@@ -25,6 +25,7 @@
 #import "FTModelHelper.h"
 #import "FTMobileConfig+Private.h"
 #import "FTNetworkMock.h"
+#import "FTTestUtils.h"
 @interface FTMobileAgentTests : KIFTestCase
 @property (nonatomic, strong) FTMobileConfig *config;
 @property (nonatomic, copy) NSString *url;
@@ -558,7 +559,10 @@
     [[FTMobileAgent sharedInstance] startTraceWithConfigOptions:trace];
     
     [tester waitForTimeInterval:0.5];
-    [FTMobileAgent shutDown];
+    CFTimeInterval duration = [FTTestUtils functionElapsedTime:^{
+        [FTMobileAgent shutDown];
+    }];
+    XCTAssertTrue(duration<0.1);
     NSInteger count = [[FTTrackerEventDBTool sharedManger] getDatasCount];
     XCTAssertThrows([FTMobileAgent sharedInstance]);
     // 日志不再采集

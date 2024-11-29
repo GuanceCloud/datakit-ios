@@ -20,6 +20,7 @@
 #import "FTRUMManager.h"
 #import "FTGlobalRumManager.h"
 #import "FTLongTaskManager.h"
+#import "FTTestUtils.h"
 @interface FTLongTaskTest : KIFTestCase
 
 @end
@@ -234,7 +235,10 @@
     dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)(2 * NSEC_PER_SEC)), dispatch_get_global_queue(0, 0), ^{
         NSData *data = [NSData dataWithContentsOfFile:dataStorePath];
         XCTAssertTrue(data.length>0);
-        [FTMobileAgent shutDown];
+        CFTimeInterval duration = [FTTestUtils functionElapsedTime:^{
+            [FTMobileAgent shutDown];
+        }];
+        XCTAssertTrue(duration<0.1);
     });
     [self mockAnr];
     XCTestExpectation *expect = [self expectationWithDescription:@"请求超时timeout!"];

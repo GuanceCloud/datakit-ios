@@ -486,7 +486,10 @@
     [[FTMobileAgent sharedInstance] syncProcess];
     [[FTTrackDataManager sharedInstance] insertCacheToDB];
     NSInteger count = [[FTTrackerEventDBTool sharedManger] getDatasCount];
-    [[FTMobileAgent sharedInstance] shutDown];
+    CFTimeInterval duration = [FTTestUtils functionElapsedTime:^{
+        [FTMobileAgent shutDown];
+    }];
+    XCTAssertTrue(duration<0.1);
     XCTAssertTrue(count>oldCount);
     [[FTLogger sharedInstance] error:@"testSDKShutDown" property:nil];
     [[FTLogger sharedInstance] warning:@"testSDKShutDown" property:nil];

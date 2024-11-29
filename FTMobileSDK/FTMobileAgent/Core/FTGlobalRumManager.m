@@ -164,7 +164,6 @@ static dispatch_once_t onceToken;
 }
 #pragma mark ========== 注销 ==========
 - (void)shutDown{
-    [self.rumManager syncProcess];
     [[FTAppLifeCycle sharedInstance] removeAppLifecycleDelegate:self];
     [FTWKWebViewHandler sharedInstance].enableTrace = NO;
     onceToken = 0;

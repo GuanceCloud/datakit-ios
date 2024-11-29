@@ -173,6 +173,13 @@ static dispatch_once_t onceToken;
     pthread_rwlock_unlock(&_uploadWorkLock);
     return block_t;
 }
+-(void)cancelUploadWork{
+    pthread_rwlock_wrlock(&_uploadWorkLock);
+    if(_uploadWork){
+        dispatch_block_cancel(_uploadWork);
+    }
+    pthread_rwlock_unlock(&_uploadWorkLock);
+}
 #pragma mark - Upload -
 
 - (void)uploadTrackData{
@@ -261,20 +268,10 @@ static dispatch_once_t onceToken;
 - (void)insertCacheToDB{
     [self.logDataCache insertCacheToDB];
 }
-- (void)cancelSynchronously{
-    __weak typeof(self) weakSelf = self;
-    dispatch_sync(self.networkQueue, ^{
-        if(weakSelf.uploadWork){
-            dispatch_block_cancel(weakSelf.uploadWork);
-            weakSelf.uploadWork = nil;
-        }
-    });
-}
 - (void)shutDown{
-    [self cancelSynchronously];
+    [self cancelUploadWork];
     [self.logDataCache insertCacheToDB];
     [[FTAppLifeCycle sharedInstance] removeAppLifecycleDelegate:self];
-    dispatch_sync(self.networkQueue, ^{});
     [[FTTrackerEventDBTool sharedManger] shutDown];
     onceToken = 0;
 }
