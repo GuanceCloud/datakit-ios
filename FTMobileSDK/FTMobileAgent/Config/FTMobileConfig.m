@@ -30,7 +30,7 @@
         _enableTraceUserResource = NO;
         _enableResourceHostIP = NO;
         _monitorFrequency = FTMonitorFrequencyDefault;
-        _blockDurationMs = FT_DEFAULT_BLOCK_DURATIONS_MS;
+        _freezeDurationMs = FT_DEFAULT_BLOCK_DURATIONS_MS;
     }
     return self;
 }
@@ -50,7 +50,7 @@
     options.deviceMetricsMonitorType = self.deviceMetricsMonitorType;
     options.monitorFrequency = self.monitorFrequency;
     options.resourceUrlHandler = self.resourceUrlHandler;
-    options.blockDurationMs = self.blockDurationMs;
+    options.freezeDurationMs = self.freezeDurationMs;
     return options;
 }
 -(instancetype)initWithDictionary:(NSDictionary *)dict{
@@ -59,7 +59,7 @@
             _enableTrackAppCrash = [dict[@"enableTrackAppCrash"] boolValue];
             _samplerate = [dict[@"samplerate"] intValue];
             _enableTrackAppFreeze = [dict[@"enableTrackAppFreeze"] boolValue];
-            _blockDurationMs = [dict[@"blockDurationMs"] intValue];
+            _freezeDurationMs = [dict[@"freezeDurationMs"] intValue];
             _enableTrackAppANR = [dict[@"enableTrackAppANR"] boolValue];
             _enableTraceUserAction = [dict[@"enableTraceUserAction"] boolValue];
             _enableTraceUserView = [dict[@"enableTraceUserView"] boolValue];
@@ -77,12 +77,12 @@
         return nil;
     }
 }
--(void)setEnableTrackAppFreeze:(BOOL)enableTrackAppFreeze blockDurationMs:(long)blockDurationMs{
+-(void)setEnableTrackAppFreeze:(BOOL)enableTrackAppFreeze freezeDurationMs:(long)freezeDurationMs{
     _enableTrackAppFreeze = enableTrackAppFreeze;
-    self.blockDurationMs = blockDurationMs;
+    self.freezeDurationMs = freezeDurationMs;
 }
--(void)setBlockDurationMs:(long)blockDurationMs{
-    _blockDurationMs = MAX(FT_MINI_DEFAULT_BLOCK_DURATIONS_MS,blockDurationMs);
+-(void)setFreezeDurationMs:(long)freezeDurationMs{
+    _freezeDurationMs = MAX(FT_MINI_DEFAULT_BLOCK_DURATIONS_MS,freezeDurationMs);
 }
 -(void)setGlobalContext:(NSDictionary<NSString *,NSString *> *)globalContext{
     _globalContext = [globalContext ft_deepCopy];
@@ -92,7 +92,7 @@
     [dict setValue:@(self.enableTrackAppCrash) forKey:@"enableTrackAppCrash"];
     [dict setValue:@(self.samplerate) forKey:@"samplerate"];
     [dict setValue:@(self.enableTrackAppFreeze) forKey:@"enableTrackAppFreeze"];
-    [dict setValue:@(self.blockDurationMs) forKey:@"blockDurationMs"];
+    [dict setValue:@(self.freezeDurationMs) forKey:@"freezeDurationMs"];
     [dict setValue:@(self.enableTrackAppANR) forKey:@"enableTrackAppANR"];
     [dict setValue:@(self.enableTraceUserAction) forKey:@"enableTraceUserAction"];
     [dict setValue:@(self.enableTraceUserView) forKey:@"enableTraceUserView"];

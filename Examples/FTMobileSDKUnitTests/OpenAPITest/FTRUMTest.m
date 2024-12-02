@@ -52,11 +52,11 @@
 #pragma mark ========== RUM CONFIG ==========
 - (void)testRUMFreezeThreshold{
     FTRumConfig *rumConfig = [[FTRumConfig alloc]initWithAppid:@"appid"];
-    XCTAssertTrue(rumConfig.blockDurationMs == 250);
-    rumConfig.blockDurationMs = 0;
-    XCTAssertTrue(rumConfig.blockDurationMs == 100);
-    rumConfig.blockDurationMs = 5000;
-    XCTAssertTrue(rumConfig.blockDurationMs == 5000);
+    XCTAssertTrue(rumConfig.freezeDurationMs == 250);
+    rumConfig.freezeDurationMs = 0;
+    XCTAssertTrue(rumConfig.freezeDurationMs == 100);
+    rumConfig.freezeDurationMs = 5000;
+    XCTAssertTrue(rumConfig.freezeDurationMs == 5000);
 }
 #pragma mark ========== Session ==========
 
@@ -807,7 +807,7 @@
 - (void)testStartAction_0_1s_NoDataBind{
     [self setRumConfig];
     [FTModelHelper startView];
-    [[FTExternalDataManager sharedManager] addActionName:@"testStartAction_0_1s_NoDataBind" actionType:@"click" property:nil];
+    [[FTExternalDataManager sharedManager] startAction:@"testStartAction_0_1s_NoDataBind" actionType:@"click" property:nil];
     [tester waitForTimeInterval:0.2];
     [self addLongTaskData:nil];
     [[FTGlobalRumManager sharedInstance].rumManager syncProcess];

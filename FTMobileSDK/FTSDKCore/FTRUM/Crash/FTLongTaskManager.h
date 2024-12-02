@@ -22,7 +22,7 @@ NS_ASSUME_NONNULL_BEGIN
                            delegate:(id<FTRunloopDetectorDelegate>)delegate
                   enableTrackAppANR:(BOOL)enableANR
                enableTrackAppFreeze:(BOOL)enableFreeze
-                    blockDurationMs:(long)freezeThreshold;
+                                       freezeDurationMs:(long)freezeThreshold;
 
 -(void)shutDown;
 @end

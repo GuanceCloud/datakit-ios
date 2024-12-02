@@ -157,8 +157,8 @@ typedef BOOL(^FTResourceUrlHandler)(NSURL * url);
 @property (nonatomic, assign) BOOL enableTrackAppCrash;
 /// 设置是否需要采集卡顿
 @property (nonatomic, assign) BOOL enableTrackAppFreeze;
-/// 设置卡顿的阈值。单位毫秒 100 < blockDurationMs ，默认 250ms
-@property (nonatomic, assign) long blockDurationMs;
+/// 设置卡顿的阈值。单位毫秒 100 < freezeDurationMs ，默认 250ms
+@property (nonatomic, assign) long freezeDurationMs;
 /// 设置是否需要采集 ANR
 ///
 /// runloop 采集主线程卡顿
@@ -176,8 +176,8 @@ typedef BOOL(^FTResourceUrlHandler)(NSURL * url);
 
 /// 开启采集卡顿并设置卡顿的阈值。
 /// - Parameter enableTrackAppFreeze: 设置是否需要采集卡顿
-/// - Parameter blockDurationMs: 卡顿的阈值，单位毫秒 100 < blockDurationMs ，默认 250ms
--(void)setEnableTrackAppFreeze:(BOOL)enableTrackAppFreeze blockDurationMs:(long)blockDurationMs;
+/// - Parameter freezeDurationMs: 卡顿的阈值，单位毫秒 100 < freezeDurationMs ，默认 250ms
+-(void)setEnableTrackAppFreeze:(BOOL)enableTrackAppFreeze freezeDurationMs:(long)freezeDurationMs;
 @end
 /// Trace 功能配置项
 @interface FTTraceConfig : NSObject
