@@ -1,3 +1,6 @@
+# 1.5.7-alpha.2
+1. 替换 longtask 检测时间范围设置参数 `blockDurationMs` 为 `freezeDurationMs`
+---
 # 1.5.7-alpha.1
 1. 添加设置 longtask 检测时间范围的方法
 2. 优化 SDK 的 `shutDown` 方法，避免主线程同步等待导致的卡顿或 WatchDog 崩溃
