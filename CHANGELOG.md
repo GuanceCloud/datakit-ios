@@ -1,3 +1,6 @@
+# 1.5.7-beta.1
+1. 同 1.5.7-alpha.1、1.5.7-alpha.2
+---
 # 1.5.7-alpha.2
 1. 替换 longtask 检测时间范围设置参数 `blockDurationMs` 为 `freezeDurationMs`
 ---
