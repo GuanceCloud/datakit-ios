@@ -1,3 +1,7 @@
+# 1.5.7
+1. 支持通过 `FTRUMConfig.freezeDurationMs` 设置卡顿检测阀值
+2. 优化 SDK 的 `shutDown` 方法，避免主线程同步等待导致的卡顿或 WatchDog 崩溃
+---
 # 1.5.7-beta.1
 1. 同 1.5.7-alpha.1、1.5.7-alpha.2
 ---
