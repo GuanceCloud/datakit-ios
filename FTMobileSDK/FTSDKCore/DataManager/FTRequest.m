@@ -12,6 +12,9 @@
 #import "FTRecordModel.h"
 #import "FTConstants.h"
 #import "FTBaseInfoHandler.h"
+#import "FTDataCompression.h"
+#import "FTLog+Private.h"
+#import "FTEnumConstant.h"
 @interface FTRequest()
 @property (nonatomic, strong) NSArray <FTRecordModel *> *events;
 
@@ -56,6 +59,9 @@
 -(BOOL)enableDataIntegerCompatible{
     return FTNetworkInfoManager.sharedInstance.enableDataIntegerCompatible;
 }
+-(BOOL)compression{
+    return FTNetworkInfoManager.sharedInstance.compression;
+}
 - (NSMutableURLRequest *)adaptedRequest:(NSMutableURLRequest *)mutableRequest{
      NSString *date =[[NSDate date] ft_stringWithGMTFormat];
      mutableRequest.HTTPMethod = self.httpMethod;
@@ -74,7 +80,19 @@
         NSString *body = [self.requestBody getRequestBodyWithEventArray:self.events packageId:packageId enableIntegerCompatible:self.enableDataIntegerCompatible];
         mutableRequest.HTTPBody = [body dataUsingEncoding:NSUTF8StringEncoding];
     }
-     return mutableRequest;
+    return [self compression:mutableRequest];
+}
+- (NSMutableURLRequest *)compression:(NSMutableURLRequest *)request{
+    if(self.compression){
+        NSData *data = [FTDataCompression deflate:request.HTTPBody];
+        if (data) {
+            request.HTTPBody = data;
+            [request setValue:@"deflate" forHTTPHeaderField:@"Content-Encoding"];
+        }else{
+            FTInnerLogError(@"Failed to compress request payload \n- url: %@\n- uncompressed-size: %lu",request.URL,(unsigned long)request.HTTPBody.length);
+        }
+    }
+    return request;
 }
 @end
 @implementation FTLoggingRequest

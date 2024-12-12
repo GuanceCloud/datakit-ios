@@ -34,6 +34,7 @@
 
 - (void)tearDown {
     // Put teardown code here. This method is called after the invocation of each test method in the class.
+    [FTNetworkInfoManager shutDown];
     [OHHTTPStubs removeAllStubs];
 }
 - (void)mockHttp{
@@ -173,7 +174,7 @@
     FTRecordModel *model = [FTModelHelper createWrongFormatRumModel];
     FTRequest *request = [FTRequest createRequestWithEvents:@[model] type:FT_DATA_TYPE_RUM];
     XCTAssertTrue([request.absoluteURL.host isEqualToString:[NSURL URLWithString:datakitUrlStr].host]);
-    [[FTMobileAgent sharedInstance] shutDown];
+    [FTMobileAgent shutDown];
 }
 - (void)testDatawayUrl{
     NSString *datawayUrlStr = @"http://www.test.com/some/url/string";
@@ -185,7 +186,7 @@
     NSURL *datawayUrl = [NSURL URLWithString:[NSString stringWithFormat:@"%@%@?token=%@&to_headless=true",datawayUrlStr,request.path,clientToken]];
     XCTAssertTrue([request.absoluteURL.host isEqualToString:[NSURL URLWithString:datawayUrlStr].host]);
     XCTAssertTrue([request.absoluteURL isEqual:datawayUrl]);
-    [[FTMobileAgent sharedInstance] shutDown];
+    [FTMobileAgent shutDown];
 }
 - (void)testSetDatakitAndDatawayUrl{
     NSString *datakitUrlStr = @"http://www.test.com/datakit/url/string";
@@ -199,6 +200,74 @@
     FTRecordModel *model = [FTModelHelper createWrongFormatRumModel];
     FTRequest *request = [FTRequest createRequestWithEvents:@[model] type:FT_DATA_TYPE_RUM];
     XCTAssertTrue([request.absoluteURL.host isEqualToString:[NSURL URLWithString:datakitUrlStr].host]);
-    [[FTMobileAgent sharedInstance] shutDown];
+    [FTMobileAgent shutDown];
+}
+- (void)testCompressIntakeRequests_NO{
+    NSString *datakitUrlStr = @"http://www.test.com/datakit/url/string";
+    FTMobileConfig *config = [[FTMobileConfig alloc]initWithDatakitUrl:datakitUrlStr];
+    config.enableSDKDebugLog = YES;
+    config.compressIntakeRequests = NO;
+    [FTMobileAgent startWithConfigOptions:config];
+    FTRecordModel *model = [FTModelHelper createRumModel];
+    FTRequest *request = [FTRequest createRequestWithEvents:@[model] type:FT_DATA_TYPE_RUM];
+    NSMutableURLRequest *urlRequest = [[NSMutableURLRequest alloc]initWithURL:request.absoluteURL cachePolicy:NSURLRequestUseProtocolCachePolicy timeoutInterval:30.0];
+
+    NSMutableURLRequest *newRequest = [request adaptedRequest:urlRequest];
+    
+    XCTAssertNil([newRequest.allHTTPHeaderFields valueForKey:@"Content-Encoding"]);
+    [FTMobileAgent shutDown];
+}
+//- (void)testCompressionForUpload_Gzip_HTTPHeader{
+//    FTRecordModel *model = [FTModelHelper createRumModel];
+//    FTRequest *referenceRequest = [FTRequest createRequestWithEvents:@[model] type:FT_DATA_TYPE_RUM];
+//    NSMutableURLRequest *rUrlRequest = [[NSMutableURLRequest alloc]initWithURL:referenceRequest.absoluteURL cachePolicy:NSURLRequestUseProtocolCachePolicy timeoutInterval:30.0];
+//    NSMutableURLRequest *normalRequest = [referenceRequest adaptedRequest:rUrlRequest];
+//    
+//    NSString *datakitUrlStr = @"http://www.test.com/datakit/url/string";
+//    FTMobileConfig *config = [[FTMobileConfig alloc]initWithDatakitUrl:datakitUrlStr];
+//    config.enableSDKDebugLog = YES;
+//    config.compressionForUpload = FTHttpRequestCompressionGzip;
+//    [FTMobileAgent startWithConfigOptions:config];
+//
+//    FTRequest *request = [FTRequest createRequestWithEvents:@[model] type:FT_DATA_TYPE_RUM];
+//    NSMutableURLRequest *urlRequest = [[NSMutableURLRequest alloc]initWithURL:request.absoluteURL cachePolicy:NSURLRequestUseProtocolCachePolicy timeoutInterval:30.0];
+//
+//    NSMutableURLRequest *compressRequest = [request adaptedRequest:urlRequest];
+//
+//    NSString *contentEncoding = [compressRequest.allHTTPHeaderFields valueForKey:@"Content-Encoding"];
+//
+//    XCTAssertTrue([contentEncoding isEqualToString:@"gzip"]);
+//    
+//    NSUInteger rLength = normalRequest.HTTPBody.length;
+//    NSUInteger cLength = compressRequest.HTTPBody.length;
+//    XCTAssertTrue(rLength>cLength);
+//    [FTMobileAgent shutDown];
+//}
+- (void)testCompressIntakeRequests_YES{
+    FTRecordModel *model = [FTModelHelper createRumModel];
+    FTRequest *referenceRequest = [FTRequest createRequestWithEvents:@[model] type:FT_DATA_TYPE_RUM];
+    NSMutableURLRequest *rUrlRequest = [[NSMutableURLRequest alloc]initWithURL:referenceRequest.absoluteURL cachePolicy:NSURLRequestUseProtocolCachePolicy timeoutInterval:30.0];
+    NSMutableURLRequest *normalRequest = [referenceRequest adaptedRequest:rUrlRequest];
+    
+    NSString *datakitUrlStr = @"http://www.test.com/datakit/url/string";
+    FTMobileConfig *config = [[FTMobileConfig alloc]initWithDatakitUrl:datakitUrlStr];
+    config.enableSDKDebugLog = YES;
+    config.compressIntakeRequests = YES;
+    [FTMobileAgent startWithConfigOptions:config];
+
+    FTRequest *request = [FTRequest createRequestWithEvents:@[model] type:FT_DATA_TYPE_RUM];
+    NSMutableURLRequest *urlRequest = [[NSMutableURLRequest alloc]initWithURL:request.absoluteURL cachePolicy:NSURLRequestUseProtocolCachePolicy timeoutInterval:30.0];
+
+    NSMutableURLRequest *compressRequest = [request adaptedRequest:urlRequest];
+
+    NSString *contentEncoding = [compressRequest.allHTTPHeaderFields valueForKey:@"Content-Encoding"];
+
+    XCTAssertTrue([contentEncoding isEqualToString:@"deflate"]);
+    
+    NSUInteger rLength = normalRequest.HTTPBody.length;
+    NSUInteger cLength = compressRequest.HTTPBody.length;
+    XCTAssertTrue(rLength>cLength);
+   
+    [FTMobileAgent shutDown];
 }
 @end

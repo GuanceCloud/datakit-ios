@@ -131,27 +131,29 @@ void *FTRUMQueueIdentityKey = &FTRUMQueueIdentityKey;
     });
 }
 #pragma mark - Action -
--(void)addClickActionWithName:(NSString *)actionName{
-    [self addClickActionWithName:actionName property:nil];
-}
-- (void)addClickActionWithName:(NSString *)actionName property:(NSDictionary *)property{
-    [self addActionName:actionName actionType:FT_KEY_ACTION_TYPE_CLICK property:property];
-}
--(void)addActionName:(NSString *)actionName actionType:(NSString *)actionType{
-    [self addActionName:actionName actionType:actionType property:nil];
-}
-- (void)addActionName:(NSString *)actionName actionType:(NSString *)actionType property:(NSDictionary *)property{
-    if (!actionName || actionName.length == 0 || !actionType || actionType.length == 0) {
-        FTInnerLogError(@"[RUM] Failed to add action due to missing required fields. Please ensure 'actionName' and 'actionType' are provided.");
-        return;
-    }
+- (void)startAction:(NSString *)actionName actionType:(NSString *)actionType property:(NSDictionary *)property{
     NSDate *time = [NSDate date];
     NSDictionary *context = [self rumDynamicProperty];
     dispatch_async(self.rumQueue, ^{
         @try {
             FTRUMActionModel *actionModel = [[FTRUMActionModel alloc] initWithActionName:actionName actionType:actionType];
             actionModel.time = time;
-            actionModel.type = FTRUMDataClick;
+            actionModel.type = FTRUMDataStartAction;
+            actionModel.fields = property;
+            [self process:actionModel context:context];
+        } @catch (NSException *exception) {
+            FTInnerLogError(@"exception %@",exception);
+        }
+    });
+}
+- (void)addAction:(NSString *)actionName actionType:(NSString *)actionType property:(NSDictionary *)property{
+    NSDate *time = [NSDate date];
+    NSDictionary *context = [self rumDynamicProperty];
+    dispatch_async(self.rumQueue, ^{
+        @try {
+            FTRUMActionModel *actionModel = [[FTRUMActionModel alloc] initWithActionName:actionName actionType:actionType];
+            actionModel.time = time;
+            actionModel.type = FTRUMDataAddAction;
             actionModel.fields = property;
             [self process:actionModel context:context];
         } @catch (NSException *exception) {

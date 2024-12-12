@@ -80,14 +80,14 @@
     [[FTExternalDataManager sharedManager] stopResourceWithKey:key];
     [[FTExternalDataManager sharedManager] addResourceWithKey:key metrics:nil content:model];
 }
-+ (void)addAction{
++ (void)startAction{
     [[FTExternalDataManager sharedManager] addClickActionWithName:@"testActionClick" property:nil];
 }
-+ (void)addActionWithType:(NSString *)type{
++ (void)startActionWithType:(NSString *)type{
     [[FTExternalDataManager sharedManager] addActionName:@"testActionClick2" actionType:type property:nil];
 }
 + (void)addActionWithContext:(NSDictionary *)context{
-    [[FTExternalDataManager sharedManager] addClickActionWithName:@"testActionWithContext" property:context];
+    [[FTExternalDataManager sharedManager] addAction:@"testActionWithContext" actionType:@"click" property:context];
 }
 + (void)resolveModelArray:(NSArray *)modelArray callBack:(void(^)(NSString *source,NSDictionary *tags,NSDictionary *fields,BOOL *stop))callBack{
     [modelArray enumerateObjectsWithOptions:NSEnumerationReverse usingBlock:^(FTRecordModel *obj, NSUInteger idx, BOOL * _Nonnull stop) {

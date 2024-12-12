@@ -25,6 +25,7 @@
 #import "FTModelHelper.h"
 #import "FTMobileConfig+Private.h"
 #import "FTNetworkMock.h"
+#import "FTTestUtils.h"
 @interface FTMobileAgentTests : KIFTestCase
 @property (nonatomic, strong) FTMobileConfig *config;
 @property (nonatomic, copy) NSString *url;
@@ -459,6 +460,8 @@
     XCTAssertTrue(copyRumConfig.monitorFrequency == rumConfig.monitorFrequency);
     XCTAssertTrue([copyRumConfig.globalContext isEqual:rumConfig.globalContext]);
     XCTAssertTrue([copyRumConfig.resourceUrlHandler isEqual:rumConfig.resourceUrlHandler]);
+    XCTAssertTrue(copyRumConfig.freezeDurationMs == rumConfig.freezeDurationMs);
+
 }
 - (void)testRUMConfigInitWithDict{
     XCTAssertNil([[FTRumConfig alloc]initWithDictionary:nil]);
@@ -479,6 +482,7 @@
     XCTAssertTrue(rumConfig.monitorFrequency == newRum.monitorFrequency);
     XCTAssertTrue(rumConfig.globalContext == newRum.globalContext);
     XCTAssertTrue(rumConfig.resourceUrlHandler == newRum.resourceUrlHandler);
+    XCTAssertTrue(rumConfig.freezeDurationMs == newRum.freezeDurationMs);
 }
 - (void)testTraceConfigCopy{
     FTTraceConfig *traceConfig = [[FTTraceConfig alloc]init];
@@ -558,7 +562,10 @@
     [[FTMobileAgent sharedInstance] startTraceWithConfigOptions:trace];
     
     [tester waitForTimeInterval:0.5];
-    [FTMobileAgent shutDown];
+    CFTimeInterval duration = [FTTestUtils functionElapsedTime:^{
+        [FTMobileAgent shutDown];
+    }];
+    XCTAssertTrue(duration<0.1);
     NSInteger count = [[FTTrackerEventDBTool sharedManger] getDatasCount];
     XCTAssertThrows([FTMobileAgent sharedInstance]);
     // 日志不再采集

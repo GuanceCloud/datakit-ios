@@ -139,7 +139,7 @@
 }
 - (void)addRumData{
     [FTModelHelper startView];
-    [FTModelHelper addAction];
-    [FTModelHelper addAction];
+    [FTModelHelper startAction];
+    [FTModelHelper startAction];
 }
 @end

@@ -95,6 +95,7 @@ typedef NS_ENUM(NSInteger, FTLogCacheDiscard)  {
     /// 当日志数据大于最大值时,废弃旧数据
     FTDiscardOldest
 };
+
 NS_ASSUME_NONNULL_BEGIN
 /// RUM 过滤 resource 回调，返回：NO 表示要采集，YES 表示不需要采集。
 typedef BOOL(^FTResourceUrlHandler)(NSURL * url);
@@ -156,6 +157,8 @@ typedef BOOL(^FTResourceUrlHandler)(NSURL * url);
 @property (nonatomic, assign) BOOL enableTrackAppCrash;
 /// 设置是否需要采集卡顿
 @property (nonatomic, assign) BOOL enableTrackAppFreeze;
+/// 设置卡顿的阈值。单位毫秒 100 < freezeDurationMs ，默认 250ms
+@property (nonatomic, assign) long freezeDurationMs;
 /// 设置是否需要采集 ANR
 ///
 /// runloop 采集主线程卡顿
@@ -170,6 +173,11 @@ typedef BOOL(^FTResourceUrlHandler)(NSURL * url);
 ///
 /// 保留标签:特殊 key - track_id (用于追踪功能)
 @property (nonatomic, strong) NSDictionary<NSString*,NSString*> *globalContext;
+
+/// 开启采集卡顿并设置卡顿的阈值。
+/// - Parameter enableTrackAppFreeze: 设置是否需要采集卡顿
+/// - Parameter freezeDurationMs: 卡顿的阈值，单位毫秒 100 < freezeDurationMs ，默认 250ms
+-(void)setEnableTrackAppFreeze:(BOOL)enableTrackAppFreeze freezeDurationMs:(long)freezeDurationMs;
 @end
 /// Trace 功能配置项
 @interface FTTraceConfig : NSObject
@@ -231,6 +239,9 @@ typedef BOOL(^FTResourceUrlHandler)(NSURL * url);
 @property (nonatomic, assign) int syncSleepTime;
 /// 数据同步时是否开启数据整数兼容
 @property (nonatomic, assign) BOOL enableDataIntegerCompatible;
+/// 设置内部数据同步时是否开启压缩 默认: NO
+@property (nonatomic, assign) BOOL compressIntakeRequests;
+
 /// 设置 SDK 全局 tag
 ///
 /// 保留标签： sdk_package_flutter、sdk_package_react_native

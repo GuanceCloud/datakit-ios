@@ -498,7 +498,7 @@ typedef NS_ENUM(NSUInteger,TestSessionRequestMethod){
             [expectation fulfill];
         }];
     }
-    [self waitForExpectationsWithTimeout:30 handler:^(NSError *error) {
+    [self waitForExpectationsWithTimeout:5 handler:^(NSError *error) {
         XCTAssertNil(error);
     }];
     [NSThread sleepForTimeInterval:0.5];

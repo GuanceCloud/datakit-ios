@@ -170,9 +170,11 @@ NSUInteger const FT_TIME_INTERVAL = 100;
 
 int const FT_DB_CONTENT_MAX_COUNT = 5000;
 NSString * const FT_SCRIPT_MESSAGE_HANDLER_NAME = @"ftMobileSdk";
+long const FT_DEFAULT_BLOCK_DURATIONS_MS = 250;
+long const FT_MINI_DEFAULT_BLOCK_DURATIONS_MS = 100;
+long const FT_ANR_THRESHOLD_MS = 5000;
 
-NSUInteger const MXRMonitorRunloopOneStandstillMillisecond = 250;
-NSUInteger const MXRMonitorRunloopStandstillCount = 5;
+long long const FT_ANR_THRESHOLD_NS = 5000000000;
 
 #pragma mark ==========  user info ==========
 NSString * const FT_USER_ID = @"userid";

@@ -58,7 +58,7 @@
     NSString *appid = [processInfo environment][@"APP_ID"];
     FTMobileConfig *config = [[FTMobileConfig alloc]initWithDatakitUrl:url];
     config.autoSync = NO;
-    
+    config.enableSDKDebugLog = YES;
     [FTMobileAgent startWithConfigOptions:config];
     FTTraceConfig *trace = [[FTTraceConfig alloc]init];
     trace.enableAutoTrace = YES;
@@ -174,6 +174,7 @@
     [tester waitForTimeInterval:1];
     
     [[tester waitForViewWithAccessibilityLabel:@"cell: 1"] tap];
+    [tester waitForTimeInterval:0.2];
     [[tester waitForViewWithAccessibilityLabel:@"cell: 2"] tap];
     
     [[FTGlobalRumManager sharedInstance].rumManager syncProcess];

@@ -45,18 +45,27 @@ typedef NS_ENUM(NSUInteger, FTAppState) {
 /// 离开页面
 /// - Parameter property: 事件自定义属性(可选)
 -(void)stopViewWithProperty:(nullable NSDictionary *)property;
-/// 添加 Action 事件
+
+/// 启动 RUM Action。
+///
+/// RUM 会绑定该 Action 可能触发的 Resource、Error、LongTask 事件。避免在 0.1 s 内多次添加，同一个 View 在同一时间只会关联一个 Action，在上一个 Action 未结束时，新增的 Action 会被丢弃。
+/// 与 `addAction:actionType:property` 方法添加 Action 互不影响。
 ///
 /// - Parameters:
 ///   - actionName: 事件名称
 ///   - actionType: 事件类型
-- (void)addActionName:(NSString *)actionName actionType:(NSString *)actionType;
-/// 添加 Action 事件
+///   - property: 事件自定义属性(可选)
+- (void)startAction:(NSString *)actionName actionType:(NSString *)actionType property:(nullable NSDictionary *)property;
+
+/// 添加 Action 事件.无 duration，无丢弃逻辑
+///
+/// 与 `startAction:actionType:property:` 启动的 RUM Action 互不影响。
 /// - Parameters:
 ///   - actionName: 事件名称
 ///   - actionType: 事件类型
 ///   - property: 事件自定义属性(可选)
-- (void)addActionName:(NSString *)actionName actionType:(NSString *)actionType property:(nullable NSDictionary *)property;
+- (void)addAction:(NSString *)actionName actionType:(NSString *)actionType property:(nullable NSDictionary *)property;
+
 
 /// 添加 Error 事件
 ///
@@ -99,21 +108,11 @@ typedef NS_ENUM(NSUInteger, FTAppState) {
 - (void)addLongTaskWithStack:(NSString *)stack duration:(NSNumber *)duration startTime:(long long)startTime property:(nullable NSDictionary *)property;
 
 @optional
-/// 添加 Click Action 事件
-///
-/// - Parameters:
-///   - actionName: 事件名称
-- (void)addClickActionWithName:(NSString *)actionName;
-
-/// 添加 Click Action 事件
-/// - Parameters:
-///   - actionName: 事件名称
-///   - property: 事件自定义属性(可选)
-- (void)addClickActionWithName:(NSString *)actionName property:(nullable NSDictionary *)property;
 /**
  * 进入页面
  * @param viewId          页面id
  * @param viewName        页面名称
+ * @param property        事件自定义属性(可选)
  */
 -(void)startViewWithViewID:(NSString *)viewId viewName:(NSString *)viewName property:(nullable NSDictionary *)property;
 /**

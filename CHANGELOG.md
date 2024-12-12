@@ -1,8 +1,36 @@
+# 1.5.7
+1. 支持通过 `FTRUMConfig.freezeDurationMs` 设置卡顿检测阀值
+2. 优化 SDK 的 `shutDown` 方法，避免主线程同步等待导致的卡顿或 WatchDog 崩溃
+---
+# 1.5.7-beta.1
+1. 同 1.5.7-alpha.1、1.5.7-alpha.2
+---
+# 1.5.7-alpha.2
+1. 替换 longtask 检测时间范围设置参数 `blockDurationMs` 为 `freezeDurationMs`
+---
+# 1.5.7-alpha.1
+1. 添加设置 longtask 检测时间范围的方法
+2. 优化 SDK 的 `shutDown` 方法，避免主线程同步等待导致的卡顿或 WatchDog 崩溃
+---
+# 1.5.6
+1. 支持使用 `FTMobileConfig.compressIntakeRequests` 对同步数据进行 deflate 压缩配置
+2. RUM 添加 `addAction:actionType:property` 与 `startAction:actionType:property:` 方法，优化 RUM Action 采集逻辑
+3. 修复使用 NSFileHandle 废弃 api 导致的崩溃问题
+---
+# 1.5.6-beta.1
+1. 同 1.5.5-alpha.1
+2. 修复使用 NSFileHandle 废弃 api 导致的崩溃问题
+
+---
 # 1.5.5
 1. 修复 `FTResourceMetricsModel` 中数组越界导致的崩溃问题
 ---
 # 1.5.5-beta.1
 1. 同 1.5.2-hotfix.2
+---
+# 1.5.5-alpha.1
+1. 添加对 SDK 内部数据请求压缩的支持
+2. RUM 添加 `addAction:actionType:property` 与 `startAction:actionType:property:` 方法，优化 RUM Action 采集逻辑
 ---
 # 1.5.4
 1. 添加全局、log、RUM globalContext 属性动态设置方式

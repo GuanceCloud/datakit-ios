@@ -149,7 +149,6 @@ static dispatch_once_t onceToken;
     }
 }
 - (void)shutDown{
-    [self syncProcess:^{}];
     onceToken = 0;
     sharedInstance =nil;
     FTInnerLogInfo(@"[Logging] SHUT DOWN");

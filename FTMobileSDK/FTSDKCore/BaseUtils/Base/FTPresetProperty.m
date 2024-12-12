@@ -340,6 +340,10 @@ static uintptr_t firstCmdAfterHeader(const struct mach_header* const header) {
     uname(&systemInfo);
     NSString *platform = [NSString stringWithCString:systemInfo.machine encoding:NSASCIIStringEncoding];
     //------------------------------iPhone---------------------------
+    if ([platform isEqualToString:@"iPhone17,3"]) return @"iPhone 16";
+    if ([platform isEqualToString:@"iPhone17,4"]) return @"iPhone 16 Plus";
+    if ([platform isEqualToString:@"iPhone17,1"]) return @"iPhone 16 Pro";
+    if ([platform isEqualToString:@"iPhone17,2"]) return @"iPhone 16 Pro Max";
     if ([platform isEqualToString:@"iPhone16,2"]) return @"iPhone 15 Pro Max";
     if ([platform isEqualToString:@"iPhone16,1"]) return @"iPhone 15 Pro";
     if ([platform isEqualToString:@"iPhone15,5"]) return @"iPhone 15 Plus";
@@ -458,36 +462,41 @@ static uintptr_t firstCmdAfterHeader(const struct mach_header* const header) {
     if ([platform isEqualToString:@"iPad12,2"])  return @"iPad 9";
     if ([platform isEqualToString:@"iPad13,1"])  return @"iPad Air 4";
     if ([platform isEqualToString:@"iPad13,2"])  return @"iPad Air 4";
-    if ([platform isEqualToString:@"iPad13,4"])  return @"iPad Pro 4 (11-inch) ";
-    if ([platform isEqualToString:@"iPad13,5"])  return @"iPad Pro 4 (11-inch) ";
-    if ([platform isEqualToString:@"iPad13,6"])  return @"iPad Pro 4 (11-inch) ";
-    if ([platform isEqualToString:@"iPad13,7"])  return @"iPad Pro 4 (11-inch) ";
+    if ([platform isEqualToString:@"iPad13,4"])  return @"iPad Pro 3 (11-inch) ";
+    if ([platform isEqualToString:@"iPad13,5"])  return @"iPad Pro 3 (11-inch) ";
+    if ([platform isEqualToString:@"iPad13,6"])  return @"iPad Pro 3 (11-inch) ";
+    if ([platform isEqualToString:@"iPad13,7"])  return @"iPad Pro 3 (11-inch) ";
     if ([platform isEqualToString:@"iPad13,8"])  return @"iPad Pro 5 (12.9-inch) ";
     if ([platform isEqualToString:@"iPad13,9"])  return @"iPad Pro 5 (12.9-inch) ";
     if ([platform isEqualToString:@"iPad13,10"])  return @"iPad Pro 5 (12.9-inch) ";
     if ([platform isEqualToString:@"iPad13,11"])  return @"iPad Pro 5 (12.9-inch) ";
+    if ([platform isEqualToString:@"iPad13,16"])   return @"iPad Air 5";
+    if ([platform isEqualToString:@"iPad13,17"])   return @"iPad Air 5";
+    if ([platform isEqualToString:@"iPad13,18"])  return @"iPad 10";
+    if ([platform isEqualToString:@"iPad13,19"])  return @"iPad 10";
     if ([platform isEqualToString:@"iPad14,1"])  return @"iPad mini 6";
     if ([platform isEqualToString:@"iPad14,2"])  return @"iPad mini 6";
+    if ([platform isEqualToString:@"iPad14,3"]) return @"iPad Pro 4_11";
+    if ([platform isEqualToString:@"iPad14,4"]) return @"iPad Pro 4_11";
+    if ([platform isEqualToString:@"iPad14,5"]) return @"iPad Pro 6_12.9";
+    if ([platform isEqualToString:@"iPad14,6"]) return @"iPad Pro 6_12.9";
+    if ([platform isEqualToString:@"iPad14,8"]) return @"iPad Air M2_11";
+    if ([platform isEqualToString:@"iPad14,9"]) return @"iPad Air M2_11";
+    if ([platform isEqualToString:@"iPad14,10"])   return @"iPad Air M2_13";
+    if ([platform isEqualToString:@"iPad14,11"])   return @"iPad Air M2_13";
+    if ([platform isEqualToString:@"iPad16,3"]) return @"iPad Pro M4_11";
+    if ([platform isEqualToString:@"iPad16,4"]) return @"iPad Pro M4_11";
+    if ([platform isEqualToString:@"iPad16,5"]) return @"iPad Pro M4_13";
+    if ([platform isEqualToString:@"iPad16,6"]) return @"iPad Pro M4_13";
     
     //------------------------------iTouch------------------------
-    if ([platform isEqualToString:@"iPod1,1"]){
-        return  @"iTouch";
-    }
-    if ([platform isEqualToString:@"iPod2,1"]){
-        return @"iTouch2";
-    }
-    if ([platform isEqualToString:@"iPod3,1"]){
-        return  @"iTouch3";
-    }
-    if ([platform isEqualToString:@"iPod4,1"]){
-        return  @"iTouch4";
-    }
-    if ([platform isEqualToString:@"iPod5,1"]){
-        return  @"iTouch5";
-    }
-    if ([platform isEqualToString:@"iPod7,1"]){
-        return  @"iTouch6";
-    }
+    if ([platform isEqualToString:@"iPod1,1"]) return @"iTouch";
+    if ([platform isEqualToString:@"iPod2,1"]) return @"iTouch2";
+    if ([platform isEqualToString:@"iPod3,1"]) return  @"iTouch3";
+    if ([platform isEqualToString:@"iPod4,1"]) return  @"iTouch4";
+    if ([platform isEqualToString:@"iPod5,1"]) return  @"iTouch5";
+    if ([platform isEqualToString:@"iPod7,1"]) return  @"iTouch6";
+   
     //------------------------------Samulitor-------------------------------------
     if ([platform isEqualToString:@"i386"] ||
         [platform isEqualToString:@"x86_64"] || [platform isEqualToString:@"arm64"]){

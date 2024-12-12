@@ -56,7 +56,7 @@ class RUMViewController: UIViewController,UITableViewDelegate,UITableViewDataSou
         case 2:
             FTExternalDataManager.shared().stopView()
         case 3:
-            FTExternalDataManager.shared().addActionName("custom_action", actionType: "click")
+            FTExternalDataManager.shared().addAction("custom_action", actionType: "click",property: nil)
         case 4:
             FTExternalDataManager.shared().addError(withType: "custom_type", message: "custom_message", stack: "custom_stack")
         case 5:
