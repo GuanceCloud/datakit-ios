@@ -21,7 +21,7 @@ NSString *const kFTReachabilityChangedNotification = @"kFTReachabilityChangedNot
 @property (nonatomic, assign) SCNetworkReachabilityRef  reachabilityRef;
 @property (nonatomic, strong) dispatch_queue_t          reachabilitySerialQueue;
 @property (nonatomic, strong) id                        reachabilityObject;
-
+@property (nonatomic, assign) BOOL reachable;
 -(void)reachabilityChanged:(SCNetworkReachabilityFlags)flags;
 -(BOOL)isReachableWithFlags:(SCNetworkReachabilityFlags)flags;
 
@@ -145,6 +145,7 @@ static void FTReachabilityCallback(SCNetworkReachabilityRef target, SCNetworkRea
 
         self.reachabilitySerialQueue = dispatch_queue_create("com.ft.reachability", NULL);
         self.net = [self networkType];
+        self.reachable = [self isReachable];
     }
     
     return self;
@@ -298,6 +299,7 @@ static void FTReachabilityCallback(SCNetworkReachabilityRef target, SCNetworkRea
 -(void)reachabilityChanged:(SCNetworkReachabilityFlags)flags
 {
     self.net = [self networkType];
+    self.reachable = [self isReachable];
     if (self.networkChanged) {
         self.networkChanged();
     }

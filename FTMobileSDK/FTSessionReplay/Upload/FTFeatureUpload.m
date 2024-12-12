@@ -81,7 +81,7 @@
         //读取上传文件
         NSArray<id <FTReadableFile>> *files = canUpload?[strongSelf.fileReader readFiles:strongSelf.maxBatchesPerUpload]:nil;
         if(files == nil || files.count == 0){
-            FTInnerLogDebug(@"[NETWORK][%@] No upload.%@",strongSelf.featureName,canUpload?@"No files to upload":[NSString stringWithFormat:@"[upload was skipped because:%@]",[conditions componentsJoinedByString:@" AND "]]);
+            FTInnerLogDebug(@"[NETWORK][%@] No upload:%@",strongSelf.featureName,canUpload?@"No files to upload":[NSString stringWithFormat:@"[upload was skipped because:%@]",[conditions componentsJoinedByString:@" AND "]]);
             [strongSelf.delay increase];
             [strongSelf scheduleNextCycle];
         }else{

@@ -77,7 +77,7 @@ static dispatch_once_t onceToken;
     if(_autoSync){
         __weak typeof(self) weakSelf = self;
         [FTReachability sharedInstance].networkChanged = ^(){
-            if([FTReachability sharedInstance].isReachable){
+            if([FTReachability sharedInstance].reachable){
                 [weakSelf uploadTrackData];
             }
         };
@@ -184,7 +184,7 @@ static dispatch_once_t onceToken;
 
 - (void)uploadTrackData{
     //无网 返回
-    if(![FTReachability sharedInstance].isReachable){
+    if(![FTReachability sharedInstance].reachable){
         FTInnerLogError(@"[NETWORK] Network unreachable, cancel upload");
         return;
     }

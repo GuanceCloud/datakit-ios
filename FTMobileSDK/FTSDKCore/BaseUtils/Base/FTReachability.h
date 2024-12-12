@@ -27,7 +27,7 @@ typedef void(^NetworkChangeBlock)(void);
 @interface FTReachability : NSObject
 
 /// 是否有网络连接
-@property (readonly, nonatomic, assign, getter = isReachable) BOOL reachable;
+@property (readonly, nonatomic, assign) BOOL reachable;
 /// 网络状态改变回调
 @property (nonatomic,copy) NetworkChangeBlock networkChanged;
 
@@ -47,6 +47,7 @@ typedef void(^NetworkChangeBlock)(void);
 /// 停止监听网络状态
 - (void)stopNotifier;
 
-
+/// 判断当前网络是否可用
+-(BOOL)isReachable;
 @end
 
