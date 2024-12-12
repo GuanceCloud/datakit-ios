@@ -48,9 +48,8 @@
 - (void)testNoneMonitor{
     [self setRumMonitorNone];
     [FTModelHelper startView];
-    [NSThread sleepForTimeInterval:0.5];
-    [FTModelHelper startAction];
-    [FTModelHelper startAction];
+    [tester waitForTimeInterval:1];
+    [FTModelHelper addActionWithContext:@{@"test":@"monitor"}];
     [[FTGlobalRumManager sharedInstance].rumManager syncProcess];
     NSArray *newDatas = [[FTTrackerEventDBTool sharedManger] getFirstRecords:10 withType:FT_DATA_TYPE_RUM];
     [FTModelHelper resolveModelArray:newDatas callBack:^(NSString * _Nonnull source, NSDictionary * _Nonnull tags, NSDictionary * _Nonnull fields, BOOL * _Nonnull stop) {
@@ -70,8 +69,7 @@
     [self setRumMonitorType:FTDeviceMetricsMonitorAll];
     [FTModelHelper startView];
     [tester waitForTimeInterval:1.5];
-    [FTModelHelper startAction];
-    [FTModelHelper startAction];
+    [FTModelHelper addActionWithContext:@{@"test":@"monitor"}];
     [[FTGlobalRumManager sharedInstance].rumManager syncProcess];
     NSArray *newDatas = [[FTTrackerEventDBTool sharedManger] getFirstRecords:10 withType:FT_DATA_TYPE_RUM];
     [FTModelHelper resolveModelArray:newDatas callBack:^(NSString * _Nonnull source, NSDictionary * _Nonnull tags, NSDictionary * _Nonnull fields, BOOL * _Nonnull stop) {
@@ -116,8 +114,7 @@
      postNotificationName:UIApplicationDidBecomeActiveNotification object:nil];
     [FTModelHelper startView];
     [tester waitForTimeInterval:0.5];
-    [FTModelHelper startAction];
-    [FTModelHelper startAction];
+    [FTModelHelper addActionWithContext:@{@"test":@"monitor"}];
     [[FTGlobalRumManager sharedInstance].rumManager syncProcess];
     NSArray *newDatas = [[FTTrackerEventDBTool sharedManger] getFirstRecords:10 withType:FT_DATA_TYPE_RUM];
     [FTModelHelper resolveModelArray:newDatas callBack:^(NSString * _Nonnull source, NSDictionary * _Nonnull tags, NSDictionary * _Nonnull fields, BOOL * _Nonnull stop) {

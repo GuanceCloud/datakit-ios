@@ -445,8 +445,9 @@
 }
 - (void)testStopResourceInBackground{
     [self setRumConfig];
-    [FTModelHelper startView];
-    [FTModelHelper startAction];
+    UIViewController *vc = [[UIViewController alloc] init];
+    vc.view.backgroundColor = UIColor.whiteColor;
+    [vc viewDidAppear:YES];
     NSString *key = [FTBaseInfoHandler randomUUID];
     NSURL *url = [NSURL URLWithString:@"https://www.baidu.com/more/"];
     [[FTExternalDataManager sharedManager] startResourceWithKey:key];
@@ -458,7 +459,7 @@
     XCTAssertTrue(viewHandlers.count>0);
 
     FTResourceContentModel *model = [FTResourceContentModel new];
-    model.url = [NSURL URLWithString:@"https://www.baidu.com/more/"];
+    model.url = url;
     model.httpStatusCode = 404;
     model.httpMethod = @"GET";
     [[FTExternalDataManager sharedManager] stopResourceWithKey:key];
