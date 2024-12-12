@@ -43,14 +43,14 @@
 }
 - (void)shutDownSDK{
     [[FTGlobalRumManager sharedInstance].rumManager syncProcess];
-    [[FTMobileAgent sharedInstance] shutDown];
+    [FTMobileAgent shutDown];
 }
 - (void)testNoneMonitor{
     [self setRumMonitorNone];
     [FTModelHelper startView];
     [NSThread sleepForTimeInterval:0.5];
-    [FTModelHelper addAction];
-    [FTModelHelper addAction];
+    [FTModelHelper startAction];
+    [FTModelHelper startAction];
     [[FTGlobalRumManager sharedInstance].rumManager syncProcess];
     NSArray *newDatas = [[FTTrackerEventDBTool sharedManger] getFirstRecords:10 withType:FT_DATA_TYPE_RUM];
     [FTModelHelper resolveModelArray:newDatas callBack:^(NSString * _Nonnull source, NSDictionary * _Nonnull tags, NSDictionary * _Nonnull fields, BOOL * _Nonnull stop) {
@@ -70,8 +70,8 @@
     [self setRumMonitorType:FTDeviceMetricsMonitorAll];
     [FTModelHelper startView];
     [tester waitForTimeInterval:1.5];
-    [FTModelHelper addAction];
-    [FTModelHelper addAction];
+    [FTModelHelper startAction];
+    [FTModelHelper startAction];
     [[FTGlobalRumManager sharedInstance].rumManager syncProcess];
     NSArray *newDatas = [[FTTrackerEventDBTool sharedManger] getFirstRecords:10 withType:FT_DATA_TYPE_RUM];
     [FTModelHelper resolveModelArray:newDatas callBack:^(NSString * _Nonnull source, NSDictionary * _Nonnull tags, NSDictionary * _Nonnull fields, BOOL * _Nonnull stop) {
@@ -116,8 +116,8 @@
      postNotificationName:UIApplicationDidBecomeActiveNotification object:nil];
     [FTModelHelper startView];
     [tester waitForTimeInterval:0.5];
-    [FTModelHelper addAction];
-    [FTModelHelper addAction];
+    [FTModelHelper startAction];
+    [FTModelHelper startAction];
     [[FTGlobalRumManager sharedInstance].rumManager syncProcess];
     NSArray *newDatas = [[FTTrackerEventDBTool sharedManger] getFirstRecords:10 withType:FT_DATA_TYPE_RUM];
     [FTModelHelper resolveModelArray:newDatas callBack:^(NSString * _Nonnull source, NSDictionary * _Nonnull tags, NSDictionary * _Nonnull fields, BOOL * _Nonnull stop) {

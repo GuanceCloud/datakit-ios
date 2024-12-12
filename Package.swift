@@ -92,7 +92,8 @@ let package = Package(
                 cSettings: [
                 ]),
         .target(name: "_FTLogger",
-                dependencies: ["_FTBaseUtils_Base"],
+                dependencies: ["_FTBaseUtils_Base",
+                               "_FTProtocol"],
                 path: "FTMobileSDK/FTSDKCore/Logger",
                 publicHeadersPath: ".",
                 cSettings: [

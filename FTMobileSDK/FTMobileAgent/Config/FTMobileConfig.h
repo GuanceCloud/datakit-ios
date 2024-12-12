@@ -95,6 +95,7 @@ typedef NS_ENUM(NSInteger, FTLogCacheDiscard)  {
     /// 当日志数据大于最大值时,废弃旧数据
     FTDiscardOldest
 };
+
 NS_ASSUME_NONNULL_BEGIN
 /// RUM 过滤 resource 回调，返回：NO 表示要采集，YES 表示不需要采集。
 typedef BOOL(^FTResourceUrlHandler)(NSURL * url);
@@ -156,6 +157,8 @@ typedef BOOL(^FTResourceUrlHandler)(NSURL * url);
 @property (nonatomic, assign) BOOL enableTrackAppCrash;
 /// 设置是否需要采集卡顿
 @property (nonatomic, assign) BOOL enableTrackAppFreeze;
+/// 设置卡顿的阈值。单位毫秒 100 < freezeDurationMs ，默认 250ms
+@property (nonatomic, assign) long freezeDurationMs;
 /// 设置是否需要采集 ANR
 ///
 /// runloop 采集主线程卡顿
@@ -170,6 +173,11 @@ typedef BOOL(^FTResourceUrlHandler)(NSURL * url);
 ///
 /// 保留标签:特殊 key - track_id (用于追踪功能)
 @property (nonatomic, strong) NSDictionary<NSString*,NSString*> *globalContext;
+
+/// 开启采集卡顿并设置卡顿的阈值。
+/// - Parameter enableTrackAppFreeze: 设置是否需要采集卡顿
+/// - Parameter freezeDurationMs: 卡顿的阈值，单位毫秒 100 < freezeDurationMs ，默认 250ms
+-(void)setEnableTrackAppFreeze:(BOOL)enableTrackAppFreeze freezeDurationMs:(long)freezeDurationMs;
 @end
 /// Trace 功能配置项
 @interface FTTraceConfig : NSObject
@@ -219,18 +227,21 @@ typedef BOOL(^FTResourceUrlHandler)(NSURL * url);
 @property (nonatomic, copy) NSString *env;
 /// 设置是否允许 SDK 打印 Debug 日志。
 @property (nonatomic, assign) BOOL enableSDKDebugLog;
-/// 应用版本号。
-@property (nonatomic, copy) NSString *version;
+/// 应用版本号。默认`CFBundleShortVersionString`值
+@property (nonatomic, copy) NSString *version DEPRECATED_MSG_ATTRIBUTE("已废弃，version 将统一使用`CFBundleShortVersionString`值");
 /// 所属业务或服务的名称 默认：df_rum_ios
 @property (nonatomic, copy) NSString *service;
 /// 数据是否进行自动同步上传 默认：YES
 @property (nonatomic, assign) BOOL autoSync;
 /// 数据同步时每条请求同步条数,最小值 5 默认：10
 @property (nonatomic, assign) int syncPageSize;
-/// 数据同步时每条请求间隔时间 单位毫秒 0< syncSleepTime <100
+/// 数据同步时每条请求间隔时间 单位毫秒 0< syncSleepTime <5000
 @property (nonatomic, assign) int syncSleepTime;
 /// 数据同步时是否开启数据整数兼容
 @property (nonatomic, assign) BOOL enableDataIntegerCompatible;
+/// 设置内部数据同步时是否开启压缩 默认: NO
+@property (nonatomic, assign) BOOL compressIntakeRequests;
+
 /// 设置 SDK 全局 tag
 ///
 /// 保留标签： sdk_package_flutter、sdk_package_react_native

@@ -35,7 +35,21 @@ NSString * const FT_NULL_VALUE  = @"N/A";
 NSString * const FT_TYPE = @"type";
 NSString * const FT_SDK_VERSION = @"sdk_version";
 NSString * const FT_SDK_NAME = @"sdk_name";
-
+#pragma mark ========== BASE PROPERTY ==========
+NSString * const FT_COMMON_PROPERTY_APP_NAME = @"app_name";
+NSString * const FT_COMMON_PROPERTY_OS_VERSION = @"os_version";
+NSString * const FT_COMMON_PROPERTY_OS_VERSION_MAJOR = @"os_version_major";
+NSString * const FT_IS_SIGNIN = @"is_signin";
+NSString * const FT_COMMON_PROPERTY_OS = @"os";
+NSString * const FT_COMMON_PROPERTY_DEVICE = @"device";
+NSString * const FT_COMMON_PROPERTY_DISPLAY = @"display";
+NSString * const FT_COMMON_PROPERTY_DEVICE_MODEL = @"model";
+NSString * const FT_SCREEN_SIZE = @"screen_size";
+NSString * const FT_CPU_ARCH = @"arch";
+NSString * const FT_COMMON_PROPERTY_DEVICE_UUID = @"device_uuid";
+NSString * const FT_APPLICATION_UUID = @"application_uuid";
+NSString * const FT_ENV = @"env";
+NSString * const FT_VERSION = @"version";
 #pragma mark ========== RUM ==========
 NSString * const FT_TERMINAL_APP = @"app";
 NSString * const FT_APP_ID = @"app_id";
@@ -121,6 +135,8 @@ NSString * const FT_KEY_ACTION_TYPE_CLICK = @"click";
 NSString * const FT_LAUNCH_HOT = @"launch_hot";
 NSString * const FT_LAUNCH_COLD = @"launch_cold";
 NSString * const FT_LAUNCH_WARM = @"launch_warm";
+
+NSString * const FT_RUM_CUSTOM_KEYS = @"custom_keys";
 #pragma mark ========== Session Replay ==========
 NSString * const FT_SESSION_HAS_REPLAY = @"session_has_replay";
 NSString * const FT_SESSION_REPLAY_STATS = @"session_replay_stats";
@@ -160,10 +176,13 @@ NSUInteger const FT_TIME_INTERVAL = 100;
 
 int const FT_DB_CONTENT_MAX_COUNT = 5000;
 NSString * const FT_SCRIPT_MESSAGE_HANDLER_NAME = @"ftMobileSdk";
+long const FT_DEFAULT_BLOCK_DURATIONS_MS = 250;
+long const FT_MINI_DEFAULT_BLOCK_DURATIONS_MS = 100;
+long const FT_ANR_THRESHOLD_MS = 5000;
 
-NSUInteger const MXRMonitorRunloopOneStandstillMillisecond = 250;
-NSUInteger const MXRMonitorRunloopStandstillCount = 5;
+long long const FT_ANR_THRESHOLD_NS = 5000000000;
 
+#pragma mark ==========  user info ==========
 NSString * const FT_USER_ID = @"userid";
 NSString * const FT_USER_NAME = @"user_name";
 NSString * const FT_USER_EMAIL = @"user_email";

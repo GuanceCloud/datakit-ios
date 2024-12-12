@@ -62,7 +62,7 @@ static const NSTimeInterval sessionMaxDuration = 4 * 60 * 60; // 4 hours
         FTInnerLogInfo(@"[RUM] The current 'Session' is not sampled.");
     }
 }
-- (BOOL)process:(FTRUMDataModel *)model {
+- (BOOL)process:(FTRUMDataModel *)model context:(nonnull NSDictionary *)context{
     if ([self timedOutOrExpired:[NSDate date]]) {
         return NO;
     }
@@ -83,21 +83,21 @@ static const NSTimeInterval sessionMaxDuration = 4 * 60 * 60; // 4 hours
             self.needWriteErrorData = YES;
             break;
         case FTRUMDataLaunch:
-            [self writeLaunchData:(FTRUMLaunchDataModel*)model];
+            [self writeLaunchData:(FTRUMLaunchDataModel*)model context:context];
             break;
         case FTRUMDataWebViewJSBData:
-            [self writeWebViewJSBData:(FTRUMWebViewData *)model];
+            [self writeWebViewJSBData:(FTRUMWebViewData *)model context:context];
             break;
         default:
             break;
     }
-    self.viewHandlers = [self.assistant manageChildHandlers:self.viewHandlers byPropagatingData:model];
+    self.viewHandlers = [self.assistant manageChildHandlers:self.viewHandlers byPropagatingData:model context:context];
     if(![self hasActivityView]){
         self.rumDependencies.fatalErrorContext.lastSessionContext = [self getCurrentSessionInfo];
     }
     // 没有 view 能处理 error\longTask 则由 session 处理写入
     if(self.needWriteErrorData){
-        [self writeErrorData:model];
+        [self writeErrorData:model context:context];
     }
     return  YES;
 }
@@ -147,14 +147,15 @@ static const NSTimeInterval sessionMaxDuration = 4 * 60 * 60; // 4 hours
  * launch action
  * 实际意义上 与 click action 不同，action附加resource、error、long task不进行统计
  */
-- (void)writeLaunchData:(FTRUMLaunchDataModel *)model{
+- (void)writeLaunchData:(FTRUMLaunchDataModel *)model context:(NSDictionary *)context{
     
     NSDictionary *sessionViewTag = [model.action_type isEqualToString:FT_LAUNCH_HOT]?[self getCurrentSessionInfo]:@{
         FT_RUM_KEY_SESSION_ID:self.context.session_id,
         FT_RUM_KEY_SESSION_TYPE:self.context.session_type,
         FT_APP_ID:self.context.app_id
     };
-    NSMutableDictionary *tags = [NSMutableDictionary dictionaryWithDictionary:sessionViewTag];
+    NSMutableDictionary *tags = [NSMutableDictionary dictionaryWithDictionary:context];
+    [tags addEntriesFromDictionary:sessionViewTag];    
     NSDictionary *actionTags = @{FT_KEY_ACTION_ID:[FTBaseInfoHandler randomUUID],
                                  FT_KEY_ACTION_NAME:model.action_name,
                                  FT_KEY_ACTION_TYPE:model.action_type
@@ -169,23 +170,25 @@ static const NSTimeInterval sessionMaxDuration = 4 * 60 * 60; // 4 hours
     [self.rumDependencies.writer rumWrite:FT_RUM_SOURCE_ACTION tags:tags fields:fields time:[model.time ft_nanosecondTimeStamp]];
 
 }
-- (void)writeErrorData:(FTRUMDataModel *)model{
+- (void)writeErrorData:(FTRUMDataModel *)model context:(NSDictionary *)context{
     FTRUMErrorData *data = (FTRUMErrorData *)model;
     NSDictionary *sessionViewTag = [self getCurrentSessionInfo];
-    NSMutableDictionary *tags = [NSMutableDictionary dictionaryWithDictionary:sessionViewTag];
+    NSMutableDictionary *tags = [NSMutableDictionary dictionaryWithDictionary:context];
+    [tags addEntriesFromDictionary:sessionViewTag];
     [tags addEntriesFromDictionary:model.tags];
     NSMutableDictionary *fields = [NSMutableDictionary dictionaryWithDictionary:model.fields];
     [fields setValue:@(self.rumDependencies.sessionHasReplay) forKey:FT_SESSION_HAS_REPLAY];
     NSString *error = model.type == FTRUMDataLongTask?FT_RUM_SOURCE_LONG_TASK :FT_RUM_SOURCE_ERROR;
     [self.rumDependencies.writer rumWrite:error tags:tags fields:fields time:data.tm];
 }
-- (void)writeWebViewJSBData:(FTRUMWebViewData *)data{
+- (void)writeWebViewJSBData:(FTRUMWebViewData *)data context:(NSDictionary *)context{
     NSDictionary *sessionTag = @{
         FT_RUM_KEY_SESSION_ID:self.context.session_id,
         FT_RUM_KEY_SESSION_TYPE:self.context.session_type,
         FT_APP_ID:self.context.app_id,
     };
     NSMutableDictionary *tags = [NSMutableDictionary new];
+    [tags addEntriesFromDictionary:context];
     [tags addEntriesFromDictionary:data.tags];
     [tags addEntriesFromDictionary:sessionTag];
     [tags setValue:@(YES) forKey:FT_IS_WEBVIEW];

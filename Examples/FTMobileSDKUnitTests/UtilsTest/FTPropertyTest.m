@@ -51,7 +51,7 @@
     FTMobileConfig *config = [[FTMobileConfig alloc]initWithDatakitUrl:self.url];
     config.autoSync = NO;
     [FTMobileAgent startWithConfigOptions:config];
-    NSDictionary *dict = [[FTMobileAgent sharedInstance].presetProperty rumProperty];
+    NSDictionary *dict = [[FTPresetProperty sharedInstance] rumProperty];
     NSString *env = dict[@"env"];
     XCTAssertTrue([env isEqualToString:@"prod"]);
     [[FTMobileAgent sharedInstance] shutDown];
@@ -61,7 +61,7 @@
     config.autoSync = NO;
     [config setEnvWithType:FTEnvPre];
     [FTMobileAgent startWithConfigOptions:config];
-    NSDictionary *dict = [[FTMobileAgent sharedInstance].presetProperty rumProperty];
+    NSDictionary *dict = [[FTPresetProperty sharedInstance] rumProperty];
     NSString *env = dict[@"env"];
     XCTAssertTrue([env isEqualToString:@"pre"]);
     [[FTMobileAgent sharedInstance] shutDown];
@@ -139,7 +139,7 @@
 }
 - (void)addRumData{
     [FTModelHelper startView];
-    [FTModelHelper addAction];
-    [FTModelHelper addAction];
+    [FTModelHelper startAction];
+    [FTModelHelper startAction];
 }
 @end

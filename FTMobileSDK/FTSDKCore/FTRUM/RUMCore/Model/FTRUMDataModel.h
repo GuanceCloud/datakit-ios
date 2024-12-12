@@ -10,7 +10,9 @@
 typedef NS_ENUM(NSUInteger, FTRUMDataType) {
     FTRUMSDKInit,
     FTRUMDataLaunch,
-    FTRUMDataClick,
+    FTRUMDataStartAction,
+    FTRUMDataAddAction,
+    FTRUMDataStopAction,
     FTRUMDataViewStart,
     FTRUMDataViewStop,
     FTRUMDataLongTask,

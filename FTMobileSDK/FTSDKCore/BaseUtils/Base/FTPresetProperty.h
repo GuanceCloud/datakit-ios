@@ -15,38 +15,35 @@ NS_ASSUME_NONNULL_BEGIN
 @class FTUserInfo;
 /// 预置属性
 @interface FTPresetProperty : NSObject
-/// 用户设置的 logger globalContext
-@property (nonatomic, strong) NSDictionary *logContext;
-/// 用户设置的 rum globalContext
-@property (nonatomic, strong) NSDictionary *rumContext;
+/// 应用唯一 ID
+@property (nonatomic, copy) NSString *appID;
 /// 读写保护的用户信息
 @property (nonatomic, strong) FTReadWriteHelper<FTUserInfo*> *userHelper;
 @property (nonatomic, copy) NSString *sdkVersion;
+@property (nonatomic, strong) NSDictionary *rumGlobalContext;
+@property (nonatomic, strong) NSDictionary *logGlobalContext;
 @property (atomic, copy) NSString *sessionReplaySource;
 /// 设备名称
 + (NSString *)deviceInfo;
 + (NSString *)cpuArch;
-+ (NSString*)CPUArchForMajor:(cpu_type_t)majorCode minor:(cpu_subtype_t)minorCode;
++ (NSString *)CPUArchForMajor:(cpu_type_t)majorCode minor:(cpu_subtype_t)minorCode;
 #if FT_MAC
 + (NSString *)getDeviceUUID;
 + (NSString *)macOSdeviceModel;
 + (NSString *)macOSSystermVersion;
 #endif
-
++ (instancetype)sharedInstance;
 /// 初始化方法
 /// - Parameter version: 版本号
+/// - Parameter sdkVersion: SDK 版本号
 /// - Parameter env: 环境
 /// - Parameter service: 服务
 /// - Parameter globalContext: 全局自定义属性
-- (instancetype)initWithVersion:(NSString *)version env:(NSString *)env service:(NSString *)service globalContext:(NSDictionary *)globalContext;
-/// 禁用 init 初始化
-- (instancetype)init NS_UNAVAILABLE;
-
-/// 禁用 new 初始化
-+ (instancetype)new NS_UNAVAILABLE;
+- (void)startWithVersion:(NSString *)version sdkVersion:(NSString *)sdkVersion env:(NSString *)env service:(NSString *)service globalContext:(NSDictionary *)globalContext;
 
 /// 获取 Rum ES 公共Tag
 - (NSMutableDictionary *)rumProperty;
+- (NSMutableDictionary *)rumWebViewProperty;
 - (NSDictionary *)rumDynamicProperty;
 /// 获取 Session Replay 公共Tag
 - (NSDictionary *)sessionReplayProperty;
@@ -54,12 +51,15 @@ NS_ASSUME_NONNULL_BEGIN
 /// - Parameters:
 ///   - status: 事件等级和状态
 - (NSDictionary *)loggerProperty;
-/// 重新设置 SDK 配置项
-/// - Parameter version: 版本号
-/// - Parameter env: 环境
-/// - Parameter service: 服务
-/// - Parameter globalContext: 全局自定义属性
-- (void)resetWithVersion:(NSString *)version env:(NSString *)env service:(NSString *)service globalContext:(NSDictionary *)globalContext;
+- (NSDictionary *)loggerDynamicProperty;
+
+- (void)appendGlobalContext:(NSDictionary *)context;
+
+- (void)appendRUMGlobalContext:(NSDictionary *)context;
+
+- (void)appendLogGlobalContext:(NSDictionary *)context;
+
+- (void)shutDown;
 @end
 
 NS_ASSUME_NONNULL_END

@@ -25,6 +25,7 @@
 #import "FTDURLSessionDelegate.h"
 #import "FTSwizzle.h"
 #import "FTSwizzler.h"
+#import "FTLog+Private.h"
 #import <objc/runtime.h>
 static void *const kFTConformsToFTProtocol = (void *)&kFTConformsToFTProtocol;
 
@@ -58,22 +59,26 @@ static BOOL delegateConformsToFTProtocol(id delegate){
     });
 }
 - (NSURLSessionDataTask *)ft_dataTaskWithURL:(NSURL *)url{
-    id<FTURLSessionInterceptorProtocol> traceIntercepter = [self traceInterceptor];
-    id<FTURLSessionInterceptorProtocol> rumIntercepter = [self rumInterceptor];
-    if (traceIntercepter || rumIntercepter){
-        if([[FTURLSessionInstrumentation sharedInstance] isNotSDKInsideUrl:url]){
-            NSURLSessionDataTask *task = [self ft_dataTaskWithURL:url];
-            if (@available(iOS 13.0, *)) {
-                if(traceIntercepter){
-                    NSURLRequest *interceptedRequest = [traceIntercepter interceptRequest:task.currentRequest];
-                    if(interceptedRequest){
-                        [task setValue:interceptedRequest forKey:@"currentRequest"];
+    @try {
+        id<FTURLSessionInterceptorProtocol> traceIntercepter = [self traceInterceptor];
+        id<FTURLSessionInterceptorProtocol> rumIntercepter = [self rumInterceptor];
+        if (traceIntercepter || rumIntercepter){
+            if([[FTURLSessionInstrumentation sharedInstance] isNotSDKInsideUrl:url]){
+                NSURLSessionDataTask *task = [self ft_dataTaskWithURL:url];
+                if (@available(iOS 13.0, *)) {
+                    if(traceIntercepter){
+                        NSURLRequest *interceptedRequest = [traceIntercepter interceptRequest:task.currentRequest];
+                        if(interceptedRequest){
+                            [task setValue:interceptedRequest forKey:@"currentRequest"];
+                        }
                     }
+                    [rumIntercepter interceptTask:task];
                 }
-                [rumIntercepter interceptTask:task];
+                return task;
             }
-            return task;
         }
+    } @catch (NSException *exception) {
+        FTInnerLogError(@"exception: %@", exception);
     }
     return [self ft_dataTaskWithURL:url];
 }
@@ -112,46 +117,55 @@ static BOOL delegateConformsToFTProtocol(id delegate){
     return [self ft_dataTaskWithURL:url completionHandler:completionHandler];
 }
 - (NSURLSessionDataTask *)ft_dataTaskWithRequest:(NSURLRequest *)request{
-    id<FTURLSessionInterceptorProtocol> traceIntercepter = [self traceInterceptor];
-    id<FTURLSessionInterceptorProtocol> rumIntercepter = [self rumInterceptor];
-    if (traceIntercepter  || rumIntercepter){
-        if([[FTURLSessionInstrumentation sharedInstance] isNotSDKInsideUrl:request.URL]){
-            NSURLRequest *newRequest = traceIntercepter? [traceIntercepter interceptRequest:request]:request;
-            NSURLSessionDataTask *task = [self ft_dataTaskWithRequest:newRequest];
-            if (@available(iOS 13.0, *)) {
-                [rumIntercepter interceptTask:task];
+    @try {
+        id<FTURLSessionInterceptorProtocol> traceIntercepter = [self traceInterceptor];
+        id<FTURLSessionInterceptorProtocol> rumIntercepter = [self rumInterceptor];
+        if (traceIntercepter  || rumIntercepter){
+            if([[FTURLSessionInstrumentation sharedInstance] isNotSDKInsideUrl:request.URL]){
+                NSURLRequest *newRequest = traceIntercepter? [traceIntercepter interceptRequest:request]:request;
+                NSURLSessionDataTask *task = [self ft_dataTaskWithRequest:newRequest];
+                if (@available(iOS 13.0, *)) {
+                    [rumIntercepter interceptTask:task];
+                }
+                return task;
             }
-            return task;
         }
+        
+    } @catch (NSException *exception) {
+        FTInnerLogError(@"exception: %@", exception);
     }
     return [self ft_dataTaskWithRequest:request];
 }
 - (NSURLSessionDataTask *)ft_dataTaskWithRequest:(NSURLRequest *)request completionHandler:(CompletionHandler)completionHandler{
-    id<FTURLSessionInterceptorProtocol> traceIntercepter = [self traceInterceptor];
-    id<FTURLSessionInterceptorProtocol> rumIntercepter = [self rumInterceptor];
-    if (traceIntercepter || rumIntercepter){
-        if([[FTURLSessionInstrumentation sharedInstance] isNotSDKInsideUrl:request.URL]){
-            NSURLSessionDataTask *task;
-            if (completionHandler) {
-                __block NSURLSessionDataTask *taskReference;
-                CompletionHandler newCompletionHandler = ^(NSData * data, NSURLResponse * response, NSError * error){
-                    completionHandler(data,response,error);
-                    if (taskReference){
-                        if (data) {
-                            [rumIntercepter taskReceivedData:taskReference data:data];
+    @try {
+        id<FTURLSessionInterceptorProtocol> traceIntercepter = [self traceInterceptor];
+        id<FTURLSessionInterceptorProtocol> rumIntercepter = [self rumInterceptor];
+        if (traceIntercepter || rumIntercepter){
+            if([[FTURLSessionInstrumentation sharedInstance] isNotSDKInsideUrl:request.URL]){
+                NSURLSessionDataTask *task;
+                if (completionHandler) {
+                    __block NSURLSessionDataTask *taskReference;
+                    CompletionHandler newCompletionHandler = ^(NSData * data, NSURLResponse * response, NSError * error){
+                        completionHandler(data,response,error);
+                        if (taskReference){
+                            if (data) {
+                                [rumIntercepter taskReceivedData:taskReference data:data];
+                            }
+                            [rumIntercepter taskCompleted:taskReference error:error];
                         }
-                        [rumIntercepter taskCompleted:taskReference error:error];
-                    }
-                };
-                NSURLRequest *newRequest = traceIntercepter?[traceIntercepter interceptRequest:request]:request;
-                task = [self ft_dataTaskWithRequest:newRequest completionHandler:newCompletionHandler];
-                taskReference = task;
-            }else{
-                task = [self ft_dataTaskWithRequest:request completionHandler:completionHandler];
+                    };
+                    NSURLRequest *newRequest = traceIntercepter?[traceIntercepter interceptRequest:request]:request;
+                    task = [self ft_dataTaskWithRequest:newRequest completionHandler:newCompletionHandler];
+                    taskReference = task;
+                }else{
+                    task = [self ft_dataTaskWithRequest:request completionHandler:completionHandler];
+                }
+                [rumIntercepter interceptTask:task];
+                return task;
             }
-            [rumIntercepter interceptTask:task];
-            return task;
         }
+    } @catch (NSException *exception) {
+        FTInnerLogError(@"exception: %@", exception);
     }
     return [self ft_dataTaskWithRequest:request completionHandler:completionHandler];
 }
@@ -173,10 +187,14 @@ static BOOL delegateConformsToFTProtocol(id delegate){
 }
 +(NSURLSession *)ft_sessionWithConfiguration:(NSURLSessionConfiguration *)configuration delegate:(id<NSURLSessionDelegate>)delegate delegateQueue:(NSOperationQueue *)queue{
     id<NSURLSessionDelegate> realDelegate = delegate;
-    if (delegate == nil) {
-        realDelegate = [[FTDURLSessionDelegate alloc]init];
-    }else if(![realDelegate conformsToProtocol:@protocol(FTURLSessionDelegateProviding)]){
-        [[FTURLSessionInstrumentation sharedInstance] enableSessionDelegate:realDelegate];
+    @try {
+        if (delegate == nil) {
+            realDelegate = [[FTDURLSessionDelegate alloc]init];
+        }else if(![realDelegate conformsToProtocol:@protocol(FTURLSessionDelegateProviding)]){
+            [[FTURLSessionInstrumentation sharedInstance] enableSessionDelegate:realDelegate];
+        }
+    } @catch (NSException *exception) {
+        FTInnerLogError(@"exception: %@", exception);
     }
     return [NSURLSession ft_sessionWithConfiguration:configuration delegate:realDelegate delegateQueue:queue];
 }

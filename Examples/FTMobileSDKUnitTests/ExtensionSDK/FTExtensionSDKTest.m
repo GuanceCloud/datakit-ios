@@ -7,6 +7,7 @@
 //
 
 #import <XCTest/XCTest.h>
+#import <KIF/KIF.h>
 #import "FTMobileAgent.h"
 #import "FTMobileAgent+Private.h"
 #import "FTMobileExtension.h"
@@ -69,6 +70,7 @@
     NSArray *olddatas = [[FTExtensionDataManager sharedInstance] readAllEventsWithGroupIdentifier:@"group.com.ft.widget.demo"];
     [[FTExternalDataManager sharedManager] startViewWithName:@"TestRum"];
     [[FTExternalDataManager sharedManager] addClickActionWithName:@"extensionClick1"];
+    [tester waitForTimeInterval:0.1];
     [[FTExternalDataManager sharedManager] addClickActionWithName:@"extensionClick2"];
     [NSThread sleepForTimeInterval:2];
     NSArray *datas = [[FTExtensionDataManager sharedInstance] readAllEventsWithGroupIdentifier:@"group.com.ft.widget.demo"];
@@ -189,34 +191,64 @@
     XCTAssertTrue(newDatas.count>olddatas.count);
     XCTAssertTrue(newDatas.count == 100);
 }
-- (void)testWriteInMobileSDK{
+- (void)testWriteInMobileSDK_BindUserData_globalContext{
     [self saveMobileSdkConfig];
     [self setExtensionSDK];
     [[FTExtensionManager sharedInstance] logging:@"testCustomLogger" status:FTStatusInfo];
     [NSThread sleepForTimeInterval:0.5];
+    [[FTLogger sharedInstance] syncProcess];
     NSArray *datas = [[FTExtensionDataManager sharedInstance] readAllEventsWithGroupIdentifier:@"group.com.ft.widget.demo"];
 
     FTMobileConfig *config = [[FTMobileConfig alloc]initWithDatakitUrl:@"test"];
     config.groupIdentifiers = @[@"group.com.ft.widget.demo"];
     config.autoSync = NO;
+    config.globalContext = @{@"ft_key":@"ft_value"};
     FTLoggerConfig *logger = [[FTLoggerConfig alloc]init];
     logger.enableCustomLog = YES;
+    logger.enableLinkRumData = YES;
+    logger.globalContext = @{@"log_key":@"log_value"};
     [FTMobileAgent startWithConfigOptions:config];
+    FTRumConfig *rum = [[FTRumConfig alloc]initWithAppid:@"aaa"];
+    rum.globalContext = @{@"rum_key":@"rum_value"};
+    [[FTMobileAgent sharedInstance] startRumWithConfigOptions:rum];
     [[FTMobileAgent sharedInstance] startLoggerWithConfigOptions:logger];
+    [FTMobileAgent appendGlobalContext:@{@"ft_key1":@"ft_value"}];
+    [FTMobileAgent appendRUMGlobalContext:@{@"rum_key1":@"rum_value"}];
+    [FTMobileAgent appendLogGlobalContext:@{@"log_key1":@"log_value"}];
+    
+    [[FTMobileAgent sharedInstance] bindUserWithUserID:@"test_id" userName:@"BindUserData" userEmail:@"aaa@a.com" extra:@{@"extra_key":@"extra_value"}];
     XCTestExpectation *expectation= [self expectationWithDescription:@"异步操作timeout"];
     [[FTTrackDataManager sharedInstance] insertCacheToDB];
-    NSInteger count = [[FTTrackerEventDBTool sharedManger] getDatasCount];
+    [FTMobileAgent clearAllData];
     [[FTMobileAgent sharedInstance] trackEventFromExtensionWithGroupIdentifier:@"group.com.ft.widget.demo" completion:^(NSString * _Nonnull groupIdentifier, NSArray * _Nonnull events) {
-        [[FTTrackDataManager sharedInstance] insertCacheToDB];
-        NSInteger newCount = [[FTTrackerEventDBTool sharedManger] getDatasCount];
         XCTAssertTrue(datas.count == events.count);
-        XCTAssertTrue(count + datas.count == newCount);
         [expectation fulfill];
     }];
     [self waitForExpectationsWithTimeout:30 handler:^(NSError *error) {
         XCTAssertNil(error);
     }];
-    [[FTMobileAgent sharedInstance] shutDown];
+    [[FTTrackDataManager sharedInstance] insertCacheToDB];
+    NSArray *array = [[FTTrackerEventDBTool sharedManger] getAllDatas];
+    FTRecordModel *model = [array lastObject];
+    NSDictionary *dict = [FTJSONUtil dictionaryWithJsonString:model.data];
+    NSDictionary *op = dict[@"opdata"];
+    NSDictionary *tags = op[FT_TAGS];
+    XCTAssertTrue([tags[FT_USER_ID] isEqualToString:@"test_id"]);
+    XCTAssertTrue([tags[FT_USER_NAME] isEqualToString:@"BindUserData"]);
+    XCTAssertTrue([tags[FT_USER_EMAIL] isEqualToString:@"aaa@a.com"]);
+    XCTAssertTrue([tags[@"extra_key"] isEqualToString:@"extra_value"]);
+    XCTAssertTrue([tags[@"rum_key1"] isEqualToString:@"rum_value"]);
+    XCTAssertTrue([tags[@"rum_key"] isEqualToString:@"rum_value"]);
+    XCTAssertTrue([tags[@"log_key"] isEqualToString:@"log_value"]);
+    XCTAssertTrue([tags[@"log_key1"] isEqualToString:@"log_value"]);
+    XCTAssertTrue([tags[@"ft_key"] isEqualToString:@"ft_value"]);
+    XCTAssertTrue([tags[@"ft_key1"] isEqualToString:@"ft_value"]);
+    NSString *custom_keys = tags[FT_RUM_CUSTOM_KEYS];
+    NSArray *keys = [NSJSONSerialization JSONObjectWithData:[custom_keys dataUsingEncoding:kCFStringEncodingUTF8] options:0 error:nil];
+    XCTAssertTrue(keys.count == 2);
+    XCTAssertTrue([keys containsObject:@"rum_key1"]);
+    XCTAssertTrue([keys containsObject:@"rum_key"]);
+    [FTMobileAgent shutDown];
 }
 - (void)networkUpload:(void (^)(NSData * _Nullable data, NSURLResponse * _Nullable response, NSError * _Nullable error))completionHandler{
     NSString * urlStr = [[NSProcessInfo processInfo] environment][@"TRACE_URL"];

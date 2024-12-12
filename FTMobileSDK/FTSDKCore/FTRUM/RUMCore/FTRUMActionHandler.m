@@ -10,7 +10,7 @@
 #import "NSDate+FTUtil.h"
 #import "FTConstants.h"
 #import "FTBaseInfoHandler.h"
-static const NSTimeInterval actionMaxDuration = 10; // 10 seconds
+static const NSTimeInterval actionMaxDuration = 5; // 5 seconds
 static const NSTimeInterval discreteActionTimeoutDuration = 0.1;
 @interface FTRUMActionHandler ()<FTRUMSessionProtocol>
 @property (nonatomic, strong) FTRUMDependencies *dependencies;
@@ -27,6 +27,7 @@ static const NSTimeInterval discreteActionTimeoutDuration = 0.1;
 @property (nonatomic, strong) NSDictionary *actionProperty;//添加到field中
 //private
 @property (nonatomic, assign) NSInteger activeResourcesCount;
+@property (nonatomic, strong) NSDate *lastActiveDate;
 @end
 @implementation FTRUMActionHandler
 
@@ -48,22 +49,31 @@ static const NSTimeInterval discreteActionTimeoutDuration = 0.1;
     }
     return  self;
 }
-- (BOOL)process:(FTRUMDataModel *)model{
-   
-    if ([self timedOutOrExpired:model.time]&&[self allResourcesCompletedLoading]){
-        [self writeActionData:model.time];
+- (BOOL)process:(FTRUMDataModel *)model context:(nonnull NSDictionary *)context{
+    NSDate *timedOutDate = [self timedOutOrExpired:model.time];
+    if(timedOutDate && [self allResourcesCompletedLoading]){
+        [self writeActionData:timedOutDate context:context];
         return NO;
     }
-    
+    NSDate *maxDuration = [self timedOutMaxDuration:model.time];
+    if (maxDuration) {
+        [self writeActionData:maxDuration context:context];
+        return NO;
+    }
     switch (model.type) {
-        case FTRUMDataClick:
-            if ([self allResourcesCompletedLoading]) {
-                [self writeActionData:model.time];
-                return NO;
-            }
+        case FTRUMDataViewStart:
+        case FTRUMDataViewStop:
+        case FTRUMDataStopAction:
+            [self writeActionData:model.time context:context];
+            return NO;
             break;
         case FTRUMDataError:{
             self.actionErrorCount++;
+            FTRUMErrorData *error = (FTRUMErrorData *)model;
+            if(error.fatal){
+                [self writeActionData:model.time context:context];
+            }
+            self.lastActiveDate = model.time;
         }
             break;
         case FTRUMDataResourceStart:
@@ -72,12 +82,15 @@ static const NSTimeInterval discreteActionTimeoutDuration = 0.1;
         case FTRUMDataResourceComplete:
             self.actionResourcesCount += 1;
             self.activeResourcesCount -= 1;
+            self.lastActiveDate = model.time;
             break;
         case FTRUMDataLongTask:
             self.actionLongTaskCount++;
+            self.lastActiveDate = model.time;
             break;
         case FTRUMDataResourceError:
             self.actionErrorCount++;
+            self.lastActiveDate = model.time;
             break;
         default:
             break;
@@ -85,16 +98,26 @@ static const NSTimeInterval discreteActionTimeoutDuration = 0.1;
     return YES;
 }
 
--(BOOL)timedOutOrExpired:(NSDate*)currentTime{
+-(NSDate *)timedOutOrExpired:(NSDate*)currentTime{
     NSTimeInterval actionDuration = [currentTime  timeIntervalSinceDate:_actionStartTime];
     BOOL expired = actionDuration >= discreteActionTimeoutDuration;
-    return  expired;
+    if(expired){
+        return [_actionStartTime dateByAddingTimeInterval:discreteActionTimeoutDuration];
+    }
+    return  nil;
 }
-
+-(NSDate *)timedOutMaxDuration:(NSDate *)currentTime{
+    NSTimeInterval actionDuration = [currentTime  timeIntervalSinceDate:_actionStartTime];
+    BOOL expired = actionDuration >= actionMaxDuration;
+    if(expired){
+        return [_actionStartTime dateByAddingTimeInterval:actionMaxDuration];
+    }
+    return  nil;
+}
 -(BOOL)allResourcesCompletedLoading{
     return self.activeResourcesCount<=0;
 }
--(void)writeActionData:(NSDate *)endDate{
+-(void)writeActionData:(NSDate *)endDate context:(NSDictionary *)context{
     NSNumber *duration =  [endDate timeIntervalSinceDate:self.actionStartTime] >= actionMaxDuration?@(actionMaxDuration*1000000000):[self.actionStartTime ft_nanosecondTimeIntervalToDate:endDate];
     NSDictionary *sessionViewActionTag = [self.context getGlobalSessionViewActionTags];
     
@@ -107,7 +130,8 @@ static const NSTimeInterval discreteActionTimeoutDuration = 0.1;
     if(self.actionProperty && self.actionProperty.allKeys.count>0){
         [fields addEntriesFromDictionary:self.actionProperty];
     }
-    NSMutableDictionary *tags = [NSMutableDictionary dictionaryWithDictionary:sessionViewActionTag];
+    NSMutableDictionary *tags = [NSMutableDictionary dictionaryWithDictionary:context];
+    [tags addEntriesFromDictionary:sessionViewActionTag];
     [tags setValue:self.action_type forKey:FT_KEY_ACTION_TYPE];
     [self.dependencies.writer rumWrite:FT_RUM_SOURCE_ACTION tags:tags fields:fields time:[self.actionStartTime ft_nanosecondTimeStamp]];
     if (self.handler) {

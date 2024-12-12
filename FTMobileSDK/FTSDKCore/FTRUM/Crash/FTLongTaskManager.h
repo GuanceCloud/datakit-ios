@@ -21,7 +21,9 @@ NS_ASSUME_NONNULL_BEGIN
 -(instancetype)initWithDependencies:(FTRUMDependencies *)dependencies
                            delegate:(id<FTRunloopDetectorDelegate>)delegate
                   enableTrackAppANR:(BOOL)enableANR
-               enableTrackAppFreeze:(BOOL)enableFreeze;
+               enableTrackAppFreeze:(BOOL)enableFreeze
+                                       freezeDurationMs:(long)freezeThreshold;
+
 -(void)shutDown;
 @end
 

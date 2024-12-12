@@ -49,7 +49,8 @@
     //    [[FTMobileAgent sharedInstance] resetInstance];
     // Put teardown code here. This method is called after the invocation of each test method in the class.
     [[FTGlobalRumManager sharedInstance].rumManager syncProcess];
-    [[FTMobileAgent sharedInstance] shutDown];
+    [FTMobileAgent shutDown];
+    [FTMobileAgent clearAllData];
 }
 - (void)setSdkWithRum:(BOOL)hasRum{
     NSProcessInfo *processInfo = [NSProcessInfo processInfo];
@@ -57,7 +58,7 @@
     NSString *appid = [processInfo environment][@"APP_ID"];
     FTMobileConfig *config = [[FTMobileConfig alloc]initWithDatakitUrl:url];
     config.autoSync = NO;
-    
+    config.enableSDKDebugLog = YES;
     [FTMobileAgent startWithConfigOptions:config];
     FTTraceConfig *trace = [[FTTraceConfig alloc]init];
     trace.enableAutoTrace = YES;
@@ -70,7 +71,6 @@
         rumConfig.enableTrackAppCrash = YES;
         [[FTMobileAgent sharedInstance] startRumWithConfigOptions:rumConfig];
     }
-    [[FTTrackerEventDBTool sharedManger] deleteItemWithTm:[NSDate ft_currentNanosecondTimeStamp]];
 }
 - (void)testAutoTableViewClick{
     [self setSdkWithRum:YES];
@@ -174,6 +174,7 @@
     [tester waitForTimeInterval:1];
     
     [[tester waitForViewWithAccessibilityLabel:@"cell: 1"] tap];
+    [tester waitForTimeInterval:0.2];
     [[tester waitForViewWithAccessibilityLabel:@"cell: 2"] tap];
     
     [[FTGlobalRumManager sharedInstance].rumManager syncProcess];

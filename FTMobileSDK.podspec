@@ -80,6 +80,8 @@ Pod::Spec.new do |s|
 		c.subspec 'Logger' do |l|
 			l.source_files = 'FTMobileSDK/FTSDKCore/Logger/*{.h,.m}'
 			l.dependency 'FTMobileSDK/FTSDKCore/BaseUtils/Base'
+			l.dependency 'FTMobileSDK/FTSDKCore/Protocol'
+
 		end
 
 		c.subspec 'FTWKWebView' do |j|

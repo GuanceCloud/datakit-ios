@@ -1,3 +1,65 @@
+# 1.5.7
+1. 支持通过 `FTRUMConfig.freezeDurationMs` 设置卡顿检测阀值
+2. 优化 SDK 的 `shutDown` 方法，避免主线程同步等待导致的卡顿或 WatchDog 崩溃
+---
+# 1.5.7-beta.1
+1. 同 1.5.7-alpha.1、1.5.7-alpha.2
+---
+# 1.5.7-alpha.2
+1. 替换 longtask 检测时间范围设置参数 `blockDurationMs` 为 `freezeDurationMs`
+---
+# 1.5.7-alpha.1
+1. 添加设置 longtask 检测时间范围的方法
+2. 优化 SDK 的 `shutDown` 方法，避免主线程同步等待导致的卡顿或 WatchDog 崩溃
+---
+# 1.5.6
+1. 支持使用 `FTMobileConfig.compressIntakeRequests` 对同步数据进行 deflate 压缩配置
+2. RUM 添加 `addAction:actionType:property` 与 `startAction:actionType:property:` 方法，优化 RUM Action 采集逻辑
+3. 修复使用 NSFileHandle 废弃 api 导致的崩溃问题
+---
+# 1.5.6-beta.1
+1. 同 1.5.5-alpha.1
+2. 修复使用 NSFileHandle 废弃 api 导致的崩溃问题
+
+---
+# 1.5.5
+1. 修复 `FTResourceMetricsModel` 中数组越界导致的崩溃问题
+---
+# 1.5.5-beta.1
+1. 同 1.5.2-hotfix.2
+---
+# 1.5.5-alpha.1
+1. 添加对 SDK 内部数据请求压缩的支持
+2. RUM 添加 `addAction:actionType:property` 与 `startAction:actionType:property:` 方法，优化 RUM Action 采集逻辑
+---
+# 1.5.4
+1. 添加全局、log、RUM globalContext 属性动态设置方式
+2. 添加清除数据方法，支持删除所有尚未上传至服务器的数据
+3. 调整同步间歇支持的最大时间间隔至 5000 毫秒
+---
+# 1.5.4-beta.1
+1. 同 1.5.4-alpha.1-1.5.4-alpha.4
+2. SDK `shutDown` 方法内部关闭顺序调整
+3. RUM `addError` 方法参数 `stack` 允许为空
+---
+# 1.5.4-alpha.4
+1. 调整同步间歇支持的最大时间间隔至 5000 毫秒
+2. 全局、log、RUM globalContext 属性动态设置方法修改为类方法
+3. 废弃 `FTMobileConfig.version` 属性
+4. 优化动态 tags 赋值的时机
+---
+# 1.5.4-alpha.3
+1. 添加清除数据方法，支持删除所有尚未上传至服务器的数据
+2. 优化 SDK `shutDown` 方法，由实例方法改为类方法，防止测试环境断言抛错
+3. 调整同步间歇支持的最大时间间隔至 500 毫秒
+4. 补充内部错误提示日志
+---
+# 1.5.4-alpha.2
+1. 优化动态 tags 赋值的时机
+---
+# 1.5.4-alpha.1
+1. 添加全局、log、RUM globalContext 属性动态设置方式
+---
 # 1.6.0-alpha.6
 1. 修复增量快照中 `updates` 数据丢失问题
 2. 优化获取 `keyWindow` 方法
@@ -8,6 +70,11 @@
 ---
 # 1.6.0-alpha.4
 1. 同 1.5.3
+---
+# 1.5.3
+1. 修复因属性修饰符使用不当引发的内存访问错误导致的崩溃问题
+2. 使用内部警告日志替换 `FTSwizzler` 中方法签名验证断言
+3. 优化采集数据的小数精度
 ---
 # 1.6.0-alpha.3
 1. 补充 `UISegment` 选定选项时的背景屏蔽
@@ -21,11 +88,9 @@ ___
 # 1.6.0-alpha.1
 1. 新增 Session Replay 功能
 2. RUM-View 自动采集逻辑优化，修复 View 采集中断缺失问题
----
-# 1.5.3
-1. 修复因属性修饰符使用不当引发的内存访问错误导致的崩溃问题
-2. 使用内部警告日志替换 `FTSwizzler` 中方法签名验证断言
-3. 优化采集数据的小数精度
+___
+# 1.5.2-hotfix.2
+1. 修复 `FTResourceMetricsModel` 中数组越界崩溃的问题
 ---
 # 1.5.2
 1. 修复 Xcode 16 编译缺少 `#include <arm/_mcontext.h>` 头文件问题

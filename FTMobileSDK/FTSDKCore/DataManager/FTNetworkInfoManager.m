@@ -12,10 +12,10 @@
 @interface FTNetworkInfoManager()
 
 @end
+static dispatch_once_t onceToken;
+static FTNetworkInfoManager *sharedInstance = nil;
 @implementation FTNetworkInfoManager
 + (instancetype)sharedInstance{
-    static FTNetworkInfoManager *sharedInstance = nil;
-    static dispatch_once_t onceToken;
     dispatch_once(&onceToken, ^{
         sharedInstance = [[self alloc] init];
     });
@@ -72,5 +72,17 @@
         return self;
     };
 }
-
+- (FTNetworkInfoManager *(^)(BOOL value))setCompression{
+    return ^(BOOL value) {
+        self->_compression = value;
+        FTInnerLogInfo(@"SDK compressIntakeRequests ：%@",value?@"true":@"false");
+        return self;
+    };
+}
++ (void)shutDown{
+    if(sharedInstance){
+        onceToken = 0;
+        sharedInstance = nil;
+    }
+}
 @end

@@ -51,7 +51,7 @@ typedef NS_ENUM(NSInteger, FTNetworkTestsType) {
 }
 - (void)tearDown{
     [OHHTTPStubs removeAllStubs];
-    [[FTMobileAgent sharedInstance] shutDown];
+    [FTMobileAgent shutDown];
 }
 - (void)setRightConfigWithTestType:(FTNetworkTestsType)type{
     NSString *urlStr = @"http://www.test.com/some/url/string";
@@ -224,7 +224,7 @@ typedef NS_ENUM(NSInteger, FTNetworkTestsType) {
     FTRequest *request = [FTRequest createRequestWithEvents:@[model] type:FT_DATA_TYPE_LOGGING];
     [[FTNetworkManager new] sendRequest:request completion:^(NSHTTPURLResponse * _Nonnull httpResponse, NSData * _Nullable data, NSError * _Nullable error) {
         NSError *jsonError;
-        NSMutableDictionary *responseObject = [NSJSONSerialization JSONObjectWithData:data options:NSJSONReadingMutableContainers error:&jsonError];
+        [NSJSONSerialization JSONObjectWithData:data options:NSJSONReadingMutableContainers error:&jsonError];
         NSString *result =[[ NSString alloc] initWithData:data encoding:NSUTF8StringEncoding];
         XCTAssertTrue(jsonError != nil && [result isEqualToString:@"Hello World!"]);
         [expectation fulfill];
@@ -385,8 +385,8 @@ typedef NS_ENUM(NSInteger, FTNetworkTestsType) {
     [self waitForExpectations:@[expectation]];
 
     [FTModelHelper startView];
-    [FTModelHelper addAction];
-    [FTModelHelper addAction];
+    [FTModelHelper startAction];
+    [FTModelHelper startAction];
     for (int i = 0; i<101; i++) {
         dispatch_async(dispatch_get_global_queue(0, 0), ^{
             [[FTLogger sharedInstance] info:[NSString stringWithFormat:@"testLongTimeLogCache%d",i] property:nil];

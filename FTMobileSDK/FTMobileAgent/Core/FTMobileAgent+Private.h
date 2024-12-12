@@ -18,9 +18,6 @@
 @class FTPresetProperty,FTTracer;
 
 @interface FTMobileAgent (Private)<FTRUMDataWriteProtocol,FTLoggerDataWriteProtocol>
-/// 管理预设属性的实例
-@property (nonatomic, strong) FTPresetProperty *presetProperty;
-
 /// 等待正在处理数据全部处理
 - (void)syncProcess;
 /// 需要在 sessionReplay 配置前设置

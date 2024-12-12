@@ -30,6 +30,7 @@
         _enableTraceUserResource = NO;
         _enableResourceHostIP = NO;
         _monitorFrequency = FTMonitorFrequencyDefault;
+        _freezeDurationMs = FT_DEFAULT_BLOCK_DURATIONS_MS;
     }
     return self;
 }
@@ -49,6 +50,7 @@
     options.deviceMetricsMonitorType = self.deviceMetricsMonitorType;
     options.monitorFrequency = self.monitorFrequency;
     options.resourceUrlHandler = self.resourceUrlHandler;
+    options.freezeDurationMs = self.freezeDurationMs;
     return options;
 }
 -(instancetype)initWithDictionary:(NSDictionary *)dict{
@@ -57,6 +59,7 @@
             _enableTrackAppCrash = [dict[@"enableTrackAppCrash"] boolValue];
             _samplerate = [dict[@"samplerate"] intValue];
             _enableTrackAppFreeze = [dict[@"enableTrackAppFreeze"] boolValue];
+            _freezeDurationMs = [dict[@"freezeDurationMs"] intValue];
             _enableTrackAppANR = [dict[@"enableTrackAppANR"] boolValue];
             _enableTraceUserAction = [dict[@"enableTraceUserAction"] boolValue];
             _enableTraceUserView = [dict[@"enableTraceUserView"] boolValue];
@@ -74,6 +77,13 @@
         return nil;
     }
 }
+-(void)setEnableTrackAppFreeze:(BOOL)enableTrackAppFreeze freezeDurationMs:(long)freezeDurationMs{
+    _enableTrackAppFreeze = enableTrackAppFreeze;
+    self.freezeDurationMs = freezeDurationMs;
+}
+-(void)setFreezeDurationMs:(long)freezeDurationMs{
+    _freezeDurationMs = MAX(FT_MINI_DEFAULT_BLOCK_DURATIONS_MS,freezeDurationMs);
+}
 -(void)setGlobalContext:(NSDictionary<NSString *,NSString *> *)globalContext{
     _globalContext = [globalContext ft_deepCopy];
 }
@@ -82,6 +92,7 @@
     [dict setValue:@(self.enableTrackAppCrash) forKey:@"enableTrackAppCrash"];
     [dict setValue:@(self.samplerate) forKey:@"samplerate"];
     [dict setValue:@(self.enableTrackAppFreeze) forKey:@"enableTrackAppFreeze"];
+    [dict setValue:@(self.freezeDurationMs) forKey:@"freezeDurationMs"];
     [dict setValue:@(self.enableTrackAppANR) forKey:@"enableTrackAppANR"];
     [dict setValue:@(self.enableTraceUserAction) forKey:@"enableTraceUserAction"];
     [dict setValue:@(self.enableTraceUserView) forKey:@"enableTraceUserView"];
@@ -216,12 +227,12 @@
 -(instancetype)init{
     if (self = [super init]) {
         _enableSDKDebugLog = NO;
-        _version = [[[NSBundle mainBundle] infoDictionary] objectForKey:@"CFBundleShortVersionString"];
         _service = FT_DEFAULT_SERVICE_NAME;
         _env = FTEnvStringMap[FTEnvProd];
         _autoSync = YES;
         _syncPageSize = 10;
         _syncSleepTime = 0;
+        _compressIntakeRequests = NO;
     }
     return self;
 }
@@ -237,7 +248,7 @@
     }
 }
 -(void)setSyncSleepTime:(int)syncSleepTime{
-    _syncSleepTime = MAX(0, MIN(syncSleepTime, 100));
+    _syncSleepTime = MAX(0, MIN(syncSleepTime, 5000));
 }
 -(void)setSyncPageSize:(int)syncPageSize{
     _syncPageSize = MAX(5, syncPageSize);
@@ -263,7 +274,6 @@
     options.clientToken = self.clientToken;
     options.enableSDKDebugLog = self.enableSDKDebugLog;
     options.env = self.env;
-    options.version = self.version;
     options.globalContext = self.globalContext;
     options.groupIdentifiers = self.groupIdentifiers;
     options.service = self.service;
@@ -271,6 +281,7 @@
     options.syncPageSize = self.syncPageSize;
     options.syncSleepTime = self.syncSleepTime;
     options.enableDataIntegerCompatible = self.enableDataIntegerCompatible;
+    options.compressIntakeRequests = self.compressIntakeRequests;
     return options;
 }
 @end

@@ -62,10 +62,10 @@
     }
     return self;
 }
-- (BOOL)process:(FTRUMDataModel *)model{
+- (BOOL)process:(FTRUMDataModel *)model context:(nonnull NSDictionary *)context{
    
     self.needUpdateView = NO;
-    self.actionHandler =(FTRUMActionHandler *)[self.assistant manage:(FTRUMHandler *)self.actionHandler byPropagatingData:model];
+    self.actionHandler =(FTRUMActionHandler *)[self.assistant manage:(FTRUMHandler *)self.actionHandler byPropagatingData:model context:context];
     switch (model.type) {
         case FTRUMDataViewStart:{
             FTRUMViewModel *viewModel = (FTRUMViewModel *)model;
@@ -92,10 +92,15 @@
             }
         }
             break;
-        case FTRUMDataClick:
+        case FTRUMDataStartAction:
             if (self.isActiveView && self.actionHandler == nil) {
                 [self startAction:model];
+            }else{
+                FTInnerLogDebug(@"RUM Action %@ was dropped, because another action is still active for the same view.",((FTRUMActionModel *)model).action_name);
             }
+            break;
+        case FTRUMDataAddAction:
+            [self addAction:model context:context];
             break;
         case FTRUMDataError:
             if (self.isActiveView) {
@@ -105,7 +110,7 @@
                 }
                 self.viewErrorCount++;
                 self.needUpdateView = YES;
-                [self writeErrorData:model];
+                [self writeErrorData:model context:context];
             }
             break;
         case FTRUMDataResourceStart:
@@ -117,7 +122,7 @@
             if (self.isActiveView) {
                 self.viewLongTaskCount++;
                 self.needUpdateView = YES;
-                [self writeErrorData:model];
+                [self writeErrorData:model context:context];
             }
             break;
         default:
@@ -126,16 +131,16 @@
     if ([model isKindOfClass:FTRUMResourceModel.class]) {
         FTRUMResourceDataModel *newModel = (FTRUMResourceDataModel *)model;
         FTRUMResourceHandler *handler =  self.resourceHandlers[newModel.identifier];
-        self.resourceHandlers[newModel.identifier] =[handler.assistant manage:handler byPropagatingData:model];
+        self.resourceHandlers[newModel.identifier] =[handler.assistant manage:handler byPropagatingData:model context:context];
     }
     
     BOOL hasNoPendingResources = self.resourceHandlers.count == 0;
     BOOL shouldComplete = !self.isActiveView && hasNoPendingResources;
     if (shouldComplete) {
-        [self.actionHandler writeActionData:[NSDate date]];
+        [self.actionHandler writeActionData:[NSDate date] context:context];
     }
     if (self.needUpdateView) {
-        [self writeViewData:model];
+        [self writeViewData:model context:context];
     }
     return !shouldComplete;
 }
@@ -149,6 +154,16 @@
         weakSelf.context.action_name = nil;
     };
     self.actionHandler = actionHandler;
+}
+- (void)addAction:(FTRUMDataModel *)model context:(NSDictionary *)context{
+    __weak typeof(self) weakSelf = self;
+    FTRUMActionHandler *actionHandler = [[FTRUMActionHandler alloc]initWithModel:(FTRUMActionModel *)model context:self.context dependencies:self.rumDependencies];
+    model.type = FTRUMDataStopAction;
+    actionHandler.handler = ^{
+        weakSelf.viewActionCount +=1;
+        weakSelf.needUpdateView = YES;
+    };
+    [actionHandler.assistant process:model context:context];
 }
 - (void)startResource:(FTRUMResourceDataModel *)model{
     __weak typeof(self) weakSelf = self;
@@ -164,9 +179,10 @@
     };
     self.resourceHandlers[model.identifier] =resourceHandler;
 }
-- (void)writeErrorData:(FTRUMDataModel *)model{
+- (void)writeErrorData:(FTRUMDataModel *)model context:(NSDictionary *)context{
     NSDictionary *sessionViewTag = [self.context getGlobalSessionViewActionTags];
-    NSMutableDictionary *tags = [NSMutableDictionary dictionaryWithDictionary:sessionViewTag];
+    NSMutableDictionary *tags = [NSMutableDictionary dictionaryWithDictionary:context];
+    [tags addEntriesFromDictionary:sessionViewTag];
     [tags addEntriesFromDictionary:model.tags];
     NSMutableDictionary *fields = [NSMutableDictionary dictionaryWithDictionary:model.fields];
     [fields setValue:@(self.rumDependencies.sessionHasReplay) forKey:FT_SESSION_HAS_REPLAY];
@@ -176,7 +192,7 @@
         self.errorHandled();
     }
 }
-- (void)writeViewData:(FTRUMDataModel *)model{
+- (void)writeViewData:(FTRUMDataModel *)model context:(NSDictionary *)context{
     if(self.isInitialView){
         return;
     }
@@ -186,7 +202,8 @@
     //纳秒级
     NSNumber *nTimeSpent = [NSNumber numberWithLongLong:sTimeSpent * 1000000000];
 
-    NSMutableDictionary *sessionViewTag = [NSMutableDictionary dictionaryWithDictionary:[self.context getGlobalSessionViewTags]];
+    NSMutableDictionary *tags = [NSMutableDictionary dictionaryWithDictionary:context];
+    [tags addEntriesFromDictionary:[self.context getGlobalSessionViewTags]];
     FTMonitorValue *cpu = self.monitorItem.cpu;
     FTMonitorValue *memory = self.monitorItem.memory;
     FTMonitorValue *refreshRateInfo = self.monitorItem.refreshDisplay;
@@ -225,8 +242,8 @@
         [fields setValue:dict forKey:FT_SESSION_REPLAY_STATS];
     }
     long long time = [self.viewStartTime ft_nanosecondTimeStamp];
-    [self.rumDependencies.writer rumWrite:FT_RUM_SOURCE_VIEW tags:sessionViewTag fields:fields time:time];
-    self.rumDependencies.fatalErrorContext.lastViewContext = @{@"tags":sessionViewTag,
+    [self.rumDependencies.writer rumWrite:FT_RUM_SOURCE_VIEW tags:tags fields:fields time:time];
+    self.rumDependencies.fatalErrorContext.lastViewContext = @{@"tags":tags,
                                                                @"fields":fields,
                                                                @"time":[NSNumber numberWithLongLong:time]
     };

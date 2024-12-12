@@ -28,6 +28,7 @@ static NSDate *g_startDate;
 @property (nonatomic, assign) BOOL isCancel;
 @property (nonatomic, assign) NSInteger countTime; // 耗时次数
 @property (nonatomic, strong) dispatch_queue_t longTaskQueue;
+@property (nonatomic, assign) long limitMillisecond;
 @end
 @implementation FTLongTaskDetector
 -(instancetype)initWithDelegate:(id<FTLongTaskProtocol>)delegate{
@@ -35,7 +36,8 @@ static NSDate *g_startDate;
     if(self){
         _longTaskDelegate = delegate;
         _semaphore = dispatch_semaphore_create(0);
-        _limitANRMillisecond = MXRMonitorRunloopOneStandstillMillisecond;
+        _limitFreezeMillisecond = FT_DEFAULT_BLOCK_DURATIONS_MS;
+        _limitMillisecond = MIN(_limitFreezeMillisecond, FT_ANR_THRESHOLD_MS);
         _longTaskQueue = dispatch_queue_create("com.guance.longtask", 0);
     }
     return self;
@@ -51,7 +53,7 @@ static NSDate *g_startDate;
         }
         while (!strongSelf.isCancel) {
             @autoreleasepool {
-                long st = dispatch_semaphore_wait(self->_semaphore, dispatch_time(DISPATCH_TIME_NOW, strongSelf.limitANRMillisecond*NSEC_PER_MSEC));
+                long st = dispatch_semaphore_wait(self->_semaphore, dispatch_time(DISPATCH_TIME_NOW, strongSelf.limitMillisecond*NSEC_PER_MSEC));
                 if(st!=0){
                     if (self->_activity == kCFRunLoopBeforeSources || self->_activity == kCFRunLoopAfterWaiting) {
                         strongSelf.countTime++;

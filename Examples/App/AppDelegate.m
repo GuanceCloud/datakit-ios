@@ -60,7 +60,6 @@
         [config setEnvWithType:FTEnvPre];
         config.globalContext = @{@"example_id":@"example_id_1"};//eg.
         config.groupIdentifiers = @[@"group.com.ft.widget.demo"];
-        NSString *dynamicTag = [[NSUserDefaults standardUserDefaults] valueForKey:@"DYNAMIC_TAG"]?:@"N/A";
         //开启 rum
         FTRumConfig *rumConfig = [[FTRumConfig alloc]initWithAppid:rumAppid];
         rumConfig.enableTrackAppCrash = YES;
@@ -75,9 +74,7 @@
         rumConfig.errorMonitorType = FTErrorMonitorAll;
         rumConfig.deviceMetricsMonitorType = FTDeviceMetricsMonitorAll;
         rumConfig.monitorFrequency = FTMonitorFrequencyRare;
-        rumConfig.globalContext = @{@"track_id":trackid,
-                                    @"static_tag":STATIC_TAG,
-                                    @"dynamic_tag":dynamicTag};//eg.
+        rumConfig.globalContext = @{@"track_id":trackid};//eg.
         FTLoggerConfig *loggerConfig = [[FTLoggerConfig alloc]init];
         loggerConfig.enableCustomLog = YES;
         loggerConfig.enableLinkRumData = YES;
