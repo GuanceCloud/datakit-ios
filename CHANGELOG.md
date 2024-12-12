@@ -1,3 +1,8 @@
+# 1.6.0-alpha.7
+1. 获取 keyWindow 方法修改，修复在 Widget Extension 环境无法编译问题
+2. 优化 Session Replay 上传条件判断、同步时内部日志输出
+3. 同 1.5.4 - 1.5.7
+---
 # 1.5.7
 1. 支持通过 `FTRUMConfig.freezeDurationMs` 设置卡顿检测阀值
 2. 优化 SDK 的 `shutDown` 方法，避免主线程同步等待导致的卡顿或 WatchDog 崩溃
