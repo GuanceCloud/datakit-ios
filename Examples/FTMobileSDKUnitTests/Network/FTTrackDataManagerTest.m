@@ -33,7 +33,7 @@
     [self mockHttp];
     [FTTrackDataManager sharedInstance];
     [FTModelHelper createRumModel];
-    [[FTTrackDataManager sharedInstance] addTrackData:[FTModelHelper createRumModel] type:FTAddDataImmediate];
+    [[FTTrackDataManager sharedInstance] addTrackData:[FTModelHelper createRumModel] type:FTAddDataRUM];
     self.expectation = [self expectationWithDescription:@"异步操作timeout"];
     [[FTTrackDataManager sharedInstance] addObserver:self forKeyPath:@"isUploading" options:NSKeyValueObservingOptionNew context:nil];
     [[FTTrackDataManager sharedInstance] uploadTrackData];

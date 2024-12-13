@@ -138,7 +138,7 @@
     }
     NSInteger oldCount =  [[FTTrackerEventDBTool sharedManger] getDatasCount];
 
-    [[FTTrackerEventDBTool sharedManger] deleteLoggingItem:5];
+    [[FTTrackerEventDBTool sharedManger] deleteDataWithType:FT_DATA_TYPE_LOGGING count:5];
     NSInteger newCount =  [[FTTrackerEventDBTool sharedManger] getDatasCount];
 
     XCTAssertTrue(oldCount - newCount == 5);

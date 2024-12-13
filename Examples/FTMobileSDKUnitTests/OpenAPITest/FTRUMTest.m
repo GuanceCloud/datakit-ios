@@ -31,6 +31,7 @@
 #import "FTRUMActionHandler.h"
 #import "FTRequestBody.h"
 #import "FTRUMDataModel.h"
+#import "FTTrackDataManager.h"
 @interface FTRUMTest : XCTestCase
 @property (nonatomic, copy) NSString *url;
 @property (nonatomic, copy) NSString *appid;
@@ -57,6 +58,53 @@
     XCTAssertTrue(rumConfig.freezeDurationMs == 100);
     rumConfig.freezeDurationMs = 5000;
     XCTAssertTrue(rumConfig.freezeDurationMs == 5000);
+}
+- (void)testDiscardNew{
+    FTMobileConfig *config = [[FTMobileConfig alloc]initWithDatakitUrl:self.url];
+    config.autoSync = NO;
+    config.enableSDKDebugLog = YES;
+    FTRumConfig *rumConfig = [[FTRumConfig alloc]initWithAppid:self.appid];
+    rumConfig.rumCacheLimitCount = 1000;
+    rumConfig.rumDiscardType = FTRUMDiscard;
+    [FTMobileAgent startWithConfigOptions:config];
+    [[FTTrackerEventDBTool sharedManger] deleteAllDatas];
+    [[FTMobileAgent sharedInstance] startRumWithConfigOptions:rumConfig];
+    for (int i = 0; i<1030; i++) {
+        FTRecordModel *model = [FTRecordModel new];
+        model.op = FT_DATA_TYPE_RUM;
+        model.data = [NSString stringWithFormat:@"testData%d",i];
+        [[FTTrackDataManager sharedInstance] addTrackData:model type:FTAddDataRUM];
+
+    }
+    NSInteger newCount =  [[FTTrackerEventDBTool sharedManger] getDatasCountWithType:FT_DATA_TYPE_RUM];
+    FTRecordModel *model = [[[FTTrackerEventDBTool sharedManger] getFirstRecords:1 withType:FT_DATA_TYPE_RUM] firstObject];
+    XCTAssertTrue([model.data isEqualToString:@"testData0"]);
+    XCTAssertTrue(newCount == 1000);
+}
+
+- (void)testDiscardOldBulk{
+    FTMobileConfig *config = [[FTMobileConfig alloc]initWithDatakitUrl:self.url];
+    config.autoSync = NO;
+    config.enableSDKDebugLog = YES;
+    FTRumConfig *rumConfig = [[FTRumConfig alloc]initWithAppid:self.appid];
+    rumConfig.rumCacheLimitCount = 1000;
+    rumConfig.rumDiscardType = FTRUMDiscardOldest;
+    [FTMobileAgent startWithConfigOptions:config];
+    [[FTTrackerEventDBTool sharedManger] deleteAllDatas];
+    [[FTMobileAgent sharedInstance] startRumWithConfigOptions:rumConfig];
+
+    for (int i = 0; i<1050; i++) {
+        FTRecordModel *model = [FTRecordModel new];
+        model.op = FT_DATA_TYPE_RUM;
+        model.data = [NSString stringWithFormat:@"testData%d",i];
+        [[FTTrackDataManager sharedInstance] addTrackData:model type:FTAddDataRUM];
+
+    }
+    [[FTTrackDataManager sharedInstance] insertCacheToDB];
+    NSInteger newCount = [[FTTrackerEventDBTool sharedManger] getDatasCountWithType:FT_DATA_TYPE_RUM];
+    FTRecordModel *model = [[[FTTrackerEventDBTool sharedManger] getFirstRecords:1 withType:FT_DATA_TYPE_RUM] firstObject];
+    XCTAssertFalse([model.data isEqualToString:@"testData0"]);
+    XCTAssertTrue(newCount == 1000);
 }
 #pragma mark ========== Session ==========
 
@@ -865,8 +913,7 @@
 - (void)testStartAction_noView{
     [self setRumConfig];
     NSArray *oldArray = [[FTTrackerEventDBTool sharedManger] getFirstRecords:10 withType:FT_DATA_TYPE_RUM];
-    [FTModelHelper startAction];
-    [FTModelHelper startAction];
+    [FTModelHelper addActionWithContext:@{@"test":@"noView"}];
     [[FTGlobalRumManager sharedInstance].rumManager syncProcess];
     NSArray *newArray = [[FTTrackerEventDBTool sharedManger] getFirstRecords:10 withType:FT_DATA_TYPE_RUM];
     XCTAssertTrue(newArray.count>oldArray.count);
@@ -1647,6 +1694,6 @@
     
     [[FTMobileAgent sharedInstance] startRumWithConfigOptions:rumConfig];
     [[FTMobileAgent sharedInstance] unbindUser];
-    [[FTTrackerEventDBTool sharedManger] deleteItemWithTm:[NSDate ft_currentNanosecondTimeStamp]];
+    [[FTTrackerEventDBTool sharedManger] deleteAllDatas];
 }
 @end

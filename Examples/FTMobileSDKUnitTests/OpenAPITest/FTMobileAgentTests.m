@@ -445,6 +445,9 @@
     rumConfig.resourceUrlHandler = ^BOOL(NSURL *url) {
         return NO;
     };
+    XCTAssertTrue(rumConfig.rumCacheLimitCount == 200000);
+    rumConfig.rumCacheLimitCount = 1000;
+    rumConfig.rumDiscardType = FTRUMDiscardOldest;
     rumConfig.globalContext = @{@"aa":@"bb"};
     FTRumConfig *copyRumConfig = [rumConfig copy];
     XCTAssertTrue(copyRumConfig.samplerate == rumConfig.samplerate);
@@ -461,6 +464,8 @@
     XCTAssertTrue([copyRumConfig.globalContext isEqual:rumConfig.globalContext]);
     XCTAssertTrue([copyRumConfig.resourceUrlHandler isEqual:rumConfig.resourceUrlHandler]);
     XCTAssertTrue(copyRumConfig.freezeDurationMs == rumConfig.freezeDurationMs);
+    XCTAssertTrue(copyRumConfig.rumDiscardType == rumConfig.rumDiscardType);
+    XCTAssertTrue(copyRumConfig.rumCacheLimitCount == rumConfig.rumCacheLimitCount);
 
 }
 - (void)testRUMConfigInitWithDict{

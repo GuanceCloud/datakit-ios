@@ -314,11 +314,11 @@ typedef NS_ENUM(NSInteger, FTNetworkTestsType) {
        FTRecordModel *logModel = [FTModelHelper createLogModel:[NSString stringWithFormat:@"%d",i]];
         FTRecordModel *rumModel = [FTModelHelper createRumModel];
 
-        [[FTTrackDataManager sharedInstance] addTrackData:logModel type:FTAddDataNormal];
-        [[FTTrackDataManager sharedInstance] addTrackData:rumModel type:FTAddDataNormal];
+        [[FTTrackDataManager sharedInstance] addTrackData:logModel type:FTAddDataRUM];
+        [[FTTrackDataManager sharedInstance] addTrackData:rumModel type:FTAddDataRUM];
     }
     FTRecordModel *rumModel = [FTModelHelper createRumModel];
-    [[FTTrackDataManager sharedInstance] addTrackData:rumModel type:FTAddDataNormal];
+    [[FTTrackDataManager sharedInstance] addTrackData:rumModel type:FTAddDataRUM];
     NSInteger count = [[FTTrackerEventDBTool sharedManger] getDatasCount];
     XCTAssertTrue(count == 21);
     self.expectation = [self expectationWithDescription:@"异步操作timeout"];
@@ -422,8 +422,8 @@ typedef NS_ENUM(NSInteger, FTNetworkTestsType) {
        FTRecordModel *logModel = [FTModelHelper createLogModel:[NSString stringWithFormat:@"%d",i]];
         FTRecordModel *rumModel = [FTModelHelper createRumModel];
 
-        [[FTTrackDataManager sharedInstance] addTrackData:logModel type:FTAddDataNormal];
-        [[FTTrackDataManager sharedInstance] addTrackData:rumModel type:FTAddDataNormal];
+        [[FTTrackDataManager sharedInstance] addTrackData:logModel type:FTAddDataRUM];
+        [[FTTrackDataManager sharedInstance] addTrackData:rumModel type:FTAddDataRUM];
     }
     NSInteger count = [[FTTrackerEventDBTool sharedManger] getDatasCount];
     XCTAssertTrue(count == 100);
@@ -484,7 +484,7 @@ typedef NS_ENUM(NSInteger, FTNetworkTestsType) {
     }];
     for (int i = 0 ; i<20; i++) {
        FTRecordModel *logModel = [FTModelHelper createLogModel:[NSString stringWithFormat:@"%d",i]];
-        [[FTTrackDataManager sharedInstance] addTrackData:logModel type:FTAddDataNormal];
+        [[FTTrackDataManager sharedInstance] addTrackData:logModel type:FTAddDataRUM];
     }
     self.expectation = [self expectationWithDescription:@"异步操作timeout"];
        
