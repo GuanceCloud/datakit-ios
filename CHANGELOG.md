@@ -1,3 +1,6 @@
+# 1.5.8-alpha.1
+1. 新增 RUM 条目数量限制功能，支持通过 `FTRUMConfig.rumCacheLimitCount` 来限制 SDK 最大缓存条目数据限制，支持通过 `FTRUMConfig.rumDiscardType` 设置来指定丢弃新数据或丢弃旧数据
+---
 # 1.5.7
 1. 支持通过 `FTRUMConfig.freezeDurationMs` 设置卡顿检测阀值
 2. 优化 SDK 的 `shutDown` 方法，避免主线程同步等待导致的卡顿或 WatchDog 崩溃
