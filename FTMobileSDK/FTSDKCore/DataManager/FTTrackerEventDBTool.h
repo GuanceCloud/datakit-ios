@@ -54,7 +54,7 @@ NS_ASSUME_NONNULL_BEGIN
 
 /// 删除日志数据
 /// @param count 删除前 count 个数据
--(BOOL)deleteLoggingItem:(NSInteger)count;
+-(BOOL)deleteDataWithType:(NSString *)type count:(NSInteger)count;
 
 /// 获取数据库数据总数
 - (NSInteger)getDatasCount;

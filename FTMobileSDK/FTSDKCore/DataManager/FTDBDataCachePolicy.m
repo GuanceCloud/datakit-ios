@@ -6,36 +6,43 @@
 //  Copyright © 2024 DataFlux-cn. All rights reserved.
 //
 
-#import "FTLogDataCache.h"
+#import "FTDBDataCachePolicy.h"
 #import "FTTrackerEventDBTool.h"
 #import <pthread.h>
 #import "FTConstants.h"
-@interface FTLogDataCache()
+#import "FTLog+Private.h"
+@interface FTDBDataCachePolicy()
 @property (nonatomic, strong) dispatch_queue_t logCacheQueue;
 @property (nonatomic, strong) NSMutableArray *messageCaches;
 @property (nonatomic, strong) dispatch_semaphore_t logSemaphore;
 @property (atomic, assign) BOOL semaphoreWaiting;
-
 @end
-@implementation FTLogDataCache{
+@implementation FTDBDataCachePolicy{
     pthread_mutex_t _lock;
 }
--(instancetype)init{
-    return [self initWithLogCacheLimitCount:FT_DB_CONTENT_MAX_COUNT logDiscardNew:YES];
-}
-- (instancetype)initWithLogCacheLimitCount:(int)count logDiscardNew:(BOOL)discardNew{
+- (instancetype)init{
     self = [super init];
     if(self){
-        _logCacheLimitCount = count;
-        _discardNew = discardNew;
-        _messageCaches = [NSMutableArray array];
-        _logCount = [[FTTrackerEventDBTool sharedManger] getDatasCountWithType:FT_DATA_TYPE_LOGGING];
         _logCacheQueue = dispatch_queue_create("com.guance.logger.write", DISPATCH_QUEUE_SERIAL);
         _logSemaphore = dispatch_semaphore_create(0);
         _semaphoreWaiting = NO;
         pthread_mutex_init(&(self->_lock), NULL);
+        _rumCacheLimitCount = FT_DB_RUM_MAX_COUNT;
+        _logCacheLimitCount = FT_DB_CONTENT_MAX_COUNT;
+        _rumCount = [[FTTrackerEventDBTool sharedManger] getDatasCountWithType:FT_DATA_TYPE_RUM];
+        _messageCaches = [NSMutableArray array];
+        _logCount = [[FTTrackerEventDBTool sharedManger] getDatasCountWithType:FT_DATA_TYPE_LOGGING];
     }
     return self;
+}
+- (void)setLogCacheLimitCount:(int)count logDiscardNew:(BOOL)discardNew{
+    _logCacheLimitCount = count;
+    _logDiscardNew = discardNew;
+   
+}
+- (void)setRumCacheLimitCount:(int)count logDiscardNew:(BOOL)discardNew{
+    _rumCacheLimitCount = count;
+    _rumDiscardNew = discardNew;
 }
 - (void)addLogData:(id)data{
     if (!data) {
@@ -51,6 +58,19 @@
     if(fullArray){
         [self insertCacheToDB];
     }
+}
+- (void)addRumData:(id)data{
+    self.rumCount += 1;
+    NSInteger count = self.rumCacheLimitCount-self.rumCount;
+    if(count<0){
+        FTInnerLogInfo(@"RUM: DiscardData (%@)",self.rumDiscardNew?@"NEW":@"OLD");
+        self.rumCount += count;
+        if(self.rumDiscardNew){
+            return;
+        }
+        [[FTTrackerEventDBTool sharedManger] deleteDataWithType:FT_DATA_TYPE_RUM count:-count];
+    }
+    [[FTTrackerEventDBTool sharedManger] insertItem:data];
 }
 - (void)autoInsertCacheToDB{
     if(self.semaphoreWaiting){
@@ -71,23 +91,28 @@
 - (NSInteger)optLogCachePolicy:(NSInteger)messageCaches{
     NSInteger count = self.logCacheLimitCount - self.logCount;
     if(count<0){
+        FTInnerLogInfo(@"LOG: DiscardData (%@) Counts %ld",self.rumDiscardNew?@"NEW":@"OLD",(long)-count);
         self.logCount += count;
-        if(self.discardNew){
+        if(self.logDiscardNew){
             NSInteger sum = count+messageCaches;
             if (sum>=0) {
                 return sum;
             }
         }else{
-            [[FTTrackerEventDBTool sharedManger] deleteLoggingItem:-count];
+            [[FTTrackerEventDBTool sharedManger] deleteDataWithType:FT_DATA_TYPE_LOGGING count:-count];
             return -1;
         }
     }
     return -1;
 }
 // 添加的日志数量超多限额一半
-- (BOOL)reachHalfLimit{
+- (BOOL)reachLogHalfLimit{
     return self.logCacheLimitCount > 0 && self.logCount > self.logCacheLimitCount / 2;
 }
+- (BOOL)reachRumHalfLimit{
+    return self.rumCacheLimitCount > 0 && self.rumCount > self.rumCacheLimitCount / 2;
+}
+
 - (void)insertCacheToDB{
     pthread_mutex_lock(&_lock);
     if (self.messageCaches.count > 0) {

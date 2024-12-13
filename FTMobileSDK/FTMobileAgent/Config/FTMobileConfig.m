@@ -31,6 +31,8 @@
         _enableResourceHostIP = NO;
         _monitorFrequency = FTMonitorFrequencyDefault;
         _freezeDurationMs = FT_DEFAULT_BLOCK_DURATIONS_MS;
+        _rumCacheLimitCount = FT_DB_RUM_MAX_COUNT;
+        _rumDiscardType = FTRUMDiscard;
     }
     return self;
 }
@@ -51,6 +53,8 @@
     options.monitorFrequency = self.monitorFrequency;
     options.resourceUrlHandler = self.resourceUrlHandler;
     options.freezeDurationMs = self.freezeDurationMs;
+    options.rumCacheLimitCount = self.rumCacheLimitCount;
+    options.rumDiscardType = self.rumDiscardType;
     return options;
 }
 -(instancetype)initWithDictionary:(NSDictionary *)dict{

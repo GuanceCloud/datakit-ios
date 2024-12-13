@@ -205,10 +205,10 @@ static dispatch_once_t onceToken;
        }];
        return is;
 }
--(BOOL)deleteLoggingItem:(NSInteger)count{
+-(BOOL)deleteDataWithType:(NSString *)type count:(NSInteger)count{
     __block BOOL is;
         [self zy_inDatabase:^{
-            NSString *sqlStr = [NSString stringWithFormat:@"DELETE FROM '%@' WHERE op = '%@' AND (select count(_id) FROM '%@')> %ld AND _id IN (select _id FROM '%@' ORDER BY _id ASC limit %ld) ;",FT_DB_TRACE_EVENT_TABLE_NAME,FT_DATA_TYPE_LOGGING,FT_DB_TRACE_EVENT_TABLE_NAME,(long)count,FT_DB_TRACE_EVENT_TABLE_NAME,(long)count];
+            NSString *sqlStr = [NSString stringWithFormat:@"DELETE FROM '%@' WHERE op = '%@' AND (select count(_id) FROM '%@')> %ld AND _id IN (select _id FROM '%@' ORDER BY _id ASC limit %ld) ;",FT_DB_TRACE_EVENT_TABLE_NAME,type,FT_DB_TRACE_EVENT_TABLE_NAME,(long)count,FT_DB_TRACE_EVENT_TABLE_NAME,(long)count];
             is = [self.db executeUpdate:sqlStr];
         }];
         return is;

@@ -95,6 +95,7 @@ static dispatch_once_t onceToken;
         _rumConfig = [rumConfigOptions copy];
         [[FTPresetProperty sharedInstance] setAppID:_rumConfig.appid];
         [FTPresetProperty sharedInstance].rumGlobalContext = _rumConfig.globalContext;
+        [[FTTrackDataManager sharedInstance] setRUMCacheLimitCount:_rumConfig.rumCacheLimitCount logDiscardNew:_rumConfig.rumDiscardType == FTRUMDiscard];
         [[FTGlobalRumManager sharedInstance] setRumConfig:_rumConfig writer:self];
         [[FTURLSessionInstrumentation sharedInstance] setEnableAutoRumTrace:_rumConfig.enableTraceUserResource resourceUrlHandler:_rumConfig.resourceUrlHandler];
         [[FTURLSessionInstrumentation sharedInstance] setRumResourceHandler:[FTGlobalRumManager sharedInstance].rumManager];
@@ -224,7 +225,6 @@ static dispatch_once_t onceToken;
         return;
     }
     @try {
-        FTAddDataType dataType = [type isEqualToString:FT_RUM_SOURCE_ERROR]?FTAddDataImmediate:FTAddDataNormal;
         NSMutableDictionary *baseTags =[NSMutableDictionary new];
         [baseTags addEntriesFromDictionary:tags];
         NSDictionary *rumProperty;
@@ -236,7 +236,7 @@ static dispatch_once_t onceToken;
         }
         [baseTags addEntriesFromDictionary:rumProperty];
         FTRecordModel *model = [[FTRecordModel alloc]initWithSource:type op:FT_DATA_TYPE_RUM tags:baseTags fields:fields tm:time];
-        [self insertDBWithItemData:model type:dataType];
+        [self insertDBWithItemData:model type:FTAddDataRUM];
     } @catch (NSException *exception) {
         FTInnerLogError(@"exception %@",exception);
     }
@@ -332,15 +332,17 @@ static dispatch_once_t onceToken;
     }
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Wdeprecated-declarations"
-        [sharedInstance shutDown];
+    [sharedInstance shutDown];
 #pragma clang diagnostic pop
 }
 + (void)clearAllData{
-    if([[FTTrackerEventDBTool sharedManger] deleteAllDatas]){
-        FTInnerLogInfo(@"[SDK] Clear All Data Success!!!");
-    }else{
-        FTInnerLogInfo(@"[SDK] Clear All Data Error!!!");
-    }
+    dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0), ^{
+        if([[FTTrackerEventDBTool sharedManger] deleteAllDatas]){
+            FTInnerLogInfo(@"[SDK] Clear All Data Success!!!");
+        }else{
+            FTInnerLogInfo(@"[SDK] Clear All Data Error!!!");
+        }
+    });
 }
 - (void)syncProcess{
     [[FTGlobalRumManager sharedInstance].rumManager syncProcess];

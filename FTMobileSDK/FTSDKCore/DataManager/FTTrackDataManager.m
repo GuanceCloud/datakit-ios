@@ -17,7 +17,7 @@
 #import "FTConstants.h"
 #import <pthread.h>
 #import "FTBaseInfoHandler.h"
-#import "FTLogDataCache.h"
+#import "FTDBDataCachePolicy.h"
 #import "FTJSONUtil.h"
 @interface FTTrackDataManager ()<FTAppLifeCycleDelegate>{
     pthread_rwlock_t _uploadWorkLock;
@@ -30,7 +30,7 @@
 @property (atomic, assign) int uploadPageSize;
 @property (atomic, assign) int syncSleepTime;
 @property (nonatomic, strong) FTNetworkManager *networkManager;
-@property (nonatomic, strong) FTLogDataCache *logDataCache;
+@property (nonatomic, strong) FTDBDataCachePolicy *dataCachePolicy;
 @property (nonatomic, strong) dispatch_block_t uploadWork;
 @property (atomic, assign) NSTimeInterval lastDataDate;
 @end
@@ -61,7 +61,7 @@ static dispatch_once_t onceToken;
         _uploadPageSize = syncPageSize;
         _syncSleepTime = syncSleepTime;
         _networkManager = [[FTNetworkManager alloc]initWithTimeoutIntervalForRequest:syncPageSize>30?syncPageSize:30];
-        _logDataCache = [[FTLogDataCache alloc]init];
+        _dataCachePolicy = [[FTDBDataCachePolicy alloc]init];
         pthread_rwlock_init(&_uploadWorkLock, NULL);
         [self listenNetworkChangeAndAppLifeCycle];
         if(autoSync){
@@ -84,8 +84,10 @@ static dispatch_once_t onceToken;
     }
 }
 - (void)setLogCacheLimitCount:(int)count logDiscardNew:(BOOL)discardNew{
-    self.logDataCache.logCacheLimitCount = count;
-    self.logDataCache.discardNew = discardNew;
+    [self.dataCachePolicy setLogCacheLimitCount:count logDiscardNew:discardNew];
+}
+- (void)setRUMCacheLimitCount:(int)count logDiscardNew:(BOOL)discardNew{
+    [self.dataCachePolicy setRumCacheLimitCount:count logDiscardNew:discardNew];
 }
 -(void)applicationDidBecomeActive{
     @try {
@@ -99,7 +101,7 @@ static dispatch_once_t onceToken;
 }
 -(void)applicationWillResignActive{
     @try {
-        [self.logDataCache insertCacheToDB];
+        [self.dataCachePolicy insertCacheToDB];
     }
     @catch (NSException *exception) {
         FTInnerLogError(@"applicationWillResignActive exception %@",exception);
@@ -107,7 +109,7 @@ static dispatch_once_t onceToken;
 }
 -(void)applicationWillTerminate{
     @try {
-        [self.logDataCache insertCacheToDB];
+        [self.dataCachePolicy insertCacheToDB];
     } @catch (NSException *exception) {
         FTInnerLogError(@"exception %@",exception);
     }
@@ -116,8 +118,8 @@ static dispatch_once_t onceToken;
     //数据写入不用做额外的线程处理，数据采集组合除了崩溃数据，都是在子线程进行的
     switch (type) {
         case FTAddDataLogging:
-            [self.logDataCache addLogData:data];
-            if(self.autoSync&&[self.logDataCache reachHalfLimit]){
+            [self.dataCachePolicy addLogData:data];
+            if(self.autoSync&&[self.dataCachePolicy reachLogHalfLimit]){
                 //如果正在上传中忽略
                 if(!self.isUploading){
                     [self uploadTrackData];
@@ -125,11 +127,15 @@ static dispatch_once_t onceToken;
                 return;
             }
             break;
-        case FTAddDataNormal:
-            [[FTTrackerEventDBTool sharedManger] insertItem:data];
-            break;
-        case FTAddDataImmediate:
-            [[FTTrackerEventDBTool sharedManger] insertItem:data];
+        case FTAddDataRUM:
+            [self.dataCachePolicy addRumData:data];
+            if(self.autoSync&&[self.dataCachePolicy reachRumHalfLimit]){
+                //如果正在上传中忽略
+                if(!self.isUploading){
+                    [self uploadTrackData];
+                }
+                return;
+            }
             break;
     }
     _lastDataDate = CACurrentMediaTime();
@@ -222,7 +228,9 @@ static dispatch_once_t onceToken;
             FTInnerLogError(@"数据库删除已上传数据失败");
         }
         if([type isEqualToString:FT_DATA_TYPE_LOGGING]){
-            _logDataCache.logCount -= events.count;
+            _dataCachePolicy.logCount -= events.count;
+        }else{
+            _dataCachePolicy.rumCount -= events.count;
         }
         if(events.count < self.uploadPageSize){
             break;
@@ -266,11 +274,11 @@ static dispatch_once_t onceToken;
     return NO;
 }
 - (void)insertCacheToDB{
-    [self.logDataCache insertCacheToDB];
+    [self.dataCachePolicy insertCacheToDB];
 }
 - (void)shutDown{
     [self cancelUploadWork];
-    [self.logDataCache insertCacheToDB];
+    [self.dataCachePolicy insertCacheToDB];
     [[FTAppLifeCycle sharedInstance] removeAppLifecycleDelegate:self];
     [[FTTrackerEventDBTool sharedManger] shutDown];
     onceToken = 0;

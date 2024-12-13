@@ -10,11 +10,9 @@
 /// 数据添加类型
 typedef NS_ENUM(NSInteger, FTAddDataType) {
     ///rum
-    FTAddDataNormal,
+    FTAddDataRUM,
     ///logging
     FTAddDataLogging,
-    ///崩溃日志
-    FTAddDataImmediate,
 };
 NS_ASSUME_NONNULL_BEGIN
 @class FTRecordModel;
@@ -26,7 +24,7 @@ NS_ASSUME_NONNULL_BEGIN
 +(instancetype)startWithAutoSync:(BOOL)autoSync syncPageSize:(int)syncPageSize syncSleepTime:(int)syncSleepTime;
 
 - (void)setLogCacheLimitCount:(int)count logDiscardNew:(BOOL)discardNew;
-
+- (void)setRUMCacheLimitCount:(int)count logDiscardNew:(BOOL)discardNew;
 /// 数据写入
 /// - Parameters:
 ///   - data: 数据
