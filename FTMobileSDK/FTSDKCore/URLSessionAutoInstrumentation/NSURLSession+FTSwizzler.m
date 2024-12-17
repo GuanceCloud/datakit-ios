@@ -36,7 +36,7 @@ static BOOL delegateConformsToFTProtocol(id delegate){
         return NO;
     }
     NSNumber *conformNum = objc_getAssociatedObject(delegate, kFTConformsToFTProtocol);
-    if(conformNum){
+    if(conformNum != nil){
         return [conformNum boolValue];
     }else{
         BOOL conform = [delegate conformsToProtocol:@protocol(FTURLSessionDelegateProviding)];

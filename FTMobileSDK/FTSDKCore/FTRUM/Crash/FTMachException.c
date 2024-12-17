@@ -294,6 +294,8 @@ static void restoreExceptionPorts(void)
                                       g_previousExceptionPorts.ports[i],
                                       g_previousExceptionPorts.behaviors[i],
                                       g_previousExceptionPorts.flavors[i]);
+        if (kr != KERN_SUCCESS) {
+        }
     }
     g_previousExceptionPorts.count = 0;
 }

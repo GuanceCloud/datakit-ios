@@ -20,15 +20,22 @@
     long long time= (long long)([self timeIntervalSince1970]*1000000000);
     return  time;
 }
+
 - (NSString *)ft_stringWithBaseFormat{
-    static NSDateFormatter *formatter = nil;
+    return [NSDate.ft_baseFormat stringFromDate:self];
+}
++ (NSDateFormatter *)ft_baseFormat{
     static dispatch_once_t onceToken;
+    static NSDateFormatter *baseFormatter = nil;
     dispatch_once(&onceToken, ^{
-        formatter = [[NSDateFormatter alloc]init];
-        [formatter setLocale:[NSLocale currentLocale]];
-        formatter.dateFormat=@"yyyy-MM-dd--HH:mm:ss:SSS";
+        baseFormatter = [[NSDateFormatter alloc]init];
+        [baseFormatter setLocale:[NSLocale currentLocale]];
+        baseFormatter.dateFormat=@"yyyy-MM-dd--HH:mm:ss:SSS";
     });
-    return [formatter stringFromDate:self];
+    return baseFormatter;
+}
++ (NSDate *)ft_dateFromBaseFormatString:(NSString *)string{
+    return [self.ft_baseFormat dateFromString:string];
 }
 - (NSString *)ft_stringWithGMTFormat{
     static NSDateFormatter *formatter = nil;

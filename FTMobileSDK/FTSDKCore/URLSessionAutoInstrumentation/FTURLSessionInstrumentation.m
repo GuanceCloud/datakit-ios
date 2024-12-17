@@ -150,7 +150,7 @@ static dispatch_once_t onceToken;
 - (BOOL)isNotSDKInsideUrl:(NSURL *)url{
     BOOL trace = YES;
     if (self.sdkUrlStr) {
-        if (url.port) {
+        if (url.port != nil) {
             trace = !([url.host isEqualToString:[NSURL URLWithString:self.sdkUrlStr].host]&&[url.port isEqual:[NSURL URLWithString:self.sdkUrlStr].port]);
         }else{
             trace = ![url.host isEqualToString:[NSURL URLWithString:self.sdkUrlStr].host];

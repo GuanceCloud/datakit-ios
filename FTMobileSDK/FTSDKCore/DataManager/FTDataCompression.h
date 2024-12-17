@@ -11,8 +11,8 @@
 NS_ASSUME_NONNULL_BEGIN
 
 @interface FTDataCompression : NSObject
-+ (NSData *)deflate:(NSData *)data;
-+ (NSData *)gzip:(NSData *)data;
++ (nullable NSData *)deflate:(NSData *)data;
++ (nullable NSData *)gzip:(NSData *)data;
 @end
 
 NS_ASSUME_NONNULL_END

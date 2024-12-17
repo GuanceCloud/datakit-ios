@@ -288,7 +288,7 @@ void *FTRUMQueueIdentityKey = &FTRUMQueueIdentityKey;
                             }
                         }
                     }
-                    if(metrics.responseSize){
+                    if(metrics.responseSize!=nil){
                         [fields setValue:metrics.responseSize forKey:FT_KEY_RESOURCE_SIZE];
                     }else if(content.responseBody){
                         NSData *data = [content.responseBody dataUsingEncoding:NSUTF8StringEncoding];

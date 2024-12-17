@@ -14,11 +14,11 @@ NS_ASSUME_NONNULL_BEGIN
 /// 操作数据库数据的工具
 @interface FTTrackerEventDBTool : NSObject
 /// 单例
-+ (FTTrackerEventDBTool *)sharedManger;
++ (nullable FTTrackerEventDBTool *)sharedManger;
 /// 单例
 /// @param dbPath 数据库地址
 /// @param dbName 数据库名称
-+ (FTTrackerEventDBTool *)shareDatabaseWithPath:(nullable NSString *)dbPath dbName:(nullable NSString *)dbName;
++ (nullable FTTrackerEventDBTool *)shareDatabaseWithPath:(nullable NSString *)dbPath dbName:(nullable NSString *)dbName;
 
 /// 向数据库中添加一个对象
 /// @param item 要记录的数据

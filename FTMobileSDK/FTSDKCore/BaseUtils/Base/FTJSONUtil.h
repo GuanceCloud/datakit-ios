@@ -20,7 +20,7 @@ NS_ASSUME_NONNULL_BEGIN
  *
  * @return 转化后得到的字符串
  */
-+ (NSString *)convertToJsonData:(NSDictionary *)dict;
++ (nullable NSString *)convertToJsonData:(NSDictionary *)dict;
 /**
  * @abstract
  * 把一个 Json字符串 转成 dict
@@ -47,11 +47,11 @@ NS_ASSUME_NONNULL_BEGIN
  *
  * @return 转化后得到的字符串
  */
-+ (NSString *)convertToJsonDataWithObject:(id)object;
++ (nullable NSString *)convertToJsonDataWithObject:(id)object;
 
 /// 安全保护，把一个对象转成可以转成Json字符串的对象
 /// @param obj 要转化的对象
-+ (id)JSONSerializableObject:(id)obj;
++ (nullable id)JSONSerializableObject:(id)obj;
 @end
 
 NS_ASSUME_NONNULL_END

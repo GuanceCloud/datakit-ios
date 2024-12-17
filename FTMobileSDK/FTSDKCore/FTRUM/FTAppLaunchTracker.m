@@ -56,7 +56,7 @@ static CFTimeInterval processStartTime(NSTimeInterval now) {
         token = nil;
     }];
 #else
-    id __block token = [center
+    id __block __unused token = [center
                         addObserverForName:UIApplicationDidBecomeActiveNotification
                         object:nil
                         queue:NSOperationQueue.mainQueue

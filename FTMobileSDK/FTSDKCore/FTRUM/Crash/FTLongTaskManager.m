@@ -29,7 +29,7 @@
 @property (nonatomic, strong) NSDictionary *errorMonitorInfo;
 @end
 @implementation FTLongTaskEvent
--(instancetype)initWithFreezeDurationMs:(int)freezeDurationMs{
+-(instancetype)initWithFreezeDurationMs:(long)freezeDurationMs{
     self = [super init];
     if(self){
         _freezeDurationNs = (long long)freezeDurationMs*1000000;
@@ -217,7 +217,7 @@ void *FTLongTaskManagerQueueTag = &FTLongTaskManagerQueueTag;
                     }
                 }];
                 NSNumber *duration = lastTime-startTime>0?[NSNumber numberWithLongLong:lastTime-startTime]:dict[@"duration"];
-                if(!duration){
+                if(duration == nil){
                     duration = @0;
                 }
                 NSDictionary *tags = dict[@"sessionContext"];

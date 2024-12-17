@@ -37,7 +37,7 @@ NS_ASSUME_NONNULL_BEGIN
 /// 获取 groupIdentifier 对应 Extension 当前缓存路径
 /// @param groupIdentifier AppGroups Identifier
 /// @return 在 group 中的数据缓存路径
-- (NSString *)filePathForApplicationGroupIdentifier:(NSString *)groupIdentifier;
+- (nullable NSString *)filePathForApplicationGroupIdentifier:(NSString *)groupIdentifier;
 
 /// 存储 rumConfig
 /// @param rumConfig rum 配置项

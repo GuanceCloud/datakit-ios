@@ -108,14 +108,14 @@ NSString * const FT_LOG_BACKUP_DIRECTORY= @"FTBackupLogs";
         if (arrayComponent.count > 0) {
             NSString *stringDate = arrayComponent.lastObject;
             stringDate = [stringDate stringByReplacingOccurrencesOfString:@".log" withString:@""];
-            date1 = [obj1 creationDate];
+            date1 = [NSDate ft_dateFromBaseFormatString:stringDate]?:[obj1 creationDate];
         }
 
         arrayComponent = [[obj2 fileName] componentsSeparatedByString:@" "];
         if (arrayComponent.count > 0) {
             NSString *stringDate = arrayComponent.lastObject;
             stringDate = [stringDate stringByReplacingOccurrencesOfString:@".log" withString:@""];
-            date2 = [obj2 creationDate];
+            date2 = [NSDate ft_dateFromBaseFormatString:stringDate]?:[obj2 creationDate];
         }
 
         return [date2 compare:date1 ?: [NSDate new]];
@@ -233,7 +233,7 @@ NSString * const FT_LOG_BACKUP_DIRECTORY= @"FTBackupLogs";
     dispatch_source_t _currentLogFileVnode;
 }
 @property (nonatomic, strong) NSFileHandle *currentLogFileHandle;
-@property (nonatomic, strong) FTLogFileInfo *currentLogFileInfo;
+@property (nonatomic, strong, nullable) FTLogFileInfo *currentLogFileInfo;
 @property (nonatomic, strong) FTLogFileManager *logFileManager;
 @end
 @implementation FTFileLogger
@@ -390,11 +390,9 @@ NSString * const FT_LOG_BACKUP_DIRECTORY= @"FTBackupLogs";
     if (_currentLogFileHandle == nil) {
         return;
     }
-    __weak __auto_type weakSelf = self;
     dispatch_block_t block = ^(){
         if(copy){
-            [weakSelf.logFileManager copyFileToCacheDirectoryWithCreateDate:weakSelf.currentLogFileInfo.creationDate];
-            
+            [self->_logFileManager copyFileToCacheDirectoryWithCreateDate:self->_currentLogFileInfo.creationDate];
         }
     };
     if (@available(macOS 10.15, iOS 13.0, tvOS 13.0, watchOS 6.0, *)) {
