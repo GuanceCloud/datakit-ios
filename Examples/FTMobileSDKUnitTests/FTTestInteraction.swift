@@ -118,7 +118,7 @@ final class FTTestInteraction: XCTestCase {
         }else{
             XCTAssertTrue(dict == nil)
         }
-        FTMobileAgent.sharedInstance().shutDown()
+        FTMobileAgent.shutDown()
     }
     // MARK: - SessionInterceptor -
     func testSessionInterceptor_injectTraceHeader() throws {
@@ -159,11 +159,11 @@ final class FTTestInteraction: XCTestCase {
             let value = dataTask.currentRequest?.allHTTPHeaderFields?["test"]
             XCTAssertTrue(value == "test")
         }
-        FTMobileAgent.sharedInstance().shutDown()
+        FTMobileAgent.shutDown()
     }
     func testSessionInterceptor_resourceProvider() throws {
         let time = NSDate.ft_currentNanosecondTimeStamp()
-        FTTrackerEventDBTool.sharedManger().deleteItem(withTm: time)
+        FTTrackerEventDBTool.sharedManger()!.deleteItem(withTm: time)
         let expectation = XCTestExpectation.init()
 
         let delegate = FTURLSessionDelegate.init()
@@ -202,7 +202,7 @@ final class FTTestInteraction: XCTestCase {
             wait(for: [expectation])
             Thread.sleep(forTimeInterval: 0.5)
             FTGlobalRumManager.sharedInstance().rumManager.syncProcess()
-            let newArray = FTTrackerEventDBTool.sharedManger().getAllDatas();
+            let newArray = FTTrackerEventDBTool.sharedManger()!.getAllDatas();
             for data in newArray {
                 let model:FTRecordModel = data as! FTRecordModel
                 let dict = FTJSONUtil.dictionary(withJsonString: model.data)
@@ -216,7 +216,7 @@ final class FTTestInteraction: XCTestCase {
                 }
             }
         }
-        FTMobileAgent.sharedInstance().shutDown()
+        FTMobileAgent.shutDown()
     }
     // MARK: - RUM - Resource filter
     func testResourceFilter_intakeUrlHandler() throws {
@@ -273,7 +273,7 @@ final class FTTestInteraction: XCTestCase {
         FTURLSessionInterceptor.shared().interceptTask(task)
         FTURLSessionInterceptor.shared().shutDown()
         XCTAssertTrue(hasResourceFilter == hasUrl)
-        FTMobileAgent.sharedInstance().shutDown()
+        FTMobileAgent.shutDown()
     }
 
 }
