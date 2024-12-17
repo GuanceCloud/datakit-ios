@@ -108,7 +108,12 @@
     [dict setValue:@(self.monitorFrequency) forKey:@"monitorFrequency"];
     [dict setValue:self.globalContext forKey:@"globalContext"];
     [dict setValue:self.resourceUrlHandler forKey:@"resourceUrlHandler"];
+    [dict setValue:@(self.rumCacheLimitCount) forKey:@"rumCacheLimitCount"];
+    [dict setValue:@(self.rumDiscardType) forKey:@"rumDiscardType"];
     return dict;
+}
+-(NSString *)debugDescription{
+    return [NSString stringWithFormat:@"%@",[self convertToDictionary]];
 }
 @end
 @implementation FTLoggerConfig
@@ -134,7 +139,6 @@
     options.globalContext = self.globalContext;
     options.printCustomLogToConsole = self.printCustomLogToConsole;
     options.logCacheLimitCount = self.logCacheLimitCount;
-    options.printCustomLogToConsole = self.printCustomLogToConsole;
     return options;
 }
 -(instancetype)initWithDictionary:(NSDictionary *)dict{
@@ -167,8 +171,12 @@
     [dict setValue:self.logLevelFilter forKey:@"logLevelFilter"];
     [dict setValue:@(self.discardType) forKey:@"discardType"];
     [dict setValue:self.globalContext forKey:@"globalContext"];
+    [dict setValue:@(self.logCacheLimitCount) forKey:@"logCacheLimitCount"];
     [dict setValue:@(self.printCustomLogToConsole) forKey:@"printCustomLogToConsole"];
     return dict;
+}
+-(NSString *)debugDescription{
+    return [NSString stringWithFormat:@"%@",[self convertToDictionary]];
 }
 @end
 @implementation FTTraceConfig
@@ -207,6 +215,9 @@
              @"networkTraceType":@(self.networkTraceType),
              @"enableAutoTrace":@(self.enableAutoTrace),
     };
+}
+-(NSString *)debugDescription{
+    return [NSString stringWithFormat:@"%@",[self convertToDictionary]];
 }
 @end
 @implementation FTMobileConfig
@@ -287,5 +298,26 @@
     options.enableDataIntegerCompatible = self.enableDataIntegerCompatible;
     options.compressIntakeRequests = self.compressIntakeRequests;
     return options;
+}
+-(NSString *)debugDescription{
+    NSMutableDictionary *dict = [NSMutableDictionary new];
+    if(self.datakitUrl){
+        [dict setValue:self.datakitUrl forKey:@"datakitUrl"];
+    }
+    if(self.datawayUrl){
+        [dict setValue:self.datawayUrl forKey:@"datawayUrl"];
+        [dict setValue:self.clientToken.length>0?[NSString stringWithFormat:@"%@*****",[self.clientToken substringWithRange:NSMakeRange(0, self.clientToken.length/2)]]:nil forKey:@"clientToken"];
+    }
+    [dict setValue:@(self.enableSDKDebugLog) forKey:@"enableSDKDebugLog"];
+    [dict setValue:self.env forKey:@"env"];
+    [dict setValue:self.groupIdentifiers forKey:@"groupIdentifiers"];
+    [dict setValue:self.globalContext forKey:@"globalContext"];
+    [dict setValue:self.service forKey:@"service"];
+    [dict setValue:@(self.autoSync) forKey:@"autoSync"];
+    [dict setValue:@(self.syncPageSize) forKey:@"syncPageSize"];
+    [dict setValue:@(self.syncSleepTime) forKey:@"syncSleepTime"];
+    [dict setValue:@(self.enableDataIntegerCompatible) forKey:@"enableDataIntegerCompatible"];
+    [dict setValue:@(self.compressIntakeRequests) forKey:@"compressIntakeRequests"];
+    return [NSString stringWithFormat:@"%@",dict];
 }
 @end

@@ -82,6 +82,7 @@ static dispatch_once_t onceToken;
                 .setEnableDataIntegerCompatible(config.enableDataIntegerCompatible);
             [[FTURLSessionInstrumentation sharedInstance] setSdkUrlStr:config.datakitUrl.length>0?config.datakitUrl:config.datawayUrl
                                                            serviceName:config.service];
+            FTInnerLogInfo(@"Mobile Config Success: \n%@",config.debugDescription);
         }
     }@catch(NSException *exception) {
         FTInnerLogError(@"exception: %@",exception);
@@ -104,6 +105,7 @@ static dispatch_once_t onceToken;
         if (_loggerConfig) {
             [FTLogger sharedInstance].linkRumDataProvider = [FTGlobalRumManager sharedInstance].rumManager;
         }
+        FTInnerLogInfo(@"RUM Config Success: \n%@",rumConfigOptions.debugDescription);
     }
 }
 - (void)startLoggerWithConfigOptions:(FTLoggerConfig *)loggerConfigOptions{
@@ -117,6 +119,7 @@ static dispatch_once_t onceToken;
                                   enableLinkRumData:_loggerConfig.enableLinkRumData
                                      logLevelFilter:_loggerConfig.logLevelFilter sampleRate:_loggerConfig.samplerate writer:self];
         [FTLogger sharedInstance].linkRumDataProvider = [FTGlobalRumManager sharedInstance].rumManager;
+        FTInnerLogInfo(@"Logger Config Success: \n%@",loggerConfigOptions.debugDescription);
     }
 }
 - (void)startTraceWithConfigOptions:(FTTraceConfig *)traceConfigOptions{
@@ -131,6 +134,7 @@ static dispatch_once_t onceToken;
                                                                     traceType:_traceConfig.networkTraceType];
         [FTExternalDataManager sharedManager].resourceDelegate = [FTURLSessionInstrumentation sharedInstance].externalResourceHandler;
         [[FTExtensionDataManager sharedInstance] writeTraceConfig:[_traceConfig convertToDictionary]];
+        FTInnerLogInfo(@"Trace Config Success: \n%@",traceConfigOptions.debugDescription);
     }
 }
 #pragma mark ========== public method ==========
