@@ -5,10 +5,10 @@
 //  Created by 胡蕾蕾 on 2021/8/4.
 //  Copyright © 2021 DataFlux-cn. All rights reserved.
 //
-
+#import <QuartzCore/CoreAnimation.h>
 #import "FTTrackDataManager.h"
 #import "FTRecordModel.h"
-#import "FTReachability.h"
+#import "FTNetworkConnectivity.h"
 #import "FTTrackerEventDBTool.h"
 #import "FTLog+Private.h"
 #import "FTRequest.h"
@@ -19,7 +19,7 @@
 #import "FTBaseInfoHandler.h"
 #import "FTDBDataCachePolicy.h"
 #import "FTJSONUtil.h"
-@interface FTTrackDataManager ()<FTAppLifeCycleDelegate>{
+@interface FTTrackDataManager ()<FTAppLifeCycleDelegate,FTNetworkChangeObserver>{
     pthread_rwlock_t _uploadWorkLock;
 }
 @property (atomic, assign) BOOL isUploading;
@@ -72,15 +72,15 @@ static dispatch_once_t onceToken;
 }
 //监听网络状态 网络连接成功 触发一次上传操作
 - (void)listenNetworkChangeAndAppLifeCycle{
-    [[FTReachability sharedInstance] startNotifier];
+    [[FTNetworkConnectivity sharedInstance] start];
     [[FTAppLifeCycle sharedInstance] addAppLifecycleDelegate:self];
     if(_autoSync){
-        __weak typeof(self) weakSelf = self;
-        [FTReachability sharedInstance].networkChanged = ^(){
-            if([FTReachability sharedInstance].isReachable){
-                [weakSelf uploadTrackData];
-            }
-        };
+        [[FTNetworkConnectivity sharedInstance] addNetworkObserver:self];
+    }
+}
+- (void)connectivityChanged:(BOOL)connected typeDescription:(NSString *)typeDescription{
+    if (connected){
+        [self uploadTrackData];
     }
 }
 - (void)setLogCacheLimitCount:(int)count logDiscardNew:(BOOL)discardNew{
@@ -190,7 +190,7 @@ static dispatch_once_t onceToken;
 
 - (void)uploadTrackData{
     //无网 返回
-    if(![FTReachability sharedInstance].isReachable){
+    if(![FTNetworkConnectivity sharedInstance].isConnected){
         FTInnerLogError(@"[NETWORK] Network unreachable, cancel upload");
         return;
     }
