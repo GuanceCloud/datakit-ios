@@ -336,7 +336,7 @@ NSString * const FT_LOG_BACKUP_DIRECTORY= @"FTBackupLogs";
             return;
         }
         NSFileHandle *fileHandle = self.currentLogFileHandle;
-        if (@available(macOS 10.15, iOS 13.0, *)) {
+        if (@available(macOS 10.15, iOS 13.0,tvOS 13.0, *)) {
             __autoreleasing NSError *error = nil;
             BOOL success = [fileHandle seekToEndReturningOffset:nil error:&error];
             if (!success) {

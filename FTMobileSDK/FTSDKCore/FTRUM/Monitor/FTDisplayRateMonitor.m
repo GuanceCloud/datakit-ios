@@ -6,7 +6,8 @@
 //  Copyright © 2022 DataFlux-cn. All rights reserved.
 //
 #import "FTSDKCompat.h"
-#if !FT_MAC
+#if FT_HAS_UIKIT
+#import <UIKit/UIKit.h>
 #import "FTDisplayRateMonitor.h"
 #import "FTAppLifeCycle.h"
 #import "FTMonitorItem.h"

@@ -15,6 +15,7 @@
     return [NSString stringWithFormat:@"[%@]",NSStringFromClass(self.class)];
 }
 - (BOOL)isAlertView {
+#if TARGET_OS_IOS
     UIResponder *responder = self;
     do {
 #pragma clang diagnostic push
@@ -30,6 +31,7 @@
             return YES;
         }
     } while ((responder = [responder nextResponder]));
+#endif
     return NO;
 }
 /// 是否为弹框点击

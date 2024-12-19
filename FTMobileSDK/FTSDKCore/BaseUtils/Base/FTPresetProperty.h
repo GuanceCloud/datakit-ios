@@ -28,9 +28,9 @@ NS_ASSUME_NONNULL_BEGIN
 + (NSString *)CPUArchForMajor:(cpu_type_t)majorCode minor:(cpu_subtype_t)minorCode;
 #if FT_MAC
 + (NSString *)getDeviceUUID;
-+ (NSString *)macOSdeviceModel;
-+ (NSString *)macOSSystermVersion;
++ (NSString *)macOSDeviceModel;
 #endif
++ (NSString *)getOSVersion;
 + (instancetype)sharedInstance;
 /// 初始化方法
 /// - Parameter version: 版本号

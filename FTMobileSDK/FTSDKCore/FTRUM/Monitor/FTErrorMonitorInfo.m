@@ -20,9 +20,11 @@
     if (monitorType & ErrorMonitorCpu) {
         errorTag[FT_CPU_USE] = [NSNumber numberWithLong:[FTMonitorUtils cpuUsage]];
     }
+#if FT_IOS || FT_MAC
     if (monitorType & ErrorMonitorBattery) {
         errorTag[FT_BATTERY_USE] =[NSNumber numberWithDouble:[FTMonitorUtils batteryUse]];
     }
+#endif
 #if FT_IOS
     errorTag[FT_KEY_CARRIER] = [FTBaseInfoHandler telephonyCarrier];
 #endif

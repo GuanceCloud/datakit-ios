@@ -7,6 +7,7 @@
 //
 
 #import "FTWKWebViewJavascriptBridge.h"
+#if !TARGET_OS_TV
 #import "FTWebViewJavascriptLeakAvoider.h"
 #import "FTConstants.h"
 @interface FTWKWebViewJavascriptBridge()
@@ -170,3 +171,4 @@ NSString * FTWebViewJavascriptBridge_js(void) {
 
 
 @end
+#endif

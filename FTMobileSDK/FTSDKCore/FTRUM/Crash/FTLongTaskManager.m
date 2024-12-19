@@ -174,7 +174,7 @@ void *FTLongTaskManagerQueueTag = &FTLongTaskManagerQueueTag;
     dispatch_async(_queue, ^{
         @try {
             NSError *error;
-            if (@available(macOS 10.15, iOS 13.0, *)) {
+            if (@available(macOS 10.15, iOS 13.0,tvOS 13.0, *)) {
                 [weakSelf.fileHandle writeData:data error:&error];
                 if(error){
                     FTInnerLogError(@"[LongTask] writeData error %@",error.description);
@@ -333,7 +333,7 @@ void *FTLongTaskManagerQueueTag = &FTLongTaskManagerQueueTag;
 -(void)dealloc{
     if(_fileHandle) {
         @try {
-            if (@available(macOS 10.15, iOS 13.0, *)) {
+            if (@available(macOS 10.15, iOS 13.0,tvOS 13.0, *)) {
                 NSError *error;
                 [_fileHandle synchronizeAndReturnError:&error];
                 if(error){

@@ -46,7 +46,7 @@ NSData *bigEndianUInt32ToData(uint32_t value) {
     if (!data) {
         return nil;
     }
-    if (@available(iOS 13.0,macOS 10.15, *)) {
+    if (@available(iOS 13.0,tvOS 13.0,macOS 10.15, *)) {
         NSError *error;
         return [data compressedDataUsingAlgorithm:NSDataCompressionAlgorithmZlib error:&error];
     } else {
