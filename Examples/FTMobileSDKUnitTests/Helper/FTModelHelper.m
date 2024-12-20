@@ -25,6 +25,20 @@
     FTRecordModel *model = [[FTRecordModel alloc]initWithSource:FT_LOGGER_SOURCE op:FT_DATA_TYPE_LOGGING tags:tagDict fields:filedDict tm:[NSDate ft_currentNanosecondTimeStamp]];
     return model;
 }
++ (FTRecordModel *)createRUMModel:(NSString *)message{
+    NSDictionary *field = @{ FT_KEY_ERROR_MESSAGE:message,
+                             FT_KEY_ERROR_STACK:@"rum_model_create",
+    };
+    NSDictionary *tags = @{
+        FT_KEY_ERROR_TYPE:@"ios_crash",
+        FT_KEY_ERROR_SOURCE:@"logger",
+        FT_KEY_ERROR_SITUATION:AppStateStringMap[FTAppStateRun],
+        FT_RUM_KEY_SESSION_ID:[FTBaseInfoHandler randomUUID],
+        FT_RUM_KEY_SESSION_TYPE:@"user",
+    };
+    FTRecordModel *model = [[FTRecordModel alloc]initWithSource:FT_RUM_SOURCE_ERROR op:FT_DATA_TYPE_RUM tags:tags fields:field tm:[NSDate ft_currentNanosecondTimeStamp]];
+    return model;
+}
 + (FTRecordModel *)createRumModel{
     NSDictionary *field = @{ FT_KEY_ERROR_MESSAGE:@"rum_model_create",
                              FT_KEY_ERROR_STACK:@"rum_model_create",

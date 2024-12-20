@@ -424,6 +424,11 @@
     XCTAssertTrue([copyConfig.service isEqualToString:datakitConfig.service]);
     XCTAssertTrue([copyConfig.globalContext isEqual:datakitConfig.globalContext]);
     XCTAssertTrue(copyConfig.enableDataIntegerCompatible == datakitConfig.enableDataIntegerCompatible);
+    XCTAssertTrue(copyConfig.dbCacheLimit == datakitConfig.dbCacheLimit);
+    XCTAssertTrue(copyConfig.dbDiscardType == datakitConfig.dbDiscardType);
+    XCTAssertTrue(copyConfig.enableLimitWithDbSize == datakitConfig.enableLimitWithDbSize);
+    XCTAssertTrue(datakitConfig.dbCacheLimit == 50*1024*1024);
+    XCTAssertTrue(datakitConfig.enableLimitWithDbSize == NO);
     FTMobileConfig *datawayConfig = [[FTMobileConfig alloc]initWithDatawayUrl:self.url clientToken:@"clientToken"];
     FTMobileConfig *copy = [datawayConfig copy];
     XCTAssertTrue([copy.datawayUrl isEqualToString:datawayConfig.datawayUrl]);

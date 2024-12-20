@@ -244,9 +244,9 @@
     [FTNetworkMock networkOHHTTPStubs];
     __weak typeof(self) weakSelf = self;
     __block NSURLSessionDataTask *dataTask;
-    [FTNetworkMock registerBeforeHandler:^{
-        XCTAssertNotNil([weakSelf getTraceHandler:dataTask]);
-    }];
+//    [FTNetworkMock registerBeforeHandler:^{
+//        XCTAssertNotNil([weakSelf getTraceHandler:dataTask]);
+//    }];
     NSURLSessionConfiguration *configuration =
     [NSURLSessionConfiguration defaultSessionConfiguration];
     NSURLSession *session = [NSURLSession sessionWithConfiguration:configuration
@@ -257,6 +257,7 @@
         dataTask = [session dataTaskWithRequest:request];
         XCTAssertNotNil(dataTask);
         [dataTask resume];
+        XCTAssertNotNil([weakSelf getTraceHandler:dataTask]);
         XCTAssertNotNil(session.delegate);
     }
 }
@@ -376,14 +377,15 @@
 - (void)testDataTaskWithRequest {
     __block NSURLSessionDataTask *dataTask;
     __weak typeof(self) weakSelf = self;
-    [FTNetworkMock registerBeforeHandler:^{
-        XCTAssertNotNil([weakSelf getTraceHandler:dataTask]);
-    }];
+//    [FTNetworkMock registerBeforeHandler:^{
+//        XCTAssertNotNil([weakSelf getTraceHandler:dataTask]);
+//    }];
     NSURLSession *session = [NSURLSession sharedSession];
     NSURLRequest *request = [NSURLRequest requestWithURL:self.url];
     dataTask = [session dataTaskWithRequest:request];
     XCTAssertNotNil(dataTask);
     [dataTask resume];
+    XCTAssertNotNil([weakSelf getTraceHandler:dataTask]);
 }
 
 /** Tests that dataTaskWithRequest:completionHandler: returns a non-nil object. */
@@ -428,15 +430,16 @@
 - (void)testMutableRequestURLs{
     __block NSURLSessionDataTask *dataTask;
     __weak typeof(self) weakSelf = self;
-    [FTNetworkMock registerBeforeHandler:^{
-        XCTAssertNotNil([weakSelf getTraceHandler:dataTask]);
-    }];
+//    [FTNetworkMock registerBeforeHandler:^{
+//        XCTAssertNotNil([weakSelf getTraceHandler:dataTask]);
+//    }];
     NSMutableURLRequest *URLRequest = [NSMutableURLRequest requestWithURL:self.url];
     NSURLSession *session = [NSURLSession
                              sessionWithConfiguration:[NSURLSessionConfiguration defaultSessionConfiguration]];
     
     dataTask = [session dataTaskWithRequest:URLRequest];
     [dataTask resume];
+    XCTAssertNotNil([weakSelf getTraceHandler:dataTask]);
 }
 - (void)waitAndRunBlockAfterResponse:(void (^)(void))block {
     XCTestExpectation *expectation= [self expectationWithDescription:@"异步操作timeout"];

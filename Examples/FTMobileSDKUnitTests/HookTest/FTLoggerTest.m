@@ -21,6 +21,7 @@
 #import "FTLog+Private.h"
 #import "FTFileLogger.h"
 #import "FTTestUtils.h"
+#import "FTLogger+Private.h"
 @interface FTLoggerTest : KIFTestCase
 
 @property (nonatomic, copy) NSString *url;
@@ -424,7 +425,8 @@
     loggerConfig.printCustomLogToConsole = YES;
     [[FTMobileAgent sharedInstance] startLoggerWithConfigOptions:loggerConfig];
     [[FTLogger sharedInstance] info:@"testPrintCustomLogToConsole" property:nil];
-    [[FTMobileAgent sharedInstance] syncProcess];
+    [[FTLogger sharedInstance] syncProcess];
+    [tester waitForTimeInterval:1];
     NSArray *array =  [[FTLog sharedInstance] valueForKey:@"loggers"];
     BOOL hasFileLogger = NO;
     FTLogFileInfo *logFileInfo;

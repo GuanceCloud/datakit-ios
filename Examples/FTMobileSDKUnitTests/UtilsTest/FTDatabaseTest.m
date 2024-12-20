@@ -38,7 +38,8 @@
     // Put teardown code here. This method is called after the invocation of each test method in the class.
 }
 - (void)testCreateDB{
-    ZY_FMDatabase *dataBase = [FTTrackerEventDBTool sharedManger].db;
+    ZY_FMDatabaseQueue *dbQueue = [FTTrackerEventDBTool sharedManger].dbQueue;
+    ZY_FMDatabase *dataBase = [dbQueue valueForKeyPath:@"_db"];
     NSString *path =  dataBase.databasePath;
     XCTAssertTrue([path containsString:self.dbName]);
 }
@@ -124,13 +125,25 @@
 -(void)testDeleteItemWithType{
     for (int i = 0; i<15; i++) {
         FTRecordModel *model = [FTModelHelper createLogModel:[NSString stringWithFormat:@"testData%d",i]];
+        FTRecordModel *rumModel = [FTModelHelper createRUMModel:[NSString stringWithFormat:@"testData%d",i]];
+        [[FTTrackerEventDBTool sharedManger] insertItem:rumModel];
         [[FTTrackerEventDBTool sharedManger] insertItem:model];
     }
     [[FTTrackerEventDBTool sharedManger] deleteItemWithType:FT_DATA_TYPE_LOGGING tm:[NSDate ft_currentNanosecondTimeStamp]];
     NSInteger newCount =  [[FTTrackerEventDBTool sharedManger] getDatasCount];
-    XCTAssertTrue(newCount == 0);
+    XCTAssertTrue(newCount == 15);
 }
-
+- (void)testDeleteDataWithCount{
+    for (int i = 0; i<50; i++) {
+        FTRecordModel *model = [FTModelHelper createLogModel:[NSString stringWithFormat:@"testData%d",i]];
+        FTRecordModel *rumModel = [FTModelHelper createRUMModel:[NSString stringWithFormat:@"testData%d",i]];
+        [[FTTrackerEventDBTool sharedManger] insertItem:rumModel];
+        [[FTTrackerEventDBTool sharedManger] insertItem:model];
+    }
+    [[FTTrackerEventDBTool sharedManger] deleteDataWithCount:50];
+    NSInteger newCount =  [[FTTrackerEventDBTool sharedManger] getDatasCount];
+    XCTAssertTrue(newCount == 50);
+}
 -(void)testDeleteLoggingItem{
     for (int i = 0; i<15; i++) {
         FTRecordModel *model = [FTModelHelper createLogModel:[NSString stringWithFormat:@"testData%d",i]];
