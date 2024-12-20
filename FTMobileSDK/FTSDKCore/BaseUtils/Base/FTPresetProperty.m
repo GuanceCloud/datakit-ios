@@ -6,6 +6,7 @@
 //  Copyright © 2020 hll. All rights reserved.
 //
 #import "FTBaseInfoHandler.h"
+#import "FTSDKCompat.h"
 #if FT_HAS_UIKIT
 #import <UIKit/UIKit.h>
 #endif

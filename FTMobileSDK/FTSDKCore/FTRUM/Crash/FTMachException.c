@@ -7,7 +7,9 @@
 //
 
 #include "FTMachException.h"
-#import "FTSDKCompat.h"
+#ifdef __OBJC__
+#include "FTSDKCompat.h"
+#endif
 #if FT_HAS_MACH
 #include <stdio.h>
 #include <stdbool.h>
