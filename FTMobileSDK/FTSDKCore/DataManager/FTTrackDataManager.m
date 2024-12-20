@@ -85,6 +85,9 @@ static dispatch_once_t onceToken;
         };
     }
 }
+-(void)setDBLimitWithSize:(long)size discardNew:(BOOL)discardNew{
+    [self.dataCachePolicy setDBLimitWithSize:size discardNew:discardNew];
+}
 - (void)setLogCacheLimitCount:(int)count discardNew:(BOOL)discardNew{
     [self.dataCachePolicy setLogCacheLimitCount:count discardNew:discardNew];
 }
@@ -274,9 +277,10 @@ static dispatch_once_t onceToken;
 }
 - (void)shutDown{
     [self cancelUploadWork];
-    [self.dataCachePolicy insertCacheToDB];
+//    [self.dataCachePolicy insertCacheToDB];
     [[FTAppLifeCycle sharedInstance] removeAppLifecycleDelegate:self];
     [[FTTrackerEventDBTool sharedManger] shutDown];
     onceToken = 0;
+    sharedInstance = nil;
 }
 @end

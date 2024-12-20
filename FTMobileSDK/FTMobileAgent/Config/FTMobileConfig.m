@@ -300,7 +300,7 @@
     options.syncSleepTime = self.syncSleepTime;
     options.enableDataIntegerCompatible = self.enableDataIntegerCompatible;
     options.compressIntakeRequests = self.compressIntakeRequests;
-    options.enableDataIntegerCompatible = self.enableLimitWithDbSize;
+    options.enableLimitWithDbSize = self.enableLimitWithDbSize;
     options.dbCacheLimit = self.dbCacheLimit;
     options.dbDiscardType = self.dbDiscardType;
     return options;
