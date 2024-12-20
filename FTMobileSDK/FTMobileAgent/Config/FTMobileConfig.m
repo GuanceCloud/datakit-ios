@@ -257,6 +257,9 @@
 -(void)setGlobalContext:(NSDictionary<NSString *,NSString *> *)globalContext{
     _globalContext = [globalContext ft_deepCopy];
 }
+-(void)setDbCacheLimit:(long)dbCacheLimit{
+    _dbCacheLimit = MAX(FT_MIN_DB_SIZE_LIMIT, dbCacheLimit);
+}
 - (void)setEnvWithType:(FTEnv)envType{
     _env = FTEnvStringMap[envType];
 }

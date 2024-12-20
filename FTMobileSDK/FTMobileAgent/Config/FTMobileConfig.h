@@ -259,7 +259,7 @@ typedef BOOL(^FTResourceUrlHandler)(NSURL * url);
 @property (nonatomic, assign) BOOL compressIntakeRequests;
 /// 开启使用 db 限制数据大小
 @property (nonatomic, assign) BOOL enableLimitWithDbSize;
-/// db 缓存限制大小,默认 50MB
+/// db 缓存限制大小,默认 100MB,单位 byte
 @property (nonatomic, assign) long dbCacheLimit;
 /// 数据库废弃策略
 @property (nonatomic, assign) FTDBCacheDiscard dbDiscardType;

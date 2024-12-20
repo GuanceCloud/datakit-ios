@@ -202,6 +202,7 @@ extern NSUInteger const FT_LOGGING_CONTENT_SIZE;
 extern int const FT_DB_CONTENT_MAX_COUNT;
 extern int const FT_DB_RUM_MAX_COUNT;
 extern long const FT_DEFAULT_DB_SIZE_LIMIT;
+extern long const FT_MIN_DB_SIZE_LIMIT;
 
 extern NSString * const FT_SCRIPT_MESSAGE_HANDLER_NAME;
 extern NSUInteger const FT_TIME_INTERVAL;
