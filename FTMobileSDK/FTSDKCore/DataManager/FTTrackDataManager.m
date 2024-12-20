@@ -151,8 +151,12 @@ static dispatch_once_t onceToken;
         if(current-strongSelf.lastDataDate>0.1 && [[FTTrackerEventDBTool sharedManger] getDatasCount]>0){
             FTInnerLogDebug(@"[NETWORK]: start upload waiting");
             dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)(10 * NSEC_PER_SEC)), strongSelf.networkQueue, ^{
-                FTInnerLogDebug(@"[NETWORK]: timer -> privateUpload");
-                [weakSelf privateUpload];
+                if([FTNetworkConnectivity sharedInstance].isConnected){
+                    FTInnerLogDebug(@"[NETWORK]: timer -> privateUpload");
+                    [weakSelf privateUpload];
+                }else{
+                    FTInnerLogError(@"[NETWORK] Network unreachable, cancel upload");
+                }
                 [weakSelf scheduleNextCycle];
             });
         }else{
