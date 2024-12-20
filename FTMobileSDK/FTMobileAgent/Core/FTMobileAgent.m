@@ -67,6 +67,9 @@ static dispatch_once_t onceToken;
             [FTExtensionDataManager sharedInstance].groupIdentifierArray = config.groupIdentifiers;
             //开启数据处理管理器
             [FTTrackDataManager startWithAutoSync:config.autoSync syncPageSize:config.syncPageSize syncSleepTime:config.syncSleepTime];
+            if(config.enableLimitWithDbSize){
+                [[FTTrackDataManager sharedInstance] setDBLimitWithSize:config.dbCacheLimit discardNew:config.dbDiscardType == FTDBDiscard];
+            }
             NSString *version = [[[NSBundle mainBundle] infoDictionary] objectForKey:@"CFBundleShortVersionString"];
             [[FTPresetProperty sharedInstance] startWithVersion:version
                                                      sdkVersion:SDK_VERSION
@@ -82,7 +85,7 @@ static dispatch_once_t onceToken;
                 .setEnableDataIntegerCompatible(config.enableDataIntegerCompatible);
             [[FTURLSessionInstrumentation sharedInstance] setSdkUrlStr:config.datakitUrl.length>0?config.datakitUrl:config.datawayUrl
                                                            serviceName:config.service];
-            FTInnerLogInfo(@"Mobile Config Success: \n%@",config.debugDescription);
+            FTInnerLogInfo(@"Init Mobile Config Success: \n%@",config.debugDescription);
         }
     }@catch(NSException *exception) {
         FTInnerLogError(@"exception: %@",exception);
@@ -96,7 +99,7 @@ static dispatch_once_t onceToken;
         _rumConfig = [rumConfigOptions copy];
         [[FTPresetProperty sharedInstance] setAppID:_rumConfig.appid];
         [FTPresetProperty sharedInstance].rumGlobalContext = _rumConfig.globalContext;
-        [[FTTrackDataManager sharedInstance] setRUMCacheLimitCount:_rumConfig.rumCacheLimitCount logDiscardNew:_rumConfig.rumDiscardType == FTRUMDiscard];
+        [[FTTrackDataManager sharedInstance] setRUMCacheLimitCount:_rumConfig.rumCacheLimitCount discardNew:_rumConfig.rumDiscardType == FTRUMDiscard];
         [[FTGlobalRumManager sharedInstance] setRumConfig:_rumConfig writer:self];
         [[FTURLSessionInstrumentation sharedInstance] setEnableAutoRumTrace:_rumConfig.enableTraceUserResource resourceUrlHandler:_rumConfig.resourceUrlHandler];
         [[FTURLSessionInstrumentation sharedInstance] setRumResourceHandler:[FTGlobalRumManager sharedInstance].rumManager];
@@ -105,21 +108,21 @@ static dispatch_once_t onceToken;
         if (_loggerConfig) {
             [FTLogger sharedInstance].linkRumDataProvider = [FTGlobalRumManager sharedInstance].rumManager;
         }
-        FTInnerLogInfo(@"RUM Config Success: \n%@",rumConfigOptions.debugDescription);
+        FTInnerLogInfo(@"Init RUM Config Success: \n%@",rumConfigOptions.debugDescription);
     }
 }
 - (void)startLoggerWithConfigOptions:(FTLoggerConfig *)loggerConfigOptions{
     if (!_loggerConfig) {
         _loggerConfig = [loggerConfigOptions copy];
         [FTPresetProperty sharedInstance].logGlobalContext = _loggerConfig.globalContext;
-        [[FTTrackDataManager sharedInstance] setLogCacheLimitCount:_loggerConfig.logCacheLimitCount logDiscardNew:_loggerConfig.discardType == FTDiscard];
+        [[FTTrackDataManager sharedInstance] setLogCacheLimitCount:_loggerConfig.logCacheLimitCount discardNew:_loggerConfig.discardType == FTDiscard];
         [[FTExtensionDataManager sharedInstance] writeLoggerConfig:[_loggerConfig convertToDictionary]];
         [FTLogger startWithEnablePrintLogsToConsole:_loggerConfig.printCustomLogToConsole
                                     enableCustomLog:_loggerConfig.enableCustomLog
                                   enableLinkRumData:_loggerConfig.enableLinkRumData
                                      logLevelFilter:_loggerConfig.logLevelFilter sampleRate:_loggerConfig.samplerate writer:self];
         [FTLogger sharedInstance].linkRumDataProvider = [FTGlobalRumManager sharedInstance].rumManager;
-        FTInnerLogInfo(@"Logger Config Success: \n%@",loggerConfigOptions.debugDescription);
+        FTInnerLogInfo(@"Init Logger Config Success: \n%@",loggerConfigOptions.debugDescription);
     }
 }
 - (void)startTraceWithConfigOptions:(FTTraceConfig *)traceConfigOptions{
@@ -134,7 +137,7 @@ static dispatch_once_t onceToken;
                                                                     traceType:_traceConfig.networkTraceType];
         [FTExternalDataManager sharedManager].resourceDelegate = [FTURLSessionInstrumentation sharedInstance].externalResourceHandler;
         [[FTExtensionDataManager sharedInstance] writeTraceConfig:[_traceConfig convertToDictionary]];
-        FTInnerLogInfo(@"Trace Config Success: \n%@",traceConfigOptions.debugDescription);
+        FTInnerLogInfo(@"Init Trace Config Success: \n%@",traceConfigOptions.debugDescription);
     }
 }
 #pragma mark ========== public method ==========

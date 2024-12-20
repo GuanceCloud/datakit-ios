@@ -248,6 +248,9 @@
         _syncPageSize = 10;
         _syncSleepTime = 0;
         _compressIntakeRequests = NO;
+        _dbDiscardType = FTDBDiscard;
+        _dbCacheLimit = FT_DEFAULT_DB_SIZE_LIMIT;
+        _enableLimitWithDbSize = NO;
     }
     return self;
 }
@@ -297,6 +300,9 @@
     options.syncSleepTime = self.syncSleepTime;
     options.enableDataIntegerCompatible = self.enableDataIntegerCompatible;
     options.compressIntakeRequests = self.compressIntakeRequests;
+    options.enableDataIntegerCompatible = self.enableLimitWithDbSize;
+    options.dbCacheLimit = self.dbCacheLimit;
+    options.dbDiscardType = self.dbDiscardType;
     return options;
 }
 -(NSString *)debugDescription{
@@ -318,6 +324,9 @@
     [dict setValue:@(self.syncSleepTime) forKey:@"syncSleepTime"];
     [dict setValue:@(self.enableDataIntegerCompatible) forKey:@"enableDataIntegerCompatible"];
     [dict setValue:@(self.compressIntakeRequests) forKey:@"compressIntakeRequests"];
+    [dict setValue:@(self.dbDiscardType) forKey:@"dbDiscardType"];
+    [dict setValue:@(self.enableLimitWithDbSize) forKey:@"enableLimitWithDbSize"];
+    [dict setValue:@(self.dbCacheLimit) forKey:@"dbCacheLimit"];
     return [NSString stringWithFormat:@"%@",dict];
 }
 @end

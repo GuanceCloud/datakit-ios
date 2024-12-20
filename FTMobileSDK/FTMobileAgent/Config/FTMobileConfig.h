@@ -102,7 +102,12 @@ typedef NS_ENUM(NSInteger, FTRUMCacheDiscard)  {
     /// 当日志数据大于最大值时,废弃旧数据
     FTRUMDiscardOldest
 };
-
+typedef NS_ENUM(NSInteger, FTDBCacheDiscard)  {
+    /// 默认，当数据库存储大于最大值(50MB)时，新数据不进行写入
+    FTDBDiscard,
+    /// 当数据库存储大于最大值,废弃旧数据
+    FTDBDiscardOldest
+};
 NS_ASSUME_NONNULL_BEGIN
 /// RUM 过滤 resource 回调，返回：NO 表示要采集，YES 表示不需要采集。
 typedef BOOL(^FTResourceUrlHandler)(NSURL * url);
@@ -252,6 +257,12 @@ typedef BOOL(^FTResourceUrlHandler)(NSURL * url);
 @property (nonatomic, assign) BOOL enableDataIntegerCompatible;
 /// 设置内部数据同步时是否开启压缩 默认: NO
 @property (nonatomic, assign) BOOL compressIntakeRequests;
+/// 开启使用 db 限制数据大小
+@property (nonatomic, assign) BOOL enableLimitWithDbSize;
+/// db 缓存限制大小,默认 50MB
+@property (nonatomic, assign) long dbCacheLimit;
+/// 数据库废弃策略
+@property (nonatomic, assign) FTDBCacheDiscard dbDiscardType;
 
 /// 设置 SDK 全局 tag
 ///

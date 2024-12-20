@@ -11,11 +11,22 @@
 #import <pthread.h>
 #import "FTConstants.h"
 #import "FTLog+Private.h"
+#import "FTTrackerEventDBTool.h"
 @interface FTDBDataCachePolicy()
+
+@property (atomic, assign) int logCacheLimitCount;
+/// logging 类型数据超过最大值后是否废弃最新数据
+@property (atomic, assign) BOOL logDiscardNew;
+@property (atomic, assign) int  rumCacheLimitCount;
+/// logging 类型数据超过最大值后是否废弃最新数据
+@property (atomic, assign) BOOL rumDiscardNew;
 @property (nonatomic, strong) dispatch_queue_t logCacheQueue;
 @property (nonatomic, strong) NSMutableArray *messageCaches;
 @property (nonatomic, strong) dispatch_semaphore_t logSemaphore;
 @property (atomic, assign) BOOL semaphoreWaiting;
+@property (nonatomic, assign) BOOL enableLimitWithDbSize;
+@property (nonatomic, assign) long dbLimitSize;
+
 @end
 @implementation FTDBDataCachePolicy{
     pthread_mutex_t _lock;
@@ -23,6 +34,7 @@
 - (instancetype)init{
     self = [super init];
     if(self){
+        _enableLimitWithDbSize = NO;
         _logCacheQueue = dispatch_queue_create("com.guance.logger.write", DISPATCH_QUEUE_SERIAL);
         _logSemaphore = dispatch_semaphore_create(0);
         _semaphoreWaiting = NO;
@@ -35,12 +47,17 @@
     }
     return self;
 }
-- (void)setLogCacheLimitCount:(int)count logDiscardNew:(BOOL)discardNew{
+-(void)setDBLimitWithSize:(long)size discardNew:(BOOL)discardNew{
+    _enableLimitWithDbSize = YES;
+    _dbLimitSize = size;
+    _dbDiscardNew = discardNew;
+}
+- (void)setLogCacheLimitCount:(int)count discardNew:(BOOL)discardNew{
     _logCacheLimitCount = count;
     _logDiscardNew = discardNew;
    
 }
-- (void)setRumCacheLimitCount:(int)count logDiscardNew:(BOOL)discardNew{
+- (void)setRumCacheLimitCount:(int)count discardNew:(BOOL)discardNew{
     _rumCacheLimitCount = count;
     _rumDiscardNew = discardNew;
 }
@@ -60,6 +77,11 @@
     }
 }
 - (void)addRumData:(id)data{
+    if(self.enableLimitWithDbSize){
+        if([self reachDbLimit]){
+            return;
+        }
+    }
     self.rumCount += 1;
     NSInteger count = self.rumCacheLimitCount-self.rumCount;
     if(count<0){
@@ -69,6 +91,7 @@
             return;
         }
         [[FTTrackerEventDBTool sharedManger] deleteDataWithType:FT_DATA_TYPE_RUM count:-count];
+        [[FTTrackerEventDBTool sharedManger] vacuumDB];
     }
     [[FTTrackerEventDBTool sharedManger] insertItem:data];
 }
@@ -89,6 +112,11 @@
     });
 }
 - (NSInteger)optLogCachePolicy:(NSInteger)messageCaches{
+    if(self.enableLimitWithDbSize){
+        if([self reachDbLimit]){
+            return messageCaches;
+        }
+    }
     NSInteger count = self.logCacheLimitCount - self.logCount;
     if(count<0){
         FTInnerLogInfo(@"LOG: DiscardData (%@) Counts %ld",self.rumDiscardNew?@"NEW":@"OLD",(long)-count);
@@ -100,10 +128,38 @@
             }
         }else{
             [[FTTrackerEventDBTool sharedManger] deleteDataWithType:FT_DATA_TYPE_LOGGING count:-count];
+            [[FTTrackerEventDBTool sharedManger] vacuumDB];
             return -1;
         }
     }
     return -1;
+}
+// NO：没有超限\超限但删除旧数据 YES:超限，删除新数据
+- (BOOL)reachDbLimit{
+    long pageSize = [[FTTrackerEventDBTool sharedManger] checkDatabaseSize];
+    if (pageSize > self.dbLimitSize){
+        FTInnerLogInfo(@"ReachDbLimit-DiscardData (%@)",self.dbDiscardNew?@"NEW":@"OLD");
+        if (self.dbDiscardNew) {
+            return YES;
+        }else{
+           BOOL delete = [[FTTrackerEventDBTool sharedManger] deleteDataWithCount:100];
+           BOOL vacuum = [[FTTrackerEventDBTool sharedManger] vacuumDB];
+           [self refreshLogsCount];
+            return !(delete && vacuum);
+        }
+    }
+    return NO;
+}
+- (void)refreshLogsCount{
+    NSInteger dbCount = [[FTTrackerEventDBTool sharedManger] getDatasCountWithType:FT_DATA_TYPE_LOGGING];
+    self.logCount = dbCount + self.messageCaches.count;
+}
+- (BOOL)reachHalfLimit{
+    if(_enableLimitWithDbSize){
+        return self.dbLimitSize>0 && self.currentDbSize > self.dbLimitSize / 2;
+    }else{
+        return [self reachLogHalfLimit] || [self reachRumHalfLimit];
+    }
 }
 // 添加的日志数量超多限额一半
 - (BOOL)reachLogHalfLimit{

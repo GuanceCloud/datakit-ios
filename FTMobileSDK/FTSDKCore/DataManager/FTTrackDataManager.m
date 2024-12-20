@@ -52,7 +52,9 @@ static dispatch_once_t onceToken;
     });
     return sharedInstance;
 }
--(instancetype)initWithAutoSync:(BOOL)autoSync syncPageSize:(int)syncPageSize syncSleepTime:(int)syncSleepTime{
+-(instancetype)initWithAutoSync:(BOOL)autoSync
+                   syncPageSize:(int)syncPageSize
+                  syncSleepTime:(int)syncSleepTime{
     self = [super init];
     if (self) {
         NSString *serialLabel = @"com.guance.network";
@@ -83,11 +85,11 @@ static dispatch_once_t onceToken;
         };
     }
 }
-- (void)setLogCacheLimitCount:(int)count logDiscardNew:(BOOL)discardNew{
-    [self.dataCachePolicy setLogCacheLimitCount:count logDiscardNew:discardNew];
+- (void)setLogCacheLimitCount:(int)count discardNew:(BOOL)discardNew{
+    [self.dataCachePolicy setLogCacheLimitCount:count discardNew:discardNew];
 }
-- (void)setRUMCacheLimitCount:(int)count logDiscardNew:(BOOL)discardNew{
-    [self.dataCachePolicy setRumCacheLimitCount:count logDiscardNew:discardNew];
+- (void)setRUMCacheLimitCount:(int)count discardNew:(BOOL)discardNew{
+    [self.dataCachePolicy setRumCacheLimitCount:count discardNew:discardNew];
 }
 -(void)applicationDidBecomeActive{
     @try {
@@ -119,24 +121,18 @@ static dispatch_once_t onceToken;
     switch (type) {
         case FTAddDataLogging:
             [self.dataCachePolicy addLogData:data];
-            if(self.autoSync&&[self.dataCachePolicy reachLogHalfLimit]){
-                //如果正在上传中忽略
-                if(!self.isUploading){
-                    [self uploadTrackData];
-                }
-                return;
-            }
+            
             break;
         case FTAddDataRUM:
             [self.dataCachePolicy addRumData:data];
-            if(self.autoSync&&[self.dataCachePolicy reachRumHalfLimit]){
-                //如果正在上传中忽略
-                if(!self.isUploading){
-                    [self uploadTrackData];
-                }
-                return;
-            }
             break;
+    }
+    if(self.autoSync&&[self.dataCachePolicy reachHalfLimit]){
+        //如果正在上传中忽略
+        if(!self.isUploading){
+            [self uploadTrackData];
+        }
+        return;
     }
     _lastDataDate = CACurrentMediaTime();
 }

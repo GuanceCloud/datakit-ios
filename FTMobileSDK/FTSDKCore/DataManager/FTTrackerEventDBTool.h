@@ -11,6 +11,8 @@
 NS_ASSUME_NONNULL_BEGIN
 #define FT_DB_TRACE_EVENT_TABLE_NAME @"trace_event"
 @class FTRecordModel;
+typedef void(^DBSizeCacheChange)(long dbSize);
+
 /// 操作数据库数据的工具
 @interface FTTrackerEventDBTool : NSObject
 /// 单例
@@ -56,6 +58,10 @@ NS_ASSUME_NONNULL_BEGIN
 /// @param count 删除前 count 个数据
 -(BOOL)deleteDataWithType:(NSString *)type count:(NSInteger)count;
 
+-(BOOL)deleteDataWithCount:(NSInteger)count;
+
+- (BOOL)vacuumDB;
+
 /// 获取数据库数据总数
 - (NSInteger)getDatasCount;
 
@@ -63,6 +69,10 @@ NS_ASSUME_NONNULL_BEGIN
 /// @param type 数据类型
 - (NSInteger)getDatasCountWithType:(NSString *)type;
 
+- (long)checkDatabaseSize;
+
+/// VACUUM
+- (BOOL)vacuumDB;
 /// 关闭单例
 - (void)shutDown;
 @end
