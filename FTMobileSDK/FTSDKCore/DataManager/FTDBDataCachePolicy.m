@@ -81,17 +81,17 @@
         if([self reachDbLimit]){
             return;
         }
-    }
-    self.rumCount += 1;
-    NSInteger count = self.rumCacheLimitCount-self.rumCount;
-    if(count<0){
-        FTInnerLogInfo(@"RUM: DiscardData (%@)",self.rumDiscardNew?@"NEW":@"OLD");
-        self.rumCount += count;
-        if(self.rumDiscardNew){
-            return;
+    }else{
+        self.rumCount += 1;
+        NSInteger count = self.rumCacheLimitCount-self.rumCount;
+        if(count<0){
+            FTInnerLogInfo(@"RUM: DiscardData (%@)",self.rumDiscardNew?@"NEW":@"OLD");
+            self.rumCount += count;
+            if(self.rumDiscardNew){
+                return;
+            }
+            [[FTTrackerEventDBTool sharedManger] deleteDataWithType:FT_DATA_TYPE_RUM count:-count];
         }
-        [[FTTrackerEventDBTool sharedManger] deleteDataWithType:FT_DATA_TYPE_RUM count:-count];
-        [[FTTrackerEventDBTool sharedManger] vacuumDB];
     }
     [[FTTrackerEventDBTool sharedManger] insertItem:data];
 }
@@ -114,22 +114,22 @@
 - (NSInteger)optLogCachePolicy:(NSInteger)messageCaches{
     if(self.enableLimitWithDbSize){
         if([self reachDbLimit]){
-            return messageCaches;
+            return 0;
         }
-    }
-    NSInteger count = self.logCacheLimitCount - self.logCount;
-    if(count<0){
-        FTInnerLogInfo(@"LOG: DiscardData (%@) Counts %ld",self.rumDiscardNew?@"NEW":@"OLD",(long)-count);
-        self.logCount += count;
-        if(self.logDiscardNew){
-            NSInteger sum = count+messageCaches;
-            if (sum>=0) {
-                return sum;
+    }else{
+        NSInteger count = self.logCacheLimitCount - self.logCount;
+        if(count<0){
+            FTInnerLogInfo(@"LOG: DiscardData (%@) Counts %ld",self.rumDiscardNew?@"NEW":@"OLD",(long)-count);
+            self.logCount += count;
+            if(self.logDiscardNew){
+                NSInteger sum = count+messageCaches;
+                if (sum>=0) {
+                    return sum;
+                }
+            }else{
+                [[FTTrackerEventDBTool sharedManger] deleteDataWithType:FT_DATA_TYPE_LOGGING count:-count];
+                return -1;
             }
-        }else{
-            [[FTTrackerEventDBTool sharedManger] deleteDataWithType:FT_DATA_TYPE_LOGGING count:-count];
-            [[FTTrackerEventDBTool sharedManger] vacuumDB];
-            return -1;
         }
     }
     return -1;
@@ -144,15 +144,10 @@
         }else{
            BOOL delete = [[FTTrackerEventDBTool sharedManger] deleteDataWithCount:100];
            BOOL vacuum = [[FTTrackerEventDBTool sharedManger] vacuumDB];
-           [self refreshLogsCount];
-            return !(delete && vacuum);
+           return !(delete && vacuum);
         }
     }
     return NO;
-}
-- (void)refreshLogsCount{
-    NSInteger dbCount = [[FTTrackerEventDBTool sharedManger] getDatasCountWithType:FT_DATA_TYPE_LOGGING];
-    self.logCount = dbCount + self.messageCaches.count;
 }
 - (BOOL)reachHalfLimit{
     if(_enableLimitWithDbSize){
