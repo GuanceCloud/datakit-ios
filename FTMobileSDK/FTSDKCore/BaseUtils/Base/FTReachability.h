@@ -31,18 +31,15 @@ typedef void(^NetworkChangeBlock)(void);
 /// 网络状态改变回调
 @property (nonatomic,copy) NetworkChangeBlock networkChanged;
 
-/// iOS下 是否允许在移动网络状态下进行网络传输
-@property (nonatomic, assign) BOOL reachableOnWWAN;
-
 /// 当前网络状态类型
 @property (nonatomic, copy, readonly) NSString *net;
-/// 单例
-+ (instancetype)sharedInstance;
+
++(instancetype)reachabilityForInternetConnection;
 /// 重新获取当前网络状态类型
 - (NSString *)networkType;
 
 /// 开始监听网络状态
--(BOOL)startNotifier;
+- (BOOL)startNotifier;
 
 /// 停止监听网络状态
 - (void)stopNotifier;

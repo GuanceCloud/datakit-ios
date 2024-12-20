@@ -31,7 +31,6 @@ class RUMViewController: UIViewController,UITableViewDelegate,UITableViewDataSou
     override func viewDidLoad() {
         super.viewDidLoad()
         self.navigationItem.title = "Custom RUM"
-        self.view.backgroundColor = .white
         createUI()
     }
     func createUI(){

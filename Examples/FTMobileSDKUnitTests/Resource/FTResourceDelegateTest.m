@@ -65,24 +65,6 @@ typedef NS_ENUM(NSUInteger,TestSessionRequestMethod){
     [[FTTrackerEventDBTool sharedManger] deleteAllDatas];
     [FTModelHelper startView];
 }
-- (void)sdkInnerURLTestSet{
-    NSProcessInfo *processInfo = [NSProcessInfo processInfo];
-    NSString *url = [processInfo environment][@"TRACE_URL"];
-    NSString *appid = [processInfo environment][@"APP_ID"];
-    FTMobileConfig *config = [[FTMobileConfig alloc]initWithDatakitUrl:url];
-    config.enableSDKDebugLog = YES;
-    FTRumConfig *rumConfig = [[FTRumConfig alloc]initWithAppid:appid];
-    FTTraceConfig *traceConfig = [[FTTraceConfig alloc]init];
-    traceConfig.networkTraceType = FTNetworkTraceTypeDDtrace;
-    traceConfig.enableLinkRumData = YES;
-    traceConfig.enableAutoTrace = YES;
-    [FTMobileAgent startWithConfigOptions:config];
-    [[FTMobileAgent sharedInstance] startRumWithConfigOptions:rumConfig];
-    [[FTMobileAgent sharedInstance] startTraceWithConfigOptions:traceConfig];
-    [[FTMobileAgent sharedInstance] unbindUser];
-    [[FTTrackerEventDBTool sharedManger] deleteAllDatas];
-    [FTModelHelper startView];
-}
 - (void)testUseDelegateDirect{
     [self sdkNormalSet];
     [self startWithTest:InstrumentationDirect hasResource:YES];

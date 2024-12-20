@@ -22,7 +22,6 @@ class TraceViewController: UIViewController,UITableViewDelegate,UITableViewDataS
     override func viewDidLoad() {
         super.viewDidLoad()
         self.navigationItem.title = "Custom Trace"
-        self.view.backgroundColor = .white
         createUI()
     }
     func createUI() {

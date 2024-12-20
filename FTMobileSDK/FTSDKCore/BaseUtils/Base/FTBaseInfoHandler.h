@@ -33,7 +33,7 @@ NS_ASSUME_NONNULL_BEGIN
 /// 电话运营商
 +(NSString *)telephonyCarrier;
 #endif
-/// 设备 IP Adderss
+/// 设备 IP Address
 /// - Parameter preferIPv4 是否优先IPv4
 + (NSString *)cellularIPAddress:(BOOL)preferIPv4;
 

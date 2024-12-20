@@ -20,18 +20,25 @@
 
 #if TARGET_OS_IOS
     #define FT_IOS 1
-    #define FT_UIKIT 1
 #else
     #define FT_IOS 0
-    #define FT_UIKIT 0
 #endif
 
-#if FT_MAC
-    #import <AppKit/AppKit.h>
+#if TARGET_OS_TV || TARGET_OS_IOS
+   #define FT_HAS_UIKIT 1
 #else
-    #if FT_UIKIT
-        #import <UIKit/UIKit.h>
-    #endif
+   #define FT_HAS_UIKIT 0
 #endif
 
+#if TARGET_OS_IOS || TARGET_OS_OSX
+#define FT_HAS_SIGNAL_STACK 1
+#else
+#define FT_HAS_SIGNAL_STACK 0
+#endif
+
+#if TARGET_OS_IOS || TARGET_OS_OSX
+#define FT_HAS_MACH 1
+#else
+#define FT_HAS_MACH 0
+#endif
 

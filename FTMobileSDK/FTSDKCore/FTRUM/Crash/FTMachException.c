@@ -7,6 +7,10 @@
 //
 
 #include "FTMachException.h"
+#ifdef __OBJC__
+#include "FTSDKCompat.h"
+#endif
+#if FT_HAS_MACH
 #include <stdio.h>
 #include <stdbool.h>
 #include <errno.h>
@@ -500,16 +504,22 @@ failed:
     uninstallMachException();
     return false;
 }
+#endif
+
 void FTUninstallMachException(void){
+#if FT_HAS_MACH
     if(ftdebug_isBeingTraced()){
         return;
     }
     uninstallMachException();
+#endif
 }
 void FTInstallMachException(const FTCrashNotifyCallback onCrashNotify){
+#if FT_HAS_MACH
     if(ftdebug_isBeingTraced()){
         return;
     }
     g_onCrashNotify = onCrashNotify;
     installMachException();
+#endif
 }

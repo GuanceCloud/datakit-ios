@@ -21,7 +21,7 @@ NS_ASSUME_NONNULL_BEGIN
 /// App 即将失活
 - (void)applicationWillResignActive;
 
-#if FT_IOS
+#if FT_HAS_UIKIT
 /// App 即将进入后台
 - (void)applicationWillEnterForeground;
 /// App 进入后台

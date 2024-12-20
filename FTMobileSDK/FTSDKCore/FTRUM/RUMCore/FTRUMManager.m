@@ -18,7 +18,7 @@
 #import "FTReadWriteHelper.h"
 #import "NSError+FTDescription.h"
 #import "FTPresetProperty.h"
-#import "FTReachability.h"
+#import "FTNetworkConnectivity.h"
 
 NSString * const AppStateStringMap[] = {
     [FTAppStateUnknown] = @"unknown",
@@ -461,7 +461,7 @@ void *FTRUMQueueIdentityKey = &FTRUMQueueIdentityKey;
 }
 -(NSDictionary *)rumDynamicProperty{
     NSMutableDictionary *dict = [NSMutableDictionary dictionary];
-    dict[@"network_type"] = [FTReachability sharedInstance].net;
+    dict[@"network_type"] = [FTNetworkConnectivity sharedInstance].networkType;
     [dict addEntriesFromDictionary:[[FTPresetProperty sharedInstance] rumDynamicProperty]];
     return dict;
 }

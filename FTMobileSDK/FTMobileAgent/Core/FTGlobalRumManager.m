@@ -10,10 +10,12 @@
 #endif
 #import "FTGlobalRumManager.h"
 #import "FTLog+Private.h"
+#if !TARGET_OS_TV
 #import "FTWKWebViewHandler.h"
+#import "FTWKWebViewJavascriptBridge.h"
+#endif
 #import "FTLongTaskManager.h"
 #import "FTJSONUtil.h"
-#import "FTWKWebViewJavascriptBridge.h"
 #import "FTTrack.h"
 #import "FTAppLifeCycle.h"
 #import "FTRUMManager.h"
@@ -30,15 +32,18 @@
 #import "FTBaseInfoHandler.h"
 #import "FTCrashMonitor.h"
 #import "FTFatalErrorContext.h"
-@interface FTGlobalRumManager ()<FTRunloopDetectorDelegate,FTWKWebViewRumDelegate,FTAppLifeCycleDelegate,FTAppLaunchDataDelegate>
+@interface FTGlobalRumManager ()<FTRunloopDetectorDelegate,FTAppLifeCycleDelegate,FTAppLaunchDataDelegate>
 @property (nonatomic, strong) FTRumConfig *rumConfig;
 @property (nonatomic, strong) FTRUMDependencies *dependencies;
-@property (nonatomic, strong) FTWKWebViewJavascriptBridge *jsBridge;
 @property (nonatomic, strong) FTAppLaunchTracker *launchTracker;
 @property (nonatomic, strong) FTRUMMonitor *monitor;
 @property (nonatomic, strong) FTLongTaskManager *longTaskManager;
 @end
-
+#if !TARGET_OS_TV
+@interface FTGlobalRumManager()<FTWKWebViewRumDelegate>
+@property (nonatomic, strong) FTWKWebViewJavascriptBridge *jsBridge;
+@end
+#endif
 @implementation FTGlobalRumManager
 static FTGlobalRumManager *sharedInstance = nil;
 static dispatch_once_t onceToken;
@@ -72,10 +77,13 @@ static dispatch_once_t onceToken;
     if (rumConfig.enableTrackAppANR||rumConfig.enableTrackAppFreeze) {
         _longTaskManager = [[FTLongTaskManager alloc]initWithDependencies:dependencies delegate:self enableTrackAppANR:rumConfig.enableTrackAppANR enableTrackAppFreeze:rumConfig.enableTrackAppFreeze                                        freezeDurationMs:rumConfig.freezeDurationMs];
     }
+#if !TARGET_OS_TV
     [FTWKWebViewHandler sharedInstance].rumTrackDelegate = self;
+#endif
     [FTExternalDataManager sharedManager].delegate = self.rumManager;
 }
 #pragma mark ========== jsBridge ==========
+#if !TARGET_OS_TV
 -(void)ftAddScriptMessageHandlerWithWebView:(WKWebView *)webView{
     if (![webView isKindOfClass:[WKWebView class]]) {
         return;
@@ -116,6 +124,7 @@ static dispatch_once_t onceToken;
         FTInnerLogError(@"%@ error: %@", self, exception);
     }
 }
+#endif
 #pragma mark ========== FTRunloopDetectorDelegate ==========
 - (void)longTaskStackDetected:(NSString*)slowStack duration:(long long)duration time:(long long)time{
     [self.rumManager addLongTaskWithStack:slowStack duration:[NSNumber numberWithLongLong:duration] startTime:time];
@@ -165,7 +174,9 @@ static dispatch_once_t onceToken;
 #pragma mark ========== 注销 ==========
 - (void)shutDown{
     [[FTAppLifeCycle sharedInstance] removeAppLifecycleDelegate:self];
+#if !TARGET_OS_TV
     [FTWKWebViewHandler sharedInstance].enableTrace = NO;
+#endif
     onceToken = 0;
     sharedInstance = nil;
     FTInnerLogInfo(@"[RUM] SHUT DOWN");

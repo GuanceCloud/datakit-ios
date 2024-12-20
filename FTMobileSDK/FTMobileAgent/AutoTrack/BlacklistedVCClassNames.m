@@ -11,7 +11,10 @@
 @implementation BlacklistedVCClassNames
 + (NSArray *)ft_blacklistedViewControllerClassNames{
    NSArray *blackList =
-     @[
+    @[@"UIDocumentBrowserViewController",
+      @"UIDocumentPickerViewController",
+      @"SFSafariViewController",
+      @"UITabBarController",
       @"SFBrowserRemoteViewController",
       @"UIAlertController",
       @"UIInputWindowController",
@@ -77,6 +80,12 @@
       @"UISystemInputAssistantViewController",
       @"UISystemKeyboardDockController",
       @"UIPredictionViewController",
+      @"UIActivityContentViewController",
+      @"SFAirDropViewController",
+      @"UICandidateViewController",//键盘
+      @"_UIDatePickerContainerViewController",
+      @"_UICursorAccessoryViewController",
+      @"_UIContextMenuActionsOnlyViewController",
      ];
      return blackList;
 }

@@ -13,9 +13,13 @@
 #include <stdlib.h>
 #include "FTStackInfo.h"
 #include <string.h>
-#include <TargetConditionals.h>
+#ifdef __OBJC__
+#include "FTSDKCompat.h"
+#endif
 static FTCrashNotifyCallback g_onCrashNotify;
+#if FT_HAS_SIGNAL_STACK
 static stack_t g_signalStack = {0};
+#endif
 static struct sigaction* g_previousSignalHandlers = NULL;
  
 #ifdef __arm64__
@@ -209,14 +213,15 @@ static void signalHandler(int signal, siginfo_t* info, void* signalUserContext) 
 #pragma mark ========== API ==========
 void FTInstallSignalException(const FTCrashNotifyCallback onCrashNotify){
     g_onCrashNotify = onCrashNotify;
+#if FT_HAS_SIGNAL_STACK
     if(g_signalStack.ss_size == 0){
         g_signalStack.ss_size = SIGSTKSZ;
         g_signalStack.ss_sp = malloc(g_signalStack.ss_size);
     }
-    
     if(sigaltstack(&g_signalStack, NULL) != 0){
         return;
     }
+#endif
     int signals[] = {
         SIGABRT,
         SIGBUS,
@@ -269,8 +274,8 @@ void FTUninstallSignalException(void){
     {
         sigaction(signals[i], &g_previousSignalHandlers[i], NULL);
     }
-    
+#if FT_HAS_SIGNAL_STACK
     g_signalStack = (stack_t){0};
-
+#endif
 }
 
