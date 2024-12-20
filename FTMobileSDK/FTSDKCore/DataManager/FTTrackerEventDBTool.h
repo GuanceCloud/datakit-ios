@@ -60,8 +60,6 @@ typedef void(^DBSizeCacheChange)(long dbSize);
 
 -(BOOL)deleteDataWithCount:(NSInteger)count;
 
-- (BOOL)vacuumDB;
-
 /// 获取数据库数据总数
 - (NSInteger)getDatasCount;
 
