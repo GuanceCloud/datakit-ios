@@ -1,3 +1,6 @@
+# 1.5.8-beta.1
+1. db 限制总缓存大小功能优化
+---
 # 1.5.8-alpha.2
 1. 增加 tvOS 支持
 2. 新增支持通过 `FTMobileConfig.enableLimitWithDbSize` 开启 db 限制大小功能，
