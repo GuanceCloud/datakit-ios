@@ -15,6 +15,8 @@
 @interface FTTrackerEventDBTool ()
 @property (nonatomic, strong) NSString *dbPath;
 @property (nonatomic, strong) ZY_FMDatabaseQueue *dbQueue;
+@property (nonatomic, assign) BOOL enableLimitWithDbSize;
+
 @end
 @implementation FTTrackerEventDBTool
 static FTTrackerEventDBTool *dbTool = nil;
@@ -42,6 +44,7 @@ static dispatch_once_t onceToken;
             dbTool.dbPath = path;
             FTInnerLogDebug(@"db path:%@",path);
             dbTool.dbQueue = dbQueue;
+            dbTool.enableLimitWithDbSize = NO;
             [dbTool createTable];
         }
     });
@@ -168,43 +171,42 @@ static dispatch_once_t onceToken;
     }];
     return count;
 }
--(BOOL)deleteItemWithType:(NSString *)type tm:(long long)tm{
+-(BOOL)deleteItemWithType:(NSString *)type identify:(NSString *)identify count:(NSInteger)count{
     __block BOOL is;
-    [self zy_inDatabase:^(ZY_FMDatabase *db){
-        NSString *sqlStr = [NSString stringWithFormat:@"DELETE FROM '%@' WHERE op = '%@' AND tm <= %lld ;",FT_DB_TRACE_EVENT_TABLE_NAME,type,tm];
-        is = [db executeUpdate:sqlStr];
-    }];
-    return is;
-}
--(BOOL)deleteItemWithType:(NSString *)type identify:(NSString *)identify{
-    __block BOOL is;
+    __weak __typeof(self) weakSelf = self;
     [self zy_inDatabase:^(ZY_FMDatabase *db){
         NSString *sqlStr = [NSString stringWithFormat:@"DELETE FROM '%@' WHERE op = '%@' AND _id <= %@ ;",FT_DB_TRACE_EVENT_TABLE_NAME,type,identify];
         is = [db executeUpdate:sqlStr];
+        if(weakSelf.enableLimitWithDbSize){
+            NSString *str = [NSString stringWithFormat:@"PRAGMA incremental_vacuum(%ld)",(long)count];
+            [db executeUpdate:str];
+        }
     }];
     return is;
 }
 -(BOOL)deleteDataWithType:(NSString *)type count:(NSInteger)count{
     __block BOOL is;
+    __weak __typeof(self) weakSelf = self;
     [self zy_inDatabase:^(ZY_FMDatabase *db){
         NSString *sqlStr = [NSString stringWithFormat:@"DELETE FROM '%@' WHERE _id in (SELECT _id from '%@' WHERE  op = '%@' ORDER by _id ASC LIMIT '%ld' )",FT_DB_TRACE_EVENT_TABLE_NAME,FT_DB_TRACE_EVENT_TABLE_NAME,type,(long)count];
         is = [db executeUpdate:sqlStr];
+        if(weakSelf.enableLimitWithDbSize){
+            NSString *str = [NSString stringWithFormat:@"PRAGMA incremental_vacuum(%ld)",(long)count];
+            [db executeUpdate:str];
+        }
     }];
     return is;
 }
 -(BOOL)deleteDataWithCount:(NSInteger)count{
     __block BOOL is;
+    __weak __typeof(self) weakSelf = self;
     [self zy_inDatabase:^(ZY_FMDatabase *db){
         NSString *sqlStr = [NSString stringWithFormat:@"DELETE FROM '%@' WHERE _id in (SELECT _id from '%@' ORDER by _id ASC LIMIT '%ld')",FT_DB_TRACE_EVENT_TABLE_NAME,FT_DB_TRACE_EVENT_TABLE_NAME,(long)count];
         is = [db executeUpdate:sqlStr];
-    }];
-    return is;
-}
--(BOOL)deleteItemWithTm:(long long)tm
-{   __block BOOL is;
-    [self zy_inDatabase:^(ZY_FMDatabase *db){
-        NSString *sqlStr = [NSString stringWithFormat:@"DELETE FROM '%@' WHERE tm <= %lld ;",FT_DB_TRACE_EVENT_TABLE_NAME,tm];
-        is = [db executeUpdate:sqlStr];
+        if(weakSelf.enableLimitWithDbSize){
+            NSString *str = [NSString stringWithFormat:@"PRAGMA incremental_vacuum(%ld)",(long)count];
+            [db executeUpdate:str];
+        }
     }];
     return is;
 }
@@ -266,6 +268,22 @@ static long pageSize = 0;
         is = [db executeUpdate:@"vacuum;"];
     }];
     return is;
+}
+- (BOOL)autoVacuum{
+    __block BOOL is;
+    [self zy_inDatabase:^(ZY_FMDatabase *db){
+        is = [db executeUpdate:@"PRAGMA auto_vacuum = INCREMENTAL"];
+        if(is){
+            FTInnerLogDebug(@"PRAGMA auto_vacuum = INCREMENTAL Success");
+        }
+    }];
+    return is;
+}
+-(void)setEnableLimitWithDbSize:(BOOL)enableLimitWithDbSize{
+    _enableLimitWithDbSize = enableLimitWithDbSize;
+    if(enableLimitWithDbSize){
+        [self autoVacuum];
+    }
 }
 - (void)shutDown{
     [self close];

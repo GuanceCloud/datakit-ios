@@ -86,6 +86,7 @@ static dispatch_once_t onceToken;
     }
 }
 -(void)setDBLimitWithSize:(long)size discardNew:(BOOL)discardNew{
+    [[FTTrackerEventDBTool sharedManger] setEnableLimitWithDbSize:YES];
     [self.dataCachePolicy setDBLimitWithSize:size discardNew:discardNew];
 }
 - (void)setLogCacheLimitCount:(int)count discardNew:(BOOL)discardNew{
@@ -133,6 +134,7 @@ static dispatch_once_t onceToken;
     if(self.autoSync&&[self.dataCachePolicy reachHalfLimit]){
         //如果正在上传中忽略
         if(!self.isUploading){
+            FTInnerLogDebug(@"[NETWORK] reachHalfLimit start uploading");
             [self uploadTrackData];
         }
         return;
@@ -227,7 +229,7 @@ static dispatch_once_t onceToken;
             break;
         }
         FTRecordModel *model = [events lastObject];
-        if (![[FTTrackerEventDBTool sharedManger] deleteItemWithType:type identify:model._id]) {
+        if (![[FTTrackerEventDBTool sharedManger] deleteItemWithType:type identify:model._id count:events.count]) {
             FTInnerLogError(@"数据库删除已上传数据失败");
         }
         if([type isEqualToString:FT_DATA_TYPE_LOGGING]){
@@ -281,7 +283,7 @@ static dispatch_once_t onceToken;
 }
 - (void)shutDown{
     [self cancelUploadWork];
-//    [self.dataCachePolicy insertCacheToDB];
+    [self.dataCachePolicy insertCacheToDB];
     [[FTAppLifeCycle sharedInstance] removeAppLifecycleDelegate:self];
     [[FTTrackerEventDBTool sharedManger] shutDown];
     onceToken = 0;

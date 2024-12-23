@@ -11,7 +11,6 @@
 NS_ASSUME_NONNULL_BEGIN
 #define FT_DB_TRACE_EVENT_TABLE_NAME @"trace_event"
 @class FTRecordModel;
-typedef void(^DBSizeCacheChange)(long dbSize);
 
 /// 操作数据库数据的工具
 @interface FTTrackerEventDBTool : NSObject
@@ -39,17 +38,8 @@ typedef void(^DBSizeCacheChange)(long dbSize);
 -(NSArray *)getFirstRecords:(NSUInteger)recordSize withType:(NSString *)type;
 /// 根据类型删除已上传的数据
 /// @param type 数据类型
-/// @param tm 删除在此时间之前的数据
--(BOOL)deleteItemWithType:(NSString *)type tm:(long long)tm;
-
-/// 根据类型删除已上传的数据
-/// @param type 数据类型
 /// @param identify 删除在此 _id 之前的数据
--(BOOL)deleteItemWithType:(NSString *)type identify:(NSString *)identify;
-
-/// 根据给定时间删除在此时间之前的数据
-/// @param tm 删除时间
--(BOOL)deleteItemWithTm:(long long)tm;
+-(BOOL)deleteItemWithType:(NSString *)type identify:(NSString *)identify count:(NSInteger)count;
 
 /// 删除所有数据
 -(BOOL)deleteAllDatas;
@@ -69,8 +59,7 @@ typedef void(^DBSizeCacheChange)(long dbSize);
 
 - (long)checkDatabaseSize;
 
-/// VACUUM
-- (BOOL)vacuumDB;
+- (void)setEnableLimitWithDbSize:(BOOL)enableLimitWithDbSize;
 /// 关闭单例
 - (void)shutDown;
 @end

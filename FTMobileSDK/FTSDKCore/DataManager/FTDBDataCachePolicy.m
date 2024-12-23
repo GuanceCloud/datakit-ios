@@ -144,8 +144,7 @@
             return YES;
         }else{
            BOOL delete = [[FTTrackerEventDBTool sharedManger] deleteDataWithCount:100];
-           BOOL vacuum = [[FTTrackerEventDBTool sharedManger] vacuumDB];
-           return !(delete && vacuum);
+           return !delete;
         }
     }
     return NO;
