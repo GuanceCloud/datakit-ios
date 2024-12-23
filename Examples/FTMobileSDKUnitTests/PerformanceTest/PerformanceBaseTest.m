@@ -25,7 +25,7 @@
     NSProcessInfo *processInfo = [NSProcessInfo processInfo];
     NSString *url = [processInfo environment][@"ACCESS_SERVER_URL"];
     FTMobileConfig *config = [[FTMobileConfig alloc]initWithDatakitUrl:url];
-    [[FTPresetProperty sharedInstance] startWithVersion:config.version sdkVersion:SDK_VERSION env:config.env service:config.service globalContext:config.globalContext];
+    [[FTPresetProperty sharedInstance] startWithVersion:[[[NSBundle mainBundle] infoDictionary] objectForKey:@"CFBundleShortVersionString"] sdkVersion:SDK_VERSION env:config.env service:config.service globalContext:config.globalContext];
     FTPresetProperty  *presetProperty = [FTPresetProperty sharedInstance];
                                          
     [self measureBlock:^{
@@ -36,7 +36,7 @@
     NSProcessInfo *processInfo = [NSProcessInfo processInfo];
     NSString *url = [processInfo environment][@"ACCESS_SERVER_URL"];
     FTMobileConfig *config = [[FTMobileConfig alloc]initWithDatakitUrl:url];
-    [[FTPresetProperty sharedInstance] startWithVersion:config.version sdkVersion:SDK_VERSION env:config.env service:config.service globalContext:config.globalContext];
+    [[FTPresetProperty sharedInstance] startWithVersion:[[[NSBundle mainBundle] infoDictionary] objectForKey:@"CFBundleShortVersionString"] sdkVersion:SDK_VERSION env:config.env service:config.service globalContext:config.globalContext];
     FTPresetProperty  *presetProperty = [FTPresetProperty sharedInstance];
     [self measureBlock:^{
          [presetProperty loggerProperty];
@@ -72,7 +72,7 @@
         [[FTMobileAgent sharedInstance] startLoggerWithConfigOptions:loggerConfig];
         [[FTMobileAgent sharedInstance] startTraceWithConfigOptions:traceConfig];
         [self stopMeasuring];
-        [[FTMobileAgent sharedInstance] shutDown];
+        [FTMobileAgent shutDown];
     }];
    
 }

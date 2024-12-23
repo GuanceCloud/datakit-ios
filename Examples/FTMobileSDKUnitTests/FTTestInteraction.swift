@@ -163,7 +163,7 @@ final class FTTestInteraction: XCTestCase {
     }
     func testSessionInterceptor_resourceProvider() throws {
         let time = NSDate.ft_currentNanosecondTimeStamp()
-        FTTrackerEventDBTool.sharedManger()!.deleteItem(withTm: time)
+        FTTrackerEventDBTool.sharedManger()!.deleteAllDatas()
         let expectation = XCTestExpectation.init()
 
         let delegate = FTURLSessionDelegate.init()

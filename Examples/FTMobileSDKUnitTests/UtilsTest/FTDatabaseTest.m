@@ -27,7 +27,7 @@
     [[FTTrackerEventDBTool sharedManger] shutDown];
     self.dbName = [NSString stringWithFormat:@"%@test.sqlite",[FTBaseInfoHandler randomUUID]];
     [FTTrackerEventDBTool shareDatabaseWithPath:nil dbName:self.dbName];
-    [[FTTrackerEventDBTool sharedManger] deleteItemWithTm:[NSDate ft_currentNanosecondTimeStamp]];
+    [[FTTrackerEventDBTool sharedManger] deleteAllDatas];
 }
 
 - (void)tearDown {
@@ -129,7 +129,7 @@
         [[FTTrackerEventDBTool sharedManger] insertItem:rumModel];
         [[FTTrackerEventDBTool sharedManger] insertItem:model];
     }
-    [[FTTrackerEventDBTool sharedManger] deleteItemWithType:FT_DATA_TYPE_LOGGING tm:[NSDate ft_currentNanosecondTimeStamp]];
+    [[FTTrackerEventDBTool sharedManger] deleteDataWithType:FT_DATA_TYPE_LOGGING count:15];
     NSInteger newCount =  [[FTTrackerEventDBTool sharedManger] getDatasCount];
     XCTAssertTrue(newCount == 15);
 }
@@ -170,7 +170,7 @@
     model.data = @"testData";
     [[FTTrackerEventDBTool sharedManger] insertItem:model];
     NSInteger oldCount =  [[FTTrackerEventDBTool sharedManger] getDatasCount];
-    [[FTTrackerEventDBTool sharedManger] deleteItemWithTm:[NSDate ft_currentNanosecondTimeStamp]];
+    [[FTTrackerEventDBTool sharedManger] deleteAllDatas];
     NSInteger newCount =  [[FTTrackerEventDBTool sharedManger] getDatasCount];
     XCTAssertTrue(oldCount>0 && newCount == 0);
 }

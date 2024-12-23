@@ -46,8 +46,7 @@ typedef NS_ENUM(NSInteger, FTNetworkTestsType) {
 
 - (void)setUp {
     // Put setup code here. This method is called before the invocation of each test method in the class.
-    long  tm =[NSDate ft_currentNanosecondTimeStamp];
-    [[FTTrackerEventDBTool sharedManger] deleteItemWithTm:tm];
+    [[FTTrackerEventDBTool sharedManger] deleteAllDatas];
 }
 - (void)tearDown{
     [OHHTTPStubs removeAllStubs];
