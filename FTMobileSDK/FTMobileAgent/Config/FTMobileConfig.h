@@ -186,7 +186,7 @@ typedef BOOL(^FTResourceUrlHandler)(NSURL * url);
 ///
 /// 保留标签:特殊 key - track_id (用于追踪功能)
 @property (nonatomic, strong) NSDictionary<NSString*,NSString*> *globalContext;
-/// RUM 最大缓存量,  默认 200_000
+/// RUM 最大缓存量,  默认 100_000
 @property (nonatomic, assign) int rumCacheLimitCount;
 /// RUM废弃策略
 @property (nonatomic, assign) FTRUMCacheDiscard rumDiscardType;
