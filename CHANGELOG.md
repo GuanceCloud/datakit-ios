@@ -1,3 +1,12 @@
+# 1.5.8
+1. 增加 tvOS 支持
+2. 新增 RUM 条目数量限制功能，支持通过 `FTRUMConfig.rumCacheLimitCount` 来限制 SDK 最大缓存条目数据限制，支持通过 `FTRUMConfig.rumDiscardType` 设置来指定丢弃新数据或丢弃旧数据
+3. 新增支持通过 `FTMobileConfig.enableLimitWithDbSize` 限制总缓存大小功能，开启之后
+   `FTLoggerConfig.logCacheLimitCount` 及 `FTRUMConfig.rumCacheLimitCount` 将失效，
+   支持通过 `FTMobileConfig.dbDiscardType` 设置 db 废弃策略，
+   支持通过 `FTMobileConfig.dbCacheLimit` 设置 db 缓存限制大小
+4. 添加配置信息调试日志输出
+---
 # 1.5.8-beta.2
 1. 同 1.5.8-beta.1
 ---
