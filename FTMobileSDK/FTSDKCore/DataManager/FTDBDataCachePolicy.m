@@ -137,8 +137,9 @@
 // NO：没有超限\超限但删除旧数据 YES:超限，删除新数据
 - (BOOL)reachDbLimit{
     long pageSize = [[FTTrackerEventDBTool sharedManger] checkDatabaseSize];
+    self.currentDbSize = pageSize;
     if (pageSize > self.dbLimitSize){
-        FTInnerLogInfo(@"ReachDbLimit-DiscardData (%@)",self.dbDiscardNew?@"NEW":@"OLD");
+        FTInnerLogInfo(@"ReachDbLimit(%ld KB)-DiscardData (%@)",pageSize/1024,self.dbDiscardNew?@"NEW":@"OLD");
         if (self.dbDiscardNew) {
             return YES;
         }else{

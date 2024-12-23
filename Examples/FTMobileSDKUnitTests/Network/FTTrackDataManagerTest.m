@@ -15,6 +15,8 @@
 #import "FTModelHelper.h"
 #import "FTTestUtils.h"
 #import "FTConstants.h"
+#import "FTDBDataCachePolicy.h"
+#import "FTTrackDataManager+Test.h"
 @interface FTTrackDataManagerTest : XCTestCase
 @property (nonatomic, strong) XCTestExpectation *expectation;
 
@@ -254,6 +256,49 @@
         [[FTTrackDataManager sharedInstance] shutDown];
     }];
     XCTAssertTrue(interval<0.1);
+}
+- (void)testDBReachHalfLimit{
+    [[FTTrackerEventDBTool sharedManger] deleteAllDatas];
+    [FTTrackDataManager startWithAutoSync:NO syncPageSize:10 syncSleepTime:0];
+    [[FTTrackDataManager sharedInstance] setDBLimitWithSize:60*1204 discardNew:NO];
+    
+    CFTimeInterval interval = [FTTestUtils functionElapsedTime:^{
+        for (int i=0; i<1000; i++) {
+            [[FTTrackDataManager sharedInstance] addTrackData:[FTModelHelper createRUMModel:[NSString stringWithFormat:@"TEST DBLimitDiscardNEW %d",i]] type:FTAddDataRUM];
+        }
+    }];
+    NSLog(@"interval:%f",interval);
+    BOOL reachHalfLimit = [[FTTrackDataManager sharedInstance].dataCachePolicy reachHalfLimit];
+    XCTAssertTrue(reachHalfLimit);
+    [[FTTrackDataManager sharedInstance] shutDown];
+}
+- (void)testRUMCountReachHalfLimit{
+    [[FTTrackerEventDBTool sharedManger] deleteAllDatas];
+    [FTTrackDataManager startWithAutoSync:NO syncPageSize:10 syncSleepTime:0];
+    [[FTTrackDataManager sharedInstance] setRUMCacheLimitCount:50 discardNew:NO];
+    CFTimeInterval interval = [FTTestUtils functionElapsedTime:^{
+        for (int i=0; i<26; i++) {
+            [[FTTrackDataManager sharedInstance] addTrackData:[FTModelHelper createRUMModel:[NSString stringWithFormat:@"TEST DBLimitDiscardOld %d",i]] type:FTAddDataRUM];
+        }
+    }];
+    NSLog(@"interval:%f",interval);
+    BOOL reachHalfLimit = [[FTTrackDataManager sharedInstance].dataCachePolicy reachHalfLimit];
+    XCTAssertTrue(reachHalfLimit);
+    [[FTTrackDataManager sharedInstance] shutDown];
+}
+- (void)testLogCountReachHalfLimit{
+    [[FTTrackerEventDBTool sharedManger] deleteAllDatas];
+    [FTTrackDataManager startWithAutoSync:NO syncPageSize:10 syncSleepTime:0];
+    [[FTTrackDataManager sharedInstance] setLogCacheLimitCount:50 discardNew:NO];
+    CFTimeInterval interval = [FTTestUtils functionElapsedTime:^{
+        for (int i=0; i<26; i++) {
+            [[FTTrackDataManager sharedInstance] addTrackData:[FTModelHelper createLogModel:[NSString stringWithFormat:@"TEST DBLimitDiscardOld %d",i]] type:FTAddDataLogging];
+        }
+    }];
+    NSLog(@"interval:%f",interval);
+    BOOL reachHalfLimit = [[FTTrackDataManager sharedInstance].dataCachePolicy reachHalfLimit];
+    XCTAssertTrue(reachHalfLimit);
+    [[FTTrackDataManager sharedInstance] shutDown];
 }
 - (void)mockHttp{
     __block id<OHHTTPStubsDescriptor> stub = [OHHTTPStubs stubRequestsPassingTest:^BOOL(NSURLRequest *request) {
