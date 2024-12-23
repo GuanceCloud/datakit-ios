@@ -456,7 +456,7 @@
     rumConfig.resourceUrlHandler = ^BOOL(NSURL *url) {
         return NO;
     };
-    XCTAssertTrue(rumConfig.rumCacheLimitCount == 200000);
+    XCTAssertTrue(rumConfig.rumCacheLimitCount == 100000);
     rumConfig.rumCacheLimitCount = 1000;
     rumConfig.rumDiscardType = FTRUMDiscardOldest;
     rumConfig.globalContext = @{@"aa":@"bb"};
