@@ -1,5 +1,6 @@
 # 1.5.8-beta.1
 1. db 限制总缓存大小功能优化
+2. `FTRUMConfig.rumCacheLimitCount` 默认值改为 100_1000
 ---
 # 1.5.8-alpha.2
 1. 增加 tvOS 支持
