@@ -417,6 +417,14 @@
     datakitConfig.service = @"testsdk";
     datakitConfig.enableDataIntegerCompatible = YES;
     [datakitConfig setEnvWithType:FTEnvLocal];
+    XCTAssertTrue(datakitConfig.dbCacheLimit == 100*1024*1024);
+    datakitConfig.dbCacheLimit = 10;
+    XCTAssertTrue(datakitConfig.dbCacheLimit == 30*1024*1024);
+    datakitConfig.dbCacheLimit = 60*1024*1024;
+    XCTAssertTrue(datakitConfig.dbCacheLimit == 60*1024*1024);
+    XCTAssertTrue(datakitConfig.enableLimitWithDbSize == NO);
+    XCTAssertTrue(datakitConfig.dbDiscardType == FTDBDiscard);
+    datakitConfig.dbDiscardType = FTDBDiscardOldest;
     FTMobileConfig *copyConfig = [datakitConfig copy];
     XCTAssertTrue(copyConfig.enableSDKDebugLog == datakitConfig.enableSDKDebugLog);
     XCTAssertTrue([copyConfig.datakitUrl isEqualToString:datakitConfig.datakitUrl]);
@@ -425,10 +433,8 @@
     XCTAssertTrue([copyConfig.globalContext isEqual:datakitConfig.globalContext]);
     XCTAssertTrue(copyConfig.enableDataIntegerCompatible == datakitConfig.enableDataIntegerCompatible);
     XCTAssertTrue(copyConfig.dbCacheLimit == datakitConfig.dbCacheLimit);
-    XCTAssertTrue(copyConfig.dbDiscardType == datakitConfig.dbDiscardType);
+    XCTAssertTrue(copyConfig.dbDiscardType == datakitConfig.dbDiscardType == FTDBDiscardOldest);
     XCTAssertTrue(copyConfig.enableLimitWithDbSize == datakitConfig.enableLimitWithDbSize);
-    XCTAssertTrue(datakitConfig.dbCacheLimit == 50*1024*1024);
-    XCTAssertTrue(datakitConfig.enableLimitWithDbSize == NO);
     FTMobileConfig *datawayConfig = [[FTMobileConfig alloc]initWithDatawayUrl:self.url clientToken:@"clientToken"];
     FTMobileConfig *copy = [datawayConfig copy];
     XCTAssertTrue([copy.datawayUrl isEqualToString:datawayConfig.datawayUrl]);
