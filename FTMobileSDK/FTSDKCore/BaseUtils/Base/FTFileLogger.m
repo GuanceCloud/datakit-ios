@@ -271,11 +271,11 @@ NSString * const FT_LOG_BACKUP_DIRECTORY= @"FTBackupLogs";
     return _currentLogFileHandle;
 }
 
-- (FTLogFileInfo *)currentLogFileInfo {
+- (nullable FTLogFileInfo *)currentLogFileInfo {
     FTLogFileInfo *newCurrentLogFile = _currentLogFileInfo;
     BOOL isResuming = newCurrentLogFile == nil;
     if (isResuming) {
-        _currentLogFileInfo = [FTLogFileInfo logFileWithPath:[self.logFileManager filePath]];
+        newCurrentLogFile = [FTLogFileInfo logFileWithPath:[self.logFileManager filePath]];
     }
     // 是否应用用当前的文件
     if (newCurrentLogFile != nil && [self shouldUseLogFile:newCurrentLogFile isResuming:isResuming]) {
@@ -287,6 +287,7 @@ NSString * const FT_LOG_BACKUP_DIRECTORY= @"FTBackupLogs";
         currentLogFilePath = [self.logFileManager createNewLogFileWithError:&error];
         if (!currentLogFilePath) {
             FTNSLogError(@"[FTLog][FTFileLogger] Failed to create new log file: %@", error);
+            return nil;
         }
         _currentLogFileInfo = [FTLogFileInfo logFileWithPath:currentLogFilePath];
     }
