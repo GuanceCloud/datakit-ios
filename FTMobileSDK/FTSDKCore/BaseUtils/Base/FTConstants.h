@@ -199,8 +199,12 @@ extern NSString * const FT_USER_EXTRA;
 #pragma mark ========== inner use ==========
 extern NSUInteger const FT_LOGGING_CONTENT_SIZE;
 
-extern int const FT_DB_CONTENT_MAX_COUNT;
+extern int const FT_DB_LOG_MAX_COUNT;
+extern int const FT_DB_LOG_MIN_COUNT;
+
 extern int const FT_DB_RUM_MAX_COUNT;
+extern int const FT_DB_RUM_MIN_COUNT;
+
 extern long const FT_DEFAULT_DB_SIZE_LIMIT;
 extern long const FT_MIN_DB_SIZE_LIMIT;
 
@@ -209,7 +213,7 @@ extern NSUInteger const FT_TIME_INTERVAL;
 /// 超过多少毫秒为一次卡顿,default 250ms
 extern long const FT_DEFAULT_BLOCK_DURATIONS_MS;
 /// 卡顿最小时长 100 ms
-extern long const FT_MINI_DEFAULT_BLOCK_DURATIONS_MS;
+extern long const FT_MIN_DEFAULT_BLOCK_DURATIONS_MS;
 
 extern long long const FT_ANR_THRESHOLD_NS;
 extern long const FT_ANR_THRESHOLD_MS;

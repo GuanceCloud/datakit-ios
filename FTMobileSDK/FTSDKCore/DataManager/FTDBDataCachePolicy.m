@@ -40,7 +40,7 @@
         _semaphoreWaiting = NO;
         pthread_mutex_init(&(self->_lock), NULL);
         _rumCacheLimitCount = FT_DB_RUM_MAX_COUNT;
-        _logCacheLimitCount = FT_DB_CONTENT_MAX_COUNT;
+        _logCacheLimitCount = FT_DB_LOG_MAX_COUNT;
         _rumCount = [[FTTrackerEventDBTool sharedManger] getDatasCountWithType:FT_DATA_TYPE_RUM];
         _messageCaches = [NSMutableArray array];
         _logCount = [[FTTrackerEventDBTool sharedManger] getDatasCountWithType:FT_DATA_TYPE_LOGGING];

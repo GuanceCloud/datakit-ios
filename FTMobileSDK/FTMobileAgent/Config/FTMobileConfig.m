@@ -86,10 +86,13 @@
     self.freezeDurationMs = freezeDurationMs;
 }
 -(void)setFreezeDurationMs:(long)freezeDurationMs{
-    _freezeDurationMs = MAX(FT_MINI_DEFAULT_BLOCK_DURATIONS_MS,freezeDurationMs);
+    _freezeDurationMs = MAX(FT_MIN_DEFAULT_BLOCK_DURATIONS_MS,freezeDurationMs);
 }
 -(void)setGlobalContext:(NSDictionary<NSString *,NSString *> *)globalContext{
     _globalContext = [globalContext ft_deepCopy];
+}
+-(void)setRumCacheLimitCount:(int)rumCacheLimitCount{
+    _rumCacheLimitCount = MAX(FT_DB_RUM_MIN_COUNT,rumCacheLimitCount);
 }
 -(NSDictionary *)convertToDictionary{
     NSMutableDictionary *dict = [NSMutableDictionary new];
@@ -125,7 +128,7 @@
         _enableLinkRumData = NO;
         _enableCustomLog = NO;
         _logLevelFilter = @[@0,@1,@2,@3,@4];
-        _logCacheLimitCount = FT_DB_CONTENT_MAX_COUNT;
+        _logCacheLimitCount = FT_DB_LOG_MAX_COUNT;
     }
     return self;
 }
@@ -158,7 +161,7 @@
     }
 }
 -(void)setLogCacheLimitCount:(int)logCacheLimitCount{
-    _logCacheLimitCount = MAX(1000, logCacheLimitCount);
+    _logCacheLimitCount = MAX(FT_DB_LOG_MIN_COUNT, logCacheLimitCount);
 }
 -(void)setGlobalContext:(NSDictionary<NSString *,NSString *> *)globalContext{
     _globalContext = [globalContext ft_deepCopy];
