@@ -63,9 +63,9 @@
     if(self.segmentWireframeIDs.count <= 0 || self.segmentWireframeIDs.count != self.segmentTitles.count || self.selectedSegmentIndex < 0){
         return nil;
     }
-    FTSRShapeWireframe *background = [[FTSRShapeWireframe alloc]initWithIdentifier:self.backgroundWireframeID frame:self.wireframeRect];
     NSString *color = self.attributes.backgroundColor? [FTSRUtils colorHexString:self.attributes.backgroundColor.CGColor]:[FTSystemColors tertiarySystemFillColorStr];
-    background.shapeStyle = [[FTSRShapeStyle alloc]initWithBackgroundColor:color cornerRadius:@(8) opacity:@(self.attributes.alpha)];
+
+    FTSRShapeWireframe *background = [[FTSRShapeWireframe alloc]initWithIdentifier:self.backgroundWireframeID frame:self.wireframeRect clip:self.attributes.clip backgroundColor:color cornerRadius:@(8) opacity:@(self.attributes.alpha)];
     
     CGSize segmentSize = CGSizeMake(self.wireframeRect.size.width/(self.segmentWireframeIDs.count*1.0), self.wireframeRect.size.height*0.96);
     CGRect dividedRect = self.wireframeRect;
@@ -86,7 +86,7 @@
         segment.textStyle = [[FTSRTextStyle alloc]initWithSize:14 color:[FTSystemColors labelColorStr] family:[UIFont systemFontOfSize:14].familyName];
         FTSRTextPosition *textPosition = [[FTSRTextPosition alloc]init];
         textPosition.alignment = [[FTAlignment alloc]initWithTextAlignment:NSTextAlignmentCenter vertical:@"center"];
-        textPosition.padding = [[FTSRContentClip alloc]initWithLeft:0 top:0 right:0 bottom:0];
+        textPosition.padding = [[FTPadding alloc]initWithLeft:0 top:0 right:0 bottom:0];
         segment.textPosition = textPosition;
         [segments addObject:segment];
     }

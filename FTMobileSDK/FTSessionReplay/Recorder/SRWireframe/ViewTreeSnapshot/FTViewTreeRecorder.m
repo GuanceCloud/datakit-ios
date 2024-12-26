@@ -16,16 +16,20 @@
     [self recordRecursively:nodes resources:resource view:view context:context];
 }
 - (void)recordRecursively:(NSMutableArray *)nodes resources:(NSMutableArray *)resource view:(UIView *)view context:(FTViewTreeRecordingContext *)context{
-    
+    FTViewTreeRecordingContext *newContext = [context copy];
     if([view.nextResponder isKindOfClass:UIViewController.class]){
         UIViewController *viewController = (UIViewController *)view.nextResponder;
-        [context.viewControllerContext setParentTypeWithViewController:viewController];
-        context.viewControllerContext.isRootView = view == viewController.view;
+        [newContext.viewControllerContext setParentTypeWithViewController:viewController];
+        newContext.viewControllerContext.isRootView = view == viewController.view;
     }else{
-        context.viewControllerContext.isRootView = NO;
+        newContext.viewControllerContext.isRootView = NO;
     }
-    
-    FTSRNodeSemantics *semantics = [self nodeSemantics:view context:context];
+    CGRect frame = [view convertRect:view.bounds toCoordinateSpace:newContext.coordinateSpace];
+    if(view.clipsToBounds){
+        newContext.clip = CGRectIntersection(frame, newContext.clip);
+    }
+    FTViewAttributes *attribute = [[FTViewAttributes alloc]initWithView:view frameInRootView:frame clip:newContext.clip];
+    FTSRNodeSemantics *semantics = [self nodeSemantics:view context:newContext attribute:attribute];
     if(semantics.nodes.count>0){
         [nodes addObjectsFromArray:semantics.nodes];
     }
@@ -36,7 +40,7 @@
     switch (semantics.subtreeStrategy) {
         case NodeSubtreeStrategyRecord:
             for (UIView *subView in view.subviews) {
-                [self recordRecursively:nodes resources:resource view:subView context:context];
+                [self recordRecursively:nodes resources:resource view:subView context:newContext];
             }
             break;
         case NodeSubtreeStrategyIgnore:
@@ -45,9 +49,7 @@
     }
 }
 
-- (FTSRNodeSemantics *)nodeSemantics:(UIView *)view context:(FTViewTreeRecordingContext *)context{
-    FTViewAttributes *attribute = [[FTViewAttributes alloc]initWithFrameInRootView:[view convertRect:view.bounds toCoordinateSpace:context.coordinateSpace] view:view];
-
+- (FTSRNodeSemantics *)nodeSemantics:(UIView *)view context:(FTViewTreeRecordingContext *)context attribute:(FTViewAttributes *)attribute{
     FTSRNodeSemantics *semantics = [FTUnknownElement constant];
     for (id<FTSRWireframesRecorder> recorder in self.nodeRecorders) {
         FTSRNodeSemantics *nextSemantics = [recorder recorder:view attributes:attribute context:context];

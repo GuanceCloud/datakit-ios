@@ -64,25 +64,24 @@
 
 
 - (NSArray<FTSRWireframe *> *)buildWireframes {
-    FTSRTextWireframe *wireframe = [[FTSRTextWireframe alloc]initWithIdentifier:self.wireframeID frame:self.wireframeRect];
+    CGRect frame = [self relativeIntersectedRect];
+    FTSRTextWireframe *wireframe = [[FTSRTextWireframe alloc]initWithIdentifier:self.wireframeID frame:frame];
     wireframe.text = [self.textObfuscator mask:self.text];
-    CGFloat top = self.contentRect.origin.y;
-    CGFloat left = self.contentRect.origin.x;
-    CGFloat right = MAX(self.contentRect.size.width - self.wireframeRect.size.width - left, 0);
-    CGFloat bottom = MIN(self.contentRect.size.height - self.wireframeRect.size.height - top, 0);
-    FTSRContentClip *clip = [[FTSRContentClip alloc]initWithLeft:left top:top right:right bottom:bottom];
-    wireframe.clip = clip;
+    wireframe.clip = [[FTSRContentClip alloc]initWithFrame:frame clip:self.attributes.clip];
     FTSRShapeStyle *shapeStyle = [[FTSRShapeStyle alloc]initWithBackgroundColor:[FTSRUtils colorHexString:self.attributes.backgroundColor.CGColor] cornerRadius:@(self.attributes.layerCornerRadius) opacity:@(self.attributes.alpha)];
     wireframe.shapeStyle = shapeStyle;
     FTAlignment *alignment = [[FTAlignment alloc]initWithTextAlignment:NSTextAlignmentLeft vertical:@"top"];
     wireframe.textStyle = [[FTSRTextStyle alloc]initWithSize:self.font.pointSize color:[FTSRUtils colorHexString:self.textColor.CGColor] family:nil];
     FTSRTextPosition *position = [[FTSRTextPosition alloc]init];
     position.alignment = alignment;
-    position.padding = [[FTSRContentClip alloc]initWithLeft:0 top:0 right:0 bottom:0];
+    position.padding = [[FTPadding alloc]initWithLeft:0 top:0 right:0 bottom:0];
     wireframe.textPosition = position;
     return @[wireframe];
 }
-
+- (CGRect)relativeIntersectedRect{
+    CGFloat padding = 8;
+    return CGRectMake(self.wireframeRect.origin.x-self.contentRect.origin.x+padding, self.wireframeRect.origin.y-self.contentRect.origin.y+padding, MAX(self.contentRect.size.width, self.wireframeRect.size.width)-padding, MAX(self.contentRect.size.height, self.wireframeRect.size.height)-padding);
+}
 - (CGRect)wireframeRect{
     return self.attributes.frame;
 }

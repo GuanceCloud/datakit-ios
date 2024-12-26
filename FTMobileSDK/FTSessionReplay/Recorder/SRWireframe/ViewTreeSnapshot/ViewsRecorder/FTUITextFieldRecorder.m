@@ -112,12 +112,12 @@ typedef id<FTSRTextObfuscatingProtocol>(^FTTextFieldObfuscator)(FTViewTreeRecord
 - (NSArray<FTSRWireframe *> *)buildWireframes {
     FTSRTextWireframe *wireframe = [[FTSRTextWireframe alloc]initWithIdentifier:self.wireframeID frame:self.wireframeRect];
     wireframe.text = [self.textObfuscator mask:self.text];
+    wireframe.clip = [[FTSRContentClip alloc]initWithFrame:self.wireframeRect clip:self.attributes.clip];
     wireframe.shapeStyle = [[FTSRShapeStyle alloc]initWithBackgroundColor:[FTSRUtils colorHexString:self.attributes.backgroundColor.CGColor] cornerRadius:@(self.attributes.layerCornerRadius) opacity:@(self.attributes.alpha)];
     FTAlignment *alignment = [[FTAlignment alloc]initWithTextAlignment:self.textAlignment vertical:@"center"];
-    FTSRContentClip *padding = [[FTSRContentClip alloc]initWithLeft:0 top:0 right:0 bottom:0];
     FTSRTextPosition *position = [[FTSRTextPosition alloc]init];
     position.alignment = alignment;
-    position.padding = padding;
+    position.padding = [[FTPadding alloc]initWithLeft:0 top:0 right:0 bottom:0];
     wireframe.textPosition = position;
     FTSRTextStyle *textStyle = [[FTSRTextStyle alloc]initWithSize:self.font.pointSize color:self.isPlaceholderText? [FTSystemColors placeholderTextColorStr]:[FTSRUtils colorHexString:self.textColor.CGColor] family:nil];
     wireframe.textStyle = textStyle;

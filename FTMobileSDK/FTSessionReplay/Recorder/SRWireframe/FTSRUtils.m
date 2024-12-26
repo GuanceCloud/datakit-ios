@@ -7,85 +7,123 @@
 //
 
 #import "FTSRUtils.h"
-
-CGRect FTCGRectFitWithContentMode(CGRect rect, CGSize size, UIViewContentMode mode) {
-    rect = CGRectStandardize(rect);
-    size.width = size.width < 0 ? -size.width : size.width;
-    size.height = size.height < 0 ? -size.height : size.height;
-    CGPoint center = CGPointMake(CGRectGetMidX(rect), CGRectGetMidY(rect));
-    switch (mode) {
-        case UIViewContentModeScaleAspectFit:
-        case UIViewContentModeScaleAspectFill: {
-            if (rect.size.width < 0.01 || rect.size.height < 0.01 ||
-                size.width < 0.01 || size.height < 0.01) {
-                rect.origin = center;
-                rect.size = CGSizeZero;
-            } else {
-                CGFloat scale;
-                if (mode == UIViewContentModeScaleAspectFit) {
-                    if (size.width / size.height < rect.size.width / rect.size.height) {
-                        scale = rect.size.height / size.height;
-                    } else {
-                        scale = rect.size.width / size.width;
-                    }
-                } else {
-                    if (size.width / size.height < rect.size.width / rect.size.height) {
-                        scale = rect.size.width / size.width;
-                    } else {
-                        scale = rect.size.height / size.height;
-                    }
-                }
-                size.width *= scale;
-                size.height *= scale;
-                rect.size = size;
-                rect.origin = CGPointMake(center.x - size.width * 0.5, center.y - size.height * 0.5);
+CGRect FTCGRectScaleAspectFitRect(CGSize size,CGSize contentSize){
+    CGFloat imageAspectRatio = contentSize.height / contentSize.width;
+    CGFloat x, y, width, height;
+    CGFloat aspectRatio = size.width > 0 ? size.height / size.width : 0;
+    if (imageAspectRatio > aspectRatio) {
+        height = size.height;
+        width = height / imageAspectRatio;
+        x = (size.width / 2) - (width / 2);
+        y = 0;
+    } else {
+        width = size.width;
+        height = width * imageAspectRatio;
+        x = 0;
+        y = (size.height / 2) - (height / 2);
+    }
+    return CGRectMake(x, y, width, height);
+}
+CGRect FTCGRectScaleAspectFillRect(CGSize size,CGSize contentSize){
+    CGFloat scale;
+    if ((contentSize.width - size.width) < (contentSize.height - size.height)) {
+        scale = size.width / contentSize.width;
+    } else {
+        scale = size.height / contentSize.height;
+    }
+    CGSize rSize = CGSizeMake(contentSize.width * scale, contentSize.height * scale);
+    return CGRectMake(
+                      (size.width - rSize.width) / 2,
+                      (size.height - rSize.height) / 2,
+                      rSize.width,
+                      rSize.height
+                      );
+}
+CGRect FTCGRectFitWithContentMode(CGRect rect, CGSize contentSize, UIViewContentMode mode) {
+    if(rect.size.width>0&&rect.size.height>0&&contentSize.width>0&&contentSize.height>0){
+        switch (mode) {
+            case UIViewContentModeScaleAspectFit:{
+                CGRect actualContentRect = FTCGRectScaleAspectFitRect(rect.size, contentSize);
+                return CGRectMake(rect.origin.x+actualContentRect.origin.x,
+                                  rect.origin.y+actualContentRect.origin.y,
+                                  actualContentRect.size.width,
+                                  actualContentRect.size.width);
             }
-        } break;
-        case UIViewContentModeCenter: {
-            rect.size = size;
-            rect.origin = CGPointMake(center.x - size.width * 0.5, center.y - size.height * 0.5);
-        } break;
-        case UIViewContentModeTop: {
-            rect.origin.x = center.x - size.width * 0.5;
-            rect.size = size;
-        } break;
-        case UIViewContentModeBottom: {
-            rect.origin.x = center.x - size.width * 0.5;
-            rect.origin.y += rect.size.height - size.height;
-            rect.size = size;
-        } break;
-        case UIViewContentModeLeft: {
-            rect.origin.y = center.y - size.height * 0.5;
-            rect.size = size;
-        } break;
-        case UIViewContentModeRight: {
-            rect.origin.y = center.y - size.height * 0.5;
-            rect.origin.x += rect.size.width - size.width;
-            rect.size = size;
-        } break;
-        case UIViewContentModeTopLeft: {
-            rect.size = size;
-        } break;
-        case UIViewContentModeTopRight: {
-            rect.origin.x += rect.size.width - size.width;
-            rect.size = size;
-        } break;
-        case UIViewContentModeBottomLeft: {
-            rect.origin.y += rect.size.height - size.height;
-            rect.size = size;
-        } break;
-        case UIViewContentModeBottomRight: {
-            rect.origin.x += rect.size.width - size.width;
-            rect.origin.y += rect.size.height - size.height;
-            rect.size = size;
-        } break;
-        case UIViewContentModeScaleToFill:
-        case UIViewContentModeRedraw:
-        default: {
-            rect = rect;
+            case UIViewContentModeScaleAspectFill:
+            {
+                CGRect actualContentRect = FTCGRectScaleAspectFillRect(rect.size, contentSize);
+                return CGRectMake(rect.origin.x+actualContentRect.origin.x,
+                                  rect.origin.y+actualContentRect.origin.y,
+                                  actualContentRect.size.width,
+                                  actualContentRect.size.width);
+            }
+            case UIViewContentModeRedraw:
+            case UIViewContentModeCenter: {
+                return CGRectMake(rect.origin.x + (rect.size.width - contentSize.width) / 2,
+                                  rect.origin.y + (rect.size.height - contentSize.height) / 2,
+                                  contentSize.width,
+                                  contentSize.height);
+            }
+            case UIViewContentModeTop: {
+                CGRectMake(rect.origin.x + (rect.size.width - contentSize.width) / 2,
+                           rect.origin.y,
+                           contentSize.width,
+                           contentSize.height
+                           );
+            }
+            case UIViewContentModeBottom: {
+                CGRectMake(rect.origin.x + (rect.size.width - contentSize.width) / 2,
+                           rect.origin.y + (rect.size.height - contentSize.height),
+                           contentSize.width,
+                           contentSize.height
+                           );
+            }
+            case UIViewContentModeLeft: {
+                return CGRectMake(rect.origin.x,
+                                  rect.origin.y + (rect.size.height - contentSize.height) / 2,
+                                  contentSize.width,
+                                  contentSize.height);
+                
+            }
+            case UIViewContentModeRight: {
+                return CGRectMake(rect.origin.x + (rect.size.width - contentSize.width),
+                                  rect.origin.y + (rect.size.height - contentSize.height) / 2,
+                                  contentSize.width,
+                                  contentSize.height);
+            }
+            case UIViewContentModeTopLeft: {
+                return CGRectMake(rect.origin.x,
+                                  rect.origin.y,
+                                  contentSize.width,
+                                  contentSize.height
+                                  );
+            }
+            case UIViewContentModeTopRight: {
+                return CGRectMake(rect.origin.x + (rect.size.width - contentSize.width),
+                                   rect.origin.y,
+                                   contentSize.width,
+                                   contentSize.height
+                                   );
+            }
+            case UIViewContentModeBottomLeft: {
+                return CGRectMake(rect.origin.x,
+                                  rect.origin.y+(rect.size.height - contentSize.height),
+                                  contentSize.width,
+                                  contentSize.height);
+            }
+            case UIViewContentModeBottomRight: {
+                return CGRectMake(rect.origin.x+(rect.size.width - contentSize.width),
+                                  rect.origin.y+(rect.size.height - contentSize.height),
+                                  contentSize.width,
+                                  contentSize.height);
+            }
+            case UIViewContentModeScaleToFill:
+            default: {
+                return rect;
+            }
         }
     }
-    return rect;
+    return CGRectZero;
 }
 CGRect FTCGRectPutInside(CGRect oriRect, CGRect inRect, HorizontalAlignment horizontal,VerticalAlignment vertical){
     CGRect new = oriRect;
@@ -121,6 +159,7 @@ CGFloat FTCGSizeAspectRatio(CGSize size){
     return 0;
     
 }
+
 @implementation FTSRUtils
 + (NSString *)colorHexString:(CGColorRef)color {
     if(color == nil){

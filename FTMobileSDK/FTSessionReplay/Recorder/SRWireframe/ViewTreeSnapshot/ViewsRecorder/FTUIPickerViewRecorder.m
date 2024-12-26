@@ -92,7 +92,7 @@
 @implementation FTUIPickerViewBuilder
 
 - (NSArray<FTSRWireframe *> *)buildWireframes {
-    FTSRShapeWireframe *wireframe = [[FTSRShapeWireframe alloc]initWithIdentifier:self.wireframeID frame:self.wireframeRect attributes:self.attributes];
+    FTSRShapeWireframe *wireframe = [[FTSRShapeWireframe alloc]initWithIdentifier:self.wireframeID attributes:self.attributes];
     return @[wireframe];
 }
 

@@ -64,12 +64,13 @@
     FTSRShapeWireframe *wireframe = [[FTSRShapeWireframe alloc]
                                      initWithIdentifier:self.trackWireframeID
                                      frame:self.attributes.frame
+                                     clip:self.attributes.clip
                                      backgroundColor:[FTSystemColors tertiarySystemFillColorStr]
                                      cornerRadius:@(self.attributes.frame.size.height*0.5)
                                      opacity:self.isEnabled?@(self.attributes.alpha) : @(0.5)];
 
     if(self.attributes.hasAnyAppearance){
-        FTSRShapeWireframe *background = [[FTSRShapeWireframe alloc]initWithIdentifier:self.backgroundWireframeID frame:self.attributes.frame attributes:self.attributes];
+        FTSRShapeWireframe *background = [[FTSRShapeWireframe alloc]initWithIdentifier:self.backgroundWireframeID attributes:self.attributes];
         return @[background,wireframe];
     }
     return @[wireframe];
@@ -80,6 +81,7 @@
     FTSRShapeWireframe *wireframe = [[FTSRShapeWireframe alloc]
                                      initWithIdentifier:self.trackWireframeID
                                      frame:self.wireframeRect
+                                     clip:self.attributes.clip
                                      backgroundColor:trackColor
                                      cornerRadius:@(cornerRadius)
                                      opacity:self.isEnabled? @(self.attributes.alpha):@(0.5)];
@@ -91,13 +93,14 @@
     FTSRShapeWireframe *thumbWireframe = [[FTSRShapeWireframe alloc]
                                           initWithIdentifier:self.thumbWireframeID
                                           frame:thumbFrame
+                                          clip:self.attributes.clip
                                           backgroundColor:thumbColor
                                           cornerRadius:@(cornerRadius)
                                           opacity:nil];
     thumbWireframe.border = [[FTSRShapeBorder alloc]initWithColor:[FTSystemColors secondarySystemFillColorStr] width:1];
     
     if(self.attributes.hasAnyAppearance){
-        FTSRShapeWireframe *background = [[FTSRShapeWireframe alloc]initWithIdentifier:self.backgroundWireframeID frame:self.attributes.frame attributes:self.attributes];
+        FTSRShapeWireframe *background = [[FTSRShapeWireframe alloc]initWithIdentifier:self.backgroundWireframeID attributes:self.attributes];
         return @[background,wireframe,thumbWireframe];
     }
     return @[wireframe,thumbWireframe];

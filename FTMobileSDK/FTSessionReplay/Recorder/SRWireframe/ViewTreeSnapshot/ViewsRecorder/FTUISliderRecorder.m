@@ -69,12 +69,13 @@
     FTSRShapeWireframe *sliderWireframe = [[FTSRShapeWireframe alloc]
                                            initWithIdentifier:self.minTrackWireframeID
                                            frame:trackFrame
+                                           clip:self.attributes.clip
                                            backgroundColor:[FTSystemColors tertiarySystemFillColorStr]
                                            cornerRadius:@(self.wireframeRect.size.width/2)
                                            opacity:self.isEnabled?@(self.attributes.alpha) : @(0.5)];
     
     if(self.attributes.hasAnyAppearance){
-        FTSRShapeWireframe *background = [[FTSRShapeWireframe alloc]initWithIdentifier:self.backgroundWireframeID frame:self.attributes.frame attributes:self.attributes];
+        FTSRShapeWireframe *background = [[FTSRShapeWireframe alloc]initWithIdentifier:self.backgroundWireframeID attributes:self.attributes];
         return @[background,sliderWireframe];
     }
     return @[sliderWireframe];
@@ -93,6 +94,7 @@
     FTSRShapeWireframe *thumbWireframe = [[FTSRShapeWireframe alloc]
                                           initWithIdentifier:self.thumbWireframeID
                                           frame:thumbFrame
+                                          clip:self.attributes.clip
                                           backgroundColor:self.isEnabled?(self.thumbTintColor?[FTSRUtils colorHexString:self.thumbTintColor.CGColor]:[FTSRUtils colorHexString:[UIColor whiteColor].CGColor]):[FTSystemColors tertiarySystemBackgroundColorStr]
                                           cornerRadius:@(cornerRadius)
                                           opacity:@(self.attributes.alpha)];
@@ -110,6 +112,7 @@
     FTSRShapeWireframe *lWireframe = [[FTSRShapeWireframe alloc]
                                       initWithIdentifier:self.minTrackWireframeID 
                                       frame:realL
+                                      clip:self.attributes.clip
                                       backgroundColor:self.minTrackTintColor?[FTSRUtils
                                                                               colorHexString:self.minTrackTintColor.CGColor]:[FTSystemColors tintColorStr]
                                       cornerRadius:@(0)
@@ -117,13 +120,13 @@
     FTSRShapeWireframe *rWireframe = [[FTSRShapeWireframe alloc]
                                       initWithIdentifier:self.maxTrackWireframeID
                                       frame:realR
+                                      clip:self.attributes.clip
                                       backgroundColor:self.maxTrackTintColor?[FTSRUtils colorHexString:self.maxTrackTintColor.CGColor]:[FTSystemColors tertiarySystemFillColorStr]
                                       cornerRadius:@(0)
                                       opacity:self.isEnabled?@(self.attributes.alpha):@(0.5)];
     if(self.attributes.hasAnyAppearance){
         FTSRShapeWireframe *background = [[FTSRShapeWireframe alloc]
                                           initWithIdentifier:self.backgroundWireframeID
-                                          frame:self.attributes.frame
                                           attributes:self.attributes];
         return @[background,lWireframe,rWireframe,thumbWireframe];
     }

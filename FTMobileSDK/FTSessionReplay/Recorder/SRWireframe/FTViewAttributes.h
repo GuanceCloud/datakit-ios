@@ -24,6 +24,7 @@ NS_ASSUME_NONNULL_BEGIN
 
 @interface FTViewAttributes : NSObject
 @property (nonatomic, assign) CGRect frame;
+@property (nonatomic, assign) CGRect clip;
 @property (nonatomic, strong) UIColor * backgroundColor;
 @property (nullable) CGColorRef layerBorderColor;
 @property (nonatomic, assign) CGFloat layerBorderWidth;
@@ -35,7 +36,7 @@ NS_ASSUME_NONNULL_BEGIN
 @property (nonatomic, assign) BOOL hasAnyAppearance;
 @property (nonatomic, assign) BOOL isTranslucent;
 
--(instancetype)initWithFrameInRootView:(CGRect)frame view:(UIView *)view;
+-(instancetype)initWithView:(UIView *)view frameInRootView:(CGRect)frame clip:(CGRect)clip;
 @end
 
 

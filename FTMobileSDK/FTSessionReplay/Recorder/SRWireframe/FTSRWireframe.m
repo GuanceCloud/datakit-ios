@@ -15,7 +15,20 @@
 NSString * const FT_DEFAULT_COLOR = @"#FF0000FF";
 CGFloat  const FT_DEFAULT_FONT_SIZE = 10;
 NSString * const FT_DEFAULT_FONT_FAMILY = @"-apple-system, BlinkMacSystemFont, 'Roboto', sans-serif";
-
+FTSRContentClip * useNewIfDifferentThanOld(FTSRContentClip *new,FTSRContentClip *old){
+    if(old == nil){
+        return new;
+    }else if([old isEqual:new]){
+        return nil;
+    }else{
+        FTSRContentClip *clip = [[FTSRContentClip alloc]init];
+        clip.top = new.top==nil&&old.top?0:new.top;
+        clip.bottom = new.bottom==nil&&old.bottom?0:new.bottom;
+        clip.left = new.left==nil&&old.left?0:new.left;
+        clip.right = new.right==nil&&old.right?0:new.right;
+        return clip;
+    }
+}
 @implementation FTSRShapeBorder
 - (instancetype)initWithColor:(NSString *)color width:(CGFloat)width {
     if(!color || width<=0){
@@ -43,13 +56,28 @@ NSString * const FT_DEFAULT_FONT_FAMILY = @"-apple-system, BlinkMacSystemFont, '
 }
 @end
 @implementation FTSRContentClip
--(instancetype)initWithLeft:(float)left top:(float)top right:(float)right bottom:(float)bottom{
+-(instancetype)initWithFrame:(CGRect)frame clip:(CGRect)clip{
     self = [super init];
     if(self){
-        _left = roundf(left);
-        _bottom = roundf(bottom);
-        _right = roundf(right);
-        _top = roundf(top);
+        CGRect intersection = CGRectIntersection(frame, clip);
+        if (CGRectIsEmpty(intersection)) {
+            _bottom = nil;
+            _left = @(roundf(frame.size.width));
+            _right = nil;
+            _top = @(roundf(frame.size.height));
+        }else{
+            CGFloat top = CGRectGetMinY(intersection) - CGRectGetMinY(frame);
+            CGFloat left = CGRectGetMinX(intersection) - CGRectGetMinX(frame);
+            CGFloat bottom = CGRectGetMaxY(frame) - CGRectGetMaxY(intersection);
+            CGFloat right = CGRectGetMaxX(frame) - CGRectGetMaxX(intersection);
+            if(top == 0 && left == 0 && bottom == 0 && right == 0){
+                return nil;
+            }
+            _bottom = bottom==0?nil:@(roundf(bottom));
+            _left = left==0?nil:@(roundf(left));
+            _top = top==0?nil:@(roundf(top));
+            _right = right==0?nil:@(roundf(right));
+        }
     }
     return self;
 }
@@ -63,7 +91,11 @@ NSString * const FT_DEFAULT_FONT_FAMILY = @"-apple-system, BlinkMacSystemFont, '
     return [self isEqualToContentClip:object];
 }
 -(BOOL)isEqualToContentClip:(FTSRContentClip *)object{
-    return  self.bottom == object.bottom && self.top == object.top && self.left == object.left && self.right == object.right;
+    BOOL haveEqualLeft = (!self.left && !object.left) || [self.left isEqualToNumber:object.left];
+    BOOL haveEqualTop = (!self.top && !object.top) || [self.top isEqualToNumber:object.top];
+    BOOL haveEqualRight = (!self.right && !object.right) || [self.right isEqualToNumber:object.right];
+    BOOL haveEqualBottom = (!self.bottom && !object.bottom) || [self.bottom isEqualToNumber:object.bottom];
+    return haveEqualLeft && haveEqualTop && haveEqualRight && haveEqualBottom;
 }
 @end
 @implementation FTSRShapeStyle
@@ -94,6 +126,31 @@ NSString * const FT_DEFAULT_FONT_FAMILY = @"-apple-system, BlinkMacSystemFont, '
     BOOL haveEqualCornerRadius = (!self.cornerRadius && !object.cornerRadius) || [self.cornerRadius isEqualToNumber:object.cornerRadius];
     BOOL haveEqualOpacity = (!self.opacity && !object.opacity) || [self.opacity isEqualToNumber:object.opacity];
     return  haveEqualCornerRadius && haveEqualColor && haveEqualOpacity;
+}
+@end
+@implementation FTPadding
+
+-(instancetype)initWithLeft:(float)left top:(float)top right:(float)right bottom:(float)bottom{
+    self = [super init];
+    if(self){
+        _left = @(roundf(left));
+        _bottom = @(roundf(bottom));
+        _right = @(roundf(right));
+        _top = @(roundf(top));
+    }
+    return self;
+}
+-(BOOL)isEqual:(id)object{
+    if(self == object){
+        return YES;
+    }
+    if (![object isKindOfClass:self.class]){
+        return NO;
+    }
+    return [self isEqualToPadding:object];
+}
+-(BOOL)isEqualToPadding:(FTPadding *)object{
+    return  self.left == object.left && self.right == object.right && self.top == object.top  && self.bottom == object.bottom;
 }
 @end
 @implementation FTAlignment
@@ -197,14 +254,15 @@ NSString * const FT_DEFAULT_FONT_FAMILY = @"-apple-system, BlinkMacSystemFont, '
     }
     if(![newWireFrame.type isEqualToString:self.type]){
         NSString *failureReason =
-            [NSString stringWithFormat:@"FTSRWireframe validation errors: %@ is not Equal to %@",
-             self.type,newWireFrame.type];
+        [NSString stringWithFormat:@"FTSRWireframe validation errors: %@ is not Equal to %@",
+         self.type,newWireFrame.type];
         if(error){
             *error = [NSError errorWithDomain:@"com.guance.session-replay" code:-100 userInfo:@{NSLocalizedDescriptionKey:failureReason}];
         }
         return nil;
     }
-    self.clip = [self.clip isEqual:newWireFrame.clip]?nil:newWireFrame.clip;
+    //旧的 clip 不存在时使用新的
+    self.clip = useNewIfDifferentThanOld(newWireFrame.clip, self.clip);
     self.width = [self.width isEqualToNumber:newWireFrame.width]?nil:newWireFrame.width;
     self.height = [self.height isEqualToNumber:newWireFrame.height]?nil:newWireFrame.height;
     self.x = [self.x isEqualToNumber:newWireFrame.x]?nil:newWireFrame.x;
@@ -217,7 +275,6 @@ NSString * const FT_DEFAULT_FONT_FAMILY = @"-apple-system, BlinkMacSystemFont, '
     BOOL haveEqualHeight= (!self.height && !object.height) || [self.height isEqualToNumber:object.height];
     BOOL haveEqualX = (!self.x && !object.x) || [self.x isEqualToNumber:object.x];
     BOOL haveEqualY = (!self.y && !object.y) || [self.y isEqualToNumber:object.y];
-
     return haveEqualClip && haveEqualWidth && haveEqualHeight && haveEqualX && haveEqualY && self.identifier == object.identifier;
 }
 -(BOOL)isEqual:(id)object{
@@ -245,9 +302,13 @@ NSString * const FT_DEFAULT_FONT_FAMILY = @"-apple-system, BlinkMacSystemFont, '
     return self;
 }
 -(instancetype)initWithIdentifier:(int)identifier frame:(CGRect)frame{
-    return [self initWithIdentifier:identifier frame:frame attributes:nil];
+    self = [super initWithIdentifier:identifier frame:frame];
+    if(self){
+        self.type = @"shape";
+    }
+    return self;
 }
--(instancetype)initWithIdentifier:(int)identifier frame:(CGRect)frame backgroundColor:(NSString *)color cornerRadius:(NSNumber *)cornerRadius opacity:(NSNumber *)opacity{
+-(instancetype)initWithIdentifier:(int)identifier frame:(CGRect)frame clip:(CGRect)clip backgroundColor:(NSString *)color cornerRadius:(NSNumber *)cornerRadius opacity:(NSNumber *)opacity{
     self = [super initWithIdentifier:identifier frame:frame];
     if(self){
         self.type = @"shape";
@@ -255,14 +316,15 @@ NSString * const FT_DEFAULT_FONT_FAMILY = @"-apple-system, BlinkMacSystemFont, '
     }
     return self;
 }
--(instancetype)initWithIdentifier:(int)identifier frame:(CGRect)frame attributes:(FTViewAttributes *)attributes{
-    self = [super initWithIdentifier:identifier frame:frame];
+-(instancetype)initWithIdentifier:(int)identifier attributes:(FTViewAttributes *)attributes{
+    self = [super initWithIdentifier:identifier frame:attributes.frame];
     if(self){
         self.type = @"shape";
         if (attributes){
             FTSRShapeBorder *border = [[FTSRShapeBorder alloc]initWithColor:[FTSRUtils colorHexString:attributes.layerBorderColor]  width:attributes.layerBorderWidth];
             FTSRShapeStyle *backgroundStyle = [[FTSRShapeStyle alloc]initWithBackgroundColor:[FTSRUtils colorHexString:attributes.backgroundColor.CGColor] cornerRadius:@(attributes.layerCornerRadius) opacity:@(attributes.alpha)];
             self.border = border;
+            self.clip = [[FTSRContentClip alloc]initWithFrame:attributes.frame clip:attributes.clip];
             self.shapeStyle = backgroundStyle;
         }
     }
@@ -288,7 +350,6 @@ NSString * const FT_DEFAULT_FONT_FAMILY = @"-apple-system, BlinkMacSystemFont, '
     }
     BOOL isBorderEqual = (!self.border && !object.border) || [self.border isEqual:object.border];
     BOOL isShapeStyleEqual = (!self.shapeStyle && !object.shapeStyle) || [self.shapeStyle isEqual:object.shapeStyle];
-   
     return isBorderEqual && isShapeStyleEqual && [super isEqual:object];
 }
 -(BOOL)isEqual:(id)object{

@@ -16,6 +16,7 @@ NS_ASSUME_NONNULL_BEGIN
 @property (nonatomic, strong) FTSRViewID *viewIDGenerator;
 @property (nonatomic, strong) id<UICoordinateSpace> coordinateSpace;
 @property (nonatomic, strong) FTViewControllerContext *viewControllerContext;
+@property (nonatomic, assign) CGRect clip;
 @end
 
 typedef NS_ENUM(NSUInteger,ViewControllerType){

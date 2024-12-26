@@ -48,11 +48,11 @@
     if(self.progress<0||self.progress>1){
         return @[];
     }
-    FTSRShapeWireframe *background = [[FTSRShapeWireframe alloc]initWithIdentifier:self.backgroundWireframeID frame:self.wireframeRect backgroundColor:self.backgroundColor?[FTSRUtils colorHexString:self.backgroundColor.CGColor]:[FTSystemColors tertiarySystemFillColorStr] cornerRadius:@(self.wireframeRect.size.height/2) opacity:@(1)];
+    FTSRShapeWireframe *background = [[FTSRShapeWireframe alloc]initWithIdentifier:self.backgroundWireframeID frame:self.wireframeRect clip:self.attributes.clip backgroundColor:self.backgroundColor?[FTSRUtils colorHexString:self.backgroundColor.CGColor]:[FTSystemColors tertiarySystemFillColorStr] cornerRadius:@(self.wireframeRect.size.height/2) opacity:@(1)];
     CGRect slice, remainder;
     CGRectDivide(_wireframeRect, &slice, &remainder, _wireframeRect.size.width*self.progress,CGRectMinXEdge);
     CGRect progressTrackFrame = FTCGRectPutInside(slice, _wireframeRect, HorizontalAlignmentLeft, VerticalAlignmentMiddle);
-    FTSRShapeWireframe *wireframe = [[FTSRShapeWireframe alloc]initWithIdentifier:self.progressTrackWireframeID frame:progressTrackFrame backgroundColor:[FTSRUtils colorHexString:self.progressTintColor.CGColor] cornerRadius:@(self.wireframeRect.size.height/2) opacity:@(self.attributes.alpha)];
+    FTSRShapeWireframe *wireframe = [[FTSRShapeWireframe alloc]initWithIdentifier:self.progressTrackWireframeID frame:progressTrackFrame clip:self.attributes.clip backgroundColor:[FTSRUtils colorHexString:self.progressTintColor.CGColor] cornerRadius:@(self.wireframeRect.size.height/2) opacity:@(self.attributes.alpha)];
     return @[background,wireframe];
     
 }

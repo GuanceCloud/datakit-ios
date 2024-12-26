@@ -10,7 +10,15 @@
 #import <SafariServices/SafariServices.h>
 #import <SwiftUI/SwiftUI.h>
 @implementation FTViewTreeRecordingContext
-
+- (instancetype)copyWithZone:(NSZone *)zone {
+    FTViewTreeRecordingContext *options = [[[self class] allocWithZone:zone] init];
+    options.recorder = self.recorder;
+    options.viewIDGenerator = self.viewIDGenerator;
+    options.coordinateSpace = self.coordinateSpace;
+    options.viewControllerContext = self.viewControllerContext;
+    options.clip = self.clip;
+    return options;
+}
 @end
 @implementation FTViewControllerContext
 - (NSString *)name{

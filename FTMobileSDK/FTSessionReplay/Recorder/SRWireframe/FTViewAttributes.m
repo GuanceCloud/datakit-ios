@@ -12,10 +12,11 @@
 @end
 
 @implementation FTViewAttributes
--(instancetype)initWithFrameInRootView:(CGRect)frame view:(UIView *)view{
+-(instancetype)initWithView:(UIView *)view frameInRootView:(CGRect)frame clip:(CGRect)clip{
     self = [super init];
     if(self){
         self.frame = frame;
+        self.clip = clip;
         self.alpha = view.alpha;
         self.backgroundColor = view.backgroundColor;
         self.layerBorderColor = view.layer.borderColor;

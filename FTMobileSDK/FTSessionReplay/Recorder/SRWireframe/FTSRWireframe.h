@@ -18,11 +18,12 @@ NS_ASSUME_NONNULL_BEGIN
 @end
 
 @interface FTSRContentClip : FTSRBaseFrame
-@property (nonatomic, assign) int bottom;
-@property (nonatomic, assign) int left;
-@property (nonatomic, assign) int right;
-@property (nonatomic, assign) int top;
--(instancetype)initWithLeft:(float)left top:(float)top right:(float)right bottom:(float)bottom;
+// 不要改为 int ,使用 NSNumber 是因为 bottom 和 right 可能为空
+@property (nonatomic, strong) NSNumber *bottom;
+@property (nonatomic, strong) NSNumber *left;
+@property (nonatomic, strong) NSNumber *right;
+@property (nonatomic, strong) NSNumber *top;
+-(instancetype)initWithFrame:(CGRect)frame clip:(CGRect)clip;
 @end
 
 @interface FTSRShapeStyle : FTSRBaseFrame
@@ -32,6 +33,13 @@ NS_ASSUME_NONNULL_BEGIN
 -(instancetype)initWithBackgroundColor:(nullable NSString *)color cornerRadius:(nullable NSNumber *)cornerRadius opacity:(NSNumber *)opacity;
 @end
 
+@interface FTPadding : FTSRBaseFrame
+@property (nonatomic, assign) NSNumber *bottom;
+@property (nonatomic, assign) NSNumber *left;
+@property (nonatomic, assign) NSNumber *right;
+@property (nonatomic, assign) NSNumber *top;
+-(instancetype)initWithLeft:(float)left top:(float)top right:(float)right bottom:(float)bottom;
+@end
 @interface FTAlignment : FTSRBaseFrame
 // left、right、center
 @property (nonatomic, copy) NSString *horizontal;
@@ -41,7 +49,7 @@ NS_ASSUME_NONNULL_BEGIN
 @end
 @interface FTSRTextPosition : FTSRBaseFrame
 @property (nonatomic, strong) FTAlignment *alignment;
-@property (nonatomic, strong) FTSRContentClip *padding;
+@property (nonatomic, strong) FTPadding *padding;
 @end
 
 @interface FTSRTextStyle : FTSRBaseFrame
@@ -66,7 +74,7 @@ NS_ASSUME_NONNULL_BEGIN
 /// 控件类型
 @property (nonatomic, copy) NSString *type;
 /// 裁剪信息
-@property (nonatomic, strong) FTSRContentClip *clip;
+@property (nonatomic, strong,nullable) FTSRContentClip *clip;
 
 -(instancetype)initWithIdentifier:(int)identifier frame:(CGRect)frame;
 -(FTSRWireframe *)compareWithNewWireFrame:(FTSRWireframe *)newWireFrame error:(NSError **)error;
@@ -76,8 +84,8 @@ NS_ASSUME_NONNULL_BEGIN
 @interface FTSRShapeWireframe : FTSRWireframe
 @property (nonatomic, strong) FTSRShapeBorder *border;
 @property (nonatomic, strong) FTSRShapeStyle *shapeStyle;
--(instancetype)initWithIdentifier:(int)identifier frame:(CGRect)frame backgroundColor:(nullable NSString *)color cornerRadius:(nullable NSNumber *)cornerRadius opacity:(nullable NSNumber *)opacity;
--(instancetype)initWithIdentifier:(int)identifier frame:(CGRect)frame attributes:(nullable FTViewAttributes *)attributes;
+-(instancetype)initWithIdentifier:(int)identifier frame:(CGRect)frame clip:(CGRect)clip backgroundColor:(nullable NSString *)color cornerRadius:(nullable NSNumber *)cornerRadius opacity:(nullable NSNumber *)opacity;
+-(instancetype)initWithIdentifier:(int)identifier attributes:(nullable FTViewAttributes *)attributes;
 @end
 @interface FTSRTextWireframe : FTSRWireframe
 @property (nonatomic, strong) FTSRShapeBorder *border;

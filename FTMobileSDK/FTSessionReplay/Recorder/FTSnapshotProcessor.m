@@ -113,10 +113,15 @@
             [self trackRecord:fullRecord];
             // 5.2. 数据写入文件
             NSData *data = [fullRecord toJSONData];
-            [self.writer write:data forceNewFile:force];
-            // 6.记录本次数据用于与下次数据比较
-            self.lastSnapshot = viewTreeSnapshot;
-            self.lastSRWireframes = wireframes;
+            if(data){
+                [self.writer write:data forceNewFile:force];
+                // 6.记录本次数据用于与下次数据比较
+                self.lastSnapshot = viewTreeSnapshot;
+                self.lastSRWireframes = wireframes;
+            }else{
+                self.lastSRWireframes = nil;
+                FTInnerLogError(@"[Session Replay] Snapshot Records to Json Data error");
+            }
         }
     } @catch (NSException *exception) {
         self.lastSRWireframes = nil;
