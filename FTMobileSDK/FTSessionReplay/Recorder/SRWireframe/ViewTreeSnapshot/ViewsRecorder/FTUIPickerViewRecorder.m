@@ -31,7 +31,7 @@
             return context.recorder.privacy.inputAndOptionTextObfuscator;
         };
         FTViewTreeRecorder *selectionRecorder = [[FTViewTreeRecorder alloc]init];
-        selectionRecorder.nodeRecorders = @[[[FTUIViewRecorder alloc]initWithIdentifier:_identifier semanticsOverride:^FTSRNodeSemantics* _Nullable(UIView *view, FTViewAttributes *attributes) {
+        selectionRecorder.nodeRecorders = @[[[FTUIViewRecorder alloc]initWithIdentifier:[NSUUID UUID].UUIDString semanticsOverride:^FTSRNodeSemantics* _Nullable(UIView *view, FTViewAttributes *attributes) {
             if (@available(iOS 13, *)) {
                 if(!attributes.isVisible || attributes.alpha<1 || !CATransform3DIsIdentity(view.transform3D) ){
                     FTIgnoredElement *element = [[FTIgnoredElement alloc]init];

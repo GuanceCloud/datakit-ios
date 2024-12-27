@@ -29,8 +29,8 @@ typedef id<FTSRTextObfuscatingProtocol>(^FTTextFieldObfuscator)(FTViewTreeRecord
     self = [super init];
     if(self){
         _identifier = [[NSUUID UUID] UUIDString];
-        _backgroundViewRecorder = [[FTUIViewRecorder alloc]initWithIdentifier:_identifier];
-        _iconsRecorder = [[FTUIImageViewRecorder alloc]initWithIdentifier:_identifier tintColorProvider:nil shouldRecordImagePredicate:nil];
+        _backgroundViewRecorder = [[FTUIViewRecorder alloc]initWithIdentifier:[NSUUID UUID].UUIDString];
+        _iconsRecorder = [[FTUIImageViewRecorder alloc]initWithIdentifier:[NSUUID UUID].UUIDString tintColorProvider:nil shouldRecordImagePredicate:nil];
         _subtreeRecorder = [[FTViewTreeRecorder alloc]init];
         _subtreeRecorder.nodeRecorders = @[_backgroundViewRecorder,_iconsRecorder];
     }

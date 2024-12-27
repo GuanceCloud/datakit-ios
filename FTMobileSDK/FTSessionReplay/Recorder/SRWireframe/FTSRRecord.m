@@ -124,10 +124,6 @@
 /// 不同的部分考虑 add\remove
 /// 子序列与子序列位置发生变化，对移动到后面的子序列进行 add\remove 操作
 -(void)createIncrementalSnapshotRecords:(NSArray<FTSRWireframe *>*)newWireframes lastWireframes:(NSArray<FTSRWireframe *>*)lastWireframes{
-    if (newWireframes.firstObject.identifier != lastWireframes.firstObject.identifier) {
-        self.isError = YES;
-        return;
-    }
     NSMutableDictionary<NSNumber*,Sampler*> *table = [[NSMutableDictionary alloc]init];
     NSMutableArray<Removes> *removes = (NSMutableArray<Removes> *)[NSMutableArray new];
     NSMutableArray<Adds> *adds = (NSMutableArray<Adds> *)[NSMutableArray new];

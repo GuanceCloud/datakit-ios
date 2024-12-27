@@ -31,9 +31,9 @@
     self = [super init];
     if(self){
         _identifier = identifier;
-        _compactRecorder = [[FTCompactStyleDatePickerRecorder alloc] initWithIdentifier:identifier];
-        _inlineRecorder = [[FTInlineStyleDatePickerRecorder alloc] initWithIdentifier:identifier];
-        _wheelRecorder = [[FTWheelsStyleDatePickerRecorder alloc] initWithIdentifier:identifier];
+        _compactRecorder = [[FTCompactStyleDatePickerRecorder alloc] initWithIdentifier:[NSUUID UUID].UUIDString];
+        _inlineRecorder = [[FTInlineStyleDatePickerRecorder alloc] initWithIdentifier:[NSUUID UUID].UUIDString];
+        _wheelRecorder = [[FTWheelsStyleDatePickerRecorder alloc] initWithIdentifier:[NSUUID UUID].UUIDString];
     }
     return self;
 }
@@ -102,7 +102,7 @@
     self = [super init];
     if(self){
         _subtreeRecorder = [[FTViewTreeRecorder alloc]init];
-        FTUIPickerViewRecorder *recorder = [[FTUIPickerViewRecorder alloc]initWithIdentifier:identifier textObfuscator:nil];
+        FTUIPickerViewRecorder *recorder = [[FTUIPickerViewRecorder alloc]initWithIdentifier:[NSUUID UUID].UUIDString textObfuscator:nil];
         recorder.textObfuscator = ^id<FTSRTextObfuscatingProtocol> _Nullable(FTViewTreeRecordingContext * _Nonnull context) {
             return context.recorder.privacy.staticTextObfuscator;
         };
@@ -127,16 +127,16 @@
 -(instancetype)initWithIdentifier:(NSString *)identifier{
     self = [super init];
     if(self){
-        _viewRecorder = [[FTUIViewRecorder alloc]initWithIdentifier:identifier];
-        _labelRecorder = [[FTUILabelRecorder alloc]initWithIdentifier:identifier builderOverride:nil textObfuscator:^id<FTSRTextObfuscatingProtocol>(FTViewTreeRecordingContext *context) {
+        _viewRecorder = [[FTUIViewRecorder alloc]initWithIdentifier:[NSUUID UUID].UUIDString];
+        _labelRecorder = [[FTUILabelRecorder alloc]initWithIdentifier:[NSUUID UUID].UUIDString builderOverride:nil textObfuscator:^id<FTSRTextObfuscatingProtocol>(FTViewTreeRecordingContext *context) {
             return context.recorder.privacy.staticTextObfuscator;
         }];
         _subtreeRecorder = [[FTViewTreeRecorder alloc]init];
         _subtreeRecorder.nodeRecorders = @[
             _viewRecorder,
             _labelRecorder,
-            [[FTUIImageViewRecorder alloc] initWithIdentifier:identifier tintColorProvider:nil shouldRecordImagePredicate:nil],
-            [[FTUISegmentRecorder alloc] initWithIdentifier:identifier],
+            [[FTUIImageViewRecorder alloc] initWithIdentifier:[NSUUID UUID].UUIDString tintColorProvider:nil shouldRecordImagePredicate:nil],
+            [[FTUISegmentRecorder alloc] initWithIdentifier:[NSUUID UUID].UUIDString],
         ];
     }
     return self;
@@ -174,12 +174,12 @@
     self = [super init];
     if(self){
         _subtreeRecorder = [[FTViewTreeRecorder alloc]init];
-        FTUILabelRecorder *labelRecorder = [[FTUILabelRecorder alloc]initWithIdentifier:identifier builderOverride:nil textObfuscator:nil];
+        FTUILabelRecorder *labelRecorder = [[FTUILabelRecorder alloc]initWithIdentifier:[NSUUID UUID].UUIDString builderOverride:nil textObfuscator:nil];
         labelRecorder.textObfuscator = ^id<FTSRTextObfuscatingProtocol> _Nullable(FTViewTreeRecordingContext *context) {
             return context.recorder.privacy.staticTextObfuscator;
         };
         _subtreeRecorder.nodeRecorders = @[
-            [[FTUIViewRecorder alloc] initWithIdentifier:identifier],
+            [[FTUIViewRecorder alloc] initWithIdentifier:[NSUUID UUID].UUIDString],
             labelRecorder
         ];
     }
