@@ -7,9 +7,7 @@
 //
 
 #import <Foundation/Foundation.h>
-@class FTTraceContext;
-/// 支持通过 url 判断是否进行自定义 trace,确认拦截后，返回 TraceContext，不拦截返回 nil
-typedef FTTraceContext*_Nullable(^FTTraceInterceptor)(NSURL * _Nullable url);
+
 NS_ASSUME_NONNULL_BEGIN
 /// 自定义 Trace 的内容
 @interface FTTraceContext: NSObject
