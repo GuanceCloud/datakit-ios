@@ -25,8 +25,8 @@ typedef NSDictionary* _Nullable (^ResourcePropertyProvider)( NSURLRequest * _Nul
 /// 拦截 Request ，返回修改后的 Request，可用于自定义链路追踪
 typedef NSURLRequest*_Nonnull(^RequestInterceptor)(NSURLRequest *_Nonnull request);
 
-/// 支持通过 url 判断是否进行自定义 trace,确认拦截后，返回 TraceContext，不拦截返回 nil
-typedef FTTraceContext*_Nullable(^TraceInterceptor)(NSURL * _Nullable url);
+/// 支持自定义 trace, 确认拦截后，返回 TraceContext，不拦截返回 nil
+typedef FTTraceContext*_Nullable(^TraceInterceptor)(NSURLRequest *_Nonnull request);
 NS_ASSUME_NONNULL_BEGIN
 @class FTURLSessionDelegate;
 

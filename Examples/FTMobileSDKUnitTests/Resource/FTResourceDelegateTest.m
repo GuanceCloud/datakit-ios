@@ -513,8 +513,8 @@ typedef NS_ENUM(NSUInteger,TestSessionRequestMethod){
 }
 - (void)testTraceInterceptor{
     [self sdkEnableRUMAutoTrace:YES];
-    TraceInterceptor traceInterceptor = ^FTTraceContext * _Nullable(NSURL *url) {
-        XCTAssertTrue(url);
+    TraceInterceptor traceInterceptor = ^FTTraceContext * _Nullable(NSURLRequest *request) {
+        XCTAssertTrue(request);
         FTTraceContext *context = [FTTraceContext new];
         context.traceHeader = @{@"test_trace_key":@"trace_value"};
         context.traceId = @"aaa";

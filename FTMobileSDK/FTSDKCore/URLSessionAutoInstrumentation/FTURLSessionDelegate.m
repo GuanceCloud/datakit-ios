@@ -63,7 +63,7 @@
        return;
     }
     if(self.traceInterceptor){
-        FTTraceContext *context = self.traceInterceptor(task.currentRequest.URL);
+        FTTraceContext *context = self.traceInterceptor(task.currentRequest);
         if (context!=nil) {
             if (context.traceHeader && context.traceHeader.allKeys.count>0) {
                 NSMutableURLRequest *mutableRequest = [task.currentRequest mutableCopy];
