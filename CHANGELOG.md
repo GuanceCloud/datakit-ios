@@ -1,3 +1,7 @@
+# 1.5.9-alpha.1
+1. 新增支持自定义 Trace 关联 RUM
+2. 支持采集通过 swift async/await URLSession API 发起的 Resource 数据
+---
 # 1.5.8
 1. 增加 tvOS 支持
 2. 新增 RUM 条目数量限制功能，支持通过 `FTRUMConfig.rumCacheLimitCount` 来限制 SDK 最大缓存条目数据限制，支持通过 `FTRUMConfig.rumDiscardType` 设置来指定丢弃新数据或丢弃旧数据
