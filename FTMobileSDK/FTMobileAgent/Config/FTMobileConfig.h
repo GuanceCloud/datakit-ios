@@ -102,7 +102,7 @@ typedef NS_ENUM(NSInteger, FTRUMCacheDiscard)  {
     /// 当日志数据大于最大值时,废弃旧数据
     FTRUMDiscardOldest
 };
-// DB废弃策略
+/// DB废弃策略
 typedef NS_ENUM(NSInteger, FTDBCacheDiscard)  {
     /// 默认，当数据库存储大于最大值(默认100MB)时，新数据不进行写入
     FTDBDiscard,
