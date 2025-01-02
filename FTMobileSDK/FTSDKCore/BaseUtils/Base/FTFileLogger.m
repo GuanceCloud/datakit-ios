@@ -275,7 +275,9 @@ NSString * const FT_LOG_BACKUP_DIRECTORY= @"FTBackupLogs";
     FTLogFileInfo *newCurrentLogFile = _currentLogFileInfo;
     BOOL isResuming = newCurrentLogFile == nil;
     if (isResuming) {
-        newCurrentLogFile = [FTLogFileInfo logFileWithPath:[self.logFileManager filePath]];
+        if([[NSFileManager defaultManager] fileExistsAtPath:[self.logFileManager filePath]]){
+            newCurrentLogFile = [FTLogFileInfo logFileWithPath:[self.logFileManager filePath]];
+        }
     }
     // 是否应用用当前的文件
     if (newCurrentLogFile != nil && [self shouldUseLogFile:newCurrentLogFile isResuming:isResuming]) {
