@@ -75,17 +75,21 @@
 @end
 @implementation HttpEngineTestUtil
 - (instancetype)initWithSessionInstrumentationType:(TestSessionInstrumentationType)type expectation:(nonnull XCTestExpectation *)expectation {
-    return [self initWithSessionInstrumentationType:type expectation:expectation provider:nil requestInterceptor:nil];
+    return [self initWithSessionInstrumentationType:type expectation:expectation provider:nil requestInterceptor:nil traceInterceptor:nil];
 }
 
--(instancetype)initWithSessionInstrumentationType:(TestSessionInstrumentationType)type expectation:( XCTestExpectation *)expectation provider:(ResourcePropertyProvider)provider requestInterceptor:(RequestInterceptor)requestInterceptor{
+-(instancetype)initWithSessionInstrumentationType:(TestSessionInstrumentationType)type expectation:( XCTestExpectation *)expectation provider:(ResourcePropertyProvider)provider requestInterceptor:(RequestInterceptor)requestInterceptor
+                                 traceInterceptor:(TraceInterceptor)traceInterceptor
+{
     self = [super init];
     if(self){
-        [self initSession:type expectation:expectation provider:provider requestInterceptor:requestInterceptor];
+        [self initSession:type expectation:expectation provider:provider requestInterceptor:requestInterceptor traceInterceptor:traceInterceptor];
     }
     return self;
 }
-- (void)initSession:(TestSessionInstrumentationType)type expectation:( XCTestExpectation *)expectation provider:(ResourcePropertyProvider)provider requestInterceptor:(RequestInterceptor)requestInterceptor{
+- (void)initSession:(TestSessionInstrumentationType)type expectation:( XCTestExpectation *)expectation provider:(ResourcePropertyProvider)provider requestInterceptor:(RequestInterceptor)requestInterceptor
+   traceInterceptor:(TraceInterceptor)traceInterceptor
+{
     id<NSURLSessionDelegate> delegate;
 
     switch (type) {
@@ -93,6 +97,7 @@
             FTURLSessionDelegate *ftDelegate = [[FTURLSessionDelegate alloc]init];
             ftDelegate.provider = provider;
             ftDelegate.requestInterceptor = requestInterceptor;
+            ftDelegate.traceInterceptor = traceInterceptor;
             delegate = ftDelegate;
         }
             break;
@@ -101,6 +106,7 @@
             InstrumentationInheritTestClass *ftDelegate = [[InstrumentationInheritTestClass alloc]initWithExpectation:expectation];
             ftDelegate.provider = provider;
             ftDelegate.requestInterceptor = requestInterceptor;
+            ftDelegate.traceInterceptor = traceInterceptor;
             delegate = ftDelegate;
             break;
         }
@@ -108,6 +114,7 @@
             InstrumentationPropertyTestClass *ftDelegate = [[InstrumentationPropertyTestClass alloc]initWithExpectation:expectation];
             ftDelegate.ftURLSessionDelegate.provider = provider;
             ftDelegate.ftURLSessionDelegate.requestInterceptor = requestInterceptor;
+            ftDelegate.ftURLSessionDelegate.traceInterceptor = traceInterceptor;
             delegate = ftDelegate;
             break;
         }
