@@ -22,6 +22,7 @@
 #define FTURLSessionInterceptorProtocol_h
 #import "FTRumResourceProtocol.h"
 #import "FTTracerProtocol.h"
+@class FTTraceContext;
 NS_ASSUME_NONNULL_BEGIN
 typedef BOOL(^FTIntakeUrl)( NSURL * _Nonnull url);
 typedef BOOL(^FTResourceUrlHandler)( NSURL * _Nonnull url);
@@ -43,10 +44,17 @@ typedef NSDictionary* _Nullable (^ResourcePropertyProvider)( NSURLRequest * _Nul
 /// - Parameter request: http 初始请求
 - (NSURLRequest *)interceptRequest:(NSURLRequest *)request;
 
+/// 实现 trace 功能，给 request header 添加 trace 参数
+/// - Parameter task: 请求任务
+- (void)traceInterceptTask:(NSURLSessionTask *)task;
+
+/// 关联 traceId、spanId
+/// - Parameter task: 请求任务
+- (void)traceInterceptTask:(NSURLSessionTask *)task linkTraceContext:(nullable FTTraceContext *)traceContext;
+
 /// 请求开始 -startResource
 /// - Parameters:
 ///   - task: 请求任务
-///   - session: session
 - (void)interceptTask:(NSURLSessionTask *)task;
 
 /// 收集请求的数据信息

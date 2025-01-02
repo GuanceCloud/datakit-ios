@@ -25,10 +25,29 @@
 #import "FTURLSessionInterceptor+Private.h"
 #import "FTTracer.h"
 #import <objc/runtime.h>
+#import "NSURLSessionTask+FTSwizzler.h"
+#import "FTURLSessionInterceptorProtocol.h"
+#import "FTURLSessionDelegate+Private.h"
+
 static void *const kFTReceiveDataSelector = (void *)&kFTReceiveDataSelector;
 static void *const kFTCompleteSelector = (void *)&kFTCompleteSelector;
 static void *const kFTCollectMetricsSelector = (void *)&kFTCollectMetricsSelector;
+static void *const kFTConformsToFTProtocol = (void *)&kFTConformsToFTProtocol;
 
+//conformsToProtocol 方法有损耗，苹果建议本地缓存结果减少调用
+static BOOL delegateConformsToFTProtocol(id delegate){
+    if(!delegate){
+        return NO;
+    }
+    NSNumber *conformNum = objc_getAssociatedObject(delegate, kFTConformsToFTProtocol);
+    if(conformNum != nil){
+        return [conformNum boolValue];
+    }else{
+        BOOL conform = [delegate conformsToProtocol:@protocol(FTURLSessionDelegateProviding)];
+        objc_setAssociatedObject(delegate, kFTConformsToFTProtocol, @(conform), OBJC_ASSOCIATION_RETAIN);
+        return conform;
+    }
+}
 @interface FTURLSessionInstrumentation()
 /// sdk 内部的数据上传 url
 @property (nonatomic, copy) NSString *sdkUrlStr;
@@ -157,6 +176,22 @@ static dispatch_once_t onceToken;
         }
     }
     return trace;
+}
+- (id<FTURLSessionInterceptorProtocol>)traceInterceptor:(id<NSURLSessionDelegate>)delegate{
+    if(delegateConformsToFTProtocol(delegate)){
+        return ((id<FTURLSessionDelegateProviding>)delegate).ftURLSessionDelegate;
+    }else if(self.shouldTraceInterceptor){
+        return self.interceptor;
+    }
+    return nil;
+}
+- (id<FTURLSessionInterceptorProtocol>)rumInterceptor:(id<NSURLSessionDelegate>)delegate{
+    if(delegateConformsToFTProtocol(delegate)){
+        return ((id<FTURLSessionDelegateProviding>)delegate).ftURLSessionDelegate;
+    }else if(self.shouldRUMInterceptor){
+        return self.interceptor;
+    }
+    return nil;
 }
 - (void)shutDown{
     [self disableAutomaticRegistration];
