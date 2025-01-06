@@ -69,7 +69,7 @@
     [FTMobileAgent startWithConfigOptions:config];
     [[FTTrackerEventDBTool sharedManger] deleteAllDatas];
     [[FTMobileAgent sharedInstance] startRumWithConfigOptions:rumConfig];
-    for (int i = 0; i<1030; i++) {
+    for (int i = 0; i<10010; i++) {
         FTRecordModel *model = [FTRecordModel new];
         model.op = FT_DATA_TYPE_RUM;
         model.data = [NSString stringWithFormat:@"testData%d",i];
@@ -79,7 +79,7 @@
     NSInteger newCount =  [[FTTrackerEventDBTool sharedManger] getDatasCountWithType:FT_DATA_TYPE_RUM];
     FTRecordModel *model = [[[FTTrackerEventDBTool sharedManger] getFirstRecords:1 withType:FT_DATA_TYPE_RUM] firstObject];
     XCTAssertTrue([model.data isEqualToString:@"testData0"]);
-    XCTAssertTrue(newCount == 1000);
+    XCTAssertTrue(newCount == 10000);
 }
 
 - (void)testDiscardOldBulk{
@@ -93,7 +93,7 @@
     [[FTTrackerEventDBTool sharedManger] deleteAllDatas];
     [[FTMobileAgent sharedInstance] startRumWithConfigOptions:rumConfig];
 
-    for (int i = 0; i<1050; i++) {
+    for (int i = 0; i<10010; i++) {
         FTRecordModel *model = [FTRecordModel new];
         model.op = FT_DATA_TYPE_RUM;
         model.data = [NSString stringWithFormat:@"testData%d",i];
@@ -104,7 +104,7 @@
     NSInteger newCount = [[FTTrackerEventDBTool sharedManger] getDatasCountWithType:FT_DATA_TYPE_RUM];
     FTRecordModel *model = [[[FTTrackerEventDBTool sharedManger] getFirstRecords:1 withType:FT_DATA_TYPE_RUM] firstObject];
     XCTAssertFalse([model.data isEqualToString:@"testData0"]);
-    XCTAssertTrue(newCount == 1000);
+    XCTAssertTrue(newCount == 10000);
 }
 #pragma mark ========== Session ==========
 

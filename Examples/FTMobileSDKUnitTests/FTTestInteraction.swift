@@ -60,7 +60,7 @@ final class FTTestInteraction: XCTestCase {
         FTMobileAgent.sharedInstance().startLogger(withConfigOptions: logConfig)
         let logger = FTLogger.shared()
         XCTAssertTrue(oldLogger != logger)
-        FTMobileAgent.sharedInstance().shutDown()
+        FTMobileAgent.shutDown()
     }
     
     // MARK: - Trace - Get trace header
@@ -162,7 +162,6 @@ final class FTTestInteraction: XCTestCase {
         FTMobileAgent.shutDown()
     }
     func testSessionInterceptor_resourceProvider() throws {
-        let time = NSDate.ft_currentNanosecondTimeStamp()
         FTTrackerEventDBTool.sharedManger()!.deleteAllDatas()
         let expectation = XCTestExpectation.init()
 

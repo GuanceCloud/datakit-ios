@@ -45,7 +45,7 @@
         return interceptedRequest;
     }
     if(self.traceInterceptor){
-        FTTraceContext *context = self.traceInterceptor(request.URL);
+        FTTraceContext *context = self.traceInterceptor(request);
         NSMutableURLRequest *mutableRequest = [interceptedRequest mutableCopy];
         if (context.traceHeader && context.traceHeader.allKeys.count>0) {
             [context.traceHeader enumerateKeysAndObjectsUsingBlock:^(id field, id value, BOOL * __unused stop) {

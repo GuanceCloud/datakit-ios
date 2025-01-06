@@ -65,7 +65,7 @@
     XCTestExpectation *expectation= [self expectationWithDescription:@"异步操作timeout"];
     NSURLSession *session = [NSURLSession sessionWithConfiguration:[NSURLSessionConfiguration defaultSessionConfiguration]];
     [self initSDKWithEnableAutoTraceResource:YES];
-    [self networkUploadHandlerSession:session trace:YES completionHandler:^(NSURLResponse *response, NSError *error) {
+    [self networkUploadHandlerSession:session autoTrace:YES completionHandler:^(NSURLResponse *response, NSError *error) {
         [expectation fulfill];
     }];
 }
@@ -90,7 +90,7 @@
     TestSessionDelegate_None *delegate = [[TestSessionDelegate_None alloc]init];
     NSURLSession *session = [NSURLSession sessionWithConfiguration:[NSURLSessionConfiguration defaultSessionConfiguration] delegate:delegate delegateQueue:nil];
     [self initSDKWithEnableAutoTraceResource:YES];
-    [self networkUploadHandlerSession:session trace:YES completionHandler:^(NSURLResponse *response, NSError *error) {
+    [self networkUploadHandlerSession:session autoTrace:YES completionHandler:^(NSURLResponse *response, NSError *error) {
         [expectation fulfill];
     }];
 }
@@ -111,7 +111,7 @@
     TestSessionDelegate *delegate = [[TestSessionDelegate alloc]initWithTestExpectation:expectation];
     NSURLSession *session = [NSURLSession sessionWithConfiguration:[NSURLSessionConfiguration defaultSessionConfiguration] delegate:delegate delegateQueue:nil];
     [self initSDKWithEnableAutoTraceResource:YES];
-    [self networkUploadHandlerSession:session trace:YES completionHandler:nil];
+    [self networkUploadHandlerSession:session autoTrace:YES completionHandler:nil];
 }
 - (void)testAutoTraceResource_DelegateNoCollectingMetrics{
     [self initSDKWithEnableAutoTraceResource:YES];
@@ -130,7 +130,7 @@
     TestSessionDelegate_NoCollectingMetrics *delegate = [[TestSessionDelegate_NoCollectingMetrics alloc]initWithTestExpectation:expectation];
     NSURLSession *session = [NSURLSession sessionWithConfiguration:[NSURLSessionConfiguration defaultSessionConfiguration] delegate:delegate delegateQueue:nil];
     [self initSDKWithEnableAutoTraceResource:YES];
-    [self networkUploadHandlerSession:session trace:YES completionHandler:nil];
+    [self networkUploadHandlerSession:session autoTrace:YES completionHandler:nil];
 }
 - (void)testAutoTraceResource_DelegateOnlyCollectingMetrics{
     [self initSDKWithEnableAutoTraceResource:YES];
@@ -154,7 +154,7 @@
     TestSessionDelegate_OnlyCollectingMetrics *delegate = [[TestSessionDelegate_OnlyCollectingMetrics alloc]init];
     NSURLSession *session = [NSURLSession sessionWithConfiguration:[NSURLSessionConfiguration defaultSessionConfiguration] delegate:delegate delegateQueue:nil];
     [self initSDKWithEnableAutoTraceResource:YES];
-    [self networkUploadHandlerSession:session trace:YES completionHandler:^(NSURLResponse *response, NSError *error) {
+    [self networkUploadHandlerSession:session autoTrace:YES completionHandler:^(NSURLResponse *response, NSError *error) {
         [expectation fulfill];
     }];
 }
@@ -167,9 +167,9 @@
     } else {
         session = [NSURLSession sessionWithConfiguration:config];
     }
-    [self networkUploadHandlerSession:session trace:trace completionHandler:completionHandler];
+    [self networkUploadHandlerSession:session autoTrace:trace completionHandler:completionHandler];
 }
-- (void)networkUploadHandlerSession:(NSURLSession *)session trace:(BOOL)trace completionHandler:(void (^)(NSURLResponse *response,NSError *error))completionHandler{
+- (void)networkUploadHandlerSession:(NSURLSession *)session autoTrace:(BOOL)trace completionHandler:(void (^)(NSURLResponse *response,NSError *error))completionHandler{
     [FTModelHelper startView];
     [FTModelHelper startAction];
     

@@ -511,9 +511,15 @@ typedef NS_ENUM(NSUInteger,TestSessionRequestMethod){
     }];
     XCTAssertTrue(hasResourceCount == 1);
 }
-- (void)testTraceInterceptor{
-    [self sdkEnableRUMAutoTrace:YES];
-    TraceInterceptor traceInterceptor = ^FTTraceContext * _Nullable(NSURLRequest *request) {
+- (void)testTraceInterceptor_disableAutoTrace{
+    [self traceInterceptorWithEnableAutoTrace:NO];
+}
+- (void)testTraceInterceptor_enableAutoTrace{
+    [self traceInterceptorWithEnableAutoTrace:YES];
+}
+- (void)traceInterceptorWithEnableAutoTrace:(BOOL)enable{
+    [self sdkEnableRUMAutoTrace:enable];
+    TraceInterceptor traceInterceptor = ^FTTraceContext *(NSURLRequest *request) {
         XCTAssertTrue(request);
         FTTraceContext *context = [FTTraceContext new];
         context.traceHeader = @{@"test_trace_key":@"trace_value"};
@@ -522,7 +528,8 @@ typedef NS_ENUM(NSUInteger,TestSessionRequestMethod){
         return context;
     };
     XCTestExpectation *expectation= [self expectationWithDescription:@"FirstProvider"];
-    HttpEngineTestUtil *engine = [[HttpEngineTestUtil alloc]initWithSessionInstrumentationType:InstrumentationInherit expectation:expectation provider:nil requestInterceptor:nil traceInterceptor:traceInterceptor];
+    TestSessionInstrumentationType type = enable? InstrumentationInherit:InstrumentationProperty;
+    HttpEngineTestUtil *engine = [[HttpEngineTestUtil alloc]initWithSessionInstrumentationType:type expectation:expectation provider:nil requestInterceptor:nil traceInterceptor:traceInterceptor];
     [engine network];
     [self waitForExpectationsWithTimeout:30 handler:^(NSError *error) {
         XCTAssertNil(error);
@@ -537,6 +544,8 @@ typedef NS_ENUM(NSUInteger,TestSessionRequestMethod){
             *stop = YES;
             XCTAssertTrue([tags[FT_KEY_SPANID] isEqualToString:@"bbb"]);
             XCTAssertTrue([tags[FT_KEY_TRACEID] isEqualToString:@"aaa"]);
+            NSString *requestHeader = fields[FT_KEY_REQUEST_HEADER];
+            XCTAssertTrue([requestHeader containsString:@"test_trace_key"] && [requestHeader containsString:@"trace_value"]);
         }
     }];
     XCTAssertTrue(hasResource);

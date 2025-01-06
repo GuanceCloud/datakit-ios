@@ -458,6 +458,7 @@
     };
     XCTAssertTrue(rumConfig.rumCacheLimitCount == 100000);
     rumConfig.rumCacheLimitCount = 1000;
+    XCTAssertTrue(rumConfig.rumCacheLimitCount == 10000);
     rumConfig.rumDiscardType = FTRUMDiscardOldest;
     rumConfig.globalContext = @{@"aa":@"bb"};
     FTRumConfig *copyRumConfig = [rumConfig copy];
