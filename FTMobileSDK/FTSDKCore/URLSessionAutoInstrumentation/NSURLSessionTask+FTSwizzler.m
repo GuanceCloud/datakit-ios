@@ -18,7 +18,7 @@ static char *hasCompletionKey = "hasCompletionKey";
 }
 -(BOOL)ft_hasCompletion{
     NSNumber *hasCompletion = objc_getAssociatedObject(self, &hasCompletionKey);
-    if(hasCompletion){
+    if(hasCompletion!=nil){
         return [hasCompletion boolValue];
     }
     return NO;

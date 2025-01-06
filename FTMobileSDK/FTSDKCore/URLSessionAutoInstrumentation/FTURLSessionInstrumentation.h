@@ -74,8 +74,8 @@ typedef enum FTNetworkTraceType:NSUInteger FTNetworkTraceType;
 - (void)setIntakeUrlHandler:(FTIntakeUrl)intakeUrlHandler;
 
 - (void)enableSessionDelegate:(id <NSURLSessionDelegate>)delegate;
-- (id<FTURLSessionInterceptorProtocol>)traceInterceptor:(id<NSURLSessionDelegate>)delegate;
-- (id<FTURLSessionInterceptorProtocol>)rumInterceptor:(id<NSURLSessionDelegate>)delegate;
+- (nullable id<FTURLSessionInterceptorProtocol>)traceInterceptor:(id<NSURLSessionDelegate>)delegate;
+- (nullable id<FTURLSessionInterceptorProtocol>)rumInterceptor:(id<NSURLSessionDelegate>)delegate;
 /// 注销
 - (void)shutDown;
 @end
