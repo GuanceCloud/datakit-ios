@@ -1,3 +1,6 @@
+# 1.5.9-beta.1
+1. 同 1.5.9-alpha.1
+---
 # 1.5.9-alpha.1
 1. 新增支持自定义 Trace 关联 RUM
 2. 支持采集通过 swift async/await URLSession API 发起的 Resource 数据
