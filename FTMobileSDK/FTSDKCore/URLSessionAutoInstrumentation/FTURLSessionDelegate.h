@@ -51,7 +51,7 @@ NS_ASSUME_NONNULL_BEGIN
 /// 拦截 Request 返回修改后的 Request，可用于自定义链路追踪
 @property (nonatomic,copy) RequestInterceptor requestInterceptor;
 
-/// 支持通过 url 判断是否进行自定义 trace,确认拦截后，返回 TraceContext，不拦截返回 nil
+/// 支持通过 URLRequest 判断是否进行自定义 trace,确认拦截后，返回 TraceContext，不拦截返回 nil
 @property (nonatomic,copy) TraceInterceptor traceInterceptor;
 
 /// 告诉拦截器需要自定义 RUM 资源属性。
