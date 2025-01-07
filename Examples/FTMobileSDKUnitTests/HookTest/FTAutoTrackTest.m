@@ -94,6 +94,7 @@
     [demovc viewWillAppear:NO];
     [demovc viewDidAppear:NO];
     [[tester waitForViewWithAccessibilityLabel:@"BindUser"] tap];
+    [tester waitForTimeInterval:0.1];
     [[tester waitForViewWithAccessibilityLabel:@"UserLogout"] tap];
     [[FTGlobalRumManager sharedInstance].rumManager syncProcess];
     NSArray *newArray = [[FTTrackerEventDBTool sharedManger] getFirstRecords:10 withType:FT_DATA_TYPE_RUM];
@@ -112,7 +113,9 @@
     [[tester waitForViewWithAccessibilityLabel:@"home"] tap];
     [tester waitForTimeInterval:1];
     [[tester waitForViewWithAccessibilityLabel:@"UITEST"] tap];
+    [tester waitForTimeInterval:0.1];
     [[tester waitForViewWithAccessibilityLabel:@"LABLE_CLICK"] tap];
+    [tester waitForTimeInterval:0.1];
     [[tester waitForViewWithAccessibilityLabel:@"LABLE_CLICK"] tap];
     [[FTGlobalRumManager sharedInstance].rumManager syncProcess];
     
@@ -152,8 +155,11 @@
 - (void)testButtonClick{
     [self setSdkWithRum:YES];
     [[tester waitForViewWithAccessibilityLabel:@"UITEST"] tap];
+    [tester waitForTimeInterval:0.1];
     [[tester waitForViewWithAccessibilityLabel:@"SecondButton"] tap];
+    [tester waitForTimeInterval:0.1];
     [[tester waitForViewWithAccessibilityLabel:@"SecondButton"] tap];
+    [tester waitForTimeInterval:0.1];
     [[tester waitForViewWithAccessibilityLabel:@"FirstButton"] tap];
     
     [[FTGlobalRumManager sharedInstance].rumManager syncProcess];

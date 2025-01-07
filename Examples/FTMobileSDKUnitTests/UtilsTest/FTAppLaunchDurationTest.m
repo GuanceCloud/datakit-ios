@@ -29,6 +29,7 @@ typedef void(^LaunchDataBlock)(NSString *source, NSDictionary *tags, NSDictionar
 }
 - (void)tearDown {
     // Put teardown code here. This method is called after the invocation of each test method in the class.
+    self.launchBlock = nil;
     self.launchTracker = nil;
 }
 - (void)testLaunchCold{

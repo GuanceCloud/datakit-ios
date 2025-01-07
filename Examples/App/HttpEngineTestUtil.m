@@ -7,6 +7,7 @@
 //
 
 #import "HttpEngineTestUtil.h"
+#import "FTExternalDataManager.h"
 // id <NSURLSessionDelegate>)delegate 直接继承 FTURLSessionDelegate 示例
 @interface InstrumentationInheritTestClass:FTURLSessionDelegate
 @property (nonatomic, strong) NSURLSession *session;
@@ -42,15 +43,20 @@
  *
  */
 @interface InstrumentationPropertyTestClass:NSObject<NSURLSessionDataDelegate,FTURLSessionDelegateProviding>
-@property (nonatomic, strong) FTURLSessionDelegate *ftURLSessionDelegate;
 @property (nonatomic, strong) XCTestExpectation *expectation;
 @end
 @implementation InstrumentationPropertyTestClass
+@synthesize ftURLSessionDelegate = _ftURLSessionDelegate;
+-(FTURLSessionDelegate *)ftURLSessionDelegate{
+    if (!_ftURLSessionDelegate) {
+        _ftURLSessionDelegate = [[FTURLSessionDelegate alloc]init];
+    }
+    return _ftURLSessionDelegate;
+}
 -(instancetype)initWithExpectation:(XCTestExpectation *)expectation{
     self = [super init];
     if(self){
         self.expectation = expectation;
-        _ftURLSessionDelegate = [[FTURLSessionDelegate alloc]init];
     }
     return self;
 }
@@ -65,6 +71,7 @@
     [self.expectation fulfill];
     [self.ftURLSessionDelegate URLSession:session task:task didFinishCollectingMetrics:metrics];
 }
+
 @end
 
 

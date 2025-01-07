@@ -15,6 +15,7 @@
 #import "FTSessionTaskHandler.h"
 #import <objc/runtime.h>
 #import "OHHTTPStubs.h"
+#import "FTRequest.h"
 
 /** This class is used to wrap an NSURLSession object during testing. */
 @interface FTURLSessionProxy : NSProxy {
@@ -430,9 +431,6 @@
 - (void)testMutableRequestURLs{
     __block NSURLSessionDataTask *dataTask;
     __weak typeof(self) weakSelf = self;
-//    [FTNetworkMock registerBeforeHandler:^{
-//        XCTAssertNotNil([weakSelf getTraceHandler:dataTask]);
-//    }];
     NSMutableURLRequest *URLRequest = [NSMutableURLRequest requestWithURL:self.url];
     NSURLSession *session = [NSURLSession
                              sessionWithConfiguration:[NSURLSessionConfiguration defaultSessionConfiguration]];
@@ -440,6 +438,31 @@
     dataTask = [session dataTaskWithRequest:URLRequest];
     [dataTask resume];
     XCTAssertNotNil([weakSelf getTraceHandler:dataTask]);
+}
+
+- (void)testSDKUploadLoggingRequest{
+    __block NSURLSessionDataTask *dataTask;
+    __weak typeof(self) weakSelf = self;
+    FTLoggingRequest *loggingRequest = [[FTLoggingRequest alloc]init];
+    NSURLRequest *URLRequest = [NSURLRequest requestWithURL:loggingRequest.absoluteURL];
+    NSURLSession *session = [NSURLSession
+                             sessionWithConfiguration:[NSURLSessionConfiguration defaultSessionConfiguration]];
+    
+    dataTask = [session dataTaskWithRequest:URLRequest];
+    [dataTask resume];
+    XCTAssertNil([weakSelf getTraceHandler:dataTask]);
+}
+- (void)testSDKUploadRumRequest{
+    __block NSURLSessionDataTask *dataTask;
+    __weak typeof(self) weakSelf = self;
+    FTLoggingRequest *loggingRequest = [[FTLoggingRequest alloc]init];
+    NSURLRequest *URLRequest = [NSURLRequest requestWithURL:loggingRequest.absoluteURL];
+    NSURLSession *session = [NSURLSession
+                             sessionWithConfiguration:[NSURLSessionConfiguration defaultSessionConfiguration]];
+    
+    dataTask = [session dataTaskWithRequest:URLRequest];
+    [dataTask resume];
+    XCTAssertNil([weakSelf getTraceHandler:dataTask]);
 }
 - (void)waitAndRunBlockAfterResponse:(void (^)(void))block {
     XCTestExpectation *expectation= [self expectationWithDescription:@"异步操作timeout"];

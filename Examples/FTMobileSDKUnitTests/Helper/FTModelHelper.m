@@ -98,7 +98,7 @@
     [[FTExternalDataManager sharedManager] addClickActionWithName:@"testActionClick" property:nil];
 }
 + (void)startActionWithType:(NSString *)type{
-    [[FTExternalDataManager sharedManager] addActionName:@"testActionClick2" actionType:type property:nil];
+    [[FTExternalDataManager sharedManager] startAction:@"testActionClick2" actionType:type property:nil];
 }
 + (void)addActionWithContext:(NSDictionary *)context{
     [[FTExternalDataManager sharedManager] addAction:@"testActionWithContext" actionType:@"click" property:context];

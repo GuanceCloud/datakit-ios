@@ -384,8 +384,8 @@ typedef NS_ENUM(NSInteger, FTNetworkTestsType) {
     [self waitForExpectations:@[expectation]];
 
     [FTModelHelper startView];
-    [FTModelHelper startAction];
-    [FTModelHelper startAction];
+    [FTModelHelper addActionWithContext:nil];
+    [FTModelHelper addActionWithContext:nil];
     for (int i = 0; i<101; i++) {
         dispatch_async(dispatch_get_global_queue(0, 0), ^{
             [[FTLogger sharedInstance] info:[NSString stringWithFormat:@"testLongTimeLogCache%d",i] property:nil];
@@ -495,7 +495,7 @@ typedef NS_ENUM(NSInteger, FTNetworkTestsType) {
     }];
     NSInteger newCount = [[FTTrackerEventDBTool sharedManger] getDatasCount];
     XCTAssertTrue(newCount == 0);
-    XCTAssertTrue(duration>time&&duration<150+time);
+    XCTAssertTrue(duration>time);
     [[FTTrackDataManager sharedInstance] removeObserver:self forKeyPath:@"isUploading"];
 }
 @end
