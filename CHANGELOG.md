@@ -1,3 +1,7 @@
+# 1.5.9-beta.2
+1. 修复 Resource 采集未过滤 SDK 内部 URL 的问题
+2. 修复 swift package 编译配置错误问题
+---
 # 1.5.9-beta.1
 1. 同 1.5.9-alpha.1
 ---
