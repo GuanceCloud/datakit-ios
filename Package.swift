@@ -26,6 +26,7 @@ let package = Package(
             targets: [
                       "FTSDKCore",
                      ]),
+        .library(name: "FTBaseUtils_Base", targets: ["_FTBaseUtils_Base"]),
     ],
     dependencies: [
         // Dependencies declare other packages that this package depends on.
@@ -102,7 +103,7 @@ let package = Package(
                ),
         // MARK: - BaseUtils
         .target(name: "_FTBaseUtils_Base",
-                dependencies: [],
+                dependencies: ["_FTBaseUtils_Thread"],
                 path: "FTMobileSDK/FTSDKCore/BaseUtils/Base",
                 publicHeadersPath: ".",
                 cSettings: [
@@ -116,9 +117,7 @@ let package = Package(
                    
                 ]),
         .target(name: "_FTBaseUtils_Thread",
-                dependencies: [],
                 path: "FTMobileSDK/FTSDKCore/BaseUtils/Thread",
-                publicHeadersPath: ".",
                 cSettings: [
                     
                 ]),

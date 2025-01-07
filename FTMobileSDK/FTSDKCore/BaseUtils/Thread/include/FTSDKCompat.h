@@ -6,7 +6,7 @@
 //  Copyright © 2023 DataFlux-cn. All rights reserved.
 //
 
-#import <TargetConditionals.h>
+#include <TargetConditionals.h>
 
 #ifdef __OBJC_GC__
     #error FTSDK does not support Objective-C Garbage Collection

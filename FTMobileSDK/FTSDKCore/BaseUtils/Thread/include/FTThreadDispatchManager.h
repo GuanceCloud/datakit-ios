@@ -5,7 +5,7 @@
 //  Created by 胡蕾蕾 on 2021/10/20.
 //  Copyright © 2021 DataFlux-cn. All rights reserved.
 //
-
+#ifdef __OBJC__
 #import <Foundation/Foundation.h>
 
 NS_ASSUME_NONNULL_BEGIN
@@ -21,3 +21,4 @@ NS_ASSUME_NONNULL_BEGIN
 @end
 
 NS_ASSUME_NONNULL_END
+#endif

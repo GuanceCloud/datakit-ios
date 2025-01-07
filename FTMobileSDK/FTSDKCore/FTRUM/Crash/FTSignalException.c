@@ -13,9 +13,7 @@
 #include <stdlib.h>
 #include "FTStackInfo.h"
 #include <string.h>
-#ifdef __OBJC__
 #include "FTSDKCompat.h"
-#endif
 static FTCrashNotifyCallback g_onCrashNotify;
 #if FT_HAS_SIGNAL_STACK
 static stack_t g_signalStack = {0};

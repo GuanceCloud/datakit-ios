@@ -49,7 +49,6 @@ Pod::Spec.new do |s|
 			core_path='FTMobileSDK/FTSDKCore/FTRUM/'
 			r.source_files = core_path+'RUMCore/**/*{.h,.m}',core_path+'Monitor/*{.h,.m}',core_path+'Crash/**/*{.h,.m,.c}',core_path+'FTAppLaunchTracker.{h,m}'
 			r.dependency 'FTMobileSDK/FTSDKCore/BaseUtils/Base'
-			r.dependency 'FTMobileSDK/FTSDKCore/BaseUtils/Thread'
 			r.dependency 'FTMobileSDK/FTSDKCore/Protocol'
 		end
 
@@ -67,10 +66,12 @@ Pod::Spec.new do |s|
 
 			b.subspec 'Base' do |bb|
 				bb.source_files = 'FTMobileSDK/FTSDKCore/BaseUtils/Base/**/*{.h,.m}'
+				bb.dependency 'FTMobileSDK/FTSDKCore/BaseUtils/Thread'
+
 			end
 
 			b.subspec 'Thread' do |bb|
-				bb.source_files = 'FTMobileSDK/FTSDKCore/BaseUtils/Thread/*{.h,.m}'
+				bb.source_files = 'FTMobileSDK/FTSDKCore/BaseUtils/Thread/**/*{.h,.m}'
 			end
 
 			b.subspec 'Swizzle' do |bb|
