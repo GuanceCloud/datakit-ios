@@ -24,11 +24,12 @@ static char *hasCompletionKey = "hasCompletionKey";
     return NO;
 }
 - (void)ft_resume{
-    id<FTURLSessionInterceptorProtocol> traceInterceptor = [[FTURLSessionInstrumentation sharedInstance] traceInterceptor:[self ft_delegate]];
-    id<FTURLSessionInterceptorProtocol> rumInterceptor = [[FTURLSessionInstrumentation sharedInstance] rumInterceptor:[self ft_delegate]];
-    [traceInterceptor traceInterceptTask:self];
-    [rumInterceptor interceptTask:self];
-    
+    if([[FTURLSessionInstrumentation sharedInstance] isNotSDKInsideUrl:self.currentRequest.URL]){
+        id<FTURLSessionInterceptorProtocol> traceInterceptor = [[FTURLSessionInstrumentation sharedInstance] traceInterceptor:[self ft_delegate]];
+        id<FTURLSessionInterceptorProtocol> rumInterceptor = [[FTURLSessionInstrumentation sharedInstance] rumInterceptor:[self ft_delegate]];
+        [traceInterceptor traceInterceptTask:self];
+        [rumInterceptor interceptTask:self];
+    }
     [self ft_resume];
 }
 - (id<NSURLSessionDelegate>)ft_delegate{
