@@ -190,6 +190,7 @@
  */
 - (void)testDataSoreANRDataFormat{
     [self initSDKWithEnableTrackAppANR:YES longTask:NO];
+    [FTModelHelper startViewWithName:@"TestAnrFormat"];
     XCTestExpectation *expect = [self expectationWithDescription:@"请求超时timeout!"];
     FTLongTaskManager *longTaskManager = [[FTGlobalRumManager sharedInstance] valueForKey:@"longTaskManager"];
     NSString *dataStorePath = [longTaskManager valueForKey:@"dataStorePath"];
@@ -208,6 +209,12 @@
                           [dict.allKeys containsObject:@"sessionContext"]&&
                           [dict.allKeys containsObject:@"backtrace"]&&
                           [dict.allKeys containsObject:@"isANR"]);
+            XCTAssertTrue([dict.allKeys containsObject:@"view"]);
+            NSDictionary *view = dict[@"view"];
+            NSDictionary *sessionContext = dict[@"sessionContext"];
+            NSString *viewId = view[FT_TAGS][FT_KEY_VIEW_ID];
+            NSString *sessionViewId = sessionContext[FT_KEY_VIEW_ID];
+            XCTAssertTrue([viewId isEqualToString:sessionViewId]);
             NSArray *dates = [array[1] componentsSeparatedByString:@"\n"];
             [dates enumerateObjectsUsingBlock:^(NSString  *obj, NSUInteger idx, BOOL * _Nonnull stop) {
                 if(obj.length>0){

@@ -10,6 +10,7 @@ import XCTest
 
 final class FTTestInteraction: XCTestCase {
     var tracerManager:FTTracer?
+    var task: URLSessionDataTask?
     override func setUpWithError() throws {
         // Put setup code here. This method is called before the invocation of each test method in the class.
     }
@@ -174,6 +175,13 @@ final class FTTestInteraction: XCTestCase {
             expectation.fulfill()
             return ["test":"test"]
         }
+        delegate.traceInterceptor = { request in
+            let traceContext = FTTraceContext()
+            traceContext.traceHeader = ["trace_key":"trace_value"]
+            traceContext.spanId = "spanId"
+            traceContext.traceId = "traceId"
+            return traceContext
+        }
         let dic = ProcessInfo().environment
         let url = dic["ACCESS_SERVER_URL"]
         let appid = dic["APP_ID"]
@@ -193,10 +201,14 @@ final class FTTestInteraction: XCTestCase {
         FTExternalDataManager.shared().startView(withName: "testSessionInterceptor")
         if let url = dic["TRACE_URL"] {
             let urlSession = URLSession(configuration: URLSessionConfiguration.default, delegate: delegate, delegateQueue: nil)
+             
             let dataTask = urlSession.dataTask(with: URL(string: url)!) { data, response, error in
-                
+                if let task = self.task {
+                    XCTAssertTrue((task.currentRequest?.allHTTPHeaderFields?.keys.contains("trace_key")) != nil)
+                }
                 expectation.fulfill()
             }
+            task = dataTask
             dataTask.resume()
             wait(for: [expectation])
             Thread.sleep(forTimeInterval: 0.5)

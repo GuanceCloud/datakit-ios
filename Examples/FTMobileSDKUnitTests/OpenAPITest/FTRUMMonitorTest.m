@@ -70,8 +70,7 @@
     [self setRumMonitorType:FTDeviceMetricsMonitorAll];
     [FTModelHelper startView];
     [tester waitForTimeInterval:1.5];
-    [FTModelHelper startAction];
-    [FTModelHelper startAction];
+    [FTModelHelper addActionWithContext:nil];
     [[FTGlobalRumManager sharedInstance].rumManager syncProcess];
     NSArray *newDatas = [[FTTrackerEventDBTool sharedManger] getFirstRecords:10 withType:FT_DATA_TYPE_RUM];
     [FTModelHelper resolveModelArray:newDatas callBack:^(NSString * _Nonnull source, NSDictionary * _Nonnull tags, NSDictionary * _Nonnull fields, BOOL * _Nonnull stop) {
@@ -115,9 +114,8 @@
     [[NSNotificationCenter defaultCenter]
      postNotificationName:UIApplicationDidBecomeActiveNotification object:nil];
     [FTModelHelper startView];
-    [tester waitForTimeInterval:0.5];
-    [FTModelHelper startAction];
-    [FTModelHelper startAction];
+    [tester waitForTimeInterval:1];
+    [FTModelHelper addActionWithContext:nil];
     [[FTGlobalRumManager sharedInstance].rumManager syncProcess];
     NSArray *newDatas = [[FTTrackerEventDBTool sharedManger] getFirstRecords:10 withType:FT_DATA_TYPE_RUM];
     [FTModelHelper resolveModelArray:newDatas callBack:^(NSString * _Nonnull source, NSDictionary * _Nonnull tags, NSDictionary * _Nonnull fields, BOOL * _Nonnull stop) {
@@ -212,6 +210,7 @@
 - (void)setRumMonitorType:(FTDeviceMetricsMonitorType)type{
     FTMobileConfig *config = [[FTMobileConfig alloc]initWithDatakitUrl:self.url];
     config.autoSync = NO;
+    config.enableSDKDebugLog = YES;
     FTRumConfig *rumConfig = [[FTRumConfig alloc]initWithAppid:self.appid];
     rumConfig.enableTraceUserAction = YES;
     rumConfig.enableTraceUserView = YES;
