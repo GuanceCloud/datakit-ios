@@ -73,6 +73,7 @@
                     self.isActiveView = NO;
                 }
                 self.didReceiveStartData = YES;
+                self.needUpdateView = YES;
             }else if(self.isActiveView == YES){
                 self.isActiveView = NO;
                 self.needUpdateView = YES;
@@ -214,7 +215,7 @@
     if(self.viewProperty && self.viewProperty.allKeys.count>0){
         [field addEntriesFromDictionary:self.viewProperty];
     }
-    if (cpu && cpu.greatestDiff>0) {
+    if (cpu && cpu.greatestDiff>=0) {
         [field setValue:@(cpu.greatestDiff) forKey:FT_CPU_TICK_COUNT];
         if(sTimeSpent>1.0){
             [field setValue:@(cpu.greatestDiff/sTimeSpent) forKey:FT_CPU_TICK_COUNT_PER_SECOND];
