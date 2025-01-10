@@ -653,7 +653,6 @@
     
     NSArray *oldArray =[[FTTrackerEventDBTool sharedManger] getFirstRecords:10 withType:FT_DATA_TYPE_RUM];
     [FTModelHelper startView];
-    [FTModelHelper startAction];
     [FTModelHelper startActionWithType:@"longTap"];
     [FTModelHelper startView];
     [[FTGlobalRumManager sharedInstance].rumManager syncProcess];
@@ -852,6 +851,7 @@
     XCTAssertFalse(hasClickAction);
     [FTModelHelper stopView];
 }
+// start action 0.1s 后新的 event 进入，数据不会绑定到 action 上并且 action 会被 close
 - (void)testStartAction_0_1s_NoDataBind{
     [self setRumConfig];
     [FTModelHelper startView];
@@ -1572,10 +1572,8 @@
 }
 - (void)addLongTaskData:(NSDictionary *)property{
     NSString *stack = @"test_long_task";
-    NSNumber *dutation = @5000000000;
-    
-    
-    [[FTExternalDataManager sharedManager] addLongTaskWithStack:stack duration:dutation property:property];
+    NSNumber *duration = @5000000000;
+    [[FTExternalDataManager sharedManager] addLongTaskWithStack:stack duration:duration property:property];
 }
 - (void)addResource{
     [self addResource:nil endContext:nil];
@@ -1583,7 +1581,7 @@
 - (void)addResource:(NSDictionary *)startContext endContext:(NSDictionary *)endContext{
     NSString *key = [FTBaseInfoHandler randomUUID];
     NSURL *url = [NSURL URLWithString:@"https://www.baidu.com/more/"];
-    NSDictionary *traceHeader = [[FTTraceManager sharedInstance] getTraceHeaderWithKey:key url:url];
+    NSDictionary *traceHeader = [[FTExternalDataManager sharedManager] getTraceHeaderWithKey:key url:url];
     [[FTExternalDataManager sharedManager] startResourceWithKey:key property:startContext];
     FTResourceContentModel *model = [FTResourceContentModel new];
     model.url = url;

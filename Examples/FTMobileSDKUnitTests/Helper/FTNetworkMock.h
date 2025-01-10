@@ -7,6 +7,7 @@
 //
 
 #import <Foundation/Foundation.h>
+#import "OHHTTPStubs.h"
 
 NS_ASSUME_NONNULL_BEGIN
 
@@ -14,8 +15,8 @@ NS_ASSUME_NONNULL_BEGIN
 + (void)registerUrlString:(NSString *)urlString;
 + (void)registerBeforeHandler:(void (^)(void))handler;
 + (void)registerHandler:(void (^)(void))handler;
-+ (void)networkOHHTTPStubs;
-+ (void)networkOHHTTPStubsHandler;
++ (id<OHHTTPStubsDescriptor>)networkOHHTTPStubs;
++ (id<OHHTTPStubsDescriptor>)networkOHHTTPStubsHandler;
 @end
 
 NS_ASSUME_NONNULL_END

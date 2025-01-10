@@ -10,13 +10,13 @@
 #import <XCTest/XCTest.h>
 
 NS_ASSUME_NONNULL_BEGIN
+typedef void (^Completion)(void);
 
 @interface TestSessionDelegate : NSObject<NSURLSessionDelegate,NSURLSessionDataDelegate>
--(instancetype)initWithTestExpectation:(XCTestExpectation *)expectation;
+-(instancetype)initWithCompletionHandler:(Completion)completionHandler;
 @end
 @interface TestSessionDelegate_NoCollectingMetrics : NSObject<NSURLSessionDelegate,NSURLSessionDataDelegate>
--(instancetype)initWithTestExpectation:(XCTestExpectation *)expectation;
-
+-(instancetype)initWithCompletionHandler:(Completion)completionHandler;
 @end
 @interface TestSessionDelegate_OnlyCollectingMetrics : NSObject<NSURLSessionDelegate,NSURLSessionDataDelegate>
 

@@ -9,6 +9,7 @@
 #import <Foundation/Foundation.h>
 #import <XCTest/XCTest.h>
 #import "FTURLSessionDelegate.h"
+typedef void (^Completion)(void);
 NS_ASSUME_NONNULL_BEGIN
 /**
  * 使用 session 工具的方法
@@ -22,10 +23,13 @@ typedef NS_ENUM(NSUInteger,TestSessionInstrumentationType){
     InstrumentationProperty,
 };
 @interface HttpEngineTestUtil : NSObject
-- (instancetype)initWithSessionInstrumentationType:(TestSessionInstrumentationType)type expectation:(XCTestExpectation *)expectation;
--(instancetype)initWithSessionInstrumentationType:(TestSessionInstrumentationType)type expectation:( XCTestExpectation *)expectation provider:(nullable ResourcePropertyProvider)provider requestInterceptor:(nullable RequestInterceptor)requestInterceptor
-                                 traceInterceptor:(nullable TraceInterceptor)traceInterceptor;
-- (void)network;
+- (instancetype)initWithSessionInstrumentationType:(TestSessionInstrumentationType)type completion:(Completion)completion;
+-(instancetype)initWithSessionInstrumentationType:(TestSessionInstrumentationType)type
+                                         provider:(nullable ResourcePropertyProvider)provider
+                               requestInterceptor:(nullable RequestInterceptor)requestInterceptor
+                                 traceInterceptor:(nullable TraceInterceptor)traceInterceptor
+                                       completion:(Completion)completion;
+- (NSURLSessionTask *)network;
 - (void)network:(void (^)(NSData * _Nullable data, NSURLResponse * _Nullable response, NSError * _Nullable error))completionHandler;
 - (void)urlNetwork;
 - (void)urlNetwork:(void (^)(NSData * _Nullable data, NSURLResponse * _Nullable response, NSError * _Nullable error))completionHandler;

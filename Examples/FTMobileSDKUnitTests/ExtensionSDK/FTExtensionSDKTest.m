@@ -114,7 +114,9 @@
     [[FTExternalDataManager sharedManager] startViewWithName:@"testRumResourceDelegate"];
     NSArray *olddatas = [[FTExtensionDataManager sharedInstance] readAllEventsWithGroupIdentifier:@"group.com.ft.widget.demo"];
     XCTestExpectation *expectation= [self expectationWithDescription:@"异步操作timeout"];
-    HttpEngineTestUtil *engine = [[HttpEngineTestUtil alloc]initWithSessionInstrumentationType:InstrumentationInherit expectation:expectation];
+    HttpEngineTestUtil *engine = [[HttpEngineTestUtil alloc]initWithSessionInstrumentationType:InstrumentationInherit completion:^{
+        [expectation fulfill];
+    }];
     [engine network:^(NSData * _Nullable data, NSURLResponse * _Nullable response, NSError * _Nullable error) {
         
     }];

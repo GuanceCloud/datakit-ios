@@ -7,7 +7,6 @@
 //
 
 #import "FTNetworkMock.h"
-#import "OHHTTPStubs.h"
 #import "FTJSONUtil.h"
 typedef void (^CompletionHandler)(void);
 static CompletionHandler g_handler;
@@ -25,8 +24,8 @@ static NSString *urlStr;
     [self networkOHHTTPStubsHandler];
     g_beforeHandler = handler;
 }
-+ (void)networkOHHTTPStubs{
-    [OHHTTPStubs stubRequestsPassingTest:^BOOL(NSURLRequest *request) {
++ (id<OHHTTPStubsDescriptor>)networkOHHTTPStubs{
+    return [OHHTTPStubs stubRequestsPassingTest:^BOOL(NSURLRequest *request) {
         if(urlStr&&urlStr.length>0){
             return [request.URL.absoluteString isEqualToString:urlStr];
         }
@@ -37,8 +36,8 @@ static NSString *urlStr;
         return [OHHTTPStubsResponse responseWithData:requestData statusCode:200 headers:nil];
     }];
 }
-+ (void)networkOHHTTPStubsHandler{
-    [OHHTTPStubs stubRequestsPassingTest:^BOOL(NSURLRequest *request) {
++ (id<OHHTTPStubsDescriptor>)networkOHHTTPStubsHandler{
+    return [OHHTTPStubs stubRequestsPassingTest:^BOOL(NSURLRequest *request) {
         if(urlStr&&urlStr.length>0){
             return [request.URL.absoluteString isEqualToString:urlStr];
         }
