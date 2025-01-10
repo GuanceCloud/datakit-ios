@@ -1,3 +1,6 @@
+# 1.5.10-alpha.1
+1. 支持全局 `traceInterceptor` 与 `resourcePropertyProvider`
+---
 # 1.5.9
 1. 新增支持通过 `FTURLSessionDelegate.traceInterceptor` block 拦截 `URLRequest`，进行自定义链路追踪、更改链路中 spanId 与 traceId
 2. RUM Resource 支持采集通过 swift async/await URLSession API 发起的网络请求
