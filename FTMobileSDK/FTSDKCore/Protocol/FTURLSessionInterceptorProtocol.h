@@ -27,6 +27,8 @@ NS_ASSUME_NONNULL_BEGIN
 typedef BOOL(^FTIntakeUrl)( NSURL * _Nonnull url);
 typedef BOOL(^FTResourceUrlHandler)( NSURL * _Nonnull url);
 typedef NSDictionary* _Nullable (^ResourcePropertyProvider)( NSURLRequest * _Nullable request, NSURLResponse * _Nullable response,NSData *_Nullable data, NSError *_Nullable error);
+/// 支持自定义 trace, 确认拦截后，返回 TraceContext，不拦截返回 nil
+typedef FTTraceContext*_Nullable(^TraceInterceptor)(NSURLRequest *_Nonnull request);
 
 /// session 拦截处理代理
 @protocol FTURLSessionInterceptorProtocol<NSObject>
@@ -34,6 +36,8 @@ typedef NSDictionary* _Nullable (^ResourcePropertyProvider)( NSURLRequest * _Nul
 /// 用户采集过滤回调
 @property (nonatomic, copy ,nullable) FTIntakeUrl intakeUrlHandler;
 @property (nonatomic, copy ,nullable) FTResourceUrlHandler resourceUrlHandler;
+@property (nonatomic, copy ,nullable) TraceInterceptor traceInterceptor;
+@property (nonatomic, copy ,nullable) ResourcePropertyProvider resourcePropertyProvider;
 
 
 /// 采集的 resource 数据接收对象
@@ -48,9 +52,9 @@ typedef NSDictionary* _Nullable (^ResourcePropertyProvider)( NSURLRequest * _Nul
 /// - Parameter task: 请求任务
 - (void)traceInterceptTask:(NSURLSessionTask *)task;
 
-/// 关联 traceId、spanId
-/// - Parameter task: 请求任务
-- (void)traceInterceptTask:(NSURLSessionTask *)task linkTraceContext:(nullable FTTraceContext *)traceContext;
+/// 实现 trace 功能，给 request header 添加 trace 参数
+/// - Parameter traceInterceptor: trace 拦截器
+- (void)traceInterceptTask:(NSURLSessionTask *)task traceInterceptor:(nullable TraceInterceptor)traceInterceptor;
 
 /// 请求开始 -startResource
 /// - Parameters:
@@ -62,6 +66,12 @@ typedef NSDictionary* _Nullable (^ResourcePropertyProvider)( NSURLRequest * _Nul
 ///   - task: 请求任务
 ///   - metrics: 请求任务的数据记录
 - (void)taskMetricsCollected:(NSURLSessionTask *)task metrics:(NSURLSessionTaskMetrics *)metrics API_AVAILABLE(ios(10.0),macos(10.12));
+
+/// 收集请求的数据信息
+/// - Parameters:
+///   - task: 请求任务
+///   - metrics: 请求任务的数据记录
+///   - custom: 是否是自定义采集的 URLSession
 - (void)taskMetricsCollected:(NSURLSessionTask *)task metrics:(NSURLSessionTaskMetrics *)metrics custom:(BOOL)custom API_AVAILABLE(ios(10.0),macos(10.12));
 /// 收集请求的返回数据
 /// - Parameters:

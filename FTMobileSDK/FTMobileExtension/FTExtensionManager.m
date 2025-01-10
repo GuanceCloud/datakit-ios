@@ -78,7 +78,9 @@ static FTExtensionManager *sharedInstance = nil;
     }
 }
 - (void)startRumWithConfigOptions:(FTRumConfig *)rumConfigOptions{
-    [[FTURLSessionInstrumentation sharedInstance] setEnableAutoRumTrace:rumConfigOptions.enableTraceUserResource resourceUrlHandler:rumConfigOptions.resourceUrlHandler];
+    [[FTURLSessionInstrumentation sharedInstance]setEnableAutoRumTrace:rumConfigOptions.enableTraceUserResource
+                                                    resourceUrlHandler:rumConfigOptions.resourceUrlHandler
+                                              resourcePropertyProvider:rumConfigOptions.resourcePropertyProvider];
     FTRUMDependencies *dependencies = [[FTRUMDependencies alloc]init];
     dependencies.writer = self;
     dependencies.errorMonitorType = (ErrorMonitorType)rumConfigOptions.errorMonitorType;
@@ -95,7 +97,7 @@ static FTExtensionManager *sharedInstance = nil;
 }
 
 - (void)startTraceWithConfigOptions:(FTTraceConfig *)traceConfigOptions{
-    [[FTURLSessionInstrumentation sharedInstance] setTraceEnableAutoTrace:traceConfigOptions.enableAutoTrace enableLinkRumData:traceConfigOptions.enableLinkRumData sampleRate:traceConfigOptions.samplerate traceType:traceConfigOptions.networkTraceType];
+    [[FTURLSessionInstrumentation sharedInstance] setTraceEnableAutoTrace:traceConfigOptions.enableAutoTrace enableLinkRumData:traceConfigOptions.enableLinkRumData sampleRate:traceConfigOptions.samplerate traceType:traceConfigOptions.networkTraceType traceInterceptor:traceConfigOptions.traceInterceptor];
     [FTExternalDataManager sharedManager].resourceDelegate = [FTURLSessionInstrumentation sharedInstance].externalResourceHandler;
 
 }

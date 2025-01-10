@@ -55,6 +55,7 @@
     options.freezeDurationMs = self.freezeDurationMs;
     options.rumCacheLimitCount = self.rumCacheLimitCount;
     options.rumDiscardType = self.rumDiscardType;
+    options.resourcePropertyProvider = self.resourcePropertyProvider;
     return options;
 }
 -(instancetype)initWithDictionary:(NSDictionary *)dict{
@@ -75,6 +76,7 @@
             _deviceMetricsMonitorType = (FTDeviceMetricsMonitorType)[dict[@"deviceMetricsMonitorType"] intValue];
             _monitorFrequency = (FTMonitorFrequency)[dict[@"monitorFrequency"] intValue];
             _resourceUrlHandler = [dict valueForKey:@"resourceUrlHandler"];
+            _resourcePropertyProvider = [dict valueForKey:@"resourceProvider"];
         }
         return self;
     }else{
@@ -113,6 +115,7 @@
     [dict setValue:self.resourceUrlHandler forKey:@"resourceUrlHandler"];
     [dict setValue:@(self.rumCacheLimitCount) forKey:@"rumCacheLimitCount"];
     [dict setValue:@(self.rumDiscardType) forKey:@"rumDiscardType"];
+    [dict setValue:self.resourcePropertyProvider forKey:@"resourceProvider"];
     return dict;
 }
 -(NSString *)debugDescription{
@@ -197,6 +200,7 @@
     options.enableLinkRumData = self.enableLinkRumData;
     options.networkTraceType = self.networkTraceType;
     options.enableAutoTrace = self.enableAutoTrace;
+    options.traceInterceptor = self.traceInterceptor;
     return options;
 }
 -(instancetype)initWithDictionary:(NSDictionary *)dict{
@@ -206,6 +210,7 @@
             _enableLinkRumData = [dict[@"enableLinkRumData"] boolValue];
             _networkTraceType =(FTNetworkTraceType)[dict[@"networkTraceType"] intValue];
             _enableAutoTrace = [dict[@"enableAutoTrace"] boolValue];
+            _traceInterceptor = dict[@"traceInterceptor"];
         }
         return self;
     }else{
@@ -213,11 +218,13 @@
     }
 }
 -(NSDictionary *)convertToDictionary{
-    return @{@"samplerate":@(self.samplerate),
-             @"enableLinkRumData":@(self.enableLinkRumData),
-             @"networkTraceType":@(self.networkTraceType),
-             @"enableAutoTrace":@(self.enableAutoTrace),
-    };
+    NSMutableDictionary *dict = [NSMutableDictionary new];
+    [dict setValue:@(self.samplerate) forKey:@"samplerate"];
+    [dict setValue:@(self.enableLinkRumData) forKey:@"enableLinkRumData"];
+    [dict setValue:@(self.networkTraceType) forKey:@"networkTraceType"];
+    [dict setValue:@(self.enableAutoTrace) forKey:@"enableAutoTrace"];
+    [dict setValue:self.traceInterceptor forKey:@"traceInterceptor"];
+    return dict;
 }
 -(NSString *)debugDescription{
     return [NSString stringWithFormat:@"%@",[self convertToDictionary]];

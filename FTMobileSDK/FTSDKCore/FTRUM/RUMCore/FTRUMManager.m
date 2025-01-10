@@ -231,6 +231,7 @@ void *FTRUMQueueIdentityKey = &FTRUMQueueIdentityKey;
             if(metrics.resourceFetchTypeLocalCache){
                 FTRUMResourceDataModel *resourceSuccess = [[FTRUMResourceDataModel alloc]initWithType:FTRUMDataResourceAbandon identifier:key];
                 [self process:resourceSuccess context:context];
+                NSLog(@"[TEST] resourceFetchTypeLocalCache:url%@",content.url.absoluteString);
             }else{
                 NSMutableDictionary *tags = [NSMutableDictionary new];
                 NSMutableDictionary *fields = [NSMutableDictionary new];

@@ -103,7 +103,9 @@ static dispatch_once_t onceToken;
         [FTPresetProperty sharedInstance].rumGlobalContext = _rumConfig.globalContext;
         [[FTTrackDataManager sharedInstance] setRUMCacheLimitCount:_rumConfig.rumCacheLimitCount discardNew:_rumConfig.rumDiscardType == FTRUMDiscard];
         [[FTGlobalRumManager sharedInstance] setRumConfig:_rumConfig writer:self];
-        [[FTURLSessionInstrumentation sharedInstance] setEnableAutoRumTrace:_rumConfig.enableTraceUserResource resourceUrlHandler:_rumConfig.resourceUrlHandler];
+        [[FTURLSessionInstrumentation sharedInstance]setEnableAutoRumTrace:_rumConfig.enableTraceUserResource
+                                                         resourceUrlHandler:_rumConfig.resourceUrlHandler
+                                                   resourcePropertyProvider:_rumConfig.resourcePropertyProvider];
         [[FTURLSessionInstrumentation sharedInstance] setRumResourceHandler:[FTGlobalRumManager sharedInstance].rumManager];
         [FTExternalDataManager sharedManager].resourceDelegate = [FTURLSessionInstrumentation sharedInstance].externalResourceHandler;
         [[FTExtensionDataManager sharedInstance] writeRumConfig:[_rumConfig convertToDictionary]];
@@ -138,7 +140,9 @@ static dispatch_once_t onceToken;
         [[FTURLSessionInstrumentation sharedInstance] setTraceEnableAutoTrace:_traceConfig.enableAutoTrace
                                                             enableLinkRumData:_traceConfig.enableLinkRumData
                                                                    sampleRate:_traceConfig.samplerate
-                                                                    traceType:_traceConfig.networkTraceType];
+                                                                    traceType:_traceConfig.networkTraceType
+                                                             traceInterceptor:_traceConfig.traceInterceptor
+        ];
         [FTExternalDataManager sharedManager].resourceDelegate = [FTURLSessionInstrumentation sharedInstance].externalResourceHandler;
         [[FTExtensionDataManager sharedInstance] writeTraceConfig:[_traceConfig convertToDictionary]];
         FTInnerLogInfo(@"Init Trace Config Success: \n%@",traceConfigOptions.debugDescription);

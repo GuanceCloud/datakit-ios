@@ -90,18 +90,23 @@ static dispatch_once_t onceToken;
 - (void)setTraceEnableAutoTrace:(BOOL)enableAutoTrace
               enableLinkRumData:(BOOL)enableLinkRumData
                      sampleRate:(int)sampleRate
-                      traceType:(FTNetworkTraceType)traceType{
+                      traceType:(FTNetworkTraceType)traceType
+               traceInterceptor:(TraceInterceptor)traceInterceptor{
     _tracer = [[FTTracer alloc] initWithSampleRate:sampleRate
                                          traceType:(NetworkTraceType)traceType
                                        serviceName:self.serviceName
                                    enableAutoTrace:enableAutoTrace
                                  enableLinkRumData:enableLinkRumData];
     [self.interceptor setTracer:_tracer];
+    self.interceptor.traceInterceptor = traceInterceptor;
     self.shouldTraceInterceptor = enableAutoTrace;
 }
-- (void)setEnableAutoRumTrace:(BOOL)enableAutoRumTrack resourceUrlHandler:(FTResourceUrlHandler)resourceUrlHandler{
+- (void)setEnableAutoRumTrace:(BOOL)enableAutoRumTrack
+           resourceUrlHandler:(FTResourceUrlHandler)resourceUrlHandler
+     resourcePropertyProvider:(ResourcePropertyProvider)resourcePropertyProvider{
     self.interceptor.resourceUrlHandler = resourceUrlHandler;
     self.shouldRUMInterceptor = enableAutoRumTrack;
+    self.interceptor.resourcePropertyProvider = resourcePropertyProvider;
 }
 - (void)setRumResourceHandler:(id<FTRumResourceProtocol>)handler{
     self.interceptor.rumResourceHandler = handler;
