@@ -213,14 +213,12 @@
         return excluded;
     };
     [[FTMobileAgent sharedInstance] startRumWithConfigOptions:rumConfig];
-    XCTestExpectation *expectation= [self expectationWithDescription:@"异步操作timeout"];
+    XCTestExpectation *expectation = [self expectationWithDescription:@"异步操作timeout"];
     [FTModelHelper startView];
     [self networkUploadHandler:^(NSURLResponse *response, NSError *error) {
         [expectation fulfill];
     }];
-    [self waitForExpectationsWithTimeout:30 handler:^(NSError *error) {
-           XCTAssertNil(error);
-       }];
+    [self waitForExpectations:@[expectation] timeout:10];
     [tester waitForTimeInterval:0.5];
     [[FTGlobalRumManager sharedInstance].rumManager syncProcess];
     NSArray *newArray = [[FTTrackerEventDBTool sharedManger] getAllDatas];

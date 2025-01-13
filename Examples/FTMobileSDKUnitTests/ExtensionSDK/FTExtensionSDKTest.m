@@ -69,9 +69,9 @@
     [self setExtensionSDK];
     NSArray *olddatas = [[FTExtensionDataManager sharedInstance] readAllEventsWithGroupIdentifier:@"group.com.ft.widget.demo"];
     [[FTExternalDataManager sharedManager] startViewWithName:@"TestRum"];
-    [[FTExternalDataManager sharedManager] addClickActionWithName:@"extensionClick1"];
+    [[FTExternalDataManager sharedManager] startAction:@"extensionClick1" actionType:@"click" property:nil];
     [tester waitForTimeInterval:0.1];
-    [[FTExternalDataManager sharedManager] addClickActionWithName:@"extensionClick2"];
+    [[FTExternalDataManager sharedManager] startAction:@"extensionClick2" actionType:@"click" property:nil];
     [NSThread sleepForTimeInterval:2];
     NSArray *datas = [[FTExtensionDataManager sharedInstance] readAllEventsWithGroupIdentifier:@"group.com.ft.widget.demo"];
     XCTAssertTrue(datas.count>olddatas.count);

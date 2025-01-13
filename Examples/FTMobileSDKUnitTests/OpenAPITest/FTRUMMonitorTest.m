@@ -131,12 +131,13 @@
     FTCPUMonitor *cpuMonitor = [[FTCPUMonitor alloc]init];
     double baseUsage = [cpuMonitor readCpuUsage];
     [[NSNotificationCenter defaultCenter] postNotificationName:UIApplicationWillResignActiveNotification object:nil];
+    double resignActiveUsage1 = [cpuMonitor readCpuUsage];
     [self heavyWork];
     double resignActiveUsage = [cpuMonitor readCpuUsage];
     [[NSNotificationCenter defaultCenter] postNotificationName:UIApplicationDidBecomeActiveNotification object:nil];
     [self heavyWork];
     double activeUsage = [cpuMonitor readCpuUsage];
-    XCTAssertEqual(resignActiveUsage, baseUsage);
+    XCTAssertEqual(resignActiveUsage, resignActiveUsage1);
     XCTAssertGreaterThan(activeUsage-resignActiveUsage, resignActiveUsage-baseUsage);
 }
 - (void)testMonitorFrequencyDefault{

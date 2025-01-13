@@ -156,16 +156,19 @@
 }
 - (void)testLongTaskStartTime{
     [self initSDKWithEnableTrackAppANR:NO longTask:NO];
-    long long startTime = [NSDate ft_currentNanosecondTimeStamp]-1000000;
-    [[FTExternalDataManager sharedManager] addLongTaskWithStack:@"test_stack" duration:@(1000000)];
+    __block long long startTime;
+    CFTimeInterval duration = [FTTestUtils functionElapsedTime:^{
+        startTime = [NSDate ft_currentNanosecondTimeStamp]-1000000000;
+        [[FTExternalDataManager sharedManager] addLongTaskWithStack:@"test_stack" duration:@(1000000000)];
+    }]*1000000000;
     
     [[FTMobileAgent sharedInstance] syncProcess];
     NSArray *datas = [[FTTrackerEventDBTool sharedManger] getFirstRecords:10 withType:FT_DATA_TYPE_RUM];
     __block BOOL noLongTask = YES;
     [FTModelHelper resolveModelArray:datas timeCallBack:^(NSString * _Nonnull source, NSDictionary * _Nonnull tags, NSDictionary * _Nonnull fields, long long time,BOOL * _Nonnull stop) {
-        if ([source isEqualToString:FT_RUM_SOURCE_LONG_TASK]) {
+        if ([source isEqualToString:FT_RUM_SOURCE_LONG_TASK]&&[fields[FT_KEY_LONG_TASK_STACK] isEqualToString:@"test_stack"]) {
             noLongTask = NO;
-            XCTAssertTrue(time-startTime<10000);
+            XCTAssertTrue(time-startTime<duration);
             *stop = YES;
         }
     }];

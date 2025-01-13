@@ -591,12 +591,12 @@
     }
     [[FTTrackDataManager sharedInstance] insertCacheToDB];
     XCTAssertTrue([[FTTrackerEventDBTool sharedManger] getDatasCount] == count);
-    // RUM Anctio、View、Resource采集关闭
+    // RUM Action、View、Resource采集关闭
     [[tester waitForViewWithAccessibilityLabel:@"home"] tap];
     [tester waitForTimeInterval:0.5];
     [[FTExternalDataManager sharedManager] startViewWithName:@"test"];
-    [[FTExternalDataManager sharedManager] addClickActionWithName:@"testClick"];
-    [[FTExternalDataManager sharedManager] addClickActionWithName:@"testClick"];
+    [[FTExternalDataManager sharedManager] startAction:@"testClick" actionType:@"click" property:nil];
+    [[FTExternalDataManager sharedManager] startAction:@"testClick" actionType:@"click" property:nil];
 
     [[FTExternalDataManager sharedManager] addErrorWithType:@"ios" message:@"testMessage" stack:@"testStack"];
     [[tester waitForViewWithAccessibilityLabel:@"Network data collection"] tap];

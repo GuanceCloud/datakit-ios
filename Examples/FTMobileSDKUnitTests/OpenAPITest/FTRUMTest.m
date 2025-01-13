@@ -496,7 +496,7 @@
     [FTModelHelper startAction];
     NSString *key = [FTBaseInfoHandler randomUUID];
     NSURL *url = [NSURL URLWithString:@"https://www.baidu.com/more/"];
-    NSDictionary *traceHeader = [[FTTraceManager sharedInstance] getTraceHeaderWithKey:key url:url];
+    NSDictionary *traceHeader = [[FTExternalDataManager sharedManager] getTraceHeaderWithKey:key url:url];
     [[FTExternalDataManager sharedManager] startResourceWithKey:key];
     [[NSNotificationCenter defaultCenter]
      postNotificationName:UIApplicationDidEnterBackgroundNotification object:nil];
@@ -678,7 +678,7 @@
     [[FTExternalDataManager sharedManager] onCreateView:@"view1" loadTime:@1000000000];
     [[FTExternalDataManager sharedManager] startViewWithName:@"view1"];
     
-    [[FTExternalDataManager sharedManager] addClickActionWithName:@"" property:nil];
+    [[FTExternalDataManager sharedManager] startAction:@"" actionType:@"click" property:nil];
     
     [[FTGlobalRumManager sharedInstance].rumManager syncProcess];
     [[FTExternalDataManager sharedManager] stopView];
@@ -761,7 +761,7 @@
     [FTMobileAgent clearAllData];
     [FTModelHelper startView];
     NSDictionary *property = @{@"action_property":@"addAction"};
-    [[FTExternalDataManager sharedManager] addActionName:@"testAddAction_HasStartAction" actionType:@"click" property:nil];
+    [[FTExternalDataManager sharedManager] startAction:@"testAddAction_HasStartAction" actionType:@"click" property:nil];
     [FTModelHelper addActionWithContext:property];
     [self addLongTaskData:nil];
     [[FTGlobalRumManager sharedInstance].rumManager syncProcess];
@@ -828,7 +828,7 @@
 - (void)testStartAction_0_1s_ActionAbandon{
     [self setRumConfig];
     [FTModelHelper startView];
-    [[FTExternalDataManager sharedManager] addActionName:@"action1" actionType:@"click" property:nil];
+    [[FTExternalDataManager sharedManager] startAction:@"action1" actionType:@"click" property:nil];
     [[FTExternalDataManager sharedManager] startAction:@"action2" actionType:@"click" property:nil];
     [[FTGlobalRumManager sharedInstance].rumManager syncProcess];
     FTRUMManager *rum = [FTGlobalRumManager sharedInstance].rumManager;
@@ -1612,7 +1612,7 @@
 - (void)addLowercaseResource{
     NSString *key = [FTBaseInfoHandler randomUUID];
     NSURL *url = [NSURL URLWithString:@"https://www.baidu.com/more/"];
-    NSDictionary *traceHeader = [[FTTraceManager sharedInstance] getTraceHeaderWithKey:key url:url];
+    NSDictionary *traceHeader = [[FTExternalDataManager sharedManager] getTraceHeaderWithKey:key url:url];
     [[FTExternalDataManager sharedManager] startResourceWithKey:key];
     FTResourceContentModel *model = [FTResourceContentModel new];
     model.url = url;
