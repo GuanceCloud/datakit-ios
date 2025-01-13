@@ -26,7 +26,7 @@
 NS_ASSUME_NONNULL_BEGIN
 typedef BOOL(^FTIntakeUrl)( NSURL * _Nonnull url);
 typedef BOOL(^FTResourceUrlHandler)( NSURL * _Nonnull url);
-typedef NSDictionary* _Nullable (^ResourcePropertyProvider)( NSURLRequest * _Nullable request, NSURLResponse * _Nullable response,NSData *_Nullable data, NSError *_Nullable error);
+typedef NSDictionary<NSString *,id>* _Nullable (^ResourcePropertyProvider)( NSURLRequest * _Nullable request, NSURLResponse * _Nullable response,NSData *_Nullable data, NSError *_Nullable error);
 /// 支持自定义 trace, 确认拦截后，返回 TraceContext，不拦截返回 nil
 typedef FTTraceContext*_Nullable(^TraceInterceptor)(NSURLRequest *_Nonnull request);
 

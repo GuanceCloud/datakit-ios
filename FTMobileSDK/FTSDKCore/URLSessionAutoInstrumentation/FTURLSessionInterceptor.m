@@ -15,6 +15,7 @@
 #import "FTLog+Private.h"
 #import "FTTraceContext.h"
 #import "NSURLSessionTask+FTSwizzler.h"
+#import "NSDictionary+FTCopyProperties.h"
 void *FTInterceptorQueueIdentityKey = &FTInterceptorQueueIdentityKey;
 
 @interface FTURLSessionInterceptor ()
@@ -284,6 +285,7 @@ static dispatch_once_t onceToken;
             NSDictionary *property;
             if(provider){
                 property = provider(handler.request, handler.response, handler.data, handler.error);
+                property = [property ft_deepCopy];
             }
             [self stopResourceWithKey:handler.identifier property:property];
             __block NSString *span_id = handler.spanID,*trace_id=handler.traceID;
