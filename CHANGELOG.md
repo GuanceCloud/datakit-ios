@@ -1,3 +1,6 @@
+# 1.5.10-beta.1
+1. `traceInterceptor` 与 `resourcePropertyProvider` block 别名添加 `FT` 前缀、返回值 NSDictionary 添加类型声明
+---
 # 1.5.10-alpha.1
 1. 支持全局 `traceInterceptor` 与 `resourcePropertyProvider`
 ---
