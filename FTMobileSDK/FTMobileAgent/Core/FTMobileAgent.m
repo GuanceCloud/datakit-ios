@@ -191,38 +191,49 @@ static dispatch_once_t onceToken;
     FTInnerLogInfo(@"Bind User ID : %@ , Name : %@ , Email : %@ , Extra : %@",Id,userName,userEmail,safeExtra);
 }
 + (void)appendGlobalContext:(NSDictionary <NSString*,id>*)context{
-    if (onceToken == 0 && sharedInstance == nil) {
-        return;
+    @try {
+        if (onceToken == 0 && sharedInstance == nil) {
+            return;
+        }
+        if(!context){
+            FTInnerLogWarning(@"appendGlobalContext: context is nil");
+        }
+        NSDictionary *safeDict = [context ft_deepCopy];
+        [[FTPresetProperty sharedInstance] appendGlobalContext:safeDict];
+        FTInnerLogInfo(@"appendGlobalContext : %@",safeDict);
+    } @catch (NSException *exception) {
+        FTInnerLogError(@"appendGlobalContext exception: %@",exception);
     }
-    if(!context){
-        FTInnerLogWarning(@"appendGlobalContext: context is nil");
-    }
-    NSDictionary *safeDict = [context ft_deepCopy];
-    [[FTPresetProperty sharedInstance] appendGlobalContext:safeDict];
-    FTInnerLogInfo(@"appendGlobalContext : %@",safeDict);
 }
 + (void)appendRUMGlobalContext:(NSDictionary <NSString*,id>*)context{
-    if (onceToken == 0 && sharedInstance == nil) {
-        return;
+    @try {
+        if (onceToken == 0 && sharedInstance == nil) {
+            return;
+        }
+        if(!context){
+            FTInnerLogWarning(@"appendRUMGlobalContext: context is nil");
+        }
+        NSDictionary *safeDict = [context ft_deepCopy];
+        [[FTPresetProperty sharedInstance] appendRUMGlobalContext:safeDict];
+        FTInnerLogInfo(@"appendRUMGlobalContext : %@",safeDict);
+    } @catch (NSException *exception) {
+        FTInnerLogError(@"appendRUMGlobalContext exception: %@",exception);
     }
-    if(!context){
-        FTInnerLogWarning(@"appendRUMGlobalContext: context is nil");
-    }
-    NSDictionary *safeDict = [context ft_deepCopy];
-    [[FTPresetProperty sharedInstance] appendRUMGlobalContext:safeDict];
-    FTInnerLogInfo(@"appendRUMGlobalContext : %@",safeDict);
-   
 }
 + (void)appendLogGlobalContext:(NSDictionary <NSString*,id>*)context{
-    if (onceToken == 0 && sharedInstance == nil) {
-        return;
+    @try {
+        if (onceToken == 0 && sharedInstance == nil) {
+            return;
+        }
+        if(!context){
+            FTInnerLogWarning(@"appendLogGlobalContext: context is nil");
+        }
+        NSDictionary *safeDict = [context ft_deepCopy];
+        [[FTPresetProperty sharedInstance] appendLogGlobalContext:safeDict];
+        FTInnerLogInfo(@"appendLogGlobalContext : %@",safeDict);
+    } @catch (NSException *exception) {
+        FTInnerLogError(@"appendLogGlobalContext exception: %@",exception);
     }
-    if(!context){
-        FTInnerLogWarning(@"appendLogGlobalContext: context is nil");
-    }
-    NSDictionary *safeDict = [context ft_deepCopy];
-    [[FTPresetProperty sharedInstance] appendLogGlobalContext:safeDict];
-    FTInnerLogInfo(@"appendLogGlobalContext : %@",safeDict);
 }
 //用户注销
 - (void)logout{

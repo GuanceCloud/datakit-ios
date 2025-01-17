@@ -142,6 +142,33 @@
         XCTAssertTrue([value.lastObject isEqualToString:@"e"]);
     }];    
 }
+- (void)testReadWriteHelperCurrentValue{
+    NSMutableDictionary *dict = @{@"a":@"a",@"b":@"b",@"c":@"c"}.mutableCopy;
+    FTReadWriteHelper *helper = [[FTReadWriteHelper alloc]initWithValue:dict];
+    dispatch_group_t group = dispatch_group_create();
+    XCTestExpectation *exception = [[XCTestExpectation alloc]init];
+    dispatch_async(dispatch_queue_create(0, 0), ^{
+        for (int i = 0; i<10000; i++) {
+            [helper concurrentWrite:^(id  _Nonnull value) {
+                [value addEntriesFromDictionary:@{[NSString stringWithFormat:@"%d",i]:@"val"}];
+            }];
+        }
+    });
+    dispatch_group_enter(group);
+    dispatch_async(dispatch_queue_create(0, 0), ^{
+        for (int j = 0; j<10000; j++) {
+            NSMutableDictionary *newDict = [NSMutableDictionary new];
+            [newDict addEntriesFromDictionary:helper.currentValue];
+            if(j == 9999){
+                dispatch_group_leave(group);
+            }
+        }
+        
+    });
+    dispatch_group_notify(group, dispatch_get_main_queue(), ^{
+        [exception fulfill];
+    });
+}
 #pragma mark ==========  NSNumber ==========
 - (void)testLineProtocolDealNumber{
     NSNumber *trueNum = [NSNumber numberWithBool:YES];

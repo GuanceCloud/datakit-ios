@@ -47,4 +47,12 @@
     value.sampleValueCount = self.sampleValueCount;
     return value;
 }
+- (id)copyWithZone:(nullable NSZone *)zone{
+    FTMonitorValue *value = [[[self class] allocWithZone:zone] init];
+    value.minValue = self.minValue;
+    value.maxValue = self.maxValue;
+    value.sampleValueCount = self.sampleValueCount;
+    value.meanValue = self.meanValue;
+    return value;
+}
 @end
