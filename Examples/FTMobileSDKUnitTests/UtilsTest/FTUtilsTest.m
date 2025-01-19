@@ -120,55 +120,6 @@
     XCTAssertFalse([uuid containsString:@"-"]);
     XCTAssertTrue([[uuid lowercaseString] isEqualToString:uuid]);
 }
-#pragma mark FTReadWriteHelper
-- (void)testReadWriteHelper{
-    NSMutableArray *array = @[@"a",@"b",@"c",@"d"].mutableCopy;
-    FTReadWriteHelper *helper = [[FTReadWriteHelper alloc]initWithValue:array];
-    [helper concurrentRead:^(NSMutableArray *value) {
-        XCTAssertTrue(value.count == 4);
-    }];
-    [helper concurrentRead:^(NSMutableArray *value) {
-        XCTAssertTrue(value.count == 4);
-    }];
-    [helper concurrentWrite:^(id  _Nonnull value) {
-        sleep(0.5);
-        [value addObject:@"e"];
-    }];
-    
-    [helper concurrentRead:^(NSMutableArray *value) {
-        XCTAssertTrue(value.count == 5);
-    }];
-    [helper concurrentRead:^(NSMutableArray *value) {
-        XCTAssertTrue([value.lastObject isEqualToString:@"e"]);
-    }];    
-}
-- (void)testReadWriteHelperCurrentValue{
-    NSMutableDictionary *dict = @{@"a":@"a",@"b":@"b",@"c":@"c"}.mutableCopy;
-    FTReadWriteHelper *helper = [[FTReadWriteHelper alloc]initWithValue:dict];
-    dispatch_group_t group = dispatch_group_create();
-    XCTestExpectation *exception = [[XCTestExpectation alloc]init];
-    dispatch_async(dispatch_queue_create(0, 0), ^{
-        for (int i = 0; i<10000; i++) {
-            [helper concurrentWrite:^(id  _Nonnull value) {
-                [value addEntriesFromDictionary:@{[NSString stringWithFormat:@"%d",i]:@"val"}];
-            }];
-        }
-    });
-    dispatch_group_enter(group);
-    dispatch_async(dispatch_queue_create(0, 0), ^{
-        for (int j = 0; j<10000; j++) {
-            NSMutableDictionary *newDict = [NSMutableDictionary new];
-            [newDict addEntriesFromDictionary:helper.currentValue];
-            if(j == 9999){
-                dispatch_group_leave(group);
-            }
-        }
-        
-    });
-    dispatch_group_notify(group, dispatch_get_main_queue(), ^{
-        [exception fulfill];
-    });
-}
 #pragma mark ==========  NSNumber ==========
 - (void)testLineProtocolDealNumber{
     NSNumber *trueNum = [NSNumber numberWithBool:YES];

@@ -595,7 +595,7 @@
     [dataTask resume];
     [urlSession finishTasksAndInvalidate];
     [self waitForExpectations:@[expect]];
-    sleep(0.5);
+    sleep(1);
     [[FTGlobalRumManager sharedInstance].rumManager syncProcess];
     NSArray *newArray = [[FTTrackerEventDBTool sharedManger] getFirstRecords:100 withType:FT_DATA_TYPE_RUM];
     __block NSInteger hasResourceData = NO;
