@@ -328,6 +328,7 @@ void *FTLongTaskManagerQueueTag = &FTLongTaskManagerQueueTag;
 }
 -(void)shutDown{
     [_longTaskDetector stopDetecting];
+    _longTaskEvent = nil;
     [self deleteFile];
 }
 -(void)dealloc{

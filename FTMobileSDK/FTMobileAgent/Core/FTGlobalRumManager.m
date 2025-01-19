@@ -177,6 +177,7 @@ static dispatch_once_t onceToken;
 #if !TARGET_OS_TV
     [FTWKWebViewHandler sharedInstance].enableTrace = NO;
 #endif
+    [_longTaskManager shutDown];
     onceToken = 0;
     sharedInstance = nil;
     FTInnerLogInfo(@"[RUM] SHUT DOWN");
