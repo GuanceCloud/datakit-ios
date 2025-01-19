@@ -462,9 +462,14 @@ void *FTRUMQueueIdentityKey = &FTRUMQueueIdentityKey;
 }
 -(NSDictionary *)rumDynamicProperty{
     NSMutableDictionary *dict = [NSMutableDictionary dictionary];
-    dict[@"network_type"] = [FTNetworkConnectivity sharedInstance].networkType;
-    [dict addEntriesFromDictionary:[[FTPresetProperty sharedInstance] rumDynamicProperty]];
-    return dict;
+    @try {
+        dict[@"network_type"] = [FTNetworkConnectivity sharedInstance].networkType;
+        [dict addEntriesFromDictionary:[[FTPresetProperty sharedInstance] rumDynamicProperty]];
+    } @catch (NSException *exception) {
+        FTInnerLogError(@"exception %@",exception);
+    } @finally {
+        return dict;
+    }
 }
 - (NSDictionary *)getLinkRUMData{
     NSMutableDictionary *dict = [NSMutableDictionary dictionary];
