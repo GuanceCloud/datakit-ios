@@ -35,6 +35,7 @@ NSString * const FT_NULL_VALUE  = @"N/A";
 NSString * const FT_TYPE = @"type";
 NSString * const FT_SDK_VERSION = @"sdk_version";
 NSString * const FT_SDK_NAME = @"sdk_name";
+NSString * const FT_SDK_PKG_INFO = @"sdk_pkg_info";
 #pragma mark ========== BASE PROPERTY ==========
 NSString * const FT_COMMON_PROPERTY_APP_NAME = @"app_name";
 NSString * const FT_COMMON_PROPERTY_OS_VERSION = @"os_version";

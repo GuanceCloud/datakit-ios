@@ -34,6 +34,7 @@ extern NSString * const FT_RUM_SOURCE_LONG_TASK;
 extern NSString * const FT_RUM_SOURCE_VIEW;
 extern NSString * const FT_SDK_VERSION;
 extern NSString * const FT_SDK_NAME;
+extern NSString * const FT_SDK_PKG_INFO;
 #pragma mark ========== BASE PROPERTY ==========
 //应用名称
 extern NSString * const FT_COMMON_PROPERTY_APP_NAME;

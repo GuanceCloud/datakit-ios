@@ -156,10 +156,11 @@ typedef void(^FTTraceRequest)(NSURLRequest *);
                 XCTAssertTrue([field[FT_KEY_IS_ACTIVE] isEqual:@(NO)]);
 
                 // 基础 tags
-                XCTAssertTrue([tags[@"package_native"] isEqualToString:SDK_VERSION]);
-                XCTAssertFalse([tags[FT_SDK_VERSION] isEqualToString:SDK_VERSION]);
-                XCTAssertTrue([tags[FT_SDK_NAME] isEqualToString:@"df_web_rum_sdk"]);
-                XCTAssertTrue([tags[FT_KEY_SERVICE] isEqualToString:@"browser"]);
+                NSString *info = [FTJSONUtil convertToJsonDataWithObject:@{@"web":@"3.0.19"}];
+                XCTAssertTrue([tags[FT_SDK_PKG_INFO] isEqualToString:info]);
+                XCTAssertTrue([tags[FT_SDK_VERSION] isEqualToString:SDK_VERSION]);
+                XCTAssertFalse([tags[FT_SDK_NAME] isEqualToString:@"df_web_rum_sdk"]);
+                XCTAssertFalse([tags[FT_KEY_SERVICE] isEqualToString:@"browser"]);
                 XCTAssertTrue(obj.tm>smallTime && obj.tm < [NSDate ft_currentNanosecondTimeStamp]);
                 hasViewData = YES;
             }
@@ -209,7 +210,7 @@ typedef void(^FTTraceRequest)(NSURLRequest *);
         }
     }];
     XCTAssertTrue(hasViewData);
-    [[FTMobileAgent sharedInstance] shutDown];
+    [FTMobileAgent shutDown];
 }
 - (void)testReloadTrace{
     [self setsdk];

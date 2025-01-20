@@ -268,13 +268,7 @@ static dispatch_once_t onceToken;
     @try {
         NSMutableDictionary *baseTags =[NSMutableDictionary new];
         [baseTags addEntriesFromDictionary:tags];
-        NSDictionary *rumProperty;
-        // webView 打进的数据
-        if([tags.allKeys containsObject:FT_IS_WEBVIEW]){
-            rumProperty = [[FTPresetProperty sharedInstance] rumWebViewProperty];
-        }else{
-            rumProperty = [[FTPresetProperty sharedInstance] rumProperty];
-        }
+        NSDictionary *rumProperty = [[FTPresetProperty sharedInstance] rumProperty];
         [baseTags addEntriesFromDictionary:rumProperty];
         FTRecordModel *model = [[FTRecordModel alloc]initWithSource:type op:FT_DATA_TYPE_RUM tags:baseTags fields:fields tm:time];
         [self insertDBWithItemData:model type:FTAddDataRUM];

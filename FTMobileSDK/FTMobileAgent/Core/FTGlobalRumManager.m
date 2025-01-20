@@ -105,7 +105,12 @@ static dispatch_once_t onceToken;
         if ([name isEqualToString:@"rum"]||[name isEqualToString:@"log"]) {
             NSDictionary *data = messageDic[@"data"];
             NSString *measurement = data[FT_MEASUREMENT];
-            NSDictionary *tags = data[FT_TAGS];
+            NSMutableDictionary *tags = [data[FT_TAGS] mutableCopy];
+            NSString *version = [tags valueForKey:FT_SDK_VERSION];
+            if(version&&version.length>0){
+                NSString *info = [FTJSONUtil convertToJsonDataWithObject:@{@"web":version}];
+                [tags setValue:info forKey:FT_SDK_PKG_INFO];
+            }
             NSDictionary *fields = data[FT_FIELDS];
             long long time = [data[@"time"] longLongValue];
             long long fixTime = time * 1000000;
