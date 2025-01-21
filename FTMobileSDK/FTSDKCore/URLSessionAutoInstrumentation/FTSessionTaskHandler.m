@@ -12,6 +12,7 @@
 #import "FTResourceMetricsModel+Private.h"
 #import "FTBaseInfoHandler.h"
 @interface FTSessionTaskHandler ()
+@property (nonatomic, strong) NSMutableData *mutableData;
 @end
 @implementation FTSessionTaskHandler
 -(instancetype)init{
@@ -25,10 +26,10 @@
     return self;
 }
 - (void)taskReceivedData:(NSData *)data{
-    if(!self.data){
-        self.data = [NSMutableData dataWithData:data];
+    if(!self.mutableData){
+        self.mutableData = [NSMutableData dataWithData:data];
     }else{
-        [self.data appendData:data];
+        [self.mutableData appendData:data];
     }
 }
 - (void)taskReceivedMetrics:(NSURLSessionTaskMetrics *)metrics{
@@ -47,8 +48,13 @@
 - (void)taskCompleted:(NSURLSessionTask *)task error:(NSError *)error{
     self.error = error;
     self.response = task.response;
-    NSHTTPURLResponse *response =(NSHTTPURLResponse *)task.response;
-    FTResourceContentModel *model = [[FTResourceContentModel alloc]initWithRequest:task.currentRequest response:response data:self.data error:error];
+    NSData *data = nil;
+    if (self.mutableData) {
+        data = [self.mutableData copy];
+        self.mutableData = nil;
+    }
+    self.data = data;
+    FTResourceContentModel *model = [[FTResourceContentModel alloc]initWithRequest:task.currentRequest response:task.response data:self.data error:error];
     self.contentModel = model;
 }
 @end
