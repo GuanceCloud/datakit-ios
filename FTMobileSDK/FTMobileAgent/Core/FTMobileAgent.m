@@ -39,6 +39,7 @@
 @property (nonatomic, strong) FTLoggerConfig *loggerConfig;
 @property (nonatomic, strong) FTRumConfig *rumConfig;
 @property (nonatomic, strong) FTTraceConfig *traceConfig;
+@property (nonatomic, strong) FTMobileConfig *sdkConfig;
 
 @property (nonatomic, copy) NSString *netTraceStr;
 @end
@@ -64,30 +65,31 @@ static dispatch_once_t onceToken;
     @try {
         self = [super init];
         if (self) {
+            _sdkConfig = [config copy];
             //基础类型的记录
-            [FTLog enableLog:config.enableSDKDebugLog];
-            [FTExtensionDataManager sharedInstance].groupIdentifierArray = config.groupIdentifiers;
+            [FTLog enableLog:_sdkConfig.enableSDKDebugLog];
+            [FTExtensionDataManager sharedInstance].groupIdentifierArray = _sdkConfig.groupIdentifiers;
             //开启数据处理管理器
-            [FTTrackDataManager startWithAutoSync:config.autoSync syncPageSize:config.syncPageSize syncSleepTime:config.syncSleepTime];
+            [FTTrackDataManager startWithAutoSync:_sdkConfig.autoSync syncPageSize:_sdkConfig.syncPageSize syncSleepTime:_sdkConfig.syncSleepTime];
             if(config.enableLimitWithDbSize){
-                [[FTTrackDataManager sharedInstance] setDBLimitWithSize:config.dbCacheLimit discardNew:config.dbDiscardType == FTDBDiscard];
+                [[FTTrackDataManager sharedInstance] setDBLimitWithSize:_sdkConfig.dbCacheLimit discardNew:_sdkConfig.dbDiscardType == FTDBDiscard];
             }
             NSString *version = [[[NSBundle mainBundle] infoDictionary] objectForKey:@"CFBundleShortVersionString"];
             [[FTPresetProperty sharedInstance] startWithVersion:version
                                                      sdkVersion:SDK_VERSION
-                                                            env:config.env
-                                                        service:config.service
-                                                  globalContext:config.globalContext];
+                                                            env:_sdkConfig.env
+                                                        service:_sdkConfig.service
+                                                  globalContext:_sdkConfig.globalContext];
             [FTNetworkInfoManager sharedInstance]
-                .setDatakitUrl(config.datakitUrl)
-                .setDatawayUrl(config.datawayUrl)
-                .setClientToken(config.clientToken)
+                .setDatakitUrl(_sdkConfig.datakitUrl)
+                .setDatawayUrl(_sdkConfig.datawayUrl)
+                .setClientToken(_sdkConfig.clientToken)
                 .setSdkVersion(SDK_VERSION)
-                .setCompression(config.compressIntakeRequests)
-                .setEnableDataIntegerCompatible(config.enableDataIntegerCompatible);
-            [[FTURLSessionInstrumentation sharedInstance] setSdkUrlStr:config.datakitUrl.length>0?config.datakitUrl:config.datawayUrl
-                                                           serviceName:config.service];
-            FTInnerLogInfo(@"Init Mobile Config Success: \n%@",config.debugDescription);
+                .setCompression(_sdkConfig.compressIntakeRequests)
+                .setEnableDataIntegerCompatible(_sdkConfig.enableDataIntegerCompatible);
+            [[FTURLSessionInstrumentation sharedInstance] setSdkUrlStr:_sdkConfig.datakitUrl.length>0?_sdkConfig.datakitUrl:_sdkConfig.datawayUrl
+                                                           serviceName:_sdkConfig.service];
+            FTInnerLogInfo(@"Init Mobile Config Success: \n%@",_sdkConfig.debugDescription);
         }
     }@catch(NSException *exception) {
         FTInnerLogError(@"exception: %@",exception);
@@ -270,6 +272,16 @@ static dispatch_once_t onceToken;
         [baseTags addEntriesFromDictionary:tags];
         NSDictionary *rumProperty = [[FTPresetProperty sharedInstance] rumProperty];
         [baseTags addEntriesFromDictionary:rumProperty];
+        NSDictionary *pkgInfo = self.sdkConfig.pkgInfo;
+        if(pkgInfo && pkgInfo.count>0){
+            NSDictionary *info = [baseTags valueForKey:FT_SDK_PKG_INFO];
+            if(info){
+                NSMutableDictionary *mutableInfo = [info mutableCopy];
+                [mutableInfo addEntriesFromDictionary:pkgInfo];
+                pkgInfo = mutableInfo;
+            }
+            [baseTags setValue:pkgInfo forKey:FT_SDK_PKG_INFO];
+        }
         FTRecordModel *model = [[FTRecordModel alloc]initWithSource:type op:FT_DATA_TYPE_RUM tags:baseTags fields:fields tm:time];
         [self insertDBWithItemData:model type:FTAddDataRUM];
     } @catch (NSException *exception) {
@@ -281,6 +293,10 @@ static dispatch_once_t onceToken;
 -(void)logging:(NSString *)content status:(NSString *)status tags:(nullable NSDictionary *)tags field:(nullable NSDictionary *)field time:(long long)time{
     @try {
         NSMutableDictionary *tagDict = [NSMutableDictionary dictionaryWithDictionary:[[FTPresetProperty sharedInstance] loggerProperty]];
+        NSDictionary *pkgInfo = self.sdkConfig.pkgInfo;
+        if(pkgInfo && pkgInfo.count>0){
+            [tagDict setValue:pkgInfo forKey:FT_SDK_PKG_INFO];
+        }
         if (tags) {
             [tagDict addEntriesFromDictionary:tags];
         }

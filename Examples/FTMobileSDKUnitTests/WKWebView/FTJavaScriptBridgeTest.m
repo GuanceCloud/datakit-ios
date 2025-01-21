@@ -20,6 +20,7 @@
 #import "FTGlobalRumManager.h"
 #import "FTRUMManager.h"
 #import "FTMobileAgentVersion.h"
+#import "FTMobileConfig+Private.h"
 typedef void(^FTTraceRequest)(NSURLRequest *);
 @interface FTJavaScriptBridgeTest : KIFTestCase<WKNavigationDelegate>
 @property (nonatomic, strong) TestWKWebViewVC *viewController;
@@ -69,11 +70,19 @@ typedef void(^FTTraceRequest)(NSURLRequest *);
     self.window = nil;
 }
 - (void)setsdk{
+    [self setSDK:nil];
+}
+- (void)setSDK:(NSDictionary *)pkgInfo{
     NSProcessInfo *processInfo = [NSProcessInfo processInfo];
     NSString *url = [processInfo environment][@"ACCESS_SERVER_URL"];
     NSString *appid = [processInfo environment][@"APP_ID"];
     FTMobileConfig *config = [[FTMobileConfig alloc]initWithDatakitUrl:url];
     config.autoSync = NO;
+    if(pkgInfo && pkgInfo.count>0){
+        [pkgInfo enumerateKeysAndObjectsUsingBlock:^(id  _Nonnull key, id  _Nonnull obj, BOOL * _Nonnull stop) {
+            [config addPkgInfo:key value:obj];
+        }];
+    }
     FTTraceConfig *traceConfig = [[FTTraceConfig alloc]init];
     traceConfig.enableAutoTrace = YES;
     FTRumConfig *rumConfig = [[FTRumConfig alloc]initWithAppid:appid];
@@ -85,12 +94,12 @@ typedef void(^FTTraceRequest)(NSURLRequest *);
 /// 1.验证有webview传入数据添加
 /// 2.验证数据格式
 ///   基础 tags :
-///    与 webview 一致：
+///    与 native sdk 一致：
 ///    sdk_name
 ///    sdk_version
 ///    service
 ///    新增 tag 字段：
-///    package_native
+///    sdk_pkg_info:{@"web":"version"}
 ///    is_web_view
 ///   其余与 native SDK 一致
 ///
@@ -105,8 +114,21 @@ typedef void(^FTTraceRequest)(NSURLRequest *);
 - (void)testAddRumViewData_Nanosecond{
     [self addRumViewData:YES];
 }
+///    新增 tag 字段：
+///    sdk_pkg_info:{@"web":"version",addPkgInfo}
+///    is_web_view
+///   其余与 native SDK 一致
+- (void)testAddPkgInfo{
+    [self addRumViewData:YES addPkgInfo:@{
+        @"test_sdk1":@"1.0.0",
+        @"test_sdk2":@"1.0.1",
+                                        }];
+}
 - (void)addRumViewData:(BOOL)nano{
-    [self setsdk];
+    [self addRumViewData:nano addPkgInfo:nil];
+}
+- (void)addRumViewData:(BOOL)nano addPkgInfo:(NSDictionary *)info{
+    [self setSDK:info];
     long long smallTime = [NSDate ft_currentNanosecondTimeStamp];
     NSURL *url = [[NSBundle mainBundle] URLForResource:@"sample" withExtension:@"html"];
     [self.viewController ft_load:url.absoluteString];
@@ -154,10 +176,9 @@ typedef void(^FTTraceRequest)(NSURLRequest *);
                 // rum 相关调整
                 XCTAssertFalse([tags[FT_RUM_KEY_SESSION_ID] isEqualToString:@"12345"]);
                 XCTAssertTrue([field[FT_KEY_IS_ACTIVE] isEqual:@(NO)]);
-
-                // 基础 tags
-                NSString *info = [FTJSONUtil convertToJsonDataWithObject:@{@"web":@"3.0.19"}];
-                XCTAssertTrue([tags[FT_SDK_PKG_INFO] isEqualToString:info]);
+                NSMutableDictionary *infoDict = [NSMutableDictionary dictionaryWithDictionary:@{@"web":@"3.0.19"}];
+                [infoDict addEntriesFromDictionary:info];
+                XCTAssertTrue([tags[FT_SDK_PKG_INFO] isEqualToDictionary:infoDict]);
                 XCTAssertTrue([tags[FT_SDK_VERSION] isEqualToString:SDK_VERSION]);
                 XCTAssertFalse([tags[FT_SDK_NAME] isEqualToString:@"df_web_rum_sdk"]);
                 XCTAssertFalse([tags[FT_KEY_SERVICE] isEqualToString:@"browser"]);

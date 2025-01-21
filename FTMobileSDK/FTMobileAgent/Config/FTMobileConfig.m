@@ -230,6 +230,9 @@
     return [NSString stringWithFormat:@"%@",[self convertToDictionary]];
 }
 @end
+@interface FTMobileConfig()
+@property (nonatomic, strong) NSMutableDictionary *sdkPkgInfo;
+@end
 @implementation FTMobileConfig
 -(instancetype)initWithMetricsUrl:(NSString *)metricsUrl{
     self = [self initWithDatakitUrl:metricsUrl];
@@ -297,6 +300,21 @@
             break;
     }
 }
+-(NSDictionary *)pkgInfo{
+    NSDictionary *dict = nil;
+    @synchronized (self) {
+        dict = _sdkPkgInfo;
+    }
+    return dict;
+}
+- (void)addPkgInfo:(NSString *)key value:(NSString *)value{
+    @synchronized (self) {
+        if(!_sdkPkgInfo){
+            _sdkPkgInfo = [NSMutableDictionary dictionary];
+        }
+        [_sdkPkgInfo setValue:value forKey:key];
+    }
+}
 #pragma mark NSCopying
 - (id)copyWithZone:(nullable NSZone *)zone {
     FTMobileConfig *options = [[[self class] allocWithZone:zone] init];
@@ -316,6 +334,7 @@
     options.enableLimitWithDbSize = self.enableLimitWithDbSize;
     options.dbCacheLimit = self.dbCacheLimit;
     options.dbDiscardType = self.dbDiscardType;
+    options.sdkPkgInfo = [self.sdkPkgInfo copy];
     return options;
 }
 -(NSString *)debugDescription{

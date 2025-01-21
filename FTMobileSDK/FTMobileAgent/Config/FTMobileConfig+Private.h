@@ -9,6 +9,10 @@
 #import "FTMobileConfig.h"
 
 NS_ASSUME_NONNULL_BEGIN
+@interface FTMobileConfig ()
+- (void)addPkgInfo:(NSString *)key value:(NSString *)value;
+- (NSDictionary *)pkgInfo;
+@end
 
 @interface FTLoggerConfig ()
 /// 私有的初始化方法，通过字典来初始化，用于 Extensin SDK
