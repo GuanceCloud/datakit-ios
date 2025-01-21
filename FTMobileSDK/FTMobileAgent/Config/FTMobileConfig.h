@@ -137,9 +137,9 @@ typedef FTTraceContext*_Nullable(^FTTraceInterceptor)(NSURLRequest *_Nonnull req
 ///
 /// 例: @[@(FTStatusInfo),@(FTStatusError)]
 /// 或 @[@0,@1]
-@property (nonatomic, strong) NSArray<NSNumber*> *logLevelFilter;
+@property (nonatomic, copy) NSArray<NSNumber*> *logLevelFilter;
 /// logger 全局 tag
-@property (nonatomic, strong) NSDictionary<NSString*,NSString*> *globalContext;
+@property (nonatomic, copy) NSDictionary<NSString*,NSString*> *globalContext;
 
 @end
 
@@ -189,7 +189,7 @@ typedef FTTraceContext*_Nullable(^FTTraceInterceptor)(NSURLRequest *_Nonnull req
 /// 设置 rum 全局 tag
 ///
 /// 保留标签:特殊 key - track_id (用于追踪功能)
-@property (nonatomic, strong) NSDictionary<NSString*,NSString*> *globalContext;
+@property (nonatomic, copy) NSDictionary<NSString*,NSString*> *globalContext;
 /// RUM 最大缓存量,  默认 100_000
 @property (nonatomic, assign) int rumCacheLimitCount;
 /// RUM废弃策略
@@ -276,10 +276,10 @@ typedef FTTraceContext*_Nullable(^FTTraceInterceptor)(NSURLRequest *_Nonnull req
 /// 设置 SDK 全局 tag
 ///
 /// 保留标签： sdk_package_flutter、sdk_package_react_native
-@property (nonatomic, strong) NSDictionary<NSString*,NSString*> *globalContext;
+@property (nonatomic, copy) NSDictionary<NSString*,NSString*> *globalContext;
 
 /// 需要采集的 Extensions 对应的 AppGroups Identifier 数组
-@property (nonatomic, strong) NSArray *groupIdentifiers;
+@property (nonatomic, copy) NSArray<NSString*> *groupIdentifiers;
 
 /// 根据提供的 FTEnv 类型设置 env
 /// - Parameter envType: 环境

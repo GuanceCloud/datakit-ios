@@ -478,8 +478,9 @@
     XCTAssertTrue(copyRumConfig.freezeDurationMs == rumConfig.freezeDurationMs);
     XCTAssertTrue(copyRumConfig.rumDiscardType == rumConfig.rumDiscardType);
     XCTAssertTrue(copyRumConfig.rumCacheLimitCount == rumConfig.rumCacheLimitCount);
-
+    XCTAssertTrue([copyRumConfig.debugDescription isEqualToString:rumConfig.debugDescription]);
 }
+// block 块不进行处理
 - (void)testRUMConfigInitWithDict{
     XCTAssertNil([[FTRumConfig alloc]initWithDictionary:nil]);
     FTRumConfig *rumConfig = [[FTRumConfig alloc]init];
@@ -498,7 +499,7 @@
     XCTAssertTrue(rumConfig.deviceMetricsMonitorType == newRum.deviceMetricsMonitorType);
     XCTAssertTrue(rumConfig.monitorFrequency == newRum.monitorFrequency);
     XCTAssertTrue(rumConfig.globalContext == newRum.globalContext);
-    XCTAssertTrue(rumConfig.resourceUrlHandler == newRum.resourceUrlHandler);
+    XCTAssertFalse(rumConfig.resourceUrlHandler == newRum.resourceUrlHandler);
     XCTAssertTrue(rumConfig.freezeDurationMs == newRum.freezeDurationMs);
 }
 - (void)testTraceConfigCopy{
@@ -512,6 +513,7 @@
     XCTAssertTrue(copyTraceConfig.enableLinkRumData == traceConfig.enableLinkRumData);
     XCTAssertTrue(copyTraceConfig.samplerate == traceConfig.samplerate);
     XCTAssertTrue(copyTraceConfig.networkTraceType == traceConfig.networkTraceType);
+    XCTAssertTrue([copyTraceConfig.debugDescription isEqualToString:traceConfig.debugDescription]);
 }
 - (void)testTraceConfigInitWithDict{
     XCTAssertNil([[FTTraceConfig alloc]initWithDictionary:nil]);
@@ -540,6 +542,8 @@
     XCTAssertTrue([copyLoggerConfig.logLevelFilter isEqual: loggerConfig.logLevelFilter]);
     XCTAssertTrue([copyLoggerConfig.globalContext isEqual: loggerConfig.globalContext]);
     XCTAssertTrue(loggerConfig.printCustomLogToConsole == copyLoggerConfig.printCustomLogToConsole);
+    XCTAssertTrue([copyLoggerConfig.debugDescription isEqualToString:loggerConfig.debugDescription]);
+
 }
 - (void)testLoggerConfigInitWithDict{
     XCTAssertNil([[FTLoggerConfig alloc]initWithDictionary:nil]);

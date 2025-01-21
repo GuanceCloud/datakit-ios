@@ -90,9 +90,6 @@
 -(void)setFreezeDurationMs:(long)freezeDurationMs{
     _freezeDurationMs = MAX(FT_MIN_DEFAULT_BLOCK_DURATIONS_MS,freezeDurationMs);
 }
--(void)setGlobalContext:(NSDictionary<NSString *,NSString *> *)globalContext{
-    _globalContext = [globalContext ft_deepCopy];
-}
 -(void)setRumCacheLimitCount:(int)rumCacheLimitCount{
     _rumCacheLimitCount = MAX(FT_DB_RUM_MIN_COUNT,rumCacheLimitCount);
 }
@@ -112,14 +109,15 @@
     [dict setValue:@(self.deviceMetricsMonitorType) forKey:@"deviceMetricsMonitorType"];
     [dict setValue:@(self.monitorFrequency) forKey:@"monitorFrequency"];
     [dict setValue:self.globalContext forKey:@"globalContext"];
-    [dict setValue:self.resourceUrlHandler forKey:@"resourceUrlHandler"];
     [dict setValue:@(self.rumCacheLimitCount) forKey:@"rumCacheLimitCount"];
     [dict setValue:@(self.rumDiscardType) forKey:@"rumDiscardType"];
-    [dict setValue:self.resourcePropertyProvider forKey:@"resourceProvider"];
     return dict;
 }
 -(NSString *)debugDescription{
-    return [NSString stringWithFormat:@"%@",[self convertToDictionary]];
+    NSMutableDictionary *dict = [[self convertToDictionary] mutableCopy];
+    [dict setValue:[self.resourceUrlHandler copy] forKey:@"resourceUrlHandler"];
+    [dict setValue:[self.resourcePropertyProvider copy] forKey:@"resourcePropertyProvider"];
+    return [NSString stringWithFormat:@"%@",dict];
 }
 @end
 @implementation FTLoggerConfig
@@ -165,9 +163,6 @@
 }
 -(void)setLogCacheLimitCount:(int)logCacheLimitCount{
     _logCacheLimitCount = MAX(FT_DB_LOG_MIN_COUNT, logCacheLimitCount);
-}
--(void)setGlobalContext:(NSDictionary<NSString *,NSString *> *)globalContext{
-    _globalContext = [globalContext ft_deepCopy];
 }
 -(NSDictionary *)convertToDictionary{
     NSMutableDictionary *dict = [NSMutableDictionary new];
@@ -223,11 +218,12 @@
     [dict setValue:@(self.enableLinkRumData) forKey:@"enableLinkRumData"];
     [dict setValue:@(self.networkTraceType) forKey:@"networkTraceType"];
     [dict setValue:@(self.enableAutoTrace) forKey:@"enableAutoTrace"];
-    [dict setValue:self.traceInterceptor forKey:@"traceInterceptor"];
     return dict;
 }
 -(NSString *)debugDescription{
-    return [NSString stringWithFormat:@"%@",[self convertToDictionary]];
+    NSMutableDictionary *dict = [[self convertToDictionary] mutableCopy];
+    [dict setValue:[self.traceInterceptor copy] forKey:@"traceInterceptor"];
+    return [NSString stringWithFormat:@"%@",dict];
 }
 @end
 @interface FTMobileConfig()
@@ -266,9 +262,6 @@
         _enableLimitWithDbSize = NO;
     }
     return self;
-}
--(void)setGlobalContext:(NSDictionary<NSString *,NSString *> *)globalContext{
-    _globalContext = [globalContext ft_deepCopy];
 }
 -(void)setDbCacheLimit:(long)dbCacheLimit{
     _dbCacheLimit = MAX(FT_MIN_DB_SIZE_LIMIT, dbCacheLimit);

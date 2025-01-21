@@ -115,7 +115,7 @@ static dispatch_once_t onceToken;
             if (_loggerConfig) {
                 [FTLogger sharedInstance].linkRumDataProvider = [FTGlobalRumManager sharedInstance].rumManager;
             }
-            FTInnerLogInfo(@"Init RUM Config Success: \n%@",rumConfigOptions.debugDescription);
+            FTInnerLogInfo(@"Init RUM Config Success: \n%@",_rumConfig.debugDescription);
         }
     } @catch (NSException *exception) {
         FTInnerLogError(@"exception: %@",exception);
@@ -134,7 +134,7 @@ static dispatch_once_t onceToken;
                                       enableLinkRumData:_loggerConfig.enableLinkRumData
                                          logLevelFilter:_loggerConfig.logLevelFilter sampleRate:_loggerConfig.samplerate writer:self];
             [FTLogger sharedInstance].linkRumDataProvider = [FTGlobalRumManager sharedInstance].rumManager;
-            FTInnerLogInfo(@"Init Logger Config Success: \n%@",loggerConfigOptions.debugDescription);
+            FTInnerLogInfo(@"Init Logger Config Success: \n%@",_loggerConfig.debugDescription);
         }
         
     } @catch (NSException *exception) {
@@ -158,7 +158,7 @@ static dispatch_once_t onceToken;
             ];
             [FTExternalDataManager sharedManager].resourceDelegate = [FTURLSessionInstrumentation sharedInstance].externalResourceHandler;
             [[FTExtensionDataManager sharedInstance] writeTraceConfig:[_traceConfig convertToDictionary]];
-            FTInnerLogInfo(@"Init Trace Config Success: \n%@",traceConfigOptions.debugDescription);
+            FTInnerLogInfo(@"Init Trace Config Success: \n%@",_traceConfig.debugDescription);
         }
     } @catch (NSException *exception) {
         FTInnerLogError(@"exception: %@",exception);
