@@ -290,6 +290,15 @@
     XCTAssertTrue([config.globalContext[@"testGlobalContext_mutable"] isEqualToString:@"testGlobalContext_mutable"]);
     XCTAssertTrue([context[@"testGlobalContext_mutable"] isEqualToString:@"testGlobalContext"]);
 }
+- (void)testAddPkgInfo{
+    FTMobileConfig *config = [[FTMobileConfig alloc]initWithDatakitUrl:self.url];
+    config.enableSDKDebugLog = YES;
+    config.autoSync = NO;
+    XCTAssertNil([config pkgInfo]);
+    [config addPkgInfo:@"test_sdk" value:@"1.0.0"];
+    XCTAssertTrue([[config pkgInfo] isEqualToDictionary:@{@"test_sdk":@"1.0.0"}]);
+    XCTAssertFalse([config pkgInfo] == [config pkgInfo]);
+}
 - (void)testAppendGlobalContext{
     FTMobileConfig *config = [[FTMobileConfig alloc]initWithDatakitUrl:self.url];
     config.enableSDKDebugLog = YES;

@@ -296,7 +296,7 @@
 -(NSDictionary *)pkgInfo{
     NSDictionary *dict = nil;
     @synchronized (self) {
-        dict = _sdkPkgInfo;
+        dict = [_sdkPkgInfo copy];
     }
     return dict;
 }
