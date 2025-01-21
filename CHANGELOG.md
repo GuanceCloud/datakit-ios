@@ -1,3 +1,9 @@
+# 1.5.10
+1. 支持通过 `FTTraceConfig.traceInterceptor` 拦截 Request 自定义 Trace,
+   通过 `FTRumConfig.resourcePropertyProvider` 添加 RUM Resource 自定义属性
+2. 修复动态添加全局属性方法在多线程访问下的异常问题
+3. 优化 WebView 传入数据信息
+---
 # 1.5.10-beta.3
 1. SDK 版本信息内容传输优化
 2. 优化处理 Resource 数据过程，防止多线程使用 NSMutableData 异常、NSURLResponse 强转 NSHTTPURLResponse 异常
