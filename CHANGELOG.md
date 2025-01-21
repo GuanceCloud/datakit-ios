@@ -1,3 +1,7 @@
+# 1.5.10-beta.3
+1. SDK 版本信息内容传输优化
+2. 优化处理 Resource 数据过程，防止多线程使用 NSMutableData 异常、NSURLResponse 强转 NSHTTPURLResponse 异常
+---
 # 1.5.10-beta.2
 1. 调整 WebView RUM 传入数据格式
 ---
