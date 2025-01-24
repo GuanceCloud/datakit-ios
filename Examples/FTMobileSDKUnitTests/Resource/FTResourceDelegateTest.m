@@ -410,8 +410,8 @@ typedef NS_ENUM(NSUInteger,TestSessionRequestMethod){
         }];
         [expectation fulfill];
     }];
-    [[FTURLSessionInterceptor shared] interceptTask:task];
     [task resume];
+    [[FTURLSessionInterceptor shared] interceptTask:task];
     [self waitForExpectationsWithTimeout:30 handler:^(NSError *error) {
         XCTAssertNil(error);
     }];

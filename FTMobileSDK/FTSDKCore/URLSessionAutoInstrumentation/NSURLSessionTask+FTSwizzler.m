@@ -9,7 +9,7 @@
 #import "NSURLSessionTask+FTSwizzler.h"
 #import "FTURLSessionInstrumentation.h"
 #import <objc/runtime.h>
-
+#import "FTLog+Private.h"
 static char *hasCompletionKey = "hasCompletionKey";
 @implementation NSURLSessionTask (FTSwizzler)
 
@@ -24,7 +24,11 @@ static char *hasCompletionKey = "hasCompletionKey";
     return NO;
 }
 - (void)ft_resume{
-    if([[FTURLSessionInstrumentation sharedInstance] isNotSDKInsideUrl:self.currentRequest.URL]){
+    if(self.currentRequest == nil || self.currentRequest.URL){
+        FTInnerLogError(@"Task currentRequest %@.\noriginalRequest:%@",!self.currentRequest?@"is nil":@"URL is nil",[self.originalRequest description]);
+    }
+    NSURLRequest *originalRequest = self.originalRequest;
+    if(originalRequest && [[FTURLSessionInstrumentation sharedInstance] isNotSDKInsideUrl:originalRequest.URL]){
         id<FTURLSessionInterceptorProtocol> traceInterceptor = [[FTURLSessionInstrumentation sharedInstance] traceInterceptor:[self ft_delegate]];
         id<FTURLSessionInterceptorProtocol> rumInterceptor = [[FTURLSessionInstrumentation sharedInstance] rumInterceptor:[self ft_delegate]];
         [traceInterceptor traceInterceptTask:self];

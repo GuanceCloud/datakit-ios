@@ -155,12 +155,16 @@ static dispatch_once_t onceToken;
 }
 - (void)traceInterceptTask:(NSURLSessionTask *)task traceInterceptor:(nullable TraceInterceptor)traceInterceptor{
     @try {
+        NSURLRequest *currentRequest = task.currentRequest;
+        if(!currentRequest){
+            return;
+        }
         TraceInterceptor interceptor = traceInterceptor?:self.traceInterceptor;
         if(interceptor){
-            FTTraceContext *context = interceptor(task.currentRequest);
+            FTTraceContext *context = interceptor(currentRequest);
             if (context != nil) {
                 if (context.traceHeader && context.traceHeader.allKeys.count>0) {
-                    NSMutableURLRequest *mutableRequest = [task.currentRequest mutableCopy];
+                    NSMutableURLRequest *mutableRequest = [currentRequest mutableCopy];
                     [context.traceHeader enumerateKeysAndObjectsUsingBlock:^(id field, id value, BOOL * __unused stop) {
                         [mutableRequest setValue:value forHTTPHeaderField:field];
                     }];
@@ -170,7 +174,7 @@ static dispatch_once_t onceToken;
             }
             return;
         }else if(_tracer&&_tracer.enableAutoTrace){
-            NSMutableURLRequest *mutableRequest = [task.currentRequest mutableCopy];
+            NSMutableURLRequest *mutableRequest = [currentRequest mutableCopy];
             NSDictionary *traceHeader = [self.tracer networkTraceHeaderWithUrl:mutableRequest.URL];
             if (traceHeader && traceHeader.allKeys.count>0) {
                 [traceHeader enumerateKeysAndObjectsUsingBlock:^(id field, id value, BOOL * __unused stop) {
@@ -201,7 +205,6 @@ static dispatch_once_t onceToken;
                 handler.spanID = traceContext.spanId;
                 handler.traceID = traceContext.traceId;
             }
-            
         }@catch (NSException *exception) {
             FTInnerLogError(@"exception: %@",exception);
         }
@@ -210,15 +213,14 @@ static dispatch_once_t onceToken;
 #pragma mark - RUM
 // rum:start resource
 - (void)interceptTask:(NSURLSessionTask *)task{
+    NSURLRequest *originalRequest = task.originalRequest;
     dispatch_async(self.queue, ^{
         @try {
-            if(!task.currentRequest){
-                return;
-            }
-            if(![self isTraceUrl:task.currentRequest.URL]){
-                return;
-            }
             FTSessionTaskHandler *handler = [self getTraceHandler:task];
+            if(!originalRequest || !originalRequest.URL || ![self isTraceUrl:originalRequest.URL]){
+                if(handler)[self removeTraceHandlerWithKey:task];
+                return;
+            }
             if(!handler){
                 handler = [[FTSessionTaskHandler alloc]init];
                 [self setTraceHandler:handler forKey:task];

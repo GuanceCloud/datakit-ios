@@ -28,7 +28,7 @@
 #import "NSURLSessionTask+FTSwizzler.h"
 #import "FTURLSessionInterceptorProtocol.h"
 #import "FTURLSessionDelegate+Private.h"
-
+#import "FTLog+Private.h"
 static void *const kFTReceiveDataSelector = (void *)&kFTReceiveDataSelector;
 static void *const kFTCompleteSelector = (void *)&kFTCompleteSelector;
 static void *const kFTCollectMetricsSelector = (void *)&kFTCollectMetricsSelector;
@@ -80,6 +80,7 @@ static dispatch_once_t onceToken;
 -(void)setSdkUrlStr:(NSString *)sdkUrlStr serviceName:(NSString *)serviceName{
     _sdkUrlStr = sdkUrlStr;
     _serviceName = serviceName;
+    FTInnerLogInfo(@"FTURLSessionInstrumentation set sdkUrlStr:%@",sdkUrlStr);
 }
 -(id<FTExternalResourceProtocol>)externalResourceHandler{
     return [FTURLSessionInterceptor shared];
@@ -172,13 +173,18 @@ static dispatch_once_t onceToken;
     }), FTSwizzlerModeOncePerClassAndSuperclasses, kFTCollectMetricsSelector);
 }
 - (BOOL)isNotSDKInsideUrl:(NSURL *)url{
-    BOOL trace = YES;
+    if(url == nil){
+        return NO;
+    }
+    BOOL trace = NO;
     if (self.sdkUrlStr) {
         if (url.port != nil) {
             trace = !([url.host isEqualToString:[NSURL URLWithString:self.sdkUrlStr].host]&&[url.port isEqual:[NSURL URLWithString:self.sdkUrlStr].port]);
         }else{
             trace = ![url.host isEqualToString:[NSURL URLWithString:self.sdkUrlStr].host];
         }
+    }else{
+        FTInnerLogError(@"FTURLSessionInstrumentation sdkUrlStr is nil");
     }
     return trace;
 }

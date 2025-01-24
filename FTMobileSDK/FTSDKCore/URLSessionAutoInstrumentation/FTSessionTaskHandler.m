@@ -48,13 +48,12 @@
 - (void)taskCompleted:(NSURLSessionTask *)task error:(NSError *)error{
     self.error = error;
     self.response = task.response;
-    NSData *data = nil;
     if (self.mutableData) {
-        data = [self.mutableData copy];
+        self.data = [self.mutableData copy];
         self.mutableData = nil;
     }
-    self.data = data;
-    FTResourceContentModel *model = [[FTResourceContentModel alloc]initWithRequest:task.currentRequest response:task.response data:self.data error:error];
+    self.request = self.request?:task.currentRequest;
+    FTResourceContentModel *model = [[FTResourceContentModel alloc]initWithRequest:self.request response:self.response data:self.data error:error];
     self.contentModel = model;
 }
 @end
