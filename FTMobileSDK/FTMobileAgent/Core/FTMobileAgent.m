@@ -89,6 +89,7 @@ static dispatch_once_t onceToken;
                 .setEnableDataIntegerCompatible(_sdkConfig.enableDataIntegerCompatible);
             [[FTURLSessionInstrumentation sharedInstance] setSdkUrlStr:_sdkConfig.datakitUrl.length>0?_sdkConfig.datakitUrl:_sdkConfig.datawayUrl
                                                            serviceName:_sdkConfig.service];
+            [[FTExtensionDataManager sharedInstance] writeMobileConfig:[_sdkConfig convertToDictionary]];
             FTInnerLogInfo(@"Init Mobile Config Success: \n%@",_sdkConfig.debugDescription);
         }
     }@catch(NSException *exception) {

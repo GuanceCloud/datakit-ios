@@ -35,13 +35,17 @@
     dispatch_once(&onceToken, ^{
         NSProcessInfo *processInfo = [NSProcessInfo processInfo];
         NSString *appid = [processInfo environment][@"APP_ID"];
-
+        NSString *datakitUrl = [processInfo environment][@"ACCESS_SERVER_URL"];
+        FTMobileConfig *config = [[FTMobileConfig alloc]initWithDatakitUrl:datakitUrl];
+        
         FTTraceConfig *traceConfig = [[FTTraceConfig alloc]init];
+        traceConfig.networkTraceType = FTNetworkTraceTypeSkywalking;
         traceConfig.enableLinkRumData = YES;
         FTRumConfig *rumConfig = [[FTRumConfig alloc]initWithAppid:appid];
         FTLoggerConfig *loggerConfig = [[FTLoggerConfig alloc]init];
         loggerConfig.enableCustomLog = YES;
         [FTExtensionDataManager sharedInstance].groupIdentifierArray =  @[@"group.com.ft.widget.demo"];
+        [[FTExtensionDataManager sharedInstance] writeMobileConfig:[config convertToDictionary]];
         [[FTExtensionDataManager sharedInstance] writeRumConfig:[rumConfig convertToDictionary]];
         [[FTExtensionDataManager sharedInstance] writeTraceConfig:[traceConfig convertToDictionary]];
         [[FTExtensionDataManager sharedInstance] writeLoggerConfig:[loggerConfig convertToDictionary]];

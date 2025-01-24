@@ -44,21 +44,26 @@ static FTExtensionManager *sharedInstance = nil;
 -(instancetype)initWithExtensionConfig:(FTExtensionConfig *)extensionConfig{
     self = [super init];
     if (self) {
-        _extensionConfig = extensionConfig;
-        [FTLog enableLog:extensionConfig.enableSDKDebugLog];
-        [FTExtensionDataManager sharedInstance].maxCount = extensionConfig.memoryMaxCount;
+        _extensionConfig = [extensionConfig copy];
+        [FTLog enableLog:_extensionConfig.enableSDKDebugLog];
+        [FTExtensionDataManager sharedInstance].maxCount = _extensionConfig.memoryMaxCount;
         [self processingConfigItems];
     }
     return self;
 }
 - (void)processingConfigItems{
+    NSDictionary *mobileDict = [[FTExtensionDataManager sharedInstance] getMobileConfigWithGroupIdentifier:self.extensionConfig.groupIdentifier];
     NSDictionary *rumDict = [[FTExtensionDataManager sharedInstance] getRumConfigWithGroupIdentifier:self.extensionConfig.groupIdentifier];
     NSDictionary *traceDict = [[FTExtensionDataManager sharedInstance] getTraceConfigWithGroupIdentifier:self.extensionConfig.groupIdentifier];
     NSDictionary *loggerDict = [[FTExtensionDataManager sharedInstance] getLoggerConfigWithGroupIdentifier:self.extensionConfig.groupIdentifier];
    
+    FTMobileConfig *mobileConfig = [[FTMobileConfig alloc]initWithDictionary:mobileDict];
     FTRumConfig *rumConfig =[[FTRumConfig alloc]initWithDictionary:rumDict];
     FTTraceConfig *traceConfig =[[FTTraceConfig alloc]initWithDictionary:traceDict];
     FTLoggerConfig *loggerConfig = [[FTLoggerConfig alloc]initWithDictionary:loggerDict];
+    if(mobileConfig){
+        [[FTURLSessionInstrumentation sharedInstance] setSdkUrlStr:mobileConfig.datakitUrl.length>0?mobileConfig.datakitUrl:mobileConfig.datawayUrl serviceName:mobileConfig.service];
+    }
     if(rumConfig){
         rumConfig.enableTraceUserResource = self.extensionConfig.enableRUMAutoTraceResource;
         rumConfig.enableTrackAppCrash = self.extensionConfig.enableTrackAppCrash;

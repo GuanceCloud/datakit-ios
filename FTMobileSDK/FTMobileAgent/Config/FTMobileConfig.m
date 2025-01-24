@@ -330,6 +330,28 @@
     options.sdkPkgInfo = [self.sdkPkgInfo copy];
     return options;
 }
+-(instancetype)initWithDictionary:(NSDictionary *)dict{
+    if(dict){
+        if (self = [super init]) {
+            _service = [dict valueForKey:@"service"];
+            _datakitUrl = [dict valueForKey:@"datakitUrl"];
+            _datawayUrl = [dict valueForKey:@"datawayUrl"];
+            _clientToken = [dict valueForKey:@"clientToken"];
+        }
+        return self;
+    }else{
+        return nil;
+    }
+}
+/// 将 config 转化成字典
+-(NSDictionary *)convertToDictionary{
+    NSMutableDictionary *dict = [NSMutableDictionary new];
+    [dict setValue:self.service forKey:@"service"];
+    [dict setValue:self.datawayUrl forKey:@"datawayUrl"];
+    [dict setValue:self.clientToken forKey:@"clientToken"];
+    [dict setValue:self.datakitUrl forKey:@"datakitUrl"];
+    return dict;
+}
 -(NSString *)debugDescription{
     NSMutableDictionary *dict = [NSMutableDictionary new];
     if(self.datakitUrl){
