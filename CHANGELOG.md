@@ -1,3 +1,7 @@
+# 1.5.11-beta.1
+1. RUM Resource 采集优化，防止 RUM 开启 Resource 自动采集时因在 task.resume() 时获取 task.currentRequest 为 nil 导致采集 SDK 内请求问题
+2. 修复 Widget Extension 中 skyWalking 类型链路追踪失败问题
+---
 # 1.5.10
 1. 支持通过 `FTTraceConfig.traceInterceptor` 拦截 Request 自定义 Trace,
    通过 `FTRumConfig.resourcePropertyProvider` 添加 RUM Resource 自定义属性
