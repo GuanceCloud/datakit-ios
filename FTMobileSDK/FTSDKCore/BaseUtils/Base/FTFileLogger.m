@@ -63,8 +63,12 @@ NSString * const FT_LOG_BACKUP_DIRECTORY= @"FTBackupLogs";
 }
 // 默认的日志文件夹
 - (NSString *)defaultLogsDirectory {
-#if TARGET_OS_IPHONE
+#if TARGET_OS_IOS
     NSArray *paths = NSSearchPathForDirectoriesInDomains(NSDocumentDirectory, NSUserDomainMask, YES);
+    NSString *baseDir = paths.firstObject;
+    NSString *logsDirectory = [baseDir stringByAppendingPathComponent:FT_LOG_FILE_DIRECTORY];
+#elif TARGET_OS_TV
+    NSArray *paths = NSSearchPathForDirectoriesInDomains(NSCachesDirectory, NSUserDomainMask, YES);
     NSString *baseDir = paths.firstObject;
     NSString *logsDirectory = [baseDir stringByAppendingPathComponent:FT_LOG_FILE_DIRECTORY];
 #else

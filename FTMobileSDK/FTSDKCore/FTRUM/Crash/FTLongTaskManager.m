@@ -123,7 +123,14 @@ void *FTLongTaskManagerQueueTag = &FTLongTaskManagerQueueTag;
 }
 - (NSString *)dataStorePath{
     if(!_dataStorePath){
+#if TARGET_OS_IOS
         NSString *pathString = [NSSearchPathForDirectoriesInDomains(NSDocumentDirectory, NSUserDomainMask, YES) lastObject];
+#elif TARGET_OS_TV
+        NSString *pathString = [NSSearchPathForDirectoriesInDomains(NSCachesDirectory, NSUserDomainMask, YES) lastObject];
+#else
+        NSString *pathString = [NSSearchPathForDirectoriesInDomains(NSLibraryDirectory, NSUserDomainMask, YES) lastObject];
+
+#endif
         _dataStorePath = [pathString stringByAppendingPathComponent:@"FTLongTask.txt"];
     }
     return _dataStorePath;

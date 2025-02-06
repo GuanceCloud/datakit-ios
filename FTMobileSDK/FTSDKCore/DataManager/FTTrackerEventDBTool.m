@@ -32,7 +32,11 @@ static dispatch_once_t onceToken;
         NSString *path = dbPath;
         NSString *name = dbName;
         if (!path) {
+#if !TARGET_OS_TV
             path = [NSSearchPathForDirectoriesInDomains(NSDocumentDirectory, NSUserDomainMask, YES) lastObject];
+#else
+            path = [NSSearchPathForDirectoriesInDomains(NSCachesDirectory, NSUserDomainMask, YES) lastObject];
+#endif
         }
         if(!name){
             name = @"ZYFMDB.sqlite";
