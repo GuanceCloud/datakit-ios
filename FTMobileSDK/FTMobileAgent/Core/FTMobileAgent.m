@@ -40,8 +40,6 @@
 @property (nonatomic, strong) FTRumConfig *rumConfig;
 @property (nonatomic, strong) FTTraceConfig *traceConfig;
 @property (nonatomic, strong) FTMobileConfig *sdkConfig;
-
-@property (nonatomic, copy) NSString *netTraceStr;
 @end
 @implementation FTMobileAgent
 
@@ -146,7 +144,6 @@ static dispatch_once_t onceToken;
     @try {
         if(!_traceConfig){
             _traceConfig = [traceConfigOptions copy];
-            _netTraceStr = FTNetworkTraceStringMap[_traceConfig.networkTraceType];
 #if !TARGET_OS_TV
             [FTWKWebViewHandler sharedInstance].enableTrace = _traceConfig.enableAutoTrace;
             [FTWKWebViewHandler sharedInstance].interceptor = [FTURLSessionInstrumentation sharedInstance].interceptor;
