@@ -59,7 +59,9 @@
 - (void)traceInterceptTask:(NSURLSessionTask *)task{
     if(self.requestInterceptor){
        NSURLRequest *interceptedRequest = self.requestInterceptor(task.currentRequest);
-       [task setValue:interceptedRequest forKey:@"currentRequest"];
+        if(interceptedRequest){
+            [task setValue:interceptedRequest forKey:@"currentRequest"];
+        }
        return;
     }
     [self.instrumentation.interceptor traceInterceptTask:task traceInterceptor:self.traceInterceptor];
