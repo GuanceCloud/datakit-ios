@@ -1,3 +1,6 @@
+# 1.5.12-alpha.1
+1. 修改 tvOS 环境文件存储路径，修复无法创建数据库问题
+---
 # 1.5.11
 1. RUM Resource 采集优化，防止 RUM 开启 Resource 自动采集时采集 SDK 内请求
 2. 修复 Widget Extension 中 skyWalking 类型链路追踪失败问题
