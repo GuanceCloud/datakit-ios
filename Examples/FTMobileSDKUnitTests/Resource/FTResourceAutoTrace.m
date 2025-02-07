@@ -5,8 +5,8 @@
 //  Created by hulilei on 2024/1/24.
 //  Copyright © 2024 GuanceCloud. All rights reserved.
 //
-#import <KIF/KIF.h>
 #import <XCTest/XCTest.h>
+#import "XCTestCase+Utils.h"
 #import "FTModelHelper.h"
 #import "FTGlobalRumManager.h"
 #import "FTTrackerEventDBTool.h"
@@ -17,7 +17,7 @@
 #import "FTTrackerEventDBTool.h"
 #import "NSDate+FTUtil.h"
 #import "FTSessionConfiguration.h"
-@interface FTResourceAutoTrace : KIFTestCase
+@interface FTResourceAutoTrace : XCTestCase
 
 @end
 
@@ -200,7 +200,7 @@
     [self waitForExpectationsWithTimeout:30 handler:^(NSError *error) {
         XCTAssertNil(error);
     }];
-    [tester waitForTimeInterval:0.5];
+    [self waitForTimeInterval:0.5];
     [[FTGlobalRumManager sharedInstance].rumManager syncProcess];
     NSArray *newArray = [[FTTrackerEventDBTool sharedManger] getAllDatas];
     __block NSInteger hasResCount = 0;

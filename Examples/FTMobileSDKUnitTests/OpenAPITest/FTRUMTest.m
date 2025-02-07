@@ -7,7 +7,7 @@
 //
 
 #import <XCTest/XCTest.h>
-#import <KIF/KIF.h>
+#import "XCTestCase+Utils.h"
 #import "FTTrackerEventDBTool.h"
 #import "FTMobileAgent.h"
 #import "FTBaseInfoHandler.h"
@@ -722,7 +722,7 @@
     [self setRumConfig];
     [FTModelHelper startView];
     [FTModelHelper startActionWithType:@""];
-    [tester waitForTimeInterval:0.1];
+    [self waitForTimeInterval:0.1];
     [FTModelHelper startActionWithType:@"AA"];
     [[FTGlobalRumManager sharedInstance].rumManager syncProcess];
     [self addErrorData:nil];
@@ -878,7 +878,7 @@
     [self setRumConfig];
     [FTModelHelper startView];
     [[FTExternalDataManager sharedManager] startAction:@"testStartAction_0_1s_NoDataBind" actionType:@"click" property:nil];
-    [tester waitForTimeInterval:0.2];
+    [self waitForTimeInterval:0.2];
     [self addLongTaskData:nil];
     [[FTGlobalRumManager sharedInstance].rumManager syncProcess];
     FTRUMManager *rum = [FTGlobalRumManager sharedInstance].rumManager;
@@ -985,7 +985,7 @@
     [FTMobileAgent clearAllData];
     [FTModelHelper startAction];
     [FTModelHelper startResource:@"aaa"];
-    [tester waitForTimeInterval:0.2];
+    [self waitForTimeInterval:0.2];
     [FTModelHelper stopView];
     [[FTGlobalRumManager sharedInstance].rumManager syncProcess];
     NSArray *array = [[FTTrackerEventDBTool sharedManger] getAllDatas];
@@ -1299,7 +1299,7 @@
         [FTModelHelper addActionWithContext:@{@"action_property":@"testActionProperty1"}];
     }else{
         [[FTExternalDataManager sharedManager] startAction:@"action" actionType:@"click" property:@{@"action_property":@"testActionProperty1"}];
-        [tester waitForTimeInterval:0.1];
+        [self waitForTimeInterval:0.1];
         [self addErrorData:nil];
     }
     [[FTGlobalRumManager sharedInstance].rumManager syncProcess];
@@ -1325,7 +1325,7 @@
     }
     [property setValue:@"add" forKey:@"add"];
     if(!isAdd){
-        [tester waitForTimeInterval:0.1];
+        [self waitForTimeInterval:0.1];
         [self addErrorData:nil];
     }
     [[FTGlobalRumManager sharedInstance].rumManager syncProcess];

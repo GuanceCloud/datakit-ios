@@ -41,7 +41,7 @@ typedef void (^FTWriteCallBack)(NSDictionary *fields, NSDictionary *tags);
     dependencies.fatalErrorContext = errorContext;
 
     FTLongTaskManager *longTaskManager = [[FTLongTaskManager alloc]initWithDependencies:dependencies delegate:self enableTrackAppANR:YES enableTrackAppFreeze:YES                                        freezeDurationMs:250];
-    NSString *pathString = [NSSearchPathForDirectoriesInDomains(NSDocumentDirectory, NSUserDomainMask, YES) lastObject];
+    NSString *pathString = [NSSearchPathForDirectoriesInDomains(NSCachesDirectory, NSUserDomainMask, YES) lastObject];
     NSString *dataStorePath = [pathString stringByAppendingPathComponent:@"FTLongTaskTest.txt"];
     longTaskManager.dataStorePath = dataStorePath;
     return longTaskManager;
@@ -180,6 +180,21 @@ typedef void (^FTWriteCallBack)(NSDictionary *fields, NSDictionary *tags);
     dispatch_sync(longTaskManager.queue, ^{});
     XCTAssertTrue(hasCallBack);
     [longTaskManager shutDown];
+}
+-(void)testLongTaskFilePath{
+#if TARGET_OS_TV
+    NSString *pathString = [NSSearchPathForDirectoriesInDomains(NSCachesDirectory, NSUserDomainMask, YES) lastObject];
+#elif TARGET_OS_IOS
+    NSString *pathString = [NSSearchPathForDirectoriesInDomains(NSDocumentDirectory, NSUserDomainMask, YES) lastObject];
+#else
+    NSString *pathString = [NSSearchPathForDirectoriesInDomains(NSLibraryDirectory, NSUserDomainMask, YES) lastObject];
+#endif
+    [FTLog enableLog:YES];
+    FTRUMDependencies *dependencies = [[FTRUMDependencies alloc]init];
+    FTLongTaskManager *longTaskManager = [[FTLongTaskManager alloc]initWithDependencies:dependencies delegate:self enableTrackAppANR:NO enableTrackAppFreeze:NO                                        freezeDurationMs:250];
+    NSString *path = longTaskManager.dataStorePath;
+    
+    XCTAssertTrue([pathString isEqualToString:[path stringByDeletingLastPathComponent]]);
 }
 -(void)longTaskStackDetected:(NSString *)slowStack duration:(long long)duration time:(long long)time{
     if(self.callBack){

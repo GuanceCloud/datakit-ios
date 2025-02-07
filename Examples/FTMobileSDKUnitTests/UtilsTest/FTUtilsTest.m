@@ -163,6 +163,7 @@
     XCTAssertEqualObjects([[unsignedLongLongNum ft_toFieldIntegerCompatibleFormat] stringValue], @"9223372036854775807");
 
 }
+#if TARGET_OS_IOS
 - (void)testErrorDescription{
     NSString *path = [[NSBundle mainBundle] pathForResource:@"errors" ofType:@"json"];
      // 将文件数据化
@@ -183,4 +184,5 @@
         }
     }
 }
+#endif
 @end

@@ -6,7 +6,8 @@
 //  Copyright © 2021 hll. All rights reserved.
 //
 
-#import <KIF/KIF.h>
+#import <XCTest/XCTest.h>
+#import "XCTestCase+Utils.h"
 #import "FTMobileAgent.h"
 #import "FTTrackerEventDBTool.h"
 #import "FTMobileAgent+Private.h"
@@ -14,7 +15,6 @@
 #import "FTConstants.h"
 #import "FTJSONUtil.h"
 #import "FTRecordModel.h"
-#import "UITestVC.h"
 #import "FTTrackDataManager.h"
 #import "FTModelHelper.h"
 #import "FTLog.h"
@@ -23,7 +23,7 @@
 #import "FTTestUtils.h"
 #import "FTLogger+Private.h"
 #import "FTMobileConfig+Private.h"
-@interface FTLoggerTest : KIFTestCase
+@interface FTLoggerTest : XCTestCase
 
 @property (nonatomic, copy) NSString *url;
 @property (nonatomic, copy) NSString *appid;
@@ -449,7 +449,7 @@
     [[FTMobileAgent sharedInstance] startLoggerWithConfigOptions:loggerConfig];
     [[FTLogger sharedInstance] info:@"testPrintCustomLogToConsole" property:nil];
     [[FTLogger sharedInstance] syncProcess];
-    [tester waitForTimeInterval:1];
+    [self waitForTimeInterval:1];
     NSArray *array =  [[FTLog sharedInstance] valueForKey:@"loggers"];
     BOOL hasFileLogger = NO;
     FTLogFileInfo *logFileInfo;
@@ -587,7 +587,11 @@
     [self logFile:logsDirectory fileName:@"ALog"];
 }
 - (void)testRegisterInnerLogCacheToDefaultPath{
+#if !TARGET_OS_TV
     NSArray *paths = NSSearchPathForDirectoriesInDomains(NSDocumentDirectory, NSUserDomainMask, YES);
+#else
+    NSArray *paths = NSSearchPathForDirectoriesInDomains(NSCachesDirectory, NSUserDomainMask, YES);
+#endif
     NSString *baseDir = paths.firstObject;
     NSString *logsDirectory = [baseDir stringByAppendingPathComponent:@"FTLogs"];
 

@@ -10,7 +10,7 @@
 #import <FTConstants.h>
 #import "NSDate+FTUtil.h"
 #import <FTEnumConstant.h>
-#import "FTMobileSDK.h"
+#import "FTMobileAgent.h"
 #import "FTJSONUtil.h"
 #import "FTBaseInfoHandler.h"
 @implementation FTModelHelper

@@ -6,7 +6,7 @@
 //  Copyright © 2022 DataFlux-cn. All rights reserved.
 //
 
-#import <KIF/KIF.h>
+#import <XCTest/XCTest.h>
 #import "FTAppLaunchTracker.h"
 #import "FTRUMManager.h"
 #import "NSDate+FTUtil.h"
@@ -15,7 +15,7 @@
 typedef void(^LaunchBlock)( NSNumber * _Nullable duration, FTLaunchType type);
 typedef void(^LaunchDataBlock)(NSString *source, NSDictionary *tags, NSDictionary *fields);
 
-@interface FTAppLaunchDurationTest : KIFTestCase<FTAppLaunchDataDelegate,FTRUMDataWriteProtocol>
+@interface FTAppLaunchDurationTest : XCTestCase<FTAppLaunchDataDelegate,FTRUMDataWriteProtocol>
 @property (nonatomic, strong) FTAppLaunchTracker *launchTracker;
 @property (nonatomic, copy) LaunchBlock launchBlock;
 @property (nonatomic, copy) LaunchDataBlock launchDataBlock;
@@ -79,6 +79,7 @@ typedef void(^LaunchDataBlock)(NSString *source, NSDictionary *tags, NSDictionar
     }];
     self.launchBlock = nil;
 }
+#if TARGET_OS_IOS
 - (void)testLaunchPrewarm{
     XCTestExpectation *expectation= [self expectationWithDescription:@"异步操作timeout"];
     self.launchBlock = ^(NSNumber * _Nullable duration, FTLaunchType type) {
@@ -98,11 +99,12 @@ typedef void(^LaunchDataBlock)(NSString *source, NSDictionary *tags, NSDictionar
     setenv("ActivePrewarm", "", 1);
     [NSClassFromString(@"FTAppLaunchTracker") load];
 }
-- (void)testLaunchColdDataNotHasViewData{
-    [self launchData:FTLaunchCold];
-}
 - (void)testLaunchWarmDataNotHasViewData{
     [self launchData:FTLaunchWarm];
+}
+#endif
+- (void)testLaunchColdDataNotHasViewData{
+    [self launchData:FTLaunchCold];
 }
 - (void)testLaunchHotData{
     [self launchData:FTLaunchHot];

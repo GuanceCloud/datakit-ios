@@ -19,6 +19,10 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
         let dic = ProcessInfo().environment
         let url = dic["ACCESS_SERVER_URL"]
         let appid = dic["APP_ID"]
+        let isUnitTests = dic["isUnitTests"];
+        if let isUnitTests = isUnitTests {
+            return true
+        }
         if let url = url,let appid = appid{
             let config = FTMobileConfig(datakitUrl: url)
             config.enableSDKDebugLog = true
