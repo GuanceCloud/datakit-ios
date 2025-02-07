@@ -64,14 +64,17 @@
     if(press.phase != UIPressPhaseEnded){
         return;
     }
-    UIWindow *window = press.window;
+    if(![press.responder isKindOfClass:UIView.class]){
+        return;
+    }
+    UIView *view = (UIView *)press.responder;
+    UIWindow *window = view.window;
     if (window == nil) {
         return;
     }
     if(![press.responder isKindOfClass:UIView.class]){
         return;
     }
-    UIView *view = (UIView *)press.responder;
     if([NSStringFromClass(view.class) containsString:@"Keyboard"]){
         return;
     }
