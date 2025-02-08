@@ -24,9 +24,6 @@ static char *hasCompletionKey = "hasCompletionKey";
     return NO;
 }
 - (void)ft_resume{
-    if(self.currentRequest == nil || !self.currentRequest.URL){
-        FTInnerLogError(@"Task currentRequest %@.\noriginalRequest:%@",!self.currentRequest?@"is nil":@"URL is nil",[self.originalRequest description]);
-    }
     NSURLRequest *originalRequest = self.originalRequest;
     if(originalRequest && [[FTURLSessionInstrumentation sharedInstance] isNotSDKInsideUrl:originalRequest.URL]){
         id<FTURLSessionInterceptorProtocol> traceInterceptor = [[FTURLSessionInstrumentation sharedInstance] traceInterceptor:[self ft_delegate]];
