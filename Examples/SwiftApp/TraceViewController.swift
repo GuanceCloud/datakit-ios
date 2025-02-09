@@ -38,18 +38,21 @@ class TraceViewController: UIViewController,UITableViewDelegate,UITableViewDataS
         return dataSource.count
     }
     func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
-        let url:URL = NSURL.init(string: "https://www.baidu.com")! as URL
-        if let traceHeader = FTExternalDataManager.shared().getTraceHeader(withKey: NSUUID().uuidString, url: url) {
-            let request = NSMutableURLRequest(url: url)
-            for (a,b) in traceHeader {
-                request.setValue(b as? String, forHTTPHeaderField: a as! String)
-            }
-            let task = URLSession.shared.dataTask(with: request as URLRequest) {  data,  response,  error in
-                if let httpResponse = response as? HTTPURLResponse {
-                   print("response statusCode:\(httpResponse.statusCode)")
+        let dic = ProcessInfo().environment
+        let traceStr = dic["TRACE_URL"]
+        if let traceStr = traceStr,let url = URL.init(string: traceStr) {
+            if let traceHeader = FTExternalDataManager.shared().getTraceHeader(withKey: NSUUID().uuidString, url: url) {
+                let request = NSMutableURLRequest(url: url)
+                for (a,b) in traceHeader {
+                    request.setValue(b as? String, forHTTPHeaderField: a as! String)
                 }
+                let task = URLSession.shared.dataTask(with: request as URLRequest) {  data,  response,  error in
+                    if let httpResponse = response as? HTTPURLResponse {
+                        print("response statusCode:\(httpResponse.statusCode)")
+                    }
+                }
+                task.resume()
             }
-            task.resume()
         }
     }
 

@@ -33,7 +33,9 @@ class ViewController: UICollectionViewController {
         actions = [
             Action(title: "Open TableViewController", callback: openTableView),
             Action(title: "Open Nib ViewController", callback: openNibViewController),
-            Action(title: "Open SplitViewController", callback: openSplitViewController)
+            Action(title: "Open SplitViewController", callback: openSplitViewController),
+            Action(title: "Debug Logs", callback: openDebugLogsController),
+
         ]
     }
     override func numberOfSections(in collectionView: UICollectionView) -> Int {
@@ -69,6 +71,16 @@ class ViewController: UICollectionViewController {
         let splitVC = SplitViewController(style: .doubleColumn)
         self.present(splitVC, animated: false, completion: nil)
     }
+    
+    private func openDebugLogsController() {
+        let debugLogs = DebugLogsVC()
+        navigationController?.pushViewController(debugLogs, animated: true)
+    }
+    
+//    private func openConfigurationController() {
+//        let splitVC = ConfigurationVC()
+//        navigationController?.pushViewController(splitVC, animated: true)
+//    }
 
 }
 
