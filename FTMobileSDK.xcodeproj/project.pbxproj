@@ -153,7 +153,7 @@
 		17678E2B29D28BD200C1DA98 /* FTTraceManager.m in Sources */ = {isa = PBXBuildFile; fileRef = 17678E1F29D28BD200C1DA98 /* FTTraceManager.m */; };
 		17678E2C29D28BD200C1DA98 /* FTGlobalRumManager.m in Sources */ = {isa = PBXBuildFile; fileRef = 17678E2029D28BD200C1DA98 /* FTGlobalRumManager.m */; };
 		17678E2D29D28BD200C1DA98 /* FTMobileAgent.m in Sources */ = {isa = PBXBuildFile; fileRef = 17678E2129D28BD200C1DA98 /* FTMobileAgent.m */; };
-		17678E2E29D28BD200C1DA98 /* FTMobileAgent+Private.h in Headers */ = {isa = PBXBuildFile; fileRef = 17678E2229D28BD200C1DA98 /* FTMobileAgent+Private.h */; };
+		17678E2E29D28BD200C1DA98 /* FTMobileAgent+Private.h in Headers */ = {isa = PBXBuildFile; fileRef = 17678E2229D28BD200C1DA98 /* FTMobileAgent+Private.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		17678E2F29D28BD200C1DA98 /* FTTraceManager.h in Headers */ = {isa = PBXBuildFile; fileRef = 17678E2329D28BD200C1DA98 /* FTTraceManager.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		17678E3229D28BED00C1DA98 /* FTMobileConfig+Private.h in Headers */ = {isa = PBXBuildFile; fileRef = 17678E1729D28BD200C1DA98 /* FTMobileConfig+Private.h */; };
 		17678E3429D28BF000C1DA98 /* FTMobileConfig.h in Headers */ = {isa = PBXBuildFile; fileRef = 17678E1829D28BD200C1DA98 /* FTMobileConfig.h */; settings = {ATTRIBUTES = (Public, ); }; };
