@@ -1,3 +1,8 @@
+# 1.5.12
+1. 调整文件存储路径配置，修复数据库创建失败的问题
+2. 更新了 tvOS 环境的默认 `service` 和日志 `source`，分别设置为 `df_rum_tvos` 和 `df_rum_tvos_log`
+3. 修复 RUM Action 事件中 `duration` 时长计算不准确的问题
+---
 # 1.5.12-beta.1
 1. 修改 tvOS 环境默认 service 为 `df_rum_tvos`、日志 source 为 `df_rum_tvos_log`
 2. RUM Action duration 时长错误修改
