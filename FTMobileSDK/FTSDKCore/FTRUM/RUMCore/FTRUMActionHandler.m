@@ -27,7 +27,7 @@ static const NSTimeInterval discreteActionTimeoutDuration = 0.1;
 @property (nonatomic, strong) NSDictionary *actionProperty;//添加到field中
 //private
 @property (nonatomic, assign) NSInteger activeResourcesCount;
-@property (nonatomic, strong) NSDate *lastActiveDate;
+@property (nonatomic, strong) NSDate *lastResourceEndDate;
 @end
 @implementation FTRUMActionHandler
 
@@ -73,7 +73,6 @@ static const NSTimeInterval discreteActionTimeoutDuration = 0.1;
             if(error.fatal){
                 [self writeActionData:model.time context:context];
             }
-            self.lastActiveDate = model.time;
         }
             break;
         case FTRUMDataResourceStart:
@@ -82,15 +81,13 @@ static const NSTimeInterval discreteActionTimeoutDuration = 0.1;
         case FTRUMDataResourceComplete:
             self.actionResourcesCount += 1;
             self.activeResourcesCount -= 1;
-            self.lastActiveDate = model.time;
+            self.lastResourceEndDate = model.time;
             break;
         case FTRUMDataLongTask:
             self.actionLongTaskCount++;
-            self.lastActiveDate = model.time;
             break;
         case FTRUMDataResourceError:
             self.actionErrorCount++;
-            self.lastActiveDate = model.time;
             break;
         default:
             break;
@@ -99,6 +96,13 @@ static const NSTimeInterval discreteActionTimeoutDuration = 0.1;
 }
 
 -(NSDate *)timedOutOrExpired:(NSDate*)currentTime{
+    if(self.lastResourceEndDate){
+        NSTimeInterval duration = [self.lastResourceEndDate timeIntervalSinceDate:_actionStartTime];
+        BOOL expired = duration >= discreteActionTimeoutDuration;
+        if(expired){
+            return self.lastResourceEndDate;
+        }
+    }
     NSTimeInterval actionDuration = [currentTime  timeIntervalSinceDate:_actionStartTime];
     BOOL expired = actionDuration >= discreteActionTimeoutDuration;
     if(expired){
