@@ -304,7 +304,12 @@ static dispatch_once_t onceToken;
         if (field) {
             [filedDict addEntriesFromDictionary:field];
         }
-        FTRecordModel *model = [[FTRecordModel alloc]initWithSource:FT_LOGGER_SOURCE op:FT_DATA_TYPE_LOGGING tags:tagDict fields:filedDict tm:time];
+#if TARGET_OS_TV
+        NSString *source = FT_LOGGER_TVOS_SOURCE;
+#else
+        NSString *source = FT_LOGGER_SOURCE;
+#endif
+        FTRecordModel *model = [[FTRecordModel alloc]initWithSource:source op:FT_DATA_TYPE_LOGGING tags:tagDict fields:filedDict tm:time];
         [self insertDBWithItemData:model type:FTAddDataLogging];
     } @catch (NSException *exception) {
         FTInnerLogError(@"exception %@",exception);

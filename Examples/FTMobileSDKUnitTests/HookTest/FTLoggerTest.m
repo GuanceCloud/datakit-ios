@@ -177,7 +177,32 @@
     NSDictionary *op = dict[@"opdata"];
     NSDictionary *tags = op[FT_TAGS];
     NSString *serviceName = [tags valueForKey:FT_KEY_SERVICE];
-    XCTAssertTrue(serviceName.length>0);
+#if TARGET_OS_TV
+    NSString  *service = FT_TVOS_SERVICE_NAME;
+#else
+    NSString  *service = FT_DEFAULT_SERVICE_NAME;
+#endif
+    XCTAssertTrue([serviceName isEqualToString:service]);
+}
+- (void)testLogSource{
+    [self setRightSDKConfig];
+    FTLoggerConfig *loggerConfig = [[FTLoggerConfig alloc]init];
+    loggerConfig.enableCustomLog = YES;
+    [[FTMobileAgent sharedInstance] startLoggerWithConfigOptions:loggerConfig];
+    [[FTMobileAgent sharedInstance] logging:@"testLogSource" status:FTStatusInfo];
+    [[FTMobileAgent sharedInstance] syncProcess];
+    [[FTTrackDataManager sharedInstance] insertCacheToDB];
+    NSArray *array = [[FTTrackerEventDBTool sharedManger] getFirstRecords:10 withType:FT_DATA_TYPE_LOGGING];
+    FTRecordModel *model = [array lastObject];
+    NSDictionary *dict = [FTJSONUtil dictionaryWithJsonString:model.data];
+    NSDictionary *op = dict[@"opdata"];
+    NSString *sourceStr = [op valueForKey:FT_KEY_SOURCE];
+#if TARGET_OS_TV
+    NSString  *source = FT_LOGGER_TVOS_SOURCE;
+#else
+    NSString  *source = FT_LOGGER_SOURCE;
+#endif
+    XCTAssertTrue([sourceStr isEqualToString:source]);
 }
 - (void)testEnableLinkRumData_setLoggerFirst{
     [self setRightSDKConfig];

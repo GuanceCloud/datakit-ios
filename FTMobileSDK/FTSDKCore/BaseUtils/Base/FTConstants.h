@@ -18,6 +18,7 @@ extern NSString * const FT_TAGS;
 extern NSString * const FT_OPDATA;
 extern NSString * const FT_OP;
 extern NSString * const FT_DEFAULT_SERVICE_NAME;
+extern NSString * const FT_TVOS_SERVICE_NAME;
 extern NSString * const FT_IOS_SDK_NAME;
 extern NSString * const FT_MACOS_SDK_NAME;
 extern NSString * const FT_IS_WEBVIEW;
@@ -25,6 +26,7 @@ extern NSString * const FT_NULL_VALUE;
 extern NSString * const FT_TYPE;
 #pragma mark ----- data source
 extern NSString * const FT_KEY_SOURCE;
+extern NSString * const FT_LOGGER_TVOS_SOURCE;
 extern NSString * const FT_LOGGER_SOURCE;
 extern NSString * const FT_LOGGER_MACOS_SOURCE;
 extern NSString * const FT_RUM_SOURCE_RESOURCE;

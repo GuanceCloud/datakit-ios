@@ -251,7 +251,11 @@
 -(instancetype)init{
     if (self = [super init]) {
         _enableSDKDebugLog = NO;
+#if TARGET_OS_TV
+        _service = FT_TVOS_SERVICE_NAME;
+#else
         _service = FT_DEFAULT_SERVICE_NAME;
+#endif
         _env = FTEnvStringMap[FTEnvProd];
         _autoSync = YES;
         _syncPageSize = 10;

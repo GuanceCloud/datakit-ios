@@ -18,6 +18,7 @@ NSString * const FT_OP  = @"op";
 // source
 NSString * const FT_KEY_SOURCE = @"source";
 NSString * const FT_LOGGER_SOURCE = @"df_rum_ios_log";
+NSString * const FT_LOGGER_TVOS_SOURCE = @"df_rum_tvos_log";
 NSString * const FT_LOGGER_MACOS_SOURCE = @"df_rum_macos_log";
 
 NSString * const FT_RUM_SOURCE_RESOURCE = @"resource";
@@ -28,6 +29,7 @@ NSString * const FT_RUM_SOURCE_LONG_TASK = @"long_task";
 //service
 NSString * const FT_KEY_SERVICE = @"service";
 NSString * const FT_DEFAULT_SERVICE_NAME = @"df_rum_ios";
+NSString * const FT_TVOS_SERVICE_NAME = @"df_rum_tvos";
 NSString * const FT_IOS_SDK_NAME = @"df_ios_rum_sdk";
 NSString * const FT_MACOS_SDK_NAME = @"df_macos_rum_sdk";
 NSString * const FT_IS_WEBVIEW = @"is_web_view";
