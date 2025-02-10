@@ -41,6 +41,9 @@ typedef enum FTNetworkTraceType:NSUInteger FTNetworkTraceType;
 
 
 - (BOOL)isNotSDKInsideUrl:(NSURL *)url;
+
+- (instancetype)init NS_UNAVAILABLE;
+
 /// 单例
 + (instancetype)sharedInstance;
 

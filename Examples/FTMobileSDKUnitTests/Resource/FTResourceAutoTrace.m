@@ -17,6 +17,7 @@
 #import "FTTrackerEventDBTool.h"
 #import "NSDate+FTUtil.h"
 #import "FTSessionConfiguration.h"
+#import "FTURLSessionInstrumentation.h"
 @interface FTResourceAutoTrace : XCTestCase
 
 @end
@@ -160,6 +161,42 @@
     [self networkUploadHandler:delegate trace:NO completionHandler:^(NSURLResponse *response, NSError *error) {
         [expectation fulfill];
     }];
+}
+- (void)testIsNotSDKURL{
+    // sdk url 有端口号时
+    NSString *sdkURLStr = @"http://www.test.com:9529";
+    [[FTURLSessionInstrumentation sharedInstance] setSdkUrlStr:sdkURLStr serviceName:@"test"];
+    
+    XCTAssertTrue([[FTURLSessionInstrumentation sharedInstance] isNotSDKInsideUrl:nil] == NO);
+    XCTAssertTrue([[FTURLSessionInstrumentation sharedInstance] isNotSDKInsideUrl:[NSURL URLWithString:@"http://www.test.com:9529/v1/write/rum"]] == NO);
+    XCTAssertTrue([[FTURLSessionInstrumentation sharedInstance] isNotSDKInsideUrl:[NSURL URLWithString:@"http://www.test.com"]] == YES);
+    XCTAssertTrue([[FTURLSessionInstrumentation sharedInstance] isNotSDKInsideUrl:[NSURL URLWithString:@"http://www.test.com:9528"]] == YES);
+    XCTAssertTrue([[FTURLSessionInstrumentation sharedInstance] isNotSDKInsideUrl:[NSURL URLWithString:@"http://www.test.com/v1/write/rum"]] == YES);
+    
+    [[FTURLSessionInstrumentation sharedInstance] shutDown];
+    
+    // sdk url 无端口号时
+    NSString *sdkURLStr2 = @"http://www.test.com";
+    [[FTURLSessionInstrumentation sharedInstance] setSdkUrlStr:sdkURLStr2 serviceName:@"test"];
+    
+    XCTAssertTrue([[FTURLSessionInstrumentation sharedInstance] isNotSDKInsideUrl:nil] == NO);
+    XCTAssertTrue([[FTURLSessionInstrumentation sharedInstance] isNotSDKInsideUrl:[NSURL URLWithString:@"http://www.test.com/v1/write/rum"]] == NO);
+    XCTAssertTrue([[FTURLSessionInstrumentation sharedInstance] isNotSDKInsideUrl:[NSURL URLWithString:@"http://www.test.com"]] == NO);
+    XCTAssertTrue([[FTURLSessionInstrumentation sharedInstance] isNotSDKInsideUrl:[NSURL URLWithString:@"http://www.test.com:9528"]] == YES);
+    XCTAssertTrue([[FTURLSessionInstrumentation sharedInstance] isNotSDKInsideUrl:[NSURL URLWithString:@"http://www.test.com:9529/v1/write/rum"]] == YES);
+    
+    [[FTURLSessionInstrumentation sharedInstance] shutDown];
+    
+    
+    // 未设置 sdk url 时
+    XCTAssertTrue([[FTURLSessionInstrumentation sharedInstance] isNotSDKInsideUrl:nil] == NO);
+    XCTAssertTrue([[FTURLSessionInstrumentation sharedInstance] isNotSDKInsideUrl:[NSURL URLWithString:@"http://www.test.com/v1/write/rum"]] == NO);
+    XCTAssertTrue([[FTURLSessionInstrumentation sharedInstance] isNotSDKInsideUrl:[NSURL URLWithString:@"http://www.test.com"]] == NO);
+    XCTAssertTrue([[FTURLSessionInstrumentation sharedInstance] isNotSDKInsideUrl:[NSURL URLWithString:@"http://www.test.com:9528"]] == NO);
+
+    [[FTURLSessionInstrumentation sharedInstance] shutDown];
+    
+   
 }
 - (void)testURLSessionCreateBeforeSDKInit_DelegateOnlyCollectingMetrics{
     XCTestExpectation *expectation= [self expectationWithDescription:@"异步操作timeout"];

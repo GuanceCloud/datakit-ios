@@ -78,8 +78,8 @@ static dispatch_once_t onceToken;
     return [FTURLSessionInterceptor shared];
 }
 -(void)setSdkUrlStr:(NSString *)sdkUrlStr serviceName:(NSString *)serviceName{
-    _sdkUrlStr = sdkUrlStr;
-    _serviceName = serviceName;
+    self.sdkUrlStr = sdkUrlStr;
+    self.serviceName = serviceName;
     FTInnerLogInfo(@"FTURLSessionInstrumentation set sdkUrlStr:%@",sdkUrlStr);
 }
 -(id<FTExternalResourceProtocol>)externalResourceHandler{
@@ -127,7 +127,7 @@ static dispatch_once_t onceToken;
     Class receiveDataClass = [FTSwizzler realDelegateClassFromSelector:receiveDataSelector proxy:delegate];
     Class completeClass = [FTSwizzler realDelegateClassFromSelector:completeSelector proxy:delegate];
     Class collectMetricsClass = [FTSwizzler realDelegateClassFromSelector:collectMetricsSelector proxy:delegate];
-
+    
     if(![FTSwizzler realDelegateClass:receiveDataClass respondsToSelector:receiveDataSelector]){
         void (^receiveDataBlock)(id, id, id, id) = ^(id delegate, NSURLSession *session, NSURLSessionDataTask *task,NSData *data) {
         };
@@ -155,7 +155,7 @@ static dispatch_once_t onceToken;
             [FTURLSessionInstrumentation.sharedInstance.interceptor taskReceivedData:task data:data];
         }
         FTSWCallOriginal(session,task,data);
-        }),
+    }),
                              FTSwizzlerModeOncePerClassAndSuperclasses,
                              kFTReceiveDataSelector);
     FTSwizzlerInstanceMethod(completeClass, completeSelector, FTSWReturnType(void), FTSWArguments(NSURLSession *session, NSURLSessionDataTask *task,NSError *error), FTSWReplacement({
@@ -173,20 +173,25 @@ static dispatch_once_t onceToken;
     }), FTSwizzlerModeOncePerClassAndSuperclasses, kFTCollectMetricsSelector);
 }
 - (BOOL)isNotSDKInsideUrl:(NSURL *)url{
-    if(url == nil){
+    if (url == nil || self.sdkUrlStr == nil) {
+        if (self.sdkUrlStr == nil) {
+            FTInnerLogError(@"FTURLSessionInstrumentation sdkUrlStr is nil");
+        }
         return NO;
     }
-    BOOL trace = NO;
-    if (self.sdkUrlStr) {
-        if (url.port != nil) {
-            trace = !([url.host isEqualToString:[NSURL URLWithString:self.sdkUrlStr].host]&&[url.port isEqual:[NSURL URLWithString:self.sdkUrlStr].port]);
-        }else{
-            trace = ![url.host isEqualToString:[NSURL URLWithString:self.sdkUrlStr].host];
-        }
-    }else{
-        FTInnerLogError(@"FTURLSessionInstrumentation sdkUrlStr is nil");
+    NSURL *sdkURL = [NSURL URLWithString:self.sdkUrlStr];
+    if (sdkURL == nil) {
+        FTInnerLogError(@"FTURLSessionInstrumentation sdkUrlStr is invalid");
+        return NO;
     }
-    return trace;
+    // Compare hosts
+    if (![url.host isEqualToString:sdkURL.host]) {
+        return YES; // Different host means URL is outside SDK
+    }
+    // Compare ports
+    BOOL isSamePort = (url.port == nil && sdkURL.port == nil) || (url.port && sdkURL.port && [url.port isEqualToNumber:sdkURL.port]);
+
+    return !isSamePort;
 }
 - (id<FTURLSessionInterceptorProtocol>)traceInterceptor:(id<NSURLSessionDelegate>)delegate{
     if(delegateConformsToFTProtocol(delegate)){
