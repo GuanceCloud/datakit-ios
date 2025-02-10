@@ -1,3 +1,7 @@
+# 1.5.12-beta.1
+1. 修改 tvOS 环境默认 service 为 `df_rum_tvos`、日志 source 为 `df_rum_tvos_log`
+2. RUM Action duration 时长错误修改
+---
 # 1.5.12-alpha.1
 1. 修改 tvOS 环境文件存储路径，修复无法创建数据库问题
 ---
