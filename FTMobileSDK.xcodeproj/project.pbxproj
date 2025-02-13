@@ -146,14 +146,13 @@
 		1763BDB529DFF050009EE026 /* FTRequestBody.m in Sources */ = {isa = PBXBuildFile; fileRef = 1763BD8429DFF04F009EE026 /* FTRequestBody.m */; };
 		1763BDB629DFF050009EE026 /* FTTrackDataManager.m in Sources */ = {isa = PBXBuildFile; fileRef = 1763BD8529DFF04F009EE026 /* FTTrackDataManager.m */; };
 		1763BDB729DFF050009EE026 /* FTTrackDataManager.m in Sources */ = {isa = PBXBuildFile; fileRef = 1763BD8529DFF04F009EE026 /* FTTrackDataManager.m */; };
-		17678E2429D28BD200C1DA98 /* FTMobileConfig+Private.h in Headers */ = {isa = PBXBuildFile; fileRef = 17678E1729D28BD200C1DA98 /* FTMobileConfig+Private.h */; };
+		17678E2429D28BD200C1DA98 /* FTMobileConfig+Private.h in Headers */ = {isa = PBXBuildFile; fileRef = 17678E1729D28BD200C1DA98 /* FTMobileConfig+Private.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		17678E2629D28BD200C1DA98 /* FTMobileConfig.m in Sources */ = {isa = PBXBuildFile; fileRef = 17678E1929D28BD200C1DA98 /* FTMobileConfig.m */; };
 		17678E2829D28BD200C1DA98 /* FTGlobalRumManager.h in Headers */ = {isa = PBXBuildFile; fileRef = 17678E1C29D28BD200C1DA98 /* FTGlobalRumManager.h */; };
 		17678E2A29D28BD200C1DA98 /* FTMobileAgentVersion.h in Headers */ = {isa = PBXBuildFile; fileRef = 17678E1E29D28BD200C1DA98 /* FTMobileAgentVersion.h */; };
 		17678E2B29D28BD200C1DA98 /* FTTraceManager.m in Sources */ = {isa = PBXBuildFile; fileRef = 17678E1F29D28BD200C1DA98 /* FTTraceManager.m */; };
 		17678E2C29D28BD200C1DA98 /* FTGlobalRumManager.m in Sources */ = {isa = PBXBuildFile; fileRef = 17678E2029D28BD200C1DA98 /* FTGlobalRumManager.m */; };
 		17678E2D29D28BD200C1DA98 /* FTMobileAgent.m in Sources */ = {isa = PBXBuildFile; fileRef = 17678E2129D28BD200C1DA98 /* FTMobileAgent.m */; };
-		17678E2E29D28BD200C1DA98 /* FTMobileAgent+Private.h in Headers */ = {isa = PBXBuildFile; fileRef = 17678E2229D28BD200C1DA98 /* FTMobileAgent+Private.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		17678E2F29D28BD200C1DA98 /* FTTraceManager.h in Headers */ = {isa = PBXBuildFile; fileRef = 17678E2329D28BD200C1DA98 /* FTTraceManager.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		17678E3229D28BED00C1DA98 /* FTMobileConfig+Private.h in Headers */ = {isa = PBXBuildFile; fileRef = 17678E1729D28BD200C1DA98 /* FTMobileConfig+Private.h */; };
 		17678E3429D28BF000C1DA98 /* FTMobileConfig.h in Headers */ = {isa = PBXBuildFile; fileRef = 17678E1829D28BD200C1DA98 /* FTMobileConfig.h */; settings = {ATTRIBUTES = (Public, ); }; };
@@ -317,6 +316,7 @@
 		178649352A1DB58400521187 /* FTLogger.m in Sources */ = {isa = PBXBuildFile; fileRef = 178649312A1DB58400521187 /* FTLogger.m */; };
 		178649362A1DB58400521187 /* FTLogger.m in Sources */ = {isa = PBXBuildFile; fileRef = 178649312A1DB58400521187 /* FTLogger.m */; };
 		178649372A1DB58400521187 /* FTLogger.m in Sources */ = {isa = PBXBuildFile; fileRef = 178649312A1DB58400521187 /* FTLogger.m */; };
+		178AE4122D5A1A0700BDC51B /* FTMobileAgent+Private.h in Headers */ = {isa = PBXBuildFile; fileRef = 17678E2229D28BD200C1DA98 /* FTMobileAgent+Private.h */; };
 		1799581429D43FDE0033B46E /* FTPresetProperty.h in Headers */ = {isa = PBXBuildFile; fileRef = 1799581129D43FDE0033B46E /* FTPresetProperty.h */; };
 		1799581529D43FDE0033B46E /* FTPresetProperty.h in Headers */ = {isa = PBXBuildFile; fileRef = 1799581129D43FDE0033B46E /* FTPresetProperty.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		1799581629D43FDE0033B46E /* FTPresetProperty.m in Sources */ = {isa = PBXBuildFile; fileRef = 1799581229D43FDE0033B46E /* FTPresetProperty.m */; };
@@ -1478,6 +1478,7 @@
 			isa = PBXHeadersBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				178AE4122D5A1A0700BDC51B /* FTMobileAgent+Private.h in Headers */,
 				17E4CC3C29CD42E4005C2D99 /* FTExternalDataManager+Private.h in Headers */,
 				1763BD9229DFF04F009EE026 /* FTTrackDataManager.h in Headers */,
 				17E4CB3429CD42DA005C2D99 /* FTSwizzle.h in Headers */,
@@ -1582,7 +1583,6 @@
 				1763BDA029DFF04F009EE026 /* ZY_FMDatabasePool.h in Headers */,
 				17E4CBDB29CD42E4005C2D99 /* FTURLSessionInstrumentation.h in Headers */,
 				17E32B982BE0FE5900F4685C /* FTFatalErrorContext.h in Headers */,
-				17678E2E29D28BD200C1DA98 /* FTMobileAgent+Private.h in Headers */,
 				17E4CC2129CD42E4005C2D99 /* FTURLSessionInterceptorProtocol.h in Headers */,
 				17D068262D26668400D59159 /* NSURLSessionTask+FTSwizzler.h in Headers */,
 				1763BD9029DFF04F009EE026 /* FTRequestBody.h in Headers */,
