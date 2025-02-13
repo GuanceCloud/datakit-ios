@@ -16,7 +16,7 @@
 #endif
 #import "FTLongTaskManager.h"
 #import "FTJSONUtil.h"
-#import "FTTrack.h"
+#import "FTAutoTrackHandler.h"
 #import "FTAppLifeCycle.h"
 #import "FTRUMManager.h"
 #import "FTAppLaunchTracker.h"
@@ -64,8 +64,8 @@ static dispatch_once_t onceToken;
     dependencies.fatalErrorContext = [FTFatalErrorContext new];
     self.dependencies = dependencies;
     self.rumManager = [[FTRUMManager alloc]initWithRumDependencies:self.dependencies];
-    [[FTTrack sharedInstance]startWithTrackView:rumConfig.enableTraceUserView action:rumConfig.enableTraceUserAction];
-    [FTTrack sharedInstance].addRumDatasDelegate = self.rumManager;
+    [[FTAutoTrackHandler sharedInstance]startWithTrackView:rumConfig.enableTraceUserView action:rumConfig.enableTraceUserAction];
+    [FTAutoTrackHandler sharedInstance].addRumDatasDelegate = self.rumManager;
     if(rumConfig.enableTraceUserAction){
         self.launchTracker = [[FTAppLaunchTracker alloc]initWithDelegate:self];
     }
@@ -143,41 +143,20 @@ static dispatch_once_t onceToken;
 -(void)ftAppColdStart:(NSDate *)launchTime duration:(NSNumber *)duration isPreWarming:(BOOL)isPreWarming{
     [self.rumManager addLaunch:isPreWarming?FTLaunchWarm:FTLaunchCold launchTime:launchTime duration:duration];
 }
-#pragma mark ========== RUM-View: App Life Cycle ==========
+#pragma mark ========== RUM-ERROR appState: App Life Cycle ==========
 -(void)applicationWillEnterForeground{
-    @try {
-        self.rumManager.appState = FTAppStateStartUp;
-        if(!self.rumConfig.enableTraceUserView){
-            return;
-        }
-        if (self.rumManager.viewReferrer) {
-            NSString *viewID = [FTBaseInfoHandler randomUUID];
-            NSString *viewReferrer =self.rumManager.viewReferrer;
-            self.rumManager.viewReferrer = @"";
-            [self.rumManager onCreateView:viewReferrer loadTime:@0];
-            [self.rumManager startViewWithViewID:viewID viewName:viewReferrer property:nil];
-        }
-    }@catch (NSException *exception) {
-        FTInnerLogError(@"applicationWillEnterForeground exception %@",exception);
-    }
+    self.rumManager.appState = FTAppStateStartUp;
 }
 -(void)applicationDidBecomeActive{
     self.rumManager.appState = FTAppStateRun;
 }
 -(void)applicationDidEnterBackground{
-    @try {
-        self.rumManager.appState = FTAppStateUnknown;
-        if(!self.rumConfig.enableTraceUserView){
-            return;
-        }
-        [self.rumManager stopViewWithProperty:nil];
-    }@catch (NSException *exception) {
-        FTInnerLogError(@"applicationDidEnterBackground exception %@",exception);
-    }
+    self.rumManager.appState = FTAppStateUnknown;
 }
 #pragma mark ========== 注销 ==========
 - (void)shutDown{
     [[FTAppLifeCycle sharedInstance] removeAppLifecycleDelegate:self];
+    [[FTAutoTrackHandler sharedInstance] shutDown];
 #if !TARGET_OS_TV
     [FTWKWebViewHandler sharedInstance].enableTrace = NO;
 #endif

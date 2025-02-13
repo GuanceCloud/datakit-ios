@@ -13,7 +13,7 @@
 #import "FTConstants.h"
 #import "BlacklistedVCClassNames.h"
 #import "FTLog+Private.h"
-#import "FTTrack.h"
+#import "FTAutoTrackHandler.h"
 #import "NSDate+FTUtil.h"
 #import "FTBaseInfoHandler.h"
 static char *viewLoadStartTimeKey = "viewLoadStartTimeKey";
@@ -67,49 +67,16 @@ static char *viewLoadDuration = "viewLoadDuration";
     return isContains;
 }
 - (void)ft_viewDidLoad{
-    self.ft_viewLoadStartTime =[NSDate date];
+    self.ft_viewLoadStartTime = [NSDate date];
     [self ft_viewDidLoad];
 }
 -(void)ft_viewDidAppear:(BOOL)animated{
     [self ft_viewDidAppear:animated];
-    if(![self isBlackListContainsViewController]){
-        // 预防撤回侧滑
-        if ([FTTrack sharedInstance].currentRUMView != self) {
-            if ([self ft_parentViewControllerIsContainer]) {
-                return;
-            }
-            [FTTrack sharedInstance].currentRUMView = self;
-            if(self.ft_viewLoadStartTime){
-                NSNumber *loadTime = [self.ft_viewLoadStartTime ft_nanosecondTimeIntervalToDate:[NSDate date]];
-                self.ft_loadDuration = loadTime;
-                self.ft_viewLoadStartTime = nil;
-            }else{
-                NSNumber *loadTime = @0;
-                self.ft_loadDuration = loadTime;
-            }
-            self.ft_viewUUID = [FTBaseInfoHandler randomUUID];
-            if([FTTrack sharedInstance].addRumDatasDelegate){
-                if([[FTTrack sharedInstance].addRumDatasDelegate respondsToSelector:@selector(onCreateView:loadTime:)]){
-                    [[FTTrack sharedInstance].addRumDatasDelegate onCreateView:self.ft_viewControllerName loadTime:self.ft_loadDuration];
-                }
-                if([[FTTrack sharedInstance].addRumDatasDelegate respondsToSelector:@selector(startViewWithViewID:viewName:property:)]){
-                    [[FTTrack sharedInstance].addRumDatasDelegate startViewWithViewID:self.ft_viewUUID viewName:self.ft_viewControllerName property:nil];
-                }
-                
-            }
-        }
-    }
+    [[FTAutoTrackHandler sharedInstance].viewControllerHandler notify_viewDidAppear:self animated:animated];
 }
 -(void)ft_viewDidDisappear:(BOOL)animated{
     [self ft_viewDidDisappear:animated];
-    if([self isBlackListContainsViewController]){
-        return;
-    }
-    if ([FTTrack sharedInstance].currentRUMView == self) {
-        if([FTTrack sharedInstance].addRumDatasDelegate && [[FTTrack sharedInstance].addRumDatasDelegate respondsToSelector:@selector(stopViewWithViewID:property:)]){
-            [[FTTrack sharedInstance].addRumDatasDelegate stopViewWithViewID:self.ft_viewUUID property:nil];
-        }
-    }
+    [[FTAutoTrackHandler sharedInstance].viewControllerHandler notify_viewDidDisappear:self animated:animated];
 }
 
 -(BOOL)ft_parentViewControllerIsContainer{

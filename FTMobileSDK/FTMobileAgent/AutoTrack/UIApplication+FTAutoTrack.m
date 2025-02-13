@@ -10,7 +10,7 @@
 #import "UIViewController+FTAutoTrack.h"
 #import "UIView+FTAutoTrack.h"
 #import "FTConstants.h"
-#import "FTTrack.h"
+#import "FTAutoTrackHandler.h"
 @implementation UIApplication (FTAutoTrack)
 #if TARGET_OS_IOS
 -(BOOL)ft_sendAction:(SEL)action to:(id)target from:(id)sender forEvent:(UIEvent *)event{
@@ -33,13 +33,13 @@
     UIView *view = (UIView *)sender;
     if ([sender isKindOfClass:UISwitch.class] || [sender isKindOfClass:UIStepper.class] ||
         [sender isKindOfClass:UIPageControl.class]||[sender isKindOfClass:[UISegmentedControl class]]) {
-        if([FTTrack sharedInstance].addRumDatasDelegate && [[FTTrack sharedInstance].addRumDatasDelegate respondsToSelector:@selector(startAction:actionType:property:)]){
-            [[FTTrack sharedInstance].addRumDatasDelegate startAction:view.ft_actionName actionType:FT_KEY_ACTION_TYPE_CLICK property:nil];
+        if([FTAutoTrackHandler sharedInstance].addRumDatasDelegate && [[FTAutoTrackHandler sharedInstance].addRumDatasDelegate respondsToSelector:@selector(startAction:actionType:property:)]){
+            [[FTAutoTrackHandler sharedInstance].addRumDatasDelegate startAction:view.ft_actionName actionType:FT_KEY_ACTION_TYPE_CLICK property:nil];
         }
     } else if ([event isKindOfClass:[UIEvent class]] && event.type == UIEventTypeTouches &&
                [[[event allTouches] anyObject] phase] == UITouchPhaseEnded) {
-        if([FTTrack sharedInstance].addRumDatasDelegate && [[FTTrack sharedInstance].addRumDatasDelegate respondsToSelector:@selector(startAction:actionType:property:)]){
-            [[FTTrack sharedInstance].addRumDatasDelegate startAction:view.ft_actionName actionType:FT_KEY_ACTION_TYPE_CLICK property:nil];
+        if([FTAutoTrackHandler sharedInstance].addRumDatasDelegate && [[FTAutoTrackHandler sharedInstance].addRumDatasDelegate respondsToSelector:@selector(startAction:actionType:property:)]){
+            [[FTAutoTrackHandler sharedInstance].addRumDatasDelegate startAction:view.ft_actionName actionType:FT_KEY_ACTION_TYPE_CLICK property:nil];
 
         }
     }
