@@ -15,6 +15,7 @@ NS_ASSUME_NONNULL_BEGIN
 ///   - key: 平台
 ///   - value: 版本号
 - (void)addPkgInfo:(NSString *)key value:(NSString *)value;
+/// 其他平台 pkg 信息
 - (NSDictionary *)pkgInfo;
 /// 私有的初始化方法，通过字典来初始化，用于 Extensin SDK,同步 service
 /// - Parameter dict: config 转化后的字典
