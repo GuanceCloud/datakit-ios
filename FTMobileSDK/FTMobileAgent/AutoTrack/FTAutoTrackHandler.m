@@ -23,14 +23,18 @@
 @property (nonatomic, strong) NSNumber *loadTime;
 @property (nonatomic, weak) UIViewController *viewController;
 -(instancetype)initWithViewController:(UIViewController *)viewController;
-- (void)updateIdentify;
+- (void)updateViewControllerUUID;
+- (NSString *)viewControllerUUID;
 @end
 @implementation RUMView
 -(instancetype)initWithViewController:(UIViewController *)viewController{
     self = [super init];
     if(self){
         _viewName = viewController.ft_viewControllerName;
-        _identify = viewController.ft_viewUUID;
+        _identify = [NSString stringWithFormat:@"%p", viewController];
+        if(viewController.ft_viewUUID == nil){
+            viewController.ft_viewUUID = [FTBaseInfoHandler randomUUID];
+        }
         _viewController = viewController;
         NSNumber *loadTime = @0;
         if(viewController.ft_viewLoadStartTime){
@@ -44,9 +48,11 @@
     }
     return self;
 }
-- (void)updateIdentify{
-    _identify = [FTBaseInfoHandler randomUUID];
-    _viewController.ft_viewUUID = _identify;
+- (NSString *)viewControllerUUID{
+    return self.viewController.ft_viewUUID;
+}
+- (void)updateViewControllerUUID{
+    _viewController.ft_viewUUID = [FTBaseInfoHandler randomUUID];
     _loadTime = @0;
 }
 @end
@@ -128,7 +134,7 @@ static dispatch_once_t onceToken;
     }
     RUMView *current = [self.stack lastObject];
     if(current){
-        [self.addRumDatasDelegate stopViewWithViewID:current.identify property:nil];
+        [self.addRumDatasDelegate stopViewWithViewID:current.viewControllerUUID property:nil];
     }
 }
 -(void)applicationWillEnterForeground{
@@ -137,8 +143,8 @@ static dispatch_once_t onceToken;
     }
     RUMView *current = [self.stack lastObject];
     if(current){
-        [current updateIdentify];
-        [self.addRumDatasDelegate startViewWithViewID:current.identify viewName:current.viewName property:nil];
+        [current updateViewControllerUUID];
+        [self.addRumDatasDelegate startViewWithViewID:current.viewControllerUUID viewName:current.viewName property:nil];
     }
 }
 #pragma mark ========== FTUIViewControllerHandler ==========
@@ -146,7 +152,6 @@ static dispatch_once_t onceToken;
     if(![self shouldTrackViewController:viewController]){
         return;
     }
-    viewController.ft_viewUUID = [FTBaseInfoHandler randomUUID];
     RUMView *view = [[RUMView alloc]initWithViewController:viewController];
     [self addView:view];
 }
@@ -154,7 +159,7 @@ static dispatch_once_t onceToken;
     if(![self shouldTrackViewController:viewController]){
         return;
     }
-    [self removeView:viewController.ft_viewUUID];
+    [self removeView:viewController viewControllerUUID:viewController.ft_viewUUID];
 }
 - (void)addView:(RUMView *)view{
     if([[self.stack lastObject].identify isEqualToString:view.identify]){
@@ -166,7 +171,7 @@ static dispatch_once_t onceToken;
         [self.addRumDatasDelegate stopViewWithViewID:current.identify property:nil];
     }
     [self.addRumDatasDelegate onCreateView:view.viewName loadTime:view.loadTime];
-    [self.addRumDatasDelegate startViewWithViewID:view.identify viewName:view.viewName property:nil];
+    [self.addRumDatasDelegate startViewWithViewID:view.viewControllerUUID viewName:view.viewName property:nil];
     
     [self.stack enumerateObjectsWithOptions:NSEnumerationReverse usingBlock:^(RUMView * _Nonnull obj, NSUInteger idx, BOOL * _Nonnull stop) {
         if([obj.identify isEqualToString:view.identify]){
@@ -175,7 +180,8 @@ static dispatch_once_t onceToken;
     }];
     [self.stack addObject:view];
 }
-- (void)removeView:(NSString *)identify{
+- (void)removeView:(UIViewController *)viewController viewControllerUUID:(NSString *)viewControllerUUID{
+    NSString *identify = [NSString stringWithFormat:@"%p", viewController];
     if(![[self.stack lastObject].identify isEqualToString:identify]){
         [self.stack enumerateObjectsWithOptions:NSEnumerationReverse usingBlock:^(RUMView * _Nonnull obj, NSUInteger idx, BOOL * _Nonnull stop) {
             if([obj.identify isEqualToString:identify]){
@@ -185,12 +191,12 @@ static dispatch_once_t onceToken;
         return;
     }
     [self.stack removeLastObject];
-    [self.addRumDatasDelegate stopViewWithViewID:identify property:nil];
+    [self.addRumDatasDelegate stopViewWithViewID:viewControllerUUID property:nil];
     
     if([self.stack lastObject]){
         RUMView *current = [self.stack lastObject];
-        [current updateIdentify];
-        [self.addRumDatasDelegate startViewWithViewID:current.identify viewName:current.viewName property:nil];
+        [current updateViewControllerUUID];
+        [self.addRumDatasDelegate startViewWithViewID:current.viewControllerUUID viewName:current.viewName property:nil];
     }
 }
 - (BOOL)shouldTrackViewController:(UIViewController *)viewController{

@@ -13,7 +13,7 @@
 #import "FTTrackerEventDBTool.h"
 #import "FTMobileAgent.h"
 #import <objc/runtime.h>
-#import "FTTrack.h"
+#import "FTAutoTrackHandler.h"
 #import "FTMobileAgent+Private.h"
 #import "FTBaseInfoHandler.h"
 #import "FTRecordModel.h"
