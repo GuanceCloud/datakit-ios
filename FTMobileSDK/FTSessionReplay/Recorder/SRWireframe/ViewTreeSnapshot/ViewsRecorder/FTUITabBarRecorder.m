@@ -27,13 +27,18 @@
 }
 @end
 @interface FTUITabBarRecorder()
-@property (nonatomic, strong) FTViewTreeRecorder *subtreeRecorder;
+@property (nonatomic, strong) FTUILabelRecorder *labelRecorder;
+@property (nonatomic, strong) FTUIViewRecorder *viewRecorder;
+
 @end
 @implementation FTUITabBarRecorder
 -(instancetype)init{
     self = [super init];
     if(self){
         _identifier = [[NSUUID UUID] UUIDString];
+        _labelRecorder = [[FTUILabelRecorder alloc] initWithIdentifier:[[NSUUID UUID] UUIDString] builderOverride:nil textObfuscator:nil];
+        _viewRecorder = [[FTUIViewRecorder alloc] initWithIdentifier:[[NSUUID UUID] UUIDString]];
+
     }
     return self;
 }
@@ -61,7 +66,7 @@
 }
 - (void)recordSubtree:(UITabBar *)tabBar records:(NSMutableArray *)records resources:(NSMutableArray *)resources context:(FTViewTreeRecordingContext *)context{
     FTViewTreeRecorder *viewTreeRecorder = [[FTViewTreeRecorder alloc]init];
-    FTUIImageViewRecorder *imageViewRecorder = [[FTUIImageViewRecorder alloc]initWithIdentifier:[NSUUID UUID].UUIDString tintColorProvider:^UIColor * _Nullable(UIImageView * _Nonnull imageView) {
+    FTUIImageViewRecorder *imageViewRecorder = [[FTUIImageViewRecorder alloc]initWithIdentifier:self.identifier tintColorProvider:^UIColor * _Nullable(UIImageView * _Nonnull imageView) {
         if(imageView.image){
             UITabBarItem *currentItemInSelectedState = nil;
             NSString *uniqueDescription = tabBar.items.firstObject.selectedImage.uniqueDescription;
@@ -77,8 +82,8 @@
     } shouldRecordImagePredicate:nil];
     viewTreeRecorder.nodeRecorders = @[
         imageViewRecorder,
-        [[FTUILabelRecorder alloc] init],
-        [[FTUIViewRecorder alloc] init],
+        self.labelRecorder,
+        self.viewRecorder,
     ];
     
     [viewTreeRecorder record:records resources:resources view:tabBar context:context];
