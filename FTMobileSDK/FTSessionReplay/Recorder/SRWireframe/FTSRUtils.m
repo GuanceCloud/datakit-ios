@@ -47,7 +47,7 @@ CGRect FTCGRectFitWithContentMode(CGRect rect, CGSize contentSize, UIViewContent
                 return CGRectMake(rect.origin.x+actualContentRect.origin.x,
                                   rect.origin.y+actualContentRect.origin.y,
                                   actualContentRect.size.width,
-                                  actualContentRect.size.width);
+                                  actualContentRect.size.height);
             }
             case UIViewContentModeScaleAspectFill:
             {
@@ -55,7 +55,7 @@ CGRect FTCGRectFitWithContentMode(CGRect rect, CGSize contentSize, UIViewContent
                 return CGRectMake(rect.origin.x+actualContentRect.origin.x,
                                   rect.origin.y+actualContentRect.origin.y,
                                   actualContentRect.size.width,
-                                  actualContentRect.size.width);
+                                  actualContentRect.size.height);
             }
             case UIViewContentModeRedraw:
             case UIViewContentModeCenter: {
