@@ -48,4 +48,32 @@
         return [app keyWindow];
     }
 }
+- (NSArray<UIWindow *>*)windows{
+    UIApplication *app = [UIApplication valueForKeyPath:@"sharedApplication"];
+    if(app == nil){
+        return nil;
+    }
+    if (@available(iOS 13.0, *)){
+        UIScene *foregroundActiveScene;
+        UIScene *foregroundInactiveScene;
+        for (UIScene *scene in app.connectedScenes) {
+            if (![scene isKindOfClass:[UIWindowScene class]]) {
+                continue;
+            }
+            if (scene.activationState == UISceneActivationStateForegroundActive) {
+                foregroundActiveScene = scene;
+                break;
+            }
+            if (!foregroundInactiveScene && scene.activationState == UISceneActivationStateForegroundInactive) {
+                foregroundInactiveScene = scene;
+                // no break, we can have the active scene later in the set.
+            }
+        }
+        UIScene *sceneToUse = foregroundActiveScene ? foregroundActiveScene : foregroundInactiveScene;
+        UIWindowScene *windowScene = (UIWindowScene *)sceneToUse;
+        return windowScene.windows;
+    }else{
+        return [app windows];
+    }
+}
 @end

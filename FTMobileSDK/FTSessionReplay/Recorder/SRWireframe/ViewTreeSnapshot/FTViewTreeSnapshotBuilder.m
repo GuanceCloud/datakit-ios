@@ -54,20 +54,24 @@
     }
     return self;
 }
-- (FTViewTreeSnapshot *)takeSnapshot:(UIView *)rootView context:(FTSRContext *)context{
-    FTViewTreeRecordingContext *recordingContext = [[FTViewTreeRecordingContext alloc]init];
-    recordingContext.viewIDGenerator = self.idGen;
-    recordingContext.recorder = context;
-    recordingContext.coordinateSpace = rootView;
-    recordingContext.viewControllerContext = [FTViewControllerContext new];
-    recordingContext.clip = rootView.bounds;
+- (FTViewTreeSnapshot *)takeSnapshot:(NSArray <UIView *> *)rootViews context:(FTSRContext *)context{
     NSMutableArray *node = [[NSMutableArray alloc]init];
     NSMutableArray *resource = [[NSMutableArray alloc]init];
-    [self.viewTreeRecorder record:node resources:resource view:rootView context:recordingContext];
+    for (UIView *rootView in rootViews) {
+        if(rootView.isHidden == NO && rootView.isOpaque){
+            FTViewTreeRecordingContext *recordingContext = [[FTViewTreeRecordingContext alloc]init];
+            recordingContext.viewIDGenerator = self.idGen;
+            recordingContext.recorder = context;
+            recordingContext.coordinateSpace = [UIScreen mainScreen].coordinateSpace;
+            recordingContext.clip = UIScreen.mainScreen.bounds;
+            recordingContext.viewControllerContext = [FTViewControllerContext new];
+            [self.viewTreeRecorder record:node resources:resource view:rootView context:recordingContext];
+        }
+    }
     FTViewTreeSnapshot *viewTree = [[FTViewTreeSnapshot alloc]init];
     viewTree.date = context.date;
     viewTree.context = context;
-    viewTree.viewportSize = rootView.bounds.size;
+    viewTree.viewportSize = UIScreen.mainScreen.bounds.size;
     viewTree.nodes = node;
     viewTree.resources = resource;
     return viewTree;

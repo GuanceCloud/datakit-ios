@@ -46,8 +46,7 @@
         return;
     }
     // 1.采集 view snap shot
-    FTViewTreeSnapshot *viewTreeSnapshot = [self.viewSnapShotBuilder takeSnapshot:rootView context:context];
-    
+    FTViewTreeSnapshot *viewTreeSnapshot = [self.viewSnapShotBuilder takeSnapshot:self.windowObserver.windows context:context];
     [self.snapshotProcessor process:viewTreeSnapshot touchSnapshot:touchSnapshot];
     [self.resourceProcessor process:viewTreeSnapshot.resources context:context];
 }

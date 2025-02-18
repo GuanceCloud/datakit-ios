@@ -12,7 +12,7 @@ NS_ASSUME_NONNULL_BEGIN
 
 @interface FTWindowObserver : NSObject
 @property (nonatomic, strong) UIWindow *keyWindow;
- 
+- (NSArray<UIWindow *>*)windows;
 @end
 
 NS_ASSUME_NONNULL_END
