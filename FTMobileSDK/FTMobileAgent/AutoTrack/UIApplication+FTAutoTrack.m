@@ -92,8 +92,8 @@
         default:
             return;
     }
-    if([FTTrack sharedInstance].addRumDatasDelegate && [[FTTrack sharedInstance].addRumDatasDelegate respondsToSelector:@selector(startAction:actionType:property:)]){
-        [[FTTrack sharedInstance].addRumDatasDelegate startAction:actionName actionType:FT_KEY_ACTION_TYPE_CLICK property:nil];
+    if([FTAutoTrackHandler sharedInstance].addRumDatasDelegate && [[FTAutoTrackHandler sharedInstance].addRumDatasDelegate respondsToSelector:@selector(startAction:actionType:property:)]){
+        [[FTAutoTrackHandler sharedInstance].addRumDatasDelegate startAction:actionName actionType:FT_KEY_ACTION_TYPE_CLICK property:nil];
     }
 }
 #endif
