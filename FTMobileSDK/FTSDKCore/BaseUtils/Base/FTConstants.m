@@ -194,3 +194,6 @@ NSString * const FT_USER_NAME = @"user_name";
 NSString * const FT_USER_EMAIL = @"user_email";
 NSString * const FT_USER_EXTRA = @"user_extra";
 NSString * const FT_USER_INFO = @"FT_USER_INFO";
+
+NSString * const FT_BLACK_LIST_VIEW = @"FT_BLACK_LIST_VIEW";
+NSString * const FT_BLACK_LIST_VIEW_ACTION = @"FT_BLACK_LIST_VIEW_ACTION";

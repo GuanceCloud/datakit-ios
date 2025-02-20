@@ -221,4 +221,7 @@ extern long const FT_MIN_DEFAULT_BLOCK_DURATIONS_MS;
 extern long long const FT_ANR_THRESHOLD_NS;
 extern long const FT_ANR_THRESHOLD_MS;
 
+extern NSString * const FT_BLACK_LIST_VIEW;
+extern NSString * const FT_BLACK_LIST_VIEW_ACTION;
+
 

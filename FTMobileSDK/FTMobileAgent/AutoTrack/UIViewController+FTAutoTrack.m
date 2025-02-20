@@ -42,29 +42,37 @@ static char *viewLoadDuration = "viewLoadDuration";
 -(void)setFt_viewUUID:(NSString *)ft_viewUUID{
     objc_setAssociatedObject(self, &viewControllerUUID, ft_viewUUID, OBJC_ASSOCIATION_COPY_NONATOMIC);
 }
+- (BOOL)isActionBlackListContainsViewController{
+    @try {
+        NSDictionary *black = [BlacklistedVCClassNames ft_blacklistedViewControllerClassNames];
+        NSDictionary *blackList = black[FT_BLACK_LIST_VIEW_ACTION];
+        if(blackList && blackList.count>0){
+            for (NSString *publicClass in blackList[@"public"]) {
+                if ([self isKindOfClass:NSClassFromString(publicClass)]) {
+                    return YES;
+                }
+            }
+        }
+        return [(NSArray *)blackList[@"private"] containsObject:NSStringFromClass(self.class)];
+    } @catch(NSException *exception) {
+        FTInnerLogError(@"error: %@",exception);
+    }
+}
 - (BOOL)isBlackListContainsViewController{
-    static NSSet * blacklistedClasses  = nil;
-    static dispatch_once_t onceToken;
-    dispatch_once(&onceToken, ^{
-        @try {
-            NSArray *blacklistedViewControllerClassNames =[BlacklistedVCClassNames ft_blacklistedViewControllerClassNames];
-            blacklistedClasses = [NSSet setWithArray:blacklistedViewControllerClassNames];
-            
-        } @catch(NSException *exception) {  // json加载和解析可能失败
-            FTInnerLogError(@"error: %@",exception);
+    @try {
+        NSDictionary *black = [BlacklistedVCClassNames ft_blacklistedViewControllerClassNames];
+        NSDictionary *blackList = black[FT_BLACK_LIST_VIEW];
+        if(blackList && blackList.count>0){
+            for (NSString *publicClass in blackList[@"public"]) {
+                if ([self isKindOfClass:NSClassFromString(publicClass)]) {
+                    return YES;
+                }
+            }
         }
-    });
-    
-    __block BOOL isContains = NO;
-    [blacklistedClasses enumerateObjectsUsingBlock:^(id  _Nonnull obj, BOOL * _Nonnull stop) {
-        NSString *blackClassName = (NSString *)obj;
-        Class blackClass = NSClassFromString(blackClassName);
-        if (blackClass && [self isKindOfClass:blackClass]) {
-            isContains = YES;
-            *stop = YES;
-        }
-    }];
-    return isContains;
+        return [(NSArray *)blackList[@"private"] containsObject:NSStringFromClass(self.class)];
+    } @catch(NSException *exception) {
+        FTInnerLogError(@"error: %@",exception);
+    }
 }
 - (void)ft_viewDidLoad{
     self.ft_viewLoadStartTime = [NSDate date];

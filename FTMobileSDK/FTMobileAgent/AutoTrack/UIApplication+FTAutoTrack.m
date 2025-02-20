@@ -23,7 +23,7 @@
         return;
     }
     if ([target isKindOfClass:UIViewController.class]) {
-        if([target isBlackListContainsViewController]){
+        if([target isActionBlackListContainsViewController]){
             return;
         }
     }
