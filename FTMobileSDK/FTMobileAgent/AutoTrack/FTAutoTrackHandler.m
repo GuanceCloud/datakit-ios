@@ -22,16 +22,18 @@
 @property (nonatomic, copy) NSString *identify;
 @property (nonatomic, strong) NSNumber *loadTime;
 @property (nonatomic, weak) UIViewController *viewController;
--(instancetype)initWithViewController:(UIViewController *)viewController;
+@property (nonatomic, assign) BOOL isUntrackedModal;
+- (instancetype)initWithViewController:(UIViewController *)viewController identify:(NSString *)identify;
 - (void)updateViewControllerUUID;
 - (NSString *)viewControllerUUID;
 @end
 @implementation RUMView
--(instancetype)initWithViewController:(UIViewController *)viewController{
+-(instancetype)initWithViewController:(UIViewController *)viewController identify:(NSString *)identify{
     self = [super init];
     if(self){
         _viewName = viewController.ft_viewControllerName;
-        _identify = [NSString stringWithFormat:@"%p", viewController];
+        _identify = identify;
+        _isUntrackedModal = NO;
         if(viewController.ft_viewUUID == nil){
             viewController.ft_viewUUID = [FTBaseInfoHandler randomUUID];
         }
@@ -149,29 +151,42 @@ static dispatch_once_t onceToken;
 }
 #pragma mark ========== FTUIViewControllerHandler ==========
 -(void)notify_viewDidAppear:(UIViewController *)viewController animated:(BOOL)animated{
-    if(![self shouldTrackViewController:viewController]){
+    NSString *identify = [NSString stringWithFormat:@"%p", viewController];
+    __block RUMView *view = nil;
+    [self.stack enumerateObjectsUsingBlock:^(RUMView * _Nonnull obj, NSUInteger idx, BOOL * _Nonnull stop) {
+        if ([obj.identify isEqualToString:identify]) {
+            *stop = YES;
+            view = obj;
+        }
+    }];
+    if (view != nil){
+        [self addView:view];
         return;
     }
-    RUMView *view = [[RUMView alloc]initWithViewController:viewController];
-    [self addView:view];
+    if([self shouldTrackViewController:viewController]){
+        view = [[RUMView alloc]initWithViewController:viewController identify:identify];
+        [self addView:view];
+    }else if (@available(iOS 13.0,tvOS 13.0, *)){
+        if(viewController.isModalInPresentation){
+            view = [[RUMView alloc]initWithViewController:viewController identify:identify];
+            view.isUntrackedModal = YES;
+            [self addView:view];
+        }
+    }
 }
 -(void)notify_viewDidDisappear:(UIViewController *)viewController animated:(BOOL)animated{
-    if(![self shouldTrackViewController:viewController]){
-        return;
-    }
-    [self removeView:viewController viewControllerUUID:viewController.ft_viewUUID];
+    [self removeView:viewController];
 }
 - (void)addView:(RUMView *)view{
     if([[self.stack lastObject].identify isEqualToString:view.identify]){
         return;
     }
     if ([self.stack lastObject]) {
-        // 没有从数组中移除的原因是有一些特殊视图，比如模态视图添加到window时，原有的 VC 并不会调用 didDisappear 方法，当这些特殊视图移除时，原有的 VC 也不会调用 DidAppear 方法，所以需要保留，重新添加到 RUM View。
+        // 没有从数组中移除的原因是有一些特殊视图，比如模态视图添加到 window 时，或者新的 window 添加到窗口，window 上有 VC，原有的 VC 并不会调用 didDisappear 方法，当这些特殊视图移除时，原有的 VC 也不会调用 DidAppear 方法，所以需要保留，重新添加到 RUM View。
         RUMView *current = [self.stack lastObject];
-        [self.addRumDatasDelegate stopViewWithViewID:current.identify property:nil];
+        [self stopView:current];
     }
-    [self.addRumDatasDelegate onCreateView:view.viewName loadTime:view.loadTime];
-    [self.addRumDatasDelegate startViewWithViewID:view.viewControllerUUID viewName:view.viewName property:nil];
+    [self startView:view];
     
     [self.stack enumerateObjectsWithOptions:NSEnumerationReverse usingBlock:^(RUMView * _Nonnull obj, NSUInteger idx, BOOL * _Nonnull stop) {
         if([obj.identify isEqualToString:view.identify]){
@@ -180,7 +195,7 @@ static dispatch_once_t onceToken;
     }];
     [self.stack addObject:view];
 }
-- (void)removeView:(UIViewController *)viewController viewControllerUUID:(NSString *)viewControllerUUID{
+- (void)removeView:(UIViewController *)viewController{
     NSString *identify = [NSString stringWithFormat:@"%p", viewController];
     if(![[self.stack lastObject].identify isEqualToString:identify]){
         [self.stack enumerateObjectsWithOptions:NSEnumerationReverse usingBlock:^(RUMView * _Nonnull obj, NSUInteger idx, BOOL * _Nonnull stop) {
@@ -190,28 +205,39 @@ static dispatch_once_t onceToken;
         }];
         return;
     }
-    [self.stack removeLastObject];
-    [self.addRumDatasDelegate stopViewWithViewID:viewControllerUUID property:nil];
+    RUMView *stopView = [self.stack lastObject];
+    if(stopView){
+        [self.stack removeLastObject];
+        [self stopView:stopView];
+    }
     
-    if([self.stack lastObject]){
-        RUMView *current = [self.stack lastObject];
-        [current updateViewControllerUUID];
-        [self.addRumDatasDelegate startViewWithViewID:current.viewControllerUUID viewName:current.viewName property:nil];
+    RUMView *reStartView = [self.stack lastObject];
+    if(reStartView){
+        [reStartView updateViewControllerUUID];
+        [self startView:reStartView];
+    }
+}
+- (void)startView:(RUMView *)view{
+    if(!self.addRumDatasDelegate){
+        return;
+    }
+    // 确保黑名单视图,不会影响采集视图的 duration
+    // 黑名单视图模态弹出时，关闭上一个采集的 View，关闭时，重新开启上一个 View 采集
+    if(!view.isUntrackedModal){
+        [self.addRumDatasDelegate onCreateView:view.viewName loadTime:view.loadTime];
+        [self.addRumDatasDelegate startViewWithViewID:view.viewControllerUUID viewName:view.viewName property:nil];
+    }
+}
+- (void)stopView:(RUMView *)view{
+    if(!self.addRumDatasDelegate){
+        return;
+    }
+    if(!view.isUntrackedModal){
+        [self.addRumDatasDelegate stopViewWithViewID:view.viewControllerUUID property:nil];
     }
 }
 - (BOOL)shouldTrackViewController:(UIViewController *)viewController{
-    if([viewController isBlackListContainsViewController]){
-        return NO;
-    }
-    UIViewController *parent = viewController.parentViewController;
-    while (parent != nil) {
-        if ([parent isKindOfClass:UIPageViewController.class] || [parent isKindOfClass:UISplitViewController.class]) {
-            return NO;
-        }else{
-            parent = parent.parentViewController;
-        }
-    }
-    return YES;
+    return ![viewController isBlackListContainsViewController];
 }
 -(void)shutDown{
     self.stack = nil;

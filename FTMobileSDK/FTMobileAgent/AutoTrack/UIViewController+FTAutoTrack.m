@@ -16,9 +16,12 @@
 #import "FTAutoTrackHandler.h"
 #import "NSDate+FTUtil.h"
 #import "FTBaseInfoHandler.h"
+#import "FTWeakPropertyContainer.h"
+
 static char *viewLoadStartTimeKey = "viewLoadStartTimeKey";
 static char *viewControllerUUID = "viewControllerUUID";
 static char *viewLoadDuration = "viewLoadDuration";
+static char *previousViewController = "previousViewController";
 
 @implementation UIViewController (FTAutoTrack)
 -(void)setFt_viewLoadStartTime:(NSDate*)viewLoadStartTime{
@@ -80,22 +83,43 @@ static char *viewLoadDuration = "viewLoadDuration";
 }
 -(void)ft_viewDidAppear:(BOOL)animated{
     [self ft_viewDidAppear:animated];
-    [[FTAutoTrackHandler sharedInstance].viewControllerHandler notify_viewDidAppear:self animated:animated];
+    // 防止 tabbar 切换，可能漏采 startView 全埋点
+    if ([self isKindOfClass:UINavigationController.class]) {
+        UINavigationController *nav = (UINavigationController *)self;
+        nav.ft_previousViewController = nil;
+    }
+    if (self.navigationController && self.parentViewController == self.navigationController) {
+        // 忽略由于侧滑部分返回原页面，重复触发 startView 事件
+        if (self.navigationController.ft_previousViewController == self) {
+            return;
+        }
+    }
+    if (!self.parentViewController ||
+        [self.parentViewController isKindOfClass:[UITabBarController class]] ||
+        [self.parentViewController isKindOfClass:[UINavigationController class]] ||
+        [self.parentViewController isKindOfClass:[UIPageViewController class]] ||
+        [self.parentViewController isKindOfClass:[UISplitViewController class]]) {
+        [[FTAutoTrackHandler sharedInstance].viewControllerHandler notify_viewDidAppear:self animated:animated];
+    }
+    // 标记 previousViewController
+    if (self.navigationController && self.parentViewController == self.navigationController) {
+        self.navigationController.ft_previousViewController = self;
+    }
 }
 -(void)ft_viewDidDisappear:(BOOL)animated{
     [self ft_viewDidDisappear:animated];
     [[FTAutoTrackHandler sharedInstance].viewControllerHandler notify_viewDidDisappear:self animated:animated];
 }
+@end
+@implementation UINavigationController (FTAutoTrack)
 
--(BOOL)ft_parentViewControllerIsContainer{
-    UIViewController *parent = self.parentViewController;
-    while (parent != nil) {
-        if ([parent isKindOfClass:UIPageViewController.class] || [parent isKindOfClass:UISplitViewController.class]) {
-            return YES;
-        }else{
-            parent = parent.parentViewController;
-        }
-    }
-    return NO;
+- (void)setFt_previousViewController:(UIViewController *)ft_previousViewController {
+    FTWeakPropertyContainer *container = [FTWeakPropertyContainer containerWithWeakProperty:ft_previousViewController];
+    objc_setAssociatedObject(self, previousViewController, container, OBJC_ASSOCIATION_RETAIN_NONATOMIC);
 }
+- (UIViewController *)ft_previousViewController {
+    FTWeakPropertyContainer *container = objc_getAssociatedObject(self, previousViewController);
+    return container.weakProperty;
+}
+
 @end
