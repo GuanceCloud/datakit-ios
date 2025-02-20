@@ -33,6 +33,8 @@
 #import "FTRUMDataModel.h"
 #import "FTTrackDataManager.h"
 #import "FTMobileConfig+Private.h"
+#import "FTAutoTrackHandler.h"
+#import "DemoViewController.h"
 @interface FTRUMTest : XCTestCase
 @property (nonatomic, copy) NSString *url;
 @property (nonatomic, copy) NSString *appid;
@@ -334,8 +336,9 @@
 /// 验证开启enableTraceUserView,应用进入后台前台，view会自动更新
 - (void)testEnableTraceUserView_whenAppWillEnterForeground{
     [self setRumConfig];
-    [FTModelHelper startView];
-    [FTModelHelper startView];
+    DemoViewController *vc = [[DemoViewController alloc]init];
+    [[FTAutoTrackHandler sharedInstance] notify_viewDidAppear:vc animated:YES];
+    
     [self addLongTaskData:nil];
     [self addResource];
     [self addErrorData:nil];
@@ -514,11 +517,11 @@
 }
 - (void)testStopResourceInBackground{
     [self setRumConfig];
-    [FTModelHelper startView];
-    [FTModelHelper startAction];
+    DemoViewController *vc = [[DemoViewController alloc]init];
+    [[FTAutoTrackHandler sharedInstance] notify_viewDidAppear:vc animated:YES];
+
     NSString *key = [FTBaseInfoHandler randomUUID];
     NSURL *url = [NSURL URLWithString:@"https://www.baidu.com/more/"];
-    NSDictionary *traceHeader = [[FTExternalDataManager sharedManager] getTraceHeaderWithKey:key url:url];
     [[FTExternalDataManager sharedManager] startResourceWithKey:key];
     [[NSNotificationCenter defaultCenter]
      postNotificationName:UIApplicationDidEnterBackgroundNotification object:nil];
@@ -528,7 +531,7 @@
     XCTAssertTrue(viewHandlers.count>0);
 
     FTResourceContentModel *model = [FTResourceContentModel new];
-    model.url = [NSURL URLWithString:@"https://www.baidu.com/more/"];
+    model.url = url;
     model.httpStatusCode = 404;
     model.httpMethod = @"GET";
     [[FTExternalDataManager sharedManager] stopResourceWithKey:key];
