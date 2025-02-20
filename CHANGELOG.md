@@ -1,3 +1,7 @@
+# 1.5.13-alpha.3
+1. RUM View 采集优化，防止侧滑重复采集 View
+2. RUM View 子页面采集逻辑调整，仅采集父视图为 UITabBarController 、UINavigationController、UIPageViewController 、UISplitViewController 的子视图
+---
 # 1.5.13-alpha.2
 1. tvOS 环境类名替换，修复使用未声明类问题
 ---
