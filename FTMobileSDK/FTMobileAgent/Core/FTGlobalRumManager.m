@@ -34,7 +34,7 @@
 #import "FTFatalErrorContext.h"
 #import "FTModuleManager.h"
 #import "FTMessageReceiver.h"
-@interface FTGlobalRumManager ()<FTRunloopDetectorDelegate,FTAppLifeCycleDelegate,FTAppLaunchDataDelegate>
+@interface FTGlobalRumManager ()<FTRunloopDetectorDelegate,FTAppLifeCycleDelegate,FTAppLaunchDataDelegate,FTMessageReceiver>
 @property (nonatomic, strong) FTRumConfig *rumConfig;
 @property (nonatomic, strong) FTRUMDependencies *dependencies;
 @property (nonatomic, strong) FTAppLaunchTracker *launchTracker;
