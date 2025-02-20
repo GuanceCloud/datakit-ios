@@ -34,9 +34,6 @@
         _viewName = viewController.ft_viewControllerName;
         _identify = identify;
         _isUntrackedModal = NO;
-        if(viewController.ft_viewUUID == nil){
-            viewController.ft_viewUUID = [FTBaseInfoHandler randomUUID];
-        }
         _viewController = viewController;
         NSNumber *loadTime = @0;
         if(viewController.ft_viewLoadStartTime){
@@ -160,6 +157,7 @@ static dispatch_once_t onceToken;
         }
     }];
     if (view != nil){
+        [view updateViewControllerUUID];
         [self addView:view];
         return;
     }
