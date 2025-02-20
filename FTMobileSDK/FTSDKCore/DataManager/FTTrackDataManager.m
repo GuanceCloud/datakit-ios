@@ -5,10 +5,10 @@
 //  Created by 胡蕾蕾 on 2021/8/4.
 //  Copyright © 2021 DataFlux-cn. All rights reserved.
 //
-
+#import <QuartzCore/CoreAnimation.h>
 #import "FTTrackDataManager.h"
 #import "FTRecordModel.h"
-#import "FTReachability.h"
+#import "FTNetworkConnectivity.h"
 #import "FTTrackerEventDBTool.h"
 #import "FTLog+Private.h"
 #import "FTRequest.h"
@@ -17,9 +17,9 @@
 #import "FTConstants.h"
 #import <pthread.h>
 #import "FTBaseInfoHandler.h"
-#import "FTLogDataCache.h"
+#import "FTDBDataCachePolicy.h"
 #import "FTJSONUtil.h"
-@interface FTTrackDataManager ()<FTAppLifeCycleDelegate>{
+@interface FTTrackDataManager ()<FTAppLifeCycleDelegate,FTNetworkChangeObserver>{
     pthread_rwlock_t _uploadWorkLock;
 }
 @property (atomic, assign) BOOL isUploading;
@@ -30,7 +30,7 @@
 @property (atomic, assign) int uploadPageSize;
 @property (atomic, assign) int syncSleepTime;
 @property (nonatomic, strong) FTNetworkManager *networkManager;
-@property (nonatomic, strong) FTLogDataCache *logDataCache;
+@property (nonatomic, strong) FTDBDataCachePolicy *dataCachePolicy;
 @property (nonatomic, strong) dispatch_block_t uploadWork;
 @property (atomic, assign) NSTimeInterval lastDataDate;
 @end
@@ -52,7 +52,9 @@ static dispatch_once_t onceToken;
     });
     return sharedInstance;
 }
--(instancetype)initWithAutoSync:(BOOL)autoSync syncPageSize:(int)syncPageSize syncSleepTime:(int)syncSleepTime{
+-(instancetype)initWithAutoSync:(BOOL)autoSync
+                   syncPageSize:(int)syncPageSize
+                  syncSleepTime:(int)syncSleepTime{
     self = [super init];
     if (self) {
         NSString *serialLabel = @"com.guance.network";
@@ -61,7 +63,7 @@ static dispatch_once_t onceToken;
         _uploadPageSize = syncPageSize;
         _syncSleepTime = syncSleepTime;
         _networkManager = [[FTNetworkManager alloc]initWithTimeoutIntervalForRequest:syncPageSize>30?syncPageSize:30];
-        _logDataCache = [[FTLogDataCache alloc]init];
+        _dataCachePolicy = [[FTDBDataCachePolicy alloc]init];
         pthread_rwlock_init(&_uploadWorkLock, NULL);
         [self listenNetworkChangeAndAppLifeCycle];
         if(autoSync){
@@ -72,20 +74,26 @@ static dispatch_once_t onceToken;
 }
 //监听网络状态 网络连接成功 触发一次上传操作
 - (void)listenNetworkChangeAndAppLifeCycle{
-    [[FTReachability sharedInstance] startNotifier];
+    [[FTNetworkConnectivity sharedInstance] start];
     [[FTAppLifeCycle sharedInstance] addAppLifecycleDelegate:self];
     if(_autoSync){
-        __weak typeof(self) weakSelf = self;
-        [FTReachability sharedInstance].networkChanged = ^(){
-            if([FTReachability sharedInstance].reachable){
-                [weakSelf uploadTrackData];
-            }
-        };
+        [[FTNetworkConnectivity sharedInstance] addNetworkObserver:self];
     }
 }
-- (void)setLogCacheLimitCount:(int)count logDiscardNew:(BOOL)discardNew{
-    self.logDataCache.logCacheLimitCount = count;
-    self.logDataCache.discardNew = discardNew;
+- (void)connectivityChanged:(BOOL)connected typeDescription:(NSString *)typeDescription{
+    if (connected){
+        [self uploadTrackData];
+    }
+}
+-(void)setDBLimitWithSize:(long)size discardNew:(BOOL)discardNew{
+    [[FTTrackerEventDBTool sharedManger] setEnableLimitWithDbSize:YES];
+    [self.dataCachePolicy setDBLimitWithSize:size discardNew:discardNew];
+}
+- (void)setLogCacheLimitCount:(int)count discardNew:(BOOL)discardNew{
+    [self.dataCachePolicy setLogCacheLimitCount:count discardNew:discardNew];
+}
+- (void)setRUMCacheLimitCount:(int)count discardNew:(BOOL)discardNew{
+    [self.dataCachePolicy setRumCacheLimitCount:count discardNew:discardNew];
 }
 -(void)applicationDidBecomeActive{
     @try {
@@ -99,7 +107,7 @@ static dispatch_once_t onceToken;
 }
 -(void)applicationWillResignActive{
     @try {
-        [self.logDataCache insertCacheToDB];
+        [self.dataCachePolicy insertCacheToDB];
     }
     @catch (NSException *exception) {
         FTInnerLogError(@"applicationWillResignActive exception %@",exception);
@@ -107,7 +115,7 @@ static dispatch_once_t onceToken;
 }
 -(void)applicationWillTerminate{
     @try {
-        [self.logDataCache insertCacheToDB];
+        [self.dataCachePolicy insertCacheToDB];
     } @catch (NSException *exception) {
         FTInnerLogError(@"exception %@",exception);
     }
@@ -116,21 +124,20 @@ static dispatch_once_t onceToken;
     //数据写入不用做额外的线程处理，数据采集组合除了崩溃数据，都是在子线程进行的
     switch (type) {
         case FTAddDataLogging:
-            [self.logDataCache addLogData:data];
-            if(self.autoSync&&[self.logDataCache reachHalfLimit]){
-                //如果正在上传中忽略
-                if(!self.isUploading){
-                    [self uploadTrackData];
-                }
-                return;
-            }
+            [self.dataCachePolicy addLogData:data];
+            
             break;
-        case FTAddDataNormal:
-            [[FTTrackerEventDBTool sharedManger] insertItem:data];
+        case FTAddDataRUM:
+            [self.dataCachePolicy addRumData:data];
             break;
-        case FTAddDataImmediate:
-            [[FTTrackerEventDBTool sharedManger] insertItem:data];
-            break;
+    }
+    if(self.autoSync&&[self.dataCachePolicy reachHalfLimit]){
+        //如果正在上传中忽略
+        if(!self.isUploading){
+            FTInnerLogDebug(@"[NETWORK] reachHalfLimit start uploading");
+            [self uploadTrackData];
+        }
+        return;
     }
     _lastDataDate = CACurrentMediaTime();
 }
@@ -145,8 +152,12 @@ static dispatch_once_t onceToken;
         if(current-strongSelf.lastDataDate>0.1 && [[FTTrackerEventDBTool sharedManger] getDatasCount]>0){
             FTInnerLogDebug(@"[NETWORK]: start upload waiting");
             dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)(10 * NSEC_PER_SEC)), strongSelf.networkQueue, ^{
-                FTInnerLogDebug(@"[NETWORK]: timer -> privateUpload");
-                [weakSelf privateUpload];
+                if([FTNetworkConnectivity sharedInstance].isConnected){
+                    FTInnerLogDebug(@"[NETWORK]: timer -> privateUpload");
+                    [weakSelf privateUpload];
+                }else{
+                    FTInnerLogError(@"[NETWORK] Network unreachable, cancel upload");
+                }
                 [weakSelf scheduleNextCycle];
             });
         }else{
@@ -184,7 +195,7 @@ static dispatch_once_t onceToken;
 
 - (void)uploadTrackData{
     //无网 返回
-    if(![FTReachability sharedInstance].reachable){
+    if(![FTNetworkConnectivity sharedInstance].isConnected){
         FTInnerLogError(@"[NETWORK] Network unreachable, cancel upload");
         return;
     }
@@ -218,11 +229,13 @@ static dispatch_once_t onceToken;
             break;
         }
         FTRecordModel *model = [events lastObject];
-        if (![[FTTrackerEventDBTool sharedManger] deleteItemWithType:type identify:model._id]) {
+        if (![[FTTrackerEventDBTool sharedManger] deleteItemWithType:type identify:model._id count:events.count]) {
             FTInnerLogError(@"数据库删除已上传数据失败");
         }
         if([type isEqualToString:FT_DATA_TYPE_LOGGING]){
-            _logDataCache.logCount -= events.count;
+            _dataCachePolicy.logCount -= events.count;
+        }else{
+            _dataCachePolicy.rumCount -= events.count;
         }
         if(events.count < self.uploadPageSize){
             break;
@@ -266,13 +279,14 @@ static dispatch_once_t onceToken;
     return NO;
 }
 - (void)insertCacheToDB{
-    [self.logDataCache insertCacheToDB];
+    [self.dataCachePolicy insertCacheToDB];
 }
 - (void)shutDown{
     [self cancelUploadWork];
-    [self.logDataCache insertCacheToDB];
+    [self.dataCachePolicy insertCacheToDB];
     [[FTAppLifeCycle sharedInstance] removeAppLifecycleDelegate:self];
     [[FTTrackerEventDBTool sharedManger] shutDown];
     onceToken = 0;
+    sharedInstance = nil;
 }
 @end

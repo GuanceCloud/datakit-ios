@@ -15,10 +15,12 @@
 #import "FTAutoTrackHandler.h"
 #import "NSDate+FTUtil.h"
 #import "FTBaseInfoHandler.h"
+#import "FTWeakPropertyContainer.h"
 #import "BlacklistedVCClassNames.h"
 static char *viewLoadStartTimeKey = "viewLoadStartTimeKey";
 static char *viewControllerUUID = "viewControllerUUID";
 static char *viewLoadDuration = "viewLoadDuration";
+static char *previousViewController = "previousViewController";
 
 @implementation UIViewController (FTAutoTrack)
 -(void)setFt_viewLoadStartTime:(NSDate*)viewLoadStartTime{
@@ -42,45 +44,81 @@ static char *viewLoadDuration = "viewLoadDuration";
 -(void)setFt_viewUUID:(NSString *)ft_viewUUID{
     objc_setAssociatedObject(self, &viewControllerUUID, ft_viewUUID, OBJC_ASSOCIATION_COPY_NONATOMIC);
 }
+- (BOOL)isActionBlackListContainsViewController{
+    @try {
+        NSDictionary *black = [BlacklistedVCClassNames ft_blacklistedViewControllerClassNames];
+        NSDictionary *blackList = black[FT_BLACK_LIST_VIEW_ACTION];
+        if(blackList && blackList.count>0){
+            for (NSString *publicClass in blackList[@"public"]) {
+                if ([self isKindOfClass:NSClassFromString(publicClass)]) {
+                    return YES;
+                }
+            }
+        }
+        return [(NSArray *)blackList[@"private"] containsObject:NSStringFromClass(self.class)];
+    } @catch(NSException *exception) {
+        FTInnerLogError(@"error: %@",exception);
+    }
+}
+- (BOOL)isBlackListContainsViewController{
+    @try {
+        NSDictionary *black = [BlacklistedVCClassNames ft_blacklistedViewControllerClassNames];
+        NSDictionary *blackList = black[FT_BLACK_LIST_VIEW];
+        if(blackList && blackList.count>0){
+            for (NSString *publicClass in blackList[@"public"]) {
+                if ([self isKindOfClass:NSClassFromString(publicClass)]) {
+                    return YES;
+                }
+            }
+        }
+        return [(NSArray *)blackList[@"private"] containsObject:NSStringFromClass(self.class)];
+    } @catch(NSException *exception) {
+        FTInnerLogError(@"error: %@",exception);
+    }
+}
 - (void)ft_viewDidLoad{
     self.ft_viewLoadStartTime = [NSDate date];
     [self ft_viewDidLoad];
 }
 -(void)ft_viewDidAppear:(BOOL)animated{
     [self ft_viewDidAppear:animated];
-    [[FTAutoTrackHandler sharedInstance].viewControllerHandler notify_viewDidAppear:self animated:animated];
+    // 防止 tabbar 切换，可能漏采 startView 全埋点
+    if ([self isKindOfClass:UINavigationController.class]) {
+        UINavigationController *nav = (UINavigationController *)self;
+        nav.ft_previousViewController = nil;
+    }
+    if (self.navigationController && self.parentViewController == self.navigationController) {
+        // 忽略由于侧滑部分返回原页面，重复触发 startView 事件
+        if (self.navigationController.ft_previousViewController == self) {
+            return;
+        }
+    }
+    if (!self.parentViewController ||
+        [self.parentViewController isKindOfClass:[UITabBarController class]] ||
+        [self.parentViewController isKindOfClass:[UINavigationController class]] ||
+        [self.parentViewController isKindOfClass:[UIPageViewController class]] ||
+        [self.parentViewController isKindOfClass:[UISplitViewController class]]) {
+        [[FTAutoTrackHandler sharedInstance].viewControllerHandler notify_viewDidAppear:self animated:animated];
+    }
+    // 标记 previousViewController
+    if (self.navigationController && self.parentViewController == self.navigationController) {
+        self.navigationController.ft_previousViewController = self;
+    }
 }
 -(void)ft_viewDidDisappear:(BOOL)animated{
     [self ft_viewDidDisappear:animated];
     [[FTAutoTrackHandler sharedInstance].viewControllerHandler notify_viewDidDisappear:self animated:animated];
 }
--(BOOL)isBlackListContainsViewController{
-//   NSString *lastPathComponent =  [NSBundle bundleForClass:self.class].bundleURL.lastPathComponent;
-//    if([lastPathComponent isEqualToString:@"UIKitCore.framework"] || [lastPathComponent isEqualToString:@"SwiftUI.framework"]){
-//        return YES;
-//    }
-//    return NO;
-    static NSSet * blacklistedClasses  = nil;
-    static dispatch_once_t onceToken;
-    dispatch_once(&onceToken, ^{
-        @try {
-            NSArray *blacklistedViewControllerClassNames =[BlacklistedVCClassNames ft_blacklistedViewControllerClassNames];
-            blacklistedClasses = [NSSet setWithArray:blacklistedViewControllerClassNames];
-            
-        } @catch(NSException *exception) {  // json加载和解析可能失败
-            FTInnerLogError(@"error: %@",exception);
-        }
-    });
-    
-    __block BOOL isContains = NO;
-    [blacklistedClasses enumerateObjectsUsingBlock:^(id  _Nonnull obj, BOOL * _Nonnull stop) {
-        NSString *blackClassName = (NSString *)obj;
-        Class blackClass = NSClassFromString(blackClassName);
-        if (blackClass && [self isKindOfClass:blackClass]) {
-            isContains = YES;
-            *stop = YES;
-        }
-    }];
-    return isContains;
+@end
+@implementation UINavigationController (FTAutoTrack)
+
+- (void)setFt_previousViewController:(UIViewController *)ft_previousViewController {
+    FTWeakPropertyContainer *container = [FTWeakPropertyContainer containerWithWeakProperty:ft_previousViewController];
+    objc_setAssociatedObject(self, previousViewController, container, OBJC_ASSOCIATION_RETAIN_NONATOMIC);
 }
+- (UIViewController *)ft_previousViewController {
+    FTWeakPropertyContainer *container = objc_getAssociatedObject(self, previousViewController);
+    return container.weakProperty;
+}
+
 @end

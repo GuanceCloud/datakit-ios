@@ -18,6 +18,7 @@ extern NSString * const FT_TAGS;
 extern NSString * const FT_OPDATA;
 extern NSString * const FT_OP;
 extern NSString * const FT_DEFAULT_SERVICE_NAME;
+extern NSString * const FT_TVOS_SERVICE_NAME;
 extern NSString * const FT_IOS_SDK_NAME;
 extern NSString * const FT_MACOS_SDK_NAME;
 extern NSString * const FT_IS_WEBVIEW;
@@ -25,6 +26,7 @@ extern NSString * const FT_NULL_VALUE;
 extern NSString * const FT_TYPE;
 #pragma mark ----- data source
 extern NSString * const FT_KEY_SOURCE;
+extern NSString * const FT_LOGGER_TVOS_SOURCE;
 extern NSString * const FT_LOGGER_SOURCE;
 extern NSString * const FT_LOGGER_MACOS_SOURCE;
 extern NSString * const FT_RUM_SOURCE_RESOURCE;
@@ -34,6 +36,7 @@ extern NSString * const FT_RUM_SOURCE_LONG_TASK;
 extern NSString * const FT_RUM_SOURCE_VIEW;
 extern NSString * const FT_SDK_VERSION;
 extern NSString * const FT_SDK_NAME;
+extern NSString * const FT_SDK_PKG_INFO;
 #pragma mark ========== BASE PROPERTY ==========
 //应用名称
 extern NSString * const FT_COMMON_PROPERTY_APP_NAME;
@@ -204,15 +207,27 @@ extern NSString * const FT_USER_EXTRA;
 
 #pragma mark ========== inner use ==========
 extern NSUInteger const FT_LOGGING_CONTENT_SIZE;
-extern int const FT_DB_CONTENT_MAX_COUNT;
+
+extern int const FT_DB_LOG_MAX_COUNT;
+extern int const FT_DB_LOG_MIN_COUNT;
+
+extern int const FT_DB_RUM_MAX_COUNT;
+extern int const FT_DB_RUM_MIN_COUNT;
+
+extern long const FT_DEFAULT_DB_SIZE_LIMIT;
+extern long const FT_MIN_DB_SIZE_LIMIT;
+
 extern NSString * const FT_SCRIPT_MESSAGE_HANDLER_NAME;
 extern NSUInteger const FT_TIME_INTERVAL;
 /// 超过多少毫秒为一次卡顿,default 250ms
 extern long const FT_DEFAULT_BLOCK_DURATIONS_MS;
 /// 卡顿最小时长 100 ms
-extern long const FT_MINI_DEFAULT_BLOCK_DURATIONS_MS;
+extern long const FT_MIN_DEFAULT_BLOCK_DURATIONS_MS;
 
 extern long long const FT_ANR_THRESHOLD_NS;
 extern long const FT_ANR_THRESHOLD_MS;
+
+extern NSString * const FT_BLACK_LIST_VIEW;
+extern NSString * const FT_BLACK_LIST_VIEW_ACTION;
 
 

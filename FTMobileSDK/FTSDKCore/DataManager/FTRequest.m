@@ -53,7 +53,7 @@
 -(NSString *)path{
     return nil;
 }
--(NSString *)serialNumber{
+-(nullable NSString *)serialNumber{
     return nil;
 }
 -(BOOL)enableDataIntegerCompatible{

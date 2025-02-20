@@ -11,14 +11,15 @@
 NS_ASSUME_NONNULL_BEGIN
 #define FT_DB_TRACE_EVENT_TABLE_NAME @"trace_event"
 @class FTRecordModel;
+
 /// 操作数据库数据的工具
 @interface FTTrackerEventDBTool : NSObject
 /// 单例
-+ (FTTrackerEventDBTool *)sharedManger;
++ (nullable FTTrackerEventDBTool *)sharedManger;
 /// 单例
 /// @param dbPath 数据库地址
 /// @param dbName 数据库名称
-+ (FTTrackerEventDBTool *)shareDatabaseWithPath:(nullable NSString *)dbPath dbName:(nullable NSString *)dbName;
++ (nullable FTTrackerEventDBTool *)shareDatabaseWithPath:(nullable NSString *)dbPath dbName:(nullable NSString *)dbName;
 
 /// 向数据库中添加一个对象
 /// @param item 要记录的数据
@@ -37,24 +38,20 @@ NS_ASSUME_NONNULL_BEGIN
 -(NSArray *)getFirstRecords:(NSUInteger)recordSize withType:(NSString *)type;
 /// 根据类型删除已上传的数据
 /// @param type 数据类型
-/// @param tm 删除在此时间之前的数据
--(BOOL)deleteItemWithType:(NSString *)type tm:(long long)tm;
-
-/// 根据类型删除已上传的数据
-/// @param type 数据类型
 /// @param identify 删除在此 _id 之前的数据
--(BOOL)deleteItemWithType:(NSString *)type identify:(NSString *)identify;
+-(BOOL)deleteItemWithType:(NSString *)type identify:(NSString *)identify count:(NSInteger)count;
 
-/// 根据给定时间删除在此时间之前的数据
-/// @param tm 删除时间
--(BOOL)deleteItemWithTm:(long long)tm;
+/// 删除所有数据
+-(BOOL)deleteAllDatas;
 
 /// 删除所有数据
 -(BOOL)deleteAllDatas;
 
 /// 删除日志数据
 /// @param count 删除前 count 个数据
--(BOOL)deleteLoggingItem:(NSInteger)count;
+-(BOOL)deleteDataWithType:(NSString *)type count:(NSInteger)count;
+
+-(BOOL)deleteDataWithCount:(NSInteger)count;
 
 /// 获取数据库数据总数
 - (NSInteger)getDatasCount;
@@ -63,6 +60,9 @@ NS_ASSUME_NONNULL_BEGIN
 /// @param type 数据类型
 - (NSInteger)getDatasCountWithType:(NSString *)type;
 
+- (long)checkDatabaseSize;
+
+- (void)setEnableLimitWithDbSize:(BOOL)enableLimitWithDbSize;
 /// 关闭单例
 - (void)shutDown;
 @end

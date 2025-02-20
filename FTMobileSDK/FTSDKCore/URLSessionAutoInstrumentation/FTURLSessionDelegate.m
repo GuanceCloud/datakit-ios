@@ -24,6 +24,9 @@
 #import "FTURLSessionInterceptorProtocol.h"
 #import "NSURLSession+FTSwizzler.h"
 #import "FTSwizzle.h"
+#import "FTTraceContext.h"
+#import "NSURLSessionTask+FTSwizzler.h"
+
 @interface FTURLSessionDelegate()<FTURLSessionInterceptorProtocol>
 @property (nonatomic,strong,readwrite) FTURLSessionInstrumentation *instrumentation;
 @end
@@ -38,9 +41,30 @@
 - (NSURLRequest *)interceptRequest:(NSURLRequest *)request{
     NSURLRequest *interceptedRequest = request;
     if(self.requestInterceptor){
-        return interceptedRequest = self.requestInterceptor(request);
+        interceptedRequest = self.requestInterceptor(request);
+        return interceptedRequest;
+    }
+    if(self.traceInterceptor){
+        FTTraceContext *context = self.traceInterceptor(request);
+        NSMutableURLRequest *mutableRequest = [interceptedRequest mutableCopy];
+        if (context.traceHeader && context.traceHeader.allKeys.count>0) {
+            [context.traceHeader enumerateKeysAndObjectsUsingBlock:^(id field, id value, BOOL * __unused stop) {
+                [mutableRequest setValue:value forHTTPHeaderField:field];
+            }];
+        }
+        return mutableRequest;
     }
     return [self.instrumentation.interceptor interceptRequest:interceptedRequest];
+}
+- (void)traceInterceptTask:(NSURLSessionTask *)task{
+    if(self.requestInterceptor){
+       NSURLRequest *interceptedRequest = self.requestInterceptor(task.currentRequest);
+        if(interceptedRequest){
+            [task setValue:interceptedRequest forKey:@"currentRequest"];
+        }
+       return;
+    }
+    [self.instrumentation.interceptor traceInterceptTask:task traceInterceptor:self.traceInterceptor];
 }
 - (void)interceptTask:(NSURLSessionTask *)task{
     [self.instrumentation.interceptor interceptTask:task];
@@ -49,7 +73,13 @@
     [self.instrumentation.interceptor taskReceivedData:dataTask data:data];
 }
 -(void)URLSession:(NSURLSession *)session task:(NSURLSessionTask *)task didFinishCollectingMetrics:(NSURLSessionTaskMetrics *)metrics{
+    // custom = YES 主要是为了优先处理 URLSession 级自定义的 provider
     [self.instrumentation.interceptor taskMetricsCollected:task metrics:metrics custom:YES];
+    if (@available(iOS 15.0,tvOS 15.0,macOS 12.0, *)) {
+        if(!task.ft_hasCompletion){
+            [self.instrumentation.interceptor taskCompleted:task error:task.error extraProvider:self.provider];
+        }
+    }
 }
 -(void)URLSession:(NSURLSession *)session task:(NSURLSessionTask *)task didCompleteWithError:(NSError *)error{
     [self.instrumentation.interceptor taskCompleted:task error:error extraProvider:self.provider];

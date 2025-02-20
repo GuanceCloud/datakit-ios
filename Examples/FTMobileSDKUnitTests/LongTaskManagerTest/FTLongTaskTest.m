@@ -39,7 +39,7 @@
     NSProcessInfo *processInfo = [NSProcessInfo processInfo];
     NSString *url = [processInfo environment][@"ACCESS_SERVER_URL"];
     NSString *appID = [processInfo environment][@"APP_ID"];
-    [[FTTrackerEventDBTool sharedManger] deleteItemWithTm:[NSDate ft_currentNanosecondTimeStamp]];
+    [[FTTrackerEventDBTool sharedManger] deleteAllDatas];
     FTMobileConfig *config = [[FTMobileConfig alloc]initWithDatakitUrl:url];
     config.autoSync = NO;
     FTRumConfig *rumConfig = [[FTRumConfig alloc]initWithAppid:appID];
@@ -156,16 +156,19 @@
 }
 - (void)testLongTaskStartTime{
     [self initSDKWithEnableTrackAppANR:NO longTask:NO];
-    long long startTime = [NSDate ft_currentNanosecondTimeStamp]-1000000;
-    [[FTExternalDataManager sharedManager] addLongTaskWithStack:@"test_stack" duration:@(1000000)];
+    __block long long startTime;
+    CFTimeInterval duration = [FTTestUtils functionElapsedTime:^{
+        startTime = [NSDate ft_currentNanosecondTimeStamp]-1000000000;
+        [[FTExternalDataManager sharedManager] addLongTaskWithStack:@"test_stack" duration:@(1000000000)];
+    }]*1000000000;
     
     [[FTMobileAgent sharedInstance] syncProcess];
     NSArray *datas = [[FTTrackerEventDBTool sharedManger] getFirstRecords:10 withType:FT_DATA_TYPE_RUM];
     __block BOOL noLongTask = YES;
     [FTModelHelper resolveModelArray:datas timeCallBack:^(NSString * _Nonnull source, NSDictionary * _Nonnull tags, NSDictionary * _Nonnull fields, long long time,BOOL * _Nonnull stop) {
-        if ([source isEqualToString:FT_RUM_SOURCE_LONG_TASK]) {
+        if ([source isEqualToString:FT_RUM_SOURCE_LONG_TASK]&&[fields[FT_KEY_LONG_TASK_STACK] isEqualToString:@"test_stack"]) {
             noLongTask = NO;
-            XCTAssertTrue(time-startTime<10000);
+            XCTAssertTrue(time-startTime<duration);
             *stop = YES;
         }
     }];
@@ -190,6 +193,7 @@
  */
 - (void)testDataSoreANRDataFormat{
     [self initSDKWithEnableTrackAppANR:YES longTask:NO];
+    [FTModelHelper startViewWithName:@"TestAnrFormat"];
     XCTestExpectation *expect = [self expectationWithDescription:@"请求超时timeout!"];
     FTLongTaskManager *longTaskManager = [[FTGlobalRumManager sharedInstance] valueForKey:@"longTaskManager"];
     NSString *dataStorePath = [longTaskManager valueForKey:@"dataStorePath"];
@@ -208,6 +212,12 @@
                           [dict.allKeys containsObject:@"sessionContext"]&&
                           [dict.allKeys containsObject:@"backtrace"]&&
                           [dict.allKeys containsObject:@"isANR"]);
+            XCTAssertTrue([dict.allKeys containsObject:@"view"]);
+            NSDictionary *view = dict[@"view"];
+            NSDictionary *sessionContext = dict[@"sessionContext"];
+            NSString *viewId = view[FT_TAGS][FT_KEY_VIEW_ID];
+            NSString *sessionViewId = sessionContext[FT_KEY_VIEW_ID];
+            XCTAssertTrue([viewId isEqualToString:sessionViewId]);
             NSArray *dates = [array[1] componentsSeparatedByString:@"\n"];
             [dates enumerateObjectsUsingBlock:^(NSString  *obj, NSUInteger idx, BOOL * _Nonnull stop) {
                 if(obj.length>0){

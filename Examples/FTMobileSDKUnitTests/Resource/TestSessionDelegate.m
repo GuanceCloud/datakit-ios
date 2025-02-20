@@ -8,13 +8,13 @@
 
 #import "TestSessionDelegate.h"
 @interface TestSessionDelegate()
-@property (nonatomic, strong) XCTestExpectation *expectation;
+@property (nonatomic, copy) Completion completionHandler;
 @end
 @implementation TestSessionDelegate
--(instancetype)initWithTestExpectation:(XCTestExpectation *)expectation{
+-(instancetype)initWithCompletionHandler:(Completion)completionHandler{
     self = [super init];
     if(self){
-        _expectation = expectation;
+        _completionHandler = completionHandler;
     }
     return self;
 }
@@ -22,20 +22,22 @@
     
 }
 -(void)URLSession:(NSURLSession *)session task:(NSURLSessionTask *)task didCompleteWithError:(NSError *)error{
-    [self.expectation fulfill];
+    if(self.completionHandler){
+        self.completionHandler();
+    }
 }
 -(void)URLSession:(NSURLSession *)session task:(NSURLSessionTask *)task didFinishCollectingMetrics:(NSURLSessionTaskMetrics *)metrics{
     
 }
 @end
 @interface TestSessionDelegate_NoCollectingMetrics()
-@property (nonatomic, strong) XCTestExpectation *expectation;
+@property (nonatomic, copy) Completion completionHandler;
 @end
 @implementation TestSessionDelegate_NoCollectingMetrics
--(instancetype)initWithTestExpectation:(XCTestExpectation *)expectation{
+-(instancetype)initWithCompletionHandler:(Completion)completionHandler{
     self = [super init];
     if(self){
-        _expectation = expectation;
+        _completionHandler = completionHandler;
     }
     return self;
 }
@@ -43,7 +45,9 @@
     
 }
 -(void)URLSession:(NSURLSession *)session task:(NSURLSessionTask *)task didCompleteWithError:(NSError *)error{
-    [self.expectation fulfill];
+    if(self.completionHandler){
+        self.completionHandler();
+    }
 }
 @end
 
@@ -61,7 +65,9 @@
 @end
 
 @implementation FTURLSessionCompleteTestDelegate
-
+- (void)URLSession:(NSURLSession *)session didCreateTask:(NSURLSessionTask *)task{
+    
+}
 -(void)URLSession:(NSURLSession *)session task:(NSURLSessionTask *)task didCompleteWithError:(NSError *)error{
     self.URLSessionTaskDidCompleteWithErrorCalledCount += 1;
 }
@@ -71,7 +77,9 @@
 @end
 
 @implementation FTURLSessionNoCompleteTestDelegate
-
+- (void)URLSession:(NSURLSession *)session didCreateTask:(NSURLSessionTask *)task{
+    
+}
 -(void)URLSession:(NSURLSession *)session dataTask:(NSURLSessionDataTask *)dataTask didReceiveData:(NSData *)data{
     self.URLSessionDataTaskDidReceiveDataCalledCount += 1;
 }
@@ -80,5 +88,7 @@
 
 @implementation FTURLSessionNoDidFinishCollectingMetrics
 
-
+- (void)URLSession:(NSURLSession *)session didCreateTask:(NSURLSessionTask *)task{
+    
+}
 @end

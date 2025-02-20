@@ -10,6 +10,7 @@
 #import "FTSDKCompat.h"
 #import "FTReachability.h"
 #import "FTLog+Private.h"
+#import "FTNetworkConnectivity.h"
 typedef void (^NotificationBlock)(NSNotification *);
 
 NSString * const FTBatteryStateStringMap[] = {
@@ -37,7 +38,7 @@ NSString * const FTBatteryStateStringMap[] = {
 }
 - (void)startObserver{
     __weak typeof(self) weakSelf = self;
-    [[FTReachability sharedInstance] startNotifier];
+    [[FTNetworkConnectivity sharedInstance] start];
     NSNotificationCenter *notificationCenter = [NSNotificationCenter defaultCenter];
     self.lowPowerModeEnabled = NSProcessInfo.processInfo.lowPowerModeEnabled;
     self.batteryState = self.device.batteryState;
@@ -67,7 +68,7 @@ NSString * const FTBatteryStateStringMap[] = {
 }
 - (NSArray *)checkForUpload{
     NSMutableArray *conditions = [[NSMutableArray alloc]init];
-    if(![FTReachability sharedInstance].reachable){
+    if(![FTNetworkConnectivity sharedInstance].isConnected){
         [conditions addObject:@"Network Unreachable"];
     }
     if(self.batteryState == UIDeviceBatteryStateUnknown){

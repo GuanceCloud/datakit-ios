@@ -25,10 +25,29 @@
 #import "FTURLSessionInterceptor+Private.h"
 #import "FTTracer.h"
 #import <objc/runtime.h>
+#import "NSURLSessionTask+FTSwizzler.h"
+#import "FTURLSessionInterceptorProtocol.h"
+#import "FTURLSessionDelegate+Private.h"
+#import "FTLog+Private.h"
 static void *const kFTReceiveDataSelector = (void *)&kFTReceiveDataSelector;
 static void *const kFTCompleteSelector = (void *)&kFTCompleteSelector;
 static void *const kFTCollectMetricsSelector = (void *)&kFTCollectMetricsSelector;
+static void *const kFTConformsToFTProtocol = (void *)&kFTConformsToFTProtocol;
 
+//conformsToProtocol 方法有损耗，苹果建议本地缓存结果减少调用
+static BOOL delegateConformsToFTProtocol(id delegate){
+    if(!delegate){
+        return NO;
+    }
+    NSNumber *conformNum = objc_getAssociatedObject(delegate, kFTConformsToFTProtocol);
+    if(conformNum != nil){
+        return [conformNum boolValue];
+    }else{
+        BOOL conform = [delegate conformsToProtocol:@protocol(FTURLSessionDelegateProviding)];
+        objc_setAssociatedObject(delegate, kFTConformsToFTProtocol, @(conform), OBJC_ASSOCIATION_RETAIN);
+        return conform;
+    }
+}
 @interface FTURLSessionInstrumentation()
 /// sdk 内部的数据上传 url
 @property (nonatomic, copy) NSString *sdkUrlStr;
@@ -59,8 +78,9 @@ static dispatch_once_t onceToken;
     return [FTURLSessionInterceptor shared];
 }
 -(void)setSdkUrlStr:(NSString *)sdkUrlStr serviceName:(NSString *)serviceName{
-    _sdkUrlStr = sdkUrlStr;
-    _serviceName = serviceName;
+    self.sdkUrlStr = sdkUrlStr;
+    self.serviceName = serviceName;
+    FTInnerLogInfo(@"FTURLSessionInstrumentation set sdkUrlStr:%@",sdkUrlStr);
 }
 -(id<FTExternalResourceProtocol>)externalResourceHandler{
     return [FTURLSessionInterceptor shared];
@@ -71,18 +91,23 @@ static dispatch_once_t onceToken;
 - (void)setTraceEnableAutoTrace:(BOOL)enableAutoTrace
               enableLinkRumData:(BOOL)enableLinkRumData
                      sampleRate:(int)sampleRate
-                      traceType:(FTNetworkTraceType)traceType{
+                      traceType:(FTNetworkTraceType)traceType
+               traceInterceptor:(TraceInterceptor)traceInterceptor{
     _tracer = [[FTTracer alloc] initWithSampleRate:sampleRate
                                          traceType:(NetworkTraceType)traceType
                                        serviceName:self.serviceName
                                    enableAutoTrace:enableAutoTrace
                                  enableLinkRumData:enableLinkRumData];
     [self.interceptor setTracer:_tracer];
+    self.interceptor.traceInterceptor = traceInterceptor;
     self.shouldTraceInterceptor = enableAutoTrace;
 }
-- (void)setEnableAutoRumTrace:(BOOL)enableAutoRumTrack resourceUrlHandler:(FTResourceUrlHandler)resourceUrlHandler{
+- (void)setEnableAutoRumTrace:(BOOL)enableAutoRumTrack
+           resourceUrlHandler:(FTResourceUrlHandler)resourceUrlHandler
+     resourcePropertyProvider:(ResourcePropertyProvider)resourcePropertyProvider{
     self.interceptor.resourceUrlHandler = resourceUrlHandler;
     self.shouldRUMInterceptor = enableAutoRumTrack;
+    self.interceptor.resourcePropertyProvider = resourcePropertyProvider;
 }
 - (void)setRumResourceHandler:(id<FTRumResourceProtocol>)handler{
     self.interceptor.rumResourceHandler = handler;
@@ -102,7 +127,7 @@ static dispatch_once_t onceToken;
     Class receiveDataClass = [FTSwizzler realDelegateClassFromSelector:receiveDataSelector proxy:delegate];
     Class completeClass = [FTSwizzler realDelegateClassFromSelector:completeSelector proxy:delegate];
     Class collectMetricsClass = [FTSwizzler realDelegateClassFromSelector:collectMetricsSelector proxy:delegate];
-
+    
     if(![FTSwizzler realDelegateClass:receiveDataClass respondsToSelector:receiveDataSelector]){
         void (^receiveDataBlock)(id, id, id, id) = ^(id delegate, NSURLSession *session, NSURLSessionDataTask *task,NSData *data) {
         };
@@ -130,7 +155,7 @@ static dispatch_once_t onceToken;
             [FTURLSessionInstrumentation.sharedInstance.interceptor taskReceivedData:task data:data];
         }
         FTSWCallOriginal(session,task,data);
-        }),
+    }),
                              FTSwizzlerModeOncePerClassAndSuperclasses,
                              kFTReceiveDataSelector);
     FTSwizzlerInstanceMethod(completeClass, completeSelector, FTSWReturnType(void), FTSWArguments(NSURLSession *session, NSURLSessionDataTask *task,NSError *error), FTSWReplacement({
@@ -148,15 +173,41 @@ static dispatch_once_t onceToken;
     }), FTSwizzlerModeOncePerClassAndSuperclasses, kFTCollectMetricsSelector);
 }
 - (BOOL)isNotSDKInsideUrl:(NSURL *)url{
-    BOOL trace = YES;
-    if (self.sdkUrlStr) {
-        if (url.port) {
-            trace = !([url.host isEqualToString:[NSURL URLWithString:self.sdkUrlStr].host]&&[url.port isEqual:[NSURL URLWithString:self.sdkUrlStr].port]);
-        }else{
-            trace = ![url.host isEqualToString:[NSURL URLWithString:self.sdkUrlStr].host];
+    if (url == nil || self.sdkUrlStr == nil) {
+        if (self.sdkUrlStr == nil) {
+            FTInnerLogError(@"FTURLSessionInstrumentation sdkUrlStr is nil");
         }
+        return NO;
     }
-    return trace;
+    NSURL *sdkURL = [NSURL URLWithString:self.sdkUrlStr];
+    if (sdkURL == nil) {
+        FTInnerLogError(@"FTURLSessionInstrumentation sdkUrlStr is invalid");
+        return NO;
+    }
+    // Compare hosts
+    if (![url.host isEqualToString:sdkURL.host]) {
+        return YES; // Different host means URL is outside SDK
+    }
+    // Compare ports
+    BOOL isSamePort = (url.port == nil && sdkURL.port == nil) || (url.port && sdkURL.port && [url.port isEqualToNumber:sdkURL.port]);
+
+    return !isSamePort;
+}
+- (id<FTURLSessionInterceptorProtocol>)traceInterceptor:(id<NSURLSessionDelegate>)delegate{
+    if(delegateConformsToFTProtocol(delegate)){
+        return ((id<FTURLSessionDelegateProviding>)delegate).ftURLSessionDelegate;
+    }else if(self.shouldTraceInterceptor){
+        return self.interceptor;
+    }
+    return nil;
+}
+- (id<FTURLSessionInterceptorProtocol>)rumInterceptor:(id<NSURLSessionDelegate>)delegate{
+    if(delegateConformsToFTProtocol(delegate)){
+        return ((id<FTURLSessionDelegateProviding>)delegate).ftURLSessionDelegate;
+    }else if(self.shouldRUMInterceptor){
+        return self.interceptor;
+    }
+    return nil;
 }
 - (void)shutDown{
     [self disableAutomaticRegistration];

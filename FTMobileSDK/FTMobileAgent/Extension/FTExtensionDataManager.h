@@ -37,7 +37,11 @@ NS_ASSUME_NONNULL_BEGIN
 /// 获取 groupIdentifier 对应 Extension 当前缓存路径
 /// @param groupIdentifier AppGroups Identifier
 /// @return 在 group 中的数据缓存路径
-- (NSString *)filePathForApplicationGroupIdentifier:(NSString *)groupIdentifier;
+- (nullable NSString *)filePathForApplicationGroupIdentifier:(NSString *)groupIdentifier;
+
+/// 存储 mobileConfig
+/// @param mobileConfig mobile 配置项
+-(void)writeMobileConfig:(NSDictionary *)mobileConfig;
 
 /// 存储 rumConfig
 /// @param rumConfig rum 配置项
@@ -51,6 +55,10 @@ NS_ASSUME_NONNULL_BEGIN
 /// @param loggerConfig logger 配置项
 - (void)writeLoggerConfig:(NSDictionary *)loggerConfig;
 
+/// 获取 mobileConfig
+/// @param groupIdentifier AppGroups Identifier
+/// @return mobile 配置项
+-(NSDictionary *)getMobileConfigWithGroupIdentifier:(NSString *)groupIdentifier;
 /// 获取 rumConfig
 /// @param groupIdentifier AppGroups Identifier
 /// @return rum 配置项

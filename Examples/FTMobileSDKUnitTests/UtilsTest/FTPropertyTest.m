@@ -40,7 +40,7 @@
     NSProcessInfo *processInfo = [NSProcessInfo processInfo];
     self.url = [processInfo environment][@"ACCESS_SERVER_URL"];
     self.appid = [processInfo environment][@"APP_ID"];
-    [[FTTrackerEventDBTool sharedManger] deleteItemWithTm:[NSDate ft_currentNanosecondTimeStamp]];
+    [[FTTrackerEventDBTool sharedManger] deleteAllDatas];
 }
 
 - (void)tearDown {
@@ -110,13 +110,13 @@
     rumConfig.enableTraceUserAction = YES;
     [FTMobileAgent startWithConfigOptions:config];
     [[FTMobileAgent sharedInstance] startRumWithConfigOptions:rumConfig];
-    [[FTTrackerEventDBTool sharedManger] deleteItemWithTm:[NSDate ft_currentNanosecondTimeStamp]];
+    [[FTTrackerEventDBTool sharedManger] deleteAllDatas];
     NSArray *oldArray =[[FTTrackerEventDBTool sharedManger] getFirstRecords:10 withType:FT_DATA_TYPE_RUM];
     [self addRumData];
     [[FTGlobalRumManager sharedInstance].rumManager syncProcess];
     NSArray *newArray = [[FTTrackerEventDBTool sharedManger] getFirstRecords:10 withType:FT_DATA_TYPE_RUM];
     XCTAssertTrue(newArray.count>oldArray.count);
-    [[FTMobileAgent sharedInstance] shutDown];
+    [FTMobileAgent shutDown];
 }
 /**
  * 未设置 appid  Rum 关闭
@@ -129,7 +129,7 @@
     rumConfig.enableTraceUserAction = YES;
     [FTMobileAgent startWithConfigOptions:config];
     XCTAssertThrows([[FTMobileAgent sharedInstance] startRumWithConfigOptions:rumConfig]);
-    [[FTTrackerEventDBTool sharedManger] deleteItemWithTm:[NSDate ft_currentNanosecondTimeStamp]];
+    [[FTTrackerEventDBTool sharedManger] deleteAllDatas];
     NSArray *oldArray =[[FTTrackerEventDBTool sharedManger] getFirstRecords:10 withType:FT_DATA_TYPE_RUM];
     [self addRumData];
     [[FTGlobalRumManager sharedInstance].rumManager syncProcess];
@@ -139,7 +139,6 @@
 }
 - (void)addRumData{
     [FTModelHelper startView];
-    [FTModelHelper startAction];
-    [FTModelHelper startAction];
+    [FTModelHelper addActionWithContext:nil];
 }
 @end

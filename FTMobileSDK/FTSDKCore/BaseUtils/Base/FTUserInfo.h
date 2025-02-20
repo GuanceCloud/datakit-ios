@@ -13,7 +13,7 @@ NS_ASSUME_NONNULL_BEGIN
 /// 用户信息
 ///
 /// 保留字段userid、user_name、user_email
-@interface FTUserInfo : NSObject
+@interface FTUserInfo : NSObject<NSCopying>
 /// 用户ID
 @property (nonatomic, copy, readonly) NSString *userId;
 /// 用户名称

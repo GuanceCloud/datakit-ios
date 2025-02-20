@@ -59,7 +59,7 @@
     rumConfig.enableTraceUserAction = YES;
     [FTMobileAgent startWithConfigOptions:config];
     [[FTMobileAgent sharedInstance] startRumWithConfigOptions:rumConfig];
-    [[FTTrackerEventDBTool sharedManger] deleteItemWithTm:[NSDate ft_currentNanosecondTimeStamp]];
+    [[FTTrackerEventDBTool sharedManger] deleteAllDatas];
 }
 - (void)testTableViewDelegate_KVO{
     [self setSDK];
@@ -72,7 +72,7 @@
             XCTAssertTrue([delegateClass.name isEqualToString:@"NSKVONotifying_DelegateSwizzlerClass"]);
         }
     }
-    [[FTMobileAgent sharedInstance] shutDown];
+    [FTMobileAgent shutDown];
 }
 - (void)testTableViewDelegate{
     [self setSDK];
@@ -98,7 +98,7 @@
                 [session finishTasksAndInvalidate];
             });
     }
-    [[FTMobileAgent sharedInstance] shutDown];
+    [FTMobileAgent shutDown];
 }
 - (void)testURLSession_shareSession_firebase{
     [self setSDK];
@@ -117,7 +117,7 @@
         });
     }
     [FIRApp performSelector:@selector(resetApps)];
-    [[FTMobileAgent sharedInstance] shutDown];
+    [FTMobileAgent shutDown];
 }
 - (void)testURLSession_customSession_noDelegate_firebase{
     [self setSDK];
@@ -136,7 +136,7 @@
         });
     }
     [FIRApp performSelector:@selector(resetApps)];
-    [[FTMobileAgent sharedInstance] shutDown];
+    [FTMobileAgent shutDown];
 }
 - (void)testURLSession_customSession_delegate_firebase{
     [self setSDK];
@@ -180,6 +180,6 @@
     }
     XCTAssertTrue(classDealloc);
     [FIRApp performSelector:@selector(resetApps)];
-    [[FTMobileAgent sharedInstance] shutDown];
+    [FTMobileAgent shutDown];
 }
 @end

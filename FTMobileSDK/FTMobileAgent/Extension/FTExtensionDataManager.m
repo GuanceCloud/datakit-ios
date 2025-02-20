@@ -21,6 +21,7 @@
 #import "FTExtensionDataManager.h"
 #import "FTConstants.h"
 void *FTAppExtensionQueueTag = &FTAppExtensionQueueTag;
+NSString * const FT_MOBILE_CONFIG = @"MOBILE_CONFIG";
 NSString * const FT_RUM_CONFIG = @"RUM_CONFIG";
 NSString * const FT_TRACE_CONFIG = @"TRACE_CONFIG";
 NSString * const FT_LOGGER_CONFIG = @"LOGGER_CONFIG";
@@ -73,6 +74,13 @@ NSString * const FT_LOGGER_CONFIG = @"LOGGER_CONFIG";
         return nil;
     }
 }
+-(void)writeMobileConfig:(NSDictionary *)agentConfig{
+    @try {
+        [self writeConfig:agentConfig forKey:FT_MOBILE_CONFIG];
+    } @catch (NSException *exception) {
+        
+    }
+}
 -(void)writeRumConfig:(NSDictionary *)rumConfig{
     @try {
         [self writeConfig:rumConfig forKey:FT_RUM_CONFIG];
@@ -120,51 +128,26 @@ NSString * const FT_LOGGER_CONFIG = @"LOGGER_CONFIG";
         dispatch_sync(self.appExtensionQueue, block);
     }
 }
+-(NSDictionary *)getMobileConfigWithGroupIdentifier:(NSString *)groupIdentifier{
+    return [self getConfigWithKey:FT_MOBILE_CONFIG groupIdentifier:groupIdentifier];
+}
 -(NSDictionary *)getRumConfigWithGroupIdentifier:(NSString *)groupIdentifier{
-    @try {
-        __block NSDictionary *config = nil;
-
-        dispatch_block_t block = ^() {
-            NSString *path = [self filePathForConfigWithApplicationGroupIdentifier:groupIdentifier];
-            NSDictionary *configDict = [[NSDictionary alloc] initWithContentsOfFile:path];
-            config = [configDict valueForKey:FT_RUM_CONFIG];
-        };
-        if (dispatch_get_specific(FTAppExtensionQueueTag)) {
-            block();
-        } else {
-            dispatch_sync(self.appExtensionQueue, block);
-        }
-        return config;
-    } @catch (NSException *exception) {
-        return nil;
-    }
+    return [self getConfigWithKey:FT_RUM_CONFIG groupIdentifier:groupIdentifier];
 }
 -(NSDictionary *)getTraceConfigWithGroupIdentifier:(NSString *)groupIdentifier{
+    return [self getConfigWithKey:FT_TRACE_CONFIG groupIdentifier:groupIdentifier];
+}
+-(NSDictionary *)getLoggerConfigWithGroupIdentifier:(NSString *)groupIdentifier{
+    return [self getConfigWithKey:FT_LOGGER_CONFIG groupIdentifier:groupIdentifier];
+}
+- (NSDictionary *)getConfigWithKey:(NSString *)key groupIdentifier:(NSString *)groupIdentifier{
     @try {
         __block NSDictionary *config = nil;
 
         dispatch_block_t block = ^() {
             NSString *path = [self filePathForConfigWithApplicationGroupIdentifier:groupIdentifier];
             NSDictionary *configDict = [[NSDictionary alloc] initWithContentsOfFile:path];
-            config = [configDict valueForKey:FT_TRACE_CONFIG];
-        };
-        if (dispatch_get_specific(FTAppExtensionQueueTag)) {
-            block();
-        } else {
-            dispatch_sync(self.appExtensionQueue, block);
-        }
-        return config;
-    } @catch (NSException *exception) {
-        return nil;
-    }
-}
--(NSDictionary *)getLoggerConfigWithGroupIdentifier:(NSString *)groupIdentifier{
-    @try {
-        __block NSDictionary *config = nil;
-        dispatch_block_t block = ^() {
-            NSString *path = [self filePathForConfigWithApplicationGroupIdentifier:groupIdentifier];
-            NSDictionary *configDict = [[NSDictionary alloc] initWithContentsOfFile:path];
-            config = [configDict valueForKey:FT_LOGGER_CONFIG];
+            config = [configDict valueForKey:key];
         };
         if (dispatch_get_specific(FTAppExtensionQueueTag)) {
             block();

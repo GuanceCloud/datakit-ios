@@ -10,7 +10,7 @@
 #import <FTConstants.h>
 #import "NSDate+FTUtil.h"
 #import <FTEnumConstant.h>
-#import "FTMobileSDK.h"
+#import "FTMobileAgent.h"
 #import "FTJSONUtil.h"
 #import "FTBaseInfoHandler.h"
 @implementation FTModelHelper
@@ -23,6 +23,20 @@
     NSDictionary *tagDict = @{FT_KEY_STATUS:FTStatusStringMap[FTStatusInfo]};
 
     FTRecordModel *model = [[FTRecordModel alloc]initWithSource:FT_LOGGER_SOURCE op:FT_DATA_TYPE_LOGGING tags:tagDict fields:filedDict tm:[NSDate ft_currentNanosecondTimeStamp]];
+    return model;
+}
++ (FTRecordModel *)createRUMModel:(NSString *)message{
+    NSDictionary *field = @{ FT_KEY_ERROR_MESSAGE:message,
+                             FT_KEY_ERROR_STACK:@"rum_model_create",
+    };
+    NSDictionary *tags = @{
+        FT_KEY_ERROR_TYPE:@"ios_crash",
+        FT_KEY_ERROR_SOURCE:@"logger",
+        FT_KEY_ERROR_SITUATION:AppStateStringMap[FTAppStateRun],
+        FT_RUM_KEY_SESSION_ID:[FTBaseInfoHandler randomUUID],
+        FT_RUM_KEY_SESSION_TYPE:@"user",
+    };
+    FTRecordModel *model = [[FTRecordModel alloc]initWithSource:FT_RUM_SOURCE_ERROR op:FT_DATA_TYPE_RUM tags:tags fields:field tm:[NSDate ft_currentNanosecondTimeStamp]];
     return model;
 }
 + (FTRecordModel *)createRumModel{
@@ -84,7 +98,7 @@
     [[FTExternalDataManager sharedManager] addClickActionWithName:@"testActionClick" property:nil];
 }
 + (void)startActionWithType:(NSString *)type{
-    [[FTExternalDataManager sharedManager] addActionName:@"testActionClick2" actionType:type property:nil];
+    [[FTExternalDataManager sharedManager] startAction:@"testActionClick2" actionType:type property:nil];
 }
 + (void)addActionWithContext:(NSDictionary *)context{
     [[FTExternalDataManager sharedManager] addAction:@"testActionWithContext" actionType:@"click" property:context];

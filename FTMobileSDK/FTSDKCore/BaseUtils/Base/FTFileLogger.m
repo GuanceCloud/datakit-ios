@@ -63,8 +63,12 @@ NSString * const FT_LOG_BACKUP_DIRECTORY= @"FTBackupLogs";
 }
 // 默认的日志文件夹
 - (NSString *)defaultLogsDirectory {
-#if TARGET_OS_IPHONE
+#if TARGET_OS_IOS
     NSArray *paths = NSSearchPathForDirectoriesInDomains(NSDocumentDirectory, NSUserDomainMask, YES);
+    NSString *baseDir = paths.firstObject;
+    NSString *logsDirectory = [baseDir stringByAppendingPathComponent:FT_LOG_FILE_DIRECTORY];
+#elif TARGET_OS_TV
+    NSArray *paths = NSSearchPathForDirectoriesInDomains(NSCachesDirectory, NSUserDomainMask, YES);
     NSString *baseDir = paths.firstObject;
     NSString *logsDirectory = [baseDir stringByAppendingPathComponent:FT_LOG_FILE_DIRECTORY];
 #else
@@ -108,14 +112,14 @@ NSString * const FT_LOG_BACKUP_DIRECTORY= @"FTBackupLogs";
         if (arrayComponent.count > 0) {
             NSString *stringDate = arrayComponent.lastObject;
             stringDate = [stringDate stringByReplacingOccurrencesOfString:@".log" withString:@""];
-            date1 = [obj1 creationDate];
+            date1 = [NSDate ft_dateFromBaseFormatString:stringDate]?:[obj1 creationDate];
         }
 
         arrayComponent = [[obj2 fileName] componentsSeparatedByString:@" "];
         if (arrayComponent.count > 0) {
             NSString *stringDate = arrayComponent.lastObject;
             stringDate = [stringDate stringByReplacingOccurrencesOfString:@".log" withString:@""];
-            date2 = [obj2 creationDate];
+            date2 = [NSDate ft_dateFromBaseFormatString:stringDate]?:[obj2 creationDate];
         }
 
         return [date2 compare:date1 ?: [NSDate new]];
@@ -233,7 +237,7 @@ NSString * const FT_LOG_BACKUP_DIRECTORY= @"FTBackupLogs";
     dispatch_source_t _currentLogFileVnode;
 }
 @property (nonatomic, strong) NSFileHandle *currentLogFileHandle;
-@property (nonatomic, strong) FTLogFileInfo *currentLogFileInfo;
+@property (nonatomic, strong, nullable) FTLogFileInfo *currentLogFileInfo;
 @property (nonatomic, strong) FTLogFileManager *logFileManager;
 @end
 @implementation FTFileLogger
@@ -271,11 +275,13 @@ NSString * const FT_LOG_BACKUP_DIRECTORY= @"FTBackupLogs";
     return _currentLogFileHandle;
 }
 
-- (FTLogFileInfo *)currentLogFileInfo {
+- (nullable FTLogFileInfo *)currentLogFileInfo {
     FTLogFileInfo *newCurrentLogFile = _currentLogFileInfo;
     BOOL isResuming = newCurrentLogFile == nil;
     if (isResuming) {
-        _currentLogFileInfo = [FTLogFileInfo logFileWithPath:[self.logFileManager filePath]];
+        if([[NSFileManager defaultManager] fileExistsAtPath:[self.logFileManager filePath]]){
+            newCurrentLogFile = [FTLogFileInfo logFileWithPath:[self.logFileManager filePath]];
+        }
     }
     // 是否应用用当前的文件
     if (newCurrentLogFile != nil && [self shouldUseLogFile:newCurrentLogFile isResuming:isResuming]) {
@@ -287,6 +293,7 @@ NSString * const FT_LOG_BACKUP_DIRECTORY= @"FTBackupLogs";
         currentLogFilePath = [self.logFileManager createNewLogFileWithError:&error];
         if (!currentLogFilePath) {
             FTNSLogError(@"[FTLog][FTFileLogger] Failed to create new log file: %@", error);
+            return nil;
         }
         _currentLogFileInfo = [FTLogFileInfo logFileWithPath:currentLogFilePath];
     }
@@ -336,7 +343,7 @@ NSString * const FT_LOG_BACKUP_DIRECTORY= @"FTBackupLogs";
             return;
         }
         NSFileHandle *fileHandle = self.currentLogFileHandle;
-        if (@available(macOS 10.15, iOS 13.0, *)) {
+        if (@available(macOS 10.15, iOS 13.0,tvOS 13.0, *)) {
             __autoreleasing NSError *error = nil;
             BOOL success = [fileHandle seekToEndReturningOffset:nil error:&error];
             if (!success) {
@@ -390,11 +397,9 @@ NSString * const FT_LOG_BACKUP_DIRECTORY= @"FTBackupLogs";
     if (_currentLogFileHandle == nil) {
         return;
     }
-    __weak __auto_type weakSelf = self;
     dispatch_block_t block = ^(){
         if(copy){
-            [weakSelf.logFileManager copyFileToCacheDirectoryWithCreateDate:weakSelf.currentLogFileInfo.creationDate];
-            
+            [self->_logFileManager copyFileToCacheDirectoryWithCreateDate:self->_currentLogFileInfo.creationDate];
         }
     };
     if (@available(macOS 10.15, iOS 13.0, tvOS 13.0, watchOS 6.0, *)) {

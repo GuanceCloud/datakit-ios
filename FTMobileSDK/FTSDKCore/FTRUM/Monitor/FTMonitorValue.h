@@ -11,7 +11,7 @@
 NS_ASSUME_NONNULL_BEGIN
 
 /// 监控器数值
-@interface FTMonitorValue : NSObject
+@interface FTMonitorValue : NSObject<NSCopying>
 /// 样本数量
 @property (nonatomic, assign) int sampleValueCount;
 /// 样本最小值

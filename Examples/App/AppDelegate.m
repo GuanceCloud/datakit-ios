@@ -11,7 +11,7 @@
 #import "DemoViewController.h"
 #import "RootTabbarVC.h"
 #import "FTMobileSDK/FTLog.h"
-#import "FTMobileSDK/FTRumSessionReplay.h"
+#import <FTMobileSDK/FTRumSessionReplay.h>
 //Target -> Build Settings -> GCC_PREPROCESSOR_DEFINITIONS 进行配置预设定义
 #if PREPROD
 #define STATIC_TAG     @"preprod"

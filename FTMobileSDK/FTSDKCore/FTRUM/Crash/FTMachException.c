@@ -7,6 +7,8 @@
 //
 
 #include "FTMachException.h"
+#include "FTSDKCompat.h"
+#if FT_HAS_MACH
 #include <stdio.h>
 #include <stdbool.h>
 #include <errno.h>
@@ -294,6 +296,8 @@ static void restoreExceptionPorts(void)
                                       g_previousExceptionPorts.ports[i],
                                       g_previousExceptionPorts.behaviors[i],
                                       g_previousExceptionPorts.flavors[i]);
+        if (kr != KERN_SUCCESS) {
+        }
     }
     g_previousExceptionPorts.count = 0;
 }
@@ -498,16 +502,22 @@ failed:
     uninstallMachException();
     return false;
 }
+#endif
+
 void FTUninstallMachException(void){
+#if FT_HAS_MACH
     if(ftdebug_isBeingTraced()){
         return;
     }
     uninstallMachException();
+#endif
 }
 void FTInstallMachException(const FTCrashNotifyCallback onCrashNotify){
+#if FT_HAS_MACH
     if(ftdebug_isBeingTraced()){
         return;
     }
     g_onCrashNotify = onCrashNotify;
     installMachException();
+#endif
 }

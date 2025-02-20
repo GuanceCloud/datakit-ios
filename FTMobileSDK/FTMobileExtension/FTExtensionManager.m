@@ -44,21 +44,26 @@ static FTExtensionManager *sharedInstance = nil;
 -(instancetype)initWithExtensionConfig:(FTExtensionConfig *)extensionConfig{
     self = [super init];
     if (self) {
-        _extensionConfig = extensionConfig;
-        [FTLog enableLog:extensionConfig.enableSDKDebugLog];
-        [FTExtensionDataManager sharedInstance].maxCount = extensionConfig.memoryMaxCount;
+        _extensionConfig = [extensionConfig copy];
+        [FTLog enableLog:_extensionConfig.enableSDKDebugLog];
+        [FTExtensionDataManager sharedInstance].maxCount = _extensionConfig.memoryMaxCount;
         [self processingConfigItems];
     }
     return self;
 }
 - (void)processingConfigItems{
+    NSDictionary *mobileDict = [[FTExtensionDataManager sharedInstance] getMobileConfigWithGroupIdentifier:self.extensionConfig.groupIdentifier];
     NSDictionary *rumDict = [[FTExtensionDataManager sharedInstance] getRumConfigWithGroupIdentifier:self.extensionConfig.groupIdentifier];
     NSDictionary *traceDict = [[FTExtensionDataManager sharedInstance] getTraceConfigWithGroupIdentifier:self.extensionConfig.groupIdentifier];
     NSDictionary *loggerDict = [[FTExtensionDataManager sharedInstance] getLoggerConfigWithGroupIdentifier:self.extensionConfig.groupIdentifier];
    
+    FTMobileConfig *mobileConfig = [[FTMobileConfig alloc]initWithDictionary:mobileDict];
     FTRumConfig *rumConfig =[[FTRumConfig alloc]initWithDictionary:rumDict];
     FTTraceConfig *traceConfig =[[FTTraceConfig alloc]initWithDictionary:traceDict];
     FTLoggerConfig *loggerConfig = [[FTLoggerConfig alloc]initWithDictionary:loggerDict];
+    if(mobileConfig){
+        [[FTURLSessionInstrumentation sharedInstance] setSdkUrlStr:mobileConfig.datakitUrl.length>0?mobileConfig.datakitUrl:mobileConfig.datawayUrl serviceName:mobileConfig.service];
+    }
     if(rumConfig){
         rumConfig.enableTraceUserResource = self.extensionConfig.enableRUMAutoTraceResource;
         rumConfig.enableTrackAppCrash = self.extensionConfig.enableTrackAppCrash;
@@ -78,7 +83,9 @@ static FTExtensionManager *sharedInstance = nil;
     }
 }
 - (void)startRumWithConfigOptions:(FTRumConfig *)rumConfigOptions{
-    [[FTURLSessionInstrumentation sharedInstance] setEnableAutoRumTrace:rumConfigOptions.enableTraceUserResource resourceUrlHandler:rumConfigOptions.resourceUrlHandler];
+    [[FTURLSessionInstrumentation sharedInstance]setEnableAutoRumTrace:rumConfigOptions.enableTraceUserResource
+                                                    resourceUrlHandler:rumConfigOptions.resourceUrlHandler
+                                              resourcePropertyProvider:rumConfigOptions.resourcePropertyProvider];
     FTRUMDependencies *dependencies = [[FTRUMDependencies alloc]init];
     dependencies.writer = self;
     dependencies.errorMonitorType = (ErrorMonitorType)rumConfigOptions.errorMonitorType;
@@ -95,7 +102,7 @@ static FTExtensionManager *sharedInstance = nil;
 }
 
 - (void)startTraceWithConfigOptions:(FTTraceConfig *)traceConfigOptions{
-    [[FTURLSessionInstrumentation sharedInstance] setTraceEnableAutoTrace:traceConfigOptions.enableAutoTrace enableLinkRumData:traceConfigOptions.enableLinkRumData sampleRate:traceConfigOptions.samplerate traceType:traceConfigOptions.networkTraceType];
+    [[FTURLSessionInstrumentation sharedInstance] setTraceEnableAutoTrace:traceConfigOptions.enableAutoTrace enableLinkRumData:traceConfigOptions.enableLinkRumData sampleRate:traceConfigOptions.samplerate traceType:traceConfigOptions.networkTraceType traceInterceptor:traceConfigOptions.traceInterceptor];
     [FTExternalDataManager sharedManager].resourceDelegate = [FTURLSessionInstrumentation sharedInstance].externalResourceHandler;
 
 }

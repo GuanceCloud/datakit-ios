@@ -218,7 +218,7 @@
     if(self.viewProperty && self.viewProperty.allKeys.count>0){
         [fields addEntriesFromDictionary:self.viewProperty];
     }
-    if (cpu && cpu.greatestDiff>0) {
+    if (cpu && cpu.greatestDiff>=0) {
         [fields setValue:@(cpu.greatestDiff) forKey:FT_CPU_TICK_COUNT];
         if(sTimeSpent>1.0){
             [fields setValue:@(cpu.greatestDiff/sTimeSpent) forKey:FT_CPU_TICK_COUNT_PER_SECOND];

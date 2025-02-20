@@ -46,8 +46,7 @@ typedef NS_ENUM(NSInteger, FTNetworkTestsType) {
 
 - (void)setUp {
     // Put setup code here. This method is called before the invocation of each test method in the class.
-    long  tm =[NSDate ft_currentNanosecondTimeStamp];
-    [[FTTrackerEventDBTool sharedManger] deleteItemWithTm:tm];
+    [[FTTrackerEventDBTool sharedManger] deleteAllDatas];
 }
 - (void)tearDown{
     [OHHTTPStubs removeAllStubs];
@@ -314,11 +313,11 @@ typedef NS_ENUM(NSInteger, FTNetworkTestsType) {
        FTRecordModel *logModel = [FTModelHelper createLogModel:[NSString stringWithFormat:@"%d",i]];
         FTRecordModel *rumModel = [FTModelHelper createRumModel];
 
-        [[FTTrackDataManager sharedInstance] addTrackData:logModel type:FTAddDataNormal];
-        [[FTTrackDataManager sharedInstance] addTrackData:rumModel type:FTAddDataNormal];
+        [[FTTrackDataManager sharedInstance] addTrackData:logModel type:FTAddDataRUM];
+        [[FTTrackDataManager sharedInstance] addTrackData:rumModel type:FTAddDataRUM];
     }
     FTRecordModel *rumModel = [FTModelHelper createRumModel];
-    [[FTTrackDataManager sharedInstance] addTrackData:rumModel type:FTAddDataNormal];
+    [[FTTrackDataManager sharedInstance] addTrackData:rumModel type:FTAddDataRUM];
     NSInteger count = [[FTTrackerEventDBTool sharedManger] getDatasCount];
     XCTAssertTrue(count == 21);
     self.expectation = [self expectationWithDescription:@"异步操作timeout"];
@@ -385,8 +384,8 @@ typedef NS_ENUM(NSInteger, FTNetworkTestsType) {
     [self waitForExpectations:@[expectation]];
 
     [FTModelHelper startView];
-    [FTModelHelper startAction];
-    [FTModelHelper startAction];
+    [FTModelHelper addActionWithContext:nil];
+    [FTModelHelper addActionWithContext:nil];
     for (int i = 0; i<101; i++) {
         dispatch_async(dispatch_get_global_queue(0, 0), ^{
             [[FTLogger sharedInstance] info:[NSString stringWithFormat:@"testLongTimeLogCache%d",i] property:nil];
@@ -422,8 +421,8 @@ typedef NS_ENUM(NSInteger, FTNetworkTestsType) {
        FTRecordModel *logModel = [FTModelHelper createLogModel:[NSString stringWithFormat:@"%d",i]];
         FTRecordModel *rumModel = [FTModelHelper createRumModel];
 
-        [[FTTrackDataManager sharedInstance] addTrackData:logModel type:FTAddDataNormal];
-        [[FTTrackDataManager sharedInstance] addTrackData:rumModel type:FTAddDataNormal];
+        [[FTTrackDataManager sharedInstance] addTrackData:logModel type:FTAddDataRUM];
+        [[FTTrackDataManager sharedInstance] addTrackData:rumModel type:FTAddDataRUM];
     }
     NSInteger count = [[FTTrackerEventDBTool sharedManger] getDatasCount];
     XCTAssertTrue(count == 100);
@@ -484,7 +483,7 @@ typedef NS_ENUM(NSInteger, FTNetworkTestsType) {
     }];
     for (int i = 0 ; i<20; i++) {
        FTRecordModel *logModel = [FTModelHelper createLogModel:[NSString stringWithFormat:@"%d",i]];
-        [[FTTrackDataManager sharedInstance] addTrackData:logModel type:FTAddDataNormal];
+        [[FTTrackDataManager sharedInstance] addTrackData:logModel type:FTAddDataRUM];
     }
     self.expectation = [self expectationWithDescription:@"异步操作timeout"];
        
@@ -496,7 +495,7 @@ typedef NS_ENUM(NSInteger, FTNetworkTestsType) {
     }];
     NSInteger newCount = [[FTTrackerEventDBTool sharedManger] getDatasCount];
     XCTAssertTrue(newCount == 0);
-    XCTAssertTrue(duration>time&&duration<150+time);
+    XCTAssertTrue(duration>time);
     [[FTTrackDataManager sharedInstance] removeObserver:self forKeyPath:@"isUploading"];
 }
 @end

@@ -37,7 +37,7 @@
                 }else{
                     _resource_first_byte = [taskMetrics.fetchStartDate ft_nanosecondTimeIntervalToDate:taskMetrics.responseStartDate];
                 }
-                if (@available(iOS 13,macOS 10.15, *)) {
+                if (@available(iOS 13,macOS 10.15,tvOS 13.0, *)) {
                     _responseSize = @(taskMetrics.countOfResponseBodyBytesAfterDecoding);
                     _remoteAddress = taskMetrics.remoteAddress;
                 }

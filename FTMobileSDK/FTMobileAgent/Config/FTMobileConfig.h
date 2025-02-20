@@ -7,6 +7,7 @@
 //
 
 #import <Foundation/Foundation.h>
+@class FTTraceContext;
 ///事件等级和状态，默认：FTStatusInfo
 typedef NS_ENUM(NSInteger, FTLogStatus) {
     /// 提示
@@ -96,10 +97,27 @@ typedef NS_ENUM(NSInteger, FTLogCacheDiscard)  {
     FTDiscardOldest
 };
 
+/// RUM废弃策略
+typedef NS_ENUM(NSInteger, FTRUMCacheDiscard)  {
+    /// 默认，当日志数据数量大于最大值（100_000）时，新数据不进行写入
+    FTRUMDiscard,
+    /// 当日志数据大于最大值时,废弃旧数据
+    FTRUMDiscardOldest
+};
+/// DB废弃策略
+typedef NS_ENUM(NSInteger, FTDBCacheDiscard)  {
+    /// 默认，当数据库存储大于最大值(默认100MB)时，新数据不进行写入
+    FTDBDiscard,
+    /// 当数据库存储大于最大值,废弃旧数据
+    FTDBDiscardOldest
+};
 NS_ASSUME_NONNULL_BEGIN
 /// RUM 过滤 resource 回调，返回：NO 表示要采集，YES 表示不需要采集。
 typedef BOOL(^FTResourceUrlHandler)(NSURL * url);
-
+/// RUM Resource 自定义添加额外属性
+typedef NSDictionary<NSString *,id>* _Nullable (^FTResourcePropertyProvider)( NSURLRequest * _Nullable request, NSURLResponse * _Nullable response,NSData *_Nullable data, NSError *_Nullable error);
+/// 支持自定义 trace, 确认拦截后，返回 TraceContext，不拦截返回 nil
+typedef FTTraceContext*_Nullable(^FTTraceInterceptor)(NSURLRequest *_Nonnull request);
 /// logger 功能配置项
 @interface FTLoggerConfig : NSObject
 /// 禁用 new 初始化
@@ -120,9 +138,9 @@ typedef BOOL(^FTResourceUrlHandler)(NSURL * url);
 ///
 /// 例: @[@(FTStatusInfo),@(FTStatusError)]
 /// 或 @[@0,@1]
-@property (nonatomic, strong) NSArray<NSNumber*> *logLevelFilter;
+@property (nonatomic, copy) NSArray<NSNumber*> *logLevelFilter;
 /// logger 全局 tag
-@property (nonatomic, strong) NSDictionary<NSString*,NSString*> *globalContext;
+@property (nonatomic, copy) NSDictionary<NSString*,NSString*> *globalContext;
 
 @end
 
@@ -172,7 +190,13 @@ typedef BOOL(^FTResourceUrlHandler)(NSURL * url);
 /// 设置 rum 全局 tag
 ///
 /// 保留标签:特殊 key - track_id (用于追踪功能)
-@property (nonatomic, strong) NSDictionary<NSString*,NSString*> *globalContext;
+@property (nonatomic, copy) NSDictionary<NSString*,NSString*> *globalContext;
+/// RUM 最大缓存量,  默认 100_000
+@property (nonatomic, assign) int rumCacheLimitCount;
+/// RUM废弃策略
+@property (nonatomic, assign) FTRUMCacheDiscard rumDiscardType;
+/// RUM Resource 添加自定义属性
+@property (nonatomic, copy) FTResourcePropertyProvider resourcePropertyProvider;
 
 /// 开启采集卡顿并设置卡顿的阈值。
 /// - Parameter enableTrackAppFreeze: 设置是否需要采集卡顿
@@ -187,6 +211,8 @@ typedef BOOL(^FTResourceUrlHandler)(NSURL * url);
 @property (nonatomic, assign) int samplerate;
 /// 设置网络请求信息采集时 使用链路追踪类型 type 默认为 DDtrace
 @property (nonatomic, assign) FTNetworkTraceType networkTraceType;
+/// 支持通过 URLRequest 判断是否进行自定义 trace,确认拦截后，返回 TraceContext，不拦截返回 nil
+@property (nonatomic,copy) FTTraceInterceptor traceInterceptor;
 /// 是否将 Trace 数据与 rum 关联
 ///
 /// 仅在 FTNetworkTraceType 设置为 FTNetworkTraceTypeDDtrace 时生效
@@ -241,14 +267,20 @@ typedef BOOL(^FTResourceUrlHandler)(NSURL * url);
 @property (nonatomic, assign) BOOL enableDataIntegerCompatible;
 /// 设置内部数据同步时是否开启压缩 默认: NO
 @property (nonatomic, assign) BOOL compressIntakeRequests;
+/// 开启使用 db 限制数据大小
+@property (nonatomic, assign) BOOL enableLimitWithDbSize;
+/// db 缓存限制大小,默认 100MB,单位 byte
+@property (nonatomic, assign) long dbCacheLimit;
+/// 数据库废弃策略
+@property (nonatomic, assign) FTDBCacheDiscard dbDiscardType;
 
 /// 设置 SDK 全局 tag
 ///
 /// 保留标签： sdk_package_flutter、sdk_package_react_native
-@property (nonatomic, strong) NSDictionary<NSString*,NSString*> *globalContext;
+@property (nonatomic, copy) NSDictionary<NSString*,NSString*> *globalContext;
 
 /// 需要采集的 Extensions 对应的 AppGroups Identifier 数组
-@property (nonatomic, strong) NSArray *groupIdentifiers;
+@property (nonatomic, copy) NSArray<NSString*> *groupIdentifiers;
 
 /// 根据提供的 FTEnv 类型设置 env
 /// - Parameter envType: 环境

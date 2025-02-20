@@ -35,13 +35,17 @@
     dispatch_once(&onceToken, ^{
         NSProcessInfo *processInfo = [NSProcessInfo processInfo];
         NSString *appid = [processInfo environment][@"APP_ID"];
-
+        NSString *datakitUrl = [processInfo environment][@"ACCESS_SERVER_URL"];
+        FTMobileConfig *config = [[FTMobileConfig alloc]initWithDatakitUrl:datakitUrl];
+        
         FTTraceConfig *traceConfig = [[FTTraceConfig alloc]init];
+        traceConfig.networkTraceType = FTNetworkTraceTypeSkywalking;
         traceConfig.enableLinkRumData = YES;
         FTRumConfig *rumConfig = [[FTRumConfig alloc]initWithAppid:appid];
         FTLoggerConfig *loggerConfig = [[FTLoggerConfig alloc]init];
         loggerConfig.enableCustomLog = YES;
         [FTExtensionDataManager sharedInstance].groupIdentifierArray =  @[@"group.com.ft.widget.demo"];
+        [[FTExtensionDataManager sharedInstance] writeMobileConfig:[config convertToDictionary]];
         [[FTExtensionDataManager sharedInstance] writeRumConfig:[rumConfig convertToDictionary]];
         [[FTExtensionDataManager sharedInstance] writeTraceConfig:[traceConfig convertToDictionary]];
         [[FTExtensionDataManager sharedInstance] writeLoggerConfig:[loggerConfig convertToDictionary]];
@@ -69,9 +73,9 @@
     [self setExtensionSDK];
     NSArray *olddatas = [[FTExtensionDataManager sharedInstance] readAllEventsWithGroupIdentifier:@"group.com.ft.widget.demo"];
     [[FTExternalDataManager sharedManager] startViewWithName:@"TestRum"];
-    [[FTExternalDataManager sharedManager] addClickActionWithName:@"extensionClick1"];
+    [[FTExternalDataManager sharedManager] startAction:@"extensionClick1" actionType:@"click" property:nil];
     [tester waitForTimeInterval:0.1];
-    [[FTExternalDataManager sharedManager] addClickActionWithName:@"extensionClick2"];
+    [[FTExternalDataManager sharedManager] startAction:@"extensionClick2" actionType:@"click" property:nil];
     [NSThread sleepForTimeInterval:2];
     NSArray *datas = [[FTExtensionDataManager sharedInstance] readAllEventsWithGroupIdentifier:@"group.com.ft.widget.demo"];
     XCTAssertTrue(datas.count>olddatas.count);
@@ -114,7 +118,9 @@
     [[FTExternalDataManager sharedManager] startViewWithName:@"testRumResourceDelegate"];
     NSArray *olddatas = [[FTExtensionDataManager sharedInstance] readAllEventsWithGroupIdentifier:@"group.com.ft.widget.demo"];
     XCTestExpectation *expectation= [self expectationWithDescription:@"异步操作timeout"];
-    HttpEngineTestUtil *engine = [[HttpEngineTestUtil alloc]initWithSessionInstrumentationType:InstrumentationInherit expectation:expectation];
+    HttpEngineTestUtil *engine = [[HttpEngineTestUtil alloc]initWithSessionInstrumentationType:InstrumentationInherit completion:^{
+        [expectation fulfill];
+    }];
     [engine network:^(NSData * _Nullable data, NSURLResponse * _Nullable response, NSError * _Nullable error) {
         
     }];

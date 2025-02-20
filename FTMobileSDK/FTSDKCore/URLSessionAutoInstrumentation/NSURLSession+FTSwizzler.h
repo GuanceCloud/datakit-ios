@@ -23,9 +23,7 @@
 NS_ASSUME_NONNULL_BEGIN
 
 @interface NSURLSession (FTSwizzler)
-- (NSURLSessionDataTask *)ft_dataTaskWithURL:(NSURL *)url;
 - (NSURLSessionDataTask *)ft_dataTaskWithURL:(NSURL *)url completionHandler:(void (^)(NSData * _Nullable, NSURLResponse * _Nullable, NSError * _Nullable))completionHandler;
-- (NSURLSessionDataTask *)ft_dataTaskWithRequest:(NSURLRequest *)request;
 - (NSURLSessionDataTask *)ft_dataTaskWithRequest:(NSURLRequest *)request completionHandler:(void (^)(NSData * _Nullable, NSURLResponse * _Nullable, NSError * _Nullable))completionHandler;
 + (NSURLSession *)ft_sessionWithConfiguration:(NSURLSessionConfiguration *)configuration delegate:(id<NSURLSessionDelegate>)delegate delegateQueue:(NSOperationQueue *)queue;
 @end

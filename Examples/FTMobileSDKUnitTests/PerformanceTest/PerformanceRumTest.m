@@ -39,14 +39,14 @@
     // This is an example of a performance test case.
     [[FTExternalDataManager sharedManager] startViewWithName:@"testAddAction"];
     [self measureBlock:^{
-        [[FTExternalDataManager sharedManager] addActionName:@"[testAddAction]" actionType:@"click"];
+        [[FTExternalDataManager sharedManager] startAction:@"[testAddAction]" actionType:@"click" property:nil];
     }];
 }
 - (void)testAddActionEventWithPropertyPerformance{
     [[FTExternalDataManager sharedManager] startViewWithName:@"testAddAction"];
 
     [self measureBlock:^{
-        [[FTExternalDataManager sharedManager] addActionName:@"[testAddAction]" actionType:@"click" property:@{@"action_property":@"test"}];
+        [[FTExternalDataManager sharedManager] startAction:@"[testAddAction]" actionType:@"click" property:@{@"action_property":@"test"}];
     }];
 }
 - (void)testAddErrorEventPerformance{

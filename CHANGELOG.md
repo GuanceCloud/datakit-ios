@@ -4,6 +4,101 @@
 3. 优化 Session Replay 采集，只采集 keyWindow 逻辑修改为采集多个 window
 5. 同 1.5.4 - 1.5.7
 ---
+# 1.5.13-alpha.3
+1. RUM View 采集优化，防止侧滑重复采集 View
+2. RUM View 子页面采集逻辑调整，仅采集父视图为 UITabBarController 、UINavigationController、UIPageViewController 、UISplitViewController 的子视图
+---
+# 1.5.13-alpha.2
+1. tvOS 环境类名替换，修复使用未声明类问题
+---
+# 1.5.13-alpha.1
+1. 优化页面采集逻辑，防止特殊视图导致 view 采集缺失
+---
+# 1.5.12
+1. 调整文件存储路径配置，修复数据库创建失败的问题
+2. 更新了 tvOS 环境的默认 `service` 和日志 `source`，分别设置为 `df_rum_tvos` 和 `df_rum_tvos_log`
+3. 修复 RUM Action 事件中 `duration` 时长计算不准确的问题
+---
+# 1.5.12-beta.1
+1. 修改 tvOS 环境默认 service 为 `df_rum_tvos`、日志 source 为 `df_rum_tvos_log`
+2. RUM Action duration 时长错误修改
+---
+# 1.5.12-alpha.1
+1. 修改 tvOS 环境文件存储路径，修复无法创建数据库问题
+---
+# 1.5.11
+1. RUM Resource 采集优化，防止 RUM 开启 Resource 自动采集时采集 SDK 内请求
+2. 修复 Widget Extension 中 skyWalking 类型链路追踪失败问题
+---
+# 1.5.11-beta.1
+1. RUM Resource 采集优化，防止 RUM 开启 Resource 自动采集时因在 task.resume() 时获取 task.currentRequest 为 nil 导致采集 SDK 内请求问题
+2. 修复 Widget Extension 中 skyWalking 类型链路追踪失败问题
+---
+# 1.5.10
+1. 支持通过 `FTTraceConfig.traceInterceptor` 拦截 Request 自定义 Trace,
+   通过 `FTRumConfig.resourcePropertyProvider` 添加 RUM Resource 自定义属性
+2. 修复动态添加全局属性方法在多线程访问下的异常问题
+3. 优化 WebView 传入数据信息
+---
+# 1.5.10-beta.3
+1. SDK 版本信息内容传输优化
+2. 优化处理 Resource 数据过程，防止多线程使用 NSMutableData 异常、NSURLResponse 强转 NSHTTPURLResponse 异常
+---
+# 1.5.10-beta.2
+1. 调整 WebView RUM 传入数据格式
+---
+# 1.5.10-beta.1
+1. `traceInterceptor` 与 `resourcePropertyProvider` block 别名添加 `FT` 前缀、返回值 NSDictionary 添加类型声明
+2. 修复动态添加全局属性方法多线程访问异常问题
+---
+# 1.5.10-alpha.1
+1. 支持全局 `traceInterceptor` 与 `resourcePropertyProvider`
+---
+# 1.5.9
+1. 新增支持通过 `FTURLSessionDelegate.traceInterceptor` block 拦截 `URLRequest`，进行自定义链路追踪、更改链路中 spanId 与 traceId
+2. RUM Resource 支持采集通过 swift async/await URLSession API 发起的网络请求
+3. 修复 LongTask 与 Anr 关联 View 错误问题
+---
+# 1.5.9-beta.3
+1. 修复 LongTask 与 Anr 关联 View 错误问题
+---
+# 1.5.9-beta.2
+1. 修复 Resource 采集未过滤 SDK 内部 URL 的问题
+2. 修复 swift package 编译配置错误问题
+---
+# 1.5.9-beta.1
+1. 同 1.5.9-alpha.1
+---
+# 1.5.9-alpha.1
+1. 新增支持自定义 Trace 关联 RUM
+2. 支持采集通过 swift async/await URLSession API 发起的 Resource 数据
+---
+# 1.5.8
+1. 增加 tvOS 支持
+2. 新增 RUM 条目数量限制功能，支持通过 `FTRUMConfig.rumCacheLimitCount` 来限制 SDK 最大缓存条目数据限制，支持通过 `FTRUMConfig.rumDiscardType` 设置来指定丢弃新数据或丢弃旧数据
+3. 新增支持通过 `FTMobileConfig.enableLimitWithDbSize` 限制总缓存大小功能，开启之后
+   `FTLoggerConfig.logCacheLimitCount` 及 `FTRUMConfig.rumCacheLimitCount` 将失效，
+   支持通过 `FTMobileConfig.dbDiscardType` 设置 db 废弃策略，
+   支持通过 `FTMobileConfig.dbCacheLimit` 设置 db 缓存限制大小
+4. 添加配置信息调试日志输出
+---
+# 1.5.8-beta.2
+1. 同 1.5.8-beta.1
+---
+# 1.5.8-beta.1
+1. db 限制总缓存大小功能优化
+2. `FTRUMConfig.rumCacheLimitCount` 默认值改为 100_1000
+---
+# 1.5.8-alpha.2
+1. 增加 tvOS 支持
+2. 新增支持通过 `FTMobileConfig.enableLimitWithDbSize` 开启 db 限制大小功能，
+   支持通过 `FTMobileConfig.dbDiscardType` 设置 db 废弃策略，
+   支持通过 `FTMobileConfig.dbCacheLimit` 设置 db 缓存限制大小
+3. 添加配置信息调试日志输出
+---
+# 1.5.8-alpha.1
+1. 新增 RUM 条目数量限制功能，支持通过 `FTRUMConfig.rumCacheLimitCount` 来限制 SDK 最大缓存条目数据限制，支持通过 `FTRUMConfig.rumDiscardType` 设置来指定丢弃新数据或丢弃旧数据
+---
 # 1.5.7
 1. 支持通过 `FTRUMConfig.freezeDurationMs` 设置卡顿检测阀值
 2. 优化 SDK 的 `shutDown` 方法，避免主线程同步等待导致的卡顿或 WatchDog 崩溃

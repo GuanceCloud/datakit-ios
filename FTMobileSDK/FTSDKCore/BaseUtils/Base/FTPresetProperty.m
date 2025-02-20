@@ -5,8 +5,12 @@
 //  Created by 胡蕾蕾 on 2020/10/23.
 //  Copyright © 2020 hll. All rights reserved.
 //
-#import "FTPresetProperty.h"
 #import "FTBaseInfoHandler.h"
+#import "FTSDKCompat.h"
+#if FT_HAS_UIKIT
+#import <UIKit/UIKit.h>
+#endif
+#import "FTPresetProperty.h"
 #import <sys/utsname.h>
 #import "FTJSONUtil.h"
 #import "FTUserInfo.h"
@@ -17,6 +21,7 @@
 #include <mach-o/arch.h>
 #include <sys/sysctl.h>
 #if FT_MAC
+#import <AppKit/AppKit.h>
 #import <IOKit/IOKitLib.h>
 #endif
 
@@ -35,25 +40,24 @@
     self = [super init];
     if (self) {
         _device = @"APPLE";
-#if FT_MAC
+#if FT_HAS_UIKIT
+        _model = [FTPresetProperty deviceInfo];
+        _deviceUUID =[[UIDevice currentDevice] identifierForVendor].UUIDString;
+        CGFloat scale = [[UIScreen mainScreen] scale];
+        CGRect rect = [[UIScreen mainScreen] bounds];
+        _screenSize = [[NSString alloc] initWithFormat:@"%.f*%.f",rect.size.height*scale,rect.size.width*scale];
+        _os = [UIDevice currentDevice].systemName;
+        
+#elif FT_MAC
         _os = @"macOS";
         NSRect rect = [NSScreen mainScreen].frame;
         _screenSize =[[NSString alloc] initWithFormat:@"%.f*%.f",rect.size.height,rect.size.width];
         _deviceUUID = [FTPresetProperty getDeviceUUID];
-        _model = [FTPresetProperty macOSdeviceModel];
-        _osVersion = [FTPresetProperty macOSSystermVersion];
-        _osVersionMajor = [_osVersion stringByDeletingPathExtension];
-#else
-        _model = [FTPresetProperty deviceInfo];
-        _os = @"iOS";
-        _deviceUUID =[[UIDevice currentDevice] identifierForVendor].UUIDString;
-        _osVersion = [UIDevice currentDevice].systemVersion;
-        _osVersionMajor = [[UIDevice currentDevice].systemVersion stringByDeletingPathExtension];
-        CGFloat scale = [[UIScreen mainScreen] scale];
-        CGRect rect = [[UIScreen mainScreen] bounds];
-        _screenSize =[[NSString alloc] initWithFormat:@"%.f*%.f",rect.size.height*scale,rect.size.width*scale];
-        _cpuArch = [FTPresetProperty cpuArch];
+        _model = [FTPresetProperty macOSDeviceModel];
 #endif
+        _cpuArch = [FTPresetProperty cpuArch];
+        _osVersion = [FTPresetProperty getOSVersion];
+        _osVersionMajor = [_osVersion stringByDeletingPathExtension];
     }
     return self;
 }
@@ -143,12 +147,6 @@ static dispatch_once_t onceToken;
     [tag setValue:self.sdkVersion forKey:FT_SDK_VERSION];
     [tag setValue:self.sessionReplaySource forKey:FT_KEY_SOURCE];
     return tag;
-}
-- (void)resetWithVersion:(NSString *)version env:(NSString *)env service:(NSString *)service globalContext:(NSDictionary *)globalContext{
-    self.version = version;
-    self.env = env;
-    self.service = service;
-    self.globalContext = [globalContext copy];
 }
 - (NSMutableDictionary *)rumProperty{
     NSMutableDictionary *dict = [NSMutableDictionary new];
@@ -356,6 +354,7 @@ static uintptr_t firstCmdAfterHeader(const struct mach_header* const header) {
     struct utsname systemInfo;
     uname(&systemInfo);
     NSString *platform = [NSString stringWithCString:systemInfo.machine encoding:NSASCIIStringEncoding];
+#if TARGET_OS_IOS
     //------------------------------iPhone---------------------------
     if ([platform isEqualToString:@"iPhone17,3"]) return @"iPhone 16";
     if ([platform isEqualToString:@"iPhone17,4"]) return @"iPhone 16 Plus";
@@ -514,11 +513,25 @@ static uintptr_t firstCmdAfterHeader(const struct mach_header* const header) {
     if ([platform isEqualToString:@"iPod5,1"]) return  @"iTouch5";
     if ([platform isEqualToString:@"iPod7,1"]) return  @"iTouch6";
    
-    //------------------------------Samulitor-------------------------------------
+    //------------------------------Samulitor----------------------------------
     if ([platform isEqualToString:@"i386"] ||
         [platform isEqualToString:@"x86_64"] || [platform isEqualToString:@"arm64"]){
         return  @"iPhone Simulator";
     }
+#elif TARGET_OS_TV
+    if ([platform isEqualToString:@"AppleTV1,1"]) return @"Apple TV (1st generation)";
+    if ([platform isEqualToString:@"AppleTV2,1"]) return @"Apple TV (2nd generation)";
+    if ([platform isEqualToString:@"AppleTV3,1"]||[platform isEqualToString:@"AppleTV3,2"]) return @"Apple TV (3rd generation)";
+    if ([platform isEqualToString:@"AppleTV5,3"]) return @"Apple TV (4th generation)";
+    if ([platform isEqualToString:@"AppleTV6,2"]) return @"Apple TV 4K";
+    if ([platform isEqualToString:@"AppleTV11,1"]) return @"Apple TV 4K (2nd generation)";
+    if ([platform isEqualToString:@"AppleTV14,1"]) return @"Apple TV 4K (3rd generation)";
+   //------------------------------Samulitor----------------------------------
+    if ([platform isEqualToString:@"i386"] ||
+        [platform isEqualToString:@"x86_64"] || [platform isEqualToString:@"arm64"]){
+        return  @"AppleTV Simulator";
+    }
+#endif
     return platform;
 }
 #if FT_MAC
@@ -530,7 +543,7 @@ static uintptr_t firstCmdAfterHeader(const struct mach_header* const header) {
     CFRelease(uuidCf);
     return uuid;
 }
-+ (NSString *)macOSdeviceModel {
++ (NSString *)macOSDeviceModel {
     NSString *macDevTypeStr = @"Unknown Mac";//设备型号
     size_t len = 0;
     sysctlbyname("hw.model", NULL, &len, NULL, 0);
@@ -653,15 +666,24 @@ static uintptr_t firstCmdAfterHeader(const struct mach_header* const header) {
     }
     return macDevTypeStr;
 }
-+ (NSString *)macOSSystermVersion{
-    NSProcessInfo *info = [NSProcessInfo processInfo];
-    NSInteger major = info.operatingSystemVersion.majorVersion;
-    NSInteger minor = info.operatingSystemVersion.minorVersion;
-    NSInteger patch = info.operatingSystemVersion.patchVersion;
-    return  [NSString stringWithFormat:@"%ld.%ld.%ld",major,minor,patch];
-}
 #endif
 
++ (NSString *)getOSVersion{
+#if FT_HAS_UIKIT
+    return  [UIDevice currentDevice].systemVersion;
+#else
+    NSOperatingSystemVersion version = [NSProcessInfo processInfo].operatingSystemVersion;
+    ;
+    NSString *systemVersion;
+    if (version.patchVersion == 0) {
+        systemVersion = [NSString stringWithFormat:@"%d.%d", (int)version.majorVersion, (int)version.minorVersion];
+    } else {
+        systemVersion = [NSString stringWithFormat:@"%d.%d.%d", (int)version.majorVersion,
+                                                   (int)version.minorVersion, (int)version.patchVersion];
+    }
+    return systemVersion;
+#endif
+}
 - (void)shutDown{
     onceToken = 0;
     sharedInstance =nil;

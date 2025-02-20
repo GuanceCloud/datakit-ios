@@ -19,7 +19,7 @@
 #import "FTModuleManager.h"
 #import "NSError+FTDescription.h"
 #import "FTPresetProperty.h"
-#import "FTReachability.h"
+#import "FTNetworkConnectivity.h"
 
 NSString * const AppStateStringMap[] = {
     [FTAppStateUnknown] = @"unknown",
@@ -289,7 +289,7 @@ void *FTRUMQueueIdentityKey = &FTRUMQueueIdentityKey;
                             }
                         }
                     }
-                    if(metrics.responseSize){
+                    if(metrics.responseSize!=nil){
                         [fields setValue:metrics.responseSize forKey:FT_KEY_RESOURCE_SIZE];
                     }else if(content.responseBody){
                         NSData *data = [content.responseBody dataUsingEncoding:NSUTF8StringEncoding];
@@ -461,20 +461,25 @@ void *FTRUMQueueIdentityKey = &FTRUMQueueIdentityKey;
     [[FTModuleManager sharedInstance] postMessage:FTMessageKeyRUMContext message:currentRumContext];
     return YES;
 }
--(NSDictionary *)getCurrentSessionInfo{
-    return self.rumDependencies.fatalErrorContext.lastSessionContext;
-}
 -(NSDictionary *)rumDynamicProperty{
     NSMutableDictionary *dict = [NSMutableDictionary dictionary];
-    dict[@"network_type"] = [FTReachability sharedInstance].net;
-    [dict addEntriesFromDictionary:[[FTPresetProperty sharedInstance] rumDynamicProperty]];
-    return dict;
+    @try {
+        dict[@"network_type"] = [FTNetworkConnectivity sharedInstance].networkType;
+        [dict addEntriesFromDictionary:[[FTPresetProperty sharedInstance] rumDynamicProperty]];
+    } @catch (NSException *exception) {
+        FTInnerLogError(@"exception %@",exception);
+    } @finally {
+        return dict;
+    }
 }
 - (NSDictionary *)getLinkRUMData{
     NSMutableDictionary *dict = [NSMutableDictionary dictionary];
     [dict addEntriesFromDictionary:[self rumDynamicProperty]];
     [dict addEntriesFromDictionary:self.rumDependencies.fatalErrorContext.lastSessionContext];
     return dict;
+}
+-(NSDictionary *)getCurrentSessionInfo{
+    return self.rumDependencies.fatalErrorContext.lastSessionContext;
 }
 - (void)syncProcess{
     [self syncProcess:^{}];

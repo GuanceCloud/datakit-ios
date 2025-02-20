@@ -21,7 +21,7 @@ NS_ASSUME_NONNULL_BEGIN
 /// 在此拦截期间发生的本地错误。如果任务顺利完成，则返回`nil`。
 @property (nonatomic, strong) NSError *error;
 /// 拦截期间收到的任务数据。如果任务完成时出现错误，则返回`nil`。
-@property (nonatomic, strong) NSMutableData *data;
+@property (nonatomic, strong) NSData *data;
 /// rum resource 需要的各阶段请求时长（非必须）
 @property (nonatomic, strong) FTResourceMetricsModel *metricsModel;
 /// rum resource 需要的基本数据

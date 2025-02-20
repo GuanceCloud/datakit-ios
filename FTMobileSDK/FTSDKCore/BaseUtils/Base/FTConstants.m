@@ -18,6 +18,7 @@ NSString * const FT_OP  = @"op";
 // source
 NSString * const FT_KEY_SOURCE = @"source";
 NSString * const FT_LOGGER_SOURCE = @"df_rum_ios_log";
+NSString * const FT_LOGGER_TVOS_SOURCE = @"df_rum_tvos_log";
 NSString * const FT_LOGGER_MACOS_SOURCE = @"df_rum_macos_log";
 
 NSString * const FT_RUM_SOURCE_RESOURCE = @"resource";
@@ -28,6 +29,7 @@ NSString * const FT_RUM_SOURCE_LONG_TASK = @"long_task";
 //service
 NSString * const FT_KEY_SERVICE = @"service";
 NSString * const FT_DEFAULT_SERVICE_NAME = @"df_rum_ios";
+NSString * const FT_TVOS_SERVICE_NAME = @"df_rum_tvos";
 NSString * const FT_IOS_SDK_NAME = @"df_ios_rum_sdk";
 NSString * const FT_MACOS_SDK_NAME = @"df_macos_rum_sdk";
 NSString * const FT_IS_WEBVIEW = @"is_web_view";
@@ -35,6 +37,7 @@ NSString * const FT_NULL_VALUE  = @"N/A";
 NSString * const FT_TYPE = @"type";
 NSString * const FT_SDK_VERSION = @"sdk_version";
 NSString * const FT_SDK_NAME = @"sdk_name";
+NSString * const FT_SDK_PKG_INFO = @"sdk_pkg_info";
 #pragma mark ========== BASE PROPERTY ==========
 NSString * const FT_COMMON_PROPERTY_APP_NAME = @"app_name";
 NSString * const FT_COMMON_PROPERTY_OS_VERSION = @"os_version";
@@ -174,10 +177,19 @@ NSString * const FT_NETWORK_ZIPKIN_SINGLE_KEY = @"b3";
 NSUInteger const FT_LOGGING_CONTENT_SIZE = 30720;
 NSUInteger const FT_TIME_INTERVAL = 100;
 
-int const FT_DB_CONTENT_MAX_COUNT = 5000;
+int const FT_DB_LOG_MAX_COUNT = 5000;
+int const FT_DB_LOG_MIN_COUNT = 1000;
+
+int const FT_DB_RUM_MAX_COUNT = 100000;
+int const FT_DB_RUM_MIN_COUNT = 10000;
+
+// 100MB
+long const FT_DEFAULT_DB_SIZE_LIMIT = 104857600;
+long const FT_MIN_DB_SIZE_LIMIT = 31457280;
+
 NSString * const FT_SCRIPT_MESSAGE_HANDLER_NAME = @"ftMobileSdk";
 long const FT_DEFAULT_BLOCK_DURATIONS_MS = 250;
-long const FT_MINI_DEFAULT_BLOCK_DURATIONS_MS = 100;
+long const FT_MIN_DEFAULT_BLOCK_DURATIONS_MS = 100;
 long const FT_ANR_THRESHOLD_MS = 5000;
 
 long long const FT_ANR_THRESHOLD_NS = 5000000000;
@@ -190,3 +202,5 @@ NSString * const FT_USER_EXTRA = @"user_extra";
 NSString * const FT_USER_INFO = @"FT_USER_INFO";
 
 
+NSString * const FT_BLACK_LIST_VIEW = @"FT_BLACK_LIST_VIEW";
+NSString * const FT_BLACK_LIST_VIEW_ACTION = @"FT_BLACK_LIST_VIEW_ACTION";
