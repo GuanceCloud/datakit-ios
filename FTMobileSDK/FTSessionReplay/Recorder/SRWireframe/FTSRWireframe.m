@@ -29,6 +29,9 @@ FTSRContentClip * useNewIfDifferentThanOld(FTSRContentClip *new,FTSRContentClip 
         return clip;
     }
 }
+NSNumber * useNumberNewIfDifferentThanOld(NSNumber *new,NSNumber *old){
+    return  !old ? new : (!new || [new isEqualToNumber:old]) ? nil : new;
+}
 @implementation FTSRShapeBorder
 - (instancetype)initWithColor:(NSString *)color width:(CGFloat)width {
     if(!color || width<=0){
@@ -51,7 +54,7 @@ FTSRContentClip * useNewIfDifferentThanOld(FTSRContentClip *new,FTSRContentClip 
     return [self isEqualToShapeBorder:object];
 }
 -(BOOL)isEqualToShapeBorder:(FTSRShapeBorder *)object{
-    BOOL haveEqualColor = (!self.color && !object.color) || [self.color isEqualToString:object.color];
+    BOOL haveEqualColor = (self.color == nil && object.color == nil) || (self.color && object.color && [self.color isEqualToString:object.color]);
     return  self.width == object.width && haveEqualColor;
 }
 @end
@@ -91,10 +94,10 @@ FTSRContentClip * useNewIfDifferentThanOld(FTSRContentClip *new,FTSRContentClip 
     return [self isEqualToContentClip:object];
 }
 -(BOOL)isEqualToContentClip:(FTSRContentClip *)object{
-    BOOL haveEqualLeft = (!self.left && !object.left) || [self.left isEqualToNumber:object.left];
-    BOOL haveEqualTop = (!self.top && !object.top) || [self.top isEqualToNumber:object.top];
-    BOOL haveEqualRight = (!self.right && !object.right) || [self.right isEqualToNumber:object.right];
-    BOOL haveEqualBottom = (!self.bottom && !object.bottom) || [self.bottom isEqualToNumber:object.bottom];
+    BOOL haveEqualLeft = (self.left == nil && object.left == nil) || (self.left && object.left && [self.left isEqualToNumber:object.left]);
+    BOOL haveEqualTop = (self.top == nil && object.top == nil) || (self.top && object.top && [self.top isEqualToNumber:object.top]);
+    BOOL haveEqualRight = (self.right == nil && object.right == nil) || (self.right && object.right && [self.right isEqualToNumber:object.right]);
+    BOOL haveEqualBottom = (self.bottom == nil && object.bottom == nil) || (self.bottom && object.bottom && [self.bottom isEqualToNumber:object.bottom]);
     return haveEqualLeft && haveEqualTop && haveEqualRight && haveEqualBottom;
 }
 @end
@@ -122,9 +125,9 @@ FTSRContentClip * useNewIfDifferentThanOld(FTSRContentClip *new,FTSRContentClip 
     return [self isEqualToShapeStyle:object];
 }
 -(BOOL)isEqualToShapeStyle:(FTSRShapeStyle *)object{
-    BOOL haveEqualColor = (!self.backgroundColor && !object.backgroundColor) || [self.backgroundColor isEqualToString:object.backgroundColor];
-    BOOL haveEqualCornerRadius = (!self.cornerRadius && !object.cornerRadius) || [self.cornerRadius isEqualToNumber:object.cornerRadius];
-    BOOL haveEqualOpacity = (!self.opacity && !object.opacity) || [self.opacity isEqualToNumber:object.opacity];
+    BOOL haveEqualColor = (self.backgroundColor == nil && object.backgroundColor == nil) || (self.backgroundColor && object.backgroundColor && [self.backgroundColor isEqualToString:object.backgroundColor]);
+    BOOL haveEqualCornerRadius = (self.cornerRadius == nil && object.cornerRadius == nil) || (self.cornerRadius && object.cornerRadius && [self.cornerRadius isEqualToNumber:object.cornerRadius]);
+    BOOL haveEqualOpacity = (self.opacity == nil && object.opacity == nil) || (self.opacity && object.opacity && [self.opacity isEqualToNumber:object.opacity]);
     return  haveEqualCornerRadius && haveEqualColor && haveEqualOpacity;
 }
 @end
@@ -188,8 +191,8 @@ FTSRContentClip * useNewIfDifferentThanOld(FTSRContentClip *new,FTSRContentClip 
     return [self isEqualToAlignment:object];
 }
 -(BOOL)isEqualToAlignment:(FTAlignment *)object{
-    BOOL haveEqualVertical = (!self.vertical && !object.vertical) || [self.vertical isEqualToString:object.vertical];
-    BOOL haveEqualHorizontal = (!self.horizontal && !object.horizontal) || [self.horizontal isEqualToString:object.horizontal];
+    BOOL haveEqualVertical = (self.vertical == nil && object.vertical == nil) || (self.vertical && object.vertical && [self.vertical isEqualToString:object.vertical]);
+    BOOL haveEqualHorizontal = (self.horizontal == nil && object.horizontal == nil) || (self.horizontal && object.horizontal && [self.horizontal isEqualToString:object.horizontal]);
     return  haveEqualVertical &&  haveEqualHorizontal;
 }
 @end
@@ -240,7 +243,7 @@ FTSRContentClip * useNewIfDifferentThanOld(FTSRContentClip *new,FTSRContentClip 
     if(self){
         self.identifier = identifier;
         CGFloat width = roundf(frame.size.width);
-        self.width = width == 0 ? @(frame.size.width):@(width);;
+        self.width = width == 0 ? @(frame.size.width):@(width);
         CGFloat height = roundf(frame.size.height);
         self.height = height == 0 ? @(frame.size.height):@(height);
         self.x = @(roundf(CGRectGetMinX(frame)));
@@ -263,18 +266,18 @@ FTSRContentClip * useNewIfDifferentThanOld(FTSRContentClip *new,FTSRContentClip 
     }
     //旧的 clip 不存在时使用新的
     self.clip = useNewIfDifferentThanOld(newWireFrame.clip, self.clip);
-    self.width = [self.width isEqualToNumber:newWireFrame.width]?nil:newWireFrame.width;
-    self.height = [self.height isEqualToNumber:newWireFrame.height]?nil:newWireFrame.height;
-    self.x = [self.x isEqualToNumber:newWireFrame.x]?nil:newWireFrame.x;
-    self.y = [self.y isEqualToNumber:newWireFrame.y]?nil:newWireFrame.y;
+    self.width = useNumberNewIfDifferentThanOld(newWireFrame.width,self.width);
+    self.height = useNumberNewIfDifferentThanOld(newWireFrame.height,self.height);
+    self.x = useNumberNewIfDifferentThanOld(newWireFrame.x,self.x);
+    self.y = useNumberNewIfDifferentThanOld(newWireFrame.y,self.y);
     return self;
 }
 -(BOOL)isEqualToSRWireframe:(FTSRWireframe *)object{
     BOOL haveEqualClip = (!self.clip && !object.clip) || [self.clip isEqual:object.clip];
-    BOOL haveEqualWidth= (!self.width && !object.width) || [self.width isEqualToNumber:object.width];
-    BOOL haveEqualHeight= (!self.height && !object.height) || [self.height isEqualToNumber:object.height];
-    BOOL haveEqualX = (!self.x && !object.x) || [self.x isEqualToNumber:object.x];
-    BOOL haveEqualY = (!self.y && !object.y) || [self.y isEqualToNumber:object.y];
+    BOOL haveEqualWidth= (self.width == nil && object.width == nil) || (self.width && object.width && [self.width isEqualToNumber:object.width]);
+    BOOL haveEqualHeight= (self.height == nil && object.height == nil) || (self.height && object.height && [self.height isEqualToNumber:object.height]);
+    BOOL haveEqualX = (self.x == nil && object.x == nil) || (self.x && object.x && [self.x isEqualToNumber:object.x]);
+    BOOL haveEqualY = (self.y == nil && object.y == nil) || (self.y && object.y && [self.y isEqualToNumber:object.y]);
     return haveEqualClip && haveEqualWidth && haveEqualHeight && haveEqualX && haveEqualY && self.identifier == object.identifier;
 }
 -(BOOL)isEqual:(id)object{
@@ -387,7 +390,7 @@ FTSRContentClip * useNewIfDifferentThanOld(FTSRContentClip *new,FTSRContentClip 
     }
     FTSRTextWireframe *textWireframe = (FTSRTextWireframe *)wire;
     FTSRTextWireframe *newWire = (FTSRTextWireframe *)newWireFrame;
-    textWireframe.text = [self.text isEqualToString:newWire.text]?nil:newWire.text;
+    textWireframe.text = !self.text ? newWire.text : (!newWire.text || [newWire.text isEqualToString:self.text]) ? nil : newWire.text;
     textWireframe.textPosition = [self.textPosition isEqual:newWire.textPosition]?nil:newWire.textPosition;
     textWireframe.textStyle = [self.textStyle isEqual:newWire.textStyle]?nil:newWire.textStyle;
     textWireframe.border = [self.border isEqual:newWire.border]?nil:newWire.border;
@@ -398,7 +401,7 @@ FTSRContentClip * useNewIfDifferentThanOld(FTSRContentClip *new,FTSRContentClip 
     if(!object){
         return NO;
     }
-    BOOL isTextEqual = (!self.text && !object.text) || [self.text isEqualToString:object.text];
+    BOOL isTextEqual = (self.text == nil && object.text == nil) || (self.text && object.text && [self.text isEqualToString:object.text]);
     BOOL isBorderEqual = (!self.border && !object.border) || [self.border isEqual:object.border];
     BOOL isShapeStyleEqual = (!self.shapeStyle && !object.shapeStyle) || [self.shapeStyle isEqual:object.shapeStyle];
     BOOL isTextPositionEqual = (!self.textPosition && !object.textPosition) || [self.textPosition isEqual:object.textPosition];
@@ -449,8 +452,8 @@ FTSRContentClip * useNewIfDifferentThanOld(FTSRContentClip *new,FTSRContentClip 
     if(!object){
         return NO;
     }
-    BOOL isMimeTypeEqual = (!self.mimeType && !object.mimeType) || [self.mimeType isEqualToString:object.mimeType];
-    BOOL isResourceIdEqual = (!self.resourceId && !object.resourceId) || [self.resourceId isEqualToString:object.resourceId];
+    BOOL isMimeTypeEqual = (self.mimeType == nil && object.mimeType == nil) || (self.mimeType && object.mimeType && [self.mimeType isEqualToString:object.mimeType]);
+    BOOL isResourceIdEqual = (self.resourceId == nil && object.resourceId == nil) || (self.resourceId && object.resourceId && [self.resourceId isEqualToString:object.resourceId]);
     BOOL isBorderEqual = (!self.border && !object.border) || [self.border isEqual:object.border];
     BOOL isShapeStyleEqual = (!self.shapeStyle && !object.shapeStyle) || [self.shapeStyle isEqual:object.shapeStyle];
     return isMimeTypeEqual && isResourceIdEqual && isBorderEqual && isShapeStyleEqual && [super isEqual:object];
@@ -501,7 +504,7 @@ FTSRContentClip * useNewIfDifferentThanOld(FTSRContentClip *new,FTSRContentClip 
     if(!object){
         return NO;
     }
-    BOOL isLabelEqual = (!self.label && !object.label) || [self.label isEqualToString:object.label];
+    BOOL isLabelEqual = (self.label == nil && object.label == nil) || (self.label && object.label && [self.label isEqualToString:object.label]);
     return isLabelEqual && [super isEqual:object];
 }
 -(BOOL)isEqual:(id)object{
