@@ -96,31 +96,25 @@
         return [FTInvisibleElement constant];
     }
     CGRect contentFrame = CGRectZero;
-    BOOL shouldRecordImage = self.shouldRecordImagePredicate(imageView);
     if(imageView.image){
         contentFrame = FTCGRectFitWithContentMode(attributes.frame, imageView.image.size, imageView.contentMode);
     }
-    FTUIImageResource *imageResource = [[FTUIImageResource alloc]initWithImage:imageView.image tintColor:self.tintColorProvider(imageView)];
+    FTUIImageResource *imageResource = nil;
+    BOOL shouldRecordImage = self.shouldRecordImagePredicate(imageView);
+    if (shouldRecordImage && imageView.image) {
+        imageResource = [[FTUIImageResource alloc]initWithImage:imageView.image tintColor:self.tintColorProvider(imageView)];
+    }
     NSArray *ids = [context.viewIDGenerator SRViewIDs:view size:2 nodeRecorder:self];
     FTUIImageViewBuilder *builder = [[FTUIImageViewBuilder alloc]init];
     builder.wireframeID = [ids[0] intValue];
     builder.imageWireframeID = [ids[1] intValue];
     builder.attributes = attributes;
     builder.contentFrame = contentFrame;
-    builder.clipsToBounds = imageView.clipsToBounds;
-    builder.tintColor = imageView.tintColor;
-    builder.shouldRecordImage = shouldRecordImage;
-    builder.imageResource = shouldRecordImage?imageResource:nil;
+    builder.imageResource = imageResource;
     FTSpecificElement *element = [[FTSpecificElement alloc]initWithSubtreeStrategy:NodeSubtreeStrategyRecord];
     element.nodes = @[builder];
     element.resources = builder.imageResource?@[builder.imageResource]:nil;
     return element;
-}
-- (BOOL)imageIsContextual:(UIImage *)image{
-    if (@available(iOS 13.0, *)) {
-        return image.isSymbolImage || [image.description containsString:@"named("] || image.renderingMode == UIImageRenderingModeAlwaysTemplate;
-    }
-    return NO;
 }
 @end
 @implementation FTUIImageViewBuilder

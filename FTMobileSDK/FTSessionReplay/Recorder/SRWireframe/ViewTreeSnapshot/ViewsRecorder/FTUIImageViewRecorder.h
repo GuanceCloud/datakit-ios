@@ -21,10 +21,6 @@ typedef BOOL (^FTShouldRecordImagePredicate)(UIImageView *imageView);
 @property (nonatomic, assign) int imageWireframeID;
 @property (nonatomic, strong) FTViewAttributes *attributes;
 @property (nonatomic, assign) CGRect contentFrame;
-@property (nonatomic, assign) BOOL clipsToBounds;
-@property (nonatomic, strong) UIImage *image;
-@property (nonatomic, strong) UIColor *tintColor;
-@property (nonatomic, assign) BOOL shouldRecordImage;
 
 @property (nonatomic, strong) FTUIImageResource *imageResource;
 @property (nonatomic, assign) CGRect wireframeRect;
