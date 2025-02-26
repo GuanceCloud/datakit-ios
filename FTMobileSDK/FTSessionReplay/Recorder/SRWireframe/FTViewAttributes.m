@@ -28,7 +28,7 @@
     return self;
 }
 -(BOOL)isVisible{
-    return  !self.isHidden && self.alpha > 0 && !CGRectEqualToRect(self.frame, CGRectZero);
+    return  !self.isHidden && self.alpha > 0 && !CGRectEqualToRect(self.frame, CGRectZero) && !CGRectIsEmpty(CGRectIntersection(self.frame, self.clip));
 }
 -(BOOL)hasAnyAppearance{
     CGFloat borderAlpha = [FTSRUtils getCGColorAlpha:self.layerBorderColor];
