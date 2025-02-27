@@ -96,7 +96,6 @@ static char *previousViewController = "previousViewController";
     if (!self.parentViewController ||
         [self.parentViewController isKindOfClass:[UITabBarController class]] ||
         [self.parentViewController isKindOfClass:[UINavigationController class]] ||
-        [self.parentViewController isKindOfClass:[UIPageViewController class]] ||
         [self.parentViewController isKindOfClass:[UISplitViewController class]]) {
         self.ft_viewUUID = [FTBaseInfoHandler randomUUID];
         [[FTAutoTrackHandler sharedInstance].viewControllerHandler notify_viewDidAppear:self animated:animated];

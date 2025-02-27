@@ -336,8 +336,9 @@
 /// 验证开启enableTraceUserView,应用进入后台前台，view会自动更新
 - (void)testEnableTraceUserView_whenAppWillEnterForeground{
     [self setRumConfig];
-    DemoViewController *vc = [[DemoViewController alloc]init];
-    [[FTAutoTrackHandler sharedInstance] notify_viewDidAppear:vc animated:YES];
+    UIViewController *vc = [[UIViewController alloc] init];
+    vc.view.backgroundColor = UIColor.whiteColor;
+    [vc viewDidAppear:YES];
     
     [self addLongTaskData:nil];
     [self addResource];
@@ -517,8 +518,9 @@
 }
 - (void)testStopResourceInBackground{
     [self setRumConfig];
-    DemoViewController *vc = [[DemoViewController alloc]init];
-    [[FTAutoTrackHandler sharedInstance] notify_viewDidAppear:vc animated:YES];
+    UIViewController *vc = [[UIViewController alloc] init];
+    vc.view.backgroundColor = UIColor.whiteColor;
+    [vc viewDidAppear:YES];
 
     NSString *key = [FTBaseInfoHandler randomUUID];
     NSURL *url = [NSURL URLWithString:@"https://www.baidu.com/more/"];

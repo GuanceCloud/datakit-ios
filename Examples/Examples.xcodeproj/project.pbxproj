@@ -101,6 +101,10 @@
 		178AE4082D579B8400BDC51B /* DebugLogsVC.swift in Sources */ = {isa = PBXBuildFile; fileRef = 178AE4072D579B8400BDC51B /* DebugLogsVC.swift */; };
 		178AE40A2D579D4E00BDC51B /* LogDetailVC.swift in Sources */ = {isa = PBXBuildFile; fileRef = 178AE4092D579D4E00BDC51B /* LogDetailVC.swift */; };
 		178AE40D2D58525800BDC51B /* FTMobileSDK.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 178AE40C2D58525800BDC51B /* FTMobileSDK.framework */; };
+		17933E362D68244900524BF2 /* FTRUMViewTest.m in Sources */ = {isa = PBXBuildFile; fileRef = 17933E352D68244900524BF2 /* FTRUMViewTest.m */; };
+		17933E372D68244900524BF2 /* FTRUMViewTest.m in Sources */ = {isa = PBXBuildFile; fileRef = 17933E352D68244900524BF2 /* FTRUMViewTest.m */; };
+		17933E3A2D68578900524BF2 /* AddRumDatasHandlerMock.m in Sources */ = {isa = PBXBuildFile; fileRef = 17933E392D68578900524BF2 /* AddRumDatasHandlerMock.m */; };
+		17933E3B2D68578900524BF2 /* AddRumDatasHandlerMock.m in Sources */ = {isa = PBXBuildFile; fileRef = 17933E392D68578900524BF2 /* AddRumDatasHandlerMock.m */; };
 		179BEB7E2D2B983D004AA5A6 /* FTResourceTest.swift in Sources */ = {isa = PBXBuildFile; fileRef = 179BEB7D2D2B983D004AA5A6 /* FTResourceTest.swift */; };
 		179BEB9A2D30CFAF004AA5A6 /* FTNetworkInterceptorTest.m in Sources */ = {isa = PBXBuildFile; fileRef = 179BEB992D30CFAF004AA5A6 /* FTNetworkInterceptorTest.m */; };
 		179BF6512D3D47F0004AA5A6 /* FTReadWriteHelperTest.m in Sources */ = {isa = PBXBuildFile; fileRef = 179BF6502D3D47F0004AA5A6 /* FTReadWriteHelperTest.m */; };
@@ -326,6 +330,9 @@
 		178AE4092D579D4E00BDC51B /* LogDetailVC.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LogDetailVC.swift; sourceTree = "<group>"; };
 		178AE40B2D57A1EA00BDC51B /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		178AE40C2D58525800BDC51B /* FTMobileSDK.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; path = FTMobileSDK.framework; sourceTree = BUILT_PRODUCTS_DIR; };
+		17933E352D68244900524BF2 /* FTRUMViewTest.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = FTRUMViewTest.m; sourceTree = "<group>"; };
+		17933E382D68578900524BF2 /* AddRumDatasHandlerMock.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = AddRumDatasHandlerMock.h; sourceTree = "<group>"; };
+		17933E392D68578900524BF2 /* AddRumDatasHandlerMock.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = AddRumDatasHandlerMock.m; sourceTree = "<group>"; };
 		179BEB7D2D2B983D004AA5A6 /* FTResourceTest.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FTResourceTest.swift; sourceTree = "<group>"; };
 		179BEB992D30CFAF004AA5A6 /* FTNetworkInterceptorTest.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = FTNetworkInterceptorTest.m; sourceTree = "<group>"; };
 		179BF6502D3D47F0004AA5A6 /* FTReadWriteHelperTest.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = FTReadWriteHelperTest.m; sourceTree = "<group>"; };
@@ -809,6 +816,7 @@
 				7C3C289527683983009DB8E2 /* FTRUMTest.m */,
 				17DA844C288808B2001A0B30 /* FTRUMMonitorTest.m */,
 				178AE3C02D56045A00BDC51B /* FTRUMActionTest.m */,
+				17933E352D68244900524BF2 /* FTRUMViewTest.m */,
 			);
 			path = OpenAPITest;
 			sourceTree = "<group>";
@@ -889,6 +897,8 @@
 				178AE3BC2D56009A00BDC51B /* UIEvent+Mock.h */,
 				178AE3BD2D56009A00BDC51B /* UIEvent+Mock.m */,
 				178AE3C32D56082C00BDC51B /* UIApplication+Test.h */,
+				17933E382D68578900524BF2 /* AddRumDatasHandlerMock.h */,
+				17933E392D68578900524BF2 /* AddRumDatasHandlerMock.m */,
 			);
 			path = Helper;
 			sourceTree = "<group>";
@@ -1360,9 +1370,11 @@
 				178AE3C22D56045A00BDC51B /* FTRUMActionTest.m in Sources */,
 				178AE3772D55B74F00BDC51B /* FTUtilsTest.m in Sources */,
 				178AE3782D55B74F00BDC51B /* PerformanceBaseTest.m in Sources */,
+				17933E3B2D68578900524BF2 /* AddRumDatasHandlerMock.m in Sources */,
 				178AE3AC2D55D04100BDC51B /* FTLoggerTest.m in Sources */,
 				178AE3792D55B74F00BDC51B /* FTLongTaskFileHandleTest.m in Sources */,
 				178AE37A2D55B74F00BDC51B /* FTSessionConfiguration.m in Sources */,
+				17933E362D68244900524BF2 /* FTRUMViewTest.m in Sources */,
 				178AE37B2D55B74F00BDC51B /* FTResourceDelegateTest.m in Sources */,
 				178AE37C2D55B74F00BDC51B /* FTURLProtocol.m in Sources */,
 				178AE37D2D55B74F00BDC51B /* FTAppLaunchDurationTest.m in Sources */,
@@ -1490,6 +1502,7 @@
 				4A85318C23B23A4000B40B5D /* FTNetworkTests.m in Sources */,
 				4A1D78A224F52ACC006125D0 /* FTDatabaseTest.m in Sources */,
 				177AD7332CCF72A10051C0F6 /* FTDataCompressionTest.m in Sources */,
+				17933E372D68244900524BF2 /* FTRUMViewTest.m in Sources */,
 				172099772CF9DE84004821CF /* FTTestUtils.m in Sources */,
 				4A037EFA24F791CB007B2104 /* FTTraceTest.m in Sources */,
 				172931D22BF602D700AA9D53 /* FTSwizzlerConflictTest.m in Sources */,
@@ -1512,6 +1525,7 @@
 				179BEB7E2D2B983D004AA5A6 /* FTResourceTest.swift in Sources */,
 				4A8531A323B3322500B40B5D /* FTAutoTrackTest.m in Sources */,
 				174058BB28D813190092E096 /* FTLoggerTest.m in Sources */,
+				17933E3A2D68578900524BF2 /* AddRumDatasHandlerMock.m in Sources */,
 				17B1715528115AE0004002C9 /* FTAppLifeCycleTest.m in Sources */,
 				172931D92BF6148600AA9D53 /* FTNetworkMock.m in Sources */,
 				172C3571280E7D5F002D139E /* FTSwizzleTest.m in Sources */,

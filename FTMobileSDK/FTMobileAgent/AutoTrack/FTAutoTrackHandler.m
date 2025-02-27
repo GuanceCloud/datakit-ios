@@ -149,24 +149,12 @@ static dispatch_once_t onceToken;
 #pragma mark ========== FTUIViewControllerHandler ==========
 -(void)notify_viewDidAppear:(UIViewController *)viewController animated:(BOOL)animated{
     NSString *identify = [NSString stringWithFormat:@"%p", viewController];
-    __block RUMView *view = nil;
-    [self.stack enumerateObjectsUsingBlock:^(RUMView * _Nonnull obj, NSUInteger idx, BOOL * _Nonnull stop) {
-        if ([obj.identify isEqualToString:identify]) {
-            *stop = YES;
-            view = obj;
-        }
-    }];
-    if (view != nil){
-        [view updateViewControllerUUID];
-        [self addView:view];
-        return;
-    }
     if([self shouldTrackViewController:viewController]){
-        view = [[RUMView alloc]initWithViewController:viewController identify:identify];
+        RUMView *view = [[RUMView alloc]initWithViewController:viewController identify:identify];
         [self addView:view];
     }else if (@available(iOS 13.0,tvOS 13.0, *)){
         if(viewController.isModalInPresentation){
-            view = [[RUMView alloc]initWithViewController:viewController identify:identify];
+            RUMView *view = [[RUMView alloc]initWithViewController:viewController identify:identify];
             view.isUntrackedModal = YES;
             [self addView:view];
         }
