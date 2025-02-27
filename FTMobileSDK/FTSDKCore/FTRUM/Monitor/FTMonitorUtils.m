@@ -44,7 +44,7 @@
     NSDictionary *infoDict = (__bridge_transfer NSDictionary* ) battery;
     NSNumber *current_capacity = infoDict[@"Current Capacity"];
     return current_capacity?[current_capacity doubleValue]:0;
-#else
+#elif TARGET_OS_IOS
     [UIDevice currentDevice].batteryMonitoringEnabled = YES;
     double deviceLevel = [UIDevice currentDevice].batteryLevel;
     if (deviceLevel == -1) {
@@ -53,6 +53,7 @@
         return deviceLevel*100;
     }
 #endif
+    return 0;
 }
 #pragma mark ========== 内存 ==========
 //当前任务所占用的内存

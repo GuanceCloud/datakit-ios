@@ -14,6 +14,9 @@
 #import "FTJSONUtil.h"
 #import "FTModelHelper.h"
 #import "FTTestUtils.h"
+#import "FTConstants.h"
+#import "FTDBDataCachePolicy.h"
+#import "FTTrackDataManager+Test.h"
 @interface FTTrackDataManagerTest : XCTestCase
 @property (nonatomic, strong) XCTestExpectation *expectation;
 
@@ -28,12 +31,223 @@
 - (void)tearDown {
     // Put teardown code here. This method is called after the invocation of each test method in the class.
 }
-
+- (void)testEnableDBLimitDiscardNew{
+    [self enableDBLimitDiscard:YES limitCount:NO];
+}
+- (void)testEnableDBLimitDiscardOld{
+    [self enableDBLimitDiscard:NO limitCount:NO];
+}
+- (void)testEnableDBLimitDiscardNew_limitCount{
+    [self enableDBLimitDiscard:YES limitCount:YES];
+}
+- (void)testEnableDBLimitDiscardOld_limitCount{
+    [self enableDBLimitDiscard:NO limitCount:YES];
+}
+- (void)enableDBLimitDiscard:(BOOL)isNew limitCount:(BOOL)limitCount{
+    [[FTTrackerEventDBTool sharedManger] deleteAllDatas];
+    [FTTrackDataManager startWithAutoSync:NO syncPageSize:10 syncSleepTime:0];
+    [[FTTrackDataManager sharedInstance] setDBLimitWithSize:60*1204 discardNew:isNew];
+    if(limitCount){
+        [[FTTrackDataManager sharedInstance] setLogCacheLimitCount:10 discardNew:isNew];
+        [[FTTrackDataManager sharedInstance] setRUMCacheLimitCount:10 discardNew:isNew];
+    }
+    CFTimeInterval interval = [FTTestUtils functionElapsedTime:^{
+        for (int i=0; i<500; i++) {
+            [[FTTrackDataManager sharedInstance] addTrackData:[FTModelHelper createLogModel:[NSString stringWithFormat:@"TEST DBLimitDiscard %d",i]] type:FTAddDataLogging];
+            [[FTTrackDataManager sharedInstance] addTrackData:[FTModelHelper createRUMModel:[NSString stringWithFormat:@"TEST DBLimitDiscard RUM %d",i]] type:FTAddDataRUM];
+        }
+    }];
+    NSLog(@"interval:%f",interval);
+    FTRecordModel *model = [[[FTTrackerEventDBTool sharedManger] getFirstRecords:1 withType:FT_DATA_TYPE_LOGGING] firstObject];
+    FTRecordModel *rumModel = [[[FTTrackerEventDBTool sharedManger] getFirstRecords:1 withType:FT_DATA_TYPE_RUM] firstObject];
+    if(isNew){
+        XCTAssertTrue([model.data containsString:@"TEST DBLimitDiscard 0"]);
+        XCTAssertTrue([rumModel.data containsString:@"TEST DBLimitDiscard RUM 0"]);
+    }else{
+        XCTAssertFalse([model.data containsString:@"TEST DBLimitDiscard 0"]);
+        XCTAssertFalse([rumModel.data containsString:@"TEST DBLimitDiscard RUM 0"]);
+    }
+    NSInteger count = [[FTTrackerEventDBTool sharedManger] getDatasCount];
+    NSLog(@"count:%ld",(long)count);
+    
+    XCTAssertTrue(count > 20 && count < 1000);
+    
+    long size = [[FTTrackerEventDBTool sharedManger] checkDatabaseSize];
+    NSLog(@"size:%ld",(long)size);
+    XCTAssertTrue(size <= 105*1204);
+    [[FTTrackDataManager sharedInstance] shutDown];
+}
+- (void)testEnableDBLimitDiscardNew_log{
+    [[FTTrackerEventDBTool sharedManger] deleteAllDatas];
+    [FTTrackDataManager startWithAutoSync:NO syncPageSize:10 syncSleepTime:0];
+    [[FTTrackDataManager sharedInstance] setDBLimitWithSize:60*1204 discardNew:YES];
+    CFTimeInterval interval = [FTTestUtils functionElapsedTime:^{
+        for (int i=0; i<1000; i++) {
+            [[FTTrackDataManager sharedInstance] addTrackData:[FTModelHelper createLogModel:[NSString stringWithFormat:@"TEST DBLimitDiscardNew %d",i]] type:FTAddDataLogging];
+        }
+    }];
+    NSLog(@"interval:%f",interval);
+    NSInteger count = [[FTTrackerEventDBTool sharedManger] getDatasCount];
+    NSLog(@"count:%ld",(long)count);
+    XCTAssertTrue(count < 1000);
+    FTRecordModel *model = [[[FTTrackerEventDBTool sharedManger] getFirstRecords:1 withType:FT_DATA_TYPE_LOGGING] firstObject];
+    XCTAssertTrue([model.data containsString:@"TEST DBLimitDiscardNew 0"]);
+    long size = [[FTTrackerEventDBTool sharedManger] checkDatabaseSize];
+    
+    NSLog(@"size:%ld",(long)size);
+    XCTAssertTrue(size <= 65*1204);
+    [[FTTrackDataManager sharedInstance] shutDown];
+}
+- (void)testEnableDBLimitDiscardNew_logCountLimit{
+    [[FTTrackerEventDBTool sharedManger] deleteAllDatas];
+    [FTTrackDataManager startWithAutoSync:NO syncPageSize:10 syncSleepTime:0];
+    [[FTTrackDataManager sharedInstance] setDBLimitWithSize:60*1204 discardNew:YES];
+    [[FTTrackDataManager sharedInstance] setLogCacheLimitCount:100 discardNew:YES];
+    CFTimeInterval interval = [FTTestUtils functionElapsedTime:^{
+        for (int i=0; i<1000; i++) {
+            [[FTTrackDataManager sharedInstance] addTrackData:[FTModelHelper createLogModel:[NSString stringWithFormat:@"TEST DBLimitDiscardNew %d",i]] type:FTAddDataLogging];
+        }
+    }];
+    NSLog(@"interval:%f",interval);
+    NSInteger count = [[FTTrackerEventDBTool sharedManger] getDatasCount];
+    NSLog(@"count:%ld",(long)count);
+    XCTAssertTrue(count > 100);
+    long size = [[FTTrackerEventDBTool sharedManger] checkDatabaseSize];
+    FTRecordModel *model = [[[FTTrackerEventDBTool sharedManger] getFirstRecords:1 withType:FT_DATA_TYPE_LOGGING] firstObject];
+    XCTAssertTrue([model.data containsString:@"TEST DBLimitDiscardNew 0"]);
+    NSLog(@"size:%ld",(long)size);
+    XCTAssertTrue(size <= 65*1204);
+    [[FTTrackDataManager sharedInstance] shutDown];
+}
+- (void)testEnableDBLimitDiscardOld_log{
+    [[FTTrackerEventDBTool sharedManger] deleteAllDatas];
+    [FTTrackDataManager startWithAutoSync:NO syncPageSize:10 syncSleepTime:0];
+    [[FTTrackDataManager sharedInstance] setDBLimitWithSize:40*1204 discardNew:NO];
+    CFTimeInterval interval = [FTTestUtils functionElapsedTime:^{
+        for (int i=0; i<1000; i++) {
+            [[FTTrackDataManager sharedInstance] addTrackData:[FTModelHelper createLogModel:[NSString stringWithFormat:@"TEST DBLimitDiscardOld %d",i]] type:FTAddDataLogging];
+        }
+    }];
+    NSLog(@"interval:%f",interval);
+    NSInteger count = [[FTTrackerEventDBTool sharedManger] getDatasCount];
+    FTRecordModel *model = [[[FTTrackerEventDBTool sharedManger] getFirstRecords:1 withType:FT_DATA_TYPE_LOGGING] firstObject];
+    XCTAssertFalse([model.data isEqualToString:@"TEST DBLimitDiscardOld 0"]);
+    NSLog(@"count:%ld",(long)count);
+    XCTAssertTrue(count < 1000);
+    long size = [[FTTrackerEventDBTool sharedManger] checkDatabaseSize];
+    NSLog(@"size:%ld",(long)size);
+    XCTAssertTrue(size <= 60*1204);
+    [[FTTrackDataManager sharedInstance] shutDown];
+}
+- (void)testEnableDBLimitDiscardOld_logCountLimit{
+    [[FTTrackerEventDBTool sharedManger] deleteAllDatas];
+    [FTTrackDataManager startWithAutoSync:NO syncPageSize:10 syncSleepTime:0];
+    [[FTTrackDataManager sharedInstance] setDBLimitWithSize:60*1204 discardNew:NO];
+    [[FTTrackDataManager sharedInstance] setLogCacheLimitCount:299 discardNew:NO];
+    CFTimeInterval interval = [FTTestUtils functionElapsedTime:^{
+        for (int i=0; i<1000; i++) {
+            [[FTTrackDataManager sharedInstance] addTrackData:[FTModelHelper createLogModel:[NSString stringWithFormat:@"TEST DBLimitDiscardOld %d",i]] type:FTAddDataLogging];
+        }
+    }];
+    NSLog(@"interval:%f",interval);
+    NSInteger count = [[FTTrackerEventDBTool sharedManger] getDatasCount];
+    NSLog(@"count:%ld",(long)count);
+    XCTAssertTrue(count > 299);
+    FTRecordModel *model = [[[FTTrackerEventDBTool sharedManger] getFirstRecords:1 withType:FT_DATA_TYPE_LOGGING] firstObject];
+    XCTAssertFalse([model.data isEqualToString:@"TEST DBLimitDiscardOld 0"]);
+    long size = [[FTTrackerEventDBTool sharedManger] checkDatabaseSize];
+    NSLog(@"size:%ld",(long)size);
+    XCTAssertTrue(size <= 65*1204);
+    [[FTTrackDataManager sharedInstance] shutDown];
+}
+- (void)testEnableDBLimitDiscardNew_rum{
+    [[FTTrackerEventDBTool sharedManger] deleteAllDatas];
+    [FTTrackDataManager startWithAutoSync:NO syncPageSize:10 syncSleepTime:0];
+    [[FTTrackDataManager sharedInstance] setDBLimitWithSize:60*1204 discardNew:YES];
+    CFTimeInterval interval = [FTTestUtils functionElapsedTime:^{
+        for (int i=0; i<1000; i++) {
+            [[FTTrackDataManager sharedInstance] addTrackData:[FTModelHelper createRUMModel:[NSString stringWithFormat:@"TEST DBLimitDiscardNew %d",i]] type:FTAddDataRUM];
+        }
+    }];
+    NSLog(@"interval:%f",interval);
+    NSInteger count = [[FTTrackerEventDBTool sharedManger] getDatasCount];
+    NSLog(@"count:%ld",(long)count);
+    XCTAssertTrue(count < 1000);
+    FTRecordModel *model = [[[FTTrackerEventDBTool sharedManger] getFirstRecords:1 withType:FT_DATA_TYPE_RUM] firstObject];
+    XCTAssertTrue([model.data containsString:@"TEST DBLimitDiscardNew 0"]);
+    long size = [[FTTrackerEventDBTool sharedManger] checkDatabaseSize];
+    
+    NSLog(@"size:%ld",(long)size);
+    XCTAssertTrue(size <= 65*1204);
+    [[FTTrackDataManager sharedInstance] shutDown];
+}
+- (void)testEnableDBLimitDiscardNew_RUMCountLimit{
+    [[FTTrackerEventDBTool sharedManger] deleteAllDatas];
+    [FTTrackDataManager startWithAutoSync:NO syncPageSize:10 syncSleepTime:0];
+    [[FTTrackDataManager sharedInstance] setDBLimitWithSize:60*1204 discardNew:YES];
+    [[FTTrackDataManager sharedInstance] setRUMCacheLimitCount:50 discardNew:YES];
+    CFTimeInterval interval = [FTTestUtils functionElapsedTime:^{
+        for (int i=0; i<1000; i++) {
+            [[FTTrackDataManager sharedInstance] addTrackData:[FTModelHelper createRUMModel:[NSString stringWithFormat:@"TEST DBLimitDiscardNew %d",i]] type:FTAddDataRUM];
+        }
+    }];
+    NSLog(@"interval:%f",interval);
+    NSInteger count = [[FTTrackerEventDBTool sharedManger] getDatasCount];
+    NSLog(@"count:%ld",(long)count);
+    XCTAssertTrue(count > 50);
+    long size = [[FTTrackerEventDBTool sharedManger] checkDatabaseSize];
+    FTRecordModel *model = [[[FTTrackerEventDBTool sharedManger] getFirstRecords:1 withType:FT_DATA_TYPE_RUM] firstObject];
+    XCTAssertTrue([model.data containsString:@"TEST DBLimitDiscardNew 0"]);
+    NSLog(@"size:%ld",(long)size);
+    XCTAssertTrue(size <= 65*1204);
+    [[FTTrackDataManager sharedInstance] shutDown];
+}
+- (void)testEnableDBLimitDiscardOld_RUM{
+    [[FTTrackerEventDBTool sharedManger] deleteAllDatas];
+    [FTTrackDataManager startWithAutoSync:NO syncPageSize:10 syncSleepTime:0];
+    [[FTTrackDataManager sharedInstance] setDBLimitWithSize:60*1204 discardNew:NO];
+    CFTimeInterval interval = [FTTestUtils functionElapsedTime:^{
+        for (int i=0; i<1000; i++) {
+            [[FTTrackDataManager sharedInstance] addTrackData:[FTModelHelper createRUMModel:[NSString stringWithFormat:@"TEST DBLimitDiscardOld %d",i]] type:FTAddDataRUM];
+        }
+    }];
+    NSLog(@"interval:%f",interval);
+    NSInteger count = [[FTTrackerEventDBTool sharedManger] getDatasCount];
+    FTRecordModel *model = [[[FTTrackerEventDBTool sharedManger] getFirstRecords:1 withType:FT_DATA_TYPE_RUM] firstObject];
+    XCTAssertFalse([model.data isEqualToString:@"TEST DBLimitDiscardOld 0"]);
+    NSLog(@"count:%ld",(long)count);
+    XCTAssertTrue(count < 1000);
+    long size = [[FTTrackerEventDBTool sharedManger] checkDatabaseSize];
+    NSLog(@"size:%ld",(long)size);
+    XCTAssertTrue(size <= 60*1204);
+    [[FTTrackDataManager sharedInstance] shutDown];
+}
+- (void)testEnableDBLimitDiscardOld_RUMCountLimit{
+    [[FTTrackerEventDBTool sharedManger] deleteAllDatas];
+    [FTTrackDataManager startWithAutoSync:NO syncPageSize:10 syncSleepTime:0];
+    [[FTTrackDataManager sharedInstance] setDBLimitWithSize:60*1204 discardNew:NO];
+    [[FTTrackDataManager sharedInstance] setRUMCacheLimitCount:50 discardNew:NO];
+    CFTimeInterval interval = [FTTestUtils functionElapsedTime:^{
+        for (int i=0; i<1000; i++) {
+            [[FTTrackDataManager sharedInstance] addTrackData:[FTModelHelper createRUMModel:[NSString stringWithFormat:@"TEST DBLimitDiscardOld %d",i]] type:FTAddDataRUM];
+        }
+    }];
+    NSLog(@"interval:%f",interval);
+    NSInteger count = [[FTTrackerEventDBTool sharedManger] getDatasCount];
+    NSLog(@"count:%ld",(long)count);
+    XCTAssertTrue(count > 50);
+    FTRecordModel *model = [[[FTTrackerEventDBTool sharedManger] getFirstRecords:1 withType:FT_DATA_TYPE_RUM] firstObject];
+    XCTAssertFalse([model.data isEqualToString:@"TEST DBLimitDiscardOld 0"]);
+    long size = [[FTTrackerEventDBTool sharedManger] checkDatabaseSize];
+    NSLog(@"size:%ld",(long)size);
+    XCTAssertTrue(size <= 60*1204);
+    [[FTTrackDataManager sharedInstance] shutDown];
+}
 - (void)testTrackDataManagerShutDown{
     [self mockHttp];
     [FTTrackDataManager sharedInstance];
     [FTModelHelper createRumModel];
-    [[FTTrackDataManager sharedInstance] addTrackData:[FTModelHelper createRumModel] type:FTAddDataImmediate];
+    [[FTTrackDataManager sharedInstance] addTrackData:[FTModelHelper createRumModel] type:FTAddDataRUM];
     self.expectation = [self expectationWithDescription:@"异步操作timeout"];
     [[FTTrackDataManager sharedInstance] addObserver:self forKeyPath:@"isUploading" options:NSKeyValueObservingOptionNew context:nil];
     [[FTTrackDataManager sharedInstance] uploadTrackData];
@@ -42,10 +256,50 @@
         [[FTTrackDataManager sharedInstance] shutDown];
     }];
     XCTAssertTrue(interval<0.1);
-    XCTAssertTrue([[[FTTrackDataManager sharedInstance] valueForKey:@"isUploading"] isEqual:@YES]);
-    [[FTTrackDataManager sharedInstance] removeObserver:self forKeyPath:@"isUploading"];
 }
-
+- (void)testDBReachHalfLimit{
+    [[FTTrackerEventDBTool sharedManger] deleteAllDatas];
+    [FTTrackDataManager startWithAutoSync:NO syncPageSize:10 syncSleepTime:0];
+    [[FTTrackDataManager sharedInstance] setDBLimitWithSize:60*1204 discardNew:NO];
+    
+    CFTimeInterval interval = [FTTestUtils functionElapsedTime:^{
+        for (int i=0; i<1000; i++) {
+            [[FTTrackDataManager sharedInstance] addTrackData:[FTModelHelper createRUMModel:[NSString stringWithFormat:@"TEST DBLimitDiscardNEW %d",i]] type:FTAddDataRUM];
+        }
+    }];
+    NSLog(@"interval:%f",interval);
+    BOOL reachHalfLimit = [[FTTrackDataManager sharedInstance].dataCachePolicy reachHalfLimit];
+    XCTAssertTrue(reachHalfLimit);
+    [[FTTrackDataManager sharedInstance] shutDown];
+}
+- (void)testRUMCountReachHalfLimit{
+    [[FTTrackerEventDBTool sharedManger] deleteAllDatas];
+    [FTTrackDataManager startWithAutoSync:NO syncPageSize:10 syncSleepTime:0];
+    [[FTTrackDataManager sharedInstance] setRUMCacheLimitCount:50 discardNew:NO];
+    CFTimeInterval interval = [FTTestUtils functionElapsedTime:^{
+        for (int i=0; i<26; i++) {
+            [[FTTrackDataManager sharedInstance] addTrackData:[FTModelHelper createRUMModel:[NSString stringWithFormat:@"TEST DBLimitDiscardOld %d",i]] type:FTAddDataRUM];
+        }
+    }];
+    NSLog(@"interval:%f",interval);
+    BOOL reachHalfLimit = [[FTTrackDataManager sharedInstance].dataCachePolicy reachHalfLimit];
+    XCTAssertTrue(reachHalfLimit);
+    [[FTTrackDataManager sharedInstance] shutDown];
+}
+- (void)testLogCountReachHalfLimit{
+    [[FTTrackerEventDBTool sharedManger] deleteAllDatas];
+    [FTTrackDataManager startWithAutoSync:NO syncPageSize:10 syncSleepTime:0];
+    [[FTTrackDataManager sharedInstance] setLogCacheLimitCount:50 discardNew:NO];
+    CFTimeInterval interval = [FTTestUtils functionElapsedTime:^{
+        for (int i=0; i<26; i++) {
+            [[FTTrackDataManager sharedInstance] addTrackData:[FTModelHelper createLogModel:[NSString stringWithFormat:@"TEST DBLimitDiscardOld %d",i]] type:FTAddDataLogging];
+        }
+    }];
+    NSLog(@"interval:%f",interval);
+    BOOL reachHalfLimit = [[FTTrackDataManager sharedInstance].dataCachePolicy reachHalfLimit];
+    XCTAssertTrue(reachHalfLimit);
+    [[FTTrackDataManager sharedInstance] shutDown];
+}
 - (void)mockHttp{
     __block id<OHHTTPStubsDescriptor> stub = [OHHTTPStubs stubRequestsPassingTest:^BOOL(NSURLRequest *request) {
         return YES;

@@ -6,6 +6,11 @@
 //  Copyright © 2022 DataFlux-cn. All rights reserved.
 //
 #import "FTSDKCompat.h"
+#if FT_HAS_UIKIT
+#import <UIKit/UIKit.h>
+#elif TARGET_OS_OSX
+#import <AppKit/AppKit.h>
+#endif
 #import <sys/sysctl.h>
 #import "FTAppLaunchTracker.h"
 #import "FTAppLifeCycle.h"
@@ -45,7 +50,7 @@ static CFTimeInterval processStartTime(NSTimeInterval now) {
     FTLoadDate = processStartTime(now);
     isActivePrewarm = [[NSProcessInfo processInfo].environment[@"ActivePrewarm"] isEqual:@"1"];
     NSNotificationCenter * __weak center = NSNotificationCenter.defaultCenter;
-#if FT_MAC
+#if TARGET_OS_OSX
     id __block token = [center
                         addObserverForName:NSApplicationDidBecomeActiveNotification
                         object:[NSApplication sharedApplication]
@@ -56,7 +61,7 @@ static CFTimeInterval processStartTime(NSTimeInterval now) {
         token = nil;
     }];
 #else
-    id __block token = [center
+    id __block __unused token = [center
                         addObserverForName:UIApplicationDidBecomeActiveNotification
                         object:nil
                         queue:NSOperationQueue.mainQueue

@@ -23,7 +23,6 @@ class LogViewController: UIViewController,UITableViewDelegate,UITableViewDataSou
     override func viewDidLoad() {
         super.viewDidLoad()
         self.navigationItem.title = "Logger"
-        self.view.backgroundColor = .white
         createUI()
     }
     func createUI(){

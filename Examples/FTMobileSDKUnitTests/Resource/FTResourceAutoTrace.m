@@ -5,8 +5,8 @@
 //  Created by hulilei on 2024/1/24.
 //  Copyright © 2024 GuanceCloud. All rights reserved.
 //
-#import <KIF/KIF.h>
 #import <XCTest/XCTest.h>
+#import "XCTestCase+Utils.h"
 #import "FTModelHelper.h"
 #import "FTGlobalRumManager.h"
 #import "FTTrackerEventDBTool.h"
@@ -17,7 +17,8 @@
 #import "FTTrackerEventDBTool.h"
 #import "NSDate+FTUtil.h"
 #import "FTSessionConfiguration.h"
-@interface FTResourceAutoTrace : KIFTestCase
+#import "FTURLSessionInstrumentation.h"
+@interface FTResourceAutoTrace : XCTestCase
 
 @end
 
@@ -65,7 +66,7 @@
     XCTestExpectation *expectation= [self expectationWithDescription:@"异步操作timeout"];
     NSURLSession *session = [NSURLSession sessionWithConfiguration:[NSURLSessionConfiguration defaultSessionConfiguration]];
     [self initSDKWithEnableAutoTraceResource:YES];
-    [self networkUploadHandlerSession:session trace:YES completionHandler:^(NSURLResponse *response, NSError *error) {
+    [self networkUploadHandlerSession:session autoTrace:YES completionHandler:^(NSURLResponse *response, NSError *error) {
         [expectation fulfill];
     }];
 }
@@ -90,47 +91,59 @@
     TestSessionDelegate_None *delegate = [[TestSessionDelegate_None alloc]init];
     NSURLSession *session = [NSURLSession sessionWithConfiguration:[NSURLSessionConfiguration defaultSessionConfiguration] delegate:delegate delegateQueue:nil];
     [self initSDKWithEnableAutoTraceResource:YES];
-    [self networkUploadHandlerSession:session trace:YES completionHandler:^(NSURLResponse *response, NSError *error) {
+    [self networkUploadHandlerSession:session autoTrace:YES completionHandler:^(NSURLResponse *response, NSError *error) {
         [expectation fulfill];
     }];
 }
 - (void)testAutoTraceResource_DelegateAllMethod{
     [self initSDKWithEnableAutoTraceResource:YES];
     XCTestExpectation *expectation= [self expectationWithDescription:@"异步操作timeout"];
-    TestSessionDelegate *delegate = [[TestSessionDelegate alloc]initWithTestExpectation:expectation];
+    TestSessionDelegate *delegate = [[TestSessionDelegate alloc]initWithCompletionHandler:^{
+        [expectation fulfill];
+    }];
     [self networkUploadHandler:delegate trace:YES completionHandler:nil];
 }
 - (void)testDisableAutoTraceResource_DelegateAllMethod{
     [self initSDKWithEnableAutoTraceResource:NO];
     XCTestExpectation *expectation= [self expectationWithDescription:@"异步操作timeout"];
-    TestSessionDelegate *delegate = [[TestSessionDelegate alloc]initWithTestExpectation:expectation];
+    TestSessionDelegate *delegate = [[TestSessionDelegate alloc]initWithCompletionHandler:^{
+        [expectation fulfill];
+    }];
     [self networkUploadHandler:delegate trace:NO completionHandler:nil];
 }
 - (void)testURLSessionCreateBeforeSDKInit_DelegateAllMethod{
     XCTestExpectation *expectation= [self expectationWithDescription:@"异步操作timeout"];
-    TestSessionDelegate *delegate = [[TestSessionDelegate alloc]initWithTestExpectation:expectation];
+    TestSessionDelegate *delegate = [[TestSessionDelegate alloc]initWithCompletionHandler:^{
+        [expectation fulfill];
+    }];
     NSURLSession *session = [NSURLSession sessionWithConfiguration:[NSURLSessionConfiguration defaultSessionConfiguration] delegate:delegate delegateQueue:nil];
     [self initSDKWithEnableAutoTraceResource:YES];
-    [self networkUploadHandlerSession:session trace:YES completionHandler:nil];
+    [self networkUploadHandlerSession:session autoTrace:YES completionHandler:nil];
 }
 - (void)testAutoTraceResource_DelegateNoCollectingMetrics{
     [self initSDKWithEnableAutoTraceResource:YES];
     XCTestExpectation *expectation= [self expectationWithDescription:@"异步操作timeout"];
-    TestSessionDelegate_NoCollectingMetrics *delegate = [[TestSessionDelegate_NoCollectingMetrics alloc]initWithTestExpectation:expectation];
+    TestSessionDelegate_NoCollectingMetrics *delegate = [[TestSessionDelegate_NoCollectingMetrics alloc]initWithCompletionHandler:^{
+        [expectation fulfill];
+    }];
     [self networkUploadHandler:delegate trace:YES completionHandler:nil];
 }
 - (void)testDisableAutoTraceResource_DelegateNoCollectingMetrics{
     [self initSDKWithEnableAutoTraceResource:NO];
     XCTestExpectation *expectation= [self expectationWithDescription:@"异步操作timeout"];
-    TestSessionDelegate_NoCollectingMetrics *delegate = [[TestSessionDelegate_NoCollectingMetrics alloc]initWithTestExpectation:expectation];
+    TestSessionDelegate_NoCollectingMetrics *delegate = [[TestSessionDelegate_NoCollectingMetrics alloc]initWithCompletionHandler:^{
+        [expectation fulfill];
+    }];
     [self networkUploadHandler:delegate trace:NO completionHandler:nil];
 }
 - (void)testURLSessionCreateBeforeSDKInit_DelegateNoCollectingMetrics{
     XCTestExpectation *expectation= [self expectationWithDescription:@"异步操作timeout"];
-    TestSessionDelegate_NoCollectingMetrics *delegate = [[TestSessionDelegate_NoCollectingMetrics alloc]initWithTestExpectation:expectation];
+    TestSessionDelegate_NoCollectingMetrics *delegate = [[TestSessionDelegate_NoCollectingMetrics alloc]initWithCompletionHandler:^{
+        [expectation fulfill];
+    }];
     NSURLSession *session = [NSURLSession sessionWithConfiguration:[NSURLSessionConfiguration defaultSessionConfiguration] delegate:delegate delegateQueue:nil];
     [self initSDKWithEnableAutoTraceResource:YES];
-    [self networkUploadHandlerSession:session trace:YES completionHandler:nil];
+    [self networkUploadHandlerSession:session autoTrace:YES completionHandler:nil];
 }
 - (void)testAutoTraceResource_DelegateOnlyCollectingMetrics{
     [self initSDKWithEnableAutoTraceResource:YES];
@@ -149,12 +162,48 @@
         [expectation fulfill];
     }];
 }
+- (void)testIsNotSDKURL{
+    // sdk url 有端口号时
+    NSString *sdkURLStr = @"http://www.test.com:9529";
+    [[FTURLSessionInstrumentation sharedInstance] setSdkUrlStr:sdkURLStr serviceName:@"test"];
+    
+    XCTAssertTrue([[FTURLSessionInstrumentation sharedInstance] isNotSDKInsideUrl:nil] == NO);
+    XCTAssertTrue([[FTURLSessionInstrumentation sharedInstance] isNotSDKInsideUrl:[NSURL URLWithString:@"http://www.test.com:9529/v1/write/rum"]] == NO);
+    XCTAssertTrue([[FTURLSessionInstrumentation sharedInstance] isNotSDKInsideUrl:[NSURL URLWithString:@"http://www.test.com"]] == YES);
+    XCTAssertTrue([[FTURLSessionInstrumentation sharedInstance] isNotSDKInsideUrl:[NSURL URLWithString:@"http://www.test.com:9528"]] == YES);
+    XCTAssertTrue([[FTURLSessionInstrumentation sharedInstance] isNotSDKInsideUrl:[NSURL URLWithString:@"http://www.test.com/v1/write/rum"]] == YES);
+    
+    [[FTURLSessionInstrumentation sharedInstance] shutDown];
+    
+    // sdk url 无端口号时
+    NSString *sdkURLStr2 = @"http://www.test.com";
+    [[FTURLSessionInstrumentation sharedInstance] setSdkUrlStr:sdkURLStr2 serviceName:@"test"];
+    
+    XCTAssertTrue([[FTURLSessionInstrumentation sharedInstance] isNotSDKInsideUrl:nil] == NO);
+    XCTAssertTrue([[FTURLSessionInstrumentation sharedInstance] isNotSDKInsideUrl:[NSURL URLWithString:@"http://www.test.com/v1/write/rum"]] == NO);
+    XCTAssertTrue([[FTURLSessionInstrumentation sharedInstance] isNotSDKInsideUrl:[NSURL URLWithString:@"http://www.test.com"]] == NO);
+    XCTAssertTrue([[FTURLSessionInstrumentation sharedInstance] isNotSDKInsideUrl:[NSURL URLWithString:@"http://www.test.com:9528"]] == YES);
+    XCTAssertTrue([[FTURLSessionInstrumentation sharedInstance] isNotSDKInsideUrl:[NSURL URLWithString:@"http://www.test.com:9529/v1/write/rum"]] == YES);
+    
+    [[FTURLSessionInstrumentation sharedInstance] shutDown];
+    
+    
+    // 未设置 sdk url 时
+    XCTAssertTrue([[FTURLSessionInstrumentation sharedInstance] isNotSDKInsideUrl:nil] == NO);
+    XCTAssertTrue([[FTURLSessionInstrumentation sharedInstance] isNotSDKInsideUrl:[NSURL URLWithString:@"http://www.test.com/v1/write/rum"]] == NO);
+    XCTAssertTrue([[FTURLSessionInstrumentation sharedInstance] isNotSDKInsideUrl:[NSURL URLWithString:@"http://www.test.com"]] == NO);
+    XCTAssertTrue([[FTURLSessionInstrumentation sharedInstance] isNotSDKInsideUrl:[NSURL URLWithString:@"http://www.test.com:9528"]] == NO);
+
+    [[FTURLSessionInstrumentation sharedInstance] shutDown];
+    
+   
+}
 - (void)testURLSessionCreateBeforeSDKInit_DelegateOnlyCollectingMetrics{
     XCTestExpectation *expectation= [self expectationWithDescription:@"异步操作timeout"];
     TestSessionDelegate_OnlyCollectingMetrics *delegate = [[TestSessionDelegate_OnlyCollectingMetrics alloc]init];
     NSURLSession *session = [NSURLSession sessionWithConfiguration:[NSURLSessionConfiguration defaultSessionConfiguration] delegate:delegate delegateQueue:nil];
     [self initSDKWithEnableAutoTraceResource:YES];
-    [self networkUploadHandlerSession:session trace:YES completionHandler:^(NSURLResponse *response, NSError *error) {
+    [self networkUploadHandlerSession:session autoTrace:YES completionHandler:^(NSURLResponse *response, NSError *error) {
         [expectation fulfill];
     }];
 }
@@ -167,9 +216,9 @@
     } else {
         session = [NSURLSession sessionWithConfiguration:config];
     }
-    [self networkUploadHandlerSession:session trace:trace completionHandler:completionHandler];
+    [self networkUploadHandlerSession:session autoTrace:trace completionHandler:completionHandler];
 }
-- (void)networkUploadHandlerSession:(NSURLSession *)session trace:(BOOL)trace completionHandler:(void (^)(NSURLResponse *response,NSError *error))completionHandler{
+- (void)networkUploadHandlerSession:(NSURLSession *)session autoTrace:(BOOL)trace completionHandler:(void (^)(NSURLResponse *response,NSError *error))completionHandler{
     [FTModelHelper startView];
     [FTModelHelper startAction];
     
@@ -188,7 +237,7 @@
     [self waitForExpectationsWithTimeout:30 handler:^(NSError *error) {
         XCTAssertNil(error);
     }];
-    [tester waitForTimeInterval:0.5];
+    [self waitForTimeInterval:0.5];
     [[FTGlobalRumManager sharedInstance].rumManager syncProcess];
     NSArray *newArray = [[FTTrackerEventDBTool sharedManger] getAllDatas];
     __block NSInteger hasResCount = 0;

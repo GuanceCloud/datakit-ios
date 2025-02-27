@@ -15,6 +15,14 @@ target 'FTMobileSDKUnitTests' do
   # Pods for SampleApp
 end
 
+target 'FTMobileSDKUnitTests-tvOS' do
+  platform :tvos, '12.0'
+  # Comment the next line if you don't want to use dynamic frameworks
+   pod 'OHHTTPStubs','8.0.0'
+   pod 'Firebase', '8.15.0'
+   pod 'FirebasePerformance', '8.15.0'
+  # Pods for SampleApp
+end
 
 #解决找不到静态库 libarclite_iphonesimulator.a/libarclite_iphoneos.a 问题
 post_install do |installer|

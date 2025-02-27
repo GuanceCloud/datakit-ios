@@ -34,7 +34,7 @@ NS_ASSUME_NONNULL_BEGIN
 ///   - response: 网络请求响应结果
 ///   - data: 网络请求获得的数据
 ///   - error: error 信息
--(instancetype)initWithRequest:(NSURLRequest *)request response:(nullable NSHTTPURLResponse *)response data:(nullable NSData *)data error:(nullable NSError *)error;
+-(instancetype)initWithRequest:(NSURLRequest *)request response:(nullable NSURLResponse *)response data:(nullable NSData *)data error:(nullable NSError *)error;
 @end
 
 NS_ASSUME_NONNULL_END

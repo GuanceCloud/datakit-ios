@@ -22,7 +22,7 @@ NSData *bigEndianUInt32ToData(uint32_t value) {
       
     return [NSData dataWithBytes:bytes length:sizeof(bytes)];
 }
-+ (NSData *)deflate:(NSData *)data{
++ (nullable NSData *)deflate:(NSData *)data{
     if (data.length == 0){
         return nil;
     }
@@ -42,11 +42,11 @@ NSData *bigEndianUInt32ToData(uint32_t value) {
     }
     return nil;
 }
-+ (NSData *)rowCompress:(NSData *)data{
++ (nullable NSData *)rowCompress:(NSData *)data{
     if (!data) {
         return nil;
     }
-    if (@available(iOS 13.0, *)) {
+    if (@available(iOS 13.0,tvOS 13.0,macOS 10.15, *)) {
         NSError *error;
         return [data compressedDataUsingAlgorithm:NSDataCompressionAlgorithmZlib error:&error];
     } else {

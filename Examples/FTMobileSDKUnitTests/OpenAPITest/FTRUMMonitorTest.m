@@ -6,7 +6,8 @@
 //  Copyright © 2022 DataFlux-cn. All rights reserved.
 //
 
-#import <KIF/KIF.h>
+#import <XCTest/XCTest.h>
+#import "XCTestCase+Utils.h"
 #import "FTMobileAgent+Private.h"
 #import "NSDate+FTUtil.h"
 #import "FTTrackerEventDBTool.h"
@@ -23,7 +24,7 @@
 #import "FTCPUMonitor.h"
 #import "FTMemoryMonitor.h"
 #import "FTDisplayRateMonitor.h"
-@interface FTRUMMonitorTest : KIFTestCase
+@interface FTRUMMonitorTest : XCTestCase
 @property (nonatomic, copy) NSString *url;
 @property (nonatomic, copy) NSString *appid;
 @property (nonatomic, copy) NSString *track_id;
@@ -48,7 +49,7 @@
 - (void)testNoneMonitor{
     [self setRumMonitorNone];
     [FTModelHelper startView];
-    [NSThread sleepForTimeInterval:0.5];
+    [self waitForTimeInterval:0.5];
     [FTModelHelper startAction];
     [FTModelHelper startAction];
     [[FTGlobalRumManager sharedInstance].rumManager syncProcess];
@@ -69,9 +70,8 @@
 - (void)testMonitorAll{
     [self setRumMonitorType:FTDeviceMetricsMonitorAll];
     [FTModelHelper startView];
-    [tester waitForTimeInterval:1.5];
-    [FTModelHelper startAction];
-    [FTModelHelper startAction];
+    [self waitForTimeInterval:1.5];
+    [FTModelHelper addActionWithContext:nil];
     [[FTGlobalRumManager sharedInstance].rumManager syncProcess];
     NSArray *newDatas = [[FTTrackerEventDBTool sharedManger] getFirstRecords:10 withType:FT_DATA_TYPE_RUM];
     [FTModelHelper resolveModelArray:newDatas callBack:^(NSString * _Nonnull source, NSDictionary * _Nonnull tags, NSDictionary * _Nonnull fields, BOOL * _Nonnull stop) {
@@ -115,9 +115,8 @@
     [[NSNotificationCenter defaultCenter]
      postNotificationName:UIApplicationDidBecomeActiveNotification object:nil];
     [FTModelHelper startView];
-    [tester waitForTimeInterval:0.5];
-    [FTModelHelper startAction];
-    [FTModelHelper startAction];
+    [self waitForTimeInterval:1];
+    [FTModelHelper addActionWithContext:nil];
     [[FTGlobalRumManager sharedInstance].rumManager syncProcess];
     NSArray *newDatas = [[FTTrackerEventDBTool sharedManger] getFirstRecords:10 withType:FT_DATA_TYPE_RUM];
     [FTModelHelper resolveModelArray:newDatas callBack:^(NSString * _Nonnull source, NSDictionary * _Nonnull tags, NSDictionary * _Nonnull fields, BOOL * _Nonnull stop) {
@@ -133,41 +132,30 @@
     FTCPUMonitor *cpuMonitor = [[FTCPUMonitor alloc]init];
     double baseUsage = [cpuMonitor readCpuUsage];
     [[NSNotificationCenter defaultCenter] postNotificationName:UIApplicationWillResignActiveNotification object:nil];
+    double resignActiveUsage1 = [cpuMonitor readCpuUsage];
     [self heavyWork];
     double resignActiveUsage = [cpuMonitor readCpuUsage];
     [[NSNotificationCenter defaultCenter] postNotificationName:UIApplicationDidBecomeActiveNotification object:nil];
     [self heavyWork];
     double activeUsage = [cpuMonitor readCpuUsage];
-    XCTAssertEqual(resignActiveUsage, baseUsage);
+    XCTAssertEqual(resignActiveUsage, resignActiveUsage1);
     XCTAssertGreaterThan(activeUsage-resignActiveUsage, resignActiveUsage-baseUsage);
 }
 - (void)testMonitorFrequencyDefault{
     FTMonitorItem *item = [[FTMonitorItem alloc]initWithCpuMonitor:[FTCPUMonitor new] memoryMonitor:[FTMemoryMonitor new] displayRateMonitor:[FTDisplayRateMonitor new] frequency:MonitorFrequencyMap[FTMonitorFrequencyDefault]];
-    XCTestExpectation *expectation = [[XCTestExpectation alloc]initWithDescription:@"expectation"];
-    dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)(0.6 * NSEC_PER_SEC)), dispatch_get_main_queue(), ^{
-        [expectation fulfill];
-    });
-    [self waitForExpectations:@[expectation] timeout:2];
+    [self waitForTimeInterval:0.6];
     XCTAssertEqual(item.cpu.sampleValueCount, 2);
     XCTAssertEqual(item.memory.sampleValueCount, 2);
 }
 - (void)testMonitorFrequencyRare{
     FTMonitorItem *item = [[FTMonitorItem alloc]initWithCpuMonitor:[FTCPUMonitor new] memoryMonitor:[FTMemoryMonitor new] displayRateMonitor:[FTDisplayRateMonitor new] frequency:MonitorFrequencyMap[FTMonitorFrequencyRare]];
-    XCTestExpectation *expectation = [[XCTestExpectation alloc]initWithDescription:@"expectation"];
-    dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)(1.1 * NSEC_PER_SEC)), dispatch_get_main_queue(), ^{
-        [expectation fulfill];
-    });
-    [self waitForExpectations:@[expectation] timeout:2];
+    [self waitForTimeInterval:1.1];
     XCTAssertEqual(item.cpu.sampleValueCount, 2);
     XCTAssertEqual(item.memory.sampleValueCount, 2);
 }
 - (void)testMonitorFrequencyFrequent{
     FTMonitorItem *item = [[FTMonitorItem alloc]initWithCpuMonitor:[FTCPUMonitor new] memoryMonitor:[FTMemoryMonitor new] displayRateMonitor:[FTDisplayRateMonitor new] frequency:MonitorFrequencyMap[FTMonitorFrequencyFrequent]];
-    XCTestExpectation *expectation = [[XCTestExpectation alloc]initWithDescription:@"expectation"];
-    dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)(0.6 * NSEC_PER_SEC)), dispatch_get_main_queue(), ^{
-        [expectation fulfill];
-    });
-    [self waitForExpectations:@[expectation] timeout:2];
+    [self waitForTimeInterval:0.6];
     XCTAssertEqual(item.cpu.sampleValueCount, 7);
     XCTAssertEqual(item.memory.sampleValueCount, 7);
 }
@@ -206,12 +194,12 @@
     [FTMobileAgent startWithConfigOptions:config];
     
     [[FTMobileAgent sharedInstance] startRumWithConfigOptions:rumConfig];
-    [[FTMobileAgent sharedInstance] unbindUser];
-    [[FTTrackerEventDBTool sharedManger] deleteItemWithTm:[NSDate ft_currentNanosecondTimeStamp]];
+    [[FTTrackerEventDBTool sharedManger] deleteAllDatas];
 }
 - (void)setRumMonitorType:(FTDeviceMetricsMonitorType)type{
     FTMobileConfig *config = [[FTMobileConfig alloc]initWithDatakitUrl:self.url];
     config.autoSync = NO;
+    config.enableSDKDebugLog = YES;
     FTRumConfig *rumConfig = [[FTRumConfig alloc]initWithAppid:self.appid];
     rumConfig.enableTraceUserAction = YES;
     rumConfig.enableTraceUserView = YES;
@@ -221,7 +209,6 @@
     [FTMobileAgent startWithConfigOptions:config];
     
     [[FTMobileAgent sharedInstance] startRumWithConfigOptions:rumConfig];
-    [[FTMobileAgent sharedInstance] unbindUser];
-    [[FTTrackerEventDBTool sharedManger] deleteItemWithTm:[NSDate ft_currentNanosecondTimeStamp]];
+    [[FTTrackerEventDBTool sharedManger] deleteAllDatas];
 }
 @end

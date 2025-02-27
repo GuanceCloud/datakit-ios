@@ -5,10 +5,13 @@
 //  Created by 胡蕾蕾 on 2020/9/16.
 //  Copyright © 2020 hll. All rights reserved.
 //
+
 #if ! __has_feature(objc_arc)
 #error This file must be compiled with ARC. Either turn on ARC for the project or use -fobjc-arc flag on this file.
 #endif
+
 #import "FTWKWebViewHandler.h"
+#if !TARGET_OS_TV
 #import "WKWebView+FTAutoTrack.h"
 #import "FTWKWebViewJavascriptBridge.h"
 #import "FTSwizzler.h"
@@ -94,3 +97,4 @@ static dispatch_once_t onceToken;
 }
 @end
 
+#endif

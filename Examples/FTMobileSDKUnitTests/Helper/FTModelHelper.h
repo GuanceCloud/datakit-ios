@@ -15,6 +15,7 @@ NS_ASSUME_NONNULL_BEGIN
 + (FTRecordModel *)createLogModel;
 + (FTRecordModel *)createLogModel:(NSString *)message;
 + (FTRecordModel *)createRumModel;
++ (FTRecordModel *)createRUMModel:(NSString *)message;
 + (FTRecordModel *)createWrongFormatRumModel;
 + (void)startView;
 + (void)startViewWithName:(NSString *)name;
@@ -25,7 +26,7 @@ NS_ASSUME_NONNULL_BEGIN
 + (void)stopErrorResource:(NSString *)key;
 + (void)startAction;
 + (void)startActionWithType:(NSString *)type;
-+ (void)addActionWithContext:(NSDictionary *)context;
++ (void)addActionWithContext:(nullable NSDictionary *)context;
 + (void)resolveModelArray:(NSArray *)modelArray callBack:(void(^)(NSString *source,NSDictionary *tags,NSDictionary *fields,BOOL *stop))callBack;
 + (void)resolveModelArray:(NSArray *)modelArray idxCallBack:(void(^)(NSString *source,NSDictionary *tags,NSDictionary *fields,BOOL *stop,NSUInteger idx))callBack;
 + (void)resolveModelArray:(NSArray *)modelArray modelIdCallBack:(void(^)(NSString *source,NSDictionary *tags,NSDictionary *fields,BOOL *stop,NSString *modelId))callBack;

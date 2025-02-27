@@ -27,7 +27,7 @@ NS_ASSUME_NONNULL_BEGIN
 ///资源加载时间 duration(responseEnd-fetchStartDate)
 @property (nonatomic, strong) NSNumber *duration;
 ///响应结果大小 response data size
-@property (nonatomic, strong) NSNumber *responseSize;
+@property (nonatomic, strong, nullable) NSNumber *responseSize;
 ///远程地址
 @property (nonatomic, copy) NSString *remoteAddress;
 /// 初始化方法
@@ -35,7 +35,7 @@ NS_ASSUME_NONNULL_BEGIN
 /// - Parameters:
 ///   - metrics: SessionTaskMetric
 /// - Returns: metrics 实例.
--(instancetype)initWithTaskMetrics:(NSURLSessionTaskMetrics *)metrics API_AVAILABLE(ios(10.0),macosx(10.12));
+-(instancetype)initWithTaskMetrics:(NSURLSessionTaskMetrics *)metrics API_AVAILABLE(ios(10.0),macos(10.12));
 
 @end
 

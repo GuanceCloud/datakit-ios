@@ -24,7 +24,6 @@ class ViewController: UIViewController,UITableViewDelegate,UITableViewDataSource
     override func viewDidLoad() {
         super.viewDidLoad()
         self.navigationItem.title = "Home"
-        self.view.backgroundColor = UIColor.white
         // Do any additional setup after loading the view.
         createUI()
     }
@@ -48,7 +47,7 @@ class ViewController: UIViewController,UITableViewDelegate,UITableViewDataSource
         case 0:
             FTMobileAgent.sharedInstance().bindUser(withUserID: "test_user_id_1", userName: "test_user", userEmail: "test@test.com", extra: ["user_age":20])
         case 1:
-            FTMobileAgent.sharedInstance().logout()
+            FTMobileAgent.sharedInstance().unbindUser()
         case 2:
             self.navigationController?.pushViewController(LogViewController.init(), animated: true)
         case 3:

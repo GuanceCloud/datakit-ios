@@ -16,8 +16,10 @@
 #include <mach-o/dyld.h>
 #include <netdb.h>
 #include <arpa/inet.h>
+#if FT_IOS
 #import <CoreTelephony/CTTelephonyNetworkInfo.h>
 #import <CoreTelephony/CTCarrier.h>
+#endif
 #include <arpa/inet.h>
 #import <ifaddrs.h>
 #include <net/if.h>
@@ -93,7 +95,7 @@
 #pragma clang diagnostic pop
         
     }
-    if(carrier ==nil){
+    if(carrier == nil){
         return FT_NULL_VALUE;
     }else{
         NSString *mCarrier = [NSString stringWithFormat:@"%@",[carrier carrierName]];

@@ -15,6 +15,11 @@
 #include <string.h>
 #import <sys/utsname.h>
 #import "FTSDKCompat.h"
+
+#if FT_HAS_UIKIT
+    #import <UIKit/UIKit.h>
+#endif
+
 #include "FTStackInfo.h"
 #include <mach-o/dyld.h>
 #include <mach-o/arch.h>

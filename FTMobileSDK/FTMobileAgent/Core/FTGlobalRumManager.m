@@ -10,11 +10,13 @@
 #endif
 #import "FTGlobalRumManager.h"
 #import "FTLog+Private.h"
+#if !TARGET_OS_TV
 #import "FTWKWebViewHandler.h"
+#import "FTWKWebViewJavascriptBridge.h"
+#endif
 #import "FTLongTaskManager.h"
 #import "FTJSONUtil.h"
-#import "FTWKWebViewJavascriptBridge.h"
-#import "FTTrack.h"
+#import "FTAutoTrackHandler.h"
 #import "FTAppLifeCycle.h"
 #import "FTRUMManager.h"
 #import "FTAppLaunchTracker.h"
@@ -30,15 +32,18 @@
 #import "FTBaseInfoHandler.h"
 #import "FTCrashMonitor.h"
 #import "FTFatalErrorContext.h"
-@interface FTGlobalRumManager ()<FTRunloopDetectorDelegate,FTWKWebViewRumDelegate,FTAppLifeCycleDelegate,FTAppLaunchDataDelegate>
+@interface FTGlobalRumManager ()<FTRunloopDetectorDelegate,FTAppLifeCycleDelegate,FTAppLaunchDataDelegate>
 @property (nonatomic, strong) FTRumConfig *rumConfig;
 @property (nonatomic, strong) FTRUMDependencies *dependencies;
-@property (nonatomic, strong) FTWKWebViewJavascriptBridge *jsBridge;
 @property (nonatomic, strong) FTAppLaunchTracker *launchTracker;
 @property (nonatomic, strong) FTRUMMonitor *monitor;
 @property (nonatomic, strong) FTLongTaskManager *longTaskManager;
 @end
-
+#if !TARGET_OS_TV
+@interface FTGlobalRumManager()<FTWKWebViewRumDelegate>
+@property (nonatomic, strong) FTWKWebViewJavascriptBridge *jsBridge;
+@end
+#endif
 @implementation FTGlobalRumManager
 static FTGlobalRumManager *sharedInstance = nil;
 static dispatch_once_t onceToken;
@@ -59,8 +64,8 @@ static dispatch_once_t onceToken;
     dependencies.fatalErrorContext = [FTFatalErrorContext new];
     self.dependencies = dependencies;
     self.rumManager = [[FTRUMManager alloc]initWithRumDependencies:self.dependencies];
-    [[FTTrack sharedInstance]startWithTrackView:rumConfig.enableTraceUserView action:rumConfig.enableTraceUserAction];
-    [FTTrack sharedInstance].addRumDatasDelegate = self.rumManager;
+    [[FTAutoTrackHandler sharedInstance]startWithTrackView:rumConfig.enableTraceUserView action:rumConfig.enableTraceUserAction];
+    [FTAutoTrackHandler sharedInstance].addRumDatasDelegate = self.rumManager;
     if(rumConfig.enableTraceUserAction){
         self.launchTracker = [[FTAppLaunchTracker alloc]initWithDelegate:self];
     }
@@ -72,10 +77,13 @@ static dispatch_once_t onceToken;
     if (rumConfig.enableTrackAppANR||rumConfig.enableTrackAppFreeze) {
         _longTaskManager = [[FTLongTaskManager alloc]initWithDependencies:dependencies delegate:self enableTrackAppANR:rumConfig.enableTrackAppANR enableTrackAppFreeze:rumConfig.enableTrackAppFreeze                                        freezeDurationMs:rumConfig.freezeDurationMs];
     }
+#if !TARGET_OS_TV
     [FTWKWebViewHandler sharedInstance].rumTrackDelegate = self;
+#endif
     [FTExternalDataManager sharedManager].delegate = self.rumManager;
 }
 #pragma mark ========== jsBridge ==========
+#if !TARGET_OS_TV
 -(void)ftAddScriptMessageHandlerWithWebView:(WKWebView *)webView{
     if (![webView isKindOfClass:[WKWebView class]]) {
         return;
@@ -97,7 +105,11 @@ static dispatch_once_t onceToken;
         if ([name isEqualToString:@"rum"]||[name isEqualToString:@"log"]) {
             NSDictionary *data = messageDic[@"data"];
             NSString *measurement = data[FT_MEASUREMENT];
-            NSDictionary *tags = data[FT_TAGS];
+            NSMutableDictionary *tags = [data[FT_TAGS] mutableCopy];
+            NSString *version = [tags valueForKey:FT_SDK_VERSION];
+            if(version&&version.length>0){
+                [tags setValue:@{@"web":version} forKey:FT_SDK_PKG_INFO];
+            }
             NSDictionary *fields = data[FT_FIELDS];
             long long time = [data[@"time"] longLongValue];
             long long fixTime = time * 1000000;
@@ -116,6 +128,7 @@ static dispatch_once_t onceToken;
         FTInnerLogError(@"%@ error: %@", self, exception);
     }
 }
+#endif
 #pragma mark ========== FTRunloopDetectorDelegate ==========
 - (void)longTaskStackDetected:(NSString*)slowStack duration:(long long)duration time:(long long)time{
     [self.rumManager addLongTaskWithStack:slowStack duration:[NSNumber numberWithLongLong:duration] startTime:time];
@@ -130,42 +143,24 @@ static dispatch_once_t onceToken;
 -(void)ftAppColdStart:(NSDate *)launchTime duration:(NSNumber *)duration isPreWarming:(BOOL)isPreWarming{
     [self.rumManager addLaunch:isPreWarming?FTLaunchWarm:FTLaunchCold launchTime:launchTime duration:duration];
 }
-#pragma mark ========== RUM-View: App Life Cycle ==========
+#pragma mark ========== RUM-ERROR appState: App Life Cycle ==========
 -(void)applicationWillEnterForeground{
-    @try {
-        self.rumManager.appState = FTAppStateStartUp;
-        if(!self.rumConfig.enableTraceUserView){
-            return;
-        }
-        if (self.rumManager.viewReferrer) {
-            NSString *viewID = [FTBaseInfoHandler randomUUID];
-            NSString *viewReferrer =self.rumManager.viewReferrer;
-            self.rumManager.viewReferrer = @"";
-            [self.rumManager onCreateView:viewReferrer loadTime:@0];
-            [self.rumManager startViewWithViewID:viewID viewName:viewReferrer property:nil];
-        }
-    }@catch (NSException *exception) {
-        FTInnerLogError(@"applicationWillEnterForeground exception %@",exception);
-    }
+    self.rumManager.appState = FTAppStateStartUp;
 }
 -(void)applicationDidBecomeActive{
     self.rumManager.appState = FTAppStateRun;
 }
 -(void)applicationDidEnterBackground{
-    @try {
-        self.rumManager.appState = FTAppStateUnknown;
-        if(!self.rumConfig.enableTraceUserView){
-            return;
-        }
-        [self.rumManager stopViewWithProperty:nil];
-    }@catch (NSException *exception) {
-        FTInnerLogError(@"applicationDidEnterBackground exception %@",exception);
-    }
+    self.rumManager.appState = FTAppStateUnknown;
 }
 #pragma mark ========== 注销 ==========
 - (void)shutDown{
     [[FTAppLifeCycle sharedInstance] removeAppLifecycleDelegate:self];
+    [[FTAutoTrackHandler sharedInstance] shutDown];
+#if !TARGET_OS_TV
     [FTWKWebViewHandler sharedInstance].enableTrace = NO;
+#endif
+    [_longTaskManager shutDown];
     onceToken = 0;
     sharedInstance = nil;
     FTInnerLogInfo(@"[RUM] SHUT DOWN");

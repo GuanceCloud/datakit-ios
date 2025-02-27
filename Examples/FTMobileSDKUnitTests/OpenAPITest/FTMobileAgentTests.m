@@ -45,7 +45,7 @@
     NSProcessInfo *processInfo = [NSProcessInfo processInfo];
     self.url = [processInfo environment][@"ACCESS_SERVER_URL"];
     self.appid = [processInfo environment][@"APP_ID"];
-    [[FTTrackerEventDBTool sharedManger] deleteItemWithTm:[NSDate ft_currentNanosecondTimeStamp]];
+    [[FTTrackerEventDBTool sharedManger] deleteAllDatas];
 }
 
 - (void)tearDown {
@@ -59,7 +59,7 @@
     config.autoSync = NO;
     [FTMobileAgent startWithConfigOptions:config];
     [[FTMobileAgent sharedInstance] unbindUser];
-    [[FTTrackerEventDBTool sharedManger] deleteItemWithTm:[NSDate ft_currentNanosecondTimeStamp]];
+    [[FTTrackerEventDBTool sharedManger] deleteAllDatas];
 }
 #pragma mark ========== 用户数据绑定 ==========
 /// 测试兼容适配 1.3.6 及以下版本旧的用户绑定逻辑
@@ -167,7 +167,7 @@
     FTRumConfig *rumConfig = [[FTRumConfig alloc]initWithAppid:self.appid];
     [FTMobileAgent startWithConfigOptions:config];
     [[FTMobileAgent sharedInstance] startRumWithConfigOptions:rumConfig];
-    [[FTTrackerEventDBTool sharedManger] deleteItemWithTm:[NSDate ft_currentNanosecondTimeStamp]];
+    [[FTTrackerEventDBTool sharedManger] deleteAllDatas];
     FTLoggerConfig *loggerConfig = [[FTLoggerConfig alloc]init];
     loggerConfig.enableCustomLog = YES;
     [[FTMobileAgent sharedInstance] startLoggerWithConfigOptions:loggerConfig];
@@ -201,7 +201,7 @@
     FTRumConfig *rumConfig = [[FTRumConfig alloc]initWithAppid:self.appid];
     [FTMobileAgent startWithConfigOptions:config];
     [[FTMobileAgent sharedInstance] startRumWithConfigOptions:rumConfig];
-    [[FTTrackerEventDBTool sharedManger] deleteItemWithTm:[NSDate ft_currentNanosecondTimeStamp]];
+    [[FTTrackerEventDBTool sharedManger] deleteAllDatas];
     FTLoggerConfig *loggerConfig = [[FTLoggerConfig alloc]init];
     loggerConfig.enableCustomLog = YES;
     [[FTMobileAgent sharedInstance] startLoggerWithConfigOptions:loggerConfig];
@@ -290,13 +290,22 @@
     XCTAssertTrue([config.globalContext[@"testGlobalContext_mutable"] isEqualToString:@"testGlobalContext_mutable"]);
     XCTAssertTrue([context[@"testGlobalContext_mutable"] isEqualToString:@"testGlobalContext"]);
 }
+- (void)testAddPkgInfo{
+    FTMobileConfig *config = [[FTMobileConfig alloc]initWithDatakitUrl:self.url];
+    config.enableSDKDebugLog = YES;
+    config.autoSync = NO;
+    XCTAssertNil([config pkgInfo]);
+    [config addPkgInfo:@"test_sdk" value:@"1.0.0"];
+    XCTAssertTrue([[config pkgInfo] isEqualToDictionary:@{@"test_sdk":@"1.0.0"}]);
+    XCTAssertFalse([config pkgInfo] == [config pkgInfo]);
+}
 - (void)testAppendGlobalContext{
     FTMobileConfig *config = [[FTMobileConfig alloc]initWithDatakitUrl:self.url];
     config.enableSDKDebugLog = YES;
     config.autoSync = NO;
     config.globalContext = @{@"testGlobalContext":@"testGlobalContext"};
     [FTMobileAgent startWithConfigOptions:config];
-    [[FTTrackerEventDBTool sharedManger] deleteItemWithTm:[NSDate ft_currentNanosecondTimeStamp]];
+    [[FTTrackerEventDBTool sharedManger] deleteAllDatas];
     FTLoggerConfig *loggerConfig = [[FTLoggerConfig alloc]init];
     loggerConfig.enableCustomLog = YES;
     [[FTMobileAgent sharedInstance] startLoggerWithConfigOptions:loggerConfig];
@@ -344,7 +353,7 @@
     config.enableSDKDebugLog = YES;
     config.autoSync = NO;
     [FTMobileAgent startWithConfigOptions:config];
-    [[FTTrackerEventDBTool sharedManger] deleteItemWithTm:[NSDate ft_currentNanosecondTimeStamp]];
+    [[FTTrackerEventDBTool sharedManger] deleteAllDatas];
     FTLoggerConfig *loggerConfig = [[FTLoggerConfig alloc]init];
     loggerConfig.enableCustomLog = YES;
     [[FTMobileAgent sharedInstance]
@@ -375,7 +384,7 @@
     config.enableSDKDebugLog = YES;
     config.autoSync = YES;
     [FTMobileAgent startWithConfigOptions:config];
-    [[FTTrackerEventDBTool sharedManger] deleteItemWithTm:[NSDate ft_currentNanosecondTimeStamp]];
+    [[FTTrackerEventDBTool sharedManger] deleteAllDatas];
     FTLoggerConfig *loggerConfig = [[FTLoggerConfig alloc]init];
     loggerConfig.enableCustomLog = YES;
     [[FTMobileAgent sharedInstance]
@@ -417,6 +426,14 @@
     datakitConfig.service = @"testsdk";
     datakitConfig.enableDataIntegerCompatible = YES;
     [datakitConfig setEnvWithType:FTEnvLocal];
+    XCTAssertTrue(datakitConfig.dbCacheLimit == 100*1024*1024);
+    datakitConfig.dbCacheLimit = 10;
+    XCTAssertTrue(datakitConfig.dbCacheLimit == 30*1024*1024);
+    datakitConfig.dbCacheLimit = 60*1024*1024;
+    XCTAssertTrue(datakitConfig.dbCacheLimit == 60*1024*1024);
+    XCTAssertTrue(datakitConfig.enableLimitWithDbSize == NO);
+    XCTAssertTrue(datakitConfig.dbDiscardType == FTDBDiscard);
+    datakitConfig.dbDiscardType = FTDBDiscardOldest;
     FTMobileConfig *copyConfig = [datakitConfig copy];
     XCTAssertTrue(copyConfig.enableSDKDebugLog == datakitConfig.enableSDKDebugLog);
     XCTAssertTrue([copyConfig.datakitUrl isEqualToString:datakitConfig.datakitUrl]);
@@ -424,6 +441,9 @@
     XCTAssertTrue([copyConfig.service isEqualToString:datakitConfig.service]);
     XCTAssertTrue([copyConfig.globalContext isEqual:datakitConfig.globalContext]);
     XCTAssertTrue(copyConfig.enableDataIntegerCompatible == datakitConfig.enableDataIntegerCompatible);
+    XCTAssertTrue(copyConfig.dbCacheLimit == datakitConfig.dbCacheLimit);
+    XCTAssertTrue(copyConfig.dbDiscardType == datakitConfig.dbDiscardType == FTDBDiscardOldest);
+    XCTAssertTrue(copyConfig.enableLimitWithDbSize == datakitConfig.enableLimitWithDbSize);
     FTMobileConfig *datawayConfig = [[FTMobileConfig alloc]initWithDatawayUrl:self.url clientToken:@"clientToken"];
     FTMobileConfig *copy = [datawayConfig copy];
     XCTAssertTrue([copy.datawayUrl isEqualToString:datawayConfig.datawayUrl]);
@@ -445,6 +465,10 @@
     rumConfig.resourceUrlHandler = ^BOOL(NSURL *url) {
         return NO;
     };
+    XCTAssertTrue(rumConfig.rumCacheLimitCount == 100000);
+    rumConfig.rumCacheLimitCount = 1000;
+    XCTAssertTrue(rumConfig.rumCacheLimitCount == 10000);
+    rumConfig.rumDiscardType = FTRUMDiscardOldest;
     rumConfig.globalContext = @{@"aa":@"bb"};
     FTRumConfig *copyRumConfig = [rumConfig copy];
     XCTAssertTrue(copyRumConfig.samplerate == rumConfig.samplerate);
@@ -461,8 +485,11 @@
     XCTAssertTrue([copyRumConfig.globalContext isEqual:rumConfig.globalContext]);
     XCTAssertTrue([copyRumConfig.resourceUrlHandler isEqual:rumConfig.resourceUrlHandler]);
     XCTAssertTrue(copyRumConfig.freezeDurationMs == rumConfig.freezeDurationMs);
-
+    XCTAssertTrue(copyRumConfig.rumDiscardType == rumConfig.rumDiscardType);
+    XCTAssertTrue(copyRumConfig.rumCacheLimitCount == rumConfig.rumCacheLimitCount);
+    XCTAssertTrue([copyRumConfig.debugDescription isEqualToString:rumConfig.debugDescription]);
 }
+// block 块不进行处理
 - (void)testRUMConfigInitWithDict{
     XCTAssertNil([[FTRumConfig alloc]initWithDictionary:nil]);
     FTRumConfig *rumConfig = [[FTRumConfig alloc]init];
@@ -481,7 +508,7 @@
     XCTAssertTrue(rumConfig.deviceMetricsMonitorType == newRum.deviceMetricsMonitorType);
     XCTAssertTrue(rumConfig.monitorFrequency == newRum.monitorFrequency);
     XCTAssertTrue(rumConfig.globalContext == newRum.globalContext);
-    XCTAssertTrue(rumConfig.resourceUrlHandler == newRum.resourceUrlHandler);
+    XCTAssertFalse(rumConfig.resourceUrlHandler == newRum.resourceUrlHandler);
     XCTAssertTrue(rumConfig.freezeDurationMs == newRum.freezeDurationMs);
 }
 - (void)testTraceConfigCopy{
@@ -495,6 +522,7 @@
     XCTAssertTrue(copyTraceConfig.enableLinkRumData == traceConfig.enableLinkRumData);
     XCTAssertTrue(copyTraceConfig.samplerate == traceConfig.samplerate);
     XCTAssertTrue(copyTraceConfig.networkTraceType == traceConfig.networkTraceType);
+    XCTAssertTrue([copyTraceConfig.debugDescription isEqualToString:traceConfig.debugDescription]);
 }
 - (void)testTraceConfigInitWithDict{
     XCTAssertNil([[FTTraceConfig alloc]initWithDictionary:nil]);
@@ -523,6 +551,8 @@
     XCTAssertTrue([copyLoggerConfig.logLevelFilter isEqual: loggerConfig.logLevelFilter]);
     XCTAssertTrue([copyLoggerConfig.globalContext isEqual: loggerConfig.globalContext]);
     XCTAssertTrue(loggerConfig.printCustomLogToConsole == copyLoggerConfig.printCustomLogToConsole);
+    XCTAssertTrue([copyLoggerConfig.debugDescription isEqualToString:loggerConfig.debugDescription]);
+
 }
 - (void)testLoggerConfigInitWithDict{
     XCTAssertNil([[FTLoggerConfig alloc]initWithDictionary:nil]);
@@ -574,12 +604,12 @@
     }
     [[FTTrackDataManager sharedInstance] insertCacheToDB];
     XCTAssertTrue([[FTTrackerEventDBTool sharedManger] getDatasCount] == count);
-    // RUM Anctio、View、Resource采集关闭
+    // RUM Action、View、Resource采集关闭
     [[tester waitForViewWithAccessibilityLabel:@"home"] tap];
     [tester waitForTimeInterval:0.5];
     [[FTExternalDataManager sharedManager] startViewWithName:@"test"];
-    [[FTExternalDataManager sharedManager] addClickActionWithName:@"testClick"];
-    [[FTExternalDataManager sharedManager] addClickActionWithName:@"testClick"];
+    [[FTExternalDataManager sharedManager] startAction:@"testClick" actionType:@"click" property:nil];
+    [[FTExternalDataManager sharedManager] startAction:@"testClick" actionType:@"click" property:nil];
 
     [[FTExternalDataManager sharedManager] addErrorWithType:@"ios" message:@"testMessage" stack:@"testStack"];
     [[tester waitForViewWithAccessibilityLabel:@"Network data collection"] tap];

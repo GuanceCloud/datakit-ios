@@ -5,8 +5,8 @@
 //  Created by 胡蕾蕾 on 2020/9/16.
 //  Copyright © 2020 hll. All rights reserved.
 //
-
 #import <Foundation/Foundation.h>
+#if !TARGET_OS_TV
 #import <WebKit/WebKit.h>
 #import "FTURLSessionInterceptorProtocol.h"
 NS_ASSUME_NONNULL_BEGIN
@@ -34,3 +34,4 @@ NS_ASSUME_NONNULL_BEGIN
 @end
 
 NS_ASSUME_NONNULL_END
+#endif

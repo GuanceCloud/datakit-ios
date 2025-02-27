@@ -118,6 +118,7 @@ typedef NS_ENUM(NSUInteger, FTAppState) {
 /**
  * 离开页面
  * @param viewId         页面id
+ * @param property       事件自定义属性(可选)
  */
 -(void)stopViewWithViewID:(NSString *)viewId property:(nullable NSDictionary *)property;
 @end

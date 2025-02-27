@@ -270,6 +270,9 @@ static void swizzle(Class classToSwizzle,
 {
     NSAssert(!(NULL == key && FTSwizzlerModeAlways != mode),
              @"Key may not be NULL if mode is not FTSwizzlerModeAlways.");
+    if (classToSwizzle == nil){
+        return NO;
+    }
     @synchronized (self) {
         if (key){
             if (mode == FTSwizzlerModeOncePerClass) {

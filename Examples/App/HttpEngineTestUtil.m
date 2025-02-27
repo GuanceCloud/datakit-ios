@@ -7,16 +7,17 @@
 //
 
 #import "HttpEngineTestUtil.h"
+#import "FTExternalDataManager.h"
 // id <NSURLSessionDelegate>)delegate 直接继承 FTURLSessionDelegate 示例
 @interface InstrumentationInheritTestClass:FTURLSessionDelegate
 @property (nonatomic, strong) NSURLSession *session;
-@property (nonatomic, strong) XCTestExpectation *expectation;
+@property (nonatomic, copy) Completion completion;
 @end
 @implementation InstrumentationInheritTestClass
--(instancetype)initWithExpectation:(XCTestExpectation *)expectation{
+-(instancetype)initWithCompletion:(Completion)completion{
     self = [super init];
     if(self){
-        self.expectation = expectation;
+        _completion = completion;
     }
     return self;
 }
@@ -25,7 +26,9 @@
     [super URLSession:session task:task didFinishCollectingMetrics:metrics];
     // 用户自己的逻辑
     // ......
-    [self.expectation fulfill];
+    if(self.completion){
+        self.completion();
+    }
 
 }
 @end
@@ -42,15 +45,20 @@
  *
  */
 @interface InstrumentationPropertyTestClass:NSObject<NSURLSessionDataDelegate,FTURLSessionDelegateProviding>
-@property (nonatomic, strong) FTURLSessionDelegate *ftURLSessionDelegate;
-@property (nonatomic, strong) XCTestExpectation *expectation;
+@property (nonatomic, copy) Completion completion;
 @end
 @implementation InstrumentationPropertyTestClass
--(instancetype)initWithExpectation:(XCTestExpectation *)expectation{
+@synthesize ftURLSessionDelegate = _ftURLSessionDelegate;
+-(FTURLSessionDelegate *)ftURLSessionDelegate{
+    if (!_ftURLSessionDelegate) {
+        _ftURLSessionDelegate = [[FTURLSessionDelegate alloc]init];
+    }
+    return _ftURLSessionDelegate;
+}
+-(instancetype)initWithCompletion:(Completion)completion{
     self = [super init];
     if(self){
-        self.expectation = expectation;
-        _ftURLSessionDelegate = [[FTURLSessionDelegate alloc]init];
+        _completion = completion;
     }
     return self;
 }
@@ -62,30 +70,43 @@
     [self.ftURLSessionDelegate URLSession:session task:task didCompleteWithError:error];
 }
 -(void)URLSession:(NSURLSession *)session task:(NSURLSessionTask *)task didFinishCollectingMetrics:(NSURLSessionTaskMetrics *)metrics{
-    [self.expectation fulfill];
     [self.ftURLSessionDelegate URLSession:session task:task didFinishCollectingMetrics:metrics];
+    if(self.completion){
+        self.completion();
+    }
 }
+
 @end
 
 
 @interface HttpEngineTestUtil ()<NSURLSessionDataDelegate>
 @property (nonatomic, strong) NSURLSession *session;
-@property (nonatomic, strong) XCTestExpectation *expectation;
+@property (nonatomic, copy) Completion completion;
 
 @end
 @implementation HttpEngineTestUtil
-- (instancetype)initWithSessionInstrumentationType:(TestSessionInstrumentationType)type expectation:(nonnull XCTestExpectation *)expectation {
-    return [self initWithSessionInstrumentationType:type expectation:expectation provider:nil requestInterceptor:nil];
+- (instancetype)initWithSessionInstrumentationType:(TestSessionInstrumentationType)type completion:(nonnull Completion)completion {
+    return [self initWithSessionInstrumentationType:type provider:nil requestInterceptor:nil traceInterceptor:nil completion:completion];
 }
 
--(instancetype)initWithSessionInstrumentationType:(TestSessionInstrumentationType)type expectation:( XCTestExpectation *)expectation provider:(ResourcePropertyProvider)provider requestInterceptor:(RequestInterceptor)requestInterceptor{
+-(instancetype)initWithSessionInstrumentationType:(TestSessionInstrumentationType)type
+                                         provider:(nullable ResourcePropertyProvider)provider
+                               requestInterceptor:(nullable RequestInterceptor)requestInterceptor
+                                 traceInterceptor:(nullable TraceInterceptor)traceInterceptor
+                                       completion:(Completion)completion
+{
     self = [super init];
     if(self){
-        [self initSession:type expectation:expectation provider:provider requestInterceptor:requestInterceptor];
+        _completion = completion;
+        [self session:type provider:provider requestInterceptor:requestInterceptor traceInterceptor:traceInterceptor completion:completion];
     }
     return self;
 }
-- (void)initSession:(TestSessionInstrumentationType)type expectation:( XCTestExpectation *)expectation provider:(ResourcePropertyProvider)provider requestInterceptor:(RequestInterceptor)requestInterceptor{
+- (void)session:(TestSessionInstrumentationType)type provider:(ResourcePropertyProvider)provider
+requestInterceptor:(RequestInterceptor)requestInterceptor
+traceInterceptor:(TraceInterceptor)traceInterceptor
+     completion:(Completion)completion
+{
     id<NSURLSessionDelegate> delegate;
 
     switch (type) {
@@ -93,21 +114,24 @@
             FTURLSessionDelegate *ftDelegate = [[FTURLSessionDelegate alloc]init];
             ftDelegate.provider = provider;
             ftDelegate.requestInterceptor = requestInterceptor;
+            ftDelegate.traceInterceptor = traceInterceptor;
             delegate = ftDelegate;
         }
             break;
             
         case InstrumentationInherit: {
-            InstrumentationInheritTestClass *ftDelegate = [[InstrumentationInheritTestClass alloc]initWithExpectation:expectation];
+            InstrumentationInheritTestClass *ftDelegate = [[InstrumentationInheritTestClass alloc]initWithCompletion:completion];
             ftDelegate.provider = provider;
             ftDelegate.requestInterceptor = requestInterceptor;
+            ftDelegate.traceInterceptor = traceInterceptor;
             delegate = ftDelegate;
             break;
         }
         case InstrumentationProperty: {
-            InstrumentationPropertyTestClass *ftDelegate = [[InstrumentationPropertyTestClass alloc]initWithExpectation:expectation];
+            InstrumentationPropertyTestClass *ftDelegate = [[InstrumentationPropertyTestClass alloc]initWithCompletion:completion];
             ftDelegate.ftURLSessionDelegate.provider = provider;
             ftDelegate.ftURLSessionDelegate.requestInterceptor = requestInterceptor;
+            ftDelegate.ftURLSessionDelegate.traceInterceptor = traceInterceptor;
             delegate = ftDelegate;
             break;
         }
@@ -129,12 +153,13 @@
     }];
     [task resume];
 }
-- (void)network{
+- (NSURLSessionTask *)network{
     NSString *urlStr = [[NSProcessInfo processInfo] environment][@"TRACE_URL"];
     NSURL *url = [NSURL URLWithString:urlStr];
     NSURLRequest *request = [NSURLRequest requestWithURL:url];
     NSURLSessionTask *task = [self.session dataTaskWithRequest:request];
     [task resume];
+    return task;
 }
 - (void)urlNetwork:(void (^)(NSData * _Nullable data, NSURLResponse * _Nullable response, NSError * _Nullable error))completionHandler{
     NSString *urlStr = [[NSProcessInfo processInfo] environment][@"TRACE_URL"];
@@ -153,7 +178,9 @@
     [task resume];
 }
 -(void)URLSession:(NSURLSession *)session task:(NSURLSessionTask *)task didFinishCollectingMetrics:(NSURLSessionTaskMetrics *)metrics{
-    [self.expectation fulfill];
+    if(self.completion){
+        self.completion();
+    }
 }
 -(void)dealloc{
     [_session invalidateAndCancel];

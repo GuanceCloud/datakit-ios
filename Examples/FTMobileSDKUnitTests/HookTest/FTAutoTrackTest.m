@@ -13,7 +13,7 @@
 #import "FTTrackerEventDBTool.h"
 #import "FTMobileAgent.h"
 #import <objc/runtime.h>
-#import "FTTrack.h"
+#import "FTAutoTrackHandler.h"
 #import "FTMobileAgent+Private.h"
 #import "FTBaseInfoHandler.h"
 #import "FTRecordModel.h"
@@ -94,6 +94,7 @@
     [demovc viewWillAppear:NO];
     [demovc viewDidAppear:NO];
     [[tester waitForViewWithAccessibilityLabel:@"BindUser"] tap];
+    [tester waitForTimeInterval:0.1];
     [[tester waitForViewWithAccessibilityLabel:@"UserLogout"] tap];
     [[FTGlobalRumManager sharedInstance].rumManager syncProcess];
     NSArray *newArray = [[FTTrackerEventDBTool sharedManger] getFirstRecords:10 withType:FT_DATA_TYPE_RUM];
@@ -112,7 +113,9 @@
     [[tester waitForViewWithAccessibilityLabel:@"home"] tap];
     [tester waitForTimeInterval:1];
     [[tester waitForViewWithAccessibilityLabel:@"UITEST"] tap];
+    [tester waitForTimeInterval:0.1];
     [[tester waitForViewWithAccessibilityLabel:@"LABLE_CLICK"] tap];
+    [tester waitForTimeInterval:0.1];
     [[tester waitForViewWithAccessibilityLabel:@"LABLE_CLICK"] tap];
     [[FTGlobalRumManager sharedInstance].rumManager syncProcess];
     
@@ -142,7 +145,7 @@
     [FTModelHelper resolveModelArray:newArray callBack:^(NSString * _Nonnull source, NSDictionary * _Nonnull tags, NSDictionary * _Nonnull fields, BOOL * _Nonnull stop) {
         if ([source isEqualToString:FT_RUM_SOURCE_ACTION]&&[tags[FT_KEY_ACTION_TYPE] isEqualToString:@"click"]) {
             NSString *actionName = tags[FT_KEY_ACTION_NAME];
-            XCTAssertTrue([actionName isEqualToString:@"[UIImageView]"]);
+            XCTAssertTrue([actionName isEqualToString:@"[UIImageView](order_status_top)"]);
             *stop = YES;
         }
     }];
@@ -152,8 +155,11 @@
 - (void)testButtonClick{
     [self setSdkWithRum:YES];
     [[tester waitForViewWithAccessibilityLabel:@"UITEST"] tap];
+    [tester waitForTimeInterval:0.1];
     [[tester waitForViewWithAccessibilityLabel:@"SecondButton"] tap];
+    [tester waitForTimeInterval:0.1];
     [[tester waitForViewWithAccessibilityLabel:@"SecondButton"] tap];
+    [tester waitForTimeInterval:0.1];
     [[tester waitForViewWithAccessibilityLabel:@"FirstButton"] tap];
     
     [[FTGlobalRumManager sharedInstance].rumManager syncProcess];
@@ -207,14 +213,12 @@
         return excluded;
     };
     [[FTMobileAgent sharedInstance] startRumWithConfigOptions:rumConfig];
-    XCTestExpectation *expectation= [self expectationWithDescription:@"异步操作timeout"];
+    XCTestExpectation *expectation = [self expectationWithDescription:@"异步操作timeout"];
     [FTModelHelper startView];
     [self networkUploadHandler:^(NSURLResponse *response, NSError *error) {
         [expectation fulfill];
     }];
-    [self waitForExpectationsWithTimeout:30 handler:^(NSError *error) {
-           XCTAssertNil(error);
-       }];
+    [self waitForExpectations:@[expectation] timeout:10];
     [tester waitForTimeInterval:0.5];
     [[FTGlobalRumManager sharedInstance].rumManager syncProcess];
     NSArray *newArray = [[FTTrackerEventDBTool sharedManger] getAllDatas];

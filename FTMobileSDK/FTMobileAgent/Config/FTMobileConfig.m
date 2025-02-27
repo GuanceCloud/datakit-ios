@@ -31,6 +31,8 @@
         _enableResourceHostIP = NO;
         _monitorFrequency = FTMonitorFrequencyDefault;
         _freezeDurationMs = FT_DEFAULT_BLOCK_DURATIONS_MS;
+        _rumCacheLimitCount = FT_DB_RUM_MAX_COUNT;
+        _rumDiscardType = FTRUMDiscard;
     }
     return self;
 }
@@ -51,6 +53,9 @@
     options.monitorFrequency = self.monitorFrequency;
     options.resourceUrlHandler = self.resourceUrlHandler;
     options.freezeDurationMs = self.freezeDurationMs;
+    options.rumCacheLimitCount = self.rumCacheLimitCount;
+    options.rumDiscardType = self.rumDiscardType;
+    options.resourcePropertyProvider = self.resourcePropertyProvider;
     return options;
 }
 -(instancetype)initWithDictionary:(NSDictionary *)dict{
@@ -71,6 +76,7 @@
             _deviceMetricsMonitorType = (FTDeviceMetricsMonitorType)[dict[@"deviceMetricsMonitorType"] intValue];
             _monitorFrequency = (FTMonitorFrequency)[dict[@"monitorFrequency"] intValue];
             _resourceUrlHandler = [dict valueForKey:@"resourceUrlHandler"];
+            _resourcePropertyProvider = [dict valueForKey:@"resourceProvider"];
         }
         return self;
     }else{
@@ -82,10 +88,10 @@
     self.freezeDurationMs = freezeDurationMs;
 }
 -(void)setFreezeDurationMs:(long)freezeDurationMs{
-    _freezeDurationMs = MAX(FT_MINI_DEFAULT_BLOCK_DURATIONS_MS,freezeDurationMs);
+    _freezeDurationMs = MAX(FT_MIN_DEFAULT_BLOCK_DURATIONS_MS,freezeDurationMs);
 }
--(void)setGlobalContext:(NSDictionary<NSString *,NSString *> *)globalContext{
-    _globalContext = [globalContext ft_deepCopy];
+-(void)setRumCacheLimitCount:(int)rumCacheLimitCount{
+    _rumCacheLimitCount = MAX(FT_DB_RUM_MIN_COUNT,rumCacheLimitCount);
 }
 -(NSDictionary *)convertToDictionary{
     NSMutableDictionary *dict = [NSMutableDictionary new];
@@ -103,8 +109,15 @@
     [dict setValue:@(self.deviceMetricsMonitorType) forKey:@"deviceMetricsMonitorType"];
     [dict setValue:@(self.monitorFrequency) forKey:@"monitorFrequency"];
     [dict setValue:self.globalContext forKey:@"globalContext"];
-    [dict setValue:self.resourceUrlHandler forKey:@"resourceUrlHandler"];
+    [dict setValue:@(self.rumCacheLimitCount) forKey:@"rumCacheLimitCount"];
+    [dict setValue:@(self.rumDiscardType) forKey:@"rumDiscardType"];
     return dict;
+}
+-(NSString *)debugDescription{
+    NSMutableDictionary *dict = [[self convertToDictionary] mutableCopy];
+    [dict setValue:[self.resourceUrlHandler copy] forKey:@"resourceUrlHandler"];
+    [dict setValue:[self.resourcePropertyProvider copy] forKey:@"resourcePropertyProvider"];
+    return [NSString stringWithFormat:@"%@",dict];
 }
 @end
 @implementation FTLoggerConfig
@@ -116,7 +129,7 @@
         _enableLinkRumData = NO;
         _enableCustomLog = NO;
         _logLevelFilter = @[@0,@1,@2,@3,@4];
-        _logCacheLimitCount = FT_DB_CONTENT_MAX_COUNT;
+        _logCacheLimitCount = FT_DB_LOG_MAX_COUNT;
     }
     return self;
 }
@@ -130,7 +143,6 @@
     options.globalContext = self.globalContext;
     options.printCustomLogToConsole = self.printCustomLogToConsole;
     options.logCacheLimitCount = self.logCacheLimitCount;
-    options.printCustomLogToConsole = self.printCustomLogToConsole;
     return options;
 }
 -(instancetype)initWithDictionary:(NSDictionary *)dict{
@@ -150,10 +162,7 @@
     }
 }
 -(void)setLogCacheLimitCount:(int)logCacheLimitCount{
-    _logCacheLimitCount = MAX(1000, logCacheLimitCount);
-}
--(void)setGlobalContext:(NSDictionary<NSString *,NSString *> *)globalContext{
-    _globalContext = [globalContext ft_deepCopy];
+    _logCacheLimitCount = MAX(FT_DB_LOG_MIN_COUNT, logCacheLimitCount);
 }
 -(NSDictionary *)convertToDictionary{
     NSMutableDictionary *dict = [NSMutableDictionary new];
@@ -163,8 +172,12 @@
     [dict setValue:self.logLevelFilter forKey:@"logLevelFilter"];
     [dict setValue:@(self.discardType) forKey:@"discardType"];
     [dict setValue:self.globalContext forKey:@"globalContext"];
+    [dict setValue:@(self.logCacheLimitCount) forKey:@"logCacheLimitCount"];
     [dict setValue:@(self.printCustomLogToConsole) forKey:@"printCustomLogToConsole"];
     return dict;
+}
+-(NSString *)debugDescription{
+    return [NSString stringWithFormat:@"%@",[self convertToDictionary]];
 }
 @end
 @implementation FTTraceConfig
@@ -182,6 +195,7 @@
     options.enableLinkRumData = self.enableLinkRumData;
     options.networkTraceType = self.networkTraceType;
     options.enableAutoTrace = self.enableAutoTrace;
+    options.traceInterceptor = self.traceInterceptor;
     return options;
 }
 -(instancetype)initWithDictionary:(NSDictionary *)dict{
@@ -191,6 +205,7 @@
             _enableLinkRumData = [dict[@"enableLinkRumData"] boolValue];
             _networkTraceType =(FTNetworkTraceType)[dict[@"networkTraceType"] intValue];
             _enableAutoTrace = [dict[@"enableAutoTrace"] boolValue];
+            _traceInterceptor = dict[@"traceInterceptor"];
         }
         return self;
     }else{
@@ -198,12 +213,21 @@
     }
 }
 -(NSDictionary *)convertToDictionary{
-    return @{@"samplerate":@(self.samplerate),
-             @"enableLinkRumData":@(self.enableLinkRumData),
-             @"networkTraceType":@(self.networkTraceType),
-             @"enableAutoTrace":@(self.enableAutoTrace),
-    };
+    NSMutableDictionary *dict = [NSMutableDictionary new];
+    [dict setValue:@(self.samplerate) forKey:@"samplerate"];
+    [dict setValue:@(self.enableLinkRumData) forKey:@"enableLinkRumData"];
+    [dict setValue:@(self.networkTraceType) forKey:@"networkTraceType"];
+    [dict setValue:@(self.enableAutoTrace) forKey:@"enableAutoTrace"];
+    return dict;
 }
+-(NSString *)debugDescription{
+    NSMutableDictionary *dict = [[self convertToDictionary] mutableCopy];
+    [dict setValue:[self.traceInterceptor copy] forKey:@"traceInterceptor"];
+    return [NSString stringWithFormat:@"%@",dict];
+}
+@end
+@interface FTMobileConfig()
+@property (nonatomic, strong) NSMutableDictionary *sdkPkgInfo;
 @end
 @implementation FTMobileConfig
 -(instancetype)initWithMetricsUrl:(NSString *)metricsUrl{
@@ -227,17 +251,24 @@
 -(instancetype)init{
     if (self = [super init]) {
         _enableSDKDebugLog = NO;
+#if TARGET_OS_TV
+        _service = FT_TVOS_SERVICE_NAME;
+#else
         _service = FT_DEFAULT_SERVICE_NAME;
+#endif
         _env = FTEnvStringMap[FTEnvProd];
         _autoSync = YES;
         _syncPageSize = 10;
         _syncSleepTime = 0;
         _compressIntakeRequests = NO;
+        _dbDiscardType = FTDBDiscard;
+        _dbCacheLimit = FT_DEFAULT_DB_SIZE_LIMIT;
+        _enableLimitWithDbSize = NO;
     }
     return self;
 }
--(void)setGlobalContext:(NSDictionary<NSString *,NSString *> *)globalContext{
-    _globalContext = [globalContext ft_deepCopy];
+-(void)setDbCacheLimit:(long)dbCacheLimit{
+    _dbCacheLimit = MAX(FT_MIN_DB_SIZE_LIMIT, dbCacheLimit);
 }
 - (void)setEnvWithType:(FTEnv)envType{
     _env = FTEnvStringMap[envType];
@@ -266,6 +297,21 @@
             break;
     }
 }
+-(NSDictionary *)pkgInfo{
+    NSDictionary *dict = nil;
+    @synchronized (self) {
+        dict = [_sdkPkgInfo copy];
+    }
+    return dict;
+}
+- (void)addPkgInfo:(NSString *)key value:(NSString *)value{
+    @synchronized (self) {
+        if(!_sdkPkgInfo){
+            _sdkPkgInfo = [NSMutableDictionary dictionary];
+        }
+        [_sdkPkgInfo setValue:value forKey:key];
+    }
+}
 #pragma mark NSCopying
 - (id)copyWithZone:(nullable NSZone *)zone {
     FTMobileConfig *options = [[[self class] allocWithZone:zone] init];
@@ -282,6 +328,56 @@
     options.syncSleepTime = self.syncSleepTime;
     options.enableDataIntegerCompatible = self.enableDataIntegerCompatible;
     options.compressIntakeRequests = self.compressIntakeRequests;
+    options.enableLimitWithDbSize = self.enableLimitWithDbSize;
+    options.dbCacheLimit = self.dbCacheLimit;
+    options.dbDiscardType = self.dbDiscardType;
+    options.sdkPkgInfo = [self.sdkPkgInfo copy];
     return options;
+}
+-(instancetype)initWithDictionary:(NSDictionary *)dict{
+    if(dict){
+        if (self = [super init]) {
+            _service = [dict valueForKey:@"service"];
+            _datakitUrl = [dict valueForKey:@"datakitUrl"];
+            _datawayUrl = [dict valueForKey:@"datawayUrl"];
+            _clientToken = [dict valueForKey:@"clientToken"];
+        }
+        return self;
+    }else{
+        return nil;
+    }
+}
+/// 将 config 转化成字典
+-(NSDictionary *)convertToDictionary{
+    NSMutableDictionary *dict = [NSMutableDictionary new];
+    [dict setValue:self.service forKey:@"service"];
+    [dict setValue:self.datawayUrl forKey:@"datawayUrl"];
+    [dict setValue:self.clientToken forKey:@"clientToken"];
+    [dict setValue:self.datakitUrl forKey:@"datakitUrl"];
+    return dict;
+}
+-(NSString *)debugDescription{
+    NSMutableDictionary *dict = [NSMutableDictionary new];
+    if(self.datakitUrl){
+        [dict setValue:self.datakitUrl forKey:@"datakitUrl"];
+    }
+    if(self.datawayUrl){
+        [dict setValue:self.datawayUrl forKey:@"datawayUrl"];
+        [dict setValue:self.clientToken.length>0?[NSString stringWithFormat:@"%@*****",[self.clientToken substringWithRange:NSMakeRange(0, self.clientToken.length/2)]]:nil forKey:@"clientToken"];
+    }
+    [dict setValue:@(self.enableSDKDebugLog) forKey:@"enableSDKDebugLog"];
+    [dict setValue:self.env forKey:@"env"];
+    [dict setValue:self.groupIdentifiers forKey:@"groupIdentifiers"];
+    [dict setValue:self.globalContext forKey:@"globalContext"];
+    [dict setValue:self.service forKey:@"service"];
+    [dict setValue:@(self.autoSync) forKey:@"autoSync"];
+    [dict setValue:@(self.syncPageSize) forKey:@"syncPageSize"];
+    [dict setValue:@(self.syncSleepTime) forKey:@"syncSleepTime"];
+    [dict setValue:@(self.enableDataIntegerCompatible) forKey:@"enableDataIntegerCompatible"];
+    [dict setValue:@(self.compressIntakeRequests) forKey:@"compressIntakeRequests"];
+    [dict setValue:@(self.dbDiscardType) forKey:@"dbDiscardType"];
+    [dict setValue:@(self.enableLimitWithDbSize) forKey:@"enableLimitWithDbSize"];
+    [dict setValue:@(self.dbCacheLimit) forKey:@"dbCacheLimit"];
+    return [NSString stringWithFormat:@"%@",dict];
 }
 @end

@@ -18,7 +18,7 @@
 #import "FTReadWriteHelper.h"
 #import "NSError+FTDescription.h"
 #import "FTPresetProperty.h"
-#import "FTReachability.h"
+#import "FTNetworkConnectivity.h"
 
 NSString * const AppStateStringMap[] = {
     [FTAppStateUnknown] = @"unknown",
@@ -288,7 +288,7 @@ void *FTRUMQueueIdentityKey = &FTRUMQueueIdentityKey;
                             }
                         }
                     }
-                    if(metrics.responseSize){
+                    if(metrics.responseSize!=nil){
                         [fields setValue:metrics.responseSize forKey:FT_KEY_RESOURCE_SIZE];
                     }else if(content.responseBody){
                         NSData *data = [content.responseBody dataUsingEncoding:NSUTF8StringEncoding];
@@ -461,9 +461,14 @@ void *FTRUMQueueIdentityKey = &FTRUMQueueIdentityKey;
 }
 -(NSDictionary *)rumDynamicProperty{
     NSMutableDictionary *dict = [NSMutableDictionary dictionary];
-    dict[@"network_type"] = [FTReachability sharedInstance].net;
-    [dict addEntriesFromDictionary:[[FTPresetProperty sharedInstance] rumDynamicProperty]];
-    return dict;
+    @try {
+        dict[@"network_type"] = [FTNetworkConnectivity sharedInstance].networkType;
+        [dict addEntriesFromDictionary:[[FTPresetProperty sharedInstance] rumDynamicProperty]];
+    } @catch (NSException *exception) {
+        FTInnerLogError(@"exception %@",exception);
+    } @finally {
+        return dict;
+    }
 }
 - (NSDictionary *)getLinkRUMData{
     NSMutableDictionary *dict = [NSMutableDictionary dictionary];

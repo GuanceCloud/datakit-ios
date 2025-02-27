@@ -31,7 +31,7 @@
 
 - (void)setUp {
     // Put setup code here. This method is called before the invocation of each test method in the class.
-    [[FTTrackerEventDBTool sharedManger] deleteItemWithTm:[NSDate ft_currentNanosecondTimeStamp]];
+    [[FTTrackerEventDBTool sharedManger] deleteAllDatas];
 }
 #pragma mark NSString+FTAdd
 - (void)testStringRemoveFrontBackBlank{
@@ -120,28 +120,6 @@
     XCTAssertFalse([uuid containsString:@"-"]);
     XCTAssertTrue([[uuid lowercaseString] isEqualToString:uuid]);
 }
-#pragma mark FTReadWriteHelper
-- (void)testReadWriteHelper{
-    NSMutableArray *array = @[@"a",@"b",@"c",@"d"].mutableCopy;
-    FTReadWriteHelper *helper = [[FTReadWriteHelper alloc]initWithValue:array];
-    [helper concurrentRead:^(NSMutableArray *value) {
-        XCTAssertTrue(value.count == 4);
-    }];
-    [helper concurrentRead:^(NSMutableArray *value) {
-        XCTAssertTrue(value.count == 4);
-    }];
-    [helper concurrentWrite:^(id  _Nonnull value) {
-        sleep(0.5);
-        [value addObject:@"e"];
-    }];
-    
-    [helper concurrentRead:^(NSMutableArray *value) {
-        XCTAssertTrue(value.count == 5);
-    }];
-    [helper concurrentRead:^(NSMutableArray *value) {
-        XCTAssertTrue([value.lastObject isEqualToString:@"e"]);
-    }];    
-}
 #pragma mark ==========  NSNumber ==========
 - (void)testLineProtocolDealNumber{
     NSNumber *trueNum = [NSNumber numberWithBool:YES];
@@ -185,6 +163,7 @@
     XCTAssertEqualObjects([[unsignedLongLongNum ft_toFieldIntegerCompatibleFormat] stringValue], @"9223372036854775807");
 
 }
+#if TARGET_OS_IOS
 - (void)testErrorDescription{
     NSString *path = [[NSBundle mainBundle] pathForResource:@"errors" ofType:@"json"];
      // 将文件数据化
@@ -205,4 +184,5 @@
         }
     }
 }
+#endif
 @end

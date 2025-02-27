@@ -6,7 +6,8 @@
 //  Copyright © 2021 hll. All rights reserved.
 //
 
-#import <KIF/KIF.h>
+#import <XCTest/XCTest.h>
+#import "XCTestCase+Utils.h"
 #import "FTMobileAgent.h"
 #import "FTTrackerEventDBTool.h"
 #import "FTMobileAgent+Private.h"
@@ -14,14 +15,15 @@
 #import "FTConstants.h"
 #import "FTJSONUtil.h"
 #import "FTRecordModel.h"
-#import "UITestVC.h"
 #import "FTTrackDataManager.h"
 #import "FTModelHelper.h"
 #import "FTLog.h"
 #import "FTLog+Private.h"
 #import "FTFileLogger.h"
 #import "FTTestUtils.h"
-@interface FTLoggerTest : KIFTestCase
+#import "FTLogger+Private.h"
+#import "FTMobileConfig+Private.h"
+@interface FTLoggerTest : XCTestCase
 
 @property (nonatomic, copy) NSString *url;
 @property (nonatomic, copy) NSString *appid;
@@ -154,7 +156,7 @@
     XCTAssertTrue(newCount == count);
 }
 - (void)setRightSDKConfig{
-    [[FTTrackerEventDBTool sharedManger] deleteItemWithTm:[NSDate ft_currentNanosecondTimeStamp]];
+    [[FTTrackerEventDBTool sharedManger] deleteAllDatas];
     FTMobileConfig *config = [[FTMobileConfig alloc]initWithDatakitUrl:self.url];
     config.enableSDKDebugLog = YES;
     config.autoSync = NO;
@@ -175,7 +177,32 @@
     NSDictionary *op = dict[@"opdata"];
     NSDictionary *tags = op[FT_TAGS];
     NSString *serviceName = [tags valueForKey:FT_KEY_SERVICE];
-    XCTAssertTrue(serviceName.length>0);
+#if TARGET_OS_TV
+    NSString  *service = FT_TVOS_SERVICE_NAME;
+#else
+    NSString  *service = FT_DEFAULT_SERVICE_NAME;
+#endif
+    XCTAssertTrue([serviceName isEqualToString:service]);
+}
+- (void)testLogSource{
+    [self setRightSDKConfig];
+    FTLoggerConfig *loggerConfig = [[FTLoggerConfig alloc]init];
+    loggerConfig.enableCustomLog = YES;
+    [[FTMobileAgent sharedInstance] startLoggerWithConfigOptions:loggerConfig];
+    [[FTMobileAgent sharedInstance] logging:@"testLogSource" status:FTStatusInfo];
+    [[FTMobileAgent sharedInstance] syncProcess];
+    [[FTTrackDataManager sharedInstance] insertCacheToDB];
+    NSArray *array = [[FTTrackerEventDBTool sharedManger] getFirstRecords:10 withType:FT_DATA_TYPE_LOGGING];
+    FTRecordModel *model = [array lastObject];
+    NSDictionary *dict = [FTJSONUtil dictionaryWithJsonString:model.data];
+    NSDictionary *op = dict[@"opdata"];
+    NSString *sourceStr = [op valueForKey:FT_KEY_SOURCE];
+#if TARGET_OS_TV
+    NSString  *source = FT_LOGGER_TVOS_SOURCE;
+#else
+    NSString  *source = FT_LOGGER_SOURCE;
+#endif
+    XCTAssertTrue([sourceStr isEqualToString:source]);
 }
 - (void)testEnableLinkRumData_setLoggerFirst{
     [self setRightSDKConfig];
@@ -303,6 +330,28 @@
     XCTAssertTrue([tags[@"logger_id"] isEqualToString:@"logger_id_1"]);
     XCTAssertFalse([tags.allKeys containsObject:@"logger_mutable"]);
 }
+- (void)testAddPkgInfo{
+    [[FTTrackerEventDBTool sharedManger] deleteAllDatas];
+    FTMobileConfig *config = [[FTMobileConfig alloc]initWithDatakitUrl:self.url];
+    config.enableSDKDebugLog = YES;
+    config.autoSync = NO;
+    [config addPkgInfo:@"test_sdk" value:@"1.0.0"];
+    [FTMobileAgent startWithConfigOptions:config];
+    FTLoggerConfig *loggerConfig = [[FTLoggerConfig alloc]init];
+    loggerConfig.enableCustomLog = YES;
+    [[FTMobileAgent sharedInstance] startLoggerWithConfigOptions:loggerConfig];
+    
+    [[FTLogger sharedInstance] info:@"testAddPkgInfo" property:nil];
+    [[FTMobileAgent sharedInstance] syncProcess];
+    [[FTTrackDataManager sharedInstance] insertCacheToDB];
+    NSArray *newDatas = [[FTTrackerEventDBTool sharedManger] getFirstRecords:10 withType:FT_DATA_TYPE_LOGGING];
+    FTRecordModel *model = [newDatas lastObject];
+    NSDictionary *dict = [FTJSONUtil dictionaryWithJsonString:model.data];
+    NSDictionary *op = dict[@"opdata"];
+    NSDictionary *tags = op[FT_TAGS];
+    XCTAssertTrue([tags[FT_SDK_PKG_INFO] isEqualToDictionary:@{@"test_sdk":@"1.0.0"}]);
+    
+}
 - (void)testAppendLogGlobalContext{
     [self setRightSDKConfig];
     FTLoggerConfig *loggerConfig = [[FTLoggerConfig alloc]init];
@@ -424,7 +473,8 @@
     loggerConfig.printCustomLogToConsole = YES;
     [[FTMobileAgent sharedInstance] startLoggerWithConfigOptions:loggerConfig];
     [[FTLogger sharedInstance] info:@"testPrintCustomLogToConsole" property:nil];
-    [[FTMobileAgent sharedInstance] syncProcess];
+    [[FTLogger sharedInstance] syncProcess];
+    [self waitForTimeInterval:1];
     NSArray *array =  [[FTLog sharedInstance] valueForKey:@"loggers"];
     BOOL hasFileLogger = NO;
     FTLogFileInfo *logFileInfo;
@@ -562,7 +612,11 @@
     [self logFile:logsDirectory fileName:@"ALog"];
 }
 - (void)testRegisterInnerLogCacheToDefaultPath{
+#if !TARGET_OS_TV
     NSArray *paths = NSSearchPathForDirectoriesInDomains(NSDocumentDirectory, NSUserDomainMask, YES);
+#else
+    NSArray *paths = NSSearchPathForDirectoriesInDomains(NSCachesDirectory, NSUserDomainMask, YES);
+#endif
     NSString *baseDir = paths.firstObject;
     NSString *logsDirectory = [baseDir stringByAppendingPathComponent:@"FTLogs"];
 

@@ -6,7 +6,9 @@ import PackageDescription
 let package = Package(
     name: "FTMobileSDK",
     platforms: [.iOS(.v10),
-                .macOS(.v10_13)],
+                .macOS(.v10_13),
+                .tvOS(.v12),
+    ],
     products: [
         // Products define the executables and libraries a package produces, and make them visible to other packages.
         .library(
@@ -24,6 +26,7 @@ let package = Package(
             targets: [
                       "FTSDKCore",
                      ]),
+        .library(name: "FTBaseUtils_Base", targets: ["_FTBaseUtils_Base"]),
     ],
     dependencies: [
         // Dependencies declare other packages that this package depends on.
@@ -100,7 +103,7 @@ let package = Package(
                ),
         // MARK: - BaseUtils
         .target(name: "_FTBaseUtils_Base",
-                dependencies: [],
+                dependencies: ["_FTBaseUtils_Thread"],
                 path: "FTMobileSDK/FTSDKCore/BaseUtils/Base",
                 publicHeadersPath: ".",
                 cSettings: [
@@ -111,12 +114,10 @@ let package = Package(
                 path: "FTMobileSDK/FTSDKCore/BaseUtils/Swizzle",
                 publicHeadersPath: ".",
                 cSettings: [
-                    .headerSearchPath("Swizzle"),
+                   
                 ]),
         .target(name: "_FTBaseUtils_Thread",
-                dependencies: [],
                 path: "FTMobileSDK/FTSDKCore/BaseUtils/Thread",
-                publicHeadersPath: ".",
                 cSettings: [
                     
                 ]),

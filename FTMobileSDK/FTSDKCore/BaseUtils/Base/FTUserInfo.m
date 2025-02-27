@@ -77,4 +77,13 @@
     }
     return sessionId;
 }
+-(id)copyWithZone:(NSZone *)zone{
+    FTUserInfo *copy = [[[self class] allocWithZone:zone] init];
+    copy.userId = self.userId;
+    copy.email = self.email;
+    copy.extra = self.extra;
+    copy.name = self.name;
+    copy.isSignIn = self.isSignIn;
+    return copy;
+}
 @end

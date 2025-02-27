@@ -16,6 +16,9 @@ FT_DATAKIT_ADDRESS="YOUR_DATAKIT_ADDRESS"
 FT_ENV="common"
 # 配置文件 datakit.conf 中 dataway 的 token
 FT_TOKEN="YOUR_DATAWAY_TOKEN"
+# 是否仅生成 dSYM zip 文件，1=仅打包dSYM zip 不上传,0=上传, 可在脚本输出日志中搜索 FT_DSYM_ZIP_FILE 来查看 DSYM_SYMBOL.zip 文件路径
+FT_DSYM_ZIP_ONLY=1
+
 #
 #
 # Debug模式编译是否上传，1＝上传 0＝不上传，默认不上传
@@ -120,14 +123,14 @@ function run() {
     CONFIG_APP_ENV="$4"
     CONFIG_TOKEN="$5"
     CONFIG_DSYM_SOURCE_DIR="$6"
-    CONFIG_DSYM_DEST_DIR="$7"
-
+    CONFIG_DSYM_ZIP_ONLY="$7"
+    
     # 检查必须参数是否设置
     if [ ! "${CONFIG_APP_ID}" ]; then
     exitWithMessage "Error: RUM App ID not defined. Please set 'FT_RUM_APP_ID' " 0
     fi
     
-    if [[ "${CONFIG_APP_ID}" == *"App ID"* ]]; then
+    if [ ! "${CONFIG_APP_ID}" ]; then
     exitWithMessage "Error: RUM App ID not defined." 0
     fi
     
@@ -147,14 +150,15 @@ function run() {
     fi
     
     if [ ! "${CONFIG_DSYM_DEST_DIR}" ]; then
-        CONFIG_DSYM_DEST_DIR=${CONFIG_DSYM_SOURCE_DIR}/SymbolTemp
-        echo "Create dSYM Destination FOLDER:${CONFIG_DSYM_DEST_DIR}"
+        CONFIG_DSYM_DEST_DIR=${CONFIG_DSYM_SOURCE_DIR}
     fi
-    
+    CONFIG_DSYM_DEST_DIR=${CONFIG_DSYM_DEST_DIR}/SymbolTemp
     if [ ! -e "${CONFIG_DSYM_DEST_DIR}" ]; then
     mkdir "${CONFIG_DSYM_DEST_DIR}"
     fi
     
+    CONFIG_DSYM_DEST_DIR=$(realpath "$CONFIG_DSYM_DEST_DIR")
+
     DSYM_FOLDER="${CONFIG_DSYM_SOURCE_DIR}"
     IFS=$'\n'
     
@@ -172,6 +176,8 @@ function run() {
     DSYM_SYMBOL_ZIP_FILE_NAME="${DSYM_SYMBOL_ZIP_FILE_NAME// /_}"
     DSYM_SYMBOL_ZIP_FILE=${CONFIG_DSYM_DEST_DIR}/${DSYM_SYMBOL_ZIP_FILE_NAME}
     
+    echo "FT_DSYM_ZIP_FILE:${DSYM_SYMBOL_ZIP_FILE}"
+
     if [ -e $DSYM_SYMBOL_ZIP_FILE ]; then
     rm -f $DSYM_SYMBOL_ZIP_FILE
     fi
@@ -179,12 +185,14 @@ function run() {
     pushd $CONFIG_DSYM_DEST_DIR
     zip -r -q $DSYM_SYMBOL_ZIP_FILE *
     popd
+    
+    if [ $CONFIG_DSYM_ZIP_ONLY -eq 0 ]; then
     # 上传
     dSYMUpload $CONFIG_SDK_URL $CONFIG_APP_ID $CONFIG_APP_VERSION $CONFIG_APP_ENV $CONFIG_TOKEN "$DSYM_SYMBOL_ZIP_FILE" "$CONFIG_DSYM_DEST_DIR"
-    fi
-    
     if [ $RET = "F" ]; then
     exitWithMessage "No .dSYM found in ${DSYM_FOLDER}" 0
+    fi
+    fi
     fi
 }
 # 检查App的dSYM文件是否为空，若为空，循环等待10s后还为空则退出
@@ -272,7 +280,7 @@ function runInXcode(){
     fi
     done
     #
-    run ${FT_DATAKIT_ADDRESS} ${FT_APP_ID} ${FT_APP_VERSION} ${FT_ENV} ${FT_TOKEN} ${DWARF_DSYM_FOLDER_PATH} ${BUILD_DIR}/SymbolTemp
+    run ${FT_DATAKIT_ADDRESS} ${FT_APP_ID} ${FT_APP_VERSION} ${FT_ENV} ${FT_TOKEN} ${DWARF_DSYM_FOLDER_PATH} ${FT_DSYM_ZIP_ONLY}
 }
 # 根据Xcode的环境变量判断是否处于Xcode环境
 INFO_PLIST_FILE="${INFOPLIST_FILE}"
@@ -294,6 +302,7 @@ FT_I_APP_VERSION="$3"
 FT_I_APP_ENV="$4"
 FT_I_DATAWAY_TOKEN="$5"
 DWARF_DSYM_FOLDER_PATH="$6"
+FT_I_DSYM_ZIP_ONLY="$7"
 
-run ${FT_I_DATAKIT_ADDRESS} ${FT_I_RUM_APP_ID} ${FT_I_APP_VERSION} ${FT_I_APP_ENV} ${FT_I_DATAWAY_TOKEN} "$DWARF_DSYM_FOLDER_PATH"
+run ${FT_I_DATAKIT_ADDRESS} ${FT_I_RUM_APP_ID} ${FT_I_APP_VERSION} ${FT_I_APP_ENV} ${FT_I_DATAWAY_TOKEN} "$DWARF_DSYM_FOLDER_PATH" ${FT_I_DSYM_ZIP_ONLY}
 fi

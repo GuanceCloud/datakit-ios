@@ -29,7 +29,7 @@
 @property (nonatomic, strong) NSDictionary *errorMonitorInfo;
 @end
 @implementation FTLongTaskEvent
--(instancetype)initWithFreezeDurationMs:(int)freezeDurationMs{
+-(instancetype)initWithFreezeDurationMs:(long)freezeDurationMs{
     self = [super init];
     if(self){
         _freezeDurationNs = (long long)freezeDurationMs*1000000;
@@ -123,7 +123,14 @@ void *FTLongTaskManagerQueueTag = &FTLongTaskManagerQueueTag;
 }
 - (NSString *)dataStorePath{
     if(!_dataStorePath){
+#if TARGET_OS_IOS
         NSString *pathString = [NSSearchPathForDirectoriesInDomains(NSDocumentDirectory, NSUserDomainMask, YES) lastObject];
+#elif TARGET_OS_TV
+        NSString *pathString = [NSSearchPathForDirectoriesInDomains(NSCachesDirectory, NSUserDomainMask, YES) lastObject];
+#else
+        NSString *pathString = [NSSearchPathForDirectoriesInDomains(NSLibraryDirectory, NSUserDomainMask, YES) lastObject];
+
+#endif
         _dataStorePath = [pathString stringByAppendingPathComponent:@"FTLongTask.txt"];
     }
     return _dataStorePath;
@@ -174,7 +181,7 @@ void *FTLongTaskManagerQueueTag = &FTLongTaskManagerQueueTag;
     dispatch_async(_queue, ^{
         @try {
             NSError *error;
-            if (@available(macOS 10.15, iOS 13.0, *)) {
+            if (@available(macOS 10.15, iOS 13.0,tvOS 13.0, *)) {
                 [weakSelf.fileHandle writeData:data error:&error];
                 if(error){
                     FTInnerLogError(@"[LongTask] writeData error %@",error.description);
@@ -217,7 +224,7 @@ void *FTLongTaskManagerQueueTag = &FTLongTaskManagerQueueTag;
                     }
                 }];
                 NSNumber *duration = lastTime-startTime>0?[NSNumber numberWithLongLong:lastTime-startTime]:dict[@"duration"];
-                if(!duration){
+                if(duration == nil){
                     duration = @0;
                 }
                 NSDictionary *tags = dict[@"sessionContext"];
@@ -328,12 +335,13 @@ void *FTLongTaskManagerQueueTag = &FTLongTaskManagerQueueTag;
 }
 -(void)shutDown{
     [_longTaskDetector stopDetecting];
+    _longTaskEvent = nil;
     [self deleteFile];
 }
 -(void)dealloc{
     if(_fileHandle) {
         @try {
-            if (@available(macOS 10.15, iOS 13.0, *)) {
+            if (@available(macOS 10.15, iOS 13.0,tvOS 13.0, *)) {
                 NSError *error;
                 [_fileHandle synchronizeAndReturnError:&error];
                 if(error){

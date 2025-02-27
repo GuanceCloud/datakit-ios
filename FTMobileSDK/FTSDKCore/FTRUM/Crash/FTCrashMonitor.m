@@ -8,6 +8,7 @@
 #if ! __has_feature(objc_arc)
 #error This file must be compiled with ARC. Either turn on ARC for the project or use -fobjc-arc flag on this file.
 #endif
+#import "FTSDKCompat.h"
 #import "FTCrashMonitor.h"
 #import "FTCallStack.h"
 #import "FTNSException.h"
@@ -21,7 +22,9 @@
 void crashNotifyCallback(thread_t thread,uintptr_t*backtrace,int count,const char *crashMessage){
     FTUninstallSignalException();
     FTUninstallUncaughtExceptionHandler();
+#if FT_HAS_MACH
     FTUninstallMachException();
+#endif
     NSString *stackInfo = [FTCallStack ft_reportOfThread:thread backtrace:backtrace count:count];
     for (id instance in FTCrashMonitor.shared.ftSDKInstances) {
         if ([instance respondsToSelector:@selector(internalErrorWithType:message:stack:)]) {

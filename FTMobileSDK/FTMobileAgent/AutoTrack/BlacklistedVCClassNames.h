@@ -15,7 +15,7 @@ NS_ASSUME_NONNULL_BEGIN
  *  @abstract
  *  忽略的系统控制器
 */
-+ (NSArray *)ft_blacklistedViewControllerClassNames;
++ (NSDictionary *)ft_blacklistedViewControllerClassNames;
 @end
 
 NS_ASSUME_NONNULL_END

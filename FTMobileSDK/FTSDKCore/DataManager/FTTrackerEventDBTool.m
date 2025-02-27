@@ -15,7 +15,7 @@
 @interface FTTrackerEventDBTool ()
 @property (nonatomic, strong) NSString *dbPath;
 @property (nonatomic, strong) ZY_FMDatabaseQueue *dbQueue;
-@property (nonatomic, strong) ZY_FMDatabase *db;
+@property (nonatomic, assign) BOOL enableLimitWithDbSize;
 
 @end
 @implementation FTTrackerEventDBTool
@@ -29,30 +29,32 @@ static dispatch_once_t onceToken;
 }
 + (instancetype)shareDatabaseWithPath:(NSString *)dbPath dbName:(NSString *)dbName{
     dispatch_once(&onceToken, ^{
-    if (!dbTool) {
         NSString *path = dbPath;
         NSString *name = dbName;
         if (!path) {
+#if !TARGET_OS_TV
             path = [NSSearchPathForDirectoriesInDomains(NSDocumentDirectory, NSUserDomainMask, YES) lastObject];
+#else
+            path = [NSSearchPathForDirectoriesInDomains(NSCachesDirectory, NSUserDomainMask, YES) lastObject];
+#endif
         }
         if(!name){
             name = @"ZYFMDB.sqlite";
         }
         path = [path stringByAppendingPathComponent:name];
         ZY_FMDatabaseQueue *dbQueue = [ZY_FMDatabaseQueue databaseQueueWithPath:path];
-        ZY_FMDatabase *fmdb = [dbQueue valueForKey:@"_db"];
-        if ([fmdb  open]) {
+        if (dbQueue) {
             dbTool = [[FTTrackerEventDBTool alloc]init];
-            dbTool.db = fmdb;
             dbTool.dbPath = path;
             FTInnerLogDebug(@"db path:%@",path);
             dbTool.dbQueue = dbQueue;
+            dbTool.enableLimitWithDbSize = NO;
+            [dbTool createTable];
         }
-        [dbTool createTable];
-     }
     });
-    if (![dbTool.db open]) {
+    if (!dbTool) {
         FTInnerLogError(@"database can not open !");
+        onceToken = 0;
         return nil;
     };
     return dbTool;
@@ -64,71 +66,65 @@ static dispatch_once_t onceToken;
         FTInnerLogError(@"%@",exception);
     }
 }
--(void)createEventTable
-{
+-(void)createEventTable{
     if ([self zy_isExistTable:FT_DB_TRACE_EVENT_TABLE_NAME]) {
         return;
     }
-      [self zy_inTransaction:^(BOOL *rollback) {
+    [[self dbQueue] inTransaction:^(ZY_FMDatabase *db, BOOL *rollback) {
         NSDictionary *keyTypes = @{@"_id":@"INTEGER",
                                    @"tm":@"INTEGER",
                                    @"data":@"TEXT",
                                    @"op":@"TEXT",
         };
-        if ([self isOpenDatabase:self.db]) {
-               NSMutableString *sql = [[NSMutableString alloc] initWithString:[NSString stringWithFormat:@"CREATE TABLE IF NOT EXISTS %@ (",FT_DB_TRACE_EVENT_TABLE_NAME]];
-               int count = 0;
-               for (NSString *key in keyTypes) {
-                   count++;
-                   [sql appendString:key];
-                   [sql appendString:@" "];
-                   [sql appendString:[keyTypes valueForKey:key]];
-                   if ([key isEqualToString:@"_id"]) {
-                       [sql appendString:@" primary key AUTOINCREMENT"];
-                   }
-                   if (count != [keyTypes count]) {
-                        [sql appendString:@", "];
-                   }
-               }
-               [sql appendString:@")"];
-             BOOL success =[self.db executeUpdate:sql];
-            FTInnerLogDebug(@"createTable success == %d",success);
-           }
+        
+        NSMutableString *sql = [[NSMutableString alloc] initWithString:[NSString stringWithFormat:@"CREATE TABLE IF NOT EXISTS %@ (",FT_DB_TRACE_EVENT_TABLE_NAME]];
+        int count = 0;
+        for (NSString *key in keyTypes) {
+            count++;
+            [sql appendString:key];
+            [sql appendString:@" "];
+            [sql appendString:[keyTypes valueForKey:key]];
+            if ([key isEqualToString:@"_id"]) {
+                [sql appendString:@" primary key AUTOINCREMENT"];
+            }
+            if (count != [keyTypes count]) {
+                [sql appendString:@", "];
+            }
+        }
+        [sql appendString:@")"];
+        BOOL success =[db executeUpdate:sql];
+        FTInnerLogDebug(@"createTable success == %d",success);
     }];
 }
 
 -(BOOL)insertItem:(FTRecordModel *)item{
     __block BOOL success = NO;
-   if([self isOpenDatabase:self.db]) {
-       [self zy_inDatabase:^{
-           NSString *sqlStr = [NSString stringWithFormat:@"INSERT INTO '%@' ( 'tm' , 'data' ,'op') VALUES (  ? , ? , ? );",FT_DB_TRACE_EVENT_TABLE_NAME];
-          success=  [self.db executeUpdate:sqlStr,@(item.tm),item.data,item.op];
-       }];
-   }
+    [self zy_inDatabase:^(ZY_FMDatabase *db){
+        NSString *sqlStr = [NSString stringWithFormat:@"INSERT INTO '%@' ( 'tm' , 'data' ,'op') VALUES (  ? , ? , ? );",FT_DB_TRACE_EVENT_TABLE_NAME];
+        success=  [db executeUpdate:sqlStr,@(item.tm),item.data,item.op];
+    }];
     return success;
 }
 -(BOOL)insertItemsWithDatas:(NSArray<FTRecordModel*> *)items{
-    __block BOOL needRollback = NO;
-    if([self isOpenDatabase:self.db]) {
-        [self zy_inTransaction:^(BOOL *rollback) {
+    if(items.count>0){
+        __block BOOL needRollback = NO;
+        [[self dbQueue] inTransaction:^(ZY_FMDatabase *db, BOOL *rollback) {
             [items enumerateObjectsUsingBlock:^(FTRecordModel *item, NSUInteger idx, BOOL * _Nonnull stop) {
                 NSString *sqlStr = [NSString stringWithFormat:@"INSERT INTO '%@' ( 'tm' , 'data','op') VALUES (  ? , ? , ? );",FT_DB_TRACE_EVENT_TABLE_NAME];
-                if(![self.db executeUpdate:sqlStr,@(item.tm),item.data,item.op]){
+                if(![db executeUpdate:sqlStr,@(item.tm),item.data,item.op]){
                     *stop = YES;
                     needRollback = YES;
                 }
             }];
             *rollback = needRollback;
         }];
-        
+        return !needRollback;
     }
-    return !needRollback;
+    return NO;
 }
 -(NSArray *)getAllDatas{
     NSString* sql = [NSString stringWithFormat:@"SELECT * FROM '%@' ORDER BY tm ASC  ;",FT_DB_TRACE_EVENT_TABLE_NAME];
-
     return [self getDatasWithFormat:sql];
-
 }
 
 -(NSArray *)getFirstRecords:(NSUInteger)recordSize withType:(NSString *)type{
@@ -136,148 +132,165 @@ static dispatch_once_t onceToken;
         return @[];
     }
     NSString* sql = [NSString stringWithFormat:@"SELECT * FROM '%@' WHERE op = '%@' ORDER BY _id ASC limit %lu  ;",FT_DB_TRACE_EVENT_TABLE_NAME,type,(unsigned long)recordSize];
-
+    
     return [self getDatasWithFormat:sql];
 }
 
 -(NSArray *)getDatasWithFormat:(NSString *)format{
-    if([self isOpenDatabase:self.db]) {
-        __block  NSMutableArray *array = [NSMutableArray new];
-        [self zy_inDatabase:^{
-            //ORDER BY ID DESC --根据ID降序查找:ORDER BY ID ASC --根据ID升序序查找
-            ZY_FMResultSet*set = [self.db executeQuery:format];
-            while(set.next) {
-                //创建对象赋值
-                FTRecordModel* item = [[FTRecordModel alloc]init];
-                item.tm = [set longForColumn:@"tm"];
-                item.data= [set stringForColumn:@"data"];
-                item.op = [set stringForColumn:@"op"];
-                item._id = [set stringForColumn:@"_id"];
-                [array addObject:item];
-            }
-        }];
-        return array;
-    }else{
-        return nil;
-    }
-}
-- (NSInteger)getDatasCount
-{
-    __block NSInteger count =0;
-    [self zy_inDatabase:^{
-        NSString *sqlStr = [NSString stringWithFormat:@"SELECT count(*) as 'count' FROM %@", FT_DB_TRACE_EVENT_TABLE_NAME];
-          ZY_FMResultSet *set = [self.db executeQuery:sqlStr];
-
-          while ([set next]) {
-              count= [set intForColumn:@"count"];
-          }
-
+    __block  NSMutableArray *array = [NSMutableArray new];
+    [self zy_inDatabase:^(ZY_FMDatabase *db){
+        //ORDER BY ID DESC --根据ID降序查找:ORDER BY ID ASC --根据ID升序序查找
+        ZY_FMResultSet*set = [db executeQuery:format];
+        while(set.next) {
+            //创建对象赋值
+            FTRecordModel* item = [[FTRecordModel alloc]init];
+            item.tm = [set longForColumn:@"tm"];
+            item.data= [set stringForColumn:@"data"];
+            item.op = [set stringForColumn:@"op"];
+            item._id = [set stringForColumn:@"_id"];
+            [array addObject:item];
+        }
     }];
-     return count;
+    return array;
+}
+- (NSInteger)getDatasCount{
+    __block NSInteger count =0;
+    [self zy_inDatabase:^(ZY_FMDatabase *db){
+        NSString *sqlStr = [NSString stringWithFormat:@"SELECT count(*) as 'count' FROM %@", FT_DB_TRACE_EVENT_TABLE_NAME];
+        ZY_FMResultSet *set = [db executeQuery:sqlStr];
+        while ([set next]) {
+            count= [set intForColumn:@"count"];
+        }
+    }];
+    return count;
 }
 - (NSInteger)getDatasCountWithType:(NSString *)op{
     __block NSInteger count =0;
-       [self zy_inDatabase:^{
-           NSString *sqlStr = [NSString stringWithFormat:@"SELECT count(*) as 'count' FROM %@ WHERE op = '%@'", FT_DB_TRACE_EVENT_TABLE_NAME,op];
-             ZY_FMResultSet *set = [self.db executeQuery:sqlStr];
-
-             while ([set next]) {
-                 count= [set intForColumn:@"count"];
-             }
-
-       }];
-        return count;
-    
+    [self zy_inDatabase:^(ZY_FMDatabase *db){
+        NSString *sqlStr = [NSString stringWithFormat:@"SELECT count(*) as 'count' FROM %@ WHERE op = '%@'", FT_DB_TRACE_EVENT_TABLE_NAME,op];
+        ZY_FMResultSet *set = [db executeQuery:sqlStr];
+        while ([set next]) {
+            count= [set intForColumn:@"count"];
+        }
+    }];
+    return count;
 }
--(BOOL)deleteItemWithType:(NSString *)type tm:(long long)tm{
+-(BOOL)deleteItemWithType:(NSString *)type identify:(NSString *)identify count:(NSInteger)count{
     __block BOOL is;
-       [self zy_inDatabase:^{
-           NSString *sqlStr = [NSString stringWithFormat:@"DELETE FROM '%@' WHERE op = '%@' AND tm <= %lld ;",FT_DB_TRACE_EVENT_TABLE_NAME,type,tm];
-           is = [self.db executeUpdate:sqlStr];
-       }];
-       return is;
+    __weak __typeof(self) weakSelf = self;
+    [self zy_inDatabase:^(ZY_FMDatabase *db){
+        NSString *sqlStr = [NSString stringWithFormat:@"DELETE FROM '%@' WHERE op = '%@' AND _id <= %@ ;",FT_DB_TRACE_EVENT_TABLE_NAME,type,identify];
+        is = [db executeUpdate:sqlStr];
+        if(weakSelf.enableLimitWithDbSize){
+            NSString *str = [NSString stringWithFormat:@"PRAGMA incremental_vacuum(%ld)",(long)count];
+            [db executeUpdate:str];
+        }
+    }];
+    return is;
 }
--(BOOL)deleteItemWithType:(NSString *)type identify:(NSString *)identify{
+-(BOOL)deleteDataWithType:(NSString *)type count:(NSInteger)count{
     __block BOOL is;
-       [self zy_inDatabase:^{
-           NSString *sqlStr = [NSString stringWithFormat:@"DELETE FROM '%@' WHERE op = '%@' AND _id <= %@ ;",FT_DB_TRACE_EVENT_TABLE_NAME,type,identify];
-           is = [self.db executeUpdate:sqlStr];
-       }];
-       return is;
+    __weak __typeof(self) weakSelf = self;
+    [self zy_inDatabase:^(ZY_FMDatabase *db){
+        NSString *sqlStr = [NSString stringWithFormat:@"DELETE FROM '%@' WHERE _id in (SELECT _id from '%@' WHERE  op = '%@' ORDER by _id ASC LIMIT '%ld' )",FT_DB_TRACE_EVENT_TABLE_NAME,FT_DB_TRACE_EVENT_TABLE_NAME,type,(long)count];
+        is = [db executeUpdate:sqlStr];
+        if(weakSelf.enableLimitWithDbSize){
+            NSString *str = [NSString stringWithFormat:@"PRAGMA incremental_vacuum(%ld)",(long)count];
+            [db executeUpdate:str];
+        }
+    }];
+    return is;
 }
--(BOOL)deleteLoggingItem:(NSInteger)count{
+-(BOOL)deleteDataWithCount:(NSInteger)count{
     __block BOOL is;
-        [self zy_inDatabase:^{
-            NSString *sqlStr = [NSString stringWithFormat:@"DELETE FROM '%@' WHERE op = '%@' AND (select count(_id) FROM '%@')> %ld AND _id IN (select _id FROM '%@' ORDER BY _id ASC limit %ld) ;",FT_DB_TRACE_EVENT_TABLE_NAME,FT_DATA_TYPE_LOGGING,FT_DB_TRACE_EVENT_TABLE_NAME,(long)count,FT_DB_TRACE_EVENT_TABLE_NAME,(long)count];
-            is = [self.db executeUpdate:sqlStr];
-        }];
-        return is;
-}
--(BOOL)deleteItemWithTm:(long long)tm
-{   __block BOOL is;
-    [self zy_inDatabase:^{
-        NSString *sqlStr = [NSString stringWithFormat:@"DELETE FROM '%@' WHERE tm <= %lld ;",FT_DB_TRACE_EVENT_TABLE_NAME,tm];
-        is = [self.db executeUpdate:sqlStr];
+    __weak __typeof(self) weakSelf = self;
+    [self zy_inDatabase:^(ZY_FMDatabase *db){
+        NSString *sqlStr = [NSString stringWithFormat:@"DELETE FROM '%@' WHERE _id in (SELECT _id from '%@' ORDER by _id ASC LIMIT '%ld')",FT_DB_TRACE_EVENT_TABLE_NAME,FT_DB_TRACE_EVENT_TABLE_NAME,(long)count];
+        is = [db executeUpdate:sqlStr];
+        if(weakSelf.enableLimitWithDbSize){
+            NSString *str = [NSString stringWithFormat:@"PRAGMA incremental_vacuum(%ld)",(long)count];
+            [db executeUpdate:str];
+        }
     }];
     return is;
 }
 -(BOOL)deleteAllDatas{
     __block BOOL is;
-    [self zy_inDatabase:^{
+    [self zy_inDatabase:^(ZY_FMDatabase *db){
         NSString *sqlStr = [NSString stringWithFormat:@"DELETE FROM '%@';",FT_DB_TRACE_EVENT_TABLE_NAME];
-        is = [self.db executeUpdate:sqlStr];
+        is = [db executeUpdate:sqlStr];
+    }];
+    [self close];
+    return is;
+}
+- (void)close{
+    [self vacuumDB];
+    [[self dbQueue] close];
+}
+static long pageSize = 0;
+- (long)checkDatabaseSize{
+    __block long fileSize = -1;
+    [self zy_inDatabase:^(ZY_FMDatabase *db){
+        if(pageSize<=0){
+            ZY_FMResultSet *set = [db executeQuery:@"PRAGMA page_size;"];
+            while([set next]) {
+                pageSize = [set longForColumn:@"page_size"];
+            }
+            [set close];
+        }
+        ZY_FMResultSet *countSet = [db executeQuery:@"PRAGMA page_count;"];
+        long pageCount = 0;
+        while([countSet next]) {
+            pageCount = [countSet longForColumn:@"page_count"];
+        }
+        [countSet close];
+        fileSize = pageCount * pageSize;
+    }];
+    return fileSize;
+}
+- (BOOL)zy_isExistTable:(NSString *)tableName{
+    __block NSInteger count = 0;
+    [self zy_inDatabase:^(ZY_FMDatabase *db){
+        ZY_FMResultSet *set = [db executeQuery:@"SELECT count(*) as 'count' FROM sqlite_master "
+                               "WHERE type ='table' and name = ?", tableName];
+        while([set next]) {
+            count = [set intForColumn:@"count"];
+        }
+        [set close];
+    }];
+    
+    return count > 0;
+}
+- (void)zy_inDatabase:(void (^)(ZY_FMDatabase *db))block{
+    [[self dbQueue] inDatabase:^(ZY_FMDatabase *db) {
+        block(db);
+    }];
+}
+- (BOOL)vacuumDB{
+    __block BOOL is;
+    [self zy_inDatabase:^(ZY_FMDatabase *db){
+        is = [db executeUpdate:@"vacuum;"];
     }];
     return is;
 }
-//-(BOOL)deleteItemWithId:(long )Id
-//{   __block BOOL is;
-//    [self zy_inDatabase:^{
-//     NSString *sqlStr = [NSString stringWithFormat:@"DELETE FROM '%@' WHERE _id <= %ld ;",FT_DB_TRACE_EVENT_TABLE_NAME,Id];
-//        is = [self.db executeUpdate:sqlStr];
-//    }];
-//    return is;
-//}
-- (void)close
-{
-    [_db close];
+- (BOOL)autoVacuum{
+    __block BOOL is;
+    [self zy_inDatabase:^(ZY_FMDatabase *db){
+        is = [db executeUpdate:@"PRAGMA auto_vacuum = INCREMENTAL"];
+        if(is){
+            FTInnerLogDebug(@"PRAGMA auto_vacuum = INCREMENTAL Success");
+        }
+    }];
+    return is;
 }
--(BOOL)isOpenDatabase:(ZY_FMDatabase *)db{
-    if (![db open]) {
-        [db open];
+-(void)setEnableLimitWithDbSize:(BOOL)enableLimitWithDbSize{
+    _enableLimitWithDbSize = enableLimitWithDbSize;
+    if(enableLimitWithDbSize){
+        [self autoVacuum];
     }
-    return YES;
-}
-- (BOOL)zy_isExistTable:(NSString *)tableName
-{
-    __block NSInteger count = 0;
-    [self zy_inDatabase:^{
-        ZY_FMResultSet *set = [self.db executeQuery:@"SELECT count(*) as 'count' FROM sqlite_master "
-                                                "WHERE type ='table' and name = ?", tableName];
-           while([set next]) {
-               count = [set intForColumn:@"count"];
-           }
-           [set close];
-    }];
-   
-    return count > 0;
-}
-- (void)zy_inDatabase:(void(^)(void))block
-{
-
-    [[self dbQueue] inDatabase:^(ZY_FMDatabase *db) {
-        block();
-    }];
-}
-
-- (void)zy_inTransaction:(void(^)(BOOL *rollback))block
-{
-
-    [[self dbQueue] inTransaction:^(ZY_FMDatabase *db, BOOL *rollback) {
-        block(rollback);
-    }];
-
 }
 - (void)shutDown{
+    [self close];
     onceToken = 0;
     dbTool = nil;
 }
