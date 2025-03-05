@@ -19,6 +19,10 @@
 #import "FTBaseInfoHandler.h"
 #import "FTDBDataCachePolicy.h"
 #import "FTJSONUtil.h"
+
+static const NSInteger kMaxRetryCount = 5;
+static const NSTimeInterval kInitialRetryDelay = 0.5; // 初始500ms延迟
+
 @interface FTTrackDataManager ()<FTAppLifeCycleDelegate,FTNetworkChangeObserver>{
     pthread_rwlock_t _uploadWorkLock;
 }
@@ -207,7 +211,7 @@ static dispatch_once_t onceToken;
 - (void)privateUpload{
     @try {
         if (self.isUploading) {
-            FTInnerLogDebug(@"[NETWORK]: privateUpload ingnore");
+            FTInnerLogDebug(@"[NETWORK]: privateUpload ignore");
             return;
         }
         FTInnerLogDebug(@"[NETWORK]:privateUpload start upload");
@@ -225,12 +229,15 @@ static dispatch_once_t onceToken;
 -(void)flushWithType:(NSString *)type{
     NSArray *events = [[FTTrackerEventDBTool sharedManger] getFirstRecords:self.uploadPageSize withType:type];
     while (events.count > 0) {
-        if(![self flushWithEvents:events type:type]){
+        FTInnerLogDebug(@"[NETWORK][%@] 开始上报事件(本次上报事件数:%lu)", type,(unsigned long)[events count]);
+        FTRequest *request = [FTRequest createRequestWithEvents:events type:type];
+        if(![self flushWithRequest:request]){
             break;
         }
         FTRecordModel *model = [events lastObject];
         if (![[FTTrackerEventDBTool sharedManger] deleteItemWithType:type identify:model._id count:events.count]) {
             FTInnerLogError(@"数据库删除已上传数据失败");
+            break;
         }
         if([type isEqualToString:FT_DATA_TYPE_LOGGING]){
             _dataCachePolicy.logCount -= events.count;
@@ -246,30 +253,43 @@ static dispatch_once_t onceToken;
         }
     }
 }
--(BOOL)flushWithEvents:(NSArray *)events type:(NSString *)type{
+-(BOOL)flushWithRequest:(FTRequest *)request{
     @try {
         __block BOOL success = NO;
-        @autoreleasepool {
-            FTInnerLogDebug(@"[NETWORK][%@] 开始上报事件(本次上报事件数:%lu)", type,(unsigned long)[events count]);
-            dispatch_semaphore_t  flushSemaphore = dispatch_semaphore_create(0);
-            FTRequest *request = [FTRequest createRequestWithEvents:events type:type];
-            
-            [self.networkManager sendRequest:request completion:^(NSHTTPURLResponse * _Nonnull httpResponse, NSData * _Nullable data, NSError * _Nullable error) {
-                if (error || ![httpResponse isKindOfClass:[NSHTTPURLResponse class]]) {
-                    FTInnerLogError(@"[NETWORK] %@", [NSString stringWithFormat:@"Network failure: %@", error ? error : @"Request 初始化失败，请检查数据上报地址是否正确"]);
-                    success = NO;
+        int retryCount = 0;
+        NSTimeInterval delay = kInitialRetryDelay; // 初始延迟500毫秒
+        while (!success) {
+            @autoreleasepool {
+                dispatch_semaphore_t  flushSemaphore = dispatch_semaphore_create(0);
+                [self.networkManager sendRequest:request completion:^(NSHTTPURLResponse * _Nonnull httpResponse, NSData * _Nullable data, NSError * _Nullable error) {
+                    if (error) {
+                        FTInnerLogError(@"[NETWORK] Network error: %@",error);
+                        success = NO;
+                        dispatch_semaphore_signal(flushSemaphore);
+                        return;
+                    }
+                    NSInteger statusCode = httpResponse.statusCode;
+                    success = (statusCode >=200 && statusCode < 500);
+                    FTInnerLogDebug(@"[NETWORK] Upload Response statusCode : %ld",(long)statusCode);
+                    if (!success && data.length>0) {
+                        FTInnerLogError(@"[NETWORK] 服务器异常 稍后再试 responseData = %@",[FTJSONUtil dictionaryWithJsonString:[[NSString alloc] initWithData:data encoding:NSUTF8StringEncoding]]);
+                    }
                     dispatch_semaphore_signal(flushSemaphore);
-                    return;
+                }];
+                dispatch_semaphore_wait(flushSemaphore, DISPATCH_TIME_FOREVER);
+                
+                if (!success) {
+                    if (retryCount < kMaxRetryCount - 1) {
+                        FTInnerLogDebug(@"[NETWORK] 请求失败，准备进行第%d次重试，等待%.0f毫秒", retryCount + 1, delay*1000);
+                        [NSThread sleepForTimeInterval:delay];
+                        delay += kInitialRetryDelay; // 退避
+                        retryCount++;
+                    } else {
+                        FTInnerLogError(@"[NETWORK] 请求失败，已达最大重试次数");
+                        break; // 达到最大重试次数
+                    }
                 }
-                NSInteger statusCode = httpResponse.statusCode;
-                success = (statusCode >=200 && statusCode < 500);
-                FTInnerLogDebug(@"[NETWORK] Upload Response statusCode : %ld",(long)statusCode);
-                if (statusCode != 200 && data.length>0) {
-                    FTInnerLogError(@"[NETWORK] 服务器异常 稍后再试 responseData = %@",[FTJSONUtil dictionaryWithJsonString:[[NSString alloc] initWithData:data encoding:NSUTF8StringEncoding]]);
-                }
-                dispatch_semaphore_signal(flushSemaphore);
-            }];
-            dispatch_semaphore_wait(flushSemaphore, DISPATCH_TIME_FOREVER);
+            }
         }
         return success;
     }  @catch (NSException *exception) {
