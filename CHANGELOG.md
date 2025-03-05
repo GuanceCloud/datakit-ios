@@ -1,3 +1,8 @@
+# 1.5.14-alpha.1
+1. 数据同步优化，添加失败重传逻辑
+2. `FTMobileConfig.enableDataIntegerCompatible` 默认开启
+3. 新增 RUM Resource 数据字段 `resource_first_byte_time`、`resource_dns_time`、`resource_download_time`、`resource_connect_time`、`resource_ssl_time`、`resource_redirect_time`，在观测云上的优化展示并支持 APM 火焰图的时间对齐
+---
 # 1.5.13
 1. 优化页面采集逻辑，防止特殊视图导致 RUM View 采集缺失
 ---
