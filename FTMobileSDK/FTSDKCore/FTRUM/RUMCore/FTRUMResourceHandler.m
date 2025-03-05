@@ -96,6 +96,12 @@
             [fields setValue:model.metrics.duration forKey:FT_DURATION];
         }
         [fields setValue:model.metrics.resource_trans forKey:FT_KEY_RESOURCE_TRANS];
+        [fields setValue:model.metrics.resource_dns_time forKey:FT_KEY_RESOURCE_DNS_TIME];
+        [fields setValue:model.metrics.resource_ssl_time forKey:FT_KEY_RESOURCE_SSL_TIME];
+        [fields setValue:model.metrics.resource_download_time forKey:FT_KEY_RESOURCE_DOWNLOAD_TIME];
+        [fields setValue:model.metrics.resource_first_byte_time forKey:FT_KEY_RESOURCE_FIRST_BYTE_TIME];
+        [fields setValue:model.metrics.resource_redirect_time forKey:FT_KEY_RESOURCE_REDIRECT_TIME];
+        [fields setValue:model.metrics.resource_connect_time forKey:FT_KEY_RESOURCE_CONNECT_TIME];    
     }
     NSDictionary *sessionTag = [self.context getGlobalSessionViewActionTags];
     NSMutableDictionary *tags = [NSMutableDictionary dictionaryWithDictionary:context];
