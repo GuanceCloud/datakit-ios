@@ -21,7 +21,7 @@
 #import "FTTrackDataManager.h"
 #import "NSDate+FTUtil.h"
 #import "FTBaseInfoHandler.h"
-
+#import "FTTestUtils.h"
 @interface FTRequestTest : XCTestCase
 @property (nonatomic, strong) XCTestExpectation *expectation;
 @end
@@ -97,23 +97,7 @@
         }
     }
 }
-- (unsigned long long)base36ToDecimal:(NSString *)str {
-    NSString *str36 = str.copy;
-    NSString *param = @"0123456789abcdefghijklmnopqrstuvwxyz";
-    unsigned long long num = 0;
-    for (unsigned long long i = 0; i < str36.length; i++) {
-        for (NSInteger j = 0; j < param.length; j++) {
-            char iChar = [str36 characterAtIndex:i];
-            char jChar = [param characterAtIndex:j];
-            if (iChar == jChar) {
-                unsigned long long n = j * pow(36, str36.length - i - 1);
-                num += n;
-                break;
-            }
-        }
-    }
-    return num;
-}
+
 - (void)testWrongFormat{
     [self mockHttp];
     FTRecordModel *model = [FTModelHelper createWrongFormatRumModel];
@@ -135,6 +119,7 @@
     NSMutableURLRequest *urlRequest2 = [[NSMutableURLRequest alloc]initWithURL:request.absoluteURL cachePolicy:NSURLRequestUseProtocolCachePolicy timeoutInterval:30.0];
 
     NSMutableURLRequest *mRequest = [request adaptedRequest:urlRequest];
+    rum?[FTBaseInfoHandler increaseRumRequestSerialNumber]:[FTBaseInfoHandler increaseLogRequestSerialNumber];
     NSMutableURLRequest *mRequest2 = [request adaptedRequest:urlRequest2];
     NSString *bodyStr = [[NSString alloc]initWithData:mRequest.HTTPBody encoding:NSUTF8StringEncoding];
     NSString *bodyStr2 = [[NSString alloc]initWithData:mRequest2.HTTPBody encoding:NSUTF8StringEncoding];
@@ -158,7 +143,7 @@
     array1 = [[sdk_data_id1 substringFromIndex:12] componentsSeparatedByString:@"."];
     array2 = [[sdk_data_id2 substringFromIndex:12] componentsSeparatedByString:@"."];
     // packageId +1
-    XCTAssertTrue([self base36ToDecimal:array2[0]] - [self base36ToDecimal:array1[0]] == 1);
+    XCTAssertTrue([FTTestUtils base36ToDecimal:array2[0]] - [FTTestUtils base36ToDecimal:array1[0]] == 1);
     // 进程 id 一致
     XCTAssertTrue([array1[1] isEqualToString:array2[1]]);
     // 数据个数
