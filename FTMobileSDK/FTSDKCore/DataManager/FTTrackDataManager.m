@@ -281,7 +281,7 @@ static dispatch_once_t onceToken;
                 dispatch_semaphore_wait(flushSemaphore, DISPATCH_TIME_FOREVER);
                 
                 if (!success) {
-                    if (retryCount < kMaxRetryCount - 1) {
+                    if (retryCount < kMaxRetryCount) {
                         FTInnerLogDebug(@"[NETWORK] 请求失败，准备进行第%d次重试，等待%.0f毫秒", retryCount + 1, delay*1000);
                         [NSThread sleepForTimeInterval:delay];
                         delay += kInitialRetryDelay; // 退避
