@@ -32,6 +32,7 @@ typedef void (^CompletionHandler)(NSData * _Nullable data, NSURLResponse * _Null
 
 @implementation NSURLSession (FTSwizzler)
 +(void)load{
+#if !defined(FT_DISABLE_SWIZZLING_RESOURCE) || FT_DISABLE_SWIZZLING_RESOURCE == 0
     static dispatch_once_t onceToken;
     dispatch_once(&onceToken, ^{
         NSError *error = NULL;
@@ -46,6 +47,7 @@ typedef void (^CompletionHandler)(NSData * _Nullable data, NSURLResponse * _Null
             [taskClass ft_swizzleMethod:@selector(resume) withMethod:@selector(ft_resume) error:&error];
         }
     });
+#endif
 }
 - (NSURLSessionDataTask *)ft_dataTaskWithURL:(NSURL *)url completionHandler:(CompletionHandler)completionHandler{
     id<FTURLSessionInterceptorProtocol> rumIntercepter = [[FTURLSessionInstrumentation sharedInstance] rumInterceptor:self.delegate];
