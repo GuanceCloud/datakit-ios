@@ -117,7 +117,7 @@ NSString * FTQueryStringFromParameters(NSDictionary *parameters,FTParameterType 
         NSDictionary *tag = opdata[FT_TAGS];
         NSDictionary *field = opdata[FT_FIELDS];
         if(source.length>0 && field.count>0 && tag.count>0){
-            NSString *dataId = [NSString stringWithFormat:@"%@.%@",packageId,[FTBaseInfoHandler randomUUID]];
+            NSString *dataId = [NSString stringWithFormat:@"%@.%@",packageId,[FTBaseInfoHandler random16UUID]];
             NSMutableDictionary *tagDict = @{@"sdk_data_id":dataId}.mutableCopy;
             if(tag.allKeys.count>0){
                 [tagDict addEntriesFromDictionary:tag];
