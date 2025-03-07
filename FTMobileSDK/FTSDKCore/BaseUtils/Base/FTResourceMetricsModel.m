@@ -24,9 +24,9 @@
                     [transactionMetrics removeObjectAtIndex:idx];
                 }
             }];
-            _duration = [metrics.taskInterval.startDate ft_nanosecondTimeIntervalToDate:metrics.taskInterval.endDate];
+            _fetchStartNsTimeInterval = [metrics.taskInterval.startDate ft_nanosecondTimeStamp];
+            _fetchEndNsTimeInterval = [metrics.taskInterval.endDate ft_nanosecondTimeStamp];
             NSURLSessionTaskTransactionMetrics *taskMetrics = [transactionMetrics lastObject];
-            NSDate *taskStartDate = metrics.taskInterval.startDate;
             [transactionMetrics removeLastObject];
             if(transactionMetrics.count>0){
                 NSMutableArray<NSDate *> *redirectionStarts = [NSMutableArray array];
@@ -40,56 +40,23 @@
                     }
                 }
                 if(redirectionStarts.firstObject && redirectionEnds.lastObject){
-                    _resource_redirect_time = @{
-                        FT_DURATION:[redirectionStarts.firstObject ft_nanosecondTimeIntervalToDate:redirectionEnds.lastObject],
-                        FT_KEY_START:[taskStartDate ft_nanosecondTimeIntervalToDate:redirectionStarts.firstObject]
-                    };
+                    _redirectionStartNsTimeInterval = [redirectionStarts.firstObject ft_nanosecondTimeStamp];
+                    _redirectionEndNsTimeInterval = [redirectionEnds.lastObject ft_nanosecondTimeStamp];
                 }
             }
-            if(taskMetrics){
+            if(taskMetrics!=nil){
                 _resourceFetchTypeLocalCache = NO;
                 // DNS
-                if(taskMetrics.domainLookupStartDate && taskMetrics.domainLookupEndDate){
-                    _resource_dns = [taskMetrics.domainLookupStartDate ft_nanosecondTimeIntervalToDate:taskMetrics.domainLookupEndDate];
-                    _resource_dns_time = @{FT_DURATION:_resource_dns,
-                                           FT_KEY_START:[taskStartDate ft_nanosecondTimeIntervalToDate:taskMetrics.domainLookupStartDate],
-                    };
-                }
-                // TCP
-                if(taskMetrics.connectStartDate && taskMetrics.connectEndDate){
-                    _resource_tcp = [taskMetrics.connectStartDate ft_nanosecondTimeIntervalToDate:taskMetrics.connectEndDate];
-                    _resource_connect_time = @{FT_DURATION:_resource_tcp,
-                                               FT_KEY_START:[taskStartDate ft_nanosecondTimeIntervalToDate:taskMetrics.connectStartDate]
-                    };
-                }
-                // SSL
-                if (taskMetrics.secureConnectionStartDate &&taskMetrics.secureConnectionEndDate) {
-                    _resource_ssl = [taskMetrics.secureConnectionStartDate ft_nanosecondTimeIntervalToDate:taskMetrics.secureConnectionEndDate];
-                    _resource_ssl_time = @{FT_DURATION:_resource_ssl,
-                                           FT_KEY_START:[taskStartDate ft_nanosecondTimeIntervalToDate:taskMetrics.secureConnectionStartDate]
-                    };
-                }
-                // TTFB\first_byte
-                if(taskMetrics.requestStartDate && taskMetrics.responseStartDate){
-                    NSNumber *duration = [taskMetrics.requestStartDate ft_nanosecondTimeIntervalToDate:taskMetrics.responseStartDate];
-                    _resource_ttfb = duration;
-                    _resource_first_byte = duration;
-                    _resource_first_byte_time = @{
-                        FT_DURATION:_resource_first_byte,
-                        FT_KEY_START:[taskStartDate ft_nanosecondTimeIntervalToDate:taskMetrics.requestStartDate],
-                    };
-                }
-                // TRANS
-                if(taskMetrics.requestStartDate && taskMetrics.responseEndDate){
-                    _resource_trans =[taskMetrics.requestStartDate ft_nanosecondTimeIntervalToDate:taskMetrics.responseEndDate];
-                }
-                // download_time
-                if(taskMetrics.responseStartDate && taskMetrics.responseEndDate){
-                    _resource_download_time = @{FT_DURATION:[taskMetrics.responseStartDate ft_nanosecondTimeIntervalToDate:taskMetrics.responseEndDate],
-                                                FT_KEY_START:[taskStartDate ft_nanosecondTimeIntervalToDate:taskMetrics.responseStartDate]
-                                                
-                    };
-                }
+                _dnsStartNsTimeInterval = taskMetrics.domainLookupStartDate?[taskMetrics.domainLookupStartDate ft_nanosecondTimeStamp]:0;
+                _dnsEndNsTimeInterval = taskMetrics.domainLookupEndDate?[taskMetrics.domainLookupEndDate ft_nanosecondTimeStamp]:0;
+                _connectStartNsTimeInterval = taskMetrics.connectStartDate?[taskMetrics.connectStartDate ft_nanosecondTimeStamp]:0;
+                _connectEndNsTimeInterval = taskMetrics.connectEndDate?[taskMetrics.connectEndDate ft_nanosecondTimeStamp]:0;
+                _sslStartNsTimeInterval = taskMetrics.secureConnectionStartDate?[taskMetrics.secureConnectionStartDate ft_nanosecondTimeStamp]:0;
+                _sslEndNsTimeInterval = taskMetrics.secureConnectionEndDate?[taskMetrics.secureConnectionEndDate ft_nanosecondTimeStamp]:0;
+                _requestStartNsTimeInterval = taskMetrics.requestStartDate?[taskMetrics.requestStartDate ft_nanosecondTimeStamp]:0;
+                _requestEndNsTimeInterval = taskMetrics.requestEndDate?[taskMetrics.requestEndDate ft_nanosecondTimeStamp]:0;
+                _responseStartNsTimeInterval = taskMetrics.responseStartDate?[taskMetrics.responseStartDate ft_nanosecondTimeStamp]:0;
+                _responseEndNsTimeInterval = taskMetrics.responseEndDate?[taskMetrics.responseEndDate ft_nanosecondTimeStamp]:0;
                 if (@available(iOS 13,macOS 10.15,tvOS 13.0, *)) {
                     _responseSize = @(taskMetrics.countOfResponseBodyBytesAfterDecoding);
                     _remoteAddress = taskMetrics.remoteAddress;
@@ -100,5 +67,117 @@
         }
     }
     return self;
+}
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wdeprecated-declarations"
+- (NSNumber *)dns{
+    long long duration = self.dnsEndNsTimeInterval - self.dnsStartNsTimeInterval;
+    if(duration>0){
+        return @(duration);
+    }
+    return self.resource_dns;
+}
+- (NSNumber *)tcp{
+    long long duration = self.connectEndNsTimeInterval - self.connectStartNsTimeInterval;
+    if(duration>0){
+        return @(duration);
+    }
+    return self.resource_tcp;
+}
+- (NSNumber *)ssl{
+    long long duration = self.sslEndNsTimeInterval - self.sslStartNsTimeInterval;
+    if(duration>0){
+        return @(duration);
+    }
+    return self.resource_ssl;
+}
+- (NSNumber *)ttfb{
+    long long duration = self.responseStartNsTimeInterval - self.requestStartNsTimeInterval;
+    if(duration>0){
+        return @(duration);
+    }
+    return self.resource_ttfb;
+}
+- (NSNumber *)trans{
+    long long duration = self.responseStartNsTimeInterval - self.requestStartNsTimeInterval;
+    if(duration>0){
+        return @(duration);
+    }
+    return self.resource_trans;
+}
+- (NSNumber *)firstByte{
+    long long duration = self.responseStartNsTimeInterval - self.requestStartNsTimeInterval;
+    if(duration>0){
+        return @(duration);
+    }
+    return self.resource_first_byte;
+}
+- (NSNumber *)fetchInterval{
+    long long duration = self.fetchEndNsTimeInterval - self.fetchStartNsTimeInterval;
+    if(duration>0){
+        return @(duration);
+    }
+    return self.duration;
+}
+#pragma clang diagnostic pop
+-(NSDictionary *)resource_redirect_time{
+    long long duration = _redirectionEndNsTimeInterval-_redirectionStartNsTimeInterval;
+    if(duration>0){
+        return  @{
+            FT_DURATION:@(duration),
+            FT_KEY_START:@(_redirectionStartNsTimeInterval-_fetchStartNsTimeInterval)
+        };
+    }
+    return nil;
+}
+-(NSDictionary *)resource_dns_time{
+    long long duration = _dnsEndNsTimeInterval-_dnsStartNsTimeInterval;
+    if(duration>0){
+        return  @{
+            FT_DURATION:@(duration),
+            FT_KEY_START:@(_dnsStartNsTimeInterval-_fetchStartNsTimeInterval)
+        };
+    }
+    return nil;
+}
+-(NSDictionary *)resource_ssl_time{
+    long long duration = _sslEndNsTimeInterval-_sslStartNsTimeInterval;
+    if(duration>0){
+        return  @{
+            FT_DURATION:@(duration),
+            FT_KEY_START:@(_sslStartNsTimeInterval-_fetchStartNsTimeInterval)
+        };
+    }
+    return nil;
+}
+-(NSDictionary *)resource_connect_time{
+    long long duration = _connectEndNsTimeInterval-_connectStartNsTimeInterval;
+    if(duration>0){
+        return  @{
+            FT_DURATION:@(duration),
+            FT_KEY_START:@(_connectStartNsTimeInterval-_fetchStartNsTimeInterval)
+        };
+    }
+    return nil;
+}
+-(NSDictionary *)resource_first_byte_time{
+    long long duration = _responseStartNsTimeInterval-_requestStartNsTimeInterval;
+    if(duration>0){
+        return  @{
+            FT_DURATION:@(duration),
+            FT_KEY_START:@(_requestStartNsTimeInterval-_fetchStartNsTimeInterval)
+        };
+    }
+    return nil;
+}
+-(NSDictionary *)resource_download_time{
+    long long duration = _responseEndNsTimeInterval-_responseStartNsTimeInterval;
+    if(duration>0){
+        return  @{
+            FT_DURATION:@(duration),
+            FT_KEY_START:@(_responseStartNsTimeInterval-_fetchStartNsTimeInterval)
+        };
+    }
+    return nil;
 }
 @end
