@@ -1,3 +1,7 @@
+# 1.5.14-beta.1
+1. 新增支持通过宏定义 `FT_DISABLE_SWIZZLING_RESOURCE` 关闭 SDK 内 URLSession Method Swizzling 方法
+2. 优化数据同步链路追踪手段
+---
 # 1.5.14-alpha.1
 1. 数据同步优化，添加失败重传逻辑
 2. `FTMobileConfig.enableDataIntegerCompatible` 默认开启
