@@ -148,6 +148,9 @@
     XCTAssertTrue([array1[1] isEqualToString:array2[1]]);
     // 数据个数
     XCTAssertTrue([array2[2] intValue] == [array1[2] intValue] == 1);
+    // packageId 末尾随机数
+    XCTAssertTrue([array2[3] stringValue].length == 12);
+    XCTAssertFalse([array2[3] isEqualToString:array1[3]]);
     // 数据 id 不一致
     XCTAssertFalse([[array1 lastObject] isEqualToString:[array2 lastObject]]);
 

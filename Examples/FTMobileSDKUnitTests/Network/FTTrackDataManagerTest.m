@@ -352,6 +352,9 @@
 - (void)testNetworkSuccessIncreasePackageID{
     NSMutableArray<NSInputStream *> *datas = [NSMutableArray new];
     __block id<OHHTTPStubsDescriptor> stub = [OHHTTPStubs stubRequestsPassingTest:^BOOL(NSURLRequest *request) {
+        NSString *packageId = [request.allHTTPHeaderFields valueForKey:@"X-Pkg-Id"];
+        XCTAssertTrue(packageId);
+        XCTAssertTrue([packageId hasPrefix:@"rumm-"]);
         return YES;
     } withStubResponse:^OHHTTPStubsResponse*(NSURLRequest *request) {
         [datas addObject:request.HTTPBodyStream];
@@ -413,6 +416,10 @@
     XCTAssertTrue([array1[1] isEqualToString:array2[1]]);
     // 数据个数
     XCTAssertTrue([array2[2] intValue] == [array1[2] intValue] == 1);
+    // packageId 末尾12位随机数
+    XCTAssertTrue([array2[3] stringValue].length == 12);
+    
+    XCTAssertFalse([array2[3] isEqualToString:array1[3]]);
     // 数据 id 不一致
     XCTAssertFalse([[array1 lastObject] isEqualToString:[array2 lastObject]]);
 }
