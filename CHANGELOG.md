@@ -1,3 +1,6 @@
+# 1.5.14-beta.2
+1. 同 1.5.14-beta.1
+---
 # 1.5.14-beta.1
 1. 新增支持通过宏定义 `FT_DISABLE_SWIZZLING_RESOURCE` 关闭 SDK 内 URLSession Method Swizzling 方法
 2. 优化数据同步链路追踪手段
