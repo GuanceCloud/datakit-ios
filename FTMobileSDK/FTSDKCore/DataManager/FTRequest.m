@@ -77,7 +77,7 @@
      
     if (self.requestBody&&self.events) {
         NSString *packageId = [NSString stringWithFormat:@"%@.%@.%lu.%@",self.serialNumber,FTNetworkInfoManager.sharedInstance.processID,(unsigned long)self.events.count,[FTBaseInfoHandler generate12CharBase62RandomString]];
-        [mutableRequest setValue:packageId forHTTPHeaderField:@"X-Pkg-Id"];
+        [mutableRequest setValue:[NSString stringWithFormat:@"rumm-%@",packageId] forHTTPHeaderField:@"X-Pkg-Id"];
         NSString *body = [self.requestBody getRequestBodyWithEventArray:self.events packageId:packageId enableIntegerCompatible:self.enableDataIntegerCompatible];
         mutableRequest.HTTPBody = [body dataUsingEncoding:NSUTF8StringEncoding];
     }
