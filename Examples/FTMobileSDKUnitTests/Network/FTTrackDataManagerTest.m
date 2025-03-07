@@ -310,10 +310,15 @@
 - (void)testNetworkFail_NetworkRetry{
     [FTLog enableLog:YES];
     NSMutableArray<NSInputStream *> *datas = [NSMutableArray new];
+    NSMutableSet *set = [[NSMutableSet alloc]init];
     __block id<OHHTTPStubsDescriptor> stub = [OHHTTPStubs stubRequestsPassingTest:^BOOL(NSURLRequest *request) {
+        NSString *str = [request.allHTTPHeaderFields valueForKey:@"X-Pkg-Id"];
+        if(str){
+            [set addObject:[request.allHTTPHeaderFields valueForKey:@"X-Pkg-Id"]];
+            [datas addObject:request.HTTPBodyStream];
+        }
         return YES;
     } withStubResponse:^OHHTTPStubsResponse*(NSURLRequest *request) {
-        [datas addObject:request.HTTPBodyStream];
         NSString *data  =[FTJSONUtil convertToJsonData:@{@"data":@"Hello World!",@"code":@501}];
         NSData *requestData = [data dataUsingEncoding:NSUTF8StringEncoding];
         return [OHHTTPStubsResponse responseWithData:requestData statusCode:501 headers:nil];
@@ -338,7 +343,7 @@
     XCTAssertTrue(endTime-startTime>7 && endTime-startTime<9);
     NSString *endPackageId = [FTBaseInfoHandler rumRequestSerialNumber];
     XCTAssertTrue([endPackageId isEqualToString:packageId]);
-    XCTAssertTrue(datas.count == 6);
+    XCTAssertTrue(set.count == 6);
     
     
     NSString *first = [[NSString alloc]initWithData:[FTTestUtils transStreamToData:datas.firstObject] encoding:NSUTF8StringEncoding];
