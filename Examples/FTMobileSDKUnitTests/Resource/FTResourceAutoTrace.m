@@ -245,14 +245,13 @@
         if ([source isEqualToString:FT_RUM_SOURCE_RESOURCE]) {
             hasResCount ++;
             XCTAssertTrue([fields.allKeys containsObject:FT_KEY_RESOURCE_TCP]);
-            XCTAssertTrue([fields.allKeys containsObject:FT_KEY_RESOURCE_SSL]);
+            
             NSNumber *dnsStart = @0;
             if([fields.allKeys containsObject:FT_KEY_RESOURCE_DNS]){
                 XCTAssertTrue([fields.allKeys containsObject:FT_KEY_RESOURCE_DNS_TIME]);
                 dnsStart = fields[FT_KEY_RESOURCE_DNS_TIME][FT_KEY_START];
             }
-            XCTAssertTrue([fields.allKeys containsObject:FT_KEY_RESOURCE_SSL_TIME]);
-            NSNumber *sslStart = fields[FT_KEY_RESOURCE_SSL_TIME][FT_KEY_START];
+           
             XCTAssertTrue([fields.allKeys containsObject:FT_KEY_RESOURCE_CONNECT_TIME]);
             NSNumber *connectStart = fields[FT_KEY_RESOURCE_CONNECT_TIME][FT_KEY_START];
             XCTAssertTrue([fields.allKeys containsObject:FT_KEY_RESOURCE_FIRST_BYTE_TIME]);
@@ -260,9 +259,15 @@
             XCTAssertTrue([fields.allKeys containsObject:FT_KEY_RESOURCE_DOWNLOAD_TIME]);
             NSNumber *downloadStart = fields[FT_KEY_RESOURCE_DOWNLOAD_TIME][FT_KEY_START];
             XCTAssertTrue(downloadStart.longValue>firstByteStart.longValue);
-            XCTAssertTrue(firstByteStart.longValue>sslStart.longValue);
-            XCTAssertTrue(sslStart.longValue>connectStart.longValue);
+            XCTAssertTrue(firstByteStart.longValue>connectStart.longValue);
             XCTAssertTrue(connectStart.longValue>dnsStart.longValue);
+            if ([[tags[FT_KEY_RESOURCE_URL] stringValue] hasPrefix:@"https:"]) {
+                XCTAssertTrue([fields.allKeys containsObject:FT_KEY_RESOURCE_SSL]);
+                XCTAssertTrue([fields.allKeys containsObject:FT_KEY_RESOURCE_SSL_TIME]);
+                NSNumber *sslStart = fields[FT_KEY_RESOURCE_SSL_TIME][FT_KEY_START];
+                XCTAssertTrue(firstByteStart.longValue>sslStart.longValue);
+                XCTAssertTrue(sslStart.longValue>connectStart.longValue);
+            }
         }
     }];
     if(trace){
