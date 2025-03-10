@@ -47,6 +47,7 @@
     [_firstButton addTarget:self action:@selector(firstAction:) forControlEvents:UIControlEventTouchUpInside];
     _firstButton.isAccessibilityElement = YES;
     _firstButton.layer.borderWidth = 1;
+    _firstButton.accessibilityLabel = @"FirstButton";
     _firstButton.layer.borderColor = [UIColor grayColor].CGColor;
     [_scrollView addSubview:_firstButton];
   
@@ -56,6 +57,7 @@
     _secondButton.frame = CGRectMake(x, y, 100, 30);
     [_secondButton setTitle:@"ActivityEnd" forState:UIControlStateNormal];
     [_secondButton addTarget:self action:@selector(secondAction:) forControlEvents:UIControlEventTouchUpInside];
+    _secondButton.accessibilityLabel = @"SecondButton";
     _secondButton.isAccessibilityElement = YES;
     [_scrollView addSubview:_secondButton];
     UITextField *text = [[UITextField alloc]initWithFrame:CGRectMake(x+200, 40, 100, 30)];
@@ -114,12 +116,7 @@
     _imageView.userInteractionEnabled = YES;
     _imageView.frame = CGRectMake(x, y, width, 50);
     _imageView.backgroundColor = [UIColor lightGrayColor];
-    dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)(1 * NSEC_PER_SEC)), dispatch_get_main_queue(), ^{
-        self.imageView.image = [UIImage imageNamed:@"order_status_top"];
-    });
-    dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)(2 * NSEC_PER_SEC)), dispatch_get_main_queue(), ^{
-        self.imageView.image = nil;
-    });
+    _imageView.image = [UIImage imageNamed:@"order_status_top"];
     _imageView.userInteractionEnabled = YES;
     _imageView.accessibilityLabel = @"IMAGE_CLICK";
     [_scrollView addSubview:_imageView];
