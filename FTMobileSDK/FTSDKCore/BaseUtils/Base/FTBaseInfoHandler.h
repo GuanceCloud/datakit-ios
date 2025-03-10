@@ -26,7 +26,9 @@ NS_ASSUME_NONNULL_BEGIN
 /// - Parameter sampling: 用户设置的采样率
 /// - Returns: 是否进行采样
 + (BOOL)randomSampling:(int)sampling;
-
++ (NSString *)generate12CharBase62RandomString;
++ (NSString *)base62Encode:(int)num;
++ (NSString *)random16UUID;
 /// 获取随机 uuid 字符串（无`-`、全小写）
 + (NSString *)randomUUID;
 #if FT_IOS

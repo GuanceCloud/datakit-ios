@@ -30,8 +30,7 @@
     NSURL *url = [NSURL URLWithString:urlStr];
     __weak typeof(self) weakSelf = self;
     TableViewCellItem *item1 = [[TableViewCellItem alloc]initWithTitle:@"Rum、Trace 开启 Resource 自动采集" handler:^{
-        NSString *urlStr = [[NSProcessInfo processInfo] environment][@"TRACE_URL"];
-        NSMutableURLRequest *request = [NSMutableURLRequest requestWithURL:[NSURL URLWithString:urlStr]];
+        NSMutableURLRequest *request = [NSMutableURLRequest requestWithURL:url];
         NSURLSession *session = [NSURLSession sessionWithConfiguration:[NSURLSessionConfiguration defaultSessionConfiguration]];
         NSURLSessionTask *task = [session dataTaskWithRequest:request completionHandler:^(NSData * _Nullable data, NSURLResponse * _Nullable response, NSError * _Nullable error) {
             

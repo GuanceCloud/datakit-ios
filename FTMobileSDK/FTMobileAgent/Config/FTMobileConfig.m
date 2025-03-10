@@ -263,6 +263,7 @@
         _compressIntakeRequests = NO;
         _dbDiscardType = FTDBDiscard;
         _dbCacheLimit = FT_DEFAULT_DB_SIZE_LIMIT;
+        _enableDataIntegerCompatible = YES;
         _enableLimitWithDbSize = NO;
     }
     return self;

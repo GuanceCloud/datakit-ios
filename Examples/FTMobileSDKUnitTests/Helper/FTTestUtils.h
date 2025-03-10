@@ -12,6 +12,8 @@ NS_ASSUME_NONNULL_BEGIN
 
 @interface FTTestUtils : NSObject
 + (CFTimeInterval)functionElapsedTime:(dispatch_block_t)block;
++ (NSData *)transStreamToData:(NSInputStream *)inputStream;
++ (unsigned long long)base36ToDecimal:(NSString *)str;
 @end
 
 NS_ASSUME_NONNULL_END

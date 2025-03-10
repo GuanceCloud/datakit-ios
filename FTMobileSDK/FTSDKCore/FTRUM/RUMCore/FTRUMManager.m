@@ -353,7 +353,7 @@ void *FTRUMQueueIdentityKey = &FTRUMQueueIdentityKey;
     [self addErrorWithType:type state:self.appState message:message stack:stack property:nil time:[NSDate date] fatal:YES];
 }
 - (void)addErrorWithType:(NSString *)type state:(FTAppState)state message:(NSString *)message stack:(NSString *)stack property:(nullable NSDictionary *)property{
-    [self addErrorWithType:type state:state message:message stack:stack property:nil time:[NSDate date] fatal:YES];
+    [self addErrorWithType:type state:state message:message stack:stack property:property time:[NSDate date] fatal:YES];
 }
 - (void)addErrorWithType:(nonnull NSString *)type message:(nonnull NSString *)message stack:(nonnull NSString *)stack date:(NSDate *)date{
     [self addErrorWithType:type state:self.appState message:message stack:stack property:nil time:date fatal:NO];

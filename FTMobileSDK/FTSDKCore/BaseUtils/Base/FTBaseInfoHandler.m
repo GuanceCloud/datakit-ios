@@ -29,6 +29,8 @@
 #define IOS_VPN         @"utun0"
 #define IP_ADDR_IPv4    @"ipv4"
 #define IP_ADDR_IPv6    @"ipv6"
+static NSString *const kBase62Charset = @"0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz";
+
 @implementation FTBaseInfoHandler : NSObject
 
 + (NSString *)convertToStringData:(NSDictionary *)dict{
@@ -70,10 +72,43 @@
     }
     return YES;
 }
++ (NSString *)generate12CharBase62RandomString{
+    NSMutableString *result = [NSMutableString stringWithCapacity:12];
+    
+    // 使用更安全的随机数生成方法（适合加密场景）
+    for (NSUInteger i = 0; i < 12; i++) {
+        uint32_t randomValue = 0;
+        int status = SecRandomCopyBytes(kSecRandomDefault, sizeof(randomValue), (uint8_t *)&randomValue);
+        
+        if (status == errSecSuccess) {
+            // 取模 62 确保范围在 0~61
+            NSUInteger charIndex = randomValue % 62;
+            [result appendString:[kBase62Charset substringWithRange:NSMakeRange(charIndex, 1)]];
+        } else {
+            // 安全随机失败时回退到 arc4random
+            NSUInteger charIndex = arc4random_uniform(62);
+            [result appendString:[kBase62Charset substringWithRange:NSMakeRange(charIndex, 1)]];
+        }
+    }
+    return result;
+}
++ (NSString *)random16UUID{
+    return [[self randomUUID] substringWithRange:NSMakeRange(0, 16)];
+}
 + (NSString *)randomUUID{
     NSString *uuid = [NSUUID UUID].UUIDString;
     uuid = [uuid stringByReplacingOccurrencesOfString:@"-" withString:@""];
     return uuid.lowercaseString;
+}
++ (NSString *)base62Encode:(int)num {
+    if (num == 0) return @"0"; // 处理边界情况
+    NSMutableString *result = [NSMutableString string];
+    while (num > 0) {
+        NSUInteger remainder = num % 62;
+        [result insertString:[kBase62Charset substringWithRange:NSMakeRange(remainder, 1)] atIndex:0];
+        num /= 62;
+    }
+    return result;
 }
 #if FT_IOS
 +(NSString *)telephonyCarrier
@@ -194,8 +229,7 @@ static unsigned long rumSerialNumber = 0;
 static unsigned long logSerialNumber = 0;
 
 + (NSString *)rumRequestSerialNumber{
-    [self increaseRumRequestSerialNumber];
-    return [NSString stringWithFormat:@"%@",[self decimalToBase36:rumSerialNumber]];
+    return [self decimalToBase36:rumSerialNumber];
 }
 + (void)increaseRumRequestSerialNumber{
     if(rumSerialNumber == ULONG_MAX){
@@ -205,8 +239,7 @@ static unsigned long logSerialNumber = 0;
     }
 }
 + (NSString *)logRequestSerialNumber{
-    [self increaseLogRequestSerialNumber];
-    return [NSString stringWithFormat:@"%@",[self decimalToBase36:logSerialNumber]];
+    return [self decimalToBase36:logSerialNumber];
 }
 + (void)increaseLogRequestSerialNumber{
     if(logSerialNumber == ULONG_MAX){

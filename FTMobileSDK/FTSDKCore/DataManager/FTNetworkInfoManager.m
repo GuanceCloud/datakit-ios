@@ -9,6 +9,8 @@
 #import "FTNetworkInfoManager.h"
 #import "FTLog+Private.h"
 #import <unistd.h>
+#import "FTBaseInfoHandler.h"
+
 @interface FTNetworkInfoManager()
 
 @end
@@ -25,7 +27,7 @@ static FTNetworkInfoManager *sharedInstance = nil;
     self = [super init];
     if(self){
         pid_t processID = getpid();
-        _processID = [NSString stringWithFormat:@"%d",processID];
+        _processID = [FTBaseInfoHandler base62Encode:processID];
     }
     return self;
 }

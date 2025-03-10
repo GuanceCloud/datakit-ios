@@ -263,7 +263,7 @@ typedef FTTraceContext*_Nullable(^FTTraceInterceptor)(NSURLRequest *_Nonnull req
 @property (nonatomic, assign) int syncPageSize;
 /// 数据同步时每条请求间隔时间 单位毫秒 0< syncSleepTime <5000
 @property (nonatomic, assign) int syncSleepTime;
-/// 数据同步时是否开启数据整数兼容
+/// 数据同步时是否开启数据整数兼容，默认 YES
 @property (nonatomic, assign) BOOL enableDataIntegerCompatible;
 /// 设置内部数据同步时是否开启压缩 默认: NO
 @property (nonatomic, assign) BOOL compressIntakeRequests;
