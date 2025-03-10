@@ -44,9 +44,6 @@ NS_ASSUME_NONNULL_BEGIN
 /// 删除所有数据
 -(BOOL)deleteAllDatas;
 
-/// 删除所有数据
--(BOOL)deleteAllDatas;
-
 /// 删除日志数据
 /// @param count 删除前 count 个数据
 -(BOOL)deleteDataWithType:(NSString *)type count:(NSInteger)count;
