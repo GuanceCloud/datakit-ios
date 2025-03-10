@@ -25,12 +25,7 @@ CGRect FTCGRectScaleAspectFitRect(CGSize size,CGSize contentSize){
     return CGRectMake(x, y, width, height);
 }
 CGRect FTCGRectScaleAspectFillRect(CGSize size,CGSize contentSize){
-    CGFloat scale;
-    if ((contentSize.width - size.width) < (contentSize.height - size.height)) {
-        scale = size.width / contentSize.width;
-    } else {
-        scale = size.height / contentSize.height;
-    }
+    CGFloat scale = MAX(size.width/contentSize.width, size.height/contentSize.height);
     CGSize rSize = CGSizeMake(contentSize.width * scale, contentSize.height * scale);
     return CGRectMake(
                       (size.width - rSize.width) / 2,
