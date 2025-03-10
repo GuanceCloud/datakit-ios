@@ -11,6 +11,7 @@
 #import "NSDate+FTUtil.h"
 #import "FTResourceContentModel.h"
 #import "FTResourceMetricsModel.h"
+#import "FTResourceMetricsModel+Private.h"
 @interface FTRUMResourceHandler()<FTRUMSessionProtocol>
 @property (nonatomic, strong) FTRUMDependencies *dependencies;
 @property (nonatomic, copy,readwrite) NSString *identifier;
@@ -85,17 +86,22 @@
         [fields addEntriesFromDictionary:self.resourceProperty];
     }
     [fields addEntriesFromDictionary:data.fields];
-    [fields setValue:[self.time ft_nanosecondTimeIntervalToDate:data.time] forKey:FT_DURATION];
     if(model.metrics){
-        [fields setValue:model.metrics.resource_ttfb forKey:FT_KEY_RESOURCE_TTFB];
-        [fields setValue:model.metrics.resource_ssl forKey:FT_KEY_RESOURCE_SSL];
-        [fields setValue:model.metrics.resource_tcp forKey:FT_KEY_RESOURCE_TCP];
-        [fields setValue:model.metrics.resource_dns forKey:FT_KEY_RESOURCE_DNS];
-        [fields setValue:model.metrics.resource_first_byte forKey:FT_KEY_RESOURCE_FIRST_BYTE];
-        if ([model.metrics.duration longLongValue]>0) {
-            [fields setValue:model.metrics.duration forKey:FT_DURATION];
-        }
-        [fields setValue:model.metrics.resource_trans forKey:FT_KEY_RESOURCE_TRANS];
+        [fields setValue:model.metrics.ttfb forKey:FT_KEY_RESOURCE_TTFB];
+        [fields setValue:model.metrics.ssl forKey:FT_KEY_RESOURCE_SSL];
+        [fields setValue:model.metrics.tcp forKey:FT_KEY_RESOURCE_TCP];
+        [fields setValue:model.metrics.dns forKey:FT_KEY_RESOURCE_DNS];
+        [fields setValue:model.metrics.firstByte forKey:FT_KEY_RESOURCE_FIRST_BYTE];
+        [fields setValue:model.metrics.fetchInterval forKey:FT_DURATION];
+        [fields setValue:model.metrics.trans forKey:FT_KEY_RESOURCE_TRANS];
+        [fields setValue:model.metrics.resource_dns_time forKey:FT_KEY_RESOURCE_DNS_TIME];
+        [fields setValue:model.metrics.resource_ssl_time forKey:FT_KEY_RESOURCE_SSL_TIME];
+        [fields setValue:model.metrics.resource_download_time forKey:FT_KEY_RESOURCE_DOWNLOAD_TIME];
+        [fields setValue:model.metrics.resource_first_byte_time forKey:FT_KEY_RESOURCE_FIRST_BYTE_TIME];
+        [fields setValue:model.metrics.resource_redirect_time forKey:FT_KEY_RESOURCE_REDIRECT_TIME];
+        [fields setValue:model.metrics.resource_connect_time forKey:FT_KEY_RESOURCE_CONNECT_TIME];
+    }else{
+        [fields setValue:[self.time ft_nanosecondTimeIntervalToDate:data.time] forKey:FT_DURATION];
     }
     NSDictionary *sessionTag = [self.context getGlobalSessionViewActionTags];
     NSMutableDictionary *tags = [NSMutableDictionary dictionaryWithDictionary:context];

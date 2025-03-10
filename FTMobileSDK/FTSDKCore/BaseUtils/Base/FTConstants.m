@@ -105,6 +105,13 @@ NSString * const FT_KEY_RESOURCE_FIRST_BYTE = @"resource_first_byte";
 NSString * const FT_KEY_RESPONSE_HEADER = @"response_header";
 NSString * const FT_KEY_REQUEST_HEADER = @"request_header";
 NSString * const FT_KEY_RESOURCE_HOST_IP = @"resource_host_ip";
+NSString * const FT_KEY_START = @"start";
+NSString * const FT_KEY_RESOURCE_DNS_TIME = @"resource_dns_time";
+NSString * const FT_KEY_RESOURCE_SSL_TIME = @"resource_ssl_time";
+NSString * const FT_KEY_RESOURCE_DOWNLOAD_TIME = @"resource_download_time";
+NSString * const FT_KEY_RESOURCE_FIRST_BYTE_TIME = @"resource_first_byte_time";
+NSString * const FT_KEY_RESOURCE_CONNECT_TIME = @"resource_connect_time";
+NSString * const FT_KEY_RESOURCE_REDIRECT_TIME = @"resource_redirect_time";
 //trace link rum tag
 NSString * const FT_KEY_TRACEID  = @"trace_id";
 NSString * const FT_KEY_SPANID = @"span_id";

@@ -424,7 +424,9 @@
     datakitConfig.enableSDKDebugLog = YES;
     datakitConfig.globalContext = @{@"aa":@"bb"};
     datakitConfig.service = @"testsdk";
-    datakitConfig.enableDataIntegerCompatible = YES;
+    // enableDataIntegerCompatible 默认为 YES
+    XCTAssertTrue(datakitConfig.enableDataIntegerCompatible == YES);
+    datakitConfig.enableDataIntegerCompatible = NO;
     [datakitConfig setEnvWithType:FTEnvLocal];
     XCTAssertTrue(datakitConfig.dbCacheLimit == 100*1024*1024);
     datakitConfig.dbCacheLimit = 10;
