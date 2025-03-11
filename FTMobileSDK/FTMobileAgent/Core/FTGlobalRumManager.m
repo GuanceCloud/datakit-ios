@@ -66,6 +66,7 @@ static dispatch_once_t onceToken;
     dependencies.appId = rumConfig.appid;
     dependencies.fatalErrorContext = [FTFatalErrorContext new];
     self.dependencies = dependencies;
+    [[FTModuleManager sharedInstance] addMessageReceiver:self];
     self.rumManager = [[FTRUMManager alloc]initWithRumDependencies:self.dependencies];
     [[FTAutoTrackHandler sharedInstance]startWithTrackView:rumConfig.enableTraceUserView action:rumConfig.enableTraceUserAction];
     [FTAutoTrackHandler sharedInstance].addRumDatasDelegate = self.rumManager;
@@ -84,7 +85,6 @@ static dispatch_once_t onceToken;
     [FTWKWebViewHandler sharedInstance].rumTrackDelegate = self;
 #endif
     [FTExternalDataManager sharedManager].delegate = self.rumManager;
-    [[FTModuleManager sharedInstance] addMessageReceiver:self];
 }
 -(void)receive:(NSString *)key message:(NSDictionary *)message{
     if(key == FTMessageKeySessionHasReplay){
