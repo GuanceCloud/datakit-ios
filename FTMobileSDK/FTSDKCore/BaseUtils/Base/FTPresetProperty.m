@@ -150,11 +150,7 @@ static dispatch_once_t onceToken;
     dict[FT_KEY_SERVICE] = self.service;
     dict[FT_SDK_VERSION] = self.sdkVersion;
     dict[FT_CPU_ARCH] = self.mobileDevice.cpuArch;
-#if FT_MAC
-    dict[FT_SDK_NAME] = FT_MACOS_SDK_NAME;
-#else
-    dict[FT_SDK_NAME] = FT_IOS_SDK_NAME;
-#endif
+    dict[FT_SDK_NAME] = FT_SDK_NAME_VALUE;
     [dict setValue:self.env forKey:FT_ENV];
     [dict setValue:self.version forKey:FT_VERSION];
     [dict setValue:self.appID forKey:FT_APP_ID];
