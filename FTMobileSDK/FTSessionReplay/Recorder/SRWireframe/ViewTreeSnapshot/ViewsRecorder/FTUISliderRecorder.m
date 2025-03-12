@@ -33,7 +33,7 @@
     FTUISliderBuilder *builder = [[FTUISliderBuilder alloc]init];
     builder.wireframeRect = attributes.frame;
     builder.attributes = attributes;
-    builder.isMasked = context.recorder.privacy.shouldMaskInputElements;
+    builder.isMasked = [FTSRTextObfuscatingFactory shouldMaskInputElements:[attributes resolveTextAndInputPrivacyLevel:context.recorder]];
     builder.backgroundWireframeID = [ids[0] intValue];
     builder.minTrackWireframeID = [ids[1] intValue];
     builder.maxTrackWireframeID = [ids[2] intValue];

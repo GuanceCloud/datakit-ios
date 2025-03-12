@@ -103,8 +103,8 @@
     if(self){
         _subtreeRecorder = [[FTViewTreeRecorder alloc]init];
         FTUIPickerViewRecorder *recorder = [[FTUIPickerViewRecorder alloc]initWithIdentifier:[NSUUID UUID].UUIDString textObfuscator:nil];
-        recorder.textObfuscator = ^id<FTSRTextObfuscatingProtocol> _Nullable(FTViewTreeRecordingContext * _Nonnull context) {
-            return context.recorder.privacy.staticTextObfuscator;
+        recorder.textObfuscator = ^id<FTSRTextObfuscatingProtocol> _Nullable(FTViewTreeRecordingContext * _Nonnull context,FTViewAttributes *attributes) {
+            return [FTSRTextObfuscatingFactory staticTextObfuscator:[attributes resolveTextAndInputPrivacyLevel:context.recorder]];
         };
         _subtreeRecorder.nodeRecorders = @[
             recorder
@@ -128,14 +128,14 @@
     self = [super init];
     if(self){
         _viewRecorder = [[FTUIViewRecorder alloc]initWithIdentifier:[NSUUID UUID].UUIDString];
-        _labelRecorder = [[FTUILabelRecorder alloc]initWithIdentifier:[NSUUID UUID].UUIDString builderOverride:nil textObfuscator:^id<FTSRTextObfuscatingProtocol>(FTViewTreeRecordingContext *context) {
-            return context.recorder.privacy.staticTextObfuscator;
+        _labelRecorder = [[FTUILabelRecorder alloc]initWithIdentifier:[NSUUID UUID].UUIDString builderOverride:nil textObfuscator:^id<FTSRTextObfuscatingProtocol>(FTViewTreeRecordingContext *context,FTViewAttributes *attributes) {
+            return [FTSRTextObfuscatingFactory staticTextObfuscator:[attributes resolveTextAndInputPrivacyLevel:context.recorder]];
         }];
         _subtreeRecorder = [[FTViewTreeRecorder alloc]init];
         _subtreeRecorder.nodeRecorders = @[
             _viewRecorder,
             _labelRecorder,
-            [[FTUIImageViewRecorder alloc] initWithIdentifier:[NSUUID UUID].UUIDString tintColorProvider:nil shouldRecordImagePredicate:nil],
+            [[FTUIImageViewRecorder alloc] initWithIdentifier:[NSUUID UUID].UUIDString tintColorProvider:nil shouldRecordImagePredicateOverride:nil],
             [[FTUISegmentRecorder alloc] initWithIdentifier:[NSUUID UUID].UUIDString],
         ];
     }
@@ -143,7 +143,7 @@
 }
 -(void)recorder:(UIView *)view attributes:(FTViewAttributes *)attributes context:(FTViewTreeRecordingContext *)context nodes:(NSMutableArray *)nodes resources:(NSMutableArray *)resources{
     self.viewRecorder.semanticsOverride = ^FTSRNodeSemantics* _Nullable(UIView * _Nonnull view, FTViewAttributes * _Nonnull attributes) {
-        if (context.recorder.privacy.shouldMaskInputElements) {
+        if ([FTSRTextObfuscatingFactory shouldMaskInputElements:[attributes resolveTextAndInputPrivacyLevel:context.recorder]]) {
             BOOL isSquare = attributes.frame.size.width == attributes.frame.size.height;
             BOOL isCircle = isSquare && attributes.layerCornerRadius == attributes.frame.size.width * 0.5;
             if (isCircle) {
@@ -155,7 +155,7 @@
         return nil;
     };
     
-    if(context.recorder.privacy.shouldMaskInputElements){
+    if([FTSRTextObfuscatingFactory shouldMaskInputElements:[attributes resolveTextAndInputPrivacyLevel:context.recorder]]){
         self.labelRecorder.builderOverride = ^FTUILabelBuilder * _Nullable(FTUILabelBuilder *builder) {
             FTUILabelBuilder *labelBuilder = builder;
             labelBuilder.textColor = [FTSystemColors labelColor];
@@ -175,8 +175,8 @@
     if(self){
         _subtreeRecorder = [[FTViewTreeRecorder alloc]init];
         FTUILabelRecorder *labelRecorder = [[FTUILabelRecorder alloc]initWithIdentifier:[NSUUID UUID].UUIDString builderOverride:nil textObfuscator:nil];
-        labelRecorder.textObfuscator = ^id<FTSRTextObfuscatingProtocol> _Nullable(FTViewTreeRecordingContext *context) {
-            return context.recorder.privacy.staticTextObfuscator;
+        labelRecorder.textObfuscator = ^id<FTSRTextObfuscatingProtocol> _Nullable(FTViewTreeRecordingContext *context,FTViewAttributes *attributes) {
+            return [FTSRTextObfuscatingFactory staticTextObfuscator:[attributes resolveTextAndInputPrivacyLevel:context.recorder]];
         };
         _subtreeRecorder.nodeRecorders = @[
             [[FTUIViewRecorder alloc] initWithIdentifier:[NSUUID UUID].UUIDString],

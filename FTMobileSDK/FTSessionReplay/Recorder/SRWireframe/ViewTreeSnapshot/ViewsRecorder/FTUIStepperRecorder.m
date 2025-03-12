@@ -30,7 +30,7 @@
     UIStepper *stepper = (UIStepper *)view;
     CGRect stepperFrame = CGRectMake(attributes.frame.origin.x, attributes.frame.origin.y, stepper.intrinsicContentSize.width, stepper.intrinsicContentSize.height);
     NSArray *wireframeIDs = [context.viewIDGenerator SRViewIDs:view size:5 nodeRecorder:self];
-    BOOL isMasked = context.recorder.privacy.shouldMaskInputElements;
+    BOOL isMasked = [FTSRTextObfuscatingFactory shouldMaskInputElements:[attributes resolveTextAndInputPrivacyLevel:context.recorder]];
 
     FTUIStepperBuilder *builder = [[FTUIStepperBuilder alloc]init];
     builder.attributes = attributes;

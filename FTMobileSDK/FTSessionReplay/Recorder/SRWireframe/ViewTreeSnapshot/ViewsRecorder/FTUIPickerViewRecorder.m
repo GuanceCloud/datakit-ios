@@ -27,8 +27,8 @@
     self = [super init];
     if(self){
         _identifier = identifier;
-        _textObfuscator = textObfuscator?textObfuscator:^(FTViewTreeRecordingContext *context){
-            return context.recorder.privacy.inputAndOptionTextObfuscator;
+        _textObfuscator = textObfuscator?textObfuscator:^(FTViewTreeRecordingContext *context,FTViewAttributes *attributes){
+            return [FTSRTextObfuscatingFactory inputAndOptionTextObfuscator:[attributes resolveTextAndInputPrivacyLevel:context.recorder]];
         };
         FTViewTreeRecorder *selectionRecorder = [[FTViewTreeRecorder alloc]init];
         selectionRecorder.nodeRecorders = @[[[FTUIViewRecorder alloc]initWithIdentifier:[NSUUID UUID].UUIDString semanticsOverride:^FTSRNodeSemantics* _Nullable(UIView *view, FTViewAttributes *attributes) {

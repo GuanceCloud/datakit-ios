@@ -12,10 +12,13 @@
 #import "FTImageDataUtils.h"
 #import "FTSRViewID.h"
 #import "FTSRTextObfuscatingFactory.h"
+#import "FTSessionReplayPrivacyOverrides+Extension.h"
 NS_ASSUME_NONNULL_BEGIN
 
 @interface FTSRContext : NSObject
-@property (nonatomic, strong) FTSRTextObfuscatingFactory *privacy;
+@property (nonatomic, assign) FTTextAndInputPrivacyLevel textAndInputPrivacy;
+@property (nonatomic, assign) FTImagePrivacyLevel imagePrivacy;
+@property (nonatomic, assign) FTTouchPrivacyLevel touchPrivacy;
 @property (nonatomic, copy) NSString *applicationID;
 @property (nonatomic, copy) NSString *sessionID;
 @property (nonatomic, copy) NSString *viewID;
@@ -35,8 +38,14 @@ NS_ASSUME_NONNULL_BEGIN
 @property (nonatomic, assign) BOOL isVisible;
 @property (nonatomic, assign) BOOL hasAnyAppearance;
 @property (nonatomic, assign) BOOL isTranslucent;
+@property (nonatomic, strong) NSNumber *imagePrivacy;
+@property (nonatomic, strong) NSNumber *textAndInputPrivacy;
+@property (nonatomic, assign) BOOL hide;
 
--(instancetype)initWithView:(UIView *)view frameInRootView:(CGRect)frame clip:(CGRect)clip;
+-(instancetype)initWithView:(UIView *)view frameInRootView:(CGRect)frame clip:(CGRect)clip overrides:(PrivacyOverrides *)overrides;
+-(FTTextAndInputPrivacyLevel)resolveTextAndInputPrivacyLevel:(FTSRContext *)context;
+-(FTImagePrivacyLevel)resolveImagePrivacyLevel:(FTSRContext *)context;
+
 @end
 
 

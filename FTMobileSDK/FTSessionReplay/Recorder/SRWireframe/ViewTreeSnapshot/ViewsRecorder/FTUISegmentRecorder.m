@@ -20,8 +20,8 @@
     self = [super init];
     if(self){
         _identifier = identifier;
-        _textObfuscator = ^id<FTSRTextObfuscatingProtocol> _Nullable(FTViewTreeRecordingContext *context) {
-            return [context.recorder.privacy inputAndOptionTextObfuscator];
+        _textObfuscator = ^id<FTSRTextObfuscatingProtocol> _Nullable(FTViewTreeRecordingContext *context,FTViewAttributes *attributes) {
+            return [FTSRTextObfuscatingFactory inputAndOptionTextObfuscator:[attributes resolveTextAndInputPrivacyLevel:context.recorder]];
         };
     }
     return self;
@@ -38,8 +38,8 @@
     FTUISegmentBuilder *builder = [[FTUISegmentBuilder alloc]init];
     builder.attributes = attributes;
     builder.wireframeRect = attributes.frame;
-    builder.textObfuscator = self.textObfuscator(context);
-    builder.selectedSegmentIndex = context.recorder.privacy.shouldMaskInputElements? nil : @(segment.selectedSegmentIndex);
+    builder.textObfuscator = self.textObfuscator(context,attributes);
+    builder.selectedSegmentIndex = [FTSRTextObfuscatingFactory shouldMaskInputElements:[attributes resolveTextAndInputPrivacyLevel:context.recorder]]? nil : @(segment.selectedSegmentIndex);
     if (@available(iOS 13.0, *)) {
         builder.selectedSegmentTintColor = segment.selectedSegmentTintColor;
     }

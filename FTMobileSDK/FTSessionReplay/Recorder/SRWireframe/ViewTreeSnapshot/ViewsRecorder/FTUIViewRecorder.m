@@ -47,6 +47,14 @@
     if(semantics){
         return semantics;
     }
+    if (attr.hide) {
+        FTUIViewBuilder *builder = [[FTUIViewBuilder alloc]init];
+        builder.wireframeID = [context.viewIDGenerator SRViewID:view nodeRecorder:self];
+        builder.attributes = attr;
+        FTSpecificElement *element = [[FTSpecificElement alloc]initWithSubtreeStrategy:NodeSubtreeStrategyIgnore];
+        element.nodes = @[builder];
+        return element;
+    }
     if(!attr.hasAnyAppearance){
         FTInvisibleElement *element = [[FTInvisibleElement alloc]init];
         element.subtreeStrategy = NodeSubtreeStrategyRecord;

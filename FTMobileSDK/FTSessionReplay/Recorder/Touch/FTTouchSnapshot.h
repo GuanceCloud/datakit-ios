@@ -20,6 +20,7 @@ typedef NS_ENUM(NSInteger,FTTouchPhase) {
 @property (nonatomic, assign) FTTouchPhase phase;
 @property (nonatomic, assign) int identifier;
 @property (nonatomic, assign) long long timestamp;
+@property (nonatomic, strong ,nullable) NSNumber *touchPrivacyOverride;
 @end
 
 @interface FTTouchSnapshot : NSObject

@@ -53,7 +53,7 @@
 - (void)recordSubtree:(UIActivityIndicatorView *)activityIndicator records:(NSMutableArray *)records resources:(NSMutableArray *)resources context:(FTViewTreeRecordingContext *)context{
     if(!_subtreeRecorder){
         FTViewTreeRecorder *viewTreeRecorder = [[FTViewTreeRecorder alloc]init];
-        FTUIImageViewRecorder *imageViewRecorder = [[FTUIImageViewRecorder alloc]initWithIdentifier:self.identifier tintColorProvider:nil shouldRecordImagePredicate: ^BOOL(UIImageView * _Nonnull imageView) {
+        FTUIImageViewRecorder *imageViewRecorder = [[FTUIImageViewRecorder alloc]initWithIdentifier:self.identifier tintColorProvider:nil shouldRecordImagePredicateOverride: ^BOOL(UIImageView * _Nonnull imageView) {
             return imageView.image != nil;
         }];
         viewTreeRecorder.nodeRecorders = @[imageViewRecorder];

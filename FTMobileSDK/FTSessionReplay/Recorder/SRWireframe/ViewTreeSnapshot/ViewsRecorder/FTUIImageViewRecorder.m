@@ -54,9 +54,9 @@
 @end
 @implementation FTUIImageViewRecorder
 -(instancetype)init{
-    return [self initWithIdentifier:[NSUUID UUID].UUIDString tintColorProvider:nil shouldRecordImagePredicate:nil];
+    return [self initWithIdentifier:[NSUUID UUID].UUIDString tintColorProvider:nil shouldRecordImagePredicateOverride:nil];
 }
--(instancetype)initWithIdentifier:(NSString *)identifier tintColorProvider:(nullable FTTintColorProvider)tintColorProvider shouldRecordImagePredicate:(nullable FTShouldRecordImagePredicate)shouldRecordImagePredicate{
+-(instancetype)initWithIdentifier:(NSString *)identifier tintColorProvider:(nullable FTTintColorProvider)tintColorProvider shouldRecordImagePredicateOverride:(nullable FTShouldRecordImagePredicate)shouldRecordImagePredicateOverride{
     self = [super init];
     if(self){
         _identifier = identifier;
@@ -72,14 +72,7 @@
             }
             return nil;
         };
-        _shouldRecordImagePredicate =shouldRecordImagePredicate?shouldRecordImagePredicate: ^BOOL(UIImageView *imageView){
-            if (@available(iOS 13.0, *)) {
-                if(imageView.image){
-                    return imageView.image.isContextual || imageView.isSystemControlBackground;
-                }
-            }
-            return NO;
-        };
+        _shouldRecordImagePredicateOverride = shouldRecordImagePredicateOverride;
     }
     return self;
 }
@@ -100,7 +93,12 @@
         contentFrame = FTCGRectFitWithContentMode(attributes.frame, imageView.image.size, imageView.contentMode);
     }
     FTUIImageResource *imageResource = nil;
-    BOOL shouldRecordImage = self.shouldRecordImagePredicate(imageView);
+    BOOL shouldRecordImage = NO;
+    if(self.shouldRecordImagePredicateOverride){
+        shouldRecordImage = self.shouldRecordImagePredicateOverride(imageView);
+    }else{
+        shouldRecordImage = [self shouldRecordImagePredicate:imageView privacy:[attributes resolveImagePrivacyLevel:context.recorder]];
+    }
     if (shouldRecordImage && imageView.image) {
         imageResource = [[FTUIImageResource alloc]initWithImage:imageView.image tintColor:self.tintColorProvider(imageView)];
     }
@@ -115,6 +113,22 @@
     element.nodes = @[builder];
     element.resources = builder.imageResource?@[builder.imageResource]:nil;
     return element;
+}
+- (BOOL)shouldRecordImagePredicate:(UIImageView *)imageView privacy:(FTImagePrivacyLevel)privacy{
+    switch (privacy) {
+        case FTImagePrivacyLevelMaskNonBundledOnly:
+            if (@available(iOS 13.0, *)) {
+                if(imageView.image){
+                    return imageView.image.isContextual || imageView.isSystemControlBackground;
+                }
+            }
+            return NO;
+            break;
+        case FTImagePrivacyLevelMaskAll:
+            return NO;
+        case FTImagePrivacyLevelMaskNone:
+            return YES;
+    }
 }
 @end
 @implementation FTUIImageViewBuilder

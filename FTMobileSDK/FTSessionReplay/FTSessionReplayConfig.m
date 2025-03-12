@@ -20,4 +20,25 @@
 -(void)setAdditionalNodeRecorders:(NSArray<id<FTSRWireframesRecorder>> *)additionalNodeRecorders{
     _additionalNodeRecorders = additionalNodeRecorders;
 }
+-(void)setPrivacy:(FTSRPrivacy)privacy{
+    _privacy = privacy;
+    switch (privacy) {
+        case FTSRPrivacyMask:
+            _imagePrivacy = FTImagePrivacyLevelMaskAll;
+            _touchPrivacy = FTTouchPrivacyLevelHide;
+            _textAndInputPrivacy = FTTextAndInputPrivacyLevelMaskAll;
+            break;
+     
+        case FTSRPrivacyAllow:
+            _imagePrivacy = FTImagePrivacyLevelMaskNone;
+            _touchPrivacy = FTTouchPrivacyLevelShow;
+            _textAndInputPrivacy = FTTextAndInputPrivacyLevelMaskSensitiveInputs;
+            break;
+        case FTSRPrivacyMaskUserInput:
+            _imagePrivacy = FTImagePrivacyLevelMaskNonBundledOnly;
+            _touchPrivacy = FTTouchPrivacyLevelHide;
+            _textAndInputPrivacy = FTTextAndInputPrivacyLevelMaskAllInputs;
+            break;
+    }
+}
 @end

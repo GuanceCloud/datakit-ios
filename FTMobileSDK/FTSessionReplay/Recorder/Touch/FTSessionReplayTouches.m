@@ -13,6 +13,8 @@
 #import "FTReadWriteHelper.h"
 #import "NSDate+FTUtil.h"
 #import "FTTouchSnapshot.h"
+#import "UIView+FTSRPrivacy.h"
+#import "FTSessionReplayPrivacyOverrides+Extension.h"
 @interface FTSessionReplayTouches()
 /// 点击事件集合 都在主线程操作，所以不进行锁管理
 @property (nonatomic, strong) NSMutableArray *touches;
@@ -30,14 +32,25 @@
     }
     return self;
 }
--(FTTouchSnapshot *)takeTouchSnapshot{
+-(FTTouchSnapshot *)takeTouchSnapshotWithContext:(FTSRContext *)context{
     if(self.touches.count==0){
         return nil;
     }
     NSMutableArray *array = [NSMutableArray arrayWithArray:self.touches];
-    FTTouchSnapshot *touchSnapshot = [[FTTouchSnapshot alloc]initWithTouches:array];
     [self.touches removeAllObjects];
-    return touchSnapshot;
+    [array enumerateObjectsWithOptions:NSEnumerationReverse usingBlock:^(FTTouchCircle *obj, NSUInteger idx, BOOL * _Nonnull stop) {
+        if(![self shouldRecordTouch:obj context:context]){
+            [array removeObjectAtIndex:idx];
+        }
+    }];
+    if(array.count>0){
+        return [[FTTouchSnapshot alloc]initWithTouches:array];
+    }
+    return nil;
+}
+- (BOOL)shouldRecordTouch:(FTTouchCircle*)touch context:(FTSRContext *)context{
+    FTTouchPrivacyLevel privacy = touch.touchPrivacyOverride ?(FTTouchPrivacyLevel)[touch.touchPrivacyOverride intValue]:context.touchPrivacy;
+    return privacy == FTTouchPrivacyLevelShow;
 }
 - (int)persistNextID:(UITouch *)touch{
     int newID = [self getNextID];
@@ -72,10 +85,10 @@
             NSSet *set = [event touchesForWindow:window];
             NSEnumerator *en = [set objectEnumerator];
             UITouch *touch;
-            FTTouchCircle *circle = [[FTTouchCircle alloc]init];
             while ((touch = en.nextObject) != nil) {
                 if([touch.window isEqual:window]){
                     FTTouchPhase phase;
+                    FTTouchCircle *circle = [[FTTouchCircle alloc]init];
                     switch (touch.phase) {
                         case UITouchPhaseBegan:
                         case UITouchPhaseRegionEntered:
@@ -104,9 +117,17 @@
                             }
                             break;
                     }
+                    if (phase == TouchDown) {
+                        NSNumber *touchPrivacy = [self resolveTouchOverride:touch];
+                        if(touchPrivacy){
+                            touch.touchPrivacyOverride = touchPrivacy;
+                        }
+                    }
+                    
                     CGPoint point = [touch locationInView:window];
                     circle.position = point;
                     circle.phase = phase;
+                    circle.touchPrivacyOverride = touch.touchPrivacyOverride;
                     circle.timestamp = [NSDate ft_currentMillisecondTimeStamp];
                     [self.touches addObject:circle];
                 }
@@ -114,6 +135,21 @@
         }
     }
 
+}
+- (nullable NSNumber *)resolveTouchOverride:(UITouch *)touch{
+    if (!touch.view) {
+        return nil;
+    }
+    UIView *view = touch.view;
+   
+    while (view != nil) {
+        NSNumber *touchPrivacy =  view.sessionReplayPrivacyOverrides.nTouchPrivacy;
+        if(touchPrivacy){
+            return touchPrivacy;
+        }
+        view = view.superview;
+    }
+    return nil;
 }
 - (void)unSwizzleApplicationTouches{
     [self.touches removeAllObjects];

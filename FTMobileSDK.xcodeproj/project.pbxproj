@@ -29,6 +29,11 @@
 		1733605E2C05FFD600A50C02 /* FTDBDataCachePolicy.h in Headers */ = {isa = PBXBuildFile; fileRef = 1733605B2C05FFD600A50C02 /* FTDBDataCachePolicy.h */; };
 		1733605F2C05FFD600A50C02 /* FTDBDataCachePolicy.m in Sources */ = {isa = PBXBuildFile; fileRef = 1733605C2C05FFD600A50C02 /* FTDBDataCachePolicy.m */; };
 		173360602C05FFD600A50C02 /* FTDBDataCachePolicy.m in Sources */ = {isa = PBXBuildFile; fileRef = 1733605C2C05FFD600A50C02 /* FTDBDataCachePolicy.m */; };
+		173E45D32D803AC800900F52 /* FTSessionReplayPrivacyOverrides.m in Sources */ = {isa = PBXBuildFile; fileRef = 173E45D22D803AC800900F52 /* FTSessionReplayPrivacyOverrides.m */; };
+		173E45D42D803AC800900F52 /* FTSessionReplayPrivacyOverrides.h in Headers */ = {isa = PBXBuildFile; fileRef = 173E45D12D803AC800900F52 /* FTSessionReplayPrivacyOverrides.h */; settings = {ATTRIBUTES = (Public, ); }; };
+		173E45D72D803B5800900F52 /* UIView+FTSRPrivacy.m in Sources */ = {isa = PBXBuildFile; fileRef = 173E45D62D803B5800900F52 /* UIView+FTSRPrivacy.m */; };
+		173E45D82D803B5800900F52 /* UIView+FTSRPrivacy.h in Headers */ = {isa = PBXBuildFile; fileRef = 173E45D52D803B5800900F52 /* UIView+FTSRPrivacy.h */; settings = {ATTRIBUTES = (Public, ); }; };
+		173E45DA2D804C4700900F52 /* FTSessionReplayPrivacyOverrides+Extension.h in Headers */ = {isa = PBXBuildFile; fileRef = 173E45D92D804C4700900F52 /* FTSessionReplayPrivacyOverrides+Extension.h */; };
 		17400E672B466EFC00ACBA6C /* FTSignalException.h in Headers */ = {isa = PBXBuildFile; fileRef = 17400E652B466EFC00ACBA6C /* FTSignalException.h */; };
 		17400E682B466EFC00ACBA6C /* FTSignalException.h in Headers */ = {isa = PBXBuildFile; fileRef = 17400E652B466EFC00ACBA6C /* FTSignalException.h */; };
 		17400E692B466EFC00ACBA6C /* FTSignalException.h in Headers */ = {isa = PBXBuildFile; fileRef = 17400E652B466EFC00ACBA6C /* FTSignalException.h */; };
@@ -724,6 +729,11 @@
 		172C1DD42BC7EB6400412DB6 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; name = Info.plist; path = FTMobileSDK/Info.plist; sourceTree = "<group>"; };
 		1733605B2C05FFD600A50C02 /* FTDBDataCachePolicy.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = FTDBDataCachePolicy.h; sourceTree = "<group>"; };
 		1733605C2C05FFD600A50C02 /* FTDBDataCachePolicy.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = FTDBDataCachePolicy.m; sourceTree = "<group>"; };
+		173E45D12D803AC800900F52 /* FTSessionReplayPrivacyOverrides.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = FTSessionReplayPrivacyOverrides.h; sourceTree = "<group>"; };
+		173E45D22D803AC800900F52 /* FTSessionReplayPrivacyOverrides.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = FTSessionReplayPrivacyOverrides.m; sourceTree = "<group>"; };
+		173E45D52D803B5800900F52 /* UIView+FTSRPrivacy.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = "UIView+FTSRPrivacy.h"; sourceTree = "<group>"; };
+		173E45D62D803B5800900F52 /* UIView+FTSRPrivacy.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = "UIView+FTSRPrivacy.m"; sourceTree = "<group>"; };
+		173E45D92D804C4700900F52 /* FTSessionReplayPrivacyOverrides+Extension.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = "FTSessionReplayPrivacyOverrides+Extension.h"; sourceTree = "<group>"; };
 		17400E652B466EFC00ACBA6C /* FTSignalException.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = FTSignalException.h; sourceTree = "<group>"; };
 		17400E662B466EFC00ACBA6C /* FTSignalException.c */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.c; path = FTSignalException.c; sourceTree = "<group>"; };
 		17400E752B47AAB400ACBA6C /* FTNSException.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = FTNSException.m; sourceTree = "<group>"; };
@@ -1339,6 +1349,8 @@
 			children = (
 				17C4F0492D671AFC00F97A7F /* FTRumSessionReplay.h */,
 				17C4F04A2D671AFC00F97A7F /* FTSessionReplayConfig.h */,
+				173E45D12D803AC800900F52 /* FTSessionReplayPrivacyOverrides.h */,
+				173E45D52D803B5800900F52 /* UIView+FTSRPrivacy.h */,
 			);
 			path = Public;
 			sourceTree = "<group>";
@@ -1572,6 +1584,9 @@
 				17C4F0DC2D671AFC00F97A7F /* FTResourcesFeature.m */,
 				17C4F0DD2D671AFC00F97A7F /* FTRumSessionReplay.m */,
 				17C4F0DE2D671AFC00F97A7F /* FTSessionReplayConfig.m */,
+				173E45D62D803B5800900F52 /* UIView+FTSRPrivacy.m */,
+				173E45D22D803AC800900F52 /* FTSessionReplayPrivacyOverrides.m */,
+				173E45D92D804C4700900F52 /* FTSessionReplayPrivacyOverrides+Extension.h */,
 				17C4F0DF2D671AFC00F97A7F /* FTSessionReplayConfig+Private.h */,
 				17C4F0E02D671AFC00F97A7F /* FTSessionReplayFeature.h */,
 				17C4F0E12D671AFC00F97A7F /* FTSessionReplayFeature.m */,
@@ -2147,6 +2162,7 @@
 				17E4CB4929CD42DA005C2D99 /* NSString+FTAdd.h in Headers */,
 				17E4CBE729CD42E4005C2D99 /* FTURLSessionInterceptor.h in Headers */,
 				17E4CC1F29CD42E4005C2D99 /* FTTracerProtocol.h in Headers */,
+				173E45D42D803AC800900F52 /* FTSessionReplayPrivacyOverrides.h in Headers */,
 				1763BDA429DFF04F009EE026 /* ZY_FMDatabaseQueue.h in Headers */,
 				17E4CB3329CD42DA005C2D99 /* FTSwizzler.h in Headers */,
 				1776063029D1347500D17137 /* FTWKWebViewHandler.h in Headers */,
@@ -2198,6 +2214,7 @@
 				17C4F0ED2D671AFC00F97A7F /* FTSystemColors.h in Headers */,
 				17C4F0EE2D671AFC00F97A7F /* FTTLVReader.h in Headers */,
 				17C4F0EF2D671AFC00F97A7F /* FTFeatureStorage.h in Headers */,
+				173E45D82D803B5800900F52 /* UIView+FTSRPrivacy.h in Headers */,
 				17C4F0F02D671AFC00F97A7F /* FTWindowObserver.h in Headers */,
 				17C4F0F12D671AFC00F97A7F /* FTReader.h in Headers */,
 				17C4F0F22D671AFC00F97A7F /* FTUIViewRecorder.h in Headers */,
@@ -2213,6 +2230,7 @@
 				17C4F0FC2D671AFC00F97A7F /* FTJSONKeyMapper.h in Headers */,
 				17C4F0FD2D671AFC00F97A7F /* FTUIImageViewRecorder.h in Headers */,
 				17C4F0FE2D671AFC00F97A7F /* FTSegmentRequest.h in Headers */,
+				173E45DA2D804C4700900F52 /* FTSessionReplayPrivacyOverrides+Extension.h in Headers */,
 				17C4F0FF2D671AFC00F97A7F /* FTDataUploadDelay.h in Headers */,
 				17C4F1002D671AFC00F97A7F /* FTSRTextObfuscatingFactory.h in Headers */,
 				17C4F1012D671AFC00F97A7F /* FTSRUtils.h in Headers */,
@@ -2721,6 +2739,7 @@
 				1776073929D1416200D17137 /* FTUserInfo.m in Sources */,
 				1776062C29D1347500D17137 /* FTWebViewJavascriptBridgeBase.m in Sources */,
 				17678E2D29D28BD200C1DA98 /* FTMobileAgent.m in Sources */,
+				173E45D32D803AC800900F52 /* FTSessionReplayPrivacyOverrides.m in Sources */,
 				17D0681A2D23F48B00D59159 /* FTTraceContext.m in Sources */,
 				17E32BAB2BEE21F600F4685C /* FTRUMDependencies.m in Sources */,
 				17AB76B729D432DE008FBBF5 /* FTCPUMonitor.m in Sources */,
@@ -2728,6 +2747,7 @@
 				17E4CC4429CD42E4005C2D99 /* FTCrashMonitor.m in Sources */,
 				174BC87A2BFC9F8A00478EE1 /* NSDictionary+FTCopyProperties.m in Sources */,
 				1776BA812B99B668008424FF /* FTOSLogger.m in Sources */,
+				173E45D72D803B5800900F52 /* UIView+FTSRPrivacy.m in Sources */,
 				17AB76EA29D432DE008FBBF5 /* FTRUMViewHandler.m in Sources */,
 				17E4CB3D29CD42DA005C2D99 /* FTThreadDispatchManager.m in Sources */,
 				17AB76D829D432DE008FBBF5 /* FTDisplayRateMonitor.m in Sources */,

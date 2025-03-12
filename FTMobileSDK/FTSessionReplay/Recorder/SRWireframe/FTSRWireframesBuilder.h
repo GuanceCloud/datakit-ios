@@ -15,7 +15,7 @@ NS_ASSUME_NONNULL_BEGIN
 @protocol FTSRTextObfuscatingProtocol;
 
 typedef FTSRNodeSemantics* _Nullable(^SemanticsOverride)(UIView *  view, FTViewAttributes* attributes);
-typedef id<FTSRTextObfuscatingProtocol> _Nullable(^FTTextObfuscator)(FTViewTreeRecordingContext *context);
+typedef id<FTSRTextObfuscatingProtocol> _Nullable(^FTTextObfuscator)(FTViewTreeRecordingContext *context,FTViewAttributes *attributes);
 
 @protocol FTSRWireframesBuilder <NSObject>
 - (FTViewAttributes*)attributes;

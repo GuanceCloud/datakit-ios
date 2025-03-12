@@ -12,7 +12,7 @@
 @end
 
 @implementation FTViewAttributes
--(instancetype)initWithView:(UIView *)view frameInRootView:(CGRect)frame clip:(CGRect)clip{
+-(instancetype)initWithView:(UIView *)view frameInRootView:(CGRect)frame clip:(CGRect)clip overrides:(PrivacyOverrides *)overrides{
     self = [super init];
     if(self){
         self.frame = frame;
@@ -24,6 +24,9 @@
         self.layerCornerRadius = view.layer.cornerRadius;
         self.isHidden = view.isHidden;
         self.intrinsicContentSize = view.intrinsicContentSize;
+        self.imagePrivacy = overrides.nImagePrivacy;
+        self.textAndInputPrivacy = overrides.nTextAndInputPrivacy;
+        self.hide = overrides.hide;
     }
     return self;
 }
@@ -40,6 +43,18 @@
 }
 -(BOOL)isTranslucent{
     return  !self.isVisible || self.alpha < 1 || ([FTSRUtils getCGColorAlpha:self.backgroundColor.CGColor] < 1);
+}
+-(FTTextAndInputPrivacyLevel)resolveTextAndInputPrivacyLevel:(FTSRContext *)context{
+    if (self.textAndInputPrivacy) {
+        return (FTTextAndInputPrivacyLevel)[self.textAndInputPrivacy intValue];
+    }
+    return context.textAndInputPrivacy;
+}
+-(FTImagePrivacyLevel)resolveImagePrivacyLevel:(FTSRContext *)context{
+    if (self.imagePrivacy) {
+        return (FTImagePrivacyLevel)[self.imagePrivacy intValue];
+    }
+    return context.imagePrivacy;
 }
 - (instancetype)copyWithZone:(NSZone *)zone {
     FTViewAttributes *attributes = [[[self class] allocWithZone:zone] init];

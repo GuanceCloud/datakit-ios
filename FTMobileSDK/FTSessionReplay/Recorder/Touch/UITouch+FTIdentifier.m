@@ -9,6 +9,7 @@
 #import "UITouch+FTIdentifier.h"
 #import <objc/runtime.h>
 static char *touchIdentifier = "FTTouchIdentifier";
+static char *kTouchPrivacyOverride = "kTouchPrivacyOverride";
 
 @implementation UITouch (FTIdentifier)
 -(void)setIdentifier:(NSNumber*)identifier{
@@ -17,4 +18,11 @@ static char *touchIdentifier = "FTTouchIdentifier";
 -(NSNumber*)identifier{
     return objc_getAssociatedObject(self, &touchIdentifier);
 }
+-(void)setTouchPrivacyOverride:(NSNumber *)touchPrivacyOverride{
+    objc_setAssociatedObject(self, &kTouchPrivacyOverride, touchPrivacyOverride, OBJC_ASSOCIATION_RETAIN);
+}
+-(NSNumber *)touchPrivacyOverride{
+    return objc_getAssociatedObject(self, &kTouchPrivacyOverride);
+}
+
 @end

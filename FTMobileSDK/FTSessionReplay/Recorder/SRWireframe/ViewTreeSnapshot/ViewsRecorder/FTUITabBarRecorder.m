@@ -79,7 +79,7 @@
             return tabBar.tintColor?: [UIColor systemBlueColor];
         }
         return nil;
-    } shouldRecordImagePredicate:nil];
+    } shouldRecordImagePredicateOverride:nil];
     viewTreeRecorder.nodeRecorders = @[
         imageViewRecorder,
         self.labelRecorder,

@@ -110,12 +110,14 @@
         return;
     }
     FTSRContext *context = [[FTSRContext alloc]init];
-    context.privacy = [[FTSRTextObfuscatingFactory alloc]initWithPrivacy:self.privacy];
     context.sessionID = self.currentRUMContext[FT_RUM_KEY_SESSION_ID];
     context.viewID = self.currentRUMContext[FT_KEY_VIEW_ID];
     context.applicationID = self.currentRUMContext[FT_APP_ID];
     context.date = [NSDate date];
-    [self.windowRecorder taskSnapShot:context touchSnapshot:[self.touches takeTouchSnapshot]];
+    context.imagePrivacy = self.config.imagePrivacy;
+    context.touchPrivacy = self.config.touchPrivacy;
+    context.textAndInputPrivacy = self.config.textAndInputPrivacy;
+    [self.windowRecorder taskSnapShot:context touchSnapshot:[self.touches takeTouchSnapshotWithContext:context]];
 }
 -(void)dealloc{
     if(self.timer){

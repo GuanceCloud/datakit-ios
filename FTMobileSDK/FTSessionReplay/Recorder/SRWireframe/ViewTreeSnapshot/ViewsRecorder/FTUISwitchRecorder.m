@@ -38,7 +38,7 @@
     builder.isDarkMode = switchView.usesDarkMode;
     builder.isOn = switchView.isOn;
     builder.isEnabled = switchView.isEnabled;
-    builder.isMasked = context.recorder.privacy.shouldMaskInputElements;
+    builder.isMasked = [FTSRTextObfuscatingFactory shouldMaskInputElements:[attributes resolveTextAndInputPrivacyLevel:context.recorder]];
     builder.thumbTintColor = switchView.thumbTintColor;
     builder.onTintColor = switchView.onTintColor;
     builder.offTintColor = switchView.tintColor;

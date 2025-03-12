@@ -8,6 +8,7 @@
 
 #import <Foundation/Foundation.h>
 #import "FTRumSessionReplay.h"
+typedef FTTextAndInputPrivacyLevel TextAndInputPrivacy;
 NS_ASSUME_NONNULL_BEGIN
 @protocol FTSRTextObfuscatingProtocol <NSObject>
 
@@ -15,12 +16,11 @@ NS_ASSUME_NONNULL_BEGIN
 
 @end
 @interface FTSRTextObfuscatingFactory : NSObject
-- (instancetype)initWithPrivacy:(FTSRPrivacy)privacy;
-- (id<FTSRTextObfuscatingProtocol>)sensitiveTextObfuscator;
-- (id<FTSRTextObfuscatingProtocol>)inputAndOptionTextObfuscator;
-- (id<FTSRTextObfuscatingProtocol>)staticTextObfuscator;
-- (id<FTSRTextObfuscatingProtocol>)hintTextObfuscator;
-- (BOOL)shouldMaskInputElements;
++ (id<FTSRTextObfuscatingProtocol>)sensitiveTextObfuscator:(TextAndInputPrivacy)privacy;
++ (id<FTSRTextObfuscatingProtocol>)inputAndOptionTextObfuscator:(TextAndInputPrivacy)privacy;
++ (id<FTSRTextObfuscatingProtocol>)staticTextObfuscator:(TextAndInputPrivacy)privacy;
++ (id<FTSRTextObfuscatingProtocol>)hintTextObfuscator:(TextAndInputPrivacy)privacy;
++ (BOOL)shouldMaskInputElements:(TextAndInputPrivacy)privacy;
 
 @end
 

@@ -21,15 +21,15 @@
     self = [super init];
     if(self){
         _identifier = [[NSUUID UUID] UUIDString];
-        _textObfuscator = ^(FTViewTreeRecordingContext *context,BOOL isSensitive,BOOL isEditable){
+        _textObfuscator = ^(FTViewTreeRecordingContext *context,FTViewAttributes *attributes,BOOL isSensitive,BOOL isEditable){
             if (isSensitive) {
-                return context.recorder.privacy.sensitiveTextObfuscator;
+                return [FTSRTextObfuscatingFactory sensitiveTextObfuscator:[attributes resolveTextAndInputPrivacyLevel:context.recorder]];
             }
 
             if (isEditable) {
-                return context.recorder.privacy.inputAndOptionTextObfuscator;
+                return [FTSRTextObfuscatingFactory inputAndOptionTextObfuscator:[attributes resolveTextAndInputPrivacyLevel:context.recorder]];
             } else {
-                return context.recorder.privacy.staticTextObfuscator;
+                return [FTSRTextObfuscatingFactory staticTextObfuscator:[attributes resolveTextAndInputPrivacyLevel:context.recorder]];
             }
         };
     }
@@ -50,7 +50,7 @@
     builder.textColor = textView.textColor;
     builder.font = textView.font;
     builder.contentRect = CGRectMake(textView.contentOffset.x, textView.contentOffset.y, textView.contentSize.width, textView.contentSize.height);
-    builder.textObfuscator = self.textObfuscator(context,[FTSRUtils isSensitiveText:textView],textView.isEditable);
+    builder.textObfuscator = self.textObfuscator(context,attributes,[FTSRUtils isSensitiveText:textView],textView.isEditable);
     builder.contentRect = CGRectMake(textView.contentOffset.x, textView.contentOffset.y, textView.contentSize.width, textView.contentSize.height);
     
     FTSpecificElement *element = [[FTSpecificElement alloc]initWithSubtreeStrategy:NodeSubtreeStrategyIgnore];

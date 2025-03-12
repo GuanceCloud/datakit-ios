@@ -25,8 +25,8 @@
         _builderOverride = builderOverride?builderOverride:^(FTUILabelBuilder *builder){
             return builder;
         };
-        _textObfuscator = textObfuscator?textObfuscator:^id<FTSRTextObfuscatingProtocol> _Nullable(FTViewTreeRecordingContext * _Nonnull context) {
-            return [context.recorder.privacy staticTextObfuscator];
+        _textObfuscator = textObfuscator?textObfuscator:^id<FTSRTextObfuscatingProtocol> _Nullable(FTViewTreeRecordingContext * _Nonnull context,FTViewAttributes *attributes) {
+            return  [FTSRTextObfuscatingFactory staticTextObfuscator:[attributes resolveTextAndInputPrivacyLevel:context.recorder]];
         };
     }
     return self;
@@ -48,7 +48,7 @@
     builder.font = label.font;
     builder.textColor = label.textColor;
     builder.textAlignment = label.textAlignment;
-    builder.textObfuscator = self.textObfuscator(context);
+    builder.textObfuscator = self.textObfuscator(context,attributes);
     
     FTSpecificElement *element = [[FTSpecificElement alloc]initWithSubtreeStrategy:NodeSubtreeStrategyIgnore];
     element.nodes = @[self.builderOverride(builder)];

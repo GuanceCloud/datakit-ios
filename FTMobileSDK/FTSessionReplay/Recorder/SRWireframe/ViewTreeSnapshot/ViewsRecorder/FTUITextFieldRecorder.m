@@ -16,7 +16,7 @@
 #import "FTViewTreeRecordingContext.h"
 #import "FTViewTreeRecorder.h"
 #import "FTSRViewID.h"
-typedef id<FTSRTextObfuscatingProtocol>(^FTTextFieldObfuscator)(FTViewTreeRecordingContext *context,BOOL isSensitive,BOOL isPlaceholder);
+typedef id<FTSRTextObfuscatingProtocol>(^FTTextFieldObfuscator)(FTViewTreeRecordingContext *context,FTViewAttributes *attributes,BOOL isSensitive,BOOL isPlaceholder);
 @interface  FTUITextFieldRecorder()
 @property (nonatomic, strong) FTUIViewRecorder *backgroundViewRecorder;
 @property (nonatomic, strong) FTUIImageViewRecorder *iconsRecorder;
@@ -30,20 +30,20 @@ typedef id<FTSRTextObfuscatingProtocol>(^FTTextFieldObfuscator)(FTViewTreeRecord
     if(self){
         _identifier = [[NSUUID UUID] UUIDString];
         _backgroundViewRecorder = [[FTUIViewRecorder alloc]initWithIdentifier:[NSUUID UUID].UUIDString];
-        _iconsRecorder = [[FTUIImageViewRecorder alloc]initWithIdentifier:[NSUUID UUID].UUIDString tintColorProvider:nil shouldRecordImagePredicate:nil];
+        _iconsRecorder = [[FTUIImageViewRecorder alloc]initWithIdentifier:[NSUUID UUID].UUIDString tintColorProvider:nil shouldRecordImagePredicateOverride:nil];
         _subtreeRecorder = [[FTViewTreeRecorder alloc]init];
         _subtreeRecorder.nodeRecorders = @[_backgroundViewRecorder,_iconsRecorder];
     }
     return self;
 }
 -(FTTextFieldObfuscator)textObfuscator{
-    return ^(FTViewTreeRecordingContext *context,BOOL isSensitive,BOOL isPlaceholder){
+    return ^(FTViewTreeRecordingContext *context,FTViewAttributes *attributes,BOOL isSensitive,BOOL isPlaceholder){
         if (isPlaceholder) {
-            return context.recorder.privacy.hintTextObfuscator;
+            return [FTSRTextObfuscatingFactory hintTextObfuscator:[attributes resolveTextAndInputPrivacyLevel:context.recorder]];
         } else if (isSensitive) {
-            return context.recorder.privacy.sensitiveTextObfuscator;
+            return [FTSRTextObfuscatingFactory sensitiveTextObfuscator:[attributes resolveTextAndInputPrivacyLevel:context.recorder]];
         } else {
-            return context.recorder.privacy.inputAndOptionTextObfuscator;
+            return [FTSRTextObfuscatingFactory inputAndOptionTextObfuscator:[attributes resolveTextAndInputPrivacyLevel:context.recorder]];
         }
     };
 }
@@ -103,7 +103,7 @@ typedef id<FTSRTextObfuscatingProtocol>(^FTTextFieldObfuscator)(FTViewTreeRecord
     builder.isPlaceholderText = isPlaceholder;
     builder.font = textField.font;
     builder.fontScalingEnabled = textField.adjustsFontSizeToFitWidth;
-    builder.textObfuscator = self.textObfuscator(context,[FTSRUtils isSensitiveText:textField],isPlaceholder);
+    builder.textObfuscator = self.textObfuscator(context,attributes,[FTSRUtils isSensitiveText:textField],isPlaceholder);
     return builder;
 }
 @end

@@ -8,12 +8,13 @@
 
 #import <Foundation/Foundation.h>
 #import <UIKit/UIKit.h>
+#import "FTViewAttributes.h"
 NS_ASSUME_NONNULL_BEGIN
 @class FTTouchSnapshot,FTWindowObserver;
 @interface FTSessionReplayTouches : NSObject
 -(instancetype)initWithWindowObserver:(FTWindowObserver *)observer;
 /// 获取点击的点集合 （主线程操作）
--(nullable FTTouchSnapshot *)takeTouchSnapshot;
+-(FTTouchSnapshot *)takeTouchSnapshotWithContext:(FTSRContext *)context;
 
 @end
 

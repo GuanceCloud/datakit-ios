@@ -27,13 +27,13 @@ typedef BOOL (^FTShouldRecordImagePredicate)(UIImageView *imageView);
 @end
 @interface FTUIImageViewRecorder : NSObject<FTSRWireframesRecorder>
 @property (nonatomic, copy) SemanticsOverride semanticsOverride;
-@property (nonatomic, copy) FTShouldRecordImagePredicate shouldRecordImagePredicate;
+@property (nonatomic, copy) FTShouldRecordImagePredicate shouldRecordImagePredicateOverride;
 @property (nonatomic, copy) FTTintColorProvider tintColorProvider;
 
 @property (nonatomic, copy) NSString *identifier;
 -(instancetype)initWithIdentifier:(NSString *)identifier
                 tintColorProvider:(nullable FTTintColorProvider)tintColorProvider
-       shouldRecordImagePredicate:(nullable FTShouldRecordImagePredicate)shouldRecordImagePredicate;
+shouldRecordImagePredicateOverride:(nullable FTShouldRecordImagePredicate)shouldRecordImagePredicateOverride;
 @end
 
 NS_ASSUME_NONNULL_END
