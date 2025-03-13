@@ -30,7 +30,10 @@
     return @"/v1/write/rum/replay";
 }
 -(NSString *)contentType{
-    return  [[NSString alloc]initWithFormat:@"multipart/form-data; boundary=%@",[self.multipartFormBody boundary]];
+    return [[NSString alloc]initWithFormat:@"multipart/form-data; boundary=%@",[self.multipartFormBody boundary]];
+}
+-(NSString *)userAgent{
+    return [[super userAgent] stringByAppendingString:@" (Mode=Replay)"];
 }
 -(void)requestWithEvents:(NSArray *)events parameters:(NSDictionary *)parameters{
     self.parameters = parameters;
