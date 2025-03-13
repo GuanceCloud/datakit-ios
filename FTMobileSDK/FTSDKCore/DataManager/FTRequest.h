@@ -27,7 +27,7 @@ NS_ASSUME_NONNULL_BEGIN
 @optional
 ///event property
 @property (nonatomic, strong) id<FTRequestBodyProtocol> requestBody;
-- (NSMutableURLRequest *)adaptedRequest:(NSMutableURLRequest *)mutableRequest;
+- (nullable NSMutableURLRequest *)adaptedRequest:(NSMutableURLRequest *)mutableRequest;
 @end
 
 @interface FTRequest : NSObject<FTRequestProtocol>

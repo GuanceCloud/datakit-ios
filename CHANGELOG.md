@@ -1,3 +1,6 @@
+# 1.5.15-alpha.2
+1. 数据同步 UserAgent 格式调整
+---
 # 1.5.15-alpha.1
 1. 修复使用 `[FTExternalDataManager addErrorWithType:state:message:stack:property:]` 添加 RUM Error 时自定义指标传递丢失问题
 2. 更新 tvOS 环境默认 `sdk_name` 设置为 `df_tvos_rum_sdk`
