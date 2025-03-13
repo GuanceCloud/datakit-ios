@@ -8,7 +8,6 @@
 
 #import "FTNetworkInfoManager.h"
 #import "FTLog+Private.h"
-#import <unistd.h>
 #import "FTBaseInfoHandler.h"
 
 @interface FTNetworkInfoManager()
@@ -22,14 +21,6 @@ static FTNetworkInfoManager *sharedInstance = nil;
         sharedInstance = [[self alloc] init];
     });
     return sharedInstance;
-}
--(instancetype)init{
-    self = [super init];
-    if(self){
-        pid_t processID = getpid();
-        _processID = [FTBaseInfoHandler base62Encode:processID];
-    }
-    return self;
 }
 - (FTNetworkInfoManager *(^)(NSString *value))setDatakitUrl {
     return ^(NSString *value) {

@@ -239,12 +239,12 @@ static dispatch_once_t onceToken;
             FTInnerLogError(@"数据库删除已上传数据失败");
             break;
         }
+        [[request classSerialGenerator] increaseRequestSerialNumber];
+        
         if([type isEqualToString:FT_DATA_TYPE_LOGGING]){
             _dataCachePolicy.logCount -= events.count;
-            [FTBaseInfoHandler increaseLogRequestSerialNumber];
         }else{
             _dataCachePolicy.rumCount -= events.count;
-            [FTBaseInfoHandler increaseRumRequestSerialNumber];
         }
         if(events.count < self.uploadPageSize){
             break;

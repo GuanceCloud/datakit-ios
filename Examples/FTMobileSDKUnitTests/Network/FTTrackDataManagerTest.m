@@ -19,6 +19,7 @@
 #import "FTTrackDataManager+Test.h"
 #import "FTBaseInfoHandler.h"
 #import "FTLog+Private.h"
+#import "FTRequest.h"
 @interface FTTrackDataManagerTest : XCTestCase
 @property (nonatomic, strong) XCTestExpectation *expectation;
 
@@ -336,12 +337,12 @@
     self.expectation = [self expectationWithDescription:@"isUploadingEqualNO"];
     [[FTTrackDataManager sharedInstance] addObserver:self forKeyPath:@"isUploading" options:NSKeyValueObservingOptionNew context:nil];
     CFTimeInterval startTime = CACurrentMediaTime();
-    NSString *packageId = [FTBaseInfoHandler rumRequestSerialNumber];
+    NSString *packageId = [FTRumRequest.serialGenerator getCurrentSerialNumber];
     [[FTTrackDataManager sharedInstance] uploadTrackData];
     [self waitForExpectations:@[self.expectation]];
     CFTimeInterval endTime = CACurrentMediaTime();
     XCTAssertTrue(endTime-startTime>7 && endTime-startTime<9);
-    NSString *endPackageId = [FTBaseInfoHandler rumRequestSerialNumber];
+    NSString *endPackageId = [FTRumRequest.serialGenerator getCurrentSerialNumber];
     XCTAssertTrue([endPackageId isEqualToString:packageId]);
     XCTAssertTrue(set.count == 6);
     
@@ -376,7 +377,7 @@
         .setSdkVersion(@"RequestTest");
     
     [[FTTrackDataManager sharedInstance] addObserver:self forKeyPath:@"isUploading" options:NSKeyValueObservingOptionNew context:nil];
-
+    NSString *logStartNum = [FTLoggingRequest.serialGenerator getCurrentSerialNumber];
     for (int i = 0; i<2; i++) {
         self.expectation = [self expectationWithDescription:@"isUploadingEqualNO"];
         FTRecordModel *model = [FTModelHelper createRumModel];
@@ -385,7 +386,8 @@
         [[FTTrackDataManager sharedInstance] uploadTrackData];
         [self waitForExpectations:@[self.expectation]];
     }
-    
+    NSString *logEndtNum = [FTLoggingRequest.serialGenerator getCurrentSerialNumber];
+    XCTAssertTrue([logEndtNum isEqualToString:logStartNum]);
     XCTAssertTrue(datas.count == 2);
     
     NSString *bodyStr = [[NSString alloc]initWithData:[FTTestUtils transStreamToData:datas.firstObject] encoding:NSUTF8StringEncoding];
