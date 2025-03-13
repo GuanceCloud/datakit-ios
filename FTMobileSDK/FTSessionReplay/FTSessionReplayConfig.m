@@ -27,6 +27,9 @@ NSString * const FTImagePrivacyLevelStringMap[] = {
     self = [super init];
     if(self){
         _sampleRate = 100;
+        _imagePrivacy = FTImagePrivacyLevelMaskAll;
+        _touchPrivacy = FTTouchPrivacyLevelHide;
+        _textAndInputPrivacy = FTTextAndInputPrivacyLevelMaskAll;
         _privacy = FTSRPrivacyMask;
     }
     return self;
