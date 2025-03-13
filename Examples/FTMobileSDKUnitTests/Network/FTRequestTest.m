@@ -87,6 +87,24 @@
     [self waitForExpectationsWithTimeout:35 handler:^(NSError *error) {
     }];
 }
+- (void)testRequestSerialNumIncrease{
+    FTRequest *rumRequest = [FTRequest createRequestWithEvents:@[[FTModelHelper createRumModel]] type:FT_DATA_TYPE_RUM];
+    FTRequest *logRequest = [FTRequest createRequestWithEvents:@[[FTModelHelper createLogModel]] type:FT_DATA_TYPE_LOGGING];
+    XCTAssertTrue([rumRequest.classSerialGenerator.prefix isEqualToString:@"FTRumRequest"]);
+    XCTAssertTrue([logRequest.classSerialGenerator.prefix isEqualToString:@"FTLoggingRequest"]);
+    NSString *currentRumSerialNum = [rumRequest.classSerialGenerator getCurrentSerialNumber];
+    NSString *currentLogSerialNum = [logRequest.classSerialGenerator getCurrentSerialNumber];
+    [rumRequest.classSerialGenerator increaseRequestSerialNumber];
+    [logRequest.classSerialGenerator increaseRequestSerialNumber];
+    
+    NSString *newRumSerialNum = [rumRequest.classSerialGenerator getCurrentSerialNumber];
+    NSString *newtLogSerialNum = [logRequest.classSerialGenerator getCurrentSerialNumber];
+    
+    XCTAssertFalse([currentRumSerialNum isEqualToString:newRumSerialNum]);
+    XCTAssertFalse([currentLogSerialNum isEqualToString:newtLogSerialNum]);
+    XCTAssertTrue([FTTestUtils base36ToDecimal:newRumSerialNum] - [FTTestUtils base36ToDecimal:currentRumSerialNum] == 1);
+    XCTAssertTrue([FTTestUtils base36ToDecimal:newtLogSerialNum] - [FTTestUtils base36ToDecimal:currentLogSerialNum] == 1);
+}
 -(void)observeValueForKeyPath:(NSString *)keyPath ofObject:(id)object change:(NSDictionary<NSKeyValueChangeKey,id> *)change context:(void *)context{
     if([keyPath isEqualToString:@"isUploading"]){
         FTTrackDataManager *manager = object;
@@ -119,7 +137,7 @@
     NSMutableURLRequest *urlRequest2 = [[NSMutableURLRequest alloc]initWithURL:request.absoluteURL cachePolicy:NSURLRequestUseProtocolCachePolicy timeoutInterval:30.0];
 
     NSMutableURLRequest *mRequest = [request adaptedRequest:urlRequest];
-    rum?[FTBaseInfoHandler increaseRumRequestSerialNumber]:[FTBaseInfoHandler increaseLogRequestSerialNumber];
+    [request.classSerialGenerator increaseRequestSerialNumber];
     NSMutableURLRequest *mRequest2 = [request adaptedRequest:urlRequest2];
     NSString *bodyStr = [[NSString alloc]initWithData:mRequest.HTTPBody encoding:NSUTF8StringEncoding];
     NSString *bodyStr2 = [[NSString alloc]initWithData:mRequest2.HTTPBody encoding:NSUTF8StringEncoding];

@@ -29,7 +29,6 @@
 #define IOS_VPN         @"utun0"
 #define IP_ADDR_IPv4    @"ipv4"
 #define IP_ADDR_IPv6    @"ipv6"
-static NSString *const kBase62Charset = @"0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz";
 
 @implementation FTBaseInfoHandler : NSObject
 
@@ -72,26 +71,7 @@ static NSString *const kBase62Charset = @"0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZab
     }
     return YES;
 }
-+ (NSString *)generate12CharBase62RandomString{
-    NSMutableString *result = [NSMutableString stringWithCapacity:12];
-    
-    // 使用更安全的随机数生成方法（适合加密场景）
-    for (NSUInteger i = 0; i < 12; i++) {
-        uint32_t randomValue = 0;
-        int status = SecRandomCopyBytes(kSecRandomDefault, sizeof(randomValue), (uint8_t *)&randomValue);
-        
-        if (status == errSecSuccess) {
-            // 取模 62 确保范围在 0~61
-            NSUInteger charIndex = randomValue % 62;
-            [result appendString:[kBase62Charset substringWithRange:NSMakeRange(charIndex, 1)]];
-        } else {
-            // 安全随机失败时回退到 arc4random
-            NSUInteger charIndex = arc4random_uniform(62);
-            [result appendString:[kBase62Charset substringWithRange:NSMakeRange(charIndex, 1)]];
-        }
-    }
-    return result;
-}
+
 + (NSString *)random16UUID{
     return [[self randomUUID] substringWithRange:NSMakeRange(0, 16)];
 }
@@ -100,16 +80,7 @@ static NSString *const kBase62Charset = @"0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZab
     uuid = [uuid stringByReplacingOccurrencesOfString:@"-" withString:@""];
     return uuid.lowercaseString;
 }
-+ (NSString *)base62Encode:(int)num {
-    if (num == 0) return @"0"; // 处理边界情况
-    NSMutableString *result = [NSMutableString string];
-    while (num > 0) {
-        NSUInteger remainder = num % 62;
-        [result insertString:[kBase62Charset substringWithRange:NSMakeRange(remainder, 1)] atIndex:0];
-        num /= 62;
-    }
-    return result;
-}
+
 #if FT_IOS
 +(NSString *)telephonyCarrier
 {
@@ -215,37 +186,5 @@ static NSString *const kBase62Charset = @"0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZab
     }
     return [addresses count] ? addresses : nil;
 }
-+ (NSString *)decimalToBase36:(unsigned long)decimalNumber{
-    static NSString *const base36Characters = @"0123456789abcdefghijklmnopqrstuvwxyz";
-    NSMutableString *result = [NSMutableString string];
-    while (decimalNumber > 0) {
-        NSUInteger remainder = decimalNumber % 36;
-        [result insertString:[base36Characters substringWithRange:NSMakeRange(remainder, 1)] atIndex:0];
-        decimalNumber /= 36;
-    }
-    return result.length > 0 ? result : @"0";
-}
-static unsigned long rumSerialNumber = 0;
-static unsigned long logSerialNumber = 0;
 
-+ (NSString *)rumRequestSerialNumber{
-    return [self decimalToBase36:rumSerialNumber];
-}
-+ (void)increaseRumRequestSerialNumber{
-    if(rumSerialNumber == ULONG_MAX){
-        rumSerialNumber = 0;
-    }else{
-        rumSerialNumber += 1;
-    }
-}
-+ (NSString *)logRequestSerialNumber{
-    return [self decimalToBase36:logSerialNumber];
-}
-+ (void)increaseLogRequestSerialNumber{
-    if(logSerialNumber == ULONG_MAX){
-        logSerialNumber = 0;
-    }else{
-        logSerialNumber += 1;
-    }
-}
 @end

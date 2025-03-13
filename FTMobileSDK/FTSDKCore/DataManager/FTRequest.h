@@ -8,7 +8,8 @@
 
 #import <Foundation/Foundation.h>
 #import "FTRequestBody.h"
-@class FTRecordModel;
+#import "FTSerialNumberGenerator.h"
+#import "FTPackageIdGenerator.h"
 NS_ASSUME_NONNULL_BEGIN
 
 @protocol FTRequestProtocol <NSObject>
@@ -20,7 +21,7 @@ NS_ASSUME_NONNULL_BEGIN
 @property (nonatomic, copy, readonly) NSString *httpMethod;
 @property (nonatomic, copy, readonly, nullable) NSString *serialNumber;
 @property (nonatomic, assign, readonly) BOOL enableDataIntegerCompatible;
-
+- (FTSerialNumberGenerator *)classSerialGenerator;
 @optional
 ///event property
 @property (nonatomic, strong) id<FTRequestBodyProtocol> requestBody;
@@ -28,8 +29,10 @@ NS_ASSUME_NONNULL_BEGIN
 @end
 
 @interface FTRequest : NSObject<FTRequestProtocol>
-
-+(FTRequest * _Nullable)createRequestWithEvents:(NSArray <FTRecordModel*>*)events type:(NSString *)type;
+@property (nonatomic, strong, class) FTSerialNumberGenerator *serialGenerator;
+@property (nonatomic, strong) NSArray *events;
+- (void)addHTTPHeaderFields:(NSMutableURLRequest *)mutableRequest packageId:(NSString *)packageId;
++(FTRequest * _Nullable)createRequestWithEvents:(NSArray *)events type:(NSString *)type;
 @end
 
 @interface FTLoggingRequest : FTRequest

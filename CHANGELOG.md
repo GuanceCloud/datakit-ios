@@ -1,3 +1,8 @@
+# 1.5.15-alpha.1
+1. 修复使用 `[FTExternalDataManager addErrorWithType:state:message:stack:property:]` 添加 RUM Error 时自定义指标传递丢失问题
+2. 更新 tvOS 环境默认 `sdk_name` 设置为 `df_tvos_rum_sdk`
+3. 优化数据同步 packageId 生成逻辑
+---
 # 1.6.0-alpha.9
 1. 同 1.5.14
 ---
