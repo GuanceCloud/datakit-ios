@@ -30,9 +30,9 @@
 		1733605F2C05FFD600A50C02 /* FTDBDataCachePolicy.m in Sources */ = {isa = PBXBuildFile; fileRef = 1733605C2C05FFD600A50C02 /* FTDBDataCachePolicy.m */; };
 		173360602C05FFD600A50C02 /* FTDBDataCachePolicy.m in Sources */ = {isa = PBXBuildFile; fileRef = 1733605C2C05FFD600A50C02 /* FTDBDataCachePolicy.m */; };
 		173E45D32D803AC800900F52 /* FTSessionReplayPrivacyOverrides.m in Sources */ = {isa = PBXBuildFile; fileRef = 173E45D22D803AC800900F52 /* FTSessionReplayPrivacyOverrides.m */; };
-		173E45D42D803AC800900F52 /* FTSessionReplayPrivacyOverrides.h in Headers */ = {isa = PBXBuildFile; fileRef = 173E45D12D803AC800900F52 /* FTSessionReplayPrivacyOverrides.h */; settings = {ATTRIBUTES = (Public, ); }; };
+		173E45D42D803AC800900F52 /* FTSessionReplayPrivacyOverrides.h in Headers */ = {isa = PBXBuildFile; fileRef = 173E45D12D803AC800900F52 /* FTSessionReplayPrivacyOverrides.h */; platformFilter = ios; settings = {ATTRIBUTES = (Public, ); }; };
 		173E45D72D803B5800900F52 /* UIView+FTSRPrivacy.m in Sources */ = {isa = PBXBuildFile; fileRef = 173E45D62D803B5800900F52 /* UIView+FTSRPrivacy.m */; };
-		173E45D82D803B5800900F52 /* UIView+FTSRPrivacy.h in Headers */ = {isa = PBXBuildFile; fileRef = 173E45D52D803B5800900F52 /* UIView+FTSRPrivacy.h */; settings = {ATTRIBUTES = (Public, ); }; };
+		173E45D82D803B5800900F52 /* UIView+FTSRPrivacy.h in Headers */ = {isa = PBXBuildFile; fileRef = 173E45D52D803B5800900F52 /* UIView+FTSRPrivacy.h */; platformFilter = ios; settings = {ATTRIBUTES = (Public, ); }; };
 		173E45DA2D804C4700900F52 /* FTSessionReplayPrivacyOverrides+Extension.h in Headers */ = {isa = PBXBuildFile; fileRef = 173E45D92D804C4700900F52 /* FTSessionReplayPrivacyOverrides+Extension.h */; };
 		173E460F2D828CB300900F52 /* FTSerialNumberGenerator.m in Sources */ = {isa = PBXBuildFile; fileRef = 173E460E2D828CB300900F52 /* FTSerialNumberGenerator.m */; };
 		173E46102D828CB300900F52 /* FTPackageIdGenerator.m in Sources */ = {isa = PBXBuildFile; fileRef = 173E460C2D828CB300900F52 /* FTPackageIdGenerator.m */; };
