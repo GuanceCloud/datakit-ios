@@ -17,11 +17,6 @@
 #import "FTSessionReplayFeature.h"
 #import "FTFeatureDataStore.h"
 #import "FTModuleManager.h"
-NSString * const FTTextPrivacyStringMap[] = {
-    [FTSRPrivacyAllow] = @"Allow",
-    [FTSRPrivacyMaskUserInput] = @"MaskUserInput",
-    [FTSRPrivacyMask] = @"Mask",
-};
 @interface FTFeatureStores : NSObject
 @property (nonatomic, strong) FTFeatureStorage *storage;
 @property (nonatomic, strong) FTFeatureUpload *upload;
@@ -66,11 +61,10 @@ static dispatch_once_t onceToken;
     return self;
 }
 - (void)startWithSessionReplayConfig:(FTSessionReplayConfig *)config{
+    FTInnerLogInfo(@"[session-replay] %@",config.debugDescription);
     if(config.sampleRate<=0){
-        FTInnerLogInfo(@"[session-replay] sampleRate: %d",config.sampleRate);
         return;
     }
-    FTInnerLogInfo(@"[session-replay] textPrivacy :%@",FTTextPrivacyStringMap[config.privacy]);
     FTSessionReplayFeature *sessionReplayFeature = [[FTSessionReplayFeature alloc]initWithConfig:config];
     FTFeatureStores *srStore = [self registerFeature:sessionReplayFeature];
     [self.stores setValue:srStore forKey:sessionReplayFeature.name];

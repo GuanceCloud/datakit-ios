@@ -8,6 +8,20 @@
 
 #import "FTSessionReplayConfig.h"
 #import "FTSessionReplayConfig+Private.h"
+NSString * const FTTextAndInputPrivacyLevelStringMap[] = {
+    [FTTextAndInputPrivacyLevelMaskAll] = @"MaskAll",
+    [FTTextAndInputPrivacyLevelMaskAllInputs] = @"MaskAllInputs",
+    [FTTextAndInputPrivacyLevelMaskSensitiveInputs] = @"MaskSensitiveInputs",
+};
+NSString * const FTTouchPrivacyLevelStringMap[] = {
+    [FTTouchPrivacyLevelHide] = @"Hide",
+    [FTTouchPrivacyLevelShow] = @"Show",
+};
+NSString * const FTImagePrivacyLevelStringMap[] = {
+    [FTImagePrivacyLevelMaskAll] = @"MaskAll",
+    [FTImagePrivacyLevelMaskNone] = @"MaskNone",
+    [FTImagePrivacyLevelMaskNonBundledOnly] = @"MaskNonBundledOnly",
+};
 @implementation FTSessionReplayConfig
 -(instancetype)init{
     self = [super init];
@@ -40,5 +54,8 @@
             _textAndInputPrivacy = FTTextAndInputPrivacyLevelMaskAllInputs;
             break;
     }
+}
+-(NSString *)debugDescription{
+    return [NSString stringWithFormat:@"====== Config ======\n sampleRate:%d\n textAndInputPrivacy:%@\n touchPrivacy:%@\n imagePrivacy:%@\n ================== ",self.sampleRate,FTTextAndInputPrivacyLevelStringMap[self.textAndInputPrivacy],FTTouchPrivacyLevelStringMap[self.touchPrivacy],FTImagePrivacyLevelStringMap[self.imagePrivacy]];
 }
 @end
