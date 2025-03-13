@@ -21,6 +21,8 @@ NS_ASSUME_NONNULL_BEGIN
 @property (nonatomic, copy, readonly) NSString *httpMethod;
 @property (nonatomic, copy, readonly, nullable) NSString *serialNumber;
 @property (nonatomic, assign, readonly) BOOL enableDataIntegerCompatible;
+@property (nonatomic, copy, readonly) NSString *userAgent;
+
 - (FTSerialNumberGenerator *)classSerialGenerator;
 @optional
 ///event property
