@@ -21,6 +21,7 @@ extern NSString * const FT_DEFAULT_SERVICE_NAME;
 extern NSString * const FT_TVOS_SERVICE_NAME;
 extern NSString * const FT_IOS_SDK_NAME;
 extern NSString * const FT_SDK_NAME_VALUE;
+extern NSString * const FT_USER_AGENT_NAME;
 extern NSString * const FT_MACOS_SDK_NAME;
 extern NSString * const FT_IS_WEBVIEW;
 extern NSString * const FT_NULL_VALUE;

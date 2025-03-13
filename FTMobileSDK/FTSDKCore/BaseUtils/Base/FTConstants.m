@@ -36,10 +36,13 @@ NSString * const FT_TVOS_SDK_NAME = @"df_tvos_rum_sdk";
 NSString * const FT_MACOS_SDK_NAME = @"df_macos_rum_sdk";
 #if FT_MAC
 NSString * const FT_SDK_NAME_VALUE = FT_MACOS_SDK_NAME;
+NSString * const FT_USER_AGENT_NAME = @"DF-RUM-macOS";
 #elif TARGET_OS_TV
 NSString * const FT_SDK_NAME_VALUE = FT_TVOS_SDK_NAME;
+NSString * const FT_USER_AGENT_NAME = @"DF-RUM-tvOS";
 #else
 NSString * const FT_SDK_NAME_VALUE = FT_IOS_SDK_NAME;
+NSString * const FT_USER_AGENT_NAME = @"DF-RUM-iOS";
 #endif
 NSString * const FT_IS_WEBVIEW = @"is_web_view";
 NSString * const FT_NULL_VALUE  = @"N/A";

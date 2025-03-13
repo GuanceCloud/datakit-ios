@@ -58,6 +58,9 @@
 -(NSString *)path{
     return nil;
 }
+- (NSString *)userAgent{
+    return [NSString stringWithFormat:@"%@/%@",FT_USER_AGENT_NAME,[FTNetworkInfoManager sharedInstance].sdkVersion];
+}
 -(nullable NSString *)serialNumber{
     return [[self classSerialGenerator] getCurrentSerialNumber];
 }
@@ -89,7 +92,7 @@
         [mutableRequest setValue:self.contentType forHTTPHeaderField:@"Content-Type"];
     }
     [mutableRequest setValue:@"zh-CN" forHTTPHeaderField:@"Accept-Language"];
-    [mutableRequest setValue:FT_SDK_NAME_VALUE forHTTPHeaderField:@"User-Agent"];
+    [mutableRequest setValue:self.userAgent forHTTPHeaderField:@"User-Agent"];
     [mutableRequest setValue:[NSString stringWithFormat:@"rumm-%@",packageId] forHTTPHeaderField:@"X-Pkg-Id"];
 }
 - (NSMutableURLRequest *)adaptedRequest:(NSMutableURLRequest *)mutableRequest{
