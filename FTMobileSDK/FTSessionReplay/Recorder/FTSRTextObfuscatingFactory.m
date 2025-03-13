@@ -10,8 +10,7 @@
 
 @implementation FTSRTextObfuscatingFactory
 
-+ (id<FTSRTextObfuscatingProtocol>)sensitiveTextObfuscator{
-    
++ (id<FTSRTextObfuscatingProtocol>)sensitiveTextObfuscator:(TextAndInputPrivacy)privacy{
     return [FTFixLengthMaskObfuscator new];
 }
 + (id<FTSRTextObfuscatingProtocol>)inputAndOptionTextObfuscator:(TextAndInputPrivacy)privacy{
