@@ -45,13 +45,13 @@
     return  !self.isVisible || self.alpha < 1 || ([FTSRUtils getCGColorAlpha:self.backgroundColor.CGColor] < 1);
 }
 -(FTTextAndInputPrivacyLevel)resolveTextAndInputPrivacyLevel:(FTSRContext *)context{
-    if (self.textAndInputPrivacy) {
+    if (self.textAndInputPrivacy != nil) {
         return (FTTextAndInputPrivacyLevel)[self.textAndInputPrivacy intValue];
     }
     return context.textAndInputPrivacy;
 }
 -(FTImagePrivacyLevel)resolveImagePrivacyLevel:(FTSRContext *)context{
-    if (self.imagePrivacy) {
+    if (self.imagePrivacy != nil) {
         return (FTImagePrivacyLevel)[self.imagePrivacy intValue];
     }
     return context.imagePrivacy;

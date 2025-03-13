@@ -16,7 +16,7 @@ NS_ASSUME_NONNULL_BEGIN
 @property (nonatomic, assign) CGRect wireframeRect;
 @property (nonatomic, assign) int backgroundWireframeID;
 @property (nonatomic, strong) FTViewAttributes *attributes;
-@property (nonatomic, strong) NSNumber *selectedSegmentIndex;
+@property (nonatomic, strong, nullable) NSNumber *selectedSegmentIndex;
 @property (nonatomic, strong) NSArray *segmentTitles;
 @property (nonatomic, strong) NSArray *segmentWireframeIDs;
 @property (nonatomic, strong) UIColor *selectedSegmentTintColor;

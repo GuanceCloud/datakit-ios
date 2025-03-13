@@ -21,7 +21,7 @@ NS_ASSUME_NONNULL_BEGIN
 @end
 @protocol FTReader <NSObject>
 - (NSArray<id<FTReadableFile>>*)readFiles:(int)limit;
-- (FTBatch*)readBatch:(id<FTReadableFile>)file;
+- (nullable FTBatch*)readBatch:(id<FTReadableFile>)file;
 - (void)markBatchAsRead:(FTBatch*)batch;
    
 @end

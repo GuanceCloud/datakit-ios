@@ -11,8 +11,8 @@
 NS_ASSUME_NONNULL_BEGIN
 
 @interface FTCompression : NSObject
-+ (NSData *)compress:(NSData *)data;
-+ (NSData *)encode:(NSData *)data;
++ (nullable NSData *)compress:(NSData *)data;
++ (nullable NSData *)encode:(NSData *)data;
 @end
 
 NS_ASSUME_NONNULL_END

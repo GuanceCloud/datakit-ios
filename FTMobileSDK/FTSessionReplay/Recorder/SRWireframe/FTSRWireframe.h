@@ -12,17 +12,17 @@
 NS_ASSUME_NONNULL_BEGIN
 @class FTViewTreeSnapshot,FTViewAttributes;
 @interface FTSRShapeBorder : FTSRBaseFrame
-@property (nonatomic, copy) NSString *color;
+@property (nonatomic, copy, nullable) NSString *color;
 @property (nonatomic, assign) CGFloat width;
--(instancetype)initWithColor:(NSString *)color width:(CGFloat)width;
+-(instancetype)initWithColor:(nullable NSString *)color width:(CGFloat)width;
 @end
 
 @interface FTSRContentClip : FTSRBaseFrame
 // 不要改为 int ,使用 NSNumber 是因为 bottom 和 right 可能为空
-@property (nonatomic, strong) NSNumber *bottom;
-@property (nonatomic, strong) NSNumber *left;
-@property (nonatomic, strong) NSNumber *right;
-@property (nonatomic, strong) NSNumber *top;
+@property (nonatomic, strong, nullable) NSNumber *bottom;
+@property (nonatomic, strong, nullable) NSNumber *left;
+@property (nonatomic, strong, nullable) NSNumber *right;
+@property (nonatomic, strong, nullable) NSNumber *top;
 -(instancetype)initWithFrame:(CGRect)frame clip:(CGRect)clip;
 @end
 
@@ -77,7 +77,7 @@ NS_ASSUME_NONNULL_BEGIN
 @property (nonatomic, strong,nullable) FTSRContentClip *clip;
 
 -(instancetype)initWithIdentifier:(int)identifier frame:(CGRect)frame;
--(FTSRWireframe *)compareWithNewWireFrame:(FTSRWireframe *)newWireFrame error:(NSError **)error;
+-(nullable FTSRWireframe *)compareWithNewWireFrame:(FTSRWireframe *)newWireFrame error:(NSError **)error;
 
 @end
 

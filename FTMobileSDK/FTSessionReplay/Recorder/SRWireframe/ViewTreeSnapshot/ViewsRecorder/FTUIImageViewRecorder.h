@@ -22,12 +22,12 @@ typedef BOOL (^FTShouldRecordImagePredicate)(UIImageView *imageView);
 @property (nonatomic, strong) FTViewAttributes *attributes;
 @property (nonatomic, assign) CGRect contentFrame;
 
-@property (nonatomic, strong) FTUIImageResource *imageResource;
+@property (nonatomic, strong, nullable) FTUIImageResource *imageResource;
 @property (nonatomic, assign) CGRect wireframeRect;
 @end
 @interface FTUIImageViewRecorder : NSObject<FTSRWireframesRecorder>
 @property (nonatomic, copy) SemanticsOverride semanticsOverride;
-@property (nonatomic, copy) FTShouldRecordImagePredicate shouldRecordImagePredicateOverride;
+@property (nonatomic, copy, nullable) FTShouldRecordImagePredicate shouldRecordImagePredicateOverride;
 @property (nonatomic, copy) FTTintColorProvider tintColorProvider;
 
 @property (nonatomic, copy) NSString *identifier;

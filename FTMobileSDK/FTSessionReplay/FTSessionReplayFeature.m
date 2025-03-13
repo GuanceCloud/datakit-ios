@@ -30,7 +30,6 @@
 @property (nonatomic, strong) NSDictionary *currentRUMContext;
 @property (nonatomic, assign) BOOL isSampled;
 @property (nonatomic, strong) FTRecorder *windowRecorder;
-@property (nonatomic, assign) FTSRPrivacy privacy;
 @property (nonatomic, assign) int sampleRate;
 @property (nonatomic, strong) FTSessionReplayTouches *touches;
 @property (nonatomic, strong) FTWindowObserver *windowObserver;
@@ -42,7 +41,6 @@
     self = [super init];
     if(self){
         _name = @"session-replay";
-        _privacy = config.privacy;
         _processorsQueue = dispatch_queue_create("com.guance.session-replay.processors", 0);
         _sampleRate = config.sampleRate;
         _requestBuilder = [[FTSegmentRequest alloc]init];

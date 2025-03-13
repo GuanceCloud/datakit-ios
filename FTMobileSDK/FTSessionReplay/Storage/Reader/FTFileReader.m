@@ -29,7 +29,7 @@
     [self.filesRead addObject:batch.file.name];
 }
 
-- (nonnull FTBatch *)readBatch:(nonnull id<FTReadableFile>)file { 
+- (nullable FTBatch *)readBatch:(nonnull id<FTReadableFile>)file { 
     FTTLVReader *reader = [[FTTLVReader alloc]initWithStream:file.stream maxDataLength:self.orchestrator.performance.maxObjectSize];
     NSArray *datas = [reader all];
     if(datas.count == 0){

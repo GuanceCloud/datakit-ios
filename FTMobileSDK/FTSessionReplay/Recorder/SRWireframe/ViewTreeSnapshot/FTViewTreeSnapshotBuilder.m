@@ -40,6 +40,7 @@
     return [self initWithAdditionalNodeRecorders:nil];
 }
 -(instancetype)initWithAdditionalNodeRecorders:(NSArray <id <FTSRWireframesRecorder>>*)additionalNodeRecorders{
+    self = [super init];
     if(self){
         _idGen = [[FTSRViewID alloc]init];
         _imageDataProvider = [[FTImageDataUtils alloc]init];

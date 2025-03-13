@@ -49,7 +49,7 @@
     return nil;
 }
 - (BOOL)shouldRecordTouch:(FTTouchCircle*)touch context:(FTSRContext *)context{
-    FTTouchPrivacyLevel privacy = touch.touchPrivacyOverride ?(FTTouchPrivacyLevel)[touch.touchPrivacyOverride intValue]:context.touchPrivacy;
+    FTTouchPrivacyLevel privacy = touch.touchPrivacyOverride!=nil ?(FTTouchPrivacyLevel)[touch.touchPrivacyOverride intValue]:context.touchPrivacy;
     return privacy == FTTouchPrivacyLevelShow;
 }
 - (int)persistNextID:(UITouch *)touch{
@@ -119,7 +119,7 @@
                     }
                     if (phase == TouchDown) {
                         NSNumber *touchPrivacy = [self resolveTouchOverride:touch];
-                        if(touchPrivacy){
+                        if(touchPrivacy != nil){
                             touch.touchPrivacyOverride = touchPrivacy;
                         }
                     }
@@ -144,7 +144,7 @@
    
     while (view != nil) {
         NSNumber *touchPrivacy =  view.sessionReplayPrivacyOverrides.nTouchPrivacy;
-        if(touchPrivacy){
+        if(touchPrivacy != nil){
             return touchPrivacy;
         }
         view = view.superview;

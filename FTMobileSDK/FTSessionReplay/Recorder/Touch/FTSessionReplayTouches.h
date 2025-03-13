@@ -14,7 +14,7 @@ NS_ASSUME_NONNULL_BEGIN
 @interface FTSessionReplayTouches : NSObject
 -(instancetype)initWithWindowObserver:(FTWindowObserver *)observer;
 /// 获取点击的点集合 （主线程操作）
--(FTTouchSnapshot *)takeTouchSnapshotWithContext:(FTSRContext *)context;
+-(nullable FTTouchSnapshot *)takeTouchSnapshotWithContext:(FTSRContext *)context;
 
 @end
 

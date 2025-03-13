@@ -96,9 +96,11 @@
     [[self files] enumerateObjectsUsingBlock:^(FTFile * _Nonnull obj, NSUInteger idx, BOOL * _Nonnull stop) {
         NSURL *destinationFileURL = [directory.url URLByAppendingPathComponent:obj.name];
         [self retry:3 delay:0.001 block:^(NSError **error) {
-            NSError *lastCriticalError;
+            NSError *lastCriticalError = nil;
             [[NSFileManager defaultManager] moveItemAtURL:obj.url toURL:destinationFileURL error:&lastCriticalError];
-            *error = lastCriticalError;
+            if (error != NULL) {
+               *error = lastCriticalError;
+            }
         }];
     }];
 }

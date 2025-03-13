@@ -60,8 +60,8 @@
 @implementation FTUISegmentBuilder
 
 - (NSArray<FTSRWireframe *> *)buildWireframes {
-    if(self.segmentWireframeIDs.count <= 0 || self.segmentWireframeIDs.count != self.segmentTitles.count || self.selectedSegmentIndex < 0){
-        return nil;
+    if(self.segmentWireframeIDs.count <= 0 || self.segmentWireframeIDs.count != self.segmentTitles.count || [self.selectedSegmentIndex intValue]< 0){
+        return @[];
     }
     NSString *color = self.attributes.backgroundColor? [FTSRUtils colorHexString:self.attributes.backgroundColor.CGColor]:[FTSystemColors tertiarySystemFillColorStr];
 

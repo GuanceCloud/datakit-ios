@@ -17,7 +17,7 @@ NS_ASSUME_NONNULL_BEGIN
 @end
 /// 仅支持基础类型、NSArray、NSString、NSNumber
 @interface FTSRBaseFrame : NSObject<NSCoding,NSSecureCoding,FTAbstractJSONModelProtocol>
-+ (FTJSONKeyMapper *)keyMapper;
++ (nullable FTJSONKeyMapper *)keyMapper;
 @end
 
 @interface FTSRBaseFrameProperty : NSObject

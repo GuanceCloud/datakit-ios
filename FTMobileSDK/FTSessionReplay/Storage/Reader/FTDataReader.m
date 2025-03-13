@@ -30,7 +30,7 @@
         }
     });
 }
-- (nonnull FTBatch *)readBatch:(nonnull id<FTReadableFile>)file { 
+- (nullable FTBatch *)readBatch:(nonnull id<FTReadableFile>)file { 
     __block FTBatch *batch;
     dispatch_sync(self.queue, ^{
         @try {

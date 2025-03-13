@@ -42,20 +42,20 @@
     self.resources = resources;
 }
 - (NSMutableURLRequest *)adaptedRequest:(NSMutableURLRequest *)mutableRequest{
-    NSString *date =[[NSDate date] ft_stringWithGMTFormat];
+    if(!self.multipartFormBody || !self.resources || self.resources.count == 0){
+        return nil;
+    }
+    [self addHTTPHeaderFields:mutableRequest packageId:[FTPackageIdGenerator generatePackageId:self.serialNumber count:self.resources.count]];
+    
     mutableRequest.HTTPMethod = self.httpMethod;
     //添加header
-    [mutableRequest addValue:self.contentType forHTTPHeaderField:@"Content-Type"];
     [mutableRequest addValue:@"deflate" forHTTPHeaderField:@"Content-Encoding"];
     //设置请求参数
-    [mutableRequest setValue:date forHTTPHeaderField:@"Date"];
-    [mutableRequest setValue:[NSString stringWithFormat:@"sdk_package_agent=%@",[FTNetworkInfoManager sharedInstance].sdkVersion] forHTTPHeaderField:@"User-Agent"];
-    [mutableRequest setValue:@"zh-CN" forHTTPHeaderField:@"Accept-Language"];
-    if(self.multipartFormBody && self.resources){
-        for (FTEnrichedResource *resource in self.resources) {
-            [self.multipartFormBody addFormData:@"image" filename:resource.identifier data:resource.data mimeType:@"image/png"];
-        }
+    
+    for (FTEnrichedResource *resource in self.resources) {
+        [self.multipartFormBody addFormData:@"image" filename:resource.identifier data:resource.data mimeType:@"image/png"];
     }
+    
     NSDictionary *context = @{FT_APP_ID:self.resources[0].appId,
                               @"type":self.resources[0].type
     };

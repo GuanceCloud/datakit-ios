@@ -41,12 +41,12 @@
 }
 -(void)taskSnapShot:(FTSRContext *)context touchSnapshot:(FTTouchSnapshot *)touchSnapshot{
     
-    UIView *rootView = self.windowObserver.keyWindow;
-    if(rootView == nil){
+    NSArray <UIView *> *rootViews = self.windowObserver.windows ;
+    if(rootViews == nil || rootViews.count == 0){
         return;
     }
     // 1.采集 view snap shot
-    FTViewTreeSnapshot *viewTreeSnapshot = [self.viewSnapShotBuilder takeSnapshot:self.windowObserver.windows context:context];
+    FTViewTreeSnapshot *viewTreeSnapshot = [self.viewSnapShotBuilder takeSnapshot:rootViews context:context];
     [self.snapshotProcessor process:viewTreeSnapshot touchSnapshot:touchSnapshot];
     [self.resourceProcessor process:viewTreeSnapshot.resources context:context];
 }

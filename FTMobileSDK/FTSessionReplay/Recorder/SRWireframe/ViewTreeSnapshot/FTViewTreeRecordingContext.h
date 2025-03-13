@@ -30,7 +30,7 @@ typedef NS_ENUM(NSUInteger,ViewControllerType){
 @property (nonatomic, assign) BOOL isRootView;
 @property (nonatomic, assign) ViewControllerType parentType;
 - (BOOL)isRootView:(ViewControllerType)type;
-- (NSString *)name;
+- (nullable NSString *)name;
 - (void)setParentTypeWithViewController:(UIViewController *)viewController;
 @end
 

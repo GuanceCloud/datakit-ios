@@ -36,7 +36,7 @@
         NSString *imageStr = [self.imageCache valueForKey:identifier];
         if(!imageStr){
             if (@available(iOS 13.0, *)) {
-                if (image.isSymbolImage) {
+                if (image.isSymbolImage && color != nil) {
                     image = [image imageWithTintColor:color];
                 }
             }

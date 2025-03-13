@@ -25,7 +25,7 @@ typedef id<FTSRTextObfuscatingProtocol> _Nullable(^FTTextObfuscator)(FTViewTreeR
 
 @protocol FTSRWireframesRecorder <NSObject>
 @property (nonatomic, copy) NSString *identifier;
--(FTSRNodeSemantics *)recorder:(UIView *)view attributes:(FTViewAttributes *)attributes context:(FTViewTreeRecordingContext *)context;
+-(nullable FTSRNodeSemantics *)recorder:(UIView *)view attributes:(FTViewAttributes *)attributes context:(FTViewTreeRecordingContext *)context;
 @end
 
 @protocol FTSRResource <NSObject>

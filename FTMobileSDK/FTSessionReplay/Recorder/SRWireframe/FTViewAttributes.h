@@ -38,8 +38,8 @@ NS_ASSUME_NONNULL_BEGIN
 @property (nonatomic, assign) BOOL isVisible;
 @property (nonatomic, assign) BOOL hasAnyAppearance;
 @property (nonatomic, assign) BOOL isTranslucent;
-@property (nonatomic, strong) NSNumber *imagePrivacy;
-@property (nonatomic, strong) NSNumber *textAndInputPrivacy;
+@property (nonatomic, strong, nullable) NSNumber *imagePrivacy;
+@property (nonatomic, strong, nullable) NSNumber *textAndInputPrivacy;
 @property (nonatomic, assign) BOOL hide;
 
 -(instancetype)initWithView:(UIView *)view frameInRootView:(CGRect)frame clip:(CGRect)clip overrides:(PrivacyOverrides *)overrides;
