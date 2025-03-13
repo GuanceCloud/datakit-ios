@@ -1,3 +1,8 @@
+# 1.5.15-alpha.1
+1. 修复使用 `[FTExternalDataManager addErrorWithType:state:message:stack:property:]` 添加 RUM Error 时自定义指标传递丢失问题
+2. 更新 tvOS 环境默认 `sdk_name` 设置为 `df_tvos_rum_sdk`
+3. 优化数据同步 packageId 生成逻辑
+---
 # 1.5.14
 1. 新增 RUM `Resource` 数据字段 `resource_first_byte_time`、`resource_dns_time`、`resource_download_time`、`resource_connect_time`、`resource_ssl_time`、`resource_redirect_time`，支持在观测云上的优化展示和 APM 火焰图的时间对齐
 2. 默认开启 `FTMobileConfig.enableDataIntegerCompatible` 
