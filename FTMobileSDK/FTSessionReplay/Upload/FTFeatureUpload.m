@@ -136,6 +136,7 @@
         FTBatch *batch = [strongSelf.fileReader readBatch:file];
         if(batch){
             if([strongSelf flushWithEvent:batch.events parameters:parameters]){
+                [self.requestBuilder.classSerialGenerator increaseRequestSerialNumber];
                 if(mutableFiles.count == 0){
                     [self.delay decrease];
                 }
