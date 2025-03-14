@@ -22,7 +22,7 @@ NS_ASSUME_NONNULL_BEGIN
 /// 图像隐私覆盖（例如，掩码或取消掩码特定图像）。
 @property (nonatomic, assign) FTImagePrivacyLevel imagePrivacy;
 
-/// 隐藏的隐私覆盖（例如，将视图标记为隐藏，在回放中将其呈现为不透明的线框）。
+/// 隐藏视图（例如，将视图标记为隐藏，在回放中将其呈现为不透明的线框）。
 @property (nonatomic, assign) BOOL hide;
 @end
 

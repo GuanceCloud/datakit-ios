@@ -60,7 +60,7 @@ typedef NS_ENUM(NSUInteger,FTTextAndInputPrivacyLevel){
 /// 会话回放中触摸屏蔽的可用隐私级别。默认：FTTouchPrivacyLevelHide
 @property (nonatomic, assign) FTTouchPrivacyLevel touchPrivacy;
 
-/// 会话回放中文本和输入屏蔽的可用隐私级别。 默认：FTImagePrivacyLevelMaskAll
+/// 会话回放中文本和输入屏蔽的可用隐私级别。 默认：FTTextAndInputPrivacyLevelMaskAll
 @property (nonatomic, assign) FTTextAndInputPrivacyLevel textAndInputPrivacy;
 
 /// 会话回放中图像屏蔽的可用隐私级别。默认：FTImagePrivacyLevelMaskAll
