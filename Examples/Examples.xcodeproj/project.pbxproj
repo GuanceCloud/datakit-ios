@@ -52,6 +52,8 @@
 		177892BF29A60FD00007B47F /* PerformanceLoggingTest.m in Sources */ = {isa = PBXBuildFile; fileRef = 177892BE29A60FD00007B47F /* PerformanceLoggingTest.m */; };
 		177892C129A60FE90007B47F /* PerformanceTracingTest.m in Sources */ = {isa = PBXBuildFile; fileRef = 177892C029A60FE90007B47F /* PerformanceTracingTest.m */; };
 		177AD7332CCF72A10051C0F6 /* FTDataCompressionTest.m in Sources */ = {isa = PBXBuildFile; fileRef = 177AD7322CCF72A10051C0F6 /* FTDataCompressionTest.m */; };
+		178377F72D84141A00C590AE /* SessionReplayPrivacyOverridesTests.m in Sources */ = {isa = PBXBuildFile; fileRef = 178377F62D84141A00C590AE /* SessionReplayPrivacyOverridesTests.m */; };
+		178377F82D84141A00C590AE /* SessionReplayPrivacyOverridesTests.m in Sources */ = {isa = PBXBuildFile; fileRef = 178377F62D84141A00C590AE /* SessionReplayPrivacyOverridesTests.m */; };
 		178649292A1CA79100521187 /* FTMobileSDK.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 178649282A1CA79100521187 /* FTMobileSDK.framework */; };
 		1786492A2A1CA79100521187 /* FTMobileSDK.framework in Embed Frameworks */ = {isa = PBXBuildFile; fileRef = 178649282A1CA79100521187 /* FTMobileSDK.framework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
 		1788B11629BAF43B007FDFF1 /* HttpEngineTestUtil.m in Sources */ = {isa = PBXBuildFile; fileRef = 1788B11429BAF43B007FDFF1 /* HttpEngineTestUtil.m */; };
@@ -313,6 +315,7 @@
 		177892C029A60FE90007B47F /* PerformanceTracingTest.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = PerformanceTracingTest.m; sourceTree = "<group>"; };
 		177AD7322CCF72A10051C0F6 /* FTDataCompressionTest.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = FTDataCompressionTest.m; sourceTree = "<group>"; };
 		177AD7342CCF7B090051C0F6 /* FTDataCompression+Test.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = "FTDataCompression+Test.h"; sourceTree = "<group>"; };
+		178377F62D84141A00C590AE /* SessionReplayPrivacyOverridesTests.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = SessionReplayPrivacyOverridesTests.m; sourceTree = "<group>"; };
 		178649282A1CA79100521187 /* FTMobileSDK.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; path = FTMobileSDK.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 		1788B11429BAF43B007FDFF1 /* HttpEngineTestUtil.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = HttpEngineTestUtil.m; path = App/HttpEngineTestUtil.m; sourceTree = SOURCE_ROOT; };
 		1788B11529BAF43B007FDFF1 /* HttpEngineTestUtil.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = HttpEngineTestUtil.h; path = App/HttpEngineTestUtil.h; sourceTree = SOURCE_ROOT; };
@@ -625,6 +628,14 @@
 			path = PerformanceTest;
 			sourceTree = "<group>";
 		};
+		178377F52D8413E600C590AE /* SessionReplay */ = {
+			isa = PBXGroup;
+			children = (
+				178377F62D84141A00C590AE /* SessionReplayPrivacyOverridesTests.m */,
+			);
+			path = SessionReplay;
+			sourceTree = "<group>";
+		};
 		17B1715828153F9D004002C9 /* Network */ = {
 			isa = PBXGroup;
 			children = (
@@ -851,6 +862,7 @@
 		4A85313723AB85FC00B40B5D /* FTMobileSDKUnitTests */ = {
 			isa = PBXGroup;
 			children = (
+				178377F52D8413E600C590AE /* SessionReplay */,
 				17F5C5212C60D62A007F2B2C /* FTSessionConfiguration.h */,
 				17F5C51F2C60D629007F2B2C /* FTSessionConfiguration.m */,
 				17F5C5222C60D62A007F2B2C /* FTURLProtocol.h */,
@@ -1400,6 +1412,7 @@
 				178AE3962D55B74F00BDC51B /* FTAppLifeCycleTest.m in Sources */,
 				178AE3972D55B74F00BDC51B /* FTNetworkMock.m in Sources */,
 				178AE3982D55B74F00BDC51B /* FTSwizzleTest.m in Sources */,
+				178377F72D84141A00C590AE /* SessionReplayPrivacyOverridesTests.m in Sources */,
 				178AE39A2D55B74F00BDC51B /* HttpEngineTestUtil.m in Sources */,
 				178AE39B2D55B74F00BDC51B /* TestSessionDelegate.m in Sources */,
 				178AE39C2D55B74F00BDC51B /* PerformanceLoggingTest.m in Sources */,
@@ -1495,6 +1508,7 @@
 				178AE3C12D56045A00BDC51B /* FTRUMActionTest.m in Sources */,
 				173A03FA2CDDD4AF00E07D53 /* FTLongTaskFileHandleTest.m in Sources */,
 				17F5C5232C60D62A007F2B2C /* FTSessionConfiguration.m in Sources */,
+				178377F82D84141A00C590AE /* SessionReplayPrivacyOverridesTests.m in Sources */,
 				178AE3BE2D56009A00BDC51B /* UIEvent+Mock.m in Sources */,
 				17593AE22906917700A15CD9 /* FTResourceDelegateTest.m in Sources */,
 				17F5C5242C60D62A007F2B2C /* FTURLProtocol.m in Sources */,

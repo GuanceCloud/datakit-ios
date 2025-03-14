@@ -10,17 +10,53 @@
 #import "FTSessionReplayPrivacyOverrides+Extension.h"
 
 @implementation FTSessionReplayPrivacyOverrides
--(void)setImagePrivacy:(FTImagePrivacyLevel)imagePrivacy{
+-(void)setImagePrivacy:(FTImagePrivacyLevelOverride)imagePrivacy{
     _imagePrivacy = imagePrivacy;
-    _nImagePrivacy = @(imagePrivacy);
+    switch (imagePrivacy) {
+        case FTImagePrivacyLevelOverrideNone:
+            _nImagePrivacy = nil;
+            break;
+        case FTImagePrivacyLevelOverrideMaskNonBundledOnly:
+            _nImagePrivacy = @(FTImagePrivacyLevelMaskNonBundledOnly);
+            break;
+        case FTImagePrivacyLevelOverrideMaskAll:
+            _nImagePrivacy = @(FTImagePrivacyLevelMaskAll);
+            break;
+        case FTImagePrivacyLevelOverrideMaskNone:
+            _nImagePrivacy = @(FTImagePrivacyLevelMaskNone);
+            break;
+    }
 }
--(void)setTouchPrivacy:(FTTouchPrivacyLevel)touchPrivacy{
+-(void)setTouchPrivacy:(FTTouchPrivacyLevelOverride)touchPrivacy{
     _touchPrivacy = touchPrivacy;
-    _nTouchPrivacy = @(touchPrivacy);
+    switch (touchPrivacy) {
+        case FTTouchPrivacyLevelOverrideNone:
+            _nTouchPrivacy = nil;
+            break;
+        case FTTouchPrivacyLevelOverrideShow:
+            _nTouchPrivacy = @(FTTouchPrivacyLevelShow);
+            break;
+        case FTTouchPrivacyLevelOverrideHide:
+            _nTouchPrivacy = @(FTTouchPrivacyLevelHide);
+            break;
+    }
 }
-- (void)setTextAndInputPrivacy:(FTTextAndInputPrivacyLevel)textAndInputPrivacy{
+- (void)setTextAndInputPrivacy:(FTTextAndInputPrivacyLevelOverride)textAndInputPrivacy{
     _textAndInputPrivacy = textAndInputPrivacy;
-    _nTextAndInputPrivacy = @(textAndInputPrivacy);
+    switch (textAndInputPrivacy) {
+        case FTTextAndInputPrivacyLevelOverrideNone:
+            _nTextAndInputPrivacy = nil;
+            break;
+        case FTTextAndInputPrivacyLevelOverrideMaskSensitiveInputs:
+            _nTextAndInputPrivacy = @(FTTextAndInputPrivacyLevelMaskSensitiveInputs);
+            break;
+        case FTTextAndInputPrivacyLevelOverrideMaskAllInputs:
+            _nTextAndInputPrivacy = @(FTTextAndInputPrivacyLevelMaskAllInputs);
+            break;
+        case FTTextAndInputPrivacyLevelOverrideMaskAll:
+            _nTextAndInputPrivacy = @(FTTextAndInputPrivacyLevelMaskAll);
+            break;
+    }
 }
 + (PrivacyOverrides *)mergeChild:(PrivacyOverrides *)child parent:(PrivacyOverrides *)parent{
     if (!child) {
