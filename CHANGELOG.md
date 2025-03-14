@@ -1,6 +1,6 @@
 # 1.6.1-alpha.1
 1. Session Replay 新增支持通过 `touchPrivacy` 触摸屏蔽的可用隐私级别、`textAndInputPrivacy`文本和输入屏蔽的可用隐私级别，进行细粒度的隐私级别设置
-2. Session Replay 新增支持 UIView 通过 `sessionReplayPrivacyOverrides` 属性自定义 隐私级别设置
+2. Session Replay 新增支持 UIView 通过 `sessionReplayPrivacyOverrides` 设置视图级别隐私覆盖
 3. Session Replay 数据同步添加 X-Pkg-Id 追踪适配
 ---
 # 1.5.15-alpha.2
