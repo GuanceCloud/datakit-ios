@@ -1,3 +1,6 @@
+# 1.5.15-alpha.3
+1. FTRumConfig 新增 `sessionOnErrorSampleRate` 字段。若开启，当未被采样率选中的 Session 发生错误，SDK 将对这些原本不采集的 Session 进行数据采集
+---
 # 1.5.15-alpha.2
 1. 数据同步 UserAgent 格式调整
 ---
