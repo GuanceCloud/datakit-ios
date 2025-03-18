@@ -56,6 +56,7 @@
     options.rumCacheLimitCount = self.rumCacheLimitCount;
     options.rumDiscardType = self.rumDiscardType;
     options.resourcePropertyProvider = self.resourcePropertyProvider;
+    options.sessionOnErrorSampleRate = self.sessionOnErrorSampleRate;
     return options;
 }
 -(instancetype)initWithDictionary:(NSDictionary *)dict{
@@ -77,6 +78,7 @@
             _monitorFrequency = (FTMonitorFrequency)[dict[@"monitorFrequency"] intValue];
             _resourceUrlHandler = [dict valueForKey:@"resourceUrlHandler"];
             _resourcePropertyProvider = [dict valueForKey:@"resourceProvider"];
+            _sessionOnErrorSampleRate = [dict valueForKey:@"sessionOnErrorSampleRate"];
         }
         return self;
     }else{
@@ -111,6 +113,7 @@
     [dict setValue:self.globalContext forKey:@"globalContext"];
     [dict setValue:@(self.rumCacheLimitCount) forKey:@"rumCacheLimitCount"];
     [dict setValue:@(self.rumDiscardType) forKey:@"rumDiscardType"];
+    [dict setValue:@(self.sessionOnErrorSampleRate) forKey:@"sessionOnErrorSampleRate"];
     return dict;
 }
 -(NSString *)debugDescription{

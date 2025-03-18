@@ -158,6 +158,9 @@ typedef FTTraceContext*_Nullable(^FTTraceInterceptor)(NSURLRequest *_Nonnull req
 @property (nonatomic, copy) NSString *appid;
 /// 采样配置，属性值：0至100，100则表示百分百采集，不做数据样本压缩。
 @property (nonatomic, assign) int samplerate;
+/// 采集发生 Error 的会话
+/// 当功能开启后，若原本未被采样率选中的 Session 发生错误，SDK 将对这些原本不采集的 Session 进行数据采集
+@property (nonatomic, assign) BOOL sessionOnErrorSampleRate;
 /// 设置是否追踪用户操作，目前支持应用启动和点击操作，
 /// 在有 View 事件的情况下，开启才能生效
 @property (nonatomic, assign) BOOL enableTraceUserAction;
