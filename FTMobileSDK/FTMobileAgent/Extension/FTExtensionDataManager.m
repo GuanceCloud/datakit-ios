@@ -40,7 +40,7 @@ NSString * const FT_LOGGER_CONFIG = @"LOGGER_CONFIG";
 }
 - (instancetype)init {
     if (self = [super init]) {
-        self.appExtensionQueue = dispatch_queue_create("com.ft.FTMobileExtension", DISPATCH_QUEUE_SERIAL);
+        self.appExtensionQueue = dispatch_queue_create("com.guance.extension", DISPATCH_QUEUE_SERIAL);
         dispatch_queue_set_specific(self.appExtensionQueue, FTAppExtensionQueueTag, &FTAppExtensionQueueTag, NULL);
         _filePaths = [[NSMutableDictionary alloc]init];
         _maxCount = NSIntegerMax;
