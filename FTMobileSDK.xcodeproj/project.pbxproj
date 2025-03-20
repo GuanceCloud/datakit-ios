@@ -324,6 +324,8 @@
 		177AEB602A383C890045D2BA /* FTSDKCore.h in Headers */ = {isa = PBXBuildFile; fileRef = 177AEB5D2A3819C90045D2BA /* FTSDKCore.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		177BA55629DBF7C100DB7497 /* FTAppLaunchTracker.h in Headers */ = {isa = PBXBuildFile; fileRef = 17E4CBC529CD42E4005C2D99 /* FTAppLaunchTracker.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		177BA55729DBF7C500DB7497 /* FTAppLaunchTracker.m in Sources */ = {isa = PBXBuildFile; fileRef = 17E4CBBE29CD42E4005C2D99 /* FTAppLaunchTracker.m */; };
+		178378722D8A8A4700C590AE /* FTTmpCacheManager.m in Sources */ = {isa = PBXBuildFile; fileRef = 178378712D8A8A4700C590AE /* FTTmpCacheManager.m */; };
+		178378732D8A8A4700C590AE /* FTTmpCacheManager.h in Headers */ = {isa = PBXBuildFile; fileRef = 178378702D8A8A4700C590AE /* FTTmpCacheManager.h */; };
 		178649332A1DB58400521187 /* FTLogger.h in Headers */ = {isa = PBXBuildFile; fileRef = 178649302A1DB58400521187 /* FTLogger.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		178649342A1DB58400521187 /* FTLogger.h in Headers */ = {isa = PBXBuildFile; fileRef = 178649302A1DB58400521187 /* FTLogger.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		178649352A1DB58400521187 /* FTLogger.m in Sources */ = {isa = PBXBuildFile; fileRef = 178649312A1DB58400521187 /* FTLogger.m */; };
@@ -828,6 +830,8 @@
 		1777C3DE2A36EAB600C0AA45 /* README.md */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = net.daringfireball.markdown; path = README.md; sourceTree = SOURCE_ROOT; };
 		1777C3E02A36EAD000C0AA45 /* Package.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Package.swift; sourceTree = SOURCE_ROOT; };
 		177AEB5D2A3819C90045D2BA /* FTSDKCore.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = FTSDKCore.h; path = include/FTSDKCore.h; sourceTree = "<group>"; };
+		178378702D8A8A4700C590AE /* FTTmpCacheManager.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = FTTmpCacheManager.h; sourceTree = "<group>"; };
+		178378712D8A8A4700C590AE /* FTTmpCacheManager.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = FTTmpCacheManager.m; sourceTree = "<group>"; };
 		178649302A1DB58400521187 /* FTLogger.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = FTLogger.h; sourceTree = "<group>"; };
 		178649312A1DB58400521187 /* FTLogger.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = FTLogger.m; sourceTree = "<group>"; };
 		178EF5DC2AEBBD57002A407C /* FTAutoInterceptorProtocol.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = FTAutoInterceptorProtocol.h; sourceTree = "<group>"; };
@@ -1282,6 +1286,15 @@
 			name = "Supporting Files";
 			sourceTree = "<group>";
 		};
+		1783786F2D8A89E000C590AE /* TmpCache */ = {
+			isa = PBXGroup;
+			children = (
+				178378702D8A8A4700C590AE /* FTTmpCacheManager.h */,
+				178378712D8A8A4700C590AE /* FTTmpCacheManager.m */,
+			);
+			path = TmpCache;
+			sourceTree = "<group>";
+		};
 		179BEB922D2D3ACC004AA5A6 /* include */ = {
 			isa = PBXGroup;
 			children = (
@@ -1525,6 +1538,7 @@
 		17C4F0BD2D671AFC00F97A7F /* Storage */ = {
 			isa = PBXGroup;
 			children = (
+				1783786F2D8A89E000C590AE /* TmpCache */,
 				17C4F0AF2D671AFC00F97A7F /* Reader */,
 				17C4F0B42D671AFC00F97A7F /* Writer */,
 				17C4F0B52D671AFC00F97A7F /* FTDirectory.h */,
@@ -2108,6 +2122,7 @@
 				173E46112D828CB300900F52 /* FTSerialNumberGenerator.h in Headers */,
 				173E46122D828CB300900F52 /* FTPackageIdGenerator.h in Headers */,
 				17AB76B429D432DE008FBBF5 /* FTMemoryMonitor.h in Headers */,
+				178378732D8A8A4700C590AE /* FTTmpCacheManager.h in Headers */,
 				17AB76FC29D432DE008FBBF5 /* FTRUMDataModel.h in Headers */,
 				17E4CB4C29CD42DA005C2D99 /* FTResourceContentModel.h in Headers */,
 				1777C3E72A36EED500C0AA45 /* FTLogger.h in Headers */,
@@ -2639,6 +2654,7 @@
 				17C4F1352D671AFC00F97A7F /* FTUnsupportedViewRecorder.m in Sources */,
 				17C4F1362D671AFC00F97A7F /* FTUISliderRecorder.m in Sources */,
 				17C4F1372D671AFC00F97A7F /* FTFeatureStorage.m in Sources */,
+				178378722D8A8A4700C590AE /* FTTmpCacheManager.m in Sources */,
 				17C4F1382D671AFC00F97A7F /* FTSegmentRequest.m in Sources */,
 				17C4F1392D671AFC00F97A7F /* FTResourcesFeature.m in Sources */,
 				17C4F13A2D671AFC00F97A7F /* FTUIImageViewRecorder.m in Sources */,

@@ -12,6 +12,7 @@
 #import "FTResourceContentModel.h"
 #import "FTResourceMetricsModel.h"
 #import "FTResourceMetricsModel+Private.h"
+#import "FTModuleManager.h"
 @interface FTRUMResourceHandler()<FTRUMSessionProtocol>
 @property (nonatomic, strong) FTRUMDependencies *dependencies;
 @property (nonatomic, copy,readwrite) NSString *identifier;
@@ -78,6 +79,9 @@
     [tags addEntriesFromDictionary:sessionTag];
     [tags addEntriesFromDictionary:model.tags];
     [self.dependencies.writer rumWrite:FT_RUM_SOURCE_ERROR tags:tags fields:model.fields time:model.tm];
+    [[FTModuleManager sharedInstance] postMessage:FTMessageKeyRumError message:@{@"error_date":model.time,
+                                                                                 @"error_crash":@(NO)
+                                                                               }];
 }
 - (void)writeResourceData:(FTRUMDataModel *)data context:(NSDictionary *)context{
     FTRUMResourceDataModel *model = (FTRUMResourceDataModel *)data;

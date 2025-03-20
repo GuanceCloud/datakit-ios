@@ -88,7 +88,9 @@ static dispatch_once_t onceToken;
 }
 -(void)receive:(NSString *)key message:(NSDictionary *)message{
     if(key == FTMessageKeySessionHasReplay){
-        self.dependencies.sessionHasReplay = [message[FT_SESSION_HAS_REPLAY] boolValue];
+        BOOL hasReplay = [message[FT_SESSION_HAS_REPLAY] boolValue];
+        self.dependencies.sessionHasReplay = hasReplay;
+        FTInnerLogDebug(@"[RUM] session(id:%@) has replay:%@",[self.dependencies.fatalErrorContext.lastSessionContext valueForKey:FT_RUM_KEY_SESSION_ID],(hasReplay?@"true":@"false"));
     }else if(key == FTMessageKeyRecordsCountByViewID){
         self.dependencies.sessionReplayStats = message;
     }

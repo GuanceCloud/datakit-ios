@@ -12,6 +12,10 @@ NSString *const FTMessageKeyRUMContext = @"rum_context";
 NSString *const FTMessageKeySRProperty = @"sr_property";
 NSString *const FTMessageKeyRecordsCountByViewID = @"sr_records_count_by_view_id";
 NSString *const FTMessageKeySessionHasReplay = @"sr_has_replay";
+NSString *const FTMessageKeyRumError = @"rum_error";
+
+void *FTMessageBusQueueIdentityKey = &FTMessageBusQueueIdentityKey;
+
 @interface FTModuleManager()
 @property (nonatomic, strong, readonly) NSPointerArray *receiverArray;
 @property (nonatomic, strong) NSDictionary *srProperty;
@@ -22,6 +26,7 @@ NSString *const FTMessageKeySessionHasReplay = @"sr_has_replay";
     self = [super init];
     if(self){
         _queue = dispatch_queue_create("com.guance.message-bus", 0);
+        dispatch_queue_set_specific(_queue,FTMessageBusQueueIdentityKey, &FTMessageBusQueueIdentityKey, NULL);
         _receiverArray = [NSPointerArray pointerArrayWithOptions:NSPointerFunctionsWeakMemory];
     }
     return self;
@@ -42,7 +47,10 @@ NSString *const FTMessageKeySessionHasReplay = @"sr_has_replay";
     return property;
 }
 - (void)postMessage:(NSString *)key message:(NSDictionary *)message{
-    dispatch_async(self.queue, ^{
+    [self postMessage:key message:message sync:NO];
+}
+- (void)postMessage:(NSString *)key message:(NSDictionary *)message sync:(BOOL)sync{
+    dispatch_block_t block = ^{
         if(key == FTMessageKeySRProperty){
             self.srProperty = message;
             return;
@@ -52,7 +60,12 @@ NSString *const FTMessageKeySessionHasReplay = @"sr_has_replay";
                 [receiver receive:key message:message];
             }
         }
-    });
+    };
+    if (sync) {
+        [self syncProcess:block];
+    }else{
+        dispatch_async(self.queue, block);
+    }
 }
 - (void)addMessageReceiver:(id<FTMessageReceiver>)receiver{
     dispatch_async(self.queue, ^{
@@ -73,6 +86,13 @@ NSString *const FTMessageKeySessionHasReplay = @"sr_has_replay";
     });
 }
 - (void)syncProcess{
-    dispatch_sync(self.queue, ^{ });
+    [self syncProcess:^{}];
+}
+- (void)syncProcess:(dispatch_block_t)block{
+    if(dispatch_get_specific(FTMessageBusQueueIdentityKey) == NULL){
+        dispatch_sync(self.queue, block);
+    }else{
+        block();
+    }
 }
 @end

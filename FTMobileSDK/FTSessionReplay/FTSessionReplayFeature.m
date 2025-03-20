@@ -24,7 +24,7 @@
 #import "FTModuleManager.h"
 #import "FTMessageReceiver.h"
 #import "FTLog+Private.h"
-
+#import "FTFileWriter.h"
 @interface FTSessionReplayFeature()<FTMessageReceiver>
 @property (nonatomic, strong) NSTimer *timer;
 @property (nonatomic, strong) NSDictionary *currentRUMContext;
@@ -35,6 +35,8 @@
 @property (nonatomic, strong) FTWindowObserver *windowObserver;
 @property (nonatomic, strong) dispatch_queue_t processorsQueue;
 @property (nonatomic, strong) FTSessionReplayConfig *config;
+@property (nonatomic, strong) id<FTCacheWriter> cacheWriter;
+@property (nonatomic, strong) id<FTWriter> writer;
 @end
 @implementation FTSessionReplayFeature
 -(instancetype)initWithConfig:(FTSessionReplayConfig *)config{
@@ -58,24 +60,30 @@
     return self;
 }
 
--(void)startWithWriter:(id<FTWriter>)writer resourceWriter:(id<FTWriter>)resourceWriter resourceDataStore:(id<FTDataStore>)dataStore{
+-(void)startWithWriter:(id<FTWriter>)writer cacheWriter:(id<FTCacheWriter>)cacheWriter resourceWriter:(id<FTWriter>)resourceWriter resourceDataStore:(id<FTDataStore>)dataStore{
     // image resource writer
 //    FTResourceWriter *resource = [[FTResourceWriter alloc]initWithWriter:resourceWriter dataStore:dataStore];
 //    FTResourceProcessor *resourceProcessor = [[FTResourceProcessor alloc]initWithQueue:self.processorsQueue resourceWriter:resource];
+    _cacheWriter = cacheWriter;
     FTSnapshotProcessor *srProcessor = [[FTSnapshotProcessor alloc]initWithQueue:self.processorsQueue writer:writer];
     FTRecorder *windowRecorder = [[FTRecorder alloc]initWithWindowObserver:self.windowObserver snapshotProcessor:srProcessor resourceProcessor:nil additionalNodeRecorders:self.config.additionalNodeRecorders];
     self.windowRecorder = windowRecorder;
 }
 -(void)start{
+    [self startWithTmpCache:NO];
+}
+-(void)startWithTmpCache:(BOOL)cache{
+    __weak typeof(self) weakSelf = self;
     [FTThreadDispatchManager performBlockDispatchMainAsync:^{
-        if(self.timer){
+        [weakSelf.windowRecorder.snapshotProcessor changeWriter:cache? weakSelf.cacheWriter:weakSelf.writer needUpdateFullSnapshot:cache];
+        cache?[self.cacheWriter active]:[self.cacheWriter inactive];
+        if(weakSelf.timer){
             return;
         }
-        __weak typeof(self) weakSelf = self;
-        self.timer = [NSTimer timerWithTimeInterval:0.1 repeats:YES block:^(NSTimer * _Nonnull timer) {
+        weakSelf.timer = [NSTimer timerWithTimeInterval:0.1 repeats:YES block:^(NSTimer * _Nonnull timer) {
             [weakSelf captureNextRecord];
         }];
-        [[NSRunLoop mainRunLoop] addTimer:self.timer forMode:NSRunLoopCommonModes];
+        [[NSRunLoop mainRunLoop] addTimer:weakSelf.timer forMode:NSRunLoopCommonModes];
     }];
 }
 - (void)stop{
@@ -94,11 +102,12 @@
         self.isSampled = [FTBaseInfoHandler randomSampling:self.sampleRate];
         if(self.isSampled){
             [self start];
+        }else if(self.config.sessionReplayOnErrorSampleRate){
+            [self startWithTmpCache:YES];
         }else{
             [self stop];
         }
         [[FTModuleManager sharedInstance] postMessage:FTMessageKeySessionHasReplay message:@{FT_SESSION_HAS_REPLAY:@(self.isSampled)}];
-        FTInnerLogDebug(@"[session-replay] session(id:%@) has replay:%@",message[FT_RUM_KEY_SESSION_ID],(self.isSampled?@"true":@"false"));
     }
     self.currentRUMContext = message;
 }

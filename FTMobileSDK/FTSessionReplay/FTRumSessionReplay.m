@@ -17,6 +17,7 @@
 #import "FTSessionReplayFeature.h"
 #import "FTFeatureDataStore.h"
 #import "FTModuleManager.h"
+#import "FTTmpCacheManager.h"
 @interface FTFeatureStores : NSObject
 @property (nonatomic, strong) FTFeatureStorage *storage;
 @property (nonatomic, strong) FTFeatureUpload *upload;
@@ -62,7 +63,7 @@ static dispatch_once_t onceToken;
 }
 - (void)startWithSessionReplayConfig:(FTSessionReplayConfig *)config{
     FTInnerLogInfo(@"[session-replay] %@",config.debugDescription);
-    if(config.sampleRate<=0){
+    if(config.sampleRate<=0&&!config.sessionReplayOnErrorSampleRate){
         return;
     }
     FTSessionReplayFeature *sessionReplayFeature = [[FTSessionReplayFeature alloc]initWithConfig:config];
@@ -75,7 +76,11 @@ static dispatch_once_t onceToken;
     //    FTFeatureDataStore *resourceDataStore = [[FTFeatureDataStore alloc]initWithFeature:resourcesFeature.name queue:self.readWriteQueue directory:self.coreDirectory];
     //    [self.stores setValue:resourceStore forKey:resourcesFeature.name];
     //    [self.features setValue:resourcesFeature forKey:resourcesFeature.name];
-    [sessionReplayFeature startWithWriter:srStore.storage.writer resourceWriter:nil resourceDataStore:nil];
+    FTTmpCacheManager *sessionReplayCacheWriter = nil;
+    if(config.sessionReplayOnErrorSampleRate){
+        sessionReplayCacheWriter = [[FTTmpCacheManager alloc]initWithFeatureName:sessionReplayFeature.name realWriter:srStore.storage.writer coreDirectory:self.coreDirectory];
+    }
+    [sessionReplayFeature startWithWriter:srStore.storage.writer cacheWriter:sessionReplayCacheWriter resourceWriter:nil resourceDataStore:nil];
     FTInnerLogInfo(@"[session-replay] initialized success");
 }
 - (FTFeatureStores *)registerFeature:(id<FTRemoteFeature>)feature{

@@ -370,6 +370,9 @@ void *FTRUMQueueIdentityKey = &FTRUMQueueIdentityKey;
         return;
     }
     NSDictionary *context = [self rumDynamicProperty];
+    [[FTModuleManager sharedInstance] postMessage:FTMessageKeyRumError message:@{@"error_date":time,
+                                                                                 @"error_crash":@(fatal)
+                                                                               } sync:fatal];
     [self syncProcess:^{
       @try {
         NSMutableDictionary *field = [NSMutableDictionary dictionary];

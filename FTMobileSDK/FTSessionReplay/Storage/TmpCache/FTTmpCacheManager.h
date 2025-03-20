@@ -1,0 +1,19 @@
+//
+//  FTTmpCacheManager.h
+//  FTMobileSDK
+//
+//  Created by hulilei on 2025/3/19.
+//  Copyright © 2025 DataFlux-cn. All rights reserved.
+//
+
+#import <Foundation/Foundation.h>
+#import "FTFileWriter.h"
+NS_ASSUME_NONNULL_BEGIN
+@class FTDirectory;
+
+@interface FTTmpCacheManager : NSObject<FTCacheWriter>
+- (instancetype)initWithFeatureName:(NSString *)featureName realWriter:(id<FTWriter>)realWriter coreDirectory:(FTDirectory *)coreDirectory;
+
+@end
+
+NS_ASSUME_NONNULL_END
