@@ -22,6 +22,9 @@ NSString * const FTImagePrivacyLevelStringMap[] = {
     [FTImagePrivacyLevelMaskNone] = @"MaskNone",
     [FTImagePrivacyLevelMaskNonBundledOnly] = @"MaskNonBundledOnly",
 };
+@interface FTSessionReplayConfig()
+@property (nonatomic, assign) BOOL fineGrainedMaskingSet;
+@end
 @implementation FTSessionReplayConfig
 -(instancetype)init{
     self = [super init];
@@ -39,6 +42,9 @@ NSString * const FTImagePrivacyLevelStringMap[] = {
 }
 -(void)setPrivacy:(FTSRPrivacy)privacy{
     _privacy = privacy;
+    if(_fineGrainedMaskingSet == YES){
+        return;
+    }
     switch (privacy) {
         case FTSRPrivacyMask:
             _imagePrivacy = FTImagePrivacyLevelMaskAll;
@@ -57,6 +63,18 @@ NSString * const FTImagePrivacyLevelStringMap[] = {
             _textAndInputPrivacy = FTTextAndInputPrivacyLevelMaskAllInputs;
             break;
     }
+}
+-(void)setTouchPrivacy:(FTTouchPrivacyLevel)touchPrivacy{
+    _fineGrainedMaskingSet = YES;
+    _touchPrivacy = touchPrivacy;
+}
+-(void)setTextAndInputPrivacy:(FTTextAndInputPrivacyLevel)textAndInputPrivacy{
+    _fineGrainedMaskingSet = YES;
+    _textAndInputPrivacy = textAndInputPrivacy;
+}
+-(void)setImagePrivacy:(FTImagePrivacyLevel)imagePrivacy{
+    _fineGrainedMaskingSet = YES;
+    _imagePrivacy = imagePrivacy;
 }
 -(NSString *)debugDescription{
     return [NSString stringWithFormat:@"====== Config ======\n sampleRate:%d\n textAndInputPrivacy:%@\n touchPrivacy:%@\n imagePrivacy:%@\n ================== ",self.sampleRate,FTTextAndInputPrivacyLevelStringMap[self.textAndInputPrivacy],FTTouchPrivacyLevelStringMap[self.touchPrivacy],FTImagePrivacyLevelStringMap[self.imagePrivacy]];
