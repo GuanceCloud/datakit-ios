@@ -72,6 +72,7 @@ NSString * const FT_DURATION  = @"duration";
 //session tag
 NSString * const FT_RUM_KEY_SESSION_ID = @"session_id";
 NSString * const FT_RUM_KEY_SESSION_TYPE = @"session_type";
+NSString * const FT_RUM_KEY_IS_ERROR_SESSION = @"is_error_session";
 //view tag
 NSString * const FT_KEY_VIEW_ID = @"view_id";
 NSString * const FT_KEY_IS_ACTIVE = @"is_active";

@@ -3,6 +3,9 @@
 2. Session Replay 新增支持 UIView 通过 `sessionReplayPrivacyOverrides` 设置视图级别隐私覆盖
 3. Session Replay 数据同步添加 X-Pkg-Id 追踪适配
 ---
+# 1.5.15-alpha.3
+1. FTRumConfig 新增 `sessionOnErrorSampleRate` 字段。若开启，当未被采样率选中的 Session 发生错误，SDK 将对这些原本不采集的 Session 进行数据采集
+---
 # 1.5.15-alpha.2
 1. 数据同步 UserAgent 格式调整
 ---

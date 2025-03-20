@@ -67,6 +67,12 @@ static const NSTimeInterval sessionMaxDuration = 4 * 60 * 60; // 4 hours
         return NO;
     }
     if (!self.sampling) {
+        if((model.type == FTRUMDataError || model.type == FTRUMDataResourceError) && self.rumDependencies.sessionOnErrorSampleRate){
+            self.sampling = YES;
+            self.context.is_error_session = YES;
+            [self writeErrorData:model context:context];
+            [self startInitialView:model];
+        }
         return YES;
     }
     _lastInteractionTime = [NSDate date];

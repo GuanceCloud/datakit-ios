@@ -80,6 +80,7 @@ NS_ASSUME_NONNULL_BEGIN
 @property (nonatomic, copy) NSString *view_referrer;
 @property (nonatomic, copy, nullable) NSString *action_id;
 @property (nonatomic, copy, nullable) NSString *action_name;
+@property (nonatomic, assign) BOOL is_error_session;
 - (instancetype)initWithAppID:(NSString *)appID;
 /// trace、logger 获取 rum 关联数据
 -(NSDictionary *)getGlobalSessionViewTags;
