@@ -19,6 +19,7 @@ void *FTTmpCacheQueueIdentityKey = &FTTmpCacheQueueIdentityKey;
 @property (nonatomic, strong) id<FTWriter> realWriter;
 @property (nonatomic, strong) FTDirectory *cacheDirectory;
 @property (nonatomic, copy) NSString *currentFileID;
+@property(nonatomic) dispatch_source_t timerSource;
 @end
 @implementation FTTmpCacheManager
 - (instancetype)initWithFeatureName:(NSString *)featureName realWriter:(id<FTWriter>)realWriter coreDirectory:(FTDirectory *)coreDirectory{
@@ -33,6 +34,8 @@ void *FTTmpCacheQueueIdentityKey = &FTTmpCacheQueueIdentityKey;
         // 初始化数据存储目录
         [[[NSFileManager defaultManager] URLsForDirectory:NSCachesDirectory inDomains:NSUserDomainMask] firstObject];
         _cacheDirectory = [coreDirectory createSubdirectoryWithPath:cacheName];
+        // 删除上个 session 遗留的缓存数据
+        [_cacheDirectory deleteAllFiles];
         _currentFileID = [[NSUUID UUID] UUIDString];
         // 启动定时清理任务
         [self setupCleanupTimer];
@@ -88,12 +91,12 @@ void *FTTmpCacheQueueIdentityKey = &FTTmpCacheQueueIdentityKey;
 }
 #pragma mark - 清理过期文件
 - (void)setupCleanupTimer {
-    dispatch_source_t timer = dispatch_source_create(DISPATCH_SOURCE_TYPE_TIMER, 0, 0, _fileQueue);
-    dispatch_source_set_timer(timer,
-                             DISPATCH_TIME_NOW,
-                             60 * NSEC_PER_SEC, // 每分钟检查一次
-                             0);
-    dispatch_source_set_event_handler(timer, ^{
+    self.timerSource = dispatch_source_create(DISPATCH_SOURCE_TYPE_TIMER, 0, 0, _fileQueue);
+    dispatch_source_set_timer(self.timerSource,
+                              DISPATCH_TIME_NOW,
+                              60 * NSEC_PER_SEC, // 每分钟检查一次
+                              0);
+    dispatch_source_set_event_handler(self.timerSource, ^{
         NSDate *now = [NSDate date];
         NSDate *expirationDate = [now dateByAddingTimeInterval:-60];
         
@@ -109,7 +112,7 @@ void *FTTmpCacheQueueIdentityKey = &FTTmpCacheQueueIdentityKey;
             }
         }
     });
-    dispatch_resume(timer);
+    dispatch_resume(self.timerSource);
 }
 - (NSDate *)dateFromFileName:(NSString *)fileName {
     NSString *minuteStr = [[fileName componentsSeparatedByString:@"_"] firstObject];
@@ -121,7 +124,7 @@ void *FTTmpCacheQueueIdentityKey = &FTTmpCacheQueueIdentityKey;
 - (void)handleErrorCommandWithTime:(NSDate *)aTime shouldCacheTime:(BOOL)cache{
     dispatch_block_t block = ^{
         NSMutableArray *eligibleFiles = [NSMutableArray array];
-        
+        NSDate *start = [aTime dateByAddingTimeInterval:-60];
         // 步骤1: 收集需要处理的文件
         NSEnumerator *enumerator = self.cacheDirectory.files.objectEnumerator;
         FTFile *file;
@@ -153,14 +156,16 @@ void *FTTmpCacheQueueIdentityKey = &FTTmpCacheQueueIdentityKey;
                 // 解析时间戳
                 NSTimeInterval timestamp = [components[0] doubleValue];
                 NSDate *entryDate = [NSDate dateWithTimeIntervalSince1970:timestamp];
-                
-                if ([entryDate compare:aTime] == NSOrderedAscending) {
-                    // 写入目标文件
-                    NSData *data = [[NSData alloc]initWithBase64EncodedString:components[1] options:0];
-                    [self.realWriter write:data forceNewFile:force];
-                    force = NO;
-                } else {
-                    [remainingEntries addObject:line];
+                // entryDate > start
+                if ([entryDate compare:start] == NSOrderedDescending) {
+                    if ([entryDate compare:aTime] == NSOrderedAscending ) {
+                        // 写入目标文件
+                        NSData *data = [[NSData alloc]initWithBase64EncodedString:components[1] options:0];
+                        [self.realWriter write:data forceNewFile:force];
+                        force = NO;
+                    } else {
+                        [remainingEntries addObject:line];
+                    }
                 }
             }
             // 步骤4: 更新原文件
