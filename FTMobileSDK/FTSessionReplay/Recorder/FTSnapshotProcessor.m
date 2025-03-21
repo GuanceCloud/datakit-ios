@@ -66,9 +66,9 @@ NSTimeInterval const kFullSnapshotInterval = 20.0;
         // 3.进行判断是新增，还是新的 View
         BOOL isNewView = self.lastSnapshot == nil || self.lastSnapshot.context.sessionID != viewTreeSnapshot.context.sessionID || self.lastSnapshot.context.viewID != viewTreeSnapshot.context.viewID;
         BOOL isTimeForFullSnapshot = [self isTimeForFullSnapshot];
-        BOOL fullSnapshotRequired = isNewView || isTimeForFullSnapshot || self.lastSRWireframes == nil;
+        BOOL fullSnapshotRequired = isNewView || isTimeForFullSnapshot;
         // 3.1.新的 view 全量保存
-        if (isNewView){
+        if (isNewView || fullSnapshotRequired){
             force = YES;
             // meta focus full
             FTSRMetaRecord *metaRecord = [[FTSRMetaRecord alloc]initWithViewTreeSnapshot:viewTreeSnapshot];
@@ -79,8 +79,7 @@ NSTimeInterval const kFullSnapshotInterval = 20.0;
             [records addObject:metaRecord];
             [records addObject:focusRecord];
             [records addObject:fullRecord];
-        }
-        if(fullSnapshotRequired){
+        }else if(self.lastSRWireframes == nil){
             //3.2 有 lastSnapshot ,但未采集到 wireframe 的情况
             FTSRFullSnapshotRecord *fullRecord = [[FTSRFullSnapshotRecord alloc]initWithTimestamp:[viewTreeSnapshot.context.date ft_millisecondTimeStamp]];
             fullRecord.wireframes = wireframes;
