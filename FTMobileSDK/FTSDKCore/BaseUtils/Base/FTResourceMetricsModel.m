@@ -99,7 +99,7 @@
     return self.resource_ttfb;
 }
 - (NSNumber *)trans{
-    long long duration = self.responseStartNsTimeInterval - self.requestStartNsTimeInterval;
+    long long duration = self.responseEndNsTimeInterval - self.responseStartNsTimeInterval;
     if(duration>0){
         return @(duration);
     }
