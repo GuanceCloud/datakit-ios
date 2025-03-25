@@ -1,3 +1,6 @@
+# 1.6.1-alpha.2
+1. `privacy` 与 细粒度隐私添加优先级处理，细粒度的隐私级别设置优先级高于 `privacy`
+---
 # 1.6.1-alpha.1
 1. Session Replay 新增支持通过 `touchPrivacy` 触摸屏蔽的可用隐私级别、`textAndInputPrivacy`文本和输入屏蔽的可用隐私级别，进行细粒度的隐私级别设置
 2. Session Replay 新增支持 UIView 通过 `sessionReplayPrivacyOverrides` 设置视图级别隐私覆盖
