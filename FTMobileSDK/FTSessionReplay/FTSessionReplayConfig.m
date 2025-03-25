@@ -77,6 +77,6 @@ NSString * const FTImagePrivacyLevelStringMap[] = {
     _imagePrivacy = imagePrivacy;
 }
 -(NSString *)debugDescription{
-    return [NSString stringWithFormat:@"====== Config ======\n sampleRate:%d\n textAndInputPrivacy:%@\n touchPrivacy:%@\n imagePrivacy:%@\n ================== ",self.sampleRate,FTTextAndInputPrivacyLevelStringMap[self.textAndInputPrivacy],FTTouchPrivacyLevelStringMap[self.touchPrivacy],FTImagePrivacyLevelStringMap[self.imagePrivacy]];
+    return [NSString stringWithFormat:@"====== Config ======\n sampleRate:%d\n textAndInputPrivacy:%@\n touchPrivacy:%@\n ================== ",self.sampleRate,FTTextAndInputPrivacyLevelStringMap[self.textAndInputPrivacy],FTTouchPrivacyLevelStringMap[self.touchPrivacy]];
 }
 @end
