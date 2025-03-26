@@ -71,110 +71,127 @@
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Wdeprecated-declarations"
 - (NSNumber *)dns{
-    long long duration = self.dnsEndNsTimeInterval - self.dnsStartNsTimeInterval;
-    if(duration>0){
-        return @(duration);
+    if (self.dnsEndNsTimeInterval>0 && self.dnsStartNsTimeInterval>0) {
+        long long duration = self.dnsEndNsTimeInterval - self.dnsStartNsTimeInterval;
+        if(duration >= 0 && duration < [self.fetchInterval longLongValue]){
+            return @(duration);
+        }
     }
     return self.resource_dns;
 }
 - (NSNumber *)tcp{
-    long long duration = self.connectEndNsTimeInterval - self.connectStartNsTimeInterval;
-    if(duration>0){
-        return @(duration);
+    if (self.connectEndNsTimeInterval>0 && self.connectStartNsTimeInterval>0) {
+        long long duration = self.connectEndNsTimeInterval - self.connectStartNsTimeInterval;
+        if(duration >= 0){
+            return @(duration);
+        }
     }
     return self.resource_tcp;
 }
 - (NSNumber *)ssl{
-    long long duration = self.sslEndNsTimeInterval - self.sslStartNsTimeInterval;
-    if(duration>0){
-        return @(duration);
+    if (self.sslEndNsTimeInterval>0 && self.sslStartNsTimeInterval>0) {
+        long long duration = self.sslEndNsTimeInterval - self.sslStartNsTimeInterval;
+        if(duration >= 0){
+            return @(duration);
+        }
     }
     return self.resource_ssl;
 }
+// ttfb == firstByte
 - (NSNumber *)ttfb{
-    long long duration = self.responseStartNsTimeInterval - self.requestStartNsTimeInterval;
-    if(duration>0){
-        return @(duration);
+    if (self.responseStartNsTimeInterval>0 && self.requestStartNsTimeInterval>0) {
+        long long duration = self.responseStartNsTimeInterval - self.requestStartNsTimeInterval;
+        if(duration >= 0){
+            return @(duration);
+        }
     }
     return self.resource_ttfb;
 }
 - (NSNumber *)trans{
-    long long duration = self.responseStartNsTimeInterval - self.requestStartNsTimeInterval;
-    if(duration>0){
-        return @(duration);
+    if (self.responseEndNsTimeInterval>0 && self.responseStartNsTimeInterval>0) {
+        long long duration = self.responseEndNsTimeInterval - self.responseStartNsTimeInterval;
+        if(duration >= 0){
+            return @(duration);
+        }
     }
     return self.resource_trans;
 }
 - (NSNumber *)firstByte{
-    long long duration = self.responseStartNsTimeInterval - self.requestStartNsTimeInterval;
-    if(duration>0){
-        return @(duration);
+    if (self.responseStartNsTimeInterval>0 && self.requestStartNsTimeInterval>0) {
+        long long duration = self.responseStartNsTimeInterval - self.requestStartNsTimeInterval;
+        if(duration>0){
+            return @(duration);
+        }
     }
     return self.resource_first_byte;
 }
 - (NSNumber *)fetchInterval{
-    long long duration = self.fetchEndNsTimeInterval - self.fetchStartNsTimeInterval;
-    if(duration>0){
-        return @(duration);
+    if (self.fetchEndNsTimeInterval>0 && self.fetchStartNsTimeInterval>0) {
+        long long duration = self.fetchEndNsTimeInterval - self.fetchStartNsTimeInterval;
+        if(duration >= 0){
+            return @(duration);
+        }
     }
     return self.duration;
 }
 #pragma clang diagnostic pop
 -(NSDictionary *)resource_redirect_time{
-    long long duration = _redirectionEndNsTimeInterval-_redirectionStartNsTimeInterval;
-    if(duration>0){
-        return  @{
-            FT_DURATION:@(duration),
-            FT_KEY_START:@(_redirectionStartNsTimeInterval-_fetchStartNsTimeInterval)
-        };
+    if (self.redirectionEndNsTimeInterval>0 && self.redirectionStartNsTimeInterval>0) {
+        long long duration = _redirectionEndNsTimeInterval-_redirectionStartNsTimeInterval;
+        if(duration >= 0){
+            return  @{
+                FT_DURATION:@(duration),
+                FT_KEY_START:@(_redirectionStartNsTimeInterval-_fetchStartNsTimeInterval)
+            };
+        }
     }
     return nil;
 }
 -(NSDictionary *)resource_dns_time{
-    long long duration = _dnsEndNsTimeInterval-_dnsStartNsTimeInterval;
-    if(duration>0){
+    NSNumber *duration = self.dns;
+    if(duration != nil){
         return  @{
-            FT_DURATION:@(duration),
+            FT_DURATION:duration,
             FT_KEY_START:@(_dnsStartNsTimeInterval-_fetchStartNsTimeInterval)
         };
     }
     return nil;
 }
 -(NSDictionary *)resource_ssl_time{
-    long long duration = _sslEndNsTimeInterval-_sslStartNsTimeInterval;
-    if(duration>0){
+    NSNumber *duration = self.ssl;
+    if(duration != nil){
         return  @{
-            FT_DURATION:@(duration),
+            FT_DURATION:duration,
             FT_KEY_START:@(_sslStartNsTimeInterval-_fetchStartNsTimeInterval)
         };
     }
     return nil;
 }
 -(NSDictionary *)resource_connect_time{
-    long long duration = _connectEndNsTimeInterval-_connectStartNsTimeInterval;
-    if(duration>0){
+    NSNumber *duration = self.tcp;
+    if(duration != nil){
         return  @{
-            FT_DURATION:@(duration),
+            FT_DURATION:duration,
             FT_KEY_START:@(_connectStartNsTimeInterval-_fetchStartNsTimeInterval)
         };
     }
     return nil;
 }
 -(NSDictionary *)resource_first_byte_time{
-    long long duration = _responseStartNsTimeInterval-_requestStartNsTimeInterval;
-    if(duration>0){
+    NSNumber *duration = self.firstByte;
+    if(duration != nil){
         return  @{
-            FT_DURATION:@(duration),
+            FT_DURATION:duration,
             FT_KEY_START:@(_requestStartNsTimeInterval-_fetchStartNsTimeInterval)
         };
     }
     return nil;
 }
 -(NSDictionary *)resource_download_time{
-    long long duration = _responseEndNsTimeInterval-_responseStartNsTimeInterval;
-    if(duration>0){
+    NSNumber *duration = self.trans;
+    if(duration != nil){
         return  @{
-            FT_DURATION:@(duration),
+            FT_DURATION:duration,
             FT_KEY_START:@(_responseStartNsTimeInterval-_fetchStartNsTimeInterval)
         };
     }
