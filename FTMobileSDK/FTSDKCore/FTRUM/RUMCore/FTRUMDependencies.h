@@ -21,7 +21,8 @@ NS_ASSUME_NONNULL_BEGIN
 @property (nonatomic, assign) ErrorMonitorType errorMonitorType;
 @property (nonatomic, strong) FTRUMMonitor *monitor;
 @property (nonatomic, strong) FTFatalErrorContext *fatalErrorContext;
-
+@property (nonatomic, strong, readonly) id<FTRUMDataWriteProtocol> cacheWriter;
+@property (atomic, assign) BOOL currentSessionSample;
 @end
 
 NS_ASSUME_NONNULL_END

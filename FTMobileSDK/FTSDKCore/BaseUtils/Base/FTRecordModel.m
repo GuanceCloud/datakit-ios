@@ -32,17 +32,12 @@
         [opdata setValue:tags forKey:FT_TAGS];
         NSDictionary *data =@{FT_OP:op,
                               FT_OPDATA:opdata,
+                              FT_TIME:@(tm),
         };
         _op = op;
         _data = [FTJSONUtil convertToJsonData:data];
-        if (tm&&tm>0) {
-            _tm = tm;
-        }else{
-            _tm = [NSDate ft_currentNanosecondTimeStamp];
-        }
-        FTInnerLogDebug(@"write data = %@",@{@"time":@(_tm),
-                                             @"data":data
-                                           });
+        _tm = [NSDate ft_currentNanosecondTimeStamp];
+        FTInnerLogDebug(@"write data = %@",data);
 
     }
     return self;

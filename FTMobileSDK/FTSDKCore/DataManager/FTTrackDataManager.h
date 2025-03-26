@@ -13,6 +13,8 @@ typedef NS_ENUM(NSInteger, FTAddDataType) {
     FTAddDataRUM,
     ///logging
     FTAddDataLogging,
+    ///rumCache,
+    FTAddDataRUMCache
 };
 NS_ASSUME_NONNULL_BEGIN
 @class FTRecordModel;

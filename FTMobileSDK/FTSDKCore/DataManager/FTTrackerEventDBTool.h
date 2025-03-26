@@ -50,6 +50,11 @@ NS_ASSUME_NONNULL_BEGIN
 
 -(BOOL)deleteDataWithCount:(NSInteger)count;
 
+- (BOOL)deleteDatasWithType:(NSString *)type;
+
+- (BOOL)deleteDatasWithType:(NSString *)type time:(long long)time;
+
+- (BOOL)updateDatasWithType:(NSString *)type toType:(NSString *)toType time:(long long)time;
 /// 获取数据库数据总数
 - (NSInteger)getDatasCount;
 

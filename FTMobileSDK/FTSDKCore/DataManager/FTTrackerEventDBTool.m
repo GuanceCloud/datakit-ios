@@ -223,6 +223,30 @@ static dispatch_once_t onceToken;
     [self close];
     return is;
 }
+- (BOOL)deleteDatasWithType:(NSString *)type{
+    __block BOOL is;
+    [self zy_inDatabase:^(ZY_FMDatabase *db){
+        NSString *sqlStr = [NSString stringWithFormat:@"DELETE FROM '%@' WHERE  op = '%@' ",FT_DB_TRACE_EVENT_TABLE_NAME,type];
+        is = [db executeUpdate:sqlStr];
+    }];
+    return is;
+}
+- (BOOL)deleteDatasWithType:(NSString *)type time:(long long)time{
+    __block BOOL is;
+    [self zy_inDatabase:^(ZY_FMDatabase *db){
+        NSString *sqlStr = [NSString stringWithFormat:@"DELETE FROM '%@' WHERE _id in (SELECT _id from '%@' WHERE  op = '%@' AND tm < '%lld' )",FT_DB_TRACE_EVENT_TABLE_NAME,FT_DB_TRACE_EVENT_TABLE_NAME,type,time];
+        is = [db executeUpdate:sqlStr];
+    }];
+    return is;
+}
+- (BOOL)updateDatasWithType:(NSString *)type toType:(NSString *)toType time:(long long)time{
+    __block BOOL is;
+    [self zy_inDatabase:^(ZY_FMDatabase *db){
+        NSString *sqlStr = [NSString stringWithFormat:@"UPDATE '%@' SET op = '%@'  WHERE tm < '%lld' AND op = '%@'",FT_DB_TRACE_EVENT_TABLE_NAME,toType,time,type];
+        is = [db executeUpdate:sqlStr];
+    }];
+    return is;
+}
 - (void)close{
     [self vacuumDB];
     [[self dbQueue] close];

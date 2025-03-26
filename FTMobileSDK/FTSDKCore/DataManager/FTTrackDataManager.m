@@ -99,37 +99,14 @@ static dispatch_once_t onceToken;
 - (void)setRUMCacheLimitCount:(int)count discardNew:(BOOL)discardNew{
     [self.dataCachePolicy setRumCacheLimitCount:count discardNew:discardNew];
 }
--(void)applicationDidBecomeActive{
-    @try {
-        if(self.autoSync){
-            [self uploadTrackData];
-        }
-    }
-    @catch (NSException *exception) {
-        FTInnerLogError(@"exception %@",exception);
-    }
-}
--(void)applicationWillResignActive{
-    @try {
-        [self.dataCachePolicy insertCacheToDB];
-    }
-    @catch (NSException *exception) {
-        FTInnerLogError(@"applicationWillResignActive exception %@",exception);
-    }
-}
--(void)applicationWillTerminate{
-    @try {
-        [self.dataCachePolicy insertCacheToDB];
-    } @catch (NSException *exception) {
-        FTInnerLogError(@"exception %@",exception);
-    }
-}
 - (void)addTrackData:(FTRecordModel *)data type:(FTAddDataType)type{
     //数据写入不用做额外的线程处理，数据采集组合除了崩溃数据，都是在子线程进行的
     switch (type) {
+        case FTAddDataRUMCache:
+            [[FTTrackerEventDBTool sharedManger] insertItem:data];
+            return;
         case FTAddDataLogging:
             [self.dataCachePolicy addLogData:data];
-            
             break;
         case FTAddDataRUM:
             [self.dataCachePolicy addRumData:data];
@@ -311,4 +288,34 @@ static dispatch_once_t onceToken;
     onceToken = 0;
     sharedInstance = nil;
 }
+@end
+
+@implementation FTTrackDataManager(LifeCycle)
+
+-(void)applicationDidBecomeActive{
+    @try {
+        if(self.autoSync){
+            [self uploadTrackData];
+        }
+    }
+    @catch (NSException *exception) {
+        FTInnerLogError(@"exception %@",exception);
+    }
+}
+-(void)applicationWillResignActive{
+    @try {
+        [self.dataCachePolicy insertCacheToDB];
+    }
+    @catch (NSException *exception) {
+        FTInnerLogError(@"applicationWillResignActive exception %@",exception);
+    }
+}
+-(void)applicationWillTerminate{
+    @try {
+        [self.dataCachePolicy insertCacheToDB];
+    } @catch (NSException *exception) {
+        FTInnerLogError(@"exception %@",exception);
+    }
+}
+
 @end

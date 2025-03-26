@@ -11,12 +11,14 @@
 #pragma mark ========== agent ==========
 extern NSString * const FT_DATA_TYPE_RUM;
 extern NSString * const FT_DATA_TYPE_LOGGING;
+extern NSString * const FT_DATA_TYPE_RUM_CACHE;
 extern NSString * const FT_KEY_SERVICE;
 extern NSString * const FT_MEASUREMENT;
 extern NSString * const FT_FIELDS;
 extern NSString * const FT_TAGS;
 extern NSString * const FT_OPDATA;
 extern NSString * const FT_OP;
+extern NSString * const FT_TIME;
 extern NSString * const FT_DEFAULT_SERVICE_NAME;
 extern NSString * const FT_TVOS_SERVICE_NAME;
 extern NSString * const FT_IOS_SDK_NAME;
@@ -78,6 +80,7 @@ extern NSString * const FT_APP_ID;
 extern NSString * const FT_RUM_KEY_SESSION_ID;
 extern NSString * const FT_RUM_KEY_SESSION_TYPE;
 extern NSString * const FT_RUM_KEY_IS_ERROR_SESSION;
+extern NSString * const FT_SESSION_ERROR_TIMESTTAMP; 
 #pragma mark ---------- view ----------
 #pragma mark --- tag
 extern NSString * const FT_KEY_IS_ACTIVE;

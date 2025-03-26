@@ -471,10 +471,12 @@ void *FTRUMQueueIdentityKey = &FTRUMQueueIdentityKey;
     }
 }
 - (NSDictionary *)getLinkRUMData{
-    NSMutableDictionary *dict = [NSMutableDictionary dictionary];
-    [dict addEntriesFromDictionary:[self rumDynamicProperty]];
-    [dict addEntriesFromDictionary:self.rumDependencies.fatalErrorContext.lastSessionContext];
-    return dict;
+    if(self.rumDependencies.currentSessionSample){
+        NSMutableDictionary *dict = [NSMutableDictionary dictionary];
+        [dict addEntriesFromDictionary:[self rumDynamicProperty]];
+        [dict addEntriesFromDictionary:self.rumDependencies.fatalErrorContext.lastSessionContext];
+    }
+    return nil;
 }
 - (void)syncProcess{
     [self syncProcess:^{}];
