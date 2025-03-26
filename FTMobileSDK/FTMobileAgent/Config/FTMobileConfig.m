@@ -78,7 +78,7 @@
             _monitorFrequency = (FTMonitorFrequency)[dict[@"monitorFrequency"] intValue];
             _resourceUrlHandler = [dict valueForKey:@"resourceUrlHandler"];
             _resourcePropertyProvider = [dict valueForKey:@"resourceProvider"];
-            _sessionOnErrorSampleRate = [dict valueForKey:@"sessionOnErrorSampleRate"];
+            _sessionOnErrorSampleRate = [[dict valueForKey:@"sessionOnErrorSampleRate"] intValue];
         }
         return self;
     }else{
