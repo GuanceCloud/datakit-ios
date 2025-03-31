@@ -475,6 +475,7 @@ void *FTRUMQueueIdentityKey = &FTRUMQueueIdentityKey;
         NSMutableDictionary *dict = [NSMutableDictionary dictionary];
         [dict addEntriesFromDictionary:[self rumDynamicProperty]];
         [dict addEntriesFromDictionary:self.rumDependencies.fatalErrorContext.lastSessionContext];
+        return dict;
     }
     return nil;
 }
