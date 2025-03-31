@@ -38,7 +38,7 @@ NS_ASSUME_NONNULL_BEGIN
 /// - Parameter env: 环境
 /// - Parameter service: 服务
 /// - Parameter globalContext: 全局自定义属性
-- (void)startWithVersion:(NSString *)version sdkVersion:(NSString *)sdkVersion env:(NSString *)env service:(NSString *)service globalContext:(NSDictionary *)globalContext pkgInfo:(NSDictionary *)pkgInfo;
+- (void)startWithVersion:(NSString *)version sdkVersion:(NSString *)sdkVersion env:(NSString *)env service:(NSString *)service globalContext:(NSDictionary *)globalContext pkgInfo:(nullable NSDictionary *)pkgInfo;
 
 /// 获取 Rum ES 公共Tag
 - (NSMutableDictionary *)rumProperty;
