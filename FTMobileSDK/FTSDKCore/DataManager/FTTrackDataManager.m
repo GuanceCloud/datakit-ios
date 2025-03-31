@@ -172,6 +172,32 @@ static dispatch_once_t onceToken;
     }
     pthread_rwlock_unlock(&_uploadWorkLock);
 }
+#pragma mark - App Life Cycle-
+-(void)applicationDidBecomeActive{
+    @try {
+        if(self.autoSync){
+            [self uploadTrackData];
+        }
+    }
+    @catch (NSException *exception) {
+        FTInnerLogError(@"exception %@",exception);
+    }
+}
+-(void)applicationWillResignActive{
+    @try {
+        [self.dataCachePolicy insertCacheToDB];
+    }
+    @catch (NSException *exception) {
+        FTInnerLogError(@"applicationWillResignActive exception %@",exception);
+    }
+}
+-(void)applicationWillTerminate{
+    @try {
+        [self.dataCachePolicy insertCacheToDB];
+    } @catch (NSException *exception) {
+        FTInnerLogError(@"exception %@",exception);
+    }
+}
 #pragma mark - Upload -
 
 - (void)uploadTrackData{
@@ -287,35 +313,6 @@ static dispatch_once_t onceToken;
     [[FTTrackerEventDBTool sharedManger] shutDown];
     onceToken = 0;
     sharedInstance = nil;
-}
-@end
-
-@implementation FTTrackDataManager(LifeCycle)
-
--(void)applicationDidBecomeActive{
-    @try {
-        if(self.autoSync){
-            [self uploadTrackData];
-        }
-    }
-    @catch (NSException *exception) {
-        FTInnerLogError(@"exception %@",exception);
-    }
-}
--(void)applicationWillResignActive{
-    @try {
-        [self.dataCachePolicy insertCacheToDB];
-    }
-    @catch (NSException *exception) {
-        FTInnerLogError(@"applicationWillResignActive exception %@",exception);
-    }
-}
--(void)applicationWillTerminate{
-    @try {
-        [self.dataCachePolicy insertCacheToDB];
-    } @catch (NSException *exception) {
-        FTInnerLogError(@"exception %@",exception);
-    }
 }
 
 @end

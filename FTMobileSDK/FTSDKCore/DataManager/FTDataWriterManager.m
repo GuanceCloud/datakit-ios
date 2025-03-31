@@ -14,17 +14,25 @@
 #import "FTPresetProperty.h"
 #import "FTLog+Private.h"
 #import "FTTrackerEventDBTool.h"
+#import <os/lock.h>
 
 @interface FTDataWriterManager()
 @property (atomic, assign) BOOL isCache;
 @property (nonatomic, assign) NSTimeInterval cacheInvalidTimeInterval;
+@property (nonatomic, strong) dispatch_source_t deleteTimer; // GCD 定时器
+@property (nonatomic, assign) BOOL isTimerRunning;
 @end
-@implementation FTDataWriterManager
+@implementation FTDataWriterManager{
+    dispatch_queue_t _timerControlQueue; // 串行队列用于控制定时器
+    os_unfair_lock _timerLock; // 互斥锁保护定时器状态
+}
 -(instancetype)init{
     self = [super init];
     if (self) {
         _cacheInvalidTimeInterval = 60;
-        // 应用进入新的生命周期，删除旧的数据
+        _timerControlQueue = dispatch_queue_create("com.guance.rumOnError.cache", DISPATCH_QUEUE_SERIAL);
+        _timerLock = OS_UNFAIR_LOCK_INIT; // 初始化锁
+        // 应用进入新的生命周期，删除旧的 session 数据
         [[FTTrackerEventDBTool sharedManger] deleteDatasWithType:FT_DATA_TYPE_RUM_CACHE];
     }
     return self;
@@ -46,6 +54,7 @@
             }
             [[FTTrackerEventDBTool sharedManger] deleteDatasWithType:FT_DATA_TYPE_RUM_CACHE time:deleteTime];
             [[FTTrackerEventDBTool sharedManger] updateDatasWithType:FT_DATA_TYPE_RUM_CACHE toType:FT_DATA_TYPE_RUM time:time];
+            [self stopCacheDeleteTimer];
         }
         NSString *type = self.isCache ? FT_DATA_TYPE_RUM_CACHE : FT_DATA_TYPE_RUM;
         FTAddDataType addType = self.isCache ? FTAddDataRUMCache : FTAddDataRUM;
@@ -70,9 +79,6 @@
     } @catch (NSException *exception) {
         FTInnerLogError(@"exception %@",exception);
     }
-}
--(void)switchToCacheWriter{
-    self.isCache = YES;
 }
 // FT_DATA_TYPE_LOGGING
 -(void)logging:(NSString *)content status:(NSString *)status tags:(nullable NSDictionary *)tags field:(nullable NSDictionary *)field time:(long long)time{
@@ -99,4 +105,60 @@
     }
 }
 
+-(void)switchToCacheWriter{
+    self.isCache = YES;
+    [self startCacheDeleteTimer];
+}
+#pragma mark -- Cache Delete GCD Timer --
+- (void)startCacheDeleteTimer{
+    dispatch_async(_timerControlQueue, ^{
+        os_unfair_lock_lock(&self->_timerLock); // 加锁
+        if (self.isTimerRunning) {
+            os_unfair_lock_unlock(&self->_timerLock);
+            return; // 已运行则直接返回
+        }
+        
+        dispatch_queue_t queue = dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0);
+        self.deleteTimer = dispatch_source_create(DISPATCH_SOURCE_TYPE_TIMER, 0, 0, queue);
+        
+        if (self.deleteTimer) {
+        
+            dispatch_time_t startTime = dispatch_time(DISPATCH_TIME_NOW, (int64_t)(0 * NSEC_PER_SEC));
+            uint64_t interval = (uint64_t)(self.cacheInvalidTimeInterval * NSEC_PER_SEC);
+            
+            dispatch_source_set_timer(self.deleteTimer, startTime, interval, 0);
+            
+            __weak typeof(self) weakSelf = self;
+            dispatch_source_set_event_handler(self.deleteTimer, ^{
+                __strong typeof(weakSelf) strongSelf = weakSelf;
+                [strongSelf deleteDatas];
+            });
+            
+            dispatch_resume(self.deleteTimer);
+            self.isTimerRunning = YES; // 更新状态
+        }
+        
+        os_unfair_lock_unlock(&self->_timerLock); // 解锁
+    });
+}
+- (void)stopCacheDeleteTimer{
+    dispatch_async(_timerControlQueue, ^{
+        os_unfair_lock_lock(&self->_timerLock);
+        if (self.deleteTimer) {
+            if (dispatch_source_testcancel(self.deleteTimer) == 0) {
+                dispatch_source_cancel(self.deleteTimer); // 安全取消
+            }
+            self.deleteTimer = nil;
+            self.isTimerRunning = NO; // 更新状态
+        }
+        os_unfair_lock_unlock(&self->_timerLock);
+    });
+}
+- (void)deleteDatas{
+    long long deleteTime = [NSDate dateWithTimeIntervalSinceNow:-self.cacheInvalidTimeInterval].timeIntervalSince1970 * 1e9;
+    [[FTTrackerEventDBTool sharedManger] deleteDatasWithType:FT_DATA_TYPE_RUM_CACHE time:deleteTime];
+}
+-(void)dealloc{
+    [self stopCacheDeleteTimer];
+}
 @end
