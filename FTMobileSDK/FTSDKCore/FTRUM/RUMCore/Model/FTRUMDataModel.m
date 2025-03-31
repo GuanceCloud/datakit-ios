@@ -124,7 +124,7 @@
     [dict setValue:self.session_type forKey:FT_RUM_KEY_SESSION_TYPE];
     [dict setValue:@(self.is_error_session) forKey:FT_RUM_KEY_IS_ERROR_SESSION];
     if (self.session_error_timestamp > 0) {
-        [dict setValue:@(self.session_error_timestamp) forKey:FT_SESSION_ERROR_TIMESTTAMP];
+        [dict setValue:@(self.session_error_timestamp) forKey:FT_SESSION_ERROR_TIMESTAMP];
     }
     [dict setValue:self.view_id forKey:FT_KEY_VIEW_ID];
     if(self.view_referrer.length>0){
