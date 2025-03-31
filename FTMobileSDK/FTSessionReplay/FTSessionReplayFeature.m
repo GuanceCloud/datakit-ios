@@ -28,7 +28,6 @@
 @interface FTSessionReplayFeature()<FTMessageReceiver>
 @property (nonatomic, strong) NSTimer *timer;
 @property (nonatomic, strong) NSDictionary *currentRUMContext;
-@property (nonatomic, assign) BOOL isSampled;
 @property (nonatomic, strong) FTRecorder *windowRecorder;
 @property (nonatomic, assign) int sampleRate;
 @property (nonatomic, strong) FTSessionReplayTouches *touches;
@@ -99,15 +98,20 @@
         return;
     }
     if(self.currentRUMContext == nil || ![message[FT_RUM_KEY_SESSION_ID] isEqualToString:self.currentRUMContext[FT_RUM_KEY_SESSION_ID]]){
-        self.isSampled = [FTBaseInfoHandler randomSampling:self.sampleRate];
-        if(self.isSampled){
-            [self start];
-        }else if(self.config.sessionReplayOnErrorSampleRate){
-            [self startWithTmpCache:YES];
-        }else{
+        BOOL isErrorSession = self.currentRUMContext[FT_RUM_KEY_IS_ERROR_SESSION];
+        BOOL isSampled = [FTBaseInfoHandler randomSampling:self.sampleRate];
+        BOOL srOnErrorSampleRate = [FTBaseInfoHandler randomSampling:self.config.sessionReplayOnErrorSampleRate];
+        
+        BOOL shouldStart = isSampled || srOnErrorSampleRate;
+        // 是否需要使用临时缓存（当为错误会话，或未被常规采样但开启了错误采样时）
+        BOOL useTmpCache = isErrorSession || (srOnErrorSampleRate && !isSampled);
+
+        if (shouldStart) {
+            [self startWithTmpCache:useTmpCache];
+        } else {
             [self stop];
         }
-        [[FTModuleManager sharedInstance] postMessage:FTMessageKeySessionHasReplay message:@{FT_SESSION_HAS_REPLAY:@(self.isSampled)}];
+        [[FTModuleManager sharedInstance] postMessage:FTMessageKeySessionHasReplay message:@{FT_SESSION_HAS_REPLAY:@(isSampled)}];
     }
     self.currentRUMContext = message;
 }

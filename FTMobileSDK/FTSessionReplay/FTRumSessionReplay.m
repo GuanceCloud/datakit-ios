@@ -63,7 +63,7 @@ static dispatch_once_t onceToken;
 }
 - (void)startWithSessionReplayConfig:(FTSessionReplayConfig *)config{
     FTInnerLogInfo(@"[session-replay] %@",config.debugDescription);
-    if(config.sampleRate<=0&&!config.sessionReplayOnErrorSampleRate){
+    if(config.sampleRate<=0&&config.sessionReplayOnErrorSampleRate<=0){
         return;
     }
     FTSessionReplayFeature *sessionReplayFeature = [[FTSessionReplayFeature alloc]initWithConfig:config];
@@ -77,7 +77,7 @@ static dispatch_once_t onceToken;
     //    [self.stores setValue:resourceStore forKey:resourcesFeature.name];
     //    [self.features setValue:resourcesFeature forKey:resourcesFeature.name];
     FTTmpCacheManager *sessionReplayCacheWriter = nil;
-    if(config.sessionReplayOnErrorSampleRate){
+    if(config.sessionReplayOnErrorSampleRate>0){
         sessionReplayCacheWriter = [[FTTmpCacheManager alloc]initWithFeatureName:sessionReplayFeature.name realWriter:srStore.storage.writer coreDirectory:self.coreDirectory];
     }
     [sessionReplayFeature startWithWriter:srStore.storage.writer cacheWriter:sessionReplayCacheWriter resourceWriter:nil resourceDataStore:nil];
