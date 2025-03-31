@@ -30,9 +30,9 @@
         }.mutableCopy;
         [opdata setValue:fields forKey:FT_FIELDS];
         [opdata setValue:tags forKey:FT_TAGS];
+        [opdata setValue:@(tm) forKey:FT_TIME];
         NSDictionary *data =@{FT_OP:op,
                               FT_OPDATA:opdata,
-                              FT_TIME:@(tm),
         };
         _op = op;
         _data = [FTJSONUtil convertToJsonData:data];
