@@ -40,7 +40,7 @@
     config.enableSDKDebugLog = YES;
     FTRumConfig *rumConfig = [[FTRumConfig alloc]initWithAppid:self.appid];
     rumConfig.samplerate = sampleRate;
-    rumConfig.sessionOnErrorSampleRate = YES;
+    rumConfig.sessionOnErrorSampleRate = 100;
     [FTMobileAgent startWithConfigOptions:config];
     [[FTMobileAgent sharedInstance] startRumWithConfigOptions:rumConfig];
     
@@ -60,13 +60,13 @@
         XCTAssertTrue([tags[FT_RUM_KEY_IS_ERROR_SESSION] boolValue] == NO);
     }];
 }
-- (void)testSessionOnErrorSampleRate_unsampling{
+- (void)testSessionOnErrorSampleRate_unSampling{
     [self sdkInitWithRumSampleRate:0];
     NSArray *oldArray = [[FTTrackerEventDBTool sharedManger] getAllDatas];
 
-    [FTModelHelper startView:@{@"test":@"sampling"}];
-    [[FTExternalDataManager sharedManager] addErrorWithType:@"test" message:@"testSessionOnErrorSampleRate_sampling" stack:@"testSessionOnErrorSampleRate_sampling"];
-    [FTModelHelper addActionWithContext:@{@"test":@"unsampling"}];
+    [FTModelHelper startView:@{@"test":@"unSampling"}];
+    [[FTExternalDataManager sharedManager] addErrorWithType:@"test" message:@"testSessionOnErrorSampleRate_unSampling" stack:@"testSessionOnErrorSampleRate_unSampling"];
+    [FTModelHelper addActionWithContext:@{@"test":@"unSampling"}];
     [[FTGlobalRumManager sharedInstance].rumManager syncProcess];
 
     NSArray *newArray = [[FTTrackerEventDBTool sharedManger] getAllDatas];
@@ -74,19 +74,22 @@
     __block BOOL hasError = NO;
     __block BOOL hasView = NO;
     __block BOOL hasAction= NO;
-    [FTModelHelper resolveModelArray:newArray callBack:^(NSString * _Nonnull source, NSDictionary * _Nonnull tags, NSDictionary * _Nonnull fields, BOOL * _Nonnull stop) {
+    __block NSNumber *errorTimestamp = nil;
+    [FTModelHelper resolveModelArray:newArray timeCallBack:^(NSString * _Nonnull source, NSDictionary * _Nonnull tags, NSDictionary * _Nonnull fields, long long time, BOOL * _Nonnull stop) {
         if([source isEqualToString:FT_RUM_SOURCE_ERROR]){
+            XCTAssertTrue([errorTimestamp longLongValue] == time);
             hasError = YES;
         }else if ([source isEqualToString:FT_RUM_SOURCE_VIEW]){
             hasView = YES;
         }else if ([source isEqualToString:FT_RUM_SOURCE_ACTION]){
             hasAction = YES;
-            XCTAssertTrue([fields[@"test"] isEqualToString:@"unsampling"]);
+            XCTAssertTrue([fields[@"test"] isEqualToString:@"unSampling"]);
+            errorTimestamp = tags[FT_SESSION_ERROR_TIMESTAMP];
         }
         XCTAssertTrue([tags[FT_RUM_KEY_IS_ERROR_SESSION] boolValue] == YES);
     }];
     XCTAssertTrue(hasError == YES);
-    XCTAssertTrue(hasView == NO);
+    XCTAssertTrue(hasView == YES);
     XCTAssertTrue(hasAction == YES);
 }
 - (void)testSessionOnErrorSampleRate_resource_error{
@@ -116,7 +119,7 @@
         XCTAssertTrue([tags[FT_RUM_KEY_IS_ERROR_SESSION] boolValue] == YES);
     }];
     XCTAssertTrue(hasError == YES);
-    XCTAssertTrue(hasView == NO);
+    XCTAssertTrue(hasView == YES);
     XCTAssertTrue(hasAction == YES);
 }
 - (void)testSessionOnErrorSampleRate_error{
@@ -145,7 +148,7 @@
         XCTAssertTrue([tags[FT_RUM_KEY_IS_ERROR_SESSION] boolValue] == YES);
     }];
     XCTAssertTrue(hasError == YES);
-    XCTAssertTrue(hasView == NO);
+    XCTAssertTrue(hasView == YES);
     XCTAssertTrue(hasAction == YES);
     
 }

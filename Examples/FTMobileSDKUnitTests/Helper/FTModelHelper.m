@@ -122,8 +122,9 @@
         NSString *source = opdata[@"source"];
         NSDictionary *tags = opdata[FT_TAGS];
         NSDictionary *fields = opdata[FT_FIELDS];
+        NSNumber *time = opdata[FT_TIME];
         if(callBack){
-            callBack(source,tags,fields,obj.tm,stop);
+            callBack(source,tags,fields,[time longLongValue],stop);
         }
     }];
 }

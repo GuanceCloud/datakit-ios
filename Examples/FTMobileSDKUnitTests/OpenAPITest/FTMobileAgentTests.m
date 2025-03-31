@@ -467,15 +467,15 @@
     rumConfig.resourceUrlHandler = ^BOOL(NSURL *url) {
         return NO;
     };
-    XCTAssertTrue(rumConfig.sessionOnErrorSampleRate == NO);
+    XCTAssertTrue(rumConfig.sessionOnErrorSampleRate == 0);
     XCTAssertTrue(rumConfig.rumCacheLimitCount == 100000);
     rumConfig.rumCacheLimitCount = 1000;
     XCTAssertTrue(rumConfig.rumCacheLimitCount == 10000);
     rumConfig.rumDiscardType = FTRUMDiscardOldest;
     rumConfig.globalContext = @{@"aa":@"bb"};
-    rumConfig.sessionOnErrorSampleRate = YES;
+    rumConfig.sessionOnErrorSampleRate = 50;
     FTRumConfig *copyRumConfig = [rumConfig copy];
-    XCTAssertTrue(copyRumConfig.sessionOnErrorSampleRate == YES);
+    XCTAssertTrue(copyRumConfig.sessionOnErrorSampleRate == 50);
     XCTAssertTrue(copyRumConfig.samplerate == rumConfig.samplerate);
     XCTAssertTrue(copyRumConfig.enableTraceUserAction == rumConfig.enableTraceUserAction);
     XCTAssertTrue(copyRumConfig.enableTraceUserView == rumConfig.enableTraceUserView);

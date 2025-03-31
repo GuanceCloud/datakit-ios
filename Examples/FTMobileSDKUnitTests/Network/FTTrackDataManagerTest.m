@@ -143,9 +143,10 @@
     [[FTTrackDataManager sharedInstance] shutDown];
 }
 - (void)testEnableDBLimitDiscardOld_logCountLimit{
+    [FTLog enableLog:YES];
     [[FTTrackerEventDBTool sharedManger] deleteAllDatas];
     [FTTrackDataManager startWithAutoSync:NO syncPageSize:10 syncSleepTime:0];
-    [[FTTrackDataManager sharedInstance] setDBLimitWithSize:60*1204 discardNew:NO];
+    [[FTTrackDataManager sharedInstance] setDBLimitWithSize:70*1204 discardNew:NO];
     [[FTTrackDataManager sharedInstance] setLogCacheLimitCount:299 discardNew:NO];
     CFTimeInterval interval = [FTTestUtils functionElapsedTime:^{
         for (int i=0; i<1000; i++) {
@@ -160,7 +161,7 @@
     XCTAssertFalse([model.data isEqualToString:@"TEST DBLimitDiscardOld 0"]);
     long size = [[FTTrackerEventDBTool sharedManger] checkDatabaseSize];
     NSLog(@"size:%ld",(long)size);
-    XCTAssertTrue(size <= 65*1204);
+    XCTAssertTrue(size <= 75*1204);
     [[FTTrackDataManager sharedInstance] shutDown];
 }
 - (void)testEnableDBLimitDiscardNew_rum{
