@@ -27,9 +27,12 @@
     os_unfair_lock _timerLock; // 互斥锁保护定时器状态
 }
 -(instancetype)init{
+    return [self initWithCacheInvalidTimeInterval:60];
+}
+-(instancetype)initWithCacheInvalidTimeInterval:(NSTimeInterval)timeInterval{
     self = [super init];
-    if (self) {
-        _cacheInvalidTimeInterval = 60;
+    if(self){
+        _cacheInvalidTimeInterval = timeInterval;
         _timerControlQueue = dispatch_queue_create("com.guance.rumOnError.cache", DISPATCH_QUEUE_SERIAL);
         _timerLock = OS_UNFAIR_LOCK_INIT; // 初始化锁
         // 应用进入新的生命周期，删除旧的 session 数据
@@ -46,6 +49,7 @@
         [baseTags addEntriesFromDictionary:tags];
         NSDictionary *rumProperty = [[FTPresetProperty sharedInstance] rumProperty];
         [baseTags addEntriesFromDictionary:rumProperty];
+        // 如果是 session on error 的数据，在写入 error 时切换成正常的 rum 数据写入类型。并将发生 error 前 cacheInvalidTimeInterval 的数据类型更新为 rum.
         if(self.isCache && [source isEqualToString:FT_RUM_SOURCE_ERROR]){
             self.isCache = NO;
             long long deleteTime = time - self.cacheInvalidTimeInterval * 1e9;
@@ -83,7 +87,7 @@
 // FT_DATA_TYPE_LOGGING
 -(void)logging:(NSString *)content status:(NSString *)status tags:(nullable NSDictionary *)tags field:(nullable NSDictionary *)field time:(long long)time{
     @try {
-        NSMutableDictionary *tagDict = [NSMutableDictionary dictionaryWithDictionary:[[FTPresetProperty sharedInstance] loggerProperty]];        
+        NSMutableDictionary *tagDict = [NSMutableDictionary dictionaryWithDictionary:[[FTPresetProperty sharedInstance] loggerProperty]];
         if (tags) {
             [tagDict addEntriesFromDictionary:tags];
         }
@@ -142,7 +146,7 @@
     });
 }
 - (void)stopCacheDeleteTimer{
-    dispatch_async(_timerControlQueue, ^{
+    dispatch_sync(_timerControlQueue, ^{
         os_unfair_lock_lock(&self->_timerLock);
         if (self.deleteTimer) {
             if (dispatch_source_testcancel(self.deleteTimer) == 0) {
