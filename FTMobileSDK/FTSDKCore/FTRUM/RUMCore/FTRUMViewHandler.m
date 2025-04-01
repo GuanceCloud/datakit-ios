@@ -183,8 +183,11 @@
     NSMutableDictionary *tags = [NSMutableDictionary dictionaryWithDictionary:context];
     [tags addEntriesFromDictionary:sessionViewTag];
     [tags addEntriesFromDictionary:model.tags];
+    NSMutableDictionary *fields = [NSMutableDictionary new];
+    [fields addEntriesFromDictionary:self.rumDependencies.sampleDict];
+    [fields addEntriesFromDictionary:model.fields];
     NSString *error = model.type == FTRUMDataLongTask?FT_RUM_SOURCE_LONG_TASK :FT_RUM_SOURCE_ERROR;
-    [self.rumDependencies.writer rumWrite:error tags:tags fields:model.fields time:model.tm];
+    [self.rumDependencies.writer rumWrite:error tags:tags fields:fields time:model.tm];
     if(self.errorHandled){
         self.errorHandled();
     }
@@ -212,6 +215,8 @@
                                    FT_KEY_VIEW_UPDATE_TIME:@(self.updateTime),
                                    FT_KEY_IS_ACTIVE:[NSNumber numberWithBool:self.isActiveView],
     }.mutableCopy;
+    [field setValue:@(self.context.sampled_for_error_session) forKey:FT_RUM_KEY_SAMPLED_FOR_ERROR_SESSION];
+    [field addEntriesFromDictionary:self.rumDependencies.sampleDict];
     if(self.viewProperty && self.viewProperty.allKeys.count>0){
         [field addEntriesFromDictionary:self.viewProperty];
     }

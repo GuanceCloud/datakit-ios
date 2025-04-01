@@ -23,6 +23,8 @@ NS_ASSUME_NONNULL_BEGIN
 @property (nonatomic, strong) FTFatalErrorContext *fatalErrorContext;
 @property (nonatomic, strong, readonly) id<FTRUMDataWriteProtocol> cacheWriter;
 @property (atomic, assign) BOOL currentSessionSample;
+
+- (NSDictionary *)sampleDict;
 @end
 
 NS_ASSUME_NONNULL_END

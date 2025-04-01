@@ -79,8 +79,10 @@ extern NSString * const FT_APP_ID;
 // rum global tag
 extern NSString * const FT_RUM_KEY_SESSION_ID;
 extern NSString * const FT_RUM_KEY_SESSION_TYPE;
-extern NSString * const FT_RUM_KEY_IS_ERROR_SESSION;
-extern NSString * const FT_SESSION_ERROR_TIMESTAMP; 
+extern NSString * const FT_RUM_KEY_SAMPLED_FOR_ERROR_SESSION;
+extern NSString * const FT_RUM_SESSION_ON_ERROR_SAMPLE_RATE;
+extern NSString * const FT_RUM_SESSION_SAMPLE_RATE;
+extern NSString * const FT_SESSION_ERROR_TIMESTAMP;
 #pragma mark ---------- view ----------
 #pragma mark --- tag
 extern NSString * const FT_KEY_IS_ACTIVE;

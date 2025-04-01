@@ -64,7 +64,7 @@ static const NSTimeInterval sessionMaxDuration = 4 * 60 * 60; // 4 hours
     if(!sampling){
         self.sessionOnErrorSampling = [FTBaseInfoHandler randomSampling:self.rumDependencies.sessionOnErrorSampleRate];
         if(self.sessionOnErrorSampling == YES){
-            self.context.is_error_session = YES;
+            self.context.sampled_for_error_session = YES;
             [self.rumDependencies.writer switchToCacheWriter];
         }
         FTInnerLogInfo(@"[RUM] The current 'Session' is not sampled.");
@@ -171,12 +171,13 @@ static const NSTimeInterval sessionMaxDuration = 4 * 60 * 60; // 4 hours
                                  FT_KEY_ACTION_NAME:model.action_name,
                                  FT_KEY_ACTION_TYPE:model.action_type
     };
-    NSDictionary *fields = @{FT_DURATION:model.duration,
+    NSMutableDictionary *fields = @{FT_DURATION:model.duration,
                              FT_KEY_ACTION_LONG_TASK_COUNT:@(0),
                              FT_KEY_ACTION_RESOURCE_COUNT:@(0),
                              FT_KEY_ACTION_ERROR_COUNT:@(0),
-    };
+    }.mutableCopy;
     [tags addEntriesFromDictionary:actionTags];
+    [fields addEntriesFromDictionary:self.rumDependencies.sampleDict];
     [self.rumDependencies.writer rumWrite:FT_RUM_SOURCE_ACTION tags:tags fields:fields time:[model.time ft_nanosecondTimeStamp]];
 
 }
@@ -186,8 +187,11 @@ static const NSTimeInterval sessionMaxDuration = 4 * 60 * 60; // 4 hours
     NSMutableDictionary *tags = [NSMutableDictionary dictionaryWithDictionary:context];
     [tags addEntriesFromDictionary:sessionViewTag];
     [tags addEntriesFromDictionary:model.tags];
+    NSMutableDictionary *fields = [NSMutableDictionary new];
+    [fields addEntriesFromDictionary:model.fields];
+    [fields addEntriesFromDictionary:self.rumDependencies.sampleDict];
     NSString *error = model.type == FTRUMDataLongTask?FT_RUM_SOURCE_LONG_TASK :FT_RUM_SOURCE_ERROR;
-    [self.rumDependencies.writer rumWrite:error tags:tags fields:model.fields time:data.tm];
+    [self.rumDependencies.writer rumWrite:error tags:tags fields:fields time:data.tm];
 }
 - (void)writeWebViewJSBData:(FTRUMWebViewData *)data context:(NSDictionary *)context{
     NSDictionary *sessionTag = @{FT_RUM_KEY_SESSION_ID:self.context.session_id,

@@ -59,7 +59,9 @@
     NSArray *newArray = [[FTTrackerEventDBTool sharedManger] getAllDatas];
     XCTAssertTrue(newArray.count>oldArray.count);
     [FTModelHelper resolveModelArray:newArray callBack:^(NSString * _Nonnull source, NSDictionary * _Nonnull tags, NSDictionary * _Nonnull fields, BOOL * _Nonnull stop) {
-        XCTAssertTrue([tags[FT_RUM_KEY_IS_ERROR_SESSION] boolValue] == NO);
+        if ([source isEqualToString:FT_RUM_SOURCE_VIEW]){
+            XCTAssertTrue([fields[FT_RUM_KEY_SAMPLED_FOR_ERROR_SESSION] boolValue] == NO);
+        }
     }];
 }
 /// 测试 session_error_timestamp == error.timestamp
@@ -90,13 +92,13 @@
             }
             hasError = YES;
         }else if ([source isEqualToString:FT_RUM_SOURCE_VIEW]){
+            XCTAssertTrue([fields[FT_RUM_KEY_SAMPLED_FOR_ERROR_SESSION] boolValue] == YES);
             hasView = YES;
         }else if ([source isEqualToString:FT_RUM_SOURCE_ACTION]){
             hasAction = YES;
             XCTAssertTrue([fields[@"test"] isEqualToString:@"unSampling"]);
             errorTimestamp = tags[FT_SESSION_ERROR_TIMESTAMP];
         }
-        XCTAssertTrue([tags[FT_RUM_KEY_IS_ERROR_SESSION] boolValue] == YES);
     }];
     XCTAssertTrue(hasError == YES);
     XCTAssertTrue(hasView == YES);
@@ -121,12 +123,12 @@
         if([source isEqualToString:FT_RUM_SOURCE_ERROR]){
             hasError = YES;
         }else if ([source isEqualToString:FT_RUM_SOURCE_VIEW]){
+            XCTAssertTrue([fields[FT_RUM_KEY_SAMPLED_FOR_ERROR_SESSION] boolValue] == YES);
             hasView = YES;
         }else if ([source isEqualToString:FT_RUM_SOURCE_ACTION]){
             hasAction = YES;
             XCTAssertTrue([fields[@"test"] isEqualToString:@"resource_error"]);
         }
-        XCTAssertTrue([tags[FT_RUM_KEY_IS_ERROR_SESSION] boolValue] == YES);
     }];
     XCTAssertTrue(hasError == YES);
     XCTAssertTrue(hasView == YES);
@@ -150,12 +152,12 @@
         if([source isEqualToString:FT_RUM_SOURCE_ERROR]){
             hasError = YES;
         }else if ([source isEqualToString:FT_RUM_SOURCE_VIEW]){
+            XCTAssertTrue([fields[FT_RUM_KEY_SAMPLED_FOR_ERROR_SESSION] boolValue] == YES);
             hasView = YES;
         }else if ([source isEqualToString:FT_RUM_SOURCE_ACTION]){
             hasAction = YES;
             XCTAssertTrue([fields[@"test"] isEqualToString:@"error"]);
         }
-        XCTAssertTrue([tags[FT_RUM_KEY_IS_ERROR_SESSION] boolValue] == YES);
     }];
     XCTAssertTrue(hasError == YES);
     XCTAssertTrue(hasView == YES);

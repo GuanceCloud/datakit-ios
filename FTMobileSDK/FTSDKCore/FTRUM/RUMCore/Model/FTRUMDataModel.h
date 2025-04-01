@@ -80,7 +80,7 @@ NS_ASSUME_NONNULL_BEGIN
 @property (nonatomic, copy, nullable) NSString *action_id;
 @property (nonatomic, copy, nullable) NSString *action_name;
 @property (nonatomic, assign) long long session_error_timestamp;
-@property (nonatomic, assign) BOOL is_error_session;
+@property (nonatomic, assign) BOOL sampled_for_error_session;
 /// trace、logger 获取 rum 关联数据
 -(NSDictionary *)getGlobalSessionViewTags;
 /// rum 内部获取相关关联数据

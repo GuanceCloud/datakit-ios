@@ -86,6 +86,7 @@
         [fields addEntriesFromDictionary:self.resourceProperty];
     }
     [fields addEntriesFromDictionary:data.fields];
+    [fields addEntriesFromDictionary:self.dependencies.sampleDict];
     if(model.metrics){
         [fields setValue:model.metrics.ttfb forKey:FT_KEY_RESOURCE_TTFB];
         [fields setValue:model.metrics.ssl forKey:FT_KEY_RESOURCE_SSL];

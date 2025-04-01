@@ -114,7 +114,7 @@
     context.view_id = self.view_id;
     context.view_referrer = self.view_referrer;
     context.view_name = self.view_name;
-    context.is_error_session = self.is_error_session;
+    context.sampled_for_error_session = self.sampled_for_error_session;
     context.session_error_timestamp = self.session_error_timestamp;
     return context;
 }
@@ -122,7 +122,6 @@
     NSMutableDictionary *dict = [NSMutableDictionary new];
     [dict setValue:self.session_id forKey:FT_RUM_KEY_SESSION_ID];
     [dict setValue:self.session_type forKey:FT_RUM_KEY_SESSION_TYPE];
-    [dict setValue:@(self.is_error_session) forKey:FT_RUM_KEY_IS_ERROR_SESSION];
     if (self.session_error_timestamp > 0) {
         [dict setValue:@(self.session_error_timestamp) forKey:FT_SESSION_ERROR_TIMESTAMP];
     }

@@ -76,8 +76,12 @@ NSString * const FT_DURATION = @"duration";
 //session tag
 NSString * const FT_RUM_KEY_SESSION_ID = @"session_id";
 NSString * const FT_RUM_KEY_SESSION_TYPE = @"session_type";
-NSString * const FT_RUM_KEY_IS_ERROR_SESSION = @"is_error_session";
+NSString * const FT_RUM_KEY_SAMPLED_FOR_ERROR_SESSION = @"sampled_for_error_session";
 NSString * const FT_SESSION_ERROR_TIMESTAMP = @"session_error_timestamp";
+//session field
+NSString * const FT_RUM_SESSION_ON_ERROR_SAMPLE_RATE = @"session_on_error_sample_rate";
+NSString * const FT_RUM_SESSION_SAMPLE_RATE = @"session_sample_rate";
+
 //view tag
 NSString * const FT_KEY_VIEW_ID = @"view_id";
 NSString * const FT_KEY_IS_ACTIVE = @"is_active";
