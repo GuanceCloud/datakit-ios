@@ -11,7 +11,7 @@
 
 NSString * const FT_DATA_TYPE_RUM = @"RUM";
 NSString * const FT_DATA_TYPE_LOGGING = @"Logging";
-NSString * const FT_DATA_TYPE_RUM_CACHE = @"RUM_CACHE";
+NSString * const FT_DATA_TYPE_RUM_CACHE = @"RUMCache";
 
 NSString * const FT_MEASUREMENT  = @"measurement";
 NSString * const FT_FIELDS  = @"fields";

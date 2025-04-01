@@ -32,8 +32,15 @@ NS_ASSUME_NONNULL_BEGIN
 ///   - tm: 数据产生时间戳(ns)
 - (void)rumWrite:(NSString *)source tags:(NSDictionary *)tags fields:(NSDictionary *)fields time:(long long)time;
 
+/// extension widget 采集的 RUM 数据写入
+/// - Parameters:
+///   - source: 数据来源 view|action|resource|error
+///   - tags: 属性
+///   - fields: 指标
+///   - time: 数据产生时间戳(ns)
 - (void)extensionRumWrite:(NSString *)source tags:(NSDictionary *)tags fields:(NSDictionary *)fields time:(long long)time;
 
+/// 针对 session on error 数据切换成 cache writer，数据写入类型为 RUMCache
 - (void)switchToCacheWriter;
 
 @end
