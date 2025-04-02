@@ -1,4 +1,4 @@
-# 1.5.15-alpha.4
+# 1.5.15-alpha.5
 1. `sessionOnErrorSampleRate` 类型改为 `int`。Error Session 采集逻辑调整，从 error 发生前 1 分钟开始采集。
 ---
 # 1.5.15-alpha.3
