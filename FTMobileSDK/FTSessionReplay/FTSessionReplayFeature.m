@@ -27,8 +27,8 @@
 
 @interface FTSessionReplayFeature()<FTMessageReceiver>
 @property (nonatomic, strong) NSTimer *timer;
-@property (nonatomic, strong) NSDictionary *currentRUMContext;
-@property (nonatomic, assign) BOOL isSampled;
+@property (atomic, assign) BOOL isSampled;
+@property (atomic, strong) NSDictionary *currentRUMContext;
 @property (nonatomic, strong) FTRecorder *windowRecorder;
 @property (nonatomic, assign) int sampleRate;
 @property (nonatomic, strong) FTSessionReplayTouches *touches;
@@ -52,7 +52,7 @@
         _performanceOverride = performancePresetOverride;
         _windowObserver = [[FTWindowObserver alloc]init];
         _touches = [[FTSessionReplayTouches alloc]initWithWindowObserver:_windowObserver];
-        _config = config;
+        _config = [config copy];
         [[FTModuleManager sharedInstance] addMessageReceiver:self];
     }
     return self;
@@ -90,27 +90,30 @@
     if(![key isEqualToString:FTMessageKeyRUMContext]){
         return;
     }
-    if(self.currentRUMContext == nil || ![message[FT_RUM_KEY_SESSION_ID] isEqualToString:self.currentRUMContext[FT_RUM_KEY_SESSION_ID]]){
-        self.isSampled = [FTBaseInfoHandler randomSampling:self.sampleRate];
-        if(self.isSampled){
+    NSDictionary *rumContext = self.currentRUMContext;
+    if(rumContext == nil || ![message[FT_RUM_KEY_SESSION_ID] isEqualToString:rumContext[FT_RUM_KEY_SESSION_ID]]){
+        BOOL isSampled = [FTBaseInfoHandler randomSampling:self.sampleRate];
+        if(isSampled){
             [self start];
         }else{
             [self stop];
         }
-        [[FTModuleManager sharedInstance] postMessage:FTMessageKeySessionHasReplay message:@{FT_SESSION_HAS_REPLAY:@(self.isSampled)}];
-        FTInnerLogDebug(@"[session-replay] session(id:%@) has replay:%@",message[FT_RUM_KEY_SESSION_ID],(self.isSampled?@"true":@"false"));
+        [[FTModuleManager sharedInstance] postMessage:FTMessageKeySessionHasReplay message:@{FT_SESSION_HAS_REPLAY:@(isSampled)}];
+        FTInnerLogDebug(@"[session-replay] session(id:%@) has replay:%@",message[FT_RUM_KEY_SESSION_ID],(isSampled?@"true":@"false"));
+        self.isSampled = isSampled;
     }
     self.currentRUMContext = message;
 }
 - (void)captureNextRecord{
-    NSString *viewID = self.currentRUMContext[FT_KEY_VIEW_ID];
+    NSDictionary *rumContext = self.currentRUMContext;
+    NSString *viewID = rumContext[FT_KEY_VIEW_ID];
     if (!viewID) {
         return;
     }
     FTSRContext *context = [[FTSRContext alloc]init];
-    context.sessionID = self.currentRUMContext[FT_RUM_KEY_SESSION_ID];
-    context.viewID = self.currentRUMContext[FT_KEY_VIEW_ID];
-    context.applicationID = self.currentRUMContext[FT_APP_ID];
+    context.sessionID = rumContext[FT_RUM_KEY_SESSION_ID];
+    context.viewID = viewID;
+    context.applicationID = rumContext[FT_APP_ID];
     context.date = [NSDate date];
     context.imagePrivacy = self.config.imagePrivacy;
     context.touchPrivacy = self.config.touchPrivacy;
