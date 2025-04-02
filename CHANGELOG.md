@@ -1,3 +1,6 @@
+# 1.5.15-alpha.4
+1. `sessionOnErrorSampleRate` 类型改为 `int`。Error Session 采集逻辑调整，从 error 发生前 1 分钟开始采集。
+---
 # 1.5.15-alpha.3
 1. FTRumConfig 新增 `sessionOnErrorSampleRate` 字段。若开启，当未被采样率选中的 Session 发生错误，SDK 将对这些原本不采集的 Session 进行数据采集
 ---
