@@ -928,7 +928,6 @@
 				178649302A1DB58400521187 /* FTLogger.h */,
 				178649312A1DB58400521187 /* FTLogger.m */,
 				174D91A22A2083C300D85AAA /* FTLogger+Private.h */,
-				174D91AA2A20B98300D85AAA /* FTLoggerDataWriteProtocol.h */,
 			);
 			path = Logger;
 			sourceTree = "<group>";
@@ -1019,7 +1018,6 @@
 				17AB76A829D432DE008FBBF5 /* FTRUMViewHandler.m */,
 				17AB76B229D432DE008FBBF5 /* FTRUMResourceHandler.h */,
 				17AB76A929D432DE008FBBF5 /* FTRUMResourceHandler.m */,
-				17AB76AA29D432DE008FBBF5 /* FTRUMDataWriteProtocol.h */,
 				17AB76AD29D432DE008FBBF5 /* Model */,
 				17E32BA92BEE21F600F4685C /* FTRUMDependencies.h */,
 				17E32BAA2BEE21F600F4685C /* FTRUMDependencies.m */,
@@ -1196,6 +1194,8 @@
 		17E4CBAE29CD42E4005C2D99 /* Protocol */ = {
 			isa = PBXGroup;
 			children = (
+				174D91AA2A20B98300D85AAA /* FTLoggerDataWriteProtocol.h */,
+				17AB76AA29D432DE008FBBF5 /* FTRUMDataWriteProtocol.h */,
 				17E4CBAF29CD42E4005C2D99 /* FTRumResourceProtocol.h */,
 				17E4CBB029CD42E4005C2D99 /* FTTracerProtocol.h */,
 				17E4CBB129CD42E4005C2D99 /* FTRumDatasProtocol.h */,
