@@ -24,7 +24,7 @@ NS_ASSUME_NONNULL_BEGIN
 @property (nonatomic, strong, readonly) id<FTRUMDataWriteProtocol> cacheWriter;
 @property (atomic, assign) BOOL currentSessionSample;
 
-- (NSDictionary *)sampleDict;
+- (NSDictionary *)sampleFieldsDict;
 @end
 
 NS_ASSUME_NONNULL_END

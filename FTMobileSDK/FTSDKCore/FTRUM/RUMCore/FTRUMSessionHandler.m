@@ -18,7 +18,7 @@ static const NSTimeInterval sessionMaxDuration = 4 * 60 * 60; // 4 hours
 @property (nonatomic, strong) FTRUMContext *context;
 @property (nonatomic, strong) NSDate *sessionStartTime;
 @property (nonatomic, strong) NSDate *lastInteractionTime;
-@property (nonatomic, strong) NSMutableArray<FTRUMViewHandler*> *viewHandlers;
+@property (nonatomic, strong) NSMutableArray<FTRUMHandler*> *viewHandlers;
 @property (nonatomic, assign) BOOL sampling;
 @property (nonatomic, assign) BOOL sessionOnErrorSampling;
 
@@ -81,7 +81,8 @@ static const NSTimeInterval sessionMaxDuration = 4 * 60 * 60; // 4 hours
             self.sampling = YES;
             long long timestamp = [model.time ft_nanosecondTimeStamp];
             self.context.session_error_timestamp = timestamp;
-            self.viewHandlers.lastObject.context.session_error_timestamp = timestamp;
+            FTRUMViewHandler *lastViewHandler = (FTRUMViewHandler *)self.viewHandlers.lastObject;
+            lastViewHandler.context.session_error_timestamp = timestamp;
         }
     }
     _lastInteractionTime = [NSDate date];
@@ -177,7 +178,7 @@ static const NSTimeInterval sessionMaxDuration = 4 * 60 * 60; // 4 hours
                              FT_KEY_ACTION_ERROR_COUNT:@(0),
     }.mutableCopy;
     [tags addEntriesFromDictionary:actionTags];
-    [fields addEntriesFromDictionary:self.rumDependencies.sampleDict];
+    [fields addEntriesFromDictionary:self.rumDependencies.sampleFieldsDict];
     [self.rumDependencies.writer rumWrite:FT_RUM_SOURCE_ACTION tags:tags fields:fields time:[model.time ft_nanosecondTimeStamp]];
 
 }
@@ -189,7 +190,7 @@ static const NSTimeInterval sessionMaxDuration = 4 * 60 * 60; // 4 hours
     [tags addEntriesFromDictionary:model.tags];
     NSMutableDictionary *fields = [NSMutableDictionary new];
     [fields addEntriesFromDictionary:model.fields];
-    [fields addEntriesFromDictionary:self.rumDependencies.sampleDict];
+    [fields addEntriesFromDictionary:self.rumDependencies.sampleFieldsDict];
     NSString *error = model.type == FTRUMDataLongTask?FT_RUM_SOURCE_LONG_TASK :FT_RUM_SOURCE_ERROR;
     [self.rumDependencies.writer rumWrite:error tags:tags fields:fields time:data.tm];
 }

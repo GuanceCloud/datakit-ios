@@ -79,7 +79,7 @@
     [tags addEntriesFromDictionary:model.tags];
     NSMutableDictionary *fields = [NSMutableDictionary new];
     [fields addEntriesFromDictionary:model.fields];
-    [fields addEntriesFromDictionary:self.dependencies.sampleDict];
+    [fields addEntriesFromDictionary:self.dependencies.sampleFieldsDict];
     [self.dependencies.writer rumWrite:FT_RUM_SOURCE_ERROR tags:tags fields:fields time:model.tm];
 }
 - (void)writeResourceData:(FTRUMDataModel *)data context:(NSDictionary *)context{
@@ -89,7 +89,7 @@
         [fields addEntriesFromDictionary:self.resourceProperty];
     }
     [fields addEntriesFromDictionary:data.fields];
-    [fields addEntriesFromDictionary:self.dependencies.sampleDict];
+    [fields addEntriesFromDictionary:self.dependencies.sampleFieldsDict];
     if(model.metrics){
         [fields setValue:model.metrics.ttfb forKey:FT_KEY_RESOURCE_TTFB];
         [fields setValue:model.metrics.ssl forKey:FT_KEY_RESOURCE_SSL];
