@@ -314,5 +314,8 @@ static dispatch_once_t onceToken;
     onceToken = 0;
     sharedInstance = nil;
 }
-
+-(void)dealloc{
+    [self cancelUploadWork];
+    [[FTAppLifeCycle sharedInstance] removeAppLifecycleDelegate:self];
+}
 @end

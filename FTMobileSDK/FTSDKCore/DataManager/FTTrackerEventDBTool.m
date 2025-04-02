@@ -318,4 +318,7 @@ static long pageSize = 0;
     onceToken = 0;
     dbTool = nil;
 }
+-(void)dealloc{
+    [self close];
+}
 @end
