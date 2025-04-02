@@ -77,7 +77,10 @@
     NSMutableDictionary *tags = [NSMutableDictionary dictionaryWithDictionary:context];
     [tags addEntriesFromDictionary:sessionTag];
     [tags addEntriesFromDictionary:model.tags];
-    [self.dependencies.writer rumWrite:FT_RUM_SOURCE_ERROR tags:tags fields:model.fields time:model.tm];
+    NSMutableDictionary *fields = [NSMutableDictionary new];
+    [fields addEntriesFromDictionary:model.fields];
+    [fields addEntriesFromDictionary:self.dependencies.sampleDict];
+    [self.dependencies.writer rumWrite:FT_RUM_SOURCE_ERROR tags:tags fields:fields time:model.tm];
 }
 - (void)writeResourceData:(FTRUMDataModel *)data context:(NSDictionary *)context{
     FTRUMResourceDataModel *model = (FTRUMResourceDataModel *)data;
