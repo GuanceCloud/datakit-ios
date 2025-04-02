@@ -76,6 +76,14 @@ NSString * const FTImagePrivacyLevelStringMap[] = {
     _fineGrainedMaskingSet = YES;
     _imagePrivacy = imagePrivacy;
 }
+- (id)copyWithZone:(nullable NSZone *)zone {
+    FTSessionReplayConfig *config = [[[self class] allocWithZone:zone] init];
+    config.sampleRate = self.sampleRate;
+    config.touchPrivacy = self.touchPrivacy;
+    config.imagePrivacy = self.imagePrivacy;
+    config.textAndInputPrivacy = self.textAndInputPrivacy;
+    return config;
+}
 -(NSString *)debugDescription{
     return [NSString stringWithFormat:@"====== Config ======\n sampleRate:%d\n textAndInputPrivacy:%@\n touchPrivacy:%@\n ================== ",self.sampleRate,FTTextAndInputPrivacyLevelStringMap[self.textAndInputPrivacy],FTTouchPrivacyLevelStringMap[self.touchPrivacy]];
 }
