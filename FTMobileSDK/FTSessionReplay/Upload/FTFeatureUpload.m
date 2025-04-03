@@ -122,9 +122,7 @@
     __weak typeof(self) weakSelf = self;
     dispatch_block_t uploadWork = ^{
         __strong __typeof(weakSelf) strongSelf = weakSelf;
-        if (!strongSelf) {
-            return;
-        }
+        if (!strongSelf) return;
         if(files.count == 0){
             [strongSelf scheduleNextCycle];
             return;
@@ -194,13 +192,15 @@
     [self.uploadConditions cancel];
     __weak typeof(self) weakSelf = self;
     dispatch_sync(self.queue, ^{
-        if(weakSelf.uploadWork){
-            dispatch_block_cancel(weakSelf.uploadWork);
-            weakSelf.uploadWork = nil;
+        __strong __typeof(weakSelf) strongSelf = weakSelf;
+        if (!strongSelf) return;
+        if(strongSelf.uploadWork){
+            dispatch_block_cancel(strongSelf.uploadWork);
+            strongSelf.uploadWork = nil;
         }
-        if(weakSelf.readWork){
-            dispatch_block_cancel(weakSelf.readWork);
-            weakSelf.readWork = nil;
+        if(strongSelf.readWork){
+            dispatch_block_cancel(strongSelf.readWork);
+            strongSelf.readWork = nil;
         }
     });
 }

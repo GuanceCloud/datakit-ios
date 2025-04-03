@@ -91,6 +91,7 @@ static NSDate *g_startDate;
                                                                             LONG_MIN,
                                                                             ^(CFRunLoopObserverRef observer, CFRunLoopActivity activity) {
         __strong __typeof(weakSelf) strongSelf = weakSelf;
+        if (!strongSelf) return;
         strongSelf->_activity = activity;
         g_startDate = [NSDate date];
         dispatch_semaphore_signal(strongSelf->_semaphore);

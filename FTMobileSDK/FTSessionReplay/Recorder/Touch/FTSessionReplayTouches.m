@@ -72,7 +72,9 @@
                                  FTSWArguments(UIEvent *event),
                                  FTSWReplacement({
             FTSWCallOriginal(event);
-            [weakSelf handleEvent:event];
+            __strong __typeof(weakSelf) strongSelf = weakSelf;
+            if (!strongSelf) return;
+            [strongSelf handleEvent:event];
         }),FTSwizzlerModeOncePerClassAndSuperclasses,
                                  "ft_addScreenshot"
                                  );

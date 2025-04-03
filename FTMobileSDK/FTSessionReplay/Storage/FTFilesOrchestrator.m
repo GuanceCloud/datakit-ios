@@ -132,13 +132,12 @@
         return [readableArray subarrayWithRange:NSMakeRange(0, length)];
     }
     __block NSInteger index = -1;
-    __weak typeof(self) weakSelf = self;
     if(readableArray.count == 0){
         return nil;
     }
     [readableArray enumerateObjectsUsingBlock:^(FTFile * obj, NSUInteger idx, BOOL * _Nonnull stop) {
         NSTimeInterval fileAge = [[NSDate date] timeIntervalSinceDate:obj.fileCreationDate];
-        if(fileAge >= weakSelf.performance.minFileAgeForRead){
+        if(fileAge >= self.performance.minFileAgeForRead){
             index = idx;
         }else{
             *stop = YES;

@@ -44,15 +44,17 @@ NSString * const FTBatteryStateStringMap[] = {
     self.batteryState = self.device.batteryState;
     self.batteryLevel = self.device.batteryLevel;
     NotificationBlock block = ^(NSNotification *notification){
+        __strong __typeof(weakSelf) strongSelf = weakSelf;
+        if (!strongSelf) return;
         if([notification.object isKindOfClass:NSProcessInfo.class]){
             NSProcessInfo *info = notification.object;
             [[NSOperationQueue mainQueue] addOperationWithBlock:^{
-                weakSelf.lowPowerModeEnabled = info.lowPowerModeEnabled;
+                strongSelf.lowPowerModeEnabled = info.lowPowerModeEnabled;
             }];
         }else if ([notification.object isKindOfClass:UIDevice.class]){
             UIDevice *device = notification.object;
-            weakSelf.batteryState = device.batteryState;
-            weakSelf.batteryLevel = device.batteryLevel;
+            strongSelf.batteryState = device.batteryState;
+            strongSelf.batteryLevel = device.batteryLevel;
         }
     };
     NSMutableArray *array = [NSMutableArray new];
@@ -90,5 +92,8 @@ NSString * const FTBatteryStateStringMap[] = {
     for (id observer in self.observers) {
         [[NSNotificationCenter defaultCenter] removeObserver:observer];
     }
+}
+-(void)dealloc{
+    [self cancel];
 }
 @end

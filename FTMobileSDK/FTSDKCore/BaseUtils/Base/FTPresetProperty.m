@@ -211,12 +211,14 @@ static dispatch_once_t onceToken;
     if(context && context.count>0){
         __weak typeof(self) weakSelf = self;
         [self.globalRUMContextHelper concurrentWrite:^(NSMutableDictionary * _Nonnull value) {
+            __strong __typeof(weakSelf) strongSelf = weakSelf;
+            if(!strongSelf) return;
             [value addEntriesFromDictionary:context];
             NSMutableArray *allKeys = [NSMutableArray arrayWithArray:value.allKeys];
-            if(weakSelf.rumGlobalContext.count>0){
-                [allKeys addObjectsFromArray:weakSelf.rumGlobalContext.allKeys];
+            if(strongSelf.rumGlobalContext.count>0){
+                [allKeys addObjectsFromArray:strongSelf.rumGlobalContext.allKeys];
             }
-            weakSelf.rum_custom_keys = [FTJSONUtil convertToJsonDataWithObject:allKeys];
+            strongSelf.rum_custom_keys = [FTJSONUtil convertToJsonDataWithObject:allKeys];
         }];
     }
 }

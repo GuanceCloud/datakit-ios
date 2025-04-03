@@ -73,7 +73,9 @@
         }
         __weak typeof(self) weakSelf = self;
         self.timer = [NSTimer timerWithTimeInterval:0.1 repeats:YES block:^(NSTimer * _Nonnull timer) {
-            [weakSelf captureNextRecord];
+            __strong __typeof(weakSelf) strongSelf = weakSelf;
+            if (!strongSelf) return;
+            [strongSelf captureNextRecord];
         }];
         [[NSRunLoop mainRunLoop] addTimer:self.timer forMode:NSRunLoopCommonModes];
     }];

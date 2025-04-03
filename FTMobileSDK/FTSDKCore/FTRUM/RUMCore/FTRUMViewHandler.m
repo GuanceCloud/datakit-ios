@@ -148,10 +148,12 @@
     __weak typeof(self) weakSelf = self;
     FTRUMActionHandler *actionHandler = [[FTRUMActionHandler alloc]initWithModel:(FTRUMActionModel *)model context:self.context dependencies:self.rumDependencies];
     actionHandler.handler = ^{
-        weakSelf.viewActionCount +=1;
-        weakSelf.needUpdateView = YES;
-        weakSelf.context.action_id = nil;
-        weakSelf.context.action_name = nil;
+        __strong __typeof(weakSelf) strongSelf = weakSelf;
+        if (!strongSelf) return;
+        strongSelf.viewActionCount +=1;
+        strongSelf.needUpdateView = YES;
+        strongSelf.context.action_id = nil;
+        strongSelf.context.action_name = nil;
     };
     self.actionHandler = actionHandler;
 }
@@ -160,8 +162,10 @@
     FTRUMActionHandler *actionHandler = [[FTRUMActionHandler alloc]initWithModel:(FTRUMActionModel *)model context:self.context dependencies:self.rumDependencies];
     model.type = FTRUMDataStopAction;
     actionHandler.handler = ^{
-        weakSelf.viewActionCount +=1;
-        weakSelf.needUpdateView = YES;
+        __strong __typeof(weakSelf) strongSelf = weakSelf;
+        if (!strongSelf) return;
+        strongSelf.viewActionCount +=1;
+        strongSelf.needUpdateView = YES;
     };
     [actionHandler.assistant process:model context:context];
 }
@@ -169,13 +173,17 @@
     __weak typeof(self) weakSelf = self;
     FTRUMResourceHandler *resourceHandler = [[FTRUMResourceHandler alloc] initWithModel:model context:self.context dependencies:self.rumDependencies];
     resourceHandler.resourceHandler = ^(BOOL add){
+        __strong __typeof(weakSelf) strongSelf = weakSelf;
+        if (!strongSelf) return;
         if(add){
-            weakSelf.viewResourceCount+=1;
-            weakSelf.needUpdateView = YES;
+            strongSelf.viewResourceCount+=1;
+            strongSelf.needUpdateView = YES;
         }
     };
     resourceHandler.errorHandler = ^{
-        weakSelf.viewErrorCount+=1;
+        __strong __typeof(weakSelf) strongSelf = weakSelf;
+        if (!strongSelf) return;
+        strongSelf.viewErrorCount+=1;
     };
     self.resourceHandlers[model.identifier] =resourceHandler;
 }

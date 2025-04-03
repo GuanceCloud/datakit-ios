@@ -45,7 +45,9 @@
 - (void)process:(FTViewTreeSnapshot *)viewTreeSnapshot touchSnapshot:(FTTouchSnapshot *)touchSnapshot{
     __weak typeof(self) weakSelf = self;
     dispatch_async(self.queue, ^{
-        [weakSelf processSync:viewTreeSnapshot touchSnapshot:touchSnapshot];
+        __strong typeof(self) strongSelf = weakSelf;
+        if (!strongSelf) return;
+        [strongSelf processSync:viewTreeSnapshot touchSnapshot:touchSnapshot];
     });
 }
 - (void)processSync:(FTViewTreeSnapshot *)viewTreeSnapshot touchSnapshot:(FTTouchSnapshot *)touchSnapshot{

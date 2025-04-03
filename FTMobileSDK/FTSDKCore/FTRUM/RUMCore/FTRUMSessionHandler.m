@@ -119,7 +119,9 @@ static const NSTimeInterval sessionMaxDuration = 4 * 60 * 60; // 4 hours
     //当前 view 处理了 error 数据回调,若没有 view 能处理则由 session 处理
     __weak __typeof(self) weakSelf = self;
     viewHandler.errorHandled = ^{
-        weakSelf.needWriteErrorData = NO;
+        __strong __typeof(weakSelf) strongSelf = weakSelf;
+        if (!strongSelf) return;
+        strongSelf.needWriteErrorData = NO;
     };
     [self.viewHandlers addObject:viewHandler];
 }
@@ -129,7 +131,9 @@ static const NSTimeInterval sessionMaxDuration = 4 * 60 * 60; // 4 hours
     //当前 view 处理了 error 数据回调,若没有 view 能处理则由 session 处理
     __weak __typeof(self) weakSelf = self;
     viewHandler.errorHandled = ^{
-        weakSelf.needWriteErrorData = NO;
+        __strong __typeof(weakSelf) strongSelf = weakSelf;
+        if (!strongSelf) return;
+        strongSelf.needWriteErrorData = NO;
     };
     [self.viewHandlers addObject:viewHandler];
     self.rumDependencies.fatalErrorContext.lastSessionContext = [self getCurrentSessionInfo];

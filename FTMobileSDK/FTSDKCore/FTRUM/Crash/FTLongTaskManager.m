@@ -154,18 +154,20 @@ void *FTLongTaskManagerQueueTag = &FTLongTaskManagerQueueTag;
     __weak __typeof(self) weakSelf = self;
     dispatch_block_t block = ^{
         @try {
+            __strong __typeof(weakSelf) strongSelf = weakSelf;
+            if (!strongSelf)  return;
             NSError *error = nil;
             NSFileManager *fileManager = [NSFileManager defaultManager];
-            BOOL fileExists = [[NSFileManager defaultManager] fileExistsAtPath:weakSelf.dataStorePath];
+            BOOL fileExists = [[NSFileManager defaultManager] fileExistsAtPath:strongSelf.dataStorePath];
             if(fileExists){
-                [fileManager removeItemAtPath:weakSelf.dataStorePath error:&error];
+                [fileManager removeItemAtPath:strongSelf.dataStorePath error:&error];
                 if(error){
-                    FTInnerLogError(@"[LongTask] delete file：%@ fail. reason: %@",weakSelf.dataStorePath,error.description);
+                    FTInnerLogError(@"[LongTask] delete file：%@ fail. reason: %@",strongSelf.dataStorePath,error.description);
                 }
             }else{
-                FTInnerLogDebug(@"[LongTask] delete file: %@ is not exist",weakSelf.dataStorePath);
+                FTInnerLogDebug(@"[LongTask] delete file: %@ is not exist",strongSelf.dataStorePath);
             }
-            weakSelf.fileHandle = nil;
+            strongSelf.fileHandle = nil;
         } @catch (NSException *exception) {
             FTInnerLogError(@"[LongTask] exception %@",exception);
         }
@@ -180,14 +182,16 @@ void *FTLongTaskManagerQueueTag = &FTLongTaskManagerQueueTag;
     __weak __typeof(self) weakSelf = self;
     dispatch_async(_queue, ^{
         @try {
+            __strong __typeof(weakSelf) strongSelf = weakSelf;
+            if(!strongSelf) return;
             NSError *error;
             if (@available(macOS 10.15, iOS 13.0,tvOS 13.0, *)) {
-                [weakSelf.fileHandle writeData:data error:&error];
+                [strongSelf.fileHandle writeData:data error:&error];
                 if(error){
                     FTInnerLogError(@"[LongTask] writeData error %@",error.description);
                 }
             } else {
-                [weakSelf.fileHandle writeData:data];
+                [strongSelf.fileHandle writeData:data];
             }
         } @catch (NSException *exception) {
             FTInnerLogError(@"[LongTask] exception %@",exception);
@@ -198,9 +202,11 @@ void *FTLongTaskManagerQueueTag = &FTLongTaskManagerQueueTag;
 - (void)reportFatalWatchDogIfFound{
     __weak __typeof(self) weakSelf = self;
     dispatch_async(_queue, ^{
+        __strong __typeof(weakSelf) strongSelf = weakSelf;
+        if (!strongSelf) return;
         @try {
             NSError *error = nil;
-            NSString *content = [NSString stringWithContentsOfFile:weakSelf.dataStorePath encoding:NSUTF8StringEncoding error:&error];
+            NSString *content = [NSString stringWithContentsOfFile:strongSelf.dataStorePath encoding:NSUTF8StringEncoding error:&error];
             if(error){
                 goto ended;
             }
@@ -235,7 +241,7 @@ void *FTLongTaskManagerQueueTag = &FTLongTaskManagerQueueTag;
                 NSDictionary *fields = @{FT_DURATION:duration,
                                          FT_KEY_LONG_TASK_STACK:backtrace,
                 };
-                [weakSelf.dependencies.writer rumWrite:FT_RUM_SOURCE_LONG_TASK tags:tags fields:fields time:startTime];
+                [strongSelf.dependencies.writer rumWrite:FT_RUM_SOURCE_LONG_TASK tags:tags fields:fields time:startTime];
                 //判断是否是 ANR,是则添加 ANR 数据
                 if(duration.longLongValue>5000000000){
                     NSMutableDictionary *anrTags = @{
@@ -248,7 +254,7 @@ void *FTLongTaskManagerQueueTag = &FTLongTaskManagerQueueTag;
                     NSMutableDictionary *field = @{ FT_KEY_ERROR_MESSAGE:@"ios_anr",
                                                     FT_KEY_ERROR_STACK:backtrace,
                     }.mutableCopy;
-                    [weakSelf.dependencies.writer rumWrite:FT_RUM_SOURCE_ERROR tags:anrTags fields:field time:startTime];
+                    [strongSelf.dependencies.writer rumWrite:FT_RUM_SOURCE_ERROR tags:anrTags fields:field time:startTime];
                 }
                 //更新View
                 NSDictionary *lastViews  = dict[@"view"];
@@ -259,7 +265,7 @@ void *FTLongTaskManagerQueueTag = &FTLongTaskManagerQueueTag;
                     lastViewsFields[FT_KEY_VIEW_UPDATE_TIME] = @([lastViewsFields[FT_KEY_VIEW_UPDATE_TIME] intValue]+1);
                     lastViewsFields[FT_KEY_IS_ACTIVE] = @(NO);
                     NSNumber *time = lastViews[@"time"];
-                    [weakSelf.dependencies.writer rumWrite:FT_RUM_SOURCE_VIEW tags:lastViews[@"tags"] fields:lastViewsFields time:[time longLongValue]];
+                    [strongSelf.dependencies.writer rumWrite:FT_RUM_SOURCE_VIEW tags:lastViews[@"tags"] fields:lastViewsFields time:[time longLongValue]];
                 }
                 goto ended;
             }
@@ -268,7 +274,7 @@ void *FTLongTaskManagerQueueTag = &FTLongTaskManagerQueueTag;
             goto ended;
         }
     ended:
-        [weakSelf deleteFile];
+        [strongSelf deleteFile];
         return;
     });
 }
