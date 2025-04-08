@@ -12,9 +12,9 @@ NS_ASSUME_NONNULL_BEGIN
 typedef FTSessionReplayPrivacyOverrides PrivacyOverrides;
 
 @interface FTSessionReplayPrivacyOverrides ()
-@property (nonatomic, strong) NSNumber *nImagePrivacy;
-@property (nonatomic, strong) NSNumber *nTouchPrivacy;
-@property (nonatomic, strong) NSNumber *nTextAndInputPrivacy;
+@property (nonatomic, strong, nullable) NSNumber *nImagePrivacy;
+@property (nonatomic, strong, nullable) NSNumber *nTouchPrivacy;
+@property (nonatomic, strong, nullable) NSNumber *nTextAndInputPrivacy;
 + (PrivacyOverrides *)mergeChild:(PrivacyOverrides *)child parent:(PrivacyOverrides *)parent;
 @end
 
