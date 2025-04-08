@@ -40,7 +40,7 @@ void *FTRUMQueueIdentityKey = &FTRUMQueueIdentityKey;
         _rumDependencies = dependencies;
         _appState = FTAppStateStartUp;
         _preViewDuration = [[FTReadWriteHelper alloc]initWithValue:[NSMutableDictionary new]] ;
-        _rumQueue = dispatch_queue_create_with_target("com.guance.rum", DISPATCH_QUEUE_SERIAL, dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_HIGH, 0));
+        _rumQueue = dispatch_queue_create("com.guance.rum", DISPATCH_QUEUE_SERIAL);
         dispatch_queue_set_specific(_rumQueue, FTRUMQueueIdentityKey, &FTRUMQueueIdentityKey, NULL);
         [self notifyRumInit];
         self.assistant = self;

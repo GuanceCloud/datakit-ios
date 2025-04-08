@@ -61,8 +61,8 @@ static dispatch_once_t onceToken;
                   syncSleepTime:(int)syncSleepTime{
     self = [super init];
     if (self) {
-        NSString *serialLabel = @"com.guance.network";
-        _networkQueue = dispatch_queue_create_with_target([serialLabel UTF8String], DISPATCH_QUEUE_SERIAL, dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_LOW, 0));
+        dispatch_queue_attr_t attributes = dispatch_queue_attr_make_with_qos_class(DISPATCH_QUEUE_SERIAL, QOS_CLASS_UTILITY, 0);
+        _networkQueue = dispatch_queue_create("com.guance.network", attributes);
         _autoSync = autoSync;
         _uploadPageSize = syncPageSize;
         _syncSleepTime = syncSleepTime;
