@@ -1,3 +1,6 @@
+# 1.6.1-alpha.3
+1. 修复多线程访问 `currentRUMContext` 造成的崩溃
+---
 # 1.6.1-alpha.2
 1. `privacy` 与 细粒度隐私添加优先级处理，细粒度的隐私级别设置优先级高于 `privacy`
 ---
