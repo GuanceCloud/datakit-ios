@@ -1,3 +1,6 @@
+# 1.5.15-alpha.6
+1. 解决与 `AFNetworking` URLSession resume 方法 swizzle 冲突问题
+---
 # 1.5.15-alpha.5
 1. `sessionOnErrorSampleRate` 类型改为 `int`。Error Session 采集逻辑调整，从 error 发生前 1 分钟开始采集。
 ---
