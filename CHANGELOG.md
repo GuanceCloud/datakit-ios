@@ -1,3 +1,6 @@
+# 1.5.15
+1. 修复 Swift Package Manager 编译报错问题
+---
 # 1.5.14
 1. 新增 RUM `Resource` 数据字段 `resource_first_byte_time`、`resource_dns_time`、`resource_download_time`、`resource_connect_time`、`resource_ssl_time`、`resource_redirect_time`，支持在观测云上的优化展示和 APM 火焰图的时间对齐
 2. 默认开启 `FTMobileConfig.enableDataIntegerCompatible` 
