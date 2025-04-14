@@ -282,6 +282,11 @@
         _env = env;
     }
 }
+-(void)setService:(NSString *)service{
+    if(service!=nil && service.length>0){
+        _service = service;
+    }
+}
 -(void)setSyncSleepTime:(int)syncSleepTime{
     _syncSleepTime = MAX(0, MIN(syncSleepTime, 5000));
 }
