@@ -1,3 +1,6 @@
+# 1.5.15
+1. 修复 Swift Package Manager 编译报错问题
+---
 # 1.5.15-alpha.6
 1. 解决与 `AFNetworking` URLSession resume 方法 swizzle 冲突问题
 ---
