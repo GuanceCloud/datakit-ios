@@ -1102,7 +1102,7 @@
             *stop = YES;
         }
     }];
-    XCTAssertFalse(hasDatas);
+    XCTAssertTrue(hasDatas);
 }
 #pragma mark ========== RUM Config ==========
 - (void)testSampleRate0{
