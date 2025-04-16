@@ -118,7 +118,7 @@ static dispatch_once_t onceToken;
                 _baseCommonPropertyTags =@{
                     FT_APPLICATION_UUID:[self getApplicationUUID],
                     FT_COMMON_PROPERTY_DEVICE_UUID:self.mobileDevice.deviceUUID,
-                    FT_KEY_SERVICE:self.service,
+                    FT_KEY_SERVICE:self.service ? : @"",
                 };
             }
         }

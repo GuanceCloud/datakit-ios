@@ -138,5 +138,11 @@
     [dict setValue:self.action_name forKey:FT_KEY_ACTION_NAME];
     return dict;
 }
+-(NSDictionary *)getGlobalSessionTags{
+    return @{
+        FT_RUM_KEY_SESSION_ID:self.session_id?:@"",
+        FT_RUM_KEY_SESSION_TYPE:self.session_type?:@""
+    };
+}
 @end
 

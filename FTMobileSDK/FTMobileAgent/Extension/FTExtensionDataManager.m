@@ -103,6 +103,9 @@ NSString * const FT_LOGGER_CONFIG = @"LOGGER_CONFIG";
     }
 }
 -(void)writeConfig:(NSDictionary *)config forKey:(NSString *)key{
+    if (config == nil) {
+        return;
+    }
     dispatch_block_t block = ^() {
         [self.groupIdentifierArray enumerateObjectsUsingBlock:^(NSString  *obj, NSUInteger idx, BOOL * _Nonnull stop) {
             NSString *path = [self filePathForConfigWithApplicationGroupIdentifier:obj];
@@ -230,22 +233,16 @@ NSString * const FT_LOGGER_CONFIG = @"LOGGER_CONFIG";
 }
 - (BOOL)writeRumEventType:(NSString *)eventType tags:(NSDictionary *)tags fields:(NSDictionary *)fields tm:(long long)tm groupIdentifier:(NSString *)groupIdentifier {
     @try {
-        if (![eventType isKindOfClass:NSString.class] || !eventType.length) {
+        if (eventType == nil) {
             return NO;
         }
-        if (![groupIdentifier isKindOfClass:NSString.class] || !groupIdentifier.length) {
-            return NO;
-        }
-        if (fields && ![fields isKindOfClass:NSDictionary.class]) {
-            return NO;
-        }
-        if (tags && ![tags isKindOfClass:NSDictionary.class]) {
+        if (groupIdentifier == nil || groupIdentifier.length == 0) {
             return NO;
         }
         NSDictionary *event = @{@"dataType":FT_DATA_TYPE_RUM,
                                 @"eventType": eventType,
-                                @"fields": fields?fields:@{},
-                                @"tags": tags?tags:@{},
+                                @"fields": fields ? : @{},
+                                @"tags": tags ? : @{},
                                 @"tm":[NSNumber numberWithLongLong:tm]};
         return  [self writeEvent:event groupIdentifier:groupIdentifier];
     } @catch (NSException *exception) {
@@ -254,23 +251,17 @@ NSString * const FT_LOGGER_CONFIG = @"LOGGER_CONFIG";
 }
 - (BOOL)writeLoggerEvent:(NSString *)status content:(NSString *)content tags:(NSDictionary *)tags fields:(NSDictionary *)fields tm:(long long)tm groupIdentifier:(NSString *)groupIdentifier{
     @try {
-        if (![content isKindOfClass:NSString.class] || !content.length) {
+        if (content == nil) {
             return NO;
         }
-        if (![groupIdentifier isKindOfClass:NSString.class] || !groupIdentifier.length) {
-            return NO;
-        }
-        if (fields && ![fields isKindOfClass:NSDictionary.class]) {
-            return NO;
-        }
-        if (tags && ![tags isKindOfClass:NSDictionary.class]) {
+        if (groupIdentifier == nil || groupIdentifier.length == 0) {
             return NO;
         }
         NSDictionary *event = @{@"dataType":FT_DATA_TYPE_LOGGING,
-                                @"status":status,
+                                @"status":status?:@"",
                                 @"content":content,
-                                @"fields": fields?fields:@{},
-                                @"tags": tags?tags:@{},
+                                @"fields": fields ? : @{},
+                                @"tags": tags ? : @{},
                                 @"tm":[NSNumber numberWithLongLong:tm]};
         return [self writeEvent:event groupIdentifier:groupIdentifier];
     } @catch (NSException *exception) {
@@ -278,6 +269,9 @@ NSString * const FT_LOGGER_CONFIG = @"LOGGER_CONFIG";
     }
 }
 - (BOOL)writeEvent:(NSDictionary *)event groupIdentifier:(NSString *)groupIdentifier {
+    if (event == nil) {
+        return NO;
+    }
     __block BOOL result = NO;
     dispatch_block_t block = ^{
         NSString *path = [self.filePaths objectForKey:groupIdentifier];

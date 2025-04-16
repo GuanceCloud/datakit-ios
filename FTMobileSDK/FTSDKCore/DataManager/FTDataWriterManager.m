@@ -92,7 +92,7 @@
             [tagDict addEntriesFromDictionary:tags];
         }
         [tagDict setValue:status forKey:FT_KEY_STATUS];
-        NSMutableDictionary *filedDict = @{FT_KEY_MESSAGE:content,
+        NSMutableDictionary *filedDict = @{FT_KEY_MESSAGE:content?:@"",
         }.mutableCopy;
         if (field) {
             [filedDict addEntriesFromDictionary:field];

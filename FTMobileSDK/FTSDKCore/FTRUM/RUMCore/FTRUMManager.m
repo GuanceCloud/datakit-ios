@@ -398,7 +398,7 @@ void *FTRUMQueueIdentityKey = &FTRUMQueueIdentityKey;
     [self addLongTaskWithStack:stack duration:duration startTime:time property:nil];
 }
 - (void)addLongTaskWithStack:(NSString *)stack duration:(NSNumber *)duration startTime:(long long)time property:(nullable NSDictionary *)property{
-    if (!stack || stack.length == 0 || (duration == nil)) {
+    if (!stack || (duration == nil)) {
         FTInnerLogError(@"[RUM] Failed to add longtask due to missing required fields. Please ensure 'stack' and 'duration' are provided.");
         return;
     }

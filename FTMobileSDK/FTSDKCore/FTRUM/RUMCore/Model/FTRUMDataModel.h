@@ -85,5 +85,6 @@ NS_ASSUME_NONNULL_BEGIN
 -(NSDictionary *)getGlobalSessionViewTags;
 /// rum 内部获取相关关联数据
 -(NSDictionary *)getGlobalSessionViewActionTags;
+-(NSDictionary *)getGlobalSessionTags;
 @end
 NS_ASSUME_NONNULL_END

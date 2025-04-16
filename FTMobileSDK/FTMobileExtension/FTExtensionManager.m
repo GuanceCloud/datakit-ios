@@ -119,15 +119,16 @@ static FTExtensionManager *sharedInstance = nil;
     @try {
         NSString *newContent = [content ft_subStringWithCharacterLength:FT_LOGGING_CONTENT_SIZE];
         NSString *bundleIdentifier =  [[[NSBundle mainBundle] infoDictionary] objectForKey:@"CFBundleIdentifier"];
-        
-        NSMutableDictionary *tagDict = @{
-            @"extension_identifier":bundleIdentifier,
-        }.mutableCopy;
+        if (bundleIdentifier == nil) {
+            return;
+        }
+        NSMutableDictionary *tagDict = [NSMutableDictionary new];
+        [tags setValue:bundleIdentifier forKey:@"extension_identifier"];
         [tagDict addEntriesFromDictionary:tags];
         FTInnerLogDebug(@"%@\n",@{@"type":FT_LOGGER_SOURCE,
-                             @"tags":tagDict,
-                             @"content":newContent
-                           });
+                                  @"tags":tagDict,
+                                  @"content":newContent?:@"",
+                                });
         [[FTExtensionDataManager sharedInstance] writeLoggerEvent:status content:newContent tags:tagDict fields:nil tm:time groupIdentifier:self.extensionConfig.groupIdentifier];
     } @catch (NSException *exception) {
         FTInnerLogError(@"exception %@",exception);
@@ -135,15 +136,12 @@ static FTExtensionManager *sharedInstance = nil;
 }
 - (void)rumWrite:(NSString *)type tags:(NSDictionary *)tags fields:(NSDictionary *)fields time:(long long)time{
     NSString *bundleIdentifier =  [[[NSBundle mainBundle] infoDictionary] objectForKey:@"CFBundleIdentifier"];
-    NSMutableDictionary *newTags = @{
-        @"extension_identifier":bundleIdentifier,
-    }.mutableCopy;
-    if(tags){
-        [newTags addEntriesFromDictionary:tags];
-    }
-    FTInnerLogDebug(@"%@\n",@{@"type":type,
-                              @"tags":newTags,
+    NSMutableDictionary *tagDict = [NSMutableDictionary new];
+    [tagDict setValue:bundleIdentifier forKey:@"extension_identifier"];
+    [tagDict addEntriesFromDictionary:tags];
+    FTInnerLogDebug(@"%@\n",@{@"type":type?:@"",
+                              @"tags":tagDict,
                               @"fields":fields});
-    [[FTExtensionDataManager sharedInstance] writeRumEventType:type tags:newTags fields:fields tm:time groupIdentifier:self.extensionConfig.groupIdentifier];
+    [[FTExtensionDataManager sharedInstance] writeRumEventType:type tags:tagDict fields:fields tm:time groupIdentifier:self.extensionConfig.groupIdentifier];
 }
 @end

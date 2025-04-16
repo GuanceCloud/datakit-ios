@@ -247,7 +247,7 @@
     }
     long long time = [self.viewStartTime ft_nanosecondTimeStamp];
     [self.rumDependencies.writer rumWrite:FT_RUM_SOURCE_VIEW tags:tags fields:field time:time];
-    self.rumDependencies.fatalErrorContext.lastViewContext = @{@"tags":tags,
+    self.rumDependencies.fatalErrorContext.lastViewContext = @{@"tags":tags ? : @{},
                                                                @"fields":field,
                                                                @"time":[NSNumber numberWithLongLong:time]
     };

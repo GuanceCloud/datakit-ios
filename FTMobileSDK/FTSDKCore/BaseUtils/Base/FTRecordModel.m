@@ -25,21 +25,23 @@
 -(instancetype)initWithSource:(NSString *)source op:(NSString *)op tags:(NSDictionary *)tags fields:(NSDictionary *)fields tm:(long long)tm{
     self = [super init];
     if (self) {
-        NSMutableDictionary *opdata = @{
-            FT_KEY_SOURCE:source,
-        }.mutableCopy;
-        [opdata setValue:fields forKey:FT_FIELDS];
-        [opdata setValue:tags forKey:FT_TAGS];
-        [opdata setValue:@(tm) forKey:FT_TIME];
-        NSDictionary *data =@{FT_OP:op,
-                              FT_OPDATA:opdata,
-        };
-        _op = op;
-        _data = [FTJSONUtil convertToJsonData:data];
-        _tm = [NSDate ft_currentNanosecondTimeStamp];
-        FTInnerLogDebug(@"write data = %@",data);
-
+        if (source && op && tags && fields) {
+            NSDictionary *opData = @{
+                FT_KEY_SOURCE:source,
+                FT_FIELDS:fields,
+                FT_TAGS:tags,
+                FT_TIME:@(tm)
+            };
+            NSDictionary *data =@{FT_OP:op,
+                                  FT_OPDATA:opData,
+            };
+            _op = op;
+            _data = [FTJSONUtil convertToJsonData:data];
+            _tm = [NSDate ft_currentNanosecondTimeStamp];
+            FTInnerLogDebug(@"write data = %@",data);
+            return self;
+        }
     }
-    return self;
+    return nil;
 }
 @end

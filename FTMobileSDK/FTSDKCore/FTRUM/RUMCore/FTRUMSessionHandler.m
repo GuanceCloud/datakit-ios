@@ -169,22 +169,22 @@ static const NSTimeInterval sessionMaxDuration = 4 * 60 * 60; // 4 hours
  */
 - (void)writeLaunchData:(FTRUMLaunchDataModel *)model context:(NSDictionary *)context{
     
-    NSDictionary *sessionViewTag = [model.action_type isEqualToString:FT_LAUNCH_HOT]?[self getCurrentSessionInfo]:@{FT_RUM_KEY_SESSION_ID:self.context.session_id,FT_RUM_KEY_SESSION_TYPE:self.context.session_type};
+    NSDictionary *sessionViewTag = [model.action_type isEqualToString:FT_LAUNCH_HOT]?[self getCurrentSessionInfo]:[self.context getGlobalSessionTags];
     NSMutableDictionary *tags = [NSMutableDictionary dictionaryWithDictionary:context];
     [tags addEntriesFromDictionary:sessionViewTag];
     NSDictionary *actionTags = @{FT_KEY_ACTION_ID:[FTBaseInfoHandler randomUUID],
-                                 FT_KEY_ACTION_NAME:model.action_name,
-                                 FT_KEY_ACTION_TYPE:model.action_type
+                                 FT_KEY_ACTION_NAME:model.action_name ? : @"",
+                                 FT_KEY_ACTION_TYPE:model.action_type ? : @""
     };
     NSMutableDictionary *fields = @{FT_DURATION:model.duration,
-                             FT_KEY_ACTION_LONG_TASK_COUNT:@(0),
-                             FT_KEY_ACTION_RESOURCE_COUNT:@(0),
-                             FT_KEY_ACTION_ERROR_COUNT:@(0),
+                                    FT_KEY_ACTION_LONG_TASK_COUNT:@(0),
+                                    FT_KEY_ACTION_RESOURCE_COUNT:@(0),
+                                    FT_KEY_ACTION_ERROR_COUNT:@(0),
     }.mutableCopy;
     [tags addEntriesFromDictionary:actionTags];
     [fields addEntriesFromDictionary:self.rumDependencies.sampleFieldsDict];
     [self.rumDependencies.writer rumWrite:FT_RUM_SOURCE_ACTION tags:tags fields:fields time:[model.time ft_nanosecondTimeStamp]];
-
+    
 }
 - (void)writeErrorData:(FTRUMDataModel *)model context:(NSDictionary *)context{
     FTRUMErrorData *data = (FTRUMErrorData *)model;
@@ -199,8 +199,7 @@ static const NSTimeInterval sessionMaxDuration = 4 * 60 * 60; // 4 hours
     [self.rumDependencies.writer rumWrite:error tags:tags fields:fields time:data.tm];
 }
 - (void)writeWebViewJSBData:(FTRUMWebViewData *)data context:(NSDictionary *)context{
-    NSDictionary *sessionTag = @{FT_RUM_KEY_SESSION_ID:self.context.session_id,
-                                 FT_RUM_KEY_SESSION_TYPE:self.context.session_type};
+    NSDictionary *sessionTag = [self.context getGlobalSessionTags];
     NSMutableDictionary *tags = [NSMutableDictionary new];
     [tags addEntriesFromDictionary:context];
     [tags addEntriesFromDictionary:data.tags];

@@ -100,6 +100,9 @@ static dispatch_once_t onceToken;
     [self.dataCachePolicy setRumCacheLimitCount:count discardNew:discardNew];
 }
 - (void)addTrackData:(FTRecordModel *)data type:(FTAddDataType)type{
+    if (data == nil) {
+        return;
+    }
     //数据写入不用做额外的线程处理，数据采集组合除了崩溃数据，都是在子线程进行的
     switch (type) {
         case FTAddDataRUMCache:
