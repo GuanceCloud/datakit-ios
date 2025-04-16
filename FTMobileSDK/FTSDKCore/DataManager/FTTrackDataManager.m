@@ -133,7 +133,8 @@ static dispatch_once_t onceToken;
             return;
         }
         NSTimeInterval current = CACurrentMediaTime();
-        if(current-strongSelf.lastDataDate>0.1 && [[FTTrackerEventDBTool sharedManger] getDatasCount]>0){
+        if(strongSelf.lastDataDate>0 && current-strongSelf.lastDataDate>0.1 && [[FTTrackerEventDBTool sharedManger] getDatasCount]>0){
+            strongSelf.lastDataDate = 0;
             FTInnerLogDebug(@"[NETWORK]: start upload waiting");
             dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)(10 * NSEC_PER_SEC)), strongSelf.networkQueue, ^{
                 if([FTNetworkConnectivity sharedInstance].isConnected){
