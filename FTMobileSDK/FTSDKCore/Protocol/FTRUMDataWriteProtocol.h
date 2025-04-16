@@ -31,7 +31,7 @@ NS_ASSUME_NONNULL_BEGIN
 ///   - fields: 指标
 ///   - tm: 数据产生时间戳(ns)
 - (void)rumWrite:(NSString *)source tags:(NSDictionary *)tags fields:(NSDictionary *)fields time:(long long)time;
-
+@optional
 /// extension widget 采集的 RUM 数据写入
 /// - Parameters:
 ///   - source: 数据来源 view|action|resource|error
