@@ -1,3 +1,6 @@
+# 1.6.1-alpha.4
+1. Resource 性能资源数据处理优化，过滤 dns 异常数据
+---
 # 1.5.15
 1. 修复 Swift Package Manager 编译报错问题
 ---
