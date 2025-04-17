@@ -1,3 +1,6 @@
+# 1.5.15
+1. 修复 Swift Package Manager 编译报错问题
+---
 # 1.6.1-alpha.3
 1. 修复多线程访问 `currentRUMContext` 造成的崩溃
 ---
