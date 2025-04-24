@@ -76,7 +76,7 @@ function dSYMUpload(){
     P_BSYMBOL_ZIP_FILE_NAME=${P_BSYMBOL_ZIP_FILE_NAME//&/_}
     P_BSYMBOL_ZIP_FILE_NAME="${P_BSYMBOL_ZIP_FILE_NAME// /_}"
     echo "P_BSYMBOL_ZIP_FILE_NAME: ${P_BSYMBOL_ZIP_FILE_NAME}"
-    DSYM_UPLOAD_URL="${FT_DATAKIT_ADDRESS}/v1/sourcemap?app_id=${FT_APP_ID}&env=${FT_ENV}&version=${P_APP_VERSION}&platform=ios&token=${FT_TOKEN}"
+    DSYM_UPLOAD_URL="${FT_DATAKIT_ADDRESS}/v1/sourcemap?app_id=${FT_APP_ID}&env=${FT_ENV}&version=${FT_VERSION}&platform=ios&token=${FT_TOKEN}"
     echo "dSYM upload url: ${DSYM_UPLOAD_URL}"
     
     echo "-----------------------------"
