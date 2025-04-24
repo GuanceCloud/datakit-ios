@@ -21,8 +21,16 @@
 #import "FTRUMManager.h"
 #import "FTMobileAgentVersion.h"
 #import "FTMobileConfig+Private.h"
+#import "FTWKWebViewHandler.h"
+
+@interface FTWKWebViewHandler (Testing)
+@property (nonatomic, strong) NSMapTable *webViewRequestTable;
+
+- (id)getWebViewBridge:(WKWebView *)webView;
+@end
+
 typedef void(^FTTraceRequest)(NSURLRequest *);
-@interface FTJavaScriptBridgeTest : KIFTestCase<WKNavigationDelegate>
+@interface FTJavaScriptBridgeTest : KIFTestCase<WKNavigationDelegate,FTWKWebViewRumDelegate>
 @property (nonatomic, strong) TestWKWebViewVC *viewController;
 @property (nonatomic, strong) UIWindow *window;
 @property (nonatomic, strong) UINavigationController *navigationController;
@@ -307,6 +315,35 @@ typedef void(^FTTraceRequest)(NSURLRequest *);
         XCTAssertNil(error);
     }];
     XCTAssertTrue(reloadSuccess);
+}
+- (void)testMapTableWeakReferenceWebView{
+    WKWebView *webView = [[WKWebView alloc]init];
+    NSURLRequest *orRequest = [NSURLRequest requestWithURL:[NSURL URLWithString:@"http:mock.com"]];
+    [FTWKWebViewHandler sharedInstance].rumTrackDelegate = self;
+    [[FTWKWebViewHandler sharedInstance] addScriptMessageHandlerWithWebView:webView];
+    [[FTWKWebViewHandler sharedInstance] addWebView:webView request:orRequest];
+    id request = [[FTWKWebViewHandler sharedInstance].webViewRequestTable objectForKey:webView];
+    XCTAssertTrue(request == orRequest);
+    id bridge = [[FTWKWebViewHandler sharedInstance] getWebViewBridge:webView];
+    XCTAssertTrue(bridge != nil);
+    webView = nil;
+    id bridge2 = [[FTWKWebViewHandler sharedInstance] getWebViewBridge:webView];
+    XCTAssertTrue(bridge2 == nil);
+    XCTAssertNil([[FTWKWebViewHandler sharedInstance].webViewRequestTable objectForKey:webView]);
+}
+- (void)testSameWebViewAddBridge_moreThanOnce{
+    WKWebView *webView = [[WKWebView alloc]init];
+    [FTWKWebViewHandler sharedInstance].rumTrackDelegate = self;
+    [[FTWKWebViewHandler sharedInstance] addScriptMessageHandlerWithWebView:webView];
+    id bridge = [[FTWKWebViewHandler sharedInstance] getWebViewBridge:webView];
+    [[FTWKWebViewHandler sharedInstance] addScriptMessageHandlerWithWebView:webView];
+    id bridge2 = [[FTWKWebViewHandler sharedInstance] getWebViewBridge:webView];
+    XCTAssertTrue(bridge != nil);
+    XCTAssertTrue(bridge2 != nil);
+    XCTAssertTrue(bridge == bridge2);
+}
+- (void)dealReceiveScriptMessage:(id )message slotId:(NSUInteger)slotId{
+    
 }
 -(void)webView:(WKWebView *)webView decidePolicyForNavigationAction:(WKNavigationAction *)navigationAction decisionHandler:(void (^)(WKNavigationActionPolicy))decisionHandler{
     if(self.block){
