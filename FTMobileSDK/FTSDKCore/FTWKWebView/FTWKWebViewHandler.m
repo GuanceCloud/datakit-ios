@@ -91,22 +91,25 @@ static dispatch_once_t onceToken;
     return bridge;
 }
 - (void)addScriptMessageHandlerWithWebView:(WKWebView *)webView{
-    if (self.rumTrackDelegate && [self.rumTrackDelegate respondsToSelector:@selector(dealReceiveScriptMessage:slotId:)]) {
-        if ([self getWebViewBridge:webView]) {
-            FTInnerLogDebug(@"WebView(%@) already add JSBridge.",webView);
-            return;
-        }
-        FTWKWebViewJavascriptBridge *bridge = [FTWKWebViewJavascriptBridge bridgeForWebView:webView];
-        __weak typeof(self) weakSelf = self;
-        [bridge registerHandler:@"sendEvent" handler:^(id data, int64_t slotId,WVJBResponseCallback responseCallback) {
-            __strong __typeof(weakSelf) strongSelf = weakSelf;
-            if (!strongSelf) {
-                return;
-            }
-            [strongSelf.rumTrackDelegate dealReceiveScriptMessage:data slotId:slotId];
-        }];
-        [self addWebView:webView bridge:bridge];
-    }
+    if (self.rumTrackDelegate && [self.rumTrackDelegate respondsToSelector:@selector(dealReceiveScriptMessage:slotId:viewId:)]) {
+           if ([self getWebViewBridge:webView]) {
+               FTInnerLogDebug(@"WebView(%@) already add JSBridge.",webView);
+               return;
+           }
+           FTWKWebViewJavascriptBridge *bridge = [FTWKWebViewJavascriptBridge bridgeForWebView:webView];
+           __weak typeof(self) weakSelf = self;
+           [bridge registerHandler:@"sendEvent" handler:^(id data, int64_t slotId,WVJBResponseCallback responseCallback) {
+               __strong __typeof(weakSelf) strongSelf = weakSelf;
+               if (!strongSelf) {
+                   return;
+               }
+               if (bridge.viewID == nil) {
+                   bridge.viewID = [strongSelf.rumTrackDelegate getLastViewID];
+               }
+               [strongSelf.rumTrackDelegate dealReceiveScriptMessage:data slotId:slotId viewId:bridge.viewID];
+           }];
+           [self addWebView:webView bridge:bridge];
+       }
 }
 @end
 

@@ -13,8 +13,8 @@ NS_ASSUME_NONNULL_BEGIN
 /// webView 添加  web 端 rum 数据
 @protocol FTWKWebViewRumDelegate <NSObject>
 @optional
-- (void)dealReceiveScriptMessage:(id )message slotId:(NSUInteger)slotId;
-
+- (void)dealReceiveScriptMessage:(id )message slotId:(int64_t)slotID viewId:(NSString *)viewId;
+- (NSString *)getLastViewID;
 @end
 /// 处理 WKWebView Trace、js 交互
 @interface FTWKWebViewHandler : NSObject<WKNavigationDelegate>
