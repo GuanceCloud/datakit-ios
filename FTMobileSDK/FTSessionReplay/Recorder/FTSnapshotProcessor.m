@@ -53,10 +53,15 @@
 }
 - (void)processSync:(FTViewTreeSnapshot *)viewTreeSnapshot touchSnapshot:(FTTouchSnapshot *)touchSnapshot{
     @try {
+        FTSessionReplayWireframesBuilder *srBuilder = [[FTSessionReplayWireframesBuilder alloc]initWithResources:@[] webViewSlotIDs:viewTreeSnapshot.webViewSlotIDs];
         NSMutableArray<FTSRWireframe> *wireframes = (NSMutableArray<FTSRWireframe>*)[[NSMutableArray alloc]init];
-        NSArray<id <FTSRWireframesBuilder>> *nodes = [self.flattener flattenNodes:viewTreeSnapshot];
-        for (id<FTSRWireframesBuilder> builder in nodes) {
-            [wireframes addObjectsFromArray:[builder buildWireframes]];
+        NSArray<id <FTSRNodeWireframesBuilder>> *nodes = [self.flattener flattenNodes:viewTreeSnapshot];
+        for (id<FTSRNodeWireframesBuilder> builder in nodes) {
+            [wireframes addObjectsFromArray:[builder buildWireframesWithBuilder:srBuilder]];
+        }
+        NSArray<FTSRWireframe*> *hiddenWebs = [srBuilder hiddenWebViewWireframes];
+        if(hiddenWebs.count>0){
+            [wireframes insertObjects:hiddenWebs atIndexes:[[NSIndexSet alloc] initWithIndexesInRange:NSMakeRange(0, hiddenWebs.count)]];
         }
         // 2.将数据转换成存储要求的格式
         NSMutableArray<FTSRRecord> *records =(NSMutableArray<FTSRRecord>*)[[NSMutableArray alloc]init];

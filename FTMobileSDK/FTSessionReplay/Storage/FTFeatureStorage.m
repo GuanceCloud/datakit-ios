@@ -18,6 +18,7 @@
 @interface FTFeatureStorage()
 @property (nonatomic, copy) NSString *featureName;
 @property (nonatomic, strong) FTFilesOrchestrator *authorizedFilesOrchestrator;
+@property (nonatomic, strong) FTFilesOrchestrator *webAuthorizedFilesOrchestrator;
 // TODO:隐私条例
 //@property (nonatomic, strong) FTFilesOrchestrator *unauthorizedFilesOrchestrator;
 @property (nonatomic, strong) FTPerformancePreset *performance;
@@ -43,11 +44,21 @@
     FTFileWriter *fileWriter = [[FTFileWriter alloc]initWithOrchestrator:self.authorizedFilesOrchestrator queue:self.queue];
     return fileWriter;
 }
+- (id<FTWriter>)webViewWriter{
+    FTFileWriter *fileWriter = [[FTFileWriter alloc]initWithOrchestrator:self.webAuthorizedFilesOrchestrator queue:self.queue];
+    return fileWriter;
+}
 -(FTFilesOrchestrator *)authorizedFilesOrchestrator{
     if(!_authorizedFilesOrchestrator){
         _authorizedFilesOrchestrator = [[FTFilesOrchestrator alloc]initWithDirectory:self.directory performance:self.performance];
     }
     return _authorizedFilesOrchestrator;
+}
+-(FTFilesOrchestrator *)webAuthorizedFilesOrchestrator{
+    if(!_webAuthorizedFilesOrchestrator){
+        _webAuthorizedFilesOrchestrator = [[FTFilesOrchestrator alloc]initWithDirectory:self.directory performance:self.performance];
+    }
+    return _webAuthorizedFilesOrchestrator;
 }
 
 - (void)clearAllData{

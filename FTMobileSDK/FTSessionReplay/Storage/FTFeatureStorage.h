@@ -16,6 +16,7 @@ NS_ASSUME_NONNULL_BEGIN
                          directory:(FTDirectory *)directory
                        performance:(FTPerformancePreset *)performance;
 - (id<FTWriter>)writer;
+- (id<FTWriter>)webViewWriter;
 - (id<FTReader>)reader;
 - (void)clearAllData;
 - (void)setIgnoreFilesAgeWhenReading:(BOOL)ignore;
