@@ -16,7 +16,7 @@ NS_ASSUME_NONNULL_BEGIN
 typedef FTSRNodeSemantics* _Nullable(^SemanticsOverride)(UIView *  view, FTViewAttributes* attributes);
 typedef id<FTSRTextObfuscatingProtocol> _Nullable(^FTTextObfuscator)(FTViewTreeRecordingContext *context,FTViewAttributes *attributes);
 
-@protocol FTSRWireframesBuilder <NSObject>
+@protocol FTSRNodeWireframesBuilder <NSObject>
 - (FTViewAttributes*)attributes;
 - (CGRect)wireframeRect;
 - (NSArray<FTSRWireframe *>*)buildWireframesWithBuilder:(FTSessionReplayWireframesBuilder *)builder;;

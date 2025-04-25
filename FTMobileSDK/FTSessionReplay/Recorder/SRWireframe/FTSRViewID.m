@@ -8,7 +8,7 @@
 
 #import "FTSRViewID.h"
 #import "UIView+FTSR.h"
-#import "FTSRWireframesBuilder.h"
+#import "FTSRNodeWireframesBuilder.h"
 @interface FTSRViewID()
 @property (nonatomic, assign) int64_t currentID;
 @property (nonatomic, assign) int64_t maxID;

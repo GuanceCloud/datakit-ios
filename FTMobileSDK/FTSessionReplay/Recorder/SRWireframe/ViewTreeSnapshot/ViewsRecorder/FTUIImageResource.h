@@ -7,7 +7,7 @@
 //
 
 #import <Foundation/Foundation.h>
-#import "FTSRWireframesBuilder.h"
+#import "FTSRNodeWireframesBuilder.h"
 #import <UIKit/UIKit.h>
 NS_ASSUME_NONNULL_BEGIN
 @interface FTUIImageResource : NSObject<FTSRResource>

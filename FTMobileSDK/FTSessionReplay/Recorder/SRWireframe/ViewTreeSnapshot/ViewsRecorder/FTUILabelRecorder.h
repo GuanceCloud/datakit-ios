@@ -8,13 +8,13 @@
 
 #import <Foundation/Foundation.h>
 #import <UIKit/UIKit.h>
-#import "FTSRWireframesBuilder.h"
+#import "FTSRNodeWireframesBuilder.h"
 
 @class FTViewAttributes;
 @protocol FTSRTextObfuscatingProtocol;
 
 NS_ASSUME_NONNULL_BEGIN
-@interface FTUILabelBuilder : NSObject<FTSRWireframesBuilder>
+@interface FTUILabelBuilder : NSObject<FTSRNodeWireframesBuilder>
 @property (nonatomic, assign) int wireframeID;
 @property (nonatomic, strong) FTViewAttributes *attributes;
 

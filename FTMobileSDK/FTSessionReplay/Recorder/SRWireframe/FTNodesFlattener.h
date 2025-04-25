@@ -7,11 +7,11 @@
 //
 
 #import <Foundation/Foundation.h>
-#import "FTSRWireframesBuilder.h"
+#import "FTSRNodeWireframesBuilder.h"
 NS_ASSUME_NONNULL_BEGIN
 @class FTViewTreeSnapshot;
 @interface FTNodesFlattener : NSObject
-- (NSArray<id <FTSRWireframesBuilder>>*)flattenNodes:(FTViewTreeSnapshot *)snapShot;
+- (NSArray<id <FTSRNodeWireframesBuilder>>*)flattenNodes:(FTViewTreeSnapshot *)snapShot;
 @end
 
 NS_ASSUME_NONNULL_END

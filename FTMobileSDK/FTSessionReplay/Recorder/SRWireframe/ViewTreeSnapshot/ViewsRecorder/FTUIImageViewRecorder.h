@@ -8,7 +8,7 @@
 
 #import <Foundation/Foundation.h>
 #import <UIKit/UIKit.h>
-#import "FTSRWireframesBuilder.h"
+#import "FTSRNodeWireframesBuilder.h"
 #import "FTImageDataUtils.h"
 @class FTViewAttributes,FTUIImageResource;
 
@@ -16,7 +16,7 @@ NS_ASSUME_NONNULL_BEGIN
 typedef UIColor* _Nullable(^FTTintColorProvider)(UIImageView *imageView);
 typedef BOOL (^FTShouldRecordImagePredicate)(UIImageView *imageView);
 
-@interface FTUIImageViewBuilder : NSObject<FTSRWireframesBuilder>
+@interface FTUIImageViewBuilder : NSObject<FTSRNodeWireframesBuilder>
 @property (nonatomic, assign) int wireframeID;
 @property (nonatomic, assign) int imageWireframeID;
 @property (nonatomic, strong) FTViewAttributes *attributes;

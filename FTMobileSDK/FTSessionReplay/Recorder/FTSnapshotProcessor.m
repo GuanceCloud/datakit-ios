@@ -11,7 +11,7 @@
 #import "FTViewAttributes.h"
 #import "FTViewAttributes.h"
 #import "FTSRWireframe.h"
-#import "FTSRWireframesBuilder.h"
+#import "FTSRNodeWireframesBuilder.h"
 #import "NSDate+FTUtil.h"
 #import "FTSRRecord.h"
 #import "FTNodesFlattener.h"
@@ -21,6 +21,7 @@
 #import "FTSRUtils.h"
 #import "FTTouchSnapshot.h"
 #import "FTLog+Private.h"
+#import "FTSessionReplayWireframesBuilder.h"
 @interface FTSnapshotProcessor()
 @property (nonatomic, strong) dispatch_queue_t queue;
 @property (nonatomic, strong) id<FTWriter> writer;

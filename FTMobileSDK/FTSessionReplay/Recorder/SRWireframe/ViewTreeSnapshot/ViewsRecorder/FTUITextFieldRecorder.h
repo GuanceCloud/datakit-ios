@@ -8,14 +8,14 @@
 
 #import <Foundation/Foundation.h>
 #import <UIKit/UIKit.h>
-#import "FTSRWireframesBuilder.h"
+#import "FTSRNodeWireframesBuilder.h"
 
 @class FTViewAttributes;
 @protocol FTSRTextObfuscatingProtocol;
 NS_ASSUME_NONNULL_BEGIN
 /// 绘制 textField
 /// 不考虑 textFiled bolderStyle、光标、layer 层的自定义绘制
-@interface FTUITextFieldBuilder:NSObject<FTSRWireframesBuilder>
+@interface FTUITextFieldBuilder:NSObject<FTSRNodeWireframesBuilder>
 @property (nonatomic, strong) FTViewAttributes *attributes;
 @property (nonatomic, assign) CGRect wireframeRect;
 @property (nonatomic, assign) int wireframeID;

@@ -7,7 +7,7 @@
 //
 
 #import "FTResourceProcessor.h"
-#import "FTSRWireframesBuilder.h"
+#import "FTSRNodeWireframesBuilder.h"
 #import "FTSRRecord.h"
 #import "FTViewAttributes.h"
 #import "FTFileWriter.h"

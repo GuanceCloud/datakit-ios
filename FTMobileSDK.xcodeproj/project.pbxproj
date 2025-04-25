@@ -617,7 +617,6 @@
 		17C4F1712D671AFC00F97A7F /* FTViewTreeSnapshot.m in Sources */ = {isa = PBXBuildFile; fileRef = 17C4F0742D671AFC00F97A7F /* FTViewTreeSnapshot.m */; };
 		17C4F1722D671AFC00F97A7F /* FTResourceProcessor.m in Sources */ = {isa = PBXBuildFile; fileRef = 17C4F09F2D671AFC00F97A7F /* FTResourceProcessor.m */; };
 		17C4F1732D671AFC00F97A7F /* NSData+FTHelper.m in Sources */ = {isa = PBXBuildFile; fileRef = 17C4F0A72D671AFC00F97A7F /* NSData+FTHelper.m */; };
-		17C4F1742D671AFC00F97A7F /* FTSRWireframesBuilder.m in Sources */ = {isa = PBXBuildFile; fileRef = 17C4F0892D671AFC00F97A7F /* FTSRWireframesBuilder.m */; };
 		17C4F1752D671AFC00F97A7F /* FTSRWireframe.m in Sources */ = {isa = PBXBuildFile; fileRef = 17C4F0872D671AFC00F97A7F /* FTSRWireframe.m */; };
 		17C4F1762D671AFC00F97A7F /* FTViewTreeRecorder.m in Sources */ = {isa = PBXBuildFile; fileRef = 17C4F0702D671AFC00F97A7F /* FTViewTreeRecorder.m */; };
 		17D0681A2D23F48B00D59159 /* FTTraceContext.m in Sources */ = {isa = PBXBuildFile; fileRef = 17D068192D23F48B00D59159 /* FTTraceContext.m */; };
@@ -956,7 +955,6 @@
 		17C4F0862D671AFC00F97A7F /* FTSRWireframe.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = FTSRWireframe.h; sourceTree = "<group>"; };
 		17C4F0872D671AFC00F97A7F /* FTSRWireframe.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = FTSRWireframe.m; sourceTree = "<group>"; };
 		17C4F0882D671AFC00F97A7F /* FTSRNodeWireframesBuilder.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = FTSRNodeWireframesBuilder.h; sourceTree = "<group>"; };
-		17C4F0892D671AFC00F97A7F /* FTSRWireframesBuilder.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = FTSRWireframesBuilder.m; sourceTree = "<group>"; };
 		17C4F08A2D671AFC00F97A7F /* FTSystemColors.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = FTSystemColors.h; sourceTree = "<group>"; };
 		17C4F08B2D671AFC00F97A7F /* FTSystemColors.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = FTSystemColors.m; sourceTree = "<group>"; };
 		17C4F08C2D671AFC00F97A7F /* FTViewAttributes.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = FTViewAttributes.h; sourceTree = "<group>"; };
@@ -1480,7 +1478,6 @@
 				17C4F0862D671AFC00F97A7F /* FTSRWireframe.h */,
 				17C4F0872D671AFC00F97A7F /* FTSRWireframe.m */,
 				17C4F0882D671AFC00F97A7F /* FTSRNodeWireframesBuilder.h */,
-				17C4F0892D671AFC00F97A7F /* FTSRWireframesBuilder.m */,
 				17C4F08A2D671AFC00F97A7F /* FTSystemColors.h */,
 				17C4F08B2D671AFC00F97A7F /* FTSystemColors.m */,
 				17C4F08C2D671AFC00F97A7F /* FTViewAttributes.h */,
@@ -2741,7 +2738,6 @@
 				17C4F1712D671AFC00F97A7F /* FTViewTreeSnapshot.m in Sources */,
 				17C4F1722D671AFC00F97A7F /* FTResourceProcessor.m in Sources */,
 				17C4F1732D671AFC00F97A7F /* NSData+FTHelper.m in Sources */,
-				17C4F1742D671AFC00F97A7F /* FTSRWireframesBuilder.m in Sources */,
 				17C4F1752D671AFC00F97A7F /* FTSRWireframe.m in Sources */,
 				17C4F1762D671AFC00F97A7F /* FTViewTreeRecorder.m in Sources */,
 				17AB76D229D432DE008FBBF5 /* FTMonitorItem.m in Sources */,
