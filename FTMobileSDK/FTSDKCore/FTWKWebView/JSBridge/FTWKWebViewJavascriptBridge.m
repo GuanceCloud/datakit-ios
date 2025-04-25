@@ -56,7 +56,7 @@
     }
     NSString * body = (NSString * )message.body;
     if (body && [body isKindOfClass:[NSString class]]){
-        [_base flushMessageQueue:body];
+        [_base flushMessageQueue:body slotId:_webView.hash];
     }
 }
 - (void)_injectJavascriptFile {

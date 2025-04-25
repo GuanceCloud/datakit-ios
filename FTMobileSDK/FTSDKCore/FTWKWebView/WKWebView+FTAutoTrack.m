@@ -49,11 +49,5 @@
         return [self ft_reload];
     }
 }
-
--(void)ft_dealloc{
-    [[FTWKWebViewHandler sharedInstance] removeWebView:self];
-    [self ft_dealloc];
-}
-
 @end
 #endif
