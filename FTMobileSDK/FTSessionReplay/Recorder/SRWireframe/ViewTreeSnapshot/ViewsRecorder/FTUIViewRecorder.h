@@ -14,7 +14,7 @@
 NS_ASSUME_NONNULL_BEGIN
 
 @interface FTUIViewBuilder : NSObject<FTSRNodeWireframesBuilder>
-@property (nonatomic, assign) int wireframeID;
+@property (nonatomic, assign) int64_t wireframeID;
 @property (nonatomic, strong) FTViewAttributes *attributes;
 @end
 @interface FTUIViewRecorder : NSObject<FTSRWireframesRecorder>

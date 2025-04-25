@@ -15,7 +15,7 @@
 
 NS_ASSUME_NONNULL_BEGIN
 @interface FTUILabelBuilder : NSObject<FTSRNodeWireframesBuilder>
-@property (nonatomic, assign) int wireframeID;
+@property (nonatomic, assign) int64_t wireframeID;
 @property (nonatomic, strong) FTViewAttributes *attributes;
 
 @property (nonatomic, copy) NSString *text;

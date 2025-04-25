@@ -18,7 +18,7 @@ NS_ASSUME_NONNULL_BEGIN
 @interface FTUITextFieldBuilder:NSObject<FTSRNodeWireframesBuilder>
 @property (nonatomic, strong) FTViewAttributes *attributes;
 @property (nonatomic, assign) CGRect wireframeRect;
-@property (nonatomic, assign) int wireframeID;
+@property (nonatomic, assign) int64_t wireframeID;
 @property (nonatomic, copy) NSString *text;
 @property (nonatomic, strong) UIColor *textColor;
 @property (nonatomic, assign) NSTextAlignment textAlignment;

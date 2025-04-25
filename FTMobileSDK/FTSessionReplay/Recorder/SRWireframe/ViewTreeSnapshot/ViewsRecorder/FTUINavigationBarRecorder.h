@@ -12,7 +12,7 @@
 @class FTViewAttributes;
 NS_ASSUME_NONNULL_BEGIN
 @interface FTUINavigationBarBuilder : NSObject<FTSRNodeWireframesBuilder>
-@property (nonatomic, assign) int wireframeID;
+@property (nonatomic, assign) int64_t wireframeID;
 @property (nonatomic, strong) FTViewAttributes *attributes;
 @property (nonatomic, assign) CGRect wireframeRect;
 @property (nonatomic, strong) UIColor *color;
