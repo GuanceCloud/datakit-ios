@@ -24,8 +24,10 @@
 #import "FTModuleManager.h"
 #import "FTMessageReceiver.h"
 #import "FTLog+Private.h"
-
-@interface FTSessionReplayFeature()<FTMessageReceiver>
+#import "FTSRRecord.h"
+#import "FTFileWriter.h"
+#import "FTSRWebTrackingProtocol.h"
+@interface FTSessionReplayFeature()<FTMessageReceiver,FTSRWebTrackingProtocol>
 @property (nonatomic, strong) NSTimer *timer;
 @property (atomic, assign) BOOL isSampled;
 @property (atomic, strong) NSDictionary *currentRUMContext;
@@ -35,6 +37,8 @@
 @property (nonatomic, strong) FTWindowObserver *windowObserver;
 @property (nonatomic, strong) dispatch_queue_t processorsQueue;
 @property (nonatomic, strong) FTSessionReplayConfig *config;
+@property (nonatomic, strong) id<FTWriter> webViewWriter;
+@property (atomic, copy) NSString *lastViewID;
 @end
 @implementation FTSessionReplayFeature
 -(instancetype)initWithConfig:(FTSessionReplayConfig *)config{
@@ -54,14 +58,16 @@
         _touches = [[FTSessionReplayTouches alloc]initWithWindowObserver:_windowObserver];
         _config = [config copy];
         [[FTModuleManager sharedInstance] addMessageReceiver:self];
+        [[FTModuleManager sharedInstance] registerService:NSProtocolFromString(@"FTSRWebTrackingProtocol") instance:self];
     }
     return self;
 }
 
--(void)startWithWriter:(id<FTWriter>)writer resourceWriter:(id<FTWriter>)resourceWriter resourceDataStore:(id<FTDataStore>)dataStore{
+-(void)startWithWriter:(id<FTWriter>)writer webViewWriter:(id<FTWriter>)webViewWriter resourceWriter:(nullable id<FTWriter>)resourceWriter resourceDataStore:(nullable id<FTDataStore>)dataStore{
     // image resource writer
 //    FTResourceWriter *resource = [[FTResourceWriter alloc]initWithWriter:resourceWriter dataStore:dataStore];
 //    FTResourceProcessor *resourceProcessor = [[FTResourceProcessor alloc]initWithQueue:self.processorsQueue resourceWriter:resource];
+    self.webViewWriter = webViewWriter;
     FTSnapshotProcessor *srProcessor = [[FTSnapshotProcessor alloc]initWithQueue:self.processorsQueue writer:writer];
     FTRecorder *windowRecorder = [[FTRecorder alloc]initWithWindowObserver:self.windowObserver snapshotProcessor:srProcessor resourceProcessor:nil additionalNodeRecorders:self.config.additionalNodeRecorders];
     self.windowRecorder = windowRecorder;
@@ -89,22 +95,58 @@
     }];
 }
 - (void)receive:(NSString *)key message:(NSDictionary *)message {
-    if(![key isEqualToString:FTMessageKeyRUMContext]){
-        return;
-    }
-    NSDictionary *rumContext = self.currentRUMContext;
-    if(rumContext == nil || ![message[FT_RUM_KEY_SESSION_ID] isEqualToString:rumContext[FT_RUM_KEY_SESSION_ID]]){
-        BOOL isSampled = [FTBaseInfoHandler randomSampling:self.sampleRate];
-        if(isSampled){
-            [self start];
-        }else{
-            [self stop];
+    if([key isEqualToString:FTMessageKeyRUMContext]){
+        NSDictionary *rumContext = self.currentRUMContext;
+        if(rumContext == nil || ![message[FT_RUM_KEY_SESSION_ID] isEqualToString:rumContext[FT_RUM_KEY_SESSION_ID]]){
+            BOOL isSampled = [FTBaseInfoHandler randomSampling:self.sampleRate];
+            if(isSampled){
+                [self start];
+            }else{
+                [self stop];
+            }
+            [[FTModuleManager sharedInstance] postMessage:FTMessageKeySessionHasReplay message:@{FT_SESSION_HAS_REPLAY:@(isSampled)}];
+            FTInnerLogDebug(@"[session-replay] session(id:%@) has replay:%@",message[FT_RUM_KEY_SESSION_ID],(isSampled?@"true":@"false"));
+            self.isSampled = isSampled;
+            self.currentRUMContext = message;
+        }else if (![self.currentRUMContext[FT_KEY_VIEW_ID] isEqualToString:message[FT_KEY_VIEW_ID]]){
+            self.currentRUMContext = message;
         }
-        [[FTModuleManager sharedInstance] postMessage:FTMessageKeySessionHasReplay message:@{FT_SESSION_HAS_REPLAY:@(isSampled)}];
-        FTInnerLogDebug(@"[session-replay] session(id:%@) has replay:%@",message[FT_RUM_KEY_SESSION_ID],(isSampled?@"true":@"false"));
-        self.isSampled = isSampled;
+    }else if ([key isEqualToString:FTMessageKeyWebViewSR]){
+        __weak typeof(self) weakSelf = self;
+        dispatch_async(self.processorsQueue, ^{
+            __strong __typeof(weakSelf) strongSelf = weakSelf;
+            if (!strongSelf) {
+                return;
+            }
+            @try {
+                NSString *slotID = message[@"slotId"];
+                NSDictionary *view = message[@"view"];
+                NSString *viewID = view[@"id"];
+                NSDictionary *event = message[@"data"];
+                NSDictionary *container = message[@"container"];
+                if (event && slotID && viewID) {
+                    NSDictionary *currentRumContext = strongSelf.currentRUMContext;
+                    if (!currentRumContext) {
+                        return;
+                    }
+                    NSMutableDictionary *newEvent = [event mutableCopy];
+                    [newEvent setValue:slotID forKey:@"slotId"];
+                    BOOL force = strongSelf.lastViewID == nil || ![strongSelf.lastViewID isEqualToString:viewID];
+                    FTSRWebRecord *record = [[FTSRWebRecord alloc]init];
+                    record.viewID = viewID;
+                    record.container = container;
+                    record.sessionID = currentRumContext[FT_RUM_KEY_SESSION_ID];
+                    record.applicationID = currentRumContext[FT_APP_ID];
+                    record.records = @[newEvent];
+                    NSData *data = [record toJSONData];
+                    [strongSelf.webViewWriter write:data forceNewFile:force];
+                    strongSelf.lastViewID = viewID;
+                }
+            } @catch (NSException *exception) {
+                FTInnerLogError(@"[Session Replay] EXCEPTION: %@", exception.description);
+            }
+        });
     }
-    self.currentRUMContext = message;
 }
 - (void)captureNextRecord{
     NSDictionary *rumContext = self.currentRUMContext;
@@ -122,6 +164,20 @@
     context.textAndInputPrivacy = self.config.textAndInputPrivacy;
     [self.windowRecorder taskSnapShot:context touchSnapshot:[self.touches takeTouchSnapshotWithContext:context]];
 }
+-(NSString *)getSessionReplayPrivacyLevel{
+    if (self.config.touchPrivacy == FTTouchPrivacyLevelShow) {
+        if (self.config.textAndInputPrivacy == FTTextAndInputPrivacyLevelMaskSensitiveInputs) {
+            return @"allow";
+        }else if (self.config.textAndInputPrivacy == FTTextAndInputPrivacyLevelMaskAllInputs){
+            return @"mask-user-input";
+        }
+    }
+    return @"mask";
+}
+-(NSArray *)getAllowedWebViewHosts{
+    return @[];
+}
+
 -(void)dealloc{
     if(self.timer){
         [self.timer invalidate];

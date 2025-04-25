@@ -59,7 +59,7 @@
 
 @implementation FTUISegmentBuilder
 
-- (NSArray<FTSRWireframe *> *)buildWireframes {
+- (NSArray<FTSRWireframe *> *)buildWireframesWithBuilder:(FTSessionReplayWireframesBuilder *)builder{
     if(self.segmentWireframeIDs.count <= 0 || self.segmentWireframeIDs.count != self.segmentTitles.count || [self.selectedSegmentIndex intValue]< 0){
         return @[];
     }
@@ -83,7 +83,7 @@
         segment.border = [[FTSRShapeBorder alloc]initWithColor:isSelected?[FTSystemColors secondarySystemFillColorStr]:[FTSystemColors clearColorStr] width:1];
         segment.shapeStyle = [[FTSRShapeStyle alloc]initWithBackgroundColor:isSelected?(self.selectedSegmentTintColor?[FTSRUtils colorHexString:self.selectedSegmentTintColor.CGColor]:[FTSystemColors tertiarySystemBackgroundColorStr]):[FTSystemColors clearColorStr] cornerRadius:@(8) opacity:@(self.attributes.alpha)];
         segment.text = [self.textObfuscator mask:self.segmentTitles[i]]?:@"";
-        segment.textStyle = [[FTSRTextStyle alloc]initWithSize:14 color:[FTSystemColors labelColorStr] family:[UIFont systemFontOfSize:14].familyName];
+        segment.textStyle = [[FTSRTextStyle alloc]initWithSize:14 color:[FTSystemColors labelColorStr] family:nil];
         FTSRTextPosition *textPosition = [[FTSRTextPosition alloc]init];
         textPosition.alignment = [[FTAlignment alloc]initWithTextAlignment:NSTextAlignmentCenter vertical:@"center"];
         textPosition.padding = [[FTPadding alloc]initWithLeft:0 top:0 right:0 bottom:0];

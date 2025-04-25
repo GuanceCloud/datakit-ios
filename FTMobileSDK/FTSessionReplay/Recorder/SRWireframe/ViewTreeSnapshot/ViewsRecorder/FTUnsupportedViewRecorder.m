@@ -44,7 +44,7 @@
 
 @implementation FTUnsupportedViewBuilder
 
-- (NSArray<FTSRWireframe *> *)buildWireframes{
+- (NSArray<FTSRWireframe *> *)buildWireframesWithBuilder:(FTSessionReplayWireframesBuilder *)builder{
     FTSRPlaceholderWireframe *wireframe = [[FTSRPlaceholderWireframe alloc]initWithIdentifier:self.wireframeID frame:self.attributes.frame label:self.unsupportedClassName];
     return @[wireframe];
 }

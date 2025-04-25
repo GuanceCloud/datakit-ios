@@ -10,10 +10,12 @@
 #import "FTMessageReceiver.h"
 NSString *const FTMessageKeyRUMContext = @"rum_context";
 NSString *const FTMessageKeySRProperty = @"sr_property";
+NSString *const FTMessageKeyWebViewSR = @"webView_session_replay";
 NSString *const FTMessageKeyRecordsCountByViewID = @"sr_records_count_by_view_id";
 NSString *const FTMessageKeySessionHasReplay = @"sr_has_replay";
 @interface FTModuleManager()
 @property (nonatomic, strong, readonly) NSPointerArray *receiverArray;
+@property (nonatomic, strong) NSMapTable *registerServices;
 @property (nonatomic, strong) NSDictionary *srProperty;
 @property (nonatomic, strong) dispatch_queue_t queue;
 @end
@@ -23,6 +25,7 @@ NSString *const FTMessageKeySessionHasReplay = @"sr_has_replay";
     if(self){
         _queue = dispatch_queue_create("com.guance.message-bus", 0);
         _receiverArray = [NSPointerArray pointerArrayWithOptions:NSPointerFunctionsWeakMemory];
+        _registerServices = [NSMapTable strongToWeakObjectsMapTable];
     }
     return self;
 }
@@ -71,6 +74,14 @@ NSString *const FTMessageKeySessionHasReplay = @"sr_has_replay";
             }
         }
     });
+}
+- (void)registerService:(Protocol *)service instance:(id)instance{
+    NSString *key = NSStringFromProtocol(service);
+    [self.registerServices setObject:instance forKey:key];
+}
+- (id)getRegisterService:(Protocol *)service{
+    NSString *key = NSStringFromProtocol(service);
+    return [self.registerServices objectForKey:key];
 }
 - (void)syncProcess{
     dispatch_sync(self.queue, ^{ });

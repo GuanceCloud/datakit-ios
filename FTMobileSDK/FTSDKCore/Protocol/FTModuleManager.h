@@ -13,7 +13,7 @@ FOUNDATION_EXPORT FTMessageKey const FTMessageKeyRUMContext;
 FOUNDATION_EXPORT FTMessageKey const FTMessageKeySRProperty;
 FOUNDATION_EXPORT FTMessageKey const FTMessageKeyRecordsCountByViewID;
 FOUNDATION_EXPORT FTMessageKey const FTMessageKeySessionHasReplay;
-
+FOUNDATION_EXPORT FTMessageKey const FTMessageKeyWebViewSR;
 @protocol FTMessageReceiver;
 @interface FTModuleManager : NSObject
 + (instancetype)sharedInstance;
@@ -27,6 +27,10 @@ FOUNDATION_EXPORT FTMessageKey const FTMessageKeySessionHasReplay;
 /// 移除遵循 FTMessageReceiver 协议的代理类
 /// - Parameter delegate: 遵循 FTMessageReceiver 协议的代理类
 - (void)removeMessageReceiver:(id<FTMessageReceiver>)receiver;
+
+- (void)registerService:(Protocol *)service instance:(id)instance;
+
+- (id)getRegisterService:(Protocol *)protocol;
 @end
 
 NS_ASSUME_NONNULL_END

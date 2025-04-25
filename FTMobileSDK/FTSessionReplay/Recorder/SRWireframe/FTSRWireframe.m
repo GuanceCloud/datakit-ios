@@ -241,7 +241,7 @@ BOOL objectIsEqual(id new,id old){
 }
 @end
 @implementation FTSRWireframe
--(instancetype)initWithIdentifier:(int)identifier frame:(CGRect)frame{
+-(instancetype)initWithIdentifier:(int64_t)identifier frame:(CGRect)frame{
     self = [super init];
     if(self){
         self.identifier = identifier;
@@ -307,14 +307,14 @@ BOOL objectIsEqual(id new,id old){
     }
     return self;
 }
--(instancetype)initWithIdentifier:(int)identifier frame:(CGRect)frame{
+-(instancetype)initWithIdentifier:(int64_t)identifier frame:(CGRect)frame{
     self = [super initWithIdentifier:identifier frame:frame];
     if(self){
         self.type = @"shape";
     }
     return self;
 }
--(instancetype)initWithIdentifier:(int)identifier frame:(CGRect)frame clip:(CGRect)clip backgroundColor:(NSString *)color cornerRadius:(NSNumber *)cornerRadius opacity:(NSNumber *)opacity{
+-(instancetype)initWithIdentifier:(int64_t)identifier frame:(CGRect)frame clip:(CGRect)clip backgroundColor:(NSString *)color cornerRadius:(NSNumber *)cornerRadius opacity:(NSNumber *)opacity{
     self = [super initWithIdentifier:identifier frame:frame];
     if(self){
         self.type = @"shape";
@@ -322,7 +322,7 @@ BOOL objectIsEqual(id new,id old){
     }
     return self;
 }
--(instancetype)initWithIdentifier:(int)identifier attributes:(FTViewAttributes *)attributes{
+-(instancetype)initWithIdentifier:(int64_t)identifier attributes:(FTViewAttributes *)attributes{
     self = [super initWithIdentifier:identifier frame:attributes.frame];
     if(self){
         self.type = @"shape";
@@ -376,7 +376,7 @@ BOOL objectIsEqual(id new,id old){
     }
     return self;
 }
--(instancetype)initWithIdentifier:(int)identifier frame:(CGRect)frame{
+-(instancetype)initWithIdentifier:(int64_t)identifier frame:(CGRect)frame{
     self = [super initWithIdentifier:identifier frame:frame];
     if(self){
         self.type = @"text";
@@ -425,7 +425,7 @@ BOOL objectIsEqual(id new,id old){
 -(instancetype)init{
     return [self initWithIdentifier:0 frame:CGRectZero];
 }
--(instancetype)initWithIdentifier:(int)identifier frame:(CGRect)frame {
+-(instancetype)initWithIdentifier:(int64_t)identifier frame:(CGRect)frame {
     self = [super initWithIdentifier:identifier frame:frame];
     if(self){
         self.type = @"image";
@@ -479,10 +479,10 @@ BOOL objectIsEqual(id new,id old){
     }
     return self;
 }
--(instancetype)initWithIdentifier:(int)identifier frame:(CGRect)frame{
+-(instancetype)initWithIdentifier:(int64_t)identifier frame:(CGRect)frame{
     return [self initWithIdentifier:identifier frame:frame label:nil];
 }
-- (instancetype)initWithIdentifier:(int)identifier frame:(CGRect)frame label:(NSString *)label{
+- (instancetype)initWithIdentifier:(int64_t)identifier frame:(CGRect)frame label:(NSString *)label{
     self = [super initWithIdentifier:identifier frame:frame];
     if(self){
         self.type = @"placeholder";
@@ -518,5 +518,54 @@ BOOL objectIsEqual(id new,id old){
         return NO;
     }
     return [self isEqualToPlaceholderWireframe:object];
+}
+@end
+
+@implementation FTSRWebViewWireframe
+
+-(instancetype)init{
+    self = [super init];
+    if(self){
+        self.type = @"webview";
+    }
+    return self;
+}
+-(instancetype)initWithIdentifier:(int64_t)identifier frame:(CGRect)frame{
+    self = [super initWithIdentifier:identifier frame:frame];
+    if(self){
+        self.type = @"webview";
+    }
+    return self;
+}
+-(FTSRWireframe *)compareWithNewWireFrame:(FTSRWireframe *)newWireFrame error:(NSError *__autoreleasing  _Nullable * _Nullable)error{
+    if ([self isEqual:newWireFrame]){
+        return nil;
+    }
+    FTSRWireframe *wire = [super compareWithNewWireFrame:newWireFrame error:error];
+    if(*error){
+        return nil;
+    }
+    FTSRWebViewWireframe *webView = (FTSRWebViewWireframe *)wire;
+    FTSRWebViewWireframe *newWire = (FTSRWebViewWireframe *)newWireFrame;
+    webView.border = useNewObjectIfDifferentThanOld(newWire.border,self.border);
+    webView.shapeStyle = useNewObjectIfDifferentThanOld(newWire.shapeStyle,self.shapeStyle);
+    return webView;
+}
+-(BOOL)isEqualToWebViewWireframe:(FTSRWebViewWireframe *)object{
+    if(!object){
+        return NO;
+    }
+    BOOL isSlotIdEqual = objectIsEqual(self.slotId,object.slotId);
+    BOOL isVisibleEqual = self.isVisible == object.isVisible;
+    return isSlotIdEqual && isVisibleEqual && [super isEqual:object];
+}
+-(BOOL)isEqual:(id)object{
+    if(self == object){
+        return YES;
+    }
+    if (![object isKindOfClass:self.class]){
+        return NO;
+    }
+    return [self isEqualToWebViewWireframe:object];
 }
 @end

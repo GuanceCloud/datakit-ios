@@ -36,7 +36,7 @@ NS_ASSUME_NONNULL_BEGIN
 @end
 @protocol Adds;
 @interface Adds : FTSRBaseFrame
-@property (nonatomic, assign) int previousId;
+@property (nonatomic, assign) int64_t previousId;
 @property (nonatomic, strong) FTSRWireframe *wireframe;
 @end
 @protocol Removes;
@@ -85,5 +85,14 @@ NS_ASSUME_NONNULL_BEGIN
 @property (nonatomic, copy) NSString *type;
 @property (nonatomic, copy) NSString *appId;
 -(instancetype)initWithData:(NSData *)data;
+@end
+
+
+@interface FTSRWebRecord : FTSRBaseFrame
+@property (nonatomic, copy) NSString *sessionID;
+@property (nonatomic, copy) NSString *applicationID;
+@property (nonatomic, copy) NSString *viewID;
+@property (nonatomic, strong) NSArray *records;
+@property (nonatomic, strong) NSDictionary *container;
 @end
 NS_ASSUME_NONNULL_END

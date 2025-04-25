@@ -61,7 +61,7 @@
 -(CGRect)wireframeRect{    
     return self.attributes.frame;
 }
--(NSArray<FTSRWireframe *> *)buildWireframes{
+-(NSArray<FTSRWireframe *> *)buildWireframesWithBuilder:(FTSessionReplayWireframesBuilder *)builder{
     FTSRTextWireframe *wireframe = [[FTSRTextWireframe alloc]initWithIdentifier:self.wireframeID frame:self.wireframeRect];
 
     wireframe.text = [self.textObfuscator mask:self.text];

@@ -53,7 +53,7 @@
 @end
 
 @implementation FTUISwitchBuilder
-- (NSArray<FTSRWireframe *> *)buildWireframes {
+- (NSArray<FTSRWireframe *> *)buildWireframesWithBuilder:(FTSessionReplayWireframesBuilder *)builder{
     if(self.isMasked){
         return [self createMaskWireframes];
     }else{

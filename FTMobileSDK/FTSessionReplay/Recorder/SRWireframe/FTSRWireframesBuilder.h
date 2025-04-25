@@ -10,8 +10,7 @@
 #import <UIKit/UIKit.h>
 
 NS_ASSUME_NONNULL_BEGIN
-
-@class FTSRWireframe,FTViewAttributes,FTViewTreeRecordingContext,FTSRNodeSemantics;
+@class FTSRWireframe,FTViewAttributes,FTViewTreeRecordingContext,FTSRNodeSemantics,FTSessionReplayWireframesBuilder;
 @protocol FTSRTextObfuscatingProtocol;
 
 typedef FTSRNodeSemantics* _Nullable(^SemanticsOverride)(UIView *  view, FTViewAttributes* attributes);
@@ -20,7 +19,7 @@ typedef id<FTSRTextObfuscatingProtocol> _Nullable(^FTTextObfuscator)(FTViewTreeR
 @protocol FTSRWireframesBuilder <NSObject>
 - (FTViewAttributes*)attributes;
 - (CGRect)wireframeRect;
-- (NSArray<FTSRWireframe *>*)buildWireframes;
+- (NSArray<FTSRWireframe *>*)buildWireframesWithBuilder:(FTSessionReplayWireframesBuilder *)builder;;
 @end
 
 @protocol FTSRWireframesRecorder <NSObject>

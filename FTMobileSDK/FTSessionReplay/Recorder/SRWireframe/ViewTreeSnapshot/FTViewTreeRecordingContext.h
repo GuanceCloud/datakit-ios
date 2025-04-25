@@ -8,7 +8,7 @@
 
 #import <Foundation/Foundation.h>
 #import <UIKit/UIKit.h>
-
+#import <WebKit/WKWebView.h>
 NS_ASSUME_NONNULL_BEGIN
 @class FTSRContext,FTSRViewID,FTViewControllerContext;
 @interface FTViewTreeRecordingContext : NSObject
@@ -16,6 +16,8 @@ NS_ASSUME_NONNULL_BEGIN
 @property (nonatomic, strong) FTSRViewID *viewIDGenerator;
 @property (nonatomic, strong) id<UICoordinateSpace> coordinateSpace;
 @property (nonatomic, strong) FTViewControllerContext *viewControllerContext;
+@property (nonatomic, strong, nullable) NSHashTable<WKWebView*> *webViewCache;
+
 @property (nonatomic, assign) CGRect clip;
 @end
 

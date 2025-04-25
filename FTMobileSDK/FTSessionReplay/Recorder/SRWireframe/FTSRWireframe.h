@@ -61,7 +61,7 @@ NS_ASSUME_NONNULL_BEGIN
 #pragma mark ========== FTSRWireframe ==========
 @interface FTSRWireframe : FTSRBaseFrame
 /// 唯一标识
-@property (nonatomic, assign) int identifier;
+@property (nonatomic, assign) int64_t identifier;
 // 不要改为 int ,使用 NSNumber 是为了update比较时可以置为 nil
 /// 在根视图的 frame.origin.x
 @property (nonatomic) NSNumber *x;
@@ -76,7 +76,7 @@ NS_ASSUME_NONNULL_BEGIN
 /// 裁剪信息
 @property (nonatomic, strong,nullable) FTSRContentClip *clip;
 
--(instancetype)initWithIdentifier:(int)identifier frame:(CGRect)frame;
+-(instancetype)initWithIdentifier:(int64_t)identifier frame:(CGRect)frame;
 -(nullable FTSRWireframe *)compareWithNewWireFrame:(FTSRWireframe *)newWireFrame error:(NSError **)error;
 
 @end
@@ -84,8 +84,8 @@ NS_ASSUME_NONNULL_BEGIN
 @interface FTSRShapeWireframe : FTSRWireframe
 @property (nonatomic, strong) FTSRShapeBorder *border;
 @property (nonatomic, strong) FTSRShapeStyle *shapeStyle;
--(instancetype)initWithIdentifier:(int)identifier frame:(CGRect)frame clip:(CGRect)clip backgroundColor:(nullable NSString *)color cornerRadius:(nullable NSNumber *)cornerRadius opacity:(nullable NSNumber *)opacity;
--(instancetype)initWithIdentifier:(int)identifier attributes:(nullable FTViewAttributes *)attributes;
+-(instancetype)initWithIdentifier:(int64_t)identifier frame:(CGRect)frame clip:(CGRect)clip backgroundColor:(nullable NSString *)color cornerRadius:(nullable NSNumber *)cornerRadius opacity:(nullable NSNumber *)opacity;
+-(instancetype)initWithIdentifier:(int64_t)identifier attributes:(nullable FTViewAttributes *)attributes;
 @end
 @interface FTSRTextWireframe : FTSRWireframe
 @property (nonatomic, strong) FTSRShapeBorder *border;
@@ -103,6 +103,12 @@ NS_ASSUME_NONNULL_BEGIN
 @end
 @interface FTSRPlaceholderWireframe : FTSRWireframe
 @property (nonatomic, copy, nullable) NSString *label;
-- (instancetype)initWithIdentifier:(int)identifier frame:(CGRect)frame label:(nullable NSString *)label;
+- (instancetype)initWithIdentifier:(int64_t)identifier frame:(CGRect)frame label:(nullable NSString *)label;
+@end
+@interface FTSRWebViewWireframe : FTSRWireframe
+@property (nonatomic, strong) FTSRShapeBorder *border;
+@property (nonatomic, strong) FTSRShapeStyle *shapeStyle;
+@property (nonatomic, assign) BOOL isVisible;
+@property (nonatomic, copy) NSString *slotId;
 @end
 NS_ASSUME_NONNULL_END

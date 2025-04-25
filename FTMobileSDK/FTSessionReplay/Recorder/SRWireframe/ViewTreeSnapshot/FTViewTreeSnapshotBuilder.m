@@ -29,6 +29,7 @@
 #import "FTUnsupportedViewRecorder.h"
 #import "FTUIProgressViewRecorder.h"
 #import "FTUIActivityIndicatorRecorder.h"
+#import "FTWKWebViewRecorder.h"
 
 @interface FTViewTreeSnapshotBuilder()
 @property (nonatomic, strong) FTViewTreeRecorder *viewTreeRecorder;
@@ -45,6 +46,7 @@
         _idGen = [[FTSRViewID alloc]init];
         _imageDataProvider = [[FTImageDataUtils alloc]init];
         _viewTreeRecorder = [[FTViewTreeRecorder alloc] init];
+        _webViewCache = [NSHashTable weakObjectsHashTable];
         if(additionalNodeRecorders.count>0){
             NSMutableArray<id <FTSRWireframesRecorder>> *recorders = [NSMutableArray arrayWithArray:[self createDefaultNodeRecorders]];
             [recorders addObjectsFromArray:additionalNodeRecorders];
@@ -64,6 +66,7 @@
             FTViewTreeRecordingContext *recordingContext = [[FTViewTreeRecordingContext alloc]init];
             recordingContext.viewIDGenerator = self.idGen;
             recordingContext.recorder = context;
+            recordingContext.webViewCache = self.webViewCache;
             recordingContext.coordinateSpace = [UIScreen mainScreen].coordinateSpace;
             recordingContext.clip = UIScreen.mainScreen.bounds;
             recordingContext.viewControllerContext = [FTViewControllerContext new];
@@ -75,6 +78,12 @@
     viewTree.context = context;
     viewTree.viewportSize = UIScreen.mainScreen.bounds.size;
     viewTree.nodes = node;
+    NSArray *webViews = [self.webViewCache allObjects];
+    NSMutableArray *hashes = [NSMutableArray arrayWithCapacity:webViews.count];
+    for (WKWebView *webView in webViews) {
+        [hashes addObject:@(webView.hash)];
+    }
+    viewTree.webViewSlotIDs = [NSSet setWithArray:hashes];
     viewTree.resources = resource;
     return viewTree;
 }
@@ -94,6 +103,7 @@
         [FTUITabBarRecorder new],
         [FTUIPickerViewRecorder new],
         [FTUIDatePickerRecorder new],
+        [FTWKWebViewRecorder new],
         [FTUIProgressViewRecorder new],
         [FTUIActivityIndicatorRecorder new],
     ];

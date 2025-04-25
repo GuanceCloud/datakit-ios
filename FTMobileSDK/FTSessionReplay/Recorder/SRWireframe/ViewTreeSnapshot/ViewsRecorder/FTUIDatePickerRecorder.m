@@ -86,7 +86,7 @@
 
 @implementation FTUIDatePickerBuilder
 
-- (NSArray<FTSRWireframe *> *)buildWireframes {
+- (NSArray<FTSRWireframe *> *)buildWireframesWithBuilder:(FTSessionReplayWireframesBuilder *)builder{
     FTSRShapeWireframe *wireframe = [[FTSRShapeWireframe alloc]initWithIdentifier:self.wireframeID frame:self.wireframeRect clip:self.attributes.clip backgroundColor:self.isDisplayedInPopover?[FTSystemColors secondarySystemGroupedBackgroundColorStr]:[FTSystemColors systemBackgroundColorStr] cornerRadius:@(10) opacity:@(self.attributes.alpha)];
     wireframe.border = [[FTSRShapeBorder alloc]initWithColor:self.isDisplayedInPopover?[FTSystemColors secondarySystemFillColorStr]:nil width:1];
     return @[wireframe];

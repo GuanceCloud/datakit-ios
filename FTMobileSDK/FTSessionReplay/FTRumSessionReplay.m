@@ -75,7 +75,7 @@ static dispatch_once_t onceToken;
     //    FTFeatureDataStore *resourceDataStore = [[FTFeatureDataStore alloc]initWithFeature:resourcesFeature.name queue:self.readWriteQueue directory:self.coreDirectory];
     //    [self.stores setValue:resourceStore forKey:resourcesFeature.name];
     //    [self.features setValue:resourcesFeature forKey:resourcesFeature.name];
-    [sessionReplayFeature startWithWriter:srStore.storage.writer resourceWriter:nil resourceDataStore:nil];
+    [sessionReplayFeature startWithWriter:srStore.storage.writer webViewWriter:srStore.storage.webViewWriter resourceWriter:nil resourceDataStore:nil];
     FTInnerLogInfo(@"[session-replay] initialized success");
 }
 - (FTFeatureStores *)registerFeature:(id<FTRemoteFeature>)feature{

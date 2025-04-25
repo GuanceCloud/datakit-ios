@@ -170,7 +170,7 @@
         if(indexInOld<0){
             Adds *add = [[Adds alloc]init];
             if (i - 1 >= 0){
-                int pre = newWireframes[i-1].identifier;
+                int64_t pre = newWireframes[i-1].identifier;
                 add.previousId = pre;
             }
             add.wireframe = newWireframes[i];
@@ -184,7 +184,7 @@
                 [removes addObject:remove];
                 Adds *add = [[Adds alloc]init];
                 if (i - 1 >= 0){
-                    int pre = newWireframes[i-1].identifier;
+                    int64_t pre = newWireframes[i-1].identifier;
                     add.previousId = pre;
                 }
                 add.wireframe = newWireframes[i];
@@ -323,4 +323,9 @@
 
     return jsonData;
 }
+@end
+
+@implementation FTSRWebRecord
+
+
 @end
