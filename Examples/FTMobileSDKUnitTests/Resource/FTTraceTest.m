@@ -20,7 +20,7 @@
 #import "NSDate+FTUtil.h"
 #import "FTJSONUtil.h"
 #import "FTRequest.h"
-#import "FTNetworkManager.h"
+#import "FTHTTPClient.h"
 #import "FTTracer.h"
 #import <objc/runtime.h>
 #import "FTURLSessionInstrumentation.h"

@@ -136,7 +136,7 @@ NSString * FTQueryStringFromParameters(NSDictionary *parameters,FTParameterType 
         }
     }];
     FTRecordModel *model = [events firstObject];
-    FTInnerLogDebug(@"\nUpload Datas Type:%@\nLine RequestDatas:\n%@",model.op,requestDatas);
+    FTInnerLogDebug(@"[NETWORK]\nUpload Datas Type:%@\nLine RequestDatas:\n%@",model.op,requestDatas);
     return requestDatas;
 }
 @end

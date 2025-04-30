@@ -18,7 +18,7 @@
 #import "NSString+FTAdd.h"
 //#import "FTBaseInfoHander.h"
 #import "FTRequest.h"
-#import "FTNetworkManager.h"
+#import "FTHTTPClient.h"
 #import "FTRequestBody.h"
 #import "FTModelHelper.h"
 #import "FTEnumConstant.h"

@@ -12,7 +12,7 @@
 #import "FTTrackerEventDBTool.h"
 #import "FTLog+Private.h"
 #import "FTRequest.h"
-#import "FTNetworkManager.h"
+#import "FTHTTPClient.h"
 #import "FTAppLifeCycle.h"
 #import "FTConstants.h"
 #import <pthread.h>

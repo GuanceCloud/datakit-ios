@@ -20,7 +20,7 @@
 #import "NSString+FTAdd.h"
 #import "FTPresetProperty.h"
 #import "FTRequest.h"
-#import "FTNetworkManager.h"
+#import "FTHTTPClient.h"
 #import "FTModelHelper.h"
 #import "FTGlobalRumManager.h"
 #import "FTRUMManager.h"
@@ -88,7 +88,7 @@
     [[FTTrackDataManager sharedInstance] insertCacheToDB];
     FTRecordModel *model = [[[FTTrackerEventDBTool sharedManger] getAllDatas] lastObject];
     FTRequest *request = [FTRequest createRequestWithEvents:@[model] type:FT_DATA_TYPE_LOGGING];
-    [[FTNetworkManager new] sendRequest:request completion:^(NSHTTPURLResponse * _Nonnull httpResponse, NSData * _Nullable data, NSError * _Nullable error) {
+    [[FTHTTPClient new] sendRequest:request completion:^(NSHTTPURLResponse * _Nonnull httpResponse, NSData * _Nullable data, NSError * _Nullable error) {
         NSInteger statusCode = httpResponse.statusCode;
         BOOL success = (statusCode >=200 && statusCode < 500);
         XCTAssertTrue(!success);
@@ -97,7 +97,7 @@
     [self waitForExpectationsWithTimeout:45 handler:^(NSError *error) {
         XCTAssertNil(error);
     }];
-    [[FTMobileAgent sharedInstance] shutDown];
+    [FTMobileAgent shutDown];
 }
 /**
  * 设置 appid 后 Rum 开启
