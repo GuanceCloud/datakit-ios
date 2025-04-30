@@ -72,6 +72,9 @@ static CFTimeInterval processStartTime(NSTimeInterval now) {
     }];
 #endif
 }
++(NSTimeInterval)processStartTime{
+    return FTLoadDate;
+}
 - (instancetype)initWithDelegate:(nullable id)delegate{
     self = [super init];
     if (self) {
