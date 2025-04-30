@@ -9,6 +9,7 @@
 #error This file must be compiled with ARC. Either turn on ARC for the project or use -fobjc-arc flag on this file.
 #endif
 #import "FTMobileAgent.h"
+#import "FTLoggerConfig.h"
 #import "FTRecordModel.h"
 #import "FTBaseInfoHandler.h"
 #import "FTGlobalRumManager.h"
@@ -133,10 +134,7 @@ static dispatch_once_t onceToken;
             [FTPresetProperty sharedInstance].logGlobalContext = _loggerConfig.globalContext;
             [[FTTrackDataManager sharedInstance] setLogCacheLimitCount:_loggerConfig.logCacheLimitCount discardNew:_loggerConfig.discardType == FTDiscard];
             [[FTExtensionDataManager sharedInstance] writeLoggerConfig:[_loggerConfig convertToDictionary]];
-            [FTLogger startWithEnablePrintLogsToConsole:_loggerConfig.printCustomLogToConsole
-                                        enableCustomLog:_loggerConfig.enableCustomLog
-                                      enableLinkRumData:_loggerConfig.enableLinkRumData
-                                         logLevelFilter:_loggerConfig.logLevelFilter sampleRate:_loggerConfig.samplerate writer:self.dataWriter];
+            [FTLogger startWithLoggerConfig:_loggerConfig writer:[FTTrackDataManager sharedInstance].dataWriterWorker];
             [FTLogger sharedInstance].linkRumDataProvider = [FTGlobalRumManager sharedInstance].rumManager;
             FTInnerLogInfo(@"Init Logger Config Success: \n%@",_loggerConfig.debugDescription);
         }
@@ -179,15 +177,7 @@ static dispatch_once_t onceToken;
 }
 -(void)logging:(NSString *)content status:(FTLogStatus)status property:(NSDictionary *)property{
     @try {
-        if (!self.loggerConfig) {
-            FTInnerLogError(@"[Logging] 请先设置 FTLoggerConfig");
-            return;
-        }
-        if (!content || content.length == 0 ) {
-            FTInnerLogError(@"[Logging] 传入的第数据格式有误");
-            return;
-        }
-        [[FTLogger sharedInstance] log:content statusType:(LogStatus)status property:property];
+        [[FTLogger sharedInstance] log:content statusType:status property:property];
     } @catch (NSException *exception) {
         FTInnerLogError(@"exception %@",exception);
     }

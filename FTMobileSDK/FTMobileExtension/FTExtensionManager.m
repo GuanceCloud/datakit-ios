@@ -26,7 +26,6 @@
 @property (nonatomic, strong) FTRUMManager *rumManager;
 @property (nonatomic, strong) FTLoggerConfig *loggerConfig;
 @property (nonatomic, strong) FTExtensionConfig *extensionConfig;
-@property (nonatomic, strong) NSSet *logLevelFilterSet;
 @end
 @implementation FTExtensionManager
 static FTExtensionManager *sharedInstance = nil;
@@ -75,10 +74,7 @@ static FTExtensionManager *sharedInstance = nil;
     }
     if(loggerConfig){
         self.loggerConfig = loggerConfig;
-        self.logLevelFilterSet = [NSSet setWithArray:loggerConfig.logLevelFilter];
-        [FTLogger startWithEnablePrintLogsToConsole:loggerConfig.printCustomLogToConsole enableCustomLog:loggerConfig.enableCustomLog
-                                  enableLinkRumData:loggerConfig.enableLinkRumData
-                                     logLevelFilter:loggerConfig.logLevelFilter sampleRate:loggerConfig.samplerate writer:self];
+        [FTLogger startWithLoggerConfig:loggerConfig writer:self];
         [FTLogger sharedInstance].linkRumDataProvider = self.rumManager;
     }
 }
