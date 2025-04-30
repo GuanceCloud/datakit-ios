@@ -76,10 +76,10 @@
         [self insertCacheToDB];
     }
 }
-- (void)addRumData:(id)data{
+- (BOOL)addRumData:(id)data{
     if(self.enableLimitWithDbSize){
         if([self reachDbLimit]){
-            return;
+            return NO;
         }
     }else{
         self.rumCount += 1;
@@ -88,12 +88,12 @@
             FTInnerLogInfo(@"RUM: DiscardData (%@)",self.rumDiscardNew?@"NEW":@"OLD");
             self.rumCount += count;
             if(self.rumDiscardNew){
-                return;
+                return NO;
             }
             [[FTTrackerEventDBTool sharedManger] deleteDataWithType:FT_DATA_TYPE_RUM count:-count];
         }
     }
-    [[FTTrackerEventDBTool sharedManger] insertItem:data];
+   return [[FTTrackerEventDBTool sharedManger] insertItem:data];
 }
 - (void)autoInsertCacheToDB{
     if(self.semaphoreWaiting){
@@ -175,9 +175,17 @@
         [self.messageCaches removeAllObjects];
         pthread_mutex_unlock(&_lock);
         [[FTTrackerEventDBTool sharedManger] insertItemsWithDatas:array];
+        if (self.callback) self.callback();
     }else{
         pthread_mutex_unlock(&_lock);
     }
+}
+#pragma mark --------- FTUploadCountProtocol ----------
+- (void)uploadLogCount:(NSInteger)count{
+    self.logCount -= count;
+}
+- (void)uploadRUMCount:(NSInteger)count{
+    self.rumCount -= count;
 }
 -(void)dealloc{
     if(self.logSemaphore) dispatch_semaphore_signal(self.logSemaphore);
