@@ -62,12 +62,17 @@ static const NSTimeInterval sessionMaxDuration = 4 * 60 * 60; // 4 hours
     _sampling = sampling;
     self.rumDependencies.currentSessionSample = sampling;
     if(!sampling){
+        [self.rumDependencies.writer isCacheWriter:NO];
         self.sessionOnErrorSampling = [FTBaseInfoHandler randomSampling:self.rumDependencies.sessionOnErrorSampleRate];
         if(self.sessionOnErrorSampling == YES){
             self.context.sampled_for_error_session = YES;
-            [self.rumDependencies.writer switchToCacheWriter];
+            [self.rumDependencies.writer isCacheWriter:YES];
+            FTInnerLogInfo(@"[RUM] The current 'Session' is sampled on error.");
+        }else{
+            // session 不采集时，防止 logger 关联 rum 错误
+            self.rumDependencies.fatalErrorContext = nil;
+            FTInnerLogInfo(@"[RUM] The current 'Session' is not sampled.");
         }
-        FTInnerLogInfo(@"[RUM] The current 'Session' is not sampled.");
     }
 }
 - (BOOL)process:(FTRUMDataModel *)model context:(nonnull NSDictionary *)context{

@@ -37,7 +37,7 @@
             };
             _op = op;
             _data = [FTJSONUtil convertToJsonData:data];
-            _tm = [NSDate ft_currentNanosecondTimeStamp];
+            _tm = tm;
             FTInnerLogDebug(@"write data = %@",data);
             return self;
         }

@@ -139,7 +139,7 @@
         [self.actionHandler writeActionData:[NSDate date] context:context];
     }
     if (self.needUpdateView) {
-        [self writeViewData:model context:context];
+        [self writeViewData:model context:context updateTime:model.time];
     }
     return !shouldComplete;
 }
@@ -200,7 +200,7 @@
         self.errorHandled();
     }
 }
-- (void)writeViewData:(FTRUMDataModel *)model context:(NSDictionary *)context{
+- (void)writeViewData:(FTRUMDataModel *)model context:(NSDictionary *)context updateTime:(NSDate *)updateTime{
     if(self.isInitialView){
         return;
     }
@@ -246,7 +246,7 @@
         [field setValue:self.loading_time forKey:FT_KEY_LOADING_TIME];
     }
     long long time = [self.viewStartTime ft_nanosecondTimeStamp];
-    [self.rumDependencies.writer rumWrite:FT_RUM_SOURCE_VIEW tags:tags fields:field time:time];
+    [self.rumDependencies.writer rumWrite:FT_RUM_SOURCE_VIEW tags:tags fields:field time:time updateTime:updateTime];
     self.rumDependencies.fatalErrorContext.lastViewContext = @{@"tags":tags ? : @{},
                                                                @"fields":field,
                                                                @"time":[NSNumber numberWithLongLong:time]

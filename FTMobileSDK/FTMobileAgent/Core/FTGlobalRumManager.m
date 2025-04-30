@@ -77,6 +77,8 @@ static dispatch_once_t onceToken;
     //采集view、resource、jsBridge
     if (rumConfig.enableTrackAppANR||rumConfig.enableTrackAppFreeze) {
         _longTaskManager = [[FTLongTaskManager alloc]initWithDependencies:dependencies delegate:self enableTrackAppANR:rumConfig.enableTrackAppANR enableTrackAppFreeze:rumConfig.enableTrackAppFreeze                                        freezeDurationMs:rumConfig.freezeDurationMs];
+    }else{
+        [dependencies.writer lastFatalErrorIfFound:0];
     }
 #if !TARGET_OS_TV
     [FTWKWebViewHandler sharedInstance].rumTrackDelegate = self;

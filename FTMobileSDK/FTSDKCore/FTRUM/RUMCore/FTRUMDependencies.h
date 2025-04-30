@@ -20,8 +20,7 @@ NS_ASSUME_NONNULL_BEGIN
 @property (nonatomic, weak) id<FTRUMDataWriteProtocol> writer;
 @property (nonatomic, assign) ErrorMonitorType errorMonitorType;
 @property (nonatomic, strong) FTRUMMonitor *monitor;
-@property (nonatomic, strong) FTFatalErrorContext *fatalErrorContext;
-@property (nonatomic, strong, readonly) id<FTRUMDataWriteProtocol> cacheWriter;
+@property (nonatomic, strong, nullable) FTFatalErrorContext *fatalErrorContext;
 @property (atomic, assign) BOOL currentSessionSample;
 
 - (NSDictionary *)sampleFieldsDict;
