@@ -22,15 +22,7 @@
 #import "FTDataUploadWorker.h"
 #import "FTDataWriterWorker.h"
 
-static const NSInteger kMaxRetryCount = 5;
-static const NSTimeInterval kInitialRetryDelay = 0.5; // 初始500ms延迟
-
-@interface FTTrackDataManager ()<FTAppLifeCycleDelegate,FTNetworkChangeObserver>{
-    pthread_rwlock_t _uploadWorkLock;
-    pthread_rwlock_t _timerWorkLock;
-
-}
-@property (nonatomic, strong) dispatch_queue_t networkQueue;
+@interface FTTrackDataManager ()<FTAppLifeCycleDelegate,FTNetworkChangeObserver>
 /// 是否开启自动上传逻辑（启动时、网络状态变化、写入间隔10s）
 @property (nonatomic, assign) BOOL autoSync;
 @property (nonatomic, strong) FTHTTPClient *httpClient;
@@ -50,7 +42,7 @@ static dispatch_once_t onceToken;
 
 +(instancetype)sharedInstance{
     if(!sharedInstance){
-        FTInnerLogError(@"SDK already shutDown");
+        FTInnerLogError(@"FTTrackDataManager not initialize or SDK already shutDown");
     }
     return sharedInstance;
 }
@@ -66,8 +58,6 @@ static dispatch_once_t onceToken;
                   syncSleepTime:(int)syncSleepTime{
     self = [super init];
     if (self) {
-        dispatch_queue_attr_t attributes = dispatch_queue_attr_make_with_qos_class(DISPATCH_QUEUE_SERIAL, QOS_CLASS_UTILITY, 0);
-        _networkQueue = dispatch_queue_create("com.guance.network", attributes);
         _dataCachePolicy = [[FTDBDataCachePolicy alloc]init];
         _dataUploadWorker = [[FTDataUploadWorker alloc]initWithAutoSync:autoSync syncPageSize:syncPageSize syncSleepTime:syncSleepTime];
         _dataWriterWorker = [[FTDataWriterWorker alloc]init];

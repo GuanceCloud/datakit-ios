@@ -33,7 +33,7 @@
     if(self){
         _cacheInvalidTimeInterval = timeInterval*1e9;
         _processStartTime = FTAppLaunchTracker.processStartTime * 1e9;
-        [self getErrorTimeLineFromFileCache];
+        _lastErrorTimeInterval = [self getErrorTimeLineFromFileCache];
     }
     return self;
 }
@@ -117,7 +117,7 @@
     if (updateTime>time) {
         model.tm = updateTime;
     }
-    [[FTTrackDataManager sharedInstance] addTrackData:model type:FTAddDataRUM];
+    [[FTTrackDataManager sharedInstance] addTrackData:model type:addType];
 }
 -(void)isCacheWriter:(BOOL)cache{
     self.isCache = cache;
@@ -125,20 +125,19 @@
 -(void)lastFatalErrorIfFound:(long long)errorDate{
     if (errorDate < self.processStartTime && errorDate>0) {
         [[FTTrackerEventDBTool sharedManger] updateDatasWithType:FT_DATA_TYPE_RUM_CACHE toType:FT_DATA_TYPE_RUM toTime:errorDate];
-    }else{
-        [[FTTrackerEventDBTool sharedManger] deleteDatasWithType:FT_DATA_TYPE_RUM_CACHE toTime:self.processStartTime];
     }
+    [[FTTrackerEventDBTool sharedManger] deleteDatasWithType:FT_DATA_TYPE_RUM_CACHE toTime:self.processStartTime];
 }
 - (void)setLastErrorTimeInterval:(NSTimeInterval)lastErrorTimeInterval{
     _lastErrorTimeInterval = lastErrorTimeInterval;
     [[NSUserDefaults standardUserDefaults] setObject:@(lastErrorTimeInterval) forKey:@"ft_last_error_time"];
 }
-- (void)getErrorTimeLineFromFileCache{
+- (long long)getErrorTimeLineFromFileCache{
     NSNumber *lastError = [[NSUserDefaults standardUserDefaults] valueForKey:@"ft_last_error_time"];
     if (lastError) {
-        _lastErrorTimeInterval = [lastError longLongValue];
-        [self checkRUMSessionOnErrorDatasExpired];
+        return [lastError longLongValue];
     }
+    return 0;
 }
 - (void)checkRUMSessionOnErrorDatasExpired{
     [self checkRUMSessionOnErrorDatasWithExpireTime:[NSDate ft_currentNanosecondTimeStamp] - self.cacheInvalidTimeInterval];

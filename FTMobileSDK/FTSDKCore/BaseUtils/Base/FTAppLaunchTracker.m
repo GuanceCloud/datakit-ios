@@ -45,6 +45,8 @@ static CFTimeInterval processStartTime(NSTimeInterval now) {
 @implementation FTAppLaunchTracker{
     BOOL _applicationDidEnterBackground;
 }
+@dynamic processStartTime;
+
 + (void)load{
     CFAbsoluteTime now = CFAbsoluteTimeGetCurrent();
     FTLoadDate = processStartTime(now);

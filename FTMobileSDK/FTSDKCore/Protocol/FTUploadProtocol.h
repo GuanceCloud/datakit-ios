@@ -16,5 +16,7 @@
 
 @protocol FTSessionOnErrorDataHandler <NSObject>
 - (void)checkRUMSessionOnErrorDatasExpired;
+// 如果文件缓存中无数据则返回 0
+- (long long)getErrorTimeLineFromFileCache;
 @end
 #endif /* FTUploadProtocol_h */
