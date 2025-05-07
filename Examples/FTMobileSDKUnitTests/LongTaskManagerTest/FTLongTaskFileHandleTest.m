@@ -212,5 +212,26 @@ typedef void (^FTWriteCallBack)(NSDictionary *fields, NSDictionary *tags);
         self.writeCallBack = nil;
     }
 }
+-(void)rumWrite:(NSString *)source tags:(NSDictionary *)tags fields:(NSDictionary *)fields time:(long long)time updateTime:(long long)updateTime{
+    if(self.writeCallBack){
+        self.writeCallBack(fields, tags);
+        self.writeCallBack = nil;
+    }
+}
+-(void)fatalErrorWrite:(NSString *)source tags:(NSDictionary *)tags fields:(NSDictionary *)fields time:(long long)time updateTime:(long long)updateTime{
+    if(self.writeCallBack){
+        self.writeCallBack(fields, tags);
+        self.writeCallBack = nil;
+    }
+}
+- (void)fatalErrorWrite:(NSString *)source tags:(NSDictionary *)tags fields:(NSDictionary *)fields time:(long long)time updateTime:(long long)updateTime cache:(BOOL)cache{
+    if(self.writeCallBack){
+        self.writeCallBack(fields, tags);
+        self.writeCallBack = nil;
+    }
+}
+-(void)lastFatalErrorIfFound:(long long)errorDate{
+   
+}
 @end
 

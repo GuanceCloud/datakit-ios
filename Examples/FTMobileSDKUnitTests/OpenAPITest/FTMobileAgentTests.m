@@ -26,6 +26,8 @@
 #import "FTMobileConfig+Private.h"
 #import "FTNetworkMock.h"
 #import "FTTestUtils.h"
+#import "FTTrackDataManager+Test.h"
+#import "FTDataUploadWorker.h"
 @interface FTMobileAgentTests : KIFTestCase
 @property (nonatomic, strong) FTMobileConfig *config;
 @property (nonatomic, copy) NSString *url;
@@ -364,7 +366,7 @@
     [[FTTrackDataManager sharedInstance] insertCacheToDB];
     NSArray *oldDatas = [[FTTrackerEventDBTool sharedManger] getFirstRecords:10 withType:FT_DATA_TYPE_LOGGING];
     XCTAssertTrue(oldDatas.count>0);
-    [[FTTrackDataManager sharedInstance] addObserver:self forKeyPath:@"isUploading" options:NSKeyValueObservingOptionNew context:nil];
+    [[FTTrackDataManager sharedInstance].dataUploadWorker addObserver:self forKeyPath:@"isUploading" options:NSKeyValueObservingOptionNew context:nil];
     self.expectation = [self expectationWithDescription:@"异步操作timeout"];
 
     [[NSNotificationCenter defaultCenter] postNotificationName:UIApplicationDidBecomeActiveNotification object:nil];
@@ -376,7 +378,7 @@
     }];
     NSArray *newDatas = [[FTTrackerEventDBTool sharedManger] getFirstRecords:10 withType:FT_DATA_TYPE_LOGGING];
     XCTAssertTrue(newDatas.count>=oldDatas.count);
-    [[FTTrackDataManager sharedInstance] removeObserver:self forKeyPath:@"isUploading"];
+    [[FTTrackDataManager sharedInstance].dataUploadWorker removeObserver:self forKeyPath:@"isUploading"];
 }
 - (void)testAutoSync_YES{
     [FTNetworkMock networkOHHTTPStubs];
@@ -395,7 +397,7 @@
     [[FTTrackDataManager sharedInstance] insertCacheToDB];
     NSArray *oldDatas = [[FTTrackerEventDBTool sharedManger] getFirstRecords:10 withType:FT_DATA_TYPE_LOGGING];
     XCTAssertTrue(oldDatas.count>0);
-    [[FTTrackDataManager sharedInstance] addObserver:self forKeyPath:@"isUploading" options:NSKeyValueObservingOptionNew context:nil];
+    [[FTTrackDataManager sharedInstance].dataUploadWorker addObserver:self forKeyPath:@"isUploading" options:NSKeyValueObservingOptionNew context:nil];
     self.expectation = [self expectationWithDescription:@"异步操作timeout"];
 
     [[NSNotificationCenter defaultCenter] postNotificationName:UIApplicationDidBecomeActiveNotification object:nil];
@@ -405,7 +407,7 @@
     }];
     NSArray *newDatas = [[FTTrackerEventDBTool sharedManger] getFirstRecords:10 withType:FT_DATA_TYPE_LOGGING];
     XCTAssertTrue(newDatas.count<oldDatas.count);
-    [[FTTrackDataManager sharedInstance] removeObserver:self forKeyPath:@"isUploading"];
+    [[FTTrackDataManager sharedInstance].dataUploadWorker removeObserver:self forKeyPath:@"isUploading"];
 }
 -(void)observeValueForKeyPath:(NSString *)keyPath ofObject:(id)object change:(NSDictionary<NSKeyValueChangeKey,id> *)change context:(void *)context{
     if([keyPath isEqualToString:@"isUploading"]){

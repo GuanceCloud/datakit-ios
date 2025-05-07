@@ -15,8 +15,9 @@
 #import "FTConstants.h"
 #import "FTRUMManager.h"
 #import "FTGlobalRumManager.h"
-#import "FTDataWriterManager.h"
+#import "FTDataWriterWorker.h"
 #import "XCTestCase+Utils.h"
+#import "FTTrackDataManager.h"
 @interface FTRUMSessionOnErrorSampleRateTest : XCTestCase
 @property (nonatomic, copy) NSString *url;
 @property (nonatomic, copy) NSString *appid;
@@ -175,12 +176,13 @@
 }
 /// 判断调用 -switchCacheWriter 方法后，添加的 rum 数据(非error)写入数据库时类型是否为 cache，多次调用是否有影响
 - (void)testSwitchCacheWriter{
-    FTDataWriterManager *writerManager = [[FTDataWriterManager alloc]init];
+    FTDataWriterWorker *writerManager = [[FTDataWriterWorker alloc]init];
+    [FTTrackDataManager startWithAutoSync:NO syncPageSize:10 syncSleepTime:0];
     NSArray *oldArray = [[FTTrackerEventDBTool sharedManger] getAllDatas];
 
-    [writerManager switchToCacheWriter];
+    [writerManager isCacheWriter:YES];
     [writerManager rumWrite:FT_RUM_SOURCE_VIEW tags:@{@"view_id":@"1"} fields:@{@"test":@"normal"} time:123];
-    [writerManager switchToCacheWriter];
+    [writerManager isCacheWriter:YES];
     [writerManager rumWrite:FT_RUM_SOURCE_VIEW tags:@{@"view_id":@"2"} fields:@{@"test":@"cache"} time:123];
     
     NSArray *newArray = [[FTTrackerEventDBTool sharedManger] getAllDatas];
@@ -189,18 +191,22 @@
     }
     XCTAssertTrue(newArray.count - oldArray.count == 2);
 }
-/// 判断调用 -switchCacheWriter 方法后,添加 error 数据后，再添加的数据写入数据库时，数据类型是否为 rum
+/// 判断调用 -switchCacheWriter 方法后,添加 error 数据后，再添加的数据写入数据库时，数据类型是否为 rum_cache
 - (void)testSwitchCacheWriter_addErrorDataTurnRUMWriter{
-    FTDataWriterManager *writerManager = [[FTDataWriterManager alloc]init];
+    [FTTrackDataManager startWithAutoSync:NO syncPageSize:10 syncSleepTime:0];
+    FTDataWriterWorker *writerManager = [[FTDataWriterWorker alloc]init];
     NSArray *oldArray = [[FTTrackerEventDBTool sharedManger] getAllDatas];
 
-    [writerManager switchToCacheWriter];
-    [writerManager rumWrite:FT_RUM_SOURCE_VIEW tags:@{@"view_id":@"1"} fields:@{@"test":@"cache"} time:123];
+    [writerManager isCacheWriter:YES];
+    [writerManager rumWrite:FT_RUM_SOURCE_VIEW tags:@{@"view_id":@"1"} fields:@{@"test":@"cache"} time:123 updateTime:[[NSDate date] timeIntervalSince1970]*1e9];
     [writerManager rumWrite:FT_RUM_SOURCE_ERROR tags:@{@"view_id":@"2"} fields:@{@"test":@"normal"} time:[[NSDate date] timeIntervalSince1970]*1e9];
-    [writerManager rumWrite:FT_RUM_SOURCE_VIEW tags:@{@"view_id":@"2"} fields:@{@"test":@"normal"} time:123];
+    [writerManager rumWrite:FT_RUM_SOURCE_VIEW tags:@{@"view_id":@"2"} fields:@{@"test":@"normal"} time:123 updateTime:[[NSDate date] timeIntervalSince1970]*1e9];
     
-    NSArray *newArray = [[FTTrackerEventDBTool sharedManger] getAllDatas];
-    for (FTRecordModel *model in newArray) {
+    [writerManager checkRUMSessionOnErrorDatasExpired];
+    NSArray<FTRecordModel *> *newArray = [[FTTrackerEventDBTool sharedManger] getAllDatas];
+    NSArray *datas = [newArray subarrayWithRange:NSMakeRange(0, newArray.count-1)];
+    [[newArray lastObject].op isEqualToString:FT_DATA_TYPE_RUM_CACHE];
+    for (FTRecordModel *model in datas) {
         XCTAssertTrue([model.op isEqualToString:FT_DATA_TYPE_RUM]);
     }
     XCTAssertTrue(newArray.count - oldArray.count == 3);
@@ -208,14 +214,16 @@
 }
 /// 没有 error 数据写入时，cache 数据的删除
 - (void)testSessionOnErrorDatasInvalid_noErrorData{
-    FTDataWriterManager *writerManager = [[FTDataWriterManager alloc]initWithCacheInvalidTimeInterval:1];
+    [FTTrackDataManager startWithAutoSync:NO syncPageSize:10 syncSleepTime:0];
+    FTDataWriterWorker *writerManager = [[FTDataWriterWorker alloc]initWithCacheInvalidTimeInterval:1];
     NSArray *oldArray = [[FTTrackerEventDBTool sharedManger] getAllDatas];
     
-    [writerManager switchToCacheWriter];
-    [writerManager rumWrite:FT_RUM_SOURCE_VIEW tags:@{@"view_id":@"1"} fields:@{@"test":@"cache"} time:123];
+    [writerManager isCacheWriter:YES];
+    [writerManager rumWrite:FT_RUM_SOURCE_VIEW tags:@{@"view_id":@"1"} fields:@{@"test":@"cache"} time:123 updateTime:[[NSDate date] timeIntervalSince1970]*1e9];
     [self waitForTimeInterval:1.5];
-    [writerManager rumWrite:FT_RUM_SOURCE_VIEW tags:@{@"view_id":@"2"} fields:@{@"test":@"cache"} time:123];
+    [writerManager rumWrite:FT_RUM_SOURCE_VIEW tags:@{@"view_id":@"2"} fields:@{@"test":@"cache"} time:123 updateTime:[[NSDate date] timeIntervalSince1970]*1e9];
     [self waitForTimeInterval:0.5];
+    [writerManager checkRUMSessionOnErrorDatasExpired];
     NSArray *newArray = [[FTTrackerEventDBTool sharedManger] getAllDatas];
     for (FTRecordModel *model in newArray) {
         XCTAssertTrue([model.op isEqualToString:FT_DATA_TYPE_RUM_CACHE]);
@@ -224,15 +232,18 @@
 }
 ///  error 数据写入后，删除采集时间间隔外的数据，时间间隔内更新 cache 数据的数据类型为 rum
 - (void)testSessionOnErrorDatasInvalid_addErrorData{
-    FTDataWriterManager *writerManager = [[FTDataWriterManager alloc]initWithCacheInvalidTimeInterval:1];
-    [writerManager switchToCacheWriter];
-    [writerManager rumWrite:FT_RUM_SOURCE_VIEW tags:@{@"view_id":@"1"} fields:@{@"test":@"delete"} time:123];
+    [FTTrackDataManager startWithAutoSync:NO syncPageSize:10 syncSleepTime:0];
+    FTDataWriterWorker *writerManager = [[FTDataWriterWorker alloc]initWithCacheInvalidTimeInterval:1];
+    [writerManager isCacheWriter:YES];
+    [writerManager rumWrite:FT_RUM_SOURCE_VIEW tags:@{@"view_id":@"1"} fields:@{@"test":@"delete"} time:123 updateTime:[[NSDate date] timeIntervalSince1970]*1e9];
     [self waitForTimeInterval:0.5];
-    [writerManager rumWrite:FT_RUM_SOURCE_VIEW tags:@{@"view_id":@"2"} fields:@{@"test":@"cache"} time:123];
+    [writerManager rumWrite:FT_RUM_SOURCE_VIEW tags:@{@"view_id":@"2"} fields:@{@"test":@"cache"} time:123 updateTime:[[NSDate date] timeIntervalSince1970]*1e9];
     NSArray *oldArray = [[FTTrackerEventDBTool sharedManger] getAllDatas];
     [self waitForTimeInterval:0.5];
+    
     [writerManager rumWrite:FT_RUM_SOURCE_ERROR tags:@{@"view_id":@"2"} fields:@{@"test":@"normal"} time:[[NSDate date] timeIntervalSince1970]*1e9];
 
+    [writerManager checkRUMSessionOnErrorDatasExpired];
     NSArray *newArray = [[FTTrackerEventDBTool sharedManger] getAllDatas];
     for (FTRecordModel *model in newArray) {
         XCTAssertTrue([model.op isEqualToString:FT_DATA_TYPE_RUM]);
