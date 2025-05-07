@@ -7,7 +7,7 @@
 //
 
 #import "FTMobileConfig.h"
-
+#import "FTLoggerConfig.h"
 NS_ASSUME_NONNULL_BEGIN
 @interface FTMobileConfig ()
 /// 添加 pkg 信息

@@ -1,1 +1,1 @@
-../DataManager/FTNetworkInfoManager.h
+../DataManager/Upload/FTNetworkInfoManager.h
