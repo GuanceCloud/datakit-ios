@@ -109,7 +109,7 @@ static FTExtensionManager *sharedInstance = nil;
     if (![content isKindOfClass:[NSString class]] || content.length==0) {
         return;
     }
-    [[FTLogger sharedInstance] log:content statusType:(LogStatus)status property:property];
+    [[FTLogger sharedInstance] log:content statusType:status property:property];
 }
 -(void)logging:(NSString *)content status:(NSString *)status tags:(NSDictionary *)tags field:(NSDictionary *)field time:(long long)time{
     @try {
