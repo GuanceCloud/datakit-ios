@@ -173,13 +173,13 @@ static dispatch_once_t onceToken;
 - (void)shutDown{
     onceToken = 0;
     sharedInstance = nil;
-    [self.dataUploadWorker cancelSynchronously];
+    [self.dataUploadWorker cancelAsynchronously];
     [self.dataCachePolicy insertCacheToDB];
     [[FTAppLifeCycle sharedInstance] removeAppLifecycleDelegate:self];
     [[FTTrackerEventDBTool sharedManger] shutDown];
 }
 -(void)dealloc{
-    [self.dataUploadWorker cancelSynchronously];
+    [self.dataUploadWorker cancelAsynchronously];
     [[FTAppLifeCycle sharedInstance] removeAppLifecycleDelegate:self];
 }
 @end

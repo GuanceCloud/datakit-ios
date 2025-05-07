@@ -135,6 +135,20 @@ static const NSTimeInterval kInitialRetryDelay = 0.5; // 初始500ms延迟
         strongSelf.timerSource = nil;
     });
 }
+- (void)cancelAsynchronously{
+    self.finish = YES;
+    __weak typeof(self) weakSelf = self;
+    dispatch_async(self.networkQueue, ^{
+        __strong __typeof(weakSelf) strongSelf = weakSelf;
+        if (!strongSelf) {
+            return;
+        }
+        if(strongSelf.uploadWork) dispatch_block_cancel(strongSelf.uploadWork);
+        strongSelf.uploadWork = nil;
+        if(strongSelf.timerSource) dispatch_source_cancel(strongSelf.timerSource);
+        strongSelf.timerSource = nil;
+    });
+}
 - (void)_flushSyncData:(BOOL)withSleep{
     if (self.isUploading) {
         FTInnerLogDebug(@"[NETWORK]: Network is Uploading. ignore this upload");
