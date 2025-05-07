@@ -30,10 +30,14 @@
         if (cpuMonitor || memoryMonitor) {
             __weak typeof(self) weakSelf = self;
             [[NSRunLoop mainRunLoop] performInModes:@[NSRunLoopCommonModes] block:^{
-                [weakSelf takeMonitorValue];
+                __strong __typeof(weakSelf) strongSelf = weakSelf;
+                if (!strongSelf) return;
+                [strongSelf takeMonitorValue];
             }];
             NSTimer *timer = [NSTimer timerWithTimeInterval:frequency repeats:YES block:^(NSTimer * _Nonnull timer) {
-                [weakSelf takeMonitorValue];
+                __strong __typeof(weakSelf) strongSelf = weakSelf;
+                if (!strongSelf) return;
+                [strongSelf takeMonitorValue];
             }];
             [[NSRunLoop mainRunLoop] addTimer:timer forMode:NSRunLoopCommonModes];
             _timer = timer;

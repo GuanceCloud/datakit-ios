@@ -78,7 +78,10 @@
     NSMutableDictionary *tags = [NSMutableDictionary dictionaryWithDictionary:context];
     [tags addEntriesFromDictionary:sessionTag];
     [tags addEntriesFromDictionary:model.tags];
-    [self.dependencies.writer rumWrite:FT_RUM_SOURCE_ERROR tags:tags fields:model.fields time:model.tm];
+    NSMutableDictionary *fields = [NSMutableDictionary new];
+    [fields addEntriesFromDictionary:model.fields];
+    [fields addEntriesFromDictionary:self.dependencies.sampleFieldsDict];
+    [self.dependencies.writer rumWrite:FT_RUM_SOURCE_ERROR tags:tags fields:fields time:model.tm];
     [[FTModuleManager sharedInstance] postMessage:FTMessageKeyRumError message:@{@"error_date":model.time,
                                                                                  @"error_crash":@(NO)
                                                                                }];
@@ -90,6 +93,7 @@
         [fields addEntriesFromDictionary:self.resourceProperty];
     }
     [fields addEntriesFromDictionary:data.fields];
+    [fields addEntriesFromDictionary:self.dependencies.sampleFieldsDict];
     [fields setValue:@(self.dependencies.sessionHasReplay) forKey:FT_SESSION_HAS_REPLAY];
     [fields setValue:[self.time ft_nanosecondTimeIntervalToDate:data.time] forKey:FT_DURATION];
     if(model.metrics){

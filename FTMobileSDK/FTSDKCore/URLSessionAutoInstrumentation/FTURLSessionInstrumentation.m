@@ -71,8 +71,25 @@ static dispatch_once_t onceToken;
     if(self){
         _shouldRUMInterceptor = NO;
         _shouldTraceInterceptor = NO;
+        [self swizzleURLSession];
     }
     return self;
+}
+- (void)swizzleURLSession{
+#if !defined(FT_DISABLE_SWIZZLING_RESOURCE) || FT_DISABLE_SWIZZLING_RESOURCE == 0
+    static dispatch_once_t onceToken;
+    dispatch_once(&onceToken, ^{
+        NSError *error = NULL;
+        if(@available(iOS 13.0,macOS 10.15,*)){
+            [NSURLSession ft_swizzleMethod:@selector(ft_dataTaskWithURL:completionHandler:) withMethod:@selector(dataTaskWithURL:completionHandler:) error:&error];
+        }
+        [NSURLSession ft_swizzleMethod:@selector(ft_dataTaskWithRequest:completionHandler:) withMethod:@selector(dataTaskWithRequest:completionHandler:) error:&error];
+        Class taskClass = NSClassFromString(@"__NSCFLocalSessionTask");
+        if(taskClass){
+            [taskClass ft_swizzleMethod:@selector(resume) withMethod:@selector(ft_resume) error:&error];
+        }
+    });
+#endif
 }
 -(id<FTURLSessionInterceptorProtocol>)interceptor{
     return [FTURLSessionInterceptor shared];

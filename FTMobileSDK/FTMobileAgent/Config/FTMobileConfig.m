@@ -78,7 +78,7 @@
             _monitorFrequency = (FTMonitorFrequency)[dict[@"monitorFrequency"] intValue];
             _resourceUrlHandler = [dict valueForKey:@"resourceUrlHandler"];
             _resourcePropertyProvider = [dict valueForKey:@"resourceProvider"];
-            _sessionOnErrorSampleRate = [dict valueForKey:@"sessionOnErrorSampleRate"];
+            _sessionOnErrorSampleRate = [[dict valueForKey:@"sessionOnErrorSampleRate"] intValue];
         }
         return self;
     }else{
@@ -121,66 +121,6 @@
     [dict setValue:[self.resourceUrlHandler copy] forKey:@"resourceUrlHandler"];
     [dict setValue:[self.resourcePropertyProvider copy] forKey:@"resourcePropertyProvider"];
     return [NSString stringWithFormat:@"%@",dict];
-}
-@end
-@implementation FTLoggerConfig
--(instancetype)init{
-    self = [super init];
-    if (self) {
-        _discardType = FTDiscard;
-        _samplerate = 100;
-        _enableLinkRumData = NO;
-        _enableCustomLog = NO;
-        _logLevelFilter = @[@0,@1,@2,@3,@4];
-        _logCacheLimitCount = FT_DB_LOG_MAX_COUNT;
-    }
-    return self;
-}
-- (instancetype)copyWithZone:(NSZone *)zone {
-    FTLoggerConfig *options = [[[self class] allocWithZone:zone] init];
-    options.samplerate = self.samplerate;
-    options.enableLinkRumData = self.enableLinkRumData;
-    options.enableCustomLog = self.enableCustomLog;
-    options.logLevelFilter = self.logLevelFilter;
-    options.discardType = self.discardType;
-    options.globalContext = self.globalContext;
-    options.printCustomLogToConsole = self.printCustomLogToConsole;
-    options.logCacheLimitCount = self.logCacheLimitCount;
-    return options;
-}
--(instancetype)initWithDictionary:(NSDictionary *)dict{
-    if(dict){
-        if (self = [super init]) {
-            _samplerate = [dict[@"samplerate"] intValue];
-            _enableLinkRumData = [dict[@"enableLinkRumData"] boolValue];
-            _enableCustomLog = [dict[@"enableCustomLog"] boolValue];
-            _logLevelFilter = dict[@"logLevelFilter"];
-            _discardType = (FTLogCacheDiscard)[dict[@"discardType"] intValue];
-            _globalContext = dict[@"globalContext"];
-            _printCustomLogToConsole = [dict[@"printCustomLogToConsole"] boolValue];
-        }
-        return self;
-    }else{
-        return nil;
-    }
-}
--(void)setLogCacheLimitCount:(int)logCacheLimitCount{
-    _logCacheLimitCount = MAX(FT_DB_LOG_MIN_COUNT, logCacheLimitCount);
-}
--(NSDictionary *)convertToDictionary{
-    NSMutableDictionary *dict = [NSMutableDictionary new];
-    [dict setValue:@(self.samplerate) forKey:@"samplerate"];
-    [dict setValue:@(self.enableLinkRumData) forKey:@"enableLinkRumData"];
-    [dict setValue:@(self.enableCustomLog) forKey:@"enableCustomLog"];
-    [dict setValue:self.logLevelFilter forKey:@"logLevelFilter"];
-    [dict setValue:@(self.discardType) forKey:@"discardType"];
-    [dict setValue:self.globalContext forKey:@"globalContext"];
-    [dict setValue:@(self.logCacheLimitCount) forKey:@"logCacheLimitCount"];
-    [dict setValue:@(self.printCustomLogToConsole) forKey:@"printCustomLogToConsole"];
-    return dict;
-}
--(NSString *)debugDescription{
-    return [NSString stringWithFormat:@"%@",[self convertToDictionary]];
 }
 @end
 @implementation FTTraceConfig
@@ -280,6 +220,11 @@
 -(void)setEnv:(NSString *)env{
     if(env!=nil && env.length>0){
         _env = env;
+    }
+}
+-(void)setService:(NSString *)service{
+    if(service!=nil && service.length>0){
+        _service = service;
     }
 }
 -(void)setSyncSleepTime:(int)syncSleepTime{

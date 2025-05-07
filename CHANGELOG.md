@@ -1,3 +1,12 @@
+# 1.5.15
+1. 修复 Swift Package Manager 编译报错问题
+---
+# 1.5.15-alpha.6
+1. 解决与 `AFNetworking` URLSession resume 方法 swizzle 冲突问题
+---
+# 1.5.15-alpha.5
+1. `sessionOnErrorSampleRate` 类型改为 `int`。Error Session 采集逻辑调整，从 error 发生前 1 分钟开始采集。
+---
 # 1.6.1-alpha.1
 1. Session Replay 新增支持通过 `touchPrivacy` 触摸屏蔽的可用隐私级别、`textAndInputPrivacy`文本和输入屏蔽的可用隐私级别，进行细粒度的隐私级别设置
 2. Session Replay 新增支持 UIView 通过 `sessionReplayPrivacyOverrides` 设置视图级别隐私覆盖

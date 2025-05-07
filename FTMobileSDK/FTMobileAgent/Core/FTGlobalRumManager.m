@@ -81,6 +81,8 @@ static dispatch_once_t onceToken;
     //采集view、resource、jsBridge
     if (rumConfig.enableTrackAppANR||rumConfig.enableTrackAppFreeze) {
         _longTaskManager = [[FTLongTaskManager alloc]initWithDependencies:dependencies delegate:self enableTrackAppANR:rumConfig.enableTrackAppANR enableTrackAppFreeze:rumConfig.enableTrackAppFreeze                                        freezeDurationMs:rumConfig.freezeDurationMs];
+    }else{
+        [dependencies.writer lastFatalErrorIfFound:0];
     }
 #if !TARGET_OS_TV
     [FTWKWebViewHandler sharedInstance].rumTrackDelegate = self;
@@ -98,16 +100,7 @@ static dispatch_once_t onceToken;
 }
 #pragma mark ========== jsBridge ==========
 #if !TARGET_OS_TV
--(void)ftAddScriptMessageHandlerWithWebView:(WKWebView *)webView{
-    if (![webView isKindOfClass:[WKWebView class]]) {
-        return;
-    }
-    self.jsBridge = [FTWKWebViewJavascriptBridge bridgeForWebView:webView];
-    [self.jsBridge registerHandler:@"sendEvent" handler:^(id data, WVJBResponseCallback responseCallback) {
-        [self dealReceiveScriptMessage:data callBack:responseCallback];
-    }];
-}
-- (void)dealReceiveScriptMessage:(id )message callBack:(WVJBResponseCallback)callBack{
+- (void)dealReceiveScriptMessage:(id )message slotId:(NSUInteger)slotId{
     @try {
         NSDictionary *messageDic = [message isKindOfClass:NSDictionary.class]?message:[FTJSONUtil dictionaryWithJsonString:message];
         

@@ -41,7 +41,7 @@ void *FTRUMQueueIdentityKey = &FTRUMQueueIdentityKey;
         _rumDependencies = dependencies;
         _appState = FTAppStateStartUp;
         _preViewDuration = [[FTReadWriteHelper alloc]initWithValue:[NSMutableDictionary new]] ;
-        _rumQueue = dispatch_queue_create_with_target("com.guance.rum", DISPATCH_QUEUE_SERIAL, dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_HIGH, 0));
+        _rumQueue = dispatch_queue_create("com.guance.rum", DISPATCH_QUEUE_SERIAL);
         dispatch_queue_set_specific(_rumQueue, FTRUMQueueIdentityKey, &FTRUMQueueIdentityKey, NULL);
         [self notifyRumInit];
         self.assistant = self;
@@ -402,7 +402,7 @@ void *FTRUMQueueIdentityKey = &FTRUMQueueIdentityKey;
     [self addLongTaskWithStack:stack duration:duration startTime:time property:nil];
 }
 - (void)addLongTaskWithStack:(NSString *)stack duration:(NSNumber *)duration startTime:(long long)time property:(nullable NSDictionary *)property{
-    if (!stack || stack.length == 0 || (duration == nil)) {
+    if (!stack || (duration == nil)) {
         FTInnerLogError(@"[RUM] Failed to add longtask due to missing required fields. Please ensure 'stack' and 'duration' are provided.");
         return;
     }
@@ -476,10 +476,13 @@ void *FTRUMQueueIdentityKey = &FTRUMQueueIdentityKey;
     }
 }
 - (NSDictionary *)getLinkRUMData{
-    NSMutableDictionary *dict = [NSMutableDictionary dictionary];
-    [dict addEntriesFromDictionary:[self rumDynamicProperty]];
-    [dict addEntriesFromDictionary:self.rumDependencies.fatalErrorContext.lastSessionContext];
-    return dict;
+    if(self.rumDependencies.currentSessionSample){
+        NSMutableDictionary *dict = [NSMutableDictionary dictionary];
+        [dict addEntriesFromDictionary:[self rumDynamicProperty]];
+        [dict addEntriesFromDictionary:self.rumDependencies.fatalErrorContext.lastSessionContext];
+        return dict;
+    }
+    return nil;
 }
 -(NSDictionary *)getCurrentSessionInfo{
     return self.rumDependencies.fatalErrorContext.lastSessionContext;

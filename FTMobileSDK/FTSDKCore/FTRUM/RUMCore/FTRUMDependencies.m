@@ -7,7 +7,13 @@
 //
 
 #import "FTRUMDependencies.h"
+#import "FTConstants.h"
 
 @implementation FTRUMDependencies
-
+- (NSDictionary *)sampleFieldsDict{
+    return @{
+        FT_RUM_SESSION_ON_ERROR_SAMPLE_RATE:@(self.sessionOnErrorSampleRate),
+        FT_RUM_SESSION_SAMPLE_RATE:@(self.sampleRate)
+    };
+}
 @end

@@ -73,6 +73,8 @@
 @property (nonatomic, strong) FTReadWriteHelper<NSMutableDictionary*> *globalRUMContextHelper;
 @property (nonatomic, strong) FTReadWriteHelper<NSMutableDictionary*> *globalLogContextHelper;
 @property (nonatomic, strong) NSDictionary *globalContext;
+@property (nonatomic, strong) NSDictionary *pkgInfo;
+
 @property (nonatomic, copy) NSString *rum_custom_keys;
 @end
 @implementation FTPresetProperty
@@ -96,12 +98,13 @@ static dispatch_once_t onceToken;
     }
     return self;
 }
-- (void)startWithVersion:(NSString *)version sdkVersion:(NSString *)sdkVersion env:(NSString *)env service:(NSString *)service globalContext:(NSDictionary *)globalContext{
+- (void)startWithVersion:(NSString *)version sdkVersion:(NSString *)sdkVersion env:(NSString *)env service:(NSString *)service globalContext:(NSDictionary *)globalContext pkgInfo:(NSDictionary *)pkgInfo{
     _version = version;
     _env = env;
     _service = service;
     _sdkVersion = sdkVersion;
     _globalContext = globalContext;
+    _pkgInfo = pkgInfo;
 }
 -(void)setRumGlobalContext:(NSDictionary *)rumGlobalContext{
     _rumGlobalContext = rumGlobalContext;
@@ -116,7 +119,7 @@ static dispatch_once_t onceToken;
                 _baseCommonPropertyTags =@{
                     FT_APPLICATION_UUID:[self getApplicationUUID],
                     FT_COMMON_PROPERTY_DEVICE_UUID:self.mobileDevice.deviceUUID,
-                    FT_KEY_SERVICE:self.service,
+                    FT_KEY_SERVICE:self.service ? : @"",
                 };
             }
         }
@@ -136,6 +139,7 @@ static dispatch_once_t onceToken;
     [tag addEntriesFromDictionary:self.globalLogContextHelper.currentValue];
     [tag addEntriesFromDictionary:self.globalContext];
     [tag addEntriesFromDictionary:self.logGlobalContext];
+    [tag setValue:self.pkgInfo forKey:FT_SDK_PKG_INFO];
     return tag;
 }    
 - (NSDictionary *)sessionReplayProperty{
@@ -198,6 +202,7 @@ static dispatch_once_t onceToken;
     if (self.userHelper.currentValue.extra) {
         [dict addEntriesFromDictionary:self.userHelper.currentValue.extra];
     }
+    [dict setValue:self.pkgInfo forKey:FT_SDK_PKG_INFO];
     return dict;
 }
 - (void)appendGlobalContext:(NSDictionary *)context{
@@ -211,12 +216,14 @@ static dispatch_once_t onceToken;
     if(context && context.count>0){
         __weak typeof(self) weakSelf = self;
         [self.globalRUMContextHelper concurrentWrite:^(NSMutableDictionary * _Nonnull value) {
+            __strong __typeof(weakSelf) strongSelf = weakSelf;
+            if(!strongSelf) return;
             [value addEntriesFromDictionary:context];
             NSMutableArray *allKeys = [NSMutableArray arrayWithArray:value.allKeys];
-            if(weakSelf.rumGlobalContext.count>0){
-                [allKeys addObjectsFromArray:weakSelf.rumGlobalContext.allKeys];
+            if(strongSelf.rumGlobalContext.count>0){
+                [allKeys addObjectsFromArray:strongSelf.rumGlobalContext.allKeys];
             }
-            weakSelf.rum_custom_keys = [FTJSONUtil convertToJsonDataWithObject:allKeys];
+            strongSelf.rum_custom_keys = [FTJSONUtil convertToJsonDataWithObject:allKeys];
         }];
     }
 }

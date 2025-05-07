@@ -8,19 +8,6 @@
 
 #import <Foundation/Foundation.h>
 @class FTTraceContext;
-///事件等级和状态，默认：FTStatusInfo
-typedef NS_ENUM(NSInteger, FTLogStatus) {
-    /// 提示
-    FTStatusInfo         = 0,
-    /// 警告
-    FTStatusWarning,
-    /// 错误
-    FTStatusError,
-    /// 严重
-    FTStatusCritical,
-    /// 恢复
-    FTStatusOk,
-};
 /// ERROR 中的设备信息
 typedef NS_OPTIONS(NSUInteger, FTErrorMonitorType) {
     /// 开启所有监控： 电池、内存、CPU使用率
@@ -89,13 +76,6 @@ typedef NS_ENUM(NSUInteger, FTSyncPageSize) {
     /// MAX 50
     FTSyncPageSizeMax,
 };
-/// 日志废弃策略
-typedef NS_ENUM(NSInteger, FTLogCacheDiscard)  {
-    /// 默认，当日志数据数量大于最大值（5000）时，新数据不进行写入
-    FTDiscard,
-    /// 当日志数据大于最大值时,废弃旧数据
-    FTDiscardOldest
-};
 
 /// RUM废弃策略
 typedef NS_ENUM(NSInteger, FTRUMCacheDiscard)  {
@@ -118,31 +98,6 @@ typedef BOOL(^FTResourceUrlHandler)(NSURL * url);
 typedef NSDictionary<NSString *,id>* _Nullable (^FTResourcePropertyProvider)( NSURLRequest * _Nullable request, NSURLResponse * _Nullable response,NSData *_Nullable data, NSError *_Nullable error);
 /// 支持自定义 trace, 确认拦截后，返回 TraceContext，不拦截返回 nil
 typedef FTTraceContext*_Nullable(^FTTraceInterceptor)(NSURLRequest *_Nonnull request);
-/// logger 功能配置项
-@interface FTLoggerConfig : NSObject
-/// 禁用 new 初始化
-+ (instancetype)new NS_UNAVAILABLE;
-/// 日志废弃策略
-@property (nonatomic, assign) FTLogCacheDiscard  discardType;
-/// 采样配置，属性值：0至100，100则表示百分百采集，不做数据样本压缩。
-@property (nonatomic, assign) int samplerate;
-/// 是否将 logger 数据与 rum 关联
-@property (nonatomic, assign) BOOL enableLinkRumData;
-/// 是否上传自定义 log
-@property (nonatomic, assign) BOOL enableCustomLog;
-/// 是否将自定义日志在控制台打印
-@property (nonatomic, assign) BOOL printCustomLogToConsole; 
-/// 日志最大缓存量, 最低设置为 1000  默认 5000
-@property (nonatomic, assign) int logCacheLimitCount;
-/// 采集自定义日志的状态数组，默认为全采集
-///
-/// 例: @[@(FTStatusInfo),@(FTStatusError)]
-/// 或 @[@0,@1]
-@property (nonatomic, copy) NSArray<NSNumber*> *logLevelFilter;
-/// logger 全局 tag
-@property (nonatomic, copy) NSDictionary<NSString*,NSString*> *globalContext;
-
-@end
 
 
 /// RUM 功能的配置项
@@ -161,7 +116,7 @@ typedef FTTraceContext*_Nullable(^FTTraceInterceptor)(NSURLRequest *_Nonnull req
 @property (nonatomic, assign) int samplerate;
 /// 采集发生 Error 的会话
 /// 当功能开启后，若原本未被采样率选中的 Session 发生错误，SDK 将对这些原本不采集的 Session 进行数据采集
-@property (nonatomic, assign) BOOL sessionOnErrorSampleRate;
+@property (nonatomic, assign) int sessionOnErrorSampleRate;
 /// 设置是否追踪用户操作，目前支持应用启动和点击操作，
 /// 在有 View 事件的情况下，开启才能生效
 @property (nonatomic, assign) BOOL enableTraceUserAction;

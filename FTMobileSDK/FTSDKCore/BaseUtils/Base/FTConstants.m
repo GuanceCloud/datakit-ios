@@ -11,11 +11,15 @@
 
 NSString * const FT_DATA_TYPE_RUM = @"RUM";
 NSString * const FT_DATA_TYPE_LOGGING = @"Logging";
+NSString * const FT_DATA_TYPE_RUM_CACHE = @"RUMCache";
+
 NSString * const FT_MEASUREMENT  = @"measurement";
 NSString * const FT_FIELDS  = @"fields";
 NSString * const FT_TAGS  = @"tags";
 NSString * const FT_OPDATA  = @"opdata";
 NSString * const FT_OP  = @"op";
+NSString * const FT_TIME  = @"time";
+
 // source
 NSString * const FT_KEY_SOURCE = @"source";
 NSString * const FT_LOGGER_SOURCE = @"df_rum_ios_log";
@@ -68,11 +72,16 @@ NSString * const FT_VERSION = @"version";
 #pragma mark ========== RUM ==========
 NSString * const FT_TERMINAL_APP = @"app";
 NSString * const FT_APP_ID = @"app_id";
-NSString * const FT_DURATION  = @"duration";
+NSString * const FT_DURATION = @"duration";
 //session tag
 NSString * const FT_RUM_KEY_SESSION_ID = @"session_id";
 NSString * const FT_RUM_KEY_SESSION_TYPE = @"session_type";
-NSString * const FT_RUM_KEY_IS_ERROR_SESSION = @"is_error_session";
+NSString * const FT_RUM_KEY_SAMPLED_FOR_ERROR_SESSION = @"sampled_for_error_session";
+NSString * const FT_SESSION_ERROR_TIMESTAMP = @"session_error_timestamp";
+//session field
+NSString * const FT_RUM_SESSION_ON_ERROR_SAMPLE_RATE = @"session_on_error_sample_rate";
+NSString * const FT_RUM_SESSION_SAMPLE_RATE = @"session_sample_rate";
+
 //view tag
 NSString * const FT_KEY_VIEW_ID = @"view_id";
 NSString * const FT_KEY_IS_ACTIVE = @"is_active";

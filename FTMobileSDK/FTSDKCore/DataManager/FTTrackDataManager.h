@@ -13,26 +13,35 @@ typedef NS_ENUM(NSInteger, FTAddDataType) {
     FTAddDataRUM,
     ///logging
     FTAddDataLogging,
+    ///rumCache,
+    FTAddDataRUMCache
 };
 NS_ASSUME_NONNULL_BEGIN
-@class FTRecordModel;
+@class FTRecordModel,FTDataWriterWorker;
+@protocol FTRUMDataWriteProtocol;
 /// 数据写入，数据上传 相关操作
 @interface FTTrackDataManager : NSObject
+
+@property (nonatomic, strong) FTDataWriterWorker *dataWriterWorker;
+
 /// 单例
 +(instancetype)sharedInstance;
 
-+(instancetype)startWithAutoSync:(BOOL)autoSync syncPageSize:(int)syncPageSize syncSleepTime:(int)syncSleepTime;
++(instancetype)startWithAutoSync:(BOOL)autoSync
+                    syncPageSize:(int)syncPageSize
+                   syncSleepTime:(int)syncSleepTime;
 - (void)setDBLimitWithSize:(long)size discardNew:(BOOL)discardNew;
 - (void)setLogCacheLimitCount:(int)count discardNew:(BOOL)discardNew;
 - (void)setRUMCacheLimitCount:(int)count discardNew:(BOOL)discardNew;
-/// 数据写入
+
+ /// 数据写入
 /// - Parameters:
 ///   - data: 数据
 ///   - type: 数据存储类型
 - (void)addTrackData:(FTRecordModel *)data type:(FTAddDataType)type;
 
 /// 上传数据
-- (void)uploadTrackData;
+- (void)flushSyncData;
 
 /// 关闭单例
 - (void)shutDown;

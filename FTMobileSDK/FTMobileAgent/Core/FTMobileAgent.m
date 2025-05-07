@@ -9,6 +9,7 @@
 #error This file must be compiled with ARC. Either turn on ARC for the project or use -fobjc-arc flag on this file.
 #endif
 #import "FTMobileAgent.h"
+#import "FTLoggerConfig.h"
 #import "FTRecordModel.h"
 #import "FTBaseInfoHandler.h"
 #import "FTGlobalRumManager.h"
@@ -35,6 +36,7 @@
 #import "FTLogger+Private.h"
 #import "NSDictionary+FTCopyProperties.h"
 #import "FTTrackerEventDBTool.h"
+#import "FTDataWriterWorker.h"
 #import "FTModuleManager.h"
 @interface FTMobileAgent ()<FTAppLifeCycleDelegate>
 @property (nonatomic, strong) FTLoggerConfig *loggerConfig;
@@ -78,7 +80,9 @@ static dispatch_once_t onceToken;
                                                      sdkVersion:SDK_VERSION
                                                             env:_sdkConfig.env
                                                         service:_sdkConfig.service
-                                                  globalContext:_sdkConfig.globalContext];
+                                                  globalContext:_sdkConfig.globalContext
+                                                        pkgInfo:_sdkConfig.pkgInfo
+            ];
             [FTNetworkInfoManager sharedInstance]
                 .setDatakitUrl(_sdkConfig.datakitUrl)
                 .setDatawayUrl(_sdkConfig.datawayUrl)
@@ -105,7 +109,7 @@ static dispatch_once_t onceToken;
             [[FTPresetProperty sharedInstance] setAppID:_rumConfig.appid];
             [FTPresetProperty sharedInstance].rumGlobalContext = _rumConfig.globalContext;
             [[FTTrackDataManager sharedInstance] setRUMCacheLimitCount:_rumConfig.rumCacheLimitCount discardNew:_rumConfig.rumDiscardType == FTRUMDiscard];
-            [[FTGlobalRumManager sharedInstance] setRumConfig:_rumConfig writer:self];
+            [[FTGlobalRumManager sharedInstance] setRumConfig:_rumConfig writer:[FTTrackDataManager sharedInstance].dataWriterWorker];
             [[FTURLSessionInstrumentation sharedInstance]setEnableAutoRumTrace:_rumConfig.enableTraceUserResource
                                                             resourceUrlHandler:_rumConfig.resourceUrlHandler
                                                       resourcePropertyProvider:_rumConfig.resourcePropertyProvider];
@@ -129,10 +133,7 @@ static dispatch_once_t onceToken;
             [FTPresetProperty sharedInstance].logGlobalContext = _loggerConfig.globalContext;
             [[FTTrackDataManager sharedInstance] setLogCacheLimitCount:_loggerConfig.logCacheLimitCount discardNew:_loggerConfig.discardType == FTDiscard];
             [[FTExtensionDataManager sharedInstance] writeLoggerConfig:[_loggerConfig convertToDictionary]];
-            [FTLogger startWithEnablePrintLogsToConsole:_loggerConfig.printCustomLogToConsole
-                                        enableCustomLog:_loggerConfig.enableCustomLog
-                                      enableLinkRumData:_loggerConfig.enableLinkRumData
-                                         logLevelFilter:_loggerConfig.logLevelFilter sampleRate:_loggerConfig.samplerate writer:self];
+            [FTLogger startWithLoggerConfig:_loggerConfig writer:[FTTrackDataManager sharedInstance].dataWriterWorker];
             [FTLogger sharedInstance].linkRumDataProvider = [FTGlobalRumManager sharedInstance].rumManager;
             FTInnerLogInfo(@"Init Logger Config Success: \n%@",_loggerConfig.debugDescription);
         }
@@ -175,15 +176,7 @@ static dispatch_once_t onceToken;
 }
 -(void)logging:(NSString *)content status:(FTLogStatus)status property:(NSDictionary *)property{
     @try {
-        if (!self.loggerConfig) {
-            FTInnerLogError(@"[Logging] 请先设置 FTLoggerConfig");
-            return;
-        }
-        if (!content || content.length == 0 ) {
-            FTInnerLogError(@"[Logging] 传入的第数据格式有误");
-            return;
-        }
-        [[FTLogger sharedInstance] log:content statusType:(LogStatus)status property:property];
+        [[FTLogger sharedInstance] log:content statusType:status property:property];
     } @catch (NSException *exception) {
         FTInnerLogError(@"exception %@",exception);
     }
@@ -261,61 +254,6 @@ static dispatch_once_t onceToken;
     }];
     FTInnerLogInfo(@"Unbind User");
 }
-#pragma mark ========== private method ==========
-- (void)rumWrite:(NSString *)type tags:(NSDictionary *)tags fields:(NSDictionary *)fields time:(long long)time{
-    if (![type isKindOfClass:NSString.class] || type.length == 0) {
-        return;
-    }
-    @try {
-        NSMutableDictionary *baseTags =[NSMutableDictionary new];
-        [baseTags addEntriesFromDictionary:tags];
-        NSDictionary *rumProperty = [[FTPresetProperty sharedInstance] rumProperty];
-        [baseTags addEntriesFromDictionary:rumProperty];
-        NSDictionary *pkgInfo = self.sdkConfig.pkgInfo;
-        if(pkgInfo && pkgInfo.count>0){
-            NSDictionary *info = [baseTags valueForKey:FT_SDK_PKG_INFO];
-            if(info){
-                NSMutableDictionary *mutableInfo = [info mutableCopy];
-                [mutableInfo addEntriesFromDictionary:pkgInfo];
-                pkgInfo = mutableInfo;
-            }
-            [baseTags setValue:pkgInfo forKey:FT_SDK_PKG_INFO];
-        }
-        FTRecordModel *model = [[FTRecordModel alloc]initWithSource:type op:FT_DATA_TYPE_RUM tags:baseTags fields:fields tm:time];
-        [self insertDBWithItemData:model type:FTAddDataRUM];
-    } @catch (NSException *exception) {
-        FTInnerLogError(@"exception %@",exception);
-    }
-}
-
-// FT_DATA_TYPE_LOGGING
--(void)logging:(NSString *)content status:(NSString *)status tags:(nullable NSDictionary *)tags field:(nullable NSDictionary *)field time:(long long)time{
-    @try {
-        NSMutableDictionary *tagDict = [NSMutableDictionary dictionaryWithDictionary:[[FTPresetProperty sharedInstance] loggerProperty]];
-        NSDictionary *pkgInfo = self.sdkConfig.pkgInfo;
-        if(pkgInfo && pkgInfo.count>0){
-            [tagDict setValue:pkgInfo forKey:FT_SDK_PKG_INFO];
-        }
-        if (tags) {
-            [tagDict addEntriesFromDictionary:tags];
-        }
-        [tagDict setValue:status forKey:FT_KEY_STATUS];
-        NSMutableDictionary *filedDict = @{FT_KEY_MESSAGE:content,
-        }.mutableCopy;
-        if (field) {
-            [filedDict addEntriesFromDictionary:field];
-        }
-#if TARGET_OS_TV
-        NSString *source = FT_LOGGER_TVOS_SOURCE;
-#else
-        NSString *source = FT_LOGGER_SOURCE;
-#endif
-        FTRecordModel *model = [[FTRecordModel alloc]initWithSource:source op:FT_DATA_TYPE_LOGGING tags:tagDict fields:filedDict tm:time];
-        [self insertDBWithItemData:model type:FTAddDataLogging];
-    } @catch (NSException *exception) {
-        FTInnerLogError(@"exception %@",exception);
-    }
-}
 - (void)trackEventFromExtensionWithGroupIdentifier:(NSString *)groupIdentifier completion:(void (^)(NSString *groupIdentifier, NSArray *events)) completion{
     @try {
         if (groupIdentifier == nil || [groupIdentifier isEqualToString:@""]) {
@@ -342,14 +280,14 @@ static dispatch_once_t onceToken;
                         [tags addEntriesFromDictionary:[[FTPresetProperty sharedInstance] rumProperty]];
                     }
                     [tags addEntriesFromDictionary:dict[@"tags"]];
-                    [self logging:dict[@"content"] status:statusStr tags:tags field:dict[@"fields"] time:time.longLongValue];
+                    [[FTTrackDataManager sharedInstance].dataWriterWorker logging:dict[@"content"] status:statusStr tags:tags field:dict[@"fields"] time:time.longLongValue];
                 }else if([dataType isEqualToString:FT_DATA_TYPE_RUM]){
                     NSString *eventType = dict[@"eventType"];
                     NSDictionary *dynamicTags = [[FTPresetProperty sharedInstance] rumDynamicProperty];
                     NSMutableDictionary *tags = [NSMutableDictionary dictionary];
                     [tags addEntriesFromDictionary:dict[@"tags"]];
                     [tags addEntriesFromDictionary:dynamicTags];
-                    [self rumWrite:eventType tags:tags fields:dict[@"fields"] time:time.longLongValue];
+                    [[FTTrackDataManager sharedInstance].dataWriterWorker extensionRumWrite:eventType tags:tags fields:dict[@"fields"] time:time.longLongValue];
                 }
             }
             [[FTExtensionDataManager sharedInstance] deleteEventsWithGroupIdentifier:groupIdentifier];
@@ -361,13 +299,9 @@ static dispatch_once_t onceToken;
         FTInnerLogError(@"%@ error: %@", self, exception);
     }
 }
-- (void)insertDBWithItemData:(FTRecordModel *)model type:(FTAddDataType)type{
-    [[FTTrackDataManager sharedInstance] addTrackData:model type:type];
-}
 - (void)flushSyncData{
     @try {
-        [[FTTrackDataManager sharedInstance] uploadTrackData];
-        
+        [[FTTrackDataManager sharedInstance] flushSyncData];
     } @catch (NSException *exception) {
         FTInnerLogError(@"%@ error: %@", self, exception);
     }

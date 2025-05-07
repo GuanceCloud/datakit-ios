@@ -164,6 +164,17 @@ static dispatch_once_t onceToken;
     }];
     return count;
 }
+- (NSInteger)getUploadDatasCount{
+    __block NSInteger count =0;
+    [self zy_inDatabase:^(ZY_FMDatabase *db){
+        NSString *sqlStr = [NSString stringWithFormat:@"SELECT count(*) as 'count' FROM %@ WHERE op = '%@' or op = '%@'", FT_DB_TRACE_EVENT_TABLE_NAME,FT_DATA_TYPE_LOGGING,FT_DATA_TYPE_RUM];
+        ZY_FMResultSet *set = [db executeQuery:sqlStr];
+        while ([set next]) {
+            count= [set intForColumn:@"count"];
+        }
+    }];
+    return count;
+}
 - (NSInteger)getDatasCountWithType:(NSString *)op{
     __block NSInteger count =0;
     [self zy_inDatabase:^(ZY_FMDatabase *db){
@@ -221,6 +232,46 @@ static dispatch_once_t onceToken;
         is = [db executeUpdate:sqlStr];
     }];
     [self close];
+    return is;
+}
+- (BOOL)deleteDatasWithType:(NSString *)type{
+    __block BOOL is;
+    [self zy_inDatabase:^(ZY_FMDatabase *db){
+        NSString *sqlStr = [NSString stringWithFormat:@"DELETE FROM '%@' WHERE  op = '%@' ",FT_DB_TRACE_EVENT_TABLE_NAME,type];
+        is = [db executeUpdate:sqlStr];
+    }];
+    return is;
+}
+- (BOOL)deleteDatasWithType:(NSString *)type toTime:(long long)toTime{
+    __block BOOL is;
+    [self zy_inDatabase:^(ZY_FMDatabase *db){
+        NSString *sqlStr = [NSString stringWithFormat:@"DELETE FROM '%@' WHERE _id in (SELECT _id from '%@' WHERE  op = '%@' AND tm < '%lld' )",FT_DB_TRACE_EVENT_TABLE_NAME,FT_DB_TRACE_EVENT_TABLE_NAME,type,toTime];
+        is = [db executeUpdate:sqlStr];
+    }];
+    return is;
+}
+- (BOOL)deleteDatasWithType:(NSString *)type fromTime:(long long)fromTime toTime:(long long)toTime{
+    __block BOOL is;
+    [self zy_inDatabase:^(ZY_FMDatabase *db){
+        NSString *sqlStr = [NSString stringWithFormat:@"DELETE FROM '%@' WHERE _id in (SELECT _id from '%@' WHERE  op = '%@' AND tm > '%lld' AND tm <= '%lld' )",FT_DB_TRACE_EVENT_TABLE_NAME,FT_DB_TRACE_EVENT_TABLE_NAME,type,fromTime,toTime];
+        is = [db executeUpdate:sqlStr];
+    }];
+    return is;
+}
+- (BOOL)updateDatasWithType:(NSString *)type toType:(NSString *)toType toTime:(long long)toTime{
+    __block BOOL is;
+    [self zy_inDatabase:^(ZY_FMDatabase *db){
+        NSString *sqlStr = [NSString stringWithFormat:@"UPDATE '%@' SET op = '%@'  WHERE  tm <= '%lld'  AND op = '%@'",FT_DB_TRACE_EVENT_TABLE_NAME,toType,toTime,type];
+        is = [db executeUpdate:sqlStr];
+    }];
+    return is;
+}
+- (BOOL)updateDatasWithType:(NSString *)type toType:(NSString *)toType fromTime:(long long)fromTime toTime:(long long)toTime{
+    __block BOOL is;
+    [self zy_inDatabase:^(ZY_FMDatabase *db){
+        NSString *sqlStr = [NSString stringWithFormat:@"UPDATE '%@' SET op = '%@'  WHERE tm > '%lld' AND tm <= '%lld'  AND op = '%@'",FT_DB_TRACE_EVENT_TABLE_NAME,toType,fromTime,toTime,type];
+        is = [db executeUpdate:sqlStr];
+    }];
     return is;
 }
 - (void)close{
@@ -293,5 +344,8 @@ static long pageSize = 0;
     [self close];
     onceToken = 0;
     dbTool = nil;
+}
+-(void)dealloc{
+    [self close];
 }
 @end

@@ -14,7 +14,7 @@
 #import "FTConstants.h"
 #import "FTJSONUtil.h"
 #import "FTRequest.h"
-#import "FTNetworkManager.h"
+#import "FTHTTPClient.h"
 #import "FTNetworkInfoManager.h"
 #import "FTEnumConstant.h"
 #import "FTModelHelper.h"
@@ -58,7 +58,7 @@
     FTRecordModel *model = [FTModelHelper createLogModel:@"testLogRequest"];
     
     FTRequest *request = [FTRequest createRequestWithEvents:@[model] type:FT_DATA_TYPE_LOGGING];
-    [[FTNetworkManager new] sendRequest:request completion:^(NSHTTPURLResponse * _Nonnull httpResponse, NSData * _Nullable data, NSError * _Nullable error) {
+    [[FTHTTPClient new] sendRequest:request completion:^(NSHTTPURLResponse * _Nonnull httpResponse, NSData * _Nullable data, NSError * _Nullable error) {
         if (!error) {
             NSInteger statusCode = httpResponse.statusCode;
             BOOL success = (statusCode >=200 && statusCode < 500);
@@ -76,7 +76,7 @@
     FTRecordModel *model = [FTModelHelper createRumModel];
 
     FTRequest *request = [FTRequest createRequestWithEvents:@[model] type:FT_DATA_TYPE_RUM];
-    [[FTNetworkManager new] sendRequest:request completion:^(NSHTTPURLResponse * _Nonnull httpResponse, NSData * _Nullable data, NSError * _Nullable error) {
+    [[FTHTTPClient new] sendRequest:request completion:^(NSHTTPURLResponse * _Nonnull httpResponse, NSData * _Nullable data, NSError * _Nullable error) {
         if (!error) {
         NSInteger statusCode = httpResponse.statusCode;
         BOOL success = (statusCode >=200 && statusCode < 500);
@@ -178,7 +178,7 @@
     NSString *datakitUrlStr = @"http://www.test.com/some/url/string";
     FTMobileConfig *config = [[FTMobileConfig alloc]initWithDatakitUrl:datakitUrlStr];
     [FTMobileAgent startWithConfigOptions:config];
-    FTRecordModel *model = [FTModelHelper createWrongFormatRumModel];
+    FTRecordModel *model = [FTModelHelper createRumModel];
     FTRequest *request = [FTRequest createRequestWithEvents:@[model] type:FT_DATA_TYPE_RUM];
     XCTAssertTrue([request.absoluteURL.host isEqualToString:[NSURL URLWithString:datakitUrlStr].host]);
     [FTMobileAgent shutDown];
@@ -188,7 +188,7 @@
     NSString *clientToken = @"clientToken";
     FTMobileConfig *config = [[FTMobileConfig alloc]initWithDatawayUrl:datawayUrlStr clientToken:clientToken];
     [FTMobileAgent startWithConfigOptions:config];
-    FTRecordModel *model = [FTModelHelper createWrongFormatRumModel];
+    FTRecordModel *model = [FTModelHelper createRumModel];
     FTRequest *request = [FTRequest createRequestWithEvents:@[model] type:FT_DATA_TYPE_RUM];
     NSURL *datawayUrl = [NSURL URLWithString:[NSString stringWithFormat:@"%@%@?token=%@&to_headless=true",datawayUrlStr,request.path,clientToken]];
     XCTAssertTrue([request.absoluteURL.host isEqualToString:[NSURL URLWithString:datawayUrlStr].host]);
@@ -204,7 +204,7 @@
     config.datawayUrl = datawayUrlStr;
     config.clientToken = clientToken;
     [FTMobileAgent startWithConfigOptions:config];
-    FTRecordModel *model = [FTModelHelper createWrongFormatRumModel];
+    FTRecordModel *model = [FTModelHelper createRumModel];
     FTRequest *request = [FTRequest createRequestWithEvents:@[model] type:FT_DATA_TYPE_RUM];
     XCTAssertTrue([request.absoluteURL.host isEqualToString:[NSURL URLWithString:datakitUrlStr].host]);
     [FTMobileAgent shutDown];

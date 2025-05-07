@@ -61,7 +61,19 @@
         FT_RUM_KEY_SESSION_ID:[FTBaseInfoHandler randomUUID],
         FT_RUM_KEY_SESSION_TYPE:@"user",
     };
-    FTRecordModel *model = [[FTRecordModel alloc]initWithSource:FT_RUM_SOURCE_ERROR op:FT_DATA_TYPE_RUM tags:tags fields:nil tm:[NSDate ft_currentNanosecondTimeStamp]];
+    FTRecordModel *model = [[FTRecordModel alloc]init];
+    model.op = @"logger";
+    NSDictionary *opData = @{
+        FT_KEY_SOURCE:@"logger",
+        FT_FIELDS:@{},
+        FT_TAGS:tags,
+        FT_TIME:@(model.tm)
+    };
+    NSDictionary *data =@{FT_OP:@"logger",
+                          FT_OPDATA:opData,
+    };
+   
+    model.data = [FTJSONUtil convertToJsonData:data];
     return model;
 }
 + (void)startView{
@@ -122,8 +134,9 @@
         NSString *source = opdata[@"source"];
         NSDictionary *tags = opdata[FT_TAGS];
         NSDictionary *fields = opdata[FT_FIELDS];
+        NSNumber *time = opdata[FT_TIME];
         if(callBack){
-            callBack(source,tags,fields,obj.tm,stop);
+            callBack(source,tags,fields,[time longLongValue],stop);
         }
     }];
 }
