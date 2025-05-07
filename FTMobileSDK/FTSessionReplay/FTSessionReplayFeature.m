@@ -98,7 +98,7 @@
         return;
     }
     if(self.currentRUMContext == nil || ![message[FT_RUM_KEY_SESSION_ID] isEqualToString:self.currentRUMContext[FT_RUM_KEY_SESSION_ID]]){
-        BOOL isErrorSession = self.currentRUMContext[FT_RUM_KEY_IS_ERROR_SESSION];
+        BOOL isErrorSession = self.currentRUMContext[FT_RUM_KEY_SAMPLED_FOR_ERROR_SESSION];
         BOOL isSampled = [FTBaseInfoHandler randomSampling:self.sampleRate];
         BOOL srOnErrorSampleRate = [FTBaseInfoHandler randomSampling:self.config.sessionReplayOnErrorSampleRate];
         

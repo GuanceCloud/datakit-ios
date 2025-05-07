@@ -8,7 +8,7 @@
 
 #import "FTFeatureUpload.h"
 #import "FTLog+Private.h"
-#import "FTNetworkManager.h"
+#import "FTHTTPClient.h"
 #import "FTResourceRequest.h"
 #import "FTJSONUtil.h"
 #import "FTReader.h"
@@ -26,7 +26,7 @@
     pthread_rwlock_t _readWorkLock;
     pthread_rwlock_t _uploadWorkLock;
 }
-@property (nonatomic, strong) FTNetworkManager *networkManager;
+@property (nonatomic, strong) FTHTTPClient *httpClient;
 @property (nonatomic, strong) dispatch_queue_t queue;
 @property (nonatomic, strong) dispatch_block_t readWork;
 @property (nonatomic, strong) dispatch_block_t uploadWork;
@@ -62,7 +62,7 @@
         _context = context;
         _delay = [[FTDataUploadDelay alloc]initWithPerformance:performance];
         _maxBatchesPerUpload = maxBatchesPerUpload;
-        _networkManager = [[FTNetworkManager alloc]initWithTimeoutIntervalForRequest:30];
+        _httpClient = [[FTHTTPClient alloc]initWithTimeoutIntervalForRequest:30];
         _uploadConditions = [[FTUploadConditions alloc]init];
         [_uploadConditions startObserver];
         [self startReadWork];
@@ -167,7 +167,7 @@
         __block BOOL success = NO;
         dispatch_semaphore_t flushSemaphore = dispatch_semaphore_create(0);
         [self.requestBuilder requestWithEvents:event parameters:parameters];
-        [self.networkManager sendRequest:self.requestBuilder completion:^(NSHTTPURLResponse * _Nonnull httpResponse, NSData * _Nullable data, NSError * _Nullable error) {
+        [self.httpClient sendRequest:self.requestBuilder completion:^(NSHTTPURLResponse * _Nonnull httpResponse, NSData * _Nullable data, NSError * _Nullable error) {
             if (error || ![httpResponse isKindOfClass:[NSHTTPURLResponse class]]) {
                 FTInnerLogError(@"[NETWORK][%@] %@", self.featureName,[NSString stringWithFormat:@"Network failure: %@", error ? error : @"Unknown error"]);
                 success = NO;
