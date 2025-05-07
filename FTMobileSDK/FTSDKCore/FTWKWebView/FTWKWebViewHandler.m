@@ -16,8 +16,11 @@
 #import "FTWKWebViewJavascriptBridge.h"
 #import "FTSwizzler.h"
 #import "FTSwizzle.h"
+#import "FTLog+Private.h"
+
 @interface FTWKWebViewHandler ()
-@property (nonatomic, strong) NSMutableDictionary *mutableRequestKeyedByWebviewHash;
+@property (nonatomic, strong) NSMapTable *webViewRequestTable;
+@property (nonatomic, strong) NSMapTable *webViewBridge;
 
 @property (nonatomic, strong) NSLock *lock;
 @end
@@ -34,7 +37,8 @@ static dispatch_once_t onceToken;
     self = [super init];
     if (self) {
         [self setWKWebViewTrace];
-        self.mutableRequestKeyedByWebviewHash = [NSMutableDictionary new];
+        self.webViewRequestTable = [NSMapTable weakToStrongObjectsMapTable];
+        self.webViewBridge = [NSMapTable weakToStrongObjectsMapTable];
         self.lock = [NSLock new];
         self.enableTrace = NO;
     }
@@ -55,34 +59,18 @@ static dispatch_once_t onceToken;
                          withMethod:@selector(ft_loadFileURL:allowingReadAccessToURL:)
                               error:&error];
         [WKWebView ft_swizzleMethod:@selector(reload) withMethod:@selector(ft_reload) error:&error];
-        SEL deallocMethod =  NSSelectorFromString(@"dealloc");
-        [WKWebView ft_swizzleMethod:deallocMethod
-                         withMethod:@selector(ft_dealloc)
-                              error:&error];
     });
 }
 #pragma mark request
 - (void)addWebView:(WKWebView *)webView request:(NSURLRequest *)request{
     [self.lock lock];
-    if (![self.mutableRequestKeyedByWebviewHash.allKeys containsObject:[[NSNumber numberWithInteger:webView.hash] stringValue]]) {
-        [self.mutableRequestKeyedByWebviewHash setValue:request forKey:[[NSNumber numberWithInteger:webView.hash] stringValue]];
-    }
-    [self.lock unlock];
-}
-- (void)removeWebView:(WKWebView *)webView{
-    [self.lock lock];
-    if ([self.mutableRequestKeyedByWebviewHash.allKeys containsObject:[[NSNumber numberWithInteger:webView.hash] stringValue]]) {
-        [self.mutableRequestKeyedByWebviewHash removeObjectForKey:[[NSNumber numberWithInteger:webView.hash] stringValue]];
-    }
+    [self.webViewRequestTable setObject:request forKey:webView];
     [self.lock unlock];
 }
 - (void)reloadWebView:(WKWebView *)webView completionHandler:(void (^)(NSURLRequest *request,BOOL needTrace))completionHandler{
-    NSString *key = [[NSNumber numberWithInteger:webView.hash] stringValue];
     NSURLRequest *request;
     [self.lock lock];
-    if ([self.mutableRequestKeyedByWebviewHash.allKeys containsObject:key]) {
-        request = [self.mutableRequestKeyedByWebviewHash objectForKey:key];
-    }
+    request = [self.webViewRequestTable objectForKey:webView];
     [self.lock unlock];
     if (request && [request.URL isEqual:webView.URL]) {
         completionHandler? completionHandler(request,YES):nil;
@@ -90,9 +78,34 @@ static dispatch_once_t onceToken;
         completionHandler? completionHandler(nil,NO):nil;
     }
 }
+- (void)addWebView:(WKWebView *)webView bridge:(id)bridge{
+    [self.lock lock];
+    [self.webViewBridge setObject:bridge forKey:webView];
+    [self.lock unlock];
+}
+- (id)getWebViewBridge:(WKWebView *)webView{
+    id bridge = nil;
+    [self.lock lock];
+    bridge = [self.webViewBridge objectForKey:webView];
+    [self.lock unlock];
+    return bridge;
+}
 - (void)addScriptMessageHandlerWithWebView:(WKWebView *)webView{
-    if (self.rumTrackDelegate && [self.rumTrackDelegate respondsToSelector:@selector(ftAddScriptMessageHandlerWithWebView:)]) {
-        [self.rumTrackDelegate ftAddScriptMessageHandlerWithWebView:webView];
+    if (self.rumTrackDelegate && [self.rumTrackDelegate respondsToSelector:@selector(dealReceiveScriptMessage:slotId:)]) {
+        if ([self getWebViewBridge:webView]) {
+            FTInnerLogDebug(@"WebView(%@) already add JSBridge.",webView);
+            return;
+        }
+        FTWKWebViewJavascriptBridge *bridge = [FTWKWebViewJavascriptBridge bridgeForWebView:webView];
+        __weak typeof(self) weakSelf = self;
+        [bridge registerHandler:@"sendEvent" handler:^(id data, int64_t slotId,WVJBResponseCallback responseCallback) {
+            __strong __typeof(weakSelf) strongSelf = weakSelf;
+            if (!strongSelf) {
+                return;
+            }
+            [strongSelf.rumTrackDelegate dealReceiveScriptMessage:data slotId:slotId];
+        }];
+        [self addWebView:webView bridge:bridge];
     }
 }
 @end
