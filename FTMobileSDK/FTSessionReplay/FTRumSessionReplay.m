@@ -18,6 +18,7 @@
 #import "FTFeatureDataStore.h"
 #import "FTModuleManager.h"
 #import "FTTmpCacheManager.h"
+#import "FTPresetProperty.h"
 @interface FTFeatureStores : NSObject
 @property (nonatomic, strong) FTFeatureStorage *storage;
 @property (nonatomic, strong) FTFeatureUpload *upload;
@@ -94,7 +95,7 @@ static dispatch_once_t onceToken;
                                                                requestBuilder:feature.requestBuilder
                                                           maxBatchesPerUpload:10
                                                                   performance:performancePreset
-                                                                      context:[[FTModuleManager sharedInstance] getSRProperty]];
+                                                                      context:[FTPresetProperty sharedInstance].sessionReplayProperty];
         FTFeatureStores *store = [[FTFeatureStores alloc]initWithStorage:storage upload:upload];
         return store;
     }

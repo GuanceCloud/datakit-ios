@@ -9,7 +9,6 @@
 #import "FTModuleManager.h"
 #import "FTMessageReceiver.h"
 NSString *const FTMessageKeyRUMContext = @"rum_context";
-NSString *const FTMessageKeySRProperty = @"sr_property";
 NSString *const FTMessageKeyRecordsCountByViewID = @"sr_records_count_by_view_id";
 NSString *const FTMessageKeySessionHasReplay = @"sr_has_replay";
 NSString *const FTMessageKeyRumError = @"rum_error";
@@ -39,22 +38,11 @@ void *FTMessageBusQueueIdentityKey = &FTMessageBusQueueIdentityKey;
     });
     return _sharedInstance;
 }
-- (NSDictionary *)getSRProperty{
-    __block NSDictionary *property = nil;
-    dispatch_sync(self.queue, ^{
-        property = self.srProperty;
-    });
-    return property;
-}
 - (void)postMessage:(NSString *)key message:(NSDictionary *)message{
     [self postMessage:key message:message sync:NO];
 }
 - (void)postMessage:(NSString *)key message:(NSDictionary *)message sync:(BOOL)sync{
     dispatch_block_t block = ^{
-        if(key == FTMessageKeySRProperty){
-            self.srProperty = message;
-            return;
-        }
         for (id receiver in self.receiverArray) {
             if ([receiver respondsToSelector:@selector(receive:message:)]) {
                 [receiver receive:key message:message];
