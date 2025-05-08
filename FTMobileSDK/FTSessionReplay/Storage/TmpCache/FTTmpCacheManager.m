@@ -15,6 +15,7 @@
 #import "FTUploadProtocol.h"
 #import "FTTrackDataManager.h"
 #import "FTAppLaunchTracker.h"
+#import "NSDate+FTUtil.h"
 
 void *FTTmpCacheQueueIdentityKey = &FTTmpCacheQueueIdentityKey;
 
@@ -25,6 +26,7 @@ void *FTTmpCacheQueueIdentityKey = &FTTmpCacheQueueIdentityKey;
 
 @property (nonatomic, strong) FTDirectory *cacheDirectory;
 @property (nonatomic, copy) NSString *currentFileID;
+// 强制更换文件进行写入
 @property (atomic, assign) BOOL hasErrorForceUpdate;
 @property (nonatomic, assign) long long processStartTimeStamp;
 @property (nonatomic, weak) id<FTSessionOnErrorDataHandler> sessionOnErrorHandler;
@@ -41,6 +43,7 @@ void *FTTmpCacheQueueIdentityKey = &FTTmpCacheQueueIdentityKey;
         // 创建串行队列管理文件操作
         _fileQueue = dispatch_queue_create("com.guance.session-replay.cache", DISPATCH_QUEUE_SERIAL);
         dispatch_queue_set_specific(_fileQueue,FTTmpCacheQueueIdentityKey, &FTTmpCacheQueueIdentityKey, NULL);
+        [self cleanupLastProcess];
     }
     return self;
 }
@@ -70,6 +73,35 @@ void *FTTmpCacheQueueIdentityKey = &FTTmpCacheQueueIdentityKey;
 - (void)cleanup{
     [self cleanupWithDate:[NSDate date] sync:NO];
 }
+- (void)cleanupLastProcess{
+    long long errorTimeStamp = [self.sessionOnErrorHandler getLastProcessFatalErrorTime];
+    if (errorTimeStamp == -1) {
+        dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)(0.1 * NSEC_PER_SEC)), self.fileQueue, ^{
+            [self cleanupLastProcess];
+        });
+    }else{
+        dispatch_async(self.fileQueue, ^{
+            NSArray <FTFile *> *files = self.cacheDirectory.files;
+            NSEnumerator *enumerator = [files objectEnumerator];
+            FTFile *file;
+            while ((file = [enumerator nextObject])) {
+                // 从文件名解析时间分片
+                long long fileTimeStamp = [file.fileCreationDate ft_nanosecondTimeStamp];
+                // 发生在 error 之前产生的文件，移动到 upload
+                if (errorTimeStamp > 0 && errorTimeStamp > fileTimeStamp) {
+                    NSURL *destinationFileURL = [self.realWriterUrl URLByAppendingPathComponent:file.name];
+                    NSError *lastCriticalError = nil;
+                    [[NSFileManager defaultManager] moveItemAtURL:file.url toURL:destinationFileURL error:&lastCriticalError];
+                    continue;
+                }
+                // 上一进程产生的文件删除
+                if (fileTimeStamp < self.processStartTimeStamp) {
+                    [file deleteFile];
+                }
+            }
+        });
+    }
+}
 - (void)cleanupWithDate:(NSDate *)date sync:(BOOL)sync{
     dispatch_block_t block = ^{
         long long expirationTimeStamp = [[date dateByAddingTimeInterval:-60] ft_nanosecondTimeStamp];
@@ -80,7 +112,7 @@ void *FTTmpCacheQueueIdentityKey = &FTTmpCacheQueueIdentityKey;
         FTFile *file;
         while ((file = [enumerator nextObject])) {
             // 从文件名解析时间分片
-            long long fileTimeStamp = [file.name longLongValue] * 1e6;
+            long long fileTimeStamp = [file.fileCreationDate ft_nanosecondTimeStamp];
             // 发生在 error 之前产生的文件，移动到 upload
             if (lastErrorTimeStamp > fileTimeStamp &&
                 (fileTimeStamp > self.processStartTimeStamp || lastErrorTimeStamp < self.processStartTimeStamp)) {
