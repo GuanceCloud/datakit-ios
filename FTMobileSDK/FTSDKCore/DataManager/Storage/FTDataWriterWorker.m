@@ -23,6 +23,7 @@
 @property (nonatomic, assign) NSTimeInterval lastErrorTimeInterval;
 @property (nonatomic, assign) BOOL isTimerRunning;
 @property (nonatomic, assign) long long processStartTime;
+@property (nonatomic, assign) long long lastProcessFatalErrorTime;
 @end
 @implementation FTDataWriterWorker
 -(instancetype)init{
@@ -33,6 +34,7 @@
     if(self){
         _cacheInvalidTimeInterval = timeInterval*1e9;
         _processStartTime = [[NSDate dateWithTimeIntervalSinceReferenceDate:FTAppLaunchTracker.processStartTime] ft_nanosecondTimeStamp];
+        _lastProcessFatalErrorTime = -1;
         _lastErrorTimeInterval = [self getErrorTimeLineFromFileCache];
     }
     return self;
@@ -110,9 +112,11 @@
 }
 /// 检查上一进程是否有 ANR 崩溃数据
 -(void)lastFatalErrorIfFound:(long long)errorDate{
+    _lastProcessFatalErrorTime = 0;
     if (errorDate < self.processStartTime && errorDate>0) {
+        _lastProcessFatalErrorTime = self.lastErrorTimeInterval < self.processStartTime && errorDate < self.lastErrorTimeInterval ? self.lastErrorTimeInterval : errorDate;
         FTInnerLogDebug(@"[RUM cache] Last process has fatal error.");
-        [[FTTrackerEventDBTool sharedManger] updateDatasWithType:FT_DATA_TYPE_RUM_CACHE toType:FT_DATA_TYPE_RUM toTime:errorDate];
+        [[FTTrackerEventDBTool sharedManger] updateDatasWithType:FT_DATA_TYPE_RUM_CACHE toType:FT_DATA_TYPE_RUM toTime:_lastProcessFatalErrorTime];
     }
     FTInnerLogDebug(@"[RUM cache] Deal last process datas");
     [[FTTrackerEventDBTool sharedManger] deleteDatasWithType:FT_DATA_TYPE_RUM_CACHE toTime:self.processStartTime];
@@ -125,6 +129,9 @@
     [[NSUserDefaults standardUserDefaults] setObject:@(lastErrorTimeInterval) forKey:@"ft_last_error_time"];
     [self checkRUMSessionOnErrorDatasWithExpireTime:lastErrorTimeInterval-self.cacheInvalidTimeInterval];
     _lastErrorTimeInterval = lastErrorTimeInterval;
+}
+- (long long)getLastProcessFatalErrorTime{
+    return _lastProcessFatalErrorTime;
 }
 - (long long)getErrorTimeLineFromFileCache{
     NSNumber *lastError = [[NSUserDefaults standardUserDefaults] valueForKey:@"ft_last_error_time"];

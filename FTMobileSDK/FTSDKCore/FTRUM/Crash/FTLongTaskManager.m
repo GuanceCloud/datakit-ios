@@ -256,7 +256,6 @@ void *FTLongTaskManagerQueueTag = &FTLongTaskManagerQueueTag;
                     lastViewsFields[FT_KEY_IS_ACTIVE] = @(NO);
                     NSNumber *time = lastViews[@"time"];
                     if (lastViewsFields[FT_RUM_KEY_SAMPLED_FOR_ERROR_SESSION]) {
-                        errorDate = startTime;
                         sessionOnError = YES;
                     }
                     [strongSelf.dependencies.writer rumWrite:FT_RUM_SOURCE_VIEW tags:lastViews[@"tags"] fields:lastViewsFields time:[time longLongValue] updateTime:errorDate cache:sessionOnError];
@@ -275,6 +274,7 @@ void *FTLongTaskManagerQueueTag = &FTLongTaskManagerQueueTag;
                     NSMutableDictionary *field = @{ FT_KEY_ERROR_MESSAGE:@"ios_anr",
                                                     FT_KEY_ERROR_STACK:backtrace,
                     }.mutableCopy;
+                    errorDate = startTime;
                     [strongSelf.dependencies.writer rumWrite:FT_RUM_SOURCE_ERROR tags:anrTags fields:field time:startTime updateTime:0 cache:sessionOnError];
                 }
                 goto ended;
