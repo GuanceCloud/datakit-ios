@@ -34,7 +34,7 @@ NSTimeInterval const kFullSnapshotInterval = 20.0;
 @property (nonatomic, strong) NSArray<FTSRWireframe *> *lastSRWireframes;
 @property (nonatomic, strong) FTNodesFlattener *flattener;
 @property (nonatomic, strong) NSMutableDictionary *recordsCountByViewID;
-@property (nonatomic, assign) BOOL updateFullSnapshot;
+@property (nonatomic, assign) BOOL needUpdateFullSnapshot;
 @end
 @implementation FTSnapshotProcessor
 -(instancetype)initWithQueue:(dispatch_queue_t)queue writer:(id<FTWriter>)writer{
@@ -136,7 +136,7 @@ NSTimeInterval const kFullSnapshotInterval = 20.0;
 }
 - (void)changeWriter:(id<FTWriter>)writer needUpdateFullSnapshot:(BOOL)update{
     _writer = writer;
-    _updateFullSnapshot = update;
+    _needUpdateFullSnapshot = update;
 }
 - (void)trackRecord:(FTEnrichedRecord *)record{
     NSString *key = record.viewID;
@@ -152,7 +152,7 @@ NSTimeInterval const kFullSnapshotInterval = 20.0;
     [[FTModuleManager sharedInstance] postMessage:FTMessageKeyRecordsCountByViewID message:[self.recordsCountByViewID mutableCopy]];
 }
 - (BOOL)isTimeForFullSnapshot{
-    if(self.updateFullSnapshot){
+    if(self.needUpdateFullSnapshot){
         CFTimeInterval currentTime = CACurrentMediaTime();
         if (currentTime - self.lastSnapshotTimestamp >= kFullSnapshotInterval) {
             self.lastSnapshotTimestamp = currentTime;
