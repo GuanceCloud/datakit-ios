@@ -34,6 +34,8 @@ NS_ASSUME_NONNULL_BEGIN
 
 @optional
 - (void)rumWrite:(NSString *)source tags:(NSDictionary *)tags fields:(NSDictionary *)fields time:(long long)time updateTime:(long long)updateTime;
+
+- (void)rumWrite:(NSString *)source tags:(NSDictionary *)tags fields:(NSDictionary *)fields time:(long long)time updateTime:(long long)updateTime cache:(BOOL)cache;
 /// extension widget 采集的 RUM 数据写入
 /// - Parameters:
 ///   - source: 数据来源 view|action|resource|error
@@ -47,9 +49,6 @@ NS_ASSUME_NONNULL_BEGIN
 
 /// 上次 APP 是否有崩溃 ANR 等数据写在本地,errorDate 崩溃时间
 - (void)lastFatalErrorIfFound:(long long)errorDate;
-
-/// 上一生命周期致命报告数据(当前仅是 ANR 数据) updateTime 用于更新 rum view 数据
-- (void)fatalErrorWrite:(NSString *)source tags:(NSDictionary *)tags fields:(NSDictionary *)fields time:(long long)time updateTime:(long long)updateTime cache:(BOOL)cache;
 
 /// 处理 rum cache 数据，看是否需要删除
 - (void)checkRUMSessionOnErrorDatasWithExpireTime:(long long)expireTime;

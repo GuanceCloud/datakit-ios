@@ -256,13 +256,11 @@ void *FTLongTaskManagerQueueTag = &FTLongTaskManagerQueueTag;
                     lastViewsFields[FT_KEY_IS_ACTIVE] = @(NO);
                     NSNumber *time = lastViews[@"time"];
                     if (lastViewsFields[FT_RUM_KEY_SAMPLED_FOR_ERROR_SESSION]) {
-                        errorDate = startTime;
                         sessionOnError = YES;
                     }
-                    [strongSelf.dependencies.writer fatalErrorWrite:FT_RUM_SOURCE_VIEW tags:lastViews[@"tags"] fields:lastViewsFields time:[time longLongValue] updateTime:errorDate cache:sessionOnError];
+                    [strongSelf.dependencies.writer rumWrite:FT_RUM_SOURCE_VIEW tags:lastViews[@"tags"] fields:lastViewsFields time:[time longLongValue] updateTime:errorDate cache:sessionOnError];
                 }
-                
-                [strongSelf.dependencies.writer fatalErrorWrite:FT_RUM_SOURCE_LONG_TASK tags:tags fields:fields time:startTime updateTime:0 cache:sessionOnError];
+                [strongSelf.dependencies.writer rumWrite:FT_RUM_SOURCE_LONG_TASK tags:tags fields:fields time:startTime updateTime:0 cache:sessionOnError];
                 
                 //判断是否是 ANR,是则添加 ANR 数据
                 if(duration.longLongValue>5000000000){
@@ -276,7 +274,8 @@ void *FTLongTaskManagerQueueTag = &FTLongTaskManagerQueueTag;
                     NSMutableDictionary *field = @{ FT_KEY_ERROR_MESSAGE:@"ios_anr",
                                                     FT_KEY_ERROR_STACK:backtrace,
                     }.mutableCopy;
-                    [strongSelf.dependencies.writer fatalErrorWrite:FT_RUM_SOURCE_ERROR tags:anrTags fields:field time:startTime updateTime:0 cache:sessionOnError];
+                    errorDate = startTime;
+                    [strongSelf.dependencies.writer rumWrite:FT_RUM_SOURCE_ERROR tags:anrTags fields:field time:startTime updateTime:0 cache:sessionOnError];
                 }
                 goto ended;
             }
