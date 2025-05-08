@@ -32,7 +32,7 @@
     self = [super init];
     if(self){
         _cacheInvalidTimeInterval = timeInterval*1e9;
-        _processStartTime = FTAppLaunchTracker.processStartTime * 1e9;
+        _processStartTime = [[NSDate dateWithTimeIntervalSinceReferenceDate:FTAppLaunchTracker.processStartTime] ft_nanosecondTimeStamp];
         _lastErrorTimeInterval = [self getErrorTimeLineFromFileCache];
     }
     return self;
