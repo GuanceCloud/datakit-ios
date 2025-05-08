@@ -18,6 +18,7 @@ NS_ASSUME_NONNULL_BEGIN
 @protocol FTCacheWriter <NSObject,FTWriter>
 - (void)active;
 - (void)inactive;
+- (void)cleanup;
 @end
 @interface FTFileWriter : NSObject<FTWriter>
 -(instancetype)initWithOrchestrator:(id<FTFilesOrchestratorType>)orchestrator queue:(dispatch_queue_t)queue;

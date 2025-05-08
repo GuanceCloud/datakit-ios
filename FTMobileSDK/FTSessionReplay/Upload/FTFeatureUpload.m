@@ -21,6 +21,7 @@
 #import "FTUploadConditions.h"
 #import "FTSegmentJSON.h"
 #import "FTDataStore.h"
+#import "FTFileWriter.h"
 
 @interface FTFeatureUpload()<NSCacheDelegate>{
     pthread_rwlock_t _readWorkLock;
@@ -31,6 +32,7 @@
 @property (nonatomic, strong) dispatch_block_t readWork;
 @property (nonatomic, strong) dispatch_block_t uploadWork;
 @property (nonatomic, strong) id<FTReader> fileReader;
+@property (nonatomic, strong) id<FTCacheWriter> cacheWriter;
 @property (nonatomic, strong) id<FTFeatureRequestBuilder> requestBuilder;
 @property (nonatomic, strong) FTPerformancePreset *performance;
 @property (nonatomic, strong) FTDataUploadDelay *delay;
@@ -44,9 +46,10 @@
 
 -(instancetype)initWithFeatureName:(NSString *)featureName
                         fileReader:(id<FTReader>)fileReader
+                       cacheWriter:(id<FTCacheWriter>)cacheWriter
                     requestBuilder:(id<FTFeatureRequestBuilder>)requestBuilder
                maxBatchesPerUpload:(int)maxBatchesPerUpload
-                       performance:(FTPerformancePreset *)performance 
+                       performance:(FTPerformancePreset *)performance
                            context:(nonnull NSDictionary *)context
 {
     self = [super init];
@@ -57,6 +60,7 @@
         pthread_rwlock_init(&_readWorkLock, NULL);
         pthread_rwlock_init(&_uploadWorkLock, NULL);
         _fileReader = fileReader;
+        _cacheWriter = cacheWriter;
         _requestBuilder = requestBuilder;
         _performance = performance;
         _context = context;
@@ -76,6 +80,7 @@
         if (!strongSelf) {
             return;
         }
+        [strongSelf.cacheWriter cleanup];
         NSArray *conditions = [strongSelf.uploadConditions checkForUpload];
         BOOL canUpload = conditions.count == 0;
         //读取上传文件
@@ -194,13 +199,17 @@
     [self.uploadConditions cancel];
     __weak typeof(self) weakSelf = self;
     dispatch_sync(self.queue, ^{
-        if(weakSelf.uploadWork){
-            dispatch_block_cancel(weakSelf.uploadWork);
-            weakSelf.uploadWork = nil;
+        __strong __typeof(weakSelf) strongSelf = weakSelf;
+        if (!strongSelf) {
+            return;
         }
-        if(weakSelf.readWork){
-            dispatch_block_cancel(weakSelf.readWork);
-            weakSelf.readWork = nil;
+        if(strongSelf.uploadWork){
+            dispatch_block_cancel(strongSelf.uploadWork);
+            strongSelf.uploadWork = nil;
+        }
+        if(strongSelf.readWork){
+            dispatch_block_cancel(strongSelf.readWork);
+            strongSelf.readWork = nil;
         }
     });
 }

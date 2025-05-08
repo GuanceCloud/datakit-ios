@@ -10,7 +10,7 @@
 #import "FTFile.h"
 #import "FTLog+Private.h"
 @interface FTDirectory()
-@property (nonatomic, strong) NSURL *url;
+@property (nonatomic, strong, readwrite) NSURL *url;
 
 @end
 @implementation FTDirectory
