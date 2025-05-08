@@ -22,9 +22,14 @@ NS_ASSUME_NONNULL_BEGIN
 @property (nonatomic, assign) ErrorMonitorType errorMonitorType;
 @property (nonatomic, strong) FTRUMMonitor *monitor;
 @property (nonatomic, strong, nullable) FTFatalErrorContext *fatalErrorContext;
-@property (atomic, assign) BOOL currentSessionSample;
 
-@property (atomic, assign) BOOL sessionHasReplay;
+@property (nonatomic, assign) BOOL currentSessionSample;
+@property (nonatomic, assign) BOOL sessionHasReplay;
+@property (nonatomic, strong) NSNumber *sessionReplaySampleRate;
+@property (nonatomic, strong) NSNumber *sessionReplayOnErrorSampleRate;
+@property (nonatomic, assign) BOOL sampledForErrorReplay;
+@property (nonatomic, assign) BOOL sampledForErrorSession;
+
 @property (atomic, strong) NSDictionary *sessionReplayStats;
 - (NSDictionary *)sampleFieldsDict;
 @end

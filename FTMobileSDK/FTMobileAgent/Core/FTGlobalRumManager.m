@@ -33,8 +33,7 @@
 #import "FTCrashMonitor.h"
 #import "FTFatalErrorContext.h"
 #import "FTModuleManager.h"
-#import "FTMessageReceiver.h"
-@interface FTGlobalRumManager ()<FTRunloopDetectorDelegate,FTAppLifeCycleDelegate,FTAppLaunchDataDelegate,FTMessageReceiver>
+@interface FTGlobalRumManager ()<FTRunloopDetectorDelegate,FTAppLifeCycleDelegate,FTAppLaunchDataDelegate>
 @property (nonatomic, strong) FTRumConfig *rumConfig;
 @property (nonatomic, strong) FTRUMDependencies *dependencies;
 @property (nonatomic, strong) FTAppLaunchTracker *launchTracker;
@@ -67,8 +66,7 @@ static dispatch_once_t onceToken;
     dependencies.appId = rumConfig.appid;
     dependencies.fatalErrorContext = [FTFatalErrorContext new];
     self.dependencies = dependencies;
-    [[FTModuleManager sharedInstance] addMessageReceiver:self];
-    self.rumManager = [[FTRUMManager alloc]initWithRumDependencies:self.dependencies];
+    self.rumManager = [[FTRUMManager alloc]initWithRumDependencies:dependencies];
     [[FTAutoTrackHandler sharedInstance]startWithTrackView:rumConfig.enableTraceUserView action:rumConfig.enableTraceUserAction];
     [FTAutoTrackHandler sharedInstance].addRumDatasDelegate = self.rumManager;
     if(rumConfig.enableTraceUserAction){
@@ -88,15 +86,6 @@ static dispatch_once_t onceToken;
     [FTWKWebViewHandler sharedInstance].rumTrackDelegate = self;
 #endif
     [FTExternalDataManager sharedManager].delegate = self.rumManager;
-}
--(void)receive:(NSString *)key message:(NSDictionary *)message{
-    if(key == FTMessageKeySessionHasReplay){
-        BOOL hasReplay = [message[FT_SESSION_HAS_REPLAY] boolValue];
-        self.dependencies.sessionHasReplay = hasReplay;
-        FTInnerLogDebug(@"[RUM] session(id:%@) has replay:%@",[self.dependencies.fatalErrorContext.lastSessionContext valueForKey:FT_RUM_KEY_SESSION_ID],(hasReplay?@"true":@"false"));
-    }else if(key == FTMessageKeyRecordsCountByViewID){
-        self.dependencies.sessionReplayStats = message;
-    }
 }
 #pragma mark ========== jsBridge ==========
 #if !TARGET_OS_TV

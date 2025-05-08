@@ -68,7 +68,7 @@
     }];
 }
 /// 测试 session_error_timestamp == error.timestamp
-/// is_error_session == YES
+/// sampled_for_error_session == YES
 - (void)testSessionOnErrorSampleRate_unSampling{
     [self sdkInitWithRumSampleRate:0];
     NSArray *oldArray = [[FTTrackerEventDBTool sharedManger] getAllDatas];

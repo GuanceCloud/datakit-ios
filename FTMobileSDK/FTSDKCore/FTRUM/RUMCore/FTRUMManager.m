@@ -20,6 +20,7 @@
 #import "NSError+FTDescription.h"
 #import "FTPresetProperty.h"
 #import "FTNetworkConnectivity.h"
+#import "FTMessageReceiver.h"
 
 NSString * const AppStateStringMap[] = {
     [FTAppStateUnknown] = @"unknown",
@@ -28,7 +29,7 @@ NSString * const AppStateStringMap[] = {
 };
 void *FTRUMQueueIdentityKey = &FTRUMQueueIdentityKey;
 
-@interface FTRUMManager()<FTRUMSessionProtocol>
+@interface FTRUMManager()<FTRUMSessionProtocol,FTMessageReceiver>
 @property (nonatomic, strong) FTRUMDependencies *rumDependencies;
 @property (nonatomic, strong) FTRUMSessionHandler *sessionHandler;
 @property (nonatomic, strong) FTReadWriteHelper<NSMutableDictionary *> *preViewDuration;
@@ -43,10 +44,31 @@ void *FTRUMQueueIdentityKey = &FTRUMQueueIdentityKey;
         _preViewDuration = [[FTReadWriteHelper alloc]initWithValue:[NSMutableDictionary new]] ;
         _rumQueue = dispatch_queue_create("com.guance.rum", DISPATCH_QUEUE_SERIAL);
         dispatch_queue_set_specific(_rumQueue, FTRUMQueueIdentityKey, &FTRUMQueueIdentityKey, NULL);
+        [[FTModuleManager sharedInstance] addMessageReceiver:self];
         [self notifyRumInit];
         self.assistant = self;
     }
     return self;
+}
+-(void)receive:(NSString *)key message:(NSDictionary *)message{
+    if(key == FTMessageKeySessionHasReplay){
+        dispatch_async(self.rumQueue, ^{
+            BOOL hasReplay = [message[FT_SESSION_HAS_REPLAY] boolValue];
+            BOOL sampledForErrorReplay = [message[FT_RUM_KEY_SAMPLED_FOR_ERROR_REPLAY] boolValue];
+            // 如果是正常的 session 而 session replay 是 error replay, hasReplay 为 NO
+            if (!self.rumDependencies.sampledForErrorSession && sampledForErrorReplay) {
+                self.rumDependencies.sessionHasReplay = NO;
+            }else{
+                self.rumDependencies.sessionHasReplay = hasReplay;
+            }
+            self.rumDependencies.sampledForErrorReplay = sampledForErrorReplay;
+            self.rumDependencies.sessionReplaySampleRate = message[FT_RUM_SESSION_REPLAY_SAMPLE_RATE];
+            self.rumDependencies.sessionReplayOnErrorSampleRate = message[FT_RUM_SESSION_REPLAY_ON_ERROR_SAMPLE_RATE];
+            FTInnerLogDebug(@"[RUM] session(id:%@) has replay:%@",[self.rumDependencies.fatalErrorContext.lastSessionContext valueForKey:FT_RUM_KEY_SESSION_ID],(hasReplay?@"true":@"false"));
+        });
+    }else if(key == FTMessageKeyRecordsCountByViewID){
+        self.rumDependencies.sessionReplayStats = message;
+    }
 }
 -(void)setAppState:(FTAppState)appState{
     _appState = appState;
@@ -264,7 +286,9 @@ void *FTRUMQueueIdentityKey = &FTRUMQueueIdentityKey;
                     if (content.responseBody.length>0) {
                         [errorField setValue:content.responseBody forKey:FT_KEY_ERROR_STACK];
                     }
-                    
+                    [[FTModuleManager sharedInstance] postMessage:FTMessageKeyRumError message:@{@"error_date":time,
+                                                                                                 @"error_crash":@(NO)
+                                                                                               }];
                     FTRUMResourceModel *resourceError = [[FTRUMResourceModel alloc]initWithType:FTRUMDataResourceError identifier:key];
                     resourceError.time = time;
                     resourceError.tags = errorTags;

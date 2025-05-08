@@ -100,18 +100,24 @@
     if(self.currentRUMContext == nil || ![message[FT_RUM_KEY_SESSION_ID] isEqualToString:self.currentRUMContext[FT_RUM_KEY_SESSION_ID]]){
         BOOL isErrorSession = self.currentRUMContext[FT_RUM_KEY_SAMPLED_FOR_ERROR_SESSION];
         BOOL isSampled = [FTBaseInfoHandler randomSampling:self.sampleRate];
-        BOOL srOnErrorSampleRate = [FTBaseInfoHandler randomSampling:self.config.sessionReplayOnErrorSampleRate];
+        BOOL srOnErrorSampleRate = isSampled? NO: [FTBaseInfoHandler randomSampling:self.config.sessionReplayOnErrorSampleRate];
         
         BOOL shouldStart = isSampled || srOnErrorSampleRate;
         // 是否需要使用临时缓存（当为错误会话，或未被常规采样但开启了错误采样时）
-        BOOL useTmpCache = isErrorSession || (srOnErrorSampleRate && !isSampled);
-
+        BOOL useTmpCache = isErrorSession || srOnErrorSampleRate;
         if (shouldStart) {
             [self startWithTmpCache:useTmpCache];
         } else {
             [self stop];
         }
-        [[FTModuleManager sharedInstance] postMessage:FTMessageKeySessionHasReplay message:@{FT_SESSION_HAS_REPLAY:@(isSampled)}];
+        // FT_SESSION_HAS_REPLAY,有没有 session replay 数据采集，cache 类型也算
+        // FT_RUM_KEY_SAMPLED_FOR_ERROR_REPLAY,cache 类型数据
+        [[FTModuleManager sharedInstance] postMessage:FTMessageKeySessionHasReplay message:@{
+            FT_SESSION_HAS_REPLAY:@(shouldStart),
+            FT_RUM_SESSION_REPLAY_SAMPLE_RATE:@(self.sampleRate),
+            FT_RUM_SESSION_REPLAY_ON_ERROR_SAMPLE_RATE:@(self.config.sessionReplayOnErrorSampleRate),
+            FT_RUM_KEY_SAMPLED_FOR_ERROR_REPLAY:@(useTmpCache)
+        }];
     }
     self.currentRUMContext = message;
 }

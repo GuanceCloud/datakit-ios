@@ -65,7 +65,7 @@ static const NSTimeInterval sessionMaxDuration = 4 * 60 * 60; // 4 hours
         [self.rumDependencies.writer isCacheWriter:NO];
         self.sessionOnErrorSampling = [FTBaseInfoHandler randomSampling:self.rumDependencies.sessionOnErrorSampleRate];
         if(self.sessionOnErrorSampling == YES){
-            self.context.sampled_for_error_session = YES;
+            self.rumDependencies.sampledForErrorSession = YES;
             [self.rumDependencies.writer isCacheWriter:YES];
             FTInnerLogInfo(@"[RUM] The current 'Session' is sampled on error.");
         }else{
@@ -83,7 +83,6 @@ static const NSTimeInterval sessionMaxDuration = 4 * 60 * 60; // 4 hours
         if(self.sessionOnErrorSampling == NO){
             return YES;
         }else if(model.type == FTRUMDataError || model.type == FTRUMDataResourceError){
-            self.sampling = YES;
             long long timestamp = [model.time ft_nanosecondTimeStamp];
             self.context.session_error_timestamp = timestamp;
             FTRUMViewHandler *lastViewHandler = (FTRUMViewHandler *)self.viewHandlers.lastObject;

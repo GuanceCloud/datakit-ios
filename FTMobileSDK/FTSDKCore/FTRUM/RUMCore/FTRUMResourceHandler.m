@@ -82,9 +82,6 @@
     [fields addEntriesFromDictionary:model.fields];
     [fields addEntriesFromDictionary:self.dependencies.sampleFieldsDict];
     [self.dependencies.writer rumWrite:FT_RUM_SOURCE_ERROR tags:tags fields:fields time:model.tm];
-    [[FTModuleManager sharedInstance] postMessage:FTMessageKeyRumError message:@{@"error_date":model.time,
-                                                                                 @"error_crash":@(NO)
-                                                                               }];
 }
 - (void)writeResourceData:(FTRUMDataModel *)data context:(NSDictionary *)context{
     FTRUMResourceDataModel *model = (FTRUMResourceDataModel *)data;
