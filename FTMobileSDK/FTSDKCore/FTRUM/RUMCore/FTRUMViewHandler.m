@@ -235,13 +235,16 @@
     }.mutableCopy;
     if (self.rumDependencies.sampledForErrorSession) {
         [fields setValue:@(YES) forKey:FT_RUM_KEY_SAMPLED_FOR_ERROR_SESSION];
-        if (self.rumDependencies.sampledForErrorReplay) {
-            [fields setValue:@(YES) forKey:FT_RUM_KEY_SAMPLED_FOR_ERROR_REPLAY];
-            [fields setValue:@(YES) forKey:FT_SESSION_HAS_REPLAY];
+    }
+    if (self.rumDependencies.sampledForErrorReplay) {
+        [fields setValue:@(YES) forKey:FT_RUM_KEY_SAMPLED_FOR_ERROR_REPLAY];
+    }
+    if (self.sessionHasReplay) {
+        NSDictionary *dict = [self.rumDependencies.sessionReplayStats valueForKey:self.view_id];
+        if(dict){
+            [fields setValue:dict forKey:FT_SESSION_REPLAY_STATS];
         }
-    }else{
-        // session-replay
-        [fields setValue:@(self.rumDependencies.sessionHasReplay) forKey:FT_SESSION_HAS_REPLAY];
+        [fields setValue:@(YES) forKey:FT_SESSION_HAS_REPLAY];
     }
     [fields addEntriesFromDictionary:self.rumDependencies.sampleFieldsDict];
     if(self.viewProperty && self.viewProperty.allKeys.count>0){
@@ -266,10 +269,7 @@
     }
     // session-replay
     [fields setValue:@(self.sessionHasReplay) forKey:FT_SESSION_HAS_REPLAY];
-    NSDictionary *dict = [self.rumDependencies.sessionReplayStats valueForKey:self.view_id];
-    if(dict){
-        [fields setValue:dict forKey:FT_SESSION_REPLAY_STATS];
-    }
+    
     long long time = [self.viewStartTime ft_nanosecondTimeStamp];
     [self.rumDependencies.writer rumWrite:FT_RUM_SOURCE_VIEW tags:tags fields:fields time:time updateTime:[updateTime ft_nanosecondTimeStamp]];
     self.rumDependencies.fatalErrorContext.lastViewContext = @{@"tags":tags ? : @{},
