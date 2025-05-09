@@ -1007,6 +1007,21 @@
     }];
     XCTAssertTrue(hasActionData);
 }
+- (void)testStartAction_stopBy_fatal_error{
+    [self setRumConfig];
+    [FTModelHelper startView];
+    [FTModelHelper startAction];
+    [[FTGlobalRumManager sharedInstance].rumManager internalErrorWithType:@"test_fatal" message:@"error_message" stack:@"error_stack"];
+    
+    NSArray *array = [[FTTrackerEventDBTool sharedManger] getAllDatas];
+    __block NSInteger actionCount = 0;
+    [FTModelHelper resolveModelArray:array callBack:^(NSString * _Nonnull source, NSDictionary * _Nonnull tags, NSDictionary * _Nonnull fields, BOOL * _Nonnull stop) {
+        if ([source isEqualToString:FT_RUM_SOURCE_ACTION] && ![tags[FT_KEY_ACTION_TYPE] isEqualToString:FT_LAUNCH_COLD]){
+            actionCount ++;
+        }
+    }];
+    XCTAssertTrue(actionCount == 1);
+}
 #pragma mark ========== Error ==========
 
 - (void)testAddErrorData{
@@ -1703,16 +1718,19 @@
 }
 
 - (void)setRumConfig{
-    [self setRumConfigEnableResourceHostIP:NO];
+    [self setRumConfigEnableResourceHostIP:NO enableTraceUserResource:NO];
 }
 - (void)setRumConfigEnableResourceHostIP:(BOOL)enable{
+    [self setRumConfigEnableResourceHostIP:enable enableTraceUserResource:YES];
+}
+- (void)setRumConfigEnableResourceHostIP:(BOOL)enable enableTraceUserResource:(BOOL)resource{
     FTMobileConfig *config = [[FTMobileConfig alloc]initWithDatakitUrl:self.url];
     config.autoSync = NO;
     config.enableSDKDebugLog = YES;
     FTRumConfig *rumConfig = [[FTRumConfig alloc]initWithAppid:self.appid];
     rumConfig.enableTraceUserAction = YES;
     rumConfig.enableTraceUserView = YES;
-    rumConfig.enableTraceUserResource = YES;
+    rumConfig.enableTraceUserResource = resource;
     rumConfig.enableResourceHostIP = enable;
     rumConfig.errorMonitorType = FTErrorMonitorAll;
     [FTMobileAgent startWithConfigOptions:config];
