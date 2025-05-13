@@ -68,8 +68,7 @@
 @property (nonatomic, strong, readwrite) NSDictionary *loggerTags;
 @property (nonatomic, strong, readwrite) NSMutableDictionary *rumTags;
 @property (nonatomic, strong, readwrite) NSMutableDictionary *rumWebViewTags;
-
-@property (nonatomic, copy) NSString *sdkVersion;
+@property (nonatomic, strong, readwrite) NSMutableDictionary *sessionReplayTags;
 @property (nonatomic, strong) NSDictionary *rumGlobalContext;
 @property (nonatomic, strong) FTReadWriteHelper<NSMutableDictionary*> *globalContextHelper;
 @property (nonatomic, strong) FTReadWriteHelper<NSMutableDictionary*> *globalRUMContextHelper;
@@ -95,6 +94,7 @@ static dispatch_once_t onceToken;
         _sessionReplaySource = @"ios";
         _mobileDevice = [[MobileDevice alloc]init];
         _rumTags = [NSMutableDictionary dictionary];
+        _sessionReplayTags = [NSMutableDictionary dictionary];
         _userHelper = [[FTReadWriteHelper alloc]initWithValue:[FTUserInfo new]];
         _globalContextHelper = [[FTReadWriteHelper alloc]initWithValue:[NSMutableDictionary new]];
         _globalRUMContextHelper = [[FTReadWriteHelper alloc]initWithValue:[NSMutableDictionary new]];
@@ -119,8 +119,14 @@ static dispatch_once_t onceToken;
     [dict setValue:pkgInfo forKey:FT_SDK_PKG_INFO];
     [dict setValue:sdkVersion forKey:FT_SDK_VERSION];
     NSDictionary *newDict = [self applyModifier:dict];
+    
+    [_sessionReplayTags setValue:version forKey:FT_VERSION];
+    [_sessionReplayTags setValue:env forKey:FT_ENV];
+    [_sessionReplayTags setValue:service forKey:FT_KEY_SERVICE];
+    [_sessionReplayTags setValue:FT_IOS_SDK_NAME forKey:FT_SDK_NAME];
+    [_sessionReplayTags setValue:sdkVersion forKey:FT_SDK_VERSION];
+
     _baseCommonPropertyTags = newDict;
-    _sdkVersion = sdkVersion;
 }
 -(void)setDataModifier:(FTDataModifier )dataModifier lineDataModifier:(FTLineDataModifier)lineDataModifier{
     self.dataModifier = dataModifier;
@@ -161,16 +167,9 @@ static dispatch_once_t onceToken;
     [tag addEntriesFromDictionary:self.globalContextHelper.currentValue];
     [tag addEntriesFromDictionary:self.globalLogContextHelper.currentValue];
     return tag;
-}    
-- (NSDictionary *)sessionReplayProperty{
-    NSMutableDictionary *tag = [NSMutableDictionary new];
-    [tag setValue:self.version forKey:@"version"];
-    [tag setValue:self.env forKey:FT_ENV];
-    [tag setValue:FT_IOS_SDK_NAME forKey:FT_SDK_NAME];
-    [tag setValue:self.service forKey:FT_KEY_SERVICE];
-    [tag setValue:self.sdkVersion forKey:FT_SDK_VERSION];
-    [tag setValue:self.sessionReplaySource forKey:FT_KEY_SOURCE];
-    return tag;
+}
+-(void)setSessionReplaySource:(NSString *)sessionReplaySource{
+    [_sessionReplayTags setValue:sessionReplaySource forKey:FT_KEY_SOURCE];
 }
 - (NSDictionary *)rumDynamicProperty{
     NSMutableDictionary *dict = [NSMutableDictionary new];

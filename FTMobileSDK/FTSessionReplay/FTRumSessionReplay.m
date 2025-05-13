@@ -95,7 +95,7 @@ static dispatch_once_t onceToken;
                                                                requestBuilder:feature.requestBuilder
                                                           maxBatchesPerUpload:10
                                                                   performance:performancePreset
-                                                                      context:[FTPresetProperty sharedInstance].sessionReplayProperty];
+                                                                      context:[FTPresetProperty sharedInstance].sessionReplayTags];
         FTFeatureStores *store = [[FTFeatureStores alloc]initWithStorage:storage upload:upload];
         return store;
     }

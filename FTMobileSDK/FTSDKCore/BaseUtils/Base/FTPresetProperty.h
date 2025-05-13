@@ -20,9 +20,11 @@ NS_ASSUME_NONNULL_BEGIN
 @property (nonatomic, strong) FTReadWriteHelper<FTUserInfo*> *userHelper;
 @property (nonatomic, strong, readonly) NSDictionary *loggerTags;
 @property (nonatomic, strong, readonly) NSMutableDictionary *rumTags;
+@property (nonatomic, strong, readonly) NSMutableDictionary *sessionReplayTags;
+
 /// 设置数据更改器
 @property (nonatomic, copy) FTLineDataModifier lineDataModifier;
-@property (atomic, copy) NSString *sessionReplaySource;
+@property (nonatomic, copy) NSString *sessionReplaySource;
 /// 设备名称
 + (NSString *)deviceInfo;
 + (NSString *)cpuArch;
@@ -47,9 +49,9 @@ NS_ASSUME_NONNULL_BEGIN
 
 -(void)setLogGlobalContext:(NSDictionary *)logGlobalContext;
 
+-(void)setSessionReplaySource:(NSString *)sessionReplaySource;
+
 - (NSDictionary *)rumDynamicProperty;
-/// 获取 Session Replay 公共Tag
-- (NSDictionary *)sessionReplayProperty;
 
 - (NSDictionary *)loggerDynamicProperty;
 
