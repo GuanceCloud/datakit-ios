@@ -245,7 +245,7 @@ static dispatch_once_t onceToken;
 - (BOOL)deleteDatasWithType:(NSString *)type toTime:(long long)toTime{
     __block BOOL is;
     [self zy_inDatabase:^(ZY_FMDatabase *db){
-        NSString *sqlStr = [NSString stringWithFormat:@"DELETE FROM '%@' WHERE _id in (SELECT _id from '%@' WHERE  op = '%@' AND tm < '%lld' )",FT_DB_TRACE_EVENT_TABLE_NAME,FT_DB_TRACE_EVENT_TABLE_NAME,type,toTime];
+        NSString *sqlStr = [NSString stringWithFormat:@"DELETE FROM '%@' WHERE _id in (SELECT _id from '%@' WHERE  op = '%@' AND tm <= '%lld' )",FT_DB_TRACE_EVENT_TABLE_NAME,FT_DB_TRACE_EVENT_TABLE_NAME,type,toTime];
         is = [db executeUpdate:sqlStr];
     }];
     return is;

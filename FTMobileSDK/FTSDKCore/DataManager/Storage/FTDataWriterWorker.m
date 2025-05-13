@@ -20,10 +20,11 @@
 @interface FTDataWriterWorker()
 @property (atomic, assign) BOOL isCache;
 @property (nonatomic, assign) NSTimeInterval cacheInvalidTimeInterval;
-@property (nonatomic, assign) NSTimeInterval lastErrorTimeInterval;
+@property (atomic, assign) NSTimeInterval lastErrorTimeInterval;
 @property (nonatomic, assign) BOOL isTimerRunning;
 @property (nonatomic, assign) long long processStartTime;
 @property (nonatomic, assign) long long lastProcessFatalErrorTime;
+@property (nonatomic, strong) dispatch_queue_t errorSampledConsumeQueue;
 @end
 @implementation FTDataWriterWorker
 -(instancetype)init{
@@ -34,11 +35,14 @@
     if(self){
         _cacheInvalidTimeInterval = timeInterval*1e9;
         _processStartTime = [[NSDate dateWithTimeIntervalSinceReferenceDate:FTAppLaunchTracker.processStartTime] ft_nanosecondTimeStamp];
+        _errorSampledConsumeQueue = dispatch_queue_create("com.guance.errorSampledConsume", 0);
         _lastProcessFatalErrorTime = -1;
-        _lastErrorTimeInterval = [self getErrorTimeLineFromFileCache];
+        _lastErrorTimeInterval = 0;
+        [self checkLastProcessErrorSampled];
     }
     return self;
 }
+// 在 rum 队列或者 longtask 队列调用
 - (void)rumWrite:(NSString *)source tags:(NSDictionary *)tags fields:(NSDictionary *)fields time:(long long)time{
     [self rumWrite:source tags:tags fields:fields time:time updateTime:0];
 }
@@ -52,17 +56,33 @@
     @try {
         NSMutableDictionary *baseTags = [NSMutableDictionary new];
         [baseTags addEntriesFromDictionary:tags];
-        NSDictionary *rumProperty = [[FTPresetProperty sharedInstance] rumProperty];
+        NSDictionary *rumProperty = [[FTPresetProperty sharedInstance] rumTags];
         [baseTags addEntriesFromDictionary:rumProperty];
+        NSDictionary *pkgInfo = tags[FT_SDK_PKG_INFO];
+        if(pkgInfo && pkgInfo.count>0){
+            NSDictionary *info = [rumProperty valueForKey:FT_SDK_PKG_INFO];
+            if(info){
+                NSMutableDictionary *mutableInfo = [info mutableCopy];
+                [mutableInfo addEntriesFromDictionary:pkgInfo];
+                pkgInfo = mutableInfo;
+            }
+            [baseTags setValue:pkgInfo forKey:FT_SDK_PKG_INFO];
+        }
         NSString *type = cache ? FT_DATA_TYPE_RUM_CACHE:FT_DATA_TYPE_RUM;
         FTAddDataType addType = cache ? FTAddDataRUMCache:FTAddDataRUM;
-        FTRecordModel *model = [[FTRecordModel alloc]initWithSource:source op:type tags:baseTags fields:fields tm:time];
+        FTRecordModel *model;
+        if ([FTPresetProperty sharedInstance].lineDataModifier) {
+            NSArray *array = [[FTPresetProperty sharedInstance] applyLineModifier:source tags:baseTags fields:fields];
+            model = [[FTRecordModel alloc]initWithSource:source op:type tags:array[0] fields:array[1] tm:time];
+        }else{
+            model = [[FTRecordModel alloc]initWithSource:source op:type tags:baseTags fields:fields tm:time];
+        }
         if(updateTime>0){
             model.tm = updateTime;
         }
         [[FTTrackDataManager sharedInstance] addTrackData:model type:addType];
-        if ([source isEqualToString:FT_RUM_SOURCE_ERROR]) {
-            [self setLastErrorTimeInterval:model.tm];
+        if (cache && [source isEqualToString:FT_RUM_SOURCE_ERROR]) {
+            [self lastErrorTimeInterval:model.tm];
         }
     } @catch (NSException *exception) {
         FTInnerLogError(@"exception %@",exception);
@@ -75,7 +95,7 @@
     @try {
         NSMutableDictionary *baseTags = [NSMutableDictionary new];
         [baseTags addEntriesFromDictionary:tags];
-        NSDictionary *rumProperty = [[FTPresetProperty sharedInstance] rumProperty];
+        NSDictionary *rumProperty = [[FTPresetProperty sharedInstance] rumTags];
         [baseTags addEntriesFromDictionary:rumProperty];
         FTRecordModel *model = [[FTRecordModel alloc]initWithSource:source op:FT_DATA_TYPE_RUM tags:baseTags fields:fields tm:time];
         [[FTTrackDataManager sharedInstance] addTrackData:model type:FTAddDataRUM];
@@ -86,7 +106,7 @@
 // FT_DATA_TYPE_LOGGING
 -(void)logging:(NSString *)content status:(NSString *)status tags:(nullable NSDictionary *)tags field:(nullable NSDictionary *)field time:(long long)time{
     @try {
-        NSMutableDictionary *tagDict = [NSMutableDictionary dictionaryWithDictionary:[[FTPresetProperty sharedInstance] loggerProperty]];
+        NSMutableDictionary *tagDict = [NSMutableDictionary dictionaryWithDictionary:[[FTPresetProperty sharedInstance] loggerTags]];
         if (tags) {
             [tagDict addEntriesFromDictionary:tags];
         }
@@ -110,57 +130,81 @@
 -(void)isCacheWriter:(BOOL)cache{
     self.isCache = cache;
 }
-/// 检查上一进程是否有 ANR 崩溃数据
--(void)lastFatalErrorIfFound:(long long)errorDate{
-    _lastProcessFatalErrorTime = 0;
-    if (errorDate < self.processStartTime && errorDate>0) {
-        _lastProcessFatalErrorTime = self.lastErrorTimeInterval < self.processStartTime && errorDate < self.lastErrorTimeInterval ? self.lastErrorTimeInterval : errorDate;
-        FTInnerLogDebug(@"[RUM cache] Last process has fatal error.");
-        [[FTTrackerEventDBTool sharedManger] updateDatasWithType:FT_DATA_TYPE_RUM_CACHE toType:FT_DATA_TYPE_RUM toTime:_lastProcessFatalErrorTime];
-    }
-    FTInnerLogDebug(@"[RUM cache] Deal last process datas");
-    [[FTTrackerEventDBTool sharedManger] deleteDatasWithType:FT_DATA_TYPE_RUM_CACHE toTime:self.processStartTime];
-}
-- (void)setLastErrorTimeInterval:(NSTimeInterval)lastErrorTimeInterval{
+- (void)lastErrorTimeInterval:(NSTimeInterval)lastErrorTimeInterval{
     //  不处理上一个 error 之前的数据，不处理上一个进程的数据
     if (lastErrorTimeInterval <= self.lastErrorTimeInterval || lastErrorTimeInterval < self.processStartTime){
         return;
     }
     [[NSUserDefaults standardUserDefaults] setObject:@(lastErrorTimeInterval) forKey:@"ft_last_error_time"];
     [self checkRUMSessionOnErrorDatasWithExpireTime:lastErrorTimeInterval-self.cacheInvalidTimeInterval];
-    _lastErrorTimeInterval = lastErrorTimeInterval;
+    self.lastErrorTimeInterval = lastErrorTimeInterval;
 }
 - (long long)getLastProcessFatalErrorTime{
     return _lastProcessFatalErrorTime;
 }
 - (long long)getErrorTimeLineFromFileCache{
-    NSNumber *lastError = [[NSUserDefaults standardUserDefaults] valueForKey:@"ft_last_error_time"];
-    if (lastError) {
+    NSNumber *lastError = [[NSUserDefaults standardUserDefaults] objectForKey:@"ft_last_error_time"];
+    if (lastError != nil) {
         return [lastError longLongValue];
     }
     return 0;
 }
+#pragma mark - RUM ERROR SAMPLED CONSUME
+#pragma mark ========== LAST PROCESS ==========
+- (void)checkLastProcessErrorSampled{
+    __weak typeof(self) weakSelf = self;
+    dispatch_async(self.errorSampledConsumeQueue, ^{
+        __strong typeof(weakSelf) strongSelf = weakSelf;
+        if (!strongSelf) return;
+        long long error = [strongSelf getErrorTimeLineFromFileCache];
+        if (error > 0) {
+            FTInnerLogDebug(@"[RUM errorSampledConsume] Deal last process datas");
+            [[FTTrackerEventDBTool sharedManger] updateDatasWithType:FT_DATA_TYPE_RUM_CACHE toType:FT_DATA_TYPE_RUM toTime:error];
+        }
+    });
+}
+/// 检查上一进程是否有 ANR 崩溃数据，更新删除上一进程 error sampled
+-(void)lastFatalErrorIfFound:(long long)errorDate{
+    _lastProcessFatalErrorTime = errorDate;
+    __weak typeof(self) weakSelf = self;
+    dispatch_async(self.errorSampledConsumeQueue, ^{
+        __strong typeof(weakSelf) strongSelf = weakSelf;
+        if (!strongSelf) return;
+        if (errorDate>0) {
+            FTInnerLogDebug(@"[RUM errorSampledConsume] Last process has fatal error.");
+            [[FTTrackerEventDBTool sharedManger] updateDatasWithType:FT_DATA_TYPE_RUM_CACHE toType:FT_DATA_TYPE_RUM toTime:errorDate];
+        }
+        FTInnerLogDebug(@"[RUM errorSampledConsume] Delete last process datas");
+        [[FTTrackerEventDBTool sharedManger] deleteDatasWithType:FT_DATA_TYPE_RUM_CACHE toTime:strongSelf.processStartTime];
+    });
+}
+#pragma mark ========== CURRENT PROCESS ==========
+/// 处理当前进程的 cache 数据
 - (void)checkRUMSessionOnErrorDatasExpired{
+    FTInnerLogDebug(@"[RUM errorSampledConsume] Start Check.");
     [self checkRUMSessionOnErrorDatasWithExpireTime:[NSDate ft_currentNanosecondTimeStamp] - self.cacheInvalidTimeInterval];
 }
 - (void)checkRUMSessionOnErrorDatasWithExpireTime:(long long)expireTime{
-    if([[FTTrackerEventDBTool sharedManger] getDatasCountWithType:FT_DATA_TYPE_RUM_CACHE]==0){
-        FTInnerLogDebug(@"[RUM cache] No datas.");
-        return;
-    }
-    if (expireTime <= 0) {
-        expireTime = [NSDate ft_currentNanosecondTimeStamp] - self.cacheInvalidTimeInterval;
-    }
-    if(self.lastErrorTimeInterval>0){
-        if (self.lastErrorTimeInterval < self.processStartTime) {
-            FTInnerLogDebug(@"[RUM cache] Deal last process datas");
-            [[FTTrackerEventDBTool sharedManger] updateDatasWithType:FT_DATA_TYPE_RUM_CACHE toType:FT_DATA_TYPE_RUM toTime:self.lastErrorTimeInterval];
-        }else{
-            FTInnerLogDebug(@"[RUM cache] has last error, update Datas Type");
-            [[FTTrackerEventDBTool sharedManger] updateDatasWithType:FT_DATA_TYPE_RUM_CACHE toType:FT_DATA_TYPE_RUM fromTime:self.processStartTime toTime:self.lastErrorTimeInterval];
+    __weak typeof(self) weakSelf = self;
+    dispatch_sync(self.errorSampledConsumeQueue, ^{
+        __strong typeof(weakSelf) strongSelf = weakSelf;
+        if (!strongSelf) return;
+        if([[FTTrackerEventDBTool sharedManger] getDatasCountWithType:FT_DATA_TYPE_RUM_CACHE]==0){
+            FTInnerLogDebug(@"[RUM errorSampledConsume] No datas.");
+            return;
         }
-    }
-    FTInnerLogDebug(@"[RUM cache] Delete expire datas");
-    [[FTTrackerEventDBTool sharedManger] deleteDatasWithType:FT_DATA_TYPE_RUM_CACHE fromTime:self.processStartTime toTime:expireTime];
+        long long expire = expireTime;
+        if (expire <= 0) {
+            expire = [NSDate ft_currentNanosecondTimeStamp] - strongSelf.cacheInvalidTimeInterval;
+        }
+        if(self.lastErrorTimeInterval>0){
+            FTInnerLogDebug(@"[RUM errorSampledConsume] has last error, update Datas Type");
+            [[FTTrackerEventDBTool sharedManger] updateDatasWithType:FT_DATA_TYPE_RUM_CACHE toType:FT_DATA_TYPE_RUM fromTime:strongSelf.processStartTime toTime:strongSelf.lastErrorTimeInterval];
+        }
+        FTInnerLogDebug(@"[RUM errorSampledConsume] Delete expire(%lld) datas",expire);
+        [[FTTrackerEventDBTool sharedManger] deleteDatasWithType:FT_DATA_TYPE_RUM_CACHE fromTime:strongSelf.processStartTime toTime:expire];
+        FTInnerLogDebug(@"[RUM errorSampledConsume] End");
+
+    });
 }
 @end
