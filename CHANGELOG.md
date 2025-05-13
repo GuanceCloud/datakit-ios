@@ -1,3 +1,11 @@
+# 1.5.16-alpha.1
+1. 同 1.5.15-alpha.1-1.5.15-alpha.6
+2. RUM 错误 Session 采样功能实现逻辑调整
+3. Logger 支持通过 `logLevelFilter` 设置过滤自定义日志等级
+4. 修复崩溃 error 造成冗余无效 action 写入问题
+5. 添加 `FTMobileConfig.lineDataModifier`、`FTMobileConfig.dataModifier` 支持数据写入替换，可适用数据脱敏
+6. 原生页面跳转至 WebView 页面时，用原生页面名称填充 view_referrer
+---
 # 1.5.15
 1. 修复 Swift Package Manager 编译报错问题
 ---
