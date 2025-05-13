@@ -281,6 +281,8 @@
     options.dbCacheLimit = self.dbCacheLimit;
     options.dbDiscardType = self.dbDiscardType;
     options.sdkPkgInfo = [self.sdkPkgInfo copy];
+    options.dataModifier = [self.dataModifier copy];
+    options.lineDataModifier = [self.lineDataModifier copy];
     return options;
 }
 -(instancetype)initWithDictionary:(NSDictionary *)dict{

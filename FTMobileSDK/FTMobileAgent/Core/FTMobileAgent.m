@@ -68,13 +68,8 @@ static dispatch_once_t onceToken;
             _sdkConfig = [config copy];
             //基础类型的记录
             [FTLog enableLog:_sdkConfig.enableSDKDebugLog];
-            [FTExtensionDataManager sharedInstance].groupIdentifierArray = _sdkConfig.groupIdentifiers;
-            //开启数据处理管理器
-            [FTTrackDataManager startWithAutoSync:_sdkConfig.autoSync syncPageSize:_sdkConfig.syncPageSize syncSleepTime:_sdkConfig.syncSleepTime];
-            if(config.enableLimitWithDbSize){
-                [[FTTrackDataManager sharedInstance] setDBLimitWithSize:_sdkConfig.dbCacheLimit discardNew:_sdkConfig.dbDiscardType == FTDBDiscard];
-            }
             NSString *version = [[[NSBundle mainBundle] infoDictionary] objectForKey:@"CFBundleShortVersionString"];
+            [[FTPresetProperty sharedInstance] setDataModifier:_sdkConfig.dataModifier lineDataModifier:_sdkConfig.lineDataModifier];
             [[FTPresetProperty sharedInstance] startWithVersion:version
                                                      sdkVersion:SDK_VERSION
                                                             env:_sdkConfig.env
@@ -82,6 +77,13 @@ static dispatch_once_t onceToken;
                                                   globalContext:_sdkConfig.globalContext
                                                         pkgInfo:_sdkConfig.pkgInfo
             ];
+            [FTExtensionDataManager sharedInstance].groupIdentifierArray = _sdkConfig.groupIdentifiers;
+            //开启数据处理管理器
+            [FTTrackDataManager startWithAutoSync:_sdkConfig.autoSync syncPageSize:_sdkConfig.syncPageSize syncSleepTime:_sdkConfig.syncSleepTime];
+            if(config.enableLimitWithDbSize){
+                [[FTTrackDataManager sharedInstance] setDBLimitWithSize:_sdkConfig.dbCacheLimit discardNew:_sdkConfig.dbDiscardType == FTDBDiscard];
+            }
+            
             [FTNetworkInfoManager sharedInstance]
                 .setDatakitUrl(_sdkConfig.datakitUrl)
                 .setDatawayUrl(_sdkConfig.datawayUrl)
@@ -105,8 +107,7 @@ static dispatch_once_t onceToken;
         if(!_rumConfig){
             FTInnerLogInfo(@"[RUM] APPID:%@",rumConfigOptions.appid);
             _rumConfig = [rumConfigOptions copy];
-            [[FTPresetProperty sharedInstance] setAppID:_rumConfig.appid];
-            [FTPresetProperty sharedInstance].rumGlobalContext = _rumConfig.globalContext;
+            [[FTPresetProperty sharedInstance] setRUMAppID:_rumConfig.appid rumGlobalContext:_rumConfig.globalContext];
             [[FTTrackDataManager sharedInstance] setRUMCacheLimitCount:_rumConfig.rumCacheLimitCount discardNew:_rumConfig.rumDiscardType == FTRUMDiscard];
             [[FTGlobalRumManager sharedInstance] setRumConfig:_rumConfig writer:[FTTrackDataManager sharedInstance].dataWriterWorker];
             [[FTURLSessionInstrumentation sharedInstance]setEnableAutoRumTrace:_rumConfig.enableTraceUserResource
@@ -129,7 +130,7 @@ static dispatch_once_t onceToken;
         
         if (!_loggerConfig) {
             _loggerConfig = [loggerConfigOptions copy];
-            [FTPresetProperty sharedInstance].logGlobalContext = _loggerConfig.globalContext;
+            [[FTPresetProperty sharedInstance] setLogGlobalContext:_loggerConfig.globalContext];
             [[FTTrackDataManager sharedInstance] setLogCacheLimitCount:_loggerConfig.logCacheLimitCount discardNew:_loggerConfig.discardType == FTDiscard];
             [[FTExtensionDataManager sharedInstance] writeLoggerConfig:[_loggerConfig convertToDictionary]];
             [FTLogger startWithLoggerConfig:_loggerConfig writer:[FTTrackDataManager sharedInstance].dataWriterWorker];
@@ -276,7 +277,7 @@ static dispatch_once_t onceToken;
                     [tags addEntriesFromDictionary:dynamicTags];
                     if (self.loggerConfig.enableLinkRumData) {
                         [tags addEntriesFromDictionary:[[FTPresetProperty sharedInstance] rumDynamicProperty]];
-                        [tags addEntriesFromDictionary:[[FTPresetProperty sharedInstance] rumProperty]];
+                        [tags addEntriesFromDictionary:[[FTPresetProperty sharedInstance] rumTags]];
                     }
                     [tags addEntriesFromDictionary:dict[@"tags"]];
                     [[FTTrackDataManager sharedInstance].dataWriterWorker logging:dict[@"content"] status:statusStr tags:tags field:dict[@"fields"] time:time.longLongValue];

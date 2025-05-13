@@ -12,7 +12,6 @@
 #import "FTLog+Private.h"
 #import "FTRUMManager.h"
 #import "FTRUMDataWriteProtocol.h"
-#import "FTMobileConfig.h"
 #import "FTURLSessionInstrumentation.h"
 #import "FTTracer.h"
 #import "FTExternalDataManager+Private.h"
