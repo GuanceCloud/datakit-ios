@@ -16,6 +16,7 @@
 #import "FTTrackDataManager.h"
 #import "FTAppLaunchTracker.h"
 #import "NSDate+FTUtil.h"
+#import "FTLog+Private.h"
 
 void *FTTmpCacheQueueIdentityKey = &FTTmpCacheQueueIdentityKey;
 
@@ -66,66 +67,99 @@ void *FTTmpCacheQueueIdentityKey = &FTTmpCacheQueueIdentityKey;
         self.hasErrorForceUpdate = YES;
         NSDate *date = [message valueForKey:@"error_date"];
         BOOL isCrash = [[message valueForKey:@"error_crash"] boolValue];
-        [self cleanupWithDate:date sync:isCrash];
+        if (date) {
+            long long expirationTimeStamp = [[date dateByAddingTimeInterval:-60] ft_nanosecondTimeStamp];
+            long long lastErrorTimeStamp = [date ft_nanosecondTimeStamp];
+            [self cleanupWithExpirationTimeStamp:expirationTimeStamp lastErrorTimeStamp:lastErrorTimeStamp sync:isCrash];
+        }
     }
 }
 #pragma mark - 清理过期文件
-- (void)cleanup{
-    [self cleanupWithDate:[NSDate date] sync:NO];
-}
+#pragma mark ========== LAST PROCESS ==========
 - (void)cleanupLastProcess{
-    long long errorTimeStamp = [self.sessionOnErrorHandler getLastProcessFatalErrorTime];
-    if (errorTimeStamp == -1) {
-        dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)(0.1 * NSEC_PER_SEC)), self.fileQueue, ^{
-            [self cleanupLastProcess];
-        });
-    }else{
-        dispatch_async(self.fileQueue, ^{
-            NSArray <FTFile *> *files = self.cacheDirectory.files;
+    /// 上一进程数据，仅做 update 操作
+    long long lastErrorTimeStamp = [self.sessionOnErrorHandler getErrorTimeLineFromFileCache];
+    if(lastErrorTimeStamp>0){
+        [self cleanupWithExpirationTimeStamp:0 lastErrorTimeStamp:lastErrorTimeStamp sync:NO];
+    }
+    /// 上一进程 anr 判断，update\delete
+    __weak typeof(self) weakSelf = self;
+    dispatch_async(self.fileQueue, ^{
+        __strong __typeof(weakSelf) strongSelf = weakSelf;
+        if (!strongSelf) {
+            return;
+        }
+        BOOL done = NO;
+        NSInteger times = 0;
+        while (done) {
+            long long errorTimeStamp = [strongSelf.sessionOnErrorHandler getLastProcessFatalErrorTime];
+            if (errorTimeStamp != -1 || times == 3) {
+                done = YES;
+                @try {
+                    NSArray <FTFile *> *files = strongSelf.cacheDirectory.files;
+                    NSEnumerator *enumerator = [files objectEnumerator];
+                    FTFile *file;
+                    while ((file = [enumerator nextObject])) {
+                        // 从文件名解析时间分片
+                        long long fileTimeStamp = [file.fileCreationDate ft_nanosecondTimeStamp];
+                        // 发生在 error 之前产生的文件，移动到 upload
+                        if (errorTimeStamp > 0 && errorTimeStamp > fileTimeStamp) {
+                            NSURL *destinationFileURL = [strongSelf.realWriterUrl URLByAppendingPathComponent:file.name];
+                            NSError *lastCriticalError = nil;
+                            [[NSFileManager defaultManager] moveItemAtURL:file.url toURL:destinationFileURL error:&lastCriticalError];
+                            continue;
+                        }
+                        // 上一进程产生的文件删除
+                        if (fileTimeStamp < strongSelf.processStartTimeStamp) {
+                            [file deleteFile];
+                        }
+                    }
+                } @catch (NSException *exception) {
+                    FTInnerLogError(@"[Session Replay] EXCEPTION: %@", exception.description);
+                }
+            }
+            times ++;
+            sleep(0.1);
+        }
+    });
+}
+#pragma mark ========== CURRENT PROCESS ==========
+- (void)cleanup{
+    long long expirationTimeStamp = [[[NSDate date] dateByAddingTimeInterval:-60] ft_nanosecondTimeStamp];
+    long long lastErrorTimeStamp = [self.sessionOnErrorHandler getErrorTimeLineFromFileCache];
+    if (lastErrorTimeStamp < self.processStartTimeStamp ) lastErrorTimeStamp = 0;
+    [self cleanupWithExpirationTimeStamp:expirationTimeStamp lastErrorTimeStamp:lastErrorTimeStamp sync:NO];
+}
+- (void)cleanupWithExpirationTimeStamp:(long long)expirationTimeStamp lastErrorTimeStamp:(long long)lastErrorTimeStamp sync:(BOOL)sync{
+    __weak typeof(self) weakSelf = self;
+    dispatch_block_t block = ^{
+        __strong __typeof(weakSelf) strongSelf = weakSelf;
+        if (!strongSelf) {
+            return;
+        }
+        @try {
+            NSArray <FTFile *> *files = strongSelf.cacheDirectory.files;
             NSEnumerator *enumerator = [files objectEnumerator];
             FTFile *file;
             while ((file = [enumerator nextObject])) {
                 // 从文件名解析时间分片
                 long long fileTimeStamp = [file.fileCreationDate ft_nanosecondTimeStamp];
                 // 发生在 error 之前产生的文件，移动到 upload
-                if (errorTimeStamp > 0 && errorTimeStamp > fileTimeStamp) {
-                    NSURL *destinationFileURL = [self.realWriterUrl URLByAppendingPathComponent:file.name];
+                if (lastErrorTimeStamp > fileTimeStamp &&
+                    (fileTimeStamp > strongSelf.processStartTimeStamp || lastErrorTimeStamp < self.processStartTimeStamp)) {
+                    NSURL *destinationFileURL = [strongSelf.realWriterUrl URLByAppendingPathComponent:file.name];
                     NSError *lastCriticalError = nil;
                     [[NSFileManager defaultManager] moveItemAtURL:file.url toURL:destinationFileURL error:&lastCriticalError];
                     continue;
                 }
-                // 上一进程产生的文件删除
-                if (fileTimeStamp < self.processStartTimeStamp) {
+                // 删除当前进程产生的已过期的文件
+                if (expirationTimeStamp > 0 && fileTimeStamp > strongSelf.processStartTimeStamp &&
+                    fileTimeStamp < expirationTimeStamp) {
                     [file deleteFile];
                 }
             }
-        });
-    }
-}
-- (void)cleanupWithDate:(NSDate *)date sync:(BOOL)sync{
-    dispatch_block_t block = ^{
-        long long expirationTimeStamp = [[date dateByAddingTimeInterval:-60] ft_nanosecondTimeStamp];
-        long long lastErrorTimeStamp = [self.sessionOnErrorHandler getErrorTimeLineFromFileCache];
-        
-        NSArray <FTFile *> *files = self.cacheDirectory.files;
-        NSEnumerator *enumerator = [files objectEnumerator];
-        FTFile *file;
-        while ((file = [enumerator nextObject])) {
-            // 从文件名解析时间分片
-            long long fileTimeStamp = [file.fileCreationDate ft_nanosecondTimeStamp];
-            // 发生在 error 之前产生的文件，移动到 upload
-            if (lastErrorTimeStamp > fileTimeStamp &&
-                (fileTimeStamp > self.processStartTimeStamp || lastErrorTimeStamp < self.processStartTimeStamp)) {
-                NSURL *destinationFileURL = [self.realWriterUrl URLByAppendingPathComponent:file.name];
-                NSError *lastCriticalError = nil;
-                [[NSFileManager defaultManager] moveItemAtURL:file.url toURL:destinationFileURL error:&lastCriticalError];
-                continue;
-            }
-            // 当前进程产生的文件
-            if (fileTimeStamp > self.processStartTimeStamp &&
-                fileTimeStamp < expirationTimeStamp) {
-                [file deleteFile];
-            }
+        } @catch (NSException *exception) {
+            FTInnerLogError(@"[Session Replay] EXCEPTION: %@", exception.description);
         }
     };
     if (sync) {
