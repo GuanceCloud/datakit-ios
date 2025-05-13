@@ -29,7 +29,7 @@
     FTPresetProperty  *presetProperty = [FTPresetProperty sharedInstance];
                                          
     [self measureBlock:^{
-      [presetProperty rumProperty];
+      [presetProperty rumTags];
     }];
 }
 - (void)testGetLoggerPropertyPerformance {
@@ -39,7 +39,7 @@
     [[FTPresetProperty sharedInstance] startWithVersion:[[[NSBundle mainBundle] infoDictionary] objectForKey:@"CFBundleShortVersionString"] sdkVersion:SDK_VERSION env:config.env service:config.service globalContext:config.globalContext pkgInfo:nil];
     FTPresetProperty  *presetProperty = [FTPresetProperty sharedInstance];
     [self measureBlock:^{
-         [presetProperty loggerProperty];
+         [presetProperty loggerTags];
     }];
 }
 - (void)testSDKInitPerformance {

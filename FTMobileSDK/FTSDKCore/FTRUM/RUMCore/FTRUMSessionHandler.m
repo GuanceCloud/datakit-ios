@@ -211,16 +211,6 @@ static const NSTimeInterval sessionMaxDuration = 4 * 60 * 60; // 4 hours
     [tags addEntriesFromDictionary:data.tags];
     [tags addEntriesFromDictionary:sessionTag];
     [tags setValue:@(YES) forKey:FT_IS_WEBVIEW];
-    NSDictionary *pkgInfo = context[FT_SDK_PKG_INFO];
-    if(pkgInfo && pkgInfo.count>0){
-        NSDictionary *info = [data.tags valueForKey:FT_SDK_PKG_INFO];
-        if(info){
-            NSMutableDictionary *mutableInfo = [info mutableCopy];
-            [mutableInfo addEntriesFromDictionary:pkgInfo];
-            pkgInfo = mutableInfo;
-        }
-        [tags setValue:pkgInfo forKey:FT_SDK_PKG_INFO];
-    }
     NSMutableDictionary *fields = [[NSMutableDictionary alloc]initWithDictionary:data.fields];
     [fields setValue:@(NO) forKey:FT_KEY_IS_ACTIVE];
     [self.rumDependencies.writer rumWrite:data.measurement tags:tags fields:fields time:data.tm];

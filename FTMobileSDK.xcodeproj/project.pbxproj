@@ -774,6 +774,9 @@
 		17E4CC5129CD42EB005C2D99 /* FTExtensionConfig.h in Headers */ = {isa = PBXBuildFile; fileRef = 17E4CC4B29CD42EB005C2D99 /* FTExtensionConfig.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		17E4CC5229CD42EB005C2D99 /* FTExtensionManager.h in Headers */ = {isa = PBXBuildFile; fileRef = 17E4CC4C29CD42EB005C2D99 /* FTExtensionManager.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		17E4CC5529CD42F3005C2D99 /* FTMobileSDKDocs.docc in Sources */ = {isa = PBXBuildFile; fileRef = 17E4CC5429CD42F3005C2D99 /* FTMobileSDKDocs.docc */; };
+		17E5ED9B2DD32F9000E5A971 /* FTDataModifier.h in Headers */ = {isa = PBXBuildFile; fileRef = 17E5ED9A2DD32F9000E5A971 /* FTDataModifier.h */; };
+		17E5ED9C2DD32F9000E5A971 /* FTDataModifier.h in Headers */ = {isa = PBXBuildFile; fileRef = 17E5ED9A2DD32F9000E5A971 /* FTDataModifier.h */; settings = {ATTRIBUTES = (Public, ); }; };
+		17E5ED9D2DD32F9000E5A971 /* FTDataModifier.h in Headers */ = {isa = PBXBuildFile; fileRef = 17E5ED9A2DD32F9000E5A971 /* FTDataModifier.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		17F10DAD2D13C88A00737EDD /* FTNetworkConnectivity.h in Headers */ = {isa = PBXBuildFile; fileRef = 17F10DAB2D13C88A00737EDD /* FTNetworkConnectivity.h */; };
 		17F10DAE2D13C88A00737EDD /* FTNetworkConnectivity.m in Sources */ = {isa = PBXBuildFile; fileRef = 17F10DAC2D13C88A00737EDD /* FTNetworkConnectivity.m */; };
 		17F10DAF2D13C88A00737EDD /* FTNetworkConnectivity.m in Sources */ = {isa = PBXBuildFile; fileRef = 17F10DAC2D13C88A00737EDD /* FTNetworkConnectivity.m */; };
@@ -1177,6 +1180,7 @@
 		17E4CC4B29CD42EB005C2D99 /* FTExtensionConfig.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = FTExtensionConfig.h; sourceTree = "<group>"; };
 		17E4CC4C29CD42EB005C2D99 /* FTExtensionManager.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = FTExtensionManager.h; sourceTree = "<group>"; };
 		17E4CC5429CD42F3005C2D99 /* FTMobileSDKDocs.docc */ = {isa = PBXFileReference; lastKnownFileType = folder.documentationcatalog; name = FTMobileSDKDocs.docc; path = FTMobileSDK/FTMobileSDKDocs.docc; sourceTree = "<group>"; };
+		17E5ED9A2DD32F9000E5A971 /* FTDataModifier.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = FTDataModifier.h; sourceTree = "<group>"; };
 		17F10DAB2D13C88A00737EDD /* FTNetworkConnectivity.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = FTNetworkConnectivity.h; sourceTree = "<group>"; };
 		17F10DAC2D13C88A00737EDD /* FTNetworkConnectivity.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = FTNetworkConnectivity.m; sourceTree = "<group>"; };
 		17FFE8422D5E1F9200039827 /* FTAutoTrackHandler.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = FTAutoTrackHandler.h; sourceTree = "<group>"; };
@@ -1783,6 +1787,7 @@
 				17F10DAC2D13C88A00737EDD /* FTNetworkConnectivity.m */,
 				17BCF37C2D66EB2A009A63FD /* FTWeakPropertyContainer.h */,
 				17BCF37D2D66EB2A009A63FD /* FTWeakPropertyContainer.m */,
+				17E5ED9A2DD32F9000E5A971 /* FTDataModifier.h */,
 			);
 			path = Base;
 			sourceTree = "<group>";
@@ -2018,6 +2023,7 @@
 				177606BF29D137F100D17137 /* FTTracerProtocol.h in Headers */,
 				1776BA7D2B997D19008424FF /* FTLog+Private.h in Headers */,
 				174CB0732B5126D600A4F9C5 /* FTLongTaskDetector.h in Headers */,
+				17E5ED9C2DD32F9000E5A971 /* FTDataModifier.h in Headers */,
 				1776071E29D13A0500D17137 /* FTURLSessionInterceptor.h in Headers */,
 				177606A129D1376000D17137 /* FTEnumConstant.h in Headers */,
 				177606A529D1376700D17137 /* FTReadWriteHelper.h in Headers */,
@@ -2139,6 +2145,7 @@
 				1776066129D1366900D17137 /* FTSwizzle.h in Headers */,
 				17AB76DF29D432DE008FBBF5 /* FTRUMActionHandler.h in Headers */,
 				1776070529D139D400D17137 /* FTTracer.h in Headers */,
+				17E5ED9B2DD32F9000E5A971 /* FTDataModifier.h in Headers */,
 				17AB76B529D432DE008FBBF5 /* FTMemoryMonitor.h in Headers */,
 				177606BE29D137F100D17137 /* FTTracerProtocol.h in Headers */,
 				17E32BA22BEC70E700F4685C /* FTErrorMonitorInfo.h in Headers */,
@@ -2253,6 +2260,7 @@
 				17AB770529D432DE008FBBF5 /* FTRUMResourceHandler.h in Headers */,
 				17AB76BD29D432DE008FBBF5 /* FTMonitorItem.h in Headers */,
 				17E4CBE429CD42E4005C2D99 /* FTTracer.h in Headers */,
+				17E5ED9D2DD32F9000E5A971 /* FTDataModifier.h in Headers */,
 				1748A0042BE0BF5800B921FB /* FTLongTaskManager.h in Headers */,
 				17E4CC2D29CD42E4005C2D99 /* UIGestureRecognizer+FTAutoTrack.h in Headers */,
 				176326FE2CBD415800EEDC71 /* FTLinkRumDataProvider.h in Headers */,

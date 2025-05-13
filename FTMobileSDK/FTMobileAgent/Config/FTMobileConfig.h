@@ -91,6 +91,8 @@ typedef NS_ENUM(NSInteger, FTDBCacheDiscard)  {
     /// 当数据库存储大于最大值,废弃旧数据
     FTDBDiscardOldest
 };
+#import "FTDataModifier.h"
+
 NS_ASSUME_NONNULL_BEGIN
 /// RUM 过滤 resource 回调，返回：NO 表示要采集，YES 表示不需要采集。
 typedef BOOL(^FTResourceUrlHandler)(NSURL * url);
@@ -240,6 +242,11 @@ typedef FTTraceContext*_Nullable(^FTTraceInterceptor)(NSURLRequest *_Nonnull req
 /// 需要采集的 Extensions 对应的 AppGroups Identifier 数组
 @property (nonatomic, copy) NSArray<NSString*> *groupIdentifiers;
 
+/// 设置数据更改器，字段替换，适合全局字段替换场景
+@property (nonatomic, copy) FTDataModifier dataModifier;
+
+/// 设置数据更改器，可以针对某一行进行判断，再决定是否需要替换某一个数值
+@property (nonatomic, copy) FTLineDataModifier lineDataModifier;
 /// 根据提供的 FTEnv 类型设置 env
 /// - Parameter envType: 环境
 - (void)setEnvWithType:(FTEnv)envType;

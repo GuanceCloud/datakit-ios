@@ -7,7 +7,6 @@
 //
 
 #import <Foundation/Foundation.h>
-#import "FTMobileConfig.h"
 #import "FTLoggerConfig.h"
 #import "FTExtensionConfig.h"
 NS_ASSUME_NONNULL_BEGIN

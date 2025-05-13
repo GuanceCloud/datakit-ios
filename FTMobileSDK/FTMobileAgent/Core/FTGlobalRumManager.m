@@ -98,7 +98,7 @@ static dispatch_once_t onceToken;
             return;
         }
         NSString *name = messageDic[@"name"];
-        if ([name isEqualToString:@"rum"]||[name isEqualToString:@"log"]) {
+        if ([name isEqualToString:@"rum"]) {
             NSDictionary *data = messageDic[@"data"];
             NSString *measurement = data[FT_MEASUREMENT];
             NSMutableDictionary *tags = [data[FT_TAGS] mutableCopy];
@@ -115,9 +115,12 @@ static dispatch_once_t onceToken;
                 time = fixTime;
             }
             if (measurement && fields.count>0) {
-                if ([name isEqualToString:@"rum"]) {
-                    [self.rumManager addWebViewData:measurement tags:tags fields:fields tm:time];
+                if ([measurement isEqualToString:FT_RUM_SOURCE_VIEW]) {
+                    if (tags[FT_KEY_VIEW_REFERRER] == nil) {
+                        [tags setValue:self.rumManager.viewReferrer forKey:FT_KEY_VIEW_REFERRER];
+                    }
                 }
+               [self.rumManager addWebViewData:measurement tags:tags fields:fields tm:time];
             }
         }
     } @catch (NSException *exception) {

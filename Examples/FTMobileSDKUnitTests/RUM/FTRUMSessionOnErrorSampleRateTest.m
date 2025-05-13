@@ -18,6 +18,11 @@
 #import "FTDataWriterWorker.h"
 #import "XCTestCase+Utils.h"
 #import "FTTrackDataManager.h"
+#import "FTLog+Private.h"
+@interface FTDataWriterWorker(Testing)
+@property (nonatomic, assign) long long processStartTime;
+- (void)checkLastProcessErrorSampled;
+@end
 @interface FTRUMSessionOnErrorSampleRateTest : XCTestCase
 @property (nonatomic, copy) NSString *url;
 @property (nonatomic, copy) NSString *appid;
@@ -31,6 +36,7 @@
     self.url = [processInfo environment][@"ACCESS_SERVER_URL"];
     self.appid = [processInfo environment][@"APP_ID"];
     [[FTTrackerEventDBTool sharedManger] deleteAllDatas];
+    [FTLog enableLog:YES];
 }
 
 - (void)tearDown {
@@ -43,11 +49,13 @@
     config.enableSDKDebugLog = YES;
     FTRumConfig *rumConfig = [[FTRumConfig alloc]initWithAppid:self.appid];
     rumConfig.samplerate = sampleRate;
-    rumConfig.sessionOnErrorSampleRate = 100;
+    rumConfig.sessionOnErrorSampleRate = sampleRate == 100?0:100;
     [FTMobileAgent startWithConfigOptions:config];
     [[FTMobileAgent sharedInstance] startRumWithConfigOptions:rumConfig];
     
 }
+/// FT_RUM_SESSION_SAMPLE_RATE == 100
+/// FT_RUM_SESSION_ON_ERROR_SAMPLE_RATE == 0
 - (void)testSessionOnErrorSampleRate_sampling{
     [self sdkInitWithRumSampleRate:100];
     NSArray *oldArray = [[FTTrackerEventDBTool sharedManger] getAllDatas];
@@ -64,10 +72,12 @@
             XCTAssertTrue([fields[FT_RUM_KEY_SAMPLED_FOR_ERROR_SESSION] boolValue] == NO);
         }
         XCTAssertTrue([fields[FT_RUM_SESSION_SAMPLE_RATE] intValue] == 100);
-        XCTAssertTrue([fields[FT_RUM_SESSION_ON_ERROR_SAMPLE_RATE] intValue] == 100);
+        XCTAssertTrue([fields[FT_RUM_SESSION_ON_ERROR_SAMPLE_RATE] intValue] == 0);
     }];
 }
 /// 测试 session_error_timestamp == error.timestamp
+/// FT_RUM_SESSION_SAMPLE_RATE == 0
+/// FT_RUM_SESSION_ON_ERROR_SAMPLE_RATE == 100
 /// sampled_for_error_session == YES
 - (void)testSessionOnErrorSampleRate_unSampling{
     [self sdkInitWithRumSampleRate:0];
@@ -250,5 +260,96 @@
     }
     XCTAssertTrue(newArray.count - oldArray.count == 0);
     XCTAssertTrue(newArray.count == 2);
+}
+///
+- (void)testSampledErrorSessionDatasConsume_lastProcess_exceed_time_interval{
+    [FTTrackDataManager startWithAutoSync:NO syncPageSize:10 syncSleepTime:0];
+    FTDataWriterWorker *writerManager = [[FTDataWriterWorker alloc]initWithCacheInvalidTimeInterval:1];
+    [writerManager isCacheWriter:YES];
+    [writerManager rumWrite:FT_RUM_SOURCE_VIEW tags:@{@"view_id":@"1"} fields:@{@"test":@"delete"} time:123 updateTime:[[NSDate date] timeIntervalSince1970]*1e9];
+    [writerManager rumWrite:FT_RUM_SOURCE_ERROR tags:@{@"view_id":@"2"} fields:@{@"test":@"normal"} time:[[NSDate date] timeIntervalSince1970]*1e9];
+    [self waitForTimeInterval:0.1];
+    [writerManager rumWrite:FT_RUM_SOURCE_VIEW tags:@{@"view_id":@"3"} fields:@{@"test":@"normal"} time:[[NSDate date] timeIntervalSince1970]*1e9];
+    
+    // 模拟 进入新进程，且超过时间间隔
+    writerManager.processStartTime = [[[NSDate date] dateByAddingTimeInterval:2] timeIntervalSince1970]*1e9;
+    
+    [writerManager checkLastProcessErrorSampled];
+    [writerManager checkRUMSessionOnErrorDatasExpired];
+    NSArray<FTRecordModel *> *newArray = [[FTTrackerEventDBTool sharedManger] getAllDatas];
+    XCTAssertTrue(newArray.count == 3);
+    XCTAssertTrue([newArray.firstObject.op isEqualToString:FT_DATA_TYPE_RUM]);
+    XCTAssertTrue([newArray[1].op isEqualToString:FT_DATA_TYPE_RUM]);
+    XCTAssertTrue([newArray.lastObject.op isEqualToString:FT_DATA_TYPE_RUM_CACHE]);
+}
+- (void)testSampledErrorSessionDatasConsume_lastProcess_immediately{
+    [FTTrackDataManager startWithAutoSync:NO syncPageSize:10 syncSleepTime:0];
+    FTDataWriterWorker *writerManager = [[FTDataWriterWorker alloc]initWithCacheInvalidTimeInterval:1];
+    [writerManager isCacheWriter:YES];
+    [writerManager rumWrite:FT_RUM_SOURCE_VIEW tags:@{@"view_id":@"1"} fields:@{@"test":@"delete"} time:123 updateTime:[[NSDate date] timeIntervalSince1970]*1e9];
+    [writerManager rumWrite:FT_RUM_SOURCE_VIEW tags:@{@"view_id":@"2"} fields:@{@"test":@"delete"} time:123 updateTime:[[NSDate date] timeIntervalSince1970]*1e9];
+    
+    // 模拟 进入新进程
+    writerManager.processStartTime = [[NSDate date] timeIntervalSince1970]*1e9;
+    [writerManager checkLastProcessErrorSampled];
+
+    [writerManager rumWrite:FT_RUM_SOURCE_ERROR tags:@{@"view_id":@"3"} fields:@{@"test":@"delete"} time:123 updateTime:[[NSDate date] timeIntervalSince1970]*1e9];
+
+    [writerManager checkRUMSessionOnErrorDatasExpired];
+    NSArray<FTRecordModel *> *newArray = [[FTTrackerEventDBTool sharedManger] getAllDatas];
+    XCTAssertTrue(newArray.count == 3);
+    XCTAssertTrue([newArray.firstObject.op isEqualToString:FT_DATA_TYPE_RUM_CACHE]);
+    XCTAssertTrue([newArray[1].op isEqualToString:FT_DATA_TYPE_RUM_CACHE]);
+    XCTAssertTrue([newArray.lastObject.op isEqualToString:FT_DATA_TYPE_RUM]);
+}
+- (void)testSampledErrorSessionDatasConsume_lastProcess_no_anr{
+    [FTTrackDataManager startWithAutoSync:NO syncPageSize:10 syncSleepTime:0];
+    FTDataWriterWorker *writerManager = [[FTDataWriterWorker alloc]initWithCacheInvalidTimeInterval:1];
+    [writerManager isCacheWriter:YES];
+    [writerManager rumWrite:FT_RUM_SOURCE_VIEW tags:@{@"view_id":@"1"} fields:@{@"test":@"delete"} time:123 updateTime:[[NSDate date] timeIntervalSince1970]*1e9];
+    [writerManager rumWrite:FT_RUM_SOURCE_ERROR tags:@{@"view_id":@"2"} fields:@{@"test":@"normal"} time:[[NSDate date] timeIntervalSince1970]*1e9];
+    [self waitForTimeInterval:0.1];
+    [writerManager rumWrite:FT_RUM_SOURCE_VIEW tags:@{@"view_id":@"3"} fields:@{@"test":@"normal"} time:[[NSDate date] timeIntervalSince1970]*1e9];
+    
+    // 模拟 进入新进程，且超过时间间隔
+    writerManager.processStartTime = [[[NSDate date] dateByAddingTimeInterval:2] timeIntervalSince1970]*1e9;
+    
+    [writerManager checkLastProcessErrorSampled];
+    [writerManager lastFatalErrorIfFound:0];
+    [writerManager checkRUMSessionOnErrorDatasExpired];
+    NSArray<FTRecordModel *> *newArray = [[FTTrackerEventDBTool sharedManger] getAllDatas];
+    XCTAssertTrue(newArray.count == 2);
+    XCTAssertTrue([newArray.firstObject.op isEqualToString:FT_DATA_TYPE_RUM]);
+    XCTAssertTrue([newArray[1].op isEqualToString:FT_DATA_TYPE_RUM]);
+}
+// 
+- (void)testSampledErrorSessionDatasConsume_lastProcess_has_anr{
+    [FTTrackDataManager startWithAutoSync:NO syncPageSize:10 syncSleepTime:0];
+    FTDataWriterWorker *writerManager = [[FTDataWriterWorker alloc]initWithCacheInvalidTimeInterval:1];
+    [writerManager isCacheWriter:YES];
+    [writerManager rumWrite:FT_RUM_SOURCE_VIEW tags:@{@"view_id":@"1"} fields:@{@"test":@"delete"} time:123 updateTime:[[NSDate date] timeIntervalSince1970]*1e9];
+    [writerManager rumWrite:FT_RUM_SOURCE_VIEW tags:@{@"view_id":@"2"} fields:@{@"test":@"delete"} time:123 updateTime:[[NSDate date] timeIntervalSince1970]*1e9];
+
+    [self waitForTimeInterval:0.5];
+    NSDate *date = [NSDate date];
+    [writerManager rumWrite:FT_RUM_SOURCE_VIEW tags:@{@"view_id":@"3"} fields:@{@"test":@"normal"} time:[[date dateByAddingTimeInterval:0.6] timeIntervalSince1970]*1e9];
+
+    // 模拟 进入新进程，且超过时间间隔
+    writerManager.processStartTime = [[date dateByAddingTimeInterval:2] timeIntervalSince1970]*1e9;
+    
+    [writerManager checkLastProcessErrorSampled];
+    NSArray<FTRecordModel *> *array = [[FTTrackerEventDBTool sharedManger] getAllDatas];
+    XCTAssertTrue(array.count == 3);
+    [writerManager rumWrite:FT_RUM_SOURCE_ERROR tags:@{@"anr":@"anr"} fields:@{@"test":@"normal"} time:[[date dateByAddingTimeInterval:0.5] timeIntervalSince1970]*1e9 updateTime:0 cache:YES];
+    NSArray<FTRecordModel *> *array2 = [[FTTrackerEventDBTool sharedManger] getAllDatas];
+    XCTAssertTrue(array2.count == 4);
+    [writerManager lastFatalErrorIfFound:[[date dateByAddingTimeInterval:0.5] timeIntervalSince1970]*1e9];
+    
+    [writerManager checkRUMSessionOnErrorDatasExpired];
+    
+    NSArray<FTRecordModel *> *newArray = [[FTTrackerEventDBTool sharedManger] getAllDatas];
+    XCTAssertTrue(newArray.count == 3);
+    XCTAssertTrue([newArray.firstObject.op isEqualToString:FT_DATA_TYPE_RUM]);
+    XCTAssertTrue([newArray[1].op isEqualToString:FT_DATA_TYPE_RUM]);
 }
 @end

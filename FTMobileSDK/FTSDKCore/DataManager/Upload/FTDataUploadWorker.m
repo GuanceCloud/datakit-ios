@@ -161,7 +161,7 @@ static const NSTimeInterval kInitialRetryDelay = 0.5; // 初始500ms延迟
         if (!strongSelf) {
             return;
         }
-        [self.errorSampledConsume checkRUMSessionOnErrorDatasExpired];
+        [strongSelf.errorSampledConsume checkRUMSessionOnErrorDatasExpired];
         if([[FTTrackerEventDBTool sharedManger] getUploadDatasCount]>0){
             if([FTNetworkConnectivity sharedInstance].isConnected){
                 [strongSelf privateUpload];
@@ -169,7 +169,7 @@ static const NSTimeInterval kInitialRetryDelay = 0.5; // 初始500ms延迟
                 FTInnerLogError(@"[NETWORK] Network unreachable, cancel upload");
             }
         }else{
-            self.isUploading = NO;
+            strongSelf.isUploading = NO;
             FTInnerLogDebug(@"[NETWORK]: No Data to upload");
         }
     });
