@@ -22,7 +22,7 @@
 #import "FTMobileAgentVersion.h"
 #import "FTMobileConfig+Private.h"
 #import "FTWKWebViewHandler.h"
-
+#import "FTModelHelper.h"
 @interface FTWKWebViewHandler (Testing)
 @property (nonatomic, strong) NSMapTable *webViewRequestTable;
 
@@ -125,6 +125,7 @@ typedef void(^FTTraceRequest)(NSURLRequest *);
 ///    新增 tag 字段：
 ///    sdk_pkg_info:{@"web":"version",addPkgInfo}
 ///    is_web_view
+///    view_referrer
 ///   其余与 native SDK 一致
 - (void)testAddPkgInfo{
     [self addRumViewData:YES addPkgInfo:@{
@@ -139,6 +140,7 @@ typedef void(^FTTraceRequest)(NSURLRequest *);
     [self setSDK:info];
     long long smallTime = [NSDate ft_currentNanosecondTimeStamp];
     NSURL *url = [[NSBundle mainBundle] URLForResource:@"sample" withExtension:@"html"];
+    [FTModelHelper startViewWithName:@"TestWKWebViewVC"];
     [self.viewController ft_load:url.absoluteString];
     self.loadExpect = [self expectationWithDescription:@"请求超时timeout!"];
     [self waitForExpectationsWithTimeout:30 handler:^(NSError *error) {
@@ -175,12 +177,14 @@ typedef void(^FTTraceRequest)(NSURLRequest *);
                 NSInteger resourceCount = [field[FT_KEY_VIEW_RESOURCE_COUNT] integerValue];
                 NSInteger longTaskCount = [field[FT_KEY_VIEW_LONG_TASK_COUNT] integerValue];
                 NSString *viewName = tags[FT_KEY_VIEW_NAME];
+                NSString *viewReferrer = tags[FT_KEY_VIEW_REFERRER];
+
                 NSDictionary *tags = opdata[FT_TAGS];
                 XCTAssertTrue(errorCount == 0);
                 XCTAssertTrue(longTaskCount == 0);
                 XCTAssertTrue(resourceCount == 0);
                 XCTAssertTrue([viewName isEqualToString:@"testJSBridge"]);
-
+                XCTAssertTrue([viewReferrer isEqualToString:@"TestWKWebViewVC"]);
                 // rum 相关调整
                 XCTAssertFalse([tags[FT_RUM_KEY_SESSION_ID] isEqualToString:@"12345"]);
                 XCTAssertTrue([field[FT_KEY_IS_ACTIVE] isEqual:@(NO)]);

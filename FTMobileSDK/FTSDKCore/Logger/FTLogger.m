@@ -115,11 +115,11 @@ static dispatch_once_t onceToken;
             NSDictionary *rumTag = [self.linkRumDataProvider getLinkRUMData];
             [context addEntriesFromDictionary:rumTag];
         }
-        [context addEntriesFromDictionary:[[FTPresetProperty sharedInstance] rumProperty]];
     }
     if (![FTBaseInfoHandler randomSampling:self.config.samplerate]){
         FTInnerLogInfo(@"[Logging][Not Sampled] %@",content);
         return;
+        [context addEntriesFromDictionary:[[FTPresetProperty sharedInstance] rumTags]];
     }
     long long time = [NSDate ft_currentNanosecondTimeStamp];
     dispatch_block_t logBlock = ^{
