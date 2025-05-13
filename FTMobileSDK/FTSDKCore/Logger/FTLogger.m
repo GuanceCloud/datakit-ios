@@ -108,6 +108,10 @@ static dispatch_once_t onceToken;
     [self log:content statusType:FTStatusOk property:property];
 }
 - (void)_log:(NSString *)content status:(id)status property:(nullable NSDictionary *)property{
+    if (![FTBaseInfoHandler randomSampling:self.config.samplerate]){
+        FTInnerLogInfo(@"[Logging][Not Sampled] %@",content);
+        return;
+    }
     NSMutableDictionary *context = [NSMutableDictionary dictionary];
     [context addEntriesFromDictionary:[[FTPresetProperty sharedInstance] loggerDynamicProperty]];
     if(self.config.enableLinkRumData){
@@ -115,10 +119,6 @@ static dispatch_once_t onceToken;
             NSDictionary *rumTag = [self.linkRumDataProvider getLinkRUMData];
             [context addEntriesFromDictionary:rumTag];
         }
-    }
-    if (![FTBaseInfoHandler randomSampling:self.config.samplerate]){
-        FTInnerLogInfo(@"[Logging][Not Sampled] %@",content);
-        return;
         [context addEntriesFromDictionary:[[FTPresetProperty sharedInstance] rumTags]];
     }
     long long time = [NSDate ft_currentNanosecondTimeStamp];
