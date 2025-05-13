@@ -245,7 +245,7 @@ static dispatch_once_t onceToken;
 - (BOOL)deleteDatasWithType:(NSString *)type toTime:(long long)toTime{
     __block BOOL is;
     [self zy_inDatabase:^(ZY_FMDatabase *db){
-        NSString *sqlStr = [NSString stringWithFormat:@"DELETE FROM '%@' WHERE _id in (SELECT _id from '%@' WHERE  op = '%@' AND tm <= '%lld' )",FT_DB_TRACE_EVENT_TABLE_NAME,FT_DB_TRACE_EVENT_TABLE_NAME,type,toTime];
+        NSString *sqlStr = [NSString stringWithFormat:@"DELETE FROM '%@' WHERE _id in (SELECT _id from '%@' WHERE  op = '%@' AND tm < '%lld' )",FT_DB_TRACE_EVENT_TABLE_NAME,FT_DB_TRACE_EVENT_TABLE_NAME,type,toTime];
         is = [db executeUpdate:sqlStr];
     }];
     return is;
@@ -253,7 +253,7 @@ static dispatch_once_t onceToken;
 - (BOOL)deleteDatasWithType:(NSString *)type fromTime:(long long)fromTime toTime:(long long)toTime{
     __block BOOL is;
     [self zy_inDatabase:^(ZY_FMDatabase *db){
-        NSString *sqlStr = [NSString stringWithFormat:@"DELETE FROM '%@' WHERE _id in (SELECT _id from '%@' WHERE  op = '%@' AND tm > '%lld' AND tm <= '%lld' )",FT_DB_TRACE_EVENT_TABLE_NAME,FT_DB_TRACE_EVENT_TABLE_NAME,type,fromTime,toTime];
+        NSString *sqlStr = [NSString stringWithFormat:@"DELETE FROM '%@' WHERE _id in (SELECT _id from '%@' WHERE  op = '%@' AND tm >= '%lld' AND tm <= '%lld' )",FT_DB_TRACE_EVENT_TABLE_NAME,FT_DB_TRACE_EVENT_TABLE_NAME,type,fromTime,toTime];
         is = [db executeUpdate:sqlStr];
     }];
     return is;
@@ -269,7 +269,7 @@ static dispatch_once_t onceToken;
 - (BOOL)updateDatasWithType:(NSString *)type toType:(NSString *)toType fromTime:(long long)fromTime toTime:(long long)toTime{
     __block BOOL is;
     [self zy_inDatabase:^(ZY_FMDatabase *db){
-        NSString *sqlStr = [NSString stringWithFormat:@"UPDATE '%@' SET op = '%@'  WHERE tm > '%lld' AND tm <= '%lld'  AND op = '%@'",FT_DB_TRACE_EVENT_TABLE_NAME,toType,fromTime,toTime,type];
+        NSString *sqlStr = [NSString stringWithFormat:@"UPDATE '%@' SET op = '%@'  WHERE tm >= '%lld' AND tm <= '%lld'  AND op = '%@'",FT_DB_TRACE_EVENT_TABLE_NAME,toType,fromTime,toTime,type];
         is = [db executeUpdate:sqlStr];
     }];
     return is;
