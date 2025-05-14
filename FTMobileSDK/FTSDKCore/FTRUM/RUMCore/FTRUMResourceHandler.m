@@ -89,7 +89,6 @@
         [fields addEntriesFromDictionary:self.resourceProperty];
     }
     [fields addEntriesFromDictionary:data.fields];
-    [fields addEntriesFromDictionary:self.dependencies.sampleFieldsDict];
     [fields setValue:@(self.dependencies.sessionHasReplay) forKey:FT_SESSION_HAS_REPLAY];
     [fields setValue:[self.time ft_nanosecondTimeIntervalToDate:data.time] forKey:FT_DURATION];
     if(model.metrics){
@@ -106,8 +105,6 @@
         [fields setValue:model.metrics.resource_first_byte_time forKey:FT_KEY_RESOURCE_FIRST_BYTE_TIME];
         [fields setValue:model.metrics.resource_redirect_time forKey:FT_KEY_RESOURCE_REDIRECT_TIME];
         [fields setValue:model.metrics.resource_connect_time forKey:FT_KEY_RESOURCE_CONNECT_TIME];
-    }else{
-        [fields setValue:[self.time ft_nanosecondTimeIntervalToDate:data.time] forKey:FT_DURATION];
     }
     NSDictionary *sessionTag = [self.context getGlobalSessionViewActionTags];
     NSMutableDictionary *tags = [NSMutableDictionary dictionaryWithDictionary:context];

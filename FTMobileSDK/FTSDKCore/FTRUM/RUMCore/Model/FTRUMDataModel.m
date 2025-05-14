@@ -116,7 +116,6 @@
     context.view_id = self.view_id;
     context.view_referrer = self.view_referrer;
     context.view_name = self.view_name;
-    context.sampled_for_error_session = self.sampled_for_error_session;
     context.session_error_timestamp = self.session_error_timestamp;
     return context;
 }

@@ -51,24 +51,33 @@ void *FTRUMQueueIdentityKey = &FTRUMQueueIdentityKey;
     return self;
 }
 -(void)receive:(NSString *)key message:(NSDictionary *)message{
-    if(key == FTMessageKeySessionHasReplay){
-        dispatch_async(self.rumQueue, ^{
-            BOOL hasReplay = [message[FT_SESSION_HAS_REPLAY] boolValue];
-            BOOL sampledForErrorReplay = [message[FT_RUM_KEY_SAMPLED_FOR_ERROR_REPLAY] boolValue];
-            // 如果是正常的 session 而 session replay 是 error replay, hasReplay 为 NO
-            if (!self.rumDependencies.sampledForErrorSession && sampledForErrorReplay) {
-                self.rumDependencies.sessionHasReplay = NO;
-            }else{
-                self.rumDependencies.sessionHasReplay = hasReplay;
+    NSDictionary *messageCopy = [message copy];
+    __weak typeof(self) weakSelf = self;
+    dispatch_async(self.rumQueue, ^{
+        @try {
+            __strong __typeof(weakSelf) strongSelf = weakSelf;
+            if (!strongSelf) return;
+            if(key == FTMessageKeySessionHasReplay){
+                NSMutableDictionary *mutableMessage = [messageCopy mutableCopy];
+                BOOL hasReplay = [mutableMessage[FT_SESSION_HAS_REPLAY] boolValue];
+                BOOL sampledForErrorReplay = [mutableMessage[FT_RUM_KEY_SAMPLED_FOR_ERROR_REPLAY] boolValue];
+                // 如果是正常的 session 而 session replay 是 error replay, hasReplay 为 NO
+                if (!strongSelf.rumDependencies.sampledForErrorSession && sampledForErrorReplay) {
+                    strongSelf.rumDependencies.sessionHasReplay = NO;
+                    [mutableMessage setValue:@(NO) forKey:FT_SESSION_HAS_REPLAY];
+                }else{
+                    strongSelf.rumDependencies.sessionHasReplay = hasReplay;
+                }
+                strongSelf.rumDependencies.sessionReplaySampledFields = [mutableMessage copy];
+                strongSelf.rumDependencies.sampledForErrorReplay = sampledForErrorReplay;
+                FTInnerLogDebug(@"[RUM] session(id:%@)  has replay:%@ sampledForErrorReplay:%@",[strongSelf.rumDependencies.fatalErrorContext.lastSessionContext valueForKey:FT_RUM_KEY_SESSION_ID],(hasReplay?@"true":@"false"),(sampledForErrorReplay?@"true":@"false"));
+            }else if(key == FTMessageKeyRecordsCountByViewID){
+                strongSelf.rumDependencies.sessionReplayStats = messageCopy;
             }
-            self.rumDependencies.sampledForErrorReplay = sampledForErrorReplay;
-            self.rumDependencies.sessionReplaySampleRate = message[FT_RUM_SESSION_REPLAY_SAMPLE_RATE];
-            self.rumDependencies.sessionReplayOnErrorSampleRate = message[FT_RUM_SESSION_REPLAY_ON_ERROR_SAMPLE_RATE];
-            FTInnerLogDebug(@"[RUM] session(id:%@) has replay:%@",[self.rumDependencies.fatalErrorContext.lastSessionContext valueForKey:FT_RUM_KEY_SESSION_ID],(hasReplay?@"true":@"false"));
-        });
-    }else if(key == FTMessageKeyRecordsCountByViewID){
-        self.rumDependencies.sessionReplayStats = message;
-    }
+        } @catch (NSException *exception) {
+            FTInnerLogError(@"exception %@",exception);
+        }
+    });
 }
 -(void)setAppState:(FTAppState)appState{
     _appState = appState;

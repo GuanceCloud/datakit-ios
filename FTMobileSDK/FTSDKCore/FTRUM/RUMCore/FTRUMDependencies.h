@@ -23,15 +23,13 @@ NS_ASSUME_NONNULL_BEGIN
 @property (nonatomic, strong) FTRUMMonitor *monitor;
 @property (nonatomic, strong, nullable) FTFatalErrorContext *fatalErrorContext;
 
+//下列属性需要在 rumQueue 中进行 readwrite
 @property (nonatomic, assign) BOOL currentSessionSample;
 @property (nonatomic, assign) BOOL sessionHasReplay;
-@property (nonatomic, strong) NSNumber *sessionReplaySampleRate;
-@property (nonatomic, strong) NSNumber *sessionReplayOnErrorSampleRate;
 @property (nonatomic, assign) BOOL sampledForErrorReplay;
 @property (nonatomic, assign) BOOL sampledForErrorSession;
-
-@property (atomic, strong) NSDictionary *sessionReplayStats;
-- (NSDictionary *)sampleFieldsDict;
+@property (nonatomic, strong) NSDictionary *sessionReplaySampledFields;
+@property (nonatomic, strong) NSDictionary *sessionReplayStats;
 @end
 
 NS_ASSUME_NONNULL_END
