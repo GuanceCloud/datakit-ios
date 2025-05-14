@@ -23,7 +23,6 @@ NS_ASSUME_NONNULL_BEGIN
 @property (nonatomic, strong, nullable) FTFatalErrorContext *fatalErrorContext;
 @property (atomic, assign) BOOL currentSessionSample;
 
-- (NSDictionary *)sampleFieldsDict;
 @end
 
 NS_ASSUME_NONNULL_END

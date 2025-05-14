@@ -126,12 +126,11 @@ static const NSTimeInterval discreteActionTimeoutDuration = 0.1;
     NSNumber *duration =  [endDate timeIntervalSinceDate:self.actionStartTime] >= actionMaxDuration?@(actionMaxDuration*1000000000):[self.actionStartTime ft_nanosecondTimeIntervalToDate:endDate];
     NSDictionary *sessionViewActionTag = [self.context getGlobalSessionViewActionTags];
     
-    NSMutableDictionary *fields = @{FT_DURATION:duration,
-                                    FT_KEY_ACTION_LONG_TASK_COUNT:@(self.actionLongTaskCount),
-                                    FT_KEY_ACTION_RESOURCE_COUNT:@(self.actionResourcesCount),
-                                    FT_KEY_ACTION_ERROR_COUNT:@(self.actionErrorCount),
-    }.mutableCopy;
-    [fields addEntriesFromDictionary:self.dependencies.sampleFieldsDict];
+    NSMutableDictionary *fields = [NSMutableDictionary dictionary];
+    [fields setValue:duration forKey:FT_DURATION];
+    [fields setValue:@(self.actionLongTaskCount) forKey:FT_KEY_ACTION_LONG_TASK_COUNT];
+    [fields setValue:@(self.actionResourcesCount) forKey:FT_KEY_ACTION_RESOURCE_COUNT];
+    [fields setValue:@(self.actionErrorCount) forKey:FT_KEY_ACTION_ERROR_COUNT];
     if(self.actionProperty && self.actionProperty.allKeys.count>0){
         [fields addEntriesFromDictionary:self.actionProperty];
     }

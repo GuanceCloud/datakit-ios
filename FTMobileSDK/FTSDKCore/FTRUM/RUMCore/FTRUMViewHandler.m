@@ -192,7 +192,6 @@
     [tags addEntriesFromDictionary:sessionViewTag];
     [tags addEntriesFromDictionary:model.tags];
     NSMutableDictionary *fields = [NSMutableDictionary new];
-    [fields addEntriesFromDictionary:self.rumDependencies.sampleFieldsDict];
     [fields addEntriesFromDictionary:model.fields];
     NSString *error = model.type == FTRUMDataLongTask?FT_RUM_SOURCE_LONG_TASK :FT_RUM_SOURCE_ERROR;
     [self.rumDependencies.writer rumWrite:error tags:tags fields:fields time:model.tm];
@@ -209,22 +208,23 @@
     NSTimeInterval sTimeSpent = MAX(1e-9, [model.time timeIntervalSinceDate:self.viewStartTime]);
     //纳秒级
     NSNumber *nTimeSpent = [NSNumber numberWithLongLong:sTimeSpent * 1000000000];
-
+    
     NSMutableDictionary *tags = [NSMutableDictionary dictionaryWithDictionary:context];
     [tags addEntriesFromDictionary:[self.context getGlobalSessionViewTags]];
     FTMonitorValue *cpu = self.monitorItem.cpu;
     FTMonitorValue *memory = self.monitorItem.memory;
     FTMonitorValue *refreshRateInfo = self.monitorItem.refreshDisplay;
-    NSMutableDictionary *field = @{FT_KEY_VIEW_ERROR_COUNT:@(self.viewErrorCount),
-                                   FT_KEY_VIEW_RESOURCE_COUNT:@(self.viewResourceCount),
-                                   FT_KEY_VIEW_LONG_TASK_COUNT:@(self.viewLongTaskCount),
-                                   FT_KEY_VIEW_ACTION_COUNT:@(self.viewActionCount),
-                                   FT_KEY_TIME_SPENT:nTimeSpent,
-                                   FT_KEY_VIEW_UPDATE_TIME:@(self.updateTime),
-                                   FT_KEY_IS_ACTIVE:[NSNumber numberWithBool:self.isActiveView],
-    }.mutableCopy;
+    NSMutableDictionary *field = [NSMutableDictionary dictionary];
+    [field setValue:@(self.viewErrorCount) forKey:FT_KEY_VIEW_ERROR_COUNT];
+    [field setValue:@(self.viewResourceCount) forKey:FT_KEY_VIEW_RESOURCE_COUNT];
+    [field setValue:@(self.viewLongTaskCount) forKey:FT_KEY_VIEW_LONG_TASK_COUNT];
+    [field setValue:@(self.viewActionCount) forKey:FT_KEY_VIEW_ACTION_COUNT];
+    [field setValue:nTimeSpent forKey:FT_KEY_TIME_SPENT];
+    [field setValue:@(self.updateTime) forKey:FT_KEY_VIEW_UPDATE_TIME];
+    [field setValue:@(self.isActiveView) forKey:FT_KEY_IS_ACTIVE];
+    
     [field setValue:@(self.context.sampled_for_error_session) forKey:FT_RUM_KEY_SAMPLED_FOR_ERROR_SESSION];
-    [field addEntriesFromDictionary:self.rumDependencies.sampleFieldsDict];
+    
     if(self.viewProperty && self.viewProperty.allKeys.count>0){
         [field addEntriesFromDictionary:self.viewProperty];
     }
@@ -247,7 +247,7 @@
     }
     long long time = [self.viewStartTime ft_nanosecondTimeStamp];
     [self.rumDependencies.writer rumWrite:FT_RUM_SOURCE_VIEW tags:tags fields:field time:time updateTime:[updateTime ft_nanosecondTimeStamp]];
-    self.rumDependencies.fatalErrorContext.lastViewContext = @{@"tags":tags ? : @{},
+    self.rumDependencies.fatalErrorContext.lastViewContext = @{@"tags":tags,
                                                                @"fields":field,
                                                                @"time":[NSNumber numberWithLongLong:time]
     };

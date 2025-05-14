@@ -26,7 +26,6 @@
 @property (nonatomic, copy) NSString *appState;
 @property (nonatomic, strong) NSDictionary *view;
 @property (nonatomic, strong) NSDictionary *sessionTags;
-@property (nonatomic, strong) NSDictionary *sessionFields;
 @property (nonatomic, strong) NSDictionary *errorMonitorInfo;
 @end
 @implementation FTLongTaskEvent
@@ -61,7 +60,6 @@
     [dict setValue:self.backtrace forKey:@"backtrace"];
     [dict setValue:self.view forKey:@"view"];
     [dict setValue:self.sessionTags forKey:@"sessionContext"];
-    [dict setValue:self.sessionFields forKey:@"sessionFields"];
     [dict setValue:self.appState forKey:@"appState"];
     [dict setValue:self.errorMonitorInfo forKey:@"errorMonitorInfo"];
     [dict setValue:self.duration forKey:@"duration"];
@@ -239,11 +237,10 @@ void *FTLongTaskManagerQueueTag = &FTLongTaskManagerQueueTag;
                 NSDictionary *tags = dict[@"sessionContext"];
                 NSDictionary *sessionFields = dict[@"sessionFields"];
                 NSString *backtrace = [dict valueForKey:@"backtrace"];
-                if (!backtrace) {
-                    backtrace = @"";
-                }
-                NSMutableDictionary *fields = [NSMutableDictionary dictionaryWithDictionary:@{FT_DURATION:duration,
-                                                                                              FT_KEY_LONG_TASK_STACK:backtrace}];
+    
+                NSMutableDictionary *fields = [NSMutableDictionary dictionary];
+                [fields setValue:duration forKey:FT_DURATION];
+                [fields setValue:backtrace forKey:FT_KEY_LONG_TASK_STACK];
                 [fields addEntriesFromDictionary:sessionFields];
                 //更新View
                 NSDictionary *lastViews  = dict[@"view"];
@@ -264,18 +261,18 @@ void *FTLongTaskManagerQueueTag = &FTLongTaskManagerQueueTag;
                 
                 //判断是否是 ANR,是则添加 ANR 数据
                 if(duration.longLongValue>5000000000){
-                    NSMutableDictionary *anrTags = @{
-                        FT_KEY_ERROR_TYPE:@"anr_error",
-                        FT_KEY_ERROR_SOURCE:FT_LOGGER,
-                    }.mutableCopy;
+                    NSMutableDictionary *anrTags = [NSMutableDictionary dictionary];
+                    [anrTags setValue:@"anr_error" forKey:FT_KEY_ERROR_TYPE];
+                    [anrTags setValue:FT_LOGGER forKey:FT_KEY_ERROR_SOURCE];
                     [anrTags setValue:dict[@"appState"] forKey:FT_KEY_ERROR_SITUATION];
                     [anrTags addEntriesFromDictionary:dict[@"errorMonitorInfo"]];
                     [anrTags addEntriesFromDictionary:tags];
-                    NSMutableDictionary *field = @{ FT_KEY_ERROR_MESSAGE:@"ios_anr",
-                                                    FT_KEY_ERROR_STACK:backtrace,
-                    }.mutableCopy;
+                    NSMutableDictionary *anrFields = [NSMutableDictionary dictionary];
+                    [anrFields setValue:@"ios_anr" forKey:FT_KEY_ERROR_MESSAGE];
+                    [anrFields setValue:backtrace forKey:FT_KEY_ERROR_STACK];
+                    [anrFields addEntriesFromDictionary:sessionFields];
                     errorDate = startTime;
-                    [strongSelf.dependencies.writer rumWrite:FT_RUM_SOURCE_ERROR tags:anrTags fields:field time:startTime updateTime:0 cache:sessionOnError];
+                    [strongSelf.dependencies.writer rumWrite:FT_RUM_SOURCE_ERROR tags:anrTags fields:anrFields time:startTime updateTime:0 cache:sessionOnError];
                 }
                 goto ended;
             }
@@ -298,7 +295,6 @@ void *FTLongTaskManagerQueueTag = &FTLongTaskManagerQueueTag;
         event.startDate = startDate;
         event.backtrace = backtrace;
         event.sessionTags = self.dependencies.fatalErrorContext.lastSessionContext;
-        event.sessionFields = [self.dependencies sampleFieldsDict];
         event.view = self.dependencies.fatalErrorContext.lastViewContext;
         event.isANR = NO;
         event.errorMonitorInfo = [FTErrorMonitorInfo errorMonitorInfo:self.dependencies.errorMonitorType];

@@ -177,17 +177,15 @@ static const NSTimeInterval sessionMaxDuration = 4 * 60 * 60; // 4 hours
     NSDictionary *sessionViewTag = [model.action_type isEqualToString:FT_LAUNCH_HOT]?[self getCurrentSessionInfo]:[self.context getGlobalSessionTags];
     NSMutableDictionary *tags = [NSMutableDictionary dictionaryWithDictionary:context];
     [tags addEntriesFromDictionary:sessionViewTag];
-    NSDictionary *actionTags = @{FT_KEY_ACTION_ID:[FTBaseInfoHandler randomUUID],
-                                 FT_KEY_ACTION_NAME:model.action_name ? : @"",
-                                 FT_KEY_ACTION_TYPE:model.action_type ? : @""
-    };
-    NSMutableDictionary *fields = @{FT_DURATION:model.duration,
-                                    FT_KEY_ACTION_LONG_TASK_COUNT:@(0),
-                                    FT_KEY_ACTION_RESOURCE_COUNT:@(0),
-                                    FT_KEY_ACTION_ERROR_COUNT:@(0),
-    }.mutableCopy;
-    [tags addEntriesFromDictionary:actionTags];
-    [fields addEntriesFromDictionary:self.rumDependencies.sampleFieldsDict];
+    [tags setValue:[FTBaseInfoHandler randomUUID] forKey:FT_KEY_ACTION_ID];
+    [tags setValue:model.action_name forKey:FT_KEY_ACTION_NAME];
+    [tags setValue:model.action_type forKey:FT_KEY_ACTION_TYPE];
+    
+    NSMutableDictionary *fields = [NSMutableDictionary dictionary];
+    [fields setValue:model.duration forKey:FT_DURATION];
+    [fields setValue:@(0) forKey:FT_KEY_ACTION_LONG_TASK_COUNT];
+    [fields setValue:@(0) forKey:FT_KEY_ACTION_RESOURCE_COUNT];
+    [fields setValue:@(0) forKey:FT_KEY_ACTION_ERROR_COUNT];
     [self.rumDependencies.writer rumWrite:FT_RUM_SOURCE_ACTION tags:tags fields:fields time:[model.time ft_nanosecondTimeStamp]];
     
 }
@@ -199,7 +197,6 @@ static const NSTimeInterval sessionMaxDuration = 4 * 60 * 60; // 4 hours
     [tags addEntriesFromDictionary:model.tags];
     NSMutableDictionary *fields = [NSMutableDictionary new];
     [fields addEntriesFromDictionary:model.fields];
-    [fields addEntriesFromDictionary:self.rumDependencies.sampleFieldsDict];
     NSString *error = model.type == FTRUMDataLongTask?FT_RUM_SOURCE_LONG_TASK :FT_RUM_SOURCE_ERROR;
     [self.rumDependencies.writer rumWrite:error tags:tags fields:fields time:data.tm];
 }

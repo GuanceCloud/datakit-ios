@@ -54,28 +54,33 @@
         return;
     }
     @try {
-        NSMutableDictionary *baseTags = [NSMutableDictionary new];
-        [baseTags addEntriesFromDictionary:tags];
-        NSDictionary *rumProperty = [[FTPresetProperty sharedInstance] rumTags];
-        [baseTags addEntriesFromDictionary:rumProperty];
+        NSMutableDictionary *tagsDict = [NSMutableDictionary new];
+        NSMutableDictionary *fieldsDict = [NSMutableDictionary new];
+        NSDictionary *rumStaticTags = [[FTPresetProperty sharedInstance] rumTags];
+        NSDictionary *rumStaticFields = [[FTPresetProperty sharedInstance] rumStaticFields];
+
+        [tagsDict addEntriesFromDictionary:tags];
+        [tagsDict addEntriesFromDictionary:rumStaticTags];
+        [fieldsDict addEntriesFromDictionary:fields];
+        [fieldsDict addEntriesFromDictionary:rumStaticFields];
         NSDictionary *pkgInfo = tags[FT_SDK_PKG_INFO];
         if(pkgInfo && pkgInfo.count>0){
-            NSDictionary *info = [rumProperty valueForKey:FT_SDK_PKG_INFO];
+            NSDictionary *info = [rumStaticTags valueForKey:FT_SDK_PKG_INFO];
             if(info){
                 NSMutableDictionary *mutableInfo = [info mutableCopy];
                 [mutableInfo addEntriesFromDictionary:pkgInfo];
                 pkgInfo = mutableInfo;
             }
-            [baseTags setValue:pkgInfo forKey:FT_SDK_PKG_INFO];
+            [tagsDict setValue:pkgInfo forKey:FT_SDK_PKG_INFO];
         }
         NSString *type = cache ? FT_DATA_TYPE_RUM_CACHE:FT_DATA_TYPE_RUM;
         FTAddDataType addType = cache ? FTAddDataRUMCache:FTAddDataRUM;
         FTRecordModel *model;
         if ([FTPresetProperty sharedInstance].lineDataModifier) {
-            NSArray *array = [[FTPresetProperty sharedInstance] applyLineModifier:source tags:baseTags fields:fields];
+            NSArray *array = [[FTPresetProperty sharedInstance] applyLineModifier:source tags:tagsDict fields:fieldsDict];
             model = [[FTRecordModel alloc]initWithSource:source op:type tags:array[0] fields:array[1] tm:time];
         }else{
-            model = [[FTRecordModel alloc]initWithSource:source op:type tags:baseTags fields:fields tm:time];
+            model = [[FTRecordModel alloc]initWithSource:source op:type tags:tagsDict fields:fieldsDict tm:time];
         }
         if(updateTime>0){
             model.tm = updateTime;
@@ -111,11 +116,9 @@
             [tagDict addEntriesFromDictionary:tags];
         }
         [tagDict setValue:status forKey:FT_KEY_STATUS];
-        NSMutableDictionary *filedDict = @{FT_KEY_MESSAGE:content?:@"",
-        }.mutableCopy;
-        if (field) {
-            [filedDict addEntriesFromDictionary:field];
-        }
+        NSMutableDictionary *filedDict = [NSMutableDictionary dictionary];
+        [filedDict setValue:content forKey:FT_KEY_MESSAGE];
+        [filedDict addEntriesFromDictionary:field];
 #if TARGET_OS_TV
         NSString *source = FT_LOGGER_TVOS_SOURCE;
 #else

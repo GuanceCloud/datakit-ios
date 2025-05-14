@@ -113,7 +113,7 @@ static dispatch_once_t onceToken;
         return;
     }
     NSMutableDictionary *context = [NSMutableDictionary dictionary];
-    [context addEntriesFromDictionary:[[FTPresetProperty sharedInstance] loggerDynamicProperty]];
+    [context addEntriesFromDictionary:[[FTPresetProperty sharedInstance] loggerDynamicTags]];
     if(self.config.enableLinkRumData){
         if (self.linkRumDataProvider && [self.linkRumDataProvider respondsToSelector:@selector(getLinkRUMData)]) {
             NSDictionary *rumTag = [self.linkRumDataProvider getLinkRUMData];
