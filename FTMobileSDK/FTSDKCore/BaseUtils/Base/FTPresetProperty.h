@@ -20,6 +20,7 @@ NS_ASSUME_NONNULL_BEGIN
 @property (nonatomic, strong) FTReadWriteHelper<FTUserInfo*> *userHelper;
 @property (nonatomic, strong, readonly) NSDictionary *loggerTags;
 @property (nonatomic, strong, readonly) NSMutableDictionary *rumTags;
+@property (nonatomic, strong, readonly) NSDictionary *rumStaticFields;
 @property (nonatomic, strong, readonly) NSMutableDictionary *sessionReplayTags;
 
 /// 设置数据更改器
@@ -45,15 +46,17 @@ NS_ASSUME_NONNULL_BEGIN
 
 - (void)setDataModifier:(FTDataModifier)dataModifier lineDataModifier:(FTLineDataModifier)lineDataModifier;
 
-- (void)setRUMAppID:(NSString *)appID rumGlobalContext:(NSDictionary *)rumGlobalContext;
+- (void)setRUMAppID:(NSString *)appID sampleRate:(int)sampleRate sessionOnErrorSampleRate:(int)sessionOnErrorSampleRate rumGlobalContext:(NSDictionary *)rumGlobalContext;
 
 -(void)setLogGlobalContext:(NSDictionary *)logGlobalContext;
+
+- (NSDictionary *)rumDynamicTags;
 
 -(void)setSessionReplaySource:(NSString *)sessionReplaySource;
 
 - (NSDictionary *)rumDynamicProperty;
 
-- (NSDictionary *)loggerDynamicProperty;
+- (NSDictionary *)loggerDynamicTags;
 
 - (void)appendGlobalContext:(NSDictionary *)context;
 

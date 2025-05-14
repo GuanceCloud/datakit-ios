@@ -107,7 +107,7 @@ static dispatch_once_t onceToken;
         if(!_rumConfig){
             FTInnerLogInfo(@"[RUM] APPID:%@",rumConfigOptions.appid);
             _rumConfig = [rumConfigOptions copy];
-            [[FTPresetProperty sharedInstance] setRUMAppID:_rumConfig.appid rumGlobalContext:_rumConfig.globalContext];
+            [[FTPresetProperty sharedInstance] setRUMAppID:_rumConfig.appid sampleRate:_rumConfig.samplerate sessionOnErrorSampleRate:_rumConfig.sessionOnErrorSampleRate rumGlobalContext:_rumConfig.globalContext];
             [[FTTrackDataManager sharedInstance] setRUMCacheLimitCount:_rumConfig.rumCacheLimitCount discardNew:_rumConfig.rumDiscardType == FTRUMDiscard];
             [[FTGlobalRumManager sharedInstance] setRumConfig:_rumConfig writer:[FTTrackDataManager sharedInstance].dataWriterWorker];
             [[FTURLSessionInstrumentation sharedInstance]setEnableAutoRumTrace:_rumConfig.enableTraceUserResource
@@ -272,18 +272,18 @@ static dispatch_once_t onceToken;
                     }else{
                         statusStr = status;
                     }
-                    NSDictionary *dynamicTags = [[FTPresetProperty sharedInstance] loggerDynamicProperty];
+                    NSDictionary *dynamicTags = [[FTPresetProperty sharedInstance] loggerDynamicTags];
                     NSMutableDictionary *tags = [NSMutableDictionary dictionary];
                     [tags addEntriesFromDictionary:dynamicTags];
                     if (self.loggerConfig.enableLinkRumData) {
-                        [tags addEntriesFromDictionary:[[FTPresetProperty sharedInstance] rumDynamicProperty]];
+                        [tags addEntriesFromDictionary:[[FTPresetProperty sharedInstance] rumDynamicTags]];
                         [tags addEntriesFromDictionary:[[FTPresetProperty sharedInstance] rumTags]];
                     }
                     [tags addEntriesFromDictionary:dict[@"tags"]];
                     [[FTTrackDataManager sharedInstance].dataWriterWorker logging:dict[@"content"] status:statusStr tags:tags field:dict[@"fields"] time:time.longLongValue];
                 }else if([dataType isEqualToString:FT_DATA_TYPE_RUM]){
                     NSString *eventType = dict[@"eventType"];
-                    NSDictionary *dynamicTags = [[FTPresetProperty sharedInstance] rumDynamicProperty];
+                    NSDictionary *dynamicTags = [[FTPresetProperty sharedInstance] rumDynamicTags];
                     NSMutableDictionary *tags = [NSMutableDictionary dictionary];
                     [tags addEntriesFromDictionary:dict[@"tags"]];
                     [tags addEntriesFromDictionary:dynamicTags];

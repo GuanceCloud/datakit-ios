@@ -253,8 +253,8 @@
     [FTMobileAgent appendGlobalContext:@{@"append_sdk":@"sdk",@"key2":@"value"}];
     [FTMobileAgent appendLogGlobalContext:@{@"append_log":@"log",@"key3":@"value"}];
 
-    NSDictionary *rumTags = [[FTPresetProperty sharedInstance] rumDynamicProperty];
-    NSDictionary *logTags = [[FTPresetProperty sharedInstance] loggerDynamicProperty];
+    NSDictionary *rumTags = [[FTPresetProperty sharedInstance] rumDynamicTags];
+    NSDictionary *logTags = [[FTPresetProperty sharedInstance] loggerDynamicTags];
     XCTAssertTrue(rumTags.count == 7);
     XCTAssertTrue(logTags.count == 4);
     __block NSInteger count = 0;

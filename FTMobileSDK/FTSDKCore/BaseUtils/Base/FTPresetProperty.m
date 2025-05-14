@@ -67,7 +67,9 @@
 @property (nonatomic, strong) NSDictionary *baseCommonPropertyTags;
 @property (nonatomic, strong, readwrite) NSDictionary *loggerTags;
 @property (nonatomic, strong, readwrite) NSMutableDictionary *rumTags;
+@property (nonatomic, strong, readwrite) NSDictionary *rumStaticFields;
 @property (nonatomic, strong, readwrite) NSMutableDictionary *rumWebViewTags;
+
 @property (nonatomic, strong, readwrite) NSMutableDictionary *sessionReplayTags;
 @property (nonatomic, strong) NSDictionary *rumGlobalContext;
 @property (nonatomic, strong) FTReadWriteHelper<NSMutableDictionary*> *globalContextHelper;
@@ -133,7 +135,7 @@ static dispatch_once_t onceToken;
     self.lineDataModifier = lineDataModifier;
 }
 // rumTags
--(void)setRUMAppID:(NSString *)appID rumGlobalContext:(NSDictionary *)rumGlobalContext{
+- (void)setRUMAppID:(NSString *)appID sampleRate:(int)sampleRate sessionOnErrorSampleRate:(int)sessionOnErrorSampleRate rumGlobalContext:(NSDictionary *)rumGlobalContext{
     _rumGlobalContext = rumGlobalContext;
     NSMutableDictionary *dict = [NSMutableDictionary dictionary];
     dict[FT_COMMON_PROPERTY_DEVICE] = self.mobileDevice.device;
@@ -148,9 +150,12 @@ static dispatch_once_t onceToken;
     [dict addEntriesFromDictionary:rumGlobalContext];
     NSDictionary *newDict = [self applyModifier:dict];
     
+    _rumStaticFields = @{FT_RUM_SESSION_SAMPLE_RATE:@(sampleRate),
+                         FT_RUM_SESSION_ON_ERROR_SAMPLE_RATE:@(sessionOnErrorSampleRate),
+    };
     [_rumTags addEntriesFromDictionary:_baseCommonPropertyTags];
     [_rumTags addEntriesFromDictionary:newDict];
-  
+    
     if(rumGlobalContext&&rumGlobalContext.count>0){
         self.rum_custom_keys = [FTJSONUtil convertToJsonDataWithObject:rumGlobalContext.allKeys];
     }
@@ -162,7 +167,7 @@ static dispatch_once_t onceToken;
     [dict addEntriesFromDictionary:newDict];
     _loggerTags = dict;
 }
-- (NSDictionary *)loggerDynamicProperty{
+- (NSDictionary *)loggerDynamicTags{
     NSMutableDictionary *tag = [NSMutableDictionary new];
     [tag addEntriesFromDictionary:self.globalContextHelper.currentValue];
     [tag addEntriesFromDictionary:self.globalLogContextHelper.currentValue];
@@ -171,7 +176,7 @@ static dispatch_once_t onceToken;
 -(void)setSessionReplaySource:(NSString *)sessionReplaySource{
     [_sessionReplayTags setValue:sessionReplaySource forKey:FT_KEY_SOURCE];
 }
-- (NSDictionary *)rumDynamicProperty{
+- (NSDictionary *)rumDynamicTags{
     NSMutableDictionary *dict = [NSMutableDictionary new];
     [dict addEntriesFromDictionary:self.globalContextHelper.currentValue];
     [dict addEntriesFromDictionary:self.globalRUMContextHelper.currentValue];
@@ -245,7 +250,6 @@ static dispatch_once_t onceToken;
     NSMutableDictionary *mutableTags = tags ? [tags mutableCopy] : [NSMutableDictionary dictionary];
     NSMutableDictionary *mutableFields = fields ? [fields mutableCopy] : [NSMutableDictionary dictionary];
     
-    // 合并数据（跳过空字典合并以提高性能）
     NSMutableDictionary *mergedValues = [NSMutableDictionary dictionary];
     if (mutableTags.count > 0) [mergedValues addEntriesFromDictionary:mutableTags];
     if (mutableFields.count > 0) [mergedValues addEntriesFromDictionary:mutableFields];
@@ -255,8 +259,6 @@ static dispatch_once_t onceToken;
     if (changedValues.count == 0) {
         return @[ [mutableTags copy], [mutableFields copy] ];
     }
-
-    // 仅更新 existing keys（避免意外添加新键）
     [changedValues enumerateKeysAndObjectsUsingBlock:^(id key, id obj, BOOL *stop) {
         if (mutableTags[key]) {
             mutableTags[key] = obj;

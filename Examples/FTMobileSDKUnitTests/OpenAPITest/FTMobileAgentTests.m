@@ -81,7 +81,7 @@
     config.autoSync = NO;
     [FTMobileAgent startWithConfigOptions:config];
    
-    NSDictionary *dict  = [[FTPresetProperty sharedInstance] rumDynamicProperty];
+    NSDictionary *dict  = [[FTPresetProperty sharedInstance] rumDynamicTags];
     NSString *userid = dict[FT_USER_ID];
     XCTAssertTrue([userid isEqualToString:@"old_user"]);
     [[NSUserDefaults standardUserDefaults] removeObjectForKey:@"ft_userid"];
@@ -94,14 +94,14 @@
     [self setRightSDKConfig];
    
     [[FTMobileAgent sharedInstance] bindUserWithUserID:@"testBindUser"];
-    NSDictionary *dict  = [[FTPresetProperty sharedInstance] rumDynamicProperty];
+    NSDictionary *dict  = [[FTPresetProperty sharedInstance] rumDynamicTags];
     NSString *userid = dict[FT_USER_ID];
     XCTAssertTrue([userid isEqualToString:@"testBindUser"]);
 }
 - (void)testBindUserWithNameEmail{
     [self setRightSDKConfig];
     [[FTMobileAgent sharedInstance] bindUserWithUserID:@"testBindUser2" userName:@"name1" userEmail:@"111@qq.com"];
-    NSDictionary *dict  = [[FTPresetProperty sharedInstance] rumDynamicProperty];
+    NSDictionary *dict  = [[FTPresetProperty sharedInstance] rumDynamicTags];
     NSString *userid = dict[FT_USER_ID];
     NSString *username = dict[FT_USER_NAME];
     NSString *useremail = dict[FT_USER_EMAIL];
@@ -112,7 +112,7 @@
 - (void)testBindUserWithNameEmailAndExtra{
     [self setRightSDKConfig];
     [[FTMobileAgent sharedInstance] bindUserWithUserID:@"testBindUser3" userName:@"name2" userEmail:@"222@qq.com" extra:@{@"user_age":@1}];
-    NSDictionary *dict  = [[FTPresetProperty sharedInstance] rumDynamicProperty];
+    NSDictionary *dict  = [[FTPresetProperty sharedInstance] rumDynamicTags];
     NSString *userid = dict[FT_USER_ID];
     NSString *username = dict[FT_USER_NAME];
     NSString *useremail = dict[FT_USER_EMAIL];
@@ -130,12 +130,12 @@
 -(void)testChangeUser{
     [self setRightSDKConfig];
     [[FTMobileAgent sharedInstance] bindUserWithUserID:@"testChangeUser1"];
-    NSDictionary *dict  = [[FTPresetProperty sharedInstance] rumDynamicProperty];
+    NSDictionary *dict  = [[FTPresetProperty sharedInstance] rumDynamicTags];
      NSString *userid = dict[@"userid"];
     XCTAssertTrue([userid isEqualToString:@"testChangeUser1"]);
 
     [[FTMobileAgent sharedInstance] bindUserWithUserID:@"testChangeUser2"];
-    NSDictionary *newDict  = [[FTPresetProperty sharedInstance] rumDynamicProperty];
+    NSDictionary *newDict  = [[FTPresetProperty sharedInstance] rumDynamicTags];
     NSString *newUserid = newDict[@"userid"];
    XCTAssertTrue([newUserid isEqualToString:@"testChangeUser2"]);
 }
@@ -149,7 +149,7 @@
     [[FTMobileAgent sharedInstance] bindUserWithUserID:@"testUserlogout" userName:@"name" userEmail:@"email" extra:@{@"ft_key":@"ft_value"}];
     
     [[FTMobileAgent sharedInstance] unbindUser];
-    NSDictionary *dict  = [[FTPresetProperty sharedInstance] rumDynamicProperty];
+    NSDictionary *dict  = [[FTPresetProperty sharedInstance] rumDynamicTags];
     NSString *userid = dict[FT_USER_ID];
     NSString *userName = dict[FT_USER_NAME];
     NSString *userEmail = dict[FT_USER_EMAIL];

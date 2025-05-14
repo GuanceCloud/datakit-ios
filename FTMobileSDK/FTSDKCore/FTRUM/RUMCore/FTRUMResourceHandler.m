@@ -80,7 +80,6 @@
     [tags addEntriesFromDictionary:model.tags];
     NSMutableDictionary *fields = [NSMutableDictionary new];
     [fields addEntriesFromDictionary:model.fields];
-    [fields addEntriesFromDictionary:self.dependencies.sampleFieldsDict];
     [self.dependencies.writer rumWrite:FT_RUM_SOURCE_ERROR tags:tags fields:fields time:model.tm];
 }
 - (void)writeResourceData:(FTRUMDataModel *)data context:(NSDictionary *)context{

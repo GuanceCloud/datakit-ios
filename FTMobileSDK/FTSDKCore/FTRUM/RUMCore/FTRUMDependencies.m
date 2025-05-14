@@ -10,6 +10,7 @@
 #import "FTConstants.h"
 
 @implementation FTRUMDependencies
+
 - (NSDictionary *)sampleFieldsDict{
     NSMutableDictionary *dict = [NSMutableDictionary dictionaryWithDictionary:@{
         FT_RUM_SESSION_ON_ERROR_SAMPLE_RATE:@(self.sessionOnErrorSampleRate),

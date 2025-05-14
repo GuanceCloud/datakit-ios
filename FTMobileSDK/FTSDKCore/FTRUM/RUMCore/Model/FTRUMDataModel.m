@@ -143,9 +143,9 @@
 }
 -(NSDictionary *)getGlobalSessionTags{
     return @{
-        FT_RUM_KEY_SESSION_ID:self.session_id?:@"",
-        FT_RUM_KEY_SESSION_TYPE:self.session_type?:@"",
-        FT_APP_ID:self.app_id?:@"",
+        FT_RUM_KEY_SESSION_ID:self.session_id,
+        FT_RUM_KEY_SESSION_TYPE:self.session_type,
+        FT_APP_ID:self.app_id,
     };
 }
 @end

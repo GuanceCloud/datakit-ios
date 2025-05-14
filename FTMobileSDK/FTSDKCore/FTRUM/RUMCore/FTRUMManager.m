@@ -399,22 +399,20 @@ void *FTRUMQueueIdentityKey = &FTRUMQueueIdentityKey;
                                                                                } sync:fatal];
     [self syncProcess:^{
       @try {
-        NSMutableDictionary *field = [NSMutableDictionary dictionary];
-        [field setValue:stack forKey:FT_KEY_ERROR_STACK];
-        [field setValue:message forKey:FT_KEY_ERROR_MESSAGE];
+        NSMutableDictionary *fields = [NSMutableDictionary dictionary];
+        [fields setValue:stack forKey:FT_KEY_ERROR_STACK];
+        [fields setValue:message forKey:FT_KEY_ERROR_MESSAGE];
         if(property && property.allKeys.count>0){
-          [field addEntriesFromDictionary:property];
+          [fields addEntriesFromDictionary:property];
         }
-        NSDictionary *tags = @{
-          FT_KEY_ERROR_TYPE:type,
-          FT_KEY_ERROR_SOURCE:FT_LOGGER,
-          FT_KEY_ERROR_SITUATION:AppStateStringMap[state]
-        };
-        NSMutableDictionary *errorTag = [NSMutableDictionary dictionaryWithDictionary:tags];
-        [errorTag addEntriesFromDictionary:[FTErrorMonitorInfo errorMonitorInfo:self.rumDependencies.errorMonitorType]];
+        NSMutableDictionary *tags = [NSMutableDictionary dictionary];
+        [tags setValue:type forKey:FT_KEY_ERROR_TYPE];
+        [tags setValue:FT_LOGGER forKey:FT_KEY_ERROR_SOURCE];
+        [tags setValue:AppStateStringMap[state] forKey:FT_KEY_ERROR_SITUATION];
+        [tags addEntriesFromDictionary:[FTErrorMonitorInfo errorMonitorInfo:self.rumDependencies.errorMonitorType]];
         FTRUMErrorData *model = [[FTRUMErrorData alloc]initWithType:FTRUMDataError time:time];
-        model.tags = errorTag;
-        model.fields = field;
+        model.tags = tags;
+        model.fields = fields;
         model.fatal = fatal;
         [self process:model context:context];
       } @catch (NSException *exception) {
@@ -433,9 +431,9 @@ void *FTRUMQueueIdentityKey = &FTRUMQueueIdentityKey;
     NSDictionary *context = [self rumDynamicProperty];
     dispatch_async(self.rumQueue, ^{
         @try {
-            NSMutableDictionary *fields = @{FT_DURATION:duration,
-                                            FT_KEY_LONG_TASK_STACK:stack
-            }.mutableCopy;
+            NSMutableDictionary *fields = [NSMutableDictionary dictionary];
+            [fields setValue:duration forKey:FT_DURATION];
+            [fields setValue:stack forKey:FT_KEY_LONG_TASK_STACK];
             if(property && property.allKeys.count>0){
                 [fields addEntriesFromDictionary:property];
             }
@@ -492,7 +490,7 @@ void *FTRUMQueueIdentityKey = &FTRUMQueueIdentityKey;
     NSMutableDictionary *dict = [NSMutableDictionary dictionary];
     @try {
         dict[@"network_type"] = [FTNetworkConnectivity sharedInstance].networkType;
-        [dict addEntriesFromDictionary:[[FTPresetProperty sharedInstance] rumDynamicProperty]];
+        [dict addEntriesFromDictionary:[[FTPresetProperty sharedInstance] rumDynamicTags]];
     } @catch (NSException *exception) {
         FTInnerLogError(@"exception %@",exception);
     } @finally {

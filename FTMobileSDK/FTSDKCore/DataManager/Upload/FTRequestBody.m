@@ -94,7 +94,6 @@ NSString * FTQueryStringFromParameters(NSDictionary *parameters,FTParameterType 
             if(str){
                 [mutablePairs addObject:str];
             }
-           
         }
     }
     return [mutablePairs componentsJoinedByString:@","];
@@ -120,11 +119,11 @@ NSString * FTQueryStringFromParameters(NSDictionary *parameters,FTParameterType 
         long long time = timeNum == nil ? obj.tm : [timeNum longLongValue];
         if(source.length>0 && field.count>0 && tag.count>0){
             NSString *dataId = [NSString stringWithFormat:@"%@.%@",packageId,[FTBaseInfoHandler random16UUID]];
-            NSMutableDictionary *tagDict = @{@"sdk_data_id":dataId}.mutableCopy;
+            NSMutableDictionary *tagDict = [NSMutableDictionary dictionary];
+            [tagDict setValue:dataId forKey:@"sdk_data_id"];
             [tagDict addEntriesFromDictionary:tag];
             NSString *tagStr = FTQueryStringFromParameters(tagDict,FTParameterTypeTag,compatible);
             NSString *fieldStr= FTQueryStringFromParameters(opdata[FT_FIELDS],FTParameterTypeField,compatible);
-            
             NSString *requestStr = [NSString stringWithFormat:@"%@,%@ %@ %lld",source,tagStr,fieldStr,time];
             if (idx==0) {
                 [requestDatas appendString:requestStr];
