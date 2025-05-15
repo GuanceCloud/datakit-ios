@@ -232,8 +232,9 @@ void *FTLongTaskManagerQueueTag = &FTLongTaskManagerQueueTag;
                 }];
                 NSNumber *duration = lastTime-startTime>0?[NSNumber numberWithLongLong:lastTime-startTime]:dict[@"duration"];
                 if(duration == nil){
-                    duration = @0;
+                    goto ended;
                 }
+                BOOL isAnr = duration.longLongValue>5000000000;
                 NSDictionary *tags = dict[@"sessionContext"];
                 NSDictionary *sessionFields = dict[@"sessionFields"];
                 NSString *backtrace = [dict valueForKey:@"backtrace"];
@@ -247,7 +248,9 @@ void *FTLongTaskManagerQueueTag = &FTLongTaskManagerQueueTag;
                 BOOL sessionOnError = NO;
                 if(lastViews){
                     NSMutableDictionary *lastViewsFields = [NSMutableDictionary dictionaryWithDictionary:lastViews[@"fields"]];
-                    lastViewsFields[FT_KEY_VIEW_ERROR_COUNT] = @([lastViewsFields[FT_KEY_VIEW_ERROR_COUNT] intValue]+1);
+                    if (isAnr) {
+                        lastViewsFields[FT_KEY_VIEW_ERROR_COUNT] = @([lastViewsFields[FT_KEY_VIEW_ERROR_COUNT] intValue]+1);
+                    }
                     lastViewsFields[FT_KEY_VIEW_LONG_TASK_COUNT] = @([lastViewsFields[FT_KEY_VIEW_LONG_TASK_COUNT] intValue]+1);
                     lastViewsFields[FT_KEY_VIEW_UPDATE_TIME] = @([lastViewsFields[FT_KEY_VIEW_UPDATE_TIME] intValue]+1);
                     lastViewsFields[FT_KEY_IS_ACTIVE] = @(NO);
@@ -260,7 +263,7 @@ void *FTLongTaskManagerQueueTag = &FTLongTaskManagerQueueTag;
                 [strongSelf.dependencies.writer rumWrite:FT_RUM_SOURCE_LONG_TASK tags:tags fields:fields time:startTime updateTime:0 cache:sessionOnError];
                 
                 //判断是否是 ANR,是则添加 ANR 数据
-                if(duration.longLongValue>5000000000){
+                if(isAnr){
                     NSMutableDictionary *anrTags = [NSMutableDictionary dictionary];
                     [anrTags setValue:@"anr_error" forKey:FT_KEY_ERROR_TYPE];
                     [anrTags setValue:FT_LOGGER forKey:FT_KEY_ERROR_SOURCE];
