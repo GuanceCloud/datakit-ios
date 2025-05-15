@@ -23,6 +23,7 @@
         _appid = appid;
         _enableTrackAppCrash= NO;
         _samplerate = 100;
+        _sessionOnErrorSampleRate = 0;
         _enableTrackAppFreeze = NO;
         _enableTrackAppANR = NO;
         _enableTraceUserAction = NO;
