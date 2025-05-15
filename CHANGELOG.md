@@ -1,3 +1,6 @@
+# 1.5.16-beta.2
+1. 同 1.5.16-beta.1
+---
 # 1.5.16-beta.1
 1. 同 1.5.15-alpha.1-1.5.15-alpha.6
 2. 完善 `sessionOnErrorSampleRate` 功能实现
