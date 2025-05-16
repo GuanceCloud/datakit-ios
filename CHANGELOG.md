@@ -1,3 +1,10 @@
+# 1.5.16-beta.2
+1. 同 1.5.16-beta.1
+---
+# 1.5.16-beta.1
+1. 同 1.5.15-alpha.1-1.5.15-alpha.6
+2. 完善 `sessionOnErrorSampleRate` 功能实现
+---
 # 1.5.16-alpha.1
 1. 同 1.5.15-alpha.1-1.5.15-alpha.6
 2. RUM 错误 Session 采样功能实现逻辑调整

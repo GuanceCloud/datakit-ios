@@ -320,7 +320,7 @@ void *FTLongTaskManagerQueueTag = &FTLongTaskManagerQueueTag;
 }
 - (void)updateLongTaskDate:(NSDate *)date{
     @try {
-        if(!self.longTaskEvent||!date){
+        if(!self.enableANR||!self.longTaskEvent||!date){
             return;
         }
         self.longTaskEvent.lastDate = date;
@@ -342,11 +342,11 @@ void *FTLongTaskManagerQueueTag = &FTLongTaskManagerQueueTag;
             long long startTime = [self.longTaskEvent.startDate ft_nanosecondTimeStamp];
             [self.delegate longTaskStackDetected:self.longTaskEvent.backtrace duration:[self.longTaskEvent.duration longLongValue] time:startTime];
         }
-        if(self.enableANR && self.longTaskEvent.isANR){
-            if(self.delegate && [self.delegate respondsToSelector:@selector(anrStackDetected:time:)]){
+        if(self.enableANR){
+            [self deleteFile];
+            if(self.longTaskEvent.isANR && self.delegate && [self.delegate respondsToSelector:@selector(anrStackDetected:time:)]){
                 [self.delegate anrStackDetected:self.longTaskEvent.backtrace time:self.longTaskEvent.startDate];
             }
-            [self deleteFile];
         }
     } @catch (NSException *exception) {
         FTInnerLogError(@"[LongTask] exception %@",exception);

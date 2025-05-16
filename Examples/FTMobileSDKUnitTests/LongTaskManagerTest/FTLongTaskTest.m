@@ -50,7 +50,7 @@
     [[FTMobileAgent sharedInstance] startRumWithConfigOptions:rumConfig];
 }
 - (void)testTrackLongTask{
-    [self initSDKWithEnableTrackAppANR:NO longTask:YES];
+    [self initSDKWithEnableTrackAppANR:YES longTask:YES];
     NSInteger lastCount = [[FTTrackerEventDBTool sharedManger] getDatasCountWithType:FT_DATA_TYPE_RUM];
     
     [[tester waitForViewWithAccessibilityLabel:@"TrackAppLongTask"] tap];
@@ -66,6 +66,9 @@
                 XCTAssertTrue([fields.allKeys containsObject:FT_KEY_LONG_TASK_STACK]&&[fields.allKeys containsObject:FT_DURATION]);
             }
         }];
+        NSString *pathString = [NSSearchPathForDirectoriesInDomains(NSDocumentDirectory, NSUserDomainMask, YES) lastObject];
+        pathString = [pathString stringByAppendingPathComponent:@"FTLongTask.txt"];
+        XCTAssertFalse([[NSFileManager defaultManager] fileExistsAtPath:pathString]);
         [expect fulfill];
     });
     [self waitForExpectationsWithTimeout:45 handler:^(NSError *error) {
@@ -314,6 +317,7 @@
     XCTAssertTrue(hasLongTask);
     XCTAssertTrue(hasAnr);
     XCTAssertTrue(hasView);
+    XCTAssertFalse([[NSFileManager defaultManager] fileExistsAtPath:pathString]);
     [FTMobileAgent shutDown];
 
 }
@@ -359,6 +363,7 @@
     XCTAssertTrue(hasLongTask);
     XCTAssertFalse(hasAnr);
     XCTAssertTrue(hasView);
+    XCTAssertFalse([[NSFileManager defaultManager] fileExistsAtPath:pathString]);
     [FTMobileAgent shutDown];
 
 }
