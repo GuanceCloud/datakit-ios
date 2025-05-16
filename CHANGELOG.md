@@ -1,3 +1,9 @@
+# 1.5.16
+1. 添加 `FTMobileConfig.lineDataModifier`、`FTMobileConfig.dataModifier` 支持数据写入替换，支持数据脱敏
+2. 添加 `FTRUMConfig.sessionErrorSampleRate` 支持错误采样，在未被 setSamplingRate采样时， 在发生错误时可以对 1 分钟前的 rum 的数据进行取样采集
+3. Logger 支持通过 `logLevelFilter` 设置过滤自定义日志等级
+4. 原生页面跳转至 WebView 页面时，用原生页面名称填充 view_referrer
+---
 # 1.5.16-beta.4
 1. 同 1.5.16-beta.3
 ---
