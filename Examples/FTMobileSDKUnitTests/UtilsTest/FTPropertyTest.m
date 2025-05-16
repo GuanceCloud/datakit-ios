@@ -416,6 +416,8 @@
             return @{@"field2":@"value4"};;
         }else if ([measurement isEqualToString:FT_LOGGER_SOURCE]){
             return @{@"field1":@"value3"};
+        }else if ([measurement isEqualToString:FT_LOGGER_TVOS_SOURCE]){
+            return @{@"field1":@"value3"};
         }
         return nil;
     };
@@ -452,7 +454,7 @@
     }];
     XCTAssertTrue(hasLog);
     XCTAssertTrue(hasRum);
-
+    [FTMobileAgent shutDown];
 }
     
 - (void)addRumData{
