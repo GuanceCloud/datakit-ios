@@ -124,7 +124,13 @@
 #else
         NSString *source = FT_LOGGER_SOURCE;
 #endif
-        FTRecordModel *model = [[FTRecordModel alloc]initWithSource:source op:FT_DATA_TYPE_LOGGING tags:tagDict fields:filedDict tm:time];
+        FTRecordModel *model;
+        if ([FTPresetProperty sharedInstance].lineDataModifier) {
+            NSArray *array = [[FTPresetProperty sharedInstance] applyLineModifier:source tags:tagDict fields:filedDict];
+            model = [[FTRecordModel alloc]initWithSource:source op:FT_DATA_TYPE_LOGGING tags:array[0] fields:array[1] tm:time];
+        }else{
+            model = [[FTRecordModel alloc]initWithSource:source op:FT_DATA_TYPE_LOGGING tags:tagDict fields:filedDict tm:time];
+        }
         [[FTTrackDataManager sharedInstance] addTrackData:model type:FTAddDataLogging];
     } @catch (NSException *exception) {
         FTInnerLogError(@"exception %@",exception);

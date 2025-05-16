@@ -24,6 +24,7 @@
 #import "FTModelHelper.h"
 #import "FTGlobalRumManager.h"
 #import "FTRUMManager.h"
+#import "FTLogger+Private.h"
 @interface FTPropertyTest : XCTestCase
 @property (nonatomic, strong) FTMobileConfig *config;
 @property (nonatomic, copy) NSString *url;
@@ -396,6 +397,64 @@
     XCTAssertTrue([array[1] isEqual:fields]);
     [FTMobileAgent shutDown];
 }
+- (void)testModifier_rum_log{
+    FTMobileConfig *config = [[FTMobileConfig alloc]initWithDatakitUrl:self.url];
+    config.autoSync = NO;
+    config.globalContext = @{@"sdk_config":@"sdk"};
+    config.dataModifier = ^id _Nullable(NSString * _Nonnull key, id  _Nonnull value) {
+        if ([key isEqualToString:@"append_rum"]) {
+            return @"append_rum_***";
+        }else if ([key isEqualToString:@"rum_config"]){
+            return @"rum_***";
+        }else if ([key isEqualToString:@"logger_config"]){
+            return @"log_***";
+        }
+        return nil;
+    };
+    config.lineDataModifier = ^NSDictionary<NSString *,id> * _Nullable(NSString * _Nonnull measurement, NSDictionary<NSString *,id> * _Nonnull data) {
+        if ([measurement isEqualToString:FT_RUM_SOURCE_ACTION]) {
+            return @{@"field2":@"value4"};;
+        }else if ([measurement isEqualToString:FT_LOGGER_SOURCE]){
+            return @{@"field1":@"value3"};
+        }
+        return nil;
+    };
+    [FTMobileAgent startWithConfigOptions:config];
+    FTRumConfig *rumConfig = [[FTRumConfig alloc]initWithAppid:_appid];
+    rumConfig.enableTraceUserAction = YES;
+    rumConfig.globalContext = @{@"rum_config":@"rum"};
+    [[FTMobileAgent sharedInstance] startRumWithConfigOptions:rumConfig];
+   
+    FTLoggerConfig *loggerConfig = [[FTLoggerConfig alloc]init];
+    loggerConfig.enableCustomLog = YES;
+    loggerConfig.globalContext = @{@"logger_config":@"logger"};
+    [[FTMobileAgent sharedInstance] startLoggerWithConfigOptions:loggerConfig];
+    
+    [[FTLogger sharedInstance] info:@"testModifier_rum_log" property:@{@"field1":@"value1"}];
+    [[FTLogger sharedInstance] syncProcess];
+    [[FTTrackDataManager sharedInstance] insertCacheToDB];
+    [[FTExternalDataManager sharedManager] addAction:@"testModifier_rum_log" actionType:@"click" property:@{@"field2":@"value2"}];
+    [[FTGlobalRumManager sharedInstance].rumManager syncProcess];
+    NSArray *datas = [[FTTrackerEventDBTool sharedManger] getAllDatas];
+    __block BOOL hasLog = NO,hasRum = NO;
+    [FTModelHelper resolveModelArray:datas dataTypeCallBack:^(NSString * _Nonnull source, NSDictionary * _Nonnull tags, NSDictionary * _Nonnull fields, NSString * _Nonnull type, BOOL * _Nonnull stop){
+        if ([type isEqualToString:FT_DATA_TYPE_RUM]) {
+            if (fields[@"field2"]) {
+                XCTAssertTrue([fields[@"field2"] isEqualToString:@"value4"]);
+                hasRum = YES;
+            }
+            XCTAssertTrue([tags[@"rum_config"] isEqualToString:@"rum_***"]);
+        }else if ([type isEqualToString:FT_DATA_TYPE_LOGGING]){
+            XCTAssertTrue([fields[@"field1"] isEqualToString:@"value3"]);
+            XCTAssertTrue([tags[@"logger_config"] isEqualToString:@"log_***"]);
+            hasLog = YES;
+        }
+    }];
+    XCTAssertTrue(hasLog);
+    XCTAssertTrue(hasRum);
+
+}
+    
 - (void)addRumData{
     [FTModelHelper startView];
     [FTModelHelper addActionWithContext:nil];
