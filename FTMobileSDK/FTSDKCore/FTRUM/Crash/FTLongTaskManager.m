@@ -259,7 +259,7 @@ void *FTLongTaskManagerQueueTag = &FTLongTaskManagerQueueTag;
                     lastViewsFields[FT_KEY_VIEW_UPDATE_TIME] = @([lastViewsFields[FT_KEY_VIEW_UPDATE_TIME] intValue]+1);
                     lastViewsFields[FT_KEY_IS_ACTIVE] = @(NO);
                     NSNumber *time = lastViews[@"time"];
-                    if (lastViewsFields[FT_RUM_KEY_SAMPLED_FOR_ERROR_SESSION]) {
+                    if ([lastViewsFields[FT_RUM_KEY_SAMPLED_FOR_ERROR_SESSION] boolValue]) {
                         sessionOnError = YES;
                     }
                     [strongSelf.dependencies.writer rumWrite:FT_RUM_SOURCE_VIEW tags:lastViews[@"tags"] fields:lastViewsFields time:[time longLongValue] updateTime:errorDate cache:sessionOnError];

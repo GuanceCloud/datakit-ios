@@ -283,7 +283,7 @@
     [[NSFileManager defaultManager] createFileAtPath:pathString contents:nil attributes:nil];
     
     NSFileHandle *fileHandle = [NSFileHandle fileHandleForWritingAtPath:pathString];
-    NSString *str = @"{\"startDate\":1715416161781327872,\"isANR\":false,\"sessionContext\":{\"session_id\":\"28a4b4960c5e410b9dc08ef7b27019ac\",\"view_referrer\":\"DemoViewController\",\"view_name\":\"CrashVC\",\"session_type\":\"user\",\"view_id\":\"3fe57956e0db4bef9b58f6fbb2d616a7\"},\"backtrace\":\"test_backtrace\",\"view\":{\"time\":1715416158025487872,\"tags\":{\"session_id\":\"28a4b4960c5e410b9dc08ef7b27019ac\",\"view_referrer\":\"UITabBarController\",\"view_name\":\"DemoViewController\",\"session_type\":\"user\",\"view_id\":\"d2dfb5994596450e9f9b9521008dafc0\"},\"fields\":{\"fps_mini\":3.8665922570805944,\"cpu_tick_count\":457,\"view_long_task_count\":0,\"cpu_tick_count_per_second\":208.70286551518785,\"is_active\":false,\"view_action_count\":1,\"view_update_time\":1,\"memory_max\":97737536,\"fps_avg\":56.242399636138515,\"time_spent\":2189715981,\"loading_time\":30997702002,\"view_resource_count\":0,\"memory_avg\":67175594.666666672,\"view_error_count\":0}},\"duration\":263450026,\"errorMonitorInfo\":{\"locale\":\"en\",\"cpu_use\":1,\"memory_total\":\"16.00G\",\"memory_use\":0.56642818450927734,\"battery_use\":0}}\n___boundary.info.date___\n1715416162300324864\n1715416162555699712\n1715416162809228032\n1715416167127158272\n1715416167382233088\n1715416167635441920\n";
+    NSString *str = @"{\"startDate\":1715416161781327872,\"isANR\":false,\"sessionContext\":{\"session_id\":\"28a4b4960c5e410b9dc08ef7b27019ac\",\"view_referrer\":\"DemoViewController\",\"view_name\":\"CrashVC\",\"session_type\":\"user\",\"view_id\":\"3fe57956e0db4bef9b58f6fbb2d616a7\"},\"backtrace\":\"test_backtrace\",\"view\":{\"time\":1715416158025487872,\"tags\":{\"session_id\":\"28a4b4960c5e410b9dc08ef7b27019ac\",\"view_referrer\":\"UITabBarController\",\"view_name\":\"DemoViewController\",\"session_type\":\"user\",\"view_id\":\"d2dfb5994596450e9f9b9521008dafc0\"},\"fields\":{\"fps_mini\":3.8665922570805944,\"cpu_tick_count\":457,\"view_long_task_count\":0,\"cpu_tick_count_per_second\":208.70286551518785,\"is_active\":false,\"view_action_count\":1,\"view_update_time\":1,\"memory_max\":97737536,\"fps_avg\":56.242399636138515,\"time_spent\":2189715981,\"loading_time\":30997702002,\"view_resource_count\":0,\"memory_avg\":67175594.666666672,\"view_error_count\":0,\"sampled_for_error_session\":0}},\"duration\":263450026,\"errorMonitorInfo\":{\"locale\":\"en\",\"cpu_use\":1,\"memory_total\":\"16.00G\",\"memory_use\":0.56642818450927734,\"battery_use\":0}}\n___boundary.info.date___\n1715416162300324864\n1715416162555699712\n1715416162809228032\n1715416167127158272\n1715416167382233088\n1715416167635441920\n";
     if (@available(iOS 13.0, *)) {
         [fileHandle seekToOffset:0 error:&error];
         [fileHandle writeData:[str dataUsingEncoding:NSUTF8StringEncoding] error:&error];
@@ -302,7 +302,8 @@
                    
     NSArray *datas = [[FTTrackerEventDBTool sharedManger] getAllDatas];
     __block BOOL hasLongTask = NO,hasAnr = NO,hasView = NO;
-    [FTModelHelper resolveModelArray:datas timeCallBack:^(NSString * _Nonnull source, NSDictionary * _Nonnull tags, NSDictionary * _Nonnull fields, long long time,BOOL * _Nonnull stop) {
+    [FTModelHelper resolveModelArray:datas dataTypeCallBack:^(NSString * _Nonnull source, NSDictionary * _Nonnull tags, NSDictionary * _Nonnull fields, NSString * _Nonnull type, BOOL * _Nonnull stop){
+        XCTAssertTrue([type isEqualToString:FT_DATA_TYPE_RUM]);
         if ([source isEqualToString:FT_RUM_SOURCE_LONG_TASK]) {
             hasLongTask = YES;
         }else if ([source isEqualToString:FT_RUM_SOURCE_ERROR]){
@@ -329,7 +330,7 @@
     [[NSFileManager defaultManager] createFileAtPath:pathString contents:nil attributes:nil];
     
     NSFileHandle *fileHandle = [NSFileHandle fileHandleForWritingAtPath:pathString];
-    NSString *str = @"{\"startDate\":1715416161781327872,\"isANR\":false,\"sessionContext\":{\"session_id\":\"28a4b4960c5e410b9dc08ef7b27019ac\",\"view_referrer\":\"DemoViewController\",\"view_name\":\"CrashVC\",\"session_type\":\"user\",\"view_id\":\"3fe57956e0db4bef9b58f6fbb2d616a7\"},\"backtrace\":\"test_backtrace\",\"view\":{\"time\":1715416158025487872,\"tags\":{\"session_id\":\"28a4b4960c5e410b9dc08ef7b27019ac\",\"view_referrer\":\"UITabBarController\",\"view_name\":\"DemoViewController\",\"session_type\":\"user\",\"view_id\":\"d2dfb5994596450e9f9b9521008dafc0\"},\"fields\":{\"fps_mini\":3.8665922570805944,\"cpu_tick_count\":457,\"view_long_task_count\":0,\"cpu_tick_count_per_second\":208.70286551518785,\"is_active\":false,\"view_action_count\":1,\"view_update_time\":1,\"memory_max\":97737536,\"fps_avg\":56.242399636138515,\"time_spent\":2189715981,\"loading_time\":30997702002,\"view_resource_count\":0,\"memory_avg\":67175594.666666672,\"view_error_count\":0}},\"duration\":263450026,\"errorMonitorInfo\":{\"locale\":\"en\",\"cpu_use\":1,\"memory_total\":\"16.00G\",\"memory_use\":0.56642818450927734,\"battery_use\":0}}\n___boundary.info.date___\n1715416162300324864\n1715416162555699712\n1715416162809228032\n";
+    NSString *str = @"{\"startDate\":1715416161781327872,\"isANR\":false,\"sessionContext\":{\"session_id\":\"28a4b4960c5e410b9dc08ef7b27019ac\",\"view_referrer\":\"DemoViewController\",\"view_name\":\"CrashVC\",\"session_type\":\"user\",\"view_id\":\"3fe57956e0db4bef9b58f6fbb2d616a7\"},\"backtrace\":\"test_backtrace\",\"view\":{\"time\":1715416158025487872,\"tags\":{\"session_id\":\"28a4b4960c5e410b9dc08ef7b27019ac\",\"view_referrer\":\"UITabBarController\",\"view_name\":\"DemoViewController\",\"session_type\":\"user\",\"view_id\":\"d2dfb5994596450e9f9b9521008dafc0\"},\"fields\":{\"fps_mini\":3.8665922570805944,\"cpu_tick_count\":457,\"view_long_task_count\":0,\"cpu_tick_count_per_second\":208.70286551518785,\"is_active\":false,\"view_action_count\":1,\"view_update_time\":1,\"memory_max\":97737536,\"fps_avg\":56.242399636138515,\"time_spent\":2189715981,\"loading_time\":30997702002,\"view_resource_count\":0,\"memory_avg\":67175594.666666672,\"view_error_count\":0,\"sampled_for_error_session\":0}},\"duration\":263450026,\"errorMonitorInfo\":{\"locale\":\"en\",\"cpu_use\":1,\"memory_total\":\"16.00G\",\"memory_use\":0.56642818450927734,\"battery_use\":0}}\n___boundary.info.date___\n1715416162300324864\n1715416162555699712\n1715416162809228032\n";
     if (@available(iOS 13.0, *)) {
         [fileHandle seekToOffset:0 error:&error];
         [fileHandle writeData:[str dataUsingEncoding:NSUTF8StringEncoding] error:&error];
@@ -348,7 +349,8 @@
                    
     NSArray *datas = [[FTTrackerEventDBTool sharedManger] getAllDatas];
     __block BOOL hasLongTask = NO,hasAnr = NO,hasView = NO;
-    [FTModelHelper resolveModelArray:datas timeCallBack:^(NSString * _Nonnull source, NSDictionary * _Nonnull tags, NSDictionary * _Nonnull fields, long long time,BOOL * _Nonnull stop) {
+    [FTModelHelper resolveModelArray:datas dataTypeCallBack:^(NSString * _Nonnull source, NSDictionary * _Nonnull tags, NSDictionary * _Nonnull fields, NSString * _Nonnull type, BOOL * _Nonnull stop){
+        XCTAssertTrue([type isEqualToString:FT_DATA_TYPE_RUM]);
         if ([source isEqualToString:FT_RUM_SOURCE_LONG_TASK]) {
             hasLongTask = YES;
         }else if ([source isEqualToString:FT_RUM_SOURCE_ERROR]){
