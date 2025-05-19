@@ -64,6 +64,7 @@
 //    FTResourceWriter *resource = [[FTResourceWriter alloc]initWithWriter:resourceWriter dataStore:dataStore];
 //    FTResourceProcessor *resourceProcessor = [[FTResourceProcessor alloc]initWithQueue:self.processorsQueue resourceWriter:resource];
     _cacheWriter = cacheWriter;
+    _writer = writer;
     FTSnapshotProcessor *srProcessor = [[FTSnapshotProcessor alloc]initWithQueue:self.processorsQueue writer:writer];
     FTRecorder *windowRecorder = [[FTRecorder alloc]initWithWindowObserver:self.windowObserver snapshotProcessor:srProcessor resourceProcessor:nil additionalNodeRecorders:self.config.additionalNodeRecorders];
     self.windowRecorder = windowRecorder;
@@ -98,7 +99,7 @@
         return;
     }
     if(self.currentRUMContext == nil || ![message[FT_RUM_KEY_SESSION_ID] isEqualToString:self.currentRUMContext[FT_RUM_KEY_SESSION_ID]]){
-        BOOL isErrorSession = self.currentRUMContext[FT_RUM_KEY_SAMPLED_FOR_ERROR_SESSION];
+        BOOL isErrorSession = message[FT_RUM_KEY_SAMPLED_FOR_ERROR_SESSION];
         BOOL isSampled = [FTBaseInfoHandler randomSampling:self.sampleRate];
         BOOL srOnErrorSampleRate = isSampled? NO: [FTBaseInfoHandler randomSampling:self.config.sessionReplayOnErrorSampleRate];
         

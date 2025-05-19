@@ -12,7 +12,7 @@ NS_ASSUME_NONNULL_BEGIN
 @class FTDirectory;
 
 @interface FTTmpCacheManager : NSObject<FTCacheWriter>
-- (instancetype)initWithCacheFileWriter:(id<FTWriter>)cacheWriter cacheDirectory:(FTDirectory *)cacheDirectory directory:(FTDirectory *)directory;
+- (instancetype)initWithCacheFileWriter:(id<FTWriter>)cacheWriter cacheDirectory:(FTDirectory *)cacheDirectory directory:(FTDirectory *)directory queue:(dispatch_queue_t)queue;
 
 @end
 

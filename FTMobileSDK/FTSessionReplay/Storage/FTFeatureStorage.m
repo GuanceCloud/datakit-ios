@@ -28,7 +28,7 @@
 @property (nonatomic, strong) dispatch_queue_t queue;
 @property (nonatomic, strong) FTDirectory *directory;
 @property (nonatomic, strong) FTDirectory *cacheDirectory;
-
+@property (nonatomic, strong) id<FTCacheWriter> cacheWriter;
 @end
 @implementation FTFeatureStorage
 
@@ -53,9 +53,12 @@
 }
 - (id<FTCacheWriter>)cacheWriter{
     if (self.cacheAuthorizedFilesOrchestrator) {
-        FTFileWriter *realFileWriter = [[FTFileWriter alloc]initWithOrchestrator:self.cacheAuthorizedFilesOrchestrator queue:self.queue];
-        FTTmpCacheManager *fileWriter = [[FTTmpCacheManager alloc]initWithCacheFileWriter:realFileWriter cacheDirectory:self.cacheDirectory directory:self.directory];
-        return fileWriter;
+        if (!_cacheWriter) {
+            FTFileWriter *realFileWriter = [[FTFileWriter alloc]initWithOrchestrator:self.cacheAuthorizedFilesOrchestrator queue:self.queue];
+            FTTmpCacheManager *fileWriter = [[FTTmpCacheManager alloc]initWithCacheFileWriter:realFileWriter cacheDirectory:self.cacheDirectory directory:self.directory queue:self.queue];
+            _cacheWriter = fileWriter;
+        }
+        return _cacheWriter;
     }
     return nil;
 }

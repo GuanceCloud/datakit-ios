@@ -202,7 +202,8 @@
     [tags addEntriesFromDictionary:model.tags];
     NSMutableDictionary *fields = [NSMutableDictionary new];
     [fields addEntriesFromDictionary:model.fields];
-    [fields setValue:@(self.sessionHasReplay) forKey:FT_SESSION_HAS_REPLAY];
+    BOOL sessionHasReplay = self.sessionHasReplay || self.rumDependencies.sessionHasReplay;
+    [fields setValue:@(sessionHasReplay) forKey:FT_SESSION_HAS_REPLAY];
     NSString *error = model.type == FTRUMDataLongTask?FT_RUM_SOURCE_LONG_TASK :FT_RUM_SOURCE_ERROR;
     [self.rumDependencies.writer rumWrite:error tags:tags fields:fields time:model.tm];
     if(self.errorHandled){
@@ -235,8 +236,10 @@
     
     [fields setValue:@(self.rumDependencies.sampledForErrorSession) forKey:FT_RUM_KEY_SAMPLED_FOR_ERROR_SESSION];
     [fields addEntriesFromDictionary:self.rumDependencies.sessionReplaySampledFields];
-    [fields setValue:@(self.sessionHasReplay) forKey:FT_SESSION_HAS_REPLAY];
-    if (self.sessionHasReplay) {
+    // session-replay
+    BOOL sessionHasReplay = self.sessionHasReplay || self.rumDependencies.sessionHasReplay;
+    [fields setValue:@(sessionHasReplay) forKey:FT_SESSION_HAS_REPLAY];
+    if (sessionHasReplay) {
         NSDictionary *dict = [self.rumDependencies.sessionReplayStats valueForKey:self.view_id];
         if(dict){
             [fields setValue:dict forKey:FT_SESSION_REPLAY_STATS];
@@ -262,8 +265,6 @@
     if (![self.loading_time isEqual:@0]) {
         [fields setValue:self.loading_time forKey:FT_KEY_LOADING_TIME];
     }
-    // session-replay
-    [fields setValue:@(self.sessionHasReplay) forKey:FT_SESSION_HAS_REPLAY];
     
     long long time = [self.viewStartTime ft_nanosecondTimeStamp];
     [self.rumDependencies.writer rumWrite:FT_RUM_SOURCE_VIEW tags:tags fields:fields time:time updateTime:[updateTime ft_nanosecondTimeStamp]];

@@ -67,8 +67,8 @@ static dispatch_once_t onceToken;
     if(config.sampleRate<=0&&config.sessionReplayOnErrorSampleRate<=0){
         return;
     }
-    FTSessionReplayFeature *sessionReplayFeature = [[FTSessionReplayFeature alloc]initWithConfig:config];
-    FTFeatureStores *srStore = [self registerFeature:sessionReplayFeature needCache:config.sessionReplayOnErrorSampleRate>0];
+    FTSessionReplayFeature *sessionReplayFeature = [[FTSessionReplayFeature alloc]initWithConfig:[config copy]];
+    FTFeatureStores *srStore = [self registerFeature:sessionReplayFeature];
     [self.stores setValue:srStore forKey:sessionReplayFeature.name];
     [self.features setValue:sessionReplayFeature forKey:sessionReplayFeature.name];
     
@@ -80,14 +80,11 @@ static dispatch_once_t onceToken;
     [sessionReplayFeature startWithWriter:srStore.storage.writer cacheWriter:srStore.storage.cacheWriter resourceWriter:nil resourceDataStore:nil];
     FTInnerLogInfo(@"[session-replay] initialized success");
 }
-- (FTFeatureStores *)registerFeature:(id<FTRemoteFeature>)feature needCache:(BOOL)cache{
+- (FTFeatureStores *)registerFeature:(id<FTRemoteFeature>)feature{
     FTDirectory *directory = [self.coreDirectory createSubdirectoryWithPath:feature.name];
     if(directory){
         FTPerformancePreset *performancePreset = [self.performancePreset updateWithOverride:feature.performanceOverride];
-        FTDirectory *cacheDirectory;
-        if (cache) {
-            cacheDirectory = [self.coreDirectory createSubdirectoryWithPath:[feature.name stringByAppendingString:@".cache"]];
-        }
+        FTDirectory *cacheDirectory = [self.coreDirectory createSubdirectoryWithPath:[feature.name stringByAppendingString:@".cache"]];
         FTFeatureStorage *storage = [[FTFeatureStorage alloc]initWithFeatureName:feature.name queue:self.readWriteQueue directory:directory cacheDirectory:cacheDirectory performance:performancePreset];
         FTFeatureUpload *upload = [[FTFeatureUpload alloc]initWithFeatureName:feature.name
                                                                    fileReader:storage.reader

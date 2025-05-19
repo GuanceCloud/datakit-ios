@@ -12,6 +12,7 @@
 #import "NSDate+FTUtil.h"
 #import "FTConstants.h"
 #import "FTLog+Private.h"
+#import "FTModuleManager.h"
 static const NSTimeInterval sessionTimeoutDuration = 15 * 60; // 15 minutes
 static const NSTimeInterval sessionMaxDuration = 4 * 60 * 60; // 4 hours
 @interface FTRUMSessionHandler()<FTRUMSessionProtocol>
@@ -156,7 +157,12 @@ static const NSTimeInterval sessionMaxDuration = 4 * 60 * 60; // 4 hours
         strongSelf.needWriteErrorData = NO;
     };
     [self.viewHandlers addObject:viewHandler];
-    self.rumDependencies.fatalErrorContext.lastSessionContext = [self getCurrentSessionInfo];
+    NSDictionary *sessionInfo = [self getCurrentSessionInfo];
+    self.rumDependencies.fatalErrorContext.lastSessionContext = sessionInfo;
+    NSMutableDictionary *srRumContext = [NSMutableDictionary dictionary];
+    [srRumContext setValue:@(self.rumDependencies.sampledForErrorSession) forKey:FT_RUM_KEY_SAMPLED_FOR_ERROR_SESSION];
+    [srRumContext addEntriesFromDictionary:sessionInfo?:@{}];
+    [[FTModuleManager sharedInstance] postMessage:FTMessageKeyRUMContext message:srRumContext];
 }
 -(BOOL)timedOutOrExpired:(NSDate*)currentTime{
     NSTimeInterval timeElapsedSinceLastInteraction = [currentTime timeIntervalSinceDate:_lastInteractionTime];

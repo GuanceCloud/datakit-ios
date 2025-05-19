@@ -491,8 +491,6 @@ void *FTRUMQueueIdentityKey = &FTRUMQueueIdentityKey;
         self.sessionHandler = [[FTRUMSessionHandler alloc]initWithModel:model dependencies:self.rumDependencies];
         [self.sessionHandler.assistant process:model context:context];
     }
-    NSDictionary *currentRumContext = [self getCurrentSessionInfo];
-    [[FTModuleManager sharedInstance] postMessage:FTMessageKeyRUMContext message:currentRumContext];
     return YES;
 }
 -(NSDictionary *)rumDynamicProperty{
