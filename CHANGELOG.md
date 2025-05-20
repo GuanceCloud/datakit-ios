@@ -1,5 +1,10 @@
+# 1.6.2-alpha.1
+1. 添加 `FTSessionReplayConfig.sessionReplayOnErrorSampleRate` 支持错误采样，在未被 sampleRate 采样时， 在发生错误时可以对 1 分钟前的 session replay 的数据进行取样采集
+2. 同 1.5.16
+---
 # 1.6.1-alpha.4
 1. Resource 性能资源数据处理优化，过滤 dns 异常数据
+2. 同 1.5.15
 ---
 # 1.6.1-alpha.3
 1. 修复多线程访问 `currentRUMContext` 造成的崩溃
