@@ -7,6 +7,7 @@
 //
 
 #import <Foundation/Foundation.h>
+#import "FTDataWriterWorker.h"
 /// 数据添加类型
 typedef NS_ENUM(NSInteger, FTAddDataType) {
     ///rum
@@ -17,7 +18,7 @@ typedef NS_ENUM(NSInteger, FTAddDataType) {
     FTAddDataRUMCache
 };
 NS_ASSUME_NONNULL_BEGIN
-@class FTRecordModel,FTDataWriterWorker;
+@class FTRecordModel;
 @protocol FTRUMDataWriteProtocol;
 /// 数据写入，数据上传 相关操作
 @interface FTTrackDataManager : NSObject

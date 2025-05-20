@@ -54,8 +54,6 @@ NS_ASSUME_NONNULL_BEGIN
 
 -(void)setSessionReplaySource:(NSString *)sessionReplaySource;
 
-- (NSDictionary *)rumDynamicProperty;
-
 - (NSDictionary *)loggerDynamicTags;
 
 - (void)appendGlobalContext:(NSDictionary *)context;

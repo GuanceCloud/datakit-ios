@@ -10,7 +10,6 @@
 #import "FTViewAttributes.h"
 #import "FTSRViewID.h"
 #import "FTViewTreeRecordingContext.h"
-#import <SafariServices/SafariServices.h>
 #import "FTUINavigationBarRecorder.h"
 #import "FTUIViewRecorder.h"
 #import "FTUINavigationBarRecorder.h"

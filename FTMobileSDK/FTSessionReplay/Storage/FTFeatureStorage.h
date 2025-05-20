@@ -17,7 +17,7 @@ NS_ASSUME_NONNULL_BEGIN
                     cacheDirectory:(FTDirectory *)cacheDirectory
                        performance:(FTPerformancePreset *)performance;
 - (id<FTWriter>)writer;
-- (id<FTCacheWriter>)cacheWriter;
+- (nullable id<FTCacheWriter>)cacheWriter;
 - (id<FTReader>)reader;
 - (void)clearAllData;
 - (void)setIgnoreFilesAgeWhenReading:(BOOL)ignore;

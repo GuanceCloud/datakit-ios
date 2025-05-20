@@ -20,7 +20,7 @@
 @interface FTFeatureStorage()
 @property (nonatomic, copy) NSString *featureName;
 @property (nonatomic, strong) FTFilesOrchestrator *authorizedFilesOrchestrator;
-@property (nonatomic, strong) FTFilesOrchestrator *cacheAuthorizedFilesOrchestrator;
+@property (nonatomic, strong, nullable) FTFilesOrchestrator *cacheAuthorizedFilesOrchestrator;
 
 // TODO:隐私条例
 //@property (nonatomic, strong) FTFilesOrchestrator *unauthorizedFilesOrchestrator;

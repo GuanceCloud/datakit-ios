@@ -10,7 +10,6 @@
 #import "FTSRWireframe.h"
 #import "FTViewAttributes.h"
 #import "FTSRUtils.h"
-#import <WebKit/WebKit.h>
 #import "FTViewTreeRecordingContext.h"
 @implementation FTUnsupportedViewRecorder
 -(instancetype)init{

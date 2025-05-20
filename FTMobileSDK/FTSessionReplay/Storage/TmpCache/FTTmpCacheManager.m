@@ -62,7 +62,6 @@ void *FTTmpCacheQueueIdentityKey = &FTTmpCacheQueueIdentityKey;
     if ([key isEqualToString:FTMessageKeyRumError]){
         self.hasErrorForceUpdate = YES;
         NSDate *date = [message valueForKey:@"error_date"];
-//        BOOL isCrash = [[message valueForKey:@"error_crash"] boolValue];
         if (date) {
             long long expirationTimeStamp = [[date dateByAddingTimeInterval:-60] ft_nanosecondTimeStamp];
             long long lastErrorTimeStamp = [date ft_nanosecondTimeStamp];
@@ -121,15 +120,17 @@ void *FTTmpCacheQueueIdentityKey = &FTTmpCacheQueueIdentityKey;
                     NSURL *destinationFileURL = [strongSelf.realWriterUrl URLByAppendingPathComponent:file.name];
                     NSError *lastCriticalError = nil;
                     [[NSFileManager defaultManager] moveItemAtURL:file.url toURL:destinationFileURL error:&lastCriticalError];
+                    FTInnerLogError(@"[Session Replay][Error Sampled] consumeErrorSampledData: %@",file.name);
                     continue;
                 }
                 // 删除当前进程产生的已过期的文件
                 if (expirationTimeStamp > 0 && fileTimeStamp < expirationTimeStamp) {
                     [file deleteFile];
+                    FTInnerLogError(@"[Session Replay][Error Sampled] delete expire file: %@",file.name);
                 }
             }
         } @catch (NSException *exception) {
-            FTInnerLogError(@"[Session Replay] EXCEPTION: %@", exception.description);
+            FTInnerLogError(@"[Session Replay][Error Sampled] EXCEPTION: %@", exception.description);
         }
     };
     if (sync) {
