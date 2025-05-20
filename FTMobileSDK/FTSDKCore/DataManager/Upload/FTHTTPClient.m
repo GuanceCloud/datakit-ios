@@ -1,17 +1,17 @@
 //
-//  FTNetworkManager.m
+//  FTHTTPClient.m
 //  FTMacOSSDK
 //
 //  Created by 胡蕾蕾 on 2021/8/2.
 //  Copyright © 2021 DataFlux-cn. All rights reserved.
 //
 
-#import "FTNetworkManager.h"
+#import "FTHTTPClient.h"
 
-@interface FTNetworkManager()
+@interface FTHTTPClient()
 @property (nonatomic, strong) NSURLSession *session;
 @end
-@implementation FTNetworkManager
+@implementation FTHTTPClient
 -(instancetype)init{
     return [self initWithTimeoutIntervalForRequest:30];
 }

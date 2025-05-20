@@ -94,7 +94,6 @@ NSString * FTQueryStringFromParameters(NSDictionary *parameters,FTParameterType 
             if(str){
                 [mutablePairs addObject:str];
             }
-           
         }
     }
     return [mutablePairs componentsJoinedByString:@","];
@@ -116,27 +115,27 @@ NSString * FTQueryStringFromParameters(NSDictionary *parameters,FTParameterType 
         }
         NSDictionary *tag = opdata[FT_TAGS];
         NSDictionary *field = opdata[FT_FIELDS];
+        NSNumber *timeNum = opdata[FT_TIME];
+        long long time = timeNum == nil ? obj.tm : [timeNum longLongValue];
         if(source.length>0 && field.count>0 && tag.count>0){
             NSString *dataId = [NSString stringWithFormat:@"%@.%@",packageId,[FTBaseInfoHandler random16UUID]];
-            NSMutableDictionary *tagDict = @{@"sdk_data_id":dataId}.mutableCopy;
-            if(tag.allKeys.count>0){
-                [tagDict addEntriesFromDictionary:tag];
-            }
+            NSMutableDictionary *tagDict = [NSMutableDictionary dictionary];
+            [tagDict setValue:dataId forKey:@"sdk_data_id"];
+            [tagDict addEntriesFromDictionary:tag];
             NSString *tagStr = FTQueryStringFromParameters(tagDict,FTParameterTypeTag,compatible);
             NSString *fieldStr= FTQueryStringFromParameters(opdata[FT_FIELDS],FTParameterTypeField,compatible);
-            
-            NSString *requestStr = [NSString stringWithFormat:@"%@,%@ %@ %lld",source,tagStr,fieldStr,obj.tm];
+            NSString *requestStr = [NSString stringWithFormat:@"%@,%@ %@ %lld",source,tagStr,fieldStr,time];
             if (idx==0) {
                 [requestDatas appendString:requestStr];
             }else{
                 [requestDatas appendFormat:@"\n%@",requestStr];
             }
         }else{
-            FTInnerLogError(@"\n*********此条数据格式错误********\n%@ %lld\n******************\n",item,obj.tm);
+            FTInnerLogError(@"\n*********此条数据格式错误********\n%@ %lld\n******************\n",item,time);
         }
     }];
     FTRecordModel *model = [events firstObject];
-    FTInnerLogDebug(@"\nUpload Datas Type:%@\nLine RequestDatas:\n%@",model.op,requestDatas);
+    FTInnerLogDebug(@"[NETWORK]\nUpload Datas Type:%@\nLine RequestDatas:\n%@",model.op,requestDatas);
     return requestDatas;
 }
 @end

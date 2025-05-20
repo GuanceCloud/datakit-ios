@@ -81,6 +81,7 @@
     XCTAssertTrue(newCount-oldCount == 10);
 }
 - (void)testInsertLoggingItems{
+    [FTTrackDataManager startWithAutoSync:NO syncPageSize:10 syncSleepTime:0];
     NSInteger oldCount =  [[FTTrackerEventDBTool sharedManger] getDatasCount];
     for (int i = 0; i<20; i++) {
         FTRecordModel *model = [FTRecordModel new];
@@ -96,6 +97,7 @@
 *  缓存中的数据添加到数据库中
 */
 -(void)testInsertCacheToDB{
+    [FTTrackDataManager startWithAutoSync:NO syncPageSize:10 syncSleepTime:0];
     NSInteger oldCount =  [[FTTrackerEventDBTool sharedManger] getDatasCount];
     for (int i = 0; i<15; i++) {
         FTRecordModel *model = [FTModelHelper createLogModel];

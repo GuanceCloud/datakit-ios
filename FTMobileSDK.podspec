@@ -101,6 +101,7 @@ Pod::Spec.new do |s|
 			bb.source_files =  'FTMobileSDK/FTSDKCore/DataManager/**/*{.h,.m}'
 			bb.dependency 'FTMobileSDK/FTSDKCore/BaseUtils/Thread'
 			bb.dependency 'FTMobileSDK/FTSDKCore/BaseUtils/Base'
+			bb.dependency 'FTMobileSDK/FTSDKCore/Protocol'
 		end
 	end
 	s.subspec 'FTSessionReplay' do |sr|

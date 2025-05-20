@@ -8,7 +8,7 @@
 
 #import "FTFeatureUpload.h"
 #import "FTLog+Private.h"
-#import "FTNetworkManager.h"
+#import "FTHTTPClient.h"
 #import "FTResourceRequest.h"
 #import "FTJSONUtil.h"
 #import "FTReader.h"
@@ -21,16 +21,18 @@
 #import "FTUploadConditions.h"
 #import "FTSegmentJSON.h"
 #import "FTDataStore.h"
+#import "FTFileWriter.h"
 
 @interface FTFeatureUpload()<NSCacheDelegate>{
     pthread_rwlock_t _readWorkLock;
     pthread_rwlock_t _uploadWorkLock;
 }
-@property (nonatomic, strong) FTNetworkManager *networkManager;
+@property (nonatomic, strong) FTHTTPClient *httpClient;
 @property (nonatomic, strong) dispatch_queue_t queue;
 @property (nonatomic, strong) dispatch_block_t readWork;
 @property (nonatomic, strong) dispatch_block_t uploadWork;
 @property (nonatomic, strong) id<FTReader> fileReader;
+@property (nonatomic, strong) id<FTCacheWriter> cacheWriter;
 @property (nonatomic, strong) id<FTFeatureRequestBuilder> requestBuilder;
 @property (nonatomic, strong) FTPerformancePreset *performance;
 @property (nonatomic, strong) FTDataUploadDelay *delay;
@@ -44,9 +46,10 @@
 
 -(instancetype)initWithFeatureName:(NSString *)featureName
                         fileReader:(id<FTReader>)fileReader
+                       cacheWriter:(id<FTCacheWriter>)cacheWriter
                     requestBuilder:(id<FTFeatureRequestBuilder>)requestBuilder
                maxBatchesPerUpload:(int)maxBatchesPerUpload
-                       performance:(FTPerformancePreset *)performance 
+                       performance:(FTPerformancePreset *)performance
                            context:(nonnull NSDictionary *)context
 {
     self = [super init];
@@ -57,12 +60,13 @@
         pthread_rwlock_init(&_readWorkLock, NULL);
         pthread_rwlock_init(&_uploadWorkLock, NULL);
         _fileReader = fileReader;
+        _cacheWriter = cacheWriter;
         _requestBuilder = requestBuilder;
         _performance = performance;
         _context = context;
         _delay = [[FTDataUploadDelay alloc]initWithPerformance:performance];
         _maxBatchesPerUpload = maxBatchesPerUpload;
-        _networkManager = [[FTNetworkManager alloc]initWithTimeoutIntervalForRequest:30];
+        _httpClient = [[FTHTTPClient alloc]initWithTimeoutIntervalForRequest:30];
         _uploadConditions = [[FTUploadConditions alloc]init];
         [_uploadConditions startObserver];
         [self startReadWork];
@@ -76,6 +80,7 @@
         if (!strongSelf) {
             return;
         }
+        [strongSelf.cacheWriter cleanup];
         NSArray *conditions = [strongSelf.uploadConditions checkForUpload];
         BOOL canUpload = conditions.count == 0;
         //读取上传文件
@@ -165,7 +170,7 @@
         __block BOOL success = NO;
         dispatch_semaphore_t flushSemaphore = dispatch_semaphore_create(0);
         [self.requestBuilder requestWithEvents:event parameters:parameters];
-        [self.networkManager sendRequest:self.requestBuilder completion:^(NSHTTPURLResponse * _Nonnull httpResponse, NSData * _Nullable data, NSError * _Nullable error) {
+        [self.httpClient sendRequest:self.requestBuilder completion:^(NSHTTPURLResponse * _Nonnull httpResponse, NSData * _Nullable data, NSError * _Nullable error) {
             if (error || ![httpResponse isKindOfClass:[NSHTTPURLResponse class]]) {
                 FTInnerLogError(@"[NETWORK][%@] %@", self.featureName,[NSString stringWithFormat:@"Network failure: %@", error ? error : @"Unknown error"]);
                 success = NO;

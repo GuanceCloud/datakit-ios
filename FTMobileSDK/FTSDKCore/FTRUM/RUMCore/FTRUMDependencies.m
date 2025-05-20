@@ -7,6 +7,7 @@
 //
 
 #import "FTRUMDependencies.h"
+#import "FTConstants.h"
 
 @implementation FTRUMDependencies
 

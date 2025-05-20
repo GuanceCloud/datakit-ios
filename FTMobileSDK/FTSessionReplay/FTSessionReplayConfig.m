@@ -30,6 +30,7 @@ NSString * const FTImagePrivacyLevelStringMap[] = {
     self = [super init];
     if(self){
         _sampleRate = 100;
+        _sessionReplayOnErrorSampleRate = 0;
         _imagePrivacy = FTImagePrivacyLevelMaskAll;
         _touchPrivacy = FTTouchPrivacyLevelHide;
         _textAndInputPrivacy = FTTextAndInputPrivacyLevelMaskAll;
@@ -79,12 +80,14 @@ NSString * const FTImagePrivacyLevelStringMap[] = {
 - (id)copyWithZone:(nullable NSZone *)zone {
     FTSessionReplayConfig *config = [[[self class] allocWithZone:zone] init];
     config.sampleRate = self.sampleRate;
+    config.sessionReplayOnErrorSampleRate = self.sessionReplayOnErrorSampleRate;
     config.touchPrivacy = self.touchPrivacy;
     config.imagePrivacy = self.imagePrivacy;
     config.textAndInputPrivacy = self.textAndInputPrivacy;
+    config.additionalNodeRecorders = [self.additionalNodeRecorders copy];
     return config;
 }
 -(NSString *)debugDescription{
-    return [NSString stringWithFormat:@"====== Config ======\n sampleRate:%d\n textAndInputPrivacy:%@\n touchPrivacy:%@\n ================== ",self.sampleRate,FTTextAndInputPrivacyLevelStringMap[self.textAndInputPrivacy],FTTouchPrivacyLevelStringMap[self.touchPrivacy]];
+    return [NSString stringWithFormat:@"====== Config ======\n sampleRate:%d\n sessionReplayOnErrorSampleRate:%d\n textAndInputPrivacy:%@\n touchPrivacy:%@\n imagePrivacy:%@\n ================== ",self.sampleRate,self.sessionReplayOnErrorSampleRate,FTTextAndInputPrivacyLevelStringMap[self.textAndInputPrivacy],FTTouchPrivacyLevelStringMap[self.touchPrivacy],FTImagePrivacyLevelStringMap[self.imagePrivacy]];
 }
 @end

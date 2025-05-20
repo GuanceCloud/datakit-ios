@@ -46,7 +46,7 @@ NSString *const FTConnectivityUnknown = @"unknown";
     self = [super init];
     if(self){
         _isConnected = NO;
-        _monitorQueue = dispatch_queue_create("com.ft.reachability", NULL);
+        _monitorQueue = dispatch_queue_create("com.guance.reachability", NULL);
         _reachability = [FTReachability reachabilityForInternetConnection];
         _networkObservers = [NSPointerArray pointerArrayWithOptions:NSPointerFunctionsWeakMemory];
         _observerLock = [[NSLock alloc] init];

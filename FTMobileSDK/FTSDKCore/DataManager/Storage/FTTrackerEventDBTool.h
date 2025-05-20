@@ -50,8 +50,17 @@ NS_ASSUME_NONNULL_BEGIN
 
 -(BOOL)deleteDataWithCount:(NSInteger)count;
 
+- (BOOL)deleteDatasWithType:(NSString *)type;
+
+- (BOOL)deleteDatasWithType:(NSString *)type toTime:(long long)toTime;
+- (BOOL)deleteDatasWithType:(NSString *)type fromTime:(long long)fromTime toTime:(long long)toTime;
+
+- (BOOL)updateDatasWithType:(NSString *)type toType:(NSString *)toType toTime:(long long)toTime;
+- (BOOL)updateDatasWithType:(NSString *)type toType:(NSString *)toType fromTime:(long long)fromTime toTime:(long long)toTime;
 /// 获取数据库数据总数
 - (NSInteger)getDatasCount;
+
+- (NSInteger)getUploadDatasCount;
 
 /// 获取数据库某类型数据总数
 /// @param type 数据类型

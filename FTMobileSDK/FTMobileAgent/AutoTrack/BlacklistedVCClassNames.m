@@ -154,7 +154,8 @@
                                               @"UIActivityContentViewController",
                                               @"SFAirDropViewController",
                                               @"_UICursorAccessoryViewController",
-                                              @"_UISceneHostingViewController"
+                                              @"_UISceneHostingViewController",
+                                              @"_UIDatePickerContainerViewController",
                                  ],
             }
         };

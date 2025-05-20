@@ -1,19 +1,56 @@
 # 1.6.1-alpha.4
 1. Resource 性能资源数据处理优化，过滤 dns 异常数据
 ---
-# 1.5.15
-1. 修复 Swift Package Manager 编译报错问题
----
 # 1.6.1-alpha.3
 1. 修复多线程访问 `currentRUMContext` 造成的崩溃
 ---
 # 1.6.1-alpha.2
 1. `privacy` 与 细粒度隐私添加优先级处理，细粒度的隐私级别设置优先级高于 `privacy`
 ---
+# 1.5.16
+1. 添加 `FTMobileConfig.lineDataModifier`、`FTMobileConfig.dataModifier` 支持数据写入替换，支持数据脱敏
+2. 添加 `FTRUMConfig.sessionErrorSampleRate` 支持错误采样，在未被 setSamplingRate采样时， 在发生错误时可以对 1 分钟前的 rum 的数据进行取样采集
+3. Logger 支持通过 `logLevelFilter` 设置过滤自定义日志等级
+4. 原生页面跳转至 WebView 页面时，用原生页面名称填充 view_referrer
+---
+# 1.5.16-beta.4
+1. 同 1.5.16-beta.3
+---
+# 1.5.16-beta.3
+1. Logger 行数据写入替换遗漏补充
+2. fatal ANR 数据写入失败修复
+---
+# 1.5.16-beta.2
+1. 同 1.5.16-beta.1
+---
+# 1.5.16-beta.1
+1. 同 1.5.15-alpha.1-1.5.15-alpha.6
+2. 完善 `sessionOnErrorSampleRate` 功能实现
+---
+# 1.5.16-alpha.1
+1. 同 1.5.15-alpha.1-1.5.15-alpha.6
+2. RUM 错误 Session 采样功能实现逻辑调整
+3. Logger 支持通过 `logLevelFilter` 设置过滤自定义日志等级
+4. 修复崩溃 error 造成冗余无效 action 写入问题
+5. 添加 `FTMobileConfig.lineDataModifier`、`FTMobileConfig.dataModifier` 支持数据写入替换，可适用数据脱敏
+6. 原生页面跳转至 WebView 页面时，用原生页面名称填充 view_referrer
+---
+# 1.5.15
+1. 修复 Swift Package Manager 编译报错问题
+---
+# 1.5.15-alpha.6
+1. 解决与 `AFNetworking` URLSession resume 方法 swizzle 冲突问题
+---
+# 1.5.15-alpha.5
+1. `sessionOnErrorSampleRate` 类型改为 `int`。Error Session 采集逻辑调整，从 error 发生前 1 分钟开始采集。
+---
 # 1.6.1-alpha.1
 1. Session Replay 新增支持通过 `touchPrivacy` 触摸屏蔽的可用隐私级别、`textAndInputPrivacy`文本和输入屏蔽的可用隐私级别，进行细粒度的隐私级别设置
 2. Session Replay 新增支持 UIView 通过 `sessionReplayPrivacyOverrides` 设置视图级别隐私覆盖
 3. Session Replay 数据同步添加 X-Pkg-Id 追踪适配
+---
+# 1.5.15-alpha.3
+1. FTRumConfig 新增 `sessionOnErrorSampleRate` 字段。若开启，当未被采样率选中的 Session 发生错误，SDK 将对这些原本不采集的 Session 进行数据采集
 ---
 # 1.5.15-alpha.2
 1. 数据同步 UserAgent 格式调整

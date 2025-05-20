@@ -54,6 +54,9 @@ typedef NS_ENUM(NSUInteger,FTTextAndInputPrivacyLevel){
 /// 采样配置，属性值：0至100，100则表示百分百采集，不做数据样本压缩。
 @property (nonatomic, assign) int sampleRate;
 
+/// 开启之后，未采样 session 记录发生错误前 1 分钟。
+@property (nonatomic, assign) int sessionReplayOnErrorSampleRate;
+
 /// 会话重播中内容屏蔽的隐私级别。 默认为 FTSRPrivacyMask
 @property (nonatomic, assign) FTSRPrivacy privacy DEPRECATED_MSG_ATTRIBUTE("已过时，请使用 `touchPrivacy`、`textAndInputPrivacy`、`imagePrivacy` 替换");
 

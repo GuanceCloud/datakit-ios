@@ -7,22 +7,25 @@
 //
 
 #import <Foundation/Foundation.h>
+#import "FTDataModifier.h"
 #import "FTEnumConstant.h"
 #import "FTSDKCompat.h"
 #import "FTReadWriteHelper.h"
-
 NS_ASSUME_NONNULL_BEGIN
 @class FTUserInfo;
 /// 预置属性
 @interface FTPresetProperty : NSObject
-/// 应用唯一 ID
-@property (nonatomic, copy) NSString *appID;
+
 /// 读写保护的用户信息
 @property (nonatomic, strong) FTReadWriteHelper<FTUserInfo*> *userHelper;
-@property (nonatomic, copy) NSString *sdkVersion;
-@property (nonatomic, strong) NSDictionary *rumGlobalContext;
-@property (nonatomic, strong) NSDictionary *logGlobalContext;
-@property (atomic, copy) NSString *sessionReplaySource;
+@property (nonatomic, strong, readonly) NSDictionary *loggerTags;
+@property (nonatomic, strong, readonly) NSMutableDictionary *rumTags;
+@property (nonatomic, strong, readonly) NSDictionary *rumStaticFields;
+@property (nonatomic, strong, readonly) NSMutableDictionary *sessionReplayTags;
+
+/// 设置数据更改器
+@property (nonatomic, copy) FTLineDataModifier lineDataModifier;
+@property (nonatomic, copy) NSString *sessionReplaySource;
 /// 设备名称
 + (NSString *)deviceInfo;
 + (NSString *)cpuArch;
@@ -39,25 +42,29 @@ NS_ASSUME_NONNULL_BEGIN
 /// - Parameter env: 环境
 /// - Parameter service: 服务
 /// - Parameter globalContext: 全局自定义属性
-- (void)startWithVersion:(NSString *)version sdkVersion:(NSString *)sdkVersion env:(NSString *)env service:(NSString *)service globalContext:(NSDictionary *)globalContext;
+- (void)startWithVersion:(NSString *)version sdkVersion:(NSString *)sdkVersion env:(NSString *)env service:(NSString *)service globalContext:(NSDictionary *)globalContext pkgInfo:(nullable NSDictionary *)pkgInfo;
 
-/// 获取 Rum ES 公共Tag
-- (NSMutableDictionary *)rumProperty;
-- (NSMutableDictionary *)rumWebViewProperty;
-- (NSDictionary *)rumDynamicProperty;
-/// 获取 Session Replay 公共Tag
-- (NSDictionary *)sessionReplayProperty;
-/// 获取 logger 数据公共 Tag
-/// - Parameters:
-///   - status: 事件等级和状态
-- (NSDictionary *)loggerProperty;
-- (NSDictionary *)loggerDynamicProperty;
+- (void)setDataModifier:(FTDataModifier)dataModifier lineDataModifier:(FTLineDataModifier)lineDataModifier;
+
+- (void)setRUMAppID:(NSString *)appID sampleRate:(int)sampleRate sessionOnErrorSampleRate:(int)sessionOnErrorSampleRate rumGlobalContext:(NSDictionary *)rumGlobalContext;
+
+-(void)setLogGlobalContext:(NSDictionary *)logGlobalContext;
+
+- (NSDictionary *)rumDynamicTags;
+
+-(void)setSessionReplaySource:(NSString *)sessionReplaySource;
+
+- (NSDictionary *)loggerDynamicTags;
 
 - (void)appendGlobalContext:(NSDictionary *)context;
 
 - (void)appendRUMGlobalContext:(NSDictionary *)context;
 
 - (void)appendLogGlobalContext:(NSDictionary *)context;
+
+- (NSArray<NSDictionary *> *)applyLineModifier:(NSString *)measurement
+                                          tags:(NSDictionary *)tags
+                                        fields:(NSDictionary *)fields;
 
 - (void)shutDown;
 @end

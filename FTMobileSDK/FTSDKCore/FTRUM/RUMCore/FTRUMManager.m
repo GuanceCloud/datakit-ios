@@ -20,6 +20,7 @@
 #import "NSError+FTDescription.h"
 #import "FTPresetProperty.h"
 #import "FTNetworkConnectivity.h"
+#import "FTMessageReceiver.h"
 
 NSString * const AppStateStringMap[] = {
     [FTAppStateUnknown] = @"unknown",
@@ -28,7 +29,7 @@ NSString * const AppStateStringMap[] = {
 };
 void *FTRUMQueueIdentityKey = &FTRUMQueueIdentityKey;
 
-@interface FTRUMManager()<FTRUMSessionProtocol>
+@interface FTRUMManager()<FTRUMSessionProtocol,FTMessageReceiver>
 @property (nonatomic, strong) FTRUMDependencies *rumDependencies;
 @property (nonatomic, strong) FTRUMSessionHandler *sessionHandler;
 @property (nonatomic, strong) FTReadWriteHelper<NSMutableDictionary *> *preViewDuration;
@@ -41,12 +42,42 @@ void *FTRUMQueueIdentityKey = &FTRUMQueueIdentityKey;
         _rumDependencies = dependencies;
         _appState = FTAppStateStartUp;
         _preViewDuration = [[FTReadWriteHelper alloc]initWithValue:[NSMutableDictionary new]] ;
-        _rumQueue = dispatch_queue_create_with_target("com.guance.rum", DISPATCH_QUEUE_SERIAL, dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_HIGH, 0));
+        _rumQueue = dispatch_queue_create("com.guance.rum", DISPATCH_QUEUE_SERIAL);
         dispatch_queue_set_specific(_rumQueue, FTRUMQueueIdentityKey, &FTRUMQueueIdentityKey, NULL);
+        [[FTModuleManager sharedInstance] addMessageReceiver:self];
         [self notifyRumInit];
         self.assistant = self;
     }
     return self;
+}
+-(void)receive:(NSString *)key message:(NSDictionary *)message{
+    NSDictionary *messageCopy = [message copy];
+    __weak typeof(self) weakSelf = self;
+    dispatch_async(self.rumQueue, ^{
+        @try {
+            __strong __typeof(weakSelf) strongSelf = weakSelf;
+            if (!strongSelf) return;
+            if(key == FTMessageKeySessionHasReplay){
+                NSMutableDictionary *mutableMessage = [messageCopy mutableCopy];
+                BOOL hasReplay = [mutableMessage[FT_SESSION_HAS_REPLAY] boolValue];
+                BOOL sampledForErrorReplay = [mutableMessage[FT_RUM_KEY_SAMPLED_FOR_ERROR_REPLAY] boolValue];
+                // 如果是正常的 session 而 session replay 是 error replay, hasReplay 为 NO
+                if (!strongSelf.rumDependencies.sampledForErrorSession && sampledForErrorReplay) {
+                    strongSelf.rumDependencies.sessionHasReplay = NO;
+                    [mutableMessage setValue:@(NO) forKey:FT_SESSION_HAS_REPLAY];
+                }else{
+                    strongSelf.rumDependencies.sessionHasReplay = hasReplay;
+                }
+                strongSelf.rumDependencies.sessionReplaySampledFields = [mutableMessage copy];
+                strongSelf.rumDependencies.sampledForErrorReplay = sampledForErrorReplay;
+                FTInnerLogDebug(@"[RUM] session(id:%@)  has replay:%@ sampledForErrorReplay:%@",[strongSelf.rumDependencies.fatalErrorContext.lastSessionContext valueForKey:FT_RUM_KEY_SESSION_ID],(hasReplay?@"true":@"false"),(sampledForErrorReplay?@"true":@"false"));
+            }else if(key == FTMessageKeyRecordsCountByViewID){
+                strongSelf.rumDependencies.sessionReplayStats = messageCopy;
+            }
+        } @catch (NSException *exception) {
+            FTInnerLogError(@"exception %@",exception);
+        }
+    });
 }
 -(void)setAppState:(FTAppState)appState{
     _appState = appState;
@@ -264,7 +295,9 @@ void *FTRUMQueueIdentityKey = &FTRUMQueueIdentityKey;
                     if (content.responseBody.length>0) {
                         [errorField setValue:content.responseBody forKey:FT_KEY_ERROR_STACK];
                     }
-                    
+                    [[FTModuleManager sharedInstance] postMessage:FTMessageKeyRumError message:@{@"error_date":time,
+                                                                                                 @"error_crash":@(NO)
+                                                                                               }];
                     FTRUMResourceModel *resourceError = [[FTRUMResourceModel alloc]initWithType:FTRUMDataResourceError identifier:key];
                     resourceError.time = time;
                     resourceError.tags = errorTags;
@@ -370,24 +403,25 @@ void *FTRUMQueueIdentityKey = &FTRUMQueueIdentityKey;
         return;
     }
     NSDictionary *context = [self rumDynamicProperty];
+    [[FTModuleManager sharedInstance] postMessage:FTMessageKeyRumError message:@{@"error_date":time,
+                                                                                 @"error_crash":@(fatal)
+                                                                               } sync:fatal];
     [self syncProcess:^{
       @try {
-        NSMutableDictionary *field = [NSMutableDictionary dictionary];
-        [field setValue:stack forKey:FT_KEY_ERROR_STACK];
-        [field setValue:message forKey:FT_KEY_ERROR_MESSAGE];
+        NSMutableDictionary *fields = [NSMutableDictionary dictionary];
+        [fields setValue:stack forKey:FT_KEY_ERROR_STACK];
+        [fields setValue:message forKey:FT_KEY_ERROR_MESSAGE];
         if(property && property.allKeys.count>0){
-          [field addEntriesFromDictionary:property];
+          [fields addEntriesFromDictionary:property];
         }
-        NSDictionary *tags = @{
-          FT_KEY_ERROR_TYPE:type,
-          FT_KEY_ERROR_SOURCE:FT_LOGGER,
-          FT_KEY_ERROR_SITUATION:AppStateStringMap[state]
-        };
-        NSMutableDictionary *errorTag = [NSMutableDictionary dictionaryWithDictionary:tags];
-        [errorTag addEntriesFromDictionary:[FTErrorMonitorInfo errorMonitorInfo:self.rumDependencies.errorMonitorType]];
+        NSMutableDictionary *tags = [NSMutableDictionary dictionary];
+        [tags setValue:type forKey:FT_KEY_ERROR_TYPE];
+        [tags setValue:FT_LOGGER forKey:FT_KEY_ERROR_SOURCE];
+        [tags setValue:AppStateStringMap[state] forKey:FT_KEY_ERROR_SITUATION];
+        [tags addEntriesFromDictionary:[FTErrorMonitorInfo errorMonitorInfo:self.rumDependencies.errorMonitorType]];
         FTRUMErrorData *model = [[FTRUMErrorData alloc]initWithType:FTRUMDataError time:time];
-        model.tags = errorTag;
-        model.fields = field;
+        model.tags = tags;
+        model.fields = fields;
         model.fatal = fatal;
         [self process:model context:context];
       } @catch (NSException *exception) {
@@ -399,16 +433,16 @@ void *FTRUMQueueIdentityKey = &FTRUMQueueIdentityKey;
     [self addLongTaskWithStack:stack duration:duration startTime:time property:nil];
 }
 - (void)addLongTaskWithStack:(NSString *)stack duration:(NSNumber *)duration startTime:(long long)time property:(nullable NSDictionary *)property{
-    if (!stack || stack.length == 0 || (duration == nil)) {
+    if (!stack || (duration == nil)) {
         FTInnerLogError(@"[RUM] Failed to add longtask due to missing required fields. Please ensure 'stack' and 'duration' are provided.");
         return;
     }
     NSDictionary *context = [self rumDynamicProperty];
     dispatch_async(self.rumQueue, ^{
         @try {
-            NSMutableDictionary *fields = @{FT_DURATION:duration,
-                                            FT_KEY_LONG_TASK_STACK:stack
-            }.mutableCopy;
+            NSMutableDictionary *fields = [NSMutableDictionary dictionary];
+            [fields setValue:duration forKey:FT_DURATION];
+            [fields setValue:stack forKey:FT_KEY_LONG_TASK_STACK];
             if(property && property.allKeys.count>0){
                 [fields addEntriesFromDictionary:property];
             }
@@ -457,15 +491,13 @@ void *FTRUMQueueIdentityKey = &FTRUMQueueIdentityKey;
         self.sessionHandler = [[FTRUMSessionHandler alloc]initWithModel:model dependencies:self.rumDependencies];
         [self.sessionHandler.assistant process:model context:context];
     }
-    NSDictionary *currentRumContext = [self getCurrentSessionInfo];
-    [[FTModuleManager sharedInstance] postMessage:FTMessageKeyRUMContext message:currentRumContext];
     return YES;
 }
 -(NSDictionary *)rumDynamicProperty{
     NSMutableDictionary *dict = [NSMutableDictionary dictionary];
     @try {
         dict[@"network_type"] = [FTNetworkConnectivity sharedInstance].networkType;
-        [dict addEntriesFromDictionary:[[FTPresetProperty sharedInstance] rumDynamicProperty]];
+        [dict addEntriesFromDictionary:[[FTPresetProperty sharedInstance] rumDynamicTags]];
     } @catch (NSException *exception) {
         FTInnerLogError(@"exception %@",exception);
     } @finally {
@@ -473,10 +505,13 @@ void *FTRUMQueueIdentityKey = &FTRUMQueueIdentityKey;
     }
 }
 - (NSDictionary *)getLinkRUMData{
-    NSMutableDictionary *dict = [NSMutableDictionary dictionary];
-    [dict addEntriesFromDictionary:[self rumDynamicProperty]];
-    [dict addEntriesFromDictionary:self.rumDependencies.fatalErrorContext.lastSessionContext];
-    return dict;
+    if(self.rumDependencies.currentSessionSample){
+        NSMutableDictionary *dict = [NSMutableDictionary dictionary];
+        [dict addEntriesFromDictionary:[self rumDynamicProperty]];
+        [dict addEntriesFromDictionary:self.rumDependencies.fatalErrorContext.lastSessionContext];
+        return dict;
+    }
+    return nil;
 }
 -(NSDictionary *)getCurrentSessionInfo{
     return self.rumDependencies.fatalErrorContext.lastSessionContext;
