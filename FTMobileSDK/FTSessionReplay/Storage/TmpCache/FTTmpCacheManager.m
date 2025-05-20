@@ -120,13 +120,13 @@ void *FTTmpCacheQueueIdentityKey = &FTTmpCacheQueueIdentityKey;
                     NSURL *destinationFileURL = [strongSelf.realWriterUrl URLByAppendingPathComponent:file.name];
                     NSError *lastCriticalError = nil;
                     [[NSFileManager defaultManager] moveItemAtURL:file.url toURL:destinationFileURL error:&lastCriticalError];
-                    FTInnerLogError(@"[Session Replay][Error Sampled] consumeErrorSampledData: %@",file.name);
+                    FTInnerLogDebug(@"[Session Replay][ErrorSampled] consumeErrorSampledData: %@",file.name);
                     continue;
                 }
                 // 删除当前进程产生的已过期的文件
                 if (expirationTimeStamp > 0 && fileTimeStamp < expirationTimeStamp) {
                     [file deleteFile];
-                    FTInnerLogError(@"[Session Replay][Error Sampled] delete expire file: %@",file.name);
+                    FTInnerLogDebug(@"[Session Replay][ErrorSampled] delete expire file: %@",file.name);
                 }
             }
         } @catch (NSException *exception) {

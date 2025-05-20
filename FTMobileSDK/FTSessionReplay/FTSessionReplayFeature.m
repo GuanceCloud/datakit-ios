@@ -80,12 +80,13 @@
             return;
         }
         __weak typeof(self) weakSelf = self;
-        self.timer = [NSTimer timerWithTimeInterval:0.1 repeats:YES block:^(NSTimer * _Nonnull timer) {
+        NSTimer *newTimer = [NSTimer timerWithTimeInterval:0.1 repeats:YES block:^(NSTimer * _Nonnull timer) {
             __strong __typeof(weakSelf) strongSelf = weakSelf;
             if (!strongSelf) return;
             [strongSelf captureNextRecord];
         }];
-        [[NSRunLoop mainRunLoop] addTimer:weakSelf.timer forMode:NSRunLoopCommonModes];
+        self.timer = newTimer;
+        [[NSRunLoop mainRunLoop] addTimer:newTimer forMode:NSRunLoopCommonModes];
     }];
 }
 - (void)stop{
@@ -102,7 +103,7 @@
     }
     NSDictionary *rumContext = [self.currentRUMContext copy];
     if(rumContext == nil || ![message[FT_RUM_KEY_SESSION_ID] isEqualToString:rumContext[FT_RUM_KEY_SESSION_ID]]){
-        BOOL isErrorSession = message[FT_RUM_KEY_SAMPLED_FOR_ERROR_SESSION];
+        BOOL isErrorSession = [message[FT_RUM_KEY_SAMPLED_FOR_ERROR_SESSION] boolValue];
         BOOL isSampled = [FTBaseInfoHandler randomSampling:self.sampleRate];
         BOOL srOnErrorSampleRate = isSampled? NO: [FTBaseInfoHandler randomSampling:self.config.sessionReplayOnErrorSampleRate];
         
