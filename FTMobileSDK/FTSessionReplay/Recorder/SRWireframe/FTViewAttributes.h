@@ -34,7 +34,6 @@ NS_ASSUME_NONNULL_BEGIN
 @property (nonatomic, assign) CGFloat layerCornerRadius;
 @property (nonatomic, assign) CGFloat alpha;
 @property (nonatomic, assign) BOOL  isHidden;
-@property (nonatomic, assign) CGSize intrinsicContentSize;
 @property (nonatomic, assign) BOOL isVisible;
 @property (nonatomic, assign) BOOL hasAnyAppearance;
 @property (nonatomic, assign) BOOL isTranslucent;
