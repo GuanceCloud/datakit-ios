@@ -182,6 +182,7 @@ let package = Package(
                     .headerSearchPath("Storage"),
                     .headerSearchPath("Storage/Writer"),
                     .headerSearchPath("Storage/Reader"),
+                    .headerSearchPath("Storage/TmpCache"),
                     .headerSearchPath("TLV"),
                     .headerSearchPath("Upload"),
                     .headerSearchPath("Upload/Request"),

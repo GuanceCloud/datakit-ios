@@ -50,4 +50,4 @@
 #import "FTReachability.h"
 #import "FTRequest.h"
 #import "FTRequestBody.h"
-#import "FTNetworkManager.h"
+#import "FTHTTPClient.h"
