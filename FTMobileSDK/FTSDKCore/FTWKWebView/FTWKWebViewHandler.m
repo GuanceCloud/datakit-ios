@@ -19,9 +19,9 @@
 #import "FTLog+Private.h"
 
 @interface FTWKWebViewHandler ()
-@property (nonatomic, strong) NSMapTable *webViewRequestTable;
+@property (nonatomic, weak) id<FTWKWebViewRumDelegate> rumTrackDelegate;
 @property (nonatomic, strong) NSMapTable *webViewBridge;
-
+@property (nonatomic, copy) NSArray *allowWebViewHost;
 @property (nonatomic, strong) NSLock *lock;
 @end
 @implementation FTWKWebViewHandler
@@ -36,19 +36,22 @@ static dispatch_once_t onceToken;
 -(instancetype)init{
     self = [super init];
     if (self) {
-        [self setWKWebViewTrace];
-        self.webViewRequestTable = [NSMapTable weakToStrongObjectsMapTable];
         self.webViewBridge = [NSMapTable weakToStrongObjectsMapTable];
         self.lock = [NSLock new];
-        self.enableTrace = NO;
     }
     return self;
+}
+- (void)startWithEnableTraceWebView:(BOOL)enable allowWebViewHost:(NSArray *)hosts rumDelegate:(id<FTWKWebViewRumDelegate>)delegate{
+    if (enable) {
+        [self setWKWebViewTrace];
+    }
+    self.allowWebViewHost = hosts;
+    self.rumTrackDelegate = delegate;
 }
 - (void)setWKWebViewTrace{
     static dispatch_once_t onceTokenWebView;
     dispatch_once(&onceTokenWebView, ^{
         NSError *error = NULL;
-        
         [WKWebView ft_swizzleMethod:@selector(loadRequest:)
                          withMethod:@selector(ft_loadRequest:)
                               error:&error];
@@ -58,26 +61,9 @@ static dispatch_once_t onceToken;
         [WKWebView ft_swizzleMethod:@selector(loadFileURL:allowingReadAccessToURL:)
                          withMethod:@selector(ft_loadFileURL:allowingReadAccessToURL:)
                               error:&error];
-        [WKWebView ft_swizzleMethod:@selector(reload) withMethod:@selector(ft_reload) error:&error];
     });
 }
 #pragma mark request
-- (void)addWebView:(WKWebView *)webView request:(NSURLRequest *)request{
-    [self.lock lock];
-    [self.webViewRequestTable setObject:request forKey:webView];
-    [self.lock unlock];
-}
-- (void)reloadWebView:(WKWebView *)webView completionHandler:(void (^)(NSURLRequest *request,BOOL needTrace))completionHandler{
-    NSURLRequest *request;
-    [self.lock lock];
-    request = [self.webViewRequestTable objectForKey:webView];
-    [self.lock unlock];
-    if (request && [request.URL isEqual:webView.URL]) {
-        completionHandler? completionHandler(request,YES):nil;
-    }else{
-        completionHandler? completionHandler(nil,NO):nil;
-    }
-}
 - (void)addWebView:(WKWebView *)webView bridge:(id)bridge{
     [self.lock lock];
     [self.webViewBridge setObject:bridge forKey:webView];
@@ -91,12 +77,15 @@ static dispatch_once_t onceToken;
     return bridge;
 }
 - (void)addScriptMessageHandlerWithWebView:(WKWebView *)webView{
+    if ([self getWebViewBridge:webView]) {
+        FTInnerLogDebug(@"WebView(%@) already add JSBridge.",webView);
+        return;
+    }
+    [self enableTrackingWebView:webView];
+}
+- (void)enableTrackingWebView:(WKWebView *)webView{
     if (self.rumTrackDelegate && [self.rumTrackDelegate respondsToSelector:@selector(dealReceiveScriptMessage:slotId:)]) {
-        if ([self getWebViewBridge:webView]) {
-            FTInnerLogDebug(@"WebView(%@) already add JSBridge.",webView);
-            return;
-        }
-        FTWKWebViewJavascriptBridge *bridge = [FTWKWebViewJavascriptBridge bridgeForWebView:webView];
+        FTWKWebViewJavascriptBridge *bridge = [FTWKWebViewJavascriptBridge bridgeForWebView:webView allowWebViewHost:self.allowWebViewHost];
         __weak typeof(self) weakSelf = self;
         [bridge registerHandler:@"sendEvent" handler:^(id data, int64_t slotId,WVJBResponseCallback responseCallback) {
             __strong __typeof(weakSelf) strongSelf = weakSelf;

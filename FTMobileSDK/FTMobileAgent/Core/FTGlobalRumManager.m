@@ -81,7 +81,7 @@ static dispatch_once_t onceToken;
         [dependencies.writer lastFatalErrorIfFound:0];
     }
 #if !TARGET_OS_TV
-    [FTWKWebViewHandler sharedInstance].rumTrackDelegate = self;
+    [[FTWKWebViewHandler sharedInstance] startWithEnableTraceWebView:rumConfig.enableTraceWebView allowWebViewHost:rumConfig.allowWebViewHost rumDelegate:self];
 #endif
     [FTExternalDataManager sharedManager].delegate = self.rumManager;
 }
@@ -154,9 +154,6 @@ static dispatch_once_t onceToken;
 - (void)shutDown{
     [[FTAppLifeCycle sharedInstance] removeAppLifecycleDelegate:self];
     [[FTAutoTrackHandler sharedInstance] shutDown];
-#if !TARGET_OS_TV
-    [FTWKWebViewHandler sharedInstance].enableTrace = NO;
-#endif
     [_longTaskManager shutDown];
     onceToken = 0;
     sharedInstance = nil;

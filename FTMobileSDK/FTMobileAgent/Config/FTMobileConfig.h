@@ -157,6 +157,11 @@ typedef FTTraceContext*_Nullable(^FTTraceInterceptor)(NSURLRequest *_Nonnull req
 @property (nonatomic, assign) FTRUMCacheDiscard rumDiscardType;
 /// RUM Resource 添加自定义属性
 @property (nonatomic, copy) FTResourcePropertyProvider resourcePropertyProvider;
+/// 设置开启采集 webview 数据，默认 YES
+@property (nonatomic, assign) BOOL enableTraceWebView;
+/// 设置允许采集 WebView 数据的特定主机或域名，nil 时全采集。
+@property (nonatomic, copy) NSArray *allowWebViewHost;
+
 
 /// 开启采集卡顿并设置卡顿的阈值。
 /// - Parameter enableTrackAppFreeze: 设置是否需要采集卡顿

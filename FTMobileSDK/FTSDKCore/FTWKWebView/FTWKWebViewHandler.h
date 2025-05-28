@@ -8,7 +8,6 @@
 #import <Foundation/Foundation.h>
 #if !TARGET_OS_TV
 #import <WebKit/WebKit.h>
-#import "FTURLSessionInterceptorProtocol.h"
 NS_ASSUME_NONNULL_BEGIN
 /// webView 添加  web 端 rum 数据
 @protocol FTWKWebViewRumDelegate <NSObject>
@@ -18,16 +17,14 @@ NS_ASSUME_NONNULL_BEGIN
 @end
 /// 处理 WKWebView Trace、js 交互
 @interface FTWKWebViewHandler : NSObject<WKNavigationDelegate>
-@property (nonatomic, assign) BOOL enableTrace;
-@property (nonatomic, weak) id<FTWKWebViewRumDelegate> rumTrackDelegate;
-@property (nonatomic, weak) id<FTURLSessionInterceptorProtocol> interceptor;
 + (instancetype)sharedInstance;
 
-- (void)reloadWebView:(WKWebView *)webView completionHandler:(void (^)(NSURLRequest *request,BOOL needTrace))completionHandler;
+- (void)startWithEnableTraceWebView:(BOOL)enable allowWebViewHost:(NSArray *)hosts rumDelegate:(id<FTWKWebViewRumDelegate>)delegate;
 
-- (void)addWebView:(WKWebView *)webView request:(NSURLRequest *)request;
+- (void)enableTrackingWebView:(WKWebView *)webView;
 
 - (void)addScriptMessageHandlerWithWebView:(WKWebView *)webView;
+
 @end
 
 NS_ASSUME_NONNULL_END

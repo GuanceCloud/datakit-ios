@@ -146,10 +146,6 @@ static dispatch_once_t onceToken;
     @try {
         if(!_traceConfig){
             _traceConfig = [traceConfigOptions copy];
-#if !TARGET_OS_TV
-            [FTWKWebViewHandler sharedInstance].enableTrace = _traceConfig.enableAutoTrace;
-            [FTWKWebViewHandler sharedInstance].interceptor = [FTURLSessionInstrumentation sharedInstance].interceptor;
-#endif
             [[FTURLSessionInstrumentation sharedInstance] setTraceEnableAutoTrace:_traceConfig.enableAutoTrace
                                                                 enableLinkRumData:_traceConfig.enableLinkRumData
                                                                        sampleRate:_traceConfig.samplerate

@@ -34,6 +34,7 @@
         _freezeDurationMs = FT_DEFAULT_BLOCK_DURATIONS_MS;
         _rumCacheLimitCount = FT_DB_RUM_MAX_COUNT;
         _rumDiscardType = FTRUMDiscard;
+        _enableTraceWebView = YES;
     }
     return self;
 }
@@ -58,6 +59,8 @@
     options.rumDiscardType = self.rumDiscardType;
     options.resourcePropertyProvider = self.resourcePropertyProvider;
     options.sessionOnErrorSampleRate = self.sessionOnErrorSampleRate;
+    options.enableTraceWebView = self.enableTraceWebView;
+    options.allowWebViewHost = self.allowWebViewHost;
     return options;
 }
 -(instancetype)initWithDictionary:(NSDictionary *)dict{
