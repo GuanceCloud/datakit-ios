@@ -15,17 +15,17 @@
 @implementation WKWebView (FTAutoTrack)
 
 -(WKNavigation *)ft_loadRequest:(NSURLRequest *)request{
-    [[FTWKWebViewHandler sharedInstance] addScriptMessageHandlerWithWebView:self];
+    [[FTWKWebViewHandler sharedInstance] enableWebView:self];
     return [self ft_loadRequest:request];
 }
 
 -(WKNavigation *)ft_loadHTMLString:(NSString *)string baseURL:(NSURL *)baseURL{
-    [[FTWKWebViewHandler sharedInstance] addScriptMessageHandlerWithWebView:self];
+    [[FTWKWebViewHandler sharedInstance] enableWebView:self];
     return [self ft_loadHTMLString:string baseURL:baseURL];
 }
 
 -(WKNavigation *)ft_loadFileURL:(NSURL *)URL allowingReadAccessToURL:(NSURL *)readAccessURL{
-    [[FTWKWebViewHandler sharedInstance] addScriptMessageHandlerWithWebView:self];
+    [[FTWKWebViewHandler sharedInstance] enableWebView:self];
     return [self ft_loadFileURL:URL allowingReadAccessToURL:readAccessURL];
 }
 @end

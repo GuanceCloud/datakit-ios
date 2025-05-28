@@ -20,9 +20,9 @@ NSString *const kAllowedHostsPlaceholder = @"__ALLOWED_HOSTS__";
     long _uniqueId;
     FTWebViewJavascriptBridgeBase *_base;
 }
-+ (instancetype)bridgeForWebView:(WKWebView*)webView allowWebViewHost:(NSArray *)allowWebViewHost{
++ (instancetype)bridgeForWebView:(WKWebView*)webView allowWebViewHostsString:(NSString *)hostsString{
     FTWKWebViewJavascriptBridge* bridge = [[self alloc] init];
-    [bridge _setupInstance:webView allowWebViewHost:allowWebViewHost];
+    [bridge _setupInstance:webView allowWebViewHostsString:hostsString];
     return bridge;
 }
 
@@ -45,13 +45,13 @@ NSString *const kAllowedHostsPlaceholder = @"__ALLOWED_HOSTS__";
 - (void)removeHandler:(NSString *)handlerName {
     [_base.messageHandlers removeObjectForKey:handlerName];
 }
-- (void)_setupInstance:(WKWebView*)webView allowWebViewHost:(NSArray *)allowWebViewHost{
+- (void)_setupInstance:(WKWebView*)webView allowWebViewHostsString:(NSString *)hostsString{
     _webView = webView;
     _base = [[FTWebViewJavascriptBridgeBase alloc] init];
     _base.delegate = self;
     [self removeScriptMessageHandler];
     [self addScriptMessageHandler];
-    [self _injectJavascriptFile:allowWebViewHost];
+    [self _injectJavascriptFile:hostsString];
 }
 - (void)userContentController:(WKUserContentController *)userContentController didReceiveScriptMessage:(WKScriptMessage *)message {
     if (![message.name isEqualToString:FT_SCRIPT_MESSAGE_HANDLER_NAME]) {
@@ -62,7 +62,7 @@ NSString *const kAllowedHostsPlaceholder = @"__ALLOWED_HOSTS__";
         [_base flushMessageQueue:body slotId:_webView.hash];
     }
 }
-- (void)_injectJavascriptFile:(NSArray *)allowWebViewHost {
+- (void)_injectJavascriptFile:(NSString *)allowWebViewHost {
     NSString *bridge_js = FTWebViewJavascriptBridge_js(allowWebViewHost);
     //injected the method when H5 starts to create the DOM tree
     WKUserScript * bridge_userScript = [[WKUserScript alloc]initWithSource:bridge_js injectionTime:WKUserScriptInjectionTimeAtDocumentStart forMainFrameOnly:YES];
@@ -85,15 +85,8 @@ NSString *const kAllowedHostsPlaceholder = @"__ALLOWED_HOSTS__";
     [self removeScriptMessageHandler];
 }
 
-NSString * FTWebViewJavascriptBridge_js(NSArray *allowWebViewHost) {
-    NSString *allowedHosts = @"";
-    if (allowWebViewHost) {
-        NSMutableArray<NSString *> *quotedHosts = [[NSMutableArray alloc] initWithCapacity:allowWebViewHost.count];
-        [allowWebViewHost enumerateObjectsUsingBlock:^(NSString * _Nonnull host, NSUInteger idx, BOOL * _Nonnull stop) {
-            [quotedHosts addObject:[NSString stringWithFormat:@"\\\"%@\\\"", host]];
-        }];
-        allowedHosts = [quotedHosts componentsJoinedByString:@","];
-    }
+NSString * FTWebViewJavascriptBridge_js(NSString *hostsString) {
+    NSString *allowedHosts = hostsString?:@"";
 #define __WVJB_js_func__(x) #x
     //FTWebViewJavascriptBridge
     // BEGIN preprocessorJSCode

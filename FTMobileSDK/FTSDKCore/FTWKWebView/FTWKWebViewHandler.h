@@ -9,21 +9,21 @@
 #if !TARGET_OS_TV
 #import <WebKit/WebKit.h>
 NS_ASSUME_NONNULL_BEGIN
-/// webView 添加  web 端 rum 数据
-@protocol FTWKWebViewRumDelegate <NSObject>
-@optional
-- (void)dealReceiveScriptMessage:(id )message slotId:(NSUInteger)slotId;
 
-@end
-/// 处理 WKWebView Trace、js 交互
-@interface FTWKWebViewHandler : NSObject<WKNavigationDelegate>
+/// 处理 WKWebView RUM 事件与 本机 RUM 会话关联
+@interface FTWKWebViewHandler : NSObject
+
 + (instancetype)sharedInstance;
 
-- (void)startWithEnableTraceWebView:(BOOL)enable allowWebViewHost:(NSArray *)hosts rumDelegate:(id<FTWKWebViewRumDelegate>)delegate;
+/// 使 SDK 能够将来自 WebView 的 RUM 事件与本机 RUM 会话关联起来。
+/// - Parameter webView: 采集的 webView
+- (void)enableWebView:(WKWebView *)webView;
 
-- (void)enableTrackingWebView:(WKWebView *)webView;
-
-- (void)addScriptMessageHandlerWithWebView:(WKWebView *)webView;
+/// 使 SDK 能够将来自 WebView 的 RUM 事件与本机 RUM 会话关联起来。
+/// - Parameters:
+///   - webView: 采集的 webView
+///   - hosts: 一组使用 Web SDK 进行检测的主机地址数组。
+- (void)enableWebView:(WKWebView *)webView allowWebViewHost:(NSArray *)hosts;
 
 @end
 

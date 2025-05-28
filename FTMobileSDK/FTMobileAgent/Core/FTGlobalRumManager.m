@@ -11,7 +11,7 @@
 #import "FTGlobalRumManager.h"
 #import "FTLog+Private.h"
 #if !TARGET_OS_TV
-#import "FTWKWebViewHandler.h"
+#import "FTWKWebViewHandler+Private.h"
 #import "FTWKWebViewJavascriptBridge.h"
 #endif
 #import "FTLongTaskManager.h"

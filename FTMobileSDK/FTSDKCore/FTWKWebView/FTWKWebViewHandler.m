@@ -11,17 +11,19 @@
 #endif
 
 #import "FTWKWebViewHandler.h"
+#import "FTWKWebViewHandler+Private.h"
 #if !TARGET_OS_TV
 #import "WKWebView+FTAutoTrack.h"
 #import "FTWKWebViewJavascriptBridge.h"
 #import "FTSwizzler.h"
 #import "FTSwizzle.h"
 #import "FTLog+Private.h"
+#import "FTReadWriteHelper.h"
 
 @interface FTWKWebViewHandler ()
 @property (nonatomic, weak) id<FTWKWebViewRumDelegate> rumTrackDelegate;
 @property (nonatomic, strong) NSMapTable *webViewBridge;
-@property (nonatomic, copy) NSArray *allowWebViewHost;
+@property (nonatomic, copy) NSString *allowWebViewHostsString;
 @property (nonatomic, strong) NSLock *lock;
 @end
 @implementation FTWKWebViewHandler
@@ -45,7 +47,7 @@ static dispatch_once_t onceToken;
     if (enable) {
         [self setWKWebViewTrace];
     }
-    self.allowWebViewHost = hosts;
+    self.allowWebViewHostsString = [self transHostsArrayToString:hosts];
     self.rumTrackDelegate = delegate;
 }
 - (void)setWKWebViewTrace{
@@ -76,26 +78,51 @@ static dispatch_once_t onceToken;
     [self.lock unlock];
     return bridge;
 }
-- (void)addScriptMessageHandlerWithWebView:(WKWebView *)webView{
+- (void)removeWebViewBridge:(WKWebView *)webView{
+    [self.lock lock];
+    [self.webViewBridge removeObjectForKey:webView];
+    [self.lock unlock];
+}
+- (NSString *)transHostsArrayToString:(NSArray *)hosts{
+    if(hosts && hosts.count>0){
+        NSArray *hostsCopy = [hosts copy];
+        NSMutableArray<NSString *> *quotedHosts = [[NSMutableArray alloc] initWithCapacity:hostsCopy.count];
+        [hostsCopy enumerateObjectsUsingBlock:^(NSString * _Nonnull host, NSUInteger idx, BOOL * _Nonnull stop) {
+            [quotedHosts addObject:[NSString stringWithFormat:@"\\\"%@\\\"", host]];
+        }];
+        return  [quotedHosts componentsJoinedByString:@","];
+    }
+    return @"";
+}
+- (void)enableWebView:(WKWebView *)webView{
+    [self _enableWebView:webView allowedWebViewHostsString:self.allowWebViewHostsString];
+}
+- (void)enableWebView:(WKWebView *)webView allowWebViewHost:(NSArray *)hosts{
+    NSString *allowedHosts = [self transHostsArrayToString:hosts];
+    [self _enableWebView:webView allowedWebViewHostsString:allowedHosts];
+}
+- (void)_enableWebView:(WKWebView *)webView allowedWebViewHostsString:(NSString *)hostsString{
     if ([self getWebViewBridge:webView]) {
         FTInnerLogDebug(@"WebView(%@) already add JSBridge.",webView);
         return;
     }
-    [self enableTrackingWebView:webView];
-}
-- (void)enableTrackingWebView:(WKWebView *)webView{
-    if (self.rumTrackDelegate && [self.rumTrackDelegate respondsToSelector:@selector(dealReceiveScriptMessage:slotId:)]) {
-        FTWKWebViewJavascriptBridge *bridge = [FTWKWebViewJavascriptBridge bridgeForWebView:webView allowWebViewHost:self.allowWebViewHost];
-        __weak typeof(self) weakSelf = self;
-        [bridge registerHandler:@"sendEvent" handler:^(id data, int64_t slotId,WVJBResponseCallback responseCallback) {
-            __strong __typeof(weakSelf) strongSelf = weakSelf;
-            if (!strongSelf) {
-                return;
-            }
+    FTWKWebViewJavascriptBridge *bridge = [FTWKWebViewJavascriptBridge bridgeForWebView:webView allowWebViewHostsString:hostsString];
+    __weak typeof(self) weakSelf = self;
+    [bridge registerHandler:@"sendEvent" handler:^(id data, int64_t slotId,WVJBResponseCallback responseCallback) {
+        __strong __typeof(weakSelf) strongSelf = weakSelf;
+        if (!strongSelf) {
+            return;
+        }
+        if (strongSelf.rumTrackDelegate && [strongSelf.rumTrackDelegate respondsToSelector:@selector(dealReceiveScriptMessage:slotId:)]){
             [strongSelf.rumTrackDelegate dealReceiveScriptMessage:data slotId:slotId];
-        }];
-        [self addWebView:webView bridge:bridge];
-    }
+        }
+    }];
+    [self addWebView:webView bridge:bridge];
+}
+- (void)disableWebView:(WKWebView *)webView{
+    FTWKWebViewJavascriptBridge *bridge = [self getWebViewBridge:webView];
+    [bridge removeScriptMessageHandler];
+    [self removeWebViewBridge:webView];
 }
 @end
 
