@@ -155,6 +155,9 @@ static dispatch_once_t onceToken;
     [[FTAppLifeCycle sharedInstance] removeAppLifecycleDelegate:self];
     [[FTAutoTrackHandler sharedInstance] shutDown];
     [_longTaskManager shutDown];
+#if !TARGET_OS_TV
+    [[FTWKWebViewHandler sharedInstance] shutDown];
+#endif
     onceToken = 0;
     sharedInstance = nil;
     FTInnerLogInfo(@"[RUM] SHUT DOWN");

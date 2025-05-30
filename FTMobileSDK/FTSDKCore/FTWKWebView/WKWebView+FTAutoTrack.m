@@ -8,24 +8,24 @@
 #import <TargetConditionals.h>
 #if !TARGET_OS_TV
 #import "WKWebView+FTAutoTrack.h"
-#import "FTWKWebViewHandler.h"
+#import "FTWKWebViewHandler+Private.h"
 #import "FTSwizzler.h"
 #import <objc/runtime.h>
 #import "FTURLSessionInterceptorProtocol.h"
 @implementation WKWebView (FTAutoTrack)
 
 -(WKNavigation *)ft_loadRequest:(NSURLRequest *)request{
-    [[FTWKWebViewHandler sharedInstance] enableWebView:self];
+    [[FTWKWebViewHandler sharedInstance] innerEnableWebView:self];
     return [self ft_loadRequest:request];
 }
 
 -(WKNavigation *)ft_loadHTMLString:(NSString *)string baseURL:(NSURL *)baseURL{
-    [[FTWKWebViewHandler sharedInstance] enableWebView:self];
+    [[FTWKWebViewHandler sharedInstance] innerEnableWebView:self];
     return [self ft_loadHTMLString:string baseURL:baseURL];
 }
 
 -(WKNavigation *)ft_loadFileURL:(NSURL *)URL allowingReadAccessToURL:(NSURL *)readAccessURL{
-    [[FTWKWebViewHandler sharedInstance] enableWebView:self];
+    [[FTWKWebViewHandler sharedInstance] innerEnableWebView:self];
     return [self ft_loadFileURL:URL allowingReadAccessToURL:readAccessURL];
 }
 @end

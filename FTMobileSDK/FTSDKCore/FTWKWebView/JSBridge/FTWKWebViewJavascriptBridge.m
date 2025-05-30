@@ -12,6 +12,7 @@
 #import "FTConstants.h"
 
 NSString *const kAllowedHostsPlaceholder = @"__ALLOWED_HOSTS__";
+NSString *const kFTJsCodePrefix = @"/* FTWebViewJavascriptBridge */";
 
 @interface FTWKWebViewJavascriptBridge()
 @property (nonatomic, weak) WKWebView *webView;
@@ -75,8 +76,19 @@ NSString *const kAllowedHostsPlaceholder = @"__ALLOWED_HOSTS__";
 
 - (void)removeScriptMessageHandler {
     [_webView.configuration.userContentController removeScriptMessageHandlerForName:FT_SCRIPT_MESSAGE_HANDLER_NAME];
+    WKUserContentController *controller = _webView.configuration.userContentController;
+    NSArray *userScripts = controller.userScripts;
+    [controller removeAllUserScripts];
+    if (userScripts.count>0) {
+        NSArray<WKUserScript *> *others = [userScripts filteredArrayUsingPredicate:
+            [NSPredicate predicateWithBlock:^BOOL(WKUserScript *script, NSDictionary *bindings) {
+                return ![script.source hasPrefix:kFTJsCodePrefix];
+            }]];
+        for (WKUserScript *script in others) {
+            [controller addUserScript:script];
+        }
+    }
 }
-
 - (void) _evaluateJavascript:(NSString*)javascriptCommand {
     [_webView evaluateJavaScript:javascriptCommand completionHandler:nil];
 }
@@ -92,7 +104,7 @@ NSString * FTWebViewJavascriptBridge_js(NSString *hostsString) {
     // BEGIN preprocessorJSCode
     static NSString * preprocessorJSCode = @__WVJB_js_func__(
                                                              ;(function(window) {
-               
+        /* FTWebViewJavascriptBridge */
         window.FTWebViewJavascriptBridge = {
         registerHandler: ftRegisterHandler,
         callHandler: ftCallHandler,

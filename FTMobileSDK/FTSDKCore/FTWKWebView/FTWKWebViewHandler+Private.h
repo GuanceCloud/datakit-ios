@@ -16,9 +16,13 @@ NS_ASSUME_NONNULL_BEGIN
 
 @end
 @interface FTWKWebViewHandler ()
-- (void)startWithEnableTraceWebView:(BOOL)enable allowWebViewHost:(NSArray *)hosts rumDelegate:(id<FTWKWebViewRumDelegate>)delegate;
+- (void)startWithEnableTraceWebView:(BOOL)enable allowWebViewHost:(nullable NSArray *)hosts rumDelegate:(id<FTWKWebViewRumDelegate>)delegate;
+
+- (void)innerEnableWebView:(WKWebView *)webView;
 
 - (void)disableWebView:(WKWebView *)webView;
+
+- (void)shutDown;
 @end
 
 NS_ASSUME_NONNULL_END

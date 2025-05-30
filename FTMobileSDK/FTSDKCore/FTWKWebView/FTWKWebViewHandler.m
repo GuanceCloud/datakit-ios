@@ -25,6 +25,7 @@
 @property (nonatomic, strong) NSMapTable *webViewBridge;
 @property (nonatomic, copy) NSString *allowWebViewHostsString;
 @property (nonatomic, strong) NSLock *lock;
+@property (nonatomic, assign) BOOL enableTraceWebView;
 @end
 @implementation FTWKWebViewHandler
 static FTWKWebViewHandler *sharedInstance = nil;
@@ -40,10 +41,12 @@ static dispatch_once_t onceToken;
     if (self) {
         self.webViewBridge = [NSMapTable weakToStrongObjectsMapTable];
         self.lock = [NSLock new];
+        self.enableTraceWebView = NO;
     }
     return self;
 }
 - (void)startWithEnableTraceWebView:(BOOL)enable allowWebViewHost:(NSArray *)hosts rumDelegate:(id<FTWKWebViewRumDelegate>)delegate{
+    _enableTraceWebView = enable;
     if (enable) {
         [self setWKWebViewTrace];
     }
@@ -83,6 +86,15 @@ static dispatch_once_t onceToken;
     [self.webViewBridge removeObjectForKey:webView];
     [self.lock unlock];
 }
+- (void)removeAllWebViewBridges{
+    [self.lock lock];
+    NSEnumerator *enumerator = self.webViewBridge.objectEnumerator;
+    FTWKWebViewJavascriptBridge *bridge;
+    while ((bridge = [enumerator nextObject])) {
+        [bridge removeScriptMessageHandler];
+    }
+    [self.lock unlock];
+}
 - (NSString *)transHostsArrayToString:(NSArray *)hosts{
     if(hosts && hosts.count>0){
         NSArray *hostsCopy = [hosts copy];
@@ -93,6 +105,11 @@ static dispatch_once_t onceToken;
         return  [quotedHosts componentsJoinedByString:@","];
     }
     return @"";
+}
+- (void)innerEnableWebView:(WKWebView *)webView{
+    if (self.enableTraceWebView) {
+        [self _enableWebView:webView allowedWebViewHostsString:self.allowWebViewHostsString];
+    }
 }
 - (void)enableWebView:(WKWebView *)webView{
     [self _enableWebView:webView allowedWebViewHostsString:self.allowWebViewHostsString];
@@ -123,6 +140,11 @@ static dispatch_once_t onceToken;
     FTWKWebViewJavascriptBridge *bridge = [self getWebViewBridge:webView];
     [bridge removeScriptMessageHandler];
     [self removeWebViewBridge:webView];
+}
+- (void)shutDown{
+    [self removeAllWebViewBridges];
+    onceToken = 0;
+    sharedInstance = nil;
 }
 @end
 
