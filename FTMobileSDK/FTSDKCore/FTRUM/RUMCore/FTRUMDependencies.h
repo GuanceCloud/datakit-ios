@@ -15,11 +15,13 @@ NS_ASSUME_NONNULL_BEGIN
 
 @interface FTRUMDependencies : NSObject
 @property (nonatomic, assign) int sampleRate;
+@property (nonatomic, assign) int sessionOnErrorSampleRate;
 @property (nonatomic, assign) BOOL enableResourceHostIP;
 @property (nonatomic, weak) id<FTRUMDataWriteProtocol> writer;
 @property (nonatomic, assign) ErrorMonitorType errorMonitorType;
 @property (nonatomic, strong) FTRUMMonitor *monitor;
-@property (nonatomic, strong) FTFatalErrorContext *fatalErrorContext;
+@property (nonatomic, strong, nullable) FTFatalErrorContext *fatalErrorContext;
+@property (atomic, assign) BOOL currentSessionSample;
 
 @end
 

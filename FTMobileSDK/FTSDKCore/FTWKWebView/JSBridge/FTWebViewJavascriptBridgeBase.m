@@ -39,7 +39,7 @@
    [self _dispatchMessage:message];
 }
 
-- (void)flushMessageQueue:(NSString *)messageQueueString{
+- (void)flushMessageQueue:(NSString *)messageQueueString slotId:(NSUInteger)slotId{
    if (messageQueueString == nil || messageQueueString.length == 0) {
        FTInnerLogWarning(@"WebViewJavascriptBridge: WARNING: ObjC got nil while fetching the message queue JSON from webview. This can happen if the WebViewJavascriptBridge JS is not currently present in the webview, e.g if the webview just loaded a new page.");
        return;
@@ -80,7 +80,7 @@
                continue;
            }
            
-           handler(message[@"data"], responseCallback);
+           handler(message[@"data"],slotId,responseCallback);
        }
    }
 }

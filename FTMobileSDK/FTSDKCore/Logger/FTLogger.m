@@ -16,28 +16,22 @@
 #import "NSDictionary+FTCopyProperties.h"
 #import "FTEnumConstant.h"
 #import "FTPresetProperty.h"
+#import "FTLoggerConfig.h"
 
 void *FTLoggerQueueIdentityKey = &FTLoggerQueueIdentityKey;
 
 @interface FTLogger ()
-@property (nonatomic, assign) BOOL printLogsToConsole;
 @property (nonatomic, weak) id<FTLoggerDataWriteProtocol> loggerWriter;
-@property (nonatomic, assign) int sampleRate;
 @property (nonatomic, strong) NSSet *logLevelFilterSet;
-@property (nonatomic, assign) BOOL enableCustomLog;
 @property (nonatomic, strong) dispatch_queue_t loggerQueue;
-@property (nonatomic, assign) BOOL enableLinkRumData;
+@property (nonatomic, strong) FTLoggerConfig *config;
 @end
 @implementation FTLogger
 static FTLogger *sharedInstance = nil;
 static dispatch_once_t onceToken;
-+ (void)startWithEnablePrintLogsToConsole:(BOOL)enable
-                          enableCustomLog:(BOOL)enableCustomLog
-                        enableLinkRumData:(BOOL)enableLinkRumData
-                           logLevelFilter:(NSArray<NSNumber*>*)filter
-                               sampleRate:(int)sampleRate writer:(id<FTLoggerDataWriteProtocol>)writer{
++ (void)startWithLoggerConfig:(FTLoggerConfig *)config writer:(id<FTLoggerDataWriteProtocol>)writer{
     dispatch_once(&onceToken, ^{
-        sharedInstance = [[FTLogger alloc] initWithEnablePrintLogsToConsole:enable enableCustomLog:enableCustomLog enableLinkRumData:enableLinkRumData logLevelFilter:filter sampleRate:sampleRate writer:writer];
+        sharedInstance = [[FTLogger alloc] initWithLoggerConfig:config writer:writer];
     });
 }
 + (instancetype)sharedInstance {
@@ -46,97 +40,97 @@ static dispatch_once_t onceToken;
     }
     return sharedInstance;
 }
--(instancetype)initWithEnablePrintLogsToConsole:(BOOL)enable
-                                enableCustomLog:(BOOL)enableCustomLog
-                              enableLinkRumData:(BOOL)enableLinkRumData
-                                 logLevelFilter:(NSArray<NSNumber*>*)filter sampleRate:(int)sampleRate
-                                         writer:(id<FTLoggerDataWriteProtocol>)writer{
+-(instancetype)initWithLoggerConfig:(FTLoggerConfig *)config writer:(id<FTLoggerDataWriteProtocol>)writer{
     self = [super init];
     if(self){
-        _printLogsToConsole = enable;
+        _config = config;
         _loggerWriter = writer;
-        _sampleRate = sampleRate;
-        _logLevelFilterSet = [NSSet setWithArray:filter];
-        _enableCustomLog = enableCustomLog;
-        _enableLinkRumData = enableLinkRumData;
+        if (config.logLevelFilter) {
+            _logLevelFilterSet = [NSSet setWithArray:config.logLevelFilter];
+        }
         _loggerQueue = dispatch_queue_create("com.guance.logger", DISPATCH_QUEUE_SERIAL);
         dispatch_queue_set_specific(_loggerQueue,FTLoggerQueueIdentityKey, &FTLoggerQueueIdentityKey, NULL);
     }
     return self;
 }
-- (void)log:(NSString *)message
-     statusType:(LogStatus)statusType
+- (void)log:(NSString *)content
+     statusType:(FTLogStatus)statusType
    property:(nullable NSDictionary *)property{
     NSDictionary *copyDict = [property ft_deepCopy];
-    if(self.printLogsToConsole){
-        FT_CONSOLE_LOG(statusType,message,copyDict);
-    }
-    if (!self.enableCustomLog) {
+    if (!content || content.length == 0 ) {
+        FTInnerLogError(@"[Logging] 传入的第数据格式有误");
         return;
     }
-    if (![self.logLevelFilterSet containsObject:@(statusType)]) {
+    if(self.config.printCustomLogToConsole){
+        FT_CONSOLE_LOG((LogStatus)statusType,content,copyDict);
+    }
+    if (!self.config.enableCustomLog) {
         return;
     }
-    [self _log:message async:statusType == StatusError status:FTStatusStringMap[statusType] property:copyDict];
+    if (self.logLevelFilterSet && ![self.logLevelFilterSet containsObject:@(statusType)]) {
+        return;
+    }
+    [self _log:content status:FTStatusStringMap[statusType] property:copyDict];
 }
 - (void)log:(NSString *)content status:(NSString *)status{
     [self log:content status:status property:nil];
 }
 - (void)log:(NSString *)content status:(NSString *)status property:(nullable NSDictionary *)property{
     NSDictionary *copyDict = [property ft_deepCopy];
-    if(self.printLogsToConsole){
-        FT_CONSOLE_CUSTOM_LOG(status, content, copyDict);
-    }
-    if (!self.enableCustomLog) {
+    if (!content || content.length == 0 ) {
+        FTInnerLogError(@"[Logging] 传入的第数据格式有误");
         return;
     }
-    [self _log:content async:NO status:status property:copyDict];
+    if(self.config.printCustomLogToConsole){
+        FT_CONSOLE_CUSTOM_LOG(status, content, copyDict);
+    }
+    if (!self.config.enableCustomLog) {
+        return;
+    }
+    if (self.logLevelFilterSet && ![self.logLevelFilterSet containsObject:status]) {
+        return;
+    }
+    [self _log:content status:status property:copyDict];
 }
 -(void)info:(NSString *)content property:(NSDictionary *)property{
-    [self log:content statusType:StatusInfo property:property];
+    [self log:content statusType:FTStatusInfo property:property];
 }
 -(void)warning:(NSString *)content property:(NSDictionary *)property{
-    [self log:content statusType:StatusWarning property:property];
+    [self log:content statusType:FTStatusWarning property:property];
 }
 -(void)error:(NSString *)content property:(NSDictionary *)property{
-    [self log:content statusType:StatusError property:property];
+    [self log:content statusType:FTStatusError property:property];
 }
 -(void)critical:(NSString *)content property:(NSDictionary *)property{
-    [self log:content statusType:StatusCritical property:property];
+    [self log:content statusType:FTStatusCritical property:property];
 }
 - (void)ok:(NSString *)content property:(NSDictionary *)property{
-    [self log:content statusType:StatusOk property:property];
+    [self log:content statusType:FTStatusOk property:property];
 }
-- (void)_log:(NSString *)content async:(BOOL)async status:(NSString *)status property:(nullable NSDictionary *)property{
+- (void)_log:(NSString *)content status:(id)status property:(nullable NSDictionary *)property{
+    if (![FTBaseInfoHandler randomSampling:self.config.samplerate]){
+        FTInnerLogInfo(@"[Logging][Not Sampled] %@",content);
+        return;
+    }
     NSMutableDictionary *context = [NSMutableDictionary dictionary];
-    [context addEntriesFromDictionary:[[FTPresetProperty sharedInstance] loggerDynamicProperty]];
-    if(self.enableLinkRumData){
+    [context addEntriesFromDictionary:[[FTPresetProperty sharedInstance] loggerDynamicTags]];
+    if(self.config.enableLinkRumData){
         if (self.linkRumDataProvider && [self.linkRumDataProvider respondsToSelector:@selector(getLinkRUMData)]) {
             NSDictionary *rumTag = [self.linkRumDataProvider getLinkRUMData];
             [context addEntriesFromDictionary:rumTag];
         }
-        [context addEntriesFromDictionary:[[FTPresetProperty sharedInstance] rumProperty]];
+        [context addEntriesFromDictionary:[[FTPresetProperty sharedInstance] rumTags]];
     }
+    long long time = [NSDate ft_currentNanosecondTimeStamp];
     dispatch_block_t logBlock = ^{
-        // 上传 datakit
         if(self.loggerWriter && [self.loggerWriter respondsToSelector:@selector(logging:status:tags:field:time:)]){
-            if (![FTBaseInfoHandler randomSampling:self.sampleRate]){
-                FTInnerLogInfo(@"[Logging][Not Sampled] %@",content);
-                return;
-            }
             NSString *newContent = [content ft_subStringWithCharacterLength:FT_LOGGING_CONTENT_SIZE];
-
-            [self.loggerWriter logging:newContent status:status tags:context field:property time:[NSDate ft_currentNanosecondTimeStamp]];
+            [self.loggerWriter logging:newContent status:status tags:context field:property time:time];
         }else{
             FTInnerLogError(@"SDK configuration error, unable to collect custom logs");
         }
     };
-    if(async){
-        dispatch_async(self.loggerQueue, logBlock);
-    }else{
-        [self syncProcess:logBlock];
-    }
-    
+    dispatch_async(self.loggerQueue, logBlock);
 }
 - (void)syncProcess{
     [self syncProcess:^{}];

@@ -8,7 +8,6 @@
 
 #ifndef FTLoggerDataWriteProtocol_h
 #define FTLoggerDataWriteProtocol_h
-#import "FTEnumConstant.h"
 NS_ASSUME_NONNULL_BEGIN
 /// RUM 数据写入接口
 @protocol FTLoggerDataWriteProtocol <NSObject>

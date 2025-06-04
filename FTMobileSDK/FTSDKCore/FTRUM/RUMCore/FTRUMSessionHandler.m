@@ -20,6 +20,8 @@ static const NSTimeInterval sessionMaxDuration = 4 * 60 * 60; // 4 hours
 @property (nonatomic, strong) NSDate *lastInteractionTime;
 @property (nonatomic, strong) NSMutableArray<FTRUMHandler*> *viewHandlers;
 @property (nonatomic, assign) BOOL sampling;
+@property (nonatomic, assign) BOOL sessionOnErrorSampling;
+
 @property (nonatomic, assign) BOOL needWriteErrorData;
 @end
 @implementation FTRUMSessionHandler
@@ -28,11 +30,11 @@ static const NSTimeInterval sessionMaxDuration = 4 * 60 * 60; // 4 hours
     if (self) {
         self.rumDependencies = dependencies;
         self.assistant = self;
-        self.sampling = [FTBaseInfoHandler randomSampling:dependencies.sampleRate];
         self.sessionStartTime = model.time;
         self.viewHandlers = [NSMutableArray new];
         self.context = [FTRUMContext new];
         self.rumDependencies.fatalErrorContext.lastSessionContext = [self.context getGlobalSessionViewTags];
+        self.sampling = [FTBaseInfoHandler randomSampling:dependencies.sampleRate];
     }
     return  self;
 }
@@ -58,8 +60,19 @@ static const NSTimeInterval sessionMaxDuration = 4 * 60 * 60; // 4 hours
 }
 -(void)setSampling:(BOOL)sampling{
     _sampling = sampling;
+    self.rumDependencies.currentSessionSample = sampling;
     if(!sampling){
-        FTInnerLogInfo(@"[RUM] The current 'Session' is not sampled.");
+        [self.rumDependencies.writer isCacheWriter:NO];
+        self.sessionOnErrorSampling = [FTBaseInfoHandler randomSampling:self.rumDependencies.sessionOnErrorSampleRate];
+        if(self.sessionOnErrorSampling == YES){
+            self.context.sampled_for_error_session = YES;
+            [self.rumDependencies.writer isCacheWriter:YES];
+            FTInnerLogInfo(@"[RUM] The current 'Session' is sampled on error.");
+        }else{
+            // session 不采集时，防止 logger 关联 rum 错误
+            self.rumDependencies.fatalErrorContext = nil;
+            FTInnerLogInfo(@"[RUM] The current 'Session' is not sampled.");
+        }
     }
 }
 - (BOOL)process:(FTRUMDataModel *)model context:(nonnull NSDictionary *)context{
@@ -67,7 +80,15 @@ static const NSTimeInterval sessionMaxDuration = 4 * 60 * 60; // 4 hours
         return NO;
     }
     if (!self.sampling) {
-        return YES;
+        if(self.sessionOnErrorSampling == NO){
+            return YES;
+        }else if(model.type == FTRUMDataError || model.type == FTRUMDataResourceError){
+            self.sampling = YES;
+            long long timestamp = [model.time ft_nanosecondTimeStamp];
+            self.context.session_error_timestamp = timestamp;
+            FTRUMViewHandler *lastViewHandler = (FTRUMViewHandler *)self.viewHandlers.lastObject;
+            lastViewHandler.context.session_error_timestamp = timestamp;
+        }
     }
     _lastInteractionTime = [NSDate date];
     self.needWriteErrorData = NO;
@@ -119,7 +140,9 @@ static const NSTimeInterval sessionMaxDuration = 4 * 60 * 60; // 4 hours
     //当前 view 处理了 error 数据回调,若没有 view 能处理则由 session 处理
     __weak __typeof(self) weakSelf = self;
     viewHandler.errorHandled = ^{
-        weakSelf.needWriteErrorData = NO;
+        __strong __typeof(weakSelf) strongSelf = weakSelf;
+        if (!strongSelf) return;
+        strongSelf.needWriteErrorData = NO;
     };
     [self.viewHandlers addObject:viewHandler];
 }
@@ -129,7 +152,9 @@ static const NSTimeInterval sessionMaxDuration = 4 * 60 * 60; // 4 hours
     //当前 view 处理了 error 数据回调,若没有 view 能处理则由 session 处理
     __weak __typeof(self) weakSelf = self;
     viewHandler.errorHandled = ^{
-        weakSelf.needWriteErrorData = NO;
+        __strong __typeof(weakSelf) strongSelf = weakSelf;
+        if (!strongSelf) return;
+        strongSelf.needWriteErrorData = NO;
     };
     [self.viewHandlers addObject:viewHandler];
     self.rumDependencies.fatalErrorContext.lastSessionContext = [self getCurrentSessionInfo];
@@ -149,21 +174,20 @@ static const NSTimeInterval sessionMaxDuration = 4 * 60 * 60; // 4 hours
  */
 - (void)writeLaunchData:(FTRUMLaunchDataModel *)model context:(NSDictionary *)context{
     
-    NSDictionary *sessionViewTag = [model.action_type isEqualToString:FT_LAUNCH_HOT]?[self getCurrentSessionInfo]:@{FT_RUM_KEY_SESSION_ID:self.context.session_id,FT_RUM_KEY_SESSION_TYPE:self.context.session_type};
+    NSDictionary *sessionViewTag = [model.action_type isEqualToString:FT_LAUNCH_HOT]?[self getCurrentSessionInfo]:[self.context getGlobalSessionTags];
     NSMutableDictionary *tags = [NSMutableDictionary dictionaryWithDictionary:context];
     [tags addEntriesFromDictionary:sessionViewTag];
-    NSDictionary *actionTags = @{FT_KEY_ACTION_ID:[FTBaseInfoHandler randomUUID],
-                                 FT_KEY_ACTION_NAME:model.action_name,
-                                 FT_KEY_ACTION_TYPE:model.action_type
-    };
-    NSDictionary *fields = @{FT_DURATION:model.duration,
-                             FT_KEY_ACTION_LONG_TASK_COUNT:@(0),
-                             FT_KEY_ACTION_RESOURCE_COUNT:@(0),
-                             FT_KEY_ACTION_ERROR_COUNT:@(0),
-    };
-    [tags addEntriesFromDictionary:actionTags];
+    [tags setValue:[FTBaseInfoHandler randomUUID] forKey:FT_KEY_ACTION_ID];
+    [tags setValue:model.action_name forKey:FT_KEY_ACTION_NAME];
+    [tags setValue:model.action_type forKey:FT_KEY_ACTION_TYPE];
+    
+    NSMutableDictionary *fields = [NSMutableDictionary dictionary];
+    [fields setValue:model.duration forKey:FT_DURATION];
+    [fields setValue:@(0) forKey:FT_KEY_ACTION_LONG_TASK_COUNT];
+    [fields setValue:@(0) forKey:FT_KEY_ACTION_RESOURCE_COUNT];
+    [fields setValue:@(0) forKey:FT_KEY_ACTION_ERROR_COUNT];
     [self.rumDependencies.writer rumWrite:FT_RUM_SOURCE_ACTION tags:tags fields:fields time:[model.time ft_nanosecondTimeStamp]];
-
+    
 }
 - (void)writeErrorData:(FTRUMDataModel *)model context:(NSDictionary *)context{
     FTRUMErrorData *data = (FTRUMErrorData *)model;
@@ -171,12 +195,13 @@ static const NSTimeInterval sessionMaxDuration = 4 * 60 * 60; // 4 hours
     NSMutableDictionary *tags = [NSMutableDictionary dictionaryWithDictionary:context];
     [tags addEntriesFromDictionary:sessionViewTag];
     [tags addEntriesFromDictionary:model.tags];
+    NSMutableDictionary *fields = [NSMutableDictionary new];
+    [fields addEntriesFromDictionary:model.fields];
     NSString *error = model.type == FTRUMDataLongTask?FT_RUM_SOURCE_LONG_TASK :FT_RUM_SOURCE_ERROR;
-    [self.rumDependencies.writer rumWrite:error tags:tags fields:model.fields time:data.tm];
+    [self.rumDependencies.writer rumWrite:error tags:tags fields:fields time:data.tm];
 }
 - (void)writeWebViewJSBData:(FTRUMWebViewData *)data context:(NSDictionary *)context{
-    NSDictionary *sessionTag = @{FT_RUM_KEY_SESSION_ID:self.context.session_id,
-                                 FT_RUM_KEY_SESSION_TYPE:self.context.session_type};
+    NSDictionary *sessionTag = [self.context getGlobalSessionTags];
     NSMutableDictionary *tags = [NSMutableDictionary new];
     [tags addEntriesFromDictionary:context];
     [tags addEntriesFromDictionary:data.tags];

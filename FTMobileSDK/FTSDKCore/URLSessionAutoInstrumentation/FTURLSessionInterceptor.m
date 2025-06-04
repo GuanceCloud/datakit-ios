@@ -41,7 +41,7 @@ static dispatch_once_t onceToken;
     self = [super init];
     if (self) {
         _traceHandlers = [[FTReadWriteHelper alloc]initWithValue:[NSMutableDictionary new]];
-        _queue = dispatch_queue_create("com.network.interceptor", DISPATCH_QUEUE_SERIAL);
+        _queue = dispatch_queue_create("com.guance.network.interceptor", DISPATCH_QUEUE_SERIAL);
         dispatch_queue_set_specific(_queue, FTInterceptorQueueIdentityKey, &FTInterceptorQueueIdentityKey, NULL);
 
     }

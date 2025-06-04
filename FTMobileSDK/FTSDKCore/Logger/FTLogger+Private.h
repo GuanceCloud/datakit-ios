@@ -10,6 +10,8 @@
 #import "FTEnumConstant.h"
 #import "FTLoggerDataWriteProtocol.h"
 #import "FTLinkRumDataProvider.h"
+#import "FTLoggerConfig.h"
+
 NS_ASSUME_NONNULL_BEGIN
 
 @interface FTLogger ()
@@ -21,19 +23,15 @@ NS_ASSUME_NONNULL_BEGIN
 ///   - filter: 日志过滤规则
 ///   - sampletRate: 采集率
 ///   - writer: 数据写入对象
-+ (void)startWithEnablePrintLogsToConsole:(BOOL)enable
-                          enableCustomLog:(BOOL)enableCustomLog
-                        enableLinkRumData:(BOOL)enableLinkRumData
-                           logLevelFilter:(NSArray<NSNumber*>*)filter sampleRate:(int)sampletRate
-                                   writer:(id<FTLoggerDataWriteProtocol>)writer;
++ (void)startWithLoggerConfig:(FTLoggerConfig *)config writer:(id<FTLoggerDataWriteProtocol>)writer;
 
 /// 日志传入
 /// - Parameters:
-///   - message: 日志内容，可为 json 字符串
+///   - content: 日志内容，可为 json 字符串
 ///   - status: 等级和状态
 ///   - property: 自定义属性(可选)
-- (void)log:(NSString *)message
- statusType:(LogStatus)statusType
+- (void)log:(NSString *)content
+ statusType:(FTLogStatus)statusType
    property:(nullable NSDictionary *)property;
 
 /// 同步执行处理日志的队列

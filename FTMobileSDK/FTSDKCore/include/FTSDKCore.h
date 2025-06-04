@@ -39,11 +39,11 @@
 #import "FTURLSessionInterceptorProtocol.h"
 #import "FTExternalResourceProtocol.h"
 #import "FTNetworkInfoManager.h"
-#import "FTReachability.h"
 #import "FTNetworkConnectivity.h"
 #import "FTTrackDataManager.h"
 #import "FTTrackerEventDBTool.h"
 #import "FTWebViewJavascriptBridgeBase.h"
 #import "FTWKWebViewHandler.h"
 #import "FTWKWebViewJavascriptBridge.h"
-
+#import "FTDataWriterWorker.h"
+#import "FTLoggerConfig.h"

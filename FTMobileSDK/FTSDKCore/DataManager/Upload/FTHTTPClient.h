@@ -1,5 +1,5 @@
 //
-//  FTNetworkManager.h
+//  FTHTTPClient.h
 //  FTMacOSSDK
 //
 //  Created by 胡蕾蕾 on 2021/8/2.
@@ -10,7 +10,7 @@
 #import "FTRequest.h"
 
 NS_ASSUME_NONNULL_BEGIN
-@interface FTNetworkManager : NSObject
+@interface FTHTTPClient : NSObject
 -(instancetype)initWithTimeoutIntervalForRequest:(NSTimeInterval)timeOut NS_DESIGNATED_INITIALIZER;
 - (void)sendRequest:(id<FTRequestProtocol>  _Nonnull)request
          completion:(void(^_Nullable)(NSHTTPURLResponse * _Nonnull httpResponse,

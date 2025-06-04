@@ -14,10 +14,10 @@
 }
 + (long long)ft_currentNanosecondTimeStamp{
     NSDate *dateNow = [NSDate date];
-    return (long long) ([dateNow timeIntervalSince1970] * 1000000000);
+    return (long long) ([dateNow timeIntervalSince1970] * 1e9);
 }
 - (long long)ft_nanosecondTimeStamp{
-    long long time= (long long)([self timeIntervalSince1970]*1000000000);
+    long long time= (long long)([self timeIntervalSince1970] * 1e9);
     return  time;
 }
 
@@ -51,7 +51,7 @@
 }
 - (NSNumber *)ft_nanosecondTimeIntervalToDate:(NSDate *)toDate{
     if(toDate){
-        return [NSNumber numberWithLongLong:[toDate timeIntervalSinceDate:self]*1000000000];
+        return [NSNumber numberWithLongLong:[toDate timeIntervalSinceDate:self]*1e9];
     }
     return @0;
 }

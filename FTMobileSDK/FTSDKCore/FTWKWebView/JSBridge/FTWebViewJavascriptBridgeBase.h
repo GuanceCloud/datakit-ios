@@ -14,12 +14,12 @@ NS_ASSUME_NONNULL_BEGIN
 @end
 typedef NSDictionary WVJBMessage;
 typedef void (^WVJBResponseCallback)(id responseData);
-typedef void (^WVJBHandler)(id data, WVJBResponseCallback responseCallback);
+typedef void (^WVJBHandler)(id data, int64_t slotId,WVJBResponseCallback responseCallback);
 @interface FTWebViewJavascriptBridgeBase : NSObject
 @property (nonatomic, weak) id<FTWebViewJavascriptBridgeBaseDelegate> delegate;
 @property (nonatomic, strong) NSMutableDictionary *responseCallbacks;
 @property (nonatomic, strong) NSMutableDictionary *messageHandlers;
-- (void)flushMessageQueue:(NSString *)messageQueueString;
+- (void)flushMessageQueue:(NSString *)messageQueueString slotId:(NSUInteger)slotId;
 - (void)sendData:(nullable id)data responseCallback:(nullable WVJBResponseCallback)responseCallback handlerName:(NSString*)handlerName;
 
 @end

@@ -7,14 +7,19 @@
 //
 
 #import "FTConstants.h"
+#import "FTSDKCompat.h"
 
 NSString * const FT_DATA_TYPE_RUM = @"RUM";
 NSString * const FT_DATA_TYPE_LOGGING = @"Logging";
+NSString * const FT_DATA_TYPE_RUM_CACHE = @"RUMCache";
+
 NSString * const FT_MEASUREMENT  = @"measurement";
 NSString * const FT_FIELDS  = @"fields";
 NSString * const FT_TAGS  = @"tags";
 NSString * const FT_OPDATA  = @"opdata";
 NSString * const FT_OP  = @"op";
+NSString * const FT_TIME  = @"time";
+
 // source
 NSString * const FT_KEY_SOURCE = @"source";
 NSString * const FT_LOGGER_SOURCE = @"df_rum_ios_log";
@@ -31,7 +36,18 @@ NSString * const FT_KEY_SERVICE = @"service";
 NSString * const FT_DEFAULT_SERVICE_NAME = @"df_rum_ios";
 NSString * const FT_TVOS_SERVICE_NAME = @"df_rum_tvos";
 NSString * const FT_IOS_SDK_NAME = @"df_ios_rum_sdk";
+NSString * const FT_TVOS_SDK_NAME = @"df_tvos_rum_sdk";
 NSString * const FT_MACOS_SDK_NAME = @"df_macos_rum_sdk";
+#if FT_MAC
+NSString * const FT_SDK_NAME_VALUE = FT_MACOS_SDK_NAME;
+NSString * const FT_USER_AGENT_NAME = @"DF-RUM-macOS";
+#elif TARGET_OS_TV
+NSString * const FT_SDK_NAME_VALUE = FT_TVOS_SDK_NAME;
+NSString * const FT_USER_AGENT_NAME = @"DF-RUM-tvOS";
+#else
+NSString * const FT_SDK_NAME_VALUE = FT_IOS_SDK_NAME;
+NSString * const FT_USER_AGENT_NAME = @"DF-RUM-iOS";
+#endif
 NSString * const FT_IS_WEBVIEW = @"is_web_view";
 NSString * const FT_NULL_VALUE  = @"N/A";
 NSString * const FT_TYPE = @"type";
@@ -56,10 +72,16 @@ NSString * const FT_VERSION = @"version";
 #pragma mark ========== RUM ==========
 NSString * const FT_TERMINAL_APP = @"app";
 NSString * const FT_APP_ID = @"app_id";
-NSString * const FT_DURATION  = @"duration";
+NSString * const FT_DURATION = @"duration";
 //session tag
 NSString * const FT_RUM_KEY_SESSION_ID = @"session_id";
 NSString * const FT_RUM_KEY_SESSION_TYPE = @"session_type";
+NSString * const FT_RUM_KEY_SAMPLED_FOR_ERROR_SESSION = @"sampled_for_error_session";
+NSString * const FT_SESSION_ERROR_TIMESTAMP = @"session_error_timestamp";
+//session field
+NSString * const FT_RUM_SESSION_ON_ERROR_SAMPLE_RATE = @"session_on_error_sample_rate";
+NSString * const FT_RUM_SESSION_SAMPLE_RATE = @"session_sample_rate";
+
 //view tag
 NSString * const FT_KEY_VIEW_ID = @"view_id";
 NSString * const FT_KEY_IS_ACTIVE = @"is_active";

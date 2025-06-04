@@ -159,7 +159,9 @@ let package = Package(
                     .copy("Resources/PrivacyInfo.xcprivacy")],
                 publicHeadersPath: "FTSDKCore/include",
                 cSettings: [
-                    .headerSearchPath("FTSDKCore/DataManager/fmdb"),
+                    .headerSearchPath("FTSDKCore/DataManager/Upload"),
+                    .headerSearchPath("FTSDKCore/DataManager/Storage"),
+                    .headerSearchPath("FTSDKCore/DataManager/Storage/fmdb"),
                     .headerSearchPath("FTSDKCore/FTWKWebView/JSBridge"),
 
                 ]

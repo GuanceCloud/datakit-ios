@@ -19,6 +19,9 @@
 #import "FTTrackDataManager+Test.h"
 #import "FTBaseInfoHandler.h"
 #import "FTLog+Private.h"
+#import "FTRequest.h"
+#import "FTTrackDataManager+Test.h"
+#import "FTDataUploadWorker.h"
 @interface FTTrackDataManagerTest : XCTestCase
 @property (nonatomic, strong) XCTestExpectation *expectation;
 
@@ -142,9 +145,10 @@
     [[FTTrackDataManager sharedInstance] shutDown];
 }
 - (void)testEnableDBLimitDiscardOld_logCountLimit{
+    [FTLog enableLog:YES];
     [[FTTrackerEventDBTool sharedManger] deleteAllDatas];
     [FTTrackDataManager startWithAutoSync:NO syncPageSize:10 syncSleepTime:0];
-    [[FTTrackDataManager sharedInstance] setDBLimitWithSize:60*1204 discardNew:NO];
+    [[FTTrackDataManager sharedInstance] setDBLimitWithSize:70*1204 discardNew:NO];
     [[FTTrackDataManager sharedInstance] setLogCacheLimitCount:299 discardNew:NO];
     CFTimeInterval interval = [FTTestUtils functionElapsedTime:^{
         for (int i=0; i<1000; i++) {
@@ -159,7 +163,7 @@
     XCTAssertFalse([model.data isEqualToString:@"TEST DBLimitDiscardOld 0"]);
     long size = [[FTTrackerEventDBTool sharedManger] checkDatabaseSize];
     NSLog(@"size:%ld",(long)size);
-    XCTAssertTrue(size <= 65*1204);
+    XCTAssertTrue(size <= 75*1204);
     [[FTTrackDataManager sharedInstance] shutDown];
 }
 - (void)testEnableDBLimitDiscardNew_rum{
@@ -247,13 +251,16 @@
 }
 - (void)testTrackDataManagerShutDown{
     [self mockHttp];
-    [FTTrackDataManager sharedInstance];
+    [FTLog enableLog:YES];
+    [FTTrackDataManager startWithAutoSync:NO syncPageSize:10 syncSleepTime:0];
     [FTModelHelper createRumModel];
     [[FTTrackDataManager sharedInstance] addTrackData:[FTModelHelper createRumModel] type:FTAddDataRUM];
-    self.expectation = [self expectationWithDescription:@"异步操作timeout"];
-    [[FTTrackDataManager sharedInstance] addObserver:self forKeyPath:@"isUploading" options:NSKeyValueObservingOptionNew context:nil];
-    [[FTTrackDataManager sharedInstance] uploadTrackData];
-    [self waitForExpectations:@[self.expectation] timeout:2];
+    FTDataUploadWorker *worker = [FTTrackDataManager sharedInstance].dataUploadWorker;
+    NSNumber *isUploading = [worker valueForKey:@"isUploading"];
+    XCTAssertTrue([isUploading boolValue] == NO);
+    [[FTTrackDataManager sharedInstance] flushSyncData];
+    NSNumber *isUploadingN = [worker valueForKey:@"isUploading"];
+    XCTAssertTrue([isUploadingN boolValue] == YES);
     CFTimeInterval interval = [FTTestUtils functionElapsedTime:^{
         [[FTTrackDataManager sharedInstance] shutDown];
     }];
@@ -334,14 +341,14 @@
     [[FTTrackDataManager sharedInstance] addTrackData:[FTModelHelper createRUMModel:@"testNetworkFail_NetworkRetry"] type:FTAddDataRUM];
   
     self.expectation = [self expectationWithDescription:@"isUploadingEqualNO"];
-    [[FTTrackDataManager sharedInstance] addObserver:self forKeyPath:@"isUploading" options:NSKeyValueObservingOptionNew context:nil];
+    [[FTTrackDataManager sharedInstance].dataUploadWorker addObserver:self forKeyPath:@"isUploading" options:NSKeyValueObservingOptionNew context:nil];
     CFTimeInterval startTime = CACurrentMediaTime();
-    NSString *packageId = [FTBaseInfoHandler rumRequestSerialNumber];
-    [[FTTrackDataManager sharedInstance] uploadTrackData];
+    NSString *packageId = [FTRumRequest.serialGenerator getCurrentSerialNumber];
+    [[FTTrackDataManager sharedInstance] flushSyncData];
     [self waitForExpectations:@[self.expectation]];
     CFTimeInterval endTime = CACurrentMediaTime();
     XCTAssertTrue(endTime-startTime>7 && endTime-startTime<9);
-    NSString *endPackageId = [FTBaseInfoHandler rumRequestSerialNumber];
+    NSString *endPackageId = [FTRumRequest.serialGenerator getCurrentSerialNumber];
     XCTAssertTrue([endPackageId isEqualToString:packageId]);
     XCTAssertTrue(set.count == 6);
     
@@ -375,17 +382,18 @@
     manager.setDatakitUrl(urlStr)
         .setSdkVersion(@"RequestTest");
     
-    [[FTTrackDataManager sharedInstance] addObserver:self forKeyPath:@"isUploading" options:NSKeyValueObservingOptionNew context:nil];
-
+    [[FTTrackDataManager sharedInstance].dataUploadWorker addObserver:self forKeyPath:@"isUploading" options:NSKeyValueObservingOptionNew context:nil];
+    NSString *logStartNum = [FTLoggingRequest.serialGenerator getCurrentSerialNumber];
     for (int i = 0; i<2; i++) {
         self.expectation = [self expectationWithDescription:@"isUploadingEqualNO"];
         FTRecordModel *model = [FTModelHelper createRumModel];
         [[FTTrackDataManager sharedInstance] addTrackData:model type:FTAddDataRUM];
 
-        [[FTTrackDataManager sharedInstance] uploadTrackData];
+        [[FTTrackDataManager sharedInstance] flushSyncData];
         [self waitForExpectations:@[self.expectation]];
     }
-    
+    NSString *logEndtNum = [FTLoggingRequest.serialGenerator getCurrentSerialNumber];
+    XCTAssertTrue([logEndtNum isEqualToString:logStartNum]);
     XCTAssertTrue(datas.count == 2);
     
     NSString *bodyStr = [[NSString alloc]initWithData:[FTTestUtils transStreamToData:datas.firstObject] encoding:NSUTF8StringEncoding];
@@ -446,8 +454,8 @@
 }
 -(void)observeValueForKeyPath:(NSString *)keyPath ofObject:(id)object change:(NSDictionary<NSKeyValueChangeKey,id> *)change context:(void *)context{
     if([keyPath isEqualToString:@"isUploading"]){
-        FTTrackDataManager *manager = object;
-        NSNumber *isUploading = [manager valueForKey:@"isUploading"];
+        FTDataUploadWorker *worker = object;
+        NSNumber *isUploading = [worker valueForKey:@"isUploading"];
         BOOL uploadingEqualNO = [self.expectation.description isEqualToString:@"isUploadingEqualNO"];
         if(isUploading.boolValue == !uploadingEqualNO){
             [self.expectation fulfill];

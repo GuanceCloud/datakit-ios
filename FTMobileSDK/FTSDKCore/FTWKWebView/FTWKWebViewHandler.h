@@ -13,8 +13,7 @@ NS_ASSUME_NONNULL_BEGIN
 /// webView 添加  web 端 rum 数据
 @protocol FTWKWebViewRumDelegate <NSObject>
 @optional
-
--(void)ftAddScriptMessageHandlerWithWebView:(WKWebView *)webView;
+- (void)dealReceiveScriptMessage:(id )message slotId:(NSUInteger)slotId;
 
 @end
 /// 处理 WKWebView Trace、js 交互
@@ -27,8 +26,6 @@ NS_ASSUME_NONNULL_BEGIN
 - (void)reloadWebView:(WKWebView *)webView completionHandler:(void (^)(NSURLRequest *request,BOOL needTrace))completionHandler;
 
 - (void)addWebView:(WKWebView *)webView request:(NSURLRequest *)request;
-
-- (void)removeWebView:(WKWebView *)webView;
 
 - (void)addScriptMessageHandlerWithWebView:(WKWebView *)webView;
 @end

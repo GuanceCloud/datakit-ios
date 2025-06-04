@@ -52,6 +52,8 @@
 		177892BF29A60FD00007B47F /* PerformanceLoggingTest.m in Sources */ = {isa = PBXBuildFile; fileRef = 177892BE29A60FD00007B47F /* PerformanceLoggingTest.m */; };
 		177892C129A60FE90007B47F /* PerformanceTracingTest.m in Sources */ = {isa = PBXBuildFile; fileRef = 177892C029A60FE90007B47F /* PerformanceTracingTest.m */; };
 		177AD7332CCF72A10051C0F6 /* FTDataCompressionTest.m in Sources */ = {isa = PBXBuildFile; fileRef = 177AD7322CCF72A10051C0F6 /* FTDataCompressionTest.m */; };
+		1783786D2D8964A700C590AE /* FTRUMSessionOnErrorSampleRateTest.m in Sources */ = {isa = PBXBuildFile; fileRef = 1783786C2D8964A700C590AE /* FTRUMSessionOnErrorSampleRateTest.m */; };
+		1783786E2D8964A700C590AE /* FTRUMSessionOnErrorSampleRateTest.m in Sources */ = {isa = PBXBuildFile; fileRef = 1783786C2D8964A700C590AE /* FTRUMSessionOnErrorSampleRateTest.m */; };
 		178649292A1CA79100521187 /* FTMobileSDK.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 178649282A1CA79100521187 /* FTMobileSDK.framework */; };
 		1786492A2A1CA79100521187 /* FTMobileSDK.framework in Embed Frameworks */ = {isa = PBXBuildFile; fileRef = 178649282A1CA79100521187 /* FTMobileSDK.framework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
 		1788B11629BAF43B007FDFF1 /* HttpEngineTestUtil.m in Sources */ = {isa = PBXBuildFile; fileRef = 1788B11429BAF43B007FDFF1 /* HttpEngineTestUtil.m */; };
@@ -311,6 +313,7 @@
 		177892C029A60FE90007B47F /* PerformanceTracingTest.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = PerformanceTracingTest.m; sourceTree = "<group>"; };
 		177AD7322CCF72A10051C0F6 /* FTDataCompressionTest.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = FTDataCompressionTest.m; sourceTree = "<group>"; };
 		177AD7342CCF7B090051C0F6 /* FTDataCompression+Test.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = "FTDataCompression+Test.h"; sourceTree = "<group>"; };
+		1783786C2D8964A700C590AE /* FTRUMSessionOnErrorSampleRateTest.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = FTRUMSessionOnErrorSampleRateTest.m; sourceTree = "<group>"; };
 		178649282A1CA79100521187 /* FTMobileSDK.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; path = FTMobileSDK.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 		1788B11429BAF43B007FDFF1 /* HttpEngineTestUtil.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = HttpEngineTestUtil.m; path = App/HttpEngineTestUtil.m; sourceTree = SOURCE_ROOT; };
 		1788B11529BAF43B007FDFF1 /* HttpEngineTestUtil.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = HttpEngineTestUtil.h; path = App/HttpEngineTestUtil.h; sourceTree = SOURCE_ROOT; };
@@ -620,6 +623,18 @@
 			path = PerformanceTest;
 			sourceTree = "<group>";
 		};
+		1783786B2D89644C00C590AE /* RUM */ = {
+			isa = PBXGroup;
+			children = (
+				7C3C289527683983009DB8E2 /* FTRUMTest.m */,
+				17DA844C288808B2001A0B30 /* FTRUMMonitorTest.m */,
+				178AE3C02D56045A00BDC51B /* FTRUMActionTest.m */,
+				17933E352D68244900524BF2 /* FTRUMViewTest.m */,
+				1783786C2D8964A700C590AE /* FTRUMSessionOnErrorSampleRateTest.m */,
+			);
+			path = RUM;
+			sourceTree = "<group>";
+		};
 		17B1715828153F9D004002C9 /* Network */ = {
 			isa = PBXGroup;
 			children = (
@@ -805,10 +820,6 @@
 			isa = PBXGroup;
 			children = (
 				4A85313823AB85FC00B40B5D /* FTMobileAgentTests.m */,
-				7C3C289527683983009DB8E2 /* FTRUMTest.m */,
-				17DA844C288808B2001A0B30 /* FTRUMMonitorTest.m */,
-				178AE3C02D56045A00BDC51B /* FTRUMActionTest.m */,
-				17933E352D68244900524BF2 /* FTRUMViewTest.m */,
 			);
 			path = OpenAPITest;
 			sourceTree = "<group>";
@@ -848,6 +859,7 @@
 				17F5C5222C60D62A007F2B2C /* FTURLProtocol.h */,
 				17F5C5202C60D62A007F2B2C /* FTURLProtocol.m */,
 				17132DC32C2D8AAD009DFE8F /* errors.json */,
+				1783786B2D89644C00C590AE /* RUM */,
 				173A03F82CDDD32A00E07D53 /* LongTaskManagerTest */,
 				177892B829A60CD20007B47F /* PerformanceTest */,
 				17E0792C291E60830014A420 /* ExtensionSDK */,
@@ -1362,6 +1374,7 @@
 				178AE3772D55B74F00BDC51B /* FTUtilsTest.m in Sources */,
 				178AE3782D55B74F00BDC51B /* PerformanceBaseTest.m in Sources */,
 				17933E3B2D68578900524BF2 /* AddRumDatasHandlerMock.m in Sources */,
+				1783786E2D8964A700C590AE /* FTRUMSessionOnErrorSampleRateTest.m in Sources */,
 				178AE3AC2D55D04100BDC51B /* FTLoggerTest.m in Sources */,
 				178AE3792D55B74F00BDC51B /* FTLongTaskFileHandleTest.m in Sources */,
 				178AE37A2D55B74F00BDC51B /* FTSessionConfiguration.m in Sources */,
@@ -1509,6 +1522,7 @@
 				17C7631F28267154009582B6 /* FTLineProtocol.m in Sources */,
 				178AE3B92D55DEBC00BDC51B /* XCTestCase+Utils.m in Sources */,
 				1712C5F92B63AAE500C4BD38 /* FTTestInteraction.swift in Sources */,
+				1783786D2D8964A700C590AE /* FTRUMSessionOnErrorSampleRateTest.m in Sources */,
 				17D339EE2807AB0C0083C2B3 /* FTModelHelper.m in Sources */,
 				174058BD28D813A20092E096 /* FTLongTaskTest.m in Sources */,
 				17B1715A28154A6E004002C9 /* FTRequestTest.m in Sources */,

@@ -114,12 +114,17 @@
     context.view_id = self.view_id;
     context.view_referrer = self.view_referrer;
     context.view_name = self.view_name;
+    context.sampled_for_error_session = self.sampled_for_error_session;
+    context.session_error_timestamp = self.session_error_timestamp;
     return context;
 }
 -(NSDictionary *)getGlobalSessionViewTags{
     NSMutableDictionary *dict = [NSMutableDictionary new];
     [dict setValue:self.session_id forKey:FT_RUM_KEY_SESSION_ID];
     [dict setValue:self.session_type forKey:FT_RUM_KEY_SESSION_TYPE];
+    if (self.session_error_timestamp > 0) {
+        [dict setValue:@(self.session_error_timestamp) forKey:FT_SESSION_ERROR_TIMESTAMP];
+    }
     [dict setValue:self.view_id forKey:FT_KEY_VIEW_ID];
     if(self.view_referrer.length>0){
         [dict setValue:self.view_referrer forKey:FT_KEY_VIEW_REFERRER];
@@ -132,6 +137,11 @@
     [dict setValue:self.action_id forKey:FT_KEY_ACTION_ID];
     [dict setValue:self.action_name forKey:FT_KEY_ACTION_NAME];
     return dict;
+}
+-(NSDictionary *)getGlobalSessionTags{
+    return @{FT_RUM_KEY_SESSION_ID:self.session_id,
+             FT_RUM_KEY_SESSION_TYPE:self.session_type
+    };
 }
 @end
 

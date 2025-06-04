@@ -46,7 +46,7 @@ NSString *const FTConnectivityUnknown = @"unknown";
     self = [super init];
     if(self){
         _isConnected = NO;
-        _monitorQueue = dispatch_queue_create("com.ft.reachability", NULL);
+        _monitorQueue = dispatch_queue_create("com.guance.reachability", NULL);
         _reachability = [FTReachability reachabilityForInternetConnection];
         _networkObservers = [NSPointerArray pointerArrayWithOptions:NSPointerFunctionsWeakMemory];
         _observerLock = [[NSLock alloc] init];
@@ -76,10 +76,8 @@ NSString *const FTConnectivityUnknown = @"unknown";
     }else{
         __weak typeof(self) weakSelf = self;
         nw_path_monitor_set_update_handler(_pathMonitor, ^(nw_path_t path) {
-            if (weakSelf == nil) {
-                return;
-            }
             __strong __typeof(weakSelf) strongSelf = weakSelf;
+            if (!strongSelf)  return;
             nw_path_status_t status = nw_path_get_status(path);
             strongSelf.isConnected = status != nw_path_status_unsatisfied;
             NSString *current = FTConnectivityUnknown;
@@ -108,10 +106,8 @@ NSString *const FTConnectivityUnknown = @"unknown";
     [_reachability startNotifier];
     __weak typeof(self) weakSelf = self;
     _reachability.networkChanged = ^{
-        if (weakSelf == nil) {
-            return;
-        }
         __strong __typeof(weakSelf) strongSelf = weakSelf;
+        if (!strongSelf) return;
         strongSelf.networkType = strongSelf.reachability.net;
         strongSelf.isConnected = strongSelf.reachability.isReachable;
     };

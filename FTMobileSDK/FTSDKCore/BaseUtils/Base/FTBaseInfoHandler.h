@@ -26,11 +26,9 @@ NS_ASSUME_NONNULL_BEGIN
 /// - Parameter sampling: 用户设置的采样率
 /// - Returns: 是否进行采样
 + (BOOL)randomSampling:(int)sampling;
-+ (NSString *)generate12CharBase62RandomString;
-+ (NSString *)base62Encode:(int)num;
-+ (NSString *)random16UUID;
 /// 获取随机 uuid 字符串（无`-`、全小写）
 + (NSString *)randomUUID;
++ (NSString *)random16UUID;
 #if FT_IOS
 /// 电话运营商
 +(NSString *)telephonyCarrier;
@@ -39,11 +37,6 @@ NS_ASSUME_NONNULL_BEGIN
 /// - Parameter preferIPv4 是否优先IPv4
 + (NSString *)cellularIPAddress:(BOOL)preferIPv4;
 
-
-+ (NSString *)rumRequestSerialNumber;
-+ (void)increaseRumRequestSerialNumber;
-+ (NSString *)logRequestSerialNumber;
-+ (void)increaseLogRequestSerialNumber;
 
 @end
 

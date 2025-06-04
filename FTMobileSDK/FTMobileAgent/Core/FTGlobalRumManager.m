@@ -58,6 +58,7 @@ static dispatch_once_t onceToken;
     FTRUMDependencies *dependencies = [[FTRUMDependencies alloc]init];
     dependencies.monitor = [[FTRUMMonitor alloc]initWithMonitorType:(DeviceMetricsMonitorType)rumConfig.deviceMetricsMonitorType frequency:(MonitorFrequency)rumConfig.monitorFrequency];
     dependencies.writer = writer;
+    dependencies.sessionOnErrorSampleRate = rumConfig.sessionOnErrorSampleRate;
     dependencies.sampleRate = rumConfig.samplerate;
     dependencies.enableResourceHostIP = rumConfig.enableResourceHostIP;
     dependencies.errorMonitorType = (ErrorMonitorType)rumConfig.errorMonitorType;
@@ -76,6 +77,8 @@ static dispatch_once_t onceToken;
     //采集view、resource、jsBridge
     if (rumConfig.enableTrackAppANR||rumConfig.enableTrackAppFreeze) {
         _longTaskManager = [[FTLongTaskManager alloc]initWithDependencies:dependencies delegate:self enableTrackAppANR:rumConfig.enableTrackAppANR enableTrackAppFreeze:rumConfig.enableTrackAppFreeze                                        freezeDurationMs:rumConfig.freezeDurationMs];
+    }else{
+        [dependencies.writer lastFatalErrorIfFound:0];
     }
 #if !TARGET_OS_TV
     [FTWKWebViewHandler sharedInstance].rumTrackDelegate = self;
@@ -84,16 +87,7 @@ static dispatch_once_t onceToken;
 }
 #pragma mark ========== jsBridge ==========
 #if !TARGET_OS_TV
--(void)ftAddScriptMessageHandlerWithWebView:(WKWebView *)webView{
-    if (![webView isKindOfClass:[WKWebView class]]) {
-        return;
-    }
-    self.jsBridge = [FTWKWebViewJavascriptBridge bridgeForWebView:webView];
-    [self.jsBridge registerHandler:@"sendEvent" handler:^(id data, WVJBResponseCallback responseCallback) {
-        [self dealReceiveScriptMessage:data callBack:responseCallback];
-    }];
-}
-- (void)dealReceiveScriptMessage:(id )message callBack:(WVJBResponseCallback)callBack{
+- (void)dealReceiveScriptMessage:(id )message slotId:(NSUInteger)slotId{
     @try {
         NSDictionary *messageDic = [message isKindOfClass:NSDictionary.class]?message:[FTJSONUtil dictionaryWithJsonString:message];
         
@@ -102,7 +96,7 @@ static dispatch_once_t onceToken;
             return;
         }
         NSString *name = messageDic[@"name"];
-        if ([name isEqualToString:@"rum"]||[name isEqualToString:@"log"]) {
+        if ([name isEqualToString:@"rum"]) {
             NSDictionary *data = messageDic[@"data"];
             NSString *measurement = data[FT_MEASUREMENT];
             NSMutableDictionary *tags = [data[FT_TAGS] mutableCopy];
@@ -119,9 +113,12 @@ static dispatch_once_t onceToken;
                 time = fixTime;
             }
             if (measurement && fields.count>0) {
-                if ([name isEqualToString:@"rum"]) {
-                    [self.rumManager addWebViewData:measurement tags:tags fields:fields tm:time];
+                if ([measurement isEqualToString:FT_RUM_SOURCE_VIEW]) {
+                    if (tags[FT_KEY_VIEW_REFERRER] == nil) {
+                        [tags setValue:self.rumManager.viewReferrer forKey:FT_KEY_VIEW_REFERRER];
+                    }
                 }
+               [self.rumManager addWebViewData:measurement tags:tags fields:fields tm:time];
             }
         }
     } @catch (NSException *exception) {

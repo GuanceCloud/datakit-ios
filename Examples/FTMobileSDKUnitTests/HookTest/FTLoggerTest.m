@@ -134,6 +134,27 @@
     NSInteger newCount2 =  [[FTTrackerEventDBTool sharedManger] getDatasCount];
     XCTAssertTrue(newCount2 == newCount);
 }
+- (void)testCustomLogLevelFilter{
+    [self setRightSDKConfig];
+    NSInteger count =  [[FTTrackerEventDBTool sharedManger] getDatasCount];
+    FTLoggerConfig *loggerConfig = [[FTLoggerConfig alloc]init];
+    loggerConfig.enableCustomLog = YES;
+    loggerConfig.logLevelFilter = @[@(FTStatusInfo),@"test"];
+    [[FTMobileAgent sharedInstance] startLoggerWithConfigOptions:loggerConfig];
+    
+    [[FTLogger sharedInstance] log:@"testCustomLogLevelFilter" status:@"test"];
+    
+    [[FTMobileAgent sharedInstance] syncProcess];
+    [[FTTrackDataManager sharedInstance]insertCacheToDB];
+    NSInteger newCount =  [[FTTrackerEventDBTool sharedManger] getDatasCount];
+    XCTAssertTrue(newCount>count);
+    [[FTMobileAgent sharedInstance] logging:@"testLoggingMethodError" status:FTStatusError];
+    [[FTLogger sharedInstance] log:@"testCustomLogLevelFilter" status:@"custom"];
+    [[FTMobileAgent sharedInstance] syncProcess];
+    [[FTTrackDataManager sharedInstance]insertCacheToDB];
+    NSInteger newCount2 =  [[FTTrackerEventDBTool sharedManger] getDatasCount];
+    XCTAssertTrue(newCount2 == newCount);
+}
 - (void)testEmptyStringMessageLog{
     [self setRightSDKConfig];
     NSInteger count =  [[FTTrackerEventDBTool sharedManger] getDatasCount];

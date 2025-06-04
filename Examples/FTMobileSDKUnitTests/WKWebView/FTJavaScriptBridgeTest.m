@@ -21,8 +21,16 @@
 #import "FTRUMManager.h"
 #import "FTMobileAgentVersion.h"
 #import "FTMobileConfig+Private.h"
+#import "FTWKWebViewHandler.h"
+#import "FTModelHelper.h"
+@interface FTWKWebViewHandler (Testing)
+@property (nonatomic, strong) NSMapTable *webViewRequestTable;
+
+- (id)getWebViewBridge:(WKWebView *)webView;
+@end
+
 typedef void(^FTTraceRequest)(NSURLRequest *);
-@interface FTJavaScriptBridgeTest : KIFTestCase<WKNavigationDelegate>
+@interface FTJavaScriptBridgeTest : KIFTestCase<WKNavigationDelegate,FTWKWebViewRumDelegate>
 @property (nonatomic, strong) TestWKWebViewVC *viewController;
 @property (nonatomic, strong) UIWindow *window;
 @property (nonatomic, strong) UINavigationController *navigationController;
@@ -117,6 +125,7 @@ typedef void(^FTTraceRequest)(NSURLRequest *);
 ///    新增 tag 字段：
 ///    sdk_pkg_info:{@"web":"version",addPkgInfo}
 ///    is_web_view
+///    view_referrer
 ///   其余与 native SDK 一致
 - (void)testAddPkgInfo{
     [self addRumViewData:YES addPkgInfo:@{
@@ -131,6 +140,7 @@ typedef void(^FTTraceRequest)(NSURLRequest *);
     [self setSDK:info];
     long long smallTime = [NSDate ft_currentNanosecondTimeStamp];
     NSURL *url = [[NSBundle mainBundle] URLForResource:@"sample" withExtension:@"html"];
+    [FTModelHelper startViewWithName:@"TestWKWebViewVC"];
     [self.viewController ft_load:url.absoluteString];
     self.loadExpect = [self expectationWithDescription:@"请求超时timeout!"];
     [self waitForExpectationsWithTimeout:30 handler:^(NSError *error) {
@@ -167,12 +177,14 @@ typedef void(^FTTraceRequest)(NSURLRequest *);
                 NSInteger resourceCount = [field[FT_KEY_VIEW_RESOURCE_COUNT] integerValue];
                 NSInteger longTaskCount = [field[FT_KEY_VIEW_LONG_TASK_COUNT] integerValue];
                 NSString *viewName = tags[FT_KEY_VIEW_NAME];
+                NSString *viewReferrer = tags[FT_KEY_VIEW_REFERRER];
+
                 NSDictionary *tags = opdata[FT_TAGS];
                 XCTAssertTrue(errorCount == 0);
                 XCTAssertTrue(longTaskCount == 0);
                 XCTAssertTrue(resourceCount == 0);
                 XCTAssertTrue([viewName isEqualToString:@"testJSBridge"]);
-
+                XCTAssertTrue([viewReferrer isEqualToString:@"TestWKWebViewVC"]);
                 // rum 相关调整
                 XCTAssertFalse([tags[FT_RUM_KEY_SESSION_ID] isEqualToString:@"12345"]);
                 XCTAssertTrue([field[FT_KEY_IS_ACTIVE] isEqual:@(NO)]);
@@ -307,6 +319,35 @@ typedef void(^FTTraceRequest)(NSURLRequest *);
         XCTAssertNil(error);
     }];
     XCTAssertTrue(reloadSuccess);
+}
+- (void)testMapTableWeakReferenceWebView{
+    WKWebView *webView = [[WKWebView alloc]init];
+    NSURLRequest *orRequest = [NSURLRequest requestWithURL:[NSURL URLWithString:@"http:mock.com"]];
+    [FTWKWebViewHandler sharedInstance].rumTrackDelegate = self;
+    [[FTWKWebViewHandler sharedInstance] addScriptMessageHandlerWithWebView:webView];
+    [[FTWKWebViewHandler sharedInstance] addWebView:webView request:orRequest];
+    id request = [[FTWKWebViewHandler sharedInstance].webViewRequestTable objectForKey:webView];
+    XCTAssertTrue(request == orRequest);
+    id bridge = [[FTWKWebViewHandler sharedInstance] getWebViewBridge:webView];
+    XCTAssertTrue(bridge != nil);
+    webView = nil;
+    id bridge2 = [[FTWKWebViewHandler sharedInstance] getWebViewBridge:webView];
+    XCTAssertTrue(bridge2 == nil);
+    XCTAssertNil([[FTWKWebViewHandler sharedInstance].webViewRequestTable objectForKey:webView]);
+}
+- (void)testSameWebViewAddBridge_moreThanOnce{
+    WKWebView *webView = [[WKWebView alloc]init];
+    [FTWKWebViewHandler sharedInstance].rumTrackDelegate = self;
+    [[FTWKWebViewHandler sharedInstance] addScriptMessageHandlerWithWebView:webView];
+    id bridge = [[FTWKWebViewHandler sharedInstance] getWebViewBridge:webView];
+    [[FTWKWebViewHandler sharedInstance] addScriptMessageHandlerWithWebView:webView];
+    id bridge2 = [[FTWKWebViewHandler sharedInstance] getWebViewBridge:webView];
+    XCTAssertTrue(bridge != nil);
+    XCTAssertTrue(bridge2 != nil);
+    XCTAssertTrue(bridge == bridge2);
+}
+- (void)dealReceiveScriptMessage:(id )message slotId:(NSUInteger)slotId{
+    
 }
 -(void)webView:(WKWebView *)webView decidePolicyForNavigationAction:(WKNavigationAction *)navigationAction decisionHandler:(void (^)(WKNavigationActionPolicy))decisionHandler{
     if(self.block){
