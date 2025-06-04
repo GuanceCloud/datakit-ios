@@ -520,7 +520,7 @@
 		17E4CB4B29CD42DA005C2D99 /* FTReadWriteHelper.m in Sources */ = {isa = PBXBuildFile; fileRef = 17E4CB0729CD42DA005C2D99 /* FTReadWriteHelper.m */; };
 		17E4CB4C29CD42DA005C2D99 /* FTResourceContentModel.h in Headers */ = {isa = PBXBuildFile; fileRef = 17E4CB0829CD42DA005C2D99 /* FTResourceContentModel.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		17E4CB4E29CD42DA005C2D99 /* FTAppLifeCycle.m in Sources */ = {isa = PBXBuildFile; fileRef = 17E4CB0A29CD42DA005C2D99 /* FTAppLifeCycle.m */; };
-		17E4CB4F29CD42DA005C2D99 /* FTConstants.h in Headers */ = {isa = PBXBuildFile; fileRef = 17E4CB0B29CD42DA005C2D99 /* FTConstants.h */; };
+		17E4CB4F29CD42DA005C2D99 /* FTConstants.h in Headers */ = {isa = PBXBuildFile; fileRef = 17E4CB0B29CD42DA005C2D99 /* FTConstants.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		17E4CB5029CD42DA005C2D99 /* FTLog.h in Headers */ = {isa = PBXBuildFile; fileRef = 17E4CB0C29CD42DA005C2D99 /* FTLog.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		17E4CB5129CD42DA005C2D99 /* FTRecordModel.h in Headers */ = {isa = PBXBuildFile; fileRef = 17E4CB0D29CD42DA005C2D99 /* FTRecordModel.h */; };
 		17E4CB5429CD42DA005C2D99 /* FTCallStack.m in Sources */ = {isa = PBXBuildFile; fileRef = 17E4CB1029CD42DA005C2D99 /* FTCallStack.m */; };
