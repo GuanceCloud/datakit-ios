@@ -19,6 +19,7 @@
 #import "FTSwizzle.h"
 #import "FTLog+Private.h"
 #import "FTReadWriteHelper.h"
+#import <os/lock.h>
 
 @interface FTWKWebViewHandler ()
 @property (nonatomic, weak) id<FTWKWebViewRumDelegate> rumTrackDelegate;
@@ -88,21 +89,27 @@ static dispatch_once_t onceToken;
 }
 - (void)removeAllWebViewBridges{
     [self.lock lock];
-    NSEnumerator *enumerator = self.webViewBridge.objectEnumerator;
-    FTWKWebViewJavascriptBridge *bridge;
-    while ((bridge = [enumerator nextObject])) {
+    NSArray *allBridges = [self.webViewBridge.objectEnumerator allObjects];
+    [self.lock unlock];
+    for (FTWKWebViewJavascriptBridge *bridge in allBridges) {
         [bridge removeScriptMessageHandler];
     }
+    [self.lock lock];
+    [self.webViewBridge removeAllObjects];
     [self.lock unlock];
 }
 - (NSString *)transHostsArrayToString:(NSArray *)hosts{
-    if(hosts && hosts.count>0){
-        NSArray *hostsCopy = [hosts copy];
-        NSMutableArray<NSString *> *quotedHosts = [[NSMutableArray alloc] initWithCapacity:hostsCopy.count];
-        [hostsCopy enumerateObjectsUsingBlock:^(NSString * _Nonnull host, NSUInteger idx, BOOL * _Nonnull stop) {
-            [quotedHosts addObject:[NSString stringWithFormat:@"\\\"%@\\\"", host]];
-        }];
-        return  [quotedHosts componentsJoinedByString:@","];
+    @try {
+        if(hosts && hosts.count>0){
+            NSArray *hostsCopy = [hosts copy];
+            NSMutableArray<NSString *> *quotedHosts = [[NSMutableArray alloc] initWithCapacity:hostsCopy.count];
+            [hostsCopy enumerateObjectsUsingBlock:^(NSString * _Nonnull host, NSUInteger idx, BOOL * _Nonnull stop) {
+                [quotedHosts addObject:[NSString stringWithFormat:@"\\\"%@\\\"", host]];
+            }];
+            return  [quotedHosts componentsJoinedByString:@","];
+        }
+    } @catch (NSException *exception) {
+        FTInnerLogError(@"exception: %@",exception);
     }
     return @"";
 }
@@ -119,27 +126,37 @@ static dispatch_once_t onceToken;
     [self _enableWebView:webView allowedWebViewHostsString:allowedHosts];
 }
 - (void)_enableWebView:(WKWebView *)webView allowedWebViewHostsString:(NSString *)hostsString{
-    if ([self getWebViewBridge:webView]) {
-        FTInnerLogDebug(@"WebView(%@) already add JSBridge.",webView);
-        return;
-    }
-    FTWKWebViewJavascriptBridge *bridge = [FTWKWebViewJavascriptBridge bridgeForWebView:webView allowWebViewHostsString:hostsString];
-    __weak typeof(self) weakSelf = self;
-    [bridge registerHandler:@"sendEvent" handler:^(id data, int64_t slotId,WVJBResponseCallback responseCallback) {
-        __strong __typeof(weakSelf) strongSelf = weakSelf;
-        if (!strongSelf) {
+    @try {
+        if ([self getWebViewBridge:webView]) {
+            FTInnerLogDebug(@"WebView(%@) already add JSBridge.",webView);
             return;
         }
-        if (strongSelf.rumTrackDelegate && [strongSelf.rumTrackDelegate respondsToSelector:@selector(dealReceiveScriptMessage:slotId:)]){
-            [strongSelf.rumTrackDelegate dealReceiveScriptMessage:data slotId:slotId];
-        }
-    }];
-    [self addWebView:webView bridge:bridge];
+        FTWKWebViewJavascriptBridge *bridge = [FTWKWebViewJavascriptBridge bridgeForWebView:webView allowWebViewHostsString:hostsString];
+        __weak typeof(self) weakSelf = self;
+        [bridge registerHandler:@"sendEvent" handler:^(id data, int64_t slotId,WVJBResponseCallback responseCallback) {
+            __strong __typeof(weakSelf) strongSelf = weakSelf;
+            if (!strongSelf) {
+                return;
+            }
+            if (strongSelf.rumTrackDelegate && [strongSelf.rumTrackDelegate respondsToSelector:@selector(dealReceiveScriptMessage:slotId:)]){
+                [strongSelf.rumTrackDelegate dealReceiveScriptMessage:data slotId:slotId];
+            }
+        }];
+        [self addWebView:webView bridge:bridge];
+    }
+    @catch (NSException *exception) {
+        FTInnerLogError(@"exception: %@",exception);
+    }
 }
 - (void)disableWebView:(WKWebView *)webView{
-    FTWKWebViewJavascriptBridge *bridge = [self getWebViewBridge:webView];
-    [bridge removeScriptMessageHandler];
-    [self removeWebViewBridge:webView];
+    @try {
+        FTWKWebViewJavascriptBridge *bridge = [self getWebViewBridge:webView];
+        [self removeWebViewBridge:webView];
+        [bridge removeScriptMessageHandler];
+    }
+    @catch (NSException *exception) {
+        FTInnerLogError(@"exception: %@",exception);
+    }
 }
 - (void)shutDown{
     [self removeAllWebViewBridges];

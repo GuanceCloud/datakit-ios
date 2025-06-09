@@ -28,6 +28,7 @@
 @property (nonatomic, strong) NSMapTable *webViewRequestTable;
 
 - (id)getWebViewBridge:(WKWebView *)webView;
+- (void)removeAllWebViewBridges;
 @end
 
 @interface FTJavaScriptBridgeTest : KIFTestCase<WKNavigationDelegate,FTWKWebViewRumDelegate>

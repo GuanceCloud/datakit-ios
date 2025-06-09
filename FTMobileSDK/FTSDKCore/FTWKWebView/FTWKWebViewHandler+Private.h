@@ -7,7 +7,7 @@
 //
 
 #import "FTWKWebViewHandler.h"
-
+#if !TARGET_OS_TV
 NS_ASSUME_NONNULL_BEGIN
 /// webView 添加  web 端 rum 数据
 @protocol FTWKWebViewRumDelegate <NSObject>
@@ -24,5 +24,5 @@ NS_ASSUME_NONNULL_BEGIN
 
 - (void)shutDown;
 @end
-
 NS_ASSUME_NONNULL_END
+#endif
