@@ -55,7 +55,7 @@
         if(callback)callback(NO,nil);
         return;
     }
-    if (self.lastRequestTimeInterval > 0 && miniUpdateInterval > 0 && [[NSDate date] timeIntervalSince1970] - self.lastRequestTimeInterval > miniUpdateInterval) {
+    if (self.lastRequestTimeInterval > 0 && miniUpdateInterval > 0 && [[NSDate date] timeIntervalSince1970] - self.lastRequestTimeInterval < miniUpdateInterval) {
         FTInnerLogInfo(@"[remote-config] The time interval between last request is shorter than mini Update Interval.");
         if(callback)callback(NO,nil);
         return;
