@@ -120,6 +120,14 @@ NS_ASSUME_NONNULL_BEGIN
 /// 清除所有尚未上传至服务器的数据
 + (void)clearAllData;
 
+/// 动态更新环境变量
++ (void)updateRemoteConfig;
+
+/// 动态更新环境变量，miniUpdateInterval = 0 时，强制更新
+/// - Parameters:
+///   - miniUpdateInterval: 距离上次请求最小时间间隔
+///   - callback: 请求回调
++ (void)updateRemoteConfigWithMiniUpdateInterval:(int)miniUpdateInterval callback:(void (^)(BOOL success, NSDictionary<NSString *, id> * _Nullable config))callback;
 #pragma mark ========== DEPRECATED ==========
 /// 注销当前用户
 - (void)logout DEPRECATED_MSG_ATTRIBUTE("已过时，请使用 -unbindUser 替换");

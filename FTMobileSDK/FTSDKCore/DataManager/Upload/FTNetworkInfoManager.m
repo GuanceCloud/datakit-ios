@@ -72,6 +72,12 @@ static FTNetworkInfoManager *sharedInstance = nil;
         return self;
     };
 }
+- (FTNetworkInfoManager *(^)(NSString *value))setAppId{
+    return ^(NSString *value) {
+        self->_appId = value;
+        return self;
+    };
+}
 + (void)shutDown{
     if(sharedInstance){
         onceToken = 0;

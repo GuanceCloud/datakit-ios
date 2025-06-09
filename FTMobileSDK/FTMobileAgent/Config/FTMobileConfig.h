@@ -252,6 +252,12 @@ typedef FTTraceContext*_Nullable(^FTTraceInterceptor)(NSURLRequest *_Nonnull req
 
 /// 设置数据更改器，可以针对某一行进行判断，再决定是否需要替换某一个数值
 @property (nonatomic, copy) FTLineDataModifier lineDataModifier;
+
+/// 设置是否开启动态配置
+@property (nonatomic, assign) BOOL remoteConfiguration;
+
+/// 设置动态配置最小更新间隔，单位秒,默认 12*60*60
+@property (nonatomic, assign) int remoteConfigMiniUpdateInterval;
 /// 根据提供的 FTEnv 类型设置 env
 /// - Parameter envType: 环境
 - (void)setEnvWithType:(FTEnv)envType;

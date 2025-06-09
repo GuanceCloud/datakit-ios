@@ -30,6 +30,16 @@ NS_ASSUME_NONNULL_BEGIN
  * @return 转化后得到的 dict
  */
 + (nullable NSDictionary *)dictionaryWithJsonString:(NSString *)jsonString;
+
+/**
+ * @abstract
+ * 把一个 Json字符串 转成 array
+ *
+ * @param jsonString 要转化的 Json 字符串
+ *
+ * @return 转化后得到的 array
+ */
++ (nullable NSArray *)arrayWithJsonString:(NSString *)jsonString;
 /**
  * @abstract
  * 把一个Object转成Json字符串

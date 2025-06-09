@@ -16,13 +16,11 @@
 #import "FTConstants.h"
 #import "FTRecordModel.h"
 #import "FTNetworkConnectivity.h"
+#import "FTNetworkInfoManager.h"
 static const NSInteger kMaxRetryCount = 5;
 static const NSTimeInterval kInitialRetryDelay = 0.5; // 初始500ms延迟
 
 @interface FTDataUploadWorker()
-@property (nonatomic, strong) FTHTTPClient *httpClient;
-/// 是否开启自动上传逻辑（启动时、网络状态变化、写入间隔10s）
-@property (nonatomic, assign) BOOL autoSync;
 /// 一次上传数据数量
 @property (nonatomic, assign) int uploadPageSize;
 @property (nonatomic, assign) int syncSleepTime;
@@ -42,12 +40,11 @@ static const NSTimeInterval kInitialRetryDelay = 0.5; // 初始500ms延迟
 }
 @synthesize uploadWork = _uploadWork;
 @synthesize timerSource = _timerSource;
--(instancetype)initWithAutoSync:(BOOL)autoSync syncPageSize:(int)syncPageSize syncSleepTime:(int)syncSleepTime{
+-(instancetype)initWithSyncPageSize:(int)syncPageSize syncSleepTime:(int)syncSleepTime{
     self = [super init];
     if (self) {
         pthread_rwlock_init(&_uploadWorkLock, NULL);
         pthread_rwlock_init(&_timerWorkLock, NULL);
-        _autoSync = autoSync;
         _uploadPageSize = syncPageSize;
         _syncSleepTime = syncSleepTime;
         _httpClient =[[FTHTTPClient alloc]initWithTimeoutIntervalForRequest:syncPageSize>30?syncPageSize:30];
@@ -55,6 +52,25 @@ static const NSTimeInterval kInitialRetryDelay = 0.5; // 初始500ms延迟
         _networkQueue = dispatch_queue_create("com.guance.network", attributes);
     }
     return self;
+}
+-(void)updateWithRemoteConfiguration:(NSDictionary *)configuration{
+    NSNumber *compressIntakeRequests = configuration[FT_R_COMPRESS_INTAKE_REQUESTS];
+    NSNumber *syncPageSize = configuration[FT_R_SYNC_PAGE_SIZE];
+    NSNumber *syncSleepTime = configuration[FT_R_SYNC_SLEEP_TIME];
+    __weak typeof(self) weakSelf = self;
+    dispatch_async(self.networkQueue, ^{
+        __strong typeof(weakSelf) strongSelf = weakSelf;
+        if (!strongSelf) return;
+        if (compressIntakeRequests != nil) {
+            [FTNetworkInfoManager sharedInstance] .setEnableDataIntegerCompatible([compressIntakeRequests boolValue]);
+        }
+        if (syncPageSize != nil) {
+            strongSelf.uploadPageSize = [syncPageSize intValue];
+        }
+        if (syncSleepTime != nil) {
+            strongSelf.syncSleepTime = [syncSleepTime intValue];
+        }
+    });
 }
 -(void)setUploadWork:(dispatch_block_t)uploadWork{
     pthread_rwlock_wrlock(&_uploadWorkLock);

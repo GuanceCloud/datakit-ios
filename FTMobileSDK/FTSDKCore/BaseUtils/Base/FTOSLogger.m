@@ -29,14 +29,15 @@
         case StatusWarning:
         case StatusCritical:
         case StatusOk:
+        case StatusCustom:
         case StatusInfo:
-           os_log_info(self.logger,"%{public}s",[message UTF8String]);
-           break;
+            os_log_info(self.logger,"%{public}s",[message UTF8String]);
+            break;
         case StatusError:
-            os_log_error(self.logger, "%{public}s",[message UTF8String]);
+            os_log_error(self.logger,"%{public}s",[message UTF8String]);
             break;
         case StatusDebug:
-            os_log_debug(self.logger, "%{public}s",[message UTF8String]);
+            os_log_debug(self.logger,"%{public}s",[message UTF8String]);
             break;
     }
 }
