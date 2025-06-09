@@ -156,24 +156,13 @@ static dispatch_group_t _loggingGroup;
     }
 }
 - (void)userLog:(BOOL)asynchronous
-    message:(NSString *)message
-      level:(LogStatus)level
+        message:(NSString *)message
+          level:(LogStatus)level
+         status:(NSString *)status
    property:(nullable NSDictionary *)property{
     @try {
         NSDate *timestamp = [NSDate date];
-        FTLogMessage *logMessage = [[FTLogMessage alloc] initWithMessage:message  level:level status:nil property:property timestamp:timestamp];
-        [self queueLogMessage:logMessage asynchronously:asynchronous];
-    } @catch(NSException *e) {
-        FTNSLogError(@"[FTLog] %@",e.description);
-    }
-}
-- (void)userLog:(BOOL)asynchronous
-        message:(NSString *)message
-         status:(NSString *)status
-       property:(nullable NSDictionary *)property{
-    @try {
-        NSDate *timestamp = [NSDate date];
-        FTLogMessage *logMessage = [[FTLogMessage alloc] initWithMessage:message  level:StatusInfo status:status property:property timestamp:timestamp];
+        FTLogMessage *logMessage = [[FTLogMessage alloc] initWithMessage:message  level:level status:status property:property timestamp:timestamp];
         [self queueLogMessage:logMessage asynchronously:asynchronous];
     } @catch(NSException *e) {
         FTNSLogError(@"[FTLog] %@",e.description);

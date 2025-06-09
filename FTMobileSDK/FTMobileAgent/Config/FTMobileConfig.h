@@ -157,6 +157,11 @@ typedef FTTraceContext*_Nullable(^FTTraceInterceptor)(NSURLRequest *_Nonnull req
 @property (nonatomic, assign) FTRUMCacheDiscard rumDiscardType;
 /// RUM Resource 添加自定义属性
 @property (nonatomic, copy) FTResourcePropertyProvider resourcePropertyProvider;
+/// 设置开启采集 webview 数据，默认 YES
+@property (nonatomic, assign) BOOL enableTraceWebView;
+/// 设置允许采集 WebView 数据的特定主机或域名，nil 时全采集。
+@property (nonatomic, copy) NSArray *allowWebViewHost;
+
 
 /// 开启采集卡顿并设置卡顿的阈值。
 /// - Parameter enableTrackAppFreeze: 设置是否需要采集卡顿
@@ -247,6 +252,12 @@ typedef FTTraceContext*_Nullable(^FTTraceInterceptor)(NSURLRequest *_Nonnull req
 
 /// 设置数据更改器，可以针对某一行进行判断，再决定是否需要替换某一个数值
 @property (nonatomic, copy) FTLineDataModifier lineDataModifier;
+
+/// 设置是否开启动态配置
+@property (nonatomic, assign) BOOL remoteConfiguration;
+
+/// 设置动态配置最小更新间隔，单位秒,默认 12*60*60
+@property (nonatomic, assign) int remoteConfigMiniUpdateInterval;
 /// 根据提供的 FTEnv 类型设置 env
 /// - Parameter envType: 环境
 - (void)setEnvWithType:(FTEnv)envType;

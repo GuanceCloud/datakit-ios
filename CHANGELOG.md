@@ -1,3 +1,9 @@
+# 1.5.17-alpha.1
+1. 添加 `FTRUMConfig.enableTraceWebView` 配置是否开启通过 SDK 采集 webview 数据,
+   通过 `FTRUMConfig.allowWebViewHost` 可以控制需要过滤 host 地址
+2. 添加 `FTURLSessionDelegate.errorFilter`, 可以针对本地网络错误进行过滤
+3. 添加 `FTMobileConfig.remoteConfiguration` 、`FTMobileConfig.remoteConfigMiniUpdateInterval` 配置是否开启远程配置功能，动态配置参数。`FTMobileAgent` 添加 `+updateRemoteConfig` 和 `+ updateRemoteConfigWithMiniUpdateInterval:callback:` 更新远程配置请求方法
+---
 # 1.5.16
 1. 添加 `FTMobileConfig.lineDataModifier`、`FTMobileConfig.dataModifier` 支持数据写入替换，支持数据脱敏
 2. 添加 `FTRUMConfig.sessionErrorSampleRate` 支持错误采样，在未被 setSamplingRate采样时， 在发生错误时可以对 1 分钟前的 rum 的数据进行取样采集

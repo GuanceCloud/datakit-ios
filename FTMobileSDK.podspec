@@ -61,7 +61,12 @@ Pod::Spec.new do |s|
 		c.subspec 'Protocol' do |r|
 			r.source_files = 'FTMobileSDK/FTSDKCore/Protocol/**/*{.h,.m}'
 		end
-
+    
+    c.subspec 'RemoteConfig' do |r|
+    	r.source_files = 'FTMobileSDK/FTSDKCore/RemoteConfig/*{.h,.m}'
+    	r.dependency 'FTMobileSDK/FTSDKCore/DataManager'
+    end
+    	
 		c.subspec 'BaseUtils' do |b|
 
 			b.subspec 'Base' do |bb|

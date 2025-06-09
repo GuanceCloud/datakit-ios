@@ -13,6 +13,7 @@
 #import "FTBaseInfoHandler.h"
 #import "FTEnumConstant.h"
 #import "NSDictionary+FTCopyProperties.h"
+#import "FTJSONUtil.h"
 @implementation FTRumConfig
 - (instancetype)init{
     return [self initWithAppid:@""];
@@ -34,6 +35,7 @@
         _freezeDurationMs = FT_DEFAULT_BLOCK_DURATIONS_MS;
         _rumCacheLimitCount = FT_DB_RUM_MAX_COUNT;
         _rumDiscardType = FTRUMDiscard;
+        _enableTraceWebView = YES;
     }
     return self;
 }
@@ -58,6 +60,8 @@
     options.rumDiscardType = self.rumDiscardType;
     options.resourcePropertyProvider = self.resourcePropertyProvider;
     options.sessionOnErrorSampleRate = self.sessionOnErrorSampleRate;
+    options.enableTraceWebView = self.enableTraceWebView;
+    options.allowWebViewHost = self.allowWebViewHost;
     return options;
 }
 -(instancetype)initWithDictionary:(NSDictionary *)dict{
@@ -123,6 +127,59 @@
     [dict setValue:[self.resourcePropertyProvider copy] forKey:@"resourcePropertyProvider"];
     return [NSString stringWithFormat:@"%@",dict];
 }
+-(void)mergeWithRemoteConfigDict:(NSDictionary *)dict{
+    NSNumber *sampleRate = dict[FT_R_RUM_SAMPLERATE];
+    NSNumber *sessionOnErrorSampleRate = dict[FT_R_RUM_SESSION_ON_ERROR_SAMPLE_RATE];
+    NSNumber *enableTraceUserAction = dict[FT_R_RUM_ENABLE_TRACE_USER_ACTION];
+    NSNumber *enableTraceUserView = dict[FT_R_RUM_ENABLE_TRACE_USER_VIEW];
+    NSNumber *enableTraceUserResource = dict[FT_R_RUM_ENABLE_TRACE_USER_RESOURCE];
+    NSNumber *enableResourceHostIP = dict[FT_R_RUM_ENABLE_RESOURCE_HOST_IP];
+    NSNumber *enableTrackAppUIBlock = dict[FT_R_RUM_ENABLE_TRACE_APP_UI_BLOCK];
+    NSNumber *blockDurationMs = dict[FT_R_RUM_BLOCK_DURATION_MS];
+    NSNumber *enableTrackAppCrash = dict[FT_R_RUM_ENABLE_TRACK_APP_CRASH];
+    NSNumber *enableTrackAppANR = dict[FT_R_RUM_ENABLE_TRACK_APP_ANR];
+    NSNumber *enableTraceWebView = dict[FT_R_RUM_ENABLE_TRACE_WEBVIEW];
+    NSString *allowWebViewHost = dict[FT_R_RUM_ALLOW_WEBVIEW_HOST];
+    if (sampleRate != nil) {
+        self.samplerate = [sampleRate doubleValue] * 100;
+    }
+    if (sessionOnErrorSampleRate != nil) {
+        self.sessionOnErrorSampleRate = [sessionOnErrorSampleRate doubleValue] * 100;
+    }
+    if (enableTraceUserAction != nil) {
+        self.enableTraceUserAction = [enableTraceUserAction boolValue];
+    }
+    if (enableTraceUserView != nil) {
+        self.enableTraceUserView = [enableTraceUserView boolValue];
+    }
+    if (enableTraceUserResource != nil) {
+        self.enableTraceUserResource = [enableTraceUserResource boolValue];
+    }
+    if (enableResourceHostIP != nil) {
+        self.enableResourceHostIP = [enableResourceHostIP boolValue];
+    }
+    if (enableTrackAppUIBlock != nil) {
+        self.enableTrackAppFreeze = [enableTrackAppUIBlock boolValue];
+    }
+    if (blockDurationMs != nil) {
+        self.freezeDurationMs = [blockDurationMs boolValue];
+    }
+    if (enableTrackAppCrash != nil) {
+        self.enableTrackAppCrash = [enableTrackAppCrash boolValue];
+    }
+    if (enableTrackAppANR != nil) {
+        self.enableTrackAppANR = [enableTrackAppANR boolValue];
+    }
+    if (enableTraceWebView != nil) {
+        self.enableTraceWebView = [enableTraceWebView boolValue];
+    }
+    if (allowWebViewHost && allowWebViewHost.length>0) {
+        NSArray *hosts = [FTJSONUtil arrayWithJsonString:allowWebViewHost];
+        if (hosts.count>0) {
+            self.allowWebViewHost = hosts;
+        }
+    }
+}
 @end
 @implementation FTTraceConfig
 -(instancetype)init{
@@ -169,6 +226,33 @@
     [dict setValue:[self.traceInterceptor copy] forKey:@"traceInterceptor"];
     return [NSString stringWithFormat:@"%@",dict];
 }
+-(void)mergeWithRemoteConfigDict:(NSDictionary *)dict{
+    NSNumber *sampleRate = dict[FT_R_TRACE_SAMPLERATE];
+    NSNumber *enableAutoTrace = dict[FT_R_TRACE_ENABLE_AUTO_TRACE];
+    NSString *traceType = dict[FT_R_TRACE_TRACE_TYPE];
+    if (sampleRate != nil) {
+        self.samplerate = [sampleRate doubleValue] * 100;
+    }
+    if (enableAutoTrace != nil) {
+        self.enableAutoTrace = [enableAutoTrace boolValue];
+    }
+    if (traceType && traceType.length>0) {
+        NSString *trace = [traceType lowercaseString];
+        if ([trace isEqualToString:@"ddtrace"]) {
+            self.networkTraceType = FTNetworkTraceTypeDDtrace;
+        }else if ([trace isEqualToString:@"zipkinmutiheader"]){
+            self.networkTraceType = FTNetworkTraceTypeZipkinMultiHeader;
+        }else if ([trace isEqualToString:@"zipkinsingleheader"]){
+            self.networkTraceType = FTNetworkTraceTypeZipkinSingleHeader;
+        }else if ([trace isEqualToString:@"traceparent"]){
+            self.networkTraceType = FTNetworkTraceTypeTraceparent;
+        }else if ([trace isEqualToString:@"skywalking"]){
+            self.networkTraceType = FTNetworkTraceTypeSkywalking;
+        }else if ([trace isEqualToString:@"jaeger"]){
+            self.networkTraceType = FTNetworkTraceTypeJaeger;
+        }
+    }
+}
 @end
 @interface FTMobileConfig()
 @property (nonatomic, strong) NSMutableDictionary *sdkPkgInfo;
@@ -209,6 +293,8 @@
         _dbCacheLimit = FT_DEFAULT_DB_SIZE_LIMIT;
         _enableDataIntegerCompatible = YES;
         _enableLimitWithDbSize = NO;
+        _remoteConfiguration = NO;
+        _remoteConfigMiniUpdateInterval = 12*60*60;
     }
     return self;
 }
@@ -284,6 +370,8 @@
     options.sdkPkgInfo = [self.sdkPkgInfo copy];
     options.dataModifier = [self.dataModifier copy];
     options.lineDataModifier = [self.lineDataModifier copy];
+    options.remoteConfiguration = self.remoteConfiguration;
+    options.remoteConfigMiniUpdateInterval = self.remoteConfigMiniUpdateInterval;
     return options;
 }
 -(instancetype)initWithDictionary:(NSDictionary *)dict{
@@ -306,6 +394,7 @@
     [dict setValue:self.datawayUrl forKey:@"datawayUrl"];
     [dict setValue:self.clientToken forKey:@"clientToken"];
     [dict setValue:self.datakitUrl forKey:@"datakitUrl"];
+    [dict setValue:@(self.remoteConfiguration) forKey:@"remoteConfiguration"];
     return dict;
 }
 -(NSString *)debugDescription{
@@ -331,5 +420,35 @@
     [dict setValue:@(self.enableLimitWithDbSize) forKey:@"enableLimitWithDbSize"];
     [dict setValue:@(self.dbCacheLimit) forKey:@"dbCacheLimit"];
     return [NSString stringWithFormat:@"%@",dict];
+}
+#pragma mark remote
+-(void)mergeWithRemoteConfigDict:(NSDictionary *)dict{
+    if (!dict || dict.count == 0) {
+        return;
+    }
+    NSString *env = dict[FT_ENV];
+    NSString *serviceName = dict[FT_R_SERVICE_NAME];
+    NSNumber *autoSync = dict[FT_R_AUTO_SYNC];
+    NSNumber *compressIntakeRequests = dict[FT_R_COMPRESS_INTAKE_REQUESTS];
+    NSNumber *syncPageSize = dict[FT_R_SYNC_PAGE_SIZE];
+    NSNumber *syncSleepTime = dict[FT_R_SYNC_SLEEP_TIME];
+    if (env && env.length>0) {
+        self.env = env;
+    }
+    if (serviceName && serviceName.length>0) {
+        self.service = serviceName;
+    }
+    if (autoSync != nil) {
+        self.autoSync = [autoSync boolValue];
+    }
+    if (compressIntakeRequests != nil) {
+        self.compressIntakeRequests = [compressIntakeRequests boolValue];
+    }
+    if (syncPageSize != nil) {
+        self.syncPageSize = [syncPageSize intValue];
+    }
+    if (syncSleepTime != nil) {
+        self.syncSleepTime = [syncSleepTime intValue];
+    }
 }
 @end

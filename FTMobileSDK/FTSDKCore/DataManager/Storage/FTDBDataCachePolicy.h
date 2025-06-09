@@ -16,7 +16,7 @@ typedef void (^LogDataWriteDBCallback)(void);
 @property (atomic, assign) NSInteger rumCount;
 @property (atomic, assign) long currentDbSize;
 @property (nonatomic, assign) BOOL dbDiscardNew;
-@property (nonatomic, copy) LogDataWriteDBCallback callback;
+@property (nonatomic, copy, nullable) LogDataWriteDBCallback callback;
 
 - (void)setDBLimitWithSize:(long)size discardNew:(BOOL)discardNew;
 - (void)setLogCacheLimitCount:(int)count discardNew:(BOOL)discardNew;

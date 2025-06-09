@@ -24,17 +24,13 @@
 
 #define FTInnerLogWarning(frmt,...) FTLOG_MACRO(StatusWarning,(frmt), ## __VA_ARGS__)
 
-#define FT_CONSOLE_LOG(lvl, frmt,dict)   \
+#define FT_CONSOLE_LOG(lvl,status,frmt,dict)   \
 [[FTLog sharedInstance] userLog : YES                \
    message : frmt                                    \
      level : lvl                                     \
+     status:status                                   \
    property: dict]
 
-#define FT_CONSOLE_CUSTOM_LOG(status, frmt,dict)   \
-[[FTLog sharedInstance] userLog : YES                \
-   message : frmt                                    \
-    status : status                                  \
-   property: dict]
 #define FTNSLogError(frmt, ...)    do{ if([FTLog isLoggerEnabled]) NSLog((frmt), ##__VA_ARGS__); } while(0)
 
 NS_ASSUME_NONNULL_BEGIN
@@ -58,9 +54,6 @@ NS_ASSUME_NONNULL_BEGIN
 - (void)userLog:(BOOL)asynchronous
         message:(NSString *)message
           level:(LogStatus)level
-   property:(nullable NSDictionary *)property;
-- (void)userLog:(BOOL)asynchronous
-        message:(NSString *)message
          status:(NSString *)status
    property:(nullable NSDictionary *)property;
 - (void)shutDown;

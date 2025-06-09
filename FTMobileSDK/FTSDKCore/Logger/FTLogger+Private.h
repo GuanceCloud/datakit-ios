@@ -36,6 +36,9 @@ NS_ASSUME_NONNULL_BEGIN
 
 /// 同步执行处理日志的队列
 - (void)syncProcess;
+
+
+- (void)updateWithRemoteConfiguration:(NSDictionary *)configuration;
 @end
 
 NS_ASSUME_NONNULL_END
