@@ -120,10 +120,11 @@ NS_ASSUME_NONNULL_BEGIN
 /// 清除所有尚未上传至服务器的数据
 + (void)clearAllData;
 
-/// 动态更新环境变量
+/// 触发获取远程配置的环境变量请求
+/// 最小的更新时间间隔默认为 FTMobileConfig.remoteConfiguration，若距上次请求时间间隔不满足设置，不发起请求
 + (void)updateRemoteConfig;
 
-/// 动态更新环境变量，miniUpdateInterval = 0 时，强制更新
+/// 触发获取远程配置的环境变量请求
 /// - Parameters:
 ///   - miniUpdateInterval: 距离上次请求最小时间间隔
 ///   - callback: 请求回调
