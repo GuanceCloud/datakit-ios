@@ -13,7 +13,8 @@
 #import "FTJSONUtil.h"
 #import "FTLog+Private.h"
 #import "FTNetworkInfoManager.h"
-@interface FTRemoteConfigManager()
+#import "FTAppLifeCycle.h"
+@interface FTRemoteConfigManager()<FTAppLifeCycleDelegate>
 @property (atomic, assign) BOOL isFetching;
 @property (atomic, assign) NSTimeInterval lastRequestTimeInterval;
 @property (nonatomic, assign) BOOL enable;
@@ -22,9 +23,9 @@
 @end
 
 @implementation FTRemoteConfigManager
-+ (instancetype)sharedManager{
-    static FTRemoteConfigManager *sharedManager = nil;
-    static dispatch_once_t onceToken;
+static FTRemoteConfigManager *sharedManager = nil;
+static dispatch_once_t onceToken;
++ (instancetype)sharedInstance{
     dispatch_once(&onceToken, ^{
         sharedManager = [[FTRemoteConfigManager alloc] init];
     });
@@ -41,6 +42,10 @@
 - (void)enable:(BOOL)enable updateInterval:(int)updateInterval{
     _enable = enable;
     _updateInterval = updateInterval;
+    _localRemoteConfiguration = [self getLocalRemoteConfig];
+    if (enable) {
+        [[FTAppLifeCycle sharedInstance] addAppLifecycleDelegate:self];
+    }
 }
 - (void)updateRemoteConfig{
     [self updateRemoteConfigWithMiniUpdateInterval:self.updateInterval callback:nil];
@@ -48,6 +53,7 @@
 - (void)updateRemoteConfigWithMiniUpdateInterval:(int)miniUpdateInterval callback:(void (^)(BOOL, NSDictionary<NSString *,id> * _Nullable))callback{
     if (!self.enable) {
         FTInnerLogInfo(@"[remote-config] Disable remote configuration.");
+        if(callback)callback(NO,nil);
         return;
     }
     if (self.isFetching) {
@@ -63,6 +69,7 @@
     [self requestRemoteConfigWithCompletion:callback];
 }
 - (void)requestRemoteConfigWithCompletion:(void (^)(BOOL success, NSDictionary<NSString *, id> * _Nullable config))completion{
+    FTInnerLogInfo(@"[remote-config] Start loading remote configuration.");
     self.isFetching = YES;
     FTRemoteConfigurationRequest *request = [[FTRemoteConfigurationRequest alloc]init];
     __weak typeof(self) weakSelf = self;
@@ -81,14 +88,9 @@
             completion(success,config);
         }
         strongSelf.isFetching = NO;
+        FTInnerLogInfo(@"[remote-config] Complete the loading of the remote configuration.");
     }];
 }
-//- (void)cancelRequestRemoteConfig {
-//    dispatch_async(dispatch_get_main_queue(), ^{
-//        // 还未发出请求
-//        [NSObject cancelPreviousPerformRequestsWithTarget:self];
-//    });
-//}
 - (void)handleRemoteConfig:(NSDictionary<NSString *, id> *)remoteConfig {
     @try {
         if ([remoteConfig isKindOfClass:[NSDictionary class]] && ([remoteConfig count] > 0)) {
@@ -124,16 +126,22 @@
     if (!self.enable) {
         return nil;
     }
-    if (self.localRemoteConfiguration) {
-        return self.localRemoteConfiguration;
-    }
     NSDictionary *local = [[NSUserDefaults standardUserDefaults] objectForKey:@"FT_REMOTE_CONFIG"];
-    self.localRemoteConfiguration = local;
     return local;
 }
 - (void)saveRemoteConfig:(NSDictionary<NSString *, id> *)remoteConfig{
     self.localRemoteConfiguration = remoteConfig;
     [[NSUserDefaults standardUserDefaults] setObject:remoteConfig forKey:@"FT_REMOTE_CONFIG"];
     FTInnerLogInfo(@"[remote-config] Update Remote Config: %@",remoteConfig);
+}
+-(void)applicationDidBecomeActive{
+    if (self.enable) {
+        [self updateRemoteConfig];
+    }
+}
+- (void)shutDown{
+    [[FTAppLifeCycle sharedInstance] removeAppLifecycleDelegate:self];
+    onceToken = 0;
+    sharedManager = nil;
 }
 @end

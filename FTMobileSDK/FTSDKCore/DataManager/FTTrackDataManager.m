@@ -58,16 +58,23 @@ static dispatch_once_t onceToken;
     self = [super init];
     if (self) {
         _dataCachePolicy = [[FTDBDataCachePolicy alloc]init];
+        __weak typeof(self) weakSelf = self;
+        _dataCachePolicy.callback = ^{
+            __strong typeof(weakSelf) strongSelf = weakSelf;
+            if (!strongSelf) return;
+            if (strongSelf.autoSync){
+                [strongSelf.dataUploadWorker flushWithSleep:YES];
+            };
+        };
         _dataUploadWorker = [[FTDataUploadWorker alloc]initWithSyncPageSize:syncPageSize syncSleepTime:syncSleepTime];
         _dataWriterWorker = [[FTDataWriterWorker alloc]init];
         _dataUploadWorker.errorSampledConsume = _dataWriterWorker;
         _dataUploadWorker.counter = _dataCachePolicy;
-        _autoSync = autoSync;
         _errorTimeIntervals = [[NSMutableArray alloc]init];
         _cacheInvalidTimeInterval = 60;
         [[FTNetworkConnectivity sharedInstance] start];
         [[FTAppLifeCycle sharedInstance] addAppLifecycleDelegate:self];
-        [self enableAutoSync:_autoSync];
+        [self enableAutoSync:autoSync];
     }
     return self;
 }
@@ -75,26 +82,19 @@ static dispatch_once_t onceToken;
     return _dataUploadWorker.httpClient;
 }
 - (void)enableAutoSync:(BOOL)autoSync{
+    self.autoSync = autoSync;
     if (autoSync) {
-        __weak typeof(self) weakSelf = self;
-        _dataCachePolicy.callback = ^{
-            __strong typeof(weakSelf) strongSelf = weakSelf;
-            if (!strongSelf) return;
-            [strongSelf.dataUploadWorker flushWithSleep:YES];
-        };
         [[FTNetworkConnectivity sharedInstance] addNetworkObserver:self];
     }else{
         [self.dataUploadWorker cancelAsynchronously];
-        _dataCachePolicy.callback = nil;
         [[FTNetworkConnectivity sharedInstance] removeNetworkObserver:self];
     }
 }
--(void)updateWithRemoteConfiguration:(NSDictionary *)configuration{
-    NSNumber *autoSync = configuration[FT_R_AUTO_SYNC];
-    if (autoSync != nil) {
-        self.autoSync = [autoSync boolValue];
-    }
-    [self.dataUploadWorker updateWithRemoteConfiguration:configuration];
+- (void)updateAutoSync:(BOOL)autoSync
+          syncPageSize:(int)syncPageSize
+         syncSleepTime:(int)syncSleepTime{
+    [self enableAutoSync:autoSync];
+    [self.dataUploadWorker updateSyncPageSize:syncPageSize syncSleepTime:syncSleepTime];
 }
 -(void)setEnableLimitWithDb:(BOOL)enable size:(long)size discardNew:(BOOL)discardNew{
     [[FTTrackerEventDBTool sharedManger] setEnableLimitWithDbSize:enable];

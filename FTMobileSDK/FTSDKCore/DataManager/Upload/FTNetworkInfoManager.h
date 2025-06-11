@@ -16,7 +16,8 @@ NS_ASSUME_NONNULL_BEGIN
 @property (nonatomic,copy,readonly) NSString *clientToken;
 @property (nonatomic,copy,readonly) NSString *sdkVersion;
 @property (nonatomic,copy,readonly) NSString *appId;
-@property (nonatomic,assign,readonly) BOOL compression;
+// 仅 compression 有多线程读写操作，其余属性仅在 SDK 初始化时赋值
+@property (atomic,assign,readonly) BOOL compression;
 @property (nonatomic,assign,readonly) BOOL enableDataIntegerCompatible;
 
 + (instancetype)sharedInstance;
@@ -26,7 +27,7 @@ NS_ASSUME_NONNULL_BEGIN
 - (FTNetworkInfoManager *(^)(NSString *value))setSdkVersion;
 - (FTNetworkInfoManager *(^)(NSString *value))setAppId;
 - (FTNetworkInfoManager *(^)(BOOL value))setEnableDataIntegerCompatible;
-- (FTNetworkInfoManager *(^)(BOOL value))setCompression;
+- (FTNetworkInfoManager *(^)(BOOL value))setCompressionIntakeRequests;
 + (void)shutDown;
 @end
 

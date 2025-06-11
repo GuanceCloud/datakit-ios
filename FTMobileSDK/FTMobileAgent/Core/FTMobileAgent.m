@@ -65,9 +65,9 @@ static dispatch_once_t onceToken;
         if (self) {
             _sdkConfig = [config copy];
             if (_sdkConfig.remoteConfiguration) {
-                [[FTRemoteConfigManager sharedManager] enable:YES updateInterval:_sdkConfig.remoteConfigMiniUpdateInterval];
-                [FTRemoteConfigManager sharedManager].delegate = self;
-                [_sdkConfig mergeWithRemoteConfigDict:[[FTRemoteConfigManager sharedManager] getLocalRemoteConfig]];
+                [[FTRemoteConfigManager sharedInstance] enable:YES updateInterval:_sdkConfig.remoteConfigMiniUpdateInterval];
+                [FTRemoteConfigManager sharedInstance].delegate = self;
+                [_sdkConfig mergeWithRemoteConfigDict:[[FTRemoteConfigManager sharedInstance] getLocalRemoteConfig]];
             }
             [self applyBaseConfig:_sdkConfig];
         }
@@ -83,8 +83,8 @@ static dispatch_once_t onceToken;
             _rumConfig = [rumConfigOptions copy];
             [FTNetworkInfoManager sharedInstance].setAppId(_rumConfig.appid);
             if (_sdkConfig.remoteConfiguration) {
-                [[FTRemoteConfigManager sharedManager] updateRemoteConfig];
-                [_rumConfig mergeWithRemoteConfigDict:[[FTRemoteConfigManager sharedManager] getLocalRemoteConfig]];
+                [[FTRemoteConfigManager sharedInstance] updateRemoteConfig];
+                [_rumConfig mergeWithRemoteConfigDict:[[FTRemoteConfigManager sharedInstance] getLocalRemoteConfig]];
             }
             [self applyRUMConfig:_rumConfig];
         }
@@ -97,7 +97,7 @@ static dispatch_once_t onceToken;
         if (!_loggerConfig) {
             _loggerConfig = [loggerConfigOptions copy];
             if (_sdkConfig.remoteConfiguration) {
-                [_loggerConfig mergeWithRemoteConfigDict:[[FTRemoteConfigManager sharedManager] getLocalRemoteConfig]];
+                [_loggerConfig mergeWithRemoteConfigDict:[[FTRemoteConfigManager sharedInstance] getLocalRemoteConfig]];
             }
             [self applyLogConfig:_loggerConfig];
         }
@@ -110,7 +110,7 @@ static dispatch_once_t onceToken;
         if(!_traceConfig){
             _traceConfig = [traceConfigOptions copy];
             if (_sdkConfig.remoteConfiguration) {
-                [_traceConfig mergeWithRemoteConfigDict:[[FTRemoteConfigManager sharedManager] getLocalRemoteConfig]];
+                [_traceConfig mergeWithRemoteConfigDict:[[FTRemoteConfigManager sharedInstance] getLocalRemoteConfig]];
             }else{
                 [self applyTraceConfig:_traceConfig];
             }
@@ -121,20 +121,23 @@ static dispatch_once_t onceToken;
 }
 #pragma mark ========== remote ==========
 - (void)updateRemoteConfiguration:(NSDictionary *)configuration{
-    [[FTTrackDataManager sharedInstance] updateWithRemoteConfiguration:configuration];
+    [self.sdkConfig mergeWithRemoteConfigDict:configuration];
+    [FTNetworkInfoManager sharedInstance].setCompressionIntakeRequests(self.sdkConfig.compressIntakeRequests);
+    [[FTTrackDataManager sharedInstance] updateAutoSync:self.sdkConfig.autoSync syncPageSize:self.sdkConfig.syncPageSize syncSleepTime:self.sdkConfig.syncSleepTime];
     [[FTLogger sharedInstance] updateWithRemoteConfiguration:configuration];
 }
 + (void)updateRemoteConfig{
     if (onceToken == 0 && sharedInstance == nil) {
         return;
     }
-    [[FTRemoteConfigManager sharedManager] updateRemoteConfig];
+    [[FTRemoteConfigManager sharedInstance] updateRemoteConfig];
 }
 + (void)updateRemoteConfigWithMiniUpdateInterval:(int)miniUpdateInterval callback:(void (^)(BOOL, NSDictionary<NSString *,id> * _Nullable))callback{
     if (onceToken == 0 && sharedInstance == nil) {
+        callback(NO,nil);
         return;
     }
-    [[FTRemoteConfigManager sharedManager] updateRemoteConfigWithMiniUpdateInterval:miniUpdateInterval callback:callback];
+    [[FTRemoteConfigManager sharedInstance] updateRemoteConfigWithMiniUpdateInterval:miniUpdateInterval callback:callback];
 }
 #pragma mark ========== real sdk init ==========
 - (void)applyBaseConfig:(FTMobileConfig *)config{
@@ -159,7 +162,7 @@ static dispatch_once_t onceToken;
         .setDatawayUrl(config.datawayUrl)
         .setClientToken(config.clientToken)
         .setSdkVersion(SDK_VERSION)
-        .setCompression(config.compressIntakeRequests)
+        .setCompressionIntakeRequests(config.compressIntakeRequests)
         .setEnableDataIntegerCompatible(config.enableDataIntegerCompatible);
     [[FTURLSessionInstrumentation sharedInstance] setSdkUrlStr:config.datakitUrl.length>0?config.datakitUrl:config.datawayUrl
                                                    serviceName:config.service];
@@ -350,6 +353,7 @@ static dispatch_once_t onceToken;
     [[FTLogger sharedInstance] shutDown];
     [[FTURLSessionInstrumentation sharedInstance] shutDown];
     [[FTPresetProperty sharedInstance] shutDown];
+    [[FTRemoteConfigManager sharedInstance] shutDown];
     onceToken = 0;
     sharedInstance = nil;
     [[NSNotificationCenter defaultCenter] removeObserver:self];

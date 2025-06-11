@@ -22,7 +22,7 @@ NS_ASSUME_NONNULL_BEGIN
 
 -(void)cancelSynchronously;
 -(void)cancelAsynchronously;
--(void)updateWithRemoteConfiguration:(NSDictionary *)configuration;
+-(void)updateSyncPageSize:(int)syncPageSize syncSleepTime:(int)syncSleepTime;
 @end
 
 NS_ASSUME_NONNULL_END

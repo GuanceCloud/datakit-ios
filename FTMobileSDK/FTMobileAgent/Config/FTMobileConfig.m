@@ -14,6 +14,8 @@
 #import "FTEnumConstant.h"
 #import "NSDictionary+FTCopyProperties.h"
 #import "FTJSONUtil.h"
+#import "FTLog+Private.h"
+
 @implementation FTRumConfig
 - (instancetype)init{
     return [self initWithAppid:@""];
@@ -128,56 +130,63 @@
     return [NSString stringWithFormat:@"%@",dict];
 }
 -(void)mergeWithRemoteConfigDict:(NSDictionary *)dict{
-    NSNumber *sampleRate = dict[FT_R_RUM_SAMPLERATE];
-    NSNumber *sessionOnErrorSampleRate = dict[FT_R_RUM_SESSION_ON_ERROR_SAMPLE_RATE];
-    NSNumber *enableTraceUserAction = dict[FT_R_RUM_ENABLE_TRACE_USER_ACTION];
-    NSNumber *enableTraceUserView = dict[FT_R_RUM_ENABLE_TRACE_USER_VIEW];
-    NSNumber *enableTraceUserResource = dict[FT_R_RUM_ENABLE_TRACE_USER_RESOURCE];
-    NSNumber *enableResourceHostIP = dict[FT_R_RUM_ENABLE_RESOURCE_HOST_IP];
-    NSNumber *enableTrackAppUIBlock = dict[FT_R_RUM_ENABLE_TRACE_APP_UI_BLOCK];
-    NSNumber *blockDurationMs = dict[FT_R_RUM_BLOCK_DURATION_MS];
-    NSNumber *enableTrackAppCrash = dict[FT_R_RUM_ENABLE_TRACK_APP_CRASH];
-    NSNumber *enableTrackAppANR = dict[FT_R_RUM_ENABLE_TRACK_APP_ANR];
-    NSNumber *enableTraceWebView = dict[FT_R_RUM_ENABLE_TRACE_WEBVIEW];
-    NSString *allowWebViewHost = dict[FT_R_RUM_ALLOW_WEBVIEW_HOST];
-    if (sampleRate != nil) {
-        self.samplerate = [sampleRate doubleValue] * 100;
-    }
-    if (sessionOnErrorSampleRate != nil) {
-        self.sessionOnErrorSampleRate = [sessionOnErrorSampleRate doubleValue] * 100;
-    }
-    if (enableTraceUserAction != nil) {
-        self.enableTraceUserAction = [enableTraceUserAction boolValue];
-    }
-    if (enableTraceUserView != nil) {
-        self.enableTraceUserView = [enableTraceUserView boolValue];
-    }
-    if (enableTraceUserResource != nil) {
-        self.enableTraceUserResource = [enableTraceUserResource boolValue];
-    }
-    if (enableResourceHostIP != nil) {
-        self.enableResourceHostIP = [enableResourceHostIP boolValue];
-    }
-    if (enableTrackAppUIBlock != nil) {
-        self.enableTrackAppFreeze = [enableTrackAppUIBlock boolValue];
-    }
-    if (blockDurationMs != nil) {
-        self.freezeDurationMs = [blockDurationMs boolValue];
-    }
-    if (enableTrackAppCrash != nil) {
-        self.enableTrackAppCrash = [enableTrackAppCrash boolValue];
-    }
-    if (enableTrackAppANR != nil) {
-        self.enableTrackAppANR = [enableTrackAppANR boolValue];
-    }
-    if (enableTraceWebView != nil) {
-        self.enableTraceWebView = [enableTraceWebView boolValue];
-    }
-    if (allowWebViewHost && allowWebViewHost.length>0) {
-        NSArray *hosts = [FTJSONUtil arrayWithJsonString:allowWebViewHost];
-        if (hosts.count>0) {
-            self.allowWebViewHost = hosts;
+    @try {
+        if (!dict || dict.count == 0) {
+            return;
         }
+        NSNumber *sampleRate = dict[FT_R_RUM_SAMPLERATE];
+        NSNumber *sessionOnErrorSampleRate = dict[FT_R_RUM_SESSION_ON_ERROR_SAMPLE_RATE];
+        NSNumber *enableTraceUserAction = dict[FT_R_RUM_ENABLE_TRACE_USER_ACTION];
+        NSNumber *enableTraceUserView = dict[FT_R_RUM_ENABLE_TRACE_USER_VIEW];
+        NSNumber *enableTraceUserResource = dict[FT_R_RUM_ENABLE_TRACE_USER_RESOURCE];
+        NSNumber *enableResourceHostIP = dict[FT_R_RUM_ENABLE_RESOURCE_HOST_IP];
+        NSNumber *enableTrackAppFreeze = dict[FT_R_RUM_ENABLE_TRACE_APP_FREEZE];
+        NSNumber *freezeDurationMs = dict[FT_R_RUM_FREEZE_DURATION_MS];
+        NSNumber *enableTrackAppCrash = dict[FT_R_RUM_ENABLE_TRACK_APP_CRASH];
+        NSNumber *enableTrackAppANR = dict[FT_R_RUM_ENABLE_TRACK_APP_ANR];
+        NSNumber *enableTraceWebView = dict[FT_R_RUM_ENABLE_TRACE_WEBVIEW];
+        NSString *allowWebViewHost = dict[FT_R_RUM_ALLOW_WEBVIEW_HOST];
+        if (sampleRate != nil && [sampleRate isKindOfClass:NSNumber.class]) {
+            self.samplerate = [sampleRate doubleValue] * 100;
+        }
+        if (sessionOnErrorSampleRate != nil && [sessionOnErrorSampleRate isKindOfClass:NSNumber.class]) {
+            self.sessionOnErrorSampleRate = [sessionOnErrorSampleRate doubleValue] * 100;
+        }
+        if (enableTraceUserAction != nil && [enableTraceUserAction isKindOfClass:NSNumber.class]) {
+            self.enableTraceUserAction = [enableTraceUserAction boolValue];
+        }
+        if (enableTraceUserView != nil && [enableTraceUserView isKindOfClass:NSNumber.class]) {
+            self.enableTraceUserView = [enableTraceUserView boolValue];
+        }
+        if (enableTraceUserResource != nil && [enableTraceUserResource isKindOfClass:NSNumber.class]) {
+            self.enableTraceUserResource = [enableTraceUserResource boolValue];
+        }
+        if (enableResourceHostIP != nil && [enableResourceHostIP isKindOfClass:NSNumber.class]) {
+            self.enableResourceHostIP = [enableResourceHostIP boolValue];
+        }
+        if (enableTrackAppFreeze != nil && [enableTrackAppFreeze isKindOfClass:NSNumber.class]) {
+            self.enableTrackAppFreeze = [enableTrackAppFreeze boolValue];
+        }
+        if (freezeDurationMs != nil && [freezeDurationMs isKindOfClass:NSNumber.class]) {
+            self.freezeDurationMs = [freezeDurationMs longValue];
+        }
+        if (enableTrackAppCrash != nil && [enableTrackAppCrash isKindOfClass:NSNumber.class]) {
+            self.enableTrackAppCrash = [enableTrackAppCrash boolValue];
+        }
+        if (enableTrackAppANR != nil && [enableTrackAppANR isKindOfClass:NSNumber.class]) {
+            self.enableTrackAppANR = [enableTrackAppANR boolValue];
+        }
+        if (enableTraceWebView != nil && [enableTrackAppANR isKindOfClass:NSNumber.class]) {
+            self.enableTraceWebView = [enableTraceWebView boolValue];
+        }
+        if (allowWebViewHost && [allowWebViewHost isKindOfClass:NSString.class] && allowWebViewHost.length>0) {
+            NSArray *hosts = [FTJSONUtil arrayWithJsonString:allowWebViewHost];
+            if (hosts.count>0) {
+                self.allowWebViewHost = hosts;
+            }
+        }
+    } @catch (NSException *exception) {
+        FTInnerLogError(@"exception: %@",exception);
     }
 }
 @end
@@ -227,30 +236,37 @@
     return [NSString stringWithFormat:@"%@",dict];
 }
 -(void)mergeWithRemoteConfigDict:(NSDictionary *)dict{
-    NSNumber *sampleRate = dict[FT_R_TRACE_SAMPLERATE];
-    NSNumber *enableAutoTrace = dict[FT_R_TRACE_ENABLE_AUTO_TRACE];
-    NSString *traceType = dict[FT_R_TRACE_TRACE_TYPE];
-    if (sampleRate != nil) {
-        self.samplerate = [sampleRate doubleValue] * 100;
-    }
-    if (enableAutoTrace != nil) {
-        self.enableAutoTrace = [enableAutoTrace boolValue];
-    }
-    if (traceType && traceType.length>0) {
-        NSString *trace = [traceType lowercaseString];
-        if ([trace isEqualToString:@"ddtrace"]) {
-            self.networkTraceType = FTNetworkTraceTypeDDtrace;
-        }else if ([trace isEqualToString:@"zipkinmutiheader"]){
-            self.networkTraceType = FTNetworkTraceTypeZipkinMultiHeader;
-        }else if ([trace isEqualToString:@"zipkinsingleheader"]){
-            self.networkTraceType = FTNetworkTraceTypeZipkinSingleHeader;
-        }else if ([trace isEqualToString:@"traceparent"]){
-            self.networkTraceType = FTNetworkTraceTypeTraceparent;
-        }else if ([trace isEqualToString:@"skywalking"]){
-            self.networkTraceType = FTNetworkTraceTypeSkywalking;
-        }else if ([trace isEqualToString:@"jaeger"]){
-            self.networkTraceType = FTNetworkTraceTypeJaeger;
+    @try {
+        if (!dict || dict.count == 0) {
+            return;
         }
+        NSNumber *sampleRate = dict[FT_R_TRACE_SAMPLERATE];
+        NSNumber *enableAutoTrace = dict[FT_R_TRACE_ENABLE_AUTO_TRACE];
+        NSString *traceType = dict[FT_R_TRACE_TRACE_TYPE];
+        if (sampleRate != nil && [sampleRate isKindOfClass:NSNumber.class]) {
+            self.samplerate = [sampleRate doubleValue] * 100;
+        }
+        if (enableAutoTrace != nil && [enableAutoTrace isKindOfClass:NSNumber.class]) {
+            self.enableAutoTrace = [enableAutoTrace boolValue];
+        }
+        if (traceType && [traceType isKindOfClass:NSString.class] &&traceType.length>0) {
+            NSString *trace = [traceType lowercaseString];
+            if ([trace isEqualToString:@"ddtrace"]) {
+                self.networkTraceType = FTNetworkTraceTypeDDtrace;
+            }else if ([trace isEqualToString:@"zipkinmutiheader"]){
+                self.networkTraceType = FTNetworkTraceTypeZipkinMultiHeader;
+            }else if ([trace isEqualToString:@"zipkinsingleheader"]){
+                self.networkTraceType = FTNetworkTraceTypeZipkinSingleHeader;
+            }else if ([trace isEqualToString:@"traceparent"]){
+                self.networkTraceType = FTNetworkTraceTypeTraceparent;
+            }else if ([trace isEqualToString:@"skywalking"]){
+                self.networkTraceType = FTNetworkTraceTypeSkywalking;
+            }else if ([trace isEqualToString:@"jaeger"]){
+                self.networkTraceType = FTNetworkTraceTypeJaeger;
+            }
+        }
+    } @catch (NSException *exception) {
+        FTInnerLogError(@"exception: %@",exception);
     }
 }
 @end
@@ -333,6 +349,9 @@
             break;
     }
 }
+-(void)setRemoteConfigMiniUpdateInterval:(int)remoteConfigMiniUpdateInterval{
+    _remoteConfigMiniUpdateInterval = MAX(0, remoteConfigMiniUpdateInterval);
+}
 -(NSDictionary *)pkgInfo{
     NSDictionary *dict = nil;
     @synchronized (self) {
@@ -381,6 +400,7 @@
             _datakitUrl = [dict valueForKey:@"datakitUrl"];
             _datawayUrl = [dict valueForKey:@"datawayUrl"];
             _clientToken = [dict valueForKey:@"clientToken"];
+            _env = [dict valueForKey:@"env"];
         }
         return self;
     }else{
@@ -394,7 +414,7 @@
     [dict setValue:self.datawayUrl forKey:@"datawayUrl"];
     [dict setValue:self.clientToken forKey:@"clientToken"];
     [dict setValue:self.datakitUrl forKey:@"datakitUrl"];
-    [dict setValue:@(self.remoteConfiguration) forKey:@"remoteConfiguration"];
+    [dict setValue:self.env forKey:@"env"];
     return dict;
 }
 -(NSString *)debugDescription{
@@ -419,36 +439,44 @@
     [dict setValue:@(self.dbDiscardType) forKey:@"dbDiscardType"];
     [dict setValue:@(self.enableLimitWithDbSize) forKey:@"enableLimitWithDbSize"];
     [dict setValue:@(self.dbCacheLimit) forKey:@"dbCacheLimit"];
+    [dict setValue:self.dataModifier forKey:@"dataModifier"];
+    [dict setValue:self.lineDataModifier forKey:@"lineDataModifier"];
+    [dict setValue:@(self.remoteConfiguration) forKey:@"remoteConfiguration"];
+    [dict setValue:@(self.remoteConfigMiniUpdateInterval) forKey:@"remoteConfigMiniUpdateInterval"];
     return [NSString stringWithFormat:@"%@",dict];
 }
 #pragma mark remote
 -(void)mergeWithRemoteConfigDict:(NSDictionary *)dict{
-    if (!dict || dict.count == 0) {
-        return;
-    }
-    NSString *env = dict[FT_ENV];
-    NSString *serviceName = dict[FT_R_SERVICE_NAME];
-    NSNumber *autoSync = dict[FT_R_AUTO_SYNC];
-    NSNumber *compressIntakeRequests = dict[FT_R_COMPRESS_INTAKE_REQUESTS];
-    NSNumber *syncPageSize = dict[FT_R_SYNC_PAGE_SIZE];
-    NSNumber *syncSleepTime = dict[FT_R_SYNC_SLEEP_TIME];
-    if (env && env.length>0) {
-        self.env = env;
-    }
-    if (serviceName && serviceName.length>0) {
-        self.service = serviceName;
-    }
-    if (autoSync != nil) {
-        self.autoSync = [autoSync boolValue];
-    }
-    if (compressIntakeRequests != nil) {
-        self.compressIntakeRequests = [compressIntakeRequests boolValue];
-    }
-    if (syncPageSize != nil) {
-        self.syncPageSize = [syncPageSize intValue];
-    }
-    if (syncSleepTime != nil) {
-        self.syncSleepTime = [syncSleepTime intValue];
+    @try {
+        if (!dict || dict.count == 0) {
+            return;
+        }
+        NSString *env = dict[FT_ENV];
+        NSString *serviceName = dict[FT_R_SERVICE_NAME];
+        NSNumber *autoSync = dict[FT_R_AUTO_SYNC];
+        NSNumber *compressIntakeRequests = dict[FT_R_COMPRESS_INTAKE_REQUESTS];
+        NSNumber *syncPageSize = dict[FT_R_SYNC_PAGE_SIZE];
+        NSNumber *syncSleepTime = dict[FT_R_SYNC_SLEEP_TIME];
+        if (env && env.length>0) {
+            self.env = env;
+        }
+        if (serviceName && serviceName.length>0) {
+            self.service = serviceName;
+        }
+        if (autoSync != nil) {
+            self.autoSync = [autoSync boolValue];
+        }
+        if (compressIntakeRequests != nil) {
+            self.compressIntakeRequests = [compressIntakeRequests boolValue];
+        }
+        if (syncPageSize != nil) {
+            self.syncPageSize = [syncPageSize intValue];
+        }
+        if (syncSleepTime != nil) {
+            self.syncSleepTime = [syncSleepTime intValue];
+        }
+    } @catch (NSException *exception) {
+        FTInnerLogError(@"exception: %@",exception);
     }
 }
 @end

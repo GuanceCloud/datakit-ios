@@ -10,18 +10,18 @@
 #import "FTRemoteConfigurationProtocol.h"
 NS_ASSUME_NONNULL_BEGIN
 
-@interface FTRemoteConfigManager : NSObject
+@interface FTRemoteConfigManager : NSObject<FTRemoteConfigurationDataSource>
 
 @property (nonatomic, weak) id<FTRemoteConfigurationProtocol> delegate;
 
-+ (instancetype)sharedManager;
++ (instancetype)sharedInstance;
 
 - (void)enable:(BOOL)enable updateInterval:(int)updateInterval;
 /// 请求远程配置
 - (void)updateRemoteConfig;
 
 - (void)updateRemoteConfigWithMiniUpdateInterval:(int)miniUpdateInterval callback:(nullable void (^)(BOOL, NSDictionary<NSString *,id> * _Nullable))callback;
-- (nullable NSDictionary *)getLocalRemoteConfig;
+- (void)shutDown;
 @end
 
 NS_ASSUME_NONNULL_END

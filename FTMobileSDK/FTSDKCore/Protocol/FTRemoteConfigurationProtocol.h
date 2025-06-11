@@ -8,10 +8,20 @@
 
 #ifndef FTRemoteConfigurationProtocol_h
 #define FTRemoteConfigurationProtocol_h
+
+NS_ASSUME_NONNULL_BEGIN
+
 @protocol FTRemoteConfigurationProtocol <NSObject>
 
-- (void)updateRemoteConfiguration:(NSDictionary *)configuration;
+- (void)updateRemoteConfiguration:(nullable NSDictionary *)configuration;
 
 @end
 
+@protocol FTRemoteConfigurationDataSource <NSObject>
+
+- (nullable NSDictionary *)getLocalRemoteConfig;
+
+@end
+
+NS_ASSUME_NONNULL_END
 #endif /* FTRemoteConfigurationProtocol_h */

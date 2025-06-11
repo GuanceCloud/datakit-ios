@@ -32,6 +32,9 @@ NS_ASSUME_NONNULL_BEGIN
 +(instancetype)startWithAutoSync:(BOOL)autoSync
                     syncPageSize:(int)syncPageSize
                    syncSleepTime:(int)syncSleepTime;
+- (void)updateAutoSync:(BOOL)autoSync
+          syncPageSize:(int)syncPageSize
+         syncSleepTime:(int)syncSleepTime;
 - (void)setEnableLimitWithDb:(BOOL)enable size:(long)size discardNew:(BOOL)discardNew;
 - (void)setLogCacheLimitCount:(int)count discardNew:(BOOL)discardNew;
 - (void)setRUMCacheLimitCount:(int)count discardNew:(BOOL)discardNew;
@@ -51,7 +54,6 @@ NS_ASSUME_NONNULL_BEGIN
 /// 缓存中的数据添加到数据库中
 -(void)insertCacheToDB;
 
--(void)updateWithRemoteConfiguration:(NSDictionary *)configuration;
 @end
 
 NS_ASSUME_NONNULL_END

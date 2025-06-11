@@ -53,23 +53,13 @@ static const NSTimeInterval kInitialRetryDelay = 0.5; // 初始500ms延迟
     }
     return self;
 }
--(void)updateWithRemoteConfiguration:(NSDictionary *)configuration{
-    NSNumber *compressIntakeRequests = configuration[FT_R_COMPRESS_INTAKE_REQUESTS];
-    NSNumber *syncPageSize = configuration[FT_R_SYNC_PAGE_SIZE];
-    NSNumber *syncSleepTime = configuration[FT_R_SYNC_SLEEP_TIME];
+-(void)updateSyncPageSize:(int)syncPageSize syncSleepTime:(int)syncSleepTime{
     __weak typeof(self) weakSelf = self;
     dispatch_async(self.networkQueue, ^{
         __strong typeof(weakSelf) strongSelf = weakSelf;
         if (!strongSelf) return;
-        if (compressIntakeRequests != nil) {
-            [FTNetworkInfoManager sharedInstance] .setEnableDataIntegerCompatible([compressIntakeRequests boolValue]);
-        }
-        if (syncPageSize != nil) {
-            strongSelf.uploadPageSize = [syncPageSize intValue];
-        }
-        if (syncSleepTime != nil) {
-            strongSelf.syncSleepTime = [syncSleepTime intValue];
-        }
+        strongSelf.uploadPageSize = syncPageSize;
+        strongSelf.syncSleepTime = syncSleepTime;
     });
 }
 -(void)setUploadWork:(dispatch_block_t)uploadWork{
