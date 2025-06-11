@@ -1,3 +1,7 @@
+# 1.5.17-beta.1
+1. 修复 `FTRUMConfig.allowWebViewHost` 为空时 webView 无法采集问题
+2. 优化远程动态参数更新逻辑，添加防护代码防止参数类型配置错误导致解析异常问题
+---
 # 1.5.17-alpha.1
 1. 添加 `FTRUMConfig.enableTraceWebView` 配置是否开启通过 SDK 采集 webview 数据,
    通过 `FTRUMConfig.allowWebViewHost` 可以控制需要过滤 host 地址
