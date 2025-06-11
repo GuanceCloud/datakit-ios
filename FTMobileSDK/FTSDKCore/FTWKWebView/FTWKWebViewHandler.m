@@ -106,12 +106,14 @@ static dispatch_once_t onceToken;
             [hostsCopy enumerateObjectsUsingBlock:^(NSString * _Nonnull host, NSUInteger idx, BOOL * _Nonnull stop) {
                 [quotedHosts addObject:[NSString stringWithFormat:@"\\\"%@\\\"", host]];
             }];
-            return  [quotedHosts componentsJoinedByString:@","];
+            return  [NSString stringWithFormat:@"\"[%@]\"",[quotedHosts componentsJoinedByString:@","]];
+        }else{
+            return @"null";
         }
     } @catch (NSException *exception) {
         FTInnerLogError(@"exception: %@",exception);
     }
-    return @"";
+    return @"null";
 }
 - (void)innerEnableWebView:(WKWebView *)webView{
     if (self.enableTraceWebView) {

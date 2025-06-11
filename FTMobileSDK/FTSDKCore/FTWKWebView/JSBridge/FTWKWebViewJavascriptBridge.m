@@ -119,7 +119,7 @@ NSString * FTWebViewJavascriptBridge_js(NSString *hostsString) {
         var uniqueId = 1;
         
         function getAllowedWebViewHosts(){
-            return "[__ALLOWED_HOSTS__]";
+            return __ALLOWED_HOSTS__;
         }
                                                                  
         function ftRegisterHandler(handlerName, handler) {
