@@ -15,8 +15,8 @@
             buildForAnalyzing = "YES">
             <BuildableReference
                BuildableIdentifier = "primary"
-               BlueprintIdentifier = "172112B82DF162DF006189C2"
-               BuildableName = "FTMobileSDK.framework"
+               BlueprintIdentifier = "17F6522B2DF81A73005C91DB"
+               BuildableName = "FTMobileSDK-dynamic.framework"
                BlueprintName = "FTMobileSDK-dynamic"
                ReferencedContainer = "container:FTMobileSDK.xcodeproj">
             </BuildableReference>
@@ -50,8 +50,8 @@
       <MacroExpansion>
          <BuildableReference
             BuildableIdentifier = "primary"
-            BlueprintIdentifier = "172112B82DF162DF006189C2"
-            BuildableName = "FTMobileSDK.framework"
+            BlueprintIdentifier = "17F6522B2DF81A73005C91DB"
+            BuildableName = "FTMobileSDK-dynamic.framework"
             BlueprintName = "FTMobileSDK-dynamic"
             ReferencedContainer = "container:FTMobileSDK.xcodeproj">
          </BuildableReference>
