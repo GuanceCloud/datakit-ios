@@ -407,7 +407,7 @@ typedef NS_ENUM(NSUInteger,TestSessionRequestMethod){
         [[FTURLSessionInterceptor shared] taskReceivedData:task data:data];
         [[FTURLSessionInterceptor shared] taskCompleted:task error:error extraProvider:^NSDictionary * _Nullable(NSURLRequest * _Nullable request, NSURLResponse * _Nullable response, NSData * _Nullable data, NSError * _Nullable error) {
             return @{@"ft_test":@"1"};
-        }];
+        } errorFilter:nil];
         [expectation fulfill];
     }];
     [task resume];
