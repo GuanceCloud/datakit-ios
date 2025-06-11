@@ -1,3 +1,6 @@
+# 1.5.17-beta.2
+1. 同 1.5.17-beta.1
+---
 # 1.5.17-beta.1
 1. 修复 `FTRUMConfig.allowWebViewHost` 为空时 webView 无法采集问题
 2. 优化远程动态参数更新逻辑，添加防护代码防止参数类型配置错误导致解析异常问题
