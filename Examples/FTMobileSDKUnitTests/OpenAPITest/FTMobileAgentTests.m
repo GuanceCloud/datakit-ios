@@ -438,6 +438,11 @@
     XCTAssertTrue(datakitConfig.enableLimitWithDbSize == NO);
     XCTAssertTrue(datakitConfig.dbDiscardType == FTDBDiscard);
     datakitConfig.dbDiscardType = FTDBDiscardOldest;
+    XCTAssertTrue(datakitConfig.remoteConfiguration == NO);
+    XCTAssertTrue(datakitConfig.remoteConfigMiniUpdateInterval == 12*60*60);
+    datakitConfig.remoteConfigMiniUpdateInterval = -1;
+    XCTAssertTrue(datakitConfig.remoteConfigMiniUpdateInterval == 0);
+    datakitConfig.remoteConfiguration = YES;
     FTMobileConfig *copyConfig = [datakitConfig copy];
     XCTAssertTrue(copyConfig.enableSDKDebugLog == datakitConfig.enableSDKDebugLog);
     XCTAssertTrue([copyConfig.datakitUrl isEqualToString:datakitConfig.datakitUrl]);
@@ -448,6 +453,8 @@
     XCTAssertTrue(copyConfig.dbCacheLimit == datakitConfig.dbCacheLimit);
     XCTAssertTrue(copyConfig.dbDiscardType == datakitConfig.dbDiscardType == FTDBDiscardOldest);
     XCTAssertTrue(copyConfig.enableLimitWithDbSize == datakitConfig.enableLimitWithDbSize);
+    XCTAssertTrue(copyConfig.remoteConfiguration == datakitConfig.remoteConfiguration);
+    XCTAssertTrue(copyConfig.remoteConfigMiniUpdateInterval == datakitConfig.remoteConfigMiniUpdateInterval);
     FTMobileConfig *datawayConfig = [[FTMobileConfig alloc]initWithDatawayUrl:self.url clientToken:@"clientToken"];
     FTMobileConfig *copy = [datawayConfig copy];
     XCTAssertTrue([copy.datawayUrl isEqualToString:datawayConfig.datawayUrl]);

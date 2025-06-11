@@ -13,6 +13,7 @@ NS_ASSUME_NONNULL_BEGIN
 @interface FTTrackDataManager ()
 @property (nonatomic, strong) FTDBDataCachePolicy *dataCachePolicy;
 @property (nonatomic, strong) FTDataUploadWorker *dataUploadWorker;
+@property (atomic, assign,readonly) BOOL autoSync;
 
 @end
 

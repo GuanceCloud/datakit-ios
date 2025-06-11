@@ -226,6 +226,50 @@
     XCTAssertTrue(newCount.count == count);
     XCTAssertTrue(self.viewController.webView.configuration.userContentController.userScripts.count == 1);
 }
+- (void)testDisableWebView_enableByCustom{
+    [self setSDKWithEnableWebView:NO];
+    NSURL *url = [[NSBundle mainBundle] URLForResource:@"sample" withExtension:@"html"];
+    [[FTWKWebViewHandler sharedInstance] enableWebView:self.viewController.webView];
+    [self.viewController test_loadFileURL:url allowingReadAccessToURL:url];
+    self.loadExpect = [self expectationWithDescription:@"请求超时timeout!"];
+    [self waitForExpectationsWithTimeout:30 handler:^(NSError *error) {
+        XCTAssertNil(error);
+    }];
+    XCTestExpectation *jsScript = [self expectationWithDescription:@"请求超时timeout!"];
+    [self.viewController test_addWebViewRumView:^{
+        [jsScript fulfill];
+    }];
+    [self waitForExpectationsWithTimeout:30 handler:^(NSError *error) {
+        XCTAssertNil(error);
+    }];
+    [[FTGlobalRumManager sharedInstance].rumManager syncProcess];
+    NSArray *datas =[[FTTrackerEventDBTool sharedManger] getFirstRecords:10 withType:FT_DATA_TYPE_RUM];
+    __block BOOL hasViewData = NO;
+    [datas enumerateObjectsWithOptions:NSEnumerationReverse usingBlock:^(FTRecordModel *obj, NSUInteger idx, BOOL * _Nonnull stop) {
+        NSDictionary *dict = [FTJSONUtil dictionaryWithJsonString:obj.data];
+        NSString *op = dict[FT_OP];
+        XCTAssertTrue([op isEqualToString:@"RUM"]);
+        NSDictionary *opdata = dict[FT_OPDATA];
+        NSString *measurement = opdata[FT_KEY_SOURCE];
+        NSDictionary *tags = opdata[FT_TAGS];
+        if ([measurement isEqualToString:FT_RUM_SOURCE_VIEW]) {
+            if(tags[FT_IS_WEBVIEW]){
+                NSDictionary *field = opdata[FT_FIELDS];
+                NSInteger errorCount = [field[FT_KEY_VIEW_ERROR_COUNT] integerValue];
+                NSInteger resourceCount = [field[FT_KEY_VIEW_RESOURCE_COUNT] integerValue];
+                NSInteger longTaskCount = [field[FT_KEY_VIEW_LONG_TASK_COUNT] integerValue];
+                NSString *viewName = tags[FT_KEY_VIEW_NAME];
+                XCTAssertTrue(errorCount == 0);
+                XCTAssertTrue(longTaskCount == 0);
+                XCTAssertTrue(resourceCount == 0);
+                XCTAssertTrue([viewName isEqualToString:@"testJSBridge"]);
+                hasViewData = YES;
+            }
+        }
+    }];
+    XCTAssertTrue(hasViewData);
+
+}
 -(void)testEnableWebView{
     [self setSDKWithEnableWebView:YES];
     NSURL *url = [[NSBundle mainBundle] URLForResource:@"sample" withExtension:@"html"];

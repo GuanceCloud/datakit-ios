@@ -74,6 +74,48 @@
     [[FTTrackerEventDBTool sharedManger] deleteAllDatas];
 }
 #pragma mark - RUM
+- (void)testResourceLocalErrorFilter{
+    [self initSDKEnableAutoTrace:YES];
+    NSURL *url = [NSURL URLWithString:@"http://test.error-filter.com"];
+    id<OHHTTPStubsDescriptor> stubs = [OHHTTPStubs stubRequestsPassingTest:^BOOL(NSURLRequest *request) {
+        return [request.URL.host isEqualToString:url.host];
+    } withStubResponse:^OHHTTPStubsResponse*(NSURLRequest *request) {
+        NSError* notConnectedError = [NSError errorWithDomain:NSURLErrorDomain code:NSURLErrorCancelled userInfo:@{NSLocalizedDescriptionKey:@"An asynchronous load has been canceled."}];
+        return [OHHTTPStubsResponse responseWithError:notConnectedError];
+    }];
+    FTURLSessionDelegate *ftDelegate = [[FTURLSessionDelegate alloc]init];
+    ftDelegate.errorFilter = ^BOOL(NSError * _Nonnull error) {
+        if (error.code == NSURLErrorCancelled) {
+            return YES;
+        }
+        return NO;
+    };
+    XCTestExpectation *expectation = [self expectationWithDescription:@"request"];
+
+    NSURLSession *session = [NSURLSession sessionWithConfiguration:[NSURLSessionConfiguration ephemeralSessionConfiguration] delegate:ftDelegate delegateQueue:nil];
+    
+    NSURLSessionDataTask *task = [session dataTaskWithURL:url completionHandler:^(NSData * _Nullable data, NSURLResponse * _Nullable response, NSError * _Nullable error) {
+        [expectation fulfill];
+    }];
+    [task resume];
+    
+    [self waitForExpectations:@[expectation]];
+    [NSThread sleepForTimeInterval:0.5];
+
+    [[FTGlobalRumManager sharedInstance].rumManager syncProcess];
+    NSArray *newArray = [[FTTrackerEventDBTool sharedManger] getFirstRecords:10 withType:FT_DATA_TYPE_RUM];
+    __block int hasResourceCount = 0, hasErrorCount = 0;
+    [FTModelHelper resolveModelArray:newArray callBack:^(NSString * _Nonnull source, NSDictionary * _Nonnull tags, NSDictionary * _Nonnull fields, BOOL * _Nonnull stop) {
+        if ([source isEqualToString:FT_RUM_SOURCE_RESOURCE]) {
+            hasResourceCount ++;
+        }else if ([source isEqualToString:FT_RUM_SOURCE_ERROR]){
+            hasErrorCount ++;
+        }
+    }];
+    XCTAssertTrue(hasResourceCount == 1);
+    XCTAssertTrue(hasErrorCount == 0);
+    [OHHTTPStubs removeStub:stubs];
+}
 /**
  *  RumAutoTrace = NO
  *  Session.ResourcePropertyProvider != nil
