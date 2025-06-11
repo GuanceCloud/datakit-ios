@@ -35,6 +35,7 @@
 #import "FTTrackerEventDBTool.h"
 #import "FTDataWriterWorker.h"
 #import "FTRemoteConfigManager.h"
+#import "FTRemoteConfigurationProtocol.h"
 @interface FTMobileAgent ()<FTAppLifeCycleDelegate,FTRemoteConfigurationProtocol>
 @property (nonatomic, strong) FTLoggerConfig *loggerConfig;
 @property (nonatomic, strong) FTRumConfig *rumConfig;
@@ -176,7 +177,9 @@ static dispatch_once_t onceToken;
     [[FTGlobalRumManager sharedInstance] setRumConfig:rumConfig writer:[FTTrackDataManager sharedInstance].dataWriterWorker];
     [[FTURLSessionInstrumentation sharedInstance]setEnableAutoRumTrace:rumConfig.enableTraceUserResource
                                                     resourceUrlHandler:rumConfig.resourceUrlHandler
-                                              resourcePropertyProvider:rumConfig.resourcePropertyProvider];
+                                              resourcePropertyProvider:rumConfig.resourcePropertyProvider
+                                                sessionTaskErrorFilter:rumConfig.sessionTaskErrorFilter
+    ];
     [[FTURLSessionInstrumentation sharedInstance] setRumResourceHandler:[FTGlobalRumManager sharedInstance].rumManager];
     [FTExternalDataManager sharedManager].resourceDelegate = [FTURLSessionInstrumentation sharedInstance].externalResourceHandler;
     [[FTExtensionDataManager sharedInstance] writeRumConfig:[rumConfig convertToDictionary]];

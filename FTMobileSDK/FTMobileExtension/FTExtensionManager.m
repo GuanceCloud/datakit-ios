@@ -80,7 +80,9 @@ static FTExtensionManager *sharedInstance = nil;
 - (void)startRumWithConfigOptions:(FTRumConfig *)rumConfigOptions{
     [[FTURLSessionInstrumentation sharedInstance]setEnableAutoRumTrace:rumConfigOptions.enableTraceUserResource
                                                     resourceUrlHandler:rumConfigOptions.resourceUrlHandler
-                                              resourcePropertyProvider:rumConfigOptions.resourcePropertyProvider];
+                                              resourcePropertyProvider:rumConfigOptions.resourcePropertyProvider
+                                                sessionTaskErrorFilter:rumConfigOptions.sessionTaskErrorFilter
+    ];
     FTRUMDependencies *dependencies = [[FTRUMDependencies alloc]init];
     dependencies.writer = self;
     dependencies.errorMonitorType = (ErrorMonitorType)rumConfigOptions.errorMonitorType;

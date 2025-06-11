@@ -100,7 +100,8 @@ typedef BOOL(^FTResourceUrlHandler)(NSURL * url);
 typedef NSDictionary<NSString *,id>* _Nullable (^FTResourcePropertyProvider)( NSURLRequest * _Nullable request, NSURLResponse * _Nullable response,NSData *_Nullable data, NSError *_Nullable error);
 /// 支持自定义 trace, 确认拦截后，返回 TraceContext，不拦截返回 nil
 typedef FTTraceContext*_Nullable(^FTTraceInterceptor)(NSURLRequest *_Nonnull request);
-
+/// 支持自定义拦截 SessionTask Error，确认拦截返回 YES，不拦截返回 NO
+typedef BOOL (^FTSessionTaskErrorFilter)(NSError *_Nonnull error);
 
 /// RUM 功能的配置项
 @interface FTRumConfig : NSObject
@@ -157,6 +158,9 @@ typedef FTTraceContext*_Nullable(^FTTraceInterceptor)(NSURLRequest *_Nonnull req
 @property (nonatomic, assign) FTRUMCacheDiscard rumDiscardType;
 /// RUM Resource 添加自定义属性
 @property (nonatomic, copy) FTResourcePropertyProvider resourcePropertyProvider;
+/// 拦截 SessionTask Error，确认拦截返回 YES，不拦截返回 NO
+@property (nonatomic, copy) FTSessionTaskErrorFilter sessionTaskErrorFilter;
+
 /// 设置开启采集 webview 数据，默认 YES
 @property (nonatomic, assign) BOOL enableTraceWebView;
 /// 设置允许采集 WebView 数据的特定主机或域名，nil 时全采集。

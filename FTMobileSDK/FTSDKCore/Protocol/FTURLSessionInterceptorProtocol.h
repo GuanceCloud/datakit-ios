@@ -29,6 +29,7 @@ typedef BOOL(^FTResourceUrlHandler)( NSURL * _Nonnull url);
 typedef NSDictionary<NSString *,id>* _Nullable (^ResourcePropertyProvider)( NSURLRequest * _Nullable request, NSURLResponse * _Nullable response,NSData *_Nullable data, NSError *_Nullable error);
 /// 支持自定义 trace, 确认拦截后，返回 TraceContext，不拦截返回 nil
 typedef FTTraceContext*_Nullable(^TraceInterceptor)(NSURLRequest *_Nonnull request);
+typedef BOOL (^SessionTaskErrorFilter)(NSError *_Nonnull error);
 
 /// session 拦截处理代理
 @protocol FTURLSessionInterceptorProtocol<NSObject>
@@ -38,6 +39,7 @@ typedef FTTraceContext*_Nullable(^TraceInterceptor)(NSURLRequest *_Nonnull reque
 @property (nonatomic, copy ,nullable) FTResourceUrlHandler resourceUrlHandler;
 @property (nonatomic, copy ,nullable) TraceInterceptor traceInterceptor;
 @property (nonatomic, copy ,nullable) ResourcePropertyProvider resourcePropertyProvider;
+@property (nonatomic, copy ,nullable) SessionTaskErrorFilter sessionTaskErrorFilter;
 
 
 /// 采集的 resource 数据接收对象
@@ -84,14 +86,14 @@ typedef FTTraceContext*_Nullable(^TraceInterceptor)(NSURLRequest *_Nonnull reque
 ///   - error: error 信息
 ///
 /// 传入 rum 时，先调用 -stopResource，再调用 -addResourceWithKey
-- (void)taskCompleted:(NSURLSessionTask *)task error:(nullable NSError *)error ;
+- (void)taskCompleted:(NSURLSessionTask *)task error:(nullable NSError *)error;
 
 /// 请求结束 -stopResource
 /// - Parameters:
 ///   - task: 请求任务
 ///   - error: error 信息
 ///   - extraProvider: 用户自定义额外信息
-- (void)taskCompleted:(NSURLSessionTask *)task error:(nullable NSError *)error extraProvider:(nullable ResourcePropertyProvider)extraProvider;
+- (void)taskCompleted:(NSURLSessionTask *)task error:(nullable NSError *)error extraProvider:(nullable ResourcePropertyProvider)extraProvider errorFilter:(nullable SessionTaskErrorFilter)errorFilter;
 @end
 NS_ASSUME_NONNULL_END
 #endif /* FTURLSessionInterceptorProtocol_h */

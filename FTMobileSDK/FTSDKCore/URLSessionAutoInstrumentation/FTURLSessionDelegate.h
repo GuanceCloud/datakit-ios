@@ -26,8 +26,8 @@ typedef NSDictionary<NSString *,id>* _Nullable (^ResourcePropertyProvider)( NSUR
 typedef NSURLRequest*_Nonnull(^RequestInterceptor)(NSURLRequest *_Nonnull request);
 /// 支持自定义 trace, 确认拦截后，返回 TraceContext，不拦截返回 nil
 typedef FTTraceContext*_Nullable(^TraceInterceptor)(NSURLRequest *_Nonnull request);
-
-typedef BOOL (^FTSessionTaskErrorFilter)(NSError *_Nonnull error);
+/// 支持自定义拦截 SessionTask Error，确认拦截返回 YES，不拦截返回 NO
+typedef BOOL (^SessionTaskErrorFilter)(NSError *_Nonnull error);
 
 NS_ASSUME_NONNULL_BEGIN
 @class FTURLSessionDelegate;
@@ -62,7 +62,7 @@ NS_ASSUME_NONNULL_BEGIN
 /// 是否拦截覆盖 SessionTask Error
 /// return YES:拦截，rum 中不再添加本条 network_error
 /// return NO:不拦截，rum 中添加本条 network_error
-@property (nonatomic,copy) FTSessionTaskErrorFilter errorFilter;
+@property (nonatomic,copy) SessionTaskErrorFilter errorFilter;
 
 /// 实现拦截 url 请求过程的代理
 - (FTURLSessionDelegate *)ftURLSessionDelegate;

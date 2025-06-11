@@ -42,14 +42,16 @@
     [self initSDKEnableAutoTrace:enable traceInterceptor:nil];
 }
 - (void)initSDKEnableAutoTrace:(BOOL)enable resourcePropertyProvider:(ResourcePropertyProvider)resourcePropertyProvider{
-    [self initSDKEnableAutoTrace:enable resourcePropertyProvider:resourcePropertyProvider traceInterceptor:nil];    
+    [self initSDKEnableAutoTrace:enable resourcePropertyProvider:resourcePropertyProvider traceInterceptor:nil errorFilter:nil];
 }
 - (void)initSDKEnableAutoTrace:(BOOL)enable traceInterceptor:(TraceInterceptor)traceInterceptor{
-    [self initSDKEnableAutoTrace:enable resourcePropertyProvider:nil traceInterceptor:traceInterceptor];
+    [self initSDKEnableAutoTrace:enable resourcePropertyProvider:nil traceInterceptor:traceInterceptor errorFilter:nil];
 }
 - (void)initSDKEnableAutoTrace:(BOOL)enable
       resourcePropertyProvider:(ResourcePropertyProvider)resourcePropertyProvider
-              traceInterceptor:(TraceInterceptor)traceInterceptor{
+              traceInterceptor:(TraceInterceptor)traceInterceptor
+                   errorFilter:(SessionTaskErrorFilter)errorFilter
+{
     NSProcessInfo *processInfo = [NSProcessInfo processInfo];
     NSString *url = [processInfo environment][@"ACCESS_SERVER_URL"];
     NSString *appid = [processInfo environment][@"APP_ID"];
@@ -59,6 +61,9 @@
     FTRumConfig *rumConfig = [[FTRumConfig alloc]initWithAppid:appid];
     if(resourcePropertyProvider){
         rumConfig.resourcePropertyProvider = resourcePropertyProvider;
+    }
+    if (errorFilter) {
+        rumConfig.sessionTaskErrorFilter = errorFilter;
     }
     rumConfig.enableTraceUserResource = enable;
     FTTraceConfig *traceConfig = [[FTTraceConfig alloc]init];
@@ -74,8 +79,22 @@
     [[FTTrackerEventDBTool sharedManger] deleteAllDatas];
 }
 #pragma mark - RUM
-- (void)testResourceLocalErrorFilter{
-    [self initSDKEnableAutoTrace:YES];
+- (void)testResourceLocalErrorFilter_session{
+    [self resourceLocalErrorFilter:YES enableGlobal:NO];
+}
+- (void)testResourceLocalErrorFilter_global{
+    [self resourceLocalErrorFilter:NO enableGlobal:YES];
+}
+- (void)testResourceLocalErrorFilter_priority{
+    [self resourceLocalErrorFilter:YES enableGlobal:YES];
+}
+- (void)resourceLocalErrorFilter:(BOOL)enableSession enableGlobal:(BOOL)enableGlobal{
+    [self initSDKEnableAutoTrace:YES resourcePropertyProvider:nil traceInterceptor:nil errorFilter:enableGlobal?^BOOL(NSError * _Nonnull error) {
+        if (error.code == NSURLErrorBadURL) {
+            return YES;
+        }
+        return NO;
+    }:nil];
     NSURL *url = [NSURL URLWithString:@"http://test.error-filter.com"];
     id<OHHTTPStubsDescriptor> stubs = [OHHTTPStubs stubRequestsPassingTest:^BOOL(NSURLRequest *request) {
         return [request.URL.host isEqualToString:url.host];
@@ -84,12 +103,14 @@
         return [OHHTTPStubsResponse responseWithError:notConnectedError];
     }];
     FTURLSessionDelegate *ftDelegate = [[FTURLSessionDelegate alloc]init];
-    ftDelegate.errorFilter = ^BOOL(NSError * _Nonnull error) {
-        if (error.code == NSURLErrorCancelled) {
-            return YES;
-        }
-        return NO;
-    };
+    if (enableSession) {
+        ftDelegate.errorFilter = ^BOOL(NSError * _Nonnull error) {
+            if (error.code == NSURLErrorCancelled) {
+                return YES;
+            }
+            return NO;
+        };
+    }
     XCTestExpectation *expectation = [self expectationWithDescription:@"request"];
 
     NSURLSession *session = [NSURLSession sessionWithConfiguration:[NSURLSessionConfiguration ephemeralSessionConfiguration] delegate:ftDelegate delegateQueue:nil];
@@ -113,7 +134,11 @@
         }
     }];
     XCTAssertTrue(hasResourceCount == 1);
-    XCTAssertTrue(hasErrorCount == 0);
+    if (enableSession) {
+        XCTAssertTrue(hasErrorCount == 0);
+    }else if (enableGlobal){
+        XCTAssertTrue(hasErrorCount == 1);
+    }
     [OHHTTPStubs removeStub:stubs];
 }
 /**

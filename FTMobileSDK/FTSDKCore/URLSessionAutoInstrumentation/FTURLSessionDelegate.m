@@ -91,12 +91,7 @@
 -(void)taskCompleted:(NSURLSessionTask *)task error:(NSError *)error{
     [self dealTaskCompleted:task error:error];
 }
-
 -(void)dealTaskCompleted:(NSURLSessionTask *)task error:(NSError *)error{
-    BOOL filter = NO;
-    if (error && self.errorFilter) {
-        filter = self.errorFilter(error);
-    }
-    [self.instrumentation.interceptor taskCompleted:task error:filter?nil:error extraProvider:self.provider];
+    [self.instrumentation.interceptor taskCompleted:task error:error extraProvider:self.provider errorFilter:self.errorFilter];
 }
 @end

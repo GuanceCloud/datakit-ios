@@ -64,6 +64,7 @@
     options.sessionOnErrorSampleRate = self.sessionOnErrorSampleRate;
     options.enableTraceWebView = self.enableTraceWebView;
     options.allowWebViewHost = self.allowWebViewHost;
+    options.sessionTaskErrorFilter = self.sessionTaskErrorFilter;
     return options;
 }
 -(instancetype)initWithDictionary:(NSDictionary *)dict{
@@ -85,6 +86,7 @@
             _monitorFrequency = (FTMonitorFrequency)[dict[@"monitorFrequency"] intValue];
             _resourceUrlHandler = [dict valueForKey:@"resourceUrlHandler"];
             _resourcePropertyProvider = [dict valueForKey:@"resourceProvider"];
+            _sessionTaskErrorFilter = [dict valueForKey:@"sessionTaskErrorFilter"];
             _sessionOnErrorSampleRate = [[dict valueForKey:@"sessionOnErrorSampleRate"] intValue];
         }
         return self;
@@ -127,6 +129,7 @@
     NSMutableDictionary *dict = [[self convertToDictionary] mutableCopy];
     [dict setValue:[self.resourceUrlHandler copy] forKey:@"resourceUrlHandler"];
     [dict setValue:[self.resourcePropertyProvider copy] forKey:@"resourcePropertyProvider"];
+    [dict setValue:[self.sessionTaskErrorFilter copy] forKey:@"sessionTaskErrorFilter"];
     return [NSString stringWithFormat:@"%@",dict];
 }
 -(void)mergeWithRemoteConfigDict:(NSDictionary *)dict{
