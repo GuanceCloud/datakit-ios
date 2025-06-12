@@ -121,10 +121,13 @@ static dispatch_once_t onceToken;
 }
 - (void)setEnableAutoRumTrace:(BOOL)enableAutoRumTrack
            resourceUrlHandler:(FTResourceUrlHandler)resourceUrlHandler
-     resourcePropertyProvider:(ResourcePropertyProvider)resourcePropertyProvider{
+     resourcePropertyProvider:(ResourcePropertyProvider)resourcePropertyProvider
+       sessionTaskErrorFilter:(SessionTaskErrorFilter)sessionTaskErrorFilter
+{
     self.interceptor.resourceUrlHandler = resourceUrlHandler;
     self.shouldRUMInterceptor = enableAutoRumTrack;
     self.interceptor.resourcePropertyProvider = resourcePropertyProvider;
+    self.interceptor.sessionTaskErrorFilter = sessionTaskErrorFilter;
 }
 - (void)setRumResourceHandler:(id<FTRumResourceProtocol>)handler{
     self.interceptor.rumResourceHandler = handler;

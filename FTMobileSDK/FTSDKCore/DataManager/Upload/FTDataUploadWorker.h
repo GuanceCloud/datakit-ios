@@ -9,20 +9,20 @@
 #import <Foundation/Foundation.h>
 #import "FTUploadProtocol.h"
 NS_ASSUME_NONNULL_BEGIN
-
+@class FTHTTPClient;
 @interface FTDataUploadWorker : NSObject
 @property (nonatomic, weak) id<FTUploadCountProtocol> counter;
 @property (nonatomic, weak) id<FTSessionOnErrorDataHandler> errorSampledConsume;
+@property (nonatomic, strong) FTHTTPClient *httpClient;
 
--(instancetype)initWithAutoSync:(BOOL)autoSync
-                    syncPageSize:(int)syncPageSize
-                   syncSleepTime:(int)syncSleepTime;
+-(instancetype)initWithSyncPageSize:(int)syncPageSize
+                      syncSleepTime:(int)syncSleepTime;
 
 -(void)flushWithSleep:(BOOL)withSleep;
 
 -(void)cancelSynchronously;
 -(void)cancelAsynchronously;
-
+-(void)updateSyncPageSize:(int)syncPageSize syncSleepTime:(int)syncSleepTime;
 @end
 
 NS_ASSUME_NONNULL_END

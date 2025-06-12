@@ -653,7 +653,7 @@
     [[NSFileManager defaultManager] removeItemAtPath:logsDirectory error:&error];
     [FTLog enableLog:YES];
     [[FTLog sharedInstance] registerInnerLogCacheToLogsDirectory:logsDirectory fileNamePrefix:nil];
-    [[FTLog sharedInstance] userLog:NO message:@"testLogFileMaximumFileSize" level:StatusInfo property:nil];
+    [[FTLog sharedInstance] userLog:NO message:@"testLogFileMaximumFileSize" level:StatusInfo status:@"info" property:nil];
     NSArray *array =  [[FTLog sharedInstance] valueForKey:@"loggers"];
     FTFileLogger *fileLogger;
     FTLogFileInfo *logFileInfo;
@@ -668,7 +668,7 @@
     for (int i = 0; i<2; i++) {
         FTInnerLogInfo(@"count:%d 11111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111",i);
     }
-    [[FTLog sharedInstance] userLog:NO message:@"testLogFileMaximumFileSize" level:StatusInfo property:nil];
+    [[FTLog sharedInstance] userLog:NO message:@"testLogFileMaximumFileSize" level:StatusInfo status:@"info"  property:nil];
     FTLogFileInfo *currentFileInfo = [fileLogger valueForKey:@"currentLogFileInfo"];
     XCTAssertTrue(currentFileInfo != logFileInfo);
     NSData *file = [[NSFileManager defaultManager] contentsAtPath:logFileInfo.filePath];
@@ -688,11 +688,11 @@
     NSString *firstFilePath = currentFileInfo.filePath;
     [FTLog enableLog:YES];
     [[FTLog sharedInstance] performSelector:@selector(addLogger:) withObject:fileLogger];
-    [[FTLog sharedInstance] userLog:NO message:@"testLogFilesDiskQuota" level:StatusInfo property:nil];
+    [[FTLog sharedInstance] userLog:NO message:@"testLogFilesDiskQuota" level:StatusInfo status:@"info" property:nil];
     for (int i = 0; i<10; i++) {
         FTInnerLogInfo(@"count:%d 11111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111",i);
     }
-    [[FTLog sharedInstance] userLog:NO message:@"testLogFilesDiskQuota_end" level:StatusInfo property:nil];
+    [[FTLog sharedInstance] userLog:NO message:@"testLogFilesDiskQuota_end" level:StatusInfo status:@"info" property:nil];
     NSArray *array = [fileManager performSelector:@selector(sortedLogFileInfos)];
     unsigned long long totalSize = 0;
     for (FTLogFileInfo *info in array) {
@@ -714,11 +714,11 @@
     fileLogger.maximumFileSize = 1024;
     [FTLog enableLog:YES];
     [[FTLog sharedInstance] performSelector:@selector(addLogger:) withObject:fileLogger];
-    [[FTLog sharedInstance] userLog:NO message:@"testBackupDirectoryOrder_Start" level:StatusInfo property:nil];
+    [[FTLog sharedInstance] userLog:NO message:@"testBackupDirectoryOrder_Start" level:StatusInfo status:@"info" property:nil];
     for (int i = 0; i<10; i++) {
         FTInnerLogInfo(@"count:%d 11111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111",i);
     }
-    [[FTLog sharedInstance] userLog:NO message:@"testBackupDirectoryOrder_End" level:StatusInfo property:nil];
+    [[FTLog sharedInstance] userLog:NO message:@"testBackupDirectoryOrder_End" level:StatusInfo status:@"info" property:nil];
     
     NSArray *array = [fileManager performSelector:@selector(sortedLogFileInfos)];
 
@@ -734,7 +734,7 @@
     NSString *dateStr = [date ft_stringWithBaseFormat];
     dateStr = [dateStr stringByAppendingString:@"testLogFile"];
     FTInnerLogInfo(@"%@",dateStr);
-    [[FTLog sharedInstance] userLog:NO message:@"testLogFileUserLog" level:StatusInfo property:nil];
+    [[FTLog sharedInstance] userLog:NO message:@"testLogFileUserLog" level:StatusInfo status:@"info"  property:nil];
     NSArray *array =  [[FTLog sharedInstance] valueForKey:@"loggers"];
     BOOL hasFileLogger = NO;
     FTLogFileInfo *logFileInfo;

@@ -155,7 +155,7 @@ let package = Package(
                                "_FTLogger"
                               ],
                 path: "FTMobileSDK",
-                sources: ["FTSDKCore/FTWKWebView","FTSDKCore/DataManager"],
+                sources: ["FTSDKCore/FTWKWebView","FTSDKCore/DataManager","FTSDKCore/RemoteConfig"],
                 resources: [
                     .copy("Resources/PrivacyInfo.xcprivacy")],
                 publicHeadersPath: "FTSDKCore/include",

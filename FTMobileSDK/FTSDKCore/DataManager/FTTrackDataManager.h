@@ -18,10 +18,12 @@ typedef NS_ENUM(NSInteger, FTAddDataType) {
     FTAddDataRUMCache
 };
 NS_ASSUME_NONNULL_BEGIN
-@class FTRecordModel;
+@class FTRecordModel,FTDataWriterWorker,FTHTTPClient;
 @protocol FTRUMDataWriteProtocol;
 /// 数据写入，数据上传 相关操作
 @interface FTTrackDataManager : NSObject
+
+@property (nonatomic, strong) FTHTTPClient *httpClient;
 
 @property (nonatomic, strong) FTDataWriterWorker *dataWriterWorker;
 
@@ -31,7 +33,10 @@ NS_ASSUME_NONNULL_BEGIN
 +(instancetype)startWithAutoSync:(BOOL)autoSync
                     syncPageSize:(int)syncPageSize
                    syncSleepTime:(int)syncSleepTime;
-- (void)setDBLimitWithSize:(long)size discardNew:(BOOL)discardNew;
+- (void)updateAutoSync:(BOOL)autoSync
+          syncPageSize:(int)syncPageSize
+         syncSleepTime:(int)syncSleepTime;
+- (void)setEnableLimitWithDb:(BOOL)enable size:(long)size discardNew:(BOOL)discardNew;
 - (void)setLogCacheLimitCount:(int)count discardNew:(BOOL)discardNew;
 - (void)setRUMCacheLimitCount:(int)count discardNew:(BOOL)discardNew;
 
@@ -49,6 +54,7 @@ NS_ASSUME_NONNULL_BEGIN
 
 /// 缓存中的数据添加到数据库中
 -(void)insertCacheToDB;
+
 @end
 
 NS_ASSUME_NONNULL_END

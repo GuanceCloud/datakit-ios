@@ -13,7 +13,8 @@
 NS_ASSUME_NONNULL_BEGIN
 
 @interface FTWKWebViewJavascriptBridge : NSObject<FTWebViewJavascriptBridgeBaseDelegate,WKScriptMessageHandler>
-+ (instancetype)bridgeForWebView:(WKWebView*)webView;
++ (instancetype)bridgeForWebView:(WKWebView*)webView allowWebViewHostsString:(NSString *)hostsString;
+- (void)removeScriptMessageHandler;
 - (void)registerHandler:(NSString*)handlerName handler:(nullable WVJBHandler)handler;
 - (void)removeHandler:( NSString* )handlerName;
 - (void)callHandler:(NSString*)handlerName;

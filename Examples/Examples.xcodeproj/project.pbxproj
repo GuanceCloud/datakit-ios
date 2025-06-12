@@ -7,6 +7,8 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		170D62322DFB0B7A00E9131F /* FTRemoteConfigTest.m in Sources */ = {isa = PBXBuildFile; fileRef = 170D62302DFB0B7A00E9131F /* FTRemoteConfigTest.m */; };
+		170D62332DFB0B7A00E9131F /* FTRemoteConfigTest.m in Sources */ = {isa = PBXBuildFile; fileRef = 170D62302DFB0B7A00E9131F /* FTRemoteConfigTest.m */; };
 		1712C5F42B60EBFA00C4BD38 /* FTResourceAutoTrace.m in Sources */ = {isa = PBXBuildFile; fileRef = 1712C5F32B60EBFA00C4BD38 /* FTResourceAutoTrace.m */; };
 		1712C5F72B60F0B100C4BD38 /* TestSessionDelegate.m in Sources */ = {isa = PBXBuildFile; fileRef = 1712C5F62B60F0B100C4BD38 /* TestSessionDelegate.m */; };
 		1712C5F92B63AAE500C4BD38 /* FTTestInteraction.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1712C5F82B63AAE500C4BD38 /* FTTestInteraction.swift */; };
@@ -263,6 +265,7 @@
 
 /* Begin PBXFileReference section */
 		162957DD463DC9E7C9E4D1A0 /* Pods-FTMobileSDKUnitTests-tvOS.pre.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-FTMobileSDKUnitTests-tvOS.pre.xcconfig"; path = "Target Support Files/Pods-FTMobileSDKUnitTests-tvOS/Pods-FTMobileSDKUnitTests-tvOS.pre.xcconfig"; sourceTree = "<group>"; };
+		170D62302DFB0B7A00E9131F /* FTRemoteConfigTest.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = FTRemoteConfigTest.m; sourceTree = "<group>"; };
 		1712C5F32B60EBFA00C4BD38 /* FTResourceAutoTrace.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = FTResourceAutoTrace.m; sourceTree = "<group>"; };
 		1712C5F52B60F0B100C4BD38 /* TestSessionDelegate.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = TestSessionDelegate.h; sourceTree = "<group>"; };
 		1712C5F62B60F0B100C4BD38 /* TestSessionDelegate.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = TestSessionDelegate.m; sourceTree = "<group>"; };
@@ -539,6 +542,14 @@
 /* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
+		170D62312DFB0B7A00E9131F /* RemoteConfig */ = {
+			isa = PBXGroup;
+			children = (
+				170D62302DFB0B7A00E9131F /* FTRemoteConfigTest.m */,
+			);
+			path = RemoteConfig;
+			sourceTree = "<group>";
+		};
 		172C356D280D8885002D139E /* UtilsTest */ = {
 			isa = PBXGroup;
 			children = (
@@ -883,6 +894,7 @@
 				17F5C5222C60D62A007F2B2C /* FTURLProtocol.h */,
 				17F5C5202C60D62A007F2B2C /* FTURLProtocol.m */,
 				17132DC32C2D8AAD009DFE8F /* errors.json */,
+				170D62312DFB0B7A00E9131F /* RemoteConfig */,
 				173A03F82CDDD32A00E07D53 /* LongTaskManagerTest */,
 				177892B829A60CD20007B47F /* PerformanceTest */,
 				17E0792C291E60830014A420 /* ExtensionSDK */,
@@ -1404,6 +1416,7 @@
 				1783787F2D8D0BB600C590AE /* FTRUMMonitorTest.m in Sources */,
 				178378802D8D0BB600C590AE /* FTRUMSessionOnErrorSampleRateTest.m in Sources */,
 				178378812D8D0BB600C590AE /* FTRUMViewTest.m in Sources */,
+				170D62322DFB0B7A00E9131F /* FTRemoteConfigTest.m in Sources */,
 				178378822D8D0BB600C590AE /* FTRUMTest.m in Sources */,
 				178378832D8D0BB600C590AE /* FTRUMActionTest.m in Sources */,
 				178AE37B2D55B74F00BDC51B /* FTResourceDelegateTest.m in Sources */,
@@ -1566,6 +1579,7 @@
 				1783787B2D8D0BB600C590AE /* FTRUMSessionOnErrorSampleRateTest.m in Sources */,
 				1783787C2D8D0BB600C590AE /* FTRUMViewTest.m in Sources */,
 				1783787D2D8D0BB600C590AE /* FTRUMTest.m in Sources */,
+				170D62332DFB0B7A00E9131F /* FTRemoteConfigTest.m in Sources */,
 				1783787E2D8D0BB600C590AE /* FTRUMActionTest.m in Sources */,
 				177892BD29A60FA10007B47F /* PerformanceRumTest.m in Sources */,
 				174058C028D815810092E096 /* FTJavaScriptBridgeTest.m in Sources */,

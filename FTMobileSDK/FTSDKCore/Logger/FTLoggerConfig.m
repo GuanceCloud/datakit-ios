@@ -8,7 +8,8 @@
 
 #import "FTLoggerConfig.h"
 #import "FTConstants.h"
-
+#import "FTJSONUtil.h"
+#import "FTLog+Private.h"
 @implementation FTLoggerConfig
 -(instancetype)init{
     self = [super init];
@@ -63,6 +64,30 @@
     [dict setValue:@(self.logCacheLimitCount) forKey:@"logCacheLimitCount"];
     [dict setValue:@(self.printCustomLogToConsole) forKey:@"printCustomLogToConsole"];
     return dict;
+}
+-(void)mergeWithRemoteConfigDict:(NSDictionary *)dict{
+    @try {
+        if (!dict || dict.count == 0) {
+            return;
+        }
+        NSNumber *sampleRate = dict[FT_R_LOG_SAMPLERATE];
+        NSString *logLevelFilters = dict[FT_R_LOG_LEVEL_FILTERS];
+        NSNumber *enableCustomLog = dict[FT_R_LOG_ENABLE_CUSTOM_LOG];
+        if (sampleRate != nil && [sampleRate isKindOfClass:NSNumber.class]) {
+            self.samplerate = [sampleRate doubleValue] * 100;
+        }
+        if (enableCustomLog != nil && [enableCustomLog isKindOfClass:NSNumber.class]) {
+            self.enableCustomLog = [enableCustomLog boolValue];
+        }
+        if (logLevelFilters && [logLevelFilters isKindOfClass:NSString.class] && logLevelFilters.length > 0) {
+            NSArray *filters = [FTJSONUtil arrayWithJsonString:logLevelFilters];
+            if (filters.count>0) {
+                self.logLevelFilter = filters;
+            }
+        }
+    } @catch (NSException *exception) {
+        FTInnerLogError(@"exception: %@",exception);
+    }
 }
 -(NSString *)debugDescription{
     return [NSString stringWithFormat:@"%@",[self convertToDictionary]];
