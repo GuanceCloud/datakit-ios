@@ -18,6 +18,7 @@
 #import "FTTrackDataManager+Test.h"
 #import "FTDataUploadWorker.h"
 #import "XCTestCase+Utils.h"
+#import "FTSessionReplayConfig+Private.h"
 @interface FTDataUploadWorker (Testing)
 @property (nonatomic, assign,readonly) int uploadPageSize;
 @property (nonatomic, assign,readonly) int syncSleepTime;
@@ -206,6 +207,15 @@
     NSArray *array = @[@"info",@"error"];
     XCTAssertTrue([copyLogger.logLevelFilter isEqualToArray:array]);
     
+    NSDictionary *testSRDict = @{
+        FT_R_SR_SAMPLERATE:@(0.8),
+        FT_R_SR_ON_ERROR_SAMPLE_RATE:@(0.5),
+    };
+    FTSessionReplayConfig *srConfig = [[FTSessionReplayConfig alloc]init];
+    FTSessionReplayConfig *copySrConfig = [srConfig copy];
+    [copySrConfig mergeWithRemoteConfigDict:testSRDict];
+    XCTAssertTrue(srConfig.sampleRate != copySrConfig.sampleRate && copyLogger.samplerate == 80);
+    XCTAssertTrue(srConfig.sessionReplayOnErrorSampleRate != copySrConfig.sessionReplayOnErrorSampleRate && copySrConfig.sessionReplayOnErrorSampleRate == 50);
 }
 - (void)testWrongTypeMerge{
     NSDictionary *testBaseDict = @{
@@ -286,6 +296,15 @@
     XCTAssertTrue(logger.logLevelFilter == copyLogger.logLevelFilter);
     
     
+    NSDictionary *testSRDict = @{
+        FT_R_SR_SAMPLERATE:@"0.8",
+        FT_R_SR_ON_ERROR_SAMPLE_RATE:@"0.5",
+    };
+    FTSessionReplayConfig *srConfig = [[FTSessionReplayConfig alloc]init];
+    FTSessionReplayConfig *copySrConfig = [srConfig copy];
+    [copySrConfig mergeWithRemoteConfigDict:testSRDict];
+    XCTAssertTrue(srConfig.sampleRate == copySrConfig.sampleRate);
+    XCTAssertTrue(srConfig.sessionReplayOnErrorSampleRate == copySrConfig.sessionReplayOnErrorSampleRate);
 }
 - (void)testDefaultUpdateRemoteConfig{
     

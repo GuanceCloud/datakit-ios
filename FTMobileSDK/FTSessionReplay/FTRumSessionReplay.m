@@ -19,6 +19,8 @@
 #import "FTModuleManager.h"
 #import "FTTmpCacheManager.h"
 #import "FTPresetProperty.h"
+#import "FTSessionReplayConfig+Private.h"
+#import "FTRemoteConfigManager.h"
 @interface FTFeatureStores : NSObject
 @property (nonatomic, strong) FTFeatureStorage *storage;
 @property (nonatomic, strong) FTFeatureUpload *upload;
@@ -67,7 +69,9 @@ static dispatch_once_t onceToken;
     if(config.sampleRate<=0&&config.sessionReplayOnErrorSampleRate<=0){
         return;
     }
-    FTSessionReplayFeature *sessionReplayFeature = [[FTSessionReplayFeature alloc]initWithConfig:[config copy]];
+    FTSessionReplayConfig *copyConfig = [config copy];
+    [copyConfig mergeWithRemoteConfigDict:[[FTRemoteConfigManager sharedInstance] getLocalRemoteConfig]];
+    FTSessionReplayFeature *sessionReplayFeature = [[FTSessionReplayFeature alloc]initWithConfig:copyConfig];
     FTFeatureStores *srStore = [self registerFeature:sessionReplayFeature];
     [self.stores setValue:srStore forKey:sessionReplayFeature.name];
     [self.features setValue:sessionReplayFeature forKey:sessionReplayFeature.name];

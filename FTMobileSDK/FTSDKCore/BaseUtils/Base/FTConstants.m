@@ -254,6 +254,8 @@ NSString * const FT_R_LOG_SAMPLERATE = @"logSampleRate";
 NSString * const FT_R_LOG_LEVEL_FILTERS = @"logLevelFilters";
 NSString * const FT_R_LOG_ENABLE_CUSTOM_LOG = @"logEnableCustomLog";
 
+NSString * const FT_R_SR_SAMPLERATE = @"sessionReplaySampleRate";
+NSString * const FT_R_SR_ON_ERROR_SAMPLE_RATE = @"sessionReplayOnErrorSampleRate";
 
 #pragma mark ==========  user info ==========
 NSString * const FT_USER_ID = @"userid";

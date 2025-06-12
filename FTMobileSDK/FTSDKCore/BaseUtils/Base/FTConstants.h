@@ -252,6 +252,8 @@ extern NSString * const FT_R_LOG_SAMPLERATE;
 extern NSString * const FT_R_LOG_LEVEL_FILTERS;
 extern NSString * const FT_R_LOG_ENABLE_CUSTOM_LOG;
 
+extern NSString * const FT_R_SR_SAMPLERATE;
+extern NSString * const FT_R_SR_ON_ERROR_SAMPLE_RATE;
 #pragma mark ========== inner use ==========
 extern NSUInteger const FT_LOGGING_CONTENT_SIZE;
 

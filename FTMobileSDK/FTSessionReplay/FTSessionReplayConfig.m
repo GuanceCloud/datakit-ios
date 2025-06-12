@@ -8,6 +8,8 @@
 
 #import "FTSessionReplayConfig.h"
 #import "FTSessionReplayConfig+Private.h"
+#import "FTConstants.h"
+#import "FTLog+Private.h"
 NSString * const FTTextAndInputPrivacyLevelStringMap[] = {
     [FTTextAndInputPrivacyLevelMaskAll] = @"MaskAll",
     [FTTextAndInputPrivacyLevelMaskAllInputs] = @"MaskAllInputs",
@@ -89,5 +91,24 @@ NSString * const FTImagePrivacyLevelStringMap[] = {
 }
 -(NSString *)debugDescription{
     return [NSString stringWithFormat:@"====== Config ======\n sampleRate:%d\n sessionReplayOnErrorSampleRate:%d\n textAndInputPrivacy:%@\n touchPrivacy:%@\n imagePrivacy:%@\n ================== ",self.sampleRate,self.sessionReplayOnErrorSampleRate,FTTextAndInputPrivacyLevelStringMap[self.textAndInputPrivacy],FTTouchPrivacyLevelStringMap[self.touchPrivacy],FTImagePrivacyLevelStringMap[self.imagePrivacy]];
+}
+#pragma mark remote
+-(void)mergeWithRemoteConfigDict:(NSDictionary *)dict{
+    @try {
+        if (!dict || dict.count == 0) {
+            return;
+        }
+        NSNumber *sampleRate = dict[FT_R_SR_SAMPLERATE];
+        NSNumber *onErrorSampleRate = dict[FT_R_SR_ON_ERROR_SAMPLE_RATE];
+        
+        if (sampleRate != nil && [sampleRate isKindOfClass:NSNumber.class]) {
+            self.sampleRate = [sampleRate doubleValue] * 100;
+        }
+        if (onErrorSampleRate != nil && [onErrorSampleRate isKindOfClass:NSNumber.class]) {
+            self.sessionReplayOnErrorSampleRate = [onErrorSampleRate doubleValue] * 100;
+        }
+    } @catch (NSException *exception) {
+        FTInnerLogError(@"exception: %@",exception);
+    }
 }
 @end
