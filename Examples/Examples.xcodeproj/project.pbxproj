@@ -139,6 +139,8 @@
 		17F209E42D1540630076F57C /* TraceViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1764E41A29ACB68C00E70DBB /* TraceViewController.swift */; };
 		17F209E52D1540680076F57C /* LogViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1764E41829ACB5BB00E70DBB /* LogViewController.swift */; };
 		17F209E62D1540990076F57C /* Crasher.mm in Sources */ = {isa = PBXBuildFile; fileRef = 7C6E925225E35E9700D12C12 /* Crasher.mm */; };
+		17F59C6F2DF7D3A7003FCB84 /* FTRemoteConfigTest.m in Sources */ = {isa = PBXBuildFile; fileRef = 17F59C6E2DF7D3A7003FCB84 /* FTRemoteConfigTest.m */; };
+		17F59C702DF7D3A7003FCB84 /* FTRemoteConfigTest.m in Sources */ = {isa = PBXBuildFile; fileRef = 17F59C6E2DF7D3A7003FCB84 /* FTRemoteConfigTest.m */; };
 		17F5C5232C60D62A007F2B2C /* FTSessionConfiguration.m in Sources */ = {isa = PBXBuildFile; fileRef = 17F5C51F2C60D629007F2B2C /* FTSessionConfiguration.m */; };
 		17F5C5242C60D62A007F2B2C /* FTURLProtocol.m in Sources */ = {isa = PBXBuildFile; fileRef = 17F5C5202C60D62A007F2B2C /* FTURLProtocol.m */; };
 		49E60427BFA2404CAC822ADB /* Pods_FTMobileSDKUnitTests_tvOS.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 91C1E5A38666EF7793AD416F /* Pods_FTMobileSDKUnitTests_tvOS.framework */; };
@@ -373,6 +375,7 @@
 		17F10ECC2D13EACE00737EDD /* tvOS_AppUITestsLaunchTests.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = tvOS_AppUITestsLaunchTests.m; sourceTree = "<group>"; };
 		17F10ECD2D13EACE00737EDD /* tvOS_AppUITestsLaunchTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = tvOS_AppUITestsLaunchTests.swift; sourceTree = "<group>"; };
 		17F10ED32D13F11400737EDD /* FTMobileSDK.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; path = FTMobileSDK.framework; sourceTree = BUILT_PRODUCTS_DIR; };
+		17F59C6E2DF7D3A7003FCB84 /* FTRemoteConfigTest.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = FTRemoteConfigTest.m; sourceTree = "<group>"; };
 		17F5C51F2C60D629007F2B2C /* FTSessionConfiguration.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = FTSessionConfiguration.m; sourceTree = "<group>"; };
 		17F5C5202C60D62A007F2B2C /* FTURLProtocol.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = FTURLProtocol.m; sourceTree = "<group>"; };
 		17F5C5212C60D62A007F2B2C /* FTSessionConfiguration.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = FTSessionConfiguration.h; sourceTree = "<group>"; };
@@ -710,6 +713,14 @@
 			path = "tvOS-AppUITests";
 			sourceTree = "<group>";
 		};
+		17F59C692DF7D2C5003FCB84 /* RemoteConfig */ = {
+			isa = PBXGroup;
+			children = (
+				17F59C6E2DF7D3A7003FCB84 /* FTRemoteConfigTest.m */,
+			);
+			path = RemoteConfig;
+			sourceTree = "<group>";
+		};
 		4A11694D239113B600C0BC4E = {
 			isa = PBXGroup;
 			children = (
@@ -854,6 +865,7 @@
 		4A85313723AB85FC00B40B5D /* FTMobileSDKUnitTests */ = {
 			isa = PBXGroup;
 			children = (
+				17F59C692DF7D2C5003FCB84 /* RemoteConfig */,
 				17F5C5212C60D62A007F2B2C /* FTSessionConfiguration.h */,
 				17F5C51F2C60D629007F2B2C /* FTSessionConfiguration.m */,
 				17F5C5222C60D62A007F2B2C /* FTURLProtocol.h */,
@@ -1381,6 +1393,7 @@
 				17933E362D68244900524BF2 /* FTRUMViewTest.m in Sources */,
 				178AE37B2D55B74F00BDC51B /* FTResourceDelegateTest.m in Sources */,
 				178AE37C2D55B74F00BDC51B /* FTURLProtocol.m in Sources */,
+				17F59C6F2DF7D3A7003FCB84 /* FTRemoteConfigTest.m in Sources */,
 				178AE37D2D55B74F00BDC51B /* FTAppLaunchDurationTest.m in Sources */,
 				178AE37E2D55B74F00BDC51B /* FTNetworkTests.m in Sources */,
 				178AE37F2D55B74F00BDC51B /* FTDatabaseTest.m in Sources */,
@@ -1534,6 +1547,7 @@
 				172931D92BF6148600AA9D53 /* FTNetworkMock.m in Sources */,
 				172C3571280E7D5F002D139E /* FTSwizzleTest.m in Sources */,
 				171CE1D52BFB2D590083FC1C /* FTResourceInstrumentTest.m in Sources */,
+				17F59C702DF7D3A7003FCB84 /* FTRemoteConfigTest.m in Sources */,
 				1788B11629BAF43B007FDFF1 /* HttpEngineTestUtil.m in Sources */,
 				1712C5F72B60F0B100C4BD38 /* TestSessionDelegate.m in Sources */,
 				177892BF29A60FD00007B47F /* PerformanceLoggingTest.m in Sources */,

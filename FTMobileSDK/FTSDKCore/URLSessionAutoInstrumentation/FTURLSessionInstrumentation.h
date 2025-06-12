@@ -51,7 +51,8 @@ typedef enum FTNetworkTraceType:NSUInteger FTNetworkTraceType;
 /// - Parameter enableAutoRumTrack: 是否自动采集
 - (void)setEnableAutoRumTrace:(BOOL)enableAutoRumTrack
            resourceUrlHandler:(FTResourceUrlHandler)resourceUrlHandler
-     resourcePropertyProvider:(ResourcePropertyProvider)resourcePropertyProvider;
+     resourcePropertyProvider:(ResourcePropertyProvider)resourcePropertyProvider
+       sessionTaskErrorFilter:(SessionTaskErrorFilter)sessionTaskErrorFilter;
 
 /// 设置 trace 配置项，开启 trace
 /// - Parameters:

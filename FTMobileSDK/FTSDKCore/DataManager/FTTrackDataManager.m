@@ -21,11 +21,10 @@
 #import "FTRUMDataWriteProtocol.h"
 #import "FTDataUploadWorker.h"
 #import "FTDataWriterWorker.h"
-
+#import "FTNetworkInfoManager.h"
 @interface FTTrackDataManager ()<FTAppLifeCycleDelegate,FTNetworkChangeObserver>
 /// 是否开启自动上传逻辑（启动时、网络状态变化、写入间隔10s）
-@property (nonatomic, assign) BOOL autoSync;
-@property (nonatomic, strong) FTHTTPClient *httpClient;
+@property (atomic, assign) BOOL autoSync;
 @property (nonatomic, strong) FTDBDataCachePolicy *dataCachePolicy;
 @property (nonatomic, strong) dispatch_block_t uploadWork;
 @property (nonatomic, strong) dispatch_source_t timerSource;
@@ -59,41 +58,49 @@ static dispatch_once_t onceToken;
     self = [super init];
     if (self) {
         _dataCachePolicy = [[FTDBDataCachePolicy alloc]init];
-        _dataUploadWorker = [[FTDataUploadWorker alloc]initWithAutoSync:autoSync syncPageSize:syncPageSize syncSleepTime:syncSleepTime];
+        __weak typeof(self) weakSelf = self;
+        _dataCachePolicy.callback = ^{
+            __strong typeof(weakSelf) strongSelf = weakSelf;
+            if (!strongSelf) return;
+            if (strongSelf.autoSync){
+                [strongSelf.dataUploadWorker flushWithSleep:YES];
+            };
+        };
+        _dataUploadWorker = [[FTDataUploadWorker alloc]initWithSyncPageSize:syncPageSize syncSleepTime:syncSleepTime];
         _dataWriterWorker = [[FTDataWriterWorker alloc]init];
         _dataUploadWorker.errorSampledConsume = _dataWriterWorker;
         _dataUploadWorker.counter = _dataCachePolicy;
-        _autoSync = autoSync;
-        if (autoSync) {
-            __weak typeof(self) weakSelf = self;
-            _dataCachePolicy.callback = ^{
-                __strong typeof(weakSelf) strongSelf = weakSelf;
-                if (!strongSelf) return;
-                [strongSelf.dataUploadWorker flushWithSleep:YES];
-            };
-        }
         _errorTimeIntervals = [[NSMutableArray alloc]init];
         _cacheInvalidTimeInterval = 60;
-        [self listenNetworkChangeAndAppLifeCycle];
+        [[FTNetworkConnectivity sharedInstance] start];
+        [[FTAppLifeCycle sharedInstance] addAppLifecycleDelegate:self];
+        [self enableAutoSync:autoSync];
     }
     return self;
 }
-//监听网络状态 网络连接成功 触发一次上传操作
-- (void)listenNetworkChangeAndAppLifeCycle{
-    [[FTNetworkConnectivity sharedInstance] start];
-    [[FTAppLifeCycle sharedInstance] addAppLifecycleDelegate:self];
-    if(_autoSync){
+-(FTHTTPClient *)httpClient{
+    return _dataUploadWorker.httpClient;
+}
+- (void)enableAutoSync:(BOOL)autoSync{
+    self.autoSync = autoSync;
+    if (autoSync) {
         [[FTNetworkConnectivity sharedInstance] addNetworkObserver:self];
+    }else{
+        [self.dataUploadWorker cancelAsynchronously];
+        [[FTNetworkConnectivity sharedInstance] removeNetworkObserver:self];
     }
 }
-- (void)connectivityChanged:(BOOL)connected typeDescription:(NSString *)typeDescription{
-    if (connected){
-        [self.dataUploadWorker flushWithSleep:YES];
-    }
+- (void)updateAutoSync:(BOOL)autoSync
+          syncPageSize:(int)syncPageSize
+         syncSleepTime:(int)syncSleepTime{
+    [self enableAutoSync:autoSync];
+    [self.dataUploadWorker updateSyncPageSize:syncPageSize syncSleepTime:syncSleepTime];
 }
--(void)setDBLimitWithSize:(long)size discardNew:(BOOL)discardNew{
-    [[FTTrackerEventDBTool sharedManger] setEnableLimitWithDbSize:YES];
-    [self.dataCachePolicy setDBLimitWithSize:size discardNew:discardNew];
+-(void)setEnableLimitWithDb:(BOOL)enable size:(long)size discardNew:(BOOL)discardNew{
+    [[FTTrackerEventDBTool sharedManger] setEnableLimitWithDbSize:enable];
+    if (enable) {
+        [self.dataCachePolicy setDBLimitWithSize:size discardNew:discardNew];
+    }
 }
 - (void)setLogCacheLimitCount:(int)count discardNew:(BOOL)discardNew{
     [self.dataCachePolicy setLogCacheLimitCount:count discardNew:discardNew];
@@ -124,6 +131,12 @@ static dispatch_once_t onceToken;
         return;
     }
     if(self.autoSync && insertItemResult){
+        [self.dataUploadWorker flushWithSleep:YES];
+    }
+}
+#pragma mark - Network Change Observer -
+- (void)connectivityChanged:(BOOL)connected typeDescription:(NSString *)typeDescription{
+    if (connected){
         [self.dataUploadWorker flushWithSleep:YES];
     }
 }

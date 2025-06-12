@@ -1,3 +1,22 @@
+# 1.5.17
+1. 添加 `FTRUMConfig.enableTraceWebView` 配置是否开启通过 SDK 采集 webview 数据，通过 `FTRUMConfig.allowWebViewHost` 可以控制需要过滤 host 地址
+2. 添加 `FTRumConfig.sessionTaskErrorFilter`, 可以针对本地网络错误进行过滤
+3. 添加 `FTMobileConfig.remoteConfiguration` 支持开启远程条件配置功能、`FTMobileConfig.remoteConfigMiniUpdateInterval` 支持在开启远程控制之后，设置最短更新时间间隔
+---
+# 1.5.17-beta.2
+1. 同 1.5.17-beta.1
+---
+# 1.5.17-beta.1
+1. 修复 `FTRUMConfig.allowWebViewHost` 为空时 webView 无法采集问题
+2. 优化远程动态参数更新逻辑，添加防护代码防止参数类型配置错误导致解析异常问题
+3. 支持通过 `FTRUMConfig.sessionTaskErrorFilter` 拦截 SessionTask Error
+---
+# 1.5.17-alpha.1
+1. 添加 `FTRUMConfig.enableTraceWebView` 配置是否开启通过 SDK 采集 webview 数据,
+   通过 `FTRUMConfig.allowWebViewHost` 可以控制需要过滤 host 地址
+2. 添加 `FTURLSessionDelegate.errorFilter`, 可以针对本地网络错误进行过滤
+3. 添加 `FTMobileConfig.remoteConfiguration` 、`FTMobileConfig.remoteConfigMiniUpdateInterval` 配置是否开启远程配置功能，动态配置参数。`FTMobileAgent` 添加 `+updateRemoteConfig` 和 `+ updateRemoteConfigWithMiniUpdateInterval:callback:` 更新远程配置请求方法
+---
 # 1.5.16
 1. 添加 `FTMobileConfig.lineDataModifier`、`FTMobileConfig.dataModifier` 支持数据写入替换，支持数据脱敏
 2. 添加 `FTRUMConfig.sessionErrorSampleRate` 支持错误采样，在未被 setSamplingRate采样时， 在发生错误时可以对 1 分钟前的 rum 的数据进行取样采集

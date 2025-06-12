@@ -56,7 +56,15 @@
     return result;
 }
 + (NSDictionary *)dictionaryWithJsonString:(NSString *)jsonString{
-    NSDictionary *result = nil;
+    id result = [self objectWithJsonString:jsonString];
+    return [result isKindOfClass:NSDictionary.class]?result:nil;
+}
++ (NSArray *)arrayWithJsonString:(NSString *)jsonString{
+    id result = [self objectWithJsonString:jsonString];
+    return [result isKindOfClass:NSArray.class]?result:nil;
+}
++ (id)objectWithJsonString:(NSString *)jsonString{
+    id result = nil;
     @try {
         if (jsonString == nil) {
             return nil;

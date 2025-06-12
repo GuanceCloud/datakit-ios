@@ -29,6 +29,8 @@ void *FTInterceptorQueueIdentityKey = &FTInterceptorQueueIdentityKey;
 @synthesize intakeUrlHandler = _intakeUrlHandler;
 @synthesize traceInterceptor = _traceInterceptor;
 @synthesize resourcePropertyProvider = _resourcePropertyProvider;
+@synthesize sessionTaskErrorFilter = _sessionTaskErrorFilter;
+
 static FTURLSessionInterceptor *sharedInstance = nil;
 static dispatch_once_t onceToken;
 + (instancetype)shared{
@@ -129,6 +131,12 @@ static dispatch_once_t onceToken;
         FTInnerLogError(@"SDK configuration RUM error, RUM is not supported");
     }
     return _rumResourceHandler;
+}
+-(void)setSessionTaskErrorFilter:(SessionTaskErrorFilter)sessionTaskErrorFilter{
+    _sessionTaskErrorFilter = sessionTaskErrorFilter;
+}
+-(SessionTaskErrorFilter)sessionTaskErrorFilter{
+    return _sessionTaskErrorFilter;
 }
 #pragma mark - trace
 - (NSURLRequest *)interceptRequest:(NSURLRequest *)request{
@@ -272,17 +280,22 @@ static dispatch_once_t onceToken;
 }
 /// rum: stopResource
 - (void)taskCompleted:(NSURLSessionTask *)task error:(nullable NSError *)error{
-    [self taskCompleted:task error:error extraProvider:nil];
+    [self taskCompleted:task error:error extraProvider:nil errorFilter:nil];
 }
-- (void)taskCompleted:(NSURLSessionTask *)task error:(NSError *)error extraProvider:(nullable ResourcePropertyProvider)extraProvider{
+- (void)taskCompleted:(NSURLSessionTask *)task error:(NSError *)error extraProvider:(nullable ResourcePropertyProvider)extraProvider errorFilter:(nullable SessionTaskErrorFilter)errorFilter{
     ResourcePropertyProvider provider = extraProvider?:self.resourcePropertyProvider;
+    SessionTaskErrorFilter filter = errorFilter?:self.sessionTaskErrorFilter;
     dispatch_async(self.queue, ^{
         @try {
             FTSessionTaskHandler *handler = [self getTraceHandler:task];
             if(!handler){
                 return;
             }
-            [handler taskCompleted:task error:error];
+            BOOL filterError = NO;
+            if (filter && error) {
+                filterError = filter(error);
+            }
+            [handler taskCompleted:task error:filterError?nil:error];
             [self removeTraceHandlerWithKey:task];
             NSDictionary *property;
             if(provider){

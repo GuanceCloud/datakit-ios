@@ -120,6 +120,15 @@ NS_ASSUME_NONNULL_BEGIN
 /// 清除所有尚未上传至服务器的数据
 + (void)clearAllData;
 
+/// 触发获取远程配置的环境变量请求
+/// 最小的更新时间间隔默认为 FTMobileConfig.remoteConfiguration，若距上次请求时间间隔不满足设置，不发起请求
++ (void)updateRemoteConfig;
+
+/// 触发获取远程配置的环境变量请求
+/// - Parameters:
+///   - miniUpdateInterval: 距离上次请求最小时间间隔
+///   - callback: 请求回调
++ (void)updateRemoteConfigWithMiniUpdateInterval:(int)miniUpdateInterval callback:(void (^)(BOOL success, NSDictionary<NSString *, id> * _Nullable config))callback;
 #pragma mark ========== DEPRECATED ==========
 /// 注销当前用户
 - (void)logout DEPRECATED_MSG_ATTRIBUTE("已过时，请使用 -unbindUser 替换");

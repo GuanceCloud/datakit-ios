@@ -8,26 +8,25 @@
 #import <Foundation/Foundation.h>
 #if !TARGET_OS_TV
 #import <WebKit/WebKit.h>
-#import "FTURLSessionInterceptorProtocol.h"
 NS_ASSUME_NONNULL_BEGIN
-/// webView 添加  web 端 rum 数据
-@protocol FTWKWebViewRumDelegate <NSObject>
-@optional
-- (void)dealReceiveScriptMessage:(id )message slotId:(NSUInteger)slotId;
 
-@end
-/// 处理 WKWebView Trace、js 交互
-@interface FTWKWebViewHandler : NSObject<WKNavigationDelegate>
-@property (nonatomic, assign) BOOL enableTrace;
-@property (nonatomic, weak) id<FTWKWebViewRumDelegate> rumTrackDelegate;
-@property (nonatomic, weak) id<FTURLSessionInterceptorProtocol> interceptor;
+/// 处理 WKWebView RUM 事件与 本机 RUM 会话关联
+@interface FTWKWebViewHandler : NSObject
+
 + (instancetype)sharedInstance;
 
-- (void)reloadWebView:(WKWebView *)webView completionHandler:(void (^)(NSURLRequest *request,BOOL needTrace))completionHandler;
+/// 使 SDK 能够将来自 WebView 的 RUM 事件与本机 RUM 会话关联起来。
+/// 注意：需要在 webView 页面加载之前进行使用，否则当前加载页面不生效，下一次加载页面或发生导航时才生效‌。
+/// - Parameter webView: 采集的 webView
+- (void)enableWebView:(WKWebView *)webView;
 
-- (void)addWebView:(WKWebView *)webView request:(NSURLRequest *)request;
+/// 使 SDK 能够将来自 WebView 的 RUM 事件与本机 RUM 会话关联起来。
+/// 注意：需要在 webView 页面加载之前进行使用，否则当前加载页面不生效，下一次加载页面或发生导航时才生效‌。
+/// - Parameters:
+///   - webView: 采集的 webView
+///   - hosts: 一组使用 Web SDK 进行检测的主机地址数组。
+- (void)enableWebView:(WKWebView *)webView allowWebViewHost:(NSArray *)hosts;
 
-- (void)addScriptMessageHandlerWithWebView:(WKWebView *)webView;
 @end
 
 NS_ASSUME_NONNULL_END

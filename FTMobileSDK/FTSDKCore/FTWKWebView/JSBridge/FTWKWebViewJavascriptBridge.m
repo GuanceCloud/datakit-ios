@@ -10,6 +10,10 @@
 #if !TARGET_OS_TV
 #import "FTWebViewJavascriptLeakAvoider.h"
 #import "FTConstants.h"
+
+NSString *const kAllowedHostsPlaceholder = @"__ALLOWED_HOSTS__";
+NSString *const kFTJsCodePrefix = @"/* FTWebViewJavascriptBridge */";
+
 @interface FTWKWebViewJavascriptBridge()
 @property (nonatomic, weak) WKWebView *webView;
 @end
@@ -17,9 +21,9 @@
     long _uniqueId;
     FTWebViewJavascriptBridgeBase *_base;
 }
-+ (instancetype)bridgeForWebView:(WKWebView*)webView{
++ (instancetype)bridgeForWebView:(WKWebView*)webView allowWebViewHostsString:(NSString *)hostsString{
     FTWKWebViewJavascriptBridge* bridge = [[self alloc] init];
-    [bridge _setupInstance:webView];
+    [bridge _setupInstance:webView allowWebViewHostsString:hostsString];
     return bridge;
 }
 
@@ -42,13 +46,13 @@
 - (void)removeHandler:(NSString *)handlerName {
     [_base.messageHandlers removeObjectForKey:handlerName];
 }
-- (void)_setupInstance:(WKWebView*)webView{
+- (void)_setupInstance:(WKWebView*)webView allowWebViewHostsString:(NSString *)hostsString{
     _webView = webView;
     _base = [[FTWebViewJavascriptBridgeBase alloc] init];
     _base.delegate = self;
     [self removeScriptMessageHandler];
     [self addScriptMessageHandler];
-    [self _injectJavascriptFile];
+    [self _injectJavascriptFile:hostsString];
 }
 - (void)userContentController:(WKUserContentController *)userContentController didReceiveScriptMessage:(WKScriptMessage *)message {
     if (![message.name isEqualToString:FT_SCRIPT_MESSAGE_HANDLER_NAME]) {
@@ -59,8 +63,8 @@
         [_base flushMessageQueue:body slotId:_webView.hash];
     }
 }
-- (void)_injectJavascriptFile {
-    NSString *bridge_js = FTWebViewJavascriptBridge_js();
+- (void)_injectJavascriptFile:(NSString *)allowWebViewHost {
+    NSString *bridge_js = FTWebViewJavascriptBridge_js(allowWebViewHost);
     //injected the method when H5 starts to create the DOM tree
     WKUserScript * bridge_userScript = [[WKUserScript alloc]initWithSource:bridge_js injectionTime:WKUserScriptInjectionTimeAtDocumentStart forMainFrameOnly:YES];
     [_webView.configuration.userContentController addUserScript:bridge_userScript];
@@ -72,8 +76,19 @@
 
 - (void)removeScriptMessageHandler {
     [_webView.configuration.userContentController removeScriptMessageHandlerForName:FT_SCRIPT_MESSAGE_HANDLER_NAME];
+    WKUserContentController *controller = _webView.configuration.userContentController;
+    NSArray *userScripts = controller.userScripts;
+    [controller removeAllUserScripts];
+    if (userScripts.count>0) {
+        NSArray<WKUserScript *> *others = [userScripts filteredArrayUsingPredicate:
+            [NSPredicate predicateWithBlock:^BOOL(WKUserScript *script, NSDictionary *bindings) {
+                return ![script.source hasPrefix:kFTJsCodePrefix];
+            }]];
+        for (WKUserScript *script in others) {
+            [controller addUserScript:script];
+        }
+    }
 }
-
 - (void) _evaluateJavascript:(NSString*)javascriptCommand {
     [_webView evaluateJavaScript:javascriptCommand completionHandler:nil];
 }
@@ -82,17 +97,19 @@
     [self removeScriptMessageHandler];
 }
 
-NSString * FTWebViewJavascriptBridge_js(void) {
+NSString * FTWebViewJavascriptBridge_js(NSString *hostsString) {
+    NSString *allowedHosts = hostsString?:@"";
 #define __WVJB_js_func__(x) #x
     //FTWebViewJavascriptBridge
     // BEGIN preprocessorJSCode
     static NSString * preprocessorJSCode = @__WVJB_js_func__(
                                                              ;(function(window) {
-               
+        /* FTWebViewJavascriptBridge */
         window.FTWebViewJavascriptBridge = {
         registerHandler: ftRegisterHandler,
         callHandler: ftCallHandler,
         sendEvent: ftSendEvent,
+        getAllowedWebViewHosts: getAllowedWebViewHosts,
         _handleMessageFromObjC: _ftHandleMessageFromObjC
         };
         
@@ -101,6 +118,10 @@ NSString * FTWebViewJavascriptBridge_js(void) {
         var ftResponseCallbacks = {};
         var uniqueId = 1;
         
+        function getAllowedWebViewHosts(){
+            return __ALLOWED_HOSTS__;
+        }
+                                                                 
         function ftRegisterHandler(handlerName, handler) {
             ftMessageHandlers[handlerName] = handler;
         }
@@ -166,7 +187,9 @@ NSString * FTWebViewJavascriptBridge_js(void) {
                                                              ); // END preprocessorJSCode
     
 #undef __WVJB_js_func__
-    return preprocessorJSCode;
+  NSString *jsCode = [preprocessorJSCode stringByReplacingOccurrencesOfString:kAllowedHostsPlaceholder
+                                                                withString:allowedHosts];
+  return jsCode;
 };
 
 

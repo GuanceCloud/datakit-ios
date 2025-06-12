@@ -11,7 +11,7 @@
 #import "FTBaseInfoHandler.h"
 
 @interface FTNetworkInfoManager()
-
+@property (atomic,assign,readwrite) BOOL compression;
 @end
 static dispatch_once_t onceToken;
 static FTNetworkInfoManager *sharedInstance = nil;
@@ -65,10 +65,16 @@ static FTNetworkInfoManager *sharedInstance = nil;
         return self;
     };
 }
-- (FTNetworkInfoManager *(^)(BOOL value))setCompression{
+- (FTNetworkInfoManager *(^)(BOOL value))setCompressionIntakeRequests{
     return ^(BOOL value) {
-        self->_compression = value;
+        self.compression = value;
         FTInnerLogInfo(@"SDK compressIntakeRequests ：%@",value?@"true":@"false");
+        return self;
+    };
+}
+- (FTNetworkInfoManager *(^)(NSString *value))setAppId{
+    return ^(NSString *value) {
+        self->_appId = value;
         return self;
     };
 }

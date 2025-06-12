@@ -11,18 +11,22 @@
 #endif
 
 #import "FTWKWebViewHandler.h"
+#import "FTWKWebViewHandler+Private.h"
 #if !TARGET_OS_TV
 #import "WKWebView+FTAutoTrack.h"
 #import "FTWKWebViewJavascriptBridge.h"
 #import "FTSwizzler.h"
 #import "FTSwizzle.h"
 #import "FTLog+Private.h"
+#import "FTReadWriteHelper.h"
+#import <os/lock.h>
 
 @interface FTWKWebViewHandler ()
-@property (nonatomic, strong) NSMapTable *webViewRequestTable;
+@property (nonatomic, weak) id<FTWKWebViewRumDelegate> rumTrackDelegate;
 @property (nonatomic, strong) NSMapTable *webViewBridge;
-
+@property (nonatomic, copy) NSString *allowWebViewHostsString;
 @property (nonatomic, strong) NSLock *lock;
+@property (nonatomic, assign) BOOL enableTraceWebView;
 @end
 @implementation FTWKWebViewHandler
 static FTWKWebViewHandler *sharedInstance = nil;
@@ -36,19 +40,24 @@ static dispatch_once_t onceToken;
 -(instancetype)init{
     self = [super init];
     if (self) {
-        [self setWKWebViewTrace];
-        self.webViewRequestTable = [NSMapTable weakToStrongObjectsMapTable];
         self.webViewBridge = [NSMapTable weakToStrongObjectsMapTable];
         self.lock = [NSLock new];
-        self.enableTrace = NO;
+        self.enableTraceWebView = NO;
     }
     return self;
+}
+- (void)startWithEnableTraceWebView:(BOOL)enable allowWebViewHost:(NSArray *)hosts rumDelegate:(id<FTWKWebViewRumDelegate>)delegate{
+    _enableTraceWebView = enable;
+    if (enable) {
+        [self setWKWebViewTrace];
+    }
+    self.allowWebViewHostsString = [self transHostsArrayToString:hosts];
+    self.rumTrackDelegate = delegate;
 }
 - (void)setWKWebViewTrace{
     static dispatch_once_t onceTokenWebView;
     dispatch_once(&onceTokenWebView, ^{
         NSError *error = NULL;
-        
         [WKWebView ft_swizzleMethod:@selector(loadRequest:)
                          withMethod:@selector(ft_loadRequest:)
                               error:&error];
@@ -58,26 +67,9 @@ static dispatch_once_t onceToken;
         [WKWebView ft_swizzleMethod:@selector(loadFileURL:allowingReadAccessToURL:)
                          withMethod:@selector(ft_loadFileURL:allowingReadAccessToURL:)
                               error:&error];
-        [WKWebView ft_swizzleMethod:@selector(reload) withMethod:@selector(ft_reload) error:&error];
     });
 }
 #pragma mark request
-- (void)addWebView:(WKWebView *)webView request:(NSURLRequest *)request{
-    [self.lock lock];
-    [self.webViewRequestTable setObject:request forKey:webView];
-    [self.lock unlock];
-}
-- (void)reloadWebView:(WKWebView *)webView completionHandler:(void (^)(NSURLRequest *request,BOOL needTrace))completionHandler{
-    NSURLRequest *request;
-    [self.lock lock];
-    request = [self.webViewRequestTable objectForKey:webView];
-    [self.lock unlock];
-    if (request && [request.URL isEqual:webView.URL]) {
-        completionHandler? completionHandler(request,YES):nil;
-    }else{
-        completionHandler? completionHandler(nil,NO):nil;
-    }
-}
 - (void)addWebView:(WKWebView *)webView bridge:(id)bridge{
     [self.lock lock];
     [self.webViewBridge setObject:bridge forKey:webView];
@@ -90,23 +82,88 @@ static dispatch_once_t onceToken;
     [self.lock unlock];
     return bridge;
 }
-- (void)addScriptMessageHandlerWithWebView:(WKWebView *)webView{
-    if (self.rumTrackDelegate && [self.rumTrackDelegate respondsToSelector:@selector(dealReceiveScriptMessage:slotId:)]) {
+- (void)removeWebViewBridge:(WKWebView *)webView{
+    [self.lock lock];
+    [self.webViewBridge removeObjectForKey:webView];
+    [self.lock unlock];
+}
+- (void)removeAllWebViewBridges{
+    [self.lock lock];
+    NSArray *allBridges = [self.webViewBridge.objectEnumerator allObjects];
+    [self.lock unlock];
+    for (FTWKWebViewJavascriptBridge *bridge in allBridges) {
+        [bridge removeScriptMessageHandler];
+    }
+    [self.lock lock];
+    [self.webViewBridge removeAllObjects];
+    [self.lock unlock];
+}
+- (NSString *)transHostsArrayToString:(NSArray *)hosts{
+    @try {
+        if(hosts && hosts.count>0){
+            NSArray *hostsCopy = [hosts copy];
+            NSMutableArray<NSString *> *quotedHosts = [[NSMutableArray alloc] initWithCapacity:hostsCopy.count];
+            [hostsCopy enumerateObjectsUsingBlock:^(NSString * _Nonnull host, NSUInteger idx, BOOL * _Nonnull stop) {
+                [quotedHosts addObject:[NSString stringWithFormat:@"\\\"%@\\\"", host]];
+            }];
+            return  [NSString stringWithFormat:@"\"[%@]\"",[quotedHosts componentsJoinedByString:@","]];
+        }else{
+            return @"null";
+        }
+    } @catch (NSException *exception) {
+        FTInnerLogError(@"exception: %@",exception);
+    }
+    return @"null";
+}
+- (void)innerEnableWebView:(WKWebView *)webView{
+    if (self.enableTraceWebView) {
+        [self _enableWebView:webView allowedWebViewHostsString:self.allowWebViewHostsString];
+    }
+}
+- (void)enableWebView:(WKWebView *)webView{
+    [self _enableWebView:webView allowedWebViewHostsString:self.allowWebViewHostsString];
+}
+- (void)enableWebView:(WKWebView *)webView allowWebViewHost:(NSArray *)hosts{
+    NSString *allowedHosts = [self transHostsArrayToString:hosts];
+    [self _enableWebView:webView allowedWebViewHostsString:allowedHosts];
+}
+- (void)_enableWebView:(WKWebView *)webView allowedWebViewHostsString:(NSString *)hostsString{
+    @try {
         if ([self getWebViewBridge:webView]) {
             FTInnerLogDebug(@"WebView(%@) already add JSBridge.",webView);
             return;
         }
-        FTWKWebViewJavascriptBridge *bridge = [FTWKWebViewJavascriptBridge bridgeForWebView:webView];
+        FTWKWebViewJavascriptBridge *bridge = [FTWKWebViewJavascriptBridge bridgeForWebView:webView allowWebViewHostsString:hostsString];
         __weak typeof(self) weakSelf = self;
         [bridge registerHandler:@"sendEvent" handler:^(id data, int64_t slotId,WVJBResponseCallback responseCallback) {
             __strong __typeof(weakSelf) strongSelf = weakSelf;
             if (!strongSelf) {
                 return;
             }
-            [strongSelf.rumTrackDelegate dealReceiveScriptMessage:data slotId:slotId];
+            if (strongSelf.rumTrackDelegate && [strongSelf.rumTrackDelegate respondsToSelector:@selector(dealReceiveScriptMessage:slotId:)]){
+                [strongSelf.rumTrackDelegate dealReceiveScriptMessage:data slotId:slotId];
+            }
         }];
         [self addWebView:webView bridge:bridge];
     }
+    @catch (NSException *exception) {
+        FTInnerLogError(@"exception: %@",exception);
+    }
+}
+- (void)disableWebView:(WKWebView *)webView{
+    @try {
+        FTWKWebViewJavascriptBridge *bridge = [self getWebViewBridge:webView];
+        [self removeWebViewBridge:webView];
+        [bridge removeScriptMessageHandler];
+    }
+    @catch (NSException *exception) {
+        FTInnerLogError(@"exception: %@",exception);
+    }
+}
+- (void)shutDown{
+    [self removeAllWebViewBridges];
+    onceToken = 0;
+    sharedInstance = nil;
 }
 @end
 
