@@ -79,6 +79,7 @@ extern NSString * const FT_APP_ID;
 // rum global tag
 extern NSString * const FT_RUM_KEY_SESSION_ID;
 extern NSString * const FT_RUM_KEY_SESSION_TYPE;
+// rum view fields
 extern NSString * const FT_RUM_KEY_SAMPLED_FOR_ERROR_SESSION;
 extern NSString * const FT_RUM_SESSION_ON_ERROR_SAMPLE_RATE;
 extern NSString * const FT_RUM_SESSION_SAMPLE_RATE;
@@ -208,7 +209,6 @@ extern NSString * const FT_NETWORK_TRACEPARENT_KEY;
 extern NSString * const FT_NETWORK_ZIPKIN_SINGLE_KEY;
 
 #pragma mark ========== user info key ==========
-extern NSString * const FT_USER_INFO;
 extern NSString * const FT_USER_ID;
 extern NSString * const FT_USER_EMAIL;
 extern NSString * const FT_USER_NAME;

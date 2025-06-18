@@ -245,6 +245,9 @@
     if (![self.loading_time isEqual:@0]) {
         [field setValue:self.loading_time forKey:FT_KEY_LOADING_TIME];
     }
+    if (self.context.session_error_timestamp > 0) {
+        [field setValue:@(self.context.session_error_timestamp) forKey:FT_SESSION_ERROR_TIMESTAMP];
+    }
     long long time = [self.viewStartTime ft_nanosecondTimeStamp];
     [self.rumDependencies.writer rumWrite:FT_RUM_SOURCE_VIEW tags:tags fields:field time:time updateTime:[updateTime ft_nanosecondTimeStamp]];
     self.rumDependencies.fatalErrorContext.lastViewContext = @{@"tags":tags,

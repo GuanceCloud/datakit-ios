@@ -273,9 +273,8 @@ void *FTRUMQueueIdentityKey = &FTRUMQueueIdentityKey;
                 }
                 [tags setValue:[self getResourceStatusGroup:content.httpStatusCode] forKey:FT_KEY_RESOURCE_STATUS_GROUP];
                 [tags setValue:FT_NETWORK forKey:FT_KEY_RESOURCE_TYPE];
-                
+                [tags setValue:[content.url query] forKey:FT_KEY_RESOURCE_URL_QUERY];
                 if(content.responseHeader){
-                    [tags setValue:[content.url query] forKey:FT_KEY_RESOURCE_URL_QUERY];
                     for (id key in content.responseHeader.allKeys) {
                         if([key isKindOfClass:NSString.class]){
                             NSString *lowercaseKey = [(NSString *)key lowercaseString];
@@ -288,17 +287,17 @@ void *FTRUMQueueIdentityKey = &FTRUMQueueIdentityKey;
                             }
                         }
                     }
-                    if(metrics.responseSize!=nil){
-                        [fields setValue:metrics.responseSize forKey:FT_KEY_RESOURCE_SIZE];
-                    }else if(content.responseBody){
-                        NSData *data = [content.responseBody dataUsingEncoding:NSUTF8StringEncoding];
-                        [fields setValue:@(data.length) forKey:FT_KEY_RESOURCE_SIZE];
-                    }
                     [fields setValue:[FTBaseInfoHandler convertToStringData:content.responseHeader] forKey:FT_KEY_RESPONSE_HEADER];
+                }
+                if(metrics.responseSize!=nil){
+                    [fields setValue:metrics.responseSize forKey:FT_KEY_RESOURCE_SIZE];
+                }else if(content.responseBody){
+                    NSData *data = [content.responseBody dataUsingEncoding:NSUTF8StringEncoding];
+                    [fields setValue:@(data.length) forKey:FT_KEY_RESOURCE_SIZE];
                 }
                 [fields setValue:[FTBaseInfoHandler convertToStringData:content.requestHeader] forKey:FT_KEY_REQUEST_HEADER];
                 if(self.rumDependencies.enableResourceHostIP){
-                    [fields setValue:metrics.remoteAddress forKey:FT_KEY_RESOURCE_HOST_IP];
+                    [tags setValue:metrics.remoteAddress forKey:FT_KEY_RESOURCE_HOST_IP];
                 }
                 //add trace info
                 [tags setValue:spanID forKey:FT_KEY_SPANID];
