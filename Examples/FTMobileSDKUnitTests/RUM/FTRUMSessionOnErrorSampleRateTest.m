@@ -110,7 +110,7 @@
         }else if ([source isEqualToString:FT_RUM_SOURCE_ACTION]){
             hasAction = YES;
             XCTAssertTrue([fields[@"test"] isEqualToString:@"unSampling"]);
-            errorTimestamp = tags[FT_SESSION_ERROR_TIMESTAMP];
+            errorTimestamp = fields[FT_SESSION_ERROR_TIMESTAMP];
         }
         XCTAssertTrue([fields[FT_RUM_SESSION_SAMPLE_RATE] intValue] == 0);
         XCTAssertTrue([fields[FT_RUM_SESSION_ON_ERROR_SAMPLE_RATE] intValue] == 100);

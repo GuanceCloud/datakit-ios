@@ -18,6 +18,7 @@
 #import "FTTrackDataManager+Test.h"
 #import "FTDataUploadWorker.h"
 #import "XCTestCase+Utils.h"
+
 #import "FTSessionReplayConfig+Private.h"
 @interface FTDataUploadWorker (Testing)
 @property (nonatomic, assign,readonly) int uploadPageSize;

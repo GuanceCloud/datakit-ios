@@ -112,9 +112,11 @@ static dispatch_once_t onceToken;
         FT_CONSOLE_LOG(type,status,content,copyDict);
     }
     if (!self.config.enableCustomLog) {
+        FTInnerLogInfo(@"[Logging][Disable Custom Log] %@",content);
         return;
     }
     if (self.logLevelFilterSet && ![self.logLevelFilterSet containsObject:status]) {
+        FTInnerLogInfo(@"[Logging][Not Filtered] %@",content);
         return;
     }
     if (![FTBaseInfoHandler randomSampling:self.config.samplerate]){

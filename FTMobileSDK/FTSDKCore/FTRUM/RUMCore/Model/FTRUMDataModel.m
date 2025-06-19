@@ -123,9 +123,6 @@
     NSMutableDictionary *dict = [NSMutableDictionary new];
     [dict setValue:self.session_id forKey:FT_RUM_KEY_SESSION_ID];
     [dict setValue:self.session_type forKey:FT_RUM_KEY_SESSION_TYPE];
-    if (self.session_error_timestamp > 0) {
-        [dict setValue:@(self.session_error_timestamp) forKey:FT_SESSION_ERROR_TIMESTAMP];
-    }
     [dict setValue:self.view_id forKey:FT_KEY_VIEW_ID];
     [dict setValue:self.app_id forKey:FT_APP_ID];
     if(self.view_referrer.length>0){

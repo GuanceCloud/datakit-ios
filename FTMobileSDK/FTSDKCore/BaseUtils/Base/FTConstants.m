@@ -120,6 +120,7 @@ NSString * const FT_KEY_RESOURCE_STATUS_GROUP = @"resource_status_group";
 NSString * const FT_KEY_RESPONSE_CONNECTION = @"response_connection";
 NSString * const FT_KEY_RESPONSE_CONTENT_TYPE = @"response_content_type";
 NSString * const FT_KEY_RESPONSE_CONTENT_ENCODING = @"response_content_encoding";
+NSString * const FT_KEY_RESOURCE_HOST_IP = @"resource_host_ip";
 //resource field
 NSString * const FT_KEY_RESOURCE_SIZE = @"resource_size";
 NSString * const FT_KEY_RESOURCE_DNS = @"resource_dns";
@@ -130,7 +131,6 @@ NSString * const FT_KEY_RESOURCE_TRANS = @"resource_trans";
 NSString * const FT_KEY_RESOURCE_FIRST_BYTE = @"resource_first_byte";
 NSString * const FT_KEY_RESPONSE_HEADER = @"response_header";
 NSString * const FT_KEY_REQUEST_HEADER = @"request_header";
-NSString * const FT_KEY_RESOURCE_HOST_IP = @"resource_host_ip";
 NSString * const FT_KEY_START = @"start";
 NSString * const FT_KEY_RESOURCE_DNS_TIME = @"resource_dns_time";
 NSString * const FT_KEY_RESOURCE_SSL_TIME = @"resource_ssl_time";
@@ -262,7 +262,6 @@ NSString * const FT_USER_ID = @"userid";
 NSString * const FT_USER_NAME = @"user_name";
 NSString * const FT_USER_EMAIL = @"user_email";
 NSString * const FT_USER_EXTRA = @"user_extra";
-NSString * const FT_USER_INFO = @"FT_USER_INFO";
 
 
 NSString * const FT_BLACK_LIST_VIEW = @"FT_BLACK_LIST_VIEW";
