@@ -282,6 +282,9 @@ static dispatch_once_t onceToken;
 - (void)taskCompleted:(NSURLSessionTask *)task error:(nullable NSError *)error{
     [self taskCompleted:task error:error extraProvider:nil errorFilter:nil];
 }
+- (void)taskCompleted:(NSURLSessionTask *)task error:(nullable NSError *)error extraProvider:(nullable ResourcePropertyProvider)extraProvider{
+    [self taskCompleted:task error:error extraProvider:extraProvider errorFilter:nil];
+}
 - (void)taskCompleted:(NSURLSessionTask *)task error:(NSError *)error extraProvider:(nullable ResourcePropertyProvider)extraProvider errorFilter:(nullable SessionTaskErrorFilter)errorFilter{
     ResourcePropertyProvider provider = extraProvider?:self.resourcePropertyProvider;
     SessionTaskErrorFilter filter = errorFilter?:self.sessionTaskErrorFilter;
