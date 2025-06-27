@@ -63,10 +63,10 @@ void *FTRUMQueueIdentityKey = &FTRUMQueueIdentityKey;
                 BOOL sampledForErrorReplay = [mutableMessage[FT_RUM_KEY_SAMPLED_FOR_ERROR_REPLAY] boolValue];
                 // 如果是正常的 session 而 session replay 是 error replay, hasReplay 为 NO
                 if (!strongSelf.rumDependencies.sampledForErrorSession && sampledForErrorReplay) {
-                    strongSelf.rumDependencies.sessionHasReplay = NO;
+                    strongSelf.rumDependencies.sessionHasReplay = @(NO);
                     [mutableMessage setValue:@(NO) forKey:FT_SESSION_HAS_REPLAY];
                 }else{
-                    strongSelf.rumDependencies.sessionHasReplay = hasReplay;
+                    strongSelf.rumDependencies.sessionHasReplay = @(hasReplay);
                 }
                 strongSelf.rumDependencies.sessionReplaySampledFields = [mutableMessage copy];
                 strongSelf.rumDependencies.sampledForErrorReplay = sampledForErrorReplay;

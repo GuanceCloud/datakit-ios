@@ -25,7 +25,7 @@ NS_ASSUME_NONNULL_BEGIN
 
 //下列属性需要在 rumQueue 中进行 readwrite
 @property (nonatomic, assign) BOOL currentSessionSample;
-@property (nonatomic, assign) BOOL sessionHasReplay;
+@property (nonatomic, strong) NSNumber *sessionHasReplay;
 @property (nonatomic, assign) BOOL sampledForErrorReplay;
 @property (nonatomic, assign) BOOL sampledForErrorSession;
 @property (nonatomic, strong) NSDictionary *sessionReplaySampledFields;

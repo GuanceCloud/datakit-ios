@@ -52,7 +52,7 @@
         self.resourceHandlers = [NSMutableDictionary new];
         self.viewProperty = [NSMutableDictionary new];
         self.rumDependencies = rumDependencies;
-        self.sessionHasReplay = rumDependencies.sessionHasReplay;
+        self.sessionHasReplay = rumDependencies.sessionHasReplay?rumDependencies.sessionHasReplay.boolValue:NO;
         if(model.fields && model.fields.allKeys.count>0){
             [self.viewProperty addEntriesFromDictionary:model.fields];
         }
@@ -202,8 +202,10 @@
     [tags addEntriesFromDictionary:model.tags];
     NSMutableDictionary *fields = [NSMutableDictionary new];
     [fields addEntriesFromDictionary:model.fields];
-    BOOL sessionHasReplay = self.sessionHasReplay || self.rumDependencies.sessionHasReplay;
-    [fields setValue:@(sessionHasReplay) forKey:FT_SESSION_HAS_REPLAY];
+    if (self.rumDependencies.sessionHasReplay != nil) {
+        BOOL sessionHasReplay = self.sessionHasReplay || self.rumDependencies.sessionHasReplay.boolValue;
+        [fields setValue:@(sessionHasReplay) forKey:FT_SESSION_HAS_REPLAY];
+    }
     NSString *error = model.type == FTRUMDataLongTask?FT_RUM_SOURCE_LONG_TASK :FT_RUM_SOURCE_ERROR;
     [self.rumDependencies.writer rumWrite:error tags:tags fields:fields time:model.tm];
     if(self.errorHandled){
@@ -237,12 +239,14 @@
     [fields setValue:@(self.rumDependencies.sampledForErrorSession) forKey:FT_RUM_KEY_SAMPLED_FOR_ERROR_SESSION];
     [fields addEntriesFromDictionary:self.rumDependencies.sessionReplaySampledFields];
     // session-replay
-    BOOL sessionHasReplay = self.sessionHasReplay || self.rumDependencies.sessionHasReplay;
-    [fields setValue:@(sessionHasReplay) forKey:FT_SESSION_HAS_REPLAY];
-    if (sessionHasReplay) {
-        NSDictionary *dict = [self.rumDependencies.sessionReplayStats valueForKey:self.view_id];
-        if(dict){
-            [fields setValue:dict forKey:FT_SESSION_REPLAY_STATS];
+    if (self.rumDependencies.sessionHasReplay != nil) {
+        BOOL sessionHasReplay = self.sessionHasReplay || self.rumDependencies.sessionHasReplay;
+        [fields setValue:@(sessionHasReplay) forKey:FT_SESSION_HAS_REPLAY];
+        if (sessionHasReplay) {
+            NSDictionary *dict = [self.rumDependencies.sessionReplayStats valueForKey:self.view_id];
+            if(dict){
+                [fields setValue:dict forKey:FT_SESSION_REPLAY_STATS];
+            }
         }
     }
     if(self.viewProperty && self.viewProperty.allKeys.count>0){
