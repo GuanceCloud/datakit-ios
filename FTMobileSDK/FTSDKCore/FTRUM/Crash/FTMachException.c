@@ -135,7 +135,7 @@ static void FTMachExceptionNameLookup(exception_type_t exception,
             break;
         case EXC_BAD_INSTRUCTION:
             *name = "EXC_BAD_INSTRUCTION";
-            *signalName = "SIGFPE";
+            *signalName = "SIGILL";
 #if CLS_CPU_X86
             *codeName = "EXC_I386_INVOP";
 #endif
