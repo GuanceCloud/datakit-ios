@@ -226,10 +226,35 @@
     XCTAssertTrue(newCount.count == count);
     XCTAssertTrue(self.viewController.webView.configuration.userContentController.userScripts.count == 1);
 }
+- (void)testUserScripts{
+    [self setSDKWithEnableWebView:NO];
+    WKUserScript *userScript = [[WKUserScript alloc]initWithSource:@"window.\(bridgeName) = { send(msg) {}}" injectionTime:WKUserScriptInjectionTimeAtDocumentStart forMainFrameOnly:YES];
+    [self.viewController.webView.configuration.userContentController addUserScript:userScript];
+    NSUInteger userScriptsCount =  self.viewController.webView.configuration.userContentController.userScripts.count;
+    XCTAssertTrue(userScriptsCount >= 1);
+    [[FTWKWebViewHandler sharedInstance] enableWebView:self.viewController.webView];
+    NSUInteger newUserScriptsCount =  self.viewController.webView.configuration.userContentController.userScripts.count;
+    XCTAssertTrue(newUserScriptsCount - userScriptsCount == 1);
+    [[FTWKWebViewHandler sharedInstance] disableWebView:self.viewController.webView];
+    NSUInteger dUserScriptsCount =  self.viewController.webView.configuration.userContentController.userScripts.count;
+    XCTAssertTrue(userScriptsCount == dUserScriptsCount);
+    NSArray *userScripts = self.viewController.webView.configuration.userContentController.userScripts;
+    BOOL equalUs = NO;
+    for (WKUserScript *us in userScripts) {
+        if (us == userScript) {
+            equalUs = YES;
+        }
+    }
+    XCTAssertTrue(equalUs);
+}
 - (void)testDisableWebView_enableByCustom{
     [self setSDKWithEnableWebView:NO];
     NSURL *url = [[NSBundle mainBundle] URLForResource:@"sample" withExtension:@"html"];
+    NSUInteger userScriptsCount =  self.viewController.webView.configuration.userContentController.userScripts.count;
+
     [[FTWKWebViewHandler sharedInstance] enableWebView:self.viewController.webView];
+    NSUInteger newUserScriptsCount =  self.viewController.webView.configuration.userContentController.userScripts.count;
+    XCTAssertTrue(newUserScriptsCount - userScriptsCount == 1);
     [self.viewController test_loadFileURL:url allowingReadAccessToURL:url];
     self.loadExpect = [self expectationWithDescription:@"请求超时timeout!"];
     [self waitForExpectationsWithTimeout:30 handler:^(NSError *error) {
