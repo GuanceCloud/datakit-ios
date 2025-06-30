@@ -1,5 +1,9 @@
+# 1.5.18-alpha.1
+1. 修复 SDK 采集 webView 数据注入 UserScripts 时删除用户添加的 UserScripts 问题
+2. 修复 Longtask 监控获取主线程堆栈时在子线程修改主线程 name 造成的崩溃问题
+---
 # 1.5.17
-1. 添加 `FTRUMConfig.enableTraceWebView` 配置是否开启通过 SDK 采集 webview 数据，通过 `FTRUMConfig.allowWebViewHost` 可以控制需要过滤 host 地址
+1. 添加 `FTRUMConfig.enableTraceWebView` 配置是否开启通过 SDK 采集 webView 数据，通过 `FTRUMConfig.allowWebViewHost` 可以控制需要过滤 host 地址
 2. 添加 `FTRumConfig.sessionTaskErrorFilter`, 可以针对本地网络错误进行过滤
 3. 添加 `FTMobileConfig.remoteConfiguration` 支持开启远程条件配置功能、`FTMobileConfig.remoteConfigMiniUpdateInterval` 支持在开启远程控制之后，设置最短更新时间间隔
 ---
