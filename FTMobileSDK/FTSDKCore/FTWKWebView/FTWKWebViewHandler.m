@@ -67,6 +67,10 @@ static dispatch_once_t onceToken;
         [WKWebView ft_swizzleMethod:@selector(loadFileURL:allowingReadAccessToURL:)
                          withMethod:@selector(ft_loadFileURL:allowingReadAccessToURL:)
                               error:&error];
+        SEL deallocMethod =  NSSelectorFromString(@"dealloc");
+        [WKWebView ft_swizzleMethod:deallocMethod
+                         withMethod:@selector(ft_dealloc)
+                              error:&error];
     });
 }
 #pragma mark request

@@ -28,5 +28,9 @@
     [[FTWKWebViewHandler sharedInstance] innerEnableWebView:self];
     return [self ft_loadFileURL:URL allowingReadAccessToURL:readAccessURL];
 }
+-(void)ft_dealloc{
+    [[FTWKWebViewHandler sharedInstance] disableWebView:self];
+    [self ft_dealloc];
+}
 @end
 #endif

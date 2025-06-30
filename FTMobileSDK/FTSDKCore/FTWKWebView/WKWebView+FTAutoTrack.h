@@ -14,6 +14,7 @@ NS_ASSUME_NONNULL_BEGIN
 -(WKNavigation *)ft_loadRequest:(NSURLRequest *)request;
 -(WKNavigation *)ft_loadHTMLString:(NSString *)string baseURL:(NSURL *)baseURL;
 -(WKNavigation *)ft_loadFileURL:(NSURL *)URL allowingReadAccessToURL:(NSURL *)readAccessURL;
+-(void)ft_dealloc;
 @end
 NS_ASSUME_NONNULL_END
 #endif
