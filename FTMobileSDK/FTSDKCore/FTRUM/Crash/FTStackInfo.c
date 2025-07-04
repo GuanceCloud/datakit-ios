@@ -307,3 +307,10 @@ void ft_symbolicate(const uintptr_t* const backtraceBuffer,
         ft_dladdr(CALL_INSTRUCTION_FROM_RETURN_ADDRESS(backtraceBuffer[i]), &symbolsBuffer[i],&binaryImages[i]);
     }
 }
+FTThread ftthread_self(void)
+{
+    thread_t thread_self = mach_thread_self();
+    mach_port_deallocate(mach_task_self(), thread_self);
+    return (FTThread)thread_self;
+}
+

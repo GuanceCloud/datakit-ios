@@ -31,7 +31,7 @@ static mach_port_t main_thread_id;
 @implementation FTCallStack
 
 + (void)load {
-    main_thread_id = mach_thread_self();
+    main_thread_id = (thread_t)ftthread_self();
 }
 
 #pragma -mark Implementation of interface
@@ -85,15 +85,22 @@ NSString *ft_backtraceOfThread(thread_t thread,const uintptr_t* const backtraceB
 int ft_crashThreadNumber(thread_t thread){
     mach_msg_type_number_t count;
     thread_act_array_t list;
-    task_threads(mach_task_self(), &list, &count);
+    const task_t thisTask = mach_task_self();
+    task_threads(thisTask, &list, &count);
+    int num = -1;
     for(int i = 0; i < (int)count; i++)
     {
         thread_t cThread = list[i];
         if(cThread == thread){
-            return i;
+            num = i;
+            break;
         }
     }
-    return -1;
+    for (mach_msg_type_number_t i = 0; i < count; i++) {
+        mach_port_deallocate(thisTask, list[i]);
+    }
+    vm_deallocate(thisTask, (vm_address_t)list, sizeof(thread_t) * count);
+    return num;
 }
 NSString* getCurrentCPUArch(void){
     NSString *arch = [FTPresetProperty cpuArch];

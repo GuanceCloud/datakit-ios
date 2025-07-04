@@ -9,24 +9,17 @@
 #error This file must be compiled with ARC. Either turn on ARC for the project or use -fobjc-arc flag on this file.
 #endif
 #import "FTSDKCompat.h"
-#import "FTCrashMonitor.h"
+#import "FTCrash.h"
 #import "FTCallStack.h"
-#import "FTNSException.h"
-#include "FTSignalException.h"
-#include "FTMachException.h"
 #import "FTLog+Private.h"
-@interface FTCrashMonitor()
+#import "FTCrashMonitor.h"
+@interface FTCrash()
 @property (nonatomic, strong) NSHashTable *ftSDKInstances;
 @end
-@implementation FTCrashMonitor
-void crashNotifyCallback(thread_t thread,uintptr_t*backtrace,int count,const char *crashMessage){
-    FTUninstallSignalException();
-    FTUninstallUncaughtExceptionHandler();
-#if FT_HAS_MACH
-    FTUninstallMachException();
-#endif
-    NSString *stackInfo = [FTCallStack ft_reportOfThread:thread backtrace:backtrace count:count];
-    for (id instance in FTCrashMonitor.shared.ftSDKInstances) {
+@implementation FTCrash
+void crashNotifyCallback(FTThread thread,uintptr_t*backtrace,int count,const char *crashMessage){
+    NSString *stackInfo = [FTCallStack ft_reportOfThread:(thread_t)thread backtrace:backtrace count:count];
+    for (id instance in FTCrash.shared.ftSDKInstances) {
         if ([instance respondsToSelector:@selector(internalErrorWithType:message:stack:)]) {
             NSString *message = @"unknown";
             if(crashMessage!=NULL){
@@ -37,10 +30,10 @@ void crashNotifyCallback(thread_t thread,uintptr_t*backtrace,int count,const cha
     }
 }
 + (instancetype)shared {
-    static FTCrashMonitor *sharedHandler = nil;
+    static FTCrash *sharedHandler = nil;
     static dispatch_once_t onceToken;
     dispatch_once(&onceToken, ^{
-        sharedHandler = [[FTCrashMonitor alloc] init];
+        sharedHandler = [[FTCrash alloc] init];
     });
     return sharedHandler;
 }
@@ -49,9 +42,8 @@ void crashNotifyCallback(thread_t thread,uintptr_t*backtrace,int count,const cha
     if (self) {
         _ftSDKInstances = [NSHashTable weakObjectsHashTable];
         // Install our handler
-        FTInstallUncaughtExceptionHandler(crashNotifyCallback);
-        FTInstallSignalException(crashNotifyCallback);
-        FTInstallMachException(crashNotifyCallback);
+        ftcm_setEventCallback(crashNotifyCallback);
+        ftcm_activateMonitors();
     }
     return self;
 }

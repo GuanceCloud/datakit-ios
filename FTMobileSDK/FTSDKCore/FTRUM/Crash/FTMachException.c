@@ -16,13 +16,16 @@
 #include <pthread.h>
 #include <sys/sysctl.h>
 #include <unistd.h>
+#include <os/log.h>
+#include "FTCrashMonitor.h"
+#include "FTCrashLogger.h"
 
 #if __LP64__
 #define MACH_ERROR_CODE_MASK 0xFFFFFFFFFFFFFFFF
 #else
 #define MACH_ERROR_CODE_MASK 0xFFFFFFFF
 #endif
-static FTCrashNotifyCallback g_onCrashNotify;
+static volatile bool g_isEnabled = false;
 
 static mach_port_t g_exceptionPort = MACH_PORT_NULL;
 
@@ -265,19 +268,6 @@ static void FTMachExceptionNameLookup(exception_type_t exception,
             break;
     }
 }
-static bool ftdebug_isBeingTraced(void)
-{
-    struct kinfo_proc procInfo;
-    size_t structSize = sizeof(procInfo);
-    int mib[] = {CTL_KERN, KERN_PROC, KERN_PROC_PID, getpid()};
-    
-    if(sysctl(mib, sizeof(mib)/sizeof(*mib), &procInfo, &structSize, NULL, 0) != 0)
-    {
-        return false;
-    }
-    
-    return (procInfo.kp_proc.p_flag & P_TRACED) != 0;
-}
 static void restoreExceptionPorts(void)
 {
     if(g_previousExceptionPorts.count == 0)
@@ -301,20 +291,53 @@ static void restoreExceptionPorts(void)
     }
     g_previousExceptionPorts.count = 0;
 }
+static void uninstallMachException(void){
+    FTLOG_DEBUG("Uninstalling mach exception handler.");
+
+    // NOTE: Do not deallocate the exception port. If a secondary crash occurs
+    // it will hang the process.
+    
+    restoreExceptionPorts();
+    
+    thread_t thread_self = (thread_t)ftthread_self();
+    
+    if(g_primaryPThread != 0 && g_primaryMachThread != thread_self){
+        if(g_isHandlingCrash){
+            thread_terminate(g_primaryMachThread);
+        }else{
+            pthread_cancel(g_primaryPThread);
+        }
+        g_primaryMachThread = 0;
+        g_primaryPThread = 0;
+    }
+    if(g_secondaryPThread != 0 && g_secondaryMachThread != thread_self){   FTLOG_DEBUG("Canceling secondary exception thread.");
+        if(g_isHandlingCrash){
+            thread_terminate(g_secondaryMachThread);
+        }else{
+            pthread_cancel(g_secondaryPThread);
+        }
+        g_secondaryMachThread = 0;
+        g_secondaryPThread = 0;
+    }
+    g_exceptionPort = MACH_PORT_NULL;
+    FTLOG_DEBUG("Mach exception handlers uninstalled.");
+}
 
 #pragma mark ========== Handler ==========
 static void* handleExceptions(void* const userData){
-    
     MachExceptionMessage exceptionMessage = {{0}};
     MachReplyMessage replyMessage = {{0}};
     
-    const char* threadName = (const char*) userData;
+    
+    const char* threadName = (const char*)userData;
     pthread_setname_np(threadName);
-    if(threadName == kThreadSecondary)
-    {
-        thread_suspend((thread_t)mach_thread_self());
+    if(threadName == kThreadSecondary){
+        FTLOG_DEBUG("This is the secondary thread. Suspending.");
+        thread_suspend((thread_t)ftthread_self());
     }
     for(;;){
+        FTLOG_DEBUG("Waiting for mach exception");
+        
         kern_return_t kr = mach_msg(&exceptionMessage.header,
                                     MACH_RCV_MSG,
                                     0,
@@ -325,18 +348,18 @@ static void* handleExceptions(void* const userData){
         if (kr == KERN_SUCCESS) {
             break;
         }
+        // Loop and try again on failure.
+        FTLOG_ERROR("mach_msg: %s", mach_error_string(kr));
     }
-    if (g_onCrashNotify != NULL) {
+    if (!ftcm_setCrashHandling(true) && g_isEnabled) {
         g_isHandlingCrash = true;
-        
-        if(mach_thread_self() == g_primaryMachThread)
-        {
+        if(ftthread_self() == g_primaryMachThread){
             restoreExceptionPorts();
             thread_resume(g_secondaryMachThread);
         }
         thread_t crashThread = exceptionMessage.thread.name;
         thread_suspend(crashThread);
-
+        
         _STRUCT_MCONTEXT machineContext;
         if(ft_fillThreadStateIntoMachineContext(crashThread, &machineContext)) {
             const char *machExceptionName = NULL;
@@ -356,12 +379,13 @@ static void* handleExceptions(void* const userData){
             int count = 0;
             uintptr_t backtrace[50] ;
             ft_backtrace(&machineContext,backtrace,&count);
-            g_onCrashNotify(crashThread,backtrace,count,reason);
+            ftcm_handleException(crashThread,backtrace,count,reason);
         }
         g_isHandlingCrash = false;
         thread_resume(crashThread);
+    }else{
+        FTLOG_INFO("‌An unhandled crash occurred, and it might be a second crash.");
     }
-    
     // Send a reply saying "I didn't handle this exception".
     replyMessage.header = exceptionMessage.header;
     replyMessage.NDR = exceptionMessage.NDR;
@@ -378,49 +402,17 @@ static void* handleExceptions(void* const userData){
     return NULL;
 }
 #pragma mark ========== API ==========
-static void uninstallMachException(void){
-    // NOTE: Do not deallocate the exception port. If a secondary crash occurs
-    // it will hang the process.
-    
-    restoreExceptionPorts();
-    
-    thread_t thread_self = (thread_t)mach_thread_self();
-    
-    if(g_primaryPThread != 0 && g_primaryMachThread != thread_self)
-    {
-        if(g_isHandlingCrash)
-        {
-            thread_terminate(g_primaryMachThread);
-        }
-        else
-        {
-            pthread_cancel(g_primaryPThread);
-        }
-        g_primaryMachThread = 0;
-        g_primaryPThread = 0;
-    }
-    if(g_secondaryPThread != 0 && g_secondaryMachThread != thread_self)
-    {
-        if(g_isHandlingCrash)
-        {
-            thread_terminate(g_secondaryMachThread);
-        }
-        else
-        {
-            pthread_cancel(g_secondaryPThread);
-        }
-        g_secondaryMachThread = 0;
-        g_secondaryPThread = 0;
-    }
-    
-    g_exceptionPort = MACH_PORT_NULL;
-}
+
 
 static bool installMachException(void){
+    FTLOG_DEBUG("Installing mach exception handler.");
+    
     bool attributes_created = false;
     pthread_attr_t attr;
+    
     kern_return_t kr;
     int error;
+    
     const task_t thisTask = mach_task_self();
     exception_mask_t mask = EXC_MASK_BAD_ACCESS |
     EXC_MASK_BAD_INSTRUCTION |
@@ -428,6 +420,7 @@ static bool installMachException(void){
     EXC_MASK_SOFTWARE |
     EXC_MASK_BREAKPOINT;
     
+    FTLOG_DEBUG("Backing up original exception ports.");
     kr = task_get_exception_ports(thisTask,
                                   mask,
                                   g_previousExceptionPorts.masks,
@@ -435,39 +428,44 @@ static bool installMachException(void){
                                   g_previousExceptionPorts.ports,
                                   g_previousExceptionPorts.behaviors,
                                   g_previousExceptionPorts.flavors);
-    if(kr != KERN_SUCCESS)
-    {
+    if(kr != KERN_SUCCESS){
+        FTLOG_ERROR("task_get_exception_ports: %s", mach_error_string(kr));
         goto failed;
     }
     
-    if(g_exceptionPort == MACH_PORT_NULL)
-    {
+    if(g_exceptionPort == MACH_PORT_NULL){
+        FTLOG_DEBUG("Allocating new port with receive rights.");
         kr = mach_port_allocate(thisTask,
                                 MACH_PORT_RIGHT_RECEIVE,
                                 &g_exceptionPort);
-        if(kr != KERN_SUCCESS)
-        {
+        if(kr != KERN_SUCCESS){
+            FTLOG_ERROR("mach_port_allocate: %s", mach_error_string(kr));
             goto failed;
         }
         
+        FTLOG_DEBUG("Adding send rights to port.");
         kr = mach_port_insert_right(thisTask,
                                     g_exceptionPort,
                                     g_exceptionPort,
                                     MACH_MSG_TYPE_MAKE_SEND);
-        if(kr != KERN_SUCCESS)
-        {
+        if(kr != KERN_SUCCESS){
+            FTLOG_ERROR("mach_port_insert_right: %s", mach_error_string(kr));
             goto failed;
         }
     }
+    
+    FTLOG_DEBUG("Installing port as exception handler.");
     kr = task_set_exception_ports(thisTask,
                                   mask,
                                   g_exceptionPort,
                                   (int)(EXCEPTION_DEFAULT | MACH_EXCEPTION_CODES),
                                   THREAD_STATE_NONE);
-    if(kr != KERN_SUCCESS)
-    {
+    if(kr != KERN_SUCCESS){
+        FTLOG_ERROR("task_set_exception_ports: %s", mach_error_string(kr));
         goto failed;
     }
+    
+    FTLOG_DEBUG("Creating secondary exception thread (suspended).");
     pthread_attr_init(&attr);
     attributes_created = true;
     pthread_attr_setdetachstate(&attr, PTHREAD_CREATE_DETACHED);
@@ -475,28 +473,30 @@ static bool installMachException(void){
                            &attr,
                            &handleExceptions,
                            (void*)kThreadSecondary);
-    if(error != 0)
-    {
+    if(error != 0){
+        FTLOG_ERROR("pthread_create_suspended_np: %s", strerror(error));
         goto failed;
     }
     g_secondaryMachThread = pthread_mach_thread_np(g_secondaryPThread);
 
+    FTLOG_DEBUG("Creating primary exception thread.");
     error = pthread_create(&g_primaryPThread,
                            &attr,
                            &handleExceptions,
                            (void*)kThreadPrimary);
-    if(error != 0)
-    {
+    if(error != 0){
+        FTLOG_ERROR("pthread_create: %s", strerror(error));
         goto failed;
     }
     pthread_attr_destroy(&attr);
     g_primaryMachThread = pthread_mach_thread_np(g_primaryPThread);
 
+    FTLOG_DEBUG("Mach exception handler installed.");
     return true;
 
 failed:
-    if(attributes_created)
-    {
+    FTLOG_DEBUG("Failed to install mach exception handler.");
+    if(attributes_created){
         pthread_attr_destroy(&attr);
     }
     uninstallMachException();
@@ -506,18 +506,19 @@ failed:
 
 void FTUninstallMachException(void){
 #if FT_HAS_MACH
-    if(ftdebug_isBeingTraced()){
-        return;
+    if (g_isEnabled != false) {
+        g_isEnabled = false;
+        uninstallMachException();
     }
-    uninstallMachException();
 #endif
 }
-void FTInstallMachException(const FTCrashNotifyCallback onCrashNotify){
+void FTInstallMachException(void){
 #if FT_HAS_MACH
-    if(ftdebug_isBeingTraced()){
-        return;
+    if (g_isEnabled != true) {
+        g_isEnabled = true;
+        if (!installMachException()) {
+            return;
+        }
     }
-    g_onCrashNotify = onCrashNotify;
-    installMachException();
 #endif
 }

@@ -30,7 +30,7 @@
 #import "FTConstants.h"
 #import "FTThreadDispatchManager.h"
 #import "FTBaseInfoHandler.h"
-#import "FTCrashMonitor.h"
+#import "FTCrash.h"
 #import "FTFatalErrorContext.h"
 @interface FTGlobalRumManager ()<FTRunloopDetectorDelegate,FTAppLifeCycleDelegate,FTAppLaunchDataDelegate>
 @property (nonatomic, strong) FTRumConfig *rumConfig;
@@ -72,7 +72,7 @@ static dispatch_once_t onceToken;
     }
     [[FTAppLifeCycle sharedInstance] addAppLifecycleDelegate:self];
     if(rumConfig.enableTrackAppCrash){
-        [[FTCrashMonitor shared] addErrorDataDelegate:self.rumManager];
+        [[FTCrash shared] addErrorDataDelegate:self.rumManager];
     }
     //采集view、resource、jsBridge
     if (rumConfig.enableTrackAppANR||rumConfig.enableTrackAppFreeze) {
