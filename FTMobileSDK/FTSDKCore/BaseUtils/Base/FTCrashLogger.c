@@ -7,6 +7,7 @@
 
 #include "FTCrashLogger.h"
 #include <os/log.h>
+#include <string.h>
 
 static volatile bool g_isEnabled = true;
 static os_log_t logger = NULL;
