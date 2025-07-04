@@ -70,7 +70,7 @@ Pod::Spec.new do |s|
 		c.subspec 'BaseUtils' do |b|
 
 			b.subspec 'Base' do |bb|
-				bb.source_files = 'FTMobileSDK/FTSDKCore/BaseUtils/Base/**/*{.h,.m}'
+				bb.source_files = 'FTMobileSDK/FTSDKCore/BaseUtils/Base/**/*{.h,.m,.c}'
 				bb.dependency 'FTMobileSDK/FTSDKCore/BaseUtils/Thread'
 
 			end
