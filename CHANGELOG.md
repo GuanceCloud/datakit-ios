@@ -1,3 +1,6 @@
+# 1.5.18-alpha.2
+1. Crash monitor improvements: debug logs added, duplicate/secondary crash protection 
+---
 # 1.5.18-alpha.1
 1. 修复 SDK 采集 webView 数据注入 UserScripts 时删除用户添加的 UserScripts 问题
 2. 修复 Longtask 监控获取主线程堆栈时在子线程修改主线程 name 造成的崩溃问题
