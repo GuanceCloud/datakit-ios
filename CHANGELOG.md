@@ -1,3 +1,6 @@
+# 1.5.18-alpha.3
+1. Fix: missing `#include <string.h>` in tvOS platform
+---
 # 1.5.18-alpha.2
 1. Crash monitor improvements: debug logs added, duplicate/secondary crash protection 
 ---
