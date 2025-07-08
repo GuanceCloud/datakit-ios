@@ -48,11 +48,13 @@ NS_ASSUME_NONNULL_BEGIN
 /// 上传数据
 - (void)flushSyncData;
 
-/// 关闭单例
-- (void)shutDown;
+
 
 /// 缓存中的数据添加到数据库中
 -(void)insertCacheToDB;
+
+/// 关闭单例
++ (void)shutDown;
 
 @end
 

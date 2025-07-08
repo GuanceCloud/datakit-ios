@@ -18,7 +18,7 @@ NS_ASSUME_NONNULL_BEGIN
 /// View、Action 采集类
 @interface FTAutoTrackHandler : NSObject<FTUIViewControllerHandler>
 /// 传递事件对象，将采集到的 view、action 数据传递给 RUM
-@property (nonatomic,weak) id<FTRumDatasProtocol> addRumDatasDelegate;
+@property (nonatomic, weak) id<FTRumDatasProtocol> addRumDatasDelegate;
 /// 处理 ViewController 生命周期 rum:startView、stopView
 @property (nonatomic, weak) id<FTUIViewControllerHandler> viewControllerHandler;
 /// 单例

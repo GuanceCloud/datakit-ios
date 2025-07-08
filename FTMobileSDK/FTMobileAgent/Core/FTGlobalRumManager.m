@@ -46,12 +46,19 @@
 #endif
 @implementation FTGlobalRumManager
 static FTGlobalRumManager *sharedInstance = nil;
-static dispatch_once_t onceToken;
+static NSObject *sharedInstanceLock;
++ (void)initialize{
+    if (self == [FTGlobalRumManager class]) {
+        sharedInstanceLock = [[NSObject alloc] init];
+    }
+}
 + (instancetype)sharedInstance {
-    dispatch_once(&onceToken, ^{
-        sharedInstance = [[super allocWithZone:NULL] init];
-    });
-    return sharedInstance;
+    @synchronized(sharedInstanceLock) {
+        if(!sharedInstance){
+            sharedInstance = [[super allocWithZone:NULL] init];
+        }
+        return sharedInstance;
+    }
 }
 -(void)setRumConfig:(FTRumConfig *)rumConfig writer:(id<FTRUMDataWriteProtocol>)writer{
     _rumConfig = rumConfig;
@@ -156,10 +163,11 @@ static dispatch_once_t onceToken;
     [[FTAutoTrackHandler sharedInstance] shutDown];
     [_longTaskManager shutDown];
 #if !TARGET_OS_TV
-    [[FTWKWebViewHandler sharedInstance] shutDown];
+    [FTWKWebViewHandler shutDown];
 #endif
-    onceToken = 0;
-    sharedInstance = nil;
+    @synchronized(sharedInstanceLock) {
+        sharedInstance = nil;
+    }
     FTInnerLogInfo(@"[RUM] SHUT DOWN");
 }
 @end

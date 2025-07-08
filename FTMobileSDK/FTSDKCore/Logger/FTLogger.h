@@ -7,6 +7,7 @@
 //
 
 #import <Foundation/Foundation.h>
+#import "FTLoggerConfig.h"
 
 NS_ASSUME_NONNULL_BEGIN
 
@@ -52,6 +53,13 @@ NS_ASSUME_NONNULL_BEGIN
 ///   - status: 日志状态
 ///   - property: 自定义属性(可选)
 - (void)log:(NSString *)content status:(NSString *)status property:(nullable NSDictionary *)property;
+
+/// 添加日志
+/// - Parameters:
+///   - content: 日志内容，可为 json 字符串
+///   - statusType: 等级状态
+///   - property: 自定义属性(可选)
+- (void)log:(NSString *)content statusType:(FTLogStatus)statusType property:(nullable NSDictionary *)property;
 @end
 
 /// 管理自定义日志

@@ -10,7 +10,6 @@
 #import "FTEnumConstant.h"
 #import "FTLoggerDataWriteProtocol.h"
 #import "FTLinkRumDataProvider.h"
-#import "FTLoggerConfig.h"
 
 NS_ASSUME_NONNULL_BEGIN
 
@@ -23,21 +22,12 @@ NS_ASSUME_NONNULL_BEGIN
 ///   - filter: 日志过滤规则
 ///   - sampletRate: 采集率
 ///   - writer: 数据写入对象
-+ (void)startWithLoggerConfig:(FTLoggerConfig *)config writer:(id<FTLoggerDataWriteProtocol>)writer;
-
-/// 日志传入
-/// - Parameters:
-///   - content: 日志内容，可为 json 字符串
-///   - status: 等级和状态
-///   - property: 自定义属性(可选)
-- (void)log:(NSString *)content
- statusType:(FTLogStatus)statusType
-   property:(nullable NSDictionary *)property;
+- (void)startWithLoggerConfig:(FTLoggerConfig *)config writer:(id<FTLoggerDataWriteProtocol>)writer;
 
 /// 同步执行处理日志的队列
 - (void)syncProcess;
 
-
+/// 更新远程获取的动态配置
 - (void)updateWithRemoteConfiguration:(NSDictionary *)configuration;
 @end
 

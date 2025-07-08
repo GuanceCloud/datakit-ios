@@ -69,7 +69,7 @@ NS_ASSUME_NONNULL_BEGIN
 - (long)checkDatabaseSize;
 
 - (void)setEnableLimitWithDbSize:(BOOL)enableLimitWithDbSize;
-/// 关闭单例
-- (void)shutDown;
+/// close db
+- (void)close;
 @end
 NS_ASSUME_NONNULL_END

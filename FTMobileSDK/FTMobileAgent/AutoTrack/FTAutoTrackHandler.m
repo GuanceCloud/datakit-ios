@@ -17,6 +17,7 @@
 #import "FTBaseInfoHandler.h"
 #import "NSDate+FTUtil.h"
 #import "FTAppLifeCycle.h"
+#import "FTThreadDispatchManager.h"
 @interface RUMView:NSObject
 @property (nonatomic, copy) NSString *viewName;
 @property (nonatomic, copy) NSString *identify;
@@ -69,8 +70,8 @@
     }
     return self;
 }
-static dispatch_once_t onceToken;
 + (instancetype)sharedInstance {
+    static dispatch_once_t onceToken;
     static FTAutoTrackHandler *sharedInstance = nil;
     dispatch_once(&onceToken, ^{
         sharedInstance = [[self alloc] init];
@@ -80,21 +81,22 @@ static dispatch_once_t onceToken;
 -(void)startWithTrackView:(BOOL)trackView action:(BOOL)trackAction{
     _autoTrackView = trackView;
     _autoTrackAction = trackAction;
+    _stack = [NSMutableArray new];
     if (trackView) {
         self.viewControllerHandler = self;
-        [self logViewControllerLifeCycle];
+        [self hookViewControllerLifeCycle];
+        [[FTAppLifeCycle sharedInstance] addAppLifecycleDelegate:self];
     }else{
         self.viewControllerHandler = nil;
     }
     if (trackAction) {
-        [self logTargetAction];
+        [self hookTargetAction];
     }
-    [[FTAppLifeCycle sharedInstance] addAppLifecycleDelegate:self];
 }
-- (void)logViewControllerLifeCycle{
+- (void)hookViewControllerLifeCycle{
     @try {
-        static dispatch_once_t onceToken;
-        dispatch_once(&onceToken, ^{
+        static dispatch_once_t viewOnceToken;
+        dispatch_once(&viewOnceToken, ^{
             NSError *error = NULL;
             [UIViewController ft_swizzleMethod:@selector(viewDidLoad) withMethod:@selector(ft_viewDidLoad) error:&error];
             [UIViewController ft_swizzleMethod:@selector(viewDidAppear:) withMethod:@selector(ft_viewDidAppear:) error:&error];
@@ -104,10 +106,10 @@ static dispatch_once_t onceToken;
         FTInnerLogError(@"exception: %@", exception);
     }
 }
-- (void)logTargetAction{
+- (void)hookTargetAction{
     @try {
-        static dispatch_once_t onceToken;
-        dispatch_once(&onceToken, ^{
+        static dispatch_once_t actionOnceToken;
+        dispatch_once(&actionOnceToken, ^{
             NSError *error = NULL;
 #if TARGET_OS_IOS
             [UITableView ft_swizzleMethod:@selector(setDelegate:) withMethod:@selector(ft_setDelegate:) error:&error];
@@ -226,10 +228,10 @@ static dispatch_once_t onceToken;
     return ![viewController isBlackListContainsViewController];
 }
 -(void)shutDown{
-    self.stack = nil;
     self.addRumDatasDelegate = nil;
     self.viewControllerHandler = nil;
+    self.autoTrackView = NO;
+    self.autoTrackAction = NO;
     [[FTAppLifeCycle sharedInstance] removeAppLifecycleDelegate:self];
-    onceToken = 0;
 }
 @end

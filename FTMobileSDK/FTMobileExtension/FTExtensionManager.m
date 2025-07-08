@@ -73,7 +73,7 @@ static FTExtensionManager *sharedInstance = nil;
     }
     if(loggerConfig){
         self.loggerConfig = loggerConfig;
-        [FTLogger startWithLoggerConfig:loggerConfig writer:self];
+        [[FTLogger sharedInstance] startWithLoggerConfig:loggerConfig writer:self];
         [FTLogger sharedInstance].linkRumDataProvider = self.rumManager;
     }
 }

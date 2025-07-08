@@ -43,22 +43,36 @@
 @property (nonatomic, strong) FTMobileConfig *sdkConfig;
 @end
 @implementation FTMobileAgent
-
+static NSObject *sharedInstanceLock;
 static FTMobileAgent *sharedInstance = nil;
-static dispatch_once_t onceToken;
++ (void)initialize{
+    if (self == [FTMobileAgent class]) {
+        sharedInstanceLock = [[NSObject alloc] init];
+    }
+}
 #pragma mark --------- 初始化 config 设置 ----------
 + (void)startWithConfigOptions:(FTMobileConfig *)configOptions{
     NSAssert ((strcmp(dispatch_queue_get_label(DISPATCH_CURRENT_QUEUE_LABEL), dispatch_queue_get_label(dispatch_get_main_queue())) == 0),@"SDK 必须在主线程里进行初始化，否则会引发无法预料的问题（比如丢失 launch 事件）。");
     
     NSAssert((configOptions.datakitUrl.length!=0||(configOptions.datawayUrl.length!=0&&configOptions.clientToken.length!=0)), @"请正确配置 datakit  或 dataway 写入地址");
-    dispatch_once(&onceToken, ^{
-        sharedInstance = [[FTMobileAgent alloc] initWithConfig:configOptions];
-    });
+    @synchronized(sharedInstanceLock) {
+        if (!sharedInstance) {
+            sharedInstance = [[FTMobileAgent alloc] initWithConfig:configOptions];
+        }
+    }
 }
 // 单例
 + (instancetype)sharedInstance {
-    NSAssert(sharedInstance, @"请先使用 startWithConfigOptions: 初始化 SDK");
-    return sharedInstance;
+    @synchronized(sharedInstanceLock) {
+        NSAssert(sharedInstance, @"请先使用 startWithConfigOptions: 初始化 SDK");
+        return sharedInstance;
+    }
+}
++ (void)setSharedInstance:(nullable FTMobileAgent *)agent block:(void(^)(void))block{
+    @synchronized(sharedInstanceLock) {
+        if(block) block();
+        sharedInstance = agent;
+    }
 }
 - (instancetype)initWithConfig:(FTMobileConfig *)config{
     @try {
@@ -128,13 +142,13 @@ static dispatch_once_t onceToken;
     [[FTLogger sharedInstance] updateWithRemoteConfiguration:configuration];
 }
 + (void)updateRemoteConfig{
-    if (onceToken == 0 && sharedInstance == nil) {
+    if (![self checkInstallState]) {
         return;
     }
     [[FTRemoteConfigManager sharedInstance] updateRemoteConfig];
 }
 + (void)updateRemoteConfigWithMiniUpdateInterval:(int)miniUpdateInterval callback:(void (^)(BOOL, NSDictionary<NSString *,id> * _Nullable))callback{
-    if (onceToken == 0 && sharedInstance == nil) {
+    if (![self checkInstallState]) {
         callback(NO,nil);
         return;
     }
@@ -192,7 +206,7 @@ static dispatch_once_t onceToken;
     [[FTPresetProperty sharedInstance] setLogGlobalContext:loggerConfig.globalContext];
     [[FTTrackDataManager sharedInstance] setLogCacheLimitCount:loggerConfig.logCacheLimitCount discardNew:loggerConfig.discardType == FTDiscard];
     [[FTExtensionDataManager sharedInstance] writeLoggerConfig:[loggerConfig convertToDictionary]];
-    [FTLogger startWithLoggerConfig:loggerConfig writer:[FTTrackDataManager sharedInstance].dataWriterWorker];
+    [[FTLogger sharedInstance] startWithLoggerConfig:loggerConfig writer:[FTTrackDataManager sharedInstance].dataWriterWorker];
     [FTLogger sharedInstance].linkRumDataProvider = [FTGlobalRumManager sharedInstance].rumManager;
     FTInnerLogInfo(@"Init Logger Config Success: \n%@",loggerConfig.debugDescription);
 }
@@ -207,7 +221,12 @@ static dispatch_once_t onceToken;
     [[FTExtensionDataManager sharedInstance] writeTraceConfig:[traceConfig convertToDictionary]];
     FTInnerLogInfo(@"Init Trace Config Success: \n%@",traceConfig.debugDescription);
 }
-
+#pragma mark ==
++ (BOOL)checkInstallState{
+    @synchronized(sharedInstanceLock) {
+        return sharedInstance != nil;
+    }
+}
 #pragma mark ========== public method ==========
 - (void)isIntakeUrl:(BOOL(^)(NSURL *url))handler{
     if(handler){
@@ -244,7 +263,7 @@ static dispatch_once_t onceToken;
 }
 + (void)appendGlobalContext:(NSDictionary <NSString*,id>*)context{
     @try {
-        if (onceToken == 0 && sharedInstance == nil) {
+        if (![self checkInstallState]) {
             return;
         }
         if(!context){
@@ -259,7 +278,7 @@ static dispatch_once_t onceToken;
 }
 + (void)appendRUMGlobalContext:(NSDictionary <NSString*,id>*)context{
     @try {
-        if (onceToken == 0 && sharedInstance == nil) {
+        if (![self checkInstallState]) {
             return;
         }
         if(!context){
@@ -274,7 +293,7 @@ static dispatch_once_t onceToken;
 }
 + (void)appendLogGlobalContext:(NSDictionary <NSString*,id>*)context{
     @try {
-        if (onceToken == 0 && sharedInstance == nil) {
+        if (![self checkInstallState]) {
             return;
         }
         if(!context){
@@ -351,21 +370,20 @@ static dispatch_once_t onceToken;
 }
 #pragma mark - SDK注销
 - (void)shutDown{
-    [FTNetworkInfoManager shutDown];
-    [[FTGlobalRumManager sharedInstance] shutDown];
-    [[FTLogger sharedInstance] shutDown];
-    [[FTURLSessionInstrumentation sharedInstance] shutDown];
-    [[FTPresetProperty sharedInstance] shutDown];
-    [[FTRemoteConfigManager sharedInstance] shutDown];
-    onceToken = 0;
-    sharedInstance = nil;
-    [[NSNotificationCenter defaultCenter] removeObserver:self];
-    [[FTTrackDataManager sharedInstance] shutDown];
-    FTInnerLogInfo(@"[SDK] SHUT DOWN");
-    [[FTLog sharedInstance] shutDown];
+    [FTMobileAgent setSharedInstance:nil block:^{
+        [[FTLogger sharedInstance] shutDown];
+        [[FTGlobalRumManager sharedInstance] shutDown];
+        [[FTURLSessionInstrumentation sharedInstance] shutDown];
+        [[FTRemoteConfigManager sharedInstance] shutDown];
+        [FTTrackDataManager shutDown];
+        [FTNetworkInfoManager shutDown];
+        [[FTPresetProperty sharedInstance] shutDown];
+        FTInnerLogInfo(@"[SDK] SHUT DOWN");
+        [[FTLog sharedInstance] shutDown];
+    }];
 }
 + (void)shutDown{
-    if (onceToken == 0 && sharedInstance == nil) {
+    if (sharedInstance == nil) {
         return;
     }
 #pragma clang diagnostic push

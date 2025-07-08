@@ -32,12 +32,19 @@ void *FTInterceptorQueueIdentityKey = &FTInterceptorQueueIdentityKey;
 @synthesize sessionTaskErrorFilter = _sessionTaskErrorFilter;
 
 static FTURLSessionInterceptor *sharedInstance = nil;
-static dispatch_once_t onceToken;
+static NSObject *sharedInstanceLock;
++ (void)initialize{
+    if (self == [FTURLSessionInterceptor class]) {
+        sharedInstanceLock = [[NSObject alloc] init];
+    }
+}
 + (instancetype)shared{
-    dispatch_once(&onceToken, ^{
-        sharedInstance = [[super allocWithZone:NULL] init];
-    });
-    return sharedInstance;
+    @synchronized(sharedInstanceLock) {
+        if (!sharedInstance) {
+            sharedInstance = [[super allocWithZone:NULL] init];
+        }
+        return sharedInstance;
+    }
 }
 -(instancetype)init{
     self = [super init];
@@ -382,7 +389,8 @@ static dispatch_once_t onceToken;
     if(dispatch_get_specific(FTInterceptorQueueIdentityKey)==NULL){
         dispatch_sync(self.queue, ^{});
     }
-    onceToken = 0;
-    sharedInstance =nil;
+    @synchronized(sharedInstanceLock) {
+        sharedInstance =nil;
+    }    
 }
 @end
