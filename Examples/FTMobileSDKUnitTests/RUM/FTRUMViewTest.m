@@ -176,5 +176,4 @@
     XCTAssertTrue(handler.viewStartCount == 1);
     XCTAssertTrue(handler.viewStopCount == 0);
 }
-
 @end

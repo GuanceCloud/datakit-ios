@@ -96,7 +96,7 @@
 }
 
 
-/** Tests sessionWithConfiguration: with the default configurtion returns a non-nil object. */
+/** Tests sessionWithConfiguration: with the default configuration returns a non-nil object. */
 - (void)testSessionWithDefaultSessionConfiguration {
     [FTNetworkMock networkOHHTTPStubsHandler];
     __block NSURLSessionDataTask *dataTask;

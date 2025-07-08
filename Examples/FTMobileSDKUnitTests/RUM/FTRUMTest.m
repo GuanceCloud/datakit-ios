@@ -1602,6 +1602,41 @@
     }];
     XCTAssertTrue(hasResourceData);
 }
+/**
+ * verify: No crashes occur when adding views and actions during SDK shutdown.
+ */
+- (void)testSDKShutdown{
+    [self setRumConfig];
+    XCTestExpectation *exception = [[XCTestExpectation alloc]init];
+    dispatch_group_t group = dispatch_group_create();
+    NSInteger count = 0;
+    __block BOOL isSDKClose = NO;
+    for (int i = 0; i<1000; i++) {
+        dispatch_group_enter(group);
+        dispatch_async(dispatch_get_main_queue(), ^{
+            UIViewController *vc = [[UIViewController alloc]init];
+            [[FTAutoTrackHandler sharedInstance].addRumDatasDelegate addAction:@"test" actionType:@"click" property:nil];
+            [[FTAutoTrackHandler sharedInstance].viewControllerHandler notify_viewDidAppear:vc animated:YES];
+            dispatch_group_leave(group);
+        });
+        dispatch_async(dispatch_queue_create(0, 0), ^{
+            if (!isSDKClose) {
+                isSDKClose = YES;
+                [FTMobileAgent shutDown];
+            }
+            dispatch_async(dispatch_get_main_queue(), ^{
+                [self setRumConfig];
+                isSDKClose = NO;
+            });
+        });
+        count ++;
+    }
+    dispatch_group_notify(group, dispatch_get_main_queue(), ^{
+        [exception fulfill];
+    });
+    [self waitForExpectations:@[exception]];
+    XCTAssertTrue(count == 1000);
+}
 #pragma mark ========== Mock Data ==========
 
 - (void)addErrorData:(NSDictionary *)property{

@@ -400,6 +400,39 @@
     [OHHTTPStubs removeStub:stubs];
     [FTMobileAgent shutDown];
 }
+/**
+ * Verification: No crashes occur when call '+updateRemoteConfig','+updateRemoteConfigWithMiniUpdateInterval' method
+ *  during SDK shutdown.
+ */
+- (void)testSDKShutdown{
+    [self sdkInitWithRemoteConfiguration:YES interval:60];
+    id<OHHTTPStubsDescriptor> stubs = [self mockRemoteData];
+    XCTestExpectation *exception = [[XCTestExpectation alloc]init];
+    dispatch_group_t group = dispatch_group_create();
+    NSInteger count = 0;
+    for (int i = 0; i<1000; i++) {
+        dispatch_group_enter(group);
+        dispatch_async(dispatch_queue_create(0, 0), ^{
+            [FTMobileAgent updateRemoteConfig];
+            [FTMobileAgent updateRemoteConfigWithMiniUpdateInterval:0 callback:^(BOOL success, NSDictionary<NSString *,id> * _Nullable config) {
+          
+            }];
+            dispatch_group_leave(group);
+        });
+        dispatch_async(dispatch_get_main_queue(), ^{
+            [FTMobileAgent shutDown];
+            [self sdkInitWithRemoteConfiguration:YES interval:60];
+        });
+        count ++;
+    }
+    dispatch_group_notify(group, dispatch_get_main_queue(), ^{
+        [exception fulfill];
+    });
+    [self waitForExpectations:@[exception]];
+    XCTAssertTrue(count == 1000);
+    [OHHTTPStubs removeStub:stubs];
+    [FTMobileAgent shutDown];
+}
 - (void)updateRemoteConfigWithMiniUpdateIntervalWithEnable:(BOOL)enable{
     [[FTRemoteConfigManager sharedInstance] saveRemoteConfig:nil];
     id<OHHTTPStubsDescriptor> stubs = [self mockRemoteData];
