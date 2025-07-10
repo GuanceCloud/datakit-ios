@@ -42,15 +42,15 @@ static NSString *urlStr;
     } withStubResponse:^OHHTTPStubsResponse*(NSURLRequest *request) {
         NSString *data  =[FTJSONUtil convertToJsonData:@{@"data":@"Hello World!",@"code":@200}];
         NSData *requestData = [data dataUsingEncoding:NSUTF8StringEncoding];
-        if(g_handler){
-            dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)(0.1 * NSEC_PER_SEC)), dispatch_get_main_queue(), ^{
-                @synchronized (self) {
+        @synchronized (self) {
+            if(g_handler){
+                dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)(0.1 * NSEC_PER_SEC)), dispatch_get_main_queue(), ^{
                     if(g_handler){
                         g_handler();
                         g_handler = nil;
                     }
-                }
-            });
+                });
+            }
         }
         return [OHHTTPStubsResponse responseWithData:requestData statusCode:200 headers:nil];
     }];
