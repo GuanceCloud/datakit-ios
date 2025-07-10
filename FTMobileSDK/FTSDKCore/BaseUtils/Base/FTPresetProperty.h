@@ -17,13 +17,12 @@ NS_ASSUME_NONNULL_BEGIN
 @interface FTPresetProperty : NSObject
 
 /// 读写保护的用户信息
-@property (nonatomic, strong) FTReadWriteHelper<FTUserInfo*> *userHelper;
 @property (nonatomic, strong, readonly) NSDictionary *loggerTags;
 @property (nonatomic, strong, readonly) NSMutableDictionary *rumTags;
 @property (nonatomic, strong, readonly) NSDictionary *rumStaticFields;
 
 /// 设置数据更改器
-@property (nonatomic, copy) FTLineDataModifier lineDataModifier;
+@property (nonatomic, copy, nullable) FTLineDataModifier lineDataModifier;
 /// 设备名称
 + (NSString *)deviceInfo;
 + (NSString *)cpuArch;
@@ -61,6 +60,9 @@ NS_ASSUME_NONNULL_BEGIN
 - (NSArray<NSDictionary *> *)applyLineModifier:(NSString *)measurement
                                           tags:(NSDictionary *)tags
                                         fields:(NSDictionary *)fields;
+-(void)updateUser:(NSString *)Id name:(NSString *)name email:(NSString *)email extra:(NSDictionary *)extra;
+
+-(void)clearUser;
 
 - (void)shutDown;
 @end

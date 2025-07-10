@@ -256,9 +256,7 @@ static FTMobileAgent *sharedInstance = nil;
         return;
     }
     NSDictionary *safeExtra = [extra ft_deepCopy];
-    [[FTPresetProperty sharedInstance].userHelper concurrentWrite:^(FTUserInfo * _Nonnull value) {
-        [value updateUser:Id name:userName email:userEmail extra:safeExtra];
-    }];
+    [[FTPresetProperty sharedInstance] updateUser:Id name:userName email:userEmail extra:safeExtra];
     FTInnerLogInfo(@"Bind User ID : %@ , Name : %@ , Email : %@ , Extra : %@",Id,userName,userEmail,safeExtra);
 }
 + (void)appendGlobalContext:(NSDictionary <NSString*,id>*)context{
@@ -311,9 +309,7 @@ static FTMobileAgent *sharedInstance = nil;
     [self unbindUser];
 }
 - (void)unbindUser{
-    [[FTPresetProperty sharedInstance].userHelper concurrentWrite:^(FTUserInfo * _Nonnull value) {
-        [value clearUser];
-    }];
+    [[FTPresetProperty sharedInstance] clearUser];
     FTInnerLogInfo(@"Unbind User");
 }
 - (void)trackEventFromExtensionWithGroupIdentifier:(NSString *)groupIdentifier completion:(void (^)(NSString *groupIdentifier, NSArray *events)) completion{
@@ -376,7 +372,6 @@ static FTMobileAgent *sharedInstance = nil;
         [[FTURLSessionInstrumentation sharedInstance] shutDown];
         [[FTRemoteConfigManager sharedInstance] shutDown];
         [FTTrackDataManager shutDown];
-        [FTNetworkInfoManager shutDown];
         [[FTPresetProperty sharedInstance] shutDown];
         FTInnerLogInfo(@"[SDK] SHUT DOWN");
         [[FTLog sharedInstance] shutDown];
