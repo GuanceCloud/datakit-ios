@@ -11,7 +11,6 @@
 #import "FTWKWebViewHandler+Private.h"
 #import "FTSwizzler.h"
 #import <objc/runtime.h>
-#import "FTURLSessionInterceptorProtocol.h"
 @implementation WKWebView (FTAutoTrack)
 
 -(WKNavigation *)ft_loadRequest:(NSURLRequest *)request{
