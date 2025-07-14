@@ -350,7 +350,9 @@
     [[FTTrackDataManager sharedInstance] flushSyncData];
     [self waitForExpectations:@[self.expectation]];
     CFTimeInterval endTime = CACurrentMediaTime();
-    XCTAssertTrue(endTime-startTime>7 && endTime-startTime<9);
+    CFTimeInterval duration = endTime-startTime;
+    NSLog(@"endTime-startTime:%f",duration);
+    XCTAssertTrue(duration>7 && duration<9);
     NSString *endPackageId = [FTRumRequest.serialGenerator getCurrentSerialNumber];
     XCTAssertTrue([endPackageId isEqualToString:packageId]);
     XCTAssertTrue(set.count == 6);
