@@ -1,3 +1,6 @@
+# 1.5.18-alpha.4
+1. Fix: made the SDK's -shutdown method thread-safe
+---
 # 1.5.18-alpha.3
 1. Fix: missing `#include <string.h>` in tvOS platform
 ---
