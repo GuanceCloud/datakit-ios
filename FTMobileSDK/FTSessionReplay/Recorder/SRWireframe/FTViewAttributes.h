@@ -9,7 +9,6 @@
 #import <Foundation/Foundation.h>
 #import "FTViewTreeSnapshot.h"
 #import <UIKit/UIKit.h>
-#import "FTImageDataUtils.h"
 #import "FTSRViewID.h"
 #import "FTSRTextObfuscatingFactory.h"
 #import "FTSessionReplayPrivacyOverrides+Extension.h"
