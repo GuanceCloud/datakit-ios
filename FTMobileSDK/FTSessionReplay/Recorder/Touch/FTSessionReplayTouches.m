@@ -15,6 +15,9 @@
 #import "FTTouchSnapshot.h"
 #import "UIView+FTSRPrivacy.h"
 #import "FTSessionReplayPrivacyOverrides+Extension.h"
+#import "FTThreadDispatchManager.h"
+
+static FTSessionReplayTouches *touchesHandler;
 @interface FTSessionReplayTouches()
 /// 点击事件集合 都在主线程操作，所以不进行锁管理
 @property (nonatomic, strong) NSMutableArray *touches;
@@ -29,6 +32,9 @@
         _currentID = 0;
         _windowObserver = observer;
         [self swizzleApplicationTouches];
+        [FTThreadDispatchManager performBlockDispatchMainSyncSafe:^{
+            touchesHandler = self;
+        }];
     }
     return self;
 }
@@ -63,7 +69,6 @@
     return nextID;
 }
 - (void)swizzleApplicationTouches{
-    __weak typeof(self) weakSelf = self;
     static dispatch_once_t onceToken;
     dispatch_once(&onceToken, ^{
         FTSwizzlerInstanceMethod(UIApplication.class,
@@ -72,9 +77,8 @@
                                  FTSWArguments(UIEvent *event),
                                  FTSWReplacement({
             FTSWCallOriginal(event);
-            __strong __typeof(weakSelf) strongSelf = weakSelf;
-            if (!strongSelf) return;
-            [strongSelf handleEvent:event];
+            if (!touchesHandler) return;
+            [touchesHandler handleEvent:event];
         }),FTSwizzlerModeOncePerClassAndSuperclasses,
                                  "ft_addScreenshot"
                                  );
@@ -136,7 +140,7 @@
             }
         }
     }
-
+    
 }
 - (nullable NSNumber *)resolveTouchOverride:(UITouch *)touch{
     if (!touch.view) {
@@ -154,6 +158,12 @@
     return nil;
 }
 - (void)unSwizzleApplicationTouches{
-    [self.touches removeAllObjects];
+    [FTThreadDispatchManager performBlockDispatchMainSyncSafe:^{
+        [self.touches removeAllObjects];
+        if (touchesHandler == self) touchesHandler = nil;
+    }];
+}
+-(void)dealloc{
+    [self unSwizzleApplicationTouches];
 }
 @end
