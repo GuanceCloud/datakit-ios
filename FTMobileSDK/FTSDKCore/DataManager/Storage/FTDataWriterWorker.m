@@ -111,11 +111,12 @@
 // FT_DATA_TYPE_LOGGING
 -(void)logging:(NSString *)content status:(NSString *)status tags:(nullable NSDictionary *)tags field:(nullable NSDictionary *)field time:(long long)time{
     @try {
-        NSMutableDictionary *tagDict = [NSMutableDictionary dictionaryWithDictionary:[[FTPresetProperty sharedInstance] loggerTags]];
+        NSMutableDictionary *tagDict = [NSMutableDictionary new];
         if (tags) {
             [tagDict addEntriesFromDictionary:tags];
         }
         [tagDict setValue:status forKey:FT_KEY_STATUS];
+        [tagDict addEntriesFromDictionary:[[FTPresetProperty sharedInstance] loggerTags]];
         NSMutableDictionary *filedDict = [NSMutableDictionary dictionary];
         [filedDict setValue:content forKey:FT_KEY_MESSAGE];
         [filedDict addEntriesFromDictionary:field];

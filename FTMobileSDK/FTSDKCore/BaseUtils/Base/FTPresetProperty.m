@@ -134,6 +134,8 @@
     [dict addEntriesFromDictionary:globalContext];
     [dict setValue:pkgInfo forKey:FT_SDK_PKG_INFO];
     [dict setValue:sdkVersion forKey:FT_SDK_VERSION];
+    [dict setValue:FT_SDK_NAME_VALUE forKey:FT_SDK_NAME];
+
     NSDictionary *newDict = [self applyModifier:dict];
     self.baseCommonPropertyTags = newDict;
 }
@@ -301,7 +303,6 @@
     dict[FT_COMMON_PROPERTY_OS_VERSION_MAJOR] = self.mobileDevice.osVersionMajor;
     dict[FT_SCREEN_SIZE] = self.mobileDevice.screenSize;
     dict[FT_CPU_ARCH] = self.mobileDevice.cpuArch;
-    dict[FT_SDK_NAME] = FT_SDK_NAME_VALUE;
     [dict setValue:appID forKey:FT_APP_ID];
     [dict addEntriesFromDictionary:rumGlobalContext];
     NSDictionary *newDict = [self applyModifier:dict];
