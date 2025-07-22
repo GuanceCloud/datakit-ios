@@ -68,13 +68,8 @@ static FTMobileAgent *sharedInstance = nil;
         return sharedInstance;
     }
 }
-+ (void)setSharedInstance:(nullable FTMobileAgent *)agent block:(void(^)(void))block{
-    @synchronized(sharedInstanceLock) {
-        if(block) block();
-        sharedInstance = agent;
-    }
-}
-- (instancetype)initWithConfig:(FTMobileConfig *)config{
+
+- (instancetype)initWithConfig:(FTMobileConfig *)config {
     @try {
         self = [super init];
         if (self) {
@@ -366,7 +361,7 @@ static FTMobileAgent *sharedInstance = nil;
 }
 #pragma mark - SDK注销
 - (void)shutDown{
-    [FTMobileAgent setSharedInstance:nil block:^{
+    @synchronized(sharedInstanceLock) {
         [[FTLogger sharedInstance] shutDown];
         [[FTGlobalRumManager sharedInstance] shutDown];
         [[FTURLSessionInstrumentation sharedInstance] shutDown];
@@ -375,7 +370,8 @@ static FTMobileAgent *sharedInstance = nil;
         [[FTPresetProperty sharedInstance] shutDown];
         FTInnerLogInfo(@"[SDK] SHUT DOWN");
         [[FTLog sharedInstance] shutDown];
-    }];
+        sharedInstance = nil;
+    }
 }
 + (void)shutDown{
     if (sharedInstance == nil) {
