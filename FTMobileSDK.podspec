@@ -3,7 +3,7 @@ Pod::Spec.new do |s|
 	s.name         = "FTMobileSDK"
 	#s.version      = "1.4.11-alpha.1"
 	s.version      = "$JENKINS_DYNAMIC_VERSION"
-	s.summary      = "观测云 iOS 数据采集 SDK"
+	s.summary      = "Guance Cloud iOS Data Collection SDK"
 	#s.description  = ""
 	s.homepage     = "https://github.com/GuanceCloud/datakit-ios.git"
 
@@ -15,7 +15,7 @@ Pod::Spec.new do |s|
 	s.osx.deployment_target = '10.13'
 	s.tvos.deployment_target = '12.0'
 
-	#$JENKINS_DYNAMIC_VERSION 替换成 "#{s.version}" 会在 pod valid 阶段报错
+	#$JENKINS_DYNAMIC_VERSION replacing "#{s.version}" will cause an error during pod valid phase
 	s.source       = { :git => "https://github.com/GuanceCloud/datakit-ios.git", :tag => "$JENKINS_DYNAMIC_VERSION" }
 
     s.resource_bundle = {
@@ -110,5 +110,3 @@ Pod::Spec.new do |s|
 		end
 	end
 end
-
-

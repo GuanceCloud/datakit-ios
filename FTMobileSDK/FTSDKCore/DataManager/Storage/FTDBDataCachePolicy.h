@@ -23,7 +23,7 @@ typedef void (^LogDataWriteDBCallback)(void);
 - (void)setRumCacheLimitCount:(int)count discardNew:(BOOL)discardNew;
 - (void)addLogData:(id)data;
 - (BOOL)addRumData:(id)data;
-/// 判断日志存储是否到达容量一半
+/// Determine whether log storage has reached half capacity
 - (BOOL)reachHalfLimit;
 - (void)insertCacheToDB;
 @end

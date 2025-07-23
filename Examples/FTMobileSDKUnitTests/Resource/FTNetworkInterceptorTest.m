@@ -145,9 +145,9 @@
  *  RumAutoTrace = NO
  *  Session.ResourcePropertyProvider != nil
  *  Global.ResourcePropertyProvider = nil
- * 验证: - RUM-Resource_Count = 2
- *      - 自定义采集的 URLSession: Count = 1 , fields 中添加 ResourcePropertyProvider 自定义的参数成功
- *      - 其他 URLSession : Count = 0
+ *  Verification: - RUM-Resource_Count = 2
+ *      - Custom collected URLSession: Count = 1, fields successfully added ResourcePropertyProvider custom parameters
+ *      - Other URLSession: Count = 0
  */
 - (void)testResourcePropertyProvider_URLSession{
     [self resourcePropertyProviderWithAutoTrace:NO enableSession:YES enableGlobal:NO];
@@ -156,9 +156,9 @@
  *  RumAutoTrace = YES
  *  Session.ResourcePropertyProvider != nil
  *  Global.ResourcePropertyProvider = nil
- * 验证: - RUM-Resource_Count = 2
- *      - 自定义采集的 URLSession: Count = 1 , fields.contains Session.ResourcePropertyProvider returns
- *      - 其他 URLSession : Count = 1 , fields not contains
+ *  Verification: - RUM-Resource_Count = 2
+ *      - Custom collected URLSession: Count = 1, fields.contains Session.ResourcePropertyProvider returns
+ *      - Other URLSession: Count = 1, fields not contains
  */
 - (void)testResourcePropertyProvider_URLSession_AutoTrace{
     [self resourcePropertyProviderWithAutoTrace:YES enableSession:YES enableGlobal:NO];
@@ -167,9 +167,9 @@
  *  RumAutoTrace = YES
  *  Session.ResourcePropertyProvider = nil
  *  Global.ResourcePropertyProvider != nil
- *  验证: - RUM-Resource_Count = 2
- *      - 自定义采集的 URLSession: Count = 1，fields.contains Global.ResourcePropertyProvider returns
- *      - 其他 URLSession : Count = 1 , fields.contains Global.ResourcePropertyProvider returns
+ *   Verification: - RUM-Resource_Count = 2
+ *      - Custom collected URLSession: Count = 1, fields.contains Global.ResourcePropertyProvider returns
+ *      - Other URLSession: Count = 1, fields.contains Global.ResourcePropertyProvider returns
  */
 - (void)testResourcePropertyProvider_Global{
     [self resourcePropertyProviderWithAutoTrace:YES enableSession:NO enableGlobal:YES];
@@ -178,9 +178,9 @@
  *  RumAutoTrace = YES
  *  Session.ResourcePropertyProvider != nil
  *  Global.ResourcePropertyProvider != nil
- * 验证: - RUM-Resource_Count = 2
- *      - 自定义采集的 URLSession: Count = 1，fields.contains Session.ResourcePropertyProvider returns
- *      - 其他 URLSession : Count = 1 , fields.contains Global.ResourcePropertyProvider returns
+ *  Verification: - RUM-Resource_Count = 2
+ *      - Custom collected URLSession: Count = 1, fields.contains Session.ResourcePropertyProvider returns
+ *      - Other URLSession: Count = 1, fields.contains Global.ResourcePropertyProvider returns
  */
 - (void)testResourcePropertyProvider_Priority{
     [self resourcePropertyProviderWithAutoTrace:YES enableSession:YES enableGlobal:YES];
@@ -258,32 +258,32 @@
 }
 #pragma mark - Trace
 /**
- * 验证：- 自定义采集的 URLSession Trace 自定义成功
- *      - 其他 URLSession 无 Trace 添加
+ *  Verification: - Custom collected URLSession Trace custom successfully
+ *      - Other URLSession no Trace added
  */
 - (void)testTraceInterceptor_URLSession{
     [self traceInterceptorWithAutoTrace:NO enableSession:YES enableGlobal:NO];
 }
 /**
- * 验证：- 自定义采集的 URLSession Trace 自定义成功
- *      - 其他 URLSession 通过 AutoTrace 添加 Trace 成功
+ *  Verification: - Custom collected URLSession Trace custom successfully
+ *      - Other URLSession through AutoTrace successfully added Trace
  */
 - (void)testTraceInterceptor_URLSession_AutoTrace{
     [self traceInterceptorWithAutoTrace:YES enableSession:YES enableGlobal:NO];
 }
 /**
- * 验证：- 自定义采集的 URLSession 未设置 traceInterceptor Trace 添加成功
- *      - 其他 URLSession Trace 添加成功
- *      - AutoTrace 不生效
+ *  Verification: - Custom collected URLSession no traceInterceptor Trace added successfully
+ *      - Other URLSession Trace added successfully
+ *      - AutoTrace does not take effect
  */
 - (void)testTraceInterceptor_Global{
     [self traceInterceptorWithAutoTrace:YES enableSession:NO enableGlobal:YES];
 }
 /**
- * 同时添加 URLSession 级的 traceInterceptor, Global traceInterceptor 以及 AutoTrace
- *  验证：- URLSession > Global > AutoTrace
- *       - 自定义采集的 URLSession: URLSession-traceInterceptor 生效
- *       - 其他 URLSession: Global-traceInterceptor 生效
+ *  Add URLSession-level traceInterceptor, Global traceInterceptor, and AutoTrace simultaneously
+ *   Verification: - URLSession > Global > AutoTrace
+ *       - Custom collected URLSession: URLSession-traceInterceptor effective
+ *       - Other URLSession: Global-traceInterceptor effective
  */
 - (void)testTraceInterceptor_Priority{
     [self traceInterceptorWithAutoTrace:YES enableSession:YES enableGlobal:YES];

@@ -16,7 +16,7 @@
             <BuildableReference
                BuildableIdentifier = "primary"
                BlueprintIdentifier = "17F6522B2DF81A73005C91DB"
-               BuildableName = "FTMobileSDK-dynamic.framework"
+               BuildableName = "FTMobileSDK.framework"
                BlueprintName = "FTMobileSDK-dynamic"
                ReferencedContainer = "container:FTMobileSDK.xcodeproj">
             </BuildableReference>
@@ -51,7 +51,7 @@
          <BuildableReference
             BuildableIdentifier = "primary"
             BlueprintIdentifier = "17F6522B2DF81A73005C91DB"
-            BuildableName = "FTMobileSDK-dynamic.framework"
+            BuildableName = "FTMobileSDK.framework"
             BlueprintName = "FTMobileSDK-dynamic"
             ReferencedContainer = "container:FTMobileSDK.xcodeproj">
          </BuildableReference>

@@ -2,7 +2,7 @@
 //  FTLog.h
 //  FTMobileAgent
 //
-//  Created by 胡蕾蕾 on 2020/5/19.
+//  Created by hulilei on 2020/5/19.
 //  Copyright © 2020 hll. All rights reserved.
 //
 
@@ -11,27 +11,27 @@
 NS_ASSUME_NONNULL_BEGIN
 
 
-/// SDK 内部调试日志
+/// SDK internal debug logs
 @interface FTLog : NSObject
 
-/// 单例
+/// Singleton
 + (instancetype)sharedInstance;
 
-/// 将调试日志写入默认文件。
+/// Write debug logs to the default file.
 /// Documents/FTLogs/FTLog.log
 - (void)registerInnerLogCacheToDefaultPath;
 
-/// 将调试日志写入文件。若未指定 logsDirectory ，那么将在应用程序的 Documents 中创建一个名为 'FTLogs' 的文件夹。若未指定 fileNamePrefix ，日志文件前缀为 'FTLog'
+/// Write debug logs to file. If logsDirectory is not specified, a folder named 'FTLogs' will be created in the application's Documents. If fileNamePrefix is not specified, the log file prefix is 'FTLog'
 /// - Parameters:
-///   - logsDirectory: 存储日志文件的文件夹
-///   - fileNamePrefix: 日志文件名前缀
+///   - logsDirectory: Folder to store log files
+///   - fileNamePrefix: Log file name prefix
 - (void)registerInnerLogCacheToLogsDirectory:(nullable NSString *)logsDirectory fileNamePrefix:(nullable NSString *)fileNamePrefix;
 
 
-/// 将调试日志写入指定文件。
-/// - Parameter filePath: 日志写入文件路径
+/// Write debug logs to the specified file.
+/// - Parameter filePath: Log file write path
 ///
-/// 示例：
+/// Example:
 /// ```
 /// NSString *baseDir = NSSearchPathForDirectoriesInDomains(NSDocumentDirectory, NSUserDomainMask, YES).firstObject;
 /// NSString *logsDirectory = [baseDir stringByAppendingPathComponent:@"ExampleLogs"];

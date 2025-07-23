@@ -2,7 +2,7 @@
 //  FTDatabaseTest.m
 //  ft-sdk-iosTestUnitTests
 //
-//  Created by 胡蕾蕾 on 2020/8/25.
+//  Created by hulilei on 2020/8/25.
 //  Copyright © 2020 hll. All rights reserved.
 //
 
@@ -94,7 +94,7 @@
 }
 /**
 *  @abstract
-*  缓存中的数据添加到数据库中
+*  Add data from cache to database
 */
 -(void)testInsertCacheToDB{
     [FTTrackDataManager startWithAutoSync:NO syncPageSize:10 syncSleepTime:0];

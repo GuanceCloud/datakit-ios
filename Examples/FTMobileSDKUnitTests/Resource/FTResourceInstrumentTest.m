@@ -84,7 +84,7 @@
     __block NSURLSessionDataTask *dataTask;
     NSURLSession *session = [NSURLSession sharedSession];
     XCTAssertNotNil(session);
-    XCTestExpectation *expectation= [self expectationWithDescription:@"异步操作timeout"];
+    XCTestExpectation *expectation= [self expectationWithDescription:@"Async operation timeout"];
 
    dataTask = [session dataTaskWithURL:self.url completionHandler:^(NSData * _Nullable data, NSURLResponse * _Nullable response, NSError * _Nullable error) {
         [expectation fulfill];
@@ -99,7 +99,7 @@
 /** Tests sessionWithConfiguration: with the default configuration returns a non-nil object. */
 - (void)testSessionWithDefaultSessionConfiguration {
     __block NSURLSessionDataTask *dataTask;
-    XCTestExpectation *expectation= [self expectationWithDescription:@"异步操作timeout"];
+    XCTestExpectation *expectation= [self expectationWithDescription:@"Async operation timeout"];
     __block id<OHHTTPStubsDescriptor> stubs = [FTNetworkMock networkOHHTTPStubsHandler:^{
         XCTAssertNil([[FTURLSessionInterceptor shared] getTraceHandler:dataTask]);
         [expectation fulfill];
@@ -118,7 +118,7 @@
 /** Tests sessionWithConfiguration: with an ephemeral configuration returns a non-nil object. */
 - (void)testSessionWithEphemeralSessionConfiguration {
     __block NSURLSessionDataTask *dataTask;
-    XCTestExpectation *expectation= [self expectationWithDescription:@"异步操作timeout"];
+    XCTestExpectation *expectation= [self expectationWithDescription:@"Async operation timeout"];
     __block id<OHHTTPStubsDescriptor> stubs = [FTNetworkMock networkOHHTTPStubsHandler:^{
         XCTAssertNil([[FTURLSessionInterceptor shared] getTraceHandler:dataTask]);
         [expectation fulfill];
@@ -264,7 +264,7 @@
 //* Tests that the delegate class isn't instrumented more than once.
 - (void)testDelegateClassOnlyRegisteredOnce {
     __block NSURLSessionDataTask *dataTask;
-    XCTestExpectation *expectation= [self expectationWithDescription:@"异步操作timeout"];
+    XCTestExpectation *expectation= [self expectationWithDescription:@"Async operation timeout"];
     __block id<OHHTTPStubsDescriptor> stubs = [FTNetworkMock networkOHHTTPStubsHandler:^{
         XCTAssertNil([[FTURLSessionInterceptor shared] getTraceHandler:dataTask]);
         [expectation fulfill];
@@ -324,7 +324,7 @@
 /** Tests that even if a delegate doesn't implement a method, we add it to the delegate class. */
 - (void)testDelegateUnimplementedURLSessionTaskDidCompleteWithError {
     __block NSURLSessionDataTask *dataTask;
-    XCTestExpectation *expectation= [self expectationWithDescription:@"异步操作timeout"];
+    XCTestExpectation *expectation= [self expectationWithDescription:@"Async operation timeout"];
     __block id<OHHTTPStubsDescriptor> stubs = [FTNetworkMock networkOHHTTPStubsHandler:^{
         XCTAssertNil([[FTURLSessionInterceptor shared] getTraceHandler:dataTask]);
         [expectation fulfill];
@@ -346,7 +346,7 @@
 /** Tests that even if a delegate doesn't implement a method, we add it to the delegate class. */
 - (void)testDelegateUnimplementedURLSessionTaskDidFinishCollectingMetrics {
     __block NSURLSessionDataTask *dataTask;
-    XCTestExpectation *expectation= [self expectationWithDescription:@"异步操作timeout"];
+    XCTestExpectation *expectation= [self expectationWithDescription:@"Async operation timeout"];
     __block id<OHHTTPStubsDescriptor> stubs = [FTNetworkMock networkOHHTTPStubsHandler:^{
         XCTAssertNil([[FTURLSessionInterceptor shared] getTraceHandler:dataTask]);
         [expectation fulfill];

@@ -2,7 +2,7 @@
 //  FTCrashMonitor.h
 //  FTAutoTrack
 //
-//  Created by 胡蕾蕾 on 2020/1/6.
+//  Created by hulilei on 2020/1/6.
 //  Copyright © 2020 hll. All rights reserved.
 //
 
@@ -10,16 +10,16 @@
 #import "FTErrorDataProtocol.h"
 NS_ASSUME_NONNULL_BEGIN
 
-/// 崩溃采集工具
+/// Crash collection tool
 @interface FTCrash : NSObject
 
-/// 单例
+/// Singleton
 + (instancetype)shared;
-/// 添加处理 error data 的代理对象
-/// - Parameter delegate: 代理对象
+/// Add delegate object for handling error data
+/// - Parameter delegate: delegate object
 - (void)addErrorDataDelegate:(id <FTErrorDataDelegate>)delegate;
-/// 移除处理 error data 的代理对象
-/// - Parameter delegate: 代理对象
+/// Remove delegate object for handling error data
+/// - Parameter delegate: delegate object
 - (void)removeErrorDataDelegate:(id <FTErrorDataDelegate>)delegate;
 @end
 

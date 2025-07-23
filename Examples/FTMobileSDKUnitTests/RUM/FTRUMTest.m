@@ -2,7 +2,7 @@
 //  FTRUMTest.m
 //  FTMobileSDKUnitTests
 //
-//  Created by 胡蕾蕾 on 2021/12/14.
+//  Created by hulilei on 2021/12/14.
 //  Copyright © 2021 DataFlux-cn. All rights reserved.
 //
 
@@ -145,7 +145,7 @@
     XCTAssertTrue([tags.allKeys containsObject:FT_RUM_KEY_SESSION_ID]);
 }
 /**
- * 验证： session持续 15m 无新数据写入 session更新
+ * Verify: session lasts 15m without new data, session update
  */
 - (void)testSessionTimeElapse{
     [self setRumConfig];
@@ -157,7 +157,7 @@
     FTRUMManager *rum = [FTGlobalRumManager sharedInstance].rumManager;
     FTRUMSessionHandler *session = [rum valueForKey:@"sessionHandler"];
     NSMutableArray<FTRUMHandler*> *viewHandlers = [session valueForKey:@"viewHandlers"];
-    //把session上次记录数据改为15分钟前 模拟session过期
+    //Change the last recorded data of the session to 15 minutes ago to simulate session expiration
     NSTimeInterval aTimeInterval = [[NSDate date] timeIntervalSinceReferenceDate] + 60 * 15;
     NSDate *newDate = [NSDate dateWithTimeIntervalSinceReferenceDate:-aTimeInterval];
     [session setValue:newDate forKey:@"lastInteractionTime"];
@@ -184,7 +184,7 @@
     XCTAssertFalse([oldSessionId isEqualToString:newSessionId]);
 }
 /**
- * 验证： session 持续四小时  session更新
+ * Verify: session lasts 4 hours, session update
  */
 - (void)testSessionTimeOut{
     [self setRumConfig];
@@ -194,7 +194,7 @@
     FTRecordModel *oldModel = [[[FTTrackerEventDBTool sharedManger] getFirstRecords:10 withType:FT_DATA_TYPE_RUM] firstObject];
     FTRUMManager *rum = [FTGlobalRumManager sharedInstance].rumManager;
     FTRUMSessionHandler *session = [rum valueForKey:@"sessionHandler"];
-    //把session开始时间改为四小时前 模拟session过期
+    //Change the start time of the session to 4 hours ago to simulate session expiration
     NSTimeInterval aTimeInterval = [[NSDate date] timeIntervalSinceReferenceDate] + 3600 * 4;
     NSDate *newDate = [NSDate dateWithTimeIntervalSinceReferenceDate:-aTimeInterval];
     [session setValue:newDate forKey:@"sessionStartTime"];
@@ -225,7 +225,7 @@
     FTRUMSessionHandler *session = [rum valueForKey:@"sessionHandler"];
     NSMutableArray *viewHandlers = [session valueForKey:@"viewHandlers"];
 
-    //把session开始时间改为四小时前 模拟session过期
+    //Change the start time of the session to 4 hours ago to simulate session expiration
     NSTimeInterval aTimeInterval = [[NSDate date] timeIntervalSinceReferenceDate] + 3600 * 4;
     NSDate *newDate = [NSDate dateWithTimeIntervalSinceReferenceDate:-aTimeInterval];
     [session setValue:newDate forKey:@"sessionStartTime"];
@@ -260,7 +260,7 @@
 #pragma mark ========== View ==========
 
 /**
- * 验证 source：view 的数据格式
+ * Verify the format of source:view data
  */
 - (void)testAddViewDataAndFormatChecks{
     [self setRumConfig];
@@ -300,7 +300,7 @@
     XCTAssertTrue(newArray.count == hasLaunchData?1:0);
 }
 /**
- * 验证 resource，action,error,long_task数据 是否同步到view中
+ * Verify whether resource, action, error, long_task data is synchronized to view
  */
 - (void)testViewUpdate{
     [self setRumConfig];
@@ -333,7 +333,7 @@
     XCTAssertTrue(actionCount == trueActionCount);
     [FTModelHelper stopView];
 }
-/// 验证开启enableTraceUserView,应用进入后台前台，view会自动更新
+/// Verify: enableTraceUserView, application enters background and foreground, view will be automatically updated
 - (void)testEnableTraceUserView_whenAppWillEnterForeground{
     [self setRumConfig];
     UIViewController *vc = [[UIViewController alloc] init];
@@ -394,7 +394,7 @@
 #pragma mark ========== Resource ==========
 
 /**
- * 验证 source：resource 的数据格式
+ * Verify the format of source:resource data
  */
 - (void)testAddResourceDataAndFormatChecks{
     [self resourceDataAndFormatChecks:NO];
@@ -542,7 +542,7 @@
     NSArray *newViewHandlers = [sessionHandler valueForKey:@"viewHandlers"];
     XCTAssertTrue(newViewHandlers.count == 0);
 }
-// 当下一个 View Start，不再更新当前 View 的 duration（不再有新的 View 数据，直至 resource 结束）
+// When the next View Start, the duration of the current View is no longer updated (no new View data until the resource ends)
 - (void)testGivenViewUnfinishedResource{
     [self setRumConfig];
     [FTModelHelper startViewWithName:@"TestDuration"];
@@ -673,7 +673,7 @@
 #pragma mark ========== Action ==========
 
 /**
- * 验证 source：action 的数据格式
+ * Verify the format of source:action data
  */
 - (void)testAddActionAndActionDataFormatChecks{
     [self setRumConfig];
@@ -782,7 +782,7 @@
     }];
     XCTAssertTrue(hasActionData);
 }
-// addAction 添加的 Action 不影响 StartA
+// addAction added Action does not affect StartA
 - (void)testAddAction_HasStartAction{
     [self setRumConfig];
     [FTMobileAgent clearAllData];
@@ -814,7 +814,7 @@
     }];
     XCTAssertTrue(hasActionData);
 }
-// 验证：action 最长持续 5s
+// Verify: action lasts 5s
 - (void)testStartAddAction_AppendingResource_maxDuration{
     [self setRumConfig];
     [FTModelHelper startView];
@@ -829,7 +829,7 @@
     NSDate *newDate = [NSDate dateWithTimeIntervalSinceReferenceDate:-6];
     [action setValue:newDate forKey:@"actionStartTime"];
     
-    //把 action 上次记录数据改为 6 秒前 模拟 action 过期
+    //Change the last recorded data of the action to 6 seconds ago to simulate action expiration
     
     [self addLongTaskData:nil];
     [[FTGlobalRumManager sharedInstance].rumManager syncProcess];
@@ -878,7 +878,7 @@
     XCTAssertFalse(hasClickAction);
     [FTModelHelper stopView];
 }
-// start action 0.1s 后新的 event 进入，数据不会绑定到 action 上并且 action 会被 close
+// After 0.1s, a new event enters, the data will not be bound to the action, and the action will be closed
 - (void)testStartAction_0_1s_NoDataBind{
     [self setRumConfig];
     [FTModelHelper startView];
@@ -909,7 +909,7 @@
     [FTModelHelper stopView];
 }
 /**
- * 验证 resource,error,long_task数据 是否同步到action中
+ * Verify whether resource, error, long_task data is synchronized to action
  */
 - (void)testStartAction_0_1s_DataBind{
     [self setRumConfig];
@@ -1154,8 +1154,8 @@
     XCTAssertTrue(newArray.count > oldArray.count);
 }
 /**
- * 验证  FTTraceConfig enableLinkRumData
- * 需要设置 networkTraceType = FTNetworkTraceTypeDDtrace
+ * Verify FTTraceConfig enableLinkRumData
+ * Need to set networkTraceType = FTNetworkTraceTypeDDtrace
  */
 - (void)testTraceLinkRumData{
     FTMobileConfig *config = [[FTMobileConfig alloc]initWithDatakitUrl:self.url];

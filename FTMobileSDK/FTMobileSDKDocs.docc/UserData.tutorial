@@ -1,20 +1,20 @@
 @Tutorial(time: 10) {
-    @Intro(title: "用户的绑定与注销") {
-        绑定用户信息，SDK支持设置用户ID、用户姓名、用户邮箱，还可以添加额外的信息。保留字段 userid、user_name、user_email，设置额外信息的时候应避免重复。
+    @Intro(title: "User Binding and Logout") {
+        Bind user information. The SDK supports setting user ID, user name, and user email, and you can also add extra information. The reserved fields are userid, user_name, and user_email. When setting extra information, avoid duplication with these reserved fields.
 
         
-        @Image(source: binduser, alt: "用户数据")
+        @Image(source: binduser, alt: "User Data")
     }
     
-    @Section(title: "用户数据") {
+    @Section(title: "User Data") {
         @ContentAndMedia {
             
-            @Image(source: binduserdata, alt: "用户数据绑定与注销")
+            @Image(source: binduserdata, alt: "User Data Binding and Logout")
         }
         
         @Steps {
             @Step {
-                用户数据绑定
+                User Data Binding
                 
                 ``FTMobileSDK/FTMobileAgent/bindUserWithUserID:``
                 ``FTMobileSDK/FTMobileAgent/bindUserWithUserID:userName:userEmail:``
@@ -23,7 +23,7 @@
             }
             
             @Step {
-                用户数据注销
+                User Data Logout
                 
                 ``FTMobileSDK/FTMobileAgent/logout``
                 @Code(name: "BindUser.swift", file: UserData2.swift,previousFile:UserData.swift)
@@ -32,27 +32,27 @@
     }
     @Assessments {
            @MultipleChoice {
-               用户信息的保留字段有哪些？
+               What are the reserved fields for user information?
 
                @Choice(isCorrect: false) {
                    userid 
 
                    @Justification(reaction: "Try again!") {
-                       不仅仅是这些 ！
+                       Not just these!
                    }
                }
                @Choice(isCorrect: false) {
-                   userid、user_name
+                   userid, user_name
 
                    @Justification(reaction: "That's right!") {
-                       不仅仅是这些 ！
+                       Not just these!
                    }
                } 
                @Choice(isCorrect: true) {
-                   userid、user_name、user_email
+                   userid, user_name, user_email
 
                    @Justification(reaction: "That's right!") {
-                       正确 .
+                       Correct.
                    }
                }
            } 

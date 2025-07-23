@@ -2,7 +2,7 @@
 //  FTAutoTrackTest.m
 //  ft-sdk-iosTestUnitTests
 //
-//  Created by 胡蕾蕾 on 2019/12/25.
+//  Created by hulilei on 2019/12/25.
 //  Copyright © 2019 hll. All rights reserved.
 //
 #import <KIF/KIF.h>
@@ -213,7 +213,7 @@
         return excluded;
     };
     [[FTMobileAgent sharedInstance] startRumWithConfigOptions:rumConfig];
-    XCTestExpectation *expectation = [self expectationWithDescription:@"异步操作timeout"];
+    XCTestExpectation *expectation = [self expectationWithDescription:@"Async operation timeout"];
     [FTModelHelper startView];
     [self networkUploadHandler:^(NSURLResponse *response, NSError *error) {
         [expectation fulfill];
@@ -244,7 +244,7 @@
     [[FTMobileAgent sharedInstance] isIntakeUrl:^BOOL(NSURL * _Nonnull url) {
         return trace;
     }];
-    XCTestExpectation *expectation= [self expectationWithDescription:@"异步操作timeout"];
+    XCTestExpectation *expectation= [self expectationWithDescription:@"Async operation timeout"];
     [FTModelHelper startView];
     [self networkUploadHandler:^(NSURLResponse *response, NSError *error) {
         [expectation fulfill];

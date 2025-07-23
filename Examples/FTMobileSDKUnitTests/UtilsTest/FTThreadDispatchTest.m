@@ -23,7 +23,7 @@
     // Put teardown code here. This method is called after the invocation of each test method in the class.
 }
 /**
- * 主线程同步执行
+ * Main thread synchronous execution
  */
 - (void)testPerformBlockDispatchMainSyncSafe{
     __block NSString *string = @"1";
@@ -46,7 +46,7 @@
     });
 }
 /**
- * 主线程异步执行
+ * Main thread asynchronous execution
  */
 - (void)testPerformBlockDispatchMainAsync{
     __block NSString *string = @"1";

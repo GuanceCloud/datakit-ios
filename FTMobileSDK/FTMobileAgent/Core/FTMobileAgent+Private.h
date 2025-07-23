@@ -2,7 +2,7 @@
 //  FTMobileAgent+Private.h
 //  FTMobileAgent
 //
-//  Created by 胡蕾蕾 on 2020/5/14.
+//  Created by hulilei on 2020/5/14.
 //  Copyright © 2020 hll. All rights reserved.
 //
 
@@ -16,7 +16,7 @@
 @class FTPresetProperty,FTTracer;
 
 @interface FTMobileAgent (Private)
-/// 等待正在处理数据全部处理
+/// Wait for all data being processed to complete
 - (void)syncProcess;
 @end
 #endif /* FTMobileAgent_Private_h */

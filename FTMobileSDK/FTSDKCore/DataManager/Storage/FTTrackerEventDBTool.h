@@ -2,7 +2,7 @@
 //  ZYSQLite3.h
 //  FTMobileAgent
 //
-//  Created by 胡蕾蕾 on 2019/12/2.
+//  Created by hulilei on 2019/12/2.
 //  Copyright © 2019 hll. All rights reserved.
 //
 
@@ -12,40 +12,40 @@ NS_ASSUME_NONNULL_BEGIN
 #define FT_DB_TRACE_EVENT_TABLE_NAME @"trace_event"
 @class FTRecordModel;
 
-/// 操作数据库数据的工具
+/// Tool for operating database data
 @interface FTTrackerEventDBTool : NSObject
-/// 单例
+/// Singleton
 + (nullable FTTrackerEventDBTool *)sharedManger;
-/// 单例
-/// @param dbPath 数据库地址
-/// @param dbName 数据库名称
+/// Singleton
+/// @param dbPath database path
+/// @param dbName database name
 + (nullable FTTrackerEventDBTool *)shareDatabaseWithPath:(nullable NSString *)dbPath dbName:(nullable NSString *)dbName;
 
-/// 向数据库中添加一个对象
-/// @param item 要记录的数据
+/// Add an object to the database
+/// @param item data to be recorded
 -(BOOL)insertItem:(FTRecordModel *)item;
 
-/// 向数据库中添加一组对象
-/// @param items 要记录的数据
+/// Add a group of objects to the database
+/// @param items data to be recorded
 -(BOOL)insertItemsWithDatas:(NSArray<FTRecordModel*> *)items;
 
-/// 获取数据库所有的数据
+/// Get all data from the database
 -(NSArray *)getAllDatas;
 
-/// 根据指定类型、数量获取从数据库前端获取数据
-/// @param recordSize 获取数据条数
-/// @param type 数据类型
+/// Get data from the front end of the database according to specified type and quantity
+/// @param recordSize number of data records to get
+/// @param type data type
 -(NSArray *)getFirstRecords:(NSUInteger)recordSize withType:(NSString *)type;
-/// 根据类型删除已上传的数据
-/// @param type 数据类型
-/// @param identify 删除在此 _id 之前的数据
+/// Delete uploaded data according to type
+/// @param type data type
+/// @param identify delete data before this _id
 -(BOOL)deleteItemWithType:(NSString *)type identify:(NSString *)identify count:(NSInteger)count;
 
-/// 删除所有数据
+/// Delete all data
 -(BOOL)deleteAllDatas;
 
-/// 删除日志数据
-/// @param count 删除前 count 个数据
+/// Delete log data
+/// @param count delete the first count data
 -(BOOL)deleteDataWithType:(NSString *)type count:(NSInteger)count;
 
 -(BOOL)deleteDataWithCount:(NSInteger)count;
@@ -57,13 +57,13 @@ NS_ASSUME_NONNULL_BEGIN
 
 - (BOOL)updateDatasWithType:(NSString *)type toType:(NSString *)toType toTime:(long long)toTime;
 - (BOOL)updateDatasWithType:(NSString *)type toType:(NSString *)toType fromTime:(long long)fromTime toTime:(long long)toTime;
-/// 获取数据库数据总数
+/// Get total number of database data
 - (NSInteger)getDatasCount;
 
 - (NSInteger)getUploadDatasCount;
 
-/// 获取数据库某类型数据总数
-/// @param type 数据类型
+/// Get total number of database data of a certain type
+/// @param type data type
 - (NSInteger)getDatasCountWithType:(NSString *)type;
 
 - (long)checkDatabaseSize;

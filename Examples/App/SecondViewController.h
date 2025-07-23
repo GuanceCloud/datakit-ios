@@ -2,7 +2,7 @@
 //  SecondViewController.h
 //  ft-sdk-iosTest
 //
-//  Created by 胡蕾蕾 on 2020/3/2.
+//  Created by hulilei on 2020/3/2.
 //  Copyright © 2020 hll. All rights reserved.
 //
 

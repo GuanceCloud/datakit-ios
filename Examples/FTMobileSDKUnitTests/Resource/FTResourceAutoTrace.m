@@ -51,20 +51,20 @@
 }
 - (void)testAutoTraceResource_NoDelegate{
     [self initSDKWithEnableAutoTraceResource:YES];
-    XCTestExpectation *expectation= [self expectationWithDescription:@"异步操作timeout"];
+    XCTestExpectation *expectation= [self expectationWithDescription:@"Async operation timeout"];
     [self networkUploadHandler:nil trace:YES completionHandler:^(NSURLResponse *response, NSError *error) {
         [expectation fulfill];
     }];
 }
 - (void)testDisableAutoTraceResource_NoDelegate{
     [self initSDKWithEnableAutoTraceResource:NO];
-    XCTestExpectation *expectation= [self expectationWithDescription:@"异步操作timeout"];
+    XCTestExpectation *expectation= [self expectationWithDescription:@"Async operation timeout"];
     [self networkUploadHandler:nil trace:NO completionHandler:^(NSURLResponse *response, NSError *error) {
         [expectation fulfill];
     }];
 }
 - (void)testURLSessionCreateBeforeSDKInit_NoDelegate{
-    XCTestExpectation *expectation= [self expectationWithDescription:@"异步操作timeout"];
+    XCTestExpectation *expectation= [self expectationWithDescription:@"Async operation timeout"];
     NSURLSession *session = [NSURLSession sessionWithConfiguration:[NSURLSessionConfiguration defaultSessionConfiguration]];
     [self initSDKWithEnableAutoTraceResource:YES];
     [self networkUploadHandlerSession:session autoTrace:YES completionHandler:^(NSURLResponse *response, NSError *error) {
@@ -73,7 +73,7 @@
 }
 - (void)testAutoTraceResource_DelegateNoneMethod{
     [self initSDKWithEnableAutoTraceResource:YES];
-    XCTestExpectation *expectation= [self expectationWithDescription:@"异步操作timeout"];
+    XCTestExpectation *expectation= [self expectationWithDescription:@"Async operation timeout"];
     TestSessionDelegate_None *delegate = [[TestSessionDelegate_None alloc]init];
     [self networkUploadHandler:delegate trace:YES completionHandler:^(NSURLResponse *response, NSError *error) {
         [expectation fulfill];
@@ -81,14 +81,14 @@
 }
 - (void)testDisableAutoTraceResource_DelegateNoneMethod{
     [self initSDKWithEnableAutoTraceResource:NO];
-    XCTestExpectation *expectation= [self expectationWithDescription:@"异步操作timeout"];
+    XCTestExpectation *expectation= [self expectationWithDescription:@"Async operation timeout"];
     TestSessionDelegate_None *delegate = [[TestSessionDelegate_None alloc]init];
     [self networkUploadHandler:delegate trace:NO completionHandler:^(NSURLResponse *response, NSError *error) {
         [expectation fulfill];
     }];
 }
 - (void)testURLSessionCreateBeforeSDKInit_DelegateNoneMethod{
-    XCTestExpectation *expectation= [self expectationWithDescription:@"异步操作timeout"];
+    XCTestExpectation *expectation= [self expectationWithDescription:@"Async operation timeout"];
     TestSessionDelegate_None *delegate = [[TestSessionDelegate_None alloc]init];
     NSURLSession *session = [NSURLSession sessionWithConfiguration:[NSURLSessionConfiguration defaultSessionConfiguration] delegate:delegate delegateQueue:nil];
     [self initSDKWithEnableAutoTraceResource:YES];
@@ -98,7 +98,7 @@
 }
 - (void)testAutoTraceResource_DelegateAllMethod{
     [self initSDKWithEnableAutoTraceResource:YES];
-    XCTestExpectation *expectation= [self expectationWithDescription:@"异步操作timeout"];
+    XCTestExpectation *expectation= [self expectationWithDescription:@"Async operation timeout"];
     TestSessionDelegate *delegate = [[TestSessionDelegate alloc]initWithCompletionHandler:^{
         [expectation fulfill];
     }];
@@ -106,14 +106,14 @@
 }
 - (void)testDisableAutoTraceResource_DelegateAllMethod{
     [self initSDKWithEnableAutoTraceResource:NO];
-    XCTestExpectation *expectation= [self expectationWithDescription:@"异步操作timeout"];
+    XCTestExpectation *expectation= [self expectationWithDescription:@"Async operation timeout"];
     TestSessionDelegate *delegate = [[TestSessionDelegate alloc]initWithCompletionHandler:^{
         [expectation fulfill];
     }];
     [self networkUploadHandler:delegate trace:NO completionHandler:nil];
 }
 - (void)testURLSessionCreateBeforeSDKInit_DelegateAllMethod{
-    XCTestExpectation *expectation= [self expectationWithDescription:@"异步操作timeout"];
+    XCTestExpectation *expectation= [self expectationWithDescription:@"Async operation timeout"];
     TestSessionDelegate *delegate = [[TestSessionDelegate alloc]initWithCompletionHandler:^{
         [expectation fulfill];
     }];
@@ -123,7 +123,7 @@
 }
 - (void)testAutoTraceResource_DelegateNoCollectingMetrics{
     [self initSDKWithEnableAutoTraceResource:YES];
-    XCTestExpectation *expectation= [self expectationWithDescription:@"异步操作timeout"];
+    XCTestExpectation *expectation= [self expectationWithDescription:@"Async operation timeout"];
     TestSessionDelegate_NoCollectingMetrics *delegate = [[TestSessionDelegate_NoCollectingMetrics alloc]initWithCompletionHandler:^{
         [expectation fulfill];
     }];
@@ -131,14 +131,14 @@
 }
 - (void)testDisableAutoTraceResource_DelegateNoCollectingMetrics{
     [self initSDKWithEnableAutoTraceResource:NO];
-    XCTestExpectation *expectation= [self expectationWithDescription:@"异步操作timeout"];
+    XCTestExpectation *expectation= [self expectationWithDescription:@"Async operation timeout"];
     TestSessionDelegate_NoCollectingMetrics *delegate = [[TestSessionDelegate_NoCollectingMetrics alloc]initWithCompletionHandler:^{
         [expectation fulfill];
     }];
     [self networkUploadHandler:delegate trace:NO completionHandler:nil];
 }
 - (void)testURLSessionCreateBeforeSDKInit_DelegateNoCollectingMetrics{
-    XCTestExpectation *expectation= [self expectationWithDescription:@"异步操作timeout"];
+    XCTestExpectation *expectation= [self expectationWithDescription:@"Async operation timeout"];
     TestSessionDelegate_NoCollectingMetrics *delegate = [[TestSessionDelegate_NoCollectingMetrics alloc]initWithCompletionHandler:^{
         [expectation fulfill];
     }];
@@ -148,7 +148,7 @@
 }
 - (void)testAutoTraceResource_DelegateOnlyCollectingMetrics{
     [self initSDKWithEnableAutoTraceResource:YES];
-    XCTestExpectation *expectation= [self expectationWithDescription:@"异步操作timeout"];
+    XCTestExpectation *expectation= [self expectationWithDescription:@"Async operation timeout"];
     TestSessionDelegate_OnlyCollectingMetrics *delegate = [[TestSessionDelegate_OnlyCollectingMetrics alloc]init];
     [self networkUploadHandler:delegate trace:YES completionHandler:^(NSURLResponse *response, NSError *error) {
         [expectation fulfill];
@@ -157,14 +157,14 @@
 }
 - (void)testDisableAutoTraceResource_DelegateOnlyCollectingMetrics{
     [self initSDKWithEnableAutoTraceResource:NO];
-    XCTestExpectation *expectation= [self expectationWithDescription:@"异步操作timeout"];
+    XCTestExpectation *expectation= [self expectationWithDescription:@"Async operation timeout"];
     TestSessionDelegate_OnlyCollectingMetrics *delegate = [[TestSessionDelegate_OnlyCollectingMetrics alloc]init];
     [self networkUploadHandler:delegate trace:NO completionHandler:^(NSURLResponse *response, NSError *error) {
         [expectation fulfill];
     }];
 }
 - (void)testIsNotSDKURL{
-    // sdk url 有端口号时
+    // When SDK URL has port number
     NSString *sdkURLStr = @"http://www.test.com:9529";
     [[FTURLSessionInstrumentation sharedInstance] setSdkUrlStr:sdkURLStr serviceName:@"test"];
     
@@ -176,7 +176,7 @@
     
     [[FTURLSessionInstrumentation sharedInstance] shutDown];
     
-    // sdk url 无端口号时
+    // When SDK URL has no port number
     NSString *sdkURLStr2 = @"http://www.test.com";
     [[FTURLSessionInstrumentation sharedInstance] setSdkUrlStr:sdkURLStr2 serviceName:@"test"];
     
@@ -189,7 +189,7 @@
     [[FTURLSessionInstrumentation sharedInstance] shutDown];
     
     
-    // 未设置 sdk url 时
+    // When SDK URL is not set
     XCTAssertTrue([[FTURLSessionInstrumentation sharedInstance] isNotSDKInsideUrl:nil] == NO);
     XCTAssertTrue([[FTURLSessionInstrumentation sharedInstance] isNotSDKInsideUrl:[NSURL URLWithString:@"http://www.test.com/v1/write/rum"]] == NO);
     XCTAssertTrue([[FTURLSessionInstrumentation sharedInstance] isNotSDKInsideUrl:[NSURL URLWithString:@"http://www.test.com"]] == NO);
@@ -200,7 +200,7 @@
    
 }
 - (void)testURLSessionCreateBeforeSDKInit_DelegateOnlyCollectingMetrics{
-    XCTestExpectation *expectation= [self expectationWithDescription:@"异步操作timeout"];
+    XCTestExpectation *expectation= [self expectationWithDescription:@"Async operation timeout"];
     TestSessionDelegate_OnlyCollectingMetrics *delegate = [[TestSessionDelegate_OnlyCollectingMetrics alloc]init];
     NSURLSession *session = [NSURLSession sessionWithConfiguration:[NSURLSessionConfiguration defaultSessionConfiguration] delegate:delegate delegateQueue:nil];
     [self initSDKWithEnableAutoTraceResource:YES];

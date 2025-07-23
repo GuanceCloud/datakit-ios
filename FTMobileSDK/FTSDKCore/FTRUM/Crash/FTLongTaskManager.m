@@ -211,7 +211,7 @@ void *FTLongTaskManagerQueueTag = &FTLongTaskManagerQueueTag;
             if(error){
                 goto ended;
             }
-            //有数据，需要区分是 longtask 还是 anr
+            //Has data, need to distinguish between longtask and anr
             if(content && content.length>0){
                 NSArray *datas = [content componentsSeparatedByString:FTBoundary];
                 if(datas.count != 2){
@@ -243,7 +243,7 @@ void *FTLongTaskManagerQueueTag = &FTLongTaskManagerQueueTag;
                 [fields setValue:duration forKey:FT_DURATION];
                 [fields setValue:backtrace forKey:FT_KEY_LONG_TASK_STACK];
                 [fields addEntriesFromDictionary:sessionFields];
-                //更新View
+                //Update View
                 NSDictionary *lastViews  = dict[@"view"];
                 BOOL sessionOnError = NO;
                 if(lastViews){
@@ -262,7 +262,7 @@ void *FTLongTaskManagerQueueTag = &FTLongTaskManagerQueueTag;
                 }
                 [strongSelf.dependencies.writer rumWrite:FT_RUM_SOURCE_LONG_TASK tags:tags fields:fields time:startTime updateTime:0 cache:sessionOnError];
                 
-                //判断是否是 ANR,是则添加 ANR 数据
+                //Determine if it's ANR, if so add ANR data
                 if(isAnr){
                     NSMutableDictionary *anrTags = [NSMutableDictionary dictionary];
                     [anrTags setValue:@"anr_error" forKey:FT_KEY_ERROR_TYPE];

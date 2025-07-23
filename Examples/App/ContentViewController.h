@@ -11,7 +11,7 @@
 NS_ASSUME_NONNULL_BEGIN
 
 @interface ContentViewController : UIViewController
-// 页面索引和背景颜色
+// Page index and background color
 @property (nonatomic, assign) NSInteger pageIndex;
 @property (nonatomic, strong) UIColor *bgColor;
 

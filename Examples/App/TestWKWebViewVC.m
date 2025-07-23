@@ -2,7 +2,7 @@
 //  TestWKWebViewVC.m
 //  ft-sdk-iosTest
 //
-//  Created by 胡蕾蕾 on 2020/5/28.
+//  Created by hulilei on 2020/5/28.
 //  Copyright © 2020 hll. All rights reserved.
 //
 
@@ -49,7 +49,7 @@
 }
 - (void)test_addWebViewRumView:(void(^)(void))complete{
     [self.webView evaluateJavaScript:@"testRumView()" completionHandler:^(id _Nullable response, NSError * _Nullable error) {
-        //js函数调用return,这里才会有东西,否则无任何信息。
+        // JS function call return, there will be content here, otherwise no information.
         NSLog(@"response: %@ error: %@", response, error);
         if(complete){
             complete();
@@ -58,7 +58,7 @@
 }
 - (void)test_addWebViewRumViewNano:(void(^)(void))complete{
     [self.webView evaluateJavaScript:@"testOldRumView()" completionHandler:^(id _Nullable response, NSError * _Nullable error) {
-        //js函数调用return,这里才会有东西,否则无任何信息。
+        // JS function call return, there will be content here, otherwise no information.
         NSLog(@"response: %@ error: %@", response, error);
         if(complete){
             complete();

@@ -2,7 +2,7 @@
 //  FTSessionManger.h
 //  FTMobileAgent
 //
-//  Created by 胡蕾蕾 on 2021/5/21.
+//  Created by hulilei on 2021/5/21.
 //  Copyright © 2021 hll. All rights reserved.
 //
 
@@ -15,13 +15,13 @@
 @class FTRumConfig,FTResourceMetricsModel,FTResourceContentModel,FTRUMMonitor;
 
 NS_ASSUME_NONNULL_BEGIN
-/// App 启动类型
+/// App launch type
 typedef NS_ENUM(NSUInteger, FTLaunchType) {
-    /// 热启动
+    /// Hot launch
     FTLaunchHot,
-    /// 冷启动
+    /// Cold launch
     FTLaunchCold,
-    /// 预启动，在APP启动前，系统进行了预加载
+    /// Warm launch, system preloads before APP launch
     FTLaunchWarm
 };
 @interface FTRUMManager : FTRUMHandler<FTRumResourceProtocol,FTErrorDataDelegate,FTRumDatasProtocol,FTLinkRumDataProvider>
@@ -32,37 +32,37 @@ typedef NS_ENUM(NSUInteger, FTLaunchType) {
 
 -(void)notifyRumInit;
 #pragma mark - resource -
-/// HTTP 请求开始
+/// HTTP request start
 ///
 /// - Parameters:
-///   - key: 请求标识
+///   - key: Request identifier
 - (void)startResourceWithKey:(NSString *)key;
-/// HTTP 请求开始
+/// HTTP request start
 /// - Parameters:
-///   - key: 请求标识
-///   - property: 事件自定义属性(可选)
+///   - key: Request identifier
+///   - property: Custom event properties (optional)
 - (void)startResourceWithKey:(NSString *)key property:(nullable NSDictionary *)property;
 
-/// HTTP 请求数据
+/// HTTP request data
 ///
 /// - Parameters:
-///   - key: 请求标识
-///   - metrics: 请求相关性能属性
-///   - content: 请求相关数据
+///   - key: Request identifier
+///   - metrics: Request-related performance properties
+///   - content: Request-related data
 - (void)addResourceWithKey:(NSString *)key metrics:(nullable FTResourceMetricsModel *)metrics content:(FTResourceContentModel *)content;
-/// HTTP 请求结束
+/// HTTP request end
 ///
 /// - Parameters:
-///   - key: 请求标识
+///   - key: Request identifier
 - (void)stopResourceWithKey:(NSString *)key;
-/// HTTP 请求结束
+/// HTTP request end
 /// - Parameters:
-///   - key: 请求标识
-///   - property: 事件自定义属性(可选)
+///   - key: Request identifier
+///   - property: Custom event properties (optional)
 - (void)stopResourceWithKey:(NSString *)key property:(nullable NSDictionary *)property;
 #pragma mark - webView js -
 
-/// 添加 WebView 数据
+/// Add WebView data
 /// - Parameters:
 ///   - measurement: measurement description
 ///   - tags: tags description
@@ -71,94 +71,94 @@ typedef NS_ENUM(NSUInteger, FTLaunchType) {
 - (void)addWebViewData:(NSString *)measurement tags:(NSDictionary *)tags fields:(NSDictionary *)fields tm:(long long)tm;
 #pragma mark - view -
 /**
- * 创建页面
- * @param viewName     页面名称
- * @param loadTime     页面加载时间
+ * Create page
+ * @param viewName     Page name
+ * @param loadTime     Page load time
  */
 -(void)onCreateView:(NSString *)viewName loadTime:(NSNumber *)loadTime;
 /**
- * 进入页面 viewId 内部管理
- * @param viewName        页面名称
+ * Enter page, viewId managed internally
+ * @param viewName        Page name
  */
 -(void)startViewWithName:(NSString *)viewName;
 -(void)startViewWithName:(NSString *)viewName property:(nullable NSDictionary *)property;
 /**
- * 进入页面
- * @param viewId          页面id
- * @param viewName        页面名称
+ * Enter page
+ * @param viewId          Page id
+ * @param viewName        Page name
  */
 -(void)startViewWithViewID:(NSString *)viewId viewName:(NSString *)viewName property:(nullable NSDictionary *)property;
 
-/// 离开页面
+/// Leave page
 -(void)stopView;
 /**
- * 离开页面
- * @param viewId         页面id
+ * Leave page
+ * @param viewId         Page id
  */
 -(void)stopViewWithViewID:(nullable NSString *)viewId property:(nullable NSDictionary *)property;
 /**
- * 离开页面
+ * Leave page
  */
 -(void)stopViewWithProperty:(nullable NSDictionary *)property;
 
 #pragma mark - Action -
 
-/// 启动 RUM Action。
+/// Start RUM Action.
 ///
-/// RUM 会绑定该 Action 可能触发的 Resource、Error、LongTask 事件。避免在 0.1 s 内多次添加，同一个 View 在同一时间只会关联一个 Action，在上一个 Action 未结束时，新增的 Action 会被丢弃。
-/// 与 `addAction:actionType:property` 方法添加 Action 互不影响。
+/// RUM will bind Resource, Error, LongTask events that this Action may trigger. Avoid adding multiple times within 0.1s. Only one Action can be associated with the same View at the same time. New Actions will be discarded if the previous Action hasn't ended.
+/// Does not interfere with Actions added by `addAction:actionType:property` method.
 ///
 /// - Parameters:
-///   - actionName: 事件名称
-///   - actionType: 事件类型
-///   - property: 事件自定义属性(可选)
+///   - actionName: Event name
+///   - actionType: Event type
+///   - property: Custom event properties (optional)
 - (void)startAction:(NSString *)actionName actionType:(NSString *)actionType property:(nullable NSDictionary *)property;
 
-/// 添加 Action 事件.无 duration，无丢弃逻辑
+/// Add Action event. No duration, no discard logic
 ///
-/// 与 `startAction:actionType:property:` 启动的 RUM Action 互不影响。
+/// Does not interfere with RUM Actions started by `startAction:actionType:property:`.
 /// - Parameters:
-///   - actionName: 事件名称
-///   - actionType: 事件类型
-///   - property: 事件自定义属性(可选)
+///   - actionName: Event name
+///   - actionType: Event type
+///   - property: Custom event properties (optional)
 - (void)addAction:(NSString *)actionName actionType:(NSString *)actionType property:(nullable NSDictionary *)property;
 /**
- * 应用启动
- * @param type      启动类型
- * @param duration  启动时长
+ * App launch
+ * @param type      Launch type
+ * @param duration  Launch duration
  */
 - (void)addLaunch:(FTLaunchType)type launchTime:(NSDate*)time duration:(NSNumber *)duration;
 
 #pragma mark - Error / Long Task -
-/// 崩溃
-/// @param type 错误类型:java_crash/native_crash/abort/ios_crash
-/// @param message 错误信息
-/// @param stack 错误堆栈
+/// Crash
+/// @param type Error type: java_crash/native_crash/abort/ios_crash
+/// @param message Error message
+/// @param stack Error stack
 - (void)addErrorWithType:(nonnull NSString *)type message:(nonnull NSString *)message stack:(nonnull NSString *)stack;
 /**
- * 崩溃
- * @param type       错误类型:java_crash/native_crash/abort/ios_crash
- * @param message    错误信息
- * @param stack      错误堆栈
- * @param property   事件属性(可选)
+ * Crash
+ * @param type       Error type: java_crash/native_crash/abort/ios_crash
+ * @param message    Error message
+ * @param stack      Error stack
+ * @param property   Event properties (optional)
  */
 - (void)addErrorWithType:(NSString *)type message:(NSString *)message stack:(NSString *)stack property:(nullable NSDictionary *)property;
 
 - (void)addErrorWithType:(nonnull NSString *)type message:(nonnull NSString *)message stack:(nonnull NSString *)stack date:(NSDate *)date;
-/// 卡顿
-/// @param stack 卡顿堆栈
-/// @param duration 卡顿时长
+/// Freeze
+/// @param stack Freeze stack
+/// @param duration Freeze duration
 - (void)addLongTaskWithStack:(nonnull NSString *)stack duration:(nonnull NSNumber *)duration startTime:(long long)time;
 /**
- * 卡顿
- * @param stack      卡顿堆栈
- * @param duration   卡顿时长
- * @param property   事件属性(可选)
+ * Freeze
+ * @param stack      Freeze stack
+ * @param duration   Freeze duration
+ * @param property   Event properties (optional)
  */
 - (void)addLongTaskWithStack:(NSString *)stack duration:(NSNumber *)duration startTime:(long long)time property:(nullable NSDictionary *)property;
 #pragma mark - get LinkRumData -
 
-/// 等待 rum 正在处理数据全部处理
+/// Wait for all rum processing data to be processed
 - (void)syncProcess;
 @end
 

@@ -2,7 +2,7 @@
 //  FTANRMonitor.h
 //  FTMobileAgent
 //
-//  Created by 胡蕾蕾 on 2020/9/28.
+//  Created by hulilei on 2020/9/28.
 //  Copyright © 2020 hll. All rights reserved.
 //
 
@@ -16,7 +16,7 @@ NS_ASSUME_NONNULL_BEGIN
 @end
 @interface FTLongTaskDetector : NSObject
 
-/// 超过多少毫秒为一次 longTask 默认 250ms
+/// How many milliseconds exceed for one longTask, default 250ms
 @property (nonatomic, assign) long limitFreezeMillisecond;
 
 -(instancetype)initWithDelegate:(id<FTLongTaskProtocol>)delegate;

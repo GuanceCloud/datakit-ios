@@ -10,37 +10,37 @@
 #import "FTURLSessionDelegate.h"
 NS_ASSUME_NONNULL_BEGIN
 
-/// URL Session 的拦截器，实现 RUM Resource 数据的采集，Trace 链路追踪
+/// URL Session interceptor, implements RUM Resource data collection, Trace link tracking
 @interface FTURLSessionInterceptor : NSObject
 
-/// 单例
+/// Singleton
 + (instancetype)shared;
 
-/// 告诉拦截器修改 URL 请求，开启自动链路追踪时，调用此方法会在请求头添加链路信息，
-/// 若未开启，则直接返回传入 request
-/// - Parameter request: 初始请求
+/// Tell the interceptor to modify URL request, when automatic link tracking is enabled, calling this method will add link information to the request header,
+/// if not enabled, directly return the passed request
+/// - Parameter request: Initial request
 - (NSURLRequest *)interceptRequest:(NSURLRequest *)request;
 
-/// 告诉拦截器创建了一个任务
-/// - Parameter task: 任务
+/// Tell the interceptor that a task has been created
+/// - Parameter task: Task
 - (void)interceptTask:(NSURLSessionTask *)task;
 
-/// 告诉拦截器任务已经收到了一些预期的数据。
+/// Tell the interceptor that the task has received some expected data.
 /// - Parameters:
-///   - task: 提供数据的数据任务。
-///   - data: 数据对象
+///   - task: The data task that provides the data.
+///   - data: Data object
 - (void)taskReceivedData:(NSURLSessionTask *)task data:(NSData *)data;
 
-/// 告诉拦截器已经为给定任务收集了指标。
+/// Tell the interceptor that metrics have been collected for the given task.
 /// - Parameters:
-///   - task: 收集了指标的任务
-///   - metrics: 收集的指标。
+///   - task: The task for which metrics were collected
+///   - metrics: The collected metrics.
 - (void)taskMetricsCollected:(NSURLSessionTask *)task metrics:(NSURLSessionTaskMetrics *)metrics;
-/// 告诉拦截器任务已经完成
+/// Tell the interceptor that the task has completed
 /// - Parameters:
-///   - task: 完成数据传输的任务。
-///   - error:  如果发生错误，则返回一个错误对象，表示传输如何失败，否则返回`nil`。
-///   - extraProvider: 额外添加的自定义 RUM 资源属性
+///   - task: The task that completed data transmission.
+///   - error:  If an error occurred, returns an error object indicating how the transmission failed, otherwise returns `nil`.
+///   - extraProvider: Additional custom RUM resource properties
 - (void)taskCompleted:(NSURLSessionTask *)task error:(nullable NSError *)error extraProvider:(nullable ResourcePropertyProvider)extraProvider;
 @end
 

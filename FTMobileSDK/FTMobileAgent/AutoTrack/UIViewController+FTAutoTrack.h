@@ -2,7 +2,7 @@
 //  UIViewController+FT_RootVC.h
 //  FTAutoTrack
 //
-//  Created by 胡蕾蕾 on 2019/12/2.
+//  Created by hulilei on 2019/12/2.
 //  Copyright © 2019 hll. All rights reserved.
 //
 
@@ -21,7 +21,7 @@ NS_ASSUME_NONNULL_BEGIN
 
 @interface UINavigationController (FTAutoTrack)
 
-/// 上一次页面，防止侧滑/下滑重复采集 View 事件
+/// The last page, prevent duplicate collection of View events from side sliding/sliding
 @property (nonatomic, strong,nullable) UIViewController *ft_previousViewController;
 
 @end

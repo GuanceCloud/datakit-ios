@@ -59,23 +59,23 @@ function findSimulator(){
     TEST_SCHEME="$1"
     TEST_SIMULATOR="$2"
     
-    # tvOS 测试用例
+    # tvOS test cases
     SIMULATOR_INFO=$(xcodebuild -workspace FTMobileSDK.xcworkspace -scheme ${TEST_SCHEME}  -showdestinations | grep "${TEST_SIMULATOR}" | grep "OS:" | head -1)
         
-    # 检查是否找到模拟器
+    # Check if simulator is found
     if [ -z "$SIMULATOR_INFO" ]; then
     echo "Error: No ${TEST_SIMULATOR} found!"
     exit 1
     fi
     
-    # 提取模拟器的系统版本和 ID
+    # Extract simulator OS version and ID
     SIMULATOR_OS=$(echo "$SIMULATOR_INFO" | awk -F 'OS:' '{print $2}' | awk -F ',' '{print $1}')
     SIMULATOR_ID=$(echo "$SIMULATOR_INFO" | awk -F 'id:' '{print $2}' | awk -F ',' '{print $1}')
     
-    # 构建 SIMULATOR_DESTINATION 字符串
+    # Build SIMULATOR_DESTINATION string
     SIMULATOR_DESTINATION="platform=${TEST_SIMULATOR},OS=$SIMULATOR_OS,id=$SIMULATOR_ID"
     
-    # 检查返回值是否为空
+    # Check if return value is empty
     if [ -z "$SIMULATOR_DESTINATION" ]; then
     echo "Error: Failed to get ${TEST_SIMULATOR} destination."
     exit 1
@@ -86,7 +86,7 @@ function findSimulator(){
 
 IOS_DESTINATION=$(findSimulator "FTMobileSDKUnitTestsForCmd" "iOS Simulator")
 
-## 测试 iOS
+## Test iOS
 xcodebuild test -workspace FTMobileSDK.xcworkspace \
 -scheme FTMobileSDKUnitTestsForCmd \
 -only-testing FTMobileSDKUnitTests \
@@ -94,7 +94,7 @@ xcodebuild test -workspace FTMobileSDK.xcworkspace \
 
 TVOS_DESTINATION=$(findSimulator "FTMobileSDKUnitTestsTVOSForCmd" "tvOS Simulator")
 
-## 测试 tvOS
+## Test tvOS
 xcodebuild test -workspace FTMobileSDK.xcworkspace \
 -scheme FTMobileSDKUnitTestsTVOSForCmd \
 -only-testing FTMobileSDKUnitTests-tvOS \

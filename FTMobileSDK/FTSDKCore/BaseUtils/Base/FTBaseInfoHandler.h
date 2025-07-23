@@ -2,7 +2,7 @@
 //  FTBaseInfoHandler.h
 //  FTMobileAgent
 //
-//  Created by 胡蕾蕾 on 2019/12/3.
+//  Created by hulilei on 2019/12/3.
 //  Copyright © 2019 hll. All rights reserved.
 //
 
@@ -10,31 +10,31 @@
 #import "FTSDKCompat.h"
 NS_ASSUME_NONNULL_BEGIN
 
-/// 一些工具方法
+/// Utility methods
 @interface FTBaseInfoHandler : NSObject
 
 
-/// 将字典转换成字符串
-/// - Parameter dict: 待转化字典
+/// Convert dictionary to string
+/// - Parameter dict: Dictionary to convert
 + (NSString *)convertToStringData:(NSDictionary *)dict;
 
-/// url_path_group 处理
+/// url_path_group processing
 /// - Parameter url: URL
 + (NSString *)replaceNumberCharByUrl:(NSURL *)url;
 
-/// 采样率判断
-/// - Parameter sampling: 用户设置的采样率
-/// - Returns: 是否进行采样
+/// Sampling rate determination
+/// - Parameter sampling: User-set sampling rate
+/// - Returns: Whether to perform sampling
 + (BOOL)randomSampling:(int)sampling;
-/// 获取随机 uuid 字符串（无`-`、全小写）
+/// Get random uuid string (no `-`, all lowercase)
 + (NSString *)randomUUID;
 + (NSString *)random16UUID;
 #if FT_IOS
-/// 电话运营商
+/// Telephony carrier
 +(NSString *)telephonyCarrier;
 #endif
-/// 设备 IP Address
-/// - Parameter preferIPv4 是否优先IPv4
+/// Device IP Address
+/// - Parameter preferIPv4 Whether to prefer IPv4
 + (NSString *)cellularIPAddress:(BOOL)preferIPv4;
 
 

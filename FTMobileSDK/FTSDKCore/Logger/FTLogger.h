@@ -12,61 +12,61 @@
 NS_ASSUME_NONNULL_BEGIN
 
 
-/// 添加自定义日志接口协议
+/// Add custom log interface protocol
 @protocol FTLoggerProtocol <NSObject>
 @optional
-/// 添加 info 类型自定义日志
+/// Add info type custom log
 /// - Parameters:
-///   - content: 日志内容
-///   - property: 自定义属性(可选)
+///   - content: log content
+///   - property: custom properties (optional)
 - (void)info:(NSString *)content property:(nullable NSDictionary *)property;
-/// 添加 warning 类型自定义日志
+/// Add warning type custom log
 /// - Parameters:
-///   - content: 日志内容
-///   - property: 自定义属性(可选)
+///   - content: log content
+///   - property: custom properties (optional)
 - (void)warning:(NSString *)content property:(nullable NSDictionary *)property;
-/// 添加 error 类型自定义日志
+/// Add error type custom log
 /// - Parameters:
-///   - content: 日志内容
-///   - property: 自定义属性(可选)
+///   - content: log content
+///   - property: custom properties (optional)
 - (void)error:(NSString *)content  property:(nullable NSDictionary *)property;
-/// 添加 critical 类型自定义日志
+/// Add critical type custom log
 /// - Parameters:
-///   - content: 日志内容
-///   - property: 自定义属性(可选)
+///   - content: log content
+///   - property: custom properties (optional)
 - (void)critical:(NSString *)content property:(nullable NSDictionary *)property;
-/// 添加 ok 类型自定义日志
+/// Add ok type custom log
 /// - Parameters:
-///   - content: 日志内容
-///   - property: 自定义属性(可选)
+///   - content: log content
+///   - property: custom properties (optional)
 - (void)ok:(NSString *)content property:(nullable NSDictionary *)property;
 
-/// 添加自定义日志
+/// Add custom log
 /// - Parameters:
-///   - content: 日志内容
-///   - status: 日志状态
+///   - content: log content
+///   - status: log status
 - (void)log:(NSString *)content status:(NSString *)status;
 
-/// 添加自定义日志
+/// Add custom log
 /// - Parameters:
-///   - content: 日志内容
-///   - status: 日志状态
-///   - property: 自定义属性(可选)
+///   - content: log content
+///   - status: log status
+///   - property: custom properties (optional)
 - (void)log:(NSString *)content status:(NSString *)status property:(nullable NSDictionary *)property;
 
-/// 添加日志
+/// Log input
 /// - Parameters:
-///   - content: 日志内容，可为 json 字符串
-///   - statusType: 等级状态
-///   - property: 自定义属性(可选)
+///   - content: log content, can be json string
+///   - statusType: log status
+///   - property: custom properties (optional)
 - (void)log:(NSString *)content statusType:(FTLogStatus)statusType property:(nullable NSDictionary *)property;
 @end
 
-/// 管理自定义日志
+/// Manage custom logs
 @interface FTLogger : NSObject<FTLoggerProtocol>
-/// 单例
+/// Singleton
 + (instancetype)sharedInstance NS_SWIFT_NAME(shared());
-/// 关闭 logger
+/// Shut down logger
 - (void)shutDown;
 @end
 

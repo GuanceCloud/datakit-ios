@@ -2,7 +2,7 @@
 //  FTTrackDataManager.m
 //  FTMacOSSDK
 //
-//  Created by 胡蕾蕾 on 2021/8/4.
+//  Created by hulilei on 2021/8/4.
 //  Copyright © 2021 DataFlux-cn. All rights reserved.
 //
 #import "FTTrackDataManager.h"
@@ -23,7 +23,7 @@
 #import "FTDataWriterWorker.h"
 #import "FTNetworkInfoManager.h"
 @interface FTTrackDataManager ()<FTAppLifeCycleDelegate,FTNetworkChangeObserver>
-/// 是否开启自动上传逻辑（启动时、网络状态变化、写入间隔10s）
+/// Whether to enable automatic upload logic (on startup, network status changes, write interval 10s)
 @property (atomic, assign) BOOL autoSync;
 @property (nonatomic, strong) FTDBDataCachePolicy *dataCachePolicy;
 @property (nonatomic, strong) dispatch_block_t uploadWork;
@@ -116,7 +116,7 @@ static FTTrackDataManager *sharedInstance = nil;
     if (data == nil) {
         return;
     }
-    //数据写入不用做额外的线程处理，数据采集组合除了崩溃数据，都是在子线程进行的
+    //Data writing doesn't need additional thread processing, data collection combinations except crash data are all performed in sub-threads
     BOOL insertItemResult = NO;
     switch (type) {
         case FTAddDataRUMCache:

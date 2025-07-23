@@ -2,7 +2,7 @@
 //  FTGlobalRumManager.m
 //  FTMobileAgent
 //
-//  Created by 胡蕾蕾 on 2020/4/14.
+//  Created by hulilei on 2020/4/14.
 //  Copyright © 2020 hll. All rights reserved.
 //
 #if ! __has_feature(objc_arc)
@@ -81,7 +81,7 @@ static NSObject *sharedInstanceLock;
     if(rumConfig.enableTrackAppCrash){
         [[FTCrash shared] addErrorDataDelegate:self.rumManager];
     }
-    //采集view、resource、jsBridge
+    //Collect view, resource, jsBridge
     if (rumConfig.enableTrackAppANR||rumConfig.enableTrackAppFreeze) {
         _longTaskManager = [[FTLongTaskManager alloc]initWithDependencies:dependencies delegate:self enableTrackAppANR:rumConfig.enableTrackAppANR enableTrackAppFreeze:rumConfig.enableTrackAppFreeze                                        freezeDurationMs:rumConfig.freezeDurationMs];
     }else{
@@ -114,8 +114,8 @@ static NSObject *sharedInstanceLock;
             NSDictionary *fields = data[FT_FIELDS];
             long long time = [data[@"time"] longLongValue];
             long long fixTime = time * 1000000;
-            // web 端 time 数据以毫秒为单位，native 需要纳秒，需要转换单位
-            // 判断是否越界
+            // Web time data is in milliseconds, native needs nanoseconds, need to convert units
+            // Check if overflow
             if (time == fixTime/1000000) {
                 time = fixTime;
             }
@@ -157,7 +157,7 @@ static NSObject *sharedInstanceLock;
 -(void)applicationDidEnterBackground{
     self.rumManager.appState = FTAppStateUnknown;
 }
-#pragma mark ========== 注销 ==========
+#pragma mark ========== Shutdown ==========
 - (void)shutDown{
     [[FTAppLifeCycle sharedInstance] removeAppLifecycleDelegate:self];
     [[FTAutoTrackHandler sharedInstance] shutDown];

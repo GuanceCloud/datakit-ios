@@ -15,19 +15,20 @@ NS_ASSUME_NONNULL_BEGIN
 
 @interface FTLogger ()
 @property (nonatomic, weak) id<FTLinkRumDataProvider> linkRumDataProvider;
-/// 在SDK启动时调用，开启 Logger
+/// Called when SDK starts, enables Logger
 /// - Parameters:
-///   - enable: 是否需要输出到控制台
-///   - enableCustomLog: 是否采集自定义日志
-///   - filter: 日志过滤规则
-///   - sampletRate: 采集率
-///   - writer: 数据写入对象
+///   - enable: Whether to output to console
+///   - enableCustomLog: Whether to collect custom logs
+///   - filter: Log filtering rules
+///   - sampletRate: Collection rate
+///   - writer: Data write object
 - (void)startWithLoggerConfig:(FTLoggerConfig *)config writer:(id<FTLoggerDataWriteProtocol>)writer;
 
-/// 同步执行处理日志的队列
+
+/// Synchronously execute log processing queue
 - (void)syncProcess;
 
-/// 更新远程获取的动态配置
+/// Update dynamically configured settings obtained remotely
 - (void)updateWithRemoteConfiguration:(NSDictionary *)configuration;
 @end
 

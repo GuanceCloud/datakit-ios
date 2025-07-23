@@ -2,7 +2,7 @@
 //  FTTrack.m
 //  FTMobileAgent
 //
-//  Created by 胡蕾蕾 on 2020/11/27.
+//  Created by hulilei on 2020/11/27.
 //  Copyright © 2020 hll. All rights reserved.
 //
 
@@ -170,7 +170,7 @@
         return;
     }
     if ([self.stack lastObject]) {
-        // 没有从数组中移除的原因是有一些特殊视图，比如模态视图添加到 window 时，或者新的 window 添加到窗口，window 上有 VC，原有的 VC 并不会调用 didDisappear 方法，当这些特殊视图移除时，原有的 VC 也不会调用 DidAppear 方法，所以需要保留，重新添加到 RUM View。
+        // The reason for not removing from the array is that there are some special views, such as modal views added to window, or new windows added to the window, when the window has a VC, the original VC will not call the didDisappear method, when these special views are removed, the original VC will not call the DidAppear method either, so we need to keep them and re-add them to RUM View.
         RUMView *current = [self.stack lastObject];
         [self stopView:current];
     }
@@ -209,8 +209,8 @@
     if(!self.addRumDatasDelegate){
         return;
     }
-    // 确保黑名单视图,不会影响采集视图的 duration
-    // 黑名单视图模态弹出时，关闭上一个采集的 View，关闭时，重新开启上一个 View 采集
+    // Ensure blacklisted views don't affect collected view duration
+    // When blacklisted view is presented modally, close the previously collected View, when closing, restart the previous View collection
     if(!view.isUntrackedModal){
         [self.addRumDatasDelegate onCreateView:view.viewName loadTime:view.loadTime];
         [self.addRumDatasDelegate startViewWithViewID:view.viewControllerUUID viewName:view.viewName property:nil];

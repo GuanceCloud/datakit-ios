@@ -92,7 +92,7 @@ NSString *const FTConnectivityUnknown = @"unknown";
                     current = FTConnectivityWiFi;
                 }
             }
-            // 网络状态变化时，如果跟上次的网络类型一致则不进行通知
+            // When network status changes, if it's consistent with the previous network type, no notification is sent
             if(![strongSelf.networkType isEqualToString:current]){
                 strongSelf.networkType = current;
                 [strongSelf connectivityChanged];

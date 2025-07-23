@@ -7,51 +7,51 @@
 //
 
 #import <Foundation/Foundation.h>
-///事件等级和状态，默认：FTStatusInfo
+/// Event level and status, default: FTStatusInfo
 typedef NS_ENUM(NSInteger, FTLogStatus) {
-    /// 提示
+    /// Info
     FTStatusInfo         = 0,
-    /// 警告
+    /// Warning
     FTStatusWarning,
-    /// 错误
+    /// Error
     FTStatusError,
-    /// 严重
+    /// Critical
     FTStatusCritical,
-    /// 恢复
+    /// Ok
     FTStatusOk,
 };
-/// 日志废弃策略
+/// Log discard strategy
 typedef NS_ENUM(NSInteger, FTLogCacheDiscard)  {
-    /// 默认，当日志数据数量大于最大值（5000）时，新数据不进行写入
+    /// Default, when log data count exceeds maximum (5000), new data is not written
     FTDiscard,
-    /// 当日志数据大于最大值时,废弃旧数据
+    /// When log data exceeds maximum, discard old data
     FTDiscardOldest
 };
 NS_ASSUME_NONNULL_BEGIN
-/// logger 功能配置项
+/// Logger feature configuration options
 @interface FTLoggerConfig : NSObject
-/// 禁用 new 初始化
+/// Disable new initialization
 + (instancetype)new NS_UNAVAILABLE;
-/// 日志废弃策略
+/// Log discard strategy
 @property (nonatomic, assign) FTLogCacheDiscard  discardType;
-/// 采样配置，属性值：0至100，100则表示百分百采集，不做数据样本压缩。
+/// Sampling configuration, property values: 0 to 100, 100 means 100% collection, no data sample compression.
 @property (nonatomic, assign) int samplerate;
-/// 是否将 logger 数据与 rum 关联
+/// Whether to associate logger data with rum
 @property (nonatomic, assign) BOOL enableLinkRumData;
-/// 是否上传自定义 log
+/// Whether to upload custom logs
 @property (nonatomic, assign) BOOL enableCustomLog;
-/// 是否将自定义日志在控制台打印
+/// Whether to print custom logs to console
 @property (nonatomic, assign) BOOL printCustomLogToConsole;
-/// 日志最大缓存量, 最低设置为 1000  默认 5000
+/// Log maximum cache size, minimum setting 1000, default 5000
 @property (nonatomic, assign) int logCacheLimitCount;
-/// 设置需要采集的日志等级，默认为全采集
+/// Set log levels to collect, default is to collect all
 ///
-/// 例:1.采集日志等级为 Info 与 Error 的自定义日志则设置为
-/// @[@(FTStatusInfo),@(FTStatusError)] 或 @[@0,@1]
-/// 2.采集日志等级包含自定义等级 如采集 "customLevel" 与 FTStatusError 则设置为
+/// Example: 1. To collect custom logs with log levels Info and Error, set to
+/// @[@(FTStatusInfo),@(FTStatusError)] or @[@0,@1]
+/// 2. To collect log levels including custom levels, such as collecting "customLevel" and FTStatusError, set to
 /// @[@"customLevel",@(FTStatusError)]
 @property (nonatomic, copy) NSArray *logLevelFilter;
-/// logger 全局 tag
+/// Logger global tag
 @property (nonatomic, copy) NSDictionary<NSString*,NSString*> *globalContext;
 @end
 

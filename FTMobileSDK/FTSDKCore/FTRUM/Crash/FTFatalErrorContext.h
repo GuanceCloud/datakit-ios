@@ -9,7 +9,7 @@
 #import <Foundation/Foundation.h>
 
 NS_ASSUME_NONNULL_BEGIN
-//为 crash 与 longtask 提供 Session、View 数据
+//Provide Session and View data for crash and longtask
 @interface FTFatalErrorContext : NSObject
 
 @property (atomic, copy) NSString *appState;

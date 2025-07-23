@@ -2,56 +2,56 @@
 //  FTTraceHandler.h
 //  FTMobileAgent
 //
-//  Created by 胡蕾蕾 on 2021/10/13.
+//  Created by hulilei on 2021/10/13.
 //  Copyright © 2021 DataFlux-cn. All rights reserved.
 //
 
 #import <Foundation/Foundation.h>
 NS_ASSUME_NONNULL_BEGIN
 @class FTResourceContentModel,FTResourceMetricsModel;
-/// 处理单条请求，将单条请求的拦截到的数据绑定处理成 rum 需要的数据
+/// Handles a single request, binding intercepted data to the format required by RUM
 @interface FTSessionTaskHandler : NSObject
-/// 唯一标识，用于 rum  处理 resource 数据的标识
+/// Unique identifier, used as the identifier for RUM resource processing
 @property (nonatomic, copy, readwrite) NSString *identifier;
 
-/// 在此拦截期间发送的初始请求。它是由`URLSession`发送的请求，而不是用户给出的请求。
+/// The initial request sent during this interception. It is the request sent by `URLSession`, not the one provided by the user.
 @property (nonatomic, strong) NSURLRequest *request;
-/// 在此拦截期间发送的请求响应。
+/// The response received during this interception.
 @property (nonatomic, strong) NSURLResponse *response;
-/// 在此拦截期间发生的本地错误。如果任务顺利完成，则返回`nil`。
+/// The local error that occurred during this interception. Returns `nil` if the task completed successfully.
 @property (nonatomic, strong) NSError *error;
-/// 拦截期间收到的任务数据。如果任务完成时出现错误，则返回`nil`。
+/// The task data received during this interception. Returns `nil` if the task completed with an error.
 @property (nonatomic, strong) NSData *data;
-/// rum resource 需要的各阶段请求时长（非必须）
+/// Request duration for each stage required by RUM resource (optional)
 @property (nonatomic, strong) FTResourceMetricsModel *metricsModel;
-/// rum resource 需要的基本数据
+/// Basic data required by RUM resource
 @property (nonatomic, strong) FTResourceContentModel *contentModel;
-/// trace: span_id 当没有开启 trace 功能或者没关联 rum 则返回`nil`。
+/// trace: span_id. Returns `nil` if trace is not enabled or not associated with RUM.
 @property (nonatomic, copy) NSString *spanID;
-/// trace: trace_id 当没有开启 trace 功能或者没关联 rum 则返回`nil`。
+/// trace: trace_id. Returns `nil` if trace is not enabled or not associated with RUM.
 @property (nonatomic, copy) NSString *traceID;
 
-/// 初始化方法
-/// - Parameter identifier: 唯一标识，根据标识
+/// Initialization method
+/// - Parameter identifier: Unique identifier, based on the identifier
 -(instancetype)initWithIdentifier:(NSString *)identifier;
-///  请求响应数据
-/// - Parameter data: 请求获取的数据
+/// Request response data
+/// - Parameter data: Data received from the request
 ///
-/// traceHandle 内部将在接收到 -taskCompleted 方法后将data数据绑定到 contentModel 中
+/// Internally, traceHandle will bind the data to contentModel after receiving -taskCompleted
 - (void)taskReceivedData:(NSData *)data;
 
-/// 请求各阶段的数据信息
-/// - Parameter metrics: 数据信息
+/// Data for each stage of the request
+/// - Parameter metrics: Metrics information
 ///
-/// traceHandle 内部将数据处理成 rum 可接收的 metricsModel
+/// Internally, traceHandle will process the data into a metricsModel that RUM can accept
 - (void)taskReceivedMetrics:(NSURLSessionTaskMetrics *)metrics API_AVAILABLE(macos(10.12));
 - (void)taskReceivedMetrics:(NSURLSessionTaskMetrics *)metrics custom:(BOOL)custom API_AVAILABLE(macos(10.12));
-/// 请求结束
+/// Request finished
 /// - Parameters:
-///   - task: 请求任务
-///   - error: error 信息
+///   - task: Request task
+///   - error: Error information
 ///
-///  整理 data 数据与 task 的一些数据 整合成 contentModel
+/// Organize data and some information from the task into contentModel
 - (void)taskCompleted:(NSURLSessionTask *)task error:(NSError *)error;
 
 @end

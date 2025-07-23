@@ -2,7 +2,7 @@
 //  FTLoggerTest.m
 //  FTMobileSDKUnitTests
 //
-//  Created by 胡蕾蕾 on 2021/6/21.
+//  Created by hulilei on 2021/6/21.
 //  Copyright © 2021 hll. All rights reserved.
 //
 
@@ -596,7 +596,7 @@
             [[FTLogger sharedInstance] info:[NSString stringWithFormat:@"testLongTimeLogCache%d",i] property:nil];
         });
     }
-    XCTestExpectation *expect = [self expectationWithDescription:@"请求超时timeout!"];
+    XCTestExpectation *expect = [self expectationWithDescription:@"Requesttimeout!"];
  
     dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)(1 * NSEC_PER_SEC)), dispatch_get_main_queue(), ^{
         [expect fulfill];
@@ -607,7 +607,7 @@
     NSInteger newCount = [[FTTrackerEventDBTool sharedManger] getDatasCountWithType:FT_DATA_TYPE_LOGGING];
     XCTAssertTrue(newCount == 202);
 }
-// 测试多线程操作存放 log 的数组
+// Test multiple threads to store log arrays
 - (void)testLogAsync_insertCacheToDB{
     [self setRightSDKConfig];
     FTLoggerConfig *loggerConfig = [[FTLoggerConfig alloc]init];
@@ -632,7 +632,7 @@
             [[FTTrackDataManager sharedInstance] insertCacheToDB];
         }
     }
-    XCTestExpectation *expect = [self expectationWithDescription:@"请求超时timeout!"];
+    XCTestExpectation *expect = [self expectationWithDescription:@"Request timeout!"];
  
     dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)(2 * NSEC_PER_SEC)), dispatch_get_main_queue(), ^{
         [expect fulfill];

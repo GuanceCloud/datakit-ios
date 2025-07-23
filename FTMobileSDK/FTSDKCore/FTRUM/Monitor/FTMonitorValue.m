@@ -8,11 +8,11 @@
 
 #import "FTMonitorValue.h"
 @interface FTMonitorValue()
-/* 样本最小值 */
+/* Sample minimum value */
 @property (nonatomic, assign ,readwrite) double minValue;
-/* 样本最大值 */
+/* Sample maximum value */
 @property (nonatomic, assign ,readwrite) double maxValue;
-/* 样本平均值 */
+/* Sample average value */
 @property (nonatomic, assign ,readwrite) double meanValue;
 @end
 @implementation FTMonitorValue

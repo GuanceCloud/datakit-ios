@@ -2,7 +2,7 @@
 //  FTSwizzler.h
 //  FTMobileAgent
 //
-//  Created by 胡蕾蕾 on 2021/7/2.
+//  Created by hulilei on 2021/7/2.
 //  Copyright © 2021 hll. All rights reserved.
 //
 
@@ -305,7 +305,7 @@ typedef NS_ENUM(NSUInteger, FTSwizzlerMode) {
                   inClass:(Class)classToSwizzle
             newImpFactory:(FTSwizzlerImpFactoryBlock)factoryBlock;
 
-// setDelegate时，返回正确的delegate
+// When setDelegate, return the correct delegate
 + (Class)realDelegateClassFromSelector:(SEL)selector proxy:(id)proxy;
 + (BOOL)realDelegateClass:(Class)cls respondsToSelector:(SEL)sel;
 

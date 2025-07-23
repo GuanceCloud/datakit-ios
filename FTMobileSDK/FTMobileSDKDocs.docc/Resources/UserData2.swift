@@ -10,18 +10,18 @@ import FTMobileSDK
 
 
 func userLogin(userId:String,userName:String?,userEmail:String?){
-    //方法一：
+    //Method 1:
     FTMobileAgent.sharedInstance().bindUser(withUserID: userId);
     
-    //方法二：
+    //Method 2:
     FTMobileAgent.sharedInstance().bindUser(withUserID: userId, userName: userName, userEmail: userEmail);
     
-    //方法三：
+    //Method 3:
     FTMobileAgent.sharedInstance().bindUser(withUserID: userId, userName: userName, userEmail: userEmail, extra: ["Custom_User_key":"value"]);
     
 }
 
-/// 用户登出
+/// User logout
 func userLogout(){
     FTMobileAgent.sharedInstance().logout()
 }

@@ -9,17 +9,17 @@
 #import <Foundation/Foundation.h>
 
 NS_ASSUME_NONNULL_BEGIN
-/// app 冷热启动协议
+/// App cold and hot launch protocol
 @protocol FTAppLaunchDataDelegate <NSObject>
 
-/// app 热启动
-/// - Parameter duration: 启动时长
+/// App hot start
+/// - Parameter duration: Launch duration
 -(void)ftAppHotStart:(NSDate *)launchTime duration:(NSNumber *)duration ;
 
-/// app 冷启动
+/// App cold start
 /// - Parameters:
-///   - duration: 启动时长
-///   - isPreWarming: 是否产生了预热
+///   - duration: Launch duration
+///   - isPreWarming: Whether prewarming occurred
 -(void)ftAppColdStart:(NSDate *)launchTime duration:(NSNumber *)duration isPreWarming:(BOOL)isPreWarming;
 @end
 @interface FTAppLaunchTracker : NSObject
