@@ -24,6 +24,8 @@
 @property (nonatomic, strong) NSNumber *loadTime;
 @property (nonatomic, weak) UIViewController *viewController;
 @property (nonatomic, assign) BOOL isUntrackedModal;
+@property (nonatomic, copy) NSDictionary *property;
+
 - (instancetype)initWithViewController:(UIViewController *)viewController identify:(NSString *)identify;
 - (void)updateViewControllerUUID;
 - (NSString *)viewControllerUUID;
@@ -126,7 +128,7 @@
     } @catch (NSException *exception) {
         FTInnerLogError(@"exception: %@",exception);
     }
-   
+    
 }
 #pragma mark ========== FTAppLifeCycleDelegate ==========
 -(void)applicationDidEnterBackground{
@@ -150,14 +152,27 @@
 }
 #pragma mark ========== FTUIViewControllerHandler ==========
 -(void)notify_viewDidAppear:(UIViewController *)viewController animated:(BOOL)animated{
-    NSString *identify = [NSString stringWithFormat:@"%p", viewController];
-    if([self shouldTrackViewController:viewController]){
-        RUMView *view = [[RUMView alloc]initWithViewController:viewController identify:identify];
-        [self addView:view];
-    }else if (@available(iOS 13.0,tvOS 13.0, *)){
-        if(viewController.isModalInPresentation){
+    // if User-defined 
+    if (self.uiKitViewsHandler) {
+        FTRumView *rumView = self.uiKitViewsHandler(viewController);
+        if (rumView) {
+            NSString *identify = [NSString stringWithFormat:@"%p", viewController];
             RUMView *view = [[RUMView alloc]initWithViewController:viewController identify:identify];
-            view.isUntrackedModal = YES;
+            view.viewName = rumView.viewName;
+            view.isUntrackedModal = rumView.isUntrackedModal;
+            [self addView:view];
+        }
+        return;
+    }
+    
+    if (!viewController.parentViewController ||
+        [viewController.parentViewController isKindOfClass:[UITabBarController class]] ||
+        [viewController.parentViewController isKindOfClass:[UINavigationController class]] ||
+        [viewController.parentViewController isKindOfClass:[UISplitViewController class]]) {
+        
+        if([self shouldTrackViewController:viewController]){
+            NSString *identify = [NSString stringWithFormat:@"%p", viewController];
+            RUMView *view = [[RUMView alloc]initWithViewController:viewController identify:identify];
             [self addView:view];
         }
     }
@@ -209,11 +224,11 @@
     if(!self.addRumDatasDelegate){
         return;
     }
-    // 确保黑名单视图,不会影响采集视图的 duration
-    // 黑名单视图模态弹出时，关闭上一个采集的 View，关闭时，重新开启上一个 View 采集
+    // 确保不采集的模态视图,不会影响采集视图的 duration
+    // 不采集的模态视图弹出时，关闭上一个采集的 View，关闭时，重新开启上一个 View 采集
     if(!view.isUntrackedModal){
         [self.addRumDatasDelegate onCreateView:view.viewName loadTime:view.loadTime];
-        [self.addRumDatasDelegate startViewWithViewID:view.viewControllerUUID viewName:view.viewName property:nil];
+        [self.addRumDatasDelegate startViewWithViewID:view.viewControllerUUID viewName:view.viewName property:view.property];
     }
 }
 - (void)stopView:(RUMView *)view{
@@ -230,6 +245,7 @@
 -(void)shutDown{
     self.addRumDatasDelegate = nil;
     self.viewControllerHandler = nil;
+    self.uiKitViewsHandler = nil;
     self.autoTrackView = NO;
     self.autoTrackAction = NO;
     [[FTAppLifeCycle sharedInstance] removeAppLifecycleDelegate:self];

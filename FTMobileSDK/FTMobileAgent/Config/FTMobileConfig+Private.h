@@ -8,6 +8,7 @@
 
 #import "FTMobileConfig.h"
 #import "FTLoggerConfig+Private.h"
+#import "FTRumConfig+Private.h"
 NS_ASSUME_NONNULL_BEGIN
 @interface FTMobileConfig ()
 /// 添加 pkg 信息
@@ -27,15 +28,6 @@ NS_ASSUME_NONNULL_BEGIN
 -(void)mergeWithRemoteConfigDict:(NSDictionary *)dict;
 @end
 
-@interface FTRumConfig ()
-/// 私有的初始化方法，通过字典来初始化，用于 Extensin SDK
-/// - Parameter dict: config 转化后的字典
--(instancetype)initWithDictionary:(NSDictionary *)dict;
-/// 将 config 转化成字典
--(NSDictionary *)convertToDictionary;
-/// 合并 remoteConfig
--(void)mergeWithRemoteConfigDict:(NSDictionary *)dict;
-@end
 
 @interface FTTraceConfig ()
 /// 私有的初始化方法，通过字典来初始化，用于 Extensin SDK

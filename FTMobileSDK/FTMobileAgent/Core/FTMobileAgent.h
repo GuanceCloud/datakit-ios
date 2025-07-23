@@ -9,6 +9,7 @@
 #import <Foundation/Foundation.h>
 #import "FTMobileConfig.h"
 #import "FTLoggerConfig.h"
+#import "FTRumConfig.h"
 #import "FTExternalDataManager.h"
 #import "FTResourceMetricsModel.h"
 #import "FTResourceContentModel.h"

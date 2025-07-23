@@ -94,13 +94,10 @@ static char *previousViewController = "previousViewController";
             return;
         }
     }
-    if (!self.parentViewController ||
-        [self.parentViewController isKindOfClass:[UITabBarController class]] ||
-        [self.parentViewController isKindOfClass:[UINavigationController class]] ||
-        [self.parentViewController isKindOfClass:[UISplitViewController class]]) {
-        self.ft_viewUUID = [FTBaseInfoHandler randomUUID];
-        [[FTAutoTrackHandler sharedInstance].viewControllerHandler notify_viewDidAppear:self animated:animated];
-    }
+    
+    self.ft_viewUUID = [FTBaseInfoHandler randomUUID];
+    [[FTAutoTrackHandler sharedInstance].viewControllerHandler notify_viewDidAppear:self animated:animated];
+    
     // 标记 previousViewController
     if (self.navigationController && self.parentViewController == self.navigationController) {
         self.navigationController.ft_previousViewController = self;
