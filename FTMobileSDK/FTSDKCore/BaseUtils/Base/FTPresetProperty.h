@@ -18,7 +18,7 @@ NS_ASSUME_NONNULL_BEGIN
 
 /// 读写保护的用户信息
 @property (nonatomic, strong, readonly) NSDictionary *loggerTags;
-@property (nonatomic, strong, readonly) NSMutableDictionary *rumTags;
+@property (nonatomic, strong, readonly) NSDictionary *rumTags;
 @property (nonatomic, strong, readonly) NSDictionary *rumStaticFields;
 
 /// 设置数据更改器
