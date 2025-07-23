@@ -427,7 +427,7 @@
     }
     if(self.datawayUrl){
         [dict setValue:self.datawayUrl forKey:@"datawayUrl"];
-        [dict setValue:self.clientToken.length>0?[NSString stringWithFormat:@"%@*****",[self.clientToken substringWithRange:NSMakeRange(0, self.clientToken.length/2)]]:nil forKey:@"clientToken"];
+        [dict setValue:self.clientToken.length>0?[NSString stringWithFormat:@"*****%@",[self.clientToken substringFromIndex:self.clientToken.length/2]]:nil forKey:@"clientToken"];
     }
     [dict setValue:@(self.enableSDKDebugLog) forKey:@"enableSDKDebugLog"];
     [dict setValue:self.env forKey:@"env"];
