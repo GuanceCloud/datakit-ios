@@ -20,10 +20,10 @@
     return self;
 }
 - (FTSRNodeSemantics *)recorder:(nonnull UIView *)view attributes:(nonnull FTViewAttributes *)attributes context:(FTViewTreeRecordingContext *)context {
-    // 是否是不采集的控制器
+    // Whether it's a controller that shouldn't be collected
     if([context.viewControllerContext isRootView:ViewControllerTypeSafari]||[context.viewControllerContext isRootView:ViewControllerTypeActivity]||[context.viewControllerContext isRootView:ViewControllerTypeSwiftUI]){
         
-        // View 是不是不可见
+        // Whether View is invisible
         if (!attributes.isVisible){
             FTInvisibleElement *element = [[FTInvisibleElement alloc]initWithSubtreeStrategy:NodeSubtreeStrategyIgnore];
             return element;

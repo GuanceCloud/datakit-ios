@@ -81,7 +81,7 @@
 
     }];
     
-    TableViewCellItem *item13 = [[TableViewCellItem alloc]initWithTitle:@"UI 控件" handler:^{
+    TableViewCellItem *item13 = [[TableViewCellItem alloc]initWithTitle:@"UI Controls" handler:^{
         weakSelf.hidesBottomBarWhenPushed = YES;
         [weakSelf.navigationController pushViewController:[TestUIControlVC new] animated:YES];
         weakSelf.hidesBottomBarWhenPushed = NO;

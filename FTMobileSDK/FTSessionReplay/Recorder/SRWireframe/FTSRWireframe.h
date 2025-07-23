@@ -18,7 +18,7 @@ NS_ASSUME_NONNULL_BEGIN
 @end
 
 @interface FTSRContentClip : FTSRBaseFrame
-// 不要改为 int ,使用 NSNumber 是因为 bottom 和 right 可能为空
+// Don't change to int, use NSNumber because bottom and right may be null
 @property (nonatomic, strong, nullable) NSNumber *bottom;
 @property (nonatomic, strong, nullable) NSNumber *left;
 @property (nonatomic, strong, nullable) NSNumber *right;
@@ -60,20 +60,20 @@ NS_ASSUME_NONNULL_BEGIN
 @end
 #pragma mark ========== FTSRWireframe ==========
 @interface FTSRWireframe : FTSRBaseFrame
-/// 唯一标识
+/// Unique identifier
 @property (nonatomic, assign) int identifier;
-// 不要改为 int ,使用 NSNumber 是为了update比较时可以置为 nil
-/// 在根视图的 frame.origin.x
+// Don't change to int, use NSNumber so it can be set to nil during update comparison
+/// frame.origin.x in root view
 @property (nonatomic) NSNumber *x;
-/// 在根视图的 frame.origin.y
+/// frame.origin.y in root view
 @property (nonatomic) NSNumber *y;
-/// UI 控件的宽度
+/// UI control width
 @property (nonatomic) NSNumber *width;
-/// UI 控件的高度
+/// UI control height
 @property (nonatomic) NSNumber *height;
-/// 控件类型
+/// Control type
 @property (nonatomic, copy) NSString *type;
-/// 裁剪信息
+/// Clip information
 @property (nonatomic, strong,nullable) FTSRContentClip *clip;
 
 -(instancetype)initWithIdentifier:(int)identifier frame:(CGRect)frame;

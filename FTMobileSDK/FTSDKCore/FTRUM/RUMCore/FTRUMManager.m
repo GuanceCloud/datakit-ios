@@ -61,7 +61,7 @@ void *FTRUMQueueIdentityKey = &FTRUMQueueIdentityKey;
                 NSMutableDictionary *mutableMessage = [messageCopy mutableCopy];
                 BOOL hasReplay = [mutableMessage[FT_SESSION_HAS_REPLAY] boolValue];
                 BOOL sampledForErrorReplay = [mutableMessage[FT_RUM_KEY_SAMPLED_FOR_ERROR_REPLAY] boolValue];
-                // 如果是正常的 session 而 session replay 是 error replay, hasReplay 为 NO
+                // If it's a normal session but session replay is error replay, hasReplay is NO
                 if (!strongSelf.rumDependencies.sampledForErrorSession && sampledForErrorReplay) {
                     strongSelf.rumDependencies.sessionHasReplay = @(NO);
                     [mutableMessage setValue:@(NO) forKey:FT_SESSION_HAS_REPLAY];

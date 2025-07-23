@@ -10,48 +10,48 @@
 #import "FTSessionReplayConfig.h"
 NS_ASSUME_NONNULL_BEGIN
 typedef NS_ENUM(NSUInteger,FTTouchPrivacyLevelOverride) {
-    /// 不覆盖/移除覆盖设置
+    /// Do not override/remove override settings
     FTTouchPrivacyLevelOverrideNone,
-    /// 显示所有用户触摸
+    /// Show all user touches
     FTTouchPrivacyLevelOverrideShow,
-    /// 屏蔽所有用户触摸
+    /// Hide all user touches
     FTTouchPrivacyLevelOverrideHide,
 };
 
 typedef NS_ENUM(NSUInteger,FTTextAndInputPrivacyLevelOverride) {
-    /// 不覆盖/移除覆盖设置
+    /// Do not override/remove override settings
     FTTextAndInputPrivacyLevelOverrideNone,
-    /// 显示除敏感输入外的所有文本。例如: password fields
+    /// Show all text except sensitive inputs. For example: password fields
     FTTextAndInputPrivacyLevelOverrideMaskSensitiveInputs,
-    /// 屏蔽所有输入字段。例如:textfields, switches, checkboxes
+    /// Hide all input fields. For example: textfields, switches, checkboxes
     FTTextAndInputPrivacyLevelOverrideMaskAllInputs,
-    /// 屏蔽所有文本和输入。例如: lable
+    /// Hide all text and inputs. For example: label
     FTTextAndInputPrivacyLevelOverrideMaskAll,
 };
-/// 会话回放中图像屏蔽的可用隐私级别
+/// Available privacy levels for image masking in session replay
 typedef NS_ENUM(NSUInteger,FTImagePrivacyLevelOverride){
-    /// 不覆盖/移除覆盖设置
+    /// Do not override/remove override settings
     FTImagePrivacyLevelOverrideNone,
-    /// 只有使用 [UIImage imageNamed:]/UIImage(named:) 加载的SF符号和图像被捆绑在应用程序中才会被记录
+    /// Only SF symbols and images loaded using [UIImage imageNamed:]/UIImage(named:) that are bundled in the application will be recorded
     FTImagePrivacyLevelOverrideMaskNonBundledOnly,
-    /// 不会记录任何图像
+    /// No images will be recorded
     FTImagePrivacyLevelOverrideMaskAll,
-    /// 所有图像都将被记录，包括从互联网下载的图像或在应用程序运行时生成的图像
+    /// All images will be recorded, including images downloaded from the internet or generated during application runtime
     FTImagePrivacyLevelOverrideMaskNone,
 };
-///  管理会话回放隐私覆盖设置
+///  Manage session replay privacy override settings
 @interface FTSessionReplayPrivacyOverrides : NSObject
 
-/// 触摸隐私覆盖（例如，在特定视图上隐藏或显示触摸交互）。
+/// Touch privacy override (e.g., hide or show touch interactions on specific views).
 @property (nonatomic, assign) FTTouchPrivacyLevelOverride touchPrivacy;
 
-/// 文本和输入隐私覆盖（例如，屏蔽或取消屏蔽特定的文本字段、标签等）
+/// Text and input privacy override (e.g., mask or unmask specific text fields, labels, etc.)
 @property (nonatomic, assign) FTTextAndInputPrivacyLevelOverride textAndInputPrivacy;
 
-/// 图像隐私覆盖（例如，掩码或取消掩码特定图像）。
+/// Image privacy override (e.g., mask or unmask specific images).
 @property (nonatomic, assign) FTImagePrivacyLevelOverride imagePrivacy;
 
-/// 隐藏视图（例如，将视图标记为隐藏，在回放中将其呈现为不透明的线框）。
+/// Hide view (e.g., mark view as hidden, render as opaque wireframe in replay).
 @property (nonatomic, assign) BOOL hide;
 @end
 

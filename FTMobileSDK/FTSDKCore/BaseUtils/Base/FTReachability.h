@@ -44,7 +44,7 @@ typedef void(^NetworkChangeBlock)(void);
 /// Stop monitoring network status
 - (void)stopNotifier;
 
-/// 判断当前网络是否可用
+/// Determine if current network is available
 -(BOOL)isReachable;
 @end
 

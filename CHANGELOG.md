@@ -1,5 +1,5 @@
 # 1.6.2-alpha.2
-1. 适配 1.5.17
+1. Adapted to 1.5.17
 ---
 # 1.5.18-alpha.3
 1. Fix: missing `#include <string.h>` in tvOS platform
@@ -29,19 +29,19 @@
 2. Add `FTURLSessionDelegate.errorFilter` to filter local network errors
 3. Add `FTMobileConfig.remoteConfiguration`, `FTMobileConfig.remoteConfigMiniUpdateInterval` to configure remote configuration and dynamic parameter configuration. `FTMobileAgent` adds `+updateRemoteConfig` and `+ updateRemoteConfigWithMiniUpdateInterval:callback:` remote configuration update request methods
 ---
-# 1.6.2-alpha.1
-1. 添加 `FTSessionReplayConfig.sessionReplayOnErrorSampleRate` 支持错误采样，在未被 sampleRate 采样时， 在发生错误时可以对 1 分钟前的 session replay 的数据进行取样采集
-2. 同 1.5.16
+# 1.6.2-alpha.1 
+1. Add `FTSessionReplayConfig.sessionReplayOnErrorSampleRate` to support error sampling. When not sampled by sampleRate, session replay data from 1 minute ago can be sampled when errors occur
+2. Same as 1.5.16
 ---
 # 1.6.1-alpha.4
-1. Resource 性能资源数据处理优化，过滤 dns 异常数据
-2. 同 1.5.15
+1. Resource performance resource data processing optimization, filter dns abnormal data
+2. Same as 1.5.15
 ---
 # 1.6.1-alpha.3
-1. 修复多线程访问 `currentRUMContext` 造成的崩溃
+1. Fix crash caused by multi-threaded access to `currentRUMContext`
 ---
 # 1.6.1-alpha.2
-1. `privacy` 与 细粒度隐私添加优先级处理，细粒度的隐私级别设置优先级高于 `privacy`
+1. Add priority handling for `privacy` and fine-grained privacy, fine-grained privacy level settings have higher priority than `privacy`
 ---
 # 1.5.16
 1. Add `FTMobileConfig.lineDataModifier`, `FTMobileConfig.dataModifier` to support data write replacement and data desensitization
@@ -81,9 +81,9 @@
 1. Change `sessionOnErrorSampleRate` type to `int`. Adjust Error Session collection logic, start collection from 1 minute before error occurs.
 ---
 # 1.6.1-alpha.1
-1. Session Replay 新增支持通过 `touchPrivacy` 触摸屏蔽的可用隐私级别、`textAndInputPrivacy`文本和输入屏蔽的可用隐私级别，进行细粒度的隐私级别设置
-2. Session Replay 新增支持 UIView 通过 `sessionReplayPrivacyOverrides` 设置视图级别隐私覆盖
-3. Session Replay 数据同步添加 X-Pkg-Id 追踪适配
+1. Session Replay adds support for fine-grained privacy level settings through `touchPrivacy` touch masking available privacy levels and `textAndInputPrivacy` text and input masking available privacy levels
+2. Session Replay adds support for UIView to set view-level privacy overrides through `sessionReplayPrivacyOverrides`
+3. Session Replay data synchronization adds X-Pkg-Id tracking adaptation
 ---
 # 1.5.15-alpha.3
 1. Add `sessionOnErrorSampleRate` field to FTRumConfig. If enabled, when errors occur in Sessions not selected by sampling rate, SDK will collect data from these originally uncollected Sessions
@@ -97,7 +97,7 @@
 3. Optimize data sync packageId generation logic
 ---
 # 1.6.0-alpha.9
-1. 同 1.5.14
+1. Same as 1.5.14
 ---
 # 1.5.14
 1. Add RUM `Resource` data fields `resource_first_byte_time`, `resource_dns_time`, `resource_download_time`, `resource_connect_time`, `resource_ssl_time`, `resource_redirect_time`, support optimized display on Guance Cloud and APM flame graph time alignment
@@ -118,8 +118,8 @@
 3. Add RUM Resource data fields `resource_first_byte_time`, `resource_dns_time`, `resource_download_time`, `resource_connect_time`, `resource_ssl_time`, `resource_redirect_time`, optimize display on Guance Cloud and support APM flame graph time alignment
 ---
 # 1.6.0-alpha.8
-1. 修复 Session Replay 快照 Record 增量比较时异常造成的快照丢失快照全量更新问题
-2. 同 1.5.13 
+1. Fix Session Replay snapshot Record incremental comparison exception causing snapshot loss and full snapshot update issue
+2. Same as 1.5.13
 ---
 # 1.5.13
 1. Optimize page collection logic, prevent RUM View collection loss caused by special views
@@ -128,10 +128,10 @@
 1. Update ViewController viewUUID logic to prevent RUM from adding Views with same view_id
 ---
 # 1.6.0-alpha.7
-1. 获取 keyWindow 方法修改，修复在 Widget Extension 环境无法编译问题
-2. 优化 Session Replay 上传条件判断、同步时内部日志输出
-3. 优化 Session Replay 采集，只采集 keyWindow 逻辑修改为采集多个 window
-4. 同 1.5.4 - 1.5.13-alpha.3
+1. Modify keyWindow acquisition method, fix compilation issue in Widget Extension environment
+2. Optimize Session Replay upload condition judgment and internal log output during synchronization
+3. Optimize Session Replay collection, change logic from only collecting keyWindow to collecting multiple windows
+4. Same as 1.5.4 - 1.5.13-alpha.3
 ---
 # 1.5.13-alpha.3
 1. RUM View collection optimization, prevent duplicate View collection
@@ -291,15 +291,15 @@
 1. Add global, log, RUM globalContext property dynamic setting method
 ---
 # 1.6.0-alpha.6
-1. 修复增量快照中 `updates` 数据丢失问题
-2. 优化获取 `keyWindow` 方法
+1. Fix `updates` data loss issue in incremental snapshots
+2. Optimize `keyWindow` acquisition method
 ---
 # 1.6.0-alpha.5
-1. 修复 Wireframes 增量判断时 `unrecognized selector` 崩溃问题
-2. 优化 Session Replay 添加 try Catch 防护
+1. Fix `unrecognized selector` crash issue during Wireframes incremental judgment
+2. Optimize Session Replay by adding try catch protection
 ---
 # 1.6.0-alpha.4
-1. 同 1.5.3
+1. Same as 1.5.3
 ---
 # 1.5.3
 1. Fix crash caused by improper attribute modifier memory access
@@ -307,17 +307,17 @@
 3. Optimize decimal precision of collected data
 ---
 # 1.6.0-alpha.3
-1. 补充 `UISegment` 选定选项时的背景屏蔽
-2. `FTSessionReplayConfig` 添加 `additionalNodeRecorders` 私有方法，辅助 react-native 自定义视图采集
+1. Supplement background masking for `UISegment` selected options
+2. `FTSessionReplayConfig` adds `additionalNodeRecorders` private method to assist react-native custom view collection
 ---
 # 1.6.0-alpha.2
-1. Session Replay 显示细节优化，text 隐私权限显示效果修改
-2. 修复 CGColor 释放导致的闪退问题
-3. 修复 launch_cold 丢失问题
+1. Session Replay display detail optimization, text privacy permission display effect modification
+2. Fix crash issue caused by CGColor release
+3. Fix launch_cold loss issue
 ___
 # 1.6.0-alpha.1
-1. 新增 Session Replay 功能
-2. RUM-View 自动采集逻辑优化，修复 View 采集中断缺失问题
+1. Add Session Replay functionality
+2. RUM-View automatic collection logic optimization, fix View collection interruption loss issue
 ___
 # 1.5.2-hotfix.2
 1. Fix crash caused by array out of bounds in `FTResourceMetricsModel`

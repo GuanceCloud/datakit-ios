@@ -18,7 +18,7 @@
 @interface FTMobileAgent (Private)
 /// Wait for all data being processed to complete
 - (void)syncProcess;
-/// 需要在 sessionReplay 配置前设置
+/// Must be set before sessionReplay configuration
 - (void)additionalConfigurationWithSource:(NSString *)source;
 @end
 #endif /* FTMobileAgent_Private_h */

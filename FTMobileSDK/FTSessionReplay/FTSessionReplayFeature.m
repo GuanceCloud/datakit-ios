@@ -108,15 +108,15 @@
         BOOL srOnErrorSampleRate = isSampled? NO: [FTBaseInfoHandler randomSampling:self.config.sessionReplayOnErrorSampleRate];
         
         BOOL shouldStart = isSampled || srOnErrorSampleRate;
-        // 是否需要使用临时缓存（当为错误会话，或未被常规采样但开启了错误采样时）
+        // Whether to use temporary cache (when it's an error session, or not sampled by regular sampling but error sampling is enabled)
         BOOL useTmpCache = isErrorSession || srOnErrorSampleRate;
         if (shouldStart) {
             [self startWithTmpCache:useTmpCache];
         } else {
             [self stop];
         }
-        // FT_SESSION_HAS_REPLAY,有没有 session replay 数据采集，cache 类型也算
-        // FT_RUM_KEY_SAMPLED_FOR_ERROR_REPLAY,cache 类型数据
+        // FT_SESSION_HAS_REPLAY, whether there is session replay data collection, cache type also counts
+        // FT_RUM_KEY_SAMPLED_FOR_ERROR_REPLAY, cache type data
         [[FTModuleManager sharedInstance] postMessage:FTMessageKeySessionHasReplay message:@{
             FT_SESSION_HAS_REPLAY:@(shouldStart),
             FT_RUM_SESSION_REPLAY_SAMPLE_RATE:@(self.sampleRate),

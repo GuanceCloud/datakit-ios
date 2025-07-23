@@ -13,8 +13,8 @@
 @class FTViewAttributes;
 @protocol FTSRTextObfuscatingProtocol;
 NS_ASSUME_NONNULL_BEGIN
-/// 绘制 textField
-/// 不考虑 textFiled bolderStyle、光标、layer 层的自定义绘制
+/// Draw textField
+/// Does not consider textField bolderStyle, cursor, layer custom drawing
 @interface FTUITextFieldBuilder:NSObject<FTSRWireframesBuilder>
 @property (nonatomic, strong) FTViewAttributes *attributes;
 @property (nonatomic, assign) CGRect wireframeRect;

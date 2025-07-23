@@ -21,11 +21,11 @@ FOUNDATION_EXPORT FTMessageKey const FTMessageKeyRumError;
 - (void)postMessage:(NSString *)key message:(NSDictionary *)message;
 - (void)postMessage:(NSString *)key message:(NSDictionary *)message sync:(BOOL)sync;
 
-/// 添加遵循 FTMessageReceiver 协议的代理类
-/// - Parameter delegate: 遵循 FTMessageReceiver 协议的代理类
+/// Add delegate class that conforms to FTMessageReceiver protocol
+/// - Parameter delegate: Delegate class that conforms to FTMessageReceiver protocol
 - (void)addMessageReceiver:(id<FTMessageReceiver>)receiver;
-/// 移除遵循 FTMessageReceiver 协议的代理类
-/// - Parameter delegate: 遵循 FTMessageReceiver 协议的代理类
+/// Remove delegate class that conforms to FTMessageReceiver protocol
+/// - Parameter delegate: Delegate class that conforms to FTMessageReceiver protocol
 - (void)removeMessageReceiver:(id<FTMessageReceiver>)receiver;
 @end
 

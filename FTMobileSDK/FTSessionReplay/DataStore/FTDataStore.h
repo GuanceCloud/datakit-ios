@@ -10,7 +10,7 @@
 #define FTDataStore_h
 typedef uint16_t FTDataStoreKeyVersion;
 
-// 保存的数据,数据结构发生变化时，更新该常量，用于区分新旧数据，可对旧数据做兼容或直接删除
+// Saved data, when data structure changes, update this constant to distinguish between old and new data, can be compatible with old data or directly delete
 static FTDataStoreKeyVersion const DataStoreDefaultKeyVersion = 0;
 
 typedef NS_ENUM(uint16_t,DataStoreBlockType) {

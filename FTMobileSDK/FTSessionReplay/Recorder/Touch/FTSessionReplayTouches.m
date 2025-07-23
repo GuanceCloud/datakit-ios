@@ -19,7 +19,7 @@
 
 static FTSessionReplayTouches *touchesHandler;
 @interface FTSessionReplayTouches()
-/// 点击事件集合 都在主线程操作，所以不进行锁管理
+/// Touch event collection, all operations on main thread, so no lock management needed
 @property (nonatomic, strong) NSMutableArray *touches;
 @property (nonatomic, assign) int currentID;
 @property (nonatomic, strong) FTWindowObserver *windowObserver;

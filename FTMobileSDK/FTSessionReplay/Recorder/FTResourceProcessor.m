@@ -50,7 +50,7 @@
                 }];
             }
             if(addResource.count>0){
-                // resource 写入逻辑
+                // resource writing logic
                 [self.resourceWriter write:addResource];
             }
             

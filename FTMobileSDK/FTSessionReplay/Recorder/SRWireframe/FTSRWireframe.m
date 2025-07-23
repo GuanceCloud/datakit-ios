@@ -267,7 +267,7 @@ BOOL objectIsEqual(id new,id old){
         }
         return nil;
     }
-    //旧的 clip 不存在时使用新的
+    //Use new clip when old clip doesn't exist
     self.clip = useNewIfDifferentThanOld(newWireFrame.clip, self.clip);
     self.width = useNewObjectIfDifferentThanOld(newWireFrame.width,self.width);
     self.height = useNewObjectIfDifferentThanOld(newWireFrame.height,self.height);
@@ -430,7 +430,7 @@ BOOL objectIsEqual(id new,id old){
     if(self){
         self.type = @"image";
         self.mimeType = @"png";
-        // TODO: 支持 imageData 同步时移除
+        // TODO: Remove when imageData synchronization is supported
         self.isEmpty = YES;
     }
     return self;

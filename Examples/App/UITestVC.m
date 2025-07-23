@@ -86,20 +86,20 @@
     _progressView.progress = 0.5;
     [_scrollView addSubview:_progressView];
     CGRect frame = CGRectMake(CGRectGetMaxX(_segmentedControl.frame), 0, 0, 40);
-    // 创建 UIDatePicker 对象
+    // Create UIDatePicker object
     UIDatePicker *datePicker = [[UIDatePicker alloc] initWithFrame:frame];
-    // 设置日期选择器模式:日期模式
+    // Set date picker mode: date mode
     datePicker.datePickerMode = UIDatePickerModeDate;
-    // 设置可供选择的最小时间：昨天
-    NSTimeInterval time = 24 * 60 * 60; // 24H 的时间戳值
+    // Set minimum selectable time: yesterday
+    NSTimeInterval time = 24 * 60 * 60; // 24H timestamp value
     datePicker.minimumDate = [[NSDate alloc] initWithTimeIntervalSinceNow:- time];
-    // 设置可供选择的最大时间：明天
+    // Set maximum selectable time: tomorrow
     datePicker.maximumDate = [[NSDate alloc] initWithTimeIntervalSinceNow:time];
-    // 添加 Target-Action
+    // Add Target-Action
     [datePicker addTarget:self
                    action:@selector(datePickerValueChanged:)
          forControlEvents:UIControlEventValueChanged];
-    // 将 UIDatePicker 对象添加到当前视图
+    // Add UIDatePicker object to current view
     [_scrollView addSubview:datePicker];
     y = CGRectGetMaxY(_uiswitch.frame) + 20;
     _label = [[UILabel alloc] initWithFrame:CGRectMake(x, y, width, 50)];
@@ -153,13 +153,13 @@
             UIActivityIndicatorView *activityIndicator = [[UIActivityIndicatorView alloc]initWithActivityIndicatorStyle:UIActivityIndicatorViewStyleMedium];
             activityIndicator.frame = CGRectMake(0, 0, 50, 50);
 
-            // 设置颜色
+            // Set color
             activityIndicator.color = [UIColor grayColor];
 
-            // 设置位置
+            // Set position
             activityIndicator.center = self.view.center;
 
-            // 添加到视图
+            // Add to view
             [self.view addSubview:activityIndicator];
             _activityIndicator = activityIndicator;
         }

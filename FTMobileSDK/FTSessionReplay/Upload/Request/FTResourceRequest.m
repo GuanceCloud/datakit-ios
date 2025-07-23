@@ -48,9 +48,9 @@
     [self addHTTPHeaderFields:mutableRequest packageId:[FTPackageIdGenerator generatePackageId:self.serialNumber count:self.resources.count]];
     
     mutableRequest.HTTPMethod = self.httpMethod;
-    //添加header
+    //Add header
     [mutableRequest addValue:@"deflate" forHTTPHeaderField:@"Content-Encoding"];
-    //设置请求参数
+    //Set request parameters
     
     for (FTEnrichedResource *resource in self.resources) {
         [self.multipartFormBody addFormData:@"image" filename:resource.identifier data:resource.data mimeType:@"image/png"];

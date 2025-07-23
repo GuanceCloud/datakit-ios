@@ -20,11 +20,11 @@ Guance Cloud Application Monitoring can collect metrics data from various iOS ap
 ## Documentation
  [Documentation Center](https://docs.guance.com/real-user-monitoring/ios/app-access/)   
 
-## 开源代码使用
+## Open Source Code Usage
 
-* [FTSessionReplay](https://github.com/GuanceCloud/datakit-ios/tree/feature-sessionReplay/FTMobileSDK/FTSessionReplay)  基于 datadog [dd-sdk-ios-session-replay](https://github.com/DataDog/dd-sdk-ios/tree/develop/DatadogSessionReplay) 二次开发
+* [FTSessionReplay](https://github.com/GuanceCloud/datakit-ios/tree/feature-sessionReplay/FTMobileSDK/FTSessionReplay)  Based on datadog [dd-sdk-ios-session-replay](https://github.com/DataDog/dd-sdk-ios/tree/develop/DatadogSessionReplay) secondary development
 
-## 第三方 Licenses
+## Third Party Licenses
 
 * Datadog [dd-sdk-ios](https://github.com/DataDog/dd-sdk-ios/blob/develop/LICENSE)
 

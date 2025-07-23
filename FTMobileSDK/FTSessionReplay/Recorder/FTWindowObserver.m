@@ -10,7 +10,7 @@
 
 @implementation FTWindowObserver
 -(UIWindow *)keyWindow{
-    // 防止在 WidgetExtension 环境无法编译
+    // Prevent compilation failure in WidgetExtension environment
     UIApplication *app = [UIApplication valueForKeyPath:@"sharedApplication"];
     if(app == nil){
         return nil;

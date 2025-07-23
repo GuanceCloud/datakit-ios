@@ -83,7 +83,7 @@
         [strongSelf.cacheWriter cleanup];
         NSArray *conditions = [strongSelf.uploadConditions checkForUpload];
         BOOL canUpload = conditions.count == 0;
-        //读取上传文件
+        //Read upload files
         NSArray<id <FTReadableFile>> *files = canUpload?[strongSelf.fileReader readFiles:strongSelf.maxBatchesPerUpload]:nil;
         if(files == nil || files.count == 0){
             FTInnerLogDebug(@"[NETWORK][%@] No upload:%@",strongSelf.featureName,canUpload?@"No files to upload":[NSString stringWithFormat:@"[upload was skipped because:%@]",[conditions componentsJoinedByString:@" AND "]]);
@@ -181,7 +181,7 @@
             success = (statusCode >=200 && statusCode < 500);
             FTInnerLogDebug(@"[NETWORK][%@] Upload Response statusCode : %ld",self.featureName,(long)statusCode);
             if (statusCode != 200 && data.length>0) {
-                FTInnerLogError(@"[NETWORK][%@] 服务器异常 稍后再试 responseData = %@",self.featureName,[[NSString alloc] initWithData:data encoding:NSUTF8StringEncoding]);
+                FTInnerLogError(@"[NETWORK][%@] Server exception, try again later responseData = %@",self.featureName,[[NSString alloc] initWithData:data encoding:NSUTF8StringEncoding]);
             }
             dispatch_semaphore_signal(flushSemaphore);
         }];

@@ -26,7 +26,7 @@ NS_ASSUME_NONNULL_BEGIN
 /// Set data modifier
 @property (nonatomic, copy) FTLineDataModifier lineDataModifier;
 @property (nonatomic, copy) NSString *sessionReplaySource;
-/// 设备名称
+/// Device name
 + (NSString *)deviceInfo;
 + (NSString *)cpuArch;
 + (NSString *)CPUArchForMajor:(cpu_type_t)majorCode minor:(cpu_subtype_t)minorCode;

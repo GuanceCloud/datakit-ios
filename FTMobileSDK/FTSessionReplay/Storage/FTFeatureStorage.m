@@ -22,7 +22,7 @@
 @property (nonatomic, strong) FTFilesOrchestrator *authorizedFilesOrchestrator;
 @property (nonatomic, strong, nullable) FTFilesOrchestrator *cacheAuthorizedFilesOrchestrator;
 
-// TODO:隐私条例
+// TODO: Privacy regulations
 //@property (nonatomic, strong) FTFilesOrchestrator *unauthorizedFilesOrchestrator;
 @property (nonatomic, strong) FTPerformancePreset *performance;
 @property (nonatomic, strong) dispatch_queue_t queue;

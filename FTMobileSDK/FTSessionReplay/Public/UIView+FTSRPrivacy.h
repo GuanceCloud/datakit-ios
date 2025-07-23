@@ -11,11 +11,11 @@
 
 NS_ASSUME_NONNULL_BEGIN
 
-/// 为任一 UIView 提供访问 FTSessionReplayPrivacyOverrides 的权限
+/// Provide access to FTSessionReplayPrivacyOverrides for any UIView
 @interface UIView (FTSRPrivacy)
 
-/// UIView 管理会话回放隐私覆盖设置
-/// 使用示例:
+/// UIView manages session replay privacy override settings
+/// Usage example:
 /// swift: `myView.sessionReplayPrivacyOverrides.textAndInputPrivacy = .maskAll`
 /// oc: `myView.sessionReplayPrivacyOverrides.textAndInputPrivacy = FTTextAndInputPrivacyLevelMaskAll`
 @property (nonatomic, strong, readonly) FTSessionReplayPrivacyOverrides *sessionReplayPrivacyOverrides;

@@ -12,7 +12,7 @@
 #import "RootTabbarVC.h"
 #import "FTMobileSDK/FTLog.h"
 #import <FTMobileSDK/FTRumSessionReplay.h>
-//Target -> Build Settings -> GCC_PREPROCESSOR_DEFINITIONS 进行配置预设定义
+//Target -> Build Settings -> GCC_PREPROCESSOR_DEFINITIONS for configuration preset definitions
 #if PREPROD
 #define STATIC_TAG     @"preprod"
 #else
@@ -54,7 +54,7 @@
         // Local environment deployment
       //  FTMobileConfig *config = [[FTMobileConfig alloc]initWithDatakitUrl:datakitUrl];
         // Use public network DataWay deployment
-//        FTMobileConfig *config = [[FTMobileConfig alloc]initWithDatawayUrl:datawayUrl clientToken:clientToken];
+        FTMobileConfig *config = [[FTMobileConfig alloc]initWithDatawayUrl:datawayUrl clientToken:clientToken];
         config.enableSDKDebugLog = YES;
         config.autoSync = YES;
         [config setEnvWithType:FTEnvPre];
