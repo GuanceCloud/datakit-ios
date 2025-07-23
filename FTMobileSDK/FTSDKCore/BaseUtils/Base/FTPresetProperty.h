@@ -59,7 +59,7 @@ NS_ASSUME_NONNULL_BEGIN
 - (NSArray<NSDictionary *> *)applyLineModifier:(NSString *)measurement
                                           tags:(NSDictionary *)tags
                                         fields:(NSDictionary *)fields;
--(void)updateUser:(NSString *)Id name:(NSString *)name email:(NSString *)email extra:(NSDictionary *)extra;
+-(void)updateUser:(NSString *)Id name:(nullable NSString *)name email:(nullable NSString *)email extra:(nullable NSDictionary *)extra;
 
 -(void)clearUser;
 

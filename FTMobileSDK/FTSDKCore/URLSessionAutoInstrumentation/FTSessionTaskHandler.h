@@ -52,7 +52,7 @@ NS_ASSUME_NONNULL_BEGIN
 ///   - error: Error information
 ///
 /// Organize data and some information from the task into contentModel
-- (void)taskCompleted:(NSURLSessionTask *)task error:(NSError *)error;
+- (void)taskCompleted:(NSURLSessionTask *)task error:(nullable NSError *)error;
 
 @end
 NS_ASSUME_NONNULL_END
