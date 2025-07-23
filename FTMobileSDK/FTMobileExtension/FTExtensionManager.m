@@ -2,13 +2,13 @@
 //  FTExtensionManager.m
 //  FTMobileExtension
 //
-//  Created by 胡蕾蕾 on 2020/11/13.
+//  Created by hulilei on 2020/11/13.
 //  Copyright © 2020 hll. All rights reserved.
 //
 
 #import "FTExtensionManager.h"
 #import "FTExtensionDataManager.h"
-#import "FTCrashMonitor.h"
+#import "FTCrash.h"
 #import "FTLog+Private.h"
 #import "FTRUMManager.h"
 #import "FTRUMDataWriteProtocol.h"
@@ -29,11 +29,11 @@
 @implementation FTExtensionManager
 static FTExtensionManager *sharedInstance = nil;
 + (instancetype)sharedInstance{
-    NSAssert(sharedInstance, @"请先使用 startWithExtensionConfig: 初始化");
+    NSAssert(sharedInstance, @"Please initialize with startWithExtensionConfig: first");
     return sharedInstance;
 }
 + (void)startWithExtensionConfig:(FTExtensionConfig *)extensionConfig{
-    NSAssert((extensionConfig.groupIdentifier.length!=0 ), @"请填写Group Identifier");
+    NSAssert((extensionConfig.groupIdentifier.length!=0 ), @"Please fill in Group Identifier");
     static dispatch_once_t onceToken;
     dispatch_once(&onceToken, ^{
         sharedInstance = [[FTExtensionManager alloc]initWithExtensionConfig:extensionConfig];
@@ -93,7 +93,7 @@ static FTExtensionManager *sharedInstance = nil;
     [[FTExternalDataManager sharedManager] setDelegate:rum];
     [FTExternalDataManager sharedManager].resourceDelegate = [FTURLSessionInstrumentation sharedInstance].externalResourceHandler;
     if (rumConfigOptions.enableTrackAppCrash){
-        [[FTCrashMonitor shared] addErrorDataDelegate:self.rumManager];
+        [[FTCrash shared] addErrorDataDelegate:self.rumManager];
     }
     [[FTURLSessionInstrumentation sharedInstance] setRumResourceHandler:self.rumManager];
 }

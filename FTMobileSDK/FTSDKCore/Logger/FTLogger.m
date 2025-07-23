@@ -104,7 +104,7 @@ static dispatch_once_t onceToken;
 }
 - (void)_log:(NSString *)content statusType:(LogStatus)type status:(NSString *)status property:(nullable NSDictionary *)property{
     if (!content || content.length == 0 ) {
-        FTInnerLogError(@"[Logging] 传入的第数据格式有误");
+        FTInnerLogError(@"[Logging] The passed data format is incorrect");
         return;
     }
     NSDictionary *copyDict = [property ft_deepCopy];

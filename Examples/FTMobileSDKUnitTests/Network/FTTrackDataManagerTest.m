@@ -310,9 +310,9 @@
     [[FTTrackDataManager sharedInstance] shutDown];
 }
 /**
- * packageId 不变
- * sdk_id 变化
- * 请求次数：正常同步 + retry count (5) = 6
+ * packageId remains unchanged
+ * sdk_id changes
+ * Request count: normal sync + retry count (5) = 6
  */
 - (void)testNetworkFail_NetworkRetry{
     [FTLog enableLog:YES];
@@ -425,16 +425,16 @@
     array2 = [[sdk_data_id2 substringFromIndex:12] componentsSeparatedByString:@"."];
     // packageId +1
     XCTAssertTrue([FTTestUtils base36ToDecimal:array2[0]] - [FTTestUtils base36ToDecimal:array1[0]] == increase);
-    // 进程 id 一致
+    // Process id is consistent
     XCTAssertTrue([array1[1] isEqualToString:array2[1]]);
-    // 数据个数
+    // Data count
     XCTAssertTrue([array2[2] intValue] == [array1[2] intValue] == 1);
-    // packageId 末尾12位随机数
+    // packageId end random number
     NSString *random12 = array2[3];
     XCTAssertTrue(random12.length == 12);
     
     XCTAssertFalse([array2[3] isEqualToString:array1[3]]);
-    // 数据 id 不一致
+    // Data id is inconsistent
     XCTAssertFalse([[array1 lastObject] isEqualToString:[array2 lastObject]]);
 }
 - (void)mockHttp{

@@ -82,7 +82,7 @@ static CFTimeInterval processStartTime(NSTimeInterval now) {
     if (self) {
         self.delegate = delegate;
         _launchTime = [NSDate date];
-        //ApplicationRespondedTime > 0 来判断在此之前就已经接收到了 UIApplicationDidBecomeActiveNotification 通知，进行冷启动记录
+        //ApplicationRespondedTime > 0 to determine if UIApplicationDidBecomeActiveNotification notification has been received before, record cold start
         if (ApplicationRespondedTime>0) {
             [self appColdStartEvent];
         }
@@ -129,7 +129,7 @@ static CFTimeInterval processStartTime(NSTimeInterval now) {
 }
 - (BOOL)isActivePrewarmAvailable{
 #    if FT_IOS
-    // 用户数据显示，iOS 14的应用程序启动也进行了预热，与苹果文档中在iOS 15及之后支持矛盾。
+    // User data shows that iOS 14 app launches also have prewarming, which contradicts Apple's documentation that support starts from iOS 15.
     if (@available(iOS 14, *)) {
         return YES;
     } else {

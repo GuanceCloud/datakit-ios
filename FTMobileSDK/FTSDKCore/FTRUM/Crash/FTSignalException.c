@@ -14,7 +14,12 @@
 #include "FTStackInfo.h"
 #include <string.h>
 #include "FTSDKCompat.h"
-static FTCrashNotifyCallback g_onCrashNotify;
+#include <os/log.h>
+#include <QuartzCore/QuartzCore.h>
+#include "FTCrashLogger.h"
+#include "FTCrashMonitor.h"
+static volatile bool g_isEnabled = false;
+
 #if FT_HAS_SIGNAL_STACK
 static stack_t g_signalStack = {0};
 #endif
@@ -181,12 +186,11 @@ void FTSignalMachExceptionNameLookup(int sigNum,
 }
 #pragma mark ========== Handler ==========
 static void signalHandler(int signal, siginfo_t* info, void* signalUserContext) {
-    if (g_onCrashNotify != NULL) {
+    FTLOG_INFO("Fatal signal(%d) raised.",signal);
+    if (!ftcm_setCrashHandling(true)) {
         _STRUCT_MCONTEXT* sourceContext = ((SignalUserContext*)signalUserContext)->UC_MCONTEXT;
         _STRUCT_MCONTEXT context;
         memcpy(&context, sourceContext, sizeof(context));
-        
-       
        
         uintptr_t faultAddress = (uintptr_t)info->si_addr;
         char reason[200];
@@ -199,18 +203,19 @@ static void signalHandler(int signal, siginfo_t* info, void* signalUserContext) 
                                         &signalName,
                                         &signalCodeName
                                         );
-        snprintf(reason,sizeof(reason),"Exception Type: %s (%s)\n Exception Codes: %s at 0x%016lx", machExceptionName,signalName,signalCodeName,faultAddress);
+        snprintf(reason,sizeof(reason),"Exception Type: %s (%s)\n Signal Codes: %s at 0x%016lx", machExceptionName,signalName,signalCodeName,faultAddress);
         int count = 0;
         uintptr_t callStack[50] ;
         ft_backtrace(&context,callStack,&count);
-        thread_t thread_self = mach_thread_self();
-        g_onCrashNotify(thread_self,callStack,count,reason);
+        FTThread thread_self = ftthread_self();
+        ftcm_handleException(thread_self,callStack,count,reason);
+        raise(signal);
+    }else{
+        FTLOG_INFO("‌An unhandled crash occurred, and it might be a second crash or signal.");
     }
-    raise(signal);
 }
 #pragma mark ========== API ==========
-void FTInstallSignalException(const FTCrashNotifyCallback onCrashNotify){
-    g_onCrashNotify = onCrashNotify;
+void FTInstallSignalException(void){
 #if FT_HAS_SIGNAL_STACK
     if(g_signalStack.ss_size == 0){
         g_signalStack.ss_size = SIGSTKSZ;
@@ -255,7 +260,6 @@ void FTInstallSignalException(const FTCrashNotifyCallback onCrashNotify){
 }
 
 void FTUninstallSignalException(void){
-    g_onCrashNotify = NULL;
     int signals[] = {
         SIGABRT,
         SIGBUS,

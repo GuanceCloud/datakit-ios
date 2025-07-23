@@ -2,7 +2,7 @@
 //  FTRUMActionHandler.m
 //  FTMobileAgent
 //
-//  Created by 胡蕾蕾 on 2021/5/21.
+//  Created by hulilei on 2021/5/21.
 //  Copyright © 2021 hll. All rights reserved.
 //
 
@@ -24,7 +24,7 @@ static const NSTimeInterval discreteActionTimeoutDuration = 0.1;
 @property (nonatomic, assign) NSInteger actionLongTaskCount;
 @property (nonatomic, assign) NSInteger actionResourcesCount;
 @property (nonatomic, assign) NSInteger actionErrorCount;
-@property (nonatomic, strong) NSDictionary *actionProperty;//添加到field中
+@property (nonatomic, strong) NSDictionary *actionProperty;//Add to field
 //private
 @property (nonatomic, assign) NSInteger activeResourcesCount;
 @property (nonatomic, strong) NSDate *lastResourceEndDate;

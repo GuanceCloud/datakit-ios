@@ -15,15 +15,15 @@
 @end
 
 @protocol FTSessionOnErrorDataHandler <NSObject>
-/// 处理 Session On Error Datas
+/// Handle Session On Error Datas
 - (void)checkRUMSessionOnErrorDatasExpired;
-///  如果文件缓存中无数据则返回 0
+///  If there is no data in file cache, return 0
 - (long long)getErrorTimeLineFromFileCache;
 
-///  获取上一进程致命错误的时间
-///  -1,还未获取到
-///  0,上一进程无 FatalError
-///  >0 上一进程 FatalError 时间
+///  Get the time of fatal error from the previous process
+///  -1, not yet obtained
+///  0, no FatalError in previous process
+///  >0 previous process FatalError time
 - (long long)getLastProcessFatalErrorTime;
 
 @end

@@ -1,16 +1,16 @@
 @Tutorial(time: 15) {
-    @Intro(title: "自定义 RUM 用户数据采集") {
-       自定义的 RUM 相关数据，通过 FTExternalDataManager 单例，进行传入，具体的使用方法如下。
+    @Intro(title: "Custom RUM User Data Collection") {
+       Custom RUM related data is passed through the FTExternalDataManager singleton, with specific usage methods as follows.
         
-        @Image(source: rum_access, alt: "自定义 RUM 的使用")
+        @Image(source: rum_access, alt: "Custom RUM usage")
     }
     
-    @Section(title: "自定义 RUM 数据") {
+    @Section(title: "Custom RUM Data") {
         @ContentAndMedia {
             
-            使用``FTMobileSDK/FTExternalDataManager``类来进行数据添加。
+            Use the ``FTMobileSDK/FTExternalDataManager`` class to add data.
 
-            @Image(source: rum_access, alt: "自定义 RUM 的使用")
+            @Image(source: rum_access, alt: "Custom RUM usage")
         }
         
         @Steps {

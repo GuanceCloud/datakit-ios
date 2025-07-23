@@ -9,13 +9,13 @@
 #import <Foundation/Foundation.h>
 
 NS_ASSUME_NONNULL_BEGIN
-/// 自定义 Trace 的内容
+/// Custom Trace content
 @interface FTTraceContext: NSObject
-/// traceId，用于关联 rum
+/// traceId, used to associate with rum
 @property (nonatomic, copy) NSString *traceId;
-/// spanId，用于关联 rum
+/// spanId, used to associate with rum
 @property (nonatomic, copy) NSString *spanId;
-/// trace 数据，SDK 收到回调后会添加至 request.allHTTPHeaderFields 中
+/// trace data, SDK will add to request.allHTTPHeaderFields after receiving callback
 @property (nonatomic, strong) NSDictionary<NSString*,NSString*>*traceHeader;
 
 @end

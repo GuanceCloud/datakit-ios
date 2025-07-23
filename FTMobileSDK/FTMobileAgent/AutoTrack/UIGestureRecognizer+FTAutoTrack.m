@@ -2,7 +2,7 @@
 //  UIGestureRecognizer+FTAutoTrack.m
 //  FTMobileAgent
 //
-//  Created by 胡蕾蕾 on 2021/7/21.
+//  Created by hulilei on 2021/7/21.
 //  Copyright © 2021 hll. All rights reserved.
 //
 
@@ -15,7 +15,7 @@
 
 - (void)ftTrackGestureRecognizerAppClick:(UIGestureRecognizer *)gesture{
     @try {
-        // 手势处于 Ended 状态
+        // The gesture is in the Ended state
         if (gesture.state != UIGestureRecognizerStateEnded) {
             return;
         }
@@ -38,7 +38,7 @@
         FTInnerLogError(@"%@ error: %@", self, exception);
     }
 }
-// 查找弹框手势选择所在的 view
+// Find the view where the gesture selection is located
 - (UIView *)searchGestureTouchView:(UIGestureRecognizer *)gesture {
     UIView *gestureView = gesture.view;
     CGPoint point = [gesture locationInView:gestureView];

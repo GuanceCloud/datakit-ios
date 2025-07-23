@@ -2,7 +2,7 @@
 //  FTMonitorUtils.m
 //  FTMobileAgent
 //
-//  Created by 胡蕾蕾 on 2020/4/28.
+//  Created by hulilei on 2020/4/28.
 //  Copyright © 2020 hll. All rights reserved.
 //
 #if ! __has_feature(objc_arc)
@@ -19,8 +19,8 @@
 #import <UIKit/UIKit.h>
 #endif
 @implementation FTMonitorUtils
-#pragma mark ========== 电池 ==========
-//电池电量
+#pragma mark ========== Battery ==========
+//Battery level
 +(double)batteryUse{
 #if FT_MAC
     CFTypeRef info = IOPSCopyPowerSourcesInfo();
@@ -55,8 +55,8 @@
 #endif
     return 0;
 }
-#pragma mark ========== 内存 ==========
-//当前任务所占用的内存
+#pragma mark ========== Memory ==========
+//Memory occupied by current task
 + (float)usedMemory{
     int64_t memoryUsageInByte = 0;
     task_vm_info_data_t vmInfo;
@@ -70,7 +70,7 @@
     double total = [NSProcessInfo processInfo].physicalMemory ;
     return memoryUsageInByte/total*100.00;
 }
-//总内存
+//Total memory
 +(NSString *)totalMemorySize{
     return [NSString stringWithFormat:@"%.2fG",[NSProcessInfo processInfo].physicalMemory / 1024.0 / 1024.0/ 1024.0];
     
@@ -96,7 +96,7 @@
     
     thread_basic_info_t basic_info_th;
     
-    // mach_task_self()，表示获取当前的 Mach task
+    // mach_task_self(), means get the current Mach task
     kr = task_threads(mach_task_self(), &thread_list, &thread_count);
     if (kr != KERN_SUCCESS) {
         return -1;

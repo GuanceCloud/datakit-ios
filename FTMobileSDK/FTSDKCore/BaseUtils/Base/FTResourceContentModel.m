@@ -2,7 +2,7 @@
 //  FTResourceContentModel.m
 //  FTMobileAgent
 //
-//  Created by 胡蕾蕾 on 2021/10/27.
+//  Created by hulilei on 2021/10/27.
 //  Copyright © 2021 DataFlux-cn. All rights reserved.
 //
 

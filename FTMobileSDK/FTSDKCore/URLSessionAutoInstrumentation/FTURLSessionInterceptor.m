@@ -65,8 +65,8 @@ static dispatch_once_t onceToken;
 }
 #pragma mark  ========== SessionTaskHandler ==========
 /**
- * 内部采集以 task 为 key
- * 外部传传入为 NSString 类型的 key
+ * Internal collection uses task as key
+ * External input uses NSString type key
  */
 - (void)setTraceHandler:(FTSessionTaskHandler *)handler forKey:(id)key{
     if (key == nil) {
@@ -76,7 +76,7 @@ static dispatch_once_t onceToken;
         [value setValue:handler forKey:key];
     }];
 }
-// 因为不涉及 trace 数据写入 调用-getTraceHandler方法的仅是 rum 操作 需要确保 rum 调用此方法
+// Since trace data writing is not involved, only rum operations call the -getTraceHandler method, need to ensure rum calls this method
 - (FTSessionTaskHandler *)getTraceHandler:(id)key{
     if (key == nil) {
         return nil;
@@ -282,6 +282,9 @@ static dispatch_once_t onceToken;
 - (void)taskCompleted:(NSURLSessionTask *)task error:(nullable NSError *)error{
     [self taskCompleted:task error:error extraProvider:nil errorFilter:nil];
 }
+- (void)taskCompleted:(NSURLSessionTask *)task error:(nullable NSError *)error extraProvider:(nullable ResourcePropertyProvider)extraProvider{
+    [self taskCompleted:task error:error extraProvider:extraProvider errorFilter:nil];
+}
 - (void)taskCompleted:(NSURLSessionTask *)task error:(NSError *)error extraProvider:(nullable ResourcePropertyProvider)extraProvider errorFilter:(nullable SessionTaskErrorFilter)errorFilter{
     ResourcePropertyProvider provider = extraProvider?:self.resourcePropertyProvider;
     SessionTaskErrorFilter filter = errorFilter?:self.sessionTaskErrorFilter;
@@ -325,7 +328,7 @@ static dispatch_once_t onceToken;
     }
     return [self.tracer networkTraceHeaderWithUrl:url];
 }
-// `SkyWalking` 需要参数 URL
+// `SkyWalking` requires URL parameter
 -(NSDictionary *)getTraceHeaderWithKey:(NSString *)key url:(NSURL *)url{
     if(!_tracer){
         FTInnerLogError(@"SDK configuration Trace error, trace is not supported");

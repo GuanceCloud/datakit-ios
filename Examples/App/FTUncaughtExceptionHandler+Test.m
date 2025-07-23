@@ -2,7 +2,7 @@
 //  FTUncaughtExceptionHandler+Test.m
 //  FTMobileSDKUITests
 //
-//  Created by 胡蕾蕾 on 2020/9/21.
+//  Created by hulilei on 2020/9/21.
 //  Copyright © 2020 hll. All rights reserved.
 //
 
@@ -40,15 +40,15 @@
     }];
     [alert addAction:action];
     [vc presentViewController:alert animated:YES completion:nil];
-    //获取MainRunloop
+    //Get MainRunloop
     CFRunLoopRef runLoop = CFRunLoopGetCurrent();
     CFArrayRef allModes = CFRunLoopCopyAllModes(runLoop);
-    while (!testSuccess){  //根据testSuccess标记来判断当前是否需要继续卡死线程，可以在操作完成后修改testSuccess的值。
+    while (!testSuccess){  //Use testSuccess flag to determine whether to continue blocking the thread, can modify testSuccess value after operation is completed.
         for (NSString *mode in (__bridge NSArray *)allModes) {
             CFRunLoopRunInMode((CFStringRef)mode, 0.001, false);
         }
     }
-    //释放对象
+    //Release objects
     CFRelease(allModes);
 }
 + (UIWindow *)keyWindow{

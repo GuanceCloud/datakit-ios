@@ -2,44 +2,44 @@
 //  FTMobileConfig.h
 //  FTMobileAgent
 //
-//  Created by 胡蕾蕾 on 2019/12/6.
+//  Created by hulilei on 2019/12/6.
 //  Copyright © 2019 hll. All rights reserved.
 //
 
 #import <Foundation/Foundation.h>
 @class FTTraceContext;
-/// ERROR 中的设备信息
+/// Device information in ERROR
 typedef NS_OPTIONS(NSUInteger, FTErrorMonitorType) {
-    /// 开启所有监控： 电池、内存、CPU使用率
+    /// Enable all monitoring: battery, memory, CPU usage    
     FTErrorMonitorAll          = 0xFFFFFFFF,
-    /// 电池电量
+    /// Battery level
     FTErrorMonitorBattery      = 1 << 1,
-    /// 内存总量、内存使用率
+    /// Total memory, memory usage
     FTErrorMonitorMemory       = 1 << 2,
-    /// CPU使用率
+    /// CPU usage
     FTErrorMonitorCpu          = 1 << 3,
 };
-/// 设备信息监控项
+/// Device information monitoring items
 typedef NS_OPTIONS(NSUInteger, FTDeviceMetricsMonitorType){
-    /// 开启所有监控项:内存、CPU、FPS
+    /// Enable all monitoring items: memory, CPU, FPS
     FTDeviceMetricsMonitorAll      = 0xFFFFFFFF,
-    /// 平均内存、最高内存
+    /// Average memory, peak memory
     FTDeviceMetricsMonitorMemory   = 1 << 2,
-    /// CPU 跳动最大、平均数
+    /// CPU maximum fluctuation, average
     FTDeviceMetricsMonitorCpu      = 1 << 3,
-    /// fps 最低帧率、平均帧率
+    /// FPS minimum frame rate, average frame rate
     FTDeviceMetricsMonitorFps      = 1 << 4,
 };
-/// 监控项采样周期
+/// Monitoring item sampling frequency
 typedef NS_ENUM(NSUInteger, FTMonitorFrequency) {
-    /// 500ms (默认)
+    /// 500ms (default)
     FTMonitorFrequencyDefault,
     /// 100ms
     FTMonitorFrequencyFrequent,
     /// 1000ms
     FTMonitorFrequencyRare,
 };
-/// 网络链路追踪使用类型
+/// Network link tracing usage type
 typedef NS_ENUM(NSUInteger, FTNetworkTraceType) {
     /// datadog trace
     FTNetworkTraceTypeDDtrace,
@@ -54,20 +54,20 @@ typedef NS_ENUM(NSUInteger, FTNetworkTraceType) {
     /// jaeger
     FTNetworkTraceTypeJaeger,
 };
-/// 环境。属性值：prod/gray/pre/common/local。
+/// Environment. Property values: prod/gray/pre/common/local.
 typedef NS_ENUM(NSInteger, FTEnv) {
-    /// 线上环境
+    /// Production environment
     FTEnvProd         = 0,
-    /// 灰度环境
+    /// Gray environment
     FTEnvGray,
-    /// 预发布环境
+    /// Pre-release environment
     FTEnvPre,
-    /// 日常环境
+    /// Daily environment
     FTEnvCommon,
-    /// 本地环境
+    /// Local environment
     FTEnvLocal,
 };
-/// 数据同步大小
+/// Data synchronization size
 typedef NS_ENUM(NSUInteger, FTSyncPageSize) {
     /// MINI 5
     FTSyncPageSizeMini = 0,
@@ -77,196 +77,196 @@ typedef NS_ENUM(NSUInteger, FTSyncPageSize) {
     FTSyncPageSizeMax,
 };
 
-/// RUM废弃策略
+/// RUM discard strategy
 typedef NS_ENUM(NSInteger, FTRUMCacheDiscard)  {
-    /// 默认，当日志数据数量大于最大值（100_000）时，新数据不进行写入
+    /// Default, when log data count exceeds maximum (100_000), new data is not written
     FTRUMDiscard,
-    /// 当日志数据大于最大值时,废弃旧数据
+    /// When log data exceeds maximum, discard old data
     FTRUMDiscardOldest
 };
-/// DB废弃策略
+/// DB discard strategy
 typedef NS_ENUM(NSInteger, FTDBCacheDiscard)  {
-    /// 默认，当数据库存储大于最大值(默认100MB)时，新数据不进行写入
+    /// Default, when database storage exceeds maximum (default 100MB), new data is not written
     FTDBDiscard,
-    /// 当数据库存储大于最大值,废弃旧数据
+    /// When database storage exceeds maximum, discard old data
     FTDBDiscardOldest
 };
 #import "FTDataModifier.h"
 
 NS_ASSUME_NONNULL_BEGIN
-/// RUM 过滤 resource 回调，返回：NO 表示要采集，YES 表示不需要采集。
+/// RUM filter resource callback, returns: NO means to collect, YES means not to collect.
 typedef BOOL(^FTResourceUrlHandler)(NSURL * url);
-/// RUM Resource 自定义添加额外属性
+/// RUM Resource custom add extra properties
 typedef NSDictionary<NSString *,id>* _Nullable (^FTResourcePropertyProvider)( NSURLRequest * _Nullable request, NSURLResponse * _Nullable response,NSData *_Nullable data, NSError *_Nullable error);
-/// 支持自定义 trace, 确认拦截后，返回 TraceContext，不拦截返回 nil
+/// Support custom trace, after confirming interception, returns TraceContext, returns nil if not intercepted
 typedef FTTraceContext*_Nullable(^FTTraceInterceptor)(NSURLRequest *_Nonnull request);
-/// 支持自定义拦截 SessionTask Error，确认拦截返回 YES，不拦截返回 NO
+/// Support custom intercept SessionTask Error, confirm interception returns YES, not intercepted returns NO
 typedef BOOL (^FTSessionTaskErrorFilter)(NSError *_Nonnull error);
 
-/// RUM 功能的配置项
+/// RUM functionality configuration items
 @interface FTRumConfig : NSObject
-/// 指定初始化方法，设置 appid
+/// Designated initializer, set appid
 ///
 /// - Parameters:
-///   - appid: 用户访问监测应用 ID 唯一标识，在用户访问监测控制台上面创建监控时自动生成.
-/// - Returns: rum 配置项.
+///   - appid: User access monitoring application ID unique identifier, automatically generated when creating monitoring in the user access monitoring console.
+/// - Returns: rum configuration items.
 - (instancetype)initWithAppid:(nonnull NSString *)appid;
-/// 禁用 new 初始化
+/// Disable new initialization
 + (instancetype)new NS_UNAVAILABLE;
-/// 用户访问监测应用 ID 唯一标识，在用户访问监测控制台上面创建监控时自动生成.
+/// User access monitoring application ID unique identifier, automatically generated when creating monitoring in the user access monitoring console.
 @property (nonatomic, copy) NSString *appid;
-/// 采样配置，属性值：0至100，100则表示百分百采集，不做数据样本压缩。
+/// Sampling configuration, property values: 0 to 100, 100 means 100% collection, no data sample compression.
 @property (nonatomic, assign) int samplerate;
-/// 采集发生 Error 的会话
-/// 当功能开启后，若原本未被采样率选中的 Session 发生错误，SDK 将对这些原本不采集的 Session 进行数据采集
+/// Collect sessions that have errors
+/// When the feature is enabled, if a Session that was not originally selected by the sampling rate encounters an error, the SDK will collect data from these originally uncollected Sessions
 @property (nonatomic, assign) int sessionOnErrorSampleRate;
-/// 设置是否追踪用户操作，目前支持应用启动和点击操作，
-/// 在有 View 事件的情况下，开启才能生效
+/// Set whether to track user actions, currently supports app launch and click actions,
+/// Only effective when View events are present
 @property (nonatomic, assign) BOOL enableTraceUserAction;
-/// 设置是否追踪页面生命周期 （仅作用于autotrack）
+/// Set whether to track page lifecycle (only applies to autotrack)
 @property (nonatomic, assign) BOOL enableTraceUserView;
-/// 设置是否追踪用户网络请求  (仅作用于native http)
+/// Set whether to track user network requests (only applies to native http)
 @property (nonatomic, assign) BOOL enableTraceUserResource;
-/// 设置是否采集网络请求 Host IP (仅作用于native http，iOS 13及以上)
+/// Set whether to collect network request Host IP (only applies to native http, iOS 13 and above)
 @property (nonatomic, assign) BOOL enableResourceHostIP;
-/// 自定义采集 resource 规则。
-/// 根据请求资源 url 判断是否需要采集对应资源数据，默认都采集。 返回：NO 表示要采集，YES 表示不需要采集。
+/// Custom collection resource rules.
+/// Determine whether to collect corresponding resource data based on the requested resource URL, default is to collect all. Returns: NO means to collect, YES means not to collect.
 @property (nonatomic, copy) FTResourceUrlHandler resourceUrlHandler;
-/// 设置是否需要采集崩溃日志
+/// Set whether to collect crash logs
 @property (nonatomic, assign) BOOL enableTrackAppCrash;
-/// 设置是否需要采集卡顿
+/// Set whether to collect freezes
 @property (nonatomic, assign) BOOL enableTrackAppFreeze;
-/// 设置卡顿的阈值。单位毫秒 100 < freezeDurationMs ，默认 250ms
+/// Set freeze threshold. Unit milliseconds 100 < freezeDurationMs, default 250ms
 @property (nonatomic, assign) long freezeDurationMs;
-/// 设置是否需要采集 ANR
+/// Set whether to collect ANR
 ///
-/// runloop 采集主线程卡顿
+/// runloop collects main thread freezes
 @property (nonatomic, assign) BOOL enableTrackAppANR;
-/// ERROR 中的设备信息
+/// Device information in ERROR
 @property (nonatomic, assign) FTErrorMonitorType errorMonitorType;
-/// 设置监控类型 不设置则不开启监控
+/// Set monitoring type, if not set then monitoring is not enabled
 @property (nonatomic, assign) FTDeviceMetricsMonitorType deviceMetricsMonitorType;
-/// 设置监控采样周期
+/// Set monitoring sampling frequency
 @property (nonatomic, assign) FTMonitorFrequency monitorFrequency;
-/// 设置 rum 全局 tag
+/// Set rum global tags
 ///
-/// 保留标签:特殊 key - track_id (用于追踪功能)
+/// Reserved tags: special key - track_id (for tracking functionality)
 @property (nonatomic, copy) NSDictionary<NSString*,NSString*> *globalContext;
-/// RUM 最大缓存量,  默认 100_000
+/// RUM maximum cache limit, default 100_000
 @property (nonatomic, assign) int rumCacheLimitCount;
-/// RUM废弃策略
+/// RUM discard strategy
 @property (nonatomic, assign) FTRUMCacheDiscard rumDiscardType;
-/// RUM Resource 添加自定义属性
+/// RUM Resource add custom properties
 @property (nonatomic, copy) FTResourcePropertyProvider resourcePropertyProvider;
-/// 拦截 SessionTask Error，确认拦截返回 YES，不拦截返回 NO
+/// Intercept SessionTask Error, confirm interception returns YES, not intercepted returns NO
 @property (nonatomic, copy) FTSessionTaskErrorFilter sessionTaskErrorFilter;
 
-/// 设置开启采集 webview 数据，默认 YES
+/// Set whether to enable WebView data collection, default YES
 @property (nonatomic, assign) BOOL enableTraceWebView;
-/// 设置允许采集 WebView 数据的特定主机或域名，nil 时全采集。
+/// Set specific hosts or domains allowed to collect WebView data, nil means collect all.
 @property (nonatomic, copy) NSArray *allowWebViewHost;
 
 
-/// 开启采集卡顿并设置卡顿的阈值。
-/// - Parameter enableTrackAppFreeze: 设置是否需要采集卡顿
-/// - Parameter freezeDurationMs: 卡顿的阈值，单位毫秒 100 < freezeDurationMs ，默认 250ms
+/// Enable freeze collection and set freeze threshold.
+/// - Parameter enableTrackAppFreeze: Set whether to collect freezes
+/// - Parameter freezeDurationMs: Freeze threshold, unit milliseconds 100 < freezeDurationMs, default 250ms
 -(void)setEnableTrackAppFreeze:(BOOL)enableTrackAppFreeze freezeDurationMs:(long)freezeDurationMs;
 @end
-/// Trace 功能配置项
+/// Trace functionality configuration items
 @interface FTTraceConfig : NSObject
-/// 禁用 new 初始化
+/// Disable new initialization
 + (instancetype)new NS_UNAVAILABLE;
-/// 采样配置，属性值：0至100，100则表示百分百采集，不做数据样本压缩。
+/// Sampling configuration, property values: 0 to 100, 100 means 100% collection, no data sample compression.
 @property (nonatomic, assign) int samplerate;
-/// 设置网络请求信息采集时 使用链路追踪类型 type 默认为 DDtrace
+/// Set network request information collection to use link tracing type, default is DDtrace
 @property (nonatomic, assign) FTNetworkTraceType networkTraceType;
-/// 支持通过 URLRequest 判断是否进行自定义 trace,确认拦截后，返回 TraceContext，不拦截返回 nil
+/// Support custom trace through URLRequest, after confirming interception, returns TraceContext, returns nil if not intercepted
 @property (nonatomic,copy) FTTraceInterceptor traceInterceptor;
-/// 是否将 Trace 数据与 rum 关联
+/// Whether to associate Trace data with rum
 ///
-/// 仅在 FTNetworkTraceType 设置为 FTNetworkTraceTypeDDtrace 时生效
+/// Only effective when FTNetworkTraceType is set to FTNetworkTraceTypeDDtrace
 @property (nonatomic, assign) BOOL enableLinkRumData;
-/// 设置是否开启自动 http trace
+/// Set whether to enable automatic http trace
 @property (nonatomic, assign) BOOL enableAutoTrace;
 @end
 
-/// SDK 基础配置项
+/// SDK basic configuration items
 @interface FTMobileConfig : NSObject
-/// 指定初始化方法，设置 metricsUrl
-/// - Parameter metricsUrl: 数据上报地址
-- (instancetype)initWithMetricsUrl:(NSString *)metricsUrl DEPRECATED_MSG_ATTRIBUTE("已过时，请使用 -initWithDatakitUrl: 替换");
+/// Designated initializer, set metricsUrl
+/// - Parameter metricsUrl: Data reporting address
+- (instancetype)initWithMetricsUrl:(NSString *)metricsUrl DEPRECATED_MSG_ATTRIBUTE("Deprecated, please use -initWithDatakitUrl: instead");
 
-/// 本地环境部署，设置 datakitUrl
-/// - Parameter datakitUrl: datakit 数据上报地址
+/// Local environment deployment, set datakitUrl
+/// - Parameter datakitUrl: datakit data reporting address
 - (instancetype)initWithDatakitUrl:(NSString *)datakitUrl;
 
-/// 使用公网 DataWay 部署，设置 datawayUrl 与 clientToken
-/// - Parameter datawayUrl: datawayUrl 数据上报地址
+/// Use public network DataWay deployment, set datawayUrl and clientToken
+/// - Parameter datawayUrl: datawayUrl data reporting address
 /// - Parameter clientToken: dataway token
 - (instancetype)initWithDatawayUrl:(NSString *)datawayUrl clientToken:(NSString *)clientToken;
 
-/// 禁用 init 初始化
+/// Disable init initialization
 - (instancetype)init NS_UNAVAILABLE;
 
-/// 禁用 new 初始化
+/// Disable new initialization
 + (instancetype)new NS_UNAVAILABLE;
-/// 数据上报地址
-@property (nonatomic, copy) NSString *metricsUrl DEPRECATED_MSG_ATTRIBUTE("已过时，请使用 datakitUrl 替换");
-/// 数据上报 datakit 地址
+/// Data reporting address
+@property (nonatomic, copy) NSString *metricsUrl DEPRECATED_MSG_ATTRIBUTE("Deprecated, please use datakitUrl instead");
+/// Data reporting datakit address
 @property (nonatomic, copy) NSString *datakitUrl;
-/// 数据上报 dataway 地址
+/// Data reporting dataway address
 @property (nonatomic, copy) NSString *datawayUrl;
 /// client token
 @property (nonatomic, copy) NSString *clientToken;
-/// 设置自定义环境字段。
+/// Set custom environment field.
 @property (nonatomic, copy) NSString *env;
-/// 设置是否允许 SDK 打印 Debug 日志。
+/// Set whether to allow SDK to print Debug logs.
 @property (nonatomic, assign) BOOL enableSDKDebugLog;
-/// 应用版本号。默认`CFBundleShortVersionString`值
-@property (nonatomic, copy) NSString *version DEPRECATED_MSG_ATTRIBUTE("已废弃，version 将统一使用`CFBundleShortVersionString`值");
-/// 所属业务或服务的名称 默认：df_rum_ios
+/// Application version number. Default `CFBundleShortVersionString` value
+@property (nonatomic, copy) NSString *version DEPRECATED_MSG_ATTRIBUTE("Deprecated, version will uniformly use `CFBundleShortVersionString` value");
+/// Business or service name, default: df_rum_ios
 @property (nonatomic, copy) NSString *service;
-/// 数据是否进行自动同步上传 默认：YES
+/// Whether data is automatically synchronized and uploaded, default: YES
 @property (nonatomic, assign) BOOL autoSync;
-/// 数据同步时每条请求同步条数,最小值 5 默认：10
+/// Number of items synchronized per request during data synchronization, minimum 5, default: 10
 @property (nonatomic, assign) int syncPageSize;
-/// 数据同步时每条请求间隔时间 单位毫秒 0< syncSleepTime <5000
+/// Interval time between requests during data synchronization, unit milliseconds 0< syncSleepTime <5000
 @property (nonatomic, assign) int syncSleepTime;
-/// 数据同步时是否开启数据整数兼容，默认 YES
+/// Whether to enable data integer compatibility during data synchronization, default YES
 @property (nonatomic, assign) BOOL enableDataIntegerCompatible;
-/// 设置内部数据同步时是否开启压缩 默认: NO
+/// Set whether to enable compression during internal data synchronization, default: NO
 @property (nonatomic, assign) BOOL compressIntakeRequests;
-/// 开启使用 db 限制数据大小
+/// Enable using db to limit data size
 @property (nonatomic, assign) BOOL enableLimitWithDbSize;
-/// db 缓存限制大小,默认 100MB,单位 byte
+/// db cache limit size, default 100MB, unit byte
 @property (nonatomic, assign) long dbCacheLimit;
-/// 数据库废弃策略
+/// Database discard strategy
 @property (nonatomic, assign) FTDBCacheDiscard dbDiscardType;
 
-/// 设置 SDK 全局 tag
+/// Set SDK global tags
 ///
-/// 保留标签： sdk_package_flutter、sdk_package_react_native
+/// Reserved tags: sdk_package_flutter, sdk_package_react_native
 @property (nonatomic, copy) NSDictionary<NSString*,NSString*> *globalContext;
 
-/// 需要采集的 Extensions 对应的 AppGroups Identifier 数组
+/// AppGroups Identifier array for Extensions that need to be collected
 @property (nonatomic, copy) NSArray<NSString*> *groupIdentifiers;
 
-/// 设置数据更改器，字段替换，适合全局字段替换场景
+/// Set data modifier, field replacement, suitable for global field replacement scenarios
 @property (nonatomic, copy) FTDataModifier dataModifier;
 
-/// 设置数据更改器，可以针对某一行进行判断，再决定是否需要替换某一个数值
+/// Set data modifier, can make judgments for a specific row, then decide whether to replace a certain value
 @property (nonatomic, copy) FTLineDataModifier lineDataModifier;
 
-/// 设置是否开启远程动态配置
+/// Set whether to enable remote dynamic configuration
 @property (nonatomic, assign) BOOL remoteConfiguration;
 
-/// 设置远程动态配置最小更新间隔，单位秒,默认 12*60*60
+/// Set remote dynamic configuration minimum update interval, unit seconds, default 12*60*60
 @property (nonatomic, assign) int remoteConfigMiniUpdateInterval;
-/// 根据提供的 FTEnv 类型设置 env
-/// - Parameter envType: 环境
+/// Set env based on provided FTEnv type
+/// - Parameter envType: Environment
 - (void)setEnvWithType:(FTEnv)envType;
-/// 根据提供的 FTSyncPageSize 类型设置 syncPageSize
-/// - Parameter pageSize: 数据同步大小
+/// Set syncPageSize based on provided FTSyncPageSize type
+/// - Parameter pageSize: Data synchronization size
 - (void)setSyncPageSizeWithType:(FTSyncPageSize)pageSize;
 
 @end

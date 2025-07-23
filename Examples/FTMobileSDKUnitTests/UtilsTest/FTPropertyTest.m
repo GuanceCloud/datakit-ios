@@ -2,7 +2,7 @@
 //  FTPropertyTest.m
 //  FTMobileSDKUnitTests
 //
-//  Created by 胡蕾蕾 on 2020/9/18.
+//  Created by hulilei on 2020/9/18.
 //  Copyright © 2020 hll. All rights reserved.
 //
 
@@ -35,8 +35,8 @@
 
 - (void)setUp {
     /**
-     * 设置 ft-sdk-iosTestUnitTests 的 Environment Variables
-     * 额外 添加 isUnitTests = 1 防止 SDK 在 AppDelegate 启动 对单元测试造成影响
+     * Set Environment Variables for ft-sdk-iosTestUnitTests
+     * Additionally add isUnitTests = 1 to prevent SDK from affecting unit tests when starting in AppDelegate
      */
     NSProcessInfo *processInfo = [NSProcessInfo processInfo];
     self.url = [processInfo environment][@"ACCESS_SERVER_URL"];
@@ -74,8 +74,8 @@
     [FTMobileAgent shutDown];
 }
 /**
- * url 为 空字符串
- * 验证标准：url为空字符串时 FTMobileAgent 调用  - startWithConfigOptions： 会崩溃 为 true
+ * url is empty string
+ * Verification standard: when url is empty string, FTMobileAgent calling - startWithConfigOptions: will crash as true
  */
 - (void)testSetEmptyUrl{
     FTMobileConfig *config = [[FTMobileConfig alloc]initWithDatakitUrl:@""];
@@ -83,7 +83,7 @@
     XCTAssertThrows([FTMobileAgent startWithConfigOptions:config]);
 }
 - (void)testIllegalUrl{
-    XCTestExpectation *expect = [self expectationWithDescription:@"请求超时timeout!"];
+    XCTestExpectation *expect = [self expectationWithDescription:@"Request timeout!"];
     FTMobileConfig *config = [[FTMobileConfig alloc]initWithDatakitUrl:@"111"];
     config.autoSync = NO;
     [FTMobileAgent startWithConfigOptions:config];
@@ -107,8 +107,8 @@
     [FTMobileAgent shutDown];
 }
 /**
- * 设置 appid 后 Rum 开启
- * 验证： Rum 数据能正常写入
+ * After setting appid, Rum is enabled
+ * Verification: Rum data can be written normally
  */
 - (void)testSetAppid{
     FTMobileConfig *config = [[FTMobileConfig alloc]initWithDatakitUrl:self.url];
@@ -126,8 +126,8 @@
     [FTMobileAgent shutDown];
 }
 /**
- * 未设置 appid  Rum 关闭
- * 验证： Rum 数据不能正常写入
+ * When appid is not set, Rum is disabled
+ * Verification: Rum data cannot be written normally
  */
 -(void)testSetEmptyAppid{
     FTMobileConfig *config = [[FTMobileConfig alloc]initWithDatakitUrl:self.url];

@@ -63,12 +63,12 @@ NSString * const kFTUserInfo = @"FT_USER_INFO";
     self.email = nil;
     self.isSignIn = NO;
 }
-//适配 1.3.6 及以下版本
+//Compatible with version 1.3.6 and below
 + (NSString *)userId{
     NSString  *userid =[[NSUserDefaults standardUserDefaults] valueForKey:@"ft_userid"];
     return userid;
 }
-//userID 用户未设置时的默认值
+//Default value when userID is not set by user
 + (NSString *)userSessionId{
     NSString  *sessionId =[[NSUserDefaults standardUserDefaults] valueForKey:@"ft_sessionid"];
     if (!sessionId) {

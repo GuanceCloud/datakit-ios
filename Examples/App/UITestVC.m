@@ -2,7 +2,7 @@
 //  UITestVC.m
 //  ft-sdk-iosTest
 //
-//  Created by 胡蕾蕾 on 2019/12/20.
+//  Created by hulilei on 2019/12/20.
 //  Copyright © 2019 hll. All rights reserved.
 //
 
@@ -50,7 +50,7 @@
     _firstButton.accessibilityLabel = @"FirstButton";
     _firstButton.layer.borderColor = [UIColor grayColor].CGColor;
     [_scrollView addSubview:_firstButton];
-  
+
     
     y = CGRectGetMaxY(_firstButton.frame) + 22;
     _secondButton = [UIButton buttonWithType:UIButtonTypeSystem];
@@ -68,7 +68,7 @@
     _stepper = [[UIStepper alloc] initWithFrame:CGRectMake(x, y, 80, 40)];
     [_stepper addTarget:self action:@selector(stepperAction:) forControlEvents:UIControlEventValueChanged];
     [_scrollView addSubview:_stepper];
-    
+
     _uiswitch = [[UISwitch alloc] init];
     _uiswitch.frame = CGRectMake(CGRectGetMaxX(_stepper.frame)+30, y, 80, 40);
     [_uiswitch addTarget:self action:@selector(switchAction:) forControlEvents:UIControlEventValueChanged];
@@ -144,7 +144,7 @@
     [self.view addSubview:_collectionView];
 }
 - (void)datePickerValueChanged:(id)sender{
-    
+
 }
 - (void)firstAction:(UIButton *)sender {
     NSLog(@"%@ Touch Up Inside", sender.currentTitle);
@@ -152,13 +152,13 @@
         if(!_activityIndicator){
             UIActivityIndicatorView *activityIndicator = [[UIActivityIndicatorView alloc]initWithActivityIndicatorStyle:UIActivityIndicatorViewStyleMedium];
             activityIndicator.frame = CGRectMake(0, 0, 50, 50);
-            
+
             // 设置颜色
             activityIndicator.color = [UIColor grayColor];
-            
+
             // 设置位置
             activityIndicator.center = self.view.center;
-            
+
             // 添加到视图
             [self.view addSubview:activityIndicator];
             _activityIndicator = activityIndicator;
@@ -190,11 +190,11 @@
 
 - (void)labelTouchUpInside:(UITapGestureRecognizer *)recognizer {
     UILabel *label = (UILabel *)recognizer.view;
-    NSLog(@"%@被点击了", label.text);
+    NSLog(@"%@ was clicked", label.text);
 }
 - (void)tap1Action:(UIGestureRecognizer *)sender {
     UILabel *label = (UILabel *)sender.view;
-    NSLog(@"%@被点击了", label.text);
+    NSLog(@"%@ was clicked", label.text);
 }
 
 - (void)tap2Action:(UIGestureRecognizer *)sender {
@@ -203,7 +203,7 @@
     cancel.accessibilityLabel = @"alert cancel";
     [alert addAction:cancel];
     [self presentViewController:alert animated:YES completion:nil];
-    NSLog(@"UIImageView被点击了");
+    NSLog(@"UIImageView was clicked");
 }
 - (void)tap{
     [_textField resignFirstResponder];

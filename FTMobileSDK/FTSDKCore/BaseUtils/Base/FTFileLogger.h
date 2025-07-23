@@ -32,15 +32,15 @@ NS_ASSUME_NONNULL_BEGIN
 - (instancetype)initWithFilePath:(NSString *)aFilePath;
 @end
 /**
- 单个文件大小限制 32MB
- 总的磁盘占用限制 1G
- 文件新增、删除逻辑：单个文件大小超过限制，新增新的日志文件写入，文件总大小超过限制时删除最旧的文件
+ Single file size limit 32MB
+ Total disk usage limit 1G
+ File addition and deletion logic: when single file size exceeds limit, add new log file for writing, when total file size exceeds limit, delete the oldest file
  */
 @interface FTFileLogger : FTAbstractLogger
 @property (atomic, readwrite, assign) unsigned long long maximumFileSize;
 @property (nonatomic, copy, readwrite) NSString *logsDirectory;
-/// 初始化方法
-/// - Parameter manager: 文件管理对象
+/// Initialization method
+/// - Parameter manager: File management object
 -(instancetype)initWithLogFileManager:(FTLogFileManager *)manager;
 @end
 

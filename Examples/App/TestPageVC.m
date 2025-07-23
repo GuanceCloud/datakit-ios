@@ -17,7 +17,7 @@
 @implementation TestPageVC
 - (UIPageViewController *)pageViewController {
     if (!_pageViewController) {
-        // 设置水平滚动
+        // Set horizontal scrolling
         UIPageViewController *pageVc = [[UIPageViewController alloc] initWithTransitionStyle:UIPageViewControllerTransitionStyleScroll
                                                                       navigationOrientation:UIPageViewControllerNavigationOrientationHorizontal
                                                                                     options:nil];
@@ -32,7 +32,7 @@
     // Do any additional setup after loading the view.
     [self addPageViewController];
        
-       // 设置初始化显示视图控制器
+       // Set the initial display view controller
     [self.pageViewController setViewControllers:@[[self pages][self.currentIndex]]
                                          direction:UIPageViewControllerNavigationDirectionForward
                                           animated:YES
@@ -45,7 +45,7 @@
     [self.pageViewController didMoveToParentViewController:self];
 }
 
-// 页面数据（示例使用不同颜色）
+// Page data (example using different colors)
 - (NSArray<ContentViewController *> *)pages {
     static NSArray<ContentViewController *> *pages = nil;
     static dispatch_once_t onceToken;
@@ -58,7 +58,7 @@
     return pages;
 }
 
-// 获取前一个页面
+// Get the previous page
 - (UIViewController *)pageViewController:(UIPageViewController *)pageViewController viewControllerBeforeViewController:(UIViewController *)viewController {
     if ([viewController isKindOfClass:[ContentViewController class]]) {
         ContentViewController *currentVC = (ContentViewController *)viewController;
@@ -69,7 +69,7 @@
     return nil;
 }
 
-// 获取后一个页面
+// Get the next page
 - (UIViewController *)pageViewController:(UIPageViewController *)pageViewController viewControllerAfterViewController:(UIViewController *)viewController {
     if ([viewController isKindOfClass:[ContentViewController class]]) {
         ContentViewController *currentVC = (ContentViewController *)viewController;
@@ -80,7 +80,7 @@
     return nil;
 }
 
-// 可选：显示页面指示器
+// Optional: display page indicator
 - (NSInteger)presentationCountForPageViewController:(UIPageViewController *)pageViewController {
     return self.pages.count;
 }

@@ -8,7 +8,7 @@
 
 #import "HttpEngineTestUtil.h"
 #import "FTExternalDataManager.h"
-// id <NSURLSessionDelegate>)delegate 直接继承 FTURLSessionDelegate 示例
+// id <NSURLSessionDelegate>)delegate directly inherit FTURLSessionDelegate example
 @interface InstrumentationInheritTestClass:FTURLSessionDelegate
 @property (nonatomic, strong) NSURLSession *session;
 @property (nonatomic, copy) Completion completion;
@@ -22,9 +22,9 @@
     return self;
 }
 -(void)URLSession:(NSURLSession *)session task:(NSURLSessionTask *)task didFinishCollectingMetrics:(NSURLSessionTaskMetrics *)metrics{
-    // 一定要调用 父类 方法
+    // Must call parent class method
     [super URLSession:session task:task didFinishCollectingMetrics:metrics];
-    // 用户自己的逻辑
+    // User's own logic
     // ......
     if(self.completion){
         self.completion();
@@ -33,16 +33,12 @@
 }
 @end
 
-/**
- * session 的 delegate 不为 FTURLSessionDelegate 时，需要遵循 FTURLSessionDelegateProviding 协议，实现 - (nonnull FTURLSessionDelegate *)ftURLSessionDelegate 方法
- * 并在 delegate 方法：
- * - (void)URLSession:(NSURLSession *)session dataTask:(NSURLSessionDataTask *)dataTask
- didReceiveData:(NSData *)data;
- * - (void)URLSession:(NSURLSession *)session task:(NSURLSessionTask *)task
- didCompleteWithError:(nullable NSError *)error;
- * - (void)URLSession:(NSURLSession *)session task:(NSURLSessionTask *)task didFinishCollectingMetrics:(NSURLSessionTaskMetrics *)metrics API_AVAILABLE(macosx(10.12), ios(10.0), watchos(3.0), tvos(10.0));
- * 内部，调用 FTURLSessionDelegate 的对应方法，以便于 SDK 进行数据采集。
- *
+/*
+ * When session's delegate is not FTURLSessionDelegate, need to follow FTURLSessionDelegateProviding protocol, implement - (nonnull FTURLSessionDelegate *)ftURLSessionDelegate method
+ * And in delegate method:
+ * - (void)URLSession:(NSURLSession *)session task:(NSURLSessionTask *)task didFinishCollectingMetrics:(NSURLSessionTaskMetrics *)metrics
+ * - (void)URLSession:(NSURLSession *)session task:(NSURLSessionTask *)task didCompleteWithError:(NSError *)error
+ * Inside, call FTURLSessionDelegate's corresponding method for SDK data collection.
  */
 @interface InstrumentationPropertyTestClass:NSObject<NSURLSessionDataDelegate,FTURLSessionDelegateProviding>
 @property (nonatomic, copy) Completion completion;

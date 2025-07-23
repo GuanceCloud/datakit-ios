@@ -2,7 +2,7 @@
 //  FTHTTPClient.h
 //  FTMacOSSDK
 //
-//  Created by 胡蕾蕾 on 2021/8/2.
+//  Created by hulilei on 2021/8/2.
 //  Copyright © 2021 DataFlux-cn. All rights reserved.
 //
 

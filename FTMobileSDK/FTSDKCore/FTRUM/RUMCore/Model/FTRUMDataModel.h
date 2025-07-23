@@ -2,7 +2,7 @@
 //  FTRUMDataModel.h
 //  FTMobileAgent
 //
-//  Created by 胡蕾蕾 on 2021/5/25.
+//  Created by hulilei on 2021/5/25.
 //  Copyright © 2021 hll. All rights reserved.
 //
 
@@ -36,14 +36,14 @@ NS_ASSUME_NONNULL_BEGIN
 @property (nonatomic, assign) long long tm;
 -(instancetype)initWithType:(FTRUMDataType)type time:(NSDate *)time;
 @end
-/// 处理 Action 事件的数据模型
+/// Data model for handling Action events
 @interface FTRUMActionModel : FTRUMDataModel
 @property (nonatomic, copy) NSString *action_name;
 @property (nonatomic, copy) NSString *action_type;
 -(instancetype)initWithActionName:(NSString *)actionName actionType:(NSString *)actionType;
 
 @end
-/// 处理 View 事件的数据模型
+/// Data model for handling View events
 @interface FTRUMViewModel : FTRUMDataModel
 @property (nonatomic, assign) BOOL isInitialView;
 @property (nonatomic, copy) NSString *view_id;
@@ -84,9 +84,9 @@ NS_ASSUME_NONNULL_BEGIN
 @property (nonatomic, assign) long long session_error_timestamp;
 
 - (instancetype)initWithAppID:(NSString *)appID;
-/// trace、logger 获取 rum 关联数据
+/// trace, logger get rum correlation data
 -(NSDictionary *)getGlobalSessionViewTags;
-/// rum 内部获取相关关联数据
+/// rum internal get related correlation data
 -(NSDictionary *)getGlobalSessionViewActionTags;
 -(NSDictionary *)getGlobalSessionTags;
 @end

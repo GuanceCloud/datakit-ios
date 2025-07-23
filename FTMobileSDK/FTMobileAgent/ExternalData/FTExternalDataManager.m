@@ -2,7 +2,7 @@
 //  FTExternalResourceManager.m
 //  FTMobileAgent
 //
-//  Created by 胡蕾蕾 on 2021/11/22.
+//  Created by hulilei on 2021/11/22.
 //  Copyright © 2021 DataFlux-cn. All rights reserved.
 //
 

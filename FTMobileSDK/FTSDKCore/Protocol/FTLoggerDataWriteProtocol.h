@@ -9,16 +9,16 @@
 #ifndef FTLoggerDataWriteProtocol_h
 #define FTLoggerDataWriteProtocol_h
 NS_ASSUME_NONNULL_BEGIN
-/// RUM 数据写入接口
+/// RUM data write interface
 @protocol FTLoggerDataWriteProtocol <NSObject>
 
-/// Logger 数据写入
+/// Logger data write
 /// - Parameters:
-///   - content: 日志内容
-///   - status: 日志状态
-///   - tags: 属性
-///   - field: 指标
-///   - time: 数据产生时间戳(ns)
+///   - content: Log content
+///   - status: Log status
+///   - tags: Properties
+///   - field: Metrics
+///   - time: Data generation timestamp (ns)
 -(void)logging:(NSString *)content status:(NSString *)status tags:(nullable NSDictionary *)tags field:(nullable NSDictionary *)field time:(long long)time;
 
 @end

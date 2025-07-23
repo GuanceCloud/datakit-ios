@@ -9,14 +9,14 @@ import Foundation
 import FTMobileSDK
 
 
-/// 基于 FTMobileSDK 自定义日志 API 的使用扩展示例。
-/// 在自定义日志中添加文件名、方法名称、行号。
+/// Extension example for using custom log API based on FTMobileSDK.
+/// Add file name, method name, and line number to custom logs.
 /// - Parameters:
-///   - content: 日志内容
-///   - property: 自定义属性(可选)
-///   - file: 文件名
-///   - function: 方法名
-///   - line: 行号
+///   - content: Log content
+///   - property: Custom properties (optional)
+///   - file: File name
+///   - function: Method name
+///   - line: Line number
 public func FTLogInfo(_ content: @autoclosure () -> String = "",
                               property:[String:String]? = nil,
                               file: String = #file,
@@ -72,14 +72,14 @@ public func FTLogOk(_ content: @autoclosure () -> String = "",
 
 
 func funA(){
-    // 方法一：通过 FTMobileAgent
-    // 注意：需要保证在使用的时候 SDK 已经初始化成功，否则在测试环境会断言失败从而崩溃。
+    // Method 1: Through FTMobileAgent
+    // Note: Need to ensure SDK is successfully initialized when using, otherwise it will fail assertion and crash in test environment.
     FTMobileAgent.sharedInstance().logging("Custom_logging_content", status: .statusInfo)
     
-    // 方法二：通过 FTLogger （推荐）
-    // SDK 如果没有初始化成功，调用 FTLogger 中方法添加自定义日志会失败，但不会有断言失败崩溃问题。
+    // Method 2: Through FTLogger (recommended)
+    // If SDK is not successfully initialized, calling methods in FTLogger to add custom logs will fail, but there won't be assertion failure crash issues.
     FTLogger.shared().warning("Custom_logging_content", property: nil)
     
-    // 方法三：针对自定义日志方法的扩展示例。
+    // Method 3: Extension example for custom log methods.
     FTLogOk("aaaa",property:["a":"b"])
 }

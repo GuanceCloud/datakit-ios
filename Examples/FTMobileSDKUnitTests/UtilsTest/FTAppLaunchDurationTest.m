@@ -33,7 +33,7 @@ typedef void(^LaunchDataBlock)(NSString *source, NSDictionary *tags, NSDictionar
     self.launchTracker = nil;
 }
 - (void)testLaunchCold{
-    XCTestExpectation *expectation= [self expectationWithDescription:@"异步操作timeout"];
+    XCTestExpectation *expectation= [self expectationWithDescription:@"Async operation timeout"];
     self.launchBlock = ^(NSNumber * _Nullable duration, FTLaunchType type) {
         XCTAssertTrue(type == FTLaunchCold);
         [expectation fulfill];
@@ -47,7 +47,7 @@ typedef void(^LaunchDataBlock)(NSString *source, NSDictionary *tags, NSDictionar
 }
 
 - (void)testStartSdkAfterLaunch{
-    XCTestExpectation *expectation= [self expectationWithDescription:@"异步操作timeout"];
+    XCTestExpectation *expectation= [self expectationWithDescription:@"Async operation timeout"];
     self.launchBlock = ^(NSNumber * _Nullable duration, FTLaunchType type) {
         XCTAssertTrue(type == FTLaunchCold);
         [expectation fulfill];
@@ -60,7 +60,7 @@ typedef void(^LaunchDataBlock)(NSString *source, NSDictionary *tags, NSDictionar
     self.launchBlock = nil;
 }
 - (void)testLaunchHot{
-    XCTestExpectation *expectation= [self expectationWithDescription:@"异步操作timeout"];
+    XCTestExpectation *expectation= [self expectationWithDescription:@"Async operation timeout"];
     self.launchTracker = [[FTAppLaunchTracker alloc]initWithDelegate:self];
     self.launchBlock = ^(NSNumber * _Nullable duration, FTLaunchType type) {
         if(type == FTLaunchHot){
@@ -81,7 +81,7 @@ typedef void(^LaunchDataBlock)(NSString *source, NSDictionary *tags, NSDictionar
 }
 #if TARGET_OS_IOS
 - (void)testLaunchPrewarm{
-    XCTestExpectation *expectation= [self expectationWithDescription:@"异步操作timeout"];
+    XCTestExpectation *expectation= [self expectationWithDescription:@"Async operation timeout"];
     self.launchBlock = ^(NSNumber * _Nullable duration, FTLaunchType type) {
         if(type == FTLaunchWarm){
             [expectation fulfill];
@@ -116,7 +116,7 @@ typedef void(^LaunchDataBlock)(NSString *source, NSDictionary *tags, NSDictionar
     dependencies.sampleRate = 100;
     dependencies.appId = @"testAppId";
     FTRUMManager *manager = [[FTRUMManager alloc]initWithRumDependencies:dependencies];
-    XCTestExpectation *expectation= [self expectationWithDescription:@"异步操作timeout"];
+    XCTestExpectation *expectation= [self expectationWithDescription:@"Async operation timeout"];
     self.launchDataBlock = ^(NSString *source, NSDictionary *tags, NSDictionary *fields) {
         if([source isEqualToString:FT_RUM_SOURCE_ACTION]){
             switch (type) {

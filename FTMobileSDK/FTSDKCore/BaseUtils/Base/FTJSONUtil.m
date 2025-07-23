@@ -2,7 +2,7 @@
 //  FTJSONUtil.m
 //  FTMobileAgent
 //
-//  Created by 胡蕾蕾 on 2020/10/20.
+//  Created by hulilei on 2020/10/20.
 //  Copyright © 2020 hll. All rights reserved.
 //
 #if ! __has_feature(objc_arc)
@@ -19,11 +19,11 @@
 
 /**
  *  @abstract
- *  把一个Object转成JsonData
+ *  Convert an Object to JsonData
  *
- *  @param obj 要转化的字典对象Object
+ *  @param obj Dictionary object Object to be converted
  *
- *  @return 转化后得到的DATA
+ *  @return DATA obtained after conversion
  */
 - (NSData *)JSONSerializeDictObject:(NSDictionary *)obj {
     self.error = nil;
@@ -75,7 +75,7 @@
                                                  options:NSJSONReadingMutableContainers
                                                    error:&err];
         if(err){
-            FTInnerLogError(@"json解析失败：%@",err);
+            FTInnerLogError(@"JSON parsing failed: %@",err);
             return nil;
         }
     } @catch (NSException *exception) {
@@ -92,7 +92,7 @@
         NSError *err;
         NSData *jsonData = [NSJSONSerialization dataWithJSONObject:object options:0 error:&err];
         if(err){
-            FTInnerLogError(@"json 解析失败：%@",err);
+            FTInnerLogError(@"JSON parsing failed: %@",err);
         }else{
             result = [[NSString alloc] initWithData:jsonData encoding:NSUTF8StringEncoding];
         }
@@ -109,7 +109,7 @@
     if ([obj isKindOfClass:[NSNull class]]) {
         return [obj description];
     }
-    //防止 NaN 与 无穷大
+    //Prevent NaN and infinity
     if ([obj isKindOfClass:[NSNumber class]]) {
         return [obj isEqualToNumber:NSDecimalNumber.notANumber] || [obj isEqualToNumber:@(INFINITY)] ? nil : obj;
     }

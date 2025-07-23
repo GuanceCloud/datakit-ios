@@ -2,7 +2,7 @@
 //  FTLog.m
 //  FTMobileAgent
 //
-//  Created by 胡蕾蕾 on 2020/5/19.
+//  Created by hulilei on 2020/5/19.
 //  Copyright © 2020 hll. All rights reserved.
 //
 #if ! __has_feature(objc_arc)
@@ -14,6 +14,8 @@
 #import "FTLogMessage.h"
 #import "FTFileLogger.h"
 #import "FTOSLogger.h"
+#import "FTCrashLogger.h"
+
 @implementation FTAbstractLogger
 
 -(void)logMessage:(FTLogMessage *)logMessage{
@@ -70,6 +72,7 @@ static dispatch_group_t _loggingGroup;
 }
 + (void)enableLog:(BOOL)enableLog {
     _enableLog = enableLog;
+    enableCrashMonitorLog(enableLog);
     static FTOSLogger *sdkOSLogger = nil;
     static dispatch_once_t onceToken;
     dispatch_once(&onceToken, ^{

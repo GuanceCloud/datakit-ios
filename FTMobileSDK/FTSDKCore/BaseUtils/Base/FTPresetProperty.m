@@ -2,7 +2,7 @@
 //  FTPresetProperty.m
 //  FTMobileAgent
 //
-//  Created by 胡蕾蕾 on 2020/10/23.
+//  Created by hulilei on 2020/10/23.
 //  Copyright © 2020 hll. All rights reserved.
 //
 #import "FTBaseInfoHandler.h"
@@ -240,13 +240,13 @@ static dispatch_once_t onceToken;
 - (NSArray<NSDictionary *> *)applyLineModifier:(NSString *)measurement
                                          tags:(NSDictionary *)tags
                                        fields:(NSDictionary *)fields {
-    // 快速终止条件：lineDataModifier 为 nil 时直接返回原始数据（防御性处理）
+    // Quick termination condition: when lineDataModifier is nil, return original data directly (defensive handling)
     if (!self.lineDataModifier) {
         return @[ tags ? [tags copy] : @{},
                  fields ? [fields copy] : @{} ];
     }
 
-    // 创建安全的可变副本（兼容 tags/fields 为 nil 的情况）
+    // Create safe mutable copies (compatible with nil tags/fields)
     NSMutableDictionary *mutableTags = tags ? [tags mutableCopy] : [NSMutableDictionary dictionary];
     NSMutableDictionary *mutableFields = fields ? [fields mutableCopy] : [NSMutableDictionary dictionary];
     
@@ -254,7 +254,7 @@ static dispatch_once_t onceToken;
     if (mutableTags.count > 0) [mergedValues addEntriesFromDictionary:mutableTags];
     if (mutableFields.count > 0) [mergedValues addEntriesFromDictionary:mutableFields];
     
-    // 执行 Block 并校验返回值
+    // Execute Block and validate return value
     NSDictionary *changedValues = self.lineDataModifier(measurement, [mergedValues copy]);
     if (changedValues.count == 0) {
         return @[ [mutableTags copy], [mutableFields copy] ];
@@ -274,7 +274,7 @@ static dispatch_once_t onceToken;
     return self.userHelper.currentValue.isSignIn?@"T":@"F";
 }
 - (NSString *)getApplicationUUID{
-    // 获取 image 的 index
+    // Get image index
     const uint32_t imageCount = _dyld_image_count();
     uint32_t mainImg = 0;
     NSBundle *mainBundle = [NSBundle mainBundle];
@@ -286,7 +286,7 @@ static dispatch_once_t onceToken;
         NSString *imagePath = [NSString stringWithUTF8String:name];
         if ([imagePath containsString:bundlePath]&&[[imagePath lastPathComponent] isEqualToString:executableName]){
             mainImg = iImg;
-            // 根据 index 获取 header
+            // Get header based on index
             const struct mach_header* header = _dyld_get_image_header(mainImg);
             uintptr_t cmdPtr = firstCmdAfterHeader(header);
             if(cmdPtr == 0) {
@@ -312,7 +312,7 @@ static dispatch_once_t onceToken;
     }
     return @"NULL";
 }
-//// 获取 Load Command
+//// Get Load Command
 static uintptr_t firstCmdAfterHeader(const struct mach_header* const header) {
     switch(header->magic)
     {
@@ -583,7 +583,7 @@ static uintptr_t firstCmdAfterHeader(const struct mach_header* const header) {
     return uuid;
 }
 + (NSString *)macOSDeviceModel {
-    NSString *macDevTypeStr = @"Unknown Mac";//设备型号
+    NSString *macDevTypeStr = @"Unknown Mac";//Device model
     size_t len = 0;
     sysctlbyname("hw.model", NULL, &len, NULL, 0);
     if (len) {

@@ -2,7 +2,7 @@
 //  FTRUMManger.m
 //  FTMobileAgent
 //
-//  Created by 胡蕾蕾 on 2021/5/21.
+//  Created by hulilei on 2021/5/21.
 //  Copyright © 2021 hll. All rights reserved.
 //
 #import "FTRUMManager.h"
@@ -480,13 +480,13 @@ void *FTRUMQueueIdentityKey = &FTRUMQueueIdentityKey;
     FTRUMSessionHandler *current  = self.sessionHandler;
     if (current) {
         if ([self manage:self.sessionHandler byPropagatingData:model context:context] == nil) {
-            //刷新
+            //Refresh
             FTRUMSessionHandler *sessionHandler = [[FTRUMSessionHandler alloc]initWithExpiredSession:self.sessionHandler time:model.time];
             self.sessionHandler = sessionHandler;
             [self.sessionHandler.assistant process:model context:context];
         }
     }else{
-        //初始化
+        //Initialize
         self.sessionHandler = [[FTRUMSessionHandler alloc]initWithModel:model dependencies:self.rumDependencies];
         [self.sessionHandler.assistant process:model context:context];
     }

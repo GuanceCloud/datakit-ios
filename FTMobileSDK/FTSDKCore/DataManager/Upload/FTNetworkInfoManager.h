@@ -2,7 +2,7 @@
 //  FTNetworkInfoManager.h
 //  FTMacOSSDK
 //
-//  Created by 胡蕾蕾 on 2021/8/30.
+//  Created by hulilei on 2021/8/30.
 //  Copyright © 2021 DataFlux-cn. All rights reserved.
 //
 
@@ -16,7 +16,7 @@ NS_ASSUME_NONNULL_BEGIN
 @property (nonatomic,copy,readonly) NSString *clientToken;
 @property (nonatomic,copy,readonly) NSString *sdkVersion;
 @property (nonatomic,copy,readonly) NSString *appId;
-// 仅 compression 有多线程读写操作，其余属性仅在 SDK 初始化时赋值
+// Only compression has multi-threaded read/write operations, other properties are only assigned during SDK initialization
 @property (atomic,assign,readonly) BOOL compression;
 @property (nonatomic,assign,readonly) BOOL enableDataIntegerCompatible;
 

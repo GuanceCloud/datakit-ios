@@ -29,7 +29,7 @@ class ViewController: UIViewController,UITableViewDelegate,UITableViewDataSource
     }
     
     func createUI(){
-        dataSource = ["绑定用户","解绑用户","日志输出","手动采集网络链路追踪","手动采集RUM数据采集"]
+        dataSource = ["Bind User","Unbind User","Log Output","Manual Network Link Tracing","Manual RUM Data Collection"]
         self.view.addSubview(tableView)
     }
     

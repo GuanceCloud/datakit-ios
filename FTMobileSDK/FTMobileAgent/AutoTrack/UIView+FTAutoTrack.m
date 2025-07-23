@@ -2,7 +2,7 @@
 //  UIView+FTAutoTrack.m
 //  FTAutoTrack
 //
-//  Created by 胡蕾蕾 on 2019/11/29.
+//  Created by hulilei on 2019/11/29.
 //  Copyright © 2019 hll. All rights reserved.
 //
 #if ! __has_feature(objc_arc)
@@ -42,9 +42,10 @@
 #endif
     return NO;
 }
-/// 是否为弹框点击
+/// Whether it is a pop-up click
 - (BOOL)isAlertClick {
-    if ([NSStringFromClass(self.class) isEqualToString:@"_UIInterfaceActionCustomViewRepresentationView"] || [NSStringFromClass(self.class) isEqualToString:@"_UIAlertControllerCollectionViewCell"]) { // 标记弹框
+    if ([NSStringFromClass(self.class) isEqualToString:@"_UIInterfaceActionCustomViewRepresentationView"] 
+    || [NSStringFromClass(self.class) isEqualToString:@"_UIAlertControllerCollectionViewCell"]) { // mark popup
         return YES;
     }
     return NO;

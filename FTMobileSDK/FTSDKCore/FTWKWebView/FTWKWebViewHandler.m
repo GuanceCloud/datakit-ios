@@ -2,7 +2,7 @@
 //  FTWKWebViewHandler.m
 //  FTMobileAgent
 //
-//  Created by 胡蕾蕾 on 2020/9/16.
+//  Created by hulilei on 2020/9/16.
 //  Copyright © 2020 hll. All rights reserved.
 //
 
@@ -66,6 +66,10 @@ static dispatch_once_t onceToken;
                               error:&error];
         [WKWebView ft_swizzleMethod:@selector(loadFileURL:allowingReadAccessToURL:)
                          withMethod:@selector(ft_loadFileURL:allowingReadAccessToURL:)
+                              error:&error];
+        SEL deallocMethod =  NSSelectorFromString(@"dealloc");
+        [WKWebView ft_swizzleMethod:deallocMethod
+                         withMethod:@selector(ft_dealloc)
                               error:&error];
     });
 }

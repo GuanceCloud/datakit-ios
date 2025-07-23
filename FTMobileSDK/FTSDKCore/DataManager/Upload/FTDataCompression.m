@@ -14,7 +14,7 @@
 NSData *bigEndianUInt32ToData(uint32_t value) {
     uint8_t bytes[4];
       
-    // 手动将每个字节放入数组中，以大端顺序
+    // Manually place each byte into the array in big-endian order
     bytes[0] = (value >> 24) & 0xFF;
     bytes[1] = (value >> 16) & 0xFF;
     bytes[2] = (value >> 8) & 0xFF;
@@ -61,8 +61,8 @@ NSData *bigEndianUInt32ToData(uint32_t value) {
 +(UInt32 )adler32:(NSData*)data{
     const Bytef *bytes = (const Bytef *)[data bytes];
     uInt len = (uInt)[data length];
-    uLong adler = adler32(1, Z_NULL, 0); // 初始化Adler-32为1
-    adler = adler32(adler, bytes, len); // 计算校验和
+    uLong adler = adler32(1, Z_NULL, 0); // Initialize Adler-32 to 1
+    adler = adler32(adler, bytes, len); // Calculate checksum
     return (UInt32)adler;
 }
 + (NSData *)gzip:(NSData *)data{

@@ -1,15 +1,15 @@
 @Tutorial(time: 20) {
-    @Intro(title: "SDK 配置") {
-        基础配置、Trace 配置、RUM 配置、Logger 配置
+    @Intro(title: "SDK Configuration") {
+        Basic configuration, Trace configuration, RUM configuration, Logger configuration
         
         
         @Image(source: rum_access, alt: "SSS")
     }
     
-    @Section(title: "基础配置") {
+    @Section(title: "Basic Configuration") {
         @ContentAndMedia {
             
-            通过 ``FTMobileSDK/FTMobileConfig`` 进行配置。
+            Configure through ``FTMobileSDK/FTMobileConfig``.
 
             
             @Image(source: rum_access, alt: "accessible description")
@@ -17,52 +17,54 @@
         
         @Steps {
             @Step {
-                SDK FTMobileConfig 基础配置
+                SDK FTMobileConfig Basic Configuration
                 
-                在启动 SDK 的同时配置基础的配置项，必要的配置项有 FT-GateWay metrics 写入地址。SDK 必须在主线程里进行初始化，否则会引发无法预料的问题（比如丢失 launch 事件）。 
+                Configure basic configuration items when starting the SDK. The necessary configuration items 
+                include the FT-GateWay metrics write address. The SDK must be initialized in the main thread, 
+                otherwise unpredictable problems may occur (such as losing launch events).
                 @Code(name: "AppDelegate.swift", file: startsdk_section1_step1.swift)
             }
             
             @Step {
-                配置是否允许 SDK 打印 Debug 日志 
+                Configure whether to allow SDK to print Debug logs
                 
-                开启后控制台会输出 SDK 内部打印的日志信息。
+                When enabled, the console will output log information printed internally by the SDK.
                 @Code(name: "AppDelegate.swift", file: startsdk_section1_step2.swift,previousFile:startsdk_section1_step1.swift){
                     @Image(source:enableSDKDebugLog, alt:"enableSDKDebugLog set to true")
                 }
             }
             @Step {
-                配置环境字段，默认值为 FTEnvProd
+                Configure environment field, default value is FTEnvProd
                 
-                查看环境 ``FTMobileSDK/FTEnv``
+                View environment ``FTMobileSDK/FTEnv``
                 @Code(name: "AppDelegate.swift", file: startsdk_section1_step3.swift,previousFile:startsdk_section1_step2.swift)
             }
             @Step {
-                设置 SDK 全局 tag
+                Set SDK global tags
                
-                保留标签： sdk_package_flutter、sdk_package_react_native
+                Reserved tags: sdk_package_flutter, sdk_package_react_native
                 @Code(name: "AppDelegate.swift", file: startsdk_section1_step4.swift,previousFile:startsdk_section1_step3.swift)
             }
             @Step {
-                设置 service 所属业务或服务的名称
+                Set service name
                                
                 @Code(name: "AppDelegate.swift", file: startsdk_section1_step5.swift,previousFile:startsdk_section1_step4.swift)
             }
             @Step {
-                开启 SDK
+                Enable SDK
                 
                 @Code(name: "AppDelegate.swift", file: startsdk_section1_step6.swift,previousFile:startsdk_section1_step5.swift)
             }
         }
     }
     
-    @Section(title: "RUM 功能配置") {
+    @Section(title: "RUM Function Configuration") {
         @ContentAndMedia {
-            应用的用户访问监测数据采集到的 “观测云” 后，可以通过 “观测云” 控制台进行自定义配置场景，对应用的用户访问情况数据进行可视化洞察与分析。
+            After the application user access data is collected by the "Observability Cloud", you can customize the configuration scenario through the "Observability Cloud" console to visualize and analyze the application user access situation data.
    
-            通过 ``FTMobileSDK/FTRumConfig`` 进行配置。
+            Configure through ``FTMobileSDK/FTRumConfig``.
 
-            开启用户访问监测功能 [前置条件](https://preprod-docs.cloudcare.cn/real-user-monitoring/config-datakit/)
+            Enable user access monitoring function [Prerequisites](https://preprod-docs.cloudcare.cn/real-user-monitoring/config-datakit/)
             
                 
             @Image(source: ios_overview, alt: "ios overview")
@@ -70,135 +72,135 @@
         @Steps {
             
             @Step {
-                RUM 基础配置，设置 appid 应用唯一ID，设置后 rum 数据才能正常上报
+                RUM Basic Configuration, set appid application unique ID, after setting rum data can be reported normally
                 
                 @Code(name: "AppDelegate.swift", file: startsdk_section2_step1.swift,previousFile:startsdk_section1_step6.swift)
             }
             
             @Step {
-                采样率配置
+                Sample rate configuration
                 
-                可设置 0 至 100，100 表示百分百采集，不做数据样本压缩，是 session 级别，未被采样时，整个 session 上的 view、action、resource等都不采集
+                Can be set to 0-100, 100 means 100% collection, no data compression, is session level, when not sampled, view, action, resource etc. are not collected
                 @Code(name: "AppDelegate.swift", file: startsdk_section2_step2.swift,previousFile:startsdk_section2_step1.swift)
             }
             @Step {
-                设置是否自动采集 View、Action、Resource 数据
+                Configure whether to automatically collect View, Action, Resource data
                 
-                注意：Action、Resource 数据是与 View 进行绑定的，如果没有 View 自动采集或手动采集的 Action 与 Resource 数据无法正确写入
+                Note: Action and Resource data are bound to View. If View is not automatically collected or manually collected, Action and Resource data cannot be correctly written.
                 @Code(name: "AppDelegate.swift", file: startsdk_section2_step3.swift,previousFile:startsdk_section2_step2.swift)
             }
             @Step {
-                设置是否需要采集崩溃日志，以及配置崩溃时监控的设备信息
+                Configure whether to collect crash logs and device information for monitoring
              
-                查看监控配置 ``FTMobileSDK/FTErrorMonitorType``
+                View monitoring configuration ``FTMobileSDK/FTErrorMonitorType``
                 @Code(name: "AppDelegate.swift", file: startsdk_section2_step4.swift,previousFile:startsdk_section2_step3.swift)
             }
             @Step {
-                设置是否需要采集 Long Task
+                Configure whether to collect Long Task
              
                 @Code(name: "AppDelegate.swift", file: startsdk_section2_step5.swift,previousFile:startsdk_section2_step4.swift)
             }
             @Step {
-                设置监控类型，与监控周期，不设置则不开启监控
+                Configure monitoring type and monitoring cycle, if not set, monitoring will not be enabled
              
-                查看监控项类型 ``FTMobileSDK/FTDeviceMetricsMonitorType``
-                监控项周期 ``FTMobileSDK/FTMonitorFrequency``
+                View monitoring item type ``FTMobileSDK/FTDeviceMetricsMonitorType``
+                Monitoring item cycle ``FTMobileSDK/FTMonitorFrequency``
                 @Code(name: "AppDelegate.swift", file: startsdk_section2_step6.swift,previousFile:startsdk_section2_step5.swift)
             }
             @Step {
-                设置 RUM 全局 tag
+                Set RUM global tags
                 
-                保留标签:特殊 key - track_id (用于追踪功能)
+                Reserved tags: special key - track_id (for tracking function)
                 @Code(name: "AppDelegate.swift", file: startsdk_section2_step7.swift,previousFile:startsdk_section2_step6.swift)
             }
             @Step {
-                开启 RUM 
+                Enable RUM 
                 
                 @Code(name: "AppDelegate.swift", file: startsdk_section2_step8.swift,previousFile:startsdk_section2_step7.swift)
             }
         }
     }
-    @Section(title: "Logger 功能配置"){
+    @Section(title: "Logger Function Configuration"){
         @ContentAndMedia {
-          日志数据采集到 “观测云” 后，您可以在 “观测云” 控制台，通过「日志」查看工作空间内全部的日志内容。
+           After log data is collected by "Observability Cloud", you can view all log content in the "Observability Cloud" console through "Log".
         
-          通过 ``FTMobileSDK/FTLoggerConfig`` 进行配置。            
+           Configure through ``FTMobileSDK/FTLoggerConfig``.            
                 
          @Image(source: logger, alt: "logger")
         }
         @Steps {           
           @Step {
-              设置日志废弃策略
+               Set log discard strategy
               
-              查看废弃策略 ``FTMobileSDK/FTLogCacheDiscard``
+               View discard strategy ``FTMobileSDK/FTLogCacheDiscard``
               @Code(name: "AppDelegate.swift", file: startsdk_section3_step1.swift,previousFile:startsdk_section2_step8.swift)
            }
           @Step {
-              设置是否采集自定义日志,默认为 NO
+               Configure whether to collect custom logs, default is NO
               
-              自定义日志使用方法 <doc:CustomLog>
+               Custom log usage <doc:CustomLog>
               @Code(name: "AppDelegate.swift", file: startsdk_section3_step2.swift,previousFile:startsdk_section3_step1.swift)
            }
           @Step {
-              设置日志采集条件配置
+               Set log collection condition configuration
               
               @Code(name: "AppDelegate.swift", file: startsdk_section3_step3.swift,previousFile:startsdk_section3_step2.swift)
            }
           @Step {
-              设置 logger 数据与 rum 关联
+               Set logger data and rum association
               
               @Code(name: "AppDelegate.swift", file: startsdk_section3_step4.swift,previousFile:startsdk_section3_step3.swift)
            }
           @Step {
-              logger 全局 tag
+              logger global tags
               
               @Code(name: "AppDelegate.swift", file: startsdk_section3_step5.swift,previousFile:startsdk_section3_step4.swift)
            }
           @Step {
-              是否将自定义日志在控制台打印
+               Whether to print custom logs to the console
               
               @Code(name: "AppDelegate.swift", file: startsdk_section3_step6.swift,previousFile:startsdk_section3_step5.swift)
            }
           @Step {
-              启动 logger
+               Start logger
               
               @Code(name: "AppDelegate.swift", file: startsdk_section3_step7.swift,previousFile:startsdk_section3_step6.swift)
            }
         }
     }
-    @Section(title: "Trace 功能配置"){
+    @Section(title: "Trace Function Configuration"){
         @ContentAndMedia {
-         “观测云” 的链路数据采集目前支持使用 Opentracing 协议的采集器，如  DDTrace 、Apache Jaeger 、OpenTelemetry 、Skywalking 、Zipkin 等。
+         "Observability Cloud" link data collection currently supports collectors using the Opentracing protocol, such as DDTrace, Apache Jaeger, OpenTelemetry, Skywalking, Zipkin, etc.
         
-          通过 ``FTMobileSDK/FTTraceConfig`` 进行配置。            
+           Configure through ``FTMobileSDK/FTTraceConfig``.            
                 
          @Image(source: trace, alt: "trace")
         }
         @Steps {
           @Step {
-              设置是否开启自动 http trace
+               Configure whether to enable automatic http trace
               
               @Code(name: "AppDelegate.swift", file: startsdk_section4_step1.swift,previousFile:startsdk_section3_step7.swift)
            }
           @Step {
-              设置采样率
+               Set sampling rate
             
               @Code(name: "AppDelegate.swift", file: startsdk_section4_step2.swift,previousFile:startsdk_section4_step2.swift)
            }
           @Step {
-              设置网络请求信息采集时使用链路追踪类型
+               Set link tracking type when collecting network request information
               
-              默认链路追踪类型为 DDtrace ，查看支持追踪的链路类型 ``FTMobileSDK/FTNetworkTraceType``
+               Default link tracking type is DDtrace, view supported link types ``FTMobileSDK/FTNetworkTraceType``
               @Code(name: "AppDelegate.swift", file: startsdk_section4_step3.swift,previousFile:startsdk_section4_step2.swift)
            }
           @Step {
-              是否将 Trace 数据与 rum 关联
+               Whether to associate Trace data with rum
               
-              仅在 FTNetworkTraceType 设置为 DDtrace 时生效
+               Only effective when FTNetworkTraceType is set to DDtrace
               @Code(name: "AppDelegate.swift", file: startsdk_section4_step4.swift,previousFile:startsdk_section4_step3.swift)
            }
           @Step {
-              开启 Trace
+               Enable Trace
               
               @Code(name: "AppDelegate.swift", file: startsdk_section4_step5.swift,previousFile:startsdk_section4_step4.swift)
            }
@@ -206,52 +208,52 @@
     }
     @Assessments {
            @MultipleChoice {
-               RUM 可以配置自动采集的数据类型有哪些？
+               What data types can RUM be configured to automatically collect?
 
                @Choice(isCorrect: false) {
-                   View、Action、Http Resource.
+                   View, Action, Http Resource.
 
                    @Justification(reaction: "Try again!") {
-                       不仅仅是这些 ！
+                       Not just these!
                    }
                }
                @Choice(isCorrect: true) {
-                   View、Action、Http Resource、Error、Long Task.
+                   View, Action, Http Resource, Error, Long Task.
 
                    @Justification(reaction: "That's right!") {
-                       正确 .
+                       Correct.
                    }
                }              
            } 
            @MultipleChoice {
-               将 Trace 类型设置成那种可以支持 Trace 数据与 rum 关联 ？
+                What type of Trace can support Trace data and rum association?
 
                @Choice(isCorrect: false) {
                    zipkin
 
                    @Justification(reaction: "Try again!") {
-                       可以再查看一下👆🏻的教程 
+                       You can check the tutorial above👆
                    }
                }
                @Choice(isCorrect: true) {
                    datadog
 
                    @Justification(reaction: "That's right!") {
-                       正确 .
+                       Correct.
                    }
                }  
                @Choice(isCorrect: false) {
-                   traceparent、skywalking
+                   traceparent, skywalking
 
                    @Justification(reaction: "Try again!") {
-                       可以再查看一下👆🏻的教程 
+                       You can check the tutorial above👆
                    }
                } 
                @Choice(isCorrect: false) {
                    jaeger
 
                    @Justification(reaction: "Try again!") {
-                       可以再查看一下👆🏻的教程
+                       You can check the tutorial above👆
                    }
                } 
            }  

@@ -84,7 +84,7 @@ class RUMViewController: UIViewController,UITableViewDelegate,UITableViewDataSou
     }
     
 //    func customResource (){
-//        // 完整的数据采集过程
+//        // Complete data collection process
 //        let key = UUID().uuidString
 //        FTExternalDataManager.shared().startResource(withKey: key)
 //        let session = URLSession(configuration: URLSessionConfiguration.default, delegate: self, delegateQueue: OperationQueue.main)

@@ -2,7 +2,7 @@
 //  FTWKWebViewHandler.h
 //  FTMobileAgent
 //
-//  Created by 胡蕾蕾 on 2020/9/16.
+//  Created by hulilei on 2020/9/16.
 //  Copyright © 2020 hll. All rights reserved.
 //
 #import <Foundation/Foundation.h>
@@ -10,21 +10,21 @@
 #import <WebKit/WebKit.h>
 NS_ASSUME_NONNULL_BEGIN
 
-/// 处理 WKWebView RUM 事件与 本机 RUM 会话关联
+/// Handle WKWebView RUM events and associate with native RUM sessions
 @interface FTWKWebViewHandler : NSObject
 
 + (instancetype)sharedInstance;
 
-/// 使 SDK 能够将来自 WebView 的 RUM 事件与本机 RUM 会话关联起来。
-/// 注意：需要在 webView 页面加载之前进行使用，否则当前加载页面不生效，下一次加载页面或发生导航时才生效‌。
-/// - Parameter webView: 采集的 webView
+/// Enable the SDK to associate RUM events from WebView with native RUM sessions.
+/// Note: Must be used before the webView page loads, otherwise the current loading page won't take effect, only the next page load or navigation will take effect.
+/// - Parameter webView: webView to be collected
 - (void)enableWebView:(WKWebView *)webView;
 
-/// 使 SDK 能够将来自 WebView 的 RUM 事件与本机 RUM 会话关联起来。
-/// 注意：需要在 webView 页面加载之前进行使用，否则当前加载页面不生效，下一次加载页面或发生导航时才生效‌。
+/// Enable the SDK to associate RUM events from WebView with native RUM sessions.
+/// Note: Must be used before the webView page loads, otherwise the current loading page won't take effect, only the next page load or navigation will take effect.
 /// - Parameters:
-///   - webView: 采集的 webView
-///   - hosts: 一组使用 Web SDK 进行检测的主机地址数组。
+///   - webView: webView to be collected
+///   - hosts: array of host addresses using Web SDK for detection.
 - (void)enableWebView:(WKWebView *)webView allowWebViewHost:(NSArray *)hosts;
 
 @end

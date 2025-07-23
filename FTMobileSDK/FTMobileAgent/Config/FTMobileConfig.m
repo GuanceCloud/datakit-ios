@@ -2,7 +2,7 @@
 //  FTMobileConfig.m
 //  FTMobileAgent
 //
-//  Created by 胡蕾蕾 on 2019/12/6.
+//  Created by hulilei on 2019/12/6.
 //  Copyright © 2019 hll. All rights reserved.
 //
 #if ! __has_feature(objc_arc)
@@ -410,7 +410,7 @@
         return nil;
     }
 }
-/// 将 config 转化成字典
+/// Convert config to dictionary
 -(NSDictionary *)convertToDictionary{
     NSMutableDictionary *dict = [NSMutableDictionary new];
     [dict setValue:self.service forKey:@"service"];
