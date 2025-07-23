@@ -2,7 +2,7 @@
 //  FTRUMResourceHandler.h
 //  FTMobileAgent
 //
-//  Created by 胡蕾蕾 on 2021/5/26.
+//  Created by hulilei on 2021/5/26.
 //  Copyright © 2021 hll. All rights reserved.
 //
 
@@ -12,20 +12,20 @@ NS_ASSUME_NONNULL_BEGIN
 typedef void(^FTResourceEventSent)(BOOL);
 typedef void(^FTErrorEventSent)(void);
 
-/// RUM Resource 数据处理者
+/// RUM Resource data processor
 @interface FTRUMResourceHandler : FTRUMHandler
-/// resource 唯一标识
+/// resource unique identifier
 @property (nonatomic, copy,readonly) NSString *identifier;
-/// rum 上下文
+/// rum context
 @property (nonatomic, strong) FTRUMContext *context;
-/// resource 数据处理完毕回调
+/// resource data processing completion callback
 @property (nonatomic, copy) FTResourceEventSent resourceHandler;
-/// resource error 处理完毕回调
+/// resource error processing completion callback
 @property (nonatomic, copy) FTErrorEventSent errorHandler;
-/// 初始化方法
+/// Initialization method
 /// - Parameters:
-///   - model: rum数据模型
-///   - context: rum 上下文
+///   - model: rum data model
+///   - context: rum context
 -(instancetype)initWithModel:(FTRUMResourceDataModel *)model context:(FTRUMContext *)context dependencies:(FTRUMDependencies *)dependencies;
 @end
 

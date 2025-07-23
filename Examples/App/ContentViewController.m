@@ -14,7 +14,7 @@
 
 @implementation ContentViewController
 
-// 懒加载 UILabel
+// Lazy loading UILabel
 - (UILabel *)createLabel {
     UILabel *label = [[UILabel alloc] init];
     label.font = [UIFont systemFontOfSize:24 weight:UIFontWeightBold];

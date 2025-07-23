@@ -2,7 +2,7 @@
 //  FTBaseInfoHandler.m
 //  FTMobileAgent
 //
-//  Created by 胡蕾蕾 on 2019/12/3.
+//  Created by hulilei on 2019/12/3.
 //  Copyright © 2019 hll. All rights reserved.
 //
 #if ! __has_feature(objc_arc)
@@ -96,7 +96,7 @@
     }else{
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Wdeprecated-declarations"
-        // 这部分使用到的过期api
+        // This part uses deprecated APIs
         carrier= [info subscriberCellularProvider];
 #pragma clang diagnostic pop
         
@@ -122,7 +122,7 @@
     [searchArray enumerateObjectsUsingBlock:^(NSString *key, NSUInteger idx, BOOL *stop)
      {
         address = addresses[key];
-        //筛选出IP地址格式
+        //Filter out IP address format
         if([self isValidatIP:address]) *stop = YES;
     }];
     return address ? address : @"0.0.0.0";

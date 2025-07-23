@@ -11,12 +11,12 @@
 NS_ASSUME_NONNULL_BEGIN
 
 @interface FTLoggerConfig ()
-/// 私有的初始化方法，通过字典来初始化，用于 Extensin SDK
-/// - Parameter dict: config 转化后的字典
+/// Private initialization method, initialized through dictionary, used for Extension SDK
+/// - Parameter dict: Dictionary converted from config
 -(instancetype)initWithDictionary:(NSDictionary *)dict;
-/// 将 config 转化成字典
+/// Convert config to dictionary
 -(NSDictionary *)convertToDictionary;
-/// 合并 remoteConfig
+/// Merge remoteConfig
 -(void)mergeWithRemoteConfigDict:(NSDictionary *)dict;
 @end
 

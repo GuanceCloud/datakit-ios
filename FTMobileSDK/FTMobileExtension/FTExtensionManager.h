@@ -2,7 +2,7 @@
 //  FTExtensionManager.h
 //  FTMobileExtension
 //
-//  Created by 胡蕾蕾 on 2020/11/13.
+//  Created by hulilei on 2020/11/13.
 //  Copyright © 2020 hll. All rights reserved.
 //
 
@@ -13,26 +13,26 @@ NS_ASSUME_NONNULL_BEGIN
 @interface FTExtensionManager : NSObject
 /**
  * @abstract
- * Extension 初始化方法
+ * Extension initialization method
  *
- * @param extensionConfig extension 配置项
+ * @param extensionConfig extension configuration items
  */
 + (void)startWithExtensionConfig:(FTExtensionConfig *)extensionConfig;
 
 + (instancetype)sharedInstance;
 /**
  * @abstract
- * 日志上报
+ * Log reporting
  *
- * @param content  日志内容，可为json字符串
- * @param status   事件等级和状态，info：提示，warning：警告，error：错误，critical：严重，ok：恢复，默认：info
+ * @param content  log content, can be json string
+ * @param status   event level and status, info: prompt, warning: warning, error: error, critical: critical, ok: recovery, default: info
  */
 -(void)logging:(NSString *)content status:(FTLogStatus)status;
-/// 添加自定义日志
+/// Add custom logs
 /// - Parameters:
-///   - content: 日志内容，可为 json 字符串
-///   - status: 事件等级和状态
-///   - property: 事件自定义属性(可选)
+///   - content: log content, can be json string
+///   - status: event level and status
+///   - property: event custom properties (optional)
 -(void)logging:(NSString *)content status:(FTLogStatus)status property:(nullable NSDictionary *)property;
 @end
 

@@ -2,7 +2,7 @@
 //  TestLongTaskVC.m
 //  SampleApp
 //
-//  Created by 胡蕾蕾 on 2020/10/10.
+//  Created by hulilei on 2020/10/10.
 //  Copyright © 2020 hll. All rights reserved.
 //
 
@@ -30,7 +30,7 @@
 
 }
 - (void)testAnrBlock{
-    //单元测试时 使用GCD唤醒runloop
+    // Use GCD to wake up runloop during unit testing
     dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)(1 * NSEC_PER_SEC)), dispatch_get_main_queue(), ^{
         [self.myTableView selectRowAtIndexPath:[NSIndexPath indexPathForRow:1 inSection:0] animated:YES scrollPosition:UITableViewScrollPositionMiddle];
     });
@@ -65,7 +65,7 @@
     }
     if (indexPath.row % 10 == 0) {
         usleep(250 * 1000); // 250ms
-        cell.textLabel.text = @"卡咯";
+        cell.textLabel.text = @"Lug";
     }else{
         cell.textLabel.text = [NSString stringWithFormat:@"%ld",indexPath.row];
     }

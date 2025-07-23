@@ -2,7 +2,7 @@
 //  FTSwizzler.m
 //  FTMobileAgent
 //
-//  Created by 胡蕾蕾 on 2021/7/2.
+//  Created by hulilei on 2021/7/2.
 //  Copyright © 2021 hll. All rights reserved.
 //
 #import "FTSwizzler.h"
@@ -316,13 +316,13 @@ static void swizzle(Class classToSwizzle,
     id realDelegate = proxy;
     id obj = nil;
     do {
-        //避免proxy本身实现了该方法或通过resolveInstanceMethod添加了方法实现
+        //Avoid proxy itself implementing the method or adding method implementation through resolveInstanceMethod
         if (class_getInstanceMethod(object_getClass(realDelegate), selector)) {
             break;
         }
         
-        //如果使用了NSProxy或者快速转发,判断forwardingTargetForSelector是否实现
-        //默认forwardingTargetForSelector都有实现，只是返回为nil
+        //If NSProxy is used or fast forwarding, check if forwardingTargetForSelector is implemented
+        //By default, forwardingTargetForSelector has implementation, just returns nil
         obj = ((id(*)(id, SEL, SEL))objc_msgSend)(realDelegate, @selector(forwardingTargetForSelector:), selector);
         if (!obj) break;
         realDelegate = obj;
@@ -331,8 +331,8 @@ static void swizzle(Class classToSwizzle,
 }
 
 + (BOOL)realDelegateClass:(Class)cls respondsToSelector:(SEL)sel {
-    //如果cls继承自NSProxy，使用respondsToSelector来判断会崩溃
-    //因为NSProxy本身未实现respondsToSelector
+    //If cls inherits from NSProxy, using respondsToSelector to judge will crash
+    //Because NSProxy itself does not implement respondsToSelector
     return class_respondsToSelector(cls, sel);
 }
 

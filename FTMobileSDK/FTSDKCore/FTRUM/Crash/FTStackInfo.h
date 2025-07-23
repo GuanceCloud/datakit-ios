@@ -34,8 +34,8 @@ extern "C" {
 typedef uintptr_t FTThread;
 
 typedef struct FTStackFrameEntry{
-    const struct FTStackFrameEntry *const previous;///前一个栈帧地址
-    const uintptr_t return_address;///栈帧的函数返回地址
+    const struct FTStackFrameEntry *const previous;///Previous stack frame address
+    const uintptr_t return_address;///Function return address of stack frame
 } FTStackFrameEntry;
 
 typedef struct FTMachoImage {

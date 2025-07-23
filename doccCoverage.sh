@@ -1,5 +1,5 @@
-# sh doccCoverage.sh all  获取全部文档覆盖率
-# sh doccCoverage.sh      获取 public 文件 文档覆盖率
+# sh doccCoverage.sh all  Get documentation coverage for all files
+# sh doccCoverage.sh      Get documentation coverage for public files
 project_path='FTMobileSDK.xcodeproj/project.pbxproj'
 copyFile="test.pbxproj"
 
@@ -21,7 +21,7 @@ do
   then
     if [[ $line =~ '.h in Headers */' ]];then
        if [[ $line =~ 'settings = {ATTRIBUTES = (Public,' ]];then
-           echo "已经是 Public 文件"
+           echo "Already a Public file"
        else
            #brew install gnu-sed
            sed -i "" "$lineNum s/\}\;/settings = \{ATTRIBUTES = \(Public, \)\; \}\; \}\;/" $project_path
@@ -32,9 +32,9 @@ done
 }
 
 doccCoverage(){
-echo '----- 正在清理 -----'
+echo '----- Cleaning in progress -----'
 xcodebuild clean -quiet || exit
-echo '清理完成 -->>> build'
+echo 'Cleaning completed -->>> build'
 xcodebuild -target FTMobileSDK DOCC_EXTRACT_SWIFT_INFO_FOR_OBJC_SYMBOLS=NO -quiet || exit
 echo 'build completion -->>> docc'
 xcrun docc convert FTMobileSDK/FTMobileSDKDocs.docc \
@@ -46,7 +46,7 @@ xcrun docc convert FTMobileSDK/FTMobileSDKDocs.docc \
 --level detailed
 }
 
-# 若为 all 则获取所有文件的注释覆盖率
+# If "all", get documentation coverage for all files
 FT_ALL_FILE_COVERAGE="$1"
 echo "----- Start -----"
 
@@ -56,7 +56,7 @@ changeFileAttributeToPublic
 echo "-----changeFileAttributeToPublic End-----"
 fi
 
-#删除旧工程的影响
+# Remove the impact of old project
 rm -rf App.xcodeproj
 rm -rf App.xcworkspace
 

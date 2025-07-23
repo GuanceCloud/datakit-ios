@@ -2,7 +2,7 @@
 //  FTRUMsessionHandler.m
 //  FTMobileAgent
 //
-//  Created by 胡蕾蕾 on 2021/5/26.
+//  Created by hulilei on 2021/5/26.
 //  Copyright © 2021 hll. All rights reserved.
 //
 
@@ -69,7 +69,7 @@ static const NSTimeInterval sessionMaxDuration = 4 * 60 * 60; // 4 hours
             [self.rumDependencies.writer isCacheWriter:YES];
             FTInnerLogInfo(@"[RUM] The current 'Session' is sampled on error.");
         }else{
-            // session 不采集时，防止 logger 关联 rum 错误
+            // When session is not collected, prevent logger from associating rum errors
             self.rumDependencies.fatalErrorContext = nil;
             FTInnerLogInfo(@"[RUM] The current 'Session' is not sampled.");
         }
@@ -116,7 +116,7 @@ static const NSTimeInterval sessionMaxDuration = 4 * 60 * 60; // 4 hours
     if(![self hasActivityView]){
         self.rumDependencies.fatalErrorContext.lastSessionContext = [self getCurrentSessionInfo];
     }
-    // 没有 view 能处理 error\longTask 则由 session 处理写入
+    // If no view can handle error\longTask, then session handles the writing
     if(self.needWriteErrorData){
         [self writeErrorData:model context:context];
     }
@@ -137,7 +137,7 @@ static const NSTimeInterval sessionMaxDuration = 4 * 60 * 60; // 4 hours
     FTRUMViewModel *viewModel = [[FTRUMViewModel alloc]initWithType:FTRUMSDKInit time:model.time];
     viewModel.isInitialView = YES;
     FTRUMViewHandler *viewHandler = [[FTRUMViewHandler alloc]initWithModel:viewModel context:self.context rumDependencies:self.rumDependencies];
-    //当前 view 处理了 error 数据回调,若没有 view 能处理则由 session 处理
+    //Current view handles error data callback, if no view can handle it, then session handles it
     __weak __typeof(self) weakSelf = self;
     viewHandler.errorHandled = ^{
         __strong __typeof(weakSelf) strongSelf = weakSelf;
@@ -149,7 +149,7 @@ static const NSTimeInterval sessionMaxDuration = 4 * 60 * 60; // 4 hours
 -(void)startView:(FTRUMDataModel *)model{
     
     FTRUMViewHandler *viewHandler = [[FTRUMViewHandler alloc]initWithModel:(FTRUMViewModel *)model context:self.context rumDependencies:self.rumDependencies];
-    //当前 view 处理了 error 数据回调,若没有 view 能处理则由 session 处理
+    //Current view handles error data callback, if no view can handle it, then session handles it
     __weak __typeof(self) weakSelf = self;
     viewHandler.errorHandled = ^{
         __strong __typeof(weakSelf) strongSelf = weakSelf;
@@ -170,7 +170,7 @@ static const NSTimeInterval sessionMaxDuration = 4 * 60 * 60; // 4 hours
 }
 /**
  * launch action
- * 实际意义上 与 click action 不同，action附加resource、error、long task不进行统计
+ * In actual meaning, different from click action, action attached resource, error, long task are not counted
  */
 - (void)writeLaunchData:(FTRUMLaunchDataModel *)model context:(NSDictionary *)context{
     

@@ -2,7 +2,7 @@
 //  FTPresetProperty.h
 //  FTMobileAgent
 //
-//  Created by 胡蕾蕾 on 2020/10/23.
+//  Created by hulilei on 2020/10/23.
 //  Copyright © 2020 hll. All rights reserved.
 //
 
@@ -13,18 +13,18 @@
 #import "FTReadWriteHelper.h"
 NS_ASSUME_NONNULL_BEGIN
 @class FTUserInfo;
-/// 预置属性
+/// Preset properties
 @interface FTPresetProperty : NSObject
 
-/// 读写保护的用户信息
+/// Read-write protected user information
 @property (nonatomic, strong) FTReadWriteHelper<FTUserInfo*> *userHelper;
 @property (nonatomic, strong, readonly) NSDictionary *loggerTags;
 @property (nonatomic, strong, readonly) NSMutableDictionary *rumTags;
 @property (nonatomic, strong, readonly) NSDictionary *rumStaticFields;
 
-/// 设置数据更改器
+/// Set data modifier
 @property (nonatomic, copy) FTLineDataModifier lineDataModifier;
-/// 设备名称
+/// Device name
 + (NSString *)deviceInfo;
 + (NSString *)cpuArch;
 + (NSString *)CPUArchForMajor:(cpu_type_t)majorCode minor:(cpu_subtype_t)minorCode;
@@ -34,12 +34,12 @@ NS_ASSUME_NONNULL_BEGIN
 #endif
 + (NSString *)getOSVersion;
 + (instancetype)sharedInstance;
-/// 初始化方法
-/// - Parameter version: 版本号
-/// - Parameter sdkVersion: SDK 版本号
-/// - Parameter env: 环境
-/// - Parameter service: 服务
-/// - Parameter globalContext: 全局自定义属性
+/// Initialization method
+/// - Parameter version: Version number
+/// - Parameter sdkVersion: SDK version number
+/// - Parameter env: Environment
+/// - Parameter service: Service
+/// - Parameter globalContext: Global custom properties
 - (void)startWithVersion:(NSString *)version sdkVersion:(NSString *)sdkVersion env:(NSString *)env service:(NSString *)service globalContext:(NSDictionary *)globalContext pkgInfo:(nullable NSDictionary *)pkgInfo;
 
 - (void)setDataModifier:(FTDataModifier)dataModifier lineDataModifier:(FTLineDataModifier)lineDataModifier;

@@ -1,8 +1,8 @@
-# 示例：sh BuildFramework.sh FTMobileSDK
-# 注意：无 dynamic 后缀都为静态库
-# 主项目需要的SDK ：FTMobileSDK 、 FTMobileSDK-dynamic
-# 小组件 Widget Extension 中需要的 SDK ：FTMobileExtension
-# 打包好的 SDK 存放在当前文件夹下的 build 文件夹内
+# Example: sh BuildFramework.sh FTMobileSDK
+# Note: All without dynamic suffix are static libraries
+# SDK required by main project: FTMobileSDK, FTMobileSDK-dynamic
+# SDK required by Widget Extension: FTMobileExtension
+# The packaged SDK is stored in the build folder under the current directory
 
 
 buildFrameWorkWithName(){
@@ -11,10 +11,10 @@ WORK_DIR="./build/${SCHEME_NAME}"
 FRAMEWORK_NAME=${SCHEME_NAME%%-*}
 rm -r ${WORK_DIR}
 
-#framework的输出目录
+# Framework output directory
 OUTPUT_DIR=FRAMEWORK/${FRAMEWORK_NAME}'.framework'
 
-##xcodebuild打包
+## xcodebuild packaging
 xcodebuild archive \
   -scheme ${SCHEME_NAME} \
   -archivePath "${WORK_DIR}/ios.xcarchive" \

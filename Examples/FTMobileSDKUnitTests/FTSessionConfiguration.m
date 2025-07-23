@@ -2,7 +2,7 @@
 //  FTSessionConfiguration.m
 //  FTMobileAgent
 //
-//  Created by 胡蕾蕾 on 2020/4/21.
+//  Created by hulilei on 2020/4/21.
 //  Copyright © 2020 hll. All rights reserved.
 //
 #if ! __has_feature(objc_arc)
@@ -49,7 +49,7 @@
 }
 
 - (NSArray *)protocolClasses {
-    // 如果还有其他的监控protocol，也可以在这里加进去
+    // If there are other monitoring protocols, they can also be added here
     return @[[FTURLProtocol class]];
 }
 @end

@@ -2,7 +2,7 @@
 //  FTURLProtocol.m
 //  FTMobileAgent
 //
-//  Created by 胡蕾蕾 on 2020/4/21.
+//  Created by hulilei on 2020/4/21.
 //  Copyright © 2020 hll. All rights reserved.
 //
 #if ! __has_feature(objc_arc)
@@ -10,7 +10,7 @@
 #endif
 #import "FTURLProtocol.h"
 #import "FTSessionConfiguration.h"
-static NSString *const URLProtocolHandledKey = @"URLProtocolHandledKey";//为了避免死循环
+static NSString *const URLProtocolHandledKey = @"URLProtocolHandledKey";//To avoid infinite loop
 
 @interface FTURLProtocol ()<NSURLSessionDelegate,NSURLSessionTaskDelegate>
 @property (nonatomic, strong) NSURLSession *session;
@@ -22,7 +22,7 @@ static NSString *const URLProtocolHandledKey = @"URLProtocolHandledKey";//为了
 @implementation FTURLProtocol
 static id<FTHTTPProtocolDelegate> sDelegate;
 
-// 开始监听
+// Start monitoring
 + (void)startMonitor {
     FTSessionConfiguration *sessionConfiguration = [FTSessionConfiguration defaultConfiguration];
     [NSURLProtocol registerClass:[FTURLProtocol class]];
@@ -31,7 +31,7 @@ static id<FTHTTPProtocolDelegate> sDelegate;
     }
 }
 
-// 停止监听
+// Stop monitoring
 + (void)stopMonitor {
     FTSessionConfiguration *sessionConfiguration = [FTSessionConfiguration defaultConfiguration];
     [NSURLProtocol unregisterClass:[FTURLProtocol class]];
@@ -57,7 +57,7 @@ static id<FTHTTPProtocolDelegate> sDelegate;
     
     NSString * scheme = [[request.URL scheme] lowercaseString];
     
-    //看看是否已经处理过了，防止无限循环 根据业务来截取
+    //Check if it has been processed, prevent infinite loop based on business requirements
     if ([NSURLProtocol propertyForKey: URLProtocolHandledKey inRequest:request]) {
         return NO;
     }
@@ -81,15 +81,15 @@ static id<FTHTTPProtocolDelegate> sDelegate;
     return [super initWithRequest:request cachedResponse:cachedResponse client:client];
 }
 
-//开始请求
+//Start request
 - (void)startLoading
 {
     NSMutableURLRequest *mutableReqeust = [[self request] mutableCopy];
-    //标示该request已经处理过了，防止无限循环
+    //Mark that the request has been processed, prevent infinite loop
     [NSURLProtocol setProperty:@(YES) forKey:URLProtocolHandledKey inRequest:mutableReqeust];
     
     
-    //使用NSURLSession继续把request发送出去
+    //Use NSURLSession to continue sending the request
     NSURLSessionConfiguration *config = [NSURLSessionConfiguration defaultSessionConfiguration];
     self.sessionDelegateQueue                             = [[NSOperationQueue alloc] init];
     self.sessionDelegateQueue.maxConcurrentOperationCount = 1;
@@ -104,7 +104,7 @@ static id<FTHTTPProtocolDelegate> sDelegate;
     [task resume];
 }
 
-//结束请求
+//End request
 - (void)stopLoading {
     [self.session invalidateAndCancel];
     self.session = nil;

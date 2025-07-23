@@ -2,7 +2,7 @@
 //  UIViewController+FT_RootVC.m
 //  FTAutoTrack
 //
-//  Created by 胡蕾蕾 on 2019/12/2.
+//  Created by hulilei on 2019/12/2.
 //  Copyright © 2019 hll. All rights reserved.
 //
 #if ! __has_feature(objc_arc)
@@ -83,13 +83,13 @@ static char *previousViewController = "previousViewController";
 }
 -(void)ft_viewDidAppear:(BOOL)animated{
     [self ft_viewDidAppear:animated];
-    // 防止 tabbar 切换，可能漏采 startView 全埋点
+    // Prevent tabbar switching, may miss startView full collection
     if ([self isKindOfClass:UINavigationController.class]) {
         UINavigationController *nav = (UINavigationController *)self;
         nav.ft_previousViewController = nil;
     }
     if (self.navigationController && self.parentViewController == self.navigationController) {
-        // 忽略由于侧滑部分返回原页面，重复触发 startView 事件
+        // Ignore the repeated triggering of startView events due to partial return to the original page by side sliding
         if (self.navigationController.ft_previousViewController == self) {
             return;
         }
@@ -101,7 +101,7 @@ static char *previousViewController = "previousViewController";
         self.ft_viewUUID = [FTBaseInfoHandler randomUUID];
         [[FTAutoTrackHandler sharedInstance].viewControllerHandler notify_viewDidAppear:self animated:animated];
     }
-    // 标记 previousViewController
+    // Mark previousViewController
     if (self.navigationController && self.parentViewController == self.navigationController) {
         self.navigationController.ft_previousViewController = self;
     }

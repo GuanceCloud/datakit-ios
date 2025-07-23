@@ -10,9 +10,9 @@
 
 NS_ASSUME_NONNULL_BEGIN
 
-/// CPU 监控器
+/// CPU monitor
 @interface FTCPUMonitor : NSObject
-/// 读取 CPU 使用 ticks
+/// Read CPU usage ticks
 - (double)readCpuUsage;
 @end
 

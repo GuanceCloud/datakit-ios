@@ -73,7 +73,7 @@
     [self.instrumentation.interceptor taskReceivedData:dataTask data:data];
 }
 -(void)URLSession:(NSURLSession *)session task:(NSURLSessionTask *)task didFinishCollectingMetrics:(NSURLSessionTaskMetrics *)metrics{
-    // custom = YES 主要是为了优先处理 URLSession 级自定义的 provider
+    // custom = YES is mainly to prioritize processing URLSession-level custom provider
     [self.instrumentation.interceptor taskMetricsCollected:task metrics:metrics custom:YES];
     if (@available(iOS 15.0,tvOS 15.0,macOS 12.0, *)) {
         if(!task.ft_hasCompletion){

@@ -2,7 +2,7 @@
 //  FTMobileAgent.m
 //  FTMobileAgent
 //
-//  Created by 胡蕾蕾 on 2019/11/28.
+//  Created by hulilei on 2019/11/28.
 //  Copyright © 2019 hll. All rights reserved.
 //
 #if ! __has_feature(objc_arc)
@@ -46,18 +46,18 @@
 
 static FTMobileAgent *sharedInstance = nil;
 static dispatch_once_t onceToken;
-#pragma mark --------- 初始化 config 设置 ----------
+#pragma mark --------- Initialize config settings ----------
 + (void)startWithConfigOptions:(FTMobileConfig *)configOptions{
-    NSAssert ((strcmp(dispatch_queue_get_label(DISPATCH_CURRENT_QUEUE_LABEL), dispatch_queue_get_label(dispatch_get_main_queue())) == 0),@"SDK 必须在主线程里进行初始化，否则会引发无法预料的问题（比如丢失 launch 事件）。");
+    NSAssert ((strcmp(dispatch_queue_get_label(DISPATCH_CURRENT_QUEUE_LABEL), dispatch_queue_get_label(dispatch_get_main_queue())) == 0),@"The SDK must be initialized on the main thread, otherwise unpredictable issues may occur (such as missing launch events).");
     
-    NSAssert((configOptions.datakitUrl.length!=0||(configOptions.datawayUrl.length!=0&&configOptions.clientToken.length!=0)), @"请正确配置 datakit  或 dataway 写入地址");
+    NSAssert((configOptions.datakitUrl.length!=0||(configOptions.datawayUrl.length!=0&&configOptions.clientToken.length!=0)), @"Please correctly configure datakit or dataway write address");
     dispatch_once(&onceToken, ^{
         sharedInstance = [[FTMobileAgent alloc] initWithConfig:configOptions];
     });
 }
-// 单例
+// Singleton
 + (instancetype)sharedInstance {
-    NSAssert(sharedInstance, @"请先使用 startWithConfigOptions: 初始化 SDK");
+    NSAssert(sharedInstance, @"Please use startWithConfigOptions: to initialize the SDK first");
     return sharedInstance;
 }
 - (instancetype)initWithConfig:(FTMobileConfig *)config{
@@ -78,7 +78,7 @@ static dispatch_once_t onceToken;
     return self;
 }
 - (void)startRumWithConfigOptions:(FTRumConfig *)rumConfigOptions{
-    NSAssert((rumConfigOptions.appid.length!=0 ), @"请设置 appid 用户访问监测应用ID");
+    NSAssert((rumConfigOptions.appid.length!=0 ), @"Please set appid for user access monitoring application ID");
     @try {
         if(!_rumConfig){
             _rumConfig = [rumConfigOptions copy];
@@ -142,7 +142,7 @@ static dispatch_once_t onceToken;
 }
 #pragma mark ========== real sdk init ==========
 - (void)applyBaseConfig:(FTMobileConfig *)config{
-    //基础类型的记录
+    // Basic type recording
     [FTLog enableLog:config.enableSDKDebugLog];
     NSString *version = [[[NSBundle mainBundle] infoDictionary] objectForKey:@"CFBundleShortVersionString"];
     [[FTPresetProperty sharedInstance] setDataModifier:config.dataModifier lineDataModifier:config.lineDataModifier];
@@ -154,7 +154,7 @@ static dispatch_once_t onceToken;
                                                 pkgInfo:config.pkgInfo
     ];
     [FTExtensionDataManager sharedInstance].groupIdentifierArray = config.groupIdentifiers;
-    //开启数据处理管理器
+    // Start data processing manager
     [FTTrackDataManager startWithAutoSync:config.autoSync syncPageSize:config.syncPageSize syncSleepTime:config.syncSleepTime];
     [[FTTrackDataManager sharedInstance] setEnableLimitWithDb:config.enableLimitWithDbSize size:config.dbCacheLimit discardNew:config.dbDiscardType == FTDBDiscard];
     
@@ -224,7 +224,7 @@ static dispatch_once_t onceToken;
         FTInnerLogError(@"exception %@",exception);
     }
 }
-//用户绑定
+// User binding
 - (void)bindUserWithUserID:(NSString *)Id{
     [self bindUserWithUserID:Id userName:nil userEmail:nil extra:nil];
 }
@@ -287,7 +287,7 @@ static dispatch_once_t onceToken;
         FTInnerLogError(@"appendLogGlobalContext exception: %@",exception);
     }
 }
-//用户注销
+// User logout
 - (void)logout{
     [self unbindUser];
 }
@@ -349,7 +349,7 @@ static dispatch_once_t onceToken;
         FTInnerLogError(@"%@ error: %@", self, exception);
     }
 }
-#pragma mark - SDK注销
+#pragma mark - SDK shutdown
 - (void)shutDown{
     [FTNetworkInfoManager shutDown];
     [[FTGlobalRumManager sharedInstance] shutDown];

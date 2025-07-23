@@ -2,7 +2,7 @@
 //  FTUncaughtExceptionHandler+Test.h
 //  FTMobileSDKUnitTests
 //
-//  Created by 胡蕾蕾 on 2020/9/7.
+//  Created by hulilei on 2020/9/7.
 //  Copyright © 2020 hll. All rights reserved.
 //
 

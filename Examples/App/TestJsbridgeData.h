@@ -2,7 +2,7 @@
 //  TestJsbridgeData.h
 //  SampleApp
 //
-//  Created by 胡蕾蕾 on 2021/1/7.
+//  Created by hulilei on 2021/1/7.
 //  Copyright © 2021 hll. All rights reserved.
 //
 

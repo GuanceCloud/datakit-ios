@@ -11,22 +11,22 @@
 @class FTDisplayRateMonitor,FTMemoryMonitor,FTCPUMonitor;
 
 NS_ASSUME_NONNULL_BEGIN
-/// RUM 监控器
+/// RUM monitor
 @interface FTRUMMonitor : NSObject
-/// fps 监控器
+/// FPS monitor
 @property (nonatomic, strong) FTDisplayRateMonitor * _Nullable displayMonitor;
-/// memory 监控器
+/// Memory monitor
 @property (nonatomic, strong) FTMemoryMonitor *_Nullable memoryMonitor;
-/// CPU 监控器
+/// CPU monitor
 @property (nonatomic, strong) FTCPUMonitor *_Nullable cpuMonitor;
-/// 监控频率
+/// Monitoring frequency
 @property (nonatomic, assign) NSTimeInterval frequency;
-/// 初始化方法
+/// Initialization method
 ///
-/// 根据 MonitorType 初始化对应监控器，各个监控项中的监控器从该类获取。
+/// Initialize corresponding monitors based on MonitorType. Monitors in each monitoring item are obtained from this class.
 /// - Parameters:
-///   - type: 支持的设备监控类型
-///   - frequency: 监控频率
+///   - type: Supported device monitoring types
+///   - frequency: Monitoring frequency
 - (instancetype)initWithMonitorType:(DeviceMetricsMonitorType)type frequency:(MonitorFrequency)frequency;
 @end
 

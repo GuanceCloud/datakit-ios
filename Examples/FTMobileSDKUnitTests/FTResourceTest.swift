@@ -69,11 +69,11 @@ final class FTResourceTest: XCTestCase {
                     if #available(iOS 16.0, *) {
                         XCTAssertTrue(resource_url_host == url?.host())
                     }
-                    // 链路添加成功
-                    XCTAssertTrue(request_header.components(separatedBy: "datadog").count>1)
+                    // Link added successfully
+                    XCTAssertTrue(request_header.components(separatedBy: "datadog").count > 1)
                 }
             }
-            // RUM Resource 采集成功
+            // RUM Resource collected successfully
             XCTAssertTrue(hasResource)
         }
        

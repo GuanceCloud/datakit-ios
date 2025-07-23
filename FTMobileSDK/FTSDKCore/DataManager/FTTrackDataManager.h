@@ -2,12 +2,12 @@
 //  FTTrackDataManager.h
 //  FTMacOSSDK
 //
-//  Created by 胡蕾蕾 on 2021/8/4.
+//  Created by hulilei on 2021/8/4.
 //  Copyright © 2021 DataFlux-cn. All rights reserved.
 //
 
 #import <Foundation/Foundation.h>
-/// 数据添加类型
+/// Data addition type
 typedef NS_ENUM(NSInteger, FTAddDataType) {
     ///rum
     FTAddDataRUM,
@@ -19,14 +19,14 @@ typedef NS_ENUM(NSInteger, FTAddDataType) {
 NS_ASSUME_NONNULL_BEGIN
 @class FTRecordModel,FTDataWriterWorker,FTHTTPClient;
 @protocol FTRUMDataWriteProtocol;
-/// 数据写入，数据上传 相关操作
+/// Data writing and data uploading related operations
 @interface FTTrackDataManager : NSObject
 
 @property (nonatomic, strong) FTHTTPClient *httpClient;
 
 @property (nonatomic, strong) FTDataWriterWorker *dataWriterWorker;
 
-/// 单例
+/// Singleton
 +(instancetype)sharedInstance;
 
 +(instancetype)startWithAutoSync:(BOOL)autoSync
@@ -39,19 +39,19 @@ NS_ASSUME_NONNULL_BEGIN
 - (void)setLogCacheLimitCount:(int)count discardNew:(BOOL)discardNew;
 - (void)setRUMCacheLimitCount:(int)count discardNew:(BOOL)discardNew;
 
- /// 数据写入
+ /// Data writing
 /// - Parameters:
-///   - data: 数据
-///   - type: 数据存储类型
+///   - data: data
+///   - type: data storage type
 - (void)addTrackData:(FTRecordModel *)data type:(FTAddDataType)type;
 
-/// 上传数据
+/// Upload data
 - (void)flushSyncData;
 
-/// 关闭单例
+/// Shut down singleton
 - (void)shutDown;
 
-/// 缓存中的数据添加到数据库中
+/// Add cached data to database
 -(void)insertCacheToDB;
 
 @end

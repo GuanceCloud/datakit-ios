@@ -2,7 +2,7 @@
 //  UIApplication+AutoTrack.m
 //  FTMobileAgent
 //
-//  Created by 胡蕾蕾 on 2021/7/21.
+//  Created by hulilei on 2021/7/21.
 //  Copyright © 2021 hll. All rights reserved.
 //
 
@@ -18,7 +18,7 @@
     return [self ft_sendAction:action to:target from:sender forEvent:event];
 }
 - (void)ftTrack:(SEL)action to:(id)target from:(id )sender forEvent:(UIEvent *)event {
-   //过滤 底部导航 与 顶部导航 多余的点击事件，采集 UITabBarButton 与 _UIButtonBarButton
+   // Filter out redundant click events from the bottom and top navigation bars, only collect UITabBarButton and _UIButtonBarButton
     if ([sender isKindOfClass:UITabBarItem.class] || [sender isKindOfClass:UIBarButtonItem.class]) {
         return;
     }
@@ -50,7 +50,7 @@
     [self ftSendEvent:event];
     [self ft_sendEvent:event];
 }
-// 处理 TVOS 点击事件
+// Handle TVOS click events
 - (void)ftSendEvent:(UIEvent *)event{
     if (![event isKindOfClass:UIPressesEvent.class]) {
         return;

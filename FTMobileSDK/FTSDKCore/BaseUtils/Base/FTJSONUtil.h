@@ -2,7 +2,7 @@
 //  FTJSONUtil.h
 //  FTMobileAgent
 //
-//  Created by 胡蕾蕾 on 2020/10/20.
+//  Created by hulilei on 2020/10/20.
 //  Copyright © 2020 hll. All rights reserved.
 //
 
@@ -10,57 +10,57 @@
 
 NS_ASSUME_NONNULL_BEGIN
 
-/// JSON 工具
+/// JSON Utility
 @interface FTJSONUtil : NSObject
 /**
  * @abstract
- * 把一个 dict 转成 Json字符串
+ * Convert a dict to a JSON string
  *
- * @param dict 要转化的对象
+ * @param dict The object to be converted
  *
- * @return 转化后得到的字符串
+ * @return The resulting string after conversion
  */
 + (nullable NSString *)convertToJsonData:(NSDictionary *)dict;
 /**
  * @abstract
- * 把一个 Json字符串 转成 dict
+ * Convert a JSON string to a dict
  *
- * @param jsonString 要转化的 Json字符串
+ * @param jsonString The JSON string to be converted
  *
- * @return 转化后得到的 dict
+ * @return The resulting dict after conversion
  */
 + (nullable NSDictionary *)dictionaryWithJsonString:(NSString *)jsonString;
 
 /**
  * @abstract
- * 把一个 Json字符串 转成 array
+ * Convert a JSON string to an array
  *
- * @param jsonString 要转化的 Json 字符串
+ * @param jsonString The JSON string to be converted
  *
- * @return 转化后得到的 array
+ * @return The resulting array after conversion
  */
 + (nullable NSArray *)arrayWithJsonString:(NSString *)jsonString;
 /**
  * @abstract
- * 把一个Object转成Json字符串
+ * Convert an Object to a JSON string
  *
- * @param obj 要转化的对象Object
+ * @param obj The object to be converted
  *
- * @return 转化后得到的字符串
+ * @return The resulting string after conversion
  */
 - (nullable NSData *)JSONSerializeDictObject:(NSDictionary *)obj;
 /**
  * @abstract
- * 把一个 Foundation 对象转成 Json 字符串
+ * Convert a Foundation object to a JSON string
  *
- * @param object 要转化的对象
+ * @param object The object to be converted
  *
- * @return 转化后得到的字符串
+ * @return The resulting string after conversion
  */
 + (nullable NSString *)convertToJsonDataWithObject:(id)object;
 
-/// 安全保护，把一个对象转成可以转成Json字符串的对象
-/// @param obj 要转化的对象
+/// Safety protection, convert an object to an object that can be converted to a JSON string
+/// @param obj The object to be converted
 + (nullable id)JSONSerializableObject:(id)obj;
 @end
 

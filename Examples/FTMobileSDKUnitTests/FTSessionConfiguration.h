@@ -2,7 +2,7 @@
 //  FTSessionConfiguration.h
 //  FTMobileAgent
 //
-//  Created by 胡蕾蕾 on 2020/4/21.
+//  Created by hulilei on 2020/4/21.
 //  Copyright © 2020 hll. All rights reserved.
 //
 
@@ -11,13 +11,13 @@
 NS_ASSUME_NONNULL_BEGIN
 
 @interface FTSessionConfiguration : NSObject
-//是否交换方法
+//Whether to exchange methods
 @property (nonatomic,assign) BOOL isExchanged;
 
 + (FTSessionConfiguration *)defaultConfiguration;
-// 交换掉NSURLSessionConfiguration的 protocolClasses方法
+// Exchange NSURLSessionConfiguration's protocolClasses method
 - (void)load;
-// 还原初始化
+// Restore initialization
 - (void)unload;
 @end
 

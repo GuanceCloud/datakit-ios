@@ -9,21 +9,21 @@
 #import <Foundation/Foundation.h>
 
 NS_ASSUME_NONNULL_BEGIN
-/// 管理 trace 的类
+/// Class that manages trace
 ///
-/// 功能：
-/// -  根据 URL 判断请求是否进行 trace 追踪
-/// -  获取 trace 的请求头参数
-/// -  根据 key 管理 traceHandler
+/// Features:
+/// -  Determine whether to perform trace tracking based on URL
+/// -  Get trace request header parameters
+/// -  Manage traceHandler based on key
 @interface FTTraceManager : NSObject
-/// 单例
+/// Singleton
 + (instancetype)sharedInstance;
-/// 获取 trace 的请求头参数 (已废弃)
+/// Get trace request header parameters (deprecated)
 /// - Parameters:
-///   - key: 能够确定某一请求的唯一标识
-///   - url: 请求 URL
-/// - Returns: trace 的请求头参数字典
-- (NSDictionary *)getTraceHeaderWithKey:(NSString *)key url:(NSURL *)url DEPRECATED_MSG_ATTRIBUTE("已过时，请使用 [[FTExternalDataManager sharedManager] getTraceHeaderWithKey:url:] 替换");
+///   - key: unique identifier that can determine a specific request
+///   - url: request URL
+/// - Returns: trace request header parameter dictionary
+- (NSDictionary *)getTraceHeaderWithKey:(NSString *)key url:(NSURL *)url DEPRECATED_MSG_ATTRIBUTE("Deprecated, please use [[FTExternalDataManager sharedManager] getTraceHeaderWithKey:url:] instead");
 @end
 
 NS_ASSUME_NONNULL_END

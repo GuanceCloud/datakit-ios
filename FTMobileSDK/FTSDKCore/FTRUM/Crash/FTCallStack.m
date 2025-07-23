@@ -2,7 +2,7 @@
 //  FTANRMonitor.h
 //  FTMobileAgent
 //
-//  Created by 胡蕾蕾 on 2020/10/09.
+//  Created by hulilei on 2020/10/09.
 //  Copyright © 2020 hll. All rights reserved.
 //
 
@@ -44,7 +44,7 @@ static mach_port_t main_thread_id;
 }
 #pragma -mark Get call backtrace of a mach_thread
 NSString *_ft_backtraceOfThread(thread_t thread) {
-    //线程上下文信息
+    //Thread context information
     _STRUCT_MCONTEXT machineContext;
     if(!ft_fillThreadStateIntoMachineContext(thread, &machineContext)) {
         return [NSString stringWithFormat:@"Fail to get information about thread: %u", thread];
@@ -61,7 +61,7 @@ NSString *ft_backtraceOfThread(thread_t thread,const uintptr_t* const backtraceB
     NSMutableString *resultString = [[NSMutableString alloc] initWithFormat:@"Thread %d:\n", ft_crashThreadNumber(thread)];
     NSMutableSet *imageSet = [NSMutableSet new];
     int backtraceLength = count;
-    //获得函数的实现地址，由于函数地址无法进行阅读，需要通过符号表（nlist）来解析为函数名，从而进行程序定位。
+    //Get the implementation address of the function, since the function address cannot be read, it needs to be resolved to a function name through the symbol table (nlist) for program positioning.
     Dl_info symbolicated[backtraceLength];
     FTMachoImage binaryImages[backtraceLength];
     ft_symbolicate(backtraceBuffer, symbolicated, backtraceLength, 0,binaryImages);
@@ -121,7 +121,7 @@ NSString* ft_logBacktraceEntry(const int entryNum,
     
     uintptr_t offset = address - (uintptr_t)dlInfo->dli_saddr;
     const char* sname = dlInfo->dli_sname;
-    //_mh_execute_header 未成功进行符号化，替换为 load address
+    //_mh_execute_header failed to symbolize, replace with load address
     if(sname == NULL || strcmp( sname, "_mh_execute_header") == 0 || strcmp(sname, "<redacted>") == 0) {
         sprintf(saddrBuff, POINTER_SHORT_FMT, (uintptr_t)dlInfo->dli_fbase);
         sname = saddrBuff;

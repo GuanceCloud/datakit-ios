@@ -2354,7 +2354,7 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 			shellPath = /bin/sh;
-			shellScript = "# Type a script or drag a script file from your workspace to insert its path.\n# 获取当前版本号\nremove_dash_and_after() {  \n    local str=\"$1\"  \n    echo \"${str%%-*}\"  \n}  \nFILE_PATH=\"FTMobileSDK/FTMobileAgent/Core/FTMobileAgentVersion.h\"\n# 使用 grep 和 awk 提取 SDK_VERSION 的值\nbundleVersion=$(grep 'SDK_VERSION' \"$FILE_PATH\" | awk -F'\"' '{print $2}')\nformatBundleVersion=$(remove_dash_and_after \"$bundleVersion\")  \nINFO_PLIST_PATH=\"${PROJECT_DIR}/${INFOPLIST_FILE}\"  \n\necho \"INFO_PLIST_PATH: $INFO_PLIST_PATH\"\n\n# 使用defaults写入新的版本号\ndefaults write \"${INFO_PLIST_PATH}\" CFBundleShortVersionString \"${formatBundleVersion}\"\n\n\n# 打印结果\necho \"Updated CFBundleShortVersionString to ${formatBundleVersion}\"\n\n";
+			shellScript = "# Type a script or drag a script file from your workspace to insert its path.\n# Get current version number\nremove_dash_and_after() {  \n    local str=\"$1\"  \n    echo \"${str%%-*}\"  \n}  \nFILE_PATH=\"FTMobileSDK/FTMobileAgent/Core/FTMobileAgentVersion.h\"\n# Use grep and awk to extract SDK_VERSION value\nbundleVersion=$(grep 'SDK_VERSION' \"$FILE_PATH\" | awk -F'\"' '{print $2}')\nformatBundleVersion=$(remove_dash_and_after \"$bundleVersion\")  \nINFO_PLIST_PATH=\"${PROJECT_DIR}/${INFOPLIST_FILE}\"  \n\necho \"INFO_PLIST_PATH: $INFO_PLIST_PATH\"\n\n# Use defaults to write new version number\ndefaults write \"${INFO_PLIST_PATH}\" CFBundleShortVersionString \"${formatBundleVersion}\"\n\n\n# Print result\necho \"Updated CFBundleShortVersionString to ${formatBundleVersion}\"\n\n";
 		};
 		17F653192DF81A73005C91DB /* ShellScript */ = {
 			isa = PBXShellScriptBuildPhase;
@@ -2371,7 +2371,7 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 			shellPath = /bin/sh;
-			shellScript = "# Type a script or drag a script file from your workspace to insert its path.\n# 获取当前版本号\nremove_dash_and_after() {  \n    local str=\"$1\"  \n    echo \"${str%%-*}\"  \n}  \nFILE_PATH=\"FTMobileSDK/FTMobileAgent/Core/FTMobileAgentVersion.h\"\n# 使用 grep 和 awk 提取 SDK_VERSION 的值\nbundleVersion=$(grep 'SDK_VERSION' \"$FILE_PATH\" | awk -F'\"' '{print $2}')\nformatBundleVersion=$(remove_dash_and_after \"$bundleVersion\")  \nINFO_PLIST_PATH=\"${PROJECT_DIR}/${INFOPLIST_FILE}\"  \n\necho \"INFO_PLIST_PATH: $INFO_PLIST_PATH\"\n\n# 使用defaults写入新的版本号\ndefaults write \"${INFO_PLIST_PATH}\" CFBundleShortVersionString \"${formatBundleVersion}\"\n\n\n# 打印结果\necho \"Updated CFBundleShortVersionString to ${formatBundleVersion}\"\n\n";
+			shellScript = "# Type a script or drag a script file from your workspace to insert its path.\n# Get current version number\nremove_dash_and_after() {  \n    local str=\"$1\"  \n    echo \"${str%%-*}\"  \n}  \nFILE_PATH=\"FTMobileSDK/FTMobileAgent/Core/FTMobileAgentVersion.h\"\n# Use grep and awk to extract SDK_VERSION value\nbundleVersion=$(grep 'SDK_VERSION' \"$FILE_PATH\" | awk -F'\"' '{print $2}')\nformatBundleVersion=$(remove_dash_and_after \"$bundleVersion\")  \nINFO_PLIST_PATH=\"${PROJECT_DIR}/${INFOPLIST_FILE}\"  \n\necho \"INFO_PLIST_PATH: $INFO_PLIST_PATH\"\n\n# Use defaults to write new version number\ndefaults write \"${INFO_PLIST_PATH}\" CFBundleShortVersionString \"${formatBundleVersion}\"\n\n\n# Print result\necho \"Updated CFBundleShortVersionString to ${formatBundleVersion}\"\n\n";
 		};
 /* End PBXShellScriptBuildPhase section */
 

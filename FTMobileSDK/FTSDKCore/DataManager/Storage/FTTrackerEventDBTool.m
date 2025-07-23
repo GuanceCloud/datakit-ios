@@ -2,7 +2,7 @@
 //  ZYSQLite3.m
 //  FTMobileAgent
 //
-//  Created by 胡蕾蕾 on 2019/12/2.
+//  Created by hulilei on 2019/12/2.
 //  Copyright © 2019 hll. All rights reserved.
 //
 
@@ -22,7 +22,7 @@
 static FTTrackerEventDBTool *dbTool = nil;
 static dispatch_once_t onceToken;
 
-#pragma mark --创建数据库
+#pragma mark --Create database
 + (instancetype)sharedManger
 {
     return [FTTrackerEventDBTool shareDatabaseWithPath:nil dbName:nil];
@@ -139,10 +139,10 @@ static dispatch_once_t onceToken;
 -(NSArray *)getDatasWithFormat:(NSString *)format{
     __block  NSMutableArray *array = [NSMutableArray new];
     [self zy_inDatabase:^(ZY_FMDatabase *db){
-        //ORDER BY ID DESC --根据ID降序查找:ORDER BY ID ASC --根据ID升序序查找
+        //ORDER BY ID DESC --Find by ID in descending order: ORDER BY ID ASC --Find by ID in ascending order
         ZY_FMResultSet*set = [db executeQuery:format];
         while(set.next) {
-            //创建对象赋值
+            //Create object and assign values
             FTRecordModel* item = [[FTRecordModel alloc]init];
             item.tm = [set longForColumn:@"tm"];
             item.data= [set stringForColumn:@"data"];

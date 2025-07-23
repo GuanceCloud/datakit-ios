@@ -2,7 +2,7 @@
 //  FTRequestBody.m
 //  FTMacOSSDK
 //
-//  Created by 胡蕾蕾 on 2021/8/5.
+//  Created by hulilei on 2021/8/5.
 //  Copyright © 2021 DataFlux-cn. All rights reserved.
 //
 
@@ -131,7 +131,7 @@ NSString * FTQueryStringFromParameters(NSDictionary *parameters,FTParameterType 
                 [requestDatas appendFormat:@"\n%@",requestStr];
             }
         }else{
-            FTInnerLogError(@"\n*********此条数据格式错误********\n%@ %lld\n******************\n",item,time);
+            FTInnerLogError(@"\n*********This data format is incorrect********\n%@ %lld\n******************\n",item,time);
         }
     }];
     FTRecordModel *model = [events firstObject];

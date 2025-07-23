@@ -84,7 +84,7 @@
     __block NSURLSessionDataTask *dataTask;
     NSURLSession *session = [NSURLSession sharedSession];
     XCTAssertNotNil(session);
-    XCTestExpectation *expectation= [self expectationWithDescription:@"异步操作timeout"];
+    XCTestExpectation *expectation= [self expectationWithDescription:@"Async operation timeout"];
 
    dataTask = [session dataTaskWithURL:self.url completionHandler:^(NSData * _Nullable data, NSURLResponse * _Nullable response, NSError * _Nullable error) {
         [expectation fulfill];
@@ -437,7 +437,7 @@
     XCTAssertNil([weakSelf getTraceHandler:dataTask]);
 }
 - (void)waitAndRunBlockAfterResponse:(void (^)(void))block {
-    XCTestExpectation *expectation= [self expectationWithDescription:@"异步操作timeout"];
+    XCTestExpectation *expectation= [self expectationWithDescription:@"Async operation timeout"];
     [FTNetworkMock registerHandler:^{
         block();
         [expectation fulfill];

@@ -2,7 +2,7 @@
 //  TestWKParentVC.m
 //  App
 //
-//  Created by 胡蕾蕾 on 2021/8/3.
+//  Created by hulilei on 2021/8/3.
 //  Copyright © 2021 DataFlux-cn. All rights reserved.
 //
 
@@ -31,7 +31,7 @@
     config.userContentController = userContentController;
     
         
-    //! 使用configuration对象初始化webView
+    //! Initialize webView using configuration object
     self.webView = [[WKWebView alloc] initWithFrame:self.view.bounds configuration:config];
     [self.view addSubview:self.webView];
 }

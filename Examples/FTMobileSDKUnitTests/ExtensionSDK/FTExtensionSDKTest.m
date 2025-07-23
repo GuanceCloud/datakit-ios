@@ -93,11 +93,11 @@
     XCTAssertTrue(hasAction);
 }
 - (void)testRumResource{
-    [self saveMobileSdkConfig];
+    [self saveMobileSdkConfig]; 
     [self setExtensionSDK];
     [[FTExternalDataManager sharedManager] startViewWithName:@"testRumResource"];
     NSArray *olddatas = [[FTExtensionDataManager sharedInstance] readAllEventsWithGroupIdentifier:@"group.com.ft.widget.demo"];
-    XCTestExpectation *expectation= [self expectationWithDescription:@"异步操作timeout"];
+    XCTestExpectation *expectation= [self expectationWithDescription:@"Async operation timeout"];
 
     [self networkUpload:^(NSData * _Nullable data, NSURLResponse * _Nullable response, NSError * _Nullable error) {
         [expectation fulfill];
@@ -117,7 +117,7 @@
     [self setExtensionSDK];
     [[FTExternalDataManager sharedManager] startViewWithName:@"testRumResourceDelegate"];
     NSArray *olddatas = [[FTExtensionDataManager sharedInstance] readAllEventsWithGroupIdentifier:@"group.com.ft.widget.demo"];
-    XCTestExpectation *expectation= [self expectationWithDescription:@"异步操作timeout"];
+    XCTestExpectation *expectation = [self expectationWithDescription:@"Async operation timeout"];
     HttpEngineTestUtil *engine = [[HttpEngineTestUtil alloc]initWithSessionInstrumentationType:InstrumentationInherit completion:^{
         [expectation fulfill];
     }];
@@ -138,7 +138,7 @@
     [self saveMobileSdkConfig];
     [self setExtensionSDK];
     [[FTExternalDataManager sharedManager] startViewWithName:@"testTracer"];
-    XCTestExpectation *expectation= [self expectationWithDescription:@"异步操作timeout"];
+    XCTestExpectation *expectation= [self expectationWithDescription:@"Async operation timeout"];
 
     [self networkUpload:^(NSData * _Nullable data, NSURLResponse * _Nullable response, NSError * _Nullable error) {
         [expectation fulfill];
@@ -223,7 +223,7 @@
     [FTMobileAgent appendLogGlobalContext:@{@"log_key1":@"log_value"}];
     
     [[FTMobileAgent sharedInstance] bindUserWithUserID:@"test_id" userName:@"BindUserData" userEmail:@"aaa@a.com" extra:@{@"extra_key":@"extra_value"}];
-    XCTestExpectation *expectation= [self expectationWithDescription:@"异步操作timeout"];
+    XCTestExpectation *expectation= [self expectationWithDescription:@"Async operation timeout"];
     [[FTTrackDataManager sharedInstance] insertCacheToDB];
     [FTMobileAgent clearAllData];
     [[FTMobileAgent sharedInstance] trackEventFromExtensionWithGroupIdentifier:@"group.com.ft.widget.demo" completion:^(NSString * _Nonnull groupIdentifier, NSArray * _Nonnull events) {

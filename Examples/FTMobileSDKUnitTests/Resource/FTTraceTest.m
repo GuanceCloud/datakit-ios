@@ -2,7 +2,7 @@
 //  NetworkTraceTest.m
 //  ft-sdk-iosTestUnitTests
 //
-//  Created by 胡蕾蕾 on 2020/8/27.
+//  Created by hulilei on 2020/8/27.
 //  Copyright © 2020 hll. All rights reserved.
 //
 
@@ -66,9 +66,9 @@
     XCTAssertNotNil(self.tracer);
 }
 // traceID: uuid lowercaseString
-// spanID: uuid-16位 lowercaseString
+// spanID: uuid-16 bit lowercaseString
 - (void)testFTNetworkTrackTypeZipkinMultiHeader{
-    XCTestExpectation *expectation= [self expectationWithDescription:@"异步操作timeout"];
+    XCTestExpectation *expectation= [self expectationWithDescription:@"Async operation timeout"];
     
     [self setNetworkTraceType:FTNetworkTraceTypeZipkinMultiHeader];
     __block NSString *testTrace,*testSpan;
@@ -100,9 +100,9 @@
     }];
 }
 // traceID: uuid lowercaseString
-// spanID: uuid-16位 lowercaseString
+// spanID: uuid-16 bit lowercaseString
 - (void)testFTNetworkTrackTypeZipkinSingleHeader{
-    XCTestExpectation *expectation= [self expectationWithDescription:@"异步操作timeout"];
+    XCTestExpectation *expectation= [self expectationWithDescription:@"Async operation timeout"];
     
     [self setNetworkTraceType:FTNetworkTraceTypeZipkinSingleHeader];
     __block NSString *testTrace,*testSpan;
@@ -133,9 +133,9 @@
     }];
 }
 // traceID: uuid lowercaseString
-// spanID: uuid-16位 lowercaseString
+// spanID: uuid-16 bit lowercaseString
 - (void)testFTNetworkTrackTypeJaeger{
-    XCTestExpectation *expectation= [self expectationWithDescription:@"异步操作timeout"];
+    XCTestExpectation *expectation= [self expectationWithDescription:@"Async operation timeout"];
     
     [self setNetworkTraceType:FTNetworkTraceTypeJaeger];
     __block NSString *testTrace,*testSpan;
@@ -167,10 +167,10 @@
         XCTAssertNil(error);
     }];
 }
-// traceID: 64位数字
-// spanID: 64位数字
+// traceID: 64 bit number
+// spanID: 64 bit number
 - (void)testFTNetworkTrackTypeDDtrace{
-    XCTestExpectation *expectation= [self expectationWithDescription:@"异步操作timeout"];
+    XCTestExpectation *expectation= [self expectationWithDescription:@"Async operation timeout"];
     
     [self setNetworkTraceType:FTNetworkTraceTypeDDtrace];
     __block NSString *testTrace,*testSpan;
@@ -200,7 +200,7 @@
 }
 // 
 - (void)testFTNetworkTrackTypeSkywalking_v3{
-    XCTestExpectation *expectation= [self expectationWithDescription:@"异步操作timeout"];
+    XCTestExpectation *expectation= [self expectationWithDescription:@"Async operation timeout"];
     
     [self setNetworkTraceType:FTNetworkTraceTypeSkywalking];
     __block NSString *testTrace,*testSpan;
@@ -236,7 +236,7 @@
     }];
 }
 - (void)testFTNetworkTrackTypeSkywalking_v3_ServiceName{
-    XCTestExpectation *expectation= [self expectationWithDescription:@"异步操作timeout"];
+    XCTestExpectation *expectation= [self expectationWithDescription:@"Async operation timeout"];
     NSString *testServiceName = @"TestServiceName";
     [self setNetworkTraceType:FTNetworkTraceTypeSkywalking serviceName:testServiceName];
     [self networkUpload:@"Skywalking_v3" handler:^(NSDictionary *header) {
@@ -254,7 +254,7 @@
     }];
 }
 - (void)testFTNetworkTrackTypeSkywalking_v3SeqOver9999{
-    XCTestExpectation *expectation= [self expectationWithDescription:@"异步操作timeout"];
+    XCTestExpectation *expectation= [self expectationWithDescription:@"Async operation timeout"];
     [self setNetworkTraceType:FTNetworkTraceTypeSkywalking];
     if ([self.tracer isKindOfClass:FTTracer.class]) {
         FTTracer *tracerInstance = (FTTracer *)self.tracer;
@@ -286,9 +286,9 @@
     
 }
 // traceID: uuid lowercaseString
-// spanID: uuid-16位 lowercaseString
+// spanID: uuid-16 bit lowercaseString
 - (void)testFTNetworkTrackTypeTraceparent{
-    XCTestExpectation *expectation= [self expectationWithDescription:@"异步操作timeout"];
+    XCTestExpectation *expectation= [self expectationWithDescription:@"Async operation timeout"];
     
     [self setNetworkTraceType:FTNetworkTraceTypeTraceparent];
     __block NSString *testTrace,*testSpan;
@@ -322,7 +322,7 @@
     }];
 }
 - (void)testSampleRate0{
-    XCTestExpectation *expectation= [self expectationWithDescription:@"异步操作timeout"];
+    XCTestExpectation *expectation= [self expectationWithDescription:@"Async operation timeout"];
     
     NSProcessInfo *processInfo = [NSProcessInfo processInfo];
     NSString *url = [processInfo environment][@"ACCESS_SERVER_URL"];
@@ -343,7 +343,7 @@
     }];
 }
 - (void)testSampleRate100{
-    XCTestExpectation *expectation= [self expectationWithDescription:@"异步操作timeout"];
+    XCTestExpectation *expectation= [self expectationWithDescription:@"Async operation timeout"];
     
     NSProcessInfo *processInfo = [NSProcessInfo processInfo];
     NSString *url = [processInfo environment][@"ACCESS_SERVER_URL"];
@@ -432,7 +432,7 @@
     XCTAssertTrue(hasResourceData);
 }
 - (void)testDisableAutoTrace{
-    XCTestExpectation *expectation= [self expectationWithDescription:@"异步操作timeout"];
+    XCTestExpectation *expectation= [self expectationWithDescription:@"Async operation timeout"];
     
     NSProcessInfo *processInfo = [NSProcessInfo processInfo];
     NSString *url = [processInfo environment][@"ACCESS_SERVER_URL"];
@@ -455,7 +455,7 @@
     }];
 }
 - (void)testDisableAutoTrace_enableRumAutoTraceResource{
-    XCTestExpectation *expectation= [self expectationWithDescription:@"异步操作timeout"];
+    XCTestExpectation *expectation= [self expectationWithDescription:@"Async operation timeout"];
     
     NSProcessInfo *processInfo = [NSProcessInfo processInfo];
     NSString *url = [processInfo environment][@"ACCESS_SERVER_URL"];
@@ -492,7 +492,7 @@
     XCTAssertNil(header);
 }
 - (void)testCustomTrace{
-    XCTestExpectation *expectation= [self expectationWithDescription:@"异步操作timeout"];
+    XCTestExpectation *expectation= [self expectationWithDescription:@"Async operation timeout"];
     
     NSProcessInfo *processInfo = [NSProcessInfo processInfo];
     NSString *url = [processInfo environment][@"ACCESS_SERVER_URL"];
@@ -548,7 +548,7 @@
     }];
 }
 - (void)testNewThread{
-    XCTestExpectation *expectation= [self expectationWithDescription:@"异步操作timeout"];
+    XCTestExpectation *expectation= [self expectationWithDescription:@"Async operation timeout"];
     [self setNetworkTraceType:FTNetworkTraceTypeDDtrace];
     dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0), ^{
         [self networkUpload:@"testNewThread" handler:^(NSDictionary *header) {
@@ -564,7 +564,7 @@
 }
 
 - (void)testBadResponse{
-    XCTestExpectation *expectation= [self expectationWithDescription:@"异步操作timeout"];
+    XCTestExpectation *expectation= [self expectationWithDescription:@"Async operation timeout"];
     [self setNetworkTraceType:FTNetworkTraceTypeDDtrace];
     [self setBadNetOHHTTPStubs];
     NSURLSession *session = [NSURLSession sessionWithConfiguration:[NSURLSessionConfiguration defaultSessionConfiguration]];

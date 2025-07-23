@@ -12,10 +12,10 @@
 typedef void (^Completion)(void);
 NS_ASSUME_NONNULL_BEGIN
 /**
- * 使用 session 工具的方法
- * InstrumentationDirect 直接使用
- * InstrumentationInherit 继承使用
- * InstrumentationProperty 作为属性使用
+ * Methods using session utility
+ * InstrumentationDirect Direct usage
+ * InstrumentationInherit Inherit usage
+ * InstrumentationProperty Use as property
  */
 typedef NS_ENUM(NSUInteger,TestSessionInstrumentationType){
     InstrumentationDirect,

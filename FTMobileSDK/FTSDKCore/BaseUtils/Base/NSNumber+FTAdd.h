@@ -14,7 +14,7 @@ NS_ASSUME_NONNULL_BEGIN
 - (id)ft_toFieldFormat;
 - (id)ft_toFieldIntegerCompatibleFormat;
 
-/// 用户自定义 property 中的 float、double 保留精度
+/// Preserve precision for float and double in user custom properties
 - (id)ft_toUserFieldFormat;
 - (id)ft_toTagFormat;
 @end

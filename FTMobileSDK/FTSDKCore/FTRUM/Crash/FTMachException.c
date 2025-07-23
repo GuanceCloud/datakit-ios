@@ -29,7 +29,7 @@ static volatile bool g_isEnabled = false;
 
 static mach_port_t g_exceptionPort = MACH_PORT_NULL;
 
-//监听异常端口的主要线程
+//Main thread for monitoring exception port
 static pthread_t g_primaryPThread;
 static thread_t g_primaryMachThread;
 

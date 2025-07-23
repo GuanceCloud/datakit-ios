@@ -2,7 +2,7 @@
 //  FTThreadDispatchManager.m
 //  FTMobileAgent
 //
-//  Created by 胡蕾蕾 on 2021/10/20.
+//  Created by hulilei on 2021/10/20.
 //  Copyright © 2021 DataFlux-cn. All rights reserved.
 //
 #ifdef __OBJC__

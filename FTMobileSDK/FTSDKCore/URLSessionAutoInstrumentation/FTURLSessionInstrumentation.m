@@ -34,7 +34,7 @@ static void *const kFTCompleteSelector = (void *)&kFTCompleteSelector;
 static void *const kFTCollectMetricsSelector = (void *)&kFTCollectMetricsSelector;
 static void *const kFTConformsToFTProtocol = (void *)&kFTConformsToFTProtocol;
 
-//conformsToProtocol 方法有损耗，苹果建议本地缓存结果减少调用
+//conformsToProtocol method has overhead, Apple recommends local caching of results to reduce calls
 static BOOL delegateConformsToFTProtocol(id delegate){
     if(!delegate){
         return NO;
@@ -49,7 +49,7 @@ static BOOL delegateConformsToFTProtocol(id delegate){
     }
 }
 @interface FTURLSessionInstrumentation()
-/// sdk 内部的数据上传 url
+/// SDK internal data upload URL
 @property (nonatomic, copy) NSString *sdkUrlStr;
 @property (nonatomic, strong) FTTracer *tracer;
 @property (atomic, assign, readwrite) BOOL shouldTraceInterceptor;
@@ -135,7 +135,7 @@ static dispatch_once_t onceToken;
 -(void)setIntakeUrlHandler:(FTIntakeUrl)intakeUrlHandler{
     self.interceptor.intakeUrlHandler = intakeUrlHandler;
 }
-/// 关闭自动采集
+/// Disable automatic collection
 - (void)disableAutomaticRegistration{
     self.shouldRUMInterceptor = NO;
     self.shouldTraceInterceptor = NO;

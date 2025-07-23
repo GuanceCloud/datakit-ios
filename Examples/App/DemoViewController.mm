@@ -2,14 +2,14 @@
 //  DemoViewController.m
 //  ft-sdk-iosTest
 //
-//  Created by 胡蕾蕾 on 2019/11/28.
+//  Created by hulilei on 2019/11/28.
 //  Copyright © 2019 hll. All rights reserved.
 //
 
 #import "DemoViewController.h"
 #import "UITestVC.h"
 #import <FTMobileSDK/FTMobileAgent.h>
-//测试崩溃采集
+//Test crash collection
 #import "TestLongTaskVC.h"
 #import "TestWKWebViewVC.h"
 #import "CrashVC.h"
@@ -44,7 +44,7 @@
         [weakSelf.navigationController pushViewController:[UITestVC new] animated:YES];
     }];
     TableViewCellItem *item2 = [[TableViewCellItem alloc]initWithTitle:@"BindUser" handler:^{
-        [[FTMobileAgent sharedInstance] bindUserWithUserID:@"user1" userName:@"用户1" userEmail:@"1@qq.com" extra:@{@"user_age":@21}];
+        [[FTMobileAgent sharedInstance] bindUserWithUserID:@"user1" userName:@"User1" userEmail:@"1@qq.com" extra:@{@"user_age":@21}];
     }];
     TableViewCellItem *item3 = [[TableViewCellItem alloc]initWithTitle:@"UserLogout" handler:^{
         [[FTMobileAgent sharedInstance] unbindUser];

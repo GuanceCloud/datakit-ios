@@ -18,10 +18,10 @@
 #import "FTNetworkConnectivity.h"
 #import "FTNetworkInfoManager.h"
 static const NSInteger kMaxRetryCount = 5;
-static const NSTimeInterval kInitialRetryDelay = 0.5; // 初始500ms延迟
+static const NSTimeInterval kInitialRetryDelay = 0.5; // Initial 500ms delay
 
 @interface FTDataUploadWorker()
-/// 一次上传数据数量
+/// Number of data items to upload at once
 @property (nonatomic, assign) int uploadPageSize;
 @property (nonatomic, assign) int syncSleepTime;
 @property (nonatomic, strong) dispatch_queue_t networkQueue;
@@ -80,7 +80,7 @@ static const NSTimeInterval kInitialRetryDelay = 0.5; // 初始500ms延迟
     }
     __weak typeof(self) weakSelf = self;
     if (withSleep) {
-        // 如果 Timer 已存在，直接重置触发时间
+        // If Timer already exists, directly reset the trigger time
         dispatch_async(self.networkQueue, ^{
             __strong typeof(weakSelf) strongSelf = weakSelf;
             if (!strongSelf) return;
@@ -100,31 +100,31 @@ static const NSTimeInterval kInitialRetryDelay = 0.5; // 初始500ms延迟
         [self _flushSyncData:NO];
     }
 }
-// 重置现有 Timer 的触发时间
+// Reset the trigger time of existing Timer
 - (void)resetExistingTimer {
-    // 计算新的触发时间（当前时间 + 100ms）
+    // Calculate new trigger time (current time + 100ms)
     dispatch_time_t newDelay = dispatch_time(DISPATCH_TIME_NOW, 100 * NSEC_PER_MSEC);
-    // 更新 Timer 触发时间（无需重新 Resume）
+    // Update Timer trigger time (no need to resume again)
     dispatch_source_set_timer(self.timerSource, newDelay, DISPATCH_TIME_FOREVER, 0);
 }
 - (void)createNewTimer {
-    // 创建 Timer 并关联到全局队列（或自定义队列）
+    // Create Timer and associate with global queue (or custom queue)
     self.timerSource = dispatch_source_create(DISPATCH_SOURCE_TYPE_TIMER, 0, 0, self.networkQueue);
     
     __weak typeof(self) weakSelf = self;
     dispatch_source_set_event_handler(self.timerSource, ^{
         __strong typeof(weakSelf) strongSelf = weakSelf;
         if (!strongSelf) return;
-        // 触发后执行实际操作
+        // Execute actual operation after trigger
         [strongSelf _flushSyncData:YES];
-        // 取消并清理 Timer
+        // Cancel and clean up Timer
         dispatch_source_cancel(strongSelf.timerSource);
         strongSelf.timerSource = nil;
     });
-    // 设置初始触发时间
+    // Set initial trigger time
     dispatch_time_t delay = dispatch_time(DISPATCH_TIME_NOW, 100 * NSEC_PER_MSEC);
     dispatch_source_set_timer(self.timerSource, delay, DISPATCH_TIME_FOREVER, 0);
-    // 激活 Timer
+    // Activate Timer
     dispatch_resume(self.timerSource);
 }
 -(void)cancelSynchronously{
@@ -196,7 +196,7 @@ static const NSTimeInterval kInitialRetryDelay = 0.5; // 初始500ms延迟
         self.isUploading = NO;
         FTInnerLogDebug(@"[NETWORK]:privateUpload end upload");
     } @catch (NSException *exception) {
-        FTInnerLogError(@"[NETWORK] 执行上传操作失败 %@",exception);
+        FTInnerLogError(@"[NETWORK] Failed to execute upload operation %@",exception);
     } @finally {
         self.isUploading = NO;
     }
@@ -204,14 +204,14 @@ static const NSTimeInterval kInitialRetryDelay = 0.5; // 初始500ms延迟
 -(void)flushWithType:(NSString *)type{
     NSArray *events = [[FTTrackerEventDBTool sharedManger] getFirstRecords:self.uploadPageSize withType:type];
     while (events.count > 0) {
-        FTInnerLogDebug(@"[NETWORK][%@] 开始上报事件(本次上报事件数:%lu)", type,(unsigned long)[events count]);
+        FTInnerLogDebug(@"[NETWORK][%@] Start reporting events (number of events in this report:%lu)", type,(unsigned long)[events count]);
         FTRequest *request = [FTRequest createRequestWithEvents:events type:type];
         if(![self flushWithRequest:request]){
             break;
         }
         FTRecordModel *model = [events lastObject];
         if (![[FTTrackerEventDBTool sharedManger] deleteItemWithType:type identify:model._id count:events.count]) {
-            FTInnerLogError(@"数据库删除已上传数据失败");
+            FTInnerLogError(@"Failed to delete uploaded data from database");
             break;
         }
         [[request classSerialGenerator] increaseRequestSerialNumber];
@@ -224,7 +224,7 @@ static const NSTimeInterval kInitialRetryDelay = 0.5; // 初始500ms延迟
         if(events.count < self.uploadPageSize){
             break;
         }else{
-            // 减缓同步速率降低CPU使用率
+            // Reduce synchronization rate to lower CPU usage
             [NSThread sleepForTimeInterval:0.001*self.syncSleepTime];
             events = [[FTTrackerEventDBTool sharedManger] getFirstRecords:self.uploadPageSize withType:type];
         }
@@ -234,7 +234,7 @@ static const NSTimeInterval kInitialRetryDelay = 0.5; // 初始500ms延迟
     @try {
         __block BOOL success = NO;
         int retryCount = 0;
-        NSTimeInterval delay = kInitialRetryDelay; // 初始延迟500毫秒
+        NSTimeInterval delay = kInitialRetryDelay; // Initial delay 500ms
         while (!success) {
             @autoreleasepool {
                 dispatch_semaphore_t  flushSemaphore = dispatch_semaphore_create(0);
@@ -249,7 +249,7 @@ static const NSTimeInterval kInitialRetryDelay = 0.5; // 初始500ms延迟
                     success = (statusCode >=200 && statusCode < 500);
                     FTInnerLogDebug(@"[NETWORK] Upload Response statusCode : %ld",(long)statusCode);
                     if (!success && data.length>0) {
-                        FTInnerLogError(@"[NETWORK] 服务器异常 稍后再试 responseData = %@",[FTJSONUtil dictionaryWithJsonString:[[NSString alloc] initWithData:data encoding:NSUTF8StringEncoding]]);
+                        FTInnerLogError(@"[NETWORK] Server exception, try again later responseData = %@",[FTJSONUtil dictionaryWithJsonString:[[NSString alloc] initWithData:data encoding:NSUTF8StringEncoding]]);
                     }
                     dispatch_semaphore_signal(flushSemaphore);
                 }];
@@ -257,13 +257,13 @@ static const NSTimeInterval kInitialRetryDelay = 0.5; // 初始500ms延迟
                 
                 if (!success) {
                     if (retryCount < kMaxRetryCount) {
-                        FTInnerLogDebug(@"[NETWORK] 请求失败，准备进行第%d次重试，等待%.0f毫秒", retryCount + 1, delay*1000);
+                        FTInnerLogDebug(@"[NETWORK] Request failed, preparing for %dth retry, waiting %.0f milliseconds", retryCount + 1, delay*1000);
                         [NSThread sleepForTimeInterval:delay];
-                        delay += kInitialRetryDelay; // 退避
+                        delay += kInitialRetryDelay; // Backoff
                         retryCount++;
                     } else {
-                        FTInnerLogError(@"[NETWORK] 请求失败，已达最大重试次数");
-                        break; // 达到最大重试次数
+                        FTInnerLogError(@"[NETWORK] Request failed, maximum retry count reached");
+                        break; // Reached maximum retry count
                     }
                 }
             }

@@ -15,10 +15,10 @@
 @interface FTDBDataCachePolicy()
 
 @property (atomic, assign) int logCacheLimitCount;
-/// logging 类型数据超过最大值后是否废弃最新数据
+/// Whether to discard the latest data when logging type data exceeds the maximum value
 @property (atomic, assign) BOOL logDiscardNew;
 @property (atomic, assign) int  rumCacheLimitCount;
-/// logging 类型数据超过最大值后是否废弃最新数据
+/// Whether to discard the latest data when logging type data exceeds the maximum value
 @property (atomic, assign) BOOL rumDiscardNew;
 @property (nonatomic, strong) dispatch_queue_t logCacheQueue;
 @property (nonatomic, strong) NSMutableArray *messageCaches;
@@ -134,7 +134,7 @@
     }
     return -1;
 }
-// NO：没有超限\超限但删除旧数据 YES:超限，删除新数据
+// NO: Not exceeded\Exceeded but delete old data YES: Exceeded, delete new data
 - (BOOL)reachDbLimit{
     long pageSize = [[FTTrackerEventDBTool sharedManger] checkDatabaseSize];
     self.currentDbSize = pageSize;
@@ -156,7 +156,7 @@
         return [self reachLogHalfLimit] || [self reachRumHalfLimit];
     }
 }
-// 添加的日志数量超多限额一半
+// Added log count exceeds half the limit
 - (BOOL)reachLogHalfLimit{
     return self.logCacheLimitCount > 0 && self.logCount > self.logCacheLimitCount / 2;
 }
