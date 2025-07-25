@@ -17,6 +17,7 @@
 #import "NSDate+FTUtil.h"
 #import "FTBaseInfoHandler.h"
 #import "FTWeakPropertyContainer.h"
+#import "FTDateUtil.h"
 
 static char *viewLoadStartTimeKey = "viewLoadStartTimeKey";
 static char *viewControllerUUID = "viewControllerUUID";
@@ -24,10 +25,10 @@ static char *viewLoadDuration = "viewLoadDuration";
 static char *previousViewController = "previousViewController";
 
 @implementation UIViewController (FTAutoTrack)
--(void)setFt_viewLoadStartTime:(NSDate*)viewLoadStartTime{
+-(void)setFt_viewLoadStartTime:(NSNumber *)viewLoadStartTime{
     objc_setAssociatedObject(self, &viewLoadStartTimeKey, viewLoadStartTime, OBJC_ASSOCIATION_RETAIN_NONATOMIC);
 }
--(NSDate *)ft_viewLoadStartTime{
+-(NSNumber *)ft_viewLoadStartTime{
     return objc_getAssociatedObject(self, &viewLoadStartTimeKey);
 }
 -(NSNumber *)ft_loadDuration{
@@ -78,11 +79,15 @@ static char *previousViewController = "previousViewController";
     }
 }
 - (void)ft_viewDidLoad{
-    self.ft_viewLoadStartTime = [NSDate date];
+    self.ft_viewLoadStartTime = @(FTDateUtil.systemTime);
     [self ft_viewDidLoad];
 }
 -(void)ft_viewDidAppear:(BOOL)animated{
     [self ft_viewDidAppear:animated];
+    if (self.ft_viewLoadStartTime != nil) {
+        self.ft_loadDuration = @(FTDateUtil.systemTime - [self.ft_viewLoadStartTime unsignedLongLongValue]);
+        self.ft_viewLoadStartTime = nil;
+    }
     // 防止 tabbar 切换，可能漏采 startView 全埋点
     if ([self isKindOfClass:UINavigationController.class]) {
         UINavigationController *nav = (UINavigationController *)self;

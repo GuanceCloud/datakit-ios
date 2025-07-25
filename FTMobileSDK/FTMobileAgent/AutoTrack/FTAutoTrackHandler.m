@@ -38,15 +38,11 @@
         _identify = identify;
         _isUntrackedModal = NO;
         _viewController = viewController;
-        NSNumber *loadTime = @0;
-        if(viewController.ft_viewLoadStartTime){
-            loadTime = [viewController.ft_viewLoadStartTime ft_nanosecondTimeIntervalToDate:[NSDate date]];
-            viewController.ft_loadDuration = loadTime;
-            viewController.ft_viewLoadStartTime = nil;
-        }else{
-            viewController.ft_loadDuration = loadTime;
+        _loadTime = @0;
+        if(viewController.ft_loadDuration != nil){
+            _loadTime = viewController.ft_loadDuration;
+            viewController.ft_loadDuration = nil;
         }
-        _loadTime = loadTime;
     }
     return self;
 }
