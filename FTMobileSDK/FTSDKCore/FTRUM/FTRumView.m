@@ -9,5 +9,15 @@
 #import "FTRumView.h"
 
 @implementation FTRumView
-
+-(instancetype)initWithViewName:(NSString *)viewName{
+    return [self initWithViewName:viewName property:nil];
+}
+- (instancetype)initWithViewName:(NSString *)viewName property:(NSDictionary *)property{
+    self = [super init];
+    if (self) {
+        _viewName = viewName;
+        _property = property;
+    }
+    return self;
+}
 @end

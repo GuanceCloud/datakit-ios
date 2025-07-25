@@ -25,9 +25,10 @@
 @property (nonatomic, weak) UIViewController *viewController;
 @property (nonatomic, assign) BOOL isUntrackedModal;
 @property (nonatomic, copy) NSDictionary *property;
+@property (nonatomic, copy) NSString *viewControllerUUID;
 
 - (instancetype)initWithViewController:(UIViewController *)viewController identify:(NSString *)identify;
-- (void)updateViewControllerUUID;
+- (void)resetView;
 - (NSString *)viewControllerUUID;
 @end
 @implementation RUMView
@@ -38,6 +39,7 @@
         _identify = identify;
         _isUntrackedModal = NO;
         _viewController = viewController;
+        _viewControllerUUID = [FTBaseInfoHandler randomUUID];
         _loadTime = @0;
         if(viewController.ft_loadDuration != nil){
             _loadTime = viewController.ft_loadDuration;
@@ -46,11 +48,8 @@
     }
     return self;
 }
-- (NSString *)viewControllerUUID{
-    return self.viewController.ft_viewUUID;
-}
-- (void)updateViewControllerUUID{
-    _viewController.ft_viewUUID = [FTBaseInfoHandler randomUUID];
+- (void)resetView{
+    _viewControllerUUID = [FTBaseInfoHandler randomUUID];
     _loadTime = @0;
 }
 @end
@@ -142,19 +141,20 @@
     }
     RUMView *current = [self.stack lastObject];
     if(current){
-        [current updateViewControllerUUID];
+        [current resetView];
         [self.addRumDatasDelegate startViewWithViewID:current.viewControllerUUID viewName:current.viewName property:nil];
     }
 }
 #pragma mark ========== FTUIViewControllerHandler ==========
 -(void)notify_viewDidAppear:(UIViewController *)viewController animated:(BOOL)animated{
     // if User-defined 
-    if (self.uiKitViewsHandler) {
-        FTRumView *rumView = self.uiKitViewsHandler(viewController);
+    if (self.uiKitViewTrackingStrategy) {
+        FTRumView *rumView = self.uiKitViewTrackingStrategy(viewController);
         if (rumView) {
             NSString *identify = [NSString stringWithFormat:@"%p", viewController];
             RUMView *view = [[RUMView alloc]initWithViewController:viewController identify:identify];
             view.viewName = rumView.viewName;
+            view.property = rumView.property;
             view.isUntrackedModal = rumView.isUntrackedModal;
             [self addView:view];
         }
@@ -169,6 +169,7 @@
         if([self shouldTrackViewController:viewController]){
             NSString *identify = [NSString stringWithFormat:@"%p", viewController];
             RUMView *view = [[RUMView alloc]initWithViewController:viewController identify:identify];
+            view.viewName = viewController.ft_viewControllerName;
             [self addView:view];
         }
     }
@@ -177,11 +178,12 @@
     [self removeView:viewController];
 }
 - (void)addView:(RUMView *)view{
+    // Ignore repeated startView events triggered by partially returning to the original page via side swipe
     if([[self.stack lastObject].identify isEqualToString:view.identify]){
         return;
     }
     if ([self.stack lastObject]) {
-        // 没有从数组中移除的原因是有一些特殊视图，比如模态视图添加到 window 时，或者新的 window 添加到窗口，window 上有 VC，原有的 VC 并不会调用 didDisappear 方法，当这些特殊视图移除时，原有的 VC 也不会调用 DidAppear 方法，所以需要保留，重新添加到 RUM View。
+        // The reason for not removing from the array is that there are some special views, such as modal view transitions in non-fullscreen mode, or when a new window is added to the window hierarchy with a view controller on it. The original view controller will not call the didDisappear method, and when these special views are removed, the original view controller will not call the didAppear method either. Therefore, it needs to be retained and re-added to the RUM View.
         RUMView *current = [self.stack lastObject];
         [self stopView:current];
     }
@@ -212,7 +214,7 @@
     
     RUMView *reStartView = [self.stack lastObject];
     if(reStartView){
-        [reStartView updateViewControllerUUID];
+        [reStartView resetView];
         [self startView:reStartView];
     }
 }
@@ -220,8 +222,8 @@
     if(!self.addRumDatasDelegate){
         return;
     }
-    // 确保不采集的模态视图,不会影响采集视图的 duration
-    // 不采集的模态视图弹出时，关闭上一个采集的 View，关闭时，重新开启上一个 View 采集
+    // Ensure that untracked modal views do not affect the duration of tracked views
+    // When an untracked modal view pops up, close the last tracked View; when the modal view is closed, restart tracking the last View
     if(!view.isUntrackedModal){
         [self.addRumDatasDelegate onCreateView:view.viewName loadTime:view.loadTime];
         [self.addRumDatasDelegate startViewWithViewID:view.viewControllerUUID viewName:view.viewName property:view.property];
@@ -241,7 +243,7 @@
 -(void)shutDown{
     self.addRumDatasDelegate = nil;
     self.viewControllerHandler = nil;
-    self.uiKitViewsHandler = nil;
+    self.uiKitViewTrackingStrategy = nil;
     self.autoTrackView = NO;
     self.autoTrackAction = NO;
     [[FTAppLifeCycle sharedInstance] removeAppLifecycleDelegate:self];

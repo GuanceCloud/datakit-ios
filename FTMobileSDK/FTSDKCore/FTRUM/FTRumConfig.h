@@ -7,7 +7,9 @@
 //
 
 #import <Foundation/Foundation.h>
+#if TARGET_OS_TV || TARGET_OS_IOS
 #import <UIKit/UIKit.h>
+#endif
 #import "FTRumView.h"
 NS_ASSUME_NONNULL_BEGIN
 
@@ -17,9 +19,11 @@ typedef BOOL(^FTResourceUrlHandler)(NSURL * url);
 typedef NSDictionary<NSString *,id>* _Nullable (^FTResourcePropertyProvider)( NSURLRequest * _Nullable request, NSURLResponse * _Nullable response,NSData *_Nullable data, NSError *_Nullable error);
 /// 支持自定义拦截 URLSessionTask Error，确认拦截返回 YES，不拦截返回 NO
 typedef BOOL (^FTSessionTaskErrorFilter)(NSError *_Nonnull error);
-
-typedef FTRumView* _Nullable (^FTUIKitViewsHandler)(UIViewController *viewController);
-
+#if TARGET_OS_TV || TARGET_OS_IOS
+typedef FTRumView* _Nullable (^FTViewTrackingStrategy)(UIViewController *viewController);
+#else
+typedef FTRumView* _Nullable (^FTViewTrackingStrategy)(id viewController);
+#endif
 /// ERROR 中的设备信息
 typedef NS_OPTIONS(NSUInteger, FTErrorMonitorType) {
     /// 开启所有监控： 电池、内存、CPU使用率
@@ -125,13 +129,12 @@ typedef NS_ENUM(NSInteger, FTRUMCacheDiscard)  {
 /// 设置允许采集 WebView 数据的特定主机或域名，nil 时全采集。
 @property (nonatomic, copy) NSArray *allowWebViewHost;
 
-/// A handler for user-defined collection of `UIViewControllers` as RUM views for tracking.
+/// A strategy for user-defined collection of `ViewControllers` as RUM views for tracking.
 /// It takes effect when enableTraceUserView = YES.
-/// RUM 将针对应用程序中呈现的每个 `UIViewController` 调用此回调。
+/// RUM 将针对应用程序中呈现的每个 `ViewController` 调用此回调。
 ///  - 如果给定的控制器需要启动一个 RUM 视图，需要返回 FTRumView 视图参数；
 ///  - 若要忽略该控制器，则返回 nil
-@property (nonatomic, copy) FTUIKitViewsHandler uiKitViewsHandler;
-
+@property (nonatomic, copy) FTViewTrackingStrategy viewTrackingStrategy;
 
 /// 开启采集卡顿并设置卡顿的阈值。
 /// - Parameter enableTrackAppFreeze: 设置是否需要采集卡顿
