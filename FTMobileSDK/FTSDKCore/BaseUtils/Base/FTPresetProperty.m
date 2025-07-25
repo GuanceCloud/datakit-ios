@@ -124,7 +124,7 @@
                  service:(NSString *)service
            globalContext:(NSDictionary *)globalContext
                  pkgInfo:(NSDictionary *)pkgInfo{
-    self.userInfo = [FTUserInfo new];
+    [self start];
     NSMutableDictionary *dict = [NSMutableDictionary dictionary];
     [dict setValue:[self getApplicationUUID] forKey:FT_APPLICATION_UUID];
     [dict setValue:self.mobileDevice.deviceUUID forKey:FT_COMMON_PROPERTY_DEVICE_UUID];
