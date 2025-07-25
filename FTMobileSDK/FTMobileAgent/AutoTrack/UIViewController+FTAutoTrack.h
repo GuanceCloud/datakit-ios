@@ -19,10 +19,4 @@ NS_ASSUME_NONNULL_BEGIN
 -(void)ft_viewDidDisappear:(BOOL)animated;
 @end
 
-@interface UINavigationController (FTAutoTrack)
-
-/// The last page, prevent duplicate collection of View events from side sliding/sliding
-@property (nonatomic, strong,nullable) UIViewController *ft_previousViewController;
-
-@end
 NS_ASSUME_NONNULL_END

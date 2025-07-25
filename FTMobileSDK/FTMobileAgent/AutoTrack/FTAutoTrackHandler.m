@@ -29,7 +29,6 @@
 
 - (instancetype)initWithViewController:(UIViewController *)viewController identify:(NSString *)identify;
 - (void)resetView;
-- (NSString *)viewControllerUUID;
 @end
 @implementation RUMView
 -(instancetype)initWithViewController:(UIViewController *)viewController identify:(NSString *)identify{

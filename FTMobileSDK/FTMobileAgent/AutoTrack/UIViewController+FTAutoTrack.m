@@ -20,9 +20,7 @@
 #import "FTDateUtil.h"
 
 static char *viewLoadStartTimeKey = "viewLoadStartTimeKey";
-static char *viewControllerUUID = "viewControllerUUID";
 static char *viewLoadDuration = "viewLoadDuration";
-static char *previousViewController = "previousViewController";
 
 @implementation UIViewController (FTAutoTrack)
 -(void)setFt_viewLoadStartTime:(NSNumber *)viewLoadStartTime{
