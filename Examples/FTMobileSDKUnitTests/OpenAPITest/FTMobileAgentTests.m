@@ -476,6 +476,9 @@
     rumConfig.resourceUrlHandler = ^BOOL(NSURL *url) {
         return NO;
     };
+    rumConfig.viewTrackingStrategy = ^FTRumView * _Nullable(UIViewController * _Nonnull viewController) {
+        return nil;
+    };
     XCTAssertTrue(rumConfig.sessionOnErrorSampleRate == 0);
     XCTAssertTrue(rumConfig.rumCacheLimitCount == 100000);
     rumConfig.rumCacheLimitCount = 1000;
@@ -498,6 +501,7 @@
     XCTAssertTrue(copyRumConfig.monitorFrequency == rumConfig.monitorFrequency);
     XCTAssertTrue([copyRumConfig.globalContext isEqual:rumConfig.globalContext]);
     XCTAssertTrue([copyRumConfig.resourceUrlHandler isEqual:rumConfig.resourceUrlHandler]);
+    XCTAssertTrue([copyRumConfig.viewTrackingStrategy isEqual:rumConfig.viewTrackingStrategy]);
     XCTAssertTrue(copyRumConfig.freezeDurationMs == rumConfig.freezeDurationMs);
     XCTAssertTrue(copyRumConfig.rumDiscardType == rumConfig.rumDiscardType);
     XCTAssertTrue(copyRumConfig.rumCacheLimitCount == rumConfig.rumCacheLimitCount);

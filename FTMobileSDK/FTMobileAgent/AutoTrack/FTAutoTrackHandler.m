@@ -24,8 +24,11 @@
 @property (nonatomic, strong) NSNumber *loadTime;
 @property (nonatomic, weak) UIViewController *viewController;
 @property (nonatomic, assign) BOOL isUntrackedModal;
+@property (nonatomic, copy) NSDictionary *property;
+@property (nonatomic, copy) NSString *viewControllerUUID;
+
 - (instancetype)initWithViewController:(UIViewController *)viewController identify:(NSString *)identify;
-- (void)updateViewControllerUUID;
+- (void)resetView;
 - (NSString *)viewControllerUUID;
 @end
 @implementation RUMView
@@ -36,23 +39,17 @@
         _identify = identify;
         _isUntrackedModal = NO;
         _viewController = viewController;
-        NSNumber *loadTime = @0;
-        if(viewController.ft_viewLoadStartTime){
-            loadTime = [viewController.ft_viewLoadStartTime ft_nanosecondTimeIntervalToDate:[NSDate date]];
-            viewController.ft_loadDuration = loadTime;
-            viewController.ft_viewLoadStartTime = nil;
-        }else{
-            viewController.ft_loadDuration = loadTime;
+        _viewControllerUUID = [FTBaseInfoHandler randomUUID];
+        _loadTime = @0;
+        if(viewController.ft_loadDuration != nil){
+            _loadTime = viewController.ft_loadDuration;
+            viewController.ft_loadDuration = nil;
         }
-        _loadTime = loadTime;
     }
     return self;
 }
-- (NSString *)viewControllerUUID{
-    return self.viewController.ft_viewUUID;
-}
-- (void)updateViewControllerUUID{
-    _viewController.ft_viewUUID = [FTBaseInfoHandler randomUUID];
+- (void)resetView{
+    _viewControllerUUID = [FTBaseInfoHandler randomUUID];
     _loadTime = @0;
 }
 @end
@@ -126,7 +123,7 @@
     } @catch (NSException *exception) {
         FTInnerLogError(@"exception: %@",exception);
     }
-   
+    
 }
 #pragma mark ========== FTAppLifeCycleDelegate ==========
 -(void)applicationDidEnterBackground{
@@ -144,20 +141,35 @@
     }
     RUMView *current = [self.stack lastObject];
     if(current){
-        [current updateViewControllerUUID];
+        [current resetView];
         [self.addRumDatasDelegate startViewWithViewID:current.viewControllerUUID viewName:current.viewName property:nil];
     }
 }
 #pragma mark ========== FTUIViewControllerHandler ==========
 -(void)notify_viewDidAppear:(UIViewController *)viewController animated:(BOOL)animated{
-    NSString *identify = [NSString stringWithFormat:@"%p", viewController];
-    if([self shouldTrackViewController:viewController]){
-        RUMView *view = [[RUMView alloc]initWithViewController:viewController identify:identify];
-        [self addView:view];
-    }else if (@available(iOS 13.0,tvOS 13.0, *)){
-        if(viewController.isModalInPresentation){
+    // if User-defined 
+    if (self.uiKitViewTrackingStrategy) {
+        FTRumView *rumView = self.uiKitViewTrackingStrategy(viewController);
+        if (rumView) {
+            NSString *identify = [NSString stringWithFormat:@"%p", viewController];
             RUMView *view = [[RUMView alloc]initWithViewController:viewController identify:identify];
-            view.isUntrackedModal = YES;
+            view.viewName = rumView.viewName;
+            view.property = rumView.property;
+            view.isUntrackedModal = rumView.isUntrackedModal;
+            [self addView:view];
+        }
+        return;
+    }
+    
+    if (!viewController.parentViewController ||
+        [viewController.parentViewController isKindOfClass:[UITabBarController class]] ||
+        [viewController.parentViewController isKindOfClass:[UINavigationController class]] ||
+        [viewController.parentViewController isKindOfClass:[UISplitViewController class]]) {
+        
+        if([self shouldTrackViewController:viewController]){
+            NSString *identify = [NSString stringWithFormat:@"%p", viewController];
+            RUMView *view = [[RUMView alloc]initWithViewController:viewController identify:identify];
+            view.viewName = viewController.ft_viewControllerName;
             [self addView:view];
         }
     }
@@ -166,11 +178,12 @@
     [self removeView:viewController];
 }
 - (void)addView:(RUMView *)view{
+    // Ignore repeated startView events triggered by partially returning to the original page via side swipe
     if([[self.stack lastObject].identify isEqualToString:view.identify]){
         return;
     }
     if ([self.stack lastObject]) {
-        // The reason for not removing from the array is that there are some special views, such as modal views added to window, or new windows added to the window, when the window has a VC, the original VC will not call the didDisappear method, when these special views are removed, the original VC will not call the DidAppear method either, so we need to keep them and re-add them to RUM View.
+        // The reason for not removing from the array is that there are some special views, such as modal view transitions in non-fullscreen mode, or when a new window is added to the window hierarchy with a view controller on it. The original view controller will not call the didDisappear method, and when these special views are removed, the original view controller will not call the didAppear method either. Therefore, it needs to be retained and re-added to the RUM View.
         RUMView *current = [self.stack lastObject];
         [self stopView:current];
     }
@@ -201,7 +214,7 @@
     
     RUMView *reStartView = [self.stack lastObject];
     if(reStartView){
-        [reStartView updateViewControllerUUID];
+        [reStartView resetView];
         [self startView:reStartView];
     }
 }
@@ -209,11 +222,11 @@
     if(!self.addRumDatasDelegate){
         return;
     }
-    // Ensure blacklisted views don't affect collected view duration
-    // When blacklisted view is presented modally, close the previously collected View, when closing, restart the previous View collection
+    // Ensure that untracked modal views do not affect the duration of tracked views
+    // When an untracked modal view pops up, close the last tracked View; when the modal view is closed, restart tracking the last View
     if(!view.isUntrackedModal){
         [self.addRumDatasDelegate onCreateView:view.viewName loadTime:view.loadTime];
-        [self.addRumDatasDelegate startViewWithViewID:view.viewControllerUUID viewName:view.viewName property:nil];
+        [self.addRumDatasDelegate startViewWithViewID:view.viewControllerUUID viewName:view.viewName property:view.property];
     }
 }
 - (void)stopView:(RUMView *)view{
@@ -230,6 +243,7 @@
 -(void)shutDown{
     self.addRumDatasDelegate = nil;
     self.viewControllerHandler = nil;
+    self.uiKitViewTrackingStrategy = nil;
     self.autoTrackView = NO;
     self.autoTrackAction = NO;
     [[FTAppLifeCycle sharedInstance] removeAppLifecycleDelegate:self];

@@ -10,6 +10,7 @@
 #import <UIKit/UIKit.h>
 #import "FTRumDatasProtocol.h"
 #import "FTAutoTrackProperty.h"
+#import "FTRumConfig.h"
 NS_ASSUME_NONNULL_BEGIN
 @protocol FTUIViewControllerHandler <NSObject>
 -(void)notify_viewDidAppear:(UIViewController *)viewController animated:(BOOL)animated;
@@ -21,6 +22,9 @@ NS_ASSUME_NONNULL_BEGIN
 @property (nonatomic, weak) id<FTRumDatasProtocol> addRumDatasDelegate;
 /// Handle ViewController lifecycle rum: startView, stopView
 @property (nonatomic, weak) id<FTUIViewControllerHandler> viewControllerHandler;
+/// A strategy for user-defined collection of `ViewControllers` as RUM views for tracking
+@property (nonatomic, copy, nullable) FTViewTrackingStrategy uiKitViewTrackingStrategy;
+
 /// Singleton
 + (instancetype)sharedInstance;
 

@@ -16,7 +16,9 @@
 #import "FTAppLifeCycle.h"
 #import "FTLog+Private.h"
 #import "NSDate+FTUtil.h"
+#import "FTDateUtil.h"
 
+#define COLD_START_TIME_THRESHOLD 30
 
 static CFTimeInterval FTLoadDate = 0.0;
 static CFTimeInterval ApplicationRespondedTime = 0.0;
@@ -39,6 +41,7 @@ static CFTimeInterval processStartTime(NSTimeInterval now) {
 
 @interface FTAppLaunchTracker()<FTAppLifeCycleDelegate>
 @property (nonatomic, strong) NSDate *launchTime;
+@property (nonatomic, assign) uint64_t launchTimeSystemTimestamp;
 @end
 
 
@@ -81,7 +84,8 @@ static CFTimeInterval processStartTime(NSTimeInterval now) {
     self = [super init];
     if (self) {
         self.delegate = delegate;
-        _launchTime = [NSDate date];
+        _launchTime = FTDateUtil.date;
+        _launchTimeSystemTimestamp = FTDateUtil.systemTime;
         //ApplicationRespondedTime > 0 to determine if UIApplicationDidBecomeActiveNotification notification has been received before, record cold start
         if (ApplicationRespondedTime>0) {
             [self appColdStartEvent];
@@ -96,16 +100,17 @@ static CFTimeInterval processStartTime(NSTimeInterval now) {
     if (launchEnd == 0.0) {
         launchEnd = CFAbsoluteTimeGetCurrent();
     }
-    NSNumber *duration = [NSNumber numberWithLongLong:(launchEnd-FTLoadDate)*1000000000];
-    NSDate *launchDate = [NSDate dateWithTimeIntervalSinceReferenceDate:FTLoadDate];
     if (self.delegate&&[self.delegate respondsToSelector:@selector(ftAppColdStart:duration:isPreWarming:)]) {
-        BOOL isPreWarming = [self isActivePrewarmAvailable] && isActivePrewarm;
-        [self.delegate ftAppColdStart:launchDate duration:duration isPreWarming:isPreWarming];
+        double duration = launchEnd - FTLoadDate;
+        NSDate *launchDate = [NSDate dateWithTimeIntervalSinceReferenceDate:FTLoadDate];
+        BOOL isPreWarming = [self isActivePrewarmAvailable] && (isActivePrewarm || duration > COLD_START_TIME_THRESHOLD);
+        [self.delegate ftAppColdStart:launchDate duration:[NSNumber numberWithLongLong:duration * 1e9] isPreWarming:isPreWarming];
     }
 }
 - (void)applicationWillEnterForeground{
     if (AppRelaunched){
-        self.launchTime = [NSDate date];
+        self.launchTime = FTDateUtil.date;
+        self.launchTimeSystemTimestamp = FTDateUtil.systemTime;
     }
 }
 - (void)applicationDidBecomeActive{
@@ -113,7 +118,7 @@ static CFTimeInterval processStartTime(NSTimeInterval now) {
         if(!AppRelaunched){
             [self appColdStartEvent];
         }else if (_applicationDidEnterBackground) {
-            NSNumber *duration = [self.launchTime ft_nanosecondTimeIntervalToDate:[NSDate date]];
+            NSNumber *duration = @(FTDateUtil.systemTime - self.launchTimeSystemTimestamp);
             if (self.delegate&&[self.delegate respondsToSelector:@selector(ftAppHotStart:duration:)]) {
                 [self.delegate ftAppHotStart:self.launchTime duration:duration];
             }

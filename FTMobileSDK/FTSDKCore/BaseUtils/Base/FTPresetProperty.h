@@ -17,7 +17,7 @@ NS_ASSUME_NONNULL_BEGIN
 @interface FTPresetProperty : NSObject
 
 @property (nonatomic, strong, readonly) NSDictionary *loggerTags;
-@property (nonatomic, strong, readonly) NSMutableDictionary *rumTags;
+@property (nonatomic, strong, readonly) NSDictionary *rumTags;
 @property (nonatomic, strong, readonly) NSDictionary *rumStaticFields;
 
 /// Set data modifier

@@ -17,6 +17,7 @@
 #import "NSDate+FTUtil.h"
 #import "FTBaseInfoHandler.h"
 #import "FTWeakPropertyContainer.h"
+#import "FTDateUtil.h"
 
 static char *viewLoadStartTimeKey = "viewLoadStartTimeKey";
 static char *viewControllerUUID = "viewControllerUUID";
@@ -24,10 +25,10 @@ static char *viewLoadDuration = "viewLoadDuration";
 static char *previousViewController = "previousViewController";
 
 @implementation UIViewController (FTAutoTrack)
--(void)setFt_viewLoadStartTime:(NSDate*)viewLoadStartTime{
+-(void)setFt_viewLoadStartTime:(NSNumber *)viewLoadStartTime{
     objc_setAssociatedObject(self, &viewLoadStartTimeKey, viewLoadStartTime, OBJC_ASSOCIATION_RETAIN_NONATOMIC);
 }
--(NSDate *)ft_viewLoadStartTime{
+-(NSNumber *)ft_viewLoadStartTime{
     return objc_getAssociatedObject(self, &viewLoadStartTimeKey);
 }
 -(NSNumber *)ft_loadDuration{
@@ -38,12 +39,6 @@ static char *previousViewController = "previousViewController";
 }
 - (NSString *)ft_viewControllerName{
     return NSStringFromClass([self class]);
-}
--(NSString *)ft_viewUUID{
-    return objc_getAssociatedObject(self, &viewControllerUUID);
-}
--(void)setFt_viewUUID:(NSString *)ft_viewUUID{
-    objc_setAssociatedObject(self, &viewControllerUUID, ft_viewUUID, OBJC_ASSOCIATION_COPY_NONATOMIC);
 }
 - (BOOL)isActionBlackListContainsViewController{
     @try {
@@ -78,48 +73,19 @@ static char *previousViewController = "previousViewController";
     }
 }
 - (void)ft_viewDidLoad{
-    self.ft_viewLoadStartTime = [NSDate date];
+    self.ft_viewLoadStartTime = @(FTDateUtil.systemTime);
     [self ft_viewDidLoad];
 }
 -(void)ft_viewDidAppear:(BOOL)animated{
     [self ft_viewDidAppear:animated];
-    // Prevent tabbar switching, may miss startView full collection
-    if ([self isKindOfClass:UINavigationController.class]) {
-        UINavigationController *nav = (UINavigationController *)self;
-        nav.ft_previousViewController = nil;
+    if (self.ft_viewLoadStartTime != nil) {
+        self.ft_loadDuration = @(FTDateUtil.systemTime - [self.ft_viewLoadStartTime unsignedLongLongValue]);
+        self.ft_viewLoadStartTime = nil;
     }
-    if (self.navigationController && self.parentViewController == self.navigationController) {
-        // Ignore the repeated triggering of startView events due to partial return to the original page by side sliding
-        if (self.navigationController.ft_previousViewController == self) {
-            return;
-        }
-    }
-    if (!self.parentViewController ||
-        [self.parentViewController isKindOfClass:[UITabBarController class]] ||
-        [self.parentViewController isKindOfClass:[UINavigationController class]] ||
-        [self.parentViewController isKindOfClass:[UISplitViewController class]]) {
-        self.ft_viewUUID = [FTBaseInfoHandler randomUUID];
-        [[FTAutoTrackHandler sharedInstance].viewControllerHandler notify_viewDidAppear:self animated:animated];
-    }
-    // Mark previousViewController
-    if (self.navigationController && self.parentViewController == self.navigationController) {
-        self.navigationController.ft_previousViewController = self;
-    }
+    [[FTAutoTrackHandler sharedInstance].viewControllerHandler notify_viewDidAppear:self animated:animated];
 }
 -(void)ft_viewDidDisappear:(BOOL)animated{
     [self ft_viewDidDisappear:animated];
     [[FTAutoTrackHandler sharedInstance].viewControllerHandler notify_viewDidDisappear:self animated:animated];
 }
-@end
-@implementation UINavigationController (FTAutoTrack)
-
-- (void)setFt_previousViewController:(UIViewController *)ft_previousViewController {
-    FTWeakPropertyContainer *container = [FTWeakPropertyContainer containerWithWeakProperty:ft_previousViewController];
-    objc_setAssociatedObject(self, previousViewController, container, OBJC_ASSOCIATION_RETAIN_NONATOMIC);
-}
-- (UIViewController *)ft_previousViewController {
-    FTWeakPropertyContainer *container = objc_getAssociatedObject(self, previousViewController);
-    return container.weakProperty;
-}
-
 @end

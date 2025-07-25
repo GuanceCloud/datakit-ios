@@ -8,9 +8,8 @@
 #import <Foundation/Foundation.h>
 NS_ASSUME_NONNULL_BEGIN
 @protocol FTRumViewProperty <NSObject>
-@property (nonatomic,strong,nullable) NSDate * ft_viewLoadStartTime;
-@property (nonatomic,strong,nullable) NSNumber *ft_loadDuration;
-@property (nonatomic, copy) NSString *ft_viewUUID;
+@property (nonatomic, strong, nullable) NSNumber *ft_viewLoadStartTime;
+@property (nonatomic, strong, nullable) NSNumber *ft_loadDuration;
 @end
 
 @protocol FTRUMActionProperty <NSObject>
