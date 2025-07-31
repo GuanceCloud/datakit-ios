@@ -9,6 +9,8 @@
 #import <XCTest/XCTest.h>
 #import "FTRumConfig.h"
 #import "FTMobileConfig+Private.h"
+#import "FTLoggerConfig+Private.h"
+#import "FTRumConfig+Private.h"
 #import "FTMobileAgent+Private.h"
 #import "FTTrackerEventDBTool+Test.h"
 #import "FTRecordModel.h"
@@ -19,6 +21,10 @@
 #import "FTRUMManager.h"
 #import "FTAutoTrackHandler.h"
 #import "XCTestCase+Utils.h"
+#import "UIEvent+Mock.h"
+
+typedef FTRUMView* _Nullable (^FTViewTrackingBlock)(UIViewController *viewController);
+typedef FTRUMAction* _Nullable (^FTActionTrackingBlock)(UIView *view);
 
 @interface ModalViewController : UIViewController
 
@@ -28,9 +34,12 @@
 
 
 @end
-@interface FTRUMConfigurationTest : XCTestCase
+@interface FTRUMConfigurationTest : XCTestCase<FTUIKitViewTrackingStrategy,FTUITouchRUMActionsStrategy,FTUIPressRUMActionsStrategy>
 @property (nonatomic, copy) NSString *url;
 @property (nonatomic, copy) NSString *appid;
+@property (nonatomic, copy) FTViewTrackingBlock viewTrackingBlock;
+@property (nonatomic, copy) FTActionTrackingBlock actionTrackingBlock;
+
 @end
 
 @implementation FTRUMConfigurationTest
@@ -44,6 +53,8 @@
 -(void)tearDown{
     [[FTGlobalRumManager sharedInstance].rumManager syncProcess];
     [FTMobileAgent shutDown];
+    self.viewTrackingBlock = nil;
+    self.actionTrackingBlock = nil;
 }
 
 - (void)testRUMFreezeThreshold{
@@ -131,11 +142,12 @@
     FTRumConfig *rumConfig = [[FTRumConfig alloc]initWithAppid:self.appid];
     rumConfig.enableTraceUserView = NO;
     __block BOOL noView = YES;
-    rumConfig.viewTrackingStrategy = ^FTRumView * _Nullable(UIViewController * _Nonnull viewController) {
-        FTRumView *rumView = [[FTRumView alloc]initWithViewName:[NSString stringWithFormat:@"test:%@",NSStringFromClass(viewController.class)]];
+    self.viewTrackingBlock = ^FTRUMView * _Nullable(UIViewController * _Nonnull viewController) {
+        FTRUMView *rumView = [[FTRUMView alloc]initWithViewName:[NSString stringWithFormat:@"test:%@",NSStringFromClass(viewController.class)]];
         noView = NO;
         return rumView;
     };
+    rumConfig.viewTrackingStrategy = self;
     [FTMobileAgent startWithConfigOptions:config];
     [[FTMobileAgent sharedInstance] startRumWithConfigOptions:rumConfig];
    
@@ -159,11 +171,12 @@
     FTRumConfig *rumConfig = [[FTRumConfig alloc]initWithAppid:self.appid];
     rumConfig.enableTraceUserView = YES;
     __block BOOL noView = YES;
-    rumConfig.viewTrackingStrategy = ^FTRumView * _Nullable(UIViewController * _Nonnull viewController) {
-        FTRumView *rumView = [[FTRumView alloc]initWithViewName:[NSString stringWithFormat:@"test:%@",NSStringFromClass(viewController.class)] property:@{@"test_strategy":@"enableTraceUserView"}];
+    self.viewTrackingBlock = ^FTRUMView * _Nullable(UIViewController * _Nonnull viewController) {
+        FTRUMView *rumView = [[FTRUMView alloc]initWithViewName:[NSString stringWithFormat:@"test:%@",NSStringFromClass(viewController.class)] property:@{@"test_strategy":@"enableTraceUserView"}];
         noView = NO;
         return rumView;
     };
+    rumConfig.viewTrackingStrategy = self;
     [FTMobileAgent startWithConfigOptions:config];
     [[FTMobileAgent sharedInstance] startRumWithConfigOptions:rumConfig];
    
@@ -195,9 +208,10 @@
     [FTMobileAgent startWithConfigOptions:config];
     FTRumConfig *rumConfig = [[FTRumConfig alloc]initWithAppid:self.appid];
     rumConfig.enableTraceUserView = YES;
-    rumConfig.viewTrackingStrategy = ^FTRumView * _Nullable(UIViewController * _Nonnull viewController) {
+    self.viewTrackingBlock =  ^FTRUMView * _Nullable(UIViewController * _Nonnull viewController) {
         return nil;
     };
+    rumConfig.viewTrackingStrategy = self;
     [FTMobileAgent startWithConfigOptions:config];
     [[FTMobileAgent sharedInstance] startRumWithConfigOptions:rumConfig];
     
@@ -219,11 +233,12 @@
     [FTMobileAgent startWithConfigOptions:config];
     FTRumConfig *rumConfig = [[FTRumConfig alloc]initWithAppid:self.appid];
     rumConfig.enableTraceUserView = YES;
-    rumConfig.viewTrackingStrategy = ^FTRumView * _Nullable(UIViewController * _Nonnull viewController) {
-        FTRumView *rumView = [[FTRumView alloc]initWithViewName:[NSString stringWithFormat:@"test:%@",NSStringFromClass(viewController.class)]];
+    self.viewTrackingBlock = ^FTRUMView * _Nullable(UIViewController * _Nonnull viewController) {
+        FTRUMView *rumView = [[FTRUMView alloc]initWithViewName:[NSString stringWithFormat:@"test:%@",NSStringFromClass(viewController.class)]];
         rumView.isUntrackedModal = [viewController isKindOfClass:ModalViewController.class];
         return rumView;
     };
+    rumConfig.viewTrackingStrategy = self;
     [FTMobileAgent startWithConfigOptions:config];
     [[FTMobileAgent sharedInstance] startRumWithConfigOptions:rumConfig];
     
@@ -250,5 +265,163 @@
     }];
     XCTAssertTrue(set.count == 2);
 }
+- (void)testActionTrackingStrategy_disableTraceUserAction{
+    FTMobileConfig *config = [[FTMobileConfig alloc]initWithDatakitUrl:self.url];
+    config.enableSDKDebugLog = YES;
+    config.autoSync = NO;
+    [FTMobileAgent startWithConfigOptions:config];
+    FTRumConfig *rumConfig = [[FTRumConfig alloc]initWithAppid:self.appid];
+    rumConfig.enableTraceUserAction = NO;
+    self.actionTrackingBlock = ^FTRUMAction * _Nullable(UIView *view) {
+        FTRUMAction *rumAction = [[FTRUMAction alloc]initWithActionName:@"disableTraceUserAction_click" property:@{@"test":@"disableTraceUserAction"}];
+        return rumAction;
+    };
+    rumConfig.actionTrackingStrategy = self;
+    [FTMobileAgent startWithConfigOptions:config];
+    [[FTMobileAgent sharedInstance] startRumWithConfigOptions:rumConfig];
+    
+    NSInteger count = [[FTTrackerEventDBTool sharedManger] getDatasCount];
+    
 
+    UIButton *customButton = [[UIButton alloc]initWithFrame:CGRectMake(0, 0, 100, 30)];
+    
+#if TARGET_OS_IOS
+    [[FTAutoTrackHandler sharedInstance].actionHandler notify_sendAction:customButton];
+    [self waitForTimeInterval:0.2];
+    [[FTAutoTrackHandler sharedInstance].actionHandler notify_sendAction:customButton];
+#elif TARGET_OS_TV
+    [[FTAutoTrackHandler sharedInstance].actionHandler notify_sendActionWithPressType:UIPressTypeSelect view:customButton];
+    [self waitForTimeInterval:0.2];
+    [[FTAutoTrackHandler sharedInstance].actionHandler notify_sendActionWithPressType:UIPressTypeSelect view:customButton];
+#endif
+
+
+    [self waitForTimeInterval:0.1];
+
+    
+    [[FTGlobalRumManager sharedInstance].rumManager syncProcess];
+    NSArray *datas =[[FTTrackerEventDBTool sharedManger] getFirstRecords:50 withType:FT_DATA_TYPE_RUM];
+    NSMutableSet *set = [[NSMutableSet alloc]init];
+    [FTModelHelper resolveModelArray:datas callBack:^(NSString * _Nonnull source, NSDictionary * _Nonnull tags, NSDictionary * _Nonnull fields, BOOL * _Nonnull stop) {
+        if ([source isEqualToString:FT_RUM_SOURCE_ACTION] && [tags[FT_KEY_ACTION_TYPE] isEqualToString:FT_KEY_ACTION_TYPE_CLICK ]) {
+            [set addObject:tags[FT_KEY_ACTION_ID]];
+        }
+    }];
+    XCTAssertTrue(set.count == 0);
+}
+- (void)testActionTrackingStrategy_enableTraceUserAction{
+    FTMobileConfig *config = [[FTMobileConfig alloc]initWithDatakitUrl:self.url];
+    config.enableSDKDebugLog = YES;
+    config.autoSync = NO;
+    [FTMobileAgent startWithConfigOptions:config];
+    FTRumConfig *rumConfig = [[FTRumConfig alloc]initWithAppid:self.appid];
+    rumConfig.enableTraceUserAction = YES;
+    self.actionTrackingBlock = ^FTRUMAction * _Nullable(UIView *view) {
+        FTRUMAction *rumAction = [[FTRUMAction alloc]initWithActionName:@"enableTraceUserAction_click" property:@{@"test":@"enableTraceUserAction"}];
+        return rumAction;
+    };
+    rumConfig.actionTrackingStrategy = self;
+    [FTMobileAgent startWithConfigOptions:config];
+    [[FTMobileAgent sharedInstance] startRumWithConfigOptions:rumConfig];
+    
+    NSInteger count = [[FTTrackerEventDBTool sharedManger] getDatasCount];
+    
+
+    UIButton *customButton = [[UIButton alloc]initWithFrame:CGRectMake(0, 0, 100, 30)];
+    [[FTAutoTrackHandler sharedInstance].actionHandler notify_sendAction:customButton];
+
+#if TARGET_OS_IOS
+    [[FTAutoTrackHandler sharedInstance].actionHandler notify_sendAction:customButton];
+    [self waitForTimeInterval:0.2];
+    [[FTAutoTrackHandler sharedInstance].actionHandler notify_sendAction:customButton];
+#elif TARGET_OS_TV
+    [[FTAutoTrackHandler sharedInstance].actionHandler notify_sendActionWithPressType:UIPressTypeSelect view:customButton];
+    [self waitForTimeInterval:0.2];
+    [[FTAutoTrackHandler sharedInstance].actionHandler notify_sendActionWithPressType:UIPressTypeSelect view:customButton];
+#endif
+
+
+    [self waitForTimeInterval:0.1];
+
+    
+    [[FTGlobalRumManager sharedInstance].rumManager syncProcess];
+    NSArray *datas =[[FTTrackerEventDBTool sharedManger] getFirstRecords:50 withType:FT_DATA_TYPE_RUM];
+    XCTAssertTrue(datas.count > count);
+    NSMutableSet *set = [[NSMutableSet alloc]init];
+    [FTModelHelper resolveModelArray:datas callBack:^(NSString * _Nonnull source, NSDictionary * _Nonnull tags, NSDictionary * _Nonnull fields, BOOL * _Nonnull stop) {
+        if ([source isEqualToString:FT_RUM_SOURCE_ACTION] && [tags[FT_KEY_ACTION_TYPE] isEqualToString:FT_KEY_ACTION_TYPE_CLICK ]) {
+            [set addObject:tags[FT_KEY_ACTION_ID]];
+            XCTAssertTrue([tags[FT_KEY_ACTION_NAME] isEqualToString:@"enableTraceUserAction_click"]);
+            XCTAssertTrue([fields[@"test"] isEqualToString:@"enableTraceUserAction"]);
+
+        }
+    }];
+    XCTAssertTrue(set.count == 1);
+}
+- (void)testActionTrackingStrategy_return_nil{
+    FTMobileConfig *config = [[FTMobileConfig alloc]initWithDatakitUrl:self.url];
+    config.enableSDKDebugLog = YES;
+    config.autoSync = NO;
+    [FTMobileAgent startWithConfigOptions:config];
+    FTRumConfig *rumConfig = [[FTRumConfig alloc]initWithAppid:self.appid];
+    rumConfig.enableTraceUserAction = YES;
+    self.actionTrackingBlock = ^FTRUMAction * _Nullable(UIView *view) {
+        
+        return nil;
+    };
+    rumConfig.actionTrackingStrategy = self;
+    [FTMobileAgent startWithConfigOptions:config];
+    [[FTMobileAgent sharedInstance] startRumWithConfigOptions:rumConfig];
+    
+    NSInteger count = [[FTTrackerEventDBTool sharedManger] getDatasCount];
+    
+
+    UIButton *customButton = [[UIButton alloc]initWithFrame:CGRectMake(0, 0, 100, 30)];
+    [[FTAutoTrackHandler sharedInstance].actionHandler notify_sendAction:customButton];
+
+#if TARGET_OS_IOS
+    [[FTAutoTrackHandler sharedInstance].actionHandler notify_sendAction:customButton];
+    [self waitForTimeInterval:0.2];
+    [[FTAutoTrackHandler sharedInstance].actionHandler notify_sendAction:customButton];
+#elif TARGET_OS_TV
+    [[FTAutoTrackHandler sharedInstance].actionHandler notify_sendActionWithPressType:UIPressTypeSelect view:customButton];
+    [self waitForTimeInterval:0.2];
+    [[FTAutoTrackHandler sharedInstance].actionHandler notify_sendActionWithPressType:UIPressTypeSelect view:customButton];
+#endif
+
+
+    [self waitForTimeInterval:0.1];
+
+    
+    [[FTGlobalRumManager sharedInstance].rumManager syncProcess];
+    NSArray *datas =[[FTTrackerEventDBTool sharedManger] getFirstRecords:50 withType:FT_DATA_TYPE_RUM];
+    NSMutableSet *set = [[NSMutableSet alloc]init];
+    [FTModelHelper resolveModelArray:datas callBack:^(NSString * _Nonnull source, NSDictionary * _Nonnull tags, NSDictionary * _Nonnull fields, BOOL * _Nonnull stop) {
+        if ([source isEqualToString:FT_RUM_SOURCE_ACTION] && [tags[FT_KEY_ACTION_TYPE] isEqualToString:FT_KEY_ACTION_TYPE_CLICK ]) {
+            [set addObject:tags[FT_KEY_ACTION_ID]];
+        }
+    }];
+    XCTAssertTrue(set.count == 0);
+}
+- (void)handleButtonTap:(UIButton *)sender {
+   
+}
+-(FTRUMView *)rumViewForViewController:(UIViewController *)viewController{
+    if (self.viewTrackingBlock) {
+        return self.viewTrackingBlock(viewController);
+    }
+    return nil;
+}
+-(FTRUMAction *)rumActionWithTargetView:(UIView *)targetView{
+    if (self.actionTrackingBlock) {
+        return self.actionTrackingBlock(targetView);
+    }
+    return nil;
+}
+- (FTRUMAction *)rumActionWithPressType:(UIPressType)type targetView:(UIView *)targetView{
+    if (self.actionTrackingBlock) {
+        return self.actionTrackingBlock(targetView);
+    }
+    return nil;
+}
 @end

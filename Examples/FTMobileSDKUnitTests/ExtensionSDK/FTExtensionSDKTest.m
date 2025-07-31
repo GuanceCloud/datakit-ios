@@ -13,6 +13,8 @@
 #import "FTMobileExtension.h"
 #import "FTExtensionDataManager.h"
 #import "FTMobileConfig+Private.h"
+#import "FTLoggerConfig+Private.h"
+#import "FTRumConfig+Private.h"
 #import "HttpEngineTestUtil.h"
 #import "FTRumManager.h"
 #import "FTRecordModel.h"

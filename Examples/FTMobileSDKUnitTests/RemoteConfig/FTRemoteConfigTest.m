@@ -10,6 +10,8 @@
 #import "FTRemoteConfigurationRequest.h"
 #import "FTMobileAgent.h"
 #import "FTMobileConfig+Private.h"
+#import "FTLoggerConfig+Private.h"
+#import "FTRumConfig+Private.h"
 #import "FTConstants.h"
 #import "OHHTTPStubs.h"
 #import "FTJSONUtil.h"

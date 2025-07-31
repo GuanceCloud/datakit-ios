@@ -33,6 +33,8 @@
 #import "FTRUMDataModel.h"
 #import "FTTrackDataManager.h"
 #import "FTMobileConfig+Private.h"
+#import "FTLoggerConfig+Private.h"
+#import "FTRumConfig+Private.h"
 #import "FTAutoTrackHandler.h"
 #import "DemoViewController.h"
 @interface FTRUMTest : XCTestCase

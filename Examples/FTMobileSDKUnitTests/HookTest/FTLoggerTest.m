@@ -23,6 +23,8 @@
 #import "FTTestUtils.h"
 #import "FTLogger+Private.h"
 #import "FTMobileConfig+Private.h"
+#import "FTLoggerConfig+Private.h"
+#import "FTRumConfig+Private.h"
 @interface FTLoggerTest : XCTestCase<FTLoggerDataWriteProtocol>
 
 @property (nonatomic, copy) NSString *url;
