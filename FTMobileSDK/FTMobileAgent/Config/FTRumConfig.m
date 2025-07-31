@@ -63,6 +63,7 @@
     options.allowWebViewHost = self.allowWebViewHost;
     options.sessionTaskErrorFilter = self.sessionTaskErrorFilter;
     options.viewTrackingStrategy = self.viewTrackingStrategy;
+    options.actionTrackingStrategy = self.actionTrackingStrategy;
     return options;
 }
 -(instancetype)initWithDictionary:(NSDictionary *)dict{
@@ -128,7 +129,8 @@
     [dict setValue:[self.resourceUrlHandler copy] forKey:@"resourceUrlHandler"];
     [dict setValue:[self.resourcePropertyProvider copy] forKey:@"resourcePropertyProvider"];
     [dict setValue:[self.sessionTaskErrorFilter copy] forKey:@"sessionTaskErrorFilter"];
-    [dict setValue:[self.viewTrackingStrategy copy] forKey:@"viewTrackingStrategy"];
+    [dict setValue:self.viewTrackingStrategy forKey:@"viewTrackingStrategy"];
+    [dict setValue:self.actionTrackingStrategy forKey:@"actionTrackingStrategy"];
     return [NSString stringWithFormat:@"%@",dict];
 }
 -(void)mergeWithRemoteConfigDict:(NSDictionary *)dict{

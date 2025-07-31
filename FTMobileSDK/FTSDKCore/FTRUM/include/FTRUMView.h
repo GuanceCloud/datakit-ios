@@ -1,5 +1,5 @@
 //
-//  FTRumView.h
+//  FTRUMView.h
 //  FTMobileSDK
 //
 //  Created by hulilei on 2025/7/23.
@@ -10,7 +10,7 @@
 
 NS_ASSUME_NONNULL_BEGIN
 
-@interface FTRumView : NSObject
+@interface FTRUMView : NSObject
 
 /// The RUM View name
 @property (nonatomic, copy) NSString *viewName;

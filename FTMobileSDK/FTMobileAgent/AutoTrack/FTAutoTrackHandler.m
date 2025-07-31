@@ -18,6 +18,9 @@
 #import "NSDate+FTUtil.h"
 #import "FTAppLifeCycle.h"
 #import "FTThreadDispatchManager.h"
+#import "FTConstants.h"
+#import "UIView+FTAutoTrack.h"
+
 @interface RUMView:NSObject
 @property (nonatomic, copy) NSString *viewName;
 @property (nonatomic, copy) NSString *identify;
@@ -52,7 +55,7 @@
     _loadTime = @0;
 }
 @end
-@interface FTAutoTrackHandler()<FTAppLifeCycleDelegate>
+@interface FTAutoTrackHandler()<FTAppLifeCycleDelegate,FTUIViewControllerHandler,FTUIEventHandler>
 @property (nonatomic, strong) NSMutableArray<RUMView*> *stack;
 @property (nonatomic, assign) BOOL autoTrackView;
 @property (nonatomic, assign) BOOL autoTrackAction;
@@ -86,6 +89,7 @@
         self.viewControllerHandler = nil;
     }
     if (trackAction) {
+        self.actionHandler = self;
         [self hookTargetAction];
     }
 }
@@ -124,6 +128,54 @@
     }
     
 }
+#pragma mark ========== FTUIEventHandler ==========
+- (void)notify_sendAction:(UIView *)view{
+#if TARGET_OS_IOS
+    NSString *actionName = view.ft_actionName;
+    NSDictionary *property = nil;
+    if (self.actionTrackingStrategy && [self.actionTrackingStrategy respondsToSelector:@selector(rumActionWithTargetView:)]) {
+        FTRUMAction *action = [self.actionTrackingStrategy rumActionWithTargetView:view];
+        if ( action == nil ) return;
+        actionName = action.actionName;
+        property = action.property;
+    }
+    
+    if (self.addRumDatasDelegate && [self.addRumDatasDelegate respondsToSelector:@selector(startAction:actionType:property:)]) {
+        [self.addRumDatasDelegate startAction:actionName actionType:FT_KEY_ACTION_TYPE_CLICK property:property];
+    }
+#endif
+}
+
+- (void)notify_sendActionWithPressType:(UIPressType)type view:(nonnull UIView *)view {
+#if TARGET_OS_TV
+    NSString *actionName = nil;
+    NSDictionary *property = nil;
+    if (self.actionTrackingStrategy && [self.actionTrackingStrategy respondsToSelector:@selector(rumActionWithPressType:targetView:)]) {
+        FTRUMAction *action = [self.actionTrackingStrategy rumActionWithPressType:type targetView:view];
+        if ( action == nil ) return;
+        actionName = action.actionName;
+        property = action.property;
+    }else{
+        switch (type) {
+            case UIPressTypeSelect:
+                actionName = view.ft_actionName;
+                break;
+            case UIPressTypeMenu:
+                actionName = @"[menu]";
+                break;
+            case UIPressTypePlayPause:
+                actionName = @"[play-pause]";
+                break;
+            default:
+                return;
+        }
+    }
+    if (self.addRumDatasDelegate && [self.addRumDatasDelegate respondsToSelector:@selector(startAction:actionType:property:)]) {
+        [self.addRumDatasDelegate startAction:actionName actionType:FT_KEY_ACTION_TYPE_CLICK property:property];
+    }
+#endif
+}
+
 #pragma mark ========== FTAppLifeCycleDelegate ==========
 -(void)applicationDidEnterBackground{
     if(!self.autoTrackView){
@@ -147,8 +199,8 @@
 #pragma mark ========== FTUIViewControllerHandler ==========
 -(void)notify_viewDidAppear:(UIViewController *)viewController animated:(BOOL)animated{
     // if User-defined 
-    if (self.uiKitViewTrackingStrategy) {
-        FTRumView *rumView = self.uiKitViewTrackingStrategy(viewController);
+    if (self.uiKitViewTrackingStrategy && [self.uiKitViewTrackingStrategy respondsToSelector:@selector(rumViewForViewController:)]) {
+        FTRUMView *rumView = [self.uiKitViewTrackingStrategy rumViewForViewController:viewController];
         if (rumView) {
             NSString *identify = [NSString stringWithFormat:@"%p", viewController];
             RUMView *view = [[RUMView alloc]initWithViewController:viewController identify:identify];
@@ -242,7 +294,9 @@
 -(void)shutDown{
     self.addRumDatasDelegate = nil;
     self.viewControllerHandler = nil;
+    self.actionHandler = nil;
     self.uiKitViewTrackingStrategy = nil;
+    self.actionTrackingStrategy = nil;
     self.autoTrackView = NO;
     self.autoTrackAction = NO;
     [[FTAppLifeCycle sharedInstance] removeAppLifecycleDelegate:self];

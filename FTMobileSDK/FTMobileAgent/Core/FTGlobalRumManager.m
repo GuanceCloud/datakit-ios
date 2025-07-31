@@ -75,6 +75,7 @@ static NSObject *sharedInstanceLock;
     [[FTAutoTrackHandler sharedInstance]startWithTrackView:rumConfig.enableTraceUserView action:rumConfig.enableTraceUserAction];
     [FTAutoTrackHandler sharedInstance].addRumDatasDelegate = self.rumManager;
     [FTAutoTrackHandler sharedInstance].uiKitViewTrackingStrategy = rumConfig.viewTrackingStrategy;
+    [FTAutoTrackHandler sharedInstance].actionTrackingStrategy = rumConfig.actionTrackingStrategy;
     if(rumConfig.enableTraceUserAction){
         self.launchTracker = [[FTAppLaunchTracker alloc]initWithDelegate:self];
     }

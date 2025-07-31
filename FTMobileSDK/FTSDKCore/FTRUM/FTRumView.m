@@ -1,14 +1,14 @@
 //
-//  FTRumView.m
+//  FTRUMView.m
 //  FTMobileSDK
 //
 //  Created by hulilei on 2025/7/23.
 //  Copyright © 2025 DataFlux-cn. All rights reserved.
 //
 
-#import "FTRumView.h"
+#import "FTRUMView.h"
 
-@implementation FTRumView
+@implementation FTRUMView
 -(instancetype)initWithViewName:(NSString *)viewName{
     return [self initWithViewName:viewName property:nil];
 }

@@ -7,23 +7,7 @@
 //
 
 #import <Foundation/Foundation.h>
-#if TARGET_OS_TV || TARGET_OS_IOS
-#import <UIKit/UIKit.h>
-#endif
-#import "FTRumView.h"
-NS_ASSUME_NONNULL_BEGIN
 
-/// RUM filter resource callback, returns: NO means to collect, YES means not to collect.
-typedef BOOL(^FTResourceUrlHandler)(NSURL * url);
-/// RUM Resource custom add extra properties
-typedef NSDictionary<NSString *,id>* _Nullable (^FTResourcePropertyProvider)( NSURLRequest * _Nullable request, NSURLResponse * _Nullable response,NSData *_Nullable data, NSError *_Nullable error);
-/// Support custom intercept `URLSessionTask` Error, confirm interception returns YES, not intercepted returns NO
-typedef BOOL (^FTSessionTaskErrorFilter)(NSError *_Nonnull error);
-#if TARGET_OS_TV || TARGET_OS_IOS
-typedef FTRumView* _Nullable (^FTViewTrackingStrategy)(UIViewController *viewController);
-#else
-typedef FTRumView* _Nullable (^FTViewTrackingStrategy)(id viewController);
-#endif
 /// Device information in ERROR
 typedef NS_OPTIONS(NSUInteger, FTErrorMonitorType) {
     /// Enable all monitoring: battery, memory, CPU usage
@@ -64,6 +48,18 @@ typedef NS_ENUM(NSInteger, FTRUMCacheDiscard)  {
     /// When log data exceeds maximum, discard old data
     FTRUMDiscardOldest
 };
+
+#import "FTActionTrackingStrategy.h"
+#import "FTViewTrackingStrategy.h"
+
+NS_ASSUME_NONNULL_BEGIN
+/// RUM filter resource callback, returns: NO means to collect, YES means not to collect.
+typedef BOOL(^FTResourceUrlHandler)(NSURL * url);
+/// RUM Resource custom add extra properties
+typedef NSDictionary<NSString *,id>* _Nullable (^FTResourcePropertyProvider)( NSURLRequest * _Nullable request, NSURLResponse * _Nullable response,NSData *_Nullable data, NSError *_Nullable error);
+/// Support custom intercept `URLSessionTask` Error, confirm interception returns YES, not intercepted returns NO
+typedef BOOL (^FTSessionTaskErrorFilter)(NSError *_Nonnull error);
+
 
 /// RUM functionality configuration items
 @interface FTRumConfig : NSObject
@@ -131,9 +127,15 @@ typedef NS_ENUM(NSInteger, FTRUMCacheDiscard)  {
 /// A strategy for user-defined collection of `ViewControllers` as RUM views for tracking.
 /// It takes effect when enableTraceUserView = YES.
 /// RUM will call this callback for each `ViewController` presented in the application.
-///  - If the given controller needs to start a RUM view, return the FTRumView parameters;
-///  - Return nil to ignore the controller
-@property (nonatomic, copy) FTViewTrackingStrategy viewTrackingStrategy;
+///  - If the given controller needs to start a RUM view, return the FTRUMView parameters;
+///  - Return nil to ignore it.
+@property (nonatomic, weak) FTViewTrackingStrategy viewTrackingStrategy;
+
+/// The strategy deciding if a given RUM Action should be recorded.
+/// It takes effect when enableTraceUserAction = YES.
+///  - If need to Start a RUM action, return the FTRUMAction parameters;
+///  - Return nil to ignore it.
+@property (nonatomic, weak) FTActionTrackingStrategy actionTrackingStrategy;
 
 /// Enable freeze collection and set freeze threshold.
 /// - Parameter enableTrackAppFreeze: Set whether to collect freezes
