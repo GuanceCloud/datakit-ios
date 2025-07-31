@@ -48,7 +48,6 @@ Pod::Spec.new do |s|
 		c.subspec 'FTRUM' do |r|
 			core_path='FTMobileSDK/FTSDKCore/FTRUM/'
 			r.source_files = core_path + "**/*.{h,m,c}"
-            r.exclude_files = core_path + 'include/*.h'
 			r.dependency 'FTMobileSDK/FTSDKCore/BaseUtils/Base'
 			r.dependency 'FTMobileSDK/FTSDKCore/Protocol'
 		end

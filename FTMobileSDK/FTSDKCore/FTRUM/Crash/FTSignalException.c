@@ -18,7 +18,7 @@
 #include <QuartzCore/QuartzCore.h>
 #include "FTCrashLogger.h"
 #include "FTCrashMonitor.h"
-static volatile bool g_isEnabled = false;
+//static volatile bool g_isEnabled = false;
 
 #if FT_HAS_SIGNAL_STACK
 static stack_t g_signalStack = {0};

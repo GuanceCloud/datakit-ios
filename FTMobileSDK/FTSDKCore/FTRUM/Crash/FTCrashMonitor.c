@@ -46,6 +46,7 @@ void ftcm_disableAllMonitors(void){
     FTUninstallSignalException();
     FTUninstallUncaughtExceptionHandler();
     FTUninstallMachException();
+    enableCrashMonitorLog(false);
     os_unfair_lock_unlock(&g_monitorsLock);
     FTLOG_DEBUG("All monitors have been disabled.");
 }

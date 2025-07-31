@@ -7,8 +7,7 @@
 //
 
 #import "FTMobileConfig.h"
-#import "FTLoggerConfig+Private.h"
-#import "FTRumConfig+Private.h"
+
 NS_ASSUME_NONNULL_BEGIN
 @interface FTMobileConfig ()
 /// Add package information

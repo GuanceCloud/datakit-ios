@@ -14,7 +14,6 @@
 #import "FTLogMessage.h"
 #import "FTFileLogger.h"
 #import "FTOSLogger.h"
-#import "FTCrashLogger.h"
 
 @implementation FTAbstractLogger
 
@@ -72,7 +71,6 @@ static dispatch_group_t _loggingGroup;
 }
 + (void)enableLog:(BOOL)enableLog {
     _enableLog = enableLog;
-    enableCrashMonitorLog(enableLog);
     static FTOSLogger *sdkOSLogger = nil;
     static dispatch_once_t onceToken;
     dispatch_once(&onceToken, ^{

@@ -18,7 +18,10 @@
 #import "FTBaseInfoHandler.h"
 #import "NSString+FTAdd.h"
 #import "FTConstants.h"
+#import "FTLogger.h"
 #import "FTMobileConfig+Private.h"
+#import "FTLoggerConfig+Private.h"
+#import "FTRumConfig+Private.h"
 #import "FTEnumConstant.h"
 #import "FTLogger+Private.h"
 @interface FTExtensionManager ()<FTRUMDataWriteProtocol,FTLoggerDataWriteProtocol>

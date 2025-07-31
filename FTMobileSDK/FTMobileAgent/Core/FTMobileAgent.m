@@ -30,6 +30,8 @@
 #import "FTURLSessionInstrumentation.h"
 #import "FTEnumConstant.h"
 #import "FTMobileConfig+Private.h"
+#import "FTLoggerConfig+Private.h"
+#import "FTRumConfig+Private.h"
 #import "FTLogger+Private.h"
 #import "NSDictionary+FTCopyProperties.h"
 #import "FTTrackerEventDBTool.h"

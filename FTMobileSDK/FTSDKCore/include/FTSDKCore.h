@@ -23,7 +23,7 @@
 #import "FTRUMManager.h"
 #import "FTRUMHandler.h"
 #import "FTLongTaskDetector.h"
-#import "FTCrashMonitor.h"
+#import "FTCrash.h"
 #import "FTLogger.h"
 #import "FTLoggerDataWriteProtocol.h"
 #import "FTLogger+Private.h"
