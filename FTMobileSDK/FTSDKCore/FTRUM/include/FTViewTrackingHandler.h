@@ -1,5 +1,5 @@
 //
-//  FTViewTrackingStrategy.h
+//  FTViewTrackingHandler.h
 //  FTMobileSDK
 //
 //  Created by hulilei on 2025/7/30.
@@ -13,8 +13,8 @@
 
 NS_ASSUME_NONNULL_BEGIN
 
-/// The strategy deciding if a given RUM View should be recorded.
-@protocol FTUIKitViewTrackingStrategy <NSObject>
+/// The handler deciding if a given RUM View should be recorded.
+@protocol FTUIKitViewTrackingHandler <NSObject>
 // Converts a `UIViewController` into RUM view parameters, or filters it out.
 ///
 /// - Parameter viewController: The view controller that has appeared in the UI.
@@ -23,7 +23,7 @@ NS_ASSUME_NONNULL_BEGIN
 
 @end
 
-typedef id<FTUIKitViewTrackingStrategy> FTViewTrackingStrategy;
+typedef id<FTUIKitViewTrackingHandler> FTViewTrackingHandler;
 
 
 NS_ASSUME_NONNULL_END

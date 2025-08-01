@@ -34,7 +34,7 @@ typedef FTRUMAction* _Nullable (^FTActionTrackingBlock)(UIView *view);
 
 
 @end
-@interface FTRUMConfigurationTest : XCTestCase<FTUIKitViewTrackingStrategy,FTUITouchRUMActionsStrategy,FTUIPressRUMActionsStrategy>
+@interface FTRUMConfigurationTest : XCTestCase<FTUIKitViewTrackingHandler,FTUITouchRUMActionsHandler,FTUIPressRUMActionsHandler>
 @property (nonatomic, copy) NSString *url;
 @property (nonatomic, copy) NSString *appid;
 @property (nonatomic, copy) FTViewTrackingBlock viewTrackingBlock;
@@ -147,7 +147,7 @@ typedef FTRUMAction* _Nullable (^FTActionTrackingBlock)(UIView *view);
         noView = NO;
         return rumView;
     };
-    rumConfig.viewTrackingStrategy = self;
+    rumConfig.viewTrackingHandler = self;
     [FTMobileAgent startWithConfigOptions:config];
     [[FTMobileAgent sharedInstance] startRumWithConfigOptions:rumConfig];
    
@@ -176,7 +176,7 @@ typedef FTRUMAction* _Nullable (^FTActionTrackingBlock)(UIView *view);
         noView = NO;
         return rumView;
     };
-    rumConfig.viewTrackingStrategy = self;
+    rumConfig.viewTrackingHandler = self;
     [FTMobileAgent startWithConfigOptions:config];
     [[FTMobileAgent sharedInstance] startRumWithConfigOptions:rumConfig];
    
@@ -211,7 +211,7 @@ typedef FTRUMAction* _Nullable (^FTActionTrackingBlock)(UIView *view);
     self.viewTrackingBlock =  ^FTRUMView * _Nullable(UIViewController * _Nonnull viewController) {
         return nil;
     };
-    rumConfig.viewTrackingStrategy = self;
+    rumConfig.viewTrackingHandler = self;
     [FTMobileAgent startWithConfigOptions:config];
     [[FTMobileAgent sharedInstance] startRumWithConfigOptions:rumConfig];
     
@@ -238,7 +238,7 @@ typedef FTRUMAction* _Nullable (^FTActionTrackingBlock)(UIView *view);
         rumView.isUntrackedModal = [viewController isKindOfClass:ModalViewController.class];
         return rumView;
     };
-    rumConfig.viewTrackingStrategy = self;
+    rumConfig.viewTrackingHandler = self;
     [FTMobileAgent startWithConfigOptions:config];
     [[FTMobileAgent sharedInstance] startRumWithConfigOptions:rumConfig];
     
@@ -276,7 +276,7 @@ typedef FTRUMAction* _Nullable (^FTActionTrackingBlock)(UIView *view);
         FTRUMAction *rumAction = [[FTRUMAction alloc]initWithActionName:@"disableTraceUserAction_click" property:@{@"test":@"disableTraceUserAction"}];
         return rumAction;
     };
-    rumConfig.actionTrackingStrategy = self;
+    rumConfig.actionTrackingHandler = self;
     [FTMobileAgent startWithConfigOptions:config];
     [[FTMobileAgent sharedInstance] startRumWithConfigOptions:rumConfig];
     
@@ -320,7 +320,7 @@ typedef FTRUMAction* _Nullable (^FTActionTrackingBlock)(UIView *view);
         FTRUMAction *rumAction = [[FTRUMAction alloc]initWithActionName:@"enableTraceUserAction_click" property:@{@"test":@"enableTraceUserAction"}];
         return rumAction;
     };
-    rumConfig.actionTrackingStrategy = self;
+    rumConfig.actionTrackingHandler = self;
     [FTMobileAgent startWithConfigOptions:config];
     [[FTMobileAgent sharedInstance] startRumWithConfigOptions:rumConfig];
     
@@ -369,7 +369,7 @@ typedef FTRUMAction* _Nullable (^FTActionTrackingBlock)(UIView *view);
         
         return nil;
     };
-    rumConfig.actionTrackingStrategy = self;
+    rumConfig.actionTrackingHandler = self;
     [FTMobileAgent startWithConfigOptions:config];
     [[FTMobileAgent sharedInstance] startRumWithConfigOptions:rumConfig];
     

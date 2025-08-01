@@ -49,8 +49,8 @@ typedef NS_ENUM(NSInteger, FTRUMCacheDiscard)  {
     FTRUMDiscardOldest
 };
 
-#import "FTActionTrackingStrategy.h"
-#import "FTViewTrackingStrategy.h"
+#import "FTActionTrackingHandler.h"
+#import "FTViewTrackingHandler.h"
 
 NS_ASSUME_NONNULL_BEGIN
 /// RUM filter resource callback, returns: NO means to collect, YES means not to collect.
@@ -124,18 +124,18 @@ typedef BOOL (^FTSessionTaskErrorFilter)(NSError *_Nonnull error);
 /// Set specific hosts or domains allowed to collect WebView data, nil means collect all.
 @property (nonatomic, copy) NSArray *allowWebViewHost;
 
-/// A strategy for user-defined collection of `ViewControllers` as RUM views for tracking.
+/// A handler for user-defined collection of `ViewControllers` as RUM views for tracking.
 /// It takes effect when enableTraceUserView = YES.
 /// RUM will call this callback for each `ViewController` presented in the application.
 ///  - If the given controller needs to start a RUM view, return the FTRUMView parameters;
 ///  - Return nil to ignore it.
-@property (nonatomic, weak) FTViewTrackingStrategy viewTrackingStrategy;
+@property (nonatomic, weak) FTViewTrackingHandler viewTrackingHandler;
 
-/// The strategy deciding if a given RUM Action should be recorded.
+/// The handler deciding if a given RUM Action should be recorded.
 /// It takes effect when enableTraceUserAction = YES.
 ///  - If need to Start a RUM action, return the FTRUMAction parameters;
 ///  - Return nil to ignore it.
-@property (nonatomic, weak) FTActionTrackingStrategy actionTrackingStrategy;
+@property (nonatomic, weak) FTActionTrackingHandler actionTrackingHandler;
 
 /// Enable freeze collection and set freeze threshold.
 /// - Parameter enableTrackAppFreeze: Set whether to collect freezes

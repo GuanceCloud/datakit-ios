@@ -1,5 +1,5 @@
 //
-//  FTActionTrackingStrategy.h
+//  FTActionTrackingHandler.h
 //  FTMobileSDK
 //
 //  Created by hulilei on 2025/7/30.
@@ -12,20 +12,20 @@
 #import "FTRUMAction.h"
 NS_ASSUME_NONNULL_BEGIN
 
-/// iOS: The strategy deciding if a given RUM Action should be recorded.
-@protocol FTUITouchRUMActionsStrategy <NSObject>
+/// iOS: The handler deciding if a given RUM Action should be recorded.
+@protocol FTUITouchRUMActionsHandler <NSObject>
 
-/// The strategy deciding if the RUM Action should be recorded.
+/// The handler deciding if the RUM Action should be recorded.
 /// @param targetView an instance of the `UIView` which received the action.
 /// @return RUM Action if it should be recorded, `nil` otherwise.
 - (nullable FTRUMAction *)rumActionWithTargetView:(UIView *)targetView;
 
 @end
 
-/// TVOS: The strategy deciding if a given RUM Action should be recorded.
-@protocol FTUIPressRUMActionsStrategy <NSObject>
+/// TVOS: The handler deciding if a given RUM Action should be recorded.
+@protocol FTUIPressRUMActionsHandler <NSObject>
 
-/// The strategy deciding if the RUM Action should be recorded.
+/// The handler deciding if the RUM Action should be recorded.
 /// @param type the `UIPressType` which received the action.
 /// @param targetView an instance of the `UIView` which received the action.
 /// @return RUM Action if it should be recorded, `nil` otherwise.
@@ -34,9 +34,9 @@ NS_ASSUME_NONNULL_BEGIN
 @end
 
 #if TARGET_OS_TV
-typedef id<FTUIPressRUMActionsStrategy> FTActionTrackingStrategy;
+typedef id<FTUIPressRUMActionsHandler> FTActionTrackingHandler;
 #elif TARGET_OS_IOS
-typedef id<FTUITouchRUMActionsStrategy> FTActionTrackingStrategy;
+typedef id<FTUITouchRUMActionsHandler> FTActionTrackingHandler;
 #endif
 
 NS_ASSUME_NONNULL_END

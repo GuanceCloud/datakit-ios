@@ -478,10 +478,10 @@
     rumConfig.resourceUrlHandler = ^BOOL(NSURL *url) {
         return NO;
     };
-    FTViewTrackingStrategy viewStrategy = (FTViewTrackingStrategy)[[NSObject alloc]init];
-    rumConfig.viewTrackingStrategy = viewStrategy;
-    FTActionTrackingStrategy actionStrategy = (FTActionTrackingStrategy)[[NSObject alloc]init];
-    rumConfig.actionTrackingStrategy = actionStrategy;
+    FTViewTrackingHandler viewStrategy = (FTViewTrackingHandler)[[NSObject alloc]init];
+    rumConfig.viewTrackingHandler = viewStrategy;
+    FTActionTrackingHandler actionStrategy = (FTActionTrackingHandler)[[NSObject alloc]init];
+    rumConfig.actionTrackingHandler = actionStrategy;
     XCTAssertTrue(rumConfig.sessionOnErrorSampleRate == 0);
     XCTAssertTrue(rumConfig.rumCacheLimitCount == 100000);
     rumConfig.rumCacheLimitCount = 1000;
@@ -504,8 +504,8 @@
     XCTAssertTrue(copyRumConfig.monitorFrequency == rumConfig.monitorFrequency);
     XCTAssertTrue([copyRumConfig.globalContext isEqual:rumConfig.globalContext]);
     XCTAssertTrue([copyRumConfig.resourceUrlHandler isEqual:rumConfig.resourceUrlHandler]);
-    XCTAssertTrue([copyRumConfig.viewTrackingStrategy isEqual:rumConfig.viewTrackingStrategy]);
-    XCTAssertTrue([copyRumConfig.actionTrackingStrategy isEqual:rumConfig.actionTrackingStrategy]);
+    XCTAssertTrue([copyRumConfig.viewTrackingHandler isEqual:rumConfig.viewTrackingHandler]);
+    XCTAssertTrue([copyRumConfig.actionTrackingHandler isEqual:rumConfig.actionTrackingHandler]);
     XCTAssertTrue(copyRumConfig.freezeDurationMs == rumConfig.freezeDurationMs);
     XCTAssertTrue(copyRumConfig.rumDiscardType == rumConfig.rumDiscardType);
     XCTAssertTrue(copyRumConfig.rumCacheLimitCount == rumConfig.rumCacheLimitCount);

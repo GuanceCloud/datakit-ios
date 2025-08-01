@@ -133,8 +133,8 @@
 #if TARGET_OS_IOS
     NSString *actionName = view.ft_actionName;
     NSDictionary *property = nil;
-    if (self.actionTrackingStrategy && [self.actionTrackingStrategy respondsToSelector:@selector(rumActionWithTargetView:)]) {
-        FTRUMAction *action = [self.actionTrackingStrategy rumActionWithTargetView:view];
+    if (self.actionTrackingHandler && [self.actionTrackingHandler respondsToSelector:@selector(rumActionWithTargetView:)]) {
+        FTRUMAction *action = [self.actionTrackingHandler rumActionWithTargetView:view];
         if ( action == nil ) return;
         actionName = action.actionName;
         property = action.property;
@@ -150,8 +150,8 @@
 #if TARGET_OS_TV
     NSString *actionName = nil;
     NSDictionary *property = nil;
-    if (self.actionTrackingStrategy && [self.actionTrackingStrategy respondsToSelector:@selector(rumActionWithPressType:targetView:)]) {
-        FTRUMAction *action = [self.actionTrackingStrategy rumActionWithPressType:type targetView:view];
+    if (self.actionTrackingHandler && [self.actionTrackingHandler respondsToSelector:@selector(rumActionWithPressType:targetView:)]) {
+        FTRUMAction *action = [self.actionTrackingHandler rumActionWithPressType:type targetView:view];
         if ( action == nil ) return;
         actionName = action.actionName;
         property = action.property;
@@ -199,8 +199,8 @@
 #pragma mark ========== FTUIViewControllerHandler ==========
 -(void)notify_viewDidAppear:(UIViewController *)viewController animated:(BOOL)animated{
     // if User-defined 
-    if (self.uiKitViewTrackingStrategy && [self.uiKitViewTrackingStrategy respondsToSelector:@selector(rumViewForViewController:)]) {
-        FTRUMView *rumView = [self.uiKitViewTrackingStrategy rumViewForViewController:viewController];
+    if (self.uiKitViewTrackingHandler && [self.uiKitViewTrackingHandler respondsToSelector:@selector(rumViewForViewController:)]) {
+        FTRUMView *rumView = [self.uiKitViewTrackingHandler rumViewForViewController:viewController];
         if (rumView) {
             NSString *identify = [NSString stringWithFormat:@"%p", viewController];
             RUMView *view = [[RUMView alloc]initWithViewController:viewController identify:identify];
@@ -295,8 +295,8 @@
     self.addRumDatasDelegate = nil;
     self.viewControllerHandler = nil;
     self.actionHandler = nil;
-    self.uiKitViewTrackingStrategy = nil;
-    self.actionTrackingStrategy = nil;
+    self.uiKitViewTrackingHandler = nil;
+    self.actionTrackingHandler = nil;
     self.autoTrackView = NO;
     self.autoTrackAction = NO;
     [[FTAppLifeCycle sharedInstance] removeAppLifecycleDelegate:self];
