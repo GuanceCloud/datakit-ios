@@ -1,6 +1,12 @@
+# 1.5.18-alpha.5
+1. Changes `FTRumConfig.viewTrackingStrategy` implementation from block to delegate protocol and Changes `FTRumConfig.viewTrackingStrategy` to `FTRumConfig.viewTrackingHandler`
+2. Added support for custom RUM Action tracking strategy via `FTRumConfig.actionTrackingHandler`
+3. Adds method `-updateViewLoadingTime:` to support update loading time for currently active RUM view
+---
 # 1.5.18-alpha.4
 1. Fix: made the SDK's -shutdown method thread-safe
 2. Added support for custom RUM View tracking strategy via `FTRumConfig.viewTrackingStrategy`
+3. Fix: made `sdk_name` a mandatory baseline field
 ---
 # 1.5.18-alpha.3
 1. Fix: missing `#include <string.h>` in tvOS platform
