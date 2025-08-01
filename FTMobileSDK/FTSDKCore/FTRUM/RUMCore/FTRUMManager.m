@@ -105,6 +105,17 @@ void *FTRUMQueueIdentityKey = &FTRUMQueueIdentityKey;
         }
     });
 }
+-(void)updateViewLoadingTime:(NSNumber *)duration{
+    dispatch_async(self.rumQueue, ^{
+        @try {
+            FTRUMViewLoadingModel *viewModel = [[FTRUMViewLoadingModel alloc]initWithDuration:duration];
+            [self process:viewModel context:@{}];
+        } @catch (NSException *exception) {
+            FTInnerLogError(@"exception %@",exception);
+        }
+    });
+}
+
 -(void)stopView{
     [self stopViewWithViewID:nil property:nil];
 }

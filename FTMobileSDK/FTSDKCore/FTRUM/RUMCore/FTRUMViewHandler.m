@@ -80,6 +80,12 @@
             }
         }
             break;
+        case FTRUMDataViewUpdateLoadingTime:
+            if (self.isActiveView) {
+                FTRUMViewLoadingModel *loadingModel = (FTRUMViewLoadingModel *)model;
+                self.loading_time = loadingModel.duration;
+            }
+            break;
         case FTRUMDataViewStop:{
             FTRUMViewModel *viewModel = (FTRUMViewModel *)model;
             if (self.view_id && [self.view_id isEqualToString:viewModel.view_id]) {

@@ -14,6 +14,7 @@ typedef NS_ENUM(NSUInteger, FTRUMDataType) {
     FTRUMDataAddAction,
     FTRUMDataStopAction,
     FTRUMDataViewStart,
+    FTRUMDataViewUpdateLoadingTime,
     FTRUMDataViewStop,
     FTRUMDataLongTask,
     FTRUMDataError,
@@ -51,6 +52,13 @@ NS_ASSUME_NONNULL_BEGIN
 @property (nonatomic, strong) NSNumber *loading_time;
 -(instancetype)initWithViewID:(NSString *)viewID viewName:(NSString *)viewName viewReferrer:(NSString *)viewReferrer;
 @end
+
+@interface FTRUMViewLoadingModel : FTRUMDataModel
+
+@property (nonatomic, strong) NSNumber *duration;
+-(instancetype)initWithDuration:(NSNumber *)duration;
+@end
+
 
 @interface FTRUMResourceModel : FTRUMDataModel
 @property (nonatomic, copy) NSString *identifier;

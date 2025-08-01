@@ -69,38 +69,6 @@ typedef NS_ENUM(NSUInteger, FTLaunchType) {
 ///   - fields: fields description
 ///   - tm: tm description
 - (void)addWebViewData:(NSString *)measurement tags:(NSDictionary *)tags fields:(NSDictionary *)fields tm:(long long)tm;
-#pragma mark - view -
-/**
- * Create page
- * @param viewName     Page name
- * @param loadTime     Page load time
- */
--(void)onCreateView:(NSString *)viewName loadTime:(NSNumber *)loadTime;
-/**
- * Enter page, viewId managed internally
- * @param viewName        Page name
- */
--(void)startViewWithName:(NSString *)viewName;
--(void)startViewWithName:(NSString *)viewName property:(nullable NSDictionary *)property;
-/**
- * Enter page
- * @param viewId          Page id
- * @param viewName        Page name
- */
--(void)startViewWithViewID:(NSString *)viewId viewName:(NSString *)viewName property:(nullable NSDictionary *)property;
-
-/// Leave page
--(void)stopView;
-/**
- * Leave page
- * @param viewId         Page id
- */
--(void)stopViewWithViewID:(nullable NSString *)viewId property:(nullable NSDictionary *)property;
-/**
- * Leave page
- */
--(void)stopViewWithProperty:(nullable NSDictionary *)property;
-
 #pragma mark - Action -
 
 /// Start RUM Action.

@@ -99,6 +99,11 @@ static const NSTimeInterval sessionMaxDuration = 4 * 60 * 60; // 4 hours
         case FTRUMDataViewStart:
             [self startView:model];
             break;
+        case FTRUMDataViewUpdateLoadingTime:
+            if(![self hasActivityView]){
+                return YES;
+            }
+            break;
         case FTRUMDataError:
         case FTRUMDataLongTask:
             self.needWriteErrorData = YES;
