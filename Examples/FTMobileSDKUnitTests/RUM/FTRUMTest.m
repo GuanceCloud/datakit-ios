@@ -316,6 +316,76 @@
     NSDictionary *dict2 = [[FTGlobalRumManager sharedInstance].rumManager getLinkRUMData];
     XCTAssertTrue([view_id isEqualToString:dict2[FT_KEY_VIEW_ID]]);
 }
+
+- (void)testUpdateViewLoadingTime{
+    FTMobileConfig *config = [[FTMobileConfig alloc]initWithDatakitUrl:self.url];
+    FTRumConfig *rumConfig = [[FTRumConfig alloc]initWithAppid:self.appid];
+    [FTMobileAgent startWithConfigOptions:config];
+    
+    [[FTMobileAgent sharedInstance] startRumWithConfigOptions:rumConfig];
+    [[FTTrackerEventDBTool sharedManger] deleteAllDatas];
+    
+    [FTModelHelper startViewWithName:@"first_view"];
+    
+    [FTModelHelper startViewWithName:@"second_view"];
+    
+    [[FTExternalDataManager sharedManager] updateViewLoadingTime:@(1234567)];
+    
+    [[FTExternalDataManager sharedManager] stopView];
+    [[FTGlobalRumManager sharedInstance].rumManager syncProcess];
+    NSArray *array = [[FTTrackerEventDBTool sharedManger] getAllDatas];
+    __block BOOL hasView = NO;
+    [FTModelHelper resolveModelArray:array idxCallBack:^(NSString * _Nonnull source, NSDictionary * _Nonnull tags, NSDictionary * _Nonnull fields, BOOL * _Nonnull stop, NSUInteger idx) {
+        if ([source isEqualToString:FT_RUM_SOURCE_VIEW]) {
+            if ([tags[FT_KEY_VIEW_NAME] isEqualToString:@"second_view"]) {
+                if ([fields[FT_KEY_VIEW_UPDATE_TIME] isEqual:@2]) {
+                    XCTAssertTrue([fields[FT_KEY_LOADING_TIME] isEqual:@(1234567)]);
+                }else{
+                    XCTAssertTrue([fields[FT_KEY_LOADING_TIME] isEqual:@1000000000]);
+                }
+                hasView = YES;
+            }else{
+                XCTAssertTrue([fields[FT_KEY_LOADING_TIME] isEqual:@1000000000]);
+            }
+        }
+    }];
+    XCTAssertTrue(hasView);
+    
+}
+
+- (void)testUpdateViewLoadingTime_whenViewInactive{
+    FTMobileConfig *config = [[FTMobileConfig alloc]initWithDatakitUrl:self.url];
+    FTRumConfig *rumConfig = [[FTRumConfig alloc]initWithAppid:self.appid];
+    [FTMobileAgent startWithConfigOptions:config];
+    
+    [[FTMobileAgent sharedInstance] startRumWithConfigOptions:rumConfig];
+    [[FTTrackerEventDBTool sharedManger] deleteAllDatas];
+    
+    [FTModelHelper startViewWithName:@"first_view"];
+    
+    [FTModelHelper startResource:@"resource_1"];
+    
+    [[FTExternalDataManager sharedManager] stopView];
+
+    [[FTExternalDataManager sharedManager] updateViewLoadingTime:@(1234567)];
+    
+    [FTModelHelper stopErrorResource:@"resource_1"];
+    
+    [[FTGlobalRumManager sharedInstance].rumManager syncProcess];
+    NSArray *array = [[FTTrackerEventDBTool sharedManger] getAllDatas];
+    __block BOOL hasView = NO;
+    [FTModelHelper resolveModelArray:array idxCallBack:^(NSString * _Nonnull source, NSDictionary * _Nonnull tags, NSDictionary * _Nonnull fields, BOOL * _Nonnull stop, NSUInteger idx) {
+        if ([source isEqualToString:FT_RUM_SOURCE_VIEW]) {
+            if ([tags[FT_KEY_VIEW_NAME] isEqualToString:@"first_view"]) {
+                if ([fields[FT_KEY_VIEW_UPDATE_TIME] isEqual:@3]) {
+                    hasView = YES;
+                }
+                XCTAssertTrue([fields[FT_KEY_LOADING_TIME] isEqual:@1000000000]);
+            }
+        }
+    }];
+    XCTAssertTrue(hasView);
+}
 #pragma mark ========== Resource ==========
 
 /**
