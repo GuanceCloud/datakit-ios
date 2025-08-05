@@ -35,7 +35,7 @@
     if(self){
         _cacheInvalidTimeInterval = timeInterval*1e9;
         _processStartTime = [[NSDate dateWithTimeIntervalSinceReferenceDate:FTAppLaunchTracker.processStartTime] ft_nanosecondTimeStamp];
-        _errorSampledConsumeQueue = dispatch_queue_create("com.guance.errorSampledConsume", 0);
+        _errorSampledConsumeQueue = dispatch_queue_create("com.ft.errorSampledConsume", 0);
         _lastProcessFatalErrorTime = -1;
         _lastErrorTimeInterval = 0;
         [self checkLastProcessErrorSampled];

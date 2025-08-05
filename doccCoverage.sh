@@ -39,7 +39,7 @@ xcodebuild -target FTMobileSDK DOCC_EXTRACT_SWIFT_INFO_FOR_OBJC_SYMBOLS=NO -quie
 echo 'build completion -->>> docc'
 xcrun docc convert FTMobileSDK/FTMobileSDKDocs.docc \
 --fallback-display-name FTMobileSDK \
---fallback-bundle-identifier com.cloudcare.ft.mobile.sdk.FTMobileSDK \
+--fallback-bundle-identifier com.ft.mobile.sdk.FTMobileSDK \
 --fallback-bundle-version 1.0 \
 --additional-symbol-graph-dir ./build/FTMobileSDK.build/Release-iphoneos/FTMobileSDK.build/symbol-graph \
 --experimental-documentation-coverage \

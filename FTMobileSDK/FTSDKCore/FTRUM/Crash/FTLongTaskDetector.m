@@ -38,7 +38,7 @@ static NSDate *g_startDate;
         _semaphore = dispatch_semaphore_create(0);
         _limitFreezeMillisecond = FT_DEFAULT_BLOCK_DURATIONS_MS;
         _limitMillisecond = MIN(_limitFreezeMillisecond, FT_ANR_THRESHOLD_MS);
-        _longTaskQueue = dispatch_queue_create("com.guance.longtask", 0);
+        _longTaskQueue = dispatch_queue_create("com.ft.longtask", 0);
     }
     return self;
 }

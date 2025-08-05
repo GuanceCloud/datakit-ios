@@ -93,7 +93,7 @@ void *FTLongTaskManagerQueueTag = &FTLongTaskManagerQueueTag;
         _enableANR = enableANR;
         _enableFreeze = enableFreeze;
         _freezeDurationMs = freezeDurationMs;
-        _queue = dispatch_queue_create("com.guance.read-write", 0);
+        _queue = dispatch_queue_create("com.ft.read-write", 0);
         dispatch_queue_set_specific(_queue, FTLongTaskManagerQueueTag, &FTLongTaskManagerQueueTag, NULL);
         _longTaskDetector = [[FTLongTaskDetector alloc]initWithDelegate:self];
         _longTaskDetector.limitFreezeMillisecond = freezeDurationMs;

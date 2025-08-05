@@ -107,7 +107,7 @@
     self = [super init];
     if(self){
         _mobileDevice = [[MobileDevice alloc]init];
-        _concurrentQueue = dispatch_queue_create("com.guance.readwrite", DISPATCH_QUEUE_CONCURRENT);
+        _concurrentQueue = dispatch_queue_create("com.ft.readwrite", DISPATCH_QUEUE_CONCURRENT);
     }
     return self;
 }

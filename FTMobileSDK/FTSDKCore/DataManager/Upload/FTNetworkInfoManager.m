@@ -33,7 +33,7 @@ static FTNetworkInfoManager *sharedInstance = nil;
 -(instancetype)init{
     self = [super init];
     if (self) {
-        _concurrentQueue = dispatch_queue_create("com.guance.network.info", DISPATCH_QUEUE_CONCURRENT);
+        _concurrentQueue = dispatch_queue_create("com.ft.network.info", DISPATCH_QUEUE_CONCURRENT);
     }
     return self;
 }

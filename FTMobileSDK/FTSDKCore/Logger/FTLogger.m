@@ -38,7 +38,7 @@ void *FTLoggerQueueIdentityKey = &FTLoggerQueueIdentityKey;
 -(instancetype)init{
     self = [super init];
     if(self){
-        _loggerQueue = dispatch_queue_create("com.guance.logger", DISPATCH_QUEUE_SERIAL);
+        _loggerQueue = dispatch_queue_create("com.ft.logger", DISPATCH_QUEUE_SERIAL);
         dispatch_queue_set_specific(_loggerQueue,FTLoggerQueueIdentityKey, &FTLoggerQueueIdentityKey, NULL);
     }
     return self;
