@@ -187,6 +187,9 @@ static const NSTimeInterval sessionMaxDuration = 4 * 60 * 60; // 4 hours
     [tags setValue:model.action_type forKey:FT_KEY_ACTION_TYPE];
     
     NSMutableDictionary *fields = [NSMutableDictionary dictionary];
+    if (model.fields) {
+        [fields addEntriesFromDictionary:model.fields];
+    }
     [fields setValue:model.duration forKey:FT_DURATION];
     [fields setValue:@(0) forKey:FT_KEY_ACTION_LONG_TASK_COUNT];
     [fields setValue:@(0) forKey:FT_KEY_ACTION_RESOURCE_COUNT];

@@ -20,7 +20,7 @@
 #import "FTThreadDispatchManager.h"
 #import "FTConstants.h"
 #import "UIView+FTAutoTrack.h"
-
+#import "FTAppLaunchTracker.h"
 @interface RUMView:NSObject
 @property (nonatomic, copy) NSString *viewName;
 @property (nonatomic, copy) NSString *identify;
@@ -55,10 +55,11 @@
     _loadTime = @0;
 }
 @end
-@interface FTAutoTrackHandler()<FTAppLifeCycleDelegate,FTUIViewControllerHandler,FTUIEventHandler>
+@interface FTAutoTrackHandler()<FTAppLifeCycleDelegate,FTUIViewControllerHandler,FTUIEventHandler,FTAppLaunchDataDelegate>
 @property (nonatomic, strong) NSMutableArray<RUMView*> *stack;
 @property (nonatomic, assign) BOOL autoTrackView;
 @property (nonatomic, assign) BOOL autoTrackAction;
+@property (nonatomic, strong) FTAppLaunchTracker *launchTracker;
 
 @end
 @implementation FTAutoTrackHandler
@@ -91,6 +92,7 @@
     if (trackAction) {
         self.actionHandler = self;
         [self hookTargetAction];
+        self.launchTracker = [[FTAppLaunchTracker alloc]initWithDelegate:self];
     }
 }
 - (void)hookViewControllerLifeCycle{
@@ -127,6 +129,35 @@
         FTInnerLogError(@"exception: %@",exception);
     }
     
+}
+#pragma mark ========== RUM-Action: App Launch ==========
+-(void)ftAppHotStart:(NSDate *)launchTime duration:(NSNumber *)duration{
+    NSString *actionName = @"app_hot_start";
+    NSString *actionType = FT_LAUNCH_HOT;
+    NSDictionary *property = nil;
+    if (self.actionTrackingHandler && [self.actionTrackingHandler respondsToSelector:@selector(rumLaunchActionWithLaunchType:)]) {
+        FTRUMAction *action = [self.actionTrackingHandler rumLaunchActionWithLaunchType:FTLaunchHot];
+        if (action == nil) {
+            return;
+        }
+        actionName = action.actionName;
+        property = action.property;
+    }
+    [self.addRumDatasDelegate addLaunch:actionName type:actionType launchTime:launchTime duration:duration property:property];
+}
+-(void)ftAppColdStart:(NSDate *)launchTime duration:(NSNumber *)duration isPreWarming:(BOOL)isPreWarming{
+    NSString *actionName = isPreWarming?@"app_warm_start":@"app_cold_start";
+    NSString *actionType = isPreWarming?FT_LAUNCH_WARM:FT_LAUNCH_COLD;
+    NSDictionary *property = nil;
+    if (self.actionTrackingHandler && [self.actionTrackingHandler respondsToSelector:@selector(rumLaunchActionWithLaunchType:)]) {
+        FTRUMAction *action = [self.actionTrackingHandler rumLaunchActionWithLaunchType:isPreWarming?FTLaunchWarm:FTLaunchCold];
+        if (action == nil) {
+            return;
+        }
+        actionName = action.actionName;
+        property = action.property;
+    }
+    [self.addRumDatasDelegate addLaunch:actionName type:actionType launchTime:launchTime duration:duration property:property];
 }
 #pragma mark ========== FTUIEventHandler ==========
 - (void)notify_sendAction:(UIView *)view{

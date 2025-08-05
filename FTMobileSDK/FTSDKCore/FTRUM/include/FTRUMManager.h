@@ -15,15 +15,7 @@
 @class FTRumConfig,FTResourceMetricsModel,FTResourceContentModel,FTRUMMonitor;
 
 NS_ASSUME_NONNULL_BEGIN
-/// App launch type
-typedef NS_ENUM(NSUInteger, FTLaunchType) {
-    /// Hot launch
-    FTLaunchHot,
-    /// Cold launch
-    FTLaunchCold,
-    /// Warm launch, system preloads before APP launch
-    FTLaunchWarm
-};
+
 @interface FTRUMManager : FTRUMHandler<FTRumResourceProtocol,FTErrorDataDelegate,FTRumDatasProtocol,FTLinkRumDataProvider>
 @property (nonatomic, assign) FTAppState appState;
 @property (atomic,copy,readwrite) NSString *viewReferrer;
@@ -69,33 +61,6 @@ typedef NS_ENUM(NSUInteger, FTLaunchType) {
 ///   - fields: fields description
 ///   - tm: tm description
 - (void)addWebViewData:(NSString *)measurement tags:(NSDictionary *)tags fields:(NSDictionary *)fields tm:(long long)tm;
-#pragma mark - Action -
-
-/// Start RUM Action.
-///
-/// RUM will bind Resource, Error, LongTask events that this Action may trigger. Avoid adding multiple times within 0.1s. Only one Action can be associated with the same View at the same time. New Actions will be discarded if the previous Action hasn't ended.
-/// Does not interfere with Actions added by `addAction:actionType:property` method.
-///
-/// - Parameters:
-///   - actionName: Event name
-///   - actionType: Event type
-///   - property: Custom event properties (optional)
-- (void)startAction:(NSString *)actionName actionType:(NSString *)actionType property:(nullable NSDictionary *)property;
-
-/// Add Action event. No duration, no discard logic
-///
-/// Does not interfere with RUM Actions started by `startAction:actionType:property:`.
-/// - Parameters:
-///   - actionName: Event name
-///   - actionType: Event type
-///   - property: Custom event properties (optional)
-- (void)addAction:(NSString *)actionName actionType:(NSString *)actionType property:(nullable NSDictionary *)property;
-/**
- * App launch
- * @param type      Launch type
- * @param duration  Launch duration
- */
-- (void)addLaunch:(FTLaunchType)type launchTime:(NSDate*)time duration:(NSNumber *)duration;
 
 #pragma mark - Error / Long Task -
 /// Crash

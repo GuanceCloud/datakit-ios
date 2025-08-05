@@ -72,6 +72,14 @@ typedef NS_ENUM(NSUInteger, FTAppState) {
 ///   - property: event custom properties (optional)
 - (void)addAction:(NSString *)actionName actionType:(NSString *)actionType property:(nullable NSDictionary *)property;
 
+/// Add Launch Action event.
+/// - Parameters:
+///   - name: action name
+///   - type: action type
+///   - time: launch time
+///   - duration: launch duration
+///   - property: event custom properties (optional)
+- (void)addLaunch:(NSString *)name type:(NSString *)type launchTime:(NSDate *)time duration:(NSNumber *)duration property:(nullable NSDictionary *)property;
 
 /// Add Error event
 ///
