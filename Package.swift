@@ -139,11 +139,10 @@ let package = Package(
                                "_FTLogger",
                                "_FTConfig"
                               ],
-                path: "FTMobileSDK",
-                sources: ["FTMobileExtension"],
+                path: "FTMobileSDK/FTMobileExtension",
                 resources: [
-                    .copy("Resources/PrivacyInfo.xcprivacy")],
-                publicHeadersPath: "FTMobileExtension/include",
+                    .copy("../Resources/PrivacyInfo.xcprivacy")],
+                publicHeadersPath: ".",
                 cSettings: [
                     
                 ]),
