@@ -1,6 +1,9 @@
+# 1.5.18-alpha.6
+1. Add custom RUM Launch Action handler via `FTRumConfig.actionTrackingHandler` 
+---
 # 1.5.18-alpha.5
 1. Changes `FTRumConfig.viewTrackingStrategy` implementation from block to delegate protocol and Changes `FTRumConfig.viewTrackingStrategy` to `FTRumConfig.viewTrackingHandler`
-2. Added support for custom RUM Action tracking strategy via `FTRumConfig.actionTrackingHandler`
+2. Added support for custom RUM Action tracking handler via `FTRumConfig.actionTrackingHandler`
 3. Adds method `-updateViewLoadingTime:` to support update loading time for currently active RUM view
 ---
 # 1.5.18-alpha.4
