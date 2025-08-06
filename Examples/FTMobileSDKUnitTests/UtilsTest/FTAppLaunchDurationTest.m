@@ -12,6 +12,7 @@
 #import "NSDate+FTUtil.h"
 #import "FTMobileConfig.h"
 #import "FTConstants.h"
+#import "FTActionTrackingHandler.h"
 typedef void(^LaunchBlock)( NSNumber * _Nullable duration, FTLaunchType type);
 typedef void(^LaunchDataBlock)(NSString *source, NSDictionary *tags, NSDictionary *fields);
 
@@ -115,6 +116,21 @@ typedef void(^LaunchDataBlock)(NSString *source, NSDictionary *tags, NSDictionar
     dependencies.errorMonitorType = ErrorMonitorAll;
     dependencies.sampleRate = 100;
     FTRUMManager *manager = [[FTRUMManager alloc]initWithRumDependencies:dependencies];
+    NSString *actionName;
+    NSString *actionType;
+    switch (type) {
+        case FTLaunchHot:
+            actionName = @"app_hot_start";
+            actionType = FT_LAUNCH_HOT;
+            break;
+        case FTLaunchCold:
+            actionName = @"app_cold_start";
+            actionType = FT_LAUNCH_COLD;
+            break;
+        case FTLaunchWarm:
+            actionName = @"app_warm_start";
+            actionType = FT_LAUNCH_WARM;
+    }
     XCTestExpectation *expectation= [self expectationWithDescription:@"Async operation timeout"];
     self.launchDataBlock = ^(NSString *source, NSDictionary *tags, NSDictionary *fields) {
         if([source isEqualToString:FT_RUM_SOURCE_ACTION]){
@@ -136,7 +152,8 @@ typedef void(^LaunchDataBlock)(NSString *source, NSDictionary *tags, NSDictionar
         }
     };
     [manager startViewWithName:@"Test"];
-    [manager addLaunch:type launchTime:[NSDate date] duration:@123];
+    
+    [manager addLaunch:actionName type:actionType launchTime:[NSDate date] duration:@123 property:nil];
     [manager syncProcess];
     [self waitForExpectationsWithTimeout:30 handler:^(NSError *error) {
         XCTAssertNil(error);
