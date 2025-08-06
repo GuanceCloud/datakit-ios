@@ -71,11 +71,7 @@ static NSObject *sharedInstanceLock;
     dependencies.fatalErrorContext = [FTFatalErrorContext new];
     self.dependencies = dependencies;
     self.rumManager = [[FTRUMManager alloc]initWithRumDependencies:self.dependencies];
-    [[FTAutoTrackHandler sharedInstance]startWithTrackView:rumConfig.enableTraceUserView action:rumConfig.enableTraceUserAction];
-    [FTAutoTrackHandler sharedInstance].addRumDatasDelegate = self.rumManager;
-    [FTAutoTrackHandler sharedInstance].uiKitViewTrackingHandler = rumConfig.viewTrackingHandler;
-    [FTAutoTrackHandler sharedInstance].actionTrackingHandler = rumConfig.actionTrackingHandler;
-
+    [[FTAutoTrackHandler sharedInstance] startWithTrackView:rumConfig.enableTraceUserView action:rumConfig.enableTraceUserAction addRumDatasDelegate:self.rumManager viewHandler:rumConfig.viewTrackingHandler actionHandler:rumConfig.actionTrackingHandler];
     [[FTAppLifeCycle sharedInstance] addAppLifecycleDelegate:self];
     if(rumConfig.enableTrackAppCrash){
         [[FTCrash shared] addErrorDataDelegate:self.rumManager];

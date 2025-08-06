@@ -25,18 +25,15 @@ NS_ASSUME_NONNULL_BEGIN
 @end
 /// View and Action collection class
 @interface FTAutoTrackHandler : NSObject
-/// Pass event object, pass collected view and action data to RUM
-@property (nonatomic, weak) id<FTRumDatasProtocol> addRumDatasDelegate;
+
 /// Handle ViewController lifecycle rum: startView, stopView
 @property (nonatomic, weak) id<FTUIViewControllerHandler> viewControllerHandler;
 
 @property (nonatomic, weak) id<FTUIEventHandler> actionHandler;
 
-/// A handler for user-defined collection of `ViewControllers` as RUM views for tracking
-@property (nonatomic, weak) FTViewTrackingHandler uiKitViewTrackingHandler;
-
-@property (nonatomic, weak) FTActionTrackingHandler actionTrackingHandler;
-
+@property (nonatomic, weak, readonly) id<FTRumDatasProtocol> addRumDatasDelegate;
+@property (nonatomic, strong, nullable, readonly) FTViewTrackingHandler uiKitViewTrackingHandler;
+@property (nonatomic, strong, nullable, readonly) FTActionTrackingHandler actionTrackingHandler;
 
 /// Singleton
 + (instancetype)sharedInstance;
@@ -45,7 +42,11 @@ NS_ASSUME_NONNULL_BEGIN
 /// - Parameters:
 ///   - enable: Whether to collect View data
 ///   - enable: Whether to collect Action data
--(void)startWithTrackView:(BOOL)enable action:(BOOL)enable;
+-(void)startWithTrackView:(BOOL)enable
+                   action:(BOOL)enable
+      addRumDatasDelegate:(id<FTRumDatasProtocol>)delegate
+              viewHandler:(nullable FTViewTrackingHandler)viewHandler
+            actionHandler:(nullable FTActionTrackingHandler)actionHandler;
 
 -(void)shutDown;
 @end

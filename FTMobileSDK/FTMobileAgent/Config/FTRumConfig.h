@@ -89,7 +89,7 @@ typedef BOOL (^FTSessionTaskErrorFilter)(NSError *_Nonnull error);
 @property (nonatomic, assign) BOOL enableResourceHostIP;
 /// Custom collection resource rules.
 /// Determine whether to collect corresponding resource data based on the requested resource URL, default is to collect all. Returns: NO means to collect, YES means not to collect.
-@property (nonatomic, copy) FTResourceUrlHandler resourceUrlHandler;
+@property (nonatomic, copy, nullable) FTResourceUrlHandler resourceUrlHandler;
 /// Set whether to collect crash logs
 @property (nonatomic, assign) BOOL enableTrackAppCrash;
 /// Set whether to collect freezes
@@ -109,33 +109,33 @@ typedef BOOL (^FTSessionTaskErrorFilter)(NSError *_Nonnull error);
 /// Set rum global tags
 ///
 /// Reserved tags: special key - track_id (for tracking functionality)
-@property (nonatomic, copy) NSDictionary<NSString*,NSString*> *globalContext;
+@property (nonatomic, copy, nullable) NSDictionary<NSString*,NSString*> *globalContext;
 /// RUM maximum cache limit, default 100_000
 @property (nonatomic, assign) int rumCacheLimitCount;
 /// RUM discard strategy
 @property (nonatomic, assign) FTRUMCacheDiscard rumDiscardType;
 /// RUM Resource add custom properties
-@property (nonatomic, copy) FTResourcePropertyProvider resourcePropertyProvider;
+@property (nonatomic, copy, nullable) FTResourcePropertyProvider resourcePropertyProvider;
 /// Intercept SessionTask Error, confirm interception returns YES, not intercepted returns NO
-@property (nonatomic, copy) FTSessionTaskErrorFilter sessionTaskErrorFilter;
+@property (nonatomic, copy, nullable) FTSessionTaskErrorFilter sessionTaskErrorFilter;
 
 /// Set whether to enable WebView data collection, default YES
 @property (nonatomic, assign) BOOL enableTraceWebView;
 /// Set specific hosts or domains allowed to collect WebView data, nil means collect all.
-@property (nonatomic, copy) NSArray *allowWebViewHost;
+@property (nonatomic, copy, nullable) NSArray *allowWebViewHost;
 
 /// A handler for user-defined collection of `ViewControllers` as RUM views for tracking.
 /// It takes effect when enableTraceUserView = YES.
 /// RUM will call this callback for each `ViewController` presented in the application.
 ///  - If the given controller needs to start a RUM view, return the FTRUMView parameters;
 ///  - Return nil to ignore it.
-@property (nonatomic, weak) FTViewTrackingHandler viewTrackingHandler;
+@property (nonatomic, strong, nullable) FTViewTrackingHandler viewTrackingHandler;
 
 /// The handler deciding if a given RUM Action should be recorded.
 /// It takes effect when enableTraceUserAction = YES.
 ///  - If need to Start a RUM action, return the FTRUMAction parameters;
 ///  - Return nil to ignore it.
-@property (nonatomic, weak) FTActionTrackingHandler actionTrackingHandler;
+@property (nonatomic, strong, nullable) FTActionTrackingHandler actionTrackingHandler;
 
 /// Enable freeze collection and set freeze threshold.
 /// - Parameter enableTrackAppFreeze: Set whether to collect freezes
