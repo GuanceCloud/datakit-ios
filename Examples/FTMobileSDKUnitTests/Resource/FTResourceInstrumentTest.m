@@ -78,6 +78,7 @@
     // Put teardown code here. This method is called after the invocation of each test method in the class.
     [FTMobileAgent shutDown];
     [OHHTTPStubs removeAllStubs];
+    [FTNetworkMock registerUrlString:@""];
 }
 /** Tests that creating a shared session returns a non-nil object. */
 - (void)testSharedSession {

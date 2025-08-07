@@ -24,7 +24,7 @@
 #import "UIEvent+Mock.h"
 #import "FTDefaultUIKitViewTrackingHandler.h"
 #import "FTDefaultActionTrackingHandler.h"
-
+#import "FTDBDataCachePolicy.h"
 typedef FTRUMView* _Nullable (^FTViewTrackingBlock)(UIViewController *viewController);
 typedef FTRUMAction* _Nullable (^FTActionTrackingBlock)(UIView *view);
 typedef FTRUMAction* _Nullable (^FTLaunchActionTrackingBlock)(FTLaunchType type);
@@ -101,14 +101,17 @@ typedef FTRUMAction* _Nullable (^FTLaunchActionTrackingBlock)(FTLaunchType type)
 - (void)testDiscardNew{
     FTMobileConfig *config = [[FTMobileConfig alloc]initWithDatakitUrl:self.url];
     config.autoSync = NO;
-    config.enableSDKDebugLog = YES;
     FTRumConfig *rumConfig = [[FTRumConfig alloc]initWithAppid:self.appid];
     rumConfig.rumCacheLimitCount = 1000;
     rumConfig.rumDiscardType = FTRUMDiscard;
     [FTMobileAgent startWithConfigOptions:config];
     [[FTTrackerEventDBTool sharedManger] deleteAllDatas];
     [[FTMobileAgent sharedInstance] startRumWithConfigOptions:rumConfig];
-    for (int i = 0; i<10010; i++) {
+    XCTAssertTrue([[[FTTrackDataManager sharedInstance].dataCachePolicy valueForKey:@"rumCacheLimitCount"] intValue] == 10000);
+    XCTAssertTrue([[[FTTrackDataManager sharedInstance].dataCachePolicy valueForKey:@"rumDiscardNew"] boolValue] == YES);
+
+    [[FTTrackDataManager sharedInstance] setRUMCacheLimitCount:1000 discardNew:YES];
+    for (int i = 0; i<1001; i++) {
         FTRecordModel *model = [FTRecordModel new];
         model.op = FT_DATA_TYPE_RUM;
         model.data = [NSString stringWithFormat:@"testData%d",i];
@@ -118,21 +121,23 @@ typedef FTRUMAction* _Nullable (^FTLaunchActionTrackingBlock)(FTLaunchType type)
     NSInteger newCount =  [[FTTrackerEventDBTool sharedManger] getDatasCountWithType:FT_DATA_TYPE_RUM];
     FTRecordModel *model = [[[FTTrackerEventDBTool sharedManger] getFirstRecords:1 withType:FT_DATA_TYPE_RUM] firstObject];
     XCTAssertTrue([model.data isEqualToString:@"testData0"]);
-    XCTAssertTrue(newCount == 10000);
+    XCTAssertTrue(newCount == 1000);
 }
 
 - (void)testDiscardOldBulk{
     FTMobileConfig *config = [[FTMobileConfig alloc]initWithDatakitUrl:self.url];
     config.autoSync = NO;
-    config.enableSDKDebugLog = YES;
     FTRumConfig *rumConfig = [[FTRumConfig alloc]initWithAppid:self.appid];
     rumConfig.rumCacheLimitCount = 1000;
     rumConfig.rumDiscardType = FTRUMDiscardOldest;
     [FTMobileAgent startWithConfigOptions:config];
     [[FTTrackerEventDBTool sharedManger] deleteAllDatas];
     [[FTMobileAgent sharedInstance] startRumWithConfigOptions:rumConfig];
+    XCTAssertTrue([[[FTTrackDataManager sharedInstance].dataCachePolicy valueForKey:@"rumCacheLimitCount"] intValue] == 10000);
+    XCTAssertTrue([[[FTTrackDataManager sharedInstance].dataCachePolicy valueForKey:@"rumDiscardNew"] boolValue] == NO);
+    [[FTTrackDataManager sharedInstance] setRUMCacheLimitCount:1000 discardNew:NO];
 
-    for (int i = 0; i<10010; i++) {
+    for (int i = 0; i<1001; i++) {
         FTRecordModel *model = [FTRecordModel new];
         model.op = FT_DATA_TYPE_RUM;
         model.data = [NSString stringWithFormat:@"testData%d",i];
@@ -143,7 +148,7 @@ typedef FTRUMAction* _Nullable (^FTLaunchActionTrackingBlock)(FTLaunchType type)
     NSInteger newCount = [[FTTrackerEventDBTool sharedManger] getDatasCountWithType:FT_DATA_TYPE_RUM];
     FTRecordModel *model = [[[FTTrackerEventDBTool sharedManger] getFirstRecords:1 withType:FT_DATA_TYPE_RUM] firstObject];
     XCTAssertFalse([model.data isEqualToString:@"testData0"]);
-    XCTAssertTrue(newCount == 10000);
+    XCTAssertTrue(newCount == 1000);
 }
 - (void)testAddPkgInfo{
     FTMobileConfig *config = [[FTMobileConfig alloc]initWithDatakitUrl:self.url];

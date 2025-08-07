@@ -78,7 +78,8 @@
     [[FTExternalDataManager sharedManager] startAction:@"extensionClick1" actionType:@"click" property:nil];
     [tester waitForTimeInterval:0.1];
     [[FTExternalDataManager sharedManager] startAction:@"extensionClick2" actionType:@"click" property:nil];
-    [NSThread sleepForTimeInterval:2];
+    FTRUMManager *rumManager = [[FTExtensionManager sharedInstance] valueForKey:@"rumManager"];
+    [rumManager syncProcess];
     NSArray *datas = [[FTExtensionDataManager sharedInstance] readAllEventsWithGroupIdentifier:@"group.com.ft.widget.demo"];
     XCTAssertTrue(datas.count>olddatas.count);
     __block BOOL hasAction = NO;
