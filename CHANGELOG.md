@@ -1,3 +1,6 @@
+# 1.5.8-beta.1
+1. Same as 1.5.18-alpha.6
+---
 # 1.5.18-alpha.6
 1. Add custom RUM Launch Action handler via `FTRumConfig.actionTrackingHandler` 
 ---
