@@ -2,7 +2,7 @@
 1. Added support for RUM View/Action collection filtering and custom View/Action naming via `FTRumConfig.viewTrackingHandler` and `FTRumConfig.actionTrackingHandler`
 2. Added the `-updateViewLoadingTime:` method to support updating the loading time for the currently active RUM View
 3. Made `sdk_name` a mandatory basic field
-4. Fixed the conflict between WebView user scripts during data injection
+4. Fixed the UserScripts conflict issue in WebView data collection
 5. Fixed the thread-safety issue of SDK shutdown operations
 6. Fixed the crash caused by modifying the name of the main thread during Long task monitoring
 ---
