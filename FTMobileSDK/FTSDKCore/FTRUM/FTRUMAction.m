@@ -15,8 +15,8 @@
 -(instancetype)initWithActionName:(NSString *)actionName property:(NSDictionary *)property{
     self = [super init];
     if (self) {
-        _actionName = actionName;
-        _property = property;
+        _actionName = [actionName copy];
+        _property = [property copy];
     }
     return self;
 }

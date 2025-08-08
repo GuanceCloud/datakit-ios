@@ -15,8 +15,8 @@
 - (instancetype)initWithViewName:(NSString *)viewName property:(NSDictionary *)property{
     self = [super init];
     if (self) {
-        _viewName = viewName;
-        _property = property;
+        _viewName = [viewName copy];
+        _property = [property copy];
     }
     return self;
 }
