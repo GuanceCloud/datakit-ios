@@ -19,6 +19,8 @@
 #import "XCTestCase+Utils.h"
 #import "FTTrackDataManager.h"
 #import "FTLog+Private.h"
+#import "NSDate+FTUtil.h"
+
 @interface FTDataWriterWorker(Testing)
 @property (nonatomic, assign) long long processStartTime;
 - (void)checkLastProcessErrorSampled;
@@ -191,9 +193,9 @@
     NSArray *oldArray = [[FTTrackerEventDBTool sharedManger] getAllDatas];
 
     [writerManager isCacheWriter:YES];
-    [writerManager rumWrite:FT_RUM_SOURCE_VIEW tags:@{@"view_id":@"1"} fields:@{@"test":@"normal"} time:123];
+    [writerManager rumWrite:FT_RUM_SOURCE_VIEW tags:@{@"view_id":@"1"} fields:@{@"test":@"normal"} time:[NSDate ft_currentNanosecondTimeStamp]];
     [writerManager isCacheWriter:YES];
-    [writerManager rumWrite:FT_RUM_SOURCE_VIEW tags:@{@"view_id":@"2"} fields:@{@"test":@"cache"} time:123];
+    [writerManager rumWrite:FT_RUM_SOURCE_VIEW tags:@{@"view_id":@"2"} fields:@{@"test":@"cache"} time:[NSDate ft_currentNanosecondTimeStamp]];
     
     NSArray *newArray = [[FTTrackerEventDBTool sharedManger] getAllDatas];
     for (FTRecordModel *model in newArray) {

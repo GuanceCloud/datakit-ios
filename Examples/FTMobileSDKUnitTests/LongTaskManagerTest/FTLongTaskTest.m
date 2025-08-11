@@ -237,8 +237,8 @@
     }];
     [FTMobileAgent shutDown];
 }
-// longtask not end when user manually close SDK
-// Verify: no data added, no cache, no file
+// When the longtask has not been completed, the user manually call `+shutDown` method closes the SDK.
+// Verification: No data addition, no cache, no files, no crashes
 - (void)testShutdownWhenLongTaskNotEnd{
     [self initSDKWithEnableTrackAppANR:YES longTask:NO];
     FTLongTaskManager *longTaskManager = [[FTGlobalRumManager sharedInstance] valueForKey:@"longTaskManager"];

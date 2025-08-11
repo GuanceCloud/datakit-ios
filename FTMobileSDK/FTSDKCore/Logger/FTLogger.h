@@ -7,6 +7,7 @@
 //
 
 #import <Foundation/Foundation.h>
+#import "FTLoggerConfig.h"
 
 NS_ASSUME_NONNULL_BEGIN
 
@@ -52,6 +53,13 @@ NS_ASSUME_NONNULL_BEGIN
 ///   - status: log status
 ///   - property: custom properties (optional)
 - (void)log:(NSString *)content status:(NSString *)status property:(nullable NSDictionary *)property;
+
+/// Log input
+/// - Parameters:
+///   - content: log content, can be json string
+///   - statusType: log status
+///   - property: custom properties (optional)
+- (void)log:(NSString *)content statusType:(FTLogStatus)statusType property:(nullable NSDictionary *)property;
 @end
 
 /// Manage custom logs

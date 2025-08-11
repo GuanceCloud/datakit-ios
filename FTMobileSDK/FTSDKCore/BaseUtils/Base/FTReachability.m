@@ -155,7 +155,7 @@ static void FTReachabilityCallback(SCNetworkReachabilityRef target, SCNetworkRea
 #if TARGET_OS_IOS && !TARGET_OS_MACCATALYST
         _networkInfo = [FTReachability sharedNetworkInfo];
 #endif
-    _reachabilitySerialQueue = dispatch_queue_create("com.guance.reachability", NULL);
+    _reachabilitySerialQueue = dispatch_queue_create("com.ft.reachability", NULL);
     self.net = [self networkType];
 
     SCNetworkReachabilityContext    context = { 0, NULL, NULL, NULL, NULL };

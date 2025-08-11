@@ -22,7 +22,7 @@ NS_ASSUME_NONNULL_BEGIN
 
 - (void)disableWebView:(WKWebView *)webView;
 
-- (void)shutDown;
++ (void)shutDown;
 @end
 NS_ASSUME_NONNULL_END
 #endif

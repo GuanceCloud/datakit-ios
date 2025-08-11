@@ -18,7 +18,10 @@
 #import "FTBaseInfoHandler.h"
 #import "NSString+FTAdd.h"
 #import "FTConstants.h"
+#import "FTLogger.h"
 #import "FTMobileConfig+Private.h"
+#import "FTLoggerConfig+Private.h"
+#import "FTRumConfig+Private.h"
 #import "FTEnumConstant.h"
 #import "FTLogger+Private.h"
 @interface FTExtensionManager ()<FTRUMDataWriteProtocol,FTLoggerDataWriteProtocol>
@@ -73,7 +76,7 @@ static FTExtensionManager *sharedInstance = nil;
     }
     if(loggerConfig){
         self.loggerConfig = loggerConfig;
-        [FTLogger startWithLoggerConfig:loggerConfig writer:self];
+        [[FTLogger sharedInstance] startWithLoggerConfig:loggerConfig writer:self];
         [FTLogger sharedInstance].linkRumDataProvider = self.rumManager;
     }
 }

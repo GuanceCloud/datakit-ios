@@ -49,7 +49,7 @@ static const NSTimeInterval kInitialRetryDelay = 0.5; // Initial 500ms delay
         _syncSleepTime = syncSleepTime;
         _httpClient =[[FTHTTPClient alloc]initWithTimeoutIntervalForRequest:syncPageSize>30?syncPageSize:30];
         dispatch_queue_attr_t attributes = dispatch_queue_attr_make_with_qos_class(DISPATCH_QUEUE_SERIAL, QOS_CLASS_UTILITY, 0);
-        _networkQueue = dispatch_queue_create("com.guance.network", attributes);
+        _networkQueue = dispatch_queue_create("com.ft.network", attributes);
     }
     return self;
 }

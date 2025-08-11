@@ -33,10 +33,9 @@
 #import "FTCrash.h"
 #import "FTFatalErrorContext.h"
 #import "FTModuleManager.h"
-@interface FTGlobalRumManager ()<FTRunloopDetectorDelegate,FTAppLifeCycleDelegate,FTAppLaunchDataDelegate>
+@interface FTGlobalRumManager ()<FTRunloopDetectorDelegate,FTAppLifeCycleDelegate>
 @property (nonatomic, strong) FTRumConfig *rumConfig;
 @property (nonatomic, strong) FTRUMDependencies *dependencies;
-@property (nonatomic, strong) FTAppLaunchTracker *launchTracker;
 @property (nonatomic, strong) FTRUMMonitor *monitor;
 @property (nonatomic, strong) FTLongTaskManager *longTaskManager;
 @end
@@ -47,12 +46,19 @@
 #endif
 @implementation FTGlobalRumManager
 static FTGlobalRumManager *sharedInstance = nil;
-static dispatch_once_t onceToken;
+static NSObject *sharedInstanceLock;
++ (void)initialize{
+    if (self == [FTGlobalRumManager class]) {
+        sharedInstanceLock = [[NSObject alloc] init];
+    }
+}
 + (instancetype)sharedInstance {
-    dispatch_once(&onceToken, ^{
-        sharedInstance = [[super allocWithZone:NULL] init];
-    });
-    return sharedInstance;
+    @synchronized(sharedInstanceLock) {
+        if(!sharedInstance){
+            sharedInstance = [[super allocWithZone:NULL] init];
+        }
+        return sharedInstance;
+    }
 }
 -(void)setRumConfig:(FTRumConfig *)rumConfig writer:(id<FTRUMDataWriteProtocol>)writer{
     _rumConfig = rumConfig;
@@ -66,12 +72,8 @@ static dispatch_once_t onceToken;
     dependencies.appId = rumConfig.appid;
     dependencies.fatalErrorContext = [FTFatalErrorContext new];
     self.dependencies = dependencies;
-    self.rumManager = [[FTRUMManager alloc]initWithRumDependencies:dependencies];
-    [[FTAutoTrackHandler sharedInstance]startWithTrackView:rumConfig.enableTraceUserView action:rumConfig.enableTraceUserAction];
-    [FTAutoTrackHandler sharedInstance].addRumDatasDelegate = self.rumManager;
-    if(rumConfig.enableTraceUserAction){
-        self.launchTracker = [[FTAppLaunchTracker alloc]initWithDelegate:self];
-    }
+    self.rumManager = [[FTRUMManager alloc]initWithRumDependencies:self.dependencies];
+    [[FTAutoTrackHandler sharedInstance] startWithTrackView:rumConfig.enableTraceUserView action:rumConfig.enableTraceUserAction addRumDatasDelegate:self.rumManager viewHandler:rumConfig.viewTrackingHandler actionHandler:rumConfig.actionTrackingHandler];
     [[FTAppLifeCycle sharedInstance] addAppLifecycleDelegate:self];
     if(rumConfig.enableTrackAppCrash){
         [[FTCrash shared] addErrorDataDelegate:self.rumManager];
@@ -135,13 +137,6 @@ static dispatch_once_t onceToken;
 - (void)anrStackDetected:(NSString*)slowStack time:(nonnull NSDate *)time{
     [self.rumManager addErrorWithType:@"anr_error" message:@"ios_anr" stack:slowStack date:time];
 }
-#pragma mark ========== RUM-Action: App Launch ==========
--(void)ftAppHotStart:(NSDate *)launchTime duration:(NSNumber *)duration{
-    [self.rumManager addLaunch:FTLaunchHot launchTime:launchTime duration:duration];
-}
--(void)ftAppColdStart:(NSDate *)launchTime duration:(NSNumber *)duration isPreWarming:(BOOL)isPreWarming{
-    [self.rumManager addLaunch:isPreWarming?FTLaunchWarm:FTLaunchCold launchTime:launchTime duration:duration];
-}
 #pragma mark ========== RUM-ERROR appState: App Life Cycle ==========
 -(void)applicationWillEnterForeground{
     self.rumManager.appState = FTAppStateStartUp;
@@ -159,10 +154,11 @@ static dispatch_once_t onceToken;
     [[FTAutoTrackHandler sharedInstance] shutDown];
     [_longTaskManager shutDown];
 #if !TARGET_OS_TV
-    [[FTWKWebViewHandler sharedInstance] shutDown];
+    [FTWKWebViewHandler shutDown];
 #endif
-    onceToken = 0;
-    sharedInstance = nil;
+    @synchronized(sharedInstanceLock) {
+        sharedInstance = nil;
+    }
     FTInnerLogInfo(@"[RUM] SHUT DOWN");
 }
 @end

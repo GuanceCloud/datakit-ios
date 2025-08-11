@@ -22,6 +22,7 @@
 #import "FTURLSessionInterceptor.h"
 #import "FTURLSessionInterceptor+Private.h"
 #import "FTTraceContext.h"
+#import "FTNetworkMock.h"
 typedef NS_ENUM(NSUInteger,TestSessionRequestMethod){
     DataTaskWithRequestCompletionHandler,
     DataTaskWithRequest,
@@ -36,11 +37,13 @@ typedef NS_ENUM(NSUInteger,TestSessionRequestMethod){
 
 - (void)setUp {
     // Put setup code here. This method is called before the invocation of each test method in the class.
+    [FTNetworkMock networkOHHTTPStubs];
 }
 
 - (void)tearDown {
     // Put teardown code here. This method is called after the invocation of each test method in the class.
     [FTMobileAgent shutDown];
+    [OHHTTPStubs removeAllStubs];
     
 }
 - (void)sdkNormalSet{
@@ -159,7 +162,7 @@ typedef NS_ENUM(NSUInteger,TestSessionRequestMethod){
     [self waitForExpectationsWithTimeout:30 handler:^(NSError *error) {
         XCTAssertNil(error);
     }];
-    [NSThread sleepForTimeInterval:0.5];
+    [NSThread sleepForTimeInterval:0.1];
     [[FTGlobalRumManager sharedInstance].rumManager syncProcess];
     NSArray *newArray = [[FTTrackerEventDBTool sharedManger] getFirstRecords:10 withType:FT_DATA_TYPE_RUM];
     __block BOOL hasResource = NO;
@@ -187,7 +190,7 @@ typedef NS_ENUM(NSUInteger,TestSessionRequestMethod){
     [self waitForExpectationsWithTimeout:30 handler:^(NSError *error) {
         XCTAssertNil(error);
     }];
-    [NSThread sleepForTimeInterval:0.5];
+    [NSThread sleepForTimeInterval:0.1];
     [[FTGlobalRumManager sharedInstance].rumManager syncProcess];
     NSArray *newArray2 = [[FTTrackerEventDBTool sharedManger] getFirstRecords:10 withType:FT_DATA_TYPE_RUM];
     __block BOOL hasResource2 = NO;
@@ -224,7 +227,7 @@ typedef NS_ENUM(NSUInteger,TestSessionRequestMethod){
     [self waitForExpectationsWithTimeout:30 handler:^(NSError *error) {
         XCTAssertNil(error);
     }];
-    [NSThread sleepForTimeInterval:0.5];
+    [NSThread sleepForTimeInterval:0.1];
     [[FTGlobalRumManager sharedInstance].rumManager syncProcess];
     NSArray *newArray = [[FTTrackerEventDBTool sharedManger] getFirstRecords:10 withType:FT_DATA_TYPE_RUM];
     __block BOOL hasResource = NO;
@@ -253,7 +256,7 @@ typedef NS_ENUM(NSUInteger,TestSessionRequestMethod){
     [self waitForExpectationsWithTimeout:30 handler:^(NSError *error) {
         XCTAssertNil(error);
     }];
-    [NSThread sleepForTimeInterval:0.5];
+    [NSThread sleepForTimeInterval:0.1];
     [[FTGlobalRumManager sharedInstance].rumManager syncProcess];
     NSArray *newArray2 = [[FTTrackerEventDBTool sharedManger] getFirstRecords:10 withType:FT_DATA_TYPE_RUM];
     __block BOOL hasResource2 = NO;
@@ -308,7 +311,7 @@ typedef NS_ENUM(NSUInteger,TestSessionRequestMethod){
     [self waitForExpectationsWithTimeout:30 handler:^(NSError *error) {
         XCTAssertNil(error);
     }];
-    [NSThread sleepForTimeInterval:0.5];
+    [NSThread sleepForTimeInterval:0.1];
     [[FTGlobalRumManager sharedInstance].rumManager syncProcess];
     NSArray *newArray = [[FTTrackerEventDBTool sharedManger] getFirstRecords:10 withType:FT_DATA_TYPE_RUM];
     __block BOOL hasResource = NO;
@@ -373,7 +376,7 @@ typedef NS_ENUM(NSUInteger,TestSessionRequestMethod){
     [self waitForExpectationsWithTimeout:30 handler:^(NSError *error) {
         XCTAssertNil(error);
     }];
-    [NSThread sleepForTimeInterval:0.5];
+    [NSThread sleepForTimeInterval:0.1];
     [[FTGlobalRumManager sharedInstance].rumManager syncProcess];
     NSArray *newArray = [[FTTrackerEventDBTool sharedManger] getFirstRecords:10 withType:FT_DATA_TYPE_RUM];
     __block BOOL hasResource = NO;
@@ -416,7 +419,7 @@ typedef NS_ENUM(NSUInteger,TestSessionRequestMethod){
     [self waitForExpectationsWithTimeout:30 handler:^(NSError *error) {
         XCTAssertNil(error);
     }];
-    [NSThread sleepForTimeInterval:0.5];
+    [NSThread sleepForTimeInterval:0.1];
     [[FTGlobalRumManager sharedInstance].rumManager syncProcess];
     NSArray *newArray = [[FTTrackerEventDBTool sharedManger] getAllDatas];
     __block NSInteger hasResourceCount = 0;
@@ -481,7 +484,7 @@ typedef NS_ENUM(NSUInteger,TestSessionRequestMethod){
     [self waitForExpectationsWithTimeout:5 handler:^(NSError *error) {
         XCTAssertNil(error);
     }];
-    [NSThread sleepForTimeInterval:0.5];
+    [NSThread sleepForTimeInterval:0.1];
     [[FTGlobalRumManager sharedInstance].rumManager syncProcess];
     NSArray *newArray = [[FTTrackerEventDBTool sharedManger] getFirstRecords:10 withType:FT_DATA_TYPE_RUM];
     __block NSInteger hasResourceCount = 0;

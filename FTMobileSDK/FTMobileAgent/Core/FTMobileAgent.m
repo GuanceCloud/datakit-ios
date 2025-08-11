@@ -30,6 +30,8 @@
 #import "FTURLSessionInstrumentation.h"
 #import "FTEnumConstant.h"
 #import "FTMobileConfig+Private.h"
+#import "FTLoggerConfig+Private.h"
+#import "FTRumConfig+Private.h"
 #import "FTLogger+Private.h"
 #import "NSDictionary+FTCopyProperties.h"
 #import "FTTrackerEventDBTool.h"
@@ -44,24 +46,33 @@
 @property (nonatomic, strong) FTMobileConfig *sdkConfig;
 @end
 @implementation FTMobileAgent
-
+static NSObject *sharedInstanceLock;
 static FTMobileAgent *sharedInstance = nil;
-static dispatch_once_t onceToken;
++ (void)initialize{
+    if (self == [FTMobileAgent class]) {
+        sharedInstanceLock = [[NSObject alloc] init];
+    }
+}
 #pragma mark --------- Initialize config settings ----------
 + (void)startWithConfigOptions:(FTMobileConfig *)configOptions{
     NSAssert ((strcmp(dispatch_queue_get_label(DISPATCH_CURRENT_QUEUE_LABEL), dispatch_queue_get_label(dispatch_get_main_queue())) == 0),@"The SDK must be initialized on the main thread, otherwise unpredictable issues may occur (such as missing launch events).");
     
     NSAssert((configOptions.datakitUrl.length!=0||(configOptions.datawayUrl.length!=0&&configOptions.clientToken.length!=0)), @"Please correctly configure datakit or dataway write address");
-    dispatch_once(&onceToken, ^{
-        sharedInstance = [[FTMobileAgent alloc] initWithConfig:configOptions];
-    });
+    @synchronized(sharedInstanceLock) {
+        if (!sharedInstance) {
+            sharedInstance = [[FTMobileAgent alloc] initWithConfig:configOptions];
+        }
+    }
 }
 // Singleton
 + (instancetype)sharedInstance {
-    NSAssert(sharedInstance, @"Please use startWithConfigOptions: to initialize the SDK first");
-    return sharedInstance;
+    @synchronized(sharedInstanceLock) {
+        NSAssert(sharedInstance, @"Please use `+startWithConfigOptions:` to initialize the SDK first");
+        return sharedInstance;
+    }
 }
-- (instancetype)initWithConfig:(FTMobileConfig *)config{
+
+- (instancetype)initWithConfig:(FTMobileConfig *)config {
     @try {
         self = [super init];
         if (self) {
@@ -129,13 +140,13 @@ static dispatch_once_t onceToken;
     [[FTLogger sharedInstance] updateWithRemoteConfiguration:configuration];
 }
 + (void)updateRemoteConfig{
-    if (onceToken == 0 && sharedInstance == nil) {
+    if (![self checkInstallState]) {
         return;
     }
     [[FTRemoteConfigManager sharedInstance] updateRemoteConfig];
 }
 + (void)updateRemoteConfigWithMiniUpdateInterval:(int)miniUpdateInterval callback:(void (^)(BOOL, NSDictionary<NSString *,id> * _Nullable))callback{
-    if (onceToken == 0 && sharedInstance == nil) {
+    if (![self checkInstallState]) {
         callback(NO,nil);
         return;
     }
@@ -193,7 +204,7 @@ static dispatch_once_t onceToken;
     [[FTPresetProperty sharedInstance] setLogGlobalContext:loggerConfig.globalContext];
     [[FTTrackDataManager sharedInstance] setLogCacheLimitCount:loggerConfig.logCacheLimitCount discardNew:loggerConfig.discardType == FTDiscard];
     [[FTExtensionDataManager sharedInstance] writeLoggerConfig:[loggerConfig convertToDictionary]];
-    [FTLogger startWithLoggerConfig:loggerConfig writer:[FTTrackDataManager sharedInstance].dataWriterWorker];
+    [[FTLogger sharedInstance] startWithLoggerConfig:loggerConfig writer:[FTTrackDataManager sharedInstance].dataWriterWorker];
     [FTLogger sharedInstance].linkRumDataProvider = [FTGlobalRumManager sharedInstance].rumManager;
     FTInnerLogInfo(@"Init Logger Config Success: \n%@",loggerConfig.debugDescription);
 }
@@ -208,7 +219,12 @@ static dispatch_once_t onceToken;
     [[FTExtensionDataManager sharedInstance] writeTraceConfig:[traceConfig convertToDictionary]];
     FTInnerLogInfo(@"Init Trace Config Success: \n%@",traceConfig.debugDescription);
 }
-
+#pragma mark ==
++ (BOOL)checkInstallState{
+    @synchronized(sharedInstanceLock) {
+        return sharedInstance != nil;
+    }
+}
 #pragma mark ========== public method ==========
 - (void)isIntakeUrl:(BOOL(^)(NSURL *url))handler{
     if(handler){
@@ -238,14 +254,12 @@ static dispatch_once_t onceToken;
         return;
     }
     NSDictionary *safeExtra = [extra ft_deepCopy];
-    [[FTPresetProperty sharedInstance].userHelper concurrentWrite:^(FTUserInfo * _Nonnull value) {
-        [value updateUser:Id name:userName email:userEmail extra:safeExtra];
-    }];
+    [[FTPresetProperty sharedInstance] updateUser:Id name:userName email:userEmail extra:safeExtra];
     FTInnerLogInfo(@"Bind User ID : %@ , Name : %@ , Email : %@ , Extra : %@",Id,userName,userEmail,safeExtra);
 }
 + (void)appendGlobalContext:(NSDictionary <NSString*,id>*)context{
     @try {
-        if (onceToken == 0 && sharedInstance == nil) {
+        if (![self checkInstallState]) {
             return;
         }
         if(!context){
@@ -260,7 +274,7 @@ static dispatch_once_t onceToken;
 }
 + (void)appendRUMGlobalContext:(NSDictionary <NSString*,id>*)context{
     @try {
-        if (onceToken == 0 && sharedInstance == nil) {
+        if (![self checkInstallState]) {
             return;
         }
         if(!context){
@@ -275,7 +289,7 @@ static dispatch_once_t onceToken;
 }
 + (void)appendLogGlobalContext:(NSDictionary <NSString*,id>*)context{
     @try {
-        if (onceToken == 0 && sharedInstance == nil) {
+        if (![self checkInstallState]) {
             return;
         }
         if(!context){
@@ -293,9 +307,7 @@ static dispatch_once_t onceToken;
     [self unbindUser];
 }
 - (void)unbindUser{
-    [[FTPresetProperty sharedInstance].userHelper concurrentWrite:^(FTUserInfo * _Nonnull value) {
-        [value clearUser];
-    }];
+    [[FTPresetProperty sharedInstance] clearUser];
     FTInnerLogInfo(@"Unbind User");
 }
 - (void)trackEventFromExtensionWithGroupIdentifier:(NSString *)groupIdentifier completion:(void (^)(NSString *groupIdentifier, NSArray *events)) completion{
@@ -352,21 +364,20 @@ static dispatch_once_t onceToken;
 }
 #pragma mark - SDK shutdown
 - (void)shutDown{
-    [FTNetworkInfoManager shutDown];
-    [[FTGlobalRumManager sharedInstance] shutDown];
-    [[FTLogger sharedInstance] shutDown];
-    [[FTURLSessionInstrumentation sharedInstance] shutDown];
-    [[FTPresetProperty sharedInstance] shutDown];
-    [[FTRemoteConfigManager sharedInstance] shutDown];
-    onceToken = 0;
-    sharedInstance = nil;
-    [[NSNotificationCenter defaultCenter] removeObserver:self];
-    [[FTTrackDataManager sharedInstance] shutDown];
-    FTInnerLogInfo(@"[SDK] SHUT DOWN");
-    [[FTLog sharedInstance] shutDown];
+    @synchronized(sharedInstanceLock) {
+        [[FTLogger sharedInstance] shutDown];
+        [[FTGlobalRumManager sharedInstance] shutDown];
+        [[FTURLSessionInstrumentation sharedInstance] shutDown];
+        [[FTRemoteConfigManager sharedInstance] shutDown];
+        [FTTrackDataManager shutDown];
+        [[FTPresetProperty sharedInstance] shutDown];
+        FTInnerLogInfo(@"[SDK] SHUT DOWN");
+        [[FTLog sharedInstance] shutDown];
+        sharedInstance = nil;
+    }
 }
 + (void)shutDown{
-    if (onceToken == 0 && sharedInstance == nil) {
+    if (sharedInstance == nil) {
         return;
     }
 #pragma clang diagnostic push

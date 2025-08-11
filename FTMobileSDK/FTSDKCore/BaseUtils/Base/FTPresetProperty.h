@@ -16,15 +16,13 @@ NS_ASSUME_NONNULL_BEGIN
 /// Preset properties
 @interface FTPresetProperty : NSObject
 
-/// Read-write protected user information
-@property (nonatomic, strong) FTReadWriteHelper<FTUserInfo*> *userHelper;
 @property (nonatomic, strong, readonly) NSDictionary *loggerTags;
-@property (nonatomic, strong, readonly) NSMutableDictionary *rumTags;
+@property (nonatomic, strong, readonly) NSDictionary *rumTags;
 @property (nonatomic, strong, readonly) NSDictionary *rumStaticFields;
 @property (nonatomic, strong, readonly) NSMutableDictionary *sessionReplayTags;
 
 /// Set data modifier
-@property (nonatomic, copy) FTLineDataModifier lineDataModifier;
+@property (nonatomic, copy, nullable) FTLineDataModifier lineDataModifier;
 @property (nonatomic, copy) NSString *sessionReplaySource;
 /// Device name
 + (NSString *)deviceInfo;
@@ -65,6 +63,9 @@ NS_ASSUME_NONNULL_BEGIN
 - (NSArray<NSDictionary *> *)applyLineModifier:(NSString *)measurement
                                           tags:(NSDictionary *)tags
                                         fields:(NSDictionary *)fields;
+-(void)updateUser:(NSString *)Id name:(nullable NSString *)name email:(nullable NSString *)email extra:(nullable NSDictionary *)extra;
+
+-(void)clearUser;
 
 - (void)shutDown;
 @end

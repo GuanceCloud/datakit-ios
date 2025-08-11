@@ -21,6 +21,8 @@
 #import "FTRUMManager.h"
 #import "FTMobileAgentVersion.h"
 #import "FTMobileConfig+Private.h"
+#import "FTLoggerConfig+Private.h"
+#import "FTRumConfig+Private.h"
 #import "FTWKWebViewHandler+Private.h"
 #import "FTModelHelper.h"
 #import "FTLog+Private.h"

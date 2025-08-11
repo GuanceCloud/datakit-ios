@@ -32,18 +32,25 @@ void *FTInterceptorQueueIdentityKey = &FTInterceptorQueueIdentityKey;
 @synthesize sessionTaskErrorFilter = _sessionTaskErrorFilter;
 
 static FTURLSessionInterceptor *sharedInstance = nil;
-static dispatch_once_t onceToken;
+static NSObject *sharedInstanceLock;
++ (void)initialize{
+    if (self == [FTURLSessionInterceptor class]) {
+        sharedInstanceLock = [[NSObject alloc] init];
+    }
+}
 + (instancetype)shared{
-    dispatch_once(&onceToken, ^{
-        sharedInstance = [[super allocWithZone:NULL] init];
-    });
-    return sharedInstance;
+    @synchronized(sharedInstanceLock) {
+        if (!sharedInstance) {
+            sharedInstance = [[super allocWithZone:NULL] init];
+        }
+        return sharedInstance;
+    }
 }
 -(instancetype)init{
     self = [super init];
     if (self) {
         _traceHandlers = [[FTReadWriteHelper alloc]initWithValue:[NSMutableDictionary new]];
-        _queue = dispatch_queue_create("com.guance.network.interceptor", DISPATCH_QUEUE_SERIAL);
+        _queue = dispatch_queue_create("com.ft.network.interceptor", DISPATCH_QUEUE_SERIAL);
         dispatch_queue_set_specific(_queue, FTInterceptorQueueIdentityKey, &FTInterceptorQueueIdentityKey, NULL);
 
     }
@@ -382,7 +389,8 @@ static dispatch_once_t onceToken;
     if(dispatch_get_specific(FTInterceptorQueueIdentityKey)==NULL){
         dispatch_sync(self.queue, ^{});
     }
-    onceToken = 0;
-    sharedInstance =nil;
+    @synchronized(sharedInstanceLock) {
+        sharedInstance =nil;
+    }    
 }
 @end

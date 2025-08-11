@@ -33,8 +33,9 @@ static void *const kFTTableViewDidSelect = (void *)&kFTTableViewDidSelect;
                                  FTSWReplacement({
                                                      if (tableView && indexPath) {
                                                          UITableViewCell *cell = [tableView cellForRowAtIndexPath:indexPath];
-                                                         if([FTAutoTrackHandler sharedInstance].addRumDatasDelegate && [[FTAutoTrackHandler sharedInstance].addRumDatasDelegate respondsToSelector:@selector(startAction:actionType:property:)]){
-                                                             [[FTAutoTrackHandler sharedInstance].addRumDatasDelegate startAction:cell.ft_actionName actionType:FT_KEY_ACTION_TYPE_CLICK property:nil];
+                                                         id<FTUIEventHandler> actionHandler = [FTAutoTrackHandler sharedInstance].actionHandler;
+                                                         if(actionHandler  && [actionHandler respondsToSelector:@selector(notify_sendAction:)]){
+                                                             [actionHandler notify_sendAction:cell];
                                                          }
                                                      }
                                                      FTSWCallOriginal(tableView, indexPath);
@@ -67,8 +68,9 @@ static void *const kFTTableViewDidSelect = (void *)&kFTTableViewDidSelect;
                                  FTSWReplacement({
                                                      if (collectionView && indexPath) {
                                                          UICollectionViewCell *cell = [collectionView cellForItemAtIndexPath:indexPath];
-                                                         if([FTAutoTrackHandler sharedInstance].addRumDatasDelegate && [[FTAutoTrackHandler sharedInstance].addRumDatasDelegate respondsToSelector:@selector(startAction:actionType:property:)]){
-                                                             [[FTAutoTrackHandler sharedInstance].addRumDatasDelegate startAction:cell.ft_actionName actionType:FT_KEY_ACTION_TYPE_CLICK property:nil];
+                                                         id<FTUIEventHandler> actionHandler = [FTAutoTrackHandler sharedInstance].actionHandler;
+                                                         if(actionHandler  && [actionHandler respondsToSelector:@selector(notify_sendAction:)]){
+                                                             [actionHandler notify_sendAction:cell];
                                                          }
                                                      }
                                                      FTSWCallOriginal(collectionView, indexPath);

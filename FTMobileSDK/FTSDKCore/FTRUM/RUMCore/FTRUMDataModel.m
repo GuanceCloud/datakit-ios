@@ -46,6 +46,17 @@
     return self;
 }
 @end
+
+@implementation FTRUMViewLoadingModel
+-(instancetype)initWithDuration:(NSNumber *)duration{
+    self = [super initWithType:FTRUMDataViewUpdateLoadingTime time:[NSDate date]];
+    if (self) {
+        self.duration = duration;
+    }
+    return self;
+}
+
+@end
 @implementation FTRUMActionModel
 
 -(instancetype)initWithActionName:(NSString *)actionName actionType:(nonnull NSString *)actionType{

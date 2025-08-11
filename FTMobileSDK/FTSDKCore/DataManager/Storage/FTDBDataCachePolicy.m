@@ -35,7 +35,7 @@
     self = [super init];
     if(self){
         _enableLimitWithDbSize = NO;
-        _logCacheQueue = dispatch_queue_create("com.guance.logger.write", DISPATCH_QUEUE_SERIAL);
+        _logCacheQueue = dispatch_queue_create("com.ft.logger.write", DISPATCH_QUEUE_SERIAL);
         _logSemaphore = dispatch_semaphore_create(0);
         _semaphoreWaiting = NO;
         pthread_mutex_init(&(self->_lock), NULL);

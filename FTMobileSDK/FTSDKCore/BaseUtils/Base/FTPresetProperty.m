@@ -63,28 +63,42 @@
 }
 @end
 @interface FTPresetProperty ()
+@property (nonatomic, copy) FTDataModifier dataModifier;
+/// device basic info
 @property (nonatomic, strong) MobileDevice *mobileDevice;
 @property (nonatomic, strong) NSDictionary *baseCommonPropertyTags;
-@property (nonatomic, strong, readwrite) NSDictionary *loggerTags;
-@property (nonatomic, strong, readwrite) NSMutableDictionary *rumTags;
-@property (nonatomic, strong, readwrite) NSDictionary *rumStaticFields;
-@property (nonatomic, strong, readwrite) NSMutableDictionary *rumWebViewTags;
+@property (nonatomic, strong) NSMutableDictionary *dynamicGlobalContext;
 
+@property (nonatomic, strong, readwrite) NSDictionary *loggerTags;
+@property (nonatomic, strong) NSMutableDictionary *dynamicLogGlobalContext;
+
+@property (nonatomic, strong, readwrite) NSDictionary *rumTags;
 @property (nonatomic, strong, readwrite) NSMutableDictionary *sessionReplayTags;
 @property (nonatomic, strong) NSDictionary *rumGlobalContext;
-@property (nonatomic, strong) FTReadWriteHelper<NSMutableDictionary*> *globalContextHelper;
-@property (nonatomic, strong) FTReadWriteHelper<NSMutableDictionary*> *globalRUMContextHelper;
-@property (nonatomic, strong) FTReadWriteHelper<NSMutableDictionary*> *globalLogContextHelper;
+@property (nonatomic, strong) NSMutableDictionary *dynamicRUMGlobalContext;
+@property (nonatomic, strong, readwrite) NSDictionary *rumStaticFields;
+@property (nonatomic, copy) NSString *rumCustomKeys;
+@property (nonatomic, strong) FTUserInfo *userInfo;
 
-@property (nonatomic, copy) FTDataModifier dataModifier;
-
-
-@property (nonatomic, copy) NSString *rum_custom_keys;
+@property (nonatomic, strong) dispatch_queue_t concurrentQueue;
 @end
 @implementation FTPresetProperty
-static FTPresetProperty *sharedInstance = nil;
-static dispatch_once_t onceToken;
+@synthesize baseCommonPropertyTags = _baseCommonPropertyTags;
+@synthesize rumGlobalContext = _rumGlobalContext;
+@synthesize loggerTags = _loggerTags;
+@synthesize rumStaticFields = _rumStaticFields;
+@synthesize dataModifier = _dataModifier;
+@synthesize lineDataModifier = _lineDataModifier;
+@synthesize rumCustomKeys = _rumCustomKeys;
+@synthesize rumTags = _rumTags;
+@synthesize dynamicGlobalContext = _dynamicGlobalContext;
+@synthesize dynamicRUMGlobalContext = _dynamicRUMGlobalContext;
+@synthesize dynamicLogGlobalContext = _dynamicLogGlobalContext;
+@synthesize userInfo = _userInfo;
+
 + (instancetype)sharedInstance{
+    static dispatch_once_t onceToken;
+    static FTPresetProperty *sharedInstance = nil;
     dispatch_once(&onceToken, ^{
         sharedInstance = [[FTPresetProperty alloc]init];
     });
@@ -95,14 +109,16 @@ static dispatch_once_t onceToken;
     if (self){
         _sessionReplaySource = @"ios";
         _mobileDevice = [[MobileDevice alloc]init];
-        _rumTags = [NSMutableDictionary dictionary];
+        _concurrentQueue = dispatch_queue_create("com.ft.readwrite", DISPATCH_QUEUE_CONCURRENT);
         _sessionReplayTags = [NSMutableDictionary dictionary];
-        _userHelper = [[FTReadWriteHelper alloc]initWithValue:[FTUserInfo new]];
-        _globalContextHelper = [[FTReadWriteHelper alloc]initWithValue:[NSMutableDictionary new]];
-        _globalRUMContextHelper = [[FTReadWriteHelper alloc]initWithValue:[NSMutableDictionary new]];
-        _globalLogContextHelper = [[FTReadWriteHelper alloc]initWithValue:[NSMutableDictionary new]];
     }
     return self;
+}
+- (void)start{
+    self.userInfo = [FTUserInfo new];
+    self.dynamicGlobalContext = [NSMutableDictionary new];
+    self.dynamicLogGlobalContext = [NSMutableDictionary new];
+    self.dynamicRUMGlobalContext = [NSMutableDictionary new];
 }
 // sdkConfig
 - (void)startWithVersion:(NSString *)version
@@ -111,15 +127,19 @@ static dispatch_once_t onceToken;
                  service:(NSString *)service
            globalContext:(NSDictionary *)globalContext
                  pkgInfo:(NSDictionary *)pkgInfo{
+    [self start];
     NSMutableDictionary *dict = [NSMutableDictionary dictionary];
     [dict setValue:[self getApplicationUUID] forKey:FT_APPLICATION_UUID];
     [dict setValue:self.mobileDevice.deviceUUID forKey:FT_COMMON_PROPERTY_DEVICE_UUID];
     [dict setValue:service forKey:FT_KEY_SERVICE];
     [dict setValue:version forKey:FT_VERSION];
     [dict setValue:env forKey:FT_ENV];
-    [dict addEntriesFromDictionary:globalContext];
     [dict setValue:pkgInfo forKey:FT_SDK_PKG_INFO];
     [dict setValue:sdkVersion forKey:FT_SDK_VERSION];
+    [dict setValue:FT_SDK_NAME_VALUE forKey:FT_SDK_NAME];
+    if (globalContext) {
+        [dict addEntriesFromDictionary:globalContext];
+    }
     NSDictionary *newDict = [self applyModifier:dict];
     
     [_sessionReplayTags setValue:version forKey:FT_VERSION];
@@ -128,15 +148,176 @@ static dispatch_once_t onceToken;
     [_sessionReplayTags setValue:FT_IOS_SDK_NAME forKey:FT_SDK_NAME];
     [_sessionReplayTags setValue:sdkVersion forKey:FT_SDK_VERSION];
 
-    _baseCommonPropertyTags = newDict;
+    self.baseCommonPropertyTags = newDict;
 }
+#pragma mark ----property setter/getter thread safe ----
+-(void)setBaseCommonPropertyTags:(NSDictionary *)baseCommonPropertyTags{
+    dispatch_barrier_async(self.concurrentQueue, ^{
+        self->_baseCommonPropertyTags = baseCommonPropertyTags;
+    });
+}
+-(NSDictionary *)baseCommonPropertyTags{
+    __block NSDictionary *obj;
+    dispatch_sync(self.concurrentQueue, ^{
+        obj = [self->_baseCommonPropertyTags copy];
+    });
+    return obj;
+}
+-(void)setRumGlobalContext:(NSDictionary *)rumGlobalContext{
+    dispatch_barrier_async(self.concurrentQueue, ^{
+        self->_rumGlobalContext = rumGlobalContext;
+    });
+}
+-(NSDictionary *)rumGlobalContext{
+    __block NSDictionary *obj;
+    dispatch_sync(self.concurrentQueue, ^{
+        obj = [self->_rumGlobalContext copy];
+    });
+    return obj;
+}
+-(void)setLoggerTags:(NSDictionary *)loggerTags{
+    dispatch_barrier_async(self.concurrentQueue, ^{
+        self->_loggerTags = loggerTags;
+    });
+}
+-(NSDictionary *)loggerTags{
+    __block NSDictionary *obj;
+    dispatch_sync(self.concurrentQueue, ^{
+        obj = [self->_loggerTags copy];
+    });
+    return obj;
+}
+-(void)setRumStaticFields:(NSDictionary *)rumStaticFields{
+    dispatch_barrier_async(self.concurrentQueue, ^{
+        self->_rumStaticFields = rumStaticFields;
+    });
+}
+-(NSDictionary *)rumStaticFields{
+    __block NSDictionary *obj;
+    dispatch_sync(self.concurrentQueue, ^{
+        obj = [self->_rumStaticFields copy];
+    });
+    return obj;
+}
+-(void)setDataModifier:(FTDataModifier)dataModifier{
+    dispatch_barrier_async(self.concurrentQueue, ^{
+        self->_dataModifier = dataModifier;
+    });
+}
+-(FTDataModifier)dataModifier{
+    __block FTDataModifier obj;
+    dispatch_sync(self.concurrentQueue, ^{
+        obj = [self->_dataModifier copy];
+    });
+    return obj;
+}
+-(void)setLineDataModifier:(FTLineDataModifier)lineDataModifier{
+    dispatch_barrier_async(self.concurrentQueue, ^{
+        self->_lineDataModifier = lineDataModifier;
+    });
+}
+-(FTLineDataModifier)lineDataModifier{
+    __block FTLineDataModifier obj;
+    dispatch_sync(self.concurrentQueue, ^{
+        obj = [self->_lineDataModifier copy];
+    });
+    return obj;
+}
+-(void)setRumCustomKeys:(NSString *)rumCustomKeys{
+    dispatch_barrier_async(self.concurrentQueue, ^{
+        self->_rumCustomKeys = rumCustomKeys;
+    });
+}
+- (NSString *)rumCustomKeys{
+    __block NSString *obj;
+    dispatch_sync(self.concurrentQueue, ^{
+        obj = [self->_rumCustomKeys copy];
+    });
+    return obj;
+}
+-(void)setRumTags:(NSDictionary *)rumTags{
+    dispatch_barrier_async(self.concurrentQueue, ^{
+        self->_rumTags = rumTags;
+    });
+}
+-(NSDictionary *)rumTags{
+    __block NSDictionary *obj;
+    dispatch_sync(self.concurrentQueue, ^{
+        obj = [self->_rumTags copy];
+    });
+    return obj;
+}
+-(void)setDynamicGlobalContext:(NSMutableDictionary *)globalContext{
+    dispatch_barrier_async(self.concurrentQueue, ^{
+        self->_dynamicGlobalContext = globalContext;
+    });
+}
+-(NSMutableDictionary *)dynamicGlobalContext{
+    __block NSMutableDictionary *obj;
+    dispatch_sync(self.concurrentQueue, ^{
+        obj = self->_dynamicGlobalContext;
+    });
+    return obj;
+}
+-(void)setDynamicLogGlobalContext:(NSMutableDictionary *)globalLogContext{
+    dispatch_barrier_async(self.concurrentQueue, ^{
+        self->_dynamicLogGlobalContext = globalLogContext;
+    });
+}
+-(NSMutableDictionary *)dynamicLogGlobalContext{
+    __block NSMutableDictionary *obj;
+    dispatch_sync(self.concurrentQueue, ^{
+        obj = self->_dynamicLogGlobalContext;
+    });
+    return obj;
+}
+-(void)setDynamicRUMGlobalContext:(NSMutableDictionary *)globalRUMContext{
+    dispatch_barrier_async(self.concurrentQueue, ^{
+        self->_dynamicRUMGlobalContext = globalRUMContext;
+    });
+}
+-(NSMutableDictionary *)dynamicRUMGlobalContext{
+    __block NSMutableDictionary *obj;
+    dispatch_sync(self.concurrentQueue, ^{
+        obj = self->_dynamicRUMGlobalContext;
+    });
+    return obj;
+}
+-(void)setUserInfo:(FTUserInfo *)userInfo{
+    dispatch_barrier_async(self.concurrentQueue, ^{
+        self->_userInfo = userInfo;
+    });
+}
+-(FTUserInfo *)userInfo{
+    __block FTUserInfo *obj;
+    dispatch_sync(self.concurrentQueue, ^{
+        obj = [self->_userInfo copy];
+    });
+    return obj;
+}
+- (void)concurrentWrite:(void (^)(void))block{
+    dispatch_barrier_async(self.concurrentQueue, ^{
+        block();
+    });
+}
+#pragma mark ---- api ----
 -(void)setDataModifier:(FTDataModifier )dataModifier lineDataModifier:(FTLineDataModifier)lineDataModifier{
     self.dataModifier = dataModifier;
     self.lineDataModifier = lineDataModifier;
 }
+-(void)updateUser:(NSString *)Id name:(NSString *)name email:(NSString *)email extra:(NSDictionary *)extra{
+    [self concurrentWrite:^{
+        [self->_userInfo updateUser:Id name:name email:email extra:extra];
+    }];
+}
+-(void)clearUser{
+    [self concurrentWrite:^{
+        [self->_userInfo clearUser];
+    }];
+}
 // rumTags
 - (void)setRUMAppID:(NSString *)appID sampleRate:(int)sampleRate sessionOnErrorSampleRate:(int)sessionOnErrorSampleRate rumGlobalContext:(NSDictionary *)rumGlobalContext{
-    _rumGlobalContext = rumGlobalContext;
+    self.rumGlobalContext = rumGlobalContext;
     NSMutableDictionary *dict = [NSMutableDictionary dictionary];
     dict[FT_COMMON_PROPERTY_DEVICE] = self.mobileDevice.device;
     dict[FT_COMMON_PROPERTY_DEVICE_MODEL] = self.mobileDevice.model;
@@ -145,32 +326,38 @@ static dispatch_once_t onceToken;
     dict[FT_COMMON_PROPERTY_OS_VERSION_MAJOR] = self.mobileDevice.osVersionMajor;
     dict[FT_SCREEN_SIZE] = self.mobileDevice.screenSize;
     dict[FT_CPU_ARCH] = self.mobileDevice.cpuArch;
-    dict[FT_SDK_NAME] = FT_SDK_NAME_VALUE;
     [dict setValue:appID forKey:FT_APP_ID];
-    [dict addEntriesFromDictionary:rumGlobalContext];
+    if (rumGlobalContext) {
+        [dict addEntriesFromDictionary:rumGlobalContext];
+    }
     NSDictionary *newDict = [self applyModifier:dict];
     
-    _rumStaticFields = @{FT_RUM_SESSION_SAMPLE_RATE:@(sampleRate),
+    self.rumStaticFields = @{FT_RUM_SESSION_SAMPLE_RATE:@(sampleRate),
                          FT_RUM_SESSION_ON_ERROR_SAMPLE_RATE:@(sessionOnErrorSampleRate),
     };
-    [_rumTags addEntriesFromDictionary:_baseCommonPropertyTags];
-    [_rumTags addEntriesFromDictionary:newDict];
+    
+    NSMutableDictionary *rumDict = [NSMutableDictionary new];
+    [rumDict addEntriesFromDictionary:self.baseCommonPropertyTags];
+    [rumDict addEntriesFromDictionary:newDict];
+    self.rumTags = rumDict;
     
     if(rumGlobalContext&&rumGlobalContext.count>0){
-        self.rum_custom_keys = [FTJSONUtil convertToJsonDataWithObject:rumGlobalContext.allKeys];
+        self.rumCustomKeys = [FTJSONUtil convertToJsonDataWithObject:rumGlobalContext.allKeys];
     }
 }
 -(void)setLogGlobalContext:(NSDictionary *)logGlobalContext{
     NSMutableDictionary *dict = [NSMutableDictionary dictionary];
-    [dict addEntriesFromDictionary:_baseCommonPropertyTags];
+    [dict addEntriesFromDictionary:self.baseCommonPropertyTags];
     NSDictionary *newDict = [self applyModifier:logGlobalContext];
-    [dict addEntriesFromDictionary:newDict];
-    _loggerTags = dict;
+    if (newDict) {
+        [dict addEntriesFromDictionary:newDict];
+    }
+    self.loggerTags = dict;
 }
 - (NSDictionary *)loggerDynamicTags{
     NSMutableDictionary *tag = [NSMutableDictionary new];
-    [tag addEntriesFromDictionary:self.globalContextHelper.currentValue];
-    [tag addEntriesFromDictionary:self.globalLogContextHelper.currentValue];
+    [tag addEntriesFromDictionary:[self.dynamicGlobalContext copy]];
+    [tag addEntriesFromDictionary:[self.dynamicLogGlobalContext copy]];
     return tag;
 }
 -(void)setSessionReplaySource:(NSString *)sessionReplaySource{
@@ -178,50 +365,45 @@ static dispatch_once_t onceToken;
 }
 - (NSDictionary *)rumDynamicTags{
     NSMutableDictionary *dict = [NSMutableDictionary new];
-    [dict addEntriesFromDictionary:self.globalContextHelper.currentValue];
-    [dict addEntriesFromDictionary:self.globalRUMContextHelper.currentValue];
-    [dict setValue:self.rum_custom_keys forKey:FT_RUM_CUSTOM_KEYS];
+    [dict addEntriesFromDictionary:[self.dynamicGlobalContext copy]];
+    [dict addEntriesFromDictionary:[self.dynamicRUMGlobalContext copy]];
+    [dict setValue:self.rumCustomKeys forKey:FT_RUM_CUSTOM_KEYS];
     // user
-    dict[FT_USER_ID] = self.userHelper.currentValue.userId;
-    dict[FT_USER_NAME] = self.userHelper.currentValue.name;
-    dict[FT_USER_EMAIL] = self.userHelper.currentValue.email;
-    [dict setValue:[self isSignInStr] forKey:FT_IS_SIGNIN];
-    if (self.userHelper.currentValue.extra) {
-        [dict addEntriesFromDictionary:self.userHelper.currentValue.extra];
+    FTUserInfo *user = self.userInfo;
+    dict[FT_USER_ID] = user.userId;
+    dict[FT_USER_NAME] = user.name;
+    dict[FT_USER_EMAIL] = user.email;
+    [dict setValue:user.isSignIn?@"T":@"F" forKey:FT_IS_SIGNIN];
+    if (user.extra) {
+        [dict addEntriesFromDictionary:user.extra];
     }
-    return dict;
+    return [dict copy];
 }
 - (void)appendGlobalContext:(NSDictionary *)context{
-    if(context && context.count>0){
-        NSDictionary *newContext = [self applyModifier:context];
-        [self.globalContextHelper concurrentWrite:^(NSMutableDictionary * _Nonnull value) {
-            [value addEntriesFromDictionary:newContext];
-        }];
-    }
+    if(!context || context.count == 0) return;
+    NSDictionary *newContext = [self applyModifier:context];
+    [self concurrentWrite:^{
+        [self->_dynamicGlobalContext addEntriesFromDictionary:newContext];
+    }];
 }
 - (void)appendRUMGlobalContext:(NSDictionary *)context{
-    if(context && context.count>0){
-        NSDictionary *newContext = [self applyModifier:context];
-        __weak typeof(self) weakSelf = self;
-        [self.globalRUMContextHelper concurrentWrite:^(NSMutableDictionary * _Nonnull value) {
-            __strong __typeof(weakSelf) strongSelf = weakSelf;
-            if(!strongSelf) return;
-            [value addEntriesFromDictionary:newContext];
-            NSMutableArray *allKeys = [NSMutableArray arrayWithArray:value.allKeys];
-            if(strongSelf.rumGlobalContext.count>0){
-                [allKeys addObjectsFromArray:strongSelf.rumGlobalContext.allKeys];
-            }
-            strongSelf.rum_custom_keys = [FTJSONUtil convertToJsonDataWithObject:allKeys];
-        }];
-    }
+    if(!context || context.count == 0) return;
+    NSDictionary *newContext = [self applyModifier:context];
+    [self concurrentWrite:^{
+        [self->_dynamicRUMGlobalContext addEntriesFromDictionary:newContext];
+        NSMutableArray *allKeys = [NSMutableArray arrayWithArray:self->_dynamicRUMGlobalContext.allKeys];
+        if(self->_rumGlobalContext.count>0){
+            [allKeys addObjectsFromArray:self->_rumGlobalContext.allKeys];
+        }
+        self->_rumCustomKeys = [FTJSONUtil convertToJsonDataWithObject:allKeys];
+    }];
 }
 - (void)appendLogGlobalContext:(NSDictionary *)context{
-    if(context && context.count>0){
-        NSDictionary *newContext = [self applyModifier:context];
-        [self.globalLogContextHelper concurrentWrite:^(NSMutableDictionary * _Nonnull value) {
-            [value addEntriesFromDictionary:newContext];
-        }];
-    }
+    if(!context || context.count == 0) return;
+    NSDictionary *newContext = [self applyModifier:context];
+    [self concurrentWrite:^{
+        [self->_dynamicLogGlobalContext addEntriesFromDictionary:newContext];
+    }];
 }
 - (NSDictionary *)applyModifier:(NSDictionary *)dict{
     if (self.dataModifier == nil || dict == nil) return dict;
@@ -256,7 +438,7 @@ static dispatch_once_t onceToken;
     
     // Execute Block and validate return value
     NSDictionary *changedValues = self.lineDataModifier(measurement, [mergedValues copy]);
-    if (changedValues.count == 0) {
+    if (!changedValues || changedValues.count == 0) {
         return @[ [mutableTags copy], [mutableFields copy] ];
     }
     [changedValues enumerateKeysAndObjectsUsingBlock:^(id key, id obj, BOOL *stop) {
@@ -268,10 +450,6 @@ static dispatch_once_t onceToken;
     }];
     
     return @[ [mutableTags copy], [mutableFields copy] ];
-}
-
-- (NSString *)isSignInStr{
-    return self.userHelper.currentValue.isSignIn?@"T":@"F";
 }
 - (NSString *)getApplicationUUID{
     // Get image index
@@ -724,8 +902,20 @@ static uintptr_t firstCmdAfterHeader(const struct mach_header* const header) {
 #endif
 }
 - (void)shutDown{
-    onceToken = 0;
-    sharedInstance =nil;
+    dispatch_barrier_sync(self.concurrentQueue, ^{
+        self->_baseCommonPropertyTags = nil;
+        self->_rumGlobalContext = nil;
+        self->_loggerTags = nil;
+        self->_rumStaticFields = nil;
+        self->_dataModifier = nil;
+        self->_lineDataModifier = nil;
+        self->_rumCustomKeys = nil;
+        self->_rumTags = nil;
+        self->_dynamicGlobalContext = nil;
+        self->_dynamicRUMGlobalContext = nil;
+        self->_dynamicLogGlobalContext = nil;
+        self->_userInfo = nil;
+    });
 }
 @end
 

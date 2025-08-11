@@ -10,7 +10,6 @@
 #import "FTEnumConstant.h"
 #import "FTLoggerDataWriteProtocol.h"
 #import "FTLinkRumDataProvider.h"
-#import "FTLoggerConfig.h"
 
 NS_ASSUME_NONNULL_BEGIN
 
@@ -23,21 +22,13 @@ NS_ASSUME_NONNULL_BEGIN
 ///   - filter: Log filtering rules
 ///   - sampletRate: Collection rate
 ///   - writer: Data write object
-+ (void)startWithLoggerConfig:(FTLoggerConfig *)config writer:(id<FTLoggerDataWriteProtocol>)writer;
+- (void)startWithLoggerConfig:(FTLoggerConfig *)config writer:(id<FTLoggerDataWriteProtocol>)writer;
 
-/// Log input
-/// - Parameters:
-///   - content: Log content, can be json string
-///   - status: Level and status
-///   - property: Custom properties (optional)
-- (void)log:(NSString *)content
- statusType:(FTLogStatus)statusType
-   property:(nullable NSDictionary *)property;
 
 /// Synchronously execute log processing queue
 - (void)syncProcess;
 
-
+/// Update dynamically configured settings obtained remotely
 - (void)updateWithRemoteConfiguration:(NSDictionary *)configuration;
 @end
 

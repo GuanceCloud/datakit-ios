@@ -49,6 +49,11 @@
         [self.delegate startViewWithName:viewName property:copyDict];
     }
 }
+-(void)updateViewLoadingTime:(NSNumber *)duration{
+    if(self.delegate && [self.delegate respondsToSelector:@selector(updateViewLoadingTime:)]){
+        [self.delegate updateViewLoadingTime:duration];
+    }
+}
 -(void)stopView{
     if(self.delegate && [self.delegate respondsToSelector:@selector(stopView)]){
         [self.delegate stopView];

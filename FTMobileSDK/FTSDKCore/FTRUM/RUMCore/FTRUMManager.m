@@ -42,7 +42,7 @@ void *FTRUMQueueIdentityKey = &FTRUMQueueIdentityKey;
         _rumDependencies = dependencies;
         _appState = FTAppStateStartUp;
         _preViewDuration = [[FTReadWriteHelper alloc]initWithValue:[NSMutableDictionary new]] ;
-        _rumQueue = dispatch_queue_create("com.guance.rum", DISPATCH_QUEUE_SERIAL);
+        _rumQueue = dispatch_queue_create("com.ft.rum", DISPATCH_QUEUE_SERIAL);
         dispatch_queue_set_specific(_rumQueue, FTRUMQueueIdentityKey, &FTRUMQueueIdentityKey, NULL);
         [[FTModuleManager sharedInstance] addMessageReceiver:self];
         [self notifyRumInit];
@@ -137,6 +137,17 @@ void *FTRUMQueueIdentityKey = &FTRUMQueueIdentityKey;
         }
     });
 }
+-(void)updateViewLoadingTime:(NSNumber *)duration{
+    dispatch_async(self.rumQueue, ^{
+        @try {
+            FTRUMViewLoadingModel *viewModel = [[FTRUMViewLoadingModel alloc]initWithDuration:duration];
+            [self process:viewModel context:@{}];
+        } @catch (NSException *exception) {
+            FTInnerLogError(@"exception %@",exception);
+        }
+    });
+}
+
 -(void)stopView{
     [self stopViewWithViewID:nil property:nil];
 }
@@ -193,31 +204,15 @@ void *FTRUMQueueIdentityKey = &FTRUMQueueIdentityKey;
         }
     });
 }
-- (void)addLaunch:(FTLaunchType)type launchTime:(NSDate *)time duration:(NSNumber *)duration{
+- (void)addLaunch:(NSString *)name type:(NSString *)type launchTime:(NSDate *)time duration:(NSNumber *)duration property:(nullable NSDictionary *)property{
     NSDictionary *context = [self rumDynamicProperty];
     dispatch_async(self.rumQueue, ^{
         @try {
-            NSString *actionName;
-            NSString *actionType;
-            switch (type) {
-                case FTLaunchHot:
-                    actionName = @"app_hot_start";
-                    actionType = FT_LAUNCH_HOT;
-                    break;
-                case FTLaunchCold:
-                    actionName = @"app_cold_start";
-                    actionType = FT_LAUNCH_COLD;
-                    break;
-                case FTLaunchWarm:
-                    actionName = @"app_warm_start";
-                    actionType = FT_LAUNCH_WARM;
-                    break;
-            }
             FTRUMLaunchDataModel *launchModel = [[FTRUMLaunchDataModel alloc]initWithDuration:duration];
             launchModel.time = time;
-            launchModel.action_name = actionName;
-            launchModel.action_type = actionType;
-            
+            launchModel.action_name = name;
+            launchModel.action_type = type;
+            launchModel.fields = property;
             [self process:launchModel context:context];
         } @catch (NSException *exception) {
             FTInnerLogError(@"exception %@",exception);

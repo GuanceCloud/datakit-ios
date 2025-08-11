@@ -31,16 +31,18 @@
         return;
     }
     UIView *view = (UIView *)sender;
-    if ([sender isKindOfClass:UISwitch.class] || [sender isKindOfClass:UIStepper.class] ||
-        [sender isKindOfClass:UIPageControl.class]||[sender isKindOfClass:[UISegmentedControl class]]) {
-        if([FTAutoTrackHandler sharedInstance].addRumDatasDelegate && [[FTAutoTrackHandler sharedInstance].addRumDatasDelegate respondsToSelector:@selector(startAction:actionType:property:)]){
-            [[FTAutoTrackHandler sharedInstance].addRumDatasDelegate startAction:view.ft_actionName actionType:FT_KEY_ACTION_TYPE_CLICK property:nil];
+    id<FTUIEventHandler> actionHandler = [FTAutoTrackHandler sharedInstance].actionHandler;
+    if ([sender isKindOfClass:UISwitch.class] ||
+        [sender isKindOfClass:UIStepper.class] ||
+        [sender isKindOfClass:UIPageControl.class] ||
+        [sender isKindOfClass:UISegmentedControl.class]) {
+        if(actionHandler  && [actionHandler respondsToSelector:@selector(notify_sendAction:)]){
+            [actionHandler notify_sendAction:view];
         }
     } else if ([event isKindOfClass:[UIEvent class]] && event.type == UIEventTypeTouches &&
                [[[event allTouches] anyObject] phase] == UITouchPhaseEnded) {
-        if([FTAutoTrackHandler sharedInstance].addRumDatasDelegate && [[FTAutoTrackHandler sharedInstance].addRumDatasDelegate respondsToSelector:@selector(startAction:actionType:property:)]){
-            [[FTAutoTrackHandler sharedInstance].addRumDatasDelegate startAction:view.ft_actionName actionType:FT_KEY_ACTION_TYPE_CLICK property:nil];
-
+        if(actionHandler  && [actionHandler respondsToSelector:@selector(notify_sendAction:)]){
+            [actionHandler notify_sendAction:view];
         }
     }
     
@@ -78,22 +80,9 @@
     if([NSStringFromClass(view.class) containsString:@"Keyboard"]){
         return;
     }
-    NSString *actionName = nil;
-    switch (press.type) {
-        case UIPressTypeSelect:
-            actionName = view.ft_actionName;
-            break;
-        case UIPressTypeMenu:
-            actionName = @"[menu]";
-            break;
-        case UIPressTypePlayPause:
-            actionName = @"[play-pause]";
-            break;
-        default:
-            return;
-    }
-    if([FTAutoTrackHandler sharedInstance].addRumDatasDelegate && [[FTAutoTrackHandler sharedInstance].addRumDatasDelegate respondsToSelector:@selector(startAction:actionType:property:)]){
-        [[FTAutoTrackHandler sharedInstance].addRumDatasDelegate startAction:actionName actionType:FT_KEY_ACTION_TYPE_CLICK property:nil];
+    id<FTUIEventHandler> actionHandler = [FTAutoTrackHandler sharedInstance].actionHandler;
+    if(actionHandler  && [actionHandler respondsToSelector:@selector(notify_sendActionWithPressType:view:)]){
+        [actionHandler notify_sendActionWithPressType:press.type view:view];
     }
 }
 #endif

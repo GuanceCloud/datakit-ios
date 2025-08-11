@@ -245,7 +245,7 @@ NSString * const FT_LOG_BACKUP_DIRECTORY= @"FTBackupLogs";
     self = [super init];
     if(self){
         _maximumFileSize = kFTDefaultLogMaxFileSize;
-        _loggerQueue = dispatch_queue_create("com.guance.debugLog.file", NULL);
+        _loggerQueue = dispatch_queue_create("com.ft.debugLog.file", NULL);
         _logFileManager = manager;
     }
     return self;

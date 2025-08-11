@@ -49,11 +49,12 @@ NS_ASSUME_NONNULL_BEGIN
 /// Upload data
 - (void)flushSyncData;
 
-/// Shut down singleton
-- (void)shutDown;
 
 /// Add cached data to database
 -(void)insertCacheToDB;
+
+/// Shut down singleton
++ (void)shutDown;
 
 @end
 

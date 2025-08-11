@@ -35,7 +35,7 @@
     if(self){
         _cacheInvalidTimeInterval = timeInterval*1e9;
         _processStartTime = [[NSDate dateWithTimeIntervalSinceReferenceDate:FTAppLaunchTracker.processStartTime] ft_nanosecondTimeStamp];
-        _errorSampledConsumeQueue = dispatch_queue_create("com.guance.errorSampledConsume", 0);
+        _errorSampledConsumeQueue = dispatch_queue_create("com.ft.errorSampledConsume", 0);
         _lastProcessFatalErrorTime = -1;
         _lastErrorTimeInterval = 0;
         [self checkLastProcessErrorSampled];
@@ -111,11 +111,12 @@
 // FT_DATA_TYPE_LOGGING
 -(void)logging:(NSString *)content status:(NSString *)status tags:(nullable NSDictionary *)tags field:(nullable NSDictionary *)field time:(long long)time{
     @try {
-        NSMutableDictionary *tagDict = [NSMutableDictionary dictionaryWithDictionary:[[FTPresetProperty sharedInstance] loggerTags]];
+        NSMutableDictionary *tagDict = [NSMutableDictionary new];
         if (tags) {
             [tagDict addEntriesFromDictionary:tags];
         }
         [tagDict setValue:status forKey:FT_KEY_STATUS];
+        [tagDict addEntriesFromDictionary:[[FTPresetProperty sharedInstance] loggerTags]];
         NSMutableDictionary *filedDict = [NSMutableDictionary dictionary];
         [filedDict setValue:content forKey:FT_KEY_MESSAGE];
         [filedDict addEntriesFromDictionary:field];

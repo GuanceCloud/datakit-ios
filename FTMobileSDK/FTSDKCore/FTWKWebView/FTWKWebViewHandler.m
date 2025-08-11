@@ -30,12 +30,19 @@
 @end
 @implementation FTWKWebViewHandler
 static FTWKWebViewHandler *sharedInstance = nil;
-static dispatch_once_t onceToken;
+static NSObject *sharedInstanceLock;
++ (void)initialize{
+    if (self == [FTWKWebViewHandler class]) {
+        sharedInstanceLock = [[NSObject alloc] init];
+    }
+}
 + (instancetype)sharedInstance {
-    dispatch_once(&onceToken, ^{
-        sharedInstance = [[self alloc] init];
-    });
-    return sharedInstance;
+    @synchronized(sharedInstanceLock) {
+        if (!sharedInstance) {
+            sharedInstance = [[self alloc] init];
+        }
+        return sharedInstance;
+    }
 }
 -(instancetype)init{
     self = [super init];
@@ -144,8 +151,9 @@ static dispatch_once_t onceToken;
             if (!strongSelf) {
                 return;
             }
-            if (strongSelf.rumTrackDelegate && [strongSelf.rumTrackDelegate respondsToSelector:@selector(dealReceiveScriptMessage:slotId:)]){
-                [strongSelf.rumTrackDelegate dealReceiveScriptMessage:data slotId:slotId];
+            id<FTWKWebViewRumDelegate> delegate = strongSelf.rumTrackDelegate;
+            if (delegate && [delegate respondsToSelector:@selector(dealReceiveScriptMessage:slotId:)]){
+                [delegate dealReceiveScriptMessage:data slotId:slotId];
             }
         }];
         [self addWebView:webView bridge:bridge];
@@ -164,10 +172,10 @@ static dispatch_once_t onceToken;
         FTInnerLogError(@"exception: %@",exception);
     }
 }
-- (void)shutDown{
-    [self removeAllWebViewBridges];
-    onceToken = 0;
-    sharedInstance = nil;
++ (void)shutDown{
+    @synchronized(sharedInstanceLock) {
+        sharedInstance = nil;
+    }
 }
 @end
 

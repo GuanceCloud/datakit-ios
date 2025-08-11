@@ -50,7 +50,7 @@ static BOOL delegateConformsToFTProtocol(id delegate){
 }
 @interface FTURLSessionInstrumentation()
 /// SDK internal data upload URL
-@property (nonatomic, copy) NSString *sdkUrlStr;
+@property (atomic, copy) NSString *sdkUrlStr;
 @property (nonatomic, strong) FTTracer *tracer;
 @property (atomic, assign, readwrite) BOOL shouldTraceInterceptor;
 @property (atomic, assign, readwrite) BOOL shouldRUMInterceptor;
@@ -232,8 +232,8 @@ static dispatch_once_t onceToken;
 - (void)shutDown{
     [self disableAutomaticRegistration];
     [[FTURLSessionInterceptor shared] shutDown];
-    onceToken = 0;
-    sharedInstance =nil;
+    self.sdkUrlStr = nil;
+    _tracer = nil;
 }
 
 @end

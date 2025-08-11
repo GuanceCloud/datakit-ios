@@ -23,7 +23,9 @@
 #import "FTTestUtils.h"
 #import "FTLogger+Private.h"
 #import "FTMobileConfig+Private.h"
-@interface FTLoggerTest : XCTestCase
+#import "FTLoggerConfig+Private.h"
+#import "FTRumConfig+Private.h"
+@interface FTLoggerTest : XCTestCase<FTLoggerDataWriteProtocol>
 
 @property (nonatomic, copy) NSString *url;
 @property (nonatomic, copy) NSString *appid;
@@ -373,6 +375,26 @@
     XCTAssertTrue([tags[FT_SDK_PKG_INFO] isEqualToDictionary:@{@"test_sdk":@"1.0.0"}]);
     
 }
+- (void)testLoggerFormat_sdkName{
+    [[FTTrackerEventDBTool sharedManger] deleteAllDatas];
+    FTMobileConfig *config = [[FTMobileConfig alloc]initWithDatakitUrl:self.url];
+    config.enableSDKDebugLog = YES;
+    config.autoSync = NO;
+    [FTMobileAgent startWithConfigOptions:config];
+    FTLoggerConfig *loggerConfig = [[FTLoggerConfig alloc]init];
+    loggerConfig.enableCustomLog = YES;
+    [[FTMobileAgent sharedInstance] startLoggerWithConfigOptions:loggerConfig];
+    
+    [[FTLogger sharedInstance] info:@"testSdkName" property:nil];
+    [[FTMobileAgent sharedInstance] syncProcess];
+    [[FTTrackDataManager sharedInstance] insertCacheToDB];
+    NSArray *newDatas = [[FTTrackerEventDBTool sharedManger] getFirstRecords:10 withType:FT_DATA_TYPE_LOGGING];
+    FTRecordModel *model = [newDatas lastObject];
+    NSDictionary *dict = [FTJSONUtil dictionaryWithJsonString:model.data];
+    NSDictionary *op = dict[@"opdata"];
+    NSDictionary *tags = op[FT_TAGS];
+    XCTAssertTrue([tags[FT_SDK_NAME] isEqualToString:FT_SDK_NAME_VALUE]);
+}
 - (void)testAppendLogGlobalContext{
     [self setRightSDKConfig];
     FTLoggerConfig *loggerConfig = [[FTLoggerConfig alloc]init];
@@ -540,6 +562,45 @@
     NSInteger newCount = [[FTTrackerEventDBTool sharedManger] getDatasCount];
     XCTAssertNoThrow([[FTLogger sharedInstance] ok:@"testSDKShutDown" property:nil]);
     XCTAssertTrue(count == newCount);
+}
+/**
+ *  verify: No crashes occur when add log data and update remote configuration during SDK shutdown.
+ */
+- (void)testLoggerShutdown{
+    FTLoggerConfig *loggerConfig = [[FTLoggerConfig alloc]init];
+    loggerConfig.enableCustomLog = YES;
+    loggerConfig.logLevelFilter = @[@(2)];
+    [[FTLogger sharedInstance] startWithLoggerConfig:loggerConfig writer:self];
+    
+    NSDictionary *testLoggerDict = @{
+        FT_R_LOG_SAMPLERATE:@"0.8",
+        FT_R_LOG_LEVEL_FILTERS:@"[info]",
+        FT_R_LOG_ENABLE_CUSTOM_LOG:@"1",
+    };
+    XCTestExpectation *exception = [[XCTestExpectation alloc]init];
+    dispatch_group_t group = dispatch_group_create();
+    NSInteger count = 0;
+    for (int i = 0; i<1000; i++) {
+        dispatch_group_enter(group);
+        dispatch_async(dispatch_queue_create(0, 0), ^{
+            [[FTLogger sharedInstance] updateWithRemoteConfiguration:testLoggerDict];
+            [[FTLogger sharedInstance] info:@"testLoggerShutdown" property:nil];
+            dispatch_group_leave(group);
+        });
+        dispatch_async(dispatch_queue_create(0, 0), ^{
+            [[FTLogger sharedInstance] shutDown];
+            dispatch_async(dispatch_get_main_queue(), ^{
+                [[FTLogger sharedInstance] startWithLoggerConfig:loggerConfig writer:self];
+            });
+        });
+        count ++;
+    }
+    dispatch_group_notify(group, dispatch_get_main_queue(), ^{
+        [exception fulfill];
+    });
+    [self waitForExpectations:@[exception]];
+    XCTAssertTrue(count == 1000);
+    [[FTLogger sharedInstance] shutDown];
 }
 - (void)testLongTimeLogCache{
     [self setRightSDKConfig];
@@ -767,5 +828,8 @@
     [[FTLog sharedInstance] shutDown];
     NSError *error;
     [[NSFileManager defaultManager] removeItemAtPath:[logFileInfo.filePath stringByDeletingLastPathComponent] error:&error];
+}
+-(void)logging:(NSString *)content status:(NSString *)status tags:(nullable NSDictionary *)tags field:(nullable NSDictionary *)field time:(long long)time{
+    
 }
 @end

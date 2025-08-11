@@ -33,6 +33,8 @@
 #import "FTRUMDataModel.h"
 #import "FTTrackDataManager.h"
 #import "FTMobileConfig+Private.h"
+#import "FTLoggerConfig+Private.h"
+#import "FTRumConfig+Private.h"
 #import "FTAutoTrackHandler.h"
 #import "DemoViewController.h"
 @interface FTRUMTest : XCTestCase
@@ -52,83 +54,6 @@
 -(void)tearDown{
     [[FTGlobalRumManager sharedInstance].rumManager syncProcess];
     [FTMobileAgent shutDown];
-}
-#pragma mark ========== RUM CONFIG ==========
-- (void)testRUMFreezeThreshold{
-    FTRumConfig *rumConfig = [[FTRumConfig alloc]initWithAppid:@"appid"];
-    XCTAssertTrue(rumConfig.freezeDurationMs == 250);
-    rumConfig.freezeDurationMs = 0;
-    XCTAssertTrue(rumConfig.freezeDurationMs == 100);
-    rumConfig.freezeDurationMs = 5000;
-    XCTAssertTrue(rumConfig.freezeDurationMs == 5000);
-}
-- (void)testDiscardNew{
-    FTMobileConfig *config = [[FTMobileConfig alloc]initWithDatakitUrl:self.url];
-    config.autoSync = NO;
-    config.enableSDKDebugLog = YES;
-    FTRumConfig *rumConfig = [[FTRumConfig alloc]initWithAppid:self.appid];
-    rumConfig.rumCacheLimitCount = 1000;
-    rumConfig.rumDiscardType = FTRUMDiscard;
-    [FTMobileAgent startWithConfigOptions:config];
-    [[FTTrackerEventDBTool sharedManger] deleteAllDatas];
-    [[FTMobileAgent sharedInstance] startRumWithConfigOptions:rumConfig];
-    for (int i = 0; i<10010; i++) {
-        FTRecordModel *model = [FTRecordModel new];
-        model.op = FT_DATA_TYPE_RUM;
-        model.data = [NSString stringWithFormat:@"testData%d",i];
-        [[FTTrackDataManager sharedInstance] addTrackData:model type:FTAddDataRUM];
-
-    }
-    NSInteger newCount =  [[FTTrackerEventDBTool sharedManger] getDatasCountWithType:FT_DATA_TYPE_RUM];
-    FTRecordModel *model = [[[FTTrackerEventDBTool sharedManger] getFirstRecords:1 withType:FT_DATA_TYPE_RUM] firstObject];
-    XCTAssertTrue([model.data isEqualToString:@"testData0"]);
-    XCTAssertTrue(newCount == 10000);
-}
-
-- (void)testDiscardOldBulk{
-    FTMobileConfig *config = [[FTMobileConfig alloc]initWithDatakitUrl:self.url];
-    config.autoSync = NO;
-    config.enableSDKDebugLog = YES;
-    FTRumConfig *rumConfig = [[FTRumConfig alloc]initWithAppid:self.appid];
-    rumConfig.rumCacheLimitCount = 1000;
-    rumConfig.rumDiscardType = FTRUMDiscardOldest;
-    [FTMobileAgent startWithConfigOptions:config];
-    [[FTTrackerEventDBTool sharedManger] deleteAllDatas];
-    [[FTMobileAgent sharedInstance] startRumWithConfigOptions:rumConfig];
-
-    for (int i = 0; i<10010; i++) {
-        FTRecordModel *model = [FTRecordModel new];
-        model.op = FT_DATA_TYPE_RUM;
-        model.data = [NSString stringWithFormat:@"testData%d",i];
-        [[FTTrackDataManager sharedInstance] addTrackData:model type:FTAddDataRUM];
-
-    }
-    [[FTTrackDataManager sharedInstance] insertCacheToDB];
-    NSInteger newCount = [[FTTrackerEventDBTool sharedManger] getDatasCountWithType:FT_DATA_TYPE_RUM];
-    FTRecordModel *model = [[[FTTrackerEventDBTool sharedManger] getFirstRecords:1 withType:FT_DATA_TYPE_RUM] firstObject];
-    XCTAssertFalse([model.data isEqualToString:@"testData0"]);
-    XCTAssertTrue(newCount == 10000);
-}
-- (void)testAddPkgInfo{
-    FTMobileConfig *config = [[FTMobileConfig alloc]initWithDatakitUrl:self.url];
-    config.enableSDKDebugLog = YES;
-    config.autoSync = NO;
-    [config addPkgInfo:@"test_sdk" value:@"1.0.0"];
-    [FTMobileAgent startWithConfigOptions:config];
-    FTRumConfig *rumConfig = [[FTRumConfig alloc]initWithAppid:self.appid];
-    [FTMobileAgent startWithConfigOptions:config];
-    [[FTMobileAgent sharedInstance] startRumWithConfigOptions:rumConfig];
-    [FTModelHelper addActionWithContext:nil];
-    [[FTGlobalRumManager sharedInstance].rumManager syncProcess];
-    NSArray *newArray = [[FTTrackerEventDBTool sharedManger] getFirstRecords:10 withType:FT_DATA_TYPE_RUM];
-    XCTAssertTrue(newArray.count >= 1);
-    __block BOOL hasActionData = NO;
-    [FTModelHelper resolveModelArray:newArray callBack:^(NSString * _Nonnull source, NSDictionary * _Nonnull tags, NSDictionary * _Nonnull fields, BOOL * _Nonnull stop) {
-        XCTAssertTrue([tags[FT_SDK_PKG_INFO] isEqualToDictionary:@{@"test_sdk":@"1.0.0"}]);
-        hasActionData = YES;
-        *stop = YES;
-    }];
-    XCTAssertTrue(hasActionData);
 }
 #pragma mark ========== Session ==========
 
@@ -390,6 +315,76 @@
     [[FTGlobalRumManager sharedInstance].rumManager syncProcess];
     NSDictionary *dict2 = [[FTGlobalRumManager sharedInstance].rumManager getLinkRUMData];
     XCTAssertTrue([view_id isEqualToString:dict2[FT_KEY_VIEW_ID]]);
+}
+
+- (void)testUpdateViewLoadingTime{
+    FTMobileConfig *config = [[FTMobileConfig alloc]initWithDatakitUrl:self.url];
+    FTRumConfig *rumConfig = [[FTRumConfig alloc]initWithAppid:self.appid];
+    [FTMobileAgent startWithConfigOptions:config];
+    
+    [[FTMobileAgent sharedInstance] startRumWithConfigOptions:rumConfig];
+    [[FTTrackerEventDBTool sharedManger] deleteAllDatas];
+    
+    [FTModelHelper startViewWithName:@"first_view"];
+    
+    [FTModelHelper startViewWithName:@"second_view"];
+    
+    [[FTExternalDataManager sharedManager] updateViewLoadingTime:@(1234567)];
+    
+    [[FTExternalDataManager sharedManager] stopView];
+    [[FTGlobalRumManager sharedInstance].rumManager syncProcess];
+    NSArray *array = [[FTTrackerEventDBTool sharedManger] getAllDatas];
+    __block BOOL hasView = NO;
+    [FTModelHelper resolveModelArray:array idxCallBack:^(NSString * _Nonnull source, NSDictionary * _Nonnull tags, NSDictionary * _Nonnull fields, BOOL * _Nonnull stop, NSUInteger idx) {
+        if ([source isEqualToString:FT_RUM_SOURCE_VIEW]) {
+            if ([tags[FT_KEY_VIEW_NAME] isEqualToString:@"second_view"]) {
+                if ([fields[FT_KEY_VIEW_UPDATE_TIME] isEqual:@2]) {
+                    XCTAssertTrue([fields[FT_KEY_LOADING_TIME] isEqual:@(1234567)]);
+                }else{
+                    XCTAssertTrue([fields[FT_KEY_LOADING_TIME] isEqual:@1000000000]);
+                }
+                hasView = YES;
+            }else{
+                XCTAssertTrue([fields[FT_KEY_LOADING_TIME] isEqual:@1000000000]);
+            }
+        }
+    }];
+    XCTAssertTrue(hasView);
+    
+}
+
+- (void)testUpdateViewLoadingTime_whenViewInactive{
+    FTMobileConfig *config = [[FTMobileConfig alloc]initWithDatakitUrl:self.url];
+    FTRumConfig *rumConfig = [[FTRumConfig alloc]initWithAppid:self.appid];
+    [FTMobileAgent startWithConfigOptions:config];
+    
+    [[FTMobileAgent sharedInstance] startRumWithConfigOptions:rumConfig];
+    [[FTTrackerEventDBTool sharedManger] deleteAllDatas];
+    
+    [FTModelHelper startViewWithName:@"first_view"];
+    
+    [FTModelHelper startResource:@"resource_1"];
+    
+    [[FTExternalDataManager sharedManager] stopView];
+
+    [[FTExternalDataManager sharedManager] updateViewLoadingTime:@(1234567)];
+    
+    [FTModelHelper stopErrorResource:@"resource_1"];
+    
+    [[FTGlobalRumManager sharedInstance].rumManager syncProcess];
+    NSArray *array = [[FTTrackerEventDBTool sharedManger] getAllDatas];
+    __block BOOL hasView = NO;
+    [FTModelHelper resolveModelArray:array idxCallBack:^(NSString * _Nonnull source, NSDictionary * _Nonnull tags, NSDictionary * _Nonnull fields, BOOL * _Nonnull stop, NSUInteger idx) {
+        if ([source isEqualToString:FT_RUM_SOURCE_VIEW]) {
+            if ([tags[FT_KEY_VIEW_NAME] isEqualToString:@"first_view"]) {
+                if ([fields[FT_KEY_VIEW_UPDATE_TIME] isEqual:@3]) {
+                    hasView = YES;
+                }
+                XCTAssertTrue([fields[FT_KEY_LOADING_TIME] isEqual:@1000000000]);
+            }
+        }
+    }];
+    XCTAssertTrue(hasView);
 }
 #pragma mark ========== Resource ==========
 
@@ -1601,6 +1596,41 @@
         }
     }];
     XCTAssertTrue(hasResourceData);
+}
+/**
+ * verify: No crashes occur when adding views and actions during SDK shutdown.
+ */
+- (void)testSDKShutdown{
+    [self setRumConfig];
+    XCTestExpectation *exception = [[XCTestExpectation alloc]init];
+    dispatch_group_t group = dispatch_group_create();
+    NSInteger count = 0;
+    __block BOOL isSDKClose = NO;
+    for (int i = 0; i<1000; i++) {
+        dispatch_group_enter(group);
+        dispatch_async(dispatch_get_main_queue(), ^{
+            UIViewController *vc = [[UIViewController alloc]init];
+            [[FTAutoTrackHandler sharedInstance].addRumDatasDelegate addAction:@"test" actionType:@"click" property:nil];
+            [[FTAutoTrackHandler sharedInstance].viewControllerHandler notify_viewDidAppear:vc animated:YES];
+            dispatch_group_leave(group);
+        });
+        dispatch_async(dispatch_queue_create(0, 0), ^{
+            if (!isSDKClose) {
+                isSDKClose = YES;
+                [FTMobileAgent shutDown];
+            }
+            dispatch_async(dispatch_get_main_queue(), ^{
+                [self setRumConfig];
+                isSDKClose = NO;
+            });
+        });
+        count ++;
+    }
+    dispatch_group_notify(group, dispatch_get_main_queue(), ^{
+        [exception fulfill];
+    });
+    [self waitForExpectations:@[exception]];
+    XCTAssertTrue(count == 1000);
 }
 #pragma mark ========== Mock Data ==========
 

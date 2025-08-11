@@ -24,6 +24,8 @@
 #import "FTRUMManager.h"
 #import "FTModelHelper.h"
 #import "FTMobileConfig+Private.h"
+#import "FTLoggerConfig+Private.h"
+#import "FTRumConfig+Private.h"
 #import "FTNetworkMock.h"
 #import "FTTestUtils.h"
 #import "FTTrackDataManager+Test.h"
@@ -476,6 +478,10 @@
     rumConfig.resourceUrlHandler = ^BOOL(NSURL *url) {
         return NO;
     };
+    FTViewTrackingHandler viewStrategy = (FTViewTrackingHandler)[[NSObject alloc]init];
+    rumConfig.viewTrackingHandler = viewStrategy;
+    FTActionTrackingHandler actionStrategy = (FTActionTrackingHandler)[[NSObject alloc]init];
+    rumConfig.actionTrackingHandler = actionStrategy;
     XCTAssertTrue(rumConfig.sessionOnErrorSampleRate == 0);
     XCTAssertTrue(rumConfig.rumCacheLimitCount == 100000);
     rumConfig.rumCacheLimitCount = 1000;
@@ -498,6 +504,8 @@
     XCTAssertTrue(copyRumConfig.monitorFrequency == rumConfig.monitorFrequency);
     XCTAssertTrue([copyRumConfig.globalContext isEqual:rumConfig.globalContext]);
     XCTAssertTrue([copyRumConfig.resourceUrlHandler isEqual:rumConfig.resourceUrlHandler]);
+    XCTAssertTrue([copyRumConfig.viewTrackingHandler isEqual:rumConfig.viewTrackingHandler]);
+    XCTAssertTrue([copyRumConfig.actionTrackingHandler isEqual:rumConfig.actionTrackingHandler]);
     XCTAssertTrue(copyRumConfig.freezeDurationMs == rumConfig.freezeDurationMs);
     XCTAssertTrue(copyRumConfig.rumDiscardType == rumConfig.rumDiscardType);
     XCTAssertTrue(copyRumConfig.rumCacheLimitCount == rumConfig.rumCacheLimitCount);

@@ -10,17 +10,31 @@
 #import <UIKit/UIKit.h>
 #import "FTRumDatasProtocol.h"
 #import "FTAutoTrackProperty.h"
+#import "FTRumConfig.h"
+#import "FTViewTrackingHandler.h"
+#import "FTActionTrackingHandler.h"
 NS_ASSUME_NONNULL_BEGIN
 @protocol FTUIViewControllerHandler <NSObject>
 -(void)notify_viewDidAppear:(UIViewController *)viewController animated:(BOOL)animated;
 -(void)notify_viewDidDisappear:(UIViewController *)viewController animated:(BOOL)animated;
 @end
+
+@protocol FTUIEventHandler <NSObject>
+-(void)notify_sendAction:(UIView *)view;
+-(void)notify_sendActionWithPressType:(UIPressType)type view:(UIView *)view;
+@end
 /// View and Action collection class
-@interface FTAutoTrackHandler : NSObject<FTUIViewControllerHandler>
-/// Pass event object, pass collected view and action data to RUM
-@property (nonatomic,weak) id<FTRumDatasProtocol> addRumDatasDelegate;
+@interface FTAutoTrackHandler : NSObject
+
 /// Handle ViewController lifecycle rum: startView, stopView
 @property (nonatomic, weak) id<FTUIViewControllerHandler> viewControllerHandler;
+
+@property (nonatomic, weak) id<FTUIEventHandler> actionHandler;
+
+@property (nonatomic, weak, readonly) id<FTRumDatasProtocol> addRumDatasDelegate;
+@property (nonatomic, strong, nullable, readonly) FTViewTrackingHandler uiKitViewTrackingHandler;
+@property (nonatomic, strong, nullable, readonly) FTActionTrackingHandler actionTrackingHandler;
+
 /// Singleton
 + (instancetype)sharedInstance;
 
@@ -28,7 +42,11 @@ NS_ASSUME_NONNULL_BEGIN
 /// - Parameters:
 ///   - enable: Whether to collect View data
 ///   - enable: Whether to collect Action data
--(void)startWithTrackView:(BOOL)enable action:(BOOL)enable;
+-(void)startWithTrackView:(BOOL)enable
+                   action:(BOOL)enable
+      addRumDatasDelegate:(id<FTRumDatasProtocol>)delegate
+              viewHandler:(nullable FTViewTrackingHandler)viewHandler
+            actionHandler:(nullable FTActionTrackingHandler)actionHandler;
 
 -(void)shutDown;
 @end

@@ -20,29 +20,35 @@ typedef NS_ENUM(NSUInteger, FTAppState) {
 };
 /// rum data protocol
 @protocol FTRumDatasProtocol <NSObject>
-/// Create page
+/// Create RUM View
 ///
 /// Called before the `-startViewWithName` method, this method is used to record the page loading time. If the loading time cannot be obtained, this method can be omitted.
 /// - Parameters:
-///   - viewName: page name
+///   - viewName: RUM View name
 ///   - loadTime: page loading time
 -(void)onCreateView:(NSString *)viewName loadTime:(NSNumber *)loadTime;
-/// Enter page
+/// Starts RUM view
 ///
 /// - Parameters:
-///   - viewName: page name
+///   - viewName: RUM View name
 -(void)startViewWithName:(NSString *)viewName;
 
-/// Enter page
+/// Starts RUM view
 /// - Parameters:
-///   - viewName: page name
+///   - viewName: RUM View name
 ///   - property: event custom properties (optional)
 -(void)startViewWithName:(NSString *)viewName property:(nullable NSDictionary *)property;
 
-/// Leave page
+/// Update view loading time to current RUM view.
+/// Must be called between `-startView` and `-stopView` methods to take effect.
+/// - Parameters:
+///   - duration: loading time duration (nanosecond).
+-(void)updateViewLoadingTime:(NSNumber *)duration;
+
+/// Stop RUM View.
 -(void)stopView;
 
-/// Leave page
+/// Stop RUM View.
 /// - Parameter property: event custom properties (optional)
 -(void)stopViewWithProperty:(nullable NSDictionary *)property;
 
@@ -66,6 +72,14 @@ typedef NS_ENUM(NSUInteger, FTAppState) {
 ///   - property: event custom properties (optional)
 - (void)addAction:(NSString *)actionName actionType:(NSString *)actionType property:(nullable NSDictionary *)property;
 
+/// Add Launch Action event.
+/// - Parameters:
+///   - name: action name
+///   - type: action type
+///   - time: launch time
+///   - duration: launch duration
+///   - property: event custom properties (optional)
+- (void)addLaunch:(NSString *)name type:(NSString *)type launchTime:(NSDate *)time duration:(NSNumber *)duration property:(nullable NSDictionary *)property;
 
 /// Add Error event
 ///
@@ -120,7 +134,7 @@ typedef NS_ENUM(NSUInteger, FTAppState) {
  * @param viewId         page id
  * @param property       event custom properties (optional)
  */
--(void)stopViewWithViewID:(NSString *)viewId property:(nullable NSDictionary *)property;
+-(void)stopViewWithViewID:(nullable NSString *)viewId property:(nullable NSDictionary *)property;
 @end
 NS_ASSUME_NONNULL_END
 #endif 

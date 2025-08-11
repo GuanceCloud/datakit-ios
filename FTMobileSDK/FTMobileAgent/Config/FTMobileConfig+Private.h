@@ -7,7 +7,7 @@
 //
 
 #import "FTMobileConfig.h"
-#import "FTLoggerConfig+Private.h"
+
 NS_ASSUME_NONNULL_BEGIN
 @interface FTMobileConfig ()
 /// Add package information
@@ -27,15 +27,6 @@ NS_ASSUME_NONNULL_BEGIN
 -(void)mergeWithRemoteConfigDict:(NSDictionary *)dict;
 @end
 
-@interface FTRumConfig ()
-/// Private initialization method, initialized through dictionary, used for Extension SDK
-/// - Parameter dict: dictionary converted from config
--(instancetype)initWithDictionary:(NSDictionary *)dict;
-/// Convert config to dictionary    
--(NSDictionary *)convertToDictionary;
-/// Merge remote config
--(void)mergeWithRemoteConfigDict:(NSDictionary *)dict;
-@end
 
 @interface FTTraceConfig ()
 /// Private initialization method, initialized through dictionary, used for Extension SDK

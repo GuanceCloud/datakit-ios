@@ -18,6 +18,7 @@
 #import "NSDate+FTUtil.h"
 #import "FTSessionConfiguration.h"
 #import "FTURLSessionInstrumentation.h"
+#import "OHHTTPStubs.h"
 @interface FTResourceAutoTrace : XCTestCase
 
 @end
@@ -274,5 +275,71 @@
     }else{
         XCTAssertTrue(hasResCount==0);
     }
+}
+/**
+ * verify: No crashes occur when calling network request during SDK shutdown.
+ */
+- (void)testSDKShutdown{
+    id<OHHTTPStubsDescriptor> stubs = [OHHTTPStubs stubRequestsPassingTest:^BOOL(NSURLRequest *request) {
+        return YES;
+    } withStubResponse:^OHHTTPStubsResponse*(NSURLRequest *request) {
+        return [OHHTTPStubsResponse responseWithData:[@"success" dataUsingEncoding:NSUTF8StringEncoding] statusCode:200 headers:nil];
+    }];
+    [self initSDK];
+    XCTestExpectation *exception = [[XCTestExpectation alloc]init];
+    dispatch_group_t group = dispatch_group_create();
+    NSInteger count = 0;
+    __block BOOL isSDKClose = NO;
+    for (int i = 0; i<1000; i++) {
+        dispatch_group_enter(group);
+        dispatch_async(dispatch_queue_create(0, 0), ^{
+            [self network:^{
+                dispatch_group_leave(group);
+            }];
+        });
+        dispatch_async(dispatch_queue_create(0, 0), ^{
+            if(!isSDKClose){
+                isSDKClose = YES;
+                [FTMobileAgent shutDown];
+            }
+            dispatch_async(dispatch_get_main_queue(), ^{
+                [self initSDK];
+                isSDKClose = NO;
+            });
+        });
+        count ++;
+    }
+    dispatch_group_notify(group, dispatch_get_main_queue(), ^{
+        [exception fulfill];
+    });
+    [self waitForExpectations:@[exception]];
+    XCTAssertTrue(count == 1000);
+    [OHHTTPStubs removeStub:stubs];
+    [FTMobileAgent shutDown];
+}
+- (void)initSDK{
+    NSProcessInfo *processInfo = [NSProcessInfo processInfo];
+    NSString *url = [processInfo environment][@"ACCESS_SERVER_URL"];
+    NSString *appid = [processInfo environment][@"APP_ID"];
+    FTMobileConfig *config = [[FTMobileConfig alloc]initWithDatakitUrl:url];
+    config.autoSync = NO;
+    FTRumConfig *rumConfig = [[FTRumConfig alloc]initWithAppid:appid];
+    rumConfig.enableTraceUserResource = YES;
+    [FTMobileAgent startWithConfigOptions:config];
+    FTTraceConfig *traceConfig = [[FTTraceConfig alloc]init];
+    traceConfig.enableAutoTrace = YES;
+    traceConfig.enableLinkRumData = YES;
+    [[FTMobileAgent sharedInstance] startRumWithConfigOptions:rumConfig];
+    [[FTMobileAgent sharedInstance] startTraceWithConfigOptions:traceConfig];
+}
+- (void)network:(void (^)(void))callback{
+    NSURLSession *session = [NSURLSession sessionWithConfiguration:[NSURLSessionConfiguration ephemeralSessionConfiguration]];
+    NSString * urlStr = [[NSProcessInfo processInfo] environment][@"TRACE_URL"];
+    NSMutableURLRequest *request = [NSMutableURLRequest requestWithURL:[NSURL URLWithString:urlStr]];
+    NSURLSessionTask *task = [session dataTaskWithRequest:request completionHandler:^(NSData * _Nullable data, NSURLResponse * _Nullable response, NSError * _Nullable error) {
+        if(callback) callback();
+    }];
+    [task resume];
+    [session finishTasksAndInvalidate];
 }
 @end
