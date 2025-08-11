@@ -19,11 +19,10 @@ NS_ASSUME_NONNULL_BEGIN
 @property (nonatomic, strong, readonly) NSDictionary *loggerTags;
 @property (nonatomic, strong, readonly) NSDictionary *rumTags;
 @property (nonatomic, strong, readonly) NSDictionary *rumStaticFields;
-@property (nonatomic, strong, readonly) NSMutableDictionary *sessionReplayTags;
+@property (nonatomic, strong, readonly) NSDictionary *sessionReplayTags;
 
 /// Set data modifier
 @property (nonatomic, copy, nullable) FTLineDataModifier lineDataModifier;
-@property (nonatomic, copy) NSString *sessionReplaySource;
 /// Device name
 + (NSString *)deviceInfo;
 + (NSString *)cpuArch;

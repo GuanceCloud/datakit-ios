@@ -73,7 +73,7 @@
 @property (nonatomic, strong) NSMutableDictionary *dynamicLogGlobalContext;
 
 @property (nonatomic, strong, readwrite) NSDictionary *rumTags;
-@property (nonatomic, strong, readwrite) NSMutableDictionary *sessionReplayTags;
+@property (nonatomic, strong, readwrite) NSDictionary *sessionReplayTags;
 @property (nonatomic, strong) NSDictionary *rumGlobalContext;
 @property (nonatomic, strong) NSMutableDictionary *dynamicRUMGlobalContext;
 @property (nonatomic, strong, readwrite) NSDictionary *rumStaticFields;
@@ -95,6 +95,7 @@
 @synthesize dynamicRUMGlobalContext = _dynamicRUMGlobalContext;
 @synthesize dynamicLogGlobalContext = _dynamicLogGlobalContext;
 @synthesize userInfo = _userInfo;
+@synthesize sessionReplayTags = _sessionReplayTags;
 
 + (instancetype)sharedInstance{
     static dispatch_once_t onceToken;
@@ -107,10 +108,8 @@
 -(instancetype)init{
     self = [super init];
     if (self){
-        _sessionReplaySource = @"ios";
         _mobileDevice = [[MobileDevice alloc]init];
         _concurrentQueue = dispatch_queue_create("com.ft.readwrite", DISPATCH_QUEUE_CONCURRENT);
-        _sessionReplayTags = [NSMutableDictionary dictionary];
     }
     return self;
 }
@@ -142,12 +141,14 @@
     }
     NSDictionary *newDict = [self applyModifier:dict];
     
-    [_sessionReplayTags setValue:version forKey:FT_VERSION];
-    [_sessionReplayTags setValue:env forKey:FT_ENV];
-    [_sessionReplayTags setValue:service forKey:FT_KEY_SERVICE];
-    [_sessionReplayTags setValue:FT_IOS_SDK_NAME forKey:FT_SDK_NAME];
-    [_sessionReplayTags setValue:sdkVersion forKey:FT_SDK_VERSION];
-
+    NSMutableDictionary *srDict = [NSMutableDictionary dictionary];
+    [srDict setValue:service forKey:FT_KEY_SERVICE];
+    [srDict setValue:version forKey:FT_VERSION];
+    [srDict setValue:env forKey:FT_ENV];
+    [srDict setValue:sdkVersion forKey:FT_SDK_VERSION];
+    [srDict setValue:FT_IOS_SDK_NAME forKey:FT_SDK_NAME];
+    [srDict setValue:@"ios" forKey:FT_KEY_SOURCE];
+    self.sessionReplayTags = srDict;
     self.baseCommonPropertyTags = newDict;
 }
 #pragma mark ----property setter/getter thread safe ----
@@ -295,6 +296,18 @@
     });
     return obj;
 }
+-(void)setSessionReplayTags:(NSDictionary *)sessionReplayTags{
+    dispatch_barrier_async(self.concurrentQueue, ^{
+        self->_sessionReplayTags = sessionReplayTags;
+    });
+}
+-(NSDictionary *)sessionReplayTags{
+    __block NSDictionary *obj;
+    dispatch_sync(self.concurrentQueue, ^{
+        obj = [self->_sessionReplayTags copy];
+    });
+    return obj;
+}
 - (void)concurrentWrite:(void (^)(void))block{
     dispatch_barrier_async(self.concurrentQueue, ^{
         block();
@@ -361,7 +374,9 @@
     return tag;
 }
 -(void)setSessionReplaySource:(NSString *)sessionReplaySource{
-    [_sessionReplayTags setValue:sessionReplaySource forKey:FT_KEY_SOURCE];
+    NSMutableDictionary *srDict = [self.sessionReplayTags mutableCopy];
+    [srDict setValue:sessionReplaySource forKey:FT_KEY_SOURCE];
+    self.sessionReplayTags = srDict;
 }
 - (NSDictionary *)rumDynamicTags{
     NSMutableDictionary *dict = [NSMutableDictionary new];
@@ -902,7 +917,7 @@ static uintptr_t firstCmdAfterHeader(const struct mach_header* const header) {
 #endif
 }
 - (void)shutDown{
-    dispatch_barrier_sync(self.concurrentQueue, ^{
+    dispatch_barrier_async(self.concurrentQueue, ^{
         self->_baseCommonPropertyTags = nil;
         self->_rumGlobalContext = nil;
         self->_loggerTags = nil;
@@ -915,6 +930,7 @@ static uintptr_t firstCmdAfterHeader(const struct mach_header* const header) {
         self->_dynamicRUMGlobalContext = nil;
         self->_dynamicLogGlobalContext = nil;
         self->_userInfo = nil;
+        self->_sessionReplayTags = nil;
     });
 }
 @end
