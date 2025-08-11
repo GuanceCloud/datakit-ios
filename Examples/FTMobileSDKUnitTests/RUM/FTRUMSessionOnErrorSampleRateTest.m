@@ -97,19 +97,17 @@
     __block BOOL hasError = NO;
     __block BOOL hasView = NO;
     __block BOOL hasAction= NO;
-    __block NSNumber *errorTimestamp = nil;
+    NSMutableSet *errorTimestampSet = [NSMutableSet new];
     [FTModelHelper resolveModelArray:newArray timeCallBack:^(NSString * _Nonnull source, NSDictionary * _Nonnull tags, NSDictionary * _Nonnull fields, long long time, BOOL * _Nonnull stop) {
         if([source isEqualToString:FT_RUM_SOURCE_ERROR]){
-            if ([fields[FT_KEY_ERROR_STACK] isEqualToString:@"testSessionOnErrorSampleRate_unSampling"]) {
-                XCTAssertTrue([errorTimestamp longLongValue] == time);
-            }else{
-                XCTAssertTrue([errorTimestamp longLongValue] != time);
-            }
+            XCTAssertTrue([errorTimestampSet containsObject:@(time)]);
             hasError = YES;
         }else if ([source isEqualToString:FT_RUM_SOURCE_VIEW]){
             XCTAssertTrue([fields[FT_RUM_KEY_SAMPLED_FOR_ERROR_SESSION] boolValue] == YES);
             hasView = YES;
-            errorTimestamp == nil?errorTimestamp = fields[FT_SESSION_ERROR_TIMESTAMP]:errorTimestamp;
+            if (fields[FT_SESSION_ERROR_TIMESTAMP] != nil) {
+                [errorTimestampSet addObject:fields[FT_SESSION_ERROR_TIMESTAMP]];
+            }
         }else if ([source isEqualToString:FT_RUM_SOURCE_ACTION]){
             hasAction = YES;
             XCTAssertTrue([fields[@"test"] isEqualToString:@"unSampling"]);
