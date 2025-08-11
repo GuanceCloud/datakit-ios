@@ -61,7 +61,7 @@ NSString * const FT_LOG_BACKUP_DIRECTORY= @"FTBackupLogs";
     }
     return self;
 }
-// 默认的日志文件夹
+// Default logs directory
 - (NSString *)defaultLogsDirectory {
 #if TARGET_OS_IOS
     NSArray *paths = NSSearchPathForDirectoriesInDomains(NSDocumentDirectory, NSUserDomainMask, YES);
@@ -101,7 +101,7 @@ NSString * const FT_LOG_BACKUP_DIRECTORY= @"FTBackupLogs";
     }
     return _logsBackupDirectory;
 }
-// 降序输出，新文件在队列前方，使用文件创建时间来排序
+// Descending order output, new files at the front of the queue, sorted by file creation time
 - (NSArray *)sortedLogFileInfos{
     return [[self unsortedLogFileInfos] sortedArrayUsingComparator:^NSComparisonResult(FTLogFileInfo *obj1,
                                                                                        FTLogFileInfo *obj2) {
@@ -161,7 +161,7 @@ NSString * const FT_LOG_BACKUP_DIRECTORY= @"FTBackupLogs";
     }
 }
 
-// 创建日志文件
+// Create log file
 - (NSString *)createNewLogFileWithError:(NSError *__autoreleasing  _Nullable *)error {
     static NSUInteger MAX_ALLOWED_ERROR = 5;
     NSString *logsDirectory = [self logsDirectory];
@@ -203,7 +203,7 @@ NSString * const FT_LOG_BACKUP_DIRECTORY= @"FTBackupLogs";
         }
     } while (YES);
 }
-// 删除旧日志
+// Delete old logs
 - (void)deleteOldLogFiles {
     FTNSLogError(@"[FTLog][FTLogFileManager] deleteOldLogFiles");
     NSArray *sortedLogFileInfos = [self sortedLogFileInfos];
@@ -245,7 +245,7 @@ NSString * const FT_LOG_BACKUP_DIRECTORY= @"FTBackupLogs";
     self = [super init];
     if(self){
         _maximumFileSize = kFTDefaultLogMaxFileSize;
-        _loggerQueue = dispatch_queue_create("com.guance.debugLog.file", NULL);
+        _loggerQueue = dispatch_queue_create("com.ft.debugLog.file", NULL);
         _logFileManager = manager;
     }
     return self;
@@ -283,11 +283,11 @@ NSString * const FT_LOG_BACKUP_DIRECTORY= @"FTBackupLogs";
             newCurrentLogFile = [FTLogFileInfo logFileWithPath:[self.logFileManager filePath]];
         }
     }
-    // 是否应用用当前的文件
+    // Whether to use the current file
     if (newCurrentLogFile != nil && [self shouldUseLogFile:newCurrentLogFile isResuming:isResuming]) {
         _currentLogFileInfo = newCurrentLogFile;
     } else {
-        //创建新的日志文件
+        //Create new log file
         NSString *currentLogFilePath;
         __autoreleasing NSError *error;
         currentLogFilePath = [self.logFileManager createNewLogFileWithError:&error];
@@ -313,7 +313,7 @@ NSString * const FT_LOG_BACKUP_DIRECTORY= @"FTBackupLogs";
     return YES;
 }
 
-// 监控文件是否被外部操作
+// Monitor whether the file is operated externally
 - (void)monitorCurrentLogFileForExternalChanges{
     _currentLogFileVnode = dispatch_source_create(DISPATCH_SOURCE_TYPE_VNODE,
                                                   (uintptr_t)[_currentLogFileHandle fileDescriptor],

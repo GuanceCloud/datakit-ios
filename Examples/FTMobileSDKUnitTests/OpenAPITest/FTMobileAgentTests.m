@@ -2,7 +2,7 @@
 //  ft_sdk_iosTestUnitTests.m
 //  ft-sdk-iosTestUnitTests
 //
-//  Created by 胡蕾蕾 on 2019/12/19.
+//  Created by hulilei on 2019/12/19.
 //  Copyright © 2019 hll. All rights reserved.
 //
 #import <KIF/KIF.h>
@@ -24,6 +24,8 @@
 #import "FTRUMManager.h"
 #import "FTModelHelper.h"
 #import "FTMobileConfig+Private.h"
+#import "FTLoggerConfig+Private.h"
+#import "FTRumConfig+Private.h"
 #import "FTNetworkMock.h"
 #import "FTTestUtils.h"
 #import "FTTrackDataManager+Test.h"
@@ -41,8 +43,8 @@
 
 - (void)setUp {
     /**
-     * 设置 ft-sdk-iosTestUnitTests 的 Environment Variables
-     * 额外 添加 isUnitTests = 1 防止 SDK 在 AppDelegate 启动 对单元测试造成影响
+     * Set Environment Variables for ft-sdk-iosTestUnitTests
+     * Additionally add isUnitTests = 1 to prevent SDK startup in AppDelegate from affecting unit tests
      */
     NSProcessInfo *processInfo = [NSProcessInfo processInfo];
     self.url = [processInfo environment][@"ACCESS_SERVER_URL"];
@@ -63,13 +65,13 @@
     [[FTMobileAgent sharedInstance] unbindUser];
     [[FTTrackerEventDBTool sharedManger] deleteAllDatas];
 }
-#pragma mark ========== 用户数据绑定 ==========
-/// 测试兼容适配 1.3.6 及以下版本旧的用户绑定逻辑
-/// 旧：key:ft_userid
-///    value: user_id
+#pragma mark ========== User data binding ==========
+/// Test compatibility adaptation for old user binding logic in version 1.3.6 and below
+/// Old: key: ft_userid
+///      value: user_id
 ///
-/// 新：key：FT_USER_INFO
-///    value: 用户数据字典
+/// New: key: FT_USER_INFO
+///      value: User data dictionary
 - (void)testAdaptOldUserSet{
     [self setRightSDKConfig];
     [[FTMobileAgent sharedInstance] unbindUser];
@@ -87,8 +89,8 @@
     [[NSUserDefaults standardUserDefaults] removeObjectForKey:@"ft_userid"];
 }
 /**
- * 测试 绑定用户
- * 验证：获取 RUM 数据 判断 userid 是否与设置一致
+ * Test user binding
+ * Verify: Get RUM data to check if userid matches the set value
  */
 - (void)testBindUser{
     [self setRightSDKConfig];
@@ -124,8 +126,8 @@
 
 }
 /**
- * 测试 切换用户
- * 验证： 判断切换用户前后 获取上传信息里用户信息是否正确
+ * Test user switching
+ * Verify: Check if user information in upload data is correct before and after user switching
  */
 -(void)testChangeUser{
     [self setRightSDKConfig];
@@ -140,8 +142,8 @@
    XCTAssertTrue([newUserid isEqualToString:@"testChangeUser2"]);
 }
 /**
- * 用户解绑
- * 验证：登出后 userid 改变 is_signin 为 F
+ * User unbinding
+ * Verify: After logout, userid changes and is_signin becomes F
  */
 -(void)testUserlogout{
     [[NSUserDefaults standardUserDefaults] setValue:nil forKey:@"ft_sessionid"];
@@ -159,7 +161,7 @@
     XCTAssertFalse([userEmail isEqualToString:@"email"]);
     XCTAssertFalse([ft_key isEqualToString:@"ft_value"]);
 }
-#pragma mark ========== 配置项 ==========
+#pragma mark ========== Configuration ==========
 -(void)testServiceName{
     FTMobileConfig *config = [[FTMobileConfig alloc]initWithDatakitUrl:self.url];
     config.enableSDKDebugLog = YES;
@@ -367,7 +369,7 @@
     NSArray *oldDatas = [[FTTrackerEventDBTool sharedManger] getFirstRecords:10 withType:FT_DATA_TYPE_LOGGING];
     XCTAssertTrue(oldDatas.count>0);
     [[FTTrackDataManager sharedInstance].dataUploadWorker addObserver:self forKeyPath:@"isUploading" options:NSKeyValueObservingOptionNew context:nil];
-    self.expectation = [self expectationWithDescription:@"异步操作timeout"];
+    self.expectation = [self expectationWithDescription:@"Async operation timeout"];
 
     [[NSNotificationCenter defaultCenter] postNotificationName:UIApplicationDidBecomeActiveNotification object:nil];
     dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)(1 * NSEC_PER_SEC)), dispatch_get_main_queue(), ^{
@@ -398,7 +400,7 @@
     NSArray *oldDatas = [[FTTrackerEventDBTool sharedManger] getFirstRecords:10 withType:FT_DATA_TYPE_LOGGING];
     XCTAssertTrue(oldDatas.count>0);
     [[FTTrackDataManager sharedInstance].dataUploadWorker addObserver:self forKeyPath:@"isUploading" options:NSKeyValueObservingOptionNew context:nil];
-    self.expectation = [self expectationWithDescription:@"异步操作timeout"];
+    self.expectation = [self expectationWithDescription:@"Async operation timeout"];
 
     [[NSNotificationCenter defaultCenter] postNotificationName:UIApplicationDidBecomeActiveNotification object:nil];
    
@@ -426,7 +428,7 @@
     datakitConfig.enableSDKDebugLog = YES;
     datakitConfig.globalContext = @{@"aa":@"bb"};
     datakitConfig.service = @"testsdk";
-    // enableDataIntegerCompatible 默认为 YES
+    // enableDataIntegerCompatible defaults to YES
     XCTAssertTrue(datakitConfig.enableDataIntegerCompatible == YES);
     datakitConfig.enableDataIntegerCompatible = NO;
     [datakitConfig setEnvWithType:FTEnvLocal];
@@ -476,6 +478,10 @@
     rumConfig.resourceUrlHandler = ^BOOL(NSURL *url) {
         return NO;
     };
+    FTViewTrackingHandler viewStrategy = (FTViewTrackingHandler)[[NSObject alloc]init];
+    rumConfig.viewTrackingHandler = viewStrategy;
+    FTActionTrackingHandler actionStrategy = (FTActionTrackingHandler)[[NSObject alloc]init];
+    rumConfig.actionTrackingHandler = actionStrategy;
     XCTAssertTrue(rumConfig.sessionOnErrorSampleRate == 0);
     XCTAssertTrue(rumConfig.rumCacheLimitCount == 100000);
     rumConfig.rumCacheLimitCount = 1000;
@@ -498,12 +504,14 @@
     XCTAssertTrue(copyRumConfig.monitorFrequency == rumConfig.monitorFrequency);
     XCTAssertTrue([copyRumConfig.globalContext isEqual:rumConfig.globalContext]);
     XCTAssertTrue([copyRumConfig.resourceUrlHandler isEqual:rumConfig.resourceUrlHandler]);
+    XCTAssertTrue([copyRumConfig.viewTrackingHandler isEqual:rumConfig.viewTrackingHandler]);
+    XCTAssertTrue([copyRumConfig.actionTrackingHandler isEqual:rumConfig.actionTrackingHandler]);
     XCTAssertTrue(copyRumConfig.freezeDurationMs == rumConfig.freezeDurationMs);
     XCTAssertTrue(copyRumConfig.rumDiscardType == rumConfig.rumDiscardType);
     XCTAssertTrue(copyRumConfig.rumCacheLimitCount == rumConfig.rumCacheLimitCount);
     XCTAssertTrue([copyRumConfig.debugDescription isEqualToString:rumConfig.debugDescription]);
 }
-// block 块不进行处理
+// block not processed
 - (void)testRUMConfigInitWithDict{
     XCTAssertNil([[FTRumConfig alloc]initWithDictionary:nil]);
     FTRumConfig *rumConfig = [[FTRumConfig alloc]init];
@@ -612,13 +620,13 @@
     XCTAssertTrue(duration<0.1);
     NSInteger count = [[FTTrackerEventDBTool sharedManger] getDatasCount];
     XCTAssertThrows([FTMobileAgent sharedInstance]);
-    // 日志不再采集
+    // Log collection is disabled
     for (int i = 0; i<20; i++) {
         [[FTLogger sharedInstance] info:@"test" property:nil];
     }
     [[FTTrackDataManager sharedInstance] insertCacheToDB];
     XCTAssertTrue([[FTTrackerEventDBTool sharedManger] getDatasCount] == count);
-    // RUM Action、View、Resource采集关闭
+    // RUM Action, View, Resource collection is disabled
     [[tester waitForViewWithAccessibilityLabel:@"home"] tap];
     [tester waitForTimeInterval:0.5];
     [[FTExternalDataManager sharedManager] startViewWithName:@"test"];
@@ -628,8 +636,8 @@
     [[FTExternalDataManager sharedManager] addErrorWithType:@"ios" message:@"testMessage" stack:@"testStack"];
     [[tester waitForViewWithAccessibilityLabel:@"Network data collection"] tap];
     [[tester waitForViewWithAccessibilityLabel:@"Network data collection"] tap];
-    XCTestExpectation *expectation= [self expectationWithDescription:@"异步操作timeout"];
-    // Trace 功能关闭、Rum Resource采集关闭
+    XCTestExpectation *expectation= [self expectationWithDescription:@"Async operation timeout"];
+    // Trace functionality is disabled, RUM Resource collection is disabled
     [self networkUploadHandler:^(NSURLResponse *response, NSDictionary *requestHeader, NSError *error) {
         XCTAssertFalse([requestHeader.allKeys containsObject:FT_NETWORK_DDTRACE_TRACEID]);
         XCTAssertFalse([requestHeader.allKeys containsObject:FT_NETWORK_DDTRACE_SAMPLED]);

@@ -11,7 +11,7 @@ import UIKit
 class DebugLogsVC: UIViewController,UITableViewDataSource,UITableViewDelegate {
 
     private let tableView = UITableView()
-    private var logFiles: [URL] = [] // 存储所有 .log 文件的路径
+    private var logFiles: [URL] = [] // Store paths of all .log files
 
     override func viewDidLoad() {
         super.viewDidLoad()
@@ -30,18 +30,18 @@ class DebugLogsVC: UIViewController,UITableViewDataSource,UITableViewDelegate {
     }
 
     private func loadLogFiles() {
-        // 获取 logsDirectory 路径
+        // Get logsDirectory path
         let cachesDirectory = FileManager.default.urls(for: .cachesDirectory, in: .userDomainMask).first!
         let logsDirectory = cachesDirectory.appendingPathComponent("FTLogs")
         let logsBackupDirectory = logsDirectory.appendingPathComponent("FTBackupLogs")
 
-        // 读取 logsDirectory 下的 FTLog.log 文件
+        // Read FTLog.log file in logsDirectory
         let ftLogFile = logsDirectory.appendingPathComponent("FTLog.log")
         if FileManager.default.fileExists(atPath: ftLogFile.path) {
             logFiles.append(ftLogFile)
         }
 
-        // 读取 _logsBackupDirectory 下的所有 .log 文件
+        // Read all .log files in _logsBackupDirectory
         do {
             let backupLogFiles = try FileManager.default.contentsOfDirectory(at: logsBackupDirectory, includingPropertiesForKeys: nil)
                 .filter { $0.pathExtension == "log" }

@@ -19,7 +19,6 @@
 @property (atomic, assign) NSTimeInterval lastRequestTimeInterval;
 @property (nonatomic, assign) BOOL enable;
 @property (nonatomic, assign) int updateInterval;
-@property (nonatomic, strong) NSDictionary *localRemoteConfiguration;
 @end
 
 @implementation FTRemoteConfigManager
@@ -42,7 +41,6 @@ static dispatch_once_t onceToken;
 - (void)enable:(BOOL)enable updateInterval:(int)updateInterval{
     _enable = enable;
     _updateInterval = updateInterval;
-    _localRemoteConfiguration = [self getLocalRemoteConfig];
     if (enable) {
         [[FTAppLifeCycle sharedInstance] addAppLifecycleDelegate:self];
     }
@@ -95,7 +93,7 @@ static dispatch_once_t onceToken;
     @try {
         if ([remoteConfig isKindOfClass:[NSDictionary class]] && ([remoteConfig count] > 0)) {
             NSDictionary *realRemoteConfig = [self removingPrefix:remoteConfig];
-            if ([realRemoteConfig isEqual:self.localRemoteConfiguration]) {
+            if ([realRemoteConfig isEqual:[self getLocalRemoteConfig]]) {
                 return;
             }
             if (self.delegate && [self.delegate respondsToSelector:@selector(updateRemoteConfiguration:)]) {
@@ -130,18 +128,21 @@ static dispatch_once_t onceToken;
     return local;
 }
 - (void)saveRemoteConfig:(NSDictionary<NSString *, id> *)remoteConfig{
-    self.localRemoteConfiguration = remoteConfig;
     [[NSUserDefaults standardUserDefaults] setObject:remoteConfig forKey:@"FT_REMOTE_CONFIG"];
-    FTInnerLogInfo(@"[remote-config] Update Remote Config: %@",remoteConfig);
+    [[NSUserDefaults standardUserDefaults] synchronize];
 }
 -(void)applicationDidBecomeActive{
     if (self.enable) {
+        FTInnerLogDebug(@"[remote-config] applicationDidBecomeActive: updateRemoteConfig");
         [self updateRemoteConfig];
     }
 }
 - (void)shutDown{
+    _updateInterval = 0;
+    _enable = NO;
+    _isFetching = NO;
+    _lastRequestTimeInterval = 0;
     [[FTAppLifeCycle sharedInstance] removeAppLifecycleDelegate:self];
-    onceToken = 0;
-    sharedManager = nil;
+    FTInnerLogDebug(@"[remote-config] shutDown");
 }
 @end

@@ -19,7 +19,7 @@
     self = [super init];
     if (self) {
         _logger = os_log_create("FTSDK", "InnerLog");
-        _loggerQueue = dispatch_queue_create("com.guance.debugLog.console", NULL);
+        _loggerQueue = dispatch_queue_create("com.ft.debugLog.console", NULL);
     }
     return self;
 }

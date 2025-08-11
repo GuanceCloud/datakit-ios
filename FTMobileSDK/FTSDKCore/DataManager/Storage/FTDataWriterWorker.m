@@ -35,14 +35,14 @@
     if(self){
         _cacheInvalidTimeInterval = timeInterval*1e9;
         _processStartTime = [[NSDate dateWithTimeIntervalSinceReferenceDate:FTAppLaunchTracker.processStartTime] ft_nanosecondTimeStamp];
-        _errorSampledConsumeQueue = dispatch_queue_create("com.guance.errorSampledConsume", 0);
+        _errorSampledConsumeQueue = dispatch_queue_create("com.ft.errorSampledConsume", 0);
         _lastProcessFatalErrorTime = -1;
         _lastErrorTimeInterval = 0;
         [self checkLastProcessErrorSampled];
     }
     return self;
 }
-// 在 rum 队列或者 longtask 队列调用
+// Called in RUM queue or longtask queue
 - (void)rumWrite:(NSString *)source tags:(NSDictionary *)tags fields:(NSDictionary *)fields time:(long long)time{
     [self rumWrite:source tags:tags fields:fields time:time updateTime:0];
 }
@@ -111,11 +111,12 @@
 // FT_DATA_TYPE_LOGGING
 -(void)logging:(NSString *)content status:(NSString *)status tags:(nullable NSDictionary *)tags field:(nullable NSDictionary *)field time:(long long)time{
     @try {
-        NSMutableDictionary *tagDict = [NSMutableDictionary dictionaryWithDictionary:[[FTPresetProperty sharedInstance] loggerTags]];
+        NSMutableDictionary *tagDict = [NSMutableDictionary new];
         if (tags) {
             [tagDict addEntriesFromDictionary:tags];
         }
         [tagDict setValue:status forKey:FT_KEY_STATUS];
+        [tagDict addEntriesFromDictionary:[[FTPresetProperty sharedInstance] loggerTags]];
         NSMutableDictionary *filedDict = [NSMutableDictionary dictionary];
         [filedDict setValue:content forKey:FT_KEY_MESSAGE];
         [filedDict addEntriesFromDictionary:field];
@@ -140,7 +141,7 @@
     self.isCache = cache;
 }
 - (void)lastErrorTimeInterval:(NSTimeInterval)lastErrorTimeInterval{
-    //  不处理上一个 error 之前的数据，不处理上一个进程的数据
+    //  Do not process data before the previous error, do not process data from the previous process
     if (lastErrorTimeInterval <= self.lastErrorTimeInterval || lastErrorTimeInterval < self.processStartTime){
         return;
     }
@@ -172,7 +173,7 @@
         }
     });
 }
-/// 检查上一进程是否有 ANR 崩溃数据，更新删除上一进程 error sampled
+/// Check if the previous process has ANR crash data, update and delete error sampled from the previous process
 -(void)lastFatalErrorIfFound:(long long)errorDate{
     _lastProcessFatalErrorTime = errorDate;
     __weak typeof(self) weakSelf = self;
@@ -188,7 +189,7 @@
     });
 }
 #pragma mark ========== CURRENT PROCESS ==========
-/// 处理当前进程的 cache 数据
+/// Process cache data for the current process
 - (void)checkRUMSessionOnErrorDatasExpired{
     FTInnerLogDebug(@"[RUM errorSampledConsume] Start Check.");
     [self checkRUMSessionOnErrorDatasWithExpireTime:[NSDate ft_currentNanosecondTimeStamp] - self.cacheInvalidTimeInterval];

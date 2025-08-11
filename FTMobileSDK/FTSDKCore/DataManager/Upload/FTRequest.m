@@ -2,7 +2,7 @@
 //  FTRequest.m
 //  FTMacOSSDK
 //
-//  Created by 胡蕾蕾 on 2021/8/5.
+//  Created by hulilei on 2021/8/5.
 //  Copyright © 2021 DataFlux-cn. All rights reserved.
 //
 
@@ -99,10 +99,10 @@
     if (!self.requestBody || !self.events) {
         return nil;
     }
-    //设置 header
+    //Set header
     NSString *packageId = [FTPackageIdGenerator generatePackageId:self.serialNumber count:self.events.count];
     [self addHTTPHeaderFields:mutableRequest packageId:packageId];
-    //设置请求方法
+    //Set request method
     mutableRequest.HTTPMethod = self.httpMethod;
     //body
     NSString *body = [self.requestBody getRequestBodyWithEventArray:self.events packageId:packageId enableIntegerCompatible:self.enableDataIntegerCompatible];

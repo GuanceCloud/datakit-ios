@@ -2,7 +2,7 @@
 //  FTRUMViewHandler.m
 //  FTMobileAgent
 //
-//  Created by 胡蕾蕾 on 2021/5/24.
+//  Created by hulilei on 2021/5/24.
 //  Copyright © 2021 hll. All rights reserved.
 //
 
@@ -30,7 +30,7 @@
 @property (nonatomic, strong) NSDate *viewStartTime;
 @property (nonatomic, assign) BOOL needUpdateView;
 @property (nonatomic, strong) FTMonitorItem *monitorItem;
-@property (nonatomic, strong) NSMutableDictionary *viewProperty;//存储在field中
+@property (nonatomic, strong) NSMutableDictionary *viewProperty;//Stored in field
 @property (nonatomic, assign) uint64_t updateTime;
 @end
 @implementation FTRUMViewHandler
@@ -79,6 +79,12 @@
                 self.needUpdateView = YES;
             }
         }
+            break;
+        case FTRUMDataViewUpdateLoadingTime:
+            if (self.isActiveView) {
+                FTRUMViewLoadingModel *loadingModel = (FTRUMViewLoadingModel *)model;
+                self.loading_time = loadingModel.duration;
+            }
             break;
         case FTRUMDataViewStop:{
             FTRUMViewModel *viewModel = (FTRUMViewModel *)model;
@@ -204,9 +210,9 @@
         return;
     }
     self.updateTime+=1;
-    //秒级
+    //Second level
     NSTimeInterval sTimeSpent = MAX(1e-9, [model.time timeIntervalSinceDate:self.viewStartTime]);
-    //纳秒级
+    //Nanosecond level
     NSNumber *nTimeSpent = [NSNumber numberWithLongLong:sTimeSpent * 1000000000];
     
     NSMutableDictionary *tags = [NSMutableDictionary dictionaryWithDictionary:context];
@@ -244,6 +250,9 @@
     }
     if (![self.loading_time isEqual:@0]) {
         [field setValue:self.loading_time forKey:FT_KEY_LOADING_TIME];
+    }
+    if (self.context.session_error_timestamp > 0) {
+        [field setValue:@(self.context.session_error_timestamp) forKey:FT_SESSION_ERROR_TIMESTAMP];
     }
     long long time = [self.viewStartTime ft_nanosecondTimeStamp];
     [self.rumDependencies.writer rumWrite:FT_RUM_SOURCE_VIEW tags:tags fields:field time:time updateTime:[updateTime ft_nanosecondTimeStamp]];

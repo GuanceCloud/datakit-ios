@@ -8,18 +8,18 @@
 
 #import <Foundation/Foundation.h>
 
-/// 字段替换，适合全局字段替换场景，如果期望逐条分析，实现条数据的替换，请求使用  FTLineDataModifier
+/// Field replacement, suitable for global field replacement scenarios, if you expect line-by-line analysis to implement data replacement, please use FTLineDataModifier
 /// - Parameters:
-///   - key: 字段名
-///   - value: 字段值（原始值）
-///   - return: 新的值，如果不修改就返回原始值；返回 nil 表示不做更改
+///   - key: field name
+///   - value: field value (original value)
+///   - return: new value, return original value if not modified; return nil to indicate no change
 typedef id _Nullable(^FTDataModifier)(NSString * _Nonnull key,id _Nonnull value);
 
 
-/// 可以针对某一行进行判断，再决定是否需要替换某一个数值
-/// 修改逻辑，只返回被修改的 key-value 对
+/// Can make judgments for a specific line, then decide whether to replace a certain value
+/// Modification logic, only returns modified key-value pairs
 /// - Parameters:
-///   - measurement: 测量名
-///   - data: 合并后的 key-value 对
-///   - return: 被修改过的键值对（返回 nil 或空字典均为不更改）
+///   - measurement: measurement name
+///   - data: merged key-value pairs
+///   - return: modified key-value pairs (return nil or empty dictionary to indicate no change)
 typedef NSDictionary<NSString *,id> *_Nullable (^FTLineDataModifier)(NSString * _Nonnull measurement,NSDictionary<NSString *,id> * _Nonnull data);

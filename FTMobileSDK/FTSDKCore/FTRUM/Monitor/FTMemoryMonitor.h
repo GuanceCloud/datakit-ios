@@ -10,9 +10,9 @@
 
 NS_ASSUME_NONNULL_BEGIN
 
-/// 内存监控器
+/// Memory monitor
 @interface FTMemoryMonitor : NSObject
-/// 内存使用量
+/// Memory usage
 - (double)memoryUsage;
 @end
 

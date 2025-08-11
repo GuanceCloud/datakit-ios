@@ -2,7 +2,7 @@
 //  FTWebViewJavascriptLeakAvoider.h
 //  FTMobileAgent
 //
-//  Created by 胡蕾蕾 on 2021/1/6.
+//  Created by hulilei on 2021/1/6.
 //  Copyright © 2021 hll. All rights reserved.
 //
 

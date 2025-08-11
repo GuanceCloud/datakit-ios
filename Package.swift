@@ -26,7 +26,6 @@ let package = Package(
             targets: [
                       "FTSDKCore",
                      ]),
-        .library(name: "FTBaseUtils_Base", targets: ["_FTBaseUtils_Base"]),
     ],
     dependencies: [
         // Dependencies declare other packages that this package depends on.
@@ -51,7 +50,8 @@ let package = Package(
             ]
         ),
         .target(name: "_FTConfig",
-                dependencies: ["_FTBaseUtils_Base"],
+                dependencies: ["_FTBaseUtils_Base",
+                               "_FTRUM"],
                 path: "FTMobileSDK/FTMobileAgent",
                 sources: ["Config"],
                 publicHeadersPath: "Config",
@@ -139,11 +139,10 @@ let package = Package(
                                "_FTLogger",
                                "_FTConfig"
                               ],
-                path: "FTMobileSDK",
-                sources: ["FTMobileExtension"],
+                path: "FTMobileSDK/FTMobileExtension",
                 resources: [
-                    .copy("Resources/PrivacyInfo.xcprivacy")],
-                publicHeadersPath: "FTMobileExtension/include",
+                    .copy("../Resources/PrivacyInfo.xcprivacy")],
+                publicHeadersPath: ".",
                 cSettings: [
                     
                 ]),

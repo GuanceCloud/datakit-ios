@@ -2,7 +2,7 @@
 //  FTReachability.m
 //  FTMacOSSDK
 //
-//  Created by 胡蕾蕾 on 2021/8/4.
+//  Created by hulilei on 2021/8/4.
 //  Copyright © 2021 DataFlux-cn. All rights reserved.
 //
 
@@ -155,7 +155,7 @@ static void FTReachabilityCallback(SCNetworkReachabilityRef target, SCNetworkRea
 #if TARGET_OS_IOS && !TARGET_OS_MACCATALYST
         _networkInfo = [FTReachability sharedNetworkInfo];
 #endif
-    _reachabilitySerialQueue = dispatch_queue_create("com.guance.reachability", NULL);
+    _reachabilitySerialQueue = dispatch_queue_create("com.ft.reachability", NULL);
     self.net = [self networkType];
 
     SCNetworkReachabilityContext    context = { 0, NULL, NULL, NULL, NULL };

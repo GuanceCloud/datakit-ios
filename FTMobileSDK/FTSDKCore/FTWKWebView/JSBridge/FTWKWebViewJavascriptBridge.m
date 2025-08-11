@@ -2,7 +2,7 @@
 //  FTWKWebViewJavascriptBridge.m
 //  FTMobileAgent
 //
-//  Created by 胡蕾蕾 on 2021/1/5.
+//  Created by hulilei on 2021/1/5.
 //  Copyright © 2021 hll. All rights reserved.
 //
 
@@ -50,7 +50,6 @@ NSString *const kFTJsCodePrefix = @"/* FTWebViewJavascriptBridge */";
     _webView = webView;
     _base = [[FTWebViewJavascriptBridgeBase alloc] init];
     _base.delegate = self;
-    [self removeScriptMessageHandler];
     [self addScriptMessageHandler];
     [self _injectJavascriptFile:hostsString];
 }
@@ -78,12 +77,12 @@ NSString *const kFTJsCodePrefix = @"/* FTWebViewJavascriptBridge */";
     [_webView.configuration.userContentController removeScriptMessageHandlerForName:FT_SCRIPT_MESSAGE_HANDLER_NAME];
     WKUserContentController *controller = _webView.configuration.userContentController;
     NSArray *userScripts = controller.userScripts;
-    [controller removeAllUserScripts];
     if (userScripts.count>0) {
         NSArray<WKUserScript *> *others = [userScripts filteredArrayUsingPredicate:
             [NSPredicate predicateWithBlock:^BOOL(WKUserScript *script, NSDictionary *bindings) {
                 return ![script.source hasPrefix:kFTJsCodePrefix];
             }]];
+        [controller removeAllUserScripts];
         for (WKUserScript *script in others) {
             [controller addUserScript:script];
         }
@@ -187,8 +186,8 @@ NSString * FTWebViewJavascriptBridge_js(NSString *hostsString) {
                                                              ); // END preprocessorJSCode
     
 #undef __WVJB_js_func__
-  NSString *jsCode = [preprocessorJSCode stringByReplacingOccurrencesOfString:kAllowedHostsPlaceholder
-                                                                withString:allowedHosts];
+    NSString *jsCode = [NSString stringWithFormat:@"%@\n%@",kFTJsCodePrefix,[preprocessorJSCode stringByReplacingOccurrencesOfString:kAllowedHostsPlaceholder
+                                                                                                                          withString:allowedHosts]];
   return jsCode;
 };
 

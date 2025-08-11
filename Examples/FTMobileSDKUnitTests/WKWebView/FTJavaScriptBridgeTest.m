@@ -21,6 +21,8 @@
 #import "FTRUMManager.h"
 #import "FTMobileAgentVersion.h"
 #import "FTMobileConfig+Private.h"
+#import "FTLoggerConfig+Private.h"
+#import "FTRumConfig+Private.h"
 #import "FTWKWebViewHandler+Private.h"
 #import "FTModelHelper.h"
 #import "FTLog+Private.h"
@@ -102,22 +104,22 @@
     [[FTMobileAgent sharedInstance] startRumWithConfigOptions:rumConfig];
     [[FTTrackerEventDBTool sharedManger] deleteAllDatas];
 }
-/// 1.验证有webview传入数据添加
-/// 2.验证数据格式
-///   基础 tags :
-///    与 native sdk 一致：
+/// 1. Verify that webview data is added
+/// 2. Verify data format
+///   Basic tags:
+///    Consistent with native SDK:
 ///    sdk_name
 ///    sdk_version
 ///    service
-///    新增 tag 字段：
+///    New tag fields:
 ///    sdk_pkg_info:{@"web":"version"}
 ///    is_web_view
-///   其余与 native SDK 一致
+///    Others consistent with native SDK
 ///
-///   rum 相关调整：
-///   session_id： 与 native SDK 一致
+///   RUM related adjustments:
+///   session_id: Consistent with native SDK
 ///   is_active: false
-///   其余与 webview 一致
+///    Others consistent with webview
 ///
 - (void)testAddRumViewData{
     [self addRumViewData:NO];
@@ -125,11 +127,11 @@
 - (void)testAddRumViewData_Nanosecond{
     [self addRumViewData:YES];
 }
-///    新增 tag 字段：
+///    New tag fields:
 ///    sdk_pkg_info:{@"web":"version",addPkgInfo}
 ///    is_web_view
 ///    view_referrer
-///   其余与 native SDK 一致
+///    Others consistent with native SDK
 - (void)testAddPkgInfo{
     [self addRumViewData:YES addPkgInfo:@{
         @"test_sdk1":@"1.0.0",
@@ -145,11 +147,11 @@
     NSURL *url = [[NSBundle mainBundle] URLForResource:@"sample" withExtension:@"html"];
     [FTModelHelper startViewWithName:@"TestWKWebViewVC"];
     [self.viewController ft_load:url.absoluteString];
-    self.loadExpect = [self expectationWithDescription:@"请求超时timeout!"];
+    self.loadExpect = [self expectationWithDescription:@"Request Time!"];
     [self waitForExpectationsWithTimeout:30 handler:^(NSError *error) {
         XCTAssertNil(error);
     }];
-    XCTestExpectation *jsScript = [self expectationWithDescription:@"请求超时timeout!"];
+    XCTestExpectation *jsScript = [self expectationWithDescription:@"Request Time!"];
     if(nano){
         [self.viewController test_addWebViewRumViewNano:^{
             [jsScript fulfill];
@@ -188,7 +190,7 @@
                 XCTAssertTrue(resourceCount == 0);
                 XCTAssertTrue([viewName isEqualToString:@"testJSBridge"]);
                 XCTAssertTrue([viewReferrer isEqualToString:@"TestWKWebViewVC"]);
-                // rum 相关调整
+                // RUM related adjustments
                 XCTAssertFalse([tags[FT_RUM_KEY_SESSION_ID] isEqualToString:@"12345"]);
                 XCTAssertTrue([field[FT_KEY_IS_ACTIVE] isEqual:@(NO)]);
                 NSMutableDictionary *infoDict = [NSMutableDictionary dictionaryWithDictionary:@{@"web":@"3.0.19"}];
@@ -209,11 +211,11 @@
 
     NSURL *url = [[NSBundle mainBundle] URLForResource:@"sample" withExtension:@"html"];
     [self.viewController test_loadFileURL:url allowingReadAccessToURL:url];
-    self.loadExpect = [self expectationWithDescription:@"请求超时timeout!"];
+    self.loadExpect = [self expectationWithDescription:@"Request Time!"];
     [self waitForExpectationsWithTimeout:30 handler:^(NSError *error) {
         XCTAssertNil(error);
     }];
-    XCTestExpectation *jsScript = [self expectationWithDescription:@"请求超时timeout!"];
+    XCTestExpectation *jsScript = [self expectationWithDescription:@"Request Time!"];
     NSInteger count =[[FTTrackerEventDBTool sharedManger] getDatasCount];
     [self.viewController test_addWebViewRumView:^{
         [jsScript fulfill];
@@ -226,16 +228,41 @@
     XCTAssertTrue(newCount.count == count);
     XCTAssertTrue(self.viewController.webView.configuration.userContentController.userScripts.count == 1);
 }
+- (void)testUserScripts{
+    [self setSDKWithEnableWebView:NO];
+    WKUserScript *userScript = [[WKUserScript alloc]initWithSource:@"window.\(bridgeName) = { send(msg) {}}" injectionTime:WKUserScriptInjectionTimeAtDocumentStart forMainFrameOnly:YES];
+    [self.viewController.webView.configuration.userContentController addUserScript:userScript];
+    NSUInteger userScriptsCount =  self.viewController.webView.configuration.userContentController.userScripts.count;
+    XCTAssertTrue(userScriptsCount >= 1);
+    [[FTWKWebViewHandler sharedInstance] enableWebView:self.viewController.webView];
+    NSUInteger newUserScriptsCount =  self.viewController.webView.configuration.userContentController.userScripts.count;
+    XCTAssertTrue(newUserScriptsCount - userScriptsCount == 1);
+    [[FTWKWebViewHandler sharedInstance] disableWebView:self.viewController.webView];
+    NSUInteger dUserScriptsCount =  self.viewController.webView.configuration.userContentController.userScripts.count;
+    XCTAssertTrue(userScriptsCount == dUserScriptsCount);
+    NSArray *userScripts = self.viewController.webView.configuration.userContentController.userScripts;
+    BOOL equalUs = NO;
+    for (WKUserScript *us in userScripts) {
+        if (us == userScript) {
+            equalUs = YES;
+        }
+    }
+    XCTAssertTrue(equalUs);
+}
 - (void)testDisableWebView_enableByCustom{
     [self setSDKWithEnableWebView:NO];
     NSURL *url = [[NSBundle mainBundle] URLForResource:@"sample" withExtension:@"html"];
+    NSUInteger userScriptsCount =  self.viewController.webView.configuration.userContentController.userScripts.count;
+
     [[FTWKWebViewHandler sharedInstance] enableWebView:self.viewController.webView];
+    NSUInteger newUserScriptsCount =  self.viewController.webView.configuration.userContentController.userScripts.count;
+    XCTAssertTrue(newUserScriptsCount - userScriptsCount == 1);
     [self.viewController test_loadFileURL:url allowingReadAccessToURL:url];
-    self.loadExpect = [self expectationWithDescription:@"请求超时timeout!"];
+    self.loadExpect = [self expectationWithDescription:@"Request Time!"];
     [self waitForExpectationsWithTimeout:30 handler:^(NSError *error) {
         XCTAssertNil(error);
     }];
-    XCTestExpectation *jsScript = [self expectationWithDescription:@"请求超时timeout!"];
+    XCTestExpectation *jsScript = [self expectationWithDescription:@"Request Time!"];
     [self.viewController test_addWebViewRumView:^{
         [jsScript fulfill];
     }];
@@ -274,11 +301,11 @@
     [self setSDKWithEnableWebView:YES];
     NSURL *url = [[NSBundle mainBundle] URLForResource:@"sample" withExtension:@"html"];
     [self.viewController test_loadFileURL:url allowingReadAccessToURL:url];
-    self.loadExpect = [self expectationWithDescription:@"请求超时timeout!"];
+    self.loadExpect = [self expectationWithDescription:@"Request Time!"];
     [self waitForExpectationsWithTimeout:30 handler:^(NSError *error) {
         XCTAssertNil(error);
     }];
-    XCTestExpectation *jsScript = [self expectationWithDescription:@"请求超时timeout!"];
+    XCTestExpectation *jsScript = [self expectationWithDescription:@"Request Time!"];
     [self.viewController test_addWebViewRumView:^{
         [jsScript fulfill];
     }];
@@ -318,11 +345,11 @@
     [FTMobileAgent shutDown];
     NSInteger oldCount =[[FTTrackerEventDBTool sharedManger] getDatasCount];
     [self.viewController test_loadFileURL:url allowingReadAccessToURL:url];
-    self.loadExpect = [self expectationWithDescription:@"请求超时timeout!"];
+    self.loadExpect = [self expectationWithDescription:@"Request Time!"];
     [self waitForExpectationsWithTimeout:30 handler:^(NSError *error) {
         XCTAssertNil(error);
     }];
-    XCTestExpectation *jsScript = [self expectationWithDescription:@"请求超时timeout!"];
+    XCTestExpectation *jsScript = [self expectationWithDescription:@"Request Time!"];
     [self.viewController test_addWebViewRumView:^{
         [jsScript fulfill];
     }];

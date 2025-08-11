@@ -20,51 +20,51 @@
 
 #import <Foundation/Foundation.h>
 #import "FTTraceContext.h"
-/// 自定义 RUM 资源属性 Block
+/// Custom RUM resource property Block
 typedef NSDictionary<NSString *,id>* _Nullable (^ResourcePropertyProvider)( NSURLRequest * _Nullable request, NSURLResponse * _Nullable response,NSData *_Nullable data, NSError *_Nullable error);
-/// 拦截 Request ，返回修改后的 Request，可用于自定义链路追踪
+/// Intercept Request and return modified Request, can be used for custom link tracing
 typedef NSURLRequest*_Nonnull(^RequestInterceptor)(NSURLRequest *_Nonnull request);
-/// 支持自定义 trace, 确认拦截后，返回 TraceContext，不拦截返回 nil
+/// Support custom trace, return TraceContext after confirming interception, return nil if not intercepted
 typedef FTTraceContext*_Nullable(^TraceInterceptor)(NSURLRequest *_Nonnull request);
-/// 支持自定义拦截 SessionTask Error，确认拦截返回 YES，不拦截返回 NO
+/// Support custom interception of SessionTask Error, return YES after confirming interception, return NO if not intercepted
 typedef BOOL (^SessionTaskErrorFilter)(NSError *_Nonnull error);
 
 NS_ASSUME_NONNULL_BEGIN
 @class FTURLSessionDelegate;
 
-/// 转发 'URLSessionDelegate' 调用到 'ftURLSessionDelegate'的接口协议。
+/// Interface protocol for forwarding 'URLSessionDelegate' calls to 'ftURLSessionDelegate'.
 ///
-/// 必须确保 `ftURLSessionDelegate` 调用所需的方法
+/// Must ensure that `ftURLSessionDelegate` calls the required methods
 @protocol FTURLSessionDelegateProviding <NSURLSessionDelegate>
-/// 自动化采集的委托代理对象
+/// Automated collection delegate proxy object
 ///
-/// 同时，必须要让 ftURLSessionDelegate 实现以下方法， SDK 才能进行数据采集
+/// At the same time, ftURLSessionDelegate must implement the following methods for SDK to perform data collection
 /// -  `- URLSession:dataTask:didReceiveData:`
 /// -  `- URLSession:task:didCompleteWithError:`
 /// -  `- URLSession:task:didFinishCollectingMetrics:`
 @property (nonatomic, strong) FTURLSessionDelegate *ftURLSessionDelegate;
 
 @end
-/// `URLSession` 支持自动化采集的代理委托对象。
+/// `URLSession` proxy delegate object that supports automated collection.
 ///
-/// 所有使用这个委托对象的 'URLSession' 所发出的请求都将被 SDK 拦截。
+/// All requests made by 'URLSession' using this delegate object will be intercepted by the SDK.
 @interface FTURLSessionDelegate : NSObject <NSURLSessionTaskDelegate,NSURLSessionDataDelegate,FTURLSessionDelegateProviding>
 
-/// 拦截 Request 返回修改后的 Request，可用于自定义链路追踪
+/// Intercept Request and return modified Request, can be used for custom link tracing
 @property (nonatomic,copy) RequestInterceptor requestInterceptor;
 
-/// 支持通过 URLRequest 判断是否进行自定义 trace,确认拦截后，返回 TraceContext，不拦截返回 nil
+/// Support determining whether to perform custom trace through URLRequest, return TraceContext after confirming interception, return nil if not intercepted
 @property (nonatomic,copy) TraceInterceptor traceInterceptor;
 
-/// 告诉拦截器需要自定义 RUM 资源属性。
+/// Tell the interceptor that custom RUM resource properties are needed.
 @property (nonatomic,copy) ResourcePropertyProvider provider;
 
-/// 是否拦截覆盖 SessionTask Error
-/// return YES:拦截，rum 中不再添加本条 network_error
-/// return NO:不拦截，rum 中添加本条 network_error
+/// Whether to intercept and override SessionTask Error
+/// return YES: intercept, network_error will not be added to rum
+/// return NO: do not intercept, network_error will be added to rum
 @property (nonatomic,copy) SessionTaskErrorFilter errorFilter;
 
-/// 实现拦截 url 请求过程的代理
+/// Proxy that implements interception of url request process
 - (FTURLSessionDelegate *)ftURLSessionDelegate;
 @end
 

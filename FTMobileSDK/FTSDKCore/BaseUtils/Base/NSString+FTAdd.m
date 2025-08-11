@@ -2,7 +2,7 @@
 //  NSString+FTMd5.m
 //  FTMobileAgent
 //
-//  Created by 胡蕾蕾 on 2020/6/30.
+//  Created by hulilei on 2020/6/30.
 //  Copyright © 2020 hll. All rights reserved.
 //
 #if ! __has_feature(objc_arc)
@@ -32,16 +32,16 @@
     return digest;
 }
 -(NSString *)ft_base64Encode{
-    //1、先转换成二进制数据
+    // 1. First convert to binary data
     NSData *data =[self dataUsingEncoding:NSUTF8StringEncoding];
-    //2、对二进制数据进行base64编码，完成后返回字符串
+    //2. Base64 encode the binary data, return string after completion
     return [data base64EncodedStringWithOptions:0];
 }
 -(NSString *)ft_base64Decode{
-    //注意：该字符串是base64编码后的字符串
-    //1、转换为二进制数据（完成了解码的过程）
+    // Note: This string is a base64-encoded string
+    // 1. Convert to binary data (decoding process is completed)
     NSData *data=[[NSData alloc]initWithBase64EncodedString:self options:0];
-    //2、把二进制数据转换成字符串
+    // 2. Convert the binary data to a string
     return [[NSString alloc]initWithData:data encoding:NSUTF8StringEncoding];
 }
 - (NSUInteger)ft_characterNumber{
@@ -52,18 +52,18 @@
     NSUInteger character = 0;
     const char *chars = [self cStringUsingEncoding:NSUTF8StringEncoding];
     NSUInteger charLength = length;
-    if (strlen(chars) <= charLength/3 +1) {//1个汉字或中文字符3个字节，1个英文1个字节
+    if (strlen(chars) <= charLength/3 +1) {//1 complex character 3 bytes, 1 English 1 byte
         return self;
     }
     NSString *str = self;
     for (int i=0; i<self.length; i++) {
         unichar a = [self characterAtIndex:i];
-        if( a >= 0x4e00 && a <= 0x9fa5){ //判断是否为中文
+        if( a >= 0x4e00 && a <= 0x9fa5){ //Check if it's a complex character
             character +=3;
         }else{
             character +=1;
         }
-        if (character >= length) {//按字数截取
+        if (character >= length) {//Truncate by byte count
             if (character == length) {
                 str = [str substringToIndex:i+1];
             }else{

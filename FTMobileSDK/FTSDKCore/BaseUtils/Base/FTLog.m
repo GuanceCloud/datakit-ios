@@ -2,7 +2,7 @@
 //  FTLog.m
 //  FTMobileAgent
 //
-//  Created by 胡蕾蕾 on 2020/5/19.
+//  Created by hulilei on 2020/5/19.
 //  Copyright © 2020 hll. All rights reserved.
 //
 #if ! __has_feature(objc_arc)
@@ -14,6 +14,7 @@
 #import "FTLogMessage.h"
 #import "FTFileLogger.h"
 #import "FTOSLogger.h"
+
 @implementation FTAbstractLogger
 
 -(void)logMessage:(FTLogMessage *)logMessage{
@@ -59,7 +60,7 @@ static dispatch_group_t _loggingGroup;
     static dispatch_once_t onceToken;
     dispatch_once(&onceToken, ^{
         sharedInstance = [[self alloc] init];
-        _loggingQueue = dispatch_queue_create("com.guance.debugLog", DISPATCH_QUEUE_SERIAL);
+        _loggingQueue = dispatch_queue_create("com.ft.debugLog", DISPATCH_QUEUE_SERIAL);
         dispatch_queue_set_specific(_loggingQueue, FTInnerLogQueueIdentityKey, &FTInnerLogQueueIdentityKey, NULL);
         _loggingGroup = dispatch_group_create();
     });

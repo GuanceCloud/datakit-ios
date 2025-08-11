@@ -2,7 +2,7 @@
 //  UIApplication+AutoTrack.m
 //  FTMobileAgent
 //
-//  Created by 胡蕾蕾 on 2021/7/21.
+//  Created by hulilei on 2021/7/21.
 //  Copyright © 2021 hll. All rights reserved.
 //
 
@@ -18,7 +18,7 @@
     return [self ft_sendAction:action to:target from:sender forEvent:event];
 }
 - (void)ftTrack:(SEL)action to:(id)target from:(id )sender forEvent:(UIEvent *)event {
-   //过滤 底部导航 与 顶部导航 多余的点击事件，采集 UITabBarButton 与 _UIButtonBarButton
+   // Filter out redundant click events from the bottom and top navigation bars, only collect UITabBarButton and _UIButtonBarButton
     if ([sender isKindOfClass:UITabBarItem.class] || [sender isKindOfClass:UIBarButtonItem.class]) {
         return;
     }
@@ -31,16 +31,18 @@
         return;
     }
     UIView *view = (UIView *)sender;
-    if ([sender isKindOfClass:UISwitch.class] || [sender isKindOfClass:UIStepper.class] ||
-        [sender isKindOfClass:UIPageControl.class]||[sender isKindOfClass:[UISegmentedControl class]]) {
-        if([FTAutoTrackHandler sharedInstance].addRumDatasDelegate && [[FTAutoTrackHandler sharedInstance].addRumDatasDelegate respondsToSelector:@selector(startAction:actionType:property:)]){
-            [[FTAutoTrackHandler sharedInstance].addRumDatasDelegate startAction:view.ft_actionName actionType:FT_KEY_ACTION_TYPE_CLICK property:nil];
+    id<FTUIEventHandler> actionHandler = [FTAutoTrackHandler sharedInstance].actionHandler;
+    if ([sender isKindOfClass:UISwitch.class] ||
+        [sender isKindOfClass:UIStepper.class] ||
+        [sender isKindOfClass:UIPageControl.class] ||
+        [sender isKindOfClass:UISegmentedControl.class]) {
+        if(actionHandler  && [actionHandler respondsToSelector:@selector(notify_sendAction:)]){
+            [actionHandler notify_sendAction:view];
         }
     } else if ([event isKindOfClass:[UIEvent class]] && event.type == UIEventTypeTouches &&
                [[[event allTouches] anyObject] phase] == UITouchPhaseEnded) {
-        if([FTAutoTrackHandler sharedInstance].addRumDatasDelegate && [[FTAutoTrackHandler sharedInstance].addRumDatasDelegate respondsToSelector:@selector(startAction:actionType:property:)]){
-            [[FTAutoTrackHandler sharedInstance].addRumDatasDelegate startAction:view.ft_actionName actionType:FT_KEY_ACTION_TYPE_CLICK property:nil];
-
+        if(actionHandler  && [actionHandler respondsToSelector:@selector(notify_sendAction:)]){
+            [actionHandler notify_sendAction:view];
         }
     }
     
@@ -50,7 +52,7 @@
     [self ftSendEvent:event];
     [self ft_sendEvent:event];
 }
-// 处理 TVOS 点击事件
+// Handle TVOS click events
 - (void)ftSendEvent:(UIEvent *)event{
     if (![event isKindOfClass:UIPressesEvent.class]) {
         return;
@@ -78,22 +80,9 @@
     if([NSStringFromClass(view.class) containsString:@"Keyboard"]){
         return;
     }
-    NSString *actionName = nil;
-    switch (press.type) {
-        case UIPressTypeSelect:
-            actionName = view.ft_actionName;
-            break;
-        case UIPressTypeMenu:
-            actionName = @"[menu]";
-            break;
-        case UIPressTypePlayPause:
-            actionName = @"[play-pause]";
-            break;
-        default:
-            return;
-    }
-    if([FTAutoTrackHandler sharedInstance].addRumDatasDelegate && [[FTAutoTrackHandler sharedInstance].addRumDatasDelegate respondsToSelector:@selector(startAction:actionType:property:)]){
-        [[FTAutoTrackHandler sharedInstance].addRumDatasDelegate startAction:actionName actionType:FT_KEY_ACTION_TYPE_CLICK property:nil];
+    id<FTUIEventHandler> actionHandler = [FTAutoTrackHandler sharedInstance].actionHandler;
+    if(actionHandler  && [actionHandler respondsToSelector:@selector(notify_sendActionWithPressType:view:)]){
+        [actionHandler notify_sendActionWithPressType:press.type view:view];
     }
 }
 #endif

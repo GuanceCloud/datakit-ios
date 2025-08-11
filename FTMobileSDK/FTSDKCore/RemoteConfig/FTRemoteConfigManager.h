@@ -17,7 +17,7 @@ NS_ASSUME_NONNULL_BEGIN
 + (instancetype)sharedInstance;
 
 - (void)enable:(BOOL)enable updateInterval:(int)updateInterval;
-/// 请求远程配置
+/// Request remote configuration
 - (void)updateRemoteConfig;
 
 - (void)updateRemoteConfigWithMiniUpdateInterval:(int)miniUpdateInterval callback:(nullable void (^)(BOOL, NSDictionary<NSString *,id> * _Nullable))callback;

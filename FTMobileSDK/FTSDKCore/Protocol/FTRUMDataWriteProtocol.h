@@ -1,9 +1,9 @@
 //
 //  FTRUMDataWriteProtocol.h
-//  FTMobileSDK
+//  FTMobileAgent
 //
-//  Created by hulilei on 2022/9/14.
-//  Copyright © 2022 DataFlux-cn. All rights reserved.
+//  Created by hulilei on 2021/8/23.
+//  Copyright © 2021 DataFlux-cn. All rights reserved.
 //
 //  Licensed under the Apache License, Version 2.0 (the "License");
 //  you may not use this file except in compliance with the License.
@@ -17,40 +17,42 @@
 //  See the License for the specific language governing permissions and
 //  limitations under the License.
 
+#import <Foundation/Foundation.h>
 
 #ifndef FTRUMDataWriteProtocol_h
 #define FTRUMDataWriteProtocol_h
 NS_ASSUME_NONNULL_BEGIN
-/// RUM 数据写入接口
+
+/// RUM data write interface
 @protocol FTRUMDataWriteProtocol <NSObject>
 
-/// rum 数据写入
+/// RUM data write
 /// - Parameters:
-///   - source: 数据来源 view|action|resource|error
-///   - tags: 属性
-///   - fields: 指标
-///   - tm: 数据产生时间戳(ns)
+///   - source: Data source view|action|resource|error
+///   - tags: Properties
+///   - fields: Metrics
+///   - tm: Data generation timestamp (ns)
 - (void)rumWrite:(NSString *)source tags:(NSDictionary *)tags fields:(NSDictionary *)fields time:(long long)time;
 
 @optional
 - (void)rumWrite:(NSString *)source tags:(NSDictionary *)tags fields:(NSDictionary *)fields time:(long long)time updateTime:(long long)updateTime;
 
 - (void)rumWrite:(NSString *)source tags:(NSDictionary *)tags fields:(NSDictionary *)fields time:(long long)time updateTime:(long long)updateTime cache:(BOOL)cache;
-/// extension widget 采集的 RUM 数据写入
+/// Write RUM data collected by extension widget
 /// - Parameters:
-///   - source: 数据来源 view|action|resource|error
-///   - tags: 属性
-///   - fields: 指标
-///   - time: 数据产生时间戳(ns)
+///   - source: Data source view|action|resource|error
+///   - tags: Properties
+///   - fields: Metrics
+///   - time: Data generation timestamp (ns)
 - (void)extensionRumWrite:(NSString *)source tags:(NSDictionary *)tags fields:(NSDictionary *)fields time:(long long)time;
 
-/// 针对 session on error 数据切换成 cache writer，数据写入类型为 RUMCache
+/// Switch to cache writer for session on error data, data type is RUMCache
 - (void)isCacheWriter:(BOOL)cache;
 
-/// 上次 APP 是否有崩溃 ANR 等数据写在本地,errorDate 崩溃时间
+/// Whether the last APP has written local data for crashes, ANR, etc., errorDate is the crash time
 - (void)lastFatalErrorIfFound:(long long)errorDate;
 
-/// 处理 rum cache 数据，看是否需要删除
+/// Process rum cache data, check if deletion is needed
 - (void)checkRUMSessionOnErrorDatasWithExpireTime:(long long)expireTime;
 @end
 NS_ASSUME_NONNULL_END

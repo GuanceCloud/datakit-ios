@@ -19,6 +19,8 @@
 #import "XCTestCase+Utils.h"
 #import "FTTrackDataManager.h"
 #import "FTLog+Private.h"
+#import "NSDate+FTUtil.h"
+
 @interface FTDataWriterWorker(Testing)
 @property (nonatomic, assign) long long processStartTime;
 - (void)checkLastProcessErrorSampled;
@@ -75,7 +77,7 @@
         XCTAssertTrue([fields[FT_RUM_SESSION_ON_ERROR_SAMPLE_RATE] intValue] == 0);
     }];
 }
-/// 测试 session_error_timestamp == error.timestamp
+/// Test session_error_timestamp == error.timestamp
 /// FT_RUM_SESSION_SAMPLE_RATE == 0
 /// FT_RUM_SESSION_ON_ERROR_SAMPLE_RATE == 100
 /// sampled_for_error_session == YES
@@ -107,10 +109,10 @@
         }else if ([source isEqualToString:FT_RUM_SOURCE_VIEW]){
             XCTAssertTrue([fields[FT_RUM_KEY_SAMPLED_FOR_ERROR_SESSION] boolValue] == YES);
             hasView = YES;
+            errorTimestamp == nil?errorTimestamp = fields[FT_SESSION_ERROR_TIMESTAMP]:errorTimestamp;
         }else if ([source isEqualToString:FT_RUM_SOURCE_ACTION]){
             hasAction = YES;
             XCTAssertTrue([fields[@"test"] isEqualToString:@"unSampling"]);
-            errorTimestamp = tags[FT_SESSION_ERROR_TIMESTAMP];
         }
         XCTAssertTrue([fields[FT_RUM_SESSION_SAMPLE_RATE] intValue] == 0);
         XCTAssertTrue([fields[FT_RUM_SESSION_ON_ERROR_SAMPLE_RATE] intValue] == 100);
@@ -184,16 +186,16 @@
     XCTAssertTrue(hasView == YES);
     XCTAssertTrue(hasAction == YES);
 }
-/// 判断调用 -switchCacheWriter 方法后，添加的 rum 数据(非error)写入数据库时类型是否为 cache，多次调用是否有影响
+/// Determine whether the type of rum data (non-error) added after calling the -switchCacheWriter method is cache, and whether multiple calls have an impact
 - (void)testSwitchCacheWriter{
     FTDataWriterWorker *writerManager = [[FTDataWriterWorker alloc]init];
     [FTTrackDataManager startWithAutoSync:NO syncPageSize:10 syncSleepTime:0];
     NSArray *oldArray = [[FTTrackerEventDBTool sharedManger] getAllDatas];
 
     [writerManager isCacheWriter:YES];
-    [writerManager rumWrite:FT_RUM_SOURCE_VIEW tags:@{@"view_id":@"1"} fields:@{@"test":@"normal"} time:123];
+    [writerManager rumWrite:FT_RUM_SOURCE_VIEW tags:@{@"view_id":@"1"} fields:@{@"test":@"normal"} time:[NSDate ft_currentNanosecondTimeStamp]];
     [writerManager isCacheWriter:YES];
-    [writerManager rumWrite:FT_RUM_SOURCE_VIEW tags:@{@"view_id":@"2"} fields:@{@"test":@"cache"} time:123];
+    [writerManager rumWrite:FT_RUM_SOURCE_VIEW tags:@{@"view_id":@"2"} fields:@{@"test":@"cache"} time:[NSDate ft_currentNanosecondTimeStamp]];
     
     NSArray *newArray = [[FTTrackerEventDBTool sharedManger] getAllDatas];
     for (FTRecordModel *model in newArray) {
@@ -201,7 +203,7 @@
     }
     XCTAssertTrue(newArray.count - oldArray.count == 2);
 }
-/// 判断调用 -switchCacheWriter 方法后,添加 error 数据后，再添加的数据写入数据库时，数据类型是否为 rum_cache
+/// Determine whether the type of data added after calling the -switchCacheWriter method is rum_cache after adding error data
 - (void)testSwitchCacheWriter_addErrorDataTurnRUMWriter{
     [FTTrackDataManager startWithAutoSync:NO syncPageSize:10 syncSleepTime:0];
     FTDataWriterWorker *writerManager = [[FTDataWriterWorker alloc]init];
@@ -222,7 +224,7 @@
     XCTAssertTrue(newArray.count - oldArray.count == 3);
     
 }
-/// 没有 error 数据写入时，cache 数据的删除
+/// Delete cache data when there is no error data written
 - (void)testSessionOnErrorDatasInvalid_noErrorData{
     [FTTrackDataManager startWithAutoSync:NO syncPageSize:10 syncSleepTime:0];
     FTDataWriterWorker *writerManager = [[FTDataWriterWorker alloc]initWithCacheInvalidTimeInterval:1];
@@ -240,7 +242,7 @@
     }
     XCTAssertTrue(newArray.count - oldArray.count == 1);
 }
-///  error 数据写入后，删除采集时间间隔外的数据，时间间隔内更新 cache 数据的数据类型为 rum
+/// Delete data outside the collection time interval after error data is written, and the data type of cache data updated within the time interval is rum
 - (void)testSessionOnErrorDatasInvalid_addErrorData{
     [FTTrackDataManager startWithAutoSync:NO syncPageSize:10 syncSleepTime:0];
     FTDataWriterWorker *writerManager = [[FTDataWriterWorker alloc]initWithCacheInvalidTimeInterval:1];
@@ -261,7 +263,7 @@
     XCTAssertTrue(newArray.count - oldArray.count == 0);
     XCTAssertTrue(newArray.count == 2);
 }
-///
+/// Test the case where the last process exceeds the time interval  
 - (void)testSampledErrorSessionDatasConsume_lastProcess_exceed_time_interval{
     [FTTrackDataManager startWithAutoSync:NO syncPageSize:10 syncSleepTime:0];
     FTDataWriterWorker *writerManager = [[FTDataWriterWorker alloc]initWithCacheInvalidTimeInterval:1];
@@ -271,7 +273,7 @@
     [self waitForTimeInterval:0.1];
     [writerManager rumWrite:FT_RUM_SOURCE_VIEW tags:@{@"view_id":@"3"} fields:@{@"test":@"normal"} time:[[NSDate date] timeIntervalSince1970]*1e9];
     
-    // 模拟 进入新进程，且超过时间间隔
+    // Simulate entering a new process and exceeding the time interval
     writerManager.processStartTime = [[[NSDate date] dateByAddingTimeInterval:2] timeIntervalSince1970]*1e9;
     
     [writerManager checkLastProcessErrorSampled];
@@ -289,7 +291,7 @@
     [writerManager rumWrite:FT_RUM_SOURCE_VIEW tags:@{@"view_id":@"1"} fields:@{@"test":@"delete"} time:123 updateTime:[[NSDate date] timeIntervalSince1970]*1e9];
     [writerManager rumWrite:FT_RUM_SOURCE_VIEW tags:@{@"view_id":@"2"} fields:@{@"test":@"delete"} time:123 updateTime:[[NSDate date] timeIntervalSince1970]*1e9];
     
-    // 模拟 进入新进程
+    // Simulate entering a new process
     writerManager.processStartTime = [[NSDate date] timeIntervalSince1970]*1e9;
     [writerManager checkLastProcessErrorSampled];
 
@@ -302,6 +304,7 @@
     XCTAssertTrue([newArray[1].op isEqualToString:FT_DATA_TYPE_RUM_CACHE]);
     XCTAssertTrue([newArray.lastObject.op isEqualToString:FT_DATA_TYPE_RUM]);
 }
+// Test the case where the last process has no ANR
 - (void)testSampledErrorSessionDatasConsume_lastProcess_no_anr{
     [FTTrackDataManager startWithAutoSync:NO syncPageSize:10 syncSleepTime:0];
     FTDataWriterWorker *writerManager = [[FTDataWriterWorker alloc]initWithCacheInvalidTimeInterval:1];
@@ -311,7 +314,7 @@
     [self waitForTimeInterval:0.1];
     [writerManager rumWrite:FT_RUM_SOURCE_VIEW tags:@{@"view_id":@"3"} fields:@{@"test":@"normal"} time:[[NSDate date] timeIntervalSince1970]*1e9];
     
-    // 模拟 进入新进程，且超过时间间隔
+    // Simulate entering a new process and exceeding the time interval
     writerManager.processStartTime = [[[NSDate date] dateByAddingTimeInterval:2] timeIntervalSince1970]*1e9;
     
     [writerManager checkLastProcessErrorSampled];
@@ -322,7 +325,7 @@
     XCTAssertTrue([newArray.firstObject.op isEqualToString:FT_DATA_TYPE_RUM]);
     XCTAssertTrue([newArray[1].op isEqualToString:FT_DATA_TYPE_RUM]);
 }
-// 
+// Test the case where the last process has ANR
 - (void)testSampledErrorSessionDatasConsume_lastProcess_has_anr{
     [FTTrackDataManager startWithAutoSync:NO syncPageSize:10 syncSleepTime:0];
     FTDataWriterWorker *writerManager = [[FTDataWriterWorker alloc]initWithCacheInvalidTimeInterval:1];
@@ -334,7 +337,7 @@
     NSDate *date = [NSDate date];
     [writerManager rumWrite:FT_RUM_SOURCE_VIEW tags:@{@"view_id":@"3"} fields:@{@"test":@"normal"} time:[[date dateByAddingTimeInterval:0.6] timeIntervalSince1970]*1e9];
 
-    // 模拟 进入新进程，且超过时间间隔
+    // Simulate entering a new process and exceeding the time interval
     writerManager.processStartTime = [[date dateByAddingTimeInterval:2] timeIntervalSince1970]*1e9;
     
     [writerManager checkLastProcessErrorSampled];

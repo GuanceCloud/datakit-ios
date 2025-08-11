@@ -2,7 +2,7 @@
 //  FTTrackDataManager.m
 //  FTMacOSSDK
 //
-//  Created by 胡蕾蕾 on 2021/8/4.
+//  Created by hulilei on 2021/8/4.
 //  Copyright © 2021 DataFlux-cn. All rights reserved.
 //
 #import "FTTrackDataManager.h"
@@ -23,33 +23,37 @@
 #import "FTDataWriterWorker.h"
 #import "FTNetworkInfoManager.h"
 @interface FTTrackDataManager ()<FTAppLifeCycleDelegate,FTNetworkChangeObserver>
-/// 是否开启自动上传逻辑（启动时、网络状态变化、写入间隔10s）
+/// Whether to enable automatic upload logic (on startup, network status changes, write interval 10s)
 @property (atomic, assign) BOOL autoSync;
 @property (nonatomic, strong) FTDBDataCachePolicy *dataCachePolicy;
 @property (nonatomic, strong) dispatch_block_t uploadWork;
 @property (nonatomic, strong) dispatch_source_t timerSource;
-@property (nonatomic, strong) NSMutableArray *errorTimeIntervals;
-@property (nonatomic, assign) NSTimeInterval cacheInvalidTimeInterval;
 @property (nonatomic, strong) FTDataUploadWorker *dataUploadWorker;
 @end
 @implementation FTTrackDataManager
 @synthesize uploadWork = _uploadWork;
 @synthesize timerSource = _timerSource;
 
-static  FTTrackDataManager *sharedInstance;
-static dispatch_once_t onceToken;
-
+static NSObject *sharedInstanceLock;
+static FTTrackDataManager *sharedInstance = nil;
++ (void)initialize{
+    if (self == [FTTrackDataManager class]) {
+        sharedInstanceLock = [[NSObject alloc] init];
+    }
+}
 +(instancetype)sharedInstance{
-    if(!sharedInstance){
-        FTInnerLogError(@"FTTrackDataManager not initialize or SDK already shutDown");
+    @synchronized(sharedInstanceLock) {
+        if(!sharedInstance){
+            FTInnerLogError(@"FTTrackDataManager not initialize or SDK already shutDown");
+        }
+        return sharedInstance;
     }
     return sharedInstance;
 }
-+(instancetype)startWithAutoSync:(BOOL)autoSync syncPageSize:(int)syncPageSize syncSleepTime:(int)syncSleepTime
-{
-    dispatch_once(&onceToken, ^{
++(instancetype)startWithAutoSync:(BOOL)autoSync syncPageSize:(int)syncPageSize syncSleepTime:(int)syncSleepTime{
+    @synchronized(sharedInstanceLock) {
         sharedInstance = [[FTTrackDataManager alloc]initWithAutoSync:autoSync syncPageSize:syncPageSize syncSleepTime:syncSleepTime];
-    });
+    }
     return sharedInstance;
 }
 -(instancetype)initWithAutoSync:(BOOL)autoSync
@@ -70,14 +74,14 @@ static dispatch_once_t onceToken;
         _dataWriterWorker = [[FTDataWriterWorker alloc]init];
         _dataUploadWorker.errorSampledConsume = _dataWriterWorker;
         _dataUploadWorker.counter = _dataCachePolicy;
-        _errorTimeIntervals = [[NSMutableArray alloc]init];
-        _cacheInvalidTimeInterval = 60;
         [[FTNetworkConnectivity sharedInstance] start];
         [[FTAppLifeCycle sharedInstance] addAppLifecycleDelegate:self];
+        [FTTrackerEventDBTool sharedManger];
         [self enableAutoSync:autoSync];
     }
     return self;
 }
+
 -(FTHTTPClient *)httpClient{
     return _dataUploadWorker.httpClient;
 }
@@ -112,7 +116,7 @@ static dispatch_once_t onceToken;
     if (data == nil) {
         return;
     }
-    //数据写入不用做额外的线程处理，数据采集组合除了崩溃数据，都是在子线程进行的
+    //Data writing doesn't need additional thread processing, data collection combinations except crash data are all performed in sub-threads
     BOOL insertItemResult = NO;
     switch (type) {
         case FTAddDataRUMCache:
@@ -173,16 +177,15 @@ static dispatch_once_t onceToken;
 - (void)insertCacheToDB{
     [self.dataCachePolicy insertCacheToDB];
 }
-- (void)shutDown{
-    onceToken = 0;
-    sharedInstance = nil;
-    [self.dataUploadWorker cancelAsynchronously];
-    [self.dataCachePolicy insertCacheToDB];
-    [[FTAppLifeCycle sharedInstance] removeAppLifecycleDelegate:self];
-    [[FTTrackerEventDBTool sharedManger] shutDown];
-}
--(void)dealloc{
-    [self.dataUploadWorker cancelAsynchronously];
-    [[FTAppLifeCycle sharedInstance] removeAppLifecycleDelegate:self];
++ (void)shutDown{
+    @synchronized(sharedInstanceLock) {
+        if (sharedInstance) {
+            [sharedInstance.dataUploadWorker cancelAsynchronously];
+            [sharedInstance.dataCachePolicy insertCacheToDB];
+            [[FTAppLifeCycle sharedInstance] removeAppLifecycleDelegate:sharedInstance];
+            [[FTTrackerEventDBTool sharedManger] close];
+        }
+        sharedInstance = nil;
+    }
 }
 @end

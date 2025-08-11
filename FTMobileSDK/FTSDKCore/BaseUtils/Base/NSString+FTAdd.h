@@ -2,7 +2,7 @@
 //  NSString+FTMd5.h
 //  FTMobileAgent
 //
-//  Created by 胡蕾蕾 on 2020/6/30.
+//  Created by hulilei on 2020/6/30.
 //  Copyright © 2020 hll. All rights reserved.
 //
 
@@ -10,26 +10,26 @@
 
 NS_ASSUME_NONNULL_BEGIN
 
-/// 字符串附加方法
+/// String extension methods
 @interface NSString (FTAdd)
-/// 16位 MD5 小写
+/// 16-bit MD5 lowercase
 -(NSString *)ft_md5HashToLower16Bit;
-/// 字符串 base64 编码
+/// String base64 encoding
 -(NSString *)ft_base64Encode;
-/// 字符串 base64 解码
+/// String base64 decoding
 -(NSString *)ft_base64Decode;
-/// utf8 编码模式下 字符串长度. 英文8位（一个字节)、中文24位(三个字节)
+/// String length in utf8 encoding mode. English 8 bits (one byte), complex character 24 bits (three bytes)
 -(NSUInteger)ft_characterNumber;
-/// 按字节数截取字符串
-/// - Parameter length: 字节数
+/// Truncate string by byte count
+/// - Parameter length: byte count
 -(NSString *)ft_subStringWithCharacterLength:(NSUInteger)length;
-/// 清除字符串前后的空格
+/// Remove spaces before and after string
 -(NSString *)ft_removeFrontBackBlank;
-/// 数据上传行协议，Measurement 格式处理
+/// Data upload line protocol, Measurement format processing
 -(NSString *)ft_replacingMeasurementSpecialCharacters;
-/// 数据上传行协议，Tags key、 value ，Fields key格式处理
+/// Data upload line protocol, Tags key, value, Fields key format processing
 - (NSString *)ft_replacingSpecialCharacters;
-/// 数据上传行协议，Fields value 格式处理
+/// Data upload line protocol, Fields value format processing
 - (NSString *)ft_replacingFieldSpecialCharacters;
 @end
 

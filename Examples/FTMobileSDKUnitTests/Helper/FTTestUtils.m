@@ -21,23 +21,23 @@
 + (NSData *)transStreamToData:(NSInputStream *)inputStream{
     [inputStream open];
     
-    // 3. 创建缓冲区和数据容器
+    // 3. Create buffer and data container
     uint8_t buffer[4096];
     NSMutableData *mutableData = [NSMutableData data];
     NSInteger bytesRead = 0;
     
-    // 4. 循环读取流数据
+    // 4. Loop read stream data
     while ([inputStream hasBytesAvailable]) {
         bytesRead = [inputStream read:buffer maxLength:sizeof(buffer)];
         if (bytesRead > 0) {
             [mutableData appendBytes:buffer length:bytesRead];
         } else if (bytesRead < 0) {
-            // 处理读取错误
-            NSLog(@"读取流数据失败");
+            // Handle read error
+            NSLog(@"Failed to read stream data");
             break;
         }
     }
-    // 5. 关闭流并返回结果
+    // 5. Close stream and return result
     [inputStream close];
     return [mutableData copy];
 }

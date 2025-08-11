@@ -2,7 +2,7 @@
 //  FTRUMDataModel.m
 //  FTMobileAgent
 //
-//  Created by 胡蕾蕾 on 2021/5/25.
+//  Created by hulilei on 2021/5/25.
 //  Copyright © 2021 hll. All rights reserved.
 //
 
@@ -45,6 +45,17 @@
     }
     return self;
 }
+@end
+
+@implementation FTRUMViewLoadingModel
+-(instancetype)initWithDuration:(NSNumber *)duration{
+    self = [super initWithType:FTRUMDataViewUpdateLoadingTime time:[NSDate date]];
+    if (self) {
+        self.duration = duration;
+    }
+    return self;
+}
+
 @end
 @implementation FTRUMActionModel
 
@@ -122,9 +133,6 @@
     NSMutableDictionary *dict = [NSMutableDictionary new];
     [dict setValue:self.session_id forKey:FT_RUM_KEY_SESSION_ID];
     [dict setValue:self.session_type forKey:FT_RUM_KEY_SESSION_TYPE];
-    if (self.session_error_timestamp > 0) {
-        [dict setValue:@(self.session_error_timestamp) forKey:FT_SESSION_ERROR_TIMESTAMP];
-    }
     [dict setValue:self.view_id forKey:FT_KEY_VIEW_ID];
     if(self.view_referrer.length>0){
         [dict setValue:self.view_referrer forKey:FT_KEY_VIEW_REFERRER];

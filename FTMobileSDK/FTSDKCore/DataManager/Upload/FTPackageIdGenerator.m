@@ -17,7 +17,7 @@ static NSString *pid;
     pid = [self base62Encode:processID];
 }
 + (NSString *)base62Encode:(int)num {
-    if (num == 0) return @"0"; // 处理边界情况
+    if (num == 0) return @"0"; // Handle boundary case
     NSMutableString *result = [NSMutableString string];
     while (num > 0) {
         NSUInteger remainder = num % 62;
@@ -29,17 +29,17 @@ static NSString *pid;
 + (NSString *)generate12CharBase62RandomString{
     NSMutableString *result = [NSMutableString stringWithCapacity:12];
     
-    // 使用更安全的随机数生成方法（适合加密场景）
+    // Use more secure random number generation method (suitable for encryption scenarios)
     for (NSUInteger i = 0; i < 12; i++) {
         uint32_t randomValue = 0;
         int status = SecRandomCopyBytes(kSecRandomDefault, sizeof(randomValue), (uint8_t *)&randomValue);
         
         if (status == errSecSuccess) {
-            // 取模 62 确保范围在 0~61
+            // Modulo 62 to ensure range is 0~61
             NSUInteger charIndex = randomValue % 62;
             [result appendString:[kBase62Charset substringWithRange:NSMakeRange(charIndex, 1)]];
         } else {
-            // 安全随机失败时回退到 arc4random
+            // Fallback to arc4random when secure random fails
             NSUInteger charIndex = arc4random_uniform(62);
             [result appendString:[kBase62Charset substringWithRange:NSMakeRange(charIndex, 1)]];
         }

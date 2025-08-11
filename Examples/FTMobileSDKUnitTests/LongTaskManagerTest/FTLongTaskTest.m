@@ -2,7 +2,7 @@
 //  FTLongTaskTest.m
 //  FTMobileSDKUnitTests
 //
-//  Created by 胡蕾蕾 on 2020/10/26.
+//  Created by hulilei on 2020/10/26.
 //  Copyright © 2020 hll. All rights reserved.
 //
 
@@ -55,7 +55,7 @@
     
     [[tester waitForViewWithAccessibilityLabel:@"TrackAppLongTask"] tap];
     
-    XCTestExpectation *expect = [self expectationWithDescription:@"请求超时timeout!"];
+    XCTestExpectation *expect = [self expectationWithDescription:@"Request timeout!"];
     dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)(1.5 * NSEC_PER_SEC)), dispatch_get_main_queue(), ^{
         [[FTMobileAgent sharedInstance] syncProcess];
         NSInteger newCount = [[FTTrackerEventDBTool sharedManger] getDatasCountWithType:FT_DATA_TYPE_RUM];
@@ -81,7 +81,7 @@
     [self initSDKWithEnableTrackAppANR:NO longTask:NO];
     [[tester waitForViewWithAccessibilityLabel:@"TrackAppLongTask"] tap];
     
-    XCTestExpectation *expect = [self expectationWithDescription:@"请求超时timeout!"];
+    XCTestExpectation *expect = [self expectationWithDescription:@"Request Time!"];
     dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)(1 * NSEC_PER_SEC)), dispatch_get_main_queue(), ^{
         [[FTMobileAgent sharedInstance] syncProcess];
         NSArray *datas = [[FTTrackerEventDBTool sharedManger] getAllDatas];
@@ -112,7 +112,7 @@
     long long startTime = [NSDate ft_currentNanosecondTimeStamp];
     [self mockAnr];
     
-    XCTestExpectation *expect = [self expectationWithDescription:@"请求超时timeout!"];
+    XCTestExpectation *expect = [self expectationWithDescription:@"Request Time!"];
     dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)(7 * NSEC_PER_SEC)), dispatch_get_main_queue(), ^{
         [[FTMobileAgent sharedInstance] syncProcess];
         NSArray *datas = [[FTTrackerEventDBTool sharedManger] getFirstRecords:10 withType:FT_DATA_TYPE_RUM];
@@ -137,7 +137,7 @@
 - (void)testNoTrackAnr{
     [self initSDKWithEnableTrackAppANR:NO longTask:NO];
     [self mockAnr];
-    XCTestExpectation *expect = [self expectationWithDescription:@"请求超时timeout!"];
+    XCTestExpectation *expect = [self expectationWithDescription:@"Request Time!"];
     dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)(1 * NSEC_PER_SEC)), dispatch_get_main_queue(), ^{
         [[FTMobileAgent sharedInstance] syncProcess];
         NSArray *datas = [[FTTrackerEventDBTool sharedManger] getFirstRecords:10 withType:FT_DATA_TYPE_RUM];
@@ -179,7 +179,7 @@
     [FTMobileAgent shutDown];
 }
 /**
- 格式 ：
+ Format ：
  dictStr  :{startDate:
             duration:
             sessionContext:
@@ -197,7 +197,7 @@
 - (void)testDataSoreANRDataFormat{
     [self initSDKWithEnableTrackAppANR:YES longTask:NO];
     [FTModelHelper startViewWithName:@"TestAnrFormat"];
-    XCTestExpectation *expect = [self expectationWithDescription:@"请求超时timeout!"];
+    XCTestExpectation *expect = [self expectationWithDescription:@"Request Time!"];
     FTLongTaskManager *longTaskManager = [[FTGlobalRumManager sharedInstance] valueForKey:@"longTaskManager"];
     NSString *dataStorePath = [longTaskManager valueForKey:@"dataStorePath"];
     long long startTime = [NSDate ft_currentNanosecondTimeStamp];
@@ -237,8 +237,8 @@
     }];
     [FTMobileAgent shutDown];
 }
-// longtask 没有结束时用户手动关闭SDK
-// 验证：无数据添加，无缓存、无文件
+// When the longtask has not been completed, the user manually call `+shutDown` method closes the SDK.
+// Verification: No data addition, no cache, no files, no crashes
 - (void)testShutdownWhenLongTaskNotEnd{
     [self initSDKWithEnableTrackAppANR:YES longTask:NO];
     FTLongTaskManager *longTaskManager = [[FTGlobalRumManager sharedInstance] valueForKey:@"longTaskManager"];
@@ -254,7 +254,7 @@
         XCTAssertTrue(duration<0.1);
     });
     [self mockAnr];
-    XCTestExpectation *expect = [self expectationWithDescription:@"请求超时timeout!"];
+    XCTestExpectation *expect = [self expectationWithDescription:@"Request Time!"];
     dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)(1 * NSEC_PER_SEC)), dispatch_get_main_queue(), ^{
         [[FTGlobalRumManager sharedInstance].rumManager syncProcess];
         NSArray *datas = [[FTTrackerEventDBTool sharedManger] getFirstRecords:10 withType:FT_DATA_TYPE_RUM];
@@ -292,7 +292,7 @@
         [fileHandle writeData:[str dataUsingEncoding:NSUTF8StringEncoding]];
     }
     [self initSDKWithEnableTrackAppANR:YES longTask:NO];
-    XCTestExpectation *expect = [self expectationWithDescription:@"请求超时timeout!"];
+    XCTestExpectation *expect = [self expectationWithDescription:@"Request Time!"];
     dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)(2 * NSEC_PER_SEC)), dispatch_get_main_queue(), ^{
         [expect fulfill];
     });
@@ -339,7 +339,7 @@
         [fileHandle writeData:[str dataUsingEncoding:NSUTF8StringEncoding]];
     }
     [self initSDKWithEnableTrackAppANR:YES longTask:NO];
-    XCTestExpectation *expect = [self expectationWithDescription:@"请求超时timeout!"];
+    XCTestExpectation *expect = [self expectationWithDescription:@"Request Time!"];
     dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)(2 * NSEC_PER_SEC)), dispatch_get_main_queue(), ^{
         [expect fulfill];
     });

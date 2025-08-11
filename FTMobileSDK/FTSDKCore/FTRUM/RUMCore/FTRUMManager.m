@@ -2,7 +2,7 @@
 //  FTRUMManger.m
 //  FTMobileAgent
 //
-//  Created by 胡蕾蕾 on 2021/5/21.
+//  Created by hulilei on 2021/5/21.
 //  Copyright © 2021 hll. All rights reserved.
 //
 #import "FTRUMManager.h"
@@ -40,7 +40,7 @@ void *FTRUMQueueIdentityKey = &FTRUMQueueIdentityKey;
         _rumDependencies = dependencies;
         _appState = FTAppStateStartUp;
         _preViewDuration = [[FTReadWriteHelper alloc]initWithValue:[NSMutableDictionary new]] ;
-        _rumQueue = dispatch_queue_create("com.guance.rum", DISPATCH_QUEUE_SERIAL);
+        _rumQueue = dispatch_queue_create("com.ft.rum", DISPATCH_QUEUE_SERIAL);
         dispatch_queue_set_specific(_rumQueue, FTRUMQueueIdentityKey, &FTRUMQueueIdentityKey, NULL);
         [self notifyRumInit];
         self.assistant = self;
@@ -105,6 +105,17 @@ void *FTRUMQueueIdentityKey = &FTRUMQueueIdentityKey;
         }
     });
 }
+-(void)updateViewLoadingTime:(NSNumber *)duration{
+    dispatch_async(self.rumQueue, ^{
+        @try {
+            FTRUMViewLoadingModel *viewModel = [[FTRUMViewLoadingModel alloc]initWithDuration:duration];
+            [self process:viewModel context:@{}];
+        } @catch (NSException *exception) {
+            FTInnerLogError(@"exception %@",exception);
+        }
+    });
+}
+
 -(void)stopView{
     [self stopViewWithViewID:nil property:nil];
 }
@@ -161,31 +172,15 @@ void *FTRUMQueueIdentityKey = &FTRUMQueueIdentityKey;
         }
     });
 }
-- (void)addLaunch:(FTLaunchType)type launchTime:(NSDate *)time duration:(NSNumber *)duration{
+- (void)addLaunch:(NSString *)name type:(NSString *)type launchTime:(NSDate *)time duration:(NSNumber *)duration property:(nullable NSDictionary *)property{
     NSDictionary *context = [self rumDynamicProperty];
     dispatch_async(self.rumQueue, ^{
         @try {
-            NSString *actionName;
-            NSString *actionType;
-            switch (type) {
-                case FTLaunchHot:
-                    actionName = @"app_hot_start";
-                    actionType = FT_LAUNCH_HOT;
-                    break;
-                case FTLaunchCold:
-                    actionName = @"app_cold_start";
-                    actionType = FT_LAUNCH_COLD;
-                    break;
-                case FTLaunchWarm:
-                    actionName = @"app_warm_start";
-                    actionType = FT_LAUNCH_WARM;
-                    break;
-            }
             FTRUMLaunchDataModel *launchModel = [[FTRUMLaunchDataModel alloc]initWithDuration:duration];
             launchModel.time = time;
-            launchModel.action_name = actionName;
-            launchModel.action_type = actionType;
-            
+            launchModel.action_name = name;
+            launchModel.action_type = type;
+            launchModel.fields = property;
             [self process:launchModel context:context];
         } @catch (NSException *exception) {
             FTInnerLogError(@"exception %@",exception);
@@ -273,9 +268,8 @@ void *FTRUMQueueIdentityKey = &FTRUMQueueIdentityKey;
                 }
                 [tags setValue:[self getResourceStatusGroup:content.httpStatusCode] forKey:FT_KEY_RESOURCE_STATUS_GROUP];
                 [tags setValue:FT_NETWORK forKey:FT_KEY_RESOURCE_TYPE];
-                
+                [tags setValue:[content.url query] forKey:FT_KEY_RESOURCE_URL_QUERY];
                 if(content.responseHeader){
-                    [tags setValue:[content.url query] forKey:FT_KEY_RESOURCE_URL_QUERY];
                     for (id key in content.responseHeader.allKeys) {
                         if([key isKindOfClass:NSString.class]){
                             NSString *lowercaseKey = [(NSString *)key lowercaseString];
@@ -288,17 +282,17 @@ void *FTRUMQueueIdentityKey = &FTRUMQueueIdentityKey;
                             }
                         }
                     }
-                    if(metrics.responseSize!=nil){
-                        [fields setValue:metrics.responseSize forKey:FT_KEY_RESOURCE_SIZE];
-                    }else if(content.responseBody){
-                        NSData *data = [content.responseBody dataUsingEncoding:NSUTF8StringEncoding];
-                        [fields setValue:@(data.length) forKey:FT_KEY_RESOURCE_SIZE];
-                    }
                     [fields setValue:[FTBaseInfoHandler convertToStringData:content.responseHeader] forKey:FT_KEY_RESPONSE_HEADER];
+                }
+                if(metrics.responseSize!=nil){
+                    [fields setValue:metrics.responseSize forKey:FT_KEY_RESOURCE_SIZE];
+                }else if(content.responseBody){
+                    NSData *data = [content.responseBody dataUsingEncoding:NSUTF8StringEncoding];
+                    [fields setValue:@(data.length) forKey:FT_KEY_RESOURCE_SIZE];
                 }
                 [fields setValue:[FTBaseInfoHandler convertToStringData:content.requestHeader] forKey:FT_KEY_REQUEST_HEADER];
                 if(self.rumDependencies.enableResourceHostIP){
-                    [fields setValue:metrics.remoteAddress forKey:FT_KEY_RESOURCE_HOST_IP];
+                    [tags setValue:metrics.remoteAddress forKey:FT_KEY_RESOURCE_HOST_IP];
                 }
                 //add trace info
                 [tags setValue:spanID forKey:FT_KEY_SPANID];
@@ -444,13 +438,13 @@ void *FTRUMQueueIdentityKey = &FTRUMQueueIdentityKey;
     FTRUMSessionHandler *current  = self.sessionHandler;
     if (current) {
         if ([self manage:self.sessionHandler byPropagatingData:model context:context] == nil) {
-            //刷新
+            //Refresh
             FTRUMSessionHandler *sessionHandler = [[FTRUMSessionHandler alloc]initWithExpiredSession:self.sessionHandler time:model.time];
             self.sessionHandler = sessionHandler;
             [self.sessionHandler.assistant process:model context:context];
         }
     }else{
-        //初始化
+        //Initialize
         self.sessionHandler = [[FTRUMSessionHandler alloc]initWithModel:model dependencies:self.rumDependencies];
         [self.sessionHandler.assistant process:model context:context];
     }

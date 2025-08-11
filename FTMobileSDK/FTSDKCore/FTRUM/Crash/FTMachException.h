@@ -14,7 +14,7 @@ extern "C" {
 
 #include "FTStackInfo.h"
 
-void FTInstallMachException(const FTCrashNotifyCallback onCrashNotify);
+void FTInstallMachException(void);
 
 void FTUninstallMachException(void);
 

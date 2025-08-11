@@ -1,1382 +1,1392 @@
-# 1.5.17
-1. 添加 `FTRUMConfig.enableTraceWebView` 配置是否开启通过 SDK 采集 webview 数据，通过 `FTRUMConfig.allowWebViewHost` 可以控制需要过滤 host 地址
-2. 添加 `FTRumConfig.sessionTaskErrorFilter`, 可以针对本地网络错误进行过滤
-3. 添加 `FTMobileConfig.remoteConfiguration` 支持开启远程条件配置功能、`FTMobileConfig.remoteConfigMiniUpdateInterval` 支持在开启远程控制之后，设置最短更新时间间隔
----
-# 1.5.17-beta.2
-1. 同 1.5.17-beta.1
----
-# 1.5.17-beta.1
-1. 修复 `FTRUMConfig.allowWebViewHost` 为空时 webView 无法采集问题
-2. 优化远程动态参数更新逻辑，添加防护代码防止参数类型配置错误导致解析异常问题
-3. 支持通过 `FTRUMConfig.sessionTaskErrorFilter` 拦截 SessionTask Error
----
-# 1.5.17-alpha.1
-1. 添加 `FTRUMConfig.enableTraceWebView` 配置是否开启通过 SDK 采集 webview 数据,
-   通过 `FTRUMConfig.allowWebViewHost` 可以控制需要过滤 host 地址
-2. 添加 `FTURLSessionDelegate.errorFilter`, 可以针对本地网络错误进行过滤
-3. 添加 `FTMobileConfig.remoteConfiguration` 、`FTMobileConfig.remoteConfigMiniUpdateInterval` 配置是否开启远程配置功能，动态配置参数。`FTMobileAgent` 添加 `+updateRemoteConfig` 和 `+ updateRemoteConfigWithMiniUpdateInterval:callback:` 更新远程配置请求方法
----
-# 1.5.16
-1. 添加 `FTMobileConfig.lineDataModifier`、`FTMobileConfig.dataModifier` 支持数据写入替换，支持数据脱敏
-2. 添加 `FTRUMConfig.sessionErrorSampleRate` 支持错误采样，在未被 setSamplingRate采样时， 在发生错误时可以对 1 分钟前的 rum 的数据进行取样采集
-3. Logger 支持通过 `logLevelFilter` 设置过滤自定义日志等级
-4. 原生页面跳转至 WebView 页面时，用原生页面名称填充 view_referrer
----
-# 1.5.16-beta.4
-1. 同 1.5.16-beta.3
----
-# 1.5.16-beta.3
-1. Logger 行数据写入替换遗漏补充
-2. fatal ANR 数据写入失败修复
----
-# 1.5.16-beta.2
-1. 同 1.5.16-beta.1
----
-# 1.5.16-beta.1
-1. 同 1.5.15-alpha.1-1.5.15-alpha.6
-2. 完善 `sessionOnErrorSampleRate` 功能实现
----
-# 1.5.16-alpha.1
-1. 同 1.5.15-alpha.1-1.5.15-alpha.6
-2. RUM 错误 Session 采样功能实现逻辑调整
-3. Logger 支持通过 `logLevelFilter` 设置过滤自定义日志等级
-4. 修复崩溃 error 造成冗余无效 action 写入问题
-5. 添加 `FTMobileConfig.lineDataModifier`、`FTMobileConfig.dataModifier` 支持数据写入替换，可适用数据脱敏
-6. 原生页面跳转至 WebView 页面时，用原生页面名称填充 view_referrer
----
-# 1.5.15
-1. 修复 Swift Package Manager 编译报错问题
----
-# 1.5.15-alpha.6
-1. 解决与 `AFNetworking` URLSession resume 方法 swizzle 冲突问题
----
-# 1.5.15-alpha.5
-1. `sessionOnErrorSampleRate` 类型改为 `int`。Error Session 采集逻辑调整，从 error 发生前 1 分钟开始采集。
----
-# 1.5.15-alpha.3
-1. FTRumConfig 新增 `sessionOnErrorSampleRate` 字段。若开启，当未被采样率选中的 Session 发生错误，SDK 将对这些原本不采集的 Session 进行数据采集
----
-# 1.5.15-alpha.2
-1. 数据同步 UserAgent 格式调整
----
-# 1.5.15-alpha.1
-1. 修复使用 `[FTExternalDataManager addErrorWithType:state:message:stack:property:]` 添加 RUM Error 时自定义指标传递丢失问题
-2. 更新 tvOS 环境默认 `sdk_name` 设置为 `df_tvos_rum_sdk`
-3. 优化数据同步 packageId 生成逻辑
----
-# 1.5.14
-1. 新增 RUM `Resource` 数据字段 `resource_first_byte_time`、`resource_dns_time`、`resource_download_time`、`resource_connect_time`、`resource_ssl_time`、`resource_redirect_time`，支持在观测云上的优化展示和 APM 火焰图的时间对齐
-2. 默认开启 `FTMobileConfig.enableDataIntegerCompatible` 
-3. 新增支持通过宏定义 `FT_DISABLE_SWIZZLING_RESOURCE` 关闭 SDK 内 URLSession Method Swizzling 方法
-4. 优化数据同步，添加失败重传逻辑
----
-# 1.5.14-beta.3
-1. 同 1.5.14-beta.1
----
-# 1.5.14-beta.1
-1. 新增支持通过宏定义 `FT_DISABLE_SWIZZLING_RESOURCE` 关闭 SDK 内 URLSession Method Swizzling 方法
-2. 优化数据同步链路追踪手段
----
-# 1.5.14-alpha.1
-1. 数据同步优化，添加失败重传逻辑
-2. `FTMobileConfig.enableDataIntegerCompatible` 默认开启
-3. 新增 RUM Resource 数据字段 `resource_first_byte_time`、`resource_dns_time`、`resource_download_time`、`resource_connect_time`、`resource_ssl_time`、`resource_redirect_time`，在观测云上的优化展示并支持 APM 火焰图的时间对齐
----
-# 1.5.13
-1. 优化页面采集逻辑，防止特殊视图导致 RUM View 采集缺失
----
-# 1.5.13-beta.1
-1. 更新 ViewController viewUUID 逻辑修改，防止 RUM 添加相同 view_id 的 View
----
-# 1.5.13-alpha.3
-1. RUM View 采集优化，防止侧滑重复采集 View
-2. RUM View 子页面采集逻辑调整，仅采集父视图为 UITabBarController 、UINavigationController、UISplitViewController 的子视图
----
-# 1.5.13-alpha.2
-1. tvOS 环境类名替换，修复使用未声明类问题
----
-# 1.5.13-alpha.1
-1. 优化页面采集逻辑，防止特殊视图导致 view 采集缺失
----
-# 1.5.12
-1. 调整文件存储路径配置，修复数据库创建失败的问题
-2. 更新了 tvOS 环境的默认 `service` 和日志 `source`，分别设置为 `df_rum_tvos` 和 `df_rum_tvos_log`
-3. 修复 RUM Action 事件中 `duration` 时长计算不准确的问题
----
-# 1.5.12-beta.1
-1. 修改 tvOS 环境默认 service 为 `df_rum_tvos`、日志 source 为 `df_rum_tvos_log`
-2. RUM Action duration 时长错误修改
----
-# 1.5.12-alpha.1
-1. 修改 tvOS 环境文件存储路径，修复无法创建数据库问题
----
-# 1.5.11
-1. RUM Resource 采集优化，防止 RUM 开启 Resource 自动采集时采集 SDK 内请求
-2. 修复 Widget Extension 中 skyWalking 类型链路追踪失败问题
----
-# 1.5.11-beta.1
-1. RUM Resource 采集优化，防止 RUM 开启 Resource 自动采集时因在 task.resume() 时获取 task.currentRequest 为 nil 导致采集 SDK 内请求问题
-2. 修复 Widget Extension 中 skyWalking 类型链路追踪失败问题
----
-# 1.5.10
-1. 支持通过 `FTTraceConfig.traceInterceptor` 拦截 Request 自定义 Trace,
-   通过 `FTRumConfig.resourcePropertyProvider` 添加 RUM Resource 自定义属性
-2. 修复动态添加全局属性方法在多线程访问下的异常问题
-3. 优化 WebView 传入数据信息
----
-# 1.5.10-beta.3
-1. SDK 版本信息内容传输优化
-2. 优化处理 Resource 数据过程，防止多线程使用 NSMutableData 异常、NSURLResponse 强转 NSHTTPURLResponse 异常
----
-# 1.5.10-beta.2
-1. 调整 WebView RUM 传入数据格式
----
-# 1.5.10-beta.1
-1. `traceInterceptor` 与 `resourcePropertyProvider` block 别名添加 `FT` 前缀、返回值 NSDictionary 添加类型声明
-2. 修复动态添加全局属性方法多线程访问异常问题
----
-# 1.5.10-alpha.1
-1. 支持全局 `traceInterceptor` 与 `resourcePropertyProvider`
----
-# 1.5.9
-1. 新增支持通过 `FTURLSessionDelegate.traceInterceptor` block 拦截 `URLRequest`，进行自定义链路追踪、更改链路中 spanId 与 traceId
-2. RUM Resource 支持采集通过 swift async/await URLSession API 发起的网络请求
-3. 修复 LongTask 与 Anr 关联 View 错误问题
----
-# 1.5.9-beta.3
-1. 修复 LongTask 与 Anr 关联 View 错误问题
----
-# 1.5.9-beta.2
-1. 修复 Resource 采集未过滤 SDK 内部 URL 的问题
-2. 修复 swift package 编译配置错误问题
----
-# 1.5.9-beta.1
-1. 同 1.5.9-alpha.1
----
-# 1.5.9-alpha.1
-1. 新增支持自定义 Trace 关联 RUM
-2. 支持采集通过 swift async/await URLSession API 发起的 Resource 数据
----
 # 1.5.8
-1. 增加 tvOS 支持
-2. 新增 RUM 条目数量限制功能，支持通过 `FTRUMConfig.rumCacheLimitCount` 来限制 SDK 最大缓存条目数据限制，支持通过 `FTRUMConfig.rumDiscardType` 设置来指定丢弃新数据或丢弃旧数据
-3. 新增支持通过 `FTMobileConfig.enableLimitWithDbSize` 限制总缓存大小功能，开启之后
-   `FTLoggerConfig.logCacheLimitCount` 及 `FTRUMConfig.rumCacheLimitCount` 将失效，
-   支持通过 `FTMobileConfig.dbDiscardType` 设置 db 废弃策略，
-   支持通过 `FTMobileConfig.dbCacheLimit` 设置 db 缓存限制大小
-4. 添加配置信息调试日志输出
----
-# 1.5.8-beta.2
-1. 同 1.5.8-beta.1
+1. Added support for RUM View/Action collection filtering and custom View/Action naming via `FTRumConfig.viewTrackingHandler` and `FTRumConfig.actionTrackingHandler`
+2. Added the `-updateViewLoadingTime:` method to support updating the loading time for the currently active RUM View
+3. Made `sdk_name` a mandatory basic field
+4. Fixed the UserScripts conflict issue in WebView data collection
+5. Fixed the thread-safety issue of SDK shutdown operations
+6. Fixed the crash caused by modifying the name of the main thread during Long task monitoring
 ---
 # 1.5.8-beta.1
-1. db 限制总缓存大小功能优化
-2. `FTRUMConfig.rumCacheLimitCount` 默认值改为 100_1000
+1. Same as 1.5.18-alpha.6
+---
+# 1.5.18-alpha.6
+1. Add custom RUM Launch Action handler via `FTRumConfig.actionTrackingHandler` 
+---
+# 1.5.18-alpha.5
+1. Changes `FTRumConfig.viewTrackingStrategy` implementation from block to delegate protocol and Changes `FTRumConfig.viewTrackingStrategy` to `FTRumConfig.viewTrackingHandler`
+2. Added support for custom RUM Action tracking handler via `FTRumConfig.actionTrackingHandler`
+3. Adds method `-updateViewLoadingTime:` to support update loading time for currently active RUM view
+---
+# 1.5.18-alpha.4
+1. Fix: made the SDK's -shutdown method thread-safe
+2. Added support for custom RUM View tracking strategy via `FTRumConfig.viewTrackingStrategy`
+3. Fix: made `sdk_name` a mandatory baseline field
+---
+# 1.5.18-alpha.3
+1. Fix: missing `#include <string.h>` in tvOS platform
+---
+# 1.5.18-alpha.2
+1. Crash monitor improvements: debug logs added, duplicate/secondary crash protection 
+---
+# 1.5.18-alpha.1
+1. Fix SDK collecting webView data injection UserScripts deleting user-added UserScripts issue
+2. Fix Longtask monitoring crash caused by modifying main thread name in sub-thread when getting main thread stack
+---
+# 1.5.17
+1. Add `FTRUMConfig.enableTraceWebView` configuration to enable webView data collection through SDK, control host address filtering through `FTRUMConfig.allowWebViewHost`
+2. Add `FTRumConfig.sessionTaskErrorFilter` to filter local network errors
+3. Add `FTMobileConfig.remoteConfiguration` to support remote conditional configuration, `FTMobileConfig.remoteConfigMiniUpdateInterval` to set minimum update interval after enabling remote control
+---
+# 1.5.17-beta.2
+1. Same as 1.5.17-beta.1
+---
+# 1.5.17-beta.1
+1. Fix webView unable to collect when `FTRUMConfig.allowWebViewHost` is empty
+2. Optimize remote dynamic parameter update logic, add protection code to prevent parsing exceptions caused by parameter type configuration errors
+3. Support intercepting SessionTask Error through `FTRUMConfig.sessionTaskErrorFilter`
+---
+# 1.5.17-alpha.1
+1. Add `FTRUMConfig.enableTraceWebView` configuration to enable webView data collection through SDK, control host address filtering through `FTRUMConfig.allowWebViewHost`
+2. Add `FTURLSessionDelegate.errorFilter` to filter local network errors
+3. Add `FTMobileConfig.remoteConfiguration`, `FTMobileConfig.remoteConfigMiniUpdateInterval` to configure remote configuration and dynamic parameter configuration. `FTMobileAgent` adds `+updateRemoteConfig` and `+ updateRemoteConfigWithMiniUpdateInterval:callback:` remote configuration update request methods
+---
+# 1.5.16
+1. Add `FTMobileConfig.lineDataModifier`, `FTMobileConfig.dataModifier` to support data write replacement and data desensitization
+2. Add `FTRUMConfig.sessionErrorSampleRate` to support error sampling, when not sampled by setSamplingRate, can sample RUM data from 1 minute ago when errors occur
+3. Logger supports filtering custom log levels through `logLevelFilter`
+4. When native page jumps to WebView page, fill view_referrer with native page name
+---
+# 1.5.16-beta.4
+1. Same as 1.5.16-beta.3
+---
+# 1.5.16-beta.3
+1. Logger line data write replacement omission supplement
+2. Fix fatal ANR data write failure
+---
+# 1.5.16-beta.2
+1. Same as 1.5.16-beta.1
+---
+# 1.5.16-beta.1
+1. Same as 1.5.15-alpha.1-1.5.15-alpha.6
+2. Complete `sessionOnErrorSampleRate` functionality implementation
+---
+# 1.5.16-alpha.1
+1. Same as 1.5.15-alpha.1-1.5.15-alpha.6
+2. Adjust RUM error Session sampling logic
+3. Logger supports filtering custom log levels through `logLevelFilter`
+4. Fix crash error causing redundant invalid action write issues
+5. Add `FTMobileConfig.lineDataModifier`, `FTMobileConfig.dataModifier` to support data write replacement, applicable for data desensitization
+6. When native page jumps to WebView page, fill view_referrer with native page name
+---
+# 1.5.15
+1. Fix Swift Package Manager compilation error issues
+---
+# 1.5.15-alpha.6
+1. Resolve conflict with `AFNetworking` URLSession resume method swizzle
+---
+# 1.5.15-alpha.5
+1. Change `sessionOnErrorSampleRate` type to `int`. Adjust Error Session collection logic, start collection from 1 minute before error occurs.
+---
+# 1.5.15-alpha.3
+1. Add `sessionOnErrorSampleRate` field to FTRumConfig. If enabled, when errors occur in Sessions not selected by sampling rate, SDK will collect data from these originally uncollected Sessions
+---
+# 1.5.15-alpha.2
+1. Adjust data sync UserAgent format
+---
+# 1.5.15-alpha.1
+1. Fix custom metrics loss when adding RUM Error using `[FTExternalDataManager addErrorWithType:state:message:stack:property:]`
+2. Update tvOS environment default `sdk_name` to `df_tvos_rum_sdk`
+3. Optimize data sync packageId generation logic
+---
+# 1.5.14
+1. Add RUM `Resource` data fields `resource_first_byte_time`, `resource_dns_time`, `resource_download_time`, `resource_connect_time`, `resource_ssl_time`, `resource_redirect_time`, support optimized display on Guance Cloud and APM flame graph time alignment
+2. Enable `FTMobileConfig.enableDataIntegerCompatible` by default
+3. Add support to disable SDK internal URLSession Method Swizzling through macro `FT_DISABLE_SWIZZLING_RESOURCE`
+4. Optimize data sync, add failure retransmission logic
+---
+# 1.5.14-beta.3
+1. Same as 1.5.14-beta.1
+---
+# 1.5.14-beta.1
+1. Add support to disable SDK internal URLSession Method Swizzling through macro `FT_DISABLE_SWIZZLING_RESOURCE`
+2. Optimize data sync link tracing methods
+---
+# 1.5.14-alpha.1
+1. Optimize data sync, add failure retransmission logic
+2. Enable `FTMobileConfig.enableDataIntegerCompatible` by default
+3. Add RUM Resource data fields `resource_first_byte_time`, `resource_dns_time`, `resource_download_time`, `resource_connect_time`, `resource_ssl_time`, `resource_redirect_time`, optimize display on Guance Cloud and support APM flame graph time alignment
+---
+# 1.5.13
+1. Optimize page collection logic, prevent RUM View collection loss caused by special views
+---
+# 1.5.13-beta.1
+1. Update ViewController viewUUID logic to prevent RUM from adding Views with same view_id
+---
+# 1.5.13-alpha.3
+1. RUM View collection optimization, prevent duplicate View collection
+2. RUM View subpage collection logic adjustment, only collect subviews of parent views UITabBarController, UINavigationController, UISplitViewController
+---
+# 1.5.13-alpha.2
+1. tvOS environment class name replacement, fix usage of undeclared class
+---
+# 1.5.13-alpha.1
+1. Optimize page collection logic, prevent view collection loss caused by special views
+---
+# 1.5.12
+1. Adjust file storage path configuration, fix database creation failure issues
+2. Updated tvOS environment default `service` and log `source` to `df_rum_tvos` and `df_rum_tvos_log` respectively
+3. Fix RUM Action event `duration` calculation inaccuracy
+---
+# 1.5.12-beta.1
+1. Modify tvOS environment default service to `df_rum_tvos`, log source to `df_rum_tvos_log`
+2. Fix RUM Action duration error
+---
+# 1.5.12-alpha.1
+1. Modify tvOS environment file storage path, fix inability to create database
+---
+# 1.5.11
+1. RUM Resource collection optimization, prevent RUM Resource automatic collection from collecting SDK internal requests when RUM Resource automatic collection is enabled
+2. Fix skyWalking type link tracing failure in Widget Extension
+---
+# 1.5.11-beta.1
+1. RUM Resource collection optimization, prevent RUM Resource automatic collection from collecting SDK internal requests when RUM Resource automatic collection is enabled due to nil task.currentRequest when task.resume() is called
+2. Fix skyWalking type link tracing failure in Widget Extension
+---
+# 1.5.10
+1. Support intercepting Request custom Trace through `FTTraceConfig.traceInterceptor`,
+    add RUM Resource custom properties through `FTRumConfig.resourcePropertyProvider`
+2. Fix dynamic global property method exception in multi-threaded access
+3. Optimize WebView passed data information
+---
+# 1.5.10-beta.3
+1. SDK version information content transmission optimization
+2. Optimize Resource data processing, prevent multi-threaded use of NSMutableData exception, NSURLResponse forced to NSHTTPURLResponse exception
+---
+# 1.5.10-beta.2
+1. Adjust WebView RUM passed data format
+---
+# 1.5.10-beta.1
+1. `traceInterceptor` and `resourcePropertyProvider` block alias added `FT` prefix, return value NSDictionary added type declaration
+2. Fix dynamic global property method multi-threaded access exception
+---
+# 1.5.10-alpha.1
+1. Support global `traceInterceptor` and `resourcePropertyProvider`
+---
+# 1.5.9
+1. Add support for intercepting `URLRequest` through `FTURLSessionDelegate.traceInterceptor` block, perform custom link tracing, change spanId and traceId in the link
+2. RUM Resource supports collecting network requests initiated by swift async/await URLSession API
+3. Fix LongTask and Anr associated View error
+---
+# 1.5.9-beta.3
+1. Fix LongTask and Anr associated View error
+---
+# 1.5.9-beta.2
+1. Fix Resource collection filtering SDK internal URL issues
+2. Fix swift package compilation configuration errors
+---
+# 1.5.9-beta.1
+1. Same as 1.5.9-alpha.1
+---
+# 1.5.9-alpha.1
+1. Add custom Trace association RUM
+2. Support collecting Resource data initiated by swift async/await URLSession API
+---
+# 1.5.8
+1. Add tvOS support
+2. Add RUM item limit function, support limiting SDK maximum cache item data through `FTRUMConfig.rumCacheLimitCount`, support specifying discard new data or old data through `FTRUMConfig.rumDiscardType`
+3. Add support for limiting total cache size through `FTMobileConfig.enableLimitWithDbSize`, after enabling
+   `FTLoggerConfig.logCacheLimitCount` and `FTRUMConfig.rumCacheLimitCount` will be invalid,
+   support setting db discard strategy through `FTMobileConfig.dbDiscardType`,
+   support setting db cache limit size through `FTMobileConfig.dbCacheLimit`
+4. Add configuration information debug log output
+---
+# 1.5.8-beta.2
+1. Same as 1.5.8-beta.1
+---
+# 1.5.8-beta.1
+1. db total cache size optimization
+2. `FTRUMConfig.rumCacheLimitCount` default value changed to 100_1000
 ---
 # 1.5.8-alpha.2
-1. 增加 tvOS 支持
-2. 新增支持通过 `FTMobileConfig.enableLimitWithDbSize` 开启 db 限制大小功能，
-   支持通过 `FTMobileConfig.dbDiscardType` 设置 db 废弃策略，
-   支持通过 `FTMobileConfig.dbCacheLimit` 设置 db 缓存限制大小
-3. 添加配置信息调试日志输出
+1. Add tvOS support
+2. Add support for enabling db size limit through `FTMobileConfig.enableLimitWithDbSize`,
+    support setting db discard strategy through `FTMobileConfig.dbDiscardType`,
+    support setting db cache limit size through `FTMobileConfig.dbCacheLimit`
+3. Add configuration information debug log output
 ---
 # 1.5.8-alpha.1
-1. 新增 RUM 条目数量限制功能，支持通过 `FTRUMConfig.rumCacheLimitCount` 来限制 SDK 最大缓存条目数据限制，支持通过 `FTRUMConfig.rumDiscardType` 设置来指定丢弃新数据或丢弃旧数据
+1. Add RUM item limit function, support limiting SDK maximum cache item data through `FTRUMConfig.rumCacheLimitCount`, support specifying discard new data or old data through `FTRUMConfig.rumDiscardType`
 ---
 # 1.5.7
-1. 支持通过 `FTRUMConfig.freezeDurationMs` 设置卡顿检测阀值
-2. 优化 SDK 的 `shutDown` 方法，避免主线程同步等待导致的卡顿或 WatchDog 崩溃
+1. Support setting `FTRUMConfig.freezeDurationMs` for card detection threshold
+2. Optimize SDK `shutDown` method to avoid carding or WatchDog crash caused by synchronous waiting on the main thread
 ---
 # 1.5.7-beta.1
-1. 同 1.5.7-alpha.1、1.5.7-alpha.2
+1. Same as 1.5.7-alpha.1, 1.5.7-alpha.2
 ---
 # 1.5.7-alpha.2
-1. 替换 longtask 检测时间范围设置参数 `blockDurationMs` 为 `freezeDurationMs`
+1. Replace longtask detection time range setting parameter `blockDurationMs` with `freezeDurationMs`
 ---
 # 1.5.7-alpha.1
-1. 添加设置 longtask 检测时间范围的方法
-2. 优化 SDK 的 `shutDown` 方法，避免主线程同步等待导致的卡顿或 WatchDog 崩溃
+1. Add method to set longtask detection time range
+2. Optimize SDK `shutDown` method to avoid carding or WatchDog crash caused by synchronous waiting on the main thread
 ---
 # 1.5.6
-1. 支持使用 `FTMobileConfig.compressIntakeRequests` 对同步数据进行 deflate 压缩配置
-2. RUM 添加 `addAction:actionType:property` 与 `startAction:actionType:property:` 方法，优化 RUM Action 采集逻辑
-3. 修复使用 NSFileHandle 废弃 api 导致的崩溃问题
+1. Support `FTMobileConfig.compressIntakeRequests` for synchronous data deflation configuration
+2. RUM adds `addAction:actionType:property` and `startAction:actionType:property:` methods, optimize RUM Action collection logic
+3. Fix crash caused by NSFileHandle deprecated API
 ---
 # 1.5.6-beta.1
-1. 同 1.5.5-alpha.1
-2. 修复使用 NSFileHandle 废弃 api 导致的崩溃问题
+1. Same as 1.5.5-alpha.1
+2. Fix crash caused by NSFileHandle deprecated API
 
 ---
 # 1.5.5
-1. 修复 `FTResourceMetricsModel` 中数组越界导致的崩溃问题
+1. Fix crash caused by array out of bounds in `FTResourceMetricsModel`
 ---
 # 1.5.5-beta.1
-1. 同 1.5.2-hotfix.2
+1. Same as 1.5.2-hotfix.2
 ---
 # 1.5.5-alpha.1
-1. 添加对 SDK 内部数据请求压缩的支持
-2. RUM 添加 `addAction:actionType:property` 与 `startAction:actionType:property:` 方法，优化 RUM Action 采集逻辑
+1. Add support for compressing SDK internal data requests
+2. RUM adds `addAction:actionType:property` and `startAction:actionType:property:` methods, optimize RUM Action collection logic
 ---
 # 1.5.4
-1. 添加全局、log、RUM globalContext 属性动态设置方式
-2. 添加清除数据方法，支持删除所有尚未上传至服务器的数据
-3. 调整同步间歇支持的最大时间间隔至 5000 毫秒
+1. Add global, log, RUM globalContext property dynamic setting method
+2. Add clear data method, support deleting all data not yet uploaded to the server
+3. Adjust maximum interval for synchronous intermittent support to 5000 milliseconds
 ---
 # 1.5.4-beta.1
-1. 同 1.5.4-alpha.1-1.5.4-alpha.4
-2. SDK `shutDown` 方法内部关闭顺序调整
-3. RUM `addError` 方法参数 `stack` 允许为空
+1. Same as 1.5.4-alpha.1-1.5.4-alpha.4
+2. SDK `shutDown` method internal close order adjustment
+3. RUM `addError` method parameter `stack` allows null
 ---
 # 1.5.4-alpha.4
-1. 调整同步间歇支持的最大时间间隔至 5000 毫秒
-2. 全局、log、RUM globalContext 属性动态设置方法修改为类方法
-3. 废弃 `FTMobileConfig.version` 属性
-4. 优化动态 tags 赋值的时机
+1. Adjust maximum interval for synchronous intermittent support to 5000 milliseconds
+2. Global, log, RUM globalContext property dynamic setting method modified to class method
+3. Abandon `FTMobileConfig.version` property
+4. Optimize dynamic tags assignment timing
 ---
 # 1.5.4-alpha.3
-1. 添加清除数据方法，支持删除所有尚未上传至服务器的数据
-2. 优化 SDK `shutDown` 方法，由实例方法改为类方法，防止测试环境断言抛错
-3. 调整同步间歇支持的最大时间间隔至 500 毫秒
-4. 补充内部错误提示日志
+1. Add clear data method, support deleting all data not yet uploaded to the server
+2. Optimize SDK `shutDown` method, changed from instance method to class method to prevent test environment assertion error
+3. Adjust maximum interval for synchronous intermittent support to 500 milliseconds
+4. Supplement internal error prompt log
 ---
 # 1.5.4-alpha.2
-1. 优化动态 tags 赋值的时机
+1. Optimize dynamic tags assignment timing
 ---
 # 1.5.4-alpha.1
-1. 添加全局、log、RUM globalContext 属性动态设置方式
+1. Add global, log, RUM globalContext property dynamic setting method
 ---
 # 1.5.3
-1. 修复因属性修饰符使用不当引发的内存访问错误导致的崩溃问题
-2. 使用内部警告日志替换 `FTSwizzler` 中方法签名验证断言
-3. 优化采集数据的小数精度
+1. Fix crash caused by improper attribute modifier memory access
+2. Use internal warning log instead of method signature verification assertion in `FTSwizzler`
+3. Optimize decimal precision of collected data
 ---
 # 1.5.2-hotfix.2
-1. 修复 `FTResourceMetricsModel` 中数组越界崩溃的问题
+1. Fix crash caused by array out of bounds in `FTResourceMetricsModel`
 ---
 # 1.5.2
-1. 修复 Xcode 16 编译缺少 `#include <arm/_mcontext.h>` 头文件问题
-2. 自动采集 RUM-Resource 时，过滤掉直接从本地缓存获取或获取类型未知的 Resource，防止采集重复
-3. 修复 UITabBarController 子视图 loadingTime 计算逻辑
+1. Fix Xcode 16 compilation missing `#include <arm/_mcontext.h>` header file issue
+2. Filter out Resource directly obtained from local cache or of unknown type when auto-collecting RUM-Resource, prevent duplicate collection
+3. Fix UITabBarController subview loadingTime calculation logic
 ---
 # 1.5.2-beta.1
-1. 同 1.5.2-alpha.1 - 1.5.2-alpha.3
-2. 修复 UITabBarController 子视图 loadingTime 计算逻辑
+1. Same as 1.5.2-alpha.1 - 1.5.2-alpha.3
+2. Fix UITabBarController subview loadingTime calculation logic
 ---
 # 1.5.2-alpha.3
-1. 修复 Xcode 16 编译缺少 `#include <arm/_mcontext.h>` 头文件问题
+1. Fix Xcode 16 compilation missing `#include <arm/_mcontext.h>` header file issue
 ---
 # 1.5.2-alpha.2
-1. 自动采集 RUM-Resource 过滤条件增加，过滤掉资源获取类型未知的 Resource
+1. Increase filter condition for auto-collecting RUM-Resource, filter out Resource of unknown resource type
 ---
 # 1.5.2-alpha.1
-1. 自动采集 RUM-Resource 时，过滤掉直接从本地缓存获取的 Resource，防止采集重复
+1. Filter out Resource directly obtained from local cache when auto-collecting RUM-Resource, prevent duplicate collection
 ---
 # 1.5.1
-1. 修复行协议数据转义算法，解决因换行符导致数据同步失败问题
-2. 优化错误类型为 `network_error` 的错误信息，统一使用英文描述网络请求错误码
-3. 优化数据同步逻辑，修复多线程访问已释放 `uploadDelayTimer` 导致的崩溃问题
-4. 修复采集崩溃信息时 OC 与 C 字符串转换时编码格式错误导致的崩溃问题
+1. Fix line protocol data escape algorithm, solve data synchronization failure due to line break
+2. Optimize error type `network_error` error message, unify English description of network request error code
+3. Optimize data sync logic, fix crash caused by releasing `uploadDelayTimer` in multi-threaded access
+4. Fix crash caused by incorrect encoding format when converting OC string to C string during crash information collection
 ---
 
 # 1.5.1-beta.2
-1. 优化数据同步逻辑，修复多线程访问已释放 `uploadDelayTimer` 导致的崩溃问题
-2. 修复采集崩溃信息时 OC 与 C 字符串转换时编码格式错误导致的崩溃问题
+1. Optimize data sync logic, fix crash caused by releasing `uploadDelayTimer` in multi-threaded access
+2. Fix crash caused by incorrect encoding format when converting OC string to C string during crash information collection
 ---
 # 1.5.1-beta.1
-1. 同 1.5.1-alpha.1、1.5.1-alpha.2
+1. Same as 1.5.1-alpha.1, 1.5.1-alpha.2
 ---
 # 1.5.1-alpha.2
-1. 优化错误类型为 `network_error` 的错误信息，统一使用英文描述网络请求错误码
+1. Optimize error type `network_error` error message, unify English description of network request error code
 ---
 # 1.5.1-alpha.1
-1. 修复行协议数据转义算法，解决因换行符导致数据同步失败问题
+1. Fix line protocol data escape algorithm, solve data synchronization failure due to line break
 ---
 # 1.5.0
-1. RUM resource 网络请求添加 remote ip 地址解析功能
-2. 添加行协议 Integer 数据兼容模式，处理 web 数据类型冲突问题
-3. 日志添加自定义 status 方法
-4. 日志数据写入优化、数据同步优化
-5. 对传入 SDK 的 NSDictionary 类型参数进行格式处理防止转换 json 失败造成数据丢失
+1. RUM resource network request adds remote ip address parsing function
+2. Add line protocol Integer data compatible mode, handle web data type conflict issues
+3. Log adds custom status method
+4. Log data writing optimization, data sync optimization
+5. Format parameters of NSDictionary type passed to SDK to prevent data loss due to json conversion failure
 ---
 # 1.5.0-beta.1
-1. 同 1.5.0-alpha.2
+1. Same as 1.5.0-alpha.2
 ---
 # 1.5.0-alpha.2
-1. 修复日志数据写入时互斥锁未初始化造成访问冲突问题
-2. 行协议处理格式错误数据逻辑优化
-3. sdk_data_id 算法修改
-4. 对传入 SDK 的 NSDictionary 类型参数格式处理防止转换 json 失败造成数据丢失
+1. Fix mutex lock not initialized during log data writing, causing access conflict
+2. Optimize logic for incorrectly formatted error data
+3. sdk_data_id algorithm modified
+4. Format parameters of NSDictionary type passed to SDK to prevent data loss due to json conversion failure
 ---
 # 1.5.0-alpha.1
-1. RUM resource 网络请求添加 remote ip 地址解析功能
-2. 添加行协议 Integer 数据兼容模式，处理 web 数据类型冲突问题
-3. 日志添加自定义 status 方法
-4. 日志数据写入优化、数据同步优化
+1. RUM resource network request adds remote ip address parsing function
+2. Add line protocol Integer data compatible mode, handle web data type conflict issues
+3. Log adds custom status method
+4. Log data writing optimization, data sync optimization
 ---
 # 1.4.14
-1. 修复 `FTSwizzler` 内访问已被销毁的 Class 对象而导致的内存访问错误崩溃
-2. 修复向 SDK 传递的 NSDictionary 类型参数实际上是可变对象时可能引发的数据一致性和操作冲突问题
+1. Fix crash caused by accessing destroyed Class object in `FTSwizzler`
+2. Fix data consistency and operation conflict issues when NSDictionary type parameters passed to SDK are actually mutable objects
 ---
 
 # 1.4.14-beta.1
-1. 同 1.4.14-alpha.2
+1. Same as 1.4.14-alpha.2
 ---
 # 1.4.14-alpha.2
-1. 修复传入变量属性时，可能会导致的冲突问题
+1. Fix conflict issues when variable properties are passed in
 ---
 # 1.4.14-alpha.1
-1. 修复 swizzle 方法与其他库 swizzle 方法冲突问题
+1. Fix swizzle method conflict with other library swizzle methods
 
 ---
 # 1.4.13
-1. RUM LongTask、Anr 采集优化，修复 LongTask 堆栈信息采集不准确问题，新增支持采集致命卡顿
-2. 修复 `FTSwizzler` 内因多线程同时操作 NSMutableSet 造成的崩溃
-3. 修复打包 SDK Framework info.plist 中版本信息缺失问题
-4. 修复自定义 NSURLSession 未设置 delegate 时 Resource 的性能指标采集失败问题
-5. SDK 内部日志转化为文件功能优化，新增指定文件路径方法
+1. RUM LongTask, Anr collection optimization, fix LongTask stack information collection inaccuracy, support fatal card collection
+2. Fix crash caused by multi-threaded operation of NSMutableSet in `FTSwizzler`
+3. Fix version information missing in SDK Framework info.plist
+4. Fix performance metrics collection failure for Resource when custom NSURLSession is not set delegate
+5. SDK internal log conversion to file function optimization, add method to specify file path
 
 ---
 # 1.4.13-beta.1
-1. LongTask、Anr 采集优化，文件操作添加线程保护
-2. 修复 NSURLSession 未设置 delegate 时 metrics 采集失败问题
-3. SDK 内部日志转化为文件 backup 文件名赋值错误修复
+1. LongTask, Anr collection optimization, file operation added thread protection
+2. Fix NSURLSession metrics collection failure when delegate is not set
+3. SDK internal log conversion to file backup file name assignment error fix
 
 ---
 # 1.4.13-alpha.1
-1. LongTask、Anr 采集优化，修复 LongTask 堆栈信息不准确问题
-2. 修复多线程访问造成 Resource 数据 swizzle 崩溃问题
-3. Framework info.plist 版本信息补充
-4. sdk_data_id 算法修改
-5. SDK 内部日志转化为文件功能优化，新增指定文件路径方法
+1. LongTask, Anr collection optimization, fix LongTask stack information inaccuracy
+2. Fix multi-threaded access causing Resource data swizzle crash
+3. Framework info.plist version information supplement
+4. sdk_data_id algorithm modified
+5. SDK internal log conversion to file function optimization, add method to specify file path
 
 ---
 # 1.4.12
-1. 修复 SDK 调用注销方法 shutDown 产生的内存泄漏问题
-2. 修复采集 RUM-Resource 时与其他库冲突导致崩溃问题
-3. 修复崩溃采集 UncaughtExceptionHandler 未传递问题
-4. 修复多次初始化 SDK 造成的数据异常
+1. Fix memory leak caused by SDK call shutDown method
+2. Fix crash caused by conflict with other libraries when collecting RUM-Resource
+3. Fix UncaughtExceptionHandler not passed problem
+4. Fix data anomalies caused by multiple SDK initializations
 
 ---
 # 1.4.12-beta.1
-1. 修复注销SDK后产生的内存泄漏问题
-2. 修复采集 RUM-Resource 时与其他库冲突导致崩溃问题
-3. 处理完 UncaughtException 传递 UncaughtExceptionHandler
-4. 修复重复配置 SDK 造成的数据异常
+1. Fix memory leak caused by shutDown SDK
+2. Fix crash caused by conflict with other libraries when collecting RUM-Resource
+3. Process UncaughtException and pass UncaughtExceptionHandler
+4. Fix data anomalies caused by duplicate SDK configuration
 
 ---
 # 1.4.12-alpha.1
-1. 数据同步、日志写入优化
-2. Framework info.plist 版本信息补充
-3. sdk_data_id 算法修改
+1. Data sync, log writing optimization
+2. Framework info.plist version information supplement
+3. sdk_data_id algorithm modified
 ---
 
 # 1.4.11
-1. 新增支持数据同步参数配置，请求条目数据，同步间歇时间，以及日志缓存条目数
-2. 新增内部日志转文件方法
-3. 日志关联 RUM 数据获取错误修复
-4. 耗时操作优化
-5. 修复 WebView jsBridge 时产生的崩溃，对 WebView 引用改为弱引用
+1. Add support for data sync parameter configuration, request item data, sync intermittent time, and log cache item count
+2. Add internal log conversion to file method
+3. Log associated RUM data acquisition error fix
+4. Time-consuming operation optimization
+5. Fix crash caused by WebView jsBridge, change WebView reference to weak reference
 ---
 
 # 1.4.11-beta.1
-1. 修复 WebView jsBridge 时产生的崩溃，对 WebView 引用改为弱引用
+1. Fix crash caused by WebView jsBridge, change WebView reference to weak reference
 ---
 # 1.4.11-alpha.2
-1. 数据同步时超时时间设置无效修复
-2. 避免符号冲突方法名称修改
-2. 调试日志输出格式优化
+1. Timeout setting for data sync ineffective fix
+2. Avoid symbol conflict method name modification
+2. Debug log output format optimization
 ---
 
 # 1.4.11-alpha.1
-1. 新增支持数据同步参数配置，请求条目数据，同步间歇时间，以及日志缓存条目数
-2. 新增内部日志转文件方法
-3. 日志关联 RUM 数据获取错误修复
-4. 耗时操作优化
+1. Add support for data sync parameter configuration, request item data, sync intermittent time, and log cache item count
+2. Add internal log conversion to file method
+3. Log associated RUM data acquisition error fix
+4. Time-consuming operation optimization
 
 ---
 # 1.4.10-beta.2
-1. 修复数据同步失败问题
+1. Fix data sync failure
 
 ---
 # 1.4.10-beta.1
-1. 同 1.4.10-alpha.1-1.4.10-alpha.2
-2. 调整隐私清单引用
+1. Same as 1.4.10-alpha.1-1.4.10-alpha.2
+2. Adjust privacy policy reference
 
 ---
 # 1.4.10-alpha.2
-1. 修复数据同步失败问题
-2. 修复多线程访问造成 Resource 数据 swizzle 崩溃问题
+1. Fix data sync failure
+2. Fix multi-threaded access causing Resource data swizzle crash
 
 ---
 # 1.4.10-alpha.1
-1. 添加隐私清单
+1. Add privacy policy
 
 ---
 # 1.4.9-beta.5
-1. WebView 传入数据时间精度适配
+1. WebView passed data time precision adaptation
 
 ---
 # 1.4.9-beta.4
-1. 同 1.4.9-alpha.7 ，.c文件头文件引用调整
+1. Same as 1.4.9-alpha.7, .c file header file reference adjustment
 
 ---
 # 1.4.9-alpha.7
-1. 补充缺失的头文件，修复编译失败问题
+1. Supplement missing header files, fix compilation failure
 
 ---
 # 1.4.9-beta.3
-1. 拦截 URLSession 采集数据时使用 `currentRequest` 替换 `originalRequest`，修复一些场景下用户自定义采集 `RUM-resource` 规则时数据类型转换失败问题
+1. Use `currentRequest` instead of `originalRequest` when intercepting URLSession data collection, fix data type conversion failure in some scenarios when user customizes RUM-resource rules
 
 ---
 # 1.4.9-beta.2
-1. 优化 RUM-Resource 自动采集逻辑，修复一些场景下采集异常问题
-2. 通过 `FTURLSessionDelegate` 自定义链路追踪时,自定义优先级高于自动追踪
+1. Optimize RUM-Resource automatic collection logic, fix some collection anomalies
+2. Custom priority is higher than automatic tracking when customizing link tracing through `FTURLSessionDelegate`
 
 ---
 # 1.4.9-beta.1
-1. 同 1.4.9-alpha.1 - 1.4.9-alpha.6
-2. longtask、anr 发生时间赋值错误修复
-3. RUM-Resource 自动采集与使用`FTURLSessionDelegate`自定义采集兼容处理
+1. Same as 1.4.9-alpha.1 - 1.4.9-alpha.6
+2. longtask, anr occurrence time assignment error fix
+3. RUM-Resource automatic collection and `FTURLSessionDelegate` custom collection compatibility handling
 
 ---
 # 1.4.9-alpha.6
-1. WebView 传入数据时间精度适配
-2. SkyWalking propagation header service 参数调整
-2. 修复 ANR 重复采集、优化 Error 错误信息、线程回溯
+1. WebView passed data time precision adaptation
+2. SkyWalking propagation header service parameter adjustment
+2. Fix ANR duplicate collection, optimize Error error message, thread backtrace
 
 ---
 # 1.4.9-alpha.5
-1. 新增不关联 RUM 时获取 Trace 链路请求头的方法
-2. 数据上传时 BOOL 类型数据格式处理修改
+1. Add method to get Trace link request header when not associated with RUM
+2. BOOL type data format processing modified during data upload
 
 ---
 # 1.4.9-alpha.4
-1. `RUM-View` 新增指标 `view_update_time`
+1. `RUM-View` new metric `view_update_time`
 
 ---
 # 1.4.9-alpha.3
-1. `RUM-View.is_active` 页面活跃状态修改为指标
+1. `RUM-View.is_active` page active state modified to metric
 
 ---
 # 1.4.9-alpha.2
-1. `RUM-Action` 中启动事件时间赋值错误修复
+1. `RUM-Action` start event time assignment error fix
 
 ---
 # 1.4.9-alpha.1
-1. 修复 arm64e 符号翻译失败问题
+1. Fix arm64e symbol translation failure
 
 ---
 # 1.4.8-beta.1
-1. 同 1.4.8-alpha.5、 调试日志输出调整
+1. Same as 1.4.8-alpha.5, debug log output adjustment
 
 ---
 # 1.4.8-alpha.5
-1. 修复 `RUM-view.duration` 时间过长问题
-2. RUM-ResourceError `error_type` 对应值调整为 `network_error`
+1. Fix `RUM-view.duration` time too long problem
+2. RUM-ResourceError `error_type` corresponding value adjusted to `network_error`
 
 ---
 # 1.4.8-alpha.4
-1. 修复由 block 创建 IMP 时添加多余参数 SEL 导致的崩溃问题
-2. 修复采样率算法
-3. 优化调试日志输出、UUID String 格式更改
+1. Fix crash caused by adding extra parameter SEL when creating IMP in block
+2. Fix sampling rate algorithm
+3. Optimize debug log output, UUID String format change
 
 ---
 # 1.4.8-alpha.3
-1. 新增 dataway 公网上传数据逻辑
-2. 添加上传数据唯一标识
-3. 修复 resource duration 负值问题、resource_first_byte 计算逻辑修改
-4. 自动采集 HTTP Resource 逻辑修改，解决 URLSession 创建在 SDK 初始化完成之前时该 URLSession 无法采集问题
+1. Add dataway public network data upload logic
+2. Add upload data unique identifier
+3. Fix resource duration negative value, resource_first_byte calculation logic modified
+4. Auto-collect HTTP Resource logic modified, solve the problem that URLSession cannot be collected when URLSession is created before SDK initialization
 
 ---
 # 1.4.8-alpha.2
-1. RUM Session 过期逻辑修改，同步重置 view，修复 APP 进入后台 HTTP 请求悬挂导致的 RUM-View 持续时间过长问题
-2. 自动采集 HTTP Resource 逻辑修改
-3. 新增自定义采集 HTTP Resource 功能
-4. 优化 RUM-ResourceError 错误信息描述
+1. RUM Session expiration logic modified, sync reset view, fix RUM-View continuous duration problem caused by HTTP request suspension in APP background
+2. Auto-collect HTTP Resource logic modified
+3. Add custom HTTP Resource collection function
+4. Optimize RUM-ResourceError error message description
 
 ---
 # 1.4.8-alpha.1
-1. 新增自定义 TraceHeader 功能
-2. 配置 FTRumConfig 时设置 `resourceUrlHandler` 替换 FTMobileAgent `-isIntakeUrl:` 方法
-3. 修复多个 URLSession resource 自定义数据覆盖问题
+1. Add custom TraceHeader function
+2. Set `resourceUrlHandler` in FTRumConfig to replace FTMobileAgent `-isIntakeUrl:` method
+3. Fix multiple URLSession resource custom data overwriting issues
 
 ---
 # 1.4.7-beta.4
-1. 数据上传逻辑优化
+1. Data upload logic optimization
 
 ---
 # 1.4.7-beta.3
-1. 数据上传逻辑优化，防止递归导致栈溢出崩溃
+1. Data upload logic optimization, prevent stack overflow crash caused by recursion
 
 ---
 # 1.4.7-beta.2
-1. 解决 URLSession 创建在 SDK 之前时该 URLSession 请求无法采集问题
+1. Solve the problem that URLSession is created before SDK and cannot be collected
 
 ---
 # 1.4.7-beta.1
-1. 同 1.4.7-alpha.2、1.4.7-alpha.1
+1. Same as 1.4.7-alpha.2, 1.4.7-alpha.1
 
 ---
 # 1.4.7-alpha.2
-1. RUM LongTask 采集优化
-2. RUM Resource 支持用户自定义资源属性
+1. RUM LongTask collection optimization
+2. RUM Resource supports user-defined resource properties
 
 ---
 # 1.4.7-alpha.1
-1. 解决 RUM View timeSpend 异常问题
-2. 开启 View 自动采集时 app Enter background、foreground 同步 view start、stop
+1. Solve RUM View timeSpend abnormal problem
+2. When View auto-collection is enabled, app Enter background, foreground synchronize view start, stop
 
 ---
 # 1.4.6-beta.1
-1. 同 1.4.6-alpha.6
+1. Same as 1.4.6-alpha.6
 
 ---
 # 1.4.6-alpha.6
-1. 枚举命名修改
+1. Enum naming modified
 
 ---
 # 1.4.6-alpha.5
-1. RUM AddError 方法添加 state 参数
-2. 注销用户方法 -unbindUser 替换 -logout
+1. RUM AddError method adds state parameter
+2. User logout method -unbindUser replaced -logout
 
 ---
 # 1.4.6-alpha.4
-1. app Become、Resign Active 同步 view start、stop
+1. app Become, Resign Active synchronize view start, stop
 
 ---
 
 # 1.4.6-alpha.3
-1. 支持高刷设备的 FPS 计算错误修复
+1. FPS calculation error for high-refresh-rate devices fixed
 
 ---
 # 1.4.6-alpha.2
-1. 处理 UITabBarController 子视图加载时间异常问题
+1. Handle UITabBarController subview loadingTime abnormality
 
 ---
 # 1.4.6-alpha.1
-1. 数据上传处理空值数据逻辑修改
+1. Data upload handles empty value data logic modification
 
 ---
 # 1.4.5-beta.1
-1. 修复 RUM View 时间赋值错误问题
+1. Fix RUM View time assignment error
 
 ---
 # 1.4.5-alpha.1
 
-1. Webview RUM 接入数据格式调整
+1. Webview RUM data format adjustment
 
 ---
 # 1.4.4-beta.1
-1. 自定义日志打印控制台格式调整
+1. Custom log printing console format adjustment
 
 ---
 # 1.4.4-alpha.1
-1. 移除日志自动采集功能，添加自定义日志打印在控制台开关
-2. 添加自定义 env
+1. Remove log auto-collection function, add custom log printing console switch
+2. Add custom env
 
 ---
 # 1.4.3-beta.1
-1. 同 1.4.3-alpha.1
+1. Same as 1.4.3-alpha.1
 
 ---
 
 # 1.4.3-alpha.1
-1. 修复 RUM 数据丢失问题
-2. RUM 中 resource、error、long_task 缺失 action 相关字段补充
+1. Fix RUM data loss
+2. RUM resource, error, long_task missing action related fields supplement
 
 ---
 
 # 1.4.2-alpha.3
-1. FTSDKCore 基础库支持自定义数据库路径和名称
+1. FTSDKCore basic library supports custom database path and name
 
 ---
 # 1.4.2-alpha.2
-1. 删除 dataKitUUID
+1. Delete dataKitUUID
 
 ---
 # 1.4.2-alpha.1
-1. 解决打包无 module 问题
-2. 修复已知 BUG
+1. Solve package without module problem
+2. Fix known BUG
 
 ---
 # 1.4.1-alpha.3
-1. 修复 RUM resource 数据格式错误问题
+1. Fix RUM resource data format error
 
 ---
 # 1.4.1-alpha.2
-1. RUM resource 中 resource_type 赋值修改
+1. RUM resource resource_type assignment modified
 
 ---
 # 1.4.1-alpha.1
-1. 修复 RUM resource 处理 response header 时未考虑大小写兼容问题
+1. Fix RUM resource processing response header without considering case-insensitive compatibility
 
 ---
 
 # 1.4.0-beta.3
-1. 新增 SDK 注销 API
+1. Add SDK shutDown API
 
 ---
 # 1.4.0-beta.2
-1. podspec source_files 调整，解决软连接文件导致的 duplicate 警告
+1. podspec source_files adjustment, solve duplicate warning caused by soft link file
 
 ---
 # 1.4.0-beta.1
-1. 新增 Widget Extension 数据采集功能
-2. 网络链路追踪自动追踪优化
-3. 添加 SPM 支持，添加支持 carthage 打包 FTMobileExtension
-4. 修复已知 BUG
+1. Add Widget Extension data collection function
+2. Network link tracing auto-tracking optimization
+3. Add SPM support, add support for carthage packaging FTMobileExtension
+4. Fix known BUG
 
 ---
 # 1.3.12-alpha.4
-1. macos error监控项支持采集设备电量使用率
+1. macos error monitoring supports collecting device power usage rate
 
 ---
 # 1.3.12-alpha.3
-1. 项目结构调整, FTSDKCore 支持macOS
+1. Project structure adjustment, FTSDKCore supports macOS
 
 ---
 # 1.3.12-alpha.2
-1. 包结构调整,sdk 支持 platform 版本修改
+1. Package structure adjustment, sdk supports platform version modification
 
 ---
 # 1.3.12-alpha.1
-1. 包结构调整,基础功能支持macOS
+1. Package structure adjustment, basic functions support macOS
 
 ---
 # 1.3.11-alpha.1
-1. 修复已知 BUG
-2. NSURLProtocol protocolClasses 设置优化
-3. 添加 SPM 支持，添加支持 carthage 打包 FTMobileExtension
+1. Fix known BUG
+2. NSURLProtocol protocolClasses setting optimization
+3. Add SPM support, add support for carthage packaging FTMobileExtension
 
 ---
 # 1.3.10-beta.3
-1. 修复内存泄漏问题
-2. 修复其他已知 BUG
+1. Fix memory leak
+2. Fix other known BUG
 
 ---
 # 1.3.10-alpha.7
-1. 修复多线程数组copy导致的内存泄漏
-2. 修复已知 BUG
+1. Fix memory leak caused by multi-threaded arraycopy
+2. Fix known BUG
 
 ---
 # 1.3.10-alpha.6
-1. 修复日志采集时产生的内存泄漏
-2. SDK 支持版本修改，iOS 支持10.0及以上，macOS支持10.13及以上
+1. Fix memory leak caused by log collection
+2. SDK supports version modification, iOS supports 10.0+, macOS supports 10.13+
 
 ---
 # 1.3.10-beta.2
-1. 修复 Error 监控采集属性字段错误问题
+1. Fix Error monitoring attribute field error
 
 ---
 
 # 1.3.10-beta.1
-1. 添加 intakeUrl 采集 Resource 过滤方法
-2. Resource,Action,View,Error,LongTask,Logger 支持添加扩展参数
-3. config 配置 service 参数调整
-4. 修复已知 BUG
+1. Add intakeUrl Resource filtering method
+2. Resource,Action,View,Error,LongTask,Logger support adding extension parameters
+3. config service parameter adjustment
+4. Fix known BUG
 
 ---
 
 # 1.3.10-alpha.3
-1. config 配置 service 参数调整
-2. 修复从应用切换器进入 APP 导致的启动时长统计异常问题
-3. Action Type 新增 launch_warm 适配 iOS15 后 APP 启动前进行了预热
-4. 修复 dispatch_semaphore_t 优先级反转问题
+1. config service parameter adjustment
+2. Fix startup duration statistics anomaly caused by switching from application to APP
+3. Action Type adds launch_warm adaptation for iOS15, which is warmed up before APP startup
+4. Fix dispatch_semaphore_t priority inversion
 
 ---
 # 1.3.10-alpha.1
-1. 添加 intakeUrl 采集 Resource 过滤方法
-2. Resource,Action,View,Error,LongTask,Logger 支持添加扩展参数
+1. Add intakeUrl Resource filtering method
+2. Resource,Action,View,Error,LongTask,Logger support adding extension parameters
 
 ---
 # 1.3.8-beta.4
-1. 修改 DDtrace Header Propagation 规则
+1. Modify DDtrace Header Propagation rules
 
 ---
 
 # 1.3.8-beta.3
-1. 文件引用格式修复
+1. File reference format fix
 
 ---
 
 # 1.3.8-beta.2
-1. 修复获取 GMT 时间时修改了全局 timezone 问题
-2. 内部数据上传 URLSession 使用自定义 session 替换 sharedSession
+1. Fix GMT time modification causing global timezone issue
+2. Internal data upload URLSession uses custom session instead of sharedSession
 
 ---
 # 1.3.8-beta.1
-1. 外部接入 RUM 补充自定义 actionType 方法
-2. 添加 iPhone14 设备信息适配
-3. 添加 active_pre_warm 判断启动是否进行了预热
+1. External RUM supplement custom actionType method
+2. Add iPhone14 device information adaptation
+3. Add active_pre_warm to determine if startup is pre-warmed
 
 ---
 # 1.3.8-alpha.3
-1. 测试用例修改
+1. Test case modification
 ---
 
 # 1.3.8-alpha.2
-1. 添加 iPhone14 设备信息适配
-2. 添加 active_pre_warm 判断启动是否进行了预热
+1. Add iPhone14 device information adaptation
+2. Add active_pre_warm to determine if startup is pre-warmed
 
 ---
 
 # 1.3.8-alpha.1
-1. 外部接入 RUM 补充自定义 actionType 方法
+1. External RUM supplement custom actionType method
 
 ---
 
 # 1.3.7-beta.1
-1. 用户绑定数据扩展
-2. 崩溃日志符号化
+1. User binding data extension
+2. Crash log symbolization
 
 ---
 
 # 1.3.7-alpha.4
-1. FTDeviceMetricsMonitorType type值适配
+1. FTDeviceMetricsMonitorType type value adaptation
 
 ---
 
 # 1.3.7-alpha.4
-1. userLogout 用户email缓存清理
+1. userLogout user email cache cleanup
 
 ---
 # 1.3.7-alpha.3
-1. 解决可能遗漏冷启动事件的问题
+1. Solve potential cold start event omission
 
 ---
 
 # 1.3.7-alpha.2
-1. 用户绑定数据扩展
-2. import 引用方式错误调整
+1. User binding data extension
+2. import reference error adjustment
 
 ---
 # 1.3.7-alpha.1
-1. 用户绑定数据扩展
+1. User binding data extension
 
 ---
 # 1.3.6-beta.2
-1. 解决潜在遗漏启动时部分数据的问题
+1. Solve potential data omission during startup
 
 ---
 # 1.3.6-beta.1
-1. 配置监控项，采集 fps、memory、cpu 相关数据
-2. 崩溃日志、卡顿日志采集内容格式调整
+1. Configure monitoring items, collect fps, memory, cpu related data
+2. Crash log, card log collection content format adjustment
 
 ---
 
 # 1.3.6-alpha.4
-1. 公开的头文件补充
+1. Supplement public header files
 
 ---
 
 # 1.3.6-alpha.3
-1. cpu 采集字段名称修改、cpu数据赋值错误修改
+1. cpu collection field name modified, cpu data assignment error modified
 
 ---
 
 # 1.3.6-alpha.2
-1. cpu 采集规则修改
+1. cpu collection rules modified
 
 ---
 
 # 1.3.6-alpha.1
-1. 配置监控项，采集fps、memory、cpu相关数据
-2. 崩溃日志、卡顿日志格式调整，符号化缺失信息补充
+1. Configure monitoring items, collect fps, memory, cpu related data
+2. Crash log, card log format adjustment, missing information supplement
 
 ---
 
 # 1.3.5-beta.4
-1. 解决 resource error 导致的 action 重复写入问题。
+1. Solve action duplicate write problem caused by resource error.
 
 ---
 
 # 1.3.5-beta.3
-1. 解决数据中空字符串导致上传失败问题。
+1. Solve data upload failure caused by empty string in data.
 
 ---
 
 # 1.3.5-beta.2
-1. 解决在 flutter、reactNative 中启动事件采集错误的问题。
+1. Solve launch event collection error in flutter, reactNative.
 
 ---
 
 # 1.3.5-beta.1
-1. 修正使用 kvo 导致 hook 失败影响项目正常流程的问题。
-2. 过滤格式错误的数据。
-3. SDK 内部 URL 过滤 bug 修改。
+1. Correct use of kvo causing hook failure to affect project normal process.
+2. Filter out format error data.
+3. SDK internal URL filter bug fix.
 
 ---
 
 # 1.3.5-alpha.4
-1. SDK 内部 URL 过滤 bug 修改。
+1. SDK internal URL filter bug fix.
 
 ---
 # 1.3.5-alpha.3
-1. 过滤格式错误的数据。
-2. SDK 内部日志使用 os_log 替换 NSLog。
+1. Filter out format error data.
+2. SDK internal log using os_log instead of NSLog.
 
 ---
 # 1.3.5-alpha.2
-1. SDK 内部 NSLog 删除。
+1. SDK internal NSLog deletion.
 
 ___
 # 1.3.5-alpha.1
-1. 解决使用 kvo 导致 hook 失败影响项目正常流程的问题。
+1. Solve use of kvo causing hook failure to affect project normal process.
 
 ___
 # 1.3.4-beta.2
-1. 静态库公开头文件缺失补充
+1. Supplement static library public header files missing
 2. FTMobileSDK scheme shared
 
 ___
 
 # 1.3.4-beta.1
-1. 提升测试用例覆盖率
+1. Improve test case coverage
 
 ---
 
 # 1.3.4-alpha.3
-1. 添加onCreateView方法记录view加载时长
+1. Add onCreateView method to record view loading duration
 
 ___
 # 1.3.4-alpha.2
-1. 启动事件计算规则修改
+1. Modify launch event calculation rules
 
-2. RUM 页面 viewReferrer 记录规则修改
+2. RUM page viewReferrer recording rules modified
 
 ___
 # 1.3.4-alpha.1
-1. 启动事件计算规则修改
+1. Modify launch event calculation rules
 
-2. RUM 页面 viewReferrer 记录规则修改
+2. RUM page viewReferrer recording rules modified
 
 ___
 # 1.3.3-alpha.5
-1. trace enableAutoTrace 错误修改
+1. trace enableAutoTrace error fix
 
 ___
 # 1.3.3-alpha.4
-1. DDtrace header 修改
+1. DDtrace header modified
 
 ___
 # 1.3.3-alpha.3
-1. NetworkTraceType 默认为 DDtrace,DDtrace traceid 算法修改
+1. NetworkTraceType default to DDtrace, DDtrace traceid algorithm modified
 
-2. 外部接入 rum api 调整
+2. External RUM api adjustment
 
 ___
 # 1.3.3-alpha.2
-1. 支持 Skywalking 、W3c TraceParent、
+1. Support Skywalking, W3c TraceParent,
 
-2. Zipkin 添加 single header 支持
+2. Zipkin adds single header support
 
-3. 外部接入 rum api 调整
+3. External RUM api adjustment
 
 ___
 
 # 1.3.3-alpha.1
-1. 支持 Skywalking 、W3c TraceParent、
+1. Support Skywalking, W3c TraceParent,
 
-2. Zipkin 添加 single header 支持
+2. Zipkin adds single header support
 
 ___
 
 # 1.3.2-alpha.1
-1. 添加设置全局 tag 方法。
+1. Add setGlobalTag method.
 
 ___
 
 # 1.3.1-alpha.11
-1. 修复获取公共属性多线程访问时产生的 bug
+1. Fix bug in multi-threaded access to common properties
 
 ___
 # 1.3.1-alpha.10
-1. 修改 RUM 传入字符串数据长度为0时的错误
-2. rum 常量使用调整
+1. Modify RUM string data length to 0 error
+2. rum constant usage adjustment
 
 ___
 # 1.3.1-alpha.9
-1. RUM、Trace 数据整理，提供对外调用 API
-2. 解决 RUM 数据错误问题
+1. RUM, Trace data organization, provide external call API
+2. Fix RUM data errors
 
 ---
 
 # 1.3.1-alpha.8
-1. RUM、Trace 数据整理，提供对外调用 API
+1. RUM, Trace data organization, provide external call API
 
 ---
 # 1.3.1-alpha.7
-1. RUM、Trace 数据整理，提供对外调用 API
-2. RUM Config 添加 enableTraceUserResource 方法
+1. RUM, Trace data organization, provide external call API
+2. RUM Config adds enableTraceUserResource method
 
 ---
 # 1.3.1-alpha.6
-1. RUM、Trace 数据整理，提供对外调用 API
+1. RUM, Trace data organization, provide external call API
 
 ---
 # 1.2.8-alpha.7
-1. unused code整理
+1. unused code organization
 
-2. RUM 、Trace 数据处理方法调整
+2. RUM, Trace data processing methods adjusted
 
 ---
 # 1.2.8-alpha.4
-1. unused code整理
+1. unused code organization
 
-2. RUM 、Trace 数据处理方法调整
+2. RUM, Trace data processing methods adjusted
 
 ---
 # 1.2.8-alpha.3
-1. unused code整理
+1. unused code organization
 
-2. RUM 、Trace 数据处理方法调整
+2. RUM, Trace data processing methods adjusted
 
 ---
 # 1.2.8-alpha.2
-1. unused code整理
+1. unused code organization
 
-2. RUM 数据处理方法调整
+2. RUM data processing methods adjusted
 
 ---
 # 1.2.8-alpha.1
-1. unused code整理
+1. unused code organization
 
-2. RUM 数据处理方法调整
+2. RUM data processing methods adjusted
 
 ---
 # 1.2.7-alpha.3
-1. RUM view 数据采集，参数 viewController 传入为 nil 导致的 bug 修改
+1. RUM view data collection, parameter viewController passed as nil bug fix
 
-2. 追踪 ID 算法修正
+2. Trace ID algorithm correction
 
 ---
 # 1.2.7-alpha.1
-1. RUM view 数据采集，参数 viewController 传入为 nil 导致的 bug 修改
+1. RUM view data collection, parameter viewController passed as nil bug fix
 
 ---
 # 1.2.6-alpha.2
-1. RUM 用户自设全局 tag 功能添加
+1. RUM user-defined global tag function added
 
-2. 获取 IP address bug 修改
+2. Fix IP address bug
 
 ---
 # 1.2.6-alpha.1
-1. RUM 用户自设全局 tag 功能添加
+1. RUM user-defined global tag function added
 
 ---
 # 1.2.5-alpha.2
-1. 日志废弃策略添加
+1. Log discard strategy added
 
-2. APP 生命周期监控优化
+2. APP lifecycle monitoring optimization
 
-3. UISegmentedControl 点击事件采集 bug 修改
+3. UISegmentedControl click event collection bug fix
 
-4. 页面 load 时长 bug 修改
+4. Page load duration bug fix
 
-5. 获取 IP address bug 修改
+5. Fix IP address bug
 
 ---
 # 1.2.5-alpha.1
-1. 日志废弃策略添加
+1. Log discard strategy added
 
-2. APP 生命周期监控优化
+2. APP lifecycle monitoring optimization
 
-3. UISegmentedControl 点击事件采集bug修改
+3. UISegmentedControl click event collection bug fix
 
-4. 页面 load 时长 bug 修改
+4. Page load duration bug fix
 
 ---
 # 1.2.4-alpha.2
-1. 解决 fishhook 在 iOS14.5 及以上设备上出现的崩溃问题
+1. Fix crash problem appearing on iOS14.5+ devices
 
 ---
 # 1.2.3-alpha.1
-1. 多线程懒加载导致的 BUG 修改
+1. Multi-threaded lazy loading BUG fix
 
 ---
 # 1.2.2-alpha.1
-1. logger 添加过滤条件
+1. logger add filter condition
 
 ---
 # 1.2.1-alpha.7
-1. 抽出公共方法，设置子包
+1. Extract common methods, set sub-package
 
-2. podspec 修改兼容osx，头文件引用修改
+2. podspec modification compatible with osx, header file reference modification
 
 ---
 # 1.2.1-alpha.6
-1. 抽出公共方法，设置子包
+1. Extract common methods, set sub-package
 
-2. podspec 修改兼容osx，头文件引用修改
+2. podspec modification compatible with osx, header file reference modification
 
 ---
 # 1.2.1-alpha.5
-1. 抽出公共方法，设置子包
+1. Extract common methods, set sub-package
 
-2. podspec 语法错误修改，子包移除引用主包的头文件
+2. podspec syntax error, sub-package removes header file referencing the main package
 
 ---
 # 1.2.1-alpha.4
-1.抽出公共方法，设置子包
-2. podspec 语法错误修改，子包移除引用主包的头文件
+1. Extract common methods, set sub-package
+2. podspec syntax error, sub-package removes header file referencing the main package
 
 ---
 # 1.2.1-alpha.3
-1. 抽出公共方法，设置子包
-2. podspec 语法错误修改
+1. Extract common methods, set sub-package
+2. podspec syntax error
 
 ---
 # 1.2.1-alpha.2
-1. 抽出公共方法，设置子包
+1. Extract common methods, set sub-package
 
 ---
 # 1.2.1-alpha.1
-1. swizzle 方法修改
+1. swizzle method modified
 
 ---
 
 # 1.2.0-alpha.5
-1. Config 配置修改
+1. Config configuration modified
 
-2. Logger 与 Trace 数据支持绑定 RUM
+2. Logger and Trace data support binding RUM
 
 ---
 # 1.2.0-alpha.4
-1. Config 配置修改
+1. Config configuration modified
 
-2. Logger 与 Trace 数据支持绑定 RUM
+2. Logger and Trace data support binding RUM
 
 ---
 # 1.2.0-alpha.3
-1. Config 配置修改
+1. Config configuration modified
 
-2. Logger 与 Trace 数据支持绑定 RUM
+2. Logger and Trace data support binding RUM
 
 ---
 # 1.2.0-alpha.2
-1. Config 配置修改
-2. Logger 与 Trace 数据支持绑定 RUM
+1. Config configuration modified
+2. Logger and Trace data support binding RUM
 
 ---
 # 1.2.0-alpha.1
-1. Config 配置修改
-2. Logger 与 Trace 数据支持绑定 RUM
+1. Config configuration modified
+2. Logger and Trace data support binding RUM
 
 ---
 
 # 1.1.0-alpha.10
-1. RUM 数据调整
-2. 测试用例添加
+1. RUM data adjustment
+2. Test case added
 
 ---
 # 1.1.0-alpha.9
-1. RUM 数据调整
-2. 测试用例添加
+1. RUM data adjustment
+2. Test case added
 
 ---
 # 1.1.0-alpha.8
-1. RUM 数据调整
-2. 测试用例添加
+1. RUM data adjustment
+2. Test case added
 
 ---
 # 1.1.0-alpha.7
-1. RUM 数据调整
-2. 测试用例添加
+1. RUM data adjustment
+2. Test case added
 
 ---
 # 1.1.0-alpha.6
-1. RUM 数据调整
-2. resource_size添加响应头大小
+1. RUM data adjustment
+2. resource_size added response header size
 
 ---
 # 1.1.0-alpha.5
-1. RUM 数据调整
+1. RUM data adjustment
 
 ---
 # 1.1.0-alpha.4
-1. RUM 数据调整
+1. RUM data adjustment
 
 ---
 # 1.1.0-alpha.3
-1. RUM 数据调整
+1. RUM data adjustment
 
 ---
 # 1.1.0-alpha.2
-1. RUM 数据调整
+1. RUM data adjustment
 
 ---
 # 1.1.0-alpha.1
-1. RUM 数据调整
-
----
-
-# 1.0.4-alpha.12
-1. 子线程ping 检测卡顿，进行 freeze 采集
-2. config 采集卡顿配置项改为 enableTrackAppFreeze
-
----
-# 1.0.4-alpha.11
-1. tag app_identified 改为 app_identifiedid
-2. freeze 采集，避免一次卡顿多次写入
-
----
-
-# 1.0.4-alpha.10
-1. tag、filed keys调整
+1. RUM data adjustment
 
 ---
 
 # 1.0.4-alpha.9
-1. tag、field、measurement值 添加转译字符处理
+1. Add escape character processing for tag, field, measurement values
 
 ---
 # 1.0.4-alpha.8
-1. 时间单位微秒、纳秒使用错误修改
-2. int越界修改
+1. Fix time unit microsecond, nanosecond usage errors
+2. Fix int overflow issues
 
 ---
 # 1.0.4-alpha.7
-1. 时间单位微秒、纳秒使用错误修改
+1. Fix time unit microsecond, nanosecond usage errors
 
 ---
 # 1.0.4-alpha.6
-1. 网络链路数据采集上报
+1. Network link data collection and reporting
 
 ---
 
 # 1.0.4-alpha.5
-1. RUM 数据采集
-2. 卡顿、ANR采集
+1. RUM data collection
+2. Stutter, ANR collection
 
 ---
 # 1.0.4-alpha.4
-1. RUM 数据采集
-2. 卡顿、ANR采集
-
----
-
-# 1.0.4-alpha.3
-1. RUM 数据采集
-2. 卡顿、ANR采集
-3. config 配置是否开启采集UIBlock、ANR
+1. RUM data collection
+2. Stutter, ANR collection
+3. Config configuration for enabling UIBlock, ANR collection
 
 ---
 
 # 1.0.4-alpha.2
-1. 网络错误率、时间开销采集
-2. 卡顿、ANR采集
-3. config 配置是否开启采集UIBlock、ANR
+1. Network error rate, time overhead collection
+2. Stutter, ANR collection
+3. Config configuration for enabling UIBlock, ANR collection
 
 ---
 # 1.0.4-alpha.1
-1. 网络错误率、时间开销采集
-2. 卡顿、ANR采集
+1. Network error rate, time overhead collection
+2. Stutter, ANR collection
 
 ---
 # 1.0.3-beta.2
-1. 修正若干错误问题，发布稳定版本
+1. Fix various error issues, release stable version
 
 ---
 
 # 1.0.3-beta.1
-1. 修正错误，提升性能
+1. Fix errors, improve performance
 
 ---
 
 # 1.0.3-alpha.11
-1. 日志批量写入数据库
-2. 日志__content 大小限制
+1. Batch log writing to database
+2. Log __content size limit
 
 ---
 
 # 1.0.3-alpha.10
-1. 采样率调整为网络请求信息采集采样率
-2. 使用 XML 文件设置页面描述与视图树描述
+1. Adjust sampling rate to network request information collection sampling rate
+2. Use XML files to set page description and view tree description
 
 ---
 
 # 1.0.3-alpha.9
-1. response解析修改
-2. logging类型添加新字段
+1. Response parsing modifications
+2. Add new fields to logging type
 
 ---
 
 # 1.0.3-alpha.8
-1. 根据content-type 处理 body 内容
-2. 网络追踪 __content 大小限制
-3. bug修改
+1. Process body content based on content-type
+2. Network trace __content size limit
+3. Bug fixes
 
 ---
 # 1.0.3-alpha.7
-1. 根据content-type 处理 body 内容
-2. 网络追踪 __content 大小限制
-3. bug修改
+1. Process body content based on content-type
+2. Network trace __content size limit
+3. Bug fixes
 
 ---
-
 # 1.0.3-alpha.6
-1. object __name拼接应用bundleID
-2. 网络追踪spanID改为UUID
+1. Object __name concatenate application bundleID
+2. Network trace spanID changed to UUID
 
 ---
 # 1.0.3-alpha.5
-1. logging、object、keyevent上报类型添加
-2. 增加网络信息采集链路追踪、日志采集、事件日志采集
-3. 设置NSLog release下不打印，避免数据库在主线程写入,验证token请求结果处理逻辑修改
+1. Add logging, object, keyevent reporting types
+2. Add network information collection link tracing, log collection, event log collection
+3. Set NSLog not to print in release, avoid database writing in main thread, modify token request result processing logic
 
 ---
 # 1.0.3-alpha.4
-1. logging、object、keyevent上报类型添加
-2. 增加网络信息采集链路追踪、日志采集、事件日志采集
-3. dSYMUUID获取方法修改
-4. SDK 内部log循环 bug 修改
+1. logging, object, keyevent reporting types added
+2. Increase network information collection link tracing, log collection, event log collection
+3. dSYMUUID acquisition method modified
+4. SDK internal log loop bug fix
 
 ---
 # 1.0.3-alpha.2
-1. logging、object、keyevent上报类型添加
-2. 增加网络信息采集链路追踪、日志采集、事件日志采集
-3. dSYMUUID获取方法修改
+1. logging, object, keyevent reporting types added
+2. Increase network information collection link tracing, log collection, event log collection
+3. dSYMUUID acquisition method modified
 
 ---
 # 1.0.3-alpha.1
-1. logging、object、keyevent上报类型添加
-2. 增加网络信息采集链路追踪、日志采集、事件日志采集
+1. logging, object, keyevent reporting types added
+2. Increase network information collection link tracing, log collection, event log collection
 
 ---
 # 1.0.2-alpha.26
-1. 采集率添加
-2. 获取崩溃日志方法添加
-3. object、keyevent、logging上传方法添加
+1. Add sampling rate
+2. Add method to get crash log
+3. object, keyevent, logging upload methods added
 
 ---
 # 1.0.2-alpha.25
-1. 获取蓝牙设备已连接列表修改
+1. Modify connected Bluetooth device list
 
 ---
 
 # 1.0.2-alpha.24
-1. 添加拦截https请求
-2. 已连蓝牙设备key修改
+1. Add intercept https request
+2. Connected Bluetooth device key modified
 
 ---
 
 # 1.0.2-alpha.23
-1. 网络速率获取优化
-2. 监控项上传开启未设置监控类型不上传
-3. 距离传感器距离状态获取修改
+1. Network speed optimization
+2. Monitoring item upload enabled but no monitoring type set
+3. Distance sensor distance status acquisition modified
 
 ---
 
 # 1.0.2-alpha.22
-1. 流程图 duration 拼接i处理
-2. page_desc默认赋值N/A修改
+1. Process flow chart duration i processing
+2. page_desc default value modified to N/A
 
 ---
 # 1.0.2-alpha.21
-1. 增加UIView分类，添加可设置是否在vtp拼接点击NSIndexPath的属性、添加描述Vtp属性
-2. 添加开关判断是否替换添加描述
-3. 添加描述日志开关
+1. Add UIView category, add attribute to set whether to add descriptionVtp to NSIndexPath in vtp, add descriptionVtp attribute
+2. Add switch to determine whether to replace description
+3. Add description log switch
 
 ---
 # 1.0.2-alpha.19
-1. vtp_desc、page_desc field字段添加
-2. 添加addVtpDescDict、addPageDescDict方法
-3. 引用头文件错误修改
+1. vtp_desc, page_desc field added
+2. addVtpDescDict, addPageDescDict methods added
+3. Header file reference error fix
 
 ---
 # 1.0.2-alpha.17
-1. vtp改为tag vtp_id改为field
-2. UITabBar的点击事件无vtp调整
+1. vtp changed to tag vtp_id changed to field
+2. UITabBar click event without vtp adjustment
 
 ---
 # 1.0.2-alpha.16
-1. 添加vtp_id tag
+1. Add vtp_id tag
 
 ---
 # 1.0.2-alpha.15
-1. 网络请求错误率获取失败修改
+1. Network request error rate acquisition failure fix
 
 ---
 # 1.0.2-alpha.12
-1. 监控项周期上传方法添加设置监控项类型方法
-2. autotrack抓取点击事件过滤方法修改
+1. Add method to set monitoring item type for monitoring item cycle upload
+2. autotrack click event filtering method modified
 
 ---
 
 # 1.0.2-alpha.11
-1. product移除
-2. event_id由field改为tag
-3. 一些tag的名称调整
+1. Remove product
+2. Change event_id from field to tag
+3. Adjust some tag names
 
 ---
 
 # 1.0.2-alpha.5
-1. latitude、longitude 由tag改为filed
-2. 设置location更新距离为200米
+1. Change latitude, longitude from tag to field
+2. Set location update distance to 200 meters
 
 ---
 
 # 1.0.2-alpha.4
-1. vtp 由tag改为filed
-2. 增加event_id
-3. 流程图flowId初始化bug修改
+1. Change vtp from tag to field
+2. Add event_id
+3. Fix flow chart flowId initialization bug
 
 ---
 # 1.0.2-alpha.1
-1. 监控项拓展
-2. product设置，对应全埋点、流程图、监控项上传指标名
+1. Extend monitoring items
+2. Product setting, corresponding to full tracking, flow chart, monitoring item upload metric names
 
 ---
 # 1.0.1-alpha.22
-1. 方法名拼写错误修改
-2. 黑白名单判断逻辑修改
+1. Fix method name spelling errors
+2. Fix blacklist/whitelist judgment logic
 
 ---
 # 1.0.1-alpha.21
-1. trackImmediate与trackImmediateList方法主线程回调
-2. CLLocationManagerDelegate回调逻辑处理
+1. trackImmediate and trackImmediateList methods main thread callback
+2. CLLocationManagerDelegate callback logic processing
 
 ---
 # 1.0.1-alpha.20
-1. 数据存储结构优化，网络上传模块优化
-2. 日志打印优化，全埋点优化
-3. Agent添加startLocation方法
+1. Optimize data storage structure, optimize network upload module
+2. Optimize log printing, optimize full tracking
+3. Add startLocation method to Agent
 
 ---
 # 1.0.1-alpha.19
-1. 页面流程图指标集名称校验修改
-2. 位置信息-直辖市省市一致
+1. Fix page flow chart metric set name validation
+2. Location information - municipality province city consistency
 
 ---
 # 1.0.1-alpha.18
-1. 页面流程图指标集名称添加校验
-2. 错误码拼写错误修改
-3. 上传时参数拼接bug修改
+1. Add validation for page flow chart metric set names
+2. Fix error code spelling errors
+3. Fix parameter concatenation bug during upload
 
 ---
 # 1.0.1-alpha.17
-1. 获取应用名bug修改
+1. Fix application name acquisition bug
 
 ---
 # 1.0.1-alpha.16
-1. 解决SDK获取不到版本号问题
-2. 实时获取的监控项由tag转变为field,流程图设备tag数据移除
+1. Fix SDK unable to get version number issue
+2. Change real-time monitoring items from tag to field, remove flow chart device tag data
 
 ---
 
 # 1.0.1-alpha.15
-1. 网络框架parameters拼接方法优化
-2. 网速获取bug修改
-3. Location添加国家
+1. Optimize network framework parameters concatenation method
+2. Fix network speed acquisition bug
+3. Add country to Location
 
 ---
 # 1.0.1
-1.上报流程图
+1. Report flow chart
 
 ---
 # 1.0.0
 
-1.用户自定义埋点
-2.FT Gateway 数据同步
+1. User custom tracking
+2. FT Gateway data synchronization
 

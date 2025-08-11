@@ -2,7 +2,7 @@
 //  WKWebView+FTAutoTrack.m
 //  FTMobileAgent
 //
-//  Created by 胡蕾蕾 on 2021/7/28.
+//  Created by hulilei on 2021/7/28.
 //  Copyright © 2021 DataFlux-cn. All rights reserved.
 //
 #import <TargetConditionals.h>
@@ -11,7 +11,6 @@
 #import "FTWKWebViewHandler+Private.h"
 #import "FTSwizzler.h"
 #import <objc/runtime.h>
-#import "FTURLSessionInterceptorProtocol.h"
 @implementation WKWebView (FTAutoTrack)
 
 -(WKNavigation *)ft_loadRequest:(NSURLRequest *)request{
@@ -27,6 +26,10 @@
 -(WKNavigation *)ft_loadFileURL:(NSURL *)URL allowingReadAccessToURL:(NSURL *)readAccessURL{
     [[FTWKWebViewHandler sharedInstance] innerEnableWebView:self];
     return [self ft_loadFileURL:URL allowingReadAccessToURL:readAccessURL];
+}
+-(void)ft_dealloc{
+    [[FTWKWebViewHandler sharedInstance] disableWebView:self];
+    [self ft_dealloc];
 }
 @end
 #endif

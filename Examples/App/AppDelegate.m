@@ -2,7 +2,7 @@
 //  AppDelegate.m
 //  FTMobileAgent
 //
-//  Created by 胡蕾蕾 on 2019/11/29.
+//  Created by hulilei on 2019/11/29.
 //  Copyright © 2019 hll. All rights reserved.
 //
 
@@ -11,7 +11,7 @@
 #import "DemoViewController.h"
 #import "RootTabbarVC.h"
 #import "FTMobileSDK/FTLog.h"
-//Target -> Build Settings -> GCC_PREPROCESSOR_DEFINITIONS 进行配置预设定义
+//Target -> Build Settings -> GCC_PREPROCESSOR_DEFINITIONS to configure preset definitions
 #if PREPROD
 #define STATIC_TAG     @"preprod"
 #else
@@ -29,15 +29,15 @@
     
     // Override point for customization after application launch.
     /**
-     测试 SDK config
+     Test SDK config
      APP_ID  = @"Your AppId";
      ACCESS_SERVER_URL  = @"Your App metricsUrl";
      
-     进行单元测试时 在FTMobileSDKUnitTests 的 scheme 中添加
+     When running unit tests, add in FTMobileSDKUnitTests scheme:
      isUnitTests = 1;
-     防止 SDK 在 AppDelegate 启动 对单元测试造成影响
+     To prevent SDK startup in AppDelegate from affecting unit tests
      
-     进行单UI试时 在FTMobileSDKUnitTests 的 scheme 中添加
+     When running UI tests, add in FTMobileSDKUnitTests scheme:
      isUITests = 1;
      */
     NSProcessInfo *processInfo = [NSProcessInfo processInfo];
@@ -50,15 +50,15 @@
     BOOL isUITests = [[processInfo environment][@"isUITests"] boolValue];
     if ( !isUnitTests && !isUITests) {
         [[FTLog sharedInstance] registerInnerLogCacheToLogsDirectory:nil fileNamePrefix:nil];
-        // 本地环境部署
+        // Local environment deployment
         FTMobileConfig *config = [[FTMobileConfig alloc]initWithDatakitUrl:datakitUrl];
-        // 使用公网 DataWay 部署
+        // Use public network DataWay deployment
 //        FTMobileConfig *config = [[FTMobileConfig alloc]initWithDatawayUrl:datawayUrl clientToken:clientToken];
         config.enableSDKDebugLog = YES;
         [config setEnvWithType:FTEnvPre];
         config.globalContext = @{@"example_id":@"example_id_1"};//eg.
         config.groupIdentifiers = @[@"group.com.ft.widget.demo"];
-        //开启 rum
+        // Enable rum
         FTRumConfig *rumConfig = [[FTRumConfig alloc]initWithAppid:rumAppid];
         rumConfig.enableTrackAppCrash = YES;
         rumConfig.enableTrackAppANR = YES;
@@ -89,10 +89,10 @@
         [[FTMobileAgent sharedInstance] startLoggerWithConfigOptions:loggerConfig];
         [[FTMobileAgent sharedInstance] startTraceWithConfigOptions:traceConfig];
     }
-    // UI 测试
+    // UI test
    
     if (@available(iOS 13.0, *)) {
-        //iOS 13以上系统
+        //iOS 13+ 
     } else {
         self.window = [[UIWindow alloc] initWithFrame:[UIScreen mainScreen].bounds];
         UITabBarController *tab = [[UITabBarController alloc]init];

@@ -2,12 +2,12 @@
 //  FTConstants.h
 //  FTMobileAgent
 //
-//  Created by 胡蕾蕾 on 2020/5/13.
+//  Created by hulilei on 2020/5/13.
 //  Copyright © 2020 hll. All rights reserved.
 //
 
 #import <Foundation/Foundation.h>
-/// SDK 常量声明
+/// SDK constant declarations
 #pragma mark ========== agent ==========
 extern NSString * const FT_DATA_TYPE_RUM;
 extern NSString * const FT_DATA_TYPE_LOGGING;
@@ -42,33 +42,33 @@ extern NSString * const FT_SDK_VERSION;
 extern NSString * const FT_SDK_NAME;
 extern NSString * const FT_SDK_PKG_INFO;
 #pragma mark ========== BASE PROPERTY ==========
-//应用名称
+// Application name
 extern NSString * const FT_COMMON_PROPERTY_APP_NAME;
-//系统版本
+// System version
 extern NSString * const FT_COMMON_PROPERTY_OS_VERSION;
-//操作系统主要版本
+// Operating system major version
 extern NSString * const FT_COMMON_PROPERTY_OS_VERSION_MAJOR;
-//是否是注册用户，属性值：True / False
+// Whether it's a registered user, property values: True / False
 extern NSString * const FT_IS_SIGNIN;
-//操作系统
+// Operating system
 extern NSString * const FT_COMMON_PROPERTY_OS;
-//设备提供商
+// Device provider
 extern NSString * const FT_COMMON_PROPERTY_DEVICE;
-//分辨率，格式 height * width，例子：1920*1080
+// Resolution, format height * width, example: 1920*1080
 extern NSString * const FT_COMMON_PROPERTY_DISPLAY;
-//设备机型
+// Device model
 extern NSString * const FT_COMMON_PROPERTY_DEVICE_MODEL;
-//屏幕宽度
+// Screen width
 extern NSString * const FT_SCREEN_SIZE;
-//CPU ARCH
+// CPU ARCH
 extern NSString * const FT_CPU_ARCH;
-//设备 UUID
+// Device UUID
 extern NSString * const FT_COMMON_PROPERTY_DEVICE_UUID;
-//应用 ID
+// Application ID
 extern NSString * const FT_APPLICATION_UUID;
-//环境
+// Environment
 extern NSString * const FT_ENV;
-//版本号
+// Version number
 extern NSString * const FT_VERSION;
 #pragma mark ========== rum ==========
 extern NSString * const FT_DURATION;
@@ -79,6 +79,7 @@ extern NSString * const FT_APP_ID;
 // rum global tag
 extern NSString * const FT_RUM_KEY_SESSION_ID;
 extern NSString * const FT_RUM_KEY_SESSION_TYPE;
+// rum view fields
 extern NSString * const FT_RUM_KEY_SAMPLED_FOR_ERROR_SESSION;
 extern NSString * const FT_RUM_SESSION_ON_ERROR_SAMPLE_RATE;
 extern NSString * const FT_RUM_SESSION_SAMPLE_RATE;
@@ -99,17 +100,17 @@ extern NSString * const FT_KEY_VIEW_RESOURCE_COUNT;
 extern NSString * const FT_KEY_VIEW_LONG_TASK_COUNT;
 extern NSString * const FT_KEY_VIEW_ACTION_COUNT;
 #pragma mark --- monitor field
-/// View 页面 每秒平均 CPU 跳动次数
+/// View page average CPU tick count per second
 extern NSString * const FT_CPU_TICK_COUNT_PER_SECOND;
-/// View 页面 CPU 跳动次数
+/// View page CPU tick count
 extern NSString * const FT_CPU_TICK_COUNT;
-/// 页面内存使用平均值
+/// Page memory usage average
 extern NSString * const FT_MEMORY_AVG;
-/// 页面内存峰值
+/// Page memory peak
 extern NSString * const FT_MEMORY_MAX;
-/// 页面最小每秒帧数
+/// Page minimum frames per second
 extern NSString * const FT_FPS_MINI;
-/// 页面平均每秒帧数
+/// Page average frames per second
 extern NSString * const FT_FPS_AVG;
 
 #pragma mark ---------- resource ----------
@@ -208,7 +209,6 @@ extern NSString * const FT_NETWORK_TRACEPARENT_KEY;
 extern NSString * const FT_NETWORK_ZIPKIN_SINGLE_KEY;
 
 #pragma mark ========== user info key ==========
-extern NSString * const FT_USER_INFO;
 extern NSString * const FT_USER_ID;
 extern NSString * const FT_USER_EMAIL;
 extern NSString * const FT_USER_NAME;
@@ -254,9 +254,9 @@ extern long const FT_MIN_DB_SIZE_LIMIT;
 
 extern NSString * const FT_SCRIPT_MESSAGE_HANDLER_NAME;
 extern NSUInteger const FT_TIME_INTERVAL;
-/// 超过多少毫秒为一次卡顿,default 250ms
+/// Freeze threshold in milliseconds, default 250ms
 extern long const FT_DEFAULT_BLOCK_DURATIONS_MS;
-/// 卡顿最小时长 100 ms
+/// Minimum freeze duration 100 ms
 extern long const FT_MIN_DEFAULT_BLOCK_DURATIONS_MS;
 
 extern long long const FT_ANR_THRESHOLD_NS;

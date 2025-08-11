@@ -80,7 +80,7 @@
     long size = [[FTTrackerEventDBTool sharedManger] checkDatabaseSize];
     NSLog(@"size:%ld",(long)size);
     XCTAssertTrue(size <= 105*1204);
-    [[FTTrackDataManager sharedInstance] shutDown];
+    [FTTrackDataManager shutDown];
 }
 - (void)testEnableDBLimitDiscardNew_log{
     [[FTTrackerEventDBTool sharedManger] deleteAllDatas];
@@ -101,7 +101,7 @@
     
     NSLog(@"size:%ld",(long)size);
     XCTAssertTrue(size <= 65*1204);
-    [[FTTrackDataManager sharedInstance] shutDown];
+    [FTTrackDataManager shutDown];
 }
 - (void)testEnableDBLimitDiscardNew_logCountLimit{
     [[FTTrackerEventDBTool sharedManger] deleteAllDatas];
@@ -122,7 +122,7 @@
     XCTAssertTrue([model.data containsString:@"TEST DBLimitDiscardNew 0"]);
     NSLog(@"size:%ld",(long)size);
     XCTAssertTrue(size <= 65*1204);
-    [[FTTrackDataManager sharedInstance] shutDown];
+    [FTTrackDataManager shutDown];
 }
 - (void)testEnableDBLimitDiscardOld_log{
     [[FTTrackerEventDBTool sharedManger] deleteAllDatas];
@@ -142,7 +142,7 @@
     long size = [[FTTrackerEventDBTool sharedManger] checkDatabaseSize];
     NSLog(@"size:%ld",(long)size);
     XCTAssertTrue(size <= 60*1204);
-    [[FTTrackDataManager sharedInstance] shutDown];
+    [FTTrackDataManager shutDown];
 }
 - (void)testEnableDBLimitDiscardOld_logCountLimit{
     [FTLog enableLog:YES];
@@ -164,7 +164,7 @@
     long size = [[FTTrackerEventDBTool sharedManger] checkDatabaseSize];
     NSLog(@"size:%ld",(long)size);
     XCTAssertTrue(size <= 75*1204);
-    [[FTTrackDataManager sharedInstance] shutDown];
+    [FTTrackDataManager shutDown];
 }
 - (void)testEnableDBLimitDiscardNew_rum{
     [[FTTrackerEventDBTool sharedManger] deleteAllDatas];
@@ -185,7 +185,7 @@
     
     NSLog(@"size:%ld",(long)size);
     XCTAssertTrue(size <= 65*1204);
-    [[FTTrackDataManager sharedInstance] shutDown];
+    [FTTrackDataManager shutDown];
 }
 - (void)testEnableDBLimitDiscardNew_RUMCountLimit{
     [[FTTrackerEventDBTool sharedManger] deleteAllDatas];
@@ -206,7 +206,7 @@
     XCTAssertTrue([model.data containsString:@"TEST DBLimitDiscardNew 0"]);
     NSLog(@"size:%ld",(long)size);
     XCTAssertTrue(size <= 65*1204);
-    [[FTTrackDataManager sharedInstance] shutDown];
+    [FTTrackDataManager shutDown];
 }
 - (void)testEnableDBLimitDiscardOld_RUM{
     [[FTTrackerEventDBTool sharedManger] deleteAllDatas];
@@ -226,7 +226,7 @@
     long size = [[FTTrackerEventDBTool sharedManger] checkDatabaseSize];
     NSLog(@"size:%ld",(long)size);
     XCTAssertTrue(size <= 60*1204);
-    [[FTTrackDataManager sharedInstance] shutDown];
+    [FTTrackDataManager shutDown];
 }
 - (void)testEnableDBLimitDiscardOld_RUMCountLimit{
     [[FTTrackerEventDBTool sharedManger] deleteAllDatas];
@@ -247,13 +247,12 @@
     long size = [[FTTrackerEventDBTool sharedManger] checkDatabaseSize];
     NSLog(@"size:%ld",(long)size);
     XCTAssertTrue(size <= 60*1204);
-    [[FTTrackDataManager sharedInstance] shutDown];
+    [FTTrackDataManager shutDown];
 }
 - (void)testTrackDataManagerShutDown{
     [self mockHttp];
     [FTLog enableLog:YES];
     [FTTrackDataManager startWithAutoSync:NO syncPageSize:10 syncSleepTime:0];
-    [FTModelHelper createRumModel];
     [[FTTrackDataManager sharedInstance] addTrackData:[FTModelHelper createRumModel] type:FTAddDataRUM];
     FTDataUploadWorker *worker = [FTTrackDataManager sharedInstance].dataUploadWorker;
     NSNumber *isUploading = [worker valueForKey:@"isUploading"];
@@ -262,7 +261,7 @@
     NSNumber *isUploadingN = [worker valueForKey:@"isUploading"];
     XCTAssertTrue([isUploadingN boolValue] == YES);
     CFTimeInterval interval = [FTTestUtils functionElapsedTime:^{
-        [[FTTrackDataManager sharedInstance] shutDown];
+        [FTTrackDataManager shutDown];
     }];
     XCTAssertTrue(interval<0.1);
 }
@@ -279,7 +278,7 @@
     NSLog(@"interval:%f",interval);
     BOOL reachHalfLimit = [[FTTrackDataManager sharedInstance].dataCachePolicy reachHalfLimit];
     XCTAssertTrue(reachHalfLimit);
-    [[FTTrackDataManager sharedInstance] shutDown];
+    [FTTrackDataManager shutDown];
 }
 - (void)testRUMCountReachHalfLimit{
     [[FTTrackerEventDBTool sharedManger] deleteAllDatas];
@@ -293,7 +292,7 @@
     NSLog(@"interval:%f",interval);
     BOOL reachHalfLimit = [[FTTrackDataManager sharedInstance].dataCachePolicy reachHalfLimit];
     XCTAssertTrue(reachHalfLimit);
-    [[FTTrackDataManager sharedInstance] shutDown];
+    [FTTrackDataManager shutDown];
 }
 - (void)testLogCountReachHalfLimit{
     [[FTTrackerEventDBTool sharedManger] deleteAllDatas];
@@ -307,30 +306,34 @@
     NSLog(@"interval:%f",interval);
     BOOL reachHalfLimit = [[FTTrackDataManager sharedInstance].dataCachePolicy reachHalfLimit];
     XCTAssertTrue(reachHalfLimit);
-    [[FTTrackDataManager sharedInstance] shutDown];
+    [FTTrackDataManager shutDown];
 }
 /**
- * packageId 不变
- * sdk_id 变化
- * 请求次数：正常同步 + retry count (5) = 6
+ * packageId remains unchanged
+ * sdk_id changes
+ * Request count: normal sync + retry count (5) = 6
  */
 - (void)testNetworkFail_NetworkRetry{
+    [FTTrackDataManager shutDown];
     [FTLog enableLog:YES];
     NSMutableArray<NSInputStream *> *datas = [NSMutableArray new];
     NSMutableSet *set = [[NSMutableSet alloc]init];
-    __block id<OHHTTPStubsDescriptor> stub = [OHHTTPStubs stubRequestsPassingTest:^BOOL(NSURLRequest *request) {
-        NSString *str = [request.allHTTPHeaderFields valueForKey:@"X-Pkg-Id"];
-        if(str){
-            [set addObject:[request.allHTTPHeaderFields valueForKey:@"X-Pkg-Id"]];
-            [datas addObject:request.HTTPBodyStream];
+    NSString *urlStr = @"http://www.test.com/some/url/retry";
+    id<OHHTTPStubsDescriptor> stub = [OHHTTPStubs stubRequestsPassingTest:^BOOL(NSURLRequest *request) {
+        if ([request.URL.absoluteString containsString:urlStr]) {
+            NSString *str = [request.allHTTPHeaderFields valueForKey:@"X-Pkg-Id"];
+            if(str){
+                [set addObject:[request.allHTTPHeaderFields valueForKey:@"X-Pkg-Id"]];
+                [datas addObject:request.HTTPBodyStream];
+            }
+            return YES;
         }
-        return YES;
+        return NO;
     } withStubResponse:^OHHTTPStubsResponse*(NSURLRequest *request) {
         NSString *data  =[FTJSONUtil convertToJsonData:@{@"data":@"Hello World!",@"code":@501}];
         NSData *requestData = [data dataUsingEncoding:NSUTF8StringEncoding];
         return [OHHTTPStubsResponse responseWithData:requestData statusCode:501 headers:nil];
     }];
-    NSString *urlStr = @"http://www.test.com/some/url/string";
     FTNetworkInfoManager *manager = [FTNetworkInfoManager sharedInstance];
     manager.setDatakitUrl(urlStr)
         .setSdkVersion(@"RequestTest");
@@ -347,7 +350,9 @@
     [[FTTrackDataManager sharedInstance] flushSyncData];
     [self waitForExpectations:@[self.expectation]];
     CFTimeInterval endTime = CACurrentMediaTime();
-    XCTAssertTrue(endTime-startTime>7 && endTime-startTime<9);
+    CFTimeInterval duration = endTime-startTime;
+    NSLog(@"endTime-startTime:%f",duration);
+    XCTAssertTrue(duration>7 && duration<9);
     NSString *endPackageId = [FTRumRequest.serialGenerator getCurrentSerialNumber];
     XCTAssertTrue([endPackageId isEqualToString:packageId]);
     XCTAssertTrue(set.count == 6);
@@ -357,7 +362,7 @@
     NSString *last = [[NSString alloc]initWithData:[FTTestUtils transStreamToData:datas.lastObject] encoding:NSUTF8StringEncoding];
     
     [self compareSdkID:first second:last increase:0];
-    [[FTTrackDataManager sharedInstance] shutDown];
+    [FTTrackDataManager shutDown];
     [OHHTTPStubs removeStub:stub];
 }
 
@@ -400,7 +405,7 @@
     NSString *bodyStr2 = [[NSString alloc]initWithData:[FTTestUtils transStreamToData:datas.lastObject] encoding:NSUTF8StringEncoding];
     [self compareSdkID:bodyStr second:bodyStr2 increase:1];
  
-    [[FTTrackDataManager sharedInstance] shutDown];
+    [FTTrackDataManager shutDown];
     [OHHTTPStubs removeStub:stub];
 }
 - (void)compareSdkID:(NSString *)first second:(NSString*)second increase:(int)increase{
@@ -425,16 +430,16 @@
     array2 = [[sdk_data_id2 substringFromIndex:12] componentsSeparatedByString:@"."];
     // packageId +1
     XCTAssertTrue([FTTestUtils base36ToDecimal:array2[0]] - [FTTestUtils base36ToDecimal:array1[0]] == increase);
-    // 进程 id 一致
+    // Process id is consistent
     XCTAssertTrue([array1[1] isEqualToString:array2[1]]);
-    // 数据个数
+    // Data count
     XCTAssertTrue([array2[2] intValue] == [array1[2] intValue] == 1);
-    // packageId 末尾12位随机数
+    // packageId end random number
     NSString *random12 = array2[3];
     XCTAssertTrue(random12.length == 12);
     
     XCTAssertFalse([array2[3] isEqualToString:array1[3]]);
-    // 数据 id 不一致
+    // Data id is inconsistent
     XCTAssertFalse([[array1 lastObject] isEqualToString:[array2 lastObject]]);
 }
 - (void)mockHttp{
@@ -462,5 +467,42 @@
             self.expectation = nil;
         }
     }
+}
+- (void)testShutdown{
+    id<OHHTTPStubsDescriptor> stubs = [OHHTTPStubs stubRequestsPassingTest:^BOOL(NSURLRequest *request) {
+        return YES;
+    } withStubResponse:^OHHTTPStubsResponse*(NSURLRequest *request) {
+        return [OHHTTPStubsResponse responseWithData:[@"success" dataUsingEncoding:NSUTF8StringEncoding] statusCode:200 headers:nil];
+    }];
+    XCTestExpectation *exception = [[XCTestExpectation alloc]init];
+    dispatch_group_t group = dispatch_group_create();
+    NSInteger count = 0;
+    for (int i = 0; i<1000; i++) {
+        dispatch_group_enter(group);
+        dispatch_async(dispatch_queue_create(0, 0), ^{
+            [[FTTrackDataManager sharedInstance] updateAutoSync:NO syncPageSize:100 syncSleepTime:100];
+            [[FTTrackDataManager sharedInstance] addTrackData:[FTModelHelper createRumModel] type:FTAddDataRUM];
+            [[FTTrackDataManager sharedInstance] addTrackData:[FTModelHelper createLogModel] type:FTAddDataLogging];
+            [[FTTrackDataManager sharedInstance] flushSyncData];
+            dispatch_group_leave(group);
+        });
+        dispatch_async(dispatch_queue_create(0, 0), ^{
+            [FTTrackDataManager shutDown];
+            dispatch_async(dispatch_get_main_queue(), ^{
+                [FTTrackDataManager startWithAutoSync:YES syncPageSize:10 syncSleepTime:0];
+                [[FTTrackDataManager sharedInstance] setEnableLimitWithDb:NO size:50 discardNew:YES];
+                [[FTTrackDataManager sharedInstance] setLogCacheLimitCount:500000 discardNew:YES];
+                [[FTTrackDataManager sharedInstance] setRUMCacheLimitCount:500000 discardNew:YES];
+                
+            });
+        });
+        count ++;
+    }
+    dispatch_group_notify(group, dispatch_get_main_queue(), ^{
+        [exception fulfill];
+    });
+    [self waitForExpectations:@[exception]];
+    XCTAssertTrue(count == 1000);
+    [OHHTTPStubs removeStub:stubs];
 }
 @end

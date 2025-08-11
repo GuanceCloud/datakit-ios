@@ -2,7 +2,7 @@
 //  UITestVC.m
 //  ft-sdk-iosTest
 //
-//  Created by 胡蕾蕾 on 2019/12/20.
+//  Created by hulilei on 2019/12/20.
 //  Copyright © 2019 hll. All rights reserved.
 //
 
@@ -121,16 +121,13 @@
 }
 
 - (void)firstAction:(UIButton *)sender {
-//    UIAlertController *alert = [UIAlertController alertControllerWithTitle:@"测试" message:@"测试alert按钮点击" preferredStyle:UIAlertControllerStyleAlert];
-//    UIAlertAction *action = [UIAlertAction actionWithTitle:@"OK" style:UIAlertActionStyleDefault handler:^(UIAlertAction * _Nonnull action) {
-//        NSLog(@"点击OK");
-//    }];
-//    UIAlertAction *cancel = [UIAlertAction actionWithTitle:@"CANCEL" style:UIAlertActionStyleCancel handler:^(UIAlertAction * _Nonnull action) {
-//        NSLog(@"点击CANCEL");
-//    }];
-//    [alert addAction:action];
-//    [alert addAction:cancel];
-//    [self presentViewController:alert animated:YES completion:nil];
+//    UIAlertController *alert = [UIAlertController alertControllerWithTitle:@"Test" message:@"Test alert button click" preferredStyle:UIAlertControllerStyleAlert];
+//    [alert addAction:[UIAlertAction actionWithTitle:@"OK" style:UIAlertActionStyleDefault handler:^(UIAlertAction * _Nonnull action) {
+//        NSLog(@"Clicked OK");
+//    }]];
+//    [alert addAction:[UIAlertAction actionWithTitle:@"CANCEL" style:UIAlertActionStyleCancel handler:^(UIAlertAction * _Nonnull action) {
+//        NSLog(@"Clicked CANCEL");
+//    }]];
     NSLog(@"%@ Touch Up Inside", sender.currentTitle);
 
 }
@@ -155,11 +152,11 @@
 
 - (void)labelTouchUpInside:(UITapGestureRecognizer *)recognizer {
     UILabel *label = (UILabel *)recognizer.view;
-    NSLog(@"%@被点击了", label.text);
+    NSLog(@"%@ was clicked", label.text);
 }
 - (void)tap1Action:(UIGestureRecognizer *)sender {
     UILabel *label = (UILabel *)sender.view;
-    NSLog(@"%@被点击了", label.text);
+    NSLog(@"%@ was clicked", label.text);
 }
 
 - (void)tap2Action:(UIGestureRecognizer *)sender {
@@ -168,7 +165,7 @@
     cancel.accessibilityLabel = @"alert cancel";
     [alert addAction:cancel];
     [self presentViewController:alert animated:YES completion:nil];
-    NSLog(@"UIImageView被点击了");
+    NSLog(@"UIImageView was clicked");
 }
 #pragma mark -
 -(NSInteger)numberOfSectionsInCollectionView:(UICollectionView *)collectionView{
