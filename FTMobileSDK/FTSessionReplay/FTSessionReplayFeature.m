@@ -127,20 +127,24 @@
     self.currentRUMContext = message;
 }
 - (void)captureNextRecord{
-    NSDictionary *rumContext = [self.currentRUMContext copy];
-    NSString *viewID = rumContext[FT_KEY_VIEW_ID];
-    if (!viewID) {
-        return;
+    @try {
+        NSDictionary *rumContext = [self.currentRUMContext copy];
+        NSString *viewID = rumContext[FT_KEY_VIEW_ID];
+        if (!viewID) {
+            return;
+        }
+        FTSRContext *context = [[FTSRContext alloc]init];
+        context.sessionID = rumContext[FT_RUM_KEY_SESSION_ID];
+        context.viewID = viewID;
+        context.applicationID = rumContext[FT_APP_ID];
+        context.date = [NSDate date];
+        context.imagePrivacy = self.config.imagePrivacy;
+        context.touchPrivacy = self.config.touchPrivacy;
+        context.textAndInputPrivacy = self.config.textAndInputPrivacy;
+        [self.windowRecorder taskSnapShot:context touchSnapshot:[self.touches takeTouchSnapshotWithContext:context]];
+    } @catch (NSException *exception) {
+        FTInnerLogError(@"[session-replay] EXCEPTION: %@", exception.description);
     }
-    FTSRContext *context = [[FTSRContext alloc]init];
-    context.sessionID = rumContext[FT_RUM_KEY_SESSION_ID];
-    context.viewID = viewID;
-    context.applicationID = rumContext[FT_APP_ID];
-    context.date = [NSDate date];
-    context.imagePrivacy = self.config.imagePrivacy;
-    context.touchPrivacy = self.config.touchPrivacy;
-    context.textAndInputPrivacy = self.config.textAndInputPrivacy;
-    [self.windowRecorder taskSnapShot:context touchSnapshot:[self.touches takeTouchSnapshotWithContext:context]];
 }
 -(void)dealloc{
     if(self.timer){
