@@ -54,7 +54,7 @@
 {
     self = [super init];
     if(self){
-        NSString *serialLabel = [NSString stringWithFormat:@"com.guance.%@-upload", featureName];
+        NSString *serialLabel = [NSString stringWithFormat:@"com.ft.%@-upload", featureName];
         _queue = dispatch_queue_create([serialLabel UTF8String], 0);
         _featureName = featureName;
         pthread_rwlock_init(&_readWorkLock, NULL);

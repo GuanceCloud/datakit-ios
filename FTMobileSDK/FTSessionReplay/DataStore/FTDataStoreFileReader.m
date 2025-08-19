@@ -17,11 +17,11 @@
 @end
 @implementation FTDataStoreFileReadingError
 + (NSError *)unexpectedBlocks{
-    NSError *error = [NSError errorWithDomain:@"com.guance.data-store-file-reader" code:-100 userInfo:@{NSLocalizedDescriptionKey:@"unexpected blocks"}];
+    NSError *error = [NSError errorWithDomain:@"com.ft.data-store-file-reader" code:-100 userInfo:@{NSLocalizedDescriptionKey:@"unexpected blocks"}];
     return error;
 }
 + (NSError *)unexpectedBlocksOrder{
-    NSError *error = [NSError errorWithDomain:@"com.guance.data-store-file-reader" code:-101 userInfo:@{NSLocalizedDescriptionKey:@"unexpected blocks order"}];
+    NSError *error = [NSError errorWithDomain:@"com.ft.data-store-file-reader" code:-101 userInfo:@{NSLocalizedDescriptionKey:@"unexpected blocks order"}];
     return error;
 }
 @end

@@ -263,7 +263,7 @@ BOOL objectIsEqual(id new,id old){
         [NSString stringWithFormat:@"FTSRWireframe validation errors: %@ is not Equal to %@",
          self.type,newWireFrame.type];
         if(error){
-            *error = [NSError errorWithDomain:@"com.guance.session-replay" code:-100 userInfo:@{NSLocalizedDescriptionKey:failureReason}];
+            *error = [NSError errorWithDomain:@"com.ft.session-replay" code:-100 userInfo:@{NSLocalizedDescriptionKey:failureReason}];
         }
         return nil;
     }

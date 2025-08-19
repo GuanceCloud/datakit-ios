@@ -42,7 +42,7 @@
     self = [super init];
     if(self){
         _name = @"session-replay";
-        _processorsQueue = dispatch_queue_create("com.guance.session-replay.processors", 0);
+        _processorsQueue = dispatch_queue_create("com.ft.session-replay.processors", 0);
         _sampleRate = config.sampleRate;
         _requestBuilder = [[FTSegmentRequest alloc]init];
         FTPerformancePresetOverride *performancePresetOverride = [[FTPerformancePresetOverride alloc]initWithMeanFileAge:2 minUploadDelay:0.6];

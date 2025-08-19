@@ -24,7 +24,7 @@ void *FTMessageBusQueueIdentityKey = &FTMessageBusQueueIdentityKey;
 -(instancetype)init{
     self = [super init];
     if(self){
-        _queue = dispatch_queue_create("com.guance.message-bus", 0);
+        _queue = dispatch_queue_create("com.ft.message-bus", 0);
         dispatch_queue_set_specific(_queue,FTMessageBusQueueIdentityKey, &FTMessageBusQueueIdentityKey, NULL);
         _receiverArray = [NSPointerArray pointerArrayWithOptions:NSPointerFunctionsWeakMemory];
     }

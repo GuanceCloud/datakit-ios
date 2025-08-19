@@ -56,8 +56,8 @@ static dispatch_once_t onceToken;
 -(instancetype)init{
     self = [super init];
     if(self){
-        _coreDirectory = [[FTDirectory alloc]initWithSubdirectoryPath:@"com.guance"];
-        _readWriteQueue = dispatch_queue_create("com.guance.file.readwrite", 0);
+        _coreDirectory = [[FTDirectory alloc]initWithSubdirectoryPath:@"com.ft"];
+        _readWriteQueue = dispatch_queue_create("com.ft.file.readwrite", 0);
         _performancePreset = [[FTPerformancePreset alloc]init];
         _stores = [NSMutableDictionary new];
         _features = [NSMutableDictionary new];
