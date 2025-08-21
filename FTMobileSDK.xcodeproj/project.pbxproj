@@ -1043,13 +1043,13 @@
 		178AFCB32E49C800009D3C09 /* FTRumConfig+Private.h in Headers */ = {isa = PBXBuildFile; fileRef = 178AFCAB2E49C800009D3C09 /* FTRumConfig+Private.h */; };
 		178AFCB42E49C800009D3C09 /* FTRumConfig.m in Sources */ = {isa = PBXBuildFile; fileRef = 178AFCAA2E49C800009D3C09 /* FTRumConfig.m */; };
 		178AFCB72E49C86F009D3C09 /* FTRUMAction.m in Sources */ = {isa = PBXBuildFile; fileRef = 178AFCB52E49C86F009D3C09 /* FTRUMAction.m */; };
-		178AFCB82E49C86F009D3C09 /* FTRumView.m in Sources */ = {isa = PBXBuildFile; fileRef = 178AFCB62E49C86F009D3C09 /* FTRumView.m */; };
+		178AFCB82E49C86F009D3C09 /* FTRUMView.m in Sources */ = {isa = PBXBuildFile; fileRef = 178AFCB62E49C86F009D3C09 /* FTRUMView.m */; };
 		178AFCB92E49C86F009D3C09 /* FTRUMAction.m in Sources */ = {isa = PBXBuildFile; fileRef = 178AFCB52E49C86F009D3C09 /* FTRUMAction.m */; };
-		178AFCBA2E49C86F009D3C09 /* FTRumView.m in Sources */ = {isa = PBXBuildFile; fileRef = 178AFCB62E49C86F009D3C09 /* FTRumView.m */; };
+		178AFCBA2E49C86F009D3C09 /* FTRUMView.m in Sources */ = {isa = PBXBuildFile; fileRef = 178AFCB62E49C86F009D3C09 /* FTRUMView.m */; };
 		178AFCBB2E49C86F009D3C09 /* FTRUMAction.m in Sources */ = {isa = PBXBuildFile; fileRef = 178AFCB52E49C86F009D3C09 /* FTRUMAction.m */; };
-		178AFCBC2E49C86F009D3C09 /* FTRumView.m in Sources */ = {isa = PBXBuildFile; fileRef = 178AFCB62E49C86F009D3C09 /* FTRumView.m */; };
+		178AFCBC2E49C86F009D3C09 /* FTRUMView.m in Sources */ = {isa = PBXBuildFile; fileRef = 178AFCB62E49C86F009D3C09 /* FTRUMView.m */; };
 		178AFCBD2E49C86F009D3C09 /* FTRUMAction.m in Sources */ = {isa = PBXBuildFile; fileRef = 178AFCB52E49C86F009D3C09 /* FTRUMAction.m */; };
-		178AFCBE2E49C86F009D3C09 /* FTRumView.m in Sources */ = {isa = PBXBuildFile; fileRef = 178AFCB62E49C86F009D3C09 /* FTRumView.m */; };
+		178AFCBE2E49C86F009D3C09 /* FTRUMView.m in Sources */ = {isa = PBXBuildFile; fileRef = 178AFCB62E49C86F009D3C09 /* FTRUMView.m */; };
 		178AFCC12E49C88F009D3C09 /* FTRUMView.h in Headers */ = {isa = PBXBuildFile; fileRef = 178AFCC02E49C88F009D3C09 /* FTRUMView.h */; };
 		178AFCC22E49C88F009D3C09 /* FTRUMAction.h in Headers */ = {isa = PBXBuildFile; fileRef = 178AFCBF2E49C88F009D3C09 /* FTRUMAction.h */; };
 		178AFCC32E49C88F009D3C09 /* FTRUMView.h in Headers */ = {isa = PBXBuildFile; fileRef = 178AFCC02E49C88F009D3C09 /* FTRUMView.h */; settings = {ATTRIBUTES = (Public, ); }; };
@@ -1828,7 +1828,7 @@
 		178AFCAA2E49C800009D3C09 /* FTRumConfig.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = FTRumConfig.m; sourceTree = "<group>"; };
 		178AFCAB2E49C800009D3C09 /* FTRumConfig+Private.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = "FTRumConfig+Private.h"; sourceTree = "<group>"; };
 		178AFCB52E49C86F009D3C09 /* FTRUMAction.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = FTRUMAction.m; sourceTree = "<group>"; };
-		178AFCB62E49C86F009D3C09 /* FTRumView.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = FTRumView.m; sourceTree = "<group>"; };
+		178AFCB62E49C86F009D3C09 /* FTRUMView.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = FTRUMView.m; sourceTree = "<group>"; };
 		178AFCBF2E49C88F009D3C09 /* FTRUMAction.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; name = FTRUMAction.h; path = include/FTRUMAction.h; sourceTree = "<group>"; };
 		178AFCC02E49C88F009D3C09 /* FTRUMView.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; name = FTRUMView.h; path = include/FTRUMView.h; sourceTree = "<group>"; };
 		178AFCC92E49C89D009D3C09 /* FTActionTrackingHandler.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; name = FTActionTrackingHandler.h; path = include/FTActionTrackingHandler.h; sourceTree = "<group>"; };
@@ -2672,7 +2672,7 @@
 				178AFCBF2E49C88F009D3C09 /* FTRUMAction.h */,
 				178AFCB52E49C86F009D3C09 /* FTRUMAction.m */,
 				178AFCC02E49C88F009D3C09 /* FTRUMView.h */,
-				178AFCB62E49C86F009D3C09 /* FTRumView.m */,
+				178AFCB62E49C86F009D3C09 /* FTRUMView.m */,
 				17E4CBD629CD42E4005C2D99 /* Crash */,
 				17AB769429D432DE008FBBF5 /* Monitor */,
 				17AB76A329D432DE008FBBF5 /* RUMCore */,
@@ -3946,7 +3946,7 @@
 				170D647F2DFB0D8000E9131F /* FTUIViewRecorder.m in Sources */,
 				170D64802DFB0D8000E9131F /* FTUITextFieldRecorder.m in Sources */,
 				178AFCB72E49C86F009D3C09 /* FTRUMAction.m in Sources */,
-				178AFCB82E49C86F009D3C09 /* FTRumView.m in Sources */,
+				178AFCB82E49C86F009D3C09 /* FTRUMView.m in Sources */,
 				170D64812DFB0D8000E9131F /* NSData+FTHelper.m in Sources */,
 				170D64822DFB0D8000E9131F /* FTTLVReader.m in Sources */,
 				170D64832DFB0D8000E9131F /* UIView+FTSR.m in Sources */,
@@ -4179,7 +4179,7 @@
 				170D63182DFB0D8000E9131F /* FTWindowObserver.m in Sources */,
 				170D63192DFB0D8000E9131F /* FTDataReader.m in Sources */,
 				178AFCBD2E49C86F009D3C09 /* FTRUMAction.m in Sources */,
-				178AFCBE2E49C86F009D3C09 /* FTRumView.m in Sources */,
+				178AFCBE2E49C86F009D3C09 /* FTRUMView.m in Sources */,
 				170D631A2DFB0D8000E9131F /* FTFilesOrchestrator.m in Sources */,
 				170D631B2DFB0D8000E9131F /* UIColor+FTSRIdentifier.m in Sources */,
 				170D631C2DFB0D8000E9131F /* FTFile.m in Sources */,
@@ -4261,7 +4261,7 @@
 				17E32BA32BEC70E700F4685C /* FTErrorMonitorInfo.m in Sources */,
 				17AB76D929D432DE008FBBF5 /* FTDisplayRateMonitor.m in Sources */,
 				178AFCBB2E49C86F009D3C09 /* FTRUMAction.m in Sources */,
-				178AFCBC2E49C86F009D3C09 /* FTRumView.m in Sources */,
+				178AFCBC2E49C86F009D3C09 /* FTRUMView.m in Sources */,
 				178AFCDC2E49C90C009D3C09 /* FTCrashLogger.c in Sources */,
 				17E32B992BE0FE5900F4685C /* FTFatalErrorContext.m in Sources */,
 				17AB76EB29D432DE008FBBF5 /* FTRUMViewHandler.m in Sources */,
@@ -4536,7 +4536,7 @@
 				170D64032DFB0D8000E9131F /* FTWindowObserver.m in Sources */,
 				170D64042DFB0D8000E9131F /* FTDataReader.m in Sources */,
 				178AFCB92E49C86F009D3C09 /* FTRUMAction.m in Sources */,
-				178AFCBA2E49C86F009D3C09 /* FTRumView.m in Sources */,
+				178AFCBA2E49C86F009D3C09 /* FTRUMView.m in Sources */,
 				170D64052DFB0D8000E9131F /* FTFilesOrchestrator.m in Sources */,
 				170D64062DFB0D8000E9131F /* UIColor+FTSRIdentifier.m in Sources */,
 				170D64072DFB0D8000E9131F /* FTFile.m in Sources */,
