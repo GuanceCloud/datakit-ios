@@ -36,6 +36,8 @@
 @property (nonatomic, strong) FTSessionReplayConfig *config;
 @property (nonatomic, strong) id<FTCacheWriter> cacheWriter;
 @property (nonatomic, strong) id<FTWriter> writer;
+@property (nonatomic, assign) BOOL shouldStart;
+@property (nonatomic, assign) BOOL sampledForErrorReplay;
 @end
 @implementation FTSessionReplayFeature
 -(instancetype)initWithConfig:(FTSessionReplayConfig *)config{
@@ -54,6 +56,8 @@
         _windowObserver = [[FTWindowObserver alloc]init];
         _touches = [[FTSessionReplayTouches alloc]initWithWindowObserver:_windowObserver];
         _config = [config copy];
+        _shouldStart = NO;
+        _sampledForErrorReplay = NO;
         [[FTModuleManager sharedInstance] addMessageReceiver:self];
     }
     return self;
@@ -69,13 +73,16 @@
     FTRecorder *windowRecorder = [[FTRecorder alloc]initWithWindowObserver:self.windowObserver snapshotProcessor:srProcessor resourceProcessor:nil additionalNodeRecorders:self.config.additionalNodeRecorders];
     self.windowRecorder = windowRecorder;
 }
--(void)start{
-    [self startWithTmpCache:NO];
-}
--(void)startWithTmpCache:(BOOL)cache{
+
+- (void)setSampledForErrorReplay:(BOOL)sampledForErrorReplay{
+    _sampledForErrorReplay = sampledForErrorReplay;
     [FTThreadDispatchManager performBlockDispatchMainAsync:^{
-        [self.windowRecorder.snapshotProcessor changeWriter:cache? self.cacheWriter:self.writer needUpdateFullSnapshot:cache];
-        cache?[self.cacheWriter active]:[self.cacheWriter inactive];
+        [self.windowRecorder.snapshotProcessor changeWriter:sampledForErrorReplay? self.cacheWriter:self.writer needUpdateFullSnapshot:sampledForErrorReplay];
+        sampledForErrorReplay?[self.cacheWriter active]:[self.cacheWriter inactive];
+    }];
+}
+-(void)start{
+    [FTThreadDispatchManager performBlockDispatchMainAsync:^{
         if(self.timer){
             return;
         }
@@ -101,30 +108,45 @@
     if(![key isEqualToString:FTMessageKeyRUMContext]){
         return;
     }
+    if ([self.currentRUMContext isEqualToDictionary:message]) {
+        return;
+    }
+    [self onRUMContextChanged:message];
+}
+- (void)onRUMContextChanged:(NSDictionary *)context{
     NSDictionary *rumContext = [self.currentRUMContext copy];
-    if(rumContext == nil || ![message[FT_RUM_KEY_SESSION_ID] isEqualToString:rumContext[FT_RUM_KEY_SESSION_ID]]){
-        BOOL isErrorSession = [message[FT_RUM_KEY_SAMPLED_FOR_ERROR_SESSION] boolValue];
+    if(rumContext == nil || ![context[FT_RUM_KEY_SESSION_ID] isEqualToString:rumContext[FT_RUM_KEY_SESSION_ID]]){
+        BOOL isErrorSession = [context[FT_RUM_KEY_SAMPLED_FOR_ERROR_SESSION] boolValue];
         BOOL isSampled = [FTBaseInfoHandler randomSampling:self.sampleRate];
         BOOL srOnErrorSampleRate = isSampled? NO: [FTBaseInfoHandler randomSampling:self.config.sessionReplayOnErrorSampleRate];
         
-        BOOL shouldStart = isSampled || srOnErrorSampleRate;
+        self.shouldStart = isSampled || srOnErrorSampleRate;
         // Whether to use temporary cache (when it's an error session, or not sampled by regular sampling but error sampling is enabled)
-        BOOL useTmpCache = isErrorSession || srOnErrorSampleRate;
-        if (shouldStart) {
-            [self startWithTmpCache:useTmpCache];
-        } else {
-            [self stop];
+        BOOL sampledForErrorReplay = isErrorSession || srOnErrorSampleRate;
+        if (self.sampledForErrorReplay != sampledForErrorReplay) {
+            self.sampledForErrorReplay = sampledForErrorReplay;
         }
-        // FT_SESSION_HAS_REPLAY, whether there is session replay data collection, cache type also counts
-        // FT_RUM_KEY_SAMPLED_FOR_ERROR_REPLAY, cache type data
-        [[FTModuleManager sharedInstance] postMessage:FTMessageKeySessionHasReplay message:@{
-            FT_SESSION_HAS_REPLAY:@(shouldStart),
-            FT_RUM_SESSION_REPLAY_SAMPLE_RATE:@(self.sampleRate),
-            FT_RUM_SESSION_REPLAY_ON_ERROR_SAMPLE_RATE:@(self.config.sessionReplayOnErrorSampleRate),
-            FT_RUM_KEY_SAMPLED_FOR_ERROR_REPLAY:@(useTmpCache)
-        }];
     }
-    self.currentRUMContext = message;
+    self.currentRUMContext = context;
+    [self evaluateRecordingConditions];
+}
+- (void)evaluateRecordingConditions{
+    if (self.shouldStart) {
+        [self start];
+    } else {
+        [self stop];
+    }
+    [self updateHasReplay];
+}
+- (void)updateHasReplay{
+    // FT_SESSION_HAS_REPLAY, whether there is session replay data collection, cache type also counts
+    // FT_RUM_KEY_SAMPLED_FOR_ERROR_REPLAY, cache type data
+    [[FTModuleManager sharedInstance] postMessage:FTMessageKeySessionHasReplay message:@{
+        FT_SESSION_HAS_REPLAY:@(self.shouldStart),
+        FT_RUM_SESSION_REPLAY_SAMPLE_RATE:@(self.sampleRate),
+        FT_RUM_SESSION_REPLAY_ON_ERROR_SAMPLE_RATE:@(self.config.sessionReplayOnErrorSampleRate),
+        FT_RUM_KEY_SAMPLED_FOR_ERROR_REPLAY:@(self.sampledForErrorReplay)
+    }];
 }
 - (void)captureNextRecord{
     @try {

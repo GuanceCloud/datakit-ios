@@ -17,7 +17,7 @@ FOUNDATION_EXPORT FTMessageKey const FTMessageKeyRumError;
 @protocol FTMessageReceiver;
 @interface FTModuleManager : NSObject
 + (instancetype)sharedInstance;
-
+- (void)postMessage:(NSString *)key messageBlock:(nullable NSDictionary * (^)(void))messageBlock;
 - (void)postMessage:(NSString *)key message:(NSDictionary *)message;
 - (void)postMessage:(NSString *)key message:(NSDictionary *)message sync:(BOOL)sync;
 

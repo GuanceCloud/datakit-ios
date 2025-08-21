@@ -162,12 +162,7 @@ static const NSTimeInterval sessionMaxDuration = 4 * 60 * 60; // 4 hours
         strongSelf.needWriteErrorData = NO;
     };
     [self.viewHandlers addObject:viewHandler];
-    NSDictionary *sessionInfo = [self getCurrentSessionInfo];
-    self.rumDependencies.fatalErrorContext.lastSessionContext = sessionInfo;
-    NSMutableDictionary *srRumContext = [NSMutableDictionary dictionary];
-    [srRumContext setValue:@(self.rumDependencies.sampledForErrorSession) forKey:FT_RUM_KEY_SAMPLED_FOR_ERROR_SESSION];
-    [srRumContext addEntriesFromDictionary:sessionInfo?:@{}];
-    [[FTModuleManager sharedInstance] postMessage:FTMessageKeyRUMContext message:srRumContext];
+    self.rumDependencies.fatalErrorContext.lastSessionContext = [self getCurrentSessionInfo];
 }
 -(BOOL)timedOutOrExpired:(NSDate*)currentTime{
     NSTimeInterval timeElapsedSinceLastInteraction = [currentTime timeIntervalSinceDate:_lastInteractionTime];

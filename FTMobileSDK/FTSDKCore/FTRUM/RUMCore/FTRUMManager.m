@@ -21,6 +21,7 @@
 #import "FTPresetProperty.h"
 #import "FTNetworkConnectivity.h"
 #import "FTMessageReceiver.h"
+#import "FTRUMViewHandler.h"
 
 NSString * const AppStateStringMap[] = {
     [FTAppStateUnknown] = @"unknown",
@@ -70,7 +71,7 @@ void *FTRUMQueueIdentityKey = &FTRUMQueueIdentityKey;
                 }
                 strongSelf.rumDependencies.sessionReplaySampledFields = [mutableMessage copy];
                 strongSelf.rumDependencies.sampledForErrorReplay = sampledForErrorReplay;
-                FTInnerLogDebug(@"[RUM] session(id:%@)  has replay:%@ sampledForErrorReplay:%@",[strongSelf.rumDependencies.fatalErrorContext.lastSessionContext valueForKey:FT_RUM_KEY_SESSION_ID],(hasReplay?@"true":@"false"),(sampledForErrorReplay?@"true":@"false"));
+                FTInnerLogDebug(@"[RUM] session(id:%@)  has replay:%@ sampledForErrorReplay:%@",strongSelf.sessionHandler.context.session_id,(hasReplay?@"true":@"false"),(sampledForErrorReplay?@"true":@"false"));
             }else if(key == FTMessageKeyRecordsCountByViewID){
                 strongSelf.rumDependencies.sessionReplayStats = messageCopy;
             }
@@ -485,6 +486,17 @@ void *FTRUMQueueIdentityKey = &FTRUMQueueIdentityKey;
         self.sessionHandler = [[FTRUMSessionHandler alloc]initWithModel:model dependencies:self.rumDependencies];
         [self.sessionHandler.assistant process:model context:context];
     }
+    __weak typeof(self) weakSelf = self;
+    [[FTModuleManager sharedInstance] postMessage:FTMessageKeyRUMContext messageBlock:^NSDictionary * _Nonnull{
+        __strong __typeof(weakSelf) strongSelf = weakSelf;
+        if (!strongSelf) {
+            return nil;
+        }
+        NSMutableDictionary *dict = [NSMutableDictionary new];
+        [dict addEntriesFromDictionary:[strongSelf getCurrentSessionInfo]];
+        [dict setValue:@(self.rumDependencies.sampledForErrorSession) forKey:FT_RUM_KEY_SAMPLED_FOR_ERROR_SESSION];
+        return dict;
+    }];
     return YES;
 }
 -(NSDictionary *)rumDynamicProperty{

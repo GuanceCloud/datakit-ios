@@ -38,6 +38,20 @@ void *FTMessageBusQueueIdentityKey = &FTMessageBusQueueIdentityKey;
     });
     return _sharedInstance;
 }
+- (void)postMessage:(NSString *)key messageBlock:(nullable NSDictionary * (^)(void))messageBlock{
+    dispatch_block_t block = ^{
+        NSDictionary *message = messageBlock();
+        if (!message) {
+            return;
+        }
+        for (id receiver in self.receiverArray) {
+            if ([receiver respondsToSelector:@selector(receive:message:)]) {
+                [receiver receive:key message:message];
+            }
+        }
+    };
+    dispatch_async(self.queue, block);
+}
 - (void)postMessage:(NSString *)key message:(NSDictionary *)message{
     [self postMessage:key message:message sync:NO];
 }
