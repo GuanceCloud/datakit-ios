@@ -1,3 +1,6 @@
+# 1.5.19-alpha.1
+1. Fixed data loss when RUM view is missing
+---
 # 1.5.18
 1. Added support for RUM View/Action collection filtering and custom View/Action naming via `FTRumConfig.viewTrackingHandler` and `FTRumConfig.actionTrackingHandler`
 2. Added the `-updateViewLoadingTime:` method to support updating the loading time for the currently active RUM View
