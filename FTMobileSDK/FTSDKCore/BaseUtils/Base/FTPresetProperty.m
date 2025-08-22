@@ -888,7 +888,7 @@ static uintptr_t firstCmdAfterHeader(const struct mach_header* const header) {
 #endif
 }
 - (void)shutDown{
-    dispatch_barrier_sync(self.concurrentQueue, ^{
+    dispatch_barrier_async(self.concurrentQueue, ^{
         self->_baseCommonPropertyTags = nil;
         self->_rumGlobalContext = nil;
         self->_loggerTags = nil;

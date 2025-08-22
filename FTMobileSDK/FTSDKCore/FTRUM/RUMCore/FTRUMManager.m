@@ -54,7 +54,7 @@ void *FTRUMQueueIdentityKey = &FTRUMQueueIdentityKey;
 #pragma mark - Session -
 -(void)notifyRumInit{
     NSDictionary *context = [self rumDynamicProperty];
-    [self syncProcess:^{
+    dispatch_async(self.rumQueue, ^{
         @try {
             FTRUMDataModel *model = [[FTRUMDataModel alloc]init];
             model.type = FTRUMSDKInit;
@@ -62,7 +62,7 @@ void *FTRUMQueueIdentityKey = &FTRUMQueueIdentityKey;
         } @catch (NSException *exception) {
             FTInnerLogError(@"exception %@",exception);
         }
-    }];
+    });
 }
 #pragma mark - View -
 -(void)onCreateView:(NSString *)viewName loadTime:(NSNumber *)loadTime{
