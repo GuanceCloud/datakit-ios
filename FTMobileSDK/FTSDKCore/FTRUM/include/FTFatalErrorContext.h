@@ -16,7 +16,7 @@ NS_ASSUME_NONNULL_BEGIN
 
 @property (atomic, strong) NSDictionary *lastSessionContext;
 
-@property (atomic, strong) NSDictionary *lastViewContext;
+@property (atomic, strong, nullable) NSDictionary *lastViewContext;
 @end
 
 NS_ASSUME_NONNULL_END

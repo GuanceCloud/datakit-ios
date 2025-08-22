@@ -20,7 +20,6 @@
 @property (nonatomic, strong) FTRUMDependencies *rumDependencies;
 @property (nonatomic, strong) FTRUMContext *context;
 @property (nonatomic, strong) FTRUMActionHandler *actionHandler;
-@property (nonatomic, assign) BOOL isInitialView;
 @property (nonatomic, strong) NSMutableDictionary *resourceHandlers;
 @property (nonatomic, assign) NSInteger viewLongTaskCount;
 @property (nonatomic, assign) NSInteger viewResourceCount;
@@ -39,7 +38,6 @@
     if (self) {
         self.assistant = self;
         self.isActiveView = YES;
-        self.isInitialView = model.isInitialView;
         self.updateTime = 0;
         self.view_id = model.view_id;
         self.view_name = model.view_name;
@@ -201,14 +199,8 @@
     [fields addEntriesFromDictionary:model.fields];
     NSString *error = model.type == FTRUMDataLongTask?FT_RUM_SOURCE_LONG_TASK :FT_RUM_SOURCE_ERROR;
     [self.rumDependencies.writer rumWrite:error tags:tags fields:fields time:model.tm];
-    if(self.errorHandled){
-        self.errorHandled();
-    }
 }
 - (void)writeViewData:(FTRUMDataModel *)model context:(NSDictionary *)context updateTime:(NSDate *)updateTime{
-    if(self.isInitialView){
-        return;
-    }
     self.updateTime+=1;
     //Second level
     NSTimeInterval sTimeSpent = MAX(1e-9, [model.time timeIntervalSinceDate:self.viewStartTime]);

@@ -18,8 +18,6 @@ typedef void(^FTErrorHandled)(void);
 @property (nonatomic, copy) NSString *view_name;
 @property (nonatomic, copy) NSString *view_referrer;
 @property (nonatomic, strong) NSNumber *loading_time;
-/// Current view processed error data callback
-@property (nonatomic, copy) FTErrorHandled errorHandled;
 
 -(instancetype)initWithModel:(FTRUMViewModel *)model context:(FTRUMContext *)context rumDependencies:(FTRUMDependencies *)rumDependencies;
 @end
