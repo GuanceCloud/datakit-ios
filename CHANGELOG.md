@@ -2,6 +2,29 @@
 1. Adapted to 1.5.18
 2. Expose public interfaces for React Native session replay functionality
 ---
+# 1.6.2-alpha.2
+1. Adapted to 1.5.17
+---
+# 1.6.2-alpha.1 
+1. Add `FTSessionReplayConfig.sessionReplayOnErrorSampleRate` to support error sampling. When not sampled by sampleRate, session replay data from 1 minute ago can be sampled when errors occur
+2. Same as 1.5.16
+---
+# 1.6.1-alpha.4
+1. Resource performance resource data processing optimization, filter dns abnormal data
+2. Same as 1.5.15
+---
+# 1.6.1-alpha.3
+1. Fix crash caused by multi-threaded access to `currentRUMContext`
+---
+# 1.6.1-alpha.2
+1. Add priority handling for `privacy` and fine-grained privacy, fine-grained privacy level settings have higher priority than `privacy`
+---
+# 1.6.1-alpha.1
+1. Session Replay adds support for fine-grained privacy level settings through `touchPrivacy` touch masking available privacy levels and `textAndInputPrivacy` text and input masking available privacy levels
+2. Session Replay adds support for UIView to set view-level privacy overrides through `sessionReplayPrivacyOverrides`
+3. Session Replay data synchronization adds X-Pkg-Id tracking adaptation
+4. Same as 1.5.15-alpha.2
+---
 # 1.5.18
 1. Added support for RUM View/Action collection filtering and custom View/Action naming via `FTRumConfig.viewTrackingHandler` and `FTRumConfig.actionTrackingHandler`
 2. Added the `-updateViewLoadingTime:` method to support updating the loading time for the currently active RUM View
@@ -25,9 +48,6 @@
 1. Fix: made the SDK's -shutdown method thread-safe
 2. Added support for custom RUM View tracking strategy via `FTRumConfig.viewTrackingStrategy`
 3. Fix: made `sdk_name` a mandatory baseline field
----
-# 1.6.2-alpha.2
-1. Adapted to 1.5.17
 ---
 # 1.5.18-alpha.3
 1. Fix: missing `#include <string.h>` in tvOS platform
@@ -56,20 +76,6 @@
 1. Add `FTRUMConfig.enableTraceWebView` configuration to enable webView data collection through SDK, control host address filtering through `FTRUMConfig.allowWebViewHost`
 2. Add `FTURLSessionDelegate.errorFilter` to filter local network errors
 3. Add `FTMobileConfig.remoteConfiguration`, `FTMobileConfig.remoteConfigMiniUpdateInterval` to configure remote configuration and dynamic parameter configuration. `FTMobileAgent` adds `+updateRemoteConfig` and `+ updateRemoteConfigWithMiniUpdateInterval:callback:` remote configuration update request methods
----
-# 1.6.2-alpha.1 
-1. Add `FTSessionReplayConfig.sessionReplayOnErrorSampleRate` to support error sampling. When not sampled by sampleRate, session replay data from 1 minute ago can be sampled when errors occur
-2. Same as 1.5.16
----
-# 1.6.1-alpha.4
-1. Resource performance resource data processing optimization, filter dns abnormal data
-2. Same as 1.5.15
----
-# 1.6.1-alpha.3
-1. Fix crash caused by multi-threaded access to `currentRUMContext`
----
-# 1.6.1-alpha.2
-1. Add priority handling for `privacy` and fine-grained privacy, fine-grained privacy level settings have higher priority than `privacy`
 ---
 # 1.5.16
 1. Add `FTMobileConfig.lineDataModifier`, `FTMobileConfig.dataModifier` to support data write replacement and data desensitization
@@ -107,11 +113,6 @@
 ---
 # 1.5.15-alpha.5
 1. Change `sessionOnErrorSampleRate` type to `int`. Adjust Error Session collection logic, start collection from 1 minute before error occurs.
----
-# 1.6.1-alpha.1
-1. Session Replay adds support for fine-grained privacy level settings through `touchPrivacy` touch masking available privacy levels and `textAndInputPrivacy` text and input masking available privacy levels
-2. Session Replay adds support for UIView to set view-level privacy overrides through `sessionReplayPrivacyOverrides`
-3. Session Replay data synchronization adds X-Pkg-Id tracking adaptation
 ---
 # 1.5.15-alpha.3
 1. Add `sessionOnErrorSampleRate` field to FTRumConfig. If enabled, when errors occur in Sessions not selected by sampling rate, SDK will collect data from these originally uncollected Sessions
