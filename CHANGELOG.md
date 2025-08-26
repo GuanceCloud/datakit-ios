@@ -1,9 +1,9 @@
 # 1.6.2-alpha.3
-1. Adapted to 1.5.18
-2. Expose public interfaces for React Native session replay functionality
+1. Expose public interfaces for React Native session replay functionality
+2. Same as 1.5.18
 ---
 # 1.6.2-alpha.2
-1. Adapted to 1.5.17
+1. Same as 1.5.17
 ---
 # 1.6.2-alpha.1 
 1. Add `FTSessionReplayConfig.sessionReplayOnErrorSampleRate` to support error sampling. When not sampled by sampleRate, session replay data from 1 minute ago can be sampled when errors occur
