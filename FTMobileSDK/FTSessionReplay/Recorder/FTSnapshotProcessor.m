@@ -117,6 +117,7 @@
         // 5.数据写入
         if(records.count>0){
             FTEnrichedRecord *fullRecord = [[FTEnrichedRecord alloc]initWithContext:viewTreeSnapshot.context records:records];
+            fullRecord.webViewSlotIDs = viewTreeSnapshot.webViewSlotIDs.count>0? viewTreeSnapshot.webViewSlotIDs.allObjects:nil;
             // 5.1. 将页面采集情况同步给 RUM-View
             [self trackRecord:fullRecord];
             // 5.2. 数据写入文件

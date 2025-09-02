@@ -30,7 +30,7 @@
     if (!color || width<=0) return nil;
     return [[FTSRShapeBorder alloc] initWithColor:[FTSRUtils colorHexString:color] width:width];
 }
-- (FTSRWireframe *)visibleWebViewWireframeWithID:(int64_t)identifier attributes:(FTViewAttributes *)attributes{
+- (FTSRWebViewWireframe *)visibleWebViewWireframeWithID:(int64_t)identifier attributes:(FTViewAttributes *)attributes{
     FTSRWebViewWireframe *wireframe = [[FTSRWebViewWireframe alloc]initWithIdentifier:identifier frame:attributes.frame];
     wireframe.clip = [[FTSRContentClip alloc]initWithFrame:attributes.frame clip:attributes.clip];
     wireframe.slotId = [NSString stringWithFormat:@"%lld",identifier];
@@ -46,6 +46,7 @@
     NSMutableArray *array = [NSMutableArray new];
     [self.webViewSlotIDs enumerateObjectsUsingBlock:^(NSNumber * _Nonnull obj, BOOL * _Nonnull stop) {
         FTSRWebViewWireframe *wireframe = [[FTSRWebViewWireframe alloc]initWithIdentifier:[obj longLongValue] frame:CGRectZero];
+        wireframe.isVisible = NO;
         wireframe.slotId = [NSString stringWithFormat:@"%@",obj];
         [array addObject:wireframe];
     }];

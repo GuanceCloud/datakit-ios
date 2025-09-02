@@ -9,13 +9,13 @@
 #import <Foundation/Foundation.h>
 #import "FTSRNodeWireframesBuilder.h"
 NS_ASSUME_NONNULL_BEGIN
-
+@class FTSRWebViewWireframe;
 @interface FTSessionReplayWireframesBuilder : NSObject
 -(instancetype)initWithResources:(NSArray<id <FTSRResource>>*)resources webViewSlotIDs:( NSSet<NSNumber *> *)webViewSlotIDs;
 
 - (FTSRWireframe *)createShapeWireframeWithID:(int64_t)identifier attributes:(FTViewAttributes *)attributes;
 
-- (FTSRWireframe *)visibleWebViewWireframeWithID:(int64_t)identifier attributes:(FTViewAttributes *)attributes;
+- (FTSRWebViewWireframe *)visibleWebViewWireframeWithID:(int64_t)identifier attributes:(FTViewAttributes *)attributes;
 - (NSArray<FTSRWireframe*>*)hiddenWebViewWireframes;
 @end
 

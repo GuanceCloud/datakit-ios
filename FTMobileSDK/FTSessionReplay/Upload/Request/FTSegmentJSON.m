@@ -20,7 +20,6 @@
         _start = LONG_MAX;
         _end = LONG_MIN;
         _source = @"ios";
-        _container = dict[@"container"];
         NSArray *array = dict[@"records"];
         for (NSDictionary *record in array) {
             NSInteger type = [record[@"type"] integerValue];

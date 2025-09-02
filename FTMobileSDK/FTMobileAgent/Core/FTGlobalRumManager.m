@@ -120,11 +120,11 @@ static dispatch_once_t onceToken;
             if (time == fixTime/1000000) {
                 time = fixTime;
             }
-            if ([measurement isEqualToString:@"view"]) {
-                if (viewId) {
-                    [tags setValue:@{@"source":@"ios",@"view_id":viewId} forKey:@"container"];
-                }
+            //            if ([measurement isEqualToString:@"view"]) {
+            if (viewId) {
+                [tags setValue:@{@"source":@"ios",@"view_id":viewId} forKey:@"container"];
             }
+            //            }
             if (measurement && fields.count>0) {
                 if ([name isEqualToString:@"rum"]) {
                     [self.rumManager addWebViewData:measurement tags:tags fields:fields tm:time];
@@ -133,9 +133,6 @@ static dispatch_once_t onceToken;
         }else if ([name isEqualToString:@"session_replay"]){
             NSMutableDictionary *dict = [messageDic mutableCopy];
             [dict setValue:[NSString stringWithFormat:@"%lld",slotID] forKey:@"slotId"];
-            if (viewId) {
-                [dict setValue:@{@"source":@"ios",@"view_id":viewId} forKey:@"container"];
-            }
             [[FTModuleManager sharedInstance] postMessage:FTMessageKeyWebViewSR message:dict];
         }
     } @catch (NSException *exception) {

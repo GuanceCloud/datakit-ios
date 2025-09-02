@@ -546,10 +546,10 @@ BOOL objectIsEqual(id new,id old){
         return nil;
     }
     FTSRWebViewWireframe *webView = (FTSRWebViewWireframe *)wire;
-    FTSRWebViewWireframe *newWire = (FTSRWebViewWireframe *)newWireFrame;
-    webView.border = useNewObjectIfDifferentThanOld(newWire.border,self.border);
-    webView.shapeStyle = useNewObjectIfDifferentThanOld(newWire.shapeStyle,self.shapeStyle);
-    return webView;
+    FTSRWebViewWireframe *newWeb = (FTSRWebViewWireframe *)newWireFrame;
+    newWeb.border = useNewObjectIfDifferentThanOld(newWeb.border,self.border);
+    newWeb.shapeStyle = useNewObjectIfDifferentThanOld(newWeb.shapeStyle,self.shapeStyle);
+    return newWeb;
 }
 -(BOOL)isEqualToWebViewWireframe:(FTSRWebViewWireframe *)object{
     if(!object){

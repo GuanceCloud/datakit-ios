@@ -171,7 +171,7 @@
             Adds *add = [[Adds alloc]init];
             if (i - 1 >= 0){
                 int64_t pre = newWireframes[i-1].identifier;
-                add.previousId = pre;
+                add.previousId = @(pre);
             }
             add.wireframe = newWireframes[i];
             [adds addObject:add];
@@ -185,7 +185,7 @@
                 Adds *add = [[Adds alloc]init];
                 if (i - 1 >= 0){
                     int64_t pre = newWireframes[i-1].identifier;
-                    add.previousId = pre;
+                    add.previousId = @(pre);
                 }
                 add.wireframe = newWireframes[i];
                 [adds addObject:add];
