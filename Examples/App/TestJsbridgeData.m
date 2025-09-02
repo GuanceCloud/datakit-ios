@@ -35,9 +35,12 @@
         
     //! 使用configuration对象初始化webView
     self.webView = [[WKWebView alloc] initWithFrame:self.view.bounds configuration:config];
+    if (@available(iOS 16.4, *)) {
+        self.webView.inspectable = YES;
+    }
     [self.view addSubview:self.webView];
 //    NSString *path = [[NSBundle mainBundle]pathForResource:@"sample" ofType:@"html"];
-    NSString *url = [[NSProcessInfo processInfo] environment][@"WEBVIEW_URL"];
+    NSString *url = [[NSProcessInfo processInfo] environment][@"WEBVIEW_URL"];;
     NSURLRequest *request = [NSURLRequest requestWithURL:[NSURL URLWithString:url]];
     [self.webView loadRequest:request];
 }
