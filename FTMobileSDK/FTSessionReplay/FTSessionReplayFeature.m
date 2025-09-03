@@ -144,7 +144,6 @@
                 NSDictionary *view = message[@"view"];
                 NSString *viewID = view[@"id"];
                 NSDictionary *event = message[@"data"];
-                NSDictionary *container = message[@"container"];
                 if (event && slotID && viewID) {
                     NSDictionary *currentRumContext = strongSelf.currentRUMContext;
                     if (!currentRumContext) {
@@ -155,7 +154,6 @@
                     BOOL force = strongSelf.lastViewID == nil || ![strongSelf.lastViewID isEqualToString:viewID];
                     FTSRWebRecord *record = [[FTSRWebRecord alloc]init];
                     record.viewID = viewID;
-                    record.container = container;
                     record.sessionID = currentRumContext[FT_RUM_KEY_SESSION_ID];
                     record.applicationID = currentRumContext[FT_APP_ID];
                     record.records = @[newEvent];

@@ -94,6 +94,5 @@ NS_ASSUME_NONNULL_BEGIN
 @property (nonatomic, copy) NSString *applicationID;
 @property (nonatomic, copy) NSString *viewID;
 @property (nonatomic, strong) NSArray *records;
-@property (nonatomic, strong) NSDictionary *container;
 @end
 NS_ASSUME_NONNULL_END
