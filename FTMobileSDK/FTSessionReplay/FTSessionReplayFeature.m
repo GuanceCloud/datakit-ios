@@ -27,6 +27,7 @@
 #import "FTSRRecord.h"
 #import "FTFileWriter.h"
 #import "FTSRWebTrackingProtocol.h"
+#import "FTFeatureStorage.h"
 @interface FTSessionReplayFeature()<FTMessageReceiver,FTSRWebTrackingProtocol>
 @property (nonatomic, strong) NSTimer *timer;
 @property (atomic, strong) NSDictionary *currentRUMContext;
@@ -36,10 +37,9 @@
 @property (nonatomic, strong) FTWindowObserver *windowObserver;
 @property (nonatomic, strong) dispatch_queue_t processorsQueue;
 @property (nonatomic, strong) FTSessionReplayConfig *config;
-@property (nonatomic, strong) id<FTCacheWriter> cacheWriter;
-@property (nonatomic, strong) id<FTWriter> writer;
 @property (nonatomic, assign) BOOL shouldStart;
 @property (nonatomic, assign) BOOL sampledForErrorReplay;
+@property (nonatomic, strong) FTFeatureStorage *recordStorage;
 @property (nonatomic, strong) id<FTWriter> webViewWriter;
 @property (atomic, copy) NSString *lastViewID;
 @end
@@ -61,30 +61,45 @@
         _touches = [[FTSessionReplayTouches alloc]initWithWindowObserver:_windowObserver];
         _config = [config copy];
         _shouldStart = NO;
-        _sampledForErrorReplay = NO;
+        self.sampledForErrorReplay = NO;
         [[FTModuleManager sharedInstance] addMessageReceiver:self];
         [[FTModuleManager sharedInstance] registerService:NSProtocolFromString(@"FTSRWebTrackingProtocol") instance:self];
     }
     return self;
 }
-
--(void)startWithWriter:(id<FTWriter>)writer cacheWriter:(id<FTCacheWriter>)cacheWriter resourceWriter:(id<FTWriter>)resourceWriter resourceDataStore:(id<FTDataStore>)dataStore{
-    // image resource writer
-//    FTResourceWriter *resource = [[FTResourceWriter alloc]initWithWriter:resourceWriter dataStore:dataStore];
-//    FTResourceProcessor *resourceProcessor = [[FTResourceProcessor alloc]initWithQueue:self.processorsQueue resourceWriter:resource];
-    _cacheWriter = cacheWriter;
-    _writer = writer;
-    _webViewWriter = webViewWriter;
-    FTSnapshotProcessor *srProcessor = [[FTSnapshotProcessor alloc]initWithQueue:self.processorsQueue writer:writer];
+-(void)startWithRecordStorage:(FTFeatureStorage *)recordStorage{
+    _recordStorage = recordStorage;
+    FTSnapshotProcessor *srProcessor = [[FTSnapshotProcessor alloc]initWithQueue:self.processorsQueue writer:recordStorage.writer];
     FTRecorder *windowRecorder = [[FTRecorder alloc]initWithWindowObserver:self.windowObserver snapshotProcessor:srProcessor resourceProcessor:nil additionalNodeRecorders:self.config.additionalNodeRecorders];
     self.windowRecorder = windowRecorder;
 }
+//-(void)startWithWriter:(id<FTWriter>)writer
+//           cacheWriter:(id<FTCacheWriter>)cacheWriter
+//         webViewWriter:(id<FTWriter>)webViewWriter
+//        resourceWriter:(id<FTWriter>)resourceWriter
+//     resourceDataStore:(id<FTDataStore>)dataStore{
+//    // image resource writer
+////    FTResourceWriter *resource = [[FTResourceWriter alloc]initWithWriter:resourceWriter dataStore:dataStore];
+////    FTResourceProcessor *resourceProcessor = [[FTResourceProcessor alloc]initWithQueue:self.processorsQueue resourceWriter:resource];
+//    _cacheWriter = cacheWriter;
+//    _writer = writer;
+//    _webViewWriter = webViewWriter;
+//    FTSnapshotProcessor *srProcessor = [[FTSnapshotProcessor alloc]initWithQueue:self.processorsQueue writer:writer];
+//    FTRecorder *windowRecorder = [[FTRecorder alloc]initWithWindowObserver:self.windowObserver snapshotProcessor:srProcessor resourceProcessor:nil additionalNodeRecorders:self.config.additionalNodeRecorders];
+//    self.windowRecorder = windowRecorder;
+//}
 
 - (void)setSampledForErrorReplay:(BOOL)sampledForErrorReplay{
     _sampledForErrorReplay = sampledForErrorReplay;
     [FTThreadDispatchManager performBlockDispatchMainAsync:^{
-        [self.windowRecorder.snapshotProcessor changeWriter:sampledForErrorReplay? self.cacheWriter:self.writer needUpdateFullSnapshot:sampledForErrorReplay];
-        sampledForErrorReplay?[self.cacheWriter active]:[self.cacheWriter inactive];
+        [self.windowRecorder.snapshotProcessor changeWriter:sampledForErrorReplay? self.recordStorage.cacheWriter:self.recordStorage.writer needUpdateFullSnapshot:sampledForErrorReplay];
+        if(sampledForErrorReplay){
+            [self.recordStorage.cacheWriter active];
+            self.webViewWriter = self.recordStorage.webViewCacheWriter;
+        }else{
+            [self.recordStorage.cacheWriter inactive];
+            self.webViewWriter = self.recordStorage.webViewWriter;
+        }
     }];
 }
 -(void)start{
@@ -112,12 +127,13 @@
 }
 - (void)receive:(NSString *)key message:(NSDictionary *)message {
     if([key isEqualToString:FTMessageKeyRUMContext]){
-    if ([self.currentRUMContext isEqualToDictionary:message]) {
-        return;
-    }
-    [self onRUMContextChanged:message];
+        if ([self.currentRUMContext isEqualToDictionary:message]) {
+            return;
+        }
+        [self onRUMContextChanged:message];
     }else if ([key isEqualToString:FTMessageKeyWebViewSR]){
         __weak typeof(self) weakSelf = self;
+        id <FTWriter> webViewWriter = self.webViewWriter;
         dispatch_async(self.processorsQueue, ^{
             __strong __typeof(weakSelf) strongSelf = weakSelf;
             if (!strongSelf) {
@@ -144,7 +160,7 @@
                     record.applicationID = currentRumContext[FT_APP_ID];
                     record.records = @[newEvent];
                     NSData *data = [record toJSONData];
-                    [strongSelf.webViewWriter write:data forceNewFile:force];
+                    [webViewWriter write:data forceNewFile:force];
                     strongSelf.lastViewID = viewID;
                 }
             } @catch (NSException *exception) {

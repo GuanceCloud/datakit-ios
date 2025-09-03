@@ -19,6 +19,7 @@ NS_ASSUME_NONNULL_BEGIN
 - (id<FTWriter>)writer;
 - (nullable id<FTCacheWriter>)cacheWriter;
 - (id<FTWriter>)webViewWriter;
+- (id<FTWriter>)webViewCacheWriter;
 - (id<FTReader>)reader;
 - (void)clearAllData;
 - (void)setIgnoreFilesAgeWhenReading:(BOOL)ignore;

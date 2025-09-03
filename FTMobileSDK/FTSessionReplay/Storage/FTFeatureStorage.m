@@ -30,6 +30,7 @@
 @property (nonatomic, strong) FTDirectory *directory;
 @property (nonatomic, strong) FTDirectory *cacheDirectory;
 @property (nonatomic, strong) id<FTCacheWriter> cacheWriter;
+@property (nonatomic, strong) id<FTWriter> webViewCacheWriter;
 @end
 @implementation FTFeatureStorage
 
@@ -55,6 +56,16 @@
 - (id<FTWriter>)webViewWriter{
     FTFileWriter *fileWriter = [[FTFileWriter alloc]initWithOrchestrator:self.webAuthorizedFilesOrchestrator queue:self.queue];
     return fileWriter;
+}
+- (id<FTWriter>)webViewCacheWriter{
+    if (self.cacheAuthorizedFilesOrchestrator) {
+        if (!_webViewCacheWriter) {
+            FTFileWriter *realFileWriter = [[FTFileWriter alloc]initWithOrchestrator:self.cacheAuthorizedFilesOrchestrator queue:self.queue];
+            _webViewCacheWriter = realFileWriter;
+        }
+        return _webViewCacheWriter;
+    }
+    return nil;
 }
 - (id<FTCacheWriter>)cacheWriter{
     if (self.cacheAuthorizedFilesOrchestrator) {
