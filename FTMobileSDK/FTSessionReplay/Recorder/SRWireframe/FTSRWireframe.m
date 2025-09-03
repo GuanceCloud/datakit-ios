@@ -263,11 +263,11 @@ BOOL objectIsEqual(id new,id old){
         [NSString stringWithFormat:@"FTSRWireframe validation errors: %@ is not Equal to %@",
          self.type,newWireFrame.type];
         if(error){
-            *error = [NSError errorWithDomain:@"com.guance.session-replay" code:-100 userInfo:@{NSLocalizedDescriptionKey:failureReason}];
+            *error = [NSError errorWithDomain:@"com.ft.session-replay" code:-100 userInfo:@{NSLocalizedDescriptionKey:failureReason}];
         }
         return nil;
     }
-    //旧的 clip 不存在时使用新的
+    //Use new clip when old clip doesn't exist
     self.clip = useNewIfDifferentThanOld(newWireFrame.clip, self.clip);
     self.width = useNewObjectIfDifferentThanOld(newWireFrame.width,self.width);
     self.height = useNewObjectIfDifferentThanOld(newWireFrame.height,self.height);
@@ -430,7 +430,7 @@ BOOL objectIsEqual(id new,id old){
     if(self){
         self.type = @"image";
         self.mimeType = @"png";
-        // TODO: 支持 imageData 同步时移除
+        // TODO: Remove when imageData synchronization is supported
         self.isEmpty = YES;
     }
     return self;

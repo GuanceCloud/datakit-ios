@@ -10,7 +10,6 @@
 #import "FTViewAttributes.h"
 #import "FTSRViewID.h"
 #import "FTViewTreeRecordingContext.h"
-#import <SafariServices/SafariServices.h>
 #import "FTUINavigationBarRecorder.h"
 #import "FTUIViewRecorder.h"
 #import "FTUINavigationBarRecorder.h"
@@ -61,7 +60,7 @@
     NSMutableArray *node = [[NSMutableArray alloc]init];
     NSMutableArray *resource = [[NSMutableArray alloc]init];
     for (UIView *rootView in rootViews) {
-        // 判断 window 是否可以显示
+        // Determine if window can be displayed
         if(rootView.isHidden == NO && rootView.alpha>0 && !CGRectEqualToRect(rootView.frame, CGRectZero)){
             FTViewTreeRecordingContext *recordingContext = [[FTViewTreeRecordingContext alloc]init];
             recordingContext.viewIDGenerator = self.idGen;

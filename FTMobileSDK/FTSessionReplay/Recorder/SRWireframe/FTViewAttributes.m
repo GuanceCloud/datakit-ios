@@ -23,7 +23,6 @@
         self.layerBorderWidth = view.layer.borderWidth;
         self.layerCornerRadius = view.layer.cornerRadius;
         self.isHidden = view.isHidden;
-        self.intrinsicContentSize = view.intrinsicContentSize;
         self.imagePrivacy = overrides.nImagePrivacy;
         self.textAndInputPrivacy = overrides.nTextAndInputPrivacy;
         self.hide = overrides.hide;
@@ -65,7 +64,6 @@
     attributes.layerBorderWidth = self.layerBorderWidth;
     attributes.layerCornerRadius = self.layerCornerRadius;
     attributes.isHidden = self.isHidden;
-    attributes.intrinsicContentSize = self.intrinsicContentSize;
     return attributes;
 }
 @end

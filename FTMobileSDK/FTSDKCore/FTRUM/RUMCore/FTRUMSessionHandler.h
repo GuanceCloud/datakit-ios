@@ -2,7 +2,7 @@
 //  FTRUMsessionHandler.h
 //  FTMobileAgent
 //
-//  Created by 胡蕾蕾 on 2021/5/26.
+//  Created by hulilei on 2021/5/26.
 //  Copyright © 2021 hll. All rights reserved.
 //
 
@@ -13,6 +13,7 @@ NS_ASSUME_NONNULL_BEGIN
 
 @interface FTRUMSessionHandler : FTRUMHandler
 @property (nonatomic, strong) FTRUMDependencies *rumDependencies;
+@property (nonatomic, strong, readonly) FTRUMContext *context;
 
 -(instancetype)initWithModel:(FTRUMDataModel *)model dependencies:(FTRUMDependencies *)dependencies;
 -(instancetype)initWithExpiredSession:(FTRUMSessionHandler *)expiredSession time:(NSDate *)time;

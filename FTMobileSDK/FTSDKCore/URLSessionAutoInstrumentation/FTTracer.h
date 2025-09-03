@@ -2,7 +2,7 @@
 //  FTTracer.h
 //  FTMobileAgent
 //
-//  Created by 胡蕾蕾 on 2021/3/17.
+//  Created by hulilei on 2021/3/17.
 //  Copyright © 2021 hll. All rights reserved.
 //
 
@@ -11,13 +11,13 @@
 #import "FTEnumConstant.h"
 NS_ASSUME_NONNULL_BEGIN
 
-/// 具体实现 trace 功能，请求头添加参数实现
+/// Specific implementation of trace functionality, adding parameters to request headers
 @interface FTTracer : NSObject<FTTracerProtocol>
-/// 设置 trace 配置
+/// Set trace configuration
 /// - Parameters:
-///   - sampleRate: 采样率
-///   - traceType: 链路追踪类型
-///   - link: 是否关联 rum
+///   - sampleRate: Sampling rate
+///   - traceType: Link tracking type
+///   - link: Whether to associate with rum
 -(instancetype)initWithSampleRate:(int)sampleRate
                         traceType:(NetworkTraceType)traceType
                       serviceName:(NSString *)serviceName

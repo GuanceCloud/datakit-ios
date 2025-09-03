@@ -2,7 +2,7 @@
 //  FTRUMActionHandler.m
 //  FTMobileAgent
 //
-//  Created by 胡蕾蕾 on 2021/5/21.
+//  Created by hulilei on 2021/5/21.
 //  Copyright © 2021 hll. All rights reserved.
 //
 
@@ -24,7 +24,7 @@ static const NSTimeInterval discreteActionTimeoutDuration = 0.1;
 @property (nonatomic, assign) NSInteger actionLongTaskCount;
 @property (nonatomic, assign) NSInteger actionResourcesCount;
 @property (nonatomic, assign) NSInteger actionErrorCount;
-@property (nonatomic, strong) NSDictionary *actionProperty;//添加到field中
+@property (nonatomic, strong) NSDictionary *actionProperty;//Add to field
 //private
 @property (nonatomic, assign) NSInteger activeResourcesCount;
 @property (nonatomic, strong) NSDate *lastResourceEndDate;
@@ -72,6 +72,7 @@ static const NSTimeInterval discreteActionTimeoutDuration = 0.1;
             FTRUMErrorData *error = (FTRUMErrorData *)model;
             if(error.fatal){
                 [self writeActionData:model.time context:context];
+                return NO;
             }
         }
             break;
@@ -125,12 +126,12 @@ static const NSTimeInterval discreteActionTimeoutDuration = 0.1;
     NSNumber *duration =  [endDate timeIntervalSinceDate:self.actionStartTime] >= actionMaxDuration?@(actionMaxDuration*1000000000):[self.actionStartTime ft_nanosecondTimeIntervalToDate:endDate];
     NSDictionary *sessionViewActionTag = [self.context getGlobalSessionViewActionTags];
     
-    NSMutableDictionary *fields = @{FT_DURATION:duration,
-                                    FT_KEY_ACTION_LONG_TASK_COUNT:@(self.actionLongTaskCount),
-                                    FT_KEY_ACTION_RESOURCE_COUNT:@(self.actionResourcesCount),
-                                    FT_KEY_ACTION_ERROR_COUNT:@(self.actionErrorCount),
-    }.mutableCopy;
-    [fields setValue:@(self.dependencies.sessionHasReplay) forKey:FT_SESSION_HAS_REPLAY];
+    NSMutableDictionary *fields = [NSMutableDictionary dictionary];
+    [fields setValue:duration forKey:FT_DURATION];
+    [fields setValue:@(self.actionLongTaskCount) forKey:FT_KEY_ACTION_LONG_TASK_COUNT];
+    [fields setValue:@(self.actionResourcesCount) forKey:FT_KEY_ACTION_RESOURCE_COUNT];
+    [fields setValue:@(self.actionErrorCount) forKey:FT_KEY_ACTION_ERROR_COUNT];
+    [fields setValue:self.dependencies.sessionHasReplay forKey:FT_SESSION_HAS_REPLAY];
     if(self.actionProperty && self.actionProperty.allKeys.count>0){
         [fields addEntriesFromDictionary:self.actionProperty];
     }

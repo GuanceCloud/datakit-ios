@@ -1,16 +1,16 @@
 @Tutorial(time: 10) {
-    @Intro(title: "自定义日志") {
-        SDK 提供**自定义上报日志**方法来上传日志。
-        @Image(source: logger, alt: "自定义日志的使用")
+    @Intro(title: "Custom Logging") {
+        SDK provides **custom log reporting** methods to upload logs.
+        @Image(source: logger, alt: "Custom logging usage")
     }             
     
-    @Section(title: "自定义日志使用") {
-        SDK 提供添加自定义日志的方法
+    @Section(title: "Custom Logging Usage") {
+        SDK provides methods to add custom logs
         
-        注意：需要在 SDK 启动后使用，且开启 ``FTMobileSDK/FTLoggerConfig/enableCustomLog`` 。开启 ``FTMobileSDK/FTLoggerConfig/printCustomLogToConsole`` 日志会在 Xcode 控制台中进行打印，也可通过控制台 App 进行查看。
+        Note: Must be used after SDK startup, and enable ``FTMobileSDK/FTLoggerConfig/enableCustomLog``. Enabling ``FTMobileSDK/FTLoggerConfig/printCustomLogToConsole`` will print logs in Xcode console, and can also be viewed through Console App.
         @Steps {
             @Step {
-                方法
+                Methods
                 
             @Code(name: "CustomLog.swift", file: CustomLog.swift)
             }

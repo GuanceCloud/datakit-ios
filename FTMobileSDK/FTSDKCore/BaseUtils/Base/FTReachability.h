@@ -2,7 +2,7 @@
 //  FTReachability.h
 //  FTMacOSSDK
 //
-//  Created by 胡蕾蕾 on 2021/8/4.
+//  Created by hulilei on 2021/8/4.
 //  Copyright © 2021 DataFlux-cn. All rights reserved.
 //
 
@@ -13,38 +13,38 @@
 #define NS_ENUM(_type, _name) enum _name : _type _name; enum _name : _type
 #endif
 extern NSString *const kFTReachabilityChangedNotification;
-/// 当前网络连接状态
+/// Current network connection status
 typedef NS_ENUM(NSInteger, FTNetworkStatus) {
-    /// 无网络连接
+    /// No network connection
     FTNotReachable = 0,
     /// WiFi
     FTReachableViaWiFi = 2,
-    /// 蜂窝网络
+    /// Cellular network
     FTReachableViaWWAN = 1
 };
 typedef void(^NetworkChangeBlock)(void);
-/// 网络状态监听工具
+/// Network status monitoring tool
 @interface FTReachability : NSObject
 
-/// 是否有网络连接
+/// Whether there is a network connection
 @property (readonly, nonatomic, assign) BOOL reachable;
-/// 网络状态改变回调
+/// Network status change callback
 @property (nonatomic,copy) NetworkChangeBlock networkChanged;
 
-/// 当前网络状态类型
+/// Current network status type
 @property (nonatomic, copy, readonly) NSString *net;
 
 +(instancetype)reachabilityForInternetConnection;
-/// 重新获取当前网络状态类型
+/// Re-get current network status type
 - (NSString *)networkType;
 
-/// 开始监听网络状态
+/// Start monitoring network status
 - (BOOL)startNotifier;
 
-/// 停止监听网络状态
+/// Stop monitoring network status
 - (void)stopNotifier;
 
-/// 判断当前网络是否可用
+/// Determine if current network is available
 -(BOOL)isReachable;
 @end
 

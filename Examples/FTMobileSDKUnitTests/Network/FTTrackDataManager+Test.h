@@ -9,9 +9,11 @@
 #import "FTTrackDataManager.h"
 
 NS_ASSUME_NONNULL_BEGIN
-@class FTDBDataCachePolicy;
+@class FTDBDataCachePolicy,FTDataUploadWorker;
 @interface FTTrackDataManager ()
 @property (nonatomic, strong) FTDBDataCachePolicy *dataCachePolicy;
+@property (nonatomic, strong) FTDataUploadWorker *dataUploadWorker;
+@property (atomic, assign,readonly) BOOL autoSync;
 
 @end
 

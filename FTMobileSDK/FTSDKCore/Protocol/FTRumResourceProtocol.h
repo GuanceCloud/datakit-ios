@@ -24,40 +24,40 @@ NS_ASSUME_NONNULL_BEGIN
 
 @class FTResourceMetricsModel,FTResourceContentModel;
 @protocol FTRumResourceProtocol <NSObject>
-/// HTTP 请求开始
+/// HTTP request start
 ///
 /// - Parameters:
-///   - key: 请求标识
+///   - key: Request identifier
 - (void)startResourceWithKey:(NSString *)key;
-/// HTTP 请求开始
+/// HTTP request start
 /// - Parameters:
-///   - key: 请求标识
-///   - property: 事件自定义属性(可选)
+///   - key: Request identifier
+///   - property: Event custom properties (optional)
 - (void)startResourceWithKey:(NSString *)key property:(nullable NSDictionary *)property;
 
-/// HTTP 请求数据
+/// HTTP request data
 ///
 /// - Parameters:
-///   - key: 请求标识
-///   - metrics: 请求相关性能属性
-///   - content: 请求相关数据
+///   - key: Request identifier
+///   - metrics: Request-related performance properties
+///   - content: Request-related data
 - (void)addResourceWithKey:(NSString *)key metrics:(nullable FTResourceMetricsModel *)metrics content:(FTResourceContentModel *)content;
-/// HTTP 请求结束
+/// HTTP request end
 ///
 /// - Parameters:
-///   - key: 请求标识
+///   - key: Request identifier
 - (void)stopResourceWithKey:(NSString *)key;
-/// HTTP 请求结束
+/// HTTP request end
 /// - Parameters:
-///   - key: 请求标识
-///   - property: 事件自定义属性(可选)
+///   - key: Request identifier
+///   - property: Event custom properties (optional)
 - (void)stopResourceWithKey:(NSString *)key property:(nullable NSDictionary *)property;
 @optional
-/// HTTP 请求数据 包含 tracer 信息 spanID、traceID
+/// HTTP request data including tracer information spanID, traceID
 /// - Parameters:
-///   - key: 请求标识
-///   - metrics: 请求相关性能属性
-///   - content: 请求相关数据
+///   - key: Request identifier
+///   - metrics: Request-related performance properties
+///   - content: Request-related data
 ///   - spanID: tracer spanid
 ///   - traceID: tracer traceid
 - (void)addResourceWithKey:(NSString *)key metrics:(nullable FTResourceMetricsModel *)metrics content:(FTResourceContentModel *)content spanID:(nullable NSString *)spanID traceID:(nullable NSString *)traceID;

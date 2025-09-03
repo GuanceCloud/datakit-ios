@@ -2,7 +2,7 @@
 //  FTRUMViewHandler.m
 //  FTMobileAgent
 //
-//  Created by 胡蕾蕾 on 2021/5/24.
+//  Created by hulilei on 2021/5/24.
 //  Copyright © 2021 hll. All rights reserved.
 //
 
@@ -31,8 +31,9 @@
 @property (nonatomic, strong) NSDate *viewStartTime;
 @property (nonatomic, assign) BOOL needUpdateView;
 @property (nonatomic, strong) FTMonitorItem *monitorItem;
-@property (nonatomic, strong) NSMutableDictionary *viewProperty;//存储在field中
+@property (nonatomic, strong) NSMutableDictionary *viewProperty;//Stored in field
 @property (nonatomic, assign) uint64_t updateTime;
+@property (nonatomic, assign) BOOL sessionHasReplay;
 @end
 @implementation FTRUMViewHandler
 -(instancetype)initWithModel:(FTRUMViewModel *)model context:(nonnull FTRUMContext *)context rumDependencies:(FTRUMDependencies *)rumDependencies{
@@ -51,6 +52,7 @@
         self.resourceHandlers = [NSMutableDictionary new];
         self.viewProperty = [NSMutableDictionary new];
         self.rumDependencies = rumDependencies;
+        self.sessionHasReplay = rumDependencies.sessionHasReplay?rumDependencies.sessionHasReplay.boolValue:NO;
         if(model.fields && model.fields.allKeys.count>0){
             [self.viewProperty addEntriesFromDictionary:model.fields];
         }
@@ -80,6 +82,12 @@
                 self.needUpdateView = YES;
             }
         }
+            break;
+        case FTRUMDataViewUpdateLoadingTime:
+            if (self.isActiveView) {
+                FTRUMViewLoadingModel *loadingModel = (FTRUMViewLoadingModel *)model;
+                self.loading_time = loadingModel.duration;
+            }
             break;
         case FTRUMDataViewStop:{
             FTRUMViewModel *viewModel = (FTRUMViewModel *)model;
@@ -140,9 +148,15 @@
         [self.actionHandler writeActionData:[NSDate date] context:context];
     }
     if (self.needUpdateView) {
-        [self writeViewData:model context:context];
+        [self writeViewData:model context:context updateTime:model.time];
     }
     return !shouldComplete;
+}
+-(void)setViewErrorCount:(NSInteger)viewErrorCount{
+    _viewErrorCount = viewErrorCount;
+    if (self.rumDependencies.sampledForErrorReplay) {
+        self.sessionHasReplay = YES;
+    }
 }
 - (void)startAction:(FTRUMDataModel *)model{
     __weak typeof(self) weakSelf = self;
@@ -192,37 +206,55 @@
     NSMutableDictionary *tags = [NSMutableDictionary dictionaryWithDictionary:context];
     [tags addEntriesFromDictionary:sessionViewTag];
     [tags addEntriesFromDictionary:model.tags];
-    NSMutableDictionary *fields = [NSMutableDictionary dictionaryWithDictionary:model.fields];
-    [fields setValue:@(self.rumDependencies.sessionHasReplay) forKey:FT_SESSION_HAS_REPLAY];
+    NSMutableDictionary *fields = [NSMutableDictionary new];
+    [fields addEntriesFromDictionary:model.fields];
+    if (self.rumDependencies.sessionHasReplay != nil) {
+        BOOL sessionHasReplay = self.sessionHasReplay || self.rumDependencies.sessionHasReplay.boolValue;
+        [fields setValue:@(sessionHasReplay) forKey:FT_SESSION_HAS_REPLAY];
+    }
     NSString *error = model.type == FTRUMDataLongTask?FT_RUM_SOURCE_LONG_TASK :FT_RUM_SOURCE_ERROR;
     [self.rumDependencies.writer rumWrite:error tags:tags fields:fields time:model.tm];
     if(self.errorHandled){
         self.errorHandled();
     }
 }
-- (void)writeViewData:(FTRUMDataModel *)model context:(NSDictionary *)context{
+- (void)writeViewData:(FTRUMDataModel *)model context:(NSDictionary *)context updateTime:(NSDate *)updateTime{
     if(self.isInitialView){
         return;
     }
     self.updateTime+=1;
-    //秒级
+    //Second level
     NSTimeInterval sTimeSpent = MAX(1e-9, [model.time timeIntervalSinceDate:self.viewStartTime]);
-    //纳秒级
+    //Nanosecond level
     NSNumber *nTimeSpent = [NSNumber numberWithLongLong:sTimeSpent * 1000000000];
-
+    
     NSMutableDictionary *tags = [NSMutableDictionary dictionaryWithDictionary:context];
     [tags addEntriesFromDictionary:[self.context getGlobalSessionViewTags]];
     FTMonitorValue *cpu = self.monitorItem.cpu;
     FTMonitorValue *memory = self.monitorItem.memory;
     FTMonitorValue *refreshRateInfo = self.monitorItem.refreshDisplay;
-    NSMutableDictionary *fields = @{FT_KEY_VIEW_ERROR_COUNT:@(self.viewErrorCount),
-                                   FT_KEY_VIEW_RESOURCE_COUNT:@(self.viewResourceCount),
-                                   FT_KEY_VIEW_LONG_TASK_COUNT:@(self.viewLongTaskCount),
-                                   FT_KEY_VIEW_ACTION_COUNT:@(self.viewActionCount),
-                                   FT_KEY_TIME_SPENT:nTimeSpent,
-                                   FT_KEY_VIEW_UPDATE_TIME:@(self.updateTime),
-                                   FT_KEY_IS_ACTIVE:[NSNumber numberWithBool:self.isActiveView],
-    }.mutableCopy;
+    NSMutableDictionary *fields = [NSMutableDictionary dictionary];
+    [fields setValue:@(self.viewErrorCount) forKey:FT_KEY_VIEW_ERROR_COUNT];
+    [fields setValue:@(self.viewResourceCount) forKey:FT_KEY_VIEW_RESOURCE_COUNT];
+    [fields setValue:@(self.viewLongTaskCount) forKey:FT_KEY_VIEW_LONG_TASK_COUNT];
+    [fields setValue:@(self.viewActionCount) forKey:FT_KEY_VIEW_ACTION_COUNT];
+    [fields setValue:nTimeSpent forKey:FT_KEY_TIME_SPENT];
+    [fields setValue:@(self.updateTime) forKey:FT_KEY_VIEW_UPDATE_TIME];
+    [fields setValue:@(self.isActiveView) forKey:FT_KEY_IS_ACTIVE];
+    
+    [fields setValue:@(self.rumDependencies.sampledForErrorSession) forKey:FT_RUM_KEY_SAMPLED_FOR_ERROR_SESSION];
+    [fields addEntriesFromDictionary:self.rumDependencies.sessionReplaySampledFields];
+    // session-replay
+    if (self.rumDependencies.sessionHasReplay != nil) {
+        BOOL sessionHasReplay = self.sessionHasReplay || self.rumDependencies.sessionHasReplay;
+        [fields setValue:@(sessionHasReplay) forKey:FT_SESSION_HAS_REPLAY];
+        if (sessionHasReplay) {
+            NSDictionary *dict = [self.rumDependencies.sessionReplayStats valueForKey:self.view_id];
+            if(dict){
+                [fields setValue:dict forKey:FT_SESSION_REPLAY_STATS];
+            }
+        }
+    }
     if(self.viewProperty && self.viewProperty.allKeys.count>0){
         [fields addEntriesFromDictionary:self.viewProperty];
     }
@@ -243,14 +275,11 @@
     if (![self.loading_time isEqual:@0]) {
         [fields setValue:self.loading_time forKey:FT_KEY_LOADING_TIME];
     }
-    // session-replay
-    [fields setValue:@(self.rumDependencies.sessionHasReplay) forKey:FT_SESSION_HAS_REPLAY];
-    NSDictionary *dict = [self.rumDependencies.sessionReplayStats valueForKey:self.view_id];
-    if(dict){
-        [fields setValue:dict forKey:FT_SESSION_REPLAY_STATS];
+    if (self.context.session_error_timestamp > 0) {
+        [fields setValue:@(self.context.session_error_timestamp) forKey:FT_SESSION_ERROR_TIMESTAMP];
     }
     long long time = [self.viewStartTime ft_nanosecondTimeStamp];
-    [self.rumDependencies.writer rumWrite:FT_RUM_SOURCE_VIEW tags:tags fields:fields time:time];
+    [self.rumDependencies.writer rumWrite:FT_RUM_SOURCE_VIEW tags:tags fields:fields time:time updateTime:[updateTime ft_nanosecondTimeStamp]];
     self.rumDependencies.fatalErrorContext.lastViewContext = @{@"tags":tags,
                                                                @"fields":fields,
                                                                @"time":[NSNumber numberWithLongLong:time]

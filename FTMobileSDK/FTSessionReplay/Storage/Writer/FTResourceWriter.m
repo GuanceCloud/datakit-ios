@@ -16,7 +16,7 @@
 NSString *const FT_StoreCreationKey = @"ft-store-creation";
 NSString *const FT_KnownResourcesKey = @"ft-known-resources";
 @interface FTResourceWriter()
-//TODO: dataStore 读取数据 callback 回调是在读写线程里，所以需要加锁
+//TODO: dataStore read data callback is in read-write thread, so locking is needed
 @property (nonatomic, strong) NSMutableSet *knownIdentifiers;
 @property (nonatomic, strong) FTFeatureDataStore *dataStore;
 @property (nonatomic, assign) NSTimeInterval dataStoreResetTime;

@@ -11,10 +11,12 @@
 NS_ASSUME_NONNULL_BEGIN
 @class FTFile;
 @interface FTDirectory : NSObject
+@property (nonatomic, strong, readonly) NSURL *url;
+
 -(instancetype)initWithUrl:(NSURL *)url;
 -(instancetype)initWithSubdirectoryPath:(NSString *)path;
 
--(NSArray<FTFile*>*)files;
+- (NSArray<FTFile*>*)files;
 - (nullable FTFile *)createFile:(NSString *)fileName;
 - (BOOL)hasFileWithName:(NSString *)fileName;
 - (nullable FTFile *)fileWithName:(NSString *)fileName;

@@ -14,7 +14,7 @@ NS_ASSUME_NONNULL_BEGIN
 @interface UIApplication ()
 #if TARGET_OS_TV
 
-// 处理 TVOS 点击事件
+// Handle TVOS click events
 - (void)ftSendEvent:(UIEvent *)event;
 #endif
 @end

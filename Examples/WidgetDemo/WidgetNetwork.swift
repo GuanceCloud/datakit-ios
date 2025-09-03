@@ -11,7 +11,7 @@ import FTMobileExtension
 class InheritHttpEngine:FTURLSessionDelegate {
 
     var session:URLSession?
-    /// HttpEngine 初始化，当 apiHostUrl 为空 或 token 为"" 则初始化失败
+    /// HttpEngine initialization, fails when apiHostUrl is empty or token is ""
     override init(){
         session = nil
         super.init()
@@ -36,7 +36,7 @@ class HttpEngine:NSObject,URLSessionDataDelegate,FTURLSessionDelegateProviding {
     var ftURLSessionDelegate: FTURLSessionDelegate = FTURLSessionDelegate()
     
     var session:URLSession?
-    /// HttpEngine 初始化，当 apiHostUrl 为空 或 token 为"" 则初始化失败
+    /// HttpEngine initialization, fails when apiHostUrl is empty or token is ""
     override init(){
         session = nil
         super.init()

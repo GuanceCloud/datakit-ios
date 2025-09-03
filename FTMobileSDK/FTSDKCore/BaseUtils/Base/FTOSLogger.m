@@ -19,7 +19,7 @@
     self = [super init];
     if (self) {
         _logger = os_log_create("FTSDK", "InnerLog");
-        _loggerQueue = dispatch_queue_create("com.guance.debugLog.console", NULL);
+        _loggerQueue = dispatch_queue_create("com.ft.debugLog.console", NULL);
     }
     return self;
 }
@@ -29,14 +29,15 @@
         case StatusWarning:
         case StatusCritical:
         case StatusOk:
+        case StatusCustom:
         case StatusInfo:
-           os_log_info(self.logger,"%{public}s",[message UTF8String]);
-           break;
+            os_log_info(self.logger,"%{public}s",[message UTF8String]);
+            break;
         case StatusError:
-            os_log_error(self.logger, "%{public}s",[message UTF8String]);
+            os_log_error(self.logger,"%{public}s",[message UTF8String]);
             break;
         case StatusDebug:
-            os_log_debug(self.logger, "%{public}s",[message UTF8String]);
+            os_log_debug(self.logger,"%{public}s",[message UTF8String]);
             break;
     }
 }

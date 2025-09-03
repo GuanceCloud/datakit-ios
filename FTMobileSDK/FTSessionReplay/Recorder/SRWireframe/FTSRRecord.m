@@ -119,10 +119,10 @@
     }
     return self;
 }
-/// 增量逻辑：
-/// 子序列相同的部分判断是否 update
-/// 不同的部分考虑 add\remove
-/// 子序列与子序列位置发生变化，对移动到后面的子序列进行 add\remove 操作
+/// Incremental logic:
+/// For identical parts of subsequences, determine if update is needed
+/// For different parts, consider add\remove
+/// When subsequence positions change, perform add\remove operations on subsequences moved to the back
 -(void)createIncrementalSnapshotRecords:(NSArray<FTSRWireframe *>*)newWireframes lastWireframes:(NSArray<FTSRWireframe *>*)lastWireframes{
     NSMutableDictionary<NSNumber*,Sampler*> *table = [[NSMutableDictionary alloc]init];
     NSMutableArray<Removes> *removes = (NSMutableArray<Removes> *)[NSMutableArray new];
@@ -301,7 +301,7 @@
     }
     return self;
 }
-// 字典 Value 为 NSData 类型，使用 NSKeyedArchiver 将NSDictionary 转换成 NSData
+// Dictionary Value is NSData type, use NSKeyedArchiver to convert NSDictionary to NSData
 -(NSData *)toJSONData{
     NSData* jsonData = nil;
     @try {

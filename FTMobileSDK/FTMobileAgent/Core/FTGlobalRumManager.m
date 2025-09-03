@@ -2,7 +2,7 @@
 //  FTGlobalRumManager.m
 //  FTMobileAgent
 //
-//  Created by 胡蕾蕾 on 2020/4/14.
+//  Created by hulilei on 2020/4/14.
 //  Copyright © 2020 hll. All rights reserved.
 //
 #if ! __has_feature(objc_arc)
@@ -11,7 +11,7 @@
 #import "FTGlobalRumManager.h"
 #import "FTLog+Private.h"
 #if !TARGET_OS_TV
-#import "FTWKWebViewHandler.h"
+#import "FTWKWebViewHandler+Private.h"
 #import "FTWKWebViewJavascriptBridge.h"
 #endif
 #import "FTLongTaskManager.h"
@@ -30,14 +30,12 @@
 #import "FTConstants.h"
 #import "FTThreadDispatchManager.h"
 #import "FTBaseInfoHandler.h"
-#import "FTCrashMonitor.h"
+#import "FTCrash.h"
 #import "FTFatalErrorContext.h"
 #import "FTModuleManager.h"
-#import "FTMessageReceiver.h"
-@interface FTGlobalRumManager ()<FTRunloopDetectorDelegate,FTAppLifeCycleDelegate,FTAppLaunchDataDelegate,FTMessageReceiver>
+@interface FTGlobalRumManager ()<FTRunloopDetectorDelegate,FTAppLifeCycleDelegate>
 @property (nonatomic, strong) FTRumConfig *rumConfig;
 @property (nonatomic, strong) FTRUMDependencies *dependencies;
-@property (nonatomic, strong) FTAppLaunchTracker *launchTracker;
 @property (nonatomic, strong) FTRUMMonitor *monitor;
 @property (nonatomic, strong) FTLongTaskManager *longTaskManager;
 @end
@@ -48,50 +46,48 @@
 #endif
 @implementation FTGlobalRumManager
 static FTGlobalRumManager *sharedInstance = nil;
-static dispatch_once_t onceToken;
+static NSObject *sharedInstanceLock;
++ (void)initialize{
+    if (self == [FTGlobalRumManager class]) {
+        sharedInstanceLock = [[NSObject alloc] init];
+    }
+}
 + (instancetype)sharedInstance {
-    dispatch_once(&onceToken, ^{
-        sharedInstance = [[super allocWithZone:NULL] init];
-    });
-    return sharedInstance;
+    @synchronized(sharedInstanceLock) {
+        if(!sharedInstance){
+            sharedInstance = [[super allocWithZone:NULL] init];
+        }
+        return sharedInstance;
+    }
 }
 -(void)setRumConfig:(FTRumConfig *)rumConfig writer:(id<FTRUMDataWriteProtocol>)writer{
     _rumConfig = rumConfig;
     FTRUMDependencies *dependencies = [[FTRUMDependencies alloc]init];
     dependencies.monitor = [[FTRUMMonitor alloc]initWithMonitorType:(DeviceMetricsMonitorType)rumConfig.deviceMetricsMonitorType frequency:(MonitorFrequency)rumConfig.monitorFrequency];
     dependencies.writer = writer;
+    dependencies.sessionOnErrorSampleRate = rumConfig.sessionOnErrorSampleRate;
     dependencies.sampleRate = rumConfig.samplerate;
     dependencies.enableResourceHostIP = rumConfig.enableResourceHostIP;
     dependencies.errorMonitorType = (ErrorMonitorType)rumConfig.errorMonitorType;
     dependencies.appId = rumConfig.appid;
     dependencies.fatalErrorContext = [FTFatalErrorContext new];
     self.dependencies = dependencies;
-    [[FTModuleManager sharedInstance] addMessageReceiver:self];
     self.rumManager = [[FTRUMManager alloc]initWithRumDependencies:self.dependencies];
-    [[FTAutoTrackHandler sharedInstance]startWithTrackView:rumConfig.enableTraceUserView action:rumConfig.enableTraceUserAction];
-    [FTAutoTrackHandler sharedInstance].addRumDatasDelegate = self.rumManager;
-    if(rumConfig.enableTraceUserAction){
-        self.launchTracker = [[FTAppLaunchTracker alloc]initWithDelegate:self];
-    }
+    [[FTAutoTrackHandler sharedInstance] startWithTrackView:rumConfig.enableTraceUserView action:rumConfig.enableTraceUserAction addRumDatasDelegate:self.rumManager viewHandler:rumConfig.viewTrackingHandler actionHandler:rumConfig.actionTrackingHandler];
     [[FTAppLifeCycle sharedInstance] addAppLifecycleDelegate:self];
     if(rumConfig.enableTrackAppCrash){
-        [[FTCrashMonitor shared] addErrorDataDelegate:self.rumManager];
+        [[FTCrash shared] addErrorDataDelegate:self.rumManager];
     }
-    //采集view、resource、jsBridge
+    //Collect view, resource, jsBridge
     if (rumConfig.enableTrackAppANR||rumConfig.enableTrackAppFreeze) {
         _longTaskManager = [[FTLongTaskManager alloc]initWithDependencies:dependencies delegate:self enableTrackAppANR:rumConfig.enableTrackAppANR enableTrackAppFreeze:rumConfig.enableTrackAppFreeze                                        freezeDurationMs:rumConfig.freezeDurationMs];
+    }else{
+        [dependencies.writer lastFatalErrorIfFound:0];
     }
 #if !TARGET_OS_TV
-    [FTWKWebViewHandler sharedInstance].rumTrackDelegate = self;
+    [[FTWKWebViewHandler sharedInstance] startWithEnableTraceWebView:rumConfig.enableTraceWebView allowWebViewHost:rumConfig.allowWebViewHost rumDelegate:self];
 #endif
     [FTExternalDataManager sharedManager].delegate = self.rumManager;
-}
--(void)receive:(NSString *)key message:(NSDictionary *)message{
-    if(key == FTMessageKeySessionHasReplay){
-        self.dependencies.sessionHasReplay = [message[FT_SESSION_HAS_REPLAY] boolValue];
-    }else if(key == FTMessageKeyRecordsCountByViewID){
-        self.dependencies.sessionReplayStats = message;
-    }
 }
 #pragma mark ========== jsBridge ==========
 #if !TARGET_OS_TV
@@ -104,7 +100,7 @@ static dispatch_once_t onceToken;
             return;
         }
         NSString *name = messageDic[@"name"];
-        if ([name isEqualToString:@"rum"]||[name isEqualToString:@"log"]) {
+        if ([name isEqualToString:@"rum"]) {
             NSDictionary *data = messageDic[@"data"];
             NSString *measurement = data[FT_MEASUREMENT];
             NSMutableDictionary *tags = [data[FT_TAGS] mutableCopy];
@@ -115,8 +111,8 @@ static dispatch_once_t onceToken;
             NSDictionary *fields = data[FT_FIELDS];
             long long time = [data[@"time"] longLongValue];
             long long fixTime = time * 1000000;
-            // web 端 time 数据以毫秒为单位，native 需要纳秒，需要转换单位
-            // 判断是否越界
+            // Web time data is in milliseconds, native needs nanoseconds, need to convert units
+            // Check if overflow
             if (time == fixTime/1000000) {
                 time = fixTime;
             }
@@ -126,9 +122,12 @@ static dispatch_once_t onceToken;
             }
             //            }
             if (measurement && fields.count>0) {
-                if ([name isEqualToString:@"rum"]) {
-                    [self.rumManager addWebViewData:measurement tags:tags fields:fields tm:time];
+                if ([measurement isEqualToString:FT_RUM_SOURCE_VIEW]) {
+                    if (tags[FT_KEY_VIEW_REFERRER] == nil) {
+                        [tags setValue:self.rumManager.viewReferrer forKey:FT_KEY_VIEW_REFERRER];
+                    }
                 }
+               [self.rumManager addWebViewData:measurement tags:tags fields:fields tm:time];
             }
         }else if ([name isEqualToString:@"session_replay"]){
             NSMutableDictionary *dict = [messageDic mutableCopy];
@@ -150,13 +149,6 @@ static dispatch_once_t onceToken;
 - (void)anrStackDetected:(NSString*)slowStack time:(nonnull NSDate *)time{
     [self.rumManager addErrorWithType:@"anr_error" message:@"ios_anr" stack:slowStack date:time];
 }
-#pragma mark ========== RUM-Action: App Launch ==========
--(void)ftAppHotStart:(NSDate *)launchTime duration:(NSNumber *)duration{
-    [self.rumManager addLaunch:FTLaunchHot launchTime:launchTime duration:duration];
-}
--(void)ftAppColdStart:(NSDate *)launchTime duration:(NSNumber *)duration isPreWarming:(BOOL)isPreWarming{
-    [self.rumManager addLaunch:isPreWarming?FTLaunchWarm:FTLaunchCold launchTime:launchTime duration:duration];
-}
 #pragma mark ========== RUM-ERROR appState: App Life Cycle ==========
 -(void)applicationWillEnterForeground{
     self.rumManager.appState = FTAppStateStartUp;
@@ -167,17 +159,18 @@ static dispatch_once_t onceToken;
 -(void)applicationDidEnterBackground{
     self.rumManager.appState = FTAppStateUnknown;
 }
-#pragma mark ========== 注销 ==========
+#pragma mark ========== Shutdown ==========
 - (void)shutDown{
     [[FTAutoTrackHandler sharedInstance] shutDown];
     [[FTAppLifeCycle sharedInstance] removeAppLifecycleDelegate:self];
     [[FTAutoTrackHandler sharedInstance] shutDown];
-#if !TARGET_OS_TV
-    [FTWKWebViewHandler sharedInstance].enableTrace = NO;
-#endif
     [_longTaskManager shutDown];
-    onceToken = 0;
-    sharedInstance = nil;
+#if !TARGET_OS_TV
+    [FTWKWebViewHandler shutDown];
+#endif
+    @synchronized(sharedInstanceLock) {
+        sharedInstance = nil;
+    }
     FTInnerLogInfo(@"[RUM] SHUT DOWN");
 }
 @end

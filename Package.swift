@@ -53,7 +53,8 @@ let package = Package(
             ]
         ),
         .target(name: "_FTConfig",
-                dependencies: ["_FTBaseUtils_Base"],
+                dependencies: ["_FTBaseUtils_Base",
+                               "_FTRUM"],
                 path: "FTMobileSDK/FTMobileAgent",
                 sources: ["Config"],
                 publicHeadersPath: "Config",
@@ -140,11 +141,10 @@ let package = Package(
                                "_FTLogger",
                                "_FTConfig"
                               ],
-                path: "FTMobileSDK",
-                sources: ["FTMobileExtension"],
+                path: "FTMobileSDK/FTMobileExtension",
                 resources: [
-                    .copy("Resources/PrivacyInfo.xcprivacy")],
-                publicHeadersPath: "FTMobileExtension/include",
+                    .copy("../Resources/PrivacyInfo.xcprivacy")],
+                publicHeadersPath: ".",
                 cSettings: [
                     
                 ]),
@@ -155,12 +155,14 @@ let package = Package(
                                "_FTLogger"
                               ],
                 path: "FTMobileSDK",
-                sources: ["FTSDKCore/FTWKWebView","FTSDKCore/DataManager"],
+                sources: ["FTSDKCore/FTWKWebView","FTSDKCore/DataManager","FTSDKCore/RemoteConfig"],
                 resources: [
                     .copy("Resources/PrivacyInfo.xcprivacy")],
                 publicHeadersPath: "FTSDKCore/include",
                 cSettings: [
-                    .headerSearchPath("FTSDKCore/DataManager/fmdb"),
+                    .headerSearchPath("FTSDKCore/DataManager/Upload"),
+                    .headerSearchPath("FTSDKCore/DataManager/Storage"),
+                    .headerSearchPath("FTSDKCore/DataManager/Storage/fmdb"),
                     .headerSearchPath("FTSDKCore/FTWKWebView/JSBridge"),
 
                 ]
@@ -180,6 +182,7 @@ let package = Package(
                     .headerSearchPath("Storage"),
                     .headerSearchPath("Storage/Writer"),
                     .headerSearchPath("Storage/Reader"),
+                    .headerSearchPath("Storage/TmpCache"),
                     .headerSearchPath("TLV"),
                     .headerSearchPath("Upload"),
                     .headerSearchPath("Upload/Request"),

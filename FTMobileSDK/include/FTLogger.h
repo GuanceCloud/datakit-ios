@@ -1,1 +1,0 @@
-../FTSDKCore/Logger/FTLogger.h

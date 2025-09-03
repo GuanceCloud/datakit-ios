@@ -2,7 +2,7 @@
 //  FTDatabaseTest.m
 //  ft-sdk-iosTestUnitTests
 //
-//  Created by 胡蕾蕾 on 2020/8/25.
+//  Created by hulilei on 2020/8/25.
 //  Copyright © 2020 hll. All rights reserved.
 //
 
@@ -81,6 +81,7 @@
     XCTAssertTrue(newCount-oldCount == 10);
 }
 - (void)testInsertLoggingItems{
+    [FTTrackDataManager startWithAutoSync:NO syncPageSize:10 syncSleepTime:0];
     NSInteger oldCount =  [[FTTrackerEventDBTool sharedManger] getDatasCount];
     for (int i = 0; i<20; i++) {
         FTRecordModel *model = [FTRecordModel new];
@@ -93,9 +94,10 @@
 }
 /**
 *  @abstract
-*  缓存中的数据添加到数据库中
+*  Add data from cache to database
 */
 -(void)testInsertCacheToDB{
+    [FTTrackDataManager startWithAutoSync:NO syncPageSize:10 syncSleepTime:0];
     NSInteger oldCount =  [[FTTrackerEventDBTool sharedManger] getDatasCount];
     for (int i = 0; i<15; i++) {
         FTRecordModel *model = [FTModelHelper createLogModel];

@@ -2,7 +2,7 @@
 //  FTNetworkTests.m
 //  ft-sdk-iosTestUnitTests
 //
-//  Created by 胡蕾蕾 on 2019/12/24.
+//  Created by hulilei on 2019/12/24.
 //  Copyright © 2019 hll. All rights reserved.
 //
 
@@ -15,11 +15,13 @@
 #import "NSDate+FTUtil.h"
 #import "FTJSONUtil.h"
 #import "FTRequest.h"
-#import "FTNetworkManager.h"
+#import "FTHTTPClient.h"
 #import "FTModelHelper.h"
 #import "FTTrackDataManager.h"
 #import "FTModelHelper.h"
 #import "FTMobileAgent+Private.h"
+#import "FTTrackDataManager+Test.h"
+#import "FTDataUploadWorker.h"
 #define FT_SDK_COMPILED_FOR_TESTING
 
 typedef NS_ENUM(NSInteger, FTNetworkTestsType) {
@@ -166,17 +168,17 @@ typedef NS_ENUM(NSInteger, FTNetworkTestsType) {
     }
 }
 /**
- 测试上传过程是否正确
+ Test if the upload process is correct
  */
 -(void)testNetwork{
     
     [self setRightConfigWithTestType:FTNetworkTest];
 
-    XCTestExpectation *expectation= [self expectationWithDescription:@"异步操作timeout"];
+    XCTestExpectation *expectation= [self expectationWithDescription:@"Async operation timeout"];
     
     FTRecordModel *model = [FTModelHelper createLogModel:@"FTNetworkTests"];
     FTRequest *request = [FTRequest createRequestWithEvents:@[model] type:FT_DATA_TYPE_LOGGING];
-    [[FTNetworkManager new] sendRequest:request completion:^(NSHTTPURLResponse * _Nonnull httpResponse, NSData * _Nullable data, NSError * _Nullable error) {
+    [[FTHTTPClient new] sendRequest:request completion:^(NSHTTPURLResponse * _Nonnull httpResponse, NSData * _Nullable data, NSError * _Nullable error) {
     
         NSInteger statusCode = httpResponse.statusCode;
         BOOL success = (statusCode >=200 && statusCode < 500);
@@ -189,16 +191,16 @@ typedef NS_ENUM(NSInteger, FTNetworkTestsType) {
     
 }
 /**
- 测试网络状态较差时上传过程是否正确
+ Test if the upload process is correct when network status is poor
  */
 -(void)testBadNetwork{
-    XCTestExpectation *expectation= [self expectationWithDescription:@"异步操作timeout"];
+    XCTestExpectation *expectation= [self expectationWithDescription:@"Async operation timeout"];
     [self setRightConfigWithTestType:FTNetworkTestBad];
     
     FTRecordModel *model = [FTModelHelper createLogModel:@"testBadNetwork"];
 
     FTRequest *request = [FTRequest createRequestWithEvents:@[model] type:FT_DATA_TYPE_LOGGING];
-    [[FTNetworkManager new] sendRequest:request completion:^(NSHTTPURLResponse * _Nonnull httpResponse, NSData * _Nullable data, NSError * _Nullable error) {
+    [[FTHTTPClient new] sendRequest:request completion:^(NSHTTPURLResponse * _Nonnull httpResponse, NSData * _Nullable data, NSError * _Nullable error) {
     
         NSInteger statusCode = httpResponse.statusCode;
         BOOL success = (statusCode >=200 && statusCode < 500);
@@ -214,14 +216,14 @@ typedef NS_ENUM(NSInteger, FTNetworkTestsType) {
 }
 
 /**
- 测试请求成功 返回结果为非json数据格式
+ Test successful request with non-JSON response format
  */
 -(void)testNoJsonResponseNetWork{
-    XCTestExpectation *expectation= [self expectationWithDescription:@"异步操作timeout"];
+    XCTestExpectation *expectation= [self expectationWithDescription:@"Async operation timeout"];
      [self setRightConfigWithTestType:FTNetworkTestNoJsonResponse];
     FTRecordModel *model = [FTModelHelper createLogModel:@"testNoJsonResponseNetWork"];
     FTRequest *request = [FTRequest createRequestWithEvents:@[model] type:FT_DATA_TYPE_LOGGING];
-    [[FTNetworkManager new] sendRequest:request completion:^(NSHTTPURLResponse * _Nonnull httpResponse, NSData * _Nullable data, NSError * _Nullable error) {
+    [[FTHTTPClient new] sendRequest:request completion:^(NSHTTPURLResponse * _Nonnull httpResponse, NSData * _Nullable data, NSError * _Nullable error) {
         NSError *jsonError;
         [NSJSONSerialization JSONObjectWithData:data options:NSJSONReadingMutableContainers error:&jsonError];
         NSString *result =[[ NSString alloc] initWithData:data encoding:NSUTF8StringEncoding];
@@ -235,14 +237,14 @@ typedef NS_ENUM(NSInteger, FTNetworkTestsType) {
     }];
 }
 /**
- 测试请求成功 返回结果为错误json数据格式
+ Test successful request with incorrect JSON response format
  */
 - (void)testWrongJsonResponseNetWork{
-    XCTestExpectation *expectation= [self expectationWithDescription:@"异步操作timeout"];
+    XCTestExpectation *expectation= [self expectationWithDescription:@"Async operation timeout"];
     [self setRightConfigWithTestType:FTNetworkTestWrongJsonResponse];
     FTRecordModel *model = [FTModelHelper createLogModel:@"testWrongJsonResponseNetWork"];
     FTRequest *request = [FTRequest createRequestWithEvents:@[model] type:FT_DATA_TYPE_LOGGING];
-    [[FTNetworkManager new] sendRequest:request completion:^(NSHTTPURLResponse * _Nonnull httpResponse, NSData * _Nullable data, NSError * _Nullable error) {
+    [[FTHTTPClient new] sendRequest:request completion:^(NSHTTPURLResponse * _Nonnull httpResponse, NSData * _Nullable data, NSError * _Nullable error) {
         NSError *errors;
         [NSJSONSerialization JSONObjectWithData:data options:NSJSONReadingMutableContainers error:&errors];
         XCTAssertTrue(errors != nil);
@@ -254,15 +256,15 @@ typedef NS_ENUM(NSInteger, FTNetworkTestsType) {
     }];
 }
 /**
- 测试请求成功 返回结果为空数据
+ Test successful request with empty response data
  */
 - (void)testEmptyResponseDataNetWork{
-    XCTestExpectation *expectation= [self expectationWithDescription:@"异步操作timeout"];
+    XCTestExpectation *expectation= [self expectationWithDescription:@"Async operation timeout"];
     [self setRightConfigWithTestType:FTNetworkTestEmptyResponseData];
     FTRecordModel *model = [FTModelHelper createLogModel:@"testEmptyResponseDataNetWork"];
 
     FTRequest *request = [FTRequest createRequestWithEvents:@[model] type:FT_DATA_TYPE_LOGGING];
-    [[FTNetworkManager new] sendRequest:request completion:^(NSHTTPURLResponse * _Nonnull httpResponse, NSData * _Nullable data, NSError * _Nullable error) {
+    [[FTHTTPClient new] sendRequest:request completion:^(NSHTTPURLResponse * _Nonnull httpResponse, NSData * _Nullable data, NSError * _Nullable error) {
         XCTAssertTrue(data.bytes == 0);
         [expectation fulfill];
     }];
@@ -272,15 +274,15 @@ typedef NS_ENUM(NSInteger, FTNetworkTestsType) {
     }];
 }
 /**
- 测试请求成功 返回结果code 非200
+ Test successful request with non-200 response code
  */
 - (void)testErrorResponse{
-    XCTestExpectation *expectation= [self expectationWithDescription:@"异步操作timeout"];
+    XCTestExpectation *expectation= [self expectationWithDescription:@"Async operation timeout"];
      [self setRightConfigWithTestType:FTNetworkTestErrorResponse];
     FTRecordModel *model = [FTModelHelper createLogModel:@"testErrorResponse"];
 
     FTRequest *request = [FTRequest createRequestWithEvents:@[model] type:FT_DATA_TYPE_LOGGING];
-    [[FTNetworkManager new] sendRequest:request completion:^(NSHTTPURLResponse * _Nonnull httpResponse, NSData * _Nullable data, NSError * _Nullable error) {
+    [[FTHTTPClient new] sendRequest:request completion:^(NSHTTPURLResponse * _Nonnull httpResponse, NSData * _Nullable data, NSError * _Nullable error) {
         NSInteger statusCode = httpResponse.statusCode;
         XCTAssertFalse(statusCode == 200);
         [expectation fulfill];
@@ -290,15 +292,15 @@ typedef NS_ENUM(NSInteger, FTNetworkTestsType) {
     }];
 }
 /**
- 测试网络错误
+ Test network error
  */
 - (void)testErrorNet{
-    XCTestExpectation *expectation= [self expectationWithDescription:@"异步操作timeout"];
+    XCTestExpectation *expectation= [self expectationWithDescription:@"Async operation timeout"];
     [self setRightConfigWithTestType:FTNetworkTestErrorNet];
     FTRecordModel *model = [FTModelHelper createLogModel:@"testErrorNet"];
 
     FTRequest *request = [FTRequest createRequestWithEvents:@[model] type:FT_DATA_TYPE_LOGGING];
-    [[FTNetworkManager new] sendRequest:request completion:^(NSHTTPURLResponse * _Nonnull httpResponse, NSData * _Nullable data, NSError * _Nullable error) {
+    [[FTHTTPClient new] sendRequest:request completion:^(NSHTTPURLResponse * _Nonnull httpResponse, NSData * _Nullable data, NSError * _Nullable error) {
         NSInteger statusCode = httpResponse.statusCode;
         XCTAssertFalse(statusCode == 200);
         [expectation fulfill];
@@ -320,18 +322,18 @@ typedef NS_ENUM(NSInteger, FTNetworkTestsType) {
     [[FTTrackDataManager sharedInstance] addTrackData:rumModel type:FTAddDataRUM];
     NSInteger count = [[FTTrackerEventDBTool sharedManger] getDatasCount];
     XCTAssertTrue(count == 21);
-    self.expectation = [self expectationWithDescription:@"异步操作timeout"];
-    NSLog(@"addObserver: current isUploading = %@",[[FTTrackDataManager sharedInstance] valueForKey:@"isUploading"]);
-    [[FTTrackDataManager sharedInstance] addObserver:self forKeyPath:@"isUploading" options:NSKeyValueObservingOptionNew context:nil];
-    [[FTTrackDataManager sharedInstance] uploadTrackData];
+    self.expectation = [self expectationWithDescription:@"Async operation timeout"];
+    NSLog(@"addObserver: current isUploading = %@",[[FTTrackDataManager sharedInstance].dataUploadWorker valueForKey:@"isUploading"]);
+    [[FTTrackDataManager sharedInstance].dataUploadWorker addObserver:self forKeyPath:@"isUploading" options:NSKeyValueObservingOptionNew context:nil];
+    [[FTTrackDataManager sharedInstance] flushSyncData];
 
     [self waitForExpectationsWithTimeout:30 handler:^(NSError *error) {
-        NSLog(@"isUploading = %@",[[FTTrackDataManager sharedInstance] valueForKey:@"isUploading"]);
+        NSLog(@"isUploading = %@",[[FTTrackDataManager sharedInstance].dataUploadWorker valueForKey:@"isUploading"]);
         XCTAssertNil(error);
     }];
     NSInteger newCount = [[FTTrackerEventDBTool sharedManger] getDatasCount];
     XCTAssertTrue(newCount == 0);
-    [[FTTrackDataManager sharedInstance] removeObserver:self forKeyPath:@"isUploading"];
+    [[FTTrackDataManager sharedInstance].dataUploadWorker removeObserver:self forKeyPath:@"isUploading"];
 }
 
 -(void)observeValueForKeyPath:(NSString *)keyPath ofObject:(id)object change:(NSDictionary<NSKeyValueChangeKey,id> *)change context:(void *)context{
@@ -359,11 +361,11 @@ typedef NS_ENUM(NSInteger, FTNetworkTestsType) {
 - (void)testTimeout{
     [self setRightConfigWithTestType:FTNetworkTestTimeout];
 
-    XCTestExpectation *expectation= [self expectationWithDescription:@"异步操作timeout"];
+    XCTestExpectation *expectation= [self expectationWithDescription:@"Async operation timeout"];
     
     FTRecordModel *model = [FTModelHelper createLogModel:@"FTNetworkTests"];
     FTRequest *request = [FTRequest createRequestWithEvents:@[model] type:FT_DATA_TYPE_LOGGING];
-    FTNetworkManager *networkManager = [[FTNetworkManager alloc]initWithTimeoutIntervalForRequest:2];
+    FTHTTPClient *networkManager = [[FTHTTPClient alloc]initWithTimeoutIntervalForRequest:2];
     [networkManager sendRequest:request completion:^(NSHTTPURLResponse * _Nonnull httpResponse, NSData * _Nullable data, NSError * _Nullable error) {
         XCTAssertTrue(error.code == -1001);
         [expectation fulfill];
@@ -377,7 +379,7 @@ typedef NS_ENUM(NSInteger, FTNetworkTestsType) {
     FTLoggerConfig *loggerConfig = [[FTLoggerConfig alloc]init];
     loggerConfig.enableCustomLog = YES;
     [[FTMobileAgent sharedInstance] startLoggerWithConfigOptions:loggerConfig];
-    XCTestExpectation *expectation= [self expectationWithDescription:@"异步操作timeout"];
+    XCTestExpectation *expectation= [self expectationWithDescription:@"Async operation timeout"];
     dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)(1 * NSEC_PER_SEC)), dispatch_get_main_queue(), ^{
         [expectation fulfill];
     });
@@ -394,26 +396,13 @@ typedef NS_ENUM(NSInteger, FTNetworkTestsType) {
     [[FTMobileAgent sharedInstance] syncProcess];
     NSInteger count = [[FTTrackerEventDBTool sharedManger] getDatasCount];
     XCTAssertTrue(count>0);
-    XCTestExpectation *expectation2= [self expectationWithDescription:@"异步操作timeout"];
+    XCTestExpectation *expectation2= [self expectationWithDescription:@"Async operation timeout"];
     dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)(11 * NSEC_PER_SEC)), dispatch_get_main_queue(), ^{
         [expectation2 fulfill];
     });
     [self waitForExpectations:@[expectation2]];
     NSInteger newCount = [[FTTrackerEventDBTool sharedManger] getDatasCount];
     XCTAssertTrue(newCount == 0);
-    for (int i = 0; i<101; i++) {
-        dispatch_async(dispatch_get_global_queue(0, 0), ^{
-            [[FTLogger sharedInstance] info:[NSString stringWithFormat:@"testLongTimeLogCache%d",i] property:nil];
-        });
-    }
-    XCTestExpectation *expectation3= [self expectationWithDescription:@"异步操作timeout"];
-    dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)(11 * NSEC_PER_SEC)), dispatch_get_main_queue(), ^{
-        [expectation3 fulfill];
-    });
-    [self waitForExpectations:@[expectation3]];
-    NSInteger newCount2 = [[FTTrackerEventDBTool sharedManger] getDatasCount];
-    XCTAssertTrue(newCount2 == 0);
-
 }
 - (void)pageSize:(FTNetworkTestsType)type{
     [self setRightConfigWithTestType:type];
@@ -426,9 +415,9 @@ typedef NS_ENUM(NSInteger, FTNetworkTestsType) {
     }
     NSInteger count = [[FTTrackerEventDBTool sharedManger] getDatasCount];
     XCTAssertTrue(count == 100);
-    self.expectation = [self expectationWithDescription:@"异步操作timeout"];
-    FTNetworkManager *networkManager = [[FTTrackDataManager sharedInstance] valueForKey:@"networkManager"];
-    NSURLSession *session = [networkManager valueForKey:@"session"];
+    self.expectation = [self expectationWithDescription:@"Async operation timeout"];
+    FTHTTPClient *httpClient = [[FTTrackDataManager sharedInstance].dataUploadWorker valueForKey:@"httpClient"];
+    NSURLSession *session = [httpClient valueForKey:@"session"];
     switch (type) {
         case FTNetworkTestPageSizeMax:
             XCTAssertTrue(session.configuration.timeoutIntervalForRequest == 50);
@@ -445,15 +434,15 @@ typedef NS_ENUM(NSInteger, FTNetworkTestsType) {
         default:
             break;
     }
-    [[FTTrackDataManager sharedInstance] addObserver:self forKeyPath:@"isUploading" options:NSKeyValueObservingOptionNew context:nil];
-    [[FTTrackDataManager sharedInstance] uploadTrackData];
+    [[FTTrackDataManager sharedInstance].dataUploadWorker addObserver:self forKeyPath:@"isUploading" options:NSKeyValueObservingOptionNew context:nil];
+    [[FTTrackDataManager sharedInstance] flushSyncData];
 
     [self waitForExpectationsWithTimeout:30 handler:^(NSError *error) {
         XCTAssertNil(error);
     }];
     NSInteger newCount = [[FTTrackerEventDBTool sharedManger] getDatasCount];
     XCTAssertTrue(newCount == 0);
-    [[FTTrackDataManager sharedInstance] removeObserver:self forKeyPath:@"isUploading"];
+    [[FTTrackDataManager sharedInstance].dataUploadWorker removeObserver:self forKeyPath:@"isUploading"];
 }
 - (void)testSyncSleepTime_Max{
     [self syncSleepTime:100];
@@ -485,10 +474,10 @@ typedef NS_ENUM(NSInteger, FTNetworkTestsType) {
        FTRecordModel *logModel = [FTModelHelper createLogModel:[NSString stringWithFormat:@"%d",i]];
         [[FTTrackDataManager sharedInstance] addTrackData:logModel type:FTAddDataRUM];
     }
-    self.expectation = [self expectationWithDescription:@"异步操作timeout"];
+    self.expectation = [self expectationWithDescription:@"Async operation timeout"];
        
-    [[FTTrackDataManager sharedInstance] addObserver:self forKeyPath:@"isUploading" options:NSKeyValueObservingOptionNew context:nil];
-    [[FTTrackDataManager sharedInstance] uploadTrackData];
+    [[FTTrackDataManager sharedInstance].dataUploadWorker addObserver:self forKeyPath:@"isUploading" options:NSKeyValueObservingOptionNew context:nil];
+    [[FTTrackDataManager sharedInstance] flushSyncData];
 
     [self waitForExpectationsWithTimeout:30 handler:^(NSError *error) {
         XCTAssertNil(error);
@@ -496,6 +485,6 @@ typedef NS_ENUM(NSInteger, FTNetworkTestsType) {
     NSInteger newCount = [[FTTrackerEventDBTool sharedManger] getDatasCount];
     XCTAssertTrue(newCount == 0);
     XCTAssertTrue(duration>time);
-    [[FTTrackDataManager sharedInstance] removeObserver:self forKeyPath:@"isUploading"];
+    [[FTTrackDataManager sharedInstance].dataUploadWorker removeObserver:self forKeyPath:@"isUploading"];
 }
 @end

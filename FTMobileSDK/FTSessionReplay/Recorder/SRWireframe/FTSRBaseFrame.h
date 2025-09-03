@@ -15,7 +15,7 @@ NS_ASSUME_NONNULL_BEGIN
 - (NSString*)toJSONString;
 - (NSData*)toJSONData;
 @end
-/// 仅支持基础类型、NSArray、NSString、NSNumber
+/// Only supports basic types, NSArray, NSString, NSNumber
 @interface FTSRBaseFrame : NSObject<NSCoding,NSSecureCoding,FTAbstractJSONModelProtocol>
 + (nullable FTJSONKeyMapper *)keyMapper;
 @end

@@ -2,32 +2,32 @@
 //  FTRecordModel.h
 //  FTMobileAgent
 //
-//  Created by 胡蕾蕾 on 2019/11/28.
+//  Created by hulilei on 2019/11/28.
 //  Copyright © 2019 hll. All rights reserved.
 //
 
 #import <Foundation/Foundation.h>
 NS_ASSUME_NONNULL_BEGIN
-/// 数据存储模型
+/// Data storage model
 @interface FTRecordModel : NSObject
 
-/// 数据采集时的时间（纳秒级时间戳）
+/// Time when data was collected (nanosecond timestamp)
 @property (nonatomic, assign) long long tm;
-/// 记录的操作数数据
+/// Recorded operation data
 @property (nonatomic, strong) NSString *data;
-/// 数据类型，\RUM\Logging
+/// Data type, \RUM\Logging
 @property (nonatomic, strong) NSString *op;
 
-/// 存放数据库生成的 primary key
+/// Store database generated primary key
 @property (nonatomic, copy) NSString * _id;
 
-/// 初始化方法
+/// Initialization method
 /// - Parameters:
-///   - source: 数据来源
-///   - op: 数据类型
-///   - tags: tag 类型数据
-///   - fields: field 类型数据
-///   - tm: 数据采集时的时间（纳秒级时间戳）
+///   - source: data source
+///   - op: data type
+///   - tags: tag type data
+///   - fields: field type data
+///   - tm: time when data was collected (nanosecond timestamp)
 -(instancetype)initWithSource:(NSString *)source op:(NSString *)op tags:(NSDictionary *)tags fields:(NSDictionary *)fields tm:(long long)tm;
 @end
 

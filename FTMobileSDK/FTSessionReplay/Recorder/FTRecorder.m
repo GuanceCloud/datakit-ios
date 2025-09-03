@@ -45,7 +45,7 @@
     if(rootViews == nil || rootViews.count == 0){
         return;
     }
-    // 1.采集 view snap shot
+    // 1.Collect view snap shot
     FTViewTreeSnapshot *viewTreeSnapshot = [self.viewSnapShotBuilder takeSnapshot:rootViews context:context];
     [self.snapshotProcessor process:viewTreeSnapshot touchSnapshot:touchSnapshot];
     [self.resourceProcessor process:viewTreeSnapshot.resources context:context];

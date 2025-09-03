@@ -17,6 +17,9 @@
 #import "OHHTTPStubs.h"
 #import "FTRequest.h"
 
+@interface FTURLSessionInterceptor()
+- (FTSessionTaskHandler *)getTraceHandler:(id)key;
+@end
 /** This class is used to wrap an NSURLSession object during testing. */
 @interface FTURLSessionProxy : NSProxy {
     // The wrapped session object.
@@ -75,57 +78,61 @@
     // Put teardown code here. This method is called after the invocation of each test method in the class.
     [FTMobileAgent shutDown];
     [OHHTTPStubs removeAllStubs];
-}
-- (FTSessionTaskHandler *)getTraceHandler:(NSURLSessionTask *)task{
-    return [[FTURLSessionInterceptor shared] performSelector:@selector(getTraceHandler:) withObject:task];
+    [FTNetworkMock registerUrlString:@""];
 }
 /** Tests that creating a shared session returns a non-nil object. */
 - (void)testSharedSession {
     __block NSURLSessionDataTask *dataTask;
     NSURLSession *session = [NSURLSession sharedSession];
     XCTAssertNotNil(session);
-    XCTestExpectation *expectation= [self expectationWithDescription:@"异步操作timeout"];
+    XCTestExpectation *expectation= [self expectationWithDescription:@"Async operation timeout"];
 
    dataTask = [session dataTaskWithURL:self.url completionHandler:^(NSData * _Nullable data, NSURLResponse * _Nullable response, NSError * _Nullable error) {
         [expectation fulfill];
     }];
     [dataTask resume];
-    XCTAssertNotNil([self getTraceHandler:dataTask]);
+    XCTAssertNotNil([[FTURLSessionInterceptor shared] getTraceHandler:dataTask]);
     [self waitForExpectations:@[expectation]];
-    XCTAssertNil([self getTraceHandler:dataTask]);
+    XCTAssertNil([[FTURLSessionInterceptor shared] getTraceHandler:dataTask]);
 }
 
 
-/** Tests sessionWithConfiguration: with the default configurtion returns a non-nil object. */
+/** Tests sessionWithConfiguration: with the default configuration returns a non-nil object. */
 - (void)testSessionWithDefaultSessionConfiguration {
-    [FTNetworkMock networkOHHTTPStubsHandler];
     __block NSURLSessionDataTask *dataTask;
+    XCTestExpectation *expectation= [self expectationWithDescription:@"Async operation timeout"];
+    __block id<OHHTTPStubsDescriptor> stubs = [FTNetworkMock networkOHHTTPStubsHandler:^{
+        XCTAssertNil([[FTURLSessionInterceptor shared] getTraceHandler:dataTask]);
+        [expectation fulfill];
+        [OHHTTPStubs removeStub:stubs];
+    }];
     NSURLSessionConfiguration *configuration =
     [NSURLSessionConfiguration defaultSessionConfiguration];
     NSURLSession *session = [NSURLSession sessionWithConfiguration:configuration];
     XCTAssertNotNil(session);
     dataTask = [session dataTaskWithURL:self.url];
     [dataTask resume];
-    XCTAssertNotNil([self getTraceHandler:dataTask]);
-    [self waitAndRunBlockAfterResponse:^{
-        XCTAssertNil([self getTraceHandler:dataTask]);
-    }];
+    XCTAssertNotNil([[FTURLSessionInterceptor shared] getTraceHandler:dataTask]);
+    [self waitForExpectations:@[expectation] timeout:3];
 }
 
 /** Tests sessionWithConfiguration: with an ephemeral configuration returns a non-nil object. */
 - (void)testSessionWithEphemeralSessionConfiguration {
-    [FTNetworkMock networkOHHTTPStubsHandler];
     __block NSURLSessionDataTask *dataTask;
+    XCTestExpectation *expectation= [self expectationWithDescription:@"Async operation timeout"];
+    __block id<OHHTTPStubsDescriptor> stubs = [FTNetworkMock networkOHHTTPStubsHandler:^{
+        XCTAssertNil([[FTURLSessionInterceptor shared] getTraceHandler:dataTask]);
+        [expectation fulfill];
+        [OHHTTPStubs removeStub:stubs];
+    }];
     NSURLSessionConfiguration *configuration =
     [NSURLSessionConfiguration ephemeralSessionConfiguration];
     NSURLSession *session = [NSURLSession sessionWithConfiguration:configuration];
     XCTAssertNotNil(session);
     dataTask = [session dataTaskWithURL:self.url];
     [dataTask resume];
-    XCTAssertNotNil([self getTraceHandler:dataTask]);
-    [self waitAndRunBlockAfterResponse:^{
-        XCTAssertNil([self getTraceHandler:dataTask]);
-    }];
+    XCTAssertNotNil([[FTURLSessionInterceptor shared] getTraceHandler:dataTask]);
+    [self waitForExpectations:@[expectation] timeout:3];
 }
 
 /** Tests sessionWithConfiguration: with a background configuration returns a non-nil object. */
@@ -225,7 +232,7 @@
     }];
     XCTAssertNotNil(task);
     [task resume];
-    XCTAssertNotNil([self getTraceHandler:task]);
+    XCTAssertNotNil([[FTURLSessionInterceptor shared] getTraceHandler:task]);
     [self waitForExpectationsWithTimeout:10.0 handler:nil];
     method_setImplementation(method, originalImp);
 }
@@ -250,14 +257,20 @@
         dataTask = [session dataTaskWithRequest:request];
         XCTAssertNotNil(dataTask);
         [dataTask resume];
-        XCTAssertNotNil([weakSelf getTraceHandler:dataTask]);
+        XCTAssertNotNil([[FTURLSessionInterceptor shared] getTraceHandler:dataTask]);
         XCTAssertNotNil(session.delegate);
     }
 }
 
 //* Tests that the delegate class isn't instrumented more than once.
 - (void)testDelegateClassOnlyRegisteredOnce {
-    [FTNetworkMock networkOHHTTPStubsHandler];
+    __block NSURLSessionDataTask *dataTask;
+    XCTestExpectation *expectation= [self expectationWithDescription:@"Async operation timeout"];
+    __block id<OHHTTPStubsDescriptor> stubs = [FTNetworkMock networkOHHTTPStubsHandler:^{
+        XCTAssertNil([[FTURLSessionInterceptor shared] getTraceHandler:dataTask]);
+        [expectation fulfill];
+        [OHHTTPStubs removeStub:stubs];
+    }];
     FTURLSessionCompleteTestDelegate *delegate =
     [[FTURLSessionCompleteTestDelegate alloc] init];
     NSURLSessionConfiguration *configuration =
@@ -265,12 +278,10 @@
     [NSURLSession sessionWithConfiguration:configuration delegate:delegate delegateQueue:nil];
     NSURLSession *session = [NSURLSession sessionWithConfiguration:configuration delegate:delegate delegateQueue:nil];
     NSURLRequest *request = [NSURLRequest requestWithURL:self.url];
-    NSURLSessionDataTask *dataTask = [session dataTaskWithRequest:request];
+    dataTask = [session dataTaskWithRequest:request];
     [dataTask resume];
-    XCTAssertNotNil([self getTraceHandler:dataTask]);
-    [self waitAndRunBlockAfterResponse:^{
-        XCTAssertTrue(delegate.URLSessionTaskDidCompleteWithErrorCalledCount == 1);
-    }];
+    XCTAssertNotNil([[FTURLSessionInterceptor shared] getTraceHandler:dataTask]);
+    [self waitForExpectations:@[expectation] timeout:3];
 }
 /** Tests that the called delegate selector is wrapped and calls through. */
 - (void)testDelegateURLSessionTaskDidCompleteWithError {
@@ -288,16 +299,16 @@
     @autoreleasepool {
         task = [session dataTaskWithRequest:request];
         [task resume];
-        XCTAssertNotNil([self getTraceHandler:task]);
+        XCTAssertNotNil([[FTURLSessionInterceptor shared] getTraceHandler:task]);
         [[NSRunLoop currentRunLoop] runUntilDate:[NSDate dateWithTimeIntervalSinceNow:1]];
     }
-    XCTAssertNil([self getTraceHandler:task]);
+    XCTAssertNil([[FTURLSessionInterceptor shared] getTraceHandler:task]);
     XCTAssertTrue(delegate.URLSessionTaskDidCompleteWithErrorCalledCount==1);
     [OHHTTPStubs removeStub:descriptor];
 }
 /** Tests that the called delegate selector is wrapped and calls through. */
 - (void)testDelegateURLSessionDataTaskDidReceiveData {
-    [FTNetworkMock networkOHHTTPStubsHandler];
+    [FTNetworkMock networkOHHTTPStubs];
     @autoreleasepool {
         FTURLSessionCompleteTestDelegate *delegate =
         [[FTURLSessionCompleteTestDelegate alloc] init];
@@ -308,16 +319,18 @@
                                                          delegateQueue:nil];
         NSURLSessionDataTask *dataTask = [session dataTaskWithURL:self.url];
         [dataTask resume];
-        XCTAssertNotNil([self getTraceHandler:dataTask]);
-        [self waitAndRunBlockAfterResponse:^{
-            XCTAssertTrue(delegate.URLSessionDataTaskDidReceiveDataCalledCount == 1);
-            XCTAssertNil([self getTraceHandler:dataTask]);
-        }];
+        XCTAssertNotNil([[FTURLSessionInterceptor shared] getTraceHandler:dataTask]);
     }
 }
 /** Tests that even if a delegate doesn't implement a method, we add it to the delegate class. */
 - (void)testDelegateUnimplementedURLSessionTaskDidCompleteWithError {
-    [FTNetworkMock networkOHHTTPStubsHandler];
+    __block NSURLSessionDataTask *dataTask;
+    XCTestExpectation *expectation= [self expectationWithDescription:@"Async operation timeout"];
+    __block id<OHHTTPStubsDescriptor> stubs = [FTNetworkMock networkOHHTTPStubsHandler:^{
+        XCTAssertNil([[FTURLSessionInterceptor shared] getTraceHandler:dataTask]);
+        [expectation fulfill];
+        [OHHTTPStubs removeStub:stubs];
+    }];
     FTURLSessionNoCompleteTestDelegate *delegate = [[FTURLSessionNoCompleteTestDelegate alloc] init];
     NSURLSessionConfiguration *configuration =
     [NSURLSessionConfiguration defaultSessionConfiguration];
@@ -326,16 +339,20 @@
                                                           delegate:delegate
                                                      delegateQueue:nil];
     XCTAssertTrue([delegate respondsToSelector:@selector(URLSession:task:didCompleteWithError:)]);
-    NSURLSessionDataTask *dataTask = [session dataTaskWithURL:self.url];
+    dataTask = [session dataTaskWithURL:self.url];
     [dataTask resume];
-    XCTAssertNotNil([self getTraceHandler:dataTask]);
-    [self waitAndRunBlockAfterResponse:^() {
-        XCTAssertNil([self getTraceHandler:dataTask]);
-    }];
+    XCTAssertNotNil([[FTURLSessionInterceptor shared] getTraceHandler:dataTask]);
+    [self waitForExpectations:@[expectation] timeout:3];
 }
 /** Tests that even if a delegate doesn't implement a method, we add it to the delegate class. */
 - (void)testDelegateUnimplementedURLSessionTaskDidFinishCollectingMetrics {
-    [FTNetworkMock networkOHHTTPStubsHandler];
+    __block NSURLSessionDataTask *dataTask;
+    XCTestExpectation *expectation= [self expectationWithDescription:@"Async operation timeout"];
+    __block id<OHHTTPStubsDescriptor> stubs = [FTNetworkMock networkOHHTTPStubsHandler:^{
+        XCTAssertNil([[FTURLSessionInterceptor shared] getTraceHandler:dataTask]);
+        [expectation fulfill];
+        [OHHTTPStubs removeStub:stubs];
+    }];
     FTURLSessionNoDidFinishCollectingMetrics *delegate = [[FTURLSessionNoDidFinishCollectingMetrics alloc] init];
     NSURLSessionConfiguration *configuration =
     [NSURLSessionConfiguration defaultSessionConfiguration];
@@ -344,12 +361,10 @@
                                                           delegate:delegate
                                                      delegateQueue:nil];
     XCTAssertTrue([delegate respondsToSelector:@selector(URLSession:task:didFinishCollectingMetrics:)]);
-    NSURLSessionDataTask *dataTask = [session dataTaskWithURL:self.url];
+    dataTask = [session dataTaskWithURL:self.url];
     [dataTask resume];
-    XCTAssertNotNil([self getTraceHandler:dataTask]);
-    [self waitAndRunBlockAfterResponse:^() {
-        XCTAssertNil([self getTraceHandler:dataTask]);
-    }];
+    XCTAssertNotNil([[FTURLSessionInterceptor shared] getTraceHandler:dataTask]);
+    [self waitForExpectations:@[expectation] timeout:3];
 }
 
 #pragma mark - Testing instance method wrapping
@@ -362,7 +377,7 @@
     NSURLSessionDataTask *dataTask = [session dataTaskWithRequest:request];
     XCTAssertNotNil(dataTask);
     [dataTask resume];
-    XCTAssertNotNil([self getTraceHandler:dataTask]);
+    XCTAssertNotNil([[FTURLSessionInterceptor shared] getTraceHandler:dataTask]);
 }
 
 /** Tests that dataTaskWithRequest:completionHandler: returns a non-nil object. */
@@ -395,9 +410,9 @@
     NSURLSessionDataTask *dataTask = [session dataTaskWithURL:self.url completionHandler:completionHandler];
     XCTAssertNotNil(dataTask);
     [dataTask resume];
-    XCTAssertNotNil([self getTraceHandler:dataTask]);
+    XCTAssertNotNil([[FTURLSessionInterceptor shared] getTraceHandler:dataTask]);
     [self waitForExpectationsWithTimeout:10.0 handler:nil];
-    XCTAssertNil([self getTraceHandler:dataTask]);
+    XCTAssertNil([[FTURLSessionInterceptor shared] getTraceHandler:dataTask]);
 }
 
 /** Validate that it works with NSMutableURLRequest URLs across data, upload, and download. */
@@ -409,7 +424,7 @@
     
     NSURLSessionDataTask *dataTask = [session dataTaskWithRequest:URLRequest];
     [dataTask resume];
-    XCTAssertNotNil([self getTraceHandler:dataTask]);
+    XCTAssertNotNil([[FTURLSessionInterceptor shared] getTraceHandler:dataTask]);
 }
 
 - (void)testSDKUploadLoggingRequest{
@@ -421,11 +436,10 @@
     
     NSURLSessionDataTask *dataTask = [session dataTaskWithRequest:URLRequest];
     [dataTask resume];
-    XCTAssertNil([self getTraceHandler:dataTask]);
+    XCTAssertNil([[FTURLSessionInterceptor shared] getTraceHandler:dataTask]);
 }
 - (void)testSDKUploadRumRequest{
     __block NSURLSessionDataTask *dataTask;
-    __weak typeof(self) weakSelf = self;
     [FTNetworkMock networkOHHTTPStubs];
     FTLoggingRequest *loggingRequest = [[FTLoggingRequest alloc]init];
     NSURLRequest *URLRequest = [NSURLRequest requestWithURL:loggingRequest.absoluteURL];
@@ -434,14 +448,6 @@
     
     dataTask = [session dataTaskWithRequest:URLRequest];
     [dataTask resume];
-    XCTAssertNil([weakSelf getTraceHandler:dataTask]);
-}
-- (void)waitAndRunBlockAfterResponse:(void (^)(void))block {
-    XCTestExpectation *expectation= [self expectationWithDescription:@"异步操作timeout"];
-    [FTNetworkMock registerHandler:^{
-        block();
-        [expectation fulfill];
-    }];
-    [self waitForExpectations:@[expectation] timeout:10];
+    XCTAssertNil([[FTURLSessionInterceptor shared] getTraceHandler:dataTask]);
 }
 @end

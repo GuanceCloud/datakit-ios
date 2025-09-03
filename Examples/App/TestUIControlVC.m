@@ -12,16 +12,16 @@
 
 #define PICKER_HEIGHT   266
 @interface TestUIControlVC ()<UIPickerViewDataSource, UIPickerViewDelegate>{
-    NSInteger _provinceIndex;   // 省份选择 记录
-    NSInteger _cityIndex;       // 市选择 记录
-    NSInteger _districtIndex;   // 区选择 记录
+    NSInteger _provinceIndex;   // Province selection record
+    NSInteger _cityIndex;       // City selection record
+    NSInteger _districtIndex;   // District selection record
 }
 @property (strong, nonatomic) UILabel *nameSelectLabel;
 @property (nonatomic, strong) UIPickerView * pickerView;
 @property (nonatomic, strong) UIButton * button;
 @property (nonatomic, strong) UITextView *textView;
 /**
- *  数据源
+ *  Data source
  */
 @property (nonatomic, strong) NSArray * arrayDS;
 @end
@@ -38,12 +38,12 @@
 - (void)createUI{
     UIDatePicker *datePicker = [[UIDatePicker alloc] initWithFrame:CGRectMake(20, 100, 150, 40)];
     datePicker.datePickerMode = UIDatePickerModeDateAndTime;
-    // 设置可供选择的最小时间：昨天
-    NSTimeInterval time = 24 * 60 * 60; // 24H 的时间戳值
+    // Set minimum selectable time: yesterday
+    NSTimeInterval time = 24 * 60 * 60; // 24H timestamp value
     datePicker.minimumDate = [[NSDate alloc] initWithTimeIntervalSinceNow:- time];
-    // 设置可供选择的最大时间：明天
+    // Set maximum selectable time: tomorrow
     datePicker.maximumDate = [[NSDate alloc] initWithTimeIntervalSinceNow:time];
-    // 添加 Target-Action
+    // Add Target-Action
     [datePicker addTarget:self
                    action:@selector(datePickerValueChanged:)
          forControlEvents:UIControlEventValueChanged];
@@ -64,13 +64,13 @@
     self.nameSelectLabel = nameSelectLabel;
     [self.view addSubview:self.nameSelectLabel];
     UIButton *button = [[UIButton alloc]initWithFrame:CGRectMake(180, CGRectGetMaxY(textView.frame)+10, 50, 40)];
-    [button setTitle:@"选择" forState:UIControlStateNormal];
-    [button setTitle:@"确认" forState:UIControlStateSelected];
+    [button setTitle:@"Select" forState:UIControlStateNormal];
+    [button setTitle:@"Confirm" forState:UIControlStateSelected];
     [button addTarget:self action:@selector(buttonClick:) forControlEvents:UIControlEventTouchUpInside];
     [self.view addSubview:button];
     self.button = button;
     [self initData];
-    // 默认Picker状态
+    // Default Picker state
     [self resetPickerSelectRow];
 }
 - (void)buttonClick:(UIButton *)button{
@@ -107,7 +107,7 @@
 
 #pragma mark - Load DataSource
 
-// 读取本地Plist加载数据源
+// Read local Plist to load data source
 -(NSArray *)arrayDS
 {
     if(!_arrayDS){
@@ -117,7 +117,7 @@
     return _arrayDS;
 }
 
-// 懒加载方式
+// Lazy loading method
 -(UIPickerView *)pickerView
 {
     if(!_pickerView){
@@ -138,13 +138,13 @@
 
 #pragma mark - PickerView Delegate
 
-// 列数
+// Number of columns
 - (NSInteger)numberOfComponentsInPickerView:(UIPickerView *)pickerView
 {
     return 3;
 }
 
-// 每列有多少行
+// Number of rows in each column
 - (NSInteger)pickerView:(UIPickerView *)pickerView numberOfRowsInComponent:(NSInteger)component
 {
     if(component == 0){
@@ -158,7 +158,7 @@
     }
 }
 
-// 返回每一行的内容
+// Return content of each row
 -(NSString *)pickerView:(UIPickerView *)pickerView titleForRow:(NSInteger)row forComponent:(NSInteger)component
 {
     if(component == 0){
@@ -172,7 +172,7 @@
     }
 }
 
-// 滑动或点击选择，确认pickerView选中结果
+// Slide or click to select, confirm pickerView selection result
 -(void)pickerView:(UIPickerView *)pickerView didSelectRow:(NSInteger)row inComponent:(NSInteger)component
 {
     
@@ -197,17 +197,17 @@
     
     self.nameSelectLabel.text = address;
 
-    // 重置当前选中项
+    // Reset current selection
     [self resetPickerSelectRow];
 }
 
 #pragma mark - Touch
 
-//// 确认最后选中的结果
+//// Confirm final selection result
 //-(void)touchesBegan:(NSSet<UITouch *> *)touches withEvent:(UIEvent *)event
 //{
-//    // 省市区地址
-//#warning 看明白Province.plist的结构，理解下边内容就不再是问题
+//    // Province-city-district address
+//#warning Understand the structure of Province.plist, then understanding the content below is no longer a problem
 //    NSString * address = [NSString stringWithFormat:@"%@-%@-%@", self.arrayDS[_provinceIndex][@"province"], self.arrayDS[_provinceIndex][@"citys"][_cityIndex][@"city"], self.arrayDS[_provinceIndex][@"citys"][_cityIndex][@"districts"][_districtIndex]];
 //    
 //    self.nameSelectLabel.text = address;

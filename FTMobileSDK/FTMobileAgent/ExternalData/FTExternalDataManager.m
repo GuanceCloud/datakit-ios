@@ -2,7 +2,7 @@
 //  FTExternalResourceManager.m
 //  FTMobileAgent
 //
-//  Created by 胡蕾蕾 on 2021/11/22.
+//  Created by hulilei on 2021/11/22.
 //  Copyright © 2021 DataFlux-cn. All rights reserved.
 //
 
@@ -47,6 +47,11 @@
     NSDictionary *copyDict = [property ft_deepCopy];
     if(self.delegate && [self.delegate respondsToSelector:@selector(startViewWithName:property:)]){
         [self.delegate startViewWithName:viewName property:copyDict];
+    }
+}
+-(void)updateViewLoadingTime:(NSNumber *)duration{
+    if(self.delegate && [self.delegate respondsToSelector:@selector(updateViewLoadingTime:)]){
+        [self.delegate updateViewLoadingTime:duration];
     }
 }
 -(void)stopView{

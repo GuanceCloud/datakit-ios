@@ -24,29 +24,29 @@ NS_ASSUME_NONNULL_BEGIN
 
 typedef void(^UnpackTraceHeaderHandler)(NSString * _Nullable traceId, NSString *_Nullable spanID);
 
-/// trace 功能实现协议
+/// Trace functionality implementation protocol
 @protocol FTTracerProtocol<NSObject>
 
 @property (nonatomic,assign) BOOL enableAutoTrace;
 
-/// 是否关联 RUM
+/// Whether to associate with RUM
 @property (nonatomic,assign) BOOL enableLinkRumData;
 
-/// 获取 trace 的请求头
-/// - Parameter url: 请求 URL
+/// Get trace request headers
+/// - Parameter url: Request URL
 - (NSDictionary *)networkTraceHeaderWithUrl:(NSURL *)url;
 
-/// 获取 trace 的请求头（外部调用时使用）
+/// Get trace request headers (for external calls)
 /// - Parameters:
-///   - url: 请求 URL
-///   - handler: 返回 traceID、spanID
+///   - url: Request URL
+///   - handler: Returns traceID, spanID
 - (NSDictionary *)networkTraceHeaderWithUrl:(NSURL *)url handler:(UnpackTraceHeaderHandler)handler;
 
 
-/// trace 的请求头参数解包
+/// Unpack trace request header parameters
 /// - Parameters:
-///   - header: trace 的请求头
-///   - handler: 解包处理完成后返回 traceID、spanID
+///   - header: Trace request headers
+///   - handler: Returns traceID, spanID after unpacking
 - (void)unpackTraceHeader:(NSDictionary *)header handler:(UnpackTraceHeaderHandler)handler;
 @end
 NS_ASSUME_NONNULL_END

@@ -12,7 +12,7 @@ NS_ASSUME_NONNULL_BEGIN
 
 @interface FTSessionReplayConfig ()
 @property (nonatomic, strong) NSArray<id <FTSRWireframesRecorder>>*additionalNodeRecorders;
-
+-(void)mergeWithRemoteConfigDict:(NSDictionary *)dict;
 @end
 
 NS_ASSUME_NONNULL_END

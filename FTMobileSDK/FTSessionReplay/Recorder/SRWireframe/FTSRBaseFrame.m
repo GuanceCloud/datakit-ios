@@ -218,10 +218,10 @@ BOOL isNull(id value)
 }
 #pragma mark ========== NSCoding\NSSecureCoding ==========
 - (void)encodeWithCoder:(nonnull NSCoder *)coder {
-    //获取所有属性
+    //Get all properties
     NSArray * propertyArray = [self getAllProperties];
     for (NSString * name in propertyArray) {
-        //去掉属性名前面的_
+        //Remove underscore prefix from property name
         NSString * key = [name substringFromIndex:1];
 
         [coder encodeObject:[self valueForKey:key] forKey:[NSString stringWithFormat:@"%@",key]];
@@ -232,7 +232,7 @@ BOOL isNull(id value)
     if(self){
         NSArray *propertyArray = [self getAllProperties];
         for (NSString *name in propertyArray) {
-            //去掉属性名前面的_
+            //Remove underscore prefix from property name
             NSString * key = [name substringFromIndex:1];
             [self setValue:[coder decodeObjectForKey:[NSString stringWithFormat:@"%@",key]] forKey:key];
         }
@@ -260,20 +260,20 @@ BOOL isNull(id value)
     NSMutableArray * array = [[NSMutableArray alloc]init];
     
     unsigned int  count = 0;
-    //调用runtime的方法
-    //Ivar：方法返回的对象内容对象，这里将返回一个Ivar类型的指针
-    //class_copyIvarList方法可以捕获到类的所有变量，将变量的数量存在一个unsigned int的指针中
+    //Call runtime method
+    //Ivar: The object content object returned by the method, here will return an Ivar type pointer
+    //class_copyIvarList method can capture all variables of the class, store the variable count in an unsigned int pointer
     Ivar * ivars = class_copyIvarList(class, &count);
-    //进行遍历
+    //Traverse
     for (int i=0; i< count ; i++) {
-        //通过移动指针进行遍历
+        //Traverse by moving pointer
         Ivar var = ivars[i];
-        //获取变量的名称
+        //Get variable name
         const char * name = ivar_getName(var);
         NSString * str = [NSString stringWithCString:name encoding:NSUTF8StringEncoding];
         [array addObject:str];
     }
-    //释放内存
+    //Free memory
     free(ivars);
     return array;
 }

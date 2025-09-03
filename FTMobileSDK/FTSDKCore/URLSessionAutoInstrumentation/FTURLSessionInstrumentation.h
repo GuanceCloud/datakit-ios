@@ -25,18 +25,18 @@
 #import "FTTraceContext.h"
 NS_ASSUME_NONNULL_BEGIN
 typedef enum FTNetworkTraceType:NSUInteger FTNetworkTraceType;
-/// URLSession 自动化 采集 rum 数据，实现 trace 功能的对象
+/// URLSession automation object for collecting rum data and implementing trace functionality
 @interface FTURLSessionInstrumentation : NSObject<NSURLSessionDelegate>
 
-/// session 拦截处理对象 处理 resource 的链路追踪（trace）rum resource数据采集
+/// Session interception handler for processing resource link tracing (trace) and rum resource data collection
 @property (nonatomic, weak ,readonly) id<FTURLSessionInterceptorProtocol> interceptor;
-/// 向外部提供处理用户自定义 resource 数据的对象
+/// Object provided to external for handling user-defined resource data
 @property (nonatomic, weak ,readonly) id<FTExternalResourceProtocol> externalResourceHandler;
 
-/// 判断是否允许自动链路追踪
+/// Determine whether automatic link tracing is allowed
 @property (atomic, assign, readonly) BOOL shouldTraceInterceptor;
 
-/// 判断是否允许自动采集 RUM
+/// Determine whether automatic RUM collection is allowed
 @property (atomic, assign, readonly) BOOL shouldRUMInterceptor;
 
 
@@ -44,46 +44,47 @@ typedef enum FTNetworkTraceType:NSUInteger FTNetworkTraceType;
 
 - (instancetype)init NS_UNAVAILABLE;
 
-/// 单例
+/// Singleton
 + (instancetype)sharedInstance;
 
-/// 设置是否自动采集 RUM Resource
-/// - Parameter enableAutoRumTrack: 是否自动采集
+/// Set whether to automatically collect RUM Resource
+/// - Parameter enableAutoRumTrack: Whether to automatically collect
 - (void)setEnableAutoRumTrace:(BOOL)enableAutoRumTrack
            resourceUrlHandler:(FTResourceUrlHandler)resourceUrlHandler
-     resourcePropertyProvider:(ResourcePropertyProvider)resourcePropertyProvider;
+     resourcePropertyProvider:(ResourcePropertyProvider)resourcePropertyProvider
+       sessionTaskErrorFilter:(SessionTaskErrorFilter)sessionTaskErrorFilter;
 
-/// 设置 trace 配置项，开启 trace
+/// Set trace configuration options, enable trace
 /// - Parameters:
-///   - enableAutoTrace: 是否开启自动链路追踪
-///   - enableLinkRumData: 是否关联 RUM
-///   - sampleRate: 采样率
-///   - traceType: 链路类型
+///   - enableAutoTrace: Whether to enable automatic link tracing
+///   - enableLinkRumData: Whether to associate with RUM
+///   - sampleRate: Sampling rate
+///   - traceType: Link type
 - (void)setTraceEnableAutoTrace:(BOOL)enableAutoTrace
               enableLinkRumData:(BOOL)enableLinkRumData
                      sampleRate:(int)sampleRate
                       traceType:(FTNetworkTraceType)traceType
                traceInterceptor:(TraceInterceptor)traceInterceptor;
-/// 设置 sdk 内部的数据上传 url
+/// Set SDK internal data upload URL
 /// - Parameters
-///   - sdkUrlStr: sdk 内部的数据上传 url
+///   - sdkUrlStr: SDK internal data upload URL
 ///   - serviceName:
 - (void)setSdkUrlStr:(NSString *)sdkUrlStr serviceName:(NSString *)serviceName;
 
-/// 设置遵循 FTRumResourceProtocol 的 rum resource 数据处理对象
+/// Set RUM resource data processing object that conforms to FTRumResourceProtocol
 ///
-/// 该模块采集到的 http resource 数据要传给 RUM 模块
-/// - Parameter handler: RUM 模块数据接收对象
+/// HTTP resource data collected by this module should be passed to the RUM module
+/// - Parameter handler: RUM module data receiving object
 - (void)setRumResourceHandler:(id<FTRumResourceProtocol>)handler;
 
-/// 设置 URL 过滤
-/// - Parameter intakeUrlHandler: 判断是否采集回调，返回 YES 采集， NO 过滤掉
+/// Set URL filtering
+/// - Parameter intakeUrlHandler: Callback to determine whether to collect, return YES to collect, NO to filter out
 - (void)setIntakeUrlHandler:(FTIntakeUrl)intakeUrlHandler;
 
 - (void)enableSessionDelegate:(id <NSURLSessionDelegate>)delegate;
 - (nullable id<FTURLSessionInterceptorProtocol>)traceInterceptor:(id<NSURLSessionDelegate>)delegate;
 - (nullable id<FTURLSessionInterceptorProtocol>)rumInterceptor:(id<NSURLSessionDelegate>)delegate;
-/// 注销
+/// Shut down
 - (void)shutDown;
 @end
 

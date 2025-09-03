@@ -60,7 +60,7 @@
 
 kern_return_t ft_mach_copyMem(const void *const src, void *const dst, const size_t numBytes){
     vm_size_t bytesCopied = 0;
-    ///   调用api函数，根据栈帧指针获取该栈帧对应的函数地址
+    ///   Call API function to get the function address corresponding to this stack frame based on the stack frame pointer
     return vm_read_overwrite(mach_task_self(), (vm_address_t)src, (vm_size_t)numBytes, (vm_address_t)dst, &bytesCopied);
 }
 uintptr_t ft_faultAddress(_STRUCT_MCONTEXT *const machineContext){
@@ -71,7 +71,7 @@ uintptr_t ft_faultAddress(_STRUCT_MCONTEXT *const machineContext){
 #endif
 }
 uintptr_t ft_mach_instructionAddress(_STRUCT_MCONTEXT *const machineContext){
-    return machineContext->__ss.FT_INSTRUCTION_ADDRESS; ///rip 指令指针
+    return machineContext->__ss.FT_INSTRUCTION_ADDRESS; ///rip instruction pointer
 }
 uintptr_t ft_mach_linkRegister(_STRUCT_MCONTEXT *const machineContext){
 #if defined(__i386__) || defined(__x86_64__)
@@ -81,12 +81,12 @@ uintptr_t ft_mach_linkRegister(_STRUCT_MCONTEXT *const machineContext){
 #endif
 }
 uintptr_t ft_mach_framePointer(_STRUCT_MCONTEXT *const machineContext){
-    return machineContext->__ss.FT_FRAME_POINTER; ///rbp 栈帧指针
+    return machineContext->__ss.FT_FRAME_POINTER; ///rbp stack frame pointer
 }
 
 void ft_backtrace(_STRUCT_MCONTEXT *const machineContext,uintptr_t *backtrace,int* count){
     int i = 0;
-    //.获取指针栈帧结构体_STRUCT_CONTEXT._ss，解析得到对应指令指针_STRUCT_CONTEXT._ss.ip;首次个栈帧指针_STRUCT_CONTEXT._ss.bp；栈顶指针_STRUCT_CONTEXT._ss.sp
+    //.Get pointer stack frame structure _STRUCT_CONTEXT._ss, parse to get corresponding instruction pointer _STRUCT_CONTEXT._ss.ip; first stack frame pointer _STRUCT_CONTEXT._ss.bp; stack top pointer _STRUCT_CONTEXT._ss.sp
     const uintptr_t instructionAddress = ft_mach_instructionAddress(machineContext);
     *backtrace = instructionAddress & FTPACStrippingMask_ARM64e;
     ++i;
@@ -106,7 +106,7 @@ void ft_backtrace(_STRUCT_MCONTEXT *const machineContext,uintptr_t *backtrace,in
        ft_mach_copyMem((void *)framePtr, &frame, sizeof(frame)) != KERN_SUCCESS) {
         return;
     }
-    //遍历StackFrameEntry获取所有栈帧及对应的函数地址
+    //Traverse StackFrameEntry to get all stack frames and corresponding function addresses
     for(; i < 50; i++) {
         if(frame.return_address == 0 ){
             break;
@@ -124,7 +124,7 @@ bool ft_fillThreadStateIntoMachineContext(thread_t thread, _STRUCT_MCONTEXT *mac
     mach_msg_type_number_t state_count = FT_THREAD_STATE_COUNT;
     mach_msg_type_number_t exception_state_count = FT_EXCEPTION_STATE_COUNT;
 
-    kern_return_t kr = thread_get_state(thread, FT_THREAD_STATE, (thread_state_t)&machineContext->__ss, &state_count);//获得线程上下文
+    kern_return_t kr = thread_get_state(thread, FT_THREAD_STATE, (thread_state_t)&machineContext->__ss, &state_count);//Get thread context
     thread_get_state(thread, FT_EXCEPTION_STATE, (thread_state_t)&machineContext->__es, &exception_state_count);
     return (kr == KERN_SUCCESS);
 }
@@ -177,7 +177,7 @@ uintptr_t ft_segmentBaseOfImageIndex(const uint32_t idx,FTMachoImage* const bina
     return imageIndex;
 }
 uint32_t ft_imageIndexContainingAddress(const uintptr_t address) {
-    // 调用API函数_dyld_image_count(void) ，获取images文件总数，即mach-o文件总数
+    // Call API function _dyld_image_count(void) to get the total number of images files, that is, the total number of mach-o files
     const uint32_t imageCount = _dyld_image_count();
     const struct mach_header* header = 0;
     for(uint32_t iImg = 0; iImg < imageCount; iImg++) {
@@ -307,3 +307,10 @@ void ft_symbolicate(const uintptr_t* const backtraceBuffer,
         ft_dladdr(CALL_INSTRUCTION_FROM_RETURN_ADDRESS(backtraceBuffer[i]), &symbolsBuffer[i],&binaryImages[i]);
     }
 }
+FTThread ftthread_self(void)
+{
+    thread_t thread_self = mach_thread_self();
+    mach_port_deallocate(mach_task_self(), thread_self);
+    return (FTThread)thread_self;
+}
+

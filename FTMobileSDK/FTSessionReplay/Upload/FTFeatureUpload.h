@@ -9,12 +9,13 @@
 #import <Foundation/Foundation.h>
 NS_ASSUME_NONNULL_BEGIN
 
-@protocol FTReader,FTFeatureRequestBuilder,FTDataStore;
+@protocol FTReader,FTFeatureRequestBuilder,FTDataStore,FTCacheWriter;
 @class FTPerformancePreset;
 @interface FTFeatureUpload : NSObject
 @property (nonatomic, assign) int maxBatchesPerUpload;
 -(instancetype)initWithFeatureName:(NSString *)featureName
                         fileReader:(id<FTReader>)fileReader
+                       cacheWriter:(id<FTCacheWriter>)cacheWriter
                     requestBuilder:(id<FTFeatureRequestBuilder>)requestBuilder
                maxBatchesPerUpload:(int)maxBatchesPerUpload
                        performance:(FTPerformancePreset *)performance

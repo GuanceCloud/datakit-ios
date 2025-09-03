@@ -60,7 +60,7 @@ final class FTTestInteraction: XCTestCase {
         let oldLogger = FTLogger.shared()
         FTMobileAgent.sharedInstance().startLogger(withConfigOptions: logConfig)
         let logger = FTLogger.shared()
-        XCTAssertTrue(oldLogger != logger)
+        XCTAssertTrue(oldLogger == logger)
         FTMobileAgent.shutDown()
     }
     

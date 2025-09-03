@@ -46,7 +46,7 @@
     if(![view isKindOfClass:[UITabBar class]]){
         return nil;
     }
-    // TODO: 确认是否在 TabBar hidden 的时候隐藏
+    // TODO: Confirm whether to hide when TabBar is hidden
     if(!attributes.isVisible){
         return [FTInvisibleElement constant];
     }

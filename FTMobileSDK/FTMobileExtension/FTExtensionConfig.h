@@ -12,28 +12,28 @@ NS_ASSUME_NONNULL_BEGIN
 
 @interface FTExtensionConfig : NSObject
 
-/// 文件共享 Group Identifier。（必须设置）
+/// File sharing Group Identifier. (Required)
 @property (nonatomic, copy) NSString *groupIdentifier;
 
-/// 设置是否允许 SDK 打印 Debug 日志
+/// Set whether to allow SDK to print Debug logs
 @property (nonatomic, assign) BOOL enableSDKDebugLog;
 
-/// 设置是否需要采集崩溃日志
+/// Set whether to collect crash logs
 @property (nonatomic, assign) BOOL enableTrackAppCrash;
 
-/// 设置是否开启 RUM 中 http Resource 事件自动采集
+/// Set whether to enable automatic collection of http Resource events in RUM
 @property (nonatomic, assign) BOOL enableRUMAutoTraceResource;
 
-/// 设置是否开启自动 http 链路追踪
+/// Set whether to enable automatic http link tracing
 @property (nonatomic, assign) BOOL enableTracerAutoTrace;
 
-/// 数据保存在 Extension 数量最大值
+/// Maximum number of data items saved in Extension
 ///
-/// 默认 1000 条，达到上限时删除旧数据保存新数据
+/// Default 1000 items, delete old data and save new data when limit is reached
 @property (nonatomic, assign) NSInteger memoryMaxCount;
 
-/// 初始化方法，同时设置必要参数 groupIdentifier
-/// - Parameter groupIdentifier: 文件共享 Group Identifier
+/// Initialization method, set required parameter groupIdentifier
+/// - Parameter groupIdentifier: File sharing Group Identifier
 - (instancetype)initWithGroupIdentifier:(NSString *)groupIdentifier;
 @end
 

@@ -12,19 +12,19 @@ NS_ASSUME_NONNULL_BEGIN
 
 @interface FTResourceMetricsModel ()
 @property (nonatomic, assign) BOOL resourceFetchTypeLocalCache;
-/// 同 DNS 解析时间 格式为 {duration: number(ns), start: number(ns)}
-/// duration:与resource_dns指标相同；
-/// start: 表示资源从开始请求到资源开始解析的时间段，m单位为 ns。 即 domainLookupStart - startTime
+/// Same as DNS resolution time, format is {duration: number(ns), start: number(ns)}
+/// duration: same as resource_dns metric;
+/// start: represents the time period from the start of the request to the start of resource resolution, unit is ns. That is domainLookupStart - startTime
 @property (nonatomic, strong, nullable) NSDictionary *resource_dns_time;
-/// 资源重定向耗时， 格式与计算方式同 resource_dns_time 一致
+/// Resource redirect time consumption, format and calculation method same as resource_dns_time
 @property (nonatomic, strong, nullable) NSDictionary *resource_redirect_time;
-/// 资源下载耗时，格式与计算方式同 resource_dns_time 一致
+/// Resource download time consumption, format and calculation method same as resource_dns_time
 @property (nonatomic, strong, nullable) NSDictionary *resource_download_time;
-/// 同资源加载首包时间，格式同 resource_dns_time 一致
+/// Same as resource loading first packet time, format same as resource_dns_time
 @property (nonatomic, strong, nullable) NSDictionary *resource_first_byte_time;
-/// 同资源加载 SSL 连接时间，格式与计算方式同 resource_dns_time 一致
+/// Same as resource loading SSL connection time, format and calculation method same as resource_dns_time
 @property (nonatomic, strong, nullable) NSDictionary *resource_ssl_time;
-/// 资源连接耗时
+/// Resource connection time consumption
 @property (nonatomic, strong, nullable) NSDictionary *resource_connect_time;
 
 - (NSNumber *)dns;

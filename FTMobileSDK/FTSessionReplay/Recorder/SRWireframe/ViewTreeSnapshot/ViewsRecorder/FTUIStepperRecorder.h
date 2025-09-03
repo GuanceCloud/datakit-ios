@@ -21,12 +21,12 @@ NS_ASSUME_NONNULL_BEGIN
 @property (nonatomic, assign) int plusVerticalWireframeID;
 @property (nonatomic, assign) CGRect wireframeRect;
 @property (nonatomic, assign) CGFloat cornerRadius;
-/// 是否允许 LeftSegment 点击
-///  当前值已经是最小值时，`—` 不允许点击，显示灰色
+/// Whether LeftSegment click is allowed
+///  When current value is at minimum, `—` is not clickable, displays gray
 ///  (14,2)
 @property (nonatomic, assign) BOOL isMinusEnabled;
-/// 是否允许 RightSegment 点击
-///  当前值已经是最大值时，`+` 不允许点击，显示灰色
+/// Whether RightSegment click is allowed
+///  When current value is at maximum, `+` is not clickable, displays gray
 ///  (14,12)
 @property (nonatomic, assign) BOOL isPlusEnabled;
 @end

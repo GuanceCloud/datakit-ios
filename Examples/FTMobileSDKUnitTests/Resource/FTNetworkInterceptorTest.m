@@ -42,14 +42,16 @@
     [self initSDKEnableAutoTrace:enable traceInterceptor:nil];
 }
 - (void)initSDKEnableAutoTrace:(BOOL)enable resourcePropertyProvider:(ResourcePropertyProvider)resourcePropertyProvider{
-    [self initSDKEnableAutoTrace:enable resourcePropertyProvider:resourcePropertyProvider traceInterceptor:nil];    
+    [self initSDKEnableAutoTrace:enable resourcePropertyProvider:resourcePropertyProvider traceInterceptor:nil errorFilter:nil];
 }
 - (void)initSDKEnableAutoTrace:(BOOL)enable traceInterceptor:(TraceInterceptor)traceInterceptor{
-    [self initSDKEnableAutoTrace:enable resourcePropertyProvider:nil traceInterceptor:traceInterceptor];
+    [self initSDKEnableAutoTrace:enable resourcePropertyProvider:nil traceInterceptor:traceInterceptor errorFilter:nil];
 }
 - (void)initSDKEnableAutoTrace:(BOOL)enable
       resourcePropertyProvider:(ResourcePropertyProvider)resourcePropertyProvider
-              traceInterceptor:(TraceInterceptor)traceInterceptor{
+              traceInterceptor:(TraceInterceptor)traceInterceptor
+                   errorFilter:(SessionTaskErrorFilter)errorFilter
+{
     NSProcessInfo *processInfo = [NSProcessInfo processInfo];
     NSString *url = [processInfo environment][@"ACCESS_SERVER_URL"];
     NSString *appid = [processInfo environment][@"APP_ID"];
@@ -59,6 +61,9 @@
     FTRumConfig *rumConfig = [[FTRumConfig alloc]initWithAppid:appid];
     if(resourcePropertyProvider){
         rumConfig.resourcePropertyProvider = resourcePropertyProvider;
+    }
+    if (errorFilter) {
+        rumConfig.sessionTaskErrorFilter = errorFilter;
     }
     rumConfig.enableTraceUserResource = enable;
     FTTraceConfig *traceConfig = [[FTTraceConfig alloc]init];
@@ -74,13 +79,75 @@
     [[FTTrackerEventDBTool sharedManger] deleteAllDatas];
 }
 #pragma mark - RUM
+- (void)testResourceLocalErrorFilter_session{
+    [self resourceLocalErrorFilter:YES enableGlobal:NO];
+}
+- (void)testResourceLocalErrorFilter_global{
+    [self resourceLocalErrorFilter:NO enableGlobal:YES];
+}
+- (void)testResourceLocalErrorFilter_priority{
+    [self resourceLocalErrorFilter:YES enableGlobal:YES];
+}
+- (void)resourceLocalErrorFilter:(BOOL)enableSession enableGlobal:(BOOL)enableGlobal{
+    [self initSDKEnableAutoTrace:YES resourcePropertyProvider:nil traceInterceptor:nil errorFilter:enableGlobal?^BOOL(NSError * _Nonnull error) {
+        if (error.code == NSURLErrorBadURL) {
+            return YES;
+        }
+        return NO;
+    }:nil];
+    NSURL *url = [NSURL URLWithString:@"http://test.error-filter.com"];
+    id<OHHTTPStubsDescriptor> stubs = [OHHTTPStubs stubRequestsPassingTest:^BOOL(NSURLRequest *request) {
+        return [request.URL.host isEqualToString:url.host];
+    } withStubResponse:^OHHTTPStubsResponse*(NSURLRequest *request) {
+        NSError* notConnectedError = [NSError errorWithDomain:NSURLErrorDomain code:NSURLErrorCancelled userInfo:@{NSLocalizedDescriptionKey:@"An asynchronous load has been canceled."}];
+        return [OHHTTPStubsResponse responseWithError:notConnectedError];
+    }];
+    FTURLSessionDelegate *ftDelegate = [[FTURLSessionDelegate alloc]init];
+    if (enableSession) {
+        ftDelegate.errorFilter = ^BOOL(NSError * _Nonnull error) {
+            if (error.code == NSURLErrorCancelled) {
+                return YES;
+            }
+            return NO;
+        };
+    }
+    XCTestExpectation *expectation = [self expectationWithDescription:@"request"];
+
+    NSURLSession *session = [NSURLSession sessionWithConfiguration:[NSURLSessionConfiguration ephemeralSessionConfiguration] delegate:ftDelegate delegateQueue:nil];
+    
+    NSURLSessionDataTask *task = [session dataTaskWithURL:url completionHandler:^(NSData * _Nullable data, NSURLResponse * _Nullable response, NSError * _Nullable error) {
+        [expectation fulfill];
+    }];
+    [task resume];
+    
+    [self waitForExpectations:@[expectation]];
+    [NSThread sleepForTimeInterval:0.5];
+
+    [[FTGlobalRumManager sharedInstance].rumManager syncProcess];
+    NSArray *newArray = [[FTTrackerEventDBTool sharedManger] getFirstRecords:10 withType:FT_DATA_TYPE_RUM];
+    __block int hasResourceCount = 0, hasErrorCount = 0;
+    [FTModelHelper resolveModelArray:newArray callBack:^(NSString * _Nonnull source, NSDictionary * _Nonnull tags, NSDictionary * _Nonnull fields, BOOL * _Nonnull stop) {
+        if ([source isEqualToString:FT_RUM_SOURCE_RESOURCE]) {
+            hasResourceCount ++;
+        }else if ([source isEqualToString:FT_RUM_SOURCE_ERROR]){
+            hasErrorCount ++;
+        }
+    }];
+    XCTAssertTrue(hasResourceCount == 1);
+    if (enableSession) {
+        XCTAssertTrue(hasErrorCount == 0);
+    }else if (enableGlobal){
+        XCTAssertTrue(hasErrorCount == 1);
+    }
+    [OHHTTPStubs removeStub:stubs];
+}
 /**
  *  RumAutoTrace = NO
  *  Session.ResourcePropertyProvider != nil
  *  Global.ResourcePropertyProvider = nil
- * 验证: - RUM-Resource_Count = 2
- *      - 自定义采集的 URLSession: Count = 1 , fields 中添加 ResourcePropertyProvider 自定义的参数成功
- *      - 其他 URLSession : Count = 0
+ *  Verification: - RUM-Resource_Count = 2
+ *      - Custom collected URLSession: Count = 1, fields successfully added ResourcePropertyProvider custom parameters
+ *      - Other URLSession: Count = 0
  */
 - (void)testResourcePropertyProvider_URLSession{
     [self resourcePropertyProviderWithAutoTrace:NO enableSession:YES enableGlobal:NO];
@@ -89,9 +156,9 @@
  *  RumAutoTrace = YES
  *  Session.ResourcePropertyProvider != nil
  *  Global.ResourcePropertyProvider = nil
- * 验证: - RUM-Resource_Count = 2
- *      - 自定义采集的 URLSession: Count = 1 , fields.contains Session.ResourcePropertyProvider returns
- *      - 其他 URLSession : Count = 1 , fields not contains
+ *  Verification: - RUM-Resource_Count = 2
+ *      - Custom collected URLSession: Count = 1, fields.contains Session.ResourcePropertyProvider returns
+ *      - Other URLSession: Count = 1, fields not contains
  */
 - (void)testResourcePropertyProvider_URLSession_AutoTrace{
     [self resourcePropertyProviderWithAutoTrace:YES enableSession:YES enableGlobal:NO];
@@ -100,9 +167,9 @@
  *  RumAutoTrace = YES
  *  Session.ResourcePropertyProvider = nil
  *  Global.ResourcePropertyProvider != nil
- *  验证: - RUM-Resource_Count = 2
- *      - 自定义采集的 URLSession: Count = 1，fields.contains Global.ResourcePropertyProvider returns
- *      - 其他 URLSession : Count = 1 , fields.contains Global.ResourcePropertyProvider returns
+ *   Verification: - RUM-Resource_Count = 2
+ *      - Custom collected URLSession: Count = 1, fields.contains Global.ResourcePropertyProvider returns
+ *      - Other URLSession: Count = 1, fields.contains Global.ResourcePropertyProvider returns
  */
 - (void)testResourcePropertyProvider_Global{
     [self resourcePropertyProviderWithAutoTrace:YES enableSession:NO enableGlobal:YES];
@@ -111,9 +178,9 @@
  *  RumAutoTrace = YES
  *  Session.ResourcePropertyProvider != nil
  *  Global.ResourcePropertyProvider != nil
- * 验证: - RUM-Resource_Count = 2
- *      - 自定义采集的 URLSession: Count = 1，fields.contains Session.ResourcePropertyProvider returns
- *      - 其他 URLSession : Count = 1 , fields.contains Global.ResourcePropertyProvider returns
+ *  Verification: - RUM-Resource_Count = 2
+ *      - Custom collected URLSession: Count = 1, fields.contains Session.ResourcePropertyProvider returns
+ *      - Other URLSession: Count = 1, fields.contains Global.ResourcePropertyProvider returns
  */
 - (void)testResourcePropertyProvider_Priority{
     [self resourcePropertyProviderWithAutoTrace:YES enableSession:YES enableGlobal:YES];
@@ -191,32 +258,32 @@
 }
 #pragma mark - Trace
 /**
- * 验证：- 自定义采集的 URLSession Trace 自定义成功
- *      - 其他 URLSession 无 Trace 添加
+ *  Verification: - Custom collected URLSession Trace custom successfully
+ *      - Other URLSession no Trace added
  */
 - (void)testTraceInterceptor_URLSession{
     [self traceInterceptorWithAutoTrace:NO enableSession:YES enableGlobal:NO];
 }
 /**
- * 验证：- 自定义采集的 URLSession Trace 自定义成功
- *      - 其他 URLSession 通过 AutoTrace 添加 Trace 成功
+ *  Verification: - Custom collected URLSession Trace custom successfully
+ *      - Other URLSession through AutoTrace successfully added Trace
  */
 - (void)testTraceInterceptor_URLSession_AutoTrace{
     [self traceInterceptorWithAutoTrace:YES enableSession:YES enableGlobal:NO];
 }
 /**
- * 验证：- 自定义采集的 URLSession 未设置 traceInterceptor Trace 添加成功
- *      - 其他 URLSession Trace 添加成功
- *      - AutoTrace 不生效
+ *  Verification: - Custom collected URLSession no traceInterceptor Trace added successfully
+ *      - Other URLSession Trace added successfully
+ *      - AutoTrace does not take effect
  */
 - (void)testTraceInterceptor_Global{
     [self traceInterceptorWithAutoTrace:YES enableSession:NO enableGlobal:YES];
 }
 /**
- * 同时添加 URLSession 级的 traceInterceptor, Global traceInterceptor 以及 AutoTrace
- *  验证：- URLSession > Global > AutoTrace
- *       - 自定义采集的 URLSession: URLSession-traceInterceptor 生效
- *       - 其他 URLSession: Global-traceInterceptor 生效
+ *  Add URLSession-level traceInterceptor, Global traceInterceptor, and AutoTrace simultaneously
+ *   Verification: - URLSession > Global > AutoTrace
+ *       - Custom collected URLSession: URLSession-traceInterceptor effective
+ *       - Other URLSession: Global-traceInterceptor effective
  */
 - (void)testTraceInterceptor_Priority{
     [self traceInterceptorWithAutoTrace:YES enableSession:YES enableGlobal:YES];

@@ -12,6 +12,7 @@
 #import "NSDate+FTUtil.h"
 #import "FTMobileConfig.h"
 #import "FTConstants.h"
+#import "FTActionTrackingHandler.h"
 typedef void(^LaunchBlock)( NSNumber * _Nullable duration, FTLaunchType type);
 typedef void(^LaunchDataBlock)(NSString *source, NSDictionary *tags, NSDictionary *fields);
 
@@ -33,7 +34,7 @@ typedef void(^LaunchDataBlock)(NSString *source, NSDictionary *tags, NSDictionar
     self.launchTracker = nil;
 }
 - (void)testLaunchCold{
-    XCTestExpectation *expectation= [self expectationWithDescription:@"异步操作timeout"];
+    XCTestExpectation *expectation= [self expectationWithDescription:@"Async operation timeout"];
     self.launchBlock = ^(NSNumber * _Nullable duration, FTLaunchType type) {
         XCTAssertTrue(type == FTLaunchCold);
         [expectation fulfill];
@@ -47,7 +48,7 @@ typedef void(^LaunchDataBlock)(NSString *source, NSDictionary *tags, NSDictionar
 }
 
 - (void)testStartSdkAfterLaunch{
-    XCTestExpectation *expectation= [self expectationWithDescription:@"异步操作timeout"];
+    XCTestExpectation *expectation= [self expectationWithDescription:@"Async operation timeout"];
     self.launchBlock = ^(NSNumber * _Nullable duration, FTLaunchType type) {
         XCTAssertTrue(type == FTLaunchCold);
         [expectation fulfill];
@@ -60,7 +61,7 @@ typedef void(^LaunchDataBlock)(NSString *source, NSDictionary *tags, NSDictionar
     self.launchBlock = nil;
 }
 - (void)testLaunchHot{
-    XCTestExpectation *expectation= [self expectationWithDescription:@"异步操作timeout"];
+    XCTestExpectation *expectation= [self expectationWithDescription:@"Async operation timeout"];
     self.launchTracker = [[FTAppLaunchTracker alloc]initWithDelegate:self];
     self.launchBlock = ^(NSNumber * _Nullable duration, FTLaunchType type) {
         if(type == FTLaunchHot){
@@ -81,7 +82,7 @@ typedef void(^LaunchDataBlock)(NSString *source, NSDictionary *tags, NSDictionar
 }
 #if TARGET_OS_IOS
 - (void)testLaunchPrewarm{
-    XCTestExpectation *expectation= [self expectationWithDescription:@"异步操作timeout"];
+    XCTestExpectation *expectation= [self expectationWithDescription:@"Async operation timeout"];
     self.launchBlock = ^(NSNumber * _Nullable duration, FTLaunchType type) {
         if(type == FTLaunchWarm){
             [expectation fulfill];
@@ -116,7 +117,22 @@ typedef void(^LaunchDataBlock)(NSString *source, NSDictionary *tags, NSDictionar
     dependencies.sampleRate = 100;
     dependencies.appId = @"testAppId";
     FTRUMManager *manager = [[FTRUMManager alloc]initWithRumDependencies:dependencies];
-    XCTestExpectation *expectation= [self expectationWithDescription:@"异步操作timeout"];
+    NSString *actionName;
+    NSString *actionType;
+    switch (type) {
+        case FTLaunchHot:
+            actionName = @"app_hot_start";
+            actionType = FT_LAUNCH_HOT;
+            break;
+        case FTLaunchCold:
+            actionName = @"app_cold_start";
+            actionType = FT_LAUNCH_COLD;
+            break;
+        case FTLaunchWarm:
+            actionName = @"app_warm_start";
+            actionType = FT_LAUNCH_WARM;
+    }
+    XCTestExpectation *expectation= [self expectationWithDescription:@"Async operation timeout"];
     self.launchDataBlock = ^(NSString *source, NSDictionary *tags, NSDictionary *fields) {
         if([source isEqualToString:FT_RUM_SOURCE_ACTION]){
             switch (type) {
@@ -140,7 +156,8 @@ typedef void(^LaunchDataBlock)(NSString *source, NSDictionary *tags, NSDictionar
         }
     };
     [manager startViewWithName:@"Test"];
-    [manager addLaunch:type launchTime:[NSDate date] duration:@123];
+    
+    [manager addLaunch:actionName type:actionType launchTime:[NSDate date] duration:@123 property:nil];
     [manager syncProcess];
     [self waitForExpectationsWithTimeout:30 handler:^(NSError *error) {
         XCTAssertNil(error);

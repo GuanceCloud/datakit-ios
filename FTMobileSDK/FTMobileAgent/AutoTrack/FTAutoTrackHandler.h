@@ -2,7 +2,7 @@
 //  FTTrack.h
 //  FTMobileAgent
 //
-//  Created by 胡蕾蕾 on 2020/11/27.
+//  Created by hulilei on 2020/11/27.
 //  Copyright © 2020 hll. All rights reserved.
 //
 
@@ -10,25 +10,43 @@
 #import <UIKit/UIKit.h>
 #import "FTRumDatasProtocol.h"
 #import "FTAutoTrackProperty.h"
+#import "FTRumConfig.h"
+#import "FTViewTrackingHandler.h"
+#import "FTActionTrackingHandler.h"
 NS_ASSUME_NONNULL_BEGIN
 @protocol FTUIViewControllerHandler <NSObject>
 -(void)notify_viewDidAppear:(UIViewController *)viewController animated:(BOOL)animated;
 -(void)notify_viewDidDisappear:(UIViewController *)viewController animated:(BOOL)animated;
 @end
-/// View、Action 采集类
-@interface FTAutoTrackHandler : NSObject<FTUIViewControllerHandler>
-/// 传递事件对象，将采集到的 view、action 数据传递给 RUM
-@property (nonatomic,weak) id<FTRumDatasProtocol> addRumDatasDelegate;
-/// 处理 ViewController 生命周期 rum:startView、stopView
+
+@protocol FTUIEventHandler <NSObject>
+-(void)notify_sendAction:(UIView *)view;
+-(void)notify_sendActionWithPressType:(UIPressType)type view:(UIView *)view;
+@end
+/// View and Action collection class
+@interface FTAutoTrackHandler : NSObject
+
+/// Handle ViewController lifecycle rum: startView, stopView
 @property (nonatomic, weak) id<FTUIViewControllerHandler> viewControllerHandler;
-/// 单例
+
+@property (nonatomic, weak) id<FTUIEventHandler> actionHandler;
+
+@property (nonatomic, weak, readonly) id<FTRumDatasProtocol> addRumDatasDelegate;
+@property (nonatomic, strong, nullable, readonly) FTViewTrackingHandler uiKitViewTrackingHandler;
+@property (nonatomic, strong, nullable, readonly) FTActionTrackingHandler actionTrackingHandler;
+
+/// Singleton
 + (instancetype)sharedInstance;
 
-/// 开启采集
+/// Enable collection
 /// - Parameters:
-///   - enable: 是否采集 View 数据
-///   - enable: 是否采集 Action 数据
--(void)startWithTrackView:(BOOL)enable action:(BOOL)enable;
+///   - enable: Whether to collect View data
+///   - enable: Whether to collect Action data
+-(void)startWithTrackView:(BOOL)enable
+                   action:(BOOL)enable
+      addRumDatasDelegate:(id<FTRumDatasProtocol>)delegate
+              viewHandler:(nullable FTViewTrackingHandler)viewHandler
+            actionHandler:(nullable FTActionTrackingHandler)actionHandler;
 
 -(void)shutDown;
 @end

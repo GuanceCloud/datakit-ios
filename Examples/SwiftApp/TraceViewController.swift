@@ -25,7 +25,7 @@ class TraceViewController: UIViewController,UITableViewDelegate,UITableViewDataS
         createUI()
     }
     func createUI() {
-        dataSource = ["手动网络链路追踪"]
+        dataSource = ["Manual Network Link Tracing"]
         self.view.addSubview(tableView)
     }
     func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {

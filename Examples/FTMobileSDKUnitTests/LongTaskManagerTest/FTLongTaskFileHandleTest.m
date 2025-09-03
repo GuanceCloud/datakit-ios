@@ -51,7 +51,7 @@ typedef void (^FTWriteCallBack)(NSDictionary *fields, NSDictionary *tags);
     [[NSFileManager defaultManager] removeItemAtPath:filePath error:&error];
 }
 - (void)testLongTask_fileHandle{
-    // 给定的 filePath 是文件夹时，创建 fileHandle 会失败
+    // When the given filePath is a folder, creating fileHandle will fail
     FTLongTaskManager *longTaskManager = [self mockLongTaskManager];
     NSString *pathString = [NSSearchPathForDirectoriesInDomains(NSDocumentDirectory, NSUserDomainMask, YES) lastObject];
     NSString *dataStorePath = [pathString stringByAppendingPathComponent:@"FTLongTaskTestFolder"];
@@ -67,7 +67,7 @@ typedef void (^FTWriteCallBack)(NSDictionary *fields, NSDictionary *tags);
     FTLongTaskManager *longTaskManager = [self mockLongTaskManager];
     [longTaskManager startLongTask:[NSDate date] backtrace:@"test_backtrace"];
     
-    // 正常逻辑添加 data
+    // Normal logic to add data
     XCTAssertNoThrow([longTaskManager appendData:[@"test_appendData" dataUsingEncoding:NSUTF8StringEncoding]]) ;
     dispatch_sync(longTaskManager.queue, ^{});
     NSString *dataStorePath = [longTaskManager valueForKey:@"dataStorePath"];
@@ -75,7 +75,7 @@ typedef void (^FTWriteCallBack)(NSDictionary *fields, NSDictionary *tags);
     NSString *str = [[NSString alloc]initWithData:data encoding:NSUTF8StringEncoding];
     XCTAssertTrue([str containsString:@"test_appendData"]);
     
-    // 添加 nil
+    // Add nil
     XCTAssertNoThrow([longTaskManager appendData:nil]) ;
     
     NSError *error;
@@ -84,7 +84,7 @@ typedef void (^FTWriteCallBack)(NSDictionary *fields, NSDictionary *tags);
     } else {
         [longTaskManager.fileHandle closeFile];
     }
-    // 文件已关闭，再次添加 data 会报错
+    // File is closed, adding data again will cause an error
     XCTAssertNoThrow([longTaskManager appendData:[@"test_appendData2" dataUsingEncoding:NSUTF8StringEncoding]]) ;
     dispatch_sync(longTaskManager.queue, ^{});
     NSData *data2 = [NSData dataWithContentsOfFile:dataStorePath];
@@ -104,7 +104,7 @@ typedef void (^FTWriteCallBack)(NSDictionary *fields, NSDictionary *tags);
     XCTAssertTrue(data.length>0);
     XCTAssertTrue([str containsString:@"test_backtrace_deleteFile"]);
     XCTestExpectation *expectation = [[XCTestExpectation alloc]initWithDescription:@"deleteFileInAsyncQueue"];
-    // 在 longTaskManager 中的 queue 异步执行 `deleteFile` 方法
+    // Execute `deleteFile` method asynchronously in longTaskManager's queue
     dispatch_async(longTaskManager.queue, ^{
         NSFileHandle *fileHandle = longTaskManager.fileHandle;
         [longTaskManager deleteFile];
@@ -118,7 +118,7 @@ typedef void (^FTWriteCallBack)(NSDictionary *fields, NSDictionary *tags);
     XCTestExpectation *expectation2 = [[XCTestExpectation alloc]initWithDescription:@"deleteFileInSyncQueue"];
     [longTaskManager appendData:[@"deleteFileInSyncQueue" dataUsingEncoding:NSUTF8StringEncoding]];
     
-    // 在 longTaskManager 中的 queue 同步执行 `deleteFile` 方法
+    // Execute `deleteFile` method synchronously in longTaskManager's queue
     dispatch_sync(longTaskManager.queue, ^{});
     NSData *data2 = [NSData dataWithContentsOfFile:dataStorePath];
     XCTAssertTrue(data2.length>0);
@@ -133,10 +133,10 @@ typedef void (^FTWriteCallBack)(NSDictionary *fields, NSDictionary *tags);
     NSData *data3 = [NSData dataWithContentsOfFile:dataStorePath];
     XCTAssertTrue(data3.length == 0);
     
-    //  在 longTaskManager 中的 queue 外调用
+    // Call outside of longTaskManager's queue
     XCTAssertNoThrow([longTaskManager deleteFile]);
     
-    // 模拟删除一个不存在的 file
+    // Simulate deleting a non-existent file
     NSString *pathString = [NSSearchPathForDirectoriesInDomains(NSDocumentDirectory, NSUserDomainMask, YES) lastObject];
     NSString *path = [pathString stringByAppendingPathComponent:@"FTLongTaskTest_NOFILE.txt"];
     longTaskManager.dataStorePath = path;
@@ -211,6 +211,15 @@ typedef void (^FTWriteCallBack)(NSDictionary *fields, NSDictionary *tags);
         self.writeCallBack(fields, tags);
         self.writeCallBack = nil;
     }
+}
+-(void)rumWrite:(NSString *)source tags:(NSDictionary *)tags fields:(NSDictionary *)fields time:(long long)time updateTime:(long long)updateTime cache:(BOOL)cache{
+    if(self.writeCallBack){
+        self.writeCallBack(fields, tags);
+        self.writeCallBack = nil;
+    }
+}
+-(void)lastFatalErrorIfFound:(long long)errorDate{
+   
 }
 @end
 

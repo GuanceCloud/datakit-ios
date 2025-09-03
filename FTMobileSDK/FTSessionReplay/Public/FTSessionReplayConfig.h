@@ -10,60 +10,63 @@
 
 NS_ASSUME_NONNULL_BEGIN
 
-/// 会话重播中内容屏蔽的可用隐私级别. 已废弃，建议使用细粒度的隐私级别进行设置
+/// Available privacy levels for content masking in session replay. Deprecated, recommend using fine-grained privacy levels for settings
 typedef NS_ENUM(NSUInteger,FTSRPrivacy){
-    /// 屏蔽所有内容.
+    /// Mask all content.
     FTSRPrivacyMask,
-    /// 除了敏感输入控件外记录所有内容.
+    /// Record all content except sensitive input controls.
     FTSRPrivacyAllow,
-    /// 屏蔽输入元素，但记录所有其他内容.
+    /// Mask input elements, but record all other content.
     FTSRPrivacyMaskUserInput,
 };
 
-/// 会话回放中触摸屏蔽的可用隐私级别。
+/// Available privacy levels for touch masking in session replay.
 typedef NS_ENUM(NSUInteger,FTTouchPrivacyLevel){
-    /// 显示所有用户触摸
+    /// Show all user touches
     FTTouchPrivacyLevelShow,
-    /// 屏蔽所有用户触摸
+    /// Hide all user touches
     FTTouchPrivacyLevelHide,
 };
 
-/// 会话回放中图像屏蔽的可用隐私级别
+/// Available privacy levels for image masking in session replay
 typedef NS_ENUM(NSUInteger,FTImagePrivacyLevel){
-    /// 只有使用 [UIImage imageNamed:]/UIImage(named:) 加载的SF符号和图像被捆绑在应用程序中才会被记录
+    /// Only SF symbols and images loaded using [UIImage imageNamed:]/UIImage(named:) that are bundled in the application will be recorded
     FTImagePrivacyLevelMaskNonBundledOnly,
-    /// 不会记录任何图像
+    /// No images will be recorded
     FTImagePrivacyLevelMaskAll,
-    /// 所有图像都将被记录，包括从互联网下载的图像或在应用程序运行时生成的图像
+    /// All images will be recorded, including images downloaded from the internet or generated during application runtime
     FTImagePrivacyLevelMaskNone,
 };
 
-/// 会话回放中文本和输入屏蔽的可用隐私级别
+/// Available privacy levels for text and input masking in session replay
 typedef NS_ENUM(NSUInteger,FTTextAndInputPrivacyLevel){
-    /// 显示除敏感输入外的所有文本。例如: password fields
+    /// Show all text except sensitive inputs. For example: password fields
     FTTextAndInputPrivacyLevelMaskSensitiveInputs,
-    /// 屏蔽所有输入字段。例如:textfields, switches, checkboxes
+    /// Mask all input fields. For example: textfields, switches, checkboxes
     FTTextAndInputPrivacyLevelMaskAllInputs,
-    /// 屏蔽所有文本和输入。例如: lable
+    /// Mask all text and inputs. For example: label
     FTTextAndInputPrivacyLevelMaskAll,
 };
 
-/// Session Replay 配置
+/// Session Replay configuration
 @interface FTSessionReplayConfig : NSObject
 
-/// 采样配置，属性值：0至100，100则表示百分百采集，不做数据样本压缩。
+/// Sampling configuration, property value: 0 to 100, 100 means 100% collection, no data sample compression.
 @property (nonatomic, assign) int sampleRate;
 
-/// 会话重播中内容屏蔽的隐私级别。 默认为 FTSRPrivacyMask
-@property (nonatomic, assign) FTSRPrivacy privacy DEPRECATED_MSG_ATTRIBUTE("已过时，请使用 `touchPrivacy`、`textAndInputPrivacy`、`imagePrivacy` 替换");
+/// After enabling, unsampled sessions record 1 minute before errors occur.
+@property (nonatomic, assign) int sessionReplayOnErrorSampleRate;
 
-/// 会话回放中触摸屏蔽的可用隐私级别。默认：FTTouchPrivacyLevelHide
+/// Privacy level for content masking in session replay. Default is FTSRPrivacyMask
+@property (nonatomic, assign) FTSRPrivacy privacy DEPRECATED_MSG_ATTRIBUTE("Deprecated, please use `touchPrivacy`, `textAndInputPrivacy`, `imagePrivacy` instead");
+
+/// Available privacy level for touch masking in session replay. Default: FTTouchPrivacyLevelHide
 @property (nonatomic, assign) FTTouchPrivacyLevel touchPrivacy;
 
-/// 会话回放中文本和输入屏蔽的可用隐私级别。 默认：FTTextAndInputPrivacyLevelMaskAll
+/// Available privacy level for text and input masking in session replay. Default: FTTextAndInputPrivacyLevelMaskAll
 @property (nonatomic, assign) FTTextAndInputPrivacyLevel textAndInputPrivacy;
 
-/// 会话回放中图像屏蔽的可用隐私级别。默认：FTImagePrivacyLevelMaskAll
+/// Available privacy level for image masking in session replay. Default: FTImagePrivacyLevelMaskAll
 @property (nonatomic, assign) FTImagePrivacyLevel imagePrivacy;
 
 @end

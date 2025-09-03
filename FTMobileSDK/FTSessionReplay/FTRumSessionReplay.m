@@ -17,6 +17,10 @@
 #import "FTSessionReplayFeature.h"
 #import "FTFeatureDataStore.h"
 #import "FTModuleManager.h"
+#import "FTTmpCacheManager.h"
+#import "FTPresetProperty.h"
+#import "FTSessionReplayConfig+Private.h"
+#import "FTRemoteConfigManager.h"
 @interface FTFeatureStores : NSObject
 @property (nonatomic, strong) FTFeatureStorage *storage;
 @property (nonatomic, strong) FTFeatureUpload *upload;
@@ -52,8 +56,8 @@ static dispatch_once_t onceToken;
 -(instancetype)init{
     self = [super init];
     if(self){
-        _coreDirectory = [[FTDirectory alloc]initWithSubdirectoryPath:@"com.guance"];
-        _readWriteQueue = dispatch_queue_create("com.guance.file.readwrite", 0);
+        _coreDirectory = [[FTDirectory alloc]initWithSubdirectoryPath:@"com.ft"];
+        _readWriteQueue = dispatch_queue_create("com.ft.file.readwrite", 0);
         _performancePreset = [[FTPerformancePreset alloc]init];
         _stores = [NSMutableDictionary new];
         _features = [NSMutableDictionary new];
@@ -62,10 +66,12 @@ static dispatch_once_t onceToken;
 }
 - (void)startWithSessionReplayConfig:(FTSessionReplayConfig *)config{
     FTInnerLogInfo(@"[session-replay] %@",config.debugDescription);
-    if(config.sampleRate<=0){
+    if(config.sampleRate<=0&&config.sessionReplayOnErrorSampleRate<=0){
         return;
     }
-    FTSessionReplayFeature *sessionReplayFeature = [[FTSessionReplayFeature alloc]initWithConfig:config];
+    FTSessionReplayConfig *copyConfig = [config copy];
+    [copyConfig mergeWithRemoteConfigDict:[[FTRemoteConfigManager sharedInstance] getLocalRemoteConfig]];
+    FTSessionReplayFeature *sessionReplayFeature = [[FTSessionReplayFeature alloc]initWithConfig:copyConfig];
     FTFeatureStores *srStore = [self registerFeature:sessionReplayFeature];
     [self.stores setValue:srStore forKey:sessionReplayFeature.name];
     [self.features setValue:sessionReplayFeature forKey:sessionReplayFeature.name];
@@ -75,20 +81,26 @@ static dispatch_once_t onceToken;
     //    FTFeatureDataStore *resourceDataStore = [[FTFeatureDataStore alloc]initWithFeature:resourcesFeature.name queue:self.readWriteQueue directory:self.coreDirectory];
     //    [self.stores setValue:resourceStore forKey:resourcesFeature.name];
     //    [self.features setValue:resourcesFeature forKey:resourcesFeature.name];
-    [sessionReplayFeature startWithWriter:srStore.storage.writer webViewWriter:srStore.storage.webViewWriter resourceWriter:nil resourceDataStore:nil];
+    [sessionReplayFeature startWithWriter:srStore.storage.writer
+                              cacheWriter:srStore.storage.cacheWriter
+                            webViewWriter:srStore.storage.webViewWriter
+                           resourceWriter:nil
+                        resourceDataStore:nil];
     FTInnerLogInfo(@"[session-replay] initialized success");
 }
 - (FTFeatureStores *)registerFeature:(id<FTRemoteFeature>)feature{
     FTDirectory *directory = [self.coreDirectory createSubdirectoryWithPath:feature.name];
     if(directory){
         FTPerformancePreset *performancePreset = [self.performancePreset updateWithOverride:feature.performanceOverride];
-        FTFeatureStorage *storage = [[FTFeatureStorage alloc]initWithFeatureName:feature.name queue:self.readWriteQueue directory:directory performance:performancePreset];
+        FTDirectory *cacheDirectory = [self.coreDirectory createSubdirectoryWithPath:[feature.name stringByAppendingString:@".cache"]];
+        FTFeatureStorage *storage = [[FTFeatureStorage alloc]initWithFeatureName:feature.name queue:self.readWriteQueue directory:directory cacheDirectory:cacheDirectory performance:performancePreset];
         FTFeatureUpload *upload = [[FTFeatureUpload alloc]initWithFeatureName:feature.name
                                                                    fileReader:storage.reader
+                                                                  cacheWriter:storage.cacheWriter
                                                                requestBuilder:feature.requestBuilder
                                                           maxBatchesPerUpload:10
                                                                   performance:performancePreset
-                                                                      context:[[FTModuleManager sharedInstance] getSRProperty]];
+                                                                      context:[FTPresetProperty sharedInstance].sessionReplayTags];
         FTFeatureStores *store = [[FTFeatureStores alloc]initWithStorage:storage upload:upload];
         return store;
     }

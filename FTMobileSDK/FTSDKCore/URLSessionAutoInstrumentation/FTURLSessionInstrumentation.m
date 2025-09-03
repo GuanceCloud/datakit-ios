@@ -34,7 +34,7 @@ static void *const kFTCompleteSelector = (void *)&kFTCompleteSelector;
 static void *const kFTCollectMetricsSelector = (void *)&kFTCollectMetricsSelector;
 static void *const kFTConformsToFTProtocol = (void *)&kFTConformsToFTProtocol;
 
-//conformsToProtocol 方法有损耗，苹果建议本地缓存结果减少调用
+//conformsToProtocol method has overhead, Apple recommends local caching of results to reduce calls
 static BOOL delegateConformsToFTProtocol(id delegate){
     if(!delegate){
         return NO;
@@ -49,8 +49,8 @@ static BOOL delegateConformsToFTProtocol(id delegate){
     }
 }
 @interface FTURLSessionInstrumentation()
-/// sdk 内部的数据上传 url
-@property (nonatomic, copy) NSString *sdkUrlStr;
+/// SDK internal data upload URL
+@property (atomic, copy) NSString *sdkUrlStr;
 @property (nonatomic, strong) FTTracer *tracer;
 @property (atomic, assign, readwrite) BOOL shouldTraceInterceptor;
 @property (atomic, assign, readwrite) BOOL shouldRUMInterceptor;
@@ -71,8 +71,25 @@ static dispatch_once_t onceToken;
     if(self){
         _shouldRUMInterceptor = NO;
         _shouldTraceInterceptor = NO;
+        [self swizzleURLSession];
     }
     return self;
+}
+- (void)swizzleURLSession{
+#if !defined(FT_DISABLE_SWIZZLING_RESOURCE) || FT_DISABLE_SWIZZLING_RESOURCE == 0
+    static dispatch_once_t onceToken;
+    dispatch_once(&onceToken, ^{
+        NSError *error = NULL;
+        if(@available(iOS 13.0,macOS 10.15,*)){
+            [NSURLSession ft_swizzleMethod:@selector(ft_dataTaskWithURL:completionHandler:) withMethod:@selector(dataTaskWithURL:completionHandler:) error:&error];
+        }
+        [NSURLSession ft_swizzleMethod:@selector(ft_dataTaskWithRequest:completionHandler:) withMethod:@selector(dataTaskWithRequest:completionHandler:) error:&error];
+        Class taskClass = NSClassFromString(@"__NSCFLocalSessionTask");
+        if(taskClass){
+            [taskClass ft_swizzleMethod:@selector(resume) withMethod:@selector(ft_resume) error:&error];
+        }
+    });
+#endif
 }
 -(id<FTURLSessionInterceptorProtocol>)interceptor{
     return [FTURLSessionInterceptor shared];
@@ -104,10 +121,13 @@ static dispatch_once_t onceToken;
 }
 - (void)setEnableAutoRumTrace:(BOOL)enableAutoRumTrack
            resourceUrlHandler:(FTResourceUrlHandler)resourceUrlHandler
-     resourcePropertyProvider:(ResourcePropertyProvider)resourcePropertyProvider{
+     resourcePropertyProvider:(ResourcePropertyProvider)resourcePropertyProvider
+       sessionTaskErrorFilter:(SessionTaskErrorFilter)sessionTaskErrorFilter
+{
     self.interceptor.resourceUrlHandler = resourceUrlHandler;
     self.shouldRUMInterceptor = enableAutoRumTrack;
     self.interceptor.resourcePropertyProvider = resourcePropertyProvider;
+    self.interceptor.sessionTaskErrorFilter = sessionTaskErrorFilter;
 }
 - (void)setRumResourceHandler:(id<FTRumResourceProtocol>)handler{
     self.interceptor.rumResourceHandler = handler;
@@ -115,7 +135,7 @@ static dispatch_once_t onceToken;
 -(void)setIntakeUrlHandler:(FTIntakeUrl)intakeUrlHandler{
     self.interceptor.intakeUrlHandler = intakeUrlHandler;
 }
-/// 关闭自动采集
+/// Disable automatic collection
 - (void)disableAutomaticRegistration{
     self.shouldRUMInterceptor = NO;
     self.shouldTraceInterceptor = NO;
@@ -212,8 +232,8 @@ static dispatch_once_t onceToken;
 - (void)shutDown{
     [self disableAutomaticRegistration];
     [[FTURLSessionInterceptor shared] shutDown];
-    onceToken = 0;
-    sharedInstance =nil;
+    self.sdkUrlStr = nil;
+    _tracer = nil;
 }
 
 @end

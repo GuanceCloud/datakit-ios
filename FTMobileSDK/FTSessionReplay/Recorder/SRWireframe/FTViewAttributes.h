@@ -9,7 +9,6 @@
 #import <Foundation/Foundation.h>
 #import "FTViewTreeSnapshot.h"
 #import <UIKit/UIKit.h>
-#import "FTImageDataUtils.h"
 #import "FTSRViewID.h"
 #import "FTSRTextObfuscatingFactory.h"
 #import "FTSessionReplayPrivacyOverrides+Extension.h"
@@ -34,7 +33,6 @@ NS_ASSUME_NONNULL_BEGIN
 @property (nonatomic, assign) CGFloat layerCornerRadius;
 @property (nonatomic, assign) CGFloat alpha;
 @property (nonatomic, assign) BOOL  isHidden;
-@property (nonatomic, assign) CGSize intrinsicContentSize;
 @property (nonatomic, assign) BOOL isVisible;
 @property (nonatomic, assign) BOOL hasAnyAppearance;
 @property (nonatomic, assign) BOOL isTranslucent;

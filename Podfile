@@ -24,7 +24,7 @@ target 'FTMobileSDKUnitTests-tvOS' do
   # Pods for SampleApp
 end
 
-#解决找不到静态库 libarclite_iphonesimulator.a/libarclite_iphoneos.a 问题
+# Fix the issue of not finding static library libarclite_iphonesimulator.a/libarclite_iphoneos.a
 post_install do |installer|
   installer.generated_projects.each do |project|
    project.targets.each do |target|
@@ -34,16 +34,17 @@ post_install do |installer|
    end
  end
   installer.pods_project.targets.each do |target|
-    # 假设你的 .xcconfig 文件位于 Pods 项目目录下，并且文件名是 Pods-TargetName.debug.xcconfig
-    # 你需要根据你的项目结构来修改这个路径
+    # Assuming your .xcconfig file is located in the Pods project directory, and the filename is 
+    # Pods-TargetName.debug.xcconfig
+    # You need to modify this path according to your project structure
     xcconfig_path = "Pods/Target Support Files/Pods-FTMobileSDKUnitTests/Pods-FTMobileSDKUnitTests.debug.xcconfig"
-    # 检查文件是否存在
+    # Check if the file exists
     if File.exist?(xcconfig_path)
-      # 读取文件内容
+      # Read file content
       xcconfig_content = File.read(xcconfig_path)
-      # 使用正则表达式来替换 OTHER_LDFLAGS 中的 -ObjC
+      # Use regular expression to replace -ObjC in OTHER_LDFLAGS
       new_xcconfig_content = xcconfig_content.gsub(/(OTHER_LDFLAGS\s*=\s*)(.*?)(-ObjC|\s-ObjC\s*)(.*?)/, "\\1\\2\\4")
-      # 写回文件
+      # Write back to file
       File.write(xcconfig_path, new_xcconfig_content)
       puts "Updated OTHER_LDFLAGS in #{xcconfig_path}"
     else

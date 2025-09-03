@@ -13,6 +13,10 @@ NSString *const FTMessageKeySRProperty = @"sr_property";
 NSString *const FTMessageKeyWebViewSR = @"webView_session_replay";
 NSString *const FTMessageKeyRecordsCountByViewID = @"sr_records_count_by_view_id";
 NSString *const FTMessageKeySessionHasReplay = @"sr_has_replay";
+NSString *const FTMessageKeyRumError = @"rum_error";
+
+void *FTMessageBusQueueIdentityKey = &FTMessageBusQueueIdentityKey;
+
 @interface FTModuleManager()
 @property (nonatomic, strong, readonly) NSPointerArray *receiverArray;
 @property (nonatomic, strong) NSMapTable *registerServices;
@@ -23,7 +27,8 @@ NSString *const FTMessageKeySessionHasReplay = @"sr_has_replay";
 -(instancetype)init{
     self = [super init];
     if(self){
-        _queue = dispatch_queue_create("com.guance.message-bus", 0);
+        _queue = dispatch_queue_create("com.ft.message-bus", 0);
+        dispatch_queue_set_specific(_queue,FTMessageBusQueueIdentityKey, &FTMessageBusQueueIdentityKey, NULL);
         _receiverArray = [NSPointerArray pointerArrayWithOptions:NSPointerFunctionsWeakMemory];
         _registerServices = [NSMapTable strongToWeakObjectsMapTable];
     }
@@ -37,17 +42,10 @@ NSString *const FTMessageKeySessionHasReplay = @"sr_has_replay";
     });
     return _sharedInstance;
 }
-- (NSDictionary *)getSRProperty{
-    __block NSDictionary *property = nil;
-    dispatch_sync(self.queue, ^{
-        property = self.srProperty;
-    });
-    return property;
-}
-- (void)postMessage:(NSString *)key message:(NSDictionary *)message{
-    dispatch_async(self.queue, ^{
-        if(key == FTMessageKeySRProperty){
-            self.srProperty = message;
+- (void)postMessage:(NSString *)key messageBlock:(nullable NSDictionary * (^)(void))messageBlock{
+    dispatch_block_t block = ^{
+        NSDictionary *message = messageBlock();
+        if (!message) {
             return;
         }
         for (id receiver in self.receiverArray) {
@@ -55,7 +53,25 @@ NSString *const FTMessageKeySessionHasReplay = @"sr_has_replay";
                 [receiver receive:key message:message];
             }
         }
-    });
+    };
+    dispatch_async(self.queue, block);
+}
+- (void)postMessage:(NSString *)key message:(NSDictionary *)message{
+    [self postMessage:key message:message sync:NO];
+}
+- (void)postMessage:(NSString *)key message:(NSDictionary *)message sync:(BOOL)sync{
+    dispatch_block_t block = ^{
+        for (id receiver in self.receiverArray) {
+            if ([receiver respondsToSelector:@selector(receive:message:)]) {
+                [receiver receive:key message:message];
+            }
+        }
+    };
+    if (sync) {
+        [self syncProcess:block];
+    }else{
+        dispatch_async(self.queue, block);
+    }
 }
 - (void)addMessageReceiver:(id<FTMessageReceiver>)receiver{
     dispatch_async(self.queue, ^{
@@ -84,6 +100,13 @@ NSString *const FTMessageKeySessionHasReplay = @"sr_has_replay";
     return [self.registerServices objectForKey:key];
 }
 - (void)syncProcess{
-    dispatch_sync(self.queue, ^{ });
+    [self syncProcess:^{}];
+}
+- (void)syncProcess:(dispatch_block_t)block{
+    if(dispatch_get_specific(FTMessageBusQueueIdentityKey) == NULL){
+        dispatch_sync(self.queue, block);
+    }else{
+        block();
+    }
 }
 @end

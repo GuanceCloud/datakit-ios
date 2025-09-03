@@ -73,21 +73,25 @@
     [self.instrumentation.interceptor taskReceivedData:dataTask data:data];
 }
 -(void)URLSession:(NSURLSession *)session task:(NSURLSessionTask *)task didFinishCollectingMetrics:(NSURLSessionTaskMetrics *)metrics{
-    // custom = YES 主要是为了优先处理 URLSession 级自定义的 provider
+    // custom = YES is mainly to prioritize processing URLSession-level custom provider
     [self.instrumentation.interceptor taskMetricsCollected:task metrics:metrics custom:YES];
     if (@available(iOS 15.0,tvOS 15.0,macOS 12.0, *)) {
         if(!task.ft_hasCompletion){
-            [self.instrumentation.interceptor taskCompleted:task error:task.error extraProvider:self.provider];
+            [self dealTaskCompleted:task error:task.error];
         }
     }
 }
+
 -(void)URLSession:(NSURLSession *)session task:(NSURLSessionTask *)task didCompleteWithError:(NSError *)error{
-    [self.instrumentation.interceptor taskCompleted:task error:error extraProvider:self.provider];
+    [self dealTaskCompleted:task error:error];
 }
 -(void)taskReceivedData:(NSURLSessionTask *)task data:(NSData *)data{
     [self.instrumentation.interceptor taskReceivedData:task data:data];
 }
 -(void)taskCompleted:(NSURLSessionTask *)task error:(NSError *)error{
-    [self.instrumentation.interceptor taskCompleted:task error:error extraProvider:self.provider];
+    [self dealTaskCompleted:task error:error];
+}
+-(void)dealTaskCompleted:(NSURLSessionTask *)task error:(NSError *)error{
+    [self.instrumentation.interceptor taskCompleted:task error:error extraProvider:self.provider errorFilter:self.errorFilter];
 }
 @end

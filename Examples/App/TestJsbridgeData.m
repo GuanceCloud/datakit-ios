@@ -2,7 +2,7 @@
 //  TestJsbridgeData.m
 //  SampleApp
 //
-//  Created by 胡蕾蕾 on 2021/1/7.
+//  Created by hulilei on 2021/1/7.
 //  Copyright © 2021 hll. All rights reserved.
 //
 
@@ -33,7 +33,7 @@
     config.userContentController = userContentController;
     
         
-    //! 使用configuration对象初始化webView
+    //! Initialize webView using configuration object
     self.webView = [[WKWebView alloc] initWithFrame:self.view.bounds configuration:config];
     if (@available(iOS 16.4, *)) {
         self.webView.inspectable = YES;

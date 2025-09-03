@@ -2,43 +2,60 @@
 //  FTTrackDataManager.h
 //  FTMacOSSDK
 //
-//  Created by 胡蕾蕾 on 2021/8/4.
+//  Created by hulilei on 2021/8/4.
 //  Copyright © 2021 DataFlux-cn. All rights reserved.
 //
 
 #import <Foundation/Foundation.h>
-/// 数据添加类型
+#import "FTDataWriterWorker.h"
+/// Data addition type
 typedef NS_ENUM(NSInteger, FTAddDataType) {
     ///rum
     FTAddDataRUM,
     ///logging
     FTAddDataLogging,
+    ///rumCache,
+    FTAddDataRUMCache
 };
 NS_ASSUME_NONNULL_BEGIN
-@class FTRecordModel;
-/// 数据写入，数据上传 相关操作
+@class FTRecordModel,FTDataWriterWorker,FTHTTPClient;
+@protocol FTRUMDataWriteProtocol;
+/// Data writing and data uploading related operations
 @interface FTTrackDataManager : NSObject
-/// 单例
+
+@property (nonatomic, strong) FTHTTPClient *httpClient;
+
+@property (nonatomic, strong) FTDataWriterWorker *dataWriterWorker;
+
+/// Singleton
 +(instancetype)sharedInstance;
 
-+(instancetype)startWithAutoSync:(BOOL)autoSync syncPageSize:(int)syncPageSize syncSleepTime:(int)syncSleepTime;
-- (void)setDBLimitWithSize:(long)size discardNew:(BOOL)discardNew;
++(instancetype)startWithAutoSync:(BOOL)autoSync
+                    syncPageSize:(int)syncPageSize
+                   syncSleepTime:(int)syncSleepTime;
+- (void)updateAutoSync:(BOOL)autoSync
+          syncPageSize:(int)syncPageSize
+         syncSleepTime:(int)syncSleepTime;
+- (void)setEnableLimitWithDb:(BOOL)enable size:(long)size discardNew:(BOOL)discardNew;
 - (void)setLogCacheLimitCount:(int)count discardNew:(BOOL)discardNew;
 - (void)setRUMCacheLimitCount:(int)count discardNew:(BOOL)discardNew;
-/// 数据写入
+
+ /// Data writing
 /// - Parameters:
-///   - data: 数据
-///   - type: 数据存储类型
+///   - data: data
+///   - type: data storage type
 - (void)addTrackData:(FTRecordModel *)data type:(FTAddDataType)type;
 
-/// 上传数据
-- (void)uploadTrackData;
+/// Upload data
+- (void)flushSyncData;
 
-/// 关闭单例
-- (void)shutDown;
 
-/// 缓存中的数据添加到数据库中
+/// Add cached data to database
 -(void)insertCacheToDB;
+
+/// Shut down singleton
++ (void)shutDown;
+
 @end
 
 NS_ASSUME_NONNULL_END

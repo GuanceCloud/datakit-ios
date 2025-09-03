@@ -137,16 +137,16 @@
     FTSRShapeWireframe *wireframe = [[FTSRShapeWireframe alloc]initWithIdentifier:self.wireframeID attributes:self.attributes];
     if (!CGRectIsNull(self.contentFrame)){
         FTSRWireframe *contentWireframe;
-        if(self.imageResource){
-            FTSRImageWireframe *imageWireframe = [[FTSRImageWireframe alloc]initWithIdentifier:self.imageWireframeID frame:self.contentFrame];
-            imageWireframe.resourceId = [self.imageResource calculateIdentifier];
-            imageWireframe.clip = [[FTSRContentClip alloc]initWithFrame:self.contentFrame clip:self.attributes.clip];
-            contentWireframe = imageWireframe;
-        }else{
-            FTSRPlaceholderWireframe *placeholderWireframe = [[FTSRPlaceholderWireframe alloc]initWithIdentifier:self.imageWireframeID frame:self.wireframeRect label:@"Content Image"];
-            placeholderWireframe.clip = [[FTSRContentClip alloc]initWithFrame:self.wireframeRect clip:self.attributes.clip];
-            contentWireframe = placeholderWireframe;
-        }
+        //        if(self.imageResource){
+        //            FTSRImageWireframe *imageWireframe = [[FTSRImageWireframe alloc]initWithIdentifier:self.imageWireframeID frame:self.contentFrame];
+        //            imageWireframe.resourceId = [self.imageResource calculateIdentifier];
+        //            imageWireframe.clip = [[FTSRContentClip alloc]initWithFrame:self.contentFrame clip:self.attributes.clip];
+        //            contentWireframe = imageWireframe;
+        //        }else{
+        FTSRPlaceholderWireframe *placeholderWireframe = [[FTSRPlaceholderWireframe alloc]initWithIdentifier:self.imageWireframeID frame:self.wireframeRect label:@"Content Image"];
+        placeholderWireframe.clip = [[FTSRContentClip alloc]initWithFrame:self.wireframeRect clip:self.attributes.clip];
+        contentWireframe = placeholderWireframe;
+//                }
         return @[wireframe,contentWireframe];
     }
     

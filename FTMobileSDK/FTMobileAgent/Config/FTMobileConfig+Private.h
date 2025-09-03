@@ -10,41 +10,31 @@
 
 NS_ASSUME_NONNULL_BEGIN
 @interface FTMobileConfig ()
-/// 添加 pkg 信息
+/// Add package information
 /// - Parameters:
-///   - key: 平台
-///   - value: 版本号
+///   - key: platform
+///   - value: version number
 - (void)addPkgInfo:(NSString *)key value:(NSString *)value;
-/// 其他平台 pkg 信息
+/// Other platform package information
 - (NSDictionary *)pkgInfo;
-/// 私有的初始化方法，通过字典来初始化，用于 Extensin SDK,同步 service
-/// - Parameter dict: config 转化后的字典
+/// Private initialization method, initialized through dictionary, used for Extension SDK, sync service
+/// - Parameter dict: dictionary converted from config
 -(instancetype)initWithDictionary:(NSDictionary *)dict;
-/// 将 config 转化成字典
+/// Convert config to dictionary
 -(NSDictionary *)convertToDictionary;
+
+/// Merge remote config
+-(void)mergeWithRemoteConfigDict:(NSDictionary *)dict;
 @end
 
-@interface FTLoggerConfig ()
-/// 私有的初始化方法，通过字典来初始化，用于 Extensin SDK
-/// - Parameter dict: config 转化后的字典
--(instancetype)initWithDictionary:(NSDictionary *)dict;
-/// 将 config 转化成字典
--(NSDictionary *)convertToDictionary;
-@end
-
-@interface FTRumConfig ()
-/// 私有的初始化方法，通过字典来初始化，用于 Extensin SDK
-/// - Parameter dict: config 转化后的字典
--(instancetype)initWithDictionary:(NSDictionary *)dict;
-/// 将 config 转化成字典
--(NSDictionary *)convertToDictionary;
-@end
 
 @interface FTTraceConfig ()
-/// 私有的初始化方法，通过字典来初始化，用于 Extensin SDK
-/// - Parameter dict: config 转化后的字典
+/// Private initialization method, initialized through dictionary, used for Extension SDK
+/// - Parameter dict: dictionary converted from config
 -(instancetype)initWithDictionary:(NSDictionary *)dict;
-/// 将 config 转化成字典
+/// Convert config to dictionary
 -(NSDictionary *)convertToDictionary;
+/// Merge remote config
+-(void)mergeWithRemoteConfigDict:(NSDictionary *)dict;
 @end
 NS_ASSUME_NONNULL_END

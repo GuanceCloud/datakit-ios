@@ -1,27 +1,29 @@
-# 示例：sh BuildFramework.sh FTMobileSDK
-# 主项目需要的SDK ：FTMobileSDK
-# 小组件 Widget Extension 中需要的 SDK ：FTMobileExtension
-# 打包好的 SDK 存放在当前文件夹下的 FRAMEWORK 文件夹内
+# Example: sh BuildFramework.sh FTMobileSDK
+# Note: All without dynamic suffix are static libraries
+# SDK required by main project: FTMobileSDK, FTMobileSDK-dynamic
+# SDK required by Widget Extension: FTMobileExtension
+# The packaged SDK is stored in the build folder under the current directory
+
 
 buildFrameWorkWithName(){
-
-FRAMEWORK_NAME="$1"
-WORK_DIR="./build/${FRAMEWORK_NAME}"
+SCHEME_NAME="$1"
+WORK_DIR="./build/${SCHEME_NAME}"
+FRAMEWORK_NAME=${SCHEME_NAME%%-*}
 rm -r ${WORK_DIR}
 
-#framework的输出目录
+# Framework output directory
 OUTPUT_DIR=FRAMEWORK/${FRAMEWORK_NAME}'.framework'
 
-##xcodebuild打包
+## xcodebuild packaging
 xcodebuild archive \
-  -scheme ${FRAMEWORK_NAME} \
+  -scheme ${SCHEME_NAME} \
   -archivePath "${WORK_DIR}/ios.xcarchive" \
   -sdk iphoneos \
   SKIP_INSTALL=NO \
   BUILD_LIBRARY_FOR_DISTRIBUTION=YES
 
 xcodebuild archive \
-  -scheme ${FRAMEWORK_NAME} \
+  -scheme ${SCHEME_NAME} \
   -archivePath "${WORK_DIR}/ios-sim.xcarchive" \
   -sdk iphonesimulator \
   SKIP_INSTALL=NO \
@@ -39,8 +41,6 @@ xcodebuild -create-xcframework \
 echo "--------------END--------------"
 }
 echo "--------------START--------------"
-echo "IPHONEOS_ARCH: ${IPHONEOS_ARCH}"
-echo "IPHONESIMULATOR_ARCH: ${IPHONESIMULATOR_ARCH}"
-echo "FRAMEWORK_NAME: $1"
+echo "SCHEME_NAME: $1"
 
 buildFrameWorkWithName $1

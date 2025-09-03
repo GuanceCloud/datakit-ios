@@ -2,7 +2,7 @@
 //  FTUtilsTest.m
 //  FTMobileSDKUnitTests
 //
-//  Created by 胡蕾蕾 on 2020/9/2.
+//  Created by hulilei on 2020/9/2.
 //  Copyright © 2020 hll. All rights reserved.
 //
 
@@ -17,7 +17,7 @@
 #import "FTJSONUtil.h"
 #import "NSString+FTAdd.h"
 #import "FTRequest.h"
-#import "FTNetworkManager.h"
+#import "FTHTTPClient.h"
 #import "FTRequestBody.h"
 #import "FTModelHelper.h"
 #import "FTReadWriteHelper.h"
@@ -38,15 +38,15 @@
     NSString *string = @"    a  ";
     XCTAssertTrue([[string ft_removeFrontBackBlank] isEqualToString:@"a"]);
 }
-/// 字符串的编码格式为 NSUTF8StringEncoding ，英文字符占一字节，中文占三字节
+/// String encoding format is NSUTF8StringEncoding, English characters occupy 1 byte, complex characters occupy 3 bytes
 - (void)testCharacterNumber{
     NSString *letterStr = @"abcde";
     XCTAssertTrue([letterStr ft_characterNumber] == 5);
-    NSString *Chinese = @"一二三";
-    XCTAssertTrue([Chinese ft_characterNumber] == 9);
+    NSString *complexString = [NSString stringWithFormat:@"%C%C%C", 0x4E00, 0x4E8C, 0x4E09];
+    XCTAssertTrue([complexString ft_characterNumber] == 9);
 }
 - (void)testSubStringWithCharacterLength{
-    NSString *letterStr = @"abcde一二三";
+    NSString *letterStr = [NSString stringWithFormat:@"abcde%C%C%C", 0x4E00, 0x4E8C, 0x4E09];
     NSString *subStr = [letterStr ft_subStringWithCharacterLength:4];
     XCTAssertTrue([subStr isEqualToString:@"abcd"]);
     NSString *subStr2 = [letterStr ft_subStringWithCharacterLength:15];
@@ -63,7 +63,7 @@
                           @"key3":@1,
                           @"key4":@[@1,@2,[NSNumber numberWithFloat:2.0]],
                           @"key5":[NSNumber numberWithFloat:0],
-                          @"key6":@"测试",
+                          @"key6":@"test",
     };
     
     FTJSONUtil *util = [FTJSONUtil new];
@@ -166,9 +166,9 @@
 #if TARGET_OS_IOS
 - (void)testErrorDescription{
     NSString *path = [[NSBundle mainBundle] pathForResource:@"errors" ofType:@"json"];
-     // 将文件数据化
+     // Convert file to data
      NSData *data = [[NSData alloc] initWithContentsOfFile:path];
-     // 对数据进行JSON格式化并返回字典形式
+     // Format data as JSON and return as dictionary
      NSArray *array = [NSJSONSerialization JSONObjectWithData:data options:kNilOptions error:nil];
     for (NSDictionary *domain in array) {
         if([domain[@"key"] isEqualToString:@"NSURLErrorDomain"]){

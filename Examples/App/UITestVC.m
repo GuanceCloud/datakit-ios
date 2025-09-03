@@ -2,7 +2,7 @@
 //  UITestVC.m
 //  ft-sdk-iosTest
 //
-//  Created by 胡蕾蕾 on 2019/12/20.
+//  Created by hulilei on 2019/12/20.
 //  Copyright © 2019 hll. All rights reserved.
 //
 
@@ -50,7 +50,7 @@
     _firstButton.accessibilityLabel = @"FirstButton";
     _firstButton.layer.borderColor = [UIColor grayColor].CGColor;
     [_scrollView addSubview:_firstButton];
-  
+
     
     y = CGRectGetMaxY(_firstButton.frame) + 22;
     _secondButton = [UIButton buttonWithType:UIButtonTypeSystem];
@@ -68,7 +68,7 @@
     _stepper = [[UIStepper alloc] initWithFrame:CGRectMake(x, y, 80, 40)];
     [_stepper addTarget:self action:@selector(stepperAction:) forControlEvents:UIControlEventValueChanged];
     [_scrollView addSubview:_stepper];
-    
+
     _uiswitch = [[UISwitch alloc] init];
     _uiswitch.frame = CGRectMake(CGRectGetMaxX(_stepper.frame)+30, y, 80, 40);
     [_uiswitch addTarget:self action:@selector(switchAction:) forControlEvents:UIControlEventValueChanged];
@@ -86,20 +86,20 @@
     _progressView.progress = 0.5;
     [_scrollView addSubview:_progressView];
     CGRect frame = CGRectMake(CGRectGetMaxX(_segmentedControl.frame), 0, 0, 40);
-    // 创建 UIDatePicker 对象
+    // Create UIDatePicker object
     UIDatePicker *datePicker = [[UIDatePicker alloc] initWithFrame:frame];
-    // 设置日期选择器模式:日期模式
+    // Set date picker mode: date mode
     datePicker.datePickerMode = UIDatePickerModeDate;
-    // 设置可供选择的最小时间：昨天
-    NSTimeInterval time = 24 * 60 * 60; // 24H 的时间戳值
+    // Set minimum selectable time: yesterday
+    NSTimeInterval time = 24 * 60 * 60; // 24H timestamp value
     datePicker.minimumDate = [[NSDate alloc] initWithTimeIntervalSinceNow:- time];
-    // 设置可供选择的最大时间：明天
+    // Set maximum selectable time: tomorrow
     datePicker.maximumDate = [[NSDate alloc] initWithTimeIntervalSinceNow:time];
-    // 添加 Target-Action
+    // Add Target-Action
     [datePicker addTarget:self
                    action:@selector(datePickerValueChanged:)
          forControlEvents:UIControlEventValueChanged];
-    // 将 UIDatePicker 对象添加到当前视图
+    // Add UIDatePicker object to current view
     [_scrollView addSubview:datePicker];
     y = CGRectGetMaxY(_uiswitch.frame) + 20;
     _label = [[UILabel alloc] initWithFrame:CGRectMake(x, y, width, 50)];
@@ -144,7 +144,7 @@
     [self.view addSubview:_collectionView];
 }
 - (void)datePickerValueChanged:(id)sender{
-    
+
 }
 - (void)firstAction:(UIButton *)sender {
     NSLog(@"%@ Touch Up Inside", sender.currentTitle);
@@ -152,14 +152,14 @@
         if(!_activityIndicator){
             UIActivityIndicatorView *activityIndicator = [[UIActivityIndicatorView alloc]initWithActivityIndicatorStyle:UIActivityIndicatorViewStyleMedium];
             activityIndicator.frame = CGRectMake(0, 0, 50, 50);
-            
-            // 设置颜色
+
+            // Set color
             activityIndicator.color = [UIColor grayColor];
-            
-            // 设置位置
+
+            // Set position
             activityIndicator.center = self.view.center;
-            
-            // 添加到视图
+
+            // Add to view
             [self.view addSubview:activityIndicator];
             _activityIndicator = activityIndicator;
         }
@@ -190,11 +190,11 @@
 
 - (void)labelTouchUpInside:(UITapGestureRecognizer *)recognizer {
     UILabel *label = (UILabel *)recognizer.view;
-    NSLog(@"%@被点击了", label.text);
+    NSLog(@"%@ was clicked", label.text);
 }
 - (void)tap1Action:(UIGestureRecognizer *)sender {
     UILabel *label = (UILabel *)sender.view;
-    NSLog(@"%@被点击了", label.text);
+    NSLog(@"%@ was clicked", label.text);
 }
 
 - (void)tap2Action:(UIGestureRecognizer *)sender {
@@ -203,7 +203,7 @@
     cancel.accessibilityLabel = @"alert cancel";
     [alert addAction:cancel];
     [self presentViewController:alert animated:YES completion:nil];
-    NSLog(@"UIImageView被点击了");
+    NSLog(@"UIImageView was clicked");
 }
 - (void)tap{
     [_textField resignFirstResponder];

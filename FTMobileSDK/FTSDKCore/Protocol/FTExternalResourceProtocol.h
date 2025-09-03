@@ -10,18 +10,18 @@
 #import "FTRumResourceProtocol.h"
 NS_ASSUME_NONNULL_BEGIN
 
-/// 处理用户自定义处理 HTTP Resource 数据的协议
+/// Protocol for handling user-defined HTTP Resource data processing
 @protocol FTExternalResourceProtocol <NSObject,FTRumResourceProtocol>
-/// 获取 trace 需要添加的请求头
+/// Get request headers needed for trace
 /// - Parameters:
-///   - key: 请求标识
-///   - url: 请求 URL
+///   - key: Request identifier
+///   - url: Request URL
 - (nullable NSDictionary *)getTraceHeaderWithUrl:(NSURL *)url;
 
-/// 获取 trace 需要添加的请求头
+/// Get request headers needed for trace
 /// - Parameters:
-///   - key: 请求标识
-///   - url: 请求 URL
+///   - key: Request identifier
+///   - url: Request URL
 - (nullable NSDictionary *)getTraceHeaderWithKey:(NSString *)key url:(NSURL *)url;
 
 @end

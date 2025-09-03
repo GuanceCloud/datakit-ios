@@ -21,11 +21,11 @@
     zStream.zalloc = Z_NULL;
     zStream.zfree = Z_NULL;
     zStream.opaque = Z_NULL;
-    // 剩余的需要压缩字指针
+    // Remaining bytes to be compressed pointer
     zStream.next_in = (Bytef *) data.bytes;
-    // 剩余的需要压缩字节数
+    // Remaining bytes to be compressed count
     zStream.avail_in = (uInt) data.length;
-    // 目前已经输出的字节数
+    // Currently output bytes count
     zStream.total_out = 0;
     OSStatus status = deflateInit(&zStream,level);
     
@@ -80,10 +80,10 @@
         return nil;
     }
     
-    // 创建并返回压缩后的NSData对象
+    // Create and return compressed NSData object
     NSData *compressedData = [NSData dataWithBytes:buffer length:compressedSize];
     
-    // 释放临时分配的内存
+    // Free temporarily allocated memory
     free(buffer);
     return compressedData;
 }
@@ -94,10 +94,10 @@
   
     const Bytef *bytes = (const Bytef *)[data bytes];
     uInt len = (uInt)[data length];
-    uLong adler = adler32(1, Z_NULL, 0); // 初始化Adler-32为1
-    adler = adler32(adler, bytes, len); // 计算校验和
+    uLong adler = adler32(1, Z_NULL, 0); // Initialize Adler-32 to 1
+    adler = adler32(adler, bytes, len); // Calculate checksum
   
-    // 将uLong（通常是uint32_t）转换为NSData
+    // Convert uLong (usually uint32_t) to NSData
     UInt32 checksum = (UInt32)adler;
     NSData *checksumData = [NSData dataWithBytes:&checksum length:sizeof(checksum)];
   
