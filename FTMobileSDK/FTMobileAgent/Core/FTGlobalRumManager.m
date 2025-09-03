@@ -138,7 +138,7 @@ static NSObject *sharedInstanceLock;
         FTInnerLogError(@"%@ error: %@", self, exception);
     }
 }
-- (NSString *)getLastViewID{
+- (NSString *)getLastHasReplayViewID{
     return self.rumManager.viewReferrerId;
 }
 #endif

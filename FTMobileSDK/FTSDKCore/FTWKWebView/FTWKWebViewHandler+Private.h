@@ -11,9 +11,8 @@
 NS_ASSUME_NONNULL_BEGIN
 /// webView add web-side rum data
 @protocol FTWKWebViewRumDelegate <NSObject>
-@optional
-- (void)dealReceiveScriptMessage:(id )message slotId:(int64_t)slotID viewId:(NSString *)viewId;
-- (NSString *)getLastViewID;
+- (void)dealReceiveScriptMessage:(id )message slotId:(int64_t)slotID viewId:(nullable NSString *)viewId;
+- (nullable NSString *)getLastHasReplayViewID;
 @end
 @interface FTWKWebViewHandler ()
 - (void)startWithEnableTraceWebView:(BOOL)enable allowWebViewHost:(nullable NSArray *)hosts rumDelegate:(id<FTWKWebViewRumDelegate>)delegate;

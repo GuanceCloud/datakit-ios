@@ -116,7 +116,7 @@ void *FTRUMQueueIdentityKey = &FTRUMQueueIdentityKey;
         return;
     }
     self.viewReferrer = viewName;
-    self.viewReferrerId = viewId;
+    self.viewReferrerId = self.rumDependencies.sessionHasReplay? viewId:nil;
     [self.preViewDuration concurrentRead:^(NSMutableDictionary * _Nonnull value) {
         if ([value.allKeys containsObject:viewName]) {
             duration = value[viewName];

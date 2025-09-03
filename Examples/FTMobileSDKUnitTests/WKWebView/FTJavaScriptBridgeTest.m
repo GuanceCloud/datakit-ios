@@ -388,4 +388,7 @@
     [self.loadExpect fulfill];
     self.loadExpect = nil;
 }
+-(NSString *)getLastHasReplayViewID{
+    return nil;
+}
 @end

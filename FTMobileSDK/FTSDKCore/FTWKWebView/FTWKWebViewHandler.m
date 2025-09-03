@@ -144,20 +144,13 @@ static NSObject *sharedInstanceLock;
             FTInnerLogDebug(@"WebView(%@) already add JSBridge.",webView);
             return;
         }
-        __block FTWKWebViewJavascriptBridge *bridge = [FTWKWebViewJavascriptBridge bridgeForWebView:webView allowWebViewHostsString:hostsString];
+        FTWKWebViewJavascriptBridge *bridge = [FTWKWebViewJavascriptBridge bridgeForWebView:webView allowWebViewHostsString:hostsString];
+        bridge.viewID = self.rumTrackDelegate ? [self.rumTrackDelegate getLastHasReplayViewID] : nil;
         __weak typeof(self) weakSelf = self;
         [bridge registerHandler:@"sendEvent" handler:^(id data, int64_t slotId,WVJBResponseCallback responseCallback) {
             __strong __typeof(weakSelf) strongSelf = weakSelf;
-            if (!strongSelf) {
-                return;
-            }
-            id<FTWKWebViewRumDelegate> delegate = strongSelf.rumTrackDelegate;
-            if (delegate && [delegate respondsToSelector:@selector(dealReceiveScriptMessage:slotId:viewId:)]){
-                if (!bridge.viewID) {
-                    bridge.viewID = [strongSelf.rumTrackDelegate getLastViewID];
-                }
-                [delegate dealReceiveScriptMessage:data slotId:slotId viewId:bridge.viewID];
-            }
+            if (!strongSelf || !strongSelf.rumTrackDelegate) return;
+            [strongSelf.rumTrackDelegate dealReceiveScriptMessage:data slotId:slotId viewId:bridge.viewID];
         }];
         [self addWebView:webView bridge:bridge];
     }
