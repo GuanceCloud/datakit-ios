@@ -12,7 +12,6 @@
 NS_ASSUME_NONNULL_BEGIN
 @protocol FTSRWebTrackingProtocol <NSObject>
 - (NSString *)getSessionReplayPrivacyLevel;
-- (NSArray *)getAllowedWebViewHosts;
 @end
 
 NS_ASSUME_NONNULL_END

@@ -218,9 +218,6 @@
     }
     return @"mask";
 }
--(NSArray *)getAllowedWebViewHosts{
-    return @[];
-}
 
 -(void)dealloc{
     if(self.timer){
