@@ -1,3 +1,6 @@
+# 1.6.2-alpha.4
+1. Fix the memory crash issue caused by incorrect use of the assign modifier for NSNumber properties
+---
 # 1.6.2-alpha.3
 1. Expose public interfaces for React Native session replay functionality
 2. Same as 1.5.18
