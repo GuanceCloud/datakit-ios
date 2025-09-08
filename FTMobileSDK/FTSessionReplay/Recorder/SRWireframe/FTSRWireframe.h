@@ -34,10 +34,10 @@ NS_ASSUME_NONNULL_BEGIN
 @end
 
 @interface FTPadding : FTSRBaseFrame
-@property (nonatomic, assign) NSNumber *bottom;
-@property (nonatomic, assign) NSNumber *left;
-@property (nonatomic, assign) NSNumber *right;
-@property (nonatomic, assign) NSNumber *top;
+@property (nonatomic, strong) NSNumber *bottom;
+@property (nonatomic, strong) NSNumber *left;
+@property (nonatomic, strong) NSNumber *right;
+@property (nonatomic, strong) NSNumber *top;
 -(instancetype)initWithLeft:(float)left top:(float)top right:(float)right bottom:(float)bottom;
 @end
 @interface FTAlignment : FTSRBaseFrame
