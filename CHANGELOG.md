@@ -1,3 +1,6 @@
+# 1.6.2-alpha.5
+1. WebView Session Replay support
+---
 # 1.6.2-alpha.4
 1. Fix the memory crash issue caused by incorrect use of the assign modifier for NSNumber properties
 ---
