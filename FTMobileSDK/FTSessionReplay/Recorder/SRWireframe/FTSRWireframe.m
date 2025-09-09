@@ -156,7 +156,11 @@ BOOL objectIsEqual(id new,id old){
     return [self isEqualToPadding:object];
 }
 -(BOOL)isEqualToPadding:(FTPadding *)object{
-    return  self.left == object.left && self.right == object.right && self.top == object.top  && self.bottom == object.bottom;
+    BOOL haveEqualLeft = objectIsEqual(self.left,object.left);
+    BOOL haveEqualTop = objectIsEqual(self.top,object.top);
+    BOOL haveEqualRight = objectIsEqual(self.right,object.right);
+    BOOL haveEqualBottom = objectIsEqual(self.bottom,object.bottom);
+    return haveEqualLeft && haveEqualTop && haveEqualRight && haveEqualBottom;
 }
 @end
 @implementation FTAlignment
