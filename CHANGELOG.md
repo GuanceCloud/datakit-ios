@@ -1,3 +1,6 @@
+# 1.6.2-alpha.6
+1. Fix the equality comparison logic of FTPadding
+---
 # 1.6.2-alpha.4
 1. Fix the memory crash issue caused by incorrect use of the assign modifier for NSNumber properties
 ---
