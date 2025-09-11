@@ -283,6 +283,15 @@ BOOL isNull(id value)
 +(BOOL)supportsSecureCoding{
     return YES;
 }
+- (BOOL)isEqual:(id)object {
+    if (self == object) return YES;
+    if (![object isKindOfClass:[self class]]) return NO;
+    return [self isEqualToBaseFrame:(FTSRBaseFrame *)object];
+}
+// Subclasses must override.
+- (BOOL)isEqualToBaseFrame:(FTSRBaseFrame *)baseFrame {
+    return NO;
+}
 @end
 
 @implementation FTSRBaseFrameProperty

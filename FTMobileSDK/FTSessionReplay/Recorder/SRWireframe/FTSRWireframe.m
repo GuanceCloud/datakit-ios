@@ -15,24 +15,21 @@
 NSString * const FT_DEFAULT_COLOR = @"#FF0000FF";
 CGFloat  const FT_DEFAULT_FONT_SIZE = 10;
 NSString * const FT_DEFAULT_FONT_FAMILY = @"-apple-system, BlinkMacSystemFont, 'Roboto', sans-serif";
-FTSRContentClip * useNewIfDifferentThanOld(FTSRContentClip *new,FTSRContentClip *old){
-    if(old == nil){
-        return new;
-    }else if([old isEqual:new]){
-        return nil;
-    }else{
-        FTSRContentClip *clip = [[FTSRContentClip alloc]init];
-        clip.top = new.top==nil&&old.top?0:new.top;
-        clip.bottom = new.bottom==nil&&old.bottom?0:new.bottom;
-        clip.left = new.left==nil&&old.left?0:new.left;
-        clip.right = new.right==nil&&old.right?0:new.right;
-        return clip;
-    }
+static FTSRContentClip * useNewClipIfDifferentThanOld(FTSRContentClip *new,FTSRContentClip *old){
+    if (!old) return new;
+    if ([old isEqual:new]) return nil;
+    
+    FTSRContentClip *clip = [[FTSRContentClip alloc]init];
+    clip.top = (new.top == nil && old.top != nil) ? @(0) : new.top;
+    clip.bottom = (new.bottom == nil && old.bottom != nil) ? @(0) : new.bottom;
+    clip.left = (new.left == nil && old.left != nil) ? @(0) : new.left;
+    clip.right = (new.right == nil && old.right != nil) ? @(0) : new.right;
+    return clip;
 }
-id useNewObjectIfDifferentThanOld(id new, id old){
+static id useNewObjectIfDifferentThanOld(id new, id old){
     return [new isEqual:old] ? nil : new;
 }
-BOOL objectIsEqual(id new,id old){
+static BOOL objectIsEqual(id new,id old){
     return (new == nil && old == nil) || [new isEqual:old];
 }
 @implementation FTSRShapeBorder
@@ -47,16 +44,8 @@ BOOL objectIsEqual(id new,id old){
     }
     return self;
 }
--(BOOL)isEqual:(id)object{
-    if(self == object){
-        return YES;
-    }
-    if (![object isKindOfClass:self.class]){
-        return NO;
-    }
-    return [self isEqualToShapeBorder:object];
-}
--(BOOL)isEqualToShapeBorder:(FTSRShapeBorder *)object{
+- (BOOL)isEqualToBaseFrame:(FTSRBaseFrame *)baseFrame {
+    FTSRShapeBorder *object = (FTSRShapeBorder *)baseFrame;
     BOOL haveEqualColor = objectIsEqual(self.color,object.color);
     return  self.width == object.width && haveEqualColor;
 }
@@ -87,16 +76,8 @@ BOOL objectIsEqual(id new,id old){
     }
     return self;
 }
--(BOOL)isEqual:(id)object{
-    if(self == object){
-        return YES;
-    }
-    if (![object isKindOfClass:self.class]){
-        return NO;
-    }
-    return [self isEqualToContentClip:object];
-}
--(BOOL)isEqualToContentClip:(FTSRContentClip *)object{
+- (BOOL)isEqualToBaseFrame:(FTSRBaseFrame *)baseFrame {
+    FTSRContentClip *object = (FTSRContentClip *)baseFrame;
     BOOL haveEqualLeft = objectIsEqual(self.left,object.left);
     BOOL haveEqualTop = objectIsEqual(self.top,object.top);
     BOOL haveEqualRight = objectIsEqual(self.right,object.right);
@@ -118,16 +99,8 @@ BOOL objectIsEqual(id new,id old){
     }
     return self;
 }
--(BOOL)isEqual:(id)object{
-    if(self == object){
-        return YES;
-    }
-    if (![object isKindOfClass:self.class]){
-        return NO;
-    }
-    return [self isEqualToShapeStyle:object];
-}
--(BOOL)isEqualToShapeStyle:(FTSRShapeStyle *)object{
+- (BOOL)isEqualToBaseFrame:(FTSRBaseFrame *)baseFrame {
+    FTSRShapeStyle *object = (FTSRShapeStyle *)baseFrame;
     BOOL haveEqualColor = objectIsEqual(self.backgroundColor,object.backgroundColor);
     BOOL haveEqualCornerRadius = objectIsEqual(self.cornerRadius,object.cornerRadius);
     BOOL haveEqualOpacity = objectIsEqual(self.opacity,object.opacity);
@@ -146,16 +119,8 @@ BOOL objectIsEqual(id new,id old){
     }
     return self;
 }
--(BOOL)isEqual:(id)object{
-    if(self == object){
-        return YES;
-    }
-    if (![object isKindOfClass:self.class]){
-        return NO;
-    }
-    return [self isEqualToPadding:object];
-}
--(BOOL)isEqualToPadding:(FTPadding *)object{
+- (BOOL)isEqualToBaseFrame:(FTSRBaseFrame *)baseFrame {
+    FTPadding *object = (FTPadding *)baseFrame;
     BOOL haveEqualLeft = objectIsEqual(self.left,object.left);
     BOOL haveEqualTop = objectIsEqual(self.top,object.top);
     BOOL haveEqualRight = objectIsEqual(self.right,object.right);
@@ -188,32 +153,16 @@ BOOL objectIsEqual(id new,id old){
     }
     return self;
 }
--(BOOL)isEqual:(id)object{
-    if(self == object){
-        return YES;
-    }
-    if (![object isKindOfClass:self.class]){
-        return NO;
-    }
-    return [self isEqualToAlignment:object];
-}
--(BOOL)isEqualToAlignment:(FTAlignment *)object{
+- (BOOL)isEqualToBaseFrame:(FTSRBaseFrame *)baseFrame {
+    FTAlignment *object = (FTAlignment *)baseFrame;
     BOOL haveEqualVertical = objectIsEqual(self.vertical,object.vertical);
     BOOL haveEqualHorizontal = objectIsEqual(self.horizontal,object.horizontal);
     return  haveEqualVertical &&  haveEqualHorizontal;
 }
 @end
 @implementation FTSRTextPosition
--(BOOL)isEqual:(id)object{
-    if(self == object){
-        return YES;
-    }
-    if (![object isKindOfClass:self.class]){
-        return NO;
-    }
-    return [self isEqualToTextPosition:object];
-}
--(BOOL)isEqualToTextPosition:(FTSRTextPosition *)object{
+- (BOOL)isEqualToBaseFrame:(FTSRBaseFrame *)baseFrame {
+    FTSRTextPosition *object = (FTSRTextPosition *)baseFrame;
     BOOL haveEqualAlignment = objectIsEqual(self.alignment,object.alignment);
     BOOL haveEqualPadding = objectIsEqual(self.padding,object.padding);
     return  haveEqualAlignment && haveEqualPadding;
@@ -229,16 +178,8 @@ BOOL objectIsEqual(id new,id old){
     }
     return self;
 }
--(BOOL)isEqual:(id)object{
-    if(self == object){
-        return YES;
-    }
-    if (![object isKindOfClass:self.class]){
-        return NO;
-    }
-    return [self isEqualToTextStyle:object];
-}
--(BOOL)isEqualToTextStyle:(FTSRTextStyle *)object{
+- (BOOL)isEqualToBaseFrame:(FTSRBaseFrame *)baseFrame {
+    FTSRTextStyle *object = (FTSRTextStyle *)baseFrame;
     BOOL haveEqualColor = objectIsEqual(self.color,object.color);
     BOOL haveEqualFamily = objectIsEqual(self.family,object.family);
     return  haveEqualColor && haveEqualFamily && self.size == object.size;
@@ -259,10 +200,9 @@ BOOL objectIsEqual(id new,id old){
     return self;
 }
 -(FTSRWireframe *)compareWithNewWireFrame:(FTSRWireframe *)newWireFrame error:(NSError *__autoreleasing  _Nullable * _Nullable)error{
-    if ([self isEqual:newWireFrame]){
-        return nil;
-    }
-    if(![newWireFrame.type isEqualToString:self.type]){
+    if ([self isEqual:newWireFrame]) return nil;
+    
+    if(![newWireFrame isKindOfClass:[self class]] || ![newWireFrame.type isEqualToString:self.type]){
         NSString *failureReason =
         [NSString stringWithFormat:@"FTSRWireframe validation errors: %@ is not Equal to %@",
          self.type,newWireFrame.type];
@@ -272,14 +212,15 @@ BOOL objectIsEqual(id new,id old){
         return nil;
     }
     //Use new clip when old clip doesn't exist
-    self.clip = useNewIfDifferentThanOld(newWireFrame.clip, self.clip);
+    self.clip = useNewClipIfDifferentThanOld(newWireFrame.clip, self.clip);
     self.width = useNewObjectIfDifferentThanOld(newWireFrame.width,self.width);
     self.height = useNewObjectIfDifferentThanOld(newWireFrame.height,self.height);
     self.x = useNewObjectIfDifferentThanOld(newWireFrame.x,self.x);
     self.y = useNewObjectIfDifferentThanOld(newWireFrame.y,self.y);
     return self;
 }
--(BOOL)isEqualToSRWireframe:(FTSRWireframe *)object{
+- (BOOL)isEqualToBaseFrame:(FTSRBaseFrame *)baseFrame {
+    FTSRWireframe *object = (FTSRWireframe *)baseFrame;
     BOOL haveEqualClip = objectIsEqual(self.clip,object.clip);
     BOOL haveEqualWidth= objectIsEqual(self.width,object.width);
     BOOL haveEqualHeight= objectIsEqual(self.height,object.height);
@@ -287,21 +228,13 @@ BOOL objectIsEqual(id new,id old){
     BOOL haveEqualY = objectIsEqual(self.y,object.y);
     return haveEqualClip && haveEqualWidth && haveEqualHeight && haveEqualX && haveEqualY && self.identifier == object.identifier;
 }
--(BOOL)isEqual:(id)object{
-    if(self == object){
-        return YES;
-    }
-    if (![object isKindOfClass:self.class]){
-        return NO;
-    }
-    return [self isEqualToSRWireframe:object];
-}
 +(FTJSONKeyMapper *)keyMapper{
     FTJSONKeyMapper *keyMapper = [[FTJSONKeyMapper alloc]initWithModelToJSONDictionary:@{
         @"identifier":@"id",
     }];
     return keyMapper;
 }
+
 @end
 @implementation FTSRShapeWireframe
 -(instancetype)init{
@@ -341,35 +274,22 @@ BOOL objectIsEqual(id new,id old){
     return self;
 }
 -(FTSRWireframe *)compareWithNewWireFrame:(FTSRWireframe *)newWireFrame error:(NSError *__autoreleasing  _Nullable * _Nullable)error{
-    if ([self isEqual:newWireFrame]){
+    FTSRWireframe *baseWire = [super compareWithNewWireFrame:newWireFrame error:error];
+    if(!baseWire || *error){
         return nil;
     }
-    FTSRWireframe *wire = [super compareWithNewWireFrame:newWireFrame error:error];
-    if(*error){
-        return nil;
-    }
-    FTSRShapeWireframe *snapWireframe = (FTSRShapeWireframe *)wire;
+    FTSRShapeWireframe *snapWireframe = (FTSRShapeWireframe *)baseWire;
     FTSRShapeWireframe *newWire = (FTSRShapeWireframe *)newWireFrame;
     snapWireframe.border = useNewObjectIfDifferentThanOld(newWire.border,self.border);
     snapWireframe.shapeStyle = useNewObjectIfDifferentThanOld(newWire.shapeStyle,self.shapeStyle);
     return snapWireframe;
 }
--(BOOL)isEqualToShapeWireframe:(FTSRShapeWireframe *)object{
-    if(!object){
-        return NO;
-    }
+- (BOOL)isEqualToBaseFrame:(FTSRBaseFrame *)baseFrame {
+    if (![super isEqualToBaseFrame:baseFrame]) return NO;
+    FTSRShapeWireframe *object = (FTSRShapeWireframe *)baseFrame;
     BOOL isBorderEqual = objectIsEqual(self.border,object.border);
     BOOL isShapeStyleEqual = objectIsEqual(self.shapeStyle,object.shapeStyle);
-    return isBorderEqual && isShapeStyleEqual && [super isEqual:object];
-}
--(BOOL)isEqual:(id)object{
-    if(self == object){
-        return YES;
-    }
-    if (![object isKindOfClass:self.class]){
-        return NO;
-    }
-    return [self isEqualToShapeWireframe:object];
+    return isBorderEqual && isShapeStyleEqual;
 }
 @end
 @implementation FTSRTextWireframe
@@ -388,14 +308,11 @@ BOOL objectIsEqual(id new,id old){
     return self;
 }
 -(FTSRWireframe *)compareWithNewWireFrame:(FTSRWireframe *)newWireFrame error:(NSError *__autoreleasing  _Nullable * _Nullable)error{
-    if ([self isEqual:newWireFrame]){
+    FTSRWireframe *baseWire = [super compareWithNewWireFrame:newWireFrame error:error];
+    if(!baseWire || *error){
         return nil;
     }
-    FTSRWireframe *wire = [super compareWithNewWireFrame:newWireFrame error:error];
-    if(*error){
-        return nil;
-    }
-    FTSRTextWireframe *textWireframe = (FTSRTextWireframe *)wire;
+    FTSRTextWireframe *textWireframe = (FTSRTextWireframe *)baseWire;
     FTSRTextWireframe *newWire = (FTSRTextWireframe *)newWireFrame;
     textWireframe.text = useNewObjectIfDifferentThanOld(newWire.text,self.text);
     textWireframe.textPosition = useNewObjectIfDifferentThanOld(newWire.textPosition,self.textPosition);
@@ -404,25 +321,15 @@ BOOL objectIsEqual(id new,id old){
     textWireframe.shapeStyle = useNewObjectIfDifferentThanOld(newWire.shapeStyle,self.shapeStyle);
     return textWireframe;
 }
--(BOOL)isEqualToTextWireframe:(FTSRTextWireframe *)object{
-    if(!object){
-        return NO;
-    }
+- (BOOL)isEqualToBaseFrame:(FTSRBaseFrame *)baseFrame{
+    if (![super isEqualToBaseFrame:baseFrame]) return NO;
+    FTSRTextWireframe *object = (FTSRTextWireframe *)baseFrame;
     BOOL isTextEqual = objectIsEqual(self.text,object.text);
     BOOL isBorderEqual = objectIsEqual(self.border,object.border);
     BOOL isShapeStyleEqual = objectIsEqual(self.shapeStyle,object.shapeStyle);
     BOOL isTextPositionEqual = objectIsEqual(self.textPosition,object.textPosition);
     BOOL isTextStyleEqual = objectIsEqual(self.textStyle,object.textStyle);
-    return isTextEqual && isBorderEqual && isShapeStyleEqual && isTextPositionEqual && isTextStyleEqual && [super isEqual:object];
-}
--(BOOL)isEqual:(id)object{
-    if(self == object){
-        return YES;
-    }
-    if (![object isKindOfClass:self.class]){
-        return NO;
-    }
-    return [self isEqualToTextWireframe:object];
+    return isTextEqual && isBorderEqual && isShapeStyleEqual && isTextPositionEqual && isTextStyleEqual;
 }
 @end
 @implementation FTSRImageWireframe
@@ -440,14 +347,11 @@ BOOL objectIsEqual(id new,id old){
     return self;
 }
 -(FTSRWireframe *)compareWithNewWireFrame:(FTSRWireframe *)newWireFrame error:(NSError *__autoreleasing  _Nullable * _Nullable)error{
-    if ([self isEqual:newWireFrame]){
+    FTSRWireframe *baseWire = [super compareWithNewWireFrame:newWireFrame error:error];
+    if(!baseWire || *error){
         return nil;
     }
-    FTSRWireframe *wire = [super compareWithNewWireFrame:newWireFrame error:error];
-    if(*error){
-        return nil;
-    }
-    FTSRImageWireframe *imageWireframe = (FTSRImageWireframe *)wire;
+    FTSRImageWireframe *imageWireframe = (FTSRImageWireframe *)baseWire;
     FTSRImageWireframe *newWire = (FTSRImageWireframe *)newWireFrame;
     imageWireframe.mimeType = useNewObjectIfDifferentThanOld(newWire.mimeType,self.mimeType);
     imageWireframe.resourceId = useNewObjectIfDifferentThanOld(newWire.resourceId,self.resourceId);
@@ -455,24 +359,14 @@ BOOL objectIsEqual(id new,id old){
     imageWireframe.shapeStyle = useNewObjectIfDifferentThanOld(newWire.shapeStyle,self.shapeStyle);
     return imageWireframe;
 }
--(BOOL)isEqualToImageWireframe:(FTSRImageWireframe *)object{
-    if(!object){
-        return NO;
-    }
+- (BOOL)isEqualToBaseFrame:(FTSRBaseFrame *)baseFrame{
+    if (![super isEqualToBaseFrame:baseFrame]) return NO;
+    FTSRImageWireframe *object = (FTSRImageWireframe *)baseFrame;
     BOOL isMimeTypeEqual = objectIsEqual(self.mimeType,object.mimeType);
     BOOL isResourceIdEqual = objectIsEqual(self.resourceId,object.resourceId);
     BOOL isBorderEqual = objectIsEqual(self.border,object.border);
     BOOL isShapeStyleEqual = objectIsEqual(self.shapeStyle,object.shapeStyle);
-    return isMimeTypeEqual && isResourceIdEqual && isBorderEqual && isShapeStyleEqual && [super isEqual:object];
-}
--(BOOL)isEqual:(id)object{
-    if(self == object){
-        return YES;
-    }
-    if (![object isKindOfClass:self.class]){
-        return NO;
-    }
-    return [self isEqualToImageWireframe:object];
+    return isMimeTypeEqual && isResourceIdEqual && isBorderEqual && isShapeStyleEqual;
 }
 @end
 @implementation FTSRPlaceholderWireframe
@@ -495,32 +389,19 @@ BOOL objectIsEqual(id new,id old){
     return self;
 }
 -(FTSRWireframe *)compareWithNewWireFrame:(FTSRWireframe *)newWireFrame error:(NSError *__autoreleasing  _Nullable * _Nullable)error{
-    if ([self isEqual:newWireFrame]){
+    FTSRWireframe *baseWire = [super compareWithNewWireFrame:newWireFrame error:error];
+    if(!baseWire || *error){
         return nil;
     }
-    FTSRWireframe *wire = [super compareWithNewWireFrame:newWireFrame error:error];
-    if(*error){
-        return nil;
-    }
-    FTSRPlaceholderWireframe *placeholder = (FTSRPlaceholderWireframe *)wire;
+    FTSRPlaceholderWireframe *placeholder = (FTSRPlaceholderWireframe *)baseWire;
     FTSRPlaceholderWireframe *newWire = (FTSRPlaceholderWireframe *)newWireFrame;
     placeholder.label = useNewObjectIfDifferentThanOld(newWire.label,self.label);
     return placeholder;
 }
--(BOOL)isEqualToPlaceholderWireframe:(FTSRPlaceholderWireframe *)object{
-    if(!object){
-        return NO;
-    }
+- (BOOL)isEqualToBaseFrame:(FTSRBaseFrame *)baseFrame{
+    if (![super isEqualToBaseFrame:baseFrame]) return NO;
+    FTSRPlaceholderWireframe *object = (FTSRPlaceholderWireframe *)baseFrame;
     BOOL isLabelEqual = objectIsEqual(self.label,object.label);
-    return isLabelEqual && [super isEqual:object];
-}
--(BOOL)isEqual:(id)object{
-    if(self == object){
-        return YES;
-    }
-    if (![object isKindOfClass:self.class]){
-        return NO;
-    }
-    return [self isEqualToPlaceholderWireframe:object];
+    return isLabelEqual;
 }
 @end
