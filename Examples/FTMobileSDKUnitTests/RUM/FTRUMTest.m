@@ -1041,20 +1041,29 @@
     }];
     XCTAssertTrue(hasErrorData);
 }
+
 - (void)testAddErrorSituation{
     [self setRumConfig];
+    [FTModelHelper startView];
     [[FTExternalDataManager sharedManager] addErrorWithType:@"test" state:FTAppStateUnknown message:@"message" stack:@"stack" property:nil];
+    [FTModelHelper addActionWithContext:@{@"test":@"error"}];
     [[FTGlobalRumManager sharedInstance].rumManager syncProcess];
     NSArray *newArray = [[FTTrackerEventDBTool sharedManger] getFirstRecords:100 withType:FT_DATA_TYPE_RUM];
-    __block BOOL hasErrorData = NO;
+    __block BOOL hasErrorData = NO,hasActionData = NO;
     [FTModelHelper resolveModelArray:newArray callBack:^(NSString * _Nonnull source, NSDictionary * _Nonnull tags, NSDictionary * _Nonnull fields, BOOL * _Nonnull stop) {
         if ([source isEqualToString:FT_RUM_SOURCE_ERROR]) {
             XCTAssertTrue([tags[FT_KEY_ERROR_SITUATION] isEqualToString:@"unknown"]);
             hasErrorData = YES;
-            *stop = YES;
+        }else if ([source isEqualToString:FT_RUM_SOURCE_ACTION]){
+            if ([fields.allKeys containsObject:@"test"]) {
+                XCTAssertTrue([tags.allKeys containsObject:FT_KEY_VIEW_ID]);
+                hasActionData = YES;
+            }
         }
     }];
     XCTAssertTrue(hasErrorData);
+    XCTAssertTrue(hasActionData);
+
 }
 - (void)testWrongFormatErrorData{
     [self setRumConfig];
