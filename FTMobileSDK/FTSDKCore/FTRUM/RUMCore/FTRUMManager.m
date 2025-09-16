@@ -115,8 +115,6 @@ void *FTRUMQueueIdentityKey = &FTRUMQueueIdentityKey;
         FTInnerLogError(@"[RUM] Failed to start view due to missing required fields. Please ensure 'viewName' are provided.");
         return;
     }
-    self.viewReferrer = viewName;
-    self.viewReferrerId = self.rumDependencies.sessionHasReplay? viewId:nil;
     [self.preViewDuration concurrentRead:^(NSMutableDictionary * _Nonnull value) {
         if ([value.allKeys containsObject:viewName]) {
             duration = value[viewName];
@@ -134,6 +132,8 @@ void *FTRUMQueueIdentityKey = &FTRUMQueueIdentityKey;
             viewModel.type = FTRUMDataViewStart;
             viewModel.fields = property;
             [self process:viewModel context:context];
+            self.viewReferrer = viewName;
+            self.viewReferrerId = self.rumDependencies.sessionHasReplay? viewId:nil;
         } @catch (NSException *exception) {
             FTInnerLogError(@"exception %@",exception);
         }
