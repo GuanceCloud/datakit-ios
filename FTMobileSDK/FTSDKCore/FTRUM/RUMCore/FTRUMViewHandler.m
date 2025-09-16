@@ -52,7 +52,7 @@
         self.resourceHandlers = [NSMutableDictionary new];
         self.viewProperty = [NSMutableDictionary new];
         self.rumDependencies = rumDependencies;
-        self.sessionHasReplay = rumDependencies.sessionHasReplay?rumDependencies.sessionHasReplay.boolValue:NO;
+        self.sessionHasReplay = [rumDependencies.sessionHasReplay boolValue];
         if(model.fields && model.fields.allKeys.count>0){
             [self.viewProperty addEntriesFromDictionary:model.fields];
         }

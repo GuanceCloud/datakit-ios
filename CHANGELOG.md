@@ -1,3 +1,7 @@
+# 1.6.2-alpha.6
+1. Fix the equality comparison logic of FTPadding
+2. same as 1.6.2-alpha.4
+---
 # 1.6.2-alpha.5
 1. WebView Session Replay support
 ---
