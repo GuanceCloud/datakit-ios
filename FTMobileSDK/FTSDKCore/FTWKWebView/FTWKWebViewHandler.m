@@ -145,12 +145,15 @@ static NSObject *sharedInstanceLock;
             return;
         }
         FTWKWebViewJavascriptBridge *bridge = [FTWKWebViewJavascriptBridge bridgeForWebView:webView allowWebViewHostsString:hostsString];
-        bridge.viewID = self.rumTrackDelegate ? [self.rumTrackDelegate getLastHasReplayViewID] : nil;
+        __block NSString *viewID = self.rumTrackDelegate ? [self.rumTrackDelegate getLastHasReplayViewID] : nil;
         __weak typeof(self) weakSelf = self;
         [bridge registerHandler:@"sendEvent" handler:^(id data, int64_t slotId,WVJBResponseCallback responseCallback) {
             __strong __typeof(weakSelf) strongSelf = weakSelf;
             if (!strongSelf || !strongSelf.rumTrackDelegate) return;
-            [strongSelf.rumTrackDelegate dealReceiveScriptMessage:data slotId:slotId viewId:bridge.viewID];
+            if (!viewID) {
+                viewID = strongSelf.rumTrackDelegate ? [strongSelf.rumTrackDelegate getLastHasReplayViewID] : nil;
+            }
+            [strongSelf.rumTrackDelegate dealReceiveScriptMessage:data slotId:slotId viewId:viewID];
         }];
         [self addWebView:webView bridge:bridge];
     }

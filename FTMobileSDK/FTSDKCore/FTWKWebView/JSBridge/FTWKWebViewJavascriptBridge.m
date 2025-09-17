@@ -63,7 +63,7 @@ NSString *const kFTJsCodePrefix = @"/* FTWebViewJavascriptBridge */";
     }
     NSString * body = (NSString * )message.body;
     if (body && [body isKindOfClass:[NSString class]]){
-        [_base flushMessageQueue:body slotId:_webView.hash];
+        [_base flushMessageQueue:body slotId:message.webView.hash];
     }
 }
 - (void)_injectJavascriptFile:(NSString *)allowWebViewHost {
