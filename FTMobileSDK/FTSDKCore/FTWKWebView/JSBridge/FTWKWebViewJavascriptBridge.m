@@ -54,6 +54,7 @@ NSString *const kFTJsCodePrefix = @"/* FTWebViewJavascriptBridge */";
     _webView = webView;
     _base = [[FTWebViewJavascriptBridgeBase alloc] init];
     _base.delegate = self;
+    [self removeScriptMessageHandler];
     [self addScriptMessageHandler];
     [self _injectJavascriptFile:hostsString];
 }
