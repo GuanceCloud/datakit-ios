@@ -1,6 +1,12 @@
+# 1.6.2-alpha.7
+1. Fix the viewReferrer assignment error
+2. Fix WebView memory leaks and viewId binding failures
+3. Fix the repeated addition of webView Script Messages
+4. Same as 1.6.2-alpha.5、same as 1.6.2-alpha.6
+---
 # 1.6.2-alpha.6
 1. Fix the equality comparison logic of FTPadding
-2. same as 1.6.2-alpha.4
+2. Same as 1.6.2-alpha.4
 ---
 # 1.6.2-alpha.5
 1. WebView Session Replay support
