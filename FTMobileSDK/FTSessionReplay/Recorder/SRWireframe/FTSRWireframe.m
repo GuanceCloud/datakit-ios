@@ -432,9 +432,9 @@ static BOOL objectIsEqual(id new,id old){
     }
     FTSRWebViewWireframe *webView = (FTSRWebViewWireframe *)wire;
     FTSRWebViewWireframe *newWeb = (FTSRWebViewWireframe *)newWireFrame;
-    newWeb.border = useNewObjectIfDifferentThanOld(newWeb.border,self.border);
-    newWeb.shapeStyle = useNewObjectIfDifferentThanOld(newWeb.shapeStyle,self.shapeStyle);
-    return newWeb;
+    webView.border = useNewObjectIfDifferentThanOld(newWeb.border,self.border);
+    webView.shapeStyle = useNewObjectIfDifferentThanOld(newWeb.shapeStyle,self.shapeStyle);
+    return webView;
 }
 -(BOOL)isEqualToWebViewWireframe:(FTSRWebViewWireframe *)object{
     if(!object){
