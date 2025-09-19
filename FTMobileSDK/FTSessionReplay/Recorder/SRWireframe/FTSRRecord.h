@@ -79,7 +79,7 @@ NS_ASSUME_NONNULL_BEGIN
 -(instancetype)initWithContext:(FTSRContext*)context records:(NSArray<FTSRRecord>*)records;
 @end
 
-@interface FTEnrichedResource : FTSRBaseFrame
+@interface FTEnrichedResource : FTSRBaseFrame<NSCoding>
 @property (nonatomic, copy) NSString *identifier;
 @property (nonatomic, strong) NSData *data;
 @property (nonatomic, copy) NSString *type;

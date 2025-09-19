@@ -76,12 +76,12 @@ static dispatch_once_t onceToken;
     [self.stores setValue:srStore forKey:sessionReplayFeature.name];
     [self.features setValue:sessionReplayFeature forKey:sessionReplayFeature.name];
     
-    //    FTResourcesFeature *resourcesFeature = [[FTResourcesFeature alloc]init];
-    //    FTFeatureStores *resourceStore = [self registerFeature:resourcesFeature];
-    //    FTFeatureDataStore *resourceDataStore = [[FTFeatureDataStore alloc]initWithFeature:resourcesFeature.name queue:self.readWriteQueue directory:self.coreDirectory];
-    //    [self.stores setValue:resourceStore forKey:resourcesFeature.name];
-    //    [self.features setValue:resourcesFeature forKey:resourcesFeature.name];
-    [sessionReplayFeature startWithWriter:srStore.storage.writer cacheWriter:srStore.storage.cacheWriter resourceWriter:nil resourceDataStore:nil];
+    FTResourcesFeature *resourcesFeature = [[FTResourcesFeature alloc]init];
+    FTFeatureStores *resourceStore = [self registerFeature:resourcesFeature];
+    FTFeatureDataStore *resourceDataStore = [[FTFeatureDataStore alloc]initWithFeature:resourcesFeature.name queue:self.readWriteQueue directory:self.coreDirectory];
+    [self.stores setValue:resourceStore forKey:resourcesFeature.name];
+    [self.features setValue:resourcesFeature forKey:resourcesFeature.name];
+    [sessionReplayFeature startWithWriter:srStore.storage.writer cacheWriter:srStore.storage.cacheWriter resourceWriter:resourceStore.storage.writer resourceDataStore:resourceDataStore];
     FTInnerLogInfo(@"[session-replay] initialized success");
 }
 - (FTFeatureStores *)registerFeature:(id<FTRemoteFeature>)feature{

@@ -27,7 +27,7 @@
     return self;
 }
 -(NSString *)path{
-    return @"/v1/write/rum/replay";
+    return @"/v1/write/rum/replay_assets";
 }
 -(NSString *)contentType{
     return [[NSString alloc]initWithFormat:@"multipart/form-data; boundary=%@",[self.multipartFormBody boundary]];
@@ -53,7 +53,7 @@
     //Set request parameters
     
     for (FTEnrichedResource *resource in self.resources) {
-        [self.multipartFormBody addFormData:@"image" filename:resource.identifier data:resource.data mimeType:@"image/png"];
+        [self.multipartFormBody addFormData:@"files" filename:resource.identifier data:resource.data mimeType:@"application/octet-stream"];
     }
     
     NSDictionary *context = @{FT_APP_ID:self.resources[0].appId,
