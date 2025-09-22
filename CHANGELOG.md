@@ -1,3 +1,7 @@
+# 1.5.19-alpha.2
+1. Fix RUM data loss when using `-addErrorWithType:state:message:stack:property:` method add error
+2. Avoid re-registering script message handlers when collecting webView RUM data
+---
 # 1.5.19-alpha.1
 1. Fixed data loss when RUM view is missing
 ---
