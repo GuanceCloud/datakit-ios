@@ -38,7 +38,9 @@
 @end
 
 @implementation FTWKWebViewBuilder
-
+-(CGRect)wireframeRect{
+    return self.attributes.frame;
+}
 - (NSArray<FTSRWireframe *> *)buildWireframesWithBuilder:(FTSessionReplayWireframesBuilder *)builder{
     FTSRWebViewWireframe *wireframe = (FTSRWebViewWireframe *)[builder visibleWebViewWireframeWithID:self.slotID attributes:self.attributes];
     wireframe.isVisible = self.attributes.isVisible;

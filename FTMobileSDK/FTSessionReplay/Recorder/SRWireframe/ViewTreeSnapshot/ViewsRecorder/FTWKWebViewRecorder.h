@@ -16,7 +16,6 @@ NS_ASSUME_NONNULL_BEGIN
 @property (nonatomic, assign) int64_t wireframeID;
 @property (nonatomic, assign) int64_t slotID;
 @property (nonatomic, strong) FTViewAttributes *attributes;
-@property (nonatomic, assign) CGRect wireframeRect;
 @end
 
 @interface FTWKWebViewRecorder : NSObject<FTSRWireframesRecorder>
