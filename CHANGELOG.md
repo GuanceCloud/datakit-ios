@@ -1,3 +1,7 @@
+# 1.6.2-alpha.8
+1. Fix the webView invisibility in session replay due to missing wireframeRect accessor
+2. Fix the problem that webView session replay cannot collect local CSS
+---
 # 1.6.2-alpha.7
 1. Fix the viewReferrer assignment error
 2. Fix WebView memory leaks and viewId binding failures
