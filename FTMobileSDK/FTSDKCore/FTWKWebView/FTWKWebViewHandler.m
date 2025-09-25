@@ -141,9 +141,10 @@ static NSObject *sharedInstanceLock;
 - (void)_enableWebView:(WKWebView *)webView allowedWebViewHostsString:(NSString *)hostsString{
     @try {
         if ([self getWebViewBridge:webView]) {
-            FTInnerLogDebug(@"WebView(%@) already add JSBridge.",webView);
+            FTInnerLogDebug(@"WebView(%lld) already add JSBridge.",(uint64_t)webView.hash);
             return;
         }
+        FTInnerLogInfo(@"[WebView] webView(%lld) start bridge",(uint64_t)webView.hash);
         FTWKWebViewJavascriptBridge *bridge = [FTWKWebViewJavascriptBridge bridgeForWebView:webView allowWebViewHostsString:hostsString];
         __block NSString *viewID = self.rumTrackDelegate ? [self.rumTrackDelegate getLastHasReplayViewID] : nil;
         __weak typeof(self) weakSelf = self;
