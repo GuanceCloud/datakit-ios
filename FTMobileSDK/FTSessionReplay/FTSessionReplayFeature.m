@@ -42,6 +42,7 @@
 @property (nonatomic, strong) FTFeatureStorage *recordStorage;
 @property (nonatomic, strong) id<FTWriter> webViewWriter;
 @property (atomic, copy) NSString *lastViewID;
+@property (nonatomic, strong) NSMutableSet *needCheckSlots;
 @end
 @implementation FTSessionReplayFeature
 -(instancetype)initWithConfig:(FTSessionReplayConfig *)config{
@@ -61,6 +62,7 @@
         _touches = [[FTSessionReplayTouches alloc]initWithWindowObserver:_windowObserver];
         _config = [config copy];
         _shouldStart = NO;
+        _needCheckSlots = [NSMutableSet new];
         self.sampledForErrorReplay = NO;
         [[FTModuleManager sharedInstance] addMessageReceiver:self];
         [[FTModuleManager sharedInstance] registerService:NSProtocolFromString(@"FTSRWebTrackingProtocol") instance:self];
@@ -151,6 +153,7 @@
                     }
                     NSMutableDictionary *newEvent = [event mutableCopy];
                     [newEvent setValue:slotID forKey:@"slotId"];
+                    [strongSelf checkLocalFiles:newEvent slotID:slotID];
                     BOOL force = strongSelf.lastViewID == nil || ![strongSelf.lastViewID isEqualToString:viewID];
                     FTSRWebRecord *record = [[FTSRWebRecord alloc]init];
                     record.viewID = viewID;
@@ -231,6 +234,74 @@
         }
     }
     return @"mask";
+}
+- (void)checkLocalFiles:(NSMutableDictionary *)rootNodeDict slotID:(NSString *)slotID{
+    @try {
+        NSNumber *type = [rootNodeDict valueForKey:@"type"];
+        if ([type isEqualToNumber:@4]) {
+            NSDictionary *data = [rootNodeDict valueForKey:@"data"];
+            NSString *href = [data valueForKey:@"href"];
+            if ([href containsString:@"file://"]) {
+                [self.needCheckSlots addObject:slotID];
+            }
+        } else if ([_needCheckSlots containsObject:slotID] && [type isEqualToNumber:@2]) {
+            NSMutableDictionary *data = [rootNodeDict valueForKey:@"data"];
+            NSMutableDictionary *node = data[@"node"];
+            [self addCssTextToHrefWithFileScheme:node slotID:slotID];
+            [self.needCheckSlots removeObject:slotID];
+
+        }
+    } @catch (NSException *exception) {
+        FTInnerLogError(@"[session-replay] checkLocalFiles fail: %@", exception.description);
+    }
+}
+- (void)addCssTextToHrefWithFileScheme:(NSMutableDictionary *)rootNodeDict slotID:(NSString *)slotID {
+    if (!rootNodeDict) return;
+    
+    // 1. Process the current node first (check if it meets the condition that href contains file://)
+    [self processSingleNode:rootNodeDict];
+    
+    // 2. Recursively process the child nodes of the current node (handle nested structures)
+    NSMutableArray *childNodes = rootNodeDict[@"childNodes"];
+    if ([childNodes isKindOfClass:[NSMutableArray class]]) {
+        for (NSMutableDictionary *childNode in childNodes) {
+            [self addCssTextToHrefWithFileScheme:childNode slotID:slotID];
+        }
+    }
+}
+/// Process a single node (check href and add _cssText)
+- (void)processSingleNode:(NSMutableDictionary *)nodeDict {
+    if (!nodeDict) return;
+    
+    // Step 1: First check if the tagName is link; if not, return directly (no subsequent logic processing)
+    NSString *nodeTagName = nodeDict[@"tagName"];
+    if (!nodeTagName || ![nodeTagName isEqualToString:@"link"]) {
+        return; // Not a link node, no need to process href
+    }
+    
+    // Step 2: Get the attributes dictionary of the current node (ensure it's a mutable dictionary first to avoid modification failure)
+    NSMutableDictionary *attributes = nodeDict[@"attributes"];
+    // If attributes is an immutable dictionary, first convert it to a mutable dictionary (otherwise modification will fail)
+    if ([attributes isKindOfClass:[NSDictionary class]] && ![attributes isKindOfClass:[NSMutableDictionary class]]) {
+        attributes = [attributes mutableCopy];
+        nodeDict[@"attributes"] = attributes; // Reassign back to the node dictionary
+    }
+    if (!attributes) return; // No attributes dictionary, return directly
+    
+    // Step 3: Check if href exists in attributes and its value contains file://
+    NSString *hrefValue = attributes[@"href"];
+    if (hrefValue && [hrefValue containsString:@"file://"] && !attributes[@"_cssText"]) {
+        // Step 4: Add _cssText:fileDataStr
+        NSString *cssPath = [hrefValue stringByReplacingOccurrencesOfString:@"file://" withString:@""];
+        NSFileManager *fileManager = [NSFileManager defaultManager];
+        if ([fileManager fileExistsAtPath:cssPath]) {
+            NSData *fileData = [NSData dataWithContentsOfFile:cssPath];
+            NSString *cssString = [[NSString alloc] initWithData:fileData encoding:NSUTF8StringEncoding];
+            if (cssString) {
+                attributes[@"_cssText"] = cssString;
+            }
+        }
+    }
 }
 
 -(void)dealloc{
