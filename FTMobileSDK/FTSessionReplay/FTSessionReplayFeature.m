@@ -28,6 +28,8 @@
 #import "FTFileWriter.h"
 #import "FTSRWebTrackingProtocol.h"
 #import "FTFeatureStorage.h"
+#import "FTLimitedSizeSet.h"
+
 @interface FTSessionReplayFeature()<FTMessageReceiver,FTSRWebTrackingProtocol>
 @property (nonatomic, strong) NSTimer *timer;
 @property (atomic, strong) NSDictionary *currentRUMContext;
@@ -42,7 +44,8 @@
 @property (nonatomic, strong) FTFeatureStorage *recordStorage;
 @property (nonatomic, strong) id<FTWriter> webViewWriter;
 @property (atomic, copy) NSString *lastViewID;
-@property (nonatomic, strong) NSMutableSet *needCheckSlots;
+@property (nonatomic, strong) FTLimitedSizeSet *needCheckSlots;
+
 @end
 @implementation FTSessionReplayFeature
 -(instancetype)initWithConfig:(FTSessionReplayConfig *)config{
@@ -62,7 +65,7 @@
         _touches = [[FTSessionReplayTouches alloc]initWithWindowObserver:_windowObserver];
         _config = [config copy];
         _shouldStart = NO;
-        _needCheckSlots = [NSMutableSet new];
+        _needCheckSlots = [[FTLimitedSizeSet alloc]initWithMaxCount:10];
         self.sampledForErrorReplay = NO;
         [[FTModuleManager sharedInstance] addMessageReceiver:self];
         [[FTModuleManager sharedInstance] registerService:NSProtocolFromString(@"FTSRWebTrackingProtocol") instance:self];
@@ -244,12 +247,22 @@
             if ([href containsString:@"file://"]) {
                 [self.needCheckSlots addObject:slotID];
             }
-        } else if ([_needCheckSlots containsObject:slotID] && [type isEqualToNumber:@2]) {
+        } else if ([_needCheckSlots containsObject:slotID] && ([type isEqualToNumber:@2] || [type isEqualToNumber:@3])) {
             NSMutableDictionary *data = [rootNodeDict valueForKey:@"data"];
-            NSMutableDictionary *node = data[@"node"];
-            [self addCssTextToHrefWithFileScheme:node slotID:slotID];
-            [self.needCheckSlots removeObject:slotID];
-
+            if ([type isEqualToNumber:@2]) {
+                NSMutableDictionary *node = data[@"node"];
+                [self addCssTextToHrefWithFileScheme:node slotID:slotID];
+            }else{
+                NSMutableArray *childNodes = data[@"adds"];
+                if (childNodes.count>0) {
+                    if ([childNodes isKindOfClass:[NSMutableArray class]]) {
+                        for (NSMutableDictionary *childNode in childNodes) {
+                            NSMutableDictionary *node = childNode[@"node"];
+                            [self addCssTextToHrefWithFileScheme:node slotID:slotID];
+                        }
+                    }
+                }
+            }
         }
     } @catch (NSException *exception) {
         FTInnerLogError(@"[session-replay] checkLocalFiles fail: %@", exception.description);
