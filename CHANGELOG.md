@@ -1,3 +1,6 @@
+# 1.6.2-alpha.9
+1. Fix the issue of missing local css
+---
 # 1.6.2-alpha.8
 1. Fix the webView invisibility in session replay due to missing wireframeRect accessor
 2. Fix the problem that webView session replay cannot collect local CSS
