@@ -472,6 +472,8 @@
 		179BEB962D2D3ACC004AA5A6 /* FTThreadDispatchManager.h in Headers */ = {isa = PBXBuildFile; fileRef = 179BEB912D2D3ACC004AA5A6 /* FTThreadDispatchManager.h */; };
 		179BEB972D2D3ACC004AA5A6 /* FTSDKCompat.h in Headers */ = {isa = PBXBuildFile; fileRef = 179BEB902D2D3ACC004AA5A6 /* FTSDKCompat.h */; };
 		179BEB982D2D3ACC004AA5A6 /* FTThreadDispatchManager.h in Headers */ = {isa = PBXBuildFile; fileRef = 179BEB912D2D3ACC004AA5A6 /* FTThreadDispatchManager.h */; };
+		17A6D49B2E8B6F10008E85A0 /* FTLimitedSizeSet.m in Sources */ = {isa = PBXBuildFile; fileRef = 17A6D49A2E8B6F10008E85A0 /* FTLimitedSizeSet.m */; };
+		17A6D49C2E8B6F10008E85A0 /* FTLimitedSizeSet.h in Headers */ = {isa = PBXBuildFile; fileRef = 17A6D4992E8B6F10008E85A0 /* FTLimitedSizeSet.h */; };
 		17A9BE322C5CE8A200DEC5FE /* FTResourceMetricsModel+Private.h in Headers */ = {isa = PBXBuildFile; fileRef = 17A9BE312C5CE8A100DEC5FE /* FTResourceMetricsModel+Private.h */; };
 		17A9BE332C5CE8A200DEC5FE /* FTResourceMetricsModel+Private.h in Headers */ = {isa = PBXBuildFile; fileRef = 17A9BE312C5CE8A100DEC5FE /* FTResourceMetricsModel+Private.h */; };
 		17A9BE342C5CE8A200DEC5FE /* FTResourceMetricsModel+Private.h in Headers */ = {isa = PBXBuildFile; fileRef = 17A9BE312C5CE8A100DEC5FE /* FTResourceMetricsModel+Private.h */; };
@@ -991,6 +993,8 @@
 		1799581229D43FDE0033B46E /* FTPresetProperty.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = FTPresetProperty.m; sourceTree = "<group>"; };
 		179BEB902D2D3ACC004AA5A6 /* FTSDKCompat.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = FTSDKCompat.h; sourceTree = "<group>"; };
 		179BEB912D2D3ACC004AA5A6 /* FTThreadDispatchManager.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = FTThreadDispatchManager.h; sourceTree = "<group>"; };
+		17A6D4992E8B6F10008E85A0 /* FTLimitedSizeSet.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = FTLimitedSizeSet.h; sourceTree = "<group>"; };
+		17A6D49A2E8B6F10008E85A0 /* FTLimitedSizeSet.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = FTLimitedSizeSet.m; sourceTree = "<group>"; };
 		17A9BE312C5CE8A100DEC5FE /* FTResourceMetricsModel+Private.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = "FTResourceMetricsModel+Private.h"; sourceTree = "<group>"; };
 		17AB769529D432DE008FBBF5 /* FTMemoryMonitor.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = FTMemoryMonitor.h; sourceTree = "<group>"; };
 		17AB769629D432DE008FBBF5 /* FTCPUMonitor.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = FTCPUMonitor.m; sourceTree = "<group>"; };
@@ -1793,6 +1797,8 @@
 				17C4F0C22D671AFC00F97A7F /* TLV */,
 				17C4F0D52D671AFC00F97A7F /* Upload */,
 				17C4F0D62D671AFC00F97A7F /* FTFeature.h */,
+				17A6D4992E8B6F10008E85A0 /* FTLimitedSizeSet.h */,
+				17A6D49A2E8B6F10008E85A0 /* FTLimitedSizeSet.m */,
 				17C4F0D72D671AFC00F97A7F /* FTPerformancePreset.h */,
 				17C4F0D82D671AFC00F97A7F /* FTPerformancePreset.m */,
 				17C4F0D92D671AFC00F97A7F /* FTPerformancePresetOverride.h */,
@@ -2405,6 +2411,7 @@
 				17E4CB4F29CD42DA005C2D99 /* FTConstants.h in Headers */,
 				17E4CBDF29CD42E4005C2D99 /* NSURLSession+FTSwizzler.h in Headers */,
 				17E4CC2229CD42E4005C2D99 /* FTErrorDataProtocol.h in Headers */,
+				17A6D49C2E8B6F10008E85A0 /* FTLimitedSizeSet.h in Headers */,
 				170CD0A32AF3422100DB248C /* FTAutoInterceptorProtocol.h in Headers */,
 				17400E7A2B47AAC300ACBA6C /* FTNSException.h in Headers */,
 				17AB76E729D432DE008FBBF5 /* FTRUMSessionHandler.h in Headers */,
@@ -2991,6 +2998,7 @@
 				173D9C4C2E67E53E00DF10B8 /* FTRUMView.m in Sources */,
 				17C4F14B2D671AFC00F97A7F /* UITouch+FTIdentifier.m in Sources */,
 				17C4F14C2D671AFC00F97A7F /* FTSRViewID.m in Sources */,
+				17A6D49B2E8B6F10008E85A0 /* FTLimitedSizeSet.m in Sources */,
 				175C22F92DB20FA7001FE777 /* FTWKWebViewRecorder.m in Sources */,
 				173D9C7E2E67E82400DF10B8 /* FTRumConfig.m in Sources */,
 				17C4F14D2D671AFC00F97A7F /* FTUIProgressViewRecorder.m in Sources */,
