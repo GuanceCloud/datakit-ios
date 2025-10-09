@@ -36,7 +36,8 @@
         self.didReceiveStartData = NO;
         self.resourceHandlers = [NSMutableDictionary new];
         self.viewProperty = [NSMutableDictionary new];
-        self.rumDependencies = rumDependencies;
+        self.rumDependencies = [rumDependencies copy];
+        self.rumDependencies.sessionHasReplay = @0;
         self.context = [context copy];
         if(model.fields && model.fields.allKeys.count>0){
             [self.viewProperty addEntriesFromDictionary:model.fields];
