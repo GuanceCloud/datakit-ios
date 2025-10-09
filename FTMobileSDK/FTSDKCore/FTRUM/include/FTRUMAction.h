@@ -13,7 +13,7 @@ NS_ASSUME_NONNULL_BEGIN
 /// The RUM Action name
 @property (nonatomic, copy) NSString *actionName;
 /// The RUM Action extra property
-@property (nonatomic, copy) NSDictionary *property;
+@property (nonatomic, copy, nullable) NSDictionary *property;
 
 /// Initialization method
 /// - Parameter actionName: Set the RUM Action name

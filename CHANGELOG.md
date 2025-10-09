@@ -48,6 +48,13 @@
 3. Session Replay data synchronization adds X-Pkg-Id tracking adaptation
 4. Same as 1.5.15-alpha.2
 ---
+# 1.5.19-alpha.2
+1. Fix RUM data loss when using `-addErrorWithType:state:message:stack:property:` method add error
+2. Avoid re-registering script message handlers when collecting webView RUM data
+---
+# 1.5.19-alpha.1
+1. Fixed data loss when RUM view is missing
+---
 # 1.5.18
 1. Added support for RUM View/Action collection filtering and custom View/Action naming via `FTRumConfig.viewTrackingHandler` and `FTRumConfig.actionTrackingHandler`
 2. Added the `-updateViewLoadingTime:` method to support updating the loading time for the currently active RUM View

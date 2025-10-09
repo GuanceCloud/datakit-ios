@@ -12,9 +12,9 @@
 NS_ASSUME_NONNULL_BEGIN
 
 @interface FTNetworkMock : NSObject
-+ (void)registerUrlString:(NSString *)urlString;
 + (id<OHHTTPStubsDescriptor>)networkOHHTTPStubs;
 + (id<OHHTTPStubsDescriptor>)networkOHHTTPStubsHandler:(void (^)(void))handler;
++ (id<OHHTTPStubsDescriptor>)networkOHHTTPStubsWithUrl:(NSString *)urlStr handler:(void (^)(void))handler;
 @end
 
 NS_ASSUME_NONNULL_END

@@ -87,7 +87,7 @@ void *FTRUMQueueIdentityKey = &FTRUMQueueIdentityKey;
 #pragma mark - Session -
 -(void)notifyRumInit{
     NSDictionary *context = [self rumDynamicProperty];
-    [self syncProcess:^{
+    dispatch_async(self.rumQueue, ^{
         @try {
             FTRUMDataModel *model = [[FTRUMDataModel alloc]init];
             model.type = FTRUMSDKInit;
@@ -95,7 +95,7 @@ void *FTRUMQueueIdentityKey = &FTRUMQueueIdentityKey;
         } @catch (NSException *exception) {
             FTInnerLogError(@"exception %@",exception);
         }
-    }];
+    });
 }
 #pragma mark - View -
 -(void)onCreateView:(NSString *)viewName loadTime:(NSNumber *)loadTime{
@@ -382,7 +382,7 @@ void *FTRUMQueueIdentityKey = &FTRUMQueueIdentityKey;
     [self addErrorWithType:type state:self.appState message:message stack:stack property:nil time:[NSDate date] fatal:YES];
 }
 - (void)addErrorWithType:(NSString *)type state:(FTAppState)state message:(NSString *)message stack:(NSString *)stack property:(nullable NSDictionary *)property{
-    [self addErrorWithType:type state:state message:message stack:stack property:property time:[NSDate date] fatal:YES];
+    [self addErrorWithType:type state:state message:message stack:stack property:property time:[NSDate date] fatal:NO];
 }
 - (void)addErrorWithType:(nonnull NSString *)type message:(nonnull NSString *)message stack:(nonnull NSString *)stack date:(NSDate *)date{
     [self addErrorWithType:type state:self.appState message:message stack:stack property:nil time:date fatal:NO];
