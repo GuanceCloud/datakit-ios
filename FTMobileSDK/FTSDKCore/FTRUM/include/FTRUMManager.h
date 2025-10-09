@@ -19,7 +19,7 @@ NS_ASSUME_NONNULL_BEGIN
 @interface FTRUMManager : FTRUMHandler<FTRumResourceProtocol,FTErrorDataDelegate,FTRumDatasProtocol,FTLinkRumDataProvider>
 @property (nonatomic, assign) FTAppState appState;
 @property (atomic,copy,readwrite) NSString *viewReferrer;
-@property (atomic,copy,readwrite) NSString *viewReferrerId;
+@property (atomic,copy,nullable) NSString *viewReferrerId;
 
 #pragma mark - init -
 -(instancetype)initWithRumDependencies:(FTRUMDependencies *)dependencies;

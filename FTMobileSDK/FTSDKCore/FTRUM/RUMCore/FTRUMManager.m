@@ -133,7 +133,7 @@ void *FTRUMQueueIdentityKey = &FTRUMQueueIdentityKey;
             viewModel.fields = property;
             [self process:viewModel context:context];
             self.viewReferrer = viewName;
-            self.viewReferrerId = self.rumDependencies.sessionHasReplay? viewId:nil;
+            self.viewReferrerId = self.rumDependencies.sessionHasReplay != nil ? viewId : nil;
         } @catch (NSException *exception) {
             FTInnerLogError(@"exception %@",exception);
         }
