@@ -16,7 +16,7 @@ NS_ASSUME_NONNULL_BEGIN
 @property (nonatomic, copy) NSString *viewName;
 
 /// The RUM View extra property
-@property (nonatomic, copy) NSDictionary *property;
+@property (nonatomic, copy, nullable) NSDictionary *property;
 
 /// Whether this view is modal, but should not be tracked with `startView` and `stopView`
 
