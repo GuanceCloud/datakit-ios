@@ -49,9 +49,9 @@
     FTJSONKeyMapper *keyMapper = [[FTJSONKeyMapper alloc]initWithModelToJSONDictionary:@{
         @"hasFullSnapshot":@"has_full_snapshot",
         @"recordsCount":@"records_count",
-        @"sessionID":FT_RUM_KEY_SESSION_ID,
-        @"viewID":FT_KEY_VIEW_ID,
-        @"appId":FT_APP_ID,
+        @"sessionID":@"session.id",
+        @"viewID":@"view.id",
+        @"appId":@"application.id",
     }];
     return keyMapper;
 }

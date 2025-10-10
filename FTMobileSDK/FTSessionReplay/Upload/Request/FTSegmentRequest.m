@@ -84,9 +84,15 @@
     [mutableData appendData:[self.multipartFormBody newlineByte]];
     NSData *compress = [FTCompression compress:mutableData];
     [self.multipartFormBody addFormData:@"segment" filename:[NSString stringWithFormat:@"%@-%lld",self.segment.sessionID,self.segment.start] data:compress mimeType:@"application/octet-stream"];
-    NSMutableDictionary *segmentJson = [[self.segment toDictionary] mutableCopy];
+    NSMutableDictionary *segmentJson = [NSMutableDictionary new];
+    [segmentJson setValue:self.segment.sessionID forKey:@"session_id"];
+    [segmentJson setValue:self.segment.viewID forKey:@"view_id"];
+    [segmentJson setValue:self.segment.appId forKey:@"app_id"];
+    [segmentJson setValue:@(self.segment.hasFullSnapshot) forKey:@"has_full_snapshot"];
+    [segmentJson setValue:@(self.segment.recordsCount) forKey:@"records_count"];
+    [segmentJson setValue:@(self.segment.end) forKey:@"end"];
+    [segmentJson setValue:@(self.segment.start) forKey:@"start"];
     [segmentJson addEntriesFromDictionary:self.parameters];
-    [segmentJson removeObjectForKey:@"records"];
     for (NSString *key in segmentJson.allKeys) {
         [self.multipartFormBody addFormField:key value:segmentJson[key]];
     }
