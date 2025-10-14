@@ -1,3 +1,6 @@
+# 1.6.2-alpha.12
+1. Fix webView replay failure due to `isVisible` update issue
+---
 # 1.6.2-alpha.11
 1. Fix webView session replay display issue
 ---
