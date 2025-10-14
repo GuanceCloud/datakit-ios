@@ -115,6 +115,7 @@ extern NSString * const FT_FPS_AVG;
 
 #pragma mark ---------- resource ----------
 #pragma mark --- tag
+extern NSString * const FT_KEY_RESOURCE_ID;
 extern NSString * const FT_KEY_RESOURCE_URL;
 extern NSString * const FT_KEY_RESOURCE_URL_HOST;
 extern NSString * const FT_KEY_RESOURCE_URL_PATH;
