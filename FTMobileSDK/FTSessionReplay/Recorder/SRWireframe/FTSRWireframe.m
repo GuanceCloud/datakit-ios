@@ -432,6 +432,7 @@ static BOOL objectIsEqual(id new,id old){
     }
     FTSRWebViewWireframe *webView = (FTSRWebViewWireframe *)wire;
     FTSRWebViewWireframe *newWeb = (FTSRWebViewWireframe *)newWireFrame;
+    webView.isVisible = useNewObjectIfDifferentThanOld(newWeb.isVisible,self.isVisible);
     webView.border = useNewObjectIfDifferentThanOld(newWeb.border,self.border);
     webView.shapeStyle = useNewObjectIfDifferentThanOld(newWeb.shapeStyle,self.shapeStyle);
     return webView;
@@ -441,7 +442,7 @@ static BOOL objectIsEqual(id new,id old){
         return NO;
     }
     BOOL isSlotIdEqual = objectIsEqual(self.slotId,object.slotId);
-    BOOL isVisibleEqual = self.isVisible == object.isVisible;
+    BOOL isVisibleEqual = objectIsEqual(self.isVisible,object.isVisible);
     return isSlotIdEqual && isVisibleEqual && [super isEqual:object];
 }
 -(BOOL)isEqual:(id)object{

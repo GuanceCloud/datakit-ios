@@ -108,7 +108,7 @@ NS_ASSUME_NONNULL_BEGIN
 @interface FTSRWebViewWireframe : FTSRWireframe
 @property (nonatomic, strong) FTSRShapeBorder *border;
 @property (nonatomic, strong) FTSRShapeStyle *shapeStyle;
-@property (nonatomic, assign) BOOL isVisible;
+@property (nonatomic, strong) NSNumber *isVisible;
 @property (nonatomic, copy) NSString *slotId;
 @end
 NS_ASSUME_NONNULL_END
