@@ -381,8 +381,11 @@
     XCTAssertTrue(bridge2 != nil);
     XCTAssertTrue(bridge == bridge2);
 }
-- (void)dealReceiveScriptMessage:(id )message slotId:(NSUInteger)slotId{
+- (void)dealRUMWebViewData:(NSString *)measurement tags:(NSDictionary *)tags fields:(NSDictionary *)fields tm:(long long)tm{
     
+}
+- (nullable NSString *)getLastViewName{
+    return nil;
 }
 - (void)webView:(WKWebView *)webView didFinishNavigation:(null_unspecified WKNavigation *)navigation{
     [self.loadExpect fulfill];
