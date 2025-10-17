@@ -30,7 +30,6 @@ NSString *const kFTJsCodePrefix = @"/* FTWebViewJavascriptBridge */";
 }
 + (instancetype)bridgeForWebView:(WKWebView*)webView allowWebViewHostsString:(NSString *)hostsString{
     FTWKWebViewJavascriptBridge* bridge = [[self alloc] init];
-    bridge.bindInfo = [[FTBindInfo alloc] init];
     [bridge _setupInstance:webView allowWebViewHostsString:hostsString];
     return bridge;
 }

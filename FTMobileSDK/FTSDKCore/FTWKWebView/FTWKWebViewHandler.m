@@ -149,18 +149,19 @@ static NSObject *sharedInstanceLock;
         }
         FTInnerLogInfo(@"[WebView] webView(%lld) start bridge",(uint64_t)webView.hash);
         FTWKWebViewJavascriptBridge *bridge = [FTWKWebViewJavascriptBridge bridgeForWebView:webView allowWebViewHostsString:hostsString];
-        bridge.bindInfo.viewId = [self.rumTrackDelegate getLastHasReplayViewID];
+        FTBindInfo *bindInfo = [[FTBindInfo alloc] init];
+        bindInfo.viewId = [self.rumTrackDelegate getLastHasReplayViewID];
         __weak typeof(self) weakSelf = self;
         [bridge registerHandler:@"sendEvent" handler:^(id data, int64_t slotId,WVJBResponseCallback responseCallback) {
             __strong __typeof(weakSelf) strongSelf = weakSelf;
             if (!strongSelf || !strongSelf.rumTrackDelegate) return;
-            if (!bridge.bindInfo.viewId) {
-                bridge.bindInfo.viewId = strongSelf.rumTrackDelegate ? [strongSelf.rumTrackDelegate getLastHasReplayViewID] : nil;
+            if (!bindInfo.viewId) {
+                 bindInfo.viewId = strongSelf.rumTrackDelegate ? [strongSelf.rumTrackDelegate getLastHasReplayViewID] : nil;
             }
-            if (!bridge.bindInfo.viewReferrer) {
-                bridge.bindInfo.viewReferrer = strongSelf.rumTrackDelegate ? [strongSelf.rumTrackDelegate getLastViewName] : nil;
+            if (!bindInfo.viewReferrer) {
+                 bindInfo.viewReferrer = strongSelf.rumTrackDelegate ? [strongSelf.rumTrackDelegate getLastViewName] : nil;
             }
-            [strongSelf dealReceiveScriptMessage:data slotId:slotId info:bridge.bindInfo];
+            [strongSelf dealReceiveScriptMessage:data slotId:slotId info:bindInfo];
         }];
         [self addWebView:webView bridge:bridge];
     }
