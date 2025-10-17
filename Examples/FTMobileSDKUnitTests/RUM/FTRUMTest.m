@@ -427,7 +427,8 @@
     XCTAssertTrue(hasResource);
 }
 -(void)resourceDataAndFormatChecks:(BOOL)lowercase{
-    NSArray *resourceTag = @[FT_KEY_RESOURCE_URL,
+    NSArray *resourceTag = @[FT_KEY_RESOURCE_ID,
+                             FT_KEY_RESOURCE_URL,
                              FT_KEY_RESOURCE_URL_HOST,
                              FT_KEY_RESOURCE_URL_PATH,
                              FT_KEY_RESOURCE_URL_PATH_GROUP,

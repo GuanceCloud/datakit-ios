@@ -108,6 +108,7 @@ NSString * const FT_FPS_MINI = @"fps_mini";
 NSString * const FT_FPS_AVG = @"fps_avg";
 
 //resource tag
+NSString * const FT_KEY_RESOURCE_ID= @"resource_id";
 NSString * const FT_KEY_RESOURCE_URL = @"resource_url";
 NSString * const FT_KEY_RESOURCE_URL_HOST = @"resource_url_host";
 NSString * const FT_KEY_RESOURCE_URL_PATH = @"resource_url_path";

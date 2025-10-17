@@ -118,6 +118,7 @@
     [tags setValue:self.dependencies.networkType forKey:@"network_type"];
     [tags addEntriesFromDictionary:sessionTag];
     [tags addEntriesFromDictionary:data.tags];
+    [tags setValue:model.identifier forKey:FT_KEY_RESOURCE_ID];
     [self.dependencies.writer rumWrite:FT_RUM_SOURCE_RESOURCE tags:tags fields:fields time:[self.time ft_nanosecondTimeStamp]];
 }
 @end

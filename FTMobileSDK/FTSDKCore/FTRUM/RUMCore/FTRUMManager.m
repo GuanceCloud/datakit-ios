@@ -297,6 +297,7 @@ void *FTRUMQueueIdentityKey = &FTRUMQueueIdentityKey;
                     [errorTags setValue:FT_NETWORK_ERROR forKey:FT_KEY_ERROR_TYPE];
                     [errorTags setValue:run forKey:FT_KEY_ERROR_SITUATION];
                     [errorTags addEntriesFromDictionary:[FTErrorMonitorInfo errorMonitorInfo:self.rumDependencies.errorMonitorType]];
+                    [errorTags setValue:key forKey:FT_KEY_RESOURCE_ID];
                     if (content.responseBody.length>0) {
                         [errorField setValue:content.responseBody forKey:FT_KEY_ERROR_STACK];
                     }
