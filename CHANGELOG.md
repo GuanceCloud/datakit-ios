@@ -1,3 +1,6 @@
+# 1.5.19-alpha.3
+1. Added `resource_id` to network error types for data correlation. 
+---
 # 1.5.19-alpha.2
 1. Fix RUM data loss when using `-addErrorWithType:state:message:stack:property:` method add error
 2. Avoid re-registering script message handlers when collecting webView RUM data
