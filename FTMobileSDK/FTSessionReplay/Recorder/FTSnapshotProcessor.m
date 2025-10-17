@@ -95,9 +95,10 @@ NSTimeInterval const kFullSnapshotInterval = 20.0;
         }else{
             // 3.3.1.View already exists, perform incremental judgment, algorithm comparison, get increment, decrement, update
             MutationData *mutation = [[MutationData alloc]init];
-            [mutation createIncrementalSnapshotRecords:wireframes lastWireframes:self.lastSRWireframes];
+            NSError *error = nil;
+            [mutation createIncrementalSnapshotRecords:wireframes lastWireframes:self.lastSRWireframes error:&error];
             // 3.3.2.If exception occurs during incremental judgment, don't do incremental processing, add a FullSnapshotRecord
-            if(mutation.isError){
+            if(error){
                 FTSRFullSnapshotRecord *fullRecord = [[FTSRFullSnapshotRecord alloc]initWithTimestamp:[viewTreeSnapshot.context.date ft_millisecondTimeStamp]];
                 fullRecord.wireframes = wireframes;
                 [records addObject:fullRecord];
@@ -123,6 +124,7 @@ NSTimeInterval const kFullSnapshotInterval = 20.0;
         // 5.Data writing
         if(records.count>0){
             FTEnrichedRecord *fullRecord = [[FTEnrichedRecord alloc]initWithContext:viewTreeSnapshot.context records:records];
+            fullRecord.bindInfo = viewTreeSnapshot.context.bindInfo;
             fullRecord.webViewSlotIDs = viewTreeSnapshot.webViewSlotIDs.count>0? viewTreeSnapshot.webViewSlotIDs.allObjects:nil;
             // 5.1. Synchronize page collection status to RUM-View
             [self trackRecord:fullRecord];

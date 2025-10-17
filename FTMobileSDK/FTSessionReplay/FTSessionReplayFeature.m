@@ -33,6 +33,7 @@
 @interface FTSessionReplayFeature()<FTMessageReceiver,FTSRWebTrackingProtocol>
 @property (nonatomic, strong) NSTimer *timer;
 @property (atomic, strong) NSDictionary *currentRUMContext;
+@property (atomic, strong) NSDictionary *bindInfo;
 @property (nonatomic, strong) FTRecorder *windowRecorder;
 @property (nonatomic, assign) int sampleRate;
 @property (nonatomic, strong) FTSessionReplayTouches *touches;
@@ -149,6 +150,7 @@
                 NSDictionary *view = message[@"view"];
                 NSString *viewID = view[@"id"];
                 NSDictionary *event = message[@"data"];
+                NSDictionary *bindInfo = message[@"bindInfo"];
                 if (event && slotID && viewID) {
                     NSDictionary *currentRumContext = strongSelf.currentRUMContext;
                     if (!currentRumContext) {
@@ -163,6 +165,7 @@
                     record.sessionID = currentRumContext[FT_RUM_KEY_SESSION_ID];
                     record.applicationID = currentRumContext[FT_APP_ID];
                     record.records = @[newEvent];
+                    record.bindInfo = bindInfo;
                     NSData *data = [record toJSONData];
                     [webViewWriter write:data forceNewFile:force];
                     strongSelf.lastViewID = viewID;
@@ -186,9 +189,28 @@
         if (self.sampledForErrorReplay != sampledForErrorReplay) {
             self.sampledForErrorReplay = sampledForErrorReplay;
         }
+        [self checkLinkRumKeys:context];
+    }else if(![context[FT_KEY_VIEW_ID] isEqualToString:rumContext[FT_KEY_VIEW_ID]]){
+        [self checkLinkRumKeys:context];
     }
     self.currentRUMContext = context;
     [self evaluateRecordingConditions];
+}
+- (void)checkLinkRumKeys:(NSDictionary *)rumContext{
+    // link rum
+    NSDictionary *bindInfo = rumContext[@"bindInfo"];
+    if (bindInfo) {
+        NSArray *whiteLists = self.config.enableLinkRUMKeys;
+        if (whiteLists.count>0) {
+            NSMutableDictionary *infoDict = [[NSMutableDictionary alloc]init];
+            NSEnumerator *en = [whiteLists objectEnumerator];
+            NSString *key;
+            while ((key = en.nextObject) != nil) {
+                [infoDict setValue:bindInfo[key] forKey:key];
+            }
+            self.bindInfo = infoDict?:nil;
+        }
+    }
 }
 - (void)evaluateRecordingConditions{
     if (self.shouldStart) {
@@ -223,6 +245,7 @@
         context.imagePrivacy = self.config.imagePrivacy;
         context.touchPrivacy = self.config.touchPrivacy;
         context.textAndInputPrivacy = self.config.textAndInputPrivacy;
+        context.bindInfo = self.bindInfo;
         [self.windowRecorder taskSnapShot:context touchSnapshot:[self.touches takeTouchSnapshotWithContext:context]];
     } @catch (NSException *exception) {
         FTInnerLogError(@"[session-replay] EXCEPTION: %@", exception.description);

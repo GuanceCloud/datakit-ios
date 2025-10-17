@@ -75,7 +75,10 @@
 }
 - (void)writeResourceError:(FTRUMDataModel *)model context:(NSDictionary *)context{
     NSDictionary *sessionTag = [self.context getGlobalSessionViewActionTags];
-    NSMutableDictionary *tags = [NSMutableDictionary dictionaryWithDictionary:context];
+    NSMutableDictionary *tags = [NSMutableDictionary dictionary];
+    if (context) {
+        [tags addEntriesFromDictionary:context];
+    }
     [tags addEntriesFromDictionary:sessionTag];
     [tags addEntriesFromDictionary:model.tags];
     NSMutableDictionary *fields = [NSMutableDictionary dictionary];
@@ -108,7 +111,11 @@
         [fields setValue:model.metrics.resource_connect_time forKey:FT_KEY_RESOURCE_CONNECT_TIME];
     }
     NSDictionary *sessionTag = [self.context getGlobalSessionViewActionTags];
-    NSMutableDictionary *tags = [NSMutableDictionary dictionaryWithDictionary:context];
+    NSMutableDictionary *tags = [NSMutableDictionary dictionary];
+    if (context) {
+        [tags addEntriesFromDictionary:context];
+    }
+    [tags setValue:self.dependencies.networkType forKey:@"network_type"];
     [tags addEntriesFromDictionary:sessionTag];
     [tags addEntriesFromDictionary:data.tags];
     [self.dependencies.writer rumWrite:FT_RUM_SOURCE_RESOURCE tags:tags fields:fields time:[self.time ft_nanosecondTimeStamp]];

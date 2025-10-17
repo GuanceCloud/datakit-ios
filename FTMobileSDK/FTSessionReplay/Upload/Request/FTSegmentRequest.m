@@ -80,6 +80,8 @@
     // method
     mutableRequest.HTTPMethod = self.httpMethod;
     // body
+    NSDictionary *bindInfo = self.segment.bindInfo;
+    self.segment.bindInfo = nil;
     NSMutableData *mutableData = [NSMutableData dataWithData:[self.segment toJSONData]];
     [mutableData appendData:[self.multipartFormBody newlineByte]];
     NSData *compress = [FTCompression compress:mutableData];
@@ -93,6 +95,11 @@
     [segmentJson setValue:@(self.segment.end) forKey:@"end"];
     [segmentJson setValue:@(self.segment.start) forKey:@"start"];
     [segmentJson addEntriesFromDictionary:self.parameters];
+    if (bindInfo) {
+        for (NSString *key in bindInfo.allKeys) {
+            [self.multipartFormBody addFormField:key value:bindInfo[key]];
+        }
+    }
     for (NSString *key in segmentJson.allKeys) {
         [self.multipartFormBody addFormField:key value:segmentJson[key]];
     }

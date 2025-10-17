@@ -22,7 +22,10 @@ NS_ASSUME_NONNULL_BEGIN
 @property (nonatomic, assign) ErrorMonitorType errorMonitorType;
 @property (nonatomic, strong) FTRUMMonitor *monitor;
 @property (nonatomic, strong, nullable) FTFatalErrorContext *fatalErrorContext;
+@property (atomic, strong, nullable) NSDictionary *lastViewUserCustomDatas;
 
+
+@property (nonatomic, copy) NSString *networkType;
 //The following properties need to be readwrite in rumQueue
 @property (nonatomic, assign) BOOL currentSessionSample;
 @property (nonatomic, strong) NSNumber *sessionHasReplay;

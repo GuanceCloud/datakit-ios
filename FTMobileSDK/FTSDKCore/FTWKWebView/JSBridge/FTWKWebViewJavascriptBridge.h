@@ -11,8 +11,14 @@
 #import "FTWebViewJavascriptBridgeBase.h"
 
 NS_ASSUME_NONNULL_BEGIN
+@interface FTBindInfo:NSObject
+@property (nonatomic, copy) NSString *viewReferrer;
+@property (nonatomic, copy) NSString *viewId;
+@property (nonatomic, strong) NSDictionary *bindInfo;
+@end
 
 @interface FTWKWebViewJavascriptBridge : NSObject<FTWebViewJavascriptBridgeBaseDelegate,WKScriptMessageHandler>
+@property (nonatomic, strong) FTBindInfo *bindInfo;
 + (instancetype)bridgeForWebView:(WKWebView*)webView allowWebViewHostsString:(NSString *)hostsString;
 - (void)removeScriptMessageHandler;
 - (void)registerHandler:(NSString*)handlerName handler:(nullable WVJBHandler)handler;

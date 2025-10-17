@@ -40,6 +40,9 @@ NSString * const FTImagePrivacyLevelStringMap[] = {
     }
     return self;
 }
+-(void)setEnableLinkRUMKeys:(NSArray *)enableLinkRUMKeys{
+    _enableLinkRUMKeys = [enableLinkRUMKeys copy];
+}
 -(void)setAdditionalNodeRecorders:(NSArray<id<FTSRWireframesRecorder>> *)additionalNodeRecorders{
     _additionalNodeRecorders = additionalNodeRecorders;
 }
@@ -87,6 +90,7 @@ NSString * const FTImagePrivacyLevelStringMap[] = {
     config.imagePrivacy = self.imagePrivacy;
     config.textAndInputPrivacy = self.textAndInputPrivacy;
     config.additionalNodeRecorders = [self.additionalNodeRecorders copy];
+    config.enableLinkRUMKeys = [self.enableLinkRUMKeys copy];
     return config;
 }
 -(NSString *)debugDescription{

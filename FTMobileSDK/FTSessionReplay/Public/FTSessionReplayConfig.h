@@ -69,6 +69,9 @@ typedef NS_ENUM(NSUInteger,FTTextAndInputPrivacyLevel){
 /// Available privacy level for image masking in session replay. Default: FTImagePrivacyLevelMaskAll
 @property (nonatomic, assign) FTImagePrivacyLevel imagePrivacy;
 
+/// Session Replay requires the association of the specified RUM key.
+@property (nonatomic, copy) NSArray *enableLinkRUMKeys;
+
 @end
 
 NS_ASSUME_NONNULL_END

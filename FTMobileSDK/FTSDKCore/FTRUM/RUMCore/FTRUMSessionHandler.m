@@ -117,6 +117,7 @@ static const NSTimeInterval sessionMaxDuration = 4 * 60 * 60; // 4 hours
     if(![self hasActivityView]){
         self.rumDependencies.fatalErrorContext.lastSessionContext = [self.context getGlobalSessionTags];
         self.rumDependencies.fatalErrorContext.lastViewContext = nil;
+        self.rumDependencies.lastViewUserCustomDatas = nil;
     }
     return  YES;
 }
@@ -157,7 +158,10 @@ static const NSTimeInterval sessionMaxDuration = 4 * 60 * 60; // 4 hours
 - (void)writeLaunchData:(FTRUMLaunchDataModel *)model context:(NSDictionary *)context{
     
     NSDictionary *sessionViewTag = [model.action_type isEqualToString:FT_LAUNCH_HOT]?[self getCurrentSessionInfo]:[self.context getGlobalSessionTags];
-    NSMutableDictionary *tags = [NSMutableDictionary dictionaryWithDictionary:context];
+    NSMutableDictionary *tags = [NSMutableDictionary dictionary];
+    if (context) {
+        [tags addEntriesFromDictionary:context];
+    }
     [tags addEntriesFromDictionary:sessionViewTag];
     [tags setValue:[FTBaseInfoHandler randomUUID] forKey:FT_KEY_ACTION_ID];
     [tags setValue:model.action_name forKey:FT_KEY_ACTION_NAME];
@@ -177,7 +181,9 @@ static const NSTimeInterval sessionMaxDuration = 4 * 60 * 60; // 4 hours
 - (void)writeWebViewJSBData:(FTRUMWebViewData *)data context:(NSDictionary *)context{
     NSDictionary *sessionTag = [self.context getGlobalSessionTags];
     NSMutableDictionary *tags = [NSMutableDictionary new];
-    [tags addEntriesFromDictionary:context];
+    if (context) {
+        [tags addEntriesFromDictionary:context];
+    }
     [tags addEntriesFromDictionary:data.tags];
     [tags addEntriesFromDictionary:sessionTag];
     [tags setValue:@(YES) forKey:FT_IS_WEBVIEW];

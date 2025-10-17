@@ -11,10 +11,15 @@
 NS_ASSUME_NONNULL_BEGIN
 /// webView add web-side rum data
 @protocol FTWKWebViewRumDelegate <NSObject>
-- (void)dealReceiveScriptMessage:(id )message slotId:(int64_t)slotID viewId:(nullable NSString *)viewId;
+- (void)dealRUMWebViewData:(NSString *)measurement tags:(NSDictionary *)tags fields:(NSDictionary *)fields tm:(long long)tm;
 - (nullable NSString *)getLastHasReplayViewID;
+- (nullable NSString *)getLastViewName;
+
 @end
 @interface FTWKWebViewHandler ()
+
+@property (nonatomic, copy) NSArray *whiteLists;
+
 - (void)startWithEnableTraceWebView:(BOOL)enable allowWebViewHost:(nullable NSArray *)hosts rumDelegate:(id<FTWKWebViewRumDelegate>)delegate;
 
 - (void)innerEnableWebView:(WKWebView *)webView;

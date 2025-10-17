@@ -50,9 +50,8 @@ NS_ASSUME_NONNULL_BEGIN
 @property (nonatomic, strong) NSArray<Adds> *adds;
 @property (nonatomic, strong) NSArray<Removes> *removes;
 @property (nonatomic, strong) NSArray<FTSRWireframe> *updates;
-@property (nonatomic, assign,readonly) BOOL isError;
 
--(void)createIncrementalSnapshotRecords:(NSArray<FTSRWireframe *>*)newWireframes lastWireframes:(NSArray<FTSRWireframe *>*)lastWireframes;
+-(void)createIncrementalSnapshotRecords:(NSArray<FTSRWireframe *>*)newWireframes lastWireframes:(NSArray<FTSRWireframe *>*)lastWireframes error:(NSError **)error;
 - (BOOL)isEmpty;
 @end
 
@@ -77,6 +76,7 @@ NS_ASSUME_NONNULL_BEGIN
 @property (nonatomic, copy) NSString *applicationID;
 @property (nonatomic, copy) NSString *viewID;
 @property (nonatomic, strong,nullable) NSArray<NSNumber *> *webViewSlotIDs;
+@property (nonatomic, strong) NSDictionary *bindInfo;
 -(instancetype)initWithContext:(FTSRContext*)context records:(NSArray<FTSRRecord>*)records;
 @end
 
@@ -94,5 +94,6 @@ NS_ASSUME_NONNULL_BEGIN
 @property (nonatomic, copy) NSString *applicationID;
 @property (nonatomic, copy) NSString *viewID;
 @property (nonatomic, strong) NSArray *records;
+@property (nonatomic, strong) NSDictionary *bindInfo;
 @end
 NS_ASSUME_NONNULL_END

@@ -18,6 +18,9 @@ NSString *const kAllowedHostsPlaceholder = @"__ALLOWED_HOSTS__";
 NSString *const kCapabilitiesPlaceholder = @"__CAPABILITIES__";
 NSString *const kPrivacyLevelPlaceholder = @"__PRIVACY_LEVEL__";
 NSString *const kFTJsCodePrefix = @"/* FTWebViewJavascriptBridge */";
+@implementation FTBindInfo
+
+@end
 @interface FTWKWebViewJavascriptBridge()
 @property (nonatomic, weak) WKWebView *webView;
 @end
@@ -27,6 +30,7 @@ NSString *const kFTJsCodePrefix = @"/* FTWebViewJavascriptBridge */";
 }
 + (instancetype)bridgeForWebView:(WKWebView*)webView allowWebViewHostsString:(NSString *)hostsString{
     FTWKWebViewJavascriptBridge* bridge = [[self alloc] init];
+    bridge.bindInfo = [[FTBindInfo alloc] init];
     [bridge _setupInstance:webView allowWebViewHostsString:hostsString];
     return bridge;
 }

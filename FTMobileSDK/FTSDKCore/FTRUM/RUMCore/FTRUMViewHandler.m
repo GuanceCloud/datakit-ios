@@ -201,7 +201,11 @@
 }
 - (void)writeErrorData:(FTRUMDataModel *)model context:(NSDictionary *)context{
     NSDictionary *sessionViewTag = [self.context getGlobalSessionViewActionTags];
-    NSMutableDictionary *tags = [NSMutableDictionary dictionaryWithDictionary:context];
+    NSMutableDictionary *tags = [NSMutableDictionary dictionary];
+    if (context) {
+        [tags addEntriesFromDictionary:context];
+    }
+    [tags setValue:self.rumDependencies.networkType forKey:@"network_type"];
     [tags addEntriesFromDictionary:sessionViewTag];
     [tags addEntriesFromDictionary:model.tags];
     NSMutableDictionary *fields = [NSMutableDictionary new];
@@ -220,7 +224,13 @@
     //Nanosecond level
     NSNumber *nTimeSpent = [NSNumber numberWithLongLong:sTimeSpent * 1000000000];
     
-    NSMutableDictionary *tags = [NSMutableDictionary dictionaryWithDictionary:context];
+    NSMutableDictionary *tags = [NSMutableDictionary dictionary];
+    NSMutableDictionary *viewUserCustomDatas = [NSMutableDictionary dictionary];
+    if (context) {
+        [tags addEntriesFromDictionary:context];
+        [viewUserCustomDatas addEntriesFromDictionary:context];
+    }
+    [tags setValue:self.rumDependencies.networkType forKey:@"network_type"];
     [tags addEntriesFromDictionary:[self.context getGlobalSessionViewTags]];
     FTMonitorValue *cpu = self.monitorItem.cpu;
     FTMonitorValue *memory = self.monitorItem.memory;
@@ -249,6 +259,7 @@
     }
     if(self.viewProperty && self.viewProperty.allKeys.count>0){
         [fields addEntriesFromDictionary:self.viewProperty];
+        [viewUserCustomDatas addEntriesFromDictionary:self.viewProperty];
     }
     if (cpu && cpu.greatestDiff>=0) {
         [fields setValue:@(cpu.greatestDiff) forKey:FT_CPU_TICK_COUNT];
@@ -272,6 +283,7 @@
     }
     long long time = [self.viewStartTime ft_nanosecondTimeStamp];
     [self.rumDependencies.writer rumWrite:FT_RUM_SOURCE_VIEW tags:tags fields:fields time:time updateTime:[updateTime ft_nanosecondTimeStamp]];
+    self.rumDependencies.lastViewUserCustomDatas = viewUserCustomDatas;
     self.rumDependencies.fatalErrorContext.lastViewContext = @{@"tags":tags,
                                                                @"fields":fields,
                                                                @"time":[NSNumber numberWithLongLong:time]

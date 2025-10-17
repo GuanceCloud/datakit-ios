@@ -30,7 +30,7 @@ NSString * const AppStateStringMap[] = {
 };
 void *FTRUMQueueIdentityKey = &FTRUMQueueIdentityKey;
 
-@interface FTRUMManager()<FTRUMSessionProtocol,FTMessageReceiver>
+@interface FTRUMManager()<FTRUMSessionProtocol,FTMessageReceiver,FTNetworkChangeObserver>
 @property (nonatomic, strong) FTRUMDependencies *rumDependencies;
 @property (nonatomic, strong) FTRUMSessionHandler *sessionHandler;
 @property (nonatomic, strong) FTReadWriteHelper<NSMutableDictionary *> *preViewDuration;
@@ -46,6 +46,8 @@ void *FTRUMQueueIdentityKey = &FTRUMQueueIdentityKey;
         _rumQueue = dispatch_queue_create("com.ft.rum", DISPATCH_QUEUE_SERIAL);
         dispatch_queue_set_specific(_rumQueue, FTRUMQueueIdentityKey, &FTRUMQueueIdentityKey, NULL);
         [[FTModuleManager sharedInstance] addMessageReceiver:self];
+        [[FTNetworkConnectivity sharedInstance] addNetworkObserver:self];
+        _rumDependencies.networkType = [FTNetworkConnectivity sharedInstance].networkType;
         [self notifyRumInit];
         self.assistant = self;
     }
@@ -83,6 +85,12 @@ void *FTRUMQueueIdentityKey = &FTRUMQueueIdentityKey;
 -(void)setAppState:(FTAppState)appState{
     _appState = appState;
     self.rumDependencies.fatalErrorContext.appState = AppStateStringMap[appState];
+}
+#pragma mark - Network Change Observer -
+- (void)connectivityChanged:(BOOL)connected typeDescription:(NSString *)typeDescription{
+    dispatch_async(self.rumQueue, ^{
+        self.rumDependencies.networkType = [FTNetworkConnectivity sharedInstance].networkType;
+    });
 }
 #pragma mark - Session -
 -(void)notifyRumInit{
@@ -494,16 +502,23 @@ void *FTRUMQueueIdentityKey = &FTRUMQueueIdentityKey;
             return nil;
         }
         NSMutableDictionary *dict = [NSMutableDictionary new];
-        [dict addEntriesFromDictionary:[strongSelf getCurrentSessionInfo]];
-        [dict setValue:@(self.rumDependencies.sampledForErrorSession) forKey:FT_RUM_KEY_SAMPLED_FOR_ERROR_SESSION];
-        return dict;
+        NSDictionary *sessionDict = [strongSelf getCurrentSessionInfo];
+        if (sessionDict){
+            [dict addEntriesFromDictionary:sessionDict];
+            NSDictionary *context = strongSelf.rumDependencies.lastViewUserCustomDatas;
+            if (context) {
+                [dict addEntriesFromDictionary:@{@"bindInfo":context}];
+            }
+            [dict setValue:@(strongSelf.rumDependencies.sampledForErrorSession) forKey:FT_RUM_KEY_SAMPLED_FOR_ERROR_SESSION];
+            return dict;
+        }
+        return nil;
     }];
     return YES;
 }
 -(NSDictionary *)rumDynamicProperty{
     NSMutableDictionary *dict = [NSMutableDictionary dictionary];
     @try {
-        dict[@"network_type"] = [FTNetworkConnectivity sharedInstance].networkType;
         [dict addEntriesFromDictionary:[[FTPresetProperty sharedInstance] rumDynamicTags]];
     } @catch (NSException *exception) {
         FTInnerLogError(@"exception %@",exception);

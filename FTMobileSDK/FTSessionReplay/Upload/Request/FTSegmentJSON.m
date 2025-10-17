@@ -33,6 +33,7 @@
         }
         _recordsCount = array.count;
         _records = array;
+        _bindInfo = dict[@"bindInfo"];
     }
     return self;
 }
@@ -44,6 +45,16 @@
     _end = MAX(_end, another.end);
     _recordsCount = _recordsCount + another.recordsCount;
     _hasFullSnapshot = _hasFullSnapshot || another.hasFullSnapshot;
+    if (_bindInfo || another.bindInfo) {
+        NSMutableDictionary *dict = [NSMutableDictionary new];
+        if (_bindInfo) {
+            [dict addEntriesFromDictionary:_bindInfo];
+        }
+        if (another.bindInfo) {
+            [dict addEntriesFromDictionary:another.bindInfo];
+        }
+        _bindInfo = dict;
+    }
 }
 +(FTJSONKeyMapper *)keyMapper{
     FTJSONKeyMapper *keyMapper = [[FTJSONKeyMapper alloc]initWithModelToJSONDictionary:@{

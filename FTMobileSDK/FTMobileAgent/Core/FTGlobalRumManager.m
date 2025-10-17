@@ -91,55 +91,14 @@ static NSObject *sharedInstanceLock;
 }
 #pragma mark ========== jsBridge ==========
 #if !TARGET_OS_TV
-- (void)dealReceiveScriptMessage:(id )message slotId:(int64_t)slotID viewId:(NSString *)viewId{
-    @try {
-        NSDictionary *messageDic = [message isKindOfClass:NSDictionary.class]?message:[FTJSONUtil dictionaryWithJsonString:message];
-        
-        if (![messageDic isKindOfClass:[NSDictionary class]]) {
-            FTInnerLogError(@"Message body is formatted failure from JS SDK");
-            return;
-        }
-        NSString *name = messageDic[@"name"];
-        if ([name isEqualToString:@"rum"]) {
-            NSDictionary *data = messageDic[@"data"];
-            NSString *measurement = data[FT_MEASUREMENT];
-            NSMutableDictionary *tags = [data[FT_TAGS] mutableCopy];
-            NSString *version = [tags valueForKey:FT_SDK_VERSION];
-            if(version&&version.length>0){
-                [tags setValue:@{@"web":version} forKey:FT_SDK_PKG_INFO];
-            }
-            NSDictionary *fields = data[FT_FIELDS];
-            long long time = [data[@"time"] longLongValue];
-            long long fixTime = time * 1000000;
-            // Web time data is in milliseconds, native needs nanoseconds, need to convert units
-            // Check if overflow
-            if (time == fixTime/1000000) {
-                time = fixTime;
-            }
-            //            if ([measurement isEqualToString:@"view"]) {
-            if (viewId) {
-                [tags setValue:@{@"source":@"ios",@"view_id":viewId} forKey:@"container"];
-            }
-            //            }
-            if (measurement && fields.count>0) {
-                if ([measurement isEqualToString:FT_RUM_SOURCE_VIEW]) {
-                    if (tags[FT_KEY_VIEW_REFERRER] == nil) {
-                        [tags setValue:self.rumManager.viewReferrer forKey:FT_KEY_VIEW_REFERRER];
-                    }
-                }
-               [self.rumManager addWebViewData:measurement tags:tags fields:fields tm:time];
-            }
-        }else if ([name isEqualToString:@"session_replay"]){
-            NSMutableDictionary *dict = [messageDic mutableCopy];
-            [dict setValue:[NSString stringWithFormat:@"%lld",slotID] forKey:@"slotId"];
-            [[FTModuleManager sharedInstance] postMessage:FTMessageKeyWebViewSR message:dict];
-        }
-    } @catch (NSException *exception) {
-        FTInnerLogError(@"%@ error: %@", self, exception);
-    }
+- (void)dealRUMWebViewData:(NSString *)measurement tags:(NSDictionary *)tags fields:(NSDictionary *)fields tm:(long long)tm{
+    [self.rumManager addWebViewData:measurement tags:tags fields:fields tm:tm];
 }
 - (NSString *)getLastHasReplayViewID{
     return self.rumManager.viewReferrerId;
+}
+-(NSString *)getLastViewName{
+    return self.rumManager.viewReferrer;
 }
 #endif
 #pragma mark ========== FTRunloopDetectorDelegate ==========

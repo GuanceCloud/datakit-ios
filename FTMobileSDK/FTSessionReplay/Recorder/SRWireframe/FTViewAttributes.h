@@ -22,6 +22,8 @@ NS_ASSUME_NONNULL_BEGIN
 @property (nonatomic, copy) NSString *sessionID;
 @property (nonatomic, copy) NSString *viewID;
 @property (nonatomic, strong) NSDate *date;
+@property (nonatomic, copy) NSDictionary *bindInfo;
+
 @end
 
 @interface FTViewAttributes : NSObject

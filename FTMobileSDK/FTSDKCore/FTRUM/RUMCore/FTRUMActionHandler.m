@@ -135,7 +135,11 @@ static const NSTimeInterval discreteActionTimeoutDuration = 0.1;
     if(self.actionProperty && self.actionProperty.allKeys.count>0){
         [fields addEntriesFromDictionary:self.actionProperty];
     }
-    NSMutableDictionary *tags = [NSMutableDictionary dictionaryWithDictionary:context];
+    NSMutableDictionary *tags = [NSMutableDictionary dictionary];
+    if (context) {
+        [tags addEntriesFromDictionary:context];
+    }
+    [tags setValue:self.dependencies.networkType forKey:@"network_type"];
     [tags addEntriesFromDictionary:sessionViewActionTag];
     [tags setValue:self.action_type forKey:FT_KEY_ACTION_TYPE];
     [self.dependencies.writer rumWrite:FT_RUM_SOURCE_ACTION tags:tags fields:fields time:[self.actionStartTime ft_nanosecondTimeStamp]];
