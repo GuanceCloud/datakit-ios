@@ -112,6 +112,6 @@ Pod::Spec.new do |s|
 	s.subspec 'FTSessionReplay' do |sr|
 		 sr.platform = :ios, '10.0'
 		 sr.source_files =  'FTMobileSDK/FTSessionReplay/**/*{.h,.m}'
-		 sr.dependency 'FTMobileSDK/FTSDKCore'
+		 sr.dependency 'FTMobileSDK/FTMobileAgent'
 	end
 end
