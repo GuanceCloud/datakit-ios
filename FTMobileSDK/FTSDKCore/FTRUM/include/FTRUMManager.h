@@ -92,7 +92,7 @@ NS_ASSUME_NONNULL_BEGIN
  */
 - (void)addLongTaskWithStack:(NSString *)stack duration:(NSNumber *)duration startTime:(long long)time property:(nullable NSDictionary *)property;
 #pragma mark - get LinkRumData -
-
+- (nullable NSString *)getLastHasReplayViewIDWithSRBindInfo:(NSDictionary *)info;
 /// Wait for all rum processing data to be processed
 - (void)syncProcess;
 @end

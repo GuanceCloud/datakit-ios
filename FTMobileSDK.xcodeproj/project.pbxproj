@@ -732,6 +732,8 @@
 		17C4F1732D671AFC00F97A7F /* NSData+FTHelper.m in Sources */ = {isa = PBXBuildFile; fileRef = 17C4F0A72D671AFC00F97A7F /* NSData+FTHelper.m */; };
 		17C4F1752D671AFC00F97A7F /* FTSRWireframe.m in Sources */ = {isa = PBXBuildFile; fileRef = 17C4F0872D671AFC00F97A7F /* FTSRWireframe.m */; };
 		17C4F1762D671AFC00F97A7F /* FTViewTreeRecorder.m in Sources */ = {isa = PBXBuildFile; fileRef = 17C4F0702D671AFC00F97A7F /* FTViewTreeRecorder.m */; };
+		17C930EA2EA79E30002800BF /* FTDefaultUIKitViewTrackingHandler+LinkRumKeys.m in Sources */ = {isa = PBXBuildFile; fileRef = 17C930E92EA79E30002800BF /* FTDefaultUIKitViewTrackingHandler+LinkRumKeys.m */; };
+		17C930EB2EA79E30002800BF /* FTDefaultUIKitViewTrackingHandler+LinkRumKeys.h in Headers */ = {isa = PBXBuildFile; fileRef = 17C930E82EA79E30002800BF /* FTDefaultUIKitViewTrackingHandler+LinkRumKeys.h */; };
 		17D0681A2D23F48B00D59159 /* FTTraceContext.m in Sources */ = {isa = PBXBuildFile; fileRef = 17D068192D23F48B00D59159 /* FTTraceContext.m */; };
 		17D0681B2D23F48B00D59159 /* FTTraceContext.h in Headers */ = {isa = PBXBuildFile; fileRef = 17D068182D23F48B00D59159 /* FTTraceContext.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		17D0681C2D23F48B00D59159 /* FTTraceContext.m in Sources */ = {isa = PBXBuildFile; fileRef = 17D068192D23F48B00D59159 /* FTTraceContext.m */; };
@@ -1185,6 +1187,8 @@
 		17C4F0DF2D671AFC00F97A7F /* FTSessionReplayConfig+Private.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = "FTSessionReplayConfig+Private.h"; sourceTree = "<group>"; };
 		17C4F0E02D671AFC00F97A7F /* FTSessionReplayFeature.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = FTSessionReplayFeature.h; sourceTree = "<group>"; };
 		17C4F0E12D671AFC00F97A7F /* FTSessionReplayFeature.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = FTSessionReplayFeature.m; sourceTree = "<group>"; };
+		17C930E82EA79E30002800BF /* FTDefaultUIKitViewTrackingHandler+LinkRumKeys.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = "FTDefaultUIKitViewTrackingHandler+LinkRumKeys.h"; sourceTree = "<group>"; };
+		17C930E92EA79E30002800BF /* FTDefaultUIKitViewTrackingHandler+LinkRumKeys.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = "FTDefaultUIKitViewTrackingHandler+LinkRumKeys.m"; sourceTree = "<group>"; };
 		17D068182D23F48B00D59159 /* FTTraceContext.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = FTTraceContext.h; sourceTree = "<group>"; };
 		17D068192D23F48B00D59159 /* FTTraceContext.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = FTTraceContext.m; sourceTree = "<group>"; };
 		17D068202D26668400D59159 /* NSURLSessionTask+FTSwizzler.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = "NSURLSessionTask+FTSwizzler.h"; sourceTree = "<group>"; };
@@ -1823,6 +1827,8 @@
 				17C4F0DF2D671AFC00F97A7F /* FTSessionReplayConfig+Private.h */,
 				17C4F0E02D671AFC00F97A7F /* FTSessionReplayFeature.h */,
 				17C4F0E12D671AFC00F97A7F /* FTSessionReplayFeature.m */,
+				17C930E82EA79E30002800BF /* FTDefaultUIKitViewTrackingHandler+LinkRumKeys.h */,
+				17C930E92EA79E30002800BF /* FTDefaultUIKitViewTrackingHandler+LinkRumKeys.m */,
 			);
 			name = FTSessionReplay;
 			path = FTMobileSDK/FTSessionReplay;
@@ -2600,6 +2606,7 @@
 				17C4F1262D671AFC00F97A7F /* UIView+FTSR.h in Headers */,
 				173D9C7C2E67E82400DF10B8 /* FTRumConfig.h in Headers */,
 				173D9C7D2E67E82400DF10B8 /* FTRumConfig+Private.h in Headers */,
+				17C930EB2EA79E30002800BF /* FTDefaultUIKitViewTrackingHandler+LinkRumKeys.h in Headers */,
 				17C4F1272D671AFC00F97A7F /* FTSessionReplayFeature.h in Headers */,
 				17C4F1282D671AFC00F97A7F /* FTFileWriter.h in Headers */,
 				17C4F1292D671AFC00F97A7F /* UIImage+FTSRIdentifier.h in Headers */,
@@ -3087,6 +3094,7 @@
 				17D068272D26668400D59159 /* NSURLSessionTask+FTSwizzler.m in Sources */,
 				17F10DAE2D13C88A00737EDD /* FTNetworkConnectivity.m in Sources */,
 				173D9CFF2E67E9F400DF10B8 /* FTAppLaunchTracker.m in Sources */,
+				17C930EA2EA79E30002800BF /* FTDefaultUIKitViewTrackingHandler+LinkRumKeys.m in Sources */,
 				178649352A1DB58400521187 /* FTLogger.m in Sources */,
 				17AB76F329D432DE008FBBF5 /* FTRUMActionHandler.m in Sources */,
 				17E4CBDC29CD42E4005C2D99 /* FTTracer.m in Sources */,

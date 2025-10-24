@@ -94,8 +94,8 @@ static NSObject *sharedInstanceLock;
 - (void)dealRUMWebViewData:(NSString *)measurement tags:(NSDictionary *)tags fields:(NSDictionary *)fields tm:(long long)tm{
     [self.rumManager addWebViewData:measurement tags:tags fields:fields tm:tm];
 }
-- (NSString *)getLastHasReplayViewID{
-    return self.rumManager.viewReferrerId;
+- (nullable NSString *)getLastHasReplayViewIDWithSRBindInfo:(NSDictionary *)info{
+    return [self.rumManager getLastHasReplayViewIDWithSRBindInfo:info];
 }
 -(NSString *)getLastViewName{
     return self.rumManager.viewReferrer;

@@ -44,8 +44,9 @@
 @property (nonatomic, assign) BOOL sampledForErrorReplay;
 @property (nonatomic, strong) FTFeatureStorage *recordStorage;
 @property (nonatomic, strong) id<FTWriter> webViewWriter;
-@property (atomic, copy) NSString *lastViewID;
+@property (nonatomic, copy) NSString *lastViewID;
 @property (nonatomic, strong) FTLimitedSizeSet *needCheckSlots;
+@property (atomic, assign) BOOL needFullSnapshot;
 
 @end
 @implementation FTSessionReplayFeature
@@ -133,10 +134,17 @@
 }
 - (void)receive:(NSString *)key message:(NSDictionary *)message {
     if([key isEqualToString:FTMessageKeyRUMContext]){
-        if ([self.currentRUMContext isEqualToDictionary:message]) {
-            return;
-        }
-        [self onRUMContextChanged:message];
+        __weak typeof(self) weakSelf = self;
+        dispatch_async(self.processorsQueue, ^{
+            __strong __typeof(weakSelf) strongSelf = weakSelf;
+            if (!strongSelf) {
+                return;
+            }
+            if ([strongSelf.currentRUMContext isEqualToDictionary:message]) {
+                return;
+            }
+            [strongSelf onRUMContextChanged:message];
+        });
     }else if ([key isEqualToString:FTMessageKeyWebViewSR]){
         __weak typeof(self) weakSelf = self;
         id <FTWriter> webViewWriter = self.webViewWriter;
@@ -189,10 +197,8 @@
         if (self.sampledForErrorReplay != sampledForErrorReplay) {
             self.sampledForErrorReplay = sampledForErrorReplay;
         }
-        [self checkLinkRumKeys:context];
-    }else if(![context[FT_KEY_VIEW_ID] isEqualToString:rumContext[FT_KEY_VIEW_ID]]){
-        [self checkLinkRumKeys:context];
     }
+    [self checkLinkRumKeys:context];
     self.currentRUMContext = context;
     [self evaluateRecordingConditions];
 }
@@ -208,7 +214,10 @@
             while ((key = en.nextObject) != nil) {
                 [infoDict setValue:bindInfo[key] forKey:key];
             }
-            self.bindInfo = infoDict?:nil;
+            if (infoDict && ![infoDict isEqualToDictionary:self.bindInfo]) {
+                self.bindInfo = [infoDict copy];
+                self.needFullSnapshot = YES;
+            }
         }
     }
 }
@@ -246,6 +255,8 @@
         context.touchPrivacy = self.config.touchPrivacy;
         context.textAndInputPrivacy = self.config.textAndInputPrivacy;
         context.bindInfo = self.bindInfo;
+        context.needFullSnapshot = self.needFullSnapshot;
+        self.needFullSnapshot = NO;
         [self.windowRecorder taskSnapShot:context touchSnapshot:[self.touches takeTouchSnapshotWithContext:context]];
     } @catch (NSException *exception) {
         FTInnerLogError(@"[session-replay] EXCEPTION: %@", exception.description);

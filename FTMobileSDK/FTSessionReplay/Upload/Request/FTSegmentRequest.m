@@ -12,6 +12,8 @@
 #import "FTNetworkInfoManager.h"
 #import "FTCompression.h"
 #import "FTSegmentJSON.h"
+#import "FTLog+Private.h"
+
 @interface FTSegmentRequest()
 @property (nonatomic, strong) id<FTMultipartFormBodyProtocol> multipartFormBody;
 @property (nonatomic, strong) NSDictionary *parameters;
@@ -96,10 +98,9 @@
     [segmentJson setValue:@(self.segment.start) forKey:@"start"];
     [segmentJson addEntriesFromDictionary:self.parameters];
     if (bindInfo) {
-        for (NSString *key in bindInfo.allKeys) {
-            [self.multipartFormBody addFormField:key value:bindInfo[key]];
-        }
+        [segmentJson addEntriesFromDictionary:bindInfo];
     }
+    FTInnerLogDebug(@"[Segment Request] segmentJson:%@",segmentJson);
     for (NSString *key in segmentJson.allKeys) {
         [self.multipartFormBody addFormField:key value:segmentJson[key]];
     }

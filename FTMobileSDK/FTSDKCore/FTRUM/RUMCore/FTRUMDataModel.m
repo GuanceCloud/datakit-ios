@@ -107,6 +107,9 @@
 }
 
 @end
+@implementation FTRUMSRLinkInfoData
+
+@end
 @implementation FTRUMContext
 -(instancetype)initWithAppID:(NSString *)appID{
     self = [super init];

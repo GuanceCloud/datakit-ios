@@ -24,6 +24,7 @@ typedef NS_ENUM(NSUInteger, FTRUMDataType) {
     FTRUMDataResourceStop,
     FTRUMDataResourceError,
     FTRUMDataWebViewJSBData,
+    FTRUMSRLinkInfo,
 };
 
 NS_ASSUME_NONNULL_BEGIN
@@ -75,6 +76,10 @@ NS_ASSUME_NONNULL_BEGIN
 @property (nonatomic, copy) NSString *measurement;
 -(instancetype)initWithMeasurement:(NSString *)measurement tm:(long long )tm;
 @end
+@interface FTRUMSRLinkInfoData : FTRUMDataModel
+@property (nonatomic, copy) NSString *view_id;
+@end
+
 @interface FTRUMErrorData : FTRUMDataModel
 @property (nonatomic, assign) BOOL fatal;
 @end

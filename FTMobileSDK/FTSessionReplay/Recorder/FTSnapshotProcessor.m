@@ -74,7 +74,7 @@ NSTimeInterval const kFullSnapshotInterval = 20.0;
         // 3.Determine if it's new addition or new View
         BOOL isNewView = self.lastSnapshot == nil || self.lastSnapshot.context.sessionID != viewTreeSnapshot.context.sessionID || self.lastSnapshot.context.viewID != viewTreeSnapshot.context.viewID;
         BOOL isTimeForFullSnapshot = [self isTimeForFullSnapshot];
-        BOOL fullSnapshotRequired = isNewView || isTimeForFullSnapshot;
+        BOOL fullSnapshotRequired = isNewView || isTimeForFullSnapshot || viewTreeSnapshot.context.needFullSnapshot;
         // 3.1.New view full save
         if (isNewView || fullSnapshotRequired){
             force = YES;

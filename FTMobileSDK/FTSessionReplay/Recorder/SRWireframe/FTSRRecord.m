@@ -191,7 +191,7 @@
                 [adds addObject:add];
             }else{
                 FTSRWireframe *update = [lastWireframes[indexInOld] compareWithNewWireFrame:newWireframes[i] error:error];
-                if(error){
+                if (error != nil && *error != nil) {
                     return;
                 }
                 if(update){

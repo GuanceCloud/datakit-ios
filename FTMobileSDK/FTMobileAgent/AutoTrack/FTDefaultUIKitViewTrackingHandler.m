@@ -17,12 +17,16 @@
         [viewController.parentViewController isKindOfClass:[UISplitViewController class]]) {
         
         if([self shouldTrackViewController:viewController]){
-            return [[FTRUMView alloc]initWithViewName:viewController.ft_viewControllerName];
+            return [self createRUMView:viewController];
         }
     }
     return nil;
 }
 - (BOOL)shouldTrackViewController:(UIViewController *)viewController{
     return ![viewController isBlackListContainsViewController];
+}
+
+- (FTRUMView *)createRUMView:(UIViewController *)viewController{
+    return [[FTRUMView alloc]initWithViewName:viewController.ft_viewControllerName];
 }
 @end

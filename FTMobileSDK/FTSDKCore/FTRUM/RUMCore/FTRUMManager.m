@@ -536,6 +536,26 @@ void *FTRUMQueueIdentityKey = &FTRUMQueueIdentityKey;
     }
     return nil;
 }
+- (NSString *)getLastHasReplayViewIDWithSRBindInfo:(NSDictionary *)info{
+    NSString *viewID = self.viewReferrerId;
+    if (viewID && info) {
+        NSDictionary *context = [self rumDynamicProperty];
+        dispatch_async(self.rumQueue, ^{
+            @try {
+                FTRUMSRLinkInfoData *model = [[FTRUMSRLinkInfoData alloc]init];
+                model.type = FTRUMSRLinkInfo;
+                model.tags = @{};
+                model.view_id = viewID;
+                model.fields = info;
+                [self process:model context:context];
+            } @catch (NSException *exception) {
+                FTInnerLogError(@"exception %@",exception);
+            }
+        });
+        
+    }
+    return viewID;
+}
 -(NSDictionary *)getCurrentSessionInfo{
     return self.rumDependencies.fatalErrorContext.lastSessionContext;
 }

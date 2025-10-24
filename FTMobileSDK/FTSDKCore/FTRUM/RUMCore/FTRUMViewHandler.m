@@ -131,6 +131,15 @@
                 [self writeErrorData:model context:context];
             }
             break;
+        case FTRUMSRLinkInfo:
+            if (self.isActiveView) {
+                FTRUMSRLinkInfoData *info = (FTRUMSRLinkInfoData *)model;
+                if (info.fields && [self.view_id isEqualToString:info.view_id]) {
+                    [self.viewProperty addEntriesFromDictionary:info.fields];
+                }
+                self.needUpdateView = YES;
+            }
+            break;
         default:
             break;
     }

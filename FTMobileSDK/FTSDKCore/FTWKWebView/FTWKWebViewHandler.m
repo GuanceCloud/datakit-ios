@@ -32,6 +32,7 @@
 @property (nonatomic, assign) BOOL enableTraceWebView;
 @end
 @implementation FTWKWebViewHandler
+@synthesize whiteLists = _whiteLists;
 static FTWKWebViewHandler *sharedInstance = nil;
 static NSObject *sharedInstanceLock;
 + (void)initialize{
@@ -82,6 +83,31 @@ static NSObject *sharedInstanceLock;
                          withMethod:@selector(ft_dealloc)
                               error:&error];
     });
+}
+-(void)setWhiteLists:(NSArray *)whiteLists{
+    [self.lock lock];
+    _whiteLists = [whiteLists copy];
+    self.linkRumInfos = [NSMapTable weakToStrongObjectsMapTable];
+    [self.lock unlock];
+}
+-(NSArray *)whiteLists{
+    id list = nil;
+    [self.lock lock];
+    list = [_whiteLists copy];
+    [self.lock unlock];
+    return list;
+}
+-(NSMapTable *)linkRumInfos{
+    id infos = nil;
+    [self.lock lock];
+    infos = [_linkRumInfos copy];
+    [self.lock unlock];
+    return infos;
+}
+- (void)addLinkRumInfos:(UIViewController *)viewController infos:(NSDictionary *)infos{
+    [self.lock lock];
+    [_linkRumInfos setObject:infos forKey:viewController];
+    [self.lock unlock];
 }
 #pragma mark request
 - (void)addWebView:(WKWebView *)webView bridge:(id)bridge{
@@ -150,17 +176,11 @@ static NSObject *sharedInstanceLock;
         FTInnerLogInfo(@"[WebView] webView(%lld) start bridge",(uint64_t)webView.hash);
         FTWKWebViewJavascriptBridge *bridge = [FTWKWebViewJavascriptBridge bridgeForWebView:webView allowWebViewHostsString:hostsString];
         FTBindInfo *bindInfo = [[FTBindInfo alloc] init];
-        bindInfo.viewId = [self.rumTrackDelegate getLastHasReplayViewID];
+        bindInfo.container = [self findViewControllerForWebView:webView];
         __weak typeof(self) weakSelf = self;
         [bridge registerHandler:@"sendEvent" handler:^(id data, int64_t slotId,WVJBResponseCallback responseCallback) {
             __strong __typeof(weakSelf) strongSelf = weakSelf;
             if (!strongSelf || !strongSelf.rumTrackDelegate) return;
-            if (!bindInfo.viewId) {
-                 bindInfo.viewId = strongSelf.rumTrackDelegate ? [strongSelf.rumTrackDelegate getLastHasReplayViewID] : nil;
-            }
-            if (!bindInfo.viewReferrer) {
-                 bindInfo.viewReferrer = strongSelf.rumTrackDelegate ? [strongSelf.rumTrackDelegate getLastViewName] : nil;
-            }
             [strongSelf dealReceiveScriptMessage:data slotId:slotId info:bindInfo];
         }];
         [self addWebView:webView bridge:bridge];
@@ -168,6 +188,17 @@ static NSObject *sharedInstanceLock;
     @catch (NSException *exception) {
         FTInnerLogError(@"exception: %@",exception);
     }
+}
+- (nullable UIViewController *)findViewControllerForWebView:(nonnull WKWebView *)webView {
+    UIView *currentView = webView;
+    while (currentView) {
+        UIResponder *nextResponder = currentView.nextResponder;
+        if ([nextResponder isKindOfClass:[UIViewController class]]) {
+            return (UIViewController *)nextResponder;
+        }
+        currentView = currentView.superview;
+    }
+    return nil;
 }
 - (void)dealReceiveScriptMessage:(id )message slotId:(int64_t)slotID info:(FTBindInfo *)info{
     @try {
@@ -194,15 +225,9 @@ static NSObject *sharedInstanceLock;
             if (time == fixTime/1000000) {
                 time = fixTime;
             }
-            if ([measurement isEqualToString:@"view"]) {
-                NSString *viewID = info.viewId;
-                if (viewID) {
-                    [tags setValue:@{@"source":@"ios",@"view_id":viewID} forKey:@"container"];
-                }
-            }
             if (measurement && fields.count>0) {
                 if ([measurement isEqualToString:FT_RUM_SOURCE_VIEW]) {
-                    NSArray *whiteLists = [self.whiteLists copy];
+                    NSArray *whiteLists = self.whiteLists;
                     if (whiteLists.count>0 && (info.bindInfo == nil ||  info.bindInfo.count == 0)) {
                         NSMutableDictionary *infoDict = [[NSMutableDictionary alloc]init];
                         NSEnumerator *en = [whiteLists objectEnumerator];
@@ -210,7 +235,17 @@ static NSObject *sharedInstanceLock;
                         while ((key = en.nextObject) != nil) {
                             [infoDict setValue:fields[key] forKey:key];
                         }
-                        info.bindInfo = infoDict;
+                        info.bindInfo = [infoDict copy];
+                        [self addLinkRumInfos:info.container infos:info.bindInfo];
+                    }
+                    if (!info.viewId) {
+                        info.viewId = self.rumTrackDelegate ? [self.rumTrackDelegate getLastHasReplayViewIDWithSRBindInfo:info.bindInfo] : nil;
+                    }
+                    if (info.viewId) {
+                        [tags setValue:@{@"source":@"ios",@"view_id":info.viewId} forKey:@"container"];
+                    }
+                    if (!info.viewReferrer) {
+                        info.viewReferrer = self.rumTrackDelegate ? [self.rumTrackDelegate getLastViewName] : nil;
                     }
                     if (tags[FT_KEY_VIEW_REFERRER] == nil) {
                         [tags setValue:info.viewReferrer forKey:FT_KEY_VIEW_REFERRER];
