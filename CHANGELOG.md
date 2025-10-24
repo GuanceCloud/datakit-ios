@@ -1,3 +1,6 @@
+# 1.6.2-alpha.13
+1. Added RUM Session Replay context association feature and established WebView container binding with loaded HTML content
+---
 # 1.6.2-alpha.12
 1. Fix webView replay failure due to `isVisible` update issue
 ---
