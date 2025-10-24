@@ -156,6 +156,7 @@
                                               @"_UICursorAccessoryViewController",
                                               @"_UISceneHostingViewController",
                                               @"_UIDatePickerContainerViewController",
+                                              @"UITrackingElementWindowController",
                                  ],
             }
         };
