@@ -104,9 +104,9 @@ static NSObject *sharedInstanceLock;
     [self.lock unlock];
     return infos;
 }
-- (void)addLinkRumInfos:(UIViewController *)viewController infos:(NSDictionary *)infos{
+- (void)addLinkRumInfos:(id)container infos:(NSDictionary *)infos{
     [self.lock lock];
-    [_linkRumInfos setObject:infos forKey:viewController];
+    [_linkRumInfos setObject:infos forKey:container];
     [self.lock unlock];
 }
 #pragma mark request
@@ -176,7 +176,9 @@ static NSObject *sharedInstanceLock;
         FTInnerLogInfo(@"[WebView] webView(%lld) start bridge",(uint64_t)webView.hash);
         FTWKWebViewJavascriptBridge *bridge = [FTWKWebViewJavascriptBridge bridgeForWebView:webView allowWebViewHostsString:hostsString];
         FTBindInfo *bindInfo = [[FTBindInfo alloc] init];
+#if TARGET_OS_IOS
         bindInfo.container = [self findViewControllerForWebView:webView];
+#endif
         __weak typeof(self) weakSelf = self;
         [bridge registerHandler:@"sendEvent" handler:^(id data, int64_t slotId,WVJBResponseCallback responseCallback) {
             __strong __typeof(weakSelf) strongSelf = weakSelf;
@@ -189,6 +191,7 @@ static NSObject *sharedInstanceLock;
         FTInnerLogError(@"exception: %@",exception);
     }
 }
+#if TARGET_OS_IOS
 - (nullable UIViewController *)findViewControllerForWebView:(nonnull WKWebView *)webView {
     UIView *currentView = webView;
     while (currentView) {
@@ -200,6 +203,7 @@ static NSObject *sharedInstanceLock;
     }
     return nil;
 }
+#endif
 - (void)dealReceiveScriptMessage:(id )message slotId:(int64_t)slotID info:(FTBindInfo *)info{
     @try {
         NSDictionary *messageDic = [message isKindOfClass:NSDictionary.class]?message:[FTJSONUtil dictionaryWithJsonString:message];
