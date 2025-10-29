@@ -11,8 +11,16 @@
 #import "FTWKWebViewHandler+Private.h"
 #import "FTSwizzler.h"
 #import <objc/runtime.h>
-@implementation WKWebView (FTAutoTrack)
 
+static char *FTWebViewBridge = "FTWebViewBridge";
+
+@implementation WKWebView (FTAutoTrack)
+-(void)setFt_jsBridge:(id)ft_jsBridge{
+    objc_setAssociatedObject(self, &FTWebViewBridge, ft_jsBridge, OBJC_ASSOCIATION_RETAIN_NONATOMIC);
+}
+-(id)ft_jsBridge{
+    return objc_getAssociatedObject(self, &FTWebViewBridge);
+}
 -(WKNavigation *)ft_loadRequest:(NSURLRequest *)request{
     [[FTWKWebViewHandler sharedInstance] innerEnableWebView:self];
     return [self ft_loadRequest:request];

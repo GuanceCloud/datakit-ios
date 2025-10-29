@@ -23,9 +23,9 @@
 
 @interface FTWKWebViewHandler ()
 @property (nonatomic, weak) id<FTWKWebViewRumDelegate> rumTrackDelegate;
-@property (nonatomic, strong) NSMapTable *webViewBridge;
 @property (nonatomic, copy) NSString *allowWebViewHostsString;
-@property (nonatomic, strong) NSLock *lock;
+@property (nonatomic, strong) NSHashTable *allWebViews;
+@property (nonatomic, strong) NSRecursiveLock *lock;
 @property (nonatomic, assign) BOOL enableTraceWebView;
 @end
 @implementation FTWKWebViewHandler
@@ -47,8 +47,8 @@ static NSObject *sharedInstanceLock;
 -(instancetype)init{
     self = [super init];
     if (self) {
-        self.webViewBridge = [NSMapTable weakToStrongObjectsMapTable];
-        self.lock = [NSLock new];
+        self.allWebViews = [NSHashTable hashTableWithOptions:NSPointerFunctionsWeakMemory];
+        self.lock = [[NSRecursiveLock alloc] init];
         self.enableTraceWebView = NO;
     }
     return self;
@@ -81,33 +81,43 @@ static NSObject *sharedInstanceLock;
     });
 }
 #pragma mark request
-- (void)addWebView:(WKWebView *)webView bridge:(id)bridge{
+- (void)setBridge:(FTWKWebViewJavascriptBridge *)bridge forWebView:(WKWebView *)webView{
+    if (!webView || !bridge) return;
     [self.lock lock];
-    [self.webViewBridge setObject:bridge forKey:webView];
+    @try {
+        webView.ft_jsBridge = bridge;
+        [self.allWebViews addObject:webView];
+    } @finally {
+        [self.lock unlock];
+    }
+}
+- (void)addWebView:(WKWebView *)webView{
+    [self.lock lock];
+    [self.allWebViews addObject:webView];
     [self.lock unlock];
 }
-- (id)getWebViewBridge:(WKWebView *)webView{
-    id bridge = nil;
+- (void)removeBridgeForWebView:(WKWebView *)webView{
+    if (!webView) return;
     [self.lock lock];
-    bridge = [self.webViewBridge objectForKey:webView];
-    [self.lock unlock];
-    return bridge;
-}
-- (void)removeWebViewBridge:(WKWebView *)webView{
-    [self.lock lock];
-    [self.webViewBridge removeObjectForKey:webView];
-    [self.lock unlock];
+    @try {
+        FTWKWebViewJavascriptBridge *bridge = webView.ft_jsBridge;
+        [bridge removeScriptMessageHandler];
+        webView.ft_jsBridge = nil;
+        [self.allWebViews removeObject:webView];
+    } @finally {
+        [self.lock unlock];
+    }
 }
 - (void)removeAllWebViewBridges{
     [self.lock lock];
-    NSArray *allBridges = [self.webViewBridge.objectEnumerator allObjects];
-    [self.lock unlock];
-    for (FTWKWebViewJavascriptBridge *bridge in allBridges) {
-        [bridge removeScriptMessageHandler];
+    @try {
+        NSArray<WKWebView *> *webViewSnapshot = [self.allWebViews allObjects];
+        for (WKWebView *webView in webViewSnapshot) {
+            [self removeBridgeForWebView:webView];
+        }
+    } @finally {
+        [self.lock unlock];
     }
-    [self.lock lock];
-    [self.webViewBridge removeAllObjects];
-    [self.lock unlock];
 }
 - (NSString *)transHostsArrayToString:(NSArray *)hosts{
     @try {
@@ -140,7 +150,7 @@ static NSObject *sharedInstanceLock;
 }
 - (void)_enableWebView:(WKWebView *)webView allowedWebViewHostsString:(NSString *)hostsString{
     @try {
-        if ([self getWebViewBridge:webView]) {
+        if (webView.ft_jsBridge) {
             FTInnerLogDebug(@"WebView(%@) already add JSBridge.",webView);
             return;
         }
@@ -156,7 +166,7 @@ static NSObject *sharedInstanceLock;
                 [delegate dealReceiveScriptMessage:data slotId:slotId];
             }
         }];
-        [self addWebView:webView bridge:bridge];
+        [self setBridge:bridge forWebView:webView];
     }
     @catch (NSException *exception) {
         FTInnerLogError(@"exception: %@",exception);
@@ -164,9 +174,7 @@ static NSObject *sharedInstanceLock;
 }
 - (void)disableWebView:(WKWebView *)webView{
     @try {
-        FTWKWebViewJavascriptBridge *bridge = [self getWebViewBridge:webView];
-        [self removeWebViewBridge:webView];
-        [bridge removeScriptMessageHandler];
+        [self removeBridgeForWebView:webView];
     }
     @catch (NSException *exception) {
         FTInnerLogError(@"exception: %@",exception);
@@ -174,6 +182,7 @@ static NSObject *sharedInstanceLock;
 }
 + (void)shutDown{
     @synchronized(sharedInstanceLock) {
+        [sharedInstance removeAllWebViewBridges];
         sharedInstance = nil;
     }
 }
