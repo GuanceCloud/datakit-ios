@@ -15,7 +15,7 @@
     NSMutableDictionary *errorTag = [NSMutableDictionary new];
     if (monitorType & ErrorMonitorMemory) {
         errorTag[FT_MEMORY_TOTAL] = [FTMonitorUtils totalMemorySize];
-        errorTag[FT_MEMORY_USE] = [NSNumber numberWithFloat:[FTMonitorUtils usedMemory]];
+        errorTag[FT_MEMORY_USE] = [NSNumber numberWithFloat:[FTMonitorUtils memoryUsage]];
     }
     if (monitorType & ErrorMonitorCpu) {
         errorTag[FT_CPU_USE] = [NSNumber numberWithLong:[FTMonitorUtils cpuUsage]];
