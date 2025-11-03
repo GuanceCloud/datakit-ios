@@ -7,6 +7,8 @@
 //
 
 #import "FTWKWebViewHandler.h"
+#import "FTWeakMapTable.h"
+
 #if !TARGET_OS_TV
 NS_ASSUME_NONNULL_BEGIN
 /// webView add web-side rum data
@@ -23,7 +25,7 @@ NS_ASSUME_NONNULL_BEGIN
  * key:viewController
  * value:linkRumInfos
  */
-@property (nonatomic, strong) NSMapTable *linkRumInfos;
+@property (nonatomic, strong) FTWeakMapTable *linkRumInfos;
 
 - (void)startWithEnableTraceWebView:(BOOL)enable allowWebViewHost:(nullable NSArray *)hosts rumDelegate:(id<FTWKWebViewRumDelegate>)delegate;
 

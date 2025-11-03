@@ -23,6 +23,7 @@
 #import "FTConstants.h"
 #import "FTModuleManager.h"
 #import "FTJSONUtil.h"
+#import "FTWeakMapTable.h"
 
 @interface FTWKWebViewHandler ()
 @property (nonatomic, weak) id<FTWKWebViewRumDelegate> rumTrackDelegate;
@@ -87,7 +88,7 @@ static NSObject *sharedInstanceLock;
 -(void)setWhiteLists:(NSArray *)whiteLists{
     [self.lock lock];
     _whiteLists = [whiteLists copy];
-    self.linkRumInfos = [NSMapTable weakToStrongObjectsMapTable];
+    self.linkRumInfos = [[FTWeakMapTable alloc]init];
     [self.lock unlock];
 }
 -(NSArray *)whiteLists{
@@ -96,18 +97,6 @@ static NSObject *sharedInstanceLock;
     list = [_whiteLists copy];
     [self.lock unlock];
     return list;
-}
--(NSMapTable *)linkRumInfos{
-    id infos = nil;
-    [self.lock lock];
-    infos = [_linkRumInfos copy];
-    [self.lock unlock];
-    return infos;
-}
-- (void)addLinkRumInfos:(id)container infos:(NSDictionary *)infos{
-    [self.lock lock];
-    [_linkRumInfos setObject:infos forKey:container];
-    [self.lock unlock];
 }
 #pragma mark request
 - (void)addWebView:(WKWebView *)webView bridge:(id)bridge{
@@ -240,7 +229,7 @@ static NSObject *sharedInstanceLock;
                             [infoDict setValue:fields[key] forKey:key];
                         }
                         info.bindInfo = [infoDict copy];
-                        [self addLinkRumInfos:info.container infos:info.bindInfo];
+                        [self.linkRumInfos setObject:info.bindInfo forKey:info.container];
                     }
                     if (!info.viewId) {
                         info.viewId = self.rumTrackDelegate ? [self.rumTrackDelegate getLastHasReplayViewIDWithSRBindInfo:info.bindInfo] : nil;

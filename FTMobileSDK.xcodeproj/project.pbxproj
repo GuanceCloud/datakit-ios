@@ -734,6 +734,12 @@
 		17C4F1762D671AFC00F97A7F /* FTViewTreeRecorder.m in Sources */ = {isa = PBXBuildFile; fileRef = 17C4F0702D671AFC00F97A7F /* FTViewTreeRecorder.m */; };
 		17C930EA2EA79E30002800BF /* FTDefaultUIKitViewTrackingHandler+LinkRumKeys.m in Sources */ = {isa = PBXBuildFile; fileRef = 17C930E92EA79E30002800BF /* FTDefaultUIKitViewTrackingHandler+LinkRumKeys.m */; };
 		17C930EB2EA79E30002800BF /* FTDefaultUIKitViewTrackingHandler+LinkRumKeys.h in Headers */ = {isa = PBXBuildFile; fileRef = 17C930E82EA79E30002800BF /* FTDefaultUIKitViewTrackingHandler+LinkRumKeys.h */; };
+		17C930FE2EB0A4F9002800BF /* FTWeakMapTable.m in Sources */ = {isa = PBXBuildFile; fileRef = 17C930FD2EB0A4F9002800BF /* FTWeakMapTable.m */; };
+		17C930FF2EB0A4F9002800BF /* FTWeakMapTable.h in Headers */ = {isa = PBXBuildFile; fileRef = 17C930FC2EB0A4F9002800BF /* FTWeakMapTable.h */; };
+		17C931002EB0A4F9002800BF /* FTWeakMapTable.h in Headers */ = {isa = PBXBuildFile; fileRef = 17C930FC2EB0A4F9002800BF /* FTWeakMapTable.h */; };
+		17C931012EB0A4F9002800BF /* FTWeakMapTable.m in Sources */ = {isa = PBXBuildFile; fileRef = 17C930FD2EB0A4F9002800BF /* FTWeakMapTable.m */; };
+		17C931022EB0A4F9002800BF /* FTWeakMapTable.m in Sources */ = {isa = PBXBuildFile; fileRef = 17C930FD2EB0A4F9002800BF /* FTWeakMapTable.m */; };
+		17C931032EB0A4F9002800BF /* FTWeakMapTable.h in Headers */ = {isa = PBXBuildFile; fileRef = 17C930FC2EB0A4F9002800BF /* FTWeakMapTable.h */; };
 		17D0681A2D23F48B00D59159 /* FTTraceContext.m in Sources */ = {isa = PBXBuildFile; fileRef = 17D068192D23F48B00D59159 /* FTTraceContext.m */; };
 		17D0681B2D23F48B00D59159 /* FTTraceContext.h in Headers */ = {isa = PBXBuildFile; fileRef = 17D068182D23F48B00D59159 /* FTTraceContext.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		17D0681C2D23F48B00D59159 /* FTTraceContext.m in Sources */ = {isa = PBXBuildFile; fileRef = 17D068192D23F48B00D59159 /* FTTraceContext.m */; };
@@ -1189,6 +1195,8 @@
 		17C4F0E12D671AFC00F97A7F /* FTSessionReplayFeature.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = FTSessionReplayFeature.m; sourceTree = "<group>"; };
 		17C930E82EA79E30002800BF /* FTDefaultUIKitViewTrackingHandler+LinkRumKeys.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = "FTDefaultUIKitViewTrackingHandler+LinkRumKeys.h"; sourceTree = "<group>"; };
 		17C930E92EA79E30002800BF /* FTDefaultUIKitViewTrackingHandler+LinkRumKeys.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = "FTDefaultUIKitViewTrackingHandler+LinkRumKeys.m"; sourceTree = "<group>"; };
+		17C930FC2EB0A4F9002800BF /* FTWeakMapTable.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = FTWeakMapTable.h; sourceTree = "<group>"; };
+		17C930FD2EB0A4F9002800BF /* FTWeakMapTable.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = FTWeakMapTable.m; sourceTree = "<group>"; };
 		17D068182D23F48B00D59159 /* FTTraceContext.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = FTTraceContext.h; sourceTree = "<group>"; };
 		17D068192D23F48B00D59159 /* FTTraceContext.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = FTTraceContext.m; sourceTree = "<group>"; };
 		17D068202D26668400D59159 /* NSURLSessionTask+FTSwizzler.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = "NSURLSessionTask+FTSwizzler.h"; sourceTree = "<group>"; };
@@ -1896,6 +1904,8 @@
 				17E4CB1429CD42DA005C2D99 /* NSString+FTAdd.m */,
 				17E4CB1329CD42DA005C2D99 /* FTEnumConstant.h */,
 				17E4CB0629CD42DA005C2D99 /* FTEnumConstant.m */,
+				17C930FC2EB0A4F9002800BF /* FTWeakMapTable.h */,
+				17C930FD2EB0A4F9002800BF /* FTWeakMapTable.m */,
 				17E4CB1929CD42DA005C2D99 /* FTReadWriteHelper.h */,
 				17E4CB0729CD42DA005C2D99 /* FTReadWriteHelper.m */,
 				17E4CB0829CD42DA005C2D99 /* FTResourceContentModel.h */,
@@ -2241,6 +2251,7 @@
 				174D91A52A2083C300D85AAA /* FTLogger+Private.h in Headers */,
 				171CE1DD2BFB3C550083FC1C /* FTDURLSessionDelegate.h in Headers */,
 				1776072B29D13A3000D17137 /* FTWKWebViewHandler.h in Headers */,
+				17C931002EB0A4F9002800BF /* FTWeakMapTable.h in Headers */,
 				1776064629D1361400D17137 /* FTSwizzler.h in Headers */,
 				1776069029D1372B00D17137 /* FTLog.h in Headers */,
 				1776063D29D135F900D17137 /* FTCrashMonitor.h in Headers */,
@@ -2363,6 +2374,7 @@
 				1776071529D139F700D17137 /* FTURLSessionInstrumentation.h in Headers */,
 				1776067B29D1370600D17137 /* FTAppLifeCycle.h in Headers */,
 				173D9D3F2E67F05800DF10B8 /* FTCrashDebug.h in Headers */,
+				17C931032EB0A4F9002800BF /* FTWeakMapTable.h in Headers */,
 				173D9CFA2E67E9F400DF10B8 /* FTAppLaunchTracker.h in Headers */,
 				176326FD2CBD415800EEDC71 /* FTLinkRumDataProvider.h in Headers */,
 				177155BB2B0F5C3000C26DC4 /* FTURLSessionInterceptor+Private.h in Headers */,
@@ -2453,6 +2465,7 @@
 				17E4CB4129CD42DA005C2D99 /* FTCallStack.h in Headers */,
 				175C7D1029E9439700A7F271 /* FTURLSessionDelegate.h in Headers */,
 				17E4CB4829CD42DA005C2D99 /* FTJsonWriter.h in Headers */,
+				17C930FF2EB0A4F9002800BF /* FTWeakMapTable.h in Headers */,
 				173D9C6A2E67E73300DF10B8 /* FTRUMMonitor.h in Headers */,
 				173D9CFE2E67E9F400DF10B8 /* FTAppLaunchTracker.h in Headers */,
 				17AC174B2B98635C003E18A6 /* NSDate+FTUtil.h in Headers */,
@@ -2784,6 +2797,7 @@
 				17AC17502B98635C003E18A6 /* NSDate+FTUtil.m in Sources */,
 				17AB76D729D432DE008FBBF5 /* FTRUMMonitor.m in Sources */,
 				17400E8D2B4B965600ACBA6C /* FTStackInfo.c in Sources */,
+				17C931012EB0A4F9002800BF /* FTWeakMapTable.m in Sources */,
 				1776069F29D1375D00D17137 /* NSString+FTAdd.m in Sources */,
 				17400E6C2B466EFC00ACBA6C /* FTSignalException.c in Sources */,
 				17E32BA42BEC70E700F4685C /* FTErrorMonitorInfo.m in Sources */,
@@ -2951,6 +2965,7 @@
 				17400E8C2B4B965600ACBA6C /* FTStackInfo.c in Sources */,
 				173D9D402E67F05800DF10B8 /* FTCrashDebug.c in Sources */,
 				17AB76D629D432DE008FBBF5 /* FTRUMMonitor.m in Sources */,
+				17C931022EB0A4F9002800BF /* FTWeakMapTable.m in Sources */,
 				173D9C4D2E67E53E00DF10B8 /* FTRUMAction.m in Sources */,
 				173D9C4E2E67E53E00DF10B8 /* FTRUMView.m in Sources */,
 				1776068329D1371300D17137 /* FTBaseInfoHandler.m in Sources */,
@@ -3078,6 +3093,7 @@
 				17678E2629D28BD200C1DA98 /* FTMobileConfig.m in Sources */,
 				17678E2B29D28BD200C1DA98 /* FTTraceManager.m in Sources */,
 				17E4CB3729CD42DA005C2D99 /* FTSwizzler.m in Sources */,
+				17C930FE2EB0A4F9002800BF /* FTWeakMapTable.m in Sources */,
 				17AB76C029D432DE008FBBF5 /* FTMonitorUtils.m in Sources */,
 				17E4CC2329CD42E4005C2D99 /* FTErrorDataProtocol.m in Sources */,
 				17FFE8462D5E1F9200039827 /* FTAutoTrackHandler.m in Sources */,
