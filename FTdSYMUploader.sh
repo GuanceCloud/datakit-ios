@@ -150,14 +150,14 @@ function run() {
     echo "Dataway Token: ${FT_TOKEN}"
     echo "Version: ${FT_VERSION}"
     echo "Env: ${FT_ENV}"
-    echo "DSYM FOLDER PATH: ${DWARF_DSYM_FOLDER_PATH}"
+    echo "DSYM FOLDER PATH: ${CONFIG_DSYM_SOURCE_DIR}"
     echo "--------------------------------"
     echo "Check the arguments ..."
     echo "--------------------------------"
     else
     echo "--------------------------------"
     echo "DSYM ZIP ONLY !!!"
-    echo "DSYM FOLDER PATH: ${DWARF_DSYM_FOLDER_PATH}"
+    echo "DSYM FOLDER PATH: ${CONFIG_DSYM_SOURCE_DIR}"
     echo "--------------------------------"
     fi
     
@@ -169,10 +169,13 @@ function run() {
         CONFIG_DSYM_DEST_DIR=${CONFIG_DSYM_SOURCE_DIR}
     fi
     CONFIG_DSYM_DEST_DIR=${CONFIG_DSYM_DEST_DIR}/SymbolTemp
-    if [ ! -e "${CONFIG_DSYM_DEST_DIR}" ]; then
-    mkdir "${CONFIG_DSYM_DEST_DIR}"
+    # If the directory exists, force delete it .
+    if [ -e "${CONFIG_DSYM_DEST_DIR}" ]; then
+       rm -rf "${CONFIG_DSYM_DEST_DIR}"
     fi
-    
+
+    mkdir -p "${CONFIG_DSYM_DEST_DIR}"
+
     CONFIG_DSYM_DEST_DIR=$(realpath "$CONFIG_DSYM_DEST_DIR")
 
     DSYM_FOLDER="${CONFIG_DSYM_SOURCE_DIR}"
