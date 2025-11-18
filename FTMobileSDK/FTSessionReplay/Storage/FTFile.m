@@ -16,6 +16,7 @@
     if(self){
         _url = url;
         _name = [url lastPathComponent];
+        [self removeNamePrefixAndSeparator];
     }
     return self;
 }
@@ -61,5 +62,18 @@
         _fileCreationDate = [NSDate dateWithTimeIntervalSinceReferenceDate:time];
     }
     return _fileCreationDate;
+}
+- (void)removeNamePrefixAndSeparator{
+    if (!self.name) {
+        return;
+    }
+    NSString *separator = @"_";
+    NSRange lastSeparatorRange = [self.name rangeOfString:separator options:NSBackwardsSearch];
+    if (lastSeparatorRange.location != NSNotFound) {
+        NSString *pureName = [self.name substringFromIndex:lastSeparatorRange.location + 1];
+        if (pureName.length > 0 ) {
+            self.name = pureName;
+        }
+    }
 }
 @end

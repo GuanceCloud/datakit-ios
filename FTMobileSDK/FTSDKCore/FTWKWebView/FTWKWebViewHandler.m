@@ -24,6 +24,7 @@
 #import "FTModuleManager.h"
 #import "FTJSONUtil.h"
 #import "FTWeakMapTable.h"
+#import "FTThreadDispatchManager.h"
 
 @interface FTWKWebViewHandler ()
 @property (nonatomic, weak) id<FTWKWebViewRumDelegate> rumTrackDelegate;
@@ -243,6 +244,11 @@ static NSObject *sharedInstanceLock;
                     if (tags[FT_KEY_VIEW_REFERRER] == nil) {
                         [tags setValue:info.viewReferrer forKey:FT_KEY_VIEW_REFERRER];
                     }
+                }else if ([measurement isEqualToString:FT_RUM_SOURCE_ERROR]){
+                    [[FTModuleManager sharedInstance] postMessage:FTMessageKeyRumError message:@{
+                        @"error_date":[NSDate date],
+                        @"error_crash":@(NO)
+                    } sync:NO];
                 }
                 [self.rumTrackDelegate dealRUMWebViewData:measurement tags:tags fields:fields tm:time];
             }
@@ -254,6 +260,17 @@ static NSObject *sharedInstanceLock;
         }
     } @catch (NSException *exception) {
         FTInnerLogError(@"%@ error: %@", self, exception);
+    }
+}
+- (void)takeSubsequentFullSnapshot{
+    NSArray *allKeys = [self.webViewBridge keyEnumerator].allObjects; //
+    for (WKWebView *key in allKeys) {
+        id value = [self.webViewBridge objectForKey:key]; 
+        if (key && value) {
+            [FTThreadDispatchManager performBlockDispatchMainAsync:^{
+                [key evaluateJavaScript:@"DATAFLUX_RUM.takeSubsequentFullSnapshot()" completionHandler:nil];
+            }];
+        }
     }
 }
 - (void)disableWebView:(WKWebView *)webView{

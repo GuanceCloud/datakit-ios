@@ -27,6 +27,8 @@ NS_ASSUME_NONNULL_BEGIN
 
 -(instancetype)initWithDirectory:(FTDirectory *)directory performance:(id <FTStoragePerformancePreset>)performance;
 
+// prefix: not allowed to contain `_`
+-(instancetype)initWithDirectory:(FTDirectory *)directory performance:(id <FTStoragePerformancePreset>)performance prefix:(NSString *)prefix;
 
 @end
 

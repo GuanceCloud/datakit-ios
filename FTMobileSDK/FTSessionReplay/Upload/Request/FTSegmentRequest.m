@@ -40,6 +40,9 @@
 -(void)requestWithEvents:(NSArray *)events parameters:(NSDictionary *)parameters{
     self.parameters = parameters;
     NSArray *merged = [self mergeSegments:events];
+    if (merged.count>1) {
+        FTInnerLogWarning(@"[SegmentRequest] mergeSegments fail");
+    }
     self.segment = [merged firstObject];
 }
 - (NSArray *)mergeSegments:(NSArray *)segments{

@@ -248,6 +248,7 @@
 		17400E952B4E41E100ACBA6C /* FTMachException.c in Sources */ = {isa = PBXBuildFile; fileRef = 17400E912B4E41E100ACBA6C /* FTMachException.c */; };
 		17400E962B4E41E100ACBA6C /* FTMachException.c in Sources */ = {isa = PBXBuildFile; fileRef = 17400E912B4E41E100ACBA6C /* FTMachException.c */; };
 		17400E972B4E41E100ACBA6C /* FTMachException.c in Sources */ = {isa = PBXBuildFile; fileRef = 17400E912B4E41E100ACBA6C /* FTMachException.c */; };
+		1745F6472EC5E3F600E0D49C /* FTWKWebViewHandler+SessionReplay.h in Headers */ = {isa = PBXBuildFile; fileRef = 1745F6462EC5E3F600E0D49C /* FTWKWebViewHandler+SessionReplay.h */; };
 		1748A0052BE0BF5800B921FB /* FTLongTaskManager.m in Sources */ = {isa = PBXBuildFile; fileRef = 1748A0032BE0BF5800B921FB /* FTLongTaskManager.m */; };
 		1748A0062BE0BF5800B921FB /* FTLongTaskManager.m in Sources */ = {isa = PBXBuildFile; fileRef = 1748A0032BE0BF5800B921FB /* FTLongTaskManager.m */; };
 		1748A0092BE0BF5800B921FB /* FTLongTaskManager.m in Sources */ = {isa = PBXBuildFile; fileRef = 1748A0032BE0BF5800B921FB /* FTLongTaskManager.m */; };
@@ -947,6 +948,7 @@
 		17400E872B4B965600ACBA6C /* FTStackInfo.c */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.c; path = FTStackInfo.c; sourceTree = "<group>"; };
 		17400E902B4E41E100ACBA6C /* FTMachException.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = FTMachException.h; sourceTree = "<group>"; };
 		17400E912B4E41E100ACBA6C /* FTMachException.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = FTMachException.c; sourceTree = "<group>"; };
+		1745F6462EC5E3F600E0D49C /* FTWKWebViewHandler+SessionReplay.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = "FTWKWebViewHandler+SessionReplay.h"; sourceTree = "<group>"; };
 		1748A0032BE0BF5800B921FB /* FTLongTaskManager.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = FTLongTaskManager.m; sourceTree = "<group>"; };
 		174BC8772BFC9F8A00478EE1 /* NSDictionary+FTCopyProperties.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = "NSDictionary+FTCopyProperties.h"; sourceTree = "<group>"; };
 		174BC8782BFC9F8A00478EE1 /* NSDictionary+FTCopyProperties.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = "NSDictionary+FTCopyProperties.m"; sourceTree = "<group>"; };
@@ -1835,6 +1837,7 @@
 				17C4F0DF2D671AFC00F97A7F /* FTSessionReplayConfig+Private.h */,
 				17C4F0E02D671AFC00F97A7F /* FTSessionReplayFeature.h */,
 				17C4F0E12D671AFC00F97A7F /* FTSessionReplayFeature.m */,
+				1745F6462EC5E3F600E0D49C /* FTWKWebViewHandler+SessionReplay.h */,
 				17C930E82EA79E30002800BF /* FTDefaultUIKitViewTrackingHandler+LinkRumKeys.h */,
 				17C930E92EA79E30002800BF /* FTDefaultUIKitViewTrackingHandler+LinkRumKeys.m */,
 			);
@@ -2469,6 +2472,7 @@
 				173D9C6A2E67E73300DF10B8 /* FTRUMMonitor.h in Headers */,
 				173D9CFE2E67E9F400DF10B8 /* FTAppLaunchTracker.h in Headers */,
 				17AC174B2B98635C003E18A6 /* NSDate+FTUtil.h in Headers */,
+				1745F6472EC5E3F600E0D49C /* FTWKWebViewHandler+SessionReplay.h in Headers */,
 				1776062F29D1347500D17137 /* FTWebViewJavascriptBridgeBase.h in Headers */,
 				17AC17432B9856C3003E18A6 /* FTFileLogger.h in Headers */,
 				17132DBD2C2D652E009DFE8F /* NSError+FTDescription.h in Headers */,

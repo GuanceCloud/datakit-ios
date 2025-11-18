@@ -17,6 +17,7 @@
 @property (nonatomic, assign) long long lastWritableFileApproximatedSize;
 @property (nonatomic, strong) NSDate *lastWritableFileLastWriteDate;
 @property (nonatomic, strong) FTDirectory *directory;
+@property (nonatomic, copy) NSString *prefix;
 @end
 @implementation FTFilesOrchestrator
 -(instancetype)initWithDirectory:(FTDirectory *)directory performance:(id <FTStoragePerformancePreset>)performance{
@@ -24,6 +25,13 @@
     if(self){
         _directory = directory;
         _performance = performance;
+    }
+    return self;
+}
+-(instancetype)initWithDirectory:(FTDirectory *)directory performance:(id <FTStoragePerformancePreset>)performance prefix:(NSString *)prefix{
+    self = [self initWithDirectory:directory performance:performance];
+    if (self) {
+        _prefix = prefix;
     }
     return self;
 }
@@ -59,6 +67,9 @@
     [self purgeFilesDirectoryIfNeeded];
     NSTimeInterval current = [[NSDate date] timeIntervalSinceReferenceDate];
     NSString *name = [NSString stringWithFormat:@"%.f",round(current*1000)];
+    if (self.prefix.length > 0) {
+        name = [NSString stringWithFormat:@"%@_%@", self.prefix, name];
+    }
     FTFile *file = [self.directory createFile:name];
     if(file){
         self.lastWritableFileName = name;

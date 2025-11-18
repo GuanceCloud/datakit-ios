@@ -22,6 +22,7 @@
 #import "FTTouchSnapshot.h"
 #import "FTLog+Private.h"
 #import "FTSessionReplayWireframesBuilder.h"
+#import "FTWKWebViewHandler+SessionReplay.h"
 
 NSTimeInterval const kFullSnapshotInterval = 20.0;
 
@@ -70,14 +71,12 @@ NSTimeInterval const kFullSnapshotInterval = 20.0;
         }
         // 2.Convert data to storage required format
         NSMutableArray<FTSRRecord> *records =(NSMutableArray<FTSRRecord>*)[[NSMutableArray alloc]init];
-        BOOL force = NO;
         // 3.Determine if it's new addition or new View
         BOOL isNewView = self.lastSnapshot == nil || self.lastSnapshot.context.sessionID != viewTreeSnapshot.context.sessionID || self.lastSnapshot.context.viewID != viewTreeSnapshot.context.viewID;
         BOOL isTimeForFullSnapshot = [self isTimeForFullSnapshot];
-        BOOL fullSnapshotRequired = isNewView || isTimeForFullSnapshot || viewTreeSnapshot.context.needFullSnapshot;
+        BOOL fullSnapshotRequired = isNewView || viewTreeSnapshot.context.needFullSnapshot || isTimeForFullSnapshot;
         // 3.1.New view full save
         if (isNewView || fullSnapshotRequired){
-            force = YES;
             // meta focus full
             FTSRMetaRecord *metaRecord = [[FTSRMetaRecord alloc]initWithViewTreeSnapshot:viewTreeSnapshot];
             FTSRFocusRecord *focusRecord = [[FTSRFocusRecord alloc]initWithTimestamp:[viewTreeSnapshot.context.date ft_millisecondTimeStamp]];
@@ -131,7 +130,7 @@ NSTimeInterval const kFullSnapshotInterval = 20.0;
             // 5.2. Write data to file
             NSData *data = [fullRecord toJSONData];
             if(data){
-                [self.writer write:data forceNewFile:force];
+                [self.writer write:data forceNewFile:isNewView];
                 // 6.Record current data for comparison with next data
                 self.lastSnapshot = viewTreeSnapshot;
                 self.lastSRWireframes = wireframes;
@@ -139,6 +138,9 @@ NSTimeInterval const kFullSnapshotInterval = 20.0;
                 self.lastSRWireframes = nil;
                 FTInnerLogError(@"[Session Replay] Snapshot Records to Json Data error");
             }
+        }
+        if (isTimeForFullSnapshot) {
+            [[FTWKWebViewHandler sharedInstance] takeSubsequentFullSnapshot];
         }
     } @catch (NSException *exception) {
         self.lastSRWireframes = nil;

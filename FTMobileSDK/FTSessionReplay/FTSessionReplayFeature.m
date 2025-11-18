@@ -29,6 +29,7 @@
 #import "FTSRWebTrackingProtocol.h"
 #import "FTFeatureStorage.h"
 #import "FTLimitedSizeSet.h"
+#import "FTWKWebViewHandler+SessionReplay.h"
 
 @interface FTSessionReplayFeature()<FTMessageReceiver,FTSRWebTrackingProtocol>
 @property (nonatomic, strong) NSTimer *timer;
