@@ -9,6 +9,7 @@
 #import "FTSRBaseFrame.h"
 #import <objc/runtime.h>
 #import "FTLog+Private.h"
+#import <math.h>
 static const char * kClassPropertiesKey;
 static const char * kMapperObjectKey;
 BOOL isNull(id value)
@@ -16,6 +17,22 @@ BOOL isNull(id value)
     if (!value) return YES;
     if ([value isKindOfClass:[NSNull class]]) return YES;
 
+    return NO;
+}
+BOOL isNAN(id value) {
+    if ([value isKindOfClass:[NSNumber class]]) {
+        NSNumber *num = (NSNumber *)value;
+        return num.doubleValue != num.doubleValue;
+    }
+    
+    if ([value isKindOfClass:[NSValue class]]) {
+        const char *type = [value objCType];
+        if (strcmp(type, @encode(double)) == 0) {
+            return isnan([value doubleValue]);
+        } else if (strcmp(type, @encode(float)) == 0) {
+            return isnan([value floatValue]);
+        }
+    }
     return NO;
 }
 @implementation FTSRBaseFrame
@@ -40,6 +57,9 @@ BOOL isNull(id value)
             {
                 [tempDictionary setValue:[NSNull null] forKeyPath:p.name];
             }
+            continue;
+        }
+        if (isNAN(value)) {
             continue;
         }
         if ([value isKindOfClass:FTSRBaseFrame.class]) {
