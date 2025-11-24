@@ -110,24 +110,26 @@ NSString* getCurrentCPUArch(void){
 NSString* ft_logBacktraceEntry(const int entryNum,
                                const uintptr_t address,
                                const Dl_info* const dlInfo) {
-    char faddrBuff[20];
-    char saddrBuff[20];
-    
     const char* fname = ft_lastPathEntry(dlInfo->dli_fname);
+    NSString *fnameStr = nil;
     if(fname == NULL) {
-        sprintf(faddrBuff, POINTER_FMT, (uintptr_t)dlInfo->dli_fbase);
-        fname = faddrBuff;
+        fnameStr = [NSString stringWithFormat:@(POINTER_FMT), (uintptr_t)dlInfo->dli_fbase];
+    }else{
+        fnameStr = [NSString stringWithUTF8String:fname];
     }
     
     uintptr_t offset = address - (uintptr_t)dlInfo->dli_saddr;
     const char* sname = dlInfo->dli_sname;
+    NSString *snameStr = nil;
     //_mh_execute_header failed to symbolize, replace with load address
     if(sname == NULL || strcmp( sname, "_mh_execute_header") == 0 || strcmp(sname, "<redacted>") == 0) {
-        sprintf(saddrBuff, POINTER_SHORT_FMT, (uintptr_t)dlInfo->dli_fbase);
-        sname = saddrBuff;
+        snameStr = [NSString stringWithFormat:@(POINTER_SHORT_FMT), (uintptr_t)dlInfo->dli_fbase];
         offset = address - (uintptr_t)dlInfo->dli_fbase;
+    }else{
+        snameStr = [NSString stringWithUTF8String:sname];
     }
-    return [NSString stringWithFormat:@"%-30s  0x%08" PRIxPTR " %s + %lu\n" ,fname, (uintptr_t)address, sname, offset];
+    return [NSString stringWithFormat:@"%-30@  0x%08" PRIxPTR " %@ + %lu\n",
+                fnameStr, (uintptr_t)address, snameStr, offset];
 }
 NSString* ft_logBinaryImage(const FTMachoImage* const image) {
     if(image->name == NULL || strcmp(image->name,"") == 0) {

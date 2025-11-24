@@ -35,8 +35,8 @@ bool ftcm_activateMonitors(void){
     }
     FTInstallUncaughtExceptionHandler();
     if (!isDebuggerUnsafe) {
-        FTInstallSignalException();
         FTInstallMachException();
+        FTInstallSignalException();
     }
     return true;
 }

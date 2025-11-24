@@ -36,8 +36,8 @@ static thread_t g_primaryMachThread;
 static pthread_t g_secondaryPThread;
 static thread_t g_secondaryMachThread;
 
-static const char* kThreadPrimary = "Exception Handler (Primary)";
-static const char* kThreadSecondary = "Exception Handler (Secondary)";
+#define kThreadPrimary "FTCrash Exception Handler (Primary)"
+#define kThreadSecondary "FTCrash Exception Handler (Secondary)"
 
 static bool g_isHandlingCrash = false;
 
@@ -331,7 +331,7 @@ static void* handleExceptions(void* const userData){
     
     const char* threadName = (const char*)userData;
     pthread_setname_np(threadName);
-    if(threadName == kThreadSecondary){
+    if(strcmp(threadName, kThreadSecondary) == 0){
         FTLOG_DEBUG("This is the secondary thread. Suspending.");
         thread_suspend((thread_t)ftthread_self());
     }
@@ -472,7 +472,7 @@ static bool installMachException(void){
     error = pthread_create(&g_secondaryPThread,
                            &attr,
                            &handleExceptions,
-                           (void*)kThreadSecondary);
+                           kThreadSecondary);
     if(error != 0){
         FTLOG_ERROR("pthread_create_suspended_np: %s", strerror(error));
         goto failed;
@@ -483,7 +483,7 @@ static bool installMachException(void){
     error = pthread_create(&g_primaryPThread,
                            &attr,
                            &handleExceptions,
-                           (void*)kThreadPrimary);
+                           kThreadPrimary);
     if(error != 0){
         FTLOG_ERROR("pthread_create: %s", strerror(error));
         goto failed;
