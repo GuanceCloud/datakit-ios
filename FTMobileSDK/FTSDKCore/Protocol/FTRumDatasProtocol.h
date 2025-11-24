@@ -9,118 +9,132 @@
 #ifndef FTAddRumDatasProtocol_h
 #define FTAddRumDatasProtocol_h
 NS_ASSUME_NONNULL_BEGIN
-/// App 运行状态
+/// App running state
 typedef NS_ENUM(NSUInteger, FTAppState) {
-    /// 未知
+    /// Unknown
     FTAppStateUnknown,
-    /// 启动中
+    /// Starting up
     FTAppStateStartUp,
-    /// 运行中
+    /// Running
     FTAppStateRun,
 };
-/// rum 数据协议
+/// rum data protocol
 @protocol FTRumDatasProtocol <NSObject>
-/// 创建页面
+/// Create RUM View
 ///
-/// 在 `-startViewWithName` 方法前调用，该方法用于记录页面的加载时间，如果无法获得加载时间该方法可以不调用。
+/// Called before the `-startViewWithName` method, this method is used to record the page loading time. If the loading time cannot be obtained, this method can be omitted.
 /// - Parameters:
-///   - viewName: 页面名称
-///   - loadTime: 页面加载时间
+///   - viewName: RUM View name
+///   - loadTime: page loading time
 -(void)onCreateView:(NSString *)viewName loadTime:(NSNumber *)loadTime;
-/// 进入页面
+/// Starts RUM view
 ///
 /// - Parameters:
-///   - viewName: 页面名称
+///   - viewName: RUM View name
 -(void)startViewWithName:(NSString *)viewName;
 
-/// 进入页面
+/// Starts RUM view
 /// - Parameters:
-///   - viewName: 页面名称
-///   - property: 事件自定义属性(可选)
+///   - viewName: RUM View name
+///   - property: event custom properties (optional)
 -(void)startViewWithName:(NSString *)viewName property:(nullable NSDictionary *)property;
 
-/// 离开页面
+/// Update view loading time to current RUM view.
+/// Must be called between `-startView` and `-stopView` methods to take effect.
+/// - Parameters:
+///   - duration: loading time duration (nanosecond).
+-(void)updateViewLoadingTime:(NSNumber *)duration;
+
+/// Stop RUM View.
 -(void)stopView;
 
-/// 离开页面
-/// - Parameter property: 事件自定义属性(可选)
+/// Stop RUM View.
+/// - Parameter property: event custom properties (optional)
 -(void)stopViewWithProperty:(nullable NSDictionary *)property;
-/// 添加 Action 事件
-///
-/// - Parameters:
-///   - actionName: 事件名称
-///   - actionType: 事件类型
-- (void)addActionName:(NSString *)actionName actionType:(NSString *)actionType;
-/// 添加 Action 事件
-/// - Parameters:
-///   - actionName: 事件名称
-///   - actionType: 事件类型
-///   - property: 事件自定义属性(可选)
-- (void)addActionName:(NSString *)actionName actionType:(NSString *)actionType property:(nullable NSDictionary *)property;
 
-/// 添加 Error 事件
+/// Start RUM Action.
+///
+/// RUM will bind Resource, Error, and LongTask events that this Action may trigger. Avoid adding multiple times within 0.1s. Only one Action can be associated with the same View at the same time. If the previous Action hasn't ended, new Actions will be discarded.
+/// This does not interfere with Actions added by the `addAction:actionType:property` method.
 ///
 /// - Parameters:
-///   - type: error 类型
-///   - message: 错误信息
-///   - stack: 堆栈信息
-- (void)addErrorWithType:(NSString *)type message:(NSString *)message stack:(NSString *)stack;
-/// 添加 Error 事件
+///   - actionName: event name
+///   - actionType: event type
+///   - property: event custom properties (optional)
+- (void)startAction:(NSString *)actionName actionType:(NSString *)actionType property:(nullable NSDictionary *)property;
+
+/// Add Action event. No duration, no discard logic
+///
+/// This does not interfere with RUM Actions started by `startAction:actionType:property:`.
 /// - Parameters:
-///   - type: error 类型
-///   - message: 错误信息
-///   - stack: 堆栈信息
-///   - property: 事件自定义属性(可选)
+///   - actionName: event name
+///   - actionType: event type
+///   - property: event custom properties (optional)
+- (void)addAction:(NSString *)actionName actionType:(NSString *)actionType property:(nullable NSDictionary *)property;
+
+/// Add Launch Action event.
+/// - Parameters:
+///   - name: action name
+///   - type: action type
+///   - time: launch time
+///   - duration: launch duration
+///   - property: event custom properties (optional)
+- (void)addLaunch:(NSString *)name type:(NSString *)type launchTime:(NSDate *)time duration:(NSNumber *)duration property:(nullable NSDictionary *)property;
+
+/// Add Error event
+///
+/// - Parameters:
+///   - type: error type
+///   - message: error message
+///   - stack: stack information
+- (void)addErrorWithType:(NSString *)type message:(NSString *)message stack:(NSString *)stack;
+/// Add Error event
+/// - Parameters:
+///   - type: error type
+///   - message: error message
+///   - stack: stack information
+///   - property: event custom properties (optional)
 - (void)addErrorWithType:(NSString *)type message:(NSString *)message stack:(NSString *)stack property:(nullable NSDictionary *)property;
 
-/// 添加 Error 事件
+/// Add Error event
 /// - Parameters:
-///   - type: error 类型
-///   - state: 程序运行状态
-///   - message: 错误信息
-///   - stack: 堆栈信息
-///   - property: 事件自定义属性(可选)
+///   - type: error type
+///   - state: program running state
+///   - message: error message
+///   - stack: stack information
+///   - property: event custom properties (optional)
 - (void)addErrorWithType:(NSString *)type state:(FTAppState)state  message:(NSString *)message stack:(NSString *)stack property:(nullable NSDictionary *)property;
 
-/// 添加 卡顿 事件
+/// Add freeze event
 ///
 /// - Parameters:
-///   - stack: 卡顿堆栈
-///   - duration: 卡顿时长（纳秒）
-///   - startTime: 卡顿开始时间
+///   - stack: freeze stack
+///   - duration: freeze duration (nanoseconds)
+///   - startTime: freeze start time
 - (void)addLongTaskWithStack:(NSString *)stack duration:(NSNumber *)duration startTime:(long long)startTime;
 
-/// 添加 卡顿 事件
+/// Add freeze event
 /// - Parameters:
-///   - stack: 卡顿堆栈
-///   - duration: 卡顿时长（纳秒）
-///   - startTime: 卡顿开始时间（纳秒级时间戳）
-///   - property: 事件自定义属性(可选)
+///   - stack: freeze stack
+///   - duration: freeze duration (nanoseconds)
+///   - startTime: freeze start time (nanosecond timestamp)
+///   - property: event custom properties (optional)
 - (void)addLongTaskWithStack:(NSString *)stack duration:(NSNumber *)duration startTime:(long long)startTime property:(nullable NSDictionary *)property;
 
 @optional
-/// 添加 Click Action 事件
-///
-/// - Parameters:
-///   - actionName: 事件名称
-- (void)addClickActionWithName:(NSString *)actionName;
-
-/// 添加 Click Action 事件
-/// - Parameters:
-///   - actionName: 事件名称
-///   - property: 事件自定义属性(可选)
-- (void)addClickActionWithName:(NSString *)actionName property:(nullable NSDictionary *)property;
 /**
- * 进入页面
- * @param viewId          页面id
- * @param viewName        页面名称
+ * Enter page
+ * @param viewId          page id
+ * @param viewName        page name
+ * @param property        event custom properties (optional)
  */
 -(void)startViewWithViewID:(NSString *)viewId viewName:(NSString *)viewName property:(nullable NSDictionary *)property;
 /**
- * 离开页面
- * @param viewId         页面id
+ * Leave page
+ * @param viewId         page id
+ * @param property       event custom properties (optional)
  */
--(void)stopViewWithViewID:(NSString *)viewId property:(nullable NSDictionary *)property;
+-(void)stopViewWithViewID:(nullable NSString *)viewId property:(nullable NSDictionary *)property;
 @end
 NS_ASSUME_NONNULL_END
 #endif 

@@ -10,24 +10,24 @@
 
 NS_ASSUME_NONNULL_BEGIN
 
-/// 监控器数值
-@interface FTMonitorValue : NSObject
-/// 样本数量
+/// Monitor value
+@interface FTMonitorValue : NSObject<NSCopying>
+/// Sample count
 @property (nonatomic, assign) int sampleValueCount;
-/// 样本最小值
+/// Sample minimum value
 @property (nonatomic, assign ,readonly) double minValue;
-/// 样本最大值
+/// Sample maximum value
 @property (nonatomic, assign ,readonly) double maxValue;
-/// 样本平均值
+/// Sample average value
 @property (nonatomic, assign ,readonly) double meanValue;
 
-/// 添加样本值
-/// - Parameter sample: 样本值
+/// Add sample value
+/// - Parameter sample: Sample value
 - (void)addSample:(double)sample;
-/// 样本最大最小差值
+/// Sample maximum minimum difference
 - (double)greatestDiff;
-/// 按比例缩小
-/// - Parameter scale: 缩小比例
+/// Scale down proportionally
+/// - Parameter scale: Scale down ratio
 - (FTMonitorValue *)scaledDown:(double)scale;
 @end
 

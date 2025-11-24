@@ -10,6 +10,7 @@ import XCTest
 
 final class FTTestInteraction: XCTestCase {
     var tracerManager:FTTracer?
+    var task: URLSessionDataTask?
     override func setUpWithError() throws {
         // Put setup code here. This method is called before the invocation of each test method in the class.
     }
@@ -59,8 +60,8 @@ final class FTTestInteraction: XCTestCase {
         let oldLogger = FTLogger.shared()
         FTMobileAgent.sharedInstance().startLogger(withConfigOptions: logConfig)
         let logger = FTLogger.shared()
-        XCTAssertTrue(oldLogger != logger)
-        FTMobileAgent.sharedInstance().shutDown()
+        XCTAssertTrue(oldLogger == logger)
+        FTMobileAgent.shutDown()
     }
     
     // MARK: - Trace - Get trace header
@@ -118,7 +119,7 @@ final class FTTestInteraction: XCTestCase {
         }else{
             XCTAssertTrue(dict == nil)
         }
-        FTMobileAgent.sharedInstance().shutDown()
+        FTMobileAgent.shutDown()
     }
     // MARK: - SessionInterceptor -
     func testSessionInterceptor_injectTraceHeader() throws {
@@ -159,11 +160,10 @@ final class FTTestInteraction: XCTestCase {
             let value = dataTask.currentRequest?.allHTTPHeaderFields?["test"]
             XCTAssertTrue(value == "test")
         }
-        FTMobileAgent.sharedInstance().shutDown()
+        FTMobileAgent.shutDown()
     }
     func testSessionInterceptor_resourceProvider() throws {
-        let time = NSDate.ft_currentNanosecondTimeStamp()
-        FTTrackerEventDBTool.sharedManger().deleteItem(withTm: time)
+        FTTrackerEventDBTool.sharedManger()!.deleteAllDatas()
         let expectation = XCTestExpectation.init()
 
         let delegate = FTURLSessionDelegate.init()
@@ -174,6 +174,13 @@ final class FTTestInteraction: XCTestCase {
             XCTAssertTrue(error is Error?)
             expectation.fulfill()
             return ["test":"test"]
+        }
+        delegate.traceInterceptor = { request in
+            let traceContext = FTTraceContext()
+            traceContext.traceHeader = ["trace_key":"trace_value"]
+            traceContext.spanId = "spanId"
+            traceContext.traceId = "traceId"
+            return traceContext
         }
         let dic = ProcessInfo().environment
         let url = dic["ACCESS_SERVER_URL"]
@@ -194,15 +201,19 @@ final class FTTestInteraction: XCTestCase {
         FTExternalDataManager.shared().startView(withName: "testSessionInterceptor")
         if let url = dic["TRACE_URL"] {
             let urlSession = URLSession(configuration: URLSessionConfiguration.default, delegate: delegate, delegateQueue: nil)
+             
             let dataTask = urlSession.dataTask(with: URL(string: url)!) { data, response, error in
-                
+                if let task = self.task {
+                    XCTAssertTrue((task.currentRequest?.allHTTPHeaderFields?.keys.contains("trace_key")) != nil)
+                }
                 expectation.fulfill()
             }
+            task = dataTask
             dataTask.resume()
             wait(for: [expectation])
             Thread.sleep(forTimeInterval: 0.5)
             FTGlobalRumManager.sharedInstance().rumManager.syncProcess()
-            let newArray = FTTrackerEventDBTool.sharedManger().getAllDatas();
+            let newArray = FTTrackerEventDBTool.sharedManger()!.getAllDatas();
             for data in newArray {
                 let model:FTRecordModel = data as! FTRecordModel
                 let dict = FTJSONUtil.dictionary(withJsonString: model.data)
@@ -216,7 +227,7 @@ final class FTTestInteraction: XCTestCase {
                 }
             }
         }
-        FTMobileAgent.sharedInstance().shutDown()
+        FTMobileAgent.shutDown()
     }
     // MARK: - RUM - Resource filter
     func testResourceFilter_intakeUrlHandler() throws {
@@ -273,7 +284,7 @@ final class FTTestInteraction: XCTestCase {
         FTURLSessionInterceptor.shared().interceptTask(task)
         FTURLSessionInterceptor.shared().shutDown()
         XCTAssertTrue(hasResourceFilter == hasUrl)
-        FTMobileAgent.sharedInstance().shutDown()
+        FTMobileAgent.shutDown()
     }
 
 }

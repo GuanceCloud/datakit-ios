@@ -10,30 +10,30 @@
 
 NS_ASSUME_NONNULL_BEGIN
 
-/// 用户信息
+/// User information
 ///
-/// 保留字段userid、user_name、user_email
-@interface FTUserInfo : NSObject
-/// 用户ID
+/// Reserved fields: userid, user_name, user_email
+@interface FTUserInfo : NSObject<NSCopying>
+/// User ID
 @property (nonatomic, copy, readonly) NSString *userId;
-/// 用户名称
+/// User name
 @property (nonatomic, copy, readonly) NSString *name;
-/// 用户邮箱
+/// User email
 @property (nonatomic, copy, readonly) NSString *email;
-/// 额外信息
+/// Additional information
 @property (nonatomic, strong, readonly) NSDictionary *extra;
-/// 是否设置用户信息
+/// Whether user information is set
 @property (nonatomic, assign, readonly) BOOL isSignIn;
 
-/// 更新本地保存的用户信息
+/// Update locally saved user information
 /// - Parameters:
 ///   - Id:  ID
-///   - name:  名称
-///   - email: 邮箱
-///   - extra: 额外信息
+///   - name:  Name
+///   - email: Email
+///   - extra: Additional information
 -(void)updateUser:(NSString *)Id name:(nullable NSString *)name email:(nullable NSString *)email extra:(nullable NSDictionary *)extra;
 
-/// 清除本地保存的用户信息
+/// Clear locally saved user information
 -(void)clearUser;
 @end
 

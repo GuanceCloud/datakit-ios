@@ -2,7 +2,7 @@
 //  FTBaseInfoHandler.m
 //  FTMobileAgent
 //
-//  Created by 胡蕾蕾 on 2019/12/3.
+//  Created by hulilei on 2019/12/3.
 //  Copyright © 2019 hll. All rights reserved.
 //
 #if ! __has_feature(objc_arc)
@@ -16,8 +16,10 @@
 #include <mach-o/dyld.h>
 #include <netdb.h>
 #include <arpa/inet.h>
+#if FT_IOS
 #import <CoreTelephony/CTTelephonyNetworkInfo.h>
 #import <CoreTelephony/CTCarrier.h>
+#endif
 #include <arpa/inet.h>
 #import <ifaddrs.h>
 #include <net/if.h>
@@ -27,6 +29,7 @@
 #define IOS_VPN         @"utun0"
 #define IP_ADDR_IPv4    @"ipv4"
 #define IP_ADDR_IPv6    @"ipv6"
+
 @implementation FTBaseInfoHandler : NSObject
 
 + (NSString *)convertToStringData:(NSDictionary *)dict{
@@ -68,11 +71,16 @@
     }
     return YES;
 }
+
++ (NSString *)random16UUID{
+    return [[self randomUUID] substringWithRange:NSMakeRange(0, 16)];
+}
 + (NSString *)randomUUID{
     NSString *uuid = [NSUUID UUID].UUIDString;
     uuid = [uuid stringByReplacingOccurrencesOfString:@"-" withString:@""];
     return uuid.lowercaseString;
 }
+
 #if FT_IOS
 +(NSString *)telephonyCarrier
 {
@@ -88,12 +96,12 @@
     }else{
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Wdeprecated-declarations"
-        // 这部分使用到的过期api
+        // This part uses deprecated APIs
         carrier= [info subscriberCellularProvider];
 #pragma clang diagnostic pop
         
     }
-    if(carrier ==nil){
+    if(carrier == nil){
         return FT_NULL_VALUE;
     }else{
         NSString *mCarrier = [NSString stringWithFormat:@"%@",[carrier carrierName]];
@@ -114,7 +122,7 @@
     [searchArray enumerateObjectsUsingBlock:^(NSString *key, NSUInteger idx, BOOL *stop)
      {
         address = addresses[key];
-        //筛选出IP地址格式
+        //Filter out IP address format
         if([self isValidatIP:address]) *stop = YES;
     }];
     return address ? address : @"0.0.0.0";
@@ -178,39 +186,5 @@
     }
     return [addresses count] ? addresses : nil;
 }
-+ (NSString *)decimalToBase36:(unsigned long)decimalNumber{
-    static NSString *const base36Characters = @"0123456789abcdefghijklmnopqrstuvwxyz";
-    NSMutableString *result = [NSMutableString string];
-    while (decimalNumber > 0) {
-        NSUInteger remainder = decimalNumber % 36;
-        [result insertString:[base36Characters substringWithRange:NSMakeRange(remainder, 1)] atIndex:0];
-        decimalNumber /= 36;
-    }
-    return result.length > 0 ? result : @"0";
-}
-static unsigned long rumSerialNumber = 0;
-static unsigned long logSerialNumber = 0;
 
-+ (NSString *)rumRequestSerialNumber{
-    [self increaseRumRequestSerialNumber];
-    return [NSString stringWithFormat:@"%@",[self decimalToBase36:rumSerialNumber]];
-}
-+ (void)increaseRumRequestSerialNumber{
-    if(rumSerialNumber == ULONG_MAX){
-        rumSerialNumber = 0;
-    }else{
-        rumSerialNumber += 1;
-    }
-}
-+ (NSString *)logRequestSerialNumber{
-    [self increaseLogRequestSerialNumber];
-    return [NSString stringWithFormat:@"%@",[self decimalToBase36:logSerialNumber]];
-}
-+ (void)increaseLogRequestSerialNumber{
-    if(logSerialNumber == ULONG_MAX){
-        logSerialNumber = 0;
-    }else{
-        logSerialNumber += 1;
-    }
-}
 @end

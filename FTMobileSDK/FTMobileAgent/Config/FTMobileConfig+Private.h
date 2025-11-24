@@ -9,28 +9,32 @@
 #import "FTMobileConfig.h"
 
 NS_ASSUME_NONNULL_BEGIN
-
-@interface FTLoggerConfig ()
-/// 私有的初始化方法，通过字典来初始化，用于 Extensin SDK
-/// - Parameter dict: config 转化后的字典
+@interface FTMobileConfig ()
+/// Add package information
+/// - Parameters:
+///   - key: platform
+///   - value: version number
+- (void)addPkgInfo:(NSString *)key value:(NSString *)value;
+/// Other platform package information
+- (NSDictionary *)pkgInfo;
+/// Private initialization method, initialized through dictionary, used for Extension SDK, sync service
+/// - Parameter dict: dictionary converted from config
 -(instancetype)initWithDictionary:(NSDictionary *)dict;
-/// 将 config 转化成字典
+/// Convert config to dictionary
 -(NSDictionary *)convertToDictionary;
+
+/// Merge remote config
+-(void)mergeWithRemoteConfigDict:(NSDictionary *)dict;
 @end
 
-@interface FTRumConfig ()
-/// 私有的初始化方法，通过字典来初始化，用于 Extensin SDK
-/// - Parameter dict: config 转化后的字典
--(instancetype)initWithDictionary:(NSDictionary *)dict;
-/// 将 config 转化成字典
--(NSDictionary *)convertToDictionary;
-@end
 
 @interface FTTraceConfig ()
-/// 私有的初始化方法，通过字典来初始化，用于 Extensin SDK
-/// - Parameter dict: config 转化后的字典
+/// Private initialization method, initialized through dictionary, used for Extension SDK
+/// - Parameter dict: dictionary converted from config
 -(instancetype)initWithDictionary:(NSDictionary *)dict;
-/// 将 config 转化成字典
+/// Convert config to dictionary
 -(NSDictionary *)convertToDictionary;
+/// Merge remote config
+-(void)mergeWithRemoteConfigDict:(NSDictionary *)dict;
 @end
 NS_ASSUME_NONNULL_END

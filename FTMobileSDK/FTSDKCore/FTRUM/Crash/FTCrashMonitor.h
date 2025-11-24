@@ -1,26 +1,48 @@
 //
 //  FTCrashMonitor.h
-//  FTAutoTrack
+//  FTMobileSDK
 //
-//  Created by 胡蕾蕾 on 2020/1/6.
-//  Copyright © 2020 hll. All rights reserved.
+//  Created by hulilei on 2025/7/4.
+//  Copyright © 2025 DataFlux-cn. All rights reserved.
 //
 
-#import <Foundation/Foundation.h>
-#import "FTErrorDataProtocol.h"
-NS_ASSUME_NONNULL_BEGIN
+#ifndef FTCrashMonitor_h
+#define FTCrashMonitor_h
+#include "FTStackInfo.h"
 
-/// 崩溃采集工具
-@interface FTCrashMonitor : NSObject
-
-/// 单例
-+ (instancetype)shared;
-/// 添加处理 error data 的代理对象
-/// - Parameter delegate: 代理对象
-- (void)addErrorDataDelegate:(id <FTErrorDataDelegate>)delegate;
-/// 移除处理 error data 的代理对象
-/// - Parameter delegate: 代理对象
-- (void)removeErrorDataDelegate:(id <FTErrorDataDelegate>)delegate;
-@end
-
-NS_ASSUME_NONNULL_END
+#include <stdio.h>
+#ifdef __cplusplus
+extern "C" {
+#endif
+typedef void (*FTCrashNotifyCallback)(FTThread thread,uintptr_t*   backtrace,int count, const char *  crashMessage);
+/** Sets whether a crash is being handled and returns the previous state.
+ *
+ * @return The previous crash handling state
+ */
+bool ftcm_setCrashHandling(bool handling);
+/**
+ * Activates all added crash monitors.
+ */
+bool ftcm_activateMonitors(void);
+/**
+ * Disables all active crash monitors.
+ *
+ * Turns off all currently active monitors.
+ */
+void ftcm_disableAllMonitors(void);
+/**
+ * Sets the callback for event capture.
+ *
+ * @param onCrashNotify Callback function for events.
+ *
+ * Registers a callback to be invoked when an event occurs.
+ */
+void ftcm_setEventCallback(const FTCrashNotifyCallback onCrashNotify);
+/**
+ * Start general exception processing.
+ */
+void ftcm_handleException(FTThread thread,uintptr_t*backtrace,int count,const char *crashMessage);
+#ifdef __cplusplus
+}
+#endif
+#endif /* FTCrashMonitor_h */

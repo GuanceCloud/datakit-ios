@@ -2,42 +2,42 @@
 //  FTAppLifeCycle.h
 //  FTMacOSSDK-framework
 //
-//  Created by 胡蕾蕾 on 2021/9/17.
+//  Created by hulilei on 2021/9/17.
 //
 
 #import <Foundation/Foundation.h>
 #import "FTSDKCompat.h"
 NS_ASSUME_NONNULL_BEGIN
-/// APP 生命周期协议
+/// APP lifecycle protocol
 @protocol FTAppLifeCycleDelegate <NSObject>
 @optional
 
-/// App 即将结束
+/// App will terminate
 - (void)applicationWillTerminate;
 
-/// App 进入活跃状态
+/// App becomes active
 - (void)applicationDidBecomeActive;
 
-/// App 即将失活
+/// App will resign active
 - (void)applicationWillResignActive;
 
-#if FT_IOS
-/// App 即将进入后台
+#if FT_HAS_UIKIT
+/// App will enter foreground
 - (void)applicationWillEnterForeground;
-/// App 进入后台
+/// App enters background
 - (void)applicationDidEnterBackground;
 #endif
 
 @end
-/// App 生命周期监控工具
+/// App lifecycle monitoring utility
 @interface FTAppLifeCycle : NSObject
-/// 单例
+/// Singleton
 + (instancetype)sharedInstance;
-/// 添加遵循 FTAppLifeCycleDelegate 协议的代理类
-/// - Parameter delegate: 遵循 FTAppLifeCycleDelegate 协议的代理类
+/// Add delegate class that conforms to FTAppLifeCycleDelegate protocol
+/// - Parameter delegate: Delegate class that conforms to FTAppLifeCycleDelegate protocol
 - (void)addAppLifecycleDelegate:(id<FTAppLifeCycleDelegate>)delegate;
-/// 移除遵循 FTAppLifeCycleDelegate 协议的代理类
-/// - Parameter delegate: 遵循 FTAppLifeCycleDelegate 协议的代理类
+/// Remove delegate class that conforms to FTAppLifeCycleDelegate protocol
+/// - Parameter delegate: Delegate class that conforms to FTAppLifeCycleDelegate protocol
 - (void)removeAppLifecycleDelegate:(id<FTAppLifeCycleDelegate>)delegate;
 
 @end

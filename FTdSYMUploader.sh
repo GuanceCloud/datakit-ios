@@ -3,28 +3,32 @@
 # This is the upload dSYM script
 #
 ######################################################
-# 1. 脚本集成到 Xcode工 程的 Target
+# 1. Script integration into Xcode project Target
 ######################################################
 #
 # --- Copy the SCRIPT to the Run Script of Build Phases in the Xcode project ---
 #
 # #
-FT_APP_ID="YOUR_APP_ID"
+FT_APP_ID="<app_id>"
 #datakit_address
-FT_DATAKIT_ADDRESS="YOUR_DATAKIT_ADDRESS"
-# 环境字段。属性值：prod/gray/pre/common/local。需要与 SDK 设置一致
+FT_DATAKIT_ADDRESS="<datakit_address>"
+# Environment field. Property values: prod/gray/pre/common/local. Must be consistent with SDK settings
 FT_ENV="common"
-# 配置文件 datakit.conf 中 dataway 的 token
-FT_TOKEN="YOUR_DATAWAY_TOKEN"
+# Token for dataway in the datakit.conf configuration file
+FT_TOKEN="<dataway_token>"
+# Whether to only generate dSYM zip file, 1=only package dSYM zip without upload, 0=upload, 
+# you can search for FT_DSYM_ZIP_FILE in the script output log to view the DSYM_SYMBOL.zip file path
+FT_DSYM_ZIP_ONLY=0
+
 #
 #
-# Debug模式编译是否上传，1＝上传 0＝不上传，默认不上传
+# Whether to upload in Debug mode compilation, 1=upload 0=no upload, default no upload
 # UPLOAD_DEBUG_SYMBOLS=0
 #
-# # 模拟器编译是否上传，1=上传 0=不上传，默认不上传
+# # Whether to upload in simulator compilation, 1=upload 0=no upload, default no upload
 # UPLOAD_SIMULATOR_SYMBOLS=0
 #
-# #只有Archive操作时上传, 1=支持Archive上传 0=所有Release模式编译都上传
+# # Only upload during Archive operation, 1=support Archive upload 0=upload for all Release mode compilation
 UPLOAD_ARCHIVE_ONLY=1
 # #
 # source FTdSYMUpload.sh
@@ -33,26 +37,31 @@ UPLOAD_ARCHIVE_ONLY=1
 #
 #
 #######################################################
-# 2. 脚本根据输入参数处理
+# 2. Script processing based on input parameters
 #######################################################
 #
-# #命令行下输入应用基本信息
-#
+# # Command line input of basic application information
+# # Upload symbol table files
 # sh  FTdSYMUpload.sh <datakit_address> <app_id> <version> <env> <dataway_token> <dSYMBOL_src_dir>
+# or
+# # Only compress symbol table files
+# sh  FTdSYMUpload.sh -dSYMFolderPath <dSYMBOL_src_dir> -z
 #
-#  变量说明：
-#  - `<datakit_address>`: DataKit 服务的地址，如 `http://localhost:9529`
-#  - `<app_id>`: 对应 RUM 的 `applicationId`
-#  - `<env>`: 对应 RUM 的 `env`
-#  - `<version>`: 应用的 `version` ，`CFBundleShortVersionString`值
-#  - `<dataway_token>`: 配置文件 `datakit.conf` 中 `dataway` 的 token
-#  - `<dSYMBOL_src_dir>`: 待上传的 `dSYMBOL` 文件夹路径
-#
+#   Variable description:
+#  - `<datakit_address>`: DataKit service address, such as `http://localhost:9529`
+#  - `<app_id>`: Corresponds to RUM's `applicationId`
+#  - `<env>`: Corresponds to RUM's `env`
+#  - `<version>`: Application's `version`, `CFBundleShortVersionString` value
+#  - `<dataway_token>`: Token for `dataway` in the `datakit.conf` configuration file
+#  - `<dSYMBOL_src_dir>`: Path to the `dSYMBOL` folder to be uploaded
+#  - `<dSYM_ZIP_ONLY>`: Whether to only package dSYM files into zip file. Optional. 
+#    1=no upload, only package dSYM Zip, 0=upload, you can search for `FT_DSYM_ZIP_FILE` 
+#    in the script output log to view the Zip file path
 #
 # --- CONTENT OF SCRIPT ---
 #
 
-# 打印错误信息
+# Print error message
 function exitWithMessage(){
     echo "--------------------------------"
     echo "${1}"
@@ -60,22 +69,17 @@ function exitWithMessage(){
     exit ${2}
 }
 
-# 上传bSYMBOL文件
+# Upload bSYMBOL file
 function dSYMUpload(){
-    P_SDK_URL="$1"
-    P_RUM_APP_ID="$2"
-    P_APP_VERSION="$3"
-    P_APP_ENV="$4"
-    P_TOKEN="$5"
-    P_BSYMBOL_ZIP_FILE="$6"
-    P_DSYM_TEMPORARY_DIR="$7"
+    P_BSYMBOL_ZIP_FILE="$1"
+    P_DSYM_TEMPORARY_DIR="$2"
 
     #
     P_BSYMBOL_ZIP_FILE_NAME=${P_BSYMBOL_ZIP_FILE##*/}
     P_BSYMBOL_ZIP_FILE_NAME=${P_BSYMBOL_ZIP_FILE_NAME//&/_}
     P_BSYMBOL_ZIP_FILE_NAME="${P_BSYMBOL_ZIP_FILE_NAME// /_}"
     echo "P_BSYMBOL_ZIP_FILE_NAME: ${P_BSYMBOL_ZIP_FILE_NAME}"
-    DSYM_UPLOAD_URL="${P_SDK_URL}/v1/sourcemap?app_id=${P_RUM_APP_ID}&env=${P_APP_ENV}&version=${P_APP_VERSION}&platform=ios&token=${P_TOKEN}"
+    DSYM_UPLOAD_URL="${FT_DATAKIT_ADDRESS}/v1/sourcemap?app_id=${FT_APP_ID}&env=${FT_ENV}&version=${FT_VERSION}&platform=ios&token=${FT_TOKEN}"
     echo "dSYM upload url: ${DSYM_UPLOAD_URL}"
     
     echo "-----------------------------"
@@ -111,35 +115,50 @@ function dSYMUpload(){
     fi
 }
 
-#执行
+#Execute
 function run() {
-    CONFIG_SDK_URL="$1"
-    CONFIG_APP_ID="$2"
+    CONFIG_DSYM_SOURCE_DIR="$1"
+    CONFIG_DSYM_ZIP_ONLY="$2"
     
-    CONFIG_APP_VERSION="$3"
-    CONFIG_APP_ENV="$4"
-    CONFIG_TOKEN="$5"
-    CONFIG_DSYM_SOURCE_DIR="$6"
-    CONFIG_DSYM_DEST_DIR="$7"
-
-    # 检查必须参数是否设置
-    if [ ! "${CONFIG_APP_ID}" ]; then
-    exitWithMessage "Error: RUM App ID not defined. Please set 'FT_RUM_APP_ID' " 0
+    if [ -z "$CONFIG_DSYM_ZIP_ONLY" ] || [ $CONFIG_DSYM_ZIP_ONLY -eq 0 ] ; then
+    # Check if required parameters are set
+    if [ ! "${FT_DATAKIT_ADDRESS}" ]; then
+    exitWithMessage "Error: DATAKIT URL not defined." 0
     fi
-    
-    if [[ "${CONFIG_APP_ID}" == *"App ID"* ]]; then
+    if [ ! "${FT_APP_ID}" ]; then
     exitWithMessage "Error: RUM App ID not defined." 0
     fi
-    
-    if [ ! "${CONFIG_APP_VERSION}" ]; then
+   
+    if [ ! "${FT_VERSION}" ]; then
     exitWithMessage "Error: App Version not defined." 0
     fi
     
-    if [ ! "${CONFIG_APP_ENV}" ]; then
+    if [ ! "${FT_ENV}" ]; then
     exitWithMessage "Error: SDK Env not defined." 0
     fi
-        if [ ! "${CONFIG_TOKEN}" ]; then
+        if [ ! "${FT_TOKEN}" ]; then
     exitWithMessage "Error: Dataway Token not defined." 0
+    fi
+    
+    echo "--------------------------------"
+    echo "dSYM Upload information."
+    echo "--------------------------------"
+    
+    
+    echo "Datakit Url: ${FT_DATAKIT_ADDRESS}"
+    echo "RUM App ID: ${FT_APP_ID}"
+    echo "Dataway Token: ${FT_TOKEN}"
+    echo "Version: ${FT_VERSION}"
+    echo "Env: ${FT_ENV}"
+    echo "DSYM FOLDER PATH: ${CONFIG_DSYM_SOURCE_DIR}"
+    echo "--------------------------------"
+    echo "Check the arguments ..."
+    echo "--------------------------------"
+    else
+    echo "--------------------------------"
+    echo "DSYM ZIP ONLY !!!"
+    echo "DSYM FOLDER PATH: ${CONFIG_DSYM_SOURCE_DIR}"
+    echo "--------------------------------"
     fi
     
     if [ ! -e "${CONFIG_DSYM_SOURCE_DIR}" ]; then
@@ -147,14 +166,18 @@ function run() {
     fi
     
     if [ ! "${CONFIG_DSYM_DEST_DIR}" ]; then
-        CONFIG_DSYM_DEST_DIR=${CONFIG_DSYM_SOURCE_DIR}/SymbolTemp
-        echo "Create dSYM Destination FOLDER:${CONFIG_DSYM_DEST_DIR}"
+        CONFIG_DSYM_DEST_DIR=${CONFIG_DSYM_SOURCE_DIR}
     fi
-    
-    if [ ! -e "${CONFIG_DSYM_DEST_DIR}" ]; then
-    mkdir "${CONFIG_DSYM_DEST_DIR}"
+    CONFIG_DSYM_DEST_DIR=${CONFIG_DSYM_DEST_DIR}/SymbolTemp
+    # If the directory exists, force delete it .
+    if [ -e "${CONFIG_DSYM_DEST_DIR}" ]; then
+       rm -rf "${CONFIG_DSYM_DEST_DIR}"
     fi
-    
+
+    mkdir -p "${CONFIG_DSYM_DEST_DIR}"
+
+    CONFIG_DSYM_DEST_DIR=$(realpath "$CONFIG_DSYM_DEST_DIR")
+
     DSYM_FOLDER="${CONFIG_DSYM_SOURCE_DIR}"
     IFS=$'\n'
     
@@ -172,22 +195,27 @@ function run() {
     DSYM_SYMBOL_ZIP_FILE_NAME="${DSYM_SYMBOL_ZIP_FILE_NAME// /_}"
     DSYM_SYMBOL_ZIP_FILE=${CONFIG_DSYM_DEST_DIR}/${DSYM_SYMBOL_ZIP_FILE_NAME}
     
+    echo "FT_DSYM_ZIP_FILE:${DSYM_SYMBOL_ZIP_FILE}"
+
     if [ -e $DSYM_SYMBOL_ZIP_FILE ]; then
     rm -f $DSYM_SYMBOL_ZIP_FILE
     fi
-    # 压缩dSYM目录
+    # Compress dSYM directory
     pushd $CONFIG_DSYM_DEST_DIR
     zip -r -q $DSYM_SYMBOL_ZIP_FILE *
     popd
-    # 上传
-    dSYMUpload $CONFIG_SDK_URL $CONFIG_APP_ID $CONFIG_APP_VERSION $CONFIG_APP_ENV $CONFIG_TOKEN "$DSYM_SYMBOL_ZIP_FILE" "$CONFIG_DSYM_DEST_DIR"
-    fi
     
+    if [ $CONFIG_DSYM_ZIP_ONLY -eq 0 ]; then
+    # Upload
+    dSYMUpload "$DSYM_SYMBOL_ZIP_FILE" "$CONFIG_DSYM_DEST_DIR"
     if [ $RET = "F" ]; then
     exitWithMessage "No .dSYM found in ${DSYM_FOLDER}" 0
     fi
+    fi
+    fi
 }
-# 检查App的dSYM文件是否为空，若为空，循环等待10s后还为空则退出
+# Check if the app's dSYM file is empty, if empty, wait in a loop for 10s, 
+# if still empty then exit
 function checkAppSourceFile(){
     dsymFile="$1"
     DSYM_APP_FILE_IS_EXIST=1
@@ -203,7 +231,7 @@ function checkAppSourceFile(){
     return $DSYM_APP_FILE_IS_EXIST
 }
 
-# 在Xcode工程中执行
+# Execute in Xcode project
 function runInXcode(){
     echo "Uploading dSYM in Xcode ..."
     
@@ -215,40 +243,26 @@ function runInXcode(){
     fi
     echo "BUNDLE_SHORT_VERSION: $BUNDLE_SHORT_VERSION"
     
-    # 组装默认识别的版本信息(格式为CFBundleShortVersionString, 例如: 1.0)
+    # Assemble default recognized version information (format is CFBundleShortVersionString, e.g.: 1.0)
     if [ ! "${FT_VERSION}" ]; then
-    FT_APP_VERSION="${BUNDLE_SHORT_VERSION}"
-    else
-    FT_APP_VERSION="${FT_VERSION}"
+    FT_VERSION="${BUNDLE_SHORT_VERSION}"
     fi
     
-    echo "--------------------------------"
-    echo "Prepare application information."
-    echo "--------------------------------"
-    
-    echo "Product Name: ${PRODUCT_NAME}"
-    echo "Version: ${FT_APP_VERSION}"
-    
-    echo "RUM App ID: ${FT_APP_ID}"
-    echo "Dataway Token: ${FT_TOKEN}"
-    echo "--------------------------------"
-    echo "Check the arguments ..."
-    
-    ##检查模拟器编译是否允许上传符号
+    ##Check if simulator compilation allows symbol upload
     if [ "$EFFECTIVE_PLATFORM_NAME" == "-iphonesimulator" ]; then
     if [ $UPLOAD_SIMULATOR_SYMBOLS -eq 0 ]; then
     exitWithMessage "Warning: Build for simulator and skipping to upload. \nYou can modify 'UPLOAD_SIMULATOR_SYMBOLS' to 1 in the script." 0
     fi
     fi
     
-    ##检查是否是Release模式编译
+    ##Check if it's Release mode compilation
     if [ "${CONFIGURATION=}" == "Debug" ]; then
     if [ $UPLOAD_DEBUG_SYMBOLS -eq 0 ]; then
     exitWithMessage "Warning: Build for debug mode and skipping to upload. \nYou can modify 'UPLOAD_DEBUG_SYMBOLS' to 1 in the script." 0
     fi
     fi
     
-    ##检查是否Archive操作
+    ##Check if it's Archive operation
     if [ $UPLOAD_ARCHIVE_ONLY -eq 1 ]; then
     if [[ "$TARGET_BUILD_DIR" == *"/Archive"* ]]; then
     echo "Archive the package"
@@ -257,7 +271,7 @@ function runInXcode(){
     fi
     fi
     
-    ##检查dSYM文件是否完整
+    ##Check if dSYM file is complete
     for dsymFile in $(find "$DWARF_DSYM_FOLDER_PATH" -name '*.dSYM'); do
     FILE_NAME=${dsymFile##*/}
     FILE_NAME=${FILE_NAME//&/_}
@@ -272,9 +286,9 @@ function runInXcode(){
     fi
     done
     #
-    run ${FT_DATAKIT_ADDRESS} ${FT_APP_ID} ${FT_APP_VERSION} ${FT_ENV} ${FT_TOKEN} ${DWARF_DSYM_FOLDER_PATH} ${BUILD_DIR}/SymbolTemp
+    run ${DWARF_DSYM_FOLDER_PATH} ${FT_DSYM_ZIP_ONLY}
 }
-# 根据Xcode的环境变量判断是否处于Xcode环境
+# Determine if in Xcode environment based on Xcode environment variables
 INFO_PLIST_FILE="${INFOPLIST_FILE}"
 
 BuildInXcode="F"
@@ -285,15 +299,63 @@ fi
 if [ $BuildInXcode = "T" ]; then
 runInXcode
 else
-echo "\nUsage: dSYMUpload.sh <sdk_url> <rum_app_id> <app_version> <app_env> <dataway_token> <dSYMBOL_src_dir> <dSYMBOL_dest_dir>\n"
+echo "\nUsage: dSYMUpload.sh <sdk_url> <rum_app_id> <app_version> <app_env> <dataway_token> <dSYMBOL_src_dir> <dSYMBOL_dest_dir>\n or dSYMUpload.sh -dSYMFolderPath <dSYMBOL_src_dir> -z"
 
-# 你可以在此处直接设置 DATAKIT_ADDRESS、RUM_APP_ID 、APP_VERSION、 APP_ENV、DATAWAY_TOKEN、DSYM_FOLDER_PATH，排除不常变参数的输入
-FT_I_DATAKIT_ADDRESS="$1"
-FT_I_RUM_APP_ID="$2"
-FT_I_APP_VERSION="$3"
-FT_I_APP_ENV="$4"
-FT_I_DATAWAY_TOKEN="$5"
-DWARF_DSYM_FOLDER_PATH="$6"
+max_args=6
+if [ $# -ge $max_args ]; then
+    FT_DATAKIT_ADDRESS="$1"
+    FT_APP_ID="$2"
+    FT_VERSION="$3"
+    FT_ENV="$4"
+    FT_TOKEN="$5"
+    DWARF_DSYM_FOLDER_PATH="$6"
+    FT_DSYM_ZIP_ONLY=${7:-"0"}
+else
+while [[ $# -gt 0 ]]; do
+    key="$1"
+    case ${key} in
+        -url)
+        FT_DATAKIT_ADDRESS="$2"
+        shift
+        shift
+        ;;
+        -appid)
+        FT_APP_ID="$2"
+        shift
+        shift
+        ;;
+        -version)
+        FT_VERSION="$2"
+        shift
+        shift
+        ;;
+        -env)
+        FT_ENV="$2"
+        shift
+        shift
+        ;;
+        -token)
+        FT_TOKEN="$2"
+        shift
+        shift
+        ;;
+        -dSYMFolderPath)
+        DWARF_DSYM_FOLDER_PATH="$2"
+        shift # past argument
+        shift # past value
+        ;;
+        -z)
+        FT_DSYM_ZIP_ONLY=1
+        shift # past argument
+        ;;
+        *)
+        # Ignore unknown parameters or report error
+        shift
+        ;;
+    esac
+done
 
-run ${FT_I_DATAKIT_ADDRESS} ${FT_I_RUM_APP_ID} ${FT_I_APP_VERSION} ${FT_I_APP_ENV} ${FT_I_DATAWAY_TOKEN} "$DWARF_DSYM_FOLDER_PATH"
+fi
+
+run "$DWARF_DSYM_FOLDER_PATH" ${FT_DSYM_ZIP_ONLY}
 fi

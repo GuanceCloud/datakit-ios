@@ -2,11 +2,11 @@
 //  FTWebViewJavascriptLeakAvoider.m
 //  FTMobileAgent
 //
-//  Created by 胡蕾蕾 on 2021/1/6.
+//  Created by hulilei on 2021/1/6.
 //  Copyright © 2021 hll. All rights reserved.
 //
-
 #import "FTWebViewJavascriptLeakAvoider.h"
+#if !TARGET_OS_TV
 
 @implementation FTWebViewJavascriptLeakAvoider
 - (instancetype)initWithDelegate:(id <WKScriptMessageHandler> )delegate {
@@ -20,3 +20,4 @@
 }
 
 @end
+#endif

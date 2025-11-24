@@ -2,28 +2,30 @@
 //  FTReachability.m
 //  FTMacOSSDK
 //
-//  Created by 胡蕾蕾 on 2021/8/4.
+//  Created by hulilei on 2021/8/4.
 //  Copyright © 2021 DataFlux-cn. All rights reserved.
 //
 
 #import "FTReachability.h"
 #import <netinet/in.h>
 #import <arpa/inet.h>
+#import <Network/Network.h>
 #import "FTSDKCompat.h"
-#if FT_IOS
+#if TARGET_OS_IOS && !TARGET_OS_MACCATALYST
 #import <CoreTelephony/CTTelephonyNetworkInfo.h>
 #endif
-
-NSString *const kFTReachabilityChangedNotification = @"kFTReachabilityChangedNotification";
 
 @interface FTReachability ()
 @property (nonatomic, copy) NSString *net;
 @property (nonatomic, assign) SCNetworkReachabilityRef  reachabilityRef;
 @property (nonatomic, strong) dispatch_queue_t          reachabilitySerialQueue;
 @property (nonatomic, strong) id                        reachabilityObject;
+@property (atomic, assign) FTNetworkStatus reachabilityStatus;
 
+#if TARGET_OS_IOS && !TARGET_OS_MACCATALYST
+@property (nonatomic, strong) CTTelephonyNetworkInfo *networkInfo;
+#endif
 -(void)reachabilityChanged:(SCNetworkReachabilityFlags)flags;
--(BOOL)isReachableWithFlags:(SCNetworkReachabilityFlags)flags;
 
 @end
 
@@ -42,22 +44,26 @@ static void FTReachabilityCallback(SCNetworkReachabilityRef target, SCNetworkRea
     }
 }
 @implementation FTReachability
-+ (instancetype)sharedInstance{
-    static FTReachability *manager;
+#if TARGET_OS_IOS && !TARGET_OS_MACCATALYST
++ (CTTelephonyNetworkInfo *)sharedNetworkInfo {
+    static CTTelephonyNetworkInfo *networkInfo;
     static dispatch_once_t onceToken;
     dispatch_once(&onceToken, ^{
-        manager = [FTReachability reachabilityForInternetConnection];
+        networkInfo = [[CTTelephonyNetworkInfo alloc] init];
     });
-    return manager;
+    return networkInfo;
 }
-
+#endif
 - (NSString *)networkType{
     FTNetworkStatus status = [self currentReachabilityStatus];
-    
+    self.reachabilityStatus = status;
+    return [self networkTypeWithStatus:status];
+}
+- (NSString *)networkTypeWithStatus:(FTNetworkStatus)status{
     if (status == FTReachableViaWiFi) {
         return @"wifi";
     }
-#if FT_IOS
+#if TARGET_OS_IOS && !TARGET_OS_MACCATALYST
     NSArray *typeStrings2G = @[CTRadioAccessTechnologyEdge,
                                CTRadioAccessTechnologyGPRS,
                                CTRadioAccessTechnologyCDMA1x];
@@ -71,17 +77,19 @@ static void FTReachabilityCallback(SCNetworkReachabilityRef target, SCNetworkRea
     
     NSArray *typeStrings4G = @[CTRadioAccessTechnologyLTE];
     
-    CTTelephonyNetworkInfo *info= [[CTTelephonyNetworkInfo alloc] init];
     NSString *currentStatus = nil;
     if (@available(iOS 12.1, *)) {
-        if (info && [info respondsToSelector:@selector(serviceCurrentRadioAccessTechnology)]) {
-            NSDictionary *radioDic = [info serviceCurrentRadioAccessTechnology];
+        if (_networkInfo && [_networkInfo respondsToSelector:@selector(serviceCurrentRadioAccessTechnology)]) {
+            NSDictionary *radioDic = [_networkInfo serviceCurrentRadioAccessTechnology];
             if (radioDic.allKeys.count) {
                 currentStatus = [radioDic objectForKey:radioDic.allKeys[0]];
             }
         }
     }else{
-        currentStatus = info.currentRadioAccessTechnology;
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wdeprecated-declarations"
+        currentStatus = _networkInfo.currentRadioAccessTechnology;
+#pragma clang diagnostic pop
     }
     if (!currentStatus) {
         return @"unknown";
@@ -108,13 +116,12 @@ static void FTReachabilityCallback(SCNetworkReachabilityRef target, SCNetworkRea
 }
 
 
-+(instancetype)reachabilityWithAddress:(void *)hostAddress
-{
++(instancetype)reachabilityWithAddress:(void *)hostAddress{
     SCNetworkReachabilityRef ref = SCNetworkReachabilityCreateWithAddress(kCFAllocatorDefault, (const struct sockaddr*)hostAddress);
     if (ref)
     {
         id reachability = [[self alloc] initWithReachabilityRef:ref];
-        
+        CFRelease(ref);
         return reachability;
     }
     
@@ -133,27 +140,23 @@ static void FTReachabilityCallback(SCNetworkReachabilityRef target, SCNetworkRea
 -(instancetype)initWithReachabilityRef:(SCNetworkReachabilityRef)ref
 {
     self = [super init];
-    if (self != nil)
-    {   self.reachableOnWWAN = YES;
-        self.reachabilityRef = ref;
-
-        // We need to create a serial queue.
-        // We allocate this once for the lifetime of the notifier.
-
-        self.reachabilitySerialQueue = dispatch_queue_create("com.ft.reachability", NULL);
-        self.net = [self networkType];
+    if (self){
+        if (ref != NULL) {
+            _reachabilityRef = CFRetain(ref);
+        }
     }
-    
     return self;
 }
--(BOOL)startNotifier
-{
-    // allow start notifier to be called multiple times
+-(BOOL)startNotifier{
     if(self.reachabilityObject && (self.reachabilityObject == self))
     {
         return YES;
     }
-
+#if TARGET_OS_IOS && !TARGET_OS_MACCATALYST
+        _networkInfo = [FTReachability sharedNetworkInfo];
+#endif
+    _reachabilitySerialQueue = dispatch_queue_create("com.ft.reachability", NULL);
+    self.net = [self networkType];
 
     SCNetworkReachabilityContext    context = { 0, NULL, NULL, NULL, NULL };
     context.info = (__bridge void *)self;
@@ -186,102 +189,62 @@ static void FTReachabilityCallback(SCNetworkReachabilityRef target, SCNetworkRea
         SCNetworkReachabilityUnscheduleFromRunLoop(_reachabilityRef, CFRunLoopGetCurrent(), kCFRunLoopDefaultMode);
     }
 }
+- (FTNetworkStatus)networkStatusForFlags:(SCNetworkReachabilityFlags)flags{
+    if ((flags & kSCNetworkReachabilityFlagsReachable) == 0)
+    {
+        // The target host is not reachable.
+        return FTNotReachable;
+    }
 
--(BOOL)isReachable
-{
+    FTNetworkStatus returnValue = FTNotReachable;
+
+    if ((flags & kSCNetworkReachabilityFlagsConnectionRequired) == 0)
+    {
+        /*
+         If the target host is reachable and no connection is required then we'll assume (for now) that you're on Wi-Fi...
+         */
+        returnValue = FTReachableViaWiFi;
+    }
+
+    if ((((flags & kSCNetworkReachabilityFlagsConnectionOnDemand ) != 0) ||
+        (flags & kSCNetworkReachabilityFlagsConnectionOnTraffic) != 0))
+    {
+        /*
+         ... and the connection is on-demand (or on-traffic) if the calling application is using the CFSocketStream or higher APIs...
+         */
+
+        if ((flags & kSCNetworkReachabilityFlagsInterventionRequired) == 0)
+        {
+            /*
+             ... and no [user] intervention is needed...
+             */
+            returnValue = FTReachableViaWiFi;
+        }
+    }
+
+#if !TARGET_OS_OSX
+    if ((flags & kSCNetworkReachabilityFlagsIsWWAN) == kSCNetworkReachabilityFlagsIsWWAN)
+    {
+        /*
+         ... but WWAN connections are OK if the calling application is using the CFNetwork APIs.
+         */
+        returnValue = FTReachableViaWWAN;
+    }
+#endif
+    return returnValue;
+}
+-(FTNetworkStatus)currentReachabilityStatus{
+    FTNetworkStatus returnValue = FTNotReachable;
     SCNetworkReachabilityFlags flags;
     
-    if(!SCNetworkReachabilityGetFlags(self.reachabilityRef, &flags))
-        return NO;
-    
-    return [self isReachableWithFlags:flags];
-}
-#define testcase (kSCNetworkReachabilityFlagsConnectionRequired | kSCNetworkReachabilityFlagsTransientConnection)
-
--(BOOL)isReachableWithFlags:(SCNetworkReachabilityFlags)flags
-{
-    BOOL connectionUP = YES;
-    
-    if(!(flags & kSCNetworkReachabilityFlagsReachable))
-        connectionUP = NO;
-    
-    if( (flags & testcase) == testcase )
-        connectionUP = NO;
-    
-#if    FT_IOS
-    if(flags & kSCNetworkReachabilityFlagsIsWWAN)
+    if (SCNetworkReachabilityGetFlags(_reachabilityRef, &flags))
     {
-        // We're on 3G.
-        if(!self.reachableOnWWAN)
-        {
-            // We don't want to connect when on 3G.
-            connectionUP = NO;
-        }
-    }
-#endif
-    
-    return connectionUP;
-}
--(BOOL)isReachableViaWWAN
-{
-#if    FT_IOS
-
-    SCNetworkReachabilityFlags flags = 0;
-    
-    if(SCNetworkReachabilityGetFlags(self.reachabilityRef, &flags))
-    {
-        // Check we're REACHABLE
-        if(flags & kSCNetworkReachabilityFlagsReachable)
-        {
-            // Now, check we're on WWAN
-            if(flags & kSCNetworkReachabilityFlagsIsWWAN)
-            {
-                return YES;
-            }
-        }
-    }
-#endif
-    
-    return NO;
-}
--(FTNetworkStatus)currentReachabilityStatus
-{
-    if([self isReachable])
-    {
-        if([self isReachableViaWiFi])
-            return FTReachableViaWiFi;
-        
-#if    FT_IOS
-        return FTReachableViaWWAN;
-#endif
+        returnValue = [self networkStatusForFlags:flags];
     }
     
-    return FTNotReachable;
+    return returnValue;
 }
--(BOOL)isReachableViaWiFi
-{
-    SCNetworkReachabilityFlags flags = 0;
-    
-    if(SCNetworkReachabilityGetFlags(self.reachabilityRef, &flags))
-    {
-        // Check we're reachable
-        if((flags & kSCNetworkReachabilityFlagsReachable))
-        {
-#if    FT_IOS
-            // Check we're NOT on WWAN
-            if((flags & kSCNetworkReachabilityFlagsIsWWAN))
-            {
-                return NO;
-            }
-#endif
-            return YES;
-        }
-    }
-    
-    return NO;
-}
-- (BOOL)connectionRequired
-{
+- (BOOL)connectionRequired{
     NSAssert(_reachabilityRef != NULL, @"connectionRequired called with NULL reachabilityRef");
     SCNetworkReachabilityFlags flags;
 
@@ -292,16 +255,26 @@ static void FTReachabilityCallback(SCNetworkReachabilityRef target, SCNetworkRea
 
     return NO;
 }
--(void)reachabilityChanged:(SCNetworkReachabilityFlags)flags
-{
-    self.net = [self networkType];
+-(void)reachabilityChanged:(SCNetworkReachabilityFlags)flags{
+    self.reachabilityStatus = [self networkStatusForFlags:flags];
+    self.net = [self networkTypeWithStatus:self.reachabilityStatus];
     if (self.networkChanged) {
         self.networkChanged();
     }
-    // this makes sure the change notification happens on the MAIN THREAD
-    dispatch_async(dispatch_get_main_queue(), ^{
-        [[NSNotificationCenter defaultCenter] postNotificationName:kFTReachabilityChangedNotification
-                                                            object:self];
-    });
+}
+- (BOOL)isReachable {
+    return [self isReachableViaWWAN] || [self isReachableViaWiFi];
+}
+-(BOOL)isReachableViaWiFi{
+    return self.reachabilityStatus == FTReachableViaWiFi;
+}
+-(BOOL)isReachableViaWWAN{
+    return self.reachabilityStatus == FTReachableViaWWAN;
+}
+- (void)dealloc{
+    [self stopNotifier];
+    if (_reachabilityRef != NULL){
+        CFRelease(_reachabilityRef);
+    }
 }
 @end

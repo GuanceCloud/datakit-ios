@@ -2,11 +2,12 @@
 //  FTWebViewJavascriptLeakAvoider.h
 //  FTMobileAgent
 //
-//  Created by 胡蕾蕾 on 2021/1/6.
+//  Created by hulilei on 2021/1/6.
 //  Copyright © 2021 hll. All rights reserved.
 //
 
 #import <Foundation/Foundation.h>
+#if !TARGET_OS_TV
 #import <WebKit/WebKit.h>
 
 NS_ASSUME_NONNULL_BEGIN
@@ -18,3 +19,4 @@ NS_ASSUME_NONNULL_BEGIN
 @end
 
 NS_ASSUME_NONNULL_END
+#endif

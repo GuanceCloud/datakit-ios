@@ -12,15 +12,15 @@
 
 @protocol FTAutoInterceptorProtocol<NSObject>
 @property (nonatomic, weak ,readonly) id<FTURLSessionInterceptorProtocol> interceptor;
-/// 设置是否支持自动采集 rum resource 数据
+/// Set whether to support automatic collection of rum resource data
 @property (nonatomic, assign) BOOL enableAutoRumTrack;
-/// 实现 trace 功能，给 request header 添加 trace 参数
-/// - Parameter request: http 初始请求
+/// Implement trace functionality, add trace parameters to request header
+/// - Parameter request: HTTP initial request
 - (NSURLRequest *)interceptRequest:(NSURLRequest *)request;
 
-/// 判断 URL 是否采集
-/// 是否是 SDK 内部上传链接
-/// - Parameter url: 需要判断的 URL
+/// Determine whether URL should be collected
+/// Whether it's an SDK internal upload link
+/// - Parameter url: URL to be determined
 - (BOOL)isNotSDKInsideUrl:(NSURL *)url;
 @end
 #endif /* FTAutoInterceptorProtocol_h */

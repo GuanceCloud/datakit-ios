@@ -16,128 +16,152 @@
 #import "NSDictionary+FTCopyProperties.h"
 #import "FTEnumConstant.h"
 #import "FTPresetProperty.h"
-
+#import "FTLoggerConfig+Private.h"
+#import "FTJSONUtil.h"
 void *FTLoggerQueueIdentityKey = &FTLoggerQueueIdentityKey;
 
 @interface FTLogger ()
-@property (nonatomic, assign) BOOL printLogsToConsole;
 @property (nonatomic, weak) id<FTLoggerDataWriteProtocol> loggerWriter;
-@property (nonatomic, assign) int sampleRate;
 @property (nonatomic, strong) NSSet *logLevelFilterSet;
-@property (nonatomic, assign) BOOL enableCustomLog;
 @property (nonatomic, strong) dispatch_queue_t loggerQueue;
-@property (nonatomic, assign) BOOL enableLinkRumData;
+@property (nonatomic, strong) FTLoggerConfig *config;
 @end
 @implementation FTLogger
-static FTLogger *sharedInstance = nil;
-static dispatch_once_t onceToken;
-+ (void)startWithEnablePrintLogsToConsole:(BOOL)enable
-                          enableCustomLog:(BOOL)enableCustomLog
-                        enableLinkRumData:(BOOL)enableLinkRumData
-                           logLevelFilter:(NSArray<NSNumber*>*)filter
-                               sampleRate:(int)sampleRate writer:(id<FTLoggerDataWriteProtocol>)writer{
-    dispatch_once(&onceToken, ^{
-        sharedInstance = [[FTLogger alloc] initWithEnablePrintLogsToConsole:enable enableCustomLog:enableCustomLog enableLinkRumData:enableLinkRumData logLevelFilter:filter sampleRate:sampleRate writer:writer];
-    });
-}
 + (instancetype)sharedInstance {
-    if(!sharedInstance){
-        FTInnerLogError(@"SDK configuration `Logger` error, unable to collect custom logs");
-    }
+    static FTLogger *sharedInstance = nil;
+    static dispatch_once_t onceToken;
+    dispatch_once(&onceToken, ^{
+        sharedInstance = [[FTLogger alloc] init];
+    });
     return sharedInstance;
 }
--(instancetype)initWithEnablePrintLogsToConsole:(BOOL)enable
-                                enableCustomLog:(BOOL)enableCustomLog
-                              enableLinkRumData:(BOOL)enableLinkRumData
-                                 logLevelFilter:(NSArray<NSNumber*>*)filter sampleRate:(int)sampleRate
-                                         writer:(id<FTLoggerDataWriteProtocol>)writer{
+-(instancetype)init{
     self = [super init];
     if(self){
-        _printLogsToConsole = enable;
-        _loggerWriter = writer;
-        _sampleRate = sampleRate;
-        _logLevelFilterSet = [NSSet setWithArray:filter];
-        _enableCustomLog = enableCustomLog;
-        _enableLinkRumData = enableLinkRumData;
-        _loggerQueue = dispatch_queue_create("com.guance.logger", DISPATCH_QUEUE_SERIAL);
+        _loggerQueue = dispatch_queue_create("com.ft.logger", DISPATCH_QUEUE_SERIAL);
         dispatch_queue_set_specific(_loggerQueue,FTLoggerQueueIdentityKey, &FTLoggerQueueIdentityKey, NULL);
     }
     return self;
 }
-- (void)log:(NSString *)message
-     statusType:(LogStatus)statusType
+- (void)startWithLoggerConfig:(FTLoggerConfig *)config writer:(id<FTLoggerDataWriteProtocol>)writer{
+    __weak typeof(self) weakSelf = self;
+    dispatch_async(self.loggerQueue, ^{
+        __strong typeof(weakSelf) strongSelf = weakSelf;
+        if (!strongSelf) return;
+        strongSelf.config = config;
+        strongSelf.loggerWriter = writer;
+        [strongSelf dealLogLevelFilter:strongSelf.config.logLevelFilter];
+    });
+}
+-(void)setLinkRumDataProvider:(id<FTLinkRumDataProvider>)linkRumDataProvider{
+    dispatch_async(self.loggerQueue, ^{
+        self->_linkRumDataProvider = linkRumDataProvider;
+    });
+}
+-(void)dealLogLevelFilter:(NSArray *)logLevelFilter{
+    if (!logLevelFilter || logLevelFilter.count == 0) {
+        _logLevelFilterSet = nil;
+        return;
+    }
+    NSMutableArray *levels = [[NSMutableArray alloc]init];
+    for (id level in logLevelFilter) {
+        if ([level isKindOfClass:NSNumber.class] && [level intValue]<5 && [level intValue]>=0) {
+            [levels addObject:FTStatusStringMap[[level intValue]]];
+        }else{
+            [levels addObject:level];
+        }
+    }
+    _logLevelFilterSet = [NSSet setWithArray:levels];
+}
+-(void)updateWithRemoteConfiguration:(NSDictionary *)configuration{
+    __weak typeof(self) weakSelf = self;
+    dispatch_async(self.loggerQueue, ^{
+        __strong typeof(weakSelf) strongSelf = weakSelf;
+        if (!strongSelf) return;
+        [strongSelf.config mergeWithRemoteConfigDict:configuration];
+        [strongSelf dealLogLevelFilter:strongSelf.config.logLevelFilter];
+    });
+}
+- (void)log:(NSString *)content
+     statusType:(FTLogStatus)statusType
    property:(nullable NSDictionary *)property{
     NSDictionary *copyDict = [property ft_deepCopy];
-    if(self.printLogsToConsole){
-        FT_CONSOLE_LOG(statusType,message,copyDict);
-    }
-    if (!self.enableCustomLog) {
-        return;
-    }
-    if (![self.logLevelFilterSet containsObject:@(statusType)]) {
-        return;
-    }
-    [self _log:message async:statusType == StatusError status:FTStatusStringMap[statusType] property:copyDict];
+    [self _log:content statusType:(LogStatus)statusType status:FTStatusStringMap[statusType] property:copyDict];
 }
 - (void)log:(NSString *)content status:(NSString *)status{
     [self log:content status:status property:nil];
 }
 - (void)log:(NSString *)content status:(NSString *)status property:(nullable NSDictionary *)property{
     NSDictionary *copyDict = [property ft_deepCopy];
-    if(self.printLogsToConsole){
-        FT_CONSOLE_CUSTOM_LOG(status, content, copyDict);
-    }
-    if (!self.enableCustomLog) {
-        return;
-    }
-    [self _log:content async:NO status:status property:copyDict];
+    [self _log:content statusType:StatusCustom status:status property:copyDict];
 }
 -(void)info:(NSString *)content property:(NSDictionary *)property{
-    [self log:content statusType:StatusInfo property:property];
+    [self log:content statusType:FTStatusInfo property:property];
 }
 -(void)warning:(NSString *)content property:(NSDictionary *)property{
-    [self log:content statusType:StatusWarning property:property];
+    [self log:content statusType:FTStatusWarning property:property];
 }
 -(void)error:(NSString *)content property:(NSDictionary *)property{
-    [self log:content statusType:StatusError property:property];
+    [self log:content statusType:FTStatusError property:property];
 }
 -(void)critical:(NSString *)content property:(NSDictionary *)property{
-    [self log:content statusType:StatusCritical property:property];
+    [self log:content statusType:FTStatusCritical property:property];
 }
 - (void)ok:(NSString *)content property:(NSDictionary *)property{
-    [self log:content statusType:StatusOk property:property];
+    [self log:content statusType:FTStatusOk property:property];
 }
-- (void)_log:(NSString *)content async:(BOOL)async status:(NSString *)status property:(nullable NSDictionary *)property{
-    NSMutableDictionary *context = [NSMutableDictionary dictionary];
-    [context addEntriesFromDictionary:[[FTPresetProperty sharedInstance] loggerDynamicProperty]];
-    if(self.enableLinkRumData){
-        if (self.linkRumDataProvider && [self.linkRumDataProvider respondsToSelector:@selector(getLinkRUMData)]) {
-            NSDictionary *rumTag = [self.linkRumDataProvider getLinkRUMData];
-            [context addEntriesFromDictionary:rumTag];
-        }
-        [context addEntriesFromDictionary:[[FTPresetProperty sharedInstance] rumProperty]];
-    }
+- (void)_log:(NSString *)content statusType:(LogStatus)type status:(NSString *)status property:(nullable NSDictionary *)property{
+    NSDictionary *copyDict = [property ft_deepCopy];
+    long long time = [NSDate ft_currentNanosecondTimeStamp];
+    __weak typeof(self) weakSelf = self;
     dispatch_block_t logBlock = ^{
-        // 上传 datakit
-        if(self.loggerWriter && [self.loggerWriter respondsToSelector:@selector(logging:status:tags:field:time:)]){
-            if (![FTBaseInfoHandler randomSampling:self.sampleRate]){
-                FTInnerLogInfo(@"[Logging][Not Sampled] %@",content);
-                return;
+        __strong typeof(weakSelf) strongSelf = weakSelf;
+        if (!strongSelf) return;
+        FTLoggerConfig *config = strongSelf.config;
+        if (!config) {
+            FTInnerLogError(@"SDK configuration `Logger` error, unable to collect custom logs");
+            return;
+        }
+        if (!content || content.length == 0 ) {
+            FTInnerLogError(@"[Logging] The passed data format is incorrect");
+            return;
+        }
+        if(config.printCustomLogToConsole){
+            FT_CONSOLE_LOG(type,status,content,copyDict);
+        }
+        if (!config.enableCustomLog) {
+            FTInnerLogInfo(@"[Logging][Disable Custom Log] %@",content);
+            return;
+        }
+        if (strongSelf.logLevelFilterSet && ![strongSelf.logLevelFilterSet containsObject:status]) {
+            FTInnerLogInfo(@"[Logging][Not Filtered] %@",content);
+            return;
+        }
+        if (![FTBaseInfoHandler randomSampling:config.samplerate]){
+            FTInnerLogInfo(@"[Logging][Not Sampled] %@",content);
+            return;
+        }
+        NSMutableDictionary *context = [NSMutableDictionary dictionary];
+        [context addEntriesFromDictionary:[[FTPresetProperty sharedInstance] loggerDynamicTags]];
+        if(config.enableLinkRumData){
+            if (strongSelf.linkRumDataProvider && [strongSelf.linkRumDataProvider respondsToSelector:@selector(getLinkRUMData)]) {
+                NSDictionary *rumTag = [strongSelf.linkRumDataProvider getLinkRUMData];
+                [context addEntriesFromDictionary:rumTag];
             }
+            [context addEntriesFromDictionary:[[FTPresetProperty sharedInstance] rumTags]];
+        }
+        if(strongSelf.loggerWriter && [strongSelf.loggerWriter respondsToSelector:@selector(logging:status:tags:field:time:)]){
             NSString *newContent = [content ft_subStringWithCharacterLength:FT_LOGGING_CONTENT_SIZE];
-
-            [self.loggerWriter logging:newContent status:status tags:context field:property time:[NSDate ft_currentNanosecondTimeStamp]];
+            [strongSelf.loggerWriter logging:newContent status:status tags:context field:property time:time];
         }else{
             FTInnerLogError(@"SDK configuration error, unable to collect custom logs");
         }
     };
-    if(async){
-        dispatch_async(self.loggerQueue, logBlock);
-    }else{
-        [self syncProcess:logBlock];
-    }
-    
+    dispatch_async(self.loggerQueue, logBlock);
 }
+/**
+ *  just for test
+ */
 - (void)syncProcess{
     [self syncProcess:^{}];
 }
@@ -149,9 +173,13 @@ static dispatch_once_t onceToken;
     }
 }
 - (void)shutDown{
-    [self syncProcess:^{}];
-    onceToken = 0;
-    sharedInstance =nil;
+    __weak typeof(self) weakSelf = self;
+    dispatch_async(self.loggerQueue, ^{
+        __strong typeof(weakSelf) strongSelf = weakSelf;
+        if (!strongSelf) return;
+        strongSelf.config = nil;
+        strongSelf.loggerWriter = nil;
+    });
     FTInnerLogInfo(@"[Logging] SHUT DOWN");
 }
 @end

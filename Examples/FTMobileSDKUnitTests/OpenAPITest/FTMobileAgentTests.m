@@ -2,7 +2,7 @@
 //  ft_sdk_iosTestUnitTests.m
 //  ft-sdk-iosTestUnitTests
 //
-//  Created by 胡蕾蕾 on 2019/12/19.
+//  Created by hulilei on 2019/12/19.
 //  Copyright © 2019 hll. All rights reserved.
 //
 #import <KIF/KIF.h>
@@ -24,7 +24,12 @@
 #import "FTRUMManager.h"
 #import "FTModelHelper.h"
 #import "FTMobileConfig+Private.h"
+#import "FTLoggerConfig+Private.h"
+#import "FTRumConfig+Private.h"
 #import "FTNetworkMock.h"
+#import "FTTestUtils.h"
+#import "FTTrackDataManager+Test.h"
+#import "FTDataUploadWorker.h"
 @interface FTMobileAgentTests : KIFTestCase
 @property (nonatomic, strong) FTMobileConfig *config;
 @property (nonatomic, copy) NSString *url;
@@ -38,13 +43,13 @@
 
 - (void)setUp {
     /**
-     * 设置 ft-sdk-iosTestUnitTests 的 Environment Variables
-     * 额外 添加 isUnitTests = 1 防止 SDK 在 AppDelegate 启动 对单元测试造成影响
+     * Set Environment Variables for ft-sdk-iosTestUnitTests
+     * Additionally add isUnitTests = 1 to prevent SDK startup in AppDelegate from affecting unit tests
      */
     NSProcessInfo *processInfo = [NSProcessInfo processInfo];
     self.url = [processInfo environment][@"ACCESS_SERVER_URL"];
     self.appid = [processInfo environment][@"APP_ID"];
-    [[FTTrackerEventDBTool sharedManger] deleteItemWithTm:[NSDate ft_currentNanosecondTimeStamp]];
+    [[FTTrackerEventDBTool sharedManger] deleteAllDatas];
 }
 
 - (void)tearDown {
@@ -58,15 +63,15 @@
     config.autoSync = NO;
     [FTMobileAgent startWithConfigOptions:config];
     [[FTMobileAgent sharedInstance] unbindUser];
-    [[FTTrackerEventDBTool sharedManger] deleteItemWithTm:[NSDate ft_currentNanosecondTimeStamp]];
+    [[FTTrackerEventDBTool sharedManger] deleteAllDatas];
 }
-#pragma mark ========== 用户数据绑定 ==========
-/// 测试兼容适配 1.3.6 及以下版本旧的用户绑定逻辑
-/// 旧：key:ft_userid
-///    value: user_id
+#pragma mark ========== User data binding ==========
+/// Test compatibility adaptation for old user binding logic in version 1.3.6 and below
+/// Old: key: ft_userid
+///      value: user_id
 ///
-/// 新：key：FT_USER_INFO
-///    value: 用户数据字典
+/// New: key: FT_USER_INFO
+///      value: User data dictionary
 - (void)testAdaptOldUserSet{
     [self setRightSDKConfig];
     [[FTMobileAgent sharedInstance] unbindUser];
@@ -78,27 +83,27 @@
     config.autoSync = NO;
     [FTMobileAgent startWithConfigOptions:config];
    
-    NSDictionary *dict  = [[FTPresetProperty sharedInstance] rumDynamicProperty];
+    NSDictionary *dict  = [[FTPresetProperty sharedInstance] rumDynamicTags];
     NSString *userid = dict[FT_USER_ID];
     XCTAssertTrue([userid isEqualToString:@"old_user"]);
     [[NSUserDefaults standardUserDefaults] removeObjectForKey:@"ft_userid"];
 }
 /**
- * 测试 绑定用户
- * 验证：获取 RUM 数据 判断 userid 是否与设置一致
+ * Test user binding
+ * Verify: Get RUM data to check if userid matches the set value
  */
 - (void)testBindUser{
     [self setRightSDKConfig];
    
     [[FTMobileAgent sharedInstance] bindUserWithUserID:@"testBindUser"];
-    NSDictionary *dict  = [[FTPresetProperty sharedInstance] rumDynamicProperty];
+    NSDictionary *dict  = [[FTPresetProperty sharedInstance] rumDynamicTags];
     NSString *userid = dict[FT_USER_ID];
     XCTAssertTrue([userid isEqualToString:@"testBindUser"]);
 }
 - (void)testBindUserWithNameEmail{
     [self setRightSDKConfig];
     [[FTMobileAgent sharedInstance] bindUserWithUserID:@"testBindUser2" userName:@"name1" userEmail:@"111@qq.com"];
-    NSDictionary *dict  = [[FTPresetProperty sharedInstance] rumDynamicProperty];
+    NSDictionary *dict  = [[FTPresetProperty sharedInstance] rumDynamicTags];
     NSString *userid = dict[FT_USER_ID];
     NSString *username = dict[FT_USER_NAME];
     NSString *useremail = dict[FT_USER_EMAIL];
@@ -109,7 +114,7 @@
 - (void)testBindUserWithNameEmailAndExtra{
     [self setRightSDKConfig];
     [[FTMobileAgent sharedInstance] bindUserWithUserID:@"testBindUser3" userName:@"name2" userEmail:@"222@qq.com" extra:@{@"user_age":@1}];
-    NSDictionary *dict  = [[FTPresetProperty sharedInstance] rumDynamicProperty];
+    NSDictionary *dict  = [[FTPresetProperty sharedInstance] rumDynamicTags];
     NSString *userid = dict[FT_USER_ID];
     NSString *username = dict[FT_USER_NAME];
     NSString *useremail = dict[FT_USER_EMAIL];
@@ -121,24 +126,24 @@
 
 }
 /**
- * 测试 切换用户
- * 验证： 判断切换用户前后 获取上传信息里用户信息是否正确
+ * Test user switching
+ * Verify: Check if user information in upload data is correct before and after user switching
  */
 -(void)testChangeUser{
     [self setRightSDKConfig];
     [[FTMobileAgent sharedInstance] bindUserWithUserID:@"testChangeUser1"];
-    NSDictionary *dict  = [[FTPresetProperty sharedInstance] rumDynamicProperty];
+    NSDictionary *dict  = [[FTPresetProperty sharedInstance] rumDynamicTags];
      NSString *userid = dict[@"userid"];
     XCTAssertTrue([userid isEqualToString:@"testChangeUser1"]);
 
     [[FTMobileAgent sharedInstance] bindUserWithUserID:@"testChangeUser2"];
-    NSDictionary *newDict  = [[FTPresetProperty sharedInstance] rumDynamicProperty];
+    NSDictionary *newDict  = [[FTPresetProperty sharedInstance] rumDynamicTags];
     NSString *newUserid = newDict[@"userid"];
    XCTAssertTrue([newUserid isEqualToString:@"testChangeUser2"]);
 }
 /**
- * 用户解绑
- * 验证：登出后 userid 改变 is_signin 为 F
+ * User unbinding
+ * Verify: After logout, userid changes and is_signin becomes F
  */
 -(void)testUserlogout{
     [[NSUserDefaults standardUserDefaults] setValue:nil forKey:@"ft_sessionid"];
@@ -146,7 +151,7 @@
     [[FTMobileAgent sharedInstance] bindUserWithUserID:@"testUserlogout" userName:@"name" userEmail:@"email" extra:@{@"ft_key":@"ft_value"}];
     
     [[FTMobileAgent sharedInstance] unbindUser];
-    NSDictionary *dict  = [[FTPresetProperty sharedInstance] rumDynamicProperty];
+    NSDictionary *dict  = [[FTPresetProperty sharedInstance] rumDynamicTags];
     NSString *userid = dict[FT_USER_ID];
     NSString *userName = dict[FT_USER_NAME];
     NSString *userEmail = dict[FT_USER_EMAIL];
@@ -156,7 +161,7 @@
     XCTAssertFalse([userEmail isEqualToString:@"email"]);
     XCTAssertFalse([ft_key isEqualToString:@"ft_value"]);
 }
-#pragma mark ========== 配置项 ==========
+#pragma mark ========== Configuration ==========
 -(void)testServiceName{
     FTMobileConfig *config = [[FTMobileConfig alloc]initWithDatakitUrl:self.url];
     config.enableSDKDebugLog = YES;
@@ -166,7 +171,7 @@
     FTRumConfig *rumConfig = [[FTRumConfig alloc]initWithAppid:self.appid];
     [FTMobileAgent startWithConfigOptions:config];
     [[FTMobileAgent sharedInstance] startRumWithConfigOptions:rumConfig];
-    [[FTTrackerEventDBTool sharedManger] deleteItemWithTm:[NSDate ft_currentNanosecondTimeStamp]];
+    [[FTTrackerEventDBTool sharedManger] deleteAllDatas];
     FTLoggerConfig *loggerConfig = [[FTLoggerConfig alloc]init];
     loggerConfig.enableCustomLog = YES;
     [[FTMobileAgent sharedInstance] startLoggerWithConfigOptions:loggerConfig];
@@ -200,7 +205,7 @@
     FTRumConfig *rumConfig = [[FTRumConfig alloc]initWithAppid:self.appid];
     [FTMobileAgent startWithConfigOptions:config];
     [[FTMobileAgent sharedInstance] startRumWithConfigOptions:rumConfig];
-    [[FTTrackerEventDBTool sharedManger] deleteItemWithTm:[NSDate ft_currentNanosecondTimeStamp]];
+    [[FTTrackerEventDBTool sharedManger] deleteAllDatas];
     FTLoggerConfig *loggerConfig = [[FTLoggerConfig alloc]init];
     loggerConfig.enableCustomLog = YES;
     [[FTMobileAgent sharedInstance] startLoggerWithConfigOptions:loggerConfig];
@@ -289,13 +294,22 @@
     XCTAssertTrue([config.globalContext[@"testGlobalContext_mutable"] isEqualToString:@"testGlobalContext_mutable"]);
     XCTAssertTrue([context[@"testGlobalContext_mutable"] isEqualToString:@"testGlobalContext"]);
 }
+- (void)testAddPkgInfo{
+    FTMobileConfig *config = [[FTMobileConfig alloc]initWithDatakitUrl:self.url];
+    config.enableSDKDebugLog = YES;
+    config.autoSync = NO;
+    XCTAssertNil([config pkgInfo]);
+    [config addPkgInfo:@"test_sdk" value:@"1.0.0"];
+    XCTAssertTrue([[config pkgInfo] isEqualToDictionary:@{@"test_sdk":@"1.0.0"}]);
+    XCTAssertFalse([config pkgInfo] == [config pkgInfo]);
+}
 - (void)testAppendGlobalContext{
     FTMobileConfig *config = [[FTMobileConfig alloc]initWithDatakitUrl:self.url];
     config.enableSDKDebugLog = YES;
     config.autoSync = NO;
     config.globalContext = @{@"testGlobalContext":@"testGlobalContext"};
     [FTMobileAgent startWithConfigOptions:config];
-    [[FTTrackerEventDBTool sharedManger] deleteItemWithTm:[NSDate ft_currentNanosecondTimeStamp]];
+    [[FTTrackerEventDBTool sharedManger] deleteAllDatas];
     FTLoggerConfig *loggerConfig = [[FTLoggerConfig alloc]init];
     loggerConfig.enableCustomLog = YES;
     [[FTMobileAgent sharedInstance] startLoggerWithConfigOptions:loggerConfig];
@@ -343,7 +357,7 @@
     config.enableSDKDebugLog = YES;
     config.autoSync = NO;
     [FTMobileAgent startWithConfigOptions:config];
-    [[FTTrackerEventDBTool sharedManger] deleteItemWithTm:[NSDate ft_currentNanosecondTimeStamp]];
+    [[FTTrackerEventDBTool sharedManger] deleteAllDatas];
     FTLoggerConfig *loggerConfig = [[FTLoggerConfig alloc]init];
     loggerConfig.enableCustomLog = YES;
     [[FTMobileAgent sharedInstance]
@@ -354,8 +368,8 @@
     [[FTTrackDataManager sharedInstance] insertCacheToDB];
     NSArray *oldDatas = [[FTTrackerEventDBTool sharedManger] getFirstRecords:10 withType:FT_DATA_TYPE_LOGGING];
     XCTAssertTrue(oldDatas.count>0);
-    [[FTTrackDataManager sharedInstance] addObserver:self forKeyPath:@"isUploading" options:NSKeyValueObservingOptionNew context:nil];
-    self.expectation = [self expectationWithDescription:@"异步操作timeout"];
+    [[FTTrackDataManager sharedInstance].dataUploadWorker addObserver:self forKeyPath:@"isUploading" options:NSKeyValueObservingOptionNew context:nil];
+    self.expectation = [self expectationWithDescription:@"Async operation timeout"];
 
     [[NSNotificationCenter defaultCenter] postNotificationName:UIApplicationDidBecomeActiveNotification object:nil];
     dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)(1 * NSEC_PER_SEC)), dispatch_get_main_queue(), ^{
@@ -366,7 +380,7 @@
     }];
     NSArray *newDatas = [[FTTrackerEventDBTool sharedManger] getFirstRecords:10 withType:FT_DATA_TYPE_LOGGING];
     XCTAssertTrue(newDatas.count>=oldDatas.count);
-    [[FTTrackDataManager sharedInstance] removeObserver:self forKeyPath:@"isUploading"];
+    [[FTTrackDataManager sharedInstance].dataUploadWorker removeObserver:self forKeyPath:@"isUploading"];
 }
 - (void)testAutoSync_YES{
     [FTNetworkMock networkOHHTTPStubs];
@@ -374,7 +388,7 @@
     config.enableSDKDebugLog = YES;
     config.autoSync = YES;
     [FTMobileAgent startWithConfigOptions:config];
-    [[FTTrackerEventDBTool sharedManger] deleteItemWithTm:[NSDate ft_currentNanosecondTimeStamp]];
+    [[FTTrackerEventDBTool sharedManger] deleteAllDatas];
     FTLoggerConfig *loggerConfig = [[FTLoggerConfig alloc]init];
     loggerConfig.enableCustomLog = YES;
     [[FTMobileAgent sharedInstance]
@@ -385,8 +399,8 @@
     [[FTTrackDataManager sharedInstance] insertCacheToDB];
     NSArray *oldDatas = [[FTTrackerEventDBTool sharedManger] getFirstRecords:10 withType:FT_DATA_TYPE_LOGGING];
     XCTAssertTrue(oldDatas.count>0);
-    [[FTTrackDataManager sharedInstance] addObserver:self forKeyPath:@"isUploading" options:NSKeyValueObservingOptionNew context:nil];
-    self.expectation = [self expectationWithDescription:@"异步操作timeout"];
+    [[FTTrackDataManager sharedInstance].dataUploadWorker addObserver:self forKeyPath:@"isUploading" options:NSKeyValueObservingOptionNew context:nil];
+    self.expectation = [self expectationWithDescription:@"Async operation timeout"];
 
     [[NSNotificationCenter defaultCenter] postNotificationName:UIApplicationDidBecomeActiveNotification object:nil];
    
@@ -395,7 +409,7 @@
     }];
     NSArray *newDatas = [[FTTrackerEventDBTool sharedManger] getFirstRecords:10 withType:FT_DATA_TYPE_LOGGING];
     XCTAssertTrue(newDatas.count<oldDatas.count);
-    [[FTTrackDataManager sharedInstance] removeObserver:self forKeyPath:@"isUploading"];
+    [[FTTrackDataManager sharedInstance].dataUploadWorker removeObserver:self forKeyPath:@"isUploading"];
 }
 -(void)observeValueForKeyPath:(NSString *)keyPath ofObject:(id)object change:(NSDictionary<NSKeyValueChangeKey,id> *)change context:(void *)context{
     if([keyPath isEqualToString:@"isUploading"]){
@@ -414,8 +428,23 @@
     datakitConfig.enableSDKDebugLog = YES;
     datakitConfig.globalContext = @{@"aa":@"bb"};
     datakitConfig.service = @"testsdk";
-    datakitConfig.enableDataIntegerCompatible = YES;
+    // enableDataIntegerCompatible defaults to YES
+    XCTAssertTrue(datakitConfig.enableDataIntegerCompatible == YES);
+    datakitConfig.enableDataIntegerCompatible = NO;
     [datakitConfig setEnvWithType:FTEnvLocal];
+    XCTAssertTrue(datakitConfig.dbCacheLimit == 100*1024*1024);
+    datakitConfig.dbCacheLimit = 10;
+    XCTAssertTrue(datakitConfig.dbCacheLimit == 30*1024*1024);
+    datakitConfig.dbCacheLimit = 60*1024*1024;
+    XCTAssertTrue(datakitConfig.dbCacheLimit == 60*1024*1024);
+    XCTAssertTrue(datakitConfig.enableLimitWithDbSize == NO);
+    XCTAssertTrue(datakitConfig.dbDiscardType == FTDBDiscard);
+    datakitConfig.dbDiscardType = FTDBDiscardOldest;
+    XCTAssertTrue(datakitConfig.remoteConfiguration == NO);
+    XCTAssertTrue(datakitConfig.remoteConfigMiniUpdateInterval == 12*60*60);
+    datakitConfig.remoteConfigMiniUpdateInterval = -1;
+    XCTAssertTrue(datakitConfig.remoteConfigMiniUpdateInterval == 0);
+    datakitConfig.remoteConfiguration = YES;
     FTMobileConfig *copyConfig = [datakitConfig copy];
     XCTAssertTrue(copyConfig.enableSDKDebugLog == datakitConfig.enableSDKDebugLog);
     XCTAssertTrue([copyConfig.datakitUrl isEqualToString:datakitConfig.datakitUrl]);
@@ -423,6 +452,11 @@
     XCTAssertTrue([copyConfig.service isEqualToString:datakitConfig.service]);
     XCTAssertTrue([copyConfig.globalContext isEqual:datakitConfig.globalContext]);
     XCTAssertTrue(copyConfig.enableDataIntegerCompatible == datakitConfig.enableDataIntegerCompatible);
+    XCTAssertTrue(copyConfig.dbCacheLimit == datakitConfig.dbCacheLimit);
+    XCTAssertTrue(copyConfig.dbDiscardType == datakitConfig.dbDiscardType == FTDBDiscardOldest);
+    XCTAssertTrue(copyConfig.enableLimitWithDbSize == datakitConfig.enableLimitWithDbSize);
+    XCTAssertTrue(copyConfig.remoteConfiguration == datakitConfig.remoteConfiguration);
+    XCTAssertTrue(copyConfig.remoteConfigMiniUpdateInterval == datakitConfig.remoteConfigMiniUpdateInterval);
     FTMobileConfig *datawayConfig = [[FTMobileConfig alloc]initWithDatawayUrl:self.url clientToken:@"clientToken"];
     FTMobileConfig *copy = [datawayConfig copy];
     XCTAssertTrue([copy.datawayUrl isEqualToString:datawayConfig.datawayUrl]);
@@ -444,8 +478,19 @@
     rumConfig.resourceUrlHandler = ^BOOL(NSURL *url) {
         return NO;
     };
+    FTViewTrackingHandler viewStrategy = (FTViewTrackingHandler)[[NSObject alloc]init];
+    rumConfig.viewTrackingHandler = viewStrategy;
+    FTActionTrackingHandler actionStrategy = (FTActionTrackingHandler)[[NSObject alloc]init];
+    rumConfig.actionTrackingHandler = actionStrategy;
+    XCTAssertTrue(rumConfig.sessionOnErrorSampleRate == 0);
+    XCTAssertTrue(rumConfig.rumCacheLimitCount == 100000);
+    rumConfig.rumCacheLimitCount = 1000;
+    XCTAssertTrue(rumConfig.rumCacheLimitCount == 10000);
+    rumConfig.rumDiscardType = FTRUMDiscardOldest;
     rumConfig.globalContext = @{@"aa":@"bb"};
+    rumConfig.sessionOnErrorSampleRate = 50;
     FTRumConfig *copyRumConfig = [rumConfig copy];
+    XCTAssertTrue(copyRumConfig.sessionOnErrorSampleRate == 50);
     XCTAssertTrue(copyRumConfig.samplerate == rumConfig.samplerate);
     XCTAssertTrue(copyRumConfig.enableTraceUserAction == rumConfig.enableTraceUserAction);
     XCTAssertTrue(copyRumConfig.enableTraceUserView == rumConfig.enableTraceUserView);
@@ -459,7 +504,14 @@
     XCTAssertTrue(copyRumConfig.monitorFrequency == rumConfig.monitorFrequency);
     XCTAssertTrue([copyRumConfig.globalContext isEqual:rumConfig.globalContext]);
     XCTAssertTrue([copyRumConfig.resourceUrlHandler isEqual:rumConfig.resourceUrlHandler]);
+    XCTAssertTrue([copyRumConfig.viewTrackingHandler isEqual:rumConfig.viewTrackingHandler]);
+    XCTAssertTrue([copyRumConfig.actionTrackingHandler isEqual:rumConfig.actionTrackingHandler]);
+    XCTAssertTrue(copyRumConfig.freezeDurationMs == rumConfig.freezeDurationMs);
+    XCTAssertTrue(copyRumConfig.rumDiscardType == rumConfig.rumDiscardType);
+    XCTAssertTrue(copyRumConfig.rumCacheLimitCount == rumConfig.rumCacheLimitCount);
+    XCTAssertTrue([copyRumConfig.debugDescription isEqualToString:rumConfig.debugDescription]);
 }
+// block not processed
 - (void)testRUMConfigInitWithDict{
     XCTAssertNil([[FTRumConfig alloc]initWithDictionary:nil]);
     FTRumConfig *rumConfig = [[FTRumConfig alloc]init];
@@ -478,7 +530,8 @@
     XCTAssertTrue(rumConfig.deviceMetricsMonitorType == newRum.deviceMetricsMonitorType);
     XCTAssertTrue(rumConfig.monitorFrequency == newRum.monitorFrequency);
     XCTAssertTrue(rumConfig.globalContext == newRum.globalContext);
-    XCTAssertTrue(rumConfig.resourceUrlHandler == newRum.resourceUrlHandler);
+    XCTAssertFalse(rumConfig.resourceUrlHandler == newRum.resourceUrlHandler);
+    XCTAssertTrue(rumConfig.freezeDurationMs == newRum.freezeDurationMs);
 }
 - (void)testTraceConfigCopy{
     FTTraceConfig *traceConfig = [[FTTraceConfig alloc]init];
@@ -491,6 +544,7 @@
     XCTAssertTrue(copyTraceConfig.enableLinkRumData == traceConfig.enableLinkRumData);
     XCTAssertTrue(copyTraceConfig.samplerate == traceConfig.samplerate);
     XCTAssertTrue(copyTraceConfig.networkTraceType == traceConfig.networkTraceType);
+    XCTAssertTrue([copyTraceConfig.debugDescription isEqualToString:traceConfig.debugDescription]);
 }
 - (void)testTraceConfigInitWithDict{
     XCTAssertNil([[FTTraceConfig alloc]initWithDictionary:nil]);
@@ -519,6 +573,8 @@
     XCTAssertTrue([copyLoggerConfig.logLevelFilter isEqual: loggerConfig.logLevelFilter]);
     XCTAssertTrue([copyLoggerConfig.globalContext isEqual: loggerConfig.globalContext]);
     XCTAssertTrue(loggerConfig.printCustomLogToConsole == copyLoggerConfig.printCustomLogToConsole);
+    XCTAssertTrue([copyLoggerConfig.debugDescription isEqualToString:loggerConfig.debugDescription]);
+
 }
 - (void)testLoggerConfigInitWithDict{
     XCTAssertNil([[FTLoggerConfig alloc]initWithDictionary:nil]);
@@ -558,27 +614,30 @@
     [[FTMobileAgent sharedInstance] startTraceWithConfigOptions:trace];
     
     [tester waitForTimeInterval:0.5];
-    [FTMobileAgent shutDown];
+    CFTimeInterval duration = [FTTestUtils functionElapsedTime:^{
+        [FTMobileAgent shutDown];
+    }];
+    XCTAssertTrue(duration<0.1);
     NSInteger count = [[FTTrackerEventDBTool sharedManger] getDatasCount];
     XCTAssertThrows([FTMobileAgent sharedInstance]);
-    // 日志不再采集
+    // Log collection is disabled
     for (int i = 0; i<20; i++) {
         [[FTLogger sharedInstance] info:@"test" property:nil];
     }
     [[FTTrackDataManager sharedInstance] insertCacheToDB];
     XCTAssertTrue([[FTTrackerEventDBTool sharedManger] getDatasCount] == count);
-    // RUM Anctio、View、Resource采集关闭
+    // RUM Action, View, Resource collection is disabled
     [[tester waitForViewWithAccessibilityLabel:@"home"] tap];
     [tester waitForTimeInterval:0.5];
     [[FTExternalDataManager sharedManager] startViewWithName:@"test"];
-    [[FTExternalDataManager sharedManager] addClickActionWithName:@"testClick"];
-    [[FTExternalDataManager sharedManager] addClickActionWithName:@"testClick"];
+    [[FTExternalDataManager sharedManager] startAction:@"testClick" actionType:@"click" property:nil];
+    [[FTExternalDataManager sharedManager] startAction:@"testClick" actionType:@"click" property:nil];
 
     [[FTExternalDataManager sharedManager] addErrorWithType:@"ios" message:@"testMessage" stack:@"testStack"];
     [[tester waitForViewWithAccessibilityLabel:@"Network data collection"] tap];
     [[tester waitForViewWithAccessibilityLabel:@"Network data collection"] tap];
-    XCTestExpectation *expectation= [self expectationWithDescription:@"异步操作timeout"];
-    // Trace 功能关闭、Rum Resource采集关闭
+    XCTestExpectation *expectation= [self expectationWithDescription:@"Async operation timeout"];
+    // Trace functionality is disabled, RUM Resource collection is disabled
     [self networkUploadHandler:^(NSURLResponse *response, NSDictionary *requestHeader, NSError *error) {
         XCTAssertFalse([requestHeader.allKeys containsObject:FT_NETWORK_DDTRACE_TRACEID]);
         XCTAssertFalse([requestHeader.allKeys containsObject:FT_NETWORK_DDTRACE_SAMPLED]);

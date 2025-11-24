@@ -2,7 +2,7 @@
 //  FTRUMActionHandler.m
 //  FTMobileAgent
 //
-//  Created by 胡蕾蕾 on 2021/5/21.
+//  Created by hulilei on 2021/5/21.
 //  Copyright © 2021 hll. All rights reserved.
 //
 
@@ -10,7 +10,7 @@
 #import "NSDate+FTUtil.h"
 #import "FTConstants.h"
 #import "FTBaseInfoHandler.h"
-static const NSTimeInterval actionMaxDuration = 10; // 10 seconds
+static const NSTimeInterval actionMaxDuration = 5; // 5 seconds
 static const NSTimeInterval discreteActionTimeoutDuration = 0.1;
 @interface FTRUMActionHandler ()<FTRUMSessionProtocol>
 @property (nonatomic, strong) FTRUMDependencies *dependencies;
@@ -24,9 +24,10 @@ static const NSTimeInterval discreteActionTimeoutDuration = 0.1;
 @property (nonatomic, assign) NSInteger actionLongTaskCount;
 @property (nonatomic, assign) NSInteger actionResourcesCount;
 @property (nonatomic, assign) NSInteger actionErrorCount;
-@property (nonatomic, strong) NSDictionary *actionProperty;//添加到field中
+@property (nonatomic, strong) NSDictionary *actionProperty;//Add to field
 //private
 @property (nonatomic, assign) NSInteger activeResourcesCount;
+@property (nonatomic, strong) NSDate *lastResourceEndDate;
 @end
 @implementation FTRUMActionHandler
 
@@ -49,21 +50,30 @@ static const NSTimeInterval discreteActionTimeoutDuration = 0.1;
     return  self;
 }
 - (BOOL)process:(FTRUMDataModel *)model context:(nonnull NSDictionary *)context{
-   
-    if ([self timedOutOrExpired:model.time]&&[self allResourcesCompletedLoading]){
-        [self writeActionData:model.time context:context];
+    NSDate *timedOutDate = [self timedOutOrExpired:model.time];
+    if(timedOutDate && [self allResourcesCompletedLoading]){
+        [self writeActionData:timedOutDate context:context];
         return NO;
     }
-    
+    NSDate *maxDuration = [self timedOutMaxDuration:model.time];
+    if (maxDuration) {
+        [self writeActionData:maxDuration context:context];
+        return NO;
+    }
     switch (model.type) {
-        case FTRUMDataClick:
-            if ([self allResourcesCompletedLoading]) {
-                [self writeActionData:model.time context:context];
-                return NO;
-            }
+        case FTRUMDataViewStart:
+        case FTRUMDataViewStop:
+        case FTRUMDataStopAction:
+            [self writeActionData:model.time context:context];
+            return NO;
             break;
         case FTRUMDataError:{
             self.actionErrorCount++;
+            FTRUMErrorData *error = (FTRUMErrorData *)model;
+            if(error.fatal){
+                [self writeActionData:model.time context:context];
+                return NO;
+            }
         }
             break;
         case FTRUMDataResourceStart:
@@ -72,6 +82,7 @@ static const NSTimeInterval discreteActionTimeoutDuration = 0.1;
         case FTRUMDataResourceComplete:
             self.actionResourcesCount += 1;
             self.activeResourcesCount -= 1;
+            self.lastResourceEndDate = model.time;
             break;
         case FTRUMDataLongTask:
             self.actionLongTaskCount++;
@@ -85,12 +96,29 @@ static const NSTimeInterval discreteActionTimeoutDuration = 0.1;
     return YES;
 }
 
--(BOOL)timedOutOrExpired:(NSDate*)currentTime{
+-(NSDate *)timedOutOrExpired:(NSDate*)currentTime{
+    if(self.lastResourceEndDate){
+        NSTimeInterval duration = [self.lastResourceEndDate timeIntervalSinceDate:_actionStartTime];
+        BOOL expired = duration >= discreteActionTimeoutDuration;
+        if(expired){
+            return self.lastResourceEndDate;
+        }
+    }
     NSTimeInterval actionDuration = [currentTime  timeIntervalSinceDate:_actionStartTime];
     BOOL expired = actionDuration >= discreteActionTimeoutDuration;
-    return  expired;
+    if(expired){
+        return [_actionStartTime dateByAddingTimeInterval:discreteActionTimeoutDuration];
+    }
+    return  nil;
 }
-
+-(NSDate *)timedOutMaxDuration:(NSDate *)currentTime{
+    NSTimeInterval actionDuration = [currentTime  timeIntervalSinceDate:_actionStartTime];
+    BOOL expired = actionDuration >= actionMaxDuration;
+    if(expired){
+        return [_actionStartTime dateByAddingTimeInterval:actionMaxDuration];
+    }
+    return  nil;
+}
 -(BOOL)allResourcesCompletedLoading{
     return self.activeResourcesCount<=0;
 }
@@ -98,11 +126,11 @@ static const NSTimeInterval discreteActionTimeoutDuration = 0.1;
     NSNumber *duration =  [endDate timeIntervalSinceDate:self.actionStartTime] >= actionMaxDuration?@(actionMaxDuration*1000000000):[self.actionStartTime ft_nanosecondTimeIntervalToDate:endDate];
     NSDictionary *sessionViewActionTag = [self.context getGlobalSessionViewActionTags];
     
-    NSMutableDictionary *fields = @{FT_DURATION:duration,
-                                    FT_KEY_ACTION_LONG_TASK_COUNT:@(self.actionLongTaskCount),
-                                    FT_KEY_ACTION_RESOURCE_COUNT:@(self.actionResourcesCount),
-                                    FT_KEY_ACTION_ERROR_COUNT:@(self.actionErrorCount),
-    }.mutableCopy;
+    NSMutableDictionary *fields = [NSMutableDictionary dictionary];
+    [fields setValue:duration forKey:FT_DURATION];
+    [fields setValue:@(self.actionLongTaskCount) forKey:FT_KEY_ACTION_LONG_TASK_COUNT];
+    [fields setValue:@(self.actionResourcesCount) forKey:FT_KEY_ACTION_RESOURCE_COUNT];
+    [fields setValue:@(self.actionErrorCount) forKey:FT_KEY_ACTION_ERROR_COUNT];
     if(self.actionProperty && self.actionProperty.allKeys.count>0){
         [fields addEntriesFromDictionary:self.actionProperty];
     }

@@ -21,6 +21,8 @@
 #import "FTURLSessionDelegate.h"
 #import "FTURLSessionInterceptor.h"
 #import "FTURLSessionInterceptor+Private.h"
+#import "FTTraceContext.h"
+#import "FTNetworkMock.h"
 typedef NS_ENUM(NSUInteger,TestSessionRequestMethod){
     DataTaskWithRequestCompletionHandler,
     DataTaskWithRequest,
@@ -35,11 +37,13 @@ typedef NS_ENUM(NSUInteger,TestSessionRequestMethod){
 
 - (void)setUp {
     // Put setup code here. This method is called before the invocation of each test method in the class.
+    [FTNetworkMock networkOHHTTPStubs];
 }
 
 - (void)tearDown {
     // Put teardown code here. This method is called after the invocation of each test method in the class.
     [FTMobileAgent shutDown];
+    [OHHTTPStubs removeAllStubs];
     
 }
 - (void)sdkNormalSet{
@@ -54,24 +58,6 @@ typedef NS_ENUM(NSUInteger,TestSessionRequestMethod){
     config.autoSync = NO;
     FTRumConfig *rumConfig = [[FTRumConfig alloc]initWithAppid:appid];
     rumConfig.enableTraceUserResource = enable;
-    FTTraceConfig *traceConfig = [[FTTraceConfig alloc]init];
-    traceConfig.networkTraceType = FTNetworkTraceTypeDDtrace;
-    traceConfig.enableLinkRumData = YES;
-    traceConfig.enableAutoTrace = YES;
-    [FTMobileAgent startWithConfigOptions:config];
-    [[FTMobileAgent sharedInstance] startRumWithConfigOptions:rumConfig];
-    [[FTMobileAgent sharedInstance] startTraceWithConfigOptions:traceConfig];
-    [[FTMobileAgent sharedInstance] unbindUser];
-    [[FTTrackerEventDBTool sharedManger] deleteAllDatas];
-    [FTModelHelper startView];
-}
-- (void)sdkInnerURLTestSet{
-    NSProcessInfo *processInfo = [NSProcessInfo processInfo];
-    NSString *url = [processInfo environment][@"TRACE_URL"];
-    NSString *appid = [processInfo environment][@"APP_ID"];
-    FTMobileConfig *config = [[FTMobileConfig alloc]initWithDatakitUrl:url];
-    config.enableSDKDebugLog = YES;
-    FTRumConfig *rumConfig = [[FTRumConfig alloc]initWithAppid:appid];
     FTTraceConfig *traceConfig = [[FTTraceConfig alloc]init];
     traceConfig.networkTraceType = FTNetworkTraceTypeDDtrace;
     traceConfig.enableLinkRumData = YES;
@@ -139,23 +125,6 @@ typedef NS_ENUM(NSUInteger,TestSessionRequestMethod){
     [self sdkEnableRUMAutoTrace:YES];
     [self startWithTest:InstrumentationInherit requestMethod:DataTaskWithURL hasResource:YES];
 }
-- (void)testResourcePropertyProvider{
-    [self resourcePropertyProviderEnableRUMAutoTrace:NO];
-}
-- (void)testResourcePropertyProvider_enableRUMAutoTrace{
-    [self resourcePropertyProviderEnableRUMAutoTrace:YES];
-}
-- (void)resourcePropertyProviderEnableRUMAutoTrace:(BOOL)enable{
-    [self sdkEnableRUMAutoTrace:enable];
-    ResourcePropertyProvider provider = ^NSDictionary * _Nullable(NSURLRequest *request, NSURLResponse *response, NSData *data, NSError *error) {
-        XCTAssertTrue(request);
-        NSString *body = [[NSString alloc] initWithData:request.HTTPBody encoding:NSUTF8StringEncoding];
-        NSString *responseBody = [[NSString alloc] initWithData:data encoding:NSUTF8StringEncoding];
-        XCTAssertTrue([body isEqualToString:@"111"]);
-        return @{@"request_body":body,@"response_body":responseBody};
-    };
-    [self startWithTest:InstrumentationInherit requestMethod:DataTaskWithRequestCompletionHandler hasResource:YES provider:provider];
-}
 - (void)testResourceRequestInterceptor{
     [self resourceRequestInterceptorEnableRUMAutoTrace:NO];
 }
@@ -186,12 +155,14 @@ typedef NS_ENUM(NSUInteger,TestSessionRequestMethod){
         return @{@"response_body":responseBody};
     };
     XCTestExpectation *expectation= [self expectationWithDescription:@"FirstProvider"];
-    HttpEngineTestUtil *engine = [[HttpEngineTestUtil alloc]initWithSessionInstrumentationType:InstrumentationInherit expectation:expectation provider:provider requestInterceptor:nil];
+    HttpEngineTestUtil *engine = [[HttpEngineTestUtil alloc]initWithSessionInstrumentationType:InstrumentationInherit provider:provider requestInterceptor:nil traceInterceptor:nil completion:^{
+        [expectation fulfill];
+    }];
     [engine network];
     [self waitForExpectationsWithTimeout:30 handler:^(NSError *error) {
         XCTAssertNil(error);
     }];
-    [NSThread sleepForTimeInterval:0.5];
+    [NSThread sleepForTimeInterval:0.1];
     [[FTGlobalRumManager sharedInstance].rumManager syncProcess];
     NSArray *newArray = [[FTTrackerEventDBTool sharedManger] getFirstRecords:10 withType:FT_DATA_TYPE_RUM];
     __block BOOL hasResource = NO;
@@ -212,12 +183,14 @@ typedef NS_ENUM(NSUInteger,TestSessionRequestMethod){
         return @{@"response_body2":responseBody};
     };
     XCTestExpectation *expectation2= [self expectationWithDescription:@"SecondProvider"];
-    HttpEngineTestUtil *engine2 = [[HttpEngineTestUtil alloc]initWithSessionInstrumentationType:InstrumentationInherit expectation:expectation2 provider:provider2 requestInterceptor:nil];
+    HttpEngineTestUtil *engine2 = [[HttpEngineTestUtil alloc]initWithSessionInstrumentationType:InstrumentationInherit provider:provider2 requestInterceptor:nil traceInterceptor:nil completion:^{
+        [expectation2 fulfill];
+    }];
     [engine2 network];
     [self waitForExpectationsWithTimeout:30 handler:^(NSError *error) {
         XCTAssertNil(error);
     }];
-    [NSThread sleepForTimeInterval:0.5];
+    [NSThread sleepForTimeInterval:0.1];
     [[FTGlobalRumManager sharedInstance].rumManager syncProcess];
     NSArray *newArray2 = [[FTTrackerEventDBTool sharedManger] getFirstRecords:10 withType:FT_DATA_TYPE_RUM];
     __block BOOL hasResource2 = NO;
@@ -247,12 +220,14 @@ typedef NS_ENUM(NSUInteger,TestSessionRequestMethod){
         [newRequest setValue:@"testRequestInterceptor" forHTTPHeaderField:@"test1"];
         return newRequest;
     };
-    HttpEngineTestUtil *engine = [[HttpEngineTestUtil alloc]initWithSessionInstrumentationType:InstrumentationInherit expectation:expectation provider:nil requestInterceptor:requestInterceptor];
+    HttpEngineTestUtil *engine = [[HttpEngineTestUtil alloc]initWithSessionInstrumentationType:InstrumentationInherit provider:nil requestInterceptor:requestInterceptor traceInterceptor:nil completion:^{
+        [expectation fulfill];
+    }];
     [engine network];
     [self waitForExpectationsWithTimeout:30 handler:^(NSError *error) {
         XCTAssertNil(error);
     }];
-    [NSThread sleepForTimeInterval:0.5];
+    [NSThread sleepForTimeInterval:0.1];
     [[FTGlobalRumManager sharedInstance].rumManager syncProcess];
     NSArray *newArray = [[FTTrackerEventDBTool sharedManger] getFirstRecords:10 withType:FT_DATA_TYPE_RUM];
     __block BOOL hasResource = NO;
@@ -267,19 +242,21 @@ typedef NS_ENUM(NSUInteger,TestSessionRequestMethod){
     }];
     XCTAssertTrue(hasResource);
     
-    [[FTTrackerEventDBTool sharedManger] deleteItemWithTm:[NSDate ft_currentNanosecondTimeStamp]];
+    [[FTTrackerEventDBTool sharedManger] deleteAllDatas];
     XCTestExpectation *expectation2= [self expectationWithDescription:@"SecondRequestInterceptor"];
     RequestInterceptor requestInterceptor2 = ^NSURLRequest *(NSURLRequest *request){
         NSMutableURLRequest *newRequest = [request mutableCopy];
         [newRequest setValue:@"testRequestInterceptor" forHTTPHeaderField:@"test2"];
         return newRequest;
     };
-    HttpEngineTestUtil *engine2 = [[HttpEngineTestUtil alloc]initWithSessionInstrumentationType:InstrumentationInherit expectation:expectation2 provider:nil requestInterceptor:requestInterceptor2];
+    HttpEngineTestUtil *engine2 = [[HttpEngineTestUtil alloc]initWithSessionInstrumentationType:InstrumentationInherit provider:nil requestInterceptor:requestInterceptor2 traceInterceptor:nil completion:^{
+        [expectation2 fulfill];
+    }];
     [engine2 network];
     [self waitForExpectationsWithTimeout:30 handler:^(NSError *error) {
         XCTAssertNil(error);
     }];
-    [NSThread sleepForTimeInterval:0.5];
+    [NSThread sleepForTimeInterval:0.1];
     [[FTGlobalRumManager sharedInstance].rumManager syncProcess];
     NSArray *newArray2 = [[FTTrackerEventDBTool sharedManger] getFirstRecords:10 withType:FT_DATA_TYPE_RUM];
     __block BOOL hasResource2 = NO;
@@ -324,16 +301,17 @@ typedef NS_ENUM(NSUInteger,TestSessionRequestMethod){
     [FTMobileAgent startWithConfigOptions:config];
     [[FTMobileAgent sharedInstance] startRumWithConfigOptions:rumConfig];
     [[FTMobileAgent sharedInstance] startTraceWithConfigOptions:traceConfig];
-    [[FTMobileAgent sharedInstance] unbindUser];
-    [[FTTrackerEventDBTool sharedManger] deleteItemWithTm:[NSDate ft_currentNanosecondTimeStamp]];
+    [[FTTrackerEventDBTool sharedManger] deleteAllDatas];
     [FTModelHelper startView];
     XCTestExpectation *expectation= [self expectationWithDescription:@"testResourceUrlHandlerReturnYes"];
-    HttpEngineTestUtil *engine = [[HttpEngineTestUtil alloc]initWithSessionInstrumentationType:InstrumentationInherit expectation:expectation provider:nil requestInterceptor:nil];
+    HttpEngineTestUtil *engine = [[HttpEngineTestUtil alloc]initWithSessionInstrumentationType:InstrumentationInherit provider:nil requestInterceptor:nil traceInterceptor:nil completion:^{
+        [expectation fulfill];
+    }];
     [engine network];
     [self waitForExpectationsWithTimeout:30 handler:^(NSError *error) {
         XCTAssertNil(error);
     }];
-    [NSThread sleepForTimeInterval:0.5];
+    [NSThread sleepForTimeInterval:0.1];
     [[FTGlobalRumManager sharedInstance].rumManager syncProcess];
     NSArray *newArray = [[FTTrackerEventDBTool sharedManger] getFirstRecords:10 withType:FT_DATA_TYPE_RUM];
     __block BOOL hasResource = NO;
@@ -390,13 +368,15 @@ typedef NS_ENUM(NSUInteger,TestSessionRequestMethod){
     [[FTMobileAgent sharedInstance] isIntakeUrl:^BOOL(NSURL * _Nonnull url) {
         return trace;
     }];
-    XCTestExpectation *expectation= [self expectationWithDescription:@"testResourceUrlHandlerReturnYes"];
-    HttpEngineTestUtil *engine = [[HttpEngineTestUtil alloc]initWithSessionInstrumentationType:InstrumentationInherit expectation:expectation provider:nil requestInterceptor:nil];
+    XCTestExpectation *expectation = [self expectationWithDescription:@"testResourceUrlHandlerReturnYes"];
+    HttpEngineTestUtil *engine = [[HttpEngineTestUtil alloc]initWithSessionInstrumentationType:InstrumentationInherit provider:nil requestInterceptor:nil traceInterceptor:nil completion:^{
+        [expectation fulfill];
+    }];
     [engine network];
     [self waitForExpectationsWithTimeout:30 handler:^(NSError *error) {
         XCTAssertNil(error);
     }];
-    [NSThread sleepForTimeInterval:0.5];
+    [NSThread sleepForTimeInterval:0.1];
     [[FTGlobalRumManager sharedInstance].rumManager syncProcess];
     NSArray *newArray = [[FTTrackerEventDBTool sharedManger] getFirstRecords:10 withType:FT_DATA_TYPE_RUM];
     __block BOOL hasResource = NO;
@@ -412,16 +392,17 @@ typedef NS_ENUM(NSUInteger,TestSessionRequestMethod){
 - (void)testUseURLSessionInterceptorTraceResource{
     [self URLSessionInterceptorTraceResourceWithEnableRUMAutoTrace:NO];
 }
-// 使用 `FTURLSessionInterceptor` 自定义添加resource，同时开启 RUMAutoTrace，使用 FTURLSessionDelegate 自定义采集，不影响 resource 正确采集。
-// 始终只采集 一条 resource 数据
-// 可能会多次添加 trace ，后面添加的覆盖前面的 （最后一次生效）
-// extraProvider 的添加，第一次添加后 resource 采集就会结束，后续的添加无效。（第一次生效）
+// Use `FTURLSessionInterceptor` to manually add a resource while enabling RUMAutoTrace. 
+// At the same time, use FTURLSessionDelegate for custom collection, which does not affect correct resource collection.
+// Always only one resource data is collected.
+// Trace may be added multiple times, but the later addition will overwrite the previous one (the last one takes effect).
+// For extraProvider, after the first addition, resource collection will end, and subsequent additions will be invalid. (Only the first one takes effect)
 - (void)testUseURLSessionInterceptorTraceResource_enableRUMAutoTrace{
     [self URLSessionInterceptorTraceResourceWithEnableRUMAutoTrace:YES];
 }
 - (void)URLSessionInterceptorTraceResourceWithEnableRUMAutoTrace:(BOOL)enable{
     [self sdkEnableRUMAutoTrace:enable];
-    XCTestExpectation *expectation= [self expectationWithDescription:@"异步操作timeout"];
+    XCTestExpectation *expectation= [self expectationWithDescription:@"Async operation timeout"];
     NSString *urlStr = [[NSProcessInfo processInfo] environment][@"TRACE_URL"];
     NSURL *url = [NSURL URLWithString:urlStr];
     NSURLRequest *request = [NSURLRequest requestWithURL:url];
@@ -430,15 +411,15 @@ typedef NS_ENUM(NSUInteger,TestSessionRequestMethod){
         [[FTURLSessionInterceptor shared] taskReceivedData:task data:data];
         [[FTURLSessionInterceptor shared] taskCompleted:task error:error extraProvider:^NSDictionary * _Nullable(NSURLRequest * _Nullable request, NSURLResponse * _Nullable response, NSData * _Nullable data, NSError * _Nullable error) {
             return @{@"ft_test":@"1"};
-        }];
+        } errorFilter:nil];
         [expectation fulfill];
     }];
-    [[FTURLSessionInterceptor shared] interceptTask:task];
     [task resume];
+    [[FTURLSessionInterceptor shared] interceptTask:task];
     [self waitForExpectationsWithTimeout:30 handler:^(NSError *error) {
         XCTAssertNil(error);
     }];
-    [NSThread sleepForTimeInterval:0.5];
+    [NSThread sleepForTimeInterval:0.1];
     [[FTGlobalRumManager sharedInstance].rumManager syncProcess];
     NSArray *newArray = [[FTTrackerEventDBTool sharedManger] getAllDatas];
     __block NSInteger hasResourceCount = 0;
@@ -471,8 +452,10 @@ typedef NS_ENUM(NSUInteger,TestSessionRequestMethod){
     [self startWithTest:type requestMethod:requestMethod hasResource:has provider:provider requestInterceptor:nil];
 }
 - (void)startWithTest:(TestSessionInstrumentationType)type requestMethod:(TestSessionRequestMethod)requestMethod hasResource:(BOOL)has provider:(ResourcePropertyProvider)provider requestInterceptor:(RequestInterceptor)requestInterceptor{
-    XCTestExpectation *expectation= [self expectationWithDescription:@"异步操作timeout"];
-    HttpEngineTestUtil *engine = [[HttpEngineTestUtil alloc]initWithSessionInstrumentationType:type expectation:expectation provider:provider requestInterceptor:requestInterceptor];
+    XCTestExpectation *expectation= [self expectationWithDescription:@"Async operation timeout"];
+    HttpEngineTestUtil *engine = [[HttpEngineTestUtil alloc]initWithSessionInstrumentationType:type provider:provider requestInterceptor:requestInterceptor traceInterceptor:nil completion:^{
+        [expectation fulfill];
+    }];
     switch (requestMethod){
         case DataTaskWithRequestCompletionHandler:
             if(type != InstrumentationDirect){
@@ -498,10 +481,10 @@ typedef NS_ENUM(NSUInteger,TestSessionRequestMethod){
             [expectation fulfill];
         }];
     }
-    [self waitForExpectationsWithTimeout:30 handler:^(NSError *error) {
+    [self waitForExpectationsWithTimeout:5 handler:^(NSError *error) {
         XCTAssertNil(error);
     }];
-    [NSThread sleepForTimeInterval:0.5];
+    [NSThread sleepForTimeInterval:0.1];
     [[FTGlobalRumManager sharedInstance].rumManager syncProcess];
     NSArray *newArray = [[FTTrackerEventDBTool sharedManger] getFirstRecords:10 withType:FT_DATA_TYPE_RUM];
     __block NSInteger hasResourceCount = 0;

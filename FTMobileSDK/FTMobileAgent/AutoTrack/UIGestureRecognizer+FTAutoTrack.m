@@ -2,19 +2,20 @@
 //  UIGestureRecognizer+FTAutoTrack.m
 //  FTMobileAgent
 //
-//  Created by 胡蕾蕾 on 2021/7/21.
+//  Created by hulilei on 2021/7/21.
 //  Copyright © 2021 hll. All rights reserved.
 //
 
 #import "UIGestureRecognizer+FTAutoTrack.h"
 #import "FTLog+Private.h"
 #import "UIView+FTAutoTrack.h"
-#import "FTTrack.h"
+#import "FTAutoTrackHandler.h"
+#import "FTConstants.h"
 @implementation UIGestureRecognizer (FTAutoTrack)
 
 - (void)ftTrackGestureRecognizerAppClick:(UIGestureRecognizer *)gesture{
     @try {
-        // 手势处于 Ended 状态
+        // The gesture is in the Ended state
         if (gesture.state != UIGestureRecognizerStateEnded) {
             return;
         }
@@ -28,8 +29,9 @@
         BOOL isAlterType = [view isAlertClick];
         BOOL isTrackClass = [view isKindOfClass:UILabel.class] || [view isKindOfClass:UIImageView.class] ||isAlterType;
         if(isTrackClass){
-            if([FTTrack sharedInstance].addRumDatasDelegate && [[FTTrack sharedInstance].addRumDatasDelegate respondsToSelector:@selector(addClickActionWithName:)]){
-                [[FTTrack sharedInstance].addRumDatasDelegate addClickActionWithName:view.ft_actionName];
+            id<FTUIEventHandler> actionHandler = [FTAutoTrackHandler sharedInstance].actionHandler;
+            if(actionHandler  && [actionHandler respondsToSelector:@selector(notify_sendAction:)]){
+                [actionHandler notify_sendAction:view];
             }
         }
         
@@ -37,7 +39,7 @@
         FTInnerLogError(@"%@ error: %@", self, exception);
     }
 }
-// 查找弹框手势选择所在的 view
+// Find the view where the gesture selection is located
 - (UIView *)searchGestureTouchView:(UIGestureRecognizer *)gesture {
     UIView *gestureView = gesture.view;
     CGPoint point = [gesture locationInView:gestureView];

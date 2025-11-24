@@ -2,7 +2,7 @@
 //  FTANRMonitor.m
 //  FTMobileAgent
 //
-//  Created by 胡蕾蕾 on 2020/9/28.
+//  Created by hulilei on 2020/9/28.
 //  Copyright © 2020 hll. All rights reserved.
 //
 #if ! __has_feature(objc_arc)
@@ -18,16 +18,17 @@
 static NSDate *g_startDate;
 
 @interface FTLongTaskDetector (){
-    CFRunLoopObserverRef m_runLoopBeginObserver;  // 观察者
-    CFRunLoopObserverRef m_runLoopEndObserver;    // 观察者
+    CFRunLoopObserverRef m_runLoopBeginObserver;  // Observer
+    CFRunLoopObserverRef m_runLoopEndObserver;    // Observer
     dispatch_semaphore_t _semaphore;
-    CFRunLoopActivity _activity;     // 状态
+    CFRunLoopActivity _activity;     // Status
 }
 
 @property (nonatomic, weak) id<FTLongTaskProtocol> longTaskDelegate;
 @property (nonatomic, assign) BOOL isCancel;
-@property (nonatomic, assign) NSInteger countTime; // 耗时次数
+@property (nonatomic, assign) NSInteger countTime; // Time-consuming count
 @property (nonatomic, strong) dispatch_queue_t longTaskQueue;
+@property (nonatomic, assign) long limitMillisecond;
 @end
 @implementation FTLongTaskDetector
 -(instancetype)initWithDelegate:(id<FTLongTaskProtocol>)delegate{
@@ -35,8 +36,9 @@ static NSDate *g_startDate;
     if(self){
         _longTaskDelegate = delegate;
         _semaphore = dispatch_semaphore_create(0);
-        _limitANRMillisecond = MXRMonitorRunloopOneStandstillMillisecond;
-        _longTaskQueue = dispatch_queue_create("com.guance.longtask", 0);
+        _limitFreezeMillisecond = FT_DEFAULT_BLOCK_DURATIONS_MS;
+        _limitMillisecond = MIN(_limitFreezeMillisecond, FT_ANR_THRESHOLD_MS);
+        _longTaskQueue = dispatch_queue_create("com.ft.longtask", 0);
     }
     return self;
 }
@@ -51,7 +53,7 @@ static NSDate *g_startDate;
         }
         while (!strongSelf.isCancel) {
             @autoreleasepool {
-                long st = dispatch_semaphore_wait(self->_semaphore, dispatch_time(DISPATCH_TIME_NOW, strongSelf.limitANRMillisecond*NSEC_PER_MSEC));
+                long st = dispatch_semaphore_wait(self->_semaphore, dispatch_time(DISPATCH_TIME_NOW, strongSelf.limitMillisecond*NSEC_PER_MSEC));
                 if(st!=0){
                     if (self->_activity == kCFRunLoopBeforeSources || self->_activity == kCFRunLoopAfterWaiting) {
                         strongSelf.countTime++;
@@ -79,16 +81,17 @@ static NSDate *g_startDate;
         }
     });
 }
-// 注册一个Observer来监测Loop的状态,回调函数是runLoopObserverCallBack
+// Register an Observer to monitor the state of the Loop, callback function is runLoopObserverCallBack
 - (void)registerObserver{
     __weak __typeof(self) weakSelf = self;
-    // 创建Runloop observer对象
+    // Create Runloop observer object
     CFRunLoopObserverRef beginObserver = CFRunLoopObserverCreateWithHandler(kCFAllocatorDefault,
                                                                             kCFRunLoopEntry|kCFRunLoopBeforeSources|kCFRunLoopAfterWaiting,
                                                                             YES,
                                                                             LONG_MIN,
                                                                             ^(CFRunLoopObserverRef observer, CFRunLoopActivity activity) {
         __strong __typeof(weakSelf) strongSelf = weakSelf;
+        if (!strongSelf) return;
         strongSelf->_activity = activity;
         g_startDate = [NSDate date];
         dispatch_semaphore_signal(strongSelf->_semaphore);
@@ -105,7 +108,7 @@ static NSDate *g_startDate;
     CFRetain(endObserver);
     m_runLoopEndObserver = endObserver;
     CFRelease(endObserver);
-    // 将新建的observer加入到当前thread的runloop
+    // Add the newly created observer to the current thread's runloop
     CFRunLoopAddObserver(CFRunLoopGetMain(), beginObserver, kCFRunLoopCommonModes);
     CFRunLoopAddObserver(CFRunLoopGetMain(), endObserver, kCFRunLoopCommonModes);
 }

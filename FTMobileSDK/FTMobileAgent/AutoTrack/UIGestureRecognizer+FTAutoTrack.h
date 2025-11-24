@@ -2,7 +2,7 @@
 //  UIGestureRecognizer+FTAutoTrack.h
 //  FTMobileAgent
 //
-//  Created by 胡蕾蕾 on 2021/7/21.
+//  Created by hulilei on 2021/7/21.
 //  Copyright © 2021 hll. All rights reserved.
 //
 

@@ -31,11 +31,11 @@ extern "C" {
 #endif
 #define CALL_INSTRUCTION_FROM_RETURN_ADDRESS(A) (DETAG_INSTRUCTION_ADDRESS((A)) - 1)
 
-typedef void (*FTCrashNotifyCallback)(thread_t thread,uintptr_t*   backtrace,int count, const char *  crashMessage);
+typedef uintptr_t FTThread;
 
 typedef struct FTStackFrameEntry{
-    const struct FTStackFrameEntry *const previous;///前一个栈帧地址
-    const uintptr_t return_address;///栈帧的函数返回地址
+    const struct FTStackFrameEntry *const previous;///Previous stack frame address
+    const uintptr_t return_address;///Function return address of stack frame
 } FTStackFrameEntry;
 
 typedef struct FTMachoImage {
@@ -57,6 +57,15 @@ void ft_symbolicate(const uintptr_t* const backtraceBuffer,
                     const int numEntries,
                     const int skippedEntries,
                     FTMachoImage* const binaryImages);
+/* Get the current mach thread ID.
+ * mach_thread_self() receives a send right for the thread port which needs to
+ * be deallocated to balance the reference count. This function takes care of
+ * all of that for you.
+ *
+ * @return The current thread ID.
+ */
+FTThread ftthread_self(void);
+
 #ifdef __cplusplus
 }
 #endif

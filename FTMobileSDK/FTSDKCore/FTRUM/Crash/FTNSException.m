@@ -7,14 +7,15 @@
 //
 
 #import <Foundation/Foundation.h>
-#include <mach/mach.h>
-#include "FTSignalException.h"
-static FTCrashNotifyCallback g_onCrashNotify;
+#import <mach/mach.h>
+#import "FTSignalException.h"
+#import "FTCrashMonitor.h"
+#import "FTCrashLogger.h"
 
 static NSUncaughtExceptionHandler *previousUncaughtExceptionHandler;
 
 static void handleException(NSException *exception) {
-    if (g_onCrashNotify != NULL) {
+    if (!ftcm_setCrashHandling(true)) {
         NSArray* addresses = [exception callStackReturnAddresses];
         NSUInteger numFrames = addresses.count;
         uintptr_t* callStack = malloc(numFrames * sizeof(*callStack));
@@ -23,16 +24,16 @@ static void handleException(NSException *exception) {
         for(NSUInteger i = 0; i < numFrames; i++){
             callStack[i] = (uintptr_t)[addresses[i] unsignedLongLongValue];
         }
-        thread_t thread_self = mach_thread_self();
-        g_onCrashNotify(thread_self,callStack,(int)numFrames,[message cStringUsingEncoding:NSUTF8StringEncoding]);
+        FTThread thread_self = ftthread_self();
+        ftcm_handleException(thread_self,callStack,(int)numFrames,[message cStringUsingEncoding:NSUTF8StringEncoding]);
+    }else{
+        FTLOG_INFO("‌An unhandled crash occurred, and it might be a second crash.");
     }
-    
     if(previousUncaughtExceptionHandler != NULL){
         previousUncaughtExceptionHandler(exception);
     }
 }
-void FTInstallUncaughtExceptionHandler(const FTCrashNotifyCallback onCrashNotify){
-    g_onCrashNotify = onCrashNotify;
+void FTInstallUncaughtExceptionHandler(void){
     previousUncaughtExceptionHandler = NSGetUncaughtExceptionHandler();
     NSSetUncaughtExceptionHandler(&handleException);
 }

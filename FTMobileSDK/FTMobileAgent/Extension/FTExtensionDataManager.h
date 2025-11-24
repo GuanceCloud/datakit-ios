@@ -22,77 +22,85 @@
 
 NS_ASSUME_NONNULL_BEGIN
 
-/// extension 组件数据管理对象
+/// Extension component data management object
 @interface FTExtensionDataManager : NSObject{
     NSArray * _groupIdentifierArray;
 }
-/// AppGroups Identifier 数组
+/// AppGroups Identifier array
 @property (nonatomic, strong) NSArray *groupIdentifierArray;
-/// 存储数据最大值
+/// Maximum storage data count
 @property (nonatomic, assign) NSInteger maxCount;
 
-/// 单例
+/// Singleton
 + (instancetype)sharedInstance;
 
-/// 获取 groupIdentifier 对应 Extension 当前缓存路径
+/// Get Extension current cache path for groupIdentifier
 /// @param groupIdentifier AppGroups Identifier
-/// @return 在 group 中的数据缓存路径
-- (NSString *)filePathForApplicationGroupIdentifier:(NSString *)groupIdentifier;
+/// @return Data cache path in group
+- (nullable NSString *)filePathForApplicationGroupIdentifier:(NSString *)groupIdentifier;
 
-/// 存储 rumConfig
-/// @param rumConfig rum 配置项
+/// Store mobileConfig
+/// @param mobileConfig Mobile configuration items
+-(void)writeMobileConfig:(NSDictionary *)mobileConfig;
+
+/// Store rumConfig
+/// @param rumConfig RUM configuration items
 - (void)writeRumConfig:(NSDictionary *)rumConfig;
 
-/// 存储 traceConfig
-/// @param traceConfig trace 配置项
+/// Store traceConfig
+/// @param traceConfig Trace configuration items
 - (void)writeTraceConfig:(NSDictionary *)traceConfig;
 
-/// 存储 loggerConfig
-/// @param loggerConfig logger 配置项
+/// Store loggerConfig
+/// @param loggerConfig Logger configuration items
 - (void)writeLoggerConfig:(NSDictionary *)loggerConfig;
 
-/// 获取 rumConfig
+/// Get mobileConfig
 /// @param groupIdentifier AppGroups Identifier
-/// @return rum 配置项
+/// @return Mobile configuration items
+-(NSDictionary *)getMobileConfigWithGroupIdentifier:(NSString *)groupIdentifier;
+/// Get rumConfig
+/// @param groupIdentifier AppGroups Identifier
+/// @return RUM configuration items
 - (NSDictionary *)getRumConfigWithGroupIdentifier:(NSString *)groupIdentifier;
 
-/// 获取 traceConfig
+/// Get traceConfig
 /// @param groupIdentifier AppGroups Identifier
-/// @return trace 配置项
+/// @return Trace configuration items
 - (NSDictionary *)getTraceConfigWithGroupIdentifier:(NSString *)groupIdentifier;
 
-/// 获取 loggerConfig
+/// Get loggerConfig
 /// @param groupIdentifier AppGroups Identifier
-/// @return  logger 配置项
+/// @return Logger configuration items
 - (NSDictionary *)getLoggerConfigWithGroupIdentifier:(NSString *)groupIdentifier;
 
-/// 给对应 groupIdentifier 添加 RUM 事件
-/// @param eventType 事件类型
-/// @param tags 事件标签
-/// @param fields 事件指标
-/// @param tm 时间戳
+/// Add RUM event for corresponding groupIdentifier
+/// @param eventType Event type
+/// @param tags Event tags
+/// @param fields Event metrics
+/// @param tm Timestamp
 /// @param groupIdentifier AppGroups Identifier
-/// @return 是否写入成功
+/// @return Whether write was successful
 - (BOOL)writeRumEventType:(NSString *)eventType tags:(NSDictionary *)tags fields:(NSDictionary *)fields tm:(long long)tm groupIdentifier:(NSString *)groupIdentifier;
 
-/// 给对应 groupIdentifier 添加 LOGGER 事件
-/// @param status 事件类型
-/// @param content logger 内容
-/// @param tags 事件标签
-/// @param fields 事件指标
-/// @param tm 时间戳
+/// Add LOGGER event for corresponding groupIdentifier
+/// @param status Event type
+/// @param content Logger content
+/// @param tags Event tags
+/// @param fields Event metrics
+/// @param tm Timestamp
 /// @param groupIdentifier AppGroups Identifier
-/// @return 是否写入成功
+/// @return Whether write was successful
 - (BOOL)writeLoggerEvent:(NSString *)status content:(NSString *)content tags:(NSDictionary *)tags fields:(nullable NSDictionary *)fields tm:(long long)tm groupIdentifier:(NSString *)groupIdentifier;
 
-/// 读取 groupIdentifier 对应的所有缓存事件
+/// Read all cached events for corresponding groupIdentifier
 /// @param groupIdentifier AppGroups Identifier
-/// @return 当前 groupIdentifier 缓存的所有事件
+/// @return All events cached for current groupIdentifier
 - (NSArray *)readAllEventsWithGroupIdentifier:(NSString *)groupIdentifier;
 
-/// 删除 groupIdentifier 对应的所有缓存事件
+/// Delete all cached events for corresponding groupIdentifier
 /// @param groupIdentifier AppGroups Identifier
-/// @return 是否删除成功
+/// @return Whether deletion was successful
 - (BOOL)deleteEventsWithGroupIdentifier:(NSString *)groupIdentifier;
 @end
 

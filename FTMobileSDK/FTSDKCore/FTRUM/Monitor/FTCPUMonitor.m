@@ -35,7 +35,7 @@
     }
     return usage;
 }
-//总的 cpu 占用率
+//Total CPU usage
 - (natural_t)readUtilizedTicks {
     kern_return_t kr;
     natural_t user = -1;

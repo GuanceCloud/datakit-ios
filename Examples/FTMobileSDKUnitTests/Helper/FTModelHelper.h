@@ -15,6 +15,7 @@ NS_ASSUME_NONNULL_BEGIN
 + (FTRecordModel *)createLogModel;
 + (FTRecordModel *)createLogModel:(NSString *)message;
 + (FTRecordModel *)createRumModel;
++ (FTRecordModel *)createRUMModel:(NSString *)message;
 + (FTRecordModel *)createWrongFormatRumModel;
 + (void)startView;
 + (void)startViewWithName:(NSString *)name;
@@ -23,13 +24,14 @@ NS_ASSUME_NONNULL_BEGIN
 + (void)stopView:(NSDictionary *)context;
 + (void)startResource:(NSString *)key;
 + (void)stopErrorResource:(NSString *)key;
-+ (void)addAction;
-+ (void)addActionWithType:(NSString *)type;
-+ (void)addActionWithContext:(NSDictionary *)context;
++ (void)startAction;
++ (void)startActionWithType:(NSString *)type;
++ (void)addActionWithContext:(nullable NSDictionary *)context;
 + (void)resolveModelArray:(NSArray *)modelArray callBack:(void(^)(NSString *source,NSDictionary *tags,NSDictionary *fields,BOOL *stop))callBack;
 + (void)resolveModelArray:(NSArray *)modelArray idxCallBack:(void(^)(NSString *source,NSDictionary *tags,NSDictionary *fields,BOOL *stop,NSUInteger idx))callBack;
 + (void)resolveModelArray:(NSArray *)modelArray modelIdCallBack:(void(^)(NSString *source,NSDictionary *tags,NSDictionary *fields,BOOL *stop,NSString *modelId))callBack;
 + (void)resolveModelArray:(NSArray *)modelArray timeCallBack:(void(^)(NSString *source,NSDictionary *tags,NSDictionary *fields,long long time,BOOL *stop))callBack;
++ (void)resolveModelArray:(NSArray *)modelArray dataTypeCallBack:(void(^)(NSString *source,NSDictionary *tags,NSDictionary *fields,NSString *type,BOOL *stop))callBack;
 @end
 
 NS_ASSUME_NONNULL_END

@@ -1,5 +1,6 @@
 # ``FTMobileSDK``
-用于收集 iOS 应用的指标数据，用于 “观测云” 应用监测功能，以可视化的方式分析各个iOS应用端的性能。
+Used to collect metrics data from iOS applications for "Guance Cloud" application monitoring functionality, 
+analyzing the performance of various iOS applications in a visual way.
 
 ## Topics
 

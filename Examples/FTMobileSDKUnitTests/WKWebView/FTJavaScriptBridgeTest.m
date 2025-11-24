@@ -20,13 +20,26 @@
 #import "FTGlobalRumManager.h"
 #import "FTRUMManager.h"
 #import "FTMobileAgentVersion.h"
-typedef void(^FTTraceRequest)(NSURLRequest *);
-@interface FTJavaScriptBridgeTest : KIFTestCase<WKNavigationDelegate>
+#import "FTMobileConfig+Private.h"
+#import "FTLoggerConfig+Private.h"
+#import "FTRumConfig+Private.h"
+#import "FTWKWebViewHandler+Private.h"
+#import "FTModelHelper.h"
+#import "FTLog+Private.h"
+#import "WKWebView+FTAutoTrack.h"
+
+@interface FTWKWebViewHandler (Testing)
+@property (nonatomic, strong) NSMapTable *webViewRequestTable;
+@property (nonatomic, strong) NSHashTable *allWebViews;
+
+- (void)removeAllWebViewBridges;
+@end
+
+@interface FTJavaScriptBridgeTest : KIFTestCase<WKNavigationDelegate,FTWKWebViewRumDelegate>
 @property (nonatomic, strong) TestWKWebViewVC *viewController;
 @property (nonatomic, strong) UIWindow *window;
 @property (nonatomic, strong) UINavigationController *navigationController;
 @property (nonatomic, strong) UITabBarController *tabBarController;
-@property (nonatomic, copy) FTTraceRequest block;
 @property (nonatomic, strong) XCTestExpectation *loadExpect;
 @end
 
@@ -34,6 +47,7 @@ typedef void(^FTTraceRequest)(NSURLRequest *);
 
 - (void)setUp {
     // Put setup code here. This method is called before the invocation of each test method in the class.
+    [FTLog enableLog:YES];
     self.window = [[UIWindow alloc] initWithFrame:UIScreen.mainScreen.bounds];
     self.window.backgroundColor = [UIColor whiteColor];
 
@@ -67,37 +81,47 @@ typedef void(^FTTraceRequest)(NSURLRequest *);
 
     self.window.hidden = YES;
     self.window = nil;
+    [FTMobileAgent shutDown];
 }
-- (void)setsdk{
+- (void)setSDKWithEnableWebView:(BOOL)enable{
+    [self setSDK:nil enableWebView:enable];
+}
+- (void)setSDK:(NSDictionary *)pkgInfo enableWebView:(BOOL)enable{
     NSProcessInfo *processInfo = [NSProcessInfo processInfo];
     NSString *url = [processInfo environment][@"ACCESS_SERVER_URL"];
     NSString *appid = [processInfo environment][@"APP_ID"];
     FTMobileConfig *config = [[FTMobileConfig alloc]initWithDatakitUrl:url];
     config.autoSync = NO;
+    if(pkgInfo && pkgInfo.count>0){
+        [pkgInfo enumerateKeysAndObjectsUsingBlock:^(id  _Nonnull key, id  _Nonnull obj, BOOL * _Nonnull stop) {
+            [config addPkgInfo:key value:obj];
+        }];
+    }
     FTTraceConfig *traceConfig = [[FTTraceConfig alloc]init];
     traceConfig.enableAutoTrace = YES;
     FTRumConfig *rumConfig = [[FTRumConfig alloc]initWithAppid:appid];
+    rumConfig.enableTraceWebView = enable;
     [FTMobileAgent startWithConfigOptions:config];
     [[FTMobileAgent sharedInstance] startTraceWithConfigOptions:traceConfig];
     [[FTMobileAgent sharedInstance] startRumWithConfigOptions:rumConfig];
     [[FTTrackerEventDBTool sharedManger] deleteAllDatas];
 }
-/// 1.验证有webview传入数据添加
-/// 2.验证数据格式
-///   基础 tags :
-///    与 webview 一致：
+/// 1. Verify that webview data is added
+/// 2. Verify data format
+///   Basic tags:
+///    Consistent with native SDK:
 ///    sdk_name
 ///    sdk_version
 ///    service
-///    新增 tag 字段：
-///    package_native
+///    New tag fields:
+///    sdk_pkg_info:{@"web":"version"}
 ///    is_web_view
-///   其余与 native SDK 一致
+///    Others consistent with native SDK
 ///
-///   rum 相关调整：
-///   session_id： 与 native SDK 一致
+///   RUM related adjustments:
+///   session_id: Consistent with native SDK
 ///   is_active: false
-///   其余与 webview 一致
+///    Others consistent with webview
 ///
 - (void)testAddRumViewData{
     [self addRumViewData:NO];
@@ -105,16 +129,31 @@ typedef void(^FTTraceRequest)(NSURLRequest *);
 - (void)testAddRumViewData_Nanosecond{
     [self addRumViewData:YES];
 }
+///    New tag fields:
+///    sdk_pkg_info:{@"web":"version",addPkgInfo}
+///    is_web_view
+///    view_referrer
+///    Others consistent with native SDK
+- (void)testAddPkgInfo{
+    [self addRumViewData:YES addPkgInfo:@{
+        @"test_sdk1":@"1.0.0",
+        @"test_sdk2":@"1.0.1",
+                                        }];
+}
 - (void)addRumViewData:(BOOL)nano{
-    [self setsdk];
+    [self addRumViewData:nano addPkgInfo:nil];
+}
+- (void)addRumViewData:(BOOL)nano addPkgInfo:(NSDictionary *)info{
+    [self setSDK:info enableWebView:YES];
     long long smallTime = [NSDate ft_currentNanosecondTimeStamp];
     NSURL *url = [[NSBundle mainBundle] URLForResource:@"sample" withExtension:@"html"];
+    [FTModelHelper startViewWithName:@"TestWKWebViewVC"];
     [self.viewController ft_load:url.absoluteString];
-    self.loadExpect = [self expectationWithDescription:@"请求超时timeout!"];
+    self.loadExpect = [self expectationWithDescription:@"Request Time!"];
     [self waitForExpectationsWithTimeout:30 handler:^(NSError *error) {
         XCTAssertNil(error);
     }];
-    XCTestExpectation *jsScript = [self expectationWithDescription:@"请求超时timeout!"];
+    XCTestExpectation *jsScript = [self expectationWithDescription:@"Request Time!"];
     if(nano){
         [self.viewController test_addWebViewRumViewNano:^{
             [jsScript fulfill];
@@ -145,38 +184,87 @@ typedef void(^FTTraceRequest)(NSURLRequest *);
                 NSInteger resourceCount = [field[FT_KEY_VIEW_RESOURCE_COUNT] integerValue];
                 NSInteger longTaskCount = [field[FT_KEY_VIEW_LONG_TASK_COUNT] integerValue];
                 NSString *viewName = tags[FT_KEY_VIEW_NAME];
+                NSString *viewReferrer = tags[FT_KEY_VIEW_REFERRER];
+
                 NSDictionary *tags = opdata[FT_TAGS];
                 XCTAssertTrue(errorCount == 0);
                 XCTAssertTrue(longTaskCount == 0);
                 XCTAssertTrue(resourceCount == 0);
                 XCTAssertTrue([viewName isEqualToString:@"testJSBridge"]);
-
-                // rum 相关调整
+                XCTAssertTrue([viewReferrer isEqualToString:@"TestWKWebViewVC"]);
+                // RUM related adjustments
                 XCTAssertFalse([tags[FT_RUM_KEY_SESSION_ID] isEqualToString:@"12345"]);
                 XCTAssertTrue([field[FT_KEY_IS_ACTIVE] isEqual:@(NO)]);
-
-                // 基础 tags
-                XCTAssertTrue([tags[@"package_native"] isEqualToString:SDK_VERSION]);
-                XCTAssertFalse([tags[FT_SDK_VERSION] isEqualToString:SDK_VERSION]);
-                XCTAssertTrue([tags[FT_SDK_NAME] isEqualToString:@"df_web_rum_sdk"]);
-                XCTAssertTrue([tags[FT_KEY_SERVICE] isEqualToString:@"browser"]);
+                NSMutableDictionary *infoDict = [NSMutableDictionary dictionaryWithDictionary:@{@"web":@"3.0.19"}];
+                [infoDict addEntriesFromDictionary:info];
+                XCTAssertTrue([tags[FT_SDK_PKG_INFO] isEqualToDictionary:infoDict]);
+                XCTAssertTrue([tags[FT_SDK_VERSION] isEqualToString:SDK_VERSION]);
+                XCTAssertFalse([tags[FT_SDK_NAME] isEqualToString:@"df_web_rum_sdk"]);
+                XCTAssertFalse([tags[FT_KEY_SERVICE] isEqualToString:@"browser"]);
                 XCTAssertTrue(obj.tm>smallTime && obj.tm < [NSDate ft_currentNanosecondTimeStamp]);
                 hasViewData = YES;
             }
         }
     }];
     XCTAssertTrue(hasViewData);
-    [FTMobileAgent shutDown];
 }
--(void)testloadFileURL{
-    [self setsdk];
+-(void)testDisableWebView{
+    [self setSDKWithEnableWebView:NO];
+
     NSURL *url = [[NSBundle mainBundle] URLForResource:@"sample" withExtension:@"html"];
     [self.viewController test_loadFileURL:url allowingReadAccessToURL:url];
-    self.loadExpect = [self expectationWithDescription:@"请求超时timeout!"];
+    self.loadExpect = [self expectationWithDescription:@"Request Time!"];
     [self waitForExpectationsWithTimeout:30 handler:^(NSError *error) {
         XCTAssertNil(error);
     }];
-    XCTestExpectation *jsScript = [self expectationWithDescription:@"请求超时timeout!"];
+    XCTestExpectation *jsScript = [self expectationWithDescription:@"Request Time!"];
+    NSInteger count =[[FTTrackerEventDBTool sharedManger] getDatasCount];
+    [self.viewController test_addWebViewRumView:^{
+        [jsScript fulfill];
+    }];
+    [self waitForExpectationsWithTimeout:30 handler:^(NSError *error) {
+        XCTAssertNil(error);
+    }];
+    [[FTGlobalRumManager sharedInstance].rumManager syncProcess];
+    NSArray *newCount =[[FTTrackerEventDBTool sharedManger] getAllDatas];
+    XCTAssertTrue(newCount.count == count);
+    XCTAssertTrue(self.viewController.webView.configuration.userContentController.userScripts.count == 1);
+}
+- (void)testUserScripts{
+    [self setSDKWithEnableWebView:NO];
+    WKUserScript *userScript = [[WKUserScript alloc]initWithSource:@"window.\(bridgeName) = { send(msg) {}}" injectionTime:WKUserScriptInjectionTimeAtDocumentStart forMainFrameOnly:YES];
+    [self.viewController.webView.configuration.userContentController addUserScript:userScript];
+    NSUInteger userScriptsCount =  self.viewController.webView.configuration.userContentController.userScripts.count;
+    XCTAssertTrue(userScriptsCount >= 1);
+    [[FTWKWebViewHandler sharedInstance] enableWebView:self.viewController.webView];
+    NSUInteger newUserScriptsCount =  self.viewController.webView.configuration.userContentController.userScripts.count;
+    XCTAssertTrue(newUserScriptsCount - userScriptsCount == 1);
+    [[FTWKWebViewHandler sharedInstance] disableWebView:self.viewController.webView];
+    NSUInteger dUserScriptsCount =  self.viewController.webView.configuration.userContentController.userScripts.count;
+    XCTAssertTrue(userScriptsCount == dUserScriptsCount);
+    NSArray *userScripts = self.viewController.webView.configuration.userContentController.userScripts;
+    BOOL equalUs = NO;
+    for (WKUserScript *us in userScripts) {
+        if (us == userScript) {
+            equalUs = YES;
+        }
+    }
+    XCTAssertTrue(equalUs);
+}
+- (void)testDisableWebView_enableByCustom{
+    [self setSDKWithEnableWebView:NO];
+    NSURL *url = [[NSBundle mainBundle] URLForResource:@"sample" withExtension:@"html"];
+    NSUInteger userScriptsCount =  self.viewController.webView.configuration.userContentController.userScripts.count;
+
+    [[FTWKWebViewHandler sharedInstance] enableWebView:self.viewController.webView];
+    NSUInteger newUserScriptsCount =  self.viewController.webView.configuration.userContentController.userScripts.count;
+    XCTAssertTrue(newUserScriptsCount - userScriptsCount == 1);
+    [self.viewController test_loadFileURL:url allowingReadAccessToURL:url];
+    self.loadExpect = [self expectationWithDescription:@"Request Time!"];
+    [self waitForExpectationsWithTimeout:30 handler:^(NSError *error) {
+        XCTAssertNil(error);
+    }];
+    XCTestExpectation *jsScript = [self expectationWithDescription:@"Request Time!"];
     [self.viewController test_addWebViewRumView:^{
         [jsScript fulfill];
     }];
@@ -209,46 +297,61 @@ typedef void(^FTTraceRequest)(NSURLRequest *);
         }
     }];
     XCTAssertTrue(hasViewData);
-    [[FTMobileAgent sharedInstance] shutDown];
+
 }
-- (void)testReloadTrace{
-    [self setsdk];
+-(void)testEnableWebView{
+    [self setSDKWithEnableWebView:YES];
     NSURL *url = [[NSBundle mainBundle] URLForResource:@"sample" withExtension:@"html"];
-    __block NSString *spanid;
-    __block BOOL hasTrace = NO;
-    self.block = ^(NSURLRequest *request){
-        if([request.URL isEqual:url]){
-            if(spanid){
-                XCTAssertFalse([spanid isEqualToString:request.allHTTPHeaderFields[FT_NETWORK_DDTRACE_TRACEID]]);
-                hasTrace = YES;
-            }else{
-                spanid = request.allHTTPHeaderFields[FT_NETWORK_DDTRACE_TRACEID];
+    [self.viewController test_loadFileURL:url allowingReadAccessToURL:url];
+    self.loadExpect = [self expectationWithDescription:@"Request Time!"];
+    [self waitForExpectationsWithTimeout:30 handler:^(NSError *error) {
+        XCTAssertNil(error);
+    }];
+    XCTestExpectation *jsScript = [self expectationWithDescription:@"Request Time!"];
+    [self.viewController test_addWebViewRumView:^{
+        [jsScript fulfill];
+    }];
+    [self waitForExpectationsWithTimeout:30 handler:^(NSError *error) {
+        XCTAssertNil(error);
+    }];
+    [[FTGlobalRumManager sharedInstance].rumManager syncProcess];
+    NSArray *datas =[[FTTrackerEventDBTool sharedManger] getFirstRecords:10 withType:FT_DATA_TYPE_RUM];
+    __block BOOL hasViewData = NO;
+    [datas enumerateObjectsWithOptions:NSEnumerationReverse usingBlock:^(FTRecordModel *obj, NSUInteger idx, BOOL * _Nonnull stop) {
+        NSDictionary *dict = [FTJSONUtil dictionaryWithJsonString:obj.data];
+        NSString *op = dict[FT_OP];
+        XCTAssertTrue([op isEqualToString:@"RUM"]);
+        NSDictionary *opdata = dict[FT_OPDATA];
+        NSString *measurement = opdata[FT_KEY_SOURCE];
+        NSDictionary *tags = opdata[FT_TAGS];
+        if ([measurement isEqualToString:FT_RUM_SOURCE_VIEW]) {
+            if(tags[FT_IS_WEBVIEW]){
+                NSDictionary *field = opdata[FT_FIELDS];
+                NSInteger errorCount = [field[FT_KEY_VIEW_ERROR_COUNT] integerValue];
+                NSInteger resourceCount = [field[FT_KEY_VIEW_RESOURCE_COUNT] integerValue];
+                NSInteger longTaskCount = [field[FT_KEY_VIEW_LONG_TASK_COUNT] integerValue];
+                NSString *viewName = tags[FT_KEY_VIEW_NAME];
+                XCTAssertTrue(errorCount == 0);
+                XCTAssertTrue(longTaskCount == 0);
+                XCTAssertTrue(resourceCount == 0);
+                XCTAssertTrue([viewName isEqualToString:@"testJSBridge"]);
+                hasViewData = YES;
             }
         }
-    };
-    self.loadExpect = [self expectationWithDescription:@"请求超时timeout!"];
-    [self.viewController ft_load:url.absoluteString];
-    [self waitForExpectationsWithTimeout:30 handler:^(NSError *error) {
-        XCTAssertNil(error);
     }];
-    self.loadExpect = [self expectationWithDescription:@"请求超时timeout!"];
-    [self.viewController ft_reload];
-    [self waitForExpectationsWithTimeout:30 handler:^(NSError *error) {
-        XCTAssertNil(error);
-    }];
-    XCTAssertTrue(hasTrace);
+    XCTAssertTrue(hasViewData);
 }
 -(void)testSDKShutDownWebViewBridge{
-    [self setsdk];
+    [self setSDKWithEnableWebView:YES];
     NSURL *url = [[NSBundle mainBundle] URLForResource:@"sample" withExtension:@"html"];
     [FTMobileAgent shutDown];
     NSInteger oldCount =[[FTTrackerEventDBTool sharedManger] getDatasCount];
     [self.viewController test_loadFileURL:url allowingReadAccessToURL:url];
-    self.loadExpect = [self expectationWithDescription:@"请求超时timeout!"];
+    self.loadExpect = [self expectationWithDescription:@"Request Time!"];
     [self waitForExpectationsWithTimeout:30 handler:^(NSError *error) {
         XCTAssertNil(error);
     }];
-    XCTestExpectation *jsScript = [self expectationWithDescription:@"请求超时timeout!"];
+    XCTestExpectation *jsScript = [self expectationWithDescription:@"Request Time!"];
     [self.viewController test_addWebViewRumView:^{
         [jsScript fulfill];
     }];
@@ -259,38 +362,25 @@ typedef void(^FTTraceRequest)(NSURLRequest *);
     NSInteger newCount =[[FTTrackerEventDBTool sharedManger] getDatasCount];
     XCTAssertTrue(newCount == oldCount);
 }
--(void)testSDKShutDownWebViewTrace{
-    [self setsdk];
-    NSURL *url = [[NSBundle mainBundle] URLForResource:@"sample" withExtension:@"html"];
-    __block NSString *spanid;
-    __block BOOL reloadSuccess = NO;
-    self.block = ^(NSURLRequest *request){
-        if([request.URL isEqual:url]){
-            if(spanid){
-                XCTAssertTrue([spanid isEqualToString:request.allHTTPHeaderFields[FT_NETWORK_DDTRACE_TRACEID]]);                reloadSuccess = YES;
-            }else{
-                spanid = request.allHTTPHeaderFields[FT_NETWORK_DDTRACE_TRACEID];
-            }
-        }
-    };
-    self.loadExpect = [self expectationWithDescription:@"请求超时timeout!"];
-    [self.viewController ft_load:url.absoluteString];
-    [self waitForExpectationsWithTimeout:30 handler:^(NSError *error) {
-        XCTAssertNil(error);
-    }];
-    self.loadExpect = [self expectationWithDescription:@"请求超时timeout!"];
-    [FTMobileAgent shutDown];
-    [self.viewController ft_reload];
-    [self waitForExpectationsWithTimeout:30 handler:^(NSError *error) {
-        XCTAssertNil(error);
-    }];
-    XCTAssertTrue(reloadSuccess);
+- (void)testRemoveAllWebViewBridges{
+    WKWebView *webView = [[WKWebView alloc]init];
+    [[FTWKWebViewHandler sharedInstance] startWithEnableTraceWebView:NO allowWebViewHost:nil rumDelegate:self];
+    [[FTWKWebViewHandler sharedInstance] enableWebView:webView];
+    XCTAssertTrue(webView.ft_jsBridge != nil);
+    [[FTWKWebViewHandler sharedInstance] removeAllWebViewBridges];
+    XCTAssertTrue(webView.ft_jsBridge == nil);
 }
--(void)webView:(WKWebView *)webView decidePolicyForNavigationAction:(WKNavigationAction *)navigationAction decisionHandler:(void (^)(WKNavigationActionPolicy))decisionHandler{
-    if(self.block){
-        self.block(navigationAction.request);
-    }
-    decisionHandler(WKNavigationActionPolicyAllow);
+- (void)testSameWebViewAddBridge_moreThanOnce{
+    WKWebView *webView = [[WKWebView alloc]init];
+    [[FTWKWebViewHandler sharedInstance] startWithEnableTraceWebView:NO allowWebViewHost:nil rumDelegate:self];
+    [[FTWKWebViewHandler sharedInstance] enableWebView:webView];
+    id bridge = webView.ft_jsBridge;
+    [[FTWKWebViewHandler sharedInstance] enableWebView:webView];
+    id bridge2 = webView.ft_jsBridge;
+    XCTAssertTrue(bridge == bridge2);
+}
+- (void)dealReceiveScriptMessage:(id )message slotId:(NSUInteger)slotId{
+    
 }
 - (void)webView:(WKWebView *)webView didFinishNavigation:(null_unspecified WKNavigation *)navigation{
     [self.loadExpect fulfill];

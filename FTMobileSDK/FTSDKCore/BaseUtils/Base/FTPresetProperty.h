@@ -2,59 +2,66 @@
 //  FTPresetProperty.h
 //  FTMobileAgent
 //
-//  Created by 胡蕾蕾 on 2020/10/23.
+//  Created by hulilei on 2020/10/23.
 //  Copyright © 2020 hll. All rights reserved.
 //
 
 #import <Foundation/Foundation.h>
+#import "FTDataModifier.h"
 #import "FTEnumConstant.h"
 #import "FTSDKCompat.h"
 #import "FTReadWriteHelper.h"
-
 NS_ASSUME_NONNULL_BEGIN
 @class FTUserInfo;
-/// 预置属性
+/// Preset properties
 @interface FTPresetProperty : NSObject
-/// 应用唯一 ID
-@property (nonatomic, copy) NSString *appID;
-/// 读写保护的用户信息
-@property (nonatomic, strong) FTReadWriteHelper<FTUserInfo*> *userHelper;
-@property (nonatomic, copy) NSString *sdkVersion;
-@property (nonatomic, strong) NSDictionary *rumGlobalContext;
-@property (nonatomic, strong) NSDictionary *logGlobalContext;
-/// 设备名称
+
+@property (nonatomic, strong, readonly) NSDictionary *loggerTags;
+@property (nonatomic, strong, readonly) NSDictionary *rumTags;
+@property (nonatomic, strong, readonly) NSDictionary *rumStaticFields;
+
+/// Set data modifier
+@property (nonatomic, copy, nullable) FTLineDataModifier lineDataModifier;
+/// Device name
 + (NSString *)deviceInfo;
 + (NSString *)cpuArch;
 + (NSString *)CPUArchForMajor:(cpu_type_t)majorCode minor:(cpu_subtype_t)minorCode;
 #if FT_MAC
 + (NSString *)getDeviceUUID;
-+ (NSString *)macOSdeviceModel;
-+ (NSString *)macOSSystermVersion;
++ (NSString *)macOSDeviceModel;
 #endif
++ (NSString *)getOSVersion;
 + (instancetype)sharedInstance;
-/// 初始化方法
-/// - Parameter version: 版本号
-/// - Parameter sdkVersion: SDK 版本号
-/// - Parameter env: 环境
-/// - Parameter service: 服务
-/// - Parameter globalContext: 全局自定义属性
-- (void)startWithVersion:(NSString *)version sdkVersion:(NSString *)sdkVersion env:(NSString *)env service:(NSString *)service globalContext:(NSDictionary *)globalContext;
+/// Initialization method
+/// - Parameter version: Version number
+/// - Parameter sdkVersion: SDK version number
+/// - Parameter env: Environment
+/// - Parameter service: Service
+/// - Parameter globalContext: Global custom properties
+- (void)startWithVersion:(NSString *)version sdkVersion:(NSString *)sdkVersion env:(NSString *)env service:(NSString *)service globalContext:(NSDictionary *)globalContext pkgInfo:(nullable NSDictionary *)pkgInfo;
 
-/// 获取 Rum ES 公共Tag
-- (NSMutableDictionary *)rumProperty;
-- (NSMutableDictionary *)rumWebViewProperty;
-- (NSDictionary *)rumDynamicProperty;
-/// 获取 logger 数据公共 Tag
-/// - Parameters:
-///   - status: 事件等级和状态
-- (NSDictionary *)loggerProperty;
-- (NSDictionary *)loggerDynamicProperty;
+- (void)setDataModifier:(FTDataModifier)dataModifier lineDataModifier:(FTLineDataModifier)lineDataModifier;
+
+- (void)setRUMAppID:(NSString *)appID sampleRate:(int)sampleRate sessionOnErrorSampleRate:(int)sessionOnErrorSampleRate rumGlobalContext:(NSDictionary *)rumGlobalContext;
+
+-(void)setLogGlobalContext:(NSDictionary *)logGlobalContext;
+
+- (NSDictionary *)rumDynamicTags;
+
+- (NSDictionary *)loggerDynamicTags;
 
 - (void)appendGlobalContext:(NSDictionary *)context;
 
 - (void)appendRUMGlobalContext:(NSDictionary *)context;
 
 - (void)appendLogGlobalContext:(NSDictionary *)context;
+
+- (NSArray<NSDictionary *> *)applyLineModifier:(NSString *)measurement
+                                          tags:(NSDictionary *)tags
+                                        fields:(NSDictionary *)fields;
+-(void)updateUser:(NSString *)Id name:(nullable NSString *)name email:(nullable NSString *)email extra:(nullable NSDictionary *)extra;
+
+-(void)clearUser;
 
 - (void)shutDown;
 @end

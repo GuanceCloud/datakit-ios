@@ -2,7 +2,7 @@
 //  FTExternalDataManager.h
 //  FTMobileAgent
 //
-//  Created by 胡蕾蕾 on 2021/11/22.
+//  Created by hulilei on 2021/11/22.
 //  Copyright © 2021 DataFlux-cn. All rights reserved.
 //
 
@@ -12,140 +12,167 @@ typedef enum FTAppState:NSUInteger FTAppState;
 
 @class FTResourceMetricsModel,FTResourceContentModel;
 
-/// 实现用户自定义 RUM、 Trace 功能的类
+/// Class that implements user custom RUM and Trace functionality
 @interface FTExternalDataManager : NSObject
 
-/// 单例
+/// Singleton
 + (instancetype)sharedManager;
 #pragma mark --------- Rum ----------
-/// 创建页面
+/// Create RUM View
 ///
-/// 在 `-startViewWithName` 方法前调用，该方法用于记录页面的加载时间，如果无法获得加载时间该方法可以不调用。
+/// Called before the `-startViewWithName` method, this method is used to record the page loading time. If the loading time cannot be obtained, this method can be omitted.
 /// - Parameters:
-///   - viewName: 页面名称
-///   - loadTime: 页面加载时间
+///   - viewName: RUM View name
+///   - loadTime: page loading time
 -(void)onCreateView:(NSString *)viewName loadTime:(NSNumber *)loadTime;
-/// 进入页面
+/// Starts RUM view
 ///
 /// - Parameters:
-///   - viewName: 页面名称
+///   - viewName: RUM View name
 -(void)startViewWithName:(NSString *)viewName;
 
-/// 进入页面
+/// Starts RUM view
 /// - Parameters:
-///   - viewName: 页面名称
-///   - property: 事件自定义属性(可选)
+///   - viewName: RUM View name
+///   - property: event custom properties (optional)
 -(void)startViewWithName:(NSString *)viewName property:(nullable NSDictionary *)property;
 
-/// 离开页面
+/// Update view loading time to current RUM view.
+/// Must be called between `-startView` and `-stopView` methods to take effect.
+/// - Parameters:
+///   - duration: loading time duration (nanosecond).
+-(void)updateViewLoadingTime:(NSNumber *)duration;
+
+/// Stop RUM View.
 -(void)stopView;
 
-/// 离开页面
-/// - Parameter property: 事件自定义属性(可选)
+/// Stop RUM View.
+/// - Parameter property: event custom properties (optional)
 -(void)stopViewWithProperty:(nullable NSDictionary *)property;
 
-/// 添加 Click Action 事件
+
+/// Start RUM Action.
+///
+/// RUM will bind Resource, Error, and LongTask events that this Action may trigger. Avoid adding multiple times within 0.1s. Only one Action can be associated with the same View at the same time. If the previous Action hasn't ended, new Actions will be discarded.
+/// This does not interfere with Actions added by the `addAction:actionType:property` method.
 ///
 /// - Parameters:
-///   - actionName: 事件名称
-- (void)addClickActionWithName:(NSString *)actionName;
+///   - actionName: event name
+///   - actionType: event type
+///   - property: event custom properties (optional)
+- (void)startAction:(NSString *)actionName actionType:(NSString *)actionType property:(nullable NSDictionary *)property;
 
-/// 添加 Click Action 事件
+/// Add Action event. No duration, no discard logic
+///
+/// This does not interfere with RUM Actions started by `startAction:actionType:property:`.
 /// - Parameters:
-///   - actionName: 事件名称
-///   - property: 事件自定义属性(可选)
-- (void)addClickActionWithName:(NSString *)actionName property:(nullable NSDictionary *)property;
-
-/// 添加 Action 事件
+///   - actionName: event name
+///   - actionType: event type
+///   - property: event custom properties (optional)
+- (void)addAction:(NSString *)actionName actionType:(NSString *)actionType property:(nullable NSDictionary *)property;
+/// Add Error event
 ///
 /// - Parameters:
-///   - actionName: 事件名称
-///   - actionType: 事件类型
-- (void)addActionName:(NSString *)actionName actionType:(NSString *)actionType;
-/// 添加 Action 事件
-/// - Parameters:
-///   - actionName: 事件名称
-///   - actionType: 事件类型
-///   - property: 事件自定义属性(可选)
-- (void)addActionName:(NSString *)actionName actionType:(NSString *)actionType property:(nullable NSDictionary *)property;
-
-/// 添加 Error 事件
-///
-/// - Parameters:
-///   - type: error 类型
-///   - message: 错误信息
-///   - stack: 堆栈信息
+///   - type: error type
+///   - message: error message
+///   - stack: stack information
 - (void)addErrorWithType:(NSString *)type message:(NSString *)message stack:(NSString *)stack;
-/// 添加 Error 事件
+/// Add Error event
 /// - Parameters:
-///   - type: error 类型
-///   - message: 错误信息
-///   - stack: 堆栈信息
-///   - property: 事件自定义属性(可选)
+///   - type: error type
+///   - message: error message
+///   - stack: stack information
+///   - property: event custom properties (optional)
 - (void)addErrorWithType:(NSString *)type message:(NSString *)message stack:(NSString *)stack property:(nullable NSDictionary *)property;
 
-/// 添加 Error 事件
+/// Add Error event
 /// - Parameters:
-///   - type: error 类型
-///   - state: 程序运行状态
-///   - message: 错误信息
-///   - stack: 堆栈信息
-///   - property: 事件自定义属性(可选)
+///   - type: error type
+///   - state: program running state
+///   - message: error message
+///   - stack: stack information
+///   - property: event custom properties (optional)
 - (void)addErrorWithType:(NSString *)type state:(FTAppState)state  message:(NSString *)message stack:(NSString *)stack property:(nullable NSDictionary *)property;
 
-/// 添加 卡顿 事件
+/// Add freeze event
 ///
 /// - Parameters:
-///   - stack: 卡顿堆栈
-///   - duration: 卡顿时长（纳秒）
+///   - stack: freeze stack
+///   - duration: freeze duration (nanoseconds)
 - (void)addLongTaskWithStack:(NSString *)stack duration:(NSNumber *)duration;
 
-/// 添加 卡顿 事件
+/// Add freeze event
 /// - Parameters:
-///   - stack: 卡顿堆栈
-///   - duration: 卡顿时长（纳秒）
-///   - property: 事件自定义属性(可选)
+///   - stack: freeze stack
+///   - duration: freeze duration (nanoseconds)
+///   - property: event custom properties (optional)
 - (void)addLongTaskWithStack:(NSString *)stack duration:(NSNumber *)duration property:(nullable NSDictionary *)property;
 
-/// HTTP 请求开始
+/// HTTP request start
 ///
 /// - Parameters:
-///   - key: 请求标识
+///   - key: request identifier
 - (void)startResourceWithKey:(NSString *)key;
-/// HTTP 请求开始
+/// HTTP request start
 /// - Parameters:
-///   - key: 请求标识
-///   - property: 事件自定义属性(可选)
+///   - key: request identifier
+///   - property: event custom properties (optional)
 - (void)startResourceWithKey:(NSString *)key property:(nullable NSDictionary *)property;
 
-/// HTTP 添加请求数据
+/// HTTP add request data
 ///
 /// - Parameters:
-///   - key: 请求标识
-///   - metrics: 请求相关性能属性
-///   - content: 请求相关数据
+///   - key: request identifier
+///   - metrics: request-related performance properties
+///   - content: request-related data
 - (void)addResourceWithKey:(NSString *)key metrics:(nullable FTResourceMetricsModel *)metrics content:(FTResourceContentModel *)content;
-/// HTTP 请求结束
+/// HTTP request end
 ///
 /// - Parameters:
-///   - key: 请求标识
+///   - key: request identifier
 - (void)stopResourceWithKey:(NSString *)key;
-/// HTTP 请求结束
+/// HTTP request end
 /// - Parameters:
-///   - key: 请求标识
-///   - property: 事件自定义属性(可选)
+///   - key: request identifier
+///   - property: event custom properties (optional)
 - (void)stopResourceWithKey:(NSString *)key property:(nullable NSDictionary *)property;
 
 #pragma mark --------- Trace ----------
-/// 获取 trace（链路追踪）需要添加的请求头
+/// Get trace (link tracing) headers that need to be added
 /// - Parameters:
-///   - url: 请求 URL
+///   - url: request URL
 - (nullable NSDictionary *)getTraceHeaderWithUrl:(NSURL *)url;
-/// 开启 `enableLinkRUMData` 时，获取 trace（链路追踪）需要添加的请求头，
+/// When `enableLinkRUMData` is enabled, get trace (link tracing) headers that need to be added
 /// - Parameters:
-///   - key: 请求标识
-///   - url: 请求 URL
+///   - key: request identifier
+///   - url: request URL
 - (nullable NSDictionary *)getTraceHeaderWithKey:(NSString *)key url:(NSURL *)url;
+#pragma mark --------- DEPRECATED ----------
+
+/// Add Click Action event. actionType defaults to `click`
+///
+/// - Parameters:
+///   - actionName: event name
+- (void)addClickActionWithName:(NSString *)actionName DEPRECATED_MSG_ATTRIBUTE("Deprecated, please use -startAction:actionType:property: method instead");
+
+/// Add Click Action event, actionType defaults to `click`
+/// - Parameters:
+///   - actionName: event name
+///   - property: event custom properties (optional)
+- (void)addClickActionWithName:(NSString *)actionName property:(nullable NSDictionary *)property DEPRECATED_MSG_ATTRIBUTE("Deprecated, please use -startAction:actionType:property: method instead");
+
+/// Add Action event
+///
+/// - Parameters:
+///   - actionName: event name
+///   - actionType: event type
+- (void)addActionName:(NSString *)actionName actionType:(NSString *)actionType DEPRECATED_MSG_ATTRIBUTE("Deprecated, please use -startAction:actionType:property: method instead");
+/// Add Action event
+/// - Parameters:
+///   - actionName: event name
+///   - actionType: event type
+///   - property: event custom properties (optional)
+- (void)addActionName:(NSString *)actionName actionType:(NSString *)actionType property:(nullable NSDictionary *)property DEPRECATED_MSG_ATTRIBUTE("Deprecated, please use -startAction:actionType:property: method instead");
 @end
 
 NS_ASSUME_NONNULL_END

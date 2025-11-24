@@ -1,32 +1,24 @@
 @Tutorials(name: "FTMobileSDK") {
-    @Intro(title: "应用监测 配置教程") {
-             
-    @Image(source: rum_access, alt: "应用监测 配置教程")
+    @Intro(title: "Application Monitoring Configuration Tutorial") {
+        @Image(source: rum_access, alt: "Application Monitoring Configuration Tutorial")
     }
     
-    @Chapter(name: "应用接入") {
-       
-        
-        @Image(source: rum_access, alt: "应用接入")
-        
+    @Chapter(name: "SDK Integration") {
+        @Image(source: rum_access, alt: "SDK Integration")
         @TutorialReference(tutorial: "doc:StartSDK")
     }
-    @Chapter(name: "用户数据绑定") {
-        
-        @Image(source: binduser, alt: "用户数据绑定")
-        
+    @Chapter(name: "User Data Binding") {
+        @Image(source: binduser, alt: "User Data Binding")
         @TutorialReference(tutorial: "doc:UserData")
     }
     
-    @Chapter(name: "自定义日志") {
-        
-        @Image(source: logger, alt: "自定义日志")
-        
+    @Chapter(name: "Custom Log") {
+        @Image(source: logger, alt: "Custom Log")
         @TutorialReference(tutorial: "doc:CustomLog")
     }
     
-    @Chapter(name: "自定义 RUM 数据") {
-        @Image(source: rum_access, alt: "自定义 RUM 数据")
+    @Chapter(name: "Custom RUM Data") {
+        @Image(source: rum_access, alt: "Custom RUM Data")
         @TutorialReference(tutorial: "doc:CustomRUM")
     }
 }

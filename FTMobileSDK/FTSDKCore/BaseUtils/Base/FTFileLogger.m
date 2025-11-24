@@ -61,10 +61,14 @@ NSString * const FT_LOG_BACKUP_DIRECTORY= @"FTBackupLogs";
     }
     return self;
 }
-// 默认的日志文件夹
+// Default logs directory
 - (NSString *)defaultLogsDirectory {
-#if TARGET_OS_IPHONE
+#if TARGET_OS_IOS
     NSArray *paths = NSSearchPathForDirectoriesInDomains(NSDocumentDirectory, NSUserDomainMask, YES);
+    NSString *baseDir = paths.firstObject;
+    NSString *logsDirectory = [baseDir stringByAppendingPathComponent:FT_LOG_FILE_DIRECTORY];
+#elif TARGET_OS_TV
+    NSArray *paths = NSSearchPathForDirectoriesInDomains(NSCachesDirectory, NSUserDomainMask, YES);
     NSString *baseDir = paths.firstObject;
     NSString *logsDirectory = [baseDir stringByAppendingPathComponent:FT_LOG_FILE_DIRECTORY];
 #else
@@ -97,7 +101,7 @@ NSString * const FT_LOG_BACKUP_DIRECTORY= @"FTBackupLogs";
     }
     return _logsBackupDirectory;
 }
-// 降序输出，新文件在队列前方，使用文件创建时间来排序
+// Descending order output, new files at the front of the queue, sorted by file creation time
 - (NSArray *)sortedLogFileInfos{
     return [[self unsortedLogFileInfos] sortedArrayUsingComparator:^NSComparisonResult(FTLogFileInfo *obj1,
                                                                                        FTLogFileInfo *obj2) {
@@ -108,14 +112,14 @@ NSString * const FT_LOG_BACKUP_DIRECTORY= @"FTBackupLogs";
         if (arrayComponent.count > 0) {
             NSString *stringDate = arrayComponent.lastObject;
             stringDate = [stringDate stringByReplacingOccurrencesOfString:@".log" withString:@""];
-            date1 = [obj1 creationDate];
+            date1 = [NSDate ft_dateFromBaseFormatString:stringDate]?:[obj1 creationDate];
         }
 
         arrayComponent = [[obj2 fileName] componentsSeparatedByString:@" "];
         if (arrayComponent.count > 0) {
             NSString *stringDate = arrayComponent.lastObject;
             stringDate = [stringDate stringByReplacingOccurrencesOfString:@".log" withString:@""];
-            date2 = [obj2 creationDate];
+            date2 = [NSDate ft_dateFromBaseFormatString:stringDate]?:[obj2 creationDate];
         }
 
         return [date2 compare:date1 ?: [NSDate new]];
@@ -142,17 +146,22 @@ NSString * const FT_LOG_BACKUP_DIRECTORY= @"FTBackupLogs";
     return unsortedLogFilePaths;
 }
 - (void)copyFileToCacheDirectoryWithCreateDate:(NSDate *)creationDate{
-    NSString *dateStr = [creationDate ft_stringWithBaseFormat];
-    NSString *fileName = [_prefix stringByReplacingOccurrencesOfString:@".log" withString:@""];
-    NSString *actuallyFileName = [NSString stringWithFormat:@"%@ %@.log",fileName,dateStr];
-    NSString *logsBackupDirectory = [self logsBackupDirectory];
-    NSString *cacheFilePath = [logsBackupDirectory stringByAppendingPathComponent:actuallyFileName];
-    NSError *error;
-    [[NSFileManager defaultManager] copyItemAtPath:_filePath toPath:cacheFilePath error:&error];
-    [self deleteOldLogFiles];
+    @try {
+        NSString *dateStr = [creationDate ft_stringWithBaseFormat];
+        NSString *fileName = [_prefix stringByReplacingOccurrencesOfString:@".log" withString:@""];
+        NSString *actuallyFileName = [NSString stringWithFormat:@"%@ %@.log",fileName,dateStr];
+        NSString *logsBackupDirectory = [self logsBackupDirectory];
+        NSString *cacheFilePath = [logsBackupDirectory stringByAppendingPathComponent:actuallyFileName];
+        NSError *error;
+        [[NSFileManager defaultManager] copyItemAtPath:_filePath toPath:cacheFilePath error:&error];
+        [self deleteOldLogFiles];
+        
+    } @catch (NSException *exception) {
+        FTNSLogError(@"[FTLog][FTLogFileManager] : copy File To Cache Directory fail :%@ .",exception);
+    }
 }
 
-// 创建日志文件
+// Create log file
 - (NSString *)createNewLogFileWithError:(NSError *__autoreleasing  _Nullable *)error {
     static NSUInteger MAX_ALLOWED_ERROR = 5;
     NSString *logsDirectory = [self logsDirectory];
@@ -194,7 +203,7 @@ NSString * const FT_LOG_BACKUP_DIRECTORY= @"FTBackupLogs";
         }
     } while (YES);
 }
-// 删除旧日志
+// Delete old logs
 - (void)deleteOldLogFiles {
     FTNSLogError(@"[FTLog][FTLogFileManager] deleteOldLogFiles");
     NSArray *sortedLogFileInfos = [self sortedLogFileInfos];
@@ -228,7 +237,7 @@ NSString * const FT_LOG_BACKUP_DIRECTORY= @"FTBackupLogs";
     dispatch_source_t _currentLogFileVnode;
 }
 @property (nonatomic, strong) NSFileHandle *currentLogFileHandle;
-@property (nonatomic, strong) FTLogFileInfo *currentLogFileInfo;
+@property (nonatomic, strong, nullable) FTLogFileInfo *currentLogFileInfo;
 @property (nonatomic, strong) FTLogFileManager *logFileManager;
 @end
 @implementation FTFileLogger
@@ -236,7 +245,7 @@ NSString * const FT_LOG_BACKUP_DIRECTORY= @"FTBackupLogs";
     self = [super init];
     if(self){
         _maximumFileSize = kFTDefaultLogMaxFileSize;
-        _loggerQueue = dispatch_queue_create("com.guance.debugLog.file", NULL);
+        _loggerQueue = dispatch_queue_create("com.ft.debugLog.file", NULL);
         _logFileManager = manager;
     }
     return self;
@@ -246,37 +255,45 @@ NSString * const FT_LOG_BACKUP_DIRECTORY= @"FTBackupLogs";
         NSString *logFilePath = [[self currentLogFileInfo] filePath];
         _currentLogFileHandle = [NSFileHandle fileHandleForWritingAtPath:logFilePath];
         if(_currentLogFileHandle != nil){
-            if (@available(macOS 10.15, iOS 13.0, tvOS 13.0, watchOS 6.0, *)) {
-                __autoreleasing NSError *error = nil;
-                BOOL success = [_currentLogFileHandle seekToEndReturningOffset:nil error:&error];
-                if (!success) {
-                    FTNSLogError(@"[FTLog][FTFileLogger] Failed to seek to end of file: %@", error);
+            @try {
+                if (@available(macOS 10.15, iOS 13.0, tvOS 13.0, watchOS 6.0, *)) {
+                    __autoreleasing NSError *error = nil;
+                    BOOL success = [_currentLogFileHandle seekToEndReturningOffset:nil error:&error];
+                    if (!success) {
+                        FTNSLogError(@"[FTLog][FTFileLogger] Failed to seek to end of file: %@", error);
+                    }
+                } else {
+                    [_currentLogFileHandle seekToEndOfFile];
                 }
-            } else {
-                [_currentLogFileHandle seekToEndOfFile];
+                [self monitorCurrentLogFileForExternalChanges];
+                
+            } @catch (NSException *exception) {
+                FTNSLogError(@"[FTLog][FTFileLogger] Failed to seek to end of file: %@", exception);
             }
-            [self monitorCurrentLogFileForExternalChanges];
         }
     }
     return _currentLogFileHandle;
 }
 
-- (FTLogFileInfo *)currentLogFileInfo {
+- (nullable FTLogFileInfo *)currentLogFileInfo {
     FTLogFileInfo *newCurrentLogFile = _currentLogFileInfo;
     BOOL isResuming = newCurrentLogFile == nil;
     if (isResuming) {
-        _currentLogFileInfo = [FTLogFileInfo logFileWithPath:[self.logFileManager filePath]];
+        if([[NSFileManager defaultManager] fileExistsAtPath:[self.logFileManager filePath]]){
+            newCurrentLogFile = [FTLogFileInfo logFileWithPath:[self.logFileManager filePath]];
+        }
     }
-    // 是否应用用当前的文件
+    // Whether to use the current file
     if (newCurrentLogFile != nil && [self shouldUseLogFile:newCurrentLogFile isResuming:isResuming]) {
         _currentLogFileInfo = newCurrentLogFile;
     } else {
-        //创建新的日志文件
+        //Create new log file
         NSString *currentLogFilePath;
         __autoreleasing NSError *error;
         currentLogFilePath = [self.logFileManager createNewLogFileWithError:&error];
         if (!currentLogFilePath) {
             FTNSLogError(@"[FTLog][FTFileLogger] Failed to create new log file: %@", error);
+            return nil;
         }
         _currentLogFileInfo = [FTLogFileInfo logFileWithPath:currentLogFilePath];
     }
@@ -296,7 +313,7 @@ NSString * const FT_LOG_BACKUP_DIRECTORY= @"FTBackupLogs";
     return YES;
 }
 
-// 监控文件是否被外部操作
+// Monitor whether the file is operated externally
 - (void)monitorCurrentLogFileForExternalChanges{
     _currentLogFileVnode = dispatch_source_create(DISPATCH_SOURCE_TYPE_VNODE,
                                                   (uintptr_t)[_currentLogFileHandle fileDescriptor],
@@ -326,7 +343,7 @@ NSString * const FT_LOG_BACKUP_DIRECTORY= @"FTBackupLogs";
             return;
         }
         NSFileHandle *fileHandle = self.currentLogFileHandle;
-        if (@available(macOS 10.15, iOS 13.0, *)) {
+        if (@available(macOS 10.15, iOS 13.0,tvOS 13.0, *)) {
             __autoreleasing NSError *error = nil;
             BOOL success = [fileHandle seekToEndReturningOffset:nil error:&error];
             if (!success) {
@@ -380,11 +397,9 @@ NSString * const FT_LOG_BACKUP_DIRECTORY= @"FTBackupLogs";
     if (_currentLogFileHandle == nil) {
         return;
     }
-    __weak __auto_type weakSelf = self;
     dispatch_block_t block = ^(){
         if(copy){
-            [weakSelf.logFileManager copyFileToCacheDirectoryWithCreateDate:weakSelf.currentLogFileInfo.creationDate];
-            
+            [self->_logFileManager copyFileToCacheDirectoryWithCreateDate:self->_currentLogFileInfo.creationDate];
         }
     };
     if (@available(macOS 10.15, iOS 13.0, tvOS 13.0, watchOS 6.0, *)) {
@@ -407,7 +422,15 @@ NSString * const FT_LOG_BACKUP_DIRECTORY= @"FTBackupLogs";
         } @catch (NSException *exception) {
             FTNSLogError(@"[FTLog][FTFileLogger] Failed to synchronize file: %@", exception);
         }
-        copy?block():[_currentLogFileHandle closeFile];
+        if(copy){
+            block();
+        }else{
+            @try {
+                [_currentLogFileHandle closeFile];
+            } @catch (NSException *exception) {
+                FTNSLogError(@"[FTLog][FTFileLogger] Failed to close file: %@", exception);
+            }
+        }
     }
     _currentLogFileHandle = nil;
     _currentLogFileInfo.isArchived = YES;

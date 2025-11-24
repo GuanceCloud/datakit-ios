@@ -19,7 +19,7 @@ struct RUMResource {
 class RUMViewController: UIViewController,UITableViewDelegate,UITableViewDataSource,URLSessionDataDelegate,URLSessionTaskDelegate {
     var dataSource:Array<String> = []
     var taskDict:[URLSessionTask:RUMResource] = [:]
-    
+    let session = URLSession(configuration: URLSessionConfiguration.default)
     lazy var tableView:UITableView = {
         let tab = UITableView.init(frame: self.view.bounds)
         tab.delegate = self
@@ -31,11 +31,10 @@ class RUMViewController: UIViewController,UITableViewDelegate,UITableViewDataSou
     override func viewDidLoad() {
         super.viewDidLoad()
         self.navigationItem.title = "Custom RUM"
-        self.view.backgroundColor = .white
         createUI()
     }
     func createUI(){
-        dataSource = ["onCreateView","startView","stopView","addAction","addError","addLongTask","resourse"]
+        dataSource = ["onCreateView","startView","stopView","addAction","addError","addLongTask","resource","resourceError"]
         self.view.addSubview(tableView)
     }
     func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
@@ -56,51 +55,67 @@ class RUMViewController: UIViewController,UITableViewDelegate,UITableViewDataSou
         case 2:
             FTExternalDataManager.shared().stopView()
         case 3:
-            FTExternalDataManager.shared().addActionName("custom_action", actionType: "click")
+            FTExternalDataManager.shared().addAction("custom_action", actionType: "click",property: nil)
         case 4:
             FTExternalDataManager.shared().addError(withType: "custom_type", message: "custom_message", stack: "custom_stack")
         case 5:
             FTExternalDataManager.shared().addLongTask(withStack: "longtask_stack", duration: 1000000000)
         case 6:
-            customResource()
+            let dic = ProcessInfo().environment
+            let traceStr = dic["TRACE_URL"]
+            if let traceStr = traceStr {
+                request(urlStr: traceStr)
+            }
+        case 7:
+            request(urlStr: "https://console-api.guance.com/not/found/")
         default:
             print("default")
         }
     }
+     
+    func request(urlStr:String){
+        if let url = URL(string: urlStr) {
+            let request = URLRequest(url: url)
+            let task = session.dataTask(with: request) { data, _, _ in
+                
+            }
+            task.resume()
+        }
+    }
     
-    func customResource (){
-        // 完整的数据采集过程
-        let key = UUID().uuidString
-        FTExternalDataManager.shared().startResource(withKey: key)
-        let session = URLSession(configuration: URLSessionConfiguration.default, delegate: self, delegateQueue: OperationQueue.main)
-        let dic = ProcessInfo().environment
-        if let urlStr = dic["TRACE_URL"] {
-            if let url = URL(string: urlStr) {
-                let request = URLRequest(url: url)
-                let task = session.dataTask(with: request)
-                taskDict[task] = RUMResource(key: key)
-                task.resume()
-            }
-        }
-    }
-    func urlSession(_ session: URLSession, dataTask: URLSessionDataTask, didReceive data: Data) {
-        taskDict[dataTask]?.data = data
-    }
-    func urlSession(_ session: URLSession, task: URLSessionTask, didFinishCollecting metrics: URLSessionTaskMetrics) {
-        taskDict[task]?.metrics = metrics
-    }
-    func urlSession(_ session: URLSession, task: URLSessionTask, didCompleteWithError error: Error?) {
-        if let resource = taskDict[task] {
-            FTExternalDataManager.shared().stopResource(withKey: resource.key)
-            var metricsModel:FTResourceMetricsModel?
-            if let metrics = resource.metrics {
-                metricsModel = FTResourceMetricsModel(taskMetrics:metrics)
-            }
-            let contentModel = FTResourceContentModel(request: task.currentRequest!, response: task.response as? HTTPURLResponse, data: resource.data, error: error)
-            FTExternalDataManager.shared().addResource(withKey: resource.key, metrics: metricsModel, content: contentModel)
-        }
-        taskDict.removeValue(forKey: task)
-    }
+//    func customResource (){
+//        // Complete data collection process
+//        let key = UUID().uuidString
+//        FTExternalDataManager.shared().startResource(withKey: key)
+//        let session = URLSession(configuration: URLSessionConfiguration.default, delegate: self, delegateQueue: OperationQueue.main)
+//        let dic = ProcessInfo().environment
+//        if let urlStr = dic["TRACE_URL"] {
+//            if let url = URL(string: urlStr) {
+//                let request = URLRequest(url: url)
+//                let task = session.dataTask(with: request)
+//                taskDict[task] = RUMResource(key: key)
+//                task.resume()
+//            }
+//        }
+//    }
+//    func urlSession(_ session: URLSession, dataTask: URLSessionDataTask, didReceive data: Data) {
+//        taskDict[dataTask]?.data = data
+//    }
+//    func urlSession(_ session: URLSession, task: URLSessionTask, didFinishCollecting metrics: URLSessionTaskMetrics) {
+//        taskDict[task]?.metrics = metrics
+//    }
+//    func urlSession(_ session: URLSession, task: URLSessionTask, didCompleteWithError error: Error?) {
+//        if let resource = taskDict[task] {
+//            FTExternalDataManager.shared().stopResource(withKey: resource.key)
+//            var metricsModel:FTResourceMetricsModel?
+//            if let metrics = resource.metrics {
+//                metricsModel = FTResourceMetricsModel(taskMetrics:metrics)
+//            }
+//            let contentModel = FTResourceContentModel(request: task.currentRequest!, response: task.response as? HTTPURLResponse, data: resource.data, error: error)
+//            FTExternalDataManager.shared().addResource(withKey: resource.key, metrics: metricsModel, content: contentModel)
+//        }
+//        taskDict.removeValue(forKey: task)
+//    }
     /*
     // MARK: - Navigation
 

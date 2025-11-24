@@ -29,9 +29,8 @@
     NSString *urlStr = [[NSProcessInfo processInfo] environment][@"TRACE_URL"];
     NSURL *url = [NSURL URLWithString:urlStr];
     __weak typeof(self) weakSelf = self;
-    TableViewCellItem *item1 = [[TableViewCellItem alloc]initWithTitle:@"Rum、Trace 开启 Resource 自动采集" handler:^{
-        NSString *urlStr = [[NSProcessInfo processInfo] environment][@"TRACE_URL"];
-        NSMutableURLRequest *request = [NSMutableURLRequest requestWithURL:[NSURL URLWithString:urlStr]];
+    TableViewCellItem *item1 = [[TableViewCellItem alloc]initWithTitle:@"RUM, Trace enable Resource auto collection" handler:^{
+        NSMutableURLRequest *request = [NSMutableURLRequest requestWithURL:url];
         NSURLSession *session = [NSURLSession sessionWithConfiguration:[NSURLSessionConfiguration defaultSessionConfiguration]];
         NSURLSessionTask *task = [session dataTaskWithRequest:request completionHandler:^(NSData * _Nullable data, NSURLResponse * _Nullable response, NSError * _Nullable error) {
             
@@ -39,8 +38,8 @@
         [task resume];
         [session finishTasksAndInvalidate];
     }];
-    // 避免数据重复请关闭 enableTraceUserResource
-    TableViewCellItem *item2 = [[TableViewCellItem alloc]initWithTitle:@"注册 `FTURLSessionDelegate`" handler:^{
+    // To avoid data duplication, please disable enableTraceUserResource
+    TableViewCellItem *item2 = [[TableViewCellItem alloc]initWithTitle:@"Register `FTURLSessionDelegate`" handler:^{
         NSURLSession *session=[NSURLSession sessionWithConfiguration:[NSURLSessionConfiguration defaultSessionConfiguration] delegate:[[FTURLSessionDelegate alloc]init] delegateQueue:nil];
 
         NSMutableURLRequest *request = [NSMutableURLRequest requestWithURL:url];
@@ -50,7 +49,7 @@
         [task resume];
         [session finishTasksAndInvalidate];
     }];
-    TableViewCellItem *item3 = [[TableViewCellItem alloc]initWithTitle:@"拦截 Request 请求，自定义 Trace" handler:^{
+    TableViewCellItem *item3 = [[TableViewCellItem alloc]initWithTitle:@"Intercept Request, custom Trace" handler:^{
         FTURLSessionDelegate *delegateProxy = [[FTURLSessionDelegate alloc]init];
         delegateProxy.requestInterceptor = ^NSURLRequest * _Nonnull(NSURLRequest * _Nonnull request) {
             NSMutableURLRequest *newRequest = [request mutableCopy];
@@ -66,7 +65,7 @@
         [task resume];
         [session finishTasksAndInvalidate];
     }];
-    TableViewCellItem *item4 = [[TableViewCellItem alloc]initWithTitle:@"添加 RUM Resource 额外资源" handler:^{
+    TableViewCellItem *item4 = [[TableViewCellItem alloc]initWithTitle:@"Add RUM Resource additional resources" handler:^{
         FTURLSessionDelegate *delegateProxy = [[FTURLSessionDelegate alloc]init];
         delegateProxy.provider = ^NSDictionary * _Nullable(NSURLRequest * _Nullable request, NSURLResponse * _Nullable response, NSData * _Nullable data, NSError * _Nullable error) {
             NSString *body = [[NSString alloc] initWithData:data encoding:NSUTF8StringEncoding];
@@ -89,7 +88,7 @@
         [session finishTasksAndInvalidate];
     }];
     
-    TableViewCellItem *item5 = [[TableViewCellItem alloc]initWithTitle:@"手动操作:使用 open api 操作" handler:^{
+    TableViewCellItem *item5 = [[TableViewCellItem alloc]initWithTitle:@"Manual operation: use open api operation" handler:^{
         NSString *urlStr = [[NSProcessInfo processInfo] environment][@"TRACE_URL"];
         NSURL *url = [NSURL URLWithString:urlStr];
         NSURLRequest *request = [NSURLRequest requestWithURL:url];

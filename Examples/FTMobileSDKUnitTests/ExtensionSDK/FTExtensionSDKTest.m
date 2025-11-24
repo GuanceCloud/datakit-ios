@@ -7,11 +7,14 @@
 //
 
 #import <XCTest/XCTest.h>
+#import <KIF/KIF.h>
 #import "FTMobileAgent.h"
 #import "FTMobileAgent+Private.h"
 #import "FTMobileExtension.h"
 #import "FTExtensionDataManager.h"
 #import "FTMobileConfig+Private.h"
+#import "FTLoggerConfig+Private.h"
+#import "FTRumConfig+Private.h"
 #import "HttpEngineTestUtil.h"
 #import "FTRumManager.h"
 #import "FTRecordModel.h"
@@ -34,13 +37,17 @@
     dispatch_once(&onceToken, ^{
         NSProcessInfo *processInfo = [NSProcessInfo processInfo];
         NSString *appid = [processInfo environment][@"APP_ID"];
-
+        NSString *datakitUrl = [processInfo environment][@"ACCESS_SERVER_URL"];
+        FTMobileConfig *config = [[FTMobileConfig alloc]initWithDatakitUrl:datakitUrl];
+        
         FTTraceConfig *traceConfig = [[FTTraceConfig alloc]init];
+        traceConfig.networkTraceType = FTNetworkTraceTypeSkywalking;
         traceConfig.enableLinkRumData = YES;
         FTRumConfig *rumConfig = [[FTRumConfig alloc]initWithAppid:appid];
         FTLoggerConfig *loggerConfig = [[FTLoggerConfig alloc]init];
         loggerConfig.enableCustomLog = YES;
         [FTExtensionDataManager sharedInstance].groupIdentifierArray =  @[@"group.com.ft.widget.demo"];
+        [[FTExtensionDataManager sharedInstance] writeMobileConfig:[config convertToDictionary]];
         [[FTExtensionDataManager sharedInstance] writeRumConfig:[rumConfig convertToDictionary]];
         [[FTExtensionDataManager sharedInstance] writeTraceConfig:[traceConfig convertToDictionary]];
         [[FTExtensionDataManager sharedInstance] writeLoggerConfig:[loggerConfig convertToDictionary]];
@@ -68,9 +75,11 @@
     [self setExtensionSDK];
     NSArray *olddatas = [[FTExtensionDataManager sharedInstance] readAllEventsWithGroupIdentifier:@"group.com.ft.widget.demo"];
     [[FTExternalDataManager sharedManager] startViewWithName:@"TestRum"];
-    [[FTExternalDataManager sharedManager] addClickActionWithName:@"extensionClick1"];
-    [[FTExternalDataManager sharedManager] addClickActionWithName:@"extensionClick2"];
-    [NSThread sleepForTimeInterval:2];
+    [[FTExternalDataManager sharedManager] startAction:@"extensionClick1" actionType:@"click" property:nil];
+    [tester waitForTimeInterval:0.1];
+    [[FTExternalDataManager sharedManager] startAction:@"extensionClick2" actionType:@"click" property:nil];
+    FTRUMManager *rumManager = [[FTExtensionManager sharedInstance] valueForKey:@"rumManager"];
+    [rumManager syncProcess];
     NSArray *datas = [[FTExtensionDataManager sharedInstance] readAllEventsWithGroupIdentifier:@"group.com.ft.widget.demo"];
     XCTAssertTrue(datas.count>olddatas.count);
     __block BOOL hasAction = NO;
@@ -87,11 +96,11 @@
     XCTAssertTrue(hasAction);
 }
 - (void)testRumResource{
-    [self saveMobileSdkConfig];
+    [self saveMobileSdkConfig]; 
     [self setExtensionSDK];
     [[FTExternalDataManager sharedManager] startViewWithName:@"testRumResource"];
     NSArray *olddatas = [[FTExtensionDataManager sharedInstance] readAllEventsWithGroupIdentifier:@"group.com.ft.widget.demo"];
-    XCTestExpectation *expectation= [self expectationWithDescription:@"异步操作timeout"];
+    XCTestExpectation *expectation= [self expectationWithDescription:@"Async operation timeout"];
 
     [self networkUpload:^(NSData * _Nullable data, NSURLResponse * _Nullable response, NSError * _Nullable error) {
         [expectation fulfill];
@@ -111,8 +120,10 @@
     [self setExtensionSDK];
     [[FTExternalDataManager sharedManager] startViewWithName:@"testRumResourceDelegate"];
     NSArray *olddatas = [[FTExtensionDataManager sharedInstance] readAllEventsWithGroupIdentifier:@"group.com.ft.widget.demo"];
-    XCTestExpectation *expectation= [self expectationWithDescription:@"异步操作timeout"];
-    HttpEngineTestUtil *engine = [[HttpEngineTestUtil alloc]initWithSessionInstrumentationType:InstrumentationInherit expectation:expectation];
+    XCTestExpectation *expectation = [self expectationWithDescription:@"Async operation timeout"];
+    HttpEngineTestUtil *engine = [[HttpEngineTestUtil alloc]initWithSessionInstrumentationType:InstrumentationInherit completion:^{
+        [expectation fulfill];
+    }];
     [engine network:^(NSData * _Nullable data, NSURLResponse * _Nullable response, NSError * _Nullable error) {
         
     }];
@@ -130,7 +141,7 @@
     [self saveMobileSdkConfig];
     [self setExtensionSDK];
     [[FTExternalDataManager sharedManager] startViewWithName:@"testTracer"];
-    XCTestExpectation *expectation= [self expectationWithDescription:@"异步操作timeout"];
+    XCTestExpectation *expectation= [self expectationWithDescription:@"Async operation timeout"];
 
     [self networkUpload:^(NSData * _Nullable data, NSURLResponse * _Nullable response, NSError * _Nullable error) {
         [expectation fulfill];
@@ -215,7 +226,7 @@
     [FTMobileAgent appendLogGlobalContext:@{@"log_key1":@"log_value"}];
     
     [[FTMobileAgent sharedInstance] bindUserWithUserID:@"test_id" userName:@"BindUserData" userEmail:@"aaa@a.com" extra:@{@"extra_key":@"extra_value"}];
-    XCTestExpectation *expectation= [self expectationWithDescription:@"异步操作timeout"];
+    XCTestExpectation *expectation= [self expectationWithDescription:@"Async operation timeout"];
     [[FTTrackDataManager sharedInstance] insertCacheToDB];
     [FTMobileAgent clearAllData];
     [[FTMobileAgent sharedInstance] trackEventFromExtensionWithGroupIdentifier:@"group.com.ft.widget.demo" completion:^(NSString * _Nonnull groupIdentifier, NSArray * _Nonnull events) {

@@ -10,20 +10,20 @@
 
 NS_ASSUME_NONNULL_BEGIN
 
-/// 使用 GCD 栅栏模式实现线程安全的多读单写工具；ValueType 泛型
+/// Thread-safe multiple-read single-write tool implemented using GCD barrier mode; ValueType generic must conform to NSCopying protocol
 @interface FTReadWriteHelper<ValueType> : NSObject
-/// 初始化
-/// - Parameter value: 需要线程安全的对象
+/// Initialize
+/// - Parameter value: Object that needs thread safety
 -(instancetype)initWithValue:(ValueType)value;
 
-/// 线程安全读数据
-/// - Parameter block: 读数据block块
+/// Thread-safe read data
+/// - Parameter block: Read data block
 - (void)concurrentRead:(void (^)(ValueType value))block;
-/// 线程安全写数据
-/// - Parameter block: 写数据block块
+/// Thread-safe write data
+/// - Parameter block: Write data block
 - (void)concurrentWrite:(void (^)(ValueType value))block;
-/// 线程安全读数据
-/// - Returns: 读取的数据.
+/// Thread-safe read data, copy the read data, ValueType must conform to NSCopying protocol, otherwise it will crash
+/// - Returns: Read data.
 - (ValueType)currentValue;
 @end
 

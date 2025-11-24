@@ -2,7 +2,7 @@
 //  FTRUMsessionHandler.m
 //  FTMobileAgent
 //
-//  Created by 胡蕾蕾 on 2021/5/26.
+//  Created by hulilei on 2021/5/26.
 //  Copyright © 2021 hll. All rights reserved.
 //
 
@@ -12,6 +12,7 @@
 #import "NSDate+FTUtil.h"
 #import "FTConstants.h"
 #import "FTLog+Private.h"
+#import "FTRUMPlaceholderViewHandler.h"
 static const NSTimeInterval sessionTimeoutDuration = 15 * 60; // 15 minutes
 static const NSTimeInterval sessionMaxDuration = 4 * 60 * 60; // 4 hours
 @interface FTRUMSessionHandler()<FTRUMSessionProtocol>
@@ -20,7 +21,8 @@ static const NSTimeInterval sessionMaxDuration = 4 * 60 * 60; // 4 hours
 @property (nonatomic, strong) NSDate *lastInteractionTime;
 @property (nonatomic, strong) NSMutableArray<FTRUMHandler*> *viewHandlers;
 @property (nonatomic, assign) BOOL sampling;
-@property (nonatomic, assign) BOOL needWriteErrorData;
+@property (nonatomic, assign) BOOL sessionOnErrorSampling;
+
 @end
 @implementation FTRUMSessionHandler
 -(instancetype)initWithModel:(FTRUMDataModel *)model dependencies:(FTRUMDependencies *)dependencies{
@@ -28,11 +30,11 @@ static const NSTimeInterval sessionMaxDuration = 4 * 60 * 60; // 4 hours
     if (self) {
         self.rumDependencies = dependencies;
         self.assistant = self;
-        self.sampling = [FTBaseInfoHandler randomSampling:dependencies.sampleRate];
         self.sessionStartTime = model.time;
         self.viewHandlers = [NSMutableArray new];
         self.context = [FTRUMContext new];
         self.rumDependencies.fatalErrorContext.lastSessionContext = [self.context getGlobalSessionViewTags];
+        self.sampling = [FTBaseInfoHandler randomSampling:dependencies.sampleRate];
     }
     return  self;
 }
@@ -58,8 +60,19 @@ static const NSTimeInterval sessionMaxDuration = 4 * 60 * 60; // 4 hours
 }
 -(void)setSampling:(BOOL)sampling{
     _sampling = sampling;
+    self.rumDependencies.currentSessionSample = sampling;
     if(!sampling){
-        FTInnerLogInfo(@"[RUM] The current 'Session' is not sampled.");
+        [self.rumDependencies.writer isCacheWriter:NO];
+        self.sessionOnErrorSampling = [FTBaseInfoHandler randomSampling:self.rumDependencies.sessionOnErrorSampleRate];
+        if(self.sessionOnErrorSampling == YES){
+            self.context.sampled_for_error_session = YES;
+            [self.rumDependencies.writer isCacheWriter:YES];
+            FTInnerLogInfo(@"[RUM] The current 'Session' is sampled on error.");
+        }else{
+            // When session is not collected, prevent logger from associating rum errors
+            self.rumDependencies.fatalErrorContext = nil;
+            FTInnerLogInfo(@"[RUM] The current 'Session' is not sampled.");
+        }
     }
 }
 - (BOOL)process:(FTRUMDataModel *)model context:(nonnull NSDictionary *)context{
@@ -67,20 +80,25 @@ static const NSTimeInterval sessionMaxDuration = 4 * 60 * 60; // 4 hours
         return NO;
     }
     if (!self.sampling) {
-        return YES;
+        if(self.sessionOnErrorSampling == NO){
+            return YES;
+        }else if(model.type == FTRUMDataError || model.type == FTRUMDataResourceError){
+            self.sampling = YES;
+            long long timestamp = [model.time ft_nanosecondTimeStamp];
+            self.context.session_error_timestamp = timestamp;
+            FTRUMViewHandler *lastViewHandler = (FTRUMViewHandler *)self.viewHandlers.lastObject;
+            lastViewHandler.context.session_error_timestamp = timestamp;
+        }
     }
     _lastInteractionTime = [NSDate date];
-    self.needWriteErrorData = NO;
     switch (model.type) {
-        case FTRUMSDKInit:
-            [self startInitialView:model];
-            break;
         case FTRUMDataViewStart:
             [self startView:model];
             break;
-        case FTRUMDataError:
-        case FTRUMDataLongTask:
-            self.needWriteErrorData = YES;
+        case FTRUMDataViewUpdateLoadingTime:
+            if(![self hasActivityView]){
+                return YES;
+            }
             break;
         case FTRUMDataLaunch:
             [self writeLaunchData:(FTRUMLaunchDataModel*)model context:context];
@@ -91,46 +109,35 @@ static const NSTimeInterval sessionMaxDuration = 4 * 60 * 60; // 4 hours
         default:
             break;
     }
-    self.viewHandlers = [self.assistant manageChildHandlers:self.viewHandlers byPropagatingData:model context:context];
-    if(![self hasActivityView]){
-        self.rumDependencies.fatalErrorContext.lastSessionContext = [self getCurrentSessionInfo];
+    if (self.viewHandlers.count == 0) {
+        [self startPlaceholderView:model];
     }
-    // 没有 view 能处理 error\longTask 则由 session 处理写入
-    if(self.needWriteErrorData){
-        [self writeErrorData:model context:context];
+    self.viewHandlers = [self.assistant manageChildHandlers:self.viewHandlers byPropagatingData:model context:context];
+    
+    if(![self hasActivityView]){
+        self.rumDependencies.fatalErrorContext.lastSessionContext = [self.context getGlobalSessionTags];
+        self.rumDependencies.fatalErrorContext.lastViewContext = nil;
     }
     return  YES;
 }
 - (BOOL)hasActivityView{
+    if (self.viewHandlers.count == 0) {
+        return NO;
+    }
     for (FTRUMViewHandler *viewHandler in self.viewHandlers) {
-        if(viewHandler.isActiveView){
+        if(![viewHandler isKindOfClass:FTRUMPlaceholderViewHandler.class] && viewHandler.isActiveView){
             return YES;
         }
     }
     return NO;
 }
--(void)startInitialView:(FTRUMDataModel *)model{
-    if(self.viewHandlers.count>0){
-        return;
-    }
+-(void)startPlaceholderView:(FTRUMDataModel *)model{
     FTRUMViewModel *viewModel = [[FTRUMViewModel alloc]initWithType:FTRUMSDKInit time:model.time];
-    viewModel.isInitialView = YES;
-    FTRUMViewHandler *viewHandler = [[FTRUMViewHandler alloc]initWithModel:viewModel context:self.context rumDependencies:self.rumDependencies];
-    //当前 view 处理了 error 数据回调,若没有 view 能处理则由 session 处理
-    __weak __typeof(self) weakSelf = self;
-    viewHandler.errorHandled = ^{
-        weakSelf.needWriteErrorData = NO;
-    };
+    FTRUMPlaceholderViewHandler *viewHandler = [[FTRUMPlaceholderViewHandler alloc]initWithModel:viewModel context:self.context rumDependencies:self.rumDependencies];
     [self.viewHandlers addObject:viewHandler];
 }
 -(void)startView:(FTRUMDataModel *)model{
-    
     FTRUMViewHandler *viewHandler = [[FTRUMViewHandler alloc]initWithModel:(FTRUMViewModel *)model context:self.context rumDependencies:self.rumDependencies];
-    //当前 view 处理了 error 数据回调,若没有 view 能处理则由 session 处理
-    __weak __typeof(self) weakSelf = self;
-    viewHandler.errorHandled = ^{
-        weakSelf.needWriteErrorData = NO;
-    };
     [self.viewHandlers addObject:viewHandler];
     self.rumDependencies.fatalErrorContext.lastSessionContext = [self getCurrentSessionInfo];
 }
@@ -145,38 +152,30 @@ static const NSTimeInterval sessionMaxDuration = 4 * 60 * 60; // 4 hours
 }
 /**
  * launch action
- * 实际意义上 与 click action 不同，action附加resource、error、long task不进行统计
+ * In actual meaning, different from click action, action attached resource, error, long task are not counted
  */
 - (void)writeLaunchData:(FTRUMLaunchDataModel *)model context:(NSDictionary *)context{
     
-    NSDictionary *sessionViewTag = [model.action_type isEqualToString:FT_LAUNCH_HOT]?[self getCurrentSessionInfo]:@{FT_RUM_KEY_SESSION_ID:self.context.session_id,FT_RUM_KEY_SESSION_TYPE:self.context.session_type};
+    NSDictionary *sessionViewTag = [model.action_type isEqualToString:FT_LAUNCH_HOT]?[self getCurrentSessionInfo]:[self.context getGlobalSessionTags];
     NSMutableDictionary *tags = [NSMutableDictionary dictionaryWithDictionary:context];
     [tags addEntriesFromDictionary:sessionViewTag];
-    NSDictionary *actionTags = @{FT_KEY_ACTION_ID:[FTBaseInfoHandler randomUUID],
-                                 FT_KEY_ACTION_NAME:model.action_name,
-                                 FT_KEY_ACTION_TYPE:model.action_type
-    };
-    NSDictionary *fields = @{FT_DURATION:model.duration,
-                             FT_KEY_ACTION_LONG_TASK_COUNT:@(0),
-                             FT_KEY_ACTION_RESOURCE_COUNT:@(0),
-                             FT_KEY_ACTION_ERROR_COUNT:@(0),
-    };
-    [tags addEntriesFromDictionary:actionTags];
+    [tags setValue:[FTBaseInfoHandler randomUUID] forKey:FT_KEY_ACTION_ID];
+    [tags setValue:model.action_name forKey:FT_KEY_ACTION_NAME];
+    [tags setValue:model.action_type forKey:FT_KEY_ACTION_TYPE];
+    
+    NSMutableDictionary *fields = [NSMutableDictionary dictionary];
+    if (model.fields) {
+        [fields addEntriesFromDictionary:model.fields];
+    }
+    [fields setValue:model.duration forKey:FT_DURATION];
+    [fields setValue:@(0) forKey:FT_KEY_ACTION_LONG_TASK_COUNT];
+    [fields setValue:@(0) forKey:FT_KEY_ACTION_RESOURCE_COUNT];
+    [fields setValue:@(0) forKey:FT_KEY_ACTION_ERROR_COUNT];
     [self.rumDependencies.writer rumWrite:FT_RUM_SOURCE_ACTION tags:tags fields:fields time:[model.time ft_nanosecondTimeStamp]];
-
-}
-- (void)writeErrorData:(FTRUMDataModel *)model context:(NSDictionary *)context{
-    FTRUMErrorData *data = (FTRUMErrorData *)model;
-    NSDictionary *sessionViewTag = [self getCurrentSessionInfo];
-    NSMutableDictionary *tags = [NSMutableDictionary dictionaryWithDictionary:context];
-    [tags addEntriesFromDictionary:sessionViewTag];
-    [tags addEntriesFromDictionary:model.tags];
-    NSString *error = model.type == FTRUMDataLongTask?FT_RUM_SOURCE_LONG_TASK :FT_RUM_SOURCE_ERROR;
-    [self.rumDependencies.writer rumWrite:error tags:tags fields:model.fields time:data.tm];
+    
 }
 - (void)writeWebViewJSBData:(FTRUMWebViewData *)data context:(NSDictionary *)context{
-    NSDictionary *sessionTag = @{FT_RUM_KEY_SESSION_ID:self.context.session_id,
-                                 FT_RUM_KEY_SESSION_TYPE:self.context.session_type};
+    NSDictionary *sessionTag = [self.context getGlobalSessionTags];
     NSMutableDictionary *tags = [NSMutableDictionary new];
     [tags addEntriesFromDictionary:context];
     [tags addEntriesFromDictionary:data.tags];
@@ -192,13 +191,6 @@ static const NSTimeInterval sessionMaxDuration = 4 * 60 * 60; // 4 hours
         return view.context.view_id;
     }
     return nil;
-}
--(NSDictionary *)getCurrentErrorSessionInfo{
-    FTRUMViewHandler *view = (FTRUMViewHandler *)[self.viewHandlers lastObject];
-    if (view) {
-        return [view.context getGlobalSessionViewActionTags];
-    }
-    return [self.context getGlobalSessionViewTags];
 }
 -(NSDictionary *)getCurrentSessionInfo{
     FTRUMViewHandler *view = (FTRUMViewHandler *)[self.viewHandlers lastObject];

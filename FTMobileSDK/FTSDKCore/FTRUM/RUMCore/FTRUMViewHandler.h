@@ -2,7 +2,7 @@
 //  FTRUMViewHandler.h
 //  FTMobileAgent
 //
-//  Created by 胡蕾蕾 on 2021/5/24.
+//  Created by hulilei on 2021/5/24.
 //  Copyright © 2021 hll. All rights reserved.
 //
 
@@ -18,8 +18,6 @@ typedef void(^FTErrorHandled)(void);
 @property (nonatomic, copy) NSString *view_name;
 @property (nonatomic, copy) NSString *view_referrer;
 @property (nonatomic, strong) NSNumber *loading_time;
-/// 当前 view 处理了 error 数据回调
-@property (nonatomic, copy) FTErrorHandled errorHandled;
 
 -(instancetype)initWithModel:(FTRUMViewModel *)model context:(FTRUMContext *)context rumDependencies:(FTRUMDependencies *)rumDependencies;
 @end

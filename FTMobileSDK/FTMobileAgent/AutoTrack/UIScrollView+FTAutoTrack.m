@@ -2,14 +2,15 @@
 //  UIScrollView+FTAutoTrack.m
 //  FTMobileAgent
 //
-//  Created by 胡蕾蕾 on 2021/7/28.
+//  Created by hulilei on 2021/7/28.
 //  Copyright © 2021 DataFlux-cn. All rights reserved.
 //
 
 #import "UIScrollView+FTAutoTrack.h"
 #import "FTSwizzler.h"
-#import "FTTrack.h"
+#import "FTAutoTrackHandler.h"
 #import "UIView+FTAutoTrack.h"
+#import "FTConstants.h"
 
 static void *const kFTCollectionViewDidSelect = (void *)&kFTCollectionViewDidSelect;
 static void *const kFTTableViewDidSelect = (void *)&kFTTableViewDidSelect;
@@ -32,8 +33,9 @@ static void *const kFTTableViewDidSelect = (void *)&kFTTableViewDidSelect;
                                  FTSWReplacement({
                                                      if (tableView && indexPath) {
                                                          UITableViewCell *cell = [tableView cellForRowAtIndexPath:indexPath];
-                                                         if([FTTrack sharedInstance].addRumDatasDelegate && [[FTTrack sharedInstance].addRumDatasDelegate respondsToSelector:@selector(addClickActionWithName:)]){
-                                                             [[FTTrack sharedInstance].addRumDatasDelegate addClickActionWithName:cell.ft_actionName];
+                                                         id<FTUIEventHandler> actionHandler = [FTAutoTrackHandler sharedInstance].actionHandler;
+                                                         if(actionHandler  && [actionHandler respondsToSelector:@selector(notify_sendAction:)]){
+                                                             [actionHandler notify_sendAction:cell];
                                                          }
                                                      }
                                                      FTSWCallOriginal(tableView, indexPath);
@@ -66,8 +68,9 @@ static void *const kFTTableViewDidSelect = (void *)&kFTTableViewDidSelect;
                                  FTSWReplacement({
                                                      if (collectionView && indexPath) {
                                                          UICollectionViewCell *cell = [collectionView cellForItemAtIndexPath:indexPath];
-                                                         if([FTTrack sharedInstance].addRumDatasDelegate && [[FTTrack sharedInstance].addRumDatasDelegate respondsToSelector:@selector(addClickActionWithName:)]){
-                                                             [[FTTrack sharedInstance].addRumDatasDelegate addClickActionWithName:cell.ft_actionName];
+                                                         id<FTUIEventHandler> actionHandler = [FTAutoTrackHandler sharedInstance].actionHandler;
+                                                         if(actionHandler  && [actionHandler respondsToSelector:@selector(notify_sendAction:)]){
+                                                             [actionHandler notify_sendAction:cell];
                                                          }
                                                      }
                                                      FTSWCallOriginal(collectionView, indexPath);

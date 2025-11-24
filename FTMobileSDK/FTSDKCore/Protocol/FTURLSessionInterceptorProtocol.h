@@ -22,58 +22,78 @@
 #define FTURLSessionInterceptorProtocol_h
 #import "FTRumResourceProtocol.h"
 #import "FTTracerProtocol.h"
+@class FTTraceContext;
 NS_ASSUME_NONNULL_BEGIN
 typedef BOOL(^FTIntakeUrl)( NSURL * _Nonnull url);
 typedef BOOL(^FTResourceUrlHandler)( NSURL * _Nonnull url);
-typedef NSDictionary* _Nullable (^ResourcePropertyProvider)( NSURLRequest * _Nullable request, NSURLResponse * _Nullable response,NSData *_Nullable data, NSError *_Nullable error);
+typedef NSDictionary<NSString *,id>* _Nullable (^ResourcePropertyProvider)( NSURLRequest * _Nullable request, NSURLResponse * _Nullable response,NSData *_Nullable data, NSError *_Nullable error);
+/// Support custom trace, return TraceContext after confirming interception, return nil if not intercepted
+typedef FTTraceContext*_Nullable(^TraceInterceptor)(NSURLRequest *_Nonnull request);
+typedef BOOL (^SessionTaskErrorFilter)(NSError *_Nonnull error);
 
-/// session 拦截处理代理
+/// Session interception processing delegate
 @protocol FTURLSessionInterceptorProtocol<NSObject>
 @optional
-/// 用户采集过滤回调
+/// User collection filter callback
 @property (nonatomic, copy ,nullable) FTIntakeUrl intakeUrlHandler;
 @property (nonatomic, copy ,nullable) FTResourceUrlHandler resourceUrlHandler;
+@property (nonatomic, copy ,nullable) TraceInterceptor traceInterceptor;
+@property (nonatomic, copy ,nullable) ResourcePropertyProvider resourcePropertyProvider;
+@property (nonatomic, copy ,nullable) SessionTaskErrorFilter sessionTaskErrorFilter;
 
 
-/// 采集的 resource 数据接收对象
+/// Collected resource data receiver object
 @property (nonatomic, weak) id<FTRumResourceProtocol> rumResourceHandler;
 
 - (void)setTracer:(id<FTTracerProtocol>)tracer;
-/// 实现 trace 功能，给 request header 添加 trace 参数
-/// - Parameter request: http 初始请求
+/// Implement trace function, add trace parameters to request header
+/// - Parameter request: http initial request
 - (NSURLRequest *)interceptRequest:(NSURLRequest *)request;
 
-/// 请求开始 -startResource
+/// Implement trace function, add trace parameters to request header
+/// - Parameter task: request task
+- (void)traceInterceptTask:(NSURLSessionTask *)task;
+
+/// Implement trace function, add trace parameters to request header
+/// - Parameter traceInterceptor: trace interceptor
+- (void)traceInterceptTask:(NSURLSessionTask *)task traceInterceptor:(nullable TraceInterceptor)traceInterceptor;
+
+/// Request start -startResource
 /// - Parameters:
-///   - task: 请求任务
-///   - session: session
+///   - task: request task
 - (void)interceptTask:(NSURLSessionTask *)task;
 
-/// 收集请求的数据信息
+/// Collect request data information
 /// - Parameters:
-///   - task: 请求任务
-///   - metrics: 请求任务的数据记录
+///   - task: request task
+///   - metrics: request task data record
 - (void)taskMetricsCollected:(NSURLSessionTask *)task metrics:(NSURLSessionTaskMetrics *)metrics API_AVAILABLE(ios(10.0),macos(10.12));
-- (void)taskMetricsCollected:(NSURLSessionTask *)task metrics:(NSURLSessionTaskMetrics *)metrics custom:(BOOL)custom API_AVAILABLE(ios(10.0),macos(10.12));
-/// 收集请求的返回数据
-/// - Parameters:
-///   - task: 请求任务
-///   - data: 请求的返回数据
-- (void)taskReceivedData:(NSURLSessionTask *)task data:(NSData *)data;
-/// 请求结束 -stopResource
-/// - Parameters:
-///   - task: 请求任务
-///   - error: error 信息
-///
-/// 传入 rum 时，先调用 -stopResource，再调用 -addResourceWithKey
-- (void)taskCompleted:(NSURLSessionTask *)task error:(nullable NSError *)error ;
 
-/// 请求结束 -stopResource
+/// Collect request data information
 /// - Parameters:
-///   - task: 请求任务
-///   - error: error 信息
-///   - extraProvider: 用户自定义额外信息
-- (void)taskCompleted:(NSURLSessionTask *)task error:(nullable NSError *)error extraProvider:(nullable ResourcePropertyProvider)extraProvider;
+///   - task: request task
+///   - metrics: request task data record
+///   - custom: whether it is a custom collected URLSession
+- (void)taskMetricsCollected:(NSURLSessionTask *)task metrics:(NSURLSessionTaskMetrics *)metrics custom:(BOOL)custom API_AVAILABLE(ios(10.0),macos(10.12));
+/// Collect request return data
+/// - Parameters:
+///   - task: request task
+///   - data: request return data
+- (void)taskReceivedData:(NSURLSessionTask *)task data:(NSData *)data;
+/// Request end -stopResource
+/// - Parameters:
+///   - task: request task
+///   - error: error information
+///
+/// When passing to rum, first call -stopResource, then call -addResourceWithKey
+- (void)taskCompleted:(NSURLSessionTask *)task error:(nullable NSError *)error;
+
+/// Request end -stopResource
+/// - Parameters:
+///   - task: request task
+///   - error: error information
+///   - extraProvider: user custom additional information
+- (void)taskCompleted:(NSURLSessionTask *)task error:(nullable NSError *)error extraProvider:(nullable ResourcePropertyProvider)extraProvider errorFilter:(nullable SessionTaskErrorFilter)errorFilter;
 @end
 NS_ASSUME_NONNULL_END
 #endif /* FTURLSessionInterceptorProtocol_h */

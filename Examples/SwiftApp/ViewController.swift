@@ -24,13 +24,12 @@ class ViewController: UIViewController,UITableViewDelegate,UITableViewDataSource
     override func viewDidLoad() {
         super.viewDidLoad()
         self.navigationItem.title = "Home"
-        self.view.backgroundColor = UIColor.white
         // Do any additional setup after loading the view.
         createUI()
     }
     
     func createUI(){
-        dataSource = ["绑定用户","解绑用户","日志输出","手动采集网络链路追踪","手动采集RUM数据采集"]
+        dataSource = ["Bind User","Unbind User","Log Output","Manual Network Link Tracing","Manual RUM Data Collection"]
         self.view.addSubview(tableView)
     }
     
@@ -48,7 +47,7 @@ class ViewController: UIViewController,UITableViewDelegate,UITableViewDataSource
         case 0:
             FTMobileAgent.sharedInstance().bindUser(withUserID: "test_user_id_1", userName: "test_user", userEmail: "test@test.com", extra: ["user_age":20])
         case 1:
-            FTMobileAgent.sharedInstance().logout()
+            FTMobileAgent.sharedInstance().unbindUser()
         case 2:
             self.navigationController?.pushViewController(LogViewController.init(), animated: true)
         case 3:

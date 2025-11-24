@@ -20,7 +20,7 @@
 #import "NSString+FTAdd.h"
 #import "FTPresetProperty.h"
 #import "FTRequest.h"
-#import "FTNetworkManager.h"
+#import "FTHTTPClient.h"
 #import "FTModelHelper.h"
 #import "FTGlobalRumManager.h"
 #import "FTRUMManager.h"

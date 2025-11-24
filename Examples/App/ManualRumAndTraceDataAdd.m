@@ -2,7 +2,7 @@
 //  ManualRumAndTraceDataAdd.m
 //  App
 //
-//  Created by 胡蕾蕾 on 2021/12/3.
+//  Created by hulilei on 2021/12/3.
 //  Copyright © 2021 DataFlux-cn. All rights reserved.
 //
 
@@ -39,7 +39,7 @@
         [weakSelf manualTrace];
     }];
     TableViewCellItem *item2 = [[TableViewCellItem alloc]initWithTitle:@"RUM startView" handler:^{
-        // duration 以纳秒为单位 示例中为 1s
+        // duration in nanoseconds, example is 1s
         [[FTExternalDataManager sharedManager] startViewWithName:@"TestVC"];
     }];
     TableViewCellItem *item3 = [[TableViewCellItem alloc]initWithTitle:@"RUM stopView" handler:^{
@@ -47,7 +47,7 @@
         [[FTExternalDataManager sharedManager] stopView];
     }];
     TableViewCellItem *item4 = [[TableViewCellItem alloc]initWithTitle:@"RUM addAction" handler:^{
-        [[FTExternalDataManager sharedManager]  addClickActionWithName:@"UITableViewCell click"];
+        [[FTExternalDataManager sharedManager] startAction:@"UITableViewCell click" actionType:@"click" property:nil];
     }];
     TableViewCellItem *item5 = [[TableViewCellItem alloc]initWithTitle:@"RUM addError" handler:^{
         [[FTExternalDataManager sharedManager] addErrorWithType:@"ios_crash" state:FTAppStateUnknown message:@"crash_message" stack:@"crash_stack" property:nil];
@@ -73,7 +73,7 @@
 
     NSURL *url = [NSURL URLWithString:urlStr];
     NSDictionary *traceHeader = [[FTExternalDataManager sharedManager] getTraceHeaderWithKey:key url:url];
-    // 上面方法已废弃，使用下面方法进行替换
+    // The above method is deprecated, use the method below instead
     //    NSDictionary *traceHeader = [[FTExternalDataManager sharedManager] getTraceHeaderWithKey:key url:url];
     NSMutableURLRequest *request = [NSMutableURLRequest requestWithURL:url];
     if (traceHeader && traceHeader.allKeys.count>0) {

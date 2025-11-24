@@ -2,35 +2,32 @@
 //  FTWKWebViewHandler.h
 //  FTMobileAgent
 //
-//  Created by 胡蕾蕾 on 2020/9/16.
+//  Created by hulilei on 2020/9/16.
 //  Copyright © 2020 hll. All rights reserved.
 //
-
 #import <Foundation/Foundation.h>
+#if !TARGET_OS_TV
 #import <WebKit/WebKit.h>
-#import "FTURLSessionInterceptorProtocol.h"
 NS_ASSUME_NONNULL_BEGIN
-/// webView 添加  web 端 rum 数据
-@protocol FTWKWebViewRumDelegate <NSObject>
-@optional
 
--(void)ftAddScriptMessageHandlerWithWebView:(WKWebView *)webView;
+/// Handle WKWebView RUM events and associate with native RUM sessions
+@interface FTWKWebViewHandler : NSObject
 
-@end
-/// 处理 WKWebView Trace、js 交互
-@interface FTWKWebViewHandler : NSObject<WKNavigationDelegate>
-@property (nonatomic, assign) BOOL enableTrace;
-@property (nonatomic, weak) id<FTWKWebViewRumDelegate> rumTrackDelegate;
-@property (nonatomic, weak) id<FTURLSessionInterceptorProtocol> interceptor;
 + (instancetype)sharedInstance;
 
-- (void)reloadWebView:(WKWebView *)webView completionHandler:(void (^)(NSURLRequest *request,BOOL needTrace))completionHandler;
+/// Enable the SDK to associate RUM events from WebView with native RUM sessions.
+/// Note: Must be used before the webView page loads, otherwise the current loading page won't take effect, only the next page load or navigation will take effect.
+/// - Parameter webView: webView to be collected
+- (void)enableWebView:(WKWebView *)webView;
 
-- (void)addWebView:(WKWebView *)webView request:(NSURLRequest *)request;
+/// Enable the SDK to associate RUM events from WebView with native RUM sessions.
+/// Note: Must be used before the webView page loads, otherwise the current loading page won't take effect, only the next page load or navigation will take effect.
+/// - Parameters:
+///   - webView: webView to be collected
+///   - hosts: array of host addresses using Web SDK for detection.
+- (void)enableWebView:(WKWebView *)webView allowWebViewHost:(NSArray *)hosts;
 
-- (void)removeWebView:(WKWebView *)webView;
-
-- (void)addScriptMessageHandlerWithWebView:(WKWebView *)webView;
 @end
 
 NS_ASSUME_NONNULL_END
+#endif

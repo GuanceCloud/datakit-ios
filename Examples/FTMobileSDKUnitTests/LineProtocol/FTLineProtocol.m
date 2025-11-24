@@ -18,7 +18,7 @@
 #import "NSString+FTAdd.h"
 //#import "FTBaseInfoHander.h"
 #import "FTRequest.h"
-#import "FTNetworkManager.h"
+#import "FTHTTPClient.h"
 #import "FTRequestBody.h"
 #import "FTModelHelper.h"
 #import "FTEnumConstant.h"
@@ -257,15 +257,15 @@
     NSString *timeStr = [array lastObject];
     XCTAssertTrue([self isNum:timeStr] && [timeStr longLongValue] == time);
 }
-// message 实际为 "\"
+// message actually is "\"
 - (void)testFieldValueHasTransliteration1{
     [self transliteration:@"\\" expect:@"\\\\"];
 }
-// message 实际为 "\\"
+// message actually is "\\"
 - (void)testFieldValueHasTransliteration2{
     [self transliteration:@"\\\\" expect:@"\\\\\\\\"];
 }
-// message 实际为 "\\\"
+// message actually is "\\\"
 - (void)testFieldValueHasTransliteration3{
     [self transliteration:@"\\\\\\" expect:@"\\\\\\\\\\\\"];
 }
@@ -291,7 +291,7 @@
 - (void)sdkDataEnableIntegerCompatible:(BOOL)enable{
     NSProcessInfo *processInfo = [NSProcessInfo processInfo];
     NSString *url = [processInfo environment][@"ACCESS_SERVER_URL"];
-    [[FTTrackerEventDBTool sharedManger] deleteItemWithTm:[NSDate ft_currentNanosecondTimeStamp]];
+    [[FTTrackerEventDBTool sharedManger] deleteAllDatas];
     FTMobileConfig *config = [[FTMobileConfig alloc]initWithDatakitUrl:url];
     config.autoSync = NO;
     config.enableDataIntegerCompatible = enable;
@@ -427,7 +427,7 @@
 - (void)transliteration:(NSString *)str expect:(NSString *)expect{
     NSProcessInfo *processInfo = [NSProcessInfo processInfo];
     NSString *url = [processInfo environment][@"ACCESS_SERVER_URL"];
-    [[FTTrackerEventDBTool sharedManger] deleteItemWithTm:[NSDate ft_currentNanosecondTimeStamp]];
+    [[FTTrackerEventDBTool sharedManger] deleteAllDatas];
     FTMobileConfig *config = [[FTMobileConfig alloc]initWithDatakitUrl:url];
     config.autoSync = NO;
     FTLoggerConfig *loggerConfig = [[FTLoggerConfig alloc]init];
@@ -435,7 +435,7 @@
     [FTMobileAgent startWithConfigOptions:config];
     [[FTMobileAgent sharedInstance] startLoggerWithConfigOptions:loggerConfig];
 
-//    XCTestExpectation *expectation= [self expectationWithDescription:@"异步操作timeout"];
+//    XCTestExpectation *expectation= [self expectationWithDescription:@"Async operation timeout"];
     FTRecordModel *model = [FTModelHelper createLogModel:str];
     FTRequestLineBody *line = [[FTRequestLineBody alloc]init];
     
@@ -445,7 +445,7 @@
         NSString *message = [NSString stringWithFormat:@"message=\"%@\"",expect];
         XCTAssertTrue([array[1] isEqualToString:message]);
     }
-    [[FTMobileAgent sharedInstance] shutDown];
+    [FTMobileAgent shutDown];
 //    FTRequest *request = [FTRequest createRequestWithEvents:@[model] type:FT_DATA_TYPE_LOGGING];
 //    [[FTNetworkManager sharedInstance] sendRequest:request completion:^(NSHTTPURLResponse * _Nonnull httpResponse, NSData * _Nullable data, NSError * _Nullable error) {
 //        if(!error){

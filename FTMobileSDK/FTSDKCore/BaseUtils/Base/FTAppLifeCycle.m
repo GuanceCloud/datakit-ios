@@ -2,11 +2,18 @@
 //  FTAppLifeCycle.m
 //  FTMacOSSDK-framework
 //
-//  Created by 胡蕾蕾 on 2021/9/17.
+//  Created by hulilei on 2021/9/17.
 //
 
 #import "FTAppLifeCycle.h"
 #import "FTSDKCompat.h"
+#if FT_MAC
+    #import <AppKit/AppKit.h>
+#else
+    #if FT_HAS_UIKIT
+        #import <UIKit/UIKit.h>
+    #endif
+#endif
 @interface FTAppLifeCycle()
 @property(strong, nonatomic, readonly) NSPointerArray *appLifecycleDelegates;
 @property(strong, nonatomic, readonly) NSLock *delegateLock;
@@ -55,7 +62,7 @@
     [notification addObserver:self selector:@selector(applicationWillResignActive:) name:NSApplicationWillResignActiveNotification object:[NSApplication sharedApplication]];
     
     [notification addObserver:self selector:@selector(applicationWillTerminate:) name:NSApplicationWillTerminateNotification object:[NSApplication sharedApplication]];
-#elif FT_IOS
+#elif FT_HAS_UIKIT
     [notification addObserver:self
                            selector:@selector(applicationWillEnterForeground:)
                                name:UIApplicationWillEnterForegroundNotification
@@ -105,7 +112,7 @@
     }
     [self.delegateLock unlock];
 }
-#if FT_IOS
+#if FT_HAS_UIKIT
 - (void)applicationWillEnterForeground:(NSNotification *)notification{
     [self.delegateLock lock];
     for (id delegate in self.appLifecycleDelegates) {

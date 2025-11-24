@@ -10,7 +10,7 @@
 #import <FTConstants.h>
 #import "NSDate+FTUtil.h"
 #import <FTEnumConstant.h>
-#import "FTMobileSDK.h"
+#import "FTMobileAgent.h"
 #import "FTJSONUtil.h"
 #import "FTBaseInfoHandler.h"
 @implementation FTModelHelper
@@ -23,6 +23,20 @@
     NSDictionary *tagDict = @{FT_KEY_STATUS:FTStatusStringMap[FTStatusInfo]};
 
     FTRecordModel *model = [[FTRecordModel alloc]initWithSource:FT_LOGGER_SOURCE op:FT_DATA_TYPE_LOGGING tags:tagDict fields:filedDict tm:[NSDate ft_currentNanosecondTimeStamp]];
+    return model;
+}
++ (FTRecordModel *)createRUMModel:(NSString *)message{
+    NSDictionary *field = @{ FT_KEY_ERROR_MESSAGE:message,
+                             FT_KEY_ERROR_STACK:@"rum_model_create",
+    };
+    NSDictionary *tags = @{
+        FT_KEY_ERROR_TYPE:@"ios_crash",
+        FT_KEY_ERROR_SOURCE:@"logger",
+        FT_KEY_ERROR_SITUATION:AppStateStringMap[FTAppStateRun],
+        FT_RUM_KEY_SESSION_ID:[FTBaseInfoHandler randomUUID],
+        FT_RUM_KEY_SESSION_TYPE:@"user",
+    };
+    FTRecordModel *model = [[FTRecordModel alloc]initWithSource:FT_RUM_SOURCE_ERROR op:FT_DATA_TYPE_RUM tags:tags fields:field tm:[NSDate ft_currentNanosecondTimeStamp]];
     return model;
 }
 + (FTRecordModel *)createRumModel{
@@ -47,7 +61,19 @@
         FT_RUM_KEY_SESSION_ID:[FTBaseInfoHandler randomUUID],
         FT_RUM_KEY_SESSION_TYPE:@"user",
     };
-    FTRecordModel *model = [[FTRecordModel alloc]initWithSource:FT_RUM_SOURCE_ERROR op:FT_DATA_TYPE_RUM tags:tags fields:nil tm:[NSDate ft_currentNanosecondTimeStamp]];
+    FTRecordModel *model = [[FTRecordModel alloc]init];
+    model.op = @"logger";
+    NSDictionary *opData = @{
+        FT_KEY_SOURCE:@"logger",
+        FT_FIELDS:@{},
+        FT_TAGS:tags,
+        FT_TIME:@(model.tm)
+    };
+    NSDictionary *data =@{FT_OP:@"logger",
+                          FT_OPDATA:opData,
+    };
+   
+    model.data = [FTJSONUtil convertToJsonData:data];
     return model;
 }
 + (void)startView{
@@ -80,14 +106,14 @@
     [[FTExternalDataManager sharedManager] stopResourceWithKey:key];
     [[FTExternalDataManager sharedManager] addResourceWithKey:key metrics:nil content:model];
 }
-+ (void)addAction{
++ (void)startAction{
     [[FTExternalDataManager sharedManager] addClickActionWithName:@"testActionClick" property:nil];
 }
-+ (void)addActionWithType:(NSString *)type{
-    [[FTExternalDataManager sharedManager] addActionName:@"testActionClick2" actionType:type property:nil];
++ (void)startActionWithType:(NSString *)type{
+    [[FTExternalDataManager sharedManager] startAction:@"testActionClick2" actionType:type property:nil];
 }
 + (void)addActionWithContext:(NSDictionary *)context{
-    [[FTExternalDataManager sharedManager] addClickActionWithName:@"testActionWithContext" property:context];
+    [[FTExternalDataManager sharedManager] addAction:@"testActionWithContext" actionType:@"click" property:context];
 }
 + (void)resolveModelArray:(NSArray *)modelArray callBack:(void(^)(NSString *source,NSDictionary *tags,NSDictionary *fields,BOOL *stop))callBack{
     [modelArray enumerateObjectsWithOptions:NSEnumerationReverse usingBlock:^(FTRecordModel *obj, NSUInteger idx, BOOL * _Nonnull stop) {
@@ -108,8 +134,9 @@
         NSString *source = opdata[@"source"];
         NSDictionary *tags = opdata[FT_TAGS];
         NSDictionary *fields = opdata[FT_FIELDS];
+        NSNumber *time = opdata[FT_TIME];
         if(callBack){
-            callBack(source,tags,fields,obj.tm,stop);
+            callBack(source,tags,fields,[time longLongValue],stop);
         }
     }];
 }
@@ -134,6 +161,18 @@
         NSDictionary *fields = opdata[FT_FIELDS];
         if(callBack){
             callBack(source,tags,fields,stop,obj._id);
+        }
+    }];
+}
++ (void)resolveModelArray:(NSArray *)modelArray dataTypeCallBack:(void(^)(NSString *source,NSDictionary *tags,NSDictionary *fields,NSString *type,BOOL *stop))callBack{
+    [modelArray enumerateObjectsWithOptions:NSEnumerationReverse usingBlock:^(FTRecordModel *obj, NSUInteger idx, BOOL * _Nonnull stop) {
+        NSDictionary *dict = [FTJSONUtil dictionaryWithJsonString:obj.data];
+        NSDictionary *opdata = dict[@"opdata"];
+        NSString *source = opdata[@"source"];
+        NSDictionary *tags = opdata[FT_TAGS];
+        NSDictionary *fields = opdata[FT_FIELDS];
+        if(callBack){
+            callBack(source,tags,fields,obj.op,stop);
         }
     }];
 }

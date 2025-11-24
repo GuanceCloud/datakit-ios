@@ -2,7 +2,7 @@
 //  FTExternalResourceManager.m
 //  FTMobileAgent
 //
-//  Created by 胡蕾蕾 on 2021/11/22.
+//  Created by hulilei on 2021/11/22.
 //  Copyright © 2021 DataFlux-cn. All rights reserved.
 //
 
@@ -12,6 +12,7 @@
 #import "FTLog+Private.h"
 #import "NSDate+FTUtil.h"
 #import "NSDictionary+FTCopyProperties.h"
+#import "FTConstants.h"
 @interface FTExternalDataManager()
 @property (nonatomic, weak) id <FTRumDatasProtocol> delegate;
 @property (nonatomic, weak) id <FTExternalResourceProtocol> resourceDelegate;
@@ -48,6 +49,11 @@
         [self.delegate startViewWithName:viewName property:copyDict];
     }
 }
+-(void)updateViewLoadingTime:(NSNumber *)duration{
+    if(self.delegate && [self.delegate respondsToSelector:@selector(updateViewLoadingTime:)]){
+        [self.delegate updateViewLoadingTime:duration];
+    }
+}
 -(void)stopView{
     if(self.delegate && [self.delegate respondsToSelector:@selector(stopView)]){
         [self.delegate stopView];
@@ -59,26 +65,28 @@
         [self.delegate stopViewWithProperty:copyDict];
     }
 }
-- (void)addClickActionWithName:(NSString *)actionName {
-    if(self.delegate && [self.delegate respondsToSelector:@selector(addClickActionWithName:)]){
-        [self.delegate addClickActionWithName:actionName];
+- (void)startAction:(NSString *)actionName actionType:(NSString *)actionType property:(nullable NSDictionary *)property{
+    NSDictionary *copyDict = [property ft_deepCopy];
+    if(self.delegate && [self.delegate respondsToSelector:@selector(startAction:actionType:property:)]){
+        [self.delegate startAction:actionName actionType:actionType property:copyDict];
     }
+}
+- (void)addClickActionWithName:(NSString *)actionName {
+    [self startAction:actionName actionType:FT_KEY_ACTION_TYPE_CLICK property:nil];
 }
 -(void)addClickActionWithName:(NSString *)actionName property:(NSDictionary *)property{
-    NSDictionary *copyDict = [property ft_deepCopy];
-    if(self.delegate && [self.delegate respondsToSelector:@selector(addClickActionWithName:property:)]){
-        [self.delegate addClickActionWithName:actionName property:copyDict];
-    }
+    [self startAction:actionName actionType:FT_KEY_ACTION_TYPE_CLICK property:property];
 }
 - (void)addActionName:(NSString *)actionName actionType:(NSString *)actionType{
-    if(self.delegate && [self.delegate respondsToSelector:@selector(addActionName:actionType:)]){
-        [self.delegate addActionName:actionName actionType:actionType];
-    }
+    [self startAction:actionName actionType:actionType property:nil];
 }
 -(void)addActionName:(NSString *)actionName actionType:(NSString *)actionType property:(NSDictionary *)property{
+    [self startAction:actionName actionType:actionType property:property];
+}
+- (void)addAction:(NSString *)actionName actionType:(NSString *)actionType property:(nullable NSDictionary *)property{
     NSDictionary *copyDict = [property ft_deepCopy];
-    if(self.delegate && [self.delegate respondsToSelector:@selector(addActionName:actionType:property:)]){
-        [self.delegate addActionName:actionName actionType:actionType property:copyDict];
+    if(self.delegate && [self.delegate respondsToSelector:@selector(addAction:actionType:property:)]){
+        [self.delegate addAction:actionName actionType:actionType property:copyDict];
     }
 }
 - (void)addErrorWithType:(NSString *)type message:(NSString *)message stack:(NSString *)stack{

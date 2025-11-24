@@ -3,7 +3,7 @@ Pod::Spec.new do |s|
 	s.name         = "FTMobileSDK"
 	#s.version      = "1.4.11-alpha.1"
 	s.version      = "$JENKINS_DYNAMIC_VERSION"
-	s.summary      = "观测云 iOS 数据采集 SDK"
+	s.summary      = "Guance Cloud iOS Data Collection SDK"
 	#s.description  = ""
 	s.homepage     = "https://github.com/GuanceCloud/datakit-ios.git"
 
@@ -13,7 +13,9 @@ Pod::Spec.new do |s|
 
 	s.ios.deployment_target = '10.0'
 	s.osx.deployment_target = '10.13'
-	#$JENKINS_DYNAMIC_VERSION 替换成 "#{s.version}" 会在 pod valid 阶段报错
+	s.tvos.deployment_target = '12.0'
+
+	#$JENKINS_DYNAMIC_VERSION replacing "#{s.version}" will cause an error during pod valid phase
 	s.source       = { :git => "https://github.com/GuanceCloud/datakit-ios.git", :tag => "$JENKINS_DYNAMIC_VERSION" }
 
     s.resource_bundle = {
@@ -21,8 +23,9 @@ Pod::Spec.new do |s|
     }
 
 	s.subspec  'FTMobileAgent' do | agent |
-		agent.platform = :ios, '10.0'
-
+		core_path='FTMobileSDK/FTMobileAgent/'
+		agent.ios.deployment_target = '10.0'
+		agent.tvos.deployment_target = '12.0'
 		agent.source_files =  'FTMobileSDK/FTMobileAgent/**/*{.h,.m}'
 		agent.dependency  'FTMobileSDK/FTSDKCore'
 
@@ -40,12 +43,12 @@ Pod::Spec.new do |s|
 	s.subspec 'FTSDKCore' do |c|
 		c.ios.deployment_target = '10.0'
 		c.osx.deployment_target = '10.13'
+	  c.tvos.deployment_target = '12.0'
 
 		c.subspec 'FTRUM' do |r|
 			core_path='FTMobileSDK/FTSDKCore/FTRUM/'
-			r.source_files = core_path+'RUMCore/**/*{.h,.m}',core_path+'Monitor/*{.h,.m}',core_path+'Crash/**/*{.h,.m,.c}',core_path+'FTAppLaunchTracker.{h,m}'
+			r.source_files = core_path + "**/*.{h,m,c}"
 			r.dependency 'FTMobileSDK/FTSDKCore/BaseUtils/Base'
-			r.dependency 'FTMobileSDK/FTSDKCore/BaseUtils/Thread'
 			r.dependency 'FTMobileSDK/FTSDKCore/Protocol'
 		end
 
@@ -58,15 +61,22 @@ Pod::Spec.new do |s|
 		c.subspec 'Protocol' do |r|
 			r.source_files = 'FTMobileSDK/FTSDKCore/Protocol/**/*{.h,.m}'
 		end
-
+    
+    c.subspec 'RemoteConfig' do |r|
+    	r.source_files = 'FTMobileSDK/FTSDKCore/RemoteConfig/*{.h,.m}'
+    	r.dependency 'FTMobileSDK/FTSDKCore/DataManager'
+    end
+    	
 		c.subspec 'BaseUtils' do |b|
 
 			b.subspec 'Base' do |bb|
-				bb.source_files = 'FTMobileSDK/FTSDKCore/BaseUtils/Base/**/*{.h,.m}'
+				bb.source_files = 'FTMobileSDK/FTSDKCore/BaseUtils/Base/**/*{.h,.m,.c}'
+				bb.dependency 'FTMobileSDK/FTSDKCore/BaseUtils/Thread'
+
 			end
 
 			b.subspec 'Thread' do |bb|
-				bb.source_files = 'FTMobileSDK/FTSDKCore/BaseUtils/Thread/*{.h,.m}'
+				bb.source_files = 'FTMobileSDK/FTSDKCore/BaseUtils/Thread/**/*{.h,.m}'
 			end
 
 			b.subspec 'Swizzle' do |bb|
@@ -84,6 +94,9 @@ Pod::Spec.new do |s|
 		end
 
 		c.subspec 'FTWKWebView' do |j|
+			j.ios.deployment_target = '10.0'
+		  j.osx.deployment_target = '10.13'
+
 			j.source_files = 'FTMobileSDK/FTSDKCore/FTWKWebView/**/*{.h,.m}'
 			j.dependency 'FTMobileSDK/FTSDKCore/Protocol'
 			j.dependency 'FTMobileSDK/FTSDKCore/BaseUtils/Swizzle'
@@ -93,8 +106,7 @@ Pod::Spec.new do |s|
 			bb.source_files =  'FTMobileSDK/FTSDKCore/DataManager/**/*{.h,.m}'
 			bb.dependency 'FTMobileSDK/FTSDKCore/BaseUtils/Thread'
 			bb.dependency 'FTMobileSDK/FTSDKCore/BaseUtils/Base'
+			bb.dependency 'FTMobileSDK/FTSDKCore/Protocol'
 		end
 	end
 end
-
-

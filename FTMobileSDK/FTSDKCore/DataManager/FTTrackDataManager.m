@@ -2,95 +2,153 @@
 //  FTTrackDataManager.m
 //  FTMacOSSDK
 //
-//  Created by 胡蕾蕾 on 2021/8/4.
+//  Created by hulilei on 2021/8/4.
 //  Copyright © 2021 DataFlux-cn. All rights reserved.
 //
-
 #import "FTTrackDataManager.h"
 #import "FTRecordModel.h"
-#import "FTReachability.h"
+#import "FTNetworkConnectivity.h"
 #import "FTTrackerEventDBTool.h"
 #import "FTLog+Private.h"
 #import "FTRequest.h"
-#import "FTNetworkManager.h"
+#import "FTHTTPClient.h"
 #import "FTAppLifeCycle.h"
 #import "FTConstants.h"
 #import <pthread.h>
 #import "FTBaseInfoHandler.h"
-#import "FTLogDataCache.h"
+#import "FTDBDataCachePolicy.h"
 #import "FTJSONUtil.h"
-@interface FTTrackDataManager ()<FTAppLifeCycleDelegate>{
-    pthread_rwlock_t _uploadWorkLock;
-}
-@property (atomic, assign) BOOL isUploading;
-@property (nonatomic, strong) dispatch_queue_t networkQueue;
-/// 是否开启自动上传逻辑（启动时、网络状态变化、写入间隔10s）
+#import "FTRUMDataWriteProtocol.h"
+#import "FTDataUploadWorker.h"
+#import "FTDataWriterWorker.h"
+#import "FTNetworkInfoManager.h"
+@interface FTTrackDataManager ()<FTAppLifeCycleDelegate,FTNetworkChangeObserver>
+/// Whether to enable automatic upload logic (on startup, network status changes, write interval 10s)
 @property (atomic, assign) BOOL autoSync;
-/// 一次上传数据数量
-@property (atomic, assign) int uploadPageSize;
-@property (atomic, assign) int syncSleepTime;
-@property (nonatomic, strong) FTNetworkManager *networkManager;
-@property (nonatomic, strong) FTLogDataCache *logDataCache;
+@property (nonatomic, strong) FTDBDataCachePolicy *dataCachePolicy;
 @property (nonatomic, strong) dispatch_block_t uploadWork;
-@property (atomic, assign) NSTimeInterval lastDataDate;
+@property (nonatomic, strong) dispatch_source_t timerSource;
+@property (nonatomic, strong) FTDataUploadWorker *dataUploadWorker;
 @end
 @implementation FTTrackDataManager
 @synthesize uploadWork = _uploadWork;
+@synthesize timerSource = _timerSource;
 
-static  FTTrackDataManager *sharedInstance;
-static dispatch_once_t onceToken;
-
+static NSObject *sharedInstanceLock;
+static FTTrackDataManager *sharedInstance = nil;
++ (void)initialize{
+    if (self == [FTTrackDataManager class]) {
+        sharedInstanceLock = [[NSObject alloc] init];
+    }
+}
 +(instancetype)sharedInstance{
-    if(!sharedInstance){
-        sharedInstance = [self startWithAutoSync:NO syncPageSize:10 syncSleepTime:0];
+    @synchronized(sharedInstanceLock) {
+        if(!sharedInstance){
+            FTInnerLogError(@"FTTrackDataManager not initialize or SDK already shutDown");
+        }
+        return sharedInstance;
     }
     return sharedInstance;
 }
 +(instancetype)startWithAutoSync:(BOOL)autoSync syncPageSize:(int)syncPageSize syncSleepTime:(int)syncSleepTime{
-    dispatch_once(&onceToken, ^{
+    @synchronized(sharedInstanceLock) {
         sharedInstance = [[FTTrackDataManager alloc]initWithAutoSync:autoSync syncPageSize:syncPageSize syncSleepTime:syncSleepTime];
-    });
+    }
     return sharedInstance;
 }
--(instancetype)initWithAutoSync:(BOOL)autoSync syncPageSize:(int)syncPageSize syncSleepTime:(int)syncSleepTime{
+-(instancetype)initWithAutoSync:(BOOL)autoSync
+                   syncPageSize:(int)syncPageSize
+                  syncSleepTime:(int)syncSleepTime{
     self = [super init];
     if (self) {
-        NSString *serialLabel = @"com.guance.network";
-        _networkQueue = dispatch_queue_create_with_target([serialLabel UTF8String], DISPATCH_QUEUE_SERIAL, dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_LOW, 0));
-        _autoSync = autoSync;
-        _uploadPageSize = syncPageSize;
-        _syncSleepTime = syncSleepTime;
-        _networkManager = [[FTNetworkManager alloc]initWithTimeoutIntervalForRequest:syncPageSize>30?syncPageSize:30];
-        _logDataCache = [[FTLogDataCache alloc]init];
-        pthread_rwlock_init(&_uploadWorkLock, NULL);
-        [self listenNetworkChangeAndAppLifeCycle];
-        if(autoSync){
-            [self createUploadDelayTimer];
-        }
+        _dataCachePolicy = [[FTDBDataCachePolicy alloc]init];
+        __weak typeof(self) weakSelf = self;
+        _dataCachePolicy.callback = ^{
+            __strong typeof(weakSelf) strongSelf = weakSelf;
+            if (!strongSelf) return;
+            if (strongSelf.autoSync){
+                [strongSelf.dataUploadWorker flushWithSleep:YES];
+            };
+        };
+        _dataUploadWorker = [[FTDataUploadWorker alloc]initWithSyncPageSize:syncPageSize syncSleepTime:syncSleepTime];
+        _dataWriterWorker = [[FTDataWriterWorker alloc]init];
+        _dataUploadWorker.errorSampledConsume = _dataWriterWorker;
+        _dataUploadWorker.counter = _dataCachePolicy;
+        [[FTNetworkConnectivity sharedInstance] start];
+        [[FTAppLifeCycle sharedInstance] addAppLifecycleDelegate:self];
+        [FTTrackerEventDBTool sharedManger];
+        [self enableAutoSync:autoSync];
     }
     return self;
 }
-//监听网络状态 网络连接成功 触发一次上传操作
-- (void)listenNetworkChangeAndAppLifeCycle{
-    [[FTReachability sharedInstance] startNotifier];
-    [[FTAppLifeCycle sharedInstance] addAppLifecycleDelegate:self];
-    if(_autoSync){
-        __weak typeof(self) weakSelf = self;
-        [FTReachability sharedInstance].networkChanged = ^(){
-            if([FTReachability sharedInstance].isReachable){
-                [weakSelf uploadTrackData];
-            }
-        };
+
+-(FTHTTPClient *)httpClient{
+    return _dataUploadWorker.httpClient;
+}
+- (void)enableAutoSync:(BOOL)autoSync{
+    self.autoSync = autoSync;
+    if (autoSync) {
+        [[FTNetworkConnectivity sharedInstance] addNetworkObserver:self];
+    }else{
+        [self.dataUploadWorker cancelAsynchronously];
+        [[FTNetworkConnectivity sharedInstance] removeNetworkObserver:self];
     }
 }
-- (void)setLogCacheLimitCount:(int)count logDiscardNew:(BOOL)discardNew{
-    self.logDataCache.logCacheLimitCount = count;
-    self.logDataCache.discardNew = discardNew;
+- (void)updateAutoSync:(BOOL)autoSync
+          syncPageSize:(int)syncPageSize
+         syncSleepTime:(int)syncSleepTime{
+    [self enableAutoSync:autoSync];
+    [self.dataUploadWorker updateSyncPageSize:syncPageSize syncSleepTime:syncSleepTime];
 }
+-(void)setEnableLimitWithDb:(BOOL)enable size:(long)size discardNew:(BOOL)discardNew{
+    [[FTTrackerEventDBTool sharedManger] setEnableLimitWithDbSize:enable];
+    if (enable) {
+        [self.dataCachePolicy setDBLimitWithSize:size discardNew:discardNew];
+    }
+}
+- (void)setLogCacheLimitCount:(int)count discardNew:(BOOL)discardNew{
+    [self.dataCachePolicy setLogCacheLimitCount:count discardNew:discardNew];
+}
+- (void)setRUMCacheLimitCount:(int)count discardNew:(BOOL)discardNew{
+    [self.dataCachePolicy setRumCacheLimitCount:count discardNew:discardNew];
+}
+- (void)addTrackData:(FTRecordModel *)data type:(FTAddDataType)type{
+    if (data == nil) {
+        return;
+    }
+    //Data writing doesn't need additional thread processing, data collection combinations except crash data are all performed in sub-threads
+    BOOL insertItemResult = NO;
+    switch (type) {
+        case FTAddDataRUMCache:
+            insertItemResult = [[FTTrackerEventDBTool sharedManger] insertItem:data];
+            break;
+        case FTAddDataLogging:
+            [self.dataCachePolicy addLogData:data];
+            break;
+        case FTAddDataRUM:
+            insertItemResult = [self.dataCachePolicy addRumData:data];
+            break;
+    }
+    if(self.autoSync&&[self.dataCachePolicy reachHalfLimit]){
+        FTInnerLogDebug(@"[NETWORK] reachHalfLimit start uploading");
+        [self flushSyncData];
+        return;
+    }
+    if(self.autoSync && insertItemResult){
+        [self.dataUploadWorker flushWithSleep:YES];
+    }
+}
+#pragma mark - Network Change Observer -
+- (void)connectivityChanged:(BOOL)connected typeDescription:(NSString *)typeDescription{
+    if (connected){
+        [self.dataUploadWorker flushWithSleep:YES];
+    }
+}
+#pragma mark - App Life Cycle-
 -(void)applicationDidBecomeActive{
     @try {
         if(self.autoSync){
-            [self uploadTrackData];
+            [self.dataUploadWorker flushWithSleep:YES];
         }
     }
     @catch (NSException *exception) {
@@ -99,7 +157,7 @@ static dispatch_once_t onceToken;
 }
 -(void)applicationWillResignActive{
     @try {
-        [self.logDataCache insertCacheToDB];
+        [self.dataCachePolicy insertCacheToDB];
     }
     @catch (NSException *exception) {
         FTInnerLogError(@"applicationWillResignActive exception %@",exception);
@@ -107,175 +165,27 @@ static dispatch_once_t onceToken;
 }
 -(void)applicationWillTerminate{
     @try {
-        [self.logDataCache insertCacheToDB];
+        [self.dataCachePolicy insertCacheToDB];
     } @catch (NSException *exception) {
         FTInnerLogError(@"exception %@",exception);
     }
 }
-- (void)addTrackData:(FTRecordModel *)data type:(FTAddDataType)type{
-    //数据写入不用做额外的线程处理，数据采集组合除了崩溃数据，都是在子线程进行的
-    switch (type) {
-        case FTAddDataLogging:
-            [self.logDataCache addLogData:data];
-            if(self.autoSync&&[self.logDataCache reachHalfLimit]){
-                //如果正在上传中忽略
-                if(!self.isUploading){
-                    [self uploadTrackData];
-                }
-                return;
-            }
-            break;
-        case FTAddDataNormal:
-            [[FTTrackerEventDBTool sharedManger] insertItem:data];
-            break;
-        case FTAddDataImmediate:
-            [[FTTrackerEventDBTool sharedManger] insertItem:data];
-            break;
-    }
-    _lastDataDate = CACurrentMediaTime();
-}
-- (void)createUploadDelayTimer{
-    __weak typeof(self) weakSelf = self;
-    dispatch_block_t uploadWork = dispatch_block_create(0, ^{
-        __strong __typeof(weakSelf) strongSelf = weakSelf;
-        if (!strongSelf) {
-            return;
-        }
-        NSTimeInterval current = CACurrentMediaTime();
-        if(current-strongSelf.lastDataDate>0.1 && [[FTTrackerEventDBTool sharedManger] getDatasCount]>0){
-            FTInnerLogDebug(@"[NETWORK]: start upload waiting");
-            dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)(10 * NSEC_PER_SEC)), strongSelf.networkQueue, ^{
-                FTInnerLogDebug(@"[NETWORK]: timer -> privateUpload");
-                [weakSelf privateUpload];
-                [weakSelf scheduleNextCycle];
-            });
-        }else{
-            [strongSelf scheduleNextCycle];
-        }
-    });
-    self.uploadWork = uploadWork;
-    dispatch_async(_networkQueue, uploadWork);
-}
-- (void)scheduleNextCycle{
-    if(self.uploadWork){
-        dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)(100 * NSEC_PER_MSEC)), self.networkQueue, self.uploadWork);
-    }
-}
--(void)setUploadWork:(dispatch_block_t)uploadWork{
-    pthread_rwlock_wrlock(&_uploadWorkLock);
-    _uploadWork = uploadWork;
-    pthread_rwlock_unlock(&_uploadWorkLock);
-}
--(dispatch_block_t)uploadWork{
-    dispatch_block_t block_t;
-    pthread_rwlock_rdlock(&_uploadWorkLock);
-    block_t = _uploadWork;
-    pthread_rwlock_unlock(&_uploadWorkLock);
-    return block_t;
-}
 #pragma mark - Upload -
-
-- (void)uploadTrackData{
-    //无网 返回
-    if(![FTReachability sharedInstance].isReachable){
-        FTInnerLogError(@"[NETWORK] Network unreachable, cancel upload");
-        return;
-    }
-    dispatch_async(self.networkQueue, ^{
-        FTInnerLogDebug(@"[NETWORK]: uploadTrackData -> privateUpload");
-        [self privateUpload];
-    });
-}
-- (void)privateUpload{
-    @try {
-        if (self.isUploading) {
-            FTInnerLogDebug(@"[NETWORK]: privateUpload ingnore");
-            return;
-        }
-        FTInnerLogDebug(@"[NETWORK]:privateUpload start upload");
-        self.isUploading = YES;
-        [self flushWithType:FT_DATA_TYPE_RUM];
-        [self flushWithType:FT_DATA_TYPE_LOGGING];
-        self.isUploading = NO;
-        FTInnerLogDebug(@"[NETWORK]:privateUpload end upload");
-    } @catch (NSException *exception) {
-        FTInnerLogError(@"[NETWORK] 执行上传操作失败 %@",exception);
-    } @finally {
-        self.isUploading = NO;
-    }
-}
--(void)flushWithType:(NSString *)type{
-    NSArray *events = [[FTTrackerEventDBTool sharedManger] getFirstRecords:self.uploadPageSize withType:type];
-    while (events.count > 0) {
-        if(![self flushWithEvents:events type:type]){
-            break;
-        }
-        FTRecordModel *model = [events lastObject];
-        if (![[FTTrackerEventDBTool sharedManger] deleteItemWithType:type identify:model._id]) {
-            FTInnerLogError(@"数据库删除已上传数据失败");
-        }
-        if([type isEqualToString:FT_DATA_TYPE_LOGGING]){
-            _logDataCache.logCount -= events.count;
-        }
-        if(events.count < self.uploadPageSize){
-            break;
-        }else{
-            // 减缓同步速率降低CPU使用率
-            [NSThread sleepForTimeInterval:0.001*self.syncSleepTime];
-            events = [[FTTrackerEventDBTool sharedManger] getFirstRecords:self.uploadPageSize withType:type];
-        }
-    }
-}
--(BOOL)flushWithEvents:(NSArray *)events type:(NSString *)type{
-    @try {
-        __block BOOL success = NO;
-        @autoreleasepool {
-            FTInnerLogDebug(@"[NETWORK][%@] 开始上报事件(本次上报事件数:%lu)", type,(unsigned long)[events count]);
-            dispatch_semaphore_t  flushSemaphore = dispatch_semaphore_create(0);
-            FTRequest *request = [FTRequest createRequestWithEvents:events type:type];
-            
-            [self.networkManager sendRequest:request completion:^(NSHTTPURLResponse * _Nonnull httpResponse, NSData * _Nullable data, NSError * _Nullable error) {
-                if (error || ![httpResponse isKindOfClass:[NSHTTPURLResponse class]]) {
-                    FTInnerLogError(@"[NETWORK] %@", [NSString stringWithFormat:@"Network failure: %@", error ? error : @"Request 初始化失败，请检查数据上报地址是否正确"]);
-                    success = NO;
-                    dispatch_semaphore_signal(flushSemaphore);
-                    return;
-                }
-                NSInteger statusCode = httpResponse.statusCode;
-                success = (statusCode >=200 && statusCode < 500);
-                FTInnerLogDebug(@"[NETWORK] Upload Response statusCode : %ld",(long)statusCode);
-                if (statusCode != 200 && data.length>0) {
-                    FTInnerLogError(@"[NETWORK] 服务器异常 稍后再试 responseData = %@",[FTJSONUtil dictionaryWithJsonString:[[NSString alloc] initWithData:data encoding:NSUTF8StringEncoding]]);
-                }
-                dispatch_semaphore_signal(flushSemaphore);
-            }];
-            dispatch_semaphore_wait(flushSemaphore, DISPATCH_TIME_FOREVER);
-        }
-        return success;
-    }  @catch (NSException *exception) {
-        FTInnerLogError(@"[NETWORK] exception %@",exception);
-    }
-
-    return NO;
+- (void)flushSyncData{
+    [self.dataUploadWorker flushWithSleep:NO];
 }
 - (void)insertCacheToDB{
-    [self.logDataCache insertCacheToDB];
+    [self.dataCachePolicy insertCacheToDB];
 }
-- (void)cancelSynchronously{
-    __weak typeof(self) weakSelf = self;
-    dispatch_sync(self.networkQueue, ^{
-        if(weakSelf.uploadWork){
-            dispatch_block_cancel(weakSelf.uploadWork);
-            weakSelf.uploadWork = nil;
++ (void)shutDown{
+    @synchronized(sharedInstanceLock) {
+        if (sharedInstance) {
+            [sharedInstance.dataUploadWorker cancelAsynchronously];
+            [sharedInstance.dataCachePolicy insertCacheToDB];
+            [[FTAppLifeCycle sharedInstance] removeAppLifecycleDelegate:sharedInstance];
+            [[FTTrackerEventDBTool sharedManger] close];
         }
-    });
-}
-- (void)shutDown{
-    [self cancelSynchronously];
-    [self.logDataCache insertCacheToDB];
-    [[FTAppLifeCycle sharedInstance] removeAppLifecycleDelegate:self];
-    dispatch_sync(self.networkQueue, ^{});
-    [[FTTrackerEventDBTool sharedManger] shutDown];
-    onceToken = 0;
+        sharedInstance = nil;
+    }
 }
 @end

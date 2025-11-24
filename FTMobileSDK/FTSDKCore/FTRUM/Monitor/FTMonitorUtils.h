@@ -2,23 +2,23 @@
 //  FTMonitorUtils.h
 //  FTMobileAgent
 //
-//  Created by 胡蕾蕾 on 2020/4/28.
+//  Created by hulilei on 2020/4/28.
 //  Copyright © 2020 hll. All rights reserved.
 //
 
 #import <Foundation/Foundation.h>
 NS_ASSUME_NONNULL_BEGIN
 
-/// 监控项相关数据获取工具
+/// Monitoring item related data acquisition tool
 @interface FTMonitorUtils : NSObject
-/// 获取当前设备CPU使用率
-+ (long )cpuUsage;
-/// 获取当前电池电量使用率
+/// Get current app CPU usage
++ (float)cpuUsage;
+/// Get current battery usage
 + (double)batteryUse;
-/// 获取设备总内存
+/// Get device total memory
 + (NSString *)totalMemorySize;
-/// 获取当前内存使用率
-+ (float)usedMemory;
+/// Get current device memory usage
++ (float)memoryUsage;
 @end
 
 NS_ASSUME_NONNULL_END
