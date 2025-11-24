@@ -1,5 +1,6 @@
 # 1.5.19-alpha.4
 1. Fix CPU and memory utilization collection methods
+2. Replace the mutable `const char* kThreadSecondary` pointer with a read-only string literal macro to eliminate pointer tampering risks
 ---
 # 1.5.19-alpha.3
 1. Added `resource_id` to network error types for data correlation. 
