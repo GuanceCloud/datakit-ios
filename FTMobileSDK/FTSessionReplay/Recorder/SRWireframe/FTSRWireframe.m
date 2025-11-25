@@ -169,12 +169,16 @@ static BOOL objectIsEqual(id new,id old){
 }
 @end
 @implementation FTSRTextStyle
-- (instancetype)initWithSize:(int)size color:(NSString *)color family:(NSString *)family{
+-(instancetype)initWithSize:(int)size color:(NSString *)color family:(NSString *)family{
+    return [self initWithSize:size color:color family:family truncationMode:nil];
+}
+- (instancetype)initWithSize:(int)size color:(NSString *)color family:(NSString *)family truncationMode:(NSString *)truncationMode{
     self = [super init];
     if(self){
         _size = size?:FT_DEFAULT_FONT_SIZE;
         _color = color?:FT_DEFAULT_COLOR;
         _family = family?:FT_DEFAULT_FONT_FAMILY;
+        _truncationMode = truncationMode;
     }
     return self;
 }
@@ -182,7 +186,8 @@ static BOOL objectIsEqual(id new,id old){
     FTSRTextStyle *object = (FTSRTextStyle *)baseFrame;
     BOOL haveEqualColor = objectIsEqual(self.color,object.color);
     BOOL haveEqualFamily = objectIsEqual(self.family,object.family);
-    return  haveEqualColor && haveEqualFamily && self.size == object.size;
+    BOOL haveEqualTruncationMode = objectIsEqual(self.truncationMode,object.truncationMode);
+    return  haveEqualColor && haveEqualFamily && self.size == object.size && haveEqualTruncationMode;
 }
 @end
 @implementation FTSRWireframe

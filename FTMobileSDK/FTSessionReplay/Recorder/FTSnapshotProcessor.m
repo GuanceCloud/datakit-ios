@@ -95,9 +95,9 @@ NSTimeInterval const kFullSnapshotInterval = 20.0;
             // 3.3.1.View already exists, perform incremental judgment, algorithm comparison, get increment, decrement, update
             MutationData *mutation = [[MutationData alloc]init];
             NSError *error = nil;
-            [mutation createIncrementalSnapshotRecords:wireframes lastWireframes:self.lastSRWireframes error:&error];
+            BOOL success = [mutation createIncrementalSnapshotRecords:wireframes lastWireframes:self.lastSRWireframes error:&error];
             // 3.3.2.If exception occurs during incremental judgment, don't do incremental processing, add a FullSnapshotRecord
-            if(error){
+            if(!success && error){
                 FTSRFullSnapshotRecord *fullRecord = [[FTSRFullSnapshotRecord alloc]initWithTimestamp:[viewTreeSnapshot.context.date ft_millisecondTimeStamp]];
                 fullRecord.wireframes = wireframes;
                 [records addObject:fullRecord];

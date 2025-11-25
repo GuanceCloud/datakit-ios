@@ -28,12 +28,29 @@
     }
     WKWebView *webView = (WKWebView *)view;
     [context.webViewCache addObject:webView];
+    CGFloat frameAdjustment = [self calculateFrameOffset:webView attributes:attributes];
+    if (frameAdjustment > 0) {
+        attributes.frame =  CGRectOffset(attributes.frame, 0, frameAdjustment);
+    }
     FTWKWebViewBuilder *builder = [[FTWKWebViewBuilder alloc]init];
     builder.slotID = webView.hash;
     builder.attributes = attributes;
     FTSpecificElement *element = [[FTSpecificElement alloc]initWithSubtreeStrategy:NodeSubtreeStrategyIgnore];
     element.nodes = @[builder];
     return element;
+}
+
+- (float)calculateFrameOffset:(WKWebView *)webView attributes:(FTViewAttributes *)attributes{
+    if (@available(iOS 11.0, *)) {
+        if (webView.scrollView.contentInsetAdjustmentBehavior != UIScrollViewContentInsetAdjustmentNever) {
+            CGFloat safeAreaTop = webView.safeAreaInsets.top;
+            if (CGRectGetMinX(attributes.frame) < safeAreaTop) {
+                CGFloat scale = webView.window != nil ? webView.window.screen.scale : 1;
+                return safeAreaTop / scale;
+            }
+        }
+    }
+    return -1;
 }
 @end
 

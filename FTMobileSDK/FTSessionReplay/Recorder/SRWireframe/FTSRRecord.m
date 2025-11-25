@@ -123,7 +123,7 @@
 /// For identical parts of subsequences, determine if update is needed
 /// For different parts, consider add\remove
 /// When subsequence positions change, perform add\remove operations on subsequences moved to the back
--(void)createIncrementalSnapshotRecords:(NSArray<FTSRWireframe *>*)newWireframes lastWireframes:(NSArray<FTSRWireframe *>*)lastWireframes error:(NSError **)error{
+-(BOOL)createIncrementalSnapshotRecords:(NSArray<FTSRWireframe *>*)newWireframes lastWireframes:(NSArray<FTSRWireframe *>*)lastWireframes error:(NSError **)error{
     NSMutableDictionary<NSNumber*,Sampler*> *table = [[NSMutableDictionary alloc]init];
     NSMutableArray<Removes> *removes = (NSMutableArray<Removes> *)[NSMutableArray new];
     NSMutableArray<Adds> *adds = (NSMutableArray<Adds> *)[NSMutableArray new];
@@ -192,7 +192,7 @@
             }else{
                 FTSRWireframe *update = [lastWireframes[indexInOld] compareWithNewWireFrame:newWireframes[i] error:error];
                 if (error != nil && *error != nil) {
-                    return;
+                    return NO;
                 }
                 if(update){
                     [updates addObject:update];
@@ -203,6 +203,7 @@
     self.removes = removes;
     self.updates = updates;
     self.adds = adds;
+    return YES;
 }
 - (BOOL)isEmpty{
     return !(self.removes.count>0 || self.updates.count>0 || self.adds.count>0);

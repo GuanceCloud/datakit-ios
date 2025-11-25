@@ -19,10 +19,11 @@ NS_ASSUME_NONNULL_BEGIN
 @property (nonatomic, strong) FTViewAttributes *attributes;
 
 @property (nonatomic, copy) NSString *text;
-@property (nonatomic, assign) BOOL adjustsFontSizeToFitWidth;
+@property (nonatomic, assign) BOOL fontScalingEnabled;
 @property (nonatomic, strong) UIFont *font;
 @property (nonatomic, strong) UIColor *textColor;
 @property (nonatomic, assign) NSTextAlignment textAlignment;
+@property (nonatomic, assign) NSLineBreakMode lineBreakMode;
 @property (nonatomic, strong) id<FTSRTextObfuscatingProtocol> textObfuscator;
 @end
 typedef FTUILabelBuilder* _Nullable (^FTBuilderOverride)(FTUILabelBuilder *builder);

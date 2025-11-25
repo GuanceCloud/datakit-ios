@@ -44,12 +44,12 @@
     builder.text = label.text?:@"";
     builder.attributes = attributes;
     builder.wireframeID = [context.viewIDGenerator SRViewID:label nodeRecorder:self];
-    builder.adjustsFontSizeToFitWidth = label.adjustsFontSizeToFitWidth;
+    builder.fontScalingEnabled = label.adjustsFontSizeToFitWidth;
     builder.font = label.font;
     builder.textColor = label.textColor;
     builder.textAlignment = label.textAlignment;
     builder.textObfuscator = self.textObfuscator(context,attributes);
-    
+    builder.lineBreakMode = label.lineBreakMode;
     FTSpecificElement *element = [[FTSpecificElement alloc]initWithSubtreeStrategy:NodeSubtreeStrategyIgnore];
     element.nodes = @[self.builderOverride(builder)];
     return element;
@@ -67,7 +67,16 @@
     wireframe.text = [self.textObfuscator mask:self.text];
     wireframe.border = [[FTSRShapeBorder alloc]initWithColor:[FTSRUtils colorHexString:self.attributes.layerBorderColor] width:self.attributes.layerBorderWidth];
     wireframe.shapeStyle = [[FTSRShapeStyle alloc]initWithBackgroundColor:[FTSRUtils colorHexString:self.attributes.backgroundColor.CGColor] cornerRadius:@(self.attributes.layerCornerRadius) opacity:@(self.attributes.alpha)];
-    wireframe.textStyle = [[FTSRTextStyle alloc]initWithSize:self.font.pointSize color:[FTSRUtils colorHexString:self.textColor.CGColor] family:nil];
+    CGFloat fontSize = self.font.pointSize;
+    if (wireframe.text.length > 0 && self.fontScalingEnabled ){
+        // Calculates the approximate font size for available text area √(frameArea / numberOfCharacters)
+        CGFloat area = self.attributes.frame.size.width * self.attributes.frame.size.height;
+        int calculatedFontSize = sqrt(area / wireframe.text.length);
+        if (calculatedFontSize < self.font.pointSize) {
+            fontSize = calculatedFontSize;
+        }
+    }
+    wireframe.textStyle = [[FTSRTextStyle alloc]initWithSize:fontSize color:[FTSRUtils colorHexString:self.textColor.CGColor] family:nil truncationMode:[FTSRUtils getTextStyleTruncationMode:self.lineBreakMode]];
     wireframe.clip = [[FTSRContentClip alloc] initWithFrame:self.wireframeRect clip:self.attributes.clip];
     FTSRTextPosition *textPosition = [[FTSRTextPosition alloc]init];
     textPosition.alignment = [[FTAlignment alloc]initWithTextAlignment:self.textAlignment vertical:@"center"];

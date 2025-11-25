@@ -56,7 +56,9 @@ NS_ASSUME_NONNULL_BEGIN
 @property (nonatomic, assign) int size;
 @property (nonatomic, copy) NSString *color;
 @property (nonatomic, copy) NSString *family;
+@property (nonatomic, copy, nullable) NSString *truncationMode;
 - (instancetype)initWithSize:(int)size color:(NSString *)color family:(nullable NSString *)family;
+- (instancetype)initWithSize:(int)size color:(NSString *)color family:(nullable NSString *)family truncationMode:(nullable NSString *)truncationMode;
 @end
 #pragma mark ========== FTSRWireframe ==========
 @interface FTSRWireframe : FTSRBaseFrame
