@@ -12,11 +12,13 @@
 #import "FTRumDatasProtocol.h"
 #import "FTRumResourceProtocol.h"
 #import "FTLinkRumDataProvider.h"
+#import "FTWKWebViewRumDelegate.h"
+
 @class FTRumConfig,FTResourceMetricsModel,FTResourceContentModel,FTRUMMonitor;
 
 NS_ASSUME_NONNULL_BEGIN
 
-@interface FTRUMManager : FTRUMHandler<FTRumResourceProtocol,FTErrorDataDelegate,FTRumDatasProtocol,FTLinkRumDataProvider>
+@interface FTRUMManager : FTRUMHandler<FTRumResourceProtocol,FTErrorDataDelegate,FTRumDatasProtocol,FTLinkRumDataProvider,FTWKWebViewRumDelegate>
 @property (nonatomic, assign) FTAppState appState;
 @property (atomic,copy,readwrite) NSString *viewReferrer;
 @property (atomic,copy,nullable) NSString *viewReferrerId;
@@ -91,8 +93,7 @@ NS_ASSUME_NONNULL_BEGIN
  * @param property   Event properties (optional)
  */
 - (void)addLongTaskWithStack:(NSString *)stack duration:(NSNumber *)duration startTime:(long long)time property:(nullable NSDictionary *)property;
-#pragma mark - get LinkRumData -
-- (nullable NSString *)getLastHasReplayViewIDWithSRBindInfo:(NSDictionary *)info;
+
 /// Wait for all rum processing data to be processed
 - (void)syncProcess;
 @end

@@ -13,6 +13,7 @@
 @interface FTSessionReplayWireframesBuilder()
 @property (nonatomic, strong) NSArray<id<FTSRResource>> *resources;
 @property (nonatomic, strong) NSMutableSet<NSNumber *> *webViewSlotIDs;
+@property (nonatomic, strong) NSMutableDictionary *linkRUMKeysInfo;
 @end
 @implementation FTSessionReplayWireframesBuilder
 -(instancetype)initWithResources:(NSArray<id <FTSRResource>>*)resources webViewSlotIDs:( NSSet<NSNumber *> *)webViewSlotIDs{
@@ -20,6 +21,7 @@
     if (self) {
         _resources = resources;
         _webViewSlotIDs = [NSMutableSet setWithSet:webViewSlotIDs];
+        _linkRUMKeysInfo = [NSMutableDictionary new];
     }
     return self;
 }
@@ -30,13 +32,16 @@
     if (!color || width<=0) return nil;
     return [[FTSRShapeBorder alloc] initWithColor:[FTSRUtils colorHexString:color] width:width];
 }
-- (FTSRWebViewWireframe *)visibleWebViewWireframeWithID:(int64_t)identifier attributes:(FTViewAttributes *)attributes{
+- (FTSRWebViewWireframe *)visibleWebViewWireframeWithID:(int64_t)identifier attributes:(FTViewAttributes *)attributes linkRUMKeysInfo:(nullable NSDictionary *)linkRUMKeysInfo{
     FTSRWebViewWireframe *wireframe = [[FTSRWebViewWireframe alloc]initWithIdentifier:identifier frame:attributes.frame];
     wireframe.clip = [[FTSRContentClip alloc]initWithFrame:attributes.frame clip:attributes.clip];
     wireframe.slotId = [NSString stringWithFormat:@"%lld",identifier];
     wireframe.isVisible = @(YES);
     wireframe.shapeStyle = [[FTSRShapeStyle alloc]initWithBackgroundColor:[FTSRUtils colorHexString:attributes.backgroundColor.CGColor] cornerRadius:@(attributes.layerCornerRadius) opacity:@(attributes.alpha)];
     [self.webViewSlotIDs removeObject:@(identifier)];
+    if (linkRUMKeysInfo.count>0) {
+        [self.linkRUMKeysInfo addEntriesFromDictionary:linkRUMKeysInfo];
+    }
     return wireframe;
 }
 - (NSArray <FTSRWireframe*> *)hiddenWebViewWireframes{
@@ -52,6 +57,9 @@
     }];
     [self.webViewSlotIDs removeAllObjects];
     return array;
+}
+- (NSDictionary *)linkRumKeysInfo{
+    return [_linkRUMKeysInfo copy];
 }
 @end
 

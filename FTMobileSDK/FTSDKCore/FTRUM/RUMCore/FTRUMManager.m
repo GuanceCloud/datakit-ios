@@ -536,8 +536,16 @@ void *FTRUMQueueIdentityKey = &FTRUMQueueIdentityKey;
     }
     return nil;
 }
-- (NSString *)getLastHasReplayViewIDWithSRBindInfo:(NSDictionary *)info{
-    NSString *viewID = self.viewReferrerId;
+- (NSString *)getLastHasReplayViewID{
+    return self.viewReferrerId;
+}
+-(NSString *)getLastViewName{
+    return self.viewReferrer;
+}
+- (void)dealRUMWebViewData:(NSString *)measurement tags:(NSDictionary *)tags fields:(NSDictionary *)fields tm:(long long)tm{
+    [self addWebViewData:measurement tags:tags fields:fields tm:tm];
+}
+- (void)bindSRInfo:(NSDictionary *)info containerViewID:(NSString *)viewID{
     if (viewID && info) {
         NSDictionary *context = [self rumDynamicProperty];
         dispatch_async(self.rumQueue, ^{
@@ -554,7 +562,6 @@ void *FTRUMQueueIdentityKey = &FTRUMQueueIdentityKey;
         });
         
     }
-    return viewID;
 }
 -(NSDictionary *)getCurrentSessionInfo{
     return self.rumDependencies.fatalErrorContext.lastSessionContext;

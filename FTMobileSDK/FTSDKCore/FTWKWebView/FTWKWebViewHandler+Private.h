@@ -8,16 +8,10 @@
 
 #import "FTWKWebViewHandler.h"
 #import "FTWeakMapTable.h"
-
+#import "FTWKWebViewRumDelegate.h"
 #if !TARGET_OS_TV
 NS_ASSUME_NONNULL_BEGIN
-/// webView add web-side rum data
-@protocol FTWKWebViewRumDelegate <NSObject>
-- (void)dealRUMWebViewData:(NSString *)measurement tags:(NSDictionary *)tags fields:(NSDictionary *)fields tm:(long long)tm;
-- (nullable NSString *)getLastHasReplayViewIDWithSRBindInfo:(NSDictionary *)info;
-- (nullable NSString *)getLastViewName;
 
-@end
 @interface FTWKWebViewHandler ()
 
 @property (nonatomic, copy) NSArray *whiteLists;

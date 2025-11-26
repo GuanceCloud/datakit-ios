@@ -733,8 +733,6 @@
 		17C4F1732D671AFC00F97A7F /* NSData+FTHelper.m in Sources */ = {isa = PBXBuildFile; fileRef = 17C4F0A72D671AFC00F97A7F /* NSData+FTHelper.m */; };
 		17C4F1752D671AFC00F97A7F /* FTSRWireframe.m in Sources */ = {isa = PBXBuildFile; fileRef = 17C4F0872D671AFC00F97A7F /* FTSRWireframe.m */; };
 		17C4F1762D671AFC00F97A7F /* FTViewTreeRecorder.m in Sources */ = {isa = PBXBuildFile; fileRef = 17C4F0702D671AFC00F97A7F /* FTViewTreeRecorder.m */; };
-		17C930EA2EA79E30002800BF /* FTDefaultUIKitViewTrackingHandler+LinkRumKeys.m in Sources */ = {isa = PBXBuildFile; fileRef = 17C930E92EA79E30002800BF /* FTDefaultUIKitViewTrackingHandler+LinkRumKeys.m */; };
-		17C930EB2EA79E30002800BF /* FTDefaultUIKitViewTrackingHandler+LinkRumKeys.h in Headers */ = {isa = PBXBuildFile; fileRef = 17C930E82EA79E30002800BF /* FTDefaultUIKitViewTrackingHandler+LinkRumKeys.h */; };
 		17C930FE2EB0A4F9002800BF /* FTWeakMapTable.m in Sources */ = {isa = PBXBuildFile; fileRef = 17C930FD2EB0A4F9002800BF /* FTWeakMapTable.m */; };
 		17C930FF2EB0A4F9002800BF /* FTWeakMapTable.h in Headers */ = {isa = PBXBuildFile; fileRef = 17C930FC2EB0A4F9002800BF /* FTWeakMapTable.h */; };
 		17C931002EB0A4F9002800BF /* FTWeakMapTable.h in Headers */ = {isa = PBXBuildFile; fileRef = 17C930FC2EB0A4F9002800BF /* FTWeakMapTable.h */; };
@@ -765,6 +763,9 @@
 		17E32BAB2BEE21F600F4685C /* FTRUMDependencies.m in Sources */ = {isa = PBXBuildFile; fileRef = 17E32BAA2BEE21F600F4685C /* FTRUMDependencies.m */; };
 		17E32BAE2BEE21F600F4685C /* FTRUMDependencies.m in Sources */ = {isa = PBXBuildFile; fileRef = 17E32BAA2BEE21F600F4685C /* FTRUMDependencies.m */; };
 		17E32BB02BEE21F600F4685C /* FTRUMDependencies.m in Sources */ = {isa = PBXBuildFile; fileRef = 17E32BAA2BEE21F600F4685C /* FTRUMDependencies.m */; };
+		17E336412ECD676B009B98DC /* FTWKWebViewRumDelegate.h in Headers */ = {isa = PBXBuildFile; fileRef = 17E336402ECD676B009B98DC /* FTWKWebViewRumDelegate.h */; };
+		17E336422ECD676B009B98DC /* FTWKWebViewRumDelegate.h in Headers */ = {isa = PBXBuildFile; fileRef = 17E336402ECD676B009B98DC /* FTWKWebViewRumDelegate.h */; };
+		17E336432ECD676B009B98DC /* FTWKWebViewRumDelegate.h in Headers */ = {isa = PBXBuildFile; fileRef = 17E336402ECD676B009B98DC /* FTWKWebViewRumDelegate.h */; };
 		17E4CB3329CD42DA005C2D99 /* FTSwizzler.h in Headers */ = {isa = PBXBuildFile; fileRef = 17E4CAED29CD42DA005C2D99 /* FTSwizzler.h */; };
 		17E4CB3429CD42DA005C2D99 /* FTSwizzle.h in Headers */ = {isa = PBXBuildFile; fileRef = 17E4CAEE29CD42DA005C2D99 /* FTSwizzle.h */; };
 		17E4CB3629CD42DA005C2D99 /* FTSwizzle.m in Sources */ = {isa = PBXBuildFile; fileRef = 17E4CAF029CD42DA005C2D99 /* FTSwizzle.m */; };
@@ -1195,8 +1196,6 @@
 		17C4F0DF2D671AFC00F97A7F /* FTSessionReplayConfig+Private.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = "FTSessionReplayConfig+Private.h"; sourceTree = "<group>"; };
 		17C4F0E02D671AFC00F97A7F /* FTSessionReplayFeature.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = FTSessionReplayFeature.h; sourceTree = "<group>"; };
 		17C4F0E12D671AFC00F97A7F /* FTSessionReplayFeature.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = FTSessionReplayFeature.m; sourceTree = "<group>"; };
-		17C930E82EA79E30002800BF /* FTDefaultUIKitViewTrackingHandler+LinkRumKeys.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = "FTDefaultUIKitViewTrackingHandler+LinkRumKeys.h"; sourceTree = "<group>"; };
-		17C930E92EA79E30002800BF /* FTDefaultUIKitViewTrackingHandler+LinkRumKeys.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = "FTDefaultUIKitViewTrackingHandler+LinkRumKeys.m"; sourceTree = "<group>"; };
 		17C930FC2EB0A4F9002800BF /* FTWeakMapTable.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = FTWeakMapTable.h; sourceTree = "<group>"; };
 		17C930FD2EB0A4F9002800BF /* FTWeakMapTable.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = FTWeakMapTable.m; sourceTree = "<group>"; };
 		17D068182D23F48B00D59159 /* FTTraceContext.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = FTTraceContext.h; sourceTree = "<group>"; };
@@ -1207,6 +1206,7 @@
 		17E32B9E2BEC70E700F4685C /* FTErrorMonitorInfo.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = FTErrorMonitorInfo.h; sourceTree = "<group>"; };
 		17E32B9F2BEC70E700F4685C /* FTErrorMonitorInfo.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = FTErrorMonitorInfo.m; sourceTree = "<group>"; };
 		17E32BAA2BEE21F600F4685C /* FTRUMDependencies.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = FTRUMDependencies.m; sourceTree = "<group>"; };
+		17E336402ECD676B009B98DC /* FTWKWebViewRumDelegate.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = FTWKWebViewRumDelegate.h; sourceTree = "<group>"; };
 		17E4CAED29CD42DA005C2D99 /* FTSwizzler.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = FTSwizzler.h; sourceTree = "<group>"; };
 		17E4CAEE29CD42DA005C2D99 /* FTSwizzle.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = FTSwizzle.h; sourceTree = "<group>"; };
 		17E4CAF029CD42DA005C2D99 /* FTSwizzle.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = FTSwizzle.m; sourceTree = "<group>"; };
@@ -1838,8 +1838,6 @@
 				17C4F0E02D671AFC00F97A7F /* FTSessionReplayFeature.h */,
 				17C4F0E12D671AFC00F97A7F /* FTSessionReplayFeature.m */,
 				1745F6462EC5E3F600E0D49C /* FTWKWebViewHandler+SessionReplay.h */,
-				17C930E82EA79E30002800BF /* FTDefaultUIKitViewTrackingHandler+LinkRumKeys.h */,
-				17C930E92EA79E30002800BF /* FTDefaultUIKitViewTrackingHandler+LinkRumKeys.m */,
 			);
 			name = FTSessionReplay;
 			path = FTMobileSDK/FTSessionReplay;
@@ -2017,6 +2015,7 @@
 		17E4CBAE29CD42E4005C2D99 /* Protocol */ = {
 			isa = PBXGroup;
 			children = (
+				17E336402ECD676B009B98DC /* FTWKWebViewRumDelegate.h */,
 				173D9D102E67EC6200DF10B8 /* FTUploadProtocol.h */,
 				173D9C712E67E7BA00DF10B8 /* FTRUMDataWriteProtocol.h */,
 				173D9BC82E67E34300DF10B8 /* FTLoggerDataWriteProtocol.h */,
@@ -2220,6 +2219,7 @@
 				17AC17452B9856C3003E18A6 /* FTFileLogger.h in Headers */,
 				17AB76B629D432DE008FBBF5 /* FTMemoryMonitor.h in Headers */,
 				173D9C662E67E6F300DF10B8 /* FTLongTaskManager.h in Headers */,
+				17E336412ECD676B009B98DC /* FTWKWebViewRumDelegate.h in Headers */,
 				173D9CB62E67E9C900DF10B8 /* FTTrackerEventDBTool.h in Headers */,
 				173D9CB72E67E9C900DF10B8 /* ZY_FMDatabaseQueue.h in Headers */,
 				173D9D0F2E67EBBC00DF10B8 /* FTWKWebViewHandler+Private.h in Headers */,
@@ -2336,6 +2336,7 @@
 				1759510D2A6FE4DE006FAB9D /* NSNumber+FTAdd.h in Headers */,
 				1776070929D139DA00D17137 /* FTSessionTaskHandler.h in Headers */,
 				174BC87C2BFC9F8A00478EE1 /* NSDictionary+FTCopyProperties.h in Headers */,
+				17E336432ECD676B009B98DC /* FTWKWebViewRumDelegate.h in Headers */,
 				1776069C29D1375800D17137 /* NSString+FTAdd.h in Headers */,
 				177606B829D137E900D17137 /* FTExternalResourceProtocol.h in Headers */,
 				173D9BC62E67E2CA00DF10B8 /* FTLoggerConfig+Private.h in Headers */,
@@ -2412,6 +2413,7 @@
 				175C23012DB640C0001FE777 /* FTSessionReplayWireframesBuilder.h in Headers */,
 				17AB76B429D432DE008FBBF5 /* FTMemoryMonitor.h in Headers */,
 				17E4CB4C29CD42DA005C2D99 /* FTResourceContentModel.h in Headers */,
+				17E336422ECD676B009B98DC /* FTWKWebViewRumDelegate.h in Headers */,
 				1777C3E72A36EED500C0AA45 /* FTLogger.h in Headers */,
 				1759510C2A6FE4DE006FAB9D /* NSNumber+FTAdd.h in Headers */,
 				174BC8792BFC9F8A00478EE1 /* NSDictionary+FTCopyProperties.h in Headers */,
@@ -2623,7 +2625,6 @@
 				17C4F1262D671AFC00F97A7F /* UIView+FTSR.h in Headers */,
 				173D9C7C2E67E82400DF10B8 /* FTRumConfig.h in Headers */,
 				173D9C7D2E67E82400DF10B8 /* FTRumConfig+Private.h in Headers */,
-				17C930EB2EA79E30002800BF /* FTDefaultUIKitViewTrackingHandler+LinkRumKeys.h in Headers */,
 				17C4F1272D671AFC00F97A7F /* FTSessionReplayFeature.h in Headers */,
 				17C4F1282D671AFC00F97A7F /* FTFileWriter.h in Headers */,
 				17C4F1292D671AFC00F97A7F /* UIImage+FTSRIdentifier.h in Headers */,
@@ -3114,7 +3115,6 @@
 				17D068272D26668400D59159 /* NSURLSessionTask+FTSwizzler.m in Sources */,
 				17F10DAE2D13C88A00737EDD /* FTNetworkConnectivity.m in Sources */,
 				173D9CFF2E67E9F400DF10B8 /* FTAppLaunchTracker.m in Sources */,
-				17C930EA2EA79E30002800BF /* FTDefaultUIKitViewTrackingHandler+LinkRumKeys.m in Sources */,
 				178649352A1DB58400521187 /* FTLogger.m in Sources */,
 				17AB76F329D432DE008FBBF5 /* FTRUMActionHandler.m in Sources */,
 				17E4CBDC29CD42E4005C2D99 /* FTTracer.m in Sources */,

@@ -15,8 +15,9 @@ NS_ASSUME_NONNULL_BEGIN
 
 - (FTSRWireframe *)createShapeWireframeWithID:(int64_t)identifier attributes:(FTViewAttributes *)attributes;
 
-- (FTSRWebViewWireframe *)visibleWebViewWireframeWithID:(int64_t)identifier attributes:(FTViewAttributes *)attributes;
+- (FTSRWebViewWireframe *)visibleWebViewWireframeWithID:(int64_t)identifier attributes:(FTViewAttributes *)attributes linkRUMKeysInfo:(nullable NSDictionary *)linkRUMKeysInfo;
 - (NSArray<FTSRWireframe*>*)hiddenWebViewWireframes;
+- (NSDictionary *)linkRumKeysInfo;
 @end
 
 NS_ASSUME_NONNULL_END

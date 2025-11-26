@@ -40,7 +40,7 @@
 @property (nonatomic, strong) FTLongTaskManager *longTaskManager;
 @end
 #if !TARGET_OS_TV
-@interface FTGlobalRumManager()<FTWKWebViewRumDelegate>
+@interface FTGlobalRumManager()
 @property (nonatomic, strong) FTWKWebViewJavascriptBridge *jsBridge;
 @end
 #endif
@@ -85,22 +85,10 @@ static NSObject *sharedInstanceLock;
         [dependencies.writer lastFatalErrorIfFound:0];
     }
 #if !TARGET_OS_TV
-    [[FTWKWebViewHandler sharedInstance] startWithEnableTraceWebView:rumConfig.enableTraceWebView allowWebViewHost:rumConfig.allowWebViewHost rumDelegate:self];
+    [[FTWKWebViewHandler sharedInstance] startWithEnableTraceWebView:rumConfig.enableTraceWebView allowWebViewHost:rumConfig.allowWebViewHost rumDelegate:self.rumManager];
 #endif
     [FTExternalDataManager sharedManager].delegate = self.rumManager;
 }
-#pragma mark ========== jsBridge ==========
-#if !TARGET_OS_TV
-- (void)dealRUMWebViewData:(NSString *)measurement tags:(NSDictionary *)tags fields:(NSDictionary *)fields tm:(long long)tm{
-    [self.rumManager addWebViewData:measurement tags:tags fields:fields tm:tm];
-}
-- (nullable NSString *)getLastHasReplayViewIDWithSRBindInfo:(NSDictionary *)info{
-    return [self.rumManager getLastHasReplayViewIDWithSRBindInfo:info];
-}
--(NSString *)getLastViewName{
-    return self.rumManager.viewReferrer;
-}
-#endif
 #pragma mark ========== FTRunloopDetectorDelegate ==========
 - (void)longTaskStackDetected:(NSString*)slowStack duration:(long long)duration time:(long long)time{
     [self.rumManager addLongTaskWithStack:slowStack duration:[NSNumber numberWithLongLong:duration] startTime:time];

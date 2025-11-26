@@ -12,6 +12,7 @@ NS_ASSUME_NONNULL_BEGIN
 
 @interface FTWKWebViewHandler ()
 - (void)takeSubsequentFullSnapshot;
+- (void)bindInfo:(NSDictionary *)info viewId:(NSString *)viewId;
 @end
 
 NS_ASSUME_NONNULL_END

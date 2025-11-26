@@ -159,16 +159,10 @@ static NSObject *sharedInstanceLock;
 }
 - (void)_enableWebView:(WKWebView *)webView allowedWebViewHostsString:(NSString *)hostsString{
     @try {
-        if ([self getWebViewBridge:webView]) {
-            FTInnerLogDebug(@"WebView(%lld) already add JSBridge.",(uint64_t)webView.hash);
-            return;
-        }
         FTInnerLogInfo(@"[WebView] webView(%lld) start bridge",(uint64_t)webView.hash);
         FTWKWebViewJavascriptBridge *bridge = [FTWKWebViewJavascriptBridge bridgeForWebView:webView allowWebViewHostsString:hostsString];
         FTBindInfo *bindInfo = [[FTBindInfo alloc] init];
-#if TARGET_OS_IOS
-        bindInfo.container = [self findViewControllerForWebView:webView];
-#endif
+        bindInfo.container = webView;
         __weak typeof(self) weakSelf = self;
         [bridge registerHandler:@"sendEvent" handler:^(id data, int64_t slotId,WVJBResponseCallback responseCallback) {
             __strong __typeof(weakSelf) strongSelf = weakSelf;
@@ -181,19 +175,6 @@ static NSObject *sharedInstanceLock;
         FTInnerLogError(@"exception: %@",exception);
     }
 }
-#if TARGET_OS_IOS
-- (nullable UIViewController *)findViewControllerForWebView:(nonnull WKWebView *)webView {
-    UIView *currentView = webView;
-    while (currentView) {
-        UIResponder *nextResponder = currentView.nextResponder;
-        if ([nextResponder isKindOfClass:[UIViewController class]]) {
-            return (UIViewController *)nextResponder;
-        }
-        currentView = currentView.superview;
-    }
-    return nil;
-}
-#endif
 - (void)dealReceiveScriptMessage:(id )message slotId:(int64_t)slotID info:(FTBindInfo *)info{
     @try {
         NSDictionary *messageDic = [message isKindOfClass:NSDictionary.class]?message:[FTJSONUtil dictionaryWithJsonString:message];
@@ -221,25 +202,29 @@ static NSObject *sharedInstanceLock;
             }
             if (measurement && fields.count>0) {
                 if ([measurement isEqualToString:FT_RUM_SOURCE_VIEW]) {
-                    NSArray *whiteLists = self.whiteLists;
-                    if (whiteLists.count>0 && (info.bindInfo == nil ||  info.bindInfo.count == 0)) {
-                        NSMutableDictionary *infoDict = [[NSMutableDictionary alloc]init];
-                        NSEnumerator *en = [whiteLists objectEnumerator];
-                        NSString *key;
-                        while ((key = en.nextObject) != nil) {
-                            [infoDict setValue:fields[key] forKey:key];
-                        }
-                        info.bindInfo = [infoDict copy];
-                        [self.linkRumInfos setObject:info.bindInfo forKey:info.container];
-                    }
                     if (!info.viewId) {
-                        info.viewId = self.rumTrackDelegate ? [self.rumTrackDelegate getLastHasReplayViewIDWithSRBindInfo:info.bindInfo] : nil;
-                    }
-                    if (info.viewId) {
-                        [tags setValue:@{@"source":@"ios",@"view_id":info.viewId} forKey:@"container"];
+                        info.viewId = self.rumTrackDelegate ? [self.rumTrackDelegate getLastHasReplayViewID] : nil;
                     }
                     if (!info.viewReferrer) {
                         info.viewReferrer = self.rumTrackDelegate ? [self.rumTrackDelegate getLastViewName] : nil;
+                    }
+                    if (info.viewId) {
+                        NSArray *whiteLists = self.whiteLists;
+                        if (whiteLists.count>0 && (info.container.ft_linkRumKeysInfo == nil ||  info.container.ft_linkRumKeysInfo.count == 0)) {
+                            NSMutableDictionary *infoDict = [[NSMutableDictionary alloc]init];
+                            NSEnumerator *en = [whiteLists objectEnumerator];
+                            NSString *key;
+                            while ((key = en.nextObject) != nil) {
+                                [infoDict setValue:fields[key] forKey:key];
+                            }
+                            if (infoDict.count>0) {
+                                info.container.ft_linkRumKeysInfo = [infoDict copy];
+                                [self bindInfo:info.container.ft_linkRumKeysInfo viewId:info.viewId];
+                            }else{
+                                FTInnerLogDebug(@"[WebView] webView(%lld:%@) bindInfo fail.",slotID,tags[FT_KEY_VIEW_ID]);
+                            }
+                        }
+                        [tags setValue:@{@"source":@"ios",@"view_id":info.viewId} forKey:@"container"];
                     }
                     if (tags[FT_KEY_VIEW_REFERRER] == nil) {
                         [tags setValue:info.viewReferrer forKey:FT_KEY_VIEW_REFERRER];
@@ -255,7 +240,7 @@ static NSObject *sharedInstanceLock;
         }else if ([name isEqualToString:@"session_replay"]){
             NSMutableDictionary *dict = [messageDic mutableCopy];
             [dict setValue:[NSString stringWithFormat:@"%lld",slotID] forKey:@"slotId"];
-            [dict setValue:info.bindInfo forKey:@"bindInfo"];
+            [dict setValue:info.container.ft_linkRumKeysInfo forKey:@"bindInfo"];
             [[FTModuleManager sharedInstance] postMessage:FTMessageKeyWebViewSR message:dict];
         }
     } @catch (NSException *exception) {
@@ -263,7 +248,7 @@ static NSObject *sharedInstanceLock;
     }
 }
 - (void)takeSubsequentFullSnapshot{
-    NSArray *allKeys = [self.webViewBridge keyEnumerator].allObjects; //
+    NSArray *allKeys = [self.webViewBridge keyEnumerator].allObjects;
     for (WKWebView *key in allKeys) {
         id value = [self.webViewBridge objectForKey:key]; 
         if (key && value) {
@@ -271,6 +256,11 @@ static NSObject *sharedInstanceLock;
                 [key evaluateJavaScript:@"DATAFLUX_RUM.takeSubsequentFullSnapshot()" completionHandler:nil];
             }];
         }
+    }
+}
+- (void)bindInfo:(NSDictionary *)info viewId:(NSString *)viewId{
+    if(self.rumTrackDelegate){
+        [self.rumTrackDelegate bindSRInfo:info containerViewID:viewId];
     }
 }
 - (void)disableWebView:(WKWebView *)webView{

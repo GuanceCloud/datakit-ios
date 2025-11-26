@@ -12,10 +12,9 @@
 
 NS_ASSUME_NONNULL_BEGIN
 @interface FTBindInfo:NSObject
-@property (nonatomic, copy) NSString *viewReferrer;
-@property (nonatomic, copy) NSString *viewId;
-@property (nonatomic, strong) NSDictionary *bindInfo;
-@property (nonatomic, weak) id container;
+@property (nonatomic, copy, nullable) NSString *viewReferrer;
+@property (nonatomic, copy, nullable) NSString *viewId;
+@property (nonatomic, weak, nullable) WKWebView *container;
 @end
 
 @interface FTWKWebViewJavascriptBridge : NSObject<FTWebViewJavascriptBridgeBaseDelegate,WKScriptMessageHandler>

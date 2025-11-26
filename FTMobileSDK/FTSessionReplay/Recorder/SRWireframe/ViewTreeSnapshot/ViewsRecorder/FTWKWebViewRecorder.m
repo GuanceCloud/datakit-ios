@@ -13,6 +13,7 @@
 #import "FTViewTreeRecordingContext.h"
 #import "FTSystemColors.h"
 #import <WebKit/WKWebView.h>
+#import "WKWebView+FTAutoTrack.h"
 @implementation FTWKWebViewRecorder
 -(instancetype)init{
     self = [super init];
@@ -35,6 +36,7 @@
     FTWKWebViewBuilder *builder = [[FTWKWebViewBuilder alloc]init];
     builder.slotID = webView.hash;
     builder.attributes = attributes;
+    builder.linkRUMKeysInfo = webView.ft_linkRumKeysInfo;
     FTSpecificElement *element = [[FTSpecificElement alloc]initWithSubtreeStrategy:NodeSubtreeStrategyIgnore];
     element.nodes = @[builder];
     return element;
@@ -59,7 +61,7 @@
     return self.attributes.frame;
 }
 - (NSArray<FTSRWireframe *> *)buildWireframesWithBuilder:(FTSessionReplayWireframesBuilder *)builder{
-    FTSRWebViewWireframe *wireframe = (FTSRWebViewWireframe *)[builder visibleWebViewWireframeWithID:self.slotID attributes:self.attributes];
+    FTSRWebViewWireframe *wireframe = (FTSRWebViewWireframe *)[builder visibleWebViewWireframeWithID:self.slotID attributes:self.attributes linkRUMKeysInfo:self.linkRUMKeysInfo];
     return @[wireframe];
 }
 

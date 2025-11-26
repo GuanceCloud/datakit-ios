@@ -47,7 +47,6 @@
 @property (nonatomic, strong) id<FTWriter> webViewWriter;
 @property (nonatomic, copy) NSString *lastViewID;
 @property (nonatomic, strong) FTLimitedSizeSet *needCheckSlots;
-@property (atomic, assign) BOOL needFullSnapshot;
 
 @end
 @implementation FTSessionReplayFeature
@@ -215,10 +214,7 @@
             while ((key = en.nextObject) != nil) {
                 [infoDict setValue:bindInfo[key] forKey:key];
             }
-            if (infoDict && ![infoDict isEqualToDictionary:self.bindInfo]) {
-                self.bindInfo = [infoDict copy];
-                self.needFullSnapshot = YES;
-            }
+            self.bindInfo = [infoDict copy];
         }
     }
 }
@@ -256,8 +252,6 @@
         context.touchPrivacy = self.config.touchPrivacy;
         context.textAndInputPrivacy = self.config.textAndInputPrivacy;
         context.bindInfo = self.bindInfo;
-        context.needFullSnapshot = self.needFullSnapshot;
-        self.needFullSnapshot = NO;
         [self.windowRecorder taskSnapShot:context touchSnapshot:[self.touches takeTouchSnapshotWithContext:context]];
     } @catch (NSException *exception) {
         FTInnerLogError(@"[session-replay] EXCEPTION: %@", exception.description);
