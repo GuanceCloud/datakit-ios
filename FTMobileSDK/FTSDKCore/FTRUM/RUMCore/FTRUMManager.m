@@ -24,6 +24,7 @@ NSString * const AppStateStringMap[] = {
     [FTAppStateUnknown] = @"unknown",
     [FTAppStateStartUp] = @"startup",
     [FTAppStateRun] = @"run",
+    [FTAppStateBackground] = @"background",
 };
 void *FTRUMQueueIdentityKey = &FTRUMQueueIdentityKey;
 
@@ -242,7 +243,7 @@ void *FTRUMQueueIdentityKey = &FTRUMQueueIdentityKey;
                 [tags setValue:@(content.httpStatusCode) forKey:FT_KEY_RESOURCE_STATUS];
                 
                 if (content.error || content.httpStatusCode>=400) {
-                    NSString *run = AppStateStringMap[self.appState];
+                    NSString *errorSituation = AppStateStringMap[self.appState];
                     NSMutableDictionary *errorField = [NSMutableDictionary new];
                     NSMutableDictionary *errorTags = [NSMutableDictionary dictionaryWithDictionary:tags];
                     if(content.error){
@@ -253,7 +254,7 @@ void *FTRUMQueueIdentityKey = &FTRUMQueueIdentityKey;
                     }
                     [errorTags setValue:FT_NETWORK forKey:FT_KEY_ERROR_SOURCE];
                     [errorTags setValue:FT_NETWORK_ERROR forKey:FT_KEY_ERROR_TYPE];
-                    [errorTags setValue:run forKey:FT_KEY_ERROR_SITUATION];
+                    [errorTags setValue:errorSituation forKey:FT_KEY_ERROR_SITUATION];
                     [errorTags addEntriesFromDictionary:[FTErrorMonitorInfo errorMonitorInfo:self.rumDependencies.errorMonitorType]];
                     [errorTags setValue:key forKey:FT_KEY_RESOURCE_ID];
                     if (content.responseBody.length>0) {
@@ -344,21 +345,21 @@ void *FTRUMQueueIdentityKey = &FTRUMQueueIdentityKey;
 
 #pragma mark - error 、 long_task -
 - (void)internalErrorWithType:(NSString *)type message:(NSString *)message stack:(NSString *)stack{
-    [self addErrorWithType:type state:self.appState message:message stack:stack property:nil time:[NSDate date] fatal:YES];
-}
-- (void)addErrorWithType:(NSString *)type state:(FTAppState)state message:(NSString *)message stack:(NSString *)stack property:(nullable NSDictionary *)property{
-    [self addErrorWithType:type state:state message:message stack:stack property:property time:[NSDate date] fatal:NO];
-}
-- (void)addErrorWithType:(nonnull NSString *)type message:(nonnull NSString *)message stack:(nonnull NSString *)stack date:(NSDate *)date{
-    [self addErrorWithType:type state:self.appState message:message stack:stack property:nil time:date fatal:NO];
+    [self addErrorWithType:type state:AppStateStringMap[self.appState] message:message stack:stack property:nil time:[NSDate date] fatal:YES];
 }
 -(void)addErrorWithType:(NSString *)type message:(NSString *)message stack:(NSString *)stack{
-    [self addErrorWithType:type state:self.appState message:message stack:stack property:nil time:[NSDate date] fatal:NO];
+    [self addErrorWithType:type state:AppStateStringMap[self.appState] message:message stack:stack property:nil time:[NSDate date] fatal:NO];
 }
 - (void)addErrorWithType:(NSString *)type message:(NSString *)message stack:(NSString *)stack property:(nullable NSDictionary *)property{
-    [self addErrorWithType:type state:self.appState message:message stack:stack property:property time:[NSDate date] fatal:NO];
+    [self addErrorWithType:type state:AppStateStringMap[self.appState] message:message stack:stack property:property time:[NSDate date] fatal:NO];
 }
-- (void)addErrorWithType:(NSString *)type state:(FTAppState)state message:(NSString *)message stack:(NSString *)stack property:(nullable NSDictionary *)property time:(NSDate *)time fatal:(BOOL)fatal{
+- (void)addErrorWithType:(NSString *)type state:(FTAppState)state message:(NSString *)message stack:(NSString *)stack property:(nullable NSDictionary *)property{
+    [self addErrorWithType:type state:AppStateStringMap[state] message:message stack:stack property:property time:[NSDate date] fatal:NO];
+}
+- (void)addErrorWithType:(nonnull NSString *)type state:(NSString *)state message:(nonnull NSString *)message stack:(nonnull NSString *)stack date:(NSDate *)date{
+    [self addErrorWithType:type state:state message:message stack:stack property:nil time:date fatal:NO];
+}
+- (void)addErrorWithType:(NSString *)type state:(NSString *)state message:(NSString *)message stack:(NSString *)stack property:(nullable NSDictionary *)property time:(NSDate *)time fatal:(BOOL)fatal{
     if (!(type && message && type.length>0 && message.length>0)) {
         FTInnerLogError(@"[RUM] Failed to add error due to missing required fields. Please ensure 'type'、'message' are provided.");
         return;
@@ -375,7 +376,7 @@ void *FTRUMQueueIdentityKey = &FTRUMQueueIdentityKey;
         NSMutableDictionary *tags = [NSMutableDictionary dictionary];
         [tags setValue:type forKey:FT_KEY_ERROR_TYPE];
         [tags setValue:FT_LOGGER forKey:FT_KEY_ERROR_SOURCE];
-        [tags setValue:AppStateStringMap[state] forKey:FT_KEY_ERROR_SITUATION];
+        [tags setValue:state forKey:FT_KEY_ERROR_SITUATION];
         [tags addEntriesFromDictionary:[FTErrorMonitorInfo errorMonitorInfo:self.rumDependencies.errorMonitorType]];
         FTRUMErrorData *model = [[FTRUMErrorData alloc]initWithType:FTRUMDataError time:time];
         model.tags = tags;

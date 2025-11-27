@@ -132,8 +132,8 @@ static NSObject *sharedInstanceLock;
 - (void)longTaskStackDetected:(NSString*)slowStack duration:(long long)duration time:(long long)time{
     [self.rumManager addLongTaskWithStack:slowStack duration:[NSNumber numberWithLongLong:duration] startTime:time];
 }
-- (void)anrStackDetected:(NSString*)slowStack time:(nonnull NSDate *)time{
-    [self.rumManager addErrorWithType:@"anr_error" message:@"ios_anr" stack:slowStack date:time];
+- (void)anrStackDetected:(NSString*)slowStack time:(nonnull NSDate *)time state:(nonnull NSString *)state{
+    [self.rumManager addErrorWithType:@"anr_error" state:state message:@"ios_anr" stack:slowStack date:time];
 }
 #pragma mark ========== RUM-ERROR appState: App Life Cycle ==========
 -(void)applicationWillEnterForeground{
@@ -143,7 +143,7 @@ static NSObject *sharedInstanceLock;
     self.rumManager.appState = FTAppStateRun;
 }
 -(void)applicationDidEnterBackground{
-    self.rumManager.appState = FTAppStateUnknown;
+    self.rumManager.appState = FTAppStateBackground;
 }
 #pragma mark ========== Shutdown ==========
 - (void)shutDown{

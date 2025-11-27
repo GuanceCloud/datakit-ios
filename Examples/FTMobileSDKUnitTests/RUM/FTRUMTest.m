@@ -1083,6 +1083,34 @@
     }];
     XCTAssertTrue(hasDatasCount == 1);
 }
+- (void)testErrorSituation{
+    [self setRumConfig];
+//    [[FTExternalDataManager sharedManager] addErrorWithType:@"ios_crash" message:@"testSituation_unknown" stack:@"error stack"];
+    [[NSNotificationCenter defaultCenter]
+     postNotificationName:UIApplicationWillEnterForegroundNotification object:nil];
+    [[FTExternalDataManager sharedManager] addErrorWithType:@"ios_crash" message:@"testSituation_startup" stack:@"error stack"];
+    [[NSNotificationCenter defaultCenter]
+     postNotificationName:UIApplicationDidBecomeActiveNotification object:nil];
+    [[FTExternalDataManager sharedManager] addErrorWithType:@"ios_crash" message:@"testSituation_run" stack:@"error stack"];
+    [[NSNotificationCenter defaultCenter]
+     postNotificationName:UIApplicationDidEnterBackgroundNotification object:nil];
+    [[FTExternalDataManager sharedManager] addErrorWithType:@"ios_crash" message:@"testSituation_background" stack:@"error stack"];
+
+    [[FTGlobalRumManager sharedInstance].rumManager syncProcess];
+    NSArray *newArray = [[FTTrackerEventDBTool sharedManger] getFirstRecords:10 withType:FT_DATA_TYPE_RUM];
+    __block int hasDatasCount = 0;
+    [FTModelHelper resolveModelArray:newArray callBack:^(NSString * _Nonnull source, NSDictionary * _Nonnull tags, NSDictionary * _Nonnull fields, BOOL * _Nonnull stop) {
+        if ([source isEqualToString:FT_RUM_SOURCE_ERROR]) {
+            hasDatasCount ++;
+            NSString *errorMessage = fields[FT_KEY_ERROR_MESSAGE];
+            NSString *errorSituation = tags[FT_KEY_ERROR_SITUATION];
+            NSString *situation = [errorMessage substringFromIndex:14];
+            XCTAssertTrue([errorSituation isEqualToString:situation]);
+        }
+    }];
+    XCTAssertTrue(hasDatasCount == 3);
+    
+}
 #pragma mark ========== Long Task ==========
 
 - (void)testAddLongTaskData{

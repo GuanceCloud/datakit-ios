@@ -111,12 +111,6 @@
     }
     return self;
 }
-- (void)start{
-    self.userInfo = [FTUserInfo new];
-    self.dynamicGlobalContext = [NSMutableDictionary new];
-    self.dynamicLogGlobalContext = [NSMutableDictionary new];
-    self.dynamicRUMGlobalContext = [NSMutableDictionary new];
-}
 // sdkConfig
 - (void)startWithVersion:(NSString *)version
               sdkVersion:(NSString *)sdkVersion
@@ -124,7 +118,10 @@
                  service:(NSString *)service
            globalContext:(NSDictionary *)globalContext
                  pkgInfo:(NSDictionary *)pkgInfo{
-    [self start];
+    self.userInfo = [FTUserInfo new];
+    self.dynamicGlobalContext = [NSMutableDictionary new];
+    self.dynamicLogGlobalContext = [NSMutableDictionary new];
+    self.dynamicRUMGlobalContext = [NSMutableDictionary new];
     NSMutableDictionary *dict = [NSMutableDictionary dictionary];
     [dict setValue:[self getApplicationUUID] forKey:FT_APPLICATION_UUID];
     [dict setValue:self.mobileDevice.deviceUUID forKey:FT_COMMON_PROPERTY_DEVICE_UUID];
@@ -281,6 +278,9 @@
 -(FTUserInfo *)userInfo{
     __block FTUserInfo *obj;
     dispatch_sync(self.concurrentQueue, ^{
+        if (!self->_userInfo) {
+            self->_userInfo = [[FTUserInfo alloc] init];
+        }
         obj = [self->_userInfo copy];
     });
     return obj;

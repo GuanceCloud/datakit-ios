@@ -344,8 +344,8 @@ void *FTLongTaskManagerQueueTag = &FTLongTaskManagerQueueTag;
         }
         if(self.enableANR){
             [self deleteFile];
-            if(self.longTaskEvent.isANR && self.delegate && [self.delegate respondsToSelector:@selector(anrStackDetected:time:)]){
-                [self.delegate anrStackDetected:self.longTaskEvent.backtrace time:self.longTaskEvent.startDate];
+            if(self.longTaskEvent.isANR && self.delegate && [self.delegate respondsToSelector:@selector(anrStackDetected:time:state:)]){
+                [self.delegate anrStackDetected:self.longTaskEvent.backtrace time:self.longTaskEvent.startDate state:self.longTaskEvent.appState];
             }
         }
     } @catch (NSException *exception) {

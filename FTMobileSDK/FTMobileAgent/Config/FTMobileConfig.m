@@ -15,6 +15,8 @@
 #import "NSDictionary+FTCopyProperties.h"
 #import "FTJSONUtil.h"
 #import "FTLog+Private.h"
+#import "FTPresetProperty.h"
+#import "FTUserInfo.h"
 
 @implementation FTTraceConfig
 -(instancetype)init{
@@ -69,7 +71,10 @@
         NSNumber *sampleRate = dict[FT_R_TRACE_SAMPLERATE];
         NSNumber *enableAutoTrace = dict[FT_R_TRACE_ENABLE_AUTO_TRACE];
         NSString *traceType = dict[FT_R_TRACE_TRACE_TYPE];
-        if (sampleRate != nil && [sampleRate isKindOfClass:NSNumber.class]) {
+        NSString *vipId = dict[FT_R_VIPID];
+        if (vipId.length > 0 && [[FTJSONUtil arrayWithJsonString:vipId] containsObject:[FTPresetProperty sharedInstance].userInfo.userId]) {
+                self.samplerate = 100;
+        }else if (sampleRate != nil && [sampleRate isKindOfClass:NSNumber.class]) {
             self.samplerate = [sampleRate doubleValue] * 100;
         }
         if (enableAutoTrace != nil && [enableAutoTrace isKindOfClass:NSNumber.class]) {

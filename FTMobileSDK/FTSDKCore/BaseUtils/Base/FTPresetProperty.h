@@ -19,6 +19,7 @@ NS_ASSUME_NONNULL_BEGIN
 @property (nonatomic, strong, readonly) NSDictionary *loggerTags;
 @property (nonatomic, strong, readonly) NSDictionary *rumTags;
 @property (nonatomic, strong, readonly) NSDictionary *rumStaticFields;
+@property (nonatomic, strong, readonly) FTUserInfo *userInfo;
 
 /// Set data modifier
 @property (nonatomic, copy, nullable) FTLineDataModifier lineDataModifier;
