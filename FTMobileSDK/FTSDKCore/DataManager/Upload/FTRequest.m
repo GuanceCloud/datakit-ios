@@ -86,8 +86,11 @@
     objc_setAssociatedObject(self, @selector(serialGenerator), serialGenerator, OBJC_ASSOCIATION_RETAIN);
 }
 - (void)addHTTPHeaderFields:(NSMutableURLRequest *)mutableRequest packageId:(NSString *)packageId{
-    NSString *date =[[NSDate date] ft_stringWithGMTFormat];
-    [mutableRequest setValue:date forHTTPHeaderField:@"Date"];
+    NSDate *date = [NSDate date];
+    NSString *gmtDate =[date ft_stringWithGMTFormat];
+    [mutableRequest setValue:gmtDate forHTTPHeaderField:@"Date"];
+    NSString *timestamp = [NSString stringWithFormat:@"%lld",[date ft_millisecondTimeStamp]];
+    [mutableRequest setValue:timestamp forHTTPHeaderField:@"x-client-timestamp"];
     if(self.contentType){
         [mutableRequest setValue:self.contentType forHTTPHeaderField:@"Content-Type"];
     }

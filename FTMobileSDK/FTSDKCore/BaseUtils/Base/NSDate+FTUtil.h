@@ -12,6 +12,7 @@ NS_ASSUME_NONNULL_BEGIN
 
 @interface NSDate (FTUtil)
 + (long long)ft_currentMillisecondTimeStamp;
+- (long long)ft_millisecondTimeStamp;
 + (long long)ft_currentNanosecondTimeStamp;
 - (long long)ft_nanosecondTimeStamp;
 - (NSString *)ft_stringWithBaseFormat;
