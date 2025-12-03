@@ -25,7 +25,6 @@
 #import "FTJSONUtil.h"
 #import "FTWeakMapTable.h"
 #import "FTThreadDispatchManager.h"
-#import "FTWKWebViewHandler+SessionReplay.h"
 
 @interface FTWKWebViewHandler ()
 @property (nonatomic, weak) id<FTWKWebViewRumDelegate> rumTrackDelegate;
@@ -35,6 +34,16 @@
 @property (nonatomic, assign) BOOL enableTraceWebView;
 @end
 
+// FTWKWebViewHandler+SessionReplay.h
+@interface FTWKWebViewHandler ()
+@property (nonatomic, copy) NSArray *enableLinkRUMKeys;
+
+@property (nonatomic, readwrite, strong) NSSet<NSNumber *> *hiddenSlotIds;
+
+- (void)takeSubsequentFullSnapshot;
+
+- (void)bindInfo:(NSDictionary *)info viewId:(NSString *)viewId;
+@end
 @implementation FTWKWebViewHandler
 @synthesize hiddenSlotIds = _hiddenSlotIds;
 @synthesize enableLinkRUMKeys = _enableLinkRUMKeys;

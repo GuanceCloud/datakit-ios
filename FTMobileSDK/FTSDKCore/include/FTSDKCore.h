@@ -53,3 +53,4 @@
 #import "FTRequestBody.h"
 #import "FTHTTPClient.h"
 #import "FTRemoteConfigManager.h"
+#import "WKWebView+FTAutoTrack.h"

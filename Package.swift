@@ -173,6 +173,7 @@ let package = Package(
                 publicHeadersPath: "Public",
                 cSettings: [
                     .headerSearchPath("."),
+                    .headerSearchPath("Processor/Builders"),
                     .headerSearchPath("DataStore"),
                     .headerSearchPath("Recorder"),
                     .headerSearchPath("Recorder/Touch"),

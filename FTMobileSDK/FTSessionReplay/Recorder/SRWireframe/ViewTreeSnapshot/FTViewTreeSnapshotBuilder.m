@@ -28,8 +28,9 @@
 #import "FTUnsupportedViewRecorder.h"
 #import "FTUIProgressViewRecorder.h"
 #import "FTUIActivityIndicatorRecorder.h"
+#if !TARGET_OS_TV
 #import "FTWKWebViewRecorder.h"
-
+#endif
 @interface FTViewTreeSnapshotBuilder()
 @property (nonatomic, strong) FTViewTreeRecorder *viewTreeRecorder;
 @property (nonatomic, strong) FTSRViewID *idGen;
@@ -102,7 +103,9 @@
         [FTUITabBarRecorder new],
         [FTUIPickerViewRecorder new],
         [FTUIDatePickerRecorder new],
+#if !TARGET_OS_TV
         [FTWKWebViewRecorder new],
+#endif
         [FTUIProgressViewRecorder new],
         [FTUIActivityIndicatorRecorder new],
     ];

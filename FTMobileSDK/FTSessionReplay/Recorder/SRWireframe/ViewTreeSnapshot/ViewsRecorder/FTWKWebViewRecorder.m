@@ -5,7 +5,7 @@
 //  Created by hulilei on 2025/4/18.
 //  Copyright © 2025 DataFlux-cn. All rights reserved.
 //
-
+#if !TARGET_OS_TV
 #import "FTWKWebViewRecorder.h"
 #import "FTViewAttributes.h"
 #import "FTSRWireframe.h"
@@ -66,3 +66,4 @@
 }
 
 @end
+#endif
