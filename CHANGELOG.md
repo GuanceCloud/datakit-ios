@@ -1,3 +1,8 @@
+# 1.6.2-alpha.14
+1. Fix the issue where SessionReplay (SR) collection fails due to NaN value of layerCornerRadius on iOS 26
+2. Support the error sampling for webView session replay
+3. Same as 1.5.15-alpha.2
+---
 # 1.6.2-alpha.13
 1. Added RUM Session Replay context association feature and established WebView container binding with loaded HTML content
 ---
