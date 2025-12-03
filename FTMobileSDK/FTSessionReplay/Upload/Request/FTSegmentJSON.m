@@ -33,7 +33,7 @@
         }
         _recordsCount = array.count;
         _records = array;
-        _bindInfo = dict[@"bindInfo"];
+        _bindInfo = dict[FT_LINK_RUM_KEYS];
     }
     return self;
 }

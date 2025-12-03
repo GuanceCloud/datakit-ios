@@ -21,7 +21,7 @@
 #import "FTPresetProperty.h"
 #import "FTSessionReplayConfig+Private.h"
 #import "FTRemoteConfigManager.h"
-#import "FTWKWebViewHandler+Private.h"
+#import "FTWKWebViewHandler+SessionReplay.h"
 @interface FTFeatureStores : NSObject
 @property (nonatomic, strong) FTFeatureStorage *storage;
 @property (nonatomic, strong) FTFeatureUpload *upload;
@@ -72,7 +72,7 @@ static dispatch_once_t onceToken;
     }
     FTSessionReplayConfig *copyConfig = [config copy];
     [copyConfig mergeWithRemoteConfigDict:[[FTRemoteConfigManager sharedInstance] getLocalRemoteConfig]];
-    [FTWKWebViewHandler sharedInstance].whiteLists = copyConfig.enableLinkRUMKeys;
+    [FTWKWebViewHandler sharedInstance].enableLinkRUMKeys = copyConfig.enableLinkRUMKeys;
     FTSessionReplayFeature *sessionReplayFeature = [[FTSessionReplayFeature alloc]initWithConfig:copyConfig];
     FTFeatureStores *srStore = [self registerFeature:sessionReplayFeature];
     [self.stores setValue:srStore forKey:sessionReplayFeature.name];

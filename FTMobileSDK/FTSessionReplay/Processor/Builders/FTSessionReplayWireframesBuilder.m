@@ -61,6 +61,9 @@
 - (NSDictionary *)linkRumKeysInfo{
     return [_linkRUMKeysInfo copy];
 }
+- (NSSet<NSNumber *> *)hiddenWebViewSlotIDs{
+    return [_webViewSlotIDs copy];
+}
 @end
 
 

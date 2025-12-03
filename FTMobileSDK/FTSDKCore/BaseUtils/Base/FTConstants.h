@@ -197,6 +197,7 @@ extern NSString * const FT_SESSION_REPLAY_STATS;
 extern NSString * const FT_RECORDS_COUNT;
 extern NSString * const FT_SEGMENTS_COUNT;
 extern NSString * const FT_SEGMENTS_TOTAL_RAW_SIZE;
+extern NSString * const FT_LINK_RUM_KEYS;
 #pragma mark ========== logging ==========
 extern NSString * const FT_KEY_STATUS;
 extern NSString * const FT_KEY_CONTENT;

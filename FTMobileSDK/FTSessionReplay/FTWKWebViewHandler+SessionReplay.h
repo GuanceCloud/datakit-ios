@@ -11,7 +11,12 @@
 NS_ASSUME_NONNULL_BEGIN
 
 @interface FTWKWebViewHandler ()
+@property (nonatomic, copy) NSArray *enableLinkRUMKeys;
+
+@property (nonatomic, readwrite, strong) NSSet<NSNumber *> *hiddenSlotIds;
+
 - (void)takeSubsequentFullSnapshot;
+
 - (void)bindInfo:(NSDictionary *)info viewId:(NSString *)viewId;
 @end
 

@@ -158,7 +158,7 @@
                 NSDictionary *view = message[@"view"];
                 NSString *viewID = view[@"id"];
                 NSDictionary *event = message[@"data"];
-                NSDictionary *bindInfo = message[@"bindInfo"];
+                NSDictionary *bindInfo = message[FT_LINK_RUM_KEYS];
                 if (event && slotID && viewID) {
                     NSDictionary *currentRumContext = strongSelf.currentRUMContext;
                     if (!currentRumContext) {
@@ -204,7 +204,7 @@
 }
 - (void)checkLinkRumKeys:(NSDictionary *)rumContext{
     // link rum
-    NSDictionary *bindInfo = rumContext[@"bindInfo"];
+    NSDictionary *bindInfo = rumContext[FT_LINK_RUM_KEYS];
     if (bindInfo) {
         NSArray *whiteLists = self.config.enableLinkRUMKeys;
         if (whiteLists.count>0) {

@@ -508,7 +508,7 @@ void *FTRUMQueueIdentityKey = &FTRUMQueueIdentityKey;
             [dict addEntriesFromDictionary:sessionDict];
             NSDictionary *context = strongSelf.rumDependencies.lastViewUserCustomDatas;
             if (context) {
-                [dict addEntriesFromDictionary:@{@"bindInfo":context}];
+                [dict addEntriesFromDictionary:@{FT_LINK_RUM_KEYS:context}];
             }
             [dict setValue:@(strongSelf.rumDependencies.sampledForErrorSession) forKey:FT_RUM_KEY_SAMPLED_FOR_ERROR_SESSION];
             return dict;

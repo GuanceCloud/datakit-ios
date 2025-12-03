@@ -180,6 +180,7 @@ NSString * const FT_SESSION_REPLAY_STATS = @"session_replay_stats";
 NSString * const FT_RECORDS_COUNT = @"records_count";
 NSString * const FT_SEGMENTS_COUNT = @"segments_count";
 NSString * const FT_SEGMENTS_TOTAL_RAW_SIZE = @"segments_total_raw_size";
+NSString * const FT_LINK_RUM_KEYS = @"bindInfo";
 #pragma mark ========== error monitor ==========
 NSString * const FT_MEMORY_TOTAL  = @"memory_total";
 NSString * const FT_MEMORY_USE  = @"memory_use";

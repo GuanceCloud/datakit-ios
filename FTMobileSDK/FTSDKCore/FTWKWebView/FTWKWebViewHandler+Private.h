@@ -14,13 +14,6 @@ NS_ASSUME_NONNULL_BEGIN
 
 @interface FTWKWebViewHandler ()
 
-@property (nonatomic, copy) NSArray *whiteLists;
-/**
- * key:viewController
- * value:linkRumInfos
- */
-@property (nonatomic, strong) FTWeakMapTable *linkRumInfos;
-
 - (void)startWithEnableTraceWebView:(BOOL)enable allowWebViewHost:(nullable NSArray *)hosts rumDelegate:(id<FTWKWebViewRumDelegate>)delegate;
 
 - (void)innerEnableWebView:(WKWebView *)webView;

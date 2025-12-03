@@ -25,6 +25,7 @@
 #import "FTJSONUtil.h"
 #import "FTWeakMapTable.h"
 #import "FTThreadDispatchManager.h"
+#import "FTWKWebViewHandler+SessionReplay.h"
 
 @interface FTWKWebViewHandler ()
 @property (nonatomic, weak) id<FTWKWebViewRumDelegate> rumTrackDelegate;
@@ -33,8 +34,10 @@
 @property (nonatomic, strong) NSLock *lock;
 @property (nonatomic, assign) BOOL enableTraceWebView;
 @end
+
 @implementation FTWKWebViewHandler
-@synthesize whiteLists = _whiteLists;
+@synthesize hiddenSlotIds = _hiddenSlotIds;
+@synthesize enableLinkRUMKeys = _enableLinkRUMKeys;
 static FTWKWebViewHandler *sharedInstance = nil;
 static NSObject *sharedInstanceLock;
 + (void)initialize{
@@ -85,19 +88,6 @@ static NSObject *sharedInstanceLock;
                          withMethod:@selector(ft_dealloc)
                               error:&error];
     });
-}
--(void)setWhiteLists:(NSArray *)whiteLists{
-    [self.lock lock];
-    _whiteLists = [whiteLists copy];
-    self.linkRumInfos = [[FTWeakMapTable alloc]init];
-    [self.lock unlock];
-}
--(NSArray *)whiteLists{
-    id list = nil;
-    [self.lock lock];
-    list = [_whiteLists copy];
-    [self.lock unlock];
-    return list;
 }
 #pragma mark request
 - (void)addWebView:(WKWebView *)webView bridge:(id)bridge{
@@ -209,10 +199,10 @@ static NSObject *sharedInstanceLock;
                         info.viewReferrer = self.rumTrackDelegate ? [self.rumTrackDelegate getLastViewName] : nil;
                     }
                     if (info.viewId) {
-                        NSArray *whiteLists = self.whiteLists;
-                        if (whiteLists.count>0 && (info.container.ft_linkRumKeysInfo == nil ||  info.container.ft_linkRumKeysInfo.count == 0)) {
+                        NSArray *linkRUMKeys = self.enableLinkRUMKeys;
+                        if (linkRUMKeys.count>0 && (info.container.ft_linkRumKeysInfo == nil ||  info.container.ft_linkRumKeysInfo.count == 0)) {
                             NSMutableDictionary *infoDict = [[NSMutableDictionary alloc]init];
-                            NSEnumerator *en = [whiteLists objectEnumerator];
+                            NSEnumerator *en = [linkRUMKeys objectEnumerator];
                             NSString *key;
                             while ((key = en.nextObject) != nil) {
                                 [infoDict setValue:fields[key] forKey:key];
@@ -240,27 +230,11 @@ static NSObject *sharedInstanceLock;
         }else if ([name isEqualToString:@"session_replay"]){
             NSMutableDictionary *dict = [messageDic mutableCopy];
             [dict setValue:[NSString stringWithFormat:@"%lld",slotID] forKey:@"slotId"];
-            [dict setValue:info.container.ft_linkRumKeysInfo forKey:@"bindInfo"];
+            [dict setValue:info.container.ft_linkRumKeysInfo forKey:FT_LINK_RUM_KEYS];
             [[FTModuleManager sharedInstance] postMessage:FTMessageKeyWebViewSR message:dict];
         }
     } @catch (NSException *exception) {
         FTInnerLogError(@"%@ error: %@", self, exception);
-    }
-}
-- (void)takeSubsequentFullSnapshot{
-    NSArray *allKeys = [self.webViewBridge keyEnumerator].allObjects;
-    for (WKWebView *key in allKeys) {
-        id value = [self.webViewBridge objectForKey:key]; 
-        if (key && value) {
-            [FTThreadDispatchManager performBlockDispatchMainAsync:^{
-                [key evaluateJavaScript:@"DATAFLUX_RUM.takeSubsequentFullSnapshot()" completionHandler:nil];
-            }];
-        }
-    }
-}
-- (void)bindInfo:(NSDictionary *)info viewId:(NSString *)viewId{
-    if(self.rumTrackDelegate){
-        [self.rumTrackDelegate bindSRInfo:info containerViewID:viewId];
     }
 }
 - (void)disableWebView:(WKWebView *)webView{
@@ -276,6 +250,48 @@ static NSObject *sharedInstanceLock;
 + (void)shutDown{
     @synchronized(sharedInstanceLock) {
         sharedInstance = nil;
+    }
+}
+#pragma mark ========= FTWKWebViewHandler+SessionReplay ========
+-(void)setEnableLinkRUMKeys:(NSArray *)enableLinkRUMKeys{
+    [self.lock lock];
+    _enableLinkRUMKeys = [enableLinkRUMKeys copy];
+    [self.lock unlock];
+}
+-(NSArray *)enableLinkRUMKeys{
+    id list = nil;
+    [self.lock lock];
+    list = [_enableLinkRUMKeys copy];
+    [self.lock unlock];
+    return list;
+}
+-(void)setHiddenSlotIds:(NSSet<NSNumber *> *)hiddenSlotIds{
+    [self.lock lock];
+    _hiddenSlotIds = hiddenSlotIds;
+    [self.lock unlock];
+}
+-(NSSet<NSNumber *> *)hiddenSlotIds{
+    NSSet<NSNumber *> *slotIds = nil;
+    [self.lock lock];
+    slotIds = [_hiddenSlotIds copy];
+    [self.lock unlock];
+    return slotIds;
+}
+- (void)takeSubsequentFullSnapshot{
+    NSArray *allKeys = [self.webViewBridge keyEnumerator].allObjects;
+    for (WKWebView *key in allKeys) {
+        BOOL isHidden = [self.hiddenSlotIds containsObject:@(key.hash)];
+        id value = [self.webViewBridge objectForKey:key];
+        if (!isHidden && key && value) {
+            [FTThreadDispatchManager performBlockDispatchMainAsync:^{
+                [key evaluateJavaScript:@"DATAFLUX_RUM.takeSubsequentFullSnapshot()" completionHandler:nil];
+            }];
+        }
+    }
+}
+- (void)bindInfo:(NSDictionary *)info viewId:(NSString *)viewId{
+    if(self.rumTrackDelegate){
+        [self.rumTrackDelegate bindSRInfo:info containerViewID:viewId];
     }
 }
 @end

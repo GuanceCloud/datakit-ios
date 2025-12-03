@@ -66,32 +66,23 @@ NSTimeInterval const kFullSnapshotInterval = 20.0;
         for (id<FTSRNodeWireframesBuilder> builder in nodes) {
             [wireframes addObjectsFromArray:[builder buildWireframesWithBuilder:srBuilder]];
         }
+        // -hiddenWebViewSlotIDs methods must all after all nodes call [builder buildWireframesWithBuilder:srBuilder]
+        [[FTWKWebViewHandler sharedInstance] setHiddenSlotIds:[srBuilder hiddenWebViewSlotIDs]];
         NSArray<FTSRWireframe*> *hiddenWebs = [srBuilder hiddenWebViewWireframes];
         if(hiddenWebs.count>0){
             [wireframes insertObjects:hiddenWebs atIndexes:[[NSIndexSet alloc] initWithIndexesInRange:NSMakeRange(0, hiddenWebs.count)]];
-        }
-        // linkRumKeys
-        NSDictionary *webLinkRumKeysInfo = [srBuilder linkRumKeysInfo]?:@{};
-        NSDictionary *nativeBindInfo = viewTreeSnapshot.context.bindInfo?:@{};
-        NSMutableDictionary *bindInfo = [NSMutableDictionary dictionaryWithDictionary:nativeBindInfo];
-        [bindInfo addEntriesFromDictionary:webLinkRumKeysInfo];
-        if (![[NSSet setWithArray:webLinkRumKeysInfo.allKeys] isSubsetOfSet:[NSSet setWithArray:nativeBindInfo.allKeys]]) {
-            [[FTWKWebViewHandler sharedInstance] bindInfo:webLinkRumKeysInfo viewId:viewTreeSnapshot.context.viewID];
         }
         // 2.Convert data to storage required format
         NSMutableArray<FTSRRecord> *records =(NSMutableArray<FTSRRecord>*)[[NSMutableArray alloc]init];
         // 3.Determine if it's new addition or new View
         BOOL isNewView = self.lastSnapshot == nil || self.lastSnapshot.context.sessionID != viewTreeSnapshot.context.sessionID || self.lastSnapshot.context.viewID != viewTreeSnapshot.context.viewID;
-        if (isNewView) {
-            self.lastBindInfo = nil;
-        }
-        BOOL needFullSnapOnLinkRumKeysBind = bindInfo.count>0?![bindInfo isEqualToDictionary:self.lastBindInfo] : NO;
-        self.lastBindInfo = bindInfo;
-        BOOL isTimeForFullSnapshot = [self isTimeForFullSnapshot];
+       
+        BOOL needFullSnapOnLinkRumKeysBind = [self needFullSnapOnLinkRumKeysBind:[srBuilder linkRumKeysInfo] context:viewTreeSnapshot.context];
+        BOOL isTimeForFullSnapshot = [self isTimeForFullSnapshot:isNewView];
         BOOL fullSnapshotRequired = isNewView || needFullSnapOnLinkRumKeysBind || isTimeForFullSnapshot;
         
         // 3.1.New view full save
-        if (isNewView || fullSnapshotRequired){
+        if (fullSnapshotRequired){
             // meta focus full
             FTSRMetaRecord *metaRecord = [[FTSRMetaRecord alloc]initWithViewTreeSnapshot:viewTreeSnapshot];
             FTSRFocusRecord *focusRecord = [[FTSRFocusRecord alloc]initWithTimestamp:[viewTreeSnapshot.context.date ft_millisecondTimeStamp]];
@@ -101,6 +92,7 @@ NSTimeInterval const kFullSnapshotInterval = 20.0;
             [records addObject:metaRecord];
             [records addObject:focusRecord];
             [records addObject:fullRecord];
+            [[FTWKWebViewHandler sharedInstance] takeSubsequentFullSnapshot];
         }else if(self.lastSRWireframes == nil){
             //3.2 Has lastSnapshot, but no wireframe collected
             FTSRFullSnapshotRecord *fullRecord = [[FTSRFullSnapshotRecord alloc]initWithTimestamp:[viewTreeSnapshot.context.date ft_millisecondTimeStamp]];
@@ -138,7 +130,7 @@ NSTimeInterval const kFullSnapshotInterval = 20.0;
         // 5.Data writing
         if(records.count>0){
             FTEnrichedRecord *fullRecord = [[FTEnrichedRecord alloc]initWithContext:viewTreeSnapshot.context records:records];
-            fullRecord.bindInfo = bindInfo;
+            fullRecord.bindInfo = self.lastBindInfo;
             fullRecord.webViewSlotIDs = viewTreeSnapshot.webViewSlotIDs.count>0? viewTreeSnapshot.webViewSlotIDs.allObjects:nil;
             // 5.1. Synchronize page collection status to RUM-View
             [self trackRecord:fullRecord];
@@ -179,15 +171,33 @@ NSTimeInterval const kFullSnapshotInterval = 20.0;
     // TODO: Whether to use protocol delegate to replace singleton
     [[FTModuleManager sharedInstance] postMessage:FTMessageKeyRecordsCountByViewID message:[self.recordsCountByViewID mutableCopy]];
 }
-- (BOOL)isTimeForFullSnapshot{
+#pragma mark ===== sessionErrorSampled =====
+- (BOOL)isTimeForFullSnapshot:(BOOL)isNewView{
     if(self.onErrorSampled){
         CFTimeInterval currentTime = CACurrentMediaTime();
-        if (currentTime - self.lastSnapshotTimestamp >= kFullSnapshotInterval) {
+        if (isNewView) {
+            self.lastSnapshotTimestamp = currentTime;
+            return YES;
+        }else if(currentTime - self.lastSnapshotTimestamp >= kFullSnapshotInterval) {
             self.lastSnapshotTimestamp = currentTime;
             return YES;
         }
     }
     return NO;
 }
-
+#pragma mark ===== bindinfo =====
+- (BOOL)needFullSnapOnLinkRumKeysBind:(NSDictionary *)webLinkRumKeysInfo context:(FTSRContext *)context {
+    // linkRumKeys
+    NSDictionary *web = webLinkRumKeysInfo?:@{};
+    NSDictionary *native = context.bindInfo?:@{};
+    NSMutableDictionary *bindInfo = [NSMutableDictionary dictionaryWithDictionary:native];
+    [bindInfo addEntriesFromDictionary:webLinkRumKeysInfo];
+    if (![[NSSet setWithArray:web.allKeys] isSubsetOfSet:[NSSet setWithArray:native.allKeys]]) {
+        [[FTWKWebViewHandler sharedInstance] bindInfo:webLinkRumKeysInfo viewId:context.viewID];
+    }
+   
+    BOOL need = bindInfo.count>0?![bindInfo isEqualToDictionary:self.lastBindInfo] : NO;
+    self.lastBindInfo = bindInfo;
+    return need;
+}
 @end
