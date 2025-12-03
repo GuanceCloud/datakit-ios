@@ -100,10 +100,6 @@ NSString *const kFTJsCodePrefix = @"/* FTWebViewJavascriptBridge */";
     [_webView evaluateJavaScript:javascriptCommand completionHandler:nil];
 }
 
--(void)dealloc{
-    [self removeScriptMessageHandler];
-}
-
 NSString * FTWebViewJavascriptBridge_js(NSString *hostsString) {
     NSString *allowedHosts = hostsString?:@"";
     id<FTSRWebTrackingProtocol> sessionReplay = [[FTModuleManager sharedInstance] getRegisterService:NSProtocolFromString(@"FTSRWebTrackingProtocol")];

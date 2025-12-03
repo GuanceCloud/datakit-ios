@@ -374,12 +374,13 @@
     WKWebView *webView = [[WKWebView alloc]init];
     [[FTWKWebViewHandler sharedInstance] startWithEnableTraceWebView:NO allowWebViewHost:nil rumDelegate:self];
     [[FTWKWebViewHandler sharedInstance] enableWebView:webView];
-    id bridge = [[FTWKWebViewHandler sharedInstance] getWebViewBridge:webView];
+    __weak id bridge = [[FTWKWebViewHandler sharedInstance] getWebViewBridge:webView];
+    XCTAssertTrue(bridge != nil);
+
     [[FTWKWebViewHandler sharedInstance] enableWebView:webView];
     id bridge2 = [[FTWKWebViewHandler sharedInstance] getWebViewBridge:webView];
-    XCTAssertTrue(bridge != nil);
     XCTAssertTrue(bridge2 != nil);
-    XCTAssertTrue(bridge == bridge2);
+    XCTAssertTrue(bridge != bridge2);
 }
 - (void)dealRUMWebViewData:(NSString *)measurement tags:(NSDictionary *)tags fields:(NSDictionary *)fields tm:(long long)tm{
     
