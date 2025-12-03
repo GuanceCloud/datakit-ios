@@ -60,6 +60,10 @@
 3. Session Replay data synchronization adds X-Pkg-Id tracking adaptation
 4. Same as 1.5.15-alpha.2
 ---
+# 1.5.19-alpha.4
+1. Fix CPU and memory utilization collection methods
+2. Replace the mutable `const char* kThreadSecondary` pointer with a read-only string literal macro to eliminate pointer tampering risks
+---
 # 1.5.19-alpha.3
 1. Added `resource_id` to network error types for data correlation. 
 ---
@@ -127,6 +131,7 @@
 2. Add `FTRUMConfig.sessionErrorSampleRate` to support error sampling, when not sampled by setSamplingRate, can sample RUM data from 1 minute ago when errors occur
 3. Logger supports filtering custom log levels through `logLevelFilter`
 4. When native page jumps to WebView page, fill view_referrer with native page name
+5. Resolve unexpectedly long DNS duration in resource collection
 ---
 # 1.5.16-beta.4
 1. Same as 1.5.16-beta.3

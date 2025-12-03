@@ -102,6 +102,8 @@
                                               @"UIActivityGroupViewController",
                                               @"UIKeyboardCandidateRowViewController",
                                               @"UIKeyboardHiddenViewController",
+                                              @"UIKeyboardHiddenViewController_Autofill",
+                                              @"_SFAppAutoFillPasswordViewController",
                                               @"_UIAlertControllerTextFieldViewController",
                                               @"_UILongDefinitionViewController",
                                               @"_UIResilientRemoteViewContainerViewController",

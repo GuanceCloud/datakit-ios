@@ -274,4 +274,8 @@ static const NSTimeInterval kInitialRetryDelay = 0.5; // Initial 500ms delay
     }
     return NO;
 }
+-(void)dealloc{
+    pthread_rwlock_destroy(&_timerWorkLock);
+    pthread_rwlock_destroy(&_uploadWorkLock);
+}
 @end

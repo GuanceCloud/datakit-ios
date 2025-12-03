@@ -47,7 +47,7 @@
         [[FTExternalDataManager sharedManager] stopView];
     }];
     TableViewCellItem *item4 = [[TableViewCellItem alloc]initWithTitle:@"RUM addAction" handler:^{
-        [[FTExternalDataManager sharedManager]  addClickActionWithName:@"UITableViewCell click"];
+        [[FTExternalDataManager sharedManager] startAction:@"UITableViewCell click" actionType:@"click" property:nil];
     }];
     TableViewCellItem *item5 = [[TableViewCellItem alloc]initWithTitle:@"RUM addError" handler:^{
         [[FTExternalDataManager sharedManager] addErrorWithType:@"ios_crash" state:FTAppStateUnknown message:@"crash_message" stack:@"crash_stack" property:nil];
