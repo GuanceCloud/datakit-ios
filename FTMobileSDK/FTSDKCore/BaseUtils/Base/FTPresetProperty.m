@@ -20,7 +20,7 @@
 #import "FTLog.h"
 #include <mach-o/arch.h>
 #include <sys/sysctl.h>
-#if FT_MAC
+#if FT_HOST_MAC
 #import <AppKit/AppKit.h>
 #import <IOKit/IOKitLib.h>
 #endif
@@ -48,7 +48,7 @@
         _screenSize = [[NSString alloc] initWithFormat:@"%.f*%.f",rect.size.height*scale,rect.size.width*scale];
         _os = [UIDevice currentDevice].systemName;
         
-#elif FT_MAC
+#elif FT_HOST_MAC
         _os = @"macOS";
         NSRect rect = [NSScreen mainScreen].frame;
         _screenSize =[[NSString alloc] initWithFormat:@"%.f*%.f",rect.size.height,rect.size.width];
@@ -738,7 +738,7 @@ static uintptr_t firstCmdAfterHeader(const struct mach_header* const header) {
 #endif
     return platform;
 }
-#if FT_MAC
+#if FT_HOST_MAC
 + (NSString *)getDeviceUUID{
     io_registry_entry_t ioRegistryRoot = IORegistryEntryFromPath(kIOMasterPortDefault, "IOService:/");
     CFStringRef uuidCf = (CFStringRef) IORegistryEntryCreateCFProperty(ioRegistryRoot, CFSTR(kIOPlatformUUIDKey), kCFAllocatorDefault, 0);

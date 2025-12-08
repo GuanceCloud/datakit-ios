@@ -23,7 +23,7 @@
 - (NSString *)formatLogMessage:(FTLogMessage *)logMessage{
     if(logMessage.userLog){
         NSString *prefix = @"IOS APP" ;
-#if FT_MAC
+#if FT_HOST_MAC
         prefix = @"MACOS APP";
 #endif
         NSString *status = logMessage.status.length>0?[logMessage.status uppercaseString]:[FTStatusStringMap[logMessage.level] uppercaseString];

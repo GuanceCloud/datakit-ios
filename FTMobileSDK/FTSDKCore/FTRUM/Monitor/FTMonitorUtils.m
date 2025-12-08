@@ -12,7 +12,7 @@
 #import "FTSDKCompat.h"
 #import <mach/mach.h>
 #import "FTConstants.h"
-#if FT_MAC
+#if FT_HOST_MAC
 #import <IOKit/ps/IOPowerSources.h>
 #import <IOKit/ps/IOPSKeys.h>
 #else
@@ -22,7 +22,7 @@
 #pragma mark ========== Battery ==========
 //Battery level
 +(double)batteryUse{
-#if FT_MAC
+#if FT_HOST_MAC
     CFTypeRef info = IOPSCopyPowerSourcesInfo();
     if (info == NULL)
         return 0;

@@ -16,3 +16,10 @@
 ///   - stack: stack information
 - (void)internalErrorWithType:(NSString *)type message:(NSString *)message stack:(NSString *)stack;
 @end
+
+
+@protocol FTBacktraceReporting <NSObject>
+
+- (NSString *)generateMainThreadBacktrace;
+
+@end

@@ -133,7 +133,7 @@ static CFTimeInterval processStartTime(NSTimeInterval now) {
     _applicationDidEnterBackground = YES;
 }
 - (BOOL)isActivePrewarmAvailable{
-#    if FT_IOS
+#    if FT_HOST_IOS
     // User data shows that iOS 14 app launches also have prewarming, which contradicts Apple's documentation that support starts from iOS 15.
     if (@available(iOS 14, *)) {
         return YES;

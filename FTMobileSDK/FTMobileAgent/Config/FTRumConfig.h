@@ -7,6 +7,9 @@
 //
 
 #import <Foundation/Foundation.h>
+#import "FTActionTrackingHandler.h"
+#import "FTViewTrackingHandler.h"
+#import "FTCrashMonitorType.h"
 
 /// Device information in ERROR
 typedef NS_OPTIONS(NSUInteger, FTErrorMonitorType) {
@@ -49,9 +52,6 @@ typedef NS_ENUM(NSInteger, FTRUMCacheDiscard)  {
     FTRUMDiscardOldest
 };
 
-#import "FTActionTrackingHandler.h"
-#import "FTViewTrackingHandler.h"
-
 NS_ASSUME_NONNULL_BEGIN
 /// RUM filter resource callback, returns: NO means to collect, YES means not to collect.
 typedef BOOL(^FTResourceUrlHandler)(NSURL * url);
@@ -92,6 +92,8 @@ typedef BOOL (^FTSessionTaskErrorFilter)(NSError *_Nonnull error);
 @property (nonatomic, copy, nullable) FTResourceUrlHandler resourceUrlHandler;
 /// Set whether to collect crash logs
 @property (nonatomic, assign) BOOL enableTrackAppCrash;
+
+@property (nonatomic, assign) FTCrashMonitorType crashMonitoring;
 /// Set whether to collect freezes
 @property (nonatomic, assign) BOOL enableTrackAppFreeze;
 /// Set freeze threshold. Unit milliseconds 100 < freezeDurationMs, default 250ms

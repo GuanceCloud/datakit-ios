@@ -26,7 +26,7 @@ NS_ASSUME_NONNULL_BEGIN
 + (NSString *)deviceInfo;
 + (NSString *)cpuArch;
 + (NSString *)CPUArchForMajor:(cpu_type_t)majorCode minor:(cpu_subtype_t)minorCode;
-#if FT_MAC
+#if FT_HOST_MAC
 + (NSString *)getDeviceUUID;
 + (NSString *)macOSDeviceModel;
 #endif

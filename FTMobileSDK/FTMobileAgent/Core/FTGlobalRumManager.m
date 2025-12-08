@@ -74,7 +74,9 @@ static NSObject *sharedInstanceLock;
     [[FTAutoTrackHandler sharedInstance] startWithTrackView:rumConfig.enableTraceUserView action:rumConfig.enableTraceUserAction addRumDatasDelegate:self.rumManager viewHandler:rumConfig.viewTrackingHandler actionHandler:rumConfig.actionTrackingHandler];
     [[FTAppLifeCycle sharedInstance] addAppLifecycleDelegate:self];
     if(rumConfig.enableTrackAppCrash){
+        [FTCrash shared].monitoring = rumConfig.crashMonitoring;
         [[FTCrash shared] addErrorDataDelegate:self.rumManager];
+        [[FTCrash shared] install];
     }
     //Collect view, resource, jsBridge
     if (rumConfig.enableTrackAppANR||rumConfig.enableTrackAppFreeze) {

@@ -7,7 +7,7 @@
 
 #import "FTAppLifeCycle.h"
 #import "FTSDKCompat.h"
-#if FT_MAC
+#if FT_HOST_MAC
     #import <AppKit/AppKit.h>
 #else
     #if FT_HAS_UIKIT
@@ -56,7 +56,7 @@
 }
 - (void)setupAppStateNotification{
     NSNotificationCenter *notification = [NSNotificationCenter defaultCenter];
-#if FT_MAC
+#if FT_HOST_MAC
     [notification addObserver:self selector:@selector(applicationDidBecomeActive:) name:NSApplicationDidBecomeActiveNotification object:[NSApplication sharedApplication]];
     
     [notification addObserver:self selector:@selector(applicationWillResignActive:) name:NSApplicationWillResignActiveNotification object:[NSApplication sharedApplication]];

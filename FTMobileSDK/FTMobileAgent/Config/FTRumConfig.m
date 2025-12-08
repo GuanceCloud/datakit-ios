@@ -35,6 +35,7 @@
         _rumCacheLimitCount = FT_DB_RUM_MAX_COUNT;
         _rumDiscardType = FTRUMDiscard;
         _enableTraceWebView = YES;
+        _crashMonitoring = FTCrashMonitorTypeAll;
     }
     return self;
 }
@@ -64,6 +65,7 @@
     options.sessionTaskErrorFilter = self.sessionTaskErrorFilter;
     options.viewTrackingHandler = self.viewTrackingHandler;
     options.actionTrackingHandler = self.actionTrackingHandler;
+    options.crashMonitoring = self.crashMonitoring;
     return options;
 }
 -(instancetype)initWithDictionary:(NSDictionary *)dict{

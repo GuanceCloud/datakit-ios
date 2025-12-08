@@ -16,7 +16,7 @@
 #include <mach-o/dyld.h>
 #include <netdb.h>
 #include <arpa/inet.h>
-#if FT_IOS
+#if FT_HOST_IOS
 #import <CoreTelephony/CTTelephonyNetworkInfo.h>
 #import <CoreTelephony/CTCarrier.h>
 #endif
@@ -81,7 +81,7 @@
     return uuid.lowercaseString;
 }
 
-#if FT_IOS
+#if FT_HOST_IOS
 +(NSString *)telephonyCarrier
 {
     CTTelephonyNetworkInfo *info = [[CTTelephonyNetworkInfo alloc] init];
