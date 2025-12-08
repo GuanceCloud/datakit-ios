@@ -103,7 +103,9 @@
             }
             break;
         case FTRUMDataAddAction:
-            [self addAction:model context:context];
+            if (self.isActiveView){
+                [self addAction:model context:context];
+            }
             break;
         case FTRUMDataError:
             if (self.isActiveView) {
