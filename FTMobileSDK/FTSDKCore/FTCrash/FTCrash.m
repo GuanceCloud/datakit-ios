@@ -68,6 +68,7 @@ static mach_port_t main_thread_id;
     }
     return self;
 }
+
 - (void)install{
     NSString *installPath = [self getDefaultInstallPath];
     if (!installPath) {
@@ -81,6 +82,9 @@ static mach_port_t main_thread_id;
     
     ftcrash_install(self.bundleName.UTF8String,installPath.UTF8String,self.monitoring);
     [self sendCrashReport];
+}
+-(id<FTBacktraceReporting>)backtraceReporting{
+    return self;
 }
 - (NSString *)getBundleName{
     NSString *bundleName =
@@ -201,10 +205,7 @@ static mach_port_t main_thread_id;
     return [self.crashReportWrapper generateBacktrace:main_thread_id];
 }
 -(NSString *)generateAllThreadsBacktrace{
-    return nil;
-}
--(NSString *)generateBacktrace:(thread_t)thread{
- 
+    return [self.crashReportWrapper generateAllThreadsBacktrace];
 }
 - (double)crashedLastTimestamp{
     return ftcrashstate_currentState()->crashedLastTimestamp;

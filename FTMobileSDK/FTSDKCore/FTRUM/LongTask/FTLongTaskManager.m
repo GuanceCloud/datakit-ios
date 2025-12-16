@@ -16,6 +16,7 @@
 #import "FTLog+Private.h"
 #define FTBoundary  @"\n___boundary.info.date___\n"
 
+#define FT_ANR_THRESHOLD_S 3
 #define FT_ANR_THRESHOLD_UPDATE_S 1
 
 @interface FTLongTaskEvent:NSObject
@@ -24,6 +25,7 @@
 @property (nonatomic, assign) long long freezeDurationNs;
 @property (nonatomic, strong) NSDate *startDate;
 @property (nonatomic, copy) NSString *backtrace;
+@property (nonatomic, copy) NSString *allBacktrace;
 @property (nonatomic, strong) NSDate *lastDate;
 @property (nonatomic, strong) NSNumber *duration;
 @property (nonatomic, copy) NSString *appState;
@@ -61,6 +63,7 @@
     [dict setValue:[NSNumber numberWithBool:self.isANR] forKey:@"isANR"];
     [dict setValue:self.startDate?@([self.startDate ft_nanosecondTimeStamp]):nil forKey:@"startDate"];
     [dict setValue:self.backtrace forKey:@"backtrace"];
+    [dict setValue:self.allBacktrace forKey:@"allBacktrace"];
     [dict setValue:self.view forKey:@"view"];
     [dict setValue:self.sessionTags forKey:@"sessionContext"];
     [dict setValue:self.appState forKey:@"appState"];
@@ -81,10 +84,12 @@ void *FTLongTaskManagerQueueTag = &FTLongTaskManagerQueueTag;
 @property (nonatomic, assign) BOOL enableANR;
 @property (nonatomic, assign) BOOL enableFreeze;
 @property (nonatomic, assign) long freezeDurationMs;
+@property (nonatomic, weak) id<FTBacktraceReporting> backtraceReporting;
 @end
 @implementation FTLongTaskManager
 -(instancetype)initWithDependencies:(FTRUMDependencies *)dependencies
                            delegate:(id<FTRunloopDetectorDelegate>)delegate
+                 backtraceReporting:(id<FTBacktraceReporting>)backtraceReporting
                   enableTrackAppANR:(BOOL)enableANR
                enableTrackAppFreeze:(BOOL)enableFreeze
                    freezeDurationMs:(long)freezeDurationMs
@@ -99,6 +104,7 @@ void *FTLongTaskManagerQueueTag = &FTLongTaskManagerQueueTag;
         _queue = dispatch_queue_create("com.ft.read-write", 0);
         dispatch_queue_set_specific(_queue, FTLongTaskManagerQueueTag, &FTLongTaskManagerQueueTag, NULL);
         _longTaskDetector = [[FTLongTaskDetector alloc]initWithDelegate:self];
+        _backtraceReporting = backtraceReporting;
         _longTaskDetector.limitFreezeMillisecond = freezeDurationMs;
         [self reportFatalWatchDogIfFound];
         [_longTaskDetector startDetecting];
@@ -267,6 +273,7 @@ void *FTLongTaskManagerQueueTag = &FTLongTaskManagerQueueTag;
                 
                 //Determine if it's ANR, if so add ANR data
                 if(isAnr){
+                    NSString *allBacktrace = [dict valueForKey:@"allBacktrace"];
                     NSMutableDictionary *anrTags = [NSMutableDictionary dictionary];
                     [anrTags setValue:@"anr_error" forKey:FT_KEY_ERROR_TYPE];
                     [anrTags setValue:FT_LOGGER forKey:FT_KEY_ERROR_SOURCE];
@@ -275,7 +282,7 @@ void *FTLongTaskManagerQueueTag = &FTLongTaskManagerQueueTag;
                     [anrTags addEntriesFromDictionary:tags];
                     NSMutableDictionary *anrFields = [NSMutableDictionary dictionary];
                     [anrFields setValue:@"ios_anr" forKey:FT_KEY_ERROR_MESSAGE];
-                    [anrFields setValue:backtrace forKey:FT_KEY_ERROR_STACK];
+                    [anrFields setValue:allBacktrace?:backtrace forKey:FT_KEY_ERROR_STACK];
                     [anrFields addEntriesFromDictionary:sessionFields];
                     errorDate = startTime;
                     [strongSelf.dependencies.writer rumWrite:FT_RUM_SOURCE_ERROR tags:anrTags fields:anrFields time:startTime updateTime:0 cache:sessionOnError];
@@ -292,31 +299,19 @@ void *FTLongTaskManagerQueueTag = &FTLongTaskManagerQueueTag;
         return;
     });
 }
-- (void)startLongTask:(NSDate *)startDate backtrace:(NSString *)backtrace{
+- (void)startLongTask:(NSDate *)startDate{
     @try {
         if(!self.dependencies.fatalErrorContext.lastSessionContext){
             return;
         }
         FTLongTaskEvent *event = [[FTLongTaskEvent alloc]initWithFreezeDurationMs:_freezeDurationMs];
         event.startDate = startDate;
-        event.backtrace = backtrace;
+        event.backtrace = [self.backtraceReporting generateMainThreadBacktrace];
         event.sessionTags = self.dependencies.fatalErrorContext.lastSessionContext;
         event.view = self.dependencies.fatalErrorContext.lastViewContext;
         event.isANR = NO;
         event.errorMonitorInfo = [FTErrorMonitorInfo errorMonitorInfo:self.dependencies.errorMonitorType];
         self.longTaskEvent = event;
-        if (self.enableANR) {
-            NSDictionary *dict = [self.longTaskEvent convertToDictionary];
-            NSString *jsonString = [FTJSONUtil convertToJsonDataWithObject:dict];
-            if(jsonString){
-                NSData *data = [jsonString dataUsingEncoding:NSUTF8StringEncoding];
-                NSData *boundaryData = [FTBoundary dataUsingEncoding:NSUTF8StringEncoding];
-                [self appendData:data];
-                [self appendData:boundaryData];
-            }else{
-                FTInnerLogError(@"[LongTask] longTaskEvent convert to Json Data Error");
-            }
-        }
     }@catch (NSException *exception) {
         FTInnerLogError(@"[LongTask] exception %@",exception);
     }
@@ -327,12 +322,27 @@ void *FTLongTaskManagerQueueTag = &FTLongTaskManagerQueueTag;
             return;
         }
         // Reduce I/O
-        if ([date timeIntervalSinceDate:self.longTaskEvent.lastDate]>FT_ANR_THRESHOLD_UPDATE_S) {
-            self.longTaskEvent.lastDate = date;
-            long long updateDate = [date ft_nanosecondTimeStamp];
-            NSString *lastDate = [NSString stringWithFormat:@"%lld\n",updateDate];
-            NSData *data = [lastDate dataUsingEncoding:NSUTF8StringEncoding];
-            [self appendData:data];
+        if ([date timeIntervalSinceDate:self.longTaskEvent.startDate]>FT_ANR_THRESHOLD_S) {
+            if (!self.longTaskEvent.allBacktrace){
+                self.longTaskEvent.allBacktrace = [self.backtraceReporting generateAllThreadsBacktrace];
+                self.longTaskEvent.errorMonitorInfo = [FTErrorMonitorInfo errorMonitorInfo:self.dependencies.errorMonitorType];
+                NSDictionary *dict = [self.longTaskEvent convertToDictionary];
+                NSString *jsonString = [FTJSONUtil convertToJsonDataWithObject:dict];
+                if(jsonString){
+                    NSData *data = [jsonString dataUsingEncoding:NSUTF8StringEncoding];
+                    NSData *boundaryData = [FTBoundary dataUsingEncoding:NSUTF8StringEncoding];
+                    [self appendData:data];
+                    [self appendData:boundaryData];
+                }else{
+                    FTInnerLogError(@"[LongTask] longTaskEvent convert to Json Data Error");
+                }
+            }else if([date timeIntervalSinceDate:self.longTaskEvent.lastDate]>FT_ANR_THRESHOLD_UPDATE_S){
+                self.longTaskEvent.lastDate = date;
+                long long updateDate = [date ft_nanosecondTimeStamp];
+                NSString *lastDate = [NSString stringWithFormat:@"%lld\n",updateDate];
+                NSData *data = [lastDate dataUsingEncoding:NSUTF8StringEncoding];
+                [self appendData:data];
+            }
         }
     } @catch (NSException *exception) {
         FTInnerLogError(@"[LongTask] exception %@",exception);
@@ -351,7 +361,7 @@ void *FTLongTaskManagerQueueTag = &FTLongTaskManagerQueueTag;
         if(self.enableANR){
             [self deleteFile];
             if(self.longTaskEvent.isANR && self.delegate && [self.delegate respondsToSelector:@selector(anrStackDetected:time:)]){
-                [self.delegate anrStackDetected:self.longTaskEvent.backtrace time:self.longTaskEvent.startDate];
+                [self.delegate anrStackDetected:self.longTaskEvent.allBacktrace?:self.longTaskEvent.backtrace time:self.longTaskEvent.startDate];
             }
         }
     } @catch (NSException *exception) {

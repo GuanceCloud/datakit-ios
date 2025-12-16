@@ -13,6 +13,7 @@
 #import "FTConstants.h"
 #import <sys/time.h>
 #import "NSDate+FTUtil.h"
+#import "FTErrorDataProtocol.h"
 
 static NSDate *g_startDate;
 
@@ -57,11 +58,8 @@ static NSDate *g_startDate;
                     if (self->_activity == kCFRunLoopBeforeSources || self->_activity == kCFRunLoopAfterWaiting) {
                         strongSelf.countTime++;
                         if(strongSelf.countTime == 1){
-                            /// TODO: mainThread backtrace
-                            NSString *backtrace = @"";
-                            //[FTCallStack ft_backtraceOfMainThread];
-                            if (strongSelf.longTaskDelegate != nil && [strongSelf.longTaskDelegate  respondsToSelector:@selector(startLongTask:backtrace:)]) {
-                                [strongSelf.longTaskDelegate startLongTask:g_startDate backtrace:backtrace];
+                            if (strongSelf.longTaskDelegate != nil && [strongSelf.longTaskDelegate  respondsToSelector:@selector(startLongTask:)]) {
+                                [strongSelf.longTaskDelegate startLongTask:g_startDate];
                             }
                         }else{
                             if (strongSelf.longTaskDelegate != nil && [strongSelf.longTaskDelegate  respondsToSelector:@selector(updateLongTaskDate:)]) {

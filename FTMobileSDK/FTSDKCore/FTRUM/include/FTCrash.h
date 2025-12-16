@@ -18,6 +18,9 @@ NS_ASSUME_NONNULL_BEGIN
 @property (nonatomic, readwrite, assign) FTCrashMonitorType monitoring;
 
 
+@property (nonatomic, readonly, strong) id<FTBacktraceReporting> backtraceReporting;
+
+
 @property(nonatomic, readwrite, strong, nullable) NSDictionary<NSString *, id> *userInfo;
 
 /** The maximum number of reports allowed on disk before old ones get deleted.
