@@ -33,3 +33,9 @@ FOUNDATION_EXPORT const unsigned char FTMobileSDKVersionString[];
 #import <FTMobileSDK/FTConstants.h>
 #import <FTMobileSDK/FTWKWebViewHandler.h>
 #import <FTMobileSDK/FTMobileConfig+Private.h>
+#import <FTMobileSDK/FTActionTrackingHandler.h>
+#import <FTMobileSDK/FTViewTrackingHandler.h>
+#import <FTMobileSDK/FTRUMView.h>
+#import <FTMobileSDK/FTRUMAction.h>
+#import <FTMobileSDK/FTCrashMonitorType.h>
+

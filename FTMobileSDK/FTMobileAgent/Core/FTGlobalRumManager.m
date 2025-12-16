@@ -73,15 +73,25 @@ static NSObject *sharedInstanceLock;
     self.rumManager = [[FTRUMManager alloc]initWithRumDependencies:self.dependencies];
     [[FTAutoTrackHandler sharedInstance] startWithTrackView:rumConfig.enableTraceUserView action:rumConfig.enableTraceUserAction addRumDatasDelegate:self.rumManager viewHandler:rumConfig.viewTrackingHandler actionHandler:rumConfig.actionTrackingHandler];
     [[FTAppLifeCycle sharedInstance] addAppLifecycleDelegate:self];
+    BOOL lastSessionHadCrash = NO;
     if(rumConfig.enableTrackAppCrash){
         [FTCrash shared].monitoring = rumConfig.crashMonitoring;
         [[FTCrash shared] addErrorDataDelegate:self.rumManager];
         [[FTCrash shared] install];
+        dependencies.fatalErrorContext.onChange = ^(NSDictionary * _Nonnull context) {
+            [FTCrash shared].userInfo = context;
+        };
+        // for sessionOnErrorSampled
+        if([FTCrash shared].crashedLastLaunch){
+            lastSessionHadCrash = YES;
+            long long crashDate = [FTCrash shared].crashedLastTimestamp * 1e9;
+            [dependencies.writer lastFatalErrorIfFound:crashDate];
+        }
     }
     //Collect view, resource, jsBridge
     if (rumConfig.enableTrackAppANR||rumConfig.enableTrackAppFreeze) {
         _longTaskManager = [[FTLongTaskManager alloc]initWithDependencies:dependencies delegate:self enableTrackAppANR:rumConfig.enableTrackAppANR enableTrackAppFreeze:rumConfig.enableTrackAppFreeze                                        freezeDurationMs:rumConfig.freezeDurationMs];
-    }else{
+    }else if(!lastSessionHadCrash){
         [dependencies.writer lastFatalErrorIfFound:0];
     }
 #if !TARGET_OS_TV

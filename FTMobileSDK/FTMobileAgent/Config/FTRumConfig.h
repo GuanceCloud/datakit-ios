@@ -1,6 +1,5 @@
 //
 //  FTRumConfig.h
-//  FTMobileSDK
 //
 //  Created by hulilei on 2025/7/22.
 //  Copyright © 2025 DataFlux-cn. All rights reserved.
@@ -9,7 +8,7 @@
 #import <Foundation/Foundation.h>
 #import "FTActionTrackingHandler.h"
 #import "FTViewTrackingHandler.h"
-#import "FTCrashMonitorType.h"
+#include "FTCrashMonitorType.h"
 
 /// Device information in ERROR
 typedef NS_OPTIONS(NSUInteger, FTErrorMonitorType) {

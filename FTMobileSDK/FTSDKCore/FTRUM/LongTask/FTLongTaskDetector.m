@@ -57,6 +57,7 @@ static NSDate *g_startDate;
                     if (self->_activity == kCFRunLoopBeforeSources || self->_activity == kCFRunLoopAfterWaiting) {
                         strongSelf.countTime++;
                         if(strongSelf.countTime == 1){
+                            /// TODO: mainThread backtrace
                             NSString *backtrace = @"";
                             //[FTCallStack ft_backtraceOfMainThread];
                             if (strongSelf.longTaskDelegate != nil && [strongSelf.longTaskDelegate  respondsToSelector:@selector(startLongTask:backtrace:)]) {

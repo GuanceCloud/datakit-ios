@@ -22,4 +22,5 @@
 
 - (NSString *)generateMainThreadBacktrace;
 
+- (NSString *)generateAllThreadsBacktrace;
 @end

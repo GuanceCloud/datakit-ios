@@ -15,6 +15,11 @@
     #error FTSDK does not support Objective-C Garbage Collection
 #endif
 
+#if defined(TARGET_OS_VISION) && TARGET_OS_VISION
+#define FTCRASH_HOST_VISION 1
+#else
+#define FTCRASH_HOST_VISION 0
+#endif
 
 #define FT_HOST_IOS TARGET_OS_IOS
 #define FT_HOST_TV TARGET_OS_TV
@@ -63,7 +68,7 @@
 #define FT_HAS_UIDEVICE 0
 #endif
 
-#if TARGET_OS_TV || TARGET_OS_IOS
+#if TARGET_OS_TV || TARGET_OS_IOS || FT_HOST_WATCH || FT_HOST_VISION
    #define FT_HAS_UIKIT 1
 #else
    #define FT_HAS_UIKIT 0
@@ -87,3 +92,8 @@
 #define FT_HAS_MACH 0
 #endif
 
+#if FT_HOST_MAC || FT_HOST_IOS || FT_HOST_TV || FT_HOST_VISION
+#define FTCRASH_HAS_THREADS_API 1
+#else
+#define FTCRASH_HAS_THREADS_API 0
+#endif

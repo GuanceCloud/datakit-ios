@@ -15,6 +15,9 @@
 #import "FTErrorMonitorInfo.h"
 #import "FTLog+Private.h"
 #define FTBoundary  @"\n___boundary.info.date___\n"
+
+#define FT_ANR_THRESHOLD_UPDATE_S 1
+
 @interface FTLongTaskEvent:NSObject
 @property (nonatomic, assign) BOOL isANR;
 @property (nonatomic, assign) BOOL isLongTask;
@@ -323,11 +326,14 @@ void *FTLongTaskManagerQueueTag = &FTLongTaskManagerQueueTag;
         if(!self.enableANR||!self.longTaskEvent||!date){
             return;
         }
-        self.longTaskEvent.lastDate = date;
-        long long updateDate = [date ft_nanosecondTimeStamp];
-        NSString *lastDate = [NSString stringWithFormat:@"%lld\n",updateDate];
-        NSData *data = [lastDate dataUsingEncoding:NSUTF8StringEncoding];
-        [self appendData:data];
+        // Reduce I/O
+        if ([date timeIntervalSinceDate:self.longTaskEvent.lastDate]>FT_ANR_THRESHOLD_UPDATE_S) {
+            self.longTaskEvent.lastDate = date;
+            long long updateDate = [date ft_nanosecondTimeStamp];
+            NSString *lastDate = [NSString stringWithFormat:@"%lld\n",updateDate];
+            NSData *data = [lastDate dataUsingEncoding:NSUTF8StringEncoding];
+            [self appendData:data];
+        }
     } @catch (NSException *exception) {
         FTInnerLogError(@"[LongTask] exception %@",exception);
     }

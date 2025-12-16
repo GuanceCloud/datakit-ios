@@ -35,7 +35,7 @@
         _rumCacheLimitCount = FT_DB_RUM_MAX_COUNT;
         _rumDiscardType = FTRUMDiscard;
         _enableTraceWebView = YES;
-        _crashMonitoring = FTCrashMonitorTypeAll;
+        _crashMonitoring = FTCrashMonitorTypeHighCompatibility;
     }
     return self;
 }

@@ -14,10 +14,11 @@ NS_ASSUME_NONNULL_BEGIN
 /// Crash collection tool
 @interface FTCrash : NSObject
 
+
 @property (nonatomic, readwrite, assign) FTCrashMonitorType monitoring;
 
 
-@property(atomic, readwrite, strong, nullable) NSDictionary<NSString *, id> *userInfo;
+@property(nonatomic, readwrite, strong, nullable) NSDictionary<NSString *, id> *userInfo;
 
 /** The maximum number of reports allowed on disk before old ones get deleted.
  *
@@ -36,9 +37,15 @@ NS_ASSUME_NONNULL_BEGIN
 /// @note The default value is NO.
 @property (nonatomic, readwrite, assign) BOOL enableSigtermReporting;
 
+/** If true, the application crashed on the previous launch. */
+@property(nonatomic, readonly, assign) BOOL crashedLastLaunch;
+
+/** If value > 0, the application crashed on the previous launch. */
+@property(nonatomic, readonly, assign) double crashedLastTimestamp;
 
 /// Singleton
 + (instancetype)shared;
+
 - (void)install;
 /// Add delegate object for handling error data
 /// - Parameter delegate: delegate object
