@@ -560,6 +560,11 @@ static uintptr_t firstCmdAfterHeader(const struct mach_header* const header) {
     NSString *platform = [NSString stringWithCString:systemInfo.machine encoding:NSASCIIStringEncoding];
 #if TARGET_OS_IOS
     //------------------------------iPhone---------------------------
+    if ([platform isEqualToString:@"iPhone18,4"]) return @"iPhone Air";
+    if ([platform isEqualToString:@"iPhone18,3"]) return @"iPhone 17";
+    if ([platform isEqualToString:@"iPhone18,2"]) return @"iPhone 17 Pro Max";
+    if ([platform isEqualToString:@"iPhone18,1"]) return @"iPhone 17 Pro";
+    if ([platform isEqualToString:@"iPhone17,5"]) return @"iPhone 16e";
     if ([platform isEqualToString:@"iPhone17,3"]) return @"iPhone 16";
     if ([platform isEqualToString:@"iPhone17,4"]) return @"iPhone 16 Plus";
     if ([platform isEqualToString:@"iPhone17,1"]) return @"iPhone 16 Pro";
