@@ -269,7 +269,7 @@ void *FTRUMQueueIdentityKey = &FTRUMQueueIdentityKey;
                     
                 }
                 [tags setValue:[self getResourceStatusGroup:content.httpStatusCode] forKey:FT_KEY_RESOURCE_STATUS_GROUP];
-                [tags setValue:FT_NETWORK forKey:FT_KEY_RESOURCE_TYPE];
+                [tags setValue:content.resourceType forKey:FT_KEY_RESOURCE_TYPE];
                 [tags setValue:[content.url query] forKey:FT_KEY_RESOURCE_URL_QUERY];
                 if(content.responseHeader){
                     for (id key in content.responseHeader.allKeys) {
