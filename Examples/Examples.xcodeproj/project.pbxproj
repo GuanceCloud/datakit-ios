@@ -16,8 +16,6 @@
 		171F9F6E2CF97E9300BEF0B9 /* FTTrackDataManagerTest.m in Sources */ = {isa = PBXBuildFile; fileRef = 171F9F6D2CF97E9300BEF0B9 /* FTTrackDataManagerTest.m */; };
 		172099772CF9DE84004821CF /* FTTestUtils.m in Sources */ = {isa = PBXBuildFile; fileRef = 172099762CF9DE84004821CF /* FTTestUtils.m */; };
 		172931D22BF602D700AA9D53 /* FTSwizzlerConflictTest.m in Sources */ = {isa = PBXBuildFile; fileRef = 172931D12BF602D700AA9D53 /* FTSwizzlerConflictTest.m */; };
-		172931D42BF6032900AA9D53 /* GoogleService-Info.plist in Resources */ = {isa = PBXBuildFile; fileRef = 172931D32BF6032900AA9D53 /* GoogleService-Info.plist */; };
-		172931D52BF6032900AA9D53 /* GoogleService-Info.plist in Resources */ = {isa = PBXBuildFile; fileRef = 172931D32BF6032900AA9D53 /* GoogleService-Info.plist */; };
 		172931D92BF6148600AA9D53 /* FTNetworkMock.m in Sources */ = {isa = PBXBuildFile; fileRef = 172931D72BF6148600AA9D53 /* FTNetworkMock.m */; };
 		172B10762E336A2400753766 /* FTRUMConfigurationTest.m in Sources */ = {isa = PBXBuildFile; fileRef = 172B10752E336A2400753766 /* FTRUMConfigurationTest.m */; };
 		172B10772E336A2400753766 /* FTRUMConfigurationTest.m in Sources */ = {isa = PBXBuildFile; fileRef = 172B10752E336A2400753766 /* FTRUMConfigurationTest.m */; };
@@ -94,7 +92,6 @@
 		178AE39B2D55B74F00BDC51B /* TestSessionDelegate.m in Sources */ = {isa = PBXBuildFile; fileRef = 1712C5F62B60F0B100C4BD38 /* TestSessionDelegate.m */; };
 		178AE39C2D55B74F00BDC51B /* PerformanceLoggingTest.m in Sources */ = {isa = PBXBuildFile; fileRef = 177892BE29A60FD00007B47F /* PerformanceLoggingTest.m */; };
 		178AE39E2D55B74F00BDC51B /* PerformanceRumTest.m in Sources */ = {isa = PBXBuildFile; fileRef = 177892BC29A60FA10007B47F /* PerformanceRumTest.m */; };
-		178AE3A42D55B74F00BDC51B /* GoogleService-Info.plist in Resources */ = {isa = PBXBuildFile; fileRef = 172931D32BF6032900AA9D53 /* GoogleService-Info.plist */; };
 		178AE3AC2D55D04100BDC51B /* FTLoggerTest.m in Sources */ = {isa = PBXBuildFile; fileRef = 174058BA28D813190092E096 /* FTLoggerTest.m */; };
 		178AE3B92D55DEBC00BDC51B /* XCTestCase+Utils.m in Sources */ = {isa = PBXBuildFile; fileRef = 178AE3B82D55DEBC00BDC51B /* XCTestCase+Utils.m */; };
 		178AE3BA2D55DEBC00BDC51B /* XCTestCase+Utils.m in Sources */ = {isa = PBXBuildFile; fileRef = 178AE3B82D55DEBC00BDC51B /* XCTestCase+Utils.m */; };
@@ -272,7 +269,6 @@
 		172099752CF9DE84004821CF /* FTTestUtils.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = FTTestUtils.h; sourceTree = "<group>"; };
 		172099762CF9DE84004821CF /* FTTestUtils.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = FTTestUtils.m; sourceTree = "<group>"; };
 		172931D12BF602D700AA9D53 /* FTSwizzlerConflictTest.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = FTSwizzlerConflictTest.m; sourceTree = "<group>"; };
-		172931D32BF6032900AA9D53 /* GoogleService-Info.plist */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.xml; path = "GoogleService-Info.plist"; sourceTree = "<group>"; };
 		172931D62BF6148600AA9D53 /* FTNetworkMock.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = FTNetworkMock.h; sourceTree = "<group>"; };
 		172931D72BF6148600AA9D53 /* FTNetworkMock.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = FTNetworkMock.m; sourceTree = "<group>"; };
 		172B10752E336A2400753766 /* FTRUMConfigurationTest.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = FTRUMConfigurationTest.m; sourceTree = "<group>"; };
@@ -547,7 +543,6 @@
 				4A1D78A024F52ACB006125D0 /* FTDatabaseTest.m */,
 				172931D12BF602D700AA9D53 /* FTSwizzlerConflictTest.m */,
 				174BC87F2BFCB05500478EE1 /* FTDictionaryCopyTest.m */,
-				172931D32BF6032900AA9D53 /* GoogleService-Info.plist */,
 				177AD7322CCF72A10051C0F6 /* FTDataCompressionTest.m */,
 				177AD7342CCF7B090051C0F6 /* FTDataCompression+Test.h */,
 				179BF6502D3D47F0004AA5A6 /* FTReadWriteHelperTest.m */,
@@ -1217,7 +1212,6 @@
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				178AE3A42D55B74F00BDC51B /* GoogleService-Info.plist in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -1252,7 +1246,6 @@
 			files = (
 				4A116969239113B900C0BC4E /* LaunchScreen.storyboard in Resources */,
 				4A116966239113B900C0BC4E /* Assets.xcassets in Resources */,
-				172931D42BF6032900AA9D53 /* GoogleService-Info.plist in Resources */,
 				7C28B878266098E700CECBA6 /* sample.html in Resources */,
 				17132DCA2C2D90BA009DFE8F /* errors.json in Resources */,
 				4A116964239113B600C0BC4E /* Main.storyboard in Resources */,
@@ -1270,7 +1263,6 @@
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				172931D52BF6032900AA9D53 /* GoogleService-Info.plist in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -1307,9 +1299,13 @@
 			inputFileListPaths = (
 				"${PODS_ROOT}/Target Support Files/Pods-FTMobileSDKUnitTests-tvOS/Pods-FTMobileSDKUnitTests-tvOS-frameworks-${CONFIGURATION}-input-files.xcfilelist",
 			);
+			inputPaths = (
+			);
 			name = "[CP] Embed Pods Frameworks";
 			outputFileListPaths = (
 				"${PODS_ROOT}/Target Support Files/Pods-FTMobileSDKUnitTests-tvOS/Pods-FTMobileSDKUnitTests-tvOS-frameworks-${CONFIGURATION}-output-files.xcfilelist",
+			);
+			outputPaths = (
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 			shellPath = /bin/sh;
@@ -1324,9 +1320,13 @@
 			inputFileListPaths = (
 				"${PODS_ROOT}/Target Support Files/Pods-FTMobileSDKUnitTests/Pods-FTMobileSDKUnitTests-frameworks-${CONFIGURATION}-input-files.xcfilelist",
 			);
+			inputPaths = (
+			);
 			name = "[CP] Embed Pods Frameworks";
 			outputFileListPaths = (
 				"${PODS_ROOT}/Target Support Files/Pods-FTMobileSDKUnitTests/Pods-FTMobileSDKUnitTests-frameworks-${CONFIGURATION}-output-files.xcfilelist",
+			);
+			outputPaths = (
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 			shellPath = /bin/sh;
