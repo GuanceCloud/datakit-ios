@@ -32,6 +32,8 @@
 #import "FTBaseInfoHandler.h"
 #import "FTCrash.h"
 #import "FTFatalErrorContext.h"
+#import "FTErrorMonitorInfo.h"
+
 @interface FTGlobalRumManager ()<FTRunloopDetectorDelegate,FTAppLifeCycleDelegate>
 @property (nonatomic, strong) FTRumConfig *rumConfig;
 @property (nonatomic, strong) FTRUMDependencies *dependencies;
@@ -62,22 +64,25 @@ static NSObject *sharedInstanceLock;
 -(void)setRumConfig:(FTRumConfig *)rumConfig writer:(id<FTRUMDataWriteProtocol>)writer{
     _rumConfig = rumConfig;
     FTRUMDependencies *dependencies = [[FTRUMDependencies alloc]init];
+    FTErrorMonitorInfo *errorInfoWrapper = [[FTErrorMonitorInfo alloc]initWithMonitorType:(ErrorMonitorType)rumConfig.errorMonitorType];
     dependencies.monitor = [[FTRUMMonitor alloc]initWithMonitorType:(DeviceMetricsMonitorType)rumConfig.deviceMetricsMonitorType frequency:(MonitorFrequency)rumConfig.monitorFrequency];
     dependencies.writer = writer;
     dependencies.sessionOnErrorSampleRate = rumConfig.sessionOnErrorSampleRate;
     dependencies.sampleRate = rumConfig.samplerate;
     dependencies.enableResourceHostIP = rumConfig.enableResourceHostIP;
-    dependencies.errorMonitorType = (ErrorMonitorType)rumConfig.errorMonitorType;
-    dependencies.fatalErrorContext = [FTFatalErrorContext new];
+    dependencies.errorMonitorInfoWrapper = errorInfoWrapper;
+    dependencies.fatalErrorContext = [[FTFatalErrorContext alloc]initWithErrorInfoProvider:errorInfoWrapper];
     self.dependencies = dependencies;
     self.rumManager = [[FTRUMManager alloc]initWithRumDependencies:self.dependencies];
     [[FTAutoTrackHandler sharedInstance] startWithTrackView:rumConfig.enableTraceUserView action:rumConfig.enableTraceUserAction addRumDatasDelegate:self.rumManager viewHandler:rumConfig.viewTrackingHandler actionHandler:rumConfig.actionTrackingHandler];
     [[FTAppLifeCycle sharedInstance] addAppLifecycleDelegate:self];
     BOOL lastSessionHadCrash = NO;
     if(rumConfig.enableTrackAppCrash){
-        [FTCrash shared].monitoring = rumConfig.crashMonitoring;
-        [[FTCrash shared] addErrorDataDelegate:self.rumManager];
+        [[FTCrash shared] setMonitoring:rumConfig.crashMonitoring];
+        [[FTCrash shared] setWriter:writer];
+        [[FTCrash shared] setErrorInfoWrapper:errorInfoWrapper];
         [[FTCrash shared] install];
+        [[FTCrash shared] sendCrashReport];
         dependencies.fatalErrorContext.onChange = ^(NSDictionary * _Nonnull context) {
             [FTCrash shared].userInfo = context;
         };
@@ -144,8 +149,8 @@ static NSObject *sharedInstanceLock;
 - (void)longTaskStackDetected:(NSString*)slowStack duration:(long long)duration time:(long long)time{
     [self.rumManager addLongTaskWithStack:slowStack duration:[NSNumber numberWithLongLong:duration] startTime:time];
 }
-- (void)anrStackDetected:(NSString*)slowStack time:(nonnull NSDate *)time{
-    [self.rumManager addErrorWithType:@"anr_error" message:@"ios_anr" stack:slowStack date:time];
+- (void)anrStackDetected:(NSString*)slowStack appState:(NSString *)appState time:(long long)time{
+    [self.rumManager addErrorWithType:@"anr_error" stateStr:appState message:@"ios_anr" stack:slowStack property:nil time:time];
 }
 #pragma mark ========== RUM-ERROR appState: App Life Cycle ==========
 -(void)applicationWillEnterForeground{

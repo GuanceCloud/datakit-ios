@@ -104,8 +104,7 @@
     if(carrier == nil){
         return FT_NULL_VALUE;
     }else{
-        NSString *mCarrier = [NSString stringWithFormat:@"%@",[carrier carrierName]];
-        return mCarrier;
+        return [carrier carrierName];
     }
 }
 #endif

@@ -77,7 +77,7 @@ NS_ASSUME_NONNULL_BEGIN
  */
 - (void)addErrorWithType:(NSString *)type message:(NSString *)message stack:(NSString *)stack property:(nullable NSDictionary *)property;
 
-- (void)addErrorWithType:(nonnull NSString *)type message:(nonnull NSString *)message stack:(nonnull NSString *)stack date:(NSDate *)date;
+
 /// Freeze
 /// @param stack Freeze stack
 /// @param duration Freeze duration

@@ -10,8 +10,5 @@
 #import "FTConstants.h"
 
 @implementation FTRUMDependencies
--(void)setFatalErrorContext:(FTFatalErrorContext *)fatalErrorContext{
-    _fatalErrorContext = fatalErrorContext;
-}
 
 @end

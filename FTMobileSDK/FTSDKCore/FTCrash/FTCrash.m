@@ -22,10 +22,9 @@
 #import "FTCrashReportWrapper.h"
 #import "FTCrashReportStore.h"
 #import "FTCrashMonitor_AppState.h"
+#import "FTCrashReport.h"
 
-static mach_port_t main_thread_id;
 @interface FTCrash()<FTAppLifeCycleDelegate,FTBacktraceReporting>
-@property (nonatomic, strong) NSHashTable *ftSDKInstances;
 /** If YES, introspect memory contents during a crash.
  * Any Objective-C objects or C strings near the stack pointer or referenced by
  * cpu registers or exceptions will be recorded in the crash report, along with
@@ -38,7 +37,12 @@ static mach_port_t main_thread_id;
 
 @property (nonatomic, strong) FTCrashReportStore *reportStore;
 @property (nonatomic, strong) FTCrashReportWrapper *crashReportWrapper;
+@property (nonatomic, weak) id<FTRUMDataWriteProtocol> writer;
+@property (nonatomic, weak) id<FTErrorMonitorInfoWrapper> errorInfoWrapper;
 @end
+
+static FTCrash *sharedHandler = nil;
+static mach_port_t main_thread_id;
 
 @implementation FTCrash
 
@@ -47,7 +51,6 @@ static mach_port_t main_thread_id;
     [[self class] classDidBecomeLoaded];
 }
 + (instancetype)shared {
-    static FTCrash *sharedHandler = nil;
     static dispatch_once_t onceToken;
     dispatch_once(&onceToken, ^{
         sharedHandler = [[FTCrash alloc] init];
@@ -57,12 +60,12 @@ static mach_port_t main_thread_id;
 - (instancetype)init {
     self = [super init];
     if (self) {
-        self.ftSDKInstances = [NSHashTable weakObjectsHashTable];
         self.bundleName = [self getBundleName];
         self.introspectMemory = YES;
         self.maxReportCount = 1;
         self.enableSigtermReporting = NO;
         self.reportStore = [[FTCrashReportStore alloc]init];
+        self.reportStore.reportCleanupPolicy = FTCrashReportCleanupPolicyNever;
         self.crashReportWrapper = [[FTCrashReportWrapper alloc]init];
         [[FTAppLifeCycle sharedInstance] addAppLifecycleDelegate:self];
     }
@@ -78,10 +81,8 @@ static mach_port_t main_thread_id;
         return;
     }
     self.reportStore.reportCleanupPolicy = FTCrashReportCleanupPolicyNever;
-    self.reportStore.sink = [[FTCrashReportFilterCombine alloc]initWithFilters:@{@"report":[FTCrashReportFilterAppleFmt new],@"rumInfo":self.crashReportWrapper}];
-    
+    self.reportStore.sink = self.crashReportWrapper;
     ftcrash_install(self.bundleName.UTF8String,installPath.UTF8String,self.monitoring);
-    [self sendCrashReport];
 }
 -(id<FTBacktraceReporting>)backtraceReporting{
     return self;
@@ -110,28 +111,9 @@ static mach_port_t main_thread_id;
     _introspectMemory = introspectMemory;
     ftcrash_setIntrospectMemory(introspectMemory);
 }
-- (void)addErrorDataDelegate:(id <FTErrorDataDelegate>)instance{
-    if(instance == nil){
-        FTInnerLogWarning(@"addErrorDataDelegate: instance is nil");
-        return;
-    }
-    if (![self.ftSDKInstances containsObject:instance]) {
-        [self.ftSDKInstances addObject:instance];
-    }
-}
-- (void)removeErrorDataDelegate:(id <FTErrorDataDelegate>)instance{
-    if(instance == nil){
-        FTInnerLogWarning(@"removeErrorDataDelegate: instance is nil");
-        return;
-    }
-    if ([self.ftSDKInstances containsObject:instance]) {
-        [self.ftSDKInstances removeObject:instance];
-    }
-}
 // ============================================================================
 #pragma mark - API -
 // ============================================================================
-
 - (NSDictionary *)userInfo{
     const char *userInfoJSON = ftcrash_getUserInfoJSON();
     if (userInfoJSON != NULL && strlen(userInfoJSON) > 0) {
@@ -214,11 +196,19 @@ static mach_port_t main_thread_id;
     return ftcrashstate_currentState()->crashedLastLaunch;
 }
 - (void)sendCrashReport{
-    [self.reportStore sendAllReportsWithCompletion:^(NSArray<id<FTCrashReport>> * _Nullable filteredReports, NSError * _Nullable error) {
-        NSLog(@"[FTCrash] %@",[filteredReports description]);
-        
-        [self.reportStore deleteAllReports];
-    }];
+    dispatch_async(dispatch_get_global_queue(0, 0), ^{
+        __weak __typeof(self) weakSelf = self;
+        [self.reportStore sendAllReportsWithCompletion:^(NSArray<id<FTCrashReport>> * _Nullable filteredReports, NSError * _Nullable error) {
+            __strong typeof(weakSelf) strongSelf = weakSelf;
+            if(filteredReports.count>0 && [filteredReports[0] isKindOfClass:[FTCrashReportRUMModel class]]){
+                for (FTCrashReportRUMModel *report in filteredReports) {
+                    RUMModel *model = report.value;
+                    [strongSelf.writer rumWriteAssembledData:model.source tags:model.tags fields:model.fields time:model.createTime];
+                }
+            }
+            [strongSelf.reportStore deleteAllReports];
+        }];
+    });
 }
 
 @end

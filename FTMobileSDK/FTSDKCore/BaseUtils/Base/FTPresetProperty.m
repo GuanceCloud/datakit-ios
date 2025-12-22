@@ -75,7 +75,6 @@
 @property (nonatomic, strong, readwrite) NSDictionary *rumTags;
 @property (nonatomic, strong) NSDictionary *rumGlobalContext;
 @property (nonatomic, strong) NSMutableDictionary *dynamicRUMGlobalContext;
-@property (nonatomic, strong, readwrite) NSDictionary *rumStaticFields;
 @property (nonatomic, copy) NSString *rumCustomKeys;
 @property (nonatomic, strong) FTUserInfo *userInfo;
 
@@ -85,7 +84,6 @@
 @synthesize baseCommonPropertyTags = _baseCommonPropertyTags;
 @synthesize rumGlobalContext = _rumGlobalContext;
 @synthesize loggerTags = _loggerTags;
-@synthesize rumStaticFields = _rumStaticFields;
 @synthesize dataModifier = _dataModifier;
 @synthesize lineDataModifier = _lineDataModifier;
 @synthesize rumCustomKeys = _rumCustomKeys;
@@ -174,18 +172,6 @@
     __block NSDictionary *obj;
     dispatch_sync(self.concurrentQueue, ^{
         obj = [self->_loggerTags copy];
-    });
-    return obj;
-}
--(void)setRumStaticFields:(NSDictionary *)rumStaticFields{
-    dispatch_barrier_async(self.concurrentQueue, ^{
-        self->_rumStaticFields = rumStaticFields;
-    });
-}
--(NSDictionary *)rumStaticFields{
-    __block NSDictionary *obj;
-    dispatch_sync(self.concurrentQueue, ^{
-        obj = [self->_rumStaticFields copy];
     });
     return obj;
 }
@@ -321,11 +307,7 @@
         [dict addEntriesFromDictionary:rumGlobalContext];
     }
     NSDictionary *newDict = [self applyModifier:dict];
-    
-    self.rumStaticFields = @{FT_RUM_SESSION_SAMPLE_RATE:@(sampleRate),
-                         FT_RUM_SESSION_ON_ERROR_SAMPLE_RATE:@(sessionOnErrorSampleRate),
-    };
-    
+        
     NSMutableDictionary *rumDict = [NSMutableDictionary new];
     [rumDict addEntriesFromDictionary:self.baseCommonPropertyTags];
     [rumDict addEntriesFromDictionary:newDict];
@@ -892,7 +874,6 @@ static uintptr_t firstCmdAfterHeader(const struct mach_header* const header) {
         self->_baseCommonPropertyTags = nil;
         self->_rumGlobalContext = nil;
         self->_loggerTags = nil;
-        self->_rumStaticFields = nil;
         self->_dataModifier = nil;
         self->_lineDataModifier = nil;
         self->_rumCustomKeys = nil;

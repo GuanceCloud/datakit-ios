@@ -95,4 +95,24 @@ NS_SWIFT_NAME(CrashReportData)
 
 @end
 
+
+#pragma mark --------------ftsdk------------------
+@interface RUMModel : NSObject
+@property (nonatomic, copy) NSString *source;
+@property (nonatomic, copy) NSDictionary *tags;
+@property (nonatomic, copy) NSDictionary *fields;
+@property (nonatomic, assign) long long createTime;
+@end
+
+NS_SWIFT_NAME(CrashReportRUMModel)
+@interface FTCrashReportRUMModel : NSObject<FTCrashReport>
+@property(nonatomic, readonly, copy) RUMModel *value;
+
+- (instancetype)init NS_UNAVAILABLE;
++ (instancetype)new NS_UNAVAILABLE;
+
++ (instancetype)reportWithValue:(RUMModel *)value;
+
+@end
+
 NS_ASSUME_NONNULL_END

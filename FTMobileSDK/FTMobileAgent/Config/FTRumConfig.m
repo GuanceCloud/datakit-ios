@@ -35,7 +35,7 @@
         _rumCacheLimitCount = FT_DB_RUM_MAX_COUNT;
         _rumDiscardType = FTRUMDiscard;
         _enableTraceWebView = YES;
-        _crashMonitoring = FTCrashMonitorTypeHighCompatibility;
+        _crashMonitoring = FTCrashMonitorTypeAll;
     }
     return self;
 }
@@ -89,6 +89,7 @@
             _resourcePropertyProvider = [dict valueForKey:@"resourceProvider"];
             _sessionTaskErrorFilter = [dict valueForKey:@"sessionTaskErrorFilter"];
             _sessionOnErrorSampleRate = [[dict valueForKey:@"sessionOnErrorSampleRate"] intValue];
+            _crashMonitoring = (FTCrashMonitorType)[[dict valueForKey:@"crashMonitoring"] intValue];
         }
         return self;
     }else{
@@ -124,6 +125,7 @@
     [dict setValue:@(self.rumCacheLimitCount) forKey:@"rumCacheLimitCount"];
     [dict setValue:@(self.rumDiscardType) forKey:@"rumDiscardType"];
     [dict setValue:@(self.sessionOnErrorSampleRate) forKey:@"sessionOnErrorSampleRate"];
+    [dict setValue:@(self.crashMonitoring) forKey:@"crashMonitoring"];
     return dict;
 }
 -(NSString *)debugDescription{

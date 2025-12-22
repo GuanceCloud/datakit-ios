@@ -34,6 +34,7 @@
 #import "FTCrashNSErrorHelper.h"
 
 #import "FTLogger.h"
+#import "FTLog+Private.h"
 
 @implementation FTCrashReportStore
 
@@ -54,12 +55,12 @@
     __weak __typeof(self) weakSelf = self;
     [self sendReports:reports
          onCompletion:^(NSArray *filteredReports, NSError *error) {
-//             FTLOG_DEBUG(@"Process finished");
+             FTInnerLogDebug(@"Process finished");
              if (error != nil) {
-//                 FTLOG_ERROR(@"Failed to send reports: %@", error);
+                 FTInnerLogError(@"Failed to send reports: %@", error);
              }
-             if ((self.reportCleanupPolicy == FTCrashReportCleanupPolicyOnSuccess && error == nil) ||
-                 self.reportCleanupPolicy == FTCrashReportCleanupPolicyAlways) {
+             if ((weakSelf.reportCleanupPolicy == FTCrashReportCleanupPolicyOnSuccess && error == nil) ||
+                 weakSelf.reportCleanupPolicy == FTCrashReportCleanupPolicyAlways) {
                  [weakSelf deleteAllReports];
              }
              ftcrash_callCompletion(onCompletion, filteredReports, error);
@@ -143,10 +144,10 @@
          FTCrashJSONDecodeOptionKeepPartialObject
                       error:&error];
     if (error != nil) {
-//        FTLOG_ERROR(@"Encountered error loading crash report %" PRIx64 ": %@", reportID, error);
+        FTInnerLogError(@"Encountered error loading crash report %" PRIx64 ": %@", reportID, error);
     }
     if (crashReport == nil) {
-//        FTLOG_ERROR(@"Could not load crash report");
+        FTInnerLogError(@"Could not load crash report");
         return nil;
     }
 

@@ -34,10 +34,13 @@ NS_ASSUME_NONNULL_BEGIN
 ///   - tm: Data generation timestamp (ns)
 - (void)rumWrite:(NSString *)source tags:(NSDictionary *)tags fields:(NSDictionary *)fields time:(long long)time;
 
-@optional
+
 - (void)rumWrite:(NSString *)source tags:(NSDictionary *)tags fields:(NSDictionary *)fields time:(long long)time updateTime:(long long)updateTime;
 
 - (void)rumWrite:(NSString *)source tags:(NSDictionary *)tags fields:(NSDictionary *)fields time:(long long)time updateTime:(long long)updateTime cache:(BOOL)cache;
+
+- (void)rumWriteAssembledData:(NSString *)source tags:(NSDictionary *)tags fields:(NSDictionary *)fields time:(long long)time;
+@optional
 /// Write RUM data collected by extension widget
 /// - Parameters:
 ///   - source: Data source view|action|resource|error
@@ -52,8 +55,6 @@ NS_ASSUME_NONNULL_BEGIN
 /// Whether the last APP has written local data for crashes, ANR, etc., errorDate is the crash time
 - (void)lastFatalErrorIfFound:(long long)errorDate;
 
-/// Process rum cache data, check if deletion is needed
-- (void)checkRUMSessionOnErrorDatasWithExpireTime:(long long)expireTime;
 @end
 NS_ASSUME_NONNULL_END
 #endif /* FTRUMDataWriteProtocol_h */

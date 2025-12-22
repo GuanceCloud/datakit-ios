@@ -16,7 +16,7 @@ NS_ASSUME_NONNULL_BEGIN
 @protocol FTRunloopDetectorDelegate <NSObject>
 @optional
 - (void)longTaskStackDetected:(NSString *)slowStack duration:(long long)duration time:(long long)time;
-- (void)anrStackDetected:(NSString *)slowStack time:(NSDate *)time;
+- (void)anrStackDetected:(NSString *)slowStack appState:(NSString *)appState time:(long long)time;
 @end
 @interface FTLongTaskManager : NSObject
 -(instancetype)initWithDependencies:(FTRUMDependencies *)dependencies

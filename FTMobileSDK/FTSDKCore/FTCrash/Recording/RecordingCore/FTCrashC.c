@@ -186,6 +186,9 @@ void ftcrash_install(const char *appName, const char *const installPath,FTCrashM
     
     g_installed = true;
 }
+void ftcrash_setWillWriteCrashNotifyCallback(const FTCrashWillWriteReportCallback onCrashNotify){
+    g_willWriteReportCallback = onCrashNotify;
+}
 void ftcrash_setCrashNotifyCallback(const FTCrashIsWritingReportCallback onCrashNotify){
     g_isWritingReportCallback = onCrashNotify;
 }

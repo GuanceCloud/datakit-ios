@@ -112,6 +112,8 @@ static int onIntegerElement(const char *const name, const int64_t value, void *c
         state->launchesSinceLastCrash = (int)value;
     } else if (strcmp(name, kKeySessionsSinceLastCrash) == 0) {
         state->sessionsSinceLastCrash = (int)value;
+    } else if (strcmp(name, kKeyCrashedLastDate) == 0) {
+        state->crashedLastTimestamp = (int)value;
     }
 
     // FP value might have been written as a whole number.
@@ -267,7 +269,7 @@ static bool saveState(const char *const path)
         FTCRASHJSON_OK) {
         goto done;
     }
-    if ((result = ftcrashjson_addUIntegerElement(&JSONContext, kKeyCrashedLastDate, g_state.crashedLastTimestamp)) !=
+    if ((result = ftcrashjson_addIntegerElement(&JSONContext, kKeyCrashedLastDate, g_state.crashedThisTimestamp)) !=
         FTCRASHJSON_OK) {
         goto done;
     }
@@ -337,6 +339,7 @@ bool ftcrashstate_reset(void)
             g_state.backgroundDurationSinceLastCrash = 0;
             g_state.launchesSinceLastCrash = 0;
             g_state.sessionsSinceLastCrash = 0;
+            g_state.crashedThisTimestamp = 0;
         }
         g_state.crashedThisLaunch = false;
 
@@ -405,7 +408,7 @@ void ftcrashstate_notifyAppCrash(void)
         const char *const stateFilePath = g_stateFilePath;
         updateAppState();
         g_state.crashedThisLaunch = true;
-        g_state.crashedLastTimestamp = getCurrentTime();
+        g_state.crashedThisTimestamp = getCurrentTime();
         saveState(stateFilePath);
     }
 }

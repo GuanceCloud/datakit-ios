@@ -119,6 +119,14 @@
 		17440CAE2CBF8B8300BA4B1A /* FTDataCompression.h in Headers */ = {isa = PBXBuildFile; fileRef = 17440CAB2CBF8B8300BA4B1A /* FTDataCompression.h */; };
 		17440CAF2CBF8B8300BA4B1A /* FTDataCompression.m in Sources */ = {isa = PBXBuildFile; fileRef = 17440CAC2CBF8B8300BA4B1A /* FTDataCompression.m */; };
 		17440CB02CBF8B8300BA4B1A /* FTDataCompression.h in Headers */ = {isa = PBXBuildFile; fileRef = 17440CAB2CBF8B8300BA4B1A /* FTDataCompression.h */; };
+		1745E31F2EF900BB00C8FA9B /* FTRUMContext.m in Sources */ = {isa = PBXBuildFile; fileRef = 1745E31E2EF900BB00C8FA9B /* FTRUMContext.m */; };
+		1745E3202EF900BB00C8FA9B /* FTRUMContext.h in Headers */ = {isa = PBXBuildFile; fileRef = 1745E31D2EF900BB00C8FA9B /* FTRUMContext.h */; };
+		1745E3212EF900BB00C8FA9B /* FTRUMContext.m in Sources */ = {isa = PBXBuildFile; fileRef = 1745E31E2EF900BB00C8FA9B /* FTRUMContext.m */; };
+		1745E3222EF900BB00C8FA9B /* FTRUMContext.h in Headers */ = {isa = PBXBuildFile; fileRef = 1745E31D2EF900BB00C8FA9B /* FTRUMContext.h */; };
+		1745E3232EF900BB00C8FA9B /* FTRUMContext.h in Headers */ = {isa = PBXBuildFile; fileRef = 1745E31D2EF900BB00C8FA9B /* FTRUMContext.h */; };
+		1745E3242EF900BB00C8FA9B /* FTRUMContext.m in Sources */ = {isa = PBXBuildFile; fileRef = 1745E31E2EF900BB00C8FA9B /* FTRUMContext.m */; };
+		1745E3252EF900BB00C8FA9B /* FTRUMContext.m in Sources */ = {isa = PBXBuildFile; fileRef = 1745E31E2EF900BB00C8FA9B /* FTRUMContext.m */; };
+		1745E3262EF900BB00C8FA9B /* FTRUMContext.h in Headers */ = {isa = PBXBuildFile; fileRef = 1745E31D2EF900BB00C8FA9B /* FTRUMContext.h */; };
 		174BC8792BFC9F8A00478EE1 /* NSDictionary+FTCopyProperties.h in Headers */ = {isa = PBXBuildFile; fileRef = 174BC8772BFC9F8A00478EE1 /* NSDictionary+FTCopyProperties.h */; };
 		174BC87A2BFC9F8A00478EE1 /* NSDictionary+FTCopyProperties.m in Sources */ = {isa = PBXBuildFile; fileRef = 174BC8782BFC9F8A00478EE1 /* NSDictionary+FTCopyProperties.m */; };
 		174BC87B2BFC9F8A00478EE1 /* NSDictionary+FTCopyProperties.m in Sources */ = {isa = PBXBuildFile; fileRef = 174BC8782BFC9F8A00478EE1 /* NSDictionary+FTCopyProperties.m */; };
@@ -1374,6 +1382,8 @@
 		17400E792B47AAC300ACBA6C /* FTCrashMonitor_NSException.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = FTCrashMonitor_NSException.h; sourceTree = "<group>"; };
 		17440CAB2CBF8B8300BA4B1A /* FTDataCompression.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = FTDataCompression.h; sourceTree = "<group>"; };
 		17440CAC2CBF8B8300BA4B1A /* FTDataCompression.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = FTDataCompression.m; sourceTree = "<group>"; };
+		1745E31D2EF900BB00C8FA9B /* FTRUMContext.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = FTRUMContext.h; sourceTree = "<group>"; };
+		1745E31E2EF900BB00C8FA9B /* FTRUMContext.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = FTRUMContext.m; sourceTree = "<group>"; };
 		174BC8772BFC9F8A00478EE1 /* NSDictionary+FTCopyProperties.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = "NSDictionary+FTCopyProperties.h"; sourceTree = "<group>"; };
 		174BC8782BFC9F8A00478EE1 /* NSDictionary+FTCopyProperties.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = "NSDictionary+FTCopyProperties.m"; sourceTree = "<group>"; };
 		174D91A22A2083C300D85AAA /* FTLogger+Private.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = "FTLogger+Private.h"; sourceTree = "<group>"; };
@@ -1895,6 +1905,8 @@
 		176CE1FC2ED556A700E9E92B /* Recording */ = {
 			isa = PBXGroup;
 			children = (
+				17A422C22EE2D38100416673 /* FTCrashReportFilterAppleFmt.h */,
+				17A422C32EE2D38100416673 /* FTCrashReportFilterAppleFmt.m */,
 				17A422762EE195A600416673 /* FTCrashReportStore.h */,
 				17A422772EE195A600416673 /* FTCrashReportStore.m */,
 				17A4231A2EEAE46500416673 /* FTCrashReportFilterBasic.h */,
@@ -2004,8 +2016,6 @@
 				17A422802EE19DFF00416673 /* FTCrashReportFilter.h */,
 				17A422B82EE2C06500416673 /* FTCrashBacktrace.h */,
 				17A422B92EE2C06500416673 /* FTCrashBacktrace.c */,
-				17A422C22EE2D38100416673 /* FTCrashReportFilterAppleFmt.h */,
-				17A422C32EE2D38100416673 /* FTCrashReportFilterAppleFmt.m */,
 				17A422CC2EE2E64C00416673 /* FTCrashNSErrorHelper.h */,
 				17A422CD2EE2E64C00416673 /* FTCrashNSErrorHelper.m */,
 				17A422D62EE2EF9000416673 /* FTCrashJailbreak.h */,
@@ -2108,6 +2118,8 @@
 		17AB76A329D432DE008FBBF5 /* RUMCore */ = {
 			isa = PBXGroup;
 			children = (
+				1745E31D2EF900BB00C8FA9B /* FTRUMContext.h */,
+				1745E31E2EF900BB00C8FA9B /* FTRUMContext.m */,
 				17C2FEA32E4327C6003D600F /* FTRUMDataModel.h */,
 				17C2FE492E3B8CE8003D600F /* FTRUMDataModel.m */,
 				17AB76A429D432DE008FBBF5 /* FTRUMActionHandler.h */,
@@ -2584,6 +2596,7 @@
 				1763BDA529DFF04F009EE026 /* ZY_FMDatabaseQueue.h in Headers */,
 				1763BDAB29DFF04F009EE026 /* ZY_FMDatabase.h in Headers */,
 				17C33AA62D93D68B003BB98B /* FTDataWriterWorker.h in Headers */,
+				1745E3232EF900BB00C8FA9B /* FTRUMContext.h in Headers */,
 				177AEB602A383C890045D2BA /* FTSDKCore.h in Headers */,
 				176CE2252ED6CC0B00E9E92B /* FTCrashJSONCodec.h in Headers */,
 				1763BDA129DFF04F009EE026 /* ZY_FMDatabasePool.h in Headers */,
@@ -2712,6 +2725,7 @@
 				17F652662DF81A73005C91DB /* FTRUMViewHandler.h in Headers */,
 				17C2FD212E3B448A003D600F /* FTActionTrackingHandler.h in Headers */,
 				17C2FD222E3B448A003D600F /* FTRUMView.h in Headers */,
+				1745E3262EF900BB00C8FA9B /* FTRUMContext.h in Headers */,
 				17C2FD232E3B448A003D600F /* FTViewTrackingHandler.h in Headers */,
 				17C2FD242E3B448A003D600F /* FTRUMAction.h in Headers */,
 				17F652682DF81A73005C91DB /* FTSDKCompat.h in Headers */,
@@ -2908,6 +2922,7 @@
 				176CE2122ED5840500E9E92B /* FTCrashC.h in Headers */,
 				176868E82ED47AA600C76F0D /* FTCrashMachineContext.h in Headers */,
 				176868E92ED47AA600C76F0D /* FTCrashMachineContext_Apple.h in Headers */,
+				1745E3222EF900BB00C8FA9B /* FTRUMContext.h in Headers */,
 				176868EA2ED47AA600C76F0D /* FTCrashThread.h in Headers */,
 				176868EC2ED47AA600C76F0D /* FTCrashStackCursor.h in Headers */,
 				176868ED2ED47AA600C76F0D /* FTCrashUUIDConversion.h in Headers */,
@@ -3089,6 +3104,7 @@
 				17AB770829D432DE008FBBF5 /* FTRUMViewHandler.h in Headers */,
 				17C2FD292E3B448A003D600F /* FTActionTrackingHandler.h in Headers */,
 				17C2FD2A2E3B448A003D600F /* FTRUMView.h in Headers */,
+				1745E3202EF900BB00C8FA9B /* FTRUMContext.h in Headers */,
 				17C2FD2B2E3B448A003D600F /* FTViewTrackingHandler.h in Headers */,
 				17C2FD2C2E3B448A003D600F /* FTRUMAction.h in Headers */,
 				179BEB972D2D3ACC004AA5A6 /* FTSDKCompat.h in Headers */,
@@ -3414,6 +3430,7 @@
 				176CE2612ED6F6F900E9E92B /* FTLongTaskManager.m in Sources */,
 				176CE2112ED5840500E9E92B /* FTCrashC.c in Sources */,
 				1768691D2ED47AA600C76F0D /* FTCrashStackCursor.c in Sources */,
+				1745E3242EF900BB00C8FA9B /* FTRUMContext.m in Sources */,
 				1768691E2ED47AA600C76F0D /* FTCrashCPU_x86_64.c in Sources */,
 				17A422202EDE958E00416673 /* FTCrashString.c in Sources */,
 				1768691F2ED47AA600C76F0D /* FTCrashDynamicLinker.c in Sources */,
@@ -3680,6 +3697,7 @@
 				17F6530A2DF81A73005C91DB /* FTDataUploadWorker.m in Sources */,
 				17F6530B2DF81A73005C91DB /* FTPresetProperty.m in Sources */,
 				17A4230D2EEAB9E400416673 /* FTFatalErrorContext.m in Sources */,
+				1745E3252EF900BB00C8FA9B /* FTRUMContext.m in Sources */,
 				17F6530C2DF81A73005C91DB /* FTRUMSessionHandler.m in Sources */,
 				17F6530D2DF81A73005C91DB /* FTJsonWriter.m in Sources */,
 				176CE2512ED6E67100E9E92B /* FTCrashDate.c in Sources */,
@@ -3750,6 +3768,7 @@
 				17A422AB2EE28B4B00416673 /* FTCrashReportFixer.c in Sources */,
 				1712696C2DC9B417002D238B /* FTAppLaunchTracker.m in Sources */,
 				1776071B29D13A0100D17137 /* FTURLSessionDelegate.m in Sources */,
+				1745E3212EF900BB00C8FA9B /* FTRUMContext.m in Sources */,
 				176CE2582ED6E67100E9E92B /* FTCrashDate.c in Sources */,
 				17E32BAE2BEE21F600F4685C /* FTRUMDependencies.m in Sources */,
 				177606FC29D1399500D17137 /* FTExtensionDataManager.m in Sources */,
@@ -3976,6 +3995,7 @@
 				1712695E2DC21026002D238B /* FTDataUploadWorker.m in Sources */,
 				1799581629D43FDE0033B46E /* FTPresetProperty.m in Sources */,
 				17A4230F2EEAB9E400416673 /* FTFatalErrorContext.m in Sources */,
+				1745E31F2EF900BB00C8FA9B /* FTRUMContext.m in Sources */,
 				17AB76F629D432DE008FBBF5 /* FTRUMSessionHandler.m in Sources */,
 				17E4CB5929CD42DA005C2D99 /* FTJsonWriter.m in Sources */,
 				176CE2532ED6E67100E9E92B /* FTCrashDate.c in Sources */,

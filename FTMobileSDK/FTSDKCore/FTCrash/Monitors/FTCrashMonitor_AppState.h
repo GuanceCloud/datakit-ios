@@ -73,6 +73,8 @@ typedef struct {
 
     /** If true, the application crashed on this launch. */
     bool crashedThisLaunch;
+    unsigned int crashedThisTimestamp;
+
 
     /** Timestamp for when the app state was last changed (active<->inactive,
      * background<->foreground) */

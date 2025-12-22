@@ -10,6 +10,7 @@
 
 NS_ASSUME_NONNULL_BEGIN
 @protocol FTBacktraceReporting;
+
 @interface FTCrashReportWrapper : NSObject<FTCrashReportFilter>
 
 -(NSString *)generateBacktrace:(thread_t)thread;

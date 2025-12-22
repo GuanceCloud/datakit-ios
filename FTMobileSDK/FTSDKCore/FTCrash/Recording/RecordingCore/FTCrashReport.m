@@ -25,6 +25,7 @@
 //
 
 #import "FTCrashReport.h"
+#import "FTConstants.h"
 
 #define REPORT_IMPL(NAME, TYPE)                                               \
     @implementation NAME                                                      \
@@ -64,6 +65,18 @@
                                                                               \
     @end
 
+@implementation RUMModel
+- (instancetype)copyWithZone:(NSZone *)zone {
+    RUMModel *model = [[[self class] allocWithZone:zone] init];
+    model.source = self.source;
+    model.tags = self.tags;
+    model.fields = self.fields;
+    model.createTime = self.createTime;
+    return model;
+}
+@end
+
 REPORT_IMPL(FTCrashReportDictionary, NSDictionary *)
 REPORT_IMPL(FTCrashReportString, NSString *)
 REPORT_IMPL(FTCrashReportData, NSData *)
+REPORT_IMPL(FTCrashReportRUMModel, RUMModel *)

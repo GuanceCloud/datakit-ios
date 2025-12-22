@@ -68,6 +68,7 @@ const char *ftcrash_getUserInfoJSON(void);
 void ftcrash_setIntrospectMemory(bool introspectMemory);
 
 
+void ftcrash_setWillWriteCrashNotifyCallback(const FTCrashWillWriteReportCallback onCrashNotify);
 /** Set the callback to invoke upon a crash.
  *
  * WARNING: Only call async-safe functions from this function! DO NOT call

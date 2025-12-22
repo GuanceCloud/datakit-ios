@@ -16,6 +16,8 @@
 #import "FTMonitorValue.h"
 #import "FTLog+Private.h"
 #import "FTRUMMonitor.h"
+#import "FTRUMContext.h"
+
 @interface FTRUMViewHandler()<FTRUMSessionProtocol>
 @property (nonatomic, strong) FTRUMDependencies *rumDependencies;
 @property (nonatomic, strong) FTRUMContext *context;
@@ -108,9 +110,6 @@
         case FTRUMDataError:
             if (self.isActiveView) {
                 FTRUMErrorData *error = (FTRUMErrorData *)model;
-                if(error.fatal){
-                    self.isActiveView = NO;
-                }
                 self.viewErrorCount++;
                 self.needUpdateView = YES;
                 [self writeErrorData:model context:context];
@@ -221,7 +220,7 @@
     [field setValue:@(self.updateTime) forKey:FT_KEY_VIEW_UPDATE_TIME];
     [field setValue:@(self.isActiveView) forKey:FT_KEY_IS_ACTIVE];
     
-    [field setValue:@(self.context.sampled_for_error_session) forKey:FT_RUM_KEY_SAMPLED_FOR_ERROR_SESSION];
+    [field addEntriesFromDictionary:[self.context.sessionState sessionFields]];
     
     if(self.viewProperty && self.viewProperty.allKeys.count>0){
         [field addEntriesFromDictionary:self.viewProperty];
@@ -243,9 +242,7 @@
     if (![self.loading_time isEqual:@0]) {
         [field setValue:self.loading_time forKey:FT_KEY_LOADING_TIME];
     }
-    if (self.context.session_error_timestamp > 0) {
-        [field setValue:@(self.context.session_error_timestamp) forKey:FT_SESSION_ERROR_TIMESTAMP];
-    }
+   
     long long time = [self.viewStartTime ft_nanosecondTimeStamp];
     [self.rumDependencies.writer rumWrite:FT_RUM_SOURCE_VIEW tags:tags fields:field time:time updateTime:[updateTime ft_nanosecondTimeStamp]];
     self.rumDependencies.fatalErrorContext.lastViewContext = @{@"tags":tags,

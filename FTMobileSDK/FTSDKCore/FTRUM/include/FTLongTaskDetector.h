@@ -9,7 +9,6 @@
 #import <Foundation/Foundation.h>
 
 NS_ASSUME_NONNULL_BEGIN
-@protocol FTBacktraceReporting;
 @protocol FTLongTaskProtocol<NSObject>
 - (void)startLongTask:(NSDate *)startDate;
 - (void)updateLongTaskDate:(NSDate *)date;

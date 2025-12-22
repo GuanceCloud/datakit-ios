@@ -8,6 +8,7 @@
 #import <Foundation/Foundation.h>
 #import "FTErrorDataProtocol.h"
 #import "FTCrashMonitorType.h"
+#import "FTRUMDataWriteProtocol.h"
 
 NS_ASSUME_NONNULL_BEGIN
 
@@ -21,7 +22,7 @@ NS_ASSUME_NONNULL_BEGIN
 @property (nonatomic, readonly, strong) id<FTBacktraceReporting> backtraceReporting;
 
 
-@property(nonatomic, readwrite, strong, nullable) NSDictionary<NSString *, id> *userInfo;
+@property(atomic, readwrite, copy, nullable) NSDictionary<NSString *, id> *userInfo;
 
 /** The maximum number of reports allowed on disk before old ones get deleted.
  *
@@ -50,12 +51,10 @@ NS_ASSUME_NONNULL_BEGIN
 + (instancetype)shared;
 
 - (void)install;
-/// Add delegate object for handling error data
-/// - Parameter delegate: delegate object
-- (void)addErrorDataDelegate:(id <FTErrorDataDelegate>)delegate;
-/// Remove delegate object for handling error data
-/// - Parameter delegate: delegate object
-- (void)removeErrorDataDelegate:(id <FTErrorDataDelegate>)delegate;
+
+- (void)setWriter:(id<FTRUMDataWriteProtocol>)writer;
+- (void)setErrorInfoWrapper:(id<FTErrorMonitorInfoWrapper>)errorInfoWrapper;
+- (void)sendCrashReport;
 @end
 
 NS_ASSUME_NONNULL_END

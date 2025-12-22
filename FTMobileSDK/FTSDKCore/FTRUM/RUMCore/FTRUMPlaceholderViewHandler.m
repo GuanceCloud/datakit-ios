@@ -16,6 +16,7 @@
 #import "FTMonitorItem.h"
 #import "FTMonitorValue.h"
 #import "FTLog+Private.h"
+#import "FTRUMContext.h"
 
 @interface FTRUMPlaceholderViewHandler ()<FTRUMSessionProtocol>
 @property (nonatomic, strong) FTRUMDependencies *rumDependencies;
@@ -82,10 +83,6 @@
             break;
         case FTRUMDataError:
             if (self.isActiveView) {
-                FTRUMErrorData *error = (FTRUMErrorData *)model;
-                if(error.fatal){
-                    self.isActiveView = NO;
-                }
                 [self writeErrorData:model context:context];
             }
             break;

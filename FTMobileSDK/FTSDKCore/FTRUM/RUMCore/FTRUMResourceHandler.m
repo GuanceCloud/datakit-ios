@@ -12,6 +12,8 @@
 #import "FTResourceContentModel.h"
 #import "FTResourceMetricsModel.h"
 #import "FTResourceMetricsModel+Private.h"
+#import "FTRUMContext.h"
+
 @interface FTRUMResourceHandler()<FTRUMSessionProtocol>
 @property (nonatomic, strong) FTRUMDependencies *dependencies;
 @property (nonatomic, copy,readwrite) NSString *identifier;
