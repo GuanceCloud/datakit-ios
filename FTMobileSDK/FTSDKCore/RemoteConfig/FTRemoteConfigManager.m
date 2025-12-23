@@ -79,7 +79,7 @@ static dispatch_once_t onceToken;
         NSDictionary<NSString *, id> *config = nil;
         if (success && data.length) {
             config = [FTJSONUtil dictionaryWithJsonString:[[NSString alloc] initWithData:data encoding:NSUTF8StringEncoding]];
-            [strongSelf handleRemoteConfig:config[@"content"]];
+            config = [strongSelf handleRemoteConfig:config[@"content"]];
             strongSelf.lastRequestTimeInterval = [[NSDate date] timeIntervalSince1970];
         }
         if (completion) {
@@ -89,12 +89,13 @@ static dispatch_once_t onceToken;
         FTInnerLogInfo(@"[remote-config] Complete the loading of the remote configuration.");
     }];
 }
-- (void)handleRemoteConfig:(NSDictionary<NSString *, id> *)remoteConfig {
+- (NSDictionary *)handleRemoteConfig:(NSDictionary<NSString *, id> *)remoteConfig {
+    NSDictionary *realRemoteConfig = nil;
     @try {
         if ([remoteConfig isKindOfClass:[NSDictionary class]] && ([remoteConfig count] > 0)) {
-            NSDictionary *realRemoteConfig = [self removingPrefix:remoteConfig];
+            realRemoteConfig = [self removingPrefix:remoteConfig];
             if ([realRemoteConfig isEqual:[self getLocalRemoteConfig]]) {
-                return;
+                return realRemoteConfig;
             }
             if (self.delegate && [self.delegate respondsToSelector:@selector(updateRemoteConfiguration:)]) {
                 [self.delegate updateRemoteConfiguration:realRemoteConfig];
@@ -106,6 +107,7 @@ static dispatch_once_t onceToken;
     } @catch (NSException *exception) {
         FTInnerLogError(@"exception: %@",exception);
     }
+    return realRemoteConfig;
 }
 - (NSDictionary *)removingPrefix:(NSDictionary *)context {
     NSMutableDictionary *result = [NSMutableDictionary dictionary];

@@ -109,7 +109,7 @@
     __block int rCount = 0;
     id<OHHTTPStubsDescriptor> stubs = [self mockRemoteDataCallBack:^(int count) {
         rCount = count;
-    }];
+    } withOriginalRemoteDict:nil];
     NSString *datakit = @"http://datakit-test.com";
     NSString *appId = @"appid-test";
     FTMobileConfig *config = [[FTMobileConfig alloc]initWithDatakitUrl:datakit];
@@ -320,28 +320,32 @@
     [FTMobileAgent shutDown];
 }
 - (id<OHHTTPStubsDescriptor>)mockRemoteData{
-    return [self mockRemoteDataCallBack:nil];
+    return [self mockRemoteDataCallBack:nil withOriginalRemoteDict:nil];
 }
-- (id<OHHTTPStubsDescriptor>)mockRemoteDataCallBack:(nullable void (^)(int))callback{
+- (id<OHHTTPStubsDescriptor>)mockRemoteDataCallBack:(nullable void (^)(int))callback withOriginalRemoteDict:(nullable NSDictionary *)originalRemoteDict{
     NSString *datakit = @"http://datakit-test.com";
     NSString *prefix = @"R.appid-test.";
-    NSString *autoSyncKey = [NSString stringWithFormat:@"%@%@",prefix,FT_R_AUTO_SYNC];
-    NSString *pageSizeKey = [NSString stringWithFormat:@"%@%@",prefix,FT_R_SYNC_PAGE_SIZE];
-    NSString *sleepTimeKey = [NSString stringWithFormat:@"%@%@",prefix,FT_R_SYNC_SLEEP_TIME];
-    NSString *compressKey = [NSString stringWithFormat:@"%@%@",prefix,FT_R_COMPRESS_INTAKE_REQUESTS];
-    
-    NSString *levelFiltersKey = [NSString stringWithFormat:@"%@%@",prefix,FT_R_LOG_LEVEL_FILTERS];
-    NSString *enableCustomLogKey = [NSString stringWithFormat:@"%@%@",prefix,FT_R_LOG_ENABLE_CUSTOM_LOG];
-
-    NSDictionary *remoteDict = @{autoSyncKey:@NO,
-                                 pageSizeKey:@15,
-                                 sleepTimeKey:@300,
-                                 compressKey:@YES,
-                                 levelFiltersKey:@"[\"logTest\"]",
-                                 enableCustomLogKey:@YES,
+    NSDictionary *defaultOriginalDict = @{
+        FT_R_AUTO_SYNC: @NO,
+        FT_R_SYNC_PAGE_SIZE: @15,
+        FT_R_SYNC_SLEEP_TIME: @300,
+        FT_R_COMPRESS_INTAKE_REQUESTS: @YES,
+        FT_R_LOG_LEVEL_FILTERS: @"[\"logTest\"]",
+        FT_R_LOG_ENABLE_CUSTOM_LOG: @YES
     };
+    NSDictionary *effectiveOriginalDict = originalRemoteDict ?: defaultOriginalDict;
+    
+    NSMutableDictionary *remoteDict = [NSMutableDictionary dictionary];
+    [effectiveOriginalDict enumerateKeysAndObjectsUsingBlock:^(id key, id obj, BOOL *stop) {
+        NSString *newKey = [NSString stringWithFormat:@"%@%@", prefix, key];
+        remoteDict[newKey] = obj;
+    }];
+    
     NSDictionary *content = @{@"content":remoteDict};
     NSString *contentStr = [FTJSONUtil convertToJsonDataWithObject:content];
+    if (!contentStr) {
+        contentStr = @"{\"content\": {}}";
+    }
     __block int count = 0;
     id<OHHTTPStubsDescriptor> stubs = [OHHTTPStubs stubRequestsPassingTest:^BOOL(NSURLRequest *request) {
         return [request.URL.host isEqualToString:[NSURL URLWithString:datakit].host];
@@ -399,6 +403,33 @@
         [expectation2 fulfill];
     }];
     [self waitForExpectations:@[expectation1,expectation2] timeout:10];
+    [OHHTTPStubs removeStub:stubs];
+    [FTMobileAgent shutDown];
+}
+- (void)testUpdateRemoteConfigCallBack_configFormat{
+    [[FTRemoteConfigManager sharedInstance] saveRemoteConfig:nil];
+    NSDictionary *remoteDict = @{
+        FT_R_AUTO_SYNC: @YES,
+        FT_R_SYNC_PAGE_SIZE: @20,
+        FT_R_SYNC_SLEEP_TIME: @300,
+        FT_R_COMPRESS_INTAKE_REQUESTS: @YES,
+        FT_R_LOG_LEVEL_FILTERS: @"[\"logTest\"]",
+        FT_R_LOG_ENABLE_CUSTOM_LOG: @YES
+    };
+
+    id<OHHTTPStubsDescriptor> stubs = [self mockRemoteDataCallBack:nil withOriginalRemoteDict:remoteDict];
+    [self sdkInitWithRemoteConfiguration:YES interval:60];
+    [self waitForTimeInterval:1];
+    
+    XCTestExpectation *expectation1 = [self expectationWithDescription:@"expectation1"];
+    
+    [FTMobileAgent updateRemoteConfigWithMiniUpdateInterval:0 callback:^(BOOL success, NSDictionary<NSString *,id> * _Nullable config) {
+        XCTAssertTrue(success == YES);
+        XCTAssertTrue(config != nil && [config isKindOfClass:NSDictionary.class]);
+        XCTAssertTrue([config isEqualToDictionary:remoteDict]);
+        [expectation1 fulfill];
+    }];
+    [self waitForExpectations:@[expectation1] timeout:10];
     [OHHTTPStubs removeStub:stubs];
     [FTMobileAgent shutDown];
 }
