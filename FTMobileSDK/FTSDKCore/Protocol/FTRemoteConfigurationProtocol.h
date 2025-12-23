@@ -19,7 +19,7 @@ NS_ASSUME_NONNULL_BEGIN
 
 @protocol FTRemoteConfigurationDataSource <NSObject>
 
-- (nullable NSDictionary *)getLocalRemoteConfig;
+- (nullable NSDictionary *)getLastFetchedRemoteConfig;
 
 @end
 

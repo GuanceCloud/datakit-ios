@@ -119,7 +119,7 @@
     FTRumConfig *rum = [[FTRumConfig alloc]initWithAppid:appId];
     [[FTMobileAgent sharedInstance] startRumWithConfigOptions:rum];
     [self waitForTimeInterval:2];
-    NSDictionary *remoteConfig = [[FTRemoteConfigManager sharedInstance] getLocalRemoteConfig];
+    NSDictionary *remoteConfig = [[FTRemoteConfigManager sharedInstance] getLastFetchedRemoteConfig];
     XCTAssertTrue(remoteConfig != nil);
     [FTMobileAgent updateRemoteConfig];
     [self waitForTimeInterval:1];
@@ -315,7 +315,7 @@
         XCTAssertTrue([FTTrackDataManager sharedInstance].dataUploadWorker.syncSleepTime == 300);
         XCTAssertTrue([FTTrackDataManager sharedInstance].dataUploadWorker.uploadPageSize == 15);
     });
-    XCTAssertTrue([[FTRemoteConfigManager sharedInstance] getLocalRemoteConfig] != nil);
+    XCTAssertTrue([[FTRemoteConfigManager sharedInstance] getLastFetchedRemoteConfig] != nil);
     [OHHTTPStubs removeStub:stubs];
     [FTMobileAgent shutDown];
 }
@@ -472,7 +472,7 @@
     id<OHHTTPStubsDescriptor> stubs = [self mockRemoteData];
     [self sdkInitWithRemoteConfiguration:enable interval:60];
     [self waitForTimeInterval:1];
-    NSDictionary *remoteConfig = [[FTRemoteConfigManager sharedInstance] getLocalRemoteConfig];
+    NSDictionary *remoteConfig = [[FTRemoteConfigManager sharedInstance] getLastFetchedRemoteConfig];
     if (enable) {
         XCTAssertTrue(remoteConfig != nil);
     }else{

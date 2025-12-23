@@ -79,7 +79,7 @@ static FTMobileAgent *sharedInstance = nil;
             if (_sdkConfig.remoteConfiguration) {
                 [[FTRemoteConfigManager sharedInstance] enable:YES updateInterval:_sdkConfig.remoteConfigMiniUpdateInterval];
                 [FTRemoteConfigManager sharedInstance].delegate = self;
-                [_sdkConfig mergeWithRemoteConfigDict:[[FTRemoteConfigManager sharedInstance] getLocalRemoteConfig]];
+                [_sdkConfig mergeWithRemoteConfigDict:[[FTRemoteConfigManager sharedInstance] getLastFetchedRemoteConfig]];
             }
             [self applyBaseConfig:_sdkConfig];
         }
@@ -96,7 +96,7 @@ static FTMobileAgent *sharedInstance = nil;
             [FTNetworkInfoManager sharedInstance].setAppId(_rumConfig.appid);
             if (_sdkConfig.remoteConfiguration) {
                 [[FTRemoteConfigManager sharedInstance] updateRemoteConfig];
-                [_rumConfig mergeWithRemoteConfigDict:[[FTRemoteConfigManager sharedInstance] getLocalRemoteConfig]];
+                [_rumConfig mergeWithRemoteConfigDict:[[FTRemoteConfigManager sharedInstance] getLastFetchedRemoteConfig]];
             }
             [self applyRUMConfig:_rumConfig];
         }
@@ -109,7 +109,7 @@ static FTMobileAgent *sharedInstance = nil;
         if (!_loggerConfig) {
             _loggerConfig = [loggerConfigOptions copy];
             if (_sdkConfig.remoteConfiguration) {
-                [_loggerConfig mergeWithRemoteConfigDict:[[FTRemoteConfigManager sharedInstance] getLocalRemoteConfig]];
+                [_loggerConfig mergeWithRemoteConfigDict:[[FTRemoteConfigManager sharedInstance] getLastFetchedRemoteConfig]];
             }
             [self applyLogConfig:_loggerConfig];
         }
@@ -122,7 +122,7 @@ static FTMobileAgent *sharedInstance = nil;
         if(!_traceConfig){
             _traceConfig = [traceConfigOptions copy];
             if (_sdkConfig.remoteConfiguration) {
-                [_traceConfig mergeWithRemoteConfigDict:[[FTRemoteConfigManager sharedInstance] getLocalRemoteConfig]];
+                [_traceConfig mergeWithRemoteConfigDict:[[FTRemoteConfigManager sharedInstance] getLastFetchedRemoteConfig]];
             }else{
                 [self applyTraceConfig:_traceConfig];
             }

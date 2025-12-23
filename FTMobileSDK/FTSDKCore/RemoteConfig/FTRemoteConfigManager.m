@@ -94,7 +94,7 @@ static dispatch_once_t onceToken;
     @try {
         if ([remoteConfig isKindOfClass:[NSDictionary class]] && ([remoteConfig count] > 0)) {
             realRemoteConfig = [self removingPrefix:remoteConfig];
-            if ([realRemoteConfig isEqual:[self getLocalRemoteConfig]]) {
+            if ([realRemoteConfig isEqual:[self getLastFetchedRemoteConfig]]) {
                 return realRemoteConfig;
             }
             if (self.delegate && [self.delegate respondsToSelector:@selector(updateRemoteConfiguration:)]) {
@@ -122,7 +122,7 @@ static dispatch_once_t onceToken;
     }];
     return [result copy];
 }
-- (NSDictionary *)getLocalRemoteConfig{
+- (NSDictionary *)getLastFetchedRemoteConfig{
     if (!self.enable) {
         return nil;
     }
