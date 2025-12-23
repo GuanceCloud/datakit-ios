@@ -435,64 +435,7 @@
     [OHHTTPStubs removeStub:stubs];
     [FTMobileAgent shutDown];
 }
-- (void)testVipId{
-    FTMobileConfig *config = [[FTMobileConfig alloc]initWithDatakitUrl:@"aa"];
-    [FTMobileAgent startWithConfigOptions:config];
-    [[FTMobileAgent sharedInstance] bindUserWithUserID:@"user_1"];
-    FTRumConfig *rumConfig = [[FTRumConfig alloc]initWithAppid:@"appid"];
-    rumConfig.samplerate = 20;
-    
-    FTLoggerConfig *logConfig = [[FTLoggerConfig alloc]init];
-    logConfig.samplerate = 30;
-    
-    FTTraceConfig *traceConfig = [[FTTraceConfig alloc]init];
-    traceConfig.samplerate = 40;
-    
-    FTRumConfig *copyRumConfig = [rumConfig copy];
-    FTLoggerConfig *copyLogConfig = [logConfig copy];
-    FTTraceConfig *copyTraceConfig = [traceConfig copy];
 
-    NSDictionary *testDict = @{
-        FT_R_RUM_SAMPLERATE:@(0.4),
-        FT_R_TRACE_SAMPLERATE:@(0.5),
-        FT_R_LOG_SAMPLERATE:@(0.6),
-        FT_R_VIPID:@"[\"user_1\",\"user_2\"]",
-    };
-    XCTAssertNoThrow([copyRumConfig mergeWithRemoteConfigDict:testDict]);
-    XCTAssertTrue(rumConfig.samplerate != copyRumConfig.samplerate);
-    XCTAssertTrue(copyRumConfig.samplerate == 100);
-    
-    XCTAssertNoThrow([copyLogConfig mergeWithRemoteConfigDict:testDict]);
-    XCTAssertTrue(logConfig.samplerate != copyLogConfig.samplerate);
-    XCTAssertTrue(copyLogConfig.samplerate == 100);
-    
-    XCTAssertNoThrow([copyTraceConfig mergeWithRemoteConfigDict:testDict]);
-    XCTAssertTrue(traceConfig.samplerate != copyTraceConfig.samplerate);
-    XCTAssertTrue(copyTraceConfig.samplerate == 100);
-    
-    FTRumConfig *copyRumConfig2 = [rumConfig copy];
-    FTLoggerConfig *copyLogConfig2 = [logConfig copy];
-    FTTraceConfig *copyTraceConfig2 = [traceConfig copy];
-    
-    NSDictionary *testDict2 = @{
-        FT_R_RUM_SAMPLERATE:@(0.4),
-        FT_R_LOG_SAMPLERATE:@(0.5),
-        FT_R_TRACE_SAMPLERATE:@(0.6),
-        FT_R_VIPID:@"[\"user_3\",\"user_4\"]",
-    };
-    XCTAssertNoThrow([copyRumConfig2 mergeWithRemoteConfigDict:testDict2]);
-    XCTAssertTrue(rumConfig.samplerate != copyRumConfig2.samplerate);
-    XCTAssertTrue(copyRumConfig2.samplerate == 40);
-    
-    XCTAssertNoThrow([copyLogConfig2 mergeWithRemoteConfigDict:testDict2]);
-    XCTAssertTrue(logConfig.samplerate != copyLogConfig2.samplerate);
-    XCTAssertTrue(copyLogConfig2.samplerate == 50);
-    
-    XCTAssertNoThrow([copyTraceConfig2 mergeWithRemoteConfigDict:testDict2]);
-    XCTAssertTrue(traceConfig.samplerate != copyTraceConfig2.samplerate);
-    XCTAssertTrue(copyTraceConfig2.samplerate == 60);
-    [FTMobileAgent shutDown];
-}
 - (void)updateRemoteConfigWithMiniUpdateIntervalWithEnable:(BOOL)enable{
     [[FTRemoteConfigManager sharedInstance] saveRemoteConfig:nil];
     id<OHHTTPStubsDescriptor> stubs = [self mockRemoteData];

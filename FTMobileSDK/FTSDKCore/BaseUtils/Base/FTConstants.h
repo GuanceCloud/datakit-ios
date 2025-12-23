@@ -215,7 +215,6 @@ extern NSString * const FT_USER_EMAIL;
 extern NSString * const FT_USER_NAME;
 extern NSString * const FT_USER_EXTRA;
 #pragma mark ========== remote config ==========
-extern NSString * const FT_R_VIPID;
 extern NSString * const FT_R_SERVICE_NAME;
 extern NSString * const FT_R_AUTO_SYNC;
 extern NSString * const FT_R_COMPRESS_INTAKE_REQUESTS;

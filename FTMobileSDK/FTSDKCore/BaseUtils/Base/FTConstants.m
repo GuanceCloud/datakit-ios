@@ -218,7 +218,6 @@ long const FT_ANR_THRESHOLD_MS = 5000;
 
 long long const FT_ANR_THRESHOLD_NS = 5000000000;
 #pragma mark ========== remote config ==========
-NSString * const FT_R_VIPID = @"vipId";
 NSString * const FT_R_SERVICE_NAME = @"serviceName";
 NSString * const FT_R_AUTO_SYNC = @"autoSync";
 NSString * const FT_R_COMPRESS_INTAKE_REQUESTS = @"compressIntakeRequests";

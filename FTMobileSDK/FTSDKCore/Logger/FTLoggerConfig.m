@@ -10,8 +10,7 @@
 #import "FTConstants.h"
 #import "FTJSONUtil.h"
 #import "FTLog+Private.h"
-#import "FTPresetProperty.h"
-#import "FTUserInfo.h"
+
 @implementation FTLoggerConfig
 -(instancetype)init{
     self = [super init];
@@ -75,10 +74,8 @@
         NSNumber *sampleRate = dict[FT_R_LOG_SAMPLERATE];
         NSString *logLevelFilters = dict[FT_R_LOG_LEVEL_FILTERS];
         NSNumber *enableCustomLog = dict[FT_R_LOG_ENABLE_CUSTOM_LOG];
-        NSString *vipId = dict[FT_R_VIPID];
-        if (vipId.length > 0 && [[FTJSONUtil arrayWithJsonString:vipId] containsObject:[FTPresetProperty sharedInstance].userInfo.userId]) {
-                self.samplerate = 100;
-        }else if (sampleRate != nil && [sampleRate isKindOfClass:NSNumber.class]) {
+       
+        if (sampleRate != nil && [sampleRate isKindOfClass:NSNumber.class]) {
             self.samplerate = [sampleRate doubleValue] * 100;
         }
         if (enableCustomLog != nil && [enableCustomLog isKindOfClass:NSNumber.class]) {

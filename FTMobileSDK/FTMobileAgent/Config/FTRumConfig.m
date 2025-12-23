@@ -13,8 +13,7 @@
 #import "NSDictionary+FTCopyProperties.h"
 #import "FTJSONUtil.h"
 #import "FTLog+Private.h"
-#import "FTPresetProperty.h"
-#import "FTUserInfo.h"
+
 @implementation FTRumConfig
 - (instancetype)init{
     return [self initWithAppid:@""];
@@ -152,10 +151,8 @@
         NSNumber *enableTrackAppANR = dict[FT_R_RUM_ENABLE_TRACK_APP_ANR];
         NSNumber *enableTraceWebView = dict[FT_R_RUM_ENABLE_TRACE_WEBVIEW];
         NSString *allowWebViewHost = dict[FT_R_RUM_ALLOW_WEBVIEW_HOST];
-        NSString *vipId = dict[FT_R_VIPID];
-        if (vipId.length > 0 && [[FTJSONUtil arrayWithJsonString:vipId] containsObject:[FTPresetProperty sharedInstance].userInfo.userId]) {
-                self.samplerate = 100;
-        }else if (sampleRate != nil && [sampleRate isKindOfClass:NSNumber.class]) {
+
+        if (sampleRate != nil && [sampleRate isKindOfClass:NSNumber.class]) {
             self.samplerate = [sampleRate doubleValue] * 100;
         }
         if (sessionOnErrorSampleRate != nil && [sessionOnErrorSampleRate isKindOfClass:NSNumber.class]) {
