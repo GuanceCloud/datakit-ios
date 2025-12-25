@@ -7,6 +7,7 @@
 //
 
 #import "FTResourceContentModel.h"
+
 typedef NS_ENUM(NSInteger, ResourceType) {
     ResourceTypeDocument,
     ResourceTypeXhr,
@@ -20,19 +21,24 @@ typedef NS_ENUM(NSInteger, ResourceType) {
     ResourceTypeOther,
     ResourceTypeNative
 };
-NSString * const ResourceTypeStringMap[] = {
-    [ResourceTypeDocument] = @"document",
-    [ResourceTypeXhr] = @"xhr",
-    [ResourceTypeBeacon] = @"beacon",
-    [ResourceTypeFetch] = @"fetch",
-    [ResourceTypeCSS] = @"css",
-    [ResourceTypeJS] = @"js",
-    [ResourceTypeImage] = @"image",
-    [ResourceTypeFont] = @"font",
-    [ResourceTypeMedia] = @"media",
-    [ResourceTypeOther] = @"other",
-    [ResourceTypeNative] = @"native",
-};
+
+static inline NSString *ResourceTypeToString(ResourceType type) {
+    switch (type) {
+        case ResourceTypeDocument: return @"document";
+        case ResourceTypeXhr: return @"xhr";
+        case ResourceTypeBeacon: return @"beacon";
+        case ResourceTypeFetch: return @"fetch";
+        case ResourceTypeCSS: return @"css";
+        case ResourceTypeJS: return @"js";
+        case ResourceTypeImage: return @"image";
+        case ResourceTypeFont: return @"font";
+        case ResourceTypeMedia: return @"media";
+        case ResourceTypeOther: return @"other";
+        case ResourceTypeNative: return @"native";
+    }
+    return @"unknown";
+}
+
 @implementation FTResourceContentModel
 -(instancetype)init{
     self = [super init];
@@ -65,7 +71,7 @@ NSString * const ResourceTypeStringMap[] = {
 - (nullable NSString *)resourceTypeWithRequest:(NSURLRequest *)request{
     NSSet<NSString *> *nativeHTTPMethods = [NSSet setWithArray:@[@"POST",@"PUT",@"DELETE"]];
     if (request.HTTPMethod && [nativeHTTPMethods containsObject:[request.HTTPMethod uppercaseString]]) {
-        return ResourceTypeStringMap[ResourceTypeNative];
+        return ResourceTypeToString(ResourceTypeNative);
     }
     return nil;
 }
@@ -94,7 +100,7 @@ NSString * const ResourceTypeStringMap[] = {
             }
         }
     }
-    return ResourceTypeStringMap[type];
+    return ResourceTypeToString(type);
 }
 
 @end
