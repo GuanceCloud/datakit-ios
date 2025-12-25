@@ -271,31 +271,44 @@ void *FTRUMQueueIdentityKey = &FTRUMQueueIdentityKey;
                 [tags setValue:[self getResourceStatusGroup:content.httpStatusCode] forKey:FT_KEY_RESOURCE_STATUS_GROUP];
                 [tags setValue:content.resourceType forKey:FT_KEY_RESOURCE_TYPE];
                 [tags setValue:[content.url query] forKey:FT_KEY_RESOURCE_URL_QUERY];
-                if(content.responseHeader){
-                    for (id key in content.responseHeader.allKeys) {
-                        if([key isKindOfClass:NSString.class]){
-                            NSString *lowercaseKey = [(NSString *)key lowercaseString];
-                            if([lowercaseKey isEqualToString:@"connection"]){
-                                [tags setValue:content.responseHeader[key] forKey:FT_KEY_RESPONSE_CONNECTION];
-                            }else if ([lowercaseKey isEqualToString:@"content-type"]){
-                                [tags setValue:content.responseHeader[key] forKey:FT_KEY_RESPONSE_CONTENT_TYPE];
-                            }else if([lowercaseKey isEqualToString:@"content-encoding"]){
-                                [tags setValue:content.responseHeader[key] forKey:FT_KEY_RESPONSE_CONTENT_ENCODING];
-                            }
-                        }
+                
+                NSNumber *responseSize = metrics.responseSize;
+                NSNumber *requestSize = metrics.requestSize;
+
+                if (content.responseHeader) {
+                    NSString *responseConnection = content.responseHeader[@"Connection"];
+                    NSString *responseConnectType = content.responseHeader[@"Content-Type"];
+                    NSString *responseConnectEncoding = content.responseHeader[@"Content-Encoding"];
+                    [tags setValue:responseConnection forKey:FT_KEY_RESPONSE_CONNECTION];
+                    [tags setValue:responseConnectType forKey:FT_KEY_RESPONSE_CONTENT_TYPE];
+                    [tags setValue:responseConnectEncoding forKey:FT_KEY_RESPONSE_CONTENT_ENCODING];
+                    NSString *responseHeaderStr = [FTBaseInfoHandler convertToStringData:content.responseHeader];
+                    if (!responseSize) {
+                        responseSize = content.responseHeader[@"Content-Length"];
+                        responseSize = @([responseSize longLongValue] + [responseHeaderStr dataUsingEncoding:NSUTF8StringEncoding].length);
                     }
-                    [fields setValue:[FTBaseInfoHandler convertToStringData:content.responseHeader] forKey:FT_KEY_RESPONSE_HEADER];
+                    [fields setValue:responseHeaderStr forKey:FT_KEY_RESPONSE_HEADER];
                 }
-                if(metrics.responseSize!=nil){
-                    [fields setValue:metrics.responseSize forKey:FT_KEY_RESOURCE_SIZE];
-                }else if(content.responseBody){
-                    NSData *data = [content.responseBody dataUsingEncoding:NSUTF8StringEncoding];
-                    [fields setValue:@(data.length) forKey:FT_KEY_RESOURCE_SIZE];
+                
+                if (content.requestHeader) {
+                    NSString *requestHeaderStr = [FTBaseInfoHandler convertToStringData:content.requestHeader];
+                    [fields setValue:requestHeaderStr forKey:FT_KEY_REQUEST_HEADER];
+                    if (!requestSize) {
+                        requestSize = content.requestHeader[@"Content-Length"];
+                        requestSize = @([requestSize longLongValue] + [requestHeaderStr dataUsingEncoding:NSUTF8StringEncoding].length);
+                    }
                 }
-                [fields setValue:[FTBaseInfoHandler convertToStringData:content.requestHeader] forKey:FT_KEY_REQUEST_HEADER];
+                
+                [fields setValue:responseSize forKey:FT_KEY_RESOURCE_SIZE];
+                [fields setValue:requestSize forKey:FT_KEY_RESOURCE_REQUEST_SIZE];
+
+                [fields setValue:metrics.resourceHttpProtocol forKey:FT_KEY_RESOURCE_HTTP_PROTOCOL];
+                [fields setValue:@(metrics.reusedConnection) forKey:FT_KEY_RESOURCE_CONNECTION_REUSE];
+                
                 if(self.rumDependencies.enableResourceHostIP){
                     [tags setValue:metrics.remoteAddress forKey:FT_KEY_RESOURCE_HOST_IP];
                 }
+            
                 //add trace info
                 [tags setValue:spanID forKey:FT_KEY_SPANID];
                 [tags setValue:traceID forKey:FT_KEY_TRACEID];

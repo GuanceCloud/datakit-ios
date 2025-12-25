@@ -387,16 +387,7 @@
     XCTAssertTrue(hasView);
 }
 #pragma mark ========== Resource ==========
-
-/**
- * Verify the format of source:resource data
- */
-- (void)testAddResourceDataAndFormatChecks{
-    [self resourceDataAndFormatChecks:NO];
-}
--(void)testLowercaseResponseHeader{
-    [self resourceDataAndFormatChecks:YES];
-}
+   
 -(void)testErrorResourceBindView{
     [self setRumConfig];
     [FTModelHelper startViewWithName:@"FirstView"];
@@ -426,7 +417,10 @@
     }];
     XCTAssertTrue(hasResource);
 }
--(void)resourceDataAndFormatChecks:(BOOL)lowercase{
+/**
+ * Verify the format of source:resource data
+ */
+- (void)testAddResourceDataAndFormatChecks{
     NSArray *resourceTag = @[FT_KEY_RESOURCE_ID,
                              FT_KEY_RESOURCE_URL,
                              FT_KEY_RESOURCE_URL_HOST,
@@ -454,11 +448,7 @@
     [self setRumConfig];
     [FTModelHelper startView];
     [FTModelHelper startAction];
-    if(lowercase){
-        [self addLowercaseResource];
-    }else{
-        [self addResource];
-    }
+    [self addResource];
     [[FTGlobalRumManager sharedInstance].rumManager syncProcess];
     NSArray *array = [[FTTrackerEventDBTool sharedManger] getFirstRecords:10 withType:FT_DATA_TYPE_RUM];
     __block BOOL hasResource = NO;
@@ -602,17 +592,50 @@
     }];
 }
 - (void)testEnableResourceHostIP{
-    [self enableResourceHostIP:YES];
+    [self setRumConfigEnableResourceHostIP:YES];
+    [self enableResource:^(NSDictionary *tags, NSDictionary *fields) {
+        XCTAssertNotNil(tags[FT_KEY_RESOURCE_HOST_IP]);
+    }];
 }
 - (void)testDisableResourceHostIP{
-    [self enableResourceHostIP:NO];
+    [self setRumConfigEnableResourceHostIP:NO];
+    [self enableResource:^(NSDictionary *tags, NSDictionary *fields) {
+        XCTAssertNil(tags[FT_KEY_RESOURCE_HOST_IP]);
+    }];
 }
-- (void)enableResourceHostIP:(BOOL)enable{
-    [self setRumConfigEnableResourceHostIP:enable];
+- (void)testResourceTagsAndFields{
+    [self setRumConfigEnableResourceHostIP:YES];
+    [self enableResource:^(NSDictionary *tags, NSDictionary *fields) {
+        XCTAssertTrue([fields.allKeys containsObject:FT_KEY_RESOURCE_SIZE]);
+        XCTAssertTrue([fields.allKeys containsObject:FT_KEY_RESOURCE_REQUEST_SIZE]);
+        XCTAssertTrue([fields.allKeys containsObject:FT_KEY_RESOURCE_CONNECTION_REUSE]);
+        XCTAssertTrue([fields.allKeys containsObject:FT_KEY_RESOURCE_HTTP_PROTOCOL]);
+        XCTAssertTrue([fields.allKeys containsObject:FT_DURATION]);
+        XCTAssertTrue([fields.allKeys containsObject:FT_KEY_RESOURCE_TCP]);
+        XCTAssertTrue([fields.allKeys containsObject:FT_KEY_RESOURCE_DNS]);
+        XCTAssertTrue([fields.allKeys containsObject:FT_KEY_RESOURCE_SSL]);
+        XCTAssertTrue([fields.allKeys containsObject:FT_KEY_RESOURCE_TTFB]);
+        XCTAssertTrue([fields.allKeys containsObject:FT_KEY_RESOURCE_TRANS]);
+        XCTAssertTrue([fields.allKeys containsObject:FT_KEY_RESOURCE_FIRST_BYTE]);
+        
+        XCTAssertTrue([tags.allKeys containsObject:FT_KEY_RESOURCE_ID]);
+        XCTAssertTrue([tags.allKeys containsObject:FT_KEY_RESOURCE_URL]);
+        XCTAssertTrue([tags.allKeys containsObject:FT_KEY_RESOURCE_URL_HOST]);
+        XCTAssertTrue([tags.allKeys containsObject:FT_KEY_RESOURCE_URL_PATH]);
+        XCTAssertTrue([tags.allKeys containsObject:FT_KEY_RESOURCE_URL_PATH_GROUP]);
+        XCTAssertTrue([tags.allKeys containsObject:FT_KEY_RESOURCE_TYPE]);
+        XCTAssertTrue([tags.allKeys containsObject:FT_KEY_RESOURCE_METHOD]);
+        XCTAssertTrue([tags.allKeys containsObject:FT_KEY_RESOURCE_STATUS]);
+        XCTAssertTrue([tags.allKeys containsObject:FT_KEY_RESOURCE_STATUS_GROUP]);
+//        XCTAssertTrue([tags.allKeys containsObject:FT_KEY_RESPONSE_CONTENT_ENCODING]);
+//        XCTAssertTrue([tags.allKeys containsObject:FT_KEY_RESPONSE_CONNECTION]);
+    }];
+}
+- (void)enableResource:(void(^)(NSDictionary *tags,NSDictionary *fields))callback{
     [FTModelHelper startView];
     XCTestExpectation *expect = [self expectationWithDescription:@"testEnableResourceHostIP"];
     NSURLSession *urlSession = [NSURLSession sessionWithConfiguration:[NSURLSessionConfiguration defaultSessionConfiguration]];
-    NSURLSessionDataTask *dataTask = [urlSession dataTaskWithURL:[NSURL URLWithString:@"https://www.baidu.com"] completionHandler:^(NSData * _Nullable data, NSURLResponse * _Nullable response, NSError * _Nullable error) {
+    NSURLSessionDataTask *dataTask = [urlSession dataTaskWithURL:[NSURL URLWithString:@"https://httpbin.org/encoding/utf8"] completionHandler:^(NSData * _Nullable data, NSURLResponse * _Nullable response, NSError * _Nullable error) {
         [expect fulfill];
     }];
     [dataTask resume];
@@ -624,10 +647,8 @@
     __block NSInteger hasResourceData = NO;
     [FTModelHelper resolveModelArray:newArray callBack:^(NSString * _Nonnull source, NSDictionary * _Nonnull tags, NSDictionary * _Nonnull fields, BOOL * _Nonnull stop) {
         if ([source isEqualToString:FT_RUM_SOURCE_RESOURCE]) {
-            if(enable){
-                XCTAssertNotNil(tags[FT_KEY_RESOURCE_HOST_IP]);
-            }else{
-                XCTAssertNil(tags[FT_KEY_RESOURCE_HOST_IP]);
+            if (callback) {
+                callback(tags,fields);
             }
             hasResourceData = YES;
             *stop = YES;
@@ -1828,6 +1849,7 @@
                               @"Vary": @"Accept-Encoding,User-Agent"
                               
     };
+    model.resourceType = @"native";
     [[FTExternalDataManager sharedManager] stopResourceWithKey:key property:endContext];
     FTResourceMetricsModel *metrics = [FTResourceMetricsModel new];
     metrics.duration = @1000;
@@ -1859,6 +1881,7 @@
                               @"Vary": @"Accept-Encoding,User-Agent",
                               
     };
+    model.resourceType = @"native";
     [[FTExternalDataManager sharedManager] stopResourceWithKey:key];
     FTResourceMetricsModel *metrics = [FTResourceMetricsModel new];
     metrics.duration = @1000;

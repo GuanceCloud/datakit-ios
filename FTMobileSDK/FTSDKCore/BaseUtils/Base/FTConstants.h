@@ -146,6 +146,9 @@ extern NSString * const FT_KEY_RESOURCE_DOWNLOAD_TIME;
 extern NSString * const FT_KEY_RESOURCE_FIRST_BYTE_TIME;
 extern NSString * const FT_KEY_RESOURCE_CONNECT_TIME;
 extern NSString * const FT_KEY_RESOURCE_REDIRECT_TIME;
+extern NSString * const FT_KEY_RESOURCE_HTTP_PROTOCOL;
+extern NSString * const FT_KEY_RESOURCE_REQUEST_SIZE;
+extern NSString * const FT_KEY_RESOURCE_CONNECTION_REUSE;
 #pragma mark --- trace link tag
 extern NSString * const FT_KEY_TRACEID;
 extern NSString * const FT_KEY_SPANID;
