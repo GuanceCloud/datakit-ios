@@ -343,6 +343,7 @@
 		17B17150281042B7004002C9 /* FTThreadDispatchTest.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = FTThreadDispatchTest.m; sourceTree = "<group>"; };
 		17B1715428115ADF004002C9 /* FTAppLifeCycleTest.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = FTAppLifeCycleTest.m; sourceTree = "<group>"; };
 		17B1715928154A6E004002C9 /* FTRequestTest.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = FTRequestTest.m; sourceTree = "<group>"; };
+		17B8F78F2EFAB998003B0651 /* FTRemoteConfigModel+Test.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = "FTRemoteConfigModel+Test.h"; sourceTree = "<group>"; };
 		17BCF3842D66FF6D009A63FD /* TestPageVC.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = TestPageVC.h; sourceTree = "<group>"; };
 		17BCF3852D66FF6D009A63FD /* TestPageVC.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = TestPageVC.m; sourceTree = "<group>"; };
 		17BCF3872D66FFD8009A63FD /* ContentViewController.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = ContentViewController.h; sourceTree = "<group>"; };
@@ -715,6 +716,7 @@
 		17F59C692DF7D2C5003FCB84 /* RemoteConfig */ = {
 			isa = PBXGroup;
 			children = (
+				17B8F78F2EFAB998003B0651 /* FTRemoteConfigModel+Test.h */,
 				17F59C6E2DF7D3A7003FCB84 /* FTRemoteConfigTest.m */,
 			);
 			path = RemoteConfig;

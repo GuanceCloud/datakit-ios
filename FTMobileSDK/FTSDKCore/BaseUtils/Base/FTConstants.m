@@ -217,33 +217,6 @@ long const FT_MIN_DEFAULT_BLOCK_DURATIONS_MS = 100;
 long const FT_ANR_THRESHOLD_MS = 5000;
 
 long long const FT_ANR_THRESHOLD_NS = 5000000000;
-#pragma mark ========== remote config ==========
-NSString * const FT_R_SERVICE_NAME = @"serviceName";
-NSString * const FT_R_AUTO_SYNC = @"autoSync";
-NSString * const FT_R_COMPRESS_INTAKE_REQUESTS = @"compressIntakeRequests";
-NSString * const FT_R_SYNC_PAGE_SIZE = @"syncPageSize";
-NSString * const FT_R_SYNC_SLEEP_TIME = @"syncSleepTime";
-
-NSString * const FT_R_RUM_SAMPLERATE = @"rumSampleRate";
-NSString * const FT_R_RUM_SESSION_ON_ERROR_SAMPLE_RATE = @"rumSessionOnErrorSampleRate";
-NSString * const FT_R_RUM_ENABLE_TRACE_USER_ACTION = @"rumEnableTraceUserAction";
-NSString * const FT_R_RUM_ENABLE_TRACE_USER_VIEW = @"rumEnableTraceUserView";
-NSString * const FT_R_RUM_ENABLE_TRACE_USER_RESOURCE = @"rumEnableTraceUserResource";
-NSString * const FT_R_RUM_ENABLE_RESOURCE_HOST_IP = @"rumEnableResourceHostIP";
-NSString * const FT_R_RUM_ENABLE_TRACE_APP_FREEZE = @"rumEnableTrackAppUIBlock";
-NSString * const FT_R_RUM_FREEZE_DURATION_MS = @"rumBlockDurationMs";
-NSString * const FT_R_RUM_ENABLE_TRACK_APP_CRASH = @"rumEnableTrackAppCrash";
-NSString * const FT_R_RUM_ENABLE_TRACK_APP_ANR = @"rumEnableTrackAppANR";
-NSString * const FT_R_RUM_ENABLE_TRACE_WEBVIEW = @"rumEnableTraceWebView";
-NSString * const FT_R_RUM_ALLOW_WEBVIEW_HOST = @"rumAllowWebViewHost";
-
-NSString * const FT_R_TRACE_SAMPLERATE = @"traceSampleRate";
-NSString * const FT_R_TRACE_ENABLE_AUTO_TRACE = @"traceEnableAutoTrace";
-NSString * const FT_R_TRACE_TRACE_TYPE = @"traceType";
-
-NSString * const FT_R_LOG_SAMPLERATE = @"logSampleRate";
-NSString * const FT_R_LOG_LEVEL_FILTERS = @"logLevelFilters";
-NSString * const FT_R_LOG_ENABLE_CUSTOM_LOG = @"logEnableCustomLog";
 #pragma mark ==========  user info ==========
 NSString * const FT_USER_ID = @"userid";
 NSString * const FT_USER_NAME = @"user_name";

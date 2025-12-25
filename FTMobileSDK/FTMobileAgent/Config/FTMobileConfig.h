@@ -1,6 +1,5 @@
 //
 //  FTMobileConfig.h
-//  FTMobileAgent
 //
 //  Created by hulilei on 2019/12/6.
 //  Copyright © 2019 hll. All rights reserved.
@@ -54,9 +53,11 @@ typedef NS_ENUM(NSInteger, FTDBCacheDiscard)  {
     FTDBDiscardOldest
 };
 #import "FTDataModifier.h"
+#import "FTRemoteConfigTypeDefs.h"
 
 NS_ASSUME_NONNULL_BEGIN
 @class FTTraceContext;
+
 /// Support custom trace, after confirming interception, returns TraceContext, returns nil if not intercepted
 typedef FTTraceContext*_Nullable(^FTTraceInterceptor)(NSURLRequest *_Nonnull request);
 
@@ -150,9 +151,19 @@ typedef FTTraceContext*_Nullable(^FTTraceInterceptor)(NSURLRequest *_Nonnull req
 
 /// Set remote dynamic configuration minimum update interval, unit seconds, default 12*60*60
 @property (nonatomic, assign) int remoteConfigMiniUpdateInterval;
+
+/// Global completion block for remote configuration fetch operations
+/// @discussion This block is triggered when the remote configuration fetch/parsing process completes (either successfully or failed).
+///  Note that:
+///     1. `success = YES` means the network request and data parsing are error-free, but does NOT guarantee non-empty `model`/`content` (they may be nil if fetched data is empty);
+///     2. `success = NO` means network/parsing errors occurred, and `model`/`content` will be nil;
+///     3.  Callback scope: When directly calling `+updateRemoteConfigWithMinimumUpdateInterval:completion:`, only the method's local `completion` block is triggered, and this global property will NOT take effect;
+@property (nonatomic, copy) FTRemoteConfigFetchCompletionBlock remoteConfigFetchCompletionBlock;
+
 /// Set env based on provided FTEnv type
 /// - Parameter envType: Environment
 - (void)setEnvWithType:(FTEnv)envType;
+
 /// Set syncPageSize based on provided FTSyncPageSize type
 /// - Parameter pageSize: Data synchronization size
 - (void)setSyncPageSizeWithType:(FTSyncPageSize)pageSize;
