@@ -38,7 +38,6 @@
 @property (nonatomic, strong) FTCrashReportStore *reportStore;
 @property (nonatomic, strong) FTCrashReportWrapper *crashReportWrapper;
 @property (nonatomic, weak) id<FTRUMDataWriteProtocol> writer;
-@property (nonatomic, weak) id<FTErrorMonitorInfoWrapper> errorInfoWrapper;
 @end
 
 static FTCrash *sharedHandler = nil;
@@ -57,6 +56,18 @@ static mach_port_t main_thread_id;
     });
     return sharedHandler;
 }
++ (void)setupWithMonitoringType:(FTCrashCMonitorType)monitoring
+                    writer:(id<FTRUMDataWriteProtocol>)writer
+       enableMonitorMemory:(BOOL)memory
+       enableMonitorCpu:(BOOL)cpu
+{
+    FTCrash *crash = [self shared];
+    crash.monitoring = monitoring;
+    crash.writer = writer;
+    crash.crashReportWrapper = [[FTCrashReportWrapper alloc]initWithMonitorMemory:memory cpu:cpu];
+    [crash install];
+    [crash sendCrashReport];
+}
 - (instancetype)init {
     self = [super init];
     if (self) {
@@ -66,7 +77,6 @@ static mach_port_t main_thread_id;
         self.enableSigtermReporting = NO;
         self.reportStore = [[FTCrashReportStore alloc]init];
         self.reportStore.reportCleanupPolicy = FTCrashReportCleanupPolicyNever;
-        self.crashReportWrapper = [[FTCrashReportWrapper alloc]init];
         [[FTAppLifeCycle sharedInstance] addAppLifecycleDelegate:self];
     }
     return self;

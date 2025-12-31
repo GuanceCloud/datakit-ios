@@ -631,9 +631,9 @@
 		179BEB962D2D3ACC004AA5A6 /* FTThreadDispatchManager.h in Headers */ = {isa = PBXBuildFile; fileRef = 179BEB912D2D3ACC004AA5A6 /* FTThreadDispatchManager.h */; };
 		179BEB972D2D3ACC004AA5A6 /* FTSDKCompat.h in Headers */ = {isa = PBXBuildFile; fileRef = 179BEB902D2D3ACC004AA5A6 /* FTSDKCompat.h */; };
 		179BEB982D2D3ACC004AA5A6 /* FTThreadDispatchManager.h in Headers */ = {isa = PBXBuildFile; fileRef = 179BEB912D2D3ACC004AA5A6 /* FTThreadDispatchManager.h */; };
-		17A421A62EDD9A9D00416673 /* FTCrashMonitorType.h in Headers */ = {isa = PBXBuildFile; fileRef = 17A421A52EDD9A9D00416673 /* FTCrashMonitorType.h */; settings = {ATTRIBUTES = (Public, ); }; };
-		17A421A72EDD9A9D00416673 /* FTCrashMonitorType.h in Headers */ = {isa = PBXBuildFile; fileRef = 17A421A52EDD9A9D00416673 /* FTCrashMonitorType.h */; settings = {ATTRIBUTES = (Public, ); }; };
-		17A421A82EDD9A9D00416673 /* FTCrashMonitorType.h in Headers */ = {isa = PBXBuildFile; fileRef = 17A421A52EDD9A9D00416673 /* FTCrashMonitorType.h */; settings = {ATTRIBUTES = (Public, ); }; };
+		17A421A62EDD9A9D00416673 /* FTCrashMonitorType.h in Headers */ = {isa = PBXBuildFile; fileRef = 17A421A52EDD9A9D00416673 /* FTCrashMonitorType.h */; };
+		17A421A72EDD9A9D00416673 /* FTCrashMonitorType.h in Headers */ = {isa = PBXBuildFile; fileRef = 17A421A52EDD9A9D00416673 /* FTCrashMonitorType.h */; };
+		17A421A82EDD9A9D00416673 /* FTCrashMonitorType.h in Headers */ = {isa = PBXBuildFile; fileRef = 17A421A52EDD9A9D00416673 /* FTCrashMonitorType.h */; };
 		17A421A92EDD9A9D00416673 /* FTCrashMonitorType.h in Headers */ = {isa = PBXBuildFile; fileRef = 17A421A52EDD9A9D00416673 /* FTCrashMonitorType.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		17A421AC2EDDA88900416673 /* FTCrashReportC.c in Sources */ = {isa = PBXBuildFile; fileRef = 17A421AB2EDDA88900416673 /* FTCrashReportC.c */; };
 		17A421AD2EDDA88900416673 /* FTCrashReportC.h in Headers */ = {isa = PBXBuildFile; fileRef = 17A421AA2EDDA88900416673 /* FTCrashReportC.h */; };

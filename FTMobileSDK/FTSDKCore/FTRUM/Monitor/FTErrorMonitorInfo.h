@@ -14,7 +14,7 @@ typedef void (^ErrorMonitorInfoChangeBlock)(NSDictionary *info);
 
 @protocol FTErrorMonitorInfoProvider <NSObject>
 
-- (NSDictionary *)currentErrorMonitorInfo;
+- (NSDictionary *)errorMonitorInfo;
 
 - (void)onErrorMonitorInfoChange:(ErrorMonitorInfoChangeBlock)onChange;
 

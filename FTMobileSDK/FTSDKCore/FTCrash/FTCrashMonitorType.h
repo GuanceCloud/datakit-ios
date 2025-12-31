@@ -25,57 +25,38 @@
 #ifndef FTCrashMonitorType_h
 #define FTCrashMonitorType_h
 
-#ifdef __OBJC__
-#include <Foundation/Foundation.h>
-#endif
-
-#ifdef __cplusplus
-extern "C" {
-#endif
 
 typedef
-#ifdef __OBJC__
-NS_OPTIONS(NSUInteger, FTCrashMonitorType)
-#else /* __OBJC__ */
+//#ifdef __OBJC__
+//NS_OPTIONS(NSUInteger, FTCrashMonitorType)
+//#else /* __OBJC__ */
 enum
-#endif /* __OBJC__ */
+//#endif /* __OBJC__ */
 {
     /** Monitor Mach kernel exceptions. */
-    FTCrashMonitorTypeMachException      = 0x01,
+    FTCrashCMonitorTypeMachException      = 0x01,
     
     /** Monitor fatal signals. */
-    FTCrashMonitorTypeSignal             = 0x02,
+    FTCrashCMonitorTypeSignal             = 0x02,
     
     /** Monitor uncaught C++ exceptions. */
-    FTCrashMonitorTypeCPPException       = 0x04,
+    FTCrashCMonitorTypeCPPException       = 0x04,
     
     /** Monitor uncaught Objective-C NSExceptions. */
-    FTCrashMonitorTypeNSException        = 0x08,
+    FTCrashCMonitorTypeNSException        = 0x08,
     
     /** Track and inject system information. */
-    FTCrashMonitorTypeSystem             = 0x40,
+    FTCrashCMonitorTypeSystem             = 0x40,
     
     /** Track and inject application state information. */
-    FTCrashMonitorTypeApplicationState   = 0x80,
+    FTCrashCMonitorTypeApplicationState   = 0x80,
     
 }
-#ifndef __OBJC__
-FTCrashMonitorType
-#endif
+//#ifndef __OBJC__
+FTCrashCMonitorType
+//#endif
 ;
 
-#define FTCrashMonitorTypeAll                                                                  \
-    (FTCrashMonitorTypeMachException | FTCrashMonitorTypeSignal                            \
-        | FTCrashMonitorTypeCPPException | FTCrashMonitorTypeNSException                   \
-        | FTCrashMonitorTypeApplicationState | FTCrashMonitorTypeSystem)
 
-
-#define FTCrashMonitorTypeHighCompatibility                                                          \
-    (FTCrashMonitorTypeAll & (~FTCrashMonitorTypeMachException))
-
-
-#ifdef __cplusplus
-}
-#endif
 
 #endif /* FTCrashMonitorType_h */

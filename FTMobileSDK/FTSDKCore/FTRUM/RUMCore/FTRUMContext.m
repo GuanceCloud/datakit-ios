@@ -106,7 +106,9 @@ NS_ASSUME_NONNULL_BEGIN
     if (self.session_error_timestamp > 0) {
         [fields setValue:@(self.session_error_timestamp) forKey:FT_SESSION_ERROR_TIMESTAMP];
     }
-    [fields setValue:@(self.sampled_for_error_session) forKey:FT_RUM_KEY_SAMPLED_FOR_ERROR_SESSION];
+    if (self.sampled_for_error_session == YES) {
+        [fields setValue:@(self.sampled_for_error_session) forKey:FT_RUM_KEY_SAMPLED_FOR_ERROR_SESSION];
+    }
     return [fields copy];
 }
 -(BOOL)isEqual:(id)object{

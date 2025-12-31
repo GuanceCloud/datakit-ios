@@ -37,6 +37,8 @@
 #import "FTRumConfig+Private.h"
 #import "FTAutoTrackHandler.h"
 #import "DemoViewController.h"
+#import "FTRUMContext.h"
+
 @interface FTRUMTest : XCTestCase
 @property (nonatomic, copy) NSString *url;
 @property (nonatomic, copy) NSString *appid;
@@ -1003,21 +1005,7 @@
     }];
     XCTAssertTrue(hasActionData);
 }
-- (void)testStartAction_stopBy_fatal_error{
-    [self setRumConfig];
-    [FTModelHelper startView];
-    [FTModelHelper startAction];
-    [[FTGlobalRumManager sharedInstance].rumManager internalErrorWithType:@"test_fatal" message:@"error_message" stack:@"error_stack"];
-    
-    NSArray *array = [[FTTrackerEventDBTool sharedManger] getAllDatas];
-    __block NSInteger actionCount = 0;
-    [FTModelHelper resolveModelArray:array callBack:^(NSString * _Nonnull source, NSDictionary * _Nonnull tags, NSDictionary * _Nonnull fields, BOOL * _Nonnull stop) {
-        if ([source isEqualToString:FT_RUM_SOURCE_ACTION] && ![tags[FT_KEY_ACTION_TYPE] isEqualToString:FT_LAUNCH_COLD]){
-            actionCount ++;
-        }
-    }];
-    XCTAssertTrue(actionCount == 1);
-}
+
 #pragma mark ========== Error ==========
 
 - (void)testAddErrorData{

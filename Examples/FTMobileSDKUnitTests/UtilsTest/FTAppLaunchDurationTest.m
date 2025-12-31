@@ -113,7 +113,6 @@ typedef void(^LaunchDataBlock)(NSString *source, NSDictionary *tags, NSDictionar
 - (void)launchData:(FTLaunchType)type{
     FTRUMDependencies *dependencies = [[FTRUMDependencies alloc]init];
     dependencies.writer = self;
-    dependencies.errorMonitorType = ErrorMonitorAll;
     dependencies.sampleRate = 100;
     FTRUMManager *manager = [[FTRUMManager alloc]initWithRumDependencies:dependencies];
     NSString *actionName;

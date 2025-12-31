@@ -6,8 +6,8 @@
 //
 
 #import <Foundation/Foundation.h>
-#import "FTErrorDataProtocol.h"
 #import "FTCrashMonitorType.h"
+#import "FTErrorDataProtocol.h"
 #import "FTRUMDataWriteProtocol.h"
 
 NS_ASSUME_NONNULL_BEGIN
@@ -16,7 +16,7 @@ NS_ASSUME_NONNULL_BEGIN
 @interface FTCrash : NSObject
 
 
-@property (nonatomic, readwrite, assign) FTCrashMonitorType monitoring;
+@property (nonatomic, readwrite, assign) FTCrashCMonitorType monitoring;
 
 
 @property (nonatomic, readonly, strong) id<FTBacktraceReporting> backtraceReporting;
@@ -50,11 +50,11 @@ NS_ASSUME_NONNULL_BEGIN
 /// Singleton
 + (instancetype)shared;
 
-- (void)install;
++ (void)setupWithMonitoringType:(FTCrashCMonitorType)monitoring
+                    writer:(id<FTRUMDataWriteProtocol>)writer
+       enableMonitorMemory:(BOOL)memory
+          enableMonitorCpu:(BOOL)cpu;
 
-- (void)setWriter:(id<FTRUMDataWriteProtocol>)writer;
-- (void)setErrorInfoWrapper:(id<FTErrorMonitorInfoWrapper>)errorInfoWrapper;
-- (void)sendCrashReport;
 @end
 
 NS_ASSUME_NONNULL_END

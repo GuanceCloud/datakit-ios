@@ -13,6 +13,8 @@ NS_ASSUME_NONNULL_BEGIN
 
 @interface FTCrashReportWrapper : NSObject<FTCrashReportFilter>
 
+-(instancetype)initWithMonitorMemory:(BOOL)memory cpu:(BOOL)cpu;
+
 -(NSString *)generateBacktrace:(thread_t)thread;
 
 -(NSString *)generateAllThreadsBacktrace;

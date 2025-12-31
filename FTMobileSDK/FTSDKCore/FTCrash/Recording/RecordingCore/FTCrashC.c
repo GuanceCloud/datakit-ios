@@ -25,8 +25,6 @@
 //
 
 #include "FTCrashC.h"
-
-#include "FTCrashMonitorType.h"
 #include "FTCrashBinaryImageCache.h"
 #include "FTSDKCompat.h"
 #include "FTCrashExceptionHandlingPlan.h"
@@ -68,7 +66,7 @@ static volatile bool g_installed = 0;
 static bool g_shouldAddConsoleLogToReport = false;
 static bool g_shouldPrintPreviousLog = false;
 static char g_consoleLogPath[FTCRASHFU_MAX_PATH_LENGTH];
-static FTCrashMonitorType g_monitoring = FTCrashMonitorTypeHighCompatibility;
+static FTCrashCMonitorType g_monitoring = FTCrashCMonitorTypeSignal | FTCrashCMonitorTypeCPPException | FTCrashCMonitorTypeNSException | FTCrashCMonitorTypeSystem;
 static char g_lastCrashReportFilePath[FTCRASHFU_MAX_PATH_LENGTH];
 
 static FTCrashWillWriteReportCallback g_willWriteReportCallback;
@@ -78,14 +76,14 @@ static FTCrashApplicationState g_lastApplicationState = FTCrashApplicationStateN
 
 
 static const struct FTCrashMonitorMapping {
-    FTCrashMonitorType type;
+    FTCrashCMonitorType type;
     FTCrashMonitorAPI *(*getAPI)(void);
-} g_monitorMappings[] = { { FTCrashMonitorTypeMachException, ftcrashcm_machexception_getAPI },
-    { FTCrashMonitorTypeSignal, ftcrashcm_signal_getAPI },
-    { FTCrashMonitorTypeCPPException, ftcrashcm_cppexception_getAPI },
-    { FTCrashMonitorTypeNSException, ftcrashcm_nsexception_getAPI },
-    { FTCrashMonitorTypeSystem, ftcrashcm_system_getAPI },
-    { FTCrashMonitorTypeApplicationState, ftcrashcm_appstate_getAPI}
+} g_monitorMappings[] = { { FTCrashCMonitorTypeMachException, ftcrashcm_machexception_getAPI },
+    { FTCrashCMonitorTypeSignal, ftcrashcm_signal_getAPI },
+    { FTCrashCMonitorTypeCPPException, ftcrashcm_cppexception_getAPI },
+    { FTCrashCMonitorTypeNSException, ftcrashcm_nsexception_getAPI },
+    { FTCrashCMonitorTypeSystem, ftcrashcm_system_getAPI },
+    { FTCrashCMonitorTypeApplicationState, ftcrashcm_appstate_getAPI}
 };
 
 static const size_t g_monitorMappingCount = sizeof(g_monitorMappings) / sizeof(g_monitorMappings[0]);
@@ -135,7 +133,7 @@ static void onExceptionEvent(struct FTCrash_MonitorContext *monitorContext)
     }
 }
 
-static void setMonitors(FTCrashMonitorType monitorTypes)
+static void setMonitors(FTCrashCMonitorType monitorTypes)
 {
     g_monitoring = monitorTypes;
 
@@ -155,8 +153,8 @@ static void setMonitors(FTCrashMonitorType monitorTypes)
 #pragma mark - API -
 // ============================================================================
 
-void ftcrash_install(const char *appName, const char *const installPath,FTCrashMonitorType monitors){
-    enableCrashMonitorLog(true);
+void ftcrash_install(const char *appName, const char *const installPath,FTCrashCMonitorType monitors){
+    //enableCrashMonitorLog(false);
     if (g_installed) {
         FTLOG_DEBUG("Crash reporter already installed.");
         return;

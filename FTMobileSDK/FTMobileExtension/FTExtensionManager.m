@@ -25,6 +25,8 @@
 #import "FTEnumConstant.h"
 #import "FTLogger+Private.h"
 #import "FTErrorMonitorInfo.h"
+#import "FTCrashMonitorType.h"
+
 @interface FTExtensionManager ()<FTRUMDataWriteProtocol,FTLoggerDataWriteProtocol>
 @property (nonatomic, strong) FTRUMManager *rumManager;
 @property (nonatomic, strong) FTLoggerConfig *loggerConfig;
@@ -98,10 +100,8 @@ static FTExtensionManager *sharedInstance = nil;
     [[FTExternalDataManager sharedManager] setDelegate:rum];
     [FTExternalDataManager sharedManager].resourceDelegate = [FTURLSessionInstrumentation sharedInstance].externalResourceHandler;
     if (rumConfigOptions.enableTrackAppCrash){
-        [[FTCrash shared] setMonitoring:rumConfigOptions.crashMonitoring];
-        [[FTCrash shared] setWriter:self];
-        [[FTCrash shared] setErrorInfoWrapper:errorInfoWrapper];
-        [[FTCrash shared] install];
+        FTCrashMonitorType type = (rumConfigOptions.crashMonitoring & (~FTCrashMonitorTypeMachException));
+        [FTCrash setupWithMonitoringType:(FTCrashCMonitorType)type writer:self enableMonitorMemory:[errorInfoWrapper enableMonitorMemory] enableMonitorCpu:[errorInfoWrapper enableMonitorCpu]];
         dependencies.fatalErrorContext.onChange = ^(NSDictionary * _Nonnull context) {
             [FTCrash shared].userInfo = context;
         };
@@ -148,14 +148,17 @@ static FTExtensionManager *sharedInstance = nil;
 - (void)rumWrite:(NSString *)source tags:(NSDictionary *)tags fields:(NSDictionary *)fields time:(long long)time updateTime:(long long)updateTime cache:(BOOL)cache{
     [self rumWrite:source tags:tags fields:fields time:time];
 }
-- (void)rumWrite:(NSString *)type tags:(NSDictionary *)tags fields:(NSDictionary *)fields time:(long long)time{
+- (void)rumWriteAssembledData:(nonnull NSString *)source tags:(nonnull NSDictionary *)tags fields:(nonnull NSDictionary *)fields time:(long long)time {
+    [self rumWrite:source tags:tags fields:fields time:time];
+}
+- (void)rumWrite:(NSString *)source tags:(NSDictionary *)tags fields:(NSDictionary *)fields time:(long long)time{
     NSString *bundleIdentifier =  [[[NSBundle mainBundle] infoDictionary] objectForKey:@"CFBundleIdentifier"];
     NSMutableDictionary *tagDict = [NSMutableDictionary new];
     [tagDict setValue:bundleIdentifier forKey:@"extension_identifier"];
     [tagDict addEntriesFromDictionary:tags];
-    FTInnerLogDebug(@"%@\n",@{@"type":type?:@"",
+    FTInnerLogDebug(@"%@\n",@{@"type":source?:@"",
                               @"tags":tagDict,
                               @"fields":fields});
-    [[FTExtensionDataManager sharedInstance] writeRumEventType:type tags:tagDict fields:fields tm:time groupIdentifier:self.extensionConfig.groupIdentifier];
+    [[FTExtensionDataManager sharedInstance] writeRumEventType:source tags:tagDict fields:fields tm:time groupIdentifier:self.extensionConfig.groupIdentifier];
 }
 @end

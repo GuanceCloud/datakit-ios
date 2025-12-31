@@ -78,11 +78,7 @@ static NSObject *sharedInstanceLock;
     [[FTAppLifeCycle sharedInstance] addAppLifecycleDelegate:self];
     BOOL lastSessionHadCrash = NO;
     if(rumConfig.enableTrackAppCrash){
-        [[FTCrash shared] setMonitoring:rumConfig.crashMonitoring];
-        [[FTCrash shared] setWriter:writer];
-        [[FTCrash shared] setErrorInfoWrapper:errorInfoWrapper];
-        [[FTCrash shared] install];
-        [[FTCrash shared] sendCrashReport];
+        [FTCrash setupWithMonitoringType:(FTCrashCMonitorType)rumConfig.crashMonitoring writer:writer enableMonitorMemory:[errorInfoWrapper enableMonitorMemory] enableMonitorCpu:[errorInfoWrapper enableMonitorCpu]];
         dependencies.fatalErrorContext.onChange = ^(NSDictionary * _Nonnull context) {
             [FTCrash shared].userInfo = context;
         };

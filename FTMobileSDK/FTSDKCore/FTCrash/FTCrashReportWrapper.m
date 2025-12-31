@@ -28,6 +28,7 @@
 #import "FTCrashCPU.h"
 #import "NSDate+FTUtil.h"
 #import "FTRUMContext.h"
+#include <sys/sysctl.h>
 
 #if FT_HAS_UIKIT
 #import <UIKit/UIKit.h>
@@ -86,6 +87,9 @@ getStackEntriesFromThread(FTCrashThread thread, struct FTCrashMachineContext *co
     return entries;
 }
 @interface FTCrashReportWrapper ()
+@property (nonatomic, assign) BOOL enableMemory;
+@property (nonatomic, assign) BOOL enableCpu;
+
 
 @property (nonatomic, assign) long long crashDate;
 
@@ -193,6 +197,15 @@ static NSDictionary *g_registerOrders;
                                x86Order, @"i686", x86_64Order, @"x86_64", nil];
 }
 
+-(instancetype)initWithMonitorMemory:(BOOL)memory cpu:(BOOL)cpu{
+    self = [super init];
+    if (self) {
+        _enableMemory = memory;
+        _enableCpu = cpu;
+    }
+    return self;
+}
+
 - (int)majorVersion:(NSDictionary *)report
 {
     NSDictionary *info = [self infoReport:report];
@@ -227,13 +240,24 @@ static NSDictionary *g_registerOrders;
                 if(!errorContext.lastSessionState){
                     continue;
                 }
+                NSMutableDictionary *extra = [NSMutableDictionary new];
+                NSString *registers = [self crashedThreadCPUStateStringForReport:report.value cpuArch:[self cpuArchForReport:report.value]];
+                [extra setValue:registers forKey:@"registers"];
+                
                 RUMModel *errorModel = [RUMModel new];
                 NSMutableDictionary *errorTags = [NSMutableDictionary dictionaryWithDictionary:errorContext.globalAttributes];
                 
                 [errorTags addEntriesFromDictionary:errorContext.dynamicContext];
                 [errorTags addEntriesFromDictionary:errorContext.errorMonitorInfo];
                 [errorTags addEntriesFromDictionary:[errorContext.lastSessionState sessionTags]];
-                
+                if (self.enableMemory) {
+                    float memUsage = [self memoryUsageForReport:report.value];
+                    [errorTags setValue:@(memUsage) forKey:FT_MEMORY_USE];
+                }
+                if (self.enableCpu) {
+                    float cpuUsage = [self threadCpuUsageForReport:report.value];
+                    [errorTags setValue:@(cpuUsage) forKey:FT_CPU_USE];
+                }
                 [errorTags setValue:FT_LOGGER forKey:FT_KEY_ERROR_SOURCE];
                 [errorTags setValue:errorContext.appState forKey:FT_KEY_ERROR_SITUATION];
                 
@@ -247,6 +271,7 @@ static NSDictionary *g_registerOrders;
                 [errorFields setValue:@"ios_crash" forKey:FT_KEY_ERROR_TYPE];
                 [errorFields setValue:self.crashMessage forKey:FT_KEY_ERROR_MESSAGE];
                 [errorFields setValue:appleReportString forKey:FT_KEY_ERROR_STACK];
+                [errorFields setValue:extra forKey:@"crash_extra"];
                 errorModel.source = FT_RUM_SOURCE_ERROR;
                 
                 if(errorContext.lastViewContext){
@@ -340,19 +365,17 @@ static NSDictionary *g_registerOrders;
                            stackLength:(NSInteger)stackLength
                        toMutableString:(NSMutableString *)threadStr
                             imagesDict:(NSMutableDictionary *)imagesDict {
-    NSString *threadName = [self getThreadName:thread];
-    if (threadName) {
-        [threadStr appendFormat:@"\nThread %ld name:  %@\n", threadIndex, threadName];
-    } else {
-        [threadStr appendFormat:@"\nThread %ld:\n", threadIndex];
-    }
-    
+
+    [threadStr appendFormat:@"\nThread %ld:\n", threadIndex];
+
     for (int index = 0; index < stackLength; index++) {
         FTCrashStackEntry entry = stackEntries[index];
         if (entry.imageName) {
             NSString *imagePath = [NSString stringWithUTF8String:entry.imageName];
             NSString *imageName = [imagePath lastPathComponent];
-            
+            if (imageName == nil) {
+                imageName = @"(null)";
+            }
             NSString *preamble = [NSString stringWithFormat:FMT_TRACE_PREAMBLE, index, imageName.UTF8String, entry.address];
             NSString *unsymbolicated = [NSString stringWithFormat:FMT_TRACE_UNSYMBOLICATED, entry.imageAddress, entry.address - entry.imageAddress];
             NSString *symbolicated = nil;
@@ -397,7 +420,6 @@ static NSDictionary *g_registerOrders;
     [threadStr appendString:@"\nBinary Images:\n"];
     [threadStr appendString:[imagesDict.allValues componentsJoinedByString:@"\n"]];
     
-    [threadStr appendString:@"\nEOF\n"];
     NSString *header = [self headStringForFreeze];
     [threadStr insertString:header atIndex:0];
 }
@@ -504,9 +526,11 @@ static NSDictionary *g_registerOrders;
         uintptr_t pc = (uintptr_t)[[trace objectForKey:FTCrashField_InstructionAddr] longLongValue];
         uintptr_t objAddr = (uintptr_t)[[trace objectForKey:FTCrashField_ObjectAddr] longLongValue];
         NSString *objName = [[trace objectForKey:FTCrashField_ObjectName] lastPathComponent];
+        if (objName == nil) {
+            objName = @"(null)";
+        }
         uintptr_t symAddr = (uintptr_t)[[trace objectForKey:FTCrashField_SymbolAddr] longLongValue];
         NSString *symName = [trace objectForKey:FTCrashField_SymbolName];
-        bool isMainExecutable = mainExecutableName && [objName isEqualToString:mainExecutableName];
       
 
         NSString *preamble = [NSString stringWithFormat:FMT_TRACE_PREAMBLE, traceNum, [objName UTF8String], pc];
@@ -528,23 +552,6 @@ static NSDictionary *g_registerOrders;
     }
 
     return str;
-}
-- (nullable NSString *)getThreadName:(FTCrashThread)thread
-{
-    int bufferLength = 128;
-    char buffer[bufferLength];
-    char *const pBuffer = buffer;
-
-    BOOL didGetThreadNameSucceed = ftcrashthread_getThreadName(thread,pBuffer,bufferLength);
-
-    if (didGetThreadNameSucceed == YES) {
-        NSString *threadName = [NSString stringWithCString:pBuffer encoding:NSUTF8StringEncoding];
-        if (threadName.length > 0) {
-            return threadName;
-        }
-    }
-
-    return nil;
 }
 - (NSString *)stringFromDate:(NSDate *)date
 {
@@ -606,8 +613,6 @@ static NSDictionary *g_registerOrders;
                               name, arch, uuid, path];
         }
     }
-
-    [str appendString:@"\nEOF\n\n"];
 
     return str;
 }
@@ -717,70 +722,6 @@ static NSDictionary *g_registerOrders;
             [str appendFormat:@"%6s: " FMT_PTR_LONG @" ", [regName cStringUsingEncoding:NSUTF8StringEncoding], addr];
         }
         [str appendString:@"\n"];
-    }
-
-    return str;
-}
-
-- (NSString *)extraInfoStringForReport:(NSDictionary *)report mainExecutableName:(NSString *)mainExecutableName
-{
-    NSMutableString *str = [NSMutableString string];
-
-    [str appendString:@"\nExtra Information:\n"];
-
-    NSDictionary *system = [self systemReport:report];
-    NSDictionary *crash = [self crashReport:report];
-    NSDictionary *error = [crash objectForKey:FTCrashField_Error];
-    NSDictionary *nsexception = [error objectForKey:FTCrashField_NSException];
-    NSDictionary *referencedObject = [nsexception objectForKey:FTCrashField_ReferencedObject];
-    if (referencedObject != nil) {
-        [str appendFormat:@"Object referenced by NSException:\n%@\n", [self JSONForObject:referencedObject]];
-    }
-
-    NSDictionary *crashedThread = [self crashedThread:report];
-    if (crashedThread != nil) {
-        NSDictionary *stack = [crashedThread objectForKey:FTCrashField_Stack];
-        if (stack != nil) {
-            [str appendFormat:@"\nStack Dump (" FMT_PTR_LONG "-" FMT_PTR_LONG "):\n\n%@\n",
-                              (uintptr_t)[[stack objectForKey:FTCrashField_DumpStart] unsignedLongLongValue],
-                              (uintptr_t)[[stack objectForKey:FTCrashField_DumpEnd] unsignedLongLongValue],
-                              [stack objectForKey:FTCrashField_Contents]];
-        }
-
-        NSDictionary *notableAddresses = [crashedThread objectForKey:FTCrashField_NotableAddresses];
-        if (notableAddresses.count) {
-            [str appendFormat:@"\nNotable Addresses:\n%@\n", [self JSONForObject:notableAddresses]];
-        }
-    }
-
-    NSDictionary *lastException = [[self processReport:report] objectForKey:FTCrashField_LastDeallocedNSException];
-    if (lastException != nil) {
-        uintptr_t address = (uintptr_t)[[lastException objectForKey:FTCrashField_Address] unsignedLongLongValue];
-        NSString *name = [lastException objectForKey:FTCrashField_Name];
-        NSString *reason = [lastException objectForKey:FTCrashField_Reason];
-        referencedObject = [lastException objectForKey:FTCrashField_ReferencedObject];
-        [str appendFormat:@"\nLast deallocated NSException (" FMT_PTR_LONG "): %@: %@\n", address, name, reason];
-        if (referencedObject != nil) {
-            [str appendFormat:@"Referenced object:\n%@\n", [self JSONForObject:referencedObject]];
-        }
-        [str appendString:[self backtraceString:[lastException objectForKey:FTCrashField_Backtrace]
-                              mainExecutableName:mainExecutableName]];
-    }
-
-    NSDictionary *appStats = [system objectForKey:FTCrashField_AppStats];
-    if (appStats != nil) {
-        [str appendFormat:@"\nApplication Stats:\n%@\n", [self JSONForObject:appStats]];
-    }
-
-//    NSDictionary *memoryStats = [system objectForKey:FTCrashField_AppMemory];
-//    if (memoryStats != nil) {
-//        [str appendFormat:@"\nMemory Statistics:\n%@\n", [self JSONForObject:memoryStats]];
-//    }
-
-    NSDictionary *crashReport = [report objectForKey:FTCrashField_Crash];
-    NSString *diagnosis = [crashReport objectForKey:FTCrashField_Diagnosis];
-    if (diagnosis != nil) {
-        [str appendFormat:@"\nCrashDoctor Diagnosis: %@\n", diagnosis];
     }
 
     return str;
@@ -904,13 +845,38 @@ static NSDictionary *g_registerOrders;
     [str appendString:[self headerStringForReport:report]];
     [str appendString:[self errorInfoStringForReport:report]];
     [str appendString:[self threadListStringForReport:report mainExecutableName:executableName]];
-    [str appendString:[self crashedThreadCPUStateStringForReport:report cpuArch:[self cpuArchForReport:report]]];
+//    [str appendString:[self crashedThreadCPUStateStringForReport:report cpuArch:[self cpuArchForReport:report]]];
     [str appendString:[self binaryImagesStringForReport:report]];
-    [str appendString:[self extraInfoStringForReport:report mainExecutableName:executableName]];
+//    [str appendString:[self extraInfoStringForReport:report mainExecutableName:executableName]];
 
     return str;
 }
+- (float)threadCpuUsageForReport:(NSDictionary *)report{
+    NSDictionary *crash = [self crashReport:report];
+    NSArray *threads = [crash objectForKey:FTCrashField_Threads];
+    float tot_cpu = 0;
 
+    for (NSDictionary *thread in threads) {
+        NSNumber *cpuUsage = thread[FTCrashField_CPU];
+        if (cpuUsage) {
+            tot_cpu = tot_cpu + [cpuUsage floatValue];
+        }
+    }
+    return (tot_cpu / [NSProcessInfo processInfo].processorCount) * 100.0f;
+}
+- (float)memoryUsageForReport:(NSDictionary *)report{
+    NSDictionary *system = [self systemReport:report];
+    NSDictionary *memory = system[FTCrashField_Memory];
+    NSNumber *memorySize = memory[FTCrashField_Size];
+    NSNumber *memoryAvailable = memory[FTCrashField_Available];
+    if (memoryAvailable && memorySize) {
+        NSUInteger total = [memorySize unsignedIntegerValue];
+        NSUInteger avail = [memoryAvailable unsignedIntegerValue];
+        float usage =  (float)(total - avail) / total * 100;
+        return MAX(0.0f, MIN(100.0f, usage));
+    }
+    return 0.0f;
+}
 - (NSString *)recrashReportString:(NSDictionary *)report
 {
     NSMutableString *str = [NSMutableString string];
@@ -925,7 +891,7 @@ static NSDictionary *g_registerOrders;
     [str appendString:@"\nHandler crashed while reporting:\n"];
     [str appendString:[self errorInfoStringForReport:report]];
     [str appendString:[self threadStringForThread:thread mainExecutableName:executableName]];
-    [str appendString:[self crashedThreadCPUStateStringForReport:report cpuArch:[self cpuArchForReport:recrashReport]]];
+//    [str appendString:[self crashedThreadCPUStateStringForReport:report cpuArch:[self cpuArchForReport:recrashReport]]];
     NSString *diagnosis = [crash objectForKey:FTCrashField_Diagnosis];
     if (diagnosis != nil) {
         [str appendFormat:@"\nRecrash Diagnosis: %@", diagnosis];
@@ -937,13 +903,13 @@ static NSDictionary *g_registerOrders;
 {
     NSMutableString *str = [NSMutableString string];
 
-    NSDictionary *recrashReport = report[FTCrashField_RecrashReport];
-    if (recrashReport) {
-        [str appendString:[self crashReportString:recrashReport]];
-        [str appendString:[self recrashReportString:report]];
-    } else {
-        [str appendString:[self crashReportString:report]];
-    }
+//    NSDictionary *recrashReport = report[FTCrashField_RecrashReport];
+//    if (recrashReport) {
+//        [str appendString:[self crashReportString:recrashReport]];
+//        [str appendString:[self recrashReportString:report]];
+//    } else {
+    [str appendString:[self crashReportString:report]];
+//    }
 
     return str;
 }

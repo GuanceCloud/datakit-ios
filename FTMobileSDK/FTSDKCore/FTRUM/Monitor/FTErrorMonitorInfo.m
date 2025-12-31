@@ -14,6 +14,10 @@
 #if FT_HAS_UIKIT
 #import <UIKit/UIKit.h>
 #endif
+#if FT_HOST_IOS
+#import <CoreTelephony/CTTelephonyNetworkInfo.h>
+#import <CoreTelephony/CTCarrier.h>
+#endif
 @interface FTErrorMonitorInfo()
 @property (nonatomic, assign) ErrorMonitorType monitorType;
 @property (nonatomic, copy) NSString *totalMemorySize;
@@ -25,7 +29,12 @@
 #if FT_HAS_UIDEVICE
 @property (nonatomic, strong) UIDevice *device;
 #endif
-
+#if FT_HOST_IOS
+@property (nonatomic, strong) CTTelephonyNetworkInfo *networkInfo;
+#endif
+@property (nonatomic, strong) id batteryNotificationObserver;
+@property (nonatomic, strong) id telephonyNotificationObserver;
+@property (nonatomic, strong) id localNotificationObserver;
 @end
 void *FTErrorMonitorInfoQueueTag = &FTErrorMonitorInfoQueueTag;
 
@@ -36,7 +45,6 @@ void *FTErrorMonitorInfoQueueTag = &FTErrorMonitorInfoQueueTag;
         self.monitorType = monitorType;
         self.queue = dispatch_queue_create("com.ft.error-info",DISPATCH_QUEUE_SERIAL);
         dispatch_queue_set_specific(self.queue, FTErrorMonitorInfoQueueTag, &FTErrorMonitorInfoQueueTag, NULL);
-
         [self startMonitor];
     }
     return self;
@@ -45,27 +53,92 @@ void *FTErrorMonitorInfoQueueTag = &FTErrorMonitorInfoQueueTag;
     if (self.monitorType & ErrorMonitorMemory) {
         self.totalMemorySize = [FTMonitorUtils totalMemorySize];
     }
+    __weak __typeof(self) weakSelf = self;
 #if FT_HAS_UIDEVICE
     if (self.monitorType & ErrorMonitorBattery) {
         self.device = [UIDevice currentDevice];
         self.device.batteryMonitoringEnabled = YES;
-        self->_batteryUse = self.device.batteryLevel == -1? @0 : @(self.device.batteryLevel*100);
-        [[NSNotificationCenter defaultCenter] addObserverForName:UIDeviceBatteryLevelDidChangeNotification object:self.device queue:NSOperationQueue.mainQueue usingBlock:^(NSNotification * _Nonnull notification) {
+        _batteryUse = self.device.batteryLevel == -1? @0 : @(self.device.batteryLevel*100);
+        if (self.batteryNotificationObserver) {
+            [[NSNotificationCenter defaultCenter] removeObserver:self.batteryNotificationObserver];
+        }
+        
+        self.batteryNotificationObserver = [[NSNotificationCenter defaultCenter] addObserverForName:UIDeviceBatteryLevelDidChangeNotification object:self.device queue:NSOperationQueue.mainQueue  usingBlock:^(NSNotification * _Nonnull notification) {
+            __strong typeof(weakSelf) strongSelf = weakSelf;
+            if (!strongSelf) return;
             if ([notification.object isKindOfClass:UIDevice.class]) {
                 UIDevice *device = notification.object;
                 float batteryLevel = device.batteryLevel;
-                self.batteryUse = batteryLevel == -1? @0 : @(batteryLevel*100);
+                strongSelf.batteryUse = batteryLevel == -1? @0 : @(batteryLevel*100);
             }
         }];
     }
 #endif
     
+#if FT_HOST_IOS
+    // https://developer.apple.com/documentation/ios-ipados-release-notes/ios-ipados-16_4-release-notes#Core-Telephony
+    //  CTCarrier, a deprecated API, returns static values for apps that are built with the iOS 16.4 SDK or later.
+    if (@available(iOS 16.4, *)) {
+        _telephonyCarrier = @"--";
+    }else{
+        self.networkInfo = [[CTTelephonyNetworkInfo alloc] init];
+        if (@available(iOS 12.0, *)) {
+            _telephonyCarrier = [self.networkInfo.serviceCurrentRadioAccessTechnology.allValues firstObject] ?: FT_NULL_VALUE;
+        } else {
+            _telephonyCarrier = [[self.networkInfo subscriberCellularProvider] carrierName] ?: FT_NULL_VALUE;
+        }
+        
+        if (self.telephonyNotificationObserver) {
+            [[NSNotificationCenter defaultCenter] removeObserver:self.telephonyNotificationObserver];
+        }
+        NSString *notificationName;
+        if (@available(iOS 12.0, *)) {
+            notificationName = CTServiceRadioAccessTechnologyDidChangeNotification;
+        }else{
+            notificationName = CTRadioAccessTechnologyDidChangeNotification;
+        }
+        self.telephonyNotificationObserver = [[NSNotificationCenter defaultCenter] addObserverForName:notificationName
+                                                                                               object:self.networkInfo
+                                                                                                queue:NSOperationQueue.mainQueue
+                                                           usingBlock:^(NSNotification * _Nonnull notification) {
+            __strong typeof(weakSelf) strongSelf = weakSelf;
+            if (!strongSelf) return;
+            
+            NSString *newCarrier = @"";
+            if (@available(iOS 12.0, *)) {
+                NSString *key = notification.object;
+                if (key && strongSelf.networkInfo.serviceCurrentRadioAccessTechnology[key]) {
+                    newCarrier = strongSelf.networkInfo.serviceCurrentRadioAccessTechnology[key];
+                }
+            } else {
+                newCarrier = [[strongSelf.networkInfo subscriberCellularProvider] carrierName] ?: @"";
+            }
+            strongSelf.telephonyCarrier = newCarrier ? : FT_NULL_VALUE;
+        }];
+    }
+#endif
+    if (self.localNotificationObserver) {
+        [[NSNotificationCenter defaultCenter] removeObserver:self.localNotificationObserver];
+    }
+    _local = [[[NSBundle mainBundle] preferredLocalizations] firstObject];
+    self.localNotificationObserver = [[NSNotificationCenter defaultCenter] addObserverForName:NSCurrentLocaleDidChangeNotification object:nil queue:[NSOperationQueue mainQueue] usingBlock:^(NSNotification * _Nonnull notification) {
+        __strong typeof(weakSelf) strongSelf = weakSelf;
+        if (!strongSelf) return;
+        strongSelf.local = [[[NSBundle mainBundle] preferredLocalizations] firstObject];
+    }];
+    
+    [self onChangeCallBack];
 }
-
+-(BOOL)enableMonitorCpu{
+    return self.monitorType & ErrorMonitorCpu;
+}
+-(BOOL)enableMonitorMemory{
+    return self.monitorType & ErrorMonitorMemory;
+}
 -(void)setBatteryUse:(NSNumber *)batteryUse{
     dispatch_async(self.queue, ^{
         if (![batteryUse isEqualToNumber:self.batteryUse]) {
-            self.batteryUse = batteryUse;
+            self->_batteryUse = batteryUse;
             [self onChangeCallBack];
         }
     });
@@ -73,7 +146,7 @@ void *FTErrorMonitorInfoQueueTag = &FTErrorMonitorInfoQueueTag;
 - (void)setLocal:(NSString *)local{
     dispatch_async(self.queue, ^{
         if (![local isEqualToString:self.local]) {
-            self.local = local;
+            self->_local = local;
             [self onChangeCallBack];
         }
     });
@@ -81,7 +154,7 @@ void *FTErrorMonitorInfoQueueTag = &FTErrorMonitorInfoQueueTag;
 -(void)setTelephonyCarrier:(NSString *)telephonyCarrier{
     dispatch_async(self.queue, ^{
         if (![telephonyCarrier isEqualToString:self.telephonyCarrier]) {
-            self.telephonyCarrier = telephonyCarrier;
+            self->_telephonyCarrier = telephonyCarrier;
             [self onChangeCallBack];
         }
     });
@@ -104,20 +177,19 @@ void *FTErrorMonitorInfoQueueTag = &FTErrorMonitorInfoQueueTag;
 #endif
         }
 #if FT_HOST_IOS
-        errorTag[FT_KEY_CARRIER] = [FTBaseInfoHandler telephonyCarrier];
+        errorTag[FT_KEY_CARRIER] = self.telephonyCarrier;
 #endif
-        NSString *preferredLanguage = [[[NSBundle mainBundle] preferredLocalizations] firstObject];
-        errorTag[FT_KEY_LOCALE] = preferredLanguage;
+        errorTag[FT_KEY_LOCALE] = self.local;
     });
     return [errorTag copy];
 }
 
 - (void)onChangeCallBack{
     if (self.onChange) {
-        self.onChange([self currentErrorMonitorInfo]);
+        self.onChange([self onChangeErrorMonitorInfo]);
     }
 }
-- (NSDictionary *)currentErrorMonitorInfo{
+- (NSDictionary *)onChangeErrorMonitorInfo{
     NSMutableDictionary *dict = [NSMutableDictionary new];
     dispatch_block_t block = ^{
         dict[FT_MEMORY_TOTAL] = self.totalMemorySize;
@@ -140,5 +212,29 @@ void *FTErrorMonitorInfoQueueTag = &FTErrorMonitorInfoQueueTag;
         self.onChange = onChange;
     });
 }
-
+- (void)dealloc {
+    if (self.batteryNotificationObserver) {
+        [[NSNotificationCenter defaultCenter] removeObserver:self.batteryNotificationObserver];
+        self.batteryNotificationObserver = nil;
+    }
+    
+    if (self.telephonyNotificationObserver) {
+        [[NSNotificationCenter defaultCenter] removeObserver:self.telephonyNotificationObserver];
+        self.telephonyNotificationObserver = nil;
+    }
+    if (self.localNotificationObserver) {
+        [[NSNotificationCenter defaultCenter] removeObserver:self.localNotificationObserver];
+        self.localNotificationObserver = nil;
+    }
+#if FT_HAS_UIDEVICE
+    if (self.device) {
+        self.device.batteryMonitoringEnabled = NO;
+        self.device = nil;
+    }
+#endif
+    
+#if FT_HOST_IOS
+    self.networkInfo = nil;
+#endif
+}
 @end

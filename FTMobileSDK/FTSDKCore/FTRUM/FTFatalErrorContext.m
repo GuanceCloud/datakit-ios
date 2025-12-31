@@ -87,11 +87,6 @@ static BOOL FTObjectIsEqual(id a, id b) {
         _queue = dispatch_queue_create("com.ft.error-context",DISPATCH_QUEUE_SERIAL);
         _globalAttributes = [[FTPresetProperty sharedInstance] rumTags];
         _provider = provider;
-        _errorMonitorInfo = [provider currentErrorMonitorInfo];
-        __weak __typeof(self) weakSelf = self;
-        [self.provider onErrorMonitorInfoChange:^(NSDictionary * _Nonnull info) {
-            weakSelf.errorMonitorInfo = info;
-        }];
     }
     return self;
 }
@@ -143,7 +138,7 @@ static BOOL FTObjectIsEqual(id a, id b) {
                                                    lastViewContext:self.lastViewContext
                                                     dynamicContext:self.dynamicContext
                                                  globalAttributes:self.globalAttributes
-                                                 errorMonitorInfo:self.errorMonitorInfo];
+                                                 errorMonitorInfo:[self.provider errorMonitorInfo]];
     });
     return model;
 }

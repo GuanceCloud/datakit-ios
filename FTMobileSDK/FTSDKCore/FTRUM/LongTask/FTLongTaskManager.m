@@ -16,6 +16,8 @@
 #import "FTLog+Private.h"
 #import "FTRUMContext.h"
 
+static NSString *const kSDKDirName      = @"com.ft.sdk";
+
 #define FT_ANR_VERSION @"2.0.0"
 
 #define FTBoundary  @"\n___boundary.info.date___\n"
@@ -139,17 +141,32 @@ void *FTLongTaskManagerQueueTag = &FTLongTaskManagerQueueTag;
     }
     return _fileHandle;
 }
-- (NSString *)dataStorePath{
-    if(!_dataStorePath){
-#if TARGET_OS_IOS
-        NSString *pathString = [NSSearchPathForDirectoriesInDomains(NSDocumentDirectory, NSUserDomainMask, YES) lastObject];
-#elif TARGET_OS_TV
-        NSString *pathString = [NSSearchPathForDirectoriesInDomains(NSCachesDirectory, NSUserDomainMask, YES) lastObject];
-#else
-        NSString *pathString = [NSSearchPathForDirectoriesInDomains(NSLibraryDirectory, NSUserDomainMask, YES) lastObject];
+- (NSString *)dataStorePath {
+    if (!_dataStorePath) {
+        NSFileManager *fileManager = [NSFileManager defaultManager];
+        NSURL *appSupportDir = [[fileManager URLsForDirectory:[self supportedDirectory] inDomains:NSUserDomainMask] firstObject];
+        NSURL *sdkDirectory = [appSupportDir URLByAppendingPathComponent:kSDKDirName];
 
+        if (![fileManager fileExistsAtPath:sdkDirectory.path]) {
+            [fileManager createDirectoryAtURL:sdkDirectory withIntermediateDirectories:YES attributes:nil error:nil];
+        }
+        
+        NSURL *fileURL = [sdkDirectory URLByAppendingPathComponent:@"longtask.log"];
+        
+#if TARGET_OS_IOS
+        NSString *docPath = [NSSearchPathForDirectoriesInDomains(NSDocumentDirectory, NSUserDomainMask, YES) lastObject];
+#elif TARGET_OS_TV
+        NSString *docPath = [NSSearchPathForDirectoriesInDomains(NSCachesDirectory, NSUserDomainMask, YES) lastObject];
+#else
+        NSString *docPath = [NSSearchPathForDirectoriesInDomains(NSLibraryDirectory, NSUserDomainMask, YES) lastObject];
 #endif
-        _dataStorePath = [pathString stringByAppendingPathComponent:@"FTLongTask.txt"];
+        NSString *oldPath = [docPath stringByAppendingPathComponent:@"FTLongTask.txt"];
+        
+        if ([fileManager fileExistsAtPath:oldPath]) {
+            NSError *moveError = nil;
+            [fileManager removeItemAtPath:oldPath error:&moveError];
+        }
+        _dataStorePath = fileURL.path;
     }
     return _dataStorePath;
 }
@@ -412,5 +429,12 @@ void *FTLongTaskManagerQueueTag = &FTLongTaskManagerQueueTag;
         }
     }
     if (_longTaskDetector) [_longTaskDetector stopDetecting];
+}
+- (NSSearchPathDirectory)supportedDirectory {
+#if TARGET_OS_TV
+  return NSCachesDirectory;
+#else
+  return NSApplicationSupportDirectory;
+#endif
 }
 @end

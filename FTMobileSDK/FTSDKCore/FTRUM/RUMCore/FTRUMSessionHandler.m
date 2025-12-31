@@ -56,6 +56,7 @@ static const NSTimeInterval sessionMaxDuration = 4 * 60 * 60; // 4 hours
                 [self startView:viewModel];
             }
         }
+        self.rumDependencies.linkRUMSessionContext = [self.context getGlobalSessionViewTags];
     }
     return  self;
 }
@@ -94,7 +95,8 @@ static const NSTimeInterval sessionMaxDuration = 4 * 60 * 60; // 4 hours
         if(self.sessionOnErrorSampling == NO){
             return YES;
         }else if(model.type == FTRUMDataError || model.type == FTRUMDataResourceError){
-            long long timestamp = [model.time ft_nanosecondTimeStamp];
+            self.sampling = YES;
+            long long timestamp = model.tm;
             self.context.sessionState.session_error_timestamp = timestamp;
             FTRUMViewHandler *lastViewHandler = (FTRUMViewHandler *)self.viewHandlers.lastObject;
             lastViewHandler.context.sessionState.session_error_timestamp = timestamp;
@@ -128,8 +130,8 @@ static const NSTimeInterval sessionMaxDuration = 4 * 60 * 60; // 4 hours
     
     if(![self hasActivityView]){
         [self.rumDependencies.fatalErrorContext setLastViewContext:nil];
+        self.rumDependencies.linkRUMSessionContext = [self.context getGlobalSessionTags];
     }
-    self.rumDependencies.linkRUMSessionContext = [self.context getGlobalSessionViewTags];
     return  YES;
 }
 - (BOOL)hasActivityView{
@@ -151,6 +153,7 @@ static const NSTimeInterval sessionMaxDuration = 4 * 60 * 60; // 4 hours
 -(void)startView:(FTRUMDataModel *)model{
     FTRUMViewHandler *viewHandler = [[FTRUMViewHandler alloc]initWithModel:(FTRUMViewModel *)model context:self.context rumDependencies:self.rumDependencies];
     [self.viewHandlers addObject:viewHandler];
+    self.rumDependencies.linkRUMSessionContext = [self getCurrentSessionInfo];
 }
 -(BOOL)timedOutOrExpired:(NSDate*)currentTime{
     NSTimeInterval timeElapsedSinceLastInteraction = [currentTime timeIntervalSinceDate:_lastInteractionTime];
@@ -182,7 +185,8 @@ static const NSTimeInterval sessionMaxDuration = 4 * 60 * 60; // 4 hours
     [fields setValue:@(0) forKey:FT_KEY_ACTION_LONG_TASK_COUNT];
     [fields setValue:@(0) forKey:FT_KEY_ACTION_RESOURCE_COUNT];
     [fields setValue:@(0) forKey:FT_KEY_ACTION_ERROR_COUNT];
-    [self.rumDependencies.writer rumWrite:FT_RUM_SOURCE_ACTION tags:tags fields:fields time:[model.time ft_nanosecondTimeStamp]];
+    [fields addEntriesFromDictionary:self.context.sessionState.sessionFields];
+    [self.rumDependencies.writer rumWrite:FT_RUM_SOURCE_ACTION tags:tags fields:fields time:model.tm];
     
 }
 - (void)writeWebViewJSBData:(FTRUMWebViewData *)data context:(NSDictionary *)context{
@@ -194,6 +198,7 @@ static const NSTimeInterval sessionMaxDuration = 4 * 60 * 60; // 4 hours
     [tags setValue:@(YES) forKey:FT_IS_WEBVIEW];
     NSMutableDictionary *fields = [[NSMutableDictionary alloc]initWithDictionary:data.fields];
     [fields setValue:@(NO) forKey:FT_KEY_IS_ACTIVE];
+    [fields addEntriesFromDictionary:self.context.sessionState.sessionFields];
     [self.rumDependencies.writer rumWrite:data.measurement tags:tags fields:fields time:data.tm];
 }
 -(NSString *)getCurrentViewID{

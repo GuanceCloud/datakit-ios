@@ -41,7 +41,7 @@ extern "C" {
 
 
 
-void ftcrash_install(const char *appName, const char *const installPath,FTCrashMonitorType monitors);
+void ftcrash_install(const char *appName, const char *const installPath,FTCrashCMonitorType monitors);
 
 /** Set the user-supplied data in JSON format.
  *

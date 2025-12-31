@@ -15,7 +15,7 @@ NS_ASSUME_NONNULL_BEGIN
 // session tags
 @property (nonatomic, copy) NSString *session_id;
 @property (nonatomic, copy) NSString *session_type;
-// session fields
+// view session fields
 @property (nonatomic, assign) int sampleRate;
 @property (nonatomic, assign) int sessionOnErrorSampleRate;
 @property (nonatomic, assign) long long session_error_timestamp;

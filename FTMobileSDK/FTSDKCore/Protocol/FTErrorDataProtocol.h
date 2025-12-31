@@ -11,6 +11,8 @@ typedef void (^ErrorMonitorInfoChangeBlock)(NSDictionary * _Nonnull);
 
 @protocol FTErrorMonitorInfoWrapper <NSObject>
 
+- (BOOL)enableMonitorMemory;
+- (BOOL)enableMonitorCpu;
 - (NSDictionary *)errorMonitorInfo;
 
 @end

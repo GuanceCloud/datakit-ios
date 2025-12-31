@@ -12,6 +12,8 @@
 #import "FTFatalErrorContext.h"
 #import "FTConstants.h"
 #import "FTLog+Private.h"
+#import "FTCrash.h"
+#import "FTRUMContext.h"
 typedef void (^FTLongTaskCallBack)(NSString *slowStack, long long duration);
 typedef void (^FTWriteCallBack)(NSDictionary *fields, NSDictionary *tags);
 
@@ -34,13 +36,10 @@ typedef void (^FTWriteCallBack)(NSDictionary *fields, NSDictionary *tags);
     [FTLog enableLog:YES];
     FTRUMDependencies *dependencies = [[FTRUMDependencies alloc]init];
     dependencies.writer = self;
-    FTFatalErrorContext *errorContext = [[FTFatalErrorContext alloc]init];
-    errorContext.lastSessionContext = @{FT_RUM_KEY_SESSION_ID:@"test_session_id",
-                                        FT_RUM_KEY_SESSION_TYPE:@"test"
-    };
+    FTFatalErrorContext *errorContext = [[FTFatalErrorContext alloc]initWithErrorInfoProvider:nil];
+    [errorContext setLastSessionState:[FTRUMSessionState new]];
     dependencies.fatalErrorContext = errorContext;
-
-    FTLongTaskManager *longTaskManager = [[FTLongTaskManager alloc]initWithDependencies:dependencies delegate:self enableTrackAppANR:YES enableTrackAppFreeze:YES                                        freezeDurationMs:250];
+    FTLongTaskManager *longTaskManager = [[FTLongTaskManager alloc]initWithDependencies:dependencies delegate:self backtraceReporting:[FTCrash shared].backtraceReporting enableTrackAppANR:YES enableTrackAppFreeze:YES freezeDurationMs:250];
     NSString *pathString = [NSSearchPathForDirectoriesInDomains(NSCachesDirectory, NSUserDomainMask, YES) lastObject];
     NSString *dataStorePath = [pathString stringByAppendingPathComponent:@"FTLongTaskTest.txt"];
     longTaskManager.dataStorePath = dataStorePath;
@@ -65,7 +64,7 @@ typedef void (^FTWriteCallBack)(NSDictionary *fields, NSDictionary *tags);
 }
 - (void)testLongTask_appendData{
     FTLongTaskManager *longTaskManager = [self mockLongTaskManager];
-    [longTaskManager startLongTask:[NSDate date] backtrace:@"test_backtrace"];
+    [longTaskManager startLongTask:[NSDate date]];
     
     // Normal logic to add data
     XCTAssertNoThrow([longTaskManager appendData:[@"test_appendData" dataUsingEncoding:NSUTF8StringEncoding]]) ;
@@ -96,13 +95,14 @@ typedef void (^FTWriteCallBack)(NSDictionary *fields, NSDictionary *tags);
 }
 - (void)testLongTask_deleteFile{
     FTLongTaskManager *longTaskManager = [self mockLongTaskManager];
-    [longTaskManager startLongTask:[NSDate date] backtrace:@"test_backtrace_deleteFile"];
+    [longTaskManager startLongTask:[NSDate date]];
+    [longTaskManager updateLongTaskDate:[[NSDate date] dateByAddingTimeInterval:4]];
+
     dispatch_sync(longTaskManager.queue, ^{});
     NSString *dataStorePath = [longTaskManager valueForKey:@"dataStorePath"];
     NSData *data = [NSData dataWithContentsOfFile:dataStorePath];
-    NSString *str = [[NSString alloc]initWithData:data encoding:NSUTF8StringEncoding];
+//    NSString *str = [[NSString alloc]initWithData:data encoding:NSUTF8StringEncoding];
     XCTAssertTrue(data.length>0);
-    XCTAssertTrue([str containsString:@"test_backtrace_deleteFile"]);
     XCTestExpectation *expectation = [[XCTestExpectation alloc]initWithDescription:@"deleteFileInAsyncQueue"];
     // Execute `deleteFile` method asynchronously in longTaskManager's queue
     dispatch_async(longTaskManager.queue, ^{
@@ -147,7 +147,7 @@ typedef void (^FTWriteCallBack)(NSDictionary *fields, NSDictionary *tags);
 - (void)testLongTask_start_update_end{
     NSDate *date = [NSDate date];
     FTLongTaskManager *longTaskManager = [self mockLongTaskManager];
-    XCTAssertNoThrow([longTaskManager startLongTask:date backtrace:nil]);
+    XCTAssertNoThrow([longTaskManager startLongTask:date]);
     XCTAssertNoThrow([longTaskManager updateLongTaskDate:nil]);
     [longTaskManager updateLongTaskDate:[NSDate date]];
     __block BOOL hasCallBack = NO;
@@ -167,13 +167,13 @@ typedef void (^FTWriteCallBack)(NSDictionary *fields, NSDictionary *tags);
 - (void)testLongTask_reportFatalWatchDogIfFound{
     NSDate *date = [NSDate date];
     FTLongTaskManager *longTaskManager = [self mockLongTaskManager];
-    XCTAssertNoThrow([longTaskManager startLongTask:date backtrace:@"reportFatalWatchDogIfFound"]);
+    XCTAssertNoThrow([longTaskManager startLongTask:date]);
     XCTAssertNoThrow([longTaskManager updateLongTaskDate:nil]);
-    [longTaskManager updateLongTaskDate:[date dateByAddingTimeInterval:1]];
+    [longTaskManager updateLongTaskDate:[date dateByAddingTimeInterval:3]];
     dispatch_sync(longTaskManager.queue, ^{});
     __block BOOL hasCallBack = NO;
     self.writeCallBack = ^(NSDictionary *fields, NSDictionary *tags) {
-        XCTAssertTrue([fields[FT_KEY_LONG_TASK_STACK] isEqualToString:@"reportFatalWatchDogIfFound"]);
+        XCTAssertTrue(fields[FT_KEY_LONG_TASK_STACK]);
         hasCallBack = YES;
     };
     XCTAssertNoThrow([longTaskManager reportFatalWatchDogIfFound]);
@@ -191,7 +191,9 @@ typedef void (^FTWriteCallBack)(NSDictionary *fields, NSDictionary *tags);
 #endif
     [FTLog enableLog:YES];
     FTRUMDependencies *dependencies = [[FTRUMDependencies alloc]init];
-    FTLongTaskManager *longTaskManager = [[FTLongTaskManager alloc]initWithDependencies:dependencies delegate:self enableTrackAppANR:NO enableTrackAppFreeze:NO                                        freezeDurationMs:250];
+    dependencies.fatalErrorContext = [[FTFatalErrorContext alloc]initWithErrorInfoProvider:nil];
+    [dependencies.fatalErrorContext setLastSessionState:[FTRUMSessionState new]];
+    FTLongTaskManager *longTaskManager = [[FTLongTaskManager alloc]initWithDependencies:dependencies delegate:self backtraceReporting:[FTCrash shared].backtraceReporting enableTrackAppANR:NO enableTrackAppFreeze:NO freezeDurationMs:250];
     NSString *path = longTaskManager.dataStorePath;
     
     XCTAssertTrue([pathString isEqualToString:[path stringByDeletingLastPathComponent]]);
@@ -221,5 +223,15 @@ typedef void (^FTWriteCallBack)(NSDictionary *fields, NSDictionary *tags);
 -(void)lastFatalErrorIfFound:(long long)errorDate{
    
 }
+
+- (void)rumWrite:(nonnull NSString *)source tags:(nonnull NSDictionary *)tags fields:(nonnull NSDictionary *)fields time:(long long)time updateTime:(long long)updateTime { 
+    
+}
+
+
+- (void)rumWriteAssembledData:(nonnull NSString *)source tags:(nonnull NSDictionary *)tags fields:(nonnull NSDictionary *)fields time:(long long)time { 
+    
+}
+
 @end
 
