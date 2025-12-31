@@ -1030,7 +1030,9 @@ static void writeNotableAddresses(const FTCrashReportWriter *const writer, const
  */
 static void writeThread(const FTCrashReportWriter *const writer, const char *const key,
                         const FTCrash_MonitorContext *const crash, const struct FTCrashMachineContext *const machineContext,
-                        const int threadIndex, const bool shouldWriteNotableAddresses, const int threadState)
+                        const int threadIndex, const bool shouldWriteNotableAddresses, const int threadState,
+                        const float threadCpu
+                        )
 {
     bool isCrashedThread = ftcrashmc_isCrashedContext(machineContext);
     FTCrashThread thread = ftcrashmc_getThreadFromContext(machineContext);
@@ -1049,6 +1051,7 @@ static void writeThread(const FTCrashReportWriter *const writer, const char *con
             writeRegisters(writer, FTCrashField_Registers, machineContext);
         }
         writer->addIntegerElement(writer, FTCrashField_Index, threadIndex);
+        writer->addFloatingPointElement(writer, FTCrashField_CPU, threadCpu);
         const char *name = ftcrashtc_getThreadName(thread);
         if (name != NULL) {
             writer->addStringElement(writer, FTCrashField_Name, name);
@@ -1095,12 +1098,13 @@ static void writeThreads(const FTCrashReportWriter *const writer, const char *co
         FTLOG_DEBUG("Writing %d of %d threads.", shouldRecordAllThreads ? threadCount : 1, threadCount);
         for (int i = 0; i < threadCount; i++) {
             FTCrashThread thread = ftcrashmc_getThreadAtIndex(context, i);
-            int threadRunState = ftcrashthread_getThreadState(thread);
+            float cpu_usage = 0.0f;
+            int threadRunState = ftcrashthread_getThreadState(thread,&cpu_usage);
             if (thread == offendingThread) {
-                writeThread(writer, NULL, crash, context, i, writeNotableAddresses, threadRunState);
+                writeThread(writer, NULL, crash, context, i, writeNotableAddresses, threadRunState,cpu_usage);
             } else if (shouldRecordAllThreads) {
                 ftcrashmc_getContextForThread(thread, &machineContext, false);
-                writeThread(writer, NULL, crash, &machineContext, i, writeNotableAddresses, threadRunState);
+                writeThread(writer, NULL, crash, &machineContext, i, writeNotableAddresses, threadRunState,cpu_usage);
             }
         }
     }
@@ -1183,6 +1187,8 @@ static void writeMemoryInfo(const FTCrashReportWriter *const writer, const char 
         writer->addUIntegerElement(writer, FTCrashField_Size, monitorContext->System.memorySize);
         writer->addUIntegerElement(writer, FTCrashField_Usable, monitorContext->System.usableMemory);
         writer->addUIntegerElement(writer, FTCrashField_Free, monitorContext->System.freeMemory);
+        writer->addUIntegerElement(writer, FTCrashField_Available, monitorContext->System.availableMemory);
+
     }
     writer->endContainer(writer);
 }
@@ -1439,9 +1445,10 @@ void ftcrashreport_writeRecrashReport(const FTCrash_MonitorContext *const monito
             ftcrashfu_flushBufferedWriter(&bufferedWriter);
             FTCrashThread thread = ftcrashmc_getThreadFromContext(monitorContext->offendingMachineContext);
             int threadIndex = ftcrashmc_indexOfThread(monitorContext->offendingMachineContext, thread);
-            int threadRunState = ftcrashthread_getThreadState(thread);
+            float cpu_usage = 0.0f;
+            int threadRunState = ftcrashthread_getThreadState(thread,&cpu_usage);
             writeThread(writer, FTCrashField_CrashedThread, monitorContext, monitorContext->offendingMachineContext,
-                        threadIndex, false, threadRunState);
+                        threadIndex, false, threadRunState,cpu_usage);
             ftcrashfu_flushBufferedWriter(&bufferedWriter);
         }
         writer->endContainer(writer);

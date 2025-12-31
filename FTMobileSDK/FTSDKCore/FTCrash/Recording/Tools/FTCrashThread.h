@@ -66,9 +66,11 @@ bool ftcrashthread_getThreadName(
  *
  * @param thread The thread whose state to get.
  *
+ * @param out_cpu_usage get cpu usage
+ *
  * @return Thread state integer code, default value is TH_STATE_UNSET
  */
-int ftcrashthread_getThreadState(const FTCrashThread thread);
+int ftcrashthread_getThreadState(const FTCrashThread thread, float *const out_cpu_usage);
 
 /** Get the name of a thread's dispatch queue. Internally, a queue name will
  * never be more than 64 characters long.

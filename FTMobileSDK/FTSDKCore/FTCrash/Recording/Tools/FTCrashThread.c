@@ -67,7 +67,7 @@ bool ftcrashthread_getThreadName(
     return pthread_getname_np(pthread, buffer, (unsigned)bufLength) == 0;
 }
 
-int ftcrashthread_getThreadState(const FTCrashThread thread)
+int ftcrashthread_getThreadState(const FTCrashThread thread, float *const out_cpu_usage)
 {
     integer_t infoBuffer[THREAD_BASIC_INFO_COUNT] = { 0 };
     thread_basic_info_t info = (thread_basic_info_t)infoBuffer;
@@ -76,12 +76,21 @@ int ftcrashthread_getThreadState(const FTCrashThread thread)
 
     kr = thread_info((thread_t)thread, THREAD_BASIC_INFO, (thread_info_t)info, &count);
     if (kr != KERN_SUCCESS) {
+        if (out_cpu_usage) *out_cpu_usage = 0;
         return TH_STATE_UNSET;
     }
-
+    
     if (!ftcrashmem_isMemoryReadable(info, sizeof(*info))) {
         FTLOG_DEBUG("Thread %p has an invalid thread basic info %p", thread, info);
+        if (out_cpu_usage) *out_cpu_usage = 0;
         return TH_STATE_UNSET;
+    }
+    if (out_cpu_usage) {
+        if (!(info->flags & TH_FLAGS_IDLE)) {
+            *out_cpu_usage = (float)info->cpu_usage / (float)TH_USAGE_SCALE;
+        } else {
+            *out_cpu_usage = 0;
+        }
     }
 
     return info->run_state;

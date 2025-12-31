@@ -221,6 +221,7 @@ typedef struct FTCrash_MonitorContext {
         uint64_t memorySize;
         uint64_t freeMemory;
         uint64_t usableMemory;
+        uint64_t availableMemory;
     } System;
 
     struct {

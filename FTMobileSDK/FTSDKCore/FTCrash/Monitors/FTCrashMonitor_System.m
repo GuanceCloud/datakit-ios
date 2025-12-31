@@ -188,6 +188,16 @@ static uint64_t usableMemory(void)
     return 0;
 }
 
+static uint64_t availableMemory(void) {
+    vm_statistics_data_t vmStats;
+    vm_size_t pageSize;
+    if (VMStats(&vmStats, &pageSize)) {
+        return ((uint64_t)pageSize) *
+               (vmStats.inactive_count + vmStats.free_count);
+    }
+    return 0;
+}
+
 /** Convert raw UUID bytes to a human-readable string.
  *
  * @param uuidBytes The UUID bytes (must be 16 bytes long).
@@ -584,6 +594,7 @@ static void addContextualInfoToEvent(FTCrash_MonitorContext *eventContext)
         COPY_REFERENCE(memorySize);
         eventContext->System.freeMemory = freeMemory();
         eventContext->System.usableMemory = usableMemory();
+        eventContext->System.availableMemory = availableMemory();
     }
 }
 

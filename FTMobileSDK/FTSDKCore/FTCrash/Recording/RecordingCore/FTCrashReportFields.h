@@ -91,6 +91,7 @@ FTCrashCRF_DEFINE_CONSTANT(FTCrashField, Contents, contents, "contents")
 FTCrashCRF_DEFINE_CONSTANT(FTCrashField, Exception, exception, "exception")
 FTCrashCRF_DEFINE_CONSTANT(FTCrashField, FirstObject, firstObject, "first_object")
 FTCrashCRF_DEFINE_CONSTANT(FTCrashField, Index, index, "index")
+FTCrashCRF_DEFINE_CONSTANT(FTCrashField, CPU, cpu, "cpu")
 FTCrashCRF_DEFINE_CONSTANT(FTCrashField, Ivars, ivars, "ivars")
 FTCrashCRF_DEFINE_CONSTANT(FTCrashField, Language, language, "language")
 FTCrashCRF_DEFINE_CONSTANT(FTCrashField, Name, name, "name")
@@ -157,6 +158,7 @@ FTCrashCRF_DEFINE_CONSTANT(FTCrashField, ImageCrashInfoSignature, imageCrashInfo
 
 FTCrashCRF_DEFINE_CONSTANT(FTCrashField, Free, free, "free")
 FTCrashCRF_DEFINE_CONSTANT(FTCrashField, Usable, usable, "usable")
+FTCrashCRF_DEFINE_CONSTANT(FTCrashField, Available, available, "available")
 
 #pragma mark - Error -
 
