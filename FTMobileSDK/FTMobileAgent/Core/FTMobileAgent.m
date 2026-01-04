@@ -38,11 +38,15 @@
 #import "FTDataWriterWorker.h"
 #import "FTRemoteConfigManager.h"
 #import "FTRemoteConfigurationProtocol.h"
+#import "FTDateUtil.h"
+#import "FTAppLaunchTracker.h"
+
 @interface FTMobileAgent ()<FTAppLifeCycleDelegate,FTRemoteConfigurationProtocol>
 @property (nonatomic, strong) FTLoggerConfig *loggerConfig;
 @property (nonatomic, strong) FTRumConfig *rumConfig;
 @property (nonatomic, strong) FTTraceConfig *traceConfig;
 @property (nonatomic, strong) FTMobileConfig *sdkConfig;
+@property (nonatomic, strong) NSDate *sdkStartDate;
 @end
 @implementation FTMobileAgent
 static NSObject *sharedInstanceLock;
@@ -76,6 +80,7 @@ static FTMobileAgent *sharedInstance = nil;
         self = [super init];
         if (self) {
             _sdkConfig = [config copy];
+            FTAppLaunchTracker.sdkStartDate = FTDateUtil.date;
             if (_sdkConfig.remoteConfiguration) {
                 [[FTRemoteConfigManager sharedInstance] enable:YES updateInterval:_sdkConfig.remoteConfigMiniUpdateInterval];
                 [FTRemoteConfigManager sharedInstance].delegate = self;

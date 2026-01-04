@@ -163,6 +163,11 @@ NSString * const FT_KEY_LONG_TASK_STACK = @"long_task_stack";
 NSString * const FT_KEY_ACTION_LONG_TASK_COUNT = @"action_long_task_count";
 NSString * const FT_KEY_ACTION_RESOURCE_COUNT = @"action_resource_count";
 NSString * const FT_KEY_ACTION_ERROR_COUNT = @"action_error_count";
+NSString * const FT_KEY_LAUNCH_FIRST_FRAME_RENDER_TIME = @"app_first_frame_init_time";
+NSString * const FT_KEY_LAUNCH_APP_INIT_TIME = @"app_application_init_time";
+NSString * const FT_KEY_LAUNCH_UIKITI_INIT_TIME = @"app_uikit_init_time";
+NSString * const FT_KEY_LAUNCH_PRE_RUNTIME_INIT_TIME = @"app_pre_runtime_init_time";
+NSString * const FT_KEY_LAUNCH_RUNTIME_INIT_TIME = @"app_runtime_init_time";
 //action tag
 NSString * const FT_KEY_ACTION_ID = @"action_id";
 NSString * const FT_KEY_ACTION_NAME = @"action_name";

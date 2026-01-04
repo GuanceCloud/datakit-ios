@@ -189,7 +189,11 @@ extern NSString * const FT_LAUNCH_WARM;
 extern NSString * const FT_KEY_ACTION_LONG_TASK_COUNT;
 extern NSString * const FT_KEY_ACTION_RESOURCE_COUNT;
 extern NSString * const FT_KEY_ACTION_ERROR_COUNT;
-
+extern NSString * const FT_KEY_LAUNCH_FIRST_FRAME_RENDER_TIME;
+extern NSString * const FT_KEY_LAUNCH_APP_INIT_TIME;
+extern NSString * const FT_KEY_LAUNCH_UIKITI_INIT_TIME;
+extern NSString * const FT_KEY_LAUNCH_PRE_RUNTIME_INIT_TIME;
+extern NSString * const FT_KEY_LAUNCH_RUNTIME_INIT_TIME;
 #pragma mark ========== logging ==========
 extern NSString * const FT_KEY_STATUS;
 extern NSString * const FT_KEY_CONTENT;

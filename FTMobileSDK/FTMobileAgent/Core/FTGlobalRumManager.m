@@ -19,7 +19,7 @@
 #import "FTAutoTrackHandler.h"
 #import "FTAppLifeCycle.h"
 #import "FTRUMManager.h"
-#import "FTAppLaunchTracker.h"
+#import "FTDisplayRateMonitor.h"
 #import "FTTracer.h"
 #import "FTSessionTaskHandler.h"
 #import "FTURLSessionInterceptor.h"
@@ -35,12 +35,10 @@
 @interface FTGlobalRumManager ()<FTRunloopDetectorDelegate,FTAppLifeCycleDelegate>
 @property (nonatomic, strong) FTRumConfig *rumConfig;
 @property (nonatomic, strong) FTRUMDependencies *dependencies;
-@property (nonatomic, strong) FTRUMMonitor *monitor;
 @property (nonatomic, strong) FTLongTaskManager *longTaskManager;
 @end
 #if !TARGET_OS_TV
 @interface FTGlobalRumManager()<FTWKWebViewRumDelegate>
-@property (nonatomic, strong) FTWKWebViewJavascriptBridge *jsBridge;
 @end
 #endif
 @implementation FTGlobalRumManager
@@ -61,8 +59,16 @@ static NSObject *sharedInstanceLock;
 }
 -(void)setRumConfig:(FTRumConfig *)rumConfig writer:(id<FTRUMDataWriteProtocol>)writer{
     _rumConfig = rumConfig;
+    FTDisplayRateMonitor *displayMonitor = nil;
+#if !FT_MAC
+        if (rumConfig.deviceMetricsMonitorType & DeviceMetricsMonitorFps || rumConfig.enableTraceUserAction) {
+            displayMonitor = [[FTDisplayRateMonitor alloc]init];
+        }
+#endif
+    FTRUMMonitor *monitor = [[FTRUMMonitor alloc]initWithMonitorType:(DeviceMetricsMonitorType)rumConfig.deviceMetricsMonitorType frequency:(MonitorFrequency)rumConfig.monitorFrequency];
+    monitor.displayMonitor = displayMonitor;
     FTRUMDependencies *dependencies = [[FTRUMDependencies alloc]init];
-    dependencies.monitor = [[FTRUMMonitor alloc]initWithMonitorType:(DeviceMetricsMonitorType)rumConfig.deviceMetricsMonitorType frequency:(MonitorFrequency)rumConfig.monitorFrequency];
+    dependencies.monitor = monitor;
     dependencies.writer = writer;
     dependencies.sessionOnErrorSampleRate = rumConfig.sessionOnErrorSampleRate;
     dependencies.sampleRate = rumConfig.samplerate;
@@ -71,7 +77,7 @@ static NSObject *sharedInstanceLock;
     dependencies.fatalErrorContext = [FTFatalErrorContext new];
     self.dependencies = dependencies;
     self.rumManager = [[FTRUMManager alloc]initWithRumDependencies:self.dependencies];
-    [[FTAutoTrackHandler sharedInstance] startWithTrackView:rumConfig.enableTraceUserView action:rumConfig.enableTraceUserAction addRumDatasDelegate:self.rumManager viewHandler:rumConfig.viewTrackingHandler actionHandler:rumConfig.actionTrackingHandler];
+    [[FTAutoTrackHandler sharedInstance] startWithTrackView:rumConfig.enableTraceUserView action:rumConfig.enableTraceUserAction addRumDatasDelegate:self.rumManager viewHandler:rumConfig.viewTrackingHandler actionHandler:rumConfig.actionTrackingHandler displayMonitor:displayMonitor];
     [[FTAppLifeCycle sharedInstance] addAppLifecycleDelegate:self];
     if(rumConfig.enableTrackAppCrash){
         [[FTCrash shared] addErrorDataDelegate:self.rumManager];

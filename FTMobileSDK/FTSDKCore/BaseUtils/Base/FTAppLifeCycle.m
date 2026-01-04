@@ -64,6 +64,10 @@
     [notification addObserver:self selector:@selector(applicationWillTerminate:) name:NSApplicationWillTerminateNotification object:[NSApplication sharedApplication]];
 #elif FT_HAS_UIKIT
     [notification addObserver:self
+                           selector:@selector(applicationDidFinishLaunching:)
+                               name:UIApplicationDidFinishLaunchingNotification
+                             object:nil];
+    [notification addObserver:self
                            selector:@selector(applicationWillEnterForeground:)
                                name:UIApplicationWillEnterForegroundNotification
                              object:nil];
@@ -84,6 +88,15 @@
 
 }
 
+- (void)applicationDidFinishLaunching:(NSNotification *)notification{
+    [self.delegateLock lock];
+    for (id delegate in self.appLifecycleDelegates) {
+        if ([delegate respondsToSelector:@selector(applicationDidFinishLaunching)]) {
+            [delegate applicationDidFinishLaunching];
+        }
+    }
+    [self.delegateLock unlock];
+}
 - (void)applicationDidBecomeActive:(NSNotification *)notification{
     [self.delegateLock lock];
     for (id delegate in self.appLifecycleDelegates) {

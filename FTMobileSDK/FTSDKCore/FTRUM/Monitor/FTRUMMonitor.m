@@ -17,11 +17,6 @@
         if (type & DeviceMetricsMonitorCpu) {
             self.cpuMonitor = [[FTCPUMonitor alloc]init];
         }
-#if !FT_MAC
-        if (type & DeviceMetricsMonitorFps) {
-            self.displayMonitor = [[FTDisplayRateMonitor alloc]init];
-        }
-#endif
         if (type & DeviceMetricsMonitorMemory) {
             self.memoryMonitor = [[FTMemoryMonitor alloc] init];
         }

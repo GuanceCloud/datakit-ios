@@ -13,6 +13,7 @@
 #import "FTMobileConfig.h"
 #import "FTConstants.h"
 #import "FTActionTrackingHandler.h"
+#import "FTDisplayRateMonitor.h"
 typedef void(^LaunchBlock)( NSNumber * _Nullable duration, FTLaunchType type);
 typedef void(^LaunchDataBlock)(NSString *source, NSDictionary *tags, NSDictionary *fields);
 
@@ -34,12 +35,15 @@ typedef void(^LaunchDataBlock)(NSString *source, NSDictionary *tags, NSDictionar
     self.launchTracker = nil;
 }
 - (void)testLaunchCold{
-    XCTestExpectation *expectation= [self expectationWithDescription:@"Async operation timeout"];
+    XCTestExpectation *expectation= [self expectationWithDescription:@"LaunchBlock timeout"];
+
     self.launchBlock = ^(NSNumber * _Nullable duration, FTLaunchType type) {
         XCTAssertTrue(type == FTLaunchCold);
         [expectation fulfill];
     };
-    self.launchTracker = [[FTAppLaunchTracker alloc]initWithDelegate:self];
+    self.launchTracker = [[FTAppLaunchTracker alloc]initWithDelegate:self displayMonitor:[FTDisplayRateMonitor new]];
+    [[NSNotificationCenter defaultCenter] postNotificationName:UIApplicationDidFinishLaunchingNotification object:nil];
+    sleep(0.1);
     [[NSNotificationCenter defaultCenter] postNotificationName:UIApplicationDidBecomeActiveNotification object:nil];
     [self waitForExpectationsWithTimeout:30 handler:^(NSError *error) {
         XCTAssertNil(error);
@@ -53,8 +57,9 @@ typedef void(^LaunchDataBlock)(NSString *source, NSDictionary *tags, NSDictionar
         XCTAssertTrue(type == FTLaunchCold);
         [expectation fulfill];
     };
+    [[NSNotificationCenter defaultCenter] postNotificationName:UIApplicationDidFinishLaunchingNotification object:nil];
     [[NSNotificationCenter defaultCenter] postNotificationName:UIApplicationDidBecomeActiveNotification object:nil];
-    self.launchTracker = [[FTAppLaunchTracker alloc]initWithDelegate:self];
+    self.launchTracker = [[FTAppLaunchTracker alloc]initWithDelegate:self displayMonitor:[FTDisplayRateMonitor new]];
     [self waitForExpectationsWithTimeout:30 handler:^(NSError *error) {
         XCTAssertNil(error);
     }];
@@ -62,7 +67,7 @@ typedef void(^LaunchDataBlock)(NSString *source, NSDictionary *tags, NSDictionar
 }
 - (void)testLaunchHot{
     XCTestExpectation *expectation= [self expectationWithDescription:@"Async operation timeout"];
-    self.launchTracker = [[FTAppLaunchTracker alloc]initWithDelegate:self];
+    self.launchTracker = [[FTAppLaunchTracker alloc]initWithDelegate:self displayMonitor:[FTDisplayRateMonitor new]];
     self.launchBlock = ^(NSNumber * _Nullable duration, FTLaunchType type) {
         if(type == FTLaunchHot){
             [expectation fulfill];
@@ -90,8 +95,10 @@ typedef void(^LaunchDataBlock)(NSString *source, NSDictionary *tags, NSDictionar
     };
     setenv("ActivePrewarm", "1", 1);
     [NSClassFromString(@"FTAppLaunchTracker") load];
+    [[NSNotificationCenter defaultCenter] postNotificationName:UIApplicationDidFinishLaunchingNotification object:nil];
+    sleep(0.1);
     [[NSNotificationCenter defaultCenter] postNotificationName:UIApplicationDidBecomeActiveNotification object:nil];
-    self.launchTracker = [[FTAppLaunchTracker alloc]initWithDelegate:self];
+    self.launchTracker = [[FTAppLaunchTracker alloc]initWithDelegate:self displayMonitor:[FTDisplayRateMonitor new]];
 
     [self waitForExpectationsWithTimeout:30 handler:^(NSError *error) {
         XCTAssertNil(error);
@@ -159,9 +166,10 @@ typedef void(^LaunchDataBlock)(NSString *source, NSDictionary *tags, NSDictionar
         XCTAssertNil(error);
     }];
 }
-- (void)ftAppColdStart:(NSDate *)launchTime duration:(NSNumber *)duration isPreWarming:(BOOL)isPreWarming {
+- (void)ftAppColdStart:(NSDate *)launchTime duration:(NSNumber *)duration isPreWarming:(BOOL)isPreWarming fields:(nonnull NSDictionary *)fields{
     NSNumber *maxDuration = [launchTime ft_nanosecondTimeIntervalToDate:[NSDate date]];
     XCTAssertTrue(maxDuration.longLongValue>duration.longLongValue);
+    XCTAssertNotNil(fields);
     if(self.launchBlock){
         self.launchBlock(duration, isPreWarming?FTLaunchWarm:FTLaunchCold);
     }

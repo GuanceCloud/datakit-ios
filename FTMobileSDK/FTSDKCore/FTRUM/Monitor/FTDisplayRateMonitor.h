@@ -9,9 +9,14 @@
 #import <Foundation/Foundation.h>
 @class FTReadWriteHelper,FTMonitorValue;
 NS_ASSUME_NONNULL_BEGIN
+typedef void (^FirstFrameCallBack)(NSDate *date);
 
 /// FPS monitor
 @interface FTDisplayRateMonitor : NSObject
+@property (nonatomic, copy, nullable) FirstFrameCallBack callBack;
+
+- (NSDate *)firstFrameDate;
+
 /// Add monitoring item, each ViewHandler in RUM contains a monitoring item to monitor data during the View lifecycle
 /// - Parameter item: monitoring item
 - (void)addMonitorItem:(FTReadWriteHelper *)item;

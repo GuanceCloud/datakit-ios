@@ -9,6 +9,7 @@
 #import <Foundation/Foundation.h>
 
 NS_ASSUME_NONNULL_BEGIN
+@class FTDisplayRateMonitor;
 /// App cold and hot launch protocol
 @protocol FTAppLaunchDataDelegate <NSObject>
 
@@ -20,12 +21,13 @@ NS_ASSUME_NONNULL_BEGIN
 /// - Parameters:
 ///   - duration: Launch duration
 ///   - isPreWarming: Whether prewarming occurred
--(void)ftAppColdStart:(NSDate *)launchTime duration:(NSNumber *)duration isPreWarming:(BOOL)isPreWarming;
+///   - fields: performance fields
+-(void)ftAppColdStart:(NSDate *)launchTime duration:(NSNumber *)duration isPreWarming:(BOOL)isPreWarming fields:(NSDictionary *)fields;
 @end
 @interface FTAppLaunchTracker : NSObject
-@property (class,nonatomic,assign) NSTimeInterval processStartTime;
+@property (class, nonatomic, assign) NSDate *sdkStartDate;
 @property (nonatomic,weak) id<FTAppLaunchDataDelegate> delegate;
-- (instancetype)initWithDelegate:(nullable id)delegate;
+- (instancetype)initWithDelegate:(nullable id)delegate displayMonitor:( FTDisplayRateMonitor *)displayMonitor;
 @end
 
 NS_ASSUME_NONNULL_END
