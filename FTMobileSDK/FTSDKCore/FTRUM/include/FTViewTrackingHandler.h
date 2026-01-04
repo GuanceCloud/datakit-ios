@@ -5,6 +5,8 @@
 //  Created by hulilei on 2025/7/30.
 //  Copyright © 2025 DataFlux-cn. All rights reserved.
 //
+#ifndef FTViewTrackingHandler_h
+#define FTViewTrackingHandler_h
 
 #import <Foundation/Foundation.h>
 #if TARGET_OS_TV || TARGET_OS_IOS
@@ -27,4 +29,6 @@ typedef id<FTUIKitViewTrackingHandler> FTViewTrackingHandler;
 
 
 NS_ASSUME_NONNULL_END
+#endif
+
 #endif
