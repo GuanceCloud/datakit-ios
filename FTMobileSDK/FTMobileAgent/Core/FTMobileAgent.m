@@ -38,6 +38,10 @@
 #import "FTDataWriterWorker.h"
 #import "FTRemoteConfigManager.h"
 #import "FTRemoteConfigurationProtocol.h"
+#import "FTRemoteConfigError.h"
+#import "FTConfig+RemoteConfig.h"
+#import "FTRemoteConfigTypeDefs.h"
+#import "FTRemoteConfigError.h"
 #import "FTDateUtil.h"
 #import "FTAppLaunchTracker.h"
 
@@ -46,7 +50,6 @@
 @property (nonatomic, strong) FTRumConfig *rumConfig;
 @property (nonatomic, strong) FTTraceConfig *traceConfig;
 @property (nonatomic, strong) FTMobileConfig *sdkConfig;
-@property (nonatomic, strong) NSDate *sdkStartDate;
 @end
 @implementation FTMobileAgent
 static NSObject *sharedInstanceLock;
@@ -82,9 +85,9 @@ static FTMobileAgent *sharedInstance = nil;
             _sdkConfig = [config copy];
             FTAppLaunchTracker.sdkStartDate = FTDateUtil.date;
             if (_sdkConfig.remoteConfiguration) {
-                [[FTRemoteConfigManager sharedInstance] enable:YES updateInterval:_sdkConfig.remoteConfigMiniUpdateInterval];
+                [[FTRemoteConfigManager sharedInstance] enable:YES updateInterval:_sdkConfig.remoteConfigMiniUpdateInterval remoteConfigFetchCompletionBlock:_sdkConfig.remoteConfigFetchCompletionBlock];
                 [FTRemoteConfigManager sharedInstance].delegate = self;
-                [_sdkConfig mergeWithRemoteConfigDict:[[FTRemoteConfigManager sharedInstance] getLocalRemoteConfig]];
+                [_sdkConfig mergeWithRemoteConfigModel:[FTRemoteConfigManager sharedInstance].lastRemoteModel];
             }
             [self applyBaseConfig:_sdkConfig];
         }
@@ -101,7 +104,8 @@ static FTMobileAgent *sharedInstance = nil;
             [FTNetworkInfoManager sharedInstance].setAppId(_rumConfig.appid);
             if (_sdkConfig.remoteConfiguration) {
                 [[FTRemoteConfigManager sharedInstance] updateRemoteConfig];
-                [_rumConfig mergeWithRemoteConfigDict:[[FTRemoteConfigManager sharedInstance] getLocalRemoteConfig]];
+                [_rumConfig mergeWithRemoteConfigModel:[FTRemoteConfigManager sharedInstance].lastRemoteModel];
+
             }
             [self applyRUMConfig:_rumConfig];
         }
@@ -114,7 +118,7 @@ static FTMobileAgent *sharedInstance = nil;
         if (!_loggerConfig) {
             _loggerConfig = [loggerConfigOptions copy];
             if (_sdkConfig.remoteConfiguration) {
-                [_loggerConfig mergeWithRemoteConfigDict:[[FTRemoteConfigManager sharedInstance] getLocalRemoteConfig]];
+                [_loggerConfig mergeWithRemoteConfigModel:[FTRemoteConfigManager sharedInstance].lastRemoteModel];
             }
             [self applyLogConfig:_loggerConfig];
         }
@@ -127,7 +131,7 @@ static FTMobileAgent *sharedInstance = nil;
         if(!_traceConfig){
             _traceConfig = [traceConfigOptions copy];
             if (_sdkConfig.remoteConfiguration) {
-                [_traceConfig mergeWithRemoteConfigDict:[[FTRemoteConfigManager sharedInstance] getLocalRemoteConfig]];
+                [_traceConfig mergeWithRemoteConfigModel:[FTRemoteConfigManager sharedInstance].lastRemoteModel];
             }else{
                 [self applyTraceConfig:_traceConfig];
             }
@@ -137,11 +141,12 @@ static FTMobileAgent *sharedInstance = nil;
     }
 }
 #pragma mark ========== remote ==========
-- (void)updateRemoteConfiguration:(NSDictionary *)configuration{
-    [self.sdkConfig mergeWithRemoteConfigDict:configuration];
+- (void)remoteConfigurationDidChange{
+    [self.sdkConfig mergeWithRemoteConfigModel:[FTRemoteConfigManager sharedInstance].lastRemoteModel];
     [FTNetworkInfoManager sharedInstance].setCompressionIntakeRequests(self.sdkConfig.compressIntakeRequests);
     [[FTTrackDataManager sharedInstance] updateAutoSync:self.sdkConfig.autoSync syncPageSize:self.sdkConfig.syncPageSize syncSleepTime:self.sdkConfig.syncSleepTime];
-    [[FTLogger sharedInstance] updateWithRemoteConfiguration:configuration];
+    [self.loggerConfig mergeWithRemoteConfigModel:[FTRemoteConfigManager sharedInstance].lastRemoteModel];
+    [[FTLogger sharedInstance] updateLoggerConfiguration:self.loggerConfig];
 }
 + (void)updateRemoteConfig{
     if (![self checkInstallState]) {
@@ -150,11 +155,18 @@ static FTMobileAgent *sharedInstance = nil;
     [[FTRemoteConfigManager sharedInstance] updateRemoteConfig];
 }
 + (void)updateRemoteConfigWithMiniUpdateInterval:(int)miniUpdateInterval callback:(void (^)(BOOL, NSDictionary<NSString *,id> * _Nullable))callback{
+    [self updateRemoteConfigWithMiniUpdateInterval:miniUpdateInterval completion:^(BOOL success, NSError * _Nullable error, FTRemoteConfigModel * _Nullable model, NSDictionary<NSString *,id> * _Nullable content) {
+        callback(success,content);
+        return model;
+    }];
+}
++ (void)updateRemoteConfigWithMiniUpdateInterval:(NSInteger)miniUpdateInterval
+                                         completion:(FTRemoteConfigFetchCompletionBlock)completion{
     if (![self checkInstallState]) {
-        callback(NO,nil);
+        completion(NO,[FTRemoteConfigError errorWithSDKNotInitialized],nil,nil);
         return;
     }
-    [[FTRemoteConfigManager sharedInstance] updateRemoteConfigWithMiniUpdateInterval:miniUpdateInterval callback:callback];
+    [[FTRemoteConfigManager sharedInstance] updateRemoteConfigWithMinimumUpdateInterval:miniUpdateInterval completion:completion];
 }
 #pragma mark ========== real sdk init ==========
 - (void)applyBaseConfig:(FTMobileConfig *)config{

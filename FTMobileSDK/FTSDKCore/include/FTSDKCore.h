@@ -49,3 +49,6 @@
 #import "FTDataWriterWorker.h"
 #import "FTLoggerConfig.h"
 #import "FTRemoteConfigManager.h"
+#import "FTRemoteConfigModel.h"
+#import "FTRemoteConfigError.h"
+#import "FTRemoteConfigTypeDefs.h"

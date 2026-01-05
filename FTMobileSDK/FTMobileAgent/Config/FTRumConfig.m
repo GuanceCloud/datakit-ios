@@ -13,8 +13,7 @@
 #import "NSDictionary+FTCopyProperties.h"
 #import "FTJSONUtil.h"
 #import "FTLog+Private.h"
-#import "FTPresetProperty.h"
-#import "FTUserInfo.h"
+
 @implementation FTRumConfig
 - (instancetype)init{
     return [self initWithAppid:@""];
@@ -134,68 +133,5 @@
     [dict setValue:self.viewTrackingHandler forKey:@"viewTrackingHandler"];
     [dict setValue:self.actionTrackingHandler forKey:@"actionTrackingHandler"];
     return [NSString stringWithFormat:@"%@",dict];
-}
--(void)mergeWithRemoteConfigDict:(NSDictionary *)dict{
-    @try {
-        if (!dict || dict.count == 0) {
-            return;
-        }
-        NSNumber *sampleRate = dict[FT_R_RUM_SAMPLERATE];
-        NSNumber *sessionOnErrorSampleRate = dict[FT_R_RUM_SESSION_ON_ERROR_SAMPLE_RATE];
-        NSNumber *enableTraceUserAction = dict[FT_R_RUM_ENABLE_TRACE_USER_ACTION];
-        NSNumber *enableTraceUserView = dict[FT_R_RUM_ENABLE_TRACE_USER_VIEW];
-        NSNumber *enableTraceUserResource = dict[FT_R_RUM_ENABLE_TRACE_USER_RESOURCE];
-        NSNumber *enableResourceHostIP = dict[FT_R_RUM_ENABLE_RESOURCE_HOST_IP];
-        NSNumber *enableTrackAppFreeze = dict[FT_R_RUM_ENABLE_TRACE_APP_FREEZE];
-        NSNumber *freezeDurationMs = dict[FT_R_RUM_FREEZE_DURATION_MS];
-        NSNumber *enableTrackAppCrash = dict[FT_R_RUM_ENABLE_TRACK_APP_CRASH];
-        NSNumber *enableTrackAppANR = dict[FT_R_RUM_ENABLE_TRACK_APP_ANR];
-        NSNumber *enableTraceWebView = dict[FT_R_RUM_ENABLE_TRACE_WEBVIEW];
-        NSString *allowWebViewHost = dict[FT_R_RUM_ALLOW_WEBVIEW_HOST];
-        NSString *vipId = dict[FT_R_VIPID];
-        if (vipId.length > 0 && [[FTJSONUtil arrayWithJsonString:vipId] containsObject:[FTPresetProperty sharedInstance].userInfo.userId]) {
-                self.samplerate = 100;
-        }else if (sampleRate != nil && [sampleRate isKindOfClass:NSNumber.class]) {
-            self.samplerate = [sampleRate doubleValue] * 100;
-        }
-        if (sessionOnErrorSampleRate != nil && [sessionOnErrorSampleRate isKindOfClass:NSNumber.class]) {
-            self.sessionOnErrorSampleRate = [sessionOnErrorSampleRate doubleValue] * 100;
-        }
-        if (enableTraceUserAction != nil && [enableTraceUserAction isKindOfClass:NSNumber.class]) {
-            self.enableTraceUserAction = [enableTraceUserAction boolValue];
-        }
-        if (enableTraceUserView != nil && [enableTraceUserView isKindOfClass:NSNumber.class]) {
-            self.enableTraceUserView = [enableTraceUserView boolValue];
-        }
-        if (enableTraceUserResource != nil && [enableTraceUserResource isKindOfClass:NSNumber.class]) {
-            self.enableTraceUserResource = [enableTraceUserResource boolValue];
-        }
-        if (enableResourceHostIP != nil && [enableResourceHostIP isKindOfClass:NSNumber.class]) {
-            self.enableResourceHostIP = [enableResourceHostIP boolValue];
-        }
-        if (enableTrackAppFreeze != nil && [enableTrackAppFreeze isKindOfClass:NSNumber.class]) {
-            self.enableTrackAppFreeze = [enableTrackAppFreeze boolValue];
-        }
-        if (freezeDurationMs != nil && [freezeDurationMs isKindOfClass:NSNumber.class]) {
-            self.freezeDurationMs = [freezeDurationMs longValue];
-        }
-        if (enableTrackAppCrash != nil && [enableTrackAppCrash isKindOfClass:NSNumber.class]) {
-            self.enableTrackAppCrash = [enableTrackAppCrash boolValue];
-        }
-        if (enableTrackAppANR != nil && [enableTrackAppANR isKindOfClass:NSNumber.class]) {
-            self.enableTrackAppANR = [enableTrackAppANR boolValue];
-        }
-        if (enableTraceWebView != nil && [enableTrackAppANR isKindOfClass:NSNumber.class]) {
-            self.enableTraceWebView = [enableTraceWebView boolValue];
-        }
-        if (allowWebViewHost && [allowWebViewHost isKindOfClass:NSString.class] && allowWebViewHost.length>0) {
-            NSArray *hosts = [FTJSONUtil arrayWithJsonString:allowWebViewHost];
-            if (hosts.count>0) {
-                self.allowWebViewHost = hosts;
-            }
-        }
-    } @catch (NSException *exception) {
-        FTInnerLogError(@"exception: %@",exception);
-    }
 }
 @end
