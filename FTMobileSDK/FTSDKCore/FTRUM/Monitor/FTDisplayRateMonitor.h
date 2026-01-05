@@ -24,6 +24,12 @@ typedef void (^FirstFrameCallBack)(NSDate *date);
 /// Remove monitoring item
 /// - Parameter item: monitoring item
 - (void)removeMonitorItem:(FTReadWriteHelper *)item;
+
+/// Start DisplayLink
+- (void)start;
+
+/// Stop DisplayLink
+- (void)stop;
 @end
 
 NS_ASSUME_NONNULL_END

@@ -103,6 +103,7 @@ ftModuleInitializationHook(void)
         if (applicationDidBecomeActive != nil) {
             [self reportAppLaunchPhaseDuration:applicationDidBecomeActive];
         }else{
+            [displayMonitor start];
             NSDate *firstFrame = [displayMonitor firstFrameDate];
             if (firstFrame == nil) {
                 __weak typeof(self) weakSelf = self;
@@ -114,6 +115,7 @@ ftModuleInitializationHook(void)
             }else{
                 [self reportAppLaunchPhaseDuration:firstFrame];
             }
+            [displayMonitor stop];
         }
     }
     return self;
