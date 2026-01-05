@@ -200,10 +200,10 @@ static dispatch_once_t onceToken;
 - (void)shutDown{
     _updateInterval = 0;
     _enable = NO;
-    _isFetching = NO;
-    _lastRequestTimeInterval = 0;
     _delegate = nil;
-    _lastRemoteModel = nil;
+    self.isFetching = NO;
+    self.lastRequestTimeInterval = 0;
+    self.lastRemoteModel = nil;
     [[FTAppLifeCycle sharedInstance] removeAppLifecycleDelegate:self];
     FTInnerLogDebug(@"[remote-config] shutDown");
 }
