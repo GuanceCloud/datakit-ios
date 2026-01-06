@@ -23,7 +23,6 @@
 @property (atomic, assign) NSTimeInterval lastErrorTimeInterval;
 @property (nonatomic, assign) BOOL isTimerRunning;
 @property (nonatomic, assign) long long processStartTime;
-@property (nonatomic, assign) long long lastProcessFatalErrorTime;
 @property (nonatomic, strong) dispatch_queue_t errorSampledConsumeQueue;
 
 - (FTRecordModel *)_recordModelWithSource:(NSString *)source
@@ -42,7 +41,6 @@
         _cacheInvalidTimeInterval = timeInterval*1e9;
         _processStartTime = [[NSDate dateWithTimeIntervalSinceReferenceDate:FTAppLaunchTracker.processStartTime] ft_nanosecondTimeStamp];
         _errorSampledConsumeQueue = dispatch_queue_create("com.ft.errorSampledConsume", 0);
-        _lastProcessFatalErrorTime = -1;
         _lastErrorTimeInterval = 0;
         [self checkLastProcessErrorSampled];
     }
@@ -165,9 +163,6 @@
     [self checkRUMSessionOnErrorDatasWithExpireTime:lastErrorTimeInterval-self.cacheInvalidTimeInterval];
     self.lastErrorTimeInterval = lastErrorTimeInterval;
 }
-- (long long)getLastProcessFatalErrorTime{
-    return _lastProcessFatalErrorTime;
-}
 - (long long)getErrorTimeLineFromFileCache{
     NSNumber *lastError = [[NSUserDefaults standardUserDefaults] objectForKey:@"ft_last_error_time"];
     if (lastError != nil) {
@@ -191,7 +186,6 @@
 }
 /// Check if the previous process has ANR crash data, update and delete error sampled from the previous process
 -(void)lastFatalErrorIfFound:(long long)errorDate{
-    _lastProcessFatalErrorTime = errorDate;
     __weak typeof(self) weakSelf = self;
     dispatch_async(self.errorSampledConsumeQueue, ^{
         __strong typeof(weakSelf) strongSelf = weakSelf;
