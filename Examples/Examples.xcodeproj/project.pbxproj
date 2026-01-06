@@ -121,6 +121,8 @@
 		17D339EE2807AB0C0083C2B3 /* FTModelHelper.m in Sources */ = {isa = PBXBuildFile; fileRef = 17D339ED2807AB0C0083C2B3 /* FTModelHelper.m */; };
 		17DA844D288808B2001A0B30 /* FTRUMMonitorTest.m in Sources */ = {isa = PBXBuildFile; fileRef = 17DA844C288808B2001A0B30 /* FTRUMMonitorTest.m */; };
 		17E0792E291E60830014A420 /* FTExtensionSDKTest.m in Sources */ = {isa = PBXBuildFile; fileRef = 17E0792D291E60830014A420 /* FTExtensionSDKTest.m */; };
+		17E18F0C2F0CE09100788864 /* longtask_no_anr.log in Resources */ = {isa = PBXBuildFile; fileRef = 17E18F092F0CDE1300788864 /* longtask_no_anr.log */; };
+		17E18F0E2F0CE1C700788864 /* longtask.log in Resources */ = {isa = PBXBuildFile; fileRef = 17E18F0D2F0CE1C700788864 /* longtask.log */; };
 		17F10EBB2D13EAC800737EDD /* NibViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 17F10EAD2D13EAC800737EDD /* NibViewController.swift */; };
 		17F10EBC2D13EAC800737EDD /* SplitViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 17F10EAF2D13EAC800737EDD /* SplitViewController.swift */; };
 		17F10EBD2D13EAC800737EDD /* TableViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 17F10EB02D13EAC800737EDD /* TableViewController.swift */; };
@@ -356,6 +358,8 @@
 		17D339ED2807AB0C0083C2B3 /* FTModelHelper.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = FTModelHelper.m; sourceTree = "<group>"; };
 		17DA844C288808B2001A0B30 /* FTRUMMonitorTest.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = FTRUMMonitorTest.m; sourceTree = "<group>"; };
 		17E0792D291E60830014A420 /* FTExtensionSDKTest.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = FTExtensionSDKTest.m; sourceTree = "<group>"; };
+		17E18F092F0CDE1300788864 /* longtask_no_anr.log */ = {isa = PBXFileReference; lastKnownFileType = text; path = longtask_no_anr.log; sourceTree = "<group>"; };
+		17E18F0D2F0CE1C700788864 /* longtask.log */ = {isa = PBXFileReference; lastKnownFileType = text; path = longtask.log; sourceTree = "<group>"; };
 		17E1927929C9883A0067B23D /* FTMobileSDK.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; path = FTMobileSDK.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 		17EAFA462D15535F004223E2 /* FTMobileSDK.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; path = FTMobileSDK.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 		17F10E6C2D13CBCB00737EDD /* tvOS-App.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = "tvOS-App.app"; sourceTree = BUILT_PRODUCTS_DIR; };
@@ -570,6 +574,8 @@
 		173A03F82CDDD32A00E07D53 /* LongTaskManagerTest */ = {
 			isa = PBXGroup;
 			children = (
+				17E18F092F0CDE1300788864 /* longtask_no_anr.log */,
+				17E18F0D2F0CE1C700788864 /* longtask.log */,
 				174058BC28D813A20092E096 /* FTLongTaskTest.m */,
 				173A03F92CDDD4AF00E07D53 /* FTLongTaskFileHandleTest.m */,
 				1761116B2CE3219D00071CA7 /* FTLongTaskManager+Test.h */,
@@ -1254,7 +1260,9 @@
 				4A116966239113B900C0BC4E /* Assets.xcassets in Resources */,
 				172931D42BF6032900AA9D53 /* GoogleService-Info.plist in Resources */,
 				7C28B878266098E700CECBA6 /* sample.html in Resources */,
+				17E18F0C2F0CE09100788864 /* longtask_no_anr.log in Resources */,
 				17132DCA2C2D90BA009DFE8F /* errors.json in Resources */,
+				17E18F0E2F0CE1C700788864 /* longtask.log in Resources */,
 				4A116964239113B600C0BC4E /* Main.storyboard in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -1307,13 +1315,9 @@
 			inputFileListPaths = (
 				"${PODS_ROOT}/Target Support Files/Pods-FTMobileSDKUnitTests-tvOS/Pods-FTMobileSDKUnitTests-tvOS-frameworks-${CONFIGURATION}-input-files.xcfilelist",
 			);
-			inputPaths = (
-			);
 			name = "[CP] Embed Pods Frameworks";
 			outputFileListPaths = (
 				"${PODS_ROOT}/Target Support Files/Pods-FTMobileSDKUnitTests-tvOS/Pods-FTMobileSDKUnitTests-tvOS-frameworks-${CONFIGURATION}-output-files.xcfilelist",
-			);
-			outputPaths = (
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 			shellPath = /bin/sh;
@@ -1328,13 +1332,9 @@
 			inputFileListPaths = (
 				"${PODS_ROOT}/Target Support Files/Pods-FTMobileSDKUnitTests/Pods-FTMobileSDKUnitTests-frameworks-${CONFIGURATION}-input-files.xcfilelist",
 			);
-			inputPaths = (
-			);
 			name = "[CP] Embed Pods Frameworks";
 			outputFileListPaths = (
 				"${PODS_ROOT}/Target Support Files/Pods-FTMobileSDKUnitTests/Pods-FTMobileSDKUnitTests-frameworks-${CONFIGURATION}-output-files.xcfilelist",
-			);
-			outputPaths = (
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 			shellPath = /bin/sh;
@@ -1926,7 +1926,10 @@
 				SWIFT_VERSION = 5.0;
 				TARGETED_DEVICE_FAMILY = 3;
 				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/tvOS-App.app/$(BUNDLE_EXECUTABLE_FOLDER_PATH)/tvOS-App";
-				USER_HEADER_SEARCH_PATHS = "$(inherited)  ";
+				USER_HEADER_SEARCH_PATHS = (
+					"$(inherited)",
+					" ",
+				);
 			};
 			name = Debug;
 		};
@@ -1967,7 +1970,10 @@
 				SWIFT_VERSION = 5.0;
 				TARGETED_DEVICE_FAMILY = 3;
 				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/tvOS-App.app/$(BUNDLE_EXECUTABLE_FOLDER_PATH)/tvOS-App";
-				USER_HEADER_SEARCH_PATHS = "$(inherited)  ";
+				USER_HEADER_SEARCH_PATHS = (
+					"$(inherited)",
+					" ",
+				);
 			};
 			name = Pre;
 		};
@@ -2002,7 +2008,10 @@
 				SWIFT_VERSION = 5.0;
 				TARGETED_DEVICE_FAMILY = 3;
 				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/tvOS-App.app/$(BUNDLE_EXECUTABLE_FOLDER_PATH)/tvOS-App";
-				USER_HEADER_SEARCH_PATHS = "$(inherited)  ";
+				USER_HEADER_SEARCH_PATHS = (
+					"$(inherited)",
+					" ",
+				);
 			};
 			name = Release;
 		};
@@ -2131,7 +2140,10 @@
 				SWIFT_VERSION = 5.0;
 				TARGETED_DEVICE_FAMILY = "1,2";
 				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/App.app/$(BUNDLE_EXECUTABLE_FOLDER_PATH)/App";
-				USER_HEADER_SEARCH_PATHS = "$(inherited)  ";
+				USER_HEADER_SEARCH_PATHS = (
+					"$(inherited)",
+					" ",
+				);
 			};
 			name = Pre;
 		};
@@ -2698,7 +2710,10 @@
 				SWIFT_VERSION = 5.0;
 				TARGETED_DEVICE_FAMILY = "1,2";
 				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/App.app/$(BUNDLE_EXECUTABLE_FOLDER_PATH)/App";
-				USER_HEADER_SEARCH_PATHS = "$(inherited)  ";
+				USER_HEADER_SEARCH_PATHS = (
+					"$(inherited)",
+					" ",
+				);
 			};
 			name = Debug;
 		};
@@ -2731,7 +2746,10 @@
 				SWIFT_VERSION = 5.0;
 				TARGETED_DEVICE_FAMILY = "1,2";
 				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/App.app/$(BUNDLE_EXECUTABLE_FOLDER_PATH)/App";
-				USER_HEADER_SEARCH_PATHS = "$(inherited)  ";
+				USER_HEADER_SEARCH_PATHS = (
+					"$(inherited)",
+					" ",
+				);
 			};
 			name = Release;
 		};

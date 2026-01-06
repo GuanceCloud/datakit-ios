@@ -39,10 +39,9 @@ typedef void (^FTWriteCallBack)(NSDictionary *fields, NSDictionary *tags);
     FTFatalErrorContext *errorContext = [[FTFatalErrorContext alloc]initWithErrorInfoProvider:nil];
     [errorContext setLastSessionState:[FTRUMSessionState new]];
     dependencies.fatalErrorContext = errorContext;
+    [FTCrash setupWithMonitoringType:FTCrashCMonitorTypeSystem writer:self enableMonitorMemory:YES enableMonitorCpu:YES];
     FTLongTaskManager *longTaskManager = [[FTLongTaskManager alloc]initWithDependencies:dependencies delegate:self backtraceReporting:[FTCrash shared].backtraceReporting enableTrackAppANR:YES enableTrackAppFreeze:YES freezeDurationMs:250];
-    NSString *pathString = [NSSearchPathForDirectoriesInDomains(NSCachesDirectory, NSUserDomainMask, YES) lastObject];
-    NSString *dataStorePath = [pathString stringByAppendingPathComponent:@"FTLongTaskTest.txt"];
-    longTaskManager.dataStorePath = dataStorePath;
+    [self removeFile:longTaskManager.dataStorePath];
     return longTaskManager;
 }
 - (void)removeFile:(NSString *)filePath{
@@ -152,7 +151,7 @@ typedef void (^FTWriteCallBack)(NSDictionary *fields, NSDictionary *tags);
     [longTaskManager updateLongTaskDate:[NSDate date]];
     __block BOOL hasCallBack = NO;
     self.callBack = ^(NSString *slowStack, long long duration) {
-        XCTAssertTrue(slowStack == nil);
+        XCTAssertTrue(slowStack != nil);
         XCTAssertTrue(duration>1000000000);
         hasCallBack = YES;
     };
@@ -169,7 +168,8 @@ typedef void (^FTWriteCallBack)(NSDictionary *fields, NSDictionary *tags);
     FTLongTaskManager *longTaskManager = [self mockLongTaskManager];
     XCTAssertNoThrow([longTaskManager startLongTask:date]);
     XCTAssertNoThrow([longTaskManager updateLongTaskDate:nil]);
-    [longTaskManager updateLongTaskDate:[date dateByAddingTimeInterval:3]];
+    [longTaskManager updateLongTaskDate:[date dateByAddingTimeInterval:3.1]];
+    [longTaskManager updateLongTaskDate:[date dateByAddingTimeInterval:5.1]];
     dispatch_sync(longTaskManager.queue, ^{});
     __block BOOL hasCallBack = NO;
     self.writeCallBack = ^(NSDictionary *fields, NSDictionary *tags) {
@@ -185,10 +185,9 @@ typedef void (^FTWriteCallBack)(NSDictionary *fields, NSDictionary *tags);
 #if TARGET_OS_TV
     NSString *pathString = [NSSearchPathForDirectoriesInDomains(NSCachesDirectory, NSUserDomainMask, YES) lastObject];
 #elif TARGET_OS_IOS
-    NSString *pathString = [NSSearchPathForDirectoriesInDomains(NSDocumentDirectory, NSUserDomainMask, YES) lastObject];
-#else
-    NSString *pathString = [NSSearchPathForDirectoriesInDomains(NSLibraryDirectory, NSUserDomainMask, YES) lastObject];
+    NSString *pathString = [NSSearchPathForDirectoriesInDomains(NSApplicationSupportDirectory, NSUserDomainMask, YES) lastObject];
 #endif
+    pathString = [pathString stringByAppendingPathComponent:@"com.ft.sdk"];
     [FTLog enableLog:YES];
     FTRUMDependencies *dependencies = [[FTRUMDependencies alloc]init];
     dependencies.fatalErrorContext = [[FTFatalErrorContext alloc]initWithErrorInfoProvider:nil];
@@ -230,7 +229,10 @@ typedef void (^FTWriteCallBack)(NSDictionary *fields, NSDictionary *tags);
 
 
 - (void)rumWriteAssembledData:(nonnull NSString *)source tags:(nonnull NSDictionary *)tags fields:(nonnull NSDictionary *)fields time:(long long)time { 
-    
+    if(self.writeCallBack){
+        self.writeCallBack(fields, tags);
+        self.writeCallBack = nil;
+    }
 }
 
 @end

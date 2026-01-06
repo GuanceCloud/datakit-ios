@@ -32,10 +32,10 @@ static NSString *const kSDKDirName      = @"com.ft.sdk";
 @property (nonatomic, assign) long long startDate;
 @property (nonatomic, assign) long long lastDate;
 @property (nonatomic, assign) long long duration;
-
 @property (nonatomic, copy) NSString *mainThreadBacktrace;
 @property (nonatomic, copy) NSString *allThreadsBacktrace;
 @property (nonatomic, strong) FTFatalErrorContextModel *errorContextModel;
+@property (nonatomic, assign) BOOL writeInFile;
 @end
 @implementation FTLongTaskEvent
 -(instancetype)initWithFreezeDurationMs:(long)freezeDurationMs{
@@ -345,6 +345,7 @@ void *FTLongTaskManagerQueueTag = &FTLongTaskManagerQueueTag;
         event.errorContextModel = currentContextModel;
         event.startDate = [startDate ft_nanosecondTimeStamp];
         event.mainThreadBacktrace = [self.backtraceReporting generateMainThreadBacktrace];
+        event.lastDate = event.startDate;
         event.isANR = NO;
         self.longTaskEvent = event;
     }@catch (NSException *exception) {
@@ -359,7 +360,7 @@ void *FTLongTaskManagerQueueTag = &FTLongTaskManagerQueueTag;
         long long updateDate = [date ft_nanosecondTimeStamp];
         // Reduce I/O
         if (updateDate - self.longTaskEvent.startDate > FT_ANR_THRESHOLD_S) {
-            if (!self.longTaskEvent.allThreadsBacktrace){
+            if (!self.longTaskEvent.writeInFile){
                 self.longTaskEvent.allThreadsBacktrace = [self.backtraceReporting generateAllThreadsBacktrace];
                 FTFatalErrorContextModel *currentContextModel = [self.dependencies.fatalErrorContext currentContextModel];
                 self.longTaskEvent.errorContextModel = [[FTFatalErrorContextModel alloc]initWithAppState:currentContextModel.appState lastSessionState:currentContextModel.lastSessionState lastViewContext:currentContextModel.lastViewContext dynamicContext:currentContextModel.dynamicContext globalAttributes:currentContextModel.globalAttributes errorMonitorInfo:[self.dependencies.errorMonitorInfoWrapper errorMonitorInfo]];
@@ -373,10 +374,12 @@ void *FTLongTaskManagerQueueTag = &FTLongTaskManagerQueueTag;
                     [self appendData:versionData];
                     [self appendData:data];
                     [self appendData:boundaryData];
+                    self.longTaskEvent.writeInFile = YES;
                 }else{
                     FTInnerLogError(@"[LongTask] longTaskEvent convert to Json Data Error");
                 }
-            }else if(updateDate - self.longTaskEvent.lastDate > FT_ANR_THRESHOLD_UPDATE_S){
+            }
+            if(updateDate - self.longTaskEvent.lastDate > FT_ANR_THRESHOLD_UPDATE_S){
                 self.longTaskEvent.lastDate = updateDate;
                 NSString *lastDate = [NSString stringWithFormat:@"%lld\n",updateDate];
                 NSData *data = [lastDate dataUsingEncoding:NSUTF8StringEncoding];
