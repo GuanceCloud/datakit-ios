@@ -197,15 +197,12 @@ static NSDictionary *g_registerOrders;
                                x86Order, @"i686", x86_64Order, @"x86_64", nil];
 }
 
--(instancetype)initWithMonitorMemory:(BOOL)memory cpu:(BOOL)cpu{
-    self = [super init];
-    if (self) {
-        _enableMemory = memory;
-        _enableCpu = cpu;
-    }
-    return self;
+-(void)setEnableMemory:(BOOL)enableMemory{
+    _enableMemory = enableMemory;
 }
-
+-(void)setEnableCpu:(BOOL)enableCpu{
+    _enableCpu = enableCpu;
+}
 - (int)majorVersion:(NSDictionary *)report
 {
     NSDictionary *info = [self infoReport:report];
@@ -313,11 +310,12 @@ static NSDictionary *g_registerOrders;
 }
 #pragma mark ----- FTBacktraceReporting -----
 -(NSString *)generateBacktrace:(thread_t)thread{
+    FTCrashThread currentThread = ftcrashthread_self();
     FTCrashMachineContext context = { 0 };
     FTCrashStackEntry stackEntries[MAX_STACKTRACE_LENGTH] = {0};
     NSMutableString *threadStr = [NSMutableString string];
     NSMutableDictionary *imagesDict = [NSMutableDictionary new];
-    int count = getStackEntriesFromThread(thread,&context,stackEntries,MAX_STACKTRACE_LENGTH,true,false);
+    int count = getStackEntriesFromThread(thread,&context,stackEntries,MAX_STACKTRACE_LENGTH,true,currentThread == thread);
     if (count>0)  {
         [self appendThreadInfoForThreadIndex:0 thread:thread stackEntries:stackEntries stackLength:count toMutableString:threadStr imagesDict:imagesDict];
         [self appendCommonTailToMutableString:threadStr imagesDict:imagesDict];

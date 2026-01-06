@@ -23,6 +23,7 @@
 #import "FTCrashReportStore.h"
 #import "FTCrashMonitor_AppState.h"
 #import "FTCrashReport.h"
+#import "FTCrashBinaryImageCache.h"
 
 @interface FTCrash()<FTAppLifeCycleDelegate,FTBacktraceReporting>
 /** If YES, introspect memory contents during a crash.
@@ -53,6 +54,8 @@ static mach_port_t main_thread_id;
     static dispatch_once_t onceToken;
     dispatch_once(&onceToken, ^{
         sharedHandler = [[FTCrash alloc] init];
+        sharedHandler.crashReportWrapper = [[FTCrashReportWrapper alloc]init];
+        ftcrashbic_init();
     });
     return sharedHandler;
 }
@@ -61,10 +64,11 @@ static mach_port_t main_thread_id;
        enableMonitorMemory:(BOOL)memory
        enableMonitorCpu:(BOOL)cpu
 {
-    FTCrash *crash = [self shared];
+    FTCrash *crash = sharedHandler ? sharedHandler : [self shared];
     crash.monitoring = monitoring;
     crash.writer = writer;
-    crash.crashReportWrapper = [[FTCrashReportWrapper alloc]initWithMonitorMemory:memory cpu:cpu];
+    [crash.crashReportWrapper setEnableCpu:cpu];
+    [crash.crashReportWrapper setEnableMemory:memory];
     [crash install];
     [crash sendCrashReport];
 }

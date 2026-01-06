@@ -175,9 +175,7 @@ void ftcrash_install(const char *appName, const char *const installPath,FTCrashC
     ftcrashstate_initialize(path);
 
     ftcrashtc_init(60);
-    
-    ftcrashbic_init();
-    
+        
     ftcrashcm_setEventCallback(onExceptionEvent);
     setMonitors(monitors);
     ftcrashcm_activateMonitors();
