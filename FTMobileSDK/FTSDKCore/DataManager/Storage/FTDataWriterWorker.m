@@ -22,7 +22,7 @@
 @property (nonatomic, assign) NSTimeInterval cacheInvalidTimeInterval;
 @property (atomic, assign) NSTimeInterval lastErrorTimeInterval;
 @property (nonatomic, assign) BOOL isTimerRunning;
-@property (nonatomic, assign) long long sdkStartTime;
+@property (nonatomic, assign) long long processStartTime;
 @property (nonatomic, assign) long long lastProcessFatalErrorTime;
 @property (nonatomic, strong) dispatch_queue_t errorSampledConsumeQueue;
 @end
@@ -34,7 +34,7 @@
     self = [super init];
     if(self){
         _cacheInvalidTimeInterval = timeInterval*1e9;
-        _sdkStartTime = [FTAppLaunchTracker.sdkStartDate ft_nanosecondTimeStamp];
+        _processStartTime = [[FTAppLaunchTracker processStartTimestamp] ft_nanosecondTimeStamp];
         _errorSampledConsumeQueue = dispatch_queue_create("com.ft.errorSampledConsume", 0);
         _lastProcessFatalErrorTime = -1;
         _lastErrorTimeInterval = 0;
@@ -142,7 +142,7 @@
 }
 - (void)lastErrorTimeInterval:(NSTimeInterval)lastErrorTimeInterval{
     //  Do not process data before the previous error, do not process data from the previous process
-    if (lastErrorTimeInterval <= self.lastErrorTimeInterval || lastErrorTimeInterval < self.sdkStartTime){
+    if (lastErrorTimeInterval <= self.lastErrorTimeInterval || lastErrorTimeInterval < self.processStartTime){
         return;
     }
     [[NSUserDefaults standardUserDefaults] setObject:@(lastErrorTimeInterval) forKey:@"ft_last_error_time"];
@@ -185,7 +185,7 @@
             [[FTTrackerEventDBTool sharedManger] updateDatasWithType:FT_DATA_TYPE_RUM_CACHE toType:FT_DATA_TYPE_RUM toTime:errorDate];
         }
         FTInnerLogDebug(@"[RUM errorSampledConsume] Delete last process datas");
-        [[FTTrackerEventDBTool sharedManger] deleteDatasWithType:FT_DATA_TYPE_RUM_CACHE toTime:strongSelf.sdkStartTime];
+        [[FTTrackerEventDBTool sharedManger] deleteDatasWithType:FT_DATA_TYPE_RUM_CACHE toTime:strongSelf.processStartTime];
     });
 }
 #pragma mark ========== CURRENT PROCESS ==========
@@ -209,10 +209,10 @@
         }
         if(self.lastErrorTimeInterval>0){
             FTInnerLogDebug(@"[RUM errorSampledConsume] has last error, update Datas Type");
-            [[FTTrackerEventDBTool sharedManger] updateDatasWithType:FT_DATA_TYPE_RUM_CACHE toType:FT_DATA_TYPE_RUM fromTime:strongSelf.sdkStartTime toTime:strongSelf.lastErrorTimeInterval];
+            [[FTTrackerEventDBTool sharedManger] updateDatasWithType:FT_DATA_TYPE_RUM_CACHE toType:FT_DATA_TYPE_RUM fromTime:strongSelf.processStartTime toTime:strongSelf.lastErrorTimeInterval];
         }
         FTInnerLogDebug(@"[RUM errorSampledConsume] Delete expire(%lld) datas",expire);
-        [[FTTrackerEventDBTool sharedManger] deleteDatasWithType:FT_DATA_TYPE_RUM_CACHE fromTime:strongSelf.sdkStartTime toTime:expire];
+        [[FTTrackerEventDBTool sharedManger] deleteDatasWithType:FT_DATA_TYPE_RUM_CACHE fromTime:strongSelf.processStartTime toTime:expire];
         FTInnerLogDebug(@"[RUM errorSampledConsume] End");
 
     });

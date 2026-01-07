@@ -28,6 +28,8 @@ NS_ASSUME_NONNULL_BEGIN
 @property (class, nonatomic, assign) NSDate *sdkStartDate;
 @property (nonatomic,weak) id<FTAppLaunchDataDelegate> delegate;
 - (instancetype)initWithDelegate:(nullable id)delegate displayMonitor:( FTDisplayRateMonitor *)displayMonitor;
+
++ (NSDate *)processStartTimestamp;
 @end
 
 NS_ASSUME_NONNULL_END

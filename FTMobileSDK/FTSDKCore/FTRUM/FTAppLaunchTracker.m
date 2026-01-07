@@ -139,10 +139,10 @@ ftModuleInitializationHook(void)
             appStartTimestamp = launchDate.ft_nanosecondTimeStamp;
             appStartDuration = [moduleInitializationTimestamp ft_nanosecondTimeIntervalToDate:endDate];
         }else{
-            launchDate = [self processStartTimestamp];
+            launchDate = [FTAppLaunchTracker processStartTimestamp];
             appStartTimestamp = launchDate.ft_nanosecondTimeStamp;
             appStartDuration = [launchDate ft_nanosecondTimeIntervalToDate:endDate];
-            NSDate *processStart = [self processStartTimestamp];
+            NSDate *processStart = launchDate;
             NSDictionary *preRuntimeInit = @{
                 FT_DURATION:[processStart ft_nanosecondTimeIntervalToDate:runtimeInit],
                 FT_KEY_START:@(processStart.ft_nanosecondTimeStamp - appStartTimestamp)
@@ -159,7 +159,7 @@ ftModuleInitializationHook(void)
         // applicationDidBecomeActive after then didFinishLaunchingTimestamp,means Hybrid or
         // sdk init after -didFinishLaunching, no fileds UIKitInit/ ApplicationInit/InitialFrameRender
         if (endDate != applicationDidBecomeActive) {
-            NSDate *sdkStartDate = FTAppLaunchTracker.sdkStartDate;
+            NSDate *sdkStartDate = _sdkStartDate;
             NSDictionary *uikitInit = @{
                 FT_DURATION:[moduleInitializationTimestamp ft_nanosecondTimeIntervalToDate:sdkStartDate],
                 FT_KEY_START:@(moduleInitializationTimestamp.ft_nanosecondTimeStamp - appStartTimestamp)
@@ -187,6 +187,10 @@ ftModuleInitializationHook(void)
 }
 + (void)setSdkStartDate:(NSDate *)sdkStartDate{
     _sdkStartDate = sdkStartDate;
+}
++ (NSDate *)processStartTimestamp{
+    struct timeval startTime = ft_processStartTime();
+    return [NSDate dateWithTimeIntervalSince1970:startTime.tv_sec + startTime.tv_usec / 1E6];
 }
 #pragma mark - life cycle
 - (void)applicationDidFinishLaunching{
@@ -227,10 +231,7 @@ ftModuleInitializationHook(void)
     return NO;
 #    endif
 }
-- (NSDate *)processStartTimestamp{
-    struct timeval startTime = ft_processStartTime();
-    return [NSDate dateWithTimeIntervalSince1970:startTime.tv_sec + startTime.tv_usec / 1E6];
-}
+
 -(void)dealloc{
     [[FTAppLifeCycle sharedInstance] removeAppLifecycleDelegate:self];
 }
