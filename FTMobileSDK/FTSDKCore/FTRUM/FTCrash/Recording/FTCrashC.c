@@ -64,7 +64,7 @@ typedef enum {
 
 static volatile bool g_installed = 0;
 static bool g_shouldAddConsoleLogToReport = false;
-static bool g_shouldPrintPreviousLog = false;
+//static bool g_shouldPrintPreviousLog = false;
 static char g_consoleLogPath[FTCRASHFU_MAX_PATH_LENGTH];
 static FTCrashCMonitorType g_monitoring = FTCrashCMonitorTypeSignal | FTCrashCMonitorTypeCPPException | FTCrashCMonitorTypeNSException | FTCrashCMonitorTypeSystem;
 static char g_lastCrashReportFilePath[FTCRASHFU_MAX_PATH_LENGTH];
@@ -72,7 +72,7 @@ static char g_lastCrashReportFilePath[FTCRASHFU_MAX_PATH_LENGTH];
 static FTCrashWillWriteReportCallback g_willWriteReportCallback;
 static FTCrashIsWritingReportCallback g_isWritingReportCallback;
 static FTCrashDidWriteReportCallback g_didWriteReportCallback;
-static FTCrashApplicationState g_lastApplicationState = FTCrashApplicationStateNone;
+//static FTCrashApplicationState g_lastApplicationState = FTCrashApplicationStateNone;
 
 
 static const struct FTCrashMonitorMapping {

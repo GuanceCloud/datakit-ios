@@ -18,7 +18,6 @@
 #import "FTCrashMonitor_Signal.h"
 #import "FTCrashBacktrace.h"
 #import "FTCrashReportFilterBasic.h"
-#import "FTCrashReportFilterAppleFmt.h"
 #import "FTCrashReportWrapper.h"
 #import "FTCrashReportStore.h"
 #import "FTCrashMonitor_AppState.h"

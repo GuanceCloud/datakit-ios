@@ -148,11 +148,11 @@ static FTCRASH_NOINLINE void handleException(NSException *exception, BOOL isUser
     FTCRASH_THWART_TAIL_CALL_OPTIMISATION
 }
 
-static void customNSExceptionReporter(NSException *exception, BOOL logAllThreads) FTCRASH_KEEP_FUNCTION_IN_STACKTRACE
-{
-    handleException(exception, YES, logAllThreads);
-    FTCRASH_THWART_TAIL_CALL_OPTIMISATION
-}
+//static void customNSExceptionReporter(NSException *exception, BOOL logAllThreads) FTCRASH_KEEP_FUNCTION_IN_STACKTRACE
+//{
+//    handleException(exception, YES, logAllThreads);
+//    FTCRASH_THWART_TAIL_CALL_OPTIMISATION
+//}
 
 static void handleUncaughtException(NSException *exception) FTCRASH_KEEP_FUNCTION_IN_STACKTRACE
 {
