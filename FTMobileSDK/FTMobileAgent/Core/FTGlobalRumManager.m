@@ -71,7 +71,7 @@ static NSObject *sharedInstanceLock;
     monitor.displayMonitor = displayMonitor;
     FTRUMDependencies *dependencies = [[FTRUMDependencies alloc]init];
     FTErrorMonitorInfo *errorInfoWrapper = [[FTErrorMonitorInfo alloc]initWithMonitorType:(ErrorMonitorType)rumConfig.errorMonitorType];
-    dependencies.monitor = [[FTRUMMonitor alloc]initWithMonitorType:(DeviceMetricsMonitorType)rumConfig.deviceMetricsMonitorType frequency:(MonitorFrequency)rumConfig.monitorFrequency];
+    dependencies.monitor = monitor;
     dependencies.writer = writer;
     dependencies.sessionOnErrorSampleRate = rumConfig.sessionOnErrorSampleRate;
     dependencies.sampleRate = rumConfig.samplerate;
