@@ -111,7 +111,6 @@
             break;
         case FTRUMDataError:
             if (self.isActiveView) {
-                FTRUMErrorData *error = (FTRUMErrorData *)model;
                 self.viewErrorCount++;
                 self.needUpdateView = YES;
                 [self writeErrorData:model context:context];
