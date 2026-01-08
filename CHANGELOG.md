@@ -1,3 +1,9 @@
+# 1.5.19-alpha.5
+1. Refined cold start timing by adding `app_pre_runtime_init_time`, `app_runtime_init_time`,`app_uikit_init_time`, `app_application_init_time`, and `app_first_frame_init_time`.
+2. RUM Resource added `resource_http_protocol`, `resource_request_size`, `resource_connection_reuse`
+3. Support customizable configuration of remote variables
+4. Enhance Crash/ANR Report with full thread stack and Crash monitor type settings
+---
 # 1.5.19-alpha.4
 1. Fix CPU and memory utilization collection methods
 2. Replace the mutable `const char* kThreadSecondary` pointer with a read-only string literal macro to eliminate pointer tampering risks
