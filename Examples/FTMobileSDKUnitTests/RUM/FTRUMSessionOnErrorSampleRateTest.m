@@ -22,7 +22,7 @@
 #import "NSDate+FTUtil.h"
 
 @interface FTDataWriterWorker(Testing)
-@property (nonatomic, assign) long long sdkStartTime;
+@property (nonatomic, assign) long long processStartTime;
 - (void)checkLastProcessErrorSampled;
 @end
 @interface FTRUMSessionOnErrorSampleRateTest : XCTestCase
@@ -274,7 +274,7 @@
     [writerManager rumWrite:FT_RUM_SOURCE_VIEW tags:@{@"view_id":@"3"} fields:@{@"test":@"normal"} time:[[NSDate date] timeIntervalSince1970]*1e9];
     
     // Simulate entering a new process and exceeding the time interval
-    writerManager.sdkStartTime = [[[NSDate date] dateByAddingTimeInterval:2] timeIntervalSince1970]*1e9;
+    writerManager.processStartTime = [[[NSDate date] dateByAddingTimeInterval:2] timeIntervalSince1970]*1e9;
     
     [writerManager checkLastProcessErrorSampled];
     [writerManager checkRUMSessionOnErrorDatasExpired];
@@ -292,7 +292,7 @@
     [writerManager rumWrite:FT_RUM_SOURCE_VIEW tags:@{@"view_id":@"2"} fields:@{@"test":@"delete"} time:123 updateTime:[[NSDate date] timeIntervalSince1970]*1e9];
     
     // Simulate entering a new process
-    writerManager.sdkStartTime = [[NSDate date] timeIntervalSince1970]*1e9;
+    writerManager.processStartTime = [[NSDate date] timeIntervalSince1970]*1e9;
     [writerManager checkLastProcessErrorSampled];
 
     [writerManager rumWrite:FT_RUM_SOURCE_ERROR tags:@{@"view_id":@"3"} fields:@{@"test":@"delete"} time:123 updateTime:[[NSDate date] timeIntervalSince1970]*1e9];
@@ -315,7 +315,7 @@
     [writerManager rumWrite:FT_RUM_SOURCE_VIEW tags:@{@"view_id":@"3"} fields:@{@"test":@"normal"} time:[[NSDate date] timeIntervalSince1970]*1e9];
     
     // Simulate entering a new process and exceeding the time interval
-    writerManager.sdkStartTime = [[[NSDate date] dateByAddingTimeInterval:2] timeIntervalSince1970]*1e9;
+    writerManager.processStartTime = [[[NSDate date] dateByAddingTimeInterval:2] timeIntervalSince1970]*1e9;
     
     [writerManager checkLastProcessErrorSampled];
     [writerManager lastFatalErrorIfFound:0];
@@ -338,7 +338,7 @@
     [writerManager rumWrite:FT_RUM_SOURCE_VIEW tags:@{@"view_id":@"3"} fields:@{@"test":@"normal"} time:[[date dateByAddingTimeInterval:0.6] timeIntervalSince1970]*1e9];
 
     // Simulate entering a new process and exceeding the time interval
-    writerManager.sdkStartTime = [[date dateByAddingTimeInterval:2] timeIntervalSince1970]*1e9;
+    writerManager.processStartTime = [[date dateByAddingTimeInterval:2] timeIntervalSince1970]*1e9;
     
     [writerManager checkLastProcessErrorSampled];
     NSArray<FTRecordModel *> *array = [[FTTrackerEventDBTool sharedManger] getAllDatas];

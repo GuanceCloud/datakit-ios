@@ -1686,6 +1686,7 @@
     FTRumConfig *rumConfig = [[FTRumConfig alloc]initWithAppid:self.appid];
     [FTMobileAgent startWithConfigOptions:config];
     [[FTMobileAgent sharedInstance] startRumWithConfigOptions:rumConfig];
+    [[FTGlobalRumManager sharedInstance].rumManager syncProcess];
     NSDictionary *context = [[[FTGlobalRumManager sharedInstance] rumManager] getLinkRUMData];
     XCTAssertTrue(context[FT_KEY_VIEW_ID] == nil);
     XCTAssertTrue(context[FT_KEY_VIEW_REFERRER] == nil);

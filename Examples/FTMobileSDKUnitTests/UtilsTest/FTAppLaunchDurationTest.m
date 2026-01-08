@@ -89,9 +89,8 @@ typedef void(^LaunchDataBlock)(NSString *source, NSDictionary *tags, NSDictionar
 - (void)testLaunchPrewarm{
     XCTestExpectation *expectation= [self expectationWithDescription:@"Async operation timeout"];
     self.launchBlock = ^(NSNumber * _Nullable duration, FTLaunchType type) {
-        if(type == FTLaunchWarm){
+        XCTAssertTrue(type == FTLaunchWarm);
             [expectation fulfill];
-        }
     };
     setenv("ActivePrewarm", "1", 1);
     [NSClassFromString(@"FTAppLaunchTracker") load];
@@ -100,7 +99,7 @@ typedef void(^LaunchDataBlock)(NSString *source, NSDictionary *tags, NSDictionar
     [[NSNotificationCenter defaultCenter] postNotificationName:UIApplicationDidBecomeActiveNotification object:nil];
     self.launchTracker = [[FTAppLaunchTracker alloc]initWithDelegate:self displayMonitor:[FTDisplayRateMonitor new]];
 
-    [self waitForExpectationsWithTimeout:30 handler:^(NSError *error) {
+    [self waitForExpectationsWithTimeout:5 handler:^(NSError *error) {
         XCTAssertNil(error);
     }];
     self.launchBlock = nil;
