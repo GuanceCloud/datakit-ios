@@ -170,14 +170,14 @@
     [FTModelHelper resolveModelArray:newArray callBack:^(NSString * _Nonnull source, NSDictionary * _Nonnull tags, NSDictionary * _Nonnull fields, BOOL * _Nonnull stop) {
         if([source isEqualToString:FT_RUM_SOURCE_ERROR]){
             hasError = YES;
-            XCTAssertTrue(fields[FT_RUM_KEY_SAMPLED_FOR_ERROR_SESSION] == nil);
+            XCTAssertTrue([fields[FT_RUM_KEY_SAMPLED_FOR_ERROR_SESSION] boolValue] == YES);
         }else if ([source isEqualToString:FT_RUM_SOURCE_VIEW]){
             XCTAssertTrue([fields[FT_RUM_KEY_SAMPLED_FOR_ERROR_SESSION] boolValue] == YES);
             hasView = YES;
         }else if ([source isEqualToString:FT_RUM_SOURCE_ACTION]){
             hasAction = YES;
             XCTAssertTrue([fields[@"test"] isEqualToString:@"error"]);
-            XCTAssertTrue(fields[FT_RUM_KEY_SAMPLED_FOR_ERROR_SESSION] == nil);
+            XCTAssertTrue([fields[FT_RUM_KEY_SAMPLED_FOR_ERROR_SESSION] boolValue] == YES);
         }
         XCTAssertTrue([fields[FT_RUM_SESSION_SAMPLE_RATE] intValue] == 0);
         XCTAssertTrue([fields[FT_RUM_SESSION_ON_ERROR_SAMPLE_RATE] intValue] == 100);

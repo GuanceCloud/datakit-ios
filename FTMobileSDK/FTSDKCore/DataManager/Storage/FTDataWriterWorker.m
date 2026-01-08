@@ -25,6 +25,12 @@
 @property (nonatomic, assign) long long processStartTime;
 @property (nonatomic, assign) long long lastProcessFatalErrorTime;
 @property (nonatomic, strong) dispatch_queue_t errorSampledConsumeQueue;
+
+- (FTRecordModel *)_recordModelWithSource:(NSString *)source
+                                     tags:(NSDictionary *)tags
+                                   fields:(NSDictionary *)fields
+                                     time:(long long)time
+                                       op:(NSString *)op;
 @end
 @implementation FTDataWriterWorker
 -(instancetype)init{
@@ -36,7 +42,6 @@
         _cacheInvalidTimeInterval = timeInterval*1e9;
         _processStartTime = [[FTAppLaunchTracker processStartTimestamp] ft_nanosecondTimeStamp];
         _errorSampledConsumeQueue = dispatch_queue_create("com.ft.errorSampledConsume", 0);
-        _lastProcessFatalErrorTime = -1;
         _lastErrorTimeInterval = 0;
         [self checkLastProcessErrorSampled];
     }
@@ -57,12 +62,10 @@
         NSMutableDictionary *tagsDict = [NSMutableDictionary new];
         NSMutableDictionary *fieldsDict = [NSMutableDictionary new];
         NSDictionary *rumStaticTags = [[FTPresetProperty sharedInstance] rumTags];
-        NSDictionary *rumStaticFields = [[FTPresetProperty sharedInstance] rumStaticFields];
 
         [tagsDict addEntriesFromDictionary:tags];
         [tagsDict addEntriesFromDictionary:rumStaticTags];
         [fieldsDict addEntriesFromDictionary:fields];
-        [fieldsDict addEntriesFromDictionary:rumStaticFields];
         NSDictionary *pkgInfo = tags[FT_SDK_PKG_INFO];
         if(pkgInfo && pkgInfo.count>0){
             NSDictionary *info = [rumStaticTags valueForKey:FT_SDK_PKG_INFO];
@@ -75,13 +78,7 @@
         }
         NSString *type = cache ? FT_DATA_TYPE_RUM_CACHE:FT_DATA_TYPE_RUM;
         FTAddDataType addType = cache ? FTAddDataRUMCache:FTAddDataRUM;
-        FTRecordModel *model;
-        if ([FTPresetProperty sharedInstance].lineDataModifier) {
-            NSArray *array = [[FTPresetProperty sharedInstance] applyLineModifier:source tags:tagsDict fields:fieldsDict];
-            model = [[FTRecordModel alloc]initWithSource:source op:type tags:array[0] fields:array[1] tm:time];
-        }else{
-            model = [[FTRecordModel alloc]initWithSource:source op:type tags:tagsDict fields:fieldsDict tm:time];
-        }
+        FTRecordModel *model = [self _recordModelWithSource:source tags:tagsDict fields:fieldsDict time:time op:type];
         if(updateTime>0){
             model.tm = updateTime;
         }
@@ -92,6 +89,24 @@
     } @catch (NSException *exception) {
         FTInnerLogError(@"exception %@",exception);
     }
+}
+- (void)rumWriteAssembledData:(NSString *)source tags:(NSDictionary *)tags fields:(NSDictionary *)fields time:(long long)time{
+    FTRecordModel *model = [self _recordModelWithSource:source tags:tags fields:fields time:time op:FT_DATA_TYPE_RUM];
+    [[FTTrackDataManager sharedInstance] addTrackData:model type:FTAddDataRUM];
+}
+- (FTRecordModel *)_recordModelWithSource:(NSString *)source
+                                     tags:(NSDictionary *)tags
+                                   fields:(NSDictionary *)fields
+                                     time:(long long)time
+                                       op:(NSString *)op {
+    FTRecordModel *model = nil;
+    if ([FTPresetProperty sharedInstance].lineDataModifier) {
+        NSArray *array = [[FTPresetProperty sharedInstance] applyLineModifier:source tags:tags fields:fields];
+        model = [[FTRecordModel alloc] initWithSource:source op:op tags:array[0] fields:array[1] tm:time];
+    } else {
+        model = [[FTRecordModel alloc] initWithSource:source op:op tags:tags fields:fields tm:time];
+    }
+    return model;
 }
 - (void)extensionRumWrite:(NSString *)source tags:(NSDictionary *)tags fields:(NSDictionary *)fields time:(long long)time{
     if (![source isKindOfClass:NSString.class] || source.length == 0) {
@@ -149,9 +164,6 @@
     [self checkRUMSessionOnErrorDatasWithExpireTime:lastErrorTimeInterval-self.cacheInvalidTimeInterval];
     self.lastErrorTimeInterval = lastErrorTimeInterval;
 }
-- (long long)getLastProcessFatalErrorTime{
-    return _lastProcessFatalErrorTime;
-}
 - (long long)getErrorTimeLineFromFileCache{
     NSNumber *lastError = [[NSUserDefaults standardUserDefaults] objectForKey:@"ft_last_error_time"];
     if (lastError != nil) {
@@ -175,7 +187,6 @@
 }
 /// Check if the previous process has ANR crash data, update and delete error sampled from the previous process
 -(void)lastFatalErrorIfFound:(long long)errorDate{
-    _lastProcessFatalErrorTime = errorDate;
     __weak typeof(self) weakSelf = self;
     dispatch_async(self.errorSampledConsumeQueue, ^{
         __strong typeof(weakSelf) strongSelf = weakSelf;

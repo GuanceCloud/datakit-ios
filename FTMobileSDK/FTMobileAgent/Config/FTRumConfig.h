@@ -1,6 +1,5 @@
 //
 //  FTRumConfig.h
-//  FTMobileSDK
 //
 //  Created by hulilei on 2025/7/22.
 //  Copyright © 2025 DataFlux-cn. All rights reserved.
@@ -8,6 +7,35 @@
 
 #import <Foundation/Foundation.h>
 
+typedef NS_OPTIONS(NSUInteger, FTCrashMonitorType){
+    /** Monitor Mach kernel exceptions. */
+    FTCrashMonitorTypeMachException      = 0x01,
+    
+    /** Monitor fatal signals. */
+    FTCrashMonitorTypeSignal             = 0x02,
+    
+    /** Monitor uncaught C++ exceptions. */
+    FTCrashMonitorTypeCPPException       = 0x04,
+    
+    /** Monitor uncaught Objective-C NSExceptions. */
+    FTCrashMonitorTypeNSException        = 0x08,
+    
+    /** Track and inject system information. */
+    FTCrashMonitorTypeSystem             = 0x40,
+    
+    /** Track and inject application state information. */
+    FTCrashMonitorTypeApplicationState   = 0x80,
+    
+};
+
+#define FTCrashMonitorTypeAll                                                                  \
+    (FTCrashMonitorTypeMachException | FTCrashMonitorTypeSignal                            \
+        | FTCrashMonitorTypeCPPException | FTCrashMonitorTypeNSException                   \
+        | FTCrashMonitorTypeApplicationState | FTCrashMonitorTypeSystem)
+
+
+#define FTCrashMonitorTypeHighCompatibility                                                          \
+    (FTCrashMonitorTypeAll & (~FTCrashMonitorTypeMachException))
 /// Device information in ERROR
 typedef NS_OPTIONS(NSUInteger, FTErrorMonitorType) {
     /// Enable all monitoring: battery, memory, CPU usage
@@ -61,6 +89,7 @@ typedef NSDictionary<NSString *,id>* _Nullable (^FTResourcePropertyProvider)( NS
 typedef BOOL (^FTSessionTaskErrorFilter)(NSError *_Nonnull error);
 
 
+
 /// RUM functionality configuration items
 @interface FTRumConfig : NSObject
 /// Designated initializer, set appid
@@ -92,6 +121,8 @@ typedef BOOL (^FTSessionTaskErrorFilter)(NSError *_Nonnull error);
 @property (nonatomic, copy, nullable) FTResourceUrlHandler resourceUrlHandler;
 /// Set whether to collect crash logs
 @property (nonatomic, assign) BOOL enableTrackAppCrash;
+
+@property (nonatomic, assign) FTCrashMonitorType crashMonitoring;
 /// Set whether to collect freezes
 @property (nonatomic, assign) BOOL enableTrackAppFreeze;
 /// Set freeze threshold. Unit milliseconds 100 < freezeDurationMs, default 250ms

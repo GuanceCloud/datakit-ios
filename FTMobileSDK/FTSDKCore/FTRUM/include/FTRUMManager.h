@@ -64,13 +64,6 @@ NS_ASSUME_NONNULL_BEGIN
 
 #pragma mark - Error / Long Task -
 
-/// Add Error Data
-/// @param type Error type
-/// @param state app state
-/// @param message error message
-/// @param stack error state
-/// @param date error date
-- (void)addErrorWithType:(nonnull NSString *)type state:(NSString *)state message:(nonnull NSString *)message stack:(nonnull NSString *)stack date:(NSDate *)date;
 
 /// Freeze
 /// @param stack Freeze stack

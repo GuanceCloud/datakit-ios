@@ -8,10 +8,20 @@
 
 #import <Foundation/Foundation.h>
 #import "FTEnumConstant.h"
+#import "FTErrorDataProtocol.h"
 NS_ASSUME_NONNULL_BEGIN
+typedef void (^ErrorMonitorInfoChangeBlock)(NSDictionary *info);
 
-@interface FTErrorMonitorInfo : NSObject
-+ (NSDictionary *)errorMonitorInfo:(ErrorMonitorType)monitorType;
+@protocol FTErrorMonitorInfoProvider <NSObject>
+
+- (NSDictionary *)errorMonitorInfo;
+
+- (void)onErrorMonitorInfoChange:(ErrorMonitorInfoChangeBlock)onChange;
+
+@end
+@interface FTErrorMonitorInfo : NSObject<FTErrorMonitorInfoWrapper,FTErrorMonitorInfoProvider>
+
+- (instancetype)initWithMonitorType:(ErrorMonitorType)monitorType;
 @end
 
 NS_ASSUME_NONNULL_END

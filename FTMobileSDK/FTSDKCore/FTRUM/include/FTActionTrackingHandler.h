@@ -1,6 +1,5 @@
 //
 //  FTActionTrackingHandler.h
-//  FTMobileSDK
 //
 //  Created by hulilei on 2025/7/30.
 //  Copyright © 2025 DataFlux-cn. All rights reserved.
@@ -10,6 +9,7 @@
 #define FTActionTrackingHandler_h
 
 #import <Foundation/Foundation.h>
+#import <TargetConditionals.h>
 #if TARGET_OS_TV || TARGET_OS_IOS
 #import <UIKit/UIKit.h>
 #import "FTRUMAction.h"
