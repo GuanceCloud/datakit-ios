@@ -16,14 +16,13 @@
 #import "FTTrackerEventDBTool.h"
 #import "NSDate+FTUtil.h"
 #import <os/lock.h>
-#import "FTAppLaunchTracker.h"
+#import "FTDateUtil.h"
 @interface FTDataWriterWorker()
 @property (atomic, assign) BOOL isCache;
 @property (nonatomic, assign) NSTimeInterval cacheInvalidTimeInterval;
 @property (atomic, assign) NSTimeInterval lastErrorTimeInterval;
 @property (nonatomic, assign) BOOL isTimerRunning;
 @property (nonatomic, assign) long long processStartTime;
-@property (nonatomic, assign) long long lastProcessFatalErrorTime;
 @property (nonatomic, strong) dispatch_queue_t errorSampledConsumeQueue;
 
 - (FTRecordModel *)_recordModelWithSource:(NSString *)source
@@ -40,7 +39,7 @@
     self = [super init];
     if(self){
         _cacheInvalidTimeInterval = timeInterval*1e9;
-        _processStartTime = [[FTAppLaunchTracker processStartTimestamp] ft_nanosecondTimeStamp];
+        _processStartTime = [[FTDateUtil processStartTimestamp] ft_nanosecondTimeStamp];
         _errorSampledConsumeQueue = dispatch_queue_create("com.ft.errorSampledConsume", 0);
         _lastErrorTimeInterval = 0;
         [self checkLastProcessErrorSampled];

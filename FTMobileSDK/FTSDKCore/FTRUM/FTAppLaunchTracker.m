@@ -11,7 +11,6 @@
 #elif TARGET_OS_OSX
 #import <AppKit/AppKit.h>
 #endif
-#import <sys/sysctl.h>
 #import "FTAppLaunchTracker.h"
 #import "FTAppLifeCycle.h"
 #import "FTLog+Private.h"
@@ -19,6 +18,7 @@
 #import "FTDateUtil.h"
 #import "FTDisplayRateMonitor.h"
 #import "FTConstants.h"
+
 #define COLD_START_TIME_THRESHOLD 30
 static NSDate *_sdkStartDate = nil;
 static NSDate *applicationDidBecomeActive;
@@ -28,17 +28,6 @@ static NSDate *moduleInitializationTimestamp;
 static BOOL isActivePrewarm = NO;
 static BOOL AppRelaunched = NO;
 
-struct timeval ft_processStartTime(void) {
-    int mib[4] = {CTL_KERN, KERN_PROC, KERN_PROC_PID, getpid()};
-    struct kinfo_proc kp;
-    size_t len = sizeof(kp);
-    int res = sysctl(mib, 4, &kp, &len, NULL, 0);
-    struct timeval value = { 0 };
-    if (res == 0) {
-        value = kp.kp_proc.p_un.__p_starttime;
-    }
-    return value;
-}
 /**
  * Constructor priority must be bounded between 101 and 65535 inclusive, see
  * https://gcc.gnu.org/onlinedocs/gcc-4.7.0/gcc/Function-Attributes.html and
@@ -139,7 +128,7 @@ ftModuleInitializationHook(void)
             appStartTimestamp = launchDate.ft_nanosecondTimeStamp;
             appStartDuration = [moduleInitializationTimestamp ft_nanosecondTimeIntervalToDate:endDate];
         }else{
-            launchDate = [FTAppLaunchTracker processStartTimestamp];
+            launchDate = [FTDateUtil processStartTimestamp];
             appStartTimestamp = launchDate.ft_nanosecondTimeStamp;
             appStartDuration = [launchDate ft_nanosecondTimeIntervalToDate:endDate];
             NSDate *processStart = launchDate;
@@ -188,10 +177,7 @@ ftModuleInitializationHook(void)
 + (void)setSdkStartDate:(NSDate *)sdkStartDate{
     _sdkStartDate = sdkStartDate;
 }
-+ (NSDate *)processStartTimestamp{
-    struct timeval startTime = ft_processStartTime();
-    return [NSDate dateWithTimeIntervalSince1970:startTime.tv_sec + startTime.tv_usec / 1E6];
-}
+
 #pragma mark - life cycle
 - (void)applicationDidFinishLaunching{
     _didFinishLaunchingTimestamp = [NSDate date];
@@ -220,7 +206,7 @@ ftModuleInitializationHook(void)
     _applicationDidEnterBackground = YES;
 }
 - (BOOL)isActivePrewarmAvailable{
-#    if FT_IOS
+#    if FT_HOST_IOS
     // User data shows that iOS 14 app launches also have prewarming, which contradicts Apple's documentation that support starts from iOS 15.
     if (@available(iOS 14, *)) {
         return YES;
