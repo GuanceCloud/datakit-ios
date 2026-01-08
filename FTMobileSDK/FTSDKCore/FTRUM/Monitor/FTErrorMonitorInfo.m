@@ -26,10 +26,8 @@
 @property (nonatomic, copy) NSString *telephonyCarrier;
 @property (nonatomic, copy) NSString *local;
 @property (nonatomic, copy) ErrorMonitorInfoChangeBlock onChange;
-#if FT_HAS_UIDEVICE
-@property (nonatomic, strong) UIDevice *device;
-#endif
 #if FT_HOST_IOS
+@property (nonatomic, strong) UIDevice *device;
 @property (nonatomic, strong) CTTelephonyNetworkInfo *networkInfo;
 #endif
 @property (nonatomic, strong) id batteryNotificationObserver;
@@ -54,7 +52,7 @@ void *FTErrorMonitorInfoQueueTag = &FTErrorMonitorInfoQueueTag;
         self.totalMemorySize = [FTMonitorUtils totalMemorySize];
     }
     __weak __typeof(self) weakSelf = self;
-#if FT_HAS_UIDEVICE
+#if FT_HOST_IOS
     if (self.monitorType & ErrorMonitorBattery) {
         self.device = [UIDevice currentDevice];
         self.device.batteryMonitoringEnabled = YES;
@@ -74,6 +72,7 @@ void *FTErrorMonitorInfoQueueTag = &FTErrorMonitorInfoQueueTag;
         }];
     }
 #endif
+
     
 #if FT_HOST_IOS
     // https://developer.apple.com/documentation/ios-ipados-release-notes/ios-ipados-16_4-release-notes#Core-Telephony
@@ -170,7 +169,7 @@ void *FTErrorMonitorInfoQueueTag = &FTErrorMonitorInfoQueueTag;
             errorTag[FT_CPU_USE] = [NSNumber numberWithLong:[FTMonitorUtils cpuUsage]];
         }
         if (self.monitorType & ErrorMonitorBattery) {
-#if FT_HAS_UIDEVICE
+#if FT_HOST_IOS
             errorTag[FT_BATTERY_USE] = self.batteryUse;
 #elif FT_HOST_MAC
             errorTag[FT_BATTERY_USE] =[NSNumber numberWithDouble:[FTMonitorUtils batteryUse]];
@@ -226,7 +225,7 @@ void *FTErrorMonitorInfoQueueTag = &FTErrorMonitorInfoQueueTag;
         [[NSNotificationCenter defaultCenter] removeObserver:self.localNotificationObserver];
         self.localNotificationObserver = nil;
     }
-#if FT_HAS_UIDEVICE
+#if FT_HOST_IOS
     if (self.device) {
         self.device.batteryMonitoringEnabled = NO;
         self.device = nil;
