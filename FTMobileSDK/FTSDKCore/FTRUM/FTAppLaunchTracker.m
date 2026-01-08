@@ -24,7 +24,6 @@ static NSDate *_sdkStartDate = nil;
 static NSDate *applicationDidBecomeActive;
 static NSDate *moduleInitializationTimestamp;
 static NSDate *runtimeInit = nil;
-static NSDate *moduleInitializationTimestamp;
 static BOOL isActivePrewarm = NO;
 static BOOL AppRelaunched = NO;
 
@@ -88,26 +87,31 @@ ftModuleInitializationHook(void)
         self.delegate = delegate;
         _didFinishLaunchingTimestamp = FTDateUtil.date;
         [[FTAppLifeCycle sharedInstance] addAppLifecycleDelegate:self];
-        //applicationDidBecomeActive != nil to determine if UIApplicationDidBecomeActiveNotification notification has been received before, record cold start
-        if (applicationDidBecomeActive != nil) {
-            [self reportAppLaunchPhaseDuration:applicationDidBecomeActive];
-        }else{
-            [displayMonitor start];
-            NSDate *firstFrame = [displayMonitor firstFrameDate];
-            if (firstFrame == nil) {
-                __weak typeof(self) weakSelf = self;
-                displayMonitor.callBack = ^(NSDate * _Nonnull date) {
-                    __strong typeof(weakSelf) strongSelf = weakSelf;
-                    if (!strongSelf) return;
-                    [strongSelf reportAppLaunchPhaseDuration:date];
-                };
-            }else{
-                [self reportAppLaunchPhaseDuration:firstFrame];
-            }
-            [displayMonitor stop];
-        }
+        
+        [self handleLaunchPhaseWithDisplayMonitor:displayMonitor];
     }
     return self;
+}
+- (void)handleLaunchPhaseWithDisplayMonitor:(FTDisplayRateMonitor *)displayMonitor {
+    //applicationDidBecomeActive != nil to determine if UIApplicationDidBecomeActiveNotification notification has been received before, record cold start
+    if (applicationDidBecomeActive != nil) {
+        [self reportAppLaunchPhaseDuration:applicationDidBecomeActive];
+    }else{
+        NSDate *firstFrame = [displayMonitor firstFrameDate];
+        if (firstFrame == nil) {
+            [displayMonitor start];
+            __weak typeof(self) weakSelf = self;
+            __weak typeof(displayMonitor) weakMonitor = displayMonitor;
+            displayMonitor.callBack = ^(NSDate * _Nonnull date) {
+                __strong typeof(weakSelf) strongSelf = weakSelf;
+                if (!strongSelf) return;
+                [weakMonitor stop];
+                [strongSelf reportAppLaunchPhaseDuration:date];
+            };
+        }else{
+            [self reportAppLaunchPhaseDuration:firstFrame];
+        }
+    }
 }
 - (void)reportAppLaunchPhaseDuration:(NSDate *)endDate{
         AppRelaunched = YES;
@@ -221,4 +225,33 @@ ftModuleInitializationHook(void)
 -(void)dealloc{
     [[FTAppLifeCycle sharedInstance] removeAppLifecycleDelegate:self];
 }
+
+#ifdef DEBUG
+// Just for testing
+NSDate *FTGetApplicationDidBecomeActive(void) {
+    return applicationDidBecomeActive;
+}
+void FTSetApplicationDidBecomeActive(NSDate *date) {
+    applicationDidBecomeActive = date;
+}
+NSDate *FTGetModuleInitializationTimestamp(void) {
+    return moduleInitializationTimestamp;
+}
+void FTSetModuleInitializationTimestamp(NSDate *date) {
+    moduleInitializationTimestamp = date;
+}
+NSDate *FTGetRuntimeInit(void) {
+    return runtimeInit;
+}
+void FTSetRuntimeInit(NSDate *date) {
+    runtimeInit = date;
+}
+BOOL FTGetIsActivePrewarm(void) {
+    return isActivePrewarm;
+}
+void FTSetIsActivePrewarm(BOOL active) {
+    isActivePrewarm = active;
+}
+
+#endif
 @end
