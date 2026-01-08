@@ -136,10 +136,10 @@
 }
 // NO: Not exceeded\Exceeded but delete old data YES: Exceeded, delete new data
 - (BOOL)reachDbLimit{
-    long pageSize = [[FTTrackerEventDBTool sharedManger] checkDatabaseSize];
+    long long pageSize = [[FTTrackerEventDBTool sharedManger] checkDatabaseSize];
     self.currentDbSize = pageSize;
     if (pageSize > self.dbLimitSize){
-        FTInnerLogInfo(@"ReachDbLimit(%ld KB)-DiscardData (%@)",pageSize/1024,self.dbDiscardNew?@"NEW":@"OLD");
+        FTInnerLogInfo(@"ReachDbLimit(%lld KB)-DiscardData (%@)",pageSize/1024,self.dbDiscardNew?@"NEW":@"OLD");
         if (self.dbDiscardNew) {
             return YES;
         }else{
