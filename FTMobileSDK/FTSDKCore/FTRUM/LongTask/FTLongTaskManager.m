@@ -50,7 +50,7 @@ static NSString *const kSDKDirName      = @"com.ft.sdk";
 -(instancetype)initWithDictionary:(NSDictionary *)dict{
     self = [super init];
     if (self) {
-        self.isANR = dict[@"isANR"];
+        self.isANR = [dict[@"isANR"] boolValue];
         self.startDate = [dict[@"startDate"] longLongValue];
         self.mainThreadBacktrace = dict[@"mainThreadBacktrace"];
         self.allThreadsBacktrace = dict[@"allThreadsBacktrace"];
