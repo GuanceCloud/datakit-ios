@@ -86,6 +86,7 @@
 //        rumConfig.resourceUrlHandler = ^(NSURL *url){
 //            return NO;
 //        };
+        rumConfig.crashMonitoring = FTCrashMonitorTypeAll;
         rumConfig.errorMonitorType = FTErrorMonitorAll;
         rumConfig.deviceMetricsMonitorType = FTDeviceMetricsMonitorAll;
         rumConfig.monitorFrequency = FTMonitorFrequencyRare;
