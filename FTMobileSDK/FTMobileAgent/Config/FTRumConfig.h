@@ -123,6 +123,7 @@ typedef BOOL (^FTSessionTaskErrorFilter)(NSError *_Nonnull error);
 /// Set whether to collect crash logs
 @property (nonatomic, assign) BOOL enableTrackAppCrash;
 /// Crash monitoring type, default:FTCrashMonitorTypeHighCompatibility
+/// Note: Required are FTCrashMonitorTypeSystem | FTCrashMonitorTypeApplicationState (provides important information for crash reports)
 @property (nonatomic, assign) FTCrashMonitorType crashMonitoring;
 /// Set whether to collect freezes
 @property (nonatomic, assign) BOOL enableTrackAppFreeze;
