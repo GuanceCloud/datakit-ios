@@ -123,32 +123,27 @@ ftModuleInitializationHook(void)
          InitialFrameRender: didFinishLaunchingTimestamp - CADisplayLink.callback
          */
         BOOL isPreWarming = [self isActivePrewarmAvailable] && isActivePrewarm;
-        NSNumber *appStartDuration = nil;
-        long long appStartTimestamp = 0;
-        NSDate *launchDate = nil;
+        NSDate *processStart = [FTDateUtil processStartTimestamp];
+        NSDate *launchDate = processStart;
+        long long appStartTimestamp = launchDate.ft_nanosecondTimeStamp;
+        NSNumber *appStartDuration = [launchDate ft_nanosecondTimeIntervalToDate:endDate];
+
         NSMutableDictionary *fields = [NSMutableDictionary new];
-        if (isPreWarming) {
-            launchDate = moduleInitializationTimestamp;
-            appStartTimestamp = launchDate.ft_nanosecondTimeStamp;
-            appStartDuration = [moduleInitializationTimestamp ft_nanosecondTimeIntervalToDate:endDate];
-        }else{
-            launchDate = [FTDateUtil processStartTimestamp];
-            appStartTimestamp = launchDate.ft_nanosecondTimeStamp;
-            appStartDuration = [launchDate ft_nanosecondTimeIntervalToDate:endDate];
-            NSDate *processStart = launchDate;
-            NSDictionary *preRuntimeInit = @{
-                FT_DURATION:[processStart ft_nanosecondTimeIntervalToDate:runtimeInit],
-                FT_KEY_START:@(processStart.ft_nanosecondTimeStamp - appStartTimestamp)
-            };
-            NSDictionary *runtimeInitDict = @{
-                FT_DURATION:[runtimeInit ft_nanosecondTimeIntervalToDate:moduleInitializationTimestamp],
-                FT_KEY_START:@(runtimeInit.ft_nanosecondTimeStamp - appStartTimestamp),
-            };
-            
-            [fields setValue:preRuntimeInit forKey:FT_KEY_LAUNCH_PRE_RUNTIME_INIT_TIME];
-            [fields setValue:runtimeInitDict forKey:FT_KEY_LAUNCH_RUNTIME_INIT_TIME];
-            
-        }
+   
+    if (!isPreWarming) {
+        NSDictionary *preRuntimeInit = @{
+            FT_DURATION:[processStart ft_nanosecondTimeIntervalToDate:runtimeInit],
+            FT_KEY_START:@(processStart.ft_nanosecondTimeStamp - appStartTimestamp)
+        };
+        NSDictionary *runtimeInitDict = @{
+            FT_DURATION:[runtimeInit ft_nanosecondTimeIntervalToDate:moduleInitializationTimestamp],
+            FT_KEY_START:@(runtimeInit.ft_nanosecondTimeStamp - appStartTimestamp),
+        };
+        
+        [fields setValue:preRuntimeInit forKey:FT_KEY_LAUNCH_PRE_RUNTIME_INIT_TIME];
+        [fields setValue:runtimeInitDict forKey:FT_KEY_LAUNCH_RUNTIME_INIT_TIME];
+        
+    }
         // applicationDidBecomeActive after then didFinishLaunchingTimestamp,means Hybrid or
         // sdk init after -didFinishLaunching, no fileds UIKitInit/ ApplicationInit/InitialFrameRender
         if (endDate != applicationDidBecomeActive) {
