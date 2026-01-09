@@ -1,3 +1,7 @@
+# 1.5.19-beta.1
+1. Fix displayMonitor callback failure caused by early stop call
+2. RemoteConfiguration support hot activation of `sampleRate`
+---
 # 1.5.19-alpha.5
 1. Refined cold start timing by adding `app_pre_runtime_init_time`, `app_runtime_init_time`,`app_uikit_init_time`, `app_application_init_time`, and `app_first_frame_init_time`.
 2. RUM Resource added `resource_http_protocol`, `resource_request_size`, `resource_connection_reuse`
