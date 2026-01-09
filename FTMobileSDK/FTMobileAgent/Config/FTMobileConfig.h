@@ -155,7 +155,7 @@ typedef FTTraceContext*_Nullable(^FTTraceInterceptor)(NSURLRequest *_Nonnull req
 /// Global completion block for remote configuration fetch operations
 /// @discussion This block is triggered when the remote configuration fetch/parsing process completes (either successfully or failed).
 ///  Note that:
-///     1. `success = YES` means the network request and data parsing are error-free, but does NOT guarantee non-empty `model`/`content` (they may be nil if fetched data is empty);
+///     1. `success = YES`  remote configuration fetch operation succeeds but does NOT guarantee non-empty `model`/`content` (they may be nil if fetched data is empty);
 ///     2. `success = NO` means network/parsing errors occurred, and `model`/`content` will be nil;
 ///     3.  Callback scope: When directly calling `+updateRemoteConfigWithMinimumUpdateInterval:completion:`, only the method's local `completion` block is triggered, and this global property will NOT take effect;
 @property (nonatomic, copy) FTRemoteConfigFetchCompletionBlock remoteConfigFetchCompletionBlock;

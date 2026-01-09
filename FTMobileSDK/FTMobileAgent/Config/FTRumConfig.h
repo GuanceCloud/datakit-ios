@@ -7,6 +7,7 @@
 
 #import <Foundation/Foundation.h>
 
+/// Crash monitoring type
 typedef NS_OPTIONS(NSUInteger, FTCrashMonitorType){
     /** Monitor Mach kernel exceptions. */
     FTCrashMonitorTypeMachException      = 0x01,
@@ -121,7 +122,7 @@ typedef BOOL (^FTSessionTaskErrorFilter)(NSError *_Nonnull error);
 @property (nonatomic, copy, nullable) FTResourceUrlHandler resourceUrlHandler;
 /// Set whether to collect crash logs
 @property (nonatomic, assign) BOOL enableTrackAppCrash;
-
+/// Crash monitoring type, default:FTCrashMonitorTypeHighCompatibility
 @property (nonatomic, assign) FTCrashMonitorType crashMonitoring;
 /// Set whether to collect freezes
 @property (nonatomic, assign) BOOL enableTrackAppFreeze;

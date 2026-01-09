@@ -10,7 +10,7 @@
 @class FTRemoteConfigModel;
 /**
  * Remote configuration fetch completion Block type (success + error + data)
- * @param success  Whether the remote configuration fetch operation succeeds (network/parsing layer, YES = success, NO = failure). Note: Success does not guarantee non-empty data.
+ * @param success  Whether the remote configuration fetch operation succeeds. Note: Success does not guarantee non-empty data.
  * @param error    Error information when the fetch/parsing operation fails (nil when success=YES, regardless of data presence)
  * @param model    Parsed configuration model (nil if success=NO, or success=YES but fetched data is empty)
  * @param content  Raw configuration dictionary (nil if success=NO, or success=YES but fetched data is empty)
