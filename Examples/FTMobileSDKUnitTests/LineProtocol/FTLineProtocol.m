@@ -156,17 +156,17 @@
     XCTAssertTrue([field containsString:tm]);
 }
 - (void)testStringReplacingBlank{
-    NSString *str = @"a b c";
+    NSString *str = @"a b \tc";
     str = [str ft_replacingSpecialCharacters];
-    XCTAssertTrue([str isEqualToString:@"a\\ b\\ c"]);
+    XCTAssertTrue([str isEqualToString:@"a\\ b\\ \\ c"]);
     NSString *str2 = @"⍣ ₂₈.₂₃ᴀͤꜱᷟ ⷨꜱᷛᴮᴀᷟꜱͤı ⷨɴ";
-    str2 = [str2 ft_replacingMeasurementSpecialCharacters];
+    str2 = [str2 ft_replacingSpecialCharacters];
     XCTAssertTrue([str2 isEqualToString:@"⍣\\ ₂₈.₂₃ᴀͤꜱᷟ\\ ⷨꜱᷛᴮᴀᷟꜱͤı\\ ⷨɴ"]);
 }
 - (void)testStringReplacingLineBreak{
     NSString *str = @"a\nb\tc";  
     str = [str ft_replacingSpecialCharacters];
-    XCTAssertTrue([str isEqualToString:@"a\\ b\tc"]);
+    XCTAssertTrue([str isEqualToString:@"a\\ b\\ c"]);
 }
 - (void)testDataUUID{
     NSDictionary *dict = @{

@@ -87,12 +87,27 @@
     return reStr;
 }
 - (NSString *)ft_replacingSpecialCharacters{
-    NSString *reStr = [self stringByReplacingOccurrencesOfString:@"\\" withString:@"\\\\"];
-    reStr = [reStr stringByReplacingOccurrencesOfString:@"\n" withString:@" "];
-    reStr =[reStr stringByReplacingOccurrencesOfString:@"," withString:@"\\,"];
-    reStr =[reStr stringByReplacingOccurrencesOfString:@"=" withString:@"\\="];
-    reStr =[reStr stringByReplacingOccurrencesOfString:@" " withString:@"\\ " options:NSLiteralSearch range:NSMakeRange(0, reStr.length)];
-    return reStr;
+    if (self.length == 0) return self;
+    NSMutableString *reStr = [self mutableCopy];
+    [reStr replaceOccurrencesOfString:@"\\" withString:@"\\\\" options:NSLiteralSearch range:NSMakeRange(0, reStr.length)];
+    [reStr replaceOccurrencesOfString:@"," withString:@"\\," options:NSLiteralSearch range:NSMakeRange(0, reStr.length)];
+    [reStr replaceOccurrencesOfString:@"=" withString:@"\\=" options:NSLiteralSearch range:NSMakeRange(0, reStr.length)];
+    static NSRegularExpression *whitespaceNewlineRegex = nil;
+    static dispatch_once_t onceToken;
+    dispatch_once(&onceToken, ^{
+        NSError *error = nil;
+        NSString *pattern = @"\\s";
+        whitespaceNewlineRegex = [NSRegularExpression regularExpressionWithPattern:pattern options:NSRegularExpressionCaseInsensitive error:&error];
+    });
+    if (whitespaceNewlineRegex) {
+        return  [whitespaceNewlineRegex stringByReplacingMatchesInString:reStr
+                                                                                    options:0
+                                                                                      range:NSMakeRange(0, reStr.length)
+                                                                               withTemplate:@"\\\\ "];
+    }else{
+        [reStr replaceOccurrencesOfString:@" " withString:@"\\ " options:NSLiteralSearch range:NSMakeRange(0, reStr.length)];
+        return [reStr copy];
+    }
 }
 - (NSString *)ft_replacingFieldSpecialCharacters{
     NSString *reStr = [self stringByReplacingOccurrencesOfString:@"\\" withString:@"\\\\"];
