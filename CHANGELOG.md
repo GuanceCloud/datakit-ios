@@ -1,3 +1,12 @@
+# 1.5.19
+1. Extended resource_type to include new types: image, media, font, CSS, JS, and native
+2. Added resource_id in network errors to associate corresponding resource data
+3. Supported custom configuration of remote variables
+4. Added resource_http_protocol, resource_request_size, and resource_connection_reuse fields to Resource
+5. Refined cold start and warm start time metrics, adding app_pre_runtime_init_time, app_runtime_init_time, app_uikit_init_time, app_application_init_time, and app_first_frame_init_time
+6. Fixed data loss caused by missing RUM View
+7. Enhanced crash and ANR stack information to include full thread stacks, and added support for configuring crash monitoring types
+---
 # 1.5.19-beta.1
 1. Fix displayMonitor callback failure caused by early stop call
 2. RemoteConfiguration support hot activation of `sampleRate`
