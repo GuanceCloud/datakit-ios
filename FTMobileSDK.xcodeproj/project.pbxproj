@@ -1036,11 +1036,11 @@
 		17C2FEA72E4327C6003D600F /* FTRUMDataModel.h in Headers */ = {isa = PBXBuildFile; fileRef = 17C2FEA32E4327C6003D600F /* FTRUMDataModel.h */; };
 		17C2FEAA2E432949003D600F /* FTDefaultUIKitViewTrackingHandler.m in Sources */ = {isa = PBXBuildFile; fileRef = 17C2FEA92E432949003D600F /* FTDefaultUIKitViewTrackingHandler.m */; };
 		17C2FEAB2E432949003D600F /* FTDefaultUIKitViewTrackingHandler.h in Headers */ = {isa = PBXBuildFile; fileRef = 17C2FEA82E432949003D600F /* FTDefaultUIKitViewTrackingHandler.h */; };
-		17C2FEAC2E432949003D600F /* FTDefaultUIKitViewTrackingHandler.h in Headers */ = {isa = PBXBuildFile; fileRef = 17C2FEA82E432949003D600F /* FTDefaultUIKitViewTrackingHandler.h */; };
+		17C2FEAC2E432949003D600F /* FTDefaultUIKitViewTrackingHandler.h in Headers */ = {isa = PBXBuildFile; fileRef = 17C2FEA82E432949003D600F /* FTDefaultUIKitViewTrackingHandler.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		17C2FEAD2E432949003D600F /* FTDefaultUIKitViewTrackingHandler.m in Sources */ = {isa = PBXBuildFile; fileRef = 17C2FEA92E432949003D600F /* FTDefaultUIKitViewTrackingHandler.m */; };
 		17C2FEB42E432B9A003D600F /* FTDefaultActionTrackingHandler.m in Sources */ = {isa = PBXBuildFile; fileRef = 17C2FEB32E432B9A003D600F /* FTDefaultActionTrackingHandler.m */; };
 		17C2FEB52E432B9A003D600F /* FTDefaultActionTrackingHandler.h in Headers */ = {isa = PBXBuildFile; fileRef = 17C2FEB22E432B9A003D600F /* FTDefaultActionTrackingHandler.h */; };
-		17C2FEB62E432B9A003D600F /* FTDefaultActionTrackingHandler.h in Headers */ = {isa = PBXBuildFile; fileRef = 17C2FEB22E432B9A003D600F /* FTDefaultActionTrackingHandler.h */; };
+		17C2FEB62E432B9A003D600F /* FTDefaultActionTrackingHandler.h in Headers */ = {isa = PBXBuildFile; fileRef = 17C2FEB22E432B9A003D600F /* FTDefaultActionTrackingHandler.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		17C2FEB72E432B9A003D600F /* FTDefaultActionTrackingHandler.m in Sources */ = {isa = PBXBuildFile; fileRef = 17C2FEB32E432B9A003D600F /* FTDefaultActionTrackingHandler.m */; };
 		17C33AA42D93D68B003BB98B /* FTDataWriterWorker.m in Sources */ = {isa = PBXBuildFile; fileRef = 17C33AA32D93D68B003BB98B /* FTDataWriterWorker.m */; };
 		17C33AA52D93D68B003BB98B /* FTDataWriterWorker.h in Headers */ = {isa = PBXBuildFile; fileRef = 17C33AA22D93D68B003BB98B /* FTDataWriterWorker.h */; };
