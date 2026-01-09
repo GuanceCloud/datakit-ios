@@ -132,9 +132,8 @@ static FTMobileAgent *sharedInstance = nil;
             _traceConfig = [traceConfigOptions copy];
             if (_sdkConfig.remoteConfiguration) {
                 [_traceConfig mergeWithRemoteConfigModel:[FTRemoteConfigManager sharedInstance].lastRemoteModel];
-            }else{
-                [self applyTraceConfig:_traceConfig];
             }
+            [self applyTraceConfig:_traceConfig];
         }
     } @catch (NSException *exception) {
         FTInnerLogError(@"exception: %@",exception);
@@ -143,6 +142,10 @@ static FTMobileAgent *sharedInstance = nil;
 #pragma mark ========== remote ==========
 - (void)remoteConfigurationDidChange{
     [self.sdkConfig mergeWithRemoteConfigModel:[FTRemoteConfigManager sharedInstance].lastRemoteModel];
+    [self.rumConfig mergeWithRemoteConfigModel:[FTRemoteConfigManager sharedInstance].lastRemoteModel];
+    [self.traceConfig mergeWithRemoteConfigModel:[FTRemoteConfigManager sharedInstance].lastRemoteModel];
+    [[FTGlobalRumManager sharedInstance] updateSampleRate:self.rumConfig.samplerate sessionOnErrorSampleRate:self.rumConfig.sessionOnErrorSampleRate];
+    [[FTURLSessionInstrumentation sharedInstance] updateTraceSampleRate:self.traceConfig.samplerate];
     [FTNetworkInfoManager sharedInstance].setCompressionIntakeRequests(self.sdkConfig.compressIntakeRequests);
     [[FTTrackDataManager sharedInstance] updateAutoSync:self.sdkConfig.autoSync syncPageSize:self.sdkConfig.syncPageSize syncSleepTime:self.sdkConfig.syncSleepTime];
     [self.loggerConfig mergeWithRemoteConfigModel:[FTRemoteConfigManager sharedInstance].lastRemoteModel];

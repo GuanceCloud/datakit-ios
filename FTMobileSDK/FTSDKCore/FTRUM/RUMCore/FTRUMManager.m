@@ -54,6 +54,19 @@ void *FTRUMQueueIdentityKey = &FTRUMQueueIdentityKey;
     _appState = appState;
     self.rumDependencies.fatalErrorContext.appState = AppStateStringMap[appState];
 }
+-(void)updateSampleRate:(int)sampleRate sessionOnErrorSampleRate:(int)sessionOnErrorSampleRate{
+    dispatch_async(self.rumQueue, ^{
+        @try {
+            self.rumDependencies.sampleRate = sampleRate;
+            self.rumDependencies.sessionOnErrorSampleRate = sessionOnErrorSampleRate;
+            FTRUMDataModel *model = [[FTRUMDataModel alloc]init];
+            model.type = FTRUMSampleRateUpdate;
+            [self process:model context:@{}];
+        } @catch (NSException *exception) {
+            FTInnerLogError(@"exception %@",exception);
+        }
+    });
+}
 #pragma mark - Session -
 -(void)notifyRumInit{
     NSDictionary *context = [self rumDynamicProperty];

@@ -21,7 +21,7 @@ NS_ASSUME_NONNULL_BEGIN
 @property (atomic,copy,readwrite) NSString *viewReferrer;
 #pragma mark - init -
 -(instancetype)initWithRumDependencies:(FTRUMDependencies *)dependencies;
-
+-(void)updateSampleRate:(int)sampleRate sessionOnErrorSampleRate:(int)sessionOnErrorSampleRate;
 -(void)notifyRumInit;
 #pragma mark - resource -
 /// HTTP request start

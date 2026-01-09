@@ -93,6 +93,9 @@ static const NSTimeInterval sessionMaxDuration = 4 * 60 * 60; // 4 hours
     }
     if (!self.sampling) {
         if(self.sessionOnErrorSampling == NO){
+            if (model.type == FTRUMSampleRateUpdate) {
+                self.sampling = [FTBaseInfoHandler randomSampling:self.rumDependencies.sampleRate];
+            }
             return YES;
         }else if(model.type == FTRUMDataError || model.type == FTRUMDataResourceError){
             self.sampling = YES;
@@ -120,6 +123,8 @@ static const NSTimeInterval sessionMaxDuration = 4 * 60 * 60; // 4 hours
         case FTRUMDataWebViewJSBData:
             [self writeWebViewJSBData:(FTRUMWebViewData *)model context:context];
             break;
+        case FTRUMSampleRateUpdate:
+            return YES;
         default:
             break;
     }

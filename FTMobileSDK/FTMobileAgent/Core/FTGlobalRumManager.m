@@ -106,6 +106,9 @@ static NSObject *sharedInstanceLock;
 #endif
     [FTExternalDataManager sharedManager].delegate = self.rumManager;
 }
+-(void)updateSampleRate:(int)sampleRate sessionOnErrorSampleRate:(int)sessionOnErrorSampleRate{
+    [self.rumManager updateSampleRate:sampleRate sessionOnErrorSampleRate:sessionOnErrorSampleRate];
+}
 #pragma mark ========== jsBridge ==========
 #if !TARGET_OS_TV
 - (void)dealReceiveScriptMessage:(id )message slotId:(NSUInteger)slotId{

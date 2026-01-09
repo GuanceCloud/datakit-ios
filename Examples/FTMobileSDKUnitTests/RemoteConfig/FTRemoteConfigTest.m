@@ -23,6 +23,10 @@
 #import "FTRemoteConfigModel+Test.h"
 #import "FTRemoteConfigError.h"
 #import "FTConfig+RemoteConfig.h"
+#import "FTGlobalRumManager.h"
+#import "FTRUMManager.h"
+#import "FTTrackerEventDBTool.h"
+#import "FTModelHelper.h"
 
 @interface FTDataUploadWorker (Testing)
 @property (nonatomic, assign,readonly) int uploadPageSize;
@@ -310,7 +314,7 @@
     XCTAssertTrue(logger.logLevelFilter == copyLogger.logLevelFilter);
 }
 - (void)testDefaultUpdateRemoteConfig{
-    
+    [[FTTrackerEventDBTool sharedManger] deleteAllDatas];
     NSString *datakit = @"http://datakit-test.com";
     NSString *appId = @"appid-test";
     id<OHHTTPStubsDescriptor> stubs = [self mockRemoteData];
@@ -322,15 +326,27 @@
     [FTMobileAgent startWithConfigOptions:config];
     [FTRemoteConfigManager sharedInstance].delegate = self;
     FTRumConfig *rum = [[FTRumConfig alloc]initWithAppid:appId];
+    rum.samplerate = 0;
+    rum.sessionOnErrorSampleRate = 0;
     [[FTMobileAgent sharedInstance] startRumWithConfigOptions:rum];
     FTLoggerConfig *log = [[FTLoggerConfig alloc]init];
+    log.enableCustomLog = NO;
+    log.samplerate = 0;
+    FTTraceConfig *trace = [[FTTraceConfig alloc]init];
+    trace.samplerate = 0;
     [[FTMobileAgent sharedInstance] startLoggerWithConfigOptions:log];
+    [[FTMobileAgent sharedInstance] startTraceWithConfigOptions:trace];
+
+    [[FTExternalDataManager sharedManager] addAction:@"testUpdate_no" actionType:@"test" property:nil];
     
     [self waitForExpectations:@[self.expectation]];
     
+    
     dispatch_sync([FTLogger sharedInstance].loggerQueue, ^{
+        FTLoggerConfig *log = [FTLogger sharedInstance].config;
         XCTAssertTrue([[FTLogger sharedInstance].logLevelFilterSet containsObject:@"logTest"]);
-        XCTAssertTrue([FTLogger sharedInstance].config.enableCustomLog == YES);
+        XCTAssertTrue(log.enableCustomLog == YES);
+        XCTAssertTrue(log.samplerate == 100);
     });
     XCTAssertTrue([FTTrackDataManager sharedInstance].autoSync == NO);
     dispatch_sync([FTTrackDataManager sharedInstance].dataUploadWorker.networkQueue, ^{
@@ -338,6 +354,19 @@
         XCTAssertTrue([FTTrackDataManager sharedInstance].dataUploadWorker.uploadPageSize == 15);
     });
     XCTAssertTrue([[FTRemoteConfigManager sharedInstance] getLastFetchedRemoteConfig] != nil);
+    NSDictionary *traceHeader = [[FTExternalDataManager sharedManager] getTraceHeaderWithUrl:[NSURL URLWithString:@"http:test.com"]];
+    XCTAssertTrue([traceHeader[FT_NETWORK_DDTRACE_SAMPLING_PRIORITY] intValue] == 2);
+    
+    [[FTExternalDataManager sharedManager] addAction:@"testUpdate" actionType:@"test" property:nil];
+    
+    [[FTGlobalRumManager sharedInstance].rumManager syncProcess];
+    NSArray *newArray = [[FTTrackerEventDBTool sharedManger] getFirstRecords:100 withType:FT_DATA_TYPE_RUM];
+    [FTModelHelper resolveModelArray:newArray callBack:^(NSString * _Nonnull source, NSDictionary * _Nonnull tags, NSDictionary * _Nonnull fields, BOOL * _Nonnull stop) {
+        if ([source isEqualToString:FT_RUM_SOURCE_ACTION]){
+            XCTAssertTrue([tags[FT_KEY_ACTION_NAME] isEqualToString:@"testUpdate"]);
+        }
+    }];
+    
     [OHHTTPStubs removeStub:stubs];
     [FTMobileAgent shutDown];
 }
@@ -354,7 +383,10 @@
         FT_R_SYNC_SLEEP_TIME: @300,
         FT_R_COMPRESS_INTAKE_REQUESTS: @YES,
         FT_R_LOG_LEVEL_FILTERS: @"[\"logTest\"]",
-        FT_R_LOG_ENABLE_CUSTOM_LOG: @YES
+        FT_R_LOG_ENABLE_CUSTOM_LOG: @YES,
+        FT_R_TRACE_SAMPLERATE:@(1),
+        FT_R_RUM_SAMPLERATE:@(1),
+        FT_R_LOG_SAMPLERATE:@(1),
     };
     NSDictionary *effectiveOriginalDict = originalRemoteDict ?: defaultOriginalDict;
     
