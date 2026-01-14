@@ -23,6 +23,7 @@ NS_ASSUME_NONNULL_BEGIN
                       serviceName:(NSString *)serviceName
                   enableAutoTrace:(BOOL)trace
                 enableLinkRumData:(BOOL)link;
+- (void)updateTraceSampleRate:(int)sampleRate;
 #if FTSDKUNITTEST
 -(NSUInteger)getSkyWalkingSequence;
 #endif

@@ -24,6 +24,7 @@ typedef NS_ENUM(NSUInteger, FTRUMDataType) {
     FTRUMDataResourceStop,
     FTRUMDataResourceError,
     FTRUMDataWebViewJSBData,
+    FTRUMSampleRateUpdate,
 };
 
 NS_ASSUME_NONNULL_BEGIN
@@ -45,7 +46,6 @@ NS_ASSUME_NONNULL_BEGIN
 @end
 /// Data model for handling View events
 @interface FTRUMViewModel : FTRUMDataModel
-@property (nonatomic, assign) BOOL isInitialView;
 @property (nonatomic, copy) NSString *view_id;
 @property (nonatomic, copy) NSString *view_name;
 @property (nonatomic, copy) NSString *view_referrer;
@@ -77,22 +77,6 @@ NS_ASSUME_NONNULL_BEGIN
 -(instancetype)initWithMeasurement:(NSString *)measurement tm:(long long )tm;
 @end
 @interface FTRUMErrorData : FTRUMDataModel
-@property (nonatomic, assign) BOOL fatal;
-@end
-@interface FTRUMContext : NSObject
-@property (nonatomic, copy) NSString *session_id;
-@property (nonatomic, copy) NSString *session_type;
-@property (nonatomic, copy) NSString *view_id;
-@property (nonatomic, copy) NSString *view_name;
-@property (nonatomic, copy) NSString *view_referrer;
-@property (nonatomic, copy, nullable) NSString *action_id;
-@property (nonatomic, copy, nullable) NSString *action_name;
-@property (nonatomic, assign) long long session_error_timestamp;
-@property (nonatomic, assign) BOOL sampled_for_error_session;
-/// trace, logger get rum correlation data
--(NSDictionary *)getGlobalSessionViewTags;
-/// rum internal get related correlation data
--(NSDictionary *)getGlobalSessionViewActionTags;
--(NSDictionary *)getGlobalSessionTags;
+
 @end
 NS_ASSUME_NONNULL_END

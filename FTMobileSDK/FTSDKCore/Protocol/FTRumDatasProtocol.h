@@ -12,11 +12,14 @@ NS_ASSUME_NONNULL_BEGIN
 /// App running state
 typedef NS_ENUM(NSUInteger, FTAppState) {
     /// Unknown
-    FTAppStateUnknown,
+    FTAppStateUnknown = 0,
     /// Starting up
     FTAppStateStartUp,
     /// Running
     FTAppStateRun,
+    /// Background
+    FTAppStateBackground,
+
 };
 /// rum data protocol
 @protocol FTRumDatasProtocol <NSObject>

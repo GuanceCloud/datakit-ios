@@ -38,7 +38,7 @@ NSString * const FT_TVOS_SERVICE_NAME = @"df_rum_tvos";
 NSString * const FT_IOS_SDK_NAME = @"df_ios_rum_sdk";
 NSString * const FT_TVOS_SDK_NAME = @"df_tvos_rum_sdk";
 NSString * const FT_MACOS_SDK_NAME = @"df_macos_rum_sdk";
-#if FT_MAC
+#if FT_HOST_MAC
 NSString * const FT_SDK_NAME_VALUE = FT_MACOS_SDK_NAME;
 NSString * const FT_USER_AGENT_NAME = @"DF-RUM-macOS";
 #elif TARGET_OS_TV
@@ -104,6 +104,7 @@ NSString * const FT_FPS_MINI = @"fps_mini";
 NSString * const FT_FPS_AVG = @"fps_avg";
 
 //resource tag
+NSString * const FT_KEY_RESOURCE_ID= @"resource_id";
 NSString * const FT_KEY_RESOURCE_URL = @"resource_url";
 NSString * const FT_KEY_RESOURCE_URL_HOST = @"resource_url_host";
 NSString * const FT_KEY_RESOURCE_URL_PATH = @"resource_url_path";
@@ -134,6 +135,9 @@ NSString * const FT_KEY_RESOURCE_DOWNLOAD_TIME = @"resource_download_time";
 NSString * const FT_KEY_RESOURCE_FIRST_BYTE_TIME = @"resource_first_byte_time";
 NSString * const FT_KEY_RESOURCE_CONNECT_TIME = @"resource_connect_time";
 NSString * const FT_KEY_RESOURCE_REDIRECT_TIME = @"resource_redirect_time";
+NSString * const FT_KEY_RESOURCE_HTTP_PROTOCOL = @"resource_http_protocol";
+NSString * const FT_KEY_RESOURCE_REQUEST_SIZE = @"resource_request_size";
+NSString * const FT_KEY_RESOURCE_CONNECTION_REUSE = @"resource_connection_reuse";
 //trace link rum tag
 NSString * const FT_KEY_TRACEID  = @"trace_id";
 NSString * const FT_KEY_SPANID = @"span_id";
@@ -159,6 +163,11 @@ NSString * const FT_KEY_LONG_TASK_STACK = @"long_task_stack";
 NSString * const FT_KEY_ACTION_LONG_TASK_COUNT = @"action_long_task_count";
 NSString * const FT_KEY_ACTION_RESOURCE_COUNT = @"action_resource_count";
 NSString * const FT_KEY_ACTION_ERROR_COUNT = @"action_error_count";
+NSString * const FT_KEY_LAUNCH_FIRST_FRAME_RENDER_TIME = @"app_first_frame_init_time";
+NSString * const FT_KEY_LAUNCH_APP_INIT_TIME = @"app_application_init_time";
+NSString * const FT_KEY_LAUNCH_UIKITI_INIT_TIME = @"app_uikit_init_time";
+NSString * const FT_KEY_LAUNCH_PRE_RUNTIME_INIT_TIME = @"app_pre_runtime_init_time";
+NSString * const FT_KEY_LAUNCH_RUNTIME_INIT_TIME = @"app_runtime_init_time";
 //action tag
 NSString * const FT_KEY_ACTION_ID = @"action_id";
 NSString * const FT_KEY_ACTION_NAME = @"action_name";
@@ -216,33 +225,6 @@ long const FT_MIN_DEFAULT_BLOCK_DURATIONS_MS = 100;
 long const FT_ANR_THRESHOLD_MS = 5000;
 
 long long const FT_ANR_THRESHOLD_NS = 5000000000;
-#pragma mark ========== remote config ==========
-NSString * const FT_R_SERVICE_NAME = @"serviceName";
-NSString * const FT_R_AUTO_SYNC = @"autoSync";
-NSString * const FT_R_COMPRESS_INTAKE_REQUESTS = @"compressIntakeRequests";
-NSString * const FT_R_SYNC_PAGE_SIZE = @"syncPageSize";
-NSString * const FT_R_SYNC_SLEEP_TIME = @"syncSleepTime";
-
-NSString * const FT_R_RUM_SAMPLERATE = @"rumSampleRate";
-NSString * const FT_R_RUM_SESSION_ON_ERROR_SAMPLE_RATE = @"rumSessionOnErrorSampleRate";
-NSString * const FT_R_RUM_ENABLE_TRACE_USER_ACTION = @"rumEnableTraceUserAction";
-NSString * const FT_R_RUM_ENABLE_TRACE_USER_VIEW = @"rumEnableTraceUserView";
-NSString * const FT_R_RUM_ENABLE_TRACE_USER_RESOURCE = @"rumEnableTraceUserResource";
-NSString * const FT_R_RUM_ENABLE_RESOURCE_HOST_IP = @"rumEnableResourceHostIP";
-NSString * const FT_R_RUM_ENABLE_TRACE_APP_FREEZE = @"rumEnableTrackAppUIBlock";
-NSString * const FT_R_RUM_FREEZE_DURATION_MS = @"rumBlockDurationMs";
-NSString * const FT_R_RUM_ENABLE_TRACK_APP_CRASH = @"rumEnableTrackAppCrash";
-NSString * const FT_R_RUM_ENABLE_TRACK_APP_ANR = @"rumEnableTrackAppANR";
-NSString * const FT_R_RUM_ENABLE_TRACE_WEBVIEW = @"rumEnableTraceWebView";
-NSString * const FT_R_RUM_ALLOW_WEBVIEW_HOST = @"rumAllowWebViewHost";
-
-NSString * const FT_R_TRACE_SAMPLERATE = @"traceSampleRate";
-NSString * const FT_R_TRACE_ENABLE_AUTO_TRACE = @"traceEnableAutoTrace";
-NSString * const FT_R_TRACE_TRACE_TYPE = @"traceType";
-
-NSString * const FT_R_LOG_SAMPLERATE = @"logSampleRate";
-NSString * const FT_R_LOG_LEVEL_FILTERS = @"logLevelFilters";
-NSString * const FT_R_LOG_ENABLE_CUSTOM_LOG = @"logEnableCustomLog";
 #pragma mark ==========  user info ==========
 NSString * const FT_USER_ID = @"userid";
 NSString * const FT_USER_NAME = @"user_name";

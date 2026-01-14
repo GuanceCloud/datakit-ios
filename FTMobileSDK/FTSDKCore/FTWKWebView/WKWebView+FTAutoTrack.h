@@ -11,6 +11,7 @@
 NS_ASSUME_NONNULL_BEGIN
 
 @interface WKWebView (FTAutoTrack)
+@property (nullable, nonatomic, strong) id ft_jsBridge;
 -(WKNavigation *)ft_loadRequest:(NSURLRequest *)request;
 -(WKNavigation *)ft_loadHTMLString:(NSString *)string baseURL:(NSURL *)baseURL;
 -(WKNavigation *)ft_loadFileURL:(NSURL *)URL allowingReadAccessToURL:(NSURL *)readAccessURL;

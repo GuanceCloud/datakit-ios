@@ -7,6 +7,19 @@
 //
 
 #import "FTDateUtil.h"
+#import <sys/sysctl.h>
+
+struct timeval ft_processStartTime(void) {
+    int mib[4] = {CTL_KERN, KERN_PROC, KERN_PROC_PID, getpid()};
+    struct kinfo_proc kp;
+    size_t len = sizeof(kp);
+    int res = sysctl(mib, 4, &kp, &len, NULL, 0);
+    struct timeval value = { 0 };
+    if (res == 0) {
+        value = kp.kp_proc.p_un.__p_starttime;
+    }
+    return value;
+}
 
 @implementation FTDateUtil
 + (NSDate *)date{
@@ -17,5 +30,9 @@
 }
 + (CFTimeInterval)systemUptime{
     return NSProcessInfo.processInfo.systemUptime;
+}
++ (NSDate *)processStartTimestamp{
+    struct timeval startTime = ft_processStartTime();
+    return [NSDate dateWithTimeIntervalSince1970:startTime.tv_sec + startTime.tv_usec / 1E6];
 }
 @end

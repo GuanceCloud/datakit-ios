@@ -20,7 +20,7 @@
 #import "FTLog.h"
 #include <mach-o/arch.h>
 #include <sys/sysctl.h>
-#if FT_MAC
+#if FT_HOST_MAC
 #import <AppKit/AppKit.h>
 #import <IOKit/IOKitLib.h>
 #endif
@@ -48,7 +48,7 @@
         _screenSize = [[NSString alloc] initWithFormat:@"%.f*%.f",rect.size.height*scale,rect.size.width*scale];
         _os = [UIDevice currentDevice].systemName;
         
-#elif FT_MAC
+#elif FT_HOST_MAC
         _os = @"macOS";
         NSRect rect = [NSScreen mainScreen].frame;
         _screenSize =[[NSString alloc] initWithFormat:@"%.f*%.f",rect.size.height,rect.size.width];
@@ -75,7 +75,6 @@
 @property (nonatomic, strong, readwrite) NSDictionary *rumTags;
 @property (nonatomic, strong) NSDictionary *rumGlobalContext;
 @property (nonatomic, strong) NSMutableDictionary *dynamicRUMGlobalContext;
-@property (nonatomic, strong, readwrite) NSDictionary *rumStaticFields;
 @property (nonatomic, copy) NSString *rumCustomKeys;
 @property (nonatomic, strong) FTUserInfo *userInfo;
 
@@ -85,7 +84,6 @@
 @synthesize baseCommonPropertyTags = _baseCommonPropertyTags;
 @synthesize rumGlobalContext = _rumGlobalContext;
 @synthesize loggerTags = _loggerTags;
-@synthesize rumStaticFields = _rumStaticFields;
 @synthesize dataModifier = _dataModifier;
 @synthesize lineDataModifier = _lineDataModifier;
 @synthesize rumCustomKeys = _rumCustomKeys;
@@ -111,12 +109,6 @@
     }
     return self;
 }
-- (void)start{
-    self.userInfo = [FTUserInfo new];
-    self.dynamicGlobalContext = [NSMutableDictionary new];
-    self.dynamicLogGlobalContext = [NSMutableDictionary new];
-    self.dynamicRUMGlobalContext = [NSMutableDictionary new];
-}
 // sdkConfig
 - (void)startWithVersion:(NSString *)version
               sdkVersion:(NSString *)sdkVersion
@@ -124,7 +116,10 @@
                  service:(NSString *)service
            globalContext:(NSDictionary *)globalContext
                  pkgInfo:(NSDictionary *)pkgInfo{
-    [self start];
+    self.userInfo = [FTUserInfo new];
+    self.dynamicGlobalContext = [NSMutableDictionary new];
+    self.dynamicLogGlobalContext = [NSMutableDictionary new];
+    self.dynamicRUMGlobalContext = [NSMutableDictionary new];
     NSMutableDictionary *dict = [NSMutableDictionary dictionary];
     [dict setValue:[self getApplicationUUID] forKey:FT_APPLICATION_UUID];
     [dict setValue:self.mobileDevice.deviceUUID forKey:FT_COMMON_PROPERTY_DEVICE_UUID];
@@ -174,18 +169,6 @@
     __block NSDictionary *obj;
     dispatch_sync(self.concurrentQueue, ^{
         obj = [self->_loggerTags copy];
-    });
-    return obj;
-}
--(void)setRumStaticFields:(NSDictionary *)rumStaticFields{
-    dispatch_barrier_async(self.concurrentQueue, ^{
-        self->_rumStaticFields = rumStaticFields;
-    });
-}
--(NSDictionary *)rumStaticFields{
-    __block NSDictionary *obj;
-    dispatch_sync(self.concurrentQueue, ^{
-        obj = [self->_rumStaticFields copy];
     });
     return obj;
 }
@@ -281,6 +264,9 @@
 -(FTUserInfo *)userInfo{
     __block FTUserInfo *obj;
     dispatch_sync(self.concurrentQueue, ^{
+        if (!self->_userInfo) {
+            self->_userInfo = [[FTUserInfo alloc] init];
+        }
         obj = [self->_userInfo copy];
     });
     return obj;
@@ -321,11 +307,7 @@
         [dict addEntriesFromDictionary:rumGlobalContext];
     }
     NSDictionary *newDict = [self applyModifier:dict];
-    
-    self.rumStaticFields = @{FT_RUM_SESSION_SAMPLE_RATE:@(sampleRate),
-                         FT_RUM_SESSION_ON_ERROR_SAMPLE_RATE:@(sessionOnErrorSampleRate),
-    };
-    
+        
     NSMutableDictionary *rumDict = [NSMutableDictionary new];
     [rumDict addEntriesFromDictionary:self.baseCommonPropertyTags];
     [rumDict addEntriesFromDictionary:newDict];
@@ -560,6 +542,11 @@ static uintptr_t firstCmdAfterHeader(const struct mach_header* const header) {
     NSString *platform = [NSString stringWithCString:systemInfo.machine encoding:NSASCIIStringEncoding];
 #if TARGET_OS_IOS
     //------------------------------iPhone---------------------------
+    if ([platform isEqualToString:@"iPhone18,4"]) return @"iPhone Air";
+    if ([platform isEqualToString:@"iPhone18,3"]) return @"iPhone 17";
+    if ([platform isEqualToString:@"iPhone18,2"]) return @"iPhone 17 Pro Max";
+    if ([platform isEqualToString:@"iPhone18,1"]) return @"iPhone 17 Pro";
+    if ([platform isEqualToString:@"iPhone17,5"]) return @"iPhone 16e";
     if ([platform isEqualToString:@"iPhone17,3"]) return @"iPhone 16";
     if ([platform isEqualToString:@"iPhone17,4"]) return @"iPhone 16 Plus";
     if ([platform isEqualToString:@"iPhone17,1"]) return @"iPhone 16 Pro";
@@ -738,7 +725,7 @@ static uintptr_t firstCmdAfterHeader(const struct mach_header* const header) {
 #endif
     return platform;
 }
-#if FT_MAC
+#if FT_HOST_MAC
 + (NSString *)getDeviceUUID{
     io_registry_entry_t ioRegistryRoot = IORegistryEntryFromPath(kIOMasterPortDefault, "IOService:/");
     CFStringRef uuidCf = (CFStringRef) IORegistryEntryCreateCFProperty(ioRegistryRoot, CFSTR(kIOPlatformUUIDKey), kCFAllocatorDefault, 0);
@@ -888,11 +875,10 @@ static uintptr_t firstCmdAfterHeader(const struct mach_header* const header) {
 #endif
 }
 - (void)shutDown{
-    dispatch_barrier_sync(self.concurrentQueue, ^{
+    dispatch_barrier_async(self.concurrentQueue, ^{
         self->_baseCommonPropertyTags = nil;
         self->_rumGlobalContext = nil;
         self->_loggerTags = nil;
-        self->_rumStaticFields = nil;
         self->_dataModifier = nil;
         self->_lineDataModifier = nil;
         self->_rumCustomKeys = nil;

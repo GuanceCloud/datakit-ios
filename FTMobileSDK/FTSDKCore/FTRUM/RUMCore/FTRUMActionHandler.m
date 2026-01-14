@@ -10,6 +10,8 @@
 #import "NSDate+FTUtil.h"
 #import "FTConstants.h"
 #import "FTBaseInfoHandler.h"
+#import "FTRUMContext.h"
+
 static const NSTimeInterval actionMaxDuration = 5; // 5 seconds
 static const NSTimeInterval discreteActionTimeoutDuration = 0.1;
 @interface FTRUMActionHandler ()<FTRUMSessionProtocol>
@@ -69,11 +71,6 @@ static const NSTimeInterval discreteActionTimeoutDuration = 0.1;
             break;
         case FTRUMDataError:{
             self.actionErrorCount++;
-            FTRUMErrorData *error = (FTRUMErrorData *)model;
-            if(error.fatal){
-                [self writeActionData:model.time context:context];
-                return NO;
-            }
         }
             break;
         case FTRUMDataResourceStart:
@@ -131,6 +128,8 @@ static const NSTimeInterval discreteActionTimeoutDuration = 0.1;
     [fields setValue:@(self.actionLongTaskCount) forKey:FT_KEY_ACTION_LONG_TASK_COUNT];
     [fields setValue:@(self.actionResourcesCount) forKey:FT_KEY_ACTION_RESOURCE_COUNT];
     [fields setValue:@(self.actionErrorCount) forKey:FT_KEY_ACTION_ERROR_COUNT];
+    [fields addEntriesFromDictionary:self.context.sessionState.sessionFields];
+
     if(self.actionProperty && self.actionProperty.allKeys.count>0){
         [fields addEntriesFromDictionary:self.actionProperty];
     }

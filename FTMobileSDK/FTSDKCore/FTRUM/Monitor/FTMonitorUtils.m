@@ -12,7 +12,7 @@
 #import "FTSDKCompat.h"
 #import <mach/mach.h>
 #import "FTConstants.h"
-#if FT_MAC
+#if FT_HOST_MAC
 #import <IOKit/ps/IOPowerSources.h>
 #import <IOKit/ps/IOPSKeys.h>
 #else
@@ -22,7 +22,7 @@
 #pragma mark ========== Battery ==========
 //Battery level
 +(double)batteryUse{
-#if FT_MAC
+#if FT_HOST_MAC
     CFTypeRef info = IOPSCopyPowerSourcesInfo();
     if (info == NULL)
         return 0;
@@ -56,74 +56,67 @@
     return 0;
 }
 #pragma mark ========== Memory ==========
-//Memory occupied by current task
-+ (float)usedMemory{
-    int64_t memoryUsageInByte = 0;
-    task_vm_info_data_t vmInfo;
-    mach_msg_type_number_t count = TASK_VM_INFO_COUNT;
-    kern_return_t kernelReturn = task_info(mach_task_self(), TASK_VM_INFO, (task_info_t) &vmInfo, &count);
-    if(kernelReturn == KERN_SUCCESS) {
-        memoryUsageInByte = (int64_t) vmInfo.phys_footprint;
-    } else {
++ (uint64_t)totalMemBytes{
+    return [NSProcessInfo processInfo].physicalMemory;
+}
++ (uint64_t)availMemBytes {
+    vm_statistics_data_t vmStats;
+    mach_msg_type_number_t count = sizeof(vmStats) / sizeof(natural_t);
+    mach_port_t hostPort = mach_host_self();
+    
+    if (host_statistics(hostPort, HOST_VM_INFO, (host_info_t)&vmStats, &count) != KERN_SUCCESS) {
         return 0;
     }
-    double total = [NSProcessInfo processInfo].physicalMemory ;
-    return memoryUsageInByte/total*100.00;
+    
+    uint64_t pageSize = (uint64_t)vm_page_size;
+    uint64_t freePages = (uint64_t)vmStats.free_count;
+    uint64_t inactivePages = (uint64_t)vmStats.inactive_count;
+    
+    return (freePages + inactivePages) * pageSize;
 }
-//Total memory
+// device memory usage
++ (float)memoryUsage{
+    uint64_t total = [self totalMemBytes];
+    uint64_t avail = [self availMemBytes];
+    if (total <= 0) return 0;
+    float usage = (float)(total - avail) / total * 100;
+    return MAX(0.0f, MIN(100.0f, usage));
+}
+// Total memory
 +(NSString *)totalMemorySize{
     return [NSString stringWithFormat:@"%.2fG",[NSProcessInfo processInfo].physicalMemory / 1024.0 / 1024.0/ 1024.0];
-    
 }
 
 #pragma mark ========== cpu ==========
-+ (long )cpuUsage{
-    kern_return_t kr;
-    task_info_data_t tinfo;
-    mach_msg_type_number_t task_info_count;
-    
-    task_info_count = TASK_INFO_MAX;
-    kr = task_info(mach_task_self(), MACH_TASK_BASIC_INFO, (task_info_t)tinfo, &task_info_count);
-    if (kr != KERN_SUCCESS) {
-        return -1;
-    }
-    
++ (NSUInteger)cpuCoreCount {
+    NSUInteger count = [NSProcessInfo processInfo].processorCount;
+    return count > 0 ? count : 1;
+}
++ (float)cpuUsage{
     thread_array_t         thread_list;
     mach_msg_type_number_t thread_count;
     
-    thread_info_data_t     thinfo;
-    mach_msg_type_number_t thread_info_count;
-    
-    thread_basic_info_t basic_info_th;
-    
-    // mach_task_self(), means get the current Mach task
-    kr = task_threads(mach_task_self(), &thread_list, &thread_count);
+    kern_return_t kr = task_threads(mach_task_self(), &thread_list, &thread_count);
     if (kr != KERN_SUCCESS) {
         return -1;
     }
 
     float tot_cpu = 0;
-    for (int j = 0; j < (int)thread_count; j++)
-    {
-        thread_info_count = THREAD_INFO_MAX;
-        kr = thread_info(thread_list[j], THREAD_BASIC_INFO,
-                         (thread_info_t)thinfo, &thread_info_count);
-        if (kr != KERN_SUCCESS) {
-            return -1;
-        }
-        
-        basic_info_th = (thread_basic_info_t)thinfo;
-        
-        if (!(basic_info_th->flags & TH_FLAGS_IDLE)) {
-            tot_cpu = tot_cpu + basic_info_th->cpu_usage / (float)TH_USAGE_SCALE * 100.0;
-        }
-        
-    } // for each thread
     
-    kr = vm_deallocate(mach_task_self(), (vm_offset_t)thread_list, thread_count * sizeof(thread_t));
-    assert(kr == KERN_SUCCESS);
-    
-    return tot_cpu;
-}
+    for (int j = 0; j < (int)thread_count; j++) {
+        thread_info_data_t     thinfo;
+        mach_msg_type_number_t thread_info_count = THREAD_INFO_MAX;
+        
+        kr = thread_info(thread_list[j], THREAD_BASIC_INFO, (thread_info_t)thinfo, &thread_info_count);
+        if (kr == KERN_SUCCESS) {
+            thread_basic_info_t basic_info_th = (thread_basic_info_t)thinfo;
+            if (!(basic_info_th->flags & TH_FLAGS_IDLE)) {
+                tot_cpu += basic_info_th->cpu_usage / (float)TH_USAGE_SCALE;
+            }
+        }
+    }
+    vm_deallocate(mach_task_self(), (vm_offset_t)thread_list, thread_count * sizeof(thread_t));
 
+    return (tot_cpu / [self cpuCoreCount]) * 100.0f;
+}
 @end

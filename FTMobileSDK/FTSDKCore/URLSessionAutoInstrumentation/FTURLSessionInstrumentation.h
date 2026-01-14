@@ -65,6 +65,9 @@ typedef enum FTNetworkTraceType:NSUInteger FTNetworkTraceType;
                      sampleRate:(int)sampleRate
                       traceType:(FTNetworkTraceType)traceType
                traceInterceptor:(TraceInterceptor)traceInterceptor;
+
+- (void)updateTraceSampleRate:(int)sampleRate;
+
 /// Set SDK internal data upload URL
 /// - Parameters
 ///   - sdkUrlStr: SDK internal data upload URL

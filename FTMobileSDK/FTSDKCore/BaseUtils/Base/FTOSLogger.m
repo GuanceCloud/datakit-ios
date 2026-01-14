@@ -10,6 +10,8 @@
 #import "FTLogMessage.h"
 #import "FTEnumConstant.h"
 #import <os/log.h>
+#import "NSDate+FTUtil.h"
+
 @interface FTOSLogger()
 @property (nonatomic, strong) os_log_t logger;
 @end
@@ -25,19 +27,22 @@
 }
 - (void)logMessage:(FTLogMessage *)logMessage {
     NSString *message = [self formatLogMessage:logMessage];
+    NSString *dateStr = [logMessage.timestamp ft_stringWithBaseFormat];
+    NSString *logContent = [NSString stringWithFormat:@"%@ %@",dateStr, message];
+
     switch (logMessage.level) {
         case StatusWarning:
         case StatusCritical:
         case StatusOk:
         case StatusCustom:
         case StatusInfo:
-            os_log_info(self.logger,"%{public}s",[message UTF8String]);
+            os_log_info(self.logger,"%{public}s",[logContent UTF8String]);
             break;
         case StatusError:
-            os_log_error(self.logger,"%{public}s",[message UTF8String]);
+            os_log_error(self.logger,"%{public}s",[logContent UTF8String]);
             break;
         case StatusDebug:
-            os_log_debug(self.logger,"%{public}s",[message UTF8String]);
+            os_log_debug(self.logger,"%{public}s",[logContent UTF8String]);
             break;
     }
 }

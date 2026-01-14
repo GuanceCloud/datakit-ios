@@ -41,10 +41,18 @@ NS_ASSUME_NONNULL_BEGIN
 @property (nonatomic, assign) long long redirectionStartNsTimeInterval;
 /// Redirect end time
 @property (nonatomic, assign) long long redirectionEndNsTimeInterval;
-/// Response result size response data size
+/// Response body + header
 @property (nonatomic, strong, nullable) NSNumber *responseSize;
+/// Request body + header
+@property (nonatomic, strong, nullable) NSNumber *requestSize;
 /// Remote address
 @property (nonatomic, copy, nullable) NSString *remoteAddress;
+/// The network protocol used to fetch the resource
+@property (nonatomic, copy, nullable) NSString *resourceHttpProtocol;
+/// This property is set to YES if a persistent connection was used to fetch the resource
+@property (nonatomic, assign) BOOL reusedConnection;
+
+
 /// Initialization method
 ///
 /// - Parameters:

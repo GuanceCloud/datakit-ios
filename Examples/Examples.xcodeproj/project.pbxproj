@@ -16,8 +16,6 @@
 		171F9F6E2CF97E9300BEF0B9 /* FTTrackDataManagerTest.m in Sources */ = {isa = PBXBuildFile; fileRef = 171F9F6D2CF97E9300BEF0B9 /* FTTrackDataManagerTest.m */; };
 		172099772CF9DE84004821CF /* FTTestUtils.m in Sources */ = {isa = PBXBuildFile; fileRef = 172099762CF9DE84004821CF /* FTTestUtils.m */; };
 		172931D22BF602D700AA9D53 /* FTSwizzlerConflictTest.m in Sources */ = {isa = PBXBuildFile; fileRef = 172931D12BF602D700AA9D53 /* FTSwizzlerConflictTest.m */; };
-		172931D42BF6032900AA9D53 /* GoogleService-Info.plist in Resources */ = {isa = PBXBuildFile; fileRef = 172931D32BF6032900AA9D53 /* GoogleService-Info.plist */; };
-		172931D52BF6032900AA9D53 /* GoogleService-Info.plist in Resources */ = {isa = PBXBuildFile; fileRef = 172931D32BF6032900AA9D53 /* GoogleService-Info.plist */; };
 		172931D92BF6148600AA9D53 /* FTNetworkMock.m in Sources */ = {isa = PBXBuildFile; fileRef = 172931D72BF6148600AA9D53 /* FTNetworkMock.m */; };
 		172B10762E336A2400753766 /* FTRUMConfigurationTest.m in Sources */ = {isa = PBXBuildFile; fileRef = 172B10752E336A2400753766 /* FTRUMConfigurationTest.m */; };
 		172B10772E336A2400753766 /* FTRUMConfigurationTest.m in Sources */ = {isa = PBXBuildFile; fileRef = 172B10752E336A2400753766 /* FTRUMConfigurationTest.m */; };
@@ -94,7 +92,6 @@
 		178AE39B2D55B74F00BDC51B /* TestSessionDelegate.m in Sources */ = {isa = PBXBuildFile; fileRef = 1712C5F62B60F0B100C4BD38 /* TestSessionDelegate.m */; };
 		178AE39C2D55B74F00BDC51B /* PerformanceLoggingTest.m in Sources */ = {isa = PBXBuildFile; fileRef = 177892BE29A60FD00007B47F /* PerformanceLoggingTest.m */; };
 		178AE39E2D55B74F00BDC51B /* PerformanceRumTest.m in Sources */ = {isa = PBXBuildFile; fileRef = 177892BC29A60FA10007B47F /* PerformanceRumTest.m */; };
-		178AE3A42D55B74F00BDC51B /* GoogleService-Info.plist in Resources */ = {isa = PBXBuildFile; fileRef = 172931D32BF6032900AA9D53 /* GoogleService-Info.plist */; };
 		178AE3AC2D55D04100BDC51B /* FTLoggerTest.m in Sources */ = {isa = PBXBuildFile; fileRef = 174058BA28D813190092E096 /* FTLoggerTest.m */; };
 		178AE3B92D55DEBC00BDC51B /* XCTestCase+Utils.m in Sources */ = {isa = PBXBuildFile; fileRef = 178AE3B82D55DEBC00BDC51B /* XCTestCase+Utils.m */; };
 		178AE3BA2D55DEBC00BDC51B /* XCTestCase+Utils.m in Sources */ = {isa = PBXBuildFile; fileRef = 178AE3B82D55DEBC00BDC51B /* XCTestCase+Utils.m */; };
@@ -121,6 +118,8 @@
 		17D339EE2807AB0C0083C2B3 /* FTModelHelper.m in Sources */ = {isa = PBXBuildFile; fileRef = 17D339ED2807AB0C0083C2B3 /* FTModelHelper.m */; };
 		17DA844D288808B2001A0B30 /* FTRUMMonitorTest.m in Sources */ = {isa = PBXBuildFile; fileRef = 17DA844C288808B2001A0B30 /* FTRUMMonitorTest.m */; };
 		17E0792E291E60830014A420 /* FTExtensionSDKTest.m in Sources */ = {isa = PBXBuildFile; fileRef = 17E0792D291E60830014A420 /* FTExtensionSDKTest.m */; };
+		17E18F0C2F0CE09100788864 /* longtask_no_anr.log in Resources */ = {isa = PBXBuildFile; fileRef = 17E18F092F0CDE1300788864 /* longtask_no_anr.log */; };
+		17E18F0E2F0CE1C700788864 /* longtask.log in Resources */ = {isa = PBXBuildFile; fileRef = 17E18F0D2F0CE1C700788864 /* longtask.log */; };
 		17F10EBB2D13EAC800737EDD /* NibViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 17F10EAD2D13EAC800737EDD /* NibViewController.swift */; };
 		17F10EBC2D13EAC800737EDD /* SplitViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 17F10EAF2D13EAC800737EDD /* SplitViewController.swift */; };
 		17F10EBD2D13EAC800737EDD /* TableViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 17F10EB02D13EAC800737EDD /* TableViewController.swift */; };
@@ -272,7 +271,6 @@
 		172099752CF9DE84004821CF /* FTTestUtils.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = FTTestUtils.h; sourceTree = "<group>"; };
 		172099762CF9DE84004821CF /* FTTestUtils.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = FTTestUtils.m; sourceTree = "<group>"; };
 		172931D12BF602D700AA9D53 /* FTSwizzlerConflictTest.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = FTSwizzlerConflictTest.m; sourceTree = "<group>"; };
-		172931D32BF6032900AA9D53 /* GoogleService-Info.plist */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.xml; path = "GoogleService-Info.plist"; sourceTree = "<group>"; };
 		172931D62BF6148600AA9D53 /* FTNetworkMock.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = FTNetworkMock.h; sourceTree = "<group>"; };
 		172931D72BF6148600AA9D53 /* FTNetworkMock.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = FTNetworkMock.m; sourceTree = "<group>"; };
 		172B10752E336A2400753766 /* FTRUMConfigurationTest.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = FTRUMConfigurationTest.m; sourceTree = "<group>"; };
@@ -312,6 +310,7 @@
 		1764E41829ACB5BB00E70DBB /* LogViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LogViewController.swift; sourceTree = "<group>"; };
 		1764E41A29ACB68C00E70DBB /* TraceViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TraceViewController.swift; sourceTree = "<group>"; };
 		1764E41C29ACB70200E70DBB /* RUMViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RUMViewController.swift; sourceTree = "<group>"; };
+		17717B582F0E816D002158F6 /* FTRemoteConfigModel+Test.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = "FTRemoteConfigModel+Test.h"; sourceTree = "<group>"; };
 		177892B929A60F2E0007B47F /* PerformanceBaseTest.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = PerformanceBaseTest.m; sourceTree = "<group>"; };
 		177892BC29A60FA10007B47F /* PerformanceRumTest.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = PerformanceRumTest.m; sourceTree = "<group>"; };
 		177892BE29A60FD00007B47F /* PerformanceLoggingTest.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = PerformanceLoggingTest.m; sourceTree = "<group>"; };
@@ -356,6 +355,8 @@
 		17D339ED2807AB0C0083C2B3 /* FTModelHelper.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = FTModelHelper.m; sourceTree = "<group>"; };
 		17DA844C288808B2001A0B30 /* FTRUMMonitorTest.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = FTRUMMonitorTest.m; sourceTree = "<group>"; };
 		17E0792D291E60830014A420 /* FTExtensionSDKTest.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = FTExtensionSDKTest.m; sourceTree = "<group>"; };
+		17E18F092F0CDE1300788864 /* longtask_no_anr.log */ = {isa = PBXFileReference; lastKnownFileType = text; path = longtask_no_anr.log; sourceTree = "<group>"; };
+		17E18F0D2F0CE1C700788864 /* longtask.log */ = {isa = PBXFileReference; lastKnownFileType = text; path = longtask.log; sourceTree = "<group>"; };
 		17E1927929C9883A0067B23D /* FTMobileSDK.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; path = FTMobileSDK.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 		17EAFA462D15535F004223E2 /* FTMobileSDK.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; path = FTMobileSDK.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 		17F10E6C2D13CBCB00737EDD /* tvOS-App.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = "tvOS-App.app"; sourceTree = BUILT_PRODUCTS_DIR; };
@@ -547,7 +548,6 @@
 				4A1D78A024F52ACB006125D0 /* FTDatabaseTest.m */,
 				172931D12BF602D700AA9D53 /* FTSwizzlerConflictTest.m */,
 				174BC87F2BFCB05500478EE1 /* FTDictionaryCopyTest.m */,
-				172931D32BF6032900AA9D53 /* GoogleService-Info.plist */,
 				177AD7322CCF72A10051C0F6 /* FTDataCompressionTest.m */,
 				177AD7342CCF7B090051C0F6 /* FTDataCompression+Test.h */,
 				179BF6502D3D47F0004AA5A6 /* FTReadWriteHelperTest.m */,
@@ -570,6 +570,8 @@
 		173A03F82CDDD32A00E07D53 /* LongTaskManagerTest */ = {
 			isa = PBXGroup;
 			children = (
+				17E18F092F0CDE1300788864 /* longtask_no_anr.log */,
+				17E18F0D2F0CE1C700788864 /* longtask.log */,
 				174058BC28D813A20092E096 /* FTLongTaskTest.m */,
 				173A03F92CDDD4AF00E07D53 /* FTLongTaskFileHandleTest.m */,
 				1761116B2CE3219D00071CA7 /* FTLongTaskManager+Test.h */,
@@ -721,6 +723,7 @@
 			isa = PBXGroup;
 			children = (
 				17F59C6E2DF7D3A7003FCB84 /* FTRemoteConfigTest.m */,
+				17717B582F0E816D002158F6 /* FTRemoteConfigModel+Test.h */,
 			);
 			path = RemoteConfig;
 			sourceTree = "<group>";
@@ -1217,7 +1220,6 @@
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				178AE3A42D55B74F00BDC51B /* GoogleService-Info.plist in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -1252,9 +1254,10 @@
 			files = (
 				4A116969239113B900C0BC4E /* LaunchScreen.storyboard in Resources */,
 				4A116966239113B900C0BC4E /* Assets.xcassets in Resources */,
-				172931D42BF6032900AA9D53 /* GoogleService-Info.plist in Resources */,
 				7C28B878266098E700CECBA6 /* sample.html in Resources */,
+				17E18F0C2F0CE09100788864 /* longtask_no_anr.log in Resources */,
 				17132DCA2C2D90BA009DFE8F /* errors.json in Resources */,
+				17E18F0E2F0CE1C700788864 /* longtask.log in Resources */,
 				4A116964239113B600C0BC4E /* Main.storyboard in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -1270,7 +1273,6 @@
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				172931D52BF6032900AA9D53 /* GoogleService-Info.plist in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -1655,6 +1657,7 @@
 			buildSettings = {
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
 				ASSETCATALOG_COMPILER_WIDGET_BACKGROUND_COLOR_NAME = WidgetBackground;
+				CLANG_ALLOW_NON_MODULAR_INCLUDES_IN_FRAMEWORK_MODULES = NO;
 				CLANG_CXX_LANGUAGE_STANDARD = "gnu++20";
 				CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER = YES;
 				CODE_SIGN_ENTITLEMENTS = WidgetDemo/WidgetDemoExtension.entitlements;
@@ -1677,7 +1680,10 @@
 					"@executable_path/../../Frameworks",
 				);
 				MARKETING_VERSION = 1.0.0;
-				OTHER_LDFLAGS = "-ObjC";
+				OTHER_LDFLAGS = (
+					"-ObjC",
+					"-lc++",
+				);
 				PRODUCT_BUNDLE_IDENTIFIER = "ft.demo.ft-sdk-iosTest.WidgetDemo";
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				PROVISIONING_PROFILE_SPECIFIER = "";
@@ -1695,6 +1701,7 @@
 			buildSettings = {
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
 				ASSETCATALOG_COMPILER_WIDGET_BACKGROUND_COLOR_NAME = WidgetBackground;
+				CLANG_ALLOW_NON_MODULAR_INCLUDES_IN_FRAMEWORK_MODULES = NO;
 				CLANG_CXX_LANGUAGE_STANDARD = "gnu++20";
 				CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER = YES;
 				CODE_SIGN_ENTITLEMENTS = WidgetDemo/WidgetDemoExtension.entitlements;
@@ -1713,7 +1720,10 @@
 					"@executable_path/../../Frameworks",
 				);
 				MARKETING_VERSION = 1.0.0;
-				OTHER_LDFLAGS = "-ObjC";
+				OTHER_LDFLAGS = (
+					"-ObjC",
+					"-lc++",
+				);
 				PRODUCT_BUNDLE_IDENTIFIER = "ft.demo.ft-sdk-iosTest.WidgetDemo";
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				PROVISIONING_PROFILE_SPECIFIER = "";
@@ -1731,6 +1741,7 @@
 			buildSettings = {
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
 				ASSETCATALOG_COMPILER_WIDGET_BACKGROUND_COLOR_NAME = WidgetBackground;
+				CLANG_ALLOW_NON_MODULAR_INCLUDES_IN_FRAMEWORK_MODULES = NO;
 				CLANG_CXX_LANGUAGE_STANDARD = "gnu++20";
 				CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER = YES;
 				CODE_SIGN_ENTITLEMENTS = WidgetDemo/WidgetDemoExtension.entitlements;
@@ -1749,7 +1760,10 @@
 					"@executable_path/../../Frameworks",
 				);
 				MARKETING_VERSION = 1.0.0;
-				OTHER_LDFLAGS = "-ObjC";
+				OTHER_LDFLAGS = (
+					"-ObjC",
+					"-lc++",
+				);
 				PRODUCT_BUNDLE_IDENTIFIER = "ft.demo.ft-sdk-iosTest.WidgetDemo";
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				PROVISIONING_PROFILE_SPECIFIER = "";
@@ -1906,7 +1920,10 @@
 				SWIFT_VERSION = 5.0;
 				TARGETED_DEVICE_FAMILY = 3;
 				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/tvOS-App.app/$(BUNDLE_EXECUTABLE_FOLDER_PATH)/tvOS-App";
-				USER_HEADER_SEARCH_PATHS = "$(inherited)  ";
+				USER_HEADER_SEARCH_PATHS = (
+					"$(inherited)",
+					" ",
+				);
 			};
 			name = Debug;
 		};
@@ -1947,7 +1964,10 @@
 				SWIFT_VERSION = 5.0;
 				TARGETED_DEVICE_FAMILY = 3;
 				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/tvOS-App.app/$(BUNDLE_EXECUTABLE_FOLDER_PATH)/tvOS-App";
-				USER_HEADER_SEARCH_PATHS = "$(inherited)  ";
+				USER_HEADER_SEARCH_PATHS = (
+					"$(inherited)",
+					" ",
+				);
 			};
 			name = Pre;
 		};
@@ -1982,7 +2002,10 @@
 				SWIFT_VERSION = 5.0;
 				TARGETED_DEVICE_FAMILY = 3;
 				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/tvOS-App.app/$(BUNDLE_EXECUTABLE_FOLDER_PATH)/tvOS-App";
-				USER_HEADER_SEARCH_PATHS = "$(inherited)  ";
+				USER_HEADER_SEARCH_PATHS = (
+					"$(inherited)",
+					" ",
+				);
 			};
 			name = Release;
 		};
@@ -2111,7 +2134,10 @@
 				SWIFT_VERSION = 5.0;
 				TARGETED_DEVICE_FAMILY = "1,2";
 				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/App.app/$(BUNDLE_EXECUTABLE_FOLDER_PATH)/App";
-				USER_HEADER_SEARCH_PATHS = "$(inherited)  ";
+				USER_HEADER_SEARCH_PATHS = (
+					"$(inherited)",
+					" ",
+				);
 			};
 			name = Pre;
 		};
@@ -2654,6 +2680,7 @@
 				GCC_PREPROCESSOR_DEFINITIONS = (
 					"$(inherited)",
 					"COCOAPODS=1",
+					"DEBUG=1",
 					"FTSDKUNITTEST=1",
 				);
 				HEADER_SEARCH_PATHS = (
@@ -2678,7 +2705,10 @@
 				SWIFT_VERSION = 5.0;
 				TARGETED_DEVICE_FAMILY = "1,2";
 				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/App.app/$(BUNDLE_EXECUTABLE_FOLDER_PATH)/App";
-				USER_HEADER_SEARCH_PATHS = "$(inherited)  ";
+				USER_HEADER_SEARCH_PATHS = (
+					"$(inherited)",
+					" ",
+				);
 			};
 			name = Debug;
 		};
@@ -2711,7 +2741,10 @@
 				SWIFT_VERSION = 5.0;
 				TARGETED_DEVICE_FAMILY = "1,2";
 				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/App.app/$(BUNDLE_EXECUTABLE_FOLDER_PATH)/App";
-				USER_HEADER_SEARCH_PATHS = "$(inherited)  ";
+				USER_HEADER_SEARCH_PATHS = (
+					"$(inherited)",
+					" ",
+				);
 			};
 			name = Release;
 		};

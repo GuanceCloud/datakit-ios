@@ -80,8 +80,29 @@
     TableViewCellItem *item13 = [[TableViewCellItem alloc]initWithTitle:@"ClearAllData" handler:^{
         [FTMobileAgent clearAllData];
     }];
-   
-    [self.dataSource addObjectsFromArray:@[item1,item2,item3,item4,item5,item7,item8,item9,item10,item11,item12,item13]];
+    TableViewCellItem *item14 = [[TableViewCellItem alloc]initWithTitle:@"updateRemoteConfig" handler:^{
+        [FTMobileAgent updateRemoteConfig];
+    }];
+    TableViewCellItem *item15 = [[TableViewCellItem alloc]initWithTitle:@"updateRemoteConfigWithMiniUpdateInterval:completion" handler:^{
+        [FTMobileAgent updateRemoteConfigWithMiniUpdateInterval:0 completion:^FTRemoteConfigModel * _Nullable(BOOL success, NSError * _Nullable error, FTRemoteConfigModel * _Nullable model, NSDictionary<NSString *,id> * _Nullable content) {
+            if (error) {
+                NSLog(@"emoteConfigFetch error:%@",error.description);
+            }
+            if (success) {
+                NSString *userId = content[@"custom_userid"];
+                // example this user uid = @"user_1"
+                if ([userId isEqualToString:@"user_1"]) {
+                    model.rumSampleRate = @(1);
+                    model.logSampleRate = @(1);
+                    model.traceSampleRate = @(1);
+                }
+            }
+            //if the model is not modified, `return nil`(use original model) == `return model`
+            return model;
+        }];
+    }];
+    
+    [self.dataSource addObjectsFromArray:@[item1,item2,item3,item4,item5,item7,item8,item9,item10,item11,item12,item13,item14,item15]];
     _mtableView = [[UITableView alloc] initWithFrame:CGRectMake(0, 0, [UIScreen mainScreen].bounds.size.width, [UIScreen mainScreen].bounds.size.height)];
     _mtableView.dataSource = self;
     _mtableView.delegate = self;

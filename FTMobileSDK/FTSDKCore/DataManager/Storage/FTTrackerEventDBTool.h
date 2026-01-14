@@ -66,7 +66,7 @@ NS_ASSUME_NONNULL_BEGIN
 /// @param type data type
 - (NSInteger)getDatasCountWithType:(NSString *)type;
 
-- (long)checkDatabaseSize;
+- (long long)checkDatabaseSize;
 
 - (void)setEnableLimitWithDbSize:(BOOL)enableLimitWithDbSize;
 /// close db

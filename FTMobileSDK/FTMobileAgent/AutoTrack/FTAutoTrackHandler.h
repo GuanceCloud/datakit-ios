@@ -14,6 +14,7 @@
 #import "FTViewTrackingHandler.h"
 #import "FTActionTrackingHandler.h"
 NS_ASSUME_NONNULL_BEGIN
+@class FTDisplayRateMonitor;
 @protocol FTUIViewControllerHandler <NSObject>
 -(void)notify_viewDidAppear:(UIViewController *)viewController animated:(BOOL)animated;
 -(void)notify_viewDidDisappear:(UIViewController *)viewController animated:(BOOL)animated;
@@ -46,7 +47,8 @@ NS_ASSUME_NONNULL_BEGIN
                    action:(BOOL)enable
       addRumDatasDelegate:(id<FTRumDatasProtocol>)delegate
               viewHandler:(nullable FTViewTrackingHandler)viewHandler
-            actionHandler:(nullable FTActionTrackingHandler)actionHandler;
+            actionHandler:(nullable FTActionTrackingHandler)actionHandler
+           displayMonitor:(nullable FTDisplayRateMonitor *)displayMonitor;
 
 -(void)shutDown;
 @end

@@ -1,4 +1,37 @@
-# 1.5.8
+# 1.5.19
+1. Extended resource_type to include new types: image, media, font, CSS, JS, and native
+2. Added resource_id in network errors to associate corresponding resource data
+3. Supported custom configuration of remote variables
+4. Added resource_http_protocol, resource_request_size, and resource_connection_reuse fields to Resource
+5. Refined cold start and warm start time metrics, adding app_pre_runtime_init_time, app_runtime_init_time, app_uikit_init_time, app_application_init_time, and app_first_frame_init_time
+6. Fixed data loss caused by missing RUM View
+7. Enhanced crash and ANR stack information to include full thread stacks, and added support for configuring crash monitoring types
+---
+# 1.5.19-beta.1
+1. Fix displayMonitor callback failure caused by early stop call
+2. RemoteConfiguration support hot activation of `sampleRate`
+---
+# 1.5.19-alpha.5
+1. Refined cold start timing by adding `app_pre_runtime_init_time`, `app_runtime_init_time`,`app_uikit_init_time`, `app_application_init_time`, and `app_first_frame_init_time`.
+2. RUM Resource added `resource_http_protocol`, `resource_request_size`, `resource_connection_reuse`
+3. Support customizable configuration of remote variables
+4. Enhance Crash/ANR Report with full thread stack and Crash monitor type settings
+---
+# 1.5.19-alpha.4
+1. Fix CPU and memory utilization collection methods
+2. Replace the mutable `const char* kThreadSecondary` pointer with a read-only string literal macro to eliminate pointer tampering risks
+---
+# 1.5.19-alpha.3
+1. Added `resource_id` to network error types for data correlation. 
+---
+# 1.5.19-alpha.2
+1. Fix RUM data loss when using `-addErrorWithType:state:message:stack:property:` method add error
+2. Avoid re-registering script message handlers when collecting webView RUM data
+---
+# 1.5.19-alpha.1
+1. Fixed data loss when RUM view is missing
+---
+# 1.5.18
 1. Added support for RUM View/Action collection filtering and custom View/Action naming via `FTRumConfig.viewTrackingHandler` and `FTRumConfig.actionTrackingHandler`
 2. Added the `-updateViewLoadingTime:` method to support updating the loading time for the currently active RUM View
 3. Made `sdk_name` a mandatory basic field
@@ -6,7 +39,7 @@
 5. Fixed the thread-safety issue of SDK shutdown operations
 6. Fixed the crash caused by modifying the name of the main thread during Long task monitoring
 ---
-# 1.5.8-beta.1
+# 1.5.18-beta.1
 1. Same as 1.5.18-alpha.6
 ---
 # 1.5.18-alpha.6
@@ -55,6 +88,7 @@
 2. Add `FTRUMConfig.sessionErrorSampleRate` to support error sampling, when not sampled by setSamplingRate, can sample RUM data from 1 minute ago when errors occur
 3. Logger supports filtering custom log levels through `logLevelFilter`
 4. When native page jumps to WebView page, fill view_referrer with native page name
+5. Resolve unexpectedly long DNS duration in resource collection
 ---
 # 1.5.16-beta.4
 1. Same as 1.5.16-beta.3

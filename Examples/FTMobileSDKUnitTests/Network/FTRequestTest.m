@@ -276,4 +276,23 @@
    
     [FTMobileAgent shutDown];
 }
+/// test header contains `x-client-timestamp` (ms)
+- (void)testRequestHeader_time{
+    NSString *datakitUrlStr = @"http://www.test.com/datakit/url/string";
+    FTMobileConfig *config = [[FTMobileConfig alloc]initWithDatakitUrl:datakitUrlStr];
+    config.enableSDKDebugLog = YES;
+    [FTMobileAgent startWithConfigOptions:config];
+    FTRecordModel *model = [FTModelHelper createRumModel];
+    NSDate *beforeDate = [NSDate date];
+    FTRequest *request = [FTRequest createRequestWithEvents:@[model] type:FT_DATA_TYPE_RUM];
+    NSMutableURLRequest *urlRequest = [[NSMutableURLRequest alloc]initWithURL:request.absoluteURL cachePolicy:NSURLRequestUseProtocolCachePolicy timeoutInterval:30.0];
+
+    NSMutableURLRequest *newRequest = [request adaptedRequest:urlRequest];
+    NSDate *afterDate = [NSDate date];
+    long long timestamp = [[newRequest.allHTTPHeaderFields valueForKey:@"x-client-timestamp"] longLongValue];
+    XCTAssertTrue(timestamp>0);
+    XCTAssertTrue(timestamp >= [beforeDate ft_millisecondTimeStamp]);
+    XCTAssertTrue(timestamp <= [afterDate ft_millisecondTimeStamp]);
+    [FTMobileAgent shutDown];
+}
 @end

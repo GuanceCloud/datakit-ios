@@ -16,8 +16,7 @@ NS_ASSUME_NONNULL_BEGIN
 -(instancetype)initWithDictionary:(NSDictionary *)dict;
 /// Convert config to dictionary
 -(NSDictionary *)convertToDictionary;
-/// Merge remoteConfig
--(void)mergeWithRemoteConfigDict:(NSDictionary *)dict;
+
 @end
 
 NS_ASSUME_NONNULL_END

@@ -15,9 +15,9 @@ NS_ASSUME_NONNULL_BEGIN
 @property (nonatomic, copy, readwrite) NSString *identifier;
 
 /// The initial request sent during this interception. It is the request sent by `URLSession`, not the one provided by the user.
-@property (nonatomic, strong) NSURLRequest *request;
+@property (nonatomic, copy) NSURLRequest *request;
 /// The response received during this interception.
-@property (nonatomic, strong) NSURLResponse *response;
+@property (nonatomic, copy) NSURLResponse *response;
 /// The local error that occurred during this interception. Returns `nil` if the task completed successfully.
 @property (nonatomic, strong) NSError *error;
 /// The task data received during this interception. Returns `nil` if the task completed with an error.

@@ -21,7 +21,7 @@ NS_ASSUME_NONNULL_BEGIN
 @property (atomic,copy,readwrite) NSString *viewReferrer;
 #pragma mark - init -
 -(instancetype)initWithRumDependencies:(FTRUMDependencies *)dependencies;
-
+-(void)updateSampleRate:(int)sampleRate sessionOnErrorSampleRate:(int)sessionOnErrorSampleRate;
 -(void)notifyRumInit;
 #pragma mark - resource -
 /// HTTP request start
@@ -63,21 +63,8 @@ NS_ASSUME_NONNULL_BEGIN
 - (void)addWebViewData:(NSString *)measurement tags:(NSDictionary *)tags fields:(NSDictionary *)fields tm:(long long)tm;
 
 #pragma mark - Error / Long Task -
-/// Crash
-/// @param type Error type: java_crash/native_crash/abort/ios_crash
-/// @param message Error message
-/// @param stack Error stack
-- (void)addErrorWithType:(nonnull NSString *)type message:(nonnull NSString *)message stack:(nonnull NSString *)stack;
-/**
- * Crash
- * @param type       Error type: java_crash/native_crash/abort/ios_crash
- * @param message    Error message
- * @param stack      Error stack
- * @param property   Event properties (optional)
- */
-- (void)addErrorWithType:(NSString *)type message:(NSString *)message stack:(NSString *)stack property:(nullable NSDictionary *)property;
 
-- (void)addErrorWithType:(nonnull NSString *)type message:(nonnull NSString *)message stack:(nonnull NSString *)stack date:(NSDate *)date;
+
 /// Freeze
 /// @param stack Freeze stack
 /// @param duration Freeze duration

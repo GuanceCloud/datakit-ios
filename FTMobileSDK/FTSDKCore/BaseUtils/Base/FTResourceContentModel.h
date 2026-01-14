@@ -28,6 +28,9 @@ NS_ASSUME_NONNULL_BEGIN
 @property (nonatomic, strong,nullable) NSError *error;
 /// Response result
 @property (nonatomic, copy) NSString *responseBody;
+/// Resource Type
+@property (nonatomic, copy, nullable) NSString *resourceType;
+
 ///  Initialization method
 /// - Parameters:
 ///   - request: network request

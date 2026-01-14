@@ -11,14 +11,14 @@ NS_ASSUME_NONNULL_BEGIN
 
 /// Monitoring item related data acquisition tool
 @interface FTMonitorUtils : NSObject
-/// Get current device CPU usage
-+ (long )cpuUsage;
+/// Get current app CPU usage
++ (float)cpuUsage;
 /// Get current battery usage
 + (double)batteryUse;
 /// Get device total memory
 + (NSString *)totalMemorySize;
-/// Get current memory usage
-+ (float)usedMemory;
+/// Get current device memory usage
++ (float)memoryUsage;
 @end
 
 NS_ASSUME_NONNULL_END

@@ -20,11 +20,6 @@
 ///  If there is no data in file cache, return 0
 - (long long)getErrorTimeLineFromFileCache;
 
-///  Get the time of fatal error from the previous process
-///  -1, not yet obtained
-///  0, no FatalError in previous process
-///  >0 previous process FatalError time
-- (long long)getLastProcessFatalErrorTime;
 
 @end
 #endif /* FTUploadProtocol_h */

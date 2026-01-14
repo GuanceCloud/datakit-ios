@@ -11,7 +11,8 @@ NS_ASSUME_NONNULL_BEGIN
 /// APP lifecycle protocol
 @protocol FTAppLifeCycleDelegate <NSObject>
 @optional
-
+/// App did finish launching
+- (void)applicationDidFinishLaunching;
 /// App will terminate
 - (void)applicationWillTerminate;
 

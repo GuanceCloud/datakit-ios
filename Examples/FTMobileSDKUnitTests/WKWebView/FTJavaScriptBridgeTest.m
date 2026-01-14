@@ -26,10 +26,12 @@
 #import "FTWKWebViewHandler+Private.h"
 #import "FTModelHelper.h"
 #import "FTLog+Private.h"
+#import "WKWebView+FTAutoTrack.h"
+
 @interface FTWKWebViewHandler (Testing)
 @property (nonatomic, strong) NSMapTable *webViewRequestTable;
+@property (nonatomic, strong) NSHashTable *allWebViews;
 
-- (id)getWebViewBridge:(WKWebView *)webView;
 - (void)removeAllWebViewBridges;
 @end
 
@@ -148,7 +150,7 @@
     [FTModelHelper startViewWithName:@"TestWKWebViewVC"];
     [self.viewController ft_load:url.absoluteString];
     self.loadExpect = [self expectationWithDescription:@"Request Time!"];
-    [self waitForExpectationsWithTimeout:30 handler:^(NSError *error) {
+    [self waitForExpectationsWithTimeout:5 handler:^(NSError *error) {
         XCTAssertNil(error);
     }];
     XCTestExpectation *jsScript = [self expectationWithDescription:@"Request Time!"];
@@ -162,7 +164,7 @@
         }];
     }
     
-    [self waitForExpectationsWithTimeout:30 handler:^(NSError *error) {
+    [self waitForExpectationsWithTimeout:5 handler:^(NSError *error) {
         XCTAssertNil(error);
     }];
     [[FTGlobalRumManager sharedInstance].rumManager syncProcess];
@@ -360,25 +362,21 @@
     NSInteger newCount =[[FTTrackerEventDBTool sharedManger] getDatasCount];
     XCTAssertTrue(newCount == oldCount);
 }
-- (void)testMapTableWeakReferenceWebView{
+- (void)testRemoveAllWebViewBridges{
     WKWebView *webView = [[WKWebView alloc]init];
     [[FTWKWebViewHandler sharedInstance] startWithEnableTraceWebView:NO allowWebViewHost:nil rumDelegate:self];
     [[FTWKWebViewHandler sharedInstance] enableWebView:webView];
-    id bridge = [[FTWKWebViewHandler sharedInstance] getWebViewBridge:webView];
-    XCTAssertTrue(bridge != nil);
-    webView = nil;
-    id bridge2 = [[FTWKWebViewHandler sharedInstance] getWebViewBridge:webView];
-    XCTAssertTrue(bridge2 == nil);
+    XCTAssertTrue(webView.ft_jsBridge != nil);
+    [[FTWKWebViewHandler sharedInstance] removeAllWebViewBridges];
+    XCTAssertTrue(webView.ft_jsBridge == nil);
 }
 - (void)testSameWebViewAddBridge_moreThanOnce{
     WKWebView *webView = [[WKWebView alloc]init];
     [[FTWKWebViewHandler sharedInstance] startWithEnableTraceWebView:NO allowWebViewHost:nil rumDelegate:self];
     [[FTWKWebViewHandler sharedInstance] enableWebView:webView];
-    id bridge = [[FTWKWebViewHandler sharedInstance] getWebViewBridge:webView];
+    id bridge = webView.ft_jsBridge;
     [[FTWKWebViewHandler sharedInstance] enableWebView:webView];
-    id bridge2 = [[FTWKWebViewHandler sharedInstance] getWebViewBridge:webView];
-    XCTAssertTrue(bridge != nil);
-    XCTAssertTrue(bridge2 != nil);
+    id bridge2 = webView.ft_jsBridge;
     XCTAssertTrue(bridge == bridge2);
 }
 - (void)dealReceiveScriptMessage:(id )message slotId:(NSUInteger)slotId{
