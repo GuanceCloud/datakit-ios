@@ -66,13 +66,13 @@
 + (id)objectWithJsonString:(NSString *)jsonString{
     id result = nil;
     @try {
-        if (jsonString == nil) {
+        if (jsonString == nil || [jsonString isEqualToString:@""]) {
             return nil;
         }
         NSData *jsonData = [jsonString dataUsingEncoding:NSUTF8StringEncoding];
         NSError *err;
         result = [NSJSONSerialization JSONObjectWithData:jsonData
-                                                 options:NSJSONReadingMutableContainers
+                                                 options:0
                                                    error:&err];
         if(err){
             FTInnerLogError(@"JSON parsing failed: %@",err);

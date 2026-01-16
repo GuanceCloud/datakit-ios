@@ -106,36 +106,43 @@ NSString * FTQueryStringFromParameters(NSDictionary *parameters,FTParameterType 
 @implementation FTRequestLineBody
 - (NSString *)getRequestBodyWithEventArray:(NSArray *)events packageId:(NSString *)packageId enableIntegerCompatible:(BOOL)compatible{
     __block NSMutableString *requestDatas = [NSMutableString new];
-    [events enumerateObjectsUsingBlock:^(FTRecordModel *obj, NSUInteger idx, BOOL * _Nonnull stop) {
-        NSDictionary *item = [FTJSONUtil dictionaryWithJsonString:obj.data];
-        NSDictionary *opdata =item[FT_OPDATA];
-        NSString *source = [[opdata valueForKey:FT_KEY_SOURCE] ft_replacingMeasurementSpecialCharacters];
-        if (!source) {
-            source =[[opdata valueForKey:FT_MEASUREMENT] ft_replacingMeasurementSpecialCharacters];
-        }
-        NSDictionary *tag = opdata[FT_TAGS];
-        NSDictionary *field = opdata[FT_FIELDS];
-        NSNumber *timeNum = opdata[FT_TIME];
-        long long time = timeNum == nil ? obj.tm : [timeNum longLongValue];
-        if(source.length>0 && field.count>0 && tag.count>0){
-            NSString *dataId = [NSString stringWithFormat:@"%@.%@",packageId,[FTBaseInfoHandler random16UUID]];
-            NSMutableDictionary *tagDict = [NSMutableDictionary dictionary];
-            [tagDict setValue:dataId forKey:@"sdk_data_id"];
-            [tagDict addEntriesFromDictionary:tag];
-            NSString *tagStr = FTQueryStringFromParameters(tagDict,FTParameterTypeTag,compatible);
-            NSString *fieldStr= FTQueryStringFromParameters(opdata[FT_FIELDS],FTParameterTypeField,compatible);
-            NSString *requestStr = [NSString stringWithFormat:@"%@,%@ %@ %lld",source,tagStr,fieldStr,time];
-            if (idx==0) {
-                [requestDatas appendString:requestStr];
+    NSArray *eventsSnapshot = [events copy];
+    [eventsSnapshot enumerateObjectsUsingBlock:^(FTRecordModel *obj, NSUInteger idx, BOOL * _Nonnull stop) {
+        @autoreleasepool {
+            NSDictionary *item = [FTJSONUtil dictionaryWithJsonString:obj.data];
+            if (!item) {
+                FTInnerLogError(@"\n*********This data format is incorrect********\n%@\n******************\n",obj.data);
+                return;
+             }
+            NSDictionary *opdata =item[FT_OPDATA];
+            NSString *sourceRaw = opdata[FT_KEY_SOURCE]?:opdata[FT_MEASUREMENT];
+            NSString *source =[sourceRaw ft_replacingMeasurementSpecialCharacters];
+            
+            NSDictionary *tag = opdata[FT_TAGS];
+            NSDictionary *field = opdata[FT_FIELDS];
+            NSNumber *timeNum = opdata[FT_TIME];
+            long long time = timeNum == nil ? obj.tm : [timeNum longLongValue];
+            
+            if(source.length>0 && field.count>0 && tag.count>0){
+                NSString *dataId = [NSString stringWithFormat:@"%@.%@",packageId,[FTBaseInfoHandler random16UUID]];
+                NSMutableDictionary *tagDict = [NSMutableDictionary dictionary];
+                [tagDict setValue:dataId forKey:@"sdk_data_id"];
+                [tagDict addEntriesFromDictionary:tag];
+                NSString *tagStr = FTQueryStringFromParameters(tagDict,FTParameterTypeTag,compatible);
+                NSString *fieldStr= FTQueryStringFromParameters(opdata[FT_FIELDS],FTParameterTypeField,compatible);
+                NSString *requestStr = [NSString stringWithFormat:@"%@,%@ %@ %lld",source,tagStr,fieldStr,time];
+                if (idx==0) {
+                    [requestDatas appendString:requestStr];
+                }else{
+                    [requestDatas appendFormat:@"\n%@",requestStr];
+                }
             }else{
-                [requestDatas appendFormat:@"\n%@",requestStr];
+                FTInnerLogError(@"\n*********This data format is incorrect********\n%@ %lld\n******************\n",item,time);
             }
-        }else{
-            FTInnerLogError(@"\n*********This data format is incorrect********\n%@ %lld\n******************\n",item,time);
         }
     }];
     FTRecordModel *model = [events firstObject];
     FTInnerLogDebug(@"[NETWORK]\nUpload Datas Type:%@\nLine RequestDatas:\n%@",model.op,requestDatas);
-    return requestDatas;
+    return [requestDatas copy];
 }
 @end

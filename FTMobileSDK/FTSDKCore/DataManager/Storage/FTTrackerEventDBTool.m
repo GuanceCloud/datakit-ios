@@ -151,7 +151,7 @@ static dispatch_once_t onceToken;
             [array addObject:item];
         }
     }];
-    return array;
+    return [array copy];
 }
 - (NSInteger)getDatasCount{
     __block NSInteger count =0;
