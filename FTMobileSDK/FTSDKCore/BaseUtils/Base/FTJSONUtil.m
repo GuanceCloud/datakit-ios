@@ -10,43 +10,14 @@
 #endif
 #import "FTJSONUtil.h"
 #import "FTLog+Private.h"
-#import "FTJsonWriter.h"
-@interface FTJSONUtil ()<FTJsonWriterDelegate>
-@property (nonatomic, copy) NSString *error;
-@property (nonatomic, strong) NSMutableData *acc;
+@interface FTJSONUtil ()
 @end
 @implementation FTJSONUtil
 
-/**
- *  @abstract
- *  Convert an Object to JsonData
- *
- *  @param obj Dictionary object Object to be converted
- *
- *  @return DATA obtained after conversion
- */
-- (NSData *)JSONSerializeDictObject:(NSDictionary *)obj {
-    self.error = nil;
-
-    self.acc = [[NSMutableData alloc] initWithCapacity:8096u];
-
-    FTJsonWriter *streamWriter = [FTJsonWriter writerWithDelegate:self];
-
-    if ([streamWriter writeObject:obj])
-        return self.acc;
-
-    self.error = streamWriter.error;
-    return nil;
-}
-
-- (void)writer:(FTJsonWriter *)writer appendBytes:(const void *)bytes length:(NSUInteger)length {
-    [self.acc appendBytes:bytes length:length];
-}
 + (NSString *)convertToJsonData:(NSDictionary *)dict{
     NSString *result = nil;
     @try {
-        FTJSONUtil *util = [FTJSONUtil new];
-        NSData *jsonData = [util JSONSerializeDictObject:dict];
+        NSData *jsonData = [FTJSONUtil JSONSerializeDictObject:dict];
         if (jsonData) {
             result = [[NSString alloc]initWithData:jsonData encoding:NSUTF8StringEncoding];
         }
@@ -54,6 +25,21 @@
         FTInnerLogError(@"%@ exception encoding api data: %@", self, exception);
     }
     return result;
+}
++ (nullable NSData *)JSONSerializeDictObject:(NSDictionary *)dict{
+    if (!dict) return nil;
+
+    if (![NSJSONSerialization isValidJSONObject:dict]) {
+        FTInnerLogError(@"Object is not a valid JSON object: %@", dict);
+        return nil;
+    }
+    NSError *error = nil;
+    NSData *jsonData = [NSJSONSerialization dataWithJSONObject:dict options:0 error:&error];
+    if (error) {
+        FTInnerLogError(@"JSON Serialization failed: %@", error.localizedDescription);
+        return nil;
+    }
+    return jsonData;
 }
 + (NSDictionary *)dictionaryWithJsonString:(NSString *)jsonString{
     id result = [self objectWithJsonString:jsonString];
