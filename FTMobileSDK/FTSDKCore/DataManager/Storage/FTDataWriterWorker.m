@@ -180,7 +180,7 @@
         long long error = [strongSelf getErrorTimeLineFromFileCache];
         if (error > 0) {
             FTInnerLogDebug(@"[RUM errorSampledConsume] Deal last process datas");
-            [[FTTrackerEventDBTool sharedManger] updateDatasWithType:FT_DATA_TYPE_RUM_CACHE toType:FT_DATA_TYPE_RUM toTime:error];
+            [[FTTrackerEventDBTool sharedManager] updateDatasWithType:FT_DATA_TYPE_RUM_CACHE toType:FT_DATA_TYPE_RUM toTime:error];
         }
     });
 }
@@ -192,10 +192,10 @@
         if (!strongSelf) return;
         if (errorDate>0) {
             FTInnerLogDebug(@"[RUM errorSampledConsume] Last process has fatal error.");
-            [[FTTrackerEventDBTool sharedManger] updateDatasWithType:FT_DATA_TYPE_RUM_CACHE toType:FT_DATA_TYPE_RUM toTime:errorDate];
+            [[FTTrackerEventDBTool sharedManager] updateDatasWithType:FT_DATA_TYPE_RUM_CACHE toType:FT_DATA_TYPE_RUM toTime:errorDate];
         }
         FTInnerLogDebug(@"[RUM errorSampledConsume] Delete last process datas");
-        [[FTTrackerEventDBTool sharedManger] deleteDatasWithType:FT_DATA_TYPE_RUM_CACHE toTime:strongSelf.processStartTime];
+        [[FTTrackerEventDBTool sharedManager] deleteDatasWithType:FT_DATA_TYPE_RUM_CACHE toTime:strongSelf.processStartTime];
     });
 }
 #pragma mark ========== CURRENT PROCESS ==========
@@ -209,7 +209,7 @@
     dispatch_sync(self.errorSampledConsumeQueue, ^{
         __strong typeof(weakSelf) strongSelf = weakSelf;
         if (!strongSelf) return;
-        if([[FTTrackerEventDBTool sharedManger] getDatasCountWithType:FT_DATA_TYPE_RUM_CACHE]==0){
+        if([[FTTrackerEventDBTool sharedManager] getDatasCountWithType:FT_DATA_TYPE_RUM_CACHE]==0){
             FTInnerLogDebug(@"[RUM errorSampledConsume] No datas.");
             return;
         }
@@ -219,10 +219,10 @@
         }
         if(self.lastErrorTimeInterval>0){
             FTInnerLogDebug(@"[RUM errorSampledConsume] has last error, update Datas Type");
-            [[FTTrackerEventDBTool sharedManger] updateDatasWithType:FT_DATA_TYPE_RUM_CACHE toType:FT_DATA_TYPE_RUM fromTime:strongSelf.processStartTime toTime:strongSelf.lastErrorTimeInterval];
+            [[FTTrackerEventDBTool sharedManager] updateDatasWithType:FT_DATA_TYPE_RUM_CACHE toType:FT_DATA_TYPE_RUM fromTime:strongSelf.processStartTime toTime:strongSelf.lastErrorTimeInterval];
         }
         FTInnerLogDebug(@"[RUM errorSampledConsume] Delete expire(%lld) datas",expire);
-        [[FTTrackerEventDBTool sharedManger] deleteDatasWithType:FT_DATA_TYPE_RUM_CACHE fromTime:strongSelf.processStartTime toTime:expire];
+        [[FTTrackerEventDBTool sharedManager] deleteDatasWithType:FT_DATA_TYPE_RUM_CACHE fromTime:strongSelf.processStartTime toTime:expire];
         FTInnerLogDebug(@"[RUM errorSampledConsume] End");
 
     });
