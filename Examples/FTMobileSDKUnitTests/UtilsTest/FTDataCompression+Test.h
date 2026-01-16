@@ -11,8 +11,8 @@
 NS_ASSUME_NONNULL_BEGIN
 
 @interface FTDataCompression ()
-+ (NSData *)rowCompress:(NSData *)data;
-+(UInt32 )adler32:(NSData*)data;
++ (NSData *)rawCompress:(NSData *)data;
++ (NSData *)adler32:(NSData*)data;
 + (BOOL)isGzippedData:(NSData *)data;
 + (BOOL)isDeflateData:(NSData *)data;
 @end

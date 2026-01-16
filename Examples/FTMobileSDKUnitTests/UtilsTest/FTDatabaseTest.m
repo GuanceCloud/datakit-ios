@@ -194,9 +194,9 @@
     [[FTTrackerEventDBTool sharedManger] deleteDataWithCount:50];
     long dSize1 = [[FTTrackerEventDBTool sharedManger] checkDatabaseSize];
     
-    [[FTTrackerEventDBTool sharedManger] deleteDataWithType:FT_DATA_TYPE_LOGGING count:10];
+    [[FTTrackerEventDBTool sharedManger] deleteDataWithType:FT_DATA_TYPE_LOGGING count:20];
     long dSize2 = [[FTTrackerEventDBTool sharedManger] checkDatabaseSize];
-    [[FTTrackerEventDBTool sharedManger] deleteDataWithType:FT_DATA_TYPE_RUM count:10];
+    [[FTTrackerEventDBTool sharedManger] deleteDataWithType:FT_DATA_TYPE_RUM count:20];
     long dSize3 = [[FTTrackerEventDBTool sharedManger] checkDatabaseSize];
 
     FTRecordModel *model = [[[FTTrackerEventDBTool sharedManger] getFirstRecords:100 withType:FT_DATA_TYPE_LOGGING] lastObject];

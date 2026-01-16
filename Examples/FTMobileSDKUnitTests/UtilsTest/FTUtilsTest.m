@@ -66,8 +66,7 @@
                           @"key6":@"test",
     };
     
-    FTJSONUtil *util = [FTJSONUtil new];
-    NSData *data = [util JSONSerializeDictObject:dict];
+    NSData *data = [FTJSONUtil JSONSerializeDictObject:dict];
     NSString *jsonString = [[NSString alloc]initWithData:data encoding:NSUTF8StringEncoding];
     NSData *jsonData = [jsonString dataUsingEncoding:NSUTF8StringEncoding];
     NSError *err;
