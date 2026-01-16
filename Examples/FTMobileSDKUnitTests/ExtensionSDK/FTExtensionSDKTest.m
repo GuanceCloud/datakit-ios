@@ -237,7 +237,7 @@
         XCTAssertNil(error);
     }];
     [[FTTrackDataManager sharedInstance] insertCacheToDB];
-    NSArray *array = [[FTTrackerEventDBTool sharedManger] getAllDatas];
+    NSArray *array = [[FTTrackerEventDBTool sharedManager] getAllDatas];
     FTRecordModel *model = [array lastObject];
     NSDictionary *dict = [FTJSONUtil dictionaryWithJsonString:model.data];
     NSDictionary *op = dict[@"opdata"];
