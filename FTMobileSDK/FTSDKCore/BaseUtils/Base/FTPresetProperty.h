@@ -20,7 +20,7 @@ NS_ASSUME_NONNULL_BEGIN
 @property (nonatomic, strong, readonly) NSDictionary *rumTags;
 
 /// Set data modifier
-@property (nonatomic, copy, nullable) FTLineDataModifier lineDataModifier;
+@property (nonatomic, copy, readonly, nullable) FTLineDataModifier lineDataModifier;
 /// Device name
 + (NSString *)deviceInfo;
 + (NSString *)cpuArch;
@@ -37,13 +37,13 @@ NS_ASSUME_NONNULL_BEGIN
 /// - Parameter env: Environment
 /// - Parameter service: Service
 /// - Parameter globalContext: Global custom properties
-- (void)startWithVersion:(NSString *)version sdkVersion:(NSString *)sdkVersion env:(NSString *)env service:(NSString *)service globalContext:(NSDictionary *)globalContext pkgInfo:(nullable NSDictionary *)pkgInfo;
+- (void)startWithVersion:(NSString *)version sdkVersion:(NSString *)sdkVersion env:(NSString *)env service:(NSString *)service globalContext:(nullable NSDictionary *)globalContext pkgInfo:(nullable NSDictionary *)pkgInfo;
 
-- (void)setDataModifier:(FTDataModifier)dataModifier lineDataModifier:(FTLineDataModifier)lineDataModifier;
+- (void)setDataModifier:(nullable FTDataModifier)dataModifier lineDataModifier:(nullable FTLineDataModifier)lineDataModifier;
 
-- (void)setRUMAppID:(NSString *)appID sampleRate:(int)sampleRate sessionOnErrorSampleRate:(int)sessionOnErrorSampleRate rumGlobalContext:(NSDictionary *)rumGlobalContext;
+- (void)setRUMAppID:(NSString *)appID sampleRate:(int)sampleRate sessionOnErrorSampleRate:(int)sessionOnErrorSampleRate rumGlobalContext:(nullable NSDictionary *)rumGlobalContext;
 
--(void)setLogGlobalContext:(NSDictionary *)logGlobalContext;
+-(void)setLogGlobalContext:(nullable NSDictionary *)logGlobalContext;
 
 - (NSDictionary *)rumDynamicTags;
 
