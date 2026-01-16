@@ -11,59 +11,62 @@
 #import "compression.h"
 #import <zlib.h>
 @implementation FTDataCompression
-NSData *bigEndianUInt32ToData(uint32_t value) {
-    uint8_t bytes[4];
-      
-    // Manually place each byte into the array in big-endian order
-    bytes[0] = (value >> 24) & 0xFF;
-    bytes[1] = (value >> 16) & 0xFF;
-    bytes[2] = (value >> 8) & 0xFF;
-    bytes[3] = value & 0xFF;
-      
-    return [NSData dataWithBytes:bytes length:sizeof(bytes)];
-}
+
 + (nullable NSData *)deflate:(NSData *)data{
-    if (data.length == 0){
+    if (!data || data.length == 0){
         return nil;
     }
     uint8_t bytes[] = {0x78, 0x5e};
     NSData *header = [NSData dataWithBytes:bytes length:sizeof(bytes)];
-    NSData *raw = [self rowCompress:data];
+    NSData *raw = [self rawCompress:data];
     if(raw == nil){
         return nil;
     }
-    UInt32 checksum = [self adler32:data];
-    NSData *checksumData = bigEndianUInt32ToData(checksum);
-    if (data.length>header.length+raw.length+checksumData.length){
-        NSMutableData *result = [NSMutableData dataWithData:header];
-        [result appendData:raw];
-        [result appendData:checksumData];
-        return result;
-    }
-    return nil;
-}
-+ (nullable NSData *)rowCompress:(NSData *)data{
-    if (!data) {
+    NSData *checksumData = [self adler32:data];
+    if (!checksumData) {
         return nil;
     }
-    if (@available(iOS 13.0,tvOS 13.0,macOS 10.15, *)) {
-        NSError *error;
-        return [data compressedDataUsingAlgorithm:NSDataCompressionAlgorithmZlib error:&error];
-    } else {
-        NSMutableData* rData = [[NSMutableData alloc] initWithLength:[data length]];
-        rData.length = compression_encode_buffer(rData.mutableBytes, [data length], data.bytes, [data length], nil, COMPRESSION_ZLIB);
-        if (rData.length <= 0) {
-            return nil;
-        }
-        return rData;
+    NSUInteger compressedTotalLength = header.length + raw.length + checksumData.length;
+    if (compressedTotalLength >= data.length) {
+        return nil;
     }
+    
+    NSMutableData *result = [NSMutableData dataWithData:header];
+    [result appendData:raw];
+    [result appendData:checksumData];
+    
+    return result;
 }
-+(UInt32 )adler32:(NSData*)data{
-    const Bytef *bytes = (const Bytef *)[data bytes];
-    uInt len = (uInt)[data length];
-    uLong adler = adler32(1, Z_NULL, 0); // Initialize Adler-32 to 1
-    adler = adler32(adler, bytes, len); // Calculate checksum
-    return (UInt32)adler;
++ (nullable NSData *)rawCompress:(NSData *)data{
+    if (!data || !data.bytes) {
+        return nil;
+    }
+    size_t sourceSize = data.length;
+    size_t bufferSize = sourceSize + (sourceSize * 5 / 100) + 16;
+    uint8_t *buffer = malloc(bufferSize);
+    if (!buffer) return nil;
+    
+    size_t compressedSize = compression_encode_buffer(buffer, bufferSize,
+                                                      data.bytes, sourceSize,
+                                                      NULL,
+                                                      COMPRESSION_ZLIB);
+    
+    if (compressedSize == 0) {
+        free(buffer);
+        return nil;
+    }
+    
+    return [NSData dataWithBytesNoCopy:buffer length:compressedSize freeWhenDone:YES];
+}
++ (nullable NSData *)adler32:(NSData *)data {
+    if (!data || !data.bytes) {
+        return nil;
+    }
+    uLong adler = adler32(1L, data.bytes, (uInt)data.length);
+    
+    uint32_t bigEndianAdler = CFSwapInt32HostToBig((uint32_t)adler);
+    
+    return [NSData dataWithBytes:&bigEndianAdler length:sizeof(uint32_t)];
 }
 + (NSData *)gzip:(NSData *)data{
     if (data.length == 0){
