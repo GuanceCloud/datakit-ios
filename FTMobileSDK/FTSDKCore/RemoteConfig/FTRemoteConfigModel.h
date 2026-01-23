@@ -39,6 +39,9 @@ NS_ASSUME_NONNULL_BEGIN
 @property (nonatomic, copy, nullable) NSArray *logLevelFilters;
 @property (nonatomic, strong, nullable) NSNumber *logEnableCustomLog;
 
+@property (nonatomic, strong, nullable) NSNumber *sessionReplaySampleRate;
+@property (nonatomic, strong, nullable) NSNumber *sessionReplayOnErrorSampleRate;
+
 @end
 
 NS_ASSUME_NONNULL_END

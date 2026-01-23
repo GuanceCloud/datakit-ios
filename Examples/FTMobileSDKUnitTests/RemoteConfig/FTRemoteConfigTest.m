@@ -233,7 +233,7 @@
     };
     FTSessionReplayConfig *srConfig = [[FTSessionReplayConfig alloc]init];
     FTSessionReplayConfig *copySrConfig = [srConfig copy];
-    [copySrConfig mergeWithRemoteConfigDict:testSRDict];
+    [copySrConfig mergeWithRemoteConfigModel:[[FTRemoteConfigModel alloc] initWithDict:testSRDict]];
     XCTAssertTrue(srConfig.sampleRate != copySrConfig.sampleRate && copyLogger.samplerate == 80);
     XCTAssertTrue(srConfig.sessionReplayOnErrorSampleRate != copySrConfig.sessionReplayOnErrorSampleRate && copySrConfig.sessionReplayOnErrorSampleRate == 50);
 
@@ -331,7 +331,7 @@
     };
     FTSessionReplayConfig *srConfig = [[FTSessionReplayConfig alloc]init];
     FTSessionReplayConfig *copySrConfig = [srConfig copy];
-    [copySrConfig mergeWithRemoteConfigDict:testSRDict];
+    [copySrConfig mergeWithRemoteConfigModel:[[FTRemoteConfigModel alloc] initWithDict:testSRDict]];
     XCTAssertTrue(srConfig.sampleRate == copySrConfig.sampleRate);
     XCTAssertTrue(srConfig.sessionReplayOnErrorSampleRate == copySrConfig.sessionReplayOnErrorSampleRate);
 }

@@ -71,7 +71,7 @@ static dispatch_once_t onceToken;
         return;
     }
     FTSessionReplayConfig *copyConfig = [config copy];
-    [copyConfig mergeWithRemoteConfigDict:[[FTRemoteConfigManager sharedInstance] getLocalRemoteConfig]];
+    [copyConfig mergeWithRemoteConfigModel:[FTRemoteConfigManager sharedInstance].lastRemoteModel];
     [FTWKWebViewHandler sharedInstance].enableLinkRUMKeys = copyConfig.enableLinkRUMKeys;
     FTSessionReplayFeature *sessionReplayFeature = [[FTSessionReplayFeature alloc]initWithConfig:copyConfig];
     FTFeatureStores *srStore = [self registerFeature:sessionReplayFeature];

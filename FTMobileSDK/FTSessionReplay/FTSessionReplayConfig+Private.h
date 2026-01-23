@@ -9,10 +9,10 @@
 #import "FTSessionReplayConfig.h"
 #import "FTSRNodeWireframesBuilder.h"
 NS_ASSUME_NONNULL_BEGIN
-
+@class FTRemoteConfigModel;
 @interface FTSessionReplayConfig ()
 @property (nonatomic, strong) NSArray<id <FTSRWireframesRecorder>>*additionalNodeRecorders;
--(void)mergeWithRemoteConfigDict:(NSDictionary *)dict;
+-(void)mergeWithRemoteConfigModel:(FTRemoteConfigModel *)model;
 @end
 
 NS_ASSUME_NONNULL_END

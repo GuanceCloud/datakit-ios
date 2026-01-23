@@ -51,6 +51,9 @@ NSString * const FT_R_LOG_SAMPLERATE = @"logSampleRate";
 NSString * const FT_R_LOG_LEVEL_FILTERS = @"logLevelFilters";
 NSString * const FT_R_LOG_ENABLE_CUSTOM_LOG = @"logEnableCustomLog";
 
+NSString * const FT_R_SR_SAMPLERATE = @"sessionReplaySampleRate";
+NSString * const FT_R_SR_ON_ERROR_SAMPLE_RATE = @"sessionReplayOnErrorSampleRate";
+
 NSString * const FT_MD5 = @"MD5";
 
 @interface FTRemoteConfigModel()
@@ -124,6 +127,10 @@ NSString * const FT_MD5 = @"MD5";
     }
     SetNumberFromDict(dict,FT_R_LOG_ENABLE_CUSTOM_LOG,self.logEnableCustomLog);
 
+    // ---- SessionReplay ----
+    SetNumberFromDict(dict,FT_R_SR_SAMPLERATE,self.sessionReplaySampleRate);
+    SetNumberFromDict(dict,FT_R_SR_ON_ERROR_SAMPLE_RATE,self.sessionReplayOnErrorSampleRate);
+    
     // ---- MD5 ----
     SetStringFromDict(dict, FT_MD5, self.md5Str);
 }
@@ -224,8 +231,15 @@ NSString * const FT_MD5 = @"MD5";
     if (self.logEnableCustomLog) {
         dict[FT_R_LOG_ENABLE_CUSTOM_LOG] = self.logEnableCustomLog;
     }
+    // ===== 5. SessionReplay  =====
+    if (self.sessionReplaySampleRate) {
+        dict[FT_R_SR_SAMPLERATE] = self.sessionReplaySampleRate;
+    }
+    if (self.sessionReplayOnErrorSampleRate) {
+        dict[FT_R_SR_ON_ERROR_SAMPLE_RATE] = self.sessionReplayOnErrorSampleRate;
+    }
     
-    // ===== 5. MD5  =====
+    // ===== 6. MD5  =====
     if (self.md5Str) {
         dict[FT_MD5] = self.md5Str;
     }
@@ -244,6 +258,8 @@ NSString * const FT_MD5 = @"MD5";
                             FT_R_TRACE_SAMPLERATE, FT_R_TRACE_ENABLE_AUTO_TRACE, FT_R_TRACE_TRACE_TYPE,
                             // Log
                             FT_R_LOG_SAMPLERATE, FT_R_LOG_LEVEL_FILTERS, FT_R_LOG_ENABLE_CUSTOM_LOG,
+                            // SessionReplay
+                            FT_R_SR_SAMPLERATE,FT_R_SR_ON_ERROR_SAMPLE_RATE,
                             // MD5
                             FT_MD5,
                             nil];
@@ -293,6 +309,10 @@ NSString * const FT_MD5 = @"MD5";
     copyModel.logSampleRate = self.logSampleRate;
     copyModel.logLevelFilters = [self.logLevelFilters copy];
     copyModel.logEnableCustomLog = self.logEnableCustomLog;
+    
+    // ---- SessionReplay ----
+    copyModel.sessionReplaySampleRate = self.sessionReplaySampleRate;
+    copyModel.sessionReplayOnErrorSampleRate = self.sessionReplayOnErrorSampleRate;
     
     copyModel.context = [self.context copy];
     copyModel.md5Str = [self.md5Str copy];
