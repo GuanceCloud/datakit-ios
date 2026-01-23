@@ -10,11 +10,7 @@
 #import <Network/Network.h>
 #import "FTReachability.h"
 #import "FTLog+Private.h"
-typedef NS_ENUM(NSInteger, FTReachable) {
-    yes,
-    no,
-    maybe,
-};
+
 NSString *const FTConnectivityCellular = @"cellular";
 NSString *const FTConnectivityWiFi = @"wifi";
 NSString *const FTConnectivityNone = @"unreachable";
@@ -25,8 +21,8 @@ NSString *const FTConnectivityUnknown = @"unknown";
 @property (nonatomic, assign, readwrite) BOOL isConnected;
 @property (nonatomic, copy) NSString *networkType;
 @property (nonatomic, strong) FTReachability *reachability;
-@property(strong, nonatomic, readonly) NSPointerArray *networkObservers;
-@property(strong, nonatomic, readonly) NSLock *observerLock;
+@property (nonatomic, strong, readonly) NSPointerArray *networkObservers;
+@property (nonatomic, strong, readonly) NSLock *observerLock;
 @property (atomic, assign) BOOL isNotifying;
 
 @end
@@ -151,7 +147,7 @@ NSString *const FTConnectivityUnknown = @"unknown";
 #else
     [_reachability stopNotifier];
 #endif
-    self.isNotifying = YES;
+    self.isNotifying = NO;
 }
 - (void)stop {
   [self cancel];

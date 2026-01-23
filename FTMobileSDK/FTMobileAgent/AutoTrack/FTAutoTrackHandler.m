@@ -87,7 +87,8 @@
                    action:(BOOL)trackAction
       addRumDatasDelegate:(id<FTRumDatasProtocol>)delegate
               viewHandler:(FTViewTrackingHandler)viewHandler
-            actionHandler:(FTActionTrackingHandler)actionHandler{
+            actionHandler:(FTActionTrackingHandler)actionHandler
+           displayMonitor:(FTDisplayRateMonitor *)displayMonitor{
     _autoTrackView = trackView;
     _autoTrackAction = trackAction;
     _stack = [NSMutableArray new];
@@ -104,7 +105,7 @@
         self.actionHandler = self;
         [self hookTargetAction];
         self.actionTrackingHandler = actionHandler ? actionHandler : [FTDefaultActionTrackingHandler new];
-        self.launchTracker = [[FTAppLaunchTracker alloc]initWithDelegate:self];
+        self.launchTracker = [[FTAppLaunchTracker alloc]initWithDelegate:self displayMonitor:displayMonitor];
     }
 }
 - (void)hookViewControllerLifeCycle{
@@ -154,9 +155,10 @@
         }
     }
 }
--(void)ftAppColdStart:(NSDate *)launchTime duration:(NSNumber *)duration isPreWarming:(BOOL)isPreWarming{
+-(void)ftAppColdStart:(NSDate *)launchTime duration:(NSNumber *)duration isPreWarming:(BOOL)isPreWarming fields:(NSDictionary *)fields{
     if (self.actionTrackingHandler && [self.actionTrackingHandler respondsToSelector:@selector(rumLaunchActionWithLaunchType:)]) {
         FTRUMAction *action = [self.actionTrackingHandler rumLaunchActionWithLaunchType:isPreWarming?FTLaunchWarm:FTLaunchCold];
+        action.property = fields;
         if (action == nil) {
             return;
         }

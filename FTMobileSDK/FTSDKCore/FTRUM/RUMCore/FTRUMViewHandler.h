@@ -10,7 +10,8 @@
 NS_ASSUME_NONNULL_BEGIN
 typedef void(^FTErrorHandled)(void);
 
-@class FTRUMMonitor;
+@class FTRUMMonitor,FTRUMContext;
+
 @interface FTRUMViewHandler : FTRUMHandler
 @property (nonatomic, strong,readonly) FTRUMContext *context;
 @property (nonatomic, assign,readwrite) BOOL isActiveView;

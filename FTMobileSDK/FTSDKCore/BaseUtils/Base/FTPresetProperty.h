@@ -18,7 +18,6 @@ NS_ASSUME_NONNULL_BEGIN
 
 @property (nonatomic, strong, readonly) NSDictionary *loggerTags;
 @property (nonatomic, strong, readonly) NSDictionary *rumTags;
-@property (nonatomic, strong, readonly) NSDictionary *rumStaticFields;
 @property (nonatomic, strong, readonly) NSDictionary *sessionReplayTags;
 
 /// Set data modifier
@@ -27,7 +26,7 @@ NS_ASSUME_NONNULL_BEGIN
 + (NSString *)deviceInfo;
 + (NSString *)cpuArch;
 + (NSString *)CPUArchForMajor:(cpu_type_t)majorCode minor:(cpu_subtype_t)minorCode;
-#if FT_MAC
+#if FT_HOST_MAC
 + (NSString *)getDeviceUUID;
 + (NSString *)macOSDeviceModel;
 #endif

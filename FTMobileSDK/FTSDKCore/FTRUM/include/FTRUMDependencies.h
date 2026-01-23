@@ -11,6 +11,8 @@
 #import "FTEnumConstant.h"
 #import "FTRUMMonitor.h"
 #import "FTFatalErrorContext.h"
+#import "FTErrorDataProtocol.h"
+
 NS_ASSUME_NONNULL_BEGIN
 
 @interface FTRUMDependencies : NSObject
@@ -19,13 +21,12 @@ NS_ASSUME_NONNULL_BEGIN
 @property (nonatomic, assign) BOOL enableResourceHostIP;
 @property (nonatomic, copy) NSString *appId;
 @property (nonatomic, weak) id<FTRUMDataWriteProtocol> writer;
-@property (nonatomic, assign) ErrorMonitorType errorMonitorType;
+@property (nonatomic, strong) id<FTErrorMonitorInfoWrapper> errorMonitorInfoWrapper;
 @property (nonatomic, strong) FTRUMMonitor *monitor;
 @property (nonatomic, strong, nullable) FTFatalErrorContext *fatalErrorContext;
+@property (atomic, strong) NSDictionary *linkRUMSessionContext;
 @property (atomic, strong, nullable) NSDictionary *lastViewUserCustomDatas;
 
-
-@property (nonatomic, copy) NSString *networkType;
 //The following properties need to be readwrite in rumQueue
 @property (nonatomic, assign) BOOL currentSessionSample;
 @property (nonatomic, strong) NSNumber *sessionHasReplay;

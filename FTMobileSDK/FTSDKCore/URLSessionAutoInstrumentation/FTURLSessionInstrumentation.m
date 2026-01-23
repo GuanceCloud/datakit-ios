@@ -129,6 +129,9 @@ static dispatch_once_t onceToken;
     self.interceptor.resourcePropertyProvider = resourcePropertyProvider;
     self.interceptor.sessionTaskErrorFilter = sessionTaskErrorFilter;
 }
+- (void)updateTraceSampleRate:(int)sampleRate{
+    [_tracer updateTraceSampleRate:sampleRate];
+}
 - (void)setRumResourceHandler:(id<FTRumResourceProtocol>)handler{
     self.interceptor.rumResourceHandler = handler;
 }

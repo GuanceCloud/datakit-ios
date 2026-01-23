@@ -54,7 +54,9 @@ let package = Package(
         ),
         .target(name: "_FTConfig",
                 dependencies: ["_FTBaseUtils_Base",
-                               "_FTRUM"],
+                               "_FTRUM",
+                               "_FTProtocol",
+                              ],
                 path: "FTMobileSDK/FTMobileAgent",
                 sources: ["Config"],
                 publicHeadersPath: "Config",
@@ -85,7 +87,11 @@ let package = Package(
             path: "FTMobileSDK/FTSDKCore/FTRUM",
             cSettings: [
                 .headerSearchPath("Monitor"),
-                .headerSearchPath("Crash"),
+                .headerSearchPath("FTCrash"),
+                .headerSearchPath("FTCrash/RecordingCore"),
+                .headerSearchPath("FTCrash/Recording"),
+                .headerSearchPath("FTCrash/Recording/Monitors"),
+                .headerSearchPath("RUMCore"),
             ]
         ),
         .target(name: "_FTURLSessionAutoInstrumentation",

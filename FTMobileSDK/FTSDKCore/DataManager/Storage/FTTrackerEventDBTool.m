@@ -279,25 +279,40 @@ static dispatch_once_t onceToken;
     [[self dbQueue] close];
 }
 static long pageSize = 0;
-- (long)checkDatabaseSize{
-    __block long fileSize = -1;
+- (long long)checkDatabaseSize {
+    __block long long actualUsedSize = -1;
     [self zy_inDatabase:^(ZY_FMDatabase *db){
-        if(pageSize<=0){
-            ZY_FMResultSet *set = [db executeQuery:@"PRAGMA page_size;"];
-            while([set next]) {
-                pageSize = [set longForColumn:@"page_size"];
+        if (pageSize <= 0) {
+            ZY_FMResultSet *pageSizeSet = [db executeQuery:@"PRAGMA page_size;"];
+            if ([pageSizeSet next]) {
+                pageSize = [pageSizeSet longForColumn:@"page_size"];
             }
-            [set close];
+            [pageSizeSet close];
+            
+            if (pageSize <= 0) {
+                FTInnerLogError(@"get page_size fail，default set 4096");
+                pageSize = 4096;
+            }
         }
-        ZY_FMResultSet *countSet = [db executeQuery:@"PRAGMA page_count;"];
-        long pageCount = 0;
-        while([countSet next]) {
-            pageCount = [countSet longForColumn:@"page_count"];
+        
+        long totalPageCount = 0;
+        ZY_FMResultSet *pageCountSet = [db executeQuery:@"PRAGMA page_count;"];
+        if ([pageCountSet next]) {
+            totalPageCount = [pageCountSet longForColumn:@"page_count"];
         }
-        [countSet close];
-        fileSize = pageCount * pageSize;
+        [pageCountSet close];
+        
+        long freePageCount = 0;
+        ZY_FMResultSet *freePageSet = [db executeQuery:@"PRAGMA freelist_count;"];
+        if ([freePageSet next]) {
+            freePageCount = [freePageSet longForColumn:@"freelist_count"];
+        }
+        [freePageSet close];
+        
+        long usedPageCount = totalPageCount - freePageCount;
+        actualUsedSize = (long long)usedPageCount * pageSize;
     }];
-    return fileSize;
+    return actualUsedSize;
 }
 - (BOOL)zy_isExistTable:(NSString *)tableName{
     __block NSInteger count = 0;

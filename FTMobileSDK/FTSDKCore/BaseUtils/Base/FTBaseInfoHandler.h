@@ -29,7 +29,7 @@ NS_ASSUME_NONNULL_BEGIN
 /// Get random uuid string (no `-`, all lowercase)
 + (NSString *)randomUUID;
 + (NSString *)random16UUID;
-#if FT_IOS
+#if FT_HOST_IOS
 /// Telephony carrier
 +(NSString *)telephonyCarrier;
 #endif

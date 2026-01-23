@@ -5,6 +5,8 @@
 //  Created by hulilei on 2025/5/12.
 //  Copyright © 2025 DataFlux-cn. All rights reserved.
 //
+#ifndef FTDataModifier_h
+#define FTDataModifier_h
 
 #import <Foundation/Foundation.h>
 
@@ -23,3 +25,5 @@ typedef id _Nullable(^FTDataModifier)(NSString * _Nonnull key,id _Nonnull value)
 ///   - data: merged key-value pairs
 ///   - return: modified key-value pairs (return nil or empty dictionary to indicate no change)
 typedef NSDictionary<NSString *,id> *_Nullable (^FTLineDataModifier)(NSString * _Nonnull measurement,NSDictionary<NSString *,id> * _Nonnull data);
+
+#endif

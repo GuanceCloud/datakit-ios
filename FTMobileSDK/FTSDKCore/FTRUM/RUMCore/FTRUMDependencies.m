@@ -17,7 +17,7 @@
     dependencies.enableResourceHostIP = self.enableResourceHostIP;
     dependencies.appId = self.appId;
     dependencies.writer = self.writer;
-    dependencies.errorMonitorType = self.errorMonitorType;
+    dependencies.errorMonitorInfoWrapper = self.errorMonitorInfoWrapper;
     dependencies.monitor = self.monitor;
     dependencies.fatalErrorContext = self.fatalErrorContext;
     dependencies.currentSessionSample = self.currentSessionSample;

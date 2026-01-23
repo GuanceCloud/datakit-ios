@@ -102,8 +102,11 @@
 }
 - (void)testURLSession_shareSession_firebase{
     [self setSDK];
-    [FIRApp configure];
+    [FIRApp configureWithOptions:[self mockFIRAppOption]];
+    XCTestExpectation *exception = [[XCTestExpectation alloc]init];
+    dispatch_group_t group = dispatch_group_create();
     for (int i = 0; i<1000; i++) {
+        dispatch_group_enter(group);
         dispatch_async(dispatch_get_global_queue(0, 0), ^{
             NSString *urlStr = [NSString stringWithFormat:@"http://testing-ft2x-api.cloudcare.cn/api/v1/account/permissions%d",i];
             NSURL *url = [NSURL URLWithString:urlStr];
@@ -111,18 +114,26 @@
             NSURLSession *session = [NSURLSession sharedSession];
             NSURLSessionTask *task = [session dataTaskWithRequest:request completionHandler:^(NSData * _Nullable data, NSURLResponse * _Nullable response, NSError * _Nullable error) {
                 [[NSURLCache sharedURLCache] removeCachedResponseForRequest:request];
+                dispatch_group_leave(group);
             }];
             [task resume];
             [session finishTasksAndInvalidate];
         });
     }
+    dispatch_group_notify(group, dispatch_get_main_queue(), ^{
+        [exception fulfill];
+    });
+    [self waitForExpectations:@[exception]];
     [FIRApp performSelector:@selector(resetApps)];
     [FTMobileAgent shutDown];
 }
 - (void)testURLSession_customSession_noDelegate_firebase{
     [self setSDK];
-    [FIRApp configure];
+    [FIRApp configureWithOptions:[self mockFIRAppOption]];
+    XCTestExpectation *exception = [[XCTestExpectation alloc]init];
+    dispatch_group_t group = dispatch_group_create();
     for (int i = 0; i<1000; i++) {
+        dispatch_group_enter(group);
         dispatch_async(dispatch_get_global_queue(0, 0), ^{
             NSString *urlStr = [NSString stringWithFormat:@"http://testing-ft2x-api.cloudcare.cn/api/v1/account/permissions%d",i];
             NSURL *url = [NSURL URLWithString:urlStr];
@@ -130,17 +141,22 @@
             NSURLSession *session = [NSURLSession sessionWithConfiguration:[NSURLSessionConfiguration defaultSessionConfiguration]];
             NSURLSessionTask *task = [session dataTaskWithRequest:request completionHandler:^(NSData * _Nullable data, NSURLResponse * _Nullable response, NSError * _Nullable error) {
                 [[NSURLCache sharedURLCache] removeCachedResponseForRequest:request];
+                dispatch_group_leave(group);
             }];
             [task resume];
             [session finishTasksAndInvalidate];
         });
     }
+    dispatch_group_notify(group, dispatch_get_main_queue(), ^{
+        [exception fulfill];
+    });
+    [self waitForExpectations:@[exception]];
     [FIRApp performSelector:@selector(resetApps)];
     [FTMobileAgent shutDown];
 }
 - (void)testURLSession_customSession_delegate_firebase{
     [self setSDK];
-    [FIRApp configure];
+    [FIRApp configureWithOptions:[self mockFIRAppOption]];
     NSMutableSet *set = [NSMutableSet new];
     XCTestExpectation *exception = [[XCTestExpectation alloc]init];
     dispatch_group_t group = dispatch_group_create();
@@ -181,5 +197,17 @@
     XCTAssertTrue(classDealloc);
     [FIRApp performSelector:@selector(resetApps)];
     [FTMobileAgent shutDown];
+}
+- (FIROptions *)mockFIRAppOption{
+    NSInteger projectNumber = arc4random();
+    uint64_t fingerprint;
+    arc4random_buf(&fingerprint, sizeof(fingerprint));
+    NSString *fingerprintHex = [NSString stringWithFormat:@"%llx", fingerprint];
+    NSString *appID = [NSString stringWithFormat:@"1:%ld:ios:%@", projectNumber, fingerprintHex];
+    
+    FIROptions *options = [[FIROptions alloc]initWithGoogleAppID:appID GCMSenderID:[NSString stringWithFormat:@"%ld",(long)projectNumber]];
+    options.APIKey = @"A0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ01";
+    options.projectID = @"fir-poc-abcde";
+    return options;
 }
 @end

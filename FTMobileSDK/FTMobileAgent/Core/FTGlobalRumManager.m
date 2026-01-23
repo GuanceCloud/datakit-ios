@@ -19,7 +19,7 @@
 #import "FTAutoTrackHandler.h"
 #import "FTAppLifeCycle.h"
 #import "FTRUMManager.h"
-#import "FTAppLaunchTracker.h"
+#import "FTDisplayRateMonitor.h"
 #import "FTTracer.h"
 #import "FTSessionTaskHandler.h"
 #import "FTURLSessionInterceptor.h"
@@ -32,16 +32,15 @@
 #import "FTBaseInfoHandler.h"
 #import "FTCrash.h"
 #import "FTFatalErrorContext.h"
+#import "FTErrorMonitorInfo.h"
 #import "FTModuleManager.h"
 @interface FTGlobalRumManager ()<FTRunloopDetectorDelegate,FTAppLifeCycleDelegate>
 @property (nonatomic, strong) FTRumConfig *rumConfig;
 @property (nonatomic, strong) FTRUMDependencies *dependencies;
-@property (nonatomic, strong) FTRUMMonitor *monitor;
 @property (nonatomic, strong) FTLongTaskManager *longTaskManager;
 @end
 #if !TARGET_OS_TV
-@interface FTGlobalRumManager()
-@property (nonatomic, strong) FTWKWebViewJavascriptBridge *jsBridge;
+@interface FTGlobalRumManager()<FTWKWebViewRumDelegate>
 @end
 #endif
 @implementation FTGlobalRumManager
@@ -62,26 +61,44 @@ static NSObject *sharedInstanceLock;
 }
 -(void)setRumConfig:(FTRumConfig *)rumConfig writer:(id<FTRUMDataWriteProtocol>)writer{
     _rumConfig = rumConfig;
+    FTDisplayRateMonitor *displayMonitor = nil;
+#if !FT_MAC
+        if (rumConfig.deviceMetricsMonitorType & DeviceMetricsMonitorFps || rumConfig.enableTraceUserAction) {
+            displayMonitor = [[FTDisplayRateMonitor alloc]init];
+        }
+#endif
+    FTRUMMonitor *monitor = [[FTRUMMonitor alloc]initWithMonitorType:(DeviceMetricsMonitorType)rumConfig.deviceMetricsMonitorType frequency:(MonitorFrequency)rumConfig.monitorFrequency];
+    monitor.displayMonitor = displayMonitor;
     FTRUMDependencies *dependencies = [[FTRUMDependencies alloc]init];
-    dependencies.monitor = [[FTRUMMonitor alloc]initWithMonitorType:(DeviceMetricsMonitorType)rumConfig.deviceMetricsMonitorType frequency:(MonitorFrequency)rumConfig.monitorFrequency];
+    FTErrorMonitorInfo *errorInfoWrapper = [[FTErrorMonitorInfo alloc]initWithMonitorType:(ErrorMonitorType)rumConfig.errorMonitorType];
+    dependencies.monitor = monitor;
     dependencies.writer = writer;
     dependencies.sessionOnErrorSampleRate = rumConfig.sessionOnErrorSampleRate;
     dependencies.sampleRate = rumConfig.samplerate;
     dependencies.enableResourceHostIP = rumConfig.enableResourceHostIP;
-    dependencies.errorMonitorType = (ErrorMonitorType)rumConfig.errorMonitorType;
-    dependencies.appId = rumConfig.appid;
-    dependencies.fatalErrorContext = [FTFatalErrorContext new];
+    dependencies.errorMonitorInfoWrapper = errorInfoWrapper;
+    dependencies.fatalErrorContext = [[FTFatalErrorContext alloc]initWithErrorInfoProvider:errorInfoWrapper];
     self.dependencies = dependencies;
     self.rumManager = [[FTRUMManager alloc]initWithRumDependencies:self.dependencies];
-    [[FTAutoTrackHandler sharedInstance] startWithTrackView:rumConfig.enableTraceUserView action:rumConfig.enableTraceUserAction addRumDatasDelegate:self.rumManager viewHandler:rumConfig.viewTrackingHandler actionHandler:rumConfig.actionTrackingHandler];
+    [[FTAutoTrackHandler sharedInstance] startWithTrackView:rumConfig.enableTraceUserView action:rumConfig.enableTraceUserAction addRumDatasDelegate:self.rumManager viewHandler:rumConfig.viewTrackingHandler actionHandler:rumConfig.actionTrackingHandler displayMonitor:displayMonitor];
     [[FTAppLifeCycle sharedInstance] addAppLifecycleDelegate:self];
+    BOOL lastSessionHadCrash = NO;
     if(rumConfig.enableTrackAppCrash){
-        [[FTCrash shared] addErrorDataDelegate:self.rumManager];
+        [FTCrash setupWithMonitoringType:(FTCrashCMonitorType)rumConfig.crashMonitoring writer:writer enableMonitorMemory:[errorInfoWrapper enableMonitorMemory] enableMonitorCpu:[errorInfoWrapper enableMonitorCpu]];
+        dependencies.fatalErrorContext.onChange = ^(NSDictionary * _Nonnull context) {
+            [FTCrash shared].userInfo = context;
+        };
+        // for sessionOnErrorSampled
+        if([FTCrash shared].crashedLastLaunch){
+            lastSessionHadCrash = YES;
+            long long crashDate = [FTCrash shared].crashedLastTimestamp * 1e9;
+            [dependencies.writer lastFatalErrorIfFound:crashDate];
+        }
     }
     //Collect view, resource, jsBridge
     if (rumConfig.enableTrackAppANR||rumConfig.enableTrackAppFreeze) {
-        _longTaskManager = [[FTLongTaskManager alloc]initWithDependencies:dependencies delegate:self enableTrackAppANR:rumConfig.enableTrackAppANR enableTrackAppFreeze:rumConfig.enableTrackAppFreeze                                        freezeDurationMs:rumConfig.freezeDurationMs];
-    }else{
+        _longTaskManager = [[FTLongTaskManager alloc]initWithDependencies:dependencies delegate:self backtraceReporting:[FTCrash shared].backtraceReporting enableTrackAppANR:rumConfig.enableTrackAppANR enableTrackAppFreeze:rumConfig.enableTrackAppFreeze                                        freezeDurationMs:rumConfig.freezeDurationMs];
+    }else if(!lastSessionHadCrash){
         [dependencies.writer lastFatalErrorIfFound:0];
     }
 #if !TARGET_OS_TV
@@ -89,12 +106,56 @@ static NSObject *sharedInstanceLock;
 #endif
     [FTExternalDataManager sharedManager].delegate = self.rumManager;
 }
+-(void)updateSampleRate:(int)sampleRate sessionOnErrorSampleRate:(int)sessionOnErrorSampleRate{
+    [self.rumManager updateSampleRate:sampleRate sessionOnErrorSampleRate:sessionOnErrorSampleRate];
+}
+#pragma mark ========== jsBridge ==========
+#if !TARGET_OS_TV
+- (void)dealReceiveScriptMessage:(id )message slotId:(NSUInteger)slotId{
+    @try {
+        NSDictionary *messageDic = [message isKindOfClass:NSDictionary.class]?message:[FTJSONUtil dictionaryWithJsonString:message];
+        
+        if (![messageDic isKindOfClass:[NSDictionary class]]) {
+            FTInnerLogError(@"Message body is formatted failure from JS SDK");
+            return;
+        }
+        NSString *name = messageDic[@"name"];
+        if ([name isEqualToString:@"rum"]) {
+            NSDictionary *data = messageDic[@"data"];
+            NSString *measurement = data[FT_MEASUREMENT];
+            NSMutableDictionary *tags = [data[FT_TAGS] mutableCopy];
+            NSString *version = [tags valueForKey:FT_SDK_VERSION];
+            if(version&&version.length>0){
+                [tags setValue:@{@"web":version} forKey:FT_SDK_PKG_INFO];
+            }
+            NSDictionary *fields = data[FT_FIELDS];
+            long long time = [data[@"time"] longLongValue];
+            long long fixTime = time * 1000000;
+            // Web time data is in milliseconds, native needs nanoseconds, need to convert units
+            // Check if overflow
+            if (time == fixTime/1000000) {
+                time = fixTime;
+            }
+            if (measurement && fields.count>0) {
+                if ([measurement isEqualToString:FT_RUM_SOURCE_VIEW]) {
+                    if (tags[FT_KEY_VIEW_REFERRER] == nil) {
+                        [tags setValue:self.rumManager.viewReferrer forKey:FT_KEY_VIEW_REFERRER];
+                    }
+                }
+               [self.rumManager addWebViewData:measurement tags:tags fields:fields tm:time];
+            }
+        }
+    } @catch (NSException *exception) {
+        FTInnerLogError(@"%@ error: %@", self, exception);
+    }
+}
+#endif
 #pragma mark ========== FTRunloopDetectorDelegate ==========
 - (void)longTaskStackDetected:(NSString*)slowStack duration:(long long)duration time:(long long)time{
     [self.rumManager addLongTaskWithStack:slowStack duration:[NSNumber numberWithLongLong:duration] startTime:time];
 }
-- (void)anrStackDetected:(NSString*)slowStack time:(nonnull NSDate *)time{
-    [self.rumManager addErrorWithType:@"anr_error" message:@"ios_anr" stack:slowStack date:time];
+- (void)anrStackDetected:(NSString*)slowStack appState:(NSString *)appState time:(long long)time{
+    [self.rumManager addErrorWithType:@"anr_error" stateStr:appState message:@"ios_anr" stack:slowStack property:nil time:time];
 }
 #pragma mark ========== RUM-ERROR appState: App Life Cycle ==========
 -(void)applicationWillEnterForeground{
@@ -104,7 +165,7 @@ static NSObject *sharedInstanceLock;
     self.rumManager.appState = FTAppStateRun;
 }
 -(void)applicationDidEnterBackground{
-    self.rumManager.appState = FTAppStateUnknown;
+    self.rumManager.appState = FTAppStateBackground;
 }
 #pragma mark ========== Shutdown ==========
 - (void)shutDown{

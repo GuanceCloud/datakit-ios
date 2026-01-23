@@ -107,56 +107,9 @@
 }
 
 @end
+
 @implementation FTRUMSRLinkInfoData
 
 @end
-@implementation FTRUMContext
--(instancetype)initWithAppID:(NSString *)appID{
-    self = [super init];
-    if (self) {
-        self.app_id = appID;
-        self.session_id = [FTBaseInfoHandler randomUUID];
-        self.session_type = @"user";
-    }
-    return self;
-}
-- (instancetype)copyWithZone:(NSZone *)zone {
-    FTRUMContext *context = [[[self class] allocWithZone:zone] init];
-    context.app_id = self.app_id;
-    context.action_id = self.action_id;
-    context.action_name = self.action_name;
-    context.session_id = self.session_id;
-    context.session_type = self.session_type;
-    context.view_id = self.view_id;
-    context.view_referrer = self.view_referrer;
-    context.view_name = self.view_name;
-    context.session_error_timestamp = self.session_error_timestamp;
-    return context;
-}
--(NSDictionary *)getGlobalSessionViewTags{
-    NSMutableDictionary *dict = [NSMutableDictionary new];
-    [dict setValue:self.session_id forKey:FT_RUM_KEY_SESSION_ID];
-    [dict setValue:self.session_type forKey:FT_RUM_KEY_SESSION_TYPE];
-    [dict setValue:self.view_id forKey:FT_KEY_VIEW_ID];
-    [dict setValue:self.app_id forKey:FT_APP_ID];
-    if(self.view_referrer.length>0){
-        [dict setValue:self.view_referrer forKey:FT_KEY_VIEW_REFERRER];
-    }
-    [dict setValue:self.view_name forKey:FT_KEY_VIEW_NAME];
-    return dict;
-}
--(NSDictionary *)getGlobalSessionViewActionTags{
-    NSMutableDictionary *dict = [NSMutableDictionary dictionaryWithDictionary:[self getGlobalSessionViewTags]];
-    [dict setValue:self.action_id forKey:FT_KEY_ACTION_ID];
-    [dict setValue:self.action_name forKey:FT_KEY_ACTION_NAME];
-    return dict;
-}
--(NSDictionary *)getGlobalSessionTags{
-    return @{
-        FT_RUM_KEY_SESSION_ID:self.session_id,
-        FT_RUM_KEY_SESSION_TYPE:self.session_type,
-        FT_APP_ID:self.app_id,
-    };
-}
-@end
+
 

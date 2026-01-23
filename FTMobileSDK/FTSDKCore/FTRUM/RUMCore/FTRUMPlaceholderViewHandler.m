@@ -16,6 +16,7 @@
 #import "FTMonitorItem.h"
 #import "FTMonitorValue.h"
 #import "FTLog+Private.h"
+#import "FTRUMContext.h"
 
 @interface FTRUMPlaceholderViewHandler ()<FTRUMSessionProtocol>
 @property (nonatomic, strong) FTRUMDependencies *rumDependencies;
@@ -83,10 +84,6 @@
             break;
         case FTRUMDataError:
             if (self.isActiveView) {
-                FTRUMErrorData *error = (FTRUMErrorData *)model;
-                if(error.fatal){
-                    self.isActiveView = NO;
-                }
                 [self writeErrorData:model context:context];
             }
             break;
@@ -136,11 +133,11 @@
     if (context) {
         [tags addEntriesFromDictionary:context];
     }
-    [tags setValue:self.rumDependencies.networkType forKey:@"network_type"];
     [tags addEntriesFromDictionary:sessionViewTag];
     [tags addEntriesFromDictionary:model.tags];
     NSMutableDictionary *fields = [NSMutableDictionary new];
     [fields addEntriesFromDictionary:model.fields];
+    [fields addEntriesFromDictionary:self.context.sessionState.sessionFields];
     NSString *error = model.type == FTRUMDataLongTask?FT_RUM_SOURCE_LONG_TASK :FT_RUM_SOURCE_ERROR;
     [self.rumDependencies.writer rumWrite:error tags:tags fields:fields time:model.tm];
 }

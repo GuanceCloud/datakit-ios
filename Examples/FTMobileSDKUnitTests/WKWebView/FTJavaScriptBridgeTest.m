@@ -148,7 +148,7 @@
     [FTModelHelper startViewWithName:@"TestWKWebViewVC"];
     [self.viewController ft_load:url.absoluteString];
     self.loadExpect = [self expectationWithDescription:@"Request Time!"];
-    [self waitForExpectationsWithTimeout:30 handler:^(NSError *error) {
+    [self waitForExpectationsWithTimeout:5 handler:^(NSError *error) {
         XCTAssertNil(error);
     }];
     XCTestExpectation *jsScript = [self expectationWithDescription:@"Request Time!"];
@@ -162,7 +162,7 @@
         }];
     }
     
-    [self waitForExpectationsWithTimeout:30 handler:^(NSError *error) {
+    [self waitForExpectationsWithTimeout:5 handler:^(NSError *error) {
         XCTAssertNil(error);
     }];
     [[FTGlobalRumManager sharedInstance].rumManager syncProcess];

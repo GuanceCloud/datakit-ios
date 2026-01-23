@@ -334,7 +334,7 @@
 }
 - (void)network:(void (^)(void))callback{
     NSURLSession *session = [NSURLSession sessionWithConfiguration:[NSURLSessionConfiguration ephemeralSessionConfiguration]];
-    NSString * urlStr = [[NSProcessInfo processInfo] environment][@"TRACE_URL"];
+    NSString * urlStr = @"https://httpbin.org/status/200";
     NSMutableURLRequest *request = [NSMutableURLRequest requestWithURL:[NSURL URLWithString:urlStr]];
     NSURLSessionTask *task = [session dataTaskWithRequest:request completionHandler:^(NSData * _Nullable data, NSURLResponse * _Nullable response, NSError * _Nullable error) {
         if(callback) callback();

@@ -12,6 +12,7 @@
 #import "FTResourceContentModel.h"
 #import "FTResourceMetricsModel.h"
 #import "FTResourceMetricsModel+Private.h"
+#import "FTRUMContext.h"
 #import "FTModuleManager.h"
 @interface FTRUMResourceHandler()<FTRUMSessionProtocol>
 @property (nonatomic, strong) FTRUMDependencies *dependencies;
@@ -84,6 +85,7 @@
     NSMutableDictionary *fields = [NSMutableDictionary dictionary];
     [fields setValue:self.dependencies.sessionHasReplay forKey:FT_SESSION_HAS_REPLAY];
     [fields addEntriesFromDictionary:model.fields];
+    [fields addEntriesFromDictionary:self.context.sessionState.sessionFields];
     [self.dependencies.writer rumWrite:FT_RUM_SOURCE_ERROR tags:tags fields:fields time:model.tm];
 }
 - (void)writeResourceData:(FTRUMDataModel *)data context:(NSDictionary *)context{
@@ -110,12 +112,12 @@
         [fields setValue:model.metrics.resource_redirect_time forKey:FT_KEY_RESOURCE_REDIRECT_TIME];
         [fields setValue:model.metrics.resource_connect_time forKey:FT_KEY_RESOURCE_CONNECT_TIME];
     }
+    [fields addEntriesFromDictionary:self.context.sessionState.sessionFields];
     NSDictionary *sessionTag = [self.context getGlobalSessionViewActionTags];
     NSMutableDictionary *tags = [NSMutableDictionary dictionary];
     if (context) {
         [tags addEntriesFromDictionary:context];
     }
-    [tags setValue:self.dependencies.networkType forKey:@"network_type"];
     [tags addEntriesFromDictionary:sessionTag];
     [tags addEntriesFromDictionary:data.tags];
     [tags setValue:model.identifier forKey:FT_KEY_RESOURCE_ID];

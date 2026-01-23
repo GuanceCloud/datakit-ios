@@ -73,12 +73,12 @@ void *FTLoggerQueueIdentityKey = &FTLoggerQueueIdentityKey;
     }
     _logLevelFilterSet = [NSSet setWithArray:levels];
 }
--(void)updateWithRemoteConfiguration:(NSDictionary *)configuration{
+-(void)updateLoggerConfiguration:(FTLoggerConfig *)configuration{
     __weak typeof(self) weakSelf = self;
     dispatch_async(self.loggerQueue, ^{
         __strong typeof(weakSelf) strongSelf = weakSelf;
         if (!strongSelf) return;
-        [strongSelf.config mergeWithRemoteConfigDict:configuration];
+        strongSelf.config = [configuration copy];
         [strongSelf dealLogLevelFilter:strongSelf.config.logLevelFilter];
     });
 }

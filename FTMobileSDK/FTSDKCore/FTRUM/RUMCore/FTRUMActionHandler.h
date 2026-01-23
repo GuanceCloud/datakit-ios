@@ -7,7 +7,8 @@
 //
 
 #import "FTRUMHandler.h"
-@class  FTRUMViewHandler;
+
+@class  FTRUMViewHandler,FTRUMContext;
 NS_ASSUME_NONNULL_BEGIN
 typedef void(^FTActionEventSent)(void);
 

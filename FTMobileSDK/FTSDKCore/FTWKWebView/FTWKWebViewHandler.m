@@ -25,6 +25,7 @@
 #import "FTJSONUtil.h"
 #import "FTWeakMapTable.h"
 #import "FTThreadDispatchManager.h"
+#import "NSDate+FTUtil.h"
 
 @interface FTWKWebViewHandler ()
 @property (nonatomic, weak) id<FTWKWebViewRumDelegate> rumTrackDelegate;
@@ -230,7 +231,7 @@ static NSObject *sharedInstanceLock;
                     }
                 }else if ([measurement isEqualToString:FT_RUM_SOURCE_ERROR]){
                     [[FTModuleManager sharedInstance] postMessage:FTMessageKeyRumError message:@{
-                        @"error_date":[NSDate date],
+                        @"error_date":@([NSDate ft_currentNanosecondTimeStamp]),
                         @"error_crash":@(NO)
                     } sync:NO];
                 }

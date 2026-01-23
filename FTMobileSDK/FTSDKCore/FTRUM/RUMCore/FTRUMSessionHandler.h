@@ -8,7 +8,7 @@
 
 #import "FTRUMHandler.h"
 #import "FTRUMDependencies.h"
-@class FTRumConfig,FTRUMMonitor;
+@class FTRumConfig,FTRUMMonitor,FTRUMContext;
 NS_ASSUME_NONNULL_BEGIN
 
 @interface FTRUMSessionHandler : FTRUMHandler

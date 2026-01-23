@@ -1,7 +1,7 @@
 # 1.6.2-alpha.14
 1. Fix the issue where SessionReplay (SR) collection fails due to NaN value of layerCornerRadius on iOS 26
 2. Support the error sampling for webView session replay
-3. Same as 1.5.15-alpha.2
+3. Same as 1.5.19-alpha.4
 ---
 # 1.6.2-alpha.13
 1. Added RUM Session Replay context association feature and established WebView container binding with loaded HTML content
@@ -64,6 +64,25 @@
 2. Session Replay adds support for UIView to set view-level privacy overrides through `sessionReplayPrivacyOverrides`
 3. Session Replay data synchronization adds X-Pkg-Id tracking adaptation
 4. Same as 1.5.15-alpha.2
+---
+# 1.5.19
+1. Extended resource_type to include new types: image, media, font, CSS, JS, and native
+2. Added resource_id in network errors to associate corresponding resource data
+3. Supported custom configuration of remote variables
+4. Added resource_http_protocol, resource_request_size, and resource_connection_reuse fields to Resource
+5. Refined cold start and warm start time metrics, adding app_pre_runtime_init_time, app_runtime_init_time, app_uikit_init_time, app_application_init_time, and app_first_frame_init_time
+6. Fixed data loss caused by missing RUM View
+7. Enhanced crash and ANR stack information to include full thread stacks, and added support for configuring crash monitoring types
+---
+# 1.5.19-beta.1
+1. Fix displayMonitor callback failure caused by early stop call
+2. RemoteConfiguration support hot activation of `sampleRate`
+---
+# 1.5.19-alpha.5
+1. Refined cold start timing by adding `app_pre_runtime_init_time`, `app_runtime_init_time`,`app_uikit_init_time`, `app_application_init_time`, and `app_first_frame_init_time`.
+2. RUM Resource added `resource_http_protocol`, `resource_request_size`, `resource_connection_reuse`
+3. Support customizable configuration of remote variables
+4. Enhance Crash/ANR Report with full thread stack and Crash monitor type settings
 ---
 # 1.5.19-alpha.4
 1. Fix CPU and memory utilization collection methods

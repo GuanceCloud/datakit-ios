@@ -17,6 +17,8 @@
 #import "FTTraceManager.h"
 #import "FTLogger.h"
 #import "FTRumDatasProtocol.h"
+#import "FTRemoteConfigModel.h"
+#import "FTRemoteConfigTypeDefs.h"
 NS_ASSUME_NONNULL_BEGIN
 
 /// FTMobileSDK
@@ -128,9 +130,16 @@ NS_ASSUME_NONNULL_BEGIN
 /// Trigger request to get remote configuration environment variables
 /// - Parameters:
 ///   - miniUpdateInterval: minimum time interval since last request
-///   - callback: request callback
-+ (void)updateRemoteConfigWithMiniUpdateInterval:(int)miniUpdateInterval callback:(void (^)(BOOL success, NSDictionary<NSString *, id> * _Nullable config))callback;
+///   - completion: request callback
++ (void)updateRemoteConfigWithMiniUpdateInterval:(NSInteger)miniUpdateInterval
+                                         completion:(nullable FTRemoteConfigFetchCompletionBlock)completion;
 #pragma mark ========== DEPRECATED ==========
+/// Trigger request to get remote configuration environment variables
+/// - Parameters:
+///   - miniUpdateInterval: minimum time interval since last request
+///   - callback: request callback
++ (void)updateRemoteConfigWithMiniUpdateInterval:(int)miniUpdateInterval callback:(void (^)(BOOL success, NSDictionary<NSString *, id> * _Nullable config))callback DEPRECATED_MSG_ATTRIBUTE("Deprecated, please use -updateRemoteConfigWithMiniUpdateInterval:completion: instead");
+
 /// Unbind current user
 - (void)logout DEPRECATED_MSG_ATTRIBUTE("Deprecated, please use -unbindUser instead");
 

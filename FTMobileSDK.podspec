@@ -14,6 +14,7 @@ Pod::Spec.new do |s|
 	s.ios.deployment_target = '10.0'
 	s.osx.deployment_target = '10.13'
 	s.tvos.deployment_target = '12.0'
+	s.pod_target_xcconfig = { 'DEFINES_MODULE' => 'YES' }
 
 	#$JENKINS_DYNAMIC_VERSION replacing "#{s.version}" will cause an error during pod valid phase
 	s.source       = { :git => "https://github.com/GuanceCloud/datakit-ios.git", :tag => "$JENKINS_DYNAMIC_VERSION" }
@@ -47,7 +48,7 @@ Pod::Spec.new do |s|
 
 		c.subspec 'FTRUM' do |r|
 			core_path='FTMobileSDK/FTSDKCore/FTRUM/'
-			r.source_files = core_path + "**/*.{h,m,c}"
+			r.source_files = core_path + "**/*.{h,m,c,cpp}"
 			r.dependency 'FTMobileSDK/FTSDKCore/BaseUtils/Base'
 			r.dependency 'FTMobileSDK/FTSDKCore/Protocol'
 		end

@@ -25,6 +25,9 @@
 #import "FTMobileConfig+Private.h"
 #import "FTLoggerConfig+Private.h"
 #import "FTRumConfig+Private.h"
+#import "FTRemoteConfigModel+Test.h"
+
+
 @interface FTLoggerTest : XCTestCase<FTLoggerDataWriteProtocol>
 
 @property (nonatomic, copy) NSString *url;
@@ -572,18 +575,19 @@
     loggerConfig.logLevelFilter = @[@(2)];
     [[FTLogger sharedInstance] startWithLoggerConfig:loggerConfig writer:self];
     
-    NSDictionary *testLoggerDict = @{
-        FT_R_LOG_SAMPLERATE:@"0.8",
-        FT_R_LOG_LEVEL_FILTERS:@"[info]",
-        FT_R_LOG_ENABLE_CUSTOM_LOG:@"1",
-    };
+   
+    FTLoggerConfig *remote = [[FTLoggerConfig alloc]init];
+    remote.samplerate = 80;
+    remote.logLevelFilter = @[@"info"];
+    remote.enableCustomLog = YES;
+    
     XCTestExpectation *exception = [[XCTestExpectation alloc]init];
     dispatch_group_t group = dispatch_group_create();
     NSInteger count = 0;
     for (int i = 0; i<1000; i++) {
         dispatch_group_enter(group);
         dispatch_async(dispatch_queue_create(0, 0), ^{
-            [[FTLogger sharedInstance] updateWithRemoteConfiguration:testLoggerDict];
+            [[FTLogger sharedInstance] updateLoggerConfiguration:remote];
             [[FTLogger sharedInstance] info:@"testLoggerShutdown" property:nil];
             dispatch_group_leave(group);
         });
