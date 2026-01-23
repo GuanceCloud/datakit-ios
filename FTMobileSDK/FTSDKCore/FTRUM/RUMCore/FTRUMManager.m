@@ -33,7 +33,7 @@ NSString * const AppStateStringMap[] = {
 };
 void *FTRUMQueueIdentityKey = &FTRUMQueueIdentityKey;
 
-@interface FTRUMManager()<FTRUMSessionProtocol,FTMessageReceiver,FTNetworkChangeObserver>
+@interface FTRUMManager()<FTRUMSessionProtocol,FTMessageReceiver>
 @property (nonatomic, strong) FTRUMDependencies *rumDependencies;
 @property (nonatomic, strong) FTRUMSessionHandler *sessionHandler;
 @property (nonatomic, strong) FTReadWriteHelper<NSMutableDictionary *> *preViewDuration;

@@ -27,6 +27,7 @@ NS_ASSUME_NONNULL_BEGIN
 @end
 
 @interface FTRUMContext : NSObject
+@property (nonatomic, copy) NSString *appId;
 
 @property (nonatomic, strong, readonly) FTRUMSessionState *sessionState;
 
@@ -36,7 +37,7 @@ NS_ASSUME_NONNULL_BEGIN
 @property (nonatomic, copy, nullable) NSString *action_id;
 @property (nonatomic, copy, nullable) NSString *action_name;
 
-- (instancetype)initWithSampleRate:(int)sampleRate sessionOnErrorSampleRate:(int)sessionOnErrorSampleRate;
+- (instancetype)initWithSampleRate:(int)sampleRate sessionOnErrorSampleRate:(int)sessionOnErrorSampleRate appId:(NSString *)appId;
 
 - (instancetype)init NS_UNAVAILABLE;
 

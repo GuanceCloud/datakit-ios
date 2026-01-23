@@ -39,10 +39,7 @@
 @property (nonatomic, strong) FTRUMDependencies *dependencies;
 @property (nonatomic, strong) FTLongTaskManager *longTaskManager;
 @end
-#if !TARGET_OS_TV
-@interface FTGlobalRumManager()<FTWKWebViewRumDelegate>
-@end
-#endif
+
 @implementation FTGlobalRumManager
 static FTGlobalRumManager *sharedInstance = nil;
 static NSObject *sharedInstanceLock;
@@ -71,6 +68,7 @@ static NSObject *sharedInstanceLock;
     monitor.displayMonitor = displayMonitor;
     FTRUMDependencies *dependencies = [[FTRUMDependencies alloc]init];
     FTErrorMonitorInfo *errorInfoWrapper = [[FTErrorMonitorInfo alloc]initWithMonitorType:(ErrorMonitorType)rumConfig.errorMonitorType];
+    dependencies.appId = rumConfig.appid;
     dependencies.monitor = monitor;
     dependencies.writer = writer;
     dependencies.sessionOnErrorSampleRate = rumConfig.sessionOnErrorSampleRate;

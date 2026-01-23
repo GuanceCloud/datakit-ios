@@ -16,9 +16,10 @@ NS_ASSUME_NONNULL_BEGIN
 @property (nonatomic, strong) FTRUMSessionState *sessionState;
 @end
 @implementation FTRUMContext
-- (instancetype)initWithSampleRate:(int)sampleRate sessionOnErrorSampleRate:(int)sessionOnErrorSampleRate{
+- (instancetype)initWithSampleRate:(int)sampleRate sessionOnErrorSampleRate:(int)sessionOnErrorSampleRate appId:(NSString *)appId{
     self = [super init];
     if (self) {
+        self.appId = appId;
         self.sessionState = [[FTRUMSessionState alloc] init];
         self.sessionState.sampleRate = sampleRate;
         self.sessionState.sessionOnErrorSampleRate = sessionOnErrorSampleRate;
@@ -34,12 +35,13 @@ NS_ASSUME_NONNULL_BEGIN
     context.view_id = self.view_id;
     context.view_referrer = self.view_referrer;
     context.view_name = self.view_name;
+    context.appId = self.appId;
     context.sessionState = [self.sessionState copy];
     return context;
 }
 -(NSDictionary *)getGlobalSessionViewTags{
     NSMutableDictionary *dict = [NSMutableDictionary new];
-    [dict addEntriesFromDictionary:[self.sessionState sessionTags]];
+    [dict addEntriesFromDictionary:[self getGlobalSessionTags]];
     [dict setValue:self.view_id forKey:FT_KEY_VIEW_ID];
     if(self.view_referrer.length>0){
         [dict setValue:self.view_referrer forKey:FT_KEY_VIEW_REFERRER];
@@ -54,7 +56,9 @@ NS_ASSUME_NONNULL_BEGIN
     return dict;
 }
 -(NSDictionary *)getGlobalSessionTags{
-    return [self.sessionState sessionTags];
+    NSMutableDictionary *dict = [NSMutableDictionary dictionaryWithDictionary:[self.sessionState sessionTags]];
+    [dict setValue:self.appId forKey:FT_APP_ID];
+    return [dict copy];
 }
 @end
 
