@@ -407,7 +407,7 @@ static FTMobileAgent *sharedInstance = nil;
 + (void)clearAllData{
     @try {
         dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0), ^{
-            if([[FTTrackerEventDBTool sharedManger] deleteAllDatas]){
+            if([[FTTrackerEventDBTool sharedManager] deleteAllDatas]){
                 FTInnerLogInfo(@"[SDK] Clear All Data Success!!!");
             }else{
                 FTInnerLogInfo(@"[SDK] Clear All Data Error!!!");

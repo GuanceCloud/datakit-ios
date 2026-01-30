@@ -484,7 +484,7 @@ void *FTRUMQueueIdentityKey = &FTRUMQueueIdentityKey;
     } @catch (NSException *exception) {
         FTInnerLogError(@"exception %@",exception);
     } @finally {
-        return dict;
+        return [dict copy];
     }
 }
 - (NSDictionary *)getLinkRUMData{

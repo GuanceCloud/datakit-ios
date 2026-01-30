@@ -25,6 +25,10 @@
 #import "FTGlobalRumManager.h"
 #import "FTRUMManager.h"
 #import "FTLogger+Private.h"
+#import "FTUserInfo.h"
+@interface FTPresetProperty (Testing)
+- (FTUserInfo *)userInfo;
+@end
 @interface FTPropertyTest : XCTestCase
 @property (nonatomic, strong) FTMobileConfig *config;
 @property (nonatomic, copy) NSString *url;
@@ -41,10 +45,11 @@
     NSProcessInfo *processInfo = [NSProcessInfo processInfo];
     self.url = [processInfo environment][@"ACCESS_SERVER_URL"];
     self.appid = [processInfo environment][@"APP_ID"];
-    [[FTTrackerEventDBTool sharedManger] deleteAllDatas];
+    [[FTTrackerEventDBTool sharedManager] deleteAllDatas];
 }
 
 - (void)tearDown {
+    [[FTPresetProperty sharedInstance] clearUser];
     // Put teardown code here. This method is called after the invocation of each test method in the class.
 }
 
@@ -93,7 +98,7 @@
     [[FTMobileAgent sharedInstance] logging:@"testIllegalUrl" status:FTStatusInfo];
     [[FTMobileAgent sharedInstance] syncProcess];
     [[FTTrackDataManager sharedInstance] insertCacheToDB];
-    FTRecordModel *model = [[[FTTrackerEventDBTool sharedManger] getAllDatas] lastObject];
+    FTRecordModel *model = [[[FTTrackerEventDBTool sharedManager] getAllDatas] lastObject];
     FTRequest *request = [FTRequest createRequestWithEvents:@[model] type:FT_DATA_TYPE_LOGGING];
     [[FTHTTPClient new] sendRequest:request completion:^(NSHTTPURLResponse * _Nonnull httpResponse, NSData * _Nullable data, NSError * _Nullable error) {
         NSInteger statusCode = httpResponse.statusCode;
@@ -117,11 +122,11 @@
     rumConfig.enableTraceUserAction = YES;
     [FTMobileAgent startWithConfigOptions:config];
     [[FTMobileAgent sharedInstance] startRumWithConfigOptions:rumConfig];
-    [[FTTrackerEventDBTool sharedManger] deleteAllDatas];
-    NSArray *oldArray =[[FTTrackerEventDBTool sharedManger] getFirstRecords:10 withType:FT_DATA_TYPE_RUM];
+    [[FTTrackerEventDBTool sharedManager] deleteAllDatas];
+    NSArray *oldArray =[[FTTrackerEventDBTool sharedManager] getFirstRecords:10 withType:FT_DATA_TYPE_RUM];
     [self addRumData];
     [[FTGlobalRumManager sharedInstance].rumManager syncProcess];
-    NSArray *newArray = [[FTTrackerEventDBTool sharedManger] getFirstRecords:10 withType:FT_DATA_TYPE_RUM];
+    NSArray *newArray = [[FTTrackerEventDBTool sharedManager] getFirstRecords:10 withType:FT_DATA_TYPE_RUM];
     XCTAssertTrue(newArray.count>oldArray.count);
     [FTMobileAgent shutDown];
 }
@@ -136,11 +141,11 @@
     rumConfig.enableTraceUserAction = YES;
     [FTMobileAgent startWithConfigOptions:config];
     XCTAssertThrows([[FTMobileAgent sharedInstance] startRumWithConfigOptions:rumConfig]);
-    [[FTTrackerEventDBTool sharedManger] deleteAllDatas];
-    NSArray *oldArray =[[FTTrackerEventDBTool sharedManger] getFirstRecords:10 withType:FT_DATA_TYPE_RUM];
+    [[FTTrackerEventDBTool sharedManager] deleteAllDatas];
+    NSArray *oldArray =[[FTTrackerEventDBTool sharedManager] getFirstRecords:10 withType:FT_DATA_TYPE_RUM];
     [self addRumData];
     [[FTGlobalRumManager sharedInstance].rumManager syncProcess];
-    NSArray *newArray = [[FTTrackerEventDBTool sharedManger] getFirstRecords:10 withType:FT_DATA_TYPE_RUM];
+    NSArray *newArray = [[FTTrackerEventDBTool sharedManager] getFirstRecords:10 withType:FT_DATA_TYPE_RUM];
     XCTAssertTrue(newArray.count == oldArray.count);
     [FTMobileAgent shutDown];
 }
@@ -437,7 +442,7 @@
     [[FTTrackDataManager sharedInstance] insertCacheToDB];
     [[FTExternalDataManager sharedManager] addAction:@"testModifier_rum_log" actionType:@"click" property:@{@"field2":@"value2"}];
     [[FTGlobalRumManager sharedInstance].rumManager syncProcess];
-    NSArray *datas = [[FTTrackerEventDBTool sharedManger] getAllDatas];
+    NSArray *datas = [[FTTrackerEventDBTool sharedManager] getAllDatas];
     __block BOOL hasLog = NO,hasRum = NO;
     [FTModelHelper resolveModelArray:datas dataTypeCallBack:^(NSString * _Nonnull source, NSDictionary * _Nonnull tags, NSDictionary * _Nonnull fields, NSString * _Nonnull type, BOOL * _Nonnull stop){
         if ([type isEqualToString:FT_DATA_TYPE_RUM]) {
@@ -456,7 +461,166 @@
     XCTAssertTrue(hasRum);
     [FTMobileAgent shutDown];
 }
+ 
+- (void)testConcurrentReadWriteThreadSafety {
     
+    FTPresetProperty *preset = [FTPresetProperty sharedInstance];
+    [preset startWithVersion:@"1.0.0"
+                  sdkVersion:@"2.0.0"
+                         env:@"test"
+                     service:@"test_service"
+               globalContext:@{@"init_key": @"init_value"}
+                     pkgInfo:@{@"pkg_name": @"test_pkg"}];
+    
+    NSInteger writeThreadCount = 5;
+    NSInteger readThreadCount = 10;
+    NSInteger operationCountPerThread = 100;
+    XCTestExpectation *expectation = [self expectationWithDescription:@"Concurrent read/write completed"];
+    expectation.expectedFulfillmentCount = writeThreadCount + readThreadCount;
+    
+    for (NSInteger i = 0; i < writeThreadCount; i++) {
+        dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0), ^{
+            for (NSInteger j = 0; j < operationCountPerThread; j++) {
+                NSString *key = [NSString stringWithFormat:@"write_key_%ld_%ld", i, j];
+                NSString *value = [NSString stringWithFormat:@"write_value_%ld_%ld", i, j];
+                [preset appendGlobalContext:@{key: value}];
+                [preset appendLogGlobalContext:@{key: value}];
+                [preset appendRUMGlobalContext:@{[NSString stringWithFormat:@"rum_key_%ld_%ld", i, j]: value}];
+                [preset updateUser:[NSString stringWithFormat:@"write_key_%ld_%ld", i, j] name:[NSString stringWithFormat:@"rum_key_%ld_%ld", i, j] email:[NSString stringWithFormat:@"%ld@test.com", (long)i] extra:@{key: value}];
+
+            }
+            [expectation fulfill];
+        });
+    }
+    
+    for (NSInteger i = 0; i < readThreadCount; i++) {
+        dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0), ^{
+            for (NSInteger j = 0; j < operationCountPerThread; j++) {
+                NSDictionary *rumDynamicTags = preset.rumDynamicTags;
+                NSDictionary *loggerDynamicTags = preset.loggerDynamicTags;
+
+            
+                XCTAssertNotNil(rumDynamicTags, @"RUM dynamic tags should not be nil (thread: %ld, op: %ld)", i, j);
+                XCTAssertNotNil(loggerDynamicTags, @"Log dynamic tags should not be nil (thread: %ld, op: %ld)", i, j);
+
+                XCTAssertTrue([loggerDynamicTags isKindOfClass:[NSDictionary class]], @"Log Dynamic tags should be NSDictionary");
+                XCTAssertTrue([rumDynamicTags isKindOfClass:[NSDictionary class]], @"RUM dynamic tags should be NSDictionary");
+            }
+            [expectation fulfill];
+        });
+    }
+    
+    [self waitForExpectationsWithTimeout:30 handler:^(NSError * _Nullable error) {
+        if (error) {
+            XCTFail(@"Concurrent read/write timeout: %@", error.localizedDescription);
+        }
+    }];
+    
+    NSDictionary *finalDynamicLog = preset.loggerDynamicTags;
+    NSDictionary *finalDynamicRUM = preset.rumDynamicTags;
+    XCTAssertGreaterThan(finalDynamicLog.count, 0, @"Final dynamic Log context should have data");
+    XCTAssertGreaterThan(finalDynamicRUM.count, 0, @"Final dynamic RUM context should have data");
+}
+- (void)testShutDownDataRelease {
+    FTPresetProperty *preset = [FTPresetProperty sharedInstance];
+    [preset startWithVersion:@"1.0.0"
+                  sdkVersion:@"2.0.0"
+                         env:@"test"
+                     service:@"test_service"
+               globalContext:@{@"test_key": @"test_value"}
+                     pkgInfo:@{@"pkg_name": @"test_pkg"}];
+    [preset appendGlobalContext:@{@"shutdown_key": @"shutdown_value"}];
+    [preset updateUser:@"test_user" name:@"test_name" email:@"test@test.com" extra:@{@"extra": @"value"}];
+    
+    
+    [preset shutDown];
+    
+    NSDictionary *loggerTags = preset.loggerTags;
+    NSDictionary *rumTags = preset.rumTags;
+    FTUserInfo *user = preset.userInfo;
+    NSString *rumCustomKeys = [preset.rumDynamicTags valueForKey:FT_RUM_CUSTOM_KEYS];
+    
+    XCTAssertTrue(loggerTags == nil || [loggerTags isEqual:@{}], @"log tags should be nil or empty after shutdown");
+    XCTAssertTrue(rumTags == nil || [rumTags isEqual:@{}], @"rum tags context should be nil or empty after shutdown");
+    XCTAssertTrue(rumTags == nil || [rumTags isEqual:@{}], @"RUM tags should be nil or empty after shutdown");
+    XCTAssertNotNil(user, @"User info should not be nil after shutdown");
+    XCTAssertNil(rumCustomKeys, @"RUM custom keys should be nil after shutdown");
+    
+    [preset appendGlobalContext:@{@"after_shutdown": @"value"}];
+    NSDictionary *afterShutdownTags = preset.rumDynamicTags;
+    XCTAssertNotNil(afterShutdownTags, @"Operation after shutdown should not crash");
+}
+- (void)testSDKShutDown{
+    NSInteger startThreadCount = 5;
+    NSInteger shutdownThreadCount = 5;
+    NSInteger operationCountPerThread = 100;
+    XCTestExpectation *expectation = [self expectationWithDescription:@"Concurrent read/write completed"];
+    expectation.expectedFulfillmentCount = startThreadCount + shutdownThreadCount;
+    
+    for (NSInteger i = 0; i < startThreadCount; i++) {
+        dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0), ^{
+            for (NSInteger j = 0; j < operationCountPerThread; j++) {
+                [self startProperty];
+            }
+            [expectation fulfill];
+        });
+    }
+    
+    for (NSInteger i = 0; i < shutdownThreadCount; i++) {
+        dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0), ^{
+            for (NSInteger j = 0; j < operationCountPerThread; j++) {
+                [[FTPresetProperty sharedInstance] shutDown];
+            }
+            [expectation fulfill];
+        });
+    }
+    [self waitForExpectationsWithTimeout:30 handler:^(NSError * _Nullable error) {
+        if (error) {
+            XCTFail(@"Concurrent read/write timeout: %@", error.localizedDescription);
+        }
+    }];
+    
+}
+- (void)startProperty{
+    FTPresetProperty *preset = [FTPresetProperty sharedInstance];
+    [preset startWithVersion:@"1.0.0"
+                  sdkVersion:@"2.0.0"
+                         env:@"test"
+                     service:@"test_service"
+               globalContext:@{@"test_key": @"test_value"}
+                     pkgInfo:@{@"pkg_name": @"test_pkg"}];
+    [preset appendGlobalContext:@{@"shutdown_key": @"shutdown_value"}];
+    [preset setRUMAppID:@"111" sampleRate:100 sessionOnErrorSampleRate:100 rumGlobalContext:@{@"a":@"b"}];
+    [preset setLogGlobalContext:@{@"c":@"d"}];
+    [preset updateUser:@"test_user" name:@"test_name" email:@"test@test.com" extra:@{@"extra": @"value"}];
+}
+- (void)testFTUserInfoCopyIndependence {
+    FTPresetProperty *preset = [FTPresetProperty sharedInstance];
+    [preset startWithVersion:@"1.0.0"
+                  sdkVersion:@"2.0.0"
+                         env:@"test"
+                     service:@"test_service"
+               globalContext:@{@"init_key": @"init_value"}
+                     pkgInfo:@{@"pkg_name": @"test_pkg"}];
+    [preset updateUser:@"copy_test_user" name:@"copy_name" email:@"copy@test.com" extra:@{@"copy_extra": @"copy_value"}];
+    
+    FTUserInfo *originalUser = preset.userInfo;
+    FTUserInfo *copiedUser = [originalUser copy];
+    
+    XCTAssertEqualObjects(originalUser.userId, copiedUser.userId, @"Copied user ID should match original");
+    XCTAssertEqualObjects(originalUser.extra, copiedUser.extra, @"Copied user extra should match original");
+    XCTAssertTrue(copiedUser.isSignIn, @"Copied user should be signed in");
+    
+    [preset clearUser];
+    FTUserInfo *clearedOriginalUser = preset.userInfo;
+    
+    XCTAssertEqualObjects(copiedUser.userId, @"copy_test_user", @"Copied user ID should not change after original is cleared");
+    XCTAssertEqualObjects(copiedUser.name, @"copy_name", @"Copied user name should not change after original is cleared");
+    XCTAssertTrue(copiedUser.isSignIn, @"Copied user isSignIn should not change after original is cleared");
+    
+    XCTAssertNotEqualObjects(clearedOriginalUser.userId, copiedUser.userId, @"Cleared original user should not match copied user");
+    XCTAssertFalse(clearedOriginalUser.isSignIn, @"Original user should be signed out after clear");
+}
 - (void)addRumData{
     [FTModelHelper startView];
     [FTModelHelper addActionWithContext:nil];

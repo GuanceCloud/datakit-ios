@@ -21,7 +21,7 @@ NS_ASSUME_NONNULL_BEGIN
 /// User email
 @property (nonatomic, copy, readonly) NSString *email;
 /// Additional information
-@property (nonatomic, strong, readonly) NSDictionary *extra;
+@property (nonatomic, copy, readonly) NSDictionary *extra;
 /// Whether user information is set
 @property (nonatomic, assign, readonly) BOOL isSignIn;
 

@@ -32,7 +32,7 @@ NS_ASSUME_NONNULL_BEGIN
 
 @interface FTRequest : NSObject<FTRequestProtocol>
 @property (nonatomic, strong, class) FTSerialNumberGenerator *serialGenerator;
-@property (nonatomic, strong) NSArray *events;
+@property (nonatomic, copy) NSArray *events;
 - (void)addHTTPHeaderFields:(NSMutableURLRequest *)mutableRequest packageId:(NSString *)packageId;
 +(FTRequest * _Nullable)createRequestWithEvents:(NSArray *)events type:(NSString *)type;
 @end

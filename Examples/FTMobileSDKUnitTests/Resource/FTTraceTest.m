@@ -413,7 +413,7 @@
     [[FTExternalDataManager sharedManager] addResourceWithKey:key metrics:metrics content:model];
     [[FTGlobalRumManager sharedInstance].rumManager syncProcess];
     
-    NSArray *newArray = [[FTTrackerEventDBTool sharedManger] getFirstRecords:100 withType:FT_DATA_TYPE_RUM];
+    NSArray *newArray = [[FTTrackerEventDBTool sharedManager] getFirstRecords:100 withType:FT_DATA_TYPE_RUM];
     __block BOOL hasResourceData = NO;
     [newArray enumerateObjectsWithOptions:NSEnumerationReverse usingBlock:^(FTRecordModel *obj, NSUInteger idx, BOOL * _Nonnull stop) {
         NSDictionary *dict = [FTJSONUtil dictionaryWithJsonString:obj.data];

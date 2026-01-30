@@ -83,7 +83,7 @@ typedef FTRUMAction* _Nullable (^FTLaunchActionTrackingBlock)(FTLaunchType type)
     NSProcessInfo *processInfo = [NSProcessInfo processInfo];
     self.url = [processInfo environment][@"ACCESS_SERVER_URL"];
     self.appid = [processInfo environment][@"APP_ID"];
-    [[FTTrackerEventDBTool sharedManger] deleteAllDatas];
+    [[FTTrackerEventDBTool sharedManager] deleteAllDatas];
 }
 -(void)tearDown{
     [[FTGlobalRumManager sharedInstance].rumManager syncProcess];
@@ -105,7 +105,7 @@ typedef FTRUMAction* _Nullable (^FTLaunchActionTrackingBlock)(FTLaunchType type)
     rumConfig.rumCacheLimitCount = 1000;
     rumConfig.rumDiscardType = FTRUMDiscard;
     [FTMobileAgent startWithConfigOptions:config];
-    [[FTTrackerEventDBTool sharedManger] deleteAllDatas];
+    [[FTTrackerEventDBTool sharedManager] deleteAllDatas];
     [[FTMobileAgent sharedInstance] startRumWithConfigOptions:rumConfig];
     XCTAssertTrue([[[FTTrackDataManager sharedInstance].dataCachePolicy valueForKey:@"rumCacheLimitCount"] intValue] == 10000);
     XCTAssertTrue([[[FTTrackDataManager sharedInstance].dataCachePolicy valueForKey:@"rumDiscardNew"] boolValue] == YES);
@@ -118,8 +118,8 @@ typedef FTRUMAction* _Nullable (^FTLaunchActionTrackingBlock)(FTLaunchType type)
         [[FTTrackDataManager sharedInstance] addTrackData:model type:FTAddDataRUM];
 
     }
-    NSInteger newCount =  [[FTTrackerEventDBTool sharedManger] getDatasCountWithType:FT_DATA_TYPE_RUM];
-    FTRecordModel *model = [[[FTTrackerEventDBTool sharedManger] getFirstRecords:1 withType:FT_DATA_TYPE_RUM] firstObject];
+    NSInteger newCount =  [[FTTrackerEventDBTool sharedManager] getDatasCountWithType:FT_DATA_TYPE_RUM];
+    FTRecordModel *model = [[[FTTrackerEventDBTool sharedManager] getFirstRecords:1 withType:FT_DATA_TYPE_RUM] firstObject];
     XCTAssertTrue([model.data isEqualToString:@"testData0"]);
     XCTAssertTrue(newCount == 1000);
 }
@@ -131,7 +131,7 @@ typedef FTRUMAction* _Nullable (^FTLaunchActionTrackingBlock)(FTLaunchType type)
     rumConfig.rumCacheLimitCount = 1000;
     rumConfig.rumDiscardType = FTRUMDiscardOldest;
     [FTMobileAgent startWithConfigOptions:config];
-    [[FTTrackerEventDBTool sharedManger] deleteAllDatas];
+    [[FTTrackerEventDBTool sharedManager] deleteAllDatas];
     [[FTMobileAgent sharedInstance] startRumWithConfigOptions:rumConfig];
     XCTAssertTrue([[[FTTrackDataManager sharedInstance].dataCachePolicy valueForKey:@"rumCacheLimitCount"] intValue] == 10000);
     XCTAssertTrue([[[FTTrackDataManager sharedInstance].dataCachePolicy valueForKey:@"rumDiscardNew"] boolValue] == NO);
@@ -145,8 +145,8 @@ typedef FTRUMAction* _Nullable (^FTLaunchActionTrackingBlock)(FTLaunchType type)
 
     }
     [[FTTrackDataManager sharedInstance] insertCacheToDB];
-    NSInteger newCount = [[FTTrackerEventDBTool sharedManger] getDatasCountWithType:FT_DATA_TYPE_RUM];
-    FTRecordModel *model = [[[FTTrackerEventDBTool sharedManger] getFirstRecords:1 withType:FT_DATA_TYPE_RUM] firstObject];
+    NSInteger newCount = [[FTTrackerEventDBTool sharedManager] getDatasCountWithType:FT_DATA_TYPE_RUM];
+    FTRecordModel *model = [[[FTTrackerEventDBTool sharedManager] getFirstRecords:1 withType:FT_DATA_TYPE_RUM] firstObject];
     XCTAssertFalse([model.data isEqualToString:@"testData0"]);
     XCTAssertTrue(newCount == 1000);
 }
@@ -161,7 +161,7 @@ typedef FTRUMAction* _Nullable (^FTLaunchActionTrackingBlock)(FTLaunchType type)
     [[FTMobileAgent sharedInstance] startRumWithConfigOptions:rumConfig];
     [FTModelHelper addActionWithContext:nil];
     [[FTGlobalRumManager sharedInstance].rumManager syncProcess];
-    NSArray *newArray = [[FTTrackerEventDBTool sharedManger] getFirstRecords:10 withType:FT_DATA_TYPE_RUM];
+    NSArray *newArray = [[FTTrackerEventDBTool sharedManager] getFirstRecords:10 withType:FT_DATA_TYPE_RUM];
     XCTAssertTrue(newArray.count >= 1);
     __block BOOL hasActionData = NO;
     [FTModelHelper resolveModelArray:newArray callBack:^(NSString * _Nonnull source, NSDictionary * _Nonnull tags, NSDictionary * _Nonnull fields, BOOL * _Nonnull stop) {
@@ -202,7 +202,7 @@ typedef FTRUMAction* _Nullable (^FTLaunchActionTrackingBlock)(FTLaunchType type)
     [FTMobileAgent startWithConfigOptions:config];
     [[FTMobileAgent sharedInstance] startRumWithConfigOptions:rumConfig];
    
-    NSInteger count = [[FTTrackerEventDBTool sharedManger] getDatasCount];
+    NSInteger count = [[FTTrackerEventDBTool sharedManager] getDatasCount];
 
     UIViewController *vc = [[UIViewController alloc]init];
 
@@ -210,7 +210,7 @@ typedef FTRUMAction* _Nullable (^FTLaunchActionTrackingBlock)(FTLaunchType type)
     
     XCTAssertTrue(noView);
     [[FTGlobalRumManager sharedInstance].rumManager syncProcess];
-    NSInteger newCount = [[FTTrackerEventDBTool sharedManger] getDatasCount];
+    NSInteger newCount = [[FTTrackerEventDBTool sharedManager] getDatasCount];
     
     XCTAssertTrue(count == newCount);
 }
@@ -232,7 +232,7 @@ typedef FTRUMAction* _Nullable (^FTLaunchActionTrackingBlock)(FTLaunchType type)
     [FTMobileAgent startWithConfigOptions:config];
     [[FTMobileAgent sharedInstance] startRumWithConfigOptions:rumConfig];
    
-    NSInteger count = [[FTTrackerEventDBTool sharedManger] getDatasCount];
+    NSInteger count = [[FTTrackerEventDBTool sharedManager] getDatasCount];
     UIViewController *vc = [[UIViewController alloc]init];
 
     [[FTAutoTrackHandler sharedInstance].viewControllerHandler notify_viewDidAppear:vc animated:YES];
@@ -240,7 +240,7 @@ typedef FTRUMAction* _Nullable (^FTLaunchActionTrackingBlock)(FTLaunchType type)
     XCTAssertTrue(noView == NO);
     
     [[FTGlobalRumManager sharedInstance].rumManager syncProcess];
-    NSArray *datas = [[FTTrackerEventDBTool sharedManger] getFirstRecords:50 withType:FT_DATA_TYPE_RUM];
+    NSArray *datas = [[FTTrackerEventDBTool sharedManager] getFirstRecords:50 withType:FT_DATA_TYPE_RUM];
     
     XCTAssertTrue(datas.count > count);
     
@@ -273,7 +273,7 @@ typedef FTRUMAction* _Nullable (^FTLaunchActionTrackingBlock)(FTLaunchType type)
     [FTMobileAgent startWithConfigOptions:config];
     [[FTMobileAgent sharedInstance] startRumWithConfigOptions:rumConfig];
    
-    NSInteger count = [[FTTrackerEventDBTool sharedManger] getDatasCount];
+    NSInteger count = [[FTTrackerEventDBTool sharedManager] getDatasCount];
     UIViewController *vc = [[UIViewController alloc]init];
     ModalViewController *abandonVC = [[ModalViewController alloc]init];
     
@@ -285,7 +285,7 @@ typedef FTRUMAction* _Nullable (^FTLaunchActionTrackingBlock)(FTLaunchType type)
     [[FTAutoTrackHandler sharedInstance].viewControllerHandler notify_viewDidDisappear:abandonVC animated:YES];
     
     [[FTGlobalRumManager sharedInstance].rumManager syncProcess];
-    NSArray *datas = [[FTTrackerEventDBTool sharedManger] getFirstRecords:50 withType:FT_DATA_TYPE_RUM];
+    NSArray *datas = [[FTTrackerEventDBTool sharedManager] getFirstRecords:50 withType:FT_DATA_TYPE_RUM];
     
     XCTAssertTrue(datas.count > count);
     
@@ -317,12 +317,12 @@ typedef FTRUMAction* _Nullable (^FTLaunchActionTrackingBlock)(FTLaunchType type)
     [[FTMobileAgent sharedInstance] startRumWithConfigOptions:rumConfig];
     
     UIViewController *vc = [[UIViewController alloc]init];
-    NSInteger count = [[FTTrackerEventDBTool sharedManger] getDatasCount];
+    NSInteger count = [[FTTrackerEventDBTool sharedManager] getDatasCount];
     
     [[FTAutoTrackHandler sharedInstance].viewControllerHandler notify_viewDidAppear:vc animated:YES];
     
     [[FTGlobalRumManager sharedInstance].rumManager syncProcess];
-    NSInteger newCount = [[FTTrackerEventDBTool sharedManger] getDatasCount];
+    NSInteger newCount = [[FTTrackerEventDBTool sharedManager] getDatasCount];
     
     XCTAssertTrue(count == newCount);
     handler = nil;
@@ -349,7 +349,7 @@ typedef FTRUMAction* _Nullable (^FTLaunchActionTrackingBlock)(FTLaunchType type)
     [[FTMobileAgent sharedInstance] startRumWithConfigOptions:rumConfig];
     
     UIViewController *vc = [[UIViewController alloc]init];
-    NSInteger count = [[FTTrackerEventDBTool sharedManger] getDatasCount];
+    NSInteger count = [[FTTrackerEventDBTool sharedManager] getDatasCount];
     
     ModalViewController *modalVC = [[ModalViewController alloc]init];
 
@@ -360,7 +360,7 @@ typedef FTRUMAction* _Nullable (^FTLaunchActionTrackingBlock)(FTLaunchType type)
     [[FTAutoTrackHandler sharedInstance].viewControllerHandler notify_viewDidDisappear:modalVC animated:YES];
     
     [[FTGlobalRumManager sharedInstance].rumManager syncProcess];
-    NSArray *datas =[[FTTrackerEventDBTool sharedManger] getFirstRecords:50 withType:FT_DATA_TYPE_RUM];
+    NSArray *datas =[[FTTrackerEventDBTool sharedManager] getFirstRecords:50 withType:FT_DATA_TYPE_RUM];
     XCTAssertTrue(datas.count > count);
     NSMutableSet *set = [[NSMutableSet alloc]init];
     [FTModelHelper resolveModelArray:datas callBack:^(NSString * _Nonnull source, NSDictionary * _Nonnull tags, NSDictionary * _Nonnull fields, BOOL * _Nonnull stop) {
@@ -400,7 +400,7 @@ typedef FTRUMAction* _Nullable (^FTLaunchActionTrackingBlock)(FTLaunchType type)
     [FTMobileAgent startWithConfigOptions:config];
     [[FTMobileAgent sharedInstance] startRumWithConfigOptions:rumConfig];
     
-    NSInteger count = [[FTTrackerEventDBTool sharedManger] getDatasCount];
+    NSInteger count = [[FTTrackerEventDBTool sharedManager] getDatasCount];
     
 
     UIButton *customButton = [[UIButton alloc]initWithFrame:CGRectMake(0, 0, 100, 30)];
@@ -420,7 +420,7 @@ typedef FTRUMAction* _Nullable (^FTLaunchActionTrackingBlock)(FTLaunchType type)
 
     
     [[FTGlobalRumManager sharedInstance].rumManager syncProcess];
-    NSArray *datas =[[FTTrackerEventDBTool sharedManger] getFirstRecords:50 withType:FT_DATA_TYPE_RUM];
+    NSArray *datas =[[FTTrackerEventDBTool sharedManager] getFirstRecords:50 withType:FT_DATA_TYPE_RUM];
     NSMutableSet *set = [[NSMutableSet alloc]init];
     [FTModelHelper resolveModelArray:datas callBack:^(NSString * _Nonnull source, NSDictionary * _Nonnull tags, NSDictionary * _Nonnull fields, BOOL * _Nonnull stop) {
         if ([source isEqualToString:FT_RUM_SOURCE_ACTION] && [tags[FT_KEY_ACTION_TYPE] isEqualToString:FT_KEY_ACTION_TYPE_CLICK ]) {
@@ -445,7 +445,7 @@ typedef FTRUMAction* _Nullable (^FTLaunchActionTrackingBlock)(FTLaunchType type)
     [FTMobileAgent startWithConfigOptions:config];
     [[FTMobileAgent sharedInstance] startRumWithConfigOptions:rumConfig];
     
-    NSInteger count = [[FTTrackerEventDBTool sharedManger] getDatasCount];
+    NSInteger count = [[FTTrackerEventDBTool sharedManager] getDatasCount];
     
 
     UIButton *customButton = [[UIButton alloc]initWithFrame:CGRectMake(0, 0, 100, 30)];
@@ -466,7 +466,7 @@ typedef FTRUMAction* _Nullable (^FTLaunchActionTrackingBlock)(FTLaunchType type)
 
     
     [[FTGlobalRumManager sharedInstance].rumManager syncProcess];
-    NSArray *datas =[[FTTrackerEventDBTool sharedManger] getFirstRecords:50 withType:FT_DATA_TYPE_RUM];
+    NSArray *datas =[[FTTrackerEventDBTool sharedManager] getFirstRecords:50 withType:FT_DATA_TYPE_RUM];
     XCTAssertTrue(datas.count > count);
     NSMutableSet *set = [[NSMutableSet alloc]init];
     [FTModelHelper resolveModelArray:datas callBack:^(NSString * _Nonnull source, NSDictionary * _Nonnull tags, NSDictionary * _Nonnull fields, BOOL * _Nonnull stop) {
@@ -494,7 +494,7 @@ typedef FTRUMAction* _Nullable (^FTLaunchActionTrackingBlock)(FTLaunchType type)
     [FTMobileAgent startWithConfigOptions:config];
     [[FTMobileAgent sharedInstance] startRumWithConfigOptions:rumConfig];
     
-    NSInteger count = [[FTTrackerEventDBTool sharedManger] getDatasCount];
+    NSInteger count = [[FTTrackerEventDBTool sharedManager] getDatasCount];
     
 
     UIButton *customButton = [[UIButton alloc]initWithFrame:CGRectMake(0, 0, 100, 30)];
@@ -512,7 +512,7 @@ typedef FTRUMAction* _Nullable (^FTLaunchActionTrackingBlock)(FTLaunchType type)
     [self waitForTimeInterval:0.1];
     
     [[FTGlobalRumManager sharedInstance].rumManager syncProcess];
-    NSArray *datas =[[FTTrackerEventDBTool sharedManger] getFirstRecords:50 withType:FT_DATA_TYPE_RUM];
+    NSArray *datas =[[FTTrackerEventDBTool sharedManager] getFirstRecords:50 withType:FT_DATA_TYPE_RUM];
     NSMutableSet *set = [[NSMutableSet alloc]init];
     [FTModelHelper resolveModelArray:datas callBack:^(NSString * _Nonnull source, NSDictionary * _Nonnull tags, NSDictionary * _Nonnull fields, BOOL * _Nonnull stop) {
         if ([source isEqualToString:FT_RUM_SOURCE_ACTION] && [tags[FT_KEY_ACTION_TYPE] isEqualToString:FT_KEY_ACTION_TYPE_CLICK ]) {
@@ -552,7 +552,7 @@ typedef FTRUMAction* _Nullable (^FTLaunchActionTrackingBlock)(FTLaunchType type)
     
     
     [[FTGlobalRumManager sharedInstance].rumManager syncProcess];
-    NSArray *datas =[[FTTrackerEventDBTool sharedManger] getFirstRecords:50 withType:FT_DATA_TYPE_RUM];
+    NSArray *datas =[[FTTrackerEventDBTool sharedManager] getFirstRecords:50 withType:FT_DATA_TYPE_RUM];
     __block BOOL hasLaunchAction = NO;
     [FTModelHelper resolveModelArray:datas callBack:^(NSString * _Nonnull source, NSDictionary * _Nonnull tags, NSDictionary * _Nonnull fields, BOOL * _Nonnull stop) {
         if ([source isEqualToString:FT_RUM_SOURCE_ACTION] && ![tags[FT_KEY_ACTION_TYPE] isEqualToString:FT_KEY_ACTION_TYPE_CLICK ]) {

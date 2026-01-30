@@ -22,6 +22,8 @@
 #import "FTDataUploadWorker.h"
 #import "FTDataWriterWorker.h"
 #import "FTNetworkInfoManager.h"
+#import "FTSDKCompat.h"
+
 @interface FTTrackDataManager ()<FTAppLifeCycleDelegate,FTNetworkChangeObserver>
 /// Whether to enable automatic upload logic (on startup, network status changes, write interval 10s)
 @property (atomic, assign) BOOL autoSync;
@@ -76,7 +78,7 @@ static FTTrackDataManager *sharedInstance = nil;
         _dataUploadWorker.counter = _dataCachePolicy;
         [[FTNetworkConnectivity sharedInstance] start];
         [[FTAppLifeCycle sharedInstance] addAppLifecycleDelegate:self];
-        [FTTrackerEventDBTool sharedManger];
+        [FTTrackerEventDBTool sharedManager];
         [self enableAutoSync:autoSync];
     }
     return self;
@@ -101,7 +103,7 @@ static FTTrackDataManager *sharedInstance = nil;
     [self.dataUploadWorker updateSyncPageSize:syncPageSize syncSleepTime:syncSleepTime];
 }
 -(void)setEnableLimitWithDb:(BOOL)enable size:(long)size discardNew:(BOOL)discardNew{
-    [[FTTrackerEventDBTool sharedManger] setEnableLimitWithDbSize:enable];
+    [[FTTrackerEventDBTool sharedManager] setEnableLimitWithDbSize:enable];
     if (enable) {
         [self.dataCachePolicy setDBLimitWithSize:size discardNew:discardNew];
     }
@@ -120,7 +122,7 @@ static FTTrackDataManager *sharedInstance = nil;
     BOOL insertItemResult = NO;
     switch (type) {
         case FTAddDataRUMCache:
-            insertItemResult = [[FTTrackerEventDBTool sharedManger] insertItem:data];
+            insertItemResult = [[FTTrackerEventDBTool sharedManager] insertItem:data];
             break;
         case FTAddDataLogging:
             [self.dataCachePolicy addLogData:data];
@@ -140,7 +142,7 @@ static FTTrackDataManager *sharedInstance = nil;
 }
 #pragma mark - Network Change Observer -
 - (void)connectivityChanged:(BOOL)connected typeDescription:(NSString *)typeDescription{
-    if (connected){
+    if (connected && self.autoSync){
         [self.dataUploadWorker flushWithSleep:YES];
     }
 }
@@ -163,13 +165,26 @@ static FTTrackDataManager *sharedInstance = nil;
         FTInnerLogError(@"applicationWillResignActive exception %@",exception);
     }
 }
+#if FT_HAS_UIKIT
+- (void)applicationDidEnterBackground{
+    @try {
+        [self.dataCachePolicy insertCacheToDB];
+        [[FTTrackerEventDBTool sharedManager] close];
+    }
+    @catch (NSException *exception) {
+        FTInnerLogError(@"exception %@",exception);
+    }
+}
+#else
 -(void)applicationWillTerminate{
     @try {
         [self.dataCachePolicy insertCacheToDB];
+        [[FTTrackerEventDBTool sharedManager] close];
     } @catch (NSException *exception) {
         FTInnerLogError(@"exception %@",exception);
     }
 }
+#endif
 #pragma mark - Upload -
 - (void)flushSyncData{
     [self.dataUploadWorker flushWithSleep:NO];
@@ -183,7 +198,7 @@ static FTTrackDataManager *sharedInstance = nil;
             [sharedInstance.dataUploadWorker cancelAsynchronously];
             [sharedInstance.dataCachePolicy insertCacheToDB];
             [[FTAppLifeCycle sharedInstance] removeAppLifecycleDelegate:sharedInstance];
-            [[FTTrackerEventDBTool sharedManger] close];
+            [[FTTrackerEventDBTool sharedManager] close];
         }
         sharedInstance = nil;
     }

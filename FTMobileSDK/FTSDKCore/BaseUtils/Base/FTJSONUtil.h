@@ -48,7 +48,7 @@ NS_ASSUME_NONNULL_BEGIN
  *
  * @return The resulting string after conversion
  */
-- (nullable NSData *)JSONSerializeDictObject:(NSDictionary *)obj;
++ (nullable NSData *)JSONSerializeDictObject:(NSDictionary *)obj;
 /**
  * @abstract
  * Convert a Foundation object to a JSON string

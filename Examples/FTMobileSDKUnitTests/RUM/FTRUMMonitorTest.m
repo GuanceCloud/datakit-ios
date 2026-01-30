@@ -53,7 +53,7 @@
     [FTModelHelper startAction];
     [FTModelHelper startAction];
     [[FTGlobalRumManager sharedInstance].rumManager syncProcess];
-    NSArray *newDatas = [[FTTrackerEventDBTool sharedManger] getFirstRecords:10 withType:FT_DATA_TYPE_RUM];
+    NSArray *newDatas = [[FTTrackerEventDBTool sharedManager] getFirstRecords:10 withType:FT_DATA_TYPE_RUM];
     [FTModelHelper resolveModelArray:newDatas callBack:^(NSString * _Nonnull source, NSDictionary * _Nonnull tags, NSDictionary * _Nonnull fields, BOOL * _Nonnull stop) {
         if ([source isEqualToString:FT_RUM_SOURCE_VIEW]) {
             XCTAssertFalse([fields.allKeys containsObject:FT_FPS_MINI]);
@@ -73,7 +73,7 @@
     [self waitForTimeInterval:1.5];
     [FTModelHelper addActionWithContext:nil];
     [[FTGlobalRumManager sharedInstance].rumManager syncProcess];
-    NSArray *newDatas = [[FTTrackerEventDBTool sharedManger] getFirstRecords:10 withType:FT_DATA_TYPE_RUM];
+    NSArray *newDatas = [[FTTrackerEventDBTool sharedManager] getFirstRecords:10 withType:FT_DATA_TYPE_RUM];
     [FTModelHelper resolveModelArray:newDatas callBack:^(NSString * _Nonnull source, NSDictionary * _Nonnull tags, NSDictionary * _Nonnull fields, BOOL * _Nonnull stop) {
         if ([source isEqualToString:FT_RUM_SOURCE_VIEW]) {
             XCTAssertTrue([fields.allKeys containsObject:FT_FPS_MINI]);
@@ -118,7 +118,7 @@
     [self waitForTimeInterval:1];
     [FTModelHelper addActionWithContext:nil];
     [[FTGlobalRumManager sharedInstance].rumManager syncProcess];
-    NSArray *newDatas = [[FTTrackerEventDBTool sharedManger] getFirstRecords:10 withType:FT_DATA_TYPE_RUM];
+    NSArray *newDatas = [[FTTrackerEventDBTool sharedManager] getFirstRecords:10 withType:FT_DATA_TYPE_RUM];
     [FTModelHelper resolveModelArray:newDatas callBack:^(NSString * _Nonnull source, NSDictionary * _Nonnull tags, NSDictionary * _Nonnull fields, BOOL * _Nonnull stop) {
         if ([source isEqualToString:FT_RUM_SOURCE_VIEW]) {
             XCTAssertTrue([fields.allKeys containsObject:FT_FPS_MINI]&&[fields.allKeys containsObject:FT_FPS_AVG]);
@@ -194,7 +194,7 @@
     [FTMobileAgent startWithConfigOptions:config];
     
     [[FTMobileAgent sharedInstance] startRumWithConfigOptions:rumConfig];
-    [[FTTrackerEventDBTool sharedManger] deleteAllDatas];
+    [[FTTrackerEventDBTool sharedManager] deleteAllDatas];
 }
 - (void)setRumMonitorType:(FTDeviceMetricsMonitorType)type{
     FTMobileConfig *config = [[FTMobileConfig alloc]initWithDatakitUrl:self.url];
@@ -209,6 +209,6 @@
     [FTMobileAgent startWithConfigOptions:config];
     
     [[FTMobileAgent sharedInstance] startRumWithConfigOptions:rumConfig];
-    [[FTTrackerEventDBTool sharedManger] deleteAllDatas];
+    [[FTTrackerEventDBTool sharedManager] deleteAllDatas];
 }
 @end

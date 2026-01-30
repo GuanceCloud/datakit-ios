@@ -16,13 +16,10 @@ NS_ASSUME_NONNULL_BEGIN
 /// Preset properties
 @interface FTPresetProperty : NSObject
 
-@property (nonatomic, strong, readonly) NSDictionary *loggerTags;
-@property (nonatomic, strong, readonly) NSDictionary *rumTags;
 
-/// Set data modifier
-@property (nonatomic, copy, nullable) FTLineDataModifier lineDataModifier;
 /// Device name
 + (NSString *)deviceInfo;
++ (NSString *)getApplicationUUID;
 + (NSString *)cpuArch;
 + (NSString *)CPUArchForMajor:(cpu_type_t)majorCode minor:(cpu_subtype_t)minorCode;
 #if FT_HOST_MAC
@@ -37,16 +34,18 @@ NS_ASSUME_NONNULL_BEGIN
 /// - Parameter env: Environment
 /// - Parameter service: Service
 /// - Parameter globalContext: Global custom properties
-- (void)startWithVersion:(NSString *)version sdkVersion:(NSString *)sdkVersion env:(NSString *)env service:(NSString *)service globalContext:(NSDictionary *)globalContext pkgInfo:(nullable NSDictionary *)pkgInfo;
+- (void)startWithVersion:(NSString *)version sdkVersion:(NSString *)sdkVersion env:(NSString *)env service:(NSString *)service globalContext:(nullable NSDictionary *)globalContext pkgInfo:(nullable NSDictionary *)pkgInfo;
 
-- (void)setDataModifier:(FTDataModifier)dataModifier lineDataModifier:(FTLineDataModifier)lineDataModifier;
+- (void)setDataModifier:(nullable FTDataModifier)dataModifier lineDataModifier:(nullable FTLineDataModifier)lineDataModifier;
 
-- (void)setRUMAppID:(NSString *)appID sampleRate:(int)sampleRate sessionOnErrorSampleRate:(int)sessionOnErrorSampleRate rumGlobalContext:(NSDictionary *)rumGlobalContext;
+- (void)setRUMAppID:(NSString *)appID sampleRate:(int)sampleRate sessionOnErrorSampleRate:(int)sessionOnErrorSampleRate rumGlobalContext:(nullable NSDictionary *)rumGlobalContext;
 
--(void)setLogGlobalContext:(NSDictionary *)logGlobalContext;
+-(void)setLogGlobalContext:(nullable NSDictionary *)logGlobalContext;
 
+- (NSDictionary *)rumTags;
 - (NSDictionary *)rumDynamicTags;
 
+- (NSDictionary *)loggerTags;
 - (NSDictionary *)loggerDynamicTags;
 
 - (void)appendGlobalContext:(NSDictionary *)context;
@@ -55,7 +54,7 @@ NS_ASSUME_NONNULL_BEGIN
 
 - (void)appendLogGlobalContext:(NSDictionary *)context;
 
-- (NSArray<NSDictionary *> *)applyLineModifier:(NSString *)measurement
+- (nullable NSArray<NSDictionary *> *)applyLineModifier:(NSString *)measurement
                                           tags:(NSDictionary *)tags
                                         fields:(NSDictionary *)fields;
 -(void)updateUser:(NSString *)Id name:(nullable NSString *)name email:(nullable NSString *)email extra:(nullable NSDictionary *)extra;
