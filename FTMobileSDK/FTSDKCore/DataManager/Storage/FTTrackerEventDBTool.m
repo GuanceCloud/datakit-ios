@@ -20,14 +20,13 @@
 @end
 @implementation FTTrackerEventDBTool
 static FTTrackerEventDBTool *dbTool = nil;
-
+static dispatch_once_t onceToken;
 #pragma mark --Create database
 + (instancetype)sharedManager
 {
     return [FTTrackerEventDBTool shareDatabaseWithPath:nil dbName:nil];
 }
 + (instancetype)shareDatabaseWithPath:(NSString *)dbPath dbName:(NSString *)dbName{
-    static dispatch_once_t onceToken;
     dispatch_once(&onceToken, ^{
         NSString *path = dbPath;
         NSString *name = dbName;
@@ -58,14 +57,6 @@ static FTTrackerEventDBTool *dbTool = nil;
     };
     return dbTool;
 }
-+ (instancetype)allocWithZone:(struct _NSZone *)zone {
-    static dispatch_once_t allocOnceToken;
-    dispatch_once(&allocOnceToken, ^{
-        dbTool = [super allocWithZone:zone];
-    });
-    return dbTool;
-}
-
 - (id)copyWithZone:(struct _NSZone *)zone {
     return self;
 }
@@ -75,6 +66,7 @@ static FTTrackerEventDBTool *dbTool = nil;
 - (void)createTable{
     @try {
         [self createEventTable];
+        [self enableWAL];
     } @catch (NSException *exception) {
         FTInnerLogError(@"%@",exception);
     }
@@ -109,7 +101,11 @@ static FTTrackerEventDBTool *dbTool = nil;
         FTInnerLogDebug(@"createTable success == %d",success);
     }];
 }
-
+-(void)enableWAL{
+    [self zy_inDatabase:^(ZY_FMDatabase *db){
+        [db executeQuery:@"PRAGMA journal_mode=WAL;"];
+    }];
+}
 -(BOOL)insertItem:(FTRecordModel *)item{
     __block BOOL success = NO;
     [self zy_inDatabase:^(ZY_FMDatabase *db){
@@ -216,8 +212,9 @@ static FTTrackerEventDBTool *dbTool = nil;
         NSString *sqlStr = [NSString stringWithFormat:@"DELETE FROM %@ WHERE op = ? AND _id <= ? ;",FT_DB_TRACE_EVENT_TABLE_NAME];
         is = [db executeUpdate:sqlStr,type,identify];
         if(weakSelf.enableLimitWithDbSize){
-            NSString *str = [NSString stringWithFormat:@"PRAGMA incremental_vacuum(?)"];
-            [db executeUpdate:str,@(count)];
+            NSString *str = [NSString stringWithFormat:@"PRAGMA incremental_vacuum(%ld)", (long)count];
+            ZY_FMResultSet *set = [db executeQuery:str];
+            [set close];
         }
     }];
     return is;
@@ -229,8 +226,9 @@ static FTTrackerEventDBTool *dbTool = nil;
         NSString *sqlStr = [NSString stringWithFormat:@"DELETE FROM %@ WHERE _id in (SELECT _id from '%@' WHERE  op = ? ORDER by _id ASC LIMIT ? )",FT_DB_TRACE_EVENT_TABLE_NAME,FT_DB_TRACE_EVENT_TABLE_NAME];
         is = [db executeUpdate:sqlStr,type,@(count)];
         if(weakSelf.enableLimitWithDbSize){
-            NSString *str = [NSString stringWithFormat:@"PRAGMA incremental_vacuum(?)"];
-            [db executeUpdate:str,@(count)];
+            NSString *str = [NSString stringWithFormat:@"PRAGMA incremental_vacuum(%ld)", (long)count];
+            ZY_FMResultSet *set = [db executeQuery:str];
+            [set close];
         }
     }];
     return is;
@@ -242,8 +240,9 @@ static FTTrackerEventDBTool *dbTool = nil;
         NSString *sqlStr = [NSString stringWithFormat:@"DELETE FROM %@ WHERE _id in (SELECT _id from '%@' ORDER by _id ASC LIMIT ?)",FT_DB_TRACE_EVENT_TABLE_NAME,FT_DB_TRACE_EVENT_TABLE_NAME];
         is = [db executeUpdate:sqlStr,@(count)];
         if(weakSelf.enableLimitWithDbSize){
-            NSString *str = [NSString stringWithFormat:@"PRAGMA incremental_vacuum(?)"];
-            [db executeUpdate:str,@(count)];
+            NSString *str = [NSString stringWithFormat:@"PRAGMA incremental_vacuum(%ld)", (long)count];
+            ZY_FMResultSet *set = [db executeQuery:str];
+            [set close];
         }
     }];
     return is;
@@ -376,5 +375,13 @@ static long pageSize = 0;
     if(enableLimitWithDbSize){
         [self autoVacuum];
     }
+}
+/**
+ * Only used for testing.
+ */
+- (void)shutDown{
+    [self close];
+    onceToken = 0;
+    dbTool = nil;
 }
 @end

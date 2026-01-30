@@ -22,6 +22,8 @@
 #import "FTDataUploadWorker.h"
 #import "FTDataWriterWorker.h"
 #import "FTNetworkInfoManager.h"
+#import "FTSDKCompat.h"
+
 @interface FTTrackDataManager ()<FTAppLifeCycleDelegate,FTNetworkChangeObserver>
 /// Whether to enable automatic upload logic (on startup, network status changes, write interval 10s)
 @property (atomic, assign) BOOL autoSync;
@@ -140,7 +142,7 @@ static FTTrackDataManager *sharedInstance = nil;
 }
 #pragma mark - Network Change Observer -
 - (void)connectivityChanged:(BOOL)connected typeDescription:(NSString *)typeDescription{
-    if (connected){
+    if (connected && self.autoSync){
         [self.dataUploadWorker flushWithSleep:YES];
     }
 }
@@ -163,6 +165,17 @@ static FTTrackDataManager *sharedInstance = nil;
         FTInnerLogError(@"applicationWillResignActive exception %@",exception);
     }
 }
+#if FT_HAS_UIKIT
+- (void)applicationDidEnterBackground{
+    @try {
+        [self.dataCachePolicy insertCacheToDB];
+        [[FTTrackerEventDBTool sharedManager] close];
+    }
+    @catch (NSException *exception) {
+        FTInnerLogError(@"exception %@",exception);
+    }
+}
+#else
 -(void)applicationWillTerminate{
     @try {
         [self.dataCachePolicy insertCacheToDB];
@@ -171,6 +184,7 @@ static FTTrackDataManager *sharedInstance = nil;
         FTInnerLogError(@"exception %@",exception);
     }
 }
+#endif
 #pragma mark - Upload -
 - (void)flushSyncData{
     [self.dataUploadWorker flushWithSleep:NO];
