@@ -30,6 +30,7 @@
 #import "FTTestUtils.h"
 #import "FTTrackDataManager+Test.h"
 #import "FTDataUploadWorker.h"
+#import "FTUserInfo.h"
 @interface FTMobileAgentTests : KIFTestCase
 @property (nonatomic, strong) FTMobileConfig *config;
 @property (nonatomic, copy) NSString *url;
@@ -73,18 +74,11 @@
 /// New: key: FT_USER_INFO
 ///      value: User data dictionary
 - (void)testAdaptOldUserSet{
-    [self setRightSDKConfig];
-    [[FTMobileAgent sharedInstance] unbindUser];
     [[NSUserDefaults standardUserDefaults] setValue:@"old_user" forKey:@"ft_userid"];
     [[NSUserDefaults standardUserDefaults] synchronize];
-    [[FTMobileAgent sharedInstance] syncProcess];
-    [FTMobileAgent shutDown];
-    FTMobileConfig *config = [[FTMobileConfig alloc]initWithDatakitUrl:self.url];
-    config.autoSync = NO;
-    [FTMobileAgent startWithConfigOptions:config];
-   
-    NSDictionary *dict  = [[FTPresetProperty sharedInstance] rumDynamicTags];
-    NSString *userid = dict[FT_USER_ID];
+    
+    FTUserInfo *userInfo = [[FTUserInfo alloc]init];
+    NSString *userid = userInfo.userId;
     XCTAssertTrue([userid isEqualToString:@"old_user"]);
     [[NSUserDefaults standardUserDefaults] removeObjectForKey:@"ft_userid"];
 }

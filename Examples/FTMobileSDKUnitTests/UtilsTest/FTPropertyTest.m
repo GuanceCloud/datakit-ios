@@ -27,12 +27,7 @@
 #import "FTLogger+Private.h"
 #import "FTUserInfo.h"
 @interface FTPresetProperty (Testing)
-@property (nonatomic, strong) NSDictionary *dynamicGlobalContext;
-@property (nonatomic, strong) NSDictionary *dynamicRUMGlobalContext;
-@property (nonatomic, strong) FTUserInfo *userInfo;
-@property (nonatomic, strong) NSDictionary *baseCommonPropertyTags;
-@property (nonatomic, copy) NSString *rumCustomKeys;
-
+- (FTUserInfo *)userInfo;
 @end
 @interface FTPropertyTest : XCTestCase
 @property (nonatomic, strong) FTMobileConfig *config;
@@ -501,18 +496,14 @@
     for (NSInteger i = 0; i < readThreadCount; i++) {
         dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0), ^{
             for (NSInteger j = 0; j < operationCountPerThread; j++) {
-                NSDictionary *dynamicGlobal = preset.dynamicGlobalContext;
-                NSDictionary *dynamicRUM = preset.dynamicRUMGlobalContext;
                 NSDictionary *rumDynamicTags = preset.rumDynamicTags;
-                NSDictionary *logDynamicTags = preset.loggerDynamicTags;
+                NSDictionary *loggerDynamicTags = preset.loggerDynamicTags;
 
-                XCTAssertNotNil(dynamicGlobal, @"Dynamic global context should not be nil (thread: %ld, op: %ld)", i, j);
-                XCTAssertNotNil(dynamicRUM, @"Dynamic RUM context should not be nil (thread: %ld, op: %ld)", i, j);
+            
                 XCTAssertNotNil(rumDynamicTags, @"RUM dynamic tags should not be nil (thread: %ld, op: %ld)", i, j);
-                XCTAssertNotNil(logDynamicTags, @"Log dynamic tags should not be nil (thread: %ld, op: %ld)", i, j);
+                XCTAssertNotNil(loggerDynamicTags, @"Log dynamic tags should not be nil (thread: %ld, op: %ld)", i, j);
 
-                
-                XCTAssertTrue([dynamicGlobal isKindOfClass:[NSDictionary class]], @"Dynamic global context should be NSDictionary");
+                XCTAssertTrue([loggerDynamicTags isKindOfClass:[NSDictionary class]], @"Log Dynamic tags should be NSDictionary");
                 XCTAssertTrue([rumDynamicTags isKindOfClass:[NSDictionary class]], @"RUM dynamic tags should be NSDictionary");
             }
             [expectation fulfill];
@@ -525,12 +516,12 @@
         }
     }];
     
-    NSDictionary *finalDynamicGlobal = preset.dynamicGlobalContext;
-    NSDictionary *finalDynamicRUM = preset.dynamicRUMGlobalContext;
-    XCTAssertGreaterThan(finalDynamicGlobal.count, 0, @"Final dynamic global context should have data");
+    NSDictionary *finalDynamicLog = preset.loggerDynamicTags;
+    NSDictionary *finalDynamicRUM = preset.rumDynamicTags;
+    XCTAssertGreaterThan(finalDynamicLog.count, 0, @"Final dynamic Log context should have data");
     XCTAssertGreaterThan(finalDynamicRUM.count, 0, @"Final dynamic RUM context should have data");
 }
-- (void)testShutDownResourceRelease {
+- (void)testShutDownDataRelease {
     FTPresetProperty *preset = [FTPresetProperty sharedInstance];
     [preset startWithVersion:@"1.0.0"
                   sdkVersion:@"2.0.0"
@@ -544,14 +535,13 @@
     
     [preset shutDown];
     
-    NSDictionary *baseCommon = preset.baseCommonPropertyTags;
-    NSDictionary *dynamicGlobal = preset.dynamicGlobalContext;
+    NSDictionary *loggerTags = preset.loggerTags;
     NSDictionary *rumTags = preset.rumTags;
     FTUserInfo *user = preset.userInfo;
-    NSString *rumCustomKeys = preset.rumCustomKeys;
+    NSString *rumCustomKeys = [preset.rumDynamicTags valueForKey:FT_RUM_CUSTOM_KEYS];
     
-    XCTAssertTrue(baseCommon == nil || [baseCommon isEqual:@{}], @"Base common property should be nil or empty after shutdown");
-    XCTAssertTrue(dynamicGlobal == nil || [dynamicGlobal isEqual:@{}], @"Dynamic global context should be nil or empty after shutdown");
+    XCTAssertTrue(loggerTags == nil || [loggerTags isEqual:@{}], @"log tags should be nil or empty after shutdown");
+    XCTAssertTrue(rumTags == nil || [rumTags isEqual:@{}], @"rum tags context should be nil or empty after shutdown");
     XCTAssertTrue(rumTags == nil || [rumTags isEqual:@{}], @"RUM tags should be nil or empty after shutdown");
     XCTAssertNotNil(user, @"User info should not be nil after shutdown");
     XCTAssertNil(rumCustomKeys, @"RUM custom keys should be nil after shutdown");
@@ -559,6 +549,50 @@
     [preset appendGlobalContext:@{@"after_shutdown": @"value"}];
     NSDictionary *afterShutdownTags = preset.rumDynamicTags;
     XCTAssertNotNil(afterShutdownTags, @"Operation after shutdown should not crash");
+}
+- (void)testSDKShutDown{
+    NSInteger startThreadCount = 5;
+    NSInteger shutdownThreadCount = 5;
+    NSInteger operationCountPerThread = 100;
+    XCTestExpectation *expectation = [self expectationWithDescription:@"Concurrent read/write completed"];
+    expectation.expectedFulfillmentCount = startThreadCount + shutdownThreadCount;
+    
+    for (NSInteger i = 0; i < startThreadCount; i++) {
+        dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0), ^{
+            for (NSInteger j = 0; j < operationCountPerThread; j++) {
+                [self startProperty];
+            }
+            [expectation fulfill];
+        });
+    }
+    
+    for (NSInteger i = 0; i < shutdownThreadCount; i++) {
+        dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0), ^{
+            for (NSInteger j = 0; j < operationCountPerThread; j++) {
+                [[FTPresetProperty sharedInstance] shutDown];
+            }
+            [expectation fulfill];
+        });
+    }
+    [self waitForExpectationsWithTimeout:30 handler:^(NSError * _Nullable error) {
+        if (error) {
+            XCTFail(@"Concurrent read/write timeout: %@", error.localizedDescription);
+        }
+    }];
+    
+}
+- (void)startProperty{
+    FTPresetProperty *preset = [FTPresetProperty sharedInstance];
+    [preset startWithVersion:@"1.0.0"
+                  sdkVersion:@"2.0.0"
+                         env:@"test"
+                     service:@"test_service"
+               globalContext:@{@"test_key": @"test_value"}
+                     pkgInfo:@{@"pkg_name": @"test_pkg"}];
+    [preset appendGlobalContext:@{@"shutdown_key": @"shutdown_value"}];
+    [preset setRUMAppID:@"111" sampleRate:100 sessionOnErrorSampleRate:100 rumGlobalContext:@{@"a":@"b"}];
+    [preset setLogGlobalContext:@{@"c":@"d"}];
+    [preset updateUser:@"test_user" name:@"test_name" email:@"test@test.com" extra:@{@"extra": @"value"}];
 }
 - (void)testFTUserInfoCopyIndependence {
     FTPresetProperty *preset = [FTPresetProperty sharedInstance];

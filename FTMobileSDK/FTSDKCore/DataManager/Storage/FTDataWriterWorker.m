@@ -99,8 +99,8 @@
                                      time:(long long)time
                                        op:(NSString *)op {
     FTRecordModel *model = nil;
-    if ([FTPresetProperty sharedInstance].lineDataModifier) {
-        NSArray *array = [[FTPresetProperty sharedInstance] applyLineModifier:source tags:tags fields:fields];
+    NSArray *array = [[FTPresetProperty sharedInstance] applyLineModifier:source tags:tags fields:fields];
+    if(array){
         model = [[FTRecordModel alloc] initWithSource:source op:op tags:array[0] fields:array[1] tm:time];
     } else {
         model = [[FTRecordModel alloc] initWithSource:source op:op tags:tags fields:fields tm:time];
@@ -140,8 +140,8 @@
         NSString *source = FT_LOGGER_SOURCE;
 #endif
         FTRecordModel *model;
-        if ([FTPresetProperty sharedInstance].lineDataModifier) {
-            NSArray *array = [[FTPresetProperty sharedInstance] applyLineModifier:source tags:tagDict fields:filedDict];
+        NSArray *array = [[FTPresetProperty sharedInstance] applyLineModifier:source tags:tagDict fields:filedDict];
+        if (array) {
             model = [[FTRecordModel alloc]initWithSource:source op:FT_DATA_TYPE_LOGGING tags:array[0] fields:array[1] tm:time];
         }else{
             model = [[FTRecordModel alloc]initWithSource:source op:FT_DATA_TYPE_LOGGING tags:tagDict fields:filedDict tm:time];
