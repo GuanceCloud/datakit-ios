@@ -12,14 +12,14 @@
 #import <math.h>
 static const char * kClassPropertiesKey;
 static const char * kMapperObjectKey;
-BOOL isNull(id value)
+static BOOL isNull(id value)
 {
     if (!value) return YES;
     if ([value isKindOfClass:[NSNull class]]) return YES;
 
     return NO;
 }
-BOOL isNAN(id value) {
+static BOOL isNAN(id value) {
     if ([value isKindOfClass:[NSNumber class]]) {
         NSNumber *num = (NSNumber *)value;
         return num.doubleValue != num.doubleValue;
