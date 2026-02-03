@@ -1,3 +1,6 @@
+# 1.6.2-alpha.15
+1. Fix iOS `isNull` naming conflict by marking as static (file-scoped)
+---
 # 1.6.2-alpha.14
 1. Fix the issue where SessionReplay (SR) collection fails due to NaN value of layerCornerRadius on iOS 26
 2. Support the error sampling for webView session replay
