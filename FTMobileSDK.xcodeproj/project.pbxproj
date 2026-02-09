@@ -34,12 +34,8 @@
 		171CE1DD2BFB3C550083FC1C /* FTDURLSessionDelegate.h in Headers */ = {isa = PBXBuildFile; fileRef = 171CE1D62BFB3C550083FC1C /* FTDURLSessionDelegate.h */; };
 		172113B82DF1A200006189C2 /* FTRemoteConfigManager.m in Sources */ = {isa = PBXBuildFile; fileRef = 172113B72DF1A200006189C2 /* FTRemoteConfigManager.m */; };
 		172113B92DF1A200006189C2 /* FTRemoteConfigManager.h in Headers */ = {isa = PBXBuildFile; fileRef = 172113B62DF1A200006189C2 /* FTRemoteConfigManager.h */; };
-		172113BA2DF1A200006189C2 /* FTRemoteConfigManager.m in Sources */ = {isa = PBXBuildFile; fileRef = 172113B72DF1A200006189C2 /* FTRemoteConfigManager.m */; };
-		172113BB2DF1A200006189C2 /* FTRemoteConfigManager.h in Headers */ = {isa = PBXBuildFile; fileRef = 172113B62DF1A200006189C2 /* FTRemoteConfigManager.h */; };
 		172113BC2DF1A200006189C2 /* FTRemoteConfigManager.m in Sources */ = {isa = PBXBuildFile; fileRef = 172113B72DF1A200006189C2 /* FTRemoteConfigManager.m */; };
 		172113BD2DF1A200006189C2 /* FTRemoteConfigManager.h in Headers */ = {isa = PBXBuildFile; fileRef = 172113B62DF1A200006189C2 /* FTRemoteConfigManager.h */; };
-		172113C02DF1B476006189C2 /* FTRemoteConfigurationRequest.m in Sources */ = {isa = PBXBuildFile; fileRef = 172113BF2DF1B476006189C2 /* FTRemoteConfigurationRequest.m */; };
-		172113C12DF1B476006189C2 /* FTRemoteConfigurationRequest.h in Headers */ = {isa = PBXBuildFile; fileRef = 172113BE2DF1B476006189C2 /* FTRemoteConfigurationRequest.h */; };
 		172113C22DF1B476006189C2 /* FTRemoteConfigurationRequest.m in Sources */ = {isa = PBXBuildFile; fileRef = 172113BF2DF1B476006189C2 /* FTRemoteConfigurationRequest.m */; };
 		172113C32DF1B476006189C2 /* FTRemoteConfigurationRequest.h in Headers */ = {isa = PBXBuildFile; fileRef = 172113BE2DF1B476006189C2 /* FTRemoteConfigurationRequest.h */; };
 		172113C42DF1B476006189C2 /* FTRemoteConfigurationRequest.m in Sources */ = {isa = PBXBuildFile; fileRef = 172113BF2DF1B476006189C2 /* FTRemoteConfigurationRequest.m */; };
@@ -418,9 +414,6 @@
 		17717B332F0E7E69002158F6 /* FTRemoteConfigModel.h in Headers */ = {isa = PBXBuildFile; fileRef = 17717B302F0E7E69002158F6 /* FTRemoteConfigModel.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		17717B342F0E7E69002158F6 /* FTRemoteConfigModel+Private.h in Headers */ = {isa = PBXBuildFile; fileRef = 17717B322F0E7E69002158F6 /* FTRemoteConfigModel+Private.h */; };
 		17717B352F0E7E69002158F6 /* FTRemoteConfigModel.m in Sources */ = {isa = PBXBuildFile; fileRef = 17717B312F0E7E69002158F6 /* FTRemoteConfigModel.m */; };
-		17717B362F0E7E69002158F6 /* FTRemoteConfigModel.h in Headers */ = {isa = PBXBuildFile; fileRef = 17717B302F0E7E69002158F6 /* FTRemoteConfigModel.h */; };
-		17717B372F0E7E69002158F6 /* FTRemoteConfigModel+Private.h in Headers */ = {isa = PBXBuildFile; fileRef = 17717B322F0E7E69002158F6 /* FTRemoteConfigModel+Private.h */; };
-		17717B382F0E7E69002158F6 /* FTRemoteConfigModel.m in Sources */ = {isa = PBXBuildFile; fileRef = 17717B312F0E7E69002158F6 /* FTRemoteConfigModel.m */; };
 		17717B392F0E7E69002158F6 /* FTRemoteConfigModel.h in Headers */ = {isa = PBXBuildFile; fileRef = 17717B302F0E7E69002158F6 /* FTRemoteConfigModel.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		17717B3A2F0E7E69002158F6 /* FTRemoteConfigModel+Private.h in Headers */ = {isa = PBXBuildFile; fileRef = 17717B322F0E7E69002158F6 /* FTRemoteConfigModel+Private.h */; };
 		17717B3B2F0E7E69002158F6 /* FTRemoteConfigModel.m in Sources */ = {isa = PBXBuildFile; fileRef = 17717B312F0E7E69002158F6 /* FTRemoteConfigModel.m */; };
@@ -431,8 +424,6 @@
 		17717B422F0E7E71002158F6 /* FTRemoteConfigError.m in Sources */ = {isa = PBXBuildFile; fileRef = 17717B402F0E7E71002158F6 /* FTRemoteConfigError.m */; };
 		17717B432F0E7E71002158F6 /* FTRemoteConfigError.m in Sources */ = {isa = PBXBuildFile; fileRef = 17717B402F0E7E71002158F6 /* FTRemoteConfigError.m */; };
 		17717B442F0E7E71002158F6 /* FTRemoteConfigError.h in Headers */ = {isa = PBXBuildFile; fileRef = 17717B3F2F0E7E71002158F6 /* FTRemoteConfigError.h */; };
-		17717B452F0E7E71002158F6 /* FTRemoteConfigError.h in Headers */ = {isa = PBXBuildFile; fileRef = 17717B3F2F0E7E71002158F6 /* FTRemoteConfigError.h */; };
-		17717B462F0E7E71002158F6 /* FTRemoteConfigError.m in Sources */ = {isa = PBXBuildFile; fileRef = 17717B402F0E7E71002158F6 /* FTRemoteConfigError.m */; };
 		17717B472F0E7E71002158F6 /* FTRemoteConfigError.h in Headers */ = {isa = PBXBuildFile; fileRef = 17717B3F2F0E7E71002158F6 /* FTRemoteConfigError.h */; };
 		17717B482F0E7E71002158F6 /* FTRemoteConfigError.m in Sources */ = {isa = PBXBuildFile; fileRef = 17717B402F0E7E71002158F6 /* FTRemoteConfigError.m */; };
 		17717B4A2F0E7E9A002158F6 /* FTRemoteConfigTypeDefs.h in Headers */ = {isa = PBXBuildFile; fileRef = 17717B492F0E7E9A002158F6 /* FTRemoteConfigTypeDefs.h */; settings = {ATTRIBUTES = (Public, ); }; };
@@ -2836,7 +2827,6 @@
 			isa = PBXHeadersBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				172113BB2DF1A200006189C2 /* FTRemoteConfigManager.h in Headers */,
 				172B10EC2E377B3700753766 /* FTRUMDependencies.h in Headers */,
 				177606A429D1376600D17137 /* FTReadWriteHelper.h in Headers */,
 				17717B7A2F0F4FA9002158F6 /* FTCrash.h in Headers */,
@@ -2906,7 +2896,6 @@
 				174BC87C2BFC9F8A00478EE1 /* NSDictionary+FTCopyProperties.h in Headers */,
 				1776069C29D1375800D17137 /* NSString+FTAdd.h in Headers */,
 				177606B829D137E900D17137 /* FTExternalResourceProtocol.h in Headers */,
-				17717B452F0E7E71002158F6 /* FTRemoteConfigError.h in Headers */,
 				17E4CC5029CD42EB005C2D99 /* FTMobileExtension.h in Headers */,
 				1776BD372E179EC100612A7F /* FTCrashMonitor.h in Headers */,
 				17E4CC5229CD42EB005C2D99 /* FTExtensionManager.h in Headers */,
@@ -2924,7 +2913,6 @@
 				17678E3229D28BED00C1DA98 /* FTMobileConfig+Private.h in Headers */,
 				177606BA29D137EB00D17137 /* FTURLSessionInterceptorProtocol.h in Headers */,
 				17717B8F2F0F5250002158F6 /* FTErrorMonitorInfo.h in Headers */,
-				172113C12DF1B476006189C2 /* FTRemoteConfigurationRequest.h in Headers */,
 				17C2FD042E3B3E09003D600F /* FTRumConfig.h in Headers */,
 				1799581429D43FDE0033B46E /* FTPresetProperty.h in Headers */,
 				17A421C52EDDB06E00416673 /* FTCrashMonitorHelper.h in Headers */,
@@ -2944,8 +2932,6 @@
 				176868F02ED47AA600C76F0D /* FTCrashStackCursor_MachineContext.h in Headers */,
 				17717B4C2F0E7E9A002158F6 /* FTRemoteConfigTypeDefs.h in Headers */,
 				176CE2322ED6CFA200E9E92B /* FTCrashFileUtils.h in Headers */,
-				17717B362F0E7E69002158F6 /* FTRemoteConfigModel.h in Headers */,
-				17717B372F0E7E69002158F6 /* FTRemoteConfigModel+Private.h in Headers */,
 				176868F22ED47AA600C76F0D /* FTCrashPlatformSpecificDefines.h in Headers */,
 				176868F42ED47AA600C76F0D /* FTCrashDynamicLinker.h in Headers */,
 				176868F52ED47AA600C76F0D /* FTCrashCPU_Apple.h in Headers */,
@@ -3752,7 +3738,6 @@
 				176868D72ED47AA600C76F0D /* FTCrashDynamicLinker.c in Sources */,
 				176868D92ED47AA600C76F0D /* FTCrashBinaryImageCache.c in Sources */,
 				176868DA2ED47AA600C76F0D /* FTCrashCPU_arm64.c in Sources */,
-				17717B462F0E7E71002158F6 /* FTRemoteConfigError.m in Sources */,
 				17A422C02EE2C06500416673 /* FTCrashBacktrace.c in Sources */,
 				176868DB2ED47AA600C76F0D /* FTCrashStackCursor_Backtrace.c in Sources */,
 				176868DE2ED47AA600C76F0D /* FTCrashMachineContext.c in Sources */,
@@ -3773,7 +3758,6 @@
 				17A421FE2EDE8F8D00416673 /* FTCrashObjC.c in Sources */,
 				177606A629D1376A00D17137 /* FTReadWriteHelper.m in Sources */,
 				17AB76E529D432DE008FBBF5 /* FTRUMManager.m in Sources */,
-				17717B382F0E7E69002158F6 /* FTRemoteConfigModel.m in Sources */,
 				1776073A29D1416200D17137 /* FTUserInfo.m in Sources */,
 				1776070729D139D700D17137 /* FTTracer.m in Sources */,
 				17AB76F429D432DE008FBBF5 /* FTRUMActionHandler.m in Sources */,
@@ -3804,7 +3788,6 @@
 				176CE21F2ED586DF00E9E92B /* FTCrashMonitor_AppState.c in Sources */,
 				1776071F29D13A0700D17137 /* FTURLSessionInterceptor.m in Sources */,
 				1762D6C92DC1D0F900238B61 /* FTLoggerConfig.m in Sources */,
-				172113C02DF1B476006189C2 /* FTRemoteConfigurationRequest.m in Sources */,
 				1776BD362E179EC100612A7F /* FTCrashMonitor.c in Sources */,
 				17AC174F2B98635C003E18A6 /* NSDate+FTUtil.m in Sources */,
 				17AB76B829D432DE008FBBF5 /* FTCPUMonitor.m in Sources */,
@@ -3831,7 +3814,6 @@
 				17A423452EEBC6A600416673 /* FTCrashReportWrapper.m in Sources */,
 				1776064329D1360500D17137 /* FTExternalDataManager.m in Sources */,
 				175951102A6FE4DE006FAB9D /* NSNumber+FTAdd.m in Sources */,
-				172113BA2DF1A200006189C2 /* FTRemoteConfigManager.m in Sources */,
 				1776068F29D1372900D17137 /* FTRecordModel.m in Sources */,
 				17C2FE2F2E3B8799003D600F /* FTRUMView.m in Sources */,
 				172B10682E3219F500753766 /* FTDateUtil.m in Sources */,
