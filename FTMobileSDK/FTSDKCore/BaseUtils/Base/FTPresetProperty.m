@@ -45,9 +45,8 @@
 #if FT_HAS_UIKIT
         _model = [FTPresetProperty deviceInfo];
         _deviceUUID =[[UIDevice currentDevice] identifierForVendor].UUIDString;
-        CGFloat scale = [[UIScreen mainScreen] scale];
-        CGRect rect = [[UIScreen mainScreen] bounds];
-        _screenSize = [[NSString alloc] initWithFormat:@"%.f*%.f",rect.size.height*scale,rect.size.width*scale];
+        CGSize size = [self safeDeviceResolution];
+        _screenSize = [[NSString alloc] initWithFormat:@"%.f*%.f",size.width,size.height];
         _os = [UIDevice currentDevice].systemName;
         _appUUID = [FTPresetProperty getApplicationUUID];
 #elif FT_HOST_MAC
@@ -68,6 +67,32 @@
     }
     return self;
 }
+#if FT_HAS_UIKIT
+- (CGSize)safeDeviceResolution {
+    CGSize size = CGSizeZero;
+    if (@available(iOS 13.0,tvOS 13.0, *)) {
+        NSSet<UIScene *> *scenes = [UIApplication sharedApplication].connectedScenes;
+        for (UIScene *scene in scenes) {
+            if ([scene isKindOfClass:[UIWindowScene class]]) {
+                UIWindowScene *windowScene = (UIWindowScene *)scene;
+                size = windowScene.screen.nativeBounds.size;
+                break;
+            }
+        }
+    }
+    if (!CGSizeEqualToSize(size, CGSizeZero)) {
+        return size;
+    }
+
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wdeprecated-declarations"
+    if ([UIScreen respondsToSelector:@selector(mainScreen)]) {
+        size = [UIScreen mainScreen].nativeBounds.size;
+    }
+#pragma clang diagnostic pop
+    return size;
+}
+#endif
 @end
 @interface FTPresetProperty ()
 @property (nonatomic, copy) FTDataModifier dataModifier;
