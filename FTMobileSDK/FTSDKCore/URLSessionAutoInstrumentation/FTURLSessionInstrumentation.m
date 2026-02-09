@@ -71,7 +71,6 @@ static dispatch_once_t onceToken;
     if(self){
         _shouldRUMInterceptor = NO;
         _shouldTraceInterceptor = NO;
-        [self swizzleURLSession];
     }
     return self;
 }
@@ -110,6 +109,9 @@ static dispatch_once_t onceToken;
                      sampleRate:(int)sampleRate
                       traceType:(FTNetworkTraceType)traceType
                traceInterceptor:(TraceInterceptor)traceInterceptor{
+    if (enableAutoTrace) {
+        [self swizzleURLSession];
+    }
     _tracer = [[FTTracer alloc] initWithSampleRate:sampleRate
                                          traceType:(NetworkTraceType)traceType
                                        serviceName:self.serviceName
@@ -124,6 +126,9 @@ static dispatch_once_t onceToken;
      resourcePropertyProvider:(ResourcePropertyProvider)resourcePropertyProvider
        sessionTaskErrorFilter:(SessionTaskErrorFilter)sessionTaskErrorFilter
 {
+    if (enableAutoRumTrack) {
+        [self swizzleURLSession];
+    }
     self.interceptor.resourceUrlHandler = resourceUrlHandler;
     self.shouldRUMInterceptor = enableAutoRumTrack;
     self.interceptor.resourcePropertyProvider = resourcePropertyProvider;
@@ -144,6 +149,7 @@ static dispatch_once_t onceToken;
     self.shouldTraceInterceptor = NO;
 }
 - (void)enableSessionDelegate:(id <NSURLSessionDelegate>)delegate{
+    [self swizzleURLSession];
     SEL receiveDataSelector = @selector(URLSession:dataTask:didReceiveData:);
     SEL completeSelector = @selector(URLSession:task:didCompleteWithError:);
     SEL collectMetricsSelector = @selector(URLSession:task:didFinishCollectingMetrics:);
