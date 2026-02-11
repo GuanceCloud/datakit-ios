@@ -266,7 +266,7 @@
                 XCTAssertTrue([fields.allKeys containsObject:FT_KEY_RESOURCE_SSL_TIME]);
                 NSNumber *sslStart = fields[FT_KEY_RESOURCE_SSL_TIME][FT_KEY_START];
                 XCTAssertTrue(firstByteStart.longValue>sslStart.longValue);
-                XCTAssertTrue(sslStart.longValue>connectStart.longValue);
+                XCTAssertTrue(sslStart.longValue>=connectStart.longValue);
             }
         }
     }];

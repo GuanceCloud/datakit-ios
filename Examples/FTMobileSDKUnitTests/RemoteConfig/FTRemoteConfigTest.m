@@ -57,6 +57,7 @@
 - (void)tearDown {
     // Put teardown code here. This method is called after the invocation of each test method in the class.
     [OHHTTPStubs removeAllStubs];
+    [[NSUserDefaults standardUserDefaults] setObject:nil forKey:@"FT_REMOTE_CONFIG"];
 }
 - (void)testRequestFormat{
     NSString *datakit = @"http://datakit-test.com";
