@@ -20,6 +20,7 @@
 #import "FTLog.h"
 #include <mach-o/arch.h>
 #include <sys/sysctl.h>
+#import "FTThreadDispatchManager.h"
 #if FT_HOST_MAC
 #import <AppKit/AppKit.h>
 #import <IOKit/IOKitLib.h>
@@ -44,15 +45,13 @@
         _device = @"APPLE";
 #if FT_HAS_UIKIT
         _model = [FTPresetProperty deviceInfo];
-        _deviceUUID =[[UIDevice currentDevice] identifierForVendor].UUIDString;
-        CGSize size = [self safeDeviceResolution];
-        _screenSize = [[NSString alloc] initWithFormat:@"%.f*%.f",size.width,size.height];
+        _deviceUUID = [[UIDevice currentDevice] identifierForVendor].UUIDString;
         _os = [UIDevice currentDevice].systemName;
         _appUUID = [FTPresetProperty getApplicationUUID];
 #elif FT_HOST_MAC
         _os = @"macOS";
         NSRect rect = [NSScreen mainScreen].frame;
-        _screenSize =[[NSString alloc] initWithFormat:@"%.f*%.f",rect.size.height,rect.size.width];
+        _screenSize = [[NSString alloc] initWithFormat:@"%.f*%.f",rect.size.height,rect.size.width];
         _deviceUUID = [FTPresetProperty getDeviceUUID];
         _model = [FTPresetProperty macOSDeviceModel];
 #endif
@@ -68,29 +67,60 @@
     return self;
 }
 #if FT_HAS_UIKIT
-- (CGSize)safeDeviceResolution {
-    CGSize size = CGSizeZero;
-    if (@available(iOS 13.0,tvOS 13.0, *)) {
-        NSSet<UIScene *> *scenes = [UIApplication sharedApplication].connectedScenes;
-        for (UIScene *scene in scenes) {
-            if ([scene isKindOfClass:[UIWindowScene class]]) {
-                UIWindowScene *windowScene = (UIWindowScene *)scene;
-                size = windowScene.screen.nativeBounds.size;
-                break;
+- (NSArray<UIWindow *> *)windows{
+    __block NSArray<UIWindow *> *windows = nil;
+   BOOL success = [FTThreadDispatchManager performBlockDispatchMainSyncSafe:^{
+            UIApplication *app = [self sharedApplication];
+            NSMutableSet *result = [NSMutableSet set];
+
+            if (@available(iOS 13.0, tvOS 13.0, *)) {
+                NSArray<UIScene *> *scenes = [self getApplicationConnectedScenes:app];
+                for (UIScene *scene in scenes) {
+                    if (scene.activationState == UISceneActivationStateForegroundActive
+                        && scene.delegate &&
+                        [scene.delegate respondsToSelector:@selector(window)]) {
+                        id window = [scene.delegate performSelector:@selector(window)];
+                        if (window) {
+                            [result addObject:window];
+                        }
+                    }
+                }
             }
+            id<UIApplicationDelegate> appDelegate = [self getApplicationDelegate:app];
+            if ([appDelegate respondsToSelector:@selector(window)] && appDelegate.window != nil) {
+                [result addObject:appDelegate.window];
+            }
+            windows = [result allObjects];
+        }
+                        timeout:0.1];
+    if (!success) {
+        NSLog(@"[TEST] windows");
+    }
+    return windows ?: @[];
+}
+- (NSArray<UIScene *> *)getApplicationConnectedScenes:(UIApplication *)application API_AVAILABLE(ios(13.0), tvos(13.0)){
+    if (application && [application respondsToSelector:@selector(connectedScenes)]) {
+        return [application.connectedScenes allObjects];
+    }
+    return @[];
+}
+- (nullable id<UIApplicationDelegate>)getApplicationDelegate:(UIApplication *)application{
+    return application.delegate;
+}
+- (UIApplication *)sharedApplication{
+    if (![UIApplication respondsToSelector:@selector(sharedApplication)])
+        return nil;
+    return [UIApplication performSelector:@selector(sharedApplication)];
+}
+- (NSString *)screenSize{
+    NSArray<UIWindow *> *appWindows = self.windows;
+    if ([appWindows count] > 0) {
+        UIScreen *appScreen = appWindows.firstObject.screen;
+        if (appScreen != nil) {
+            return [[NSString alloc] initWithFormat:@"%.f*%.f",appScreen.nativeBounds.size.width,appScreen.nativeBounds.size.height];
         }
     }
-    if (!CGSizeEqualToSize(size, CGSizeZero)) {
-        return size;
-    }
-
-#pragma clang diagnostic push
-#pragma clang diagnostic ignored "-Wdeprecated-declarations"
-    if ([UIScreen respondsToSelector:@selector(mainScreen)]) {
-        size = [UIScreen mainScreen].nativeBounds.size;
-    }
-#pragma clang diagnostic pop
-    return size;
+    return nil;
 }
 #endif
 @end
@@ -115,6 +145,7 @@
     NSMutableDictionary *_dynamicLogGlobalContext;
     NSMutableDictionary *_dynamicRUMGlobalContext;
     pthread_rwlock_t _rwLock;
+    BOOL _isScreenSizeReady;
 }
 @synthesize baseCommonPropertyTags = _baseCommonPropertyTags;
 @synthesize rumGlobalContext = _rumGlobalContext;
@@ -132,6 +163,21 @@
     });
     return sharedInstance;
 }
++(void)initialize{
+#if FT_HAS_UIKIT
+    if (self == [FTPresetProperty class]) {
+        id __block __unused token = [[NSNotificationCenter defaultCenter]
+                            addObserverForName:UIApplicationDidBecomeActiveNotification
+                            object:nil
+                            queue:NSOperationQueue.mainQueue
+                            usingBlock:^(NSNotification *_){
+            [[FTPresetProperty sharedInstance] retryGetScreenSize];
+            [[NSNotificationCenter defaultCenter] removeObserver:token];
+            token = nil;
+        }];
+    }
+#endif
+}
 -(instancetype)init{
     self = [super init];
     if(self){
@@ -140,6 +186,7 @@
         _dynamicGlobalContext = [NSMutableDictionary new];
         _dynamicLogGlobalContext = [NSMutableDictionary new];
         _dynamicRUMGlobalContext = [NSMutableDictionary new];
+        _isScreenSizeReady = NO;
         pthread_rwlock_init(&_rwLock, NULL);
     }
     return self;
@@ -173,14 +220,15 @@
          sampleRate:(int)sampleRate
  sessionOnErrorSampleRate:(int)sessionOnErrorSampleRate
    rumGlobalContext:(NSDictionary *)rumGlobalContext {
-    
     NSMutableDictionary *dict = [NSMutableDictionary dictionary];
     dict[FT_COMMON_PROPERTY_DEVICE] = self.mobileDevice.device;
     dict[FT_COMMON_PROPERTY_DEVICE_MODEL] = self.mobileDevice.model;
     dict[FT_COMMON_PROPERTY_OS] = self.mobileDevice.os;
     dict[FT_COMMON_PROPERTY_OS_VERSION] = self.mobileDevice.osVersion;
     dict[FT_COMMON_PROPERTY_OS_VERSION_MAJOR] = self.mobileDevice.osVersionMajor;
-    dict[FT_SCREEN_SIZE] = self.mobileDevice.screenSize;
+    if (self.mobileDevice.screenSize) {
+        dict[FT_SCREEN_SIZE] = self.mobileDevice.screenSize;
+    }
     dict[FT_CPU_ARCH] = self.mobileDevice.cpuArch;
     [dict setValue:appID forKey:FT_APP_ID];
     
@@ -211,6 +259,26 @@
         [dict addEntriesFromDictionary:newDict];
     }
     self.loggerTags = [dict copy];
+}
+- (void)retryGetScreenSize{
+    BOOL isReady = NO;
+    pthread_rwlock_rdlock(&_rwLock);
+    isReady = _isScreenSizeReady;
+    pthread_rwlock_unlock(&_rwLock);
+    if (!isReady) {
+        NSDictionary *obj = self.rumTags;
+        NSString *screenSize = [self.mobileDevice screenSize];
+        if (screenSize) {
+            pthread_rwlock_wrlock(&_rwLock);
+            NSMutableDictionary *mergedDict = [NSMutableDictionary dictionary];
+            [mergedDict addEntriesFromDictionary:obj];
+            [mergedDict addEntriesFromDictionary:@{FT_SCREEN_SIZE:screenSize}];
+            obj = [mergedDict copy];
+            _rumTags = obj;
+            _isScreenSizeReady = YES;
+            pthread_rwlock_unlock(&_rwLock);
+        }
+    }
 }
 #pragma mark ----property setter/getter thread safe ----
 -(void)setBaseCommonPropertyTags:(NSDictionary *)baseCommonPropertyTags{

@@ -74,7 +74,6 @@ static BOOL FTObjectIsEqual(id a, id b) {
 @property (nonatomic, strong, nullable) FTRUMSessionState *lastSessionState;
 @property (nonatomic, strong, nullable) NSDictionary *lastViewContext;
 @property (nonatomic, strong, nullable) NSDictionary *dynamicContext;
-@property (nonatomic, strong, nullable) NSDictionary *globalAttributes;
 @property (nonatomic, strong, nullable) NSDictionary *errorMonitorInfo;
 @end
 @implementation FTFatalErrorContext
@@ -85,7 +84,6 @@ static BOOL FTObjectIsEqual(id a, id b) {
     self = [super init];
     if (self) {
         _queue = dispatch_queue_create("com.ft.error-context",DISPATCH_QUEUE_SERIAL);
-        _globalAttributes = [[FTPresetProperty sharedInstance] rumTags];
         _provider = provider;
     }
     return self;
@@ -137,7 +135,7 @@ static BOOL FTObjectIsEqual(id a, id b) {
                                                  lastSessionState:self.lastSessionState
                                                    lastViewContext:self.lastViewContext
                                                     dynamicContext:self.dynamicContext
-                                                 globalAttributes:self.globalAttributes
+                                                 globalAttributes:[[FTPresetProperty sharedInstance] rumTags]
                                                  errorMonitorInfo:[self.provider errorMonitorInfo]];
     });
     return model;
@@ -152,7 +150,7 @@ static BOOL FTObjectIsEqual(id a, id b) {
                                                                             lastSessionState:self.lastSessionState
                                                                              lastViewContext:self.lastViewContext
                                                                               dynamicContext:self.dynamicContext
-                                                                            globalAttributes:self.globalAttributes
+                                                                            globalAttributes:[[FTPresetProperty sharedInstance] rumTags]
                                                                             errorMonitorInfo:self.errorMonitorInfo];
         NSDictionary *contextDict = [model toDictionary];
         self.onChange(contextDict);
