@@ -14,7 +14,7 @@ NS_ASSUME_NONNULL_BEGIN
 @end
 @interface FTNetworkConnectivity : NSObject
 @property (nonatomic, assign, readonly) BOOL isConnected;
-@property (nonatomic, copy, readonly) NSString *networkType;
+@property (atomic, copy, readonly) NSString *networkType;
 
 + (instancetype)sharedInstance;
 
