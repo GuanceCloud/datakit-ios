@@ -1,3 +1,9 @@
+# 1.5.20-alpha.1
+1. Fix concurrent read/write issues in FTPresetProperty causing corrupted dictionaries and double free crashes
+2. Enable WAL mode for sqlite
+3. Replace deprecated SCNetworkReachability with NWPathMonitor
+4. Remove usage of deprecated API UIScreen.mainScreen 
+---
 # 1.5.19
 1. Extended resource_type to include new types: image, media, font, CSS, JS, and native
 2. Added resource_id in network errors to associate corresponding resource data
