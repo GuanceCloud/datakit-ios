@@ -36,7 +36,7 @@ typedef void (^ErrorMonitorInfoChangeBlock)(NSDictionary * _Nonnull);
 
 - (NSString *)generateMainThreadBacktrace;
 
-- (NSString *)generateAllThreadsBacktrace;
+- (nullable NSString *)generateAllThreadsBacktrace;
 @end
 
 @protocol FTDictionaryConvertible <NSObject>

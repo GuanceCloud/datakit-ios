@@ -118,9 +118,11 @@ NSString * const FT_MD5 = @"MD5";
     SetNumberFromDict(dict,FT_R_LOG_SAMPLERATE,self.logSampleRate);
     NSString *logLevelFilters;
     SetStringFromDict(dict,FT_R_LOG_LEVEL_FILTERS,logLevelFilters);
-    NSArray *filters = [FTJSONUtil arrayWithJsonString:logLevelFilters];
-    if (filters.count>0) {
-        self.logLevelFilters = filters;
+    if (logLevelFilters) {
+        NSArray *filters = [FTJSONUtil arrayWithJsonString:logLevelFilters];
+        if (filters.count>0) {
+            self.logLevelFilters = filters;
+        }
     }
     SetNumberFromDict(dict,FT_R_LOG_ENABLE_CUSTOM_LOG,self.logEnableCustomLog);
 
@@ -144,51 +146,51 @@ NSString * const FT_MD5 = @"MD5";
     if (self.serviceName) {
         dict[FT_R_SERVICE_NAME] = self.serviceName;
     }
-    if (self.autoSync) {
+    if (self.autoSync != nil) {
         dict[FT_R_AUTO_SYNC] = self.autoSync;
     }
-    if (self.compressIntakeRequests) {
+    if (self.compressIntakeRequests != nil) {
         dict[FT_R_COMPRESS_INTAKE_REQUESTS] = self.compressIntakeRequests;
     }
-    if (self.syncPageSize) {
+    if (self.syncPageSize != nil) {
         dict[FT_R_SYNC_PAGE_SIZE] = self.syncPageSize;
     }
-    if (self.syncSleepTime) {
+    if (self.syncSleepTime != nil) {
         dict[FT_R_SYNC_SLEEP_TIME] = self.syncSleepTime;
     }
     
     // ===== 2. RUM  =====
-    if (self.rumSampleRate) {
+    if (self.rumSampleRate != nil) {
         dict[FT_R_RUM_SAMPLERATE] = self.rumSampleRate;
     }
-    if (self.rumSessionOnErrorSampleRate) {
+    if (self.rumSessionOnErrorSampleRate != nil) {
         dict[FT_R_RUM_SESSION_ON_ERROR_SAMPLE_RATE] = self.rumSessionOnErrorSampleRate;
     }
-    if (self.rumEnableTraceUserAction) {
+    if (self.rumEnableTraceUserAction != nil) {
         dict[FT_R_RUM_ENABLE_TRACE_USER_ACTION] = self.rumEnableTraceUserAction;
     }
-    if (self.rumEnableTraceUserView) {
+    if (self.rumEnableTraceUserView != nil) {
         dict[FT_R_RUM_ENABLE_TRACE_USER_VIEW] = self.rumEnableTraceUserView;
     }
-    if (self.rumEnableTraceUserResource) {
+    if (self.rumEnableTraceUserResource != nil) {
         dict[FT_R_RUM_ENABLE_TRACE_USER_RESOURCE] = self.rumEnableTraceUserResource;
     }
-    if (self.rumEnableResourceHostIP) {
+    if (self.rumEnableResourceHostIP != nil) {
         dict[FT_R_RUM_ENABLE_RESOURCE_HOST_IP] = self.rumEnableResourceHostIP;
     }
-    if (self.rumEnableTrackAppUIBlock) {
+    if (self.rumEnableTrackAppUIBlock != nil) {
         dict[FT_R_RUM_ENABLE_TRACE_APP_FREEZE] = self.rumEnableTrackAppUIBlock;
     }
-    if (self.rumBlockDurationMs) {
+    if (self.rumBlockDurationMs != nil) {
         dict[FT_R_RUM_FREEZE_DURATION_MS] = self.rumBlockDurationMs;
     }
-    if (self.rumEnableTrackAppCrash) {
+    if (self.rumEnableTrackAppCrash != nil) {
         dict[FT_R_RUM_ENABLE_TRACK_APP_CRASH] = self.rumEnableTrackAppCrash;
     }
-    if (self.rumEnableTrackAppANR) {
+    if (self.rumEnableTrackAppANR != nil) {
         dict[FT_R_RUM_ENABLE_TRACK_APP_ANR] = self.rumEnableTrackAppANR;
     }
-    if (self.rumEnableTraceWebView) {
+    if (self.rumEnableTraceWebView != nil) {
         dict[FT_R_RUM_ENABLE_TRACE_WEBVIEW] = self.rumEnableTraceWebView;
     }
 
@@ -200,10 +202,10 @@ NSString * const FT_MD5 = @"MD5";
     }
     
     // ===== 3. Trace  =====
-    if (self.traceSampleRate) {
+    if (self.traceSampleRate != nil) {
         dict[FT_R_TRACE_SAMPLERATE] = self.traceSampleRate;
     }
-    if (self.traceEnableAutoTrace) {
+    if (self.traceEnableAutoTrace != nil) {
         dict[FT_R_TRACE_ENABLE_AUTO_TRACE] = self.traceEnableAutoTrace;
     }
     if (self.traceType) {
@@ -211,7 +213,7 @@ NSString * const FT_MD5 = @"MD5";
     }
     
     // ===== 4. Log  =====
-    if (self.logSampleRate) {
+    if (self.logSampleRate != nil) {
         dict[FT_R_LOG_SAMPLERATE] = self.logSampleRate;
     }
 
@@ -221,7 +223,7 @@ NSString * const FT_MD5 = @"MD5";
             dict[FT_R_LOG_LEVEL_FILTERS] = filterJson;
         }
     }
-    if (self.logEnableCustomLog) {
+    if (self.logEnableCustomLog != nil) {
         dict[FT_R_LOG_ENABLE_CUSTOM_LOG] = self.logEnableCustomLog;
     }
     

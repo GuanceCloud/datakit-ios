@@ -17,9 +17,9 @@ NS_ASSUME_NONNULL_BEGIN
 
 -(void)setEnableCpu:(BOOL)enableCpu;
 
--(NSString *)generateBacktrace:(thread_t)thread;
+-(nullable NSString *)generateBacktrace:(thread_t)thread;
 
--(NSString *)generateAllThreadsBacktrace;
+-(nullable NSString *)generateAllThreadsBacktrace;
 
 @end
 

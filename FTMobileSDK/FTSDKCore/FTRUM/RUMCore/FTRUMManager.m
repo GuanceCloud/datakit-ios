@@ -298,7 +298,7 @@ void *FTRUMQueueIdentityKey = &FTRUMQueueIdentityKey;
                     [tags setValue:responseConnectType forKey:FT_KEY_RESPONSE_CONTENT_TYPE];
                     [tags setValue:responseConnectEncoding forKey:FT_KEY_RESPONSE_CONTENT_ENCODING];
                     NSString *responseHeaderStr = [FTBaseInfoHandler convertToStringData:content.responseHeader];
-                    if (!responseSize) {
+                    if (responseSize == nil) {
                         responseSize = content.responseHeader[@"Content-Length"];
                         responseSize = @([responseSize longLongValue] + [responseHeaderStr dataUsingEncoding:NSUTF8StringEncoding].length);
                     }
@@ -308,7 +308,7 @@ void *FTRUMQueueIdentityKey = &FTRUMQueueIdentityKey;
                 if (content.requestHeader) {
                     NSString *requestHeaderStr = [FTBaseInfoHandler convertToStringData:content.requestHeader];
                     [fields setValue:requestHeaderStr forKey:FT_KEY_REQUEST_HEADER];
-                    if (!requestSize) {
+                    if (requestSize == nil) {
                         requestSize = content.requestHeader[@"Content-Length"];
                         requestSize = @([requestSize longLongValue] + [requestHeaderStr dataUsingEncoding:NSUTF8StringEncoding].length);
                     }
