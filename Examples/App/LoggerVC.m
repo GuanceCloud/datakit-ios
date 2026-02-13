@@ -46,7 +46,7 @@
         [[FTLogger sharedInstance] ok:datas[4] property:@{@"ok_key":@"ok_value",@"ok_key2":@"ok_value2"}];
     }];
     [self.dataSource addObjectsFromArray:@[item1,item2,item3,item4,item5]];
-    _mtableView = [[UITableView alloc] initWithFrame:CGRectMake(0, 100, self.view.window.bounds.size.width, self.view.window.bounds.size.height-200)];
+    _mtableView = [[UITableView alloc] initWithFrame:CGRectMake(0, 0, self.view.bounds.size.width, self.view.bounds.size.height)];
     _mtableView.dataSource = self;
     _mtableView.delegate = self;
     [self.view addSubview:_mtableView];

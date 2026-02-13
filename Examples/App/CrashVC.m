@@ -24,7 +24,7 @@
     [self createUI];
 }
 - (void)createUI{
-    _mtableView = [[UITableView alloc] initWithFrame:CGRectMake(0, 100, self.view.window.bounds.size.width, self.view.window.bounds.size.height-200)];
+    _mtableView = [[UITableView alloc] initWithFrame:CGRectMake(0, 0, self.view.bounds.size.width, self.view.bounds.size.height)];
     _mtableView.dataSource = self;
     _mtableView.delegate = self;
     [self.view addSubview:_mtableView];
