@@ -1,3 +1,6 @@
+# 1.5.20-alpha.2
+1. Fix dataModifier block processing to cover all data entries
+---
 # 1.5.20-alpha.1
 1. Fix concurrent read/write issues in FTPresetProperty causing corrupted dictionaries and double free crashes
 2. Enable WAL mode for sqlite
