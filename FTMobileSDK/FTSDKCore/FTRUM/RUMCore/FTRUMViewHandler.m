@@ -192,14 +192,14 @@
 }
 - (void)writeErrorData:(FTRUMDataModel *)model context:(NSDictionary *)context{
     NSDictionary *sessionViewTag = [self.context getGlobalSessionViewActionTags];
-    NSMutableDictionary *tags = [NSMutableDictionary dictionaryWithDictionary:context];
+    NSMutableDictionary *tags = [NSMutableDictionary new];
     [tags addEntriesFromDictionary:sessionViewTag];
     [tags addEntriesFromDictionary:model.tags];
     NSMutableDictionary *fields = [NSMutableDictionary new];
     [fields addEntriesFromDictionary:model.fields];
     [fields addEntriesFromDictionary:self.context.sessionState.sessionFields];
     NSString *error = model.type == FTRUMDataLongTask?FT_RUM_SOURCE_LONG_TASK :FT_RUM_SOURCE_ERROR;
-    [self.rumDependencies.writer rumWrite:error tags:tags fields:fields time:model.tm];
+    [self.rumDependencies.writer rumWrite:error tags:tags fields:fields dynamicContext:context time:model.tm];
 }
 - (void)writeViewData:(FTRUMDataModel *)model context:(NSDictionary *)context updateTime:(NSDate *)updateTime{
     self.updateTime+=1;
@@ -208,7 +208,7 @@
     //Nanosecond level
     NSNumber *nTimeSpent = [NSNumber numberWithLongLong:sTimeSpent * 1000000000];
     
-    NSMutableDictionary *tags = [NSMutableDictionary dictionaryWithDictionary:context];
+    NSMutableDictionary *tags = [NSMutableDictionary new];
     [tags addEntriesFromDictionary:[self.context getGlobalSessionViewTags]];
     FTMonitorValue *cpu = self.monitorItem.cpu;
     FTMonitorValue *memory = self.monitorItem.memory;
@@ -247,7 +247,7 @@
     [field addEntriesFromDictionary:self.context.sessionState.sessionFields];
 
     long long time = [self.viewStartTime ft_nanosecondTimeStamp];
-    [self.rumDependencies.writer rumWrite:FT_RUM_SOURCE_VIEW tags:tags fields:field time:time updateTime:[updateTime ft_nanosecondTimeStamp]];
+    [self.rumDependencies.writer rumWrite:FT_RUM_SOURCE_VIEW tags:tags fields:field dynamicContext:context time:time updateTime:[updateTime ft_nanosecondTimeStamp]];
     self.rumDependencies.fatalErrorContext.lastViewContext = @{@"tags":tags,
                                                                @"fields":field,
                                                                @"time":[NSNumber numberWithLongLong:time]

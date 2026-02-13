@@ -18,13 +18,11 @@ NSString * const kFTUserInfo = @"FT_USER_INFO";
 @property (nonatomic, copy, readwrite) NSDictionary *extra;
 @property (nonatomic, assign, readwrite) BOOL isSignIn;
 @end
-@implementation FTUserInfo{
-    os_unfair_lock _lock; 
-}
+@implementation FTUserInfo
+
 -(instancetype)init{
     self = [super init];
     if (self) {
-        _lock = OS_UNFAIR_LOCK_INIT;
         NSDictionary *dict = [[NSUserDefaults standardUserDefaults] dictionaryForKey:kFTUserInfo];
         if (dict) {
             _userId = [dict valueForKey:FT_USER_ID];
@@ -52,26 +50,31 @@ NSString * const kFTUserInfo = @"FT_USER_INFO";
     [dict setValue:email forKey:FT_USER_EMAIL];
     [[NSUserDefaults standardUserDefaults] setObject:dict forKey:kFTUserInfo];
     [[NSUserDefaults standardUserDefaults] synchronize];
-    os_unfair_lock_lock(&_lock);
     self.userId = Id;
     self.name = name;
     self.extra = extra;
     self.email = email;
     self.isSignIn = YES;
-    os_unfair_lock_unlock(&_lock);
 }
 -(void)clearUser{
     [[NSUserDefaults standardUserDefaults] setObject:nil forKey:kFTUserInfo];
-    [[NSUserDefaults standardUserDefaults] synchronize];
     NSString *userId = [FTUserInfo userSessionId];
-    os_unfair_lock_lock(&_lock);
     self.userId = userId;
     self.name = nil;
     self.extra = nil;
     self.email = nil;
     self.isSignIn = NO;
-    os_unfair_lock_unlock(&_lock);
 }
+- (NSDictionary *)userInfoDict{
+    NSMutableDictionary *dict = [NSMutableDictionary new];
+    dict[FT_USER_ID] = self.userId;
+    dict[FT_USER_NAME] = self.name;
+    dict[FT_USER_EMAIL] = self.email;
+    dict[FT_IS_SIGNIN] = self.isSignIn ? @"T" : @"F";
+    if (self.extra) [dict addEntriesFromDictionary:self.extra];
+    return [dict copy];
+}
+
 //Compatible with version 1.3.6 and below
 + (NSString *)userId{
     NSString  *userid =[[NSUserDefaults standardUserDefaults] valueForKey:@"ft_userid"];
@@ -86,16 +89,5 @@ NSString * const kFTUserInfo = @"FT_USER_INFO";
         [[NSUserDefaults standardUserDefaults] synchronize];
     }
     return sessionId;
-}
--(id)copyWithZone:(NSZone *)zone{
-    FTUserInfo *copy = [[[self class] allocWithZone:zone] init];
-    os_unfair_lock_lock(&_lock);
-    copy.userId = [self.userId copy];
-    copy.email = [self.email copy];
-    copy.extra = [self.extra copy];
-    copy.name = [self.name copy];
-    copy.isSignIn = self.isSignIn;
-    os_unfair_lock_unlock(&_lock);
-    return copy;
 }
 @end

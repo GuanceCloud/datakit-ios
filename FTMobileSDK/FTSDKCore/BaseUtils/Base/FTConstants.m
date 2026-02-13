@@ -102,7 +102,7 @@ NSString * const FT_MEMORY_AVG = @"memory_avg";
 NSString * const FT_MEMORY_MAX = @"memory_max";
 NSString * const FT_FPS_MINI = @"fps_mini";
 NSString * const FT_FPS_AVG = @"fps_avg";
-
+NSString * const FT_NETWORK_TYPE = @"network_type";
 //resource tag
 NSString * const FT_KEY_RESOURCE_ID= @"resource_id";
 NSString * const FT_KEY_RESOURCE_URL = @"resource_url";

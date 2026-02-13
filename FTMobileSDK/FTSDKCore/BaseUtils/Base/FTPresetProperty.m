@@ -17,7 +17,8 @@
 #import "FTConstants.h"
 #include <mach-o/dyld.h>
 #include <mach-o/nlist.h>
-#import "FTLog.h"
+#import "FTLog+Private.h"
+#import "FTNetworkConnectivity.h"
 #include <mach-o/arch.h>
 #include <sys/sysctl.h>
 #import "FTThreadDispatchManager.h"
@@ -26,7 +27,9 @@
 #import <IOKit/IOKitLib.h>
 #endif
 #import <pthread.h>
-
+static BOOL FTDictionaryContainsKey(NSDictionary *dict, id key) {
+    return dict && key && [dict.allKeys containsObject:key];
+}
 @interface MobileDevice : NSObject
 @property (nonatomic,copy,readonly) NSString *os;
 @property (nonatomic,copy,readonly) NSString *device;
@@ -146,6 +149,8 @@
     NSMutableDictionary *_dynamicRUMGlobalContext;
     pthread_rwlock_t _rwLock;
     NSString *_screenSize;
+    NSString *_networkType;
+    NSDictionary *_userInfoDict;
 
 }
 @synthesize baseCommonPropertyTags = _baseCommonPropertyTags;
@@ -221,8 +226,13 @@
     
     [rumDict addEntriesFromDictionary:self.baseCommonPropertyTags];
     [rumDict addEntriesFromDictionary:newDict];
-    
+    [[FTNetworkConnectivity sharedInstance] addNetworkObserver:self];
     [self safeWrite:^{
+        self->_userInfoDict = [self _innerApplyModifier:self->_dataModifier dict:[self->_userInfo userInfoDict]];
+        NSString *network = [FTNetworkConnectivity sharedInstance].networkType;
+        if (network) {
+            self->_networkType = self->_dataModifier? self->_dataModifier(FT_NETWORK,network):network;
+        }
         self->_rumGlobalContext = [rumGlobalContext copy];
         self->_rumTags = [rumDict copy];
         if (rumGlobalContext && rumGlobalContext.count > 0) {
@@ -230,7 +240,11 @@
         }
     }];
 }
-
+- (void)connectivityChanged:(BOOL)connected typeDescription:(NSString *)typeDescription{
+    [self safeWrite:^{
+        self->_networkType = self->_dataModifier? self->_dataModifier(FT_NETWORK,typeDescription):typeDescription;
+    }];
+}
 - (void)setLogGlobalContext:(NSDictionary *)logGlobalContext {
     NSMutableDictionary *dict = [NSMutableDictionary dictionary];
     [dict addEntriesFromDictionary:self.baseCommonPropertyTags];
@@ -354,10 +368,16 @@
     }];
 }
 -(void)updateUser:(NSString *)Id name:(NSString *)name email:(NSString *)email extra:(NSDictionary *)extra{
-    [_userInfo updateUser:Id name:name email:email extra:extra];
+    [self safeWrite:^{
+        [self->_userInfo updateUser:Id name:name email:email extra:extra];
+        self->_userInfoDict = [self _innerApplyModifier:self->_dataModifier dict:[self->_userInfo userInfoDict]];
+    }];
 }
 -(void)clearUser{
-    [_userInfo clearUser];
+    [self safeWrite:^{
+        [self->_userInfo clearUser];
+        self->_userInfoDict = [self _innerApplyModifier:self->_dataModifier dict:[self->_userInfo userInfoDict]];
+    }];
 }
 - (NSDictionary *)loggerDynamicTags{
     __block NSMutableDictionary *dict = [NSMutableDictionary new];
@@ -376,15 +396,10 @@
         if (self->_dynamicGlobalContext) [dict addEntriesFromDictionary:self->_dynamicGlobalContext];
         if (self->_dynamicRUMGlobalContext) [dict addEntriesFromDictionary:self->_dynamicRUMGlobalContext];
         [dict setValue:self->_rumCustomKeys forKey:FT_RUM_CUSTOM_KEYS];
+        [dict setValue:self->_networkType forKey:FT_NETWORK_TYPE];
+        [dict addEntriesFromDictionary:self->_userInfoDict];
         screenSize = [self->_screenSize copy];
     }];
-    FTUserInfo *user = [self.userInfo copy];
-    if (user) {
-        dict[FT_USER_ID] = user.userId;
-        dict[FT_USER_NAME] = user.name;
-        dict[FT_USER_EMAIL] = user.email;
-        [dict setValue:user.isSignIn ? @"T" : @"F" forKey:FT_IS_SIGNIN];
-        if (user.extra) [dict addEntriesFromDictionary:user.extra];
     if (!screenSize) {
         [self safeWrite:^{
             if (!self->_screenSize) {
@@ -412,15 +427,14 @@
 - (void)appendRUMGlobalContext:(NSDictionary *)context{
     if(!context || context.count == 0) return;
     NSDictionary *newContext = [self applyModifier:context];
-    pthread_rwlock_wrlock(&_rwLock);
-    [self->_dynamicRUMGlobalContext addEntriesFromDictionary:newContext];
-    NSMutableArray *allKeys = [NSMutableArray arrayWithArray:self->_dynamicRUMGlobalContext.allKeys];
-    if(self->_rumGlobalContext.count>0){
-        [allKeys addObjectsFromArray:self->_rumGlobalContext.allKeys];
-    }
-    self->_rumCustomKeys = [FTJSONUtil convertToJsonDataWithObject:allKeys];
-    pthread_rwlock_unlock(&_rwLock);
-    
+    [self safeWrite:^{
+        [self->_dynamicRUMGlobalContext addEntriesFromDictionary:newContext];
+        NSMutableArray *allKeys = [NSMutableArray arrayWithArray:self->_dynamicRUMGlobalContext.allKeys];
+        if(self->_rumGlobalContext.count>0){
+            [allKeys addObjectsFromArray:self->_rumGlobalContext.allKeys];
+        }
+        self->_rumCustomKeys = [FTJSONUtil convertToJsonDataWithObject:allKeys];
+    }];
 }
 - (void)appendLogGlobalContext:(NSDictionary *)context{
     if(!context || context.count == 0) return;
@@ -431,6 +445,10 @@
 }
 - (NSDictionary *)applyModifier:(NSDictionary *)dict{
     FTDataModifier tempModifier = self.dataModifier;
+    if (tempModifier == nil || dict == nil) return dict;
+    return [self _innerApplyModifier:tempModifier dict:dict];
+}
+- (NSDictionary *)_innerApplyModifier:(FTDataModifier)tempModifier dict:(NSDictionary *)dict{
     if (tempModifier == nil || dict == nil) return dict;
     NSMutableDictionary *result = [NSMutableDictionary dictionary];
     [dict enumerateKeysAndObjectsUsingBlock:^(id  _Nonnull key, id  _Nonnull obj, BOOL * _Nonnull stop) {
@@ -443,7 +461,6 @@
     }];
     return result;
 }
-
 - (NSArray<NSDictionary *> *)applyLineModifier:(NSString *)measurement
                                          tags:(NSDictionary *)tags
                                        fields:(NSDictionary *)fields {
@@ -453,28 +470,38 @@
         return nil;
     }
 
-    // Create safe mutable copies (compatible with nil tags/fields)
-    NSMutableDictionary *mutableTags = tags ? [tags mutableCopy] : [NSMutableDictionary dictionary];
-    NSMutableDictionary *mutableFields = fields ? [fields mutableCopy] : [NSMutableDictionary dictionary];
-    
     NSMutableDictionary *mergedValues = [NSMutableDictionary dictionary];
-    if (mutableTags.count > 0) [mergedValues addEntriesFromDictionary:mutableTags];
-    if (mutableFields.count > 0) [mergedValues addEntriesFromDictionary:mutableFields];
+    if (tags) [mergedValues addEntriesFromDictionary:tags];
+    if (fields) [mergedValues addEntriesFromDictionary:fields];
     
     // Execute Block and validate return value
     NSDictionary *changedValues = tempLineModifier(measurement, [mergedValues copy]);
     if (!changedValues || changedValues.count == 0) {
-        return @[ [mutableTags copy], [mutableFields copy] ];
+        return @[ tags ?: @{}, fields ?: @{} ];
     }
-    [changedValues enumerateKeysAndObjectsUsingBlock:^(id key, id obj, BOOL *stop) {
-        if (mutableTags[key]) {
-            mutableTags[key] = obj;
-        } else if (mutableFields[key]) {
-            mutableFields[key] = obj;
+    __block NSMutableDictionary *mutableTags = nil;
+    __block NSMutableDictionary *mutableFields = nil;
+    [changedValues enumerateKeysAndObjectsUsingBlock:^(id  _Nonnull key, id  _Nonnull obj, BOOL * _Nonnull stop) {
+        if (FTDictionaryContainsKey(tags, key)) {
+            if (!mutableTags) {
+                mutableTags = [tags mutableCopy];
+            }
+            if (obj != nil) {
+                mutableTags[key] = obj;
+            }
+        }
+        else if (FTDictionaryContainsKey(fields, key)) {
+            if (!mutableFields) {
+                mutableFields = [fields mutableCopy];
+            }
+            if (obj != nil) {
+                mutableFields[key] = obj;
+            }
         }
     }];
-    
-    return @[ [mutableTags copy], [mutableFields copy] ];
+    NSDictionary *finalTags = mutableTags ?: (tags ?: @{});
+    NSDictionary *finalFields = mutableFields ?: (fields ?: @{});
+    return @[ finalTags, finalFields ];
 }
 + (NSString *)getApplicationUUID{
     // Get image index
@@ -935,7 +962,6 @@ static uintptr_t firstCmdAfterHeader(const struct mach_header* const header) {
         [self->_dynamicGlobalContext removeAllObjects];
         [self->_dynamicLogGlobalContext removeAllObjects];
         [self->_dynamicRUMGlobalContext removeAllObjects];
-        self->_baseCommonPropertyTags = nil;
         self->_baseCommonPropertyTags = nil;
         self->_rumGlobalContext = nil;
         self->_loggerTags = nil;

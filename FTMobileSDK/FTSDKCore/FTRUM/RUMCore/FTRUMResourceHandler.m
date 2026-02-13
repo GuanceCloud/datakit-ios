@@ -76,13 +76,13 @@
 }
 - (void)writeResourceError:(FTRUMDataModel *)model context:(NSDictionary *)context{
     NSDictionary *sessionTag = [self.context getGlobalSessionViewActionTags];
-    NSMutableDictionary *tags = [NSMutableDictionary dictionaryWithDictionary:context];
+    NSMutableDictionary *tags = [NSMutableDictionary new];
     [tags addEntriesFromDictionary:sessionTag];
     [tags addEntriesFromDictionary:model.tags];
     NSMutableDictionary *fields = [NSMutableDictionary new];
     [fields addEntriesFromDictionary:model.fields];
     [fields addEntriesFromDictionary:self.context.sessionState.sessionFields];
-    [self.dependencies.writer rumWrite:FT_RUM_SOURCE_ERROR tags:tags fields:fields time:model.tm];
+    [self.dependencies.writer rumWrite:FT_RUM_SOURCE_ERROR tags:tags fields:fields dynamicContext:context time:model.tm];
 }
 - (void)writeResourceData:(FTRUMDataModel *)data context:(NSDictionary *)context{
     FTRUMResourceDataModel *model = (FTRUMResourceDataModel *)data;
@@ -110,10 +110,10 @@
     }
     [fields addEntriesFromDictionary:self.context.sessionState.sessionFields];
     NSDictionary *sessionTag = [self.context getGlobalSessionViewActionTags];
-    NSMutableDictionary *tags = [NSMutableDictionary dictionaryWithDictionary:context];
+    NSMutableDictionary *tags = [NSMutableDictionary new];
     [tags addEntriesFromDictionary:sessionTag];
     [tags addEntriesFromDictionary:data.tags];
     [tags setValue:model.identifier forKey:FT_KEY_RESOURCE_ID];
-    [self.dependencies.writer rumWrite:FT_RUM_SOURCE_RESOURCE tags:tags fields:fields time:[self.time ft_nanosecondTimeStamp]];
+    [self.dependencies.writer rumWrite:FT_RUM_SOURCE_RESOURCE tags:tags fields:fields dynamicContext:context time:[self.time ft_nanosecondTimeStamp]];
 }
 @end

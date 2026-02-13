@@ -71,10 +71,9 @@ void *FTRUMQueueIdentityKey = &FTRUMQueueIdentityKey;
 -(void)notifyRumInit{
     dispatch_async(self.rumQueue, ^{
         @try {
-            NSDictionary *context = [self rumDynamicProperty];
             FTRUMDataModel *model = [[FTRUMDataModel alloc]init];
             model.type = FTRUMSDKInit;
-            [self process:model context:context];
+            [self process:model context:@{}];
         } @catch (NSException *exception) {
             FTInnerLogError(@"exception %@",exception);
         }
@@ -477,21 +476,15 @@ void *FTRUMQueueIdentityKey = &FTRUMQueueIdentityKey;
     return YES;
 }
 -(NSDictionary *)rumDynamicProperty{
-    NSMutableDictionary *dict = [NSMutableDictionary dictionary];
     @try {
-        dict[@"network_type"] = [FTNetworkConnectivity sharedInstance].networkType;
-        [dict addEntriesFromDictionary:[[FTPresetProperty sharedInstance] rumDynamicTags]];
+        return [[FTPresetProperty sharedInstance] rumDynamicTags];        
     } @catch (NSException *exception) {
         FTInnerLogError(@"exception %@",exception);
-    } @finally {
-        return [dict copy];
     }
+    return @{};
 }
 - (NSDictionary *)getLinkRUMData{
-    NSMutableDictionary *dict = [NSMutableDictionary dictionary];
-    [dict addEntriesFromDictionary:[self rumDynamicProperty]];
-    [dict addEntriesFromDictionary:self.rumDependencies.linkRUMSessionContext];
-    return dict;
+    return [self.rumDependencies.linkRUMSessionContext copy];
 }
 - (void)syncProcess{
     [self syncProcess:^{}];

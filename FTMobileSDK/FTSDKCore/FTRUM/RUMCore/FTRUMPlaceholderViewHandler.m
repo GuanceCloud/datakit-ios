@@ -128,13 +128,13 @@
 }
 - (void)writeErrorData:(FTRUMDataModel *)model context:(NSDictionary *)context{
     NSDictionary *sessionViewTag = [self.context getGlobalSessionViewActionTags];
-    NSMutableDictionary *tags = [NSMutableDictionary dictionaryWithDictionary:context];
+    NSMutableDictionary *tags = [NSMutableDictionary new];
     [tags addEntriesFromDictionary:sessionViewTag];
     [tags addEntriesFromDictionary:model.tags];
     NSMutableDictionary *fields = [NSMutableDictionary new];
     [fields addEntriesFromDictionary:model.fields];
     [fields addEntriesFromDictionary:self.context.sessionState.sessionFields];
     NSString *error = model.type == FTRUMDataLongTask?FT_RUM_SOURCE_LONG_TASK :FT_RUM_SOURCE_ERROR;
-    [self.rumDependencies.writer rumWrite:error tags:tags fields:fields time:model.tm];
+    [self.rumDependencies.writer rumWrite:error tags:tags fields:fields dynamicContext:context time:model.tm];
 }
 @end

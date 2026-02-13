@@ -176,7 +176,7 @@ static const NSTimeInterval sessionMaxDuration = 4 * 60 * 60; // 4 hours
 - (void)writeLaunchData:(FTRUMLaunchDataModel *)model context:(NSDictionary *)context{
     
     NSDictionary *sessionViewTag = [model.action_type isEqualToString:FT_LAUNCH_HOT]?[self getCurrentSessionInfo]:[self.context getGlobalSessionTags];
-    NSMutableDictionary *tags = [NSMutableDictionary dictionaryWithDictionary:context];
+    NSMutableDictionary *tags = [NSMutableDictionary new];
     [tags addEntriesFromDictionary:sessionViewTag];
     [tags setValue:[FTBaseInfoHandler randomUUID] forKey:FT_KEY_ACTION_ID];
     [tags setValue:model.action_name forKey:FT_KEY_ACTION_NAME];
@@ -191,20 +191,19 @@ static const NSTimeInterval sessionMaxDuration = 4 * 60 * 60; // 4 hours
     [fields setValue:@(0) forKey:FT_KEY_ACTION_RESOURCE_COUNT];
     [fields setValue:@(0) forKey:FT_KEY_ACTION_ERROR_COUNT];
     [fields addEntriesFromDictionary:self.context.sessionState.sessionFields];
-    [self.rumDependencies.writer rumWrite:FT_RUM_SOURCE_ACTION tags:tags fields:fields time:model.tm];
+    [self.rumDependencies.writer rumWrite:FT_RUM_SOURCE_ACTION tags:tags fields:fields dynamicContext:context time:model.tm];
     
 }
 - (void)writeWebViewJSBData:(FTRUMWebViewData *)data context:(NSDictionary *)context{
     NSDictionary *sessionTag = [self.context getGlobalSessionTags];
     NSMutableDictionary *tags = [NSMutableDictionary new];
-    [tags addEntriesFromDictionary:context];
     [tags addEntriesFromDictionary:data.tags];
     [tags addEntriesFromDictionary:sessionTag];
     [tags setValue:@(YES) forKey:FT_IS_WEBVIEW];
     NSMutableDictionary *fields = [[NSMutableDictionary alloc]initWithDictionary:data.fields];
     [fields setValue:@(NO) forKey:FT_KEY_IS_ACTIVE];
     [fields addEntriesFromDictionary:self.context.sessionState.sessionFields];
-    [self.rumDependencies.writer rumWrite:data.measurement tags:tags fields:fields time:data.tm];
+    [self.rumDependencies.writer rumWrite:data.measurement tags:tags fields:fields dynamicContext:context time:data.tm];
 }
 -(NSString *)getCurrentViewID{
     FTRUMViewHandler *view = (FTRUMViewHandler *)[self.viewHandlers lastObject];
