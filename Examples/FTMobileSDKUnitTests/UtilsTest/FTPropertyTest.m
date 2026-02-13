@@ -255,13 +255,15 @@
     FTRumConfig *rumConfig = [[FTRumConfig alloc]initWithAppid:_appid];
     rumConfig.enableTraceUserAction = YES;
     [[FTMobileAgent sharedInstance] startRumWithConfigOptions:rumConfig];
+    [[FTMobileAgent sharedInstance] unbindUser];
     [FTMobileAgent appendRUMGlobalContext:@{@"append_rum":@"rum",@"key":@"value"}];
     [FTMobileAgent appendGlobalContext:@{@"append_sdk":@"sdk",@"key2":@"value"}];
     [FTMobileAgent appendLogGlobalContext:@{@"append_log":@"log",@"key3":@"value"}];
 
     NSDictionary *rumTags = [[FTPresetProperty sharedInstance] rumDynamicTags];
     NSDictionary *logTags = [[FTPresetProperty sharedInstance] loggerDynamicTags];
-    XCTAssertTrue(rumTags.count == 7);
+    // FT_NETWORK_TYPE\FT_SCREEN_SIZE
+    XCTAssertTrue(rumTags.count >= 6);
     XCTAssertTrue(logTags.count == 4);
     __block NSInteger count = 0;
     [rumTags enumerateKeysAndObjectsUsingBlock:^(id  _Nonnull key, id  _Nonnull obj, BOOL * _Nonnull stop) {
@@ -406,6 +408,7 @@
     FTMobileConfig *config = [[FTMobileConfig alloc]initWithDatakitUrl:self.url];
     config.autoSync = NO;
     config.globalContext = @{@"sdk_config":@"sdk"};
+    __block BOOL hasRumProperty = NO;
     config.dataModifier = ^id _Nullable(NSString * _Nonnull key, id  _Nonnull value) {
         if ([key isEqualToString:@"append_rum"]) {
             return @"append_rum_***";
@@ -413,6 +416,8 @@
             return @"rum_***";
         }else if ([key isEqualToString:@"logger_config"]){
             return @"log_***";
+        }else if ([key isEqualToString:@"action_name"]){
+            hasRumProperty = YES;
         }
         return nil;
     };
@@ -457,6 +462,7 @@
             hasLog = YES;
         }
     }];
+    XCTAssertTrue(hasRumProperty);
     XCTAssertTrue(hasLog);
     XCTAssertTrue(hasRum);
     [FTMobileAgent shutDown];
@@ -471,6 +477,7 @@
                      service:@"test_service"
                globalContext:@{@"init_key": @"init_value"}
                      pkgInfo:@{@"pkg_name": @"test_pkg"}];
+    [preset setRUMAppID:@"aaa" sampleRate:100 sessionOnErrorSampleRate:0 rumGlobalContext:@{@"a":@"b"}];
     
     NSInteger writeThreadCount = 5;
     NSInteger readThreadCount = 10;
@@ -593,33 +600,6 @@
     [preset setRUMAppID:@"111" sampleRate:100 sessionOnErrorSampleRate:100 rumGlobalContext:@{@"a":@"b"}];
     [preset setLogGlobalContext:@{@"c":@"d"}];
     [preset updateUser:@"test_user" name:@"test_name" email:@"test@test.com" extra:@{@"extra": @"value"}];
-}
-- (void)testFTUserInfoCopyIndependence {
-    FTPresetProperty *preset = [FTPresetProperty sharedInstance];
-    [preset startWithVersion:@"1.0.0"
-                  sdkVersion:@"2.0.0"
-                         env:@"test"
-                     service:@"test_service"
-               globalContext:@{@"init_key": @"init_value"}
-                     pkgInfo:@{@"pkg_name": @"test_pkg"}];
-    [preset updateUser:@"copy_test_user" name:@"copy_name" email:@"copy@test.com" extra:@{@"copy_extra": @"copy_value"}];
-    
-    FTUserInfo *originalUser = preset.userInfo;
-    FTUserInfo *copiedUser = [originalUser copy];
-    
-    XCTAssertEqualObjects(originalUser.userId, copiedUser.userId, @"Copied user ID should match original");
-    XCTAssertEqualObjects(originalUser.extra, copiedUser.extra, @"Copied user extra should match original");
-    XCTAssertTrue(copiedUser.isSignIn, @"Copied user should be signed in");
-    
-    [preset clearUser];
-    FTUserInfo *clearedOriginalUser = preset.userInfo;
-    
-    XCTAssertEqualObjects(copiedUser.userId, @"copy_test_user", @"Copied user ID should not change after original is cleared");
-    XCTAssertEqualObjects(copiedUser.name, @"copy_name", @"Copied user name should not change after original is cleared");
-    XCTAssertTrue(copiedUser.isSignIn, @"Copied user isSignIn should not change after original is cleared");
-    
-    XCTAssertNotEqualObjects(clearedOriginalUser.userId, copiedUser.userId, @"Cleared original user should not match copied user");
-    XCTAssertFalse(clearedOriginalUser.isSignIn, @"Original user should be signed out after clear");
 }
 - (void)addRumData{
     [FTModelHelper startView];

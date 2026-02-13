@@ -240,6 +240,7 @@
     [[FTMobileAgent sharedInstance] startLoggerWithConfigOptions:loggerConfig];
     [[FTMobileAgent sharedInstance] startRumWithConfigOptions:rumConfig];
     [FTModelHelper startView];
+    [self waitForTimeInterval:0.1];
     [[FTMobileAgent sharedInstance] logging:@"testEnableLinkRumData" status:FTStatusInfo];
 
     [[FTMobileAgent sharedInstance] syncProcess];

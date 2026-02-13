@@ -180,7 +180,7 @@
     [newDatas enumerateObjectsWithOptions:NSEnumerationReverse usingBlock:^(NSDictionary *dict, NSUInteger idx, BOOL * _Nonnull stop) {
         NSString *op = dict[@"dataType"];
         if ([op isEqualToString:@"Logging"]) {
-            NSString *content = dict[FT_KEY_CONTENT];
+            NSString *content = dict[FT_FIELDS][FT_KEY_MESSAGE];
             XCTAssertTrue([content isEqualToString:@"testCustomLogger"]);
             hasLogger = YES;
             *stop = YES;

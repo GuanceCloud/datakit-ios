@@ -207,13 +207,13 @@ typedef void (^FTWriteCallBack)(NSDictionary *fields, NSDictionary *tags);
         self.callBack(slowStack, 0);
     }
 }
--(void)rumWrite:(NSString *)source tags:(NSDictionary *)tags fields:(NSDictionary *)fields time:(long long)time{
+-(void)rumWrite:(NSString *)source tags:(NSDictionary *)tags fields:(NSDictionary *)fields dynamicContext:(NSDictionary *)dynamicContext time:(long long)time{
     if(self.writeCallBack){
         self.writeCallBack(fields, tags);
         self.writeCallBack = nil;
     }
 }
--(void)rumWrite:(NSString *)source tags:(NSDictionary *)tags fields:(NSDictionary *)fields time:(long long)time updateTime:(long long)updateTime cache:(BOOL)cache{
+-(void)rumWrite:(NSString *)source tags:(NSDictionary *)tags fields:(NSDictionary *)fields dynamicContext:(NSDictionary *)dynamicContext time:(long long)time updateTime:(long long)updateTime cache:(BOOL)cache{
     if(self.writeCallBack){
         self.writeCallBack(fields, tags);
         self.writeCallBack = nil;
@@ -223,7 +223,7 @@ typedef void (^FTWriteCallBack)(NSDictionary *fields, NSDictionary *tags);
    
 }
 
-- (void)rumWrite:(nonnull NSString *)source tags:(nonnull NSDictionary *)tags fields:(nonnull NSDictionary *)fields time:(long long)time updateTime:(long long)updateTime { 
+- (void)rumWrite:(nonnull NSString *)source tags:(nonnull NSDictionary *)tags fields:(nonnull NSDictionary *)fields dynamicContext:(NSDictionary *)dynamicContext time:(long long)time updateTime:(long long)updateTime {
     
 }
 

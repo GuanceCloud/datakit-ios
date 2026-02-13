@@ -193,9 +193,9 @@
     NSArray *oldArray = [[FTTrackerEventDBTool sharedManager] getAllDatas];
 
     [writerManager isCacheWriter:YES];
-    [writerManager rumWrite:FT_RUM_SOURCE_VIEW tags:@{@"view_id":@"1"} fields:@{@"test":@"normal"} time:[NSDate ft_currentNanosecondTimeStamp]];
+    [writerManager rumWrite:FT_RUM_SOURCE_VIEW tags:@{@"view_id":@"1"} fields:@{@"test":@"normal"} dynamicContext:@{} time:[NSDate ft_currentNanosecondTimeStamp]];
     [writerManager isCacheWriter:YES];
-    [writerManager rumWrite:FT_RUM_SOURCE_VIEW tags:@{@"view_id":@"2"} fields:@{@"test":@"cache"} time:[NSDate ft_currentNanosecondTimeStamp]];
+    [writerManager rumWrite:FT_RUM_SOURCE_VIEW tags:@{@"view_id":@"2"} fields:@{@"test":@"cache"} dynamicContext:@{} time:[NSDate ft_currentNanosecondTimeStamp]];
     
     NSArray *newArray = [[FTTrackerEventDBTool sharedManager] getAllDatas];
     for (FTRecordModel *model in newArray) {
@@ -210,9 +210,9 @@
     NSArray *oldArray = [[FTTrackerEventDBTool sharedManager] getAllDatas];
 
     [writerManager isCacheWriter:YES];
-    [writerManager rumWrite:FT_RUM_SOURCE_VIEW tags:@{@"view_id":@"1"} fields:@{@"test":@"cache"} time:123 updateTime:[[NSDate date] timeIntervalSince1970]*1e9];
-    [writerManager rumWrite:FT_RUM_SOURCE_ERROR tags:@{@"view_id":@"2"} fields:@{@"test":@"normal"} time:[[NSDate date] timeIntervalSince1970]*1e9];
-    [writerManager rumWrite:FT_RUM_SOURCE_VIEW tags:@{@"view_id":@"2"} fields:@{@"test":@"normal"} time:123 updateTime:[[NSDate date] timeIntervalSince1970]*1e9];
+    [writerManager rumWrite:FT_RUM_SOURCE_VIEW tags:@{@"view_id":@"1"} fields:@{@"test":@"cache"} dynamicContext:@{} time:123 updateTime:[[NSDate date] timeIntervalSince1970]*1e9];
+    [writerManager rumWrite:FT_RUM_SOURCE_ERROR tags:@{@"view_id":@"2"} fields:@{@"test":@"normal"} dynamicContext:@{} time:[[NSDate date] timeIntervalSince1970]*1e9];
+    [writerManager rumWrite:FT_RUM_SOURCE_VIEW tags:@{@"view_id":@"2"} fields:@{@"test":@"normal"} dynamicContext:@{} time:123 updateTime:[[NSDate date] timeIntervalSince1970]*1e9];
     
     [writerManager checkRUMSessionOnErrorDatasExpired];
     NSArray<FTRecordModel *> *newArray = [[FTTrackerEventDBTool sharedManager] getAllDatas];
@@ -231,9 +231,9 @@
     NSArray *oldArray = [[FTTrackerEventDBTool sharedManager] getAllDatas];
     
     [writerManager isCacheWriter:YES];
-    [writerManager rumWrite:FT_RUM_SOURCE_VIEW tags:@{@"view_id":@"1"} fields:@{@"test":@"cache"} time:123 updateTime:[[NSDate date] timeIntervalSince1970]*1e9];
+    [writerManager rumWrite:FT_RUM_SOURCE_VIEW tags:@{@"view_id":@"1"} fields:@{@"test":@"cache"} dynamicContext:@{} time:123 updateTime:[[NSDate date] timeIntervalSince1970]*1e9];
     [self waitForTimeInterval:1.5];
-    [writerManager rumWrite:FT_RUM_SOURCE_VIEW tags:@{@"view_id":@"2"} fields:@{@"test":@"cache"} time:123 updateTime:[[NSDate date] timeIntervalSince1970]*1e9];
+    [writerManager rumWrite:FT_RUM_SOURCE_VIEW tags:@{@"view_id":@"2"} fields:@{@"test":@"cache"} dynamicContext:@{} time:123 updateTime:[[NSDate date] timeIntervalSince1970]*1e9];
     [self waitForTimeInterval:0.5];
     [writerManager checkRUMSessionOnErrorDatasExpired];
     NSArray *newArray = [[FTTrackerEventDBTool sharedManager] getAllDatas];
@@ -247,13 +247,13 @@
     [FTTrackDataManager startWithAutoSync:NO syncPageSize:10 syncSleepTime:0];
     FTDataWriterWorker *writerManager = [[FTDataWriterWorker alloc]initWithCacheInvalidTimeInterval:1];
     [writerManager isCacheWriter:YES];
-    [writerManager rumWrite:FT_RUM_SOURCE_VIEW tags:@{@"view_id":@"1"} fields:@{@"test":@"delete"} time:123 updateTime:[[NSDate date] timeIntervalSince1970]*1e9];
+    [writerManager rumWrite:FT_RUM_SOURCE_VIEW tags:@{@"view_id":@"1"} fields:@{@"test":@"delete"} dynamicContext:@{} time:123 updateTime:[[NSDate date] timeIntervalSince1970]*1e9];
     [self waitForTimeInterval:0.5];
-    [writerManager rumWrite:FT_RUM_SOURCE_VIEW tags:@{@"view_id":@"2"} fields:@{@"test":@"cache"} time:123 updateTime:[[NSDate date] timeIntervalSince1970]*1e9];
+    [writerManager rumWrite:FT_RUM_SOURCE_VIEW tags:@{@"view_id":@"2"} fields:@{@"test":@"cache"} dynamicContext:@{} time:123 updateTime:[[NSDate date] timeIntervalSince1970]*1e9];
     NSArray *oldArray = [[FTTrackerEventDBTool sharedManager] getAllDatas];
     [self waitForTimeInterval:0.5];
     
-    [writerManager rumWrite:FT_RUM_SOURCE_ERROR tags:@{@"view_id":@"2"} fields:@{@"test":@"normal"} time:[[NSDate date] timeIntervalSince1970]*1e9];
+    [writerManager rumWrite:FT_RUM_SOURCE_ERROR tags:@{@"view_id":@"2"} fields:@{@"test":@"normal"} dynamicContext:@{} time:[[NSDate date] timeIntervalSince1970]*1e9];
 
     [writerManager checkRUMSessionOnErrorDatasExpired];
     NSArray *newArray = [[FTTrackerEventDBTool sharedManager] getAllDatas];
@@ -268,10 +268,10 @@
     [FTTrackDataManager startWithAutoSync:NO syncPageSize:10 syncSleepTime:0];
     FTDataWriterWorker *writerManager = [[FTDataWriterWorker alloc]initWithCacheInvalidTimeInterval:1];
     [writerManager isCacheWriter:YES];
-    [writerManager rumWrite:FT_RUM_SOURCE_VIEW tags:@{@"view_id":@"1"} fields:@{@"test":@"delete"} time:123 updateTime:[[NSDate date] timeIntervalSince1970]*1e9];
-    [writerManager rumWrite:FT_RUM_SOURCE_ERROR tags:@{@"view_id":@"2"} fields:@{@"test":@"normal"} time:[[NSDate date] timeIntervalSince1970]*1e9];
+    [writerManager rumWrite:FT_RUM_SOURCE_VIEW tags:@{@"view_id":@"1"} fields:@{@"test":@"delete"} dynamicContext:@{} time:123 updateTime:[[NSDate date] timeIntervalSince1970]*1e9];
+    [writerManager rumWrite:FT_RUM_SOURCE_ERROR tags:@{@"view_id":@"2"} fields:@{@"test":@"normal"} dynamicContext:@{} time:[[NSDate date] timeIntervalSince1970]*1e9];
     [self waitForTimeInterval:0.1];
-    [writerManager rumWrite:FT_RUM_SOURCE_VIEW tags:@{@"view_id":@"3"} fields:@{@"test":@"normal"} time:[[NSDate date] timeIntervalSince1970]*1e9];
+    [writerManager rumWrite:FT_RUM_SOURCE_VIEW tags:@{@"view_id":@"3"} fields:@{@"test":@"normal"} dynamicContext:@{} time:[[NSDate date] timeIntervalSince1970]*1e9];
     
     // Simulate entering a new process and exceeding the time interval
     writerManager.processStartTime = [[[NSDate date] dateByAddingTimeInterval:2] timeIntervalSince1970]*1e9;
@@ -288,14 +288,14 @@
     [FTTrackDataManager startWithAutoSync:NO syncPageSize:10 syncSleepTime:0];
     FTDataWriterWorker *writerManager = [[FTDataWriterWorker alloc]initWithCacheInvalidTimeInterval:1];
     [writerManager isCacheWriter:YES];
-    [writerManager rumWrite:FT_RUM_SOURCE_VIEW tags:@{@"view_id":@"1"} fields:@{@"test":@"delete"} time:123 updateTime:[[NSDate date] timeIntervalSince1970]*1e9];
-    [writerManager rumWrite:FT_RUM_SOURCE_VIEW tags:@{@"view_id":@"2"} fields:@{@"test":@"delete"} time:123 updateTime:[[NSDate date] timeIntervalSince1970]*1e9];
+    [writerManager rumWrite:FT_RUM_SOURCE_VIEW tags:@{@"view_id":@"1"} fields:@{@"test":@"delete"} dynamicContext:@{} time:123 updateTime:[[NSDate date] timeIntervalSince1970]*1e9];
+    [writerManager rumWrite:FT_RUM_SOURCE_VIEW tags:@{@"view_id":@"2"} fields:@{@"test":@"delete"} dynamicContext:@{} time:123 updateTime:[[NSDate date] timeIntervalSince1970]*1e9];
     
     // Simulate entering a new process
     writerManager.processStartTime = [[NSDate date] timeIntervalSince1970]*1e9;
     [writerManager checkLastProcessErrorSampled];
 
-    [writerManager rumWrite:FT_RUM_SOURCE_ERROR tags:@{@"view_id":@"3"} fields:@{@"test":@"delete"} time:123 updateTime:[[NSDate date] timeIntervalSince1970]*1e9];
+    [writerManager rumWrite:FT_RUM_SOURCE_ERROR tags:@{@"view_id":@"3"} fields:@{@"test":@"delete"} dynamicContext:@{} time:123 updateTime:[[NSDate date] timeIntervalSince1970]*1e9];
 
     [writerManager checkRUMSessionOnErrorDatasExpired];
     NSArray<FTRecordModel *> *newArray = [[FTTrackerEventDBTool sharedManager] getAllDatas];
@@ -309,10 +309,10 @@
     [FTTrackDataManager startWithAutoSync:NO syncPageSize:10 syncSleepTime:0];
     FTDataWriterWorker *writerManager = [[FTDataWriterWorker alloc]initWithCacheInvalidTimeInterval:1];
     [writerManager isCacheWriter:YES];
-    [writerManager rumWrite:FT_RUM_SOURCE_VIEW tags:@{@"view_id":@"1"} fields:@{@"test":@"delete"} time:123 updateTime:[[NSDate date] timeIntervalSince1970]*1e9];
-    [writerManager rumWrite:FT_RUM_SOURCE_ERROR tags:@{@"view_id":@"2"} fields:@{@"test":@"normal"} time:[[NSDate date] timeIntervalSince1970]*1e9];
+    [writerManager rumWrite:FT_RUM_SOURCE_VIEW tags:@{@"view_id":@"1"} fields:@{@"test":@"delete"} dynamicContext:@{} time:123 updateTime:[[NSDate date] timeIntervalSince1970]*1e9];
+    [writerManager rumWrite:FT_RUM_SOURCE_ERROR tags:@{@"view_id":@"2"} fields:@{@"test":@"normal"} dynamicContext:@{} time:[[NSDate date] timeIntervalSince1970]*1e9];
     [self waitForTimeInterval:0.1];
-    [writerManager rumWrite:FT_RUM_SOURCE_VIEW tags:@{@"view_id":@"3"} fields:@{@"test":@"normal"} time:[[NSDate date] timeIntervalSince1970]*1e9];
+    [writerManager rumWrite:FT_RUM_SOURCE_VIEW tags:@{@"view_id":@"3"} fields:@{@"test":@"normal"} dynamicContext:@{} time:[[NSDate date] timeIntervalSince1970]*1e9];
     
     // Simulate entering a new process and exceeding the time interval
     writerManager.processStartTime = [[[NSDate date] dateByAddingTimeInterval:2] timeIntervalSince1970]*1e9;
@@ -330,12 +330,12 @@
     [FTTrackDataManager startWithAutoSync:NO syncPageSize:10 syncSleepTime:0];
     FTDataWriterWorker *writerManager = [[FTDataWriterWorker alloc]initWithCacheInvalidTimeInterval:1];
     [writerManager isCacheWriter:YES];
-    [writerManager rumWrite:FT_RUM_SOURCE_VIEW tags:@{@"view_id":@"1"} fields:@{@"test":@"delete"} time:123 updateTime:[[NSDate date] timeIntervalSince1970]*1e9];
-    [writerManager rumWrite:FT_RUM_SOURCE_VIEW tags:@{@"view_id":@"2"} fields:@{@"test":@"delete"} time:123 updateTime:[[NSDate date] timeIntervalSince1970]*1e9];
+    [writerManager rumWrite:FT_RUM_SOURCE_VIEW tags:@{@"view_id":@"1"} fields:@{@"test":@"delete"} dynamicContext:@{} time:123 updateTime:[[NSDate date] timeIntervalSince1970]*1e9];
+    [writerManager rumWrite:FT_RUM_SOURCE_VIEW tags:@{@"view_id":@"2"} fields:@{@"test":@"delete"} dynamicContext:@{} time:123 updateTime:[[NSDate date] timeIntervalSince1970]*1e9];
 
     [self waitForTimeInterval:0.5];
     NSDate *date = [NSDate date];
-    [writerManager rumWrite:FT_RUM_SOURCE_VIEW tags:@{@"view_id":@"3"} fields:@{@"test":@"normal"} time:[[date dateByAddingTimeInterval:0.6] timeIntervalSince1970]*1e9];
+    [writerManager rumWrite:FT_RUM_SOURCE_VIEW tags:@{@"view_id":@"3"} fields:@{@"test":@"normal"} dynamicContext:@{} time:[[date dateByAddingTimeInterval:0.6] timeIntervalSince1970]*1e9];
 
     // Simulate entering a new process and exceeding the time interval
     writerManager.processStartTime = [[date dateByAddingTimeInterval:2] timeIntervalSince1970]*1e9;
@@ -343,7 +343,7 @@
     [writerManager checkLastProcessErrorSampled];
     NSArray<FTRecordModel *> *array = [[FTTrackerEventDBTool sharedManager] getAllDatas];
     XCTAssertTrue(array.count == 3);
-    [writerManager rumWrite:FT_RUM_SOURCE_ERROR tags:@{@"anr":@"anr"} fields:@{@"test":@"normal"} time:[[date dateByAddingTimeInterval:0.5] timeIntervalSince1970]*1e9 updateTime:0 cache:YES];
+    [writerManager rumWrite:FT_RUM_SOURCE_ERROR tags:@{@"anr":@"anr"} fields:@{@"test":@"normal"} dynamicContext:@{} time:[[date dateByAddingTimeInterval:0.5] timeIntervalSince1970]*1e9 updateTime:0 cache:YES];
     NSArray<FTRecordModel *> *array2 = [[FTTrackerEventDBTool sharedManager] getAllDatas];
     XCTAssertTrue(array2.count == 4);
     [writerManager lastFatalErrorIfFound:[[date dateByAddingTimeInterval:0.5] timeIntervalSince1970]*1e9];
