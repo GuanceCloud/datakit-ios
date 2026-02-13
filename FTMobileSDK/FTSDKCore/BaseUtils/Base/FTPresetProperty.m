@@ -69,33 +69,30 @@
 #if FT_HAS_UIKIT
 - (NSArray<UIWindow *> *)windows{
     __block NSArray<UIWindow *> *windows = nil;
-   BOOL success = [FTThreadDispatchManager performBlockDispatchMainSyncSafe:^{
-            UIApplication *app = [self sharedApplication];
-            NSMutableSet *result = [NSMutableSet set];
-
-            if (@available(iOS 13.0, tvOS 13.0, *)) {
-                NSArray<UIScene *> *scenes = [self getApplicationConnectedScenes:app];
-                for (UIScene *scene in scenes) {
-                    if (scene.activationState == UISceneActivationStateForegroundActive
-                        && scene.delegate &&
-                        [scene.delegate respondsToSelector:@selector(window)]) {
-                        id window = [scene.delegate performSelector:@selector(window)];
-                        if (window) {
-                            [result addObject:window];
-                        }
+    [FTThreadDispatchManager performBlockDispatchMainSyncSafe:^{
+        UIApplication *app = [self sharedApplication];
+        NSMutableSet *result = [NSMutableSet set];
+        
+        if (@available(iOS 13.0, tvOS 13.0, *)) {
+            NSArray<UIScene *> *scenes = [self getApplicationConnectedScenes:app];
+            for (UIScene *scene in scenes) {
+                if (scene.activationState == UISceneActivationStateForegroundActive
+                    && scene.delegate &&
+                    [scene.delegate respondsToSelector:@selector(window)]) {
+                    id window = [scene.delegate performSelector:@selector(window)];
+                    if (window) {
+                        [result addObject:window];
                     }
                 }
             }
-            id<UIApplicationDelegate> appDelegate = [self getApplicationDelegate:app];
-            if ([appDelegate respondsToSelector:@selector(window)] && appDelegate.window != nil) {
-                [result addObject:appDelegate.window];
-            }
-            windows = [result allObjects];
         }
-                        timeout:0.1];
-    if (!success) {
-        NSLog(@"[TEST] windows");
+        id<UIApplicationDelegate> appDelegate = [self getApplicationDelegate:app];
+        if ([appDelegate respondsToSelector:@selector(window)] && appDelegate.window != nil) {
+            [result addObject:appDelegate.window];
+        }
+        windows = [result allObjects];
     }
+                                                      timeout:0.1];
     return windows ?: @[];
 }
 - (NSArray<UIScene *> *)getApplicationConnectedScenes:(UIApplication *)application API_AVAILABLE(ios(13.0), tvos(13.0)){
@@ -115,7 +112,10 @@
 - (NSString *)screenSize{
     NSArray<UIWindow *> *appWindows = self.windows;
     if ([appWindows count] > 0) {
-        UIScreen *appScreen = appWindows.firstObject.screen;
+        __block UIScreen *appScreen;
+        [FTThreadDispatchManager performBlockDispatchMainSyncSafe:^{
+            appScreen = appWindows.firstObject.screen;
+        } timeout:0.1];
         if (appScreen != nil) {
             return [[NSString alloc] initWithFormat:@"%.f*%.f",appScreen.nativeBounds.size.width,appScreen.nativeBounds.size.height];
         }
@@ -124,7 +124,7 @@
 }
 #endif
 @end
-@interface FTPresetProperty ()
+@interface FTPresetProperty ()<FTNetworkChangeObserver>
 @property (nonatomic, copy) FTDataModifier dataModifier;
 @property (nonatomic, copy) FTLineDataModifier lineDataModifier;
 
@@ -145,7 +145,8 @@
     NSMutableDictionary *_dynamicLogGlobalContext;
     NSMutableDictionary *_dynamicRUMGlobalContext;
     pthread_rwlock_t _rwLock;
-    BOOL _isScreenSizeReady;
+    NSString *_screenSize;
+
 }
 @synthesize baseCommonPropertyTags = _baseCommonPropertyTags;
 @synthesize rumGlobalContext = _rumGlobalContext;
@@ -163,21 +164,6 @@
     });
     return sharedInstance;
 }
-+(void)initialize{
-#if FT_HAS_UIKIT
-    if (self == [FTPresetProperty class]) {
-        id __block __unused token = [[NSNotificationCenter defaultCenter]
-                            addObserverForName:UIApplicationDidBecomeActiveNotification
-                            object:nil
-                            queue:NSOperationQueue.mainQueue
-                            usingBlock:^(NSNotification *_){
-            [[FTPresetProperty sharedInstance] retryGetScreenSize];
-            [[NSNotificationCenter defaultCenter] removeObserver:token];
-            token = nil;
-        }];
-    }
-#endif
-}
 -(instancetype)init{
     self = [super init];
     if(self){
@@ -186,7 +172,6 @@
         _dynamicGlobalContext = [NSMutableDictionary new];
         _dynamicLogGlobalContext = [NSMutableDictionary new];
         _dynamicRUMGlobalContext = [NSMutableDictionary new];
-        _isScreenSizeReady = NO;
         pthread_rwlock_init(&_rwLock, NULL);
     }
     return self;
@@ -226,12 +211,8 @@
     dict[FT_COMMON_PROPERTY_OS] = self.mobileDevice.os;
     dict[FT_COMMON_PROPERTY_OS_VERSION] = self.mobileDevice.osVersion;
     dict[FT_COMMON_PROPERTY_OS_VERSION_MAJOR] = self.mobileDevice.osVersionMajor;
-    if (self.mobileDevice.screenSize) {
-        dict[FT_SCREEN_SIZE] = self.mobileDevice.screenSize;
-    }
     dict[FT_CPU_ARCH] = self.mobileDevice.cpuArch;
     [dict setValue:appID forKey:FT_APP_ID];
-    
     if (rumGlobalContext) {
         [dict addEntriesFromDictionary:rumGlobalContext];
     }
@@ -259,26 +240,6 @@
         [dict addEntriesFromDictionary:newDict];
     }
     self.loggerTags = [dict copy];
-}
-- (void)retryGetScreenSize{
-    BOOL isReady = NO;
-    pthread_rwlock_rdlock(&_rwLock);
-    isReady = _isScreenSizeReady;
-    pthread_rwlock_unlock(&_rwLock);
-    if (!isReady) {
-        NSDictionary *obj = self.rumTags;
-        NSString *screenSize = [self.mobileDevice screenSize];
-        if (screenSize) {
-            pthread_rwlock_wrlock(&_rwLock);
-            NSMutableDictionary *mergedDict = [NSMutableDictionary dictionary];
-            [mergedDict addEntriesFromDictionary:obj];
-            [mergedDict addEntriesFromDictionary:@{FT_SCREEN_SIZE:screenSize}];
-            obj = [mergedDict copy];
-            _rumTags = obj;
-            _isScreenSizeReady = YES;
-            pthread_rwlock_unlock(&_rwLock);
-        }
-    }
 }
 #pragma mark ----property setter/getter thread safe ----
 -(void)setBaseCommonPropertyTags:(NSDictionary *)baseCommonPropertyTags{
@@ -366,14 +327,22 @@
     return obj;
 }
 - (void)safeRead:(void (^)(void))block {
+    if (!block) return;
     pthread_rwlock_rdlock(&_rwLock);
-    block();
-    pthread_rwlock_unlock(&_rwLock);
+    @try {
+        block();
+    } @finally {
+        pthread_rwlock_unlock(&_rwLock);
+    }
 }
 - (void)safeWrite:(void (^)(void))block{
+    if (!block) return;
     pthread_rwlock_wrlock(&_rwLock);
-    block();
-    pthread_rwlock_unlock(&_rwLock);
+    @try {
+        block();
+    } @finally {
+        pthread_rwlock_unlock(&_rwLock);
+    }
 }
 #pragma mark ---- api ----
 -(void)setDataModifier:(FTDataModifier )dataModifier lineDataModifier:(FTLineDataModifier)lineDataModifier{
@@ -402,11 +371,12 @@
 }
 - (NSDictionary *)rumDynamicTags{
     __block NSMutableDictionary *dict = [NSMutableDictionary new];
+    __block NSString *screenSize;
     [self safeRead:^{
         if (self->_dynamicGlobalContext) [dict addEntriesFromDictionary:self->_dynamicGlobalContext];
         if (self->_dynamicRUMGlobalContext) [dict addEntriesFromDictionary:self->_dynamicRUMGlobalContext];
-        
         [dict setValue:self->_rumCustomKeys forKey:FT_RUM_CUSTOM_KEYS];
+        screenSize = [self->_screenSize copy];
     }];
     FTUserInfo *user = [self.userInfo copy];
     if (user) {
@@ -415,6 +385,20 @@
         dict[FT_USER_EMAIL] = user.email;
         [dict setValue:user.isSignIn ? @"T" : @"F" forKey:FT_IS_SIGNIN];
         if (user.extra) [dict addEntriesFromDictionary:user.extra];
+    if (!screenSize) {
+        [self safeWrite:^{
+            if (!self->_screenSize) {
+                NSString *screen = [self.mobileDevice screenSize];
+                if(screen && self->_dataModifier){
+                    screen = self->_dataModifier(FT_SCREEN_SIZE, screen);
+                }
+                self->_screenSize = screen;
+            }
+            screenSize = self->_screenSize;
+        }];
+    }
+    if (screenSize) {
+        dict[FT_SCREEN_SIZE] = screenSize;
     }
     return [dict copy];
 }

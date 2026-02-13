@@ -48,12 +48,14 @@ NS_ASSUME_NONNULL_BEGIN
 - (NSDictionary *)loggerTags;
 - (NSDictionary *)loggerDynamicTags;
 
+
 - (void)appendGlobalContext:(NSDictionary *)context;
 
 - (void)appendRUMGlobalContext:(NSDictionary *)context;
 
 - (void)appendLogGlobalContext:(NSDictionary *)context;
 
+- (NSDictionary *)applyModifier:(NSDictionary *)dict;
 - (nullable NSArray<NSDictionary *> *)applyLineModifier:(NSString *)measurement
                                           tags:(NSDictionary *)tags
                                         fields:(NSDictionary *)fields;
