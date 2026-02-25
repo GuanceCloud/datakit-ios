@@ -1,3 +1,6 @@
+# 1.5.20-beta.2
+1. Refactor shutDown logic to fix memory safety
+---
 # 1.5.20-beta.1
 1. Same as 1.5.20-alpha.2
 ---
