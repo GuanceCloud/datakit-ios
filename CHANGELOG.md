@@ -1,3 +1,6 @@
+# 1.5.20-beta.1
+1. Same as 1.5.20-alpha.2
+---
 # 1.5.20-alpha.2
 1. Fix dataModifier block processing to cover all data entries
 ---
