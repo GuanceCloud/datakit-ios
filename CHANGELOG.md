@@ -1,3 +1,6 @@
+# 1.5.20-beta.3
+1. Resolve deadlock in rumDynamicTags caused by screenSize and FTAppLifeCycleDelegate's removeAppLifecycleDelegate method
+---
 # 1.5.20-beta.2
 1. Refactor shutDown logic to fix memory safety
 ---
