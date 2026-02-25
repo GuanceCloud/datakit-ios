@@ -383,25 +383,28 @@ static FTMobileAgent *sharedInstance = nil;
 #pragma mark - SDK shutdown
 - (void)shutDown{
     @synchronized(sharedInstanceLock) {
-        [[FTLogger sharedInstance] shutDown];
-        [[FTGlobalRumManager sharedInstance] shutDown];
-        [[FTURLSessionInstrumentation sharedInstance] shutDown];
-        [[FTRemoteConfigManager sharedInstance] shutDown];
-        [FTTrackDataManager shutDown];
-        [[FTPresetProperty sharedInstance] shutDown];
-        FTInnerLogInfo(@"[SDK] SHUT DOWN");
-        [[FTLog sharedInstance] shutDown];
-        sharedInstance = nil;
+        [self releaseInternalResources];
+        [FTMobileAgent shutDown];
     }
 }
+- (void)releaseInternalResources {
+    [[FTLogger sharedInstance] shutDown];
+    [[FTGlobalRumManager sharedInstance] shutDown];
+    [[FTURLSessionInstrumentation sharedInstance] shutDown];
+    [[FTRemoteConfigManager sharedInstance] shutDown];
+    [FTTrackDataManager shutDown];
+    [[FTPresetProperty sharedInstance] shutDown];
+    FTInnerLogInfo(@"[SDK] SHUT DOWN");
+    [[FTLog sharedInstance] shutDown];
+}
 + (void)shutDown{
-    if (sharedInstance == nil) {
-        return;
+    @synchronized(sharedInstanceLock) {
+        if (sharedInstance == nil) {
+            return;
+        }
+        [sharedInstance releaseInternalResources];
+        sharedInstance = nil;
     }
-#pragma clang diagnostic push
-#pragma clang diagnostic ignored "-Wdeprecated-declarations"
-    [sharedInstance shutDown];
-#pragma clang diagnostic pop
 }
 + (void)clearAllData{
     @try {
