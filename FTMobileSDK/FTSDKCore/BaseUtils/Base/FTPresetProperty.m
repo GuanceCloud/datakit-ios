@@ -392,6 +392,7 @@ static BOOL FTDictionaryContainsKey(NSDictionary *dict, id key) {
 - (NSDictionary *)rumDynamicTags{
     __block NSMutableDictionary *dict = [NSMutableDictionary new];
     __block NSString *screenSize;
+    __block FTDataModifier tempModifier;
     [self safeRead:^{
         if (self->_dynamicGlobalContext) [dict addEntriesFromDictionary:self->_dynamicGlobalContext];
         if (self->_dynamicRUMGlobalContext) [dict addEntriesFromDictionary:self->_dynamicRUMGlobalContext];
@@ -399,18 +400,21 @@ static BOOL FTDictionaryContainsKey(NSDictionary *dict, id key) {
         [dict setValue:self->_networkType forKey:FT_NETWORK_TYPE];
         [dict addEntriesFromDictionary:self->_userInfoDict];
         screenSize = [self->_screenSize copy];
+        tempModifier = self->_dataModifier;
     }];
     if (!screenSize) {
-        [self safeWrite:^{
-            if (!self->_screenSize) {
-                NSString *screen = [self.mobileDevice screenSize];
-                if(screen && self->_dataModifier){
-                    screen = self->_dataModifier(FT_SCREEN_SIZE, screen);
+        NSString *screen = [self.mobileDevice screenSize];
+        if (screen && tempModifier) {
+            screen = tempModifier(FT_SCREEN_SIZE, screen);
+        }
+        if (screen) {
+            [self safeWrite:^{
+                if (!self->_screenSize) {
+                    self->_screenSize = screen;
                 }
-                self->_screenSize = screen;
-            }
-            screenSize = self->_screenSize;
-        }];
+            }];
+            screenSize = screen;
+        }
     }
     if (screenSize) {
         dict[FT_SCREEN_SIZE] = screenSize;
