@@ -45,8 +45,11 @@ typedef void (^FTWriteCallBack)(NSDictionary *fields, NSDictionary *tags);
     return longTaskManager;
 }
 - (void)removeFile:(NSString *)filePath{
-    NSError *error;
-    [[NSFileManager defaultManager] removeItemAtPath:filePath error:&error];
+    if ([[NSFileManager defaultManager] fileExistsAtPath:filePath]) {
+        NSError *error;
+        [[NSFileManager defaultManager] removeItemAtPath:filePath error:&error];
+    }
+   
 }
 - (void)testLongTask_fileHandle{
     // When the given filePath is a folder, creating fileHandle will fail
