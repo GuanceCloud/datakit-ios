@@ -1,3 +1,10 @@
+# 1.5.20
+1. Fix concurrent read/write issues in `FTPresetProperty` causing corrupted dictionaries and double free crashes
+2. Enable WAL mode for sqlite
+3. Replace deprecated `SCNetworkReachability` with `NWPathMonitor`
+4. Remove usage of deprecated API `UIScreen.mainScreen`
+5. Fix `FTMobileConfig.dataModifier` block processing to cover all data entries
+---
 # 1.5.20-beta.3
 1. Resolve deadlock in rumDynamicTags caused by screenSize and FTAppLifeCycleDelegate's removeAppLifecycleDelegate method
 ---
