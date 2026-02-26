@@ -52,7 +52,7 @@
     rumConfig.enableTraceUserAction = YES;
     [FTMobileAgent startWithConfigOptions:config];
     [[FTMobileAgent sharedInstance] startRumWithConfigOptions:rumConfig];
-    [[FTTrackerEventDBTool sharedManger] deleteAllDatas];
+    [[FTTrackerEventDBTool sharedManager] deleteAllDatas];
 }
 #if TARGET_OS_TV
 - (void)testTVOSActionName{
@@ -88,7 +88,7 @@
     
     
     [[FTGlobalRumManager sharedInstance].rumManager syncProcess];
-    NSArray *array = [[FTTrackerEventDBTool sharedManger] getFirstRecords:10 withType:FT_DATA_TYPE_RUM];
+    NSArray *array = [[FTTrackerEventDBTool sharedManager] getFirstRecords:10 withType:FT_DATA_TYPE_RUM];
     
     NSArray *actionNames = @[@"[menu]",@"[play-pause]",@"[UIView](test_select)"];
 

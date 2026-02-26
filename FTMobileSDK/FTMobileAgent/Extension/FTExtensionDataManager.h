@@ -84,14 +84,12 @@ NS_ASSUME_NONNULL_BEGIN
 - (BOOL)writeRumEventType:(NSString *)eventType tags:(NSDictionary *)tags fields:(NSDictionary *)fields tm:(long long)tm groupIdentifier:(NSString *)groupIdentifier;
 
 /// Add LOGGER event for corresponding groupIdentifier
-/// @param status Event type
-/// @param content Logger content
 /// @param tags Event tags
 /// @param fields Event metrics
 /// @param tm Timestamp
 /// @param groupIdentifier AppGroups Identifier
 /// @return Whether write was successful
-- (BOOL)writeLoggerEvent:(NSString *)status content:(NSString *)content tags:(NSDictionary *)tags fields:(nullable NSDictionary *)fields tm:(long long)tm groupIdentifier:(NSString *)groupIdentifier;
+- (BOOL)writeLoggerTags:(NSDictionary *)tags fields:(NSDictionary *)fields tm:(long long)tm groupIdentifier:(NSString *)groupIdentifier;
 
 /// Read all cached events for corresponding groupIdentifier
 /// @param groupIdentifier AppGroups Identifier

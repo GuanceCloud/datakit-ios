@@ -39,7 +39,7 @@
     NSProcessInfo *processInfo = [NSProcessInfo processInfo];
     NSString *url = [processInfo environment][@"ACCESS_SERVER_URL"];
     NSString *appID = [processInfo environment][@"APP_ID"];
-    [[FTTrackerEventDBTool sharedManger] deleteAllDatas];
+    [[FTTrackerEventDBTool sharedManager] deleteAllDatas];
     FTMobileConfig *config = [[FTMobileConfig alloc]initWithDatakitUrl:url];
     config.autoSync = NO;
     FTRumConfig *rumConfig = [[FTRumConfig alloc]initWithAppid:appID];
@@ -52,16 +52,16 @@
 }
 - (void)testTrackLongTask{
     [self initSDKWithEnableTrackAppANR:YES longTask:YES];
-    NSInteger lastCount = [[FTTrackerEventDBTool sharedManger] getDatasCountWithType:FT_DATA_TYPE_RUM];
+    NSInteger lastCount = [[FTTrackerEventDBTool sharedManager] getDatasCountWithType:FT_DATA_TYPE_RUM];
     
     [[tester waitForViewWithAccessibilityLabel:@"TrackAppLongTask"] tap];
     
     XCTestExpectation *expect = [self expectationWithDescription:@"Request timeout!"];
     dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)(1.5 * NSEC_PER_SEC)), dispatch_get_main_queue(), ^{
         [[FTMobileAgent sharedInstance] syncProcess];
-        NSInteger newCount = [[FTTrackerEventDBTool sharedManger] getDatasCountWithType:FT_DATA_TYPE_RUM];
+        NSInteger newCount = [[FTTrackerEventDBTool sharedManager] getDatasCountWithType:FT_DATA_TYPE_RUM];
         XCTAssertTrue(newCount-lastCount>0);
-        NSArray *datas = [[FTTrackerEventDBTool sharedManger] getFirstRecords:10 withType:FT_DATA_TYPE_RUM];
+        NSArray *datas = [[FTTrackerEventDBTool sharedManager] getFirstRecords:10 withType:FT_DATA_TYPE_RUM];
         [FTModelHelper resolveModelArray:datas callBack:^(NSString * _Nonnull source, NSDictionary * _Nonnull tags, NSDictionary * _Nonnull fields, BOOL * _Nonnull stop) {
             if ([source isEqualToString:FT_RUM_SOURCE_LONG_TASK]) {
                 XCTAssertTrue([fields.allKeys containsObject:FT_KEY_LONG_TASK_STACK]&&[fields.allKeys containsObject:FT_DURATION]);
@@ -85,7 +85,7 @@
     XCTestExpectation *expect = [self expectationWithDescription:@"Request Time!"];
     dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)(1 * NSEC_PER_SEC)), dispatch_get_main_queue(), ^{
         [[FTMobileAgent sharedInstance] syncProcess];
-        NSArray *datas = [[FTTrackerEventDBTool sharedManger] getAllDatas];
+        NSArray *datas = [[FTTrackerEventDBTool sharedManager] getAllDatas];
         __block BOOL noLongTask = YES;
         __block long long longStarTime = 0;
         [FTModelHelper resolveModelArray:datas timeCallBack:^(NSString * _Nonnull source, NSDictionary * _Nonnull tags, NSDictionary * _Nonnull fields, long long time,BOOL * _Nonnull stop) {
@@ -116,7 +116,7 @@
     XCTestExpectation *expect = [self expectationWithDescription:@"Request Time!"];
     dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)(7 * NSEC_PER_SEC)), dispatch_get_main_queue(), ^{
         [[FTMobileAgent sharedInstance] syncProcess];
-        NSArray *datas = [[FTTrackerEventDBTool sharedManger] getFirstRecords:10 withType:FT_DATA_TYPE_RUM];
+        NSArray *datas = [[FTTrackerEventDBTool sharedManager] getFirstRecords:10 withType:FT_DATA_TYPE_RUM];
         __block BOOL noAnr = YES;
         [FTModelHelper resolveModelArray:datas timeCallBack:^(NSString * _Nonnull source, NSDictionary * _Nonnull tags, NSDictionary * _Nonnull fields, long long time,BOOL * _Nonnull stop) {
             if ([source isEqualToString:FT_RUM_SOURCE_ERROR]) {
@@ -141,7 +141,7 @@
     XCTestExpectation *expect = [self expectationWithDescription:@"Request Time!"];
     dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)(1 * NSEC_PER_SEC)), dispatch_get_main_queue(), ^{
         [[FTMobileAgent sharedInstance] syncProcess];
-        NSArray *datas = [[FTTrackerEventDBTool sharedManger] getFirstRecords:10 withType:FT_DATA_TYPE_RUM];
+        NSArray *datas = [[FTTrackerEventDBTool sharedManager] getFirstRecords:10 withType:FT_DATA_TYPE_RUM];
         __block BOOL noAnr = YES;
         [FTModelHelper resolveModelArray:datas callBack:^(NSString * _Nonnull source, NSDictionary * _Nonnull tags, NSDictionary * _Nonnull fields, BOOL * _Nonnull stop) {
             if ([source isEqualToString:FT_RUM_SOURCE_ERROR]) {
@@ -167,7 +167,7 @@
     }]*1000000000;
     
     [[FTMobileAgent sharedInstance] syncProcess];
-    NSArray *datas = [[FTTrackerEventDBTool sharedManger] getFirstRecords:10 withType:FT_DATA_TYPE_RUM];
+    NSArray *datas = [[FTTrackerEventDBTool sharedManager] getFirstRecords:10 withType:FT_DATA_TYPE_RUM];
     __block BOOL noLongTask = YES;
     [FTModelHelper resolveModelArray:datas timeCallBack:^(NSString * _Nonnull source, NSDictionary * _Nonnull tags, NSDictionary * _Nonnull fields, long long time,BOOL * _Nonnull stop) {
         if ([source isEqualToString:FT_RUM_SOURCE_LONG_TASK]&&[fields[FT_KEY_LONG_TASK_STACK] isEqualToString:@"test_stack"]) {
@@ -262,7 +262,7 @@
     XCTestExpectation *expect = [self expectationWithDescription:@"Request Time!"];
     dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)(1 * NSEC_PER_SEC)), dispatch_get_main_queue(), ^{
         [[FTGlobalRumManager sharedInstance].rumManager syncProcess];
-        NSArray *datas = [[FTTrackerEventDBTool sharedManger] getFirstRecords:10 withType:FT_DATA_TYPE_RUM];
+        NSArray *datas = [[FTTrackerEventDBTool sharedManager] getFirstRecords:10 withType:FT_DATA_TYPE_RUM];
         __block BOOL noAnr = YES;
         [FTModelHelper resolveModelArray:datas timeCallBack:^(NSString * _Nonnull source, NSDictionary * _Nonnull tags, NSDictionary * _Nonnull fields, long long time,BOOL * _Nonnull stop) {
             if ([source isEqualToString:FT_RUM_SOURCE_ERROR]) {
@@ -301,7 +301,7 @@
         XCTAssertNil(error);
     }];
                    
-    NSArray *datas = [[FTTrackerEventDBTool sharedManger] getAllDatas];
+    NSArray *datas = [[FTTrackerEventDBTool sharedManager] getAllDatas];
     __block BOOL hasLongTask = NO,hasAnr = NO,hasView = NO;
     [FTModelHelper resolveModelArray:datas dataTypeCallBack:^(NSString * _Nonnull source, NSDictionary * _Nonnull tags, NSDictionary * _Nonnull fields, NSString * _Nonnull type, BOOL * _Nonnull stop){
         XCTAssertTrue([type isEqualToString:FT_DATA_TYPE_RUM]);
@@ -346,7 +346,7 @@
         XCTAssertNil(error);
     }];
                    
-    NSArray *datas = [[FTTrackerEventDBTool sharedManger] getAllDatas];
+    NSArray *datas = [[FTTrackerEventDBTool sharedManager] getAllDatas];
     __block BOOL hasLongTask = NO,hasAnr = NO,hasView = NO;
     [FTModelHelper resolveModelArray:datas dataTypeCallBack:^(NSString * _Nonnull source, NSDictionary * _Nonnull tags, NSDictionary * _Nonnull fields, NSString * _Nonnull type, BOOL * _Nonnull stop){
         XCTAssertTrue([type isEqualToString:FT_DATA_TYPE_RUM]);

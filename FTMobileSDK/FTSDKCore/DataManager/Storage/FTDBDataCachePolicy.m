@@ -41,9 +41,9 @@
         pthread_mutex_init(&(self->_lock), NULL);
         _rumCacheLimitCount = FT_DB_RUM_MAX_COUNT;
         _logCacheLimitCount = FT_DB_LOG_MAX_COUNT;
-        _rumCount = [[FTTrackerEventDBTool sharedManger] getDatasCountWithType:FT_DATA_TYPE_RUM];
+        _rumCount = [[FTTrackerEventDBTool sharedManager] getDatasCountWithType:FT_DATA_TYPE_RUM];
         _messageCaches = [NSMutableArray array];
-        _logCount = [[FTTrackerEventDBTool sharedManger] getDatasCountWithType:FT_DATA_TYPE_LOGGING];
+        _logCount = [[FTTrackerEventDBTool sharedManager] getDatasCountWithType:FT_DATA_TYPE_LOGGING];
     }
     return self;
 }
@@ -90,10 +90,10 @@
             if(self.rumDiscardNew){
                 return NO;
             }
-            [[FTTrackerEventDBTool sharedManger] deleteDataWithType:FT_DATA_TYPE_RUM count:-count];
+            [[FTTrackerEventDBTool sharedManager] deleteDataWithType:FT_DATA_TYPE_RUM count:-count];
         }
     }
-   return [[FTTrackerEventDBTool sharedManger] insertItem:data];
+   return [[FTTrackerEventDBTool sharedManager] insertItem:data];
 }
 - (void)autoInsertCacheToDB{
     if(self.semaphoreWaiting){
@@ -127,7 +127,7 @@
                     return sum;
                 }
             }else{
-                [[FTTrackerEventDBTool sharedManger] deleteDataWithType:FT_DATA_TYPE_LOGGING count:-count];
+                [[FTTrackerEventDBTool sharedManager] deleteDataWithType:FT_DATA_TYPE_LOGGING count:-count];
                 return -1;
             }
         }
@@ -136,14 +136,14 @@
 }
 // NO: Not exceeded\Exceeded but delete old data YES: Exceeded, delete new data
 - (BOOL)reachDbLimit{
-    long long pageSize = [[FTTrackerEventDBTool sharedManger] checkDatabaseSize];
+    long long pageSize = [[FTTrackerEventDBTool sharedManager] checkDatabaseSize];
     self.currentDbSize = pageSize;
     if (pageSize > self.dbLimitSize){
         FTInnerLogInfo(@"ReachDbLimit(%lld KB)-DiscardData (%@)",pageSize/1024,self.dbDiscardNew?@"NEW":@"OLD");
         if (self.dbDiscardNew) {
             return YES;
         }else{
-           BOOL delete = [[FTTrackerEventDBTool sharedManger] deleteDataWithCount:100];
+           BOOL delete = [[FTTrackerEventDBTool sharedManager] deleteDataWithCount:100];
            return !delete;
         }
     }
@@ -174,7 +174,7 @@
         NSArray *array = [self.messageCaches copy];
         [self.messageCaches removeAllObjects];
         pthread_mutex_unlock(&_lock);
-        [[FTTrackerEventDBTool sharedManger] insertItemsWithDatas:array];
+        [[FTTrackerEventDBTool sharedManager] insertItemsWithDatas:array];
         if (self.callback) self.callback();
     }else{
         pthread_mutex_unlock(&_lock);

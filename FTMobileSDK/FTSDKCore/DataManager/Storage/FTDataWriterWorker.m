@@ -49,25 +49,28 @@
     return self;
 }
 // Called in RUM queue or longtask queue
-- (void)rumWrite:(NSString *)source tags:(NSDictionary *)tags fields:(NSDictionary *)fields time:(long long)time{
-    [self rumWrite:source tags:tags fields:fields time:time updateTime:0];
+- (void)rumWrite:(NSString *)source tags:(NSDictionary *)tags fields:(NSDictionary *)fields dynamicContext:(NSDictionary *)dynamicContext time:(long long)time{
+    [self rumWrite:source tags:tags fields:fields dynamicContext:dynamicContext time:time updateTime:0];
 }
-- (void)rumWrite:(NSString *)source tags:(NSDictionary *)tags fields:(NSDictionary *)fields time:(long long)time updateTime:(long long)updateTime{
-    [self rumWrite:source tags:tags fields:fields time:time updateTime:updateTime cache:self.isCache];
+- (void)rumWrite:(NSString *)source tags:(NSDictionary *)tags fields:(NSDictionary *)fields dynamicContext:(NSDictionary *)dynamicContext time:(long long)time updateTime:(long long)updateTime{
+    [self rumWrite:source tags:tags fields:fields dynamicContext:dynamicContext time:time updateTime:updateTime cache:self.isCache];
 }
-- (void)rumWrite:(NSString *)source tags:(NSDictionary *)tags fields:(NSDictionary *)fields time:(long long)time updateTime:(long long)updateTime cache:(BOOL)cache{
+- (void)rumWrite:(NSString *)source tags:(NSDictionary *)tags fields:(NSDictionary *)fields dynamicContext:(NSDictionary *)dynamicContext time:(long long)time updateTime:(long long)updateTime cache:(BOOL)cache{
     if (![source isKindOfClass:NSString.class] || source.length == 0) {
         return;
     }
     @try {
+        NSDictionary *rTags = [[FTPresetProperty sharedInstance] applyModifier:tags];
+        NSDictionary *rFields = [[FTPresetProperty sharedInstance] applyModifier:fields];
         NSMutableDictionary *tagsDict = [NSMutableDictionary new];
         NSMutableDictionary *fieldsDict = [NSMutableDictionary new];
         NSDictionary *rumStaticTags = [[FTPresetProperty sharedInstance] rumTags];
 
-        [tagsDict addEntriesFromDictionary:tags];
+        [tagsDict addEntriesFromDictionary:rTags];
         [tagsDict addEntriesFromDictionary:rumStaticTags];
-        [fieldsDict addEntriesFromDictionary:fields];
-        NSDictionary *pkgInfo = tags[FT_SDK_PKG_INFO];
+        [tagsDict addEntriesFromDictionary:dynamicContext];
+        [fieldsDict addEntriesFromDictionary:rFields];
+        NSDictionary *pkgInfo = rTags[FT_SDK_PKG_INFO];
         if(pkgInfo && pkgInfo.count>0){
             NSDictionary *info = [rumStaticTags valueForKey:FT_SDK_PKG_INFO];
             if(info){
@@ -92,7 +95,9 @@
     }
 }
 - (void)rumWriteAssembledData:(NSString *)source tags:(NSDictionary *)tags fields:(NSDictionary *)fields time:(long long)time{
-    FTRecordModel *model = [self _recordModelWithSource:source tags:tags fields:fields time:time op:FT_DATA_TYPE_RUM];
+    NSDictionary *rTags = [[FTPresetProperty sharedInstance] applyModifier:tags];
+    NSDictionary *rFields = [[FTPresetProperty sharedInstance] applyModifier:fields];
+    FTRecordModel *model = [self _recordModelWithSource:source tags:rTags fields:rFields time:time op:FT_DATA_TYPE_RUM];
     [[FTTrackDataManager sharedInstance] addTrackData:model type:FTAddDataRUM];
 }
 - (FTRecordModel *)_recordModelWithSource:(NSString *)source
@@ -101,8 +106,8 @@
                                      time:(long long)time
                                        op:(NSString *)op {
     FTRecordModel *model = nil;
-    if ([FTPresetProperty sharedInstance].lineDataModifier) {
-        NSArray *array = [[FTPresetProperty sharedInstance] applyLineModifier:source tags:tags fields:fields];
+    NSArray *array = [[FTPresetProperty sharedInstance] applyLineModifier:source tags:tags fields:fields];
+    if(array){
         model = [[FTRecordModel alloc] initWithSource:source op:op tags:array[0] fields:array[1] tm:time];
     } else {
         model = [[FTRecordModel alloc] initWithSource:source op:op tags:tags fields:fields tm:time];
@@ -116,8 +121,8 @@
     @try {
         NSMutableDictionary *baseTags = [NSMutableDictionary new];
         [baseTags addEntriesFromDictionary:tags];
-        NSDictionary *rumProperty = [[FTPresetProperty sharedInstance] rumTags];
-        [baseTags addEntriesFromDictionary:rumProperty];
+        [baseTags addEntriesFromDictionary:[[FTPresetProperty sharedInstance] rumDynamicTags]];
+        [baseTags addEntriesFromDictionary:[[FTPresetProperty sharedInstance] rumTags]];
         FTRecordModel *model = [[FTRecordModel alloc]initWithSource:source op:FT_DATA_TYPE_RUM tags:baseTags fields:fields tm:time];
         [[FTTrackDataManager sharedInstance] addTrackData:model type:FTAddDataRUM];
     } @catch (NSException *exception) {
@@ -125,28 +130,32 @@
     }
 }
 // FT_DATA_TYPE_LOGGING
--(void)logging:(NSString *)content status:(NSString *)status tags:(nullable NSDictionary *)tags field:(nullable NSDictionary *)field time:(long long)time{
+-(void)loggingTags:(nullable NSDictionary *)tags field:(nullable NSDictionary *)field time:(long long)time linkRum:(BOOL)linkRum{
     @try {
+        NSDictionary *rTags = [[FTPresetProperty sharedInstance] applyModifier:tags];
+        NSDictionary *rFields = [[FTPresetProperty sharedInstance] applyModifier:field];
+
         NSMutableDictionary *tagDict = [NSMutableDictionary new];
-        if (tags) {
-            [tagDict addEntriesFromDictionary:tags];
+        if (rTags) {
+            [tagDict addEntriesFromDictionary:rTags];
         }
-        [tagDict setValue:status forKey:FT_KEY_STATUS];
+        [tagDict addEntriesFromDictionary:[[FTPresetProperty sharedInstance] loggerDynamicTags]];
         [tagDict addEntriesFromDictionary:[[FTPresetProperty sharedInstance] loggerTags]];
-        NSMutableDictionary *filedDict = [NSMutableDictionary dictionary];
-        [filedDict setValue:content forKey:FT_KEY_MESSAGE];
-        [filedDict addEntriesFromDictionary:field];
+        if (linkRum) {
+            [tagDict addEntriesFromDictionary:[[FTPresetProperty sharedInstance] rumDynamicTags]];
+            [tagDict addEntriesFromDictionary:[[FTPresetProperty sharedInstance] rumTags]];
+        }
 #if TARGET_OS_TV
         NSString *source = FT_LOGGER_TVOS_SOURCE;
 #else
         NSString *source = FT_LOGGER_SOURCE;
 #endif
         FTRecordModel *model;
-        if ([FTPresetProperty sharedInstance].lineDataModifier) {
-            NSArray *array = [[FTPresetProperty sharedInstance] applyLineModifier:source tags:tagDict fields:filedDict];
+        NSArray *array = [[FTPresetProperty sharedInstance] applyLineModifier:source tags:tagDict fields:rFields];
+        if (array) {
             model = [[FTRecordModel alloc]initWithSource:source op:FT_DATA_TYPE_LOGGING tags:array[0] fields:array[1] tm:time];
         }else{
-            model = [[FTRecordModel alloc]initWithSource:source op:FT_DATA_TYPE_LOGGING tags:tagDict fields:filedDict tm:time];
+            model = [[FTRecordModel alloc]initWithSource:source op:FT_DATA_TYPE_LOGGING tags:tagDict fields:rFields tm:time];
         }
         [[FTTrackDataManager sharedInstance] addTrackData:model type:FTAddDataLogging];
     } @catch (NSException *exception) {
@@ -185,7 +194,7 @@
         long long error = [strongSelf getErrorTimeLineFromFileCache];
         if (error > 0) {
             FTInnerLogDebug(@"[RUM errorSampledConsume] Deal last process datas");
-            [[FTTrackerEventDBTool sharedManger] updateDatasWithType:FT_DATA_TYPE_RUM_CACHE toType:FT_DATA_TYPE_RUM toTime:error];
+            [[FTTrackerEventDBTool sharedManager] updateDatasWithType:FT_DATA_TYPE_RUM_CACHE toType:FT_DATA_TYPE_RUM toTime:error];
         }
     });
 }
@@ -198,10 +207,10 @@
         if (!strongSelf) return;
         if (errorDate>0) {
             FTInnerLogDebug(@"[RUM errorSampledConsume] Last process has fatal error.");
-            [[FTTrackerEventDBTool sharedManger] updateDatasWithType:FT_DATA_TYPE_RUM_CACHE toType:FT_DATA_TYPE_RUM toTime:errorDate];
+            [[FTTrackerEventDBTool sharedManager] updateDatasWithType:FT_DATA_TYPE_RUM_CACHE toType:FT_DATA_TYPE_RUM toTime:errorDate];
         }
         FTInnerLogDebug(@"[RUM errorSampledConsume] Delete last process datas");
-        [[FTTrackerEventDBTool sharedManger] deleteDatasWithType:FT_DATA_TYPE_RUM_CACHE toTime:strongSelf.processStartTime];
+        [[FTTrackerEventDBTool sharedManager] deleteDatasWithType:FT_DATA_TYPE_RUM_CACHE toTime:strongSelf.processStartTime];
     });
 }
 #pragma mark ========== CURRENT PROCESS ==========
@@ -215,7 +224,7 @@
     dispatch_sync(self.errorSampledConsumeQueue, ^{
         __strong typeof(weakSelf) strongSelf = weakSelf;
         if (!strongSelf) return;
-        if([[FTTrackerEventDBTool sharedManger] getDatasCountWithType:FT_DATA_TYPE_RUM_CACHE]==0){
+        if([[FTTrackerEventDBTool sharedManager] getDatasCountWithType:FT_DATA_TYPE_RUM_CACHE]==0){
             FTInnerLogDebug(@"[RUM errorSampledConsume] No datas.");
             return;
         }
@@ -225,10 +234,10 @@
         }
         if(self.lastErrorTimeInterval>0){
             FTInnerLogDebug(@"[RUM errorSampledConsume] has last error, update Datas Type");
-            [[FTTrackerEventDBTool sharedManger] updateDatasWithType:FT_DATA_TYPE_RUM_CACHE toType:FT_DATA_TYPE_RUM fromTime:strongSelf.processStartTime toTime:strongSelf.lastErrorTimeInterval];
+            [[FTTrackerEventDBTool sharedManager] updateDatasWithType:FT_DATA_TYPE_RUM_CACHE toType:FT_DATA_TYPE_RUM fromTime:strongSelf.processStartTime toTime:strongSelf.lastErrorTimeInterval];
         }
         FTInnerLogDebug(@"[RUM errorSampledConsume] Delete expire(%lld) datas",expire);
-        [[FTTrackerEventDBTool sharedManger] deleteDatasWithType:FT_DATA_TYPE_RUM_CACHE fromTime:strongSelf.processStartTime toTime:expire];
+        [[FTTrackerEventDBTool sharedManager] deleteDatasWithType:FT_DATA_TYPE_RUM_CACHE fromTime:strongSelf.processStartTime toTime:expire];
         FTInnerLogDebug(@"[RUM errorSampledConsume] End");
 
     });

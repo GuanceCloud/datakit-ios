@@ -38,21 +38,34 @@
 }
 
 - (void)addAppLifecycleDelegate:(id<FTAppLifeCycleDelegate>)delegate {
-    [self.delegateLock lock];
-    if (![self.appLifecycleDelegates.allObjects containsObject:delegate]) {
-        [self.appLifecycleDelegates addPointer:(__bridge void *)delegate];
-    }
-    [self.delegateLock unlock];
+    if (!delegate) return;
+        [self.delegateLock lock];
+        @try {
+            if (![self.appLifecycleDelegates.allObjects containsObject:delegate]) {
+                [self.appLifecycleDelegates addPointer:(__bridge void *)delegate];
+            }
+        } @finally {
+            [self.delegateLock unlock]; 
+        }
 }
 - (void)removeAppLifecycleDelegate:(id<FTAppLifeCycleDelegate>)delegate{
-    [self.delegateLock lock];
-    for (NSUInteger i=0; i<self.appLifecycleDelegates.count; i++) {
-        if ([self.appLifecycleDelegates pointerAtIndex:i] == (__bridge void *)delegate) {
-            [self.appLifecycleDelegates removePointerAtIndex:i];
-            break;
-        }
-    }
-    [self.delegateLock unlock];
+    if (!delegate) return;
+       [self.delegateLock lock];
+       @try {
+           NSUInteger indexToRemove = NSNotFound;
+           for (NSUInteger i = 0; i < self.appLifecycleDelegates.count; i++) {
+               void *pointer = [self.appLifecycleDelegates pointerAtIndex:i];
+               if (pointer == (__bridge void *)delegate) {
+                   indexToRemove = i;
+                   break;
+               }
+           }
+           if (indexToRemove != NSNotFound) {
+               [self.appLifecycleDelegates removePointerAtIndex:indexToRemove];
+           }
+       } @finally {
+           [self.delegateLock unlock];
+       }
 }
 - (void)setupAppStateNotification{
     NSNotificationCenter *notification = [NSNotificationCenter defaultCenter];

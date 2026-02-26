@@ -30,7 +30,7 @@
     
     XCTAssertNil([FTDataCompression deflate:data]);
     
-    NSData *rowData = [FTDataCompression rowCompress:data];
+    NSData *rowData = [FTDataCompression rawCompress:data];
     
     uint8_t nbytes[] = {0x63, 0x00, 0x00};
     NSData *eData = [NSData dataWithBytes:nbytes length:sizeof(nbytes)];
@@ -40,10 +40,12 @@
 }
 - (void)testDataCompression_deflate_big_data{
     NSDictionary *dict = @{@"a":@"123456",
-                           @"b":@"234567"
+                           @"b":@"234567",
+                           @"c":@"qwertyuii",
+                           @"d":@"qwertyuii",
+                           @"e":@"qwertyuii",
     };
-    FTJSONUtil *util = [FTJSONUtil new];
-    NSData *jsonData = [util JSONSerializeDictObject:dict];
+    NSData *jsonData = [FTJSONUtil JSONSerializeDictObject:dict];
     
     NSData *compressionData = [FTDataCompression deflate:jsonData];
 
@@ -51,19 +53,26 @@
 }
 - (void)testDataCompression_deflate_CalculatesAdler32{
     NSData *data = [@"Wikipedia" dataUsingEncoding:NSUTF8StringEncoding];
-    UInt32 uint32Value = [FTDataCompression adler32:data];
-    
+    NSData *adler32Data = [FTDataCompression adler32:data];
+   
+
+    uint32_t resultBigEndian;
+    [adler32Data getBytes:&resultBigEndian length:sizeof(uint32_t)];
+
+    uint32_t resultHostEndian = CFSwapInt32BigToHost(resultBigEndian);
+
     // From https://en.wikipedia.org/wiki/Adler-32
-    XCTAssertEqual(uint32Value, 300286872);
+    XCTAssertEqual(resultHostEndian, 300286872);
 
 }
 - (void)testDataCompression_deflate_format{
     NSDictionary *dict = @{@"a":@"123456",
                            @"b":@"234567",
-                           @"c":@"qwertyuii"
+                           @"c":@"qwertyuii",
+                           @"d":@"qwertyuii",
+                           @"e":@"qwertyuii",
     };
-    FTJSONUtil *util = [FTJSONUtil new];
-    NSData *jsonData = [util JSONSerializeDictObject:dict];
+    NSData *jsonData = [FTJSONUtil JSONSerializeDictObject:dict];
     
     NSData *compressionData = [FTDataCompression deflate:jsonData];
     
@@ -75,18 +84,80 @@
     XCTAssertTrue([dict isEqualToDictionary:nDict]);
 }
 
-- (NSData *)deflateDecompress:(NSData *)data{
-    // Skip `deflate` header (2 bytes) and checksum (4 bytes)
-    // validations and inflate raw deflated data.
-    NSRange range = NSMakeRange(2, data.length-4);
-    NSData *compressData = [data subdataWithRange:range];
+//- (NSData *)deflateDecompress:(NSData *)data{
+//    // Skip `deflate` header (2 bytes) and checksum (4 bytes)
+//    // validations and inflate raw deflated data.
+//    NSRange range = NSMakeRange(2, data.length-4);
+//    NSData *compressData = [data subdataWithRange:range];
+//   
+//    
+//    NSMutableData* rData = [[NSMutableData alloc] initWithLength:[compressData length]*3];
+//    rData.length = compression_decode_buffer(rData.mutableBytes, 1000000, compressData.bytes, [compressData length], nil, COMPRESSION_ZLIB);
+//    if (rData.length <= 0) {
+//        return nil;
+//    }
+//    return rData;
+//}
+- (NSData *)deflateDecompress:(NSData *)data {
+    if (data.length < 8) return nil;
+
+    const uint8_t *bytes = (const uint8_t *)data.bytes;
+
    
-    
-    NSMutableData* rData = [[NSMutableData alloc] initWithLength:[compressData length]*3];
-    rData.length = compression_decode_buffer(rData.mutableBytes, 1000000, compressData.bytes, [compressData length], nil, COMPRESSION_ZLIB);
-    if (rData.length <= 0) {
+    if (bytes[0] != 0x78) {
+       
         return nil;
     }
-    return rData;
+
+    NSUInteger payloadLength = data.length - 6;
+    const uint8_t *payloadBytes = bytes + 2;
+
+    uint32_t expectedChecksum;
+    memcpy(&expectedChecksum, bytes + data.length - 4, sizeof(uint32_t));
+    expectedChecksum = CFSwapInt32BigToHost(expectedChecksum);
+
+    NSData *decompressedData = [self rawDecompress:payloadBytes
+                                     payloadLength:payloadLength];
+    if (!decompressedData) return nil;
+
+    NSData *calculatedChecksumData = [FTDataCompression adler32:decompressedData];
+    uint32_t calculatedChecksum;
+    [calculatedChecksumData getBytes:&calculatedChecksum length:sizeof(uint32_t)];
+    calculatedChecksum = CFSwapInt32BigToHost(calculatedChecksum);
+
+    if (calculatedChecksum != expectedChecksum) {
+        NSLog(@"Adler-32 failed");
+        return nil;
+    }
+
+    return decompressedData;
+}
+- (nullable NSData *)rawDecompress:(const uint8_t *)payload
+                     payloadLength:(NSUInteger)payloadLength {
+    if (payloadLength == 0) return nil;
+
+    size_t bufferSize = payloadLength * 3;
+    uint8_t *buffer = NULL;
+    size_t decodedSize = 0;
+
+    for (int i = 0; i < 4; i++) {
+        buffer = malloc(bufferSize);
+        if (!buffer) return nil;
+
+        decodedSize = compression_decode_buffer(buffer, bufferSize,
+                                               payload, payloadLength,
+                                               NULL,
+                                               COMPRESSION_ZLIB);
+
+        if (decodedSize != 0) {
+            return [NSData dataWithBytesNoCopy:buffer length:decodedSize freeWhenDone:YES];
+        }
+
+        free(buffer);
+        buffer = NULL;
+        bufferSize *= 4;
+    }
+
+    return nil;
 }
 @end

@@ -102,7 +102,7 @@
     [FTMobileAgent startWithConfigOptions:config];
     [[FTMobileAgent sharedInstance] startTraceWithConfigOptions:traceConfig];
     [[FTMobileAgent sharedInstance] startRumWithConfigOptions:rumConfig];
-    [[FTTrackerEventDBTool sharedManger] deleteAllDatas];
+    [[FTTrackerEventDBTool sharedManager] deleteAllDatas];
 }
 /// 1. Verify that webview data is added
 /// 2. Verify data format
@@ -166,7 +166,7 @@
         XCTAssertNil(error);
     }];
     [[FTGlobalRumManager sharedInstance].rumManager syncProcess];
-    NSArray *datas =[[FTTrackerEventDBTool sharedManger] getFirstRecords:10 withType:FT_DATA_TYPE_RUM];
+    NSArray *datas =[[FTTrackerEventDBTool sharedManager] getFirstRecords:10 withType:FT_DATA_TYPE_RUM];
     __block BOOL hasViewData = NO;
     [datas enumerateObjectsWithOptions:NSEnumerationReverse usingBlock:^(FTRecordModel *obj, NSUInteger idx, BOOL * _Nonnull stop) {
         NSDictionary *dict = [FTJSONUtil dictionaryWithJsonString:obj.data];
@@ -216,7 +216,7 @@
         XCTAssertNil(error);
     }];
     XCTestExpectation *jsScript = [self expectationWithDescription:@"Request Time!"];
-    NSInteger count =[[FTTrackerEventDBTool sharedManger] getDatasCount];
+    NSInteger count =[[FTTrackerEventDBTool sharedManager] getDatasCount];
     [self.viewController test_addWebViewRumView:^{
         [jsScript fulfill];
     }];
@@ -224,7 +224,7 @@
         XCTAssertNil(error);
     }];
     [[FTGlobalRumManager sharedInstance].rumManager syncProcess];
-    NSArray *newCount =[[FTTrackerEventDBTool sharedManger] getAllDatas];
+    NSArray *newCount =[[FTTrackerEventDBTool sharedManager] getAllDatas];
     XCTAssertTrue(newCount.count == count);
     XCTAssertTrue(self.viewController.webView.configuration.userContentController.userScripts.count == 1);
 }
@@ -270,7 +270,7 @@
         XCTAssertNil(error);
     }];
     [[FTGlobalRumManager sharedInstance].rumManager syncProcess];
-    NSArray *datas =[[FTTrackerEventDBTool sharedManger] getFirstRecords:10 withType:FT_DATA_TYPE_RUM];
+    NSArray *datas =[[FTTrackerEventDBTool sharedManager] getFirstRecords:10 withType:FT_DATA_TYPE_RUM];
     __block BOOL hasViewData = NO;
     [datas enumerateObjectsWithOptions:NSEnumerationReverse usingBlock:^(FTRecordModel *obj, NSUInteger idx, BOOL * _Nonnull stop) {
         NSDictionary *dict = [FTJSONUtil dictionaryWithJsonString:obj.data];
@@ -313,7 +313,7 @@
         XCTAssertNil(error);
     }];
     [[FTGlobalRumManager sharedInstance].rumManager syncProcess];
-    NSArray *datas =[[FTTrackerEventDBTool sharedManger] getFirstRecords:10 withType:FT_DATA_TYPE_RUM];
+    NSArray *datas =[[FTTrackerEventDBTool sharedManager] getFirstRecords:10 withType:FT_DATA_TYPE_RUM];
     __block BOOL hasViewData = NO;
     [datas enumerateObjectsWithOptions:NSEnumerationReverse usingBlock:^(FTRecordModel *obj, NSUInteger idx, BOOL * _Nonnull stop) {
         NSDictionary *dict = [FTJSONUtil dictionaryWithJsonString:obj.data];
@@ -343,7 +343,7 @@
     [self setSDKWithEnableWebView:YES];
     NSURL *url = [[NSBundle mainBundle] URLForResource:@"sample" withExtension:@"html"];
     [FTMobileAgent shutDown];
-    NSInteger oldCount =[[FTTrackerEventDBTool sharedManger] getDatasCount];
+    NSInteger oldCount =[[FTTrackerEventDBTool sharedManager] getDatasCount];
     [self.viewController test_loadFileURL:url allowingReadAccessToURL:url];
     self.loadExpect = [self expectationWithDescription:@"Request Time!"];
     [self waitForExpectationsWithTimeout:30 handler:^(NSError *error) {
@@ -357,7 +357,7 @@
         XCTAssertNil(error);
     }];
     [[FTGlobalRumManager sharedInstance].rumManager syncProcess];
-    NSInteger newCount =[[FTTrackerEventDBTool sharedManger] getDatasCount];
+    NSInteger newCount =[[FTTrackerEventDBTool sharedManager] getDatasCount];
     XCTAssertTrue(newCount == oldCount);
 }
 - (void)testMapTableWeakReferenceWebView{

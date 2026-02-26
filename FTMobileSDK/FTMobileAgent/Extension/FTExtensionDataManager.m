@@ -249,17 +249,12 @@ NSString * const FT_LOGGER_CONFIG = @"LOGGER_CONFIG";
         return NO;
     }
 }
-- (BOOL)writeLoggerEvent:(NSString *)status content:(NSString *)content tags:(NSDictionary *)tags fields:(NSDictionary *)fields tm:(long long)tm groupIdentifier:(NSString *)groupIdentifier{
+- (BOOL)writeLoggerTags:(NSDictionary *)tags fields:(NSDictionary *)fields tm:(long long)tm groupIdentifier:(NSString *)groupIdentifier{
     @try {
-        if (content == nil) {
-            return NO;
-        }
         if (groupIdentifier == nil || groupIdentifier.length == 0) {
             return NO;
         }
         NSDictionary *event = @{@"dataType":FT_DATA_TYPE_LOGGING,
-                                @"status":status?:@"",
-                                @"content":content,
                                 @"fields": fields ? : @{},
                                 @"tags": tags ? : @{},
                                 @"tm":[NSNumber numberWithLongLong:tm]};

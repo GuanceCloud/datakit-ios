@@ -10,8 +10,6 @@
 
 
 - (void)scene:(UIScene *)scene willConnectToSession:(UISceneSession *)session options:(UISceneConnectionOptions *)connectionOptions  API_AVAILABLE(ios(13.0)){
-    self.window = [[UIWindow alloc] initWithFrame:[UIScreen mainScreen].bounds];
-    self.window.windowScene = (UIWindowScene*)scene;
     UITabBarController *tab = [[UITabBarController alloc]init];
     DemoViewController *rootVC = [[DemoViewController alloc] init];
     rootVC.title = @"home";

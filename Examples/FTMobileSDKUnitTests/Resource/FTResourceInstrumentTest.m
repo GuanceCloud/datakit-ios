@@ -70,7 +70,7 @@
     rumConfig.enableTraceUserResource = YES;
     [FTMobileAgent startWithConfigOptions:config];
     [[FTMobileAgent sharedInstance] startRumWithConfigOptions:rumConfig];
-    [[FTTrackerEventDBTool sharedManger] deleteAllDatas];
+    [[FTTrackerEventDBTool sharedManager] deleteAllDatas];
 }
 
 - (void)tearDown {
@@ -140,6 +140,7 @@
     [NSURLSessionConfiguration backgroundSessionConfigurationWithIdentifier:@"madeUpID"];
     NSURLSession *session = [NSURLSession sessionWithConfiguration:configuration];
     XCTAssertNotNil(session);
+    [session finishTasksAndInvalidate];
 }
 /** Tests instrumenting an NSProxy wrapped NSURLSession object works. */
 - (void)testProxyWrappedSharedSession {
@@ -313,6 +314,7 @@
         NSURLSessionDataTask *dataTask = [session dataTaskWithURL:self.url];
         [dataTask resume];
         XCTAssertNotNil([[FTURLSessionInterceptor shared] getTraceHandler:dataTask]);
+        [session invalidateAndCancel];
     }
 }
 /** Tests that even if a delegate doesn't implement a method, we add it to the delegate class. */
@@ -336,6 +338,7 @@
     [dataTask resume];
     XCTAssertNotNil([[FTURLSessionInterceptor shared] getTraceHandler:dataTask]);
     [self waitForExpectations:@[expectation] timeout:3];
+    [session invalidateAndCancel];
 }
 /** Tests that even if a delegate doesn't implement a method, we add it to the delegate class. */
 - (void)testDelegateUnimplementedURLSessionTaskDidFinishCollectingMetrics {
@@ -358,6 +361,7 @@
     [dataTask resume];
     XCTAssertNotNil([[FTURLSessionInterceptor shared] getTraceHandler:dataTask]);
     [self waitForExpectations:@[expectation] timeout:3];
+    [session invalidateAndCancel];
 }
 
 #pragma mark - Testing instance method wrapping
@@ -371,6 +375,7 @@
     XCTAssertNotNil(dataTask);
     [dataTask resume];
     XCTAssertNotNil([[FTURLSessionInterceptor shared] getTraceHandler:dataTask]);
+    [session invalidateAndCancel];
 }
 
 /** Tests that dataTaskWithRequest:completionHandler: returns a non-nil object. */
@@ -388,6 +393,7 @@
     XCTAssertNotNil(dataTask);
     [dataTask resume];
     [self waitForExpectationsWithTimeout:10.0 handler:nil];
+    [session invalidateAndCancel];
 }
 
 
@@ -406,6 +412,7 @@
     XCTAssertNotNil([[FTURLSessionInterceptor shared] getTraceHandler:dataTask]);
     [self waitForExpectationsWithTimeout:10.0 handler:nil];
     XCTAssertNil([[FTURLSessionInterceptor shared] getTraceHandler:dataTask]);
+    [session invalidateAndCancel];
 }
 
 /** Validate that it works with NSMutableURLRequest URLs across data, upload, and download. */
@@ -418,6 +425,7 @@
     NSURLSessionDataTask *dataTask = [session dataTaskWithRequest:URLRequest];
     [dataTask resume];
     XCTAssertNotNil([[FTURLSessionInterceptor shared] getTraceHandler:dataTask]);
+    [session invalidateAndCancel];
 }
 
 - (void)testSDKUploadLoggingRequest{
@@ -430,6 +438,7 @@
     NSURLSessionDataTask *dataTask = [session dataTaskWithRequest:URLRequest];
     [dataTask resume];
     XCTAssertNil([[FTURLSessionInterceptor shared] getTraceHandler:dataTask]);
+    [session invalidateAndCancel];
 }
 - (void)testSDKUploadRumRequest{
     __block NSURLSessionDataTask *dataTask;
@@ -442,5 +451,6 @@
     dataTask = [session dataTaskWithRequest:URLRequest];
     [dataTask resume];
     XCTAssertNil([[FTURLSessionInterceptor shared] getTraceHandler:dataTask]);
+    [session invalidateAndCancel];
 }
 @end

@@ -13,7 +13,7 @@ NS_ASSUME_NONNULL_BEGIN
 /// User information
 ///
 /// Reserved fields: userid, user_name, user_email
-@interface FTUserInfo : NSObject<NSCopying>
+@interface FTUserInfo : NSObject
 /// User ID
 @property (nonatomic, copy, readonly) NSString *userId;
 /// User name
@@ -21,7 +21,7 @@ NS_ASSUME_NONNULL_BEGIN
 /// User email
 @property (nonatomic, copy, readonly) NSString *email;
 /// Additional information
-@property (nonatomic, strong, readonly) NSDictionary *extra;
+@property (nonatomic, copy, readonly) NSDictionary *extra;
 /// Whether user information is set
 @property (nonatomic, assign, readonly) BOOL isSignIn;
 
@@ -32,6 +32,8 @@ NS_ASSUME_NONNULL_BEGIN
 ///   - email: Email
 ///   - extra: Additional information
 -(void)updateUser:(NSString *)Id name:(nullable NSString *)name email:(nullable NSString *)email extra:(nullable NSDictionary *)extra;
+
+- (NSDictionary *)userInfoDict;
 
 /// Clear locally saved user information
 -(void)clearUser;

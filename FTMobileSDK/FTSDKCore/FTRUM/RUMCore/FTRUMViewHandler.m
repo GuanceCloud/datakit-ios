@@ -209,10 +209,7 @@
 }
 - (void)writeErrorData:(FTRUMDataModel *)model context:(NSDictionary *)context{
     NSDictionary *sessionViewTag = [self.context getGlobalSessionViewActionTags];
-    NSMutableDictionary *tags = [NSMutableDictionary dictionary];
-    if (context) {
-        [tags addEntriesFromDictionary:context];
-    }
+    NSMutableDictionary *tags = [NSMutableDictionary new];
     [tags addEntriesFromDictionary:sessionViewTag];
     [tags addEntriesFromDictionary:model.tags];
     NSMutableDictionary *fields = [NSMutableDictionary new];
@@ -223,7 +220,7 @@
         [fields setValue:@(sessionHasReplay) forKey:FT_SESSION_HAS_REPLAY];
     }
     NSString *error = model.type == FTRUMDataLongTask?FT_RUM_SOURCE_LONG_TASK :FT_RUM_SOURCE_ERROR;
-    [self.rumDependencies.writer rumWrite:error tags:tags fields:fields time:model.tm];
+    [self.rumDependencies.writer rumWrite:error tags:tags fields:fields dynamicContext:context time:model.tm];
 }
 - (void)writeViewData:(FTRUMDataModel *)model context:(NSDictionary *)context updateTime:(NSDate *)updateTime{
     self.updateTime+=1;
@@ -232,10 +229,9 @@
     //Nanosecond level
     NSNumber *nTimeSpent = [NSNumber numberWithLongLong:sTimeSpent * 1000000000];
     
-    NSMutableDictionary *tags = [NSMutableDictionary dictionary];
-    NSMutableDictionary *viewUserCustomDatas = [NSMutableDictionary dictionary];
+    NSMutableDictionary *tags = [NSMutableDictionary new];
+    NSMutableDictionary *viewUserCustomDatas = [NSMutableDictionary new];
     if (context) {
-        [tags addEntriesFromDictionary:context];
         [viewUserCustomDatas addEntriesFromDictionary:context];
     }
     [tags addEntriesFromDictionary:[self.context getGlobalSessionViewTags]];
@@ -289,7 +285,7 @@
     [fields addEntriesFromDictionary:self.context.sessionState.sessionFields];
 
     long long time = [self.viewStartTime ft_nanosecondTimeStamp];
-    [self.rumDependencies.writer rumWrite:FT_RUM_SOURCE_VIEW tags:tags fields:fields time:time updateTime:[updateTime ft_nanosecondTimeStamp]];
+    [self.rumDependencies.writer rumWrite:FT_RUM_SOURCE_VIEW tags:tags fields:fields dynamicContext:context time:time updateTime:[updateTime ft_nanosecondTimeStamp]];
     self.rumDependencies.lastViewUserCustomDatas = viewUserCustomDatas;
     self.rumDependencies.fatalErrorContext.lastViewContext = @{@"tags":tags,
                                                                @"fields":fields,

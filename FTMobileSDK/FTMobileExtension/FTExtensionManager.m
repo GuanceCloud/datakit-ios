@@ -123,9 +123,8 @@ static FTExtensionManager *sharedInstance = nil;
     }
     [[FTLogger sharedInstance] log:content statusType:status property:property];
 }
--(void)logging:(NSString *)content status:(NSString *)status tags:(NSDictionary *)tags field:(NSDictionary *)field time:(long long)time{
+-(void)loggingTags:(NSDictionary *)tags field:(NSDictionary *)field time:(long long)time linkRum:(BOOL)linkRum{
     @try {
-        NSString *newContent = [content ft_subStringWithCharacterLength:FT_LOGGING_CONTENT_SIZE];
         NSString *bundleIdentifier =  [[[NSBundle mainBundle] infoDictionary] objectForKey:@"CFBundleIdentifier"];
         if (bundleIdentifier == nil) {
             return;
@@ -134,24 +133,23 @@ static FTExtensionManager *sharedInstance = nil;
         [tags setValue:bundleIdentifier forKey:@"extension_identifier"];
         [tagDict addEntriesFromDictionary:tags];
         FTInnerLogDebug(@"%@\n",@{@"type":FT_LOGGER_SOURCE,
-                                  @"tags":tagDict,
-                                  @"content":newContent?:@"",
+                                  @"tags":tagDict
                                 });
-        [[FTExtensionDataManager sharedInstance] writeLoggerEvent:status content:newContent tags:tagDict fields:nil tm:time groupIdentifier:self.extensionConfig.groupIdentifier];
+        [[FTExtensionDataManager sharedInstance] writeLoggerTags:tagDict fields:field tm:time groupIdentifier:self.extensionConfig.groupIdentifier];
     } @catch (NSException *exception) {
         FTInnerLogError(@"exception %@",exception);
     }
 }
-- (void)rumWrite:(NSString *)source tags:(NSDictionary *)tags fields:(NSDictionary *)fields time:(long long)time updateTime:(long long)updateTime{
-    [self rumWrite:source tags:tags fields:fields time:time];
+- (void)rumWrite:(NSString *)source tags:(NSDictionary *)tags fields:(NSDictionary *)fields dynamicContext:(NSDictionary *)dynamicContext time:(long long)time updateTime:(long long)updateTime{
+    [self rumWrite:source tags:tags fields:fields dynamicContext:dynamicContext time:time];
 }
-- (void)rumWrite:(NSString *)source tags:(NSDictionary *)tags fields:(NSDictionary *)fields time:(long long)time updateTime:(long long)updateTime cache:(BOOL)cache{
-    [self rumWrite:source tags:tags fields:fields time:time];
+- (void)rumWrite:(NSString *)source tags:(NSDictionary *)tags fields:(NSDictionary *)fields dynamicContext:(NSDictionary *)dynamicContext time:(long long)time updateTime:(long long)updateTime cache:(BOOL)cache{
+    [self rumWrite:source tags:tags fields:fields dynamicContext:dynamicContext time:time];
 }
 - (void)rumWriteAssembledData:(nonnull NSString *)source tags:(nonnull NSDictionary *)tags fields:(nonnull NSDictionary *)fields time:(long long)time {
-    [self rumWrite:source tags:tags fields:fields time:time];
+    [self rumWrite:source tags:tags fields:fields dynamicContext:@{} time:time];
 }
-- (void)rumWrite:(NSString *)source tags:(NSDictionary *)tags fields:(NSDictionary *)fields time:(long long)time{
+- (void)rumWrite:(NSString *)source tags:(NSDictionary *)tags fields:(NSDictionary *)fields dynamicContext:(NSDictionary *)dynamicContext time:(long long)time{
     NSString *bundleIdentifier =  [[[NSBundle mainBundle] infoDictionary] objectForKey:@"CFBundleIdentifier"];
     NSMutableDictionary *tagDict = [NSMutableDictionary new];
     [tagDict setValue:bundleIdentifier forKey:@"extension_identifier"];

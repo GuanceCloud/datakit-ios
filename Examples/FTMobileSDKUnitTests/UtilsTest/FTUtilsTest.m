@@ -32,7 +32,7 @@
 
 - (void)setUp {
     // Put setup code here. This method is called before the invocation of each test method in the class.
-    [[FTTrackerEventDBTool sharedManger] deleteAllDatas];
+    [[FTTrackerEventDBTool sharedManager] deleteAllDatas];
 }
 #pragma mark NSString+FTAdd
 - (void)testStringRemoveFrontBackBlank{
@@ -67,8 +67,7 @@
                           @"key6":@"test",
     };
     
-    FTJSONUtil *util = [FTJSONUtil new];
-    NSData *data = [util JSONSerializeDictObject:dict];
+    NSData *data = [FTJSONUtil JSONSerializeDictObject:dict];
     NSString *jsonString = [[NSString alloc]initWithData:data encoding:NSUTF8StringEncoding];
     NSData *jsonData = [jsonString dataUsingEncoding:NSUTF8StringEncoding];
     NSError *err;

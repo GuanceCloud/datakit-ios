@@ -163,7 +163,7 @@ final class FTTestInteraction: XCTestCase {
         FTMobileAgent.shutDown()
     }
     func testSessionInterceptor_resourceProvider() throws {
-        FTTrackerEventDBTool.sharedManger()!.deleteAllDatas()
+        FTTrackerEventDBTool.sharedManager()!.deleteAllDatas()
         let expectation = XCTestExpectation.init()
 
         let delegate = FTURLSessionDelegate.init()
@@ -213,7 +213,7 @@ final class FTTestInteraction: XCTestCase {
             wait(for: [expectation])
             Thread.sleep(forTimeInterval: 0.5)
             FTGlobalRumManager.sharedInstance().rumManager.syncProcess()
-            let newArray = FTTrackerEventDBTool.sharedManger()!.getAllDatas();
+            let newArray = FTTrackerEventDBTool.sharedManager()!.getAllDatas();
             for data in newArray {
                 let model:FTRecordModel = data as! FTRecordModel
                 let dict = FTJSONUtil.dictionary(withJsonString: model.data)

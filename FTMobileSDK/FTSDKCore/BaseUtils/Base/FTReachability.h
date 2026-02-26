@@ -16,13 +16,17 @@ extern NSString *const kFTReachabilityChangedNotification;
 /// Current network connection status
 typedef NS_ENUM(NSInteger, FTNetworkStatus) {
     /// No network connection
-    FTNotReachable = 0,
-    /// WiFi
-    FTReachableViaWiFi = 2,
+    FTNetworkStatusNotReachable = 0,
     /// Cellular network
-    FTReachableViaWWAN = 1
+    FTNetworkStatusWWAN = 1,
+    /// WiFi
+    FTNetworkStatusWiFi = 2,
+    /// Ethernet
+    FTNetworkStatusEthernet = 3,
+    /// Unknown
+    FTNetworkStatusUnknown = 4,
 };
-typedef void(^NetworkChangeBlock)(void);
+typedef void(^NetworkChangeBlock)(FTNetworkStatus status);
 /// Network status monitoring tool
 @interface FTReachability : NSObject
 
@@ -35,8 +39,8 @@ typedef void(^NetworkChangeBlock)(void);
 @property (nonatomic, copy, readonly) NSString *net;
 
 +(instancetype)reachabilityForInternetConnection;
-/// Re-get current network status type
-- (NSString *)networkType;
+
+-(FTNetworkStatus)currentReachabilityStatus;
 
 /// Start monitoring network status
 - (BOOL)startNotifier;
