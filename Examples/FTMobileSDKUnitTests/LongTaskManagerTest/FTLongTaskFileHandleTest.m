@@ -41,12 +41,8 @@ typedef void (^FTWriteCallBack)(NSDictionary *fields, NSDictionary *tags);
     dependencies.fatalErrorContext = errorContext;
     [FTCrash setupWithMonitoringType:FTCrashCMonitorTypeSystem writer:self enableMonitorMemory:YES enableMonitorCpu:YES];
     FTLongTaskManager *longTaskManager = [[FTLongTaskManager alloc]initWithDependencies:dependencies delegate:self backtraceReporting:[FTCrash shared].backtraceReporting enableTrackAppANR:YES enableTrackAppFreeze:YES freezeDurationMs:250];
-    [self removeFile:longTaskManager.dataStorePath];
+    [longTaskManager deleteFile];
     return longTaskManager;
-}
-- (void)removeFile:(NSString *)filePath{
-    NSError *error;
-    [[NSFileManager defaultManager] removeItemAtPath:filePath error:&error];
 }
 - (void)testLongTask_fileHandle{
     // When the given filePath is a folder, creating fileHandle will fail
@@ -90,7 +86,6 @@ typedef void (^FTWriteCallBack)(NSDictionary *fields, NSDictionary *tags);
     XCTAssertFalse([str2 containsString:@"test_appendData2"]);
     
     [longTaskManager shutDown];
-    [self removeFile:longTaskManager.dataStorePath];
 }
 - (void)testLongTask_deleteFile{
     FTLongTaskManager *longTaskManager = [self mockLongTaskManager];
@@ -160,7 +155,6 @@ typedef void (^FTWriteCallBack)(NSDictionary *fields, NSDictionary *tags);
     self.callBack = nil;
     XCTAssertTrue(hasCallBack);
 
-    [self removeFile:longTaskManager.dataStorePath];
     [longTaskManager shutDown];
 }
 - (void)testLongTask_reportFatalWatchDogIfFound{
@@ -207,13 +201,13 @@ typedef void (^FTWriteCallBack)(NSDictionary *fields, NSDictionary *tags);
         self.callBack(slowStack, 0);
     }
 }
--(void)rumWrite:(NSString *)source tags:(NSDictionary *)tags fields:(NSDictionary *)fields time:(long long)time{
+-(void)rumWrite:(NSString *)source tags:(NSDictionary *)tags fields:(NSDictionary *)fields dynamicContext:(NSDictionary *)dynamicContext time:(long long)time{
     if(self.writeCallBack){
         self.writeCallBack(fields, tags);
         self.writeCallBack = nil;
     }
 }
--(void)rumWrite:(NSString *)source tags:(NSDictionary *)tags fields:(NSDictionary *)fields time:(long long)time updateTime:(long long)updateTime cache:(BOOL)cache{
+-(void)rumWrite:(NSString *)source tags:(NSDictionary *)tags fields:(NSDictionary *)fields dynamicContext:(NSDictionary *)dynamicContext time:(long long)time updateTime:(long long)updateTime cache:(BOOL)cache{
     if(self.writeCallBack){
         self.writeCallBack(fields, tags);
         self.writeCallBack = nil;
@@ -223,7 +217,7 @@ typedef void (^FTWriteCallBack)(NSDictionary *fields, NSDictionary *tags);
    
 }
 
-- (void)rumWrite:(nonnull NSString *)source tags:(nonnull NSDictionary *)tags fields:(nonnull NSDictionary *)fields time:(long long)time updateTime:(long long)updateTime { 
+- (void)rumWrite:(nonnull NSString *)source tags:(nonnull NSDictionary *)tags fields:(nonnull NSDictionary *)fields dynamicContext:(NSDictionary *)dynamicContext time:(long long)time updateTime:(long long)updateTime {
     
 }
 

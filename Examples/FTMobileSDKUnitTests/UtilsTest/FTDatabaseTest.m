@@ -27,48 +27,48 @@
     // Put setup code here. This method is called before the invocation of each test method in the class.
     [FTLog enableLog:YES];
 
-    [[FTTrackerEventDBTool sharedManger] shutDown];
+    [[FTTrackerEventDBTool sharedManager] shutDown];
     self.dbName = [NSString stringWithFormat:@"%@test.sqlite",[FTBaseInfoHandler randomUUID]];
     [FTTrackerEventDBTool shareDatabaseWithPath:nil dbName:self.dbName];
-    [[FTTrackerEventDBTool sharedManger] deleteAllDatas];
+    [[FTTrackerEventDBTool sharedManager] deleteAllDatas];
 }
 
 - (void)tearDown {
-    NSString *path = [FTTrackerEventDBTool sharedManger].dbQueue.path;
-    [[FTTrackerEventDBTool sharedManger] shutDown];
+    NSString *path = [FTTrackerEventDBTool sharedManager].dbQueue.path;
+    [[FTTrackerEventDBTool sharedManager] shutDown];
     NSError *errpr;
     [[NSFileManager defaultManager] removeItemAtPath:path error:&errpr];
     // Put teardown code here. This method is called after the invocation of each test method in the class.
 }
 - (void)testCreateDB{
-    ZY_FMDatabaseQueue *dbQueue = [FTTrackerEventDBTool sharedManger].dbQueue;
+    ZY_FMDatabaseQueue *dbQueue = [FTTrackerEventDBTool sharedManager].dbQueue;
     NSString *path =  dbQueue.path;
     XCTAssertTrue([path containsString:self.dbName]);
 }
 -(void)testCreateTable{
-    BOOL  track = [[FTTrackerEventDBTool sharedManger] zy_isExistTable:FT_DB_TRACE_EVENT_TABLE_NAME];
+    BOOL  track = [[FTTrackerEventDBTool sharedManager] zy_isExistTable:FT_DB_TRACE_EVENT_TABLE_NAME];
     XCTAssertTrue(track);
 }
 - (void)testInsertSingle{
-    NSInteger oldCount =  [[FTTrackerEventDBTool sharedManger] getDatasCount];
+    NSInteger oldCount =  [[FTTrackerEventDBTool sharedManager] getDatasCount];
     FTRecordModel *model = [FTRecordModel new];
     model.op = @"test";
     model.data = @"testData";
-    [[FTTrackerEventDBTool sharedManger] insertItem:model];
-    NSInteger newCount =  [[FTTrackerEventDBTool sharedManger] getDatasCount];
+    [[FTTrackerEventDBTool sharedManager] insertItem:model];
+    NSInteger newCount =  [[FTTrackerEventDBTool sharedManager] getDatasCount];
     XCTAssertTrue(newCount-oldCount == 1);
     
 }
 - (void)testGetDatasCount{
     for (int i = 0; i<15; i++) {
         FTRecordModel *model = [FTModelHelper createLogModel:[NSString stringWithFormat:@"testData%d",i]];
-        [[FTTrackerEventDBTool sharedManger] insertItem:model];
+        [[FTTrackerEventDBTool sharedManager] insertItem:model];
     }
-    NSInteger newCount =  [[FTTrackerEventDBTool sharedManger] getDatasCount];
+    NSInteger newCount =  [[FTTrackerEventDBTool sharedManager] getDatasCount];
     XCTAssertTrue(newCount == 15);
 }
 - (void)testInsertItemsWithDatas{
-    NSInteger oldCount =  [[FTTrackerEventDBTool sharedManger] getDatasCount];
+    NSInteger oldCount =  [[FTTrackerEventDBTool sharedManager] getDatasCount];
     NSMutableArray *array = [NSMutableArray new];
     for (int i = 0; i<10; i++) {
         FTRecordModel *model = [FTRecordModel new];
@@ -76,20 +76,20 @@
         model.data = [NSString stringWithFormat:@"testData%d",i];
         [array addObject:model];
     }
-    [[FTTrackerEventDBTool sharedManger] insertItemsWithDatas:array];
-    NSInteger newCount =  [[FTTrackerEventDBTool sharedManger] getDatasCount];
+    [[FTTrackerEventDBTool sharedManager] insertItemsWithDatas:array];
+    NSInteger newCount =  [[FTTrackerEventDBTool sharedManager] getDatasCount];
     XCTAssertTrue(newCount-oldCount == 10);
 }
 - (void)testInsertLoggingItems{
     [FTTrackDataManager startWithAutoSync:NO syncPageSize:10 syncSleepTime:0];
-    NSInteger oldCount =  [[FTTrackerEventDBTool sharedManger] getDatasCount];
+    NSInteger oldCount =  [[FTTrackerEventDBTool sharedManager] getDatasCount];
     for (int i = 0; i<20; i++) {
         FTRecordModel *model = [FTRecordModel new];
         model.op = [NSString stringWithFormat:@"test%d",i];
         model.data = [NSString stringWithFormat:@"testData%d",i];
         [[FTTrackDataManager sharedInstance] addTrackData:model type:FTAddDataLogging];
     }
-    NSInteger newCount =  [[FTTrackerEventDBTool sharedManger] getDatasCount];
+    NSInteger newCount =  [[FTTrackerEventDBTool sharedManager] getDatasCount];
     XCTAssertTrue(newCount-oldCount == 20);
 }
 /**
@@ -98,31 +98,31 @@
 */
 -(void)testInsertCacheToDB{
     [FTTrackDataManager startWithAutoSync:NO syncPageSize:10 syncSleepTime:0];
-    NSInteger oldCount =  [[FTTrackerEventDBTool sharedManger] getDatasCount];
+    NSInteger oldCount =  [[FTTrackerEventDBTool sharedManager] getDatasCount];
     for (int i = 0; i<15; i++) {
         FTRecordModel *model = [FTModelHelper createLogModel];
         [[FTTrackDataManager sharedInstance] addTrackData:model type:FTAddDataLogging];
     }
     [[FTTrackDataManager sharedInstance] insertCacheToDB];
-    NSInteger newCount =  [[FTTrackerEventDBTool sharedManger] getDatasCount];
+    NSInteger newCount =  [[FTTrackerEventDBTool sharedManager] getDatasCount];
     XCTAssertTrue(newCount-oldCount == 15);
 }
                      
 -(void)testGetAllDatas{
     for (int i = 0; i<15; i++) {
         FTRecordModel *model = [FTModelHelper createLogModel:[NSString stringWithFormat:@"testData%d",i]];
-        [[FTTrackerEventDBTool sharedManger] insertItem:model];
+        [[FTTrackerEventDBTool sharedManager] insertItem:model];
     }
-   NSArray *datas = [[FTTrackerEventDBTool sharedManger] getAllDatas];
+   NSArray *datas = [[FTTrackerEventDBTool sharedManager] getAllDatas];
     XCTAssertTrue(datas.count == 15);
 
 }
 -(void)testGetFirstRecords{
     for (int i = 0; i<15; i++) {
         FTRecordModel *model = [FTModelHelper createLogModel:[NSString stringWithFormat:@"testData%d",i]];
-        [[FTTrackerEventDBTool sharedManger] insertItem:model];
+        [[FTTrackerEventDBTool sharedManager] insertItem:model];
     }
-   NSArray *datas = [[FTTrackerEventDBTool sharedManger] getFirstRecords:1 withType:FT_DATA_TYPE_LOGGING];
+   NSArray *datas = [[FTTrackerEventDBTool sharedManager] getFirstRecords:1 withType:FT_DATA_TYPE_LOGGING];
     XCTAssertTrue(datas.count == 1);
 }
 
@@ -130,83 +130,83 @@
     for (int i = 0; i<15; i++) {
         FTRecordModel *model = [FTModelHelper createLogModel:[NSString stringWithFormat:@"testData%d",i]];
         FTRecordModel *rumModel = [FTModelHelper createRUMModel:[NSString stringWithFormat:@"testData%d",i]];
-        [[FTTrackerEventDBTool sharedManger] insertItem:rumModel];
-        [[FTTrackerEventDBTool sharedManger] insertItem:model];
+        [[FTTrackerEventDBTool sharedManager] insertItem:rumModel];
+        [[FTTrackerEventDBTool sharedManager] insertItem:model];
     }
-    [[FTTrackerEventDBTool sharedManger] deleteDataWithType:FT_DATA_TYPE_LOGGING count:15];
-    NSInteger newCount =  [[FTTrackerEventDBTool sharedManger] getDatasCount];
+    [[FTTrackerEventDBTool sharedManager] deleteDataWithType:FT_DATA_TYPE_LOGGING count:15];
+    NSInteger newCount =  [[FTTrackerEventDBTool sharedManager] getDatasCount];
     XCTAssertTrue(newCount == 15);
 }
 - (void)testDeleteDataWithCount{
     for (int i = 0; i<50; i++) {
         FTRecordModel *model = [FTModelHelper createLogModel:[NSString stringWithFormat:@"testData%d",i]];
         FTRecordModel *rumModel = [FTModelHelper createRUMModel:[NSString stringWithFormat:@"testData%d",i]];
-        [[FTTrackerEventDBTool sharedManger] insertItem:rumModel];
-        [[FTTrackerEventDBTool sharedManger] insertItem:model];
+        [[FTTrackerEventDBTool sharedManager] insertItem:rumModel];
+        [[FTTrackerEventDBTool sharedManager] insertItem:model];
     }
-    [[FTTrackerEventDBTool sharedManger] deleteDataWithCount:50];
-    NSInteger newCount =  [[FTTrackerEventDBTool sharedManger] getDatasCount];
+    [[FTTrackerEventDBTool sharedManager] deleteDataWithCount:50];
+    NSInteger newCount =  [[FTTrackerEventDBTool sharedManager] getDatasCount];
     XCTAssertTrue(newCount == 50);
 }
 -(void)testDeleteLoggingItem{
     for (int i = 0; i<15; i++) {
         FTRecordModel *model = [FTModelHelper createLogModel:[NSString stringWithFormat:@"testData%d",i]];
-        [[FTTrackerEventDBTool sharedManger] insertItem:model];
+        [[FTTrackerEventDBTool sharedManager] insertItem:model];
     }
-    NSInteger oldCount =  [[FTTrackerEventDBTool sharedManger] getDatasCount];
+    NSInteger oldCount =  [[FTTrackerEventDBTool sharedManager] getDatasCount];
 
-    [[FTTrackerEventDBTool sharedManger] deleteDataWithType:FT_DATA_TYPE_LOGGING count:5];
-    NSInteger newCount =  [[FTTrackerEventDBTool sharedManger] getDatasCount];
+    [[FTTrackerEventDBTool sharedManager] deleteDataWithType:FT_DATA_TYPE_LOGGING count:5];
+    NSInteger newCount =  [[FTTrackerEventDBTool sharedManager] getDatasCount];
 
     XCTAssertTrue(oldCount - newCount == 5);
 }
 - (void)testGetDatasCountWithOp{
     for (int i = 0; i<15; i++) {
         FTRecordModel *model = [FTModelHelper createLogModel:[NSString stringWithFormat:@"testData%d",i]];
-        [[FTTrackerEventDBTool sharedManger] insertItem:model];
+        [[FTTrackerEventDBTool sharedManager] insertItem:model];
     }
-    NSInteger count = [[FTTrackerEventDBTool sharedManger] getDatasCountWithType:FT_DATA_TYPE_LOGGING];
+    NSInteger count = [[FTTrackerEventDBTool sharedManager] getDatasCountWithType:FT_DATA_TYPE_LOGGING];
     XCTAssertTrue(count == 15);
 }
 - (void)testDelete{
     FTRecordModel *model = [FTRecordModel new];
     model.op = @"test";
     model.data = @"testData";
-    [[FTTrackerEventDBTool sharedManger] insertItem:model];
-    NSInteger oldCount =  [[FTTrackerEventDBTool sharedManger] getDatasCount];
-    [[FTTrackerEventDBTool sharedManger] deleteAllDatas];
-    NSInteger newCount =  [[FTTrackerEventDBTool sharedManger] getDatasCount];
+    [[FTTrackerEventDBTool sharedManager] insertItem:model];
+    NSInteger oldCount =  [[FTTrackerEventDBTool sharedManager] getDatasCount];
+    [[FTTrackerEventDBTool sharedManager] deleteAllDatas];
+    NSInteger newCount =  [[FTTrackerEventDBTool sharedManager] getDatasCount];
     XCTAssertTrue(oldCount>0 && newCount == 0);
 }
 
 - (void)testEnableLimitDBSize_deleteData{
-    [[FTTrackerEventDBTool sharedManger] setEnableLimitWithDbSize:YES];
+    [[FTTrackerEventDBTool sharedManager] setEnableLimitWithDbSize:YES];
     for (int i = 0; i<100; i++) {
         FTRecordModel *logModel = [FTModelHelper createLogModel:[NSString stringWithFormat:@"testData%d",i]];
         FTRecordModel *rumModel = [FTModelHelper createRUMModel:[NSString stringWithFormat:@"testData%d",i]];
-        [[FTTrackerEventDBTool sharedManger] insertItem:logModel];
-        [[FTTrackerEventDBTool sharedManger] insertItem:rumModel];
+        [[FTTrackerEventDBTool sharedManager] insertItem:logModel];
+        [[FTTrackerEventDBTool sharedManager] insertItem:rumModel];
     }
-    NSInteger count = [[FTTrackerEventDBTool sharedManger] getDatasCount];
+    NSInteger count = [[FTTrackerEventDBTool sharedManager] getDatasCount];
     XCTAssertTrue(count == 200);
-    long size = [[FTTrackerEventDBTool sharedManger] checkDatabaseSize];
+    long size = [[FTTrackerEventDBTool sharedManager] checkDatabaseSize];
     XCTAssertTrue(size>0);
-    [[FTTrackerEventDBTool sharedManger] deleteDataWithCount:50];
-    long dSize1 = [[FTTrackerEventDBTool sharedManger] checkDatabaseSize];
+    [[FTTrackerEventDBTool sharedManager] deleteDataWithCount:50];
+    long dSize1 = [[FTTrackerEventDBTool sharedManager] checkDatabaseSize];
     
-    [[FTTrackerEventDBTool sharedManger] deleteDataWithType:FT_DATA_TYPE_LOGGING count:10];
-    long dSize2 = [[FTTrackerEventDBTool sharedManger] checkDatabaseSize];
-    [[FTTrackerEventDBTool sharedManger] deleteDataWithType:FT_DATA_TYPE_RUM count:10];
-    long dSize3 = [[FTTrackerEventDBTool sharedManger] checkDatabaseSize];
+    [[FTTrackerEventDBTool sharedManager] deleteDataWithType:FT_DATA_TYPE_LOGGING count:20];
+    long dSize2 = [[FTTrackerEventDBTool sharedManager] checkDatabaseSize];
+    [[FTTrackerEventDBTool sharedManager] deleteDataWithType:FT_DATA_TYPE_RUM count:20];
+    long dSize3 = [[FTTrackerEventDBTool sharedManager] checkDatabaseSize];
 
-    FTRecordModel *model = [[[FTTrackerEventDBTool sharedManger] getFirstRecords:100 withType:FT_DATA_TYPE_LOGGING] lastObject];
+    FTRecordModel *model = [[[FTTrackerEventDBTool sharedManager] getFirstRecords:100 withType:FT_DATA_TYPE_LOGGING] lastObject];
 
-    [[FTTrackerEventDBTool sharedManger] deleteItemWithType:FT_DATA_TYPE_LOGGING identify:model._id count:100];
-    long dSize4 = [[FTTrackerEventDBTool sharedManger] checkDatabaseSize];
+    [[FTTrackerEventDBTool sharedManager] deleteItemWithType:FT_DATA_TYPE_LOGGING identify:model._id count:100];
+    long dSize4 = [[FTTrackerEventDBTool sharedManager] checkDatabaseSize];
 
-    [[FTTrackerEventDBTool sharedManger] deleteAllDatas];
-    XCTAssertTrue([[FTTrackerEventDBTool sharedManger] getDatasCount] == 0);
-    long dSize = [[FTTrackerEventDBTool sharedManger] checkDatabaseSize];
+    [[FTTrackerEventDBTool sharedManager] deleteAllDatas];
+    XCTAssertTrue([[FTTrackerEventDBTool sharedManager] getDatasCount] == 0);
+    long dSize = [[FTTrackerEventDBTool sharedManager] checkDatabaseSize];
     XCTAssertTrue(dSize < dSize4 && dSize4 < dSize3 && dSize3 < dSize2 && dSize2 < dSize1);
 }
 @end

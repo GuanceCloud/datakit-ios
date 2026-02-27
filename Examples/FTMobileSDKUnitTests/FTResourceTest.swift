@@ -13,7 +13,7 @@ final class FTResourceTest: XCTestCase {
 
     override func setUpWithError() throws {
         // Put setup code here. This method is called before the invocation of each test method in the class.
-        FTTrackerEventDBTool.sharedManger()?.deleteAllDatas()
+        FTTrackerEventDBTool.sharedManager()?.deleteAllDatas()
         sdkInit()
     }
 
@@ -43,7 +43,7 @@ final class FTResourceTest: XCTestCase {
         let dic = ProcessInfo().environment
         let urlStr = dic["TRACE_URL"] ?? "https://www.baidu.com/more/"
         let url = URL(string: urlStr)
-        let count = FTTrackerEventDBTool.sharedManger()?.getDatasCount() ?? 0
+        let count = FTTrackerEventDBTool.sharedManager()?.getDatasCount() ?? 0
 
         let session = URLSession.init(configuration: URLSessionConfiguration.default)
         let request = URLRequest.init(url: url!)
@@ -51,9 +51,9 @@ final class FTResourceTest: XCTestCase {
             let (_,_) = try await session.data(for: request)
             try await Task.sleep(nanoseconds: 500000000)
             FTGlobalRumManager.sharedInstance().rumManager.syncProcess()
-            let newCount = FTTrackerEventDBTool.sharedManger()?.getDatasCount() ?? 0
+            let newCount = FTTrackerEventDBTool.sharedManager()?.getDatasCount() ?? 0
             XCTAssertTrue(newCount > count)
-            let datas = FTTrackerEventDBTool.sharedManger()?.getAllDatas() ?? []
+            let datas = FTTrackerEventDBTool.sharedManager()?.getAllDatas() ?? []
             var hasResource = false
             datas.forEach { model in
                 let model = model as! FTRecordModel

@@ -113,6 +113,8 @@ extern NSString * const FT_FPS_MINI;
 /// Page average frames per second
 extern NSString * const FT_FPS_AVG;
 
+extern NSString * const FT_NETWORK_TYPE;
+
 #pragma mark ---------- resource ----------
 #pragma mark --- tag
 extern NSString * const FT_KEY_RESOURCE_ID;

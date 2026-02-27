@@ -66,7 +66,7 @@ typedef NS_ENUM(NSUInteger,TestSessionRequestMethod){
     [[FTMobileAgent sharedInstance] startRumWithConfigOptions:rumConfig];
     [[FTMobileAgent sharedInstance] startTraceWithConfigOptions:traceConfig];
     [[FTMobileAgent sharedInstance] unbindUser];
-    [[FTTrackerEventDBTool sharedManger] deleteAllDatas];
+    [[FTTrackerEventDBTool sharedManager] deleteAllDatas];
     [FTModelHelper startView];
 }
 - (void)testUseDelegateDirect{
@@ -164,7 +164,7 @@ typedef NS_ENUM(NSUInteger,TestSessionRequestMethod){
     }];
     [NSThread sleepForTimeInterval:0.1];
     [[FTGlobalRumManager sharedInstance].rumManager syncProcess];
-    NSArray *newArray = [[FTTrackerEventDBTool sharedManger] getFirstRecords:10 withType:FT_DATA_TYPE_RUM];
+    NSArray *newArray = [[FTTrackerEventDBTool sharedManager] getFirstRecords:10 withType:FT_DATA_TYPE_RUM];
     __block BOOL hasResource = NO;
     [FTModelHelper resolveModelArray:newArray callBack:^(NSString * _Nonnull source, NSDictionary * _Nonnull tags, NSDictionary * _Nonnull fields, BOOL * _Nonnull stop) {
         if ([source isEqualToString:FT_RUM_SOURCE_RESOURCE]) {
@@ -176,7 +176,7 @@ typedef NS_ENUM(NSUInteger,TestSessionRequestMethod){
         }
     }];
     XCTAssertTrue(hasResource);
-    [[FTTrackerEventDBTool sharedManger] deleteAllDatas];
+    [[FTTrackerEventDBTool sharedManager] deleteAllDatas];
     ResourcePropertyProvider provider2 = ^NSDictionary * _Nullable(NSURLRequest *request, NSURLResponse *response, NSData *data, NSError *error) {
         XCTAssertTrue(request);
         NSString *responseBody = [[NSString alloc] initWithData:data encoding:NSUTF8StringEncoding];
@@ -192,7 +192,7 @@ typedef NS_ENUM(NSUInteger,TestSessionRequestMethod){
     }];
     [NSThread sleepForTimeInterval:0.1];
     [[FTGlobalRumManager sharedInstance].rumManager syncProcess];
-    NSArray *newArray2 = [[FTTrackerEventDBTool sharedManger] getFirstRecords:10 withType:FT_DATA_TYPE_RUM];
+    NSArray *newArray2 = [[FTTrackerEventDBTool sharedManager] getFirstRecords:10 withType:FT_DATA_TYPE_RUM];
     __block BOOL hasResource2 = NO;
     [FTModelHelper resolveModelArray:newArray2 callBack:^(NSString * _Nonnull source, NSDictionary * _Nonnull tags, NSDictionary * _Nonnull fields, BOOL * _Nonnull stop) {
         if ([source isEqualToString:FT_RUM_SOURCE_RESOURCE]) {
@@ -229,7 +229,7 @@ typedef NS_ENUM(NSUInteger,TestSessionRequestMethod){
     }];
     [NSThread sleepForTimeInterval:0.1];
     [[FTGlobalRumManager sharedInstance].rumManager syncProcess];
-    NSArray *newArray = [[FTTrackerEventDBTool sharedManger] getFirstRecords:10 withType:FT_DATA_TYPE_RUM];
+    NSArray *newArray = [[FTTrackerEventDBTool sharedManager] getFirstRecords:10 withType:FT_DATA_TYPE_RUM];
     __block BOOL hasResource = NO;
     [FTModelHelper resolveModelArray:newArray callBack:^(NSString * _Nonnull source, NSDictionary * _Nonnull tags, NSDictionary * _Nonnull fields, BOOL * _Nonnull stop) {
         if ([source isEqualToString:FT_RUM_SOURCE_RESOURCE]) {
@@ -242,7 +242,7 @@ typedef NS_ENUM(NSUInteger,TestSessionRequestMethod){
     }];
     XCTAssertTrue(hasResource);
     
-    [[FTTrackerEventDBTool sharedManger] deleteAllDatas];
+    [[FTTrackerEventDBTool sharedManager] deleteAllDatas];
     XCTestExpectation *expectation2= [self expectationWithDescription:@"SecondRequestInterceptor"];
     RequestInterceptor requestInterceptor2 = ^NSURLRequest *(NSURLRequest *request){
         NSMutableURLRequest *newRequest = [request mutableCopy];
@@ -258,7 +258,7 @@ typedef NS_ENUM(NSUInteger,TestSessionRequestMethod){
     }];
     [NSThread sleepForTimeInterval:0.1];
     [[FTGlobalRumManager sharedInstance].rumManager syncProcess];
-    NSArray *newArray2 = [[FTTrackerEventDBTool sharedManger] getFirstRecords:10 withType:FT_DATA_TYPE_RUM];
+    NSArray *newArray2 = [[FTTrackerEventDBTool sharedManager] getFirstRecords:10 withType:FT_DATA_TYPE_RUM];
     __block BOOL hasResource2 = NO;
     [FTModelHelper resolveModelArray:newArray2 callBack:^(NSString * _Nonnull source, NSDictionary * _Nonnull tags, NSDictionary * _Nonnull fields, BOOL * _Nonnull stop) {
         if ([source isEqualToString:FT_RUM_SOURCE_RESOURCE]) {
@@ -301,7 +301,7 @@ typedef NS_ENUM(NSUInteger,TestSessionRequestMethod){
     [FTMobileAgent startWithConfigOptions:config];
     [[FTMobileAgent sharedInstance] startRumWithConfigOptions:rumConfig];
     [[FTMobileAgent sharedInstance] startTraceWithConfigOptions:traceConfig];
-    [[FTTrackerEventDBTool sharedManger] deleteAllDatas];
+    [[FTTrackerEventDBTool sharedManager] deleteAllDatas];
     [FTModelHelper startView];
     XCTestExpectation *expectation= [self expectationWithDescription:@"testResourceUrlHandlerReturnYes"];
     HttpEngineTestUtil *engine = [[HttpEngineTestUtil alloc]initWithSessionInstrumentationType:InstrumentationInherit provider:nil requestInterceptor:nil traceInterceptor:nil completion:^{
@@ -313,7 +313,7 @@ typedef NS_ENUM(NSUInteger,TestSessionRequestMethod){
     }];
     [NSThread sleepForTimeInterval:0.1];
     [[FTGlobalRumManager sharedInstance].rumManager syncProcess];
-    NSArray *newArray = [[FTTrackerEventDBTool sharedManger] getFirstRecords:10 withType:FT_DATA_TYPE_RUM];
+    NSArray *newArray = [[FTTrackerEventDBTool sharedManager] getFirstRecords:10 withType:FT_DATA_TYPE_RUM];
     __block BOOL hasResource = NO;
     [FTModelHelper resolveModelArray:newArray callBack:^(NSString * _Nonnull source, NSDictionary * _Nonnull tags, NSDictionary * _Nonnull fields, BOOL * _Nonnull stop) {
         if ([source isEqualToString:FT_RUM_SOURCE_RESOURCE]) {
@@ -378,7 +378,7 @@ typedef NS_ENUM(NSUInteger,TestSessionRequestMethod){
     }];
     [NSThread sleepForTimeInterval:0.1];
     [[FTGlobalRumManager sharedInstance].rumManager syncProcess];
-    NSArray *newArray = [[FTTrackerEventDBTool sharedManger] getFirstRecords:10 withType:FT_DATA_TYPE_RUM];
+    NSArray *newArray = [[FTTrackerEventDBTool sharedManager] getFirstRecords:10 withType:FT_DATA_TYPE_RUM];
     __block BOOL hasResource = NO;
     [FTModelHelper resolveModelArray:newArray callBack:^(NSString * _Nonnull source, NSDictionary * _Nonnull tags, NSDictionary * _Nonnull fields, BOOL * _Nonnull stop) {
         if ([source isEqualToString:FT_RUM_SOURCE_RESOURCE]) {
@@ -421,7 +421,7 @@ typedef NS_ENUM(NSUInteger,TestSessionRequestMethod){
     }];
     [NSThread sleepForTimeInterval:0.1];
     [[FTGlobalRumManager sharedInstance].rumManager syncProcess];
-    NSArray *newArray = [[FTTrackerEventDBTool sharedManger] getAllDatas];
+    NSArray *newArray = [[FTTrackerEventDBTool sharedManager] getAllDatas];
     __block NSInteger hasResourceCount = 0;
     [FTModelHelper resolveModelArray:newArray callBack:^(NSString * _Nonnull source, NSDictionary * _Nonnull tags, NSDictionary * _Nonnull fields, BOOL * _Nonnull stop) {
         if ([source isEqualToString:FT_RUM_SOURCE_RESOURCE]) {
@@ -486,7 +486,7 @@ typedef NS_ENUM(NSUInteger,TestSessionRequestMethod){
     }];
     [NSThread sleepForTimeInterval:0.1];
     [[FTGlobalRumManager sharedInstance].rumManager syncProcess];
-    NSArray *newArray = [[FTTrackerEventDBTool sharedManger] getFirstRecords:10 withType:FT_DATA_TYPE_RUM];
+    NSArray *newArray = [[FTTrackerEventDBTool sharedManager] getFirstRecords:10 withType:FT_DATA_TYPE_RUM];
     __block NSInteger hasResourceCount = 0;
     [FTModelHelper resolveModelArray:newArray callBack:^(NSString * _Nonnull source, NSDictionary * _Nonnull tags, NSDictionary * _Nonnull fields, BOOL * _Nonnull stop) {
         if ([source isEqualToString:FT_RUM_SOURCE_RESOURCE]) {

@@ -34,12 +34,8 @@
 		171CE1DD2BFB3C550083FC1C /* FTDURLSessionDelegate.h in Headers */ = {isa = PBXBuildFile; fileRef = 171CE1D62BFB3C550083FC1C /* FTDURLSessionDelegate.h */; };
 		172113B82DF1A200006189C2 /* FTRemoteConfigManager.m in Sources */ = {isa = PBXBuildFile; fileRef = 172113B72DF1A200006189C2 /* FTRemoteConfigManager.m */; };
 		172113B92DF1A200006189C2 /* FTRemoteConfigManager.h in Headers */ = {isa = PBXBuildFile; fileRef = 172113B62DF1A200006189C2 /* FTRemoteConfigManager.h */; };
-		172113BA2DF1A200006189C2 /* FTRemoteConfigManager.m in Sources */ = {isa = PBXBuildFile; fileRef = 172113B72DF1A200006189C2 /* FTRemoteConfigManager.m */; };
-		172113BB2DF1A200006189C2 /* FTRemoteConfigManager.h in Headers */ = {isa = PBXBuildFile; fileRef = 172113B62DF1A200006189C2 /* FTRemoteConfigManager.h */; };
 		172113BC2DF1A200006189C2 /* FTRemoteConfigManager.m in Sources */ = {isa = PBXBuildFile; fileRef = 172113B72DF1A200006189C2 /* FTRemoteConfigManager.m */; };
 		172113BD2DF1A200006189C2 /* FTRemoteConfigManager.h in Headers */ = {isa = PBXBuildFile; fileRef = 172113B62DF1A200006189C2 /* FTRemoteConfigManager.h */; };
-		172113C02DF1B476006189C2 /* FTRemoteConfigurationRequest.m in Sources */ = {isa = PBXBuildFile; fileRef = 172113BF2DF1B476006189C2 /* FTRemoteConfigurationRequest.m */; };
-		172113C12DF1B476006189C2 /* FTRemoteConfigurationRequest.h in Headers */ = {isa = PBXBuildFile; fileRef = 172113BE2DF1B476006189C2 /* FTRemoteConfigurationRequest.h */; };
 		172113C22DF1B476006189C2 /* FTRemoteConfigurationRequest.m in Sources */ = {isa = PBXBuildFile; fileRef = 172113BF2DF1B476006189C2 /* FTRemoteConfigurationRequest.m */; };
 		172113C32DF1B476006189C2 /* FTRemoteConfigurationRequest.h in Headers */ = {isa = PBXBuildFile; fileRef = 172113BE2DF1B476006189C2 /* FTRemoteConfigurationRequest.h */; };
 		172113C42DF1B476006189C2 /* FTRemoteConfigurationRequest.m in Sources */ = {isa = PBXBuildFile; fileRef = 172113BF2DF1B476006189C2 /* FTRemoteConfigurationRequest.m */; };
@@ -47,12 +43,12 @@
 		172113C72DF1BB5C006189C2 /* FTRemoteConfigurationProtocol.h in Headers */ = {isa = PBXBuildFile; fileRef = 172113C62DF1BB5C006189C2 /* FTRemoteConfigurationProtocol.h */; };
 		172113C82DF1BB5C006189C2 /* FTRemoteConfigurationProtocol.h in Headers */ = {isa = PBXBuildFile; fileRef = 172113C62DF1BB5C006189C2 /* FTRemoteConfigurationProtocol.h */; };
 		172113C92DF1BB5C006189C2 /* FTRemoteConfigurationProtocol.h in Headers */ = {isa = PBXBuildFile; fileRef = 172113C62DF1BB5C006189C2 /* FTRemoteConfigurationProtocol.h */; };
-		172B100F2E2F8FEB00753766 /* FTRumConfig.m in Sources */ = {isa = PBXBuildFile; fileRef = 172B100E2E2F8FEA00753766 /* FTRumConfig.m */; };
+		172307802F3C84150029A5C6 /* FTExtensionManager.h in Headers */ = {isa = PBXBuildFile; fileRef = 17E4CC4C29CD42EB005C2D99 /* FTExtensionManager.h */; settings = {ATTRIBUTES = (Public, ); }; };
+		172307812F3C842C0029A5C6 /* FTExtensionManager.m in Sources */ = {isa = PBXBuildFile; fileRef = 17E4CC4829CD42EB005C2D99 /* FTExtensionManager.m */; };
+		172307822F3C84320029A5C6 /* FTExtensionConfig.h in Headers */ = {isa = PBXBuildFile; fileRef = 17E4CC4B29CD42EB005C2D99 /* FTExtensionConfig.h */; settings = {ATTRIBUTES = (Public, ); }; };
+		172307832F3C843C0029A5C6 /* FTExtensionConfig.m in Sources */ = {isa = PBXBuildFile; fileRef = 17E4CC4929CD42EB005C2D99 /* FTExtensionConfig.m */; };
 		172B10112E2F8FEB00753766 /* FTRumConfig.m in Sources */ = {isa = PBXBuildFile; fileRef = 172B100E2E2F8FEA00753766 /* FTRumConfig.m */; };
 		172B10182E308B6500753766 /* FTRUMView.m in Sources */ = {isa = PBXBuildFile; fileRef = 172B10172E308B6500753766 /* FTRUMView.m */; };
-		172B101A2E308B6500753766 /* FTRUMView.m in Sources */ = {isa = PBXBuildFile; fileRef = 172B10172E308B6500753766 /* FTRUMView.m */; };
-		172B10612E3219F500753766 /* FTDateUtil.m in Sources */ = {isa = PBXBuildFile; fileRef = 172B10602E3219F500753766 /* FTDateUtil.m */; };
-		172B10622E3219F500753766 /* FTDateUtil.h in Headers */ = {isa = PBXBuildFile; fileRef = 172B105F2E3219F500753766 /* FTDateUtil.h */; };
 		172B10632E3219F500753766 /* FTDateUtil.h in Headers */ = {isa = PBXBuildFile; fileRef = 172B105F2E3219F500753766 /* FTDateUtil.h */; };
 		172B10642E3219F500753766 /* FTDateUtil.m in Sources */ = {isa = PBXBuildFile; fileRef = 172B10602E3219F500753766 /* FTDateUtil.m */; };
 		172B10652E3219F500753766 /* FTDateUtil.h in Headers */ = {isa = PBXBuildFile; fileRef = 172B105F2E3219F500753766 /* FTDateUtil.h */; };
@@ -61,23 +57,17 @@
 		172B10682E3219F500753766 /* FTDateUtil.m in Sources */ = {isa = PBXBuildFile; fileRef = 172B10602E3219F500753766 /* FTDateUtil.m */; };
 		172B107A2E339F0600753766 /* FTGlobalRumManager.m in Sources */ = {isa = PBXBuildFile; fileRef = 172B10792E339F0600753766 /* FTGlobalRumManager.m */; };
 		172B107B2E339F0600753766 /* FTGlobalRumManager.h in Headers */ = {isa = PBXBuildFile; fileRef = 172B10782E339F0600753766 /* FTGlobalRumManager.h */; };
-		172B107C2E339F0600753766 /* FTGlobalRumManager.m in Sources */ = {isa = PBXBuildFile; fileRef = 172B10792E339F0600753766 /* FTGlobalRumManager.m */; };
-		172B107D2E339F0600753766 /* FTGlobalRumManager.h in Headers */ = {isa = PBXBuildFile; fileRef = 172B10782E339F0600753766 /* FTGlobalRumManager.h */; };
 		172B10E52E377B2600753766 /* FTRUMManager.h in Headers */ = {isa = PBXBuildFile; fileRef = 172B10E42E377B2600753766 /* FTRUMManager.h */; };
 		172B10E62E377B2600753766 /* FTRUMManager.h in Headers */ = {isa = PBXBuildFile; fileRef = 172B10E42E377B2600753766 /* FTRUMManager.h */; };
 		172B10E72E377B2600753766 /* FTRUMManager.h in Headers */ = {isa = PBXBuildFile; fileRef = 172B10E42E377B2600753766 /* FTRUMManager.h */; settings = {ATTRIBUTES = (Public, ); }; };
-		172B10E82E377B2600753766 /* FTRUMManager.h in Headers */ = {isa = PBXBuildFile; fileRef = 172B10E42E377B2600753766 /* FTRUMManager.h */; };
 		172B10EA2E377B3700753766 /* FTRUMDependencies.h in Headers */ = {isa = PBXBuildFile; fileRef = 172B10E92E377B3700753766 /* FTRUMDependencies.h */; };
 		172B10EB2E377B3700753766 /* FTRUMDependencies.h in Headers */ = {isa = PBXBuildFile; fileRef = 172B10E92E377B3700753766 /* FTRUMDependencies.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		172B10EC2E377B3700753766 /* FTRUMDependencies.h in Headers */ = {isa = PBXBuildFile; fileRef = 172B10E92E377B3700753766 /* FTRUMDependencies.h */; };
-		172B10ED2E377B3700753766 /* FTRUMDependencies.h in Headers */ = {isa = PBXBuildFile; fileRef = 172B10E92E377B3700753766 /* FTRUMDependencies.h */; };
 		172B10F42E377BA100753766 /* FTFatalErrorContext.h in Headers */ = {isa = PBXBuildFile; fileRef = 172B10F32E377BA100753766 /* FTFatalErrorContext.h */; };
 		172B10F52E377BA100753766 /* FTFatalErrorContext.h in Headers */ = {isa = PBXBuildFile; fileRef = 172B10F32E377BA100753766 /* FTFatalErrorContext.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		172B10F62E377BA100753766 /* FTFatalErrorContext.h in Headers */ = {isa = PBXBuildFile; fileRef = 172B10F32E377BA100753766 /* FTFatalErrorContext.h */; };
-		172B10F72E377BA100753766 /* FTFatalErrorContext.h in Headers */ = {isa = PBXBuildFile; fileRef = 172B10F32E377BA100753766 /* FTFatalErrorContext.h */; };
 		172B11032E377C0800753766 /* FTRUMMonitor.h in Headers */ = {isa = PBXBuildFile; fileRef = 172B11022E377C0800753766 /* FTRUMMonitor.h */; };
 		172B11042E377C0800753766 /* FTRUMMonitor.h in Headers */ = {isa = PBXBuildFile; fileRef = 172B11022E377C0800753766 /* FTRUMMonitor.h */; };
-		172B11052E377C0800753766 /* FTRUMMonitor.h in Headers */ = {isa = PBXBuildFile; fileRef = 172B11022E377C0800753766 /* FTRUMMonitor.h */; };
 		172B11062E377C0800753766 /* FTRUMMonitor.h in Headers */ = {isa = PBXBuildFile; fileRef = 172B11022E377C0800753766 /* FTRUMMonitor.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		1733605D2C05FFD600A50C02 /* FTDBDataCachePolicy.h in Headers */ = {isa = PBXBuildFile; fileRef = 1733605B2C05FFD600A50C02 /* FTDBDataCachePolicy.h */; };
 		1733605E2C05FFD600A50C02 /* FTDBDataCachePolicy.h in Headers */ = {isa = PBXBuildFile; fileRef = 1733605B2C05FFD600A50C02 /* FTDBDataCachePolicy.h */; };
@@ -107,8 +97,6 @@
 		1745E3222EF900BB00C8FA9B /* FTRUMContext.h in Headers */ = {isa = PBXBuildFile; fileRef = 1745E31D2EF900BB00C8FA9B /* FTRUMContext.h */; };
 		1745E3232EF900BB00C8FA9B /* FTRUMContext.h in Headers */ = {isa = PBXBuildFile; fileRef = 1745E31D2EF900BB00C8FA9B /* FTRUMContext.h */; };
 		1745E3242EF900BB00C8FA9B /* FTRUMContext.m in Sources */ = {isa = PBXBuildFile; fileRef = 1745E31E2EF900BB00C8FA9B /* FTRUMContext.m */; };
-		1745E3252EF900BB00C8FA9B /* FTRUMContext.m in Sources */ = {isa = PBXBuildFile; fileRef = 1745E31E2EF900BB00C8FA9B /* FTRUMContext.m */; };
-		1745E3262EF900BB00C8FA9B /* FTRUMContext.h in Headers */ = {isa = PBXBuildFile; fileRef = 1745E31D2EF900BB00C8FA9B /* FTRUMContext.h */; };
 		174BC8792BFC9F8A00478EE1 /* NSDictionary+FTCopyProperties.h in Headers */ = {isa = PBXBuildFile; fileRef = 174BC8772BFC9F8A00478EE1 /* NSDictionary+FTCopyProperties.h */; };
 		174BC87A2BFC9F8A00478EE1 /* NSDictionary+FTCopyProperties.m in Sources */ = {isa = PBXBuildFile; fileRef = 174BC8782BFC9F8A00478EE1 /* NSDictionary+FTCopyProperties.m */; };
 		174BC87B2BFC9F8A00478EE1 /* NSDictionary+FTCopyProperties.m in Sources */ = {isa = PBXBuildFile; fileRef = 174BC8782BFC9F8A00478EE1 /* NSDictionary+FTCopyProperties.m */; };
@@ -232,37 +220,6 @@
 		176868982ED47AA600C76F0D /* FTCrashMemory.c in Sources */ = {isa = PBXBuildFile; fileRef = 176868512ED47AA600C76F0D /* FTCrashMemory.c */; };
 		176868992ED47AA600C76F0D /* FTCrashCPU_arm.c in Sources */ = {isa = PBXBuildFile; fileRef = 176868452ED47AA600C76F0D /* FTCrashCPU_arm.c */; };
 		1768689C2ED47AA600C76F0D /* FTCrashCPU_x86_32.c in Sources */ = {isa = PBXBuildFile; fileRef = 176868472ED47AA600C76F0D /* FTCrashCPU_x86_32.c */; };
-		1768689F2ED47AA600C76F0D /* FTCrashStackCursor_MachineContext.c in Sources */ = {isa = PBXBuildFile; fileRef = 176868612ED47AA600C76F0D /* FTCrashStackCursor_MachineContext.c */; };
-		176868A12ED47AA600C76F0D /* FTCrashUUIDConversion.c in Sources */ = {isa = PBXBuildFile; fileRef = 176868562ED47AA600C76F0D /* FTCrashUUIDConversion.c */; };
-		176868A22ED47AA600C76F0D /* FTCrashSymbolicator.c in Sources */ = {isa = PBXBuildFile; fileRef = 176868692ED47AA600C76F0D /* FTCrashSymbolicator.c */; };
-		176868A32ED47AA600C76F0D /* FTCrashStackCursor_SelfThread.c in Sources */ = {isa = PBXBuildFile; fileRef = 176868632ED47AA600C76F0D /* FTCrashStackCursor_SelfThread.c */; };
-		176868A42ED47AA600C76F0D /* FTCrashCPU.c in Sources */ = {isa = PBXBuildFile; fileRef = 176868432ED47AA600C76F0D /* FTCrashCPU.c */; };
-		176868A52ED47AA600C76F0D /* FTCrashStackCursor.c in Sources */ = {isa = PBXBuildFile; fileRef = 1768685D2ED47AA600C76F0D /* FTCrashStackCursor.c */; };
-		176868A62ED47AA600C76F0D /* FTCrashCPU_x86_64.c in Sources */ = {isa = PBXBuildFile; fileRef = 176868482ED47AA600C76F0D /* FTCrashCPU_x86_64.c */; };
-		176868A72ED47AA600C76F0D /* FTCrashDynamicLinker.c in Sources */ = {isa = PBXBuildFile; fileRef = 1768684C2ED47AA600C76F0D /* FTCrashDynamicLinker.c */; };
-		176868A92ED47AA600C76F0D /* FTCrashBinaryImageCache.c in Sources */ = {isa = PBXBuildFile; fileRef = 176868412ED47AA600C76F0D /* FTCrashBinaryImageCache.c */; };
-		176868AA2ED47AA600C76F0D /* FTCrashCPU_arm64.c in Sources */ = {isa = PBXBuildFile; fileRef = 176868462ED47AA600C76F0D /* FTCrashCPU_arm64.c */; };
-		176868AB2ED47AA600C76F0D /* FTCrashStackCursor_Backtrace.c in Sources */ = {isa = PBXBuildFile; fileRef = 1768685F2ED47AA600C76F0D /* FTCrashStackCursor_Backtrace.c */; };
-		176868AE2ED47AA600C76F0D /* FTCrashMachineContext.c in Sources */ = {isa = PBXBuildFile; fileRef = 1768684E2ED47AA600C76F0D /* FTCrashMachineContext.c */; };
-		176868AF2ED47AA600C76F0D /* FTCrashThread.c in Sources */ = {isa = PBXBuildFile; fileRef = 176868542ED47AA600C76F0D /* FTCrashThread.c */; };
-		176868B02ED47AA600C76F0D /* FTCrashMemory.c in Sources */ = {isa = PBXBuildFile; fileRef = 176868512ED47AA600C76F0D /* FTCrashMemory.c */; };
-		176868B12ED47AA600C76F0D /* FTCrashCPU_arm.c in Sources */ = {isa = PBXBuildFile; fileRef = 176868452ED47AA600C76F0D /* FTCrashCPU_arm.c */; };
-		176868B42ED47AA600C76F0D /* FTCrashCPU_x86_32.c in Sources */ = {isa = PBXBuildFile; fileRef = 176868472ED47AA600C76F0D /* FTCrashCPU_x86_32.c */; };
-		176868B72ED47AA600C76F0D /* FTCrashStackCursor_SelfThread.h in Headers */ = {isa = PBXBuildFile; fileRef = 176868622ED47AA600C76F0D /* FTCrashStackCursor_SelfThread.h */; };
-		176868B82ED47AA600C76F0D /* FTCrashMachineContext.h in Headers */ = {isa = PBXBuildFile; fileRef = 1768684D2ED47AA600C76F0D /* FTCrashMachineContext.h */; };
-		176868B92ED47AA600C76F0D /* FTCrashMachineContext_Apple.h in Headers */ = {isa = PBXBuildFile; fileRef = 1768684F2ED47AA600C76F0D /* FTCrashMachineContext_Apple.h */; };
-		176868BA2ED47AA600C76F0D /* FTCrashThread.h in Headers */ = {isa = PBXBuildFile; fileRef = 176868532ED47AA600C76F0D /* FTCrashThread.h */; };
-		176868BC2ED47AA600C76F0D /* FTCrashStackCursor.h in Headers */ = {isa = PBXBuildFile; fileRef = 1768685C2ED47AA600C76F0D /* FTCrashStackCursor.h */; };
-		176868BD2ED47AA600C76F0D /* FTCrashUUIDConversion.h in Headers */ = {isa = PBXBuildFile; fileRef = 176868552ED47AA600C76F0D /* FTCrashUUIDConversion.h */; };
-		176868C02ED47AA600C76F0D /* FTCrashStackCursor_MachineContext.h in Headers */ = {isa = PBXBuildFile; fileRef = 176868602ED47AA600C76F0D /* FTCrashStackCursor_MachineContext.h */; };
-		176868C22ED47AA600C76F0D /* FTCrashPlatformSpecificDefines.h in Headers */ = {isa = PBXBuildFile; fileRef = 176868522ED47AA600C76F0D /* FTCrashPlatformSpecificDefines.h */; };
-		176868C42ED47AA600C76F0D /* FTCrashDynamicLinker.h in Headers */ = {isa = PBXBuildFile; fileRef = 1768684B2ED47AA600C76F0D /* FTCrashDynamicLinker.h */; };
-		176868C52ED47AA600C76F0D /* FTCrashCPU_Apple.h in Headers */ = {isa = PBXBuildFile; fileRef = 176868442ED47AA600C76F0D /* FTCrashCPU_Apple.h */; };
-		176868C72ED47AA600C76F0D /* FTCrashBinaryImageCache.h in Headers */ = {isa = PBXBuildFile; fileRef = 176868402ED47AA600C76F0D /* FTCrashBinaryImageCache.h */; };
-		176868C82ED47AA600C76F0D /* FTCrashCPU.h in Headers */ = {isa = PBXBuildFile; fileRef = 176868422ED47AA600C76F0D /* FTCrashCPU.h */; };
-		176868C92ED47AA600C76F0D /* FTCrashStackCursor_Backtrace.h in Headers */ = {isa = PBXBuildFile; fileRef = 1768685E2ED47AA600C76F0D /* FTCrashStackCursor_Backtrace.h */; };
-		176868CD2ED47AA600C76F0D /* FTCrashSymbolicator.h in Headers */ = {isa = PBXBuildFile; fileRef = 176868682ED47AA600C76F0D /* FTCrashSymbolicator.h */; };
-		176868CE2ED47AA600C76F0D /* FTCrashMemory.h in Headers */ = {isa = PBXBuildFile; fileRef = 176868502ED47AA600C76F0D /* FTCrashMemory.h */; };
 		176868CF2ED47AA600C76F0D /* FTCrashStackCursor_MachineContext.c in Sources */ = {isa = PBXBuildFile; fileRef = 176868612ED47AA600C76F0D /* FTCrashStackCursor_MachineContext.c */; };
 		176868D12ED47AA600C76F0D /* FTCrashUUIDConversion.c in Sources */ = {isa = PBXBuildFile; fileRef = 176868562ED47AA600C76F0D /* FTCrashUUIDConversion.c */; };
 		176868D22ED47AA600C76F0D /* FTCrashSymbolicator.c in Sources */ = {isa = PBXBuildFile; fileRef = 176868692ED47AA600C76F0D /* FTCrashSymbolicator.c */; };
@@ -328,27 +285,20 @@
 		176CE1FF2ED57F6C00E9E92B /* FTCrashMonitorAPI.h in Headers */ = {isa = PBXBuildFile; fileRef = 176CE1FE2ED57F6C00E9E92B /* FTCrashMonitorAPI.h */; };
 		176CE2002ED57F6C00E9E92B /* FTCrashMonitorAPI.h in Headers */ = {isa = PBXBuildFile; fileRef = 176CE1FE2ED57F6C00E9E92B /* FTCrashMonitorAPI.h */; };
 		176CE2012ED57F6C00E9E92B /* FTCrashMonitorAPI.h in Headers */ = {isa = PBXBuildFile; fileRef = 176CE1FE2ED57F6C00E9E92B /* FTCrashMonitorAPI.h */; };
-		176CE2022ED57F6C00E9E92B /* FTCrashMonitorAPI.h in Headers */ = {isa = PBXBuildFile; fileRef = 176CE1FE2ED57F6C00E9E92B /* FTCrashMonitorAPI.h */; };
 		176CE21A2ED586DF00E9E92B /* FTCrashMonitor_AppState.h in Headers */ = {isa = PBXBuildFile; fileRef = 176CE2182ED586DF00E9E92B /* FTCrashMonitor_AppState.h */; };
 		176CE21B2ED586DF00E9E92B /* FTCrashMonitor_AppState.c in Sources */ = {isa = PBXBuildFile; fileRef = 176CE2192ED586DF00E9E92B /* FTCrashMonitor_AppState.c */; };
 		176CE21C2ED586DF00E9E92B /* FTCrashMonitor_AppState.h in Headers */ = {isa = PBXBuildFile; fileRef = 176CE2182ED586DF00E9E92B /* FTCrashMonitor_AppState.h */; };
 		176CE21D2ED586DF00E9E92B /* FTCrashMonitor_AppState.c in Sources */ = {isa = PBXBuildFile; fileRef = 176CE2192ED586DF00E9E92B /* FTCrashMonitor_AppState.c */; };
 		176CE21E2ED586DF00E9E92B /* FTCrashMonitor_AppState.h in Headers */ = {isa = PBXBuildFile; fileRef = 176CE2182ED586DF00E9E92B /* FTCrashMonitor_AppState.h */; };
 		176CE21F2ED586DF00E9E92B /* FTCrashMonitor_AppState.c in Sources */ = {isa = PBXBuildFile; fileRef = 176CE2192ED586DF00E9E92B /* FTCrashMonitor_AppState.c */; };
-		176CE2202ED586DF00E9E92B /* FTCrashMonitor_AppState.h in Headers */ = {isa = PBXBuildFile; fileRef = 176CE2182ED586DF00E9E92B /* FTCrashMonitor_AppState.h */; };
-		176CE2212ED586DF00E9E92B /* FTCrashMonitor_AppState.c in Sources */ = {isa = PBXBuildFile; fileRef = 176CE2192ED586DF00E9E92B /* FTCrashMonitor_AppState.c */; };
 		176CE2242ED6CC0B00E9E92B /* FTCrashJSONCodec.c in Sources */ = {isa = PBXBuildFile; fileRef = 176CE2232ED6CC0B00E9E92B /* FTCrashJSONCodec.c */; };
 		176CE2252ED6CC0B00E9E92B /* FTCrashJSONCodec.h in Headers */ = {isa = PBXBuildFile; fileRef = 176CE2222ED6CC0B00E9E92B /* FTCrashJSONCodec.h */; };
 		176CE2262ED6CC0B00E9E92B /* FTCrashJSONCodec.h in Headers */ = {isa = PBXBuildFile; fileRef = 176CE2222ED6CC0B00E9E92B /* FTCrashJSONCodec.h */; };
 		176CE2272ED6CC0B00E9E92B /* FTCrashJSONCodec.c in Sources */ = {isa = PBXBuildFile; fileRef = 176CE2232ED6CC0B00E9E92B /* FTCrashJSONCodec.c */; };
-		176CE2282ED6CC0B00E9E92B /* FTCrashJSONCodec.c in Sources */ = {isa = PBXBuildFile; fileRef = 176CE2232ED6CC0B00E9E92B /* FTCrashJSONCodec.c */; };
-		176CE2292ED6CC0B00E9E92B /* FTCrashJSONCodec.h in Headers */ = {isa = PBXBuildFile; fileRef = 176CE2222ED6CC0B00E9E92B /* FTCrashJSONCodec.h */; };
 		176CE22A2ED6CC0B00E9E92B /* FTCrashJSONCodec.h in Headers */ = {isa = PBXBuildFile; fileRef = 176CE2222ED6CC0B00E9E92B /* FTCrashJSONCodec.h */; };
 		176CE22B2ED6CC0B00E9E92B /* FTCrashJSONCodec.c in Sources */ = {isa = PBXBuildFile; fileRef = 176CE2232ED6CC0B00E9E92B /* FTCrashJSONCodec.c */; };
 		176CE22E2ED6CFA200E9E92B /* FTCrashFileUtils.c in Sources */ = {isa = PBXBuildFile; fileRef = 176CE22D2ED6CFA200E9E92B /* FTCrashFileUtils.c */; };
 		176CE22F2ED6CFA200E9E92B /* FTCrashFileUtils.h in Headers */ = {isa = PBXBuildFile; fileRef = 176CE22C2ED6CFA200E9E92B /* FTCrashFileUtils.h */; };
-		176CE2302ED6CFA200E9E92B /* FTCrashFileUtils.c in Sources */ = {isa = PBXBuildFile; fileRef = 176CE22D2ED6CFA200E9E92B /* FTCrashFileUtils.c */; };
-		176CE2312ED6CFA200E9E92B /* FTCrashFileUtils.h in Headers */ = {isa = PBXBuildFile; fileRef = 176CE22C2ED6CFA200E9E92B /* FTCrashFileUtils.h */; };
 		176CE2322ED6CFA200E9E92B /* FTCrashFileUtils.h in Headers */ = {isa = PBXBuildFile; fileRef = 176CE22C2ED6CFA200E9E92B /* FTCrashFileUtils.h */; };
 		176CE2332ED6CFA200E9E92B /* FTCrashFileUtils.c in Sources */ = {isa = PBXBuildFile; fileRef = 176CE22D2ED6CFA200E9E92B /* FTCrashFileUtils.c */; };
 		176CE2342ED6CFA200E9E92B /* FTCrashFileUtils.c in Sources */ = {isa = PBXBuildFile; fileRef = 176CE22D2ED6CFA200E9E92B /* FTCrashFileUtils.c */; };
@@ -357,24 +307,17 @@
 		176CE2392ED6DC3000E9E92B /* FTCrashMonitor_System.m in Sources */ = {isa = PBXBuildFile; fileRef = 176CE2372ED6DC3000E9E92B /* FTCrashMonitor_System.m */; };
 		176CE23A2ED6DC3000E9E92B /* FTCrashMonitor_System.h in Headers */ = {isa = PBXBuildFile; fileRef = 176CE2362ED6DC3000E9E92B /* FTCrashMonitor_System.h */; };
 		176CE23B2ED6DC3000E9E92B /* FTCrashMonitor_System.m in Sources */ = {isa = PBXBuildFile; fileRef = 176CE2372ED6DC3000E9E92B /* FTCrashMonitor_System.m */; };
-		176CE23C2ED6DC3000E9E92B /* FTCrashMonitor_System.m in Sources */ = {isa = PBXBuildFile; fileRef = 176CE2372ED6DC3000E9E92B /* FTCrashMonitor_System.m */; };
-		176CE23D2ED6DC3000E9E92B /* FTCrashMonitor_System.h in Headers */ = {isa = PBXBuildFile; fileRef = 176CE2362ED6DC3000E9E92B /* FTCrashMonitor_System.h */; };
 		176CE23E2ED6DC3000E9E92B /* FTCrashMonitor_System.m in Sources */ = {isa = PBXBuildFile; fileRef = 176CE2372ED6DC3000E9E92B /* FTCrashMonitor_System.m */; };
 		176CE23F2ED6DC3000E9E92B /* FTCrashMonitor_System.h in Headers */ = {isa = PBXBuildFile; fileRef = 176CE2362ED6DC3000E9E92B /* FTCrashMonitor_System.h */; };
 		176CE2422ED6DF3900E9E92B /* FTCrashSysCtl.c in Sources */ = {isa = PBXBuildFile; fileRef = 176CE2412ED6DF3900E9E92B /* FTCrashSysCtl.c */; };
 		176CE2432ED6DF3900E9E92B /* FTCrashSysCtl.h in Headers */ = {isa = PBXBuildFile; fileRef = 176CE2402ED6DF3900E9E92B /* FTCrashSysCtl.h */; };
 		176CE2442ED6DF3900E9E92B /* FTCrashSysCtl.h in Headers */ = {isa = PBXBuildFile; fileRef = 176CE2402ED6DF3900E9E92B /* FTCrashSysCtl.h */; };
 		176CE2452ED6DF3900E9E92B /* FTCrashSysCtl.c in Sources */ = {isa = PBXBuildFile; fileRef = 176CE2412ED6DF3900E9E92B /* FTCrashSysCtl.c */; };
-		176CE2462ED6DF3900E9E92B /* FTCrashSysCtl.c in Sources */ = {isa = PBXBuildFile; fileRef = 176CE2412ED6DF3900E9E92B /* FTCrashSysCtl.c */; };
-		176CE2472ED6DF3900E9E92B /* FTCrashSysCtl.h in Headers */ = {isa = PBXBuildFile; fileRef = 176CE2402ED6DF3900E9E92B /* FTCrashSysCtl.h */; };
 		176CE2482ED6DF3900E9E92B /* FTCrashSysCtl.c in Sources */ = {isa = PBXBuildFile; fileRef = 176CE2412ED6DF3900E9E92B /* FTCrashSysCtl.c */; };
 		176CE2492ED6DF3900E9E92B /* FTCrashSysCtl.h in Headers */ = {isa = PBXBuildFile; fileRef = 176CE2402ED6DF3900E9E92B /* FTCrashSysCtl.h */; };
 		176CE24B2ED6E30900E9E92B /* FTCrashMonitorContext.h in Headers */ = {isa = PBXBuildFile; fileRef = 176CE24A2ED6E30900E9E92B /* FTCrashMonitorContext.h */; };
-		176CE24C2ED6E30900E9E92B /* FTCrashMonitorContext.h in Headers */ = {isa = PBXBuildFile; fileRef = 176CE24A2ED6E30900E9E92B /* FTCrashMonitorContext.h */; };
 		176CE24D2ED6E30900E9E92B /* FTCrashMonitorContext.h in Headers */ = {isa = PBXBuildFile; fileRef = 176CE24A2ED6E30900E9E92B /* FTCrashMonitorContext.h */; };
 		176CE24E2ED6E30900E9E92B /* FTCrashMonitorContext.h in Headers */ = {isa = PBXBuildFile; fileRef = 176CE24A2ED6E30900E9E92B /* FTCrashMonitorContext.h */; };
-		176CE2512ED6E67100E9E92B /* FTCrashDate.c in Sources */ = {isa = PBXBuildFile; fileRef = 176CE2502ED6E67100E9E92B /* FTCrashDate.c */; };
-		176CE2522ED6E67100E9E92B /* FTCrashDate.h in Headers */ = {isa = PBXBuildFile; fileRef = 176CE24F2ED6E67100E9E92B /* FTCrashDate.h */; };
 		176CE2532ED6E67100E9E92B /* FTCrashDate.c in Sources */ = {isa = PBXBuildFile; fileRef = 176CE2502ED6E67100E9E92B /* FTCrashDate.c */; };
 		176CE2542ED6E67100E9E92B /* FTCrashDate.h in Headers */ = {isa = PBXBuildFile; fileRef = 176CE24F2ED6E67100E9E92B /* FTCrashDate.h */; };
 		176CE2552ED6E67100E9E92B /* FTCrashDate.c in Sources */ = {isa = PBXBuildFile; fileRef = 176CE2502ED6E67100E9E92B /* FTCrashDate.c */; };
@@ -387,25 +330,18 @@
 		176CE25F2ED6F6F900E9E92B /* FTLongTaskManager.m in Sources */ = {isa = PBXBuildFile; fileRef = 176CE25B2ED6F6F900E9E92B /* FTLongTaskManager.m */; };
 		176CE2602ED6F6F900E9E92B /* FTLongTaskDetector.m in Sources */ = {isa = PBXBuildFile; fileRef = 176CE25A2ED6F6F900E9E92B /* FTLongTaskDetector.m */; };
 		176CE2612ED6F6F900E9E92B /* FTLongTaskManager.m in Sources */ = {isa = PBXBuildFile; fileRef = 176CE25B2ED6F6F900E9E92B /* FTLongTaskManager.m */; };
-		176CE2622ED6F6F900E9E92B /* FTLongTaskDetector.m in Sources */ = {isa = PBXBuildFile; fileRef = 176CE25A2ED6F6F900E9E92B /* FTLongTaskDetector.m */; };
-		176CE2632ED6F6F900E9E92B /* FTLongTaskManager.m in Sources */ = {isa = PBXBuildFile; fileRef = 176CE25B2ED6F6F900E9E92B /* FTLongTaskManager.m */; };
 		176CE26B2ED8591F00E9E92B /* FTCrashMonitorRegistry.c in Sources */ = {isa = PBXBuildFile; fileRef = 176CE26A2ED8591F00E9E92B /* FTCrashMonitorRegistry.c */; };
 		176CE26C2ED8591F00E9E92B /* FTCrashMonitorRegistry.h in Headers */ = {isa = PBXBuildFile; fileRef = 176CE2692ED8591F00E9E92B /* FTCrashMonitorRegistry.h */; };
 		176CE26D2ED8591F00E9E92B /* FTCrashMonitorRegistry.h in Headers */ = {isa = PBXBuildFile; fileRef = 176CE2692ED8591F00E9E92B /* FTCrashMonitorRegistry.h */; };
 		176CE26E2ED8591F00E9E92B /* FTCrashMonitorRegistry.c in Sources */ = {isa = PBXBuildFile; fileRef = 176CE26A2ED8591F00E9E92B /* FTCrashMonitorRegistry.c */; };
 		176CE26F2ED8591F00E9E92B /* FTCrashMonitorRegistry.c in Sources */ = {isa = PBXBuildFile; fileRef = 176CE26A2ED8591F00E9E92B /* FTCrashMonitorRegistry.c */; };
 		176CE2702ED8591F00E9E92B /* FTCrashMonitorRegistry.h in Headers */ = {isa = PBXBuildFile; fileRef = 176CE2692ED8591F00E9E92B /* FTCrashMonitorRegistry.h */; };
-		176CE2712ED8591F00E9E92B /* FTCrashMonitorRegistry.h in Headers */ = {isa = PBXBuildFile; fileRef = 176CE2692ED8591F00E9E92B /* FTCrashMonitorRegistry.h */; };
-		176CE2722ED8591F00E9E92B /* FTCrashMonitorRegistry.c in Sources */ = {isa = PBXBuildFile; fileRef = 176CE26A2ED8591F00E9E92B /* FTCrashMonitorRegistry.c */; };
 		176CE2762ED862A400E9E92B /* FTCrashExceptionHandlingRequirements.h in Headers */ = {isa = PBXBuildFile; fileRef = 176CE2732ED862A400E9E92B /* FTCrashExceptionHandlingRequirements.h */; };
-		176CE2772ED862A400E9E92B /* FTCrashExceptionHandlingRequirements.h in Headers */ = {isa = PBXBuildFile; fileRef = 176CE2732ED862A400E9E92B /* FTCrashExceptionHandlingRequirements.h */; };
 		176CE27A2ED862A400E9E92B /* FTCrashExceptionHandlingRequirements.h in Headers */ = {isa = PBXBuildFile; fileRef = 176CE2732ED862A400E9E92B /* FTCrashExceptionHandlingRequirements.h */; };
 		176CE27C2ED862A400E9E92B /* FTCrashExceptionHandlingRequirements.h in Headers */ = {isa = PBXBuildFile; fileRef = 176CE2732ED862A400E9E92B /* FTCrashExceptionHandlingRequirements.h */; };
 		176CE27F2ED8667E00E9E92B /* FTCrashMonitorAPI.c in Sources */ = {isa = PBXBuildFile; fileRef = 176CE27E2ED8667E00E9E92B /* FTCrashMonitorAPI.c */; };
 		176CE2802ED8667E00E9E92B /* FTCrashMonitorAPI.c in Sources */ = {isa = PBXBuildFile; fileRef = 176CE27E2ED8667E00E9E92B /* FTCrashMonitorAPI.c */; };
-		176CE2812ED8667E00E9E92B /* FTCrashMonitorAPI.c in Sources */ = {isa = PBXBuildFile; fileRef = 176CE27E2ED8667E00E9E92B /* FTCrashMonitorAPI.c */; };
 		176CE2822ED8667E00E9E92B /* FTCrashMonitorAPI.c in Sources */ = {isa = PBXBuildFile; fileRef = 176CE27E2ED8667E00E9E92B /* FTCrashMonitorAPI.c */; };
-		176CE2842ED869D400E9E92B /* FTCrashMonitorFlag.h in Headers */ = {isa = PBXBuildFile; fileRef = 176CE2832ED869D400E9E92B /* FTCrashMonitorFlag.h */; };
 		176CE2852ED869D400E9E92B /* FTCrashMonitorFlag.h in Headers */ = {isa = PBXBuildFile; fileRef = 176CE2832ED869D400E9E92B /* FTCrashMonitorFlag.h */; };
 		176CE2862ED869D400E9E92B /* FTCrashMonitorFlag.h in Headers */ = {isa = PBXBuildFile; fileRef = 176CE2832ED869D400E9E92B /* FTCrashMonitorFlag.h */; };
 		176CE2872ED869D400E9E92B /* FTCrashMonitorFlag.h in Headers */ = {isa = PBXBuildFile; fileRef = 176CE2832ED869D400E9E92B /* FTCrashMonitorFlag.h */; };
@@ -418,12 +354,6 @@
 		17717B332F0E7E69002158F6 /* FTRemoteConfigModel.h in Headers */ = {isa = PBXBuildFile; fileRef = 17717B302F0E7E69002158F6 /* FTRemoteConfigModel.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		17717B342F0E7E69002158F6 /* FTRemoteConfigModel+Private.h in Headers */ = {isa = PBXBuildFile; fileRef = 17717B322F0E7E69002158F6 /* FTRemoteConfigModel+Private.h */; };
 		17717B352F0E7E69002158F6 /* FTRemoteConfigModel.m in Sources */ = {isa = PBXBuildFile; fileRef = 17717B312F0E7E69002158F6 /* FTRemoteConfigModel.m */; };
-		17717B362F0E7E69002158F6 /* FTRemoteConfigModel.h in Headers */ = {isa = PBXBuildFile; fileRef = 17717B302F0E7E69002158F6 /* FTRemoteConfigModel.h */; };
-		17717B372F0E7E69002158F6 /* FTRemoteConfigModel+Private.h in Headers */ = {isa = PBXBuildFile; fileRef = 17717B322F0E7E69002158F6 /* FTRemoteConfigModel+Private.h */; };
-		17717B382F0E7E69002158F6 /* FTRemoteConfigModel.m in Sources */ = {isa = PBXBuildFile; fileRef = 17717B312F0E7E69002158F6 /* FTRemoteConfigModel.m */; };
-		17717B392F0E7E69002158F6 /* FTRemoteConfigModel.h in Headers */ = {isa = PBXBuildFile; fileRef = 17717B302F0E7E69002158F6 /* FTRemoteConfigModel.h */; settings = {ATTRIBUTES = (Public, ); }; };
-		17717B3A2F0E7E69002158F6 /* FTRemoteConfigModel+Private.h in Headers */ = {isa = PBXBuildFile; fileRef = 17717B322F0E7E69002158F6 /* FTRemoteConfigModel+Private.h */; };
-		17717B3B2F0E7E69002158F6 /* FTRemoteConfigModel.m in Sources */ = {isa = PBXBuildFile; fileRef = 17717B312F0E7E69002158F6 /* FTRemoteConfigModel.m */; };
 		17717B3C2F0E7E69002158F6 /* FTRemoteConfigModel.m in Sources */ = {isa = PBXBuildFile; fileRef = 17717B312F0E7E69002158F6 /* FTRemoteConfigModel.m */; };
 		17717B3D2F0E7E69002158F6 /* FTRemoteConfigModel.h in Headers */ = {isa = PBXBuildFile; fileRef = 17717B302F0E7E69002158F6 /* FTRemoteConfigModel.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		17717B3E2F0E7E69002158F6 /* FTRemoteConfigModel+Private.h in Headers */ = {isa = PBXBuildFile; fileRef = 17717B322F0E7E69002158F6 /* FTRemoteConfigModel+Private.h */; };
@@ -431,50 +361,35 @@
 		17717B422F0E7E71002158F6 /* FTRemoteConfigError.m in Sources */ = {isa = PBXBuildFile; fileRef = 17717B402F0E7E71002158F6 /* FTRemoteConfigError.m */; };
 		17717B432F0E7E71002158F6 /* FTRemoteConfigError.m in Sources */ = {isa = PBXBuildFile; fileRef = 17717B402F0E7E71002158F6 /* FTRemoteConfigError.m */; };
 		17717B442F0E7E71002158F6 /* FTRemoteConfigError.h in Headers */ = {isa = PBXBuildFile; fileRef = 17717B3F2F0E7E71002158F6 /* FTRemoteConfigError.h */; };
-		17717B452F0E7E71002158F6 /* FTRemoteConfigError.h in Headers */ = {isa = PBXBuildFile; fileRef = 17717B3F2F0E7E71002158F6 /* FTRemoteConfigError.h */; };
-		17717B462F0E7E71002158F6 /* FTRemoteConfigError.m in Sources */ = {isa = PBXBuildFile; fileRef = 17717B402F0E7E71002158F6 /* FTRemoteConfigError.m */; };
-		17717B472F0E7E71002158F6 /* FTRemoteConfigError.h in Headers */ = {isa = PBXBuildFile; fileRef = 17717B3F2F0E7E71002158F6 /* FTRemoteConfigError.h */; };
-		17717B482F0E7E71002158F6 /* FTRemoteConfigError.m in Sources */ = {isa = PBXBuildFile; fileRef = 17717B402F0E7E71002158F6 /* FTRemoteConfigError.m */; };
 		17717B4A2F0E7E9A002158F6 /* FTRemoteConfigTypeDefs.h in Headers */ = {isa = PBXBuildFile; fileRef = 17717B492F0E7E9A002158F6 /* FTRemoteConfigTypeDefs.h */; settings = {ATTRIBUTES = (Public, ); }; };
-		17717B4B2F0E7E9A002158F6 /* FTRemoteConfigTypeDefs.h in Headers */ = {isa = PBXBuildFile; fileRef = 17717B492F0E7E9A002158F6 /* FTRemoteConfigTypeDefs.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		17717B4C2F0E7E9A002158F6 /* FTRemoteConfigTypeDefs.h in Headers */ = {isa = PBXBuildFile; fileRef = 17717B492F0E7E9A002158F6 /* FTRemoteConfigTypeDefs.h */; };
 		17717B4D2F0E7E9A002158F6 /* FTRemoteConfigTypeDefs.h in Headers */ = {isa = PBXBuildFile; fileRef = 17717B492F0E7E9A002158F6 /* FTRemoteConfigTypeDefs.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		17717B512F0E7EF3002158F6 /* FTAppLaunchTracker.m in Sources */ = {isa = PBXBuildFile; fileRef = 17717B4F2F0E7EF3002158F6 /* FTAppLaunchTracker.m */; };
 		17717B522F0E7EF3002158F6 /* FTAppLaunchTracker.m in Sources */ = {isa = PBXBuildFile; fileRef = 17717B4F2F0E7EF3002158F6 /* FTAppLaunchTracker.m */; };
 		17717B552F0E7EF3002158F6 /* FTAppLaunchTracker.m in Sources */ = {isa = PBXBuildFile; fileRef = 17717B4F2F0E7EF3002158F6 /* FTAppLaunchTracker.m */; };
-		17717B572F0E7EF3002158F6 /* FTAppLaunchTracker.m in Sources */ = {isa = PBXBuildFile; fileRef = 17717B4F2F0E7EF3002158F6 /* FTAppLaunchTracker.m */; };
 		17717B652F0E8618002158F6 /* FTLongTaskManager.h in Headers */ = {isa = PBXBuildFile; fileRef = 17717B642F0E8618002158F6 /* FTLongTaskManager.h */; };
 		17717B662F0E8618002158F6 /* FTLongTaskDetector.h in Headers */ = {isa = PBXBuildFile; fileRef = 17717B632F0E8618002158F6 /* FTLongTaskDetector.h */; };
 		17717B672F0E8618002158F6 /* FTLongTaskManager.h in Headers */ = {isa = PBXBuildFile; fileRef = 17717B642F0E8618002158F6 /* FTLongTaskManager.h */; };
 		17717B682F0E8618002158F6 /* FTLongTaskDetector.h in Headers */ = {isa = PBXBuildFile; fileRef = 17717B632F0E8618002158F6 /* FTLongTaskDetector.h */; };
-		17717B692F0E8618002158F6 /* FTLongTaskManager.h in Headers */ = {isa = PBXBuildFile; fileRef = 17717B642F0E8618002158F6 /* FTLongTaskManager.h */; };
-		17717B6A2F0E8618002158F6 /* FTLongTaskDetector.h in Headers */ = {isa = PBXBuildFile; fileRef = 17717B632F0E8618002158F6 /* FTLongTaskDetector.h */; };
 		17717B6B2F0E8618002158F6 /* FTLongTaskManager.h in Headers */ = {isa = PBXBuildFile; fileRef = 17717B642F0E8618002158F6 /* FTLongTaskManager.h */; };
 		17717B6C2F0E8618002158F6 /* FTLongTaskDetector.h in Headers */ = {isa = PBXBuildFile; fileRef = 17717B632F0E8618002158F6 /* FTLongTaskDetector.h */; };
 		17717B6F2F0E8B51002158F6 /* FTConfig+RemoteConfig.h in Headers */ = {isa = PBXBuildFile; fileRef = 17717B6D2F0E8B51002158F6 /* FTConfig+RemoteConfig.h */; };
 		17717B702F0E8B51002158F6 /* FTConfig+RemoteConfig.m in Sources */ = {isa = PBXBuildFile; fileRef = 17717B6E2F0E8B51002158F6 /* FTConfig+RemoteConfig.m */; };
-		17717B712F0E8B51002158F6 /* FTConfig+RemoteConfig.h in Headers */ = {isa = PBXBuildFile; fileRef = 17717B6D2F0E8B51002158F6 /* FTConfig+RemoteConfig.h */; };
-		17717B722F0E8B51002158F6 /* FTConfig+RemoteConfig.m in Sources */ = {isa = PBXBuildFile; fileRef = 17717B6E2F0E8B51002158F6 /* FTConfig+RemoteConfig.m */; };
 		17717B7A2F0F4FA9002158F6 /* FTCrash.h in Headers */ = {isa = PBXBuildFile; fileRef = 17717B782F0F4FA9002158F6 /* FTCrash.h */; };
 		17717B7B2F0F4FA9002158F6 /* FTCrashMonitorType.h in Headers */ = {isa = PBXBuildFile; fileRef = 17717B792F0F4FA9002158F6 /* FTCrashMonitorType.h */; };
-		17717B7C2F0F4FA9002158F6 /* FTCrash.h in Headers */ = {isa = PBXBuildFile; fileRef = 17717B782F0F4FA9002158F6 /* FTCrash.h */; };
-		17717B7D2F0F4FA9002158F6 /* FTCrashMonitorType.h in Headers */ = {isa = PBXBuildFile; fileRef = 17717B792F0F4FA9002158F6 /* FTCrashMonitorType.h */; };
 		17717B7E2F0F4FA9002158F6 /* FTCrash.h in Headers */ = {isa = PBXBuildFile; fileRef = 17717B782F0F4FA9002158F6 /* FTCrash.h */; };
 		17717B7F2F0F4FA9002158F6 /* FTCrashMonitorType.h in Headers */ = {isa = PBXBuildFile; fileRef = 17717B792F0F4FA9002158F6 /* FTCrashMonitorType.h */; };
 		17717B802F0F4FA9002158F6 /* FTCrash.h in Headers */ = {isa = PBXBuildFile; fileRef = 17717B782F0F4FA9002158F6 /* FTCrash.h */; };
 		17717B812F0F4FA9002158F6 /* FTCrashMonitorType.h in Headers */ = {isa = PBXBuildFile; fileRef = 17717B792F0F4FA9002158F6 /* FTCrashMonitorType.h */; };
-		17717B832F0F518C002158F6 /* FTAppLaunchTracker.h in Headers */ = {isa = PBXBuildFile; fileRef = 17717B822F0F518C002158F6 /* FTAppLaunchTracker.h */; };
 		17717B842F0F518C002158F6 /* FTAppLaunchTracker.h in Headers */ = {isa = PBXBuildFile; fileRef = 17717B822F0F518C002158F6 /* FTAppLaunchTracker.h */; };
 		17717B852F0F518C002158F6 /* FTAppLaunchTracker.h in Headers */ = {isa = PBXBuildFile; fileRef = 17717B822F0F518C002158F6 /* FTAppLaunchTracker.h */; };
 		17717B862F0F518C002158F6 /* FTAppLaunchTracker.h in Headers */ = {isa = PBXBuildFile; fileRef = 17717B822F0F518C002158F6 /* FTAppLaunchTracker.h */; };
 		17717B882F0F51F0002158F6 /* FTDisplayRateMonitor.h in Headers */ = {isa = PBXBuildFile; fileRef = 17717B872F0F51F0002158F6 /* FTDisplayRateMonitor.h */; };
-		17717B892F0F51F0002158F6 /* FTDisplayRateMonitor.h in Headers */ = {isa = PBXBuildFile; fileRef = 17717B872F0F51F0002158F6 /* FTDisplayRateMonitor.h */; };
 		17717B8A2F0F51F0002158F6 /* FTDisplayRateMonitor.h in Headers */ = {isa = PBXBuildFile; fileRef = 17717B872F0F51F0002158F6 /* FTDisplayRateMonitor.h */; };
 		17717B8B2F0F51F0002158F6 /* FTDisplayRateMonitor.h in Headers */ = {isa = PBXBuildFile; fileRef = 17717B872F0F51F0002158F6 /* FTDisplayRateMonitor.h */; };
 		17717B8D2F0F5250002158F6 /* FTErrorMonitorInfo.h in Headers */ = {isa = PBXBuildFile; fileRef = 17717B8C2F0F5250002158F6 /* FTErrorMonitorInfo.h */; };
 		17717B8E2F0F5250002158F6 /* FTErrorMonitorInfo.h in Headers */ = {isa = PBXBuildFile; fileRef = 17717B8C2F0F5250002158F6 /* FTErrorMonitorInfo.h */; };
 		17717B8F2F0F5250002158F6 /* FTErrorMonitorInfo.h in Headers */ = {isa = PBXBuildFile; fileRef = 17717B8C2F0F5250002158F6 /* FTErrorMonitorInfo.h */; };
-		17717B902F0F5250002158F6 /* FTErrorMonitorInfo.h in Headers */ = {isa = PBXBuildFile; fileRef = 17717B8C2F0F5250002158F6 /* FTErrorMonitorInfo.h */; };
 		1776062929D1347500D17137 /* WKWebView+FTAutoTrack.h in Headers */ = {isa = PBXBuildFile; fileRef = 1776061D29D1347400D17137 /* WKWebView+FTAutoTrack.h */; };
 		1776062A29D1347500D17137 /* FTWKWebViewJavascriptBridge.m in Sources */ = {isa = PBXBuildFile; fileRef = 1776061F29D1347400D17137 /* FTWKWebViewJavascriptBridge.m */; };
 		1776062B29D1347500D17137 /* FTWebViewJavascriptLeakAvoider.m in Sources */ = {isa = PBXBuildFile; fileRef = 1776062029D1347400D17137 /* FTWebViewJavascriptLeakAvoider.m */; };
@@ -522,10 +437,6 @@
 		1776069529D1373100D17137 /* FTJSONUtil.h in Headers */ = {isa = PBXBuildFile; fileRef = 17E4CB0329CD42DA005C2D99 /* FTJSONUtil.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		1776069629D1373300D17137 /* FTJSONUtil.m in Sources */ = {isa = PBXBuildFile; fileRef = 17E4CB1629CD42DA005C2D99 /* FTJSONUtil.m */; };
 		1776069729D1373300D17137 /* FTJSONUtil.m in Sources */ = {isa = PBXBuildFile; fileRef = 17E4CB1629CD42DA005C2D99 /* FTJSONUtil.m */; };
-		1776069829D1373600D17137 /* FTJsonWriter.h in Headers */ = {isa = PBXBuildFile; fileRef = 17E4CB0429CD42DA005C2D99 /* FTJsonWriter.h */; settings = {ATTRIBUTES = (Public, ); }; };
-		1776069929D1373700D17137 /* FTJsonWriter.h in Headers */ = {isa = PBXBuildFile; fileRef = 17E4CB0429CD42DA005C2D99 /* FTJsonWriter.h */; };
-		1776069A29D1373900D17137 /* FTJsonWriter.m in Sources */ = {isa = PBXBuildFile; fileRef = 17E4CB1529CD42DA005C2D99 /* FTJsonWriter.m */; };
-		1776069B29D1373A00D17137 /* FTJsonWriter.m in Sources */ = {isa = PBXBuildFile; fileRef = 17E4CB1529CD42DA005C2D99 /* FTJsonWriter.m */; };
 		1776069C29D1375800D17137 /* NSString+FTAdd.h in Headers */ = {isa = PBXBuildFile; fileRef = 17E4CB0529CD42DA005C2D99 /* NSString+FTAdd.h */; };
 		1776069D29D1375900D17137 /* NSString+FTAdd.h in Headers */ = {isa = PBXBuildFile; fileRef = 17E4CB0529CD42DA005C2D99 /* NSString+FTAdd.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		1776069E29D1375B00D17137 /* NSString+FTAdd.m in Sources */ = {isa = PBXBuildFile; fileRef = 17E4CB1429CD42DA005C2D99 /* NSString+FTAdd.m */; };
@@ -613,14 +524,10 @@
 		1776BA852B99B668008424FF /* FTOSLogger.h in Headers */ = {isa = PBXBuildFile; fileRef = 1776BA7E2B99B668008424FF /* FTOSLogger.h */; };
 		1776BD362E179EC100612A7F /* FTCrashMonitor.c in Sources */ = {isa = PBXBuildFile; fileRef = 1776BD352E179EC100612A7F /* FTCrashMonitor.c */; };
 		1776BD372E179EC100612A7F /* FTCrashMonitor.h in Headers */ = {isa = PBXBuildFile; fileRef = 1776BD342E179EC100612A7F /* FTCrashMonitor.h */; };
-		1776BD382E179EC100612A7F /* FTCrashMonitor.h in Headers */ = {isa = PBXBuildFile; fileRef = 1776BD342E179EC100612A7F /* FTCrashMonitor.h */; };
-		1776BD392E179EC100612A7F /* FTCrashMonitor.c in Sources */ = {isa = PBXBuildFile; fileRef = 1776BD352E179EC100612A7F /* FTCrashMonitor.c */; };
 		1776BD3A2E179EC100612A7F /* FTCrashMonitor.c in Sources */ = {isa = PBXBuildFile; fileRef = 1776BD352E179EC100612A7F /* FTCrashMonitor.c */; };
 		1776BD3B2E179EC100612A7F /* FTCrashMonitor.h in Headers */ = {isa = PBXBuildFile; fileRef = 1776BD342E179EC100612A7F /* FTCrashMonitor.h */; };
 		1776BD3C2E179EC100612A7F /* FTCrashMonitor.c in Sources */ = {isa = PBXBuildFile; fileRef = 1776BD352E179EC100612A7F /* FTCrashMonitor.c */; };
 		1776BD3D2E179EC100612A7F /* FTCrashMonitor.h in Headers */ = {isa = PBXBuildFile; fileRef = 1776BD342E179EC100612A7F /* FTCrashMonitor.h */; };
-		1776BD402E179F5C00612A7F /* FTCrashDebug.h in Headers */ = {isa = PBXBuildFile; fileRef = 1776BD3E2E179F5C00612A7F /* FTCrashDebug.h */; };
-		1776BD412E179F5C00612A7F /* FTCrashDebug.c in Sources */ = {isa = PBXBuildFile; fileRef = 1776BD3F2E179F5C00612A7F /* FTCrashDebug.c */; };
 		1776BD422E179F5C00612A7F /* FTCrashDebug.c in Sources */ = {isa = PBXBuildFile; fileRef = 1776BD3F2E179F5C00612A7F /* FTCrashDebug.c */; };
 		1776BD432E179F5C00612A7F /* FTCrashDebug.h in Headers */ = {isa = PBXBuildFile; fileRef = 1776BD3E2E179F5C00612A7F /* FTCrashDebug.h */; };
 		1776BD442E179F5C00612A7F /* FTCrashDebug.c in Sources */ = {isa = PBXBuildFile; fileRef = 1776BD3F2E179F5C00612A7F /* FTCrashDebug.c */; };
@@ -633,8 +540,6 @@
 		1776BD4D2E179FA300612A7F /* FTCrashLogger.h in Headers */ = {isa = PBXBuildFile; fileRef = 1776BD482E179FA300612A7F /* FTCrashLogger.h */; };
 		1776BD4E2E179FA300612A7F /* FTCrashLogger.c in Sources */ = {isa = PBXBuildFile; fileRef = 1776BD492E179FA300612A7F /* FTCrashLogger.c */; };
 		1776BD4F2E179FA300612A7F /* FTCrashLogger.h in Headers */ = {isa = PBXBuildFile; fileRef = 1776BD482E179FA300612A7F /* FTCrashLogger.h */; };
-		1776BD502E179FA300612A7F /* FTCrashLogger.h in Headers */ = {isa = PBXBuildFile; fileRef = 1776BD482E179FA300612A7F /* FTCrashLogger.h */; };
-		1776BD512E179FA300612A7F /* FTCrashLogger.c in Sources */ = {isa = PBXBuildFile; fileRef = 1776BD492E179FA300612A7F /* FTCrashLogger.c */; };
 		1777C3E72A36EED500C0AA45 /* FTLogger.h in Headers */ = {isa = PBXBuildFile; fileRef = 178649302A1DB58400521187 /* FTLogger.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		177AEB602A383C890045D2BA /* FTSDKCore.h in Headers */ = {isa = PBXBuildFile; fileRef = 177AEB5D2A3819C90045D2BA /* FTSDKCore.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		178649332A1DB58400521187 /* FTLogger.h in Headers */ = {isa = PBXBuildFile; fileRef = 178649302A1DB58400521187 /* FTLogger.h */; settings = {ATTRIBUTES = (Public, ); }; };
@@ -645,14 +550,11 @@
 		178AE4122D5A1A0700BDC51B /* FTMobileAgent+Private.h in Headers */ = {isa = PBXBuildFile; fileRef = 17678E2229D28BD200C1DA98 /* FTMobileAgent+Private.h */; };
 		178AFF8E2E4F3438009D3C09 /* FTRUMPlaceholderViewHandler.m in Sources */ = {isa = PBXBuildFile; fileRef = 178AFF8D2E4F3438009D3C09 /* FTRUMPlaceholderViewHandler.m */; };
 		178AFF8F2E4F3438009D3C09 /* FTRUMPlaceholderViewHandler.h in Headers */ = {isa = PBXBuildFile; fileRef = 178AFF8C2E4F3438009D3C09 /* FTRUMPlaceholderViewHandler.h */; };
-		178AFF902E4F3438009D3C09 /* FTRUMPlaceholderViewHandler.m in Sources */ = {isa = PBXBuildFile; fileRef = 178AFF8D2E4F3438009D3C09 /* FTRUMPlaceholderViewHandler.m */; };
-		178AFF912E4F3438009D3C09 /* FTRUMPlaceholderViewHandler.h in Headers */ = {isa = PBXBuildFile; fileRef = 178AFF8C2E4F3438009D3C09 /* FTRUMPlaceholderViewHandler.h */; };
 		178AFF922E4F3438009D3C09 /* FTRUMPlaceholderViewHandler.h in Headers */ = {isa = PBXBuildFile; fileRef = 178AFF8C2E4F3438009D3C09 /* FTRUMPlaceholderViewHandler.h */; };
 		178AFF932E4F3438009D3C09 /* FTRUMPlaceholderViewHandler.m in Sources */ = {isa = PBXBuildFile; fileRef = 178AFF8D2E4F3438009D3C09 /* FTRUMPlaceholderViewHandler.m */; };
 		178AFF942E4F3438009D3C09 /* FTRUMPlaceholderViewHandler.m in Sources */ = {isa = PBXBuildFile; fileRef = 178AFF8D2E4F3438009D3C09 /* FTRUMPlaceholderViewHandler.m */; };
 		178AFF952E4F3438009D3C09 /* FTRUMPlaceholderViewHandler.h in Headers */ = {isa = PBXBuildFile; fileRef = 178AFF8C2E4F3438009D3C09 /* FTRUMPlaceholderViewHandler.h */; };
 		178CDAC42F0F7A7200EE98D0 /* FTCrash.m in Sources */ = {isa = PBXBuildFile; fileRef = 178CDAC32F0F7A7200EE98D0 /* FTCrash.m */; };
-		178CDAC52F0F7A7200EE98D0 /* FTCrash.m in Sources */ = {isa = PBXBuildFile; fileRef = 178CDAC32F0F7A7200EE98D0 /* FTCrash.m */; };
 		178CDAC62F0F7A7200EE98D0 /* FTCrash.m in Sources */ = {isa = PBXBuildFile; fileRef = 178CDAC32F0F7A7200EE98D0 /* FTCrash.m */; };
 		178CDAC72F0F7A7200EE98D0 /* FTCrash.m in Sources */ = {isa = PBXBuildFile; fileRef = 178CDAC32F0F7A7200EE98D0 /* FTCrash.m */; };
 		178CDAD82F0F7AA000EE98D0 /* FTCrashReportVersion.h in Headers */ = {isa = PBXBuildFile; fileRef = 178CDAD52F0F7AA000EE98D0 /* FTCrashReportVersion.h */; };
@@ -687,22 +589,6 @@
 		178CDAF52F0F7AA000EE98D0 /* FTCrashReportStoreC.h in Headers */ = {isa = PBXBuildFile; fileRef = 178CDAD32F0F7AA000EE98D0 /* FTCrashReportStoreC.h */; };
 		178CDAF62F0F7AA000EE98D0 /* FTCrashReport.h in Headers */ = {isa = PBXBuildFile; fileRef = 178CDACA2F0F7AA000EE98D0 /* FTCrashReport.h */; };
 		178CDAF72F0F7AA000EE98D0 /* FTCrashReportStore.h in Headers */ = {isa = PBXBuildFile; fileRef = 178CDAD12F0F7AA000EE98D0 /* FTCrashReportStore.h */; };
-		178CDAF82F0F7AA000EE98D0 /* FTCrashReportVersion.h in Headers */ = {isa = PBXBuildFile; fileRef = 178CDAD52F0F7AA000EE98D0 /* FTCrashReportVersion.h */; };
-		178CDAF92F0F7AA000EE98D0 /* FTCrashReportFilterBasic.h in Headers */ = {isa = PBXBuildFile; fileRef = 178CDACE2F0F7AA000EE98D0 /* FTCrashReportFilterBasic.h */; };
-		178CDAFA2F0F7AA000EE98D0 /* FTCrashReportC.h in Headers */ = {isa = PBXBuildFile; fileRef = 178CDACC2F0F7AA000EE98D0 /* FTCrashReportC.h */; };
-		178CDAFB2F0F7AA000EE98D0 /* FTCrashC.h in Headers */ = {isa = PBXBuildFile; fileRef = 178CDAC82F0F7AA000EE98D0 /* FTCrashC.h */; };
-		178CDAFC2F0F7AA000EE98D0 /* FTCrashThreadCache.h in Headers */ = {isa = PBXBuildFile; fileRef = 178CDAD62F0F7AA000EE98D0 /* FTCrashThreadCache.h */; };
-		178CDAFD2F0F7AA000EE98D0 /* FTCrashReportFixer.h in Headers */ = {isa = PBXBuildFile; fileRef = 178CDACF2F0F7AA000EE98D0 /* FTCrashReportFixer.h */; };
-		178CDAFE2F0F7AA000EE98D0 /* FTCrashReportStoreC.h in Headers */ = {isa = PBXBuildFile; fileRef = 178CDAD32F0F7AA000EE98D0 /* FTCrashReportStoreC.h */; };
-		178CDAFF2F0F7AA000EE98D0 /* FTCrashReport.h in Headers */ = {isa = PBXBuildFile; fileRef = 178CDACA2F0F7AA000EE98D0 /* FTCrashReport.h */; };
-		178CDB002F0F7AA000EE98D0 /* FTCrashReportStore.h in Headers */ = {isa = PBXBuildFile; fileRef = 178CDAD12F0F7AA000EE98D0 /* FTCrashReportStore.h */; };
-		178CDB012F0F7AA000EE98D0 /* FTCrashReportFixer.c in Sources */ = {isa = PBXBuildFile; fileRef = 178CDAD02F0F7AA000EE98D0 /* FTCrashReportFixer.c */; };
-		178CDB022F0F7AA000EE98D0 /* FTCrashThreadCache.c in Sources */ = {isa = PBXBuildFile; fileRef = 178CDAD72F0F7AA000EE98D0 /* FTCrashThreadCache.c */; };
-		178CDB032F0F7AA000EE98D0 /* FTCrashReportStore.m in Sources */ = {isa = PBXBuildFile; fileRef = 178CDAD22F0F7AA000EE98D0 /* FTCrashReportStore.m */; };
-		178CDB042F0F7AA000EE98D0 /* FTCrashC.c in Sources */ = {isa = PBXBuildFile; fileRef = 178CDAC92F0F7AA000EE98D0 /* FTCrashC.c */; };
-		178CDB052F0F7AA000EE98D0 /* FTCrashReport.m in Sources */ = {isa = PBXBuildFile; fileRef = 178CDACB2F0F7AA000EE98D0 /* FTCrashReport.m */; };
-		178CDB062F0F7AA000EE98D0 /* FTCrashReportStoreC.c in Sources */ = {isa = PBXBuildFile; fileRef = 178CDAD42F0F7AA000EE98D0 /* FTCrashReportStoreC.c */; };
-		178CDB072F0F7AA000EE98D0 /* FTCrashReportC.c in Sources */ = {isa = PBXBuildFile; fileRef = 178CDACD2F0F7AA000EE98D0 /* FTCrashReportC.c */; };
 		178CDB082F0F7AA000EE98D0 /* FTCrashReportFixer.c in Sources */ = {isa = PBXBuildFile; fileRef = 178CDAD02F0F7AA000EE98D0 /* FTCrashReportFixer.c */; };
 		178CDB092F0F7AA000EE98D0 /* FTCrashThreadCache.c in Sources */ = {isa = PBXBuildFile; fileRef = 178CDAD72F0F7AA000EE98D0 /* FTCrashThreadCache.c */; };
 		178CDB0A2F0F7AA000EE98D0 /* FTCrashReportStore.m in Sources */ = {isa = PBXBuildFile; fileRef = 178CDAD22F0F7AA000EE98D0 /* FTCrashReportStore.m */; };
@@ -734,31 +620,23 @@
 		17A421B52EDDAACF00416673 /* FTCrashReportWriterCallbacks.h in Headers */ = {isa = PBXBuildFile; fileRef = 17A421B42EDDAACF00416673 /* FTCrashReportWriterCallbacks.h */; };
 		17A421B62EDDAACF00416673 /* FTCrashReportWriterCallbacks.h in Headers */ = {isa = PBXBuildFile; fileRef = 17A421B42EDDAACF00416673 /* FTCrashReportWriterCallbacks.h */; };
 		17A421B72EDDAACF00416673 /* FTCrashReportWriterCallbacks.h in Headers */ = {isa = PBXBuildFile; fileRef = 17A421B42EDDAACF00416673 /* FTCrashReportWriterCallbacks.h */; };
-		17A421B82EDDAACF00416673 /* FTCrashReportWriterCallbacks.h in Headers */ = {isa = PBXBuildFile; fileRef = 17A421B42EDDAACF00416673 /* FTCrashReportWriterCallbacks.h */; };
-		17A421BA2EDDAC6300416673 /* FTCrashExceptionHandlingPlan.h in Headers */ = {isa = PBXBuildFile; fileRef = 17A421B92EDDAC6300416673 /* FTCrashExceptionHandlingPlan.h */; };
 		17A421BB2EDDAC6300416673 /* FTCrashExceptionHandlingPlan.h in Headers */ = {isa = PBXBuildFile; fileRef = 17A421B92EDDAC6300416673 /* FTCrashExceptionHandlingPlan.h */; };
 		17A421BC2EDDAC6300416673 /* FTCrashExceptionHandlingPlan.h in Headers */ = {isa = PBXBuildFile; fileRef = 17A421B92EDDAC6300416673 /* FTCrashExceptionHandlingPlan.h */; };
 		17A421BD2EDDAC6300416673 /* FTCrashExceptionHandlingPlan.h in Headers */ = {isa = PBXBuildFile; fileRef = 17A421B92EDDAC6300416673 /* FTCrashExceptionHandlingPlan.h */; };
 		17A421BF2EDDAE5400416673 /* FTCrashReportWriter.h in Headers */ = {isa = PBXBuildFile; fileRef = 17A421BE2EDDAE5400416673 /* FTCrashReportWriter.h */; };
 		17A421C02EDDAE5400416673 /* FTCrashReportWriter.h in Headers */ = {isa = PBXBuildFile; fileRef = 17A421BE2EDDAE5400416673 /* FTCrashReportWriter.h */; };
-		17A421C12EDDAE5400416673 /* FTCrashReportWriter.h in Headers */ = {isa = PBXBuildFile; fileRef = 17A421BE2EDDAE5400416673 /* FTCrashReportWriter.h */; };
 		17A421C22EDDAE5400416673 /* FTCrashReportWriter.h in Headers */ = {isa = PBXBuildFile; fileRef = 17A421BE2EDDAE5400416673 /* FTCrashReportWriter.h */; };
 		17A421C42EDDB06E00416673 /* FTCrashMonitorHelper.h in Headers */ = {isa = PBXBuildFile; fileRef = 17A421C32EDDB06E00416673 /* FTCrashMonitorHelper.h */; };
 		17A421C52EDDB06E00416673 /* FTCrashMonitorHelper.h in Headers */ = {isa = PBXBuildFile; fileRef = 17A421C32EDDB06E00416673 /* FTCrashMonitorHelper.h */; };
 		17A421C62EDDB06E00416673 /* FTCrashMonitorHelper.h in Headers */ = {isa = PBXBuildFile; fileRef = 17A421C32EDDB06E00416673 /* FTCrashMonitorHelper.h */; };
-		17A421C72EDDB06E00416673 /* FTCrashMonitorHelper.h in Headers */ = {isa = PBXBuildFile; fileRef = 17A421C32EDDB06E00416673 /* FTCrashMonitorHelper.h */; };
 		17A421CA2EDDB0D500416673 /* FTCrashMonitor_CPPException.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 17A421C92EDDB0D500416673 /* FTCrashMonitor_CPPException.cpp */; };
 		17A421CB2EDDB0D500416673 /* FTCrashMonitor_CPPException.h in Headers */ = {isa = PBXBuildFile; fileRef = 17A421C82EDDB0D500416673 /* FTCrashMonitor_CPPException.h */; };
 		17A421CC2EDDB0D500416673 /* FTCrashMonitor_CPPException.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 17A421C92EDDB0D500416673 /* FTCrashMonitor_CPPException.cpp */; };
 		17A421CD2EDDB0D500416673 /* FTCrashMonitor_CPPException.h in Headers */ = {isa = PBXBuildFile; fileRef = 17A421C82EDDB0D500416673 /* FTCrashMonitor_CPPException.h */; };
-		17A421CE2EDDB0D500416673 /* FTCrashMonitor_CPPException.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 17A421C92EDDB0D500416673 /* FTCrashMonitor_CPPException.cpp */; };
-		17A421CF2EDDB0D500416673 /* FTCrashMonitor_CPPException.h in Headers */ = {isa = PBXBuildFile; fileRef = 17A421C82EDDB0D500416673 /* FTCrashMonitor_CPPException.h */; };
 		17A421D02EDDB0D500416673 /* FTCrashMonitor_CPPException.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 17A421C92EDDB0D500416673 /* FTCrashMonitor_CPPException.cpp */; };
 		17A421D12EDDB0D500416673 /* FTCrashMonitor_CPPException.h in Headers */ = {isa = PBXBuildFile; fileRef = 17A421C82EDDB0D500416673 /* FTCrashMonitor_CPPException.h */; };
 		17A421D42EDDB0F100416673 /* FTCrashMonitor_MachException.c in Sources */ = {isa = PBXBuildFile; fileRef = 17A421D32EDDB0F100416673 /* FTCrashMonitor_MachException.c */; };
 		17A421D52EDDB0F100416673 /* FTCrashMonitor_MachException.h in Headers */ = {isa = PBXBuildFile; fileRef = 17A421D22EDDB0F100416673 /* FTCrashMonitor_MachException.h */; };
-		17A421D62EDDB0F100416673 /* FTCrashMonitor_MachException.c in Sources */ = {isa = PBXBuildFile; fileRef = 17A421D32EDDB0F100416673 /* FTCrashMonitor_MachException.c */; };
-		17A421D72EDDB0F100416673 /* FTCrashMonitor_MachException.h in Headers */ = {isa = PBXBuildFile; fileRef = 17A421D22EDDB0F100416673 /* FTCrashMonitor_MachException.h */; };
 		17A421D82EDDB0F100416673 /* FTCrashMonitor_MachException.c in Sources */ = {isa = PBXBuildFile; fileRef = 17A421D32EDDB0F100416673 /* FTCrashMonitor_MachException.c */; };
 		17A421D92EDDB0F100416673 /* FTCrashMonitor_MachException.h in Headers */ = {isa = PBXBuildFile; fileRef = 17A421D22EDDB0F100416673 /* FTCrashMonitor_MachException.h */; };
 		17A421DA2EDDB0F100416673 /* FTCrashMonitor_MachException.c in Sources */ = {isa = PBXBuildFile; fileRef = 17A421D32EDDB0F100416673 /* FTCrashMonitor_MachException.c */; };
@@ -769,22 +647,15 @@
 		17A421E12EDDB12B00416673 /* FTCrashMonitor_Signal.h in Headers */ = {isa = PBXBuildFile; fileRef = 17A421DC2EDDB12B00416673 /* FTCrashMonitor_Signal.h */; };
 		17A421E22EDDB12B00416673 /* FTCrashMonitor_Signal.c in Sources */ = {isa = PBXBuildFile; fileRef = 17A421DD2EDDB12B00416673 /* FTCrashMonitor_Signal.c */; };
 		17A421E32EDDB12B00416673 /* FTCrashMonitor_Signal.h in Headers */ = {isa = PBXBuildFile; fileRef = 17A421DC2EDDB12B00416673 /* FTCrashMonitor_Signal.h */; };
-		17A421E42EDDB12B00416673 /* FTCrashMonitor_Signal.c in Sources */ = {isa = PBXBuildFile; fileRef = 17A421DD2EDDB12B00416673 /* FTCrashMonitor_Signal.c */; };
-		17A421E52EDDB12B00416673 /* FTCrashMonitor_Signal.h in Headers */ = {isa = PBXBuildFile; fileRef = 17A421DC2EDDB12B00416673 /* FTCrashMonitor_Signal.h */; };
 		17A421E72EDE87B000416673 /* FTCrashReportFields.h in Headers */ = {isa = PBXBuildFile; fileRef = 17A421E62EDE87B000416673 /* FTCrashReportFields.h */; };
-		17A421E82EDE87B000416673 /* FTCrashReportFields.h in Headers */ = {isa = PBXBuildFile; fileRef = 17A421E62EDE87B000416673 /* FTCrashReportFields.h */; };
 		17A421E92EDE87B000416673 /* FTCrashReportFields.h in Headers */ = {isa = PBXBuildFile; fileRef = 17A421E62EDE87B000416673 /* FTCrashReportFields.h */; };
 		17A421EA2EDE87B000416673 /* FTCrashReportFields.h in Headers */ = {isa = PBXBuildFile; fileRef = 17A421E62EDE87B000416673 /* FTCrashReportFields.h */; };
-		17A421F22EDE8EED00416673 /* FTCrashMach.c in Sources */ = {isa = PBXBuildFile; fileRef = 17A421F12EDE8EED00416673 /* FTCrashMach.c */; };
-		17A421F32EDE8EED00416673 /* FTCrashMach.h in Headers */ = {isa = PBXBuildFile; fileRef = 17A421F02EDE8EED00416673 /* FTCrashMach.h */; };
 		17A421F42EDE8EED00416673 /* FTCrashMach.c in Sources */ = {isa = PBXBuildFile; fileRef = 17A421F12EDE8EED00416673 /* FTCrashMach.c */; };
 		17A421F52EDE8EED00416673 /* FTCrashMach.h in Headers */ = {isa = PBXBuildFile; fileRef = 17A421F02EDE8EED00416673 /* FTCrashMach.h */; };
 		17A421F62EDE8EED00416673 /* FTCrashMach.c in Sources */ = {isa = PBXBuildFile; fileRef = 17A421F12EDE8EED00416673 /* FTCrashMach.c */; };
 		17A421F72EDE8EED00416673 /* FTCrashMach.h in Headers */ = {isa = PBXBuildFile; fileRef = 17A421F02EDE8EED00416673 /* FTCrashMach.h */; };
 		17A421F82EDE8EED00416673 /* FTCrashMach.c in Sources */ = {isa = PBXBuildFile; fileRef = 17A421F12EDE8EED00416673 /* FTCrashMach.c */; };
 		17A421F92EDE8EED00416673 /* FTCrashMach.h in Headers */ = {isa = PBXBuildFile; fileRef = 17A421F02EDE8EED00416673 /* FTCrashMach.h */; };
-		17A421FC2EDE8F8D00416673 /* FTCrashObjC.c in Sources */ = {isa = PBXBuildFile; fileRef = 17A421FB2EDE8F8D00416673 /* FTCrashObjC.c */; };
-		17A421FD2EDE8F8D00416673 /* FTCrashObjC.h in Headers */ = {isa = PBXBuildFile; fileRef = 17A421FA2EDE8F8D00416673 /* FTCrashObjC.h */; };
 		17A421FE2EDE8F8D00416673 /* FTCrashObjC.c in Sources */ = {isa = PBXBuildFile; fileRef = 17A421FB2EDE8F8D00416673 /* FTCrashObjC.c */; };
 		17A421FF2EDE8F8D00416673 /* FTCrashObjC.h in Headers */ = {isa = PBXBuildFile; fileRef = 17A421FA2EDE8F8D00416673 /* FTCrashObjC.h */; };
 		17A422002EDE8F8D00416673 /* FTCrashObjC.c in Sources */ = {isa = PBXBuildFile; fileRef = 17A421FB2EDE8F8D00416673 /* FTCrashObjC.c */; };
@@ -793,38 +664,28 @@
 		17A422032EDE8F8D00416673 /* FTCrashObjC.h in Headers */ = {isa = PBXBuildFile; fileRef = 17A421FA2EDE8F8D00416673 /* FTCrashObjC.h */; };
 		17A4220A2EDE925100416673 /* FTCrashObjCApple.h in Headers */ = {isa = PBXBuildFile; fileRef = 17A422092EDE925100416673 /* FTCrashObjCApple.h */; };
 		17A4220B2EDE925100416673 /* FTCrashObjCApple.h in Headers */ = {isa = PBXBuildFile; fileRef = 17A422092EDE925100416673 /* FTCrashObjCApple.h */; };
-		17A4220C2EDE925100416673 /* FTCrashObjCApple.h in Headers */ = {isa = PBXBuildFile; fileRef = 17A422092EDE925100416673 /* FTCrashObjCApple.h */; };
 		17A4220D2EDE925100416673 /* FTCrashObjCApple.h in Headers */ = {isa = PBXBuildFile; fileRef = 17A422092EDE925100416673 /* FTCrashObjCApple.h */; };
 		17A422102EDE94AD00416673 /* FTCrashSignalInfo.c in Sources */ = {isa = PBXBuildFile; fileRef = 17A4220F2EDE94AD00416673 /* FTCrashSignalInfo.c */; };
 		17A422112EDE94AD00416673 /* FTCrashSignalInfo.h in Headers */ = {isa = PBXBuildFile; fileRef = 17A4220E2EDE94AD00416673 /* FTCrashSignalInfo.h */; };
-		17A422122EDE94AD00416673 /* FTCrashSignalInfo.c in Sources */ = {isa = PBXBuildFile; fileRef = 17A4220F2EDE94AD00416673 /* FTCrashSignalInfo.c */; };
-		17A422132EDE94AD00416673 /* FTCrashSignalInfo.h in Headers */ = {isa = PBXBuildFile; fileRef = 17A4220E2EDE94AD00416673 /* FTCrashSignalInfo.h */; };
 		17A422142EDE94AD00416673 /* FTCrashSignalInfo.c in Sources */ = {isa = PBXBuildFile; fileRef = 17A4220F2EDE94AD00416673 /* FTCrashSignalInfo.c */; };
 		17A422152EDE94AD00416673 /* FTCrashSignalInfo.h in Headers */ = {isa = PBXBuildFile; fileRef = 17A4220E2EDE94AD00416673 /* FTCrashSignalInfo.h */; };
 		17A422162EDE94AD00416673 /* FTCrashSignalInfo.c in Sources */ = {isa = PBXBuildFile; fileRef = 17A4220F2EDE94AD00416673 /* FTCrashSignalInfo.c */; };
 		17A422172EDE94AD00416673 /* FTCrashSignalInfo.h in Headers */ = {isa = PBXBuildFile; fileRef = 17A4220E2EDE94AD00416673 /* FTCrashSignalInfo.h */; };
 		17A4221A2EDE958E00416673 /* FTCrashString.c in Sources */ = {isa = PBXBuildFile; fileRef = 17A422192EDE958E00416673 /* FTCrashString.c */; };
 		17A4221B2EDE958E00416673 /* FTCrashString.h in Headers */ = {isa = PBXBuildFile; fileRef = 17A422182EDE958E00416673 /* FTCrashString.h */; };
-		17A4221C2EDE958E00416673 /* FTCrashString.c in Sources */ = {isa = PBXBuildFile; fileRef = 17A422192EDE958E00416673 /* FTCrashString.c */; };
-		17A4221D2EDE958E00416673 /* FTCrashString.h in Headers */ = {isa = PBXBuildFile; fileRef = 17A422182EDE958E00416673 /* FTCrashString.h */; };
 		17A4221E2EDE958E00416673 /* FTCrashString.c in Sources */ = {isa = PBXBuildFile; fileRef = 17A422192EDE958E00416673 /* FTCrashString.c */; };
 		17A4221F2EDE958E00416673 /* FTCrashString.h in Headers */ = {isa = PBXBuildFile; fileRef = 17A422182EDE958E00416673 /* FTCrashString.h */; };
 		17A422202EDE958E00416673 /* FTCrashString.c in Sources */ = {isa = PBXBuildFile; fileRef = 17A422192EDE958E00416673 /* FTCrashString.c */; };
 		17A422212EDE958E00416673 /* FTCrashString.h in Headers */ = {isa = PBXBuildFile; fileRef = 17A422182EDE958E00416673 /* FTCrashString.h */; };
 		17A4222E2EDEF67600416673 /* FTCrashCompilerDefines.h in Headers */ = {isa = PBXBuildFile; fileRef = 17A4222D2EDEF67600416673 /* FTCrashCompilerDefines.h */; };
 		17A4222F2EDEF67600416673 /* FTCrashCompilerDefines.h in Headers */ = {isa = PBXBuildFile; fileRef = 17A4222D2EDEF67600416673 /* FTCrashCompilerDefines.h */; };
-		17A422302EDEF67600416673 /* FTCrashCompilerDefines.h in Headers */ = {isa = PBXBuildFile; fileRef = 17A4222D2EDEF67600416673 /* FTCrashCompilerDefines.h */; };
 		17A422312EDEF67600416673 /* FTCrashCompilerDefines.h in Headers */ = {isa = PBXBuildFile; fileRef = 17A4222D2EDEF67600416673 /* FTCrashCompilerDefines.h */; };
 		17A422342EDEF6C200416673 /* FTCrashID.h in Headers */ = {isa = PBXBuildFile; fileRef = 17A422322EDEF6C200416673 /* FTCrashID.h */; };
 		17A422352EDEF6C200416673 /* FTCrashID.c in Sources */ = {isa = PBXBuildFile; fileRef = 17A422332EDEF6C200416673 /* FTCrashID.c */; };
-		17A422362EDEF6C200416673 /* FTCrashID.c in Sources */ = {isa = PBXBuildFile; fileRef = 17A422332EDEF6C200416673 /* FTCrashID.c */; };
-		17A422372EDEF6C200416673 /* FTCrashID.h in Headers */ = {isa = PBXBuildFile; fileRef = 17A422322EDEF6C200416673 /* FTCrashID.h */; };
 		17A422382EDEF6C200416673 /* FTCrashID.c in Sources */ = {isa = PBXBuildFile; fileRef = 17A422332EDEF6C200416673 /* FTCrashID.c */; };
 		17A422392EDEF6C200416673 /* FTCrashID.h in Headers */ = {isa = PBXBuildFile; fileRef = 17A422322EDEF6C200416673 /* FTCrashID.h */; };
 		17A4223A2EDEF6C200416673 /* FTCrashID.h in Headers */ = {isa = PBXBuildFile; fileRef = 17A422322EDEF6C200416673 /* FTCrashID.h */; };
 		17A4223B2EDEF6C200416673 /* FTCrashID.c in Sources */ = {isa = PBXBuildFile; fileRef = 17A422332EDEF6C200416673 /* FTCrashID.c */; };
-		17A4223E2EDEFEEE00416673 /* FTCrashCxaThrowSwapper.c in Sources */ = {isa = PBXBuildFile; fileRef = 17A4223D2EDEFEEE00416673 /* FTCrashCxaThrowSwapper.c */; };
-		17A4223F2EDEFEEE00416673 /* FTCrashCxaThrowSwapper.h in Headers */ = {isa = PBXBuildFile; fileRef = 17A4223C2EDEFEEE00416673 /* FTCrashCxaThrowSwapper.h */; };
 		17A422402EDEFEEE00416673 /* FTCrashCxaThrowSwapper.c in Sources */ = {isa = PBXBuildFile; fileRef = 17A4223D2EDEFEEE00416673 /* FTCrashCxaThrowSwapper.c */; };
 		17A422412EDEFEEE00416673 /* FTCrashCxaThrowSwapper.h in Headers */ = {isa = PBXBuildFile; fileRef = 17A4223C2EDEFEEE00416673 /* FTCrashCxaThrowSwapper.h */; };
 		17A422422EDEFEEE00416673 /* FTCrashCxaThrowSwapper.h in Headers */ = {isa = PBXBuildFile; fileRef = 17A4223C2EDEFEEE00416673 /* FTCrashCxaThrowSwapper.h */; };
@@ -835,12 +696,9 @@
 		17A422492EDEFFCA00416673 /* FTCrashMach-O.h in Headers */ = {isa = PBXBuildFile; fileRef = 17A422462EDEFFCA00416673 /* FTCrashMach-O.h */; };
 		17A4224A2EDEFFCA00416673 /* FTCrashMach-O.h in Headers */ = {isa = PBXBuildFile; fileRef = 17A422462EDEFFCA00416673 /* FTCrashMach-O.h */; };
 		17A4224B2EDEFFCA00416673 /* FTCrashMach-O.c in Sources */ = {isa = PBXBuildFile; fileRef = 17A422472EDEFFCA00416673 /* FTCrashMach-O.c */; };
-		17A4224C2EDEFFCA00416673 /* FTCrashMach-O.c in Sources */ = {isa = PBXBuildFile; fileRef = 17A422472EDEFFCA00416673 /* FTCrashMach-O.c */; };
-		17A4224D2EDEFFCA00416673 /* FTCrashMach-O.h in Headers */ = {isa = PBXBuildFile; fileRef = 17A422462EDEFFCA00416673 /* FTCrashMach-O.h */; };
 		17A4224E2EDEFFCA00416673 /* FTCrashMach-O.h in Headers */ = {isa = PBXBuildFile; fileRef = 17A422462EDEFFCA00416673 /* FTCrashMach-O.h */; };
 		17A4224F2EDEFFCA00416673 /* FTCrashMach-O.c in Sources */ = {isa = PBXBuildFile; fileRef = 17A422472EDEFFCA00416673 /* FTCrashMach-O.c */; };
 		17A422812EE19DFF00416673 /* FTCrashReportFilter.h in Headers */ = {isa = PBXBuildFile; fileRef = 17A422802EE19DFF00416673 /* FTCrashReportFilter.h */; };
-		17A422822EE19DFF00416673 /* FTCrashReportFilter.h in Headers */ = {isa = PBXBuildFile; fileRef = 17A422802EE19DFF00416673 /* FTCrashReportFilter.h */; };
 		17A422832EE19DFF00416673 /* FTCrashReportFilter.h in Headers */ = {isa = PBXBuildFile; fileRef = 17A422802EE19DFF00416673 /* FTCrashReportFilter.h */; };
 		17A422842EE19DFF00416673 /* FTCrashReportFilter.h in Headers */ = {isa = PBXBuildFile; fileRef = 17A422802EE19DFF00416673 /* FTCrashReportFilter.h */; };
 		17A422912EE27DF200416673 /* FTCrashJSONCodecObjC.h in Headers */ = {isa = PBXBuildFile; fileRef = 17A4228F2EE27DF200416673 /* FTCrashJSONCodecObjC.h */; };
@@ -849,18 +707,12 @@
 		17A422942EE27DF200416673 /* FTCrashJSONCodecObjC.h in Headers */ = {isa = PBXBuildFile; fileRef = 17A4228F2EE27DF200416673 /* FTCrashJSONCodecObjC.h */; };
 		17A422952EE27DF200416673 /* FTCrashJSONCodecObjC.m in Sources */ = {isa = PBXBuildFile; fileRef = 17A422902EE27DF200416673 /* FTCrashJSONCodecObjC.m */; };
 		17A422962EE27DF200416673 /* FTCrashJSONCodecObjC.h in Headers */ = {isa = PBXBuildFile; fileRef = 17A4228F2EE27DF200416673 /* FTCrashJSONCodecObjC.h */; };
-		17A422972EE27DF200416673 /* FTCrashJSONCodecObjC.m in Sources */ = {isa = PBXBuildFile; fileRef = 17A422902EE27DF200416673 /* FTCrashJSONCodecObjC.m */; };
-		17A422982EE27DF200416673 /* FTCrashJSONCodecObjC.h in Headers */ = {isa = PBXBuildFile; fileRef = 17A4228F2EE27DF200416673 /* FTCrashJSONCodecObjC.h */; };
 		17A422BA2EE2C06500416673 /* FTCrashBacktrace.h in Headers */ = {isa = PBXBuildFile; fileRef = 17A422B82EE2C06500416673 /* FTCrashBacktrace.h */; };
 		17A422BB2EE2C06500416673 /* FTCrashBacktrace.c in Sources */ = {isa = PBXBuildFile; fileRef = 17A422B92EE2C06500416673 /* FTCrashBacktrace.c */; };
-		17A422BC2EE2C06500416673 /* FTCrashBacktrace.h in Headers */ = {isa = PBXBuildFile; fileRef = 17A422B82EE2C06500416673 /* FTCrashBacktrace.h */; };
-		17A422BD2EE2C06500416673 /* FTCrashBacktrace.c in Sources */ = {isa = PBXBuildFile; fileRef = 17A422B92EE2C06500416673 /* FTCrashBacktrace.c */; };
 		17A422BE2EE2C06500416673 /* FTCrashBacktrace.c in Sources */ = {isa = PBXBuildFile; fileRef = 17A422B92EE2C06500416673 /* FTCrashBacktrace.c */; };
 		17A422BF2EE2C06500416673 /* FTCrashBacktrace.h in Headers */ = {isa = PBXBuildFile; fileRef = 17A422B82EE2C06500416673 /* FTCrashBacktrace.h */; };
 		17A422C02EE2C06500416673 /* FTCrashBacktrace.c in Sources */ = {isa = PBXBuildFile; fileRef = 17A422B92EE2C06500416673 /* FTCrashBacktrace.c */; };
 		17A422C12EE2C06500416673 /* FTCrashBacktrace.h in Headers */ = {isa = PBXBuildFile; fileRef = 17A422B82EE2C06500416673 /* FTCrashBacktrace.h */; };
-		17A422CE2EE2E64C00416673 /* FTCrashNSErrorHelper.h in Headers */ = {isa = PBXBuildFile; fileRef = 17A422CC2EE2E64C00416673 /* FTCrashNSErrorHelper.h */; };
-		17A422CF2EE2E64C00416673 /* FTCrashNSErrorHelper.m in Sources */ = {isa = PBXBuildFile; fileRef = 17A422CD2EE2E64C00416673 /* FTCrashNSErrorHelper.m */; };
 		17A422D02EE2E64C00416673 /* FTCrashNSErrorHelper.h in Headers */ = {isa = PBXBuildFile; fileRef = 17A422CC2EE2E64C00416673 /* FTCrashNSErrorHelper.h */; };
 		17A422D12EE2E64C00416673 /* FTCrashNSErrorHelper.m in Sources */ = {isa = PBXBuildFile; fileRef = 17A422CD2EE2E64C00416673 /* FTCrashNSErrorHelper.m */; };
 		17A422D22EE2E64C00416673 /* FTCrashNSErrorHelper.m in Sources */ = {isa = PBXBuildFile; fileRef = 17A422CD2EE2E64C00416673 /* FTCrashNSErrorHelper.m */; };
@@ -868,22 +720,17 @@
 		17A422D42EE2E64C00416673 /* FTCrashNSErrorHelper.h in Headers */ = {isa = PBXBuildFile; fileRef = 17A422CC2EE2E64C00416673 /* FTCrashNSErrorHelper.h */; };
 		17A422D52EE2E64C00416673 /* FTCrashNSErrorHelper.m in Sources */ = {isa = PBXBuildFile; fileRef = 17A422CD2EE2E64C00416673 /* FTCrashNSErrorHelper.m */; };
 		17A422D72EE2EF9000416673 /* FTCrashJailbreak.h in Headers */ = {isa = PBXBuildFile; fileRef = 17A422D62EE2EF9000416673 /* FTCrashJailbreak.h */; };
-		17A422D82EE2EF9000416673 /* FTCrashJailbreak.h in Headers */ = {isa = PBXBuildFile; fileRef = 17A422D62EE2EF9000416673 /* FTCrashJailbreak.h */; };
 		17A422D92EE2EF9000416673 /* FTCrashJailbreak.h in Headers */ = {isa = PBXBuildFile; fileRef = 17A422D62EE2EF9000416673 /* FTCrashJailbreak.h */; };
 		17A422DA2EE2EF9000416673 /* FTCrashJailbreak.h in Headers */ = {isa = PBXBuildFile; fileRef = 17A422D62EE2EF9000416673 /* FTCrashJailbreak.h */; };
 		17A4230C2EEAB9E400416673 /* FTFatalErrorContext.m in Sources */ = {isa = PBXBuildFile; fileRef = 17A4230B2EEAB9E400416673 /* FTFatalErrorContext.m */; };
-		17A4230D2EEAB9E400416673 /* FTFatalErrorContext.m in Sources */ = {isa = PBXBuildFile; fileRef = 17A4230B2EEAB9E400416673 /* FTFatalErrorContext.m */; };
 		17A4230E2EEAB9E400416673 /* FTFatalErrorContext.m in Sources */ = {isa = PBXBuildFile; fileRef = 17A4230B2EEAB9E400416673 /* FTFatalErrorContext.m */; };
 		17A4230F2EEAB9E400416673 /* FTFatalErrorContext.m in Sources */ = {isa = PBXBuildFile; fileRef = 17A4230B2EEAB9E400416673 /* FTFatalErrorContext.m */; };
 		17A423262EEAE57300416673 /* FTCrashNSDictionaryHelper.m in Sources */ = {isa = PBXBuildFile; fileRef = 17A423252EEAE57300416673 /* FTCrashNSDictionaryHelper.m */; };
 		17A423272EEAE57300416673 /* FTCrashNSDictionaryHelper.h in Headers */ = {isa = PBXBuildFile; fileRef = 17A423242EEAE57300416673 /* FTCrashNSDictionaryHelper.h */; };
 		17A423282EEAE57300416673 /* FTCrashNSDictionaryHelper.h in Headers */ = {isa = PBXBuildFile; fileRef = 17A423242EEAE57300416673 /* FTCrashNSDictionaryHelper.h */; };
 		17A423292EEAE57300416673 /* FTCrashNSDictionaryHelper.m in Sources */ = {isa = PBXBuildFile; fileRef = 17A423252EEAE57300416673 /* FTCrashNSDictionaryHelper.m */; };
-		17A4232A2EEAE57300416673 /* FTCrashNSDictionaryHelper.m in Sources */ = {isa = PBXBuildFile; fileRef = 17A423252EEAE57300416673 /* FTCrashNSDictionaryHelper.m */; };
-		17A4232B2EEAE57300416673 /* FTCrashNSDictionaryHelper.h in Headers */ = {isa = PBXBuildFile; fileRef = 17A423242EEAE57300416673 /* FTCrashNSDictionaryHelper.h */; };
 		17A4232C2EEAE57300416673 /* FTCrashNSDictionaryHelper.h in Headers */ = {isa = PBXBuildFile; fileRef = 17A423242EEAE57300416673 /* FTCrashNSDictionaryHelper.h */; };
 		17A4232D2EEAE57300416673 /* FTCrashNSDictionaryHelper.m in Sources */ = {isa = PBXBuildFile; fileRef = 17A423252EEAE57300416673 /* FTCrashNSDictionaryHelper.m */; };
-		17A423392EEAE65700416673 /* FTCrashVarArgs.h in Headers */ = {isa = PBXBuildFile; fileRef = 17A423382EEAE65700416673 /* FTCrashVarArgs.h */; };
 		17A4233A2EEAE65700416673 /* FTCrashVarArgs.h in Headers */ = {isa = PBXBuildFile; fileRef = 17A423382EEAE65700416673 /* FTCrashVarArgs.h */; };
 		17A4233B2EEAE65700416673 /* FTCrashVarArgs.h in Headers */ = {isa = PBXBuildFile; fileRef = 17A423382EEAE65700416673 /* FTCrashVarArgs.h */; };
 		17A4233C2EEAE65700416673 /* FTCrashVarArgs.h in Headers */ = {isa = PBXBuildFile; fileRef = 17A423382EEAE65700416673 /* FTCrashVarArgs.h */; };
@@ -891,8 +738,6 @@
 		17A423402EEBC6A600416673 /* FTCrashReportWrapper.h in Headers */ = {isa = PBXBuildFile; fileRef = 17A4233D2EEBC6A600416673 /* FTCrashReportWrapper.h */; };
 		17A423412EEBC6A600416673 /* FTCrashReportWrapper.h in Headers */ = {isa = PBXBuildFile; fileRef = 17A4233D2EEBC6A600416673 /* FTCrashReportWrapper.h */; };
 		17A423422EEBC6A600416673 /* FTCrashReportWrapper.m in Sources */ = {isa = PBXBuildFile; fileRef = 17A4233E2EEBC6A600416673 /* FTCrashReportWrapper.m */; };
-		17A423432EEBC6A600416673 /* FTCrashReportWrapper.m in Sources */ = {isa = PBXBuildFile; fileRef = 17A4233E2EEBC6A600416673 /* FTCrashReportWrapper.m */; };
-		17A423442EEBC6A600416673 /* FTCrashReportWrapper.h in Headers */ = {isa = PBXBuildFile; fileRef = 17A4233D2EEBC6A600416673 /* FTCrashReportWrapper.h */; };
 		17A423452EEBC6A600416673 /* FTCrashReportWrapper.m in Sources */ = {isa = PBXBuildFile; fileRef = 17A4233E2EEBC6A600416673 /* FTCrashReportWrapper.m */; };
 		17A423462EEBC6A600416673 /* FTCrashReportWrapper.h in Headers */ = {isa = PBXBuildFile; fileRef = 17A4233D2EEBC6A600416673 /* FTCrashReportWrapper.h */; };
 		17A9BE322C5CE8A200DEC5FE /* FTResourceMetricsModel+Private.h in Headers */ = {isa = PBXBuildFile; fileRef = 17A9BE312C5CE8A100DEC5FE /* FTResourceMetricsModel+Private.h */; };
@@ -994,19 +839,13 @@
 		17BCF3822D66EB2A009A63FD /* FTWeakPropertyContainer.h in Headers */ = {isa = PBXBuildFile; fileRef = 17BCF37C2D66EB2A009A63FD /* FTWeakPropertyContainer.h */; };
 		17BCF3832D66EB2A009A63FD /* FTWeakPropertyContainer.m in Sources */ = {isa = PBXBuildFile; fileRef = 17BCF37D2D66EB2A009A63FD /* FTWeakPropertyContainer.m */; };
 		17C2FD042E3B3E09003D600F /* FTRumConfig.h in Headers */ = {isa = PBXBuildFile; fileRef = 17C2FD032E3B3E09003D600F /* FTRumConfig.h */; };
-		17C2FD052E3B3E09003D600F /* FTRumConfig.h in Headers */ = {isa = PBXBuildFile; fileRef = 17C2FD032E3B3E09003D600F /* FTRumConfig.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		17C2FD062E3B3E09003D600F /* FTRumConfig.h in Headers */ = {isa = PBXBuildFile; fileRef = 17C2FD032E3B3E09003D600F /* FTRumConfig.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		17C2FD082E3B3E42003D600F /* FTRumConfig+Private.h in Headers */ = {isa = PBXBuildFile; fileRef = 17C2FD072E3B3E42003D600F /* FTRumConfig+Private.h */; };
 		17C2FD092E3B3E42003D600F /* FTRumConfig+Private.h in Headers */ = {isa = PBXBuildFile; fileRef = 17C2FD072E3B3E42003D600F /* FTRumConfig+Private.h */; };
-		17C2FD0A2E3B3E42003D600F /* FTRumConfig+Private.h in Headers */ = {isa = PBXBuildFile; fileRef = 17C2FD072E3B3E42003D600F /* FTRumConfig+Private.h */; };
 		17C2FD182E3B400D003D600F /* FTRumConfig.m in Sources */ = {isa = PBXBuildFile; fileRef = 172B100E2E2F8FEA00753766 /* FTRumConfig.m */; };
 		17C2FD1E2E3B448A003D600F /* FTRUMView.h in Headers */ = {isa = PBXBuildFile; fileRef = 17C2FD1B2E3B448A003D600F /* FTRUMView.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		17C2FD1F2E3B448A003D600F /* FTViewTrackingHandler.h in Headers */ = {isa = PBXBuildFile; fileRef = 17C2FD1C2E3B448A003D600F /* FTViewTrackingHandler.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		17C2FD202E3B448A003D600F /* FTRUMAction.h in Headers */ = {isa = PBXBuildFile; fileRef = 17C2FD1A2E3B448A003D600F /* FTRUMAction.h */; settings = {ATTRIBUTES = (Public, ); }; };
-		17C2FD212E3B448A003D600F /* FTActionTrackingHandler.h in Headers */ = {isa = PBXBuildFile; fileRef = 17C2FD192E3B448A003D600F /* FTActionTrackingHandler.h */; settings = {ATTRIBUTES = (Public, ); }; };
-		17C2FD222E3B448A003D600F /* FTRUMView.h in Headers */ = {isa = PBXBuildFile; fileRef = 17C2FD1B2E3B448A003D600F /* FTRUMView.h */; settings = {ATTRIBUTES = (Public, ); }; };
-		17C2FD232E3B448A003D600F /* FTViewTrackingHandler.h in Headers */ = {isa = PBXBuildFile; fileRef = 17C2FD1C2E3B448A003D600F /* FTViewTrackingHandler.h */; settings = {ATTRIBUTES = (Public, ); }; };
-		17C2FD242E3B448A003D600F /* FTRUMAction.h in Headers */ = {isa = PBXBuildFile; fileRef = 17C2FD1A2E3B448A003D600F /* FTRUMAction.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		17C2FD252E3B448A003D600F /* FTActionTrackingHandler.h in Headers */ = {isa = PBXBuildFile; fileRef = 17C2FD192E3B448A003D600F /* FTActionTrackingHandler.h */; };
 		17C2FD262E3B448A003D600F /* FTRUMView.h in Headers */ = {isa = PBXBuildFile; fileRef = 17C2FD1B2E3B448A003D600F /* FTRUMView.h */; };
 		17C2FD272E3B448A003D600F /* FTViewTrackingHandler.h in Headers */ = {isa = PBXBuildFile; fileRef = 17C2FD1C2E3B448A003D600F /* FTViewTrackingHandler.h */; };
@@ -1021,25 +860,17 @@
 		17C2FE312E3B87A9003D600F /* FTRUMAction.m in Sources */ = {isa = PBXBuildFile; fileRef = 17C2FCEA2E39CDA7003D600F /* FTRUMAction.m */; };
 		17C2FE322E3B87A9003D600F /* FTRUMAction.m in Sources */ = {isa = PBXBuildFile; fileRef = 17C2FCEA2E39CDA7003D600F /* FTRUMAction.m */; };
 		17C2FE332E3B87A9003D600F /* FTRUMAction.m in Sources */ = {isa = PBXBuildFile; fileRef = 17C2FCEA2E39CDA7003D600F /* FTRUMAction.m */; };
-		17C2FE342E3B87A9003D600F /* FTRUMAction.m in Sources */ = {isa = PBXBuildFile; fileRef = 17C2FCEA2E39CDA7003D600F /* FTRUMAction.m */; };
-		17C2FE452E3B8CD5003D600F /* FTRUMHandler.h in Headers */ = {isa = PBXBuildFile; fileRef = 17C2FE442E3B8CD5003D600F /* FTRUMHandler.h */; };
 		17C2FE462E3B8CD5003D600F /* FTRUMHandler.h in Headers */ = {isa = PBXBuildFile; fileRef = 17C2FE442E3B8CD5003D600F /* FTRUMHandler.h */; };
 		17C2FE472E3B8CD5003D600F /* FTRUMHandler.h in Headers */ = {isa = PBXBuildFile; fileRef = 17C2FE442E3B8CD5003D600F /* FTRUMHandler.h */; };
 		17C2FE482E3B8CD5003D600F /* FTRUMHandler.h in Headers */ = {isa = PBXBuildFile; fileRef = 17C2FE442E3B8CD5003D600F /* FTRUMHandler.h */; settings = {ATTRIBUTES = (Public, ); }; };
-		17C2FE4A2E3B8CE8003D600F /* FTRUMDataModel.m in Sources */ = {isa = PBXBuildFile; fileRef = 17C2FE492E3B8CE8003D600F /* FTRUMDataModel.m */; };
 		17C2FE4B2E3B8CE8003D600F /* FTRUMDataModel.m in Sources */ = {isa = PBXBuildFile; fileRef = 17C2FE492E3B8CE8003D600F /* FTRUMDataModel.m */; };
 		17C2FE4C2E3B8CE8003D600F /* FTRUMDataModel.m in Sources */ = {isa = PBXBuildFile; fileRef = 17C2FE492E3B8CE8003D600F /* FTRUMDataModel.m */; };
 		17C2FE4D2E3B8CE8003D600F /* FTRUMDataModel.m in Sources */ = {isa = PBXBuildFile; fileRef = 17C2FE492E3B8CE8003D600F /* FTRUMDataModel.m */; };
 		17C2FEA42E4327C6003D600F /* FTRUMDataModel.h in Headers */ = {isa = PBXBuildFile; fileRef = 17C2FEA32E4327C6003D600F /* FTRUMDataModel.h */; settings = {ATTRIBUTES = (Public, ); }; };
-		17C2FEA52E4327C6003D600F /* FTRUMDataModel.h in Headers */ = {isa = PBXBuildFile; fileRef = 17C2FEA32E4327C6003D600F /* FTRUMDataModel.h */; };
 		17C2FEA62E4327C6003D600F /* FTRUMDataModel.h in Headers */ = {isa = PBXBuildFile; fileRef = 17C2FEA32E4327C6003D600F /* FTRUMDataModel.h */; };
 		17C2FEA72E4327C6003D600F /* FTRUMDataModel.h in Headers */ = {isa = PBXBuildFile; fileRef = 17C2FEA32E4327C6003D600F /* FTRUMDataModel.h */; };
-		17C2FEAA2E432949003D600F /* FTDefaultUIKitViewTrackingHandler.m in Sources */ = {isa = PBXBuildFile; fileRef = 17C2FEA92E432949003D600F /* FTDefaultUIKitViewTrackingHandler.m */; };
-		17C2FEAB2E432949003D600F /* FTDefaultUIKitViewTrackingHandler.h in Headers */ = {isa = PBXBuildFile; fileRef = 17C2FEA82E432949003D600F /* FTDefaultUIKitViewTrackingHandler.h */; };
 		17C2FEAC2E432949003D600F /* FTDefaultUIKitViewTrackingHandler.h in Headers */ = {isa = PBXBuildFile; fileRef = 17C2FEA82E432949003D600F /* FTDefaultUIKitViewTrackingHandler.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		17C2FEAD2E432949003D600F /* FTDefaultUIKitViewTrackingHandler.m in Sources */ = {isa = PBXBuildFile; fileRef = 17C2FEA92E432949003D600F /* FTDefaultUIKitViewTrackingHandler.m */; };
-		17C2FEB42E432B9A003D600F /* FTDefaultActionTrackingHandler.m in Sources */ = {isa = PBXBuildFile; fileRef = 17C2FEB32E432B9A003D600F /* FTDefaultActionTrackingHandler.m */; };
-		17C2FEB52E432B9A003D600F /* FTDefaultActionTrackingHandler.h in Headers */ = {isa = PBXBuildFile; fileRef = 17C2FEB22E432B9A003D600F /* FTDefaultActionTrackingHandler.h */; };
 		17C2FEB62E432B9A003D600F /* FTDefaultActionTrackingHandler.h in Headers */ = {isa = PBXBuildFile; fileRef = 17C2FEB22E432B9A003D600F /* FTDefaultActionTrackingHandler.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		17C2FEB72E432B9A003D600F /* FTDefaultActionTrackingHandler.m in Sources */ = {isa = PBXBuildFile; fileRef = 17C2FEB32E432B9A003D600F /* FTDefaultActionTrackingHandler.m */; };
 		17C33AA42D93D68B003BB98B /* FTDataWriterWorker.m in Sources */ = {isa = PBXBuildFile; fileRef = 17C33AA32D93D68B003BB98B /* FTDataWriterWorker.m */; };
@@ -1075,7 +906,6 @@
 		17E4CB4529CD42DA005C2D99 /* FTRecordModel.m in Sources */ = {isa = PBXBuildFile; fileRef = 17E4CB0129CD42DA005C2D99 /* FTRecordModel.m */; };
 		17E4CB4629CD42DA005C2D99 /* FTLog.m in Sources */ = {isa = PBXBuildFile; fileRef = 17E4CB0229CD42DA005C2D99 /* FTLog.m */; };
 		17E4CB4729CD42DA005C2D99 /* FTJSONUtil.h in Headers */ = {isa = PBXBuildFile; fileRef = 17E4CB0329CD42DA005C2D99 /* FTJSONUtil.h */; };
-		17E4CB4829CD42DA005C2D99 /* FTJsonWriter.h in Headers */ = {isa = PBXBuildFile; fileRef = 17E4CB0429CD42DA005C2D99 /* FTJsonWriter.h */; };
 		17E4CB4929CD42DA005C2D99 /* NSString+FTAdd.h in Headers */ = {isa = PBXBuildFile; fileRef = 17E4CB0529CD42DA005C2D99 /* NSString+FTAdd.h */; };
 		17E4CB4A29CD42DA005C2D99 /* FTEnumConstant.m in Sources */ = {isa = PBXBuildFile; fileRef = 17E4CB0629CD42DA005C2D99 /* FTEnumConstant.m */; };
 		17E4CB4B29CD42DA005C2D99 /* FTReadWriteHelper.m in Sources */ = {isa = PBXBuildFile; fileRef = 17E4CB0729CD42DA005C2D99 /* FTReadWriteHelper.m */; };
@@ -1087,7 +917,6 @@
 		17E4CB5529CD42DA005C2D99 /* FTBaseInfoHandler.m in Sources */ = {isa = PBXBuildFile; fileRef = 17E4CB1129CD42DA005C2D99 /* FTBaseInfoHandler.m */; };
 		17E4CB5729CD42DA005C2D99 /* FTEnumConstant.h in Headers */ = {isa = PBXBuildFile; fileRef = 17E4CB1329CD42DA005C2D99 /* FTEnumConstant.h */; };
 		17E4CB5829CD42DA005C2D99 /* NSString+FTAdd.m in Sources */ = {isa = PBXBuildFile; fileRef = 17E4CB1429CD42DA005C2D99 /* NSString+FTAdd.m */; };
-		17E4CB5929CD42DA005C2D99 /* FTJsonWriter.m in Sources */ = {isa = PBXBuildFile; fileRef = 17E4CB1529CD42DA005C2D99 /* FTJsonWriter.m */; };
 		17E4CB5A29CD42DA005C2D99 /* FTJSONUtil.m in Sources */ = {isa = PBXBuildFile; fileRef = 17E4CB1629CD42DA005C2D99 /* FTJSONUtil.m */; };
 		17E4CB5B29CD42DA005C2D99 /* FTResourceMetricsModel.m in Sources */ = {isa = PBXBuildFile; fileRef = 17E4CB1729CD42DA005C2D99 /* FTResourceMetricsModel.m */; };
 		17E4CB5C29CD42DA005C2D99 /* FTResourceContentModel.m in Sources */ = {isa = PBXBuildFile; fileRef = 17E4CB1829CD42DA005C2D99 /* FTResourceContentModel.m */; };
@@ -1147,211 +976,6 @@
 		17F59C662DF2EACB003FCB84 /* FTLoggerConfig+Private.h in Headers */ = {isa = PBXBuildFile; fileRef = 17F59C652DF2EACB003FCB84 /* FTLoggerConfig+Private.h */; };
 		17F59C672DF2EACB003FCB84 /* FTLoggerConfig+Private.h in Headers */ = {isa = PBXBuildFile; fileRef = 17F59C652DF2EACB003FCB84 /* FTLoggerConfig+Private.h */; };
 		17F59C682DF2EACB003FCB84 /* FTLoggerConfig+Private.h in Headers */ = {isa = PBXBuildFile; fileRef = 17F59C652DF2EACB003FCB84 /* FTLoggerConfig+Private.h */; };
-		17F6522D2DF81A73005C91DB /* FTMobileAgent+Private.h in Headers */ = {isa = PBXBuildFile; fileRef = 17678E2229D28BD200C1DA98 /* FTMobileAgent+Private.h */; };
-		17F6522E2DF81A73005C91DB /* FTExternalDataManager+Private.h in Headers */ = {isa = PBXBuildFile; fileRef = 17E4CBCF29CD42E4005C2D99 /* FTExternalDataManager+Private.h */; };
-		17F6522F2DF81A73005C91DB /* FTTrackDataManager.h in Headers */ = {isa = PBXBuildFile; fileRef = 1763BD7229DFF04F009EE026 /* FTTrackDataManager.h */; };
-		17F652302DF81A73005C91DB /* FTSwizzle.h in Headers */ = {isa = PBXBuildFile; fileRef = 17E4CAEE29CD42DA005C2D99 /* FTSwizzle.h */; };
-		17F652312DF81A73005C91DB /* FTURLSessionInterceptor+Private.h in Headers */ = {isa = PBXBuildFile; fileRef = 177155B92B0F5C2F00C26DC4 /* FTURLSessionInterceptor+Private.h */; };
-		17F652332DF81A73005C91DB /* FTMemoryMonitor.h in Headers */ = {isa = PBXBuildFile; fileRef = 17AB769529D432DE008FBBF5 /* FTMemoryMonitor.h */; };
-		17F652352DF81A73005C91DB /* FTResourceContentModel.h in Headers */ = {isa = PBXBuildFile; fileRef = 17E4CB0829CD42DA005C2D99 /* FTResourceContentModel.h */; settings = {ATTRIBUTES = (Public, ); }; };
-		17F652362DF81A73005C91DB /* FTDataWriterWorker.h in Headers */ = {isa = PBXBuildFile; fileRef = 17C33AA22D93D68B003BB98B /* FTDataWriterWorker.h */; };
-		17F652372DF81A73005C91DB /* FTLogger.h in Headers */ = {isa = PBXBuildFile; fileRef = 178649302A1DB58400521187 /* FTLogger.h */; settings = {ATTRIBUTES = (Public, ); }; };
-		17F652382DF81A73005C91DB /* NSNumber+FTAdd.h in Headers */ = {isa = PBXBuildFile; fileRef = 1759510A2A6FE4DE006FAB9D /* NSNumber+FTAdd.h */; };
-		17F652392DF81A73005C91DB /* NSDictionary+FTCopyProperties.h in Headers */ = {isa = PBXBuildFile; fileRef = 174BC8772BFC9F8A00478EE1 /* NSDictionary+FTCopyProperties.h */; };
-		17F6523A2DF81A73005C91DB /* FTHTTPClient.h in Headers */ = {isa = PBXBuildFile; fileRef = 1763BD6C29DFF04F009EE026 /* FTHTTPClient.h */; };
-		17F6523B2DF81A73005C91DB /* FTExternalResourceProtocol.h in Headers */ = {isa = PBXBuildFile; fileRef = 17E4CBB529CD42E4005C2D99 /* FTExternalResourceProtocol.h */; };
-		17F6523C2DF81A73005C91DB /* FTWKWebViewJavascriptBridge.h in Headers */ = {isa = PBXBuildFile; fileRef = 1776062729D1347400D17137 /* FTWKWebViewJavascriptBridge.h */; };
-		17F6523D2DF81A73005C91DB /* FTTraceManager.h in Headers */ = {isa = PBXBuildFile; fileRef = 17678E2329D28BD200C1DA98 /* FTTraceManager.h */; settings = {ATTRIBUTES = (Public, ); }; };
-		17F6523E2DF81A73005C91DB /* FTDataModifier.h in Headers */ = {isa = PBXBuildFile; fileRef = 17E5ED8C2DD2095000E5A971 /* FTDataModifier.h */; settings = {ATTRIBUTES = (Public, ); }; };
-		17F6523F2DF81A73005C91DB /* FTUploadProtocol.h in Headers */ = {isa = PBXBuildFile; fileRef = 171269622DC9B2D2002D238B /* FTUploadProtocol.h */; };
-		17F652412DF81A73005C91DB /* FTBaseInfoHandler.h in Headers */ = {isa = PBXBuildFile; fileRef = 17E4CAFE29CD42DA005C2D99 /* FTBaseInfoHandler.h */; };
-		17F652422DF81A73005C91DB /* FTMobileConfig.h in Headers */ = {isa = PBXBuildFile; fileRef = 17678E1829D28BD200C1DA98 /* FTMobileConfig.h */; settings = {ATTRIBUTES = (Public, ); }; };
-		17F652432DF81A73005C91DB /* FTSerialNumberGenerator.h in Headers */ = {isa = PBXBuildFile; fileRef = 173E45E12D81907F00900F52 /* FTSerialNumberGenerator.h */; };
-		17F652442DF81A73005C91DB /* FTLog.h in Headers */ = {isa = PBXBuildFile; fileRef = 17E4CB0C29CD42DA005C2D99 /* FTLog.h */; settings = {ATTRIBUTES = (Public, ); }; };
-		17F652452DF81A73005C91DB /* FTRecordModel.h in Headers */ = {isa = PBXBuildFile; fileRef = 17E4CB0D29CD42DA005C2D99 /* FTRecordModel.h */; };
-		17F652472DF81A73005C91DB /* FTRumResourceProtocol.h in Headers */ = {isa = PBXBuildFile; fileRef = 17E4CBAF29CD42E4005C2D99 /* FTRumResourceProtocol.h */; };
-		17F652482DF81A73005C91DB /* FTRequest.h in Headers */ = {isa = PBXBuildFile; fileRef = 1763BD7329DFF04F009EE026 /* FTRequest.h */; };
-		17F652492DF81A73005C91DB /* FTMonitorUtils.h in Headers */ = {isa = PBXBuildFile; fileRef = 17AB76A229D432DE008FBBF5 /* FTMonitorUtils.h */; };
-		17F6524A2DF81A73005C91DB /* FTMobileSDK.h in Headers */ = {isa = PBXBuildFile; fileRef = 17563F9B2AAAC4D00077C067 /* FTMobileSDK.h */; settings = {ATTRIBUTES = (Public, ); }; };
-		17F6524B2DF81A73005C91DB /* FTOSLogger.h in Headers */ = {isa = PBXBuildFile; fileRef = 1776BA7E2B99B668008424FF /* FTOSLogger.h */; };
-		17F6524C2DF81A73005C91DB /* FTPresetProperty.h in Headers */ = {isa = PBXBuildFile; fileRef = 1799581129D43FDE0033B46E /* FTPresetProperty.h */; };
-		17F6524D2DF81A73005C91DB /* FTResourceMetricsModel.h in Headers */ = {isa = PBXBuildFile; fileRef = 17E4CB0929CD42DA005C2D99 /* FTResourceMetricsModel.h */; settings = {ATTRIBUTES = (Public, ); }; };
-		17F6524F2DF81A73005C91DB /* FTRUMResourceHandler.h in Headers */ = {isa = PBXBuildFile; fileRef = 17AB76B229D432DE008FBBF5 /* FTRUMResourceHandler.h */; };
-		17F652502DF81A73005C91DB /* FTMonitorItem.h in Headers */ = {isa = PBXBuildFile; fileRef = 17AB769829D432DE008FBBF5 /* FTMonitorItem.h */; };
-		17F652512DF81A73005C91DB /* FTTracer.h in Headers */ = {isa = PBXBuildFile; fileRef = 17E4CB7029CD42E4005C2D99 /* FTTracer.h */; };
-		17F652532DF81A73005C91DB /* UIGestureRecognizer+FTAutoTrack.h in Headers */ = {isa = PBXBuildFile; fileRef = 17E4CBBF29CD42E4005C2D99 /* UIGestureRecognizer+FTAutoTrack.h */; };
-		17F652542DF81A73005C91DB /* FTRUMDataWriteProtocol.h in Headers */ = {isa = PBXBuildFile; fileRef = 17AB76AA29D432DE008FBBF5 /* FTRUMDataWriteProtocol.h */; };
-		17F652552DF81A73005C91DB /* FTLinkRumDataProvider.h in Headers */ = {isa = PBXBuildFile; fileRef = 176326FC2CBD415800EEDC71 /* FTLinkRumDataProvider.h */; };
-		17F652562DF81A73005C91DB /* FTConstants.h in Headers */ = {isa = PBXBuildFile; fileRef = 17E4CB0B29CD42DA005C2D99 /* FTConstants.h */; settings = {ATTRIBUTES = (Public, ); }; };
-		17F652572DF81A73005C91DB /* NSURLSession+FTSwizzler.h in Headers */ = {isa = PBXBuildFile; fileRef = 17E4CB6B29CD42E4005C2D99 /* NSURLSession+FTSwizzler.h */; };
-		17F652582DF81A73005C91DB /* FTErrorDataProtocol.h in Headers */ = {isa = PBXBuildFile; fileRef = 17E4CBB329CD42E4005C2D99 /* FTErrorDataProtocol.h */; };
-		17F652592DF81A73005C91DB /* FTAutoInterceptorProtocol.h in Headers */ = {isa = PBXBuildFile; fileRef = 178EF5DC2AEBBD57002A407C /* FTAutoInterceptorProtocol.h */; };
-		17F6525A2DF81A73005C91DB /* FTCrashMonitor_NSException.h in Headers */ = {isa = PBXBuildFile; fileRef = 17400E792B47AAC300ACBA6C /* FTCrashMonitor_NSException.h */; };
-		17F6525B2DF81A73005C91DB /* FTRUMSessionHandler.h in Headers */ = {isa = PBXBuildFile; fileRef = 17AB76A729D432DE008FBBF5 /* FTRUMSessionHandler.h */; };
-		17F6525C2DF81A73005C91DB /* UIScrollView+FTAutoTrack.h in Headers */ = {isa = PBXBuildFile; fileRef = 17E4CBCA29CD42E4005C2D99 /* UIScrollView+FTAutoTrack.h */; };
-		17F6525D2DF81A73005C91DB /* FTExternalDataManager.h in Headers */ = {isa = PBXBuildFile; fileRef = 17E4CBD129CD42E4005C2D99 /* FTExternalDataManager.h */; settings = {ATTRIBUTES = (Public, ); }; };
-		17F6525E2DF81A73005C91DB /* BlacklistedVCClassNames.h in Headers */ = {isa = PBXBuildFile; fileRef = 17E4CBBA29CD42E4005C2D99 /* BlacklistedVCClassNames.h */; };
-		17F6525F2DF81A73005C91DB /* FTAppLifeCycle.h in Headers */ = {isa = PBXBuildFile; fileRef = 17E4CAFC29CD42DA005C2D99 /* FTAppLifeCycle.h */; };
-		17F652602DF81A73005C91DB /* FTUserInfo.h in Headers */ = {isa = PBXBuildFile; fileRef = 1776073429D1416200D17137 /* FTUserInfo.h */; };
-		17F652612DF81A73005C91DB /* FTLogger+Private.h in Headers */ = {isa = PBXBuildFile; fileRef = 174D91A22A2083C300D85AAA /* FTLogger+Private.h */; };
-		17F652632DF81A73005C91DB /* UIView+FTAutoTrack.h in Headers */ = {isa = PBXBuildFile; fileRef = 17E4CBCD29CD42E4005C2D99 /* UIView+FTAutoTrack.h */; };
-		17F652642DF81A73005C91DB /* UIViewController+FTAutoTrack.h in Headers */ = {isa = PBXBuildFile; fileRef = 17E4CBC929CD42E4005C2D99 /* UIViewController+FTAutoTrack.h */; };
-		17F652652DF81A73005C91DB /* FTPackageIdGenerator.h in Headers */ = {isa = PBXBuildFile; fileRef = 173E45DB2D818C8900900F52 /* FTPackageIdGenerator.h */; };
-		17F652662DF81A73005C91DB /* FTRUMViewHandler.h in Headers */ = {isa = PBXBuildFile; fileRef = 17AB76B329D432DE008FBBF5 /* FTRUMViewHandler.h */; };
-		17F652682DF81A73005C91DB /* FTSDKCompat.h in Headers */ = {isa = PBXBuildFile; fileRef = 179BEB902D2D3ACC004AA5A6 /* FTSDKCompat.h */; };
-		17F652692DF81A73005C91DB /* FTThreadDispatchManager.h in Headers */ = {isa = PBXBuildFile; fileRef = 179BEB912D2D3ACC004AA5A6 /* FTThreadDispatchManager.h */; };
-		17F6526A2DF81A73005C91DB /* FTDataUploadWorker.h in Headers */ = {isa = PBXBuildFile; fileRef = 171269592DC21026002D238B /* FTDataUploadWorker.h */; };
-		17F6526C2DF81A73005C91DB /* FTURLSessionDelegate.h in Headers */ = {isa = PBXBuildFile; fileRef = 17E4CB7629CD42E4005C2D99 /* FTURLSessionDelegate.h */; settings = {ATTRIBUTES = (Public, ); }; };
-		17F6526D2DF81A73005C91DB /* FTJsonWriter.h in Headers */ = {isa = PBXBuildFile; fileRef = 17E4CB0429CD42DA005C2D99 /* FTJsonWriter.h */; };
-		17F6526E2DF81A73005C91DB /* NSDate+FTUtil.h in Headers */ = {isa = PBXBuildFile; fileRef = 17AC17492B98635C003E18A6 /* NSDate+FTUtil.h */; };
-		17F6526F2DF81A73005C91DB /* FTRemoteConfigManager.h in Headers */ = {isa = PBXBuildFile; fileRef = 172113B62DF1A200006189C2 /* FTRemoteConfigManager.h */; };
-		17F652712DF81A73005C91DB /* FTWebViewJavascriptBridgeBase.h in Headers */ = {isa = PBXBuildFile; fileRef = 1776062529D1347400D17137 /* FTWebViewJavascriptBridgeBase.h */; };
-		17F652732DF81A73005C91DB /* FTFileLogger.h in Headers */ = {isa = PBXBuildFile; fileRef = 17AC17412B9856C3003E18A6 /* FTFileLogger.h */; };
-		17F652742DF81A73005C91DB /* NSError+FTDescription.h in Headers */ = {isa = PBXBuildFile; fileRef = 17132DBB2C2D652E009DFE8F /* NSError+FTDescription.h */; };
-		17F652752DF81A73005C91DB /* FTAutoTrackHandler.h in Headers */ = {isa = PBXBuildFile; fileRef = 17FFE8422D5E1F9200039827 /* FTAutoTrackHandler.h */; };
-		17F652762DF81A73005C91DB /* FTDataCompression.h in Headers */ = {isa = PBXBuildFile; fileRef = 17440CAB2CBF8B8300BA4B1A /* FTDataCompression.h */; };
-		17F652772DF81A73005C91DB /* FTTrackerEventDBTool.h in Headers */ = {isa = PBXBuildFile; fileRef = 1763BD8329DFF04F009EE026 /* FTTrackerEventDBTool.h */; };
-		17F652782DF81A73005C91DB /* FTExtensionDataManager.h in Headers */ = {isa = PBXBuildFile; fileRef = 17E4CB7F29CD42E4005C2D99 /* FTExtensionDataManager.h */; };
-		17F652792DF81A73005C91DB /* FTRUMActionHandler.h in Headers */ = {isa = PBXBuildFile; fileRef = 17AB76A429D432DE008FBBF5 /* FTRUMActionHandler.h */; };
-		17F6527A2DF81A73005C91DB /* FTLoggerConfig+Private.h in Headers */ = {isa = PBXBuildFile; fileRef = 17F59C652DF2EACB003FCB84 /* FTLoggerConfig+Private.h */; };
-		17F6527B2DF81A73005C91DB /* FTReachability.h in Headers */ = {isa = PBXBuildFile; fileRef = 1763BD7429DFF04F009EE026 /* FTReachability.h */; };
-		17F6527C2DF81A73005C91DB /* FTJSONUtil.h in Headers */ = {isa = PBXBuildFile; fileRef = 17E4CB0329CD42DA005C2D99 /* FTJSONUtil.h */; };
-		17F6527D2DF81A73005C91DB /* FTRemoteConfigurationProtocol.h in Headers */ = {isa = PBXBuildFile; fileRef = 172113C62DF1BB5C006189C2 /* FTRemoteConfigurationProtocol.h */; };
-		17F6527E2DF81A73005C91DB /* ZY_FMDatabase.h in Headers */ = {isa = PBXBuildFile; fileRef = 1763BD7F29DFF04F009EE026 /* ZY_FMDatabase.h */; };
-		17F652802DF81A73005C91DB /* FTSessionTaskHandler.h in Headers */ = {isa = PBXBuildFile; fileRef = 17E4CB6F29CD42E4005C2D99 /* FTSessionTaskHandler.h */; };
-		17F652812DF81A73005C91DB /* FTLogMessage.h in Headers */ = {isa = PBXBuildFile; fileRef = 17AC17392B98525B003E18A6 /* FTLogMessage.h */; };
-		17F652822DF81A73005C91DB /* FTDBDataCachePolicy.h in Headers */ = {isa = PBXBuildFile; fileRef = 1733605B2C05FFD600A50C02 /* FTDBDataCachePolicy.h */; };
-		17F652832DF81A73005C91DB /* FTMobileConfig+Private.h in Headers */ = {isa = PBXBuildFile; fileRef = 17678E1729D28BD200C1DA98 /* FTMobileConfig+Private.h */; settings = {ATTRIBUTES = (Public, ); }; };
-		17F652842DF81A73005C91DB /* FTMonitorValue.h in Headers */ = {isa = PBXBuildFile; fileRef = 17AB769C29D432DE008FBBF5 /* FTMonitorValue.h */; };
-		17F652852DF81A73005C91DB /* NSString+FTAdd.h in Headers */ = {isa = PBXBuildFile; fileRef = 17E4CB0529CD42DA005C2D99 /* NSString+FTAdd.h */; };
-		17F652862DF81A73005C91DB /* FTRemoteConfigurationRequest.h in Headers */ = {isa = PBXBuildFile; fileRef = 172113BE2DF1B476006189C2 /* FTRemoteConfigurationRequest.h */; };
-		17F652872DF81A73005C91DB /* FTURLSessionInterceptor.h in Headers */ = {isa = PBXBuildFile; fileRef = 17E4CB7329CD42E4005C2D99 /* FTURLSessionInterceptor.h */; settings = {ATTRIBUTES = (Public, ); }; };
-		17F652882DF81A73005C91DB /* FTTracerProtocol.h in Headers */ = {isa = PBXBuildFile; fileRef = 17E4CBB029CD42E4005C2D99 /* FTTracerProtocol.h */; };
-		17F652892DF81A73005C91DB /* ZY_FMDatabaseQueue.h in Headers */ = {isa = PBXBuildFile; fileRef = 1763BD7C29DFF04F009EE026 /* ZY_FMDatabaseQueue.h */; };
-		17F6528A2DF81A73005C91DB /* FTSwizzler.h in Headers */ = {isa = PBXBuildFile; fileRef = 17E4CAED29CD42DA005C2D99 /* FTSwizzler.h */; };
-		17F6528B2DF81A73005C91DB /* FTWKWebViewHandler.h in Headers */ = {isa = PBXBuildFile; fileRef = 1776062629D1347400D17137 /* FTWKWebViewHandler.h */; settings = {ATTRIBUTES = (Public, ); }; };
-		17F6528C2DF81A73005C91DB /* FTURLSessionDelegate+Private.h in Headers */ = {isa = PBXBuildFile; fileRef = 1771558F2B046B5800C26DC4 /* FTURLSessionDelegate+Private.h */; };
-		17F6528E2DF81A73005C91DB /* FTReadWriteHelper.h in Headers */ = {isa = PBXBuildFile; fileRef = 17E4CB1929CD42DA005C2D99 /* FTReadWriteHelper.h */; };
-		17F6528F2DF81A73005C91DB /* ZY_FMDatabaseAdditions.h in Headers */ = {isa = PBXBuildFile; fileRef = 1763BD7B29DFF04F009EE026 /* ZY_FMDatabaseAdditions.h */; };
-		17F652902DF81A73005C91DB /* FTWebViewJavascriptLeakAvoider.h in Headers */ = {isa = PBXBuildFile; fileRef = 1776062229D1347400D17137 /* FTWebViewJavascriptLeakAvoider.h */; };
-		17F652912DF81A73005C91DB /* FTRumDatasProtocol.h in Headers */ = {isa = PBXBuildFile; fileRef = 17E4CBB129CD42E4005C2D99 /* FTRumDatasProtocol.h */; settings = {ATTRIBUTES = (Public, ); }; };
-		17F652922DF81A73005C91DB /* FTMobileAgentVersion.h in Headers */ = {isa = PBXBuildFile; fileRef = 17678E1E29D28BD200C1DA98 /* FTMobileAgentVersion.h */; };
-		17F652942DF81A73005C91DB /* FTEnumConstant.h in Headers */ = {isa = PBXBuildFile; fileRef = 17E4CB1329CD42DA005C2D99 /* FTEnumConstant.h */; };
-		17F652962DF81A73005C91DB /* FTTraceContext.h in Headers */ = {isa = PBXBuildFile; fileRef = 17D068182D23F48B00D59159 /* FTTraceContext.h */; settings = {ATTRIBUTES = (Public, ); }; };
-		17F652972DF81A73005C91DB /* FTNetworkConnectivity.h in Headers */ = {isa = PBXBuildFile; fileRef = 17F10DAB2D13C88A00737EDD /* FTNetworkConnectivity.h */; };
-		17F652982DF81A73005C91DB /* WKWebView+FTAutoTrack.h in Headers */ = {isa = PBXBuildFile; fileRef = 1776061D29D1347400D17137 /* WKWebView+FTAutoTrack.h */; };
-		17F652992DF81A73005C91DB /* FTLog+Private.h in Headers */ = {isa = PBXBuildFile; fileRef = 1776BA7A2B997D19008424FF /* FTLog+Private.h */; };
-		17F6529A2DF81A73005C91DB /* FTDURLSessionDelegate.h in Headers */ = {isa = PBXBuildFile; fileRef = 171CE1D62BFB3C550083FC1C /* FTDURLSessionDelegate.h */; };
-		17F6529C2DF81A73005C91DB /* FTNetworkInfoManager.h in Headers */ = {isa = PBXBuildFile; fileRef = 1763BD6F29DFF04F009EE026 /* FTNetworkInfoManager.h */; };
-		17F6529D2DF81A73005C91DB /* ZY_FMDatabasePool.h in Headers */ = {isa = PBXBuildFile; fileRef = 1763BD7A29DFF04F009EE026 /* ZY_FMDatabasePool.h */; };
-		17F6529E2DF81A73005C91DB /* FTURLSessionInstrumentation.h in Headers */ = {isa = PBXBuildFile; fileRef = 17E4CB6729CD42E4005C2D99 /* FTURLSessionInstrumentation.h */; };
-		17F652A02DF81A73005C91DB /* FTURLSessionInterceptorProtocol.h in Headers */ = {isa = PBXBuildFile; fileRef = 17E4CBB229CD42E4005C2D99 /* FTURLSessionInterceptorProtocol.h */; };
-		17F652A12DF81A73005C91DB /* NSURLSessionTask+FTSwizzler.h in Headers */ = {isa = PBXBuildFile; fileRef = 17D068202D26668400D59159 /* NSURLSessionTask+FTSwizzler.h */; };
-		17F652A22DF81A73005C91DB /* FTWKWebViewHandler+Private.h in Headers */ = {isa = PBXBuildFile; fileRef = 17AB09272DE73BFF004F6446 /* FTWKWebViewHandler+Private.h */; };
-		17F652A32DF81A73005C91DB /* FTRequestBody.h in Headers */ = {isa = PBXBuildFile; fileRef = 1763BD7129DFF04F009EE026 /* FTRequestBody.h */; };
-		17F652A42DF81A73005C91DB /* FTAutoTrackProperty.h in Headers */ = {isa = PBXBuildFile; fileRef = 17E4CBC329CD42E4005C2D99 /* FTAutoTrackProperty.h */; };
-		17F652A52DF81A73005C91DB /* FTCPUMonitor.h in Headers */ = {isa = PBXBuildFile; fileRef = 17AB769D29D432DE008FBBF5 /* FTCPUMonitor.h */; };
-		17F652A62DF81A73005C91DB /* FTWeakPropertyContainer.h in Headers */ = {isa = PBXBuildFile; fileRef = 17BCF37C2D66EB2A009A63FD /* FTWeakPropertyContainer.h */; };
-		17F652A72DF81A73005C91DB /* UIApplication+FTAutoTrack.h in Headers */ = {isa = PBXBuildFile; fileRef = 17E4CBC229CD42E4005C2D99 /* UIApplication+FTAutoTrack.h */; };
-		17F652A82DF81A73005C91DB /* FTLoggerConfig.h in Headers */ = {isa = PBXBuildFile; fileRef = 1762D6C42DC1D0F900238B61 /* FTLoggerConfig.h */; settings = {ATTRIBUTES = (Public, ); }; };
-		17F652A92DF81A73005C91DB /* FTMobileAgent.h in Headers */ = {isa = PBXBuildFile; fileRef = 17678E1B29D28BD200C1DA98 /* FTMobileAgent.h */; settings = {ATTRIBUTES = (Public, ); }; };
-		17F652AA2DF81A73005C91DB /* ZY_FMResultSet.h in Headers */ = {isa = PBXBuildFile; fileRef = 1763BD7D29DFF04F009EE026 /* ZY_FMResultSet.h */; };
-		17F652AB2DF81A73005C91DB /* ZY_FMDB.h in Headers */ = {isa = PBXBuildFile; fileRef = 1763BD8029DFF04F009EE026 /* ZY_FMDB.h */; };
-		17F652AC2DF81A73005C91DB /* FTLoggerDataWriteProtocol.h in Headers */ = {isa = PBXBuildFile; fileRef = 174D91AA2A20B98300D85AAA /* FTLoggerDataWriteProtocol.h */; };
-		17F652AD2DF81A73005C91DB /* FTResourceMetricsModel+Private.h in Headers */ = {isa = PBXBuildFile; fileRef = 17A9BE312C5CE8A100DEC5FE /* FTResourceMetricsModel+Private.h */; };
-		17F652AF2DF81A73005C91DB /* FTSwizzle.m in Sources */ = {isa = PBXBuildFile; fileRef = 17E4CAF029CD42DA005C2D99 /* FTSwizzle.m */; };
-		17F652B02DF81A73005C91DB /* UIApplication+FTAutoTrack.m in Sources */ = {isa = PBXBuildFile; fileRef = 17E4CBB829CD42E4005C2D99 /* UIApplication+FTAutoTrack.m */; };
-		17F652B12DF81A73005C91DB /* FTDURLSessionDelegate.m in Sources */ = {isa = PBXBuildFile; fileRef = 171CE1D72BFB3C550083FC1C /* FTDURLSessionDelegate.m */; };
-		17F652B22DF81A73005C91DB /* NSDate+FTUtil.m in Sources */ = {isa = PBXBuildFile; fileRef = 17AC174A2B98635C003E18A6 /* NSDate+FTUtil.m */; };
-		17F652B32DF81A73005C91DB /* FTDataWriterWorker.m in Sources */ = {isa = PBXBuildFile; fileRef = 17C33AA32D93D68B003BB98B /* FTDataWriterWorker.m */; };
-		17F652B42DF81A73005C91DB /* UIViewController+FTAutoTrack.m in Sources */ = {isa = PBXBuildFile; fileRef = 17E4CBBB29CD42E4005C2D99 /* UIViewController+FTAutoTrack.m */; };
-		17F652B52DF81A73005C91DB /* NSNumber+FTAdd.m in Sources */ = {isa = PBXBuildFile; fileRef = 1759510B2A6FE4DE006FAB9D /* NSNumber+FTAdd.m */; };
-		17F652B62DF81A73005C91DB /* FTAppLifeCycle.m in Sources */ = {isa = PBXBuildFile; fileRef = 17E4CB0A29CD42DA005C2D99 /* FTAppLifeCycle.m */; };
-		17F652B72DF81A73005C91DB /* FTReachability.m in Sources */ = {isa = PBXBuildFile; fileRef = 1763BD6D29DFF04F009EE026 /* FTReachability.m */; };
-		17F652B82DF81A73005C91DB /* FTRUMManager.m in Sources */ = {isa = PBXBuildFile; fileRef = 17AB76A629D432DE008FBBF5 /* FTRUMManager.m */; };
-		17F652B92DF81A73005C91DB /* FTMonitorItem.m in Sources */ = {isa = PBXBuildFile; fileRef = 17AB769F29D432DE008FBBF5 /* FTMonitorItem.m */; };
-		17F652BA2DF81A73005C91DB /* FTURLSessionDelegate.m in Sources */ = {isa = PBXBuildFile; fileRef = 17E4CB6D29CD42E4005C2D99 /* FTURLSessionDelegate.m */; };
-		17F652BB2DF81A73005C91DB /* FTMonitorValue.m in Sources */ = {isa = PBXBuildFile; fileRef = 17AB769729D432DE008FBBF5 /* FTMonitorValue.m */; };
-		17F652BC2DF81A73005C91DB /* FTHTTPClient.m in Sources */ = {isa = PBXBuildFile; fileRef = 1763BD7529DFF04F009EE026 /* FTHTTPClient.m */; };
-		17F652BD2DF81A73005C91DB /* FTMobileConfig.m in Sources */ = {isa = PBXBuildFile; fileRef = 17678E1929D28BD200C1DA98 /* FTMobileConfig.m */; };
-		17F652BE2DF81A73005C91DB /* FTTraceManager.m in Sources */ = {isa = PBXBuildFile; fileRef = 17678E1F29D28BD200C1DA98 /* FTTraceManager.m */; };
-		17F652BF2DF81A73005C91DB /* FTSwizzler.m in Sources */ = {isa = PBXBuildFile; fileRef = 17E4CAF129CD42DA005C2D99 /* FTSwizzler.m */; };
-		17F652C02DF81A73005C91DB /* FTDBDataCachePolicy.m in Sources */ = {isa = PBXBuildFile; fileRef = 1733605C2C05FFD600A50C02 /* FTDBDataCachePolicy.m */; };
-		17F652C12DF81A73005C91DB /* ZY_FMDatabase.m in Sources */ = {isa = PBXBuildFile; fileRef = 1763BD7929DFF04F009EE026 /* ZY_FMDatabase.m */; };
-		17F652C22DF81A73005C91DB /* FTMonitorUtils.m in Sources */ = {isa = PBXBuildFile; fileRef = 17AB769929D432DE008FBBF5 /* FTMonitorUtils.m */; };
-		17F652C32DF81A73005C91DB /* FTErrorDataProtocol.m in Sources */ = {isa = PBXBuildFile; fileRef = 17E4CBB429CD42E4005C2D99 /* FTErrorDataProtocol.m */; };
-		17F652C42DF81A73005C91DB /* FTAutoTrackHandler.m in Sources */ = {isa = PBXBuildFile; fileRef = 17FFE8432D5E1F9200039827 /* FTAutoTrackHandler.m */; };
-		17F652C52DF81A73005C91DB /* FTWKWebViewJavascriptBridge.m in Sources */ = {isa = PBXBuildFile; fileRef = 1776061F29D1347400D17137 /* FTWKWebViewJavascriptBridge.m */; };
-		17F652C62DF81A73005C91DB /* ZY_FMDatabaseQueue.m in Sources */ = {isa = PBXBuildFile; fileRef = 1763BD7829DFF04F009EE026 /* ZY_FMDatabaseQueue.m */; };
-		17F652C72DF81A73005C91DB /* ZY_FMResultSet.m in Sources */ = {isa = PBXBuildFile; fileRef = 1763BD7729DFF04F009EE026 /* ZY_FMResultSet.m */; };
-		17F652C92DF81A73005C91DB /* FTRequest.m in Sources */ = {isa = PBXBuildFile; fileRef = 1763BD6E29DFF04F009EE026 /* FTRequest.m */; };
-		17F652CA2DF81A73005C91DB /* FTEnumConstant.m in Sources */ = {isa = PBXBuildFile; fileRef = 17E4CB0629CD42DA005C2D99 /* FTEnumConstant.m */; };
-		17F652CB2DF81A73005C91DB /* FTExtensionDataManager.m in Sources */ = {isa = PBXBuildFile; fileRef = 17E4CB8029CD42E4005C2D99 /* FTExtensionDataManager.m */; };
-		17F652CD2DF81A73005C91DB /* FTResourceContentModel.m in Sources */ = {isa = PBXBuildFile; fileRef = 17E4CB1829CD42DA005C2D99 /* FTResourceContentModel.m */; };
-		17F652CE2DF81A73005C91DB /* FTSerialNumberGenerator.m in Sources */ = {isa = PBXBuildFile; fileRef = 173E45E22D81907F00900F52 /* FTSerialNumberGenerator.m */; };
-		17F652CF2DF81A73005C91DB /* NSString+FTAdd.m in Sources */ = {isa = PBXBuildFile; fileRef = 17E4CB1429CD42DA005C2D99 /* NSString+FTAdd.m */; };
-		17F652D02DF81A73005C91DB /* FTResourceMetricsModel.m in Sources */ = {isa = PBXBuildFile; fileRef = 17E4CB1729CD42DA005C2D99 /* FTResourceMetricsModel.m */; };
-		17F652D12DF81A73005C91DB /* NSError+FTDescription.m in Sources */ = {isa = PBXBuildFile; fileRef = 17132DBC2C2D652E009DFE8F /* NSError+FTDescription.m */; };
-		17F652D22DF81A73005C91DB /* FTTrackDataManager.m in Sources */ = {isa = PBXBuildFile; fileRef = 1763BD8529DFF04F009EE026 /* FTTrackDataManager.m */; };
-		17F652D32DF81A73005C91DB /* ZY_FMDatabaseAdditions.m in Sources */ = {isa = PBXBuildFile; fileRef = 1763BD8129DFF04F009EE026 /* ZY_FMDatabaseAdditions.m */; };
-		17F652D42DF81A73005C91DB /* NSURLSessionTask+FTSwizzler.m in Sources */ = {isa = PBXBuildFile; fileRef = 17D068212D26668400D59159 /* NSURLSessionTask+FTSwizzler.m */; };
-		17F652D52DF81A73005C91DB /* FTNetworkConnectivity.m in Sources */ = {isa = PBXBuildFile; fileRef = 17F10DAC2D13C88A00737EDD /* FTNetworkConnectivity.m */; };
-		17F652D62DF81A73005C91DB /* FTLogger.m in Sources */ = {isa = PBXBuildFile; fileRef = 178649312A1DB58400521187 /* FTLogger.m */; };
-		17F652D72DF81A73005C91DB /* FTDataCompression.m in Sources */ = {isa = PBXBuildFile; fileRef = 17440CAC2CBF8B8300BA4B1A /* FTDataCompression.m */; };
-		17F652D82DF81A73005C91DB /* FTRUMActionHandler.m in Sources */ = {isa = PBXBuildFile; fileRef = 17AB76AB29D432DE008FBBF5 /* FTRUMActionHandler.m */; };
-		17F652D92DF81A73005C91DB /* FTPackageIdGenerator.m in Sources */ = {isa = PBXBuildFile; fileRef = 173E45DC2D818C8900900F52 /* FTPackageIdGenerator.m */; };
-		17F652DA2DF81A73005C91DB /* FTTracer.m in Sources */ = {isa = PBXBuildFile; fileRef = 17E4CB6829CD42E4005C2D99 /* FTTracer.m */; };
-		17F652DB2DF81A73005C91DB /* FTReadWriteHelper.m in Sources */ = {isa = PBXBuildFile; fileRef = 17E4CB0729CD42DA005C2D99 /* FTReadWriteHelper.m */; };
-		17F652DE2DF81A73005C91DB /* FTLoggerConfig.m in Sources */ = {isa = PBXBuildFile; fileRef = 1762D6C52DC1D0F900238B61 /* FTLoggerConfig.m */; };
-		17F652E02DF81A73005C91DB /* BlacklistedVCClassNames.m in Sources */ = {isa = PBXBuildFile; fileRef = 17E4CBC829CD42E4005C2D99 /* BlacklistedVCClassNames.m */; };
-		17F652E12DF81A73005C91DB /* UIGestureRecognizer+FTAutoTrack.m in Sources */ = {isa = PBXBuildFile; fileRef = 17E4CBCB29CD42E4005C2D99 /* UIGestureRecognizer+FTAutoTrack.m */; };
-		17F652E22DF81A73005C91DB /* FTJSONUtil.m in Sources */ = {isa = PBXBuildFile; fileRef = 17E4CB1629CD42DA005C2D99 /* FTJSONUtil.m */; };
-		17F652E32DF81A73005C91DB /* FTMobileSDKDocs.docc in Sources */ = {isa = PBXBuildFile; fileRef = 17E4CC5429CD42F3005C2D99 /* FTMobileSDKDocs.docc */; };
-		17F652E42DF81A73005C91DB /* NSURLSession+FTSwizzler.m in Sources */ = {isa = PBXBuildFile; fileRef = 17E4CB7729CD42E4005C2D99 /* NSURLSession+FTSwizzler.m */; };
-		17F652E52DF81A73005C91DB /* FTFileLogger.m in Sources */ = {isa = PBXBuildFile; fileRef = 17AC17422B9856C3003E18A6 /* FTFileLogger.m */; };
-		17F652E62DF81A73005C91DB /* FTRecordModel.m in Sources */ = {isa = PBXBuildFile; fileRef = 17E4CB0129CD42DA005C2D99 /* FTRecordModel.m */; };
-		17F652E72DF81A73005C91DB /* ZY_FMDatabasePool.m in Sources */ = {isa = PBXBuildFile; fileRef = 1763BD7E29DFF04F009EE026 /* ZY_FMDatabasePool.m */; };
-		17F652E92DF81A73005C91DB /* WKWebView+FTAutoTrack.m in Sources */ = {isa = PBXBuildFile; fileRef = 1776062829D1347400D17137 /* WKWebView+FTAutoTrack.m */; };
-		17F652EA2DF81A73005C91DB /* FTBaseInfoHandler.m in Sources */ = {isa = PBXBuildFile; fileRef = 17E4CB1129CD42DA005C2D99 /* FTBaseInfoHandler.m */; };
-		17F652EB2DF81A73005C91DB /* FTURLSessionInstrumentation.m in Sources */ = {isa = PBXBuildFile; fileRef = 17E4CB7129CD42E4005C2D99 /* FTURLSessionInstrumentation.m */; };
-		17F652ED2DF81A73005C91DB /* UIView+FTAutoTrack.m in Sources */ = {isa = PBXBuildFile; fileRef = 17E4CBC029CD42E4005C2D99 /* UIView+FTAutoTrack.m */; };
-		17F652EE2DF81A73005C91DB /* FTRUMMonitor.m in Sources */ = {isa = PBXBuildFile; fileRef = 17AB76A029D432DE008FBBF5 /* FTRUMMonitor.m */; };
-		17F652EF2DF81A73005C91DB /* FTLog.m in Sources */ = {isa = PBXBuildFile; fileRef = 17E4CB0229CD42DA005C2D99 /* FTLog.m */; };
-		17F652F02DF81A73005C91DB /* FTConstants.m in Sources */ = {isa = PBXBuildFile; fileRef = 17E4CAFB29CD42DA005C2D99 /* FTConstants.m */; };
-		17F652F12DF81A73005C91DB /* FTWeakPropertyContainer.m in Sources */ = {isa = PBXBuildFile; fileRef = 17BCF37D2D66EB2A009A63FD /* FTWeakPropertyContainer.m */; };
-		17F652F22DF81A73005C91DB /* FTMemoryMonitor.m in Sources */ = {isa = PBXBuildFile; fileRef = 17AB769E29D432DE008FBBF5 /* FTMemoryMonitor.m */; };
-		17F652F32DF81A73005C91DB /* FTUserInfo.m in Sources */ = {isa = PBXBuildFile; fileRef = 1776073529D1416200D17137 /* FTUserInfo.m */; };
-		17F652F42DF81A73005C91DB /* FTWebViewJavascriptBridgeBase.m in Sources */ = {isa = PBXBuildFile; fileRef = 1776062129D1347400D17137 /* FTWebViewJavascriptBridgeBase.m */; };
-		17F652F52DF81A73005C91DB /* FTRemoteConfigurationRequest.m in Sources */ = {isa = PBXBuildFile; fileRef = 172113BF2DF1B476006189C2 /* FTRemoteConfigurationRequest.m */; };
-		17F652F62DF81A73005C91DB /* FTMobileAgent.m in Sources */ = {isa = PBXBuildFile; fileRef = 17678E2129D28BD200C1DA98 /* FTMobileAgent.m */; };
-		17F652F72DF81A73005C91DB /* FTTraceContext.m in Sources */ = {isa = PBXBuildFile; fileRef = 17D068192D23F48B00D59159 /* FTTraceContext.m */; };
-		17F652F82DF81A73005C91DB /* FTRUMDependencies.m in Sources */ = {isa = PBXBuildFile; fileRef = 17E32BAA2BEE21F600F4685C /* FTRUMDependencies.m */; };
-		17F652F92DF81A73005C91DB /* FTCPUMonitor.m in Sources */ = {isa = PBXBuildFile; fileRef = 17AB769629D432DE008FBBF5 /* FTCPUMonitor.m */; };
-		17F652FA2DF81A73005C91DB /* FTWebViewJavascriptLeakAvoider.m in Sources */ = {isa = PBXBuildFile; fileRef = 1776062029D1347400D17137 /* FTWebViewJavascriptLeakAvoider.m */; };
-		17F652FD2DF81A73005C91DB /* NSDictionary+FTCopyProperties.m in Sources */ = {isa = PBXBuildFile; fileRef = 174BC8782BFC9F8A00478EE1 /* NSDictionary+FTCopyProperties.m */; };
-		17F652FE2DF81A73005C91DB /* FTOSLogger.m in Sources */ = {isa = PBXBuildFile; fileRef = 1776BA7F2B99B668008424FF /* FTOSLogger.m */; };
-		17F652FF2DF81A73005C91DB /* FTRUMViewHandler.m in Sources */ = {isa = PBXBuildFile; fileRef = 17AB76A829D432DE008FBBF5 /* FTRUMViewHandler.m */; };
-		17F653002DF81A73005C91DB /* FTThreadDispatchManager.m in Sources */ = {isa = PBXBuildFile; fileRef = 17E4CAF829CD42DA005C2D99 /* FTThreadDispatchManager.m */; };
-		17F653012DF81A73005C91DB /* FTDisplayRateMonitor.m in Sources */ = {isa = PBXBuildFile; fileRef = 17AB76A129D432DE008FBBF5 /* FTDisplayRateMonitor.m */; };
-		17F653022DF81A73005C91DB /* FTRUMResourceHandler.m in Sources */ = {isa = PBXBuildFile; fileRef = 17AB76A929D432DE008FBBF5 /* FTRUMResourceHandler.m */; };
-		17F653032DF81A73005C91DB /* FTLogMessage.m in Sources */ = {isa = PBXBuildFile; fileRef = 17AC173A2B98525B003E18A6 /* FTLogMessage.m */; };
-		17F653042DF81A73005C91DB /* FTRequestBody.m in Sources */ = {isa = PBXBuildFile; fileRef = 1763BD8429DFF04F009EE026 /* FTRequestBody.m */; };
-		17F653052DF81A73005C91DB /* FTErrorMonitorInfo.m in Sources */ = {isa = PBXBuildFile; fileRef = 17E32B9F2BEC70E700F4685C /* FTErrorMonitorInfo.m */; };
-		17F653062DF81A73005C91DB /* FTWKWebViewHandler.m in Sources */ = {isa = PBXBuildFile; fileRef = 1776062329D1347400D17137 /* FTWKWebViewHandler.m */; };
-		17F653072DF81A73005C91DB /* FTRemoteConfigManager.m in Sources */ = {isa = PBXBuildFile; fileRef = 172113B72DF1A200006189C2 /* FTRemoteConfigManager.m */; };
-		17F653082DF81A73005C91DB /* FTExternalDataManager.m in Sources */ = {isa = PBXBuildFile; fileRef = 17E4CBD029CD42E4005C2D99 /* FTExternalDataManager.m */; };
-		17F6530A2DF81A73005C91DB /* FTDataUploadWorker.m in Sources */ = {isa = PBXBuildFile; fileRef = 1712695A2DC21026002D238B /* FTDataUploadWorker.m */; };
-		17F6530B2DF81A73005C91DB /* FTPresetProperty.m in Sources */ = {isa = PBXBuildFile; fileRef = 1799581229D43FDE0033B46E /* FTPresetProperty.m */; };
-		17F6530C2DF81A73005C91DB /* FTRUMSessionHandler.m in Sources */ = {isa = PBXBuildFile; fileRef = 17AB76AC29D432DE008FBBF5 /* FTRUMSessionHandler.m */; };
-		17F6530D2DF81A73005C91DB /* FTJsonWriter.m in Sources */ = {isa = PBXBuildFile; fileRef = 17E4CB1529CD42DA005C2D99 /* FTJsonWriter.m */; };
-		17F6530E2DF81A73005C91DB /* FTURLSessionInterceptor.m in Sources */ = {isa = PBXBuildFile; fileRef = 17E4CB6929CD42E4005C2D99 /* FTURLSessionInterceptor.m */; };
-		17F6530F2DF81A73005C91DB /* FTRUMHandler.m in Sources */ = {isa = PBXBuildFile; fileRef = 17AB76B129D432DE008FBBF5 /* FTRUMHandler.m */; };
-		17F653102DF81A73005C91DB /* UIScrollView+FTAutoTrack.m in Sources */ = {isa = PBXBuildFile; fileRef = 17E4CBB929CD42E4005C2D99 /* UIScrollView+FTAutoTrack.m */; };
-		17F653112DF81A73005C91DB /* FTNetworkInfoManager.m in Sources */ = {isa = PBXBuildFile; fileRef = 1763BD8229DFF04F009EE026 /* FTNetworkInfoManager.m */; };
-		17F653122DF81A73005C91DB /* FTCrashMonitor_NSException.m in Sources */ = {isa = PBXBuildFile; fileRef = 17400E752B47AAB400ACBA6C /* FTCrashMonitor_NSException.m */; };
-		17F653142DF81A73005C91DB /* FTSessionTaskHandler.m in Sources */ = {isa = PBXBuildFile; fileRef = 17E4CB7429CD42E4005C2D99 /* FTSessionTaskHandler.m */; };
-		17F653152DF81A73005C91DB /* FTTrackerEventDBTool.m in Sources */ = {isa = PBXBuildFile; fileRef = 1763BD7029DFF04F009EE026 /* FTTrackerEventDBTool.m */; };
-		17F653182DF81A73005C91DB /* PrivacyInfo.xcprivacy in Resources */ = {isa = PBXBuildFile; fileRef = 171C21BE2B9183D500C67AD6 /* PrivacyInfo.xcprivacy */; };
 		17FFE8462D5E1F9200039827 /* FTAutoTrackHandler.m in Sources */ = {isa = PBXBuildFile; fileRef = 17FFE8432D5E1F9200039827 /* FTAutoTrackHandler.m */; };
 		17FFE8472D5E1F9200039827 /* FTAutoTrackHandler.h in Headers */ = {isa = PBXBuildFile; fileRef = 17FFE8422D5E1F9200039827 /* FTAutoTrackHandler.h */; };
 /* End PBXBuildFile section */
@@ -1668,7 +1292,6 @@
 		17E4CB0129CD42DA005C2D99 /* FTRecordModel.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = FTRecordModel.m; sourceTree = "<group>"; };
 		17E4CB0229CD42DA005C2D99 /* FTLog.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = FTLog.m; sourceTree = "<group>"; };
 		17E4CB0329CD42DA005C2D99 /* FTJSONUtil.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = FTJSONUtil.h; sourceTree = "<group>"; };
-		17E4CB0429CD42DA005C2D99 /* FTJsonWriter.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = FTJsonWriter.h; sourceTree = "<group>"; };
 		17E4CB0529CD42DA005C2D99 /* NSString+FTAdd.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "NSString+FTAdd.h"; sourceTree = "<group>"; };
 		17E4CB0629CD42DA005C2D99 /* FTEnumConstant.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = FTEnumConstant.m; sourceTree = "<group>"; };
 		17E4CB0729CD42DA005C2D99 /* FTReadWriteHelper.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = FTReadWriteHelper.m; sourceTree = "<group>"; };
@@ -1681,7 +1304,6 @@
 		17E4CB1129CD42DA005C2D99 /* FTBaseInfoHandler.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = FTBaseInfoHandler.m; sourceTree = "<group>"; };
 		17E4CB1329CD42DA005C2D99 /* FTEnumConstant.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = FTEnumConstant.h; sourceTree = "<group>"; };
 		17E4CB1429CD42DA005C2D99 /* NSString+FTAdd.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = "NSString+FTAdd.m"; sourceTree = "<group>"; };
-		17E4CB1529CD42DA005C2D99 /* FTJsonWriter.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = FTJsonWriter.m; sourceTree = "<group>"; };
 		17E4CB1629CD42DA005C2D99 /* FTJSONUtil.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = FTJSONUtil.m; sourceTree = "<group>"; };
 		17E4CB1729CD42DA005C2D99 /* FTResourceMetricsModel.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = FTResourceMetricsModel.m; sourceTree = "<group>"; };
 		17E4CB1829CD42DA005C2D99 /* FTResourceContentModel.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = FTResourceContentModel.m; sourceTree = "<group>"; };
@@ -1733,7 +1355,6 @@
 		17F10DAB2D13C88A00737EDD /* FTNetworkConnectivity.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = FTNetworkConnectivity.h; sourceTree = "<group>"; };
 		17F10DAC2D13C88A00737EDD /* FTNetworkConnectivity.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = FTNetworkConnectivity.m; sourceTree = "<group>"; };
 		17F59C652DF2EACB003FCB84 /* FTLoggerConfig+Private.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = "FTLoggerConfig+Private.h"; sourceTree = "<group>"; };
-		17F6531D2DF81A73005C91DB /* FTMobileSDK.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = FTMobileSDK.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 		17FFE8422D5E1F9200039827 /* FTAutoTrackHandler.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = FTAutoTrackHandler.h; sourceTree = "<group>"; };
 		17FFE8432D5E1F9200039827 /* FTAutoTrackHandler.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = FTAutoTrackHandler.m; sourceTree = "<group>"; };
 		4A6C541E255E6464009771B8 /* FTMobileExtension.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = FTMobileExtension.framework; sourceTree = BUILT_PRODUCTS_DIR; };
@@ -1742,13 +1363,6 @@
 
 /* Begin PBXFrameworksBuildPhase section */
 		17510EC329C9C24500C8F1E4 /* Frameworks */ = {
-			isa = PBXFrameworksBuildPhase;
-			buildActionMask = 2147483647;
-			files = (
-			);
-			runOnlyForDeploymentPostprocessing = 0;
-		};
-		17F653162DF81A73005C91DB /* Frameworks */ = {
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
@@ -2207,8 +1821,6 @@
 				17E4CB0129CD42DA005C2D99 /* FTRecordModel.m */,
 				17E4CB0329CD42DA005C2D99 /* FTJSONUtil.h */,
 				17E4CB1629CD42DA005C2D99 /* FTJSONUtil.m */,
-				17E4CB0429CD42DA005C2D99 /* FTJsonWriter.h */,
-				17E4CB1529CD42DA005C2D99 /* FTJsonWriter.m */,
 				1799581129D43FDE0033B46E /* FTPresetProperty.h */,
 				1799581229D43FDE0033B46E /* FTPresetProperty.m */,
 				17E4CB0529CD42DA005C2D99 /* NSString+FTAdd.h */,
@@ -2437,7 +2049,6 @@
 				4A88425A239E5754001B44C3 /* FTMobileSDK.framework */,
 				4A6C541E255E6464009771B8 /* FTMobileExtension.framework */,
 				17510EC829C9C24500C8F1E4 /* FTSDKCore.framework */,
-				17F6531D2DF81A73005C91DB /* FTMobileSDK.framework */,
 			);
 			name = Products;
 			sourceTree = "<group>";
@@ -2460,7 +2071,6 @@
 				17C2FEA42E4327C6003D600F /* FTRUMDataModel.h in Headers */,
 				17132DC12C2D652E009DFE8F /* NSError+FTDescription.h in Headers */,
 				17A422032EDE8F8D00416673 /* FTCrashObjC.h in Headers */,
-				1776069829D1373600D17137 /* FTJsonWriter.h in Headers */,
 				1762D6C72DC1D0F900238B61 /* FTLoggerConfig.h in Headers */,
 				1776BD3D2E179EC100612A7F /* FTCrashMonitor.h in Headers */,
 				17C2FE482E3B8CD5003D600F /* FTRUMHandler.h in Headers */,
@@ -2634,229 +2244,15 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
-		17F6522C2DF81A73005C91DB /* Headers */ = {
-			isa = PBXHeadersBuildPhase;
-			buildActionMask = 2147483647;
-			files = (
-				17F6522D2DF81A73005C91DB /* FTMobileAgent+Private.h in Headers */,
-				176CE24C2ED6E30900E9E92B /* FTCrashMonitorContext.h in Headers */,
-				17F6522E2DF81A73005C91DB /* FTExternalDataManager+Private.h in Headers */,
-				17717B4B2F0E7E9A002158F6 /* FTRemoteConfigTypeDefs.h in Headers */,
-				17717B902F0F5250002158F6 /* FTErrorMonitorInfo.h in Headers */,
-				17F6522F2DF81A73005C91DB /* FTTrackDataManager.h in Headers */,
-				17A422D82EE2EF9000416673 /* FTCrashJailbreak.h in Headers */,
-				17F652302DF81A73005C91DB /* FTSwizzle.h in Headers */,
-				1776BD502E179FA300612A7F /* FTCrashLogger.h in Headers */,
-				17F652312DF81A73005C91DB /* FTURLSessionInterceptor+Private.h in Headers */,
-				17F652332DF81A73005C91DB /* FTMemoryMonitor.h in Headers */,
-				17A422822EE19DFF00416673 /* FTCrashReportFilter.h in Headers */,
-				17F652352DF81A73005C91DB /* FTResourceContentModel.h in Headers */,
-				17F652362DF81A73005C91DB /* FTDataWriterWorker.h in Headers */,
-				17F652372DF81A73005C91DB /* FTLogger.h in Headers */,
-				17F652382DF81A73005C91DB /* NSNumber+FTAdd.h in Headers */,
-				17F652392DF81A73005C91DB /* NSDictionary+FTCopyProperties.h in Headers */,
-				17A421C72EDDB06E00416673 /* FTCrashMonitorHelper.h in Headers */,
-				17F6523A2DF81A73005C91DB /* FTHTTPClient.h in Headers */,
-				17F6523B2DF81A73005C91DB /* FTExternalResourceProtocol.h in Headers */,
-				17F6523C2DF81A73005C91DB /* FTWKWebViewJavascriptBridge.h in Headers */,
-				17A4232B2EEAE57300416673 /* FTCrashNSDictionaryHelper.h in Headers */,
-				17F6523D2DF81A73005C91DB /* FTTraceManager.h in Headers */,
-				17F6523E2DF81A73005C91DB /* FTDataModifier.h in Headers */,
-				17F6523F2DF81A73005C91DB /* FTUploadProtocol.h in Headers */,
-				1776BD382E179EC100612A7F /* FTCrashMonitor.h in Headers */,
-				17F652412DF81A73005C91DB /* FTBaseInfoHandler.h in Headers */,
-				17F652422DF81A73005C91DB /* FTMobileConfig.h in Headers */,
-				17F652432DF81A73005C91DB /* FTSerialNumberGenerator.h in Headers */,
-				17F652442DF81A73005C91DB /* FTLog.h in Headers */,
-				176CE2712ED8591F00E9E92B /* FTCrashMonitorRegistry.h in Headers */,
-				1776BD402E179F5C00612A7F /* FTCrashDebug.h in Headers */,
-				17F652452DF81A73005C91DB /* FTRecordModel.h in Headers */,
-				17A422132EDE94AD00416673 /* FTCrashSignalInfo.h in Headers */,
-				172B10ED2E377B3700753766 /* FTRUMDependencies.h in Headers */,
-				17F652472DF81A73005C91DB /* FTRumResourceProtocol.h in Headers */,
-				17A421D72EDDB0F100416673 /* FTCrashMonitor_MachException.h in Headers */,
-				17F652482DF81A73005C91DB /* FTRequest.h in Headers */,
-				17F652492DF81A73005C91DB /* FTMonitorUtils.h in Headers */,
-				17F6524A2DF81A73005C91DB /* FTMobileSDK.h in Headers */,
-				17A421BA2EDDAC6300416673 /* FTCrashExceptionHandlingPlan.h in Headers */,
-				17F6524B2DF81A73005C91DB /* FTOSLogger.h in Headers */,
-				17F6524C2DF81A73005C91DB /* FTPresetProperty.h in Headers */,
-				17717B392F0E7E69002158F6 /* FTRemoteConfigModel.h in Headers */,
-				17717B3A2F0E7E69002158F6 /* FTRemoteConfigModel+Private.h in Headers */,
-				17F6524D2DF81A73005C91DB /* FTResourceMetricsModel.h in Headers */,
-				17F6524F2DF81A73005C91DB /* FTRUMResourceHandler.h in Headers */,
-				17F652502DF81A73005C91DB /* FTMonitorItem.h in Headers */,
-				17F652512DF81A73005C91DB /* FTTracer.h in Headers */,
-				17F652532DF81A73005C91DB /* UIGestureRecognizer+FTAutoTrack.h in Headers */,
-				17F652542DF81A73005C91DB /* FTRUMDataWriteProtocol.h in Headers */,
-				17F652552DF81A73005C91DB /* FTLinkRumDataProvider.h in Headers */,
-				17F652562DF81A73005C91DB /* FTConstants.h in Headers */,
-				17A4224D2EDEFFCA00416673 /* FTCrashMach-O.h in Headers */,
-				17F652572DF81A73005C91DB /* NSURLSession+FTSwizzler.h in Headers */,
-				17F652582DF81A73005C91DB /* FTErrorDataProtocol.h in Headers */,
-				17C2FEAB2E432949003D600F /* FTDefaultUIKitViewTrackingHandler.h in Headers */,
-				17F652592DF81A73005C91DB /* FTAutoInterceptorProtocol.h in Headers */,
-				17A422BC2EE2C06500416673 /* FTCrashBacktrace.h in Headers */,
-				17F6525A2DF81A73005C91DB /* FTCrashMonitor_NSException.h in Headers */,
-				176CE2842ED869D400E9E92B /* FTCrashMonitorFlag.h in Headers */,
-				17A423392EEAE65700416673 /* FTCrashVarArgs.h in Headers */,
-				17F6525B2DF81A73005C91DB /* FTRUMSessionHandler.h in Headers */,
-				17F6525C2DF81A73005C91DB /* UIScrollView+FTAutoTrack.h in Headers */,
-				17F6525D2DF81A73005C91DB /* FTExternalDataManager.h in Headers */,
-				17F6525E2DF81A73005C91DB /* BlacklistedVCClassNames.h in Headers */,
-				17F6525F2DF81A73005C91DB /* FTAppLifeCycle.h in Headers */,
-				17F652602DF81A73005C91DB /* FTUserInfo.h in Headers */,
-				17F652612DF81A73005C91DB /* FTLogger+Private.h in Headers */,
-				172B10E82E377B2600753766 /* FTRUMManager.h in Headers */,
-				17C2FE452E3B8CD5003D600F /* FTRUMHandler.h in Headers */,
-				176CE2022ED57F6C00E9E92B /* FTCrashMonitorAPI.h in Headers */,
-				17F652632DF81A73005C91DB /* UIView+FTAutoTrack.h in Headers */,
-				176868B72ED47AA600C76F0D /* FTCrashStackCursor_SelfThread.h in Headers */,
-				17A4220C2EDE925100416673 /* FTCrashObjCApple.h in Headers */,
-				176CE2472ED6DF3900E9E92B /* FTCrashSysCtl.h in Headers */,
-				176868B82ED47AA600C76F0D /* FTCrashMachineContext.h in Headers */,
-				176868B92ED47AA600C76F0D /* FTCrashMachineContext_Apple.h in Headers */,
-				176868BA2ED47AA600C76F0D /* FTCrashThread.h in Headers */,
-				176868BC2ED47AA600C76F0D /* FTCrashStackCursor.h in Headers */,
-				17A422302EDEF67600416673 /* FTCrashCompilerDefines.h in Headers */,
-				176868BD2ED47AA600C76F0D /* FTCrashUUIDConversion.h in Headers */,
-				17A4223F2EDEFEEE00416673 /* FTCrashCxaThrowSwapper.h in Headers */,
-				176868C02ED47AA600C76F0D /* FTCrashStackCursor_MachineContext.h in Headers */,
-				17A421FD2EDE8F8D00416673 /* FTCrashObjC.h in Headers */,
-				17A422982EE27DF200416673 /* FTCrashJSONCodecObjC.h in Headers */,
-				176868C22ED47AA600C76F0D /* FTCrashPlatformSpecificDefines.h in Headers */,
-				176868C42ED47AA600C76F0D /* FTCrashDynamicLinker.h in Headers */,
-				17717B7C2F0F4FA9002158F6 /* FTCrash.h in Headers */,
-				17717B7D2F0F4FA9002158F6 /* FTCrashMonitorType.h in Headers */,
-				176868C52ED47AA600C76F0D /* FTCrashCPU_Apple.h in Headers */,
-				17717B712F0E8B51002158F6 /* FTConfig+RemoteConfig.h in Headers */,
-				176868C72ED47AA600C76F0D /* FTCrashBinaryImageCache.h in Headers */,
-				176868C82ED47AA600C76F0D /* FTCrashCPU.h in Headers */,
-				176868C92ED47AA600C76F0D /* FTCrashStackCursor_Backtrace.h in Headers */,
-				17A421E52EDDB12B00416673 /* FTCrashMonitor_Signal.h in Headers */,
-				176868CD2ED47AA600C76F0D /* FTCrashSymbolicator.h in Headers */,
-				17A422CE2EE2E64C00416673 /* FTCrashNSErrorHelper.h in Headers */,
-				176868CE2ED47AA600C76F0D /* FTCrashMemory.h in Headers */,
-				17F652642DF81A73005C91DB /* UIViewController+FTAutoTrack.h in Headers */,
-				17F652652DF81A73005C91DB /* FTPackageIdGenerator.h in Headers */,
-				178AFF912E4F3438009D3C09 /* FTRUMPlaceholderViewHandler.h in Headers */,
-				17F652662DF81A73005C91DB /* FTRUMViewHandler.h in Headers */,
-				17C2FD212E3B448A003D600F /* FTActionTrackingHandler.h in Headers */,
-				17C2FD222E3B448A003D600F /* FTRUMView.h in Headers */,
-				1745E3262EF900BB00C8FA9B /* FTRUMContext.h in Headers */,
-				17C2FD232E3B448A003D600F /* FTViewTrackingHandler.h in Headers */,
-				17C2FD242E3B448A003D600F /* FTRUMAction.h in Headers */,
-				17F652682DF81A73005C91DB /* FTSDKCompat.h in Headers */,
-				17F652692DF81A73005C91DB /* FTThreadDispatchManager.h in Headers */,
-				17A4221D2EDE958E00416673 /* FTCrashString.h in Headers */,
-				17F6526A2DF81A73005C91DB /* FTDataUploadWorker.h in Headers */,
-				17F6526C2DF81A73005C91DB /* FTURLSessionDelegate.h in Headers */,
-				17F6526D2DF81A73005C91DB /* FTJsonWriter.h in Headers */,
-				17F6526E2DF81A73005C91DB /* NSDate+FTUtil.h in Headers */,
-				17A421E82EDE87B000416673 /* FTCrashReportFields.h in Headers */,
-				17F6526F2DF81A73005C91DB /* FTRemoteConfigManager.h in Headers */,
-				17F652712DF81A73005C91DB /* FTWebViewJavascriptBridgeBase.h in Headers */,
-				17A421C12EDDAE5400416673 /* FTCrashReportWriter.h in Headers */,
-				176CE2522ED6E67100E9E92B /* FTCrashDate.h in Headers */,
-				17F652732DF81A73005C91DB /* FTFileLogger.h in Headers */,
-				17F652742DF81A73005C91DB /* NSError+FTDescription.h in Headers */,
-				17F652752DF81A73005C91DB /* FTAutoTrackHandler.h in Headers */,
-				17F652762DF81A73005C91DB /* FTDataCompression.h in Headers */,
-				17F652772DF81A73005C91DB /* FTTrackerEventDBTool.h in Headers */,
-				17F652782DF81A73005C91DB /* FTExtensionDataManager.h in Headers */,
-				17F652792DF81A73005C91DB /* FTRUMActionHandler.h in Headers */,
-				17F6527A2DF81A73005C91DB /* FTLoggerConfig+Private.h in Headers */,
-				176CE2292ED6CC0B00E9E92B /* FTCrashJSONCodec.h in Headers */,
-				17F6527B2DF81A73005C91DB /* FTReachability.h in Headers */,
-				17F6527C2DF81A73005C91DB /* FTJSONUtil.h in Headers */,
-				17F6527D2DF81A73005C91DB /* FTRemoteConfigurationProtocol.h in Headers */,
-				172B107D2E339F0600753766 /* FTGlobalRumManager.h in Headers */,
-				17F6527E2DF81A73005C91DB /* ZY_FMDatabase.h in Headers */,
-				17A421CF2EDDB0D500416673 /* FTCrashMonitor_CPPException.h in Headers */,
-				17C2FEA52E4327C6003D600F /* FTRUMDataModel.h in Headers */,
-				172B10622E3219F500753766 /* FTDateUtil.h in Headers */,
-				17F652802DF81A73005C91DB /* FTSessionTaskHandler.h in Headers */,
-				17F652812DF81A73005C91DB /* FTLogMessage.h in Headers */,
-				17F652822DF81A73005C91DB /* FTDBDataCachePolicy.h in Headers */,
-				17F652832DF81A73005C91DB /* FTMobileConfig+Private.h in Headers */,
-				17F652842DF81A73005C91DB /* FTMonitorValue.h in Headers */,
-				17F652852DF81A73005C91DB /* NSString+FTAdd.h in Headers */,
-				17F652862DF81A73005C91DB /* FTRemoteConfigurationRequest.h in Headers */,
-				17F652872DF81A73005C91DB /* FTURLSessionInterceptor.h in Headers */,
-				17F652882DF81A73005C91DB /* FTTracerProtocol.h in Headers */,
-				17F652892DF81A73005C91DB /* ZY_FMDatabaseQueue.h in Headers */,
-				17A422372EDEF6C200416673 /* FTCrashID.h in Headers */,
-				17F6528A2DF81A73005C91DB /* FTSwizzler.h in Headers */,
-				17717B892F0F51F0002158F6 /* FTDisplayRateMonitor.h in Headers */,
-				17F6528B2DF81A73005C91DB /* FTWKWebViewHandler.h in Headers */,
-				17F6528C2DF81A73005C91DB /* FTURLSessionDelegate+Private.h in Headers */,
-				17F6528E2DF81A73005C91DB /* FTReadWriteHelper.h in Headers */,
-				17F6528F2DF81A73005C91DB /* ZY_FMDatabaseAdditions.h in Headers */,
-				17717B692F0E8618002158F6 /* FTLongTaskManager.h in Headers */,
-				17717B6A2F0E8618002158F6 /* FTLongTaskDetector.h in Headers */,
-				176CE2202ED586DF00E9E92B /* FTCrashMonitor_AppState.h in Headers */,
-				17F652902DF81A73005C91DB /* FTWebViewJavascriptLeakAvoider.h in Headers */,
-				17F652912DF81A73005C91DB /* FTRumDatasProtocol.h in Headers */,
-				17F652922DF81A73005C91DB /* FTMobileAgentVersion.h in Headers */,
-				178CDAF82F0F7AA000EE98D0 /* FTCrashReportVersion.h in Headers */,
-				178CDAF92F0F7AA000EE98D0 /* FTCrashReportFilterBasic.h in Headers */,
-				178CDAFA2F0F7AA000EE98D0 /* FTCrashReportC.h in Headers */,
-				178CDAFB2F0F7AA000EE98D0 /* FTCrashC.h in Headers */,
-				178CDAFC2F0F7AA000EE98D0 /* FTCrashThreadCache.h in Headers */,
-				178CDAFD2F0F7AA000EE98D0 /* FTCrashReportFixer.h in Headers */,
-				178CDAFE2F0F7AA000EE98D0 /* FTCrashReportStoreC.h in Headers */,
-				178CDAFF2F0F7AA000EE98D0 /* FTCrashReport.h in Headers */,
-				178CDB002F0F7AA000EE98D0 /* FTCrashReportStore.h in Headers */,
-				17F652942DF81A73005C91DB /* FTEnumConstant.h in Headers */,
-				17F652962DF81A73005C91DB /* FTTraceContext.h in Headers */,
-				17F652972DF81A73005C91DB /* FTNetworkConnectivity.h in Headers */,
-				17F652982DF81A73005C91DB /* WKWebView+FTAutoTrack.h in Headers */,
-				17F652992DF81A73005C91DB /* FTLog+Private.h in Headers */,
-				176CE2312ED6CFA200E9E92B /* FTCrashFileUtils.h in Headers */,
-				17F6529A2DF81A73005C91DB /* FTDURLSessionDelegate.h in Headers */,
-				172B11052E377C0800753766 /* FTRUMMonitor.h in Headers */,
-				17F6529C2DF81A73005C91DB /* FTNetworkInfoManager.h in Headers */,
-				17F6529D2DF81A73005C91DB /* ZY_FMDatabasePool.h in Headers */,
-				17F6529E2DF81A73005C91DB /* FTURLSessionInstrumentation.h in Headers */,
-				17F652A02DF81A73005C91DB /* FTURLSessionInterceptorProtocol.h in Headers */,
-				17F652A12DF81A73005C91DB /* NSURLSessionTask+FTSwizzler.h in Headers */,
-				17A421B82EDDAACF00416673 /* FTCrashReportWriterCallbacks.h in Headers */,
-				17F652A22DF81A73005C91DB /* FTWKWebViewHandler+Private.h in Headers */,
-				17C2FEB52E432B9A003D600F /* FTDefaultActionTrackingHandler.h in Headers */,
-				176CE23D2ED6DC3000E9E92B /* FTCrashMonitor_System.h in Headers */,
-				17F652A32DF81A73005C91DB /* FTRequestBody.h in Headers */,
-				17C2FD0A2E3B3E42003D600F /* FTRumConfig+Private.h in Headers */,
-				17A421F32EDE8EED00416673 /* FTCrashMach.h in Headers */,
-				17F652A42DF81A73005C91DB /* FTAutoTrackProperty.h in Headers */,
-				17717B832F0F518C002158F6 /* FTAppLaunchTracker.h in Headers */,
-				17F652A52DF81A73005C91DB /* FTCPUMonitor.h in Headers */,
-				17F652A62DF81A73005C91DB /* FTWeakPropertyContainer.h in Headers */,
-				17F652A72DF81A73005C91DB /* UIApplication+FTAutoTrack.h in Headers */,
-				17F652A82DF81A73005C91DB /* FTLoggerConfig.h in Headers */,
-				17C2FD052E3B3E09003D600F /* FTRumConfig.h in Headers */,
-				17A423442EEBC6A600416673 /* FTCrashReportWrapper.h in Headers */,
-				17F652A92DF81A73005C91DB /* FTMobileAgent.h in Headers */,
-				17F652AA2DF81A73005C91DB /* ZY_FMResultSet.h in Headers */,
-				17F652AB2DF81A73005C91DB /* ZY_FMDB.h in Headers */,
-				172B10F72E377BA100753766 /* FTFatalErrorContext.h in Headers */,
-				176CE2772ED862A400E9E92B /* FTCrashExceptionHandlingRequirements.h in Headers */,
-				17717B472F0E7E71002158F6 /* FTRemoteConfigError.h in Headers */,
-				17F652AC2DF81A73005C91DB /* FTLoggerDataWriteProtocol.h in Headers */,
-				17F652AD2DF81A73005C91DB /* FTResourceMetricsModel+Private.h in Headers */,
-			);
-			runOnlyForDeploymentPostprocessing = 0;
-		};
 		4A6C5419255E6464009771B8 /* Headers */ = {
 			isa = PBXHeadersBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				172113BB2DF1A200006189C2 /* FTRemoteConfigManager.h in Headers */,
 				172B10EC2E377B3700753766 /* FTRUMDependencies.h in Headers */,
 				177606A429D1376600D17137 /* FTReadWriteHelper.h in Headers */,
 				17717B7A2F0F4FA9002158F6 /* FTCrash.h in Headers */,
 				17717B7B2F0F4FA9002158F6 /* FTCrashMonitorType.h in Headers */,
 				174D91AC2A20B98300D85AAA /* FTLoggerDataWriteProtocol.h in Headers */,
-				1776069929D1373700D17137 /* FTJsonWriter.h in Headers */,
 				1776073729D1416200D17137 /* FTUserInfo.h in Headers */,
 				17A4222E2EDEF67600416673 /* FTCrashCompilerDefines.h in Headers */,
 				17E5ED8F2DD2095000E5A971 /* FTDataModifier.h in Headers */,
@@ -2921,7 +2317,6 @@
 				174BC87C2BFC9F8A00478EE1 /* NSDictionary+FTCopyProperties.h in Headers */,
 				1776069C29D1375800D17137 /* NSString+FTAdd.h in Headers */,
 				177606B829D137E900D17137 /* FTExternalResourceProtocol.h in Headers */,
-				17717B452F0E7E71002158F6 /* FTRemoteConfigError.h in Headers */,
 				17E4CC5029CD42EB005C2D99 /* FTMobileExtension.h in Headers */,
 				1776BD372E179EC100612A7F /* FTCrashMonitor.h in Headers */,
 				17E4CC5229CD42EB005C2D99 /* FTExtensionManager.h in Headers */,
@@ -2939,7 +2334,6 @@
 				17678E3229D28BED00C1DA98 /* FTMobileConfig+Private.h in Headers */,
 				177606BA29D137EB00D17137 /* FTURLSessionInterceptorProtocol.h in Headers */,
 				17717B8F2F0F5250002158F6 /* FTErrorMonitorInfo.h in Headers */,
-				172113C12DF1B476006189C2 /* FTRemoteConfigurationRequest.h in Headers */,
 				17C2FD042E3B3E09003D600F /* FTRumConfig.h in Headers */,
 				1799581429D43FDE0033B46E /* FTPresetProperty.h in Headers */,
 				17A421C52EDDB06E00416673 /* FTCrashMonitorHelper.h in Headers */,
@@ -2959,8 +2353,6 @@
 				176868F02ED47AA600C76F0D /* FTCrashStackCursor_MachineContext.h in Headers */,
 				17717B4C2F0E7E9A002158F6 /* FTRemoteConfigTypeDefs.h in Headers */,
 				176CE2322ED6CFA200E9E92B /* FTCrashFileUtils.h in Headers */,
-				17717B362F0E7E69002158F6 /* FTRemoteConfigModel.h in Headers */,
-				17717B372F0E7E69002158F6 /* FTRemoteConfigModel+Private.h in Headers */,
 				176868F22ED47AA600C76F0D /* FTCrashPlatformSpecificDefines.h in Headers */,
 				176868F42ED47AA600C76F0D /* FTCrashDynamicLinker.h in Headers */,
 				176868F52ED47AA600C76F0D /* FTCrashCPU_Apple.h in Headers */,
@@ -3038,6 +2430,7 @@
 				17A422812EE19DFF00416673 /* FTCrashReportFilter.h in Headers */,
 				17E4CB4C29CD42DA005C2D99 /* FTResourceContentModel.h in Headers */,
 				17C33AA52D93D68B003BB98B /* FTDataWriterWorker.h in Headers */,
+				172307822F3C84320029A5C6 /* FTExtensionConfig.h in Headers */,
 				1777C3E72A36EED500C0AA45 /* FTLogger.h in Headers */,
 				1759510C2A6FE4DE006FAB9D /* NSNumber+FTAdd.h in Headers */,
 				174BC8792BFC9F8A00478EE1 /* NSDictionary+FTCopyProperties.h in Headers */,
@@ -3137,7 +2530,6 @@
 				17A4221B2EDE958E00416673 /* FTCrashString.h in Headers */,
 				1712695D2DC21026002D238B /* FTDataUploadWorker.h in Headers */,
 				175C7D1029E9439700A7F271 /* FTURLSessionDelegate.h in Headers */,
-				17E4CB4829CD42DA005C2D99 /* FTJsonWriter.h in Headers */,
 				17AC174B2B98635C003E18A6 /* NSDate+FTUtil.h in Headers */,
 				17A421E72EDE87B000416673 /* FTCrashReportFields.h in Headers */,
 				172113B92DF1A200006189C2 /* FTRemoteConfigManager.h in Headers */,
@@ -3199,6 +2591,7 @@
 				1776062929D1347500D17137 /* WKWebView+FTAutoTrack.h in Headers */,
 				1776BA7B2B997D19008424FF /* FTLog+Private.h in Headers */,
 				176CE2352ED6CFA200E9E92B /* FTCrashFileUtils.h in Headers */,
+				172307802F3C84150029A5C6 /* FTExtensionManager.h in Headers */,
 				171CE1D92BFB3C550083FC1C /* FTDURLSessionDelegate.h in Headers */,
 				172B11042E377C0800753766 /* FTRUMMonitor.h in Headers */,
 				1763BD8C29DFF04F009EE026 /* FTNetworkInfoManager.h in Headers */,
@@ -3253,25 +2646,6 @@
 			productReference = 17510EC829C9C24500C8F1E4 /* FTSDKCore.framework */;
 			productType = "com.apple.product-type.framework";
 		};
-		17F6522B2DF81A73005C91DB /* FTMobileSDK-dynamic */ = {
-			isa = PBXNativeTarget;
-			buildConfigurationList = 17F6531A2DF81A73005C91DB /* Build configuration list for PBXNativeTarget "FTMobileSDK-dynamic" */;
-			buildPhases = (
-				17F6522C2DF81A73005C91DB /* Headers */,
-				17F652AE2DF81A73005C91DB /* Sources */,
-				17F653162DF81A73005C91DB /* Frameworks */,
-				17F653172DF81A73005C91DB /* Resources */,
-				17F653192DF81A73005C91DB /* ShellScript */,
-			);
-			buildRules = (
-			);
-			dependencies = (
-			);
-			name = "FTMobileSDK-dynamic";
-			productName = "ft-sdk-ios";
-			productReference = 17F6531D2DF81A73005C91DB /* FTMobileSDK.framework */;
-			productType = "com.apple.product-type.framework";
-		};
 		4A6C541D255E6464009771B8 /* FTMobileExtension */ = {
 			isa = PBXNativeTarget;
 			buildConfigurationList = 4A6C542F255E6464009771B8 /* Build configuration list for PBXNativeTarget "FTMobileExtension" */;
@@ -3321,9 +2695,6 @@
 					17510E1529C9C24500C8F1E4 = {
 						LastSwiftMigration = 1620;
 					};
-					17F6522B2DF81A73005C91DB = {
-						LastSwiftMigration = 1620;
-					};
 					4A6C541D255E6464009771B8 = {
 						CreatedOnToolsVersion = 11.4;
 						LastSwiftMigration = 1620;
@@ -3352,7 +2723,6 @@
 				4A884259239E5754001B44C3 /* FTMobileSDK */,
 				4A6C541D255E6464009771B8 /* FTMobileExtension */,
 				17510E1529C9C24500C8F1E4 /* FTSDKCore */,
-				17F6522B2DF81A73005C91DB /* FTMobileSDK-dynamic */,
 			);
 		};
 /* End PBXProject section */
@@ -3363,14 +2733,6 @@
 			buildActionMask = 2147483647;
 			files = (
 				171C21C12B9183D500C67AD6 /* PrivacyInfo.xcprivacy in Resources */,
-			);
-			runOnlyForDeploymentPostprocessing = 0;
-		};
-		17F653172DF81A73005C91DB /* Resources */ = {
-			isa = PBXResourcesBuildPhase;
-			buildActionMask = 2147483647;
-			files = (
-				17F653182DF81A73005C91DB /* PrivacyInfo.xcprivacy in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -3394,23 +2756,6 @@
 
 /* Begin PBXShellScriptBuildPhase section */
 		172C1DD52BC7F29C00412DB6 /* ShellScript */ = {
-			isa = PBXShellScriptBuildPhase;
-			buildActionMask = 2147483647;
-			files = (
-			);
-			inputFileListPaths = (
-			);
-			inputPaths = (
-			);
-			outputFileListPaths = (
-			);
-			outputPaths = (
-			);
-			runOnlyForDeploymentPostprocessing = 0;
-			shellPath = /bin/sh;
-			shellScript = "# Type a script or drag a script file from your workspace to insert its path.\n# Get current version number\nremove_dash_and_after() {  \n    local str=\"$1\"  \n    echo \"${str%%-*}\"  \n}  \nFILE_PATH=\"FTMobileSDK/FTMobileAgent/Core/FTMobileAgentVersion.h\"\n# Use grep and awk to extract SDK_VERSION value\nbundleVersion=$(grep 'SDK_VERSION' \"$FILE_PATH\" | awk -F'\"' '{print $2}')\nformatBundleVersion=$(remove_dash_and_after \"$bundleVersion\")  \nINFO_PLIST_PATH=\"${PROJECT_DIR}/${INFOPLIST_FILE}\"  \n\necho \"INFO_PLIST_PATH: $INFO_PLIST_PATH\"\n\n# Use defaults to write new version number\ndefaults write \"${INFO_PLIST_PATH}\" CFBundleShortVersionString \"${formatBundleVersion}\"\n\n\n# Print result\necho \"Updated CFBundleShortVersionString to ${formatBundleVersion}\"\n\n";
-		};
-		17F653192DF81A73005C91DB /* ShellScript */ = {
 			isa = PBXShellScriptBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
@@ -3513,7 +2858,6 @@
 				17AC17402B98525B003E18A6 /* FTLogMessage.m in Sources */,
 				1763BDB729DFF050009EE026 /* FTTrackDataManager.m in Sources */,
 				17AB76F829D432DE008FBBF5 /* FTRUMSessionHandler.m in Sources */,
-				1776069A29D1373900D17137 /* FTJsonWriter.m in Sources */,
 				178CDAC62F0F7A7200EE98D0 /* FTCrash.m in Sources */,
 				1776072E29D13A3700D17137 /* FTWebViewJavascriptLeakAvoider.m in Sources */,
 				17A421F82EDE8EED00416673 /* FTCrashMach.c in Sources */,
@@ -3578,172 +2922,6 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
-		17F652AE2DF81A73005C91DB /* Sources */ = {
-			isa = PBXSourcesBuildPhase;
-			buildActionMask = 2147483647;
-			files = (
-				17F652AF2DF81A73005C91DB /* FTSwizzle.m in Sources */,
-				17F652B02DF81A73005C91DB /* UIApplication+FTAutoTrack.m in Sources */,
-				17A421CE2EDDB0D500416673 /* FTCrashMonitor_CPPException.cpp in Sources */,
-				176CE2212ED586DF00E9E92B /* FTCrashMonitor_AppState.c in Sources */,
-				17F652B12DF81A73005C91DB /* FTDURLSessionDelegate.m in Sources */,
-				1768689F2ED47AA600C76F0D /* FTCrashStackCursor_MachineContext.c in Sources */,
-				176868A12ED47AA600C76F0D /* FTCrashUUIDConversion.c in Sources */,
-				176868A22ED47AA600C76F0D /* FTCrashSymbolicator.c in Sources */,
-				176868A32ED47AA600C76F0D /* FTCrashStackCursor_SelfThread.c in Sources */,
-				176868A42ED47AA600C76F0D /* FTCrashCPU.c in Sources */,
-				176868A52ED47AA600C76F0D /* FTCrashStackCursor.c in Sources */,
-				176868A62ED47AA600C76F0D /* FTCrashCPU_x86_64.c in Sources */,
-				176868A72ED47AA600C76F0D /* FTCrashDynamicLinker.c in Sources */,
-				176868A92ED47AA600C76F0D /* FTCrashBinaryImageCache.c in Sources */,
-				176868AA2ED47AA600C76F0D /* FTCrashCPU_arm64.c in Sources */,
-				17A422362EDEF6C200416673 /* FTCrashID.c in Sources */,
-				176868AB2ED47AA600C76F0D /* FTCrashStackCursor_Backtrace.c in Sources */,
-				176868AE2ED47AA600C76F0D /* FTCrashMachineContext.c in Sources */,
-				176868AF2ED47AA600C76F0D /* FTCrashThread.c in Sources */,
-				176CE2302ED6CFA200E9E92B /* FTCrashFileUtils.c in Sources */,
-				176868B02ED47AA600C76F0D /* FTCrashMemory.c in Sources */,
-				176868B12ED47AA600C76F0D /* FTCrashCPU_arm.c in Sources */,
-				178CDB012F0F7AA000EE98D0 /* FTCrashReportFixer.c in Sources */,
-				178CDB022F0F7AA000EE98D0 /* FTCrashThreadCache.c in Sources */,
-				178CDB032F0F7AA000EE98D0 /* FTCrashReportStore.m in Sources */,
-				178CDB042F0F7AA000EE98D0 /* FTCrashC.c in Sources */,
-				178CDB052F0F7AA000EE98D0 /* FTCrashReport.m in Sources */,
-				178CDB062F0F7AA000EE98D0 /* FTCrashReportStoreC.c in Sources */,
-				178CDB072F0F7AA000EE98D0 /* FTCrashReportC.c in Sources */,
-				176868B42ED47AA600C76F0D /* FTCrashCPU_x86_32.c in Sources */,
-				17A422BD2EE2C06500416673 /* FTCrashBacktrace.c in Sources */,
-				17717B722F0E8B51002158F6 /* FTConfig+RemoteConfig.m in Sources */,
-				17C2FEAA2E432949003D600F /* FTDefaultUIKitViewTrackingHandler.m in Sources */,
-				17F652B22DF81A73005C91DB /* NSDate+FTUtil.m in Sources */,
-				17F652B32DF81A73005C91DB /* FTDataWriterWorker.m in Sources */,
-				17F652B42DF81A73005C91DB /* UIViewController+FTAutoTrack.m in Sources */,
-				17F652B52DF81A73005C91DB /* NSNumber+FTAdd.m in Sources */,
-				17F652B62DF81A73005C91DB /* FTAppLifeCycle.m in Sources */,
-				17F652B72DF81A73005C91DB /* FTReachability.m in Sources */,
-				17F652B82DF81A73005C91DB /* FTRUMManager.m in Sources */,
-				17C2FE4A2E3B8CE8003D600F /* FTRUMDataModel.m in Sources */,
-				17F652B92DF81A73005C91DB /* FTMonitorItem.m in Sources */,
-				17F652BA2DF81A73005C91DB /* FTURLSessionDelegate.m in Sources */,
-				1776BD392E179EC100612A7F /* FTCrashMonitor.c in Sources */,
-				17A4221C2EDE958E00416673 /* FTCrashString.c in Sources */,
-				176CE23C2ED6DC3000E9E92B /* FTCrashMonitor_System.m in Sources */,
-				17F652BB2DF81A73005C91DB /* FTMonitorValue.m in Sources */,
-				17F652BC2DF81A73005C91DB /* FTHTTPClient.m in Sources */,
-				17F652BD2DF81A73005C91DB /* FTMobileConfig.m in Sources */,
-				17F652BE2DF81A73005C91DB /* FTTraceManager.m in Sources */,
-				17F652BF2DF81A73005C91DB /* FTSwizzler.m in Sources */,
-				17A421F22EDE8EED00416673 /* FTCrashMach.c in Sources */,
-				17F652C02DF81A73005C91DB /* FTDBDataCachePolicy.m in Sources */,
-				17A4232A2EEAE57300416673 /* FTCrashNSDictionaryHelper.m in Sources */,
-				17F652C12DF81A73005C91DB /* ZY_FMDatabase.m in Sources */,
-				17F652C22DF81A73005C91DB /* FTMonitorUtils.m in Sources */,
-				17F652C32DF81A73005C91DB /* FTErrorDataProtocol.m in Sources */,
-				17F652C42DF81A73005C91DB /* FTAutoTrackHandler.m in Sources */,
-				17F652C52DF81A73005C91DB /* FTWKWebViewJavascriptBridge.m in Sources */,
-				17F652C62DF81A73005C91DB /* ZY_FMDatabaseQueue.m in Sources */,
-				17F652C72DF81A73005C91DB /* ZY_FMResultSet.m in Sources */,
-				17F652C92DF81A73005C91DB /* FTRequest.m in Sources */,
-				17F652CA2DF81A73005C91DB /* FTEnumConstant.m in Sources */,
-				17F652CB2DF81A73005C91DB /* FTExtensionDataManager.m in Sources */,
-				17F652CD2DF81A73005C91DB /* FTResourceContentModel.m in Sources */,
-				17A421D62EDDB0F100416673 /* FTCrashMonitor_MachException.c in Sources */,
-				17F652CE2DF81A73005C91DB /* FTSerialNumberGenerator.m in Sources */,
-				17F652CF2DF81A73005C91DB /* NSString+FTAdd.m in Sources */,
-				17A422122EDE94AD00416673 /* FTCrashSignalInfo.c in Sources */,
-				17717B3B2F0E7E69002158F6 /* FTRemoteConfigModel.m in Sources */,
-				17F652D02DF81A73005C91DB /* FTResourceMetricsModel.m in Sources */,
-				17A422CF2EE2E64C00416673 /* FTCrashNSErrorHelper.m in Sources */,
-				17F652D12DF81A73005C91DB /* NSError+FTDescription.m in Sources */,
-				17F652D22DF81A73005C91DB /* FTTrackDataManager.m in Sources */,
-				17F652D32DF81A73005C91DB /* ZY_FMDatabaseAdditions.m in Sources */,
-				17F652D42DF81A73005C91DB /* NSURLSessionTask+FTSwizzler.m in Sources */,
-				17F652D52DF81A73005C91DB /* FTNetworkConnectivity.m in Sources */,
-				17F652D62DF81A73005C91DB /* FTLogger.m in Sources */,
-				172B107C2E339F0600753766 /* FTGlobalRumManager.m in Sources */,
-				176CE2722ED8591F00E9E92B /* FTCrashMonitorRegistry.c in Sources */,
-				17F652D72DF81A73005C91DB /* FTDataCompression.m in Sources */,
-				17F652D82DF81A73005C91DB /* FTRUMActionHandler.m in Sources */,
-				176CE2462ED6DF3900E9E92B /* FTCrashSysCtl.c in Sources */,
-				17F652D92DF81A73005C91DB /* FTPackageIdGenerator.m in Sources */,
-				17F652DA2DF81A73005C91DB /* FTTracer.m in Sources */,
-				17F652DB2DF81A73005C91DB /* FTReadWriteHelper.m in Sources */,
-				17C2FE342E3B87A9003D600F /* FTRUMAction.m in Sources */,
-				17F652DE2DF81A73005C91DB /* FTLoggerConfig.m in Sources */,
-				17F652E02DF81A73005C91DB /* BlacklistedVCClassNames.m in Sources */,
-				17F652E12DF81A73005C91DB /* UIGestureRecognizer+FTAutoTrack.m in Sources */,
-				17F652E22DF81A73005C91DB /* FTJSONUtil.m in Sources */,
-				176CE2622ED6F6F900E9E92B /* FTLongTaskDetector.m in Sources */,
-				17A422972EE27DF200416673 /* FTCrashJSONCodecObjC.m in Sources */,
-				176CE2632ED6F6F900E9E92B /* FTLongTaskManager.m in Sources */,
-				17F652E32DF81A73005C91DB /* FTMobileSDKDocs.docc in Sources */,
-				17F652E42DF81A73005C91DB /* NSURLSession+FTSwizzler.m in Sources */,
-				1776BD512E179FA300612A7F /* FTCrashLogger.c in Sources */,
-				17F652E52DF81A73005C91DB /* FTFileLogger.m in Sources */,
-				17F652E62DF81A73005C91DB /* FTRecordModel.m in Sources */,
-				17F652E72DF81A73005C91DB /* ZY_FMDatabasePool.m in Sources */,
-				178AFF902E4F3438009D3C09 /* FTRUMPlaceholderViewHandler.m in Sources */,
-				17F652E92DF81A73005C91DB /* WKWebView+FTAutoTrack.m in Sources */,
-				17F652EA2DF81A73005C91DB /* FTBaseInfoHandler.m in Sources */,
-				17F652EB2DF81A73005C91DB /* FTURLSessionInstrumentation.m in Sources */,
-				17F652ED2DF81A73005C91DB /* UIView+FTAutoTrack.m in Sources */,
-				17F652EE2DF81A73005C91DB /* FTRUMMonitor.m in Sources */,
-				17F652EF2DF81A73005C91DB /* FTLog.m in Sources */,
-				172B101A2E308B6500753766 /* FTRUMView.m in Sources */,
-				17A421E42EDDB12B00416673 /* FTCrashMonitor_Signal.c in Sources */,
-				17F652F02DF81A73005C91DB /* FTConstants.m in Sources */,
-				17A4224C2EDEFFCA00416673 /* FTCrashMach-O.c in Sources */,
-				17F652F12DF81A73005C91DB /* FTWeakPropertyContainer.m in Sources */,
-				17F652F22DF81A73005C91DB /* FTMemoryMonitor.m in Sources */,
-				17F652F32DF81A73005C91DB /* FTUserInfo.m in Sources */,
-				17F652F42DF81A73005C91DB /* FTWebViewJavascriptBridgeBase.m in Sources */,
-				1776BD412E179F5C00612A7F /* FTCrashDebug.c in Sources */,
-				17F652F52DF81A73005C91DB /* FTRemoteConfigurationRequest.m in Sources */,
-				17F652F62DF81A73005C91DB /* FTMobileAgent.m in Sources */,
-				17A421FC2EDE8F8D00416673 /* FTCrashObjC.c in Sources */,
-				17717B482F0E7E71002158F6 /* FTRemoteConfigError.m in Sources */,
-				176CE2282ED6CC0B00E9E92B /* FTCrashJSONCodec.c in Sources */,
-				17F652F72DF81A73005C91DB /* FTTraceContext.m in Sources */,
-				17F652F82DF81A73005C91DB /* FTRUMDependencies.m in Sources */,
-				17F652F92DF81A73005C91DB /* FTCPUMonitor.m in Sources */,
-				17F652FA2DF81A73005C91DB /* FTWebViewJavascriptLeakAvoider.m in Sources */,
-				17F652FD2DF81A73005C91DB /* NSDictionary+FTCopyProperties.m in Sources */,
-				172B100F2E2F8FEB00753766 /* FTRumConfig.m in Sources */,
-				17F652FE2DF81A73005C91DB /* FTOSLogger.m in Sources */,
-				17F652FF2DF81A73005C91DB /* FTRUMViewHandler.m in Sources */,
-				17F653002DF81A73005C91DB /* FTThreadDispatchManager.m in Sources */,
-				17F653012DF81A73005C91DB /* FTDisplayRateMonitor.m in Sources */,
-				17F653022DF81A73005C91DB /* FTRUMResourceHandler.m in Sources */,
-				17A423432EEBC6A600416673 /* FTCrashReportWrapper.m in Sources */,
-				17F653032DF81A73005C91DB /* FTLogMessage.m in Sources */,
-				17F653042DF81A73005C91DB /* FTRequestBody.m in Sources */,
-				17F653052DF81A73005C91DB /* FTErrorMonitorInfo.m in Sources */,
-				17F653062DF81A73005C91DB /* FTWKWebViewHandler.m in Sources */,
-				17F653072DF81A73005C91DB /* FTRemoteConfigManager.m in Sources */,
-				17F653082DF81A73005C91DB /* FTExternalDataManager.m in Sources */,
-				17C2FEB42E432B9A003D600F /* FTDefaultActionTrackingHandler.m in Sources */,
-				17F6530A2DF81A73005C91DB /* FTDataUploadWorker.m in Sources */,
-				17F6530B2DF81A73005C91DB /* FTPresetProperty.m in Sources */,
-				178CDAC52F0F7A7200EE98D0 /* FTCrash.m in Sources */,
-				17A4230D2EEAB9E400416673 /* FTFatalErrorContext.m in Sources */,
-				17717B572F0E7EF3002158F6 /* FTAppLaunchTracker.m in Sources */,
-				1745E3252EF900BB00C8FA9B /* FTRUMContext.m in Sources */,
-				17F6530C2DF81A73005C91DB /* FTRUMSessionHandler.m in Sources */,
-				17F6530D2DF81A73005C91DB /* FTJsonWriter.m in Sources */,
-				176CE2512ED6E67100E9E92B /* FTCrashDate.c in Sources */,
-				17F6530E2DF81A73005C91DB /* FTURLSessionInterceptor.m in Sources */,
-				17F6530F2DF81A73005C91DB /* FTRUMHandler.m in Sources */,
-				17F653102DF81A73005C91DB /* UIScrollView+FTAutoTrack.m in Sources */,
-				17F653112DF81A73005C91DB /* FTNetworkInfoManager.m in Sources */,
-				17A4223E2EDEFEEE00416673 /* FTCrashCxaThrowSwapper.c in Sources */,
-				17F653122DF81A73005C91DB /* FTCrashMonitor_NSException.m in Sources */,
-				172B10612E3219F500753766 /* FTDateUtil.m in Sources */,
-				176CE2812ED8667E00E9E92B /* FTCrashMonitorAPI.c in Sources */,
-				17F653142DF81A73005C91DB /* FTSessionTaskHandler.m in Sources */,
-				17F653152DF81A73005C91DB /* FTTrackerEventDBTool.m in Sources */,
-			);
-			runOnlyForDeploymentPostprocessing = 0;
-		};
 		4A6C541A255E6464009771B8 /* Sources */ = {
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
@@ -3770,7 +2948,6 @@
 				176868D72ED47AA600C76F0D /* FTCrashDynamicLinker.c in Sources */,
 				176868D92ED47AA600C76F0D /* FTCrashBinaryImageCache.c in Sources */,
 				176868DA2ED47AA600C76F0D /* FTCrashCPU_arm64.c in Sources */,
-				17717B462F0E7E71002158F6 /* FTRemoteConfigError.m in Sources */,
 				17A422C02EE2C06500416673 /* FTCrashBacktrace.c in Sources */,
 				176868DB2ED47AA600C76F0D /* FTCrashStackCursor_Backtrace.c in Sources */,
 				176868DE2ED47AA600C76F0D /* FTCrashMachineContext.c in Sources */,
@@ -3781,7 +2958,6 @@
 				177606B729D137E100D17137 /* FTErrorDataProtocol.m in Sources */,
 				176CE22B2ED6CC0B00E9E92B /* FTCrashJSONCodec.c in Sources */,
 				17678E3529D28BF400C1DA98 /* FTMobileConfig.m in Sources */,
-				1776069B29D1373A00D17137 /* FTJsonWriter.m in Sources */,
 				17E32BA32BEC70E700F4685C /* FTErrorMonitorInfo.m in Sources */,
 				17AB76D929D432DE008FBBF5 /* FTDisplayRateMonitor.m in Sources */,
 				17A422482EDEFFCA00416673 /* FTCrashMach-O.c in Sources */,
@@ -3792,7 +2968,6 @@
 				17A421FE2EDE8F8D00416673 /* FTCrashObjC.c in Sources */,
 				177606A629D1376A00D17137 /* FTReadWriteHelper.m in Sources */,
 				17AB76E529D432DE008FBBF5 /* FTRUMManager.m in Sources */,
-				17717B382F0E7E69002158F6 /* FTRemoteConfigModel.m in Sources */,
 				1776073A29D1416200D17137 /* FTUserInfo.m in Sources */,
 				1776070729D139D700D17137 /* FTTracer.m in Sources */,
 				17AB76F429D432DE008FBBF5 /* FTRUMActionHandler.m in Sources */,
@@ -3823,7 +2998,6 @@
 				176CE21F2ED586DF00E9E92B /* FTCrashMonitor_AppState.c in Sources */,
 				1776071F29D13A0700D17137 /* FTURLSessionInterceptor.m in Sources */,
 				1762D6C92DC1D0F900238B61 /* FTLoggerConfig.m in Sources */,
-				172113C02DF1B476006189C2 /* FTRemoteConfigurationRequest.m in Sources */,
 				1776BD362E179EC100612A7F /* FTCrashMonitor.c in Sources */,
 				17AC174F2B98635C003E18A6 /* NSDate+FTUtil.m in Sources */,
 				17AB76B829D432DE008FBBF5 /* FTCPUMonitor.m in Sources */,
@@ -3850,7 +3024,6 @@
 				17A423452EEBC6A600416673 /* FTCrashReportWrapper.m in Sources */,
 				1776064329D1360500D17137 /* FTExternalDataManager.m in Sources */,
 				175951102A6FE4DE006FAB9D /* NSNumber+FTAdd.m in Sources */,
-				172113BA2DF1A200006189C2 /* FTRemoteConfigManager.m in Sources */,
 				1776068F29D1372900D17137 /* FTRecordModel.m in Sources */,
 				17C2FE2F2E3B8799003D600F /* FTRUMView.m in Sources */,
 				172B10682E3219F500753766 /* FTDateUtil.m in Sources */,
@@ -3907,6 +3080,7 @@
 				178CDB0A2F0F7AA000EE98D0 /* FTCrashReportStore.m in Sources */,
 				178CDB0B2F0F7AA000EE98D0 /* FTCrashC.c in Sources */,
 				178CDB0C2F0F7AA000EE98D0 /* FTCrashReport.m in Sources */,
+				172307832F3C843C0029A5C6 /* FTExtensionConfig.m in Sources */,
 				178CDB0D2F0F7AA000EE98D0 /* FTCrashReportStoreC.c in Sources */,
 				178CDB0E2F0F7AA000EE98D0 /* FTCrashReportC.c in Sources */,
 				1768689C2ED47AA600C76F0D /* FTCrashCPU_x86_32.c in Sources */,
@@ -3969,6 +3143,7 @@
 				17C2FE312E3B87A9003D600F /* FTRUMAction.m in Sources */,
 				1762D6CB2DC1D0F900238B61 /* FTLoggerConfig.m in Sources */,
 				17E4CC3629CD42E4005C2D99 /* BlacklistedVCClassNames.m in Sources */,
+				172307812F3C842C0029A5C6 /* FTExtensionManager.m in Sources */,
 				17E4CC3929CD42E4005C2D99 /* UIGestureRecognizer+FTAutoTrack.m in Sources */,
 				17E4CB5A29CD42DA005C2D99 /* FTJSONUtil.m in Sources */,
 				176CE25E2ED6F6F900E9E92B /* FTLongTaskDetector.m in Sources */,
@@ -4027,7 +3202,6 @@
 				17717B552F0E7EF3002158F6 /* FTAppLaunchTracker.m in Sources */,
 				1745E31F2EF900BB00C8FA9B /* FTRUMContext.m in Sources */,
 				17AB76F629D432DE008FBBF5 /* FTRUMSessionHandler.m in Sources */,
-				17E4CB5929CD42DA005C2D99 /* FTJsonWriter.m in Sources */,
 				176CE2532ED6E67100E9E92B /* FTCrashDate.c in Sources */,
 				17E4CBDD29CD42E4005C2D99 /* FTURLSessionInterceptor.m in Sources */,
 				17AB770229D432DE008FBBF5 /* FTRUMHandler.m in Sources */,
@@ -4136,93 +3310,6 @@
 				SUPPORTED_PLATFORMS = "appletvos appletvsimulator iphoneos iphonesimulator macosx";
 				SUPPORTS_MACCATALYST = YES;
 				SUPPORTS_MAC_DESIGNED_FOR_IPHONE_IPAD = YES;
-				SWIFT_VERSION = 5.0;
-				TARGETED_DEVICE_FAMILY = "1,2,3";
-				TVOS_DEPLOYMENT_TARGET = 12.0;
-			};
-			name = Release;
-		};
-		17F6531B2DF81A73005C91DB /* Debug */ = {
-			isa = XCBuildConfiguration;
-			buildSettings = {
-				CLANG_ENABLE_MODULES = YES;
-				CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER = NO;
-				CODE_SIGN_IDENTITY = "Apple Development";
-				CODE_SIGN_STYLE = Automatic;
-				DEFINES_MODULE = YES;
-				DEPLOYMENT_POSTPROCESSING = NO;
-				DEVELOPMENT_TEAM = "";
-				DOCC_EXTRACT_SWIFT_INFO_FOR_OBJC_SYMBOLS = NO;
-				DYLIB_COMPATIBILITY_VERSION = 8.0;
-				DYLIB_CURRENT_VERSION = 1.0.0;
-				DYLIB_INSTALL_NAME_BASE = "@rpath";
-				FRAMEWORK_SEARCH_PATHS = "";
-				GCC_GENERATE_DEBUGGING_SYMBOLS = YES;
-				GENERATE_INFOPLIST_FILE = NO;
-				HEADER_SEARCH_PATHS = "";
-				INFOPLIST_FILE = FTMobileSDK/info.plist;
-				INFOPLIST_KEY_NSHumanReadableCopyright = "Copyright © 2021 Guance. All rights reserved.";
-				INSTALL_PATH = "$(LOCAL_LIBRARY_DIR)/Frameworks";
-				IPHONEOS_DEPLOYMENT_TARGET = 10.0;
-				LD_RUNPATH_SEARCH_PATHS = (
-					"$(inherited)",
-					"@executable_path/Frameworks",
-					"@loader_path/Frameworks",
-				);
-				MACH_O_TYPE = mh_dylib;
-				MARKETING_VERSION = 1.0;
-				ONLY_ACTIVE_ARCH = NO;
-				PRODUCT_BUNDLE_IDENTIFIER = com.ft.mobile.sdk.FTMobileSDK;
-				PRODUCT_NAME = FTMobileSDK;
-				PROVISIONING_PROFILE_SPECIFIER = "";
-				RUN_DOCUMENTATION_COMPILER = YES;
-				SKIP_INSTALL = YES;
-				SUPPORTED_PLATFORMS = "appletvos appletvsimulator iphoneos iphonesimulator";
-				SUPPORTS_MACCATALYST = YES;
-				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
-				SWIFT_VERSION = 5.0;
-				TARGETED_DEVICE_FAMILY = "1,2,3";
-				TVOS_DEPLOYMENT_TARGET = 12.0;
-			};
-			name = Debug;
-		};
-		17F6531C2DF81A73005C91DB /* Release */ = {
-			isa = XCBuildConfiguration;
-			buildSettings = {
-				CLANG_ENABLE_MODULES = YES;
-				CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER = NO;
-				CODE_SIGN_IDENTITY = "Apple Development";
-				CODE_SIGN_STYLE = Automatic;
-				DEFINES_MODULE = YES;
-				DEPLOYMENT_POSTPROCESSING = NO;
-				DEVELOPMENT_TEAM = "";
-				DOCC_EXTRACT_SWIFT_INFO_FOR_OBJC_SYMBOLS = NO;
-				DYLIB_COMPATIBILITY_VERSION = 8.0;
-				DYLIB_CURRENT_VERSION = 1.0.0;
-				DYLIB_INSTALL_NAME_BASE = "@rpath";
-				FRAMEWORK_SEARCH_PATHS = "";
-				GCC_GENERATE_DEBUGGING_SYMBOLS = YES;
-				GENERATE_INFOPLIST_FILE = NO;
-				HEADER_SEARCH_PATHS = "";
-				INFOPLIST_FILE = FTMobileSDK/info.plist;
-				INFOPLIST_KEY_NSHumanReadableCopyright = "Copyright © 2021 Guance. All rights reserved.";
-				INSTALL_PATH = "$(LOCAL_LIBRARY_DIR)/Frameworks";
-				IPHONEOS_DEPLOYMENT_TARGET = 10.0;
-				LD_RUNPATH_SEARCH_PATHS = (
-					"$(inherited)",
-					"@executable_path/Frameworks",
-					"@loader_path/Frameworks",
-				);
-				MACH_O_TYPE = mh_dylib;
-				MARKETING_VERSION = "";
-				ONLY_ACTIVE_ARCH = NO;
-				PRODUCT_BUNDLE_IDENTIFIER = com.ft.mobile.sdk.FTMobileSDK;
-				PRODUCT_NAME = FTMobileSDK;
-				PROVISIONING_PROFILE_SPECIFIER = "";
-				RUN_DOCUMENTATION_COMPILER = YES;
-				SKIP_INSTALL = YES;
-				SUPPORTED_PLATFORMS = "appletvos appletvsimulator iphoneos iphonesimulator";
-				SUPPORTS_MACCATALYST = YES;
 				SWIFT_VERSION = 5.0;
 				TARGETED_DEVICE_FAMILY = "1,2,3";
 				TVOS_DEPLOYMENT_TARGET = 12.0;
@@ -4514,15 +3601,6 @@
 			buildConfigurations = (
 				17510EC629C9C24500C8F1E4 /* Debug */,
 				17510EC729C9C24500C8F1E4 /* Release */,
-			);
-			defaultConfigurationIsVisible = 0;
-			defaultConfigurationName = Release;
-		};
-		17F6531A2DF81A73005C91DB /* Build configuration list for PBXNativeTarget "FTMobileSDK-dynamic" */ = {
-			isa = XCConfigurationList;
-			buildConfigurations = (
-				17F6531B2DF81A73005C91DB /* Debug */,
-				17F6531C2DF81A73005C91DB /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;

@@ -15,7 +15,7 @@ NS_ASSUME_NONNULL_BEGIN
 /// Tool for operating database data
 @interface FTTrackerEventDBTool : NSObject
 /// Singleton
-+ (nullable FTTrackerEventDBTool *)sharedManger;
++ (nullable FTTrackerEventDBTool *)sharedManager;
 /// Singleton
 /// @param dbPath database path
 /// @param dbName database name

@@ -857,7 +857,7 @@ static NSDictionary *g_registerOrders;
 
     for (NSDictionary *thread in threads) {
         NSNumber *cpuUsage = thread[FTCrashField_CPU];
-        if (cpuUsage) {
+        if (cpuUsage != nil) {
             tot_cpu = tot_cpu + [cpuUsage floatValue];
         }
     }

@@ -340,29 +340,28 @@ static FTMobileAgent *sharedInstance = nil;
                 NSString *dataType = dict[@"dataType"];
                 NSNumber *time = dict[@"tm"];
                 if([dataType isEqualToString:FT_DATA_TYPE_LOGGING]){
-                    id status = dict[@"status"];
-                    NSString *statusStr;
-                    if([status isKindOfClass:NSNumber.class]){
-                        statusStr = FTStatusStringMap[[status intValue]];
-                    }else{
-                        statusStr = status;
-                    }
-                    NSDictionary *dynamicTags = [[FTPresetProperty sharedInstance] loggerDynamicTags];
-                    NSMutableDictionary *tags = [NSMutableDictionary dictionary];
-                    [tags addEntriesFromDictionary:dynamicTags];
-                    if (self.loggerConfig.enableLinkRumData) {
-                        [tags addEntriesFromDictionary:[[FTPresetProperty sharedInstance] rumDynamicTags]];
-                        [tags addEntriesFromDictionary:[[FTPresetProperty sharedInstance] rumTags]];
-                    }
+                    NSMutableDictionary *tags = [NSMutableDictionary new];
                     [tags addEntriesFromDictionary:dict[@"tags"]];
-                    [[FTTrackDataManager sharedInstance].dataWriterWorker logging:dict[@"content"] status:statusStr tags:tags field:dict[@"fields"] time:time.longLongValue];
+                    id status = dict[@"status"];
+                    if (status) {
+                        NSString *statusStr;
+                        if([status isKindOfClass:NSNumber.class]){
+                            statusStr = FTStatusStringMap[[status intValue]];
+                        }else{
+                            statusStr = status;
+                        }
+                        tags[FT_KEY_STATUS] = statusStr;
+                    }
+                   
+                    NSMutableDictionary *fields = [NSMutableDictionary new];
+                    [fields addEntriesFromDictionary:dict[@"fields"]];
+                    if (dict[@"content"]) {
+                        fields[FT_KEY_MESSAGE] = dict[@"content"];
+                    }
+                    [[FTTrackDataManager sharedInstance].dataWriterWorker loggingTags:tags.copy field:fields.copy time:time.longLongValue linkRum:self.loggerConfig.enableLinkRumData];
                 }else if([dataType isEqualToString:FT_DATA_TYPE_RUM]){
                     NSString *eventType = dict[@"eventType"];
-                    NSDictionary *dynamicTags = [[FTPresetProperty sharedInstance] rumDynamicTags];
-                    NSMutableDictionary *tags = [NSMutableDictionary dictionary];
-                    [tags addEntriesFromDictionary:dict[@"tags"]];
-                    [tags addEntriesFromDictionary:dynamicTags];
-                    [[FTTrackDataManager sharedInstance].dataWriterWorker extensionRumWrite:eventType tags:tags fields:dict[@"fields"] time:time.longLongValue];
+                    [[FTTrackDataManager sharedInstance].dataWriterWorker extensionRumWrite:eventType tags:dict[@"tags"] fields:dict[@"fields"] time:time.longLongValue];
                 }
             }
             [[FTExtensionDataManager sharedInstance] deleteEventsWithGroupIdentifier:groupIdentifier];
@@ -384,30 +383,33 @@ static FTMobileAgent *sharedInstance = nil;
 #pragma mark - SDK shutdown
 - (void)shutDown{
     @synchronized(sharedInstanceLock) {
-        [[FTLogger sharedInstance] shutDown];
-        [[FTGlobalRumManager sharedInstance] shutDown];
-        [[FTURLSessionInstrumentation sharedInstance] shutDown];
-        [[FTRemoteConfigManager sharedInstance] shutDown];
-        [FTTrackDataManager shutDown];
-        [[FTPresetProperty sharedInstance] shutDown];
-        FTInnerLogInfo(@"[SDK] SHUT DOWN");
-        [[FTLog sharedInstance] shutDown];
-        sharedInstance = nil;
+        [self releaseInternalResources];
+        [FTMobileAgent shutDown];
     }
 }
+- (void)releaseInternalResources {
+    [[FTLogger sharedInstance] shutDown];
+    [[FTGlobalRumManager sharedInstance] shutDown];
+    [[FTURLSessionInstrumentation sharedInstance] shutDown];
+    [[FTRemoteConfigManager sharedInstance] shutDown];
+    [FTTrackDataManager shutDown];
+    [[FTPresetProperty sharedInstance] shutDown];
+    FTInnerLogInfo(@"[SDK] SHUT DOWN");
+    [[FTLog sharedInstance] shutDown];
+}
 + (void)shutDown{
-    if (sharedInstance == nil) {
-        return;
+    @synchronized(sharedInstanceLock) {
+        if (sharedInstance == nil) {
+            return;
+        }
+        [sharedInstance releaseInternalResources];
+        sharedInstance = nil;
     }
-#pragma clang diagnostic push
-#pragma clang diagnostic ignored "-Wdeprecated-declarations"
-    [sharedInstance shutDown];
-#pragma clang diagnostic pop
 }
 + (void)clearAllData{
     @try {
         dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0), ^{
-            if([[FTTrackerEventDBTool sharedManger] deleteAllDatas]){
+            if([[FTTrackerEventDBTool sharedManager] deleteAllDatas]){
                 FTInnerLogInfo(@"[SDK] Clear All Data Success!!!");
             }else{
                 FTInnerLogInfo(@"[SDK] Clear All Data Error!!!");

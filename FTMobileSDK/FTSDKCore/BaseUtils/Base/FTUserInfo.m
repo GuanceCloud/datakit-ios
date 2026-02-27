@@ -9,32 +9,34 @@
 #import "FTUserInfo.h"
 #import "FTConstants.h"
 #import "FTBaseInfoHandler.h"
+#import <os/lock.h>
 NSString * const kFTUserInfo = @"FT_USER_INFO";
 @interface FTUserInfo()
 @property (nonatomic, copy, readwrite) NSString *userId;
 @property (nonatomic, copy, readwrite) NSString *name;
 @property (nonatomic, copy, readwrite) NSString *email;
-@property (nonatomic, strong, readwrite) NSDictionary *extra;
+@property (nonatomic, copy, readwrite) NSDictionary *extra;
 @property (nonatomic, assign, readwrite) BOOL isSignIn;
 @end
 @implementation FTUserInfo
+
 -(instancetype)init{
     self = [super init];
     if (self) {
         NSDictionary *dict = [[NSUserDefaults standardUserDefaults] dictionaryForKey:kFTUserInfo];
         if (dict) {
-            self.userId = [dict valueForKey:FT_USER_ID];
-            self.name = [dict valueForKey:FT_USER_NAME];
-            self.extra = [dict valueForKey:FT_USER_EXTRA];
-            self.email = [dict valueForKey:FT_USER_EMAIL];
-            self.isSignIn = YES;
+            _userId = [dict valueForKey:FT_USER_ID];
+            _name = [dict valueForKey:FT_USER_NAME];
+            _extra = [dict valueForKey:FT_USER_EXTRA];
+            _email = [dict valueForKey:FT_USER_EMAIL];
+            _isSignIn = YES;
         }else{
             NSString *user = [FTUserInfo userId];
             if (user) {
                 [self updateUser:user name:nil email:nil extra:nil];
             }else{
-                self.userId = [FTUserInfo userSessionId];
-                self.isSignIn = NO;
+                _userId = [FTUserInfo userSessionId];
+                _isSignIn = NO;
             }
         }
     }
@@ -56,13 +58,23 @@ NSString * const kFTUserInfo = @"FT_USER_INFO";
 }
 -(void)clearUser{
     [[NSUserDefaults standardUserDefaults] setObject:nil forKey:kFTUserInfo];
-    [[NSUserDefaults standardUserDefaults] synchronize];
-    self.userId = [FTUserInfo userSessionId];
+    NSString *userId = [FTUserInfo userSessionId];
+    self.userId = userId;
     self.name = nil;
     self.extra = nil;
     self.email = nil;
     self.isSignIn = NO;
 }
+- (NSDictionary *)userInfoDict{
+    NSMutableDictionary *dict = [NSMutableDictionary new];
+    dict[FT_USER_ID] = self.userId;
+    dict[FT_USER_NAME] = self.name;
+    dict[FT_USER_EMAIL] = self.email;
+    dict[FT_IS_SIGNIN] = self.isSignIn ? @"T" : @"F";
+    if (self.extra) [dict addEntriesFromDictionary:self.extra];
+    return [dict copy];
+}
+
 //Compatible with version 1.3.6 and below
 + (NSString *)userId{
     NSString  *userid =[[NSUserDefaults standardUserDefaults] valueForKey:@"ft_userid"];
@@ -77,14 +89,5 @@ NSString * const kFTUserInfo = @"FT_USER_INFO";
         [[NSUserDefaults standardUserDefaults] synchronize];
     }
     return sessionId;
-}
--(id)copyWithZone:(NSZone *)zone{
-    FTUserInfo *copy = [[[self class] allocWithZone:zone] init];
-    copy.userId = self.userId;
-    copy.email = self.email;
-    copy.extra = self.extra;
-    copy.name = self.name;
-    copy.isSignIn = self.isSignIn;
-    return copy;
 }
 @end

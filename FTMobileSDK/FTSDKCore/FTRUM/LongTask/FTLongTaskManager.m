@@ -298,9 +298,9 @@ void *FTLongTaskManagerQueueTag = &FTLongTaskManagerQueueTag;
                     lastViewsFields[FT_KEY_IS_ACTIVE] = @(NO);
                     NSNumber *time = lastViews[@"time"];
                     
-                    [strongSelf.dependencies.writer rumWrite:FT_RUM_SOURCE_VIEW tags:lastViews[@"tags"] fields:lastViewsFields time:[time longLongValue] updateTime:errorDate cache:sessionOnError];
+                    [strongSelf.dependencies.writer rumWrite:FT_RUM_SOURCE_VIEW tags:lastViews[@"tags"] fields:lastViewsFields  dynamicContext:event.errorContextModel.globalAttributes time:[time longLongValue]  updateTime:errorDate cache:sessionOnError];
                 }
-                [strongSelf.dependencies.writer rumWrite:FT_RUM_SOURCE_LONG_TASK tags:tags fields:fields time:startTime updateTime:0 cache:sessionOnError];
+                [strongSelf.dependencies.writer rumWrite:FT_RUM_SOURCE_LONG_TASK tags:tags fields:fields dynamicContext:event.errorContextModel.globalAttributes time:startTime updateTime:0 cache:sessionOnError];
                 
                 //Determine if it's ANR, if so add ANR data
                 if(isAnr){

@@ -141,18 +141,20 @@ void *FTLoggerQueueIdentityKey = &FTLoggerQueueIdentityKey;
             FTInnerLogInfo(@"[Logging][Not Sampled] %@",content);
             return;
         }
-        NSMutableDictionary *context = [NSMutableDictionary dictionary];
-        [context addEntriesFromDictionary:[[FTPresetProperty sharedInstance] loggerDynamicTags]];
+        NSMutableDictionary *tags = [NSMutableDictionary dictionary];
+        tags[FT_KEY_STATUS] = status;
         if(config.enableLinkRumData){
             if (strongSelf.linkRumDataProvider && [strongSelf.linkRumDataProvider respondsToSelector:@selector(getLinkRUMData)]) {
-                NSDictionary *rumTag = [strongSelf.linkRumDataProvider getLinkRUMData];
-                [context addEntriesFromDictionary:rumTag];
+                NSDictionary *linkRum = [strongSelf.linkRumDataProvider getLinkRUMData];
+                [tags addEntriesFromDictionary:linkRum];
             }
-            [context addEntriesFromDictionary:[[FTPresetProperty sharedInstance] rumTags]];
         }
-        if(strongSelf.loggerWriter && [strongSelf.loggerWriter respondsToSelector:@selector(logging:status:tags:field:time:)]){
+        if(strongSelf.loggerWriter && [strongSelf.loggerWriter respondsToSelector:@selector(loggingTags:field:time:linkRum:)]){
             NSString *newContent = [content ft_subStringWithCharacterLength:FT_LOGGING_CONTENT_SIZE];
-            [strongSelf.loggerWriter logging:newContent status:status tags:context field:property time:time];
+            NSMutableDictionary *filedDict = [NSMutableDictionary dictionary];
+            [filedDict setValue:newContent forKey:FT_KEY_MESSAGE];
+            [filedDict addEntriesFromDictionary:property];
+            [strongSelf.loggerWriter loggingTags:tags field:filedDict time:time linkRum:config.enableLinkRumData];
         }else{
             FTInnerLogError(@"SDK configuration error, unable to collect custom logs");
         }

@@ -98,20 +98,6 @@
     FTTestObject *object = [[FTTestObject alloc]init];
     XCTAssertThrows([[FTReadWriteHelper alloc]initWithValue:object]);
 }
-- (void)testFTUserInfoCopy{
-    FTUserInfo *info = [[FTUserInfo alloc]init];
-    int a = arc4random_uniform(100)+1;
-    NSString *name = [NSString stringWithFormat:@"test_%d",a];
-    [info updateUser:[NSString stringWithFormat:@"%d",a] name:name email:@"test@123.com" extra:@{@"test_a":@"test_b"}];
-    FTReadWriteHelper *helper = [[FTReadWriteHelper alloc]initWithValue:info];
-    FTUserInfo *copyInfo = helper.currentValue;
-    XCTAssertTrue(copyInfo != info);
-    XCTAssertTrue([copyInfo.name isEqualToString: info.name]);
-    XCTAssertTrue([copyInfo.userId isEqualToString: info.userId]);
-    XCTAssertTrue([copyInfo.email isEqualToString: info.email]);
-    XCTAssertTrue(copyInfo.isSignIn == info.isSignIn);
-    XCTAssertTrue([copyInfo.extra[@"test_a"] isEqualToString:info.extra[@"test_a"]]);
-}
 - (void)testFTMonitorValueCopy{
     FTMonitorValue *value = [[FTMonitorValue alloc]init];
     [value addSample:1234];

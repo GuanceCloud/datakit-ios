@@ -9,6 +9,7 @@
 #import "FTPresetProperty.h"
 #import "FTErrorMonitorInfo.h"
 #import "FTRUMContext.h"
+#import "FTLog+Private.h"
 
 static BOOL FTDictionaryIsEqual(NSDictionary *a, NSDictionary *b) {
     if (a == b) return YES;
@@ -93,69 +94,97 @@ static BOOL FTObjectIsEqual(id a, id b) {
 
 - (void)setAppState:(nullable NSString *)appState {
     dispatch_async(self.queue, ^{
-        if (FTObjectIsEqual(self.appState, appState)) return;
-        self->_appState = appState;
-        [self triggerChangeCallbackIfNeeded];
+        @try {
+            if (FTObjectIsEqual(self.appState, appState)) return;
+            self->_appState = appState;
+            [self triggerChangeCallbackIfNeeded];
+        } @catch (NSException *exception) {
+            FTInnerLogError(@"setAppState exception: %@", exception);
+        }
     });
 }
 -(void)setLastSessionState:(FTRUMSessionState *)lastSessionState{
     dispatch_async(self.queue, ^{
-        if (!FTObjectIsEqual(self.lastSessionState,lastSessionState)) {
-            self->_lastSessionState = lastSessionState;
-            [self triggerChangeCallbackIfNeeded];
-        }
-    });
+          @try {
+              if (!FTObjectIsEqual(self.lastSessionState,lastSessionState)) {
+                  self->_lastSessionState = lastSessionState;
+                  [self triggerChangeCallbackIfNeeded];
+              }
+          } @catch (NSException *exception) {
+              FTInnerLogError(@"setLastSessionState exception: %@", exception);
+          }
+      });
 }
 -(void)setErrorMonitorInfo:(NSDictionary *)errorMonitorInfo{
     dispatch_async(self.queue, ^{
-        if (!FTDictionaryIsEqual(self.errorMonitorInfo,errorMonitorInfo)) {
-            self->_errorMonitorInfo = errorMonitorInfo;
-            [self triggerChangeCallbackIfNeeded];
+        @try {
+            if (!FTDictionaryIsEqual(self.errorMonitorInfo,errorMonitorInfo)) {
+                self->_errorMonitorInfo = errorMonitorInfo;
+                [self triggerChangeCallbackIfNeeded];
+            }
+        } @catch (NSException *exception) {
+            FTInnerLogError(@"setErrorMonitorInfo exception: %@", exception);
         }
     });
 }
 -(void)setDynamicContext:(NSDictionary *)dynamicContext{
     dispatch_async(self.queue, ^{
-        if (!FTDictionaryIsEqual(self.dynamicContext,dynamicContext)) {
-            self->_dynamicContext = dynamicContext;
-            [self triggerChangeCallbackIfNeeded];
+        @try {
+            if (!FTDictionaryIsEqual(self.dynamicContext,dynamicContext)) {
+                self->_dynamicContext = dynamicContext;
+                [self triggerChangeCallbackIfNeeded];
+            }
+        } @catch (NSException *exception) {
+            FTInnerLogError(@"setDynamicContext exception: %@", exception);
         }
     });
 }
 -(void)setLastViewContext:(NSDictionary *)lastViewContext{
     dispatch_async(self.queue, ^{
-        if (!FTDictionaryIsEqual(self.lastViewContext,lastViewContext)) {
-            self->_lastViewContext = lastViewContext;
-            [self triggerChangeCallbackIfNeeded];
+        @try {
+            if (!FTDictionaryIsEqual(self.lastViewContext,lastViewContext)) {
+                self->_lastViewContext = lastViewContext;
+                [self triggerChangeCallbackIfNeeded];
+            }
+        } @catch (NSException *exception) {
+            FTInnerLogError(@"setLastViewContext exception: %@", exception);
         }
     });
 }
 - (FTFatalErrorContextModel *)currentContextModel {
     __block FTFatalErrorContextModel *model = nil;
     dispatch_sync(self.queue, ^{
-        model = [[FTFatalErrorContextModel alloc] initWithAppState:self.appState
-                                                 lastSessionState:self.lastSessionState
-                                                   lastViewContext:self.lastViewContext
-                                                    dynamicContext:self.dynamicContext
-                                                 globalAttributes:self.globalAttributes
-                                                 errorMonitorInfo:[self.provider errorMonitorInfo]];
+        @try {
+            model = [[FTFatalErrorContextModel alloc] initWithAppState:self.appState
+                                                      lastSessionState:self.lastSessionState
+                                                       lastViewContext:self.lastViewContext
+                                                        dynamicContext:self.dynamicContext
+                                                      globalAttributes:self.globalAttributes
+                                                      errorMonitorInfo:[self.provider errorMonitorInfo]];
+        } @catch (NSException *exception) {
+            FTInnerLogError(@"currentContextModel exception: %@", exception);
+        }
     });
     return model;
 }
 // call in async queue
 - (void)triggerChangeCallbackIfNeeded{
-    // when lastSessionContext is nil, session not sampled
-    if (!self.lastSessionState) return;
-    
-    if (self.onChange) {
-        FTFatalErrorContextModel *model = [[FTFatalErrorContextModel alloc] initWithAppState:self.appState
-                                                                            lastSessionState:self.lastSessionState
-                                                                             lastViewContext:self.lastViewContext
-                                                                              dynamicContext:self.dynamicContext
-                                                                            globalAttributes:self.globalAttributes
-                                                                            errorMonitorInfo:self.errorMonitorInfo];
-        NSDictionary *contextDict = [model toDictionary];
-        self.onChange(contextDict);
+    @try {
+        // when lastSessionContext is nil, session not sampled
+        if (!self.lastSessionState) return;
+        
+        if (self.onChange) {
+            FTFatalErrorContextModel *model = [[FTFatalErrorContextModel alloc] initWithAppState:self.appState
+                                                                                lastSessionState:self.lastSessionState
+                                                                                 lastViewContext:self.lastViewContext
+                                                                                  dynamicContext:self.dynamicContext
+                                                                                globalAttributes:self.globalAttributes
+                                                                                errorMonitorInfo:self.errorMonitorInfo];
+            NSDictionary *contextDict = [model toDictionary];
+            self.onChange(contextDict);
+        }
+    } @catch (NSException *exception) {
+        FTInnerLogError(@"triggerChangeCallbackIfNeeded exception: %@", exception);
     }
 }
 

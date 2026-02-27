@@ -57,6 +57,7 @@
 - (void)tearDown {
     // Put teardown code here. This method is called after the invocation of each test method in the class.
     [OHHTTPStubs removeAllStubs];
+    [[NSUserDefaults standardUserDefaults] setObject:nil forKey:@"FT_REMOTE_CONFIG"];
 }
 - (void)testRequestFormat{
     NSString *datakit = @"http://datakit-test.com";
@@ -314,7 +315,7 @@
     XCTAssertTrue(logger.logLevelFilter == copyLogger.logLevelFilter);
 }
 - (void)testDefaultUpdateRemoteConfig{
-    [[FTTrackerEventDBTool sharedManger] deleteAllDatas];
+    [[FTTrackerEventDBTool sharedManager] deleteAllDatas];
     NSString *datakit = @"http://datakit-test.com";
     NSString *appId = @"appid-test";
     id<OHHTTPStubsDescriptor> stubs = [self mockRemoteData];
@@ -360,7 +361,7 @@
     [[FTExternalDataManager sharedManager] addAction:@"testUpdate" actionType:@"test" property:nil];
     
     [[FTGlobalRumManager sharedInstance].rumManager syncProcess];
-    NSArray *newArray = [[FTTrackerEventDBTool sharedManger] getFirstRecords:100 withType:FT_DATA_TYPE_RUM];
+    NSArray *newArray = [[FTTrackerEventDBTool sharedManager] getFirstRecords:100 withType:FT_DATA_TYPE_RUM];
     [FTModelHelper resolveModelArray:newArray callBack:^(NSString * _Nonnull source, NSDictionary * _Nonnull tags, NSDictionary * _Nonnull fields, BOOL * _Nonnull stop) {
         if ([source isEqualToString:FT_RUM_SOURCE_ACTION]){
             XCTAssertTrue([tags[FT_KEY_ACTION_NAME] isEqualToString:@"testUpdate"]);
