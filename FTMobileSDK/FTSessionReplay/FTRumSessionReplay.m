@@ -90,7 +90,7 @@ static dispatch_once_t onceToken;
         FTPerformancePreset *performancePreset = [self.performancePreset updateWithOverride:feature.performanceOverride];
         FTDirectory *cacheDirectory = [self.coreDirectory createSubdirectoryWithPath:[feature.name stringByAppendingString:@".cache"]];
         FTFeatureStorage *storage = [[FTFeatureStorage alloc]initWithFeatureName:feature.name queue:self.readWriteQueue directory:directory cacheDirectory:cacheDirectory performance:performancePreset];
-        FTFeatureUpload *upload = [[FTFeatureUpload alloc]initWithFeatureName:feature.name
+        FTFeatureUpload *upload = [FTFeatureUpload createWithFeatureName:feature.name
                                                                    fileReader:storage.reader
                                                                   cacheWriter:storage.cacheWriter
                                                                requestBuilder:feature.requestBuilder
