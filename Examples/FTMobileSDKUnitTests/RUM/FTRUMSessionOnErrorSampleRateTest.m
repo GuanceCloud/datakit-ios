@@ -20,6 +20,7 @@
 #import "FTTrackDataManager.h"
 #import "FTLog+Private.h"
 #import "NSDate+FTUtil.h"
+#import "FTRUMSessionHandler.h"
 
 @interface FTDataWriterWorker(Testing)
 @property (nonatomic, assign) long long processStartTime;
@@ -45,16 +46,18 @@
     // Put teardown code here. This method is called after the invocation of each test method in the class.
     [FTMobileAgent shutDown];
 }
-- (void)sdkInitWithRumSampleRate:(int)sampleRate{
+- (void)sdkInitWithRumSampleRate:(int)sampleRate sessionOnErrorSampleRate:(int)sessionOnErrorSampleRate{
     FTMobileConfig *config = [[FTMobileConfig alloc]initWithDatakitUrl:self.url];
     config.autoSync = NO;
     config.enableSDKDebugLog = YES;
     FTRumConfig *rumConfig = [[FTRumConfig alloc]initWithAppid:self.appid];
     rumConfig.samplerate = sampleRate;
-    rumConfig.sessionOnErrorSampleRate = sampleRate == 100?0:100;
+    rumConfig.sessionOnErrorSampleRate = sessionOnErrorSampleRate;
     [FTMobileAgent startWithConfigOptions:config];
     [[FTMobileAgent sharedInstance] startRumWithConfigOptions:rumConfig];
-    
+}
+- (void)sdkInitWithRumSampleRate:(int)sampleRate{
+    [self sdkInitWithRumSampleRate:sampleRate sessionOnErrorSampleRate: sampleRate == 100?0:100];
 }
 /// FT_RUM_SESSION_SAMPLE_RATE == 100
 /// FT_RUM_SESSION_ON_ERROR_SAMPLE_RATE == 0
@@ -352,5 +355,54 @@
     XCTAssertTrue(newArray.count == 3);
     XCTAssertTrue([newArray.firstObject.op isEqualToString:FT_DATA_TYPE_RUM]);
     XCTAssertTrue([newArray[1].op isEqualToString:FT_DATA_TYPE_RUM]);
+}
+
+- (void)testSessionSampleRateUpdate{
+    // 1. SampleRate:0 sessionOnErrorSampleRate:100
+    [self sdkInitWithRumSampleRate:0 sessionOnErrorSampleRate:100];
+    [FTModelHelper startViewWithName:@"FirstView"];
+    FTRUMManager *rum = [FTGlobalRumManager sharedInstance].rumManager;
+    FTRUMSessionHandler *session = [rum valueForKey:@"sessionHandler"];
+    
+    // -> SampleRate:100 sessionOnErrorSampleRate:0
+    [[FTGlobalRumManager sharedInstance] updateSampleRate:100 sessionOnErrorSampleRate:0];
+    [rum syncProcess];
+    FTRUMSessionHandler *newSession1 = [rum valueForKey:@"sessionHandler"];
+    XCTAssertTrue(session != newSession1);
+    
+    // -> SampleRate:0 sessionOnErrorSampleRate:0
+    [[FTGlobalRumManager sharedInstance] updateSampleRate:0 sessionOnErrorSampleRate:0];
+    [rum syncProcess];
+    
+    FTRUMSessionHandler *newSession2 = [rum valueForKey:@"sessionHandler"];
+    XCTAssertTrue(newSession1 != newSession2);
+    
+    // -> SampleRate:0 sessionOnErrorSampleRate:100
+    [[FTGlobalRumManager sharedInstance] updateSampleRate:0 sessionOnErrorSampleRate:100];
+    [rum syncProcess];
+    
+    FTRUMSessionHandler *newSession3 = [rum valueForKey:@"sessionHandler"];
+    XCTAssertTrue(newSession2 != newSession3);
+    
+    // -> SampleRate:0 sessionOnErrorSampleRate:100
+    [[FTGlobalRumManager sharedInstance] updateSampleRate:0 sessionOnErrorSampleRate:100];
+    [rum syncProcess];
+    
+    FTRUMSessionHandler *newSession4 = [rum valueForKey:@"sessionHandler"];
+    XCTAssertTrue(newSession3 == newSession4);
+    
+    // -> SampleRate:50 sessionOnErrorSampleRate:100
+    [[FTGlobalRumManager sharedInstance] updateSampleRate:50 sessionOnErrorSampleRate:100];
+    [rum syncProcess];
+    
+    FTRUMSessionHandler *newSession5 = [rum valueForKey:@"sessionHandler"];
+    XCTAssertTrue(newSession4 == newSession5);
+    
+    // -> SampleRate:50 sessionOnErrorSampleRate:50
+    [[FTGlobalRumManager sharedInstance] updateSampleRate:50 sessionOnErrorSampleRate:50];
+    [rum syncProcess];
+    
+    FTRUMSessionHandler *newSession6 = [rum valueForKey:@"sessionHandler"];
+    XCTAssertTrue(newSession5 == newSession6);
 }
 @end

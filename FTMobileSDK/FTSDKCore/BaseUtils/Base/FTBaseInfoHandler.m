@@ -81,34 +81,6 @@
     return uuid.lowercaseString;
 }
 
-#if FT_HOST_IOS
-+(NSString *)telephonyCarrier
-{
-    CTTelephonyNetworkInfo *info = [[CTTelephonyNetworkInfo alloc] init];
-    CTCarrier *carrier;
-    if (@available(iOS 12.0, *)) {
-        if (info && [info respondsToSelector:@selector(serviceSubscriberCellularProviders)]) {
-            NSDictionary *dic = [info serviceSubscriberCellularProviders];
-            if (dic.allKeys.count) {
-                carrier = [dic objectForKey:dic.allKeys[0]];
-            }
-        }
-    }else{
-#pragma clang diagnostic push
-#pragma clang diagnostic ignored "-Wdeprecated-declarations"
-        // This part uses deprecated APIs
-        carrier= [info subscriberCellularProvider];
-#pragma clang diagnostic pop
-        
-    }
-    if(carrier == nil){
-        return FT_NULL_VALUE;
-    }else{
-        return [carrier carrierName];
-    }
-}
-#endif
-
 + (NSString *)cellularIPAddress:(BOOL)preferIPv4
 {
     NSArray *searchArray = preferIPv4 ?

@@ -142,9 +142,10 @@ static FTMobileAgent *sharedInstance = nil;
 }
 #pragma mark ========== remote ==========
 - (void)remoteConfigurationDidChange{
-    [self.sdkConfig mergeWithRemoteConfigModel:[FTRemoteConfigManager sharedInstance].lastRemoteModel];
-    [self.rumConfig mergeWithRemoteConfigModel:[FTRemoteConfigManager sharedInstance].lastRemoteModel];
-    [self.traceConfig mergeWithRemoteConfigModel:[FTRemoteConfigManager sharedInstance].lastRemoteModel];
+    FTRemoteConfigModel *model = [FTRemoteConfigManager sharedInstance].lastRemoteModel;
+    [self.sdkConfig mergeWithRemoteConfigModel:model];
+    [self.rumConfig mergeWithRemoteConfigModel:model];
+    [self.traceConfig mergeWithRemoteConfigModel:model];
     [[FTGlobalRumManager sharedInstance] updateSampleRate:self.rumConfig.samplerate sessionOnErrorSampleRate:self.rumConfig.sessionOnErrorSampleRate];
     [[FTURLSessionInstrumentation sharedInstance] updateTraceSampleRate:self.traceConfig.samplerate];
     [FTNetworkInfoManager sharedInstance].setCompressionIntakeRequests(self.sdkConfig.compressIntakeRequests);
