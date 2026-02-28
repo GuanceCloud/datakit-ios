@@ -43,8 +43,8 @@ static const NSTimeInterval sessionMaxDuration = 4 * 60 * 60; // 4 hours
     self = [super init];
     if (self) {
         self.assistant = self;
-        self.sampling = [FTBaseInfoHandler randomSampling:expiredSession.rumDependencies.sampleRate];
         self.rumDependencies = expiredSession.rumDependencies;
+        self.sampling = [FTBaseInfoHandler randomSampling:expiredSession.rumDependencies.sampleRate];
         self.sessionStartTime = time;
         self.context = [[FTRUMContext alloc]initWithSampleRate:expiredSession.rumDependencies.sampleRate sessionOnErrorSampleRate:expiredSession.rumDependencies.sessionOnErrorSampleRate];
         self.viewHandlers = [NSMutableArray new];
@@ -91,19 +91,20 @@ static const NSTimeInterval sessionMaxDuration = 4 * 60 * 60; // 4 hours
     if ([self timedOutOrExpired:[NSDate date]]) {
         return NO;
     }
+    if (model.type == FTRUMSampleRateUpdate) {
+        return  [self checkSessionStateForSamplingRateUpdate];
+    }
     if (!self.sampling) {
         if(self.sessionOnErrorSampling == NO){
-            if (model.type == FTRUMSampleRateUpdate) {
-                self.sampling = [FTBaseInfoHandler randomSampling:self.rumDependencies.sampleRate];
-            }
             return YES;
-        }else if(model.type == FTRUMDataError || model.type == FTRUMDataResourceError){
-            self.sampling = YES;
-            long long timestamp = model.tm;
-            self.context.sessionState.session_error_timestamp = timestamp;
-            FTRUMViewHandler *lastViewHandler = (FTRUMViewHandler *)self.viewHandlers.lastObject;
-            lastViewHandler.context.sessionState.session_error_timestamp = timestamp;
-            [self.rumDependencies.fatalErrorContext setLastSessionState:[self.context.sessionState copy]];
+        }else{
+            if(model.type == FTRUMDataError || model.type == FTRUMDataResourceError){
+                long long timestamp = model.tm;
+                self.context.sessionState.session_error_timestamp = timestamp;
+                FTRUMViewHandler *lastViewHandler = (FTRUMViewHandler *)self.viewHandlers.lastObject;
+                lastViewHandler.context.sessionState.session_error_timestamp = timestamp;
+                [self.rumDependencies.fatalErrorContext setLastSessionState:[self.context.sessionState copy]];
+            }
         }
     }
     self.rumDependencies.fatalErrorContext.dynamicContext = context;
@@ -123,8 +124,6 @@ static const NSTimeInterval sessionMaxDuration = 4 * 60 * 60; // 4 hours
         case FTRUMDataWebViewJSBData:
             [self writeWebViewJSBData:(FTRUMWebViewData *)model context:context];
             break;
-        case FTRUMSampleRateUpdate:
-            return YES;
         default:
             break;
     }
@@ -138,6 +137,29 @@ static const NSTimeInterval sessionMaxDuration = 4 * 60 * 60; // 4 hours
         self.rumDependencies.linkRUMSessionContext = [self.context getGlobalSessionTags];
     }
     return  YES;
+}
+- (BOOL)checkSessionStateForSamplingRateUpdate{
+    // 1. The previous session is being sampled; end the current session if the updated sampling rate is set to non-sampling
+    if (self.sampling) {
+        if (self.rumDependencies.sampleRate == 0) {
+            return NO;
+        }
+    } else {
+        // The previous session was not sampled
+        // 2.1. End the current session if the updated sampling rate is set to full sampling
+        if (self.rumDependencies.sampleRate == 100) {
+            return NO;
+        }
+        // 2.2. The previous session was performing error sampling; end the current session if the updated error sampling is disabled
+        if (self.sessionOnErrorSampling && self.rumDependencies.sessionOnErrorSampleRate == 0) {
+            return NO;
+        }
+        // 2.3. The previous session was not performing error sampling; end the current session if the updated error sampling is set to full sampling
+        if (!self.sessionOnErrorSampling && self.rumDependencies.sessionOnErrorSampleRate == 100) {
+            return NO;
+        }
+    }
+    return YES;
 }
 - (BOOL)hasActivityView{
     if (self.viewHandlers.count == 0) {
