@@ -21,6 +21,20 @@
 #import "FTLog+Private.h"
 #import "NSDate+FTUtil.h"
 #import "FTRUMSessionHandler.h"
+#import "FTSessionReplayFeature.h"
+#import "FTSessionReplayConfig.h"
+#import "FTModuleManager.h"
+#import "FTRemoteConfigManager.h"
+@interface FTRemoteConfigManager(Testing)
+- (void)setLastRemoteModel:(FTRemoteConfigModel *)lastRemoteModel;
+@end
+
+@interface FTSessionReplayFeature(Testing)
+@property (nonatomic, strong) dispatch_queue_t processorsQueue;
+@property (nonatomic, strong) FTSessionReplayConfig *config;
+@property (nonatomic, assign) BOOL shouldStart;
+@property (nonatomic, assign) BOOL sampledForErrorReplay;
+@end
 
 @interface FTDataWriterWorker(Testing)
 @property (nonatomic, assign) long long processStartTime;
@@ -404,5 +418,112 @@
     
     FTRUMSessionHandler *newSession6 = [rum valueForKey:@"sessionHandler"];
     XCTAssertTrue(newSession5 == newSession6);
+}
+
+- (void)testSessionReplaySampleRateUpdate{
+    
+    FTSessionReplayConfig *config = [[FTSessionReplayConfig alloc]init];
+    config.sampleRate = 0;
+    config.sessionReplayOnErrorSampleRate = 100;
+    FTSessionReplayFeature *feature = [[FTSessionReplayFeature alloc]initWithConfig:config];
+    [[FTModuleManager sharedInstance] postMessageWithKey:FTMessageKeyRUMContext message:@{FT_RUM_KEY_SESSION_ID:[NSUUID UUID].UUIDString} sync:YES];
+    
+    dispatch_sync(feature.processorsQueue, ^{});
+    XCTAssertTrue(feature.shouldStart == YES);
+    XCTAssertTrue(feature.sampledForErrorReplay == YES);
+    
+  
+    FTRemoteConfigModel *model =  [[FTRemoteConfigModel alloc]init];
+    model.sessionReplaySampleRate = @(1);
+    model.sessionReplayOnErrorSampleRate = @(1);
+
+    [[FTRemoteConfigManager sharedInstance] setLastRemoteModel:model];
+    [[FTModuleManager sharedInstance] postMessageWithKey:FTMessageKeySRSampleRateUpdate message:@{} sync:YES];
+    dispatch_sync(feature.processorsQueue, ^{});
+    XCTAssertTrue(feature.shouldStart == YES);
+    XCTAssertTrue(feature.sampledForErrorReplay == NO);
+    
+    model.sessionReplaySampleRate = @(0.5);
+    model.sessionReplayOnErrorSampleRate = @(1);
+
+    [[FTRemoteConfigManager sharedInstance] setLastRemoteModel:model];
+    [[FTModuleManager sharedInstance] postMessageWithKey:FTMessageKeySRSampleRateUpdate message:@{} sync:YES];
+    dispatch_sync(feature.processorsQueue, ^{});
+    XCTAssertTrue(feature.shouldStart == YES);
+    XCTAssertTrue(feature.sampledForErrorReplay == NO);
+    
+    
+    model.sessionReplaySampleRate = @(0);
+    model.sessionReplayOnErrorSampleRate = @(0);
+
+    [[FTRemoteConfigManager sharedInstance] setLastRemoteModel:model];
+    [[FTModuleManager sharedInstance] postMessageWithKey:FTMessageKeySRSampleRateUpdate message:@{} sync:YES];
+    dispatch_sync(feature.processorsQueue, ^{});
+    XCTAssertTrue(feature.shouldStart == NO);
+    XCTAssertTrue(feature.sampledForErrorReplay == NO);
+    
+    
+    model.sessionReplaySampleRate = @(0);
+    model.sessionReplayOnErrorSampleRate = @(1);
+
+    [[FTRemoteConfigManager sharedInstance] setLastRemoteModel:model];
+    [[FTModuleManager sharedInstance] postMessageWithKey:FTMessageKeySRSampleRateUpdate message:@{} sync:YES];
+    dispatch_sync(feature.processorsQueue, ^{});
+    XCTAssertTrue(feature.shouldStart == YES);
+    XCTAssertTrue(feature.sampledForErrorReplay == YES);
+}
+
+- (void)testSessionReplaySampleRateUpdate_rumSessionOnError{
+    FTSessionReplayConfig *config = [[FTSessionReplayConfig alloc]init];
+    config.sampleRate = 0;
+    config.sessionReplayOnErrorSampleRate = 100;
+    FTSessionReplayFeature *feature = [[FTSessionReplayFeature alloc]initWithConfig:config];
+    [[FTModuleManager sharedInstance] postMessageWithKey:FTMessageKeyRUMContext message:@{
+        FT_RUM_KEY_SESSION_ID:[NSUUID UUID].UUIDString,
+        FT_RUM_KEY_SAMPLED_FOR_ERROR_SESSION:@(YES)} sync:YES];
+    
+    dispatch_sync(feature.processorsQueue, ^{});
+    XCTAssertTrue(feature.shouldStart == YES);
+    XCTAssertTrue(feature.sampledForErrorReplay == YES);
+    
+  
+    FTRemoteConfigModel *model =  [[FTRemoteConfigModel alloc]init];
+    model.sessionReplaySampleRate = @(1);
+    model.sessionReplayOnErrorSampleRate = @(1);
+
+    [[FTRemoteConfigManager sharedInstance] setLastRemoteModel:model];
+    [[FTModuleManager sharedInstance] postMessageWithKey:FTMessageKeySRSampleRateUpdate message:@{} sync:YES];
+    dispatch_sync(feature.processorsQueue, ^{});
+    XCTAssertTrue(feature.shouldStart == YES);
+    XCTAssertTrue(feature.sampledForErrorReplay == YES);
+    
+    model.sessionReplaySampleRate = @(0.5);
+    model.sessionReplayOnErrorSampleRate = @(1);
+
+    [[FTRemoteConfigManager sharedInstance] setLastRemoteModel:model];
+    [[FTModuleManager sharedInstance] postMessageWithKey:FTMessageKeySRSampleRateUpdate message:@{} sync:YES];
+    dispatch_sync(feature.processorsQueue, ^{});
+    XCTAssertTrue(feature.shouldStart == YES);
+    XCTAssertTrue(feature.sampledForErrorReplay == YES);
+    
+    
+    model.sessionReplaySampleRate = @(0);
+    model.sessionReplayOnErrorSampleRate = @(0);
+
+    [[FTRemoteConfigManager sharedInstance] setLastRemoteModel:model];
+    [[FTModuleManager sharedInstance] postMessageWithKey:FTMessageKeySRSampleRateUpdate message:@{} sync:YES];
+    dispatch_sync(feature.processorsQueue, ^{});
+    XCTAssertTrue(feature.shouldStart == NO);
+    XCTAssertTrue(feature.sampledForErrorReplay == YES);
+    
+    
+    model.sessionReplaySampleRate = @(0);
+    model.sessionReplayOnErrorSampleRate = @(1);
+
+    [[FTRemoteConfigManager sharedInstance] setLastRemoteModel:model];
+    [[FTModuleManager sharedInstance] postMessageWithKey:FTMessageKeySRSampleRateUpdate message:@{} sync:YES];
+    dispatch_sync(feature.processorsQueue, ^{});
+    XCTAssertTrue(feature.shouldStart == YES);
+    XCTAssertTrue(feature.sampledForErrorReplay == YES);
 }
 @end
