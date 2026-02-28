@@ -104,10 +104,10 @@ NSString * const FTImagePrivacyLevelStringMap[] = {
         if (!model) {
             return;
         }
-        if (model.sessionReplaySampleRate) {
+        if (model.sessionReplaySampleRate != nil) {
             self.sampleRate = [model.sessionReplaySampleRate doubleValue] * 100;
         }
-        if (model.sessionReplayOnErrorSampleRate) {
+        if (model.sessionReplayOnErrorSampleRate != nil) {
             self.sessionReplayOnErrorSampleRate = [model.sessionReplayOnErrorSampleRate doubleValue] * 100;
         }
     } @catch (NSException *exception) {

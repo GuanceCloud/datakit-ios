@@ -13,7 +13,7 @@ NS_ASSUME_NONNULL_BEGIN
 @required
 - (void)dealRUMWebViewData:(NSString *)measurement tags:(NSDictionary *)tags fields:(NSDictionary *)fields tm:(long long)tm;
 - (NSString *)getLastHasReplayViewID;
-- (void)bindSRInfo:(NSDictionary *)info containerViewID:(NSString *)viewID;
+- (void)bindSRInfo:(nullable NSDictionary *)info containerViewID:(NSString *)viewID;
 - (nullable NSString *)getLastViewName;
 @end
 NS_ASSUME_NONNULL_END

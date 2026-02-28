@@ -308,7 +308,7 @@ void *FTRUMQueueIdentityKey = &FTRUMQueueIdentityKey;
                     if (content.responseBody.length>0) {
                         [errorField setValue:content.responseBody forKey:FT_KEY_ERROR_STACK];
                     }
-                    [[FTModuleManager sharedInstance] postMessage:FTMessageKeyRumError message:@{@"error_date":@([time ft_nanosecondTimeStamp]),
+                    [[FTModuleManager sharedInstance] postMessageWithKey:FTMessageKeyRumError message:@{@"error_date":@([time ft_nanosecondTimeStamp]),
                                                                                                  @"error_crash":@(NO)
                                                                                                }];
                     FTRUMResourceModel *resourceError = [[FTRUMResourceModel alloc]initWithType:FTRUMDataResourceError identifier:key];
@@ -421,7 +421,7 @@ void *FTRUMQueueIdentityKey = &FTRUMQueueIdentityKey;
         FTInnerLogError(@"[RUM] Failed to add error due to missing required fields. Please ensure 'type'、'message' are provided.");
         return;
     }
-    [[FTModuleManager sharedInstance] postMessage:FTMessageKeyRumError message:@{@"error_date":@(time),
+    [[FTModuleManager sharedInstance] postMessageWithKey:FTMessageKeyRumError message:@{@"error_date":@(time),
                                                                                  @"error_crash":@(NO)
                                                                                } sync:NO];
     [self syncProcess:^{
@@ -512,7 +512,7 @@ void *FTRUMQueueIdentityKey = &FTRUMQueueIdentityKey;
         [self.sessionHandler.assistant process:model context:context];
     }
     __weak typeof(self) weakSelf = self;
-    [[FTModuleManager sharedInstance] postMessage:FTMessageKeyRUMContext messageBlock:^NSDictionary * _Nonnull{
+    [[FTModuleManager sharedInstance] postMessageWithKey:FTMessageKeyRUMContext messageBlock:^NSDictionary * _Nonnull{
         __strong __typeof(weakSelf) strongSelf = weakSelf;
         if (!strongSelf) {
             return nil;
@@ -543,6 +543,10 @@ void *FTRUMQueueIdentityKey = &FTRUMQueueIdentityKey;
 - (NSDictionary *)getLinkRUMData{
     return [self.rumDependencies.linkRUMSessionContext copy];
 }
+-(NSDictionary *)getCurrentSessionInfo{
+    return self.rumDependencies.linkRUMSessionContext;
+}
+#pragma mark ========== FTWKWebViewRumDelegate =============
 - (NSString *)getLastHasReplayViewID{
     return self.viewReferrerId;
 }
@@ -569,9 +573,6 @@ void *FTRUMQueueIdentityKey = &FTRUMQueueIdentityKey;
         });
         
     }
-}
--(NSDictionary *)getCurrentSessionInfo{
-    return self.rumDependencies.linkRUMSessionContext;
 }
 - (void)syncProcess{
     [self syncProcess:^{}];

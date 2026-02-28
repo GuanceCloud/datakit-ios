@@ -230,7 +230,7 @@ static NSObject *sharedInstanceLock;
                         [tags setValue:info.viewReferrer forKey:FT_KEY_VIEW_REFERRER];
                     }
                 }else if ([measurement isEqualToString:FT_RUM_SOURCE_ERROR]){
-                    [[FTModuleManager sharedInstance] postMessage:FTMessageKeyRumError message:@{
+                    [[FTModuleManager sharedInstance] postMessageWithKey:FTMessageKeyRumError message:@{
                         @"error_date":@([NSDate ft_currentNanosecondTimeStamp]),
                         @"error_crash":@(NO)
                     } sync:NO];
@@ -241,7 +241,7 @@ static NSObject *sharedInstanceLock;
             NSMutableDictionary *dict = [messageDic mutableCopy];
             [dict setValue:[NSString stringWithFormat:@"%lld",slotID] forKey:@"slotId"];
             [dict setValue:info.container.ft_linkRumKeysInfo forKey:FT_LINK_RUM_KEYS];
-            [[FTModuleManager sharedInstance] postMessage:FTMessageKeyWebViewSR message:dict];
+            [[FTModuleManager sharedInstance] postMessageWithKey:FTMessageKeyWebViewSR message:dict];
         }
     } @catch (NSException *exception) {
         FTInnerLogError(@"%@ error: %@", self, exception);

@@ -14,13 +14,13 @@ FOUNDATION_EXPORT FTMessageKey const FTMessageKeyRecordsCountByViewID;
 FOUNDATION_EXPORT FTMessageKey const FTMessageKeySessionHasReplay;
 FOUNDATION_EXPORT FTMessageKey const FTMessageKeyWebViewSR;
 FOUNDATION_EXPORT FTMessageKey const FTMessageKeyRumError;
-
+FOUNDATION_EXPORT FTMessageKey const FTMessageKeySRSampleRateUpdate;
 @protocol FTMessageReceiver;
 @interface FTModuleManager : NSObject
 + (instancetype)sharedInstance;
-- (void)postMessage:(NSString *)key messageBlock:(nullable NSDictionary * (^)(void))messageBlock;
-- (void)postMessage:(NSString *)key message:(NSDictionary *)message;
-- (void)postMessage:(NSString *)key message:(NSDictionary *)message sync:(BOOL)sync;
+- (void)postMessageWithKey:(NSString *)key messageBlock:(nullable NSDictionary * (^)(void))messageBlock;
+- (void)postMessageWithKey:(NSString *)key message:(NSDictionary *)message;
+- (void)postMessageWithKey:(NSString *)key message:(NSDictionary *)message sync:(BOOL)sync;
 
 /// Add delegate class that conforms to FTMessageReceiver protocol
 /// - Parameter delegate: Delegate class that conforms to FTMessageReceiver protocol

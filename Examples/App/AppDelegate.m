@@ -72,6 +72,8 @@
                     model.rumSampleRate = @(1);
                     model.logSampleRate = @(1);
                     model.traceSampleRate = @(1);
+                    model.sessionReplaySampleRate = @(1);
+                    model.sessionReplayOnErrorSampleRate = @(0);
                 }
             }
             //if the model is not modified, `return nil`(use original model) == `return model`

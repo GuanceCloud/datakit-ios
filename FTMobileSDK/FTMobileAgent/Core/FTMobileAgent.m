@@ -151,6 +151,7 @@ static FTMobileAgent *sharedInstance = nil;
     [[FTTrackDataManager sharedInstance] updateAutoSync:self.sdkConfig.autoSync syncPageSize:self.sdkConfig.syncPageSize syncSleepTime:self.sdkConfig.syncSleepTime];
     [self.loggerConfig mergeWithRemoteConfigModel:[FTRemoteConfigManager sharedInstance].lastRemoteModel];
     [[FTLogger sharedInstance] updateLoggerConfiguration:self.loggerConfig];
+    [[FTModuleManager sharedInstance] postMessageWithKey:FTMessageKeySRSampleRateUpdate message:@{}];
 }
 + (void)updateRemoteConfig{
     if (![self checkInstallState]) {

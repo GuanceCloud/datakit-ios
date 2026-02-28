@@ -14,6 +14,7 @@ NSString *const FTMessageKeyWebViewSR = @"webView_session_replay";
 NSString *const FTMessageKeyRecordsCountByViewID = @"sr_records_count_by_view_id";
 NSString *const FTMessageKeySessionHasReplay = @"sr_has_replay";
 NSString *const FTMessageKeyRumError = @"rum_error";
+NSString *const FTMessageKeySRSampleRateUpdate = @"sr_sample_rate_update";
 
 void *FTMessageBusQueueIdentityKey = &FTMessageBusQueueIdentityKey;
 
@@ -42,7 +43,7 @@ void *FTMessageBusQueueIdentityKey = &FTMessageBusQueueIdentityKey;
     });
     return _sharedInstance;
 }
-- (void)postMessage:(NSString *)key messageBlock:(nullable NSDictionary * (^)(void))messageBlock{
+- (void)postMessageWithKey:(NSString *)key messageBlock:(nullable NSDictionary * (^)(void))messageBlock{
     dispatch_block_t block = ^{
         NSDictionary *message = messageBlock();
         if (!message) {
@@ -56,10 +57,10 @@ void *FTMessageBusQueueIdentityKey = &FTMessageBusQueueIdentityKey;
     };
     dispatch_async(self.queue, block);
 }
-- (void)postMessage:(NSString *)key message:(NSDictionary *)message{
-    [self postMessage:key message:message sync:NO];
+- (void)postMessageWithKey:(NSString *)key message:(NSDictionary *)message{
+    [self postMessageWithKey:key message:message sync:NO];
 }
-- (void)postMessage:(NSString *)key message:(NSDictionary *)message sync:(BOOL)sync{
+- (void)postMessageWithKey:(NSString *)key message:(NSDictionary *)message sync:(BOOL)sync{
     dispatch_block_t block = ^{
         for (id receiver in self.receiverArray) {
             if ([receiver respondsToSelector:@selector(receive:message:)]) {

@@ -234,10 +234,10 @@ NSString * const FT_MD5 = @"MD5";
         dict[FT_R_LOG_ENABLE_CUSTOM_LOG] = self.logEnableCustomLog;
     }
     // ===== 5. SessionReplay  =====
-    if (self.sessionReplaySampleRate) {
+    if (self.sessionReplaySampleRate != nil) {
         dict[FT_R_SR_SAMPLERATE] = self.sessionReplaySampleRate;
     }
-    if (self.sessionReplayOnErrorSampleRate) {
+    if (self.sessionReplayOnErrorSampleRate != nil) {
         dict[FT_R_SR_ON_ERROR_SAMPLE_RATE] = self.sessionReplayOnErrorSampleRate;
     }
     

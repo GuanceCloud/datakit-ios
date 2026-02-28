@@ -76,8 +76,8 @@ NSTimeInterval const kFullSnapshotInterval = 20.0;
         NSMutableArray<FTSRRecord> *records =(NSMutableArray<FTSRRecord>*)[[NSMutableArray alloc]init];
         // 3.Determine if it's new addition or new View
         BOOL isNewView = self.lastSnapshot == nil || self.lastSnapshot.context.sessionID != viewTreeSnapshot.context.sessionID || self.lastSnapshot.context.viewID != viewTreeSnapshot.context.viewID;
-       
         BOOL needFullSnapOnLinkRumKeysBind = [self needFullSnapOnLinkRumKeysBind:[srBuilder linkRumKeysInfo] context:viewTreeSnapshot.context];
+        // when enable sessionErrorSampled
         BOOL isTimeForFullSnapshot = [self isTimeForFullSnapshot:isNewView];
         BOOL fullSnapshotRequired = isNewView || needFullSnapOnLinkRumKeysBind || isTimeForFullSnapshot;
         
@@ -168,8 +168,7 @@ NSTimeInterval const kFullSnapshotInterval = 20.0;
     self.recordsCountByViewID[key] = @{
         FT_RECORDS_COUNT:@(count),
     };
-    // TODO: Whether to use protocol delegate to replace singleton
-    [[FTModuleManager sharedInstance] postMessage:FTMessageKeyRecordsCountByViewID message:[self.recordsCountByViewID mutableCopy]];
+    [[FTModuleManager sharedInstance] postMessageWithKey:FTMessageKeyRecordsCountByViewID message:[self.recordsCountByViewID copy]];
 }
 #pragma mark ===== sessionErrorSampled =====
 - (BOOL)isTimeForFullSnapshot:(BOOL)isNewView{
@@ -191,7 +190,7 @@ NSTimeInterval const kFullSnapshotInterval = 20.0;
     NSDictionary *web = webLinkRumKeysInfo?:@{};
     NSDictionary *native = context.bindInfo?:@{};
     NSMutableDictionary *bindInfo = [NSMutableDictionary dictionaryWithDictionary:native];
-    [bindInfo addEntriesFromDictionary:webLinkRumKeysInfo];
+    [bindInfo addEntriesFromDictionary:web];
     if (![[NSSet setWithArray:web.allKeys] isSubsetOfSet:[NSSet setWithArray:native.allKeys]]) {
         [[FTWKWebViewHandler sharedInstance] bindInfo:webLinkRumKeysInfo viewId:context.viewID];
     }
