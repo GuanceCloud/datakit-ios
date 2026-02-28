@@ -1,3 +1,7 @@
+# 1.6.2-alpha.16
+1. Same as 1.5.21-alpha.1
+2. Add remote configuration hot reload support for Session Replay
+---
 # 1.6.2-alpha.15
 1. Fix iOS `isNull` naming conflict by marking as static (file-scoped)
 ---
