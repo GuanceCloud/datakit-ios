@@ -1,9 +1,13 @@
+# 1.5.21-alpha.1
+1. Fixed the issue where sampling rate modifications did not take effect dynamically
+---
 # 1.5.20
 1. Fix concurrent read/write issues in `FTPresetProperty` causing corrupted dictionaries and double free crashes
 2. Enable WAL mode for sqlite
 3. Replace deprecated `SCNetworkReachability` with `NWPathMonitor`
 4. Remove usage of deprecated API `UIScreen.mainScreen`
 5. Fix `FTMobileConfig.dataModifier` block processing to cover all data entries
+6. Delay swizzling of `URLSession` methods to resolve conflicts with multiple AF libraries
 ---
 # 1.5.20-beta.3
 1. Resolve deadlock in rumDynamicTags caused by screenSize and FTAppLifeCycleDelegate's removeAppLifecycleDelegate method
@@ -22,6 +26,7 @@
 2. Enable WAL mode for sqlite
 3. Replace deprecated SCNetworkReachability with NWPathMonitor
 4. Remove usage of deprecated API UIScreen.mainScreen 
+5. Delay swizzling of `URLSession` methods to resolve conflicts with multiple AF libraries
 ---
 # 1.5.19
 1. Extended resource_type to include new types: image, media, font, CSS, JS, and native
