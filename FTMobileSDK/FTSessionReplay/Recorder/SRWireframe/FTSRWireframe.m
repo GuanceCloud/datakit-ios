@@ -169,12 +169,16 @@ static BOOL objectIsEqual(id new,id old){
 }
 @end
 @implementation FTSRTextStyle
-- (instancetype)initWithSize:(int)size color:(NSString *)color family:(NSString *)family{
+-(instancetype)initWithSize:(int)size color:(NSString *)color family:(NSString *)family{
+    return [self initWithSize:size color:color family:family truncationMode:nil];
+}
+- (instancetype)initWithSize:(int)size color:(NSString *)color family:(NSString *)family truncationMode:(NSString *)truncationMode{
     self = [super init];
     if(self){
         _size = size?:FT_DEFAULT_FONT_SIZE;
         _color = color?:FT_DEFAULT_COLOR;
         _family = family?:FT_DEFAULT_FONT_FAMILY;
+        _truncationMode = truncationMode;
     }
     return self;
 }
@@ -182,11 +186,12 @@ static BOOL objectIsEqual(id new,id old){
     FTSRTextStyle *object = (FTSRTextStyle *)baseFrame;
     BOOL haveEqualColor = objectIsEqual(self.color,object.color);
     BOOL haveEqualFamily = objectIsEqual(self.family,object.family);
-    return  haveEqualColor && haveEqualFamily && self.size == object.size;
+    BOOL haveEqualTruncationMode = objectIsEqual(self.truncationMode,object.truncationMode);
+    return  haveEqualColor && haveEqualFamily && self.size == object.size && haveEqualTruncationMode;
 }
 @end
 @implementation FTSRWireframe
--(instancetype)initWithIdentifier:(int)identifier frame:(CGRect)frame{
+-(instancetype)initWithIdentifier:(int64_t)identifier frame:(CGRect)frame{
     self = [super init];
     if(self){
         self.identifier = identifier;
@@ -244,14 +249,14 @@ static BOOL objectIsEqual(id new,id old){
     }
     return self;
 }
--(instancetype)initWithIdentifier:(int)identifier frame:(CGRect)frame{
+-(instancetype)initWithIdentifier:(int64_t)identifier frame:(CGRect)frame{
     self = [super initWithIdentifier:identifier frame:frame];
     if(self){
         self.type = @"shape";
     }
     return self;
 }
--(instancetype)initWithIdentifier:(int)identifier frame:(CGRect)frame clip:(CGRect)clip backgroundColor:(NSString *)color cornerRadius:(NSNumber *)cornerRadius opacity:(NSNumber *)opacity{
+-(instancetype)initWithIdentifier:(int64_t)identifier frame:(CGRect)frame clip:(CGRect)clip backgroundColor:(NSString *)color cornerRadius:(NSNumber *)cornerRadius opacity:(NSNumber *)opacity{
     self = [super initWithIdentifier:identifier frame:frame];
     if(self){
         self.type = @"shape";
@@ -259,7 +264,7 @@ static BOOL objectIsEqual(id new,id old){
     }
     return self;
 }
--(instancetype)initWithIdentifier:(int)identifier attributes:(FTViewAttributes *)attributes{
+-(instancetype)initWithIdentifier:(int64_t)identifier attributes:(FTViewAttributes *)attributes{
     self = [super initWithIdentifier:identifier frame:attributes.frame];
     if(self){
         self.type = @"shape";
@@ -300,7 +305,7 @@ static BOOL objectIsEqual(id new,id old){
     }
     return self;
 }
--(instancetype)initWithIdentifier:(int)identifier frame:(CGRect)frame{
+-(instancetype)initWithIdentifier:(int64_t)identifier frame:(CGRect)frame{
     self = [super initWithIdentifier:identifier frame:frame];
     if(self){
         self.type = @"text";
@@ -336,7 +341,7 @@ static BOOL objectIsEqual(id new,id old){
 -(instancetype)init{
     return [self initWithIdentifier:0 frame:CGRectZero];
 }
--(instancetype)initWithIdentifier:(int)identifier frame:(CGRect)frame {
+-(instancetype)initWithIdentifier:(int64_t)identifier frame:(CGRect)frame {
     self = [super initWithIdentifier:identifier frame:frame];
     if(self){
         self.type = @"image";
@@ -377,10 +382,10 @@ static BOOL objectIsEqual(id new,id old){
     }
     return self;
 }
--(instancetype)initWithIdentifier:(int)identifier frame:(CGRect)frame{
+-(instancetype)initWithIdentifier:(int64_t)identifier frame:(CGRect)frame{
     return [self initWithIdentifier:identifier frame:frame label:nil];
 }
-- (instancetype)initWithIdentifier:(int)identifier frame:(CGRect)frame label:(NSString *)label{
+- (instancetype)initWithIdentifier:(int64_t)identifier frame:(CGRect)frame label:(NSString *)label{
     self = [super initWithIdentifier:identifier frame:frame];
     if(self){
         self.type = @"placeholder";
@@ -403,5 +408,55 @@ static BOOL objectIsEqual(id new,id old){
     FTSRPlaceholderWireframe *object = (FTSRPlaceholderWireframe *)baseFrame;
     BOOL isLabelEqual = objectIsEqual(self.label,object.label);
     return isLabelEqual;
+}
+@end
+
+@implementation FTSRWebViewWireframe
+
+-(instancetype)init{
+    self = [super init];
+    if(self){
+        self.type = @"webview";
+    }
+    return self;
+}
+-(instancetype)initWithIdentifier:(int64_t)identifier frame:(CGRect)frame{
+    self = [super initWithIdentifier:identifier frame:frame];
+    if(self){
+        self.type = @"webview";
+    }
+    return self;
+}
+-(FTSRWireframe *)compareWithNewWireFrame:(FTSRWireframe *)newWireFrame error:(NSError *__autoreleasing  _Nullable * _Nullable)error{
+    if ([self isEqual:newWireFrame]){
+        return nil;
+    }
+    FTSRWireframe *wire = [super compareWithNewWireFrame:newWireFrame error:error];
+    if(*error){
+        return nil;
+    }
+    FTSRWebViewWireframe *webView = (FTSRWebViewWireframe *)wire;
+    FTSRWebViewWireframe *newWeb = (FTSRWebViewWireframe *)newWireFrame;
+    webView.isVisible = useNewObjectIfDifferentThanOld(newWeb.isVisible,self.isVisible);
+    webView.border = useNewObjectIfDifferentThanOld(newWeb.border,self.border);
+    webView.shapeStyle = useNewObjectIfDifferentThanOld(newWeb.shapeStyle,self.shapeStyle);
+    return webView;
+}
+-(BOOL)isEqualToWebViewWireframe:(FTSRWebViewWireframe *)object{
+    if(!object){
+        return NO;
+    }
+    BOOL isSlotIdEqual = objectIsEqual(self.slotId,object.slotId);
+    BOOL isVisibleEqual = objectIsEqual(self.isVisible,object.isVisible);
+    return isSlotIdEqual && isVisibleEqual && [super isEqual:object];
+}
+-(BOOL)isEqual:(id)object{
+    if(self == object){
+        return YES;
+    }
+    if (![object isKindOfClass:self.class]){
+        return NO;
+    }
+    return [self isEqualToWebViewWireframe:object];
 }
 @end

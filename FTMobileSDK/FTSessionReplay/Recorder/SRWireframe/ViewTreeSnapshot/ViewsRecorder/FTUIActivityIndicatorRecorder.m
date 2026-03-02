@@ -65,7 +65,7 @@
 
 @implementation FTUIActivityIndicatorBuilder
 
--(NSArray<FTSRWireframe *> *)buildWireframes{
+-(NSArray<FTSRWireframe *> *)buildWireframesWithBuilder:(FTSessionReplayWireframesBuilder *)builder;{
     FTSRShapeWireframe *wireframe = [[FTSRShapeWireframe alloc]initWithIdentifier:self.wireframeID frame:self.wireframeRect clip:self.attributes.clip backgroundColor:[FTSRUtils colorHexString:self.backgroundColor.CGColor] cornerRadius:@(self.attributes.layerCornerRadius) opacity:@(self.attributes.alpha)];
     return @[wireframe];
 }

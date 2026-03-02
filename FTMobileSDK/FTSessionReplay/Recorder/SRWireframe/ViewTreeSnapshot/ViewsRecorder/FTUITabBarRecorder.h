@@ -8,12 +8,12 @@
 
 #import <Foundation/Foundation.h>
 #import <UIKit/UIKit.h>
-#import "FTSRWireframesBuilder.h"
+#import "FTSRNodeWireframesBuilder.h"
 
 @class FTViewAttributes;
 NS_ASSUME_NONNULL_BEGIN
-@interface FTUITabBarBuilder : NSObject<FTSRWireframesBuilder>
-@property (nonatomic, assign) int wireframeID;
+@interface FTUITabBarBuilder : NSObject<FTSRNodeWireframesBuilder>
+@property (nonatomic, assign) int64_t wireframeID;
 @property (nonatomic, strong) FTViewAttributes *attributes;
 @property (nonatomic, assign) CGRect wireframeRect;
 @property (nonatomic, strong) UIColor * color;

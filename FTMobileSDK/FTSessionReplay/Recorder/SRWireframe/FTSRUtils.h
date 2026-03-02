@@ -29,6 +29,7 @@ CGFloat FTCGSizeAspectRatio(CGSize size);
 + (BOOL)isSensitiveText:(id<UITextInputTraits>)textInputTraits;
 + (nullable CGColorRef)safeCast:(CGColorRef)cgColor;
 + (CGFloat)getCGColorAlpha:(CGColorRef)color;
++ (nullable NSString *)getTextStyleTruncationMode:(NSLineBreakMode)lineBreakMode;
 @end
 
 NS_ASSUME_NONNULL_END

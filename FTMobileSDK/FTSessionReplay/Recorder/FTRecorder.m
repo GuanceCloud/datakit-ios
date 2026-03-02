@@ -12,7 +12,7 @@
 #import "FTTouchSnapshot.h"
 #import "FTViewAttributes.h"
 #import "FTSRWireframe.h"
-#import "FTSRWireframesBuilder.h"
+#import "FTSRNodeWireframesBuilder.h"
 #import "NSDate+FTUtil.h"
 #import "FTSRRecord.h"
 #import "FTNodesFlattener.h"

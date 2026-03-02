@@ -70,7 +70,7 @@
 }
 @end
 @implementation FTUIViewBuilder
--(NSArray<FTSRWireframe *> *)buildWireframes{
+-(NSArray<FTSRWireframe *> *)buildWireframesWithBuilder:(FTSessionReplayWireframesBuilder *)builder{
     if(self.attributes.hide){
         FTSRPlaceholderWireframe *placeholderWireframe = [[FTSRPlaceholderWireframe alloc]initWithIdentifier:self.wireframeID frame:self.wireframeRect label:@"Hidden"];
         placeholderWireframe.clip = [[FTSRContentClip alloc]initWithFrame:self.wireframeRect clip:self.attributes.clip];

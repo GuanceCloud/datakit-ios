@@ -11,7 +11,7 @@
 NS_ASSUME_NONNULL_BEGIN
 @protocol FTSRWireframesRecorder;
 @interface FTSRViewID : NSObject
-- (int)SRViewID:(UIView *)view nodeRecorder:(id<FTSRWireframesRecorder>)nodeRecorder;
+- (int64_t)SRViewID:(UIView *)view nodeRecorder:(id<FTSRWireframesRecorder>)nodeRecorder;
 - (NSArray*)SRViewIDs:(UIView *)view size:(int)size nodeRecorder:(id<FTSRWireframesRecorder>)nodeRecorder;
 @end
 

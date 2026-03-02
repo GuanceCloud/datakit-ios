@@ -7,15 +7,13 @@
 //
 
 #import "FTWKWebViewHandler.h"
+#import "FTWeakMapTable.h"
+#import "FTWKWebViewRumDelegate.h"
 #if !TARGET_OS_TV
 NS_ASSUME_NONNULL_BEGIN
-/// webView add web-side rum data
-@protocol FTWKWebViewRumDelegate <NSObject>
-@optional
-- (void)dealReceiveScriptMessage:(id )message slotId:(NSUInteger)slotId;
 
-@end
 @interface FTWKWebViewHandler ()
+
 - (void)startWithEnableTraceWebView:(BOOL)enable allowWebViewHost:(nullable NSArray *)hosts rumDelegate:(id<FTWKWebViewRumDelegate>)delegate;
 
 - (void)innerEnableWebView:(WKWebView *)webView;

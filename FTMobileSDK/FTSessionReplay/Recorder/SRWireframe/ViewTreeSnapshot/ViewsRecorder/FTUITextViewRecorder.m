@@ -63,7 +63,7 @@
 @implementation FTUITextViewBuilder
 
 
-- (NSArray<FTSRWireframe *> *)buildWireframes {
+- (NSArray<FTSRWireframe *> *)buildWireframesWithBuilder:(FTSessionReplayWireframesBuilder *)builder{
     CGRect frame = [self relativeIntersectedRect];
     FTSRTextWireframe *wireframe = [[FTSRTextWireframe alloc]initWithIdentifier:self.wireframeID frame:frame];
     wireframe.text = [self.textObfuscator mask:self.text];

@@ -7,6 +7,7 @@
 //
 
 #import <Foundation/Foundation.h>
+#import "FTSessionReplayWireframesBuilder.h"
 
 NS_ASSUME_NONNULL_BEGIN
 typedef NS_ENUM(NSUInteger,NodeSubtreeStrategy){
@@ -33,6 +34,12 @@ typedef NS_ENUM(NSUInteger,NodeSubtreeStrategy){
 @property (nonatomic, assign) CGSize viewportSize;
 @property (nonatomic, strong) NSArray<id<FTSRWireframesBuilder>> *nodes;
 @property (nonatomic, strong) NSArray<id<FTSRResource>> *resources;
+@property (nonatomic, strong) NSSet<NSNumber *>* webViewSlotIDs;
+@end
+
+@interface FTSessionReplayNode: NSObject
+@property (nonatomic, strong) FTViewAttributes *attributes;
+@property (nonatomic, strong) FTSessionReplayWireframesBuilder *builder;
 @end
 
 @interface FTUnknownElement : FTSRNodeSemantics

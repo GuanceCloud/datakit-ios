@@ -12,6 +12,8 @@
 #import "FTNetworkInfoManager.h"
 #import "FTCompression.h"
 #import "FTSegmentJSON.h"
+#import "FTLog+Private.h"
+
 @interface FTSegmentRequest()
 @property (nonatomic, strong) id<FTMultipartFormBodyProtocol> multipartFormBody;
 @property (nonatomic, strong) NSDictionary *parameters;
@@ -38,6 +40,9 @@
 -(void)requestWithEvents:(NSArray *)events parameters:(NSDictionary *)parameters{
     self.parameters = parameters;
     NSArray *merged = [self mergeSegments:events];
+    if (merged.count>1) {
+        FTInnerLogWarning(@"[SegmentRequest] mergeSegments fail");
+    }
     self.segment = [merged firstObject];
 }
 - (NSArray *)mergeSegments:(NSArray *)segments{
@@ -80,13 +85,25 @@
     // method
     mutableRequest.HTTPMethod = self.httpMethod;
     // body
+    NSDictionary *bindInfo = self.segment.bindInfo;
+    self.segment.bindInfo = nil;
     NSMutableData *mutableData = [NSMutableData dataWithData:[self.segment toJSONData]];
     [mutableData appendData:[self.multipartFormBody newlineByte]];
     NSData *compress = [FTCompression compress:mutableData];
     [self.multipartFormBody addFormData:@"segment" filename:[NSString stringWithFormat:@"%@-%lld",self.segment.sessionID,self.segment.start] data:compress mimeType:@"application/octet-stream"];
-    NSMutableDictionary *segmentJson = [[self.segment toDictionary] mutableCopy];
+    NSMutableDictionary *segmentJson = [NSMutableDictionary new];
+    [segmentJson setValue:self.segment.sessionID forKey:@"session_id"];
+    [segmentJson setValue:self.segment.viewID forKey:@"view_id"];
+    [segmentJson setValue:self.segment.appId forKey:@"app_id"];
+    [segmentJson setValue:@(self.segment.hasFullSnapshot) forKey:@"has_full_snapshot"];
+    [segmentJson setValue:@(self.segment.recordsCount) forKey:@"records_count"];
+    [segmentJson setValue:@(self.segment.end) forKey:@"end"];
+    [segmentJson setValue:@(self.segment.start) forKey:@"start"];
     [segmentJson addEntriesFromDictionary:self.parameters];
-    [segmentJson removeObjectForKey:@"records"];
+    if (bindInfo) {
+        [segmentJson addEntriesFromDictionary:bindInfo];
+    }
+    FTInnerLogDebug(@"[Segment Request] segmentJson:%@",segmentJson);
     for (NSString *key in segmentJson.allKeys) {
         [self.multipartFormBody addFormField:key value:segmentJson[key]];
     }

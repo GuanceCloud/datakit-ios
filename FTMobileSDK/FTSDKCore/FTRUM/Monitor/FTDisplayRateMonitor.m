@@ -18,20 +18,21 @@
 @property (nonatomic, strong) CADisplayLink *displayLink;
 @property (nonatomic, assign) CFTimeInterval lastFrameTimestamp;
 @property (nonatomic, strong) NSPointerArray *dataPublisher;
-
+@property (nonatomic, strong) NSDate *firstFrameDate;
+@property (atomic, assign) int startCount;
 @end
 @implementation FTDisplayRateMonitor
 -(instancetype)init{
     self = [super init];
     if (self) {
         _dataPublisher = [NSPointerArray pointerArrayWithOptions:NSPointerFunctionsWeakMemory];
-
+        _startCount = 0;
         [[FTAppLifeCycle sharedInstance] addAppLifecycleDelegate:self];
-        [self start];
     }
     return self;
 }
 - (void)start{
+    self.startCount += 1;
     if (self.displayLink) {
         return;
     }
@@ -47,8 +48,19 @@
                 [value addSample:currentFPS];
             }];
         }
+    }else{
+        // monitor fist frame
+        NSDate *date = [NSDate date];
+        self.firstFrameDate = date;
+        if (self.callBack) {
+            self.callBack(date);
+        }
+        self.callBack = nil;
     }
     self.lastFrameTimestamp = link.timestamp;
+}
+-(NSDate *)firstFrameDate{
+    return _firstFrameDate;
 }
 - (void)addMonitorItem:(FTReadWriteHelper<FTMonitorValue *> *)item{
     [FTThreadDispatchManager performBlockDispatchMainAsync:^{
@@ -68,9 +80,12 @@
     }];
 }
 - (void)stop{
-    [self.displayLink invalidate];
-    self.displayLink = nil;
-    self.lastFrameTimestamp = -1;
+    self.startCount -= 1;
+    if (self.startCount == 0) {
+        [self.displayLink invalidate];
+        self.displayLink = nil;
+        self.lastFrameTimestamp = -1;
+    }
 }
 - (void)applicationDidBecomeActive{
     [self start];
@@ -78,6 +93,10 @@
 
 - (void)applicationWillResignActive{
     [self stop];
+}
+-(void)dealloc{
+    [self stop];
+    [[FTAppLifeCycle sharedInstance] removeAppLifecycleDelegate:self];
 }
 @end
 #endif

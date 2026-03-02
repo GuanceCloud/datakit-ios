@@ -16,12 +16,12 @@
 #import "FTMonitorValue.h"
 #import "FTLog+Private.h"
 #import "FTRUMMonitor.h"
+#import "FTRUMContext.h"
 
 @interface FTRUMViewHandler()<FTRUMSessionProtocol>
 @property (nonatomic, strong) FTRUMDependencies *rumDependencies;
 @property (nonatomic, strong) FTRUMContext *context;
 @property (nonatomic, strong) FTRUMActionHandler *actionHandler;
-@property (nonatomic, assign) BOOL isInitialView;
 @property (nonatomic, strong) NSMutableDictionary *resourceHandlers;
 @property (nonatomic, assign) NSInteger viewLongTaskCount;
 @property (nonatomic, assign) NSInteger viewResourceCount;
@@ -41,7 +41,6 @@
     if (self) {
         self.assistant = self;
         self.isActiveView = YES;
-        self.isInitialView = model.isInitialView;
         self.updateTime = 0;
         self.view_id = model.view_id;
         self.view_name = model.view_name;
@@ -108,14 +107,12 @@
             }
             break;
         case FTRUMDataAddAction:
-            [self addAction:model context:context];
+            if (self.isActiveView){
+                [self addAction:model context:context];
+            }
             break;
         case FTRUMDataError:
             if (self.isActiveView) {
-                FTRUMErrorData *error = (FTRUMErrorData *)model;
-                if(error.fatal){
-                    self.isActiveView = NO;
-                }
                 self.viewErrorCount++;
                 self.needUpdateView = YES;
                 [self writeErrorData:model context:context];
@@ -131,6 +128,15 @@
                 self.viewLongTaskCount++;
                 self.needUpdateView = YES;
                 [self writeErrorData:model context:context];
+            }
+            break;
+        case FTRUMSRLinkInfo:
+            if (self.isActiveView) {
+                FTRUMSRLinkInfoData *info = (FTRUMSRLinkInfoData *)model;
+                if (info.fields && [self.view_id isEqualToString:info.view_id]) {
+                    [self.viewProperty addEntriesFromDictionary:info.fields];
+                }
+                self.needUpdateView = YES;
             }
             break;
         default:
@@ -203,32 +209,31 @@
 }
 - (void)writeErrorData:(FTRUMDataModel *)model context:(NSDictionary *)context{
     NSDictionary *sessionViewTag = [self.context getGlobalSessionViewActionTags];
-    NSMutableDictionary *tags = [NSMutableDictionary dictionaryWithDictionary:context];
+    NSMutableDictionary *tags = [NSMutableDictionary new];
     [tags addEntriesFromDictionary:sessionViewTag];
     [tags addEntriesFromDictionary:model.tags];
     NSMutableDictionary *fields = [NSMutableDictionary new];
     [fields addEntriesFromDictionary:model.fields];
+    [fields addEntriesFromDictionary:self.context.sessionState.sessionFields];
     if (self.rumDependencies.sessionHasReplay != nil) {
         BOOL sessionHasReplay = self.sessionHasReplay || self.rumDependencies.sessionHasReplay.boolValue;
         [fields setValue:@(sessionHasReplay) forKey:FT_SESSION_HAS_REPLAY];
     }
     NSString *error = model.type == FTRUMDataLongTask?FT_RUM_SOURCE_LONG_TASK :FT_RUM_SOURCE_ERROR;
-    [self.rumDependencies.writer rumWrite:error tags:tags fields:fields time:model.tm];
-    if(self.errorHandled){
-        self.errorHandled();
-    }
+    [self.rumDependencies.writer rumWrite:error tags:tags fields:fields dynamicContext:context time:model.tm];
 }
 - (void)writeViewData:(FTRUMDataModel *)model context:(NSDictionary *)context updateTime:(NSDate *)updateTime{
-    if(self.isInitialView){
-        return;
-    }
     self.updateTime+=1;
     //Second level
     NSTimeInterval sTimeSpent = MAX(1e-9, [model.time timeIntervalSinceDate:self.viewStartTime]);
     //Nanosecond level
     NSNumber *nTimeSpent = [NSNumber numberWithLongLong:sTimeSpent * 1000000000];
     
-    NSMutableDictionary *tags = [NSMutableDictionary dictionaryWithDictionary:context];
+    NSMutableDictionary *tags = [NSMutableDictionary new];
+    NSMutableDictionary *viewUserCustomDatas = [NSMutableDictionary new];
+    if (context) {
+        [viewUserCustomDatas addEntriesFromDictionary:context];
+    }
     [tags addEntriesFromDictionary:[self.context getGlobalSessionViewTags]];
     FTMonitorValue *cpu = self.monitorItem.cpu;
     FTMonitorValue *memory = self.monitorItem.memory;
@@ -241,7 +246,8 @@
     [fields setValue:nTimeSpent forKey:FT_KEY_TIME_SPENT];
     [fields setValue:@(self.updateTime) forKey:FT_KEY_VIEW_UPDATE_TIME];
     [fields setValue:@(self.isActiveView) forKey:FT_KEY_IS_ACTIVE];
-    
+    [fields addEntriesFromDictionary:[self.context.sessionState sessionFields]];
+
     [fields setValue:@(self.rumDependencies.sampledForErrorSession) forKey:FT_RUM_KEY_SAMPLED_FOR_ERROR_SESSION];
     [fields addEntriesFromDictionary:self.rumDependencies.sessionReplaySampledFields];
     // session-replay
@@ -257,6 +263,7 @@
     }
     if(self.viewProperty && self.viewProperty.allKeys.count>0){
         [fields addEntriesFromDictionary:self.viewProperty];
+        [viewUserCustomDatas addEntriesFromDictionary:self.viewProperty];
     }
     if (cpu && cpu.greatestDiff>=0) {
         [fields setValue:@(cpu.greatestDiff) forKey:FT_CPU_TICK_COUNT];
@@ -275,11 +282,11 @@
     if (![self.loading_time isEqual:@0]) {
         [fields setValue:self.loading_time forKey:FT_KEY_LOADING_TIME];
     }
-    if (self.context.session_error_timestamp > 0) {
-        [fields setValue:@(self.context.session_error_timestamp) forKey:FT_SESSION_ERROR_TIMESTAMP];
-    }
+    [fields addEntriesFromDictionary:self.context.sessionState.sessionFields];
+
     long long time = [self.viewStartTime ft_nanosecondTimeStamp];
-    [self.rumDependencies.writer rumWrite:FT_RUM_SOURCE_VIEW tags:tags fields:fields time:time updateTime:[updateTime ft_nanosecondTimeStamp]];
+    [self.rumDependencies.writer rumWrite:FT_RUM_SOURCE_VIEW tags:tags fields:fields dynamicContext:context?:@{} time:time updateTime:[updateTime ft_nanosecondTimeStamp]];
+    self.rumDependencies.lastViewUserCustomDatas = viewUserCustomDatas;
     self.rumDependencies.fatalErrorContext.lastViewContext = @{@"tags":tags,
                                                                @"fields":fields,
                                                                @"time":[NSNumber numberWithLongLong:time]

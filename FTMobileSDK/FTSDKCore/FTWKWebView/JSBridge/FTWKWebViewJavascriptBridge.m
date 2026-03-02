@@ -10,10 +10,17 @@
 #if !TARGET_OS_TV
 #import "FTWebViewJavascriptLeakAvoider.h"
 #import "FTConstants.h"
+#import "FTJSONUtil.h"
+#import "FTSRWebTrackingProtocol.h"
+#import "FTModuleManager.h"
 
 NSString *const kAllowedHostsPlaceholder = @"__ALLOWED_HOSTS__";
+NSString *const kCapabilitiesPlaceholder = @"__CAPABILITIES__";
+NSString *const kPrivacyLevelPlaceholder = @"__PRIVACY_LEVEL__";
 NSString *const kFTJsCodePrefix = @"/* FTWebViewJavascriptBridge */";
+@implementation FTBindInfo
 
+@end
 @interface FTWKWebViewJavascriptBridge()
 @property (nonatomic, weak) WKWebView *webView;
 @end
@@ -50,6 +57,7 @@ NSString *const kFTJsCodePrefix = @"/* FTWebViewJavascriptBridge */";
     _webView = webView;
     _base = [[FTWebViewJavascriptBridgeBase alloc] init];
     _base.delegate = self;
+    [self removeScriptMessageHandler];
     [self addScriptMessageHandler];
     [self _injectJavascriptFile:hostsString];
 }
@@ -59,7 +67,7 @@ NSString *const kFTJsCodePrefix = @"/* FTWebViewJavascriptBridge */";
     }
     NSString * body = (NSString * )message.body;
     if (body && [body isKindOfClass:[NSString class]]){
-        [_base flushMessageQueue:body slotId:_webView.hash];
+        [_base flushMessageQueue:body slotId:message.webView.hash];
     }
 }
 - (void)_injectJavascriptFile:(NSString *)allowWebViewHost {
@@ -92,12 +100,11 @@ NSString *const kFTJsCodePrefix = @"/* FTWebViewJavascriptBridge */";
     [_webView evaluateJavaScript:javascriptCommand completionHandler:nil];
 }
 
--(void)dealloc{
-    [self removeScriptMessageHandler];
-}
-
 NSString * FTWebViewJavascriptBridge_js(NSString *hostsString) {
     NSString *allowedHosts = hostsString?:@"";
+    id<FTSRWebTrackingProtocol> sessionReplay = [[FTModuleManager sharedInstance] getRegisterService:NSProtocolFromString(@"FTSRWebTrackingProtocol")];
+      NSString *capabilities = sessionReplay ? @"\\\"records\\\"" : @"";
+      NSString *privacyLevel = sessionReplay ? [sessionReplay getSessionReplayPrivacyLevel] : @"mask";
 #define __WVJB_js_func__(x) #x
     //FTWebViewJavascriptBridge
     // BEGIN preprocessorJSCode
@@ -109,6 +116,8 @@ NSString * FTWebViewJavascriptBridge_js(NSString *hostsString) {
         callHandler: ftCallHandler,
         sendEvent: ftSendEvent,
         getAllowedWebViewHosts: getAllowedWebViewHosts,
+        getCapabilities: getCapabilities,
+        getPrivacyLevel: getPrivacyLevel,
         _handleMessageFromObjC: _ftHandleMessageFromObjC
         };
         
@@ -182,12 +191,22 @@ NSString * FTWebViewJavascriptBridge_js(NSString *hostsString) {
         function _ftHandleMessageFromObjC(messageJSON) {
             _ftDispatchMessageFromObjC(messageJSON);
         }
+        
+        function getCapabilities() {
+            return "[__CAPABILITIES__]";
+        }
+        function  getPrivacyLevel() {
+            return "__PRIVACY_LEVEL__";
+        }
     })(window);
                                                              ); // END preprocessorJSCode
     
 #undef __WVJB_js_func__
-    NSString *jsCode = [NSString stringWithFormat:@"%@\n%@",kFTJsCodePrefix,[preprocessorJSCode stringByReplacingOccurrencesOfString:kAllowedHostsPlaceholder
-                                                                                                                          withString:allowedHosts]];
+    NSString *jsCode = [NSString stringWithFormat:@"%@\n%@",kFTJsCodePrefix,[preprocessorJSCode stringByReplacingOccurrencesOfString:kAllowedHostsPlaceholder  withString:allowedHosts]];
+    jsCode = [jsCode stringByReplacingOccurrencesOfString:kCapabilitiesPlaceholder
+                                               withString:capabilities];
+    jsCode = [jsCode stringByReplacingOccurrencesOfString:kPrivacyLevelPlaceholder
+                                               withString:privacyLevel];
   return jsCode;
 };
 

@@ -8,17 +8,17 @@
 
 #import <Foundation/Foundation.h>
 #import <UIKit/UIKit.h>
-#import "FTSRWireframesBuilder.h"
+#import "FTSRNodeWireframesBuilder.h"
 
 @class FTViewAttributes;
 @protocol FTSRTextObfuscatingProtocol;
 NS_ASSUME_NONNULL_BEGIN
 /// Draw textField
 /// Does not consider textField bolderStyle, cursor, layer custom drawing
-@interface FTUITextFieldBuilder:NSObject<FTSRWireframesBuilder>
+@interface FTUITextFieldBuilder:NSObject<FTSRNodeWireframesBuilder>
 @property (nonatomic, strong) FTViewAttributes *attributes;
 @property (nonatomic, assign) CGRect wireframeRect;
-@property (nonatomic, assign) int wireframeID;
+@property (nonatomic, assign) int64_t wireframeID;
 @property (nonatomic, copy) NSString *text;
 @property (nonatomic, strong) UIColor *textColor;
 @property (nonatomic, assign) NSTextAlignment textAlignment;

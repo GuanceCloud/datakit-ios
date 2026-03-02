@@ -10,6 +10,8 @@
 #import "FTSessionReplayConfig+Private.h"
 #import "FTConstants.h"
 #import "FTLog+Private.h"
+#import "FTRemoteConfigModel.h"
+
 NSString * const FTTextAndInputPrivacyLevelStringMap[] = {
     [FTTextAndInputPrivacyLevelMaskAll] = @"MaskAll",
     [FTTextAndInputPrivacyLevelMaskAllInputs] = @"MaskAllInputs",
@@ -39,6 +41,9 @@ NSString * const FTImagePrivacyLevelStringMap[] = {
         _privacy = FTSRPrivacyMask;
     }
     return self;
+}
+-(void)setEnableLinkRUMKeys:(NSArray *)enableLinkRUMKeys{
+    _enableLinkRUMKeys = [enableLinkRUMKeys copy];
 }
 -(void)setAdditionalNodeRecorders:(NSArray<id<FTSRWireframesRecorder>> *)additionalNodeRecorders{
     _additionalNodeRecorders = additionalNodeRecorders;
@@ -87,25 +92,23 @@ NSString * const FTImagePrivacyLevelStringMap[] = {
     config.imagePrivacy = self.imagePrivacy;
     config.textAndInputPrivacy = self.textAndInputPrivacy;
     config.additionalNodeRecorders = [self.additionalNodeRecorders copy];
+    config.enableLinkRUMKeys = [self.enableLinkRUMKeys copy];
     return config;
 }
 -(NSString *)debugDescription{
     return [NSString stringWithFormat:@"====== Config ======\n sampleRate:%d\n sessionReplayOnErrorSampleRate:%d\n textAndInputPrivacy:%@\n touchPrivacy:%@\n imagePrivacy:%@\n ================== ",self.sampleRate,self.sessionReplayOnErrorSampleRate,FTTextAndInputPrivacyLevelStringMap[self.textAndInputPrivacy],FTTouchPrivacyLevelStringMap[self.touchPrivacy],FTImagePrivacyLevelStringMap[self.imagePrivacy]];
 }
 #pragma mark remote
--(void)mergeWithRemoteConfigDict:(NSDictionary *)dict{
+-(void)mergeWithRemoteConfigModel:(FTRemoteConfigModel *)model{
     @try {
-        if (!dict || dict.count == 0) {
+        if (!model) {
             return;
         }
-        NSNumber *sampleRate = dict[FT_R_SR_SAMPLERATE];
-        NSNumber *onErrorSampleRate = dict[FT_R_SR_ON_ERROR_SAMPLE_RATE];
-        
-        if (sampleRate != nil && [sampleRate isKindOfClass:NSNumber.class]) {
-            self.sampleRate = [sampleRate doubleValue] * 100;
+        if (model.sessionReplaySampleRate != nil) {
+            self.sampleRate = [model.sessionReplaySampleRate doubleValue] * 100;
         }
-        if (onErrorSampleRate != nil && [onErrorSampleRate isKindOfClass:NSNumber.class]) {
-            self.sessionReplayOnErrorSampleRate = [onErrorSampleRate doubleValue] * 100;
+        if (model.sessionReplayOnErrorSampleRate != nil) {
+            self.sessionReplayOnErrorSampleRate = [model.sessionReplayOnErrorSampleRate doubleValue] * 100;
         }
     } @catch (NSException *exception) {
         FTInnerLogError(@"exception: %@",exception);

@@ -10,7 +10,7 @@
 
 NS_ASSUME_NONNULL_BEGIN
 @protocol FTLongTaskProtocol<NSObject>
-- (void)startLongTask:(NSDate *)startDate backtrace:(NSString *)backtrace;
+- (void)startLongTask:(NSDate *)startDate;
 - (void)updateLongTaskDate:(NSDate *)date;
 - (void)endLongTask;
 @end

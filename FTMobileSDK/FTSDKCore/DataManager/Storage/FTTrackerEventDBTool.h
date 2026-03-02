@@ -15,7 +15,7 @@ NS_ASSUME_NONNULL_BEGIN
 /// Tool for operating database data
 @interface FTTrackerEventDBTool : NSObject
 /// Singleton
-+ (nullable FTTrackerEventDBTool *)sharedManger;
++ (nullable FTTrackerEventDBTool *)sharedManager;
 /// Singleton
 /// @param dbPath database path
 /// @param dbName database name
@@ -66,7 +66,7 @@ NS_ASSUME_NONNULL_BEGIN
 /// @param type data type
 - (NSInteger)getDatasCountWithType:(NSString *)type;
 
-- (long)checkDatabaseSize;
+- (long long)checkDatabaseSize;
 
 - (void)setEnableLimitWithDbSize:(BOOL)enableLimitWithDbSize;
 /// close db

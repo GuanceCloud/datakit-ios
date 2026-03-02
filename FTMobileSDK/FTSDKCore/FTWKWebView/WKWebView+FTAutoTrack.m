@@ -11,8 +11,16 @@
 #import "FTWKWebViewHandler+Private.h"
 #import "FTSwizzler.h"
 #import <objc/runtime.h>
-@implementation WKWebView (FTAutoTrack)
 
+static char *kLinkRumKeysInfo = "kLinkRumKeysInfo";
+
+@implementation WKWebView (FTAutoTrack)
+-(NSDictionary *)ft_linkRumKeysInfo{
+    return objc_getAssociatedObject(self, &kLinkRumKeysInfo);
+}
+-(void)setFt_linkRumKeysInfo:(NSDictionary *)ft_linkRumKeysInfo{
+    objc_setAssociatedObject(self, &kLinkRumKeysInfo, ft_linkRumKeysInfo, OBJC_ASSOCIATION_RETAIN);
+}
 -(WKNavigation *)ft_loadRequest:(NSURLRequest *)request{
     [[FTWKWebViewHandler sharedInstance] innerEnableWebView:self];
     return [self ft_loadRequest:request];

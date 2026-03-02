@@ -1,5 +1,46 @@
+# 1.6.2-alpha.16
+1. Same as 1.5.21-alpha.1
+2. Add remote configuration hot reload support for Session Replay
+---
+# 1.6.2-alpha.15
+1. Fix iOS `isNull` naming conflict by marking as static (file-scoped)
+---
+# 1.6.2-alpha.14
+1. Fix the issue where SessionReplay (SR) collection fails due to NaN value of layerCornerRadius on iOS 26
+2. Support the error sampling for webView session replay
+3. Same as 1.5.19-alpha.4
+---
+# 1.6.2-alpha.13
+1. Added RUM Session Replay context association feature and established WebView container binding with loaded HTML content
+---
+# 1.6.2-alpha.12
+1. Fix webView replay failure due to `isVisible` update issue
+---
+# 1.6.2-alpha.11
+1. Fix webView session replay display issue
+---
+# 1.6.2-alpha.10
+1. Same as 1.5.19-alpha.2
+---
+# 1.6.2-alpha.9
+1. Fix the issue of missing local css
+---
+# 1.6.2-alpha.8
+1. Fix the webView invisibility in session replay due to missing wireframeRect accessor
+2. Fix the problem that webView session replay cannot collect local CSS
+---
+# 1.6.2-alpha.7
+1. Fix the viewReferrer assignment error
+2. Fix WebView memory leaks and viewId binding failures
+3. Fix the repeated addition of webView Script Messages
+4. Same as 1.6.2-alpha.5、same as 1.6.2-alpha.6
+---
 # 1.6.2-alpha.6
 1. Fix the equality comparison logic of FTPadding
+2. Same as 1.6.2-alpha.4
+---
+# 1.6.2-alpha.5
+1. WebView Session Replay support
 ---
 # 1.6.2-alpha.4
 1. Fix the memory crash issue caused by incorrect use of the assign modifier for NSNumber properties
@@ -30,6 +71,69 @@
 2. Session Replay adds support for UIView to set view-level privacy overrides through `sessionReplayPrivacyOverrides`
 3. Session Replay data synchronization adds X-Pkg-Id tracking adaptation
 4. Same as 1.5.15-alpha.2
+---
+# 1.5.21-alpha.1
+1. Fixed the issue where sampling rate modifications did not take effect dynamically
+---
+# 1.5.20
+1. Fix concurrent read/write issues in `FTPresetProperty` causing corrupted dictionaries and double free crashes
+2. Enable WAL mode for sqlite
+3. Replace deprecated `SCNetworkReachability` with `NWPathMonitor`
+4. Remove usage of deprecated API `UIScreen.mainScreen`
+5. Fix `FTMobileConfig.dataModifier` block processing to cover all data entries
+6. Delay swizzling of `URLSession` methods to resolve conflicts with multiple AF libraries
+---
+# 1.5.20-beta.3
+1. Resolve deadlock in rumDynamicTags caused by screenSize and FTAppLifeCycleDelegate's removeAppLifecycleDelegate method
+---
+# 1.5.20-beta.2
+1. Refactor shutDown logic to fix memory safety
+---
+# 1.5.20-beta.1
+1. Same as 1.5.20-alpha.2
+---
+# 1.5.20-alpha.2
+1. Fix dataModifier block processing to cover all data entries
+---
+# 1.5.20-alpha.1
+1. Fix concurrent read/write issues in FTPresetProperty causing corrupted dictionaries and double free crashes
+2. Enable WAL mode for sqlite
+3. Replace deprecated SCNetworkReachability with NWPathMonitor
+4. Remove usage of deprecated API UIScreen.mainScreen 
+5. Delay swizzling of `URLSession` methods to resolve conflicts with multiple AF libraries
+---
+# 1.5.19
+1. Extended resource_type to include new types: image, media, font, CSS, JS, and native
+2. Added resource_id in network errors to associate corresponding resource data
+3. Supported custom configuration of remote variables
+4. Added resource_http_protocol, resource_request_size, and resource_connection_reuse fields to Resource
+5. Refined cold start and warm start time metrics, adding app_pre_runtime_init_time, app_runtime_init_time, app_uikit_init_time, app_application_init_time, and app_first_frame_init_time
+6. Fixed data loss caused by missing RUM View
+7. Enhanced crash and ANR stack information to include full thread stacks, and added support for configuring crash monitoring types
+---
+# 1.5.19-beta.1
+1. Fix displayMonitor callback failure caused by early stop call
+2. RemoteConfiguration support hot activation of `sampleRate`
+---
+# 1.5.19-alpha.5
+1. Refined cold start timing by adding `app_pre_runtime_init_time`, `app_runtime_init_time`,`app_uikit_init_time`, `app_application_init_time`, and `app_first_frame_init_time`.
+2. RUM Resource added `resource_http_protocol`, `resource_request_size`, `resource_connection_reuse`
+3. Support customizable configuration of remote variables
+4. Enhance Crash/ANR Report with full thread stack and Crash monitor type settings
+---
+# 1.5.19-alpha.4
+1. Fix CPU and memory utilization collection methods
+2. Replace the mutable `const char* kThreadSecondary` pointer with a read-only string literal macro to eliminate pointer tampering risks
+---
+# 1.5.19-alpha.3
+1. Added `resource_id` to network error types for data correlation. 
+---
+# 1.5.19-alpha.2
+1. Fix RUM data loss when using `-addErrorWithType:state:message:stack:property:` method add error
+2. Avoid re-registering script message handlers when collecting webView RUM data
+---
+# 1.5.19-alpha.1
+1. Fixed data loss when RUM view is missing
 ---
 # 1.5.18
 1. Added support for RUM View/Action collection filtering and custom View/Action naming via `FTRumConfig.viewTrackingHandler` and `FTRumConfig.actionTrackingHandler`
@@ -88,6 +192,7 @@
 2. Add `FTRUMConfig.sessionErrorSampleRate` to support error sampling, when not sampled by setSamplingRate, can sample RUM data from 1 minute ago when errors occur
 3. Logger supports filtering custom log levels through `logLevelFilter`
 4. When native page jumps to WebView page, fill view_referrer with native page name
+5. Resolve unexpectedly long DNS duration in resource collection
 ---
 # 1.5.16-beta.4
 1. Same as 1.5.16-beta.3

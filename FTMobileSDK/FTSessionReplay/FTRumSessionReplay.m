@@ -21,6 +21,7 @@
 #import "FTPresetProperty.h"
 #import "FTSessionReplayConfig+Private.h"
 #import "FTRemoteConfigManager.h"
+#import "FTWKWebViewHandler+SessionReplay.h"
 @interface FTFeatureStores : NSObject
 @property (nonatomic, strong) FTFeatureStorage *storage;
 @property (nonatomic, strong) FTFeatureUpload *upload;
@@ -70,18 +71,19 @@ static dispatch_once_t onceToken;
         return;
     }
     FTSessionReplayConfig *copyConfig = [config copy];
-    [copyConfig mergeWithRemoteConfigDict:[[FTRemoteConfigManager sharedInstance] getLocalRemoteConfig]];
+    [copyConfig mergeWithRemoteConfigModel:[FTRemoteConfigManager sharedInstance].lastRemoteModel];
+    [FTWKWebViewHandler sharedInstance].enableLinkRUMKeys = copyConfig.enableLinkRUMKeys;
     FTSessionReplayFeature *sessionReplayFeature = [[FTSessionReplayFeature alloc]initWithConfig:copyConfig];
     FTFeatureStores *srStore = [self registerFeature:sessionReplayFeature];
     [self.stores setValue:srStore forKey:sessionReplayFeature.name];
     [self.features setValue:sessionReplayFeature forKey:sessionReplayFeature.name];
     
-    FTResourcesFeature *resourcesFeature = [[FTResourcesFeature alloc]init];
-    FTFeatureStores *resourceStore = [self registerFeature:resourcesFeature];
-    FTFeatureDataStore *resourceDataStore = [[FTFeatureDataStore alloc]initWithFeature:resourcesFeature.name queue:self.readWriteQueue directory:self.coreDirectory];
-    [self.stores setValue:resourceStore forKey:resourcesFeature.name];
-    [self.features setValue:resourcesFeature forKey:resourcesFeature.name];
-    [sessionReplayFeature startWithWriter:srStore.storage.writer cacheWriter:srStore.storage.cacheWriter resourceWriter:resourceStore.storage.writer resourceDataStore:resourceDataStore];
+    //    FTResourcesFeature *resourcesFeature = [[FTResourcesFeature alloc]init];
+    //    FTFeatureStores *resourceStore = [self registerFeature:resourcesFeature];
+    //    FTFeatureDataStore *resourceDataStore = [[FTFeatureDataStore alloc]initWithFeature:resourcesFeature.name queue:self.readWriteQueue directory:self.coreDirectory];
+    //    [self.stores setValue:resourceStore forKey:resourcesFeature.name];
+    //    [self.features setValue:resourcesFeature forKey:resourcesFeature.name];
+    [sessionReplayFeature startWithRecordStorage:srStore.storage];
     FTInnerLogInfo(@"[session-replay] initialized success");
 }
 - (FTFeatureStores *)registerFeature:(id<FTRemoteFeature>)feature{

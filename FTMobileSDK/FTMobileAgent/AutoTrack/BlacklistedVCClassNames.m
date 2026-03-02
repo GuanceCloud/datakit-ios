@@ -102,6 +102,8 @@
                                               @"UIActivityGroupViewController",
                                               @"UIKeyboardCandidateRowViewController",
                                               @"UIKeyboardHiddenViewController",
+                                              @"UIKeyboardHiddenViewController_Autofill",
+                                              @"_SFAppAutoFillPasswordViewController",
                                               @"_UIAlertControllerTextFieldViewController",
                                               @"_UILongDefinitionViewController",
                                               @"_UIResilientRemoteViewContainerViewController",
@@ -156,6 +158,7 @@
                                               @"_UICursorAccessoryViewController",
                                               @"_UISceneHostingViewController",
                                               @"_UIDatePickerContainerViewController",
+                                              @"UITrackingElementWindowController",
                                  ],
             }
         };

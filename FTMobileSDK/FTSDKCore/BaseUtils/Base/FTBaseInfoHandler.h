@@ -29,10 +29,7 @@ NS_ASSUME_NONNULL_BEGIN
 /// Get random uuid string (no `-`, all lowercase)
 + (NSString *)randomUUID;
 + (NSString *)random16UUID;
-#if FT_IOS
-/// Telephony carrier
-+(NSString *)telephonyCarrier;
-#endif
+
 /// Device IP Address
 /// - Parameter preferIPv4 Whether to prefer IPv4
 + (NSString *)cellularIPAddress:(BOOL)preferIPv4;

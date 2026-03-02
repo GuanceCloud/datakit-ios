@@ -57,7 +57,7 @@
 
 @implementation FTUIStepperBuilder
 
-- (NSArray<FTSRWireframe *> *)buildWireframes {
+- (NSArray<FTSRWireframe *> *)buildWireframesWithBuilder:(FTSessionReplayWireframesBuilder *)builder {
     FTSRShapeWireframe *backgroundWireframe = [[FTSRShapeWireframe alloc]initWithIdentifier:self.backgroundWireframeID frame:self.wireframeRect clip:self.attributes.clip backgroundColor:[FTSystemColors tertiarySystemFillColorStr] cornerRadius:@(self.cornerRadius) opacity:nil];
     CGFloat verticalMargin = 6;
     CGRect dividerRect = CGRectMake(0, verticalMargin, 1, self.wireframeRect.size.height - 2*verticalMargin);

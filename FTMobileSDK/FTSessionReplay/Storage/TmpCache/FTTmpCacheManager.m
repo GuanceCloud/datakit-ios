@@ -17,6 +17,7 @@
 #import "FTAppLaunchTracker.h"
 #import "NSDate+FTUtil.h"
 #import "FTLog+Private.h"
+#import "FTDateUtil.h"
 
 void *FTTmpCacheQueueIdentityKey = &FTTmpCacheQueueIdentityKey;
 
@@ -61,10 +62,11 @@ void *FTTmpCacheQueueIdentityKey = &FTTmpCacheQueueIdentityKey;
 - (void)receive:(NSString *)key message:(NSDictionary *)message{
     if ([key isEqualToString:FTMessageKeyRumError]){
         self.hasErrorForceUpdate = YES;
-        NSDate *date = [message valueForKey:@"error_date"];
-        if (date) {
-            long long expirationTimeStamp = [[date dateByAddingTimeInterval:-60] ft_nanosecondTimeStamp];
-            long long lastErrorTimeStamp = [date ft_nanosecondTimeStamp];
+        NSNumber *errorDate = [message valueForKey:@"error_date"];
+        if (errorDate != nil) {
+            long long lastErrorTimeStamp = [errorDate longLongValue];
+            long long expirationTimeStamp = lastErrorTimeStamp - 60*1e9;
+
             [self cleanupWithExpirationTimeStamp:expirationTimeStamp lastErrorTimeStamp:lastErrorTimeStamp sync:NO];
         }
     }
@@ -80,7 +82,7 @@ void *FTTmpCacheQueueIdentityKey = &FTTmpCacheQueueIdentityKey;
         }
         /// Check if there is error sampling for the previous process data, only do update operation
         long long lastErrorTimeStamp = [self.sessionOnErrorHandler getErrorTimeLineFromFileCache];
-        long long expirationTimeStamp = [[NSDate dateWithTimeIntervalSinceReferenceDate:FTAppLaunchTracker.processStartTime] ft_nanosecondTimeStamp];
+        long long expirationTimeStamp = [[NSDate dateWithTimeIntervalSinceReferenceDate:[FTDateUtil.processStartTimestamp ft_nanosecondTimeStamp]] ft_nanosecondTimeStamp];
         if(lastErrorTimeStamp>0){
             [strongSelf cleanupWithExpirationTimeStamp:0 lastErrorTimeStamp:lastErrorTimeStamp sync:YES];
         }

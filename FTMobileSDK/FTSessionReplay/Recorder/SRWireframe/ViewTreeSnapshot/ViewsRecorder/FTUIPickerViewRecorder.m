@@ -49,7 +49,7 @@
             [[FTUIViewRecorder alloc]initWithIdentifier:_identifier],
             [[FTUILabelRecorder alloc] initWithIdentifier:_identifier builderOverride:^FTUILabelBuilder * _Nullable(FTUILabelBuilder *builder) {
                 builder.textAlignment = NSTextAlignmentCenter;
-                builder.adjustsFontSizeToFitWidth = YES;
+                builder.fontScalingEnabled = YES;
                 return builder;
             } textObfuscator:_textObfuscator],];
     }
@@ -91,7 +91,7 @@
 
 @implementation FTUIPickerViewBuilder
 
-- (NSArray<FTSRWireframe *> *)buildWireframes {
+- (NSArray<FTSRWireframe *> *)buildWireframesWithBuilder:(FTSessionReplayWireframesBuilder *)builder {
     FTSRShapeWireframe *wireframe = [[FTSRShapeWireframe alloc]initWithIdentifier:self.wireframeID attributes:self.attributes];
     return @[wireframe];
 }

@@ -7,11 +7,10 @@
 //
 
 #import <Foundation/Foundation.h>
-#import "FTSRWireframesBuilder.h"
 
 NS_ASSUME_NONNULL_BEGIN
 @class FTWindowObserver,FTSRContext,FTTouchSnapshot,FTSnapshotProcessor,FTResourceProcessor;
-@protocol FTWriter;
+@protocol FTWriter,FTSRWireframesRecorder;
 @interface FTRecorder : NSObject
 @property (nonatomic, strong) FTSnapshotProcessor *snapshotProcessor;
 @property (nonatomic, strong) FTResourceProcessor *resourceProcessor;

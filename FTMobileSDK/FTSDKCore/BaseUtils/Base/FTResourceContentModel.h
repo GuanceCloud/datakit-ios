@@ -15,9 +15,9 @@ NS_ASSUME_NONNULL_BEGIN
 /// Request URL 
 @property (nonatomic, strong) NSURL *url;
 /// Request headers
-@property (nonatomic, strong) NSDictionary *requestHeader;
+@property (nonatomic, copy) NSDictionary *requestHeader;
 /// Response headers
-@property (nonatomic, strong) NSDictionary *responseHeader;
+@property (nonatomic, copy) NSDictionary *responseHeader;
 /// HTTP method
 @property (nonatomic, copy) NSString *httpMethod;
 /// Request result status code
@@ -28,6 +28,9 @@ NS_ASSUME_NONNULL_BEGIN
 @property (nonatomic, strong,nullable) NSError *error;
 /// Response result
 @property (nonatomic, copy) NSString *responseBody;
+/// Resource Type
+@property (nonatomic, copy, nullable) NSString *resourceType;
+
 ///  Initialization method
 /// - Parameters:
 ///   - request: network request

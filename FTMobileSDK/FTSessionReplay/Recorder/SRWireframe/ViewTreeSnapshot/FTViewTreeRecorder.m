@@ -9,7 +9,7 @@
 #import "FTViewTreeRecorder.h"
 #import "FTViewAttributes.h"
 #import "FTSRViewID.h"
-#import "FTSRWireframesBuilder.h"
+#import "FTSRNodeWireframesBuilder.h"
 #import "FTViewTreeRecordingContext.h"
 #import "UIView+FTSRPrivacy.h"
 #import "FTSessionReplayPrivacyOverrides+Extension.h"

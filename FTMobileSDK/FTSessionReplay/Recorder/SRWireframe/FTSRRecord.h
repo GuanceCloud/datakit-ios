@@ -36,7 +36,7 @@ NS_ASSUME_NONNULL_BEGIN
 @end
 @protocol Adds;
 @interface Adds : FTSRBaseFrame
-@property (nonatomic, assign) int previousId;
+@property (nonatomic, strong) NSNumber *previousId;
 @property (nonatomic, strong) FTSRWireframe *wireframe;
 @end
 @protocol Removes;
@@ -50,9 +50,8 @@ NS_ASSUME_NONNULL_BEGIN
 @property (nonatomic, strong) NSArray<Adds> *adds;
 @property (nonatomic, strong) NSArray<Removes> *removes;
 @property (nonatomic, strong) NSArray<FTSRWireframe> *updates;
-@property (nonatomic, assign,readonly) BOOL isError;
 
--(void)createIncrementalSnapshotRecords:(NSArray<FTSRWireframe *>*)newWireframes lastWireframes:(NSArray<FTSRWireframe *>*)lastWireframes;
+-(BOOL)createIncrementalSnapshotRecords:(NSArray<FTSRWireframe *>*)newWireframes lastWireframes:(NSArray<FTSRWireframe *>*)lastWireframes error:(NSError **)error;
 - (BOOL)isEmpty;
 @end
 
@@ -76,6 +75,8 @@ NS_ASSUME_NONNULL_BEGIN
 @property (nonatomic, copy) NSString *sessionID;
 @property (nonatomic, copy) NSString *applicationID;
 @property (nonatomic, copy) NSString *viewID;
+@property (nonatomic, strong,nullable) NSArray<NSNumber *> *webViewSlotIDs;
+@property (nonatomic, strong) NSDictionary *bindInfo;
 -(instancetype)initWithContext:(FTSRContext*)context records:(NSArray<FTSRRecord>*)records;
 @end
 
@@ -85,5 +86,14 @@ NS_ASSUME_NONNULL_BEGIN
 @property (nonatomic, copy) NSString *type;
 @property (nonatomic, copy) NSString *appId;
 -(instancetype)initWithData:(NSData *)data;
+@end
+
+
+@interface FTSRWebRecord : FTSRBaseFrame
+@property (nonatomic, copy) NSString *sessionID;
+@property (nonatomic, copy) NSString *applicationID;
+@property (nonatomic, copy) NSString *viewID;
+@property (nonatomic, strong) NSArray *records;
+@property (nonatomic, strong) NSDictionary *bindInfo;
 @end
 NS_ASSUME_NONNULL_END

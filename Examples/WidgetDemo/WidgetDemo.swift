@@ -9,6 +9,17 @@
 import WidgetKit
 import SwiftUI
 import FTMobileExtension
+
+class WidgetEntryViewModel: ObservableObject {
+    static let shared = WidgetEntryViewModel() 
+    private var hasReportedView = false
+    
+    func reportViewIfNeeded(viewName: String) {
+        guard !hasReportedView else { return }
+        FTExternalDataManager.shared().startView(withName: viewName)
+        hasReportedView = true
+    }
+}
 struct Provider: TimelineProvider {
     func placeholder(in context: Context) -> SimpleEntry {
         SimpleEntry(date: Date())
@@ -45,12 +56,17 @@ struct SimpleEntry: TimelineEntry {
 
 struct WidgetDemoEntryView : View {
     var entry: Provider.Entry
+    @StateObject private var viewModel = WidgetEntryViewModel.shared
+    
     init(entry: Provider.Entry) {
         self.entry = entry
         FTExternalDataManager.shared().startView(withName: "WidgetDemoEntryView")
     }
     var body: some View {
         Text(entry.date, style: .time)
+            .onAppear {
+                           viewModel.reportViewIfNeeded(viewName: "WidgetDemoEntryView")
+                       }
     }
 }
 

@@ -20,6 +20,12 @@
 #import "FTLog+Private.h"
 #import "FTReadWriteHelper.h"
 #import <os/lock.h>
+#import "FTConstants.h"
+#import "FTModuleManager.h"
+#import "FTJSONUtil.h"
+#import "FTWeakMapTable.h"
+#import "FTThreadDispatchManager.h"
+#import "NSDate+FTUtil.h"
 
 @interface FTWKWebViewHandler ()
 @property (nonatomic, weak) id<FTWKWebViewRumDelegate> rumTrackDelegate;
@@ -28,7 +34,20 @@
 @property (nonatomic, strong) NSLock *lock;
 @property (nonatomic, assign) BOOL enableTraceWebView;
 @end
+
+// FTWKWebViewHandler+SessionReplay.h
+@interface FTWKWebViewHandler ()
+@property (nonatomic, copy) NSArray *enableLinkRUMKeys;
+
+@property (nonatomic, readwrite, strong) NSSet<NSNumber *> *hiddenSlotIds;
+
+- (void)takeSubsequentFullSnapshot;
+
+- (void)bindInfo:(NSDictionary *)info viewId:(NSString *)viewId;
+@end
 @implementation FTWKWebViewHandler
+@synthesize hiddenSlotIds = _hiddenSlotIds;
+@synthesize enableLinkRUMKeys = _enableLinkRUMKeys;
 static FTWKWebViewHandler *sharedInstance = nil;
 static NSObject *sharedInstanceLock;
 + (void)initialize{
@@ -140,26 +159,92 @@ static NSObject *sharedInstanceLock;
 }
 - (void)_enableWebView:(WKWebView *)webView allowedWebViewHostsString:(NSString *)hostsString{
     @try {
-        if ([self getWebViewBridge:webView]) {
-            FTInnerLogDebug(@"WebView(%@) already add JSBridge.",webView);
-            return;
-        }
+        FTInnerLogInfo(@"[WebView] webView(%lld) start bridge",(uint64_t)webView.hash);
         FTWKWebViewJavascriptBridge *bridge = [FTWKWebViewJavascriptBridge bridgeForWebView:webView allowWebViewHostsString:hostsString];
+        FTBindInfo *bindInfo = [[FTBindInfo alloc] init];
+        bindInfo.container = webView;
         __weak typeof(self) weakSelf = self;
         [bridge registerHandler:@"sendEvent" handler:^(id data, int64_t slotId,WVJBResponseCallback responseCallback) {
             __strong __typeof(weakSelf) strongSelf = weakSelf;
-            if (!strongSelf) {
-                return;
-            }
-            id<FTWKWebViewRumDelegate> delegate = strongSelf.rumTrackDelegate;
-            if (delegate && [delegate respondsToSelector:@selector(dealReceiveScriptMessage:slotId:)]){
-                [delegate dealReceiveScriptMessage:data slotId:slotId];
-            }
+            if (!strongSelf || !strongSelf.rumTrackDelegate) return;
+            [strongSelf dealReceiveScriptMessage:data slotId:slotId info:bindInfo];
         }];
         [self addWebView:webView bridge:bridge];
     }
     @catch (NSException *exception) {
         FTInnerLogError(@"exception: %@",exception);
+    }
+}
+- (void)dealReceiveScriptMessage:(id )message slotId:(int64_t)slotID info:(FTBindInfo *)info{
+    @try {
+        NSDictionary *messageDic = [message isKindOfClass:NSDictionary.class]?message:[FTJSONUtil dictionaryWithJsonString:message];
+        
+        if (![messageDic isKindOfClass:[NSDictionary class]]) {
+            FTInnerLogError(@"Message body is formatted failure from JS SDK");
+            return;
+        }
+        NSString *name = messageDic[@"name"];
+        if ([name isEqualToString:@"rum"]) {
+            NSDictionary *data = messageDic[@"data"];
+            NSString *measurement = data[FT_MEASUREMENT];
+            NSMutableDictionary *tags = [data[FT_TAGS] mutableCopy];
+            NSString *version = [tags valueForKey:FT_SDK_VERSION];
+            if(version&&version.length>0){
+                [tags setValue:@{@"web":version} forKey:FT_SDK_PKG_INFO];
+            }
+            NSDictionary *fields = data[FT_FIELDS];
+            long long time = [data[@"time"] longLongValue];
+            long long fixTime = time * 1000000;
+            // Web time data is in milliseconds, native needs nanoseconds, need to convert units
+            // Check if overflow
+            if (time == fixTime/1000000) {
+                time = fixTime;
+            }
+            if (measurement && fields.count>0) {
+                if ([measurement isEqualToString:FT_RUM_SOURCE_VIEW]) {
+                    if (!info.viewId) {
+                        info.viewId = self.rumTrackDelegate ? [self.rumTrackDelegate getLastHasReplayViewID] : nil;
+                    }
+                    if (!info.viewReferrer) {
+                        info.viewReferrer = self.rumTrackDelegate ? [self.rumTrackDelegate getLastViewName] : nil;
+                    }
+                    if (info.viewId) {
+                        NSArray *linkRUMKeys = self.enableLinkRUMKeys;
+                        if (linkRUMKeys.count>0 && (info.container.ft_linkRumKeysInfo == nil ||  info.container.ft_linkRumKeysInfo.count == 0)) {
+                            NSMutableDictionary *infoDict = [[NSMutableDictionary alloc]init];
+                            NSEnumerator *en = [linkRUMKeys objectEnumerator];
+                            NSString *key;
+                            while ((key = en.nextObject) != nil) {
+                                [infoDict setValue:fields[key] forKey:key];
+                            }
+                            if (infoDict.count>0) {
+                                info.container.ft_linkRumKeysInfo = [infoDict copy];
+                                [self bindInfo:info.container.ft_linkRumKeysInfo viewId:info.viewId];
+                            }else{
+                                FTInnerLogDebug(@"[WebView] webView(%lld:%@) bindInfo fail.",slotID,tags[FT_KEY_VIEW_ID]);
+                            }
+                        }
+                        [tags setValue:@{@"source":@"ios",@"view_id":info.viewId} forKey:@"container"];
+                    }
+                    if (tags[FT_KEY_VIEW_REFERRER] == nil) {
+                        [tags setValue:info.viewReferrer forKey:FT_KEY_VIEW_REFERRER];
+                    }
+                }else if ([measurement isEqualToString:FT_RUM_SOURCE_ERROR]){
+                    [[FTModuleManager sharedInstance] postMessageWithKey:FTMessageKeyRumError message:@{
+                        @"error_date":@([NSDate ft_currentNanosecondTimeStamp]),
+                        @"error_crash":@(NO)
+                    } sync:NO];
+                }
+                [self.rumTrackDelegate dealRUMWebViewData:measurement tags:tags fields:fields tm:time];
+            }
+        }else if ([name isEqualToString:@"session_replay"]){
+            NSMutableDictionary *dict = [messageDic mutableCopy];
+            [dict setValue:[NSString stringWithFormat:@"%lld",slotID] forKey:@"slotId"];
+            [dict setValue:info.container.ft_linkRumKeysInfo forKey:FT_LINK_RUM_KEYS];
+            [[FTModuleManager sharedInstance] postMessageWithKey:FTMessageKeyWebViewSR message:dict];
+        }
+    } @catch (NSException *exception) {
+        FTInnerLogError(@"%@ error: %@", self, exception);
     }
 }
 - (void)disableWebView:(WKWebView *)webView{
@@ -175,6 +260,48 @@ static NSObject *sharedInstanceLock;
 + (void)shutDown{
     @synchronized(sharedInstanceLock) {
         sharedInstance = nil;
+    }
+}
+#pragma mark ========= FTWKWebViewHandler+SessionReplay ========
+-(void)setEnableLinkRUMKeys:(NSArray *)enableLinkRUMKeys{
+    [self.lock lock];
+    _enableLinkRUMKeys = [enableLinkRUMKeys copy];
+    [self.lock unlock];
+}
+-(NSArray *)enableLinkRUMKeys{
+    id list = nil;
+    [self.lock lock];
+    list = [_enableLinkRUMKeys copy];
+    [self.lock unlock];
+    return list;
+}
+-(void)setHiddenSlotIds:(NSSet<NSNumber *> *)hiddenSlotIds{
+    [self.lock lock];
+    _hiddenSlotIds = hiddenSlotIds;
+    [self.lock unlock];
+}
+-(NSSet<NSNumber *> *)hiddenSlotIds{
+    NSSet<NSNumber *> *slotIds = nil;
+    [self.lock lock];
+    slotIds = [_hiddenSlotIds copy];
+    [self.lock unlock];
+    return slotIds;
+}
+- (void)takeSubsequentFullSnapshot{
+    NSArray *allKeys = [self.webViewBridge keyEnumerator].allObjects;
+    for (WKWebView *key in allKeys) {
+        BOOL isHidden = [self.hiddenSlotIds containsObject:@(key.hash)];
+        id value = [self.webViewBridge objectForKey:key];
+        if (!isHidden && key && value) {
+            [FTThreadDispatchManager performBlockDispatchMainAsync:^{
+                [key evaluateJavaScript:@"DATAFLUX_RUM.takeSubsequentFullSnapshot()" completionHandler:nil];
+            }];
+        }
+    }
+}
+- (void)bindInfo:(NSDictionary *)info viewId:(NSString *)viewId{
+    if(self.rumTrackDelegate){
+        [self.rumTrackDelegate bindSRInfo:info containerViewID:viewId];
     }
 }
 @end

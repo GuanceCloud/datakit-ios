@@ -12,16 +12,20 @@
 #import "FTRumDatasProtocol.h"
 #import "FTRumResourceProtocol.h"
 #import "FTLinkRumDataProvider.h"
+#import "FTWKWebViewRumDelegate.h"
+
 @class FTRumConfig,FTResourceMetricsModel,FTResourceContentModel,FTRUMMonitor;
 
 NS_ASSUME_NONNULL_BEGIN
 
-@interface FTRUMManager : FTRUMHandler<FTRumResourceProtocol,FTErrorDataDelegate,FTRumDatasProtocol,FTLinkRumDataProvider>
+@interface FTRUMManager : FTRUMHandler<FTRumResourceProtocol,FTErrorDataDelegate,FTRumDatasProtocol,FTLinkRumDataProvider,FTWKWebViewRumDelegate>
 @property (nonatomic, assign) FTAppState appState;
 @property (atomic,copy,readwrite) NSString *viewReferrer;
+@property (atomic,copy,nullable) NSString *viewReferrerId;
+
 #pragma mark - init -
 -(instancetype)initWithRumDependencies:(FTRUMDependencies *)dependencies;
-
+-(void)updateSampleRate:(int)sampleRate sessionOnErrorSampleRate:(int)sessionOnErrorSampleRate;
 -(void)notifyRumInit;
 #pragma mark - resource -
 /// HTTP request start
@@ -63,21 +67,8 @@ NS_ASSUME_NONNULL_BEGIN
 - (void)addWebViewData:(NSString *)measurement tags:(NSDictionary *)tags fields:(NSDictionary *)fields tm:(long long)tm;
 
 #pragma mark - Error / Long Task -
-/// Crash
-/// @param type Error type: java_crash/native_crash/abort/ios_crash
-/// @param message Error message
-/// @param stack Error stack
-- (void)addErrorWithType:(nonnull NSString *)type message:(nonnull NSString *)message stack:(nonnull NSString *)stack;
-/**
- * Crash
- * @param type       Error type: java_crash/native_crash/abort/ios_crash
- * @param message    Error message
- * @param stack      Error stack
- * @param property   Event properties (optional)
- */
-- (void)addErrorWithType:(NSString *)type message:(NSString *)message stack:(NSString *)stack property:(nullable NSDictionary *)property;
 
-- (void)addErrorWithType:(nonnull NSString *)type message:(nonnull NSString *)message stack:(nonnull NSString *)stack date:(NSDate *)date;
+
 /// Freeze
 /// @param stack Freeze stack
 /// @param duration Freeze duration
@@ -89,7 +80,6 @@ NS_ASSUME_NONNULL_BEGIN
  * @param property   Event properties (optional)
  */
 - (void)addLongTaskWithStack:(NSString *)stack duration:(NSNumber *)duration startTime:(long long)time property:(nullable NSDictionary *)property;
-#pragma mark - get LinkRumData -
 
 /// Wait for all rum processing data to be processed
 - (void)syncProcess;

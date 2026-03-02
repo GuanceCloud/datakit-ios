@@ -21,6 +21,9 @@
 @property (nonatomic, copy) NSString *featureName;
 @property (nonatomic, strong) FTFilesOrchestrator *authorizedFilesOrchestrator;
 @property (nonatomic, strong, nullable) FTFilesOrchestrator *cacheAuthorizedFilesOrchestrator;
+@property (nonatomic, strong) FTFilesOrchestrator *webAuthorizedFilesOrchestrator;
+@property (nonatomic, strong, nullable) FTFilesOrchestrator *webCacheAuthorizedFilesOrchestrator;
+
 
 // TODO: Privacy regulations
 //@property (nonatomic, strong) FTFilesOrchestrator *unauthorizedFilesOrchestrator;
@@ -29,6 +32,7 @@
 @property (nonatomic, strong) FTDirectory *directory;
 @property (nonatomic, strong) FTDirectory *cacheDirectory;
 @property (nonatomic, strong) id<FTCacheWriter> cacheWriter;
+@property (nonatomic, strong) id<FTWriter> webViewCacheWriter;
 @end
 @implementation FTFeatureStorage
 
@@ -51,6 +55,20 @@
     FTFileWriter *fileWriter = [[FTFileWriter alloc]initWithOrchestrator:self.authorizedFilesOrchestrator queue:self.queue];
     return fileWriter;
 }
+- (id<FTWriter>)webViewWriter{
+    FTFileWriter *fileWriter = [[FTFileWriter alloc]initWithOrchestrator:self.webAuthorizedFilesOrchestrator queue:self.queue];
+    return fileWriter;
+}
+- (id<FTWriter>)webViewCacheWriter{
+    if (self.cacheAuthorizedFilesOrchestrator) {
+        if (!_webViewCacheWriter) {
+            FTFileWriter *realFileWriter = [[FTFileWriter alloc]initWithOrchestrator:self.webCacheAuthorizedFilesOrchestrator queue:self.queue];
+            _webViewCacheWriter = realFileWriter;
+        }
+        return _webViewCacheWriter;
+    }
+    return nil;
+}
 - (id<FTCacheWriter>)cacheWriter{
     if (self.cacheAuthorizedFilesOrchestrator) {
         if (!_cacheWriter) {
@@ -68,12 +86,27 @@
     }
     return _authorizedFilesOrchestrator;
 }
+-(FTFilesOrchestrator *)webAuthorizedFilesOrchestrator{
+    if(!_webAuthorizedFilesOrchestrator){
+        _webAuthorizedFilesOrchestrator = [[FTFilesOrchestrator alloc]initWithDirectory:self.directory performance:self.performance prefix:@"w"];
+    }
+    return _webAuthorizedFilesOrchestrator;
+}
 -(FTFilesOrchestrator *)cacheAuthorizedFilesOrchestrator{
     if (self.cacheDirectory) {
         if(!_cacheAuthorizedFilesOrchestrator){
             _cacheAuthorizedFilesOrchestrator = [[FTFilesOrchestrator alloc]initWithDirectory:self.cacheDirectory performance:self.performance];
         }
         return _cacheAuthorizedFilesOrchestrator;
+    }
+    return nil;
+}
+-(FTFilesOrchestrator *)webCacheAuthorizedFilesOrchestrator{
+    if (self.cacheDirectory) {
+        if(!_webCacheAuthorizedFilesOrchestrator){
+            _webCacheAuthorizedFilesOrchestrator = [[FTFilesOrchestrator alloc]initWithDirectory:self.cacheDirectory performance:self.performance prefix:@"w"];
+        }
+        return _webCacheAuthorizedFilesOrchestrator;
     }
     return nil;
 }

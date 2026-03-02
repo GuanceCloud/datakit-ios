@@ -8,12 +8,12 @@
 
 #import <Foundation/Foundation.h>
 #import <UIKit/UIKit.h>
-#import "FTSRWireframesBuilder.h"
+#import "FTSRNodeWireframesBuilder.h"
 
 @class FTViewAttributes,FTViewTreeRecorder;
 NS_ASSUME_NONNULL_BEGIN
-@interface FTUIDatePickerBuilder : NSObject<FTSRWireframesBuilder>
-@property (nonatomic, assign) int wireframeID;
+@interface FTUIDatePickerBuilder : NSObject<FTSRNodeWireframesBuilder>
+@property (nonatomic, assign) int64_t wireframeID;
 @property (nonatomic, strong) FTViewAttributes *attributes;
 @property (nonatomic, assign) CGRect wireframeRect;
 @property (nonatomic, assign) BOOL isDisplayedInPopover;

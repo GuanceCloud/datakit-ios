@@ -19,6 +19,7 @@
         _viewID = dict[@"viewID"];
         _start = LONG_MAX;
         _end = LONG_MIN;
+        _source = @"ios";
         NSArray *array = dict[@"records"];
         for (NSDictionary *record in array) {
             NSInteger type = [record[@"type"] integerValue];
@@ -32,6 +33,7 @@
         }
         _recordsCount = array.count;
         _records = array;
+        _bindInfo = dict[FT_LINK_RUM_KEYS];
     }
     return self;
 }
@@ -43,14 +45,24 @@
     _end = MAX(_end, another.end);
     _recordsCount = _recordsCount + another.recordsCount;
     _hasFullSnapshot = _hasFullSnapshot || another.hasFullSnapshot;
+    if (_bindInfo || another.bindInfo) {
+        NSMutableDictionary *dict = [NSMutableDictionary new];
+        if (_bindInfo) {
+            [dict addEntriesFromDictionary:_bindInfo];
+        }
+        if (another.bindInfo) {
+            [dict addEntriesFromDictionary:another.bindInfo];
+        }
+        _bindInfo = dict;
+    }
 }
 +(FTJSONKeyMapper *)keyMapper{
     FTJSONKeyMapper *keyMapper = [[FTJSONKeyMapper alloc]initWithModelToJSONDictionary:@{
         @"hasFullSnapshot":@"has_full_snapshot",
         @"recordsCount":@"records_count",
-        @"sessionID":FT_RUM_KEY_SESSION_ID,
-        @"viewID":FT_KEY_VIEW_ID,
-        @"appId":FT_APP_ID,
+        @"sessionID":@"session.id",
+        @"viewID":@"view.id",
+        @"appId":@"application.id",
     }];
     return keyMapper;
 }

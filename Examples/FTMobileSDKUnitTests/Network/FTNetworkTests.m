@@ -48,7 +48,7 @@ typedef NS_ENUM(NSInteger, FTNetworkTestsType) {
 
 - (void)setUp {
     // Put setup code here. This method is called before the invocation of each test method in the class.
-    [[FTTrackerEventDBTool sharedManger] deleteAllDatas];
+    [[FTTrackerEventDBTool sharedManager] deleteAllDatas];
 }
 - (void)tearDown{
     [OHHTTPStubs removeAllStubs];
@@ -320,7 +320,7 @@ typedef NS_ENUM(NSInteger, FTNetworkTestsType) {
     }
     FTRecordModel *rumModel = [FTModelHelper createRumModel];
     [[FTTrackDataManager sharedInstance] addTrackData:rumModel type:FTAddDataRUM];
-    NSInteger count = [[FTTrackerEventDBTool sharedManger] getDatasCount];
+    NSInteger count = [[FTTrackerEventDBTool sharedManager] getDatasCount];
     XCTAssertTrue(count == 21);
     self.expectation = [self expectationWithDescription:@"Async operation timeout"];
     NSLog(@"addObserver: current isUploading = %@",[[FTTrackDataManager sharedInstance].dataUploadWorker valueForKey:@"isUploading"]);
@@ -331,7 +331,7 @@ typedef NS_ENUM(NSInteger, FTNetworkTestsType) {
         NSLog(@"isUploading = %@",[[FTTrackDataManager sharedInstance].dataUploadWorker valueForKey:@"isUploading"]);
         XCTAssertNil(error);
     }];
-    NSInteger newCount = [[FTTrackerEventDBTool sharedManger] getDatasCount];
+    NSInteger newCount = [[FTTrackerEventDBTool sharedManager] getDatasCount];
     XCTAssertTrue(newCount == 0);
     [[FTTrackDataManager sharedInstance].dataUploadWorker removeObserver:self forKeyPath:@"isUploading"];
 }
@@ -394,14 +394,14 @@ typedef NS_ENUM(NSInteger, FTNetworkTestsType) {
         });
     }
     [[FTMobileAgent sharedInstance] syncProcess];
-    NSInteger count = [[FTTrackerEventDBTool sharedManger] getDatasCount];
+    NSInteger count = [[FTTrackerEventDBTool sharedManager] getDatasCount];
     XCTAssertTrue(count>0);
     XCTestExpectation *expectation2= [self expectationWithDescription:@"Async operation timeout"];
     dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)(11 * NSEC_PER_SEC)), dispatch_get_main_queue(), ^{
         [expectation2 fulfill];
     });
     [self waitForExpectations:@[expectation2]];
-    NSInteger newCount = [[FTTrackerEventDBTool sharedManger] getDatasCount];
+    NSInteger newCount = [[FTTrackerEventDBTool sharedManager] getDatasCount];
     XCTAssertTrue(newCount == 0);
 }
 - (void)pageSize:(FTNetworkTestsType)type{
@@ -413,7 +413,7 @@ typedef NS_ENUM(NSInteger, FTNetworkTestsType) {
         [[FTTrackDataManager sharedInstance] addTrackData:logModel type:FTAddDataRUM];
         [[FTTrackDataManager sharedInstance] addTrackData:rumModel type:FTAddDataRUM];
     }
-    NSInteger count = [[FTTrackerEventDBTool sharedManger] getDatasCount];
+    NSInteger count = [[FTTrackerEventDBTool sharedManager] getDatasCount];
     XCTAssertTrue(count == 100);
     self.expectation = [self expectationWithDescription:@"Async operation timeout"];
     FTHTTPClient *httpClient = [[FTTrackDataManager sharedInstance].dataUploadWorker valueForKey:@"httpClient"];
@@ -440,7 +440,7 @@ typedef NS_ENUM(NSInteger, FTNetworkTestsType) {
     [self waitForExpectationsWithTimeout:30 handler:^(NSError *error) {
         XCTAssertNil(error);
     }];
-    NSInteger newCount = [[FTTrackerEventDBTool sharedManger] getDatasCount];
+    NSInteger newCount = [[FTTrackerEventDBTool sharedManager] getDatasCount];
     XCTAssertTrue(newCount == 0);
     [[FTTrackDataManager sharedInstance].dataUploadWorker removeObserver:self forKeyPath:@"isUploading"];
 }
@@ -482,7 +482,7 @@ typedef NS_ENUM(NSInteger, FTNetworkTestsType) {
     [self waitForExpectationsWithTimeout:30 handler:^(NSError *error) {
         XCTAssertNil(error);
     }];
-    NSInteger newCount = [[FTTrackerEventDBTool sharedManger] getDatasCount];
+    NSInteger newCount = [[FTTrackerEventDBTool sharedManager] getDatasCount];
     XCTAssertTrue(newCount == 0);
     XCTAssertTrue(duration>time);
     [[FTTrackDataManager sharedInstance].dataUploadWorker removeObserver:self forKeyPath:@"isUploading"];

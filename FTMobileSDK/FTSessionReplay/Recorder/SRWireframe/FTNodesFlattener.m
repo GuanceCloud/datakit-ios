@@ -9,10 +9,10 @@
 #import "FTNodesFlattener.h"
 #import "FTViewAttributes.h"
 @implementation FTNodesFlattener
-- (NSArray<id<FTSRWireframesBuilder>>*)flattenNodes:(FTViewTreeSnapshot *)snapShot{
-    NSMutableArray<id<FTSRWireframesBuilder>> *nodes = (NSMutableArray<id<FTSRWireframesBuilder>>*) [NSMutableArray new];
-    for (id<FTSRWireframesBuilder>node in snapShot.nodes) {
-        [nodes enumerateObjectsWithOptions:NSEnumerationReverse usingBlock:^(id<FTSRWireframesBuilder> preNode, NSUInteger idx, BOOL * _Nonnull stop) {
+- (NSArray<id<FTSRNodeWireframesBuilder>>*)flattenNodes:(FTViewTreeSnapshot *)snapShot{
+    NSMutableArray<id<FTSRNodeWireframesBuilder>> *nodes = (NSMutableArray<id<FTSRNodeWireframesBuilder>>*) [NSMutableArray new];
+    for (id<FTSRNodeWireframesBuilder>node in snapShot.nodes) {
+        [nodes enumerateObjectsWithOptions:NSEnumerationReverse usingBlock:^(id<FTSRNodeWireframesBuilder> preNode, NSUInteger idx, BOOL * _Nonnull stop) {
             if (CGRectContainsRect(node.wireframeRect, preNode.wireframeRect) && node.attributes.hasAnyAppearance && !node.attributes.isTranslucent){
                 [nodes removeObjectAtIndex:idx];
             }

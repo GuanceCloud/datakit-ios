@@ -233,4 +233,20 @@ CGFloat FTCGSizeAspectRatio(CGSize size){
     }
     return 0;
 }
++ (NSString *)getTextStyleTruncationMode:(NSLineBreakMode)lineBreakMode{
+    switch (lineBreakMode) {
+        case NSLineBreakByClipping:
+            return @"clip";
+            break;
+        case NSLineBreakByTruncatingHead:
+            return @"head";
+        case NSLineBreakByTruncatingTail:
+            return @"tail";
+        case NSLineBreakByTruncatingMiddle:
+            return @"middle";
+        case NSLineBreakByWordWrapping:
+        case NSLineBreakByCharWrapping:
+            return nil;
+    }
+}
 @end

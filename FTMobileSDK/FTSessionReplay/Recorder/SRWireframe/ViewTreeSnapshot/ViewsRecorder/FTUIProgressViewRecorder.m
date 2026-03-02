@@ -44,7 +44,7 @@
 }
 @end
 @implementation FTUIProgressViewBuilder
--(NSArray<FTSRWireframe *> *)buildWireframes{
+-(NSArray<FTSRWireframe *> *)buildWireframesWithBuilder:(FTSessionReplayWireframesBuilder *)builder{
     if(self.progress<0||self.progress>1){
         return @[];
     }

@@ -60,6 +60,25 @@
         [config setEnvWithType:FTEnvPre];
         config.globalContext = @{@"example_id":@"example_id_1"};//eg.
         config.groupIdentifiers = @[@"group.com.ft.widget.demo"];
+        config.remoteConfiguration = YES;
+        config.remoteConfigFetchCompletionBlock = ^FTRemoteConfigModel * _Nullable(BOOL success, NSError * _Nullable error, FTRemoteConfigModel * _Nullable model, NSDictionary<NSString *,id> * _Nullable content) {
+            if (error) {
+                NSLog(@"emoteConfigFetch error:%@",error.description);
+            }
+            if (success) {
+                NSString *userId = content[@"custom_userid"];
+                // example this user uid = @"user_1"
+                if ([userId isEqualToString:@"user_1"]) {
+                    model.rumSampleRate = @(1);
+                    model.logSampleRate = @(1);
+                    model.traceSampleRate = @(1);
+                    model.sessionReplaySampleRate = @(1);
+                    model.sessionReplayOnErrorSampleRate = @(0);
+                }
+            }
+            //if the model is not modified, `return nil`(use original model) == `return model`
+            return model;
+        };
         // Enable rum
         FTRumConfig *rumConfig = [[FTRumConfig alloc]initWithAppid:rumAppid];
         rumConfig.enableTrackAppCrash = YES;
@@ -71,6 +90,7 @@
 //        rumConfig.resourceUrlHandler = ^(NSURL *url){
 //            return NO;
 //        };
+        rumConfig.crashMonitoring = FTCrashMonitorTypeAll;
         rumConfig.errorMonitorType = FTErrorMonitorAll;
         rumConfig.deviceMetricsMonitorType = FTDeviceMetricsMonitorAll;
         rumConfig.monitorFrequency = FTMonitorFrequencyRare;

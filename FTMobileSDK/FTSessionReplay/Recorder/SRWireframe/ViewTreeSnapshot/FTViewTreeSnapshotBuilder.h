@@ -8,11 +8,13 @@
 
 #import <Foundation/Foundation.h>
 #import <UIKit/UIKit.h>
+#import <WebKit/WKWebView.h>
 NS_ASSUME_NONNULL_BEGIN
 @class FTViewTreeSnapshot,FTSRContext;
 @protocol FTSRWireframesRecorder;
 @interface FTViewTreeSnapshotBuilder : NSObject
 @property (nonatomic, strong) NSArray<id <FTSRWireframesRecorder>> *recorders;
+@property (nonatomic, strong) NSHashTable<WKWebView*> *webViewCache;
 - (FTViewTreeSnapshot *)takeSnapshot:(NSArray <UIView *> *)rootViews context:(FTSRContext *)context;
 -(instancetype)initWithAdditionalNodeRecorders:(nullable NSArray <id <FTSRWireframesRecorder>>*)additionalNodeRecorders;
 @end

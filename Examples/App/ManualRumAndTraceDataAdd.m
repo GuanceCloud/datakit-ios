@@ -47,7 +47,7 @@
         [[FTExternalDataManager sharedManager] stopView];
     }];
     TableViewCellItem *item4 = [[TableViewCellItem alloc]initWithTitle:@"RUM addAction" handler:^{
-        [[FTExternalDataManager sharedManager]  addClickActionWithName:@"UITableViewCell click"];
+        [[FTExternalDataManager sharedManager] startAction:@"UITableViewCell click" actionType:@"click" property:nil];
     }];
     TableViewCellItem *item5 = [[TableViewCellItem alloc]initWithTitle:@"RUM addError" handler:^{
         [[FTExternalDataManager sharedManager] addErrorWithType:@"ios_crash" state:FTAppStateUnknown message:@"crash_message" stack:@"crash_stack" property:nil];
@@ -59,7 +59,7 @@
         [weakSelf manualRumResource];
     }];
     [self.dataSource addObjectsFromArray:@[item1,item2,item3,item4,item5,item6,item7]];
-    _mtableView = [[UITableView alloc] initWithFrame:CGRectMake(0, 100, [UIScreen mainScreen].bounds.size.width, [UIScreen mainScreen].bounds.size.height-200)];
+    _mtableView = [[UITableView alloc] initWithFrame:CGRectMake(0, 0, self.view.bounds.size.width, self.view.bounds.size.height)];
     _mtableView.dataSource = self;
     _mtableView.delegate = self;
     [self.view addSubview:_mtableView];

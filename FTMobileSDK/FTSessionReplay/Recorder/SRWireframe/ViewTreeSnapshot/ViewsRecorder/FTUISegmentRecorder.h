@@ -8,11 +8,11 @@
 
 #import <Foundation/Foundation.h>
 #import <UIKit/UIKit.h>
-#import "FTSRWireframesBuilder.h"
+#import "FTSRNodeWireframesBuilder.h"
 
 @class FTViewAttributes;
 NS_ASSUME_NONNULL_BEGIN
-@interface FTUISegmentBuilder:NSObject<FTSRWireframesBuilder>
+@interface FTUISegmentBuilder:NSObject<FTSRNodeWireframesBuilder>
 @property (nonatomic, assign) CGRect wireframeRect;
 @property (nonatomic, assign) int backgroundWireframeID;
 @property (nonatomic, strong) FTViewAttributes *attributes;

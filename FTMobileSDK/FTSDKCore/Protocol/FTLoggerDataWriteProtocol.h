@@ -14,12 +14,10 @@ NS_ASSUME_NONNULL_BEGIN
 
 /// Logger data write
 /// - Parameters:
-///   - content: Log content
-///   - status: Log status
 ///   - tags: Properties
 ///   - field: Metrics
 ///   - time: Data generation timestamp (ns)
--(void)logging:(NSString *)content status:(NSString *)status tags:(nullable NSDictionary *)tags field:(nullable NSDictionary *)field time:(long long)time;
+-(void)loggingTags:(nullable NSDictionary *)tags field:(nullable NSDictionary *)field time:(long long)time linkRum:(BOOL)linkRum;
 
 @end
 NS_ASSUME_NONNULL_END

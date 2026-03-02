@@ -26,16 +26,8 @@
 #if TARGET_OS_IOS
     UIResponder *responder = self;
     do {
-#pragma clang diagnostic push
-#pragma clang diagnostic ignored "-Wdeprecated-declarations"
-        BOOL isUIAlertView = [responder isKindOfClass:UIAlertView.class];
-        BOOL isUIActionSheet = [responder isKindOfClass:UIActionSheet.class];
-#pragma clang diagnostic pop
-
         BOOL isUIAlertController = [responder isKindOfClass:UIAlertController.class];
-
-    
-        if (isUIAlertController || isUIAlertView || isUIActionSheet) {
+        if (isUIAlertController) {
             return YES;
         }
     } while ((responder = [responder nextResponder]));

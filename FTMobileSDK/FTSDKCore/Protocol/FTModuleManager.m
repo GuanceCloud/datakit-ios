@@ -9,14 +9,18 @@
 #import "FTModuleManager.h"
 #import "FTMessageReceiver.h"
 NSString *const FTMessageKeyRUMContext = @"rum_context";
+NSString *const FTMessageKeySRProperty = @"sr_property";
+NSString *const FTMessageKeyWebViewSR = @"webView_session_replay";
 NSString *const FTMessageKeyRecordsCountByViewID = @"sr_records_count_by_view_id";
 NSString *const FTMessageKeySessionHasReplay = @"sr_has_replay";
 NSString *const FTMessageKeyRumError = @"rum_error";
+NSString *const FTMessageKeySRSampleRateUpdate = @"sr_sample_rate_update";
 
 void *FTMessageBusQueueIdentityKey = &FTMessageBusQueueIdentityKey;
 
 @interface FTModuleManager()
 @property (nonatomic, strong, readonly) NSPointerArray *receiverArray;
+@property (nonatomic, strong) NSMapTable *registerServices;
 @property (nonatomic, strong) NSDictionary *srProperty;
 @property (nonatomic, strong) dispatch_queue_t queue;
 @end
@@ -27,6 +31,7 @@ void *FTMessageBusQueueIdentityKey = &FTMessageBusQueueIdentityKey;
         _queue = dispatch_queue_create("com.ft.message-bus", 0);
         dispatch_queue_set_specific(_queue,FTMessageBusQueueIdentityKey, &FTMessageBusQueueIdentityKey, NULL);
         _receiverArray = [NSPointerArray pointerArrayWithOptions:NSPointerFunctionsWeakMemory];
+        _registerServices = [NSMapTable strongToWeakObjectsMapTable];
     }
     return self;
 }
@@ -38,7 +43,7 @@ void *FTMessageBusQueueIdentityKey = &FTMessageBusQueueIdentityKey;
     });
     return _sharedInstance;
 }
-- (void)postMessage:(NSString *)key messageBlock:(nullable NSDictionary * (^)(void))messageBlock{
+- (void)postMessageWithKey:(NSString *)key messageBlock:(nullable NSDictionary * (^)(void))messageBlock{
     dispatch_block_t block = ^{
         NSDictionary *message = messageBlock();
         if (!message) {
@@ -52,10 +57,10 @@ void *FTMessageBusQueueIdentityKey = &FTMessageBusQueueIdentityKey;
     };
     dispatch_async(self.queue, block);
 }
-- (void)postMessage:(NSString *)key message:(NSDictionary *)message{
-    [self postMessage:key message:message sync:NO];
+- (void)postMessageWithKey:(NSString *)key message:(NSDictionary *)message{
+    [self postMessageWithKey:key message:message sync:NO];
 }
-- (void)postMessage:(NSString *)key message:(NSDictionary *)message sync:(BOOL)sync{
+- (void)postMessageWithKey:(NSString *)key message:(NSDictionary *)message sync:(BOOL)sync{
     dispatch_block_t block = ^{
         for (id receiver in self.receiverArray) {
             if ([receiver respondsToSelector:@selector(receive:message:)]) {
@@ -86,6 +91,14 @@ void *FTMessageBusQueueIdentityKey = &FTMessageBusQueueIdentityKey;
             }
         }
     });
+}
+- (void)registerService:(Protocol *)service instance:(id)instance{
+    NSString *key = NSStringFromProtocol(service);
+    [self.registerServices setObject:instance forKey:key];
+}
+- (id)getRegisterService:(Protocol *)service{
+    NSString *key = NSStringFromProtocol(service);
+    return [self.registerServices objectForKey:key];
 }
 - (void)syncProcess{
     [self syncProcess:^{}];

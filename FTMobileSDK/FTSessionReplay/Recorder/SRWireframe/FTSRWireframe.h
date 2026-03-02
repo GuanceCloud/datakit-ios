@@ -56,12 +56,14 @@ NS_ASSUME_NONNULL_BEGIN
 @property (nonatomic, assign) int size;
 @property (nonatomic, copy) NSString *color;
 @property (nonatomic, copy) NSString *family;
+@property (nonatomic, copy, nullable) NSString *truncationMode;
 - (instancetype)initWithSize:(int)size color:(NSString *)color family:(nullable NSString *)family;
+- (instancetype)initWithSize:(int)size color:(NSString *)color family:(nullable NSString *)family truncationMode:(nullable NSString *)truncationMode;
 @end
 #pragma mark ========== FTSRWireframe ==========
 @interface FTSRWireframe : FTSRBaseFrame
 /// Unique identifier
-@property (nonatomic, assign) int identifier;
+@property (nonatomic, assign) int64_t identifier;
 // Don't change to int, use NSNumber so it can be set to nil during update comparison
 /// frame.origin.x in root view
 @property (nonatomic) NSNumber *x;
@@ -76,7 +78,7 @@ NS_ASSUME_NONNULL_BEGIN
 /// Clip information
 @property (nonatomic, strong,nullable) FTSRContentClip *clip;
 
--(instancetype)initWithIdentifier:(int)identifier frame:(CGRect)frame;
+-(instancetype)initWithIdentifier:(int64_t)identifier frame:(CGRect)frame;
 -(nullable FTSRWireframe *)compareWithNewWireFrame:(FTSRWireframe *)newWireFrame error:(NSError **)error;
 
 @end
@@ -84,8 +86,8 @@ NS_ASSUME_NONNULL_BEGIN
 @interface FTSRShapeWireframe : FTSRWireframe
 @property (nonatomic, strong) FTSRShapeBorder *border;
 @property (nonatomic, strong) FTSRShapeStyle *shapeStyle;
--(instancetype)initWithIdentifier:(int)identifier frame:(CGRect)frame clip:(CGRect)clip backgroundColor:(nullable NSString *)color cornerRadius:(nullable NSNumber *)cornerRadius opacity:(nullable NSNumber *)opacity;
--(instancetype)initWithIdentifier:(int)identifier attributes:(nullable FTViewAttributes *)attributes;
+-(instancetype)initWithIdentifier:(int64_t)identifier frame:(CGRect)frame clip:(CGRect)clip backgroundColor:(nullable NSString *)color cornerRadius:(nullable NSNumber *)cornerRadius opacity:(nullable NSNumber *)opacity;
+-(instancetype)initWithIdentifier:(int64_t)identifier attributes:(nullable FTViewAttributes *)attributes;
 @end
 @interface FTSRTextWireframe : FTSRWireframe
 @property (nonatomic, strong) FTSRShapeBorder *border;
@@ -103,6 +105,12 @@ NS_ASSUME_NONNULL_BEGIN
 @end
 @interface FTSRPlaceholderWireframe : FTSRWireframe
 @property (nonatomic, copy, nullable) NSString *label;
-- (instancetype)initWithIdentifier:(int)identifier frame:(CGRect)frame label:(nullable NSString *)label;
+- (instancetype)initWithIdentifier:(int64_t)identifier frame:(CGRect)frame label:(nullable NSString *)label;
+@end
+@interface FTSRWebViewWireframe : FTSRWireframe
+@property (nonatomic, strong) FTSRShapeBorder *border;
+@property (nonatomic, strong) FTSRShapeStyle *shapeStyle;
+@property (nonatomic, strong) NSNumber *isVisible;
+@property (nonatomic, copy) NSString *slotId;
 @end
 NS_ASSUME_NONNULL_END

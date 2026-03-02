@@ -11,7 +11,7 @@
 #import "FTViewAttributes.h"
 #import "FTViewAttributes.h"
 #import "FTSRWireframe.h"
-#import "FTSRWireframesBuilder.h"
+#import "FTSRNodeWireframesBuilder.h"
 #import "NSDate+FTUtil.h"
 #import "FTSRRecord.h"
 #import "FTNodesFlattener.h"
@@ -21,6 +21,8 @@
 #import "FTSRUtils.h"
 #import "FTTouchSnapshot.h"
 #import "FTLog+Private.h"
+#import "FTSessionReplayWireframesBuilder.h"
+#import "FTWKWebViewHandler+SessionReplay.h"
 
 NSTimeInterval const kFullSnapshotInterval = 20.0;
 
@@ -34,7 +36,8 @@ NSTimeInterval const kFullSnapshotInterval = 20.0;
 @property (nonatomic, strong) NSArray<FTSRWireframe *> *lastSRWireframes;
 @property (nonatomic, strong) FTNodesFlattener *flattener;
 @property (nonatomic, strong) NSMutableDictionary *recordsCountByViewID;
-@property (nonatomic, assign) BOOL needUpdateFullSnapshot;
+@property (nonatomic, assign) BOOL onErrorSampled;
+@property (nonatomic, strong) NSDictionary *lastBindInfo;
 @end
 @implementation FTSnapshotProcessor
 -(instancetype)initWithQueue:(dispatch_queue_t)queue writer:(id<FTWriter>)writer{
@@ -57,21 +60,29 @@ NSTimeInterval const kFullSnapshotInterval = 20.0;
 }
 - (void)processSync:(FTViewTreeSnapshot *)viewTreeSnapshot touchSnapshot:(FTTouchSnapshot *)touchSnapshot{
     @try {
+        FTSessionReplayWireframesBuilder *srBuilder = [[FTSessionReplayWireframesBuilder alloc]initWithResources:@[] webViewSlotIDs:viewTreeSnapshot.webViewSlotIDs];
         NSMutableArray<FTSRWireframe> *wireframes = (NSMutableArray<FTSRWireframe>*)[[NSMutableArray alloc]init];
-        NSArray<id <FTSRWireframesBuilder>> *nodes = [self.flattener flattenNodes:viewTreeSnapshot];
-        for (id<FTSRWireframesBuilder> builder in nodes) {
-            [wireframes addObjectsFromArray:[builder buildWireframes]];
+        NSArray<id <FTSRNodeWireframesBuilder>> *nodes = [self.flattener flattenNodes:viewTreeSnapshot];
+        for (id<FTSRNodeWireframesBuilder> builder in nodes) {
+            [wireframes addObjectsFromArray:[builder buildWireframesWithBuilder:srBuilder]];
+        }
+        // -hiddenWebViewSlotIDs methods must all after all nodes call [builder buildWireframesWithBuilder:srBuilder]
+        [[FTWKWebViewHandler sharedInstance] setHiddenSlotIds:[srBuilder hiddenWebViewSlotIDs]];
+        NSArray<FTSRWireframe*> *hiddenWebs = [srBuilder hiddenWebViewWireframes];
+        if(hiddenWebs.count>0){
+            [wireframes insertObjects:hiddenWebs atIndexes:[[NSIndexSet alloc] initWithIndexesInRange:NSMakeRange(0, hiddenWebs.count)]];
         }
         // 2.Convert data to storage required format
         NSMutableArray<FTSRRecord> *records =(NSMutableArray<FTSRRecord>*)[[NSMutableArray alloc]init];
-        BOOL force = NO;
         // 3.Determine if it's new addition or new View
         BOOL isNewView = self.lastSnapshot == nil || self.lastSnapshot.context.sessionID != viewTreeSnapshot.context.sessionID || self.lastSnapshot.context.viewID != viewTreeSnapshot.context.viewID;
-        BOOL isTimeForFullSnapshot = [self isTimeForFullSnapshot];
-        BOOL fullSnapshotRequired = isNewView || isTimeForFullSnapshot;
+        BOOL needFullSnapOnLinkRumKeysBind = [self needFullSnapOnLinkRumKeysBind:[srBuilder linkRumKeysInfo] context:viewTreeSnapshot.context];
+        // when enable sessionErrorSampled
+        BOOL isTimeForFullSnapshot = [self isTimeForFullSnapshot:isNewView];
+        BOOL fullSnapshotRequired = isNewView || needFullSnapOnLinkRumKeysBind || isTimeForFullSnapshot;
+        
         // 3.1.New view full save
-        if (isNewView || fullSnapshotRequired){
-            force = YES;
+        if (fullSnapshotRequired){
             // meta focus full
             FTSRMetaRecord *metaRecord = [[FTSRMetaRecord alloc]initWithViewTreeSnapshot:viewTreeSnapshot];
             FTSRFocusRecord *focusRecord = [[FTSRFocusRecord alloc]initWithTimestamp:[viewTreeSnapshot.context.date ft_millisecondTimeStamp]];
@@ -81,6 +92,7 @@ NSTimeInterval const kFullSnapshotInterval = 20.0;
             [records addObject:metaRecord];
             [records addObject:focusRecord];
             [records addObject:fullRecord];
+            [[FTWKWebViewHandler sharedInstance] takeSubsequentFullSnapshot];
         }else if(self.lastSRWireframes == nil){
             //3.2 Has lastSnapshot, but no wireframe collected
             FTSRFullSnapshotRecord *fullRecord = [[FTSRFullSnapshotRecord alloc]initWithTimestamp:[viewTreeSnapshot.context.date ft_millisecondTimeStamp]];
@@ -89,9 +101,10 @@ NSTimeInterval const kFullSnapshotInterval = 20.0;
         }else{
             // 3.3.1.View already exists, perform incremental judgment, algorithm comparison, get increment, decrement, update
             MutationData *mutation = [[MutationData alloc]init];
-            [mutation createIncrementalSnapshotRecords:wireframes lastWireframes:self.lastSRWireframes];
+            NSError *error = nil;
+            BOOL success = [mutation createIncrementalSnapshotRecords:wireframes lastWireframes:self.lastSRWireframes error:&error];
             // 3.3.2.If exception occurs during incremental judgment, don't do incremental processing, add a FullSnapshotRecord
-            if(mutation.isError){
+            if(!success && error){
                 FTSRFullSnapshotRecord *fullRecord = [[FTSRFullSnapshotRecord alloc]initWithTimestamp:[viewTreeSnapshot.context.date ft_millisecondTimeStamp]];
                 fullRecord.wireframes = wireframes;
                 [records addObject:fullRecord];
@@ -117,12 +130,14 @@ NSTimeInterval const kFullSnapshotInterval = 20.0;
         // 5.Data writing
         if(records.count>0){
             FTEnrichedRecord *fullRecord = [[FTEnrichedRecord alloc]initWithContext:viewTreeSnapshot.context records:records];
+            fullRecord.bindInfo = self.lastBindInfo;
+            fullRecord.webViewSlotIDs = viewTreeSnapshot.webViewSlotIDs.count>0? viewTreeSnapshot.webViewSlotIDs.allObjects:nil;
             // 5.1. Synchronize page collection status to RUM-View
             [self trackRecord:fullRecord];
             // 5.2. Write data to file
             NSData *data = [fullRecord toJSONData];
             if(data){
-                [self.writer write:data forceNewFile:force];
+                [self.writer write:data forceNewFile:isNewView];
                 // 6.Record current data for comparison with next data
                 self.lastSnapshot = viewTreeSnapshot;
                 self.lastSRWireframes = wireframes;
@@ -131,6 +146,9 @@ NSTimeInterval const kFullSnapshotInterval = 20.0;
                 FTInnerLogError(@"[Session Replay] Snapshot Records to Json Data error");
             }
         }
+        if (isTimeForFullSnapshot) {
+            [[FTWKWebViewHandler sharedInstance] takeSubsequentFullSnapshot];
+        }
     } @catch (NSException *exception) {
         self.lastSRWireframes = nil;
         FTInnerLogError(@"[Session Replay] EXCEPTION: %@", exception.description);
@@ -138,7 +156,7 @@ NSTimeInterval const kFullSnapshotInterval = 20.0;
 }
 - (void)changeWriter:(id<FTWriter>)writer needUpdateFullSnapshot:(BOOL)update{
     _writer = writer;
-    _needUpdateFullSnapshot = update;
+    _onErrorSampled = update;
 }
 - (void)trackRecord:(FTEnrichedRecord *)record{
     NSString *key = record.viewID;
@@ -150,18 +168,35 @@ NSTimeInterval const kFullSnapshotInterval = 20.0;
     self.recordsCountByViewID[key] = @{
         FT_RECORDS_COUNT:@(count),
     };
-    // TODO: Whether to use protocol delegate to replace singleton
-    [[FTModuleManager sharedInstance] postMessage:FTMessageKeyRecordsCountByViewID message:[self.recordsCountByViewID mutableCopy]];
+    [[FTModuleManager sharedInstance] postMessageWithKey:FTMessageKeyRecordsCountByViewID message:[self.recordsCountByViewID copy]];
 }
-- (BOOL)isTimeForFullSnapshot{
-    if(self.needUpdateFullSnapshot){
+#pragma mark ===== sessionErrorSampled =====
+- (BOOL)isTimeForFullSnapshot:(BOOL)isNewView{
+    if(self.onErrorSampled){
         CFTimeInterval currentTime = CACurrentMediaTime();
-        if (currentTime - self.lastSnapshotTimestamp >= kFullSnapshotInterval) {
+        if (isNewView) {
+            self.lastSnapshotTimestamp = currentTime;
+            return YES;
+        }else if(currentTime - self.lastSnapshotTimestamp >= kFullSnapshotInterval) {
             self.lastSnapshotTimestamp = currentTime;
             return YES;
         }
     }
     return NO;
 }
-
+#pragma mark ===== bindinfo =====
+- (BOOL)needFullSnapOnLinkRumKeysBind:(NSDictionary *)webLinkRumKeysInfo context:(FTSRContext *)context {
+    // linkRumKeys
+    NSDictionary *web = webLinkRumKeysInfo?:@{};
+    NSDictionary *native = context.bindInfo?:@{};
+    NSMutableDictionary *bindInfo = [NSMutableDictionary dictionaryWithDictionary:native];
+    [bindInfo addEntriesFromDictionary:web];
+    if (![[NSSet setWithArray:web.allKeys] isSubsetOfSet:[NSSet setWithArray:native.allKeys]]) {
+        [[FTWKWebViewHandler sharedInstance] bindInfo:webLinkRumKeysInfo viewId:context.viewID];
+    }
+   
+    BOOL need = bindInfo.count>0?![bindInfo isEqualToDictionary:self.lastBindInfo] : NO;
+    self.lastBindInfo = bindInfo;
+    return need;
+}
 @end

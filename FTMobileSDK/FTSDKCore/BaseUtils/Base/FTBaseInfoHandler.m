@@ -16,7 +16,7 @@
 #include <mach-o/dyld.h>
 #include <netdb.h>
 #include <arpa/inet.h>
-#if FT_IOS
+#if FT_HOST_IOS
 #import <CoreTelephony/CTTelephonyNetworkInfo.h>
 #import <CoreTelephony/CTCarrier.h>
 #endif
@@ -80,35 +80,6 @@
     uuid = [uuid stringByReplacingOccurrencesOfString:@"-" withString:@""];
     return uuid.lowercaseString;
 }
-
-#if FT_IOS
-+(NSString *)telephonyCarrier
-{
-    CTTelephonyNetworkInfo *info = [[CTTelephonyNetworkInfo alloc] init];
-    CTCarrier *carrier;
-    if (@available(iOS 12.0, *)) {
-        if (info && [info respondsToSelector:@selector(serviceSubscriberCellularProviders)]) {
-            NSDictionary *dic = [info serviceSubscriberCellularProviders];
-            if (dic.allKeys.count) {
-                carrier = [dic objectForKey:dic.allKeys[0]];
-            }
-        }
-    }else{
-#pragma clang diagnostic push
-#pragma clang diagnostic ignored "-Wdeprecated-declarations"
-        // This part uses deprecated APIs
-        carrier= [info subscriberCellularProvider];
-#pragma clang diagnostic pop
-        
-    }
-    if(carrier == nil){
-        return FT_NULL_VALUE;
-    }else{
-        NSString *mCarrier = [NSString stringWithFormat:@"%@",[carrier carrierName]];
-        return mCarrier;
-    }
-}
-#endif
 
 + (NSString *)cellularIPAddress:(BOOL)preferIPv4
 {

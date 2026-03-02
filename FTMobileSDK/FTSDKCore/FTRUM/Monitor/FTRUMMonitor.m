@@ -10,6 +10,9 @@
 #import "FTDisplayRateMonitor.h"
 #import "FTMemoryMonitor.h"
 #import "FTCPUMonitor.h"
+@interface FTRUMMonitor()
+@property (nonatomic, assign) DeviceMetricsMonitorType type;
+@end
 @implementation FTRUMMonitor
 - (instancetype)initWithMonitorType:(DeviceMetricsMonitorType)type frequency:(MonitorFrequency)frequency{
     self = [super init];
@@ -17,16 +20,18 @@
         if (type & DeviceMetricsMonitorCpu) {
             self.cpuMonitor = [[FTCPUMonitor alloc]init];
         }
-#if !FT_MAC
-        if (type & DeviceMetricsMonitorFps) {
-            self.displayMonitor = [[FTDisplayRateMonitor alloc]init];
-        }
-#endif
         if (type & DeviceMetricsMonitorMemory) {
             self.memoryMonitor = [[FTMemoryMonitor alloc] init];
         }
+        _type = type;
         _frequency = MonitorFrequencyMap[frequency];
     }
     return self;
+}
+-(void)setDisplayMonitor:(FTDisplayRateMonitor *)displayMonitor{
+    if (self.type & DeviceMetricsMonitorFps) {
+        _displayMonitor = displayMonitor;
+        [displayMonitor start];
+    }
 }
 @end

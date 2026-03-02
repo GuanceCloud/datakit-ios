@@ -140,34 +140,36 @@
 - (void)uploadFile:(NSArray<id<FTReadableFile>>*)files parameters:(NSDictionary *)parameters{
     __weak typeof(self) weakSelf = self;
     dispatch_block_t uploadWork = ^{
-        __strong __typeof(weakSelf) strongSelf = weakSelf;
-        if (!strongSelf) return;
-        if(files.count == 0){
-            [strongSelf scheduleNextCycle];
-            return;
-        }
-        NSMutableArray<id<FTReadableFile>>*mutableFiles = [[NSMutableArray alloc]initWithArray:files];
-        id<FTReadableFile> file = [mutableFiles firstObject];
-        [mutableFiles removeObject:file];
-        
-        FTBatch *batch = [strongSelf.fileReader readBatch:file];
-        if(batch){
-            if([strongSelf flushWithEvent:batch.events parameters:parameters]){
-                [self.requestBuilder.classSerialGenerator increaseRequestSerialNumber];
-                if(mutableFiles.count == 0){
-                    [self.delay decrease];
-                }
-                [self.fileReader markBatchAsRead:batch];
-            }else{
-                [self.delay increase];
+        @autoreleasepool {
+            __strong __typeof(weakSelf) strongSelf = weakSelf;
+            if (!strongSelf) return;
+            if(files.count == 0){
                 [strongSelf scheduleNextCycle];
                 return;
             }
-        }
-        if(mutableFiles.count == 0){
-            [strongSelf scheduleNextCycle];
-        }else{
-            [strongSelf uploadFile:mutableFiles parameters:parameters];
+            NSMutableArray<id<FTReadableFile>>*mutableFiles = [[NSMutableArray alloc]initWithArray:files];
+            id<FTReadableFile> file = [mutableFiles firstObject];
+            [mutableFiles removeObject:file];
+            
+            FTBatch *batch = [strongSelf.fileReader readBatch:file];
+            if(batch){
+                if([strongSelf flushWithEvent:batch.events parameters:parameters]){
+                    [strongSelf.requestBuilder.classSerialGenerator increaseRequestSerialNumber];
+                    if(mutableFiles.count == 0){
+                        [strongSelf.delay decrease];
+                    }
+                    [strongSelf.fileReader markBatchAsRead:batch];
+                }else{
+                    [strongSelf.delay increase];
+                    [strongSelf scheduleNextCycle];
+                    return;
+                }
+            }
+            if(mutableFiles.count == 0){
+                [strongSelf scheduleNextCycle];
+            }else{
+                [strongSelf uploadFile:mutableFiles parameters:parameters];
+            }
         }
     };
     self.uploadWork = uploadWork;

@@ -117,8 +117,11 @@ extern NSString * const FT_FPS_MINI;
 /// Page average frames per second
 extern NSString * const FT_FPS_AVG;
 
+extern NSString * const FT_NETWORK_TYPE;
+
 #pragma mark ---------- resource ----------
 #pragma mark --- tag
+extern NSString * const FT_KEY_RESOURCE_ID;
 extern NSString * const FT_KEY_RESOURCE_URL;
 extern NSString * const FT_KEY_RESOURCE_URL_HOST;
 extern NSString * const FT_KEY_RESOURCE_URL_PATH;
@@ -149,6 +152,9 @@ extern NSString * const FT_KEY_RESOURCE_DOWNLOAD_TIME;
 extern NSString * const FT_KEY_RESOURCE_FIRST_BYTE_TIME;
 extern NSString * const FT_KEY_RESOURCE_CONNECT_TIME;
 extern NSString * const FT_KEY_RESOURCE_REDIRECT_TIME;
+extern NSString * const FT_KEY_RESOURCE_HTTP_PROTOCOL;
+extern NSString * const FT_KEY_RESOURCE_REQUEST_SIZE;
+extern NSString * const FT_KEY_RESOURCE_CONNECTION_REUSE;
 #pragma mark --- trace link tag
 extern NSString * const FT_KEY_TRACEID;
 extern NSString * const FT_KEY_SPANID;
@@ -189,6 +195,11 @@ extern NSString * const FT_LAUNCH_WARM;
 extern NSString * const FT_KEY_ACTION_LONG_TASK_COUNT;
 extern NSString * const FT_KEY_ACTION_RESOURCE_COUNT;
 extern NSString * const FT_KEY_ACTION_ERROR_COUNT;
+extern NSString * const FT_KEY_LAUNCH_FIRST_FRAME_RENDER_TIME;
+extern NSString * const FT_KEY_LAUNCH_APP_INIT_TIME;
+extern NSString * const FT_KEY_LAUNCH_UIKITI_INIT_TIME;
+extern NSString * const FT_KEY_LAUNCH_PRE_RUNTIME_INIT_TIME;
+extern NSString * const FT_KEY_LAUNCH_RUNTIME_INIT_TIME;
 
 #pragma mark ========== Session Replay ==========
 extern NSString * const FT_SESSION_HAS_REPLAY;
@@ -196,6 +207,8 @@ extern NSString * const FT_SESSION_REPLAY_STATS;
 extern NSString * const FT_RECORDS_COUNT;
 extern NSString * const FT_SEGMENTS_COUNT;
 extern NSString * const FT_SEGMENTS_TOTAL_RAW_SIZE;
+extern NSString * const FT_LINK_RUM_KEYS;
+
 #pragma mark ========== logging ==========
 extern NSString * const FT_KEY_STATUS;
 extern NSString * const FT_KEY_CONTENT;
@@ -223,36 +236,6 @@ extern NSString * const FT_USER_ID;
 extern NSString * const FT_USER_EMAIL;
 extern NSString * const FT_USER_NAME;
 extern NSString * const FT_USER_EXTRA;
-#pragma mark ========== remote config ==========
-extern NSString * const FT_R_SERVICE_NAME;
-extern NSString * const FT_R_AUTO_SYNC;
-extern NSString * const FT_R_COMPRESS_INTAKE_REQUESTS;
-extern NSString * const FT_R_SYNC_PAGE_SIZE;
-extern NSString * const FT_R_SYNC_SLEEP_TIME;
-
-extern NSString * const FT_R_RUM_SAMPLERATE;
-extern NSString * const FT_R_RUM_SESSION_ON_ERROR_SAMPLE_RATE;
-extern NSString * const FT_R_RUM_ENABLE_TRACE_USER_ACTION;
-extern NSString * const FT_R_RUM_ENABLE_TRACE_USER_VIEW;
-extern NSString * const FT_R_RUM_ENABLE_TRACE_USER_RESOURCE;
-extern NSString * const FT_R_RUM_ENABLE_RESOURCE_HOST_IP;
-extern NSString * const FT_R_RUM_ENABLE_TRACE_APP_FREEZE;
-extern NSString * const FT_R_RUM_FREEZE_DURATION_MS;
-extern NSString * const FT_R_RUM_ENABLE_TRACK_APP_CRASH;
-extern NSString * const FT_R_RUM_ENABLE_TRACK_APP_ANR;
-extern NSString * const FT_R_RUM_ENABLE_TRACE_WEBVIEW;
-extern NSString * const FT_R_RUM_ALLOW_WEBVIEW_HOST;
-
-extern NSString * const FT_R_TRACE_SAMPLERATE;
-extern NSString * const FT_R_TRACE_ENABLE_AUTO_TRACE;
-extern NSString * const FT_R_TRACE_TRACE_TYPE;
-
-extern NSString * const FT_R_LOG_SAMPLERATE;
-extern NSString * const FT_R_LOG_LEVEL_FILTERS;
-extern NSString * const FT_R_LOG_ENABLE_CUSTOM_LOG;
-
-extern NSString * const FT_R_SR_SAMPLERATE;
-extern NSString * const FT_R_SR_ON_ERROR_SAMPLE_RATE;
 #pragma mark ========== inner use ==========
 extern NSUInteger const FT_LOGGING_CONTENT_SIZE;
 

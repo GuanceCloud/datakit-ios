@@ -18,6 +18,8 @@ NS_ASSUME_NONNULL_BEGIN
 /// Main thread asynchronous execution
 /// - Parameter block: Code block
 + (void)performBlockDispatchMainAsync:(DISPATCH_NOESCAPE dispatch_block_t)block;
+
++ (BOOL)performBlockDispatchMainSyncSafe:(DISPATCH_NOESCAPE dispatch_block_t)block timeout:(NSTimeInterval)timeout;
 @end
 
 NS_ASSUME_NONNULL_END

@@ -23,6 +23,7 @@
 #import "FTReadWriteHelper.h"
 #import "NSNumber+FTAdd.h"
 #import "NSError+FTDescription.h"
+#import "FTLimitedSizeSet.h"
 @interface FTUtilsTest : XCTestCase
 
 @end
@@ -31,7 +32,7 @@
 
 - (void)setUp {
     // Put setup code here. This method is called before the invocation of each test method in the class.
-    [[FTTrackerEventDBTool sharedManger] deleteAllDatas];
+    [[FTTrackerEventDBTool sharedManager] deleteAllDatas];
 }
 #pragma mark NSString+FTAdd
 - (void)testStringRemoveFrontBackBlank{
@@ -66,8 +67,7 @@
                           @"key6":@"test",
     };
     
-    FTJSONUtil *util = [FTJSONUtil new];
-    NSData *data = [util JSONSerializeDictObject:dict];
+    NSData *data = [FTJSONUtil JSONSerializeDictObject:dict];
     NSString *jsonString = [[NSString alloc]initWithData:data encoding:NSUTF8StringEncoding];
     NSData *jsonData = [jsonString dataUsingEncoding:NSUTF8StringEncoding];
     NSError *err;
@@ -185,4 +185,26 @@
     }
 }
 #endif
+- (void)testFTLimitedSizeSet{
+    FTLimitedSizeSet *set = [[FTLimitedSizeSet alloc]initWithMaxCount:5];
+    [set addObject:@1];
+    [set addObject:@2];
+    [set addObject:@3];
+    [set addObject:@4];
+    [set addObject:@5];
+    XCTAssertTrue([set containsObject:@1]);
+    XCTAssertTrue([set containsObject:@2]);
+    XCTAssertTrue([set containsObject:@3]);
+    XCTAssertTrue([set containsObject:@4]);
+    XCTAssertTrue([set containsObject:@5]);
+    [set addObject:@6];
+
+    XCTAssertFalse([set containsObject:@1]);
+    XCTAssertTrue([set containsObject:@2]);
+    XCTAssertTrue([set containsObject:@3]);
+    XCTAssertTrue([set containsObject:@4]);
+    XCTAssertTrue([set containsObject:@5]);
+    XCTAssertTrue([set containsObject:@6]);
+
+}
 @end

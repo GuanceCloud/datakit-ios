@@ -58,9 +58,12 @@
                 _responseStartNsTimeInterval = taskMetrics.responseStartDate?[taskMetrics.responseStartDate ft_nanosecondTimeStamp]:0;
                 _responseEndNsTimeInterval = taskMetrics.responseEndDate?[taskMetrics.responseEndDate ft_nanosecondTimeStamp]:0;
                 if (@available(iOS 13,macOS 10.15,tvOS 13.0, *)) {
-                    _responseSize = @(taskMetrics.countOfResponseBodyBytesAfterDecoding);
+                    _responseSize = @(taskMetrics.countOfResponseHeaderBytesReceived + taskMetrics.countOfResponseBodyBytesReceived);
                     _remoteAddress = taskMetrics.remoteAddress;
+                    _requestSize = @(taskMetrics.countOfRequestBodyBytesSent + taskMetrics.countOfRequestHeaderBytesSent);
                 }
+                _resourceHttpProtocol = taskMetrics.networkProtocolName;
+                _reusedConnection = taskMetrics.reusedConnection;
             }
         } @catch (NSException *exception) {
             FTInnerLogError(@"exception: %@",exception);

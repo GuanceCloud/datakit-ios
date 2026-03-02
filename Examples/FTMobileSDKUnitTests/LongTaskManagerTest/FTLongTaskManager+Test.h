@@ -18,7 +18,7 @@ NS_ASSUME_NONNULL_BEGIN
 - (void)deleteFile;
 - (void)appendData:(NSData *)data;
 - (void)updateLongTaskDate:(NSDate *)date;
-- (void)startLongTask:(NSDate *)startDate backtrace:(NSString *)backtrace;
+- (void)startLongTask:(NSDate *)startDate;
 - (void)endLongTask;
 - (void)reportFatalWatchDogIfFound;
 @end

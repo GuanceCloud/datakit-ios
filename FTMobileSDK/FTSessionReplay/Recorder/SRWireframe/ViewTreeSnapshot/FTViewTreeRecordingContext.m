@@ -17,6 +17,7 @@
     options.coordinateSpace = self.coordinateSpace;
     options.viewControllerContext = self.viewControllerContext;
     options.clip = self.clip;
+    options.webViewCache = self.webViewCache;
     return options;
 }
 @end

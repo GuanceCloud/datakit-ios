@@ -14,9 +14,9 @@ NS_ASSUME_NONNULL_BEGIN
 /// Time when data was collected (nanosecond timestamp)
 @property (nonatomic, assign) long long tm;
 /// Recorded operation data
-@property (nonatomic, strong) NSString *data;
+@property (nonatomic, copy) NSString *data;
 /// Data type, \RUM\Logging
-@property (nonatomic, strong) NSString *op;
+@property (nonatomic, copy) NSString *op;
 
 /// Store database generated primary key
 @property (nonatomic, copy) NSString * _id;

@@ -133,7 +133,7 @@
 @end
 @implementation FTUIImageViewBuilder
 
-- (NSArray<FTSRWireframe *> *)buildWireframes {
+- (NSArray<FTSRWireframe *> *)buildWireframesWithBuilder:(FTSessionReplayWireframesBuilder *)builder {
     FTSRShapeWireframe *wireframe = [[FTSRShapeWireframe alloc]initWithIdentifier:self.wireframeID attributes:self.attributes];
     if (!CGRectIsNull(self.contentFrame)){
         FTSRWireframe *contentWireframe;

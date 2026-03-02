@@ -10,7 +10,8 @@
 NS_ASSUME_NONNULL_BEGIN
 typedef void(^FTErrorHandled)(void);
 
-@class FTRUMMonitor;
+@class FTRUMMonitor,FTRUMContext;
+
 @interface FTRUMViewHandler : FTRUMHandler
 @property (nonatomic, strong,readonly) FTRUMContext *context;
 @property (nonatomic, assign,readwrite) BOOL isActiveView;
@@ -18,8 +19,6 @@ typedef void(^FTErrorHandled)(void);
 @property (nonatomic, copy) NSString *view_name;
 @property (nonatomic, copy) NSString *view_referrer;
 @property (nonatomic, strong) NSNumber *loading_time;
-/// Current view processed error data callback
-@property (nonatomic, copy) FTErrorHandled errorHandled;
 
 -(instancetype)initWithModel:(FTRUMViewModel *)model context:(FTRUMContext *)context rumDependencies:(FTRUMDependencies *)rumDependencies;
 @end

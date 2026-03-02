@@ -18,6 +18,8 @@ NS_ASSUME_NONNULL_BEGIN
                        performance:(FTPerformancePreset *)performance;
 - (id<FTWriter>)writer;
 - (nullable id<FTCacheWriter>)cacheWriter;
+- (id<FTWriter>)webViewWriter;
+- (nullable id<FTWriter>)webViewCacheWriter;
 - (id<FTReader>)reader;
 - (void)clearAllData;
 - (void)setIgnoreFilesAgeWhenReading:(BOOL)ignore;

@@ -8,11 +8,11 @@
 
 #import <Foundation/Foundation.h>
 #import <UIKit/UIKit.h>
-#import "FTSRWireframesBuilder.h"
+#import "FTSRNodeWireframesBuilder.h"
 
 @class FTViewAttributes;
 NS_ASSUME_NONNULL_BEGIN
-@interface FTUIStepperBuilder : NSObject<FTSRWireframesBuilder>
+@interface FTUIStepperBuilder : NSObject<FTSRNodeWireframesBuilder>
 @property (nonatomic, strong) FTViewAttributes *attributes;
 @property (nonatomic, assign) int backgroundWireframeID;
 @property (nonatomic, assign) int dividerWireframeID;

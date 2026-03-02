@@ -29,6 +29,7 @@
     NSString *appid = [processInfo environment][@"APP_ID"];
     FTMobileConfig *config = [[FTMobileConfig alloc]initWithDatakitUrl:url];
     [FTMobileAgent startWithConfigOptions:config];
+    config.autoSync = NO;
     FTLoggerConfig *logger = [[FTLoggerConfig alloc]init];
     logger.enableCustomLog = YES;
     logger.enableLinkRumData = enableLinkRumData;

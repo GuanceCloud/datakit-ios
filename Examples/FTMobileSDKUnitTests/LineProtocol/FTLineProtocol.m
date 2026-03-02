@@ -156,17 +156,17 @@
     XCTAssertTrue([field containsString:tm]);
 }
 - (void)testStringReplacingBlank{
-    NSString *str = @"a b c";
+    NSString *str = @"a b \tc";
     str = [str ft_replacingSpecialCharacters];
-    XCTAssertTrue([str isEqualToString:@"a\\ b\\ c"]);
+    XCTAssertTrue([str isEqualToString:@"a\\ b\\ \\ c"]);
     NSString *str2 = @"⍣ ₂₈.₂₃ᴀͤꜱᷟ ⷨꜱᷛᴮᴀᷟꜱͤı ⷨɴ";
-    str2 = [str2 ft_replacingMeasurementSpecialCharacters];
+    str2 = [str2 ft_replacingSpecialCharacters];
     XCTAssertTrue([str2 isEqualToString:@"⍣\\ ₂₈.₂₃ᴀͤꜱᷟ\\ ⷨꜱᷛᴮᴀᷟꜱͤı\\ ⷨɴ"]);
 }
 - (void)testStringReplacingLineBreak{
     NSString *str = @"a\nb\tc";  
     str = [str ft_replacingSpecialCharacters];
-    XCTAssertTrue([str isEqualToString:@"a\\ b\tc"]);
+    XCTAssertTrue([str isEqualToString:@"a\\ b\\ c"]);
 }
 - (void)testDataUUID{
     NSDictionary *dict = @{
@@ -210,7 +210,7 @@
     XCTAssertTrue(tags.count == 3);
     XCTAssertEqualObjects([tags firstObject], @"iOSTest");
     XCTAssertTrue([tags[1] isEqualToString:@"name=testLineProtocol"]||[tags[2] isEqualToString:@"name=testLineProtocol"]);
-    XCTAssertEqualObjects(array[1], @"event=\"testLineProtocol\",null=\"\",emptyString=\"\"");
+    XCTAssertTrue([array[1] containsString:@"event=\"testLineProtocol\""] && [array[1] containsString:@"emptyString=\"\""] && [array[1] containsString:@"null=\"\""]);
     NSString *tm =[NSString stringWithFormat:@"%lld",model.tm];
     XCTAssertEqualObjects([array lastObject],tm);
 }
@@ -291,7 +291,7 @@
 - (void)sdkDataEnableIntegerCompatible:(BOOL)enable{
     NSProcessInfo *processInfo = [NSProcessInfo processInfo];
     NSString *url = [processInfo environment][@"ACCESS_SERVER_URL"];
-    [[FTTrackerEventDBTool sharedManger] deleteAllDatas];
+    [[FTTrackerEventDBTool sharedManager] deleteAllDatas];
     FTMobileConfig *config = [[FTMobileConfig alloc]initWithDatakitUrl:url];
     config.autoSync = NO;
     config.enableDataIntegerCompatible = enable;
@@ -427,7 +427,7 @@
 - (void)transliteration:(NSString *)str expect:(NSString *)expect{
     NSProcessInfo *processInfo = [NSProcessInfo processInfo];
     NSString *url = [processInfo environment][@"ACCESS_SERVER_URL"];
-    [[FTTrackerEventDBTool sharedManger] deleteAllDatas];
+    [[FTTrackerEventDBTool sharedManager] deleteAllDatas];
     FTMobileConfig *config = [[FTMobileConfig alloc]initWithDatakitUrl:url];
     config.autoSync = NO;
     FTLoggerConfig *loggerConfig = [[FTLoggerConfig alloc]init];
