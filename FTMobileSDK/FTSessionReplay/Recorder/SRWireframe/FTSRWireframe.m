@@ -346,8 +346,7 @@ static BOOL objectIsEqual(id new,id old){
     if(self){
         self.type = @"image";
         self.mimeType = @"png";
-        // TODO: Remove when imageData synchronization is supported
-        self.isEmpty = YES;
+        self.isEmpty = NO;
     }
     return self;
 }

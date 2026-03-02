@@ -332,26 +332,6 @@
 
     return jsonData;
 }
-- (instancetype)initWithCoder:(NSCoder *)coder {
-    self = [super initWithCoder:coder];
-    if (self) {
-        _identifier = [coder decodeObjectForKey:@"identifier"];
-        _data = [coder decodeObjectForKey:@"data"];
-        _type = [coder decodeObjectForKey:@"type"];
-        _appId = [coder decodeObjectForKey:@"appId"];
-    }
-    return self;
-}
-- (void)encodeWithCoder:(NSCoder *)coder {
-    [super encodeWithCoder:coder];
-    [coder encodeObject:self.identifier forKey:@"identifier"];
-    [coder encodeObject:self.data forKey:@"data"];
-    [coder encodeObject:self.type forKey:@"type"];
-    [coder encodeObject:self.appId forKey:@"appId"];
-}
-+ (BOOL)supportsSecureCoding {
-    return YES;
-}
 @end
 
 @implementation FTSRWebRecord

@@ -24,6 +24,7 @@
 #import "FTFileWriter.h"
 #import "FTResourceCheckRequest.h"
 #import "FTSRRecord.h"
+#import "FTConstants.h"
 
 @interface FTFeatureUpload()<NSCacheDelegate>{
     pthread_rwlock_t _readWorkLock;
@@ -260,16 +261,15 @@
         for (NSData *data in event) {
             FTEnrichedResource *resource = [[FTEnrichedResource alloc]initWithData:data];
             [resources addObject:resource];
-            [files addObject:[NSString stringWithFormat:@"%@.png",resource.identifier]];
+            [files addObject:resource.identifier];
         }
-        NSDictionary *content = [self checkImageWithEvent:files parameters:@{@"app_id":resources[0].appId}];
+        NSDictionary *content = [self checkImageWithEvent:files parameters:@{FT_APP_ID:resources[0].appId}];
         if (content == nil || content.count == 0) {
             return NO;
         }
         NSMutableArray *uploadResources = [NSMutableArray new];
         for (FTEnrichedResource *resource in resources) {
-            NSString *fileName = [NSString stringWithFormat:@"%@.png",resource.identifier];
-            NSNumber *fileExist =  content[fileName];
+            NSNumber *fileExist = content[resource.identifier];
             if (fileExist && ![fileExist boolValue]) {
                 [uploadResources addObject:resource];
             }
@@ -298,9 +298,15 @@
         if (error || ![httpResponse isKindOfClass:[NSHTTPURLResponse class]]) {
             FTInnerLogError(@"[NETWORK][%@] %@", strongSelf.featureName,[NSString stringWithFormat:@"Network failure: %@", error ? error : @"Unknown error"]);
         }else{
-            NSString *dataStr = [[NSString alloc] initWithData:data encoding:NSUTF8StringEncoding];
-            NSDictionary *dict = [FTJSONUtil dictionaryWithJsonString:dataStr];
-            content = dict[@"content"];
+            NSInteger statusCode = httpResponse.statusCode;
+            FTInnerLogDebug(@"[NETWORK][%@] CheckImage Response statusCode : %ld",strongSelf.featureName,(long)statusCode);
+            if (statusCode != 200 && data.length>0) {
+                FTInnerLogError(@"[NETWORK][%@] Server exception, responseData: %@",strongSelf.featureName,[[NSString alloc] initWithData:data encoding:NSUTF8StringEncoding]);
+            }else{
+                NSString *dataStr = [[NSString alloc] initWithData:data encoding:NSUTF8StringEncoding];
+                NSDictionary *dict = [FTJSONUtil dictionaryWithJsonString:dataStr];
+                content = dict[@"content"];
+            }
         }
         dispatch_semaphore_signal(flushSemaphore);
     }];

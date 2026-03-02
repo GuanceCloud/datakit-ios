@@ -24,7 +24,7 @@ NS_ASSUME_NONNULL_BEGIN
 //        resourceWriter:(nullable id<FTWriter>)resourceWriter
 //     resourceDataStore:(nullable id<FTDataStore>)dataStore;
 
--(void)startWithRecordStorage:(FTFeatureStorage *)recordStorage;
+-(void)startWithRecordStorage:(FTFeatureStorage *)recordStorage resourceWriter:(id <FTWriter>)resourceWriter resourceDataStore:(nullable id<FTDataStore>)dataStore;
 @end
 
 NS_ASSUME_NONNULL_END

@@ -73,10 +73,12 @@
     }
     return self;
 }
--(void)startWithRecordStorage:(FTFeatureStorage *)recordStorage{
+-(void)startWithRecordStorage:(FTFeatureStorage *)recordStorage resourceWriter:(id <FTWriter>)resourceWriter resourceDataStore:(nullable id<FTDataStore>)dataStore{
     _recordStorage = recordStorage;
     FTSnapshotProcessor *srProcessor = [[FTSnapshotProcessor alloc]initWithQueue:self.processorsQueue writer:recordStorage.writer];
-    FTRecorder *windowRecorder = [[FTRecorder alloc]initWithWindowObserver:self.windowObserver snapshotProcessor:srProcessor resourceProcessor:nil additionalNodeRecorders:self.config.additionalNodeRecorders];
+    FTResourceWriter *resource = [[FTResourceWriter alloc]initWithWriter:resourceWriter dataStore:dataStore];
+    FTResourceProcessor *resourceProcessor = [[FTResourceProcessor alloc]initWithQueue:self.processorsQueue resourceWriter:resource];
+    FTRecorder *windowRecorder = [[FTRecorder alloc]initWithWindowObserver:self.windowObserver snapshotProcessor:srProcessor resourceProcessor:resourceProcessor additionalNodeRecorders:self.config.additionalNodeRecorders];
     self.windowRecorder = windowRecorder;
 }
 //-(void)startWithWriter:(id<FTWriter>)writer
