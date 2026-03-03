@@ -15,7 +15,7 @@ NS_ASSUME_NONNULL_BEGIN
 @interface FTViewTreeSnapshotBuilder : NSObject
 @property (nonatomic, strong) NSArray<id <FTSRWireframesRecorder>> *recorders;
 @property (nonatomic, strong) NSHashTable<WKWebView*> *webViewCache;
-- (FTViewTreeSnapshot *)takeSnapshot:(NSArray <UIView *> *)rootViews context:(FTSRContext *)context;
+- (FTViewTreeSnapshot *)takeSnapshot:(NSArray <UIView *> *)rootViews referenceView:(UIView *)referenceView context:(FTSRContext *)context;
 -(instancetype)initWithAdditionalNodeRecorders:(nullable NSArray <id <FTSRWireframesRecorder>>*)additionalNodeRecorders;
 @end
 

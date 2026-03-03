@@ -9,71 +9,80 @@
 #import "FTWindowObserver.h"
 
 @implementation FTWindowObserver
--(UIWindow *)keyWindow{
-    // Prevent compilation failure in WidgetExtension environment
-    UIApplication *app = [UIApplication valueForKeyPath:@"sharedApplication"];
-    if(app == nil){
+- (nullable UIApplication *)_findApp{
+    if ([UIApplication respondsToSelector:@selector(sharedApplication)]) {
+        return [UIApplication performSelector:@selector(sharedApplication)];
+    }
+    return nil;
+}
+- (UIWindowScene *)_activeWindowScene  API_AVAILABLE(ios(13.0)){
+    UIApplication *app = [self _findApp];
+    if (app == nil) {
         return nil;
     }
-    if (@available(iOS 13.0, *)){
-        UIScene *foregroundActiveScene;
-        UIScene *foregroundInactiveScene;
+
+    if (@available(iOS 13.0, *)) {
+        UIScene *foregroundActiveScene = nil;
+        UIScene *foregroundInactiveScene = nil;
+
         for (UIScene *scene in app.connectedScenes) {
             if (![scene isKindOfClass:[UIWindowScene class]]) {
                 continue;
             }
+
             if (scene.activationState == UISceneActivationStateForegroundActive) {
                 foregroundActiveScene = scene;
                 break;
             }
-            if (!foregroundInactiveScene && scene.activationState == UISceneActivationStateForegroundInactive) {
+
+            if (!foregroundInactiveScene &&
+                scene.activationState == UISceneActivationStateForegroundInactive) {
                 foregroundInactiveScene = scene;
-                // no break, we can have the active scene later in the set.
             }
         }
-        UIScene *sceneToUse = foregroundActiveScene ? foregroundActiveScene : foregroundInactiveScene;
-        UIWindowScene *windowScene = (UIWindowScene *)sceneToUse;
+
+        UIScene *sceneToUse = foregroundActiveScene ?: foregroundInactiveScene;
+        return (UIWindowScene *)sceneToUse;
+    }
+
+    return nil;
+}
+-(UIWindow *)keyWindow{
+    // Prevent compilation failure in WidgetExtension environment
+    UIApplication *app = [self _findApp];
+    if(app == nil){
+        return nil;
+    }
+    if (@available(iOS 13.0, *)) {
+        UIWindowScene *windowScene = [self _activeWindowScene];
+        if (!windowScene) return nil;
+        
         if (@available(iOS 15.0, *)) {
             return windowScene.keyWindow;
         }
+        
         for (UIWindow *window in windowScene.windows) {
             if (window.isKeyWindow) {
                 return window;
             }
         }
         return nil;
-    }else if ([app.delegate respondsToSelector:@selector(window)]){
+    }
+    if ([app.delegate respondsToSelector:@selector(window)]){
         return [app.delegate window];
     }else{
         return [app keyWindow];
     }
 }
 - (NSArray<UIWindow *>*)windows{
-    UIApplication *app = [UIApplication valueForKeyPath:@"sharedApplication"];
+    UIApplication *app = [self _findApp];
     if(app == nil){
         return nil;
     }
-    if (@available(iOS 13.0, *)){
-        UIScene *foregroundActiveScene;
-        UIScene *foregroundInactiveScene;
-        for (UIScene *scene in app.connectedScenes) {
-            if (![scene isKindOfClass:[UIWindowScene class]]) {
-                continue;
-            }
-            if (scene.activationState == UISceneActivationStateForegroundActive) {
-                foregroundActiveScene = scene;
-                break;
-            }
-            if (!foregroundInactiveScene && scene.activationState == UISceneActivationStateForegroundInactive) {
-                foregroundInactiveScene = scene;
-                // no break, we can have the active scene later in the set.
-            }
-        }
-        UIScene *sceneToUse = foregroundActiveScene ? foregroundActiveScene : foregroundInactiveScene;
-        UIWindowScene *windowScene = (UIWindowScene *)sceneToUse;
+    if (@available(iOS 13.0, *)) {
+        UIWindowScene *windowScene = [self _activeWindowScene];
         return windowScene.windows;
-    }else{
-        return [app windows];
     }
+    return [app windows];
 }
 @end

@@ -57,7 +57,7 @@
     }
     return self;
 }
-- (FTViewTreeSnapshot *)takeSnapshot:(NSArray <UIView *> *)rootViews context:(FTSRContext *)context{
+- (FTViewTreeSnapshot *)takeSnapshot:(NSArray <UIView *> *)rootViews referenceView:(UIView *)referenceView context:(FTSRContext *)context{
     NSMutableArray *node = [[NSMutableArray alloc]init];
     NSMutableArray *resource = [[NSMutableArray alloc]init];
     for (UIView *rootView in rootViews) {
@@ -67,8 +67,8 @@
             recordingContext.viewIDGenerator = self.idGen;
             recordingContext.recorder = context;
             recordingContext.webViewCache = self.webViewCache;
-            recordingContext.coordinateSpace = [UIScreen mainScreen].coordinateSpace;
-            recordingContext.clip = UIScreen.mainScreen.bounds;
+            recordingContext.coordinateSpace = referenceView;
+            recordingContext.clip = referenceView.bounds;
             recordingContext.viewControllerContext = [FTViewControllerContext new];
             [self.viewTreeRecorder record:node resources:resource view:rootView context:recordingContext];
         }
@@ -76,7 +76,7 @@
     FTViewTreeSnapshot *viewTree = [[FTViewTreeSnapshot alloc]init];
     viewTree.date = context.date;
     viewTree.context = context;
-    viewTree.viewportSize = UIScreen.mainScreen.bounds.size;
+    viewTree.viewportSize = referenceView.bounds.size;
     viewTree.nodes = node;
     NSArray *webViews = [self.webViewCache allObjects];
     NSMutableArray *hashes = [NSMutableArray arrayWithCapacity:webViews.count];

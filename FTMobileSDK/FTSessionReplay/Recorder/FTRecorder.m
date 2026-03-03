@@ -41,12 +41,13 @@
 }
 -(void)taskSnapShot:(FTSRContext *)context touchSnapshot:(FTTouchSnapshot *)touchSnapshot{
     
-    NSArray <UIView *> *rootViews = self.windowObserver.windows ;
-    if(rootViews == nil || rootViews.count == 0){
+    NSArray <UIWindow *> *rootViews = self.windowObserver.windows ;
+    UIWindow *keyWindow = self.windowObserver.keyWindow ;
+    if(rootViews == nil || rootViews.count == 0 || keyWindow == nil){
         return;
     }
     // 1.Collect view snap shot
-    FTViewTreeSnapshot *viewTreeSnapshot = [self.viewSnapShotBuilder takeSnapshot:rootViews context:context];
+    FTViewTreeSnapshot *viewTreeSnapshot = [self.viewSnapShotBuilder takeSnapshot:rootViews referenceView:keyWindow context:context];
     [self.snapshotProcessor process:viewTreeSnapshot touchSnapshot:touchSnapshot];
     [self.resourceProcessor process:viewTreeSnapshot.resources context:context];
 }
