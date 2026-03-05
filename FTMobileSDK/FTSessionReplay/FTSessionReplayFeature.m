@@ -32,6 +32,14 @@
 #import "FTWKWebViewHandler+SessionReplay.h"
 #import "FTSessionReplayConfig+Private.h"
 #import "FTRemoteConfigManager.h"
+#import "FTScheduler.h"
+#import "FTScreenChangeScheduler.h"
+
+typedef NS_ENUM(NSInteger, SampleState) {
+    SampleStateNormal,
+    SampleStateError,
+    SampleStateNone
+};
 @interface FTSessionReplayFeature()<FTMessageReceiver,FTSRWebTrackingProtocol>
 @property (nonatomic, strong) NSTimer *timer;
 @property (atomic, strong) NSDictionary *currentRUMContext;
@@ -41,12 +49,13 @@
 @property (nonatomic, strong) FTWindowObserver *windowObserver;
 @property (nonatomic, strong) dispatch_queue_t processorsQueue;
 @property (nonatomic, strong) FTSessionReplayConfig *config;
-@property (nonatomic, assign) BOOL shouldStart;
-@property (nonatomic, assign) BOOL sampledForErrorReplay;
+@property (nonatomic, assign) BOOL recordingEnabled;
+@property (nonatomic, assign) SampleState sampleState;
 @property (nonatomic, strong) FTFeatureStorage *recordStorage;
 @property (nonatomic, strong) id<FTWriter> webViewWriter;
 @property (nonatomic, copy) NSString *lastViewID;
 @property (nonatomic, strong) FTLimitedSizeSet *needCheckSlots;
+@property (nonatomic, strong) id<FTScheduler> scheduler;
 
 @end
 @implementation FTSessionReplayFeature
@@ -65,9 +74,14 @@
         _windowObserver = [[FTWindowObserver alloc]init];
         _touches = [[FTSessionReplayTouches alloc]initWithWindowObserver:_windowObserver];
         _config = [config copy];
-        _shouldStart = NO;
+        _recordingEnabled = NO;
         _needCheckSlots = [[FTLimitedSizeSet alloc]initWithMaxCount:10];
-        self.sampledForErrorReplay = NO;
+        _sampleState = SampleStateNone;
+        __weak typeof(self) weakSelf = self;
+        _scheduler = [[FTScreenChangeScheduler alloc]initWithMinimumInterval:0.1];
+        [_scheduler scheduleWithOperation:^{
+            [weakSelf captureNextRecord];
+        }];
         [[FTModuleManager sharedInstance] addMessageReceiver:self];
         [[FTModuleManager sharedInstance] registerService:NSProtocolFromString(@"FTSRWebTrackingProtocol") instance:self];
     }
@@ -81,56 +95,31 @@
     FTRecorder *windowRecorder = [[FTRecorder alloc]initWithWindowObserver:self.windowObserver snapshotProcessor:srProcessor resourceProcessor:resourceProcessor additionalNodeRecorders:self.config.additionalNodeRecorders];
     self.windowRecorder = windowRecorder;
 }
-//-(void)startWithWriter:(id<FTWriter>)writer
-//           cacheWriter:(id<FTCacheWriter>)cacheWriter
-//         webViewWriter:(id<FTWriter>)webViewWriter
-//        resourceWriter:(id<FTWriter>)resourceWriter
-//     resourceDataStore:(id<FTDataStore>)dataStore{
-//    // image resource writer
-////    FTResourceWriter *resource = [[FTResourceWriter alloc]initWithWriter:resourceWriter dataStore:dataStore];
-////    FTResourceProcessor *resourceProcessor = [[FTResourceProcessor alloc]initWithQueue:self.processorsQueue resourceWriter:resource];
-//    _cacheWriter = cacheWriter;
-//    _writer = writer;
-//    _webViewWriter = webViewWriter;
-//    FTSnapshotProcessor *srProcessor = [[FTSnapshotProcessor alloc]initWithQueue:self.processorsQueue writer:writer];
-//    FTRecorder *windowRecorder = [[FTRecorder alloc]initWithWindowObserver:self.windowObserver snapshotProcessor:srProcessor resourceProcessor:nil additionalNodeRecorders:self.config.additionalNodeRecorders];
-//    self.windowRecorder = windowRecorder;
-//}
-
-- (void)setSampledForErrorReplay:(BOOL)sampledForErrorReplay{
-    _sampledForErrorReplay = sampledForErrorReplay;
+- (void)setSampleState:(SampleState)sampleState{
+    if (_sampleState == sampleState) {
+        return;
+    }
+    _sampleState = sampleState;
     [FTThreadDispatchManager performBlockDispatchMainAsync:^{
-        [self.windowRecorder.snapshotProcessor changeWriter:sampledForErrorReplay? self.recordStorage.cacheWriter:self.recordStorage.writer needUpdateFullSnapshot:sampledForErrorReplay];
-        if(sampledForErrorReplay){
+        if(sampleState == SampleStateError){
             [self.recordStorage.cacheWriter active];
             self.webViewWriter = self.recordStorage.webViewCacheWriter;
+            [self.windowRecorder.snapshotProcessor changeWriter:self.recordStorage.cacheWriter needUpdateFullSnapshot:YES];
         }else{
             [self.recordStorage.cacheWriter inactive];
             self.webViewWriter = self.recordStorage.webViewWriter;
+            [self.windowRecorder.snapshotProcessor changeWriter:self.recordStorage.writer needUpdateFullSnapshot:NO];
         }
     }];
 }
--(void)start{
-    [FTThreadDispatchManager performBlockDispatchMainAsync:^{
-        if(self.timer){
+- (void)startRecording{
+    __weak typeof(self) weakSelf = self;
+    [self.scheduler.queue run:^{
+        if (!weakSelf) {
             return;
         }
-        __weak typeof(self) weakSelf = self;
-        NSTimer *newTimer = [NSTimer timerWithTimeInterval:0.1 repeats:YES block:^(NSTimer * _Nonnull timer) {
-            __strong __typeof(weakSelf) strongSelf = weakSelf;
-            if (!strongSelf) return;
-            [strongSelf captureNextRecord];
-        }];
-        self.timer = newTimer;
-        [[NSRunLoop mainRunLoop] addTimer:newTimer forMode:NSRunLoopCommonModes];
-    }];
-}
-- (void)stop{
-    [FTThreadDispatchManager performBlockDispatchMainAsync:^{
-        if(self.timer){
-            [self.timer invalidate];
-            self.timer = nil;
-        }
+        weakSelf.recordingEnabled = YES;
+        [weakSelf evaluateRecordingConditions];
     }];
 }
 - (void)captureNextRecord{
@@ -234,15 +223,14 @@
 }
 - (void)updateSamplingStatusWithRUMContext:(NSDictionary *)context{
     BOOL isErrorSession = [context[FT_RUM_KEY_SAMPLED_FOR_ERROR_SESSION] boolValue];
-    BOOL isSampled = [FTBaseInfoHandler randomSampling:self.config.sampleRate];
-    BOOL srOnErrorSampleRate = isSampled? NO: [FTBaseInfoHandler randomSampling:self.config.sessionReplayOnErrorSampleRate];
-    
-    self.shouldStart = isSampled || srOnErrorSampleRate;
-    // Whether to use temporary cache (when it's an error session, or not sampled by regular sampling but error sampling is enabled)
-    BOOL sampledForErrorReplay = isErrorSession || srOnErrorSampleRate;
-    if (self.sampledForErrorReplay != sampledForErrorReplay) {
-        self.sampledForErrorReplay = sampledForErrorReplay;
-    }
+    BOOL isNormalSampled = [FTBaseInfoHandler randomSampling:self.config.sampleRate];
+    BOOL isErrorSampled = isNormalSampled? NO: [FTBaseInfoHandler randomSampling:self.config.sessionReplayOnErrorSampleRate];
+  
+    BOOL needSampleForErrorReplay = (isErrorSession && isNormalSampled) || isErrorSampled;
+
+    SampleState sampleState = needSampleForErrorReplay ? SampleStateError
+                            : (isNormalSampled ? SampleStateNormal : SampleStateNone);
+    self.sampleState = sampleState;
 }
 - (void)checkLinkRumKeys:(NSDictionary *)rumContext{
     // link rum
@@ -261,21 +249,21 @@
     }
 }
 - (void)evaluateRecordingConditions{
-    if (self.shouldStart) {
-        [self start];
+    if (self.recordingEnabled && self.sampleState == SampleStateNormal) {
+        [self.scheduler start];
     } else {
-        [self stop];
+        [self.scheduler stop];
     }
     [self updateHasReplay];
 }
 - (void)evaluateRecordingConditionsForSamplingRateUpdate{
     [self.config mergeWithRemoteConfigModel:[FTRemoteConfigManager sharedInstance].lastRemoteModel];
     BOOL needUpdate = NO;
-    
-    if (self.shouldStart) {
+
+    if (self.sampleState != SampleStateNone) {
         if (self.config.sampleRate == 0 && self.config.sessionReplayOnErrorSampleRate == 0) {
             needUpdate = YES;
-        }if (self.sampledForErrorReplay && self.config.sampleRate == 100) {
+        }if (self.sampleState == SampleStateError && self.config.sampleRate == 100) {
             needUpdate = YES;
         }
     } else {
@@ -292,11 +280,12 @@
 - (void)updateHasReplay{
     // FT_SESSION_HAS_REPLAY, whether there is session replay data collection, cache type also counts
     // FT_RUM_KEY_SAMPLED_FOR_ERROR_REPLAY, cache type data
+    BOOL hasReplay = self.recordingEnabled && self.sampleState != SampleStateNone;
     [[FTModuleManager sharedInstance] postMessageWithKey:FTMessageKeySessionHasReplay message:@{
-        FT_SESSION_HAS_REPLAY:@(self.shouldStart),
+        FT_SESSION_HAS_REPLAY:@(hasReplay),
         FT_RUM_SESSION_REPLAY_SAMPLE_RATE:@(self.config.sampleRate),
         FT_RUM_SESSION_REPLAY_ON_ERROR_SAMPLE_RATE:@(self.config.sessionReplayOnErrorSampleRate),
-        FT_RUM_KEY_SAMPLED_FOR_ERROR_REPLAY:@(self.sampledForErrorReplay)
+        FT_RUM_KEY_SAMPLED_FOR_ERROR_REPLAY:@(self.sampleState == SampleStateError)
     }];
 }
 #pragma mark -- deal web sr local file

@@ -17,7 +17,9 @@
 #import "FTSessionReplayPrivacyOverrides+Extension.h"
 #import "FTThreadDispatchManager.h"
 
-static FTSessionReplayTouches *touchesHandler;
+static __weak FTSessionReplayTouches *ft_touchesHandler = nil;
+static void *const kFTSRSendEvent = (void *)&kFTSRSendEvent;
+
 @interface FTSessionReplayTouches()
 /// Touch event collection, all operations on main thread, so no lock management needed
 @property (nonatomic, strong) NSMutableArray *touches;
@@ -32,9 +34,7 @@ static FTSessionReplayTouches *touchesHandler;
         _currentID = 0;
         _windowObserver = observer;
         [self swizzleApplicationTouches];
-        [FTThreadDispatchManager performBlockDispatchMainSyncSafe:^{
-            touchesHandler = self;
-        }];
+        ft_touchesHandler = self;
     }
     return self;
 }
@@ -77,10 +77,11 @@ static FTSessionReplayTouches *touchesHandler;
                                  FTSWArguments(UIEvent *event),
                                  FTSWReplacement({
             FTSWCallOriginal(event);
+            __strong FTSessionReplayTouches *touchesHandler = ft_touchesHandler;
             if (!touchesHandler) return;
             [touchesHandler handleEvent:event];
         }),FTSwizzlerModeOncePerClassAndSuperclasses,
-                                 "ft_addScreenshot"
+                                 kFTSRSendEvent
                                  );
     });
 }
@@ -160,10 +161,7 @@ static FTSessionReplayTouches *touchesHandler;
 - (void)unSwizzleApplicationTouches{
     [FTThreadDispatchManager performBlockDispatchMainSyncSafe:^{
         [self.touches removeAllObjects];
-        if (touchesHandler == self) touchesHandler = nil;
+        if (ft_touchesHandler == self) ft_touchesHandler = nil;
     }];
-}
--(void)dealloc{
-    [self unSwizzleApplicationTouches];
 }
 @end

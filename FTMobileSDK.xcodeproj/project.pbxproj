@@ -191,6 +191,23 @@
 		17018DCF2F5025D100688324 /* FTMessageReceiver.h in Headers */ = {isa = PBXBuildFile; fileRef = 17018DCC2F5025D100688324 /* FTMessageReceiver.h */; };
 		1701B1902F55503F00E2AE8A /* FTResourceCheckRequest.h in Headers */ = {isa = PBXBuildFile; fileRef = 1701B18E2F55503F00E2AE8A /* FTResourceCheckRequest.h */; };
 		1701B1912F55503F00E2AE8A /* FTResourceCheckRequest.m in Sources */ = {isa = PBXBuildFile; fileRef = 1701B18F2F55503F00E2AE8A /* FTResourceCheckRequest.m */; };
+		1701B1942F55812F00E2AE8A /* FTScheduler.h in Headers */ = {isa = PBXBuildFile; fileRef = 1701B1932F55812F00E2AE8A /* FTScheduler.h */; };
+		1701B1972F5594C500E2AE8A /* FTQueue.m in Sources */ = {isa = PBXBuildFile; fileRef = 1701B1962F5594C500E2AE8A /* FTQueue.m */; };
+		1701B1982F5594C500E2AE8A /* FTQueue.h in Headers */ = {isa = PBXBuildFile; fileRef = 1701B1952F5594C500E2AE8A /* FTQueue.h */; };
+		1701B19B2F55AFD300E2AE8A /* FTScreenChangeScheduler.m in Sources */ = {isa = PBXBuildFile; fileRef = 1701B19A2F55AFD300E2AE8A /* FTScreenChangeScheduler.m */; };
+		1701B19C2F55AFD300E2AE8A /* FTScreenChangeScheduler.h in Headers */ = {isa = PBXBuildFile; fileRef = 1701B1992F55AFD300E2AE8A /* FTScreenChangeScheduler.h */; };
+		1701B1A02F55B47C00E2AE8A /* FTScreenChangeMonitor.m in Sources */ = {isa = PBXBuildFile; fileRef = 1701B19F2F55B47C00E2AE8A /* FTScreenChangeMonitor.m */; };
+		1701B1A12F55B47C00E2AE8A /* FTScreenChangeMonitor.h in Headers */ = {isa = PBXBuildFile; fileRef = 1701B19E2F55B47C00E2AE8A /* FTScreenChangeMonitor.h */; };
+		1701B1A52F56FB0200E2AE8A /* FTCALayerChange.m in Sources */ = {isa = PBXBuildFile; fileRef = 1701B1A42F56FB0200E2AE8A /* FTCALayerChange.m */; };
+		1701B1A62F56FB0200E2AE8A /* FTCALayerChange.h in Headers */ = {isa = PBXBuildFile; fileRef = 1701B1A32F56FB0200E2AE8A /* FTCALayerChange.h */; };
+		1701B1A92F56FB6B00E2AE8A /* FTCALayerChangeAggregator.m in Sources */ = {isa = PBXBuildFile; fileRef = 1701B1A82F56FB6B00E2AE8A /* FTCALayerChangeAggregator.m */; };
+		1701B1AA2F56FB6B00E2AE8A /* FTCALayerChangeAggregator.h in Headers */ = {isa = PBXBuildFile; fileRef = 1701B1A72F56FB6B00E2AE8A /* FTCALayerChangeAggregator.h */; };
+		1701B1AD2F56FBB100E2AE8A /* FTCALayerChangeSnapshot.m in Sources */ = {isa = PBXBuildFile; fileRef = 1701B1AC2F56FBB100E2AE8A /* FTCALayerChangeSnapshot.m */; };
+		1701B1AE2F56FBB100E2AE8A /* FTCALayerChangeSnapshot.h in Headers */ = {isa = PBXBuildFile; fileRef = 1701B1AB2F56FBB100E2AE8A /* FTCALayerChangeSnapshot.h */; };
+		1701B1B12F56FDA100E2AE8A /* FTTimerScheduler.m in Sources */ = {isa = PBXBuildFile; fileRef = 1701B1B02F56FDA100E2AE8A /* FTTimerScheduler.m */; };
+		1701B1B22F56FDA100E2AE8A /* FTTimerScheduler.h in Headers */ = {isa = PBXBuildFile; fileRef = 1701B1AF2F56FDA100E2AE8A /* FTTimerScheduler.h */; };
+		1701B1B52F57D11100E2AE8A /* FTCALayerSwizzler.m in Sources */ = {isa = PBXBuildFile; fileRef = 1701B1B42F57D11100E2AE8A /* FTCALayerSwizzler.m */; };
+		1701B1B62F57D11100E2AE8A /* FTCALayerSwizzler.h in Headers */ = {isa = PBXBuildFile; fileRef = 1701B1B32F57D11100E2AE8A /* FTCALayerSwizzler.h */; };
 		170CD0A12AF3422000DB248C /* FTAutoInterceptorProtocol.h in Headers */ = {isa = PBXBuildFile; fileRef = 178EF5DC2AEBBD57002A407C /* FTAutoInterceptorProtocol.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		170CD0A22AF3422000DB248C /* FTAutoInterceptorProtocol.h in Headers */ = {isa = PBXBuildFile; fileRef = 178EF5DC2AEBBD57002A407C /* FTAutoInterceptorProtocol.h */; };
 		170CD0A32AF3422100DB248C /* FTAutoInterceptorProtocol.h in Headers */ = {isa = PBXBuildFile; fileRef = 178EF5DC2AEBBD57002A407C /* FTAutoInterceptorProtocol.h */; };
@@ -1335,6 +1352,23 @@
 		17018DCC2F5025D100688324 /* FTMessageReceiver.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = FTMessageReceiver.h; sourceTree = "<group>"; };
 		1701B18E2F55503F00E2AE8A /* FTResourceCheckRequest.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = FTResourceCheckRequest.h; sourceTree = "<group>"; };
 		1701B18F2F55503F00E2AE8A /* FTResourceCheckRequest.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = FTResourceCheckRequest.m; sourceTree = "<group>"; };
+		1701B1932F55812F00E2AE8A /* FTScheduler.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = FTScheduler.h; sourceTree = "<group>"; };
+		1701B1952F5594C500E2AE8A /* FTQueue.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = FTQueue.h; sourceTree = "<group>"; };
+		1701B1962F5594C500E2AE8A /* FTQueue.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = FTQueue.m; sourceTree = "<group>"; };
+		1701B1992F55AFD300E2AE8A /* FTScreenChangeScheduler.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = FTScreenChangeScheduler.h; sourceTree = "<group>"; };
+		1701B19A2F55AFD300E2AE8A /* FTScreenChangeScheduler.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = FTScreenChangeScheduler.m; sourceTree = "<group>"; };
+		1701B19E2F55B47C00E2AE8A /* FTScreenChangeMonitor.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = FTScreenChangeMonitor.h; sourceTree = "<group>"; };
+		1701B19F2F55B47C00E2AE8A /* FTScreenChangeMonitor.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = FTScreenChangeMonitor.m; sourceTree = "<group>"; };
+		1701B1A32F56FB0200E2AE8A /* FTCALayerChange.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = FTCALayerChange.h; sourceTree = "<group>"; };
+		1701B1A42F56FB0200E2AE8A /* FTCALayerChange.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = FTCALayerChange.m; sourceTree = "<group>"; };
+		1701B1A72F56FB6B00E2AE8A /* FTCALayerChangeAggregator.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = FTCALayerChangeAggregator.h; sourceTree = "<group>"; };
+		1701B1A82F56FB6B00E2AE8A /* FTCALayerChangeAggregator.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = FTCALayerChangeAggregator.m; sourceTree = "<group>"; };
+		1701B1AB2F56FBB100E2AE8A /* FTCALayerChangeSnapshot.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = FTCALayerChangeSnapshot.h; sourceTree = "<group>"; };
+		1701B1AC2F56FBB100E2AE8A /* FTCALayerChangeSnapshot.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = FTCALayerChangeSnapshot.m; sourceTree = "<group>"; };
+		1701B1AF2F56FDA100E2AE8A /* FTTimerScheduler.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = FTTimerScheduler.h; sourceTree = "<group>"; };
+		1701B1B02F56FDA100E2AE8A /* FTTimerScheduler.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = FTTimerScheduler.m; sourceTree = "<group>"; };
+		1701B1B32F57D11100E2AE8A /* FTCALayerSwizzler.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = FTCALayerSwizzler.h; sourceTree = "<group>"; };
+		1701B1B42F57D11100E2AE8A /* FTCALayerSwizzler.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = FTCALayerSwizzler.m; sourceTree = "<group>"; };
 		171269592DC21026002D238B /* FTDataUploadWorker.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = FTDataUploadWorker.h; sourceTree = "<group>"; };
 		1712695A2DC21026002D238B /* FTDataUploadWorker.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = FTDataUploadWorker.m; sourceTree = "<group>"; };
 		171269622DC9B2D2002D238B /* FTUploadProtocol.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = FTUploadProtocol.h; sourceTree = "<group>"; };
@@ -1892,6 +1926,7 @@
 		17018CCF2F50253200688324 /* Recorder */ = {
 			isa = PBXGroup;
 			children = (
+				1701B1A22F56F75700E2AE8A /* ScreenChangeMonitor */,
 				17018CBB2F50253200688324 /* SRWireframe */,
 				17018CC22F50253200688324 /* Touch */,
 				17018CC32F50253200688324 /* FTRecorder.h */,
@@ -2009,6 +2044,7 @@
 		17018D122F50253200688324 /* FTSessionReplay */ = {
 			isa = PBXGroup;
 			children = (
+				1701B1922F557F9C00E2AE8A /* Utilities */,
 				17018C682F50253200688324 /* DataStore */,
 				17018C6C2F50253200688324 /* Processor */,
 				17018C712F50253200688324 /* Public */,
@@ -2037,6 +2073,37 @@
 			);
 			name = FTSessionReplay;
 			path = FTMobileSDK/FTSessionReplay;
+			sourceTree = "<group>";
+		};
+		1701B1922F557F9C00E2AE8A /* Utilities */ = {
+			isa = PBXGroup;
+			children = (
+				1701B1932F55812F00E2AE8A /* FTScheduler.h */,
+				1701B1992F55AFD300E2AE8A /* FTScreenChangeScheduler.h */,
+				1701B19A2F55AFD300E2AE8A /* FTScreenChangeScheduler.m */,
+				1701B1952F5594C500E2AE8A /* FTQueue.h */,
+				1701B1962F5594C500E2AE8A /* FTQueue.m */,
+			);
+			path = Utilities;
+			sourceTree = "<group>";
+		};
+		1701B1A22F56F75700E2AE8A /* ScreenChangeMonitor */ = {
+			isa = PBXGroup;
+			children = (
+				1701B1A32F56FB0200E2AE8A /* FTCALayerChange.h */,
+				1701B1A42F56FB0200E2AE8A /* FTCALayerChange.m */,
+				1701B1A72F56FB6B00E2AE8A /* FTCALayerChangeAggregator.h */,
+				1701B1A82F56FB6B00E2AE8A /* FTCALayerChangeAggregator.m */,
+				1701B1AB2F56FBB100E2AE8A /* FTCALayerChangeSnapshot.h */,
+				1701B1AC2F56FBB100E2AE8A /* FTCALayerChangeSnapshot.m */,
+				1701B19E2F55B47C00E2AE8A /* FTScreenChangeMonitor.h */,
+				1701B19F2F55B47C00E2AE8A /* FTScreenChangeMonitor.m */,
+				1701B1AF2F56FDA100E2AE8A /* FTTimerScheduler.h */,
+				1701B1B02F56FDA100E2AE8A /* FTTimerScheduler.m */,
+				1701B1B32F57D11100E2AE8A /* FTCALayerSwizzler.h */,
+				1701B1B42F57D11100E2AE8A /* FTCALayerSwizzler.m */,
+			);
+			path = ScreenChangeMonitor;
 			sourceTree = "<group>";
 		};
 		172113B52DF19005006189C2 /* RemoteConfig */ = {
@@ -3112,6 +3179,7 @@
 				17A423282EEAE57300416673 /* FTCrashNSDictionaryHelper.h in Headers */,
 				17678E2F29D28BD200C1DA98 /* FTTraceManager.h in Headers */,
 				17E5ED8E2DD2095000E5A971 /* FTDataModifier.h in Headers */,
+				1701B1A12F55B47C00E2AE8A /* FTScreenChangeMonitor.h in Headers */,
 				171269652DC9B2D2002D238B /* FTUploadProtocol.h in Headers */,
 				1776BD3B2E179EC100612A7F /* FTCrashMonitor.h in Headers */,
 				17E4CB4229CD42DA005C2D99 /* FTBaseInfoHandler.h in Headers */,
@@ -3130,6 +3198,7 @@
 				17563F9C2AAAC4D00077C067 /* FTMobileSDK.h in Headers */,
 				17A421BC2EDDAC6300416673 /* FTCrashExceptionHandlingPlan.h in Headers */,
 				1776BA802B99B668008424FF /* FTOSLogger.h in Headers */,
+				1701B19C2F55AFD300E2AE8A /* FTScreenChangeScheduler.h in Headers */,
 				1799581929D4403A0033B46E /* FTPresetProperty.h in Headers */,
 				17717B3D2F0E7E69002158F6 /* FTRemoteConfigModel.h in Headers */,
 				17717B3E2F0E7E69002158F6 /* FTRemoteConfigModel+Private.h in Headers */,
@@ -3151,6 +3220,7 @@
 				176CE2852ED869D400E9E92B /* FTCrashMonitorFlag.h in Headers */,
 				17A4233A2EEAE65700416673 /* FTCrashVarArgs.h in Headers */,
 				17AB76E729D432DE008FBBF5 /* FTRUMSessionHandler.h in Headers */,
+				1701B1942F55812F00E2AE8A /* FTScheduler.h in Headers */,
 				17E4CC3829CD42E4005C2D99 /* UIScrollView+FTAutoTrack.h in Headers */,
 				175C7D0A29E9428A00A7F271 /* FTExternalDataManager.h in Headers */,
 				17E4CC2829CD42E4005C2D99 /* BlacklistedVCClassNames.h in Headers */,
@@ -3246,6 +3316,7 @@
 				1763BDA229DFF04F009EE026 /* ZY_FMDatabaseAdditions.h in Headers */,
 				17717B6B2F0E8618002158F6 /* FTLongTaskManager.h in Headers */,
 				17717B6C2F0E8618002158F6 /* FTLongTaskDetector.h in Headers */,
+				1701B1B22F56FDA100E2AE8A /* FTTimerScheduler.h in Headers */,
 				176CE21C2ED586DF00E9E92B /* FTCrashMonitor_AppState.h in Headers */,
 				1776062D29D1347500D17137 /* FTWebViewJavascriptLeakAvoider.h in Headers */,
 				17018DBF2F50259B00688324 /* FTWKWebViewRumDelegate.h in Headers */,
@@ -3255,6 +3326,7 @@
 				178CDB102F0F7AA000EE98D0 /* FTCrashReportFilterBasic.h in Headers */,
 				178CDB112F0F7AA000EE98D0 /* FTCrashReportC.h in Headers */,
 				178CDB122F0F7AA000EE98D0 /* FTCrashC.h in Headers */,
+				1701B1AA2F56FB6B00E2AE8A /* FTCALayerChangeAggregator.h in Headers */,
 				178CDB132F0F7AA000EE98D0 /* FTCrashThreadCache.h in Headers */,
 				178CDB142F0F7AA000EE98D0 /* FTCrashReportFixer.h in Headers */,
 				178CDB152F0F7AA000EE98D0 /* FTCrashReportStoreC.h in Headers */,
@@ -3339,13 +3411,16 @@
 				17018D9A2F50253200688324 /* FTUploadConditions.h in Headers */,
 				17018D9B2F50253200688324 /* FTViewTreeRecordingContext.h in Headers */,
 				17018D9C2F50253200688324 /* FTFeatureRequestBuilder.h in Headers */,
+				1701B1B62F57D11100E2AE8A /* FTCALayerSwizzler.h in Headers */,
 				17018D9D2F50253200688324 /* FTResourceProcessor.h in Headers */,
 				17018D9E2F50253200688324 /* FTFeature.h in Headers */,
 				17018D9F2F50253200688324 /* FTViewTreeSnapshot.h in Headers */,
 				17018DA02F50253200688324 /* FTSessionReplayWireframesBuilder.h in Headers */,
 				17018DA12F50253200688324 /* UIView+FTSR.h in Headers */,
 				17018DA22F50253200688324 /* FTUIImageResource.h in Headers */,
+				1701B1AE2F56FBB100E2AE8A /* FTCALayerChangeSnapshot.h in Headers */,
 				17018DA32F50253200688324 /* FTDataStoreFileReader.h in Headers */,
+				1701B1982F5594C500E2AE8A /* FTQueue.h in Headers */,
 				17018DA42F50253200688324 /* FTCompression.h in Headers */,
 				17018DA52F50253200688324 /* FTImageDataUtils.h in Headers */,
 				17018DA62F50253200688324 /* FTSRTextObfuscatingFactory.h in Headers */,
@@ -3353,6 +3428,7 @@
 				17018DA82F50253200688324 /* FTRecorder.h in Headers */,
 				17018DA92F50253200688324 /* NSData+FTHelper.h in Headers */,
 				17018DAA2F50253200688324 /* FTFile.h in Headers */,
+				1701B1A62F56FB0200E2AE8A /* FTCALayerChange.h in Headers */,
 				17018DAB2F50253200688324 /* FTRequestMultipartFormBody.h in Headers */,
 				17018DAC2F50253200688324 /* FTUIViewRecorder.h in Headers */,
 				17018DAD2F50253200688324 /* FTReader.h in Headers */,
@@ -3838,12 +3914,14 @@
 				176868962ED47AA600C76F0D /* FTCrashMachineContext.c in Sources */,
 				176868972ED47AA600C76F0D /* FTCrashThread.c in Sources */,
 				176CE2342ED6CFA200E9E92B /* FTCrashFileUtils.c in Sources */,
+				1701B1B12F56FDA100E2AE8A /* FTTimerScheduler.m in Sources */,
 				176868982ED47AA600C76F0D /* FTCrashMemory.c in Sources */,
 				176868992ED47AA600C76F0D /* FTCrashCPU_arm.c in Sources */,
 				178CDB082F0F7AA000EE98D0 /* FTCrashReportFixer.c in Sources */,
 				178CDB092F0F7AA000EE98D0 /* FTCrashThreadCache.c in Sources */,
 				178CDB0A2F0F7AA000EE98D0 /* FTCrashReportStore.m in Sources */,
 				178CDB0B2F0F7AA000EE98D0 /* FTCrashC.c in Sources */,
+				1701B1B52F57D11100E2AE8A /* FTCALayerSwizzler.m in Sources */,
 				178CDB0C2F0F7AA000EE98D0 /* FTCrashReport.m in Sources */,
 				172307832F3C843C0029A5C6 /* FTExtensionConfig.m in Sources */,
 				1701B1912F55503F00E2AE8A /* FTResourceCheckRequest.m in Sources */,
@@ -3863,13 +3941,16 @@
 				17C2FE4C2E3B8CE8003D600F /* FTRUMDataModel.m in Sources */,
 				17AB76D229D432DE008FBBF5 /* FTMonitorItem.m in Sources */,
 				17E4CBE129CD42E4005C2D99 /* FTURLSessionDelegate.m in Sources */,
+				1701B1A52F56FB0200E2AE8A /* FTCALayerChange.m in Sources */,
 				1776BD3A2E179EC100612A7F /* FTCrashMonitor.c in Sources */,
 				17A4221A2EDE958E00416673 /* FTCrashString.c in Sources */,
 				176CE23B2ED6DC3000E9E92B /* FTCrashMonitor_System.m in Sources */,
+				1701B1AD2F56FBB100E2AE8A /* FTCALayerChangeSnapshot.m in Sources */,
 				17AB76BA29D432DE008FBBF5 /* FTMonitorValue.m in Sources */,
 				1763BD9829DFF04F009EE026 /* FTHTTPClient.m in Sources */,
 				17678E2629D28BD200C1DA98 /* FTMobileConfig.m in Sources */,
 				17678E2B29D28BD200C1DA98 /* FTTraceManager.m in Sources */,
+				1701B1972F5594C500E2AE8A /* FTQueue.m in Sources */,
 				17E4CB3729CD42DA005C2D99 /* FTSwizzler.m in Sources */,
 				17A421F62EDE8EED00416673 /* FTCrashMach.c in Sources */,
 				1733605F2C05FFD600A50C02 /* FTDBDataCachePolicy.m in Sources */,
@@ -3971,6 +4052,7 @@
 				17018D302F50253200688324 /* FTTouchSnapshot.m in Sources */,
 				17018D312F50253200688324 /* FTSegmentRequest.m in Sources */,
 				17018D322F50253200688324 /* FTUIImageViewRecorder.m in Sources */,
+				1701B1A02F55B47C00E2AE8A /* FTScreenChangeMonitor.m in Sources */,
 				17018D332F50253200688324 /* FTViewTreeSnapshotBuilder.m in Sources */,
 				17018D342F50253200688324 /* FTSessionReplayWireframesBuilder.m in Sources */,
 				17018D352F50253200688324 /* FTTLVReader.m in Sources */,
@@ -4012,6 +4094,7 @@
 				17018D592F50253200688324 /* FTSRBaseFrame.m in Sources */,
 				17018D5A2F50253200688324 /* FTUISwitchRecorder.m in Sources */,
 				17018D5B2F50253200688324 /* FTUISegmentRecorder.m in Sources */,
+				1701B1A92F56FB6B00E2AE8A /* FTCALayerChangeAggregator.m in Sources */,
 				17018D5C2F50253200688324 /* FTRequestMultipartFormBody.m in Sources */,
 				17018D5D2F50253200688324 /* FTSegmentJSON.m in Sources */,
 				17018D5E2F50253200688324 /* FTDataStoreFileReader.m in Sources */,
@@ -4058,6 +4141,7 @@
 				176CE27F2ED8667E00E9E92B /* FTCrashMonitorAPI.c in Sources */,
 				17E4CBE829CD42E4005C2D99 /* FTSessionTaskHandler.m in Sources */,
 				1763BD8E29DFF04F009EE026 /* FTTrackerEventDBTool.m in Sources */,
+				1701B19B2F55AFD300E2AE8A /* FTScreenChangeScheduler.m in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

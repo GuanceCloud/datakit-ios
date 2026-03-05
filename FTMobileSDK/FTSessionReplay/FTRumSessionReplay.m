@@ -84,6 +84,7 @@ static dispatch_once_t onceToken;
     [self.stores setValue:resourceStore forKey:resourcesFeature.name];
     [self.features setValue:resourcesFeature forKey:resourcesFeature.name];
     [sessionReplayFeature startWithRecordStorage:srStore.storage resourceWriter:resourceStore.storage.writer resourceDataStore:resourceDataStore];
+    [sessionReplayFeature startRecording];
     FTInnerLogInfo(@"[session-replay] initialized success");
 }
 - (FTFeatureStores *)registerFeature:(id<FTRemoteFeature>)feature{

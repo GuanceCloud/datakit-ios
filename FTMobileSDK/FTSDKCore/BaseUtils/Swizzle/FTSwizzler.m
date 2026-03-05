@@ -10,152 +10,11 @@
 #import <objc/message.h>
 #import <os/lock.h>
 #import "FTLog+Private.h"
+#import <mach-o/dyld.h>
+#import <dlfcn.h>
 #if !__has_feature(objc_arc)
 #error This code needs ARC. Use compiler option -fobjc-arc
 #endif
-
-#pragma mark - Block Helpers
-#if !defined(NS_BLOCK_ASSERTIONS)
-
-// See http://clang.llvm.org/docs/Block-ABI-Apple.html#high-level
-struct Block_literal_1 {
-    void *isa; // initialized to &_NSConcreteStackBlock or &_NSConcreteGlobalBlock
-    int flags;
-    int reserved;
-    void (*invoke)(void *, ...);
-    struct Block_descriptor_1 {
-        unsigned long int reserved;         // NULL
-        unsigned long int size;         // sizeof(struct Block_literal_1)
-        // optional helper functions
-        void (*copy_helper)(void *dst, void *src);     // IFF (1<<25)
-        void (*dispose_helper)(void *src);             // IFF (1<<25)
-        // required ABI.2010.3.16
-        const char *signature;                         // IFF (1<<30)
-    } *descriptor;
-    // imported variables
-};
-
-enum {
-    BLOCK_HAS_COPY_DISPOSE =  (1 << 25),
-    BLOCK_HAS_CTOR =          (1 << 26), // helpers have C++ code
-    BLOCK_IS_GLOBAL =         (1 << 28),
-    BLOCK_HAS_STRET =         (1 << 29), // IFF BLOCK_HAS_SIGNATURE
-    BLOCK_HAS_SIGNATURE =     (1 << 30),
-};
-typedef int BlockFlags;
-
-static const char *blockGetType(id block){
-    struct Block_literal_1 *blockRef = (__bridge struct Block_literal_1 *)block;
-    BlockFlags flags = blockRef->flags;
-    
-    if (flags & BLOCK_HAS_SIGNATURE) {
-        void *signatureLocation = blockRef->descriptor;
-        signatureLocation += sizeof(unsigned long int);
-        signatureLocation += sizeof(unsigned long int);
-        
-        if (flags & BLOCK_HAS_COPY_DISPOSE) {
-            signatureLocation += sizeof(void(*)(void *dst, void *src));
-            signatureLocation += sizeof(void (*)(void *src));
-        }
-        
-        const char *signature = (*(const char **)signatureLocation);
-        return signature;
-    }
-    
-    return NULL;
-}
-
-static BOOL blockIsCompatibleWithMethodType(id block, const char *methodType){
-    
-    const char *blockType = blockGetType(block);
-    
-    NSMethodSignature *blockSignature;
-    
-    if (0 == strncmp(blockType, (const char *)"@\"", 2)) {
-        // Block return type includes class name for id types
-        // while methodType does not include.
-        // Stripping out return class name.
-        char *quotePtr = strchr(blockType+2, '"');
-        if (NULL != quotePtr) {
-            ++quotePtr;
-            char filteredType[strlen(quotePtr) + 2];
-            memset(filteredType, 0, sizeof(filteredType));
-            *filteredType = '@';
-            strncpy(filteredType + 1, quotePtr, sizeof(filteredType) - 2);
-            
-            blockSignature = [NSMethodSignature signatureWithObjCTypes:filteredType];
-        }else{
-            return NO;
-        }
-    }else{
-        blockSignature = [NSMethodSignature signatureWithObjCTypes:blockType];
-    }
-    
-    NSMethodSignature *methodSignature =
-    [NSMethodSignature signatureWithObjCTypes:methodType];
-    
-    if (!blockSignature || !methodSignature) {
-        return NO;
-    }
-    
-    if (blockSignature.numberOfArguments != methodSignature.numberOfArguments){
-        return NO;
-    }
-    
-    if (strcmp(blockSignature.methodReturnType, methodSignature.methodReturnType) != 0) {
-        return NO;
-    }
-    
-    for (int i=0; i<methodSignature.numberOfArguments; ++i){
-        if (i == 0){
-            // self in method, block in block
-            if (strcmp([methodSignature getArgumentTypeAtIndex:i], "@") != 0) {
-                return NO;
-            }
-            if (strcmp([blockSignature getArgumentTypeAtIndex:i], "@?") != 0) {
-                return NO;
-            }
-        }else if(i == 1){
-            // SEL in method, self in block
-            if (strcmp([methodSignature getArgumentTypeAtIndex:i], ":") != 0) {
-                return NO;
-            }
-            if (strncmp([blockSignature getArgumentTypeAtIndex:i], "@", 1) != 0) {
-                return NO;
-            }
-        }else {
-            const char *blockSignatureArg = [blockSignature getArgumentTypeAtIndex:i];
-            
-            if (strncmp(blockSignatureArg, "@?", 2) == 0) {
-                // Handle function pointer / block arguments
-                blockSignatureArg = "@?";
-            }
-            else if (strncmp(blockSignatureArg, "@", 1) == 0) {
-                blockSignatureArg = "@";
-            }
-            
-            if (strcmp(blockSignatureArg,
-                       [methodSignature getArgumentTypeAtIndex:i]) != 0)
-            {
-                return NO;
-            }
-        }
-    }
-    
-    return YES;
-}
-
-static BOOL blockIsAnImpFactoryBlock(id block){
-    const char *blockType = blockGetType(block);
-    FTSwizzlerImpFactoryBlock dummyFactory = ^id(FTSwizzlerInfo *swizzleInfo){
-        return nil;
-    };
-    const char *factoryType = blockGetType(dummyFactory);
-    return 0 == strcmp(factoryType, blockType);
-}
-
-#endif // NS_BLOCK_ASSERTIONS
-
 
 #pragma mark - Swizzling
 
@@ -233,11 +92,7 @@ static void swizzle(Class classToSwizzle,
     id newIMPBlock = factoryBlock(swizzleInfo);
     
     const char *methodType = method_getTypeEncoding(method);
-#if !defined(NS_BLOCK_ASSERTIONS)
-    if(!blockIsCompatibleWithMethodType(newIMPBlock,methodType)){
-        FTInnerLogWarning(@"Block returned from factory is not compatible with class(%@) method(%@) type(%s).",classToSwizzle,NSStringFromSelector(selector),methodType);
-    }
-#endif
+
     IMP newIMP = imp_implementationWithBlock(newIMPBlock);
     
     // Atomically replace the original method with our new implementation.
@@ -252,6 +107,11 @@ static void swizzle(Class classToSwizzle,
     os_unfair_lock_lock(&lock);
     originalIMP = class_replaceMethod(classToSwizzle, selector, newIMP, methodType);
     os_unfair_lock_unlock(&lock);
+#if DEBUG
+    Dl_info info;
+        dladdr(originalIMP, &info);
+    FTInnerLogInfo(@"[SWIZZLE] --------------------\nClass:%@ \nSelector:%@ \nnewIMP:%p \noriginalIMP:%p (%s)(%@)\n--------------------",classToSwizzle,NSStringFromSelector(selector),newIMP,originalIMP,info.dli_sname,[NSString stringWithUTF8String:info.dli_fname ? strrchr(info.dli_fname, '/') + 1 : ""]);
+#endif
 }
 + (void)setFTAssociatedObject:(id)object
                           key:(const void *)key
@@ -270,7 +130,8 @@ static void swizzle(Class classToSwizzle,
 {
     NSAssert(!(NULL == key && FTSwizzlerModeAlways != mode),
              @"Key may not be NULL if mode is not FTSwizzlerModeAlways.");
-    if (classToSwizzle == nil){
+    if (NULL == key && FTSwizzlerModeAlways != mode){
+        FTInnerLogWarning(@"Key may not be NULL if mode is not FTSwizzlerModeAlways.");
         return NO;
     }
     @synchronized (self) {
