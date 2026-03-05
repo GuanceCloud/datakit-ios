@@ -55,8 +55,7 @@
     mutableRequest.HTTPMethod = self.httpMethod;
     
     for (FTEnrichedResource *resource in self.resources) {
-        NSMutableData *mutableData = [NSMutableData dataWithData:resource.data];
-        [self.multipartFormBody addFormData:@"files" filename:resource.identifier data:mutableData mimeType:@"application/octet-stream"];
+        [self.multipartFormBody addFormData:@"files" filename:resource.identifier data:resource.data mimeType:@"application/octet-stream"];
     }
     [self.multipartFormBody addFormField:FT_APP_ID value:self.resources[0].appId];
     
