@@ -21,7 +21,6 @@
 		17018D1E2F50253200688324 /* FTResourceRequest.m in Sources */ = {isa = PBXBuildFile; fileRef = 17018CF12F50253200688324 /* FTResourceRequest.m */; };
 		17018D1F2F50253200688324 /* FTUIImageResource.m in Sources */ = {isa = PBXBuildFile; fileRef = 17018C772F50253200688324 /* FTUIImageResource.m */; };
 		17018D202F50253200688324 /* FTDataReader.m in Sources */ = {isa = PBXBuildFile; fileRef = 17018CD12F50253200688324 /* FTDataReader.m */; };
-		17018D212F50253200688324 /* FTImageDataUtils.m in Sources */ = {isa = PBXBuildFile; fileRef = 17018CA12F50253200688324 /* FTImageDataUtils.m */; };
 		17018D222F50253200688324 /* FTReader.m in Sources */ = {isa = PBXBuildFile; fileRef = 17018CD52F50253200688324 /* FTReader.m */; };
 		17018D232F50253200688324 /* FTViewTreeSnapshot.m in Sources */ = {isa = PBXBuildFile; fileRef = 17018C9C2F50253200688324 /* FTViewTreeSnapshot.m */; };
 		17018D242F50253200688324 /* FTResourcesFeature.m in Sources */ = {isa = PBXBuildFile; fileRef = 17018D082F50253200688324 /* FTResourcesFeature.m */; };
@@ -54,7 +53,6 @@
 		17018D3F2F50253200688324 /* UIView+FTSRPrivacy.m in Sources */ = {isa = PBXBuildFile; fileRef = 17018D112F50253200688324 /* UIView+FTSRPrivacy.m */; };
 		17018D402F50253200688324 /* FTUploadConditions.m in Sources */ = {isa = PBXBuildFile; fileRef = 17018CFE2F50253200688324 /* FTUploadConditions.m */; };
 		17018D412F50253200688324 /* FTSRUtils.m in Sources */ = {isa = PBXBuildFile; fileRef = 17018CAC2F50253200688324 /* FTSRUtils.m */; };
-		17018D422F50253200688324 /* NSData+FTHelper.m in Sources */ = {isa = PBXBuildFile; fileRef = 17018CCE2F50253200688324 /* NSData+FTHelper.m */; };
 		17018D432F50253200688324 /* FTUIDatePickerRecorder.m in Sources */ = {isa = PBXBuildFile; fileRef = 17018C752F50253200688324 /* FTUIDatePickerRecorder.m */; };
 		17018D442F50253200688324 /* FTFilesOrchestrator.m in Sources */ = {isa = PBXBuildFile; fileRef = 17018CE62F50253200688324 /* FTFilesOrchestrator.m */; };
 		17018D452F50253200688324 /* FTFileReader.m in Sources */ = {isa = PBXBuildFile; fileRef = 17018CD32F50253200688324 /* FTFileReader.m */; };
@@ -153,11 +151,9 @@
 		17018DA22F50253200688324 /* FTUIImageResource.h in Headers */ = {isa = PBXBuildFile; fileRef = 17018C762F50253200688324 /* FTUIImageResource.h */; };
 		17018DA32F50253200688324 /* FTDataStoreFileReader.h in Headers */ = {isa = PBXBuildFile; fileRef = 17018C622F50253200688324 /* FTDataStoreFileReader.h */; };
 		17018DA42F50253200688324 /* FTCompression.h in Headers */ = {isa = PBXBuildFile; fileRef = 17018CF72F50253200688324 /* FTCompression.h */; };
-		17018DA52F50253200688324 /* FTImageDataUtils.h in Headers */ = {isa = PBXBuildFile; fileRef = 17018CA02F50253200688324 /* FTImageDataUtils.h */; };
 		17018DA62F50253200688324 /* FTSRTextObfuscatingFactory.h in Headers */ = {isa = PBXBuildFile; fileRef = 17018CC92F50253200688324 /* FTSRTextObfuscatingFactory.h */; };
 		17018DA72F50253200688324 /* FTFileWriter.h in Headers */ = {isa = PBXBuildFile; fileRef = 17018CDA2F50253200688324 /* FTFileWriter.h */; };
 		17018DA82F50253200688324 /* FTRecorder.h in Headers */ = {isa = PBXBuildFile; fileRef = 17018CC32F50253200688324 /* FTRecorder.h */; };
-		17018DA92F50253200688324 /* NSData+FTHelper.h in Headers */ = {isa = PBXBuildFile; fileRef = 17018CCD2F50253200688324 /* NSData+FTHelper.h */; };
 		17018DAA2F50253200688324 /* FTFile.h in Headers */ = {isa = PBXBuildFile; fileRef = 17018CE32F50253200688324 /* FTFile.h */; };
 		17018DAB2F50253200688324 /* FTRequestMultipartFormBody.h in Headers */ = {isa = PBXBuildFile; fileRef = 17018CEE2F50253200688324 /* FTRequestMultipartFormBody.h */; };
 		17018DAC2F50253200688324 /* FTUIViewRecorder.h in Headers */ = {isa = PBXBuildFile; fileRef = 17018C902F50253200688324 /* FTUIViewRecorder.h */; };
@@ -1239,8 +1235,6 @@
 		17018C9C2F50253200688324 /* FTViewTreeSnapshot.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = FTViewTreeSnapshot.m; sourceTree = "<group>"; };
 		17018C9D2F50253200688324 /* FTViewTreeSnapshotBuilder.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = FTViewTreeSnapshotBuilder.h; sourceTree = "<group>"; };
 		17018C9E2F50253200688324 /* FTViewTreeSnapshotBuilder.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = FTViewTreeSnapshotBuilder.m; sourceTree = "<group>"; };
-		17018CA02F50253200688324 /* FTImageDataUtils.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = FTImageDataUtils.h; sourceTree = "<group>"; };
-		17018CA12F50253200688324 /* FTImageDataUtils.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = FTImageDataUtils.m; sourceTree = "<group>"; };
 		17018CA22F50253200688324 /* FTJSONKeyMapper.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = FTJSONKeyMapper.h; sourceTree = "<group>"; };
 		17018CA32F50253200688324 /* FTJSONKeyMapper.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = FTJSONKeyMapper.m; sourceTree = "<group>"; };
 		17018CA42F50253200688324 /* FTNodesFlattener.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = FTNodesFlattener.h; sourceTree = "<group>"; };
@@ -1282,8 +1276,6 @@
 		17018CCA2F50253200688324 /* FTSRTextObfuscatingFactory.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = FTSRTextObfuscatingFactory.m; sourceTree = "<group>"; };
 		17018CCB2F50253200688324 /* FTWindowObserver.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = FTWindowObserver.h; sourceTree = "<group>"; };
 		17018CCC2F50253200688324 /* FTWindowObserver.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = FTWindowObserver.m; sourceTree = "<group>"; };
-		17018CCD2F50253200688324 /* NSData+FTHelper.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = "NSData+FTHelper.h"; sourceTree = "<group>"; };
-		17018CCE2F50253200688324 /* NSData+FTHelper.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = "NSData+FTHelper.m"; sourceTree = "<group>"; };
 		17018CD02F50253200688324 /* FTDataReader.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = FTDataReader.h; sourceTree = "<group>"; };
 		17018CD12F50253200688324 /* FTDataReader.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = FTDataReader.m; sourceTree = "<group>"; };
 		17018CD22F50253200688324 /* FTFileReader.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = FTFileReader.h; sourceTree = "<group>"; };
@@ -1879,8 +1871,6 @@
 			isa = PBXGroup;
 			children = (
 				17018C9F2F50253200688324 /* ViewTreeSnapshot */,
-				17018CA02F50253200688324 /* FTImageDataUtils.h */,
-				17018CA12F50253200688324 /* FTImageDataUtils.m */,
 				17018CA22F50253200688324 /* FTJSONKeyMapper.h */,
 				17018CA32F50253200688324 /* FTJSONKeyMapper.m */,
 				17018CA42F50253200688324 /* FTNodesFlattener.h */,
@@ -1939,8 +1929,6 @@
 				17018CCA2F50253200688324 /* FTSRTextObfuscatingFactory.m */,
 				17018CCB2F50253200688324 /* FTWindowObserver.h */,
 				17018CCC2F50253200688324 /* FTWindowObserver.m */,
-				17018CCD2F50253200688324 /* NSData+FTHelper.h */,
-				17018CCE2F50253200688324 /* NSData+FTHelper.m */,
 			);
 			path = Recorder;
 			sourceTree = "<group>";
@@ -3422,11 +3410,9 @@
 				17018DA32F50253200688324 /* FTDataStoreFileReader.h in Headers */,
 				1701B1982F5594C500E2AE8A /* FTQueue.h in Headers */,
 				17018DA42F50253200688324 /* FTCompression.h in Headers */,
-				17018DA52F50253200688324 /* FTImageDataUtils.h in Headers */,
 				17018DA62F50253200688324 /* FTSRTextObfuscatingFactory.h in Headers */,
 				17018DA72F50253200688324 /* FTFileWriter.h in Headers */,
 				17018DA82F50253200688324 /* FTRecorder.h in Headers */,
-				17018DA92F50253200688324 /* NSData+FTHelper.h in Headers */,
 				17018DAA2F50253200688324 /* FTFile.h in Headers */,
 				1701B1A62F56FB0200E2AE8A /* FTCALayerChange.h in Headers */,
 				17018DAB2F50253200688324 /* FTRequestMultipartFormBody.h in Headers */,
@@ -4033,7 +4019,6 @@
 				17018D1E2F50253200688324 /* FTResourceRequest.m in Sources */,
 				17018D1F2F50253200688324 /* FTUIImageResource.m in Sources */,
 				17018D202F50253200688324 /* FTDataReader.m in Sources */,
-				17018D212F50253200688324 /* FTImageDataUtils.m in Sources */,
 				17018D222F50253200688324 /* FTReader.m in Sources */,
 				17018D232F50253200688324 /* FTViewTreeSnapshot.m in Sources */,
 				17018D242F50253200688324 /* FTResourcesFeature.m in Sources */,
@@ -4068,7 +4053,6 @@
 				17018D3F2F50253200688324 /* UIView+FTSRPrivacy.m in Sources */,
 				17018D402F50253200688324 /* FTUploadConditions.m in Sources */,
 				17018D412F50253200688324 /* FTSRUtils.m in Sources */,
-				17018D422F50253200688324 /* NSData+FTHelper.m in Sources */,
 				17018D432F50253200688324 /* FTUIDatePickerRecorder.m in Sources */,
 				17018D442F50253200688324 /* FTFilesOrchestrator.m in Sources */,
 				17018D452F50253200688324 /* FTFileReader.m in Sources */,

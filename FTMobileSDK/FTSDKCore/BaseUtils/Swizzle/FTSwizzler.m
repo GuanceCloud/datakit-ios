@@ -56,9 +56,6 @@ static void swizzle(Class classToSwizzle,
               class_isMetaClass(classToSwizzle) ? @"class" : @"instance",
               classToSwizzle);
     
-    NSCAssert(blockIsAnImpFactoryBlock(factoryBlock),
-              @"Wrong type of implementation factory block.");
-    
     __block os_unfair_lock lock = OS_UNFAIR_LOCK_INIT;
     // To keep things thread-safe, we fill in the originalIMP later,
     // with the result of the class_replaceMethod call below.

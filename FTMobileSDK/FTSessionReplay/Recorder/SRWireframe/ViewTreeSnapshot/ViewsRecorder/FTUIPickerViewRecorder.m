@@ -10,7 +10,6 @@
 #import "FTSRWireframe.h"
 #import "FTViewAttributes.h"
 #import "FTSRUtils.h"
-#import "FTImageDataUtils.h"
 #import "FTViewTreeRecordingContext.h"
 #import "FTViewTreeRecorder.h"
 #import "FTUIViewRecorder.h"

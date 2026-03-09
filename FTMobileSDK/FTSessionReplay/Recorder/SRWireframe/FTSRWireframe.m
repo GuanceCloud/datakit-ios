@@ -345,7 +345,7 @@ static BOOL objectIsEqual(id new,id old){
     self = [super initWithIdentifier:identifier frame:frame];
     if(self){
         self.type = @"image";
-        self.mimeType = @"png";
+        self.mimeType = @"image/png";
         self.isEmpty = NO;
     }
     return self;

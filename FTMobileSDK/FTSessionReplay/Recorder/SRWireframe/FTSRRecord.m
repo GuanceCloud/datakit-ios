@@ -302,6 +302,7 @@
             NSDictionary  *dict = [NSKeyedUnarchiver unarchiveObjectWithData:data];
 #pragma clang diagnostic pop
             _type = @"resource";
+            _mimeType = dict[@"mimeType"];
             _appId = dict[@"appId"];
             _identifier = dict[@"identifier"];
             _data = dict[@"data"];

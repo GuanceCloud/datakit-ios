@@ -28,6 +28,7 @@ typedef id<FTSRTextObfuscatingProtocol> _Nullable(^FTTextObfuscator)(FTViewTreeR
 @end
 
 @protocol FTSRResource <NSObject>
+@property (nonatomic, copy) NSString *mimeType;
 - (NSString *)calculateIdentifier;
 - (NSData *)calculateData;
 @end

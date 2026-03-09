@@ -7,7 +7,7 @@
 //
 
 #import "FTScreenChangeMonitor.h"
-#import "FTCALayerChangeAggregator.H"
+#import "FTCALayerChangeAggregator.h"
 #import "FTTimerScheduler.h"
 #import "FTQueue.h"
 #import "FTCALayerSwizzler.h"

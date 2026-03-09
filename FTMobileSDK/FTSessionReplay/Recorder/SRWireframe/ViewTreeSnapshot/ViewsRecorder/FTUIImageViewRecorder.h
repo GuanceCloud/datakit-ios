@@ -9,7 +9,6 @@
 #import <Foundation/Foundation.h>
 #import <UIKit/UIKit.h>
 #import "FTSRNodeWireframesBuilder.h"
-#import "FTImageDataUtils.h"
 @class FTViewAttributes,FTUIImageResource;
 
 NS_ASSUME_NONNULL_BEGIN

@@ -12,7 +12,7 @@ NS_ASSUME_NONNULL_BEGIN
 
 @interface UIImage (FTSRIdentifier)
 @property(nonatomic, copy) NSString *srIdentifier;
-- (NSData *)ft_scaledDownToApproximateSize:(NSUInteger)maxSize tintColor:(nullable UIColor *)tintColor;
+- (NSData *)ft_pngDataWithTintColor:(nullable UIColor *)tintColor;
 @end
 
 NS_ASSUME_NONNULL_END

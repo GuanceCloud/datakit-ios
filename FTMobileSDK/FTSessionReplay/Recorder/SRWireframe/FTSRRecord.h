@@ -84,6 +84,7 @@ NS_ASSUME_NONNULL_BEGIN
 @property (nonatomic, copy) NSString *identifier;
 @property (nonatomic, strong) NSData *data;
 @property (nonatomic, copy) NSString *type;
+@property (nonatomic, copy) NSString *mimeType;
 @property (nonatomic, copy) NSString *appId;
 -(instancetype)initWithData:(NSData *)data;
 @end
