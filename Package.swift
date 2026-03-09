@@ -186,6 +186,7 @@ let package = Package(
                     .headerSearchPath("Recorder/SRWireframe"),
                     .headerSearchPath("Recorder/SRWireframe/ViewTreeSnapshot"),
                     .headerSearchPath("Recorder/SRWireframe/ViewTreeSnapshot/ViewsRecorder"),
+                    .headerSearchPath("Recorder/ScreenChangeMonitor"),
                     .headerSearchPath("Storage"),
                     .headerSearchPath("Storage/Writer"),
                     .headerSearchPath("Storage/Reader"),
@@ -193,6 +194,7 @@ let package = Package(
                     .headerSearchPath("TLV"),
                     .headerSearchPath("Upload"),
                     .headerSearchPath("Upload/Request"),
+                    .headerSearchPath("Utilities"),
                 ]
                ),
     ]
