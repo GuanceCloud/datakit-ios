@@ -23,16 +23,6 @@ static char *hasCompletionKey = "hasCompletionKey";
     }
     return NO;
 }
-- (void)ft_resume{
-    NSURLRequest *originalRequest = self.originalRequest;
-    if(originalRequest && [[FTURLSessionInstrumentation sharedInstance] isNotSDKInsideUrl:originalRequest.URL]){
-        id<FTURLSessionInterceptorProtocol> traceInterceptor = [[FTURLSessionInstrumentation sharedInstance] traceInterceptor:[self ft_delegate]];
-        id<FTURLSessionInterceptorProtocol> rumInterceptor = [[FTURLSessionInstrumentation sharedInstance] rumInterceptor:[self ft_delegate]];
-        [traceInterceptor traceInterceptTask:self];
-        [rumInterceptor interceptTask:self];
-    }
-    [self ft_resume];
-}
 - (id<NSURLSessionDelegate>)ft_delegate{
     if (@available(iOS 15.0,tvOS 15.0,macOS 12.0, *)) {
         if(self.delegate){

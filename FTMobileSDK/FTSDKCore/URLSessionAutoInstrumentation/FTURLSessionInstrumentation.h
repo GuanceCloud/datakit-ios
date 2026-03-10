@@ -23,8 +23,8 @@
 #import "FTTracerProtocol.h"
 #import "FTExternalResourceProtocol.h"
 #import "FTTraceContext.h"
+#import "FTInternalConstants.h"
 NS_ASSUME_NONNULL_BEGIN
-typedef enum FTNetworkTraceType:NSUInteger FTNetworkTraceType;
 /// URLSession automation object for collecting rum data and implementing trace functionality
 @interface FTURLSessionInstrumentation : NSObject<NSURLSessionDelegate>
 
@@ -38,9 +38,6 @@ typedef enum FTNetworkTraceType:NSUInteger FTNetworkTraceType;
 
 /// Determine whether automatic RUM collection is allowed
 @property (atomic, assign, readonly) BOOL shouldRUMInterceptor;
-
-
-- (BOOL)isNotSDKInsideUrl:(NSURL *)url;
 
 - (instancetype)init NS_UNAVAILABLE;
 
@@ -60,19 +57,16 @@ typedef enum FTNetworkTraceType:NSUInteger FTNetworkTraceType;
 ///   - enableLinkRumData: Whether to associate with RUM
 ///   - sampleRate: Sampling rate
 ///   - traceType: Link type
+///   - serviceName: serviceName
 - (void)setTraceEnableAutoTrace:(BOOL)enableAutoTrace
               enableLinkRumData:(BOOL)enableLinkRumData
                      sampleRate:(int)sampleRate
-                      traceType:(FTNetworkTraceType)traceType
-               traceInterceptor:(TraceInterceptor)traceInterceptor;
+                      traceType:(NetworkTraceType)traceType
+               traceInterceptor:(TraceInterceptor)traceInterceptor
+                    serviceName:(NSString *)serviceName;
 
 - (void)updateTraceSampleRate:(int)sampleRate;
 
-/// Set SDK internal data upload URL
-/// - Parameters
-///   - sdkUrlStr: SDK internal data upload URL
-///   - serviceName:
-- (void)setSdkUrlStr:(NSString *)sdkUrlStr serviceName:(NSString *)serviceName;
 
 /// Set RUM resource data processing object that conforms to FTRumResourceProtocol
 ///

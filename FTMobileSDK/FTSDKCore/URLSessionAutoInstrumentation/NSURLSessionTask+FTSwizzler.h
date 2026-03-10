@@ -13,7 +13,7 @@ NS_ASSUME_NONNULL_BEGIN
 @interface NSURLSessionTask (FTSwizzler)
 @property (nonatomic, assign) BOOL ft_hasCompletion;
 
-- (void)ft_resume;
+- (id<NSURLSessionDelegate>)ft_delegate;
 @end
 
 NS_ASSUME_NONNULL_END

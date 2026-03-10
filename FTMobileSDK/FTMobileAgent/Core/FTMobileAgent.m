@@ -195,9 +195,6 @@ static FTMobileAgent *sharedInstance = nil;
     [FTTrackDataManager startWithAutoSync:autoSync syncPageSize:config.syncPageSize syncSleepTime:config.syncSleepTime];
     [[FTTrackDataManager sharedInstance] setEnableLimitWithDb:config.enableLimitWithDbSize size:config.dbCacheLimit discardNew:config.dbDiscardType == FTDBDiscard];
     
-   
-    [[FTURLSessionInstrumentation sharedInstance] setSdkUrlStr:config.datakitUrl.length>0?config.datakitUrl:config.datawayUrl
-                                                   serviceName:config.service];
     [[FTExtensionDataManager sharedInstance] writeMobileConfig:[config convertToDictionary]];
     FTInnerLogInfo(@"Init Mobile Config Success: \n%@",config.debugDescription);
 }
@@ -231,8 +228,9 @@ static FTMobileAgent *sharedInstance = nil;
     [[FTURLSessionInstrumentation sharedInstance] setTraceEnableAutoTrace:traceConfig.enableAutoTrace
                                                         enableLinkRumData:traceConfig.enableLinkRumData
                                                                sampleRate:traceConfig.samplerate
-                                                                traceType:traceConfig.networkTraceType
+                                                                traceType:(NetworkTraceType)traceConfig.networkTraceType
                                                          traceInterceptor:traceConfig.traceInterceptor
+                                                              serviceName:self.sdkConfig.service
     ];
     [FTExternalDataManager sharedManager].resourceDelegate = [FTURLSessionInstrumentation sharedInstance].externalResourceHandler;
     [[FTExtensionDataManager sharedInstance] writeTraceConfig:[traceConfig convertToDictionary]];
@@ -396,7 +394,6 @@ static FTMobileAgent *sharedInstance = nil;
     }
     
     [FTNetworkInfoManager sharedInstance].setUploadURL(datakitUrl,datawayUrl,clientToken);
-    [[FTURLSessionInstrumentation sharedInstance] updateSdkUrlStr:datakitUrl.length>0?datakitUrl:datawayUrl];
     FTTrackDataManager *trackManager = [FTTrackDataManager sharedInstance];
     BOOL autoSync = [self sharedInstance].sdkConfig.autoSync && [FTNetworkInfoManager sharedInstance].isNetworkConfigured;
     if (trackManager.autoSync != autoSync) {
