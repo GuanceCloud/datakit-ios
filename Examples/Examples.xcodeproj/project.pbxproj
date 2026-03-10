@@ -139,6 +139,7 @@
 		17C4F1792D671C2300F97A7F /* TestUIControlVC.m in Sources */ = {isa = PBXBuildFile; fileRef = 17C4F1782D671C2300F97A7F /* TestUIControlVC.m */; };
 		17C4F17B2D671C8200F97A7F /* Province.plist in Resources */ = {isa = PBXBuildFile; fileRef = 17C4F17A2D671C8200F97A7F /* Province.plist */; };
 		17C7631F28267154009582B6 /* FTLineProtocol.m in Sources */ = {isa = PBXBuildFile; fileRef = 17C7631E28267154009582B6 /* FTLineProtocol.m */; };
+		17CBD84F2F5FB78300FD9D8B /* TestImageVC.m in Sources */ = {isa = PBXBuildFile; fileRef = 17CBD84E2F5FB78300FD9D8B /* TestImageVC.m */; };
 		17D339EE2807AB0C0083C2B3 /* FTModelHelper.m in Sources */ = {isa = PBXBuildFile; fileRef = 17D339ED2807AB0C0083C2B3 /* FTModelHelper.m */; };
 		17E0792E291E60830014A420 /* FTExtensionSDKTest.m in Sources */ = {isa = PBXBuildFile; fileRef = 17E0792D291E60830014A420 /* FTExtensionSDKTest.m */; };
 		17F10EBB2D13EAC800737EDD /* NibViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 17F10EAD2D13EAC800737EDD /* NibViewController.swift */; };
@@ -385,6 +386,8 @@
 		17C4F1782D671C2300F97A7F /* TestUIControlVC.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = TestUIControlVC.m; sourceTree = "<group>"; };
 		17C4F17A2D671C8200F97A7F /* Province.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Province.plist; sourceTree = "<group>"; };
 		17C7631E28267154009582B6 /* FTLineProtocol.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = FTLineProtocol.m; sourceTree = "<group>"; };
+		17CBD84D2F5FB78300FD9D8B /* TestImageVC.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = TestImageVC.h; sourceTree = "<group>"; };
+		17CBD84E2F5FB78300FD9D8B /* TestImageVC.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = TestImageVC.m; sourceTree = "<group>"; };
 		17D339EC2807AB0C0083C2B3 /* FTModelHelper.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = FTModelHelper.h; sourceTree = "<group>"; };
 		17D339ED2807AB0C0083C2B3 /* FTModelHelper.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = FTModelHelper.m; sourceTree = "<group>"; };
 		17E0792D291E60830014A420 /* FTExtensionSDKTest.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = FTExtensionSDKTest.m; sourceTree = "<group>"; };
@@ -831,6 +834,8 @@
 				7C6E8EC025DE4D4E00D12C12 /* CrashVC.m */,
 				7C6E925325E35E9800D12C12 /* Crasher.h */,
 				7C6E925225E35E9700D12C12 /* Crasher.mm */,
+				17CBD84D2F5FB78300FD9D8B /* TestImageVC.h */,
+				17CBD84E2F5FB78300FD9D8B /* TestImageVC.m */,
 				7C6E8F1225DF684600D12C12 /* TableViewCellItem.h */,
 				7C6E8F1325DF684600D12C12 /* TableViewCellItem.m */,
 				4A159F3623D3F3BD00804D70 /* RootTabbarVC.h */,
@@ -1548,6 +1553,7 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				17CBD84F2F5FB78300FD9D8B /* TestImageVC.m in Sources */,
 				7CA16CC226B8DF1D0079840D /* TestWKParentVC.m in Sources */,
 				17BCF3862D66FF6D009A63FD /* TestPageVC.m in Sources */,
 				7CA16CE326B9110F0079840D /* TestWKProxy.m in Sources */,
@@ -1999,10 +2005,7 @@
 				SWIFT_VERSION = 5.0;
 				TARGETED_DEVICE_FAMILY = 3;
 				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/tvOS-App.app/$(BUNDLE_EXECUTABLE_FOLDER_PATH)/tvOS-App";
-				USER_HEADER_SEARCH_PATHS = (
-					"$(inherited)",
-					" ",
-				);
+				USER_HEADER_SEARCH_PATHS = "$(inherited)  ";
 			};
 			name = Debug;
 		};
@@ -2043,10 +2046,7 @@
 				SWIFT_VERSION = 5.0;
 				TARGETED_DEVICE_FAMILY = 3;
 				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/tvOS-App.app/$(BUNDLE_EXECUTABLE_FOLDER_PATH)/tvOS-App";
-				USER_HEADER_SEARCH_PATHS = (
-					"$(inherited)",
-					" ",
-				);
+				USER_HEADER_SEARCH_PATHS = "$(inherited)  ";
 			};
 			name = Pre;
 		};
@@ -2081,10 +2081,7 @@
 				SWIFT_VERSION = 5.0;
 				TARGETED_DEVICE_FAMILY = 3;
 				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/tvOS-App.app/$(BUNDLE_EXECUTABLE_FOLDER_PATH)/tvOS-App";
-				USER_HEADER_SEARCH_PATHS = (
-					"$(inherited)",
-					" ",
-				);
+				USER_HEADER_SEARCH_PATHS = "$(inherited)  ";
 			};
 			name = Release;
 		};
@@ -2213,10 +2210,7 @@
 				SWIFT_VERSION = 5.0;
 				TARGETED_DEVICE_FAMILY = "1,2";
 				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/App.app/$(BUNDLE_EXECUTABLE_FOLDER_PATH)/App";
-				USER_HEADER_SEARCH_PATHS = (
-					"$(inherited)",
-					" ",
-				);
+				USER_HEADER_SEARCH_PATHS = "$(inherited)  ";
 			};
 			name = Pre;
 		};
@@ -2783,10 +2777,7 @@
 				SWIFT_VERSION = 5.0;
 				TARGETED_DEVICE_FAMILY = "1,2";
 				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/App.app/$(BUNDLE_EXECUTABLE_FOLDER_PATH)/App";
-				USER_HEADER_SEARCH_PATHS = (
-					"$(inherited)",
-					" ",
-				);
+				USER_HEADER_SEARCH_PATHS = "$(inherited)  ";
 			};
 			name = Debug;
 		};
@@ -2819,10 +2810,7 @@
 				SWIFT_VERSION = 5.0;
 				TARGETED_DEVICE_FAMILY = "1,2";
 				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/App.app/$(BUNDLE_EXECUTABLE_FOLDER_PATH)/App";
-				USER_HEADER_SEARCH_PATHS = (
-					"$(inherited)",
-					" ",
-				);
+				USER_HEADER_SEARCH_PATHS = "$(inherited)  ";
 			};
 			name = Release;
 		};

@@ -20,6 +20,8 @@
 #import "NetworkTraceVC.h"
 #import "LoggerVC.h"
 #import "TestUIControlVC.h"
+#import "TestImageVC.h"
+
 @interface DemoViewController ()<UITableViewDelegate,UITableViewDataSource>
 @property (nonatomic, strong) UITableView *mtableView;
 @property (nonatomic, strong) NSMutableArray<TableViewCellItem*> *dataSource;
@@ -111,8 +113,13 @@
             return model;
         }];
     }];
+    TableViewCellItem *item17 = [[TableViewCellItem alloc]initWithTitle:@"Session Replay Image Test" handler:^{
+        weakSelf.hidesBottomBarWhenPushed = YES;
+        [weakSelf.navigationController pushViewController:[TestImageVC new] animated:YES];
+        weakSelf.hidesBottomBarWhenPushed = NO;
+    }];
     
-    [self.dataSource addObjectsFromArray:@[item1,item2,item3,item4,item5,item7,item8,item9,item10,item11,item12,item13,item14,item15,item16]];
+    [self.dataSource addObjectsFromArray:@[item1,item2,item3,item4,item5,item7,item8,item9,item10,item11,item12,item13,item14,item15,item16,item17]];
     _mtableView = [[UITableView alloc] initWithFrame:CGRectMake(0, 0, self.view.bounds.size.width, [UIScreen mainScreen].bounds.size.height)];
     _mtableView.dataSource = self;
     _mtableView.delegate = self;
