@@ -14,7 +14,7 @@
 #import "FTRecordModel.h"
 #import "FTSDKCompat.h"
 #import "NSDictionary+FTCopyProperties.h"
-#import "FTEnumConstant.h"
+#import "FTInternalConstants.h"
 #import "FTPresetProperty.h"
 #import "FTLoggerConfig+Private.h"
 #import "FTJSONUtil.h"

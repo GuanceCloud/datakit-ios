@@ -14,7 +14,7 @@
 #import "FTBaseInfoHandler.h"
 #import "FTDataCompression.h"
 #import "FTLog+Private.h"
-#import "FTEnumConstant.h"
+#import "FTInternalConstants.h"
 #import <objc/runtime.h>
 @interface FTRequest()
 
@@ -93,13 +93,13 @@
     NSString *gmtDate =[date ft_stringWithGMTFormat];
     [mutableRequest setValue:gmtDate forHTTPHeaderField:@"Date"];
     NSString *timestamp = [NSString stringWithFormat:@"%lld",[date ft_millisecondTimeStamp]];
-    [mutableRequest setValue:timestamp forHTTPHeaderField:@"x-client-timestamp"];
+    [mutableRequest setValue:timestamp forHTTPHeaderField:FT_HTTP_HEADER_X_CLIENT_TIMESTAMP];
     if(self.contentType){
         [mutableRequest setValue:self.contentType forHTTPHeaderField:@"Content-Type"];
     }
     [mutableRequest setValue:@"zh-CN" forHTTPHeaderField:@"Accept-Language"];
     [mutableRequest setValue:self.userAgent forHTTPHeaderField:@"User-Agent"];
-    [mutableRequest setValue:[NSString stringWithFormat:@"rumm-%@",packageId] forHTTPHeaderField:@"X-Pkg-Id"];
+    [mutableRequest setValue:[NSString stringWithFormat:@"rumm-%@",packageId] forHTTPHeaderField:FT_HTTP_HEADER_X_PKG_ID];
 }
 - (NSMutableURLRequest *)adaptedRequest:(NSMutableURLRequest *)mutableRequest{
     if (!self.requestBody || !self.events) {

@@ -28,7 +28,7 @@
 #import "FTMobileAgentVersion.h"
 #import "FTNetworkInfoManager.h"
 #import "FTURLSessionInstrumentation.h"
-#import "FTEnumConstant.h"
+#import "FTInternalConstants.h"
 #import "FTMobileConfig+Private.h"
 #import "FTLoggerConfig+Private.h"
 #import "FTRumConfig+Private.h"

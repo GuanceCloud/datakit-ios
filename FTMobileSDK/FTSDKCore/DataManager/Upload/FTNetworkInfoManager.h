@@ -7,7 +7,7 @@
 //
 
 #import <Foundation/Foundation.h>
-#import "FTEnumConstant.h"
+#import "FTInternalConstants.h"
 typedef NS_ENUM(NSInteger, FTNetworkConfigState) {
     FTNetworkConfigStateNotConfigured = 0,
     FTNetworkConfigStateDatakitMode,

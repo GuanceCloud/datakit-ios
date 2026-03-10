@@ -7,7 +7,8 @@
 //
 
 #import "BlacklistedVCClassNames.h"
-#import "FTConstants.h"
+#import "FTInternalConstants.h"
+
 @implementation BlacklistedVCClassNames
 + (NSDictionary *)ft_blacklistedViewControllerClassNames{
     static NSDictionary * blacklistedClasses  = nil;

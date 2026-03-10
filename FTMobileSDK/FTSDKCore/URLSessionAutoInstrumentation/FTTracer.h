@@ -8,7 +8,7 @@
 
 #import <Foundation/Foundation.h>
 #import "FTTracerProtocol.h"
-#import "FTEnumConstant.h"
+#import "FTInternalConstants.h"
 NS_ASSUME_NONNULL_BEGIN
 
 /// Specific implementation of trace functionality, adding parameters to request headers

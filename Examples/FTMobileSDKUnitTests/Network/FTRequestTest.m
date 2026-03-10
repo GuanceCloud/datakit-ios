@@ -16,7 +16,7 @@
 #import "FTRequest.h"
 #import "FTHTTPClient.h"
 #import "FTNetworkInfoManager.h"
-#import "FTEnumConstant.h"
+#import "FTInternalConstants.h"
 #import "FTModelHelper.h"
 #import "FTTrackDataManager.h"
 #import "NSDate+FTUtil.h"
