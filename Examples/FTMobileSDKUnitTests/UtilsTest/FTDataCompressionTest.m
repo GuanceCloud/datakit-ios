@@ -114,7 +114,7 @@
 
     uint32_t expectedChecksum;
     memcpy(&expectedChecksum, bytes + data.length - 4, sizeof(uint32_t));
-    expectedChecksum = CFSwapInt32BigToHost(expectedChecksum); // 转为主机字节序
+    expectedChecksum = CFSwapInt32BigToHost(expectedChecksum);
 
     NSData *decompressedData = [self rawDecompress:payloadBytes
                                      payloadLength:payloadLength];
@@ -126,7 +126,7 @@
     calculatedChecksum = CFSwapInt32BigToHost(calculatedChecksum);
 
     if (calculatedChecksum != expectedChecksum) {
-        NSLog(@"Adler-32 校验失败，数据可能已损坏");
+        NSLog(@"Adler-32 checksum verification failed. Data may be corrupted.");
         return nil;
     }
 

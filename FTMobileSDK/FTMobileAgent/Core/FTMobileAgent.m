@@ -63,7 +63,6 @@ static FTMobileAgent *sharedInstance = nil;
 + (void)startWithConfigOptions:(FTMobileConfig *)configOptions{
     NSAssert ((strcmp(dispatch_queue_get_label(DISPATCH_CURRENT_QUEUE_LABEL), dispatch_queue_get_label(dispatch_get_main_queue())) == 0),@"The SDK must be initialized on the main thread, otherwise unpredictable issues may occur (such as missing launch events).");
     
-    NSAssert((configOptions.datakitUrl.length!=0||(configOptions.datawayUrl.length!=0&&configOptions.clientToken.length!=0)), @"Please correctly configure datakit or dataway write address");
     @synchronized(sharedInstanceLock) {
         if (!sharedInstance) {
             sharedInstance = [[FTMobileAgent alloc] initWithConfig:configOptions];
@@ -186,17 +185,17 @@ static FTMobileAgent *sharedInstance = nil;
                                                 pkgInfo:config.pkgInfo
     ];
     [FTExtensionDataManager sharedInstance].groupIdentifierArray = config.groupIdentifiers;
-    // Start data processing manager
-    [FTTrackDataManager startWithAutoSync:config.autoSync syncPageSize:config.syncPageSize syncSleepTime:config.syncSleepTime];
-    [[FTTrackDataManager sharedInstance] setEnableLimitWithDb:config.enableLimitWithDbSize size:config.dbCacheLimit discardNew:config.dbDiscardType == FTDBDiscard];
-    
     [FTNetworkInfoManager sharedInstance]
-        .setDatakitUrl(config.datakitUrl)
-        .setDatawayUrl(config.datawayUrl)
-        .setClientToken(config.clientToken)
+        .setUploadURL(config.datakitUrl,config.datawayUrl,config.clientToken)
         .setSdkVersion(SDK_VERSION)
         .setCompressionIntakeRequests(config.compressIntakeRequests)
         .setEnableDataIntegerCompatible(config.enableDataIntegerCompatible);
+    BOOL autoSync = config.autoSync&&[FTNetworkInfoManager sharedInstance].isNetworkConfigured;
+    // Start data processing manager
+    [FTTrackDataManager startWithAutoSync:autoSync syncPageSize:config.syncPageSize syncSleepTime:config.syncSleepTime];
+    [[FTTrackDataManager sharedInstance] setEnableLimitWithDb:config.enableLimitWithDbSize size:config.dbCacheLimit discardNew:config.dbDiscardType == FTDBDiscard];
+    
+   
     [[FTURLSessionInstrumentation sharedInstance] setSdkUrlStr:config.datakitUrl.length>0?config.datakitUrl:config.datawayUrl
                                                    serviceName:config.service];
     [[FTExtensionDataManager sharedInstance] writeMobileConfig:[config convertToDictionary]];
@@ -239,7 +238,6 @@ static FTMobileAgent *sharedInstance = nil;
     [[FTExtensionDataManager sharedInstance] writeTraceConfig:[traceConfig convertToDictionary]];
     FTInnerLogInfo(@"Init Trace Config Success: \n%@",traceConfig.debugDescription);
 }
-#pragma mark ==
 + (BOOL)checkInstallState{
     @synchronized(sharedInstanceLock) {
         return sharedInstance != nil;
@@ -376,9 +374,33 @@ static FTMobileAgent *sharedInstance = nil;
 }
 - (void)flushSyncData{
     @try {
-        [[FTTrackDataManager sharedInstance] flushSyncData];
+        if ([FTNetworkInfoManager sharedInstance].isNetworkConfigured) {
+            [[FTTrackDataManager sharedInstance] flushSyncData];
+        }
     } @catch (NSException *exception) {
         FTInnerLogError(@"%@ error: %@", self, exception);
+    }
+}
++ (void)updateDatakitURL:(NSString *)url{
+    [self updateUploadURLWithDatakitUrl:url datawayUrl:nil clientToken:nil];
+}
++ (void)updateDatawayURL:(NSString *)url clientToken:(NSString *)token{
+    [self updateUploadURLWithDatakitUrl:nil datawayUrl:url clientToken:token];
+}
++ (void)updateUploadURLWithDatakitUrl:(nullable NSString *)datakitUrl
+                           datawayUrl:(nullable NSString *)datawayUrl
+                          clientToken:(nullable NSString *)clientToken {
+    if (![self checkInstallState]) {
+        FTInnerLogError(@"SDK not initialized, please call +startWithConfigOptions: first");
+        return;
+    }
+    
+    [FTNetworkInfoManager sharedInstance].setUploadURL(datakitUrl,datawayUrl,clientToken);
+    [[FTURLSessionInstrumentation sharedInstance] updateSdkUrlStr:datakitUrl.length>0?datakitUrl:datawayUrl];
+    FTTrackDataManager *trackManager = [FTTrackDataManager sharedInstance];
+    BOOL autoSync = [self sharedInstance].sdkConfig.autoSync && [FTNetworkInfoManager sharedInstance].isNetworkConfigured;
+    if (trackManager.autoSync != autoSync) {
+        [trackManager enableAutoSync:autoSync];
     }
 }
 #pragma mark - SDK shutdown

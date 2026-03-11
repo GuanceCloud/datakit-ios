@@ -94,8 +94,6 @@ typedef FTTraceContext*_Nullable(^FTTraceInterceptor)(NSURLRequest *_Nonnull req
 /// - Parameter clientToken: dataway token
 - (instancetype)initWithDatawayUrl:(NSString *)datawayUrl clientToken:(NSString *)clientToken;
 
-/// Disable init initialization
-- (instancetype)init NS_UNAVAILABLE;
 
 /// Disable new initialization
 + (instancetype)new NS_UNAVAILABLE;

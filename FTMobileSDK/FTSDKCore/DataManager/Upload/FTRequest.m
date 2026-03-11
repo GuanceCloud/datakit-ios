@@ -41,13 +41,16 @@
     return self;
 }
 -(NSURL *)absoluteURL{
-    if (FTNetworkInfoManager.sharedInstance.datakitUrl) {
-        return [NSURL URLWithString:[NSString stringWithFormat:@"%@%@",FTNetworkInfoManager.sharedInstance.datakitUrl,self.path]];
+    FTNetworkConfigState state = [FTNetworkInfoManager sharedInstance].configState;
+    switch (state) {
+        case FTNetworkConfigStateDatakitMode:
+            return [NSURL URLWithString:[NSString stringWithFormat:@"%@%@",FTNetworkInfoManager.sharedInstance.datakitUrl,self.path]];
+        case FTNetworkConfigStateDatawayMode:
+            return [NSURL URLWithString:[NSString stringWithFormat:@"%@%@?token=%@&to_headless=true",FTNetworkInfoManager.sharedInstance.datawayUrl,self.path,FTNetworkInfoManager.sharedInstance.clientToken]];
+        default:
+            return nil;
     }
-    if(FTNetworkInfoManager.sharedInstance.datawayUrl&&FTNetworkInfoManager.sharedInstance.clientToken){
-        return [NSURL URLWithString:[NSString stringWithFormat:@"%@%@?token=%@&to_headless=true",FTNetworkInfoManager.sharedInstance.datawayUrl,self.path,FTNetworkInfoManager.sharedInstance.clientToken]];
-    }
-    return nil;
+   
 }
 -(NSString *)contentType{
     return @"text/plain;charset=UTF-8";

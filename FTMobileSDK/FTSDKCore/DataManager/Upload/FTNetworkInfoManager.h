@@ -8,6 +8,11 @@
 
 #import <Foundation/Foundation.h>
 #import "FTEnumConstant.h"
+typedef NS_ENUM(NSInteger, FTNetworkConfigState) {
+    FTNetworkConfigStateNotConfigured = 0,
+    FTNetworkConfigStateDatakitMode,
+    FTNetworkConfigStateDatawayMode,
+};
 NS_ASSUME_NONNULL_BEGIN
 
 @interface FTNetworkInfoManager : NSObject
@@ -18,15 +23,20 @@ NS_ASSUME_NONNULL_BEGIN
 @property (nonatomic,copy,readonly) NSString *appId;
 @property (nonatomic,assign,readonly) BOOL compression;
 @property (nonatomic,assign,readonly) BOOL enableDataIntegerCompatible;
+@property (nonatomic, assign) FTNetworkConfigState configState;
+
 
 + (instancetype)sharedInstance;
-- (FTNetworkInfoManager *(^)(NSString *value))setDatakitUrl;
-- (FTNetworkInfoManager *(^)(NSString *value))setDatawayUrl;
-- (FTNetworkInfoManager *(^)(NSString *value))setClientToken;
+
+- (FTNetworkInfoManager *(^)(NSString * _Nullable datakitUrl,
+                            NSString * _Nullable datawayUrl,
+                             NSString * _Nullable clientToken))setUploadURL;
 - (FTNetworkInfoManager *(^)(NSString *value))setSdkVersion;
 - (FTNetworkInfoManager *(^)(NSString *value))setAppId;
 - (FTNetworkInfoManager *(^)(BOOL value))setEnableDataIntegerCompatible;
 - (FTNetworkInfoManager *(^)(BOOL value))setCompressionIntakeRequests;
+
+- (BOOL)isNetworkConfigured;
 @end
 
 NS_ASSUME_NONNULL_END

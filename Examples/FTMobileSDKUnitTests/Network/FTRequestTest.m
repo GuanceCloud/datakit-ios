@@ -46,7 +46,7 @@
     }];
     NSString *urlStr = @"http://www.test.com/some/url/string";
     FTNetworkInfoManager *manager = [FTNetworkInfoManager sharedInstance];
-    manager.setDatakitUrl(urlStr)
+    manager.setUploadURL(urlStr,nil,nil)
         .setSdkVersion(@"RequestTest");
 }
 - (void)testLogRequest{

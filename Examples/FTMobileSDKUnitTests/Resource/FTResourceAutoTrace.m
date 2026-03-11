@@ -191,9 +191,9 @@
     
     // When SDK URL is not set
     XCTAssertTrue([[FTURLSessionInstrumentation sharedInstance] isNotSDKInsideUrl:nil] == NO);
-    XCTAssertTrue([[FTURLSessionInstrumentation sharedInstance] isNotSDKInsideUrl:[NSURL URLWithString:@"http://www.test.com/v1/write/rum"]] == NO);
-    XCTAssertTrue([[FTURLSessionInstrumentation sharedInstance] isNotSDKInsideUrl:[NSURL URLWithString:@"http://www.test.com"]] == NO);
-    XCTAssertTrue([[FTURLSessionInstrumentation sharedInstance] isNotSDKInsideUrl:[NSURL URLWithString:@"http://www.test.com:9528"]] == NO);
+    XCTAssertTrue([[FTURLSessionInstrumentation sharedInstance] isNotSDKInsideUrl:[NSURL URLWithString:@"http://www.test.com/v1/write/rum"]] == YES);
+    XCTAssertTrue([[FTURLSessionInstrumentation sharedInstance] isNotSDKInsideUrl:[NSURL URLWithString:@"http://www.test.com"]] == YES);
+    XCTAssertTrue([[FTURLSessionInstrumentation sharedInstance] isNotSDKInsideUrl:[NSURL URLWithString:@"http://www.test.com:9528"]] == YES);
 
     [[FTURLSessionInstrumentation sharedInstance] shutDown];
     
