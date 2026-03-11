@@ -410,13 +410,12 @@ static dispatch_once_t onceToken;
     if (!currentRequest) {
         return;
     }
-    
     if ([self isFTIntakeRequest:currentRequest]) {
         return;
     }
-    
-    id<FTURLSessionInterceptorProtocol> traceInterceptor = [[FTURLSessionInstrumentation sharedInstance] traceInterceptor:[task ft_delegate]];
-    id<FTURLSessionInterceptorProtocol> rumInterceptor = [[FTURLSessionInstrumentation sharedInstance] rumInterceptor:[task ft_delegate]];
+    id<NSURLSessionDelegate> delegate = [task ft_delegate];
+    id<FTURLSessionInterceptorProtocol> traceInterceptor = [[FTURLSessionInstrumentation sharedInstance] traceInterceptor:delegate];
+    id<FTURLSessionInterceptorProtocol> rumInterceptor = [[FTURLSessionInstrumentation sharedInstance] rumInterceptor:delegate];
     [traceInterceptor traceInterceptTask:task];
     [rumInterceptor interceptTask:task];
 }

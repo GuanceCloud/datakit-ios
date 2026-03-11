@@ -22,7 +22,6 @@
 #import "FTURLSessionInterceptorProtocol.h"
 #import "FTTracerProtocol.h"
 #import "FTExternalResourceProtocol.h"
-#import "FTTraceContext.h"
 #import "FTInternalConstants.h"
 NS_ASSUME_NONNULL_BEGIN
 /// URLSession automation object for collecting rum data and implementing trace functionality
