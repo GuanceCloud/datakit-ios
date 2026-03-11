@@ -16,8 +16,16 @@
 #import <objc/runtime.h>
 #import "OHHTTPStubs.h"
 #import "FTRequest.h"
-
+#import "FTInternalConstants.h"
+#import "FTURLSessionInstrumentation.h"
+#import "FTModelHelper.h"
+#import "FTGlobalRumManager.h"
+#import "FTRUMManager.h"
+@interface FTURLSessionInstrumentation()
+- (BOOL)isFTIntakeRequest:(NSURLRequest *)request;
+@end
 @interface FTURLSessionInterceptor()
+@property (nonatomic, strong) dispatch_queue_t queue;
 - (FTSessionTaskHandler *)getTraceHandler:(id)key;
 @end
 /** This class is used to wrap an NSURLSession object during testing. */
@@ -411,6 +419,7 @@
     [dataTask resume];
     XCTAssertNotNil([[FTURLSessionInterceptor shared] getTraceHandler:dataTask]);
     [self waitForExpectationsWithTimeout:10.0 handler:nil];
+    dispatch_sync([FTURLSessionInterceptor shared].queue, ^{});
     XCTAssertNil([[FTURLSessionInterceptor shared] getTraceHandler:dataTask]);
     [session invalidateAndCancel];
 }
@@ -430,8 +439,9 @@
 
 - (void)testSDKUploadLoggingRequest{
     [FTNetworkMock networkOHHTTPStubs];
-    FTLoggingRequest *loggingRequest = [[FTLoggingRequest alloc]init];
-    NSURLRequest *URLRequest = [NSURLRequest requestWithURL:loggingRequest.absoluteURL];
+    FTRequest *loggingRequest = [FTRequest createRequestWithEvents:@[[FTModelHelper createLogModel]] type:FT_DATA_TYPE_LOGGING];
+    NSMutableURLRequest *URLRequest = [[NSMutableURLRequest alloc]initWithURL:loggingRequest.absoluteURL];
+    URLRequest = [loggingRequest adaptedRequest:URLRequest];
     NSURLSession *session = [NSURLSession
                              sessionWithConfiguration:[NSURLSessionConfiguration defaultSessionConfiguration]];
     
@@ -443,8 +453,9 @@
 - (void)testSDKUploadRumRequest{
     __block NSURLSessionDataTask *dataTask;
     [FTNetworkMock networkOHHTTPStubs];
-    FTLoggingRequest *loggingRequest = [[FTLoggingRequest alloc]init];
-    NSURLRequest *URLRequest = [NSURLRequest requestWithURL:loggingRequest.absoluteURL];
+    FTRequest *rumRequest = [FTRequest createRequestWithEvents:@[[FTModelHelper createRumModel]] type:FT_DATA_TYPE_RUM];
+    NSMutableURLRequest *URLRequest = [[NSMutableURLRequest alloc]initWithURL:rumRequest.absoluteURL];
+    URLRequest = [rumRequest adaptedRequest:URLRequest];
     NSURLSession *session = [NSURLSession
                              sessionWithConfiguration:[NSURLSessionConfiguration defaultSessionConfiguration]];
     
@@ -452,5 +463,72 @@
     [dataTask resume];
     XCTAssertNil([[FTURLSessionInterceptor shared] getTraceHandler:dataTask]);
     [session invalidateAndCancel];
+}
+
+#pragma mark - SDK Internal Request Filtering Tests
+
+/** Tests that SDK internal RUM upload requests are filtered out. */
+- (void)testIsFTIntakeRequest_RUMRequest{
+    FTRequest *rumRequest = [FTRequest createRequestWithEvents:@[[FTModelHelper createRumModel]] type:FT_DATA_TYPE_RUM];
+    NSMutableURLRequest *URLRequest = [[NSMutableURLRequest alloc]initWithURL:rumRequest.absoluteURL];
+    URLRequest = [rumRequest adaptedRequest:URLRequest];
+    
+    FTURLSessionInstrumentation *instrumentation = [FTURLSessionInstrumentation sharedInstance];
+        
+    XCTAssertTrue([instrumentation isFTIntakeRequest:URLRequest], @"RUM package request should be filtered out");
+}
+/** Tests that SDK internal Log upload requests are filtered out. */
+- (void)testIsFTIntakeRequest_LogRequest{
+    FTRequest *loggingRequest = [FTRequest createRequestWithEvents:@[[FTModelHelper createLogModel]] type:FT_DATA_TYPE_LOGGING];
+    NSMutableURLRequest *URLRequest = [[NSMutableURLRequest alloc]initWithURL:loggingRequest.absoluteURL];
+    URLRequest = [loggingRequest adaptedRequest:URLRequest];
+    
+    FTURLSessionInstrumentation *instrumentation = [FTURLSessionInstrumentation sharedInstance];
+        
+    XCTAssertTrue([instrumentation isFTIntakeRequest:URLRequest], @"RUM package request should be filtered out");
+}
+- (void)testIsFTIntakeRequest{
+    NSMutableURLRequest *request = [NSMutableURLRequest requestWithURL:self.url];
+    [request setValue:@"rumm-" forHTTPHeaderField:FT_HTTP_HEADER_X_PKG_ID];
+    
+    FTURLSessionInstrumentation *instrumentation = [FTURLSessionInstrumentation sharedInstance];
+    
+    XCTAssertTrue([instrumentation isFTIntakeRequest:request], @"request should be filtered out");
+}
+
+/** Tests that normal user requests are not filtered. */
+- (void)testIsFTIntakeRequest_NormalRequest {
+    NSMutableURLRequest *request = [NSMutableURLRequest requestWithURL:self.url];
+    [request setValue:@"some-other-value" forHTTPHeaderField:FT_HTTP_HEADER_X_PKG_ID];
+    
+    FTURLSessionInstrumentation *instrumentation = [FTURLSessionInstrumentation sharedInstance];
+    
+    XCTAssertFalse([instrumentation isFTIntakeRequest:request], @"Normal request should NOT be filtered out");
+}
+
+/** Tests that requests without X-PKG-ID header are not filtered. */
+- (void)testIsFTIntakeRequest_NoPackageHeader {
+    NSMutableURLRequest *request = [NSMutableURLRequest requestWithURL:self.url];
+    
+    FTURLSessionInstrumentation *instrumentation = [FTURLSessionInstrumentation sharedInstance];
+  
+    XCTAssertFalse([instrumentation isFTIntakeRequest:request], @"Request without X-PKG-ID header should NOT be filtered out");
+}
+
+/** Tests that nil request returns NO. */
+- (void)testIsFTIntakeRequest_NilRequest {
+    FTURLSessionInstrumentation *instrumentation = [FTURLSessionInstrumentation sharedInstance];
+    XCTAssertFalse([instrumentation isFTIntakeRequest:nil], @"Nil request should return NO");
+}
+
+/** Tests that user requests with custom headers are not filtered. */
+- (void)testUserRequestsWithCustomHeaders {
+    NSMutableURLRequest *request = [NSMutableURLRequest requestWithURL:self.url];
+    [request setValue:@"custom-value" forHTTPHeaderField:@"X-Custom-Header"];
+    [request setValue:@"user-token" forHTTPHeaderField:@"Authorization"];
+    
+    FTURLSessionInstrumentation *instrumentation = [FTURLSessionInstrumentation sharedInstance];
+    
+    XCTAssertFalse([instrumentation isFTIntakeRequest:request], @"User request with custom headers should NOT be filtered out");
 }
 @end
