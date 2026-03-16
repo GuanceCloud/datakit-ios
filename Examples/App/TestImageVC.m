@@ -48,7 +48,7 @@
     [self.imageCache removeAllObjects];
     
     for (int i = 0; i < 10; i++) {
-        NSString *urlString = [NSString stringWithFormat:@"https://picsum.photos/seed/picsum%d/200/200", i];
+        NSString *urlString = [NSString stringWithFormat:@"https://picsum.photos/seed/picsum%d/100/100", i];
         [self.imageURLs addObject:urlString];
     }
 }
@@ -118,7 +118,7 @@
 
 - (void)addCellButtonTapped {
     int randomSeed = arc4random_uniform(10000);
-    NSString *newURLString = [NSString stringWithFormat:@"https://picsum.photos/seed/%d/200/200", randomSeed];
+    NSString *newURLString = [NSString stringWithFormat:@"https://picsum.photos/seed/%d/100/100", randomSeed];
     
     [self.imageURLs addObject:newURLString];
     

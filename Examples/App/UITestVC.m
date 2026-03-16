@@ -8,11 +8,16 @@
 
 #import "UITestVC.h"
 #import "AppDelegate.h"
+#import "CustomCollectionViewCell.h"
+
 @interface UITestVC ()<UICollectionViewDelegate,UICollectionViewDataSource>
 @property (nonatomic, strong) UITextField *textField;
 @property (nonatomic, strong) UISlider *slider;
 @property (nonatomic, strong) UIProgressView *progressView;
 @property (nonatomic, strong) UIActivityIndicatorView *activityIndicator;
+@property (nonatomic, strong) NSArray<NSString *> *systemImageNames;
+@property (nonatomic, strong) UICollectionViewFlowLayout *flowLayout;
+
 @end
 
 @implementation UITestVC
@@ -21,11 +26,34 @@
 }
 - (void)viewDidLoad {
     [super viewDidLoad];
+    self.title = @"UITest";
     // Do any additional setup after loading the view.
     self.view.backgroundColor = [UIColor whiteColor];
     [self createUI];
 }
 -(void)createUI{
+    self.systemImageNames = @[
+        @"house.fill",
+        @"heart.fill",
+        @"star.fill",
+        @"bookmark.fill",
+        @"gear",
+        @"person.fill",
+        @"bell.fill",
+        @"envelope.fill",
+        @"camera.fill",
+        @"photo.fill",
+        @"message.fill",
+        @"phone.fill",
+        @"mic.fill",
+        @"video.fill",
+        @"map.fill",
+        @"location.fill",
+        @"car.fill",
+        @"airplane",
+        @"train.side.front.car",
+        @"bicycle"
+    ];
     CGFloat x = 16;
     CGFloat y = 16;
     CGFloat width = self.view.frame.size.width - 2 * x;
@@ -136,12 +164,22 @@
     UICollectionViewFlowLayout *layout = [[UICollectionViewFlowLayout alloc]init];
     layout.scrollDirection = UICollectionViewScrollDirectionVertical;
     layout.itemSize = CGSizeMake(100, 40);
-    _collectionView = [[UICollectionView alloc] initWithFrame:CGRectMake(0, CGRectGetMaxY(_scrollView.frame), CGRectGetWidth(self.view.frame), CGRectGetHeight(self.view.frame)/2) collectionViewLayout:layout];
+    _collectionView = [[UICollectionView alloc] initWithFrame:CGRectZero collectionViewLayout:layout];
     _collectionView.dataSource = self;
     _collectionView.delegate = self;
 
-    [_collectionView registerClass:UICollectionViewCell.class forCellWithReuseIdentifier:@"UICollectionViewCell"];
+    [self.collectionView registerClass:[CustomCollectionViewCell class]
+            forCellWithReuseIdentifier:@"CustomCollectionViewCell"];
     [self.view addSubview:_collectionView];
+    _collectionView.translatesAutoresizingMaskIntoConstraints = NO;
+    if (@available(iOS 11.0, *)) {
+        [NSLayoutConstraint activateConstraints:@[
+            [_collectionView.topAnchor constraintEqualToAnchor:_scrollView.bottomAnchor],
+            [_collectionView.leadingAnchor constraintEqualToAnchor:self.view.leadingAnchor],
+            [_collectionView.trailingAnchor constraintEqualToAnchor:self.view.trailingAnchor],
+            [_collectionView.bottomAnchor constraintEqualToAnchor:self.view.safeAreaLayoutGuide.bottomAnchor]
+        ]];
+    }
 }
 - (void)datePickerValueChanged:(id)sender{
 
@@ -216,23 +254,44 @@
     return 20;
 }
 -(__kindof UICollectionViewCell *)collectionView:(UICollectionView *)collectionView cellForItemAtIndexPath:(NSIndexPath *)indexPath{
-    UICollectionViewCell *cell = [collectionView dequeueReusableCellWithReuseIdentifier:@"UICollectionViewCell" forIndexPath:indexPath];
-    UILabel *lable = [[UILabel alloc]initWithFrame:CGRectMake(0, 0, 100, 40)];
-    lable.text = [NSString stringWithFormat:@"cell: %ld", indexPath.row];
-    [cell.contentView addSubview:lable];
-    lable.backgroundColor = [self randomColor];
-    lable.accessibilityLabel =[NSString stringWithFormat:@"cell: %ld", indexPath.row];
-    lable.isAccessibilityElement = YES;
+    CustomCollectionViewCell *cell = [collectionView dequeueReusableCellWithReuseIdentifier:@"CustomCollectionViewCell"
+                                                                               forIndexPath:indexPath];
+    
+    if (@available(iOS 13.0, *)) {
+        NSString *imageName = self.systemImageNames[indexPath.item];
+        cell.cellImageView.image = [UIImage systemImageNamed:imageName];
+        
+        
+        NSArray *colors = @[
+            [UIColor systemRedColor],
+            [UIColor systemBlueColor],
+            [UIColor systemGreenColor],
+            [UIColor systemOrangeColor],
+            [UIColor systemPurpleColor]
+        ];
+        cell.cellImageView.tintColor = colors[indexPath.item % colors.count];
+    } else {
+        NSString *imageName = self.systemImageNames[indexPath.item];
+        cell.cellImageView.image = [UIImage imageNamed:imageName];
+    }
+    
+    cell.layer.cornerRadius = 8;
+    cell.layer.masksToBounds = YES;
+    if (@available(iOS 13.0, *)) {
+        cell.backgroundColor = [UIColor secondarySystemBackgroundColor];
+    }
+    
     return cell;
 }
 -(void)collectionView:(UICollectionView *)collectionView didSelectItemAtIndexPath:(NSIndexPath *)indexPath{
-    
-}
-- (UIColor *)randomColor {
-    int R = (arc4random() % 256) ;
-    int G = (arc4random() % 256) ;
-    int B = (arc4random() % 256) ;
-    return [UIColor colorWithRed:R/255.0 green:G/255.0 blue:B/255.0 alpha:1];
+    UICollectionViewCell *cell = [collectionView cellForItemAtIndexPath:indexPath];
+    [UIView animateWithDuration:0.1 animations:^{
+        cell.transform = CGAffineTransformMakeScale(0.95, 0.95);
+    } completion:^(BOOL finished) {
+        [UIView animateWithDuration:0.1 animations:^{
+            cell.transform = CGAffineTransformIdentity;
+        }];
+    }];
 }
 
 /*

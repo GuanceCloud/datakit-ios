@@ -140,6 +140,7 @@
 		17C4F17B2D671C8200F97A7F /* Province.plist in Resources */ = {isa = PBXBuildFile; fileRef = 17C4F17A2D671C8200F97A7F /* Province.plist */; };
 		17C7631F28267154009582B6 /* FTLineProtocol.m in Sources */ = {isa = PBXBuildFile; fileRef = 17C7631E28267154009582B6 /* FTLineProtocol.m */; };
 		17CBD84F2F5FB78300FD9D8B /* TestImageVC.m in Sources */ = {isa = PBXBuildFile; fileRef = 17CBD84E2F5FB78300FD9D8B /* TestImageVC.m */; };
+		17CBD8762F67EFB100FD9D8B /* CustomCollectionViewCell.m in Sources */ = {isa = PBXBuildFile; fileRef = 17CBD8752F67EFB100FD9D8B /* CustomCollectionViewCell.m */; };
 		17D339EE2807AB0C0083C2B3 /* FTModelHelper.m in Sources */ = {isa = PBXBuildFile; fileRef = 17D339ED2807AB0C0083C2B3 /* FTModelHelper.m */; };
 		17E0792E291E60830014A420 /* FTExtensionSDKTest.m in Sources */ = {isa = PBXBuildFile; fileRef = 17E0792D291E60830014A420 /* FTExtensionSDKTest.m */; };
 		17F10EBB2D13EAC800737EDD /* NibViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 17F10EAD2D13EAC800737EDD /* NibViewController.swift */; };
@@ -388,6 +389,8 @@
 		17C7631E28267154009582B6 /* FTLineProtocol.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = FTLineProtocol.m; sourceTree = "<group>"; };
 		17CBD84D2F5FB78300FD9D8B /* TestImageVC.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = TestImageVC.h; sourceTree = "<group>"; };
 		17CBD84E2F5FB78300FD9D8B /* TestImageVC.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = TestImageVC.m; sourceTree = "<group>"; };
+		17CBD8742F67EFB100FD9D8B /* CustomCollectionViewCell.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = CustomCollectionViewCell.h; sourceTree = "<group>"; };
+		17CBD8752F67EFB100FD9D8B /* CustomCollectionViewCell.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = CustomCollectionViewCell.m; sourceTree = "<group>"; };
 		17D339EC2807AB0C0083C2B3 /* FTModelHelper.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = FTModelHelper.h; sourceTree = "<group>"; };
 		17D339ED2807AB0C0083C2B3 /* FTModelHelper.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = FTModelHelper.m; sourceTree = "<group>"; };
 		17E0792D291E60830014A420 /* FTExtensionSDKTest.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = FTExtensionSDKTest.m; sourceTree = "<group>"; };
@@ -842,6 +845,8 @@
 				4A159F3723D3F3BD00804D70 /* RootTabbarVC.m */,
 				4A85314423AC6B2700B40B5D /* UITestVC.h */,
 				4A85314523AC6B2700B40B5D /* UITestVC.m */,
+				17CBD8742F67EFB100FD9D8B /* CustomCollectionViewCell.h */,
+				17CBD8752F67EFB100FD9D8B /* CustomCollectionViewCell.m */,
 				17C4F1772D671C2300F97A7F /* TestUIControlVC.h */,
 				17C4F1782D671C2300F97A7F /* TestUIControlVC.m */,
 				17C4F17A2D671C8200F97A7F /* Province.plist */,
@@ -1568,6 +1573,7 @@
 				175C7CFC29E6CE1B00A7F271 /* LoggerVC.m in Sources */,
 				4A49E93E253979C5009C44AD /* TestWKWebViewVC.m in Sources */,
 				4A11696C239113B900C0BC4E /* main.m in Sources */,
+				17CBD8762F67EFB100FD9D8B /* CustomCollectionViewCell.m in Sources */,
 				7C28B872266098B800CECBA6 /* TestJsbridgeData.m in Sources */,
 				7C8CE50B25F8DD2A0043B213 /* PrintHookTest.swift in Sources */,
 				7C64008B275A1E8300B2708B /* ManualRumAndTraceDataAdd.m in Sources */,
