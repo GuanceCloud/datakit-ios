@@ -21,6 +21,8 @@
 #import "FTModelHelper.h"
 #import "FTGlobalRumManager.h"
 #import "FTRUMManager.h"
+#import "NSURLSessionTask+FTSwizzler.h"
+
 @interface FTURLSessionInstrumentation()
 - (BOOL)isFTIntakeRequest:(NSURLRequest *)request;
 @end
@@ -530,5 +532,79 @@
     FTURLSessionInstrumentation *instrumentation = [FTURLSessionInstrumentation sharedInstance];
     
     XCTAssertFalse([instrumentation isFTIntakeRequest:request], @"User request with custom headers should NOT be filtered out");
+}
+#pragma mark ======= isSupportedForInstrumentation =======
+
+- (void)testIsSupportedForInstrumentation_dataTask{
+    NSURLSession *session = [NSURLSession sessionWithConfiguration:[NSURLSessionConfiguration ephemeralSessionConfiguration]];
+    NSURLSessionDataTask *dataTask = [session dataTaskWithURL:[NSURL URLWithString:@"https://httpbin.org/status/200"]];
+    XCTAssertTrue([dataTask ft_isSupportedForInstrumentation]);
+    [dataTask cancel];
+    [session invalidateAndCancel];
+}
+- (void)testIsSupportedForInstrumentation_uploadTask{
+    NSURLSession *session = [NSURLSession sessionWithConfiguration:[NSURLSessionConfiguration ephemeralSessionConfiguration]];
+    NSURL *url = [NSURL URLWithString:@"https://httpbin.org/post"];
+    NSMutableURLRequest *request = [NSMutableURLRequest requestWithURL:url];
+    request.HTTPMethod = @"POST";
+    NSError *jsonError;
+    NSDictionary *parameters = @{@"test":@"uploadTask"};
+    NSData *uploadData = [NSJSONSerialization dataWithJSONObject:parameters options:0 error:&jsonError];
+    NSURLSessionUploadTask *uploadTask = [session uploadTaskWithRequest:request fromData:uploadData];
+    XCTAssertTrue([uploadTask ft_isSupportedForInstrumentation]);
+    [uploadTask cancel];
+    [session invalidateAndCancel];
+}
+- (void)testIsSupportedForInstrumentation_downloadTask{
+    NSURLSession *session = [NSURLSession sessionWithConfiguration:[NSURLSessionConfiguration ephemeralSessionConfiguration]];
+    NSURLSessionDownloadTask *downloadTask = [session downloadTaskWithURL:[NSURL URLWithString:@"https://httpbin.org/bytes/1024"]];
+    XCTAssertTrue([downloadTask ft_isSupportedForInstrumentation]);
+    [downloadTask cancel];
+    [session invalidateAndCancel];
+}
+
+- (void)testIsSupportedForInstrumentation_webSocketTask API_AVAILABLE(macos(10.15), ios(13.0), watchos(6.0), tvos(13.0)){
+    NSURLSession *session = [NSURLSession sessionWithConfiguration:[NSURLSessionConfiguration ephemeralSessionConfiguration]];
+    NSURL *url = [NSURL URLWithString:@"wss://httpbin.org/ws"];
+
+    NSURLSessionWebSocketTask *webSocketTask = [session webSocketTaskWithURL:url];
+   
+    XCTAssertTrue([webSocketTask ft_isSupportedForInstrumentation]);
+    [webSocketTask cancel];
+    [session invalidateAndCancel];
+    
+}
+
+- (void)testIsSupportedForInstrumentation_streamTask{
+    NSURLSession *session = [NSURLSession sessionWithConfiguration:[NSURLSessionConfiguration ephemeralSessionConfiguration]];
+    NSURLSessionStreamTask *streamTask = [session streamTaskWithHostName:@"tcpbin.org" port:4242];
+    XCTAssertTrue([streamTask ft_isSupportedForInstrumentation]);
+    [streamTask cancel];
+    [session invalidateAndCancel];
+}
+
+- (void)testIsSupportedForInstrumentation_unsupportedAVTaskTypes {
+    NSArray *unsupportedClassNames = @[
+        @"AVAssetDownloadTask",
+        @"NSURLSessionAVAssetDownloadTask",
+        @"AVAggregateAssetDownloadTask",
+        @"NSURLSessionAVAggregateAssetDownloadTask",
+        @"__NSCFBackgroundAVAssetDownloadTask"
+    ];
+    
+    for (NSString *className in unsupportedClassNames) {
+        Class taskClass = NSClassFromString(className);
+        if (!taskClass) {
+            continue;
+        }
+        
+        NSURLSessionTask *task = [taskClass alloc];
+        if (!task) {
+            continue;
+        }
+        
+        XCTAssertFalse([task ft_isSupportedForInstrumentation],
+                       @"%@ should not be instrumented", className);
+    }
 }
 @end

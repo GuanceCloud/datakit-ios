@@ -35,4 +35,34 @@ static char *hasCompletionKey = "hasCompletionKey";
     }
     return nil;
 }
++ (NSArray<Class> *)unsupportedTaskClasses {
+    static NSArray<Class> *classes = nil;
+    static dispatch_once_t onceToken;
+    dispatch_once(&onceToken, ^{
+        NSArray<NSString *> *classNames = @[
+            @"AVAssetDownloadTask",
+            @"NSURLSessionAVAssetDownloadTask",
+            @"AVAggregateAssetDownloadTask",
+            @"NSURLSessionAVAggregateAssetDownloadTask"
+        ];
+        
+        NSMutableArray<Class> *tmpClasses = [NSMutableArray array];
+        for (NSString *className in classNames) {
+            Class cls = NSClassFromString(className);
+            if (cls) {
+                [tmpClasses addObject:cls];
+            }
+        }
+        classes = [tmpClasses copy];
+    });
+    return classes;
+}
+- (BOOL)ft_isSupportedForInstrumentation {
+    for (Class cls in [NSURLSessionTask unsupportedTaskClasses]) {
+        if ([self isKindOfClass:cls]) {
+            return NO;
+        }
+    }
+    return YES;
+}
 @end

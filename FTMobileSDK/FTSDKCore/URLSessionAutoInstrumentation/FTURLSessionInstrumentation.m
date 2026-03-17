@@ -406,6 +406,9 @@ static dispatch_once_t onceToken;
 
 /// Intercepts the resume method of the task
 - (void)interceptResume:(NSURLSessionTask *)task {
+    if (![task ft_isSupportedForInstrumentation]) {
+        return;
+    }
     NSURLRequest *currentRequest = task.currentRequest;
     if (!currentRequest) {
         return;

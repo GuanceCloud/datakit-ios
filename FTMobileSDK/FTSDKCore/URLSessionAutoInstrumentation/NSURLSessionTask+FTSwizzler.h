@@ -14,6 +14,8 @@ NS_ASSUME_NONNULL_BEGIN
 @property (nonatomic, assign) BOOL ft_hasCompletion;
 
 - (id<NSURLSessionDelegate>)ft_delegate;
+
+- (BOOL)ft_isSupportedForInstrumentation;
 @end
 
 NS_ASSUME_NONNULL_END
