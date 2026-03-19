@@ -163,5 +163,7 @@ static FTNetworkInfoManager *sharedInstance = nil;
 - (BOOL)isNetworkConfigured {
     return self.configState != FTNetworkConfigStateNotConfigured;
 }
-
+- (BOOL)isNetworkConfiguredForRemote {
+    return [self isNetworkConfigured] && self.appId != nil;
+}
 @end

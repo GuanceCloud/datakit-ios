@@ -37,6 +37,8 @@ NS_ASSUME_NONNULL_BEGIN
 - (FTNetworkInfoManager *(^)(BOOL value))setCompressionIntakeRequests;
 
 - (BOOL)isNetworkConfigured;
+
+- (BOOL)isNetworkConfiguredForRemote;
 @end
 
 NS_ASSUME_NONNULL_END

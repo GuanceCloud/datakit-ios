@@ -102,9 +102,8 @@ static FTMobileAgent *sharedInstance = nil;
             _rumConfig = [rumConfigOptions copy];
             [FTNetworkInfoManager sharedInstance].setAppId(_rumConfig.appid);
             if (_sdkConfig.remoteConfiguration) {
-                [[FTRemoteConfigManager sharedInstance] updateRemoteConfig];
+                [[FTRemoteConfigManager sharedInstance] innerUpdateRemoteConfig];
                 [_rumConfig mergeWithRemoteConfigModel:[FTRemoteConfigManager sharedInstance].lastRemoteModel];
-
             }
             [self applyRUMConfig:_rumConfig];
         }
@@ -399,6 +398,7 @@ static FTMobileAgent *sharedInstance = nil;
     if (trackManager.autoSync != autoSync) {
         [trackManager enableAutoSync:autoSync];
     }
+    [[FTRemoteConfigManager sharedInstance] innerUpdateRemoteConfig];
 }
 #pragma mark - SDK shutdown
 - (void)shutDown{
