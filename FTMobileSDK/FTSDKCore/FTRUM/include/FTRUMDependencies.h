@@ -23,7 +23,7 @@ NS_ASSUME_NONNULL_BEGIN
 @property (nonatomic, strong) id<FTErrorMonitorInfoWrapper> errorMonitorInfoWrapper;
 @property (nonatomic, strong) FTRUMMonitor *monitor;
 @property (nonatomic, strong, nullable) FTFatalErrorContext *fatalErrorContext;
-@property (atomic, strong) NSDictionary *linkRUMSessionContext;
+@property (nonatomic, strong) NSDictionary *linkRUMSessionContext;
 @property (atomic, assign) BOOL currentSessionSample;
 
 @end

@@ -472,7 +472,7 @@ void *FTRUMQueueIdentityKey = &FTRUMQueueIdentityKey;
         self.sessionHandler = [[FTRUMSessionHandler alloc]initWithModel:model dependencies:self.rumDependencies];
         [self.sessionHandler.assistant process:model context:context];
     }
-    
+    self.rumDependencies.linkRUMSessionContext = [self.sessionHandler getCurrentSessionInfo];
     return YES;
 }
 -(NSDictionary *)rumDynamicProperty{
@@ -483,8 +483,12 @@ void *FTRUMQueueIdentityKey = &FTRUMQueueIdentityKey;
     }
     return @{};
 }
-- (NSDictionary *)getLinkRUMData{
-    return [self.rumDependencies.linkRUMSessionContext copy];
+-(void)getLinkRUMDataWithCompletion:(void (^)(NSDictionary * _Nullable))completion{
+    dispatch_async(self.rumQueue, ^{
+        if (completion) {
+            completion(self.rumDependencies.linkRUMSessionContext);
+        }
+    });
 }
 - (void)syncProcess{
     [self syncProcess:^{}];

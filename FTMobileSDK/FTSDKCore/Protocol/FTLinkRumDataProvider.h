@@ -11,7 +11,7 @@
 NS_ASSUME_NONNULL_BEGIN
 
 @protocol FTLinkRumDataProvider <NSObject>
--(nullable NSDictionary *)getLinkRUMData;
+- (void)getLinkRUMDataWithCompletion:(void (^)(NSDictionary * _Nullable rumContext))completion;
 @end
 
 NS_ASSUME_NONNULL_END

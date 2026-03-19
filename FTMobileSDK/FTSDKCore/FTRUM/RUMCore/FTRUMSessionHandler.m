@@ -56,7 +56,6 @@ static const NSTimeInterval sessionMaxDuration = 4 * 60 * 60; // 4 hours
                 [self startView:viewModel];
             }
         }
-        self.rumDependencies.linkRUMSessionContext = [self.context getGlobalSessionViewTags];
     }
     return  self;
 }
@@ -180,7 +179,6 @@ static const NSTimeInterval sessionMaxDuration = 4 * 60 * 60; // 4 hours
 -(void)startView:(FTRUMDataModel *)model{
     FTRUMViewHandler *viewHandler = [[FTRUMViewHandler alloc]initWithModel:(FTRUMViewModel *)model context:self.context rumDependencies:self.rumDependencies];
     [self.viewHandlers addObject:viewHandler];
-    self.rumDependencies.linkRUMSessionContext = [self getCurrentSessionInfo];
 }
 -(BOOL)timedOutOrExpired:(NSDate*)currentTime{
     NSTimeInterval timeElapsedSinceLastInteraction = [currentTime timeIntervalSinceDate:_lastInteractionTime];
@@ -237,7 +235,7 @@ static const NSTimeInterval sessionMaxDuration = 4 * 60 * 60; // 4 hours
 -(NSDictionary *)getCurrentSessionInfo{
     FTRUMViewHandler *view = (FTRUMViewHandler *)[self.viewHandlers lastObject];
     if (view) {
-        return [view.context getGlobalSessionViewTags];
+        return [view.context getGlobalSessionViewActionTags];
     }
     return [self.context getGlobalSessionViewTags];
 }

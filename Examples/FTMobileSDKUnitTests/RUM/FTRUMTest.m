@@ -270,20 +270,31 @@
     [self addLongTaskData:nil];
     [self addResource];
     [self addErrorData:nil];
-    NSDictionary *dict0 = [[FTGlobalRumManager sharedInstance].rumManager getLinkRUMData];
-
+    __block NSDictionary *dict0;
+    [[FTGlobalRumManager sharedInstance].rumManager getLinkRUMDataWithCompletion:^(NSDictionary * _Nullable rumContext) {
+        dict0 = rumContext;
+    }];
+    [[FTGlobalRumManager sharedInstance].rumManager syncProcess];
     NSString *view_id = dict0[FT_KEY_VIEW_ID];
     [[NSNotificationCenter defaultCenter]
      postNotificationName:UIApplicationDidEnterBackgroundNotification object:nil];
+   
+    [[FTGlobalRumManager sharedInstance].rumManager getLinkRUMDataWithCompletion:^(NSDictionary * _Nullable rumContext) {
+        XCTAssertFalse([rumContext.allKeys containsObject:FT_KEY_VIEW_ID]);
+    }];
     [[FTGlobalRumManager sharedInstance].rumManager syncProcess];
-    NSDictionary *dict = [[FTGlobalRumManager sharedInstance].rumManager getLinkRUMData];
 
-    XCTAssertFalse([dict.allKeys containsObject:FT_KEY_VIEW_ID]);
     
     [[NSNotificationCenter defaultCenter]
      postNotificationName:UIApplicationWillEnterForegroundNotification object:nil];
+   
+    __block NSDictionary *dict2;
+    [[FTGlobalRumManager sharedInstance].rumManager getLinkRUMDataWithCompletion:^(NSDictionary * _Nullable rumContext) {
+        dict2 = rumContext;
+    }];
     [[FTGlobalRumManager sharedInstance].rumManager syncProcess];
-    NSDictionary *dict2 = [[FTGlobalRumManager sharedInstance].rumManager getLinkRUMData];
+
+
     NSString *view_id2 = dict2[FT_KEY_VIEW_ID];
     XCTAssertTrue(view_id2);
     XCTAssertFalse([view_id2 isEqualToString:view_id]);
@@ -308,14 +319,22 @@
     [[NSNotificationCenter defaultCenter]
      postNotificationName:UIApplicationDidEnterBackgroundNotification object:nil];
     [[FTGlobalRumManager sharedInstance].rumManager syncProcess];
-    NSDictionary *dict = [[FTGlobalRumManager sharedInstance].rumManager getLinkRUMData];
+    __block NSDictionary *dict ;
+    [[FTGlobalRumManager sharedInstance].rumManager getLinkRUMDataWithCompletion:^(NSDictionary * _Nullable rumContext) {
+        dict = rumContext;
+    }];
+    [[FTGlobalRumManager sharedInstance].rumManager syncProcess];
     NSString *view_id = dict[FT_KEY_VIEW_ID];
     XCTAssertTrue(view_id);
     
     [[NSNotificationCenter defaultCenter]
      postNotificationName:UIApplicationWillEnterForegroundNotification object:nil];
+    __block NSDictionary *dict2 ;
+    [[FTGlobalRumManager sharedInstance].rumManager getLinkRUMDataWithCompletion:^(NSDictionary * _Nullable rumContext) {
+        dict2 = rumContext;
+    }];
     [[FTGlobalRumManager sharedInstance].rumManager syncProcess];
-    NSDictionary *dict2 = [[FTGlobalRumManager sharedInstance].rumManager getLinkRUMData];
+
     XCTAssertTrue([view_id isEqualToString:dict2[FT_KEY_VIEW_ID]]);
 }
 
@@ -1686,8 +1705,12 @@
     FTRumConfig *rumConfig = [[FTRumConfig alloc]initWithAppid:self.appid];
     [FTMobileAgent startWithConfigOptions:config];
     [[FTMobileAgent sharedInstance] startRumWithConfigOptions:rumConfig];
+    __block NSDictionary *context ;
+    [[[FTGlobalRumManager sharedInstance] rumManager] getLinkRUMDataWithCompletion:^(NSDictionary * _Nullable rumContext) {
+        context = rumContext;
+    }];
     [[FTGlobalRumManager sharedInstance].rumManager syncProcess];
-    NSDictionary *context = [[[FTGlobalRumManager sharedInstance] rumManager] getLinkRUMData];
+
     XCTAssertTrue(context[FT_KEY_VIEW_ID] == nil);
     XCTAssertTrue(context[FT_KEY_VIEW_REFERRER] == nil);
     XCTAssertTrue(context[FT_RUM_KEY_SESSION_ID]);
@@ -1726,7 +1749,12 @@
     [FTModelHelper startView];
     [FTModelHelper stopView];
     [[FTGlobalRumManager sharedInstance].rumManager syncProcess];
-    NSDictionary *context = [[[FTGlobalRumManager sharedInstance] rumManager] getLinkRUMData];
+    __block NSDictionary *context;
+    [[[FTGlobalRumManager sharedInstance] rumManager] getLinkRUMDataWithCompletion:^(NSDictionary * _Nullable rumContext) {
+        context = rumContext;
+    }];
+    [[FTGlobalRumManager sharedInstance].rumManager syncProcess];
+
     XCTAssertTrue(context[FT_KEY_VIEW_ID] == nil);
     XCTAssertTrue(context[FT_KEY_VIEW_REFERRER] == nil);
     XCTAssertTrue(context[FT_RUM_KEY_SESSION_ID]);
@@ -1766,7 +1794,11 @@
     [FTModelHelper startView];
     [FTModelHelper stopView];
     [self addErrorData:nil];
-    NSDictionary *context = [[[FTGlobalRumManager sharedInstance] rumManager] getLinkRUMData];
+    __block NSDictionary *context;
+    [[[FTGlobalRumManager sharedInstance] rumManager] getLinkRUMDataWithCompletion:^(NSDictionary * _Nullable rumContext) {
+        context = rumContext;
+    }];
+    [[FTGlobalRumManager sharedInstance].rumManager syncProcess];
     XCTAssertTrue(context[FT_KEY_VIEW_ID] == nil);
     XCTAssertTrue(context[FT_KEY_VIEW_REFERRER] == nil);
     XCTAssertTrue(context[FT_RUM_KEY_SESSION_ID]);
@@ -1777,8 +1809,11 @@
     [[FTExternalDataManager sharedManager] addAction:@"action_add" actionType:@"click" property:nil];
     [self waitForTimeInterval:0.1];
     [self addResource];
+    __block NSDictionary *context2;
+    [[[FTGlobalRumManager sharedInstance] rumManager] getLinkRUMDataWithCompletion:^(NSDictionary * _Nullable rumContext) {
+        context2 = rumContext;
+    }];
     [[FTGlobalRumManager sharedInstance].rumManager syncProcess];
-    NSDictionary *context2 = [[[FTGlobalRumManager sharedInstance] rumManager] getLinkRUMData];
     XCTAssertTrue(context2[FT_KEY_VIEW_ID]);
     XCTAssertTrue(context2[FT_KEY_VIEW_REFERRER]);
     XCTAssertTrue(context2[FT_RUM_KEY_SESSION_ID]);
