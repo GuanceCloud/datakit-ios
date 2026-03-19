@@ -72,7 +72,7 @@ void *FTRUMQueueIdentityKey = &FTRUMQueueIdentityKey;
     dispatch_async(self.rumQueue, ^{
         @try {
             FTRUMDataModel *model = [[FTRUMDataModel alloc]init];
-            model.type = FTRUMSDKInit;
+            model.type = FTRUMViewPlaceholder;
             [self process:model context:@{}];
         } @catch (NSException *exception) {
             FTInnerLogError(@"exception %@",exception);

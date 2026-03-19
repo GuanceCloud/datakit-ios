@@ -8,7 +8,7 @@
 
 #import <Foundation/Foundation.h>
 typedef NS_ENUM(NSUInteger, FTRUMDataType) {
-    FTRUMSDKInit,
+    FTRUMViewPlaceholder,
     FTRUMDataLaunch,
     FTRUMDataStartAction,
     FTRUMDataAddAction,

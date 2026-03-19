@@ -18,7 +18,7 @@
 #import "FTRUMMonitor.h"
 #import "FTRUMContext.h"
 
-@interface FTRUMViewHandler()<FTRUMSessionProtocol>
+@interface FTRUMViewHandler()
 @property (nonatomic, strong) FTRUMDependencies *rumDependencies;
 @property (nonatomic, strong) FTRUMContext *context;
 @property (nonatomic, strong) FTRUMActionHandler *actionHandler;
@@ -36,6 +36,12 @@
 @end
 @implementation FTRUMViewHandler
 -(instancetype)initWithModel:(FTRUMViewModel *)model context:(nonnull FTRUMContext *)context rumDependencies:(FTRUMDependencies *)rumDependencies{
+    return [self initWithModel:model context:context rumDependencies:rumDependencies needsMonitoring:YES];
+}
+- (instancetype)initWithModel:(FTRUMViewModel *)model
+                      context:(FTRUMContext *)context
+              rumDependencies:(FTRUMDependencies *)rumDependencies
+              needsMonitoring:(BOOL)needsMonitoring {
     self = [super init];
     if (self) {
         self.assistant = self;
@@ -57,7 +63,9 @@
         _context.view_name = self.view_name;
         _context.view_id = self.view_id;
         _context.view_referrer = self.view_referrer;
-        self.monitorItem = [[FTMonitorItem alloc]initWithCpuMonitor:rumDependencies.monitor.cpuMonitor memoryMonitor:rumDependencies.monitor.memoryMonitor displayRateMonitor:rumDependencies.monitor.displayMonitor frequency:rumDependencies.monitor.frequency];
+        if (needsMonitoring) {
+            self.monitorItem = [[FTMonitorItem alloc]initWithCpuMonitor:rumDependencies.monitor.cpuMonitor memoryMonitor:rumDependencies.monitor.memoryMonitor displayRateMonitor:rumDependencies.monitor.displayMonitor frequency:rumDependencies.monitor.frequency];
+        }
     }
     return self;
 }
