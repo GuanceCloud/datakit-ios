@@ -106,8 +106,14 @@ static void swizzle(Class classToSwizzle,
     os_unfair_lock_unlock(&lock);
 #if DEBUG
     Dl_info info;
-        dladdr(originalIMP, &info);
-    FTInnerLogInfo(@"[SWIZZLE] --------------------\nClass:%@ \nSelector:%@ \nnewIMP:%p \noriginalIMP:%p (%s)(%@)\n--------------------",classToSwizzle,NSStringFromSelector(selector),newIMP,originalIMP,info.dli_sname,[NSString stringWithUTF8String:info.dli_fname ? strrchr(info.dli_fname, '/') + 1 : ""]);
+    int result = dladdr(originalIMP, &info);
+    if (result != 0 && info.dli_sname != NULL && info.dli_fname != NULL) {
+        const char *fileName = strrchr(info.dli_fname, '/');
+        NSString *filePath = fileName ? [NSString stringWithUTF8String:fileName + 1] : @"unknown file";
+        FTInnerLogInfo(@"[SWIZZLE] --------------------\nClass:%@ \nSelector:%@ \nnewIMP:%p \noriginalIMP:%p (%s)(%@)\n--------------------",classToSwizzle,NSStringFromSelector(selector),newIMP,originalIMP,info.dli_sname,filePath);
+    } else {
+        FTInnerLogInfo(@"[SWIZZLE] --------------------\nClass:%@ \nSelector:%@ \nnewIMP:%p \noriginalIMP:%p failed to resolve address\n--------------------",classToSwizzle,NSStringFromSelector(selector),newIMP,originalIMP);
+    }
 #endif
 }
 + (void)setFTAssociatedObject:(id)object
