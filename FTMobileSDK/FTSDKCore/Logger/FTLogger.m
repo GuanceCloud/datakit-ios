@@ -148,10 +148,10 @@ void *FTLoggerQueueIdentityKey = &FTLoggerQueueIdentityKey;
     NSMutableDictionary *tags = [NSMutableDictionary dictionary];
     tags[FT_KEY_STATUS] = status;
     if (config.enableLinkRumData) {
-        if (self.linkRumDataProvider &&
-            [self.linkRumDataProvider respondsToSelector:@selector(getLinkRUMDataWithCompletion:)]) {
+        id<FTLinkRumDataProvider> provider = self.linkRumDataProvider;
+        if (provider && [provider respondsToSelector:@selector(getLinkRUMDataWithCompletion:)]) {
             __weak typeof(self) weakSelf = self;
-            [self.linkRumDataProvider getLinkRUMDataWithCompletion:^(NSDictionary * _Nullable rumContext) {
+            [provider getLinkRUMDataWithCompletion:^(NSDictionary * _Nullable rumContext) {
                 __strong typeof(weakSelf) strongSelf = weakSelf;
                 if (!strongSelf) return;
                 
@@ -166,11 +166,13 @@ void *FTLoggerQueueIdentityKey = &FTLoggerQueueIdentityKey;
     [self writeLogWithTags:tags content:content property:copyProperty time:timeStamp];
 }
 - (void)writeLogWithTags:(NSDictionary *)tags
-                 content:(NSString *)content
-                property:(NSDictionary *)property
-                    time:(long long)time {
+                  content:(NSString *)content
+                 property:(NSDictionary *)property
+                     time:(long long)time {
+    BOOL enableLinkRum = self.config.enableLinkRumData;
     dispatch_async(self.loggerQueue, ^{
-        if (!self.loggerWriter) {
+        id<FTLoggerDataWriteProtocol> writer = self.loggerWriter;
+        if (!writer) {
             FTInnerLogError(@"SDK configuration error, unable to collect custom logs");
             return;
         }
@@ -179,10 +181,10 @@ void *FTLoggerQueueIdentityKey = &FTLoggerQueueIdentityKey;
         filedDict[FT_KEY_MESSAGE] = newContent;
         [filedDict addEntriesFromDictionary:property];
         
-        [self.loggerWriter loggingTags:tags
-                                 field:filedDict
-                                  time:time
-                               linkRum:self.config.enableLinkRumData];
+        [writer loggingTags:tags
+                      field:filedDict
+                       time:time
+                    linkRum:enableLinkRum];
     });
 }
 /**
@@ -199,13 +201,10 @@ void *FTLoggerQueueIdentityKey = &FTLoggerQueueIdentityKey;
     }
 }
 - (void)shutDown{
-    __weak typeof(self) weakSelf = self;
-    dispatch_async(self.loggerQueue, ^{
-        __strong typeof(weakSelf) strongSelf = weakSelf;
-        if (!strongSelf) return;
-        strongSelf.config = nil;
-        strongSelf.loggerWriter = nil;
-    });
+    pthread_rwlock_wrlock(&_rwLock);
+    self.config = nil;
+    self.loggerWriter = nil;
+    pthread_rwlock_unlock(&_rwLock);
     FTInnerLogInfo(@"[Logging] SHUT DOWN");
 }
 @end
