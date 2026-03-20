@@ -18,6 +18,8 @@
 #import "NSString+FTAdd.h"
 #import "FTRemoteConfigError.h"
 
+static NSString *const kFTRemoteConfigUserDefaultsKey = @"FT_REMOTE_CONFIG";
+
 @interface FTRemoteConfigManager()<FTAppLifeCycleDelegate>
 @property (atomic, assign) BOOL isFetching;
 @property (atomic, assign) NSTimeInterval lastRequestTimeInterval;
@@ -30,6 +32,8 @@
 @implementation FTRemoteConfigManager
 @synthesize lastRemoteModel = _lastRemoteModel;
 
+#pragma mark - Initialization
+
 static FTRemoteConfigManager *sharedManager = nil;
 static dispatch_once_t onceToken;
 + (instancetype)sharedInstance{
@@ -38,6 +42,7 @@ static dispatch_once_t onceToken;
     });
     return sharedManager;
 }
+
 -(instancetype)init{
     self = [super init];
     if (self) {
@@ -46,16 +51,8 @@ static dispatch_once_t onceToken;
     }
     return self;
 }
-- (void)setLastRemoteModel:(FTRemoteConfigModel *)lastRemoteModel{
-    @synchronized (self) {
-        _lastRemoteModel = lastRemoteModel;
-    }
-}
--(FTRemoteConfigModel *)lastRemoteModel{
-    @synchronized (self) {
-        return [_lastRemoteModel copy];
-    }
-}
+
+#pragma mark - Configuration
 
 - (void)enable:(BOOL)enable updateInterval:(int)updateInterval remoteConfigFetchCompletionBlock:(FTRemoteConfigFetchCompletionBlock)fetchCompletionBlock{
     _enable = enable;
@@ -67,38 +64,86 @@ static dispatch_once_t onceToken;
     }
 }
 
-- (void)updateRemoteConfig{
-    [self updateRemoteConfigWithMinimumUpdateInterval:self.updateInterval completion:nil];
+#pragma mark - Public API
+/// SDK Inner API
+- (void)innerUpdateRemoteConfig{
+    if (!self.enable){
+        return;
+    }
+    if([[FTNetworkInfoManager sharedInstance] isNetworkConfiguredForRemote]) {
+        FTInnerLogDebug(@"[remote-config] innerUpdateRemoteConfig start");
+        [self requestRemoteConfig:self.updateInterval completion:self.fetchCompletionBlock];
+    }else{
+        FTInnerLogDebug(@"[remote-config] Skip update, appID not set or no upload address configured");
+    }
 }
-- (void)updateRemoteConfigWithMinimumUpdateInterval:(NSInteger)minimumUpdateInterval
-                                         completion:(FTRemoteConfigFetchCompletionBlock)completion{
-    if (!self.enable) {
-        FTInnerLogInfo(@"[remote-config] Disable remote configuration.");
-        if(completion)completion(NO,[FTRemoteConfigError errorWithDisabled],nil,nil);
-        return;
-    }
-    if (self.lastRequestTimeInterval > 0 && minimumUpdateInterval > 0 && [[NSDate date] timeIntervalSince1970] - self.lastRequestTimeInterval < minimumUpdateInterval) {
-        FTInnerLogInfo(@"[remote-config] The time interval between last request is shorter than mini Update Interval.");
-        if(completion)completion(NO,[FTRemoteConfigError errorWithIntervalNotMet:minimumUpdateInterval],nil,nil);
-        return;
-    }
-    if (self.isFetching) {
-        FTInnerLogInfo(@"[remote-config] Request is being processed.");
-        if(completion)completion(NO,[FTRemoteConfigError errorWithRequesting],nil,nil);
-        return;
-    }
-    FTRemoteConfigFetchCompletionBlock completionBlock = completion;
-    if (!completionBlock) {
-        completionBlock = self.fetchCompletionBlock;
-    }
-    [self requestRemoteConfigWithCompletion:completionBlock];
+- (void)updateRemoteConfig{
+    [self updateRemoteConfigWithMinimumUpdateInterval:self.updateInterval completion:self.fetchCompletionBlock];
 }
 
-- (void)requestRemoteConfigWithCompletion:(FTRemoteConfigFetchCompletionBlock)completion{
-    FTInnerLogInfo(@"[remote-config] Start loading remote configuration.");
-    self.isFetching = YES;
-    FTRemoteConfigurationRequest *request = [[FTRemoteConfigurationRequest alloc]init];
+- (void)updateRemoteConfigWithMinimumUpdateInterval:(NSInteger)minimumUpdateInterval
+                                         completion:(FTRemoteConfigFetchCompletionBlock)completion{
+    
+    FTRemoteConfigFetchCompletionBlock completionToCall = completion ?: self.fetchCompletionBlock;
+    if (!self.enable) {
+        FTInnerLogDebug(@"[remote-config] Skip update: Disable remote configuration.");
+        if(completionToCall) completionToCall(NO,[FTRemoteConfigError errorWithDisabled],nil,nil);
+        return;
+    }
+    if(![[FTNetworkInfoManager sharedInstance] isNetworkConfiguredForRemote]){
+        FTInnerLogDebug(@"[remote-config] Skip update: appID not set or no upload address configured.");
+        if(completionToCall) completionToCall(NO,[FTRemoteConfigError errorWithCode:FTRemoteConfigErrorCodeSyncConfigMissing customDescription:nil],nil,nil);
+        return;
+    }
+    [self requestRemoteConfig:minimumUpdateInterval completion:completionToCall];
+}
+
+
+#pragma mark - Core Request Logic
+
+- (void)requestRemoteConfig:(NSInteger)minimumUpdateInterval completion:(FTRemoteConfigFetchCompletionBlock)completion{
+    if (![self validateRemoteConfigRequestWithMinimumInterval:minimumUpdateInterval completion:completion]) {
+        return;
+    }
+    [self performRemoteConfigRequestWithCompletion:completion];
+}
+
+- (BOOL)validateRemoteConfigRequestWithMinimumInterval:(NSInteger)minimumInterval completion:(FTRemoteConfigFetchCompletionBlock)completion {
+    
+    if (self.lastRequestTimeInterval > 0 && minimumInterval > 0 && [[NSDate date] timeIntervalSince1970] - self.lastRequestTimeInterval < minimumInterval) {
+        FTInnerLogDebug(@"[remote-config] Skip update: The time interval between last request is shorter than mini Update Interval.");
+        if (completion) {
+            NSError *error = [FTRemoteConfigError errorWithIntervalNotMet:minimumInterval];
+            completion(NO, error, nil, nil);
+        }
+        return NO;
+    }
+    
+    BOOL canBeginFetch = NO;
+    @synchronized(self) {
+        if (!self.isFetching) {
+            self.isFetching = YES;
+            canBeginFetch = YES;
+        }
+    }
+    
+    if (!canBeginFetch) {
+        FTInnerLogDebug(@"[remote-config] Skip update: Request is being processed.");
+        if (completion) {
+            NSError *error = [FTRemoteConfigError errorWithRequesting];
+            completion(NO, error, nil, nil);
+        }
+        return NO;
+    }
+    
+    return YES;
+}
+
+- (void)performRemoteConfigRequestWithCompletion:(FTRemoteConfigFetchCompletionBlock)completion {
+    FTInnerLogDebug(@"[remote-config] Start loading remote configuration.");
+    FTRemoteConfigurationRequest *request = [[FTRemoteConfigurationRequest alloc] init];
     __weak typeof(self) weakSelf = self;
+    
     [[FTTrackDataManager sharedInstance].httpClient sendRequest:request completion:^(NSHTTPURLResponse * _Nonnull httpResponse, NSData * _Nullable data, NSError * _Nullable error) {
         __strong typeof(weakSelf) strongSelf = weakSelf;
         if (!strongSelf) {
@@ -109,50 +154,69 @@ static dispatch_once_t onceToken;
             }
             return;
         }
-        BOOL success = NO;
-        NSError *requestError = nil;
-        FTRemoteConfigModel *model = nil;
-        NSDictionary *content = nil;
-        if (error) {
-            requestError = [FTRemoteConfigError errorWithNetworkFailed:error];
-            FTInnerLogError(@"[remote-config] Network request failed: %@", error.localizedDescription);
-        } else if (httpResponse.statusCode != 200) {
-            NSString *desc = [NSString stringWithFormat:@"Invalid HTTP status code: %ld (expected 200)", (long)httpResponse.statusCode];
-            requestError = [FTRemoteConfigError errorWithCode:FTRemoteConfigErrorCodeNetworkFailed
-                                            customDescription:desc];
-            FTInnerLogError(@"[remote-config] Invalid status code: %ld", (long)httpResponse.statusCode);
-        } else if (!data || data.length == 0) {
-            requestError = [FTRemoteConfigError errorWithParseFailed:@"Empty response data from remote config server"];
-            FTInnerLogError(@"[remote-config] Empty response data");
-        } else {
-            success = YES;
-            model = [strongSelf handleRemoteConfigData:data];
-            strongSelf.lastRequestTimeInterval = [[NSDate date] timeIntervalSince1970];
-            content = model.context;
-        }
-        if (completion) {
-           FTRemoteConfigModel *finalModel = completion(success, requestError, [model copy], [content copy]);
-            if (finalModel) {
-                model = [finalModel copy];
-            }
-        }
-        if (success) {
-            strongSelf.lastRemoteModel = model;
-            if (model) {
-                if (strongSelf.delegate && [strongSelf.delegate respondsToSelector:@selector(remoteConfigurationDidChange)]) {
-                    [strongSelf.delegate remoteConfigurationDidChange];
-                }
-                [strongSelf saveRemoteConfig:[model toDictionary]];
-                FTInnerLogInfo(@"[remote-config] Remote config parsed successfully");
-            } else {
-                [strongSelf saveRemoteConfig:nil];
-                FTInnerLogWarning(@"[remote-config] Remote config parsed to nil");
-            }
-        }
-        strongSelf.isFetching = NO;
-        FTInnerLogInfo(@"[remote-config] Complete the loading of the remote configuration.");
+        
+        [strongSelf handleRemoteConfigResponse:httpResponse data:data error:error completion:completion];
     }];
 }
+
+- (void)handleRemoteConfigResponse:(NSHTTPURLResponse *)httpResponse 
+                              data:(NSData *)data 
+                             error:(NSError *)error 
+                        completion:(FTRemoteConfigFetchCompletionBlock)completion {
+    BOOL isSuccess = NO;
+    NSError *requestError = nil;
+    FTRemoteConfigModel *model = nil;
+    NSDictionary *content = nil;
+    
+    if (error) {
+        requestError = [FTRemoteConfigError errorWithNetworkFailed:error];
+        FTInnerLogError(@"[remote-config] Network request failed: %@ (code: %ld)", 
+                       error.localizedDescription, (long)error.code);
+    } else if (httpResponse.statusCode != 200) {
+        NSString *desc = [NSString stringWithFormat:@"Invalid HTTP status code: %ld (expected 200)", 
+                         (long)httpResponse.statusCode];
+        requestError = [FTRemoteConfigError errorWithCode:FTRemoteConfigErrorCodeNetworkFailed
+                                         customDescription:desc];
+        FTInnerLogError(@"[remote-config] Invalid status code: %ld", (long)httpResponse.statusCode);
+    } else if (!data || data.length == 0) {
+        requestError = [FTRemoteConfigError errorWithParseFailed:@"Empty response data from remote config server"];
+        FTInnerLogError(@"[remote-config] Empty response data");
+    } else {
+        isSuccess = YES;
+        model = [self handleRemoteConfigData:data];
+        self.lastRequestTimeInterval = [[NSDate date] timeIntervalSince1970];
+        content = model.context;
+    }
+    
+    if (completion) {
+        FTRemoteConfigModel *finalModel = completion(isSuccess, requestError,
+            model ? [model copy] : nil,
+            content ? [content copy] : nil);
+        if (finalModel) {
+            model = [finalModel copy];
+        }
+    }
+    
+    if (isSuccess) {
+        self.lastRemoteModel = model;
+        if (model) {
+            if (self.delegate && [self.delegate respondsToSelector:@selector(remoteConfigurationDidChange)]) {
+                [self.delegate remoteConfigurationDidChange];
+            }
+            [self saveRemoteConfig:[model toDictionary]];
+            FTInnerLogDebug(@"[remote-config] Remote config parsed successfully");
+        } else {
+            [self saveRemoteConfig:nil];
+            FTInnerLogWarning(@"[remote-config] Remote config parsed to nil");
+        }
+    }
+    
+    self.isFetching = NO;
+    FTInnerLogDebug(@"[remote-config] Complete the loading of the remote configuration.");
+}
+   
+#pragma mark - Data Processing & Local Storage
+
 - (FTRemoteConfigModel *)handleRemoteConfigData:(NSData *)data {
     FTRemoteConfigModel *model = self.lastRemoteModel;
     @try {
@@ -180,23 +244,43 @@ static dispatch_once_t onceToken;
                                                                           range:NSMakeRange(0, jsonString.length)];
     return replacedJson;
 }
+
+- (void)setLastRemoteModel:(FTRemoteConfigModel *)lastRemoteModel{
+    @synchronized (self) {
+        _lastRemoteModel = lastRemoteModel;
+    }
+}
+
+-(FTRemoteConfigModel *)lastRemoteModel{
+    @synchronized (self) {
+        return [_lastRemoteModel copy];
+    }
+}
+
 - (NSDictionary *)getLastFetchedRemoteConfig{
     if (!self.enable) {
         return nil;
     }
-    NSDictionary *local = [[NSUserDefaults standardUserDefaults] objectForKey:@"FT_REMOTE_CONFIG"];
+    NSDictionary *local = [[NSUserDefaults standardUserDefaults] objectForKey:kFTRemoteConfigUserDefaultsKey];
     return local;
 }
+
 - (void)saveRemoteConfig:(NSDictionary<NSString *, id> *)remoteConfig{
-    [[NSUserDefaults standardUserDefaults] setObject:remoteConfig forKey:@"FT_REMOTE_CONFIG"];
+    [[NSUserDefaults standardUserDefaults] setObject:remoteConfig forKey:kFTRemoteConfigUserDefaultsKey];
     [[NSUserDefaults standardUserDefaults] synchronize];
 }
+
+#pragma mark - App Lifecycle Delegate
+
 -(void)applicationDidBecomeActive{
     if (self.enable) {
         FTInnerLogDebug(@"[remote-config] applicationDidBecomeActive: updateRemoteConfig");
-        [self updateRemoteConfig];
+        [self innerUpdateRemoteConfig];
     }
 }
+
+#pragma mark - Cleanup
+
 - (void)shutDown{
     _updateInterval = 0;
     _enable = NO;

@@ -9,7 +9,7 @@
 #import "FTWKWebViewJavascriptBridge.h"
 #if !TARGET_OS_TV
 #import "FTWebViewJavascriptLeakAvoider.h"
-#import "FTConstants.h"
+#import "FTInternalConstants.h"
 
 NSString *const kAllowedHostsPlaceholder = @"__ALLOWED_HOSTS__";
 NSString *const kFTJsCodePrefix = @"/* FTWebViewJavascriptBridge */";

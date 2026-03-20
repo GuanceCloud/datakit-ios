@@ -16,7 +16,7 @@
 #import "FTRequest.h"
 #import "FTHTTPClient.h"
 #import "FTNetworkInfoManager.h"
-#import "FTEnumConstant.h"
+#import "FTInternalConstants.h"
 #import "FTModelHelper.h"
 #import "FTTrackDataManager.h"
 #import "NSDate+FTUtil.h"
@@ -46,7 +46,7 @@
     }];
     NSString *urlStr = @"http://www.test.com/some/url/string";
     FTNetworkInfoManager *manager = [FTNetworkInfoManager sharedInstance];
-    manager.setDatakitUrl(urlStr)
+    manager.setUploadURL(urlStr,nil,nil)
         .setSdkVersion(@"RequestTest");
 }
 - (void)testLogRequest{

@@ -8,7 +8,7 @@
 
 #import <Foundation/Foundation.h>
 #import "FTLog+Private.h"
-#import "FTEnumConstant.h"
+#import "FTInternalConstants.h"
 NS_ASSUME_NONNULL_BEGIN
 
 

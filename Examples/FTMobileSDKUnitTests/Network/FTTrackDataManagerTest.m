@@ -335,7 +335,7 @@
         return [OHHTTPStubsResponse responseWithData:requestData statusCode:501 headers:nil];
     }];
     FTNetworkInfoManager *manager = [FTNetworkInfoManager sharedInstance];
-    manager.setDatakitUrl(urlStr)
+    manager.setUploadURL(urlStr,nil,nil)
         .setSdkVersion(@"RequestTest");
     
     [[FTTrackerEventDBTool sharedManager] deleteAllDatas];
@@ -384,7 +384,7 @@
     
     NSString *urlStr = @"http://www.test.com/some/url/string";
     FTNetworkInfoManager *manager = [FTNetworkInfoManager sharedInstance];
-    manager.setDatakitUrl(urlStr)
+    manager.setUploadURL(urlStr,nil,nil)
         .setSdkVersion(@"RequestTest");
     
     [[FTTrackDataManager sharedInstance].dataUploadWorker addObserver:self forKeyPath:@"isUploading" options:NSKeyValueObservingOptionNew context:nil];
@@ -454,7 +454,7 @@
     }];
     NSString *urlStr = @"http://www.test.com/some/url/string";
     FTNetworkInfoManager *manager = [FTNetworkInfoManager sharedInstance];
-    manager.setDatakitUrl(urlStr)
+    manager.setUploadURL(urlStr,nil,nil)
         .setSdkVersion(@"RequestTest");
 }
 -(void)observeValueForKeyPath:(NSString *)keyPath ofObject:(id)object change:(NSDictionary<NSKeyValueChangeKey,id> *)change context:(void *)context{

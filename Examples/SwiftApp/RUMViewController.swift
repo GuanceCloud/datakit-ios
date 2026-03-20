@@ -61,13 +61,9 @@ class RUMViewController: UIViewController,UITableViewDelegate,UITableViewDataSou
         case 5:
             FTExternalDataManager.shared().addLongTask(withStack: "longtask_stack", duration: 1000000000)
         case 6:
-            let dic = ProcessInfo().environment
-            let traceStr = dic["TRACE_URL"]
-            if let traceStr = traceStr {
-                request(urlStr: traceStr)
-            }
+            request(urlStr: "https://httpbin.org/status/200")
         case 7:
-            request(urlStr: "https://console-api.guance.com/not/found/")
+            request(urlStr: "https://httpbin.org/status/404")
         default:
             print("default")
         }

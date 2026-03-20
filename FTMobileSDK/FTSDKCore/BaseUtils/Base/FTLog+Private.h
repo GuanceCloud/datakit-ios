@@ -7,7 +7,7 @@
 //
 
 #import "FTLog.h"
-#import "FTEnumConstant.h"
+#import "FTInternalConstants.h"
 #import "FTLogMessage.h"
 #define FTLOG_MACRO(lvl, frmt, ...) \
 [FTLog log : YES                                     \

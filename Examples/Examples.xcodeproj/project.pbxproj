@@ -34,6 +34,10 @@
 		174058C028D815810092E096 /* FTJavaScriptBridgeTest.m in Sources */ = {isa = PBXBuildFile; fileRef = 174058BF28D815810092E096 /* FTJavaScriptBridgeTest.m */; };
 		174058C828D826540092E096 /* FTAppLaunchDurationTest.m in Sources */ = {isa = PBXBuildFile; fileRef = 174058C728D826540092E096 /* FTAppLaunchDurationTest.m */; };
 		174BC8802BFCB05500478EE1 /* FTDictionaryCopyTest.m in Sources */ = {isa = PBXBuildFile; fileRef = 174BC87F2BFCB05500478EE1 /* FTDictionaryCopyTest.m */; };
+		174CDF682F5E6A7600614EE2 /* FTMobileAgentNetworkTests.m in Sources */ = {isa = PBXBuildFile; fileRef = 174CDF672F5E6A7600614EE2 /* FTMobileAgentNetworkTests.m */; };
+		174CDF692F5E6A7600614EE2 /* FTMobileAgentNetworkTests.m in Sources */ = {isa = PBXBuildFile; fileRef = 174CDF672F5E6A7600614EE2 /* FTMobileAgentNetworkTests.m */; };
+		174CDF6B2F5E6A8F00614EE2 /* FTMobileAgentDynamicConfigTests.m in Sources */ = {isa = PBXBuildFile; fileRef = 174CDF6A2F5E6A8F00614EE2 /* FTMobileAgentDynamicConfigTests.m */; };
+		174CDF6C2F5E6A8F00614EE2 /* FTMobileAgentDynamicConfigTests.m in Sources */ = {isa = PBXBuildFile; fileRef = 174CDF6A2F5E6A8F00614EE2 /* FTMobileAgentDynamicConfigTests.m */; };
 		17510DD829C99F2E00C8F1E4 /* FTMobileExtension.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 17510DD729C99F2E00C8F1E4 /* FTMobileExtension.framework */; };
 		17593AE22906917700A15CD9 /* FTResourceDelegateTest.m in Sources */ = {isa = PBXBuildFile; fileRef = 17593AE12906917700A15CD9 /* FTResourceDelegateTest.m */; };
 		175C7CFC29E6CE1B00A7F271 /* LoggerVC.m in Sources */ = {isa = PBXBuildFile; fileRef = 175C7CF929E6CE1A00A7F271 /* LoggerVC.m */; };
@@ -292,6 +296,8 @@
 		174058BF28D815810092E096 /* FTJavaScriptBridgeTest.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = FTJavaScriptBridgeTest.m; sourceTree = "<group>"; };
 		174058C728D826540092E096 /* FTAppLaunchDurationTest.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = FTAppLaunchDurationTest.m; sourceTree = "<group>"; };
 		174BC87F2BFCB05500478EE1 /* FTDictionaryCopyTest.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = FTDictionaryCopyTest.m; sourceTree = "<group>"; };
+		174CDF672F5E6A7600614EE2 /* FTMobileAgentNetworkTests.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = FTMobileAgentNetworkTests.m; sourceTree = "<group>"; };
+		174CDF6A2F5E6A8F00614EE2 /* FTMobileAgentDynamicConfigTests.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = FTMobileAgentDynamicConfigTests.m; sourceTree = "<group>"; };
 		17510DD429C99F0900C8F1E4 /* FTMobileExtension.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; path = FTMobileExtension.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 		17510DD729C99F2E00C8F1E4 /* FTMobileExtension.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; path = FTMobileExtension.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 		17593AE12906917700A15CD9 /* FTResourceDelegateTest.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = FTResourceDelegateTest.m; sourceTree = "<group>"; };
@@ -640,6 +646,8 @@
 				17933E352D68244900524BF2 /* FTRUMViewTest.m */,
 				1783786C2D8964A700C590AE /* FTRUMSessionOnErrorSampleRateTest.m */,
 				172B10752E336A2400753766 /* FTRUMConfigurationTest.m */,
+				174CDF672F5E6A7600614EE2 /* FTMobileAgentNetworkTests.m */,
+				174CDF6A2F5E6A8F00614EE2 /* FTMobileAgentDynamicConfigTests.m */,
 			);
 			path = RUM;
 			sourceTree = "<group>";
@@ -1404,12 +1412,14 @@
 				178AE3AC2D55D04100BDC51B /* FTLoggerTest.m in Sources */,
 				178AE3792D55B74F00BDC51B /* FTLongTaskFileHandleTest.m in Sources */,
 				178AE37A2D55B74F00BDC51B /* FTSessionConfiguration.m in Sources */,
+				174CDF6C2F5E6A8F00614EE2 /* FTMobileAgentDynamicConfigTests.m in Sources */,
 				17933E362D68244900524BF2 /* FTRUMViewTest.m in Sources */,
 				178AE37B2D55B74F00BDC51B /* FTResourceDelegateTest.m in Sources */,
 				178AE37C2D55B74F00BDC51B /* FTURLProtocol.m in Sources */,
 				17F59C6F2DF7D3A7003FCB84 /* FTRemoteConfigTest.m in Sources */,
 				178AE37D2D55B74F00BDC51B /* FTAppLaunchDurationTest.m in Sources */,
 				178AE37E2D55B74F00BDC51B /* FTNetworkTests.m in Sources */,
+				174CDF682F5E6A7600614EE2 /* FTMobileAgentNetworkTests.m in Sources */,
 				178AE37F2D55B74F00BDC51B /* FTDatabaseTest.m in Sources */,
 				178AE3802D55B74F00BDC51B /* FTDataCompressionTest.m in Sources */,
 				178AE3812D55B74F00BDC51B /* FTTestUtils.m in Sources */,
@@ -1546,7 +1556,9 @@
 				4A299B942514953300400931 /* FTPropertyTest.m in Sources */,
 				174BC8802BFCB05500478EE1 /* FTDictionaryCopyTest.m in Sources */,
 				177892C129A60FE90007B47F /* PerformanceTracingTest.m in Sources */,
+				174CDF6B2F5E6A8F00614EE2 /* FTMobileAgentDynamicConfigTests.m in Sources */,
 				172B10772E336A2400753766 /* FTRUMConfigurationTest.m in Sources */,
+				174CDF692F5E6A7600614EE2 /* FTMobileAgentNetworkTests.m in Sources */,
 				1712C5F42B60EBFA00C4BD38 /* FTResourceAutoTrace.m in Sources */,
 				17C7631F28267154009582B6 /* FTLineProtocol.m in Sources */,
 				178AE3B92D55DEBC00BDC51B /* XCTestCase+Utils.m in Sources */,

@@ -26,7 +26,7 @@
 }
 - (void)createUI{
     // enableTraceUserResource = YES;
-    NSString *urlStr = [[NSProcessInfo processInfo] environment][@"TRACE_URL"];
+    NSString *urlStr = @"https://httpbin.org/status/200";
     NSURL *url = [NSURL URLWithString:urlStr];
     __weak typeof(self) weakSelf = self;
     TableViewCellItem *item1 = [[TableViewCellItem alloc]initWithTitle:@"RUM, Trace enable Resource auto collection" handler:^{
@@ -89,8 +89,6 @@
     }];
     
     TableViewCellItem *item5 = [[TableViewCellItem alloc]initWithTitle:@"Manual operation: use open api operation" handler:^{
-        NSString *urlStr = [[NSProcessInfo processInfo] environment][@"TRACE_URL"];
-        NSURL *url = [NSURL URLWithString:urlStr];
         NSURLRequest *request = [NSURLRequest requestWithURL:url];
         NSURLRequest *addTraceRequest = [[FTURLSessionInterceptor shared] interceptRequest:request];
         NSURLSession *session=[NSURLSession sessionWithConfiguration:[NSURLSessionConfiguration defaultSessionConfiguration] delegate:weakSelf delegateQueue:[NSOperationQueue mainQueue]];

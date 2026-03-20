@@ -7,7 +7,7 @@
 //
 
 #import <Foundation/Foundation.h>
-#import "FTEnumConstant.h"
+#import "FTInternalConstants.h"
 #import "FTErrorDataProtocol.h"
 NS_ASSUME_NONNULL_BEGIN
 typedef void (^ErrorMonitorInfoChangeBlock)(NSDictionary *info);

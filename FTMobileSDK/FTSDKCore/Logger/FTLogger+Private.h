@@ -7,7 +7,6 @@
 //
 
 #import "FTLogger.h"
-#import "FTEnumConstant.h"
 #import "FTLoggerDataWriteProtocol.h"
 #import "FTLinkRumDataProvider.h"
 

@@ -15,12 +15,13 @@ static NSDictionary<NSNumber *, NSString *> *defaultErrorDescriptions(void) {
     static dispatch_once_t onceToken;
     dispatch_once(&onceToken, ^{
         descriptions = @{
-            @(FTRemoteConfigErrorCodeDisabled): @"Remote configuration function is disabled. Please enable it first via the enable method.",
+            @(FTRemoteConfigErrorCodeDisabled): @"Remote config is disabled.",
             @(FTRemoteConfigErrorCodeIntervalNotMet): @"Update interval not met.",
             @(FTRemoteConfigErrorCodeRequesting): @"A remote config request is already in progress. Please try again later.",
             @(FTRemoteConfigErrorCodeNetworkFailed): @"Network request failed to fetch remote configuration.",
             @(FTRemoteConfigErrorCodeParseFailed): @"Failed to parse remote configuration data. Invalid config format.",
-            @(FTRemoteConfigErrorCodeSDKNotInitialized): @"SDK is not initialized. Please call the initialization method first."
+            @(FTRemoteConfigErrorCodeSDKNotInitialized): @"SDK is not initialized. Please call the initialization method first.",
+            @(FTRemoteConfigErrorCodeSyncConfigMissing): @"Sync URL or AppID is not configured."
         };
     });
     return descriptions;

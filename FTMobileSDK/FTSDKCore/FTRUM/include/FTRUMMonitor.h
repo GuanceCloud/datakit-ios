@@ -7,7 +7,7 @@
 //
 
 #import <Foundation/Foundation.h>
-#import "FTEnumConstant.h"
+#import "FTInternalConstants.h"
 @class FTDisplayRateMonitor,FTMemoryMonitor,FTCPUMonitor;
 
 NS_ASSUME_NONNULL_BEGIN

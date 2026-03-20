@@ -11,7 +11,7 @@
 #import "FTMobileConfig.h"
 #import "FTConstants.h"
 #import "FTBaseInfoHandler.h"
-#import "FTEnumConstant.h"
+#import "FTInternalConstants.h"
 #import "NSDictionary+FTCopyProperties.h"
 #import "FTJSONUtil.h"
 #import "FTLog+Private.h"

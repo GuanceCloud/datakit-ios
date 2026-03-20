@@ -16,8 +16,18 @@
 #import <objc/runtime.h>
 #import "OHHTTPStubs.h"
 #import "FTRequest.h"
+#import "FTInternalConstants.h"
+#import "FTURLSessionInstrumentation.h"
+#import "FTModelHelper.h"
+#import "FTGlobalRumManager.h"
+#import "FTRUMManager.h"
+#import "NSURLSessionTask+FTSwizzler.h"
 
+@interface FTURLSessionInstrumentation()
+- (BOOL)isFTIntakeRequest:(NSURLRequest *)request;
+@end
 @interface FTURLSessionInterceptor()
+@property (nonatomic, strong) dispatch_queue_t queue;
 - (FTSessionTaskHandler *)getTraceHandler:(id)key;
 @end
 /** This class is used to wrap an NSURLSession object during testing. */
@@ -411,6 +421,7 @@
     [dataTask resume];
     XCTAssertNotNil([[FTURLSessionInterceptor shared] getTraceHandler:dataTask]);
     [self waitForExpectationsWithTimeout:10.0 handler:nil];
+    dispatch_sync([FTURLSessionInterceptor shared].queue, ^{});
     XCTAssertNil([[FTURLSessionInterceptor shared] getTraceHandler:dataTask]);
     [session invalidateAndCancel];
 }
@@ -430,8 +441,9 @@
 
 - (void)testSDKUploadLoggingRequest{
     [FTNetworkMock networkOHHTTPStubs];
-    FTLoggingRequest *loggingRequest = [[FTLoggingRequest alloc]init];
-    NSURLRequest *URLRequest = [NSURLRequest requestWithURL:loggingRequest.absoluteURL];
+    FTRequest *loggingRequest = [FTRequest createRequestWithEvents:@[[FTModelHelper createLogModel]] type:FT_DATA_TYPE_LOGGING];
+    NSMutableURLRequest *URLRequest = [[NSMutableURLRequest alloc]initWithURL:loggingRequest.absoluteURL];
+    URLRequest = [loggingRequest adaptedRequest:URLRequest];
     NSURLSession *session = [NSURLSession
                              sessionWithConfiguration:[NSURLSessionConfiguration defaultSessionConfiguration]];
     
@@ -443,8 +455,9 @@
 - (void)testSDKUploadRumRequest{
     __block NSURLSessionDataTask *dataTask;
     [FTNetworkMock networkOHHTTPStubs];
-    FTLoggingRequest *loggingRequest = [[FTLoggingRequest alloc]init];
-    NSURLRequest *URLRequest = [NSURLRequest requestWithURL:loggingRequest.absoluteURL];
+    FTRequest *rumRequest = [FTRequest createRequestWithEvents:@[[FTModelHelper createRumModel]] type:FT_DATA_TYPE_RUM];
+    NSMutableURLRequest *URLRequest = [[NSMutableURLRequest alloc]initWithURL:rumRequest.absoluteURL];
+    URLRequest = [rumRequest adaptedRequest:URLRequest];
     NSURLSession *session = [NSURLSession
                              sessionWithConfiguration:[NSURLSessionConfiguration defaultSessionConfiguration]];
     
@@ -452,5 +465,146 @@
     [dataTask resume];
     XCTAssertNil([[FTURLSessionInterceptor shared] getTraceHandler:dataTask]);
     [session invalidateAndCancel];
+}
+
+#pragma mark - SDK Internal Request Filtering Tests
+
+/** Tests that SDK internal RUM upload requests are filtered out. */
+- (void)testIsFTIntakeRequest_RUMRequest{
+    FTRequest *rumRequest = [FTRequest createRequestWithEvents:@[[FTModelHelper createRumModel]] type:FT_DATA_TYPE_RUM];
+    NSMutableURLRequest *URLRequest = [[NSMutableURLRequest alloc]initWithURL:rumRequest.absoluteURL];
+    URLRequest = [rumRequest adaptedRequest:URLRequest];
+    
+    FTURLSessionInstrumentation *instrumentation = [FTURLSessionInstrumentation sharedInstance];
+        
+    XCTAssertTrue([instrumentation isFTIntakeRequest:URLRequest], @"RUM package request should be filtered out");
+}
+/** Tests that SDK internal Log upload requests are filtered out. */
+- (void)testIsFTIntakeRequest_LogRequest{
+    FTRequest *loggingRequest = [FTRequest createRequestWithEvents:@[[FTModelHelper createLogModel]] type:FT_DATA_TYPE_LOGGING];
+    NSMutableURLRequest *URLRequest = [[NSMutableURLRequest alloc]initWithURL:loggingRequest.absoluteURL];
+    URLRequest = [loggingRequest adaptedRequest:URLRequest];
+    
+    FTURLSessionInstrumentation *instrumentation = [FTURLSessionInstrumentation sharedInstance];
+        
+    XCTAssertTrue([instrumentation isFTIntakeRequest:URLRequest], @"RUM package request should be filtered out");
+}
+- (void)testIsFTIntakeRequest{
+    NSMutableURLRequest *request = [NSMutableURLRequest requestWithURL:self.url];
+    [request setValue:@"rumm-" forHTTPHeaderField:FT_HTTP_HEADER_X_PKG_ID];
+    
+    FTURLSessionInstrumentation *instrumentation = [FTURLSessionInstrumentation sharedInstance];
+    
+    XCTAssertTrue([instrumentation isFTIntakeRequest:request], @"request should be filtered out");
+}
+
+/** Tests that normal user requests are not filtered. */
+- (void)testIsFTIntakeRequest_NormalRequest {
+    NSMutableURLRequest *request = [NSMutableURLRequest requestWithURL:self.url];
+    [request setValue:@"some-other-value" forHTTPHeaderField:FT_HTTP_HEADER_X_PKG_ID];
+    
+    FTURLSessionInstrumentation *instrumentation = [FTURLSessionInstrumentation sharedInstance];
+    
+    XCTAssertFalse([instrumentation isFTIntakeRequest:request], @"Normal request should NOT be filtered out");
+}
+
+/** Tests that requests without X-PKG-ID header are not filtered. */
+- (void)testIsFTIntakeRequest_NoPackageHeader {
+    NSMutableURLRequest *request = [NSMutableURLRequest requestWithURL:self.url];
+    
+    FTURLSessionInstrumentation *instrumentation = [FTURLSessionInstrumentation sharedInstance];
+  
+    XCTAssertFalse([instrumentation isFTIntakeRequest:request], @"Request without X-PKG-ID header should NOT be filtered out");
+}
+
+/** Tests that nil request returns NO. */
+- (void)testIsFTIntakeRequest_NilRequest {
+    FTURLSessionInstrumentation *instrumentation = [FTURLSessionInstrumentation sharedInstance];
+    XCTAssertFalse([instrumentation isFTIntakeRequest:nil], @"Nil request should return NO");
+}
+
+/** Tests that user requests with custom headers are not filtered. */
+- (void)testUserRequestsWithCustomHeaders {
+    NSMutableURLRequest *request = [NSMutableURLRequest requestWithURL:self.url];
+    [request setValue:@"custom-value" forHTTPHeaderField:@"X-Custom-Header"];
+    [request setValue:@"user-token" forHTTPHeaderField:@"Authorization"];
+    
+    FTURLSessionInstrumentation *instrumentation = [FTURLSessionInstrumentation sharedInstance];
+    
+    XCTAssertFalse([instrumentation isFTIntakeRequest:request], @"User request with custom headers should NOT be filtered out");
+}
+#pragma mark ======= isSupportedForInstrumentation =======
+
+- (void)testIsSupportedForInstrumentation_dataTask{
+    NSURLSession *session = [NSURLSession sessionWithConfiguration:[NSURLSessionConfiguration ephemeralSessionConfiguration]];
+    NSURLSessionDataTask *dataTask = [session dataTaskWithURL:[NSURL URLWithString:@"https://httpbin.org/status/200"]];
+    XCTAssertTrue([dataTask ft_isSupportedForInstrumentation]);
+    [dataTask cancel];
+    [session invalidateAndCancel];
+}
+- (void)testIsSupportedForInstrumentation_uploadTask{
+    NSURLSession *session = [NSURLSession sessionWithConfiguration:[NSURLSessionConfiguration ephemeralSessionConfiguration]];
+    NSURL *url = [NSURL URLWithString:@"https://httpbin.org/post"];
+    NSMutableURLRequest *request = [NSMutableURLRequest requestWithURL:url];
+    request.HTTPMethod = @"POST";
+    NSError *jsonError;
+    NSDictionary *parameters = @{@"test":@"uploadTask"};
+    NSData *uploadData = [NSJSONSerialization dataWithJSONObject:parameters options:0 error:&jsonError];
+    NSURLSessionUploadTask *uploadTask = [session uploadTaskWithRequest:request fromData:uploadData];
+    XCTAssertTrue([uploadTask ft_isSupportedForInstrumentation]);
+    [uploadTask cancel];
+    [session invalidateAndCancel];
+}
+- (void)testIsSupportedForInstrumentation_downloadTask{
+    NSURLSession *session = [NSURLSession sessionWithConfiguration:[NSURLSessionConfiguration ephemeralSessionConfiguration]];
+    NSURLSessionDownloadTask *downloadTask = [session downloadTaskWithURL:[NSURL URLWithString:@"https://httpbin.org/bytes/1024"]];
+    XCTAssertTrue([downloadTask ft_isSupportedForInstrumentation]);
+    [downloadTask cancel];
+    [session invalidateAndCancel];
+}
+
+- (void)testIsSupportedForInstrumentation_webSocketTask API_AVAILABLE(macos(10.15), ios(13.0), watchos(6.0), tvos(13.0)){
+    NSURLSession *session = [NSURLSession sessionWithConfiguration:[NSURLSessionConfiguration ephemeralSessionConfiguration]];
+    NSURL *url = [NSURL URLWithString:@"wss://httpbin.org/ws"];
+
+    NSURLSessionWebSocketTask *webSocketTask = [session webSocketTaskWithURL:url];
+   
+    XCTAssertTrue([webSocketTask ft_isSupportedForInstrumentation]);
+    [webSocketTask cancel];
+    [session invalidateAndCancel];
+    
+}
+
+- (void)testIsSupportedForInstrumentation_streamTask{
+    NSURLSession *session = [NSURLSession sessionWithConfiguration:[NSURLSessionConfiguration ephemeralSessionConfiguration]];
+    NSURLSessionStreamTask *streamTask = [session streamTaskWithHostName:@"tcpbin.org" port:4242];
+    XCTAssertTrue([streamTask ft_isSupportedForInstrumentation]);
+    [streamTask cancel];
+    [session invalidateAndCancel];
+}
+
+- (void)testIsSupportedForInstrumentation_unsupportedAVTaskTypes {
+    NSArray *unsupportedClassNames = @[
+        @"AVAssetDownloadTask",
+        @"NSURLSessionAVAssetDownloadTask",
+        @"AVAggregateAssetDownloadTask",
+        @"NSURLSessionAVAggregateAssetDownloadTask",
+        @"__NSCFBackgroundAVAssetDownloadTask"
+    ];
+    
+    for (NSString *className in unsupportedClassNames) {
+        Class taskClass = NSClassFromString(className);
+        if (!taskClass) {
+            continue;
+        }
+        
+        NSURLSessionTask *task = [taskClass alloc];
+        if (!task) {
+            continue;
+        }
+        
+        XCTAssertFalse([task ft_isSupportedForInstrumentation],
+                       @"%@ should not be instrumented", className);
+    }
 }
 @end

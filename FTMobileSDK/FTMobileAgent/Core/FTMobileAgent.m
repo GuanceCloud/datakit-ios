@@ -28,7 +28,7 @@
 #import "FTMobileAgentVersion.h"
 #import "FTNetworkInfoManager.h"
 #import "FTURLSessionInstrumentation.h"
-#import "FTEnumConstant.h"
+#import "FTInternalConstants.h"
 #import "FTMobileConfig+Private.h"
 #import "FTLoggerConfig+Private.h"
 #import "FTRumConfig+Private.h"
@@ -63,7 +63,6 @@ static FTMobileAgent *sharedInstance = nil;
 + (void)startWithConfigOptions:(FTMobileConfig *)configOptions{
     NSAssert ((strcmp(dispatch_queue_get_label(DISPATCH_CURRENT_QUEUE_LABEL), dispatch_queue_get_label(dispatch_get_main_queue())) == 0),@"The SDK must be initialized on the main thread, otherwise unpredictable issues may occur (such as missing launch events).");
     
-    NSAssert((configOptions.datakitUrl.length!=0||(configOptions.datawayUrl.length!=0&&configOptions.clientToken.length!=0)), @"Please correctly configure datakit or dataway write address");
     @synchronized(sharedInstanceLock) {
         if (!sharedInstance) {
             sharedInstance = [[FTMobileAgent alloc] initWithConfig:configOptions];
@@ -103,9 +102,8 @@ static FTMobileAgent *sharedInstance = nil;
             _rumConfig = [rumConfigOptions copy];
             [FTNetworkInfoManager sharedInstance].setAppId(_rumConfig.appid);
             if (_sdkConfig.remoteConfiguration) {
-                [[FTRemoteConfigManager sharedInstance] updateRemoteConfig];
+                [[FTRemoteConfigManager sharedInstance] innerUpdateRemoteConfig];
                 [_rumConfig mergeWithRemoteConfigModel:[FTRemoteConfigManager sharedInstance].lastRemoteModel];
-
             }
             [self applyRUMConfig:_rumConfig];
         }
@@ -186,19 +184,16 @@ static FTMobileAgent *sharedInstance = nil;
                                                 pkgInfo:config.pkgInfo
     ];
     [FTExtensionDataManager sharedInstance].groupIdentifierArray = config.groupIdentifiers;
-    // Start data processing manager
-    [FTTrackDataManager startWithAutoSync:config.autoSync syncPageSize:config.syncPageSize syncSleepTime:config.syncSleepTime];
-    [[FTTrackDataManager sharedInstance] setEnableLimitWithDb:config.enableLimitWithDbSize size:config.dbCacheLimit discardNew:config.dbDiscardType == FTDBDiscard];
-    
     [FTNetworkInfoManager sharedInstance]
-        .setDatakitUrl(config.datakitUrl)
-        .setDatawayUrl(config.datawayUrl)
-        .setClientToken(config.clientToken)
+        .setUploadURL(config.datakitUrl,config.datawayUrl,config.clientToken)
         .setSdkVersion(SDK_VERSION)
         .setCompressionIntakeRequests(config.compressIntakeRequests)
         .setEnableDataIntegerCompatible(config.enableDataIntegerCompatible);
-    [[FTURLSessionInstrumentation sharedInstance] setSdkUrlStr:config.datakitUrl.length>0?config.datakitUrl:config.datawayUrl
-                                                   serviceName:config.service];
+    BOOL autoSync = config.autoSync&&[FTNetworkInfoManager sharedInstance].isNetworkConfigured;
+    // Start data processing manager
+    [FTTrackDataManager startWithAutoSync:autoSync syncPageSize:config.syncPageSize syncSleepTime:config.syncSleepTime];
+    [[FTTrackDataManager sharedInstance] setEnableLimitWithDb:config.enableLimitWithDbSize size:config.dbCacheLimit discardNew:config.dbDiscardType == FTDBDiscard];
+    
     [[FTExtensionDataManager sharedInstance] writeMobileConfig:[config convertToDictionary]];
     FTInnerLogInfo(@"Init Mobile Config Success: \n%@",config.debugDescription);
 }
@@ -232,14 +227,14 @@ static FTMobileAgent *sharedInstance = nil;
     [[FTURLSessionInstrumentation sharedInstance] setTraceEnableAutoTrace:traceConfig.enableAutoTrace
                                                         enableLinkRumData:traceConfig.enableLinkRumData
                                                                sampleRate:traceConfig.samplerate
-                                                                traceType:traceConfig.networkTraceType
+                                                                traceType:(NetworkTraceType)traceConfig.networkTraceType
                                                          traceInterceptor:traceConfig.traceInterceptor
+                                                              serviceName:self.sdkConfig.service
     ];
     [FTExternalDataManager sharedManager].resourceDelegate = [FTURLSessionInstrumentation sharedInstance].externalResourceHandler;
     [[FTExtensionDataManager sharedInstance] writeTraceConfig:[traceConfig convertToDictionary]];
     FTInnerLogInfo(@"Init Trace Config Success: \n%@",traceConfig.debugDescription);
 }
-#pragma mark ==
 + (BOOL)checkInstallState{
     @synchronized(sharedInstanceLock) {
         return sharedInstance != nil;
@@ -376,10 +371,34 @@ static FTMobileAgent *sharedInstance = nil;
 }
 - (void)flushSyncData{
     @try {
-        [[FTTrackDataManager sharedInstance] flushSyncData];
+        if ([FTNetworkInfoManager sharedInstance].isNetworkConfigured) {
+            [[FTTrackDataManager sharedInstance] flushSyncData];
+        }
     } @catch (NSException *exception) {
         FTInnerLogError(@"%@ error: %@", self, exception);
     }
+}
++ (void)updateDatakitURL:(NSString *)url{
+    [self updateUploadURLWithDatakitUrl:url datawayUrl:nil clientToken:nil];
+}
++ (void)updateDatawayURL:(NSString *)url clientToken:(NSString *)token{
+    [self updateUploadURLWithDatakitUrl:nil datawayUrl:url clientToken:token];
+}
++ (void)updateUploadURLWithDatakitUrl:(nullable NSString *)datakitUrl
+                           datawayUrl:(nullable NSString *)datawayUrl
+                          clientToken:(nullable NSString *)clientToken {
+    if (![self checkInstallState]) {
+        FTInnerLogError(@"SDK not initialized, please call +startWithConfigOptions: first");
+        return;
+    }
+    
+    [FTNetworkInfoManager sharedInstance].setUploadURL(datakitUrl,datawayUrl,clientToken);
+    FTTrackDataManager *trackManager = [FTTrackDataManager sharedInstance];
+    BOOL autoSync = [self sharedInstance].sdkConfig.autoSync && [FTNetworkInfoManager sharedInstance].isNetworkConfigured;
+    if (trackManager.autoSync != autoSync) {
+        [trackManager enableAutoSync:autoSync];
+    }
+    [[FTRemoteConfigManager sharedInstance] innerUpdateRemoteConfig];
 }
 #pragma mark - SDK shutdown
 - (void)shutDown{
@@ -395,6 +414,7 @@ static FTMobileAgent *sharedInstance = nil;
     [[FTRemoteConfigManager sharedInstance] shutDown];
     [FTTrackDataManager shutDown];
     [[FTPresetProperty sharedInstance] shutDown];
+    [[FTNetworkInfoManager sharedInstance] clearUploadInfo];
     FTInnerLogInfo(@"[SDK] SHUT DOWN");
     [[FTLog sharedInstance] shutDown];
 }

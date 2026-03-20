@@ -11,7 +11,6 @@
 #import "NSString+FTAdd.h"
 #import "FTConstants.h"
 #import "FTBaseInfoHandler.h"
-#import "FTEnumConstant.h"
 #import "FTLog.h"
 #include <pthread.h>
 static NSUInteger SkyWalkingSequence = 0.0;

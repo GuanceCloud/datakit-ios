@@ -38,9 +38,8 @@ class TraceViewController: UIViewController,UITableViewDelegate,UITableViewDataS
         return dataSource.count
     }
     func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
-        let dic = ProcessInfo().environment
-        let traceStr = dic["TRACE_URL"]
-        if let traceStr = traceStr,let url = URL.init(string: traceStr) {
+        let traceStr = "https://httpbin.org/status/200"
+        if let url = URL.init(string: traceStr) {
             if let traceHeader = FTExternalDataManager.shared().getTraceHeader(withKey: NSUUID().uuidString, url: url) {
                 let request = NSMutableURLRequest(url: url)
                 for (a,b) in traceHeader {
