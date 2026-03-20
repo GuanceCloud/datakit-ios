@@ -158,14 +158,18 @@ static FTMobileAgent *sharedInstance = nil;
 }
 + (void)updateRemoteConfigWithMiniUpdateInterval:(int)miniUpdateInterval callback:(void (^)(BOOL, NSDictionary<NSString *,id> * _Nullable))callback{
     [self updateRemoteConfigWithMiniUpdateInterval:miniUpdateInterval completion:^(BOOL success, NSError * _Nullable error, FTRemoteConfigModel * _Nullable model, NSDictionary<NSString *,id> * _Nullable content) {
-        callback(success,content);
+        if (callback) {
+            callback(success,content);
+        }
         return model;
     }];
 }
 + (void)updateRemoteConfigWithMiniUpdateInterval:(NSInteger)miniUpdateInterval
                                          completion:(FTRemoteConfigFetchCompletionBlock)completion{
     if (![self checkInstallState]) {
-        completion(NO,[FTRemoteConfigError errorWithSDKNotInitialized],nil,nil);
+        if ((completion)) {
+            completion(NO,[FTRemoteConfigError errorWithSDKNotInitialized],nil,nil);
+        }
         return;
     }
     [[FTRemoteConfigManager sharedInstance] updateRemoteConfigWithMinimumUpdateInterval:miniUpdateInterval completion:completion];
