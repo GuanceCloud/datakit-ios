@@ -78,12 +78,13 @@ static dispatch_once_t onceToken;
     [self.stores setValue:srStore forKey:sessionReplayFeature.name];
     [self.features setValue:sessionReplayFeature forKey:sessionReplayFeature.name];
     
-    //    FTResourcesFeature *resourcesFeature = [[FTResourcesFeature alloc]init];
-    //    FTFeatureStores *resourceStore = [self registerFeature:resourcesFeature];
-    //    FTFeatureDataStore *resourceDataStore = [[FTFeatureDataStore alloc]initWithFeature:resourcesFeature.name queue:self.readWriteQueue directory:self.coreDirectory];
-    //    [self.stores setValue:resourceStore forKey:resourcesFeature.name];
-    //    [self.features setValue:resourcesFeature forKey:resourcesFeature.name];
-    [sessionReplayFeature startWithRecordStorage:srStore.storage];
+    FTResourcesFeature *resourcesFeature = [[FTResourcesFeature alloc]init];
+    FTFeatureStores *resourceStore = [self registerFeature:resourcesFeature];
+    FTFeatureDataStore *resourceDataStore = [[FTFeatureDataStore alloc]initWithFeature:resourcesFeature.name queue:self.readWriteQueue directory:self.coreDirectory];
+    [self.stores setValue:resourceStore forKey:resourcesFeature.name];
+    [self.features setValue:resourcesFeature forKey:resourcesFeature.name];
+    [sessionReplayFeature startWithRecordStorage:srStore.storage resourceWriter:resourceStore.storage.writer resourceDataStore:resourceDataStore];
+    [sessionReplayFeature startRecording];
     FTInnerLogInfo(@"[session-replay] initialized success");
 }
 - (FTFeatureStores *)registerFeature:(id<FTRemoteFeature>)feature{
@@ -92,7 +93,7 @@ static dispatch_once_t onceToken;
         FTPerformancePreset *performancePreset = [self.performancePreset updateWithOverride:feature.performanceOverride];
         FTDirectory *cacheDirectory = [self.coreDirectory createSubdirectoryWithPath:[feature.name stringByAppendingString:@".cache"]];
         FTFeatureStorage *storage = [[FTFeatureStorage alloc]initWithFeatureName:feature.name queue:self.readWriteQueue directory:directory cacheDirectory:cacheDirectory performance:performancePreset];
-        FTFeatureUpload *upload = [[FTFeatureUpload alloc]initWithFeatureName:feature.name
+        FTFeatureUpload *upload = [FTFeatureUpload createWithFeatureName:feature.name
                                                                    fileReader:storage.reader
                                                                   cacheWriter:storage.cacheWriter
                                                                requestBuilder:feature.requestBuilder

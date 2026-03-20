@@ -221,7 +221,7 @@
         _height = roundf(viewportSize.height);
     }
     return self;
-
+    
 }
 -(instancetype)init{
     return [self initWithViewportSize:CGSizeZero];
@@ -287,7 +287,14 @@
     if(self){
         if (@available(iOS 11.0, *)) {
             NSError *error;
-            FTEnrichedResource *resource = [NSKeyedUnarchiver unarchivedObjectOfClass:FTEnrichedResource.class fromData:data error:&error];
+            NSSet *allowedClasses = [NSSet setWithObjects:
+                                             [FTEnrichedResource class],
+                                             [FTSRBaseFrame class],
+                                             [NSString class],
+                                             [NSData class],
+                                             nil];
+                    
+            FTEnrichedResource *resource = [NSKeyedUnarchiver unarchivedObjectOfClasses:allowedClasses fromData:data error:&error];
             return resource;
         }else{
 #pragma clang diagnostic push
@@ -295,6 +302,7 @@
             NSDictionary  *dict = [NSKeyedUnarchiver unarchiveObjectWithData:data];
 #pragma clang diagnostic pop
             _type = @"resource";
+            _mimeType = dict[@"mimeType"];
             _appId = dict[@"appId"];
             _identifier = dict[@"identifier"];
             _data = dict[@"data"];

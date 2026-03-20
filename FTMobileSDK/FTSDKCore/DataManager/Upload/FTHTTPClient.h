@@ -11,7 +11,7 @@
 
 NS_ASSUME_NONNULL_BEGIN
 @interface FTHTTPClient : NSObject
--(instancetype)initWithTimeoutIntervalForRequest:(NSTimeInterval)timeOut NS_DESIGNATED_INITIALIZER;
+- (instancetype)initWithTimeoutIntervalForRequest:(NSTimeInterval)timeOut NS_DESIGNATED_INITIALIZER;
 - (void)sendRequest:(id<FTRequestProtocol>  _Nonnull)request
          completion:(void(^_Nullable)(NSHTTPURLResponse * _Nonnull httpResponse,
                                       NSData * _Nullable data,

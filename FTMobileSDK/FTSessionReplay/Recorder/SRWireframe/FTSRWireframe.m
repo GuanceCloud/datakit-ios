@@ -345,9 +345,8 @@ static BOOL objectIsEqual(id new,id old){
     self = [super initWithIdentifier:identifier frame:frame];
     if(self){
         self.type = @"image";
-        self.mimeType = @"png";
-        // TODO: Remove when imageData synchronization is supported
-        self.isEmpty = YES;
+        self.mimeType = @"image/png";
+        self.isEmpty = NO;
     }
     return self;
 }

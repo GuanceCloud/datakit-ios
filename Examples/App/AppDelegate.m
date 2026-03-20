@@ -114,6 +114,7 @@
         FTSessionReplayConfig *srConfig = [[FTSessionReplayConfig alloc]init];
         srConfig.textAndInputPrivacy = FTTextAndInputPrivacyLevelMaskSensitiveInputs;
         srConfig.touchPrivacy = FTTouchPrivacyLevelShow;
+        srConfig.imagePrivacy = FTImagePrivacyLevelMaskNone;
         srConfig.sampleRate = 100;
 
         [[FTRumSessionReplay sharedInstance] startWithSessionReplayConfig:srConfig];

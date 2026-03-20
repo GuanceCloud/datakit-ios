@@ -34,7 +34,6 @@
 @interface FTViewTreeSnapshotBuilder()
 @property (nonatomic, strong) FTViewTreeRecorder *viewTreeRecorder;
 @property (nonatomic, strong) FTSRViewID *idGen;
-@property (nonatomic, strong) FTImageDataUtils *imageDataProvider;
 @end
 @implementation FTViewTreeSnapshotBuilder
 -(instancetype)init{
@@ -44,7 +43,6 @@
     self = [super init];
     if(self){
         _idGen = [[FTSRViewID alloc]init];
-        _imageDataProvider = [[FTImageDataUtils alloc]init];
         _viewTreeRecorder = [[FTViewTreeRecorder alloc] init];
         _webViewCache = [NSHashTable weakObjectsHashTable];
         if(additionalNodeRecorders.count>0){

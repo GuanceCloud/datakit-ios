@@ -22,6 +22,9 @@
 #import "FTSegmentJSON.h"
 #import "FTDataStore.h"
 #import "FTFileWriter.h"
+#import "FTResourceCheckRequest.h"
+#import "FTSRRecord.h"
+#import "FTConstants.h"
 
 @interface FTFeatureUpload()<NSCacheDelegate>{
     pthread_rwlock_t _readWorkLock;
@@ -43,7 +46,19 @@
 @implementation FTFeatureUpload
 @synthesize readWork = _readWork;
 @synthesize uploadWork = _uploadWork;
-
++(FTFeatureUpload *)createWithFeatureName:(NSString *)featureName
+                               fileReader:(id<FTReader>)fileReader
+                              cacheWriter:(id<FTCacheWriter>)cacheWriter
+                           requestBuilder:(id<FTFeatureRequestBuilder>)requestBuilder
+                      maxBatchesPerUpload:(int)maxBatchesPerUpload
+                              performance:(FTPerformancePreset *)performance
+                                  context:(nonnull NSDictionary *)context{
+    if ([featureName isEqualToString:@"session-replay-resources"]) {
+        return [[FTImageFeatureUpload alloc]initWithFeatureName:featureName fileReader:fileReader cacheWriter:cacheWriter requestBuilder:requestBuilder maxBatchesPerUpload:maxBatchesPerUpload performance:performance context:context];
+    }else{
+        return [[FTFeatureUpload alloc]initWithFeatureName:featureName fileReader:fileReader cacheWriter:cacheWriter requestBuilder:requestBuilder maxBatchesPerUpload:maxBatchesPerUpload performance:performance context:context];
+    }
+}
 -(instancetype)initWithFeatureName:(NSString *)featureName
                         fileReader:(id<FTReader>)fileReader
                        cacheWriter:(id<FTCacheWriter>)cacheWriter
@@ -170,20 +185,25 @@
 -(BOOL)flushWithEvent:(id)event parameters:(NSDictionary *)parameters{
     @try {
         __block BOOL success = NO;
+        __weak typeof(self) weakSelf = self;
         dispatch_semaphore_t flushSemaphore = dispatch_semaphore_create(0);
         [self.requestBuilder requestWithEvents:event parameters:parameters];
         [self.httpClient sendRequest:self.requestBuilder completion:^(NSHTTPURLResponse * _Nonnull httpResponse, NSData * _Nullable data, NSError * _Nullable error) {
-            if (error || ![httpResponse isKindOfClass:[NSHTTPURLResponse class]]) {
-                FTInnerLogError(@"[NETWORK][%@] %@", self.featureName,[NSString stringWithFormat:@"Network failure: %@", error ? error : @"Unknown error"]);
-                success = NO;
-                dispatch_semaphore_signal(flushSemaphore);
+            __strong __typeof(weakSelf) strongSelf = weakSelf;
+            if (!strongSelf) {
+                dispatch_semaphore_signal(flushSemaphore); 
                 return;
             }
-            NSInteger statusCode = httpResponse.statusCode;
-            success = (statusCode >=200 && statusCode < 500);
-            FTInnerLogDebug(@"[NETWORK][%@] Upload Response statusCode : %ld",self.featureName,(long)statusCode);
-            if (statusCode != 200 && data.length>0) {
-                FTInnerLogError(@"[NETWORK][%@] Server exception, try again later responseData = %@",self.featureName,[[NSString alloc] initWithData:data encoding:NSUTF8StringEncoding]);
+            if (error || ![httpResponse isKindOfClass:[NSHTTPURLResponse class]]) {
+                FTInnerLogError(@"[NETWORK][%@] %@", strongSelf.featureName,[NSString stringWithFormat:@"Network failure: %@", error ? error : @"Unknown error"]);
+                success = NO;
+            }else{
+                NSInteger statusCode = httpResponse.statusCode;
+                success = (statusCode >= 200 && statusCode < 500);
+                FTInnerLogDebug(@"[NETWORK][%@] Upload Response statusCode : %ld",strongSelf.featureName,(long)statusCode);
+                if (statusCode != 200 && data.length>0) {
+                    FTInnerLogError(@"[NETWORK][%@] Server exception, try again later responseData = %@",strongSelf.featureName,[[NSString alloc] initWithData:data encoding:NSUTF8StringEncoding]);
+                }
             }
             dispatch_semaphore_signal(flushSemaphore);
         }];
@@ -210,5 +230,87 @@
             strongSelf.readWork = nil;
         }
     });
+}
+@end
+
+@interface FTImageFeatureUpload()
+@property (nonatomic, strong) FTResourceCheckRequest *checkRequest;
+
+@end
+
+@implementation FTImageFeatureUpload
+
+-(instancetype)initWithFeatureName:(NSString *)featureName
+                        fileReader:(id<FTReader>)fileReader
+                       cacheWriter:(id<FTCacheWriter>)cacheWriter
+                    requestBuilder:(id<FTFeatureRequestBuilder>)requestBuilder
+               maxBatchesPerUpload:(int)maxBatchesPerUpload
+                       performance:(FTPerformancePreset *)performance
+                           context:(nonnull NSDictionary *)context{
+    self = [super initWithFeatureName:featureName fileReader:fileReader cacheWriter:cacheWriter requestBuilder:requestBuilder maxBatchesPerUpload:maxBatchesPerUpload performance:performance context:context];
+    if (self) {
+        self.checkRequest = [[FTResourceCheckRequest alloc]init];
+    }
+    return self;
+}
+
+-(BOOL)flushWithEvent:(id)event parameters:(NSDictionary *)parameters{
+    @try {
+        NSMutableArray<FTEnrichedResource *> *resources = [NSMutableArray new];
+        NSMutableArray *files = [NSMutableArray new];
+        for (NSData *data in event) {
+            FTEnrichedResource *resource = [[FTEnrichedResource alloc]initWithData:data];
+            [resources addObject:resource];
+            [files addObject:resource.identifier];
+        }
+        NSDictionary *content = [self checkImageWithEvent:files parameters:@{FT_APP_ID:resources[0].appId}];
+        if (content == nil || content.count == 0) {
+            return NO;
+        }
+        NSMutableArray *uploadResources = [NSMutableArray new];
+        for (FTEnrichedResource *resource in resources) {
+            NSNumber *fileExist = content[resource.identifier];
+            if (fileExist && ![fileExist boolValue]) {
+                [uploadResources addObject:resource];
+            }
+        }
+        if (uploadResources.count == 0) {
+            return YES;
+        }
+        return [super flushWithEvent:uploadResources  parameters:parameters];
+    } @catch (NSException *exception) {
+        FTInnerLogError(@"exception %@",exception);
+    }
+    return YES;
+}
+
+- (NSDictionary *)checkImageWithEvent:(id)event parameters:(NSDictionary *)parameters{
+    __weak typeof(self) weakSelf = self;
+    __block NSDictionary *content = nil;
+    dispatch_semaphore_t flushSemaphore = dispatch_semaphore_create(0);
+    [self.checkRequest requestWithEvents:event parameters:parameters];
+    [self.httpClient sendRequest:self.checkRequest completion:^(NSHTTPURLResponse * _Nonnull httpResponse, NSData * _Nullable data, NSError * _Nullable error) {
+        __strong __typeof(weakSelf) strongSelf = weakSelf;
+        if (!strongSelf) {
+            dispatch_semaphore_signal(flushSemaphore);
+            return;
+        }
+        if (error || ![httpResponse isKindOfClass:[NSHTTPURLResponse class]]) {
+            FTInnerLogError(@"[NETWORK][%@] %@", strongSelf.featureName,[NSString stringWithFormat:@"Network failure: %@", error ? error : @"Unknown error"]);
+        }else{
+            NSInteger statusCode = httpResponse.statusCode;
+            FTInnerLogDebug(@"[NETWORK][%@] CheckImage Response statusCode : %ld",strongSelf.featureName,(long)statusCode);
+            if (statusCode != 200 && data.length>0) {
+                FTInnerLogError(@"[NETWORK][%@] Server exception, responseData: %@",strongSelf.featureName,[[NSString alloc] initWithData:data encoding:NSUTF8StringEncoding]);
+            }else{
+                NSString *dataStr = [[NSString alloc] initWithData:data encoding:NSUTF8StringEncoding];
+                NSDictionary *dict = [FTJSONUtil dictionaryWithJsonString:dataStr];
+                content = dict[@"content"];
+            }
+        }
+        dispatch_semaphore_signal(flushSemaphore);
+    }];
+    dispatch_semaphore_wait(flushSemaphore, DISPATCH_TIME_FOREVER);
+    return content;
 }
 @end
