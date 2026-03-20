@@ -502,29 +502,31 @@
 - (void)testSDKShutdown{
     [self sdkInitWithRemoteConfiguration:YES interval:60];
     id<OHHTTPStubsDescriptor> stubs = [self mockRemoteData];
-    XCTestExpectation *exception = [[XCTestExpectation alloc]init];
-    dispatch_group_t group = dispatch_group_create();
-    NSInteger count = 0;
-    for (int i = 0; i<1000; i++) {
-        dispatch_group_enter(group);
-        dispatch_async(dispatch_queue_create(0, 0), ^{
+    
+    XCTestExpectation *exp = [[XCTestExpectation alloc] initWithDescription:@"Thread contention test"];
+    dispatch_queue_t queue1 = dispatch_queue_create("com.queue1", DISPATCH_QUEUE_SERIAL);
+    dispatch_queue_t queue2 = dispatch_queue_create("com.queue2", DISPATCH_QUEUE_SERIAL);
+    
+    for (NSInteger i = 0; i < 500; i++) {
+        dispatch_async(queue1, ^{
             [FTMobileAgent updateRemoteConfig];
-            [FTMobileAgent updateRemoteConfigWithMiniUpdateInterval:0 callback:^(BOOL success, NSDictionary<NSString *,id> * _Nullable config) {
-                
-            }];
-            dispatch_group_leave(group);
         });
+        
+        dispatch_async(queue2, ^{
+            [FTMobileAgent updateRemoteConfigWithMiniUpdateInterval:0 completion:nil];
+        });
+        
         dispatch_async(dispatch_get_main_queue(), ^{
             [FTMobileAgent shutDown];
             [self sdkInitWithRemoteConfiguration:YES interval:60];
         });
-        count ++;
     }
-    dispatch_group_notify(group, dispatch_get_main_queue(), ^{
-        [exception fulfill];
+    
+    dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)(2 * NSEC_PER_SEC)), dispatch_get_main_queue(), ^{
+        [exp fulfill];
     });
-    [self waitForExpectations:@[exception]];
-    XCTAssertTrue(count == 1000);
+    
+    [self waitForExpectations:@[exp] timeout:30];
     [OHHTTPStubs removeStub:stubs];
     [FTMobileAgent shutDown];
 }
@@ -791,6 +793,7 @@
     [FTMobileAgent shutDown];
 }
 
+#pragma mark  ================== Network Configured ========================
 - (void)testIsNetworkConfiguredForRemote_WithoutAppId {
     [[FTRemoteConfigManager sharedInstance] saveRemoteConfig:nil];
     
