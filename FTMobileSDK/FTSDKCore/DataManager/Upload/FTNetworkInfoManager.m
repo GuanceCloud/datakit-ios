@@ -166,4 +166,13 @@ static FTNetworkInfoManager *sharedInstance = nil;
 - (BOOL)isNetworkConfiguredForRemote {
     return [self isNetworkConfigured] && self.appId != nil;
 }
+- (void)clearUploadInfo{
+    dispatch_barrier_async(self.concurrentQueue, ^{
+        self.datakitUrl = nil;
+        self.datawayUrl = nil;
+        self.clientToken = nil;
+        self.appId = nil;
+        self.configState = FTNetworkConfigStateNotConfigured;
+    });
+}
 @end

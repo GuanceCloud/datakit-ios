@@ -414,6 +414,7 @@ static FTMobileAgent *sharedInstance = nil;
     [[FTRemoteConfigManager sharedInstance] shutDown];
     [FTTrackDataManager shutDown];
     [[FTPresetProperty sharedInstance] shutDown];
+    [[FTNetworkInfoManager sharedInstance] clearUploadInfo];
     FTInnerLogInfo(@"[SDK] SHUT DOWN");
     [[FTLog sharedInstance] shutDown];
 }

@@ -39,6 +39,8 @@ NS_ASSUME_NONNULL_BEGIN
 - (BOOL)isNetworkConfigured;
 
 - (BOOL)isNetworkConfiguredForRemote;
+
+- (void)clearUploadInfo;
 @end
 
 NS_ASSUME_NONNULL_END
