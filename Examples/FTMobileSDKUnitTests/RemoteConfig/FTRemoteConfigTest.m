@@ -27,6 +27,7 @@
 #import "FTRUMManager.h"
 #import "FTTrackerEventDBTool.h"
 #import "FTModelHelper.h"
+#import "FTNetworkInfoManager.h"
 
 @interface FTDataUploadWorker (Testing)
 @property (nonatomic, assign,readonly) int uploadPageSize;
@@ -787,6 +788,250 @@
     XCTAssertTrue([dict[@"vips"] isEqualToString:@"[\"user1\"]"]);
     
     [OHHTTPStubs removeStub:stubs];
+    [FTMobileAgent shutDown];
+}
+
+- (void)testIsNetworkConfiguredForRemote_WithoutAppId {
+    [[FTRemoteConfigManager sharedInstance] saveRemoteConfig:nil];
+    
+    NSString *datakit = @"http://datakit-test.com";
+    
+    FTMobileConfig *config = [[FTMobileConfig alloc] init];
+    config.remoteConfiguration = YES;
+    config.remoteConfigMiniUpdateInterval = 0;
+    [FTMobileAgent startWithConfigOptions:config];
+    
+    XCTAssertFalse([[FTNetworkInfoManager sharedInstance] isNetworkConfigured]);
+    XCTAssertFalse([[FTNetworkInfoManager sharedInstance] isNetworkConfiguredForRemote]);
+    
+    [FTMobileAgent updateDatakitURL:datakit];
+    
+    XCTAssertTrue([[FTNetworkInfoManager sharedInstance] isNetworkConfigured]);
+    XCTAssertFalse([[FTNetworkInfoManager sharedInstance] isNetworkConfiguredForRemote]);
+    
+    XCTestExpectation *expectation = [self expectationWithDescription:@"RemoteConfigUpdateWithoutAppId"];
+    
+    [FTMobileAgent updateRemoteConfigWithMiniUpdateInterval:0 completion:^FTRemoteConfigModel * _Nullable(BOOL success, NSError * _Nullable error, FTRemoteConfigModel * _Nullable model, NSDictionary<NSString *,id> * _Nullable content) {
+        XCTAssertFalse(success);
+        XCTAssertEqual(error.code, FTRemoteConfigErrorCodeSyncConfigMissing);
+        [expectation fulfill];
+        return nil;
+    }];
+    
+    [self waitForExpectations:@[expectation] timeout:10];
+    
+    [FTMobileAgent shutDown];
+}
+
+- (void)testInnerUpdateRemoteConfig_NoNetworkConfigured {
+    [[FTRemoteConfigManager sharedInstance] saveRemoteConfig:nil];
+    
+    NSString *datakit = @"http://datakit-test.com";
+    NSString *appId = @"appid-test";
+    
+    __block int requestCount = 0;
+    
+    id<OHHTTPStubsDescriptor> remoteStub = [OHHTTPStubs stubRequestsPassingTest:^BOOL(NSURLRequest *request) {
+        return [request.URL.host isEqualToString:[NSURL URLWithString:datakit].host];
+    } withStubResponse:^OHHTTPStubsResponse*(NSURLRequest *request) {
+        requestCount++;
+        NSDictionary *content = @{@"content": @{}};
+        NSString *contentStr = [FTJSONUtil convertToJsonDataWithObject:content];
+        return [OHHTTPStubsResponse responseWithData:[contentStr dataUsingEncoding:NSUTF8StringEncoding] statusCode:200 headers:nil];
+    }];
+    
+    FTMobileConfig *config = [[FTMobileConfig alloc] init];
+    config.remoteConfiguration = YES;
+    config.remoteConfigMiniUpdateInterval = 0;
+    [FTMobileAgent startWithConfigOptions:config];
+    
+    XCTAssertFalse([[FTNetworkInfoManager sharedInstance] isNetworkConfigured]);
+    XCTAssertFalse([[FTNetworkInfoManager sharedInstance] isNetworkConfiguredForRemote]);
+    
+    FTRumConfig *rum = [[FTRumConfig alloc] initWithAppid:appId];
+    [[FTMobileAgent sharedInstance] startRumWithConfigOptions:rum];
+    
+    [self waitForTimeInterval:0.5];
+    
+    XCTAssertEqual(requestCount, 0, @"innerUpdateRemoteConfig should not send network requests when upload address is not configured");
+    
+    [OHHTTPStubs removeStub:remoteStub];
+    [FTMobileAgent shutDown];
+}
+
+- (void)testInnerUpdateRemoteConfig_NoAppId {
+    [[FTRemoteConfigManager sharedInstance] saveRemoteConfig:nil];
+    
+    NSString *datakit = @"http://datakit-test.com";
+    
+    __block int requestCount = 0;
+    
+    id<OHHTTPStubsDescriptor> remoteStub = [OHHTTPStubs stubRequestsPassingTest:^BOOL(NSURLRequest *request) {
+        return [request.URL.host isEqualToString:[NSURL URLWithString:datakit].host];
+    } withStubResponse:^OHHTTPStubsResponse*(NSURLRequest *request) {
+        requestCount++;
+        NSDictionary *content = @{@"content": @{}};
+        NSString *contentStr = [FTJSONUtil convertToJsonDataWithObject:content];
+        return [OHHTTPStubsResponse responseWithData:[contentStr dataUsingEncoding:NSUTF8StringEncoding] statusCode:200 headers:nil];
+    }];
+    
+    FTMobileConfig *config = [[FTMobileConfig alloc] initWithDatakitUrl:datakit];
+    config.remoteConfiguration = YES;
+    config.remoteConfigMiniUpdateInterval = 0;
+    [FTMobileAgent startWithConfigOptions:config];
+    
+    XCTAssertTrue([[FTNetworkInfoManager sharedInstance] isNetworkConfigured]);
+    XCTAssertFalse([[FTNetworkInfoManager sharedInstance] isNetworkConfiguredForRemote]);
+    
+    [self waitForTimeInterval:0.5];
+    
+    XCTAssertEqual(requestCount, 0, @"innerUpdateRemoteConfig should not send network requests when appId is not set");
+    
+    [OHHTTPStubs removeStub:remoteStub];
+    [FTMobileAgent shutDown];
+}
+
+- (void)testInnerUpdateRemoteConfig_TriggeredByUpdateDatakitURL {
+    [[FTRemoteConfigManager sharedInstance] saveRemoteConfig:nil];
+    
+    NSString *datakit = @"http://datakit-test.com";
+    NSString *appId = @"appid-test";
+    
+    __block int requestCount = 0;
+    XCTestExpectation *expectation = [self expectationWithDescription:@"RemoteConfigUpdateTriggered"];
+    
+    id<OHHTTPStubsDescriptor> remoteStub = [OHHTTPStubs stubRequestsPassingTest:^BOOL(NSURLRequest *request) {
+        return [request.URL.host isEqualToString:[NSURL URLWithString:datakit].host];
+    } withStubResponse:^OHHTTPStubsResponse*(NSURLRequest *request) {
+        requestCount++;
+        if (requestCount == 1) {
+            NSDictionary *content = @{@"content": @{}};
+            NSString *contentStr = [FTJSONUtil convertToJsonDataWithObject:content];
+            [expectation fulfill];
+            return [OHHTTPStubsResponse responseWithData:[contentStr dataUsingEncoding:NSUTF8StringEncoding] statusCode:200 headers:nil];
+        }
+        return nil;
+    }];
+    
+    FTMobileConfig *config = [[FTMobileConfig alloc] init];
+    config.remoteConfiguration = YES;
+    config.remoteConfigMiniUpdateInterval = 0;
+    [FTMobileAgent startWithConfigOptions:config];
+    
+    FTRumConfig *rum = [[FTRumConfig alloc] initWithAppid:appId];
+    [[FTMobileAgent sharedInstance] startRumWithConfigOptions:rum];
+    
+    XCTAssertFalse([[FTNetworkInfoManager sharedInstance] isNetworkConfigured]);
+    XCTAssertFalse([[FTNetworkInfoManager sharedInstance] isNetworkConfiguredForRemote]);
+    
+    [self waitForTimeInterval:0.5];
+    
+    XCTAssertEqual(requestCount, 0, @"No remoteConfig update should be triggered during initialization without upload address");
+    
+    [FTMobileAgent updateDatakitURL:datakit];
+    
+    XCTAssertTrue([[FTNetworkInfoManager sharedInstance] isNetworkConfigured]);
+    XCTAssertTrue([[FTNetworkInfoManager sharedInstance] isNetworkConfiguredForRemote]);
+    
+    [self waitForExpectations:@[expectation] timeout:5];
+    
+    XCTAssertEqual(requestCount, 1, @"One remoteConfig update should be triggered after calling updateDatakitURL");
+    
+    [OHHTTPStubs removeStub:remoteStub];
+    [FTMobileAgent shutDown];
+}
+
+- (void)testInnerUpdateRemoteConfig_TriggeredByUpdateDatawayURL {
+    [[FTRemoteConfigManager sharedInstance] saveRemoteConfig:nil];
+    
+    NSString *dataway = @"http://dataway-test.com";
+    NSString *token = @"test-token";
+    NSString *appId = @"appid-test";
+    
+    __block int requestCount = 0;
+    XCTestExpectation *expectation = [self expectationWithDescription:@"RemoteConfigUpdateTriggered"];
+    
+    id<OHHTTPStubsDescriptor> remoteStub = [OHHTTPStubs stubRequestsPassingTest:^BOOL(NSURLRequest *request) {
+        return [request.URL.host isEqualToString:[NSURL URLWithString:dataway].host];
+    } withStubResponse:^OHHTTPStubsResponse*(NSURLRequest *request) {
+        requestCount++;
+        if (requestCount == 1) {
+            NSDictionary *content = @{@"content": @{}};
+            NSString *contentStr = [FTJSONUtil convertToJsonDataWithObject:content];
+            [expectation fulfill];
+            return [OHHTTPStubsResponse responseWithData:[contentStr dataUsingEncoding:NSUTF8StringEncoding] statusCode:200 headers:nil];
+        }
+        return nil;
+    }];
+    
+    FTMobileConfig *config = [[FTMobileConfig alloc] init];
+    config.remoteConfiguration = YES;
+    config.remoteConfigMiniUpdateInterval = 0;
+    [FTMobileAgent startWithConfigOptions:config];
+    
+    FTRumConfig *rum = [[FTRumConfig alloc] initWithAppid:appId];
+    [[FTMobileAgent sharedInstance] startRumWithConfigOptions:rum];
+    
+    XCTAssertFalse([[FTNetworkInfoManager sharedInstance] isNetworkConfigured]);
+    XCTAssertFalse([[FTNetworkInfoManager sharedInstance] isNetworkConfiguredForRemote]);
+    
+    [self waitForTimeInterval:0.5];
+    
+    XCTAssertEqual(requestCount, 0, @"No remoteConfig update should be triggered during initialization without upload address");
+    
+    [FTMobileAgent updateDatawayURL:dataway clientToken:token];
+    
+    XCTAssertTrue([[FTNetworkInfoManager sharedInstance] isNetworkConfigured]);
+    XCTAssertTrue([[FTNetworkInfoManager sharedInstance] isNetworkConfiguredForRemote]);
+    XCTAssertEqual([[FTNetworkInfoManager sharedInstance] configState], FTNetworkConfigStateDatawayMode);
+    
+    [self waitForExpectations:@[expectation] timeout:5];
+    
+    XCTAssertEqual(requestCount, 1, @"One remoteConfig update should be triggered after calling updateDatawayURL");
+    
+    [OHHTTPStubs removeStub:remoteStub];
+    [FTMobileAgent shutDown];
+}
+
+- (void)testInnerUpdateRemoteConfig_AlreadyConfigured {
+    [[FTRemoteConfigManager sharedInstance] saveRemoteConfig:nil];
+    
+    NSString *datakit = @"http://datakit-test.com";
+    NSString *appId = @"appid-test";
+    
+    __block int requestCount = 0;
+    XCTestExpectation *expectation = [self expectationWithDescription:@"RemoteConfigUpdateTriggered"];
+    
+    id<OHHTTPStubsDescriptor> remoteStub = [OHHTTPStubs stubRequestsPassingTest:^BOOL(NSURLRequest *request) {
+        return [request.URL.host isEqualToString:[NSURL URLWithString:datakit].host];
+    } withStubResponse:^OHHTTPStubsResponse*(NSURLRequest *request) {
+        requestCount++;
+        if (requestCount == 1) {
+            NSDictionary *content = @{@"content": @{}};
+            NSString *contentStr = [FTJSONUtil convertToJsonDataWithObject:content];
+            [expectation fulfill];
+            return [OHHTTPStubsResponse responseWithData:[contentStr dataUsingEncoding:NSUTF8StringEncoding] statusCode:200 headers:nil];
+        }
+        return nil;
+    }];
+    
+    FTMobileConfig *config = [[FTMobileConfig alloc] initWithDatakitUrl:datakit];
+    config.remoteConfiguration = YES;
+    config.remoteConfigMiniUpdateInterval = 0;
+    [FTMobileAgent startWithConfigOptions:config];
+    
+
+    XCTAssertTrue([[FTNetworkInfoManager sharedInstance] isNetworkConfigured]);
+    XCTAssertFalse([[FTNetworkInfoManager sharedInstance] isNetworkConfiguredForRemote]);
+    
+    FTRumConfig *rum = [[FTRumConfig alloc] initWithAppid:appId];
+    [[FTMobileAgent sharedInstance] startRumWithConfigOptions:rum];
+    
+    [self waitForExpectations:@[expectation] timeout:5];
+    
+    XCTAssertEqual(requestCount, 1, @"startRumWithConfigOptions should trigger remoteConfig update when upload address is configured and appId is set");
+    
+    [OHHTTPStubs removeStub:remoteStub];
     [FTMobileAgent shutDown];
 }
 
