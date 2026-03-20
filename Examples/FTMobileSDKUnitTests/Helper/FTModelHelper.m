@@ -107,7 +107,7 @@
     [[FTExternalDataManager sharedManager] addResourceWithKey:key metrics:nil content:model];
 }
 + (void)startAction{
-    [[FTExternalDataManager sharedManager] addClickActionWithName:@"testActionClick" property:nil];
+    [[FTExternalDataManager sharedManager] startAction:@"testActionClick" actionType:@"click" property:nil];
 }
 + (void)startActionWithType:(NSString *)type{
     [[FTExternalDataManager sharedManager] startAction:@"testActionClick2" actionType:type property:nil];
