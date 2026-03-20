@@ -49,7 +49,7 @@ static const NSTimeInterval sessionMaxDuration = 4 * 60 * 60; // 4 hours
         self.context = [[FTRUMContext alloc]initWithSampleRate:expiredSession.rumDependencies.sampleRate sessionOnErrorSampleRate:expiredSession.rumDependencies.sessionOnErrorSampleRate];
         self.viewHandlers = [NSMutableArray new];
         for (FTRUMViewHandler *viewHandler in expiredSession.viewHandlers) {
-            if(viewHandler.isActiveView && [viewHandler isKindOfClass:FTRUMViewHandler.class]){
+            if(viewHandler.isActiveView && ![viewHandler isKindOfClass:FTRUMPlaceholderViewHandler.class]){
                 FTRUMViewModel *viewModel = [[FTRUMViewModel alloc]initWithViewID:[FTBaseInfoHandler randomUUID]
                                                                          viewName:viewHandler.view_name viewReferrer:viewHandler.view_referrer];
                 viewModel.loading_time = viewHandler.loading_time;

@@ -32,12 +32,13 @@
 #import "FTRequestBody.h"
 #import "FTRUMDataModel.h"
 #import "FTTrackDataManager.h"
-#import "FTMobileConfig+Private.h"
 #import "FTLoggerConfig+Private.h"
 #import "FTRumConfig+Private.h"
 #import "FTAutoTrackHandler.h"
 #import "DemoViewController.h"
 #import "FTRUMContext.h"
+#import "FTRUMViewHandler.h"
+#import "FTRUMPlaceholderViewHandler.h"
 
 @interface FTRUMTest : XCTestCase
 @property (nonatomic, copy) NSString *url;
@@ -1778,6 +1779,9 @@
         }else if ([source isEqualToString:FT_RUM_SOURCE_RESOURCE]){
             hasResource = YES;
         }
+        if (![source isEqualToString:FT_RUM_SOURCE_VIEW]) {
+            XCTAssertFalse(tags[FT_KEY_VIEW_ID]);
+        }
     }];
     XCTAssertTrue(hasError);
     XCTAssertTrue(hasAction);
@@ -1835,6 +1839,32 @@
     XCTAssertTrue(hasAction);
     XCTAssertTrue(hasLongTask);
     XCTAssertTrue(hasResource);
+}
+- (void)testPlaceholder_sessionTimeOut{
+    FTMobileConfig *config = [[FTMobileConfig alloc]initWithDatakitUrl:self.url];
+    config.autoSync = NO;
+    FTRumConfig *rumConfig = [[FTRumConfig alloc]initWithAppid:self.appid];
+    [FTMobileAgent startWithConfigOptions:config];
+    [[FTMobileAgent sharedInstance] startRumWithConfigOptions:rumConfig];
+    [self addLongTaskData:nil];
+    [[FTGlobalRumManager sharedInstance].rumManager syncProcess];
+    FTRUMManager *rum = [FTGlobalRumManager sharedInstance].rumManager;
+    FTRUMSessionHandler *session = [rum valueForKey:@"sessionHandler"];
+    NSMutableArray<FTRUMHandler*> *viewHandlers = [session valueForKey:@"viewHandlers"];
+    XCTAssertTrue([[viewHandlers firstObject] isKindOfClass:FTRUMPlaceholderViewHandler.class]);
+
+    FTRUMViewHandler *viewHandler = (FTRUMViewHandler *)[viewHandlers firstObject];
+    XCTAssertTrue([viewHandler isKindOfClass:FTRUMPlaceholderViewHandler.class]);
+    //Change the last recorded data of the session to 15 minutes ago to simulate session expiration
+    NSTimeInterval aTimeInterval = [[NSDate date] timeIntervalSinceReferenceDate] + 60 * 15;
+    NSDate *newDate = [NSDate dateWithTimeIntervalSinceReferenceDate:-aTimeInterval];
+    [session setValue:newDate forKey:@"lastInteractionTime"];
+    [self addLongTaskData:nil];
+    [[FTGlobalRumManager sharedInstance].rumManager syncProcess];
+    FTRUMSessionHandler *newSession = [rum valueForKey:@"sessionHandler"];
+    NSMutableArray *newViewHandlers = [newSession valueForKey:@"viewHandlers"];
+    XCTAssertTrue(viewHandlers.count == newViewHandlers.count == 1);
+    XCTAssertTrue([[newViewHandlers firstObject] isKindOfClass:FTRUMPlaceholderViewHandler.class]);
 }
 #pragma mark ========== Mock Data ==========
 
