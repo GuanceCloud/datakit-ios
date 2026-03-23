@@ -188,7 +188,7 @@
     [FTModelHelper resolveModelArray:newArray callBack:^(NSString * _Nonnull source, NSDictionary * _Nonnull tags, NSDictionary * _Nonnull fields, BOOL * _Nonnull stop) {
         if ([source isEqualToString:FT_RUM_SOURCE_ACTION]&&[tags[FT_KEY_ACTION_TYPE] isEqualToString:@"click"]) {
             NSString *actionName = tags[FT_KEY_ACTION_NAME];
-            XCTAssertTrue([actionName isEqualToString:@"[UICollectionViewCell]"]);
+            XCTAssertTrue([actionName isEqualToString:@"[CustomCollectionViewCell]"]);
             *stop = YES;
         }
     }];

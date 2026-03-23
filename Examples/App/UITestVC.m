@@ -26,7 +26,7 @@
 }
 - (void)viewDidLoad {
     [super viewDidLoad];
-    self.title = @"UITest";
+    self.title = @"UITEST";
     // Do any additional setup after loading the view.
     self.view.backgroundColor = [UIColor whiteColor];
     [self createUI];
@@ -256,6 +256,7 @@
 -(__kindof UICollectionViewCell *)collectionView:(UICollectionView *)collectionView cellForItemAtIndexPath:(NSIndexPath *)indexPath{
     CustomCollectionViewCell *cell = [collectionView dequeueReusableCellWithReuseIdentifier:@"CustomCollectionViewCell"
                                                                                forIndexPath:indexPath];
+    cell.accessibilityLabel = [NSString stringWithFormat:@"cell: %ld",(long)indexPath.row];
     
     if (@available(iOS 13.0, *)) {
         NSString *imageName = self.systemImageNames[indexPath.item];
