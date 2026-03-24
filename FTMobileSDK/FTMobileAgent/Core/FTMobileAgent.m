@@ -167,7 +167,7 @@ static FTMobileAgent *sharedInstance = nil;
 + (void)updateRemoteConfigWithMiniUpdateInterval:(NSInteger)miniUpdateInterval
                                          completion:(FTRemoteConfigFetchCompletionBlock)completion{
     if (![self checkInstallState]) {
-        if ((completion)) {
+        if (completion) {
             completion(NO,[FTRemoteConfigError errorWithSDKNotInitialized],nil,nil);
         }
         return;

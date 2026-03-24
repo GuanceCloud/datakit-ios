@@ -204,7 +204,6 @@ static dispatch_once_t onceToken;
                 [self.delegate remoteConfigurationDidChange];
             }
             [self saveRemoteConfig:[model toDictionary]];
-            FTInnerLogDebug(@"[remote-config] Remote config parsed successfully");
         } else {
             [self saveRemoteConfig:nil];
             FTInnerLogWarning(@"[remote-config] Remote config parsed to nil");
@@ -221,6 +220,7 @@ static dispatch_once_t onceToken;
     FTRemoteConfigModel *model = self.lastRemoteModel;
     @try {
         NSString *str = [[NSString alloc] initWithData:data encoding:NSUTF8StringEncoding];
+        FTInnerLogDebug(@"[remote-config] response data str: %@",str);
         NSString *md5 = [str ft_md5HashToLower16Bit];
         if (model && [md5 isEqualToString:model.md5Str]) {
             return model;
@@ -266,6 +266,7 @@ static dispatch_once_t onceToken;
 }
 
 - (void)saveRemoteConfig:(NSDictionary<NSString *, id> *)remoteConfig{
+    FTInnerLogDebug(@"[remote-config] saveRemoteConfig:%@",remoteConfig);
     [[NSUserDefaults standardUserDefaults] setObject:remoteConfig forKey:kFTRemoteConfigUserDefaultsKey];
     [[NSUserDefaults standardUserDefaults] synchronize];
 }
