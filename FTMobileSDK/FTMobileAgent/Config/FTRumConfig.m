@@ -50,20 +50,20 @@
     options.enableTraceUserView = self.enableTraceUserView;
     options.enableTraceUserResource = self.enableTraceUserResource;
     options.enableResourceHostIP = self.enableResourceHostIP;
-    options.appid = self.appid;
+    options.appid = [self.appid copy];
     options.errorMonitorType = self.errorMonitorType;
-    options.globalContext = self.globalContext;
+    options.globalContext = [self.globalContext copy];
     options.deviceMetricsMonitorType = self.deviceMetricsMonitorType;
     options.monitorFrequency = self.monitorFrequency;
-    options.resourceUrlHandler = self.resourceUrlHandler;
+    options.resourceUrlHandler = [self.resourceUrlHandler copy];
     options.freezeDurationMs = self.freezeDurationMs;
     options.rumCacheLimitCount = self.rumCacheLimitCount;
     options.rumDiscardType = self.rumDiscardType;
-    options.resourcePropertyProvider = self.resourcePropertyProvider;
+    options.resourcePropertyProvider = [self.resourcePropertyProvider copy];
     options.sessionOnErrorSampleRate = self.sessionOnErrorSampleRate;
     options.enableTraceWebView = self.enableTraceWebView;
-    options.allowWebViewHost = self.allowWebViewHost;
-    options.sessionTaskErrorFilter = self.sessionTaskErrorFilter;
+    options.allowWebViewHost = [self.allowWebViewHost copy];
+    options.sessionTaskErrorFilter = [self.sessionTaskErrorFilter copy];
     options.viewTrackingHandler = self.viewTrackingHandler;
     options.actionTrackingHandler = self.actionTrackingHandler;
     options.crashMonitoring = self.crashMonitoring;
@@ -136,6 +136,8 @@
     [dict setValue:[self.sessionTaskErrorFilter copy] forKey:@"sessionTaskErrorFilter"];
     [dict setValue:self.viewTrackingHandler forKey:@"viewTrackingHandler"];
     [dict setValue:self.actionTrackingHandler forKey:@"actionTrackingHandler"];
+    [dict setValue:@(self.enableTraceWebView) forKey:@"enableTraceWebView"];
+    [dict setValue:[self.allowWebViewHost copy] forKey:@"allowWebViewHost"];
     return [NSString stringWithFormat:@"%@",dict];
 }
 @end
