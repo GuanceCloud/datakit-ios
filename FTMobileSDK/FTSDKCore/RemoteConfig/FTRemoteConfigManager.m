@@ -19,6 +19,7 @@
 #import "FTRemoteConfigError.h"
 
 static NSString *const kFTRemoteConfigUserDefaultsKey = @"FT_REMOTE_CONFIG";
+static NSString *const kFTRemoteConfigLastFetchedTimeKey = @"FT_REMOTE_CONFIG_LAST_FETCHED_TIME";
 
 @interface FTRemoteConfigManager()<FTAppLifeCycleDelegate>
 @property (atomic, assign) BOOL isFetching;
@@ -60,6 +61,7 @@ static dispatch_once_t onceToken;
     self.fetchCompletionBlock = fetchCompletionBlock;
     if (enable) {
         self.lastRemoteModel = [[FTRemoteConfigModel alloc]initWithDict:[self getLastFetchedRemoteConfig]];
+        self.lastRequestTimeInterval = [self getLastFetchedTime];
         [[FTAppLifeCycle sharedInstance] addAppLifecycleDelegate:self];
     }
 }
@@ -72,7 +74,9 @@ static dispatch_once_t onceToken;
     }
     if([[FTNetworkInfoManager sharedInstance] isNetworkConfiguredForRemote]) {
         FTInnerLogDebug(@"[remote-config] innerUpdateRemoteConfig start");
-        [self requestRemoteConfig:self.updateInterval completion:self.fetchCompletionBlock];
+        if([self validateRemoteConfigRequestWithMinimumInterval:self.updateInterval completion:nil]){
+            [self performRemoteConfigRequestWithCompletion:self.fetchCompletionBlock];
+        }
     }else{
         FTInnerLogDebug(@"[remote-config] Skip update, appID not set or no upload address configured");
     }
@@ -84,47 +88,53 @@ static dispatch_once_t onceToken;
 - (void)updateRemoteConfigWithMinimumUpdateInterval:(NSInteger)minimumUpdateInterval
                                          completion:(FTRemoteConfigFetchCompletionBlock)completion{
     
-    FTRemoteConfigFetchCompletionBlock completionToCall = completion ?: self.fetchCompletionBlock;
+    FTRemoteConfigFetchCompletionBlock completionToCall = completion;
     if (!self.enable) {
-        FTInnerLogDebug(@"[remote-config] Skip update: Disable remote configuration.");
+        FTInnerLogWarning(@"[remote-config] Skip update: Disable remote configuration.");
         if(completionToCall) completionToCall(NO,[FTRemoteConfigError errorWithDisabled],nil,nil);
         return;
     }
     if(![[FTNetworkInfoManager sharedInstance] isNetworkConfiguredForRemote]){
-        FTInnerLogDebug(@"[remote-config] Skip update: appID not set or no upload address configured.");
+        FTInnerLogWarning(@"[remote-config] Skip update: appID not set or no upload address configured.");
         if(completionToCall) completionToCall(NO,[FTRemoteConfigError errorWithCode:FTRemoteConfigErrorCodeSyncConfigMissing customDescription:nil],nil,nil);
         return;
     }
-    [self requestRemoteConfig:minimumUpdateInterval completion:completionToCall];
+    if (![self validateRemoteConfigRequestWithMinimumInterval:minimumUpdateInterval completion:completionToCall]) {
+        return;
+    }
+    completionToCall = completionToCall ? : self.fetchCompletionBlock;
+    [self performRemoteConfigRequestWithCompletion:completionToCall];
 }
 
 
 #pragma mark - Core Request Logic
 
-- (void)requestRemoteConfig:(NSInteger)minimumUpdateInterval completion:(FTRemoteConfigFetchCompletionBlock)completion{
-    if (![self validateRemoteConfigRequestWithMinimumInterval:minimumUpdateInterval completion:completion]) {
-        return;
-    }
-    [self performRemoteConfigRequestWithCompletion:completion];
-}
-
 - (BOOL)validateRemoteConfigRequestWithMinimumInterval:(NSInteger)minimumInterval completion:(FTRemoteConfigFetchCompletionBlock)completion {
+    BOOL canBeginFetch = NO;
+    NSTimeInterval waitInterval = 0;
+    @synchronized (self) {
+        if(!self.isFetching){
+            NSTimeInterval lastTimeInterval = self.lastRequestTimeInterval;
+            NSTimeInterval interval = [[NSDate date] timeIntervalSince1970] - lastTimeInterval;
+            
+            if (lastTimeInterval > 0 && minimumInterval > 0 && interval < minimumInterval) {
+                waitInterval = minimumInterval-interval;
+            } else {
+                self.isFetching = YES;
+                canBeginFetch = YES;
+            }
+        }
+    }
     
-    if (self.lastRequestTimeInterval > 0 && minimumInterval > 0 && [[NSDate date] timeIntervalSince1970] - self.lastRequestTimeInterval < minimumInterval) {
-        FTInnerLogDebug(@"[remote-config] Skip update: The time interval between last request is shorter than mini Update Interval.");
+    if (waitInterval > 0) {
+        NSString *tipMessage = [NSString stringWithFormat:@"Please wait %@ before fetching remote config again",
+                      [self formatTimeIntervalShort:waitInterval]];
+        FTInnerLogWarning(@"[remote-config] Skip update: %@.", tipMessage);
         if (completion) {
-            NSError *error = [FTRemoteConfigError errorWithIntervalNotMet:minimumInterval];
+            NSError *error = [FTRemoteConfigError errorWithIntervalNotMet:tipMessage];
             completion(NO, error, nil, nil);
         }
         return NO;
-    }
-    
-    BOOL canBeginFetch = NO;
-    @synchronized(self) {
-        if (!self.isFetching) {
-            self.isFetching = YES;
-            canBeginFetch = YES;
-        }
     }
     
     if (!canBeginFetch) {
@@ -138,7 +148,20 @@ static dispatch_once_t onceToken;
     
     return YES;
 }
-
+- (NSString *)formatTimeIntervalShort:(NSTimeInterval)interval {
+    NSInteger totalSeconds = (NSInteger)interval;
+    NSInteger hours = totalSeconds / 3600;
+    NSInteger minutes = (totalSeconds % 3600) / 60;
+    NSInteger seconds = totalSeconds % 60;
+    
+    if (hours > 0) {
+        return [NSString stringWithFormat:@"%ldh %02ldm %02lds", (long)hours, (long)minutes, (long)seconds];
+    } else if (minutes > 0) {
+        return [NSString stringWithFormat:@"%ldm %02lds", (long)minutes, (long)seconds];
+    } else {
+        return [NSString stringWithFormat:@"%lds", (long)seconds];
+    }
+}
 - (void)performRemoteConfigRequestWithCompletion:(FTRemoteConfigFetchCompletionBlock)completion {
     FTInnerLogDebug(@"[remote-config] Start loading remote configuration.");
     FTRemoteConfigurationRequest *request = [[FTRemoteConfigurationRequest alloc] init];
@@ -184,7 +207,9 @@ static dispatch_once_t onceToken;
     } else {
         isSuccess = YES;
         model = [self handleRemoteConfigData:data];
-        self.lastRequestTimeInterval = [[NSDate date] timeIntervalSince1970];
+        NSTimeInterval fetchTimeInterval = [[NSDate date] timeIntervalSince1970];
+        self.lastRequestTimeInterval = fetchTimeInterval;
+        [self saveLastFetchedTime:fetchTimeInterval];
         content = model.context;
     }
     
@@ -223,6 +248,7 @@ static dispatch_once_t onceToken;
         FTInnerLogDebug(@"[remote-config] response data str: %@",str);
         NSString *md5 = [str ft_md5HashToLower16Bit];
         if (model && [md5 isEqualToString:model.md5Str]) {
+            FTInnerLogDebug(@"[remote-config] remote config no change");
             return model;
         }
         NSDictionary *remoteConfig = [FTJSONUtil dictionaryWithJsonString:[self removePrefixInString:str]];
@@ -264,11 +290,23 @@ static dispatch_once_t onceToken;
     NSDictionary *local = [[NSUserDefaults standardUserDefaults] objectForKey:kFTRemoteConfigUserDefaultsKey];
     return local;
 }
-
+- (NSTimeInterval)getLastFetchedTime{
+    if (!self.enable) {
+        return 0;
+    }
+    NSNumber *time = [[NSUserDefaults standardUserDefaults] valueForKey:kFTRemoteConfigLastFetchedTimeKey];
+    if (time) {
+        return time.doubleValue;
+    }
+    return 0;
+}
 - (void)saveRemoteConfig:(NSDictionary<NSString *, id> *)remoteConfig{
     FTInnerLogDebug(@"[remote-config] saveRemoteConfig:%@",remoteConfig);
     [[NSUserDefaults standardUserDefaults] setObject:remoteConfig forKey:kFTRemoteConfigUserDefaultsKey];
-    [[NSUserDefaults standardUserDefaults] synchronize];
+}
+
+- (void)saveLastFetchedTime:(NSTimeInterval)lastFetchedTime{
+    [[NSUserDefaults standardUserDefaults] setObject:@(lastFetchedTime) forKey:kFTRemoteConfigLastFetchedTimeKey];
 }
 
 #pragma mark - App Lifecycle Delegate

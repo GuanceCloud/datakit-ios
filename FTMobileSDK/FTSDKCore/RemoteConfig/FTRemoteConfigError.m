@@ -33,10 +33,10 @@ static NSDictionary<NSNumber *, NSString *> *defaultErrorDescriptions(void) {
     return [self errorWithCode:FTRemoteConfigErrorCodeDisabled customDescription:nil];
 }
 
-+ (NSError *)errorWithIntervalNotMet:(NSInteger)minimumInterval {
-    NSString *description = [NSString stringWithFormat:@"%@ Minimum interval required: %ld seconds.",
++ (NSError *)errorWithIntervalNotMet:(NSString *)tipMessage {
+    NSString *description = [NSString stringWithFormat:@"%@ %@",
                              defaultErrorDescriptions()[@(FTRemoteConfigErrorCodeIntervalNotMet)],
-                             minimumInterval];
+                             tipMessage];
     return [self errorWithCode:FTRemoteConfigErrorCodeIntervalNotMet customDescription:description];
 }
 
