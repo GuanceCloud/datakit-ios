@@ -42,6 +42,7 @@
 @interface FTRemoteConfigManager (Testing)
 @property (nonatomic, strong) FTRemoteConfigModel *lastRemoteModel;
 - (void)saveRemoteConfig:(NSDictionary<NSString *, id> *)remoteConfig;
+- (void)saveLastFetchedTime:(NSTimeInterval)lastFetchedTime;
 @end
 
 @interface FTRemoteConfigTest : XCTestCase<FTRemoteConfigurationProtocol>
@@ -53,12 +54,12 @@
 - (void)setUp {
     // Put setup code here. This method is called before the invocation of each test method in the class.
     [[FTRemoteConfigManager sharedInstance] saveRemoteConfig:nil];
+    [[FTRemoteConfigManager sharedInstance] saveLastFetchedTime:0];
 }
 
 - (void)tearDown {
     // Put teardown code here. This method is called after the invocation of each test method in the class.
     [OHHTTPStubs removeAllStubs];
-    [[NSUserDefaults standardUserDefaults] setObject:nil forKey:@"FT_REMOTE_CONFIG"];
 }
 - (void)testRequestFormat{
     NSString *datakit = @"http://datakit-test.com";

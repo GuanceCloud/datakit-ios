@@ -149,11 +149,11 @@
     NSURL *url = [[NSBundle mainBundle] URLForResource:@"sample" withExtension:@"html"];
     [FTModelHelper startViewWithName:@"TestWKWebViewVC"];
     [self.viewController ft_load:url.absoluteString];
-    self.loadExpect = [self expectationWithDescription:@"Request Time!"];
+    self.loadExpect = [self expectationWithDescription:@"Load WebView!"];
     [self waitForExpectationsWithTimeout:5 handler:^(NSError *error) {
         XCTAssertNil(error);
     }];
-    XCTestExpectation *jsScript = [self expectationWithDescription:@"Request Time!"];
+    XCTestExpectation *jsScript = [self expectationWithDescription:@"Add WebView Rum View Data!"];
     if(nano){
         [self.viewController test_addWebViewRumViewNano:^{
             [jsScript fulfill];
