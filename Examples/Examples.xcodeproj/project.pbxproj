@@ -126,6 +126,7 @@
 		1790FED52F237EE400E32AB0 /* longtask.log in Resources */ = {isa = PBXBuildFile; fileRef = 1790FECE2F237DBB00E32AB0 /* longtask.log */; };
 		17933E3A2D68578900524BF2 /* AddRumDatasHandlerMock.m in Sources */ = {isa = PBXBuildFile; fileRef = 17933E392D68578900524BF2 /* AddRumDatasHandlerMock.m */; };
 		17933E3B2D68578900524BF2 /* AddRumDatasHandlerMock.m in Sources */ = {isa = PBXBuildFile; fileRef = 17933E392D68578900524BF2 /* AddRumDatasHandlerMock.m */; };
+		179A53822F84EED200FE4B6F /* FTSessionReplay.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 179A53812F84EED200FE4B6F /* FTSessionReplay.framework */; };
 		179BEB7E2D2B983D004AA5A6 /* FTResourceTest.swift in Sources */ = {isa = PBXBuildFile; fileRef = 179BEB7D2D2B983D004AA5A6 /* FTResourceTest.swift */; };
 		179BEB9A2D30CFAF004AA5A6 /* FTNetworkInterceptorTest.m in Sources */ = {isa = PBXBuildFile; fileRef = 179BEB992D30CFAF004AA5A6 /* FTNetworkInterceptorTest.m */; };
 		179BF6512D3D47F0004AA5A6 /* FTReadWriteHelperTest.m in Sources */ = {isa = PBXBuildFile; fileRef = 179BF6502D3D47F0004AA5A6 /* FTReadWriteHelperTest.m */; };
@@ -370,6 +371,7 @@
 		1790FED62F2392CF00E32AB0 /* FTRemoteConfigModel+Test.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = "FTRemoteConfigModel+Test.h"; sourceTree = "<group>"; };
 		17933E382D68578900524BF2 /* AddRumDatasHandlerMock.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = AddRumDatasHandlerMock.h; sourceTree = "<group>"; };
 		17933E392D68578900524BF2 /* AddRumDatasHandlerMock.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = AddRumDatasHandlerMock.m; sourceTree = "<group>"; };
+		179A53812F84EED200FE4B6F /* FTSessionReplay.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; path = FTSessionReplay.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 		179BEB7D2D2B983D004AA5A6 /* FTResourceTest.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FTResourceTest.swift; sourceTree = "<group>"; };
 		179BEB992D30CFAF004AA5A6 /* FTNetworkInterceptorTest.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = FTNetworkInterceptorTest.m; sourceTree = "<group>"; };
 		179BF6502D3D47F0004AA5A6 /* FTReadWriteHelperTest.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = FTReadWriteHelperTest.m; sourceTree = "<group>"; };
@@ -545,6 +547,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				179A53822F84EED200FE4B6F /* FTSessionReplay.framework in Frameworks */,
 				4AECBCDE24497DBF0023DEF7 /* CoreBluetooth.framework in Frameworks */,
 				1763BD6829DFEAF6009EE026 /* FTMobileSDK.framework in Frameworks */,
 				4A3C7D4D23E6C995006DC9C7 /* Foundation.framework in Frameworks */,
@@ -909,6 +912,7 @@
 		4A5BCD9A239A77340056C12E /* Frameworks */ = {
 			isa = PBXGroup;
 			children = (
+				179A53812F84EED200FE4B6F /* FTSessionReplay.framework */,
 				178AE40C2D58525800BDC51B /* FTMobileSDK.framework */,
 				178AE3AD2D55D76C00BDC51B /* FTMobileSDK.framework */,
 				17EAFA462D15535F004223E2 /* FTMobileSDK.framework */,

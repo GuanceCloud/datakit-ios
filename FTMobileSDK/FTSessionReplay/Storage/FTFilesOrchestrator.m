@@ -9,7 +9,7 @@
 #import "FTFilesOrchestrator.h"
 #import "FTFile.h"
 #import "FTPerformancePreset.h"
-#import "FTLog+Private.h"
+#import "FTInnerLog.h"
 #import "FTDirectory.h"
 @interface FTFilesOrchestrator()
 @property (nonatomic, copy) NSString *lastWritableFileName;

@@ -6,10 +6,8 @@
 //  Copyright © 2024 DataFlux-cn. All rights reserved.
 //
 #import <UIKit/UIKit.h>
+#import <TargetConditionals.h>
 #import "FTUploadConditions.h"
-#import "FTSDKCompat.h"
-#import "FTReachability.h"
-#import "FTLog+Private.h"
 #import "FTNetworkConnectivity.h"
 typedef void (^NotificationBlock)(NSNotification *);
 
@@ -58,7 +56,7 @@ NSString * const FTBatteryStateStringMap[] = {
         }
     };
     NSMutableArray *array = [NSMutableArray new];
-#if FT_IOS
+#if TARGET_OS_IOS
    id levelObserver = [notificationCenter addObserverForName:UIDeviceBatteryLevelDidChangeNotification object:self.device queue:NSOperationQueue.mainQueue usingBlock:block];
     id stateObserver = [notificationCenter addObserverForName:UIDeviceBatteryStateDidChangeNotification object:self.device queue:NSOperationQueue.mainQueue usingBlock:block];
     [array addObjectsFromArray:@[levelObserver,stateObserver]];

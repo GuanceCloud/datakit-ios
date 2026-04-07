@@ -8,7 +8,7 @@
 
 #import "FTSRBaseFrame.h"
 #import <objc/runtime.h>
-#import "FTLog+Private.h"
+#import "FTInnerLog.h"
 #import <math.h>
 static const char * kClassPropertiesKey;
 static const char * kMapperObjectKey;

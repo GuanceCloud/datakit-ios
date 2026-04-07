@@ -6,23 +6,8 @@
 //  Copyright © 2024 DataFlux-cn. All rights reserved.
 //
 
-#import "FTLog.h"
-#import "FTEnumConstant.h"
+#import "FTInnerLog.h"
 #import "FTLogMessage.h"
-#define FTLOG_MACRO(lvl, frmt, ...) \
-[FTLog log : YES                                     \
-     level : lvl                                     \
-  function : __PRETTY_FUNCTION__                     \
-      line : __LINE__                                \
-    format : (frmt), ## __VA_ARGS__]
-
-#define FTInnerLogInfo(frmt,...) FTLOG_MACRO(StatusInfo,(frmt), ## __VA_ARGS__)
-
-#define FTInnerLogDebug(frmt,...) FTLOG_MACRO(StatusDebug,(frmt), ## __VA_ARGS__)
-
-#define FTInnerLogError(frmt,...) FTLOG_MACRO(StatusError,(frmt), ## __VA_ARGS__)
-
-#define FTInnerLogWarning(frmt,...) FTLOG_MACRO(StatusWarning,(frmt), ## __VA_ARGS__)
 
 #define FT_CONSOLE_LOG(lvl,status,frmt,dict)   \
 [[FTLog sharedInstance] userLog : YES                \
@@ -46,11 +31,6 @@ NS_ASSUME_NONNULL_BEGIN
 + (void)enableLog:(BOOL)enableLog;
 + (void)addLogger:(id <FTDebugLogger>)logger;
 + (BOOL)isLoggerEnabled;
-+ (void)log:(BOOL)asynchronous
-      level:(LogStatus)level
-   function:(const char *)function
-       line:(NSUInteger)line
-     format:(NSString *)format, ... NS_FORMAT_FUNCTION(5,6);
 - (void)userLog:(BOOL)asynchronous
         message:(NSString *)message
           level:(LogStatus)level

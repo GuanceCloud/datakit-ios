@@ -10,7 +10,7 @@
 #import "FTSRUtils.h"
 #import "FTViewAttributes.h"
 #import "NSDate+FTUtil.h"
-#import "FTLog+Private.h"
+#import "FTInnerLog.h"
 #import "FTConstants.h"
 #import "FTTouchSnapshot.h"
 @implementation FTSRRecord

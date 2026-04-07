@@ -20,8 +20,8 @@
 #import "FTModuleManager.h"
 #import "FTSRUtils.h"
 #import "FTTouchSnapshot.h"
-#import "FTLog+Private.h"
 #import "FTSessionReplayWireframesBuilder.h"
+#import "FTInnerLog.h"
 #import "FTWKWebViewHandler+SessionReplay.h"
 
 NSTimeInterval const kFullSnapshotInterval = 20.0;

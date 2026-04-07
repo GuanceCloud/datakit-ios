@@ -23,7 +23,6 @@
 #import "FTSnapshotProcessor.h"
 #import "FTModuleManager.h"
 #import "FTMessageReceiver.h"
-#import "FTLog+Private.h"
 #import "FTSRRecord.h"
 #import "FTFileWriter.h"
 #import "FTSRWebTrackingProtocol.h"
@@ -35,6 +34,7 @@
 #import "FTScheduler.h"
 #import "FTScreenChangeScheduler.h"
 
+#import "FTInnerLog.h"
 typedef NS_ENUM(NSInteger, SampleState) {
     SampleStateNormal,
     SampleStateError,

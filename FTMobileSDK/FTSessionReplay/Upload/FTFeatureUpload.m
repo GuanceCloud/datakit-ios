@@ -7,7 +7,7 @@
 //
 
 #import "FTFeatureUpload.h"
-#import "FTLog+Private.h"
+#import "FTInnerLog.h"
 #import "FTHTTPClient.h"
 #import "FTResourceRequest.h"
 #import "FTJSONUtil.h"

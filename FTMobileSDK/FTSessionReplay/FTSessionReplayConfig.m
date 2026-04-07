@@ -9,7 +9,7 @@
 #import "FTSessionReplayConfig.h"
 #import "FTSessionReplayConfig+Private.h"
 #import "FTConstants.h"
-#import "FTLog+Private.h"
+#import "FTInnerLog.h"
 #import "FTRemoteConfigModel.h"
 
 NSString * const FTTextAndInputPrivacyLevelStringMap[] = {

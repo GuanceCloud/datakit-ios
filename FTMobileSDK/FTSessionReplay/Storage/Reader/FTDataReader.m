@@ -7,7 +7,7 @@
 //
 
 #import "FTDataReader.h"
-#import "FTLog+Private.h"
+#import "FTInnerLog.h"
 @interface FTDataReader()
 @property (nonatomic, strong) dispatch_queue_t queue;
 @property (nonatomic, strong) id<FTReader> fileReader;

@@ -11,12 +11,10 @@
 #import "FTFile.h"
 #import "FTModuleManager.h"
 #import "FTConstants.h"
+#import "FTInnerLog.h"
 #import "FTMessageReceiver.h"
-#import "FTUploadProtocol.h"
 #import "FTTrackDataManager.h"
-#import "FTAppLaunchTracker.h"
 #import "NSDate+FTUtil.h"
-#import "FTLog+Private.h"
 #import "FTDateUtil.h"
 
 void *FTTmpCacheQueueIdentityKey = &FTTmpCacheQueueIdentityKey;

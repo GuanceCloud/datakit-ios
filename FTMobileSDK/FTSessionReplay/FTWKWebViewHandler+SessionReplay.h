@@ -10,7 +10,7 @@
 
 NS_ASSUME_NONNULL_BEGIN
 
-@interface FTWKWebViewHandler ()
+@interface FTWKWebViewHandler (SessionReplay)
 /// Keys that allow association with RUM data
 @property (nonatomic, copy) NSArray *enableLinkRUMKeys;
 /// A collection of slotIds for webViews that exist in memory but are not displayed on the window

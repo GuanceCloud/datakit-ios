@@ -12,7 +12,7 @@
 #import "FTNetworkInfoManager.h"
 #import "FTCompression.h"
 #import "FTSegmentJSON.h"
-#import "FTLog+Private.h"
+#import "FTInnerLog.h"
 
 @interface FTSegmentRequest()
 @property (nonatomic, strong) id<FTMultipartFormBodyProtocol> multipartFormBody;
@@ -68,11 +68,15 @@
     return result;
 }
 -(NSURL *)absoluteURL{
-    if (FTNetworkInfoManager.sharedInstance.datakitUrl) {
-        return [NSURL URLWithString:[NSString stringWithFormat:@"%@%@?precision=ms",FTNetworkInfoManager.sharedInstance.datakitUrl,self.path]];
+    FTNetworkInfoManager *networkInfo = [FTNetworkInfoManager sharedInstance];
+    NSString *datakitUrl = networkInfo.datakitUrl;
+    if (datakitUrl) {
+        return [NSURL URLWithString:[NSString stringWithFormat:@"%@%@?precision=ms",datakitUrl,self.path]];
     }
-    if(FTNetworkInfoManager.sharedInstance.datawayUrl&&FTNetworkInfoManager.sharedInstance.clientToken){
-        return [NSURL URLWithString:[NSString stringWithFormat:@"%@%@?token=%@&to_headless=true&precision=ms",FTNetworkInfoManager.sharedInstance.datawayUrl,self.path,FTNetworkInfoManager.sharedInstance.clientToken]];
+    NSString *datawayUrl = networkInfo.datawayUrl;
+    NSString *clientToken = networkInfo.clientToken;
+    if(datawayUrl && clientToken){
+        return [NSURL URLWithString:[NSString stringWithFormat:@"%@%@?token=%@&to_headless=true&precision=ms",datawayUrl,self.path,clientToken]];
     }
     return nil;
 }

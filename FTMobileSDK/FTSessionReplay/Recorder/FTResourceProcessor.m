@@ -12,7 +12,7 @@
 #import "FTViewAttributes.h"
 #import "FTFileWriter.h"
 #import "FTResourceWriter.h"
-#import "FTLog+Private.h"
+#import "FTInnerLog.h"
 
 @interface FTResourceProcessor()
 @property (nonatomic, strong) dispatch_queue_t queue;

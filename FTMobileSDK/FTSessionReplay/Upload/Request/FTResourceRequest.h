@@ -12,7 +12,7 @@ NS_ASSUME_NONNULL_BEGIN
 
 @interface FTResourceRequest : FTRequest<FTFeatureRequestBuilder>
 
-
+ 
 @end
 
 NS_ASSUME_NONNULL_END

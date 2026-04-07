@@ -11,7 +11,6 @@
 #import "FTFile.h"
 #import "FTTLVReader.h"
 #import "FTPerformancePreset.h"
-#import "FTLog+Private.h"
 @interface FTFileReader ()
 @property (nonatomic, strong) id<FTFilesOrchestratorType> orchestrator;
 @property (nonatomic, strong) NSMutableSet *filesRead;

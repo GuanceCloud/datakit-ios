@@ -11,7 +11,7 @@
 #import "FTDataStoreFileReader.h"
 #import "FTDataStoreFileWriter.h"
 #import "FTFile.h"
-#import "FTLog+Private.h"
+#import "FTInnerLog.h"
 @interface FTFeatureDataStore()
 @property (nonatomic, copy) NSString *feature;
 @property (nonatomic, copy) NSString *directoryPath;

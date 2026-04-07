@@ -9,21 +9,15 @@
 #import "FTResourceRequest.h"
 #import "FTRequestMultipartFormBody.h"
 #import "NSDate+FTUtil.h"
-#import "FTNetworkInfoManager.h"
 #import "FTCompression.h"
 #import "FTConstants.h"
 #import "FTSRRecord.h"
 #import "FTResourceCheckRequest.h"
-#import "FTHTTPClient.h"
-#import "FTLog+Private.h"
-#import "FTJSONUtil.h"
 
 @interface FTResourceRequest()
 @property (nonatomic, strong) NSArray<FTEnrichedResource *> *resources;
 @property (nonatomic, strong) NSDictionary *parameters;
 @property (nonatomic, strong) id<FTMultipartFormBodyProtocol> multipartFormBody;
-@property (nonatomic, strong) FTResourceCheckRequest *checkRequestBuilder;
-@property (nonatomic, strong) FTHTTPClient *httpClient;
 
 @end
 @implementation FTResourceRequest
@@ -31,8 +25,6 @@
     self = [super init];
     if(self){
         self.multipartFormBody = [[FTRequestMultipartFormBody alloc]init];
-        self.httpClient = [[FTHTTPClient alloc] init];
-        self.checkRequestBuilder = [[FTResourceCheckRequest alloc]init];
     }
     return self;
 }

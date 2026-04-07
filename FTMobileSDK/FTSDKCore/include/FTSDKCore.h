@@ -13,6 +13,7 @@
 #import "FTPresetProperty.h"
 #import "FTRecordModel.h"
 #import "FTLog.h"
+#import "FTInnerLog.h"
 #import "FTResourceMetricsModel.h"
 #import "FTResourceContentModel.h"
 #import "FTSwizzle.h"

@@ -14,7 +14,7 @@
 #import "FTDataReader.h"
 #import "FTFileReader.h"
 #import "FTDataReader.h"
-#import "FTLog+Private.h"
+#import "FTInnerLog.h"
 #import "FTTmpCacheManager.h"
 
 @interface FTFeatureStorage()
