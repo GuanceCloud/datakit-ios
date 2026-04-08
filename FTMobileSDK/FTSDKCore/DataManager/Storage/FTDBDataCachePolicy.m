@@ -10,7 +10,7 @@
 #import "FTTrackerEventDBTool.h"
 #import <pthread.h>
 #import "FTConstants.h"
-#import "FTLog+Private.h"
+#import "FTInnerLog.h"
 #import "FTTrackerEventDBTool.h"
 @interface FTDBDataCachePolicy()
 

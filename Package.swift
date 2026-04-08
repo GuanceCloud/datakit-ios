@@ -178,6 +178,7 @@ let package = Package(
                 path: "FTMobileSDK/FTSessionReplay",
                 publicHeadersPath: "Public",
                 cSettings: [
+                    .headerSearchPath("../.."),
                     .headerSearchPath("."),
                     .headerSearchPath("Processor/Builders"),
                     .headerSearchPath("DataStore"),

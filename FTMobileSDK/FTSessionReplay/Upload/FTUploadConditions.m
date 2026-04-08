@@ -8,7 +8,7 @@
 #import <UIKit/UIKit.h>
 #import <TargetConditionals.h>
 #import "FTUploadConditions.h"
-#import "FTNetworkConnectivity.h"
+#import "FTSessionReplayCoreImports.h"
 typedef void (^NotificationBlock)(NSNotification *);
 
 NSString * const FTBatteryStateStringMap[] = {

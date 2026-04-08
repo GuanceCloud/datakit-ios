@@ -6,7 +6,7 @@
 //  Copyright © 2024 DataFlux-cn. All rights reserved.
 //
 #import <Foundation/Foundation.h>
-#import "FTLog+Private.h"
+#import "FTInnerLog.h"
 
 NS_ASSUME_NONNULL_BEGIN
 

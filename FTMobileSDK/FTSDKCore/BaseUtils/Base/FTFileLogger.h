@@ -7,7 +7,7 @@
 //
 
 #import <Foundation/Foundation.h>
-#import "FTLog+Private.h"
+#import "FTInnerLog.h"
 NS_ASSUME_NONNULL_BEGIN
 @interface FTLogFileManager : NSObject
 @property (nonatomic, copy, readwrite) NSString *logsDirectory;

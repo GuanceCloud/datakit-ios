@@ -8,11 +8,9 @@
 
 #import "FTSegmentRequest.h"
 #import "FTRequestMultipartFormBody.h"
-#import "NSDate+FTUtil.h"
-#import "FTNetworkInfoManager.h"
+#import "FTSessionReplayCoreImports.h"
 #import "FTCompression.h"
 #import "FTSegmentJSON.h"
-#import "FTInnerLog.h"
 
 @interface FTSegmentRequest()
 @property (nonatomic, strong) id<FTMultipartFormBodyProtocol> multipartFormBody;

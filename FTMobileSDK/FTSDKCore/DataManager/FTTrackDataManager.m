@@ -9,7 +9,7 @@
 #import "FTRecordModel.h"
 #import "FTNetworkConnectivity.h"
 #import "FTTrackerEventDBTool.h"
-#import "FTLog+Private.h"
+#import "FTInnerLog.h"
 #import "FTRequest.h"
 #import "FTHTTPClient.h"
 #import "FTAppLifeCycle.h"

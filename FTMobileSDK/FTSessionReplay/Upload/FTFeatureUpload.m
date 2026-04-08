@@ -7,10 +7,8 @@
 //
 
 #import "FTFeatureUpload.h"
-#import "FTInnerLog.h"
-#import "FTHTTPClient.h"
+#import "FTSessionReplayCoreImports.h"
 #import "FTResourceRequest.h"
-#import "FTJSONUtil.h"
 #import "FTReader.h"
 #import "FTFeatureRequestBuilder.h"
 #import "FTPerformancePreset.h"
@@ -24,7 +22,6 @@
 #import "FTFileWriter.h"
 #import "FTResourceCheckRequest.h"
 #import "FTSRRecord.h"
-#import "FTConstants.h"
 
 @interface FTFeatureUpload()<NSCacheDelegate>{
     pthread_rwlock_t _readWorkLock;

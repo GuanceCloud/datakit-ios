@@ -7,7 +7,7 @@
 //
 
 #import "FTSegmentJSON.h"
-#import "FTConstants.h"
+#import "FTSessionReplayCoreImports.h"
 @implementation FTSegmentJSON
 -(instancetype)initWithData:(NSData *)data{
     self = [super init];

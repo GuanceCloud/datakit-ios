@@ -13,7 +13,7 @@
 #endif
 #import "FTAppLaunchTracker.h"
 #import "FTAppLifeCycle.h"
-#import "FTLog+Private.h"
+#import "FTInnerLog.h"
 #import "NSDate+FTUtil.h"
 #import "FTDateUtil.h"
 #import "FTDisplayRateMonitor.h"

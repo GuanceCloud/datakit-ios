@@ -12,7 +12,7 @@
 #import "FTResourceContentModel.h"
 #import "FTResourceMetricsModel.h"
 #import "FTReadWriteHelper.h"
-#import "FTLog+Private.h"
+#import "FTInnerLog.h"
 #import "FTTraceContext.h"
 #import "NSURLSessionTask+FTSwizzler.h"
 #import "NSDictionary+FTCopyProperties.h"

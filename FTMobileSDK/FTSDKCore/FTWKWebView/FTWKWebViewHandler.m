@@ -17,7 +17,7 @@
 #import "FTWKWebViewJavascriptBridge.h"
 #import "FTSwizzler.h"
 #import "FTSwizzle.h"
-#import "FTLog+Private.h"
+#import "FTInnerLog.h"
 #import "FTReadWriteHelper.h"
 #import <os/lock.h>
 #import "FTConstants.h"

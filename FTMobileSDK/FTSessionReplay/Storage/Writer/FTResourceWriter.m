@@ -11,7 +11,7 @@
 #import "FTFileWriter.h"
 #import <pthread.h>
 #import "FTFeatureDataStore.h"
-#import "FTInnerLog.h"
+#import "FTSessionReplayCoreImports.h"
 
 NSString *const FT_StoreCreationKey = @"ft-store-creation";
 NSString *const FT_KnownResourcesKey = @"ft-known-resources";

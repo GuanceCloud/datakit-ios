@@ -8,7 +8,7 @@
 
 #import "FTDirectory.h"
 #import "FTFile.h"
-#import "FTInnerLog.h"
+#import "FTSessionReplayCoreImports.h"
 @interface FTDirectory()
 @property (nonatomic, strong, readwrite) NSURL *url;
 

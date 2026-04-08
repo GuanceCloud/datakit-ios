@@ -7,6 +7,7 @@
 //
 
 #import <XCTest/XCTest.h>
+#import <TargetConditionals.h>
 #import "FTRemoteConfigurationRequest.h"
 #import "FTMobileAgent.h"
 #import "FTMobileConfig+Private.h"
@@ -28,7 +29,9 @@
 #import "FTTrackerEventDBTool.h"
 #import "FTModelHelper.h"
 
+#if !TARGET_OS_TV
 #import "FTSessionReplayConfig+Private.h"
+#endif
 @interface FTDataUploadWorker (Testing)
 @property (nonatomic, assign,readonly) int uploadPageSize;
 @property (nonatomic, assign,readonly) int syncSleepTime;
@@ -228,6 +231,7 @@
     NSArray *array = @[@"info",@"error"];
     XCTAssertTrue([copyLogger.logLevelFilter isEqualToArray:array]);
     
+#if !TARGET_OS_TV
     NSDictionary *testSRDict = @{
         FT_R_SR_SAMPLERATE:@(0.8),
         FT_R_SR_ON_ERROR_SAMPLE_RATE:@(0.5),
@@ -237,6 +241,7 @@
     [copySrConfig mergeWithRemoteConfigModel:[[FTRemoteConfigModel alloc] initWithDict:testSRDict]];
     XCTAssertTrue(srConfig.sampleRate != copySrConfig.sampleRate && copyLogger.samplerate == 80);
     XCTAssertTrue(srConfig.sessionReplayOnErrorSampleRate != copySrConfig.sessionReplayOnErrorSampleRate && copySrConfig.sessionReplayOnErrorSampleRate == 50);
+#endif
 
     [[FTRemoteConfigManager sharedInstance] shutDown];
 }
@@ -326,6 +331,7 @@
     XCTAssertTrue(logger.logLevelFilter == copyLogger.logLevelFilter);
     
     
+#if !TARGET_OS_TV
     NSDictionary *testSRDict = @{
         FT_R_SR_SAMPLERATE:@"0.8",
         FT_R_SR_ON_ERROR_SAMPLE_RATE:@"0.5",
@@ -335,6 +341,7 @@
     [copySrConfig mergeWithRemoteConfigModel:[[FTRemoteConfigModel alloc] initWithDict:testSRDict]];
     XCTAssertTrue(srConfig.sampleRate == copySrConfig.sampleRate);
     XCTAssertTrue(srConfig.sessionReplayOnErrorSampleRate == copySrConfig.sessionReplayOnErrorSampleRate);
+#endif
 }
 - (void)testDefaultUpdateRemoteConfig{
     [[FTTrackerEventDBTool sharedManager] deleteAllDatas];

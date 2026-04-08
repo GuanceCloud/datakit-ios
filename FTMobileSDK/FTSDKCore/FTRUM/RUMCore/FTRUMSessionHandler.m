@@ -11,7 +11,7 @@
 #import "FTBaseInfoHandler.h"
 #import "NSDate+FTUtil.h"
 #import "FTConstants.h"
-#import "FTLog+Private.h"
+#import "FTInnerLog.h"
 #import "FTRUMPlaceholderViewHandler.h"
 #import "FTRUMContext.h"
 #import "FTModuleManager.h"

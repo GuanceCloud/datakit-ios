@@ -12,16 +12,13 @@
 #import "FTViewAttributes.h"
 #import "FTSRWireframe.h"
 #import "FTSRNodeWireframesBuilder.h"
-#import "NSDate+FTUtil.h"
+#import "FTSessionReplayCoreImports.h"
 #import "FTSRRecord.h"
 #import "FTNodesFlattener.h"
 #import "FTFileWriter.h"
-#import "FTConstants.h"
-#import "FTModuleManager.h"
 #import "FTSRUtils.h"
 #import "FTTouchSnapshot.h"
 #import "FTSessionReplayWireframesBuilder.h"
-#import "FTInnerLog.h"
 #import "FTWKWebViewHandler+SessionReplay.h"
 
 NSTimeInterval const kFullSnapshotInterval = 20.0;

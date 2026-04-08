@@ -8,7 +8,7 @@
 
 #import "FTSRBaseFrame.h"
 #import <objc/runtime.h>
-#import "FTInnerLog.h"
+#import "FTSessionReplayCoreImports.h"
 #import <math.h>
 static const char * kClassPropertiesKey;
 static const char * kMapperObjectKey;
@@ -318,4 +318,3 @@ static BOOL isNAN(id value) {
 
 
 @end
-

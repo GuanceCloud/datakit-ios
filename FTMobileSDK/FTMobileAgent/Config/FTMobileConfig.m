@@ -14,7 +14,7 @@
 #import "FTEnumConstant.h"
 #import "NSDictionary+FTCopyProperties.h"
 #import "FTJSONUtil.h"
-#import "FTLog+Private.h"
+#import "FTInnerLog.h"
 
 @implementation FTTraceConfig
 -(instancetype)init{

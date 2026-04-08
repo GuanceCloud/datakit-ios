@@ -8,9 +8,7 @@
 
 #import "FTSessionReplayConfig.h"
 #import "FTSessionReplayConfig+Private.h"
-#import "FTConstants.h"
-#import "FTInnerLog.h"
-#import "FTRemoteConfigModel.h"
+#import "FTSessionReplayCoreImports.h"
 
 NSString * const FTTextAndInputPrivacyLevelStringMap[] = {
     [FTTextAndInputPrivacyLevelMaskAll] = @"MaskAll",

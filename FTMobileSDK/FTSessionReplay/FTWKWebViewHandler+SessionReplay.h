@@ -6,7 +6,7 @@
 //  Copyright © 2025 DataFlux-cn. All rights reserved.
 //
 
-#import "FTWKWebViewHandler.h"
+#import "FTSessionReplayCoreImports.h"
 
 NS_ASSUME_NONNULL_BEGIN
 

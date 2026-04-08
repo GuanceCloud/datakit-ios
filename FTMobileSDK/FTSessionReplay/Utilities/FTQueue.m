@@ -7,7 +7,7 @@
 //
 
 #import "FTQueue.h"
-#import "FTThreadDispatchManager.h"
+#import "FTSessionReplayCoreImports.h"
 
 @interface FTAsyncQueue()
 @end

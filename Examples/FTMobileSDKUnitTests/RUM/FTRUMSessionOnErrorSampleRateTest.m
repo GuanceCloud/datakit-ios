@@ -7,6 +7,7 @@
 //
 
 #import <XCTest/XCTest.h>
+#import <TargetConditionals.h>
 #import "XCTestCase+Utils.h"
 #import "FTTrackerEventDBTool.h"
 #import "FTMobileAgent.h"
@@ -18,9 +19,10 @@
 #import "FTDataWriterWorker.h"
 #import "XCTestCase+Utils.h"
 #import "FTTrackDataManager.h"
-#import "FTLog+Private.h"
+#import "FTInnerLog.h"
 #import "NSDate+FTUtil.h"
 #import "FTRUMSessionHandler.h"
+#if !TARGET_OS_TV
 #import "FTSessionReplayFeature.h"
 #import "FTSessionReplayConfig.h"
 #import "FTModuleManager.h"
@@ -39,6 +41,7 @@ typedef NS_ENUM(NSInteger, SampleState) {
 @property (nonatomic, strong) FTSessionReplayConfig *config;
 @property (nonatomic, assign) SampleState sampleState;
 @end
+#endif
 
 @interface FTDataWriterWorker(Testing)
 @property (nonatomic, assign) long long processStartTime;
@@ -424,6 +427,7 @@ typedef NS_ENUM(NSInteger, SampleState) {
     XCTAssertTrue(newSession5 == newSession6);
 }
 
+#if !TARGET_OS_TV
 - (void)testSessionReplaySampleRateUpdate{
     
     FTSessionReplayConfig *config = [[FTSessionReplayConfig alloc]init];
@@ -516,4 +520,5 @@ typedef NS_ENUM(NSInteger, SampleState) {
     XCTAssertTrue(feature.sampleState == SampleStateError);
 
 }
+#endif
 @end

@@ -7,6 +7,7 @@
 //
 
 #import <XCTest/XCTest.h>
+#import <TargetConditionals.h>
 #import "FTMobileAgent.h"
 #import "FTMobileAgent+Private.h"
 #import "FTTrackerEventDBTool.h"
@@ -23,7 +24,9 @@
 #import "FTReadWriteHelper.h"
 #import "NSNumber+FTAdd.h"
 #import "NSError+FTDescription.h"
+#if !TARGET_OS_TV
 #import "FTLimitedSizeSet.h"
+#endif
 @interface FTUtilsTest : XCTestCase
 
 @end
@@ -185,6 +188,7 @@
     }
 }
 #endif
+#if !TARGET_OS_TV
 - (void)testFTLimitedSizeSet{
     FTLimitedSizeSet *set = [[FTLimitedSizeSet alloc]initWithMaxCount:5];
     [set addObject:@1];
@@ -207,4 +211,5 @@
     XCTAssertTrue([set containsObject:@6]);
 
 }
+#endif
 @end

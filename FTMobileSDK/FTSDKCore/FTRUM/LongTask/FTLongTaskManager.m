@@ -13,7 +13,7 @@
 #import "FTConstants.h"
 #import "FTFatalErrorContext.h"
 #import "FTErrorMonitorInfo.h"
-#import "FTLog+Private.h"
+#import "FTInnerLog.h"
 #import "FTRUMContext.h"
 
 static NSString *const kSDKDirName      = @"com.ft.sdk";

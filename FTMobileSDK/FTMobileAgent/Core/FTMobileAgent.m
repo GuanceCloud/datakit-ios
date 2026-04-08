@@ -15,7 +15,7 @@
 #import "FTGlobalRumManager.h"
 #import "FTConstants.h"
 #import "FTMobileAgent+Private.h"
-#import "FTLog+Private.h"
+#import "FTInnerLog.h"
 #import "NSString+FTAdd.h"
 #import "FTPresetProperty.h"
 #import "FTTrackDataManager.h"

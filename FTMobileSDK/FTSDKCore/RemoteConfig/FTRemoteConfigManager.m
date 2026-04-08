@@ -11,7 +11,7 @@
 #import "FTTrackDataManager.h"
 #import "FTRemoteConfigurationRequest.h"
 #import "FTJSONUtil.h"
-#import "FTLog+Private.h"
+#import "FTInnerLog.h"
 #import "FTNetworkInfoManager.h"
 #import "FTAppLifeCycle.h"
 #import "FTRemoteConfigModel+Private.h"

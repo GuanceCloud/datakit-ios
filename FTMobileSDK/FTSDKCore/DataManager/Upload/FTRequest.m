@@ -13,7 +13,7 @@
 #import "FTConstants.h"
 #import "FTBaseInfoHandler.h"
 #import "FTDataCompression.h"
-#import "FTLog+Private.h"
+#import "FTInnerLog.h"
 #import "FTEnumConstant.h"
 #import <objc/runtime.h>
 @interface FTRequest()

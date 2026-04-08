@@ -8,9 +8,8 @@
 
 #import "FTResourceRequest.h"
 #import "FTRequestMultipartFormBody.h"
-#import "NSDate+FTUtil.h"
+#import "FTSessionReplayCoreImports.h"
 #import "FTCompression.h"
-#import "FTConstants.h"
 #import "FTSRRecord.h"
 #import "FTResourceCheckRequest.h"
 

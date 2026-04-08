@@ -7,7 +7,7 @@
 //
 
 #import "FTWeakMapTable.h"
-#import "FTLog+Private.h"
+#import "FTInnerLog.h"
 #import <pthread.h>
 /// Weak reference wrapper class, used to wrap keys that need weak references
 @interface WeakWrapper : NSObject<NSCopying>

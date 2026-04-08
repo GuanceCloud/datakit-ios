@@ -18,7 +18,7 @@
 #import "FTTrackDataManager.h"
 #import "FTModelHelper.h"
 #import "FTLog.h"
-#import "FTLog+Private.h"
+#import "FTInnerLog.h"
 #import "FTFileLogger.h"
 #import "FTTestUtils.h"
 #import "FTLogger+Private.h"

@@ -13,7 +13,7 @@
 #import "FTViewAttributes.h"
 #import "FTSRWireframe.h"
 #import "FTSRNodeWireframesBuilder.h"
-#import "NSDate+FTUtil.h"
+#import "FTSessionReplayCoreImports.h"
 #import "FTSRRecord.h"
 #import "FTNodesFlattener.h"
 #import "FTSnapshotProcessor.h"

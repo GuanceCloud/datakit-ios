@@ -8,7 +8,7 @@
 
 #import "FTMemoryMonitor.h"
 #import <mach/mach.h>
-#import "FTLog+Private.h"
+#import "FTInnerLog.h"
 
 @implementation FTMemoryMonitor
 - (double)memoryUsage {

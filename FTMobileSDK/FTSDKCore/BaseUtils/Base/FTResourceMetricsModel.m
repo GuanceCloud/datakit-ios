@@ -9,7 +9,7 @@
 #import "FTResourceMetricsModel.h"
 #import "FTResourceMetricsModel+Private.h"
 #import "NSDate+FTUtil.h"
-#import "FTLog+Private.h"
+#import "FTInnerLog.h"
 #import "FTConstants.h"
 @implementation FTResourceMetricsModel
 

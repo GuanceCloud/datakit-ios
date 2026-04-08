@@ -12,7 +12,7 @@
 #import "FTLoggerConfig.h"
 #import "FTRumConfig.h"
 #import "FTJSONUtil.h"
-#import "FTLog+Private.h"
+#import "FTInnerLog.h"
 
 @implementation FTMobileConfig (RemoteConfig)
 

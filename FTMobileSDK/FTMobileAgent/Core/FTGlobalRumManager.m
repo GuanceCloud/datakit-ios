@@ -9,7 +9,7 @@
 #error This file must be compiled with ARC. Either turn on ARC for the project or use -fobjc-arc flag on this file.
 #endif
 #import "FTGlobalRumManager.h"
-#import "FTLog+Private.h"
+#import "FTInnerLog.h"
 #if !TARGET_OS_TV
 #import "FTWKWebViewHandler+Private.h"
 #import "FTWKWebViewJavascriptBridge.h"

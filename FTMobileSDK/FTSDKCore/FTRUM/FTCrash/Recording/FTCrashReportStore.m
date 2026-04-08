@@ -33,7 +33,7 @@
 #import "FTCrashJSONCodecObjC.h"
 #import "FTCrashNSErrorHelper.h"
 
-#import "FTLog+Private.h"
+#import "FTInnerLog.h"
 
 @implementation FTCrashReportStore
 

@@ -9,7 +9,7 @@
 #import "NSURLSessionTask+FTSwizzler.h"
 #import "FTURLSessionInstrumentation.h"
 #import <objc/runtime.h>
-#import "FTLog+Private.h"
+#import "FTInnerLog.h"
 static char *hasCompletionKey = "hasCompletionKey";
 @implementation NSURLSessionTask (FTSwizzler)
 

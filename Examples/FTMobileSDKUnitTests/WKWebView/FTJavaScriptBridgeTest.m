@@ -25,7 +25,7 @@
 #import "FTRumConfig+Private.h"
 #import "FTWKWebViewHandler+Private.h"
 #import "FTModelHelper.h"
-#import "FTLog+Private.h"
+#import "FTInnerLog.h"
 @interface FTWKWebViewHandler (Testing)
 @property (nonatomic, strong) NSMapTable *webViewRequestTable;
 

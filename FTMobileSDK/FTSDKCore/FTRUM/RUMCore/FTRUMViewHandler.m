@@ -14,7 +14,7 @@
 #import "FTBaseInfoHandler.h"
 #import "FTMonitorItem.h"
 #import "FTMonitorValue.h"
-#import "FTLog+Private.h"
+#import "FTInnerLog.h"
 #import "FTRUMMonitor.h"
 #import "FTRUMContext.h"
 

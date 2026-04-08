@@ -11,7 +11,7 @@
 #import "FTTLV.h"
 #import "FTFile.h"
 #import "FTSRBaseFrame.h"
-#import "FTInnerLog.h"
+#import "FTSessionReplayCoreImports.h"
 @interface FTFileWriter()
 @property (nonatomic, strong) id<FTFilesOrchestratorType> orchestrator;
 @property (nonatomic, strong) dispatch_queue_t queue;

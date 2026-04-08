@@ -9,11 +9,9 @@
 #import "FTSessionReplayFeature.h"
 #import "FTSegmentRequest.h"
 #import "FTPerformancePresetOverride.h"
-#import "FTThreadDispatchManager.h"
+#import "FTSessionReplayCoreImports.h"
 #import "FTRecorder.h"
-#import "FTConstants.h"
 #import "FTViewAttributes.h"
-#import "FTBaseInfoHandler.h"
 #import "FTSessionReplayTouches.h"
 #import "FTWindowObserver.h"
 #import "FTSessionReplayConfig+Private.h"
@@ -21,20 +19,15 @@
 #import "FTResourceProcessor.h"
 #import "FTResourceWriter.h"
 #import "FTSnapshotProcessor.h"
-#import "FTModuleManager.h"
-#import "FTMessageReceiver.h"
 #import "FTSRRecord.h"
 #import "FTFileWriter.h"
-#import "FTSRWebTrackingProtocol.h"
 #import "FTFeatureStorage.h"
 #import "FTLimitedSizeSet.h"
 #import "FTWKWebViewHandler+SessionReplay.h"
 #import "FTSessionReplayConfig+Private.h"
-#import "FTRemoteConfigManager.h"
 #import "FTScheduler.h"
 #import "FTScreenChangeScheduler.h"
 
-#import "FTInnerLog.h"
 typedef NS_ENUM(NSInteger, SampleState) {
     SampleStateNormal,
     SampleStateError,

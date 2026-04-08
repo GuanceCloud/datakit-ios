@@ -16,10 +16,8 @@
 #import "FTSessionReplayFeature.h"
 #import "FTFeatureDataStore.h"
 #import "FTTmpCacheManager.h"
-#import "FTPresetProperty.h"
 #import "FTSessionReplayConfig+Private.h"
-#import "FTInnerLog.h"
-#import "FTRemoteConfigManager.h"
+#import "FTSessionReplayCoreImports.h"
 #import "FTWKWebViewHandler+SessionReplay.h"
 @interface FTFeatureStores : NSObject
 @property (nonatomic, strong) FTFeatureStorage *storage;

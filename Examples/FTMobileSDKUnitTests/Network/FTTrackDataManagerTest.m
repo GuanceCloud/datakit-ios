@@ -18,7 +18,7 @@
 #import "FTDBDataCachePolicy.h"
 #import "FTTrackDataManager+Test.h"
 #import "FTBaseInfoHandler.h"
-#import "FTLog+Private.h"
+#import "FTInnerLog.h"
 #import "FTRequest.h"
 #import "FTTrackDataManager+Test.h"
 #import "FTDataUploadWorker.h"

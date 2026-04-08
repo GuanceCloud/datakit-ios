@@ -9,7 +9,7 @@
 #import "FTExternalDataManager.h"
 #import "FTExternalDataManager+Private.h"
 #import "FTURLSessionInterceptorProtocol.h"
-#import "FTLog+Private.h"
+#import "FTInnerLog.h"
 #import "NSDate+FTUtil.h"
 #import "NSDictionary+FTCopyProperties.h"
 #import "FTConstants.h"

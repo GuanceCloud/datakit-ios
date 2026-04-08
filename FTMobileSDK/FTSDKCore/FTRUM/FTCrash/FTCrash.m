@@ -11,7 +11,7 @@
 #import "FTCrash.h"
 #import "FTSDKCompat.h"
 #import "FTCrashC.h"
-#import "FTLog+Private.h"
+#import "FTInnerLog.h"
 #import "FTCrashMonitor.h"
 #import "FTAppLifeCycle.h"
 #import <pthread.h>

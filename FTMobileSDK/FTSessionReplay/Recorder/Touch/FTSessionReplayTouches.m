@@ -7,15 +7,12 @@
 //
 
 #import "FTSessionReplayTouches.h"
-#import "FTSwizzler.h"
+#import "FTSessionReplayCoreImports.h"
 #import "UITouch+FTIdentifier.h"
 #import "FTWindowObserver.h"
-#import "FTReadWriteHelper.h"
-#import "NSDate+FTUtil.h"
 #import "FTTouchSnapshot.h"
 #import "UIView+FTSRPrivacy.h"
 #import "FTSessionReplayPrivacyOverrides+Extension.h"
-#import "FTThreadDispatchManager.h"
 
 static __weak FTSessionReplayTouches *ft_touchesHandler = nil;
 static void *const kFTSRSendEvent = (void *)&kFTSRSendEvent;

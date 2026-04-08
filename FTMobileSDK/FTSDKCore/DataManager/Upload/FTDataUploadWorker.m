@@ -9,9 +9,8 @@
 #import "FTDataUploadWorker.h"
 #import "FTHTTPClient.h"
 #import <pthread.h>
-#import "FTLog+Private.h"
+#import "FTInnerLog.h"
 #import "FTTrackerEventDBTool.h"
-#import "FTLog+Private.h"
 #import "FTJSONUtil.h"
 #import "FTConstants.h"
 #import "FTRecordModel.h"

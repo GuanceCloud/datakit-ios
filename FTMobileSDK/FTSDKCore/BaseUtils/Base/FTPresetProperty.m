@@ -17,7 +17,7 @@
 #import "FTConstants.h"
 #include <mach-o/dyld.h>
 #include <mach-o/nlist.h>
-#import "FTLog+Private.h"
+#import "FTInnerLog.h"
 #import "FTNetworkConnectivity.h"
 #include <mach-o/arch.h>
 #include <sys/sysctl.h>

@@ -8,7 +8,7 @@
 
 #import "FTAutoTrackHandler.h"
 #import "UIViewController+FTAutoTrack.h"
-#import "FTLog+Private.h"
+#import "FTInnerLog.h"
 #import "FTSwizzle.h"
 #import "UIApplication+FTAutoTrack.h"
 #import "UIGestureRecognizer+FTAutoTrack.h"

@@ -9,7 +9,7 @@
 #import <objc/runtime.h>
 #import <objc/message.h>
 #import <os/lock.h>
-#import "FTLog+Private.h"
+#import "FTInnerLog.h"
 #import <mach-o/dyld.h>
 #import <dlfcn.h>
 #if !__has_feature(objc_arc)

@@ -16,7 +16,7 @@
 #import "FTModelHelper.h"
 #import "FTConstants.h"
 #import "FTBaseInfoHandler.h"
-#import "FTLog+Private.h"
+#import "FTInnerLog.h"
 @interface FTDatabaseTest : XCTestCase
 @property (nonatomic, copy) NSString *dbName;
 @end

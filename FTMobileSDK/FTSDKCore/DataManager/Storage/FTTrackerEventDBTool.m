@@ -9,7 +9,7 @@
 #import "FTTrackerEventDBTool.h"
 #import "ZY_FMDB.h"
 #import "FTRecordModel.h"
-#import "FTLog+Private.h"
+#import "FTInnerLog.h"
 #import "FTConstants.h"
 #import "FTSDKCompat.h"
 @interface FTTrackerEventDBTool ()

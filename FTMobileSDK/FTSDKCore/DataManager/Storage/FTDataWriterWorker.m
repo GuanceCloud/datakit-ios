@@ -12,7 +12,7 @@
 #import "FTTrackDataManager.h"
 #import "FTRecordModel.h"
 #import "FTPresetProperty.h"
-#import "FTLog+Private.h"
+#import "FTInnerLog.h"
 #import "FTTrackerEventDBTool.h"
 #import "NSDate+FTUtil.h"
 #import <os/lock.h>

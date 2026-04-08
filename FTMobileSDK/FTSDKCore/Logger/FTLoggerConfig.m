@@ -9,7 +9,7 @@
 #import "FTLoggerConfig.h"
 #import "FTConstants.h"
 #import "FTJSONUtil.h"
-#import "FTLog+Private.h"
+#import "FTInnerLog.h"
 
 @implementation FTLoggerConfig
 -(instancetype)init{

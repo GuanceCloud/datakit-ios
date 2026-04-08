@@ -9,7 +9,7 @@
 #import "FTExtensionManager.h"
 #import "FTExtensionDataManager.h"
 #import "FTCrash.h"
-#import "FTLog+Private.h"
+#import "FTInnerLog.h"
 #import "FTRUMManager.h"
 #import "FTRUMDataWriteProtocol.h"
 #import "FTURLSessionInstrumentation.h"

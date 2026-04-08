@@ -9,7 +9,7 @@
 #import "FTNetworkConnectivity.h"
 #import <Network/Network.h>
 #import "FTReachability.h"
-#import "FTLog+Private.h"
+#import "FTInnerLog.h"
 #if TARGET_OS_IOS && !TARGET_OS_MACCATALYST
 #import <CoreTelephony/CTTelephonyNetworkInfo.h>
 #endif

@@ -7,7 +7,7 @@
 //
 
 #import "FTRequestBody.h"
-#import "FTLog+Private.h"
+#import "FTInnerLog.h"
 #import "FTRecordModel.h"
 #import "FTJSONUtil.h"
 #import "FTConstants.h"

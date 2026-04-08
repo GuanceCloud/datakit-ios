@@ -7,7 +7,7 @@
 //
 
 #import "FTWebViewJavascriptBridgeBase.h"
-#import "FTLog+Private.h"
+#import "FTInnerLog.h"
 @implementation FTWebViewJavascriptBridgeBase{
     long _uniqueId;
 }

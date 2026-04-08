@@ -28,7 +28,7 @@
 #import "NSURLSessionTask+FTSwizzler.h"
 #import "FTURLSessionInterceptorProtocol.h"
 #import "FTURLSessionDelegate+Private.h"
-#import "FTLog+Private.h"
+#import "FTInnerLog.h"
 static void *const kFTReceiveDataSelector = (void *)&kFTReceiveDataSelector;
 static void *const kFTCompleteSelector = (void *)&kFTCompleteSelector;
 static void *const kFTCollectMetricsSelector = (void *)&kFTCollectMetricsSelector;

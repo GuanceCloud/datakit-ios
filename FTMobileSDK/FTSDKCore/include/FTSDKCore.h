@@ -7,6 +7,9 @@
 //
 
 #import <Foundation/Foundation.h>
+#import "FTBaseInfoHandler.h"
+#import "FTConstants.h"
+#import "FTDateUtil.h"
 #import "FTRUMDependencies.h"
 #import "FTLongTaskManager.h"
 #import "NSDate+FTUtil.h"
@@ -34,8 +37,11 @@
 #import "FTJSONUtil.h"
 #import "FTThreadDispatchManager.h"
 #import "FTErrorDataProtocol.h"
+#import "FTMessageReceiver.h"
+#import "FTModuleManager.h"
 #import "FTRumDatasProtocol.h"
 #import "FTRumResourceProtocol.h"
+#import "FTSRWebTrackingProtocol.h"
 #import "FTTracerProtocol.h"
 #import "FTURLSessionInterceptorProtocol.h"
 #import "FTExternalResourceProtocol.h"

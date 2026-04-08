@@ -7,7 +7,7 @@
 //
 
 #import <Foundation/Foundation.h>
-#import "FTRequestBody.h"
+#import "FTSessionReplayCoreImports.h"
 
 NS_ASSUME_NONNULL_BEGIN
 @protocol FTMultipartFormBodyProtocol <NSObject>

@@ -104,7 +104,9 @@ Pod::Spec.new do |s|
 		end
 
 		c.subspec 'DataManager' do |bb|
-			bb.source_files =  'FTMobileSDK/FTSDKCore/DataManager/**/*{.h,.m}'
+			bb.source_files =  ['FTMobileSDK/FTSDKCore/DataManager/*{.h,.m}',
+			'FTMobileSDK/FTSDKCore/DataManager/Upload/*{.h,.m}',
+			'FTMobileSDK/FTSDKCore/DataManager/Storage/**/*{.h,.m}']
 			bb.dependency 'FTMobileSDK/FTSDKCore/BaseUtils/Thread'
 			bb.dependency 'FTMobileSDK/FTSDKCore/BaseUtils/Base'
 			bb.dependency 'FTMobileSDK/FTSDKCore/Protocol'
@@ -112,7 +114,11 @@ Pod::Spec.new do |s|
 	end
 	s.subspec 'FTSessionReplay' do |sr|
 		 sr.platform = :ios, '10.0'
-		 sr.source_files =  'FTMobileSDK/FTSessionReplay/**/*{.h,.m}'
-		 sr.dependency 'FTMobileSDK/FTMobileAgent'
+		 sr.public_header_files = 'FTMobileSDK/FTSessionReplay/Public/*.h'
+		 sr.source_files = 'FTMobileSDK/FTSessionReplay/**/*{.h,.m}'
+		 sr.dependency 'FTMobileSDK/FTSDKCore'
+		 sr.pod_target_xcconfig = {
+			 'HEADER_SEARCH_PATHS' => '$(inherited) $(PODS_TARGET_SRCROOT)'
+		 }
 	end
 end

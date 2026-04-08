@@ -11,7 +11,7 @@
 #import "FTRUMDependencies.h"
 #import "FTFatalErrorContext.h"
 #import "FTConstants.h"
-#import "FTLog+Private.h"
+#import "FTInnerLog.h"
 #import "FTCrash.h"
 #import "FTRUMContext.h"
 typedef void (^FTLongTaskCallBack)(NSString *slowStack, long long duration);

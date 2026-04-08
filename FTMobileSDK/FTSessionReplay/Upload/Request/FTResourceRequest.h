@@ -6,7 +6,7 @@
 //  Copyright © 2023 DataFlux-cn. All rights reserved.
 //
 
-#import "FTRequest.h"
+#import "FTSessionReplayCoreImports.h"
 #import "FTFeatureRequestBuilder.h"
 NS_ASSUME_NONNULL_BEGIN
 

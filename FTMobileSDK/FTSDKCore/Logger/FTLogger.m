@@ -6,7 +6,6 @@
 //  Copyright © 2023 DataFlux-cn. All rights reserved.
 //
 #import "FTLogger+Private.h"
-#import "FTLog+Private.h"
 #import "FTBaseInfoHandler.h"
 #import "FTConstants.h"
 #import "NSString+FTAdd.h"
@@ -18,6 +17,8 @@
 #import "FTPresetProperty.h"
 #import "FTLoggerConfig+Private.h"
 #import "FTJSONUtil.h"
+#import "FTInnerLog.h"
+
 void *FTLoggerQueueIdentityKey = &FTLoggerQueueIdentityKey;
 
 @interface FTLogger ()

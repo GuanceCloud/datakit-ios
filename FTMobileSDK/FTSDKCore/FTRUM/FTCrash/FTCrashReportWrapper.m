@@ -22,7 +22,7 @@
 #import "FTCrashStackCursor_MachineContext.h"
 #import "FTCrashDynamicLinker.h"
 #import "FTCrashStackCursor_SelfThread.h"
-#import "FTLog+Private.h"
+#import "FTInnerLog.h"
 #import "FTFatalErrorContext.h"
 #import "FTConstants.h"
 #import "FTCrashJSONCodecObjC.h"

@@ -8,7 +8,7 @@
 
 #import "NSDictionary+FTCopyProperties.h"
 #import "FTJSONUtil.h"
-#import "FTLog+Private.h"
+#import "FTInnerLog.h"
 #import "NSNumber+FTAdd.h"
 @implementation NSDictionary (FTCopyProperties)
 - (NSDictionary *)ft_deepCopy{

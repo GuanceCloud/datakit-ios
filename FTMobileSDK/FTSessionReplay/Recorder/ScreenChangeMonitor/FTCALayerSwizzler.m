@@ -7,7 +7,7 @@
 //
 
 #import "FTCALayerSwizzler.h"
-#import "FTSwizzler.h"
+#import "FTSessionReplayCoreImports.h"
 
 static __weak id<FTCALayerObserver> ft_currentLayerObserver = nil;
 static void *const kFTSwizzleDisplay = (void *)&kFTSwizzleDisplay;

@@ -9,9 +9,7 @@
 #import "FTSRRecord.h"
 #import "FTSRUtils.h"
 #import "FTViewAttributes.h"
-#import "NSDate+FTUtil.h"
-#import "FTInnerLog.h"
-#import "FTConstants.h"
+#import "FTSessionReplayCoreImports.h"
 #import "FTTouchSnapshot.h"
 @implementation FTSRRecord
 -(instancetype)initWithTimestamp:(long long)timestamp{

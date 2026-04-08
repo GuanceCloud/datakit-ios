@@ -8,7 +8,7 @@
 
 #import "ZY_FMDatabaseQueue.h"
 #import "ZY_FMDatabase.h"
-#import "FTLog+Private.h"
+#import "FTInnerLog.h"
 #if ZY_FMDB_SQLITE_STANDALONE
 #import <sqlite3/sqlite3.h>
 #else

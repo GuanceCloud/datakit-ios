@@ -26,7 +26,7 @@
 #import "FTDURLSessionDelegate.h"
 #import "FTSwizzle.h"
 #import "FTSwizzler.h"
-#import "FTLog+Private.h"
+#import "FTInnerLog.h"
 #import <objc/runtime.h>
 typedef void (^CompletionHandler)(NSData * _Nullable data, NSURLResponse * _Nullable response, NSError * _Nullable error);
 

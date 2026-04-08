@@ -9,7 +9,7 @@
 #import "FTPresetProperty.h"
 #import "FTErrorMonitorInfo.h"
 #import "FTRUMContext.h"
-#import "FTLog+Private.h"
+#import "FTInnerLog.h"
 
 static BOOL FTDictionaryIsEqual(NSDictionary *a, NSDictionary *b) {
     if (a == b) return YES;

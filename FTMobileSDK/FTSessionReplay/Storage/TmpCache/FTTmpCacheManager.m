@@ -9,13 +9,7 @@
 #import "FTTmpCacheManager.h"
 #import "FTDirectory.h"
 #import "FTFile.h"
-#import "FTModuleManager.h"
-#import "FTConstants.h"
-#import "FTInnerLog.h"
-#import "FTMessageReceiver.h"
-#import "FTTrackDataManager.h"
-#import "NSDate+FTUtil.h"
-#import "FTDateUtil.h"
+#import "FTSessionReplayCoreImports.h"
 
 void *FTTmpCacheQueueIdentityKey = &FTTmpCacheQueueIdentityKey;
 

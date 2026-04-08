@@ -8,7 +8,7 @@
 
 #import <XCTest/XCTest.h>
 #import "FTSwizzler.h"
-#import "FTLog+Private.h"
+#import "FTInnerLog.h"
 #import <objc/runtime.h>
 static void *IMP_resolved_method_implementation(void){
     return nil;
