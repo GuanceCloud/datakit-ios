@@ -1,10 +1,14 @@
+#!/bin/bash
+
 # Usage Examples (Command → Output XCFramework Name):
-#   sh BuildFramework.sh FTMobileSDK                          → FTMobileSDK.xcframework
-#   sh BuildFramework.sh FTMobileSDK-dynamic                  → FTMobileSDK-Dynamic.xcframework
-#   sh BuildFramework.sh FTMobileSDK --disable-swizzling-resource  → FTMobileSDK-DisableSwizzlingResource.xcframework
-#   sh BuildFramework.sh FTMobileSDK-dynamic --disable-swizzling-resource → FTMobileSDK-Dynamic-DisableSwizzlingResource.xcframework
-#   sh BuildFramework.sh FTMobileExtension                    → FTMobileExtension.xcframework
-#   sh BuildFramework.sh FTMobileExtension --disable-swizzling-resource → FTMobileExtension-DisableSwizzlingResource.xcframework
+#   bash BuildFramework.sh FTMobileSDK                          → FTMobileSDK.xcframework
+#   bash BuildFramework.sh FTMobileSDK-dynamic                  → FTMobileSDK-Dynamic.xcframework
+#   bash BuildFramework.sh FTMobileSDK --disable-swizzling-resource  → FTMobileSDK-DisableSwizzlingResource.xcframework
+#   bash BuildFramework.sh FTMobileSDK-dynamic --disable-swizzling-resource → FTMobileSDK-Dynamic-DisableSwizzlingResource.xcframework
+#   bash BuildFramework.sh FTMobileExtension                    → FTMobileExtension.xcframework
+#   bash BuildFramework.sh FTMobileExtension --disable-swizzling-resource → FTMobileExtension-DisableSwizzlingResource.xcframework
+#   bash BuildFramework.sh FTSessionReplay                      → FTSessionReplay.xcframework
+#   bash BuildFramework.sh FTSessionReplay-dynamic              → FTSessionReplay-Dynamic.xcframework
 
 # Parameter Notes:
 #   -dynamic: Build dynamic library (default: static library)
@@ -17,11 +21,9 @@
 # Output Path: Packaged SDK is saved to the "build" folder in the current directory
 
 set -euo pipefail
-#!/bin/bash
 # ======================== CORE ========================
 SWIZZLING_MACRO="FT_DISABLE_SWIZZLING_RESOURCE"
 CONFIGURATION="Release"
-DEFAULT_DISABLE_SWIZZLING="0"
 
 LIB_TYPE="static"
 SCHEME_NAME=""
@@ -40,7 +42,7 @@ error() {
 
 show_help() {
   echo "Usage:"
-  echo "  sh $0 <SCHEME_NAME> [--disable-swizzling-resource]"
+  echo "  bash $0 <SCHEME_NAME> [--disable-swizzling-resource]"
   echo ""
   echo "Core Workflow (aligned with original script):"
   echo "  1. Compile archive for physical iOS devices"
@@ -48,8 +50,8 @@ show_help() {
   echo "  3. Combine two archives to generate XCFramework (dynamic libraries link dSYM files)"
   echo ""
   echo "Examples:"
-  echo " sh $0 FTMobileSDK-dynamic --disable-swizzling-resource # dynamic + disable swizzling"
-  echo " sh $0 FTMobileSDK # static + disable swizzling"
+  echo " bash $0 FTMobileSDK-dynamic --disable-swizzling-resource # dynamic + disable swizzling"
+  echo " bash $0 FTMobileSDK # static"
 }
 
 # Check xcodebuild environment
@@ -76,7 +78,7 @@ parse_scheme() {
   local scheme_lower=$(echo "${scheme}" | tr '[:upper:]' '[:lower:]')
   if [[ "${scheme_lower}" == *"-dynamic" ]]; then
     LIB_TYPE="dynamic"
-    SCHEME_NAME="${scheme%%-*}"
+    SCHEME_NAME="${scheme%-dynamic}"
   else
     LIB_TYPE="static"
     SCHEME_NAME="${scheme}"
@@ -102,14 +104,12 @@ build_archive() {
 
   # Distinguish static/dynamic library parameters (aligned with your script)
   local mach_o_type="staticlib"
-  local build_lib_for_dist="NO"
   if [[ "${LIB_TYPE}" == "dynamic" ]]; then
     mach_o_type="mh_dylib"
   fi
 
   # Preprocessor macros (Swizzling disable logic)
   local preprocessor_defs="\$(inherited)"
-  local active_compile_conditions="\$(inherited)"
   if [[ "${disable_swizzling}" == "1" ]]; then
     preprocessor_defs+=" ${SWIZZLING_MACRO}=1"
   fi
@@ -161,6 +161,13 @@ create_xcframework() {
   if [[ "${LIB_TYPE}" == "dynamic" ]]; then
     local ios_dsym="${ARCHIVE_PATH}/iphoneos.xcarchive/dSYMs/${scheme}.framework.dSYM"
     local sim_dsym="${ARCHIVE_PATH}/iphonesimulator.xcarchive/dSYMs/${scheme}.framework.dSYM"
+
+    if [[ ! -d "${ios_dsym}" ]]; then
+      error "❌ Physical device dSYM does not exist: ${ios_dsym}"
+    fi
+    if [[ ! -d "${sim_dsym}" ]]; then
+      error "❌ Simulator dSYM does not exist: ${sim_dsym}"
+    fi
  
     info  "\n📦 Generating xcframework (with standard path dSYM)..."
     # Dynamic library: use -debug-symbols parameter (your core logic)
@@ -180,6 +187,13 @@ create_xcframework() {
       -output "${XCF_FRAMEWORK_PATH}"
     info "✅ Static library xcframework generated successfully"
   fi
+
+  if [[ ! -d "${XCF_FRAMEWORK_PATH}" ]]; then
+    error "❌ XCFramework generation failed: ${XCF_FRAMEWORK_PATH} does not exist"
+  fi
+  if [[ ! -f "${XCF_FRAMEWORK_PATH}/Info.plist" ]]; then
+    error "❌ Invalid XCFramework, Info.plist not found: ${XCF_FRAMEWORK_PATH}"
+  fi
   
   rm -rf "${ARCHIVE_PATH}/iphoneos.xcarchive"
   rm -rf "${ARCHIVE_PATH}/iphonesimulator.xcarchive"
@@ -195,6 +209,9 @@ main() {
   while [[ $# -gt 0 ]]; do
     case "$1" in
       --scheme)
+        if [[ $# -lt 2 ]]; then
+          error "❌ Missing value for --scheme"
+        fi
         scheme="$2"
         shift 2
         ;;
@@ -202,7 +219,7 @@ main() {
           disable_swizzling="1"
         shift
         ;;
-      --help)
+      --help|-h)
         show_help
         exit 0
         ;;
@@ -252,7 +269,7 @@ main() {
 
   # Final artifact prompt
   info "🎉 Full workflow completed! Final artifact:"
-  info "   → XCFramework: ${archive_path}/${SCHEME_NAME}.xcframework"
+  info "   → XCFramework: ${archive_path}/${framework_name}.xcframework"
 }
 
 # Execute main workflow
