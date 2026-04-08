@@ -16,3 +16,4 @@ FTMobileSDK/build/
 .swiftpm
 build
 xcuserdata
+.build
