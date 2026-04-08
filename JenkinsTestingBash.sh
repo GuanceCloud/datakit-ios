@@ -39,6 +39,14 @@ while [[ $# -gt 0 ]]; do
   esac
 done
 set -- "${POSITIONAL[@]}" # restore positional parametersCERT_FILE
+set -o pipefail
+
+if command -v xcbeautify > /dev/null 2>&1; then
+    XCODEBUILD_FORMATTER="xcbeautify"
+else
+    XCODEBUILD_FORMATTER="cat"
+    echo "Warning: xcbeautify not found. Falling back to raw xcodebuild output."
+fi
 
 cd "Examples/Examples.xcodeproj/xcshareddata/xcschemes/"
 
@@ -56,41 +64,51 @@ cd ../../../..
 pod install
 
 function findSimulator(){
-    TEST_SCHEME="$1"
-    TEST_SIMULATOR="$2"
-    
-    # tvOS test cases
-    SIMULATOR_INFO=$(xcodebuild -workspace FTMobileSDK.xcworkspace -scheme ${TEST_SCHEME}  -showdestinations | grep "${TEST_SIMULATOR}" | grep "OS:" | head -1)
-        
-    # Check if simulator is found
+    local TEST_SCHEME="$1"
+    local TEST_SIMULATOR="$2"
+    local DESTINATIONS
+    local SIMULATOR_INFO
+    local SIMULATOR_ID
+
+    DESTINATIONS=$(xcodebuild -workspace FTMobileSDK.xcworkspace -scheme "${TEST_SCHEME}" -showdestinations)
+    SIMULATOR_INFO=$(echo "$DESTINATIONS" | awk -v platform="${TEST_SIMULATOR}" '
+      index($0, "{ platform:" platform) > 0 &&
+      index($0, "id:") > 0 &&
+      index($0, "OS:") > 0 &&
+      index($0, "error:") == 0 {
+        print
+        exit
+      }
+    ')
+
     if [ -z "$SIMULATOR_INFO" ]; then
-    echo "Error: No ${TEST_SIMULATOR} found!"
-    exit 1
+        echo "Error: No available ${TEST_SIMULATOR} found for scheme ${TEST_SCHEME}!"
+        echo "$DESTINATIONS"
+        exit 1
     fi
-    
-    # Extract simulator OS version and ID
-    SIMULATOR_OS=$(echo "$SIMULATOR_INFO" | awk -F 'OS:' '{print $2}' | awk -F ',' '{print $1}')
-    SIMULATOR_ID=$(echo "$SIMULATOR_INFO" | awk -F 'id:' '{print $2}' | awk -F ',' '{print $1}')
-    
-    # Build SIMULATOR_DESTINATION string
-    SIMULATOR_DESTINATION="platform=${TEST_SIMULATOR},OS=$SIMULATOR_OS,id=$SIMULATOR_ID"
-    
-    # Check if return value is empty
-    if [ -z "$SIMULATOR_DESTINATION" ]; then
-    echo "Error: Failed to get ${TEST_SIMULATOR} destination."
-    exit 1
+
+    SIMULATOR_ID=$(echo "$SIMULATOR_INFO" | sed -n 's/.*id:\([^,}]*\).*/\1/p' | sed 's/^ *//;s/ *$//')
+
+    if [ -z "$SIMULATOR_ID" ]; then
+        echo "Error: Failed to parse simulator id from destination:"
+        echo "$SIMULATOR_INFO"
+        exit 1
     fi
-    
-    echo "$SIMULATOR_DESTINATION"
+
+    echo "platform=${TEST_SIMULATOR},id=${SIMULATOR_ID}"
 }
 
-IOS_DESTINATION=$(findSimulator "FTMobileSDKUnitTestsForCmd" "iOS Simulator")
+if [ -n "$DEVICE_DESTINATION" ]; then
+    IOS_DESTINATION="$DEVICE_DESTINATION"
+else
+    IOS_DESTINATION=$(findSimulator "FTMobileSDKUnitTestsForCmd" "iOS Simulator")
+fi
 
 ## Test iOS
 xcodebuild test -workspace FTMobileSDK.xcworkspace \
 -scheme FTMobileSDKUnitTestsForCmd \
 -only-testing FTMobileSDKUnitTests \
--destination "$IOS_DESTINATION"
+-destination "$IOS_DESTINATION" | $XCODEBUILD_FORMATTER
 
 TVOS_DESTINATION=$(findSimulator "FTMobileSDKUnitTestsTVOSForCmd" "tvOS Simulator")
 
@@ -98,5 +116,4 @@ TVOS_DESTINATION=$(findSimulator "FTMobileSDKUnitTestsTVOSForCmd" "tvOS Simulato
 xcodebuild test -workspace FTMobileSDK.xcworkspace \
 -scheme FTMobileSDKUnitTestsTVOSForCmd \
 -only-testing FTMobileSDKUnitTests-tvOS \
--destination "$TVOS_DESTINATION"
-
+-destination "$TVOS_DESTINATION" | $XCODEBUILD_FORMATTER

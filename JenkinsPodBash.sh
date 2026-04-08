@@ -15,7 +15,7 @@ if [[ $? -eq 0 ]];then
 
   sed  -i '' 's/SDK_VERSION.*/SDK_VERSION @"'$VERSION'"/g' FTMobileSDK/FTMobileAgent/Core/FTMobileAgentVersion.h
 
-  sed  -i '' 's/$JENKINS_DYNAMIC_VERSION/'"$VERSION"'/g' FTMobileSDK.podspec
+  sed  -i '' -E '/^[[:space:]]*s[[:space:]]*\.[[:space:]]*version[[:space:]]*=/s/"[^"]*"/"'"$VERSION"'"/' FTMobileSDK.podspec
 
   pod trunk push FTMobileSDK.podspec --verbose --allow-warnings
 

@@ -1,8 +1,7 @@
 Pod::Spec.new do |s|
 
 	s.name         = "FTMobileSDK"
-	#s.version      = "1.4.11-alpha.1"
-	s.version      = "$JENKINS_DYNAMIC_VERSION"
+	s.version      = "1.6.2-alpha.16"
 	s.summary      = "Guance Cloud iOS Data Collection SDK"
 	#s.description  = ""
 	s.homepage     = "https://github.com/GuanceCloud/datakit-ios.git"
@@ -17,7 +16,7 @@ Pod::Spec.new do |s|
 	s.pod_target_xcconfig = { 'DEFINES_MODULE' => 'YES' }
 
 	#$JENKINS_DYNAMIC_VERSION replacing "#{s.version}" will cause an error during pod valid phase
-	s.source       = { :git => "https://github.com/GuanceCloud/datakit-ios.git", :tag => "$JENKINS_DYNAMIC_VERSION" }
+	s.source       = { :git => "https://github.com/GuanceCloud/datakit-ios.git", :tag => s.version }
 
     s.resource_bundle = {
       "FTSDKPrivacyInfo" => "FTMobileSDK/Resources/PrivacyInfo.xcprivacy"
