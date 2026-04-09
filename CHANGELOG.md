@@ -1,3 +1,6 @@
+# 1.5.21-alpha.3
+1. Rename `updateDatakitURL:` to `setDatakitURL:`, `updateDatawayURL:clientToken:` to `setDatawayURL:clientToken:`
+---
 # 1.5.21-alpha.2
 1. Add `updateDatakitURL:` 、`updateDatawayURL:clientToken:` APIs to support dynamic upload endpoint configuration
 2. Bump minimum deployment target to iOS 12+, macOS 10.14+
