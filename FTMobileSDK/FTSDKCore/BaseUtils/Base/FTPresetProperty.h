@@ -8,7 +8,7 @@
 
 #import <Foundation/Foundation.h>
 #import "FTDataModifier.h"
-#import "FTEnumConstant.h"
+#import "FTInternalConstants.h"
 #import "FTSDKCompat.h"
 #import "FTReadWriteHelper.h"
 NS_ASSUME_NONNULL_BEGIN

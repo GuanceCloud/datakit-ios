@@ -67,14 +67,14 @@ typedef BOOL (^SessionTaskErrorFilter)(NSError *_Nonnull error);
 /// - Parameters:
 ///   - task: request task
 ///   - metrics: request task data record
-- (void)taskMetricsCollected:(NSURLSessionTask *)task metrics:(NSURLSessionTaskMetrics *)metrics API_AVAILABLE(ios(10.0),macos(10.12));
+- (void)taskMetricsCollected:(NSURLSessionTask *)task metrics:(NSURLSessionTaskMetrics *)metrics;
 
 /// Collect request data information
 /// - Parameters:
 ///   - task: request task
 ///   - metrics: request task data record
 ///   - custom: whether it is a custom collected URLSession
-- (void)taskMetricsCollected:(NSURLSessionTask *)task metrics:(NSURLSessionTaskMetrics *)metrics custom:(BOOL)custom API_AVAILABLE(ios(10.0),macos(10.12));
+- (void)taskMetricsCollected:(NSURLSessionTask *)task metrics:(NSURLSessionTaskMetrics *)metrics custom:(BOOL)custom;
 /// Collect request return data
 /// - Parameters:
 ///   - task: request task

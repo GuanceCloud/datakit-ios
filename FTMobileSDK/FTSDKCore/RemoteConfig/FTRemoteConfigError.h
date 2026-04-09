@@ -24,10 +24,10 @@ NS_ASSUME_NONNULL_BEGIN
 
 /**
  *  Create error instance for "Update interval not met"
- *  @param minimumInterval Required minimum update interval (seconds)
+ *  @param tipMessage Required update interval (seconds)
  *  @return NSError instance with domain/code/description
  */
-+ (NSError *)errorWithIntervalNotMet:(NSInteger)minimumInterval;
++ (NSError *)errorWithIntervalNotMet:(NSString *)tipMessage;
 
 /**
  *  Create error instance for "Request is in progress"

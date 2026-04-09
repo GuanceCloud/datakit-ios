@@ -32,6 +32,7 @@
 
 @property (nonatomic, copy) NSString *url;
 @property (nonatomic, copy) NSString *appid;
+@property (nonatomic, strong) XCTestExpectation *logExpectation;
 @end
 
 @implementation FTLoggerTest
@@ -46,6 +47,7 @@
 - (void)tearDown {
     // Put teardown code here. This method is called after the invocation of each test method in the class.
     [FTMobileAgent shutDown];
+    self.logExpectation = nil;
 }
 - (void)testEnableCustomLog{
     [self setRightSDKConfig];
@@ -231,49 +233,36 @@
     XCTAssertTrue([sourceStr isEqualToString:source]);
 }
 - (void)testEnableLinkRumData_setLoggerFirst{
+    self.logExpectation = [[XCTestExpectation alloc]initWithDescription:@"logWrite"];
     [self setRightSDKConfig];
     FTLoggerConfig *loggerConfig = [[FTLoggerConfig alloc]init];
     loggerConfig.enableLinkRumData = YES;
     loggerConfig.enableCustomLog = YES;
     FTRumConfig *rumConfig = [[FTRumConfig alloc]initWithAppid:self.appid];
-    rumConfig.enableTraceUserView = YES;
     [[FTMobileAgent sharedInstance] startLoggerWithConfigOptions:loggerConfig];
+    [[FTLogger sharedInstance] setValue:self forKey:@"loggerWriter"];
     [[FTMobileAgent sharedInstance] startRumWithConfigOptions:rumConfig];
     [FTModelHelper startView];
-    [self waitForTimeInterval:0.1];
+    [FTModelHelper startAction];
     [[FTMobileAgent sharedInstance] logging:@"testEnableLinkRumData" status:FTStatusInfo];
-
-    [[FTMobileAgent sharedInstance] syncProcess];
-    [[FTTrackDataManager sharedInstance] insertCacheToDB];
-    NSArray *datas = [[FTTrackerEventDBTool sharedManager] getFirstRecords:10 withType:FT_DATA_TYPE_LOGGING];
-    FTRecordModel *model = [datas lastObject];
-    NSDictionary *dict = [FTJSONUtil dictionaryWithJsonString:model.data];
-    NSDictionary *opdata = dict[@"opdata"];
-    NSDictionary *tags =opdata[FT_TAGS];
-    XCTAssertTrue([tags.allKeys containsObject:FT_RUM_KEY_SESSION_ID]);
-    XCTAssertTrue([tags.allKeys containsObject:FT_RUM_KEY_SESSION_TYPE]);
+    
+    [self waitForExpectations:@[self.logExpectation] timeout:1];
 }
 - (void)testEnableLinkRumData_setRUMFirst{
+    self.logExpectation = [[XCTestExpectation alloc]initWithDescription:@"logWrite"];
     [self setRightSDKConfig];
     FTLoggerConfig *loggerConfig = [[FTLoggerConfig alloc]init];
     loggerConfig.enableLinkRumData = YES;
     loggerConfig.enableCustomLog = YES;
     FTRumConfig *rumConfig = [[FTRumConfig alloc]initWithAppid:self.appid];
-    rumConfig.enableTraceUserView = YES;
     [[FTMobileAgent sharedInstance] startRumWithConfigOptions:rumConfig];
     [[FTMobileAgent sharedInstance] startLoggerWithConfigOptions:loggerConfig];
+    [[FTLogger sharedInstance] setValue:self forKey:@"loggerWriter"];
     [FTModelHelper startView];
+    [FTModelHelper startAction];
     [[FTMobileAgent sharedInstance] logging:@"testEnableLinkRumData" status:FTStatusInfo];
-
-    [[FTMobileAgent sharedInstance] syncProcess];
-    [[FTTrackDataManager sharedInstance] insertCacheToDB];
-    NSArray *datas = [[FTTrackerEventDBTool sharedManager] getFirstRecords:10 withType:FT_DATA_TYPE_LOGGING];
-    FTRecordModel *model = [datas lastObject];
-    NSDictionary *dict = [FTJSONUtil dictionaryWithJsonString:model.data];
-    NSDictionary *opdata = dict[@"opdata"];
-    NSDictionary *tags =opdata[FT_TAGS];
-    XCTAssertTrue([tags.allKeys containsObject:FT_RUM_KEY_SESSION_ID]);
-    XCTAssertTrue([tags.allKeys containsObject:FT_RUM_KEY_SESSION_TYPE]);
+  
+    [self waitForExpectations:@[self.logExpectation] timeout:1];
 }
 - (void)testDisableLinkRumData{
     [self setRightSDKConfig];
@@ -837,4 +826,14 @@
 -(void)logging:(NSString *)content status:(NSString *)status tags:(nullable NSDictionary *)tags field:(nullable NSDictionary *)field time:(long long)time{
     
 }
+- (void)loggingTags:(nullable NSDictionary *)tags field:(nullable NSDictionary *)field time:(long long)time linkRum:(BOOL)linkRum {
+    if (self.logExpectation) {
+        XCTAssertTrue([tags.allKeys containsObject:FT_RUM_KEY_SESSION_ID]);
+        XCTAssertTrue([tags.allKeys containsObject:FT_RUM_KEY_SESSION_TYPE]);
+        XCTAssertTrue([tags.allKeys containsObject:FT_KEY_VIEW_ID]);
+        XCTAssertTrue([tags.allKeys containsObject:FT_KEY_ACTION_ID]);
+        [self.logExpectation fulfill];
+    }
+}
+
 @end

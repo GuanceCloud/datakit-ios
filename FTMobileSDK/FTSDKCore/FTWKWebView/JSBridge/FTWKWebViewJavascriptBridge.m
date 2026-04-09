@@ -13,6 +13,7 @@
 #import "FTJSONUtil.h"
 #import "FTSRWebTrackingProtocol.h"
 #import "FTModuleManager.h"
+#import "FTInternalConstants.h"
 
 NSString *const kAllowedHostsPlaceholder = @"__ALLOWED_HOSTS__";
 NSString *const kCapabilitiesPlaceholder = @"__CAPABILITIES__";

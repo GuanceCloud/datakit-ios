@@ -22,7 +22,6 @@
 #import "FTURLSessionInstrumentation.h"
 #import "FTURLSessionInterceptor+Private.h"
 #import "FTURLSessionInterceptorProtocol.h"
-#import "NSURLSession+FTSwizzler.h"
 #import "FTSwizzle.h"
 #import "FTTraceContext.h"
 #import "NSURLSessionTask+FTSwizzler.h"

@@ -126,7 +126,7 @@
     calculatedChecksum = CFSwapInt32BigToHost(calculatedChecksum);
 
     if (calculatedChecksum != expectedChecksum) {
-        NSLog(@"Adler-32 failed");
+        NSLog(@"Adler-32 checksum verification failed. Data may be corrupted.");
         return nil;
     }
 

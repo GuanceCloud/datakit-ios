@@ -72,6 +72,16 @@
 3. Session Replay data synchronization adds X-Pkg-Id tracking adaptation
 4. Same as 1.5.15-alpha.2
 ---
+# 1.5.21-alpha.3
+1. Rename `updateDatakitURL:` to `setDatakitURL:`, `updateDatawayURL:clientToken:` to `setDatawayURL:clientToken:`
+---
+# 1.5.21-alpha.2
+1. Add `updateDatakitURL:` 、`updateDatawayURL:clientToken:` APIs to support dynamic upload endpoint configuration
+2. Bump minimum deployment target to iOS 12+, macOS 10.14+
+3. Fix view association failure when using `addAction:`
+4. Optimize log & RUM correlation logic, supplement missing `action_id` field
+5. Fix RemoteConfig fetch interval logic: validate request interval using local last request timestamp on SDK startup
+---
 # 1.5.21-alpha.1
 1. Fixed the issue where sampling rate modifications did not take effect dynamically
 ---

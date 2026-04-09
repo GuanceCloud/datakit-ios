@@ -41,7 +41,7 @@ final class FTResourceTest: XCTestCase {
     func testAsyncAwaitURLSession() async throws {
 
         let dic = ProcessInfo().environment
-        let urlStr = dic["TRACE_URL"] ?? "https://www.baidu.com/more/"
+        let urlStr = dic["TRACE_URL"] ?? "https://httpbin.org/status/200"
         let url = URL(string: urlStr)
         let count = FTTrackerEventDBTool.sharedManager()?.getDatasCount() ?? 0
 

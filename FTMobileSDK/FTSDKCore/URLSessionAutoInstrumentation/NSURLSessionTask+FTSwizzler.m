@@ -23,16 +23,6 @@ static char *hasCompletionKey = "hasCompletionKey";
     }
     return NO;
 }
-- (void)ft_resume{
-    NSURLRequest *originalRequest = self.originalRequest;
-    if(originalRequest && [[FTURLSessionInstrumentation sharedInstance] isNotSDKInsideUrl:originalRequest.URL]){
-        id<FTURLSessionInterceptorProtocol> traceInterceptor = [[FTURLSessionInstrumentation sharedInstance] traceInterceptor:[self ft_delegate]];
-        id<FTURLSessionInterceptorProtocol> rumInterceptor = [[FTURLSessionInstrumentation sharedInstance] rumInterceptor:[self ft_delegate]];
-        [traceInterceptor traceInterceptTask:self];
-        [rumInterceptor interceptTask:self];
-    }
-    [self ft_resume];
-}
 - (id<NSURLSessionDelegate>)ft_delegate{
     if (@available(iOS 15.0,tvOS 15.0,macOS 12.0, *)) {
         if(self.delegate){
@@ -44,5 +34,35 @@ static char *hasCompletionKey = "hasCompletionKey";
         return session.delegate;
     }
     return nil;
+}
++ (NSArray<Class> *)unsupportedTaskClasses {
+    static NSArray<Class> *classes = nil;
+    static dispatch_once_t onceToken;
+    dispatch_once(&onceToken, ^{
+        NSArray<NSString *> *classNames = @[
+            @"AVAssetDownloadTask",
+            @"NSURLSessionAVAssetDownloadTask",
+            @"AVAggregateAssetDownloadTask",
+            @"NSURLSessionAVAggregateAssetDownloadTask"
+        ];
+        
+        NSMutableArray<Class> *tmpClasses = [NSMutableArray array];
+        for (NSString *className in classNames) {
+            Class cls = NSClassFromString(className);
+            if (cls) {
+                [tmpClasses addObject:cls];
+            }
+        }
+        classes = [tmpClasses copy];
+    });
+    return classes;
+}
+- (BOOL)ft_isSupportedForInstrumentation {
+    for (Class cls in [NSURLSessionTask unsupportedTaskClasses]) {
+        if ([self isKindOfClass:cls]) {
+            return NO;
+        }
+    }
+    return YES;
 }
 @end

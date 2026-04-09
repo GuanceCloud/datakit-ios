@@ -49,20 +49,18 @@ static const NSTimeInterval sessionMaxDuration = 4 * 60 * 60; // 4 hours
         self.context = [[FTRUMContext alloc]initWithSampleRate:expiredSession.rumDependencies.sampleRate sessionOnErrorSampleRate:expiredSession.rumDependencies.sessionOnErrorSampleRate appId:self.rumDependencies.appId];
         self.viewHandlers = [NSMutableArray new];
         for (FTRUMViewHandler *viewHandler in expiredSession.viewHandlers) {
-            if(viewHandler.isActiveView){
+            if(viewHandler.isActiveView && ![viewHandler isKindOfClass:FTRUMPlaceholderViewHandler.class]){
                 FTRUMViewModel *viewModel = [[FTRUMViewModel alloc]initWithViewID:[FTBaseInfoHandler randomUUID]
-                                                                    viewName:viewHandler.view_name viewReferrer:viewHandler.view_referrer];
+                                                                         viewName:viewHandler.view_name viewReferrer:viewHandler.view_referrer];
                 viewModel.loading_time = viewHandler.loading_time;
                 [self startView:viewModel];
             }
         }
-        self.rumDependencies.linkRUMSessionContext = [self.context getGlobalSessionViewTags];
     }
     return  self;
 }
 -(void)setSampling:(BOOL)sampling{
     _sampling = sampling;
-    self.rumDependencies.currentSessionSample = sampling;
     [self updateWriterCacheWriterState:NO];
     FTRUMSessionState *sessionState = self.context.sessionState;
     if (!sampling) {
@@ -107,6 +105,7 @@ static const NSTimeInterval sessionMaxDuration = 4 * 60 * 60; // 4 hours
     }
     self.rumDependencies.fatalErrorContext.dynamicContext = context;
     _lastInteractionTime = [NSDate date];
+    BOOL isResourceUpdate = NO;
     switch (model.type) {
         case FTRUMDataViewStart:
             [self startView:model];
@@ -122,17 +121,22 @@ static const NSTimeInterval sessionMaxDuration = 4 * 60 * 60; // 4 hours
         case FTRUMDataWebViewJSBData:
             [self writeWebViewJSBData:(FTRUMWebViewData *)model context:context];
             break;
+        case FTRUMDataResourceComplete:
+        case FTRUMDataResourceAbandon:
+        case FTRUMDataResourceStop:
+        case FTRUMDataResourceError:
+            isResourceUpdate = YES;
+            break;
         default:
             break;
     }
-    if (self.viewHandlers.count == 0) {
+    if(![self hasActivityView] && !isResourceUpdate){
         [self startPlaceholderView:model];
     }
     self.viewHandlers = [self.assistant manageChildHandlers:self.viewHandlers byPropagatingData:model context:context];
     
     if(![self hasActivityView]){
         [self.rumDependencies.fatalErrorContext setLastViewContext:nil];
-        self.rumDependencies.linkRUMSessionContext = [self.context getGlobalSessionTags];
         self.rumDependencies.lastViewUserCustomDatas = nil;
     }
     return  YES;
@@ -165,21 +169,20 @@ static const NSTimeInterval sessionMaxDuration = 4 * 60 * 60; // 4 hours
         return NO;
     }
     for (FTRUMViewHandler *viewHandler in self.viewHandlers) {
-        if(![viewHandler isKindOfClass:FTRUMPlaceholderViewHandler.class] && viewHandler.isActiveView){
+        if(viewHandler.isActiveView){
             return YES;
         }
     }
     return NO;
 }
 -(void)startPlaceholderView:(FTRUMDataModel *)model{
-    FTRUMViewModel *viewModel = [[FTRUMViewModel alloc]initWithType:FTRUMSDKInit time:model.time];
-    FTRUMPlaceholderViewHandler *viewHandler = [[FTRUMPlaceholderViewHandler alloc]initWithModel:viewModel context:self.context rumDependencies:self.rumDependencies];
+    FTRUMViewModel *viewModel = [[FTRUMViewModel alloc]initWithType:FTRUMViewPlaceholder time:model.time];
+    FTRUMPlaceholderViewHandler *viewHandler = [[FTRUMPlaceholderViewHandler alloc]initWithModel:viewModel context:self.context rumDependencies:self.rumDependencies needsMonitoring:YES];
     [self.viewHandlers addObject:viewHandler];
 }
 -(void)startView:(FTRUMDataModel *)model{
     FTRUMViewHandler *viewHandler = [[FTRUMViewHandler alloc]initWithModel:(FTRUMViewModel *)model context:self.context rumDependencies:self.rumDependencies];
     [self.viewHandlers addObject:viewHandler];
-    self.rumDependencies.linkRUMSessionContext = [self getCurrentSessionInfo];
 }
 -(BOOL)timedOutOrExpired:(NSDate*)currentTime{
     NSTimeInterval timeElapsedSinceLastInteraction = [currentTime timeIntervalSinceDate:_lastInteractionTime];
@@ -236,7 +239,7 @@ static const NSTimeInterval sessionMaxDuration = 4 * 60 * 60; // 4 hours
 -(NSDictionary *)getCurrentSessionInfo{
     FTRUMViewHandler *view = (FTRUMViewHandler *)[self.viewHandlers lastObject];
     if (view) {
-        return [view.context getGlobalSessionViewTags];
+        return [view.context getGlobalSessionViewActionTags];
     }
     return [self.context getGlobalSessionViewTags];
 }

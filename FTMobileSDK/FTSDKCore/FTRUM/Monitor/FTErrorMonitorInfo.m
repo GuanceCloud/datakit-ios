@@ -81,37 +81,27 @@ void *FTErrorMonitorInfoQueueTag = &FTErrorMonitorInfoQueueTag;
         _telephonyCarrier = @"--";
     }else{
         self.networkInfo = [[CTTelephonyNetworkInfo alloc] init];
-        if (@available(iOS 12.0, *)) {
-            _telephonyCarrier = [self.networkInfo.serviceCurrentRadioAccessTechnology.allValues firstObject] ?: FT_NULL_VALUE;
-        } else {
-            _telephonyCarrier = [[self.networkInfo subscriberCellularProvider] carrierName] ?: FT_NULL_VALUE;
-        }
-        
+       
+        _telephonyCarrier = [self.networkInfo.serviceCurrentRadioAccessTechnology.allValues firstObject] ?: FT_NULL_VALUE;
+    
         if (self.telephonyNotificationObserver) {
             [[NSNotificationCenter defaultCenter] removeObserver:self.telephonyNotificationObserver];
         }
-        NSString *notificationName;
-        if (@available(iOS 12.0, *)) {
-            notificationName = CTServiceRadioAccessTechnologyDidChangeNotification;
-        }else{
-            notificationName = CTRadioAccessTechnologyDidChangeNotification;
-        }
+        NSString *notificationName = CTServiceRadioAccessTechnologyDidChangeNotification;
+      
         self.telephonyNotificationObserver = [[NSNotificationCenter defaultCenter] addObserverForName:notificationName
                                                                                                object:self.networkInfo
                                                                                                 queue:NSOperationQueue.mainQueue
-                                                           usingBlock:^(NSNotification * _Nonnull notification) {
+                                                                                           usingBlock:^(NSNotification * _Nonnull notification) {
             __strong typeof(weakSelf) strongSelf = weakSelf;
             if (!strongSelf) return;
             
             NSString *newCarrier = @"";
-            if (@available(iOS 12.0, *)) {
-                NSString *key = notification.object;
-                if (key && strongSelf.networkInfo.serviceCurrentRadioAccessTechnology[key]) {
-                    newCarrier = strongSelf.networkInfo.serviceCurrentRadioAccessTechnology[key];
-                }
-            } else {
-                newCarrier = [[strongSelf.networkInfo subscriberCellularProvider] carrierName] ?: @"";
+            NSString *key = notification.object;
+            if (key && strongSelf.networkInfo.serviceCurrentRadioAccessTechnology[key]) {
+                newCarrier = strongSelf.networkInfo.serviceCurrentRadioAccessTechnology[key];
             }
+            
             strongSelf.telephonyCarrier = newCarrier ? : FT_NULL_VALUE;
         }];
     }

@@ -8,7 +8,7 @@
 
 #import <Foundation/Foundation.h>
 #import "FTRUMDataWriteProtocol.h"
-#import "FTEnumConstant.h"
+#import "FTInternalConstants.h"
 #import "FTRUMMonitor.h"
 #import "FTFatalErrorContext.h"
 #import "FTErrorDataProtocol.h"
@@ -28,7 +28,6 @@ NS_ASSUME_NONNULL_BEGIN
 @property (atomic, strong, nullable) NSDictionary *lastViewUserCustomDatas;
 
 //The following properties need to be readwrite in rumQueue
-@property (nonatomic, assign) BOOL currentSessionSample;
 @property (nonatomic, strong) NSNumber *sessionHasReplay;
 @property (nonatomic, assign) BOOL sampledForErrorReplay;
 @property (nonatomic, assign) BOOL sampledForErrorSession;

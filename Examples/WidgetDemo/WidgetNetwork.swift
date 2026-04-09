@@ -8,7 +8,7 @@
 
 import Foundation
 import FTMobileExtension
-class InheritHttpEngine:FTURLSessionDelegate {
+class InheritHttpEngine:FTURLSessionDelegate, @unchecked Sendable {
 
     var session:URLSession?
     /// HttpEngine initialization, fails when apiHostUrl is empty or token is ""
@@ -22,7 +22,7 @@ class InheritHttpEngine:FTURLSessionDelegate {
  
     func network(completionHandler: @escaping @Sendable (Data?, URLResponse?, Error?) -> Void){
         let processInfo = ProcessInfo.processInfo
-        let urlStr = processInfo.environment["TRACE_URL"] ?? "https://www.baidu.com"
+        let urlStr = "https://httpbin.org/status/200"
         let url:URL = URL.init(string: urlStr)!
         let request = URLRequest.init(url: url)
         let task = self.session!.dataTask(with: request) { data,  res,  error in
@@ -46,8 +46,7 @@ class HttpEngine:NSObject,URLSessionDataDelegate,FTURLSessionDelegateProviding {
     }
     
     func network(completionHandler: @escaping @Sendable (Data?, URLResponse?, Error?) -> Void){
-        let processInfo = ProcessInfo.processInfo
-        let urlStr = processInfo.environment["TRACE_URL"] ?? "https://www.baidu.com"
+        let urlStr = "https://httpbin.org/status/200"
         let url:URL = URL.init(string: urlStr)!
         let request = URLRequest.init(url: url)
         let task = self.session!.dataTask(with: request, completionHandler: completionHandler)

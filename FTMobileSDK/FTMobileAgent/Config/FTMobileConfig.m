@@ -11,7 +11,7 @@
 #import "FTMobileConfig.h"
 #import "FTConstants.h"
 #import "FTBaseInfoHandler.h"
-#import "FTEnumConstant.h"
+#import "FTInternalConstants.h"
 #import "NSDictionary+FTCopyProperties.h"
 #import "FTJSONUtil.h"
 #import "FTInnerLog.h"
@@ -31,7 +31,7 @@
     options.enableLinkRumData = self.enableLinkRumData;
     options.networkTraceType = self.networkTraceType;
     options.enableAutoTrace = self.enableAutoTrace;
-    options.traceInterceptor = self.traceInterceptor;
+    options.traceInterceptor = [self.traceInterceptor copy];
     return options;
 }
 -(instancetype)initWithDictionary:(NSDictionary *)dict{
@@ -167,8 +167,8 @@
     options.clientToken = self.clientToken;
     options.enableSDKDebugLog = self.enableSDKDebugLog;
     options.env = self.env;
-    options.globalContext = self.globalContext;
-    options.groupIdentifiers = self.groupIdentifiers;
+    options.globalContext = [self.globalContext copy];
+    options.groupIdentifiers = [self.groupIdentifiers copy];
     options.service = self.service;
     options.autoSync = self.autoSync;
     options.syncPageSize = self.syncPageSize;
@@ -183,7 +183,7 @@
     options.lineDataModifier = [self.lineDataModifier copy];
     options.remoteConfiguration = self.remoteConfiguration;
     options.remoteConfigMiniUpdateInterval = self.remoteConfigMiniUpdateInterval;
-    options.remoteConfigFetchCompletionBlock = self.remoteConfigFetchCompletionBlock;
+    options.remoteConfigFetchCompletionBlock = [self.remoteConfigFetchCompletionBlock copy];
     return options;
 }
 -(instancetype)initWithDictionary:(NSDictionary *)dict{
@@ -237,6 +237,7 @@
     [dict setValue:@(self.remoteConfiguration) forKey:@"remoteConfiguration"];
     [dict setValue:@(self.remoteConfigMiniUpdateInterval) forKey:@"remoteConfigMiniUpdateInterval"];
     [dict setValue:self.remoteConfigFetchCompletionBlock forKey:@"remoteConfigFetchCompletionBlock"];
+    [dict setValue:self.pkgInfo forKey:@"sdkPkgInfo"];
     return [NSString stringWithFormat:@"%@",dict];
 }
 

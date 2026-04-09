@@ -7,7 +7,7 @@
 //
 
 #import "FTRUMHandler.h"
-#import "FTEnumConstant.h"
+#import "FTInternalConstants.h"
 #import "FTErrorDataProtocol.h"
 #import "FTRumDatasProtocol.h"
 #import "FTRumResourceProtocol.h"

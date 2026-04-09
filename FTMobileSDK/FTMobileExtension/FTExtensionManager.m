@@ -22,7 +22,7 @@
 #import "FTMobileConfig+Private.h"
 #import "FTLoggerConfig+Private.h"
 #import "FTRumConfig+Private.h"
-#import "FTEnumConstant.h"
+#import "FTInternalConstants.h"
 #import "FTLogger+Private.h"
 #import "FTErrorMonitorInfo.h"
 #import "FTCrashMonitorType.h"
@@ -65,9 +65,7 @@ static FTExtensionManager *sharedInstance = nil;
     FTRumConfig *rumConfig =[[FTRumConfig alloc]initWithDictionary:rumDict];
     FTTraceConfig *traceConfig =[[FTTraceConfig alloc]initWithDictionary:traceDict];
     FTLoggerConfig *loggerConfig = [[FTLoggerConfig alloc]initWithDictionary:loggerDict];
-    if(mobileConfig){
-        [[FTURLSessionInstrumentation sharedInstance] setSdkUrlStr:mobileConfig.datakitUrl.length>0?mobileConfig.datakitUrl:mobileConfig.datawayUrl serviceName:mobileConfig.service];
-    }
+ 
     if(rumConfig){
         rumConfig.enableTraceUserResource = self.extensionConfig.enableRUMAutoTraceResource;
         rumConfig.enableTrackAppCrash = self.extensionConfig.enableTrackAppCrash;
@@ -75,7 +73,7 @@ static FTExtensionManager *sharedInstance = nil;
     }
     if(traceConfig){
         traceConfig.enableAutoTrace = self.extensionConfig.enableTracerAutoTrace;
-        [self startTraceWithConfigOptions:traceConfig];
+        [self startTraceWithConfigOptions:traceConfig serviceName:mobileConfig.service?:FT_DEFAULT_SERVICE_NAME];
     }
     if(loggerConfig){
         self.loggerConfig = loggerConfig;
@@ -109,8 +107,8 @@ static FTExtensionManager *sharedInstance = nil;
     [[FTURLSessionInstrumentation sharedInstance] setRumResourceHandler:self.rumManager];
 }
 
-- (void)startTraceWithConfigOptions:(FTTraceConfig *)traceConfigOptions{
-    [[FTURLSessionInstrumentation sharedInstance] setTraceEnableAutoTrace:traceConfigOptions.enableAutoTrace enableLinkRumData:traceConfigOptions.enableLinkRumData sampleRate:traceConfigOptions.samplerate traceType:traceConfigOptions.networkTraceType traceInterceptor:traceConfigOptions.traceInterceptor];
+- (void)startTraceWithConfigOptions:(FTTraceConfig *)traceConfigOptions serviceName:(NSString *)serviceName{
+    [[FTURLSessionInstrumentation sharedInstance] setTraceEnableAutoTrace:traceConfigOptions.enableAutoTrace enableLinkRumData:traceConfigOptions.enableLinkRumData sampleRate:traceConfigOptions.samplerate traceType:(NetworkTraceType)traceConfigOptions.networkTraceType traceInterceptor:traceConfigOptions.traceInterceptor serviceName:serviceName];
     [FTExternalDataManager sharedManager].resourceDelegate = [FTURLSessionInstrumentation sharedInstance].externalResourceHandler;
 
 }

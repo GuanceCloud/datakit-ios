@@ -8,6 +8,7 @@
 
 
 #import "FTLog.h"
+#import "FTInternalConstants.h"
 #import "FTLogMessage.h"
 
 #define FTLOG_MACRO(lvl, frmt, ...) \

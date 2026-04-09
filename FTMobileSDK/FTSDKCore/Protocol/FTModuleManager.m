@@ -45,7 +45,7 @@ void *FTMessageBusQueueIdentityKey = &FTMessageBusQueueIdentityKey;
 }
 - (void)postMessageWithKey:(NSString *)key messageBlock:(nullable NSDictionary * (^)(void))messageBlock{
     dispatch_block_t block = ^{
-        NSDictionary *message = messageBlock();
+        NSDictionary *message = messageBlock ? messageBlock() : nil;
         if (!message) {
             return;
         }

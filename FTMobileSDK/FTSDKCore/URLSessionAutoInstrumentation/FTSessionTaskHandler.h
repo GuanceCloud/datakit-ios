@@ -44,8 +44,8 @@ NS_ASSUME_NONNULL_BEGIN
 /// - Parameter metrics: Metrics information
 ///
 /// Internally, traceHandle will process the data into a metricsModel that RUM can accept
-- (void)taskReceivedMetrics:(NSURLSessionTaskMetrics *)metrics API_AVAILABLE(macos(10.12));
-- (void)taskReceivedMetrics:(NSURLSessionTaskMetrics *)metrics custom:(BOOL)custom API_AVAILABLE(macos(10.12));
+- (void)taskReceivedMetrics:(NSURLSessionTaskMetrics *)metrics;
+- (void)taskReceivedMetrics:(NSURLSessionTaskMetrics *)metrics custom:(BOOL)custom;
 /// Request finished
 /// - Parameters:
 ///   - task: Request task

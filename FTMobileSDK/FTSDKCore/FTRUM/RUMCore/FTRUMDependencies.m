@@ -20,7 +20,6 @@
     dependencies.errorMonitorInfoWrapper = self.errorMonitorInfoWrapper;
     dependencies.monitor = self.monitor;
     dependencies.fatalErrorContext = self.fatalErrorContext;
-    dependencies.currentSessionSample = self.currentSessionSample;
     dependencies.sessionHasReplay = self.sessionHasReplay;
     dependencies.sampledForErrorReplay = self.sampledForErrorReplay;
     dependencies.sampledForErrorSession = self.sampledForErrorSession;

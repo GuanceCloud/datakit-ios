@@ -21,7 +21,7 @@
 #import "FTHTTPClient.h"
 #import "FTRequestBody.h"
 #import "FTModelHelper.h"
-#import "FTEnumConstant.h"
+#import "FTInternalConstants.h"
 @interface FTLineProtocol : XCTestCase
 
 @end

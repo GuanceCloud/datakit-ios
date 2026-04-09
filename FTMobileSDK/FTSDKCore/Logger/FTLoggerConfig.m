@@ -28,9 +28,9 @@
     options.samplerate = self.samplerate;
     options.enableLinkRumData = self.enableLinkRumData;
     options.enableCustomLog = self.enableCustomLog;
-    options.logLevelFilter = self.logLevelFilter;
+    options.logLevelFilter = [self.logLevelFilter copy];
     options.discardType = self.discardType;
-    options.globalContext = self.globalContext;
+    options.globalContext = [self.globalContext copy];
     options.printCustomLogToConsole = self.printCustomLogToConsole;
     options.logCacheLimitCount = self.logCacheLimitCount;
     return options;

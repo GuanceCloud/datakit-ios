@@ -8,7 +8,6 @@
 
 #import "FTNetworkConnectivity.h"
 #import <Network/Network.h>
-#import "FTReachability.h"
 #import "FTInnerLog.h"
 #if TARGET_OS_IOS && !TARGET_OS_MACCATALYST
 #import <CoreTelephony/CTTelephonyNetworkInfo.h>
@@ -19,11 +18,21 @@ NSString *const FTConnectivityWiFi = @"wifi";
 NSString *const FTConnectivityNone = @"unreachable";
 NSString *const FTConnectivityEthernet = @"ethernet";
 NSString *const FTConnectivityUnknown = @"unknown";
-
+typedef NS_ENUM(NSInteger, FTNetworkStatus) {
+    /// No network connection
+    FTNetworkStatusNotReachable = 0,
+    /// Cellular network
+    FTNetworkStatusWWAN = 1,
+    /// WiFi
+    FTNetworkStatusWiFi = 2,
+    /// Ethernet
+    FTNetworkStatusEthernet = 3,
+    /// Unknown
+    FTNetworkStatusUnknown = 4,
+};
 @interface FTNetworkConnectivity()
 @property (nonatomic, assign, readwrite) BOOL isConnected;
 @property (atomic, copy) NSString *networkType;
-@property (nonatomic, strong) FTReachability *reachability;
 @property (nonatomic, strong, readonly) NSPointerArray *networkObservers;
 @property (nonatomic, strong, readonly) NSLock *observerLock;
 @property (atomic, assign) BOOL isNotifying;
@@ -73,13 +82,9 @@ NSString *const FTConnectivityUnknown = @"unknown";
 #if TARGET_OS_IOS && !TARGET_OS_MACCATALYST
     _networkInfo = [FTNetworkConnectivity sharedNetworkInfo];
 #endif
-    if (@available(iOS 12.0,tvOS 12.0,macOS 10.14, *)) {
-        [self startPathMonitorNotifier];
-    } else {
-        [self startReachabilityNotifier];
-    }
+    [self startPathMonitorNotifier];
 }
--(void)startPathMonitorNotifier API_AVAILABLE(macos(10.14), ios(12.0), tvos(12.0)){
+-(void)startPathMonitorNotifier{
     _pathMonitor = nw_path_monitor_create();
     if (_pathMonitor == nil) {
         FTInnerLogError(@"nw_path_monitor_create failed.");
@@ -114,20 +119,6 @@ NSString *const FTConnectivityUnknown = @"unknown";
 }
 -(void)setNetworkStatus:(FTNetworkStatus)networkStatus{
     self.networkType = [self networkTypeWithStatus:networkStatus];
-}
-- (void)startReachabilityNotifier{
-    _reachability = [FTReachability reachabilityForInternetConnection];
-    [_reachability startNotifier];
-    __weak typeof(self) weakSelf = self;
-    _reachability.networkChanged = ^(FTNetworkStatus status) {
-        __strong __typeof(weakSelf) strongSelf = weakSelf;
-        if (!strongSelf) return;
-        strongSelf.networkStatus = status;
-        strongSelf.isConnected = strongSelf.reachability.isReachable;
-        [strongSelf connectivityChanged];
-    };
-    self.networkStatus = self.reachability.currentReachabilityStatus;
-    self.isConnected = self.reachability.isReachable;
 }
 - (void)connectivityChanged{
     [self.observerLock lock];
@@ -176,21 +167,14 @@ NSString *const FTConnectivityUnknown = @"unknown";
             NSArray *typeStrings4G = @[CTRadioAccessTechnologyLTE];
             
             NSString *currentStatus = nil;
-            if (@available(iOS 12.1, *)) {
-                if (_networkInfo && [_networkInfo respondsToSelector:@selector(serviceCurrentRadioAccessTechnology)]) {
-                    NSDictionary *radioDic = [_networkInfo serviceCurrentRadioAccessTechnology];
-                    if (radioDic.allKeys.count) {
-                        currentStatus = [radioDic objectForKey:radioDic.allKeys[0]];
-                    }
+
+            if (_networkInfo && [_networkInfo respondsToSelector:@selector(serviceCurrentRadioAccessTechnology)]) {
+                NSDictionary *radioDic = [_networkInfo serviceCurrentRadioAccessTechnology];
+                if (radioDic.allKeys.count) {
+                    currentStatus = [radioDic objectForKey:radioDic.allKeys[0]];
                 }
-            }else{
-#pragma clang diagnostic push
-#pragma clang diagnostic ignored "-Wdeprecated-declarations"
-                if (_networkInfo && [_networkInfo respondsToSelector:@selector(currentRadioAccessTechnology)]) {
-                    currentStatus = [_networkInfo performSelector:@selector(currentRadioAccessTechnology)];
-                }
-#pragma clang diagnostic pop
             }
+            
             if (!currentStatus) {
                 return FTConnectivityUnknown;
             }
@@ -229,12 +213,8 @@ NSString *const FTConnectivityUnknown = @"unknown";
 }
 
 -(void)cancel{
-    if (@available(iOS 12.0,tvOS 12.0,macOS 10.14, *)) {
-        nw_path_monitor_cancel(_pathMonitor);
-        _pathMonitor = nil;
-    } else {
-        [_reachability stopNotifier];
-    }
+    nw_path_monitor_cancel(_pathMonitor);
+    _pathMonitor = nil;
     self.isNotifying = NO;
 }
 - (void)stop {
