@@ -134,24 +134,24 @@ NS_ASSUME_NONNULL_BEGIN
 + (void)updateRemoteConfigWithMiniUpdateInterval:(NSInteger)miniUpdateInterval
                                          completion:(nullable FTRemoteConfigFetchCompletionBlock)completion;
 
-/// Update the Datakit upload URL
+/// Set the Datakit upload URL
 ///
-/// Use this method to dynamically update the Datakit upload URL after SDK initialization.
+/// Use this method to dynamically set the Datakit upload URL after SDK initialization.
 /// When using Datakit mode, only the Datakit URL is required.
 ///
 /// - Parameter url: The Datakit upload URL
-+ (void)updateDatakitURL:(NSString *)url;
++ (void)setDatakitURL:(NSString *)url;
 
 
-/// Update the Dataway upload URL and client token
+/// Set the Dataway upload URL and client token
 ///
-/// Use this method to dynamically update the Dataway upload URL and client token after SDK initialization.
+/// Use this method to dynamically set the Dataway upload URL and client token after SDK initialization.
 /// When using Dataway mode, both the Dataway URL and client token are required.
 ///
 /// - Parameters:
 ///   - url: The Dataway upload URL
 ///   - token: The client authentication token for Dataway
-+ (void)updateDatawayURL:(NSString *)url clientToken:(NSString *)token;
++ (void)setDatawayURL:(NSString *)url clientToken:(NSString *)token;
 
 #pragma mark ========== DEPRECATED ==========
 /// Trigger request to get remote configuration environment variables

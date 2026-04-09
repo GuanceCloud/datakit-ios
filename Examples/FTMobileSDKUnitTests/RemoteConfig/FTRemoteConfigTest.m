@@ -808,7 +808,7 @@
     XCTAssertFalse([[FTNetworkInfoManager sharedInstance] isNetworkConfigured]);
     XCTAssertFalse([[FTNetworkInfoManager sharedInstance] isNetworkConfiguredForRemote]);
     
-    [FTMobileAgent updateDatakitURL:datakit];
+    [FTMobileAgent setDatakitURL:datakit];
     
     XCTAssertTrue([[FTNetworkInfoManager sharedInstance] isNetworkConfigured]);
     XCTAssertFalse([[FTNetworkInfoManager sharedInstance] isNetworkConfiguredForRemote]);
@@ -895,7 +895,7 @@
     [FTMobileAgent shutDown];
 }
 
-- (void)testInnerUpdateRemoteConfig_TriggeredByUpdateDatakitURL {
+- (void)testInnerUpdateRemoteConfig_TriggeredBySetDatakitURL {
     [[FTRemoteConfigManager sharedInstance] saveRemoteConfig:nil];
     
     NSString *datakit = @"http://datakit-test.com";
@@ -932,20 +932,20 @@
     
     XCTAssertEqual(requestCount, 0, @"No remoteConfig update should be triggered during initialization without upload address");
     
-    [FTMobileAgent updateDatakitURL:datakit];
+    [FTMobileAgent setDatakitURL:datakit];
     
     XCTAssertTrue([[FTNetworkInfoManager sharedInstance] isNetworkConfigured]);
     XCTAssertTrue([[FTNetworkInfoManager sharedInstance] isNetworkConfiguredForRemote]);
     
     [self waitForExpectations:@[expectation] timeout:5];
     
-    XCTAssertEqual(requestCount, 1, @"One remoteConfig update should be triggered after calling updateDatakitURL");
+    XCTAssertEqual(requestCount, 1, @"One remoteConfig update should be triggered after calling setDatakitURL");
     
     [OHHTTPStubs removeStub:remoteStub];
     [FTMobileAgent shutDown];
 }
 
-- (void)testInnerUpdateRemoteConfig_TriggeredByUpdateDatawayURL {
+- (void)testInnerUpdateRemoteConfig_TriggeredBySetDatawayURL {
     [[FTRemoteConfigManager sharedInstance] saveRemoteConfig:nil];
     
     NSString *dataway = @"http://dataway-test.com";
@@ -983,7 +983,7 @@
     
     XCTAssertEqual(requestCount, 0, @"No remoteConfig update should be triggered during initialization without upload address");
     
-    [FTMobileAgent updateDatawayURL:dataway clientToken:token];
+    [FTMobileAgent setDatawayURL:dataway clientToken:token];
     
     XCTAssertTrue([[FTNetworkInfoManager sharedInstance] isNetworkConfigured]);
     XCTAssertTrue([[FTNetworkInfoManager sharedInstance] isNetworkConfiguredForRemote]);
@@ -991,7 +991,7 @@
     
     [self waitForExpectations:@[expectation] timeout:5];
     
-    XCTAssertEqual(requestCount, 1, @"One remoteConfig update should be triggered after calling updateDatawayURL");
+    XCTAssertEqual(requestCount, 1, @"One remoteConfig update should be triggered after calling setDatawayURL");
     
     [OHHTTPStubs removeStub:remoteStub];
     [FTMobileAgent shutDown];

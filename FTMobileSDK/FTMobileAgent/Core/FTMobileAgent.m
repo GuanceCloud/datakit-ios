@@ -382,10 +382,10 @@ static FTMobileAgent *sharedInstance = nil;
         FTInnerLogError(@"%@ error: %@", self, exception);
     }
 }
-+ (void)updateDatakitURL:(NSString *)url{
++ (void)setDatakitURL:(NSString *)url{
     [self updateUploadURLWithDatakitUrl:url datawayUrl:nil clientToken:nil];
 }
-+ (void)updateDatawayURL:(NSString *)url clientToken:(NSString *)token{
++ (void)setDatawayURL:(NSString *)url clientToken:(NSString *)token{
     [self updateUploadURLWithDatakitUrl:nil datawayUrl:url clientToken:token];
 }
 + (void)updateUploadURLWithDatakitUrl:(nullable NSString *)datakitUrl

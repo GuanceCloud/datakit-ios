@@ -48,7 +48,7 @@
     
     // 2. Dynamically set Datakit URL
     NSString *testURL = @"https://test-datakit.example.com";
-    [FTMobileAgent updateDatakitURL:testURL];
+    [FTMobileAgent setDatakitURL:testURL];
     
     // Verify configuration update
     XCTAssertTrue([FTNetworkInfoManager sharedInstance].isNetworkConfigured);
@@ -71,7 +71,7 @@
     
     // 2. Dynamically set Datakit URL
     NSString *testURL = @"https://test-datakit.example.com";
-    [FTMobileAgent updateDatakitURL:testURL];
+    [FTMobileAgent setDatakitURL:testURL];
     
     // Verify configuration update
     XCTAssertTrue([FTNetworkInfoManager sharedInstance].isNetworkConfigured);
@@ -96,7 +96,7 @@
     // 2. Dynamically set Dataway URL and Token
     NSString *testURL = @"https://test-dataway.example.com";
     NSString *testToken = @"test-client-token-123";
-    [FTMobileAgent updateDatawayURL:testURL clientToken:testToken];
+    [FTMobileAgent setDatawayURL:testURL clientToken:testToken];
     
     // Verify configuration update
     XCTAssertTrue([FTNetworkInfoManager sharedInstance].isNetworkConfigured);
@@ -121,7 +121,7 @@
     // 2. Dynamically set Dataway URL and Token
     NSString *testURL = @"https://test-dataway.example.com";
     NSString *testToken = @"test-client-token-123";
-    [FTMobileAgent updateDatawayURL:testURL clientToken:testToken];
+    [FTMobileAgent setDatawayURL:testURL clientToken:testToken];
     
     // Verify configuration update
     XCTAssertTrue([FTNetworkInfoManager sharedInstance].isNetworkConfigured);
@@ -148,7 +148,7 @@
     // 2. Switch to Dataway
     NSString *datawayURL = @"https://dataway1.example.com";
     NSString *datawayToken = @"token-456";
-    [FTMobileAgent updateDatawayURL:datawayURL clientToken:datawayToken];
+    [FTMobileAgent setDatawayURL:datawayURL clientToken:datawayToken];
     
     // Verify switch result
     XCTAssertTrue([FTNetworkInfoManager sharedInstance].isNetworkConfigured);
@@ -173,7 +173,7 @@
     
     // 2. Switch to Datakit
     NSString *datakitURL = @"https://datakit2.example.com";
-    [FTMobileAgent updateDatakitURL:datakitURL];
+    [FTMobileAgent setDatakitURL:datakitURL];
     
     // Verify switch result
     XCTAssertTrue([FTNetworkInfoManager sharedInstance].isNetworkConfigured);
@@ -197,7 +197,7 @@
     XCTAssertTrue([FTTrackDataManager sharedInstance].autoSync);
     
     // Try to set invalid URL
-    [FTMobileAgent updateDatakitURL:@""];
+    [FTMobileAgent setDatakitURL:@""];
     
     // Verify configuration becomes invalid
     XCTAssertFalse([FTNetworkInfoManager sharedInstance].isNetworkConfigured);
@@ -219,7 +219,7 @@
     XCTAssertTrue([FTTrackDataManager sharedInstance].autoSync);
     
     // Try to set invalid configuration (only URL)
-    [FTMobileAgent updateDatawayURL:@"https://dataway.example.com" clientToken:@""];
+    [FTMobileAgent setDatawayURL:@"https://dataway.example.com" clientToken:@""];
     
     // Verify configuration becomes invalid
     XCTAssertFalse([FTNetworkInfoManager sharedInstance].isNetworkConfigured);
@@ -239,7 +239,7 @@
     NSString *testURL = @"https://same.example.com";
     
     // First time setting
-    [FTMobileAgent updateDatakitURL:testURL];
+    [FTMobileAgent setDatakitURL:testURL];
     XCTAssertTrue([FTNetworkInfoManager sharedInstance].isNetworkConfigured);
     XCTAssertTrue([FTTrackDataManager sharedInstance].autoSync);
     
@@ -247,7 +247,7 @@
     BOOL previousAutoSync = [FTTrackDataManager sharedInstance].autoSync;
     
     // Second time setting the same URL
-    [FTMobileAgent updateDatakitURL:testURL];
+    [FTMobileAgent setDatakitURL:testURL];
     
     // Verify state remains unchanged
     XCTAssertTrue([FTNetworkInfoManager sharedInstance].isNetworkConfigured);
@@ -285,7 +285,7 @@
     XCTAssertEqual(requestCount, 0);
     
     // 2. Dynamically set URL
-    [FTMobileAgent updateDatakitURL:@"https://test-upload.example.com"];
+    [FTMobileAgent setDatakitURL:@"https://test-upload.example.com"];
     
     // 3. Manually trigger upload
     self.expectation = [self expectationWithDescription:@"Wait for upload"];
@@ -348,9 +348,9 @@
         dispatch_group_enter(group);
         dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0), ^{
             if (i % 2 == 0) {
-                [FTMobileAgent updateDatakitURL:[NSString stringWithFormat:@"https://datakit-%d.example.com", i]];
+                [FTMobileAgent setDatakitURL:[NSString stringWithFormat:@"https://datakit-%d.example.com", i]];
             } else {
-                [FTMobileAgent updateDatawayURL:[NSString stringWithFormat:@"https://dataway-%d.example.com", i]
+                [FTMobileAgent setDatawayURL:[NSString stringWithFormat:@"https://dataway-%d.example.com", i]
                                            clientToken:[NSString stringWithFormat:@"token-%d", i]];
             }
             dispatch_group_leave(group);
@@ -376,7 +376,7 @@
     [FTMobileAgent shutDown];
     
     // Try to update URL before SDK initialization
-    [FTMobileAgent updateDatakitURL:@"https://test.example.com"];
+    [FTMobileAgent setDatakitURL:@"https://test.example.com"];
     
     // Verify no crash, only error log is recorded
     // This test mainly ensures code robustness

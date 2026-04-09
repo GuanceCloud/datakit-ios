@@ -72,7 +72,7 @@
     XCTAssertFalse([[FTTrackDataManager sharedInstance] autoSync]);
     
     // Step 2: Dynamically configure after user operation
-    [FTMobileAgent updateDatakitURL:@"https://delayed-config.example.com"];
+    [FTMobileAgent setDatakitURL:@"https://delayed-config.example.com"];
     
     // Verify: Configuration takes effect, sync is automatically enabled
     XCTAssertTrue([[FTNetworkInfoManager sharedInstance] isNetworkConfigured]);
@@ -93,14 +93,14 @@
     XCTAssertEqual([[FTNetworkInfoManager sharedInstance] configState], FTNetworkConfigStateDatakitMode);
     
     // Step 2: Switch to backup Dataway at runtime
-    [FTMobileAgent updateDatawayURL:@"https://backup.example.com" clientToken:@"backup-token"];
+    [FTMobileAgent setDatawayURL:@"https://backup.example.com" clientToken:@"backup-token"];
     
     // Verify: Switch successful
     XCTAssertEqual([[FTNetworkInfoManager sharedInstance] configState], FTNetworkConfigStateDatawayMode);
     XCTAssertNil([[FTNetworkInfoManager sharedInstance] datakitUrl]);
     
     // Step 3: Switch back to Datakit
-    [FTMobileAgent updateDatakitURL:@"https://recovery.example.com"];
+    [FTMobileAgent setDatakitURL:@"https://recovery.example.com"];
     
     // Verify: Switch back successful
     XCTAssertEqual([[FTNetworkInfoManager sharedInstance] configState], FTNetworkConfigStateDatakitMode);
@@ -120,7 +120,7 @@
     XCTAssertTrue([[FTTrackDataManager sharedInstance] autoSync]);
     
     // Step 2: Set invalid configuration (empty URL)
-    [FTMobileAgent updateDatakitURL:@""];
+    [FTMobileAgent setDatakitURL:@""];
     
     // Verify: Configuration becomes invalid, sync is disabled
     XCTAssertFalse([[FTNetworkInfoManager sharedInstance] isNetworkConfigured]);
@@ -128,7 +128,7 @@
     XCTAssertFalse([[FTTrackDataManager sharedInstance] autoSync]);
     
     // Step 3: Restore valid configuration
-    [FTMobileAgent updateDatakitURL:@"https://recovered.example.com"];
+    [FTMobileAgent setDatakitURL:@"https://recovered.example.com"];
     
     // Verify: Configuration restored to valid, sync re-enabled
     XCTAssertTrue([[FTNetworkInfoManager sharedInstance] isNetworkConfigured]);
@@ -148,7 +148,7 @@
     XCTAssertEqual([[FTNetworkInfoManager sharedInstance] configState], FTNetworkConfigStateDatawayMode);
     
     // Step 2: Set invalid Dataway configuration (only URL, no Token)
-    [FTMobileAgent updateDatawayURL:@"https://dataway.example.com" clientToken:@""];
+    [FTMobileAgent setDatawayURL:@"https://dataway.example.com" clientToken:@""];
     
     // Verify: Configuration becomes invalid
     XCTAssertFalse([[FTNetworkInfoManager sharedInstance] isNetworkConfigured]);
@@ -156,7 +156,7 @@
     XCTAssertFalse([[FTTrackDataManager sharedInstance] autoSync]);
     
     // Step 3: Restore valid Token
-    [FTMobileAgent updateDatawayURL:@"https://dataway.example.com" clientToken:@"new-valid-token"];
+    [FTMobileAgent setDatawayURL:@"https://dataway.example.com" clientToken:@"new-valid-token"];
     
     // Verify: Configuration restored to valid
     XCTAssertTrue([[FTNetworkInfoManager sharedInstance] isNetworkConfigured]);
@@ -176,7 +176,7 @@
     XCTAssertTrue([[FTNetworkInfoManager sharedInstance] isNetworkConfigured]);
     
     // Set nil (will actually become empty string)
-    [FTMobileAgent updateDatakitURL:nil];
+    [FTMobileAgent setDatakitURL:nil];
     
     // Verify configuration becomes invalid
     XCTAssertFalse([[FTNetworkInfoManager sharedInstance] isNetworkConfigured]);
@@ -192,11 +192,11 @@
     NSString *testURL = @"https://repeated.example.com";
     
     // First time setting
-    [FTMobileAgent updateDatakitURL:testURL];
+    [FTMobileAgent setDatakitURL:testURL];
     BOOL firstAutoSync = [[FTTrackDataManager sharedInstance] autoSync];
     
     // Second time setting same URL
-    [FTMobileAgent updateDatakitURL:testURL];
+    [FTMobileAgent setDatakitURL:testURL];
     BOOL secondAutoSync = [[FTTrackDataManager sharedInstance] autoSync];
     
     // Verify state unchanged
@@ -241,7 +241,7 @@
     [self waitForTimeInterval:1.0];
     
     // Switch to server2
-    [FTMobileAgent updateDatakitURL:@"https://server2.example.com"];
+    [FTMobileAgent setDatakitURL:@"https://server2.example.com"];
     
     // Add more data
     for (int i = 3; i < 6; i++) {
@@ -273,9 +273,9 @@
         dispatch_group_enter(group);
         dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0), ^{
             if (i % 2 == 0) {
-                [FTMobileAgent updateDatakitURL:[NSString stringWithFormat:@"https://concurrent-%d.example.com", i]];
+                [FTMobileAgent setDatakitURL:[NSString stringWithFormat:@"https://concurrent-%d.example.com", i]];
             } else {
-                [FTMobileAgent updateDatawayURL:[NSString stringWithFormat:@"https://concurrent-%d.example.com", i]
+                [FTMobileAgent setDatawayURL:[NSString stringWithFormat:@"https://concurrent-%d.example.com", i]
                                            clientToken:[NSString stringWithFormat:@"token-%d", i]];
             }
             dispatch_group_leave(group);
@@ -302,8 +302,8 @@
     [FTMobileAgent shutDown];
     
     // These calls should not crash, only log errors
-    XCTAssertNoThrow([FTMobileAgent updateDatakitURL:@"https://test.example.com"]);
-    XCTAssertNoThrow([FTMobileAgent updateDatawayURL:@"https://test.example.com" clientToken:@"token"]);
+    XCTAssertNoThrow([FTMobileAgent setDatakitURL:@"https://test.example.com"]);
+    XCTAssertNoThrow([FTMobileAgent setDatawayURL:@"https://test.example.com" clientToken:@"token"]);
 }
 
 // Test: Logging after configuration update
@@ -315,7 +315,7 @@
     [FTMobileAgent startWithConfigOptions:config];
     
     // Dynamically update configuration
-    [FTMobileAgent updateDatakitURL:@"https://logging-test.example.com"];
+    [FTMobileAgent setDatakitURL:@"https://logging-test.example.com"];
     
     // This test mainly verifies no crash, logs will be recorded
     // In actual testing, you may need to capture log output for verification
