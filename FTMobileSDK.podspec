@@ -25,7 +25,7 @@ Pod::Spec.new do |s|
 
 	s.subspec  'FTMobileAgent' do | agent |
 		core_path='FTMobileSDK/FTMobileAgent/'
-		agent.ios.deployment_target = '10.0'
+		agent.ios.deployment_target = '12.0'
 		agent.tvos.deployment_target = '12.0'
 		agent.source_files =  'FTMobileSDK/FTMobileAgent/**/*{.h,.m}'
 		agent.dependency  'FTMobileSDK/FTSDKCore'
@@ -33,7 +33,7 @@ Pod::Spec.new do |s|
 	end
 
 	s.subspec 'Extension' do |e|
-		e.platform = :ios, '10.0'
+		e.platform = :ios, '12.0'
 		e.source_files = 'FTMobileSDK/FTMobileExtension/*{.h,.m}','FTMobileSDK/FTMobileAgent/Config/*.{h,m}','FTMobileSDK/FTMobileAgent/ExternalData/*{.h,.m}','FTMobileSDK/FTMobileAgent/Extension/*{.h,.m}'
 		e.dependency 'FTMobileSDK/FTSDKCore/FTRUM'
 		e.dependency 'FTMobileSDK/FTSDKCore/URLSessionAutoInstrumentation'
@@ -42,8 +42,8 @@ Pod::Spec.new do |s|
 
 
 	s.subspec 'FTSDKCore' do |c|
-		c.ios.deployment_target = '10.0'
-		c.osx.deployment_target = '10.13'
+		c.ios.deployment_target = '12.0'
+		c.osx.deployment_target = '10.14'
 	  c.tvos.deployment_target = '12.0'
 
 		c.subspec 'FTRUM' do |r|
@@ -95,8 +95,8 @@ Pod::Spec.new do |s|
 		end
 
 		c.subspec 'FTWKWebView' do |j|
-			j.ios.deployment_target = '10.0'
-		  j.osx.deployment_target = '10.13'
+			j.ios.deployment_target = '12.0'
+		  j.osx.deployment_target = '10.14'
 
 			j.source_files = 'FTMobileSDK/FTSDKCore/FTWKWebView/**/*{.h,.m}'
 			j.dependency 'FTMobileSDK/FTSDKCore/Protocol'
