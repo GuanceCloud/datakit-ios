@@ -16,7 +16,7 @@ Pod::Spec.new do |s|
 	s.pod_target_xcconfig = { 'DEFINES_MODULE' => 'YES' }
 
 	#$JENKINS_DYNAMIC_VERSION replacing "#{s.version}" will cause an error during pod valid phase
-	s.source       = { :git => "https://github.com/GuanceCloud/datakit-ios.git", :tag => s.version }
+	s.source       = { :git => "https://github.com/GuanceCloud/datakit-ios.git", :tag => s.version.to_s }
 
     s.resource_bundle = {
       "FTSDKPrivacyInfo" => "FTMobileSDK/Resources/PrivacyInfo.xcprivacy"
@@ -112,7 +112,7 @@ Pod::Spec.new do |s|
 		end
 	end
 	s.subspec 'FTSessionReplay' do |sr|
-		 sr.platform = :ios, '10.0'
+		 sr.platform = :ios, '12.0'
 		 sr.public_header_files = 'FTMobileSDK/FTSessionReplay/Public/*.h'
 		 sr.source_files = 'FTMobileSDK/FTSessionReplay/**/*{.h,.m}'
 		 sr.dependency 'FTMobileSDK/FTSDKCore'
