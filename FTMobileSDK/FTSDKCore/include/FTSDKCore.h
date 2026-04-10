@@ -55,7 +55,6 @@
 #import "FTWKWebViewJavascriptBridge.h"
 #import "FTDataWriterWorker.h"
 #import "FTLoggerConfig.h"
-#import "FTReachability.h"
 #import "FTRequest.h"
 #import "FTRequestBody.h"
 #import "FTHTTPClient.h"
