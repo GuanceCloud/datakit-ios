@@ -1,5 +1,10 @@
+# 1.6.2-alpha.17
+1. Merge from 1.5.21-alpha.3
+2. Session Replay adds image upload support
+3. Replace timer-based snapshot collection with layer change monitoring via FTScreenChangeMonitor for more efficient screen capture triggering 
+---
 # 1.6.2-alpha.16
-1. Same as 1.5.21-alpha.1
+1. Merge from 1.5.21-alpha.1
 2. Add remote configuration hot reload support for Session Replay
 ---
 # 1.6.2-alpha.15
