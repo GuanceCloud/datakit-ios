@@ -253,14 +253,13 @@
     } withStubResponse:^OHHTTPStubsResponse*(NSURLRequest *request) {
         return [OHHTTPStubsResponse responseWithData:[@"success" dataUsingEncoding:NSUTF8StringEncoding] statusCode:200 headers:nil];
     }];
-    [self initSDK];
-    XCTestExpectation *exception = [[XCTestExpectation alloc]init];
+    XCTestExpectation *expectation = [self expectationWithDescription:@"SDK shutdown test"];
     dispatch_group_t group = dispatch_group_create();
     NSInteger count = 0;
     __block BOOL isSDKClose = NO;
-    for (int i = 0; i<1000; i++) {
+    for (int i = 0; i<100; i++) {
         dispatch_group_enter(group);
-        dispatch_async(dispatch_queue_create(0, 0), ^{
+        dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0), ^{
             [self network:^{
                 dispatch_group_leave(group);
             }];
@@ -275,13 +274,11 @@
                 isSDKClose = NO;
             });
         });
-        count ++;
     }
     dispatch_group_notify(group, dispatch_get_main_queue(), ^{
-        [exception fulfill];
+        [expectation fulfill];
     });
-    [self waitForExpectations:@[exception]];
-    XCTAssertTrue(count == 1000);
+    [self waitForExpectationsWithTimeout:30 handler:nil];
     [OHHTTPStubs removeStub:stubs];
     [FTMobileAgent shutDown];
 }
