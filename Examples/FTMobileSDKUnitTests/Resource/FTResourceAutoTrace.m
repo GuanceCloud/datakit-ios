@@ -19,6 +19,10 @@
 #import "FTSessionConfiguration.h"
 #import "FTURLSessionInstrumentation.h"
 #import "OHHTTPStubs.h"
+#import "FTURLSessionInterceptor.h"
+@interface FTURLSessionInterceptor()
+@property (nonatomic, strong) dispatch_queue_t queue;
+@end
 @interface FTResourceAutoTrace : XCTestCase
 
 @end
@@ -202,7 +206,7 @@
     [self waitForExpectationsWithTimeout:30 handler:^(NSError *error) {
         XCTAssertNil(error);
     }];
-    [self waitForTimeInterval:0.5];
+    dispatch_sync([FTURLSessionInterceptor shared].queue, ^{});
     [[FTGlobalRumManager sharedInstance].rumManager syncProcess];
     NSArray *newArray = [[FTTrackerEventDBTool sharedManager] getAllDatas];
     __block NSInteger hasResCount = 0;

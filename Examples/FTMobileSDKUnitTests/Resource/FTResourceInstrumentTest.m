@@ -22,6 +22,7 @@
 #import "FTGlobalRumManager.h"
 #import "FTRUMManager.h"
 #import "NSURLSessionTask+FTSwizzler.h"
+#import "FTRemoteConfigurationRequest.h"
 
 @interface FTURLSessionInstrumentation()
 - (BOOL)isFTIntakeRequest:(NSURLRequest *)request;
@@ -88,6 +89,9 @@
     [FTMobileAgent shutDown];
     [OHHTTPStubs removeAllStubs];
 }
+- (void)waitForURLSessionInterceptorQueue {
+    dispatch_sync([FTURLSessionInterceptor shared].queue, ^{});
+}
 /** Tests that creating a shared session returns a non-nil object. */
 - (void)testSharedSession {
     __block NSURLSessionDataTask *dataTask;
@@ -99,8 +103,10 @@
         [expectation fulfill];
     }];
     [dataTask resume];
+    [self waitForURLSessionInterceptorQueue];
     XCTAssertNotNil([[FTURLSessionInterceptor shared] getTraceHandler:dataTask]);
     [self waitForExpectations:@[expectation]];
+    [self waitForURLSessionInterceptorQueue];
     XCTAssertNil([[FTURLSessionInterceptor shared] getTraceHandler:dataTask]);
 }
 
@@ -120,6 +126,7 @@
     XCTAssertNotNil(session);
     dataTask = [session dataTaskWithURL:self.url];
     [dataTask resume];
+    [self waitForURLSessionInterceptorQueue];
     XCTAssertNotNil([[FTURLSessionInterceptor shared] getTraceHandler:dataTask]);
     [self waitForExpectations:@[expectation] timeout:3];
 }
@@ -139,6 +146,7 @@
     XCTAssertNotNil(session);
     dataTask = [session dataTaskWithURL:self.url];
     [dataTask resume];
+    [self waitForURLSessionInterceptorQueue];
     XCTAssertNotNil([[FTURLSessionInterceptor shared] getTraceHandler:dataTask]);
     [self waitForExpectations:@[expectation] timeout:3];
 }
@@ -241,6 +249,7 @@
     }];
     XCTAssertNotNil(task);
     [task resume];
+    [self waitForURLSessionInterceptorQueue];
     XCTAssertNotNil([[FTURLSessionInterceptor shared] getTraceHandler:task]);
     [self waitForExpectationsWithTimeout:10.0 handler:nil];
     method_setImplementation(method, originalImp);
@@ -261,6 +270,7 @@
         NSURLSessionDataTask *dataTask = [session dataTaskWithRequest:request];
         XCTAssertNotNil(dataTask);
         [dataTask resume];
+        [self waitForURLSessionInterceptorQueue];
         XCTAssertNotNil([[FTURLSessionInterceptor shared] getTraceHandler:dataTask]);
         XCTAssertNotNil(session.delegate);
     }
@@ -284,6 +294,7 @@
     NSURLRequest *request = [NSURLRequest requestWithURL:self.url];
     dataTask = [session dataTaskWithRequest:request];
     [dataTask resume];
+    [self waitForURLSessionInterceptorQueue];
     XCTAssertNotNil([[FTURLSessionInterceptor shared] getTraceHandler:dataTask]);
     [self waitForExpectations:@[expectation] timeout:3];
 }
@@ -303,9 +314,11 @@
     @autoreleasepool {
         task = [session dataTaskWithRequest:request];
         [task resume];
+        [self waitForURLSessionInterceptorQueue];
         XCTAssertNotNil([[FTURLSessionInterceptor shared] getTraceHandler:task]);
         [[NSRunLoop currentRunLoop] runUntilDate:[NSDate dateWithTimeIntervalSinceNow:1]];
     }
+    [self waitForURLSessionInterceptorQueue];
     XCTAssertNil([[FTURLSessionInterceptor shared] getTraceHandler:task]);
     XCTAssertTrue(delegate.URLSessionTaskDidCompleteWithErrorCalledCount==1);
     [OHHTTPStubs removeStub:descriptor];
@@ -323,6 +336,7 @@
                                                          delegateQueue:nil];
         NSURLSessionDataTask *dataTask = [session dataTaskWithURL:self.url];
         [dataTask resume];
+        [self waitForURLSessionInterceptorQueue];
         XCTAssertNotNil([[FTURLSessionInterceptor shared] getTraceHandler:dataTask]);
         [session invalidateAndCancel];
     }
@@ -346,6 +360,7 @@
     XCTAssertTrue([delegate respondsToSelector:@selector(URLSession:task:didCompleteWithError:)]);
     dataTask = [session dataTaskWithURL:self.url];
     [dataTask resume];
+    [self waitForURLSessionInterceptorQueue];
     XCTAssertNotNil([[FTURLSessionInterceptor shared] getTraceHandler:dataTask]);
     [self waitForExpectations:@[expectation] timeout:3];
     [session invalidateAndCancel];
@@ -369,6 +384,7 @@
     XCTAssertTrue([delegate respondsToSelector:@selector(URLSession:task:didFinishCollectingMetrics:)]);
     dataTask = [session dataTaskWithURL:self.url];
     [dataTask resume];
+    [self waitForURLSessionInterceptorQueue];
     XCTAssertNotNil([[FTURLSessionInterceptor shared] getTraceHandler:dataTask]);
     [self waitForExpectations:@[expectation] timeout:3];
     [session invalidateAndCancel];
@@ -384,6 +400,7 @@
     NSURLSessionDataTask *dataTask = [session dataTaskWithRequest:request];
     XCTAssertNotNil(dataTask);
     [dataTask resume];
+    [self waitForURLSessionInterceptorQueue];
     XCTAssertNotNil([[FTURLSessionInterceptor shared] getTraceHandler:dataTask]);
     [session invalidateAndCancel];
 }
@@ -419,9 +436,10 @@
     NSURLSessionDataTask *dataTask = [session dataTaskWithURL:self.url completionHandler:completionHandler];
     XCTAssertNotNil(dataTask);
     [dataTask resume];
+    [self waitForURLSessionInterceptorQueue];
     XCTAssertNotNil([[FTURLSessionInterceptor shared] getTraceHandler:dataTask]);
     [self waitForExpectationsWithTimeout:10.0 handler:nil];
-    dispatch_sync([FTURLSessionInterceptor shared].queue, ^{});
+    [self waitForURLSessionInterceptorQueue];
     XCTAssertNil([[FTURLSessionInterceptor shared] getTraceHandler:dataTask]);
     [session invalidateAndCancel];
 }
@@ -435,6 +453,7 @@
     
     NSURLSessionDataTask *dataTask = [session dataTaskWithRequest:URLRequest];
     [dataTask resume];
+    [self waitForURLSessionInterceptorQueue];
     XCTAssertNotNil([[FTURLSessionInterceptor shared] getTraceHandler:dataTask]);
     [session invalidateAndCancel];
 }
@@ -449,6 +468,7 @@
     
     NSURLSessionDataTask *dataTask = [session dataTaskWithRequest:URLRequest];
     [dataTask resume];
+    [self waitForURLSessionInterceptorQueue];
     XCTAssertNil([[FTURLSessionInterceptor shared] getTraceHandler:dataTask]);
     [session invalidateAndCancel];
 }
@@ -463,6 +483,21 @@
     
     dataTask = [session dataTaskWithRequest:URLRequest];
     [dataTask resume];
+    [self waitForURLSessionInterceptorQueue];
+    XCTAssertNil([[FTURLSessionInterceptor shared] getTraceHandler:dataTask]);
+    [session invalidateAndCancel];
+}
+- (void)testSDKRemoteConfigRequest{
+    [FTNetworkMock networkOHHTTPStubs];
+    FTRemoteConfigurationRequest *remoteConfigRequest = [[FTRemoteConfigurationRequest alloc]init];
+    NSMutableURLRequest *URLRequest = [[NSMutableURLRequest alloc]initWithURL:remoteConfigRequest.absoluteURL];
+    URLRequest = [remoteConfigRequest adaptedRequest:URLRequest];
+    NSURLSession *session = [NSURLSession
+                             sessionWithConfiguration:[NSURLSessionConfiguration defaultSessionConfiguration]];
+
+    NSURLSessionDataTask *dataTask = [session dataTaskWithRequest:URLRequest];
+    [dataTask resume];
+    [self waitForURLSessionInterceptorQueue];
     XCTAssertNil([[FTURLSessionInterceptor shared] getTraceHandler:dataTask]);
     [session invalidateAndCancel];
 }
@@ -488,6 +523,16 @@
     FTURLSessionInstrumentation *instrumentation = [FTURLSessionInstrumentation sharedInstance];
         
     XCTAssertTrue([instrumentation isFTIntakeRequest:URLRequest], @"RUM package request should be filtered out");
+}
+/** Tests that SDK internal RemoteConfig requests are filtered out. */
+- (void)testIsFTIntakeRequest_RemoteConfigRequest{
+    FTRemoteConfigurationRequest *remoteConfigRequest = [[FTRemoteConfigurationRequest alloc]init];
+    NSMutableURLRequest *URLRequest = [[NSMutableURLRequest alloc]initWithURL:remoteConfigRequest.absoluteURL];
+    URLRequest = [remoteConfigRequest adaptedRequest:URLRequest];
+
+    FTURLSessionInstrumentation *instrumentation = [FTURLSessionInstrumentation sharedInstance];
+
+    XCTAssertTrue([instrumentation isFTIntakeRequest:URLRequest], @"RemoteConfig request should be filtered out");
 }
 - (void)testIsFTIntakeRequest{
     NSMutableURLRequest *request = [NSMutableURLRequest requestWithURL:self.url];
