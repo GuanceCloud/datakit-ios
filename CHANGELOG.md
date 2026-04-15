@@ -1,3 +1,6 @@
+# 1.5.21-beta.1
+1. Same as 1.5.21-alpha.3
+---
 # 1.5.21-alpha.3
 1. Rename `updateDatakitURL:` to `setDatakitURL:`, `updateDatawayURL:clientToken:` to `setDatawayURL:clientToken:`
 ---
