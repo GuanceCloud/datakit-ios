@@ -88,8 +88,8 @@ static FTNetworkInfoManager *sharedInstance = nil;
                 self.clientToken = clientToken;
                 self.configState = FTNetworkConfigStateDatawayMode;
                 FTInnerLogInfo(@"[NetworkInfo] SDK Dataway URL：%@", datawayUrl);
-                FTInnerLogInfo(@"[NetworkInfo] SDK Dataway Client Token：%@*****",
-                              [clientToken substringWithRange:NSMakeRange(0, clientToken.length/2)]);
+                FTInnerLogInfo(@"[NetworkInfo] SDK Dataway Client Token：%@",
+                               clientToken.length>0?[NSString stringWithFormat:@"*****%@",[clientToken substringFromIndex:clientToken.length/2]]:nil);
             } else {
                 self.configState = FTNetworkConfigStateNotConfigured;
                 FTInnerLogWarning(@"[NetworkInfo] Invalid upload URL configuration");

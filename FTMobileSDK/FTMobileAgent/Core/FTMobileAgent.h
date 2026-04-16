@@ -124,7 +124,7 @@ NS_ASSUME_NONNULL_BEGIN
 + (void)clearAllData;
 
 /// Trigger request to get remote configuration environment variables
-/// The minimum update time interval defaults to FTMobileConfig.remoteConfiguration. If the time interval since the last request doesn't meet the setting, no request will be initiated
+/// The minimum update time interval defaults to FTMobileConfig.remoteConfigMiniUpdateInterval. If the time interval since the last request doesn't meet the setting, no request will be initiated
 + (void)updateRemoteConfig;
 
 /// Trigger request to get remote configuration environment variables

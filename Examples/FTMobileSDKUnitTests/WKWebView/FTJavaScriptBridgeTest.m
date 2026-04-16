@@ -39,6 +39,7 @@
 @property (nonatomic, strong) UINavigationController *navigationController;
 @property (nonatomic, strong) UITabBarController *tabBarController;
 @property (nonatomic, strong) XCTestExpectation *loadExpect;
+@property (nonatomic, strong) WKNavigation *expectedNavigation;
 @end
 
 @implementation FTJavaScriptBridgeTest
@@ -63,15 +64,10 @@
     self.window.rootViewController = self.tabBarController;
 
     [self.viewController view];
-    [self.viewController viewWillAppear:NO];
-    [self.viewController viewDidAppear:NO];
     self.viewController.webView.navigationDelegate = self;
 }
 
 - (void)tearDown {
-    [self.tabBarController viewWillDisappear:NO];
-    [self.tabBarController viewDidDisappear:NO];
-
     self.window.rootViewController = nil;
     self.tabBarController = nil;
     self.navigationController = nil;
@@ -146,11 +142,7 @@
     long long smallTime = [NSDate ft_currentNanosecondTimeStamp];
     NSURL *url = [[NSBundle mainBundle] URLForResource:@"sample" withExtension:@"html"];
     [FTModelHelper startViewWithName:@"TestWKWebViewVC"];
-    [self.viewController ft_load:url.absoluteString];
-    self.loadExpect = [self expectationWithDescription:@"Load WebView!"];
-    [self waitForExpectationsWithTimeout:5 handler:^(NSError *error) {
-        XCTAssertNil(error);
-    }];
+    [self loadFileURL:url description:@"Load WebView!" timeout:30];
     XCTestExpectation *jsScript = [self expectationWithDescription:@"Add WebView Rum View Data!"];
     if(nano){
         [self.viewController test_addWebViewRumViewNano:^{
@@ -210,11 +202,7 @@
     [self setSDKWithEnableWebView:NO];
 
     NSURL *url = [[NSBundle mainBundle] URLForResource:@"sample" withExtension:@"html"];
-    [self.viewController test_loadFileURL:url allowingReadAccessToURL:url];
-    self.loadExpect = [self expectationWithDescription:@"Request Time!"];
-    [self waitForExpectationsWithTimeout:30 handler:^(NSError *error) {
-        XCTAssertNil(error);
-    }];
+    [self loadFileURL:url description:@"Request Time!" timeout:30];
     XCTestExpectation *jsScript = [self expectationWithDescription:@"Request Time!"];
     NSInteger count =[[FTTrackerEventDBTool sharedManager] getDatasCount];
     [self.viewController test_addWebViewRumView:^{
@@ -257,11 +245,7 @@
     [[FTWKWebViewHandler sharedInstance] enableWebView:self.viewController.webView];
     NSUInteger newUserScriptsCount =  self.viewController.webView.configuration.userContentController.userScripts.count;
     XCTAssertTrue(newUserScriptsCount - userScriptsCount == 1);
-    [self.viewController test_loadFileURL:url allowingReadAccessToURL:url];
-    self.loadExpect = [self expectationWithDescription:@"Request Time!"];
-    [self waitForExpectationsWithTimeout:30 handler:^(NSError *error) {
-        XCTAssertNil(error);
-    }];
+    [self loadFileURL:url description:@"Request Time!" timeout:30];
     XCTestExpectation *jsScript = [self expectationWithDescription:@"Request Time!"];
     [self.viewController test_addWebViewRumView:^{
         [jsScript fulfill];
@@ -300,11 +284,7 @@
 -(void)testEnableWebView{
     [self setSDKWithEnableWebView:YES];
     NSURL *url = [[NSBundle mainBundle] URLForResource:@"sample" withExtension:@"html"];
-    [self.viewController test_loadFileURL:url allowingReadAccessToURL:url];
-    self.loadExpect = [self expectationWithDescription:@"Request Time!"];
-    [self waitForExpectationsWithTimeout:30 handler:^(NSError *error) {
-        XCTAssertNil(error);
-    }];
+    [self loadFileURL:url description:@"Request Time!" timeout:30];
     XCTestExpectation *jsScript = [self expectationWithDescription:@"Request Time!"];
     [self.viewController test_addWebViewRumView:^{
         [jsScript fulfill];
@@ -344,11 +324,7 @@
     NSURL *url = [[NSBundle mainBundle] URLForResource:@"sample" withExtension:@"html"];
     [FTMobileAgent shutDown];
     NSInteger oldCount =[[FTTrackerEventDBTool sharedManager] getDatasCount];
-    [self.viewController test_loadFileURL:url allowingReadAccessToURL:url];
-    self.loadExpect = [self expectationWithDescription:@"Request Time!"];
-    [self waitForExpectationsWithTimeout:30 handler:^(NSError *error) {
-        XCTAssertNil(error);
-    }];
+    [self loadFileURL:url description:@"Request Time!" timeout:30];
     XCTestExpectation *jsScript = [self expectationWithDescription:@"Request Time!"];
     [self.viewController test_addWebViewRumView:^{
         [jsScript fulfill];
@@ -385,12 +361,23 @@
 - (void)dealRUMWebViewData:(NSString *)measurement tags:(NSDictionary *)tags fields:(NSDictionary *)fields tm:(long long)tm{
     
 }
-- (nullable NSString *)getLastViewName{
-    return nil;
+- (void)loadFileURL:(NSURL *)url description:(NSString *)description timeout:(NSTimeInterval)timeout{
+    self.loadExpect = [self expectationWithDescription:description];
+    self.expectedNavigation = [self.viewController.webView loadFileURL:url allowingReadAccessToURL:url];
+    [self waitForExpectationsWithTimeout:timeout handler:^(NSError *error) {
+        XCTAssertNil(error);
+    }];
 }
 - (void)webView:(WKWebView *)webView didFinishNavigation:(null_unspecified WKNavigation *)navigation{
+    if (!self.loadExpect) {
+        return;
+    }
+    if (self.expectedNavigation && navigation != self.expectedNavigation) {
+        return;
+    }
     [self.loadExpect fulfill];
     self.loadExpect = nil;
+    self.expectedNavigation = nil;
 }
 -(NSString *)getLastHasReplayViewID{
     return nil;

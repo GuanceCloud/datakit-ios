@@ -23,6 +23,7 @@ typedef void (^FTWriteCallBack)(NSDictionary *fields, NSDictionary *tags);
 
 @end
 
+
 @implementation FTLongTaskFileHandleTest
 
 - (void)setUp {
@@ -190,6 +191,7 @@ typedef void (^FTWriteCallBack)(NSDictionary *fields, NSDictionary *tags);
     NSString *path = longTaskManager.dataStorePath;
     
     XCTAssertTrue([pathString isEqualToString:[path stringByDeletingLastPathComponent]]);
+    [longTaskManager shutDown];
 }
 -(void)longTaskStackDetected:(NSString *)slowStack duration:(long long)duration time:(long long)time{
     if(self.callBack){
@@ -230,4 +232,3 @@ typedef void (^FTWriteCallBack)(NSDictionary *fields, NSDictionary *tags);
 }
 
 @end
-
