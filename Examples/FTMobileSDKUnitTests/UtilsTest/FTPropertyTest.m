@@ -85,7 +85,8 @@
 - (void)testSetEmptyUrl{
     FTMobileConfig *config = [[FTMobileConfig alloc]initWithDatakitUrl:@""];
     
-    XCTAssertThrows([FTMobileAgent startWithConfigOptions:config]);
+    XCTAssertNoThrow([FTMobileAgent startWithConfigOptions:config]);
+    [FTMobileAgent shutDown];
 }
 - (void)testIllegalUrl{
     XCTestExpectation *expect = [self expectationWithDescription:@"Request timeout!"];

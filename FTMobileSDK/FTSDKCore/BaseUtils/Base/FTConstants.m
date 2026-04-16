@@ -206,30 +206,10 @@ NSString * const FT_NETWORK_SKYWALKING_V2 = @"sw6";
 NSString * const FT_NETWORK_TRACEPARENT_KEY = @"traceparent";
 NSString * const FT_NETWORK_ZIPKIN_SINGLE_KEY = @"b3";
 
-NSUInteger const FT_LOGGING_CONTENT_SIZE = 30720;
-NSUInteger const FT_TIME_INTERVAL = 100;
 
-int const FT_DB_LOG_MAX_COUNT = 5000;
-int const FT_DB_LOG_MIN_COUNT = 1000;
-
-int const FT_DB_RUM_MAX_COUNT = 100000;
-int const FT_DB_RUM_MIN_COUNT = 10000;
-
-// 100MB
-long const FT_DEFAULT_DB_SIZE_LIMIT = 104857600;
-long const FT_MIN_DB_SIZE_LIMIT = 31457280;
-
-NSString * const FT_SCRIPT_MESSAGE_HANDLER_NAME = @"ftMobileSdk";
-long const FT_DEFAULT_BLOCK_DURATIONS_MS = 250;
-long const FT_MIN_DEFAULT_BLOCK_DURATIONS_MS = 100;
-long const FT_ANR_THRESHOLD_MS = 5000;
-
-long long const FT_ANR_THRESHOLD_NS = 5000000000;
 #pragma mark ==========  user info ==========
 NSString * const FT_USER_ID = @"userid";
 NSString * const FT_USER_NAME = @"user_name";
 NSString * const FT_USER_EMAIL = @"user_email";
 NSString * const FT_USER_EXTRA = @"user_extra";
 
-NSString * const FT_BLACK_LIST_VIEW = @"FT_BLACK_LIST_VIEW";
-NSString * const FT_BLACK_LIST_VIEW_ACTION = @"FT_BLACK_LIST_VIEW_ACTION";

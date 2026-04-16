@@ -94,11 +94,6 @@ typedef FTTraceContext*_Nullable(^FTTraceInterceptor)(NSURLRequest *_Nonnull req
 /// - Parameter clientToken: dataway token
 - (instancetype)initWithDatawayUrl:(NSString *)datawayUrl clientToken:(NSString *)clientToken;
 
-/// Disable init initialization
-- (instancetype)init NS_UNAVAILABLE;
-
-/// Disable new initialization
-+ (instancetype)new NS_UNAVAILABLE;
 /// Data reporting address
 @property (nonatomic, copy) NSString *metricsUrl DEPRECATED_MSG_ATTRIBUTE("Deprecated, please use datakitUrl instead");
 /// Data reporting datakit address

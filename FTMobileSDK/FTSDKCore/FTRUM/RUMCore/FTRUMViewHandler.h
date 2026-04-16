@@ -12,7 +12,7 @@ typedef void(^FTErrorHandled)(void);
 
 @class FTRUMMonitor,FTRUMContext;
 
-@interface FTRUMViewHandler : FTRUMHandler
+@interface FTRUMViewHandler : FTRUMHandler<FTRUMSessionProtocol>
 @property (nonatomic, strong,readonly) FTRUMContext *context;
 @property (nonatomic, assign,readwrite) BOOL isActiveView;
 @property (nonatomic, copy) NSString *view_id;
@@ -21,6 +21,11 @@ typedef void(^FTErrorHandled)(void);
 @property (nonatomic, strong) NSNumber *loading_time;
 
 -(instancetype)initWithModel:(FTRUMViewModel *)model context:(FTRUMContext *)context rumDependencies:(FTRUMDependencies *)rumDependencies;
+
+- (instancetype)initWithModel:(FTRUMViewModel *)model
+                      context:(FTRUMContext *)context
+              rumDependencies:(FTRUMDependencies *)rumDependencies
+              needsMonitoring:(BOOL)needsMonitoring;
 @end
 
 NS_ASSUME_NONNULL_END

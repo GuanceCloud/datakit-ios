@@ -37,17 +37,14 @@ static FTNetworkInfoManager *sharedInstance = nil;
     }
     return self;
 }
-- (FTNetworkInfoManager *(^)(NSString *value))setDatakitUrl {
-    return ^(NSString *value) {
-        dispatch_barrier_async(self.concurrentQueue, ^{
-            self.datakitUrl = value;
-        });
-        if(value && value.length>0){
-            FTInnerLogInfo(@"SDK Datakit URL：%@",value);
-        }
-        return self;
-    };
+-(NSString *)datakitUrl{
+    __block NSString *obj;
+    dispatch_sync(_concurrentQueue, ^{
+        obj = [_datakitUrl copy];
+    });
+    return obj;
 }
+
 -(NSString *)sdkVersion{
     __block NSString *obj;
     dispatch_sync(_concurrentQueue, ^{
@@ -70,14 +67,35 @@ static FTNetworkInfoManager *sharedInstance = nil;
     });
     return obj;
 }
-- (nonnull FTNetworkInfoManager * _Nonnull (^)(NSString * _Nonnull __strong))setDatawayUrl {
-    return ^(NSString *value) {
+- (FTNetworkInfoManager *(^)(NSString * _Nullable datakitUrl,
+                            NSString * _Nullable datawayUrl,
+                             NSString * _Nullable clientToken))setUploadURL{
+    return ^(NSString * _Nullable datakitUrl,
+             NSString * _Nullable datawayUrl,
+              NSString * _Nullable clientToken) {
         dispatch_barrier_async(self.concurrentQueue, ^{
-            self.datawayUrl = value;
+            self.datakitUrl = datakitUrl;
+            self.datawayUrl = datawayUrl;
+            self.clientToken = clientToken;
+            if (datakitUrl.length > 0) {
+                // Datakit
+                self.datakitUrl = datakitUrl;
+                self.configState = FTNetworkConfigStateDatakitMode;
+                FTInnerLogInfo(@"[NetworkInfo] SDK Datakit URL：%@", datakitUrl);
+            } else if (datawayUrl.length > 0 && clientToken.length > 0) {
+                // Dataway
+                self.datawayUrl = datawayUrl;
+                self.clientToken = clientToken;
+                self.configState = FTNetworkConfigStateDatawayMode;
+                FTInnerLogInfo(@"[NetworkInfo] SDK Dataway URL：%@", datawayUrl);
+                FTInnerLogInfo(@"[NetworkInfo] SDK Dataway Client Token：%@",
+                               clientToken.length>0?[NSString stringWithFormat:@"*****%@",[clientToken substringFromIndex:clientToken.length/2]]:nil);
+            } else {
+                self.configState = FTNetworkConfigStateNotConfigured;
+                FTInnerLogWarning(@"[NetworkInfo] Invalid upload URL configuration");
+            }
+            
         });
-        if(value && value.length>0){
-            FTInnerLogInfo(@"SDK Dataway URL：%@",value);
-        }
         return self;
     };
 }
@@ -88,17 +106,7 @@ static FTNetworkInfoManager *sharedInstance = nil;
     });
     return obj;
 }
-- (nonnull FTNetworkInfoManager * _Nonnull (^)(NSString * _Nonnull __strong))setClientToken {
-    return ^(NSString *value) {
-        dispatch_barrier_async(self.concurrentQueue, ^{
-            self.clientToken = value;
-        });
-        if(value && value.length>0){
-            FTInnerLogInfo(@"SDK Dataway Client Token：%@*****",[value substringWithRange:NSMakeRange(0, value.length/2)]);
-        }
-        return self;
-    };
-}
+
 -(BOOL)enableDataIntegerCompatible{
     __block BOOL obj;
     dispatch_sync(_concurrentQueue, ^{
@@ -144,5 +152,27 @@ static FTNetworkInfoManager *sharedInstance = nil;
         });
         return self;
     };
+}
+-(FTNetworkConfigState)configState{
+    __block FTNetworkConfigState obj;
+    dispatch_sync(_concurrentQueue, ^{
+        obj = _configState;
+    });
+    return obj;
+}
+- (BOOL)isNetworkConfigured {
+    return self.configState != FTNetworkConfigStateNotConfigured;
+}
+- (BOOL)isNetworkConfiguredForRemote {
+    return [self isNetworkConfigured] && self.appId != nil;
+}
+- (void)clearUploadInfo{
+    dispatch_barrier_async(self.concurrentQueue, ^{
+        self.datakitUrl = nil;
+        self.datawayUrl = nil;
+        self.clientToken = nil;
+        self.appId = nil;
+        self.configState = FTNetworkConfigStateNotConfigured;
+    });
 }
 @end

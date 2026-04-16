@@ -124,7 +124,7 @@ NS_ASSUME_NONNULL_BEGIN
 + (void)clearAllData;
 
 /// Trigger request to get remote configuration environment variables
-/// The minimum update time interval defaults to FTMobileConfig.remoteConfiguration. If the time interval since the last request doesn't meet the setting, no request will be initiated
+/// The minimum update time interval defaults to FTMobileConfig.remoteConfigMiniUpdateInterval. If the time interval since the last request doesn't meet the setting, no request will be initiated
 + (void)updateRemoteConfig;
 
 /// Trigger request to get remote configuration environment variables
@@ -133,6 +133,26 @@ NS_ASSUME_NONNULL_BEGIN
 ///   - completion: request callback
 + (void)updateRemoteConfigWithMiniUpdateInterval:(NSInteger)miniUpdateInterval
                                          completion:(nullable FTRemoteConfigFetchCompletionBlock)completion;
+
+/// Set the Datakit upload URL
+///
+/// Use this method to dynamically set the Datakit upload URL after SDK initialization.
+/// When using Datakit mode, only the Datakit URL is required.
+///
+/// - Parameter url: The Datakit upload URL
++ (void)setDatakitURL:(NSString *)url;
+
+
+/// Set the Dataway upload URL and client token
+///
+/// Use this method to dynamically set the Dataway upload URL and client token after SDK initialization.
+/// When using Dataway mode, both the Dataway URL and client token are required.
+///
+/// - Parameters:
+///   - url: The Dataway upload URL
+///   - token: The client authentication token for Dataway
++ (void)setDatawayURL:(NSString *)url clientToken:(NSString *)token;
+
 #pragma mark ========== DEPRECATED ==========
 /// Trigger request to get remote configuration environment variables
 /// - Parameters:

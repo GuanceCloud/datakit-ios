@@ -8,7 +8,7 @@
 
 #import <Foundation/Foundation.h>
 #import "FTRUMDataWriteProtocol.h"
-#import "FTEnumConstant.h"
+#import "FTInternalConstants.h"
 #import "FTRUMDependencies.h"
 #import "FTErrorDataProtocol.h"
 

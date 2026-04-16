@@ -26,6 +26,7 @@ NS_ASSUME_NONNULL_BEGIN
 
 - (void)updateRemoteConfigWithMinimumUpdateInterval:(NSInteger)minimumUpdateInterval
                                          completion:(nullable FTRemoteConfigFetchCompletionBlock)completion;
+- (void)innerUpdateRemoteConfig;
 
 - (void)shutDown;
 @end

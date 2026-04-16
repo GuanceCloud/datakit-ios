@@ -26,7 +26,7 @@
 #import "FTMobileAgent+Private.h"
 #import "FTRUMMonitor.h"
 #import "FTExternalDataManager+Private.h"
-#import "FTEnumConstant.h"
+#import "FTInternalConstants.h"
 #import "FTConstants.h"
 #import "FTThreadDispatchManager.h"
 #import "FTBaseInfoHandler.h"

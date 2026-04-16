@@ -223,29 +223,8 @@ extern NSString * const FT_USER_ID;
 extern NSString * const FT_USER_EMAIL;
 extern NSString * const FT_USER_NAME;
 extern NSString * const FT_USER_EXTRA;
-#pragma mark ========== inner use ==========
-extern NSUInteger const FT_LOGGING_CONTENT_SIZE;
 
-extern int const FT_DB_LOG_MAX_COUNT;
-extern int const FT_DB_LOG_MIN_COUNT;
 
-extern int const FT_DB_RUM_MAX_COUNT;
-extern int const FT_DB_RUM_MIN_COUNT;
 
-extern long const FT_DEFAULT_DB_SIZE_LIMIT;
-extern long const FT_MIN_DB_SIZE_LIMIT;
-
-extern NSString * const FT_SCRIPT_MESSAGE_HANDLER_NAME;
-extern NSUInteger const FT_TIME_INTERVAL;
-/// Freeze threshold in milliseconds, default 250ms
-extern long const FT_DEFAULT_BLOCK_DURATIONS_MS;
-/// Minimum freeze duration 100 ms
-extern long const FT_MIN_DEFAULT_BLOCK_DURATIONS_MS;
-
-extern long long const FT_ANR_THRESHOLD_NS;
-extern long const FT_ANR_THRESHOLD_MS;
-
-extern NSString * const FT_BLACK_LIST_VIEW;
-extern NSString * const FT_BLACK_LIST_VIEW_ACTION;
 
 

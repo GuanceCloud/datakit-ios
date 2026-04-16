@@ -21,6 +21,8 @@
     return [NSURL URLWithString:[[url absoluteString] stringByAppendingFormat:url.query ? @"&%@" : @"?%@", query]];
 }
 - (NSMutableURLRequest *)adaptedRequest:(NSMutableURLRequest *)mutableRequest{
+    NSString *packageId = [FTPackageIdGenerator generatePackageId:self.serialNumber count:self.events.count];
+    [self addHTTPHeaderFields:mutableRequest packageId:packageId];
     return mutableRequest;
 }
 @end

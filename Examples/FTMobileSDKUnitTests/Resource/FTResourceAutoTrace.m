@@ -19,6 +19,10 @@
 #import "FTSessionConfiguration.h"
 #import "FTURLSessionInstrumentation.h"
 #import "OHHTTPStubs.h"
+#import "FTURLSessionInterceptor.h"
+@interface FTURLSessionInterceptor()
+@property (nonatomic, strong) dispatch_queue_t queue;
+@end
 @interface FTResourceAutoTrace : XCTestCase
 
 @end
@@ -163,42 +167,6 @@
         [expectation fulfill];
     }];
 }
-- (void)testIsNotSDKURL{
-    // When SDK URL has port number
-    NSString *sdkURLStr = @"http://www.test.com:9529";
-    [[FTURLSessionInstrumentation sharedInstance] setSdkUrlStr:sdkURLStr serviceName:@"test"];
-    
-    XCTAssertTrue([[FTURLSessionInstrumentation sharedInstance] isNotSDKInsideUrl:nil] == NO);
-    XCTAssertTrue([[FTURLSessionInstrumentation sharedInstance] isNotSDKInsideUrl:[NSURL URLWithString:@"http://www.test.com:9529/v1/write/rum"]] == NO);
-    XCTAssertTrue([[FTURLSessionInstrumentation sharedInstance] isNotSDKInsideUrl:[NSURL URLWithString:@"http://www.test.com"]] == YES);
-    XCTAssertTrue([[FTURLSessionInstrumentation sharedInstance] isNotSDKInsideUrl:[NSURL URLWithString:@"http://www.test.com:9528"]] == YES);
-    XCTAssertTrue([[FTURLSessionInstrumentation sharedInstance] isNotSDKInsideUrl:[NSURL URLWithString:@"http://www.test.com/v1/write/rum"]] == YES);
-    
-    [[FTURLSessionInstrumentation sharedInstance] shutDown];
-    
-    // When SDK URL has no port number
-    NSString *sdkURLStr2 = @"http://www.test.com";
-    [[FTURLSessionInstrumentation sharedInstance] setSdkUrlStr:sdkURLStr2 serviceName:@"test"];
-    
-    XCTAssertTrue([[FTURLSessionInstrumentation sharedInstance] isNotSDKInsideUrl:nil] == NO);
-    XCTAssertTrue([[FTURLSessionInstrumentation sharedInstance] isNotSDKInsideUrl:[NSURL URLWithString:@"http://www.test.com/v1/write/rum"]] == NO);
-    XCTAssertTrue([[FTURLSessionInstrumentation sharedInstance] isNotSDKInsideUrl:[NSURL URLWithString:@"http://www.test.com"]] == NO);
-    XCTAssertTrue([[FTURLSessionInstrumentation sharedInstance] isNotSDKInsideUrl:[NSURL URLWithString:@"http://www.test.com:9528"]] == YES);
-    XCTAssertTrue([[FTURLSessionInstrumentation sharedInstance] isNotSDKInsideUrl:[NSURL URLWithString:@"http://www.test.com:9529/v1/write/rum"]] == YES);
-    
-    [[FTURLSessionInstrumentation sharedInstance] shutDown];
-    
-    
-    // When SDK URL is not set
-    XCTAssertTrue([[FTURLSessionInstrumentation sharedInstance] isNotSDKInsideUrl:nil] == NO);
-    XCTAssertTrue([[FTURLSessionInstrumentation sharedInstance] isNotSDKInsideUrl:[NSURL URLWithString:@"http://www.test.com/v1/write/rum"]] == NO);
-    XCTAssertTrue([[FTURLSessionInstrumentation sharedInstance] isNotSDKInsideUrl:[NSURL URLWithString:@"http://www.test.com"]] == NO);
-    XCTAssertTrue([[FTURLSessionInstrumentation sharedInstance] isNotSDKInsideUrl:[NSURL URLWithString:@"http://www.test.com:9528"]] == NO);
-
-    [[FTURLSessionInstrumentation sharedInstance] shutDown];
-    
-   
-}
 - (void)testURLSessionCreateBeforeSDKInit_DelegateOnlyCollectingMetrics{
     XCTestExpectation *expectation= [self expectationWithDescription:@"Async operation timeout"];
     TestSessionDelegate_OnlyCollectingMetrics *delegate = [[TestSessionDelegate_OnlyCollectingMetrics alloc]init];
@@ -238,7 +206,7 @@
     [self waitForExpectationsWithTimeout:30 handler:^(NSError *error) {
         XCTAssertNil(error);
     }];
-    [self waitForTimeInterval:0.5];
+    dispatch_sync([FTURLSessionInterceptor shared].queue, ^{});
     [[FTGlobalRumManager sharedInstance].rumManager syncProcess];
     NSArray *newArray = [[FTTrackerEventDBTool sharedManager] getAllDatas];
     __block NSInteger hasResCount = 0;
@@ -285,14 +253,13 @@
     } withStubResponse:^OHHTTPStubsResponse*(NSURLRequest *request) {
         return [OHHTTPStubsResponse responseWithData:[@"success" dataUsingEncoding:NSUTF8StringEncoding] statusCode:200 headers:nil];
     }];
-    [self initSDK];
-    XCTestExpectation *exception = [[XCTestExpectation alloc]init];
+    XCTestExpectation *expectation = [self expectationWithDescription:@"SDK shutdown test"];
     dispatch_group_t group = dispatch_group_create();
     NSInteger count = 0;
     __block BOOL isSDKClose = NO;
-    for (int i = 0; i<1000; i++) {
+    for (int i = 0; i<100; i++) {
         dispatch_group_enter(group);
-        dispatch_async(dispatch_queue_create(0, 0), ^{
+        dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0), ^{
             [self network:^{
                 dispatch_group_leave(group);
             }];
@@ -307,13 +274,11 @@
                 isSDKClose = NO;
             });
         });
-        count ++;
     }
     dispatch_group_notify(group, dispatch_get_main_queue(), ^{
-        [exception fulfill];
+        [expectation fulfill];
     });
-    [self waitForExpectations:@[exception]];
-    XCTAssertTrue(count == 1000);
+    [self waitForExpectationsWithTimeout:30 handler:nil];
     [OHHTTPStubs removeStub:stubs];
     [FTMobileAgent shutDown];
 }

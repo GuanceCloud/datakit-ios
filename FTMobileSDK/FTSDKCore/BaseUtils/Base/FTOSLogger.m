@@ -8,7 +8,7 @@
 
 #import "FTOSLogger.h"
 #import "FTLogMessage.h"
-#import "FTEnumConstant.h"
+#import "FTInternalConstants.h"
 #import <os/log.h>
 #import "NSDate+FTUtil.h"
 

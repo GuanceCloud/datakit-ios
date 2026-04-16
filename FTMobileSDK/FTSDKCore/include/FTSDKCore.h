@@ -18,7 +18,7 @@
 #import "FTSwizzle.h"
 #import "FTSwizzler.h"
 #import "FTSDKCompat.h"
-#import "FTEnumConstant.h"
+#import "FTInternalConstants.h"
 #import "FTRUMMonitor.h"
 #import "FTRUMManager.h"
 #import "FTRUMHandler.h"

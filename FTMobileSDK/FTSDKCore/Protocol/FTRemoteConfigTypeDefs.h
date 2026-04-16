@@ -29,5 +29,6 @@ typedef NS_ENUM(NSInteger, FTRemoteConfigErrorCode) {
     FTRemoteConfigErrorCodeRequesting = 1003,         // Request is in progress
     FTRemoteConfigErrorCodeNetworkFailed = 1004,      // Network request failed
     FTRemoteConfigErrorCodeParseFailed = 1005,        // Config parse failed
-    FTRemoteConfigErrorCodeSDKNotInitialized = 1006   // SDK is not initialized
+    FTRemoteConfigErrorCodeSDKNotInitialized = 1006,  // SDK is not initialized
+    FTRemoteConfigErrorCodeSyncConfigMissing = 1007   // Sync URL or AppID is not configured
 };

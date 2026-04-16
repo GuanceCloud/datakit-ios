@@ -5,8 +5,8 @@ import PackageDescription
 
 let package = Package(
     name: "FTMobileSDK",
-    platforms: [.iOS(.v10),
-                .macOS(.v10_13),
+    platforms: [.iOS(.v12),
+                .macOS(.v10_14),
                 .tvOS(.v12),
     ],
     products: [

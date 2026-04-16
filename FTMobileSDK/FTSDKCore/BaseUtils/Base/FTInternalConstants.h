@@ -1,5 +1,5 @@
 //
-//  FTEnumConstant.h
+//  FTInternalConstants.h
 //  FTMobileAgent
 //
 //  Created by hulilei on 2022/1/20.
@@ -100,3 +100,31 @@ extern NSString * const FTStatusStringMap[];
 extern NSString * const FTNetworkTraceStringMap[];
 extern NSString * const FTEnvStringMap[];
 extern NSTimeInterval const MonitorFrequencyMap[];
+
+extern NSString * const FT_BLACK_LIST_VIEW;
+extern NSString * const FT_BLACK_LIST_VIEW_ACTION;
+
+extern NSUInteger const FT_LOGGING_CONTENT_SIZE;
+
+extern int const FT_DB_LOG_MAX_COUNT;
+extern int const FT_DB_LOG_MIN_COUNT;
+
+extern int const FT_DB_RUM_MAX_COUNT;
+extern int const FT_DB_RUM_MIN_COUNT;
+
+extern long const FT_DEFAULT_DB_SIZE_LIMIT;
+extern long const FT_MIN_DB_SIZE_LIMIT;
+
+extern NSString * const FT_SCRIPT_MESSAGE_HANDLER_NAME;
+extern NSUInteger const FT_TIME_INTERVAL;
+/// Freeze threshold in milliseconds, default 250ms
+extern long const FT_DEFAULT_BLOCK_DURATIONS_MS;
+/// Minimum freeze duration 100 ms
+extern long const FT_MIN_DEFAULT_BLOCK_DURATIONS_MS;
+
+extern long long const FT_ANR_THRESHOLD_NS;
+extern long const FT_ANR_THRESHOLD_MS;
+
+#pragma mark ----- HTTP Header Fields -----
+extern NSString * const FT_HTTP_HEADER_X_PKG_ID;          
+extern NSString * const FT_HTTP_HEADER_X_CLIENT_TIMESTAMP;
