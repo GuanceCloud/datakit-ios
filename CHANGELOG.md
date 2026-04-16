@@ -1,3 +1,7 @@
+# 1.6.2-beta.1
+1. Merge from 1.5.21
+2. Same as 1.6.2-alpha.17
+---
 # 1.6.2-alpha.17
 1. Merge from 1.5.21-alpha.3
 2. Session Replay adds image upload support
