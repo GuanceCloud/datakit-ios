@@ -1,3 +1,11 @@
+# 1.6.2
+1. Session Replay supports configuring fine-grained privacy masking for touches, text & input, and images via touchPrivacy, textAndInputPrivacy, and imagePrivacy.
+2. Supported view-level privacy overrides for UIView using sessionReplayPrivacyOverrides.
+3. Added FTSessionReplayConfig.sessionReplayOnErrorSampleRate for error-based sampling. If not captured by the normal sample rate, the previous 1 minute of session replay data can be triggered and sampled on errors.
+4. Supported WebView session replay.
+5. Added image upload support for Session Replay.
+6. Added remote configuration hot reload support for Session Replay
+--- 
 # 1.6.2-beta.2
 1. Fix Session Replay snapshot capture running on the swizzled CALayer callback stack, avoiding layout reentry and related rendering issues
 ---
