@@ -296,13 +296,13 @@
             FTInnerLogError(@"[NETWORK][%@] %@", strongSelf.featureName,[NSString stringWithFormat:@"Network failure: %@", error ? error : @"Unknown error"]);
         }else{
             NSInteger statusCode = httpResponse.statusCode;
-            FTInnerLogDebug(@"[NETWORK][%@] CheckImage Response statusCode : %ld",strongSelf.featureName,(long)statusCode);
             if (statusCode != 200 && data.length>0) {
-                FTInnerLogError(@"[NETWORK][%@] Server exception, responseData: %@",strongSelf.featureName,[[NSString alloc] initWithData:data encoding:NSUTF8StringEncoding]);
+                FTInnerLogError(@"[NETWORK][%@] CheckImage Response statusCode : %ld \n Server exception, responseData: %@",strongSelf.featureName,(long)statusCode,[[NSString alloc] initWithData:data encoding:NSUTF8StringEncoding]);
             }else{
                 NSString *dataStr = [[NSString alloc] initWithData:data encoding:NSUTF8StringEncoding];
                 NSDictionary *dict = [FTJSONUtil dictionaryWithJsonString:dataStr];
                 content = dict[@"content"];
+                FTInnerLogDebug(@"[NETWORK][%@] CheckImage Response statusCode : %ld \ncontent:%@",strongSelf.featureName,(long)statusCode,content);
             }
         }
         dispatch_semaphore_signal(flushSemaphore);
