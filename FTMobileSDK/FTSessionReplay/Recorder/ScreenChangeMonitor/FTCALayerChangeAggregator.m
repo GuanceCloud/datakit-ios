@@ -98,18 +98,19 @@
     
     if (self.lastDeliveryTime == 0) {
         self.lastDeliveryTime = now;
-        [self scheduleDeliveryAfterDelay:self.minimumDeliveryInterval];
+        if (self.scheduledDelivery == nil) {
+            [self scheduleDeliveryAfterDelay:self.minimumDeliveryInterval];
+        }
         return;
     }
     
-    NSTimeInterval elapsed = now - self.lastDeliveryTime;
-    
-    if (elapsed >= self.minimumDeliveryInterval) {
-        [self deliverPendingChangesWithNow:now];
-    } else if (!self.scheduledDelivery) {
-        NSTimeInterval remainingDelay = self.minimumDeliveryInterval - elapsed;
-        [self scheduleDeliveryAfterDelay:remainingDelay];
+    if (self.scheduledDelivery) {
+        return;
     }
+
+    NSTimeInterval elapsed = now - self.lastDeliveryTime;
+    NSTimeInterval delay =  MAX(0, self.minimumDeliveryInterval - elapsed);
+    [self scheduleDeliveryAfterDelay:delay];
 }
 
 - (void)scheduleDeliveryAfterDelay:(NSTimeInterval)delay {
