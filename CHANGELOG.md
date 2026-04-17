@@ -1,3 +1,6 @@
+# 1.6.2-beta.2
+1. Fix Session Replay snapshot capture running on the swizzled CALayer callback stack, avoiding layout reentry and related rendering issues
+---
 # 1.6.2-beta.1
 1. Merge from 1.5.21
 2. Same as 1.6.2-alpha.17
@@ -1594,4 +1597,3 @@ ___
 
 1. User custom tracking
 2. FT Gateway data synchronization
-
