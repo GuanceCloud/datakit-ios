@@ -200,7 +200,7 @@
     [FTModelHelper resolveModelArray:array callBack:^(NSString * _Nonnull source, NSDictionary * _Nonnull tags, NSDictionary * _Nonnull fields, BOOL * _Nonnull stop) {
         if ([source isEqualToString:FT_RUM_SOURCE_VIEW]) {
             [self rumTags:tags];
-            XCTAssertTrue([fields.allKeys containsObject:FT_KEY_VIEW_RESOURCE_COUNT]&&[fields.allKeys containsObject:FT_KEY_VIEW_ACTION_COUNT]&&[fields.allKeys containsObject:FT_KEY_VIEW_LONG_TASK_COUNT]&&[fields.allKeys containsObject:FT_KEY_VIEW_ERROR_COUNT]&&[fields.allKeys containsObject:FT_KEY_IS_ACTIVE]&&[fields.allKeys containsObject:FT_KEY_VIEW_UPDATE_TIME]&&[fields.allKeys containsObject:FT_KEY_TIME_SPENT]);
+            XCTAssertTrue([fields.allKeys containsObject:FT_KEY_VIEW_RESOURCE_COUNT]&&[fields.allKeys containsObject:FT_KEY_VIEW_ACTION_COUNT]&&[fields.allKeys containsObject:FT_KEY_VIEW_LONG_TASK_COUNT]&&[fields.allKeys containsObject:FT_KEY_VIEW_ERROR_COUNT]&&[fields.allKeys containsObject:FT_KEY_IS_ACTIVE]&&[fields.allKeys containsObject:FT_KEY_VIEW_UPDATE_TIME]&&[fields.allKeys containsObject:FT_KEY_TIME_SPENT]&&[fields.allKeys containsObject:FT_KEY_VIEW_LONG_TASK_RATE]);
             XCTAssertTrue([tags.allKeys containsObject:FT_KEY_VIEW_ID]&&[tags.allKeys containsObject:FT_KEY_VIEW_NAME]);
             hasView = YES;
             *stop = YES;
@@ -259,6 +259,35 @@
     }];
     XCTAssertTrue(hasViewData);
     XCTAssertTrue(actionCount == trueActionCount);
+    [FTModelHelper stopView];
+}
+- (void)testViewLongTaskRate{
+    [self setRumConfig];
+    [FTModelHelper startView];
+    [[FTGlobalRumManager sharedInstance].rumManager syncProcess];
+
+    FTRUMManager *rum = [FTGlobalRumManager sharedInstance].rumManager;
+    FTRUMSessionHandler *session = [rum valueForKey:@"sessionHandler"];
+    FTRUMViewHandler *view = [[session valueForKey:@"viewHandlers"] lastObject];
+    [view setValue:[NSDate dateWithTimeIntervalSinceNow:-10] forKey:@"viewStartTime"];
+
+    [self addLongTaskData:nil];
+    [[FTGlobalRumManager sharedInstance].rumManager syncProcess];
+
+    NSArray *newArray = [[FTTrackerEventDBTool sharedManager] getFirstRecords:100 withType:FT_DATA_TYPE_RUM];
+    __block BOOL hasViewData = NO;
+    [FTModelHelper resolveModelArray:newArray callBack:^(NSString * _Nonnull source, NSDictionary * _Nonnull tags, NSDictionary * _Nonnull fields, BOOL * _Nonnull stop) {
+        if ([source isEqualToString:FT_RUM_SOURCE_VIEW] && [fields[FT_KEY_VIEW_LONG_TASK_COUNT] integerValue] == 1) {
+            double viewLongTaskRate = [fields[FT_KEY_VIEW_LONG_TASK_RATE] doubleValue];
+            long long timeSpent = [fields[FT_KEY_TIME_SPENT] longLongValue];
+
+            XCTAssertTrue(timeSpent >= 10000000000);
+            XCTAssertTrue(viewLongTaskRate > 0.49 && viewLongTaskRate < 0.51);
+            hasViewData = YES;
+            *stop = YES;
+        }
+    }];
+    XCTAssertTrue(hasViewData);
     [FTModelHelper stopView];
 }
 /// Verify: enableTraceUserView, application enters background and foreground, view will be automatically updated

@@ -103,6 +103,7 @@ extern NSString * const FT_KEY_VIEW_UPDATE_TIME;
 extern NSString * const FT_KEY_VIEW_RESOURCE_COUNT;
 extern NSString * const FT_KEY_VIEW_LONG_TASK_COUNT;
 extern NSString * const FT_KEY_VIEW_ACTION_COUNT;
+extern NSString * const FT_KEY_VIEW_LONG_TASK_RATE;
 #pragma mark --- monitor field
 /// View page average CPU tick count per second
 extern NSString * const FT_CPU_TICK_COUNT_PER_SECOND;
@@ -236,8 +237,6 @@ extern NSString * const FT_USER_ID;
 extern NSString * const FT_USER_EMAIL;
 extern NSString * const FT_USER_NAME;
 extern NSString * const FT_USER_EXTRA;
-
-
 
 
 

@@ -99,6 +99,7 @@ NSString * const FT_KEY_VIEW_ERROR_COUNT = @"view_error_count";
 NSString * const FT_KEY_VIEW_RESOURCE_COUNT = @"view_resource_count";
 NSString * const FT_KEY_VIEW_LONG_TASK_COUNT = @"view_long_task_count";
 NSString * const FT_KEY_VIEW_ACTION_COUNT = @"view_action_count";
+NSString * const FT_KEY_VIEW_LONG_TASK_RATE = @"view_long_task_rate";
 //Device Monitor
 NSString * const FT_CPU_TICK_COUNT_PER_SECOND = @"cpu_tick_count_per_second";
 NSString * const FT_CPU_TICK_COUNT = @"cpu_tick_count";
@@ -223,4 +224,3 @@ NSString * const FT_USER_ID = @"userid";
 NSString * const FT_USER_NAME = @"user_name";
 NSString * const FT_USER_EMAIL = @"user_email";
 NSString * const FT_USER_EXTRA = @"user_extra";
-

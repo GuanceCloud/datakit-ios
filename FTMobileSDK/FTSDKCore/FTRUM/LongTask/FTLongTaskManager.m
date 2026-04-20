@@ -275,6 +275,7 @@ void *FTLongTaskManagerQueueTag = &FTLongTaskManagerQueueTag;
                 if(duration <= 0){
                     goto ended;
                 }
+                long long longTaskEndTime = startTime + duration;
                 BOOL isAnr = duration > 5 * 1e9;
                 NSDictionary *tags = [event.errorContextModel.lastSessionState sessionTags];
                 NSString *backtrace = event.mainThreadBacktrace;
@@ -290,6 +291,16 @@ void *FTLongTaskManagerQueueTag = &FTLongTaskManagerQueueTag;
                 }
                 if(lastViews){
                     NSMutableDictionary *lastViewsFields = [NSMutableDictionary dictionaryWithDictionary:lastViews[@"fields"]];
+                    long long viewStartTime = [lastViews[@"time"] longLongValue];
+                    long long timeSpent = longTaskEndTime - viewStartTime;
+                    if (timeSpent <= 0) {
+                        timeSpent = 1;
+                    }
+                    long long oldTimeSpent = [lastViewsFields[FT_KEY_TIME_SPENT] longLongValue];
+                    double oldLongTaskRate = [lastViewsFields[FT_KEY_VIEW_LONG_TASK_RATE] doubleValue];
+                    long long oldLongTaskDuration = (oldTimeSpent > 0 && oldLongTaskRate > 0) ? (long long)(oldLongTaskRate * oldTimeSpent) : 0;
+                    long long newLongTaskDuration = oldLongTaskDuration + duration;
+                    double viewLongTaskRate = timeSpent > 0 ? (double)newLongTaskDuration / (double)timeSpent : 0;
                     if (isAnr) {
                         lastViewsFields[FT_KEY_VIEW_ERROR_COUNT] = @([lastViewsFields[FT_KEY_VIEW_ERROR_COUNT] intValue]+1);
                         BOOL sampledForErrorReplay = [lastViewsFields[FT_RUM_KEY_SAMPLED_FOR_ERROR_REPLAY] boolValue];
@@ -298,11 +309,13 @@ void *FTLongTaskManagerQueueTag = &FTLongTaskManagerQueueTag;
                         }
                     }
                     lastViewsFields[FT_KEY_VIEW_LONG_TASK_COUNT] = @([lastViewsFields[FT_KEY_VIEW_LONG_TASK_COUNT] intValue]+1);
+                    lastViewsFields[FT_KEY_TIME_SPENT] = @(timeSpent);
+                    lastViewsFields[FT_KEY_VIEW_LONG_TASK_RATE] = @(viewLongTaskRate);
                     lastViewsFields[FT_KEY_VIEW_UPDATE_TIME] = @([lastViewsFields[FT_KEY_VIEW_UPDATE_TIME] intValue]+1);
                     lastViewsFields[FT_KEY_IS_ACTIVE] = @(NO);
                     NSNumber *time = lastViews[@"time"];
                     
-                    [strongSelf.dependencies.writer rumWrite:FT_RUM_SOURCE_VIEW tags:lastViews[@"tags"] fields:lastViewsFields  dynamicContext:event.errorContextModel.globalAttributes time:[time longLongValue]  updateTime:errorDate cache:sessionOnError];
+                    [strongSelf.dependencies.writer rumWrite:FT_RUM_SOURCE_VIEW tags:lastViews[@"tags"] fields:lastViewsFields  dynamicContext:event.errorContextModel.globalAttributes time:[time longLongValue]  updateTime:longTaskEndTime cache:sessionOnError];
                 }
                 [strongSelf.dependencies.writer rumWrite:FT_RUM_SOURCE_LONG_TASK tags:tags fields:fields dynamicContext:event.errorContextModel.globalAttributes time:startTime updateTime:0 cache:sessionOnError];
                 

@@ -313,6 +313,8 @@
             XCTAssertTrue([fields[FT_KEY_VIEW_LONG_TASK_COUNT] isEqual:@1]);
             XCTAssertTrue([fields[FT_KEY_VIEW_UPDATE_TIME] isEqual:@2]);
             XCTAssertTrue([fields[FT_KEY_VIEW_ERROR_COUNT] isEqual:@1]);
+            XCTAssertTrue([fields[FT_KEY_TIME_SPENT] isEqual:@5667554048]);
+            XCTAssertEqualWithAccuracy([fields[FT_KEY_VIEW_LONG_TASK_RATE] doubleValue], 0.9613205417816246, 0.000001);
             hasView = YES;
         }
     }];
@@ -358,6 +360,8 @@
             XCTAssertTrue([fields[FT_KEY_VIEW_LONG_TASK_COUNT] isEqual:@1]);
             XCTAssertTrue([fields[FT_KEY_VIEW_ERROR_COUNT] isEqual:@0]);
             XCTAssertTrue([fields[FT_KEY_VIEW_UPDATE_TIME] isEqual:@2]);
+            XCTAssertTrue([fields[FT_KEY_TIME_SPENT] isEqual:@3667554048]);
+            XCTAssertEqualWithAccuracy([fields[FT_KEY_VIEW_LONG_TASK_RATE] doubleValue], 0.9402277602099567, 0.000001);
             hasView = YES;
         }
     }];
