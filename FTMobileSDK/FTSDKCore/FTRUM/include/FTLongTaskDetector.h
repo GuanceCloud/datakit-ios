@@ -10,8 +10,8 @@
 
 NS_ASSUME_NONNULL_BEGIN
 @protocol FTLongTaskProtocol<NSObject>
-- (void)startLongTask:(NSDate *)startDate;
-- (void)updateLongTaskDate:(NSDate *)date;
+- (void)startLongTask:(long long)startTime;
+- (void)updateLongTaskDate:(long long)time;
 - (void)endLongTask;
 @end
 @interface FTLongTaskDetector : NSObject

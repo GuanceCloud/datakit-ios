@@ -351,7 +351,7 @@ void *FTLongTaskManagerQueueTag = &FTLongTaskManagerQueueTag;
         return;
     });
 }
-- (void)startLongTask:(NSDate *)startDate{
+- (void)startLongTask:(long long)startTime{
     @try {
         // If lastSessionContext is nil, the current session is not sampled.
         FTFatalErrorContextModel *currentContextModel = self.dependencies.fatalErrorContext.currentContextModel;
@@ -360,7 +360,7 @@ void *FTLongTaskManagerQueueTag = &FTLongTaskManagerQueueTag;
         }
         FTLongTaskEvent *event = [[FTLongTaskEvent alloc]initWithFreezeDurationMs:_freezeDurationMs];
         event.errorContextModel = currentContextModel;
-        event.startDate = [startDate ft_nanosecondTimeStamp];
+        event.startDate = startTime;
         event.mainThreadBacktrace = [self.backtraceReporting generateMainThreadBacktrace];
         event.lastDate = event.startDate;
         event.isANR = NO;
@@ -369,12 +369,12 @@ void *FTLongTaskManagerQueueTag = &FTLongTaskManagerQueueTag;
         FTInnerLogError(@"[LongTask] exception %@",exception);
     }
 }
-- (void)updateLongTaskDate:(NSDate *)date{
+- (void)updateLongTaskDate:(long long)time{
     @try {
-        if(!self.enableANR||!self.longTaskEvent||!date){
+        if(!self.enableANR||!self.longTaskEvent||time <= 0){
             return;
         }
-        long long updateDate = [date ft_nanosecondTimeStamp];
+        long long updateDate = time;
         // Reduce I/O
         if (updateDate - self.longTaskEvent.startDate > FT_ANR_THRESHOLD_S) {
             if (!self.longTaskEvent.writeInFile){

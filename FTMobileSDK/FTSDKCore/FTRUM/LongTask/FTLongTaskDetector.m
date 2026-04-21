@@ -15,8 +15,6 @@
 #import "NSDate+FTUtil.h"
 #import "FTErrorDataProtocol.h"
 
-static NSDate *g_startDate;
-
 @interface FTLongTaskDetector (){
     CFRunLoopObserverRef m_runLoopBeginObserver;  // Observer
     CFRunLoopObserverRef m_runLoopEndObserver;    // Observer
@@ -29,6 +27,7 @@ static NSDate *g_startDate;
 @property (nonatomic, assign) NSInteger countTime; // Time-consuming count
 @property (nonatomic, strong) dispatch_queue_t longTaskQueue;
 @property (nonatomic, assign) long limitMillisecond;
+@property (atomic, assign) long long startTimestamp;
 @end
 @implementation FTLongTaskDetector
 -(instancetype)initWithDelegate:(id<FTLongTaskProtocol>)delegate{
@@ -59,11 +58,11 @@ static NSDate *g_startDate;
                         strongSelf.countTime++;
                         if(strongSelf.countTime == 1){
                             if (strongSelf.longTaskDelegate != nil && [strongSelf.longTaskDelegate  respondsToSelector:@selector(startLongTask:)]) {
-                                [strongSelf.longTaskDelegate startLongTask:g_startDate];
+                                [strongSelf.longTaskDelegate startLongTask:strongSelf.startTimestamp];
                             }
                         }else{
                             if (strongSelf.longTaskDelegate != nil && [strongSelf.longTaskDelegate  respondsToSelector:@selector(updateLongTaskDate:)]) {
-                                [strongSelf.longTaskDelegate updateLongTaskDate:[NSDate date]];
+                                [strongSelf.longTaskDelegate updateLongTaskDate:[NSDate ft_currentNanosecondTimeStamp]];
                             }
                         }
                         continue;
@@ -92,7 +91,7 @@ static NSDate *g_startDate;
         __strong __typeof(weakSelf) strongSelf = weakSelf;
         if (!strongSelf) return;
         strongSelf->_activity = activity;
-        g_startDate = [NSDate date];
+        strongSelf.startTimestamp = [NSDate ft_currentNanosecondTimeStamp];
         dispatch_semaphore_signal(strongSelf->_semaphore);
     });
     CFRetain(beginObserver);
@@ -100,8 +99,9 @@ static NSDate *g_startDate;
     CFRelease(beginObserver);
     CFRunLoopObserverRef endObserver = CFRunLoopObserverCreateWithHandler(kCFAllocatorDefault, kCFRunLoopExit|kCFRunLoopBeforeWaiting, YES, LONG_MAX, ^(CFRunLoopObserverRef observer, CFRunLoopActivity activity) {
         __strong __typeof(weakSelf) strongSelf = weakSelf;
+        if (!strongSelf) return;
         strongSelf->_activity = activity;
-        g_startDate = [NSDate date];
+        strongSelf.startTimestamp = [NSDate ft_currentNanosecondTimeStamp];
         dispatch_semaphore_signal(strongSelf->_semaphore);
     });
     CFRetain(endObserver);

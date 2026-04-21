@@ -14,6 +14,7 @@
 #import "FTInnerLog.h"
 #import "FTCrash.h"
 #import "FTRUMContext.h"
+#import "NSDate+FTUtil.h"
 typedef void (^FTLongTaskCallBack)(NSString *slowStack, long long duration);
 typedef void (^FTWriteCallBack)(NSDictionary *fields, NSDictionary *tags);
 
@@ -60,7 +61,7 @@ typedef void (^FTWriteCallBack)(NSDictionary *fields, NSDictionary *tags);
 }
 - (void)testLongTask_appendData{
     FTLongTaskManager *longTaskManager = [self mockLongTaskManager];
-    [longTaskManager startLongTask:[NSDate date]];
+    [longTaskManager startLongTask:[NSDate ft_currentNanosecondTimeStamp]];
     
     // Normal logic to add data
     XCTAssertNoThrow([longTaskManager appendData:[@"test_appendData" dataUsingEncoding:NSUTF8StringEncoding]]) ;
@@ -90,8 +91,9 @@ typedef void (^FTWriteCallBack)(NSDictionary *fields, NSDictionary *tags);
 }
 - (void)testLongTask_deleteFile{
     FTLongTaskManager *longTaskManager = [self mockLongTaskManager];
-    [longTaskManager startLongTask:[NSDate date]];
-    [longTaskManager updateLongTaskDate:[[NSDate date] dateByAddingTimeInterval:4]];
+    long long startTime = [NSDate ft_currentNanosecondTimeStamp];
+    [longTaskManager startLongTask:startTime];
+    [longTaskManager updateLongTaskDate:startTime + (long long)(4 * NSEC_PER_SEC)];
 
     dispatch_sync(longTaskManager.queue, ^{});
     NSString *dataStorePath = [longTaskManager valueForKey:@"dataStorePath"];
@@ -140,11 +142,11 @@ typedef void (^FTWriteCallBack)(NSDictionary *fields, NSDictionary *tags);
     [longTaskManager shutDown];
 }
 - (void)testLongTask_start_update_end{
-    NSDate *date = [NSDate date];
+    long long startTime = [NSDate ft_currentNanosecondTimeStamp];
     FTLongTaskManager *longTaskManager = [self mockLongTaskManager];
-    XCTAssertNoThrow([longTaskManager startLongTask:date]);
-    XCTAssertNoThrow([longTaskManager updateLongTaskDate:nil]);
-    [longTaskManager updateLongTaskDate:[NSDate date]];
+    XCTAssertNoThrow([longTaskManager startLongTask:startTime]);
+    XCTAssertNoThrow([longTaskManager updateLongTaskDate:0]);
+    [longTaskManager updateLongTaskDate:[NSDate ft_currentNanosecondTimeStamp]];
     __block BOOL hasCallBack = NO;
     self.callBack = ^(NSString *slowStack, long long duration) {
         XCTAssertTrue(slowStack != nil);
@@ -159,12 +161,12 @@ typedef void (^FTWriteCallBack)(NSDictionary *fields, NSDictionary *tags);
     [longTaskManager shutDown];
 }
 - (void)testLongTask_reportFatalWatchDogIfFound{
-    NSDate *date = [NSDate date];
+    long long startTime = [NSDate ft_currentNanosecondTimeStamp];
     FTLongTaskManager *longTaskManager = [self mockLongTaskManager];
-    XCTAssertNoThrow([longTaskManager startLongTask:date]);
-    XCTAssertNoThrow([longTaskManager updateLongTaskDate:nil]);
-    [longTaskManager updateLongTaskDate:[date dateByAddingTimeInterval:3.1]];
-    [longTaskManager updateLongTaskDate:[date dateByAddingTimeInterval:5.1]];
+    XCTAssertNoThrow([longTaskManager startLongTask:startTime]);
+    XCTAssertNoThrow([longTaskManager updateLongTaskDate:0]);
+    [longTaskManager updateLongTaskDate:startTime + 3100000000LL];
+    [longTaskManager updateLongTaskDate:startTime + 5100000000LL];
     dispatch_sync(longTaskManager.queue, ^{});
     __block BOOL hasCallBack = NO;
     self.writeCallBack = ^(NSDictionary *fields, NSDictionary *tags) {
