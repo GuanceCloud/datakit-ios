@@ -254,27 +254,47 @@
 -(BOOL)flushWithEvent:(id)event parameters:(NSDictionary *)parameters{
     @try {
         NSMutableArray<FTEnrichedResource *> *resources = [NSMutableArray new];
-        NSMutableArray *files = [NSMutableArray new];
         for (NSData *data in event) {
             FTEnrichedResource *resource = [[FTEnrichedResource alloc]initWithData:data];
-            [resources addObject:resource];
-            [files addObject:resource.identifier];
-        }
-        NSDictionary *content = [self checkImageWithEvent:files parameters:@{FT_APP_ID:resources[0].appId}];
-        if (content == nil || content.count == 0) {
-            return NO;
-        }
-        NSMutableArray *uploadResources = [NSMutableArray new];
-        for (FTEnrichedResource *resource in resources) {
-            NSNumber *fileExist = content[resource.identifier];
-            if (fileExist && ![fileExist boolValue]) {
-                [uploadResources addObject:resource];
+            if (resource) {
+                [resources addObject:resource];
             }
         }
-        if (uploadResources.count == 0) {
+        if (resources.count == 0) {
             return YES;
         }
-        return [super flushWithEvent:uploadResources  parameters:parameters];
+        NSArray<NSArray<FTEnrichedResource *> *> *groupedResources = [self groupedResourcesByUploadContext:resources];
+        for (NSUInteger idx = 0; idx < groupedResources.count; idx++) {
+            NSArray<FTEnrichedResource *> *resourceGroup = groupedResources[idx];
+            NSDictionary *groupParameters = [self parametersForResources:resourceGroup baseParameters:parameters];
+            NSMutableArray<NSString *> *files = [NSMutableArray new];
+            for (FTEnrichedResource *resource in resourceGroup) {
+                [files addObject:resource.identifier];
+            }
+            NSDictionary *content = [self checkImageWithEvent:files parameters:groupParameters];
+            if (content == nil || content.count == 0) {
+                return NO;
+            }
+            NSMutableArray<FTEnrichedResource *> *uploadResources = [NSMutableArray new];
+            for (FTEnrichedResource *resource in resourceGroup) {
+                NSNumber *fileExist = content[resource.identifier];
+                if (fileExist && ![fileExist boolValue]) {
+                    [uploadResources addObject:resource];
+                }
+            }
+            if (uploadResources.count > 0) {
+                if (![super flushWithEvent:uploadResources parameters:groupParameters]) {
+                    return NO;
+                }
+                if (idx < groupedResources.count - 1) {
+                    [self.requestBuilder.classSerialGenerator increaseRequestSerialNumber];
+                }
+            }
+            if (idx < groupedResources.count - 1) {
+                [self.checkRequest.classSerialGenerator increaseRequestSerialNumber];
+            }
+        }
+        return YES;
     } @catch (NSException *exception) {
         FTInnerLogError(@"exception %@",exception);
     }
@@ -309,5 +329,45 @@
     }];
     dispatch_semaphore_wait(flushSemaphore, DISPATCH_TIME_FOREVER);
     return content;
+}
+
+- (NSArray<NSArray<FTEnrichedResource *> *> *)groupedResourcesByUploadContext:(NSArray<FTEnrichedResource *> *)resources{
+    NSMutableArray<NSMutableArray<FTEnrichedResource *> *> *groups = [NSMutableArray new];
+    for (FTEnrichedResource *resource in resources) {
+        BOOL found = NO;
+        for (NSMutableArray<FTEnrichedResource *> *group in groups) {
+            FTEnrichedResource *groupSample = group.firstObject;
+            if ([self isSameUploadContext:resource another:groupSample]) {
+                [group addObject:resource];
+                found = YES;
+                break;
+            }
+        }
+        if (!found) {
+            [groups addObject:[NSMutableArray arrayWithObject:resource]];
+        }
+    }
+    return [groups copy];
+}
+
+- (BOOL)isSameUploadContext:(FTEnrichedResource *)resource another:(FTEnrichedResource *)another{
+    NSDictionary *bindInfo = resource.bindInfo ?: @{};
+    NSDictionary *otherBindInfo = another.bindInfo ?: @{};
+    BOOL sameBindInfo = [bindInfo isEqualToDictionary:otherBindInfo];
+    BOOL sameAppID = (resource.appId == another.appId) || [resource.appId isEqualToString:another.appId];
+    return sameBindInfo && sameAppID;
+}
+
+- (NSDictionary *)parametersForResources:(NSArray<FTEnrichedResource *> *)resources baseParameters:(NSDictionary *)baseParameters{
+    FTEnrichedResource *resource = resources.firstObject;
+    NSMutableDictionary *parameters = [NSMutableDictionary dictionary];
+    [parameters setValue:resource.appId forKey:FT_APP_ID];
+    if (baseParameters) {
+        [parameters addEntriesFromDictionary:baseParameters];
+    }
+    if (resource.bindInfo) {
+        [parameters addEntriesFromDictionary:resource.bindInfo];
+    }
+    return [parameters copy];
 }
 @end

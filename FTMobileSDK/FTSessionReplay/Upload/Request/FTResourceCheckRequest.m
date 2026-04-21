@@ -38,12 +38,18 @@
     
     mutableRequest.HTTPMethod = self.httpMethod;
     
-    NSDictionary *params = @{FT_APP_ID:appId,
-                             @"files":self.resources
-    };
+    NSMutableDictionary *params = [NSMutableDictionary dictionary];
+    [params setValue:appId forKey:FT_APP_ID];
+    if (self.parameters) {
+        [params addEntriesFromDictionary:self.parameters];
+    }
+    [params setValue:self.resources forKey:@"files"];
     NSError *jsonError = nil;
     
     NSData *jsonData = [NSJSONSerialization dataWithJSONObject:params options:kNilOptions error:&jsonError];
+    if (jsonError) {
+        return nil;
+    }
     
     mutableRequest.HTTPBody = jsonData;
     

@@ -46,6 +46,7 @@
                         resource.data = [obj calculateData];
                         resource.appId = context.applicationID;
                         resource.mimeType = obj.mimeType;
+                        resource.bindInfo = context.bindInfo;
                         [addResource addObject:resource];
                     }
                 }];

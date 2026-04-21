@@ -41,6 +41,7 @@
     if(!self.multipartFormBody || !self.resources || self.resources.count == 0){
         return nil;
     }
+    FTEnrichedResource *firstResource = self.resources.firstObject;
     [self addHTTPHeaderFields:mutableRequest packageId:[FTPackageIdGenerator generatePackageId:self.serialNumber count:self.resources.count]];
     
     mutableRequest.HTTPMethod = self.httpMethod;
@@ -48,7 +49,17 @@
     for (FTEnrichedResource *resource in self.resources) {
         [self.multipartFormBody addFormData:@"files" filename:resource.identifier data:resource.data mimeType:@"application/octet-stream"];
     }
-    [self.multipartFormBody addFormField:FT_APP_ID value:self.resources[0].appId];
+    NSMutableDictionary *formFields = [NSMutableDictionary dictionary];
+    [formFields setValue:firstResource.appId forKey:FT_APP_ID];
+    if (self.parameters) {
+        [formFields addEntriesFromDictionary:self.parameters];
+    }
+    if (firstResource.bindInfo) {
+        [formFields addEntriesFromDictionary:firstResource.bindInfo];
+    }
+    for (NSString *key in formFields.allKeys) {
+        [self.multipartFormBody addFormField:key value:formFields[key]];
+    }
     
     mutableRequest.HTTPBody = [self.multipartFormBody build];
     return mutableRequest;
