@@ -1,3 +1,10 @@
+# 1.6.3-alpha.1
+1. Added `view_long_task_rate` to count page jank rate for RUM views.
+2. Fixed long task detector race conditions by using timestamps.
+3. Added link RUM key support for Session Replay resource asset uploads.
+4. Improved URLSession swizzling compatibility with no-op delegate placeholders.
+5. Added RUM crash duration fields from app stats: `foreground_crash_free_duration` and `background_crash_free_duration`.
+---
 # 1.6.2
 1. Session Replay supports configuring fine-grained privacy masking for touches, text & input, and images via touchPrivacy, textAndInputPrivacy, and imagePrivacy.
 2. Supported view-level privacy overrides for UIView using sessionReplayPrivacyOverrides.
