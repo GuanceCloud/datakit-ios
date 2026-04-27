@@ -325,39 +325,58 @@ static dispatch_once_t onceToken;
     Class collectMetricsClass = [FTSwizzler realDelegateClassFromSelector:collectMetricsSelector proxy:delegate];
     
     // Ensure the delegate class implements the necessary methods
-    [self addMethodIfNeededToClass:receiveDataClass selector:receiveDataSelector];
-    [self addMethodIfNeededToClass:completeClass selector:completeSelector];
-    [self addMethodIfNeededToClass:collectMetricsClass selector:collectMetricsSelector];
+    [self addNoopMethodIfNeededToClass:receiveDataClass selector:receiveDataSelector];
+    [self addNoopMethodIfNeededToClass:completeClass selector:completeSelector];
+    [self addNoopMethodIfNeededToClass:collectMetricsClass selector:collectMetricsSelector];
     
     [self swizzleReceiveDataMethodForClass:receiveDataClass];
     [self swizzleCompleteMethodForClass:completeClass];
     [self swizzleCollectMetricsMethodForClass:collectMetricsClass];
 }
 
-/// Adds a method to the class if necessary
-- (void)addMethodIfNeededToClass:(Class)targetClass selector:(SEL)selector {
+/// Adds a no-op method to the class if necessary
+- (void)addNoopMethodIfNeededToClass:(Class)targetClass selector:(SEL)selector {
     if (![FTSwizzler realDelegateClass:targetClass respondsToSelector:selector]) {
-        void (^block)(id, id, id, id) = ^(id delegate, NSURLSession *session, NSURLSessionDataTask *task, id param) {
-            // Empty implementation, just to ensure the method exists
-        };
-        IMP imp = imp_implementationWithBlock(block);
-        
-        // Determine the method signature based on the selector
-        const char *typeEncoding = [self typeEncodingForSelector:selector];
-        class_addMethod(targetClass, selector, imp, typeEncoding);
+        Method method = class_getInstanceMethod([FTDURLSessionDelegate class], selector);
+        if (!method) {
+            return;
+        }
+        IMP imp = [self noopImplementationForSelector:selector];
+        if (!imp) {
+            return;
+        }
+        const char *typeEncoding = method_getTypeEncoding(method);
+        if (!class_addMethod(targetClass, selector, imp, typeEncoding)) {
+            imp_removeBlock(imp);
+        }
     }
 }
 
-/// Gets the type encoding for the selector
-- (const char *)typeEncodingForSelector:(SEL)selector {
+/// Creates an empty implementation matching the NSURLSession delegate selector signature
+- (IMP)noopImplementationForSelector:(SEL)selector {
     if (selector == @selector(URLSession:dataTask:didReceiveData:)) {
-        return "v@:@@@";
+        void (^block)(id, NSURLSession *, NSURLSessionDataTask *, NSData *) = ^(__unused id delegate,
+                                                                                __unused NSURLSession *session,
+                                                                                __unused NSURLSessionDataTask *dataTask,
+                                                                                __unused NSData *data) {
+        };
+        return imp_implementationWithBlock(block);
     } else if (selector == @selector(URLSession:task:didCompleteWithError:)) {
-        return "v@:@@@";
+        void (^block)(id, NSURLSession *, NSURLSessionTask *, NSError *) = ^(__unused id delegate,
+                                                                             __unused NSURLSession *session,
+                                                                             __unused NSURLSessionTask *task,
+                                                                             __unused NSError *error) {
+        };
+        return imp_implementationWithBlock(block);
     } else if (selector == @selector(URLSession:task:didFinishCollectingMetrics:)) {
-        return "v@:@@@";
+        void (^block)(id, NSURLSession *, NSURLSessionTask *, NSURLSessionTaskMetrics *) = ^(__unused id delegate,
+                                                                                             __unused NSURLSession *session,
+                                                                                             __unused NSURLSessionTask *task,
+                                                                                             __unused NSURLSessionTaskMetrics *metrics) {
+        };
+        return imp_implementationWithBlock(block);
     }
-    return "v@:@@@";
+    return NULL;
 }
 
 /// Swizzle the method for receiving data
@@ -379,7 +398,7 @@ static dispatch_once_t onceToken;
     FTSwizzlerInstanceMethod(targetClass,
                              @selector(URLSession:task:didCompleteWithError:),
                              FTSWReturnType(void),
-                             FTSWArguments(NSURLSession *session, NSURLSessionDataTask *task, NSError *error),
+                             FTSWArguments(NSURLSession *session, NSURLSessionTask *task, NSError *error),
                              FTSWReplacement({
         if (FTURLSessionInstrumentation.sharedInstance.shouldRUMInterceptor) {
             [FTURLSessionInstrumentation.sharedInstance.interceptor taskCompleted:task error:error];
@@ -393,7 +412,7 @@ static dispatch_once_t onceToken;
     FTSwizzlerInstanceMethod(targetClass,
                              @selector(URLSession:task:didFinishCollectingMetrics:),
                              FTSWReturnType(void),
-                             FTSWArguments(NSURLSession *session, NSURLSessionDataTask *task, NSURLSessionTaskMetrics *metrics),
+                             FTSWArguments(NSURLSession *session, NSURLSessionTask *task, NSURLSessionTaskMetrics *metrics),
                              FTSWReplacement({
         if (FTURLSessionInstrumentation.sharedInstance.shouldRUMInterceptor) {
             [FTURLSessionInstrumentation.sharedInstance.interceptor taskMetricsCollected:task metrics:metrics custom:NO];
