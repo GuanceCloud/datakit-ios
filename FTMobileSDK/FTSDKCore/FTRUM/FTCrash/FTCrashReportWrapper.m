@@ -58,6 +58,14 @@
 
 #define MAX_STACKTRACE_LENGTH 100
 
+static NSNumber *FTCrashFreeDurationNanoseconds(id durationValue)
+{
+    if (![durationValue respondsToSelector:@selector(doubleValue)]) {
+        return nil;
+    }
+    return @((long long)llround([durationValue doubleValue] * (double)NSEC_PER_SEC));
+}
+
 typedef struct {
     FTCrashThread thread;
     FTCrashStackEntry stackEntries[MAX_STACKTRACE_LENGTH];
@@ -261,6 +269,8 @@ static NSDictionary *g_registerOrders;
                 
                 NSMutableDictionary *errorFields = [NSMutableDictionary new];
                 NSNumber *sessionErrorTimestamp = nil;
+                NSDictionary *system = report.value[FTCrashField_System];
+                NSDictionary *appStats = system[FTCrashField_AppStats];
                 if (errorContext.lastSessionState.sampled_for_error_session) {
                     errorContext.lastSessionState.session_error_timestamp = self.crashDate;
                     sessionErrorTimestamp = @(self.crashDate);
@@ -269,6 +279,10 @@ static NSDictionary *g_registerOrders;
                 [errorFields setValue:@"ios_crash" forKey:FT_KEY_ERROR_TYPE];
                 [errorFields setValue:self.crashMessage forKey:FT_KEY_ERROR_MESSAGE];
                 [errorFields setValue:appleReportString forKey:FT_KEY_ERROR_STACK];
+                [errorFields setValue:FTCrashFreeDurationNanoseconds(appStats[FTCrashField_ActiveTimeSinceCrash])
+                               forKey:FT_KEY_FOREGROUND_CRASH_FREE_DURATION];
+                [errorFields setValue:FTCrashFreeDurationNanoseconds(appStats[FTCrashField_BGTimeSinceCrash])
+                               forKey:FT_KEY_BACKGROUND_CRASH_FREE_DURATION];
                 [errorFields setValue:extra forKey:@"crash_extra"];
                 errorModel.source = FT_RUM_SOURCE_ERROR;
                 
@@ -913,4 +927,3 @@ static NSDictionary *g_registerOrders;
     return str;
 }
 @end
-

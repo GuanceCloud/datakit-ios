@@ -19,6 +19,7 @@
 #import "FTSRNodeWireframesBuilder.h"
 #import "FTSRRecord.h"
 #import "FTViewAttributes.h"
+#import "FTResourceWriter.h"
 
 BOOL isNull(id value)
 {

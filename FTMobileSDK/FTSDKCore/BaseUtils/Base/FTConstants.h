@@ -168,6 +168,8 @@ extern NSString * const FT_KEY_ERROR_SITUATION;
 #pragma mark --- field
 extern NSString * const FT_KEY_ERROR_MESSAGE;
 extern NSString * const FT_KEY_ERROR_STACK;
+extern NSString * const FT_KEY_FOREGROUND_CRASH_FREE_DURATION;
+extern NSString * const FT_KEY_BACKGROUND_CRASH_FREE_DURATION;
 #pragma mark --- error monitor tag
 extern NSString * const FT_MEMORY_TOTAL;
 extern NSString * const FT_MEMORY_USE;
@@ -237,6 +239,5 @@ extern NSString * const FT_USER_ID;
 extern NSString * const FT_USER_EMAIL;
 extern NSString * const FT_USER_NAME;
 extern NSString * const FT_USER_EXTRA;
-
 
 

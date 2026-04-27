@@ -149,6 +149,8 @@ NSString * const FT_KEY_SPANID = @"span_id";
 //error filed
 NSString * const FT_KEY_ERROR_MESSAGE = @"error_message";
 NSString * const FT_KEY_ERROR_STACK = @"error_stack";
+NSString * const FT_KEY_FOREGROUND_CRASH_FREE_DURATION = @"foreground_crash_free_duration";
+NSString * const FT_KEY_BACKGROUND_CRASH_FREE_DURATION = @"background_crash_free_duration";
 //error tag
 NSString * const FT_KEY_ERROR_SOURCE = @"error_source";
 NSString * const FT_KEY_ERROR_TYPE = @"error_type";

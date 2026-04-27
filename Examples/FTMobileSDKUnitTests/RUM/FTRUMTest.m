@@ -39,6 +39,25 @@
 #import "FTRUMContext.h"
 #import "FTRUMViewHandler.h"
 #import "FTRUMPlaceholderViewHandler.h"
+#import "FTCrashReportWrapper.h"
+#import "FTCrashReport.h"
+#import "FTCrashReportFields.h"
+#import "FTFatalErrorContext.h"
+
+@interface FTTestCrashReportWrapper : FTCrashReportWrapper
+@end
+
+@implementation FTTestCrashReportWrapper
+
+- (NSString *)toAppleFormat:(NSDictionary *)report{
+    return @"mock crash stack";
+}
+
+- (NSString *)crashedThreadCPUStateStringForReport:(NSDictionary *)report cpuArch:(NSString *)cpuArch{
+    return @"mock registers";
+}
+
+@end
 
 @interface FTRUMTest : XCTestCase
 @property (nonatomic, copy) NSString *url;
@@ -1895,7 +1914,113 @@
     XCTAssertTrue(viewHandlers.count == newViewHandlers.count == 1);
     XCTAssertTrue([[newViewHandlers firstObject] isKindOfClass:FTRUMPlaceholderViewHandler.class]);
 }
+
+- (void)testCrashErrorAddsCrashFreeDurationFields{
+    FTCrashReportWrapper *wrapper = [self mockCrashReportWrapper];
+    NSDictionary *report = [self mockCrashReportWithAppStats:@{
+        FTCrashField_ActiveTimeSinceCrash: @12.3,
+        FTCrashField_BGTimeSinceCrash: @45.6,
+    }];
+    __block NSArray<id<FTCrashReport>> *filteredReports = nil;
+
+    [wrapper filterReports:@[[FTCrashReportDictionary reportWithValue:report]]
+              onCompletion:^(NSArray<id<FTCrashReport>> *reports, NSError *error) {
+        XCTAssertNil(error);
+        filteredReports = reports;
+    }];
+
+    XCTAssertEqual(filteredReports.count, 1);
+    FTCrashReportRUMModel *rumReport = (FTCrashReportRUMModel *)filteredReports.firstObject;
+    XCTAssertTrue([rumReport isKindOfClass:FTCrashReportRUMModel.class]);
+    RUMModel *model = rumReport.value;
+    XCTAssertEqualObjects(model.source, FT_RUM_SOURCE_ERROR);
+    XCTAssertEqualObjects(model.fields[FT_KEY_FOREGROUND_CRASH_FREE_DURATION], @12300000000LL);
+    XCTAssertEqualObjects(model.fields[FT_KEY_BACKGROUND_CRASH_FREE_DURATION], @45600000000LL);
+}
+
+- (void)testCrashErrorWithoutAppStatsDoesNotAddCrashFreeDurationFields{
+    FTCrashReportWrapper *wrapper = [self mockCrashReportWrapper];
+    NSDictionary *report = [self mockCrashReportWithAppStats:nil];
+    __block NSArray<id<FTCrashReport>> *filteredReports = nil;
+
+    [wrapper filterReports:@[[FTCrashReportDictionary reportWithValue:report]]
+              onCompletion:^(NSArray<id<FTCrashReport>> *reports, NSError *error) {
+        XCTAssertNil(error);
+        filteredReports = reports;
+    }];
+
+    XCTAssertEqual(filteredReports.count, 1);
+    FTCrashReportRUMModel *rumReport = (FTCrashReportRUMModel *)filteredReports.firstObject;
+    XCTAssertTrue([rumReport isKindOfClass:FTCrashReportRUMModel.class]);
+    RUMModel *model = rumReport.value;
+    XCTAssertNil(model.fields[FT_KEY_FOREGROUND_CRASH_FREE_DURATION]);
+    XCTAssertNil(model.fields[FT_KEY_BACKGROUND_CRASH_FREE_DURATION]);
+}
+
+- (void)testCrashErrorIgnoresCrashFreeDurationFieldsOutsideSystemAppStats{
+    FTCrashReportWrapper *wrapper = [self mockCrashReportWrapper];
+    NSMutableDictionary *report = [[self mockCrashReportWithAppStats:nil] mutableCopy];
+    NSMutableDictionary *infoReport = [report[FTCrashField_Report] mutableCopy];
+    infoReport[FTCrashField_AppStats] = @{
+        FTCrashField_ActiveTimeSinceCrash: @7.8,
+        FTCrashField_BGTimeSinceCrash: @9.1,
+    };
+    report[FTCrashField_Report] = [infoReport copy];
+    report[FTCrashField_AppStats] = @{
+        FTCrashField_ActiveTimeSinceCrash: @1.2,
+        FTCrashField_BGTimeSinceCrash: @3.4,
+    };
+    __block NSArray<id<FTCrashReport>> *filteredReports = nil;
+
+    [wrapper filterReports:@[[FTCrashReportDictionary reportWithValue:[report copy]]]
+              onCompletion:^(NSArray<id<FTCrashReport>> *reports, NSError *error) {
+        XCTAssertNil(error);
+        filteredReports = reports;
+    }];
+
+    XCTAssertEqual(filteredReports.count, 1);
+    FTCrashReportRUMModel *rumReport = (FTCrashReportRUMModel *)filteredReports.firstObject;
+    XCTAssertTrue([rumReport isKindOfClass:FTCrashReportRUMModel.class]);
+    RUMModel *model = rumReport.value;
+    XCTAssertNil(model.fields[FT_KEY_FOREGROUND_CRASH_FREE_DURATION]);
+    XCTAssertNil(model.fields[FT_KEY_BACKGROUND_CRASH_FREE_DURATION]);
+}
+
 #pragma mark ========== Mock Data ==========
+
+- (FTCrashReportWrapper *)mockCrashReportWrapper{
+    FTTestCrashReportWrapper *wrapper = [[FTTestCrashReportWrapper alloc] init];
+    [wrapper setValue:@([NSDate ft_currentNanosecondTimeStamp]) forKey:@"crashDate"];
+    [wrapper setValue:@"mock crash message" forKey:@"crashMessage"];
+    return wrapper;
+}
+
+- (NSDictionary *)mockCrashReportWithAppStats:(NSDictionary *)appStats{
+    FTRUMSessionState *sessionState = [[FTRUMSessionState alloc] init];
+    sessionState.session_id = [FTBaseInfoHandler randomUUID];
+    sessionState.session_type = @"user";
+    sessionState.sampleRate = 100;
+    sessionState.sessionOnErrorSampleRate = 0;
+    FTFatalErrorContextModel *context = [[FTFatalErrorContextModel alloc] initWithAppState:AppStateStringMap[FTAppStateRun]
+                                                                           lastSessionState:sessionState
+                                                                            lastViewContext:nil
+                                                                             dynamicContext:nil
+                                                                           globalAttributes:@{}
+                                                                           errorMonitorInfo:@{}];
+    NSMutableDictionary *report = [@{
+        FTCrashField_Report: @{
+            FTCrashField_Version: @3,
+        },
+        FTCrashField_System: @{},
+        FTCrashField_User: [context toDictionary],
+    } mutableCopy];
+    if (appStats) {
+        NSMutableDictionary *system = [report[FTCrashField_System] mutableCopy];
+        system[FTCrashField_AppStats] = appStats;
+        report[FTCrashField_System] = [system copy];
+    }
+    return [report copy];
+}
 
 - (void)addErrorData:(NSDictionary *)property{
     NSString *error_message = @"-[__NSSingleObjectArrayI objectForKey:]: unrecognized selector sent to instance 0x600002ac5270";
