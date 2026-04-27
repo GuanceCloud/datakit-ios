@@ -87,7 +87,7 @@
 }
 - (void)startReadWork{
     __weak typeof(self) weakSelf = self;
-    dispatch_block_t readWorkItem = ^{
+    dispatch_block_t readWorkItem = dispatch_block_create(0, ^{
         __strong __typeof(weakSelf) strongSelf = weakSelf;
         if (!strongSelf) {
             return;
@@ -105,7 +105,7 @@
             FTInnerLogDebug(@"[NETWORK][%@] Uploading batches... ",strongSelf.featureName);
             [strongSelf uploadFile:files parameters:strongSelf.context];
         }
-    };
+    });
     self.readWork = readWorkItem;
     dispatch_async(_queue, readWorkItem);
 }
@@ -137,7 +137,7 @@
 #pragma mark ========== deal upload data ==========
 - (void)uploadFile:(NSArray<id<FTReadableFile>>*)files parameters:(NSDictionary *)parameters{
     __weak typeof(self) weakSelf = self;
-    dispatch_block_t uploadWork = ^{
+    dispatch_block_t uploadWork = dispatch_block_create(0, ^{
         @autoreleasepool {
             __strong __typeof(weakSelf) strongSelf = weakSelf;
             if (!strongSelf) return;
@@ -169,7 +169,7 @@
                 [strongSelf uploadFile:mutableFiles parameters:parameters];
             }
         }
-    };
+    });
     self.uploadWork = uploadWork;
     dispatch_async(self.queue, uploadWork);
 }
