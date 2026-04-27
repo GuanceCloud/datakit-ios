@@ -290,6 +290,7 @@
                                              [FTSRBaseFrame class],
                                              [NSString class],
                                              [NSData class],
+                                             [NSDictionary class],
                                              nil];
                     
             FTEnrichedResource *resource = [NSKeyedUnarchiver unarchivedObjectOfClasses:allowedClasses fromData:data error:&error];
