@@ -18,6 +18,8 @@ NS_ASSUME_NONNULL_BEGIN
 
 + (instancetype)sharedInstance;
 
+- (NSDictionary<NSString *, id> *)networkResourceFields;
+
 - (void)addNetworkObserver:(id<FTNetworkChangeObserver>)observer;
 
 - (void)removeNetworkObserver:(id<FTNetworkChangeObserver>)observer;

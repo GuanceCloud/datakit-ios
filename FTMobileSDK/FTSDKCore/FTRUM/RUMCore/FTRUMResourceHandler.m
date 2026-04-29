@@ -19,6 +19,7 @@
 @property (nonatomic, copy,readwrite) NSString *identifier;
 @property (nonatomic, strong) NSDate *time;
 @property (nonatomic, strong) NSMutableDictionary *resourceProperty;
+@property (nonatomic, strong) NSNumber *networkAvailable;
 @end
 @implementation FTRUMResourceHandler
 -(instancetype)initWithModel:(FTRUMResourceDataModel *)model context:(FTRUMContext *)context dependencies:(nonnull FTRUMDependencies *)dependencies{
@@ -31,6 +32,9 @@
         self.resourceProperty = [[NSMutableDictionary alloc]init];
         if(model.fields && model.fields.allKeys.count>0){
             [self.resourceProperty addEntriesFromDictionary:model.fields];
+        }
+        if ([model.fields[FT_KEY_NETWORK_AVAILABLE] isKindOfClass:NSNumber.class]) {
+            self.networkAvailable = model.fields[FT_KEY_NETWORK_AVAILABLE];
         }
         self.context = context;
     }
@@ -92,6 +96,7 @@
         [fields addEntriesFromDictionary:self.resourceProperty];
     }
     [fields addEntriesFromDictionary:data.fields];
+    [fields setValue:self.networkAvailable forKey:FT_KEY_NETWORK_AVAILABLE];
     [fields setValue:self.dependencies.sessionHasReplay forKey:FT_SESSION_HAS_REPLAY];
     [fields setValue:[self.time ft_nanosecondTimeIntervalToDate:data.time] forKey:FT_DURATION];
     if(model.metrics){
