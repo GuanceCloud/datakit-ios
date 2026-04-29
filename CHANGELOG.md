@@ -1,3 +1,7 @@
+# 1.6.3-beta.1
+1. Fixed WKWebView bridge locking and duplicate enable handling to improve WebView RUM/session replay stability.
+2. Added `network_available` field to RUM Resource data, captured as a start-time network availability snapshot.
+---
 # 1.6.3-alpha.1
 1. Added `view_long_task_rate` to count page jank rate for RUM views.
 2. Fixed long task detector race conditions by using timestamps.
