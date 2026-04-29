@@ -101,32 +101,66 @@ static NSObject *sharedInstanceLock;
 }
 #pragma mark request
 - (void)addWebView:(WKWebView *)webView bridge:(id)bridge{
+    if (!webView || !bridge) {
+        return;
+    }
     [self.lock lock];
-    [self.webViewBridge setObject:bridge forKey:webView];
-    [self.lock unlock];
+    @try {
+        [self.webViewBridge setObject:bridge forKey:webView];
+    } @finally {
+        [self.lock unlock];
+    }
 }
 - (id)getWebViewBridge:(WKWebView *)webView{
+    if (!webView) {
+        return nil;
+    }
     id bridge = nil;
     [self.lock lock];
-    bridge = [self.webViewBridge objectForKey:webView];
-    [self.lock unlock];
+    @try {
+        bridge = [self.webViewBridge objectForKey:webView];
+    } @finally {
+        [self.lock unlock];
+    }
     return bridge;
 }
 - (void)removeWebViewBridge:(WKWebView *)webView{
+    if (!webView) {
+        return;
+    }
     [self.lock lock];
-    [self.webViewBridge removeObjectForKey:webView];
-    [self.lock unlock];
+    @try {
+        [self.webViewBridge removeObjectForKey:webView];
+    } @finally {
+        [self.lock unlock];
+    }
 }
 - (void)removeAllWebViewBridges{
+    NSArray *allBridges = nil;
     [self.lock lock];
-    NSArray *allBridges = [self.webViewBridge.objectEnumerator allObjects];
-    [self.lock unlock];
+    @try {
+        allBridges = [[self.webViewBridge.objectEnumerator allObjects] copy];
+        [self.webViewBridge removeAllObjects];
+    } @finally {
+        [self.lock unlock];
+    }
     for (FTWKWebViewJavascriptBridge *bridge in allBridges) {
         [bridge removeScriptMessageHandler];
     }
+}
+- (FTWKWebViewJavascriptBridge *)removeBridgeForWebView:(WKWebView *)webView{
+    if (!webView) {
+        return nil;
+    }
+    FTWKWebViewJavascriptBridge *bridge = nil;
     [self.lock lock];
-    [self.webViewBridge removeAllObjects];
-    [self.lock unlock];
+    @try {
+        bridge = [self.webViewBridge objectForKey:webView];
+        [self.webViewBridge removeObjectForKey:webView];
+    } @finally {
+        [self.lock unlock];
+    }
+    return bridge;
 }
 - (NSString *)transHostsArrayToString:(NSArray *)hosts{
     @try {
@@ -159,6 +193,9 @@ static NSObject *sharedInstanceLock;
 }
 - (void)_enableWebView:(WKWebView *)webView allowedWebViewHostsString:(NSString *)hostsString{
     @try {
+        if ([self getWebViewBridge:webView]) {
+            return;
+        }
         FTInnerLogInfo(@"[WebView] webView(%lld) start bridge",(uint64_t)webView.hash);
         FTWKWebViewJavascriptBridge *bridge = [FTWKWebViewJavascriptBridge bridgeForWebView:webView allowWebViewHostsString:hostsString];
         FTBindInfo *bindInfo = [[FTBindInfo alloc] init];
@@ -249,8 +286,7 @@ static NSObject *sharedInstanceLock;
 }
 - (void)disableWebView:(WKWebView *)webView{
     @try {
-        FTWKWebViewJavascriptBridge *bridge = [self getWebViewBridge:webView];
-        [self removeWebViewBridge:webView];
+        FTWKWebViewJavascriptBridge *bridge = [self removeBridgeForWebView:webView];
         [bridge removeScriptMessageHandler];
     }
     @catch (NSException *exception) {
@@ -265,38 +301,62 @@ static NSObject *sharedInstanceLock;
 #pragma mark ========= FTWKWebViewHandler+SessionReplay ========
 -(void)setEnableLinkRUMKeys:(NSArray *)enableLinkRUMKeys{
     [self.lock lock];
-    _enableLinkRUMKeys = [enableLinkRUMKeys copy];
-    [self.lock unlock];
+    @try {
+        _enableLinkRUMKeys = [enableLinkRUMKeys copy];
+    } @finally {
+        [self.lock unlock];
+    }
 }
 -(NSArray *)enableLinkRUMKeys{
     id list = nil;
     [self.lock lock];
-    list = [_enableLinkRUMKeys copy];
-    [self.lock unlock];
+    @try {
+        list = [_enableLinkRUMKeys copy];
+    } @finally {
+        [self.lock unlock];
+    }
     return list;
 }
 -(void)setHiddenSlotIds:(NSSet<NSNumber *> *)hiddenSlotIds{
     [self.lock lock];
-    _hiddenSlotIds = hiddenSlotIds;
-    [self.lock unlock];
+    @try {
+        _hiddenSlotIds = [hiddenSlotIds copy];
+    } @finally {
+        [self.lock unlock];
+    }
 }
 -(NSSet<NSNumber *> *)hiddenSlotIds{
     NSSet<NSNumber *> *slotIds = nil;
     [self.lock lock];
-    slotIds = [_hiddenSlotIds copy];
-    [self.lock unlock];
+    @try {
+        slotIds = [_hiddenSlotIds copy];
+    } @finally {
+        [self.lock unlock];
+    }
     return slotIds;
 }
 - (void)takeSubsequentFullSnapshot{
-    NSArray *allKeys = [self.webViewBridge keyEnumerator].allObjects;
-    for (WKWebView *key in allKeys) {
-        BOOL isHidden = [self.hiddenSlotIds containsObject:@(key.hash)];
-        id value = [self.webViewBridge objectForKey:key];
-        if (!isHidden && key && value) {
-            [FTThreadDispatchManager performBlockDispatchMainAsync:^{
-                [key evaluateJavaScript:@"DATAFLUX_RUM.takeSubsequentFullSnapshot()" completionHandler:nil];
-            }];
+    NSMutableArray<WKWebView *> *webViews = [NSMutableArray array];
+    [self.lock lock];
+    @try {
+        NSSet<NSNumber *> *hiddenSlotIds = [_hiddenSlotIds copy];
+        NSArray *allKeys = [[self.webViewBridge keyEnumerator].allObjects copy];
+        for (WKWebView *key in allKeys) {
+            if (!key || [hiddenSlotIds containsObject:@(key.hash)]) {
+                continue;
+            }
+            id value = [self.webViewBridge objectForKey:key];
+            if (value) {
+                [webViews addObject:key];
+            }
         }
+    } @finally {
+        [self.lock unlock];
+    }
+    for (WKWebView *webView in webViews) {
+        [FTThreadDispatchManager performBlockDispatchMainAsync:^{
+            [webView evaluateJavaScript:@"DATAFLUX_RUM.takeSubsequentFullSnapshot()" completionHandler:nil];
+        }];
     }
 }
 - (void)bindInfo:(NSDictionary *)info viewId:(NSString *)viewId{

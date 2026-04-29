@@ -28,9 +28,11 @@
 #import "FTInnerLog.h"
 @interface FTWKWebViewHandler (Testing)
 @property (nonatomic, strong) NSMapTable *webViewRequestTable;
+@property (nonatomic, readwrite, strong) NSSet<NSNumber *> *hiddenSlotIds;
 
 - (id)getWebViewBridge:(WKWebView *)webView;
 - (void)removeAllWebViewBridges;
+- (void)takeSubsequentFullSnapshot;
 @end
 
 @interface FTJavaScriptBridgeTest : KIFTestCase<WKNavigationDelegate,FTWKWebViewRumDelegate>
@@ -350,13 +352,63 @@
     WKWebView *webView = [[WKWebView alloc]init];
     [[FTWKWebViewHandler sharedInstance] startWithEnableTraceWebView:NO allowWebViewHost:nil rumDelegate:self];
     [[FTWKWebViewHandler sharedInstance] enableWebView:webView];
-    __weak id bridge = [[FTWKWebViewHandler sharedInstance] getWebViewBridge:webView];
+    id bridge = [[FTWKWebViewHandler sharedInstance] getWebViewBridge:webView];
     XCTAssertTrue(bridge != nil);
 
     [[FTWKWebViewHandler sharedInstance] enableWebView:webView];
     id bridge2 = [[FTWKWebViewHandler sharedInstance] getWebViewBridge:webView];
     XCTAssertTrue(bridge2 != nil);
-    XCTAssertTrue(bridge != bridge2);
+    XCTAssertTrue(bridge == bridge2);
+}
+- (void)testSameWebViewAddBridgeWithDifferentHosts{
+    WKWebView *webView = [[WKWebView alloc]init];
+    FTWKWebViewHandler *handler = [FTWKWebViewHandler sharedInstance];
+    [handler startWithEnableTraceWebView:NO allowWebViewHost:nil rumDelegate:self];
+    [handler enableWebView:webView allowWebViewHost:@[@"example.com"]];
+    id bridge = [handler getWebViewBridge:webView];
+    XCTAssertTrue(bridge != nil);
+
+    [handler enableWebView:webView allowWebViewHost:@[@"example.org"]];
+    id bridge2 = [handler getWebViewBridge:webView];
+    XCTAssertTrue(bridge2 != nil);
+    XCTAssertTrue(bridge == bridge2);
+}
+- (void)testDisableWebViewRemoveBridgeOnlyOnce{
+    WKWebView *webView = [[WKWebView alloc]init];
+    FTWKWebViewHandler *handler = [FTWKWebViewHandler sharedInstance];
+    [handler startWithEnableTraceWebView:NO allowWebViewHost:nil rumDelegate:self];
+    [handler enableWebView:webView];
+    XCTAssertNotNil([handler getWebViewBridge:webView]);
+
+    XCTAssertNoThrow([handler disableWebView:webView]);
+    XCTAssertNil([handler getWebViewBridge:webView]);
+    XCTAssertNoThrow([handler disableWebView:webView]);
+}
+- (void)testRemoveAllWebViewBridgesClearsRegisteredBridges{
+    WKWebView *webView = [[WKWebView alloc]init];
+    FTWKWebViewHandler *handler = [FTWKWebViewHandler sharedInstance];
+    [handler startWithEnableTraceWebView:NO allowWebViewHost:nil rumDelegate:self];
+    [handler enableWebView:webView];
+    XCTAssertNotNil([handler getWebViewBridge:webView]);
+
+    [handler removeAllWebViewBridges];
+    XCTAssertNil([handler getWebViewBridge:webView]);
+}
+- (void)testTakeSubsequentFullSnapshotWithHiddenSlotIds{
+    WKWebView *visibleWebView = [[WKWebView alloc]init];
+    WKWebView *hiddenWebView = [[WKWebView alloc]init];
+    FTWKWebViewHandler *handler = [FTWKWebViewHandler sharedInstance];
+    [handler startWithEnableTraceWebView:NO allowWebViewHost:nil rumDelegate:self];
+    [handler enableWebView:visibleWebView];
+    [handler enableWebView:hiddenWebView];
+    handler.hiddenSlotIds = [NSSet setWithObject:@(hiddenWebView.hash)];
+
+    XCTAssertNoThrow([handler takeSubsequentFullSnapshot]);
+    handler.hiddenSlotIds = [NSSet setWithObject:@(visibleWebView.hash)];
+    XCTAssertNoThrow([handler takeSubsequentFullSnapshot]);
+
+    [handler disableWebView:visibleWebView];
+    [handler disableWebView:hiddenWebView];
 }
 - (void)dealRUMWebViewData:(NSString *)measurement tags:(NSDictionary *)tags fields:(NSDictionary *)fields tm:(long long)tm{
     
