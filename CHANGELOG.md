@@ -1,3 +1,13 @@
+# 1.6.3
+1. Added `view_long_task_rate` to count page jank rate for RUM views.
+2. Added `network_available` field to RUM Resource data, captured as a start-time network availability snapshot.
+3. Added RUM crash duration fields from app stats: `foreground_crash_free_duration` and `background_crash_free_duration`.
+4. Added link RUM key support for Session Replay resource asset uploads.
+5. Enabled intake request compression by default.
+6. Fixed long task detector race conditions by using timestamps.
+7. Fixed WKWebView bridge locking and duplicate enable handling to improve WebView RUM/session replay stability.
+8. Fixed Session Replay local CSS injection for immutable nested WebView node data, preventing mutation failures during WebView replay processing.
+---
 # 1.6.3-beta.3
 1. same as 1.6.3-beta.2
 ---
