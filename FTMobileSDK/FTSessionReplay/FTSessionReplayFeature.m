@@ -292,16 +292,31 @@ typedef NS_ENUM(NSInteger, SampleState) {
                 [self.needCheckSlots addObject:slotID];
             }
         } else if ([_needCheckSlots containsObject:slotID] && ([type isEqualToNumber:@2] || [type isEqualToNumber:@3])) {
-            NSMutableDictionary *data = [rootNodeDict valueForKey:@"data"];
+            NSMutableDictionary *data = [self mutableDictionaryFromObject:[rootNodeDict valueForKey:@"data"]];
+            if (!data) {
+                return;
+            }
+            rootNodeDict[@"data"] = data;
             if ([type isEqualToNumber:@2]) {
-                NSMutableDictionary *node = data[@"node"];
+                NSMutableDictionary *node = [self mutableDictionaryFromObject:data[@"node"]];
+                if (!node) {
+                    return;
+                }
+                data[@"node"] = node;
                 [self addCssTextToHrefWithFileScheme:node slotID:slotID];
             }else{
-                NSMutableArray *childNodes = data[@"adds"];
+                NSMutableArray *childNodes = [self mutableArrayFromObject:data[@"adds"]];
                 if (childNodes.count>0) {
-                    if ([childNodes isKindOfClass:[NSMutableArray class]]) {
-                        for (NSMutableDictionary *childNode in childNodes) {
-                            NSMutableDictionary *node = childNode[@"node"];
+                    data[@"adds"] = childNodes;
+                    for (NSUInteger i = 0; i < childNodes.count; i++) {
+                        NSMutableDictionary *childNode = [self mutableDictionaryFromObject:childNodes[i]];
+                        if (childNode) {
+                            childNodes[i] = childNode;
+                            NSMutableDictionary *node = [self mutableDictionaryFromObject:childNode[@"node"]];
+                            if (!node) {
+                                continue;
+                            }
+                            childNode[@"node"] = node;
                             [self addCssTextToHrefWithFileScheme:node slotID:slotID];
                         }
                     }
@@ -319,9 +334,15 @@ typedef NS_ENUM(NSInteger, SampleState) {
     [self processSingleNode:rootNodeDict];
     
     // 2. Recursively process the child nodes of the current node (handle nested structures)
-    NSMutableArray *childNodes = rootNodeDict[@"childNodes"];
-    if ([childNodes isKindOfClass:[NSMutableArray class]]) {
-        for (NSMutableDictionary *childNode in childNodes) {
+    NSMutableArray *childNodes = [self mutableArrayFromObject:rootNodeDict[@"childNodes"]];
+    if (childNodes) {
+        rootNodeDict[@"childNodes"] = childNodes;
+        for (NSUInteger i = 0; i < childNodes.count; i++) {
+            NSMutableDictionary *childNode = [self mutableDictionaryFromObject:childNodes[i]];
+            if (!childNode) {
+                continue;
+            }
+            childNodes[i] = childNode;
             [self addCssTextToHrefWithFileScheme:childNode slotID:slotID];
         }
     }
@@ -336,17 +357,17 @@ typedef NS_ENUM(NSInteger, SampleState) {
         return; // Not a link node, no need to process href
     }
     
-    // Step 2: Get the attributes dictionary of the current node (ensure it's a mutable dictionary first to avoid modification failure)
-    NSMutableDictionary *attributes = nodeDict[@"attributes"];
-    // If attributes is an immutable dictionary, first convert it to a mutable dictionary (otherwise modification will fail)
-    if ([attributes isKindOfClass:[NSDictionary class]] && ![attributes isKindOfClass:[NSMutableDictionary class]]) {
-        attributes = [attributes mutableCopy];
-        nodeDict[@"attributes"] = attributes; // Reassign back to the node dictionary
-    }
+    // Step 2: Get the attributes dictionary of the current node.
+    NSMutableDictionary *attributes = [self mutableDictionaryFromObject:nodeDict[@"attributes"]];
     if (!attributes) return; // No attributes dictionary, return directly
+    nodeDict[@"attributes"] = attributes;
     
     // Step 3: Check if href exists in attributes and its value contains file://
-    NSString *hrefValue = attributes[@"href"];
+    id hrefObject = attributes[@"href"];
+    if (![hrefObject isKindOfClass:NSString.class]) {
+        return;
+    }
+    NSString *hrefValue = hrefObject;
     if (hrefValue && [hrefValue containsString:@"file://"] && !attributes[@"_cssText"]) {
         // Step 4: Add _cssText:fileDataStr
         NSString *cssPath = [hrefValue stringByReplacingOccurrencesOfString:@"file://" withString:@""];
@@ -359,6 +380,24 @@ typedef NS_ENUM(NSInteger, SampleState) {
             }
         }
     }
+}
+- (NSMutableDictionary *)mutableDictionaryFromObject:(id)object {
+    if (![object isKindOfClass:NSDictionary.class]) {
+        return nil;
+    }
+    if ([object isKindOfClass:NSMutableDictionary.class]) {
+        return object;
+    }
+    return [object mutableCopy];
+}
+- (NSMutableArray *)mutableArrayFromObject:(id)object {
+    if (![object isKindOfClass:NSArray.class]) {
+        return nil;
+    }
+    if ([object isKindOfClass:NSMutableArray.class]) {
+        return object;
+    }
+    return [object mutableCopy];
 }
 #pragma mark =========== FTSRWebTrackingProtocol ============
 -(NSString *)getSessionReplayPrivacyLevel{
