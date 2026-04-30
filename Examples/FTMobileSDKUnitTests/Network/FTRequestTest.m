@@ -176,6 +176,7 @@
 - (void)testDatakitUrl{
     NSString *datakitUrlStr = @"http://www.test.com/some/url/string";
     FTMobileConfig *config = [[FTMobileConfig alloc]initWithDatakitUrl:datakitUrlStr];
+    config.compressIntakeRequests = NO;
     [FTMobileAgent startWithConfigOptions:config];
     FTRecordModel *model = [FTModelHelper createRumModel];
     FTRequest *request = [FTRequest createRequestWithEvents:@[model] type:FT_DATA_TYPE_RUM];
@@ -186,6 +187,7 @@
     NSString *datawayUrlStr = @"http://www.test.com/some/url/string";
     NSString *clientToken = @"clientToken";
     FTMobileConfig *config = [[FTMobileConfig alloc]initWithDatawayUrl:datawayUrlStr clientToken:clientToken];
+    config.compressIntakeRequests = NO;
     [FTMobileAgent startWithConfigOptions:config];
     FTRecordModel *model = [FTModelHelper createRumModel];
     FTRequest *request = [FTRequest createRequestWithEvents:@[model] type:FT_DATA_TYPE_RUM];
@@ -200,6 +202,7 @@
     NSString *clientToken = @"clientToken";
 
     FTMobileConfig *config = [[FTMobileConfig alloc]initWithDatakitUrl:datakitUrlStr];
+    config.compressIntakeRequests = YES;
     config.datawayUrl = datawayUrlStr;
     config.clientToken = clientToken;
     [FTMobileAgent startWithConfigOptions:config];
@@ -281,6 +284,7 @@
     NSString *datakitUrlStr = @"http://www.test.com/datakit/url/string";
     FTMobileConfig *config = [[FTMobileConfig alloc]initWithDatakitUrl:datakitUrlStr];
     config.enableSDKDebugLog = YES;
+    config.compressIntakeRequests = NO;
     [FTMobileAgent startWithConfigOptions:config];
     FTRecordModel *model = [FTModelHelper createRumModel];
     NSDate *beforeDate = [NSDate date];
