@@ -96,7 +96,7 @@
         _autoSync = YES;
         _syncPageSize = 10;
         _syncSleepTime = 0;
-        _compressIntakeRequests = NO;
+        _compressIntakeRequests = YES;
         _dbDiscardType = FTDBDiscard;
         _dbCacheLimit = FT_DEFAULT_DB_SIZE_LIMIT;
         _enableDataIntegerCompatible = YES;
