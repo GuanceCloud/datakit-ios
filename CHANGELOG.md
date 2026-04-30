@@ -1,3 +1,7 @@
+# 1.6.3-beta.2
+1. Fixed Session Replay local CSS injection for immutable nested WebView node data, preventing mutation failures during WebView replay processing.
+2. Enabled intake request compression by default.
+---
 # 1.6.3-beta.1
 1. Fixed WKWebView bridge locking and duplicate enable handling to improve WebView RUM/session replay stability.
 2. Added `network_available` field to RUM Resource data, captured as a start-time network availability snapshot.
