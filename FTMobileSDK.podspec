@@ -13,7 +13,11 @@ Pod::Spec.new do |s|
 	s.ios.deployment_target = '12.0'
 	s.osx.deployment_target = '10.14'
 	s.tvos.deployment_target = '12.0'
-	s.pod_target_xcconfig = { 'DEFINES_MODULE' => 'YES' }
+	s.libraries    = 'c++', 'z'
+	s.pod_target_xcconfig = {
+		'DEFINES_MODULE' => 'YES',
+		'GCC_ENABLE_CPP_EXCEPTIONS' => 'YES'
+	}
 
 	#$JENKINS_DYNAMIC_VERSION replacing "#{s.version}" will cause an error during pod valid phase
 	s.source       = { :git => "https://github.com/GuanceCloud/datakit-ios.git", :tag => s.version.to_s }
