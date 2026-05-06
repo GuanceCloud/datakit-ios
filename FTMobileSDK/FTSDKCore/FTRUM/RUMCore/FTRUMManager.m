@@ -252,7 +252,12 @@ void *FTRUMQueueIdentityKey = &FTRUMQueueIdentityKey;
             NSDictionary *context = [self rumDynamicProperty];
             FTRUMResourceDataModel *resourceStart = [[FTRUMResourceDataModel alloc]initWithType:FTRUMDataResourceStart identifier:key];
             resourceStart.time = time;
-            resourceStart.fields = property;
+            NSMutableDictionary *fields = property ? [property mutableCopy] : [NSMutableDictionary dictionary];
+            NSDictionary *networkFields = [[FTNetworkConnectivity sharedInstance] networkResourceFields];
+            if (networkFields.count > 0) {
+                [fields addEntriesFromDictionary:networkFields];
+            }
+            resourceStart.fields = fields;
             [self process:resourceStart context:context];
         } @catch (NSException *exception) {
             FTInnerLogError(@"exception %@",exception);
@@ -590,4 +595,3 @@ void *FTRUMQueueIdentityKey = &FTRUMQueueIdentityKey;
     }
 }
 @end
-

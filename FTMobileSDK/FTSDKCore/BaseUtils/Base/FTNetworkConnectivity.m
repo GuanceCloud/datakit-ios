@@ -12,6 +12,7 @@
 #if TARGET_OS_IOS && !TARGET_OS_MACCATALYST
 #import <CoreTelephony/CTTelephonyNetworkInfo.h>
 #endif
+#import "FTConstants.h"
 
 NSString *const FTConnectivityCellular = @"cellular";
 NSString *const FTConnectivityWiFi = @"wifi";
@@ -40,6 +41,8 @@ typedef NS_ENUM(NSInteger, FTNetworkStatus) {
 @property (nonatomic, strong) CTTelephonyNetworkInfo *networkInfo;
 #endif
 @property (nonatomic, assign) FTNetworkStatus networkStatus;
+@property (atomic, assign) BOOL hasPathStatus;
+@property (atomic, assign) BOOL networkAvailable;
 @end
 @implementation FTNetworkConnectivity{
     nw_path_monitor_t _pathMonitor;
@@ -94,6 +97,8 @@ typedef NS_ENUM(NSInteger, FTNetworkStatus) {
             __strong __typeof(weakSelf) strongSelf = weakSelf;
             if (!strongSelf)  return;
             nw_path_status_t status = nw_path_get_status(path);
+            strongSelf.hasPathStatus = YES;
+            strongSelf.networkAvailable = status == nw_path_status_satisfied;
             strongSelf.isConnected = status != nw_path_status_unsatisfied;
             FTNetworkStatus networkStatus = FTNetworkStatusUnknown;
             if(status == nw_path_status_unsatisfied){
@@ -116,6 +121,12 @@ typedef NS_ENUM(NSInteger, FTNetworkStatus) {
         nw_path_monitor_set_queue(_pathMonitor, _monitorQueue);
         nw_path_monitor_start(_pathMonitor);
     }
+}
+- (NSDictionary<NSString *, id> *)networkResourceFields{
+    if (!self.hasPathStatus) {
+        return @{};
+    }
+    return @{FT_KEY_NETWORK_AVAILABLE:@(self.networkAvailable)};
 }
 -(void)setNetworkStatus:(FTNetworkStatus)networkStatus{
     self.networkType = [self networkTypeWithStatus:networkStatus];

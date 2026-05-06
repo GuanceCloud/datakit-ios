@@ -43,6 +43,7 @@
 #import "FTCrashReport.h"
 #import "FTCrashReportFields.h"
 #import "FTFatalErrorContext.h"
+#import "FTNetworkConnectivity.h"
 
 @interface FTTestCrashReportWrapper : FTCrashReportWrapper
 @end
@@ -1623,6 +1624,7 @@
 }
 - (void)testStartResourceProperty{
     [self setRumConfig];
+    [self waitForNetworkResourceFields];
     [FTModelHelper startView];
     [self addResource:@{@"resource_start_context":@"testStartResourceContext"} endContext:nil];
     [[FTGlobalRumManager sharedInstance].rumManager syncProcess];
@@ -1631,6 +1633,24 @@
     [FTModelHelper resolveModelArray:newArray callBack:^(NSString * _Nonnull source, NSDictionary * _Nonnull tags, NSDictionary * _Nonnull fields, BOOL * _Nonnull stop) {
         if ([source isEqualToString:FT_RUM_SOURCE_RESOURCE]) {
             XCTAssertTrue([fields[@"resource_start_context"] isEqualToString:@"testStartResourceContext"]);
+            XCTAssertTrue([fields[FT_KEY_NETWORK_AVAILABLE] isKindOfClass:NSNumber.class]);
+            hasResourceData = YES;
+            *stop = YES;
+        }
+    }];
+    XCTAssertTrue(hasResourceData);
+}
+- (void)testStartResourceNetworkAvailableOverridesCustomProperty{
+    [self setRumConfig];
+    [self waitForNetworkResourceFields];
+    [FTModelHelper startView];
+    [self addResource:@{FT_KEY_NETWORK_AVAILABLE:@"custom"} endContext:@{FT_KEY_NETWORK_AVAILABLE:@"stop_custom"}];
+    [[FTGlobalRumManager sharedInstance].rumManager syncProcess];
+    NSArray *newArray = [[FTTrackerEventDBTool sharedManager] getFirstRecords:100 withType:FT_DATA_TYPE_RUM];
+    __block NSInteger hasResourceData = NO;
+    [FTModelHelper resolveModelArray:newArray callBack:^(NSString * _Nonnull source, NSDictionary * _Nonnull tags, NSDictionary * _Nonnull fields, BOOL * _Nonnull stop) {
+        if ([source isEqualToString:FT_RUM_SOURCE_RESOURCE]) {
+            XCTAssertTrue([fields[FT_KEY_NETWORK_AVAILABLE] isKindOfClass:NSNumber.class]);
             hasResourceData = YES;
             *stop = YES;
         }
@@ -2157,5 +2177,12 @@
     [[FTMobileAgent sharedInstance] startRumWithConfigOptions:rumConfig];
     [[FTMobileAgent sharedInstance] unbindUser];
     [[FTTrackerEventDBTool sharedManager] deleteAllDatas];
+}
+- (void)waitForNetworkResourceFields{
+    NSDate *deadline = [NSDate dateWithTimeIntervalSinceNow:1.0];
+    while ([[FTNetworkConnectivity sharedInstance] networkResourceFields][FT_KEY_NETWORK_AVAILABLE] == nil
+           && [deadline timeIntervalSinceNow] > 0) {
+        [[NSRunLoop currentRunLoop] runMode:NSDefaultRunLoopMode beforeDate:[NSDate dateWithTimeIntervalSinceNow:0.01]];
+    }
 }
 @end

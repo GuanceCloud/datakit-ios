@@ -16,6 +16,8 @@
 #import "FTResourceCheckRequest.h"
 #import "FTResourceProcessor.h"
 #import "FTResourceRequest.h"
+#import "FTSessionReplayConfig.h"
+#import "FTSessionReplayFeature.h"
 #import "FTSRNodeWireframesBuilder.h"
 #import "FTSRRecord.h"
 #import "FTViewAttributes.h"
@@ -61,6 +63,10 @@ BOOL isNAN(id value) {
 
 @interface FTResourceCheckRequest (Testing)
 - (void)requestWithEvents:(NSArray *)events parameters:(NSDictionary *)parameters;
+@end
+
+@interface FTSessionReplayFeature (Testing)
+- (void)addCssTextToHrefWithFileScheme:(NSMutableDictionary *)rootNodeDict slotID:(NSString *)slotID;
 @end
 
 @interface FTImageFeatureUpload (Testing)
@@ -176,6 +182,34 @@ BOOL isNAN(id value) {
     NSDictionary *dict = [test toDictionary];
     XCTAssertEqual(dict[@"testName"] , @"testFuncConflict");
     XCTAssertNil(dict[@"property"]);
+}
+
+- (void)testWebCssTextInjectionHandlesImmutableNestedNodes{
+    NSString *cssPath = [NSTemporaryDirectory() stringByAppendingPathComponent:@"ft-session-replay-test.css"];
+    NSString *cssText = @"body { color: red; }";
+    XCTAssertTrue([cssText writeToFile:cssPath atomically:YES encoding:NSUTF8StringEncoding error:nil]);
+    
+    NSDictionary *linkNode = @{
+        @"tagName":@"link",
+        @"attributes":@{@"href":[@"file://" stringByAppendingString:cssPath]}
+    };
+    NSMutableDictionary *rootNode = [@{
+        @"tagName":@"div",
+        @"childNodes":@[linkNode]
+    } mutableCopy];
+    FTSessionReplayFeature *feature = [[FTSessionReplayFeature alloc] initWithConfig:[[FTSessionReplayConfig alloc] init]];
+    
+    [feature addCssTextToHrefWithFileScheme:rootNode slotID:@"slot-id"];
+    
+    NSArray *childNodes = rootNode[@"childNodes"];
+    NSDictionary *processedLinkNode = childNodes.firstObject;
+    NSDictionary *attributes = processedLinkNode[@"attributes"];
+    XCTAssertEqualObjects(attributes[@"_cssText"], cssText);
+    XCTAssertTrue([childNodes isKindOfClass:NSMutableArray.class]);
+    XCTAssertTrue([processedLinkNode isKindOfClass:NSMutableDictionary.class]);
+    XCTAssertTrue([attributes isKindOfClass:NSMutableDictionary.class]);
+    
+    [[NSFileManager defaultManager] removeItemAtPath:cssPath error:nil];
 }
 
 - (void)testEnrichedResourceArchivePreservesBindInfo{

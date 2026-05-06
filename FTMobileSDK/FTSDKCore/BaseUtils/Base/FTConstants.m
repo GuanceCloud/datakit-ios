@@ -143,6 +143,7 @@ NSString * const FT_KEY_RESOURCE_REDIRECT_TIME = @"resource_redirect_time";
 NSString * const FT_KEY_RESOURCE_HTTP_PROTOCOL = @"resource_http_protocol";
 NSString * const FT_KEY_RESOURCE_REQUEST_SIZE = @"resource_request_size";
 NSString * const FT_KEY_RESOURCE_CONNECTION_REUSE = @"resource_connection_reuse";
+NSString * const FT_KEY_NETWORK_AVAILABLE = @"network_available";
 //trace link rum tag
 NSString * const FT_KEY_TRACEID  = @"trace_id";
 NSString * const FT_KEY_SPANID = @"span_id";

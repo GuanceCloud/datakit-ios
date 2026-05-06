@@ -347,6 +347,10 @@
     [config setSyncPageSizeWithType:FTSyncPageSizeMedium];
     XCTAssertTrue(config.syncPageSize == 10);
 }
+- (void)testCompressIntakeRequestsDefaultEnabled{
+    FTMobileConfig *config = [[FTMobileConfig alloc]initWithDatakitUrl:self.url];
+    XCTAssertTrue(config.compressIntakeRequests);
+}
 - (void)testAutoSync_NO{
     [FTNetworkMock networkOHHTTPStubs];
     FTMobileConfig *config = [[FTMobileConfig alloc]initWithDatakitUrl:self.url];

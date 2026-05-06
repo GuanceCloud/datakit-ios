@@ -156,6 +156,7 @@ extern NSString * const FT_KEY_RESOURCE_REDIRECT_TIME;
 extern NSString * const FT_KEY_RESOURCE_HTTP_PROTOCOL;
 extern NSString * const FT_KEY_RESOURCE_REQUEST_SIZE;
 extern NSString * const FT_KEY_RESOURCE_CONNECTION_REUSE;
+extern NSString * const FT_KEY_NETWORK_AVAILABLE;
 #pragma mark --- trace link tag
 extern NSString * const FT_KEY_TRACEID;
 extern NSString * const FT_KEY_SPANID;
@@ -239,5 +240,4 @@ extern NSString * const FT_USER_ID;
 extern NSString * const FT_USER_EMAIL;
 extern NSString * const FT_USER_NAME;
 extern NSString * const FT_USER_EXTRA;
-
 
