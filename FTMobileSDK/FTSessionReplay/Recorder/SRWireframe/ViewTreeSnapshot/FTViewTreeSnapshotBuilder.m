@@ -22,6 +22,7 @@
 #import "FTUITextFieldRecorder.h"
 #import "FTUITextViewRecorder.h"
 #import "FTUIImageViewRecorder.h"
+#import "FTUIHostingViewRecorder.h"
 #import "FTUIPickerViewRecorder.h"
 #import "FTUIDatePickerRecorder.h"
 #import "FTViewTreeRecorder.h"
@@ -87,6 +88,7 @@
 }
 - (NSArray <id <FTSRWireframesRecorder>> *)createDefaultNodeRecorders{
     return @[
+        [FTUIHostingViewRecorder new],
         [FTUnsupportedViewRecorder new],
         [FTUIViewRecorder new],
         [FTUILabelRecorder new],

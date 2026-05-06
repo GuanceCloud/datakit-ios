@@ -49,7 +49,7 @@
         self.parentType = ViewControllerTypeActivity;
     }else if ([viewController isKindOfClass:SFSafariViewController.class]){
         self.parentType = ViewControllerTypeSafari;
-    }else if([viewController isKindOfClass:NSClassFromString(@"UIHostingController")]){
+    }else if([NSStringFromClass(viewController.class) containsString:@"UIHostingController"]){
         self.parentType = ViewControllerTypeSwiftUI;
     }else{
         self.parentType = ViewControllerTypeOther;

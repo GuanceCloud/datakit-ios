@@ -114,7 +114,7 @@ Pod::Spec.new do |s|
 	s.subspec 'FTSessionReplay' do |sr|
 		 sr.platform = :ios, '12.0'
 		 sr.public_header_files = 'FTMobileSDK/FTSessionReplay/Public/*.h'
-		 sr.source_files = 'FTMobileSDK/FTSessionReplay/**/*{.h,.m}'
+		 sr.source_files = 'FTMobileSDK/FTSessionReplay/**/*{.h,.m,.swift}'
 		 sr.dependency 'FTMobileSDK/FTSDKCore'
 		 sr.pod_target_xcconfig = {
 			 'HEADER_SEARCH_PATHS' => '$(inherited) $(PODS_TARGET_SRCROOT)'
