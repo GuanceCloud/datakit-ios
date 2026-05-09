@@ -65,6 +65,8 @@
     config.enableSDKDebugLog = YES;
     config.autoSync = NO;
     [FTMobileAgent startWithConfigOptions:config];
+    FTRumConfig *rumConfig = [[FTRumConfig alloc]initWithAppid:self.appid];
+    [[FTMobileAgent sharedInstance] startRumWithConfigOptions:rumConfig];
     [[FTMobileAgent sharedInstance] unbindUser];
     [[FTTrackerEventDBTool sharedManager] deleteAllDatas];
 }
