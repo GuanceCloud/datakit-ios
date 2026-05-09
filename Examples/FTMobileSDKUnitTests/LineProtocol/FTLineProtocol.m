@@ -257,6 +257,58 @@
     NSString *timeStr = [array lastObject];
     XCTAssertTrue([self isNum:timeStr] && [timeStr longLongValue] == time);
 }
+- (void)testRumViewLineProtocolDeduplicatesSameViewIdWithLargerRecordId{
+    NSDictionary *tags = @{
+        FT_KEY_VIEW_ID:@"same_view_id",
+        FT_KEY_VIEW_NAME:@"view",
+        FT_RUM_KEY_SESSION_ID:[FTBaseInfoHandler randomUUID],
+        FT_RUM_KEY_SESSION_TYPE:@"user",
+    };
+    FTRecordModel *oldView = [[FTRecordModel alloc]initWithSource:FT_RUM_SOURCE_VIEW op:FT_DATA_TYPE_RUM tags:tags fields:@{@"value":@"old"} tm:1];
+    oldView._id = @"1";
+    FTRecordModel *newView = [[FTRecordModel alloc]initWithSource:FT_RUM_SOURCE_VIEW op:FT_DATA_TYPE_RUM tags:tags fields:@{@"value":@"new"} tm:2];
+    newView._id = @"2";
+
+    FTRequestLineBody *line = [[FTRequestLineBody alloc]init];
+    NSString *lineStr = [line getRequestBodyWithEventArray:@[oldView,newView] packageId:@"1" enableIntegerCompatible:NO];
+    NSArray *lines = [lineStr componentsSeparatedByString:@"\n"];
+    XCTAssertTrue(lines.count == 1);
+    XCTAssertFalse([lineStr containsString:@"value=\"old\""]);
+    XCTAssertTrue([lineStr containsString:@"value=\"new\""]);
+}
+- (void)testRumViewLineProtocolKeepsDifferentViewIds{
+    FTRecordModel *firstView = [[FTRecordModel alloc]initWithSource:FT_RUM_SOURCE_VIEW op:FT_DATA_TYPE_RUM tags:@{FT_KEY_VIEW_ID:@"view_1",FT_KEY_VIEW_NAME:@"view1"} fields:@{@"value":@"first"} tm:1];
+    firstView._id = @"1";
+    FTRecordModel *secondView = [[FTRecordModel alloc]initWithSource:FT_RUM_SOURCE_VIEW op:FT_DATA_TYPE_RUM tags:@{FT_KEY_VIEW_ID:@"view_2",FT_KEY_VIEW_NAME:@"view2"} fields:@{@"value":@"second"} tm:2];
+    secondView._id = @"2";
+
+    FTRequestLineBody *line = [[FTRequestLineBody alloc]init];
+    NSString *lineStr = [line getRequestBodyWithEventArray:@[firstView,secondView] packageId:@"1" enableIntegerCompatible:NO];
+    NSArray *lines = [lineStr componentsSeparatedByString:@"\n"];
+    XCTAssertTrue(lines.count == 2);
+    XCTAssertTrue([lineStr containsString:@"value=\"first\""]);
+    XCTAssertTrue([lineStr containsString:@"value=\"second\""]);
+}
+- (void)testRumViewLineProtocolDoesNotDeduplicateOtherRumSourcesOrLogging{
+    NSDictionary *viewTags = @{FT_KEY_VIEW_ID:@"view_id",FT_KEY_VIEW_NAME:@"view"};
+    FTRecordModel *oldView = [[FTRecordModel alloc]initWithSource:FT_RUM_SOURCE_VIEW op:FT_DATA_TYPE_RUM tags:viewTags fields:@{@"value":@"old_view"} tm:1];
+    oldView._id = @"1";
+    FTRecordModel *newView = [[FTRecordModel alloc]initWithSource:FT_RUM_SOURCE_VIEW op:FT_DATA_TYPE_RUM tags:viewTags fields:@{@"value":@"new_view"} tm:2];
+    newView._id = @"2";
+    FTRecordModel *action = [[FTRecordModel alloc]initWithSource:FT_RUM_SOURCE_ACTION op:FT_DATA_TYPE_RUM tags:@{FT_KEY_VIEW_ID:@"view_id",@"action":@"tap"} fields:@{@"value":@"action"} tm:3];
+    action._id = @"3";
+    FTRecordModel *log = [[FTRecordModel alloc]initWithSource:FT_LOGGER_SOURCE op:FT_DATA_TYPE_LOGGING tags:@{FT_KEY_VIEW_ID:@"view_id",@"status":@"info"} fields:@{@"message":@"log"} tm:4];
+    log._id = @"4";
+
+    FTRequestLineBody *line = [[FTRequestLineBody alloc]init];
+    NSString *lineStr = [line getRequestBodyWithEventArray:@[oldView,action,newView,log] packageId:@"1" enableIntegerCompatible:NO];
+    NSArray *lines = [lineStr componentsSeparatedByString:@"\n"];
+    XCTAssertTrue(lines.count == 3);
+    XCTAssertFalse([lineStr containsString:@"value=\"old_view\""]);
+    XCTAssertTrue([lineStr containsString:@"value=\"new_view\""]);
+    XCTAssertTrue([lineStr containsString:@"value=\"action\""]);
+    XCTAssertTrue([lineStr containsString:@"message=\"log\""]);
+}
 // message actually is "\"
 - (void)testFieldValueHasTransliteration1{
     [self transliteration:@"\\" expect:@"\\\\"];

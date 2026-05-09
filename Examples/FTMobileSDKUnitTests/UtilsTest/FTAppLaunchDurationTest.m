@@ -220,6 +220,7 @@ void FTClearLaunchTaskRole(void);
     [self waitForExpectations:@[expectation] timeout:2];
     FTSetApplicationDidBecomeActive(applicationDidBecomeActive);
 }
+#if TARGET_OS_IOS
 - (void)testLaunchWhenSDKInitAfterApplicationDidBecomeActive_prewarm{
     XCTestExpectation *expectation= [self expectationWithDescription:@"Async operation timeout"];
     FTSetIsActivePrewarm(YES);
@@ -242,6 +243,7 @@ void FTClearLaunchTaskRole(void);
     FTSetIsActivePrewarm(NO);
     FTSetApplicationDidBecomeActive(applicationDidBecomeActive);
 }
+#endif
 - (void)testLaunchWhenSDKInitBeforeApplicationDidBecomeActive_cold{
     XCTestExpectation *expectation= [self expectationWithDescription:@"Async operation timeout"];
     NSDate *applicationDidBecomeActive = FTGetApplicationDidBecomeActive();
@@ -273,6 +275,7 @@ void FTClearLaunchTaskRole(void);
     [self waitForExpectations:@[expectation] timeout:10];
     FTSetApplicationDidBecomeActive(applicationDidBecomeActive);
 }
+#if TARGET_OS_IOS
 - (void)testLaunchWhenSDKInitBeforeApplicationDidBecomeActive_prewarm{
     
     XCTestExpectation *expectation= [self expectationWithDescription:@"Async operation timeout"];
@@ -297,6 +300,7 @@ void FTClearLaunchTaskRole(void);
     FTSetIsActivePrewarm(NO);
     FTSetApplicationDidBecomeActive(applicationDidBecomeActive);
 }
+#endif
 #endif
 - (void)launchData:(FTLaunchType)type{
     FTRUMDependencies *dependencies = [[FTRUMDependencies alloc]init];

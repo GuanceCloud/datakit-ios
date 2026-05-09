@@ -103,10 +103,18 @@ NSString * FTQueryStringFromParameters(NSDictionary *parameters,FTParameterType 
 @implementation FTRequestBody : NSObject
 
 @end
+@interface FTRequestLineBody ()
+- (NSArray *)deduplicatedRumViewEvents:(NSArray *)events;
+- (NSString *)rumViewIdForEvent:(FTRecordModel *)event;
+@end
 @implementation FTRequestLineBody
 - (NSString *)getRequestBodyWithEventArray:(NSArray *)events packageId:(NSString *)packageId enableIntegerCompatible:(BOOL)compatible{
     __block NSMutableString *requestDatas = [NSMutableString new];
     NSArray *eventsSnapshot = [events copy];
+    FTRecordModel *model = [eventsSnapshot firstObject];
+    if ([model.op isEqualToString:FT_DATA_TYPE_RUM]) {
+        eventsSnapshot = [self deduplicatedRumViewEvents:eventsSnapshot];
+    }
     [eventsSnapshot enumerateObjectsUsingBlock:^(FTRecordModel *obj, NSUInteger idx, BOOL * _Nonnull stop) {
         @autoreleasepool {
             NSDictionary *item = [FTJSONUtil dictionaryWithJsonString:obj.data];
@@ -131,7 +139,7 @@ NSString * FTQueryStringFromParameters(NSDictionary *parameters,FTParameterType 
                 NSString *tagStr = FTQueryStringFromParameters(tagDict,FTParameterTypeTag,compatible);
                 NSString *fieldStr= FTQueryStringFromParameters(opdata[FT_FIELDS],FTParameterTypeField,compatible);
                 NSString *requestStr = [NSString stringWithFormat:@"%@,%@ %@ %lld",source,tagStr,fieldStr,time];
-                if (idx==0) {
+                if (requestDatas.length == 0) {
                     [requestDatas appendString:requestStr];
                 }else{
                     [requestDatas appendFormat:@"\n%@",requestStr];
@@ -141,8 +149,63 @@ NSString * FTQueryStringFromParameters(NSDictionary *parameters,FTParameterType 
             }
         }
     }];
-    FTRecordModel *model = [events firstObject];
     FTInnerLogDebug(@"[NETWORK]\nUpload Datas Type:%@\nLine RequestDatas:\n%@",model.op,requestDatas);
     return [requestDatas copy];
+}
+- (NSArray *)deduplicatedRumViewEvents:(NSArray *)events{
+    if (events.count <= 1) {
+        return events;
+    }
+    NSMutableDictionary<NSString *, NSNumber *> *selectedIndexes = [NSMutableDictionary dictionary];
+    [events enumerateObjectsUsingBlock:^(FTRecordModel *obj, NSUInteger idx, BOOL * _Nonnull stop) {
+        NSString *viewId = [self rumViewIdForEvent:obj];
+        if (viewId.length == 0) {
+            return;
+        }
+        NSNumber *selectedIndex = selectedIndexes[viewId];
+        if (!selectedIndex) {
+            selectedIndexes[viewId] = @(idx);
+            return;
+        }
+        FTRecordModel *selectedEvent = events[selectedIndex.unsignedIntegerValue];
+        if (obj._id.longLongValue > selectedEvent._id.longLongValue) {
+            selectedIndexes[viewId] = @(idx);
+        }
+    }];
+    if (selectedIndexes.count == 0) {
+        return events;
+    }
+    NSMutableArray *deduplicatedEvents = [NSMutableArray arrayWithCapacity:events.count];
+    [events enumerateObjectsUsingBlock:^(FTRecordModel *obj, NSUInteger idx, BOOL * _Nonnull stop) {
+        NSString *viewId = [self rumViewIdForEvent:obj];
+        NSNumber *selectedIndex = viewId.length > 0 ? selectedIndexes[viewId] : nil;
+        if (!selectedIndex || selectedIndex.unsignedIntegerValue == idx) {
+            [deduplicatedEvents addObject:obj];
+        }
+    }];
+    return [deduplicatedEvents copy];
+}
+- (NSString *)rumViewIdForEvent:(FTRecordModel *)event{
+    if (![event.op isEqualToString:FT_DATA_TYPE_RUM]) {
+        return nil;
+    }
+    NSDictionary *item = [FTJSONUtil dictionaryWithJsonString:event.data];
+    if (![item isKindOfClass:NSDictionary.class]) {
+        return nil;
+    }
+    NSDictionary *opdata = item[FT_OPDATA];
+    if (![opdata isKindOfClass:NSDictionary.class]) {
+        return nil;
+    }
+    NSString *sourceRaw = opdata[FT_KEY_SOURCE]?:opdata[FT_MEASUREMENT];
+    if (![sourceRaw isKindOfClass:NSString.class] || ![sourceRaw isEqualToString:FT_RUM_SOURCE_VIEW]) {
+        return nil;
+    }
+    NSDictionary *tags = opdata[FT_TAGS];
+    if (![tags isKindOfClass:NSDictionary.class]) {
+        return nil;
+    }
+    NSString *viewId = tags[FT_KEY_VIEW_ID];
+    return [viewId isKindOfClass:NSString.class] ? viewId : nil;
 }
 @end
