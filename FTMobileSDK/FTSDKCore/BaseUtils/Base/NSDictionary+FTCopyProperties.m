@@ -10,7 +10,12 @@
 #import "FTJSONUtil.h"
 #import "FTInnerLog.h"
 #import "NSNumber+FTAdd.h"
+
 @implementation NSDictionary (FTCopyProperties)
+- (BOOL)ft_hasValidValueForKey:(NSString *)key {
+    id value = key.length > 0 ? self[key] : nil;
+    return value && ![value isKindOfClass:NSNull.class];
+}
 - (NSDictionary *)ft_deepCopy{
     NSMutableDictionary *properties = [NSMutableDictionary dictionary];
     @try {
@@ -70,5 +75,47 @@
     } @catch (NSException *exception) {
         FTInnerLogError(@"%@", exception);
     }
+}
+@end
+
+@implementation NSObject (FTSafeDictionary)
++ (NSDictionary *)ft_normalizedDictionaryWithObject:(id)object {
+    if (![object isKindOfClass:NSDictionary.class]) {
+        return @{};
+    }
+    return [(NSDictionary *)object copy] ?: @{};
+}
+@end
+
+@implementation FTLinePropertyBag
+- (instancetype)initWithTags:(id)tags fields:(id)fields {
+    self = [super init];
+    if (self) {
+        _tags = [NSObject ft_normalizedDictionaryWithObject:tags];
+        _fields = [NSObject ft_normalizedDictionaryWithObject:fields];
+        NSMutableDictionary *merged = [NSMutableDictionary dictionary];
+        [merged addEntriesFromDictionary:_tags];
+        [merged addEntriesFromDictionary:_fields];
+        _mergedDictionary = [merged copy];
+    }
+    return self;
+}
+- (FTLinePropertyBag *)bagByApplyingChangedValues:(id)changedValues {
+    NSDictionary *safeChangedValues = [NSObject ft_normalizedDictionaryWithObject:changedValues];
+    if (safeChangedValues.count == 0) {
+        return self;
+    }
+    NSMutableDictionary *mutableTags = [self.tags mutableCopy];
+    NSMutableDictionary *mutableFields = [self.fields mutableCopy];
+    NSSet *tagKeys = [NSSet setWithArray:self.tags.allKeys];
+    NSSet *fieldKeys = [NSSet setWithArray:self.fields.allKeys];
+    [safeChangedValues enumerateKeysAndObjectsUsingBlock:^(id key, id obj, BOOL *stop) {
+        if ([tagKeys containsObject:key]) {
+            mutableTags[key] = obj;
+        } else if ([fieldKeys containsObject:key]) {
+            mutableFields[key] = obj;
+        }
+    }];
+    return [[FTLinePropertyBag alloc] initWithTags:mutableTags fields:mutableFields];
 }
 @end

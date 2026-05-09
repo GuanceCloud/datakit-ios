@@ -13,6 +13,8 @@
 #import "FTJSONUtil.h"
 #import "FTInnerLog.h"
 #import "FTConstants.h"
+#import "NSDictionary+FTCopyProperties.h"
+
 @implementation FTRecordModel
 -(instancetype)init{
     self = [super init];
@@ -25,18 +27,24 @@
 -(instancetype)initWithSource:(NSString *)source op:(NSString *)op tags:(NSDictionary *)tags fields:(NSDictionary *)fields tm:(long long)tm{
     self = [super init];
     if (self) {
-        if (source && op && tags && fields) {
+        NSDictionary *safeTags = [NSObject ft_normalizedDictionaryWithObject:tags];
+        NSDictionary *safeFields = [NSObject ft_normalizedDictionaryWithObject:fields];
+        if (source && op) {
             NSDictionary *opData = @{
                 FT_KEY_SOURCE:source,
-                FT_FIELDS:fields,
-                FT_TAGS:tags,
+                FT_FIELDS:safeFields,
+                FT_TAGS:safeTags,
                 FT_TIME:@(tm)
             };
             NSDictionary *data =@{FT_OP:op,
                                   FT_OPDATA:opData,
             };
+            NSString *jsonData = [FTJSONUtil convertToJsonData:data];
+            if (!jsonData) {
+                return nil;
+            }
             _op = op;
-            _data = [FTJSONUtil convertToJsonData:data];
+            _data = jsonData;
             _tm = tm;
             FTInnerLogDebug(@"write data = %@",data);
             return self;

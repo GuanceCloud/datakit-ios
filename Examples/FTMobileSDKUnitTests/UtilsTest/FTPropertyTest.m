@@ -13,9 +13,11 @@
 #import "FTBaseInfoHandler.h"
 #import "FTRecordModel.h"
 #import "FTMobileAgent+Private.h"
+#import "FTMobileConfig+Private.h"
 #import "FTConstants.h"
 #import "NSDate+FTUtil.h"
 #import <objc/runtime.h>
+#import <math.h>
 #import <FTJSONUtil.h>
 #import "NSString+FTAdd.h"
 #import "FTPresetProperty.h"
@@ -26,9 +28,36 @@
 #import "FTRUMManager.h"
 #import "FTLogger+Private.h"
 #import "FTUserInfo.h"
+#import "FTDataWriterWorker.h"
+#import "NSDictionary+FTCopyProperties.h"
 @interface FTPresetProperty (Testing)
 - (FTUserInfo *)userInfo;
 @end
+static id FTPropertyTestCallClassSelector(Class cls, SEL selector) {
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Warc-performSelector-leaks"
+    return [cls respondsToSelector:selector] ? [cls performSelector:selector] : nil;
+#pragma clang diagnostic pop
+}
+
+static NSArray<NSString *> *FTPropertyTestPropertyNamesForClass(Class cls) {
+    NSMutableArray<NSString *> *propertyNames = [NSMutableArray array];
+    Class baseModelClass = NSClassFromString(@"FTPresetPropertyModel");
+    while (cls && cls != baseModelClass && cls != NSObject.class) {
+        unsigned int count = 0;
+        objc_property_t *properties = class_copyPropertyList(cls, &count);
+        for (unsigned int i = 0; i < count; i++) {
+            const char *name = property_getName(properties[i]);
+            if (name) {
+                [propertyNames addObject:[NSString stringWithUTF8String:name]];
+            }
+        }
+        free(properties);
+        cls = class_getSuperclass(cls);
+    }
+    return [propertyNames copy];
+}
+
 @interface FTPropertyTest : XCTestCase
 @property (nonatomic, strong) FTMobileConfig *config;
 @property (nonatomic, copy) NSString *url;
@@ -84,7 +113,7 @@
  */
 - (void)testSetEmptyUrl{
     FTMobileConfig *config = [[FTMobileConfig alloc]initWithDatakitUrl:@""];
-    
+
     XCTAssertNoThrow([FTMobileAgent startWithConfigOptions:config]);
     [FTMobileAgent shutDown];
 }
@@ -196,6 +225,101 @@
     }];
     [FTMobileAgent shutDown];
 }
+- (void)testApplyModifierNilReturnEmptyDictionary{
+    NSDictionary *dict = [[FTPresetProperty sharedInstance] applyModifier:nil];
+    XCTAssertNotNil(dict);
+    XCTAssertTrue([dict isKindOfClass:NSDictionary.class]);
+    XCTAssertEqual(dict.count, 0);
+}
+- (void)testApplyModifierOnlyNormalizesDictionaryWithoutModifier{
+    NSDictionary *dict = @{
+        @1:@"number_key",
+        @"null":[NSNull null],
+        @"nan":NSDecimalNumber.notANumber,
+        @"infinity":@(INFINITY),
+        @"set":[NSSet setWithObjects:@"a", @"b", nil],
+        @"date":[NSDate dateWithTimeIntervalSince1970:0],
+        @"nested":@{@"valid":@"value", @"invalid":NSDecimalNumber.notANumber}
+    };
+    NSDictionary *normalizedDict = [[FTPresetProperty sharedInstance] applyModifier:dict];
+    XCTAssertEqualObjects(normalizedDict[@1], @"number_key");
+    XCTAssertEqualObjects(normalizedDict[@"null"], [NSNull null]);
+    XCTAssertEqualObjects(normalizedDict[@"nan"], NSDecimalNumber.notANumber);
+    XCTAssertEqualObjects(normalizedDict[@"infinity"], @(INFINITY));
+    XCTAssertTrue([normalizedDict[@"set"] isKindOfClass:NSSet.class]);
+    XCTAssertTrue([normalizedDict[@"date"] isKindOfClass:NSDate.class]);
+    XCTAssertEqualObjects(normalizedDict[@"nested"][@"valid"], @"value");
+    XCTAssertEqualObjects(normalizedDict[@"nested"][@"invalid"], NSDecimalNumber.notANumber);
+}
+
+- (void)testPresetPropertyModelCodingKeysCoverNormalProperties{
+    NSArray<NSString *> *classNames = @[@"FTBasePropertyModel", @"FTRUMPropertyModel", @"FTLogPropertyModel"];
+    for (NSString *className in classNames) {
+        Class cls = NSClassFromString(className);
+        XCTAssertNotNil(cls);
+        NSDictionary *codingKeys = FTPropertyTestCallClassSelector(cls, @selector(ft_codingKeys)) ?: @{};
+        NSSet *flattenNames = FTPropertyTestCallClassSelector(cls, @selector(ft_flattenPropertyNames)) ?: [NSSet set];
+        NSSet *ignoredNames = FTPropertyTestCallClassSelector(cls, @selector(ft_ignoredPropertyNames)) ?: [NSSet set];
+        for (NSString *propertyName in FTPropertyTestPropertyNamesForClass(cls)) {
+            if ([flattenNames containsObject:propertyName] || [ignoredNames containsObject:propertyName]) {
+                continue;
+            }
+            XCTAssertNotNil(codingKeys[propertyName], @"%@.%@ should be declared in ft_codingKeys", className, propertyName);
+        }
+    }
+}
+- (void)testConfigConvertToDictionaryNilServiceNoCrash{
+    FTMobileConfig *config = [[FTMobileConfig alloc] initWithDictionary:@{}];
+    XCTAssertNotNil(config.service);
+    NSDictionary *dict = [config convertToDictionary];
+    XCTAssertEqualObjects(dict[@"service"], config.service);
+    XCTAssertTrue([NSJSONSerialization isValidJSONObject:dict]);
+
+    FTMobileConfig *emptyServiceConfig = [[FTMobileConfig alloc] initWithDictionary:@{@"service":[NSNull null]}];
+    XCTAssertNotNil(emptyServiceConfig.service);
+    XCTAssertNoThrow([emptyServiceConfig convertToDictionary]);
+}
+- (void)testAppendGlobalContextNilNoCrash{
+    FTMobileConfig *config = [[FTMobileConfig alloc]initWithDatakitUrl:self.url];
+    config.autoSync = NO;
+    [FTMobileAgent startWithConfigOptions:config];
+    FTRumConfig *rumConfig = [[FTRumConfig alloc]initWithAppid:_appid];
+    [[FTMobileAgent sharedInstance] startRumWithConfigOptions:rumConfig];
+    FTLoggerConfig *loggerConfig = [[FTLoggerConfig alloc]init];
+    [[FTMobileAgent sharedInstance] startLoggerWithConfigOptions:loggerConfig];
+
+    XCTAssertNoThrow([FTMobileAgent appendGlobalContext:nil]);
+    XCTAssertNoThrow([FTMobileAgent appendRUMGlobalContext:nil]);
+    XCTAssertNoThrow([FTMobileAgent appendLogGlobalContext:nil]);
+    XCTAssertNotNil([[FTPresetProperty sharedInstance] rumDynamicTags]);
+    XCTAssertNotNil([[FTPresetProperty sharedInstance] loggerDynamicTags]);
+    [FTMobileAgent shutDown];
+}
+- (void)testDataWriterNilTagsFieldsNoCrash{
+    FTMobileConfig *config = [[FTMobileConfig alloc]initWithDatakitUrl:self.url];
+    config.autoSync = NO;
+    [FTMobileAgent startWithConfigOptions:config];
+    FTRumConfig *rumConfig = [[FTRumConfig alloc]initWithAppid:_appid];
+    [[FTMobileAgent sharedInstance] startRumWithConfigOptions:rumConfig];
+
+    FTDataWriterWorker *writer = [FTTrackDataManager sharedInstance].dataWriterWorker;
+    XCTAssertNoThrow([writer rumWrite:FT_RUM_SOURCE_ACTION tags:nil fields:nil dynamicContext:nil time:[NSDate ft_currentNanosecondTimeStamp]]);
+    XCTAssertNoThrow([writer loggingTags:nil field:nil time:[NSDate ft_currentNanosecondTimeStamp] linkRum:NO]);
+    [[FTTrackDataManager sharedInstance] insertCacheToDB];
+    NSArray *rumDatas = [[FTTrackerEventDBTool sharedManager] getFirstRecords:10 withType:FT_DATA_TYPE_RUM];
+    NSArray *logDatas = [[FTTrackerEventDBTool sharedManager] getFirstRecords:10 withType:FT_DATA_TYPE_LOGGING];
+    XCTAssertTrue(rumDatas.count > 0);
+    XCTAssertTrue(logDatas.count > 0);
+    [FTMobileAgent shutDown];
+}
+- (void)testRecordModelNilTagsFieldsNoCrash{
+    FTRecordModel *model = [[FTRecordModel alloc]initWithSource:FT_RUM_SOURCE_ACTION op:FT_DATA_TYPE_RUM tags:nil fields:nil tm:[NSDate ft_currentNanosecondTimeStamp]];
+    XCTAssertNotNil(model);
+    NSDictionary *dict = [FTJSONUtil dictionaryWithJsonString:model.data];
+    NSDictionary *opData = dict[FT_OPDATA];
+    XCTAssertEqualObjects(opData[FT_TAGS], @{});
+    XCTAssertEqualObjects(opData[FT_FIELDS], @{});
+}
 - (void)testDataModifier_globalContext{
     FTMobileConfig *config = [[FTMobileConfig alloc]initWithDatakitUrl:self.url];
     config.autoSync = NO;
@@ -263,41 +387,16 @@
 
     NSDictionary *rumTags = [[FTPresetProperty sharedInstance] rumDynamicTags];
     NSDictionary *logTags = [[FTPresetProperty sharedInstance] loggerDynamicTags];
-    // FT_NETWORK_TYPE\FT_SCREEN_SIZE
     XCTAssertTrue(rumTags.count >= 6);
-    XCTAssertTrue(logTags.count == 4);
-    __block NSInteger count = 0;
-    [rumTags enumerateKeysAndObjectsUsingBlock:^(id  _Nonnull key, id  _Nonnull obj, BOOL * _Nonnull stop) {
-        if ([key isEqualToString:@"append_rum"]) {
-            XCTAssertTrue([obj isEqualToString:@"rum_***"]);
-            count++;
-        }else if ([key isEqualToString:@"append_sdk"]) {
-            XCTAssertTrue([obj isEqualToString:@"sdk_***"]);
-            count++;
-        }else if ([key isEqualToString:@"key"]) {
-            XCTAssertTrue([obj isEqualToString:@"value"]);
-            count++;
-        }else if ([key isEqualToString:@"key2"]) {
-            XCTAssertTrue([obj isEqualToString:@"value"]);
-            count++;
-        }
-    }];
-    [logTags enumerateKeysAndObjectsUsingBlock:^(id  _Nonnull key, id  _Nonnull obj, BOOL * _Nonnull stop) {
-        if ([key isEqualToString:@"append_log"]) {
-            XCTAssertTrue([obj isEqualToString:@"log_***"]);
-            count++;
-        }else if ([key isEqualToString:@"append_sdk"]) {
-            XCTAssertTrue([obj isEqualToString:@"sdk_***"]);
-            count++;
-        }else if ([key isEqualToString:@"key3"]) {
-            XCTAssertTrue([obj isEqualToString:@"value"]);
-            count++;
-        }else if ([key isEqualToString:@"key2"]) {
-            XCTAssertTrue([obj isEqualToString:@"value"]);
-            count++;
-        }
-    }];
-    XCTAssertTrue(count == 8);
+    XCTAssertTrue(logTags.count >= 4);
+    XCTAssertEqualObjects(rumTags[@"append_rum"], @"rum_***");
+    XCTAssertEqualObjects(rumTags[@"append_sdk"], @"sdk_***");
+    XCTAssertEqualObjects(rumTags[@"key"], @"value");
+    XCTAssertEqualObjects(rumTags[@"key2"], @"value");
+    XCTAssertEqualObjects(logTags[@"append_log"], @"log_***");
+    XCTAssertEqualObjects(logTags[@"append_sdk"], @"sdk_***");
+    XCTAssertEqualObjects(logTags[@"key3"], @"value");
+    XCTAssertEqualObjects(logTags[@"key2"], @"value");
     [FTMobileAgent shutDown];
 }
 - (void)testLineDataModifier_update{

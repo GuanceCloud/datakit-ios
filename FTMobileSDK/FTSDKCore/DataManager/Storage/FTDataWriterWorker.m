@@ -15,6 +15,7 @@
 #import "FTInnerLog.h"
 #import "FTTrackerEventDBTool.h"
 #import "NSDate+FTUtil.h"
+#import "NSDictionary+FTCopyProperties.h"
 #import <os/lock.h>
 #import "FTDateUtil.h"
 @interface FTDataWriterWorker()
@@ -26,11 +27,14 @@
 @property (nonatomic, assign) long long lastProcessFatalErrorTime;
 @property (nonatomic, strong) dispatch_queue_t errorSampledConsumeQueue;
 
-- (FTRecordModel *)_recordModelWithSource:(NSString *)source
-                                     tags:(NSDictionary *)tags
-                                   fields:(NSDictionary *)fields
-                                     time:(long long)time
-                                       op:(NSString *)op;
+- (void)writeSource:(NSString *)source
+                 op:(NSString *)op
+        contextTags:(NSDictionary *)contextTags
+               tags:(NSDictionary *)tags
+             fields:(NSDictionary *)fields
+               time:(long long)time
+         updateTime:(long long)updateTime
+              cache:(BOOL)cache;
 @end
 @implementation FTDataWriterWorker
 -(instancetype)init{
@@ -60,104 +64,100 @@
         return;
     }
     @try {
-        NSDictionary *rTags = [[FTPresetProperty sharedInstance] applyModifier:tags];
-        NSDictionary *rFields = [[FTPresetProperty sharedInstance] applyModifier:fields];
-        NSMutableDictionary *tagsDict = [NSMutableDictionary new];
-        NSMutableDictionary *fieldsDict = [NSMutableDictionary new];
-        NSDictionary *rumStaticTags = [[FTPresetProperty sharedInstance] rumTags];
-
-        [tagsDict addEntriesFromDictionary:rTags];
-        [tagsDict addEntriesFromDictionary:rumStaticTags];
-        [tagsDict addEntriesFromDictionary:dynamicContext];
-        [fieldsDict addEntriesFromDictionary:rFields];
-        NSDictionary *pkgInfo = rTags[FT_SDK_PKG_INFO];
-        if(pkgInfo && pkgInfo.count>0){
-            NSDictionary *info = [rumStaticTags valueForKey:FT_SDK_PKG_INFO];
-            if(info){
-                NSMutableDictionary *mutableInfo = [info mutableCopy];
-                [mutableInfo addEntriesFromDictionary:pkgInfo];
-                pkgInfo = mutableInfo;
-            }
-            [tagsDict setValue:pkgInfo forKey:FT_SDK_PKG_INFO];
-        }
-        NSString *type = cache ? FT_DATA_TYPE_RUM_CACHE:FT_DATA_TYPE_RUM;
-        FTAddDataType addType = cache ? FTAddDataRUMCache:FTAddDataRUM;
-        FTRecordModel *model = [self _recordModelWithSource:source tags:tagsDict fields:fieldsDict time:time op:type];
-        if(updateTime>0){
-            model.tm = updateTime;
-        }
-        [[FTTrackDataManager sharedInstance] addTrackData:model type:addType];
-        if (cache && [source isEqualToString:FT_RUM_SOURCE_ERROR]) {
-            [self lastErrorTimeInterval:model.tm];
-        }
+        FTPresetProperty *preset = [FTPresetProperty sharedInstance];
+        NSMutableDictionary *contextTags = [NSMutableDictionary dictionary];
+        [contextTags addEntriesFromDictionary:[preset rumTags]];
+        [contextTags addEntriesFromDictionary:[NSObject ft_normalizedDictionaryWithObject:dynamicContext]];
+        [self writeSource:source
+                       op:cache ? FT_DATA_TYPE_RUM_CACHE:FT_DATA_TYPE_RUM
+              contextTags:contextTags
+                     tags:tags
+                   fields:fields
+                     time:time
+               updateTime:updateTime
+                    cache:cache];
     } @catch (NSException *exception) {
         FTInnerLogError(@"exception %@",exception);
     }
 }
 - (void)rumWriteAssembledData:(NSString *)source tags:(NSDictionary *)tags fields:(NSDictionary *)fields time:(long long)time{
-    NSDictionary *rTags = [[FTPresetProperty sharedInstance] applyModifier:tags];
-    NSDictionary *rFields = [[FTPresetProperty sharedInstance] applyModifier:fields];
-    FTRecordModel *model = [self _recordModelWithSource:source tags:rTags fields:rFields time:time op:FT_DATA_TYPE_RUM];
-    [[FTTrackDataManager sharedInstance] addTrackData:model type:FTAddDataRUM];
+    [self writeSource:source op:FT_DATA_TYPE_RUM contextTags:nil tags:tags fields:fields time:time updateTime:0 cache:NO];
 }
-- (FTRecordModel *)_recordModelWithSource:(NSString *)source
-                                     tags:(NSDictionary *)tags
-                                   fields:(NSDictionary *)fields
-                                     time:(long long)time
-                                       op:(NSString *)op {
-    FTRecordModel *model = nil;
-    NSArray *array = [[FTPresetProperty sharedInstance] applyLineModifier:source tags:tags fields:fields];
-    if(array){
-        model = [[FTRecordModel alloc] initWithSource:source op:op tags:array[0] fields:array[1] tm:time];
-    } else {
-        model = [[FTRecordModel alloc] initWithSource:source op:op tags:tags fields:fields tm:time];
+- (void)writeSource:(NSString *)source
+                 op:(NSString *)op
+        contextTags:(NSDictionary *)contextTags
+               tags:(NSDictionary *)tags
+             fields:(NSDictionary *)fields
+               time:(long long)time
+         updateTime:(long long)updateTime
+              cache:(BOOL)cache {
+    if (![source isKindOfClass:NSString.class] || source.length == 0 || ![op isKindOfClass:NSString.class] || op.length == 0) {
+        return;
     }
-    return model;
+    FTPresetProperty *preset = [FTPresetProperty sharedInstance];
+    NSDictionary *eventTags = [preset applyModifier:tags];
+    NSDictionary *eventFields = [preset applyModifier:fields];
+    NSDictionary *safeContextTags = [NSObject ft_normalizedDictionaryWithObject:contextTags];
+    NSMutableDictionary *tagsDict = [eventTags mutableCopy] ?: [NSMutableDictionary dictionary];
+    [tagsDict addEntriesFromDictionary:safeContextTags];
+    NSDictionary *pkgInfo = eventTags[FT_SDK_PKG_INFO];
+    if (pkgInfo && pkgInfo.count > 0) {
+        NSDictionary *info = safeContextTags[FT_SDK_PKG_INFO];
+        if (info) {
+            NSMutableDictionary *mutableInfo = [info mutableCopy];
+            [mutableInfo addEntriesFromDictionary:pkgInfo];
+            pkgInfo = mutableInfo;
+        }
+        tagsDict[FT_SDK_PKG_INFO] = pkgInfo;
+    }
+    NSArray *array = [preset applyLineModifier:source tags:tagsDict fields:eventFields];
+    NSDictionary *recordTags = tagsDict;
+    NSDictionary *recordFields = eventFields;
+    if (array) {
+        recordTags = array[0];
+        recordFields = array[1];
+    }
+    long long recordTime = updateTime > 0 ? updateTime : time;
+    FTRecordModel *model = [[FTRecordModel alloc] initWithSource:source op:op tags:recordTags fields:recordFields tm:recordTime];
+    FTAddDataType addType = FTAddDataLogging;
+    if ([op isEqualToString:FT_DATA_TYPE_RUM_CACHE]) {
+        addType = FTAddDataRUMCache;
+    } else if ([op isEqualToString:FT_DATA_TYPE_RUM]) {
+        addType = FTAddDataRUM;
+    }
+    [[FTTrackDataManager sharedInstance] addTrackData:model type:addType];
+    if (cache && [source isEqualToString:FT_RUM_SOURCE_ERROR]) {
+        [self lastErrorTimeInterval:model.tm];
+    }
 }
 - (void)extensionRumWrite:(NSString *)source tags:(NSDictionary *)tags fields:(NSDictionary *)fields time:(long long)time{
     if (![source isKindOfClass:NSString.class] || source.length == 0) {
         return;
     }
-    @try {
-        NSMutableDictionary *baseTags = [NSMutableDictionary new];
-        [baseTags addEntriesFromDictionary:tags];
-        [baseTags addEntriesFromDictionary:[[FTPresetProperty sharedInstance] rumDynamicTags]];
-        [baseTags addEntriesFromDictionary:[[FTPresetProperty sharedInstance] rumTags]];
-        FTRecordModel *model = [[FTRecordModel alloc]initWithSource:source op:FT_DATA_TYPE_RUM tags:baseTags fields:fields tm:time];
-        [[FTTrackDataManager sharedInstance] addTrackData:model type:FTAddDataRUM];
-    } @catch (NSException *exception) {
-        FTInnerLogError(@"exception %@",exception);
-    }
+    [self rumWrite:source tags:tags fields:fields dynamicContext:@{} time:time updateTime:0 cache:NO];
 }
 // FT_DATA_TYPE_LOGGING
 -(void)loggingTags:(nullable NSDictionary *)tags field:(nullable NSDictionary *)field time:(long long)time linkRum:(BOOL)linkRum{
     @try {
-        NSDictionary *rTags = [[FTPresetProperty sharedInstance] applyModifier:tags];
-        NSDictionary *rFields = [[FTPresetProperty sharedInstance] applyModifier:field];
-
-        NSMutableDictionary *tagDict = [NSMutableDictionary new];
-        if (rTags) {
-            [tagDict addEntriesFromDictionary:rTags];
-        }
-        [tagDict addEntriesFromDictionary:[[FTPresetProperty sharedInstance] loggerDynamicTags]];
-        [tagDict addEntriesFromDictionary:[[FTPresetProperty sharedInstance] loggerTags]];
+        FTPresetProperty *preset = [FTPresetProperty sharedInstance];
+        NSMutableDictionary *contextTags = [NSMutableDictionary dictionary];
+        [contextTags addEntriesFromDictionary:[preset loggerTags]];
         if (linkRum) {
-            [tagDict addEntriesFromDictionary:[[FTPresetProperty sharedInstance] rumDynamicTags]];
-            [tagDict addEntriesFromDictionary:[[FTPresetProperty sharedInstance] rumTags]];
+            [contextTags addEntriesFromDictionary:[preset rumTags]];
         }
 #if TARGET_OS_TV
         NSString *source = FT_LOGGER_TVOS_SOURCE;
 #else
         NSString *source = FT_LOGGER_SOURCE;
 #endif
-        FTRecordModel *model;
-        NSArray *array = [[FTPresetProperty sharedInstance] applyLineModifier:source tags:tagDict fields:rFields];
-        if (array) {
-            model = [[FTRecordModel alloc]initWithSource:source op:FT_DATA_TYPE_LOGGING tags:array[0] fields:array[1] tm:time];
-        }else{
-            model = [[FTRecordModel alloc]initWithSource:source op:FT_DATA_TYPE_LOGGING tags:tagDict fields:rFields tm:time];
-        }
-        [[FTTrackDataManager sharedInstance] addTrackData:model type:FTAddDataLogging];
+        [self writeSource:source
+                       op:FT_DATA_TYPE_LOGGING
+              contextTags:contextTags
+                     tags:tags
+                   fields:field
+                     time:time
+               updateTime:0
+                    cache:NO];
     } @catch (NSException *exception) {
         FTInnerLogError(@"exception %@",exception);
     }

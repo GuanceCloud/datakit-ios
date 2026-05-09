@@ -10,6 +10,7 @@
 #import "FTConstants.h"
 #import "FTJSONUtil.h"
 #import "FTInnerLog.h"
+#import "NSDictionary+FTCopyProperties.h"
 
 @implementation FTLoggerConfig
 -(instancetype)init{
@@ -37,14 +38,15 @@
 }
 -(instancetype)initWithDictionary:(NSDictionary *)dict{
     if(dict){
-        if (self = [super init]) {
-            _samplerate = [dict[@"samplerate"] intValue];
-            _enableLinkRumData = [dict[@"enableLinkRumData"] boolValue];
-            _enableCustomLog = [dict[@"enableCustomLog"] boolValue];
-            _logLevelFilter = dict[@"logLevelFilter"];
-            _discardType = (FTLogCacheDiscard)[dict[@"discardType"] intValue];
-            _globalContext = dict[@"globalContext"];
-            _printCustomLogToConsole = [dict[@"printCustomLogToConsole"] boolValue];
+        if (self = [self init]) {
+            if ([dict ft_hasValidValueForKey:@"samplerate"]) _samplerate = [dict[@"samplerate"] intValue];
+            if ([dict ft_hasValidValueForKey:@"enableLinkRumData"]) _enableLinkRumData = [dict[@"enableLinkRumData"] boolValue];
+            if ([dict ft_hasValidValueForKey:@"enableCustomLog"]) _enableCustomLog = [dict[@"enableCustomLog"] boolValue];
+            if ([dict ft_hasValidValueForKey:@"logLevelFilter"]) _logLevelFilter = [dict[@"logLevelFilter"] copy];
+            if ([dict ft_hasValidValueForKey:@"discardType"]) _discardType = (FTLogCacheDiscard)[dict[@"discardType"] intValue];
+            if ([dict ft_hasValidValueForKey:@"globalContext"]) _globalContext = [dict[@"globalContext"] copy];
+            if ([dict ft_hasValidValueForKey:@"printCustomLogToConsole"]) _printCustomLogToConsole = [dict[@"printCustomLogToConsole"] boolValue];
+            if ([dict ft_hasValidValueForKey:@"logCacheLimitCount"]) self.logCacheLimitCount = [dict[@"logCacheLimitCount"] intValue];
         }
         return self;
     }else{

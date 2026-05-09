@@ -57,10 +57,12 @@ NS_ASSUME_NONNULL_BEGIN
 
 - (void)appendLogGlobalContext:(NSDictionary *)context;
 
-- (NSDictionary *)applyModifier:(NSDictionary *)dict;
+- (NSDictionary *)applyModifier:(nullable NSDictionary *)dict;
+
 - (nullable NSArray<NSDictionary *> *)applyLineModifier:(NSString *)measurement
-                                          tags:(NSDictionary *)tags
-                                        fields:(NSDictionary *)fields;
+                                          tags:(nullable NSDictionary *)tags
+                                        fields:(nullable NSDictionary *)fields;
+
 -(void)updateUser:(NSString *)Id name:(nullable NSString *)name email:(nullable NSString *)email extra:(nullable NSDictionary *)extra;
 
 -(void)clearUser;

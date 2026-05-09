@@ -10,9 +10,9 @@
 #import "FTConstants.h"
 #import "FTBaseInfoHandler.h"
 #import "FTInternalConstants.h"
-#import "NSDictionary+FTCopyProperties.h"
 #import "FTJSONUtil.h"
 #import "FTInnerLog.h"
+#import "NSDictionary+FTCopyProperties.h"
 
 @implementation FTRumConfig
 - (instancetype)init{
@@ -71,26 +71,30 @@
 }
 -(instancetype)initWithDictionary:(NSDictionary *)dict{
     if(dict){
-        if (self = [super init]) {
-            _enableTrackAppCrash = [dict[@"enableTrackAppCrash"] boolValue];
-            _samplerate = [dict[@"samplerate"] intValue];
-            _enableTrackAppFreeze = [dict[@"enableTrackAppFreeze"] boolValue];
-            _freezeDurationMs = [dict[@"freezeDurationMs"] intValue];
-            _enableTrackAppANR = [dict[@"enableTrackAppANR"] boolValue];
-            _enableTraceUserAction = [dict[@"enableTraceUserAction"] boolValue];
-            _enableTraceUserView = [dict[@"enableTraceUserView"] boolValue];
-            _enableTraceUserResource = [dict[@"enableTraceUserResource"] boolValue];
-            _enableResourceHostIP = [dict[@"enableResourceHostIP"] boolValue];
-            _appid = dict[@"appid"];
-            _errorMonitorType = (FTErrorMonitorType)[dict[@"errorMonitorType"] intValue];
-            _globalContext = dict[@"globalContext"];
-            _deviceMetricsMonitorType = (FTDeviceMetricsMonitorType)[dict[@"deviceMetricsMonitorType"] intValue];
-            _monitorFrequency = (FTMonitorFrequency)[dict[@"monitorFrequency"] intValue];
-            _resourceUrlHandler = [dict valueForKey:@"resourceUrlHandler"];
-            _resourcePropertyProvider = [dict valueForKey:@"resourceProvider"];
-            _sessionTaskErrorFilter = [dict valueForKey:@"sessionTaskErrorFilter"];
-            _sessionOnErrorSampleRate = [[dict valueForKey:@"sessionOnErrorSampleRate"] intValue];
-            _crashMonitoring = (FTCrashMonitorType)[[dict valueForKey:@"crashMonitoring"] intValue];
+        if (self = [self init]) {
+            if ([dict ft_hasValidValueForKey:@"enableTrackAppCrash"]) _enableTrackAppCrash = [dict[@"enableTrackAppCrash"] boolValue];
+            if ([dict ft_hasValidValueForKey:@"samplerate"]) _samplerate = [dict[@"samplerate"] intValue];
+            if ([dict ft_hasValidValueForKey:@"enableTrackAppFreeze"]) _enableTrackAppFreeze = [dict[@"enableTrackAppFreeze"] boolValue];
+            if ([dict ft_hasValidValueForKey:@"freezeDurationMs"]) self.freezeDurationMs = [dict[@"freezeDurationMs"] intValue];
+            if ([dict ft_hasValidValueForKey:@"enableTrackAppANR"]) _enableTrackAppANR = [dict[@"enableTrackAppANR"] boolValue];
+            if ([dict ft_hasValidValueForKey:@"enableTraceUserAction"]) _enableTraceUserAction = [dict[@"enableTraceUserAction"] boolValue];
+            if ([dict ft_hasValidValueForKey:@"enableTraceUserView"]) _enableTraceUserView = [dict[@"enableTraceUserView"] boolValue];
+            if ([dict ft_hasValidValueForKey:@"enableTraceUserResource"]) _enableTraceUserResource = [dict[@"enableTraceUserResource"] boolValue];
+            if ([dict ft_hasValidValueForKey:@"enableResourceHostIP"]) _enableResourceHostIP = [dict[@"enableResourceHostIP"] boolValue];
+            if ([dict ft_hasValidValueForKey:@"appid"]) _appid = [dict[@"appid"] copy];
+            if ([dict ft_hasValidValueForKey:@"errorMonitorType"]) _errorMonitorType = (FTErrorMonitorType)[dict[@"errorMonitorType"] intValue];
+            if ([dict ft_hasValidValueForKey:@"globalContext"]) _globalContext = [dict[@"globalContext"] copy];
+            if ([dict ft_hasValidValueForKey:@"deviceMetricsMonitorType"]) _deviceMetricsMonitorType = (FTDeviceMetricsMonitorType)[dict[@"deviceMetricsMonitorType"] intValue];
+            if ([dict ft_hasValidValueForKey:@"monitorFrequency"]) _monitorFrequency = (FTMonitorFrequency)[dict[@"monitorFrequency"] intValue];
+            if ([dict ft_hasValidValueForKey:@"resourceUrlHandler"]) _resourceUrlHandler = [dict valueForKey:@"resourceUrlHandler"];
+            if ([dict ft_hasValidValueForKey:@"resourceProvider"]) _resourcePropertyProvider = [dict valueForKey:@"resourceProvider"];
+            if ([dict ft_hasValidValueForKey:@"sessionTaskErrorFilter"]) _sessionTaskErrorFilter = [dict valueForKey:@"sessionTaskErrorFilter"];
+            if ([dict ft_hasValidValueForKey:@"sessionOnErrorSampleRate"]) _sessionOnErrorSampleRate = [[dict valueForKey:@"sessionOnErrorSampleRate"] intValue];
+            if ([dict ft_hasValidValueForKey:@"crashMonitoring"]) _crashMonitoring = (FTCrashMonitorType)[[dict valueForKey:@"crashMonitoring"] intValue];
+            if ([dict ft_hasValidValueForKey:@"rumCacheLimitCount"]) self.rumCacheLimitCount = [dict[@"rumCacheLimitCount"] intValue];
+            if ([dict ft_hasValidValueForKey:@"rumDiscardType"]) _rumDiscardType = (FTRUMCacheDiscard)[dict[@"rumDiscardType"] intValue];
+            if ([dict ft_hasValidValueForKey:@"enableTraceWebView"]) _enableTraceWebView = [dict[@"enableTraceWebView"] boolValue];
+            if ([dict ft_hasValidValueForKey:@"allowWebViewHost"]) _allowWebViewHost = [dict[@"allowWebViewHost"] copy];
         }
         return self;
     }else{
@@ -127,6 +131,8 @@
     [dict setValue:@(self.rumDiscardType) forKey:@"rumDiscardType"];
     [dict setValue:@(self.sessionOnErrorSampleRate) forKey:@"sessionOnErrorSampleRate"];
     [dict setValue:@(self.crashMonitoring) forKey:@"crashMonitoring"];
+    [dict setValue:@(self.enableTraceWebView) forKey:@"enableTraceWebView"];
+    [dict setValue:self.allowWebViewHost forKey:@"allowWebViewHost"];
     return dict;
 }
 -(NSString *)debugDescription{

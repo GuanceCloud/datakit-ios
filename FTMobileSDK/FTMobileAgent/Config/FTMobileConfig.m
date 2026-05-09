@@ -12,9 +12,9 @@
 #import "FTConstants.h"
 #import "FTBaseInfoHandler.h"
 #import "FTInternalConstants.h"
-#import "NSDictionary+FTCopyProperties.h"
 #import "FTJSONUtil.h"
 #import "FTInnerLog.h"
+#import "NSDictionary+FTCopyProperties.h"
 
 @implementation FTTraceConfig
 -(instancetype)init{
@@ -36,12 +36,12 @@
 }
 -(instancetype)initWithDictionary:(NSDictionary *)dict{
     if(dict){
-        if (self = [super init]) {
-            _samplerate = [dict[@"samplerate"] intValue];
-            _enableLinkRumData = [dict[@"enableLinkRumData"] boolValue];
-            _networkTraceType =(FTNetworkTraceType)[dict[@"networkTraceType"] intValue];
-            _enableAutoTrace = [dict[@"enableAutoTrace"] boolValue];
-            _traceInterceptor = dict[@"traceInterceptor"];
+        if (self = [self init]) {
+            if ([dict ft_hasValidValueForKey:@"samplerate"]) _samplerate = [dict[@"samplerate"] intValue];
+            if ([dict ft_hasValidValueForKey:@"enableLinkRumData"]) _enableLinkRumData = [dict[@"enableLinkRumData"] boolValue];
+            if ([dict ft_hasValidValueForKey:@"networkTraceType"]) _networkTraceType =(FTNetworkTraceType)[dict[@"networkTraceType"] intValue];
+            if ([dict ft_hasValidValueForKey:@"enableAutoTrace"]) _enableAutoTrace = [dict[@"enableAutoTrace"] boolValue];
+            if ([dict ft_hasValidValueForKey:@"traceInterceptor"]) _traceInterceptor = dict[@"traceInterceptor"];
         }
         return self;
     }else{
@@ -188,12 +188,12 @@
 }
 -(instancetype)initWithDictionary:(NSDictionary *)dict{
     if(dict){
-        if (self = [super init]) {
-            _service = [dict valueForKey:@"service"];
-            _datakitUrl = [dict valueForKey:@"datakitUrl"];
-            _datawayUrl = [dict valueForKey:@"datawayUrl"];
-            _clientToken = [dict valueForKey:@"clientToken"];
-            _env = [dict valueForKey:@"env"];
+        if (self = [self init]) {
+            if ([dict ft_hasValidValueForKey:@"service"]) self.service = [dict valueForKey:@"service"];
+            if ([dict ft_hasValidValueForKey:@"datakitUrl"]) self.datakitUrl = [dict valueForKey:@"datakitUrl"];
+            if ([dict ft_hasValidValueForKey:@"datawayUrl"]) self.datawayUrl = [dict valueForKey:@"datawayUrl"];
+            if ([dict ft_hasValidValueForKey:@"clientToken"]) self.clientToken = [dict valueForKey:@"clientToken"];
+            if ([dict ft_hasValidValueForKey:@"env"]) self.env = [dict valueForKey:@"env"];
         }
         return self;
     }else{
