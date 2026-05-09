@@ -204,6 +204,9 @@ extern NSString * const FT_KEY_LAUNCH_APP_INIT_TIME;
 extern NSString * const FT_KEY_LAUNCH_UIKITI_INIT_TIME;
 extern NSString * const FT_KEY_LAUNCH_PRE_RUNTIME_INIT_TIME;
 extern NSString * const FT_KEY_LAUNCH_RUNTIME_INIT_TIME;
+extern NSString * const FT_KEY_APP_LAUNCH_TYPE;
+extern NSString * const FT_APP_LAUNCH_TYPE_FOREGROUND;
+extern NSString * const FT_APP_LAUNCH_TYPE_BACKGROUND;
 
 #pragma mark ========== Session Replay ==========
 extern NSString * const FT_SESSION_HAS_REPLAY;
@@ -240,4 +243,3 @@ extern NSString * const FT_USER_ID;
 extern NSString * const FT_USER_EMAIL;
 extern NSString * const FT_USER_NAME;
 extern NSString * const FT_USER_EXTRA;
-

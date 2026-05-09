@@ -18,6 +18,10 @@
 #import "FTDateUtil.h"
 #import "FTDisplayRateMonitor.h"
 #import "FTConstants.h"
+#if FT_HOST_IOS
+#import <mach/mach.h>
+#import <mach/task_policy.h>
+#endif
 
 #define COLD_START_TIME_THRESHOLD 30
 static NSDate *_sdkStartDate = nil;
@@ -26,6 +30,40 @@ static NSDate *moduleInitializationTimestamp;
 static NSDate *runtimeInit = nil;
 static BOOL isActivePrewarm = NO;
 static BOOL AppRelaunched = NO;
+#if FT_HOST_IOS && defined(DEBUG)
+static NSNumber *launchTaskRoleOverride = nil;
+#endif
+
+static NSString *FTAppLaunchType(BOOL isPreWarming) {
+    if (isPreWarming) {
+        return nil;
+    }
+#if FT_HOST_IOS
+    task_role_t role = TASK_UNSPECIFIED;
+#if defined(DEBUG)
+    if (launchTaskRoleOverride) {
+        role = (task_role_t)launchTaskRoleOverride.integerValue;
+    } else
+#endif
+    {
+        task_category_policy_data_t policy;
+        mach_msg_type_number_t count = TASK_CATEGORY_POLICY_COUNT;
+        boolean_t getDefault = false;
+        kern_return_t result = task_policy_get(mach_task_self(),
+                                               TASK_CATEGORY_POLICY,
+                                               (task_policy_t)&policy,
+                                               &count,
+                                               &getDefault);
+        if (result != KERN_SUCCESS) {
+            return FT_APP_LAUNCH_TYPE_BACKGROUND;
+        }
+        role = policy.role;
+    }
+    return role == TASK_FOREGROUND_APPLICATION ? FT_APP_LAUNCH_TYPE_FOREGROUND : FT_APP_LAUNCH_TYPE_BACKGROUND;
+#else
+    return nil;
+#endif
+}
 
 /**
  * Constructor priority must be bounded between 101 and 65535 inclusive, see
@@ -129,6 +167,10 @@ ftModuleInitializationHook(void)
         NSNumber *appStartDuration = [launchDate ft_nanosecondTimeIntervalToDate:endDate];
 
         NSMutableDictionary *fields = [NSMutableDictionary new];
+        NSString *appLaunchType = FTAppLaunchType(isPreWarming);
+        if (appLaunchType) {
+            [fields setValue:appLaunchType forKey:FT_KEY_APP_LAUNCH_TYPE];
+        }
    
     if (!isPreWarming) {
         NSDictionary *preRuntimeInit = @{
@@ -247,6 +289,14 @@ BOOL FTGetIsActivePrewarm(void) {
 void FTSetIsActivePrewarm(BOOL active) {
     isActivePrewarm = active;
 }
+#if FT_HOST_IOS
+void FTSetLaunchTaskRole(NSInteger role) {
+    launchTaskRoleOverride = @(role);
+}
+void FTClearLaunchTaskRole(void) {
+    launchTaskRoleOverride = nil;
+}
+#endif
 
 #endif
 @end

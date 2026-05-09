@@ -176,6 +176,9 @@ NSString * const FT_KEY_LAUNCH_APP_INIT_TIME = @"app_application_init_time";
 NSString * const FT_KEY_LAUNCH_UIKITI_INIT_TIME = @"app_uikit_init_time";
 NSString * const FT_KEY_LAUNCH_PRE_RUNTIME_INIT_TIME = @"app_pre_runtime_init_time";
 NSString * const FT_KEY_LAUNCH_RUNTIME_INIT_TIME = @"app_runtime_init_time";
+NSString * const FT_KEY_APP_LAUNCH_TYPE = @"app_launch_type";
+NSString * const FT_APP_LAUNCH_TYPE_FOREGROUND = @"foreground";
+NSString * const FT_APP_LAUNCH_TYPE_BACKGROUND = @"background";
 //action tag
 NSString * const FT_KEY_ACTION_ID = @"action_id";
 NSString * const FT_KEY_ACTION_NAME = @"action_name";
