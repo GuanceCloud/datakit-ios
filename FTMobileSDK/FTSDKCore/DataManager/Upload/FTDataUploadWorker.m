@@ -245,7 +245,7 @@ static const NSTimeInterval kInitialRetryDelay = 0.5; // Initial 500ms delay
                         return;
                     }
                     NSInteger statusCode = httpResponse.statusCode;
-                    success = (statusCode >=200 && statusCode < 500);
+                    success = (statusCode >=200 && statusCode < 500 && statusCode != 403 && statusCode != 429);
                     FTInnerLogDebug(@"[NETWORK] Upload Response statusCode : %ld",(long)statusCode);
                     if (!success && data.length>0) {
                         FTInnerLogError(@"[NETWORK] Server exception, try again later responseData = %@",[FTJSONUtil dictionaryWithJsonString:[[NSString alloc] initWithData:data encoding:NSUTF8StringEncoding]]);

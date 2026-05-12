@@ -366,6 +366,45 @@
     [FTTrackDataManager shutDown];
     [OHHTTPStubs removeStub:stub];
 }
+- (void)testNetworkFail_403RetryAndKeepData{
+    [self verifyUploadRetryAndKeepDataWithStatusCode:403];
+}
+- (void)testNetworkFail_429RetryAndKeepData{
+    [self verifyUploadRetryAndKeepDataWithStatusCode:429];
+}
+- (void)verifyUploadRetryAndKeepDataWithStatusCode:(NSInteger)statusCode{
+    [FTTrackDataManager shutDown];
+    [FTLog enableLog:YES];
+    __block NSInteger requestCount = 0;
+    NSString *urlStr = [NSString stringWithFormat:@"http://www.test.com/some/url/retry/%ld",(long)statusCode];
+    id<OHHTTPStubsDescriptor> stub = [OHHTTPStubs stubRequestsPassingTest:^BOOL(NSURLRequest *request) {
+        return [request.URL.absoluteString containsString:urlStr];
+    } withStubResponse:^OHHTTPStubsResponse*(NSURLRequest *request) {
+        requestCount++;
+        NSString *data  =[FTJSONUtil convertToJsonData:@{@"data":@"Hello World!",@"code":@(statusCode)}];
+        NSData *requestData = [data dataUsingEncoding:NSUTF8StringEncoding];
+        return [OHHTTPStubsResponse responseWithData:requestData statusCode:(int)statusCode headers:nil];
+    }];
+    FTNetworkInfoManager *manager = [FTNetworkInfoManager sharedInstance];
+    manager.setUploadURL(urlStr,nil,nil)
+        .setSdkVersion(@"RequestTest");
+
+    [[FTTrackerEventDBTool sharedManager] deleteAllDatas];
+    [FTTrackDataManager startWithAutoSync:NO syncPageSize:10 syncSleepTime:0];
+
+    [[FTTrackDataManager sharedInstance] addTrackData:[FTModelHelper createRUMModel:[NSString stringWithFormat:@"testNetworkFail_%ldRetryAndKeepData",(long)statusCode]] type:FTAddDataRUM];
+
+    self.expectation = [self expectationWithDescription:@"isUploadingEqualNO"];
+    [[FTTrackDataManager sharedInstance].dataUploadWorker addObserver:self forKeyPath:@"isUploading" options:NSKeyValueObservingOptionNew context:nil];
+    [[FTTrackDataManager sharedInstance] flushSyncData];
+    [self waitForExpectations:@[self.expectation]];
+
+    XCTAssertTrue(requestCount == 6);
+    XCTAssertTrue([[FTTrackerEventDBTool sharedManager] getUploadDatasCount] == 1);
+
+    [FTTrackDataManager shutDown];
+    [OHHTTPStubs removeStub:stub];
+}
 
 - (void)testNetworkSuccessIncreasePackageID{
     NSMutableArray<NSInputStream *> *datas = [NSMutableArray new];
