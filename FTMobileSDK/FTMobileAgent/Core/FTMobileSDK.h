@@ -17,3 +17,5 @@
 #import "FTLogger.h"
 #import "FTMobileAgent.h"
 #import "FTRumDatasProtocol.h"
+#import "FTDefaultUIKitViewTrackingHandler.h"
+#import "FTDefaultActionTrackingHandler.h"

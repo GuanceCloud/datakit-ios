@@ -26,7 +26,7 @@ Pod::Spec.new do |s|
 		core_path='FTMobileSDK/FTMobileAgent/'
 		agent.ios.deployment_target = '12.0'
 		agent.tvos.deployment_target = '12.0'
-		agent.source_files =  'FTMobileSDK/FTMobileAgent/**/*{.h,.m}'
+		agent.source_files =  'FTMobileSDK/FTMobileAgent/**/*{.h,.m,.swift}'
 		agent.dependency  'FTMobileSDK/FTSDKCore'
 
 	end

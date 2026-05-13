@@ -25,9 +25,20 @@
 #import "FTDefaultUIKitViewTrackingHandler.h"
 #import "FTDefaultActionTrackingHandler.h"
 #import "FTDBDataCachePolicy.h"
+#import "AddRumDatasHandlerMock.h"
 typedef FTRUMView* _Nullable (^FTViewTrackingBlock)(UIViewController *viewController);
 typedef FTRUMAction* _Nullable (^FTActionTrackingBlock)(UIView *view);
 typedef FTRUMAction* _Nullable (^FTLaunchActionTrackingBlock)(FTLaunchType type);
+
+#if TARGET_OS_IOS || TARGET_OS_TV
+@interface FTAutoTrackHandler (SwiftUIRUMViewTest)
+- (void)notifyOnAppearWithIdentity:(NSString *)identity name:(NSString *)name property:(nullable NSDictionary *)property loadTime:(NSNumber *)loadTime;
+- (void)notifyOnDisappearWithIdentity:(NSString *)identity;
+#if TARGET_OS_IOS
+- (void)notify_swiftUIActionWithName:(NSString *)actionName property:(nullable NSDictionary *)property;
+#endif
+@end
+#endif
 
 @interface ModalViewController : UIViewController
 
@@ -371,6 +382,88 @@ typedef FTRUMAction* _Nullable (^FTLaunchActionTrackingBlock)(FTLaunchType type)
     }];
     XCTAssertTrue(set.count == 2);
 }
+#if TARGET_OS_IOS || TARGET_OS_TV
+- (void)testSwiftUIRUMViewTracking_startAndStop{
+    AddRumDatasHandlerMock *mock = [AddRumDatasHandlerMock new];
+    [[FTAutoTrackHandler sharedInstance] startWithTrackView:YES
+                                                     action:NO
+                                      addRumDatasDelegate:mock
+                                              viewHandler:nil
+                                           swiftUIViewHandler:nil
+                                    swiftUIActionHandler:nil
+                                            actionHandler:nil
+                                           displayMonitor:nil];
+
+    NSDictionary *property = @{@"source": @"swiftui"};
+    [[FTAutoTrackHandler sharedInstance] notifyOnAppearWithIdentity:@"swiftui-home"
+                                                               name:@"Home"
+                                                           property:property
+                                                           loadTime:@0];
+    [[FTAutoTrackHandler sharedInstance] notifyOnDisappearWithIdentity:@"swiftui-home"];
+
+    XCTAssertEqual(mock.viewStartCount, 1);
+    XCTAssertEqual(mock.viewStopCount, 1);
+    XCTAssertEqualObjects(mock.lastStartViewName, @"Home");
+    XCTAssertEqualObjects(mock.lastStartProperty, property);
+    XCTAssertEqual(mock.array.count, 2);
+    XCTAssertEqualObjects(mock.array.firstObject.viewId, mock.array.lastObject.viewId);
+}
+
+- (void)testSwiftUIRUMViewTracking_ignoresRepeatedAppearForSameIdentity{
+    AddRumDatasHandlerMock *mock = [AddRumDatasHandlerMock new];
+    [[FTAutoTrackHandler sharedInstance] startWithTrackView:YES
+                                                     action:NO
+                                      addRumDatasDelegate:mock
+                                              viewHandler:nil
+                                           swiftUIViewHandler:nil
+                                    swiftUIActionHandler:nil
+                                            actionHandler:nil
+                                           displayMonitor:nil];
+
+    [[FTAutoTrackHandler sharedInstance] notifyOnAppearWithIdentity:@"swiftui-home"
+                                                               name:@"Home"
+                                                           property:nil
+                                                           loadTime:@0];
+    [[FTAutoTrackHandler sharedInstance] notifyOnAppearWithIdentity:@"swiftui-home"
+                                                               name:@"Home"
+                                                           property:nil
+                                                           loadTime:@0];
+
+    XCTAssertEqual(mock.viewStartCount, 1);
+    XCTAssertEqual(mock.viewStopCount, 0);
+    XCTAssertEqual(mock.array.count, 1);
+}
+#endif
+
+#if TARGET_OS_IOS
+- (void)testDefaultSwiftUIActionTrackingHandler{
+    FTDefaultSwiftUIActionTrackingHandler *handler = [FTDefaultSwiftUIActionTrackingHandler new];
+    FTRUMAction *action = [handler rumActionWithSwiftUIComponentName:FTSwiftUIActionNameButton];
+    XCTAssertEqualObjects(action.actionName, FTSwiftUIActionNameButton);
+}
+
+- (void)testSwiftUIManualActionTracking_startAction{
+    AddRumDatasHandlerMock *mock = [AddRumDatasHandlerMock new];
+    NSDictionary *property = @{@"source": @"swiftui_action"};
+    [[FTAutoTrackHandler sharedInstance] startWithTrackView:NO
+                                                     action:NO
+                                      addRumDatasDelegate:mock
+                                              viewHandler:nil
+                                           swiftUIViewHandler:nil
+                                    swiftUIActionHandler:nil
+                                            actionHandler:nil
+                                           displayMonitor:nil];
+
+    [[FTAutoTrackHandler sharedInstance] notify_swiftUIActionWithName:@"swiftui_tap"
+                                                             property:property];
+
+    XCTAssertEqual(mock.actionStartCount, 1);
+    XCTAssertEqualObjects(mock.lastActionName, @"swiftui_tap");
+    XCTAssertEqualObjects(mock.lastActionType, FT_KEY_ACTION_TYPE_CLICK);
+    XCTAssertEqualObjects(mock.lastActionProperty, property);
+}
+#endif
+
 - (void)testActionTrackingStrategy_nil{
     FTMobileConfig *config = [[FTMobileConfig alloc]initWithDatakitUrl:self.url];
     config.enableSDKDebugLog = YES;

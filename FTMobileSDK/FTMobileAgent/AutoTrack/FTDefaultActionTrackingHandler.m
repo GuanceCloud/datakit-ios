@@ -51,3 +51,16 @@
 }
 
 @end
+
+#if TARGET_OS_IOS
+@implementation FTDefaultSwiftUIActionTrackingHandler
+
+- (nullable FTRUMAction *)rumActionWithSwiftUIComponentName:(NSString *)componentName {
+    if (componentName.length == 0) {
+        return nil;
+    }
+    return [[FTRUMAction alloc] initWithActionName:componentName];
+}
+
+@end
+#endif

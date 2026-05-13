@@ -480,6 +480,12 @@
     };
     FTViewTrackingHandler viewStrategy = (FTViewTrackingHandler)[[NSObject alloc]init];
     rumConfig.viewTrackingHandler = viewStrategy;
+    id<FTSwiftUIViewTrackingHandler> swiftUIStrategy = (id<FTSwiftUIViewTrackingHandler>)[[NSObject alloc]init];
+    rumConfig.swiftUIViewTrackingHandler = swiftUIStrategy;
+#if TARGET_OS_IOS
+    id<FTSwiftUIRUMActionsHandler> swiftUIActionStrategy = (id<FTSwiftUIRUMActionsHandler>)[[NSObject alloc]init];
+    rumConfig.swiftUIActionTrackingHandler = swiftUIActionStrategy;
+#endif
     FTActionTrackingHandler actionStrategy = (FTActionTrackingHandler)[[NSObject alloc]init];
     rumConfig.actionTrackingHandler = actionStrategy;
     XCTAssertTrue(rumConfig.sessionOnErrorSampleRate == 0);
@@ -505,6 +511,10 @@
     XCTAssertTrue([copyRumConfig.globalContext isEqual:rumConfig.globalContext]);
     XCTAssertTrue([copyRumConfig.resourceUrlHandler isEqual:rumConfig.resourceUrlHandler]);
     XCTAssertTrue([copyRumConfig.viewTrackingHandler isEqual:rumConfig.viewTrackingHandler]);
+    XCTAssertTrue([copyRumConfig.swiftUIViewTrackingHandler isEqual:rumConfig.swiftUIViewTrackingHandler]);
+#if TARGET_OS_IOS
+    XCTAssertTrue([copyRumConfig.swiftUIActionTrackingHandler isEqual:rumConfig.swiftUIActionTrackingHandler]);
+#endif
     XCTAssertTrue([copyRumConfig.actionTrackingHandler isEqual:rumConfig.actionTrackingHandler]);
     XCTAssertTrue(copyRumConfig.freezeDurationMs == rumConfig.freezeDurationMs);
     XCTAssertTrue(copyRumConfig.rumDiscardType == rumConfig.rumDiscardType);
@@ -762,7 +772,11 @@
         return YES;
     };
     config.viewTrackingHandler = [[FTDefaultUIKitViewTrackingHandler alloc]init];
+    config.swiftUIViewTrackingHandler = [[FTDefaultSwiftUIViewTrackingHandler alloc]init];
     config.actionTrackingHandler = [[FTDefaultActionTrackingHandler alloc]init];
+#if TARGET_OS_IOS
+    config.swiftUIActionTrackingHandler = [[FTDefaultSwiftUIActionTrackingHandler alloc]init];
+#endif
     [self verifyDebugDescriptionContainsAllProperties:config];
 }
 

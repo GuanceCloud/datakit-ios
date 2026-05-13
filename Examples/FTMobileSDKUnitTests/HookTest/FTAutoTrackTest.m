@@ -27,6 +27,13 @@
 #import "FTModelHelper.h"
 #import "TestSessionDelegate.h"
 #import "FTNetworkMock.h"
+#import "AddRumDatasHandlerMock.h"
+
+@interface FTAutoTrackHandler (SwiftUIRUMViewTesting)
+- (void)notifyOnAppearWithIdentity:(NSString *)identity name:(NSString *)name property:(nullable NSDictionary *)property loadTime:(NSNumber *)loadTime;
+- (void)notifyOnDisappearWithIdentity:(NSString *)identity;
+@end
+
 @interface FTAutoTrackTest : KIFTestCase
 @property (nonatomic, strong) UIWindow *window;
 @property (nonatomic, strong) UITestVC *testVC;
@@ -44,6 +51,13 @@
     
     // Put setup code here. This method is called before the invocation of each
    
+}
+- (FTAutoTrackHandler *)resetAutoTrackHandlerForSwiftUITest{
+    FTAutoTrackHandler *handler = [FTAutoTrackHandler sharedInstance];
+    [handler shutDown];
+    NSMutableArray *stack = [handler valueForKey:@"stack"];
+    [stack removeAllObjects];
+    return handler;
 }
 - (void)tearDown {
     //    [[FTMobileAgent sharedInstance] resetInstance];
@@ -71,6 +85,70 @@
         rumConfig.enableTrackAppCrash = YES;
         [[FTMobileAgent sharedInstance] startRumWithConfigOptions:rumConfig];
     }
+}
+- (void)testSwiftUIRUMViewAppearReportsLoadTimeAndProperty{
+    AddRumDatasHandlerMock *mock = [AddRumDatasHandlerMock new];
+    FTAutoTrackHandler *handler = [self resetAutoTrackHandlerForSwiftUITest];
+    [handler startWithTrackView:NO
+                         action:NO
+            addRumDatasDelegate:mock
+                    viewHandler:nil
+             swiftUIViewHandler:nil
+           swiftUIActionHandler:nil
+                  actionHandler:nil
+                 displayMonitor:nil];
+
+    [handler notifyOnAppearWithIdentity:@"swiftui-home"
+                                   name:@"Home"
+                               property:@{@"source": @"swiftui"}
+                               loadTime:@123];
+
+    XCTAssertEqual(mock.viewCreateCount, 1);
+    XCTAssertEqualObjects(mock.lastCreateViewName, @"Home");
+    XCTAssertEqualObjects(mock.lastLoadTime, @123);
+    XCTAssertEqual(mock.viewStartCount, 1);
+    XCTAssertEqualObjects(mock.lastStartViewName, @"Home");
+    XCTAssertEqualObjects(mock.lastStartProperty[@"source"], @"swiftui");
+}
+- (void)testSwiftUIRUMViewRepeatedAppearDoesNotStartDuplicateView{
+    AddRumDatasHandlerMock *mock = [AddRumDatasHandlerMock new];
+    FTAutoTrackHandler *handler = [self resetAutoTrackHandlerForSwiftUITest];
+    [handler startWithTrackView:NO
+                         action:NO
+            addRumDatasDelegate:mock
+                    viewHandler:nil
+             swiftUIViewHandler:nil
+           swiftUIActionHandler:nil
+                  actionHandler:nil
+                 displayMonitor:nil];
+
+    [handler notifyOnAppearWithIdentity:@"swiftui-home" name:@"Home" property:nil loadTime:@123];
+    [handler notifyOnAppearWithIdentity:@"swiftui-home" name:@"Home" property:nil loadTime:@456];
+
+    XCTAssertEqual(mock.viewCreateCount, 1);
+    XCTAssertEqual(mock.viewStartCount, 1);
+    XCTAssertEqualObjects(mock.lastLoadTime, @123);
+}
+- (void)testSwiftUIRUMViewReappearAfterDisappearStartsNewViewWithZeroLoadTime{
+    AddRumDatasHandlerMock *mock = [AddRumDatasHandlerMock new];
+    FTAutoTrackHandler *handler = [self resetAutoTrackHandlerForSwiftUITest];
+    [handler startWithTrackView:NO
+                         action:NO
+            addRumDatasDelegate:mock
+                    viewHandler:nil
+             swiftUIViewHandler:nil
+           swiftUIActionHandler:nil
+                  actionHandler:nil
+                 displayMonitor:nil];
+
+    [handler notifyOnAppearWithIdentity:@"swiftui-home" name:@"Home" property:nil loadTime:@123];
+    [handler notifyOnDisappearWithIdentity:@"swiftui-home"];
+    [handler notifyOnAppearWithIdentity:@"swiftui-home" name:@"Home" property:nil loadTime:@0];
+
+    XCTAssertEqual(mock.viewCreateCount, 2);
+    XCTAssertEqual(mock.viewStartCount, 2);
+    XCTAssertEqual(mock.viewStopCount, 1);
+    XCTAssertEqualObjects(mock.lastLoadTime, @0);
 }
 - (void)testAutoTableViewClick{
     [self setSdkWithRum:YES];

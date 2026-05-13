@@ -1161,6 +1161,8 @@
 		17F59C682DF2EACB003FCB84 /* FTLoggerConfig+Private.h in Headers */ = {isa = PBXBuildFile; fileRef = 17F59C652DF2EACB003FCB84 /* FTLoggerConfig+Private.h */; };
 		17FFE8462D5E1F9200039827 /* FTAutoTrackHandler.m in Sources */ = {isa = PBXBuildFile; fileRef = 17FFE8432D5E1F9200039827 /* FTAutoTrackHandler.m */; };
 		17FFE8472D5E1F9200039827 /* FTAutoTrackHandler.h in Headers */ = {isa = PBXBuildFile; fileRef = 17FFE8422D5E1F9200039827 /* FTAutoTrackHandler.h */; };
+		7B004178A5CB5FA66C1858B2 /* FTSwiftUIRUMViewModifier.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7B004177A5CB5FA66C1858B2 /* FTSwiftUIRUMViewModifier.swift */; };
+		7B004179A5CB5FA66C1858B2 /* FTSwiftUIViewNameExtractor.swift in Sources */ = {isa = PBXBuildFile; fileRef = ABC7A3EB51D767D3CD90D051 /* FTSwiftUIViewNameExtractor.swift */; };
 		A1F0B00A2F61000100A0A001 /* PrivacyInfo.xcprivacy in Resources */ = {isa = PBXBuildFile; fileRef = 171C21BE2B9183D500C67AD6 /* PrivacyInfo.xcprivacy */; };
 		A1F0B00B2F61000100A0A001 /* FTMobileSDK.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 4A88425A239E5754001B44C3 /* FTMobileSDK.framework */; };
 		A1F0B0A12F61000100A0A001 /* FTSessionReplay.h in Headers */ = {isa = PBXBuildFile; fileRef = A1F0B0A02F61000100A0A001 /* FTSessionReplay.h */; settings = {ATTRIBUTES = (Public, ); }; };
@@ -1725,6 +1727,7 @@
 		17F59C652DF2EACB003FCB84 /* FTLoggerConfig+Private.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = "FTLoggerConfig+Private.h"; sourceTree = "<group>"; };
 		17FFE8422D5E1F9200039827 /* FTAutoTrackHandler.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = FTAutoTrackHandler.h; sourceTree = "<group>"; };
 		17FFE8432D5E1F9200039827 /* FTAutoTrackHandler.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = FTAutoTrackHandler.m; sourceTree = "<group>"; };
+		7B004177A5CB5FA66C1858B2 /* FTSwiftUIRUMViewModifier.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FTSwiftUIRUMViewModifier.swift; sourceTree = "<group>"; };
 		4A6C541E255E6464009771B8 /* FTMobileExtension.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = FTMobileExtension.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 		4A88425A239E5754001B44C3 /* FTMobileSDK.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = FTMobileSDK.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 		A1F0B0012F61000100A0A001 /* FTSessionReplay.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = FTSessionReplay.framework; sourceTree = BUILT_PRODUCTS_DIR; };
@@ -1732,6 +1735,7 @@
 		A1F0B1022FA9000100A0A001 /* FTUIHostingViewRecorder.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = FTUIHostingViewRecorder.h; sourceTree = "<group>"; };
 		A1F0B1032FA9000100A0A001 /* FTUIHostingViewRecorder.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = FTUIHostingViewRecorder.m; sourceTree = "<group>"; };
 		A1F0B1042FA9000100A0A001 /* FTSwiftUIReflection.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FTSwiftUIReflection.swift; sourceTree = "<group>"; };
+		ABC7A3EB51D767D3CD90D051 /* FTSwiftUIViewNameExtractor.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = FTSwiftUIViewNameExtractor.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -2589,6 +2593,7 @@
 				17678E1A29D28BD200C1DA98 /* Core */,
 				17E4CB7E29CD42E4005C2D99 /* Extension */,
 				17E4CBB629CD42E4005C2D99 /* AutoTrack */,
+				ABC7A3EC51D767D3CD90D051 /* SwiftUI */,
 				17E4CBCE29CD42E4005C2D99 /* ExternalData */,
 			);
 			name = FTMobileAgent;
@@ -2699,6 +2704,15 @@
 				17C2FEB32E432B9A003D600F /* FTDefaultActionTrackingHandler.m */,
 			);
 			path = AutoTrack;
+			sourceTree = "<group>";
+		};
+		ABC7A3EC51D767D3CD90D051 /* SwiftUI */ = {
+			isa = PBXGroup;
+			children = (
+				ABC7A3EB51D767D3CD90D051 /* FTSwiftUIViewNameExtractor.swift */,
+				7B004177A5CB5FA66C1858B2 /* FTSwiftUIRUMViewModifier.swift */,
+			);
+			path = SwiftUI;
 			sourceTree = "<group>";
 		};
 		17E4CBCE29CD42E4005C2D99 /* ExternalData */ = {
@@ -4072,6 +4086,8 @@
 				176CE27F2ED8667E00E9E92B /* FTCrashMonitorAPI.c in Sources */,
 				17E4CBE829CD42E4005C2D99 /* FTSessionTaskHandler.m in Sources */,
 				1763BD8E29DFF04F009EE026 /* FTTrackerEventDBTool.m in Sources */,
+				7B004178A5CB5FA66C1858B2 /* FTSwiftUIRUMViewModifier.swift in Sources */,
+				7B004179A5CB5FA66C1858B2 /* FTSwiftUIViewNameExtractor.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

@@ -164,11 +164,29 @@ typedef BOOL (^FTSessionTaskErrorFilter)(NSError *_Nonnull error);
 ///  - Return nil to ignore it.
 @property (nonatomic, strong, nullable) FTViewTrackingHandler viewTrackingHandler;
 
+/// Experimental: A handler for user-defined collection of automatically extracted SwiftUI View names as RUM views.
+/// Set this only when your app needs automatic SwiftUI View tracking.
+/// If you do not need custom filtering or naming, set `FTDefaultSwiftUIViewTrackingHandler`.
+/// It takes effect when enableTraceUserView = YES and this handler is not nil.
+/// This experimental API may change in future releases.
+/// RUM will call this callback when a SwiftUI view name is extracted from a hosting view controller.
+///  - If the given SwiftUI view name needs to start a RUM view, return the FTRUMView parameters;
+///  - Return nil to ignore it.
+@property (nonatomic, strong, nullable) id<FTSwiftUIViewTrackingHandler> swiftUIViewTrackingHandler;
+
 /// The handler deciding if a given RUM Action should be recorded.
 /// It takes effect when enableTraceUserAction = YES.
 ///  - If need to Start a RUM action, return the FTRUMAction parameters;
 ///  - Return nil to ignore it.
 @property (nonatomic, strong, nullable) FTActionTrackingHandler actionTrackingHandler;
+
+#if TARGET_OS_IOS
+/// Experimental: The handler deciding if an automatically detected SwiftUI RUM Action should be recorded.
+/// It takes effect when enableTraceUserAction = YES and this handler is not nil.
+/// Set FTDefaultSwiftUIActionTrackingHandler to use the SDK default SwiftUI action names.
+/// This experimental API may change in future releases.
+@property (nonatomic, strong, nullable) id<FTSwiftUIRUMActionsHandler> swiftUIActionTrackingHandler;
+#endif
 
 /// Enable freeze collection and set freeze threshold.
 /// - Parameter enableTrackAppFreeze: Set whether to collect freezes
