@@ -104,6 +104,7 @@
                                               @"UIKeyboardCandidateRowViewController",
                                               @"UIKeyboardHiddenViewController",
                                               @"UIKeyboardHiddenViewController_Autofill",
+                                              @"UIKeyboardHiddenViewController_Save",
                                               @"_SFAppAutoFillPasswordViewController",
                                               @"_UIAlertControllerTextFieldViewController",
                                               @"_UILongDefinitionViewController",
