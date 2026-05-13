@@ -48,6 +48,7 @@
 		1764E41929ACB5BB00E70DBB /* LogViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1764E41829ACB5BB00E70DBB /* LogViewController.swift */; };
 		1764E41B29ACB68C00E70DBB /* TraceViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1764E41A29ACB68C00E70DBB /* TraceViewController.swift */; };
 		1764E41D29ACB70200E70DBB /* RUMViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1764E41C29ACB70200E70DBB /* RUMViewController.swift */; };
+		1764E41F29ACB70200E70DBB /* SwiftUIDemoView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1764E41E29ACB70200E70DBB /* SwiftUIDemoView.swift */; };
 		177892BA29A60F2E0007B47F /* PerformanceBaseTest.m in Sources */ = {isa = PBXBuildFile; fileRef = 177892B929A60F2E0007B47F /* PerformanceBaseTest.m */; };
 		177892BD29A60FA10007B47F /* PerformanceRumTest.m in Sources */ = {isa = PBXBuildFile; fileRef = 177892BC29A60FA10007B47F /* PerformanceRumTest.m */; };
 		177892BF29A60FD00007B47F /* PerformanceLoggingTest.m in Sources */ = {isa = PBXBuildFile; fileRef = 177892BE29A60FD00007B47F /* PerformanceLoggingTest.m */; };
@@ -322,6 +323,7 @@
 		1764E41829ACB5BB00E70DBB /* LogViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LogViewController.swift; sourceTree = "<group>"; };
 		1764E41A29ACB68C00E70DBB /* TraceViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TraceViewController.swift; sourceTree = "<group>"; };
 		1764E41C29ACB70200E70DBB /* RUMViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RUMViewController.swift; sourceTree = "<group>"; };
+		1764E41E29ACB70200E70DBB /* SwiftUIDemoView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SwiftUIDemoView.swift; sourceTree = "<group>"; };
 		177892B929A60F2E0007B47F /* PerformanceBaseTest.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = PerformanceBaseTest.m; sourceTree = "<group>"; };
 		177892BC29A60FA10007B47F /* PerformanceRumTest.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = PerformanceRumTest.m; sourceTree = "<group>"; };
 		177892BE29A60FD00007B47F /* PerformanceLoggingTest.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = PerformanceLoggingTest.m; sourceTree = "<group>"; };
@@ -657,6 +659,7 @@
 				1764E41829ACB5BB00E70DBB /* LogViewController.swift */,
 				1764E41A29ACB68C00E70DBB /* TraceViewController.swift */,
 				1764E41C29ACB70200E70DBB /* RUMViewController.swift */,
+				1764E41E29ACB70200E70DBB /* SwiftUIDemoView.swift */,
 			);
 			path = SwiftApp;
 			sourceTree = "<group>";
@@ -1447,6 +1450,7 @@
 				1764E41D29ACB70200E70DBB /* RUMViewController.swift in Sources */,
 				1764E41B29ACB68C00E70DBB /* TraceViewController.swift in Sources */,
 				1764E41929ACB5BB00E70DBB /* LogViewController.swift in Sources */,
+				1764E41F29ACB70200E70DBB /* SwiftUIDemoView.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -1893,7 +1897,7 @@
 				SWIFT_ACTIVE_COMPILATION_CONDITIONS = DEBUG;
 				SWIFT_EMIT_LOC_STRINGS = YES;
 				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
-				SWIFT_VERSION = 4.0;
+				SWIFT_VERSION = 5.0;
 				TARGETED_DEVICE_FAMILY = "1,2";
 			};
 			name = Debug;
@@ -1927,7 +1931,7 @@
 				SWIFT_COMPILATION_MODE = wholemodule;
 				SWIFT_EMIT_LOC_STRINGS = YES;
 				SWIFT_OPTIMIZATION_LEVEL = "-O";
-				SWIFT_VERSION = 4.0;
+				SWIFT_VERSION = 5.0;
 				TARGETED_DEVICE_FAMILY = "1,2";
 			};
 			name = Pre;
@@ -1961,7 +1965,7 @@
 				SWIFT_COMPILATION_MODE = wholemodule;
 				SWIFT_EMIT_LOC_STRINGS = YES;
 				SWIFT_OPTIMIZATION_LEVEL = "-O";
-				SWIFT_VERSION = 4.0;
+				SWIFT_VERSION = 5.0;
 				TARGETED_DEVICE_FAMILY = "1,2";
 			};
 			name = Release;
@@ -2140,7 +2144,7 @@
 				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
 				GCC_WARN_UNUSED_FUNCTION = YES;
 				GCC_WARN_UNUSED_VARIABLE = YES;
-				IPHONEOS_DEPLOYMENT_TARGET = 10.0;
+				IPHONEOS_DEPLOYMENT_TARGET = 12.0;
 				MTL_ENABLE_DEBUG_INFO = INCLUDE_SOURCE;
 				MTL_FAST_MATH = YES;
 				ONLY_ACTIVE_ARCH = YES;
@@ -2582,7 +2586,7 @@
 				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
 				GCC_WARN_UNUSED_FUNCTION = YES;
 				GCC_WARN_UNUSED_VARIABLE = YES;
-				IPHONEOS_DEPLOYMENT_TARGET = 10.0;
+				IPHONEOS_DEPLOYMENT_TARGET = 12.0;
 				MTL_ENABLE_DEBUG_INFO = INCLUDE_SOURCE;
 				MTL_FAST_MATH = YES;
 				ONLY_ACTIVE_ARCH = YES;
@@ -2636,7 +2640,7 @@
 				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
 				GCC_WARN_UNUSED_FUNCTION = YES;
 				GCC_WARN_UNUSED_VARIABLE = YES;
-				IPHONEOS_DEPLOYMENT_TARGET = 10.0;
+				IPHONEOS_DEPLOYMENT_TARGET = 12.0;
 				MTL_ENABLE_DEBUG_INFO = NO;
 				MTL_FAST_MATH = YES;
 				OTHER_LDFLAGS = "";

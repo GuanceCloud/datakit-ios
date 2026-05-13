@@ -7,6 +7,7 @@
 //
 
 import UIKit
+import SwiftUI
 import FTMobileSDK
 class ViewController: UIViewController,UITableViewDelegate,UITableViewDataSource {
     
@@ -29,7 +30,7 @@ class ViewController: UIViewController,UITableViewDelegate,UITableViewDataSource
     }
     
     func createUI(){
-        dataSource = ["Bind User","Unbind User","Log Output","Manual Network Link Tracing","Manual RUM Data Collection"]
+        dataSource = ["Bind User","Unbind User","Log Output","Manual Network Link Tracing","Manual RUM Data Collection","SwiftUI Demo"]
         self.view.addSubview(tableView)
     }
     
@@ -54,9 +55,11 @@ class ViewController: UIViewController,UITableViewDelegate,UITableViewDataSource
             self.navigationController?.pushViewController(TraceViewController.init(), animated: true)
         case 4:
             self.navigationController?.pushViewController(RUMViewController.init(), animated: true)
+        case 5:
+            let demoVC = UIHostingController(rootView: SwiftUIDemoView())
+            self.navigationController?.pushViewController(demoVC, animated: true)
         default:
             print("default")
         }
     }
 }
-
