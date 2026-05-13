@@ -1,3 +1,6 @@
+# 1.6.4-alpha.2
+1. Fixed CocoaPods validation Swift version.
+---
 # 1.6.4-alpha.1
 1. Added Session Replay support for SwiftUI views.
 2. Added RUM view and action tracking support for SwiftUI views.
