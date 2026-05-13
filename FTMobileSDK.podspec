@@ -9,6 +9,7 @@ Pod::Spec.new do |s|
 	s.license      = { type: 'Apache', :file => 'LICENSE'}
 	s.authors             = { "hulilei" => "hulilei@jiagouyun.com","Brandon Zhang" => "zhangbo@jiagouyun.com" }
 	s.default_subspec = 'FTMobileAgent'
+	s.swift_versions = ['5.0']
 
 	s.ios.deployment_target = '12.0'
 	s.osx.deployment_target = '10.14'
