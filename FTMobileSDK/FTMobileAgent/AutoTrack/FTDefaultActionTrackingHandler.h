@@ -15,4 +15,10 @@ NS_ASSUME_NONNULL_BEGIN
 
 @end
 
+#if TARGET_OS_IOS
+@interface FTDefaultSwiftUIActionTrackingHandler : NSObject<FTSwiftUIRUMActionsHandler>
+
+@end
+#endif
+
 NS_ASSUME_NONNULL_END

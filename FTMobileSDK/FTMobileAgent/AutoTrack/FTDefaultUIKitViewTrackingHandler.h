@@ -14,4 +14,6 @@ NS_ASSUME_NONNULL_BEGIN
 
 @end
 
+@interface FTDefaultSwiftUIViewTrackingHandler : NSObject<FTSwiftUIViewTrackingHandler>
+@end
 NS_ASSUME_NONNULL_END

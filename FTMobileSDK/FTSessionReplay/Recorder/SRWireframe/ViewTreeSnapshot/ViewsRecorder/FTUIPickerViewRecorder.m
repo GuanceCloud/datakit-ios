@@ -63,15 +63,13 @@
         return [FTInvisibleElement constant];
     }
     NSMutableArray *nodes = [NSMutableArray new];
-    NSMutableArray *resources = [NSMutableArray new];
     
-    [self.selectionRecorder record:nodes resources:resources view:view context:context];
-    [self.labelsRecorder record:nodes resources:resources view:view context:context];
+    [self.selectionRecorder record:nodes view:view context:context];
+    [self.labelsRecorder record:nodes view:view context:context];
     
     if(!attributes.hasAnyAppearance){
         FTSpecificElement *element = [[FTSpecificElement alloc]initWithSubtreeStrategy:NodeSubtreeStrategyIgnore];
         element.nodes = nodes;
-        element.resources = resources;
         return element;
     }
     FTUIPickerViewBuilder *builder = [[FTUIPickerViewBuilder alloc]init];
@@ -83,7 +81,6 @@
     
     FTSpecificElement *element = [[FTSpecificElement alloc]initWithSubtreeStrategy:NodeSubtreeStrategyIgnore];
     element.nodes = nodes;
-    element.resources = resources;
     return element;
 }
 @end

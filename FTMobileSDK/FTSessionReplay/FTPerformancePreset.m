@@ -34,7 +34,7 @@
     FTPerformancePreset *newPreset = [FTPerformancePreset new];
     newPreset.maxDirectorySize = self.maxDirectorySize;
     newPreset.maxFileAgeForRead = self.maxFileAgeForRead;
-    newPreset.maxObjectsInFile = self.maxObjectsInFile;
+    newPreset.maxObjectsInFile = overridePreset.maxObjectsInFile>0 ? overridePreset.maxObjectsInFile : self.maxObjectsInFile;
     newPreset.maxFileSize = overridePreset.maxFileSize>0?overridePreset.maxFileSize:self.maxFileSize;
     newPreset.maxObjectSize = overridePreset.maxObjectSize>0?overridePreset.maxObjectSize:self.maxObjectSize;
     newPreset.maxFileAgeForWrite = overridePreset.maxFileAgeForWrite>0?overridePreset.maxFileAgeForWrite:self.maxFileAgeForWrite;

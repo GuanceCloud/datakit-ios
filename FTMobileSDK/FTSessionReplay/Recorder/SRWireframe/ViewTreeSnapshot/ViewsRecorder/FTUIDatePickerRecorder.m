@@ -79,7 +79,6 @@
     [nodes insertObject:builder atIndex:0];
     FTSpecificElement *element = [[FTSpecificElement alloc]initWithSubtreeStrategy:NodeSubtreeStrategyIgnore];
     element.nodes = nodes;
-    element.resources = resources;
     return element;
 }
 @end
@@ -114,7 +113,7 @@
 }
 
 -(void)recorder:(UIView *)view attributes:(FTViewAttributes *)attributes context:(FTViewTreeRecordingContext *)context nodes:(NSMutableArray *)nodes resources:(NSMutableArray *)resources{
-    return [self.subtreeRecorder record:nodes resources:resources view:view context:context];
+    return [self.subtreeRecorder record:nodes view:view context:context];
 }
 
 @end
@@ -162,7 +161,7 @@
             return labelBuilder;
         };
     }
-    return [self.subtreeRecorder record:nodes resources:resources view:view context:context];
+    return [self.subtreeRecorder record:nodes view:view context:context];
 }
 @end
 @interface FTCompactStyleDatePickerRecorder()
@@ -186,6 +185,6 @@
     return self;
 }
 -(void)recorder:(UIView *)view attributes:(FTViewAttributes *)attributes context:(FTViewTreeRecordingContext *)context nodes:(NSMutableArray *)nodes resources:(NSMutableArray *)resources{
-    return [self.subtreeRecorder record:nodes resources:resources view:view context:context];
+    return [self.subtreeRecorder record:nodes view:view context:context];
 }
 @end

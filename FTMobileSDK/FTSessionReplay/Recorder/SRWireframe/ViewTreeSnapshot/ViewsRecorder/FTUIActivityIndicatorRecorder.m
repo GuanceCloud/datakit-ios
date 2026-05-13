@@ -44,7 +44,6 @@
         [self recordSubtree:activityIndicator records:records resources:resources context:context];
         FTSpecificElement *element = [[FTSpecificElement alloc]initWithSubtreeStrategy:NodeSubtreeStrategyIgnore];
         element.nodes = records;
-        element.resources = resources;
         return element;
     }else{
         return [FTInvisibleElement constant];
@@ -59,7 +58,7 @@
         viewTreeRecorder.nodeRecorders = @[imageViewRecorder];
         self.subtreeRecorder = viewTreeRecorder;
     }
-    [self.subtreeRecorder record:records resources:resources view:activityIndicator context:context];
+    [self.subtreeRecorder record:records view:activityIndicator context:context];
 }
 @end
 

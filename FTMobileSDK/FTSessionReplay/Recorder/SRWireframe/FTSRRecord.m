@@ -332,6 +332,12 @@
 
     return jsonData;
 }
+-(NSString *)getResourceName{
+    if ([self.mimeType isEqualToString:@"image/svg+xml"]) {
+        return [NSString stringWithFormat:@"%@.svg",_identifier];
+    }
+    return _identifier;
+}
 @end
 
 @implementation FTSRWebRecord

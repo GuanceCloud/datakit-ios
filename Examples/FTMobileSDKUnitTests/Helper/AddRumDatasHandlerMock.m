@@ -28,7 +28,9 @@
     return self;
 }
 -(void)onCreateView:(NSString *)viewName loadTime:(NSNumber *)loadTime{
-    
+    self.viewCreateCount++;
+    self.lastCreateViewName = viewName;
+    self.lastLoadTime = loadTime;
 }
 -(void)startViewWithName:(NSString *)viewName{
     _viewStartCount++;
@@ -38,6 +40,8 @@
 }
 -(void)startViewWithViewID:(NSString *)viewId viewName:(NSString *)viewName property:(NSDictionary *)property{
     _viewStartCount++;
+    self.lastStartViewName = viewName;
+    self.lastStartProperty = property;
     [self.array addObject:[[TestRUMData alloc] initWithType:ViewStart viewId:viewId]];
 }
 -(void)stopView{
@@ -81,6 +85,9 @@
 
 
 - (void)startAction:(nonnull NSString *)actionName actionType:(nonnull NSString *)actionType property:(nullable NSDictionary *)property {
-    
+    self.actionStartCount++;
+    self.lastActionName = actionName;
+    self.lastActionType = actionType;
+    self.lastActionProperty = property;
 }
 @end

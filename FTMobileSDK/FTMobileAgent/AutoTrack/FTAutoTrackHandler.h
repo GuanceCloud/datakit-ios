@@ -23,6 +23,9 @@ NS_ASSUME_NONNULL_BEGIN
 @protocol FTUIEventHandler <NSObject>
 -(void)notify_sendAction:(UIView *)view;
 -(void)notify_sendActionWithPressType:(UIPressType)type view:(UIView *)view;
+#if TARGET_OS_IOS
+-(void)notify_swiftUIActionWithName:(NSString *)actionName property:(nullable NSDictionary *)property;
+#endif
 @end
 /// View and Action collection class
 @interface FTAutoTrackHandler : NSObject
@@ -47,6 +50,8 @@ NS_ASSUME_NONNULL_BEGIN
                    action:(BOOL)enable
       addRumDatasDelegate:(id<FTRumDatasProtocol>)delegate
               viewHandler:(nullable FTViewTrackingHandler)viewHandler
+       swiftUIViewHandler:(nullable id<FTSwiftUIViewTrackingHandler>)swiftUIViewHandler
+     swiftUIActionHandler:(nullable id<FTSwiftUIRUMActionsHandler>)swiftUIActionHandler
             actionHandler:(nullable FTActionTrackingHandler)actionHandler
            displayMonitor:(nullable FTDisplayRateMonitor *)displayMonitor;
 

@@ -1161,9 +1161,14 @@
 		17F59C682DF2EACB003FCB84 /* FTLoggerConfig+Private.h in Headers */ = {isa = PBXBuildFile; fileRef = 17F59C652DF2EACB003FCB84 /* FTLoggerConfig+Private.h */; };
 		17FFE8462D5E1F9200039827 /* FTAutoTrackHandler.m in Sources */ = {isa = PBXBuildFile; fileRef = 17FFE8432D5E1F9200039827 /* FTAutoTrackHandler.m */; };
 		17FFE8472D5E1F9200039827 /* FTAutoTrackHandler.h in Headers */ = {isa = PBXBuildFile; fileRef = 17FFE8422D5E1F9200039827 /* FTAutoTrackHandler.h */; };
+		7B004178A5CB5FA66C1858B2 /* FTSwiftUIRUMViewModifier.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7B004177A5CB5FA66C1858B2 /* FTSwiftUIRUMViewModifier.swift */; };
+		7B004179A5CB5FA66C1858B2 /* FTSwiftUIViewNameExtractor.swift in Sources */ = {isa = PBXBuildFile; fileRef = ABC7A3EB51D767D3CD90D051 /* FTSwiftUIViewNameExtractor.swift */; };
 		A1F0B00A2F61000100A0A001 /* PrivacyInfo.xcprivacy in Resources */ = {isa = PBXBuildFile; fileRef = 171C21BE2B9183D500C67AD6 /* PrivacyInfo.xcprivacy */; };
 		A1F0B00B2F61000100A0A001 /* FTMobileSDK.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 4A88425A239E5754001B44C3 /* FTMobileSDK.framework */; };
 		A1F0B0A12F61000100A0A001 /* FTSessionReplay.h in Headers */ = {isa = PBXBuildFile; fileRef = A1F0B0A02F61000100A0A001 /* FTSessionReplay.h */; settings = {ATTRIBUTES = (Public, ); }; };
+		A1F0B1002FA9000100A0A001 /* FTUIHostingViewRecorder.h in Headers */ = {isa = PBXBuildFile; fileRef = A1F0B1022FA9000100A0A001 /* FTUIHostingViewRecorder.h */; };
+		A1F0B1012FA9000100A0A001 /* FTUIHostingViewRecorder.m in Sources */ = {isa = PBXBuildFile; fileRef = A1F0B1032FA9000100A0A001 /* FTUIHostingViewRecorder.m */; };
+		A1F0B1052FA9000100A0A001 /* FTSwiftUIReflection.swift in Sources */ = {isa = PBXBuildFile; fileRef = A1F0B1042FA9000100A0A001 /* FTSwiftUIReflection.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -1722,10 +1727,15 @@
 		17F59C652DF2EACB003FCB84 /* FTLoggerConfig+Private.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = "FTLoggerConfig+Private.h"; sourceTree = "<group>"; };
 		17FFE8422D5E1F9200039827 /* FTAutoTrackHandler.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = FTAutoTrackHandler.h; sourceTree = "<group>"; };
 		17FFE8432D5E1F9200039827 /* FTAutoTrackHandler.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = FTAutoTrackHandler.m; sourceTree = "<group>"; };
+		7B004177A5CB5FA66C1858B2 /* FTSwiftUIRUMViewModifier.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FTSwiftUIRUMViewModifier.swift; sourceTree = "<group>"; };
 		4A6C541E255E6464009771B8 /* FTMobileExtension.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = FTMobileExtension.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 		4A88425A239E5754001B44C3 /* FTMobileSDK.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = FTMobileSDK.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 		A1F0B0012F61000100A0A001 /* FTSessionReplay.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = FTSessionReplay.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 		A1F0B0A02F61000100A0A001 /* FTSessionReplay.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = FTSessionReplay.h; sourceTree = "<group>"; };
+		A1F0B1022FA9000100A0A001 /* FTUIHostingViewRecorder.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = FTUIHostingViewRecorder.h; sourceTree = "<group>"; };
+		A1F0B1032FA9000100A0A001 /* FTUIHostingViewRecorder.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = FTUIHostingViewRecorder.m; sourceTree = "<group>"; };
+		A1F0B1042FA9000100A0A001 /* FTSwiftUIReflection.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FTSwiftUIReflection.swift; sourceTree = "<group>"; };
+		ABC7A3EB51D767D3CD90D051 /* FTSwiftUIViewNameExtractor.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = FTSwiftUIViewNameExtractor.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -1813,6 +1823,9 @@
 				17018C752F50253200688324 /* FTUIDatePickerRecorder.m */,
 				17018C762F50253200688324 /* FTUIImageResource.h */,
 				17018C772F50253200688324 /* FTUIImageResource.m */,
+				A1F0B1022FA9000100A0A001 /* FTUIHostingViewRecorder.h */,
+				A1F0B1032FA9000100A0A001 /* FTUIHostingViewRecorder.m */,
+				A1F0B1072FA9000100A0A001 /* SwiftUI */,
 				17018C782F50253200688324 /* FTUIImageViewRecorder.h */,
 				17018C792F50253200688324 /* FTUIImageViewRecorder.m */,
 				17018C7A2F50253200688324 /* FTUILabelRecorder.h */,
@@ -2580,6 +2593,7 @@
 				17678E1A29D28BD200C1DA98 /* Core */,
 				17E4CB7E29CD42E4005C2D99 /* Extension */,
 				17E4CBB629CD42E4005C2D99 /* AutoTrack */,
+				ABC7A3EC51D767D3CD90D051 /* SwiftUI */,
 				17E4CBCE29CD42E4005C2D99 /* ExternalData */,
 			);
 			name = FTMobileAgent;
@@ -2692,6 +2706,15 @@
 			path = AutoTrack;
 			sourceTree = "<group>";
 		};
+		ABC7A3EC51D767D3CD90D051 /* SwiftUI */ = {
+			isa = PBXGroup;
+			children = (
+				ABC7A3EB51D767D3CD90D051 /* FTSwiftUIViewNameExtractor.swift */,
+				7B004177A5CB5FA66C1858B2 /* FTSwiftUIRUMViewModifier.swift */,
+			);
+			path = SwiftUI;
+			sourceTree = "<group>";
+		};
 		17E4CBCE29CD42E4005C2D99 /* ExternalData */ = {
 			isa = PBXGroup;
 			children = (
@@ -2760,6 +2783,14 @@
 				A1F0B0012F61000100A0A001 /* FTSessionReplay.framework */,
 			);
 			name = Products;
+			sourceTree = "<group>";
+		};
+		A1F0B1072FA9000100A0A001 /* SwiftUI */ = {
+			isa = PBXGroup;
+			children = (
+				A1F0B1042FA9000100A0A001 /* FTSwiftUIReflection.swift */,
+			);
+			path = SwiftUI;
 			sourceTree = "<group>";
 		};
 /* End PBXGroup section */
@@ -3359,6 +3390,7 @@
 				17018D662F50253200688324 /* FTSegmentRequest.h in Headers */,
 				17018D672F50253200688324 /* FTSegmentJSON.h in Headers */,
 				17018D682F50253200688324 /* FTUIImageViewRecorder.h in Headers */,
+				A1F0B1002FA9000100A0A001 /* FTUIHostingViewRecorder.h in Headers */,
 				17018D692F50253200688324 /* FTUITextViewRecorder.h in Headers */,
 				17018D6A2F50253200688324 /* FTFileReader.h in Headers */,
 				17018D6B2F50253200688324 /* FTFeatureDataStore.h in Headers */,
@@ -3548,8 +3580,6 @@
 				Base,
 			);
 			mainGroup = 4A884250239E5754001B44C3;
-			packageReferences = (
-			);
 			productRefGroup = 4A88425B239E5754001B44C3 /* Products */;
 			projectDirPath = "";
 			projectRoot = "";
@@ -4056,6 +4086,8 @@
 				176CE27F2ED8667E00E9E92B /* FTCrashMonitorAPI.c in Sources */,
 				17E4CBE829CD42E4005C2D99 /* FTSessionTaskHandler.m in Sources */,
 				1763BD8E29DFF04F009EE026 /* FTTrackerEventDBTool.m in Sources */,
+				7B004178A5CB5FA66C1858B2 /* FTSwiftUIRUMViewModifier.swift in Sources */,
+				7B004179A5CB5FA66C1858B2 /* FTSwiftUIViewNameExtractor.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -4120,6 +4152,8 @@
 				17018D162F50253200688324 /* FTUIActivityIndicatorRecorder.m in Sources */,
 				17018D432F50253200688324 /* FTUIDatePickerRecorder.m in Sources */,
 				17018D1F2F50253200688324 /* FTUIImageResource.m in Sources */,
+				A1F0B1012FA9000100A0A001 /* FTUIHostingViewRecorder.m in Sources */,
+				A1F0B1052FA9000100A0A001 /* FTSwiftUIReflection.swift in Sources */,
 				17018D322F50253200688324 /* FTUIImageViewRecorder.m in Sources */,
 				17018D4D2F50253200688324 /* FTUILabelRecorder.m in Sources */,
 				17018D3E2F50253200688324 /* FTUINavigationBarRecorder.m in Sources */,
@@ -4475,6 +4509,7 @@
 				SKIP_INSTALL = YES;
 				SUPPORTED_PLATFORMS = "appletvos appletvsimulator iphoneos iphonesimulator";
 				SUPPORTS_MACCATALYST = YES;
+				SWIFT_INSTALL_OBJC_HEADER = NO;
 				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
 				SWIFT_VERSION = 5.0;
 				TARGETED_DEVICE_FAMILY = "1,2,3";
@@ -4521,6 +4556,7 @@
 				SKIP_INSTALL = YES;
 				SUPPORTED_PLATFORMS = "appletvos appletvsimulator iphoneos iphonesimulator";
 				SUPPORTS_MACCATALYST = YES;
+				SWIFT_INSTALL_OBJC_HEADER = NO;
 				SWIFT_VERSION = 5.0;
 				TARGETED_DEVICE_FAMILY = "1,2,3";
 				TVOS_DEPLOYMENT_TARGET = 12.0;

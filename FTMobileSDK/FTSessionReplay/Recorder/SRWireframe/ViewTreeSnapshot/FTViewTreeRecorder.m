@@ -14,10 +14,11 @@
 #import "UIView+FTSRPrivacy.h"
 #import "FTSessionReplayPrivacyOverrides+Extension.h"
 @implementation FTViewTreeRecorder
-- (void)record:(NSMutableArray *)nodes resources:(NSMutableArray *)resource view:(UIView *)view context:(FTViewTreeRecordingContext *)context{
-    [self recordRecursively:nodes resources:resource view:view context:context overrides:view.sessionReplayPrivacyOverrides];
+
+- (void)record:(NSMutableArray *)nodes view:(UIView *)view context:(FTViewTreeRecordingContext *)context{
+    [self recordRecursively:nodes view:view context:context overrides:view.sessionReplayPrivacyOverrides];
 }
-- (void)recordRecursively:(NSMutableArray *)nodes resources:(NSMutableArray *)resource view:(UIView *)view context:(FTViewTreeRecordingContext *)context overrides:(PrivacyOverrides *)overrides{
+- (void)recordRecursively:(NSMutableArray *)nodes view:(UIView *)view context:(FTViewTreeRecordingContext *)context overrides:(PrivacyOverrides *)overrides{
     FTViewTreeRecordingContext *newContext = [context copy];
     if([view.nextResponder isKindOfClass:UIViewController.class]){
         UIViewController *viewController = (UIViewController *)view.nextResponder;
@@ -35,15 +36,11 @@
     if(semantics.nodes.count>0){
         [nodes addObjectsFromArray:semantics.nodes];
     }
-    if(semantics.resources.count>0){
-        [resource addObjectsFromArray:semantics.resources];
-    }
-    
     switch (semantics.subtreeStrategy) {
         case NodeSubtreeStrategyRecord:
             for (UIView *subView in view.subviews) {
                 PrivacyOverrides *privacy = [PrivacyOverrides mergeChild:subView.sessionReplayPrivacyOverrides parent:view.sessionReplayPrivacyOverrides];
-                [self recordRecursively:nodes resources:resource view:subView context:newContext overrides:privacy];
+                [self recordRecursively:nodes  view:subView context:newContext overrides:privacy];
             }
             break;
         case NodeSubtreeStrategyIgnore:

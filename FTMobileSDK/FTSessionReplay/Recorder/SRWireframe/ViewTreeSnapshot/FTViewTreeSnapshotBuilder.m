@@ -22,6 +22,7 @@
 #import "FTUITextFieldRecorder.h"
 #import "FTUITextViewRecorder.h"
 #import "FTUIImageViewRecorder.h"
+#import "FTUIHostingViewRecorder.h"
 #import "FTUIPickerViewRecorder.h"
 #import "FTUIDatePickerRecorder.h"
 #import "FTViewTreeRecorder.h"
@@ -68,7 +69,7 @@
             recordingContext.coordinateSpace = referenceView;
             recordingContext.clip = referenceView.bounds;
             recordingContext.viewControllerContext = [FTViewControllerContext new];
-            [self.viewTreeRecorder record:node resources:resource view:rootView context:recordingContext];
+            [self.viewTreeRecorder record:node view:rootView context:recordingContext];
         }
     }
     FTViewTreeSnapshot *viewTree = [[FTViewTreeSnapshot alloc]init];
@@ -86,7 +87,7 @@
     return viewTree;
 }
 - (NSArray <id <FTSRWireframesRecorder>> *)createDefaultNodeRecorders{
-    return @[
+    NSMutableArray *recorders = @[
         [FTUnsupportedViewRecorder new],
         [FTUIViewRecorder new],
         [FTUILabelRecorder new],
@@ -106,6 +107,10 @@
 #endif
         [FTUIProgressViewRecorder new],
         [FTUIActivityIndicatorRecorder new],
-    ];
+    ].mutableCopy;
+    if (@available(iOS 13, *)) {
+        [recorders addObject:[FTUIHostingViewRecorder new]];
+    }
+    return [recorders copy];
 }
 @end

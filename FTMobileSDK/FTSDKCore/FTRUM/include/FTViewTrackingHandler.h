@@ -27,6 +27,17 @@ NS_ASSUME_NONNULL_BEGIN
 
 @end
 
+/// Experimental: The handler deciding if an automatically extracted SwiftUI View name should be recorded as a RUM View.
+///
+/// Set this only when your app needs automatic SwiftUI View tracking.
+/// If you do not need custom filtering or naming, use `FTDefaultSwiftUIViewTrackingHandler`.
+/// This experimental API may change in future releases.
+@protocol FTSwiftUIViewTrackingHandler <NSObject>
+
+/// Experimental: Deciding if the SwiftUI RUM View should be recorded.
+- (nullable FTRUMView *)rumViewForExtractedViewName:(NSString *)extractedViewName;
+@end
+
 typedef id<FTUIKitViewTrackingHandler> FTViewTrackingHandler;
 
 

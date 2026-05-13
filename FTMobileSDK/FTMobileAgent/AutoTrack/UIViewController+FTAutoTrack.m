@@ -53,6 +53,7 @@ static char *viewLoadDuration = "viewLoadDuration";
     } @catch(NSException *exception) {
         FTInnerLogError(@"error: %@",exception);
     }
+    return NO;
 }
 - (BOOL)isBlackListContainsViewController{
     @try {
@@ -69,6 +70,7 @@ static char *viewLoadDuration = "viewLoadDuration";
     } @catch(NSException *exception) {
         FTInnerLogError(@"error: %@",exception);
     }
+    return NO;
 }
 - (void)ft_viewDidLoad{
     self.ft_viewLoadStartTime = @(FTDateUtil.systemTime);

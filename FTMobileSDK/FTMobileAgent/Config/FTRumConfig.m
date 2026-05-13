@@ -65,7 +65,11 @@
     options.allowWebViewHost = [self.allowWebViewHost copy];
     options.sessionTaskErrorFilter = [self.sessionTaskErrorFilter copy];
     options.viewTrackingHandler = self.viewTrackingHandler;
+    options.swiftUIViewTrackingHandler = self.swiftUIViewTrackingHandler;
     options.actionTrackingHandler = self.actionTrackingHandler;
+#if TARGET_OS_IOS
+    options.swiftUIActionTrackingHandler = self.swiftUIActionTrackingHandler;
+#endif
     options.crashMonitoring = self.crashMonitoring;
     return options;
 }
@@ -141,7 +145,11 @@
     [dict setValue:[self.resourcePropertyProvider copy] forKey:@"resourcePropertyProvider"];
     [dict setValue:[self.sessionTaskErrorFilter copy] forKey:@"sessionTaskErrorFilter"];
     [dict setValue:self.viewTrackingHandler forKey:@"viewTrackingHandler"];
+    [dict setValue:self.swiftUIViewTrackingHandler forKey:@"swiftUIViewTrackingHandler"];
     [dict setValue:self.actionTrackingHandler forKey:@"actionTrackingHandler"];
+#if TARGET_OS_IOS
+    [dict setValue:self.swiftUIActionTrackingHandler forKey:@"swiftUIActionTrackingHandler"];
+#endif
     [dict setValue:@(self.enableTraceWebView) forKey:@"enableTraceWebView"];
     [dict setValue:[self.allowWebViewHost copy] forKey:@"allowWebViewHost"];
     return [NSString stringWithFormat:@"%@",dict];
