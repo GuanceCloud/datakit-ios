@@ -1,7 +1,7 @@
 Pod::Spec.new do |s|
 
 	s.name         = "FTMobileSDK"
-	s.version      = "1.6.3"
+	s.version      = "1.6.4-alpha.1"
 	s.summary      = "Guance Cloud iOS Data Collection SDK"
 	#s.description  = ""
 	s.homepage     = "https://github.com/GuanceCloud/datakit-ios.git"

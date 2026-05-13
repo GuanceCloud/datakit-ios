@@ -1,3 +1,12 @@
+# 1.6.4-alpha.1
+1. Added Session Replay support for SwiftUI views.
+2. Added RUM view and action tracking support for SwiftUI views.
+3. Added app launch type tracking for cold start scenarios.
+4. Added C++ and zlib settings to the podspec and SwiftPM package configuration.
+5. Improved preset property handling by guarding against nil property dictionaries.
+6. Improved RUM upload handling by skipping duplicate view data during uploads and handling 403/429 upload retry responses.
+7. Added `UIKeyboardHiddenViewController_Save` to the automatic view tracking blacklist.
+---
 # 1.6.3
 1. Added `view_long_task_rate` to count page jank rate for RUM views.
 2. Added `network_available` field to RUM Resource data, captured as a start-time network availability snapshot.
