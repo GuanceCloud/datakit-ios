@@ -61,7 +61,6 @@
     [self recordSubtree:tabBar records:records resources:resources context:context];
     FTSpecificElement *element = [[FTSpecificElement alloc]initWithSubtreeStrategy:NodeSubtreeStrategyIgnore];
     element.nodes = records;
-    element.resources = resources;
     return element;
 }
 - (void)recordSubtree:(UITabBar *)tabBar records:(NSMutableArray *)records resources:(NSMutableArray *)resources context:(FTViewTreeRecordingContext *)context{
@@ -86,7 +85,7 @@
         self.viewRecorder,
     ];
     
-    [viewTreeRecorder record:records resources:resources view:tabBar context:context];
+    [viewTreeRecorder record:records view:tabBar context:context];
 }
 - (UIColor *)inferTabBarColor:(UITabBar *)bar{
     if(bar.backgroundColor){

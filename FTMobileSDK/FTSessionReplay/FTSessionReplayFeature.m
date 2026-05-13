@@ -82,10 +82,11 @@ typedef NS_ENUM(NSInteger, SampleState) {
 }
 -(void)startWithRecordStorage:(FTFeatureStorage *)recordStorage resourceWriter:(id <FTWriter>)resourceWriter resourceDataStore:(nullable id<FTDataStore>)dataStore{
     _recordStorage = recordStorage;
-    FTSnapshotProcessor *srProcessor = [[FTSnapshotProcessor alloc]initWithQueue:self.processorsQueue writer:recordStorage.writer];
     FTResourceWriter *resource = [[FTResourceWriter alloc]initWithWriter:resourceWriter dataStore:dataStore];
     FTResourceProcessor *resourceProcessor = [[FTResourceProcessor alloc]initWithQueue:self.processorsQueue resourceWriter:resource];
-    FTRecorder *windowRecorder = [[FTRecorder alloc]initWithWindowObserver:self.windowObserver snapshotProcessor:srProcessor resourceProcessor:resourceProcessor additionalNodeRecorders:self.config.additionalNodeRecorders];
+    FTSnapshotProcessor *srProcessor = [[FTSnapshotProcessor alloc]initWithQueue:self.processorsQueue writer:recordStorage.writer resourceProcessor:resourceProcessor];
+
+    FTRecorder *windowRecorder = [[FTRecorder alloc]initWithWindowObserver:self.windowObserver snapshotProcessor:srProcessor  additionalNodeRecorders:self.config.additionalNodeRecorders];
     self.windowRecorder = windowRecorder;
 }
 - (void)setSampleState:(SampleState)sampleState{

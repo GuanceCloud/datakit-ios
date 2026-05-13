@@ -19,7 +19,6 @@ typedef NS_ENUM(NSUInteger,NodeSubtreeStrategy){
 @interface FTSRNodeSemantics : NSObject
 @property (nonatomic, assign) int importance;
 @property (nonatomic, strong) NSArray<id<FTSRWireframesBuilder>> *nodes;
-@property (nonatomic, strong) NSArray<id<FTSRResource>> *resources;
 @property (nonatomic, assign) NodeSubtreeStrategy subtreeStrategy;
 -(instancetype)initWithSubtreeStrategy:(NodeSubtreeStrategy)subtreeStrategy;
 

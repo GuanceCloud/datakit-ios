@@ -14,7 +14,7 @@ NS_ASSUME_NONNULL_BEGIN
 @protocol FTSRWireframesRecorder;
 @interface FTViewTreeRecorder : NSObject
 @property (nonatomic, strong) NSArray<id<FTSRWireframesRecorder>> *nodeRecorders;
-- (void)record:(NSMutableArray *)nodes resources:(NSMutableArray *)resource view:(UIView *)view context:(FTViewTreeRecordingContext *)context;
+- (void)record:(NSMutableArray *)nodes view:(UIView *)view context:(FTViewTreeRecordingContext *)context;
 @end
 
 NS_ASSUME_NONNULL_END

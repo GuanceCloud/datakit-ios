@@ -20,7 +20,7 @@
 #import "FTTouchSnapshot.h"
 #import "FTSessionReplayWireframesBuilder.h"
 #import "FTWKWebViewHandler+SessionReplay.h"
-
+#import "FTResourceProcessor.h"
 NSTimeInterval const kFullSnapshotInterval = 20.0;
 
 @interface FTSnapshotProcessor()
@@ -35,15 +35,17 @@ NSTimeInterval const kFullSnapshotInterval = 20.0;
 @property (nonatomic, strong) NSMutableDictionary *recordsCountByViewID;
 @property (nonatomic, assign) BOOL onErrorSampled;
 @property (nonatomic, strong) NSDictionary *lastBindInfo;
+@property (nonatomic, strong) FTResourceProcessor *resourceProcessor;
 @end
 @implementation FTSnapshotProcessor
--(instancetype)initWithQueue:(dispatch_queue_t)queue writer:(id<FTWriter>)writer{
+-(instancetype)initWithQueue:(dispatch_queue_t)queue writer:(id<FTWriter>)writer resourceProcessor:(FTResourceProcessor *)resourceProcessor{
     self = [super init];
     if(self){
         _queue = queue;
         _writer = writer;
         _flattener = [[FTNodesFlattener alloc]init];
         _recordsCountByViewID = [NSMutableDictionary new];
+        _resourceProcessor = resourceProcessor;
     }
     return self;
 }
@@ -143,6 +145,8 @@ NSTimeInterval const kFullSnapshotInterval = 20.0;
                 FTInnerLogError(@"[Session Replay] Snapshot Records to Json Data error");
             }
         }
+        [self.resourceProcessor process:srBuilder.resources context:viewTreeSnapshot.context];
+
         if (isTimeForFullSnapshot) {
             [[FTWKWebViewHandler sharedInstance] takeSubsequentFullSnapshot];
         }

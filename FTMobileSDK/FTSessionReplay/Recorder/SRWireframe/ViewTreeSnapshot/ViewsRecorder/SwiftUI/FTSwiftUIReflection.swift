@@ -2,7 +2,7 @@
 //  FTSwiftUIReflection.swift
 //  FTMobileSDK
 //
-//  Created by OpenAI on 2026/4/29.
+//  Created by hulilei on 2026/4/29.
 //  Copyright © 2026 DataFlux-cn. All rights reserved.
 //
 
@@ -33,7 +33,8 @@ private enum FTTextPrivacy {
 
 @available(iOS 13.0, *)
 @objc(FTSwiftUIRecordingResult)
-internal final class FTSwiftUIRecordingResult: NSObject {
+@_spi(Private)
+public final class FTSwiftUIRecordingResult: NSObject {
     @objc let wireframes: [FTSwiftUIWireframePayload]
     @objc let resources: [FTSwiftUIResourcePayload]
 
@@ -45,8 +46,49 @@ internal final class FTSwiftUIRecordingResult: NSObject {
 }
 
 @available(iOS 13.0, *)
+@objc(FTSwiftUIRenderer)
+@_spi(Private)
+public final class FTSwiftUIRenderer: NSObject {
+    fileprivate let renderer: FTDisplayList.ViewUpdater
+
+    fileprivate init(renderer: FTDisplayList.ViewUpdater) {
+        self.renderer = renderer
+        super.init()
+    }
+}
+
+@available(iOS 13.0, *)
+@objc(FTSwiftUIRecordingBuilder)
+@_spi(Private)
+public final class FTSwiftUIRecordingBuilder: NSObject {
+    private let builder: FTSwiftUIWireframesBuilder
+    private let lock = NSLock()
+    private var result: FTSwiftUIRecordingResult?
+
+    fileprivate init(builder: FTSwiftUIWireframesBuilder) {
+        self.builder = builder
+        super.init()
+    }
+
+    @objc(build)
+    public func build() -> FTSwiftUIRecordingResult? {
+        lock.lock()
+        defer { lock.unlock() }
+
+        if let result {
+            return result
+        }
+
+        let result = builder.build()
+        self.result = result
+        return result
+    }
+}
+
+@available(iOS 13.0, *)
 @objc(FTSwiftUIWireframePayload)
-internal final class FTSwiftUIWireframePayload: NSObject {
+@_spi(Private)
+public final class FTSwiftUIWireframePayload: NSObject {
     @objc let kind: Int
     @objc let identifier: Int64
     @objc let frame: CGRect
@@ -107,7 +149,8 @@ internal final class FTSwiftUIWireframePayload: NSObject {
 
 @available(iOS 13.0, *)
 @objc(FTSwiftUIResourcePayload)
-internal final class FTSwiftUIResourcePayload: NSObject {
+@_spi(Private)
+public final class FTSwiftUIResourcePayload: NSObject {
     @objc let identifier: String
     @objc let mimeType: String
     @objc let data: Data
@@ -121,8 +164,39 @@ internal final class FTSwiftUIResourcePayload: NSObject {
 }
 
 @available(iOS 13.0, *)
+@objc(FTSwiftUIRecordingAttributes)
+@_spi(Private)
+public final class FTSwiftUIRecordingAttributes: NSObject {
+    @objc dynamic var frame: CGRect = .zero
+    @objc dynamic var clip: CGRect = .zero
+    @objc dynamic var alpha: CGFloat = 1
+    @objc dynamic var backgroundColor: UIColor?
+    @objc dynamic var borderColor: UIColor?
+    @objc dynamic var borderWidth: CGFloat = 0
+    @objc dynamic var cornerRadius: CGFloat = 0
+    @objc dynamic var textPrivacy: Int = 0
+    @objc dynamic var imagePrivacy: Int = 0
+    @objc dynamic var wireframeID: Int64 = 0
+}
+
+@available(iOS 13.0, *)
+@objc(FTSwiftUIReflectionRecording)
+@_spi(Private)
+public protocol FTSwiftUIReflectionRecording: NSObjectProtocol {
+    @objc(makeRecordingAttributes)
+    func makeRecordingAttributes() -> FTSwiftUIRecordingAttributes
+
+    @objc(rendererForHostingView:)
+    func renderer(hostingView: UIView) -> FTSwiftUIRenderer?
+
+    @objc(recordingBuilderForRenderer:attributes:)
+    func recordingBuilder(renderer: FTSwiftUIRenderer, attributes: FTSwiftUIRecordingAttributes) -> FTSwiftUIRecordingBuilder?
+}
+
+@available(iOS 13.0, *)
 @objc(FTSwiftUIReflectionBridge)
-internal final class FTSwiftUIReflectionBridge: NSObject {
+@_spi(Private)
+public final class FTSwiftUIReflectionBridge: NSObject, FTSwiftUIReflectionRecording {
     private let imageRenderer = FTImageRenderer()
     private let shapeResourceBuilder = FTShapeResourceBuilder()
 
@@ -136,44 +210,62 @@ internal final class FTSwiftUIReflectionBridge: NSObject {
         }
     }
 
-    @objc(recordHostingView:frame:clip:alpha:backgroundColor:borderColor:borderWidth:cornerRadius:textPrivacy:imagePrivacy:wireframeID:)
-    func record(
-        hostingView: UIView,
-        frame: CGRect,
-        clip: CGRect,
-        alpha: CGFloat,
-        backgroundColor: UIColor?,
-        borderColor: UIColor?,
-        borderWidth: CGFloat,
-        cornerRadius: CGFloat,
-        textPrivacy: Int,
-        imagePrivacy: Int,
-        wireframeID: Int64
-    ) -> FTSwiftUIRecordingResult? {
+    @objc(makeRecordingAttributes)
+    public func makeRecordingAttributes() -> FTSwiftUIRecordingAttributes {
+        FTSwiftUIRecordingAttributes()
+    }
+
+    @objc(rendererForHostingView:)
+    public func renderer(hostingView: UIView) -> FTSwiftUIRenderer? {
         guard let rendererObject = extractObject(from: hostingView, keyPath: Self.rendererKeyPath) else {
             return nil
         }
 
         do {
-            let renderer = try FTDisplayList.ViewRenderer(from: FTReflector(subject: rendererObject)).renderer
-            let builder = FTSwiftUIWireframesBuilder(
-                wireframeID: wireframeID,
-                renderer: renderer,
-                imageRenderer: imageRenderer,
-                shapeResourceBuilder: shapeResourceBuilder,
-                textPrivacyLevel: textPrivacy,
-                imagePrivacyLevel: imagePrivacy,
-                rootFrame: frame,
-                rootClip: clip,
-                rootAlpha: alpha,
-                rootBackgroundColor: backgroundColor,
-                rootBorderColor: borderColor,
-                rootBorderWidth: borderWidth,
-                rootCornerRadius: cornerRadius
-            )
-            return try builder.build()
+            return try FTSwiftUIRenderer(renderer: makeRenderer(from: rendererObject))
         } catch {
             return nil
+        }
+    }
+
+    @objc(recordingBuilderForRenderer:attributes:)
+    public func recordingBuilder(renderer: FTSwiftUIRenderer, attributes: FTSwiftUIRecordingAttributes) -> FTSwiftUIRecordingBuilder? {
+        let builder = FTSwiftUIWireframesBuilder(
+            wireframeID: attributes.wireframeID,
+            renderer: renderer.renderer,
+            imageRenderer: imageRenderer,
+            shapeResourceBuilder: shapeResourceBuilder,
+            textPrivacyLevel: attributes.textPrivacy,
+            imagePrivacyLevel: attributes.imagePrivacy,
+            rootFrame: attributes.frame,
+            rootClip: attributes.clip,
+            rootAlpha: attributes.alpha,
+            rootBackgroundColor: attributes.backgroundColor,
+            rootBorderColor: attributes.borderColor,
+            rootBorderWidth: attributes.borderWidth,
+            rootCornerRadius: attributes.cornerRadius
+        )
+
+        return FTSwiftUIRecordingBuilder(builder: builder)
+    }
+
+    private func makeRenderer(from rendererObject: AnyObject) throws -> FTDisplayList.ViewUpdater {
+        let reflector = FTReflector(subject: rendererObject)
+        do {
+            let renderer = try FTDisplayList.ViewRenderer(from: reflector).renderer
+            return renderer
+        } catch {
+            let wrapperError = error
+            do {
+                return try FTDisplayList.ViewUpdater(from: reflector)
+            } catch {
+                throw FTReflector.Error.rendererUnavailable(
+                    rendererType: FTReflector.typeName(of: rendererObject),
+                    availableLabels: FTReflector.availableLabels(in: rendererObject),
+                    wrapperError: String(describing: wrapperError),
+                    directError: String(describing: error)
+                )
+            }
         }
     }
 
@@ -207,6 +299,7 @@ private struct FTSwiftUIWireframesBuilder {
         var frame: CGRect
         var clip: CGRect
         var tintColor: Color._Resolved?
+        let resourceCollector: FTResourceCollector
 
         func convert(frame: CGRect) -> CGRect {
             frame.offsetBy(dx: self.frame.minX, dy: self.frame.minY)
@@ -231,12 +324,17 @@ private struct FTSwiftUIWireframesBuilder {
     let rootBorderWidth: CGFloat
     let rootCornerRadius: CGFloat
 
-    func build() throws -> FTSwiftUIRecordingResult {
+    func build() -> FTSwiftUIRecordingResult {
         var output = Output()
         output.wireframes.append(makeRootWireframe())
-        let list = try renderer.lastList.reflect()
-        var context = Context(frame: rootFrame, clip: rootClip, tintColor: nil)
-        buildWireframes(items: list.items, context: &context, output: &output)
+        do {
+            let list = try renderer.lastList.reflect()
+            let resourceCollector = FTResourceCollector()
+            let context = Context(frame: rootFrame, clip: rootClip, tintColor: nil, resourceCollector: resourceCollector)
+            output.wireframes.append(contentsOf: buildWireframes(items: list.items, context: context))
+            output.resourcesByIdentifier = resourceCollector.resourcesByIdentifier
+        } catch {
+        }
         return FTSwiftUIRecordingResult(
             wireframes: output.wireframes,
             resources: Array(output.resourcesByIdentifier.values)
@@ -256,39 +354,46 @@ private struct FTSwiftUIWireframesBuilder {
         )
     }
 
-    private func buildWireframes(items: [FTDisplayList.Item], context: inout Context, output: inout Output) {
-        for item in items {
+    private func buildWireframes(items: [FTDisplayList.Item], context: Context) -> [FTSwiftUIWireframePayload] {
+        items.reduce([]) { wireframes, item in
             switch item.value {
             case let .effect(effect, list):
-                var childContext = context
-                childContext.frame = childContext.convert(frame: item.frame)
-
-                switch effect {
-                case let .clip(path, _):
-                    childContext.clip = childContext.clip.intersection(childContext.convert(frame: path.boundingRect))
-                case let .filter(.colorMultiply(color)):
-                    childContext.tintColor = color
-                case .platformGroup:
-                    let key = FTDisplayList.ViewUpdater.ViewCache.Key(id: .init(identity: item.identity))
-                    if let viewInfo = renderer.viewCache.map[key] {
-                        childContext.convert(to: viewInfo.frame)
-                    }
-                case .identify, .filter, .unknown:
-                    break
-                }
-
-                buildWireframes(items: list.items, context: &childContext, output: &output)
+                return wireframes + effectWireframes(item: item, effect: effect, list: list, context: context)
             case let .content(content):
-                if let wireframe = contentWireframe(item: item, content: content, context: context, output: &output) {
-                    output.wireframes.append(wireframe)
-                }
+                return wireframes + contentWireframes(item: item, content: content, context: context)
             case .unknown:
-                break
+                return wireframes
             }
         }
     }
 
-    private func contentWireframe(item: FTDisplayList.Item, content: FTDisplayList.Content, context: Context, output: inout Output) -> FTSwiftUIWireframePayload? {
+    private func effectWireframes(item: FTDisplayList.Item, effect: FTDisplayList.Effect, list: FTDisplayList, context: Context) -> [FTSwiftUIWireframePayload] {
+        var context = context
+        context.frame = context.convert(frame: item.frame)
+
+        switch effect {
+        case let .clip(path, _):
+            let clip = context.convert(frame: path.boundingRect)
+            context.clip = context.clip.intersection(clip)
+        case let .filter(.colorMultiply(color)):
+            context.tintColor = color
+        case .platformGroup:
+            let key = FTDisplayList.ViewUpdater.ViewCache.Key(id: .init(identity: item.identity))
+            if let viewInfo = renderer.viewCache.map[key] {
+                context.convert(to: viewInfo.frame)
+            }
+        case .identify, .filter, .unknown:
+            break
+        }
+
+        return buildWireframes(items: list.items, context: context)
+    }
+
+    private func contentWireframes(item: FTDisplayList.Item, content: FTDisplayList.Content, context: Context) -> [FTSwiftUIWireframePayload] {
+        contentWireframe(item: item, content: content, context: context).map { [$0] } ?? []
+    }
+
+    private func contentWireframe(item: FTDisplayList.Item, content: FTDisplayList.Content, context: Context) -> FTSwiftUIWireframePayload? {
         let viewInfo = renderer.viewCache.map[.init(id: .init(identity: item.identity))]
         let id = wireframeID(for: content.seed)
         let frame = context.convert(frame: item.frame)
@@ -299,7 +404,7 @@ private struct FTSwiftUIWireframesBuilder {
                 return makePlaceholder(id: id, frame: frame, clip: context.clip, label: "Image")
             }
             let resource = shapeResourceBuilder.shapeResource(for: path, color: color, fillStyle: fillStyle, size: item.frame.size)
-            output.append(resource)
+            context.resourceCollector.append(resource)
             return makeImage(id: id, resource: resource, frame: frame, clip: context.clip)
 
         case let .text(view, _):
@@ -311,7 +416,7 @@ private struct FTSwiftUIWireframesBuilder {
                 id: id,
                 frame: frame,
                 clip: context.clip,
-                text: maskText(storage.string),
+                text: storage.string,
                 paragraphStyle: style,
                 textColor: foregroundColor?.cgColor,
                 font: font
@@ -337,7 +442,7 @@ private struct FTSwiftUIWireframesBuilder {
                     guard let resource = FTSwiftUIResourcePayload.imageResource(image: image, tintColor: resolvedImage.maskColor?.uiColor) else {
                         return makePlaceholder(id: id, frame: frame, clip: context.clip, label: "Unsupported image type")
                     }
-                    output.append(resource)
+                    context.resourceCollector.append(resource)
                     return makeImage(id: id, resource: resource, frame: frame, clip: context.clip)
                 }
                 let label = imagePrivacyLevel == FTImagePrivacy.maskNonBundledOnly ? "Content Image" : "Image"
@@ -350,7 +455,7 @@ private struct FTSwiftUIWireframesBuilder {
                     guard let resource = FTSwiftUIResourcePayload.imageResource(image: image, tintColor: resolvedImage.maskColor?.uiColor) else {
                         return makePlaceholder(id: id, frame: frame, clip: context.clip, label: "Unsupported image type")
                     }
-                    output.append(resource)
+                    context.resourceCollector.append(resource)
                     return makeImage(id: id, resource: resource, frame: frame, clip: context.clip)
                 }
                 return makePlaceholder(id: id, frame: frame, clip: context.clip, label: "Image")
@@ -369,7 +474,7 @@ private struct FTSwiftUIWireframesBuilder {
             guard let resource = FTSwiftUIResourcePayload.imageResource(image: image, tintColor: context.tintColor?.uiColor) else {
                 return makePlaceholder(id: id, frame: frame, clip: context.clip, label: "Unsupported image type")
             }
-            output.append(resource)
+            context.resourceCollector.append(resource)
             return makeImage(id: id, resource: resource, frame: frame, clip: context.clip)
 
         case .platformView:
@@ -429,12 +534,7 @@ private struct FTSwiftUIWireframesBuilder {
             textColor: textColor?.ft_hexString ?? "#FF0000FF",
             fontSize: font?.pointSize ?? 10,
             textAlignment: paragraphStyle?.alignment ?? .left,
-            lineBreakMode: paragraphStyle?.lineBreakMode ?? .byWordWrapping,
-            backgroundColor: rootBackgroundColor?.cgColor.ft_hexString,
-            borderColor: rootBorderColor?.cgColor.ft_hexString,
-            borderWidth: rootBorderWidth,
-            cornerRadius: rootCornerRadius,
-            opacity: rootAlpha
+            lineBreakMode: paragraphStyle?.lineBreakMode ?? .byWordWrapping
         )
     }
 
@@ -459,13 +559,14 @@ private struct FTSwiftUIWireframesBuilder {
         )
     }
 
-    private func maskText(_ text: String) -> String {
-        guard textPrivacyLevel == FTTextPrivacy.maskAll else {
-            return text
-        }
-        return text.map { character in
-            character.isWhitespace || character.isNewline ? character : "x"
-        }.map(String.init).joined()
+}
+
+@available(iOS 13.0, tvOS 13.0, *)
+private final class FTResourceCollector {
+    private(set) var resourcesByIdentifier: [String: FTSwiftUIResourcePayload] = [:]
+
+    func append(_ resource: FTSwiftUIResourcePayload) {
+        resourcesByIdentifier[resource.identifier] = resource
     }
 }
 
@@ -596,28 +697,32 @@ private struct FTDisplayList {
             case unknown
 
             init(from reflector: FTReflector) throws {
-                switch (reflector.displayStyle, reflector.descendantIfPresent(0)) {
-                case let (.enum("shape"), tuple as (SwiftUI.Path, Any, SwiftUI.FillStyle)):
-                    self = try .shape(tuple.0, reflector.reflect(tuple.1), tuple.2)
-                case let (.enum("text"), tuple as (Any, CGSize)):
-                    self = try .text(reflector.reflect(tuple.0), tuple.1)
-                case (.enum("platformView"), _):
-                    self = .platformView
-                case let (.enum("image"), image):
-                    self = try .image(reflector.reflect(image))
-                case let (.enum("drawing"), (contents, origin, _) as (NSObject, CGPoint, Any)):
-                    if let drawing = FTDrawing(contents: contents, origin: origin) {
-                        self = .drawing(FTAnyImageRepresentable(drawing))
-                    } else {
+                do {
+                    switch (reflector.displayStyle, reflector.descendantIfPresent(0)) {
+                    case let (.enum("shape"), tuple as (SwiftUI.Path, Any, SwiftUI.FillStyle)):
+                        self = try .shape(tuple.0, reflector.reflect(tuple.1), tuple.2)
+                    case let (.enum("text"), tuple as (Any, CGSize)):
+                        self = try .text(reflector.reflect(tuple.0), tuple.1)
+                    case (.enum("platformView"), _):
+                        self = .platformView
+                    case let (.enum("image"), image):
+                        self = try .image(reflector.reflect(image))
+                    case let (.enum("drawing"), (contents, origin, _) as (NSObject, CGPoint, Any)):
+                        if let drawing = FTDrawing(contents: contents, origin: origin) {
+                            self = .drawing(FTAnyImageRepresentable(drawing))
+                        } else {
+                            self = .unknown
+                        }
+                    case let (.enum("color"), color):
+                        if #available(iOS 26, tvOS 26, *) {
+                            self = try .color(reflector.reflect(type: FTColorView.self, color).color.base)
+                        } else {
+                            self = try .color(reflector.reflect(color))
+                        }
+                    default:
                         self = .unknown
                     }
-                case let (.enum("color"), color):
-                    if #available(iOS 26, tvOS 26, *) {
-                        self = try .color(reflector.reflect(type: FTColorView.self, color).color.base)
-                    } else {
-                        self = try .color(reflector.reflect(color))
-                    }
-                default:
+                } catch {
                     self = .unknown
                 }
             }
@@ -628,7 +733,11 @@ private struct FTDisplayList {
 
         init(from reflector: FTReflector) throws {
             seed = try reflector.descendant("seed")
-            value = try reflector.descendant("value")
+            do {
+                value = try reflector.descendant("value")
+            } catch {
+                value = .unknown
+            }
         }
     }
 
@@ -639,12 +748,16 @@ private struct FTDisplayList {
             case unknown
 
             init(from reflector: FTReflector) throws {
-                switch (reflector.displayStyle, reflector.descendantIfPresent(0)) {
-                case let (.enum("effect"), tuple as (Any, Any)):
-                    self = try .effect(reflector.reflect(tuple.0), reflector.reflect(tuple.1))
-                case let (.enum("content"), value):
-                    self = try .content(reflector.reflect(value))
-                default:
+                do {
+                    switch (reflector.displayStyle, reflector.descendantIfPresent(0)) {
+                    case let (.enum("effect"), tuple as (Any, Any)):
+                        self = try .effect(reflector.reflect(tuple.0), reflector.reflect(tuple.1))
+                    case let (.enum("content"), value):
+                        self = try .content(reflector.reflect(value))
+                    default:
+                        self = .unknown
+                    }
+                } catch {
                     self = .unknown
                 }
             }
@@ -657,7 +770,11 @@ private struct FTDisplayList {
         init(from reflector: FTReflector) throws {
             identity = try reflector.descendant("identity")
             frame = try reflector.descendant("frame")
-            value = try reflector.descendant("value")
+            do {
+                value = try reflector.descendant("value")
+            } catch {
+                value = .unknown
+            }
         }
     }
 
@@ -770,12 +887,12 @@ private struct FTGraphicsImage: FTReflection {
     }
 
     let scale: CGFloat
-    let orientation: Int
+    let orientation: SwiftUI.Image.Orientation
     let contents: Contents
     let maskColor: Color._Resolved?
 
     var uiImageOrientation: UIImage.Orientation {
-        UIImage.Orientation(rawValue: orientation) ?? .up
+        UIImage.Orientation(orientation)
     }
 
     init(from reflector: FTReflector) throws {
@@ -1101,13 +1218,33 @@ struct FTReflector {
         let reflect: () throws -> T
     }
 
-    enum Error: Swift.Error {
-        case notFound(String)
-        case typeMismatch(String, Any.Type)
+    enum Error: Swift.Error, CustomStringConvertible {
+        case notFound(path: [String], subjectType: String, availableLabels: [String])
+        case typeMismatch(path: [String], expectedType: String, actualType: String, subjectType: String)
+        case rendererUnavailable(rendererType: String, availableLabels: [String], wrapperError: String, directError: String)
+
+        var description: String {
+            switch self {
+            case let .notFound(path, subjectType, availableLabels):
+                return "notFound(path: \(path.joined(separator: ".")), subject: \(subjectType), available: \(availableLabels))"
+            case let .typeMismatch(path, expectedType, actualType, subjectType):
+                return "typeMismatch(path: \(path.joined(separator: ".")), expected: \(expectedType), actual: \(actualType), subject: \(subjectType))"
+            case let .rendererUnavailable(rendererType, availableLabels, wrapperError, directError):
+                return "rendererUnavailable(type: \(rendererType), available: \(availableLabels), wrapperError: \(wrapperError), directError: \(directError))"
+            }
+        }
     }
 
     let subject: Any
     let mirror: Mirror
+
+    private var subjectType: String {
+        Self.typeName(of: subject)
+    }
+
+    private var availableLabels: [String] {
+        Self.availableLabels(in: subject)
+    }
 
     var displayStyle: FTReflectionDisplayStyle {
         switch mirror.displayStyle {
@@ -1149,13 +1286,27 @@ struct FTReflector {
     }
 
     func descendant<T>(_ first: Any, _ rest: Any...) throws -> T {
-        guard let value = descendant(paths: [first] + rest) else {
-            throw Error.notFound(String(describing: [first] + rest))
+        let paths = [first] + rest
+        guard let value = descendant(paths: paths) else {
+            throw Error.notFound(path: Self.pathLabels(paths), subjectType: subjectType, availableLabels: availableLabels)
         }
         guard let typed = value as? T else {
-            throw Error.typeMismatch(String(describing: [first] + rest), T.self)
+            throw Error.typeMismatch(
+                path: Self.pathLabels(paths),
+                expectedType: String(reflecting: T.self),
+                actualType: Self.typeName(of: value),
+                subjectType: subjectType
+            )
         }
         return typed
+    }
+
+    func descendant<T>(_ first: Any, _ rest: Any...) throws -> T where T: FTReflection {
+        let paths = [first] + rest
+        guard let value = descendant(paths: paths) else {
+            throw Error.notFound(path: Self.pathLabels(paths), subjectType: subjectType, availableLabels: availableLabels)
+        }
+        return try reflect(type: T.self, value)
     }
 
     func descendant<T>(type: T.Type = T.self, _ first: Any, _ rest: [Any]) throws -> T where T: FTReflection {
@@ -1168,23 +1319,33 @@ struct FTReflector {
 
     func descendant<T>(type: T.Type = T.self, _ paths: [Any]) throws -> T where T: FTReflection {
         guard let value = descendant(paths: paths) else {
-            throw Error.notFound(String(describing: paths))
+            throw Error.notFound(path: Self.pathLabels(paths), subjectType: subjectType, availableLabels: availableLabels)
         }
         return try reflect(type: type, value)
     }
 
     func descendantArray<Element>(_ first: Any, _ rest: Any...) throws -> [Element] where Element: FTReflection {
-        guard let subject = descendant(paths: [first] + rest) as? [Any] else {
-            throw Error.typeMismatch(String(describing: [first] + rest), [Any].self)
+        let paths = [first] + rest
+        guard let value = descendant(paths: paths) else {
+            throw Error.notFound(path: Self.pathLabels(paths), subjectType: subjectType, availableLabels: availableLabels)
+        }
+        guard let subject = value as? [Any] else {
+            throw Error.typeMismatch(
+                path: Self.pathLabels(paths),
+                expectedType: String(reflecting: [Any].self),
+                actualType: Self.typeName(of: value),
+                subjectType: subjectType
+            )
         }
         return subject.compactMap { try? reflect($0) }
     }
 
     func descendantDictionary<Key, Value>(_ first: Any, _ rest: Any...) throws -> [Key: Value] where Key: FTReflection, Key: Hashable, Value: FTReflection {
-        guard let subject = descendant(paths: [first] + rest) else {
-            throw Error.notFound(String(describing: [first] + rest))
+        let paths = [first] + rest
+        guard let subject = descendant(paths: paths) else {
+            throw Error.notFound(path: Self.pathLabels(paths), subjectType: subjectType, availableLabels: availableLabels)
         }
-        return try reflectDictionary(subject)
+        return try reflectDictionary(subject, path: Self.pathLabels(paths))
     }
 
     func reflect<T>(type: T.Type = T.self, _ subject: Any?) throws -> T where T: FTReflection {
@@ -1230,6 +1391,29 @@ struct FTReflector {
         return mirror.children.first?.value
     }
 
+    static func typeName(of value: Any) -> String {
+        String(reflecting: Swift.type(of: value))
+    }
+
+    static func availableLabels(in value: Any) -> [String] {
+        let mirror = Mirror(reflecting: unwrap(value) ?? value)
+        var labels: [String] = []
+        var current: Mirror? = mirror
+        while let mirrorToSearch = current {
+            labels.append(
+                contentsOf: mirrorToSearch.children.enumerated().map { index, child in
+                    child.label ?? "#\(index)"
+                }
+            )
+            current = mirrorToSearch.superclassMirror
+        }
+        return labels
+    }
+
+    private static func pathLabels(_ paths: [Any]) -> [String] {
+        paths.map { String(describing: $0) }
+    }
+
     private func enumCaseName(subject: Any, mirror: Mirror) -> String {
         if let label = mirror.children.first?.label {
             return label
@@ -1238,7 +1422,7 @@ struct FTReflector {
         return description.split(separator: "(", maxSplits: 1).first.map(String.init) ?? description
     }
 
-    private func reflectDictionary<Key, Value>(_ subject: Any) throws -> [Key: Value] where Key: FTReflection, Key: Hashable, Value: FTReflection {
+    private func reflectDictionary<Key, Value>(_ subject: Any, path: [String]) throws -> [Key: Value] where Key: FTReflection, Key: Hashable, Value: FTReflection {
         if let dictionary = subject as? [AnyHashable: Any] {
             return dictionary.reduce(into: [:]) { result, element in
                 guard let key = try? reflect(type: Key.self, element.key.base),
@@ -1251,7 +1435,12 @@ struct FTReflector {
 
         let mirror = Mirror(reflecting: subject)
         guard mirror.displayStyle == .dictionary else {
-            throw Error.typeMismatch("dictionary", [AnyHashable: Any].self)
+            throw Error.typeMismatch(
+                path: path,
+                expectedType: String(reflecting: [AnyHashable: Any].self),
+                actualType: Self.typeName(of: subject),
+                subjectType: Self.typeName(of: subject)
+            )
         }
 
         return mirror.children.reduce(into: [:]) { result, child in
@@ -1333,6 +1522,32 @@ private extension CGImage {
     func ft_isLikelyBundled(scale: CGFloat) -> Bool {
         let maxDimension: CGFloat = 100
         return CGFloat(width) / scale <= maxDimension && CGFloat(height) / scale <= maxDimension
+    }
+}
+
+@available(iOS 13.0, tvOS 13.0, *)
+private extension UIImage.Orientation {
+    init(_ orientation: SwiftUI.Image.Orientation) {
+        switch orientation {
+        case .up:
+            self = .up
+        case .down:
+            self = .down
+        case .left:
+            self = .left
+        case .right:
+            self = .right
+        case .upMirrored:
+            self = .upMirrored
+        case .downMirrored:
+            self = .downMirrored
+        case .leftMirrored:
+            self = .leftMirrored
+        case .rightMirrored:
+            self = .rightMirrored
+        @unknown default:
+            self = .up
+        }
     }
 }
 

@@ -88,6 +88,8 @@ NS_ASSUME_NONNULL_BEGIN
 @property (nonatomic, copy) NSString *appId;
 @property (nonatomic, copy, nullable) NSDictionary *bindInfo;
 -(instancetype)initWithData:(NSData *)data;
+
+-(NSString *)getResourceName;
 @end
 
 

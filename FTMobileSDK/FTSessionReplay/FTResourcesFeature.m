@@ -19,6 +19,7 @@
         FTPerformancePresetOverride *performanceOverride = [[FTPerformancePresetOverride alloc]init];
         performanceOverride.maxObjectSize = FT_MAX_DATA_LENGTH;
         performanceOverride.maxFileSize = FT_MAX_DATA_LENGTH;
+        performanceOverride.maxObjectsInFile = 40;
         _performanceOverride = performanceOverride;
     }
     return self;

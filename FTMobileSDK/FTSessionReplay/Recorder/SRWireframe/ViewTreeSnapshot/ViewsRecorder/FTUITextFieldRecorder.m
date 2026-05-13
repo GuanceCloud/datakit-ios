@@ -77,7 +77,7 @@ typedef id<FTSRTextObfuscatingProtocol>(^FTTextFieldObfuscator)(FTViewTreeRecord
         }
         return nil;
     };
-    return [self.subtreeRecorder record:node resources:resource view:textField context:context];
+    return [self.subtreeRecorder record:node view:textField context:context];
 }
 - (FTUITextFieldBuilder *)recordText:(UITextField *)textField attributes:(FTViewAttributes *)attributes context:(FTViewTreeRecordingContext *)context{
     NSString *text;

@@ -28,7 +28,10 @@ let package = Package(
                      ]),
         .library(
             name: "FTSessionReplay",
-            targets: ["FTSessionReplay"]),
+            targets: [
+                "FTSessionReplay",
+                "FTSessionReplaySwiftUI",
+            ]),
     ],
     dependencies: [
         // Dependencies declare other packages that this package depends on.
@@ -176,6 +179,9 @@ let package = Package(
         .target(name: "FTSessionReplay",
                 dependencies: ["FTSDKCore"],
                 path: "FTMobileSDK/FTSessionReplay",
+                exclude: [
+                    "Recorder/SRWireframe/ViewTreeSnapshot/ViewsRecorder/SwiftUI",
+                ],
                 publicHeadersPath: "Public",
                 cSettings: [
                     .headerSearchPath("../.."),
@@ -196,6 +202,12 @@ let package = Package(
                     .headerSearchPath("Upload"),
                     .headerSearchPath("Upload/Request"),
                     .headerSearchPath("Utilities"),
+                ]
+               ),
+        .target(name: "FTSessionReplaySwiftUI",
+                path: "FTMobileSDK/FTSessionReplay/Recorder/SRWireframe/ViewTreeSnapshot/ViewsRecorder/SwiftUI",
+                sources: [
+                    "FTSwiftUIReflection.swift",
                 ]
                ),
     ]

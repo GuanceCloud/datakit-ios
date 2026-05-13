@@ -111,7 +111,6 @@
     builder.imageResource = imageResource;
     FTSpecificElement *element = [[FTSpecificElement alloc]initWithSubtreeStrategy:NodeSubtreeStrategyRecord];
     element.nodes = @[builder];
-    element.resources = builder.imageResource?@[builder.imageResource]:nil;
     return element;
 }
 - (BOOL)shouldRecordImagePredicate:(UIImageView *)imageView privacy:(FTImagePrivacyLevel)privacy{
@@ -138,9 +137,8 @@
     if (!CGRectIsNull(self.contentFrame)){
         FTSRWireframe *contentWireframe;
         if(self.imageResource){
-            FTSRImageWireframe *imageWireframe = [[FTSRImageWireframe alloc]initWithIdentifier:self.imageWireframeID frame:self.contentFrame];
-            imageWireframe.resourceId = [self.imageResource calculateIdentifier];
-            imageWireframe.clip = [[FTSRContentClip alloc]initWithFrame:self.contentFrame clip:self.attributes.clip];
+            FTSRImageWireframe *imageWireframe = [builder createImageWireframeWithID:self.imageWireframeID resource:self.imageResource frame:self.contentFrame clip:self.attributes.clip];
+            
             contentWireframe = imageWireframe;
         }else{
             FTSRPlaceholderWireframe *placeholderWireframe = [[FTSRPlaceholderWireframe alloc]initWithIdentifier:self.imageWireframeID frame:self.wireframeRect label:@"Content Image"];

@@ -2,13 +2,15 @@
 //  FTUIHostingViewRecorder.m
 //  FTMobileSDK
 //
-//  Created by OpenAI on 2026/4/29.
+//  Created by hulilei on 2026/4/29.
 //  Copyright © 2026 DataFlux-cn. All rights reserved.
 //
 
 #import "FTUIHostingViewRecorder.h"
 #import "FTSRWireframe.h"
 #import "FTSRUtils.h"
+#import "FTSRTextObfuscatingFactory.h"
+#import "FTSwiftUIReflectionBridge.h"
 #import "FTViewAttributes.h"
 #import "FTViewTreeRecordingContext.h"
 
@@ -30,6 +32,10 @@ typedef NS_ENUM(NSInteger, FTSwiftUIWireframePayloadKind) {
 @property (nonatomic, strong) id reflectionBridge;
 @end
 
+@interface FTUIHostingViewBuilder()
+@property (nonatomic, assign) BOOL didAppendResources;
+@end
+
 @implementation FTUIHostingViewRecorder
 
 - (instancetype)init {
@@ -37,15 +43,23 @@ typedef NS_ENUM(NSInteger, FTSwiftUIWireframePayloadKind) {
 }
 
 - (instancetype)initWithIdentifier:(NSString *)identifier {
+    return [self initWithIdentifier:identifier semanticsOverride:nil textObfuscator:nil];
+}
+
+- (instancetype)initWithIdentifier:(NSString *)identifier
+                 semanticsOverride:(SemanticsOverride)semanticsOverride
+                     textObfuscator:(FTTextObfuscator)textObfuscator {
     self = [super init];
     if (self) {
         _identifier = identifier;
+        _semanticsOverride = semanticsOverride ?: ^FTSRNodeSemantics * _Nullable(UIView *view, FTViewAttributes *attributes) {
+            return nil;
+        };
+        _textObfuscator = textObfuscator ?: ^id<FTSRTextObfuscatingProtocol> _Nullable(FTViewTreeRecordingContext *context, FTViewAttributes *attributes) {
+            return [FTSRTextObfuscatingFactory staticTextObfuscator:[attributes resolveTextAndInputPrivacyLevel:context.recorder]];
+        };
         if (@available(iOS 13.0, *)) {
-            Class bridgeClass = NSClassFromString(@"FTSwiftUIReflectionBridge");
-            if (!bridgeClass) {
-                bridgeClass = NSClassFromString(@"FTSessionReplay.FTSwiftUIReflectionBridge");
-            }
-            _reflectionBridge = bridgeClass ? [bridgeClass new] : nil;
+            _reflectionBridge = [FTSwiftUIReflectionBridge new];
         }
     }
     return self;
@@ -55,97 +69,146 @@ typedef NS_ENUM(NSInteger, FTSwiftUIWireframePayloadKind) {
     if ([FTUIHostingViewRecorder isSwiftUIGraphicsView:view]) {
         return [[FTIgnoredElement alloc] initWithSubtreeStrategy:NodeSubtreeStrategyIgnore];
     }
-    if (![FTUIHostingViewRecorder isSwiftUIHostingView:view]) {
-        return nil;
-    }
-    if (!attributes.isVisible) {
-        return [FTInvisibleElement constant];
-    }
 
     if (@available(iOS 13.0, *)) {
+        FTSRNodeSemantics *semantics = self.semanticsOverride(view, attributes);
+        if (semantics) {
+            return semantics;
+        }
         int64_t wireframeID = [context.viewIDGenerator SRViewID:view nodeRecorder:self];
-        UIColor *borderColor = attributes.layerBorderColor ? [UIColor colorWithCGColor:attributes.layerBorderColor] : nil;
-        id recordingResult = [self recordHostingView:view
-                                               frame:attributes.frame
-                                                clip:attributes.clip
-                                               alpha:attributes.alpha
-                                     backgroundColor:attributes.backgroundColor
-                                         borderColor:borderColor
-                                         borderWidth:attributes.layerBorderWidth
-                                       cornerRadius:attributes.layerCornerRadius
-                                        textPrivacy:[attributes resolveTextAndInputPrivacyLevel:context.recorder]
-                                       imagePrivacy:[attributes resolveImagePrivacyLevel:context.recorder]
-                                         wireframeID:wireframeID];
-        if (recordingResult) {
-            NSArray<FTSRWireframe *> *wireframes = [self wireframesFromPayloads:[recordingResult valueForKey:@"wireframes"]];
-            if (wireframes.count == 0) {
+        
+        FTSwiftUIRenderer *renderer = [self rendererForHostingView:view];
+        if (renderer) {
+            if (!attributes.isVisible) {
+                return [FTInvisibleElement constant];
+            }
+            FTSwiftUIRecordingBuilder *recordingBuilder = [self recordingBuilderWithRenderer:renderer wireframeID:wireframeID attributes:attributes context:context];
+            if (!recordingBuilder) {
                 return nil;
             }
+            id<FTSRTextObfuscatingProtocol> textObfuscator = self.textObfuscator(context, attributes);
             FTUIHostingViewBuilder *builder = [[FTUIHostingViewBuilder alloc] init];
             builder.wireframeID = wireframeID;
             builder.attributes = attributes;
-            builder.wireframes = wireframes;
+            builder.recordingBuilder = recordingBuilder;
+            builder.textObfuscator = textObfuscator;
             FTSpecificElement *element = [[FTSpecificElement alloc] initWithSubtreeStrategy:NodeSubtreeStrategyRecord];
             element.nodes = @[builder];
-            element.resources = [self resourcesFromPayloads:[recordingResult valueForKey:@"resources"]];
             return element;
         }
     }
 
-    FTUIHostingViewBuilder *builder = [[FTUIHostingViewBuilder alloc] init];
-    builder.wireframeID = [context.viewIDGenerator SRViewID:view nodeRecorder:self];
-    builder.attributes = attributes;
-    builder.placeholderLabel = attributes.hide ? @"Hidden" : @"SwiftUI";
-    FTSpecificElement *element = [[FTSpecificElement alloc] initWithSubtreeStrategy:NodeSubtreeStrategyIgnore];
-    element.nodes = @[builder];
-    return element;
+    return nil;
 }
 
-- (id)recordHostingView:(UIView *)view
-                  frame:(CGRect)frame
-                   clip:(CGRect)clip
-                  alpha:(CGFloat)alpha
-        backgroundColor:(UIColor *)backgroundColor
-            borderColor:(UIColor *)borderColor
-            borderWidth:(CGFloat)borderWidth
-          cornerRadius:(CGFloat)cornerRadius
-            textPrivacy:(NSInteger)textPrivacy
-           imagePrivacy:(NSInteger)imagePrivacy
-            wireframeID:(int64_t)wireframeID API_AVAILABLE(ios(13.0)) {
+- (FTSwiftUIRenderer *)rendererForHostingView:(UIView *)view API_AVAILABLE(ios(13.0)) {
     if (!self.reflectionBridge) {
         return nil;
     }
-    SEL selector = @selector(recordHostingView:frame:clip:alpha:backgroundColor:borderColor:borderWidth:cornerRadius:textPrivacy:imagePrivacy:wireframeID:);
-    NSMethodSignature *signature = [self.reflectionBridge methodSignatureForSelector:selector];
-    if (!signature) {
+    FTSwiftUIReflectionBridge *bridge = self.reflectionBridge;
+    return [bridge rendererForHostingView:view];
+}
+
+- (FTSwiftUIRecordingBuilder *)recordingBuilderWithRenderer:(FTSwiftUIRenderer *)renderer wireframeID:(int64_t)wireframeID attributes:(FTViewAttributes *)attributes context:(FTViewTreeRecordingContext *)context API_AVAILABLE(ios(13.0)) {
+    if (!self.reflectionBridge || !renderer || !attributes) {
+        return nil;
+    }
+    FTSwiftUIReflectionBridge *bridge = self.reflectionBridge;
+    UIColor *borderColor = attributes.layerBorderColor ? [UIColor colorWithCGColor:attributes.layerBorderColor] : nil;
+    FTSwiftUIRecordingAttributes *recordingAttributes = [self recordingAttributesWithViewAttributes:attributes
+                                                                                        borderColor:borderColor
+                                                                                        textPrivacy:[attributes resolveTextAndInputPrivacyLevel:context.recorder]
+                                                                                       imagePrivacy:[attributes resolveImagePrivacyLevel:context.recorder]
+                                                                                        wireframeID:wireframeID];
+    if (!recordingAttributes) {
+        return nil;
+    }
+    return [bridge recordingBuilderForRenderer:renderer attributes:recordingAttributes];
+}
+
+- (FTSwiftUIRecordingAttributes *)recordingAttributesWithViewAttributes:(FTViewAttributes *)attributes
+                                                             borderColor:(UIColor *)borderColor
+                                                             textPrivacy:(FTTextAndInputPrivacyLevel)textPrivacy
+                                                            imagePrivacy:(FTImagePrivacyLevel)imagePrivacy
+                                                             wireframeID:(int64_t)wireframeID API_AVAILABLE(ios(13.0)) {
+    if (!self.reflectionBridge) {
         return nil;
     }
 
-    NSInvocation *invocation = [NSInvocation invocationWithMethodSignature:signature];
-    invocation.target = self.reflectionBridge;
-    invocation.selector = selector;
-    [invocation setArgument:&view atIndex:2];
-    [invocation setArgument:&frame atIndex:3];
-    [invocation setArgument:&clip atIndex:4];
-    [invocation setArgument:&alpha atIndex:5];
-    [invocation setArgument:&backgroundColor atIndex:6];
-    [invocation setArgument:&borderColor atIndex:7];
-    [invocation setArgument:&borderWidth atIndex:8];
-    [invocation setArgument:&cornerRadius atIndex:9];
-    [invocation setArgument:&textPrivacy atIndex:10];
-    [invocation setArgument:&imagePrivacy atIndex:11];
-    [invocation setArgument:&wireframeID atIndex:12];
-    [invocation invoke];
-
-    __unsafe_unretained id result = nil;
-    [invocation getReturnValue:&result];
-    return result;
+    FTSwiftUIReflectionBridge *bridge = self.reflectionBridge;
+    FTSwiftUIRecordingAttributes *recordingAttributes = [bridge makeRecordingAttributes];
+    recordingAttributes.frame = attributes.frame;
+    recordingAttributes.clip = attributes.clip;
+    recordingAttributes.alpha = attributes.alpha;
+    recordingAttributes.backgroundColor = attributes.backgroundColor;
+    recordingAttributes.borderColor = borderColor;
+    recordingAttributes.borderWidth = attributes.layerBorderWidth;
+    recordingAttributes.cornerRadius = attributes.layerCornerRadius;
+    recordingAttributes.textPrivacy = textPrivacy;
+    recordingAttributes.imagePrivacy = imagePrivacy;
+    recordingAttributes.wireframeID = wireframeID;
+    return recordingAttributes;
 }
 
-- (NSArray<FTSRWireframe *> *)wireframesFromPayloads:(NSArray<id> *)payloads API_AVAILABLE(ios(13.0)) {
++ (BOOL)isSwiftUIGraphicsView:(UIView *)view {
+    NSString *className = NSStringFromClass(view.class);
+    return [className containsString:@"SwiftUI._UIGraphicsView"] || [className containsString:@"_UIGraphicsView"];
+}
+
+@end
+
+@implementation FTSwiftUIDataResource
+
+- (instancetype)initWithIdentifier:(NSString *)identifier mimeType:(NSString *)mimeType data:(NSData *)data {
+    self = [super init];
+    if (self) {
+        _identifier = [identifier copy];
+        _mimeType = [mimeType copy];
+        _data = [data copy];
+    }
+    return self;
+}
+
+- (NSString *)calculateIdentifier {
+    return self.identifier;
+}
+-(NSString *)mimeType{
+    return _mimeType;
+}
+- (NSData *)calculateData {
+    return self.data;
+}
+
+@end
+
+@implementation FTUIHostingViewBuilder
+
+- (CGRect)wireframeRect {
+    return self.attributes.frame;
+}
+
+- (NSArray<FTSRWireframe *> *)buildWireframesWithBuilder:(FTSessionReplayWireframesBuilder *)builder {
+    if (@available(iOS 13.0, *)) {
+        FTSwiftUIRecordingBuilder *recordingBuilder = self.recordingBuilder;
+        FTSwiftUIRecordingResult *recordingResult = [recordingBuilder build];
+        if (recordingResult) {
+            if (!self.didAppendResources) {
+                [builder addResources:[self resourcesFromPayloads:recordingResult.resources]];
+                self.didAppendResources = YES;
+            }
+            NSArray<FTSRWireframe *> *wireframes = [self wireframesFromPayloads:recordingResult.wireframes
+                                                                 textObfuscator:self.textObfuscator];
+            return wireframes;
+        }
+    }
+    return @[];
+}
+
+- (NSArray<FTSRWireframe *> *)wireframesFromPayloads:(NSArray<id> *)payloads
+                                      textObfuscator:(id<FTSRTextObfuscatingProtocol>)textObfuscator API_AVAILABLE(ios(13.0)) {
     NSMutableArray<FTSRWireframe *> *wireframes = [NSMutableArray arrayWithCapacity:payloads.count];
     for (id payload in payloads) {
-        FTSRWireframe *wireframe = [self wireframeFromPayload:payload];
+        FTSRWireframe *wireframe = [self wireframeFromPayload:payload textObfuscator:textObfuscator];
         if (wireframe) {
             [wireframes addObject:wireframe];
         }
@@ -165,7 +228,8 @@ typedef NS_ENUM(NSInteger, FTSwiftUIWireframePayloadKind) {
     return resources;
 }
 
-- (FTSRWireframe *)wireframeFromPayload:(id)payload API_AVAILABLE(ios(13.0)) {
+- (FTSRWireframe *)wireframeFromPayload:(id)payload
+                         textObfuscator:(id<FTSRTextObfuscatingProtocol>)textObfuscator API_AVAILABLE(ios(13.0)) {
     NSInteger kind = [[payload valueForKey:@"kind"] integerValue];
     int64_t identifier = [[payload valueForKey:@"identifier"] longLongValue];
     CGRect frame = [[payload valueForKey:@"frame"] CGRectValue];
@@ -184,7 +248,8 @@ typedef NS_ENUM(NSInteger, FTSwiftUIWireframePayloadKind) {
         }
         case FTSwiftUIWireframePayloadKindText: {
             FTSRTextWireframe *wireframe = [[FTSRTextWireframe alloc] initWithIdentifier:identifier frame:frame];
-            wireframe.text = [payload valueForKey:@"text"] ?: @"";
+            NSString *text = [payload valueForKey:@"text"] ?: @"";
+            wireframe.text = [textObfuscator mask:text];
             wireframe.clip = [[FTSRContentClip alloc] initWithFrame:frame clip:clip];
             wireframe.border = [[FTSRShapeBorder alloc] initWithColor:[payload valueForKey:@"borderColor"] width:[[payload valueForKey:@"borderWidth"] doubleValue]];
             wireframe.shapeStyle = [[FTSRShapeStyle alloc] initWithBackgroundColor:[payload valueForKey:@"backgroundColor"]
@@ -215,55 +280,6 @@ typedef NS_ENUM(NSInteger, FTSwiftUIWireframePayloadKind) {
         default:
             return nil;
     }
-}
-
-+ (BOOL)isSwiftUIHostingView:(UIView *)view {
-    NSString *className = NSStringFromClass(view.class);
-    return [className containsString:@"_UIHostingView"] || [className containsString:@"UIHostingView"];
-}
-
-+ (BOOL)isSwiftUIGraphicsView:(UIView *)view {
-    NSString *className = NSStringFromClass(view.class);
-    return [className containsString:@"SwiftUI._UIGraphicsView"] || [className containsString:@"_UIGraphicsView"];
-}
-
-@end
-
-@implementation FTSwiftUIDataResource
-
-- (instancetype)initWithIdentifier:(NSString *)identifier mimeType:(NSString *)mimeType data:(NSData *)data {
-    self = [super init];
-    if (self) {
-        _identifier = [identifier copy];
-        _mimeType = [mimeType copy];
-        _data = [data copy];
-    }
-    return self;
-}
-
-- (NSString *)calculateIdentifier {
-    return self.identifier;
-}
-
-- (NSData *)calculateData {
-    return self.data;
-}
-
-@end
-
-@implementation FTUIHostingViewBuilder
-
-- (CGRect)wireframeRect {
-    return self.attributes.frame;
-}
-
-- (NSArray<FTSRWireframe *> *)buildWireframesWithBuilder:(FTSessionReplayWireframesBuilder *)builder {
-    if (self.wireframes) {
-        return self.wireframes;
-    }
-    FTSRPlaceholderWireframe *placeholder = [[FTSRPlaceholderWireframe alloc] initWithIdentifier:self.wireframeID frame:self.wireframeRect label:self.placeholderLabel];
-    placeholder.clip = [[FTSRContentClip alloc] initWithFrame:self.wireframeRect clip:self.attributes.clip];
-    return @[placeholder];
 }
 
 @end

@@ -14,6 +14,7 @@
     if(self){
         _maxFileSize = -1;
         _maxObjectSize = -1;
+        _maxObjectsInFile = -1;
         
         _maxFileAgeForWrite = -1;
         _minFileAgeForRead = -1;

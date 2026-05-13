@@ -20,8 +20,6 @@
 		17018D1D2F50253200688324 /* FTCompression.m in Sources */ = {isa = PBXBuildFile; fileRef = 17018CF82F50253200688324 /* FTCompression.m */; };
 		17018D1E2F50253200688324 /* FTResourceRequest.m in Sources */ = {isa = PBXBuildFile; fileRef = 17018CF12F50253200688324 /* FTResourceRequest.m */; };
 		17018D1F2F50253200688324 /* FTUIImageResource.m in Sources */ = {isa = PBXBuildFile; fileRef = 17018C772F50253200688324 /* FTUIImageResource.m */; };
-		A1F0B1012FA9000100A0A001 /* FTUIHostingViewRecorder.m in Sources */ = {isa = PBXBuildFile; fileRef = A1F0B1032FA9000100A0A001 /* FTUIHostingViewRecorder.m */; };
-		A1F0B1052FA9000100A0A001 /* FTSwiftUIReflection.swift in Sources */ = {isa = PBXBuildFile; fileRef = A1F0B1042FA9000100A0A001 /* FTSwiftUIReflection.swift */; };
 		17018D202F50253200688324 /* FTDataReader.m in Sources */ = {isa = PBXBuildFile; fileRef = 17018CD12F50253200688324 /* FTDataReader.m */; };
 		17018D222F50253200688324 /* FTReader.m in Sources */ = {isa = PBXBuildFile; fileRef = 17018CD52F50253200688324 /* FTReader.m */; };
 		17018D232F50253200688324 /* FTViewTreeSnapshot.m in Sources */ = {isa = PBXBuildFile; fileRef = 17018C9C2F50253200688324 /* FTViewTreeSnapshot.m */; };
@@ -93,7 +91,6 @@
 		17018D662F50253200688324 /* FTSegmentRequest.h in Headers */ = {isa = PBXBuildFile; fileRef = 17018CF42F50253200688324 /* FTSegmentRequest.h */; };
 		17018D672F50253200688324 /* FTSegmentJSON.h in Headers */ = {isa = PBXBuildFile; fileRef = 17018CF22F50253200688324 /* FTSegmentJSON.h */; };
 		17018D682F50253200688324 /* FTUIImageViewRecorder.h in Headers */ = {isa = PBXBuildFile; fileRef = 17018C782F50253200688324 /* FTUIImageViewRecorder.h */; };
-		A1F0B1002FA9000100A0A001 /* FTUIHostingViewRecorder.h in Headers */ = {isa = PBXBuildFile; fileRef = A1F0B1022FA9000100A0A001 /* FTUIHostingViewRecorder.h */; };
 		17018D692F50253200688324 /* FTUITextViewRecorder.h in Headers */ = {isa = PBXBuildFile; fileRef = 17018C8E2F50253200688324 /* FTUITextViewRecorder.h */; };
 		17018D6A2F50253200688324 /* FTFileReader.h in Headers */ = {isa = PBXBuildFile; fileRef = 17018CD22F50253200688324 /* FTFileReader.h */; };
 		17018D6B2F50253200688324 /* FTFeatureDataStore.h in Headers */ = {isa = PBXBuildFile; fileRef = 17018C662F50253200688324 /* FTFeatureDataStore.h */; };
@@ -1167,6 +1164,9 @@
 		A1F0B00A2F61000100A0A001 /* PrivacyInfo.xcprivacy in Resources */ = {isa = PBXBuildFile; fileRef = 171C21BE2B9183D500C67AD6 /* PrivacyInfo.xcprivacy */; };
 		A1F0B00B2F61000100A0A001 /* FTMobileSDK.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 4A88425A239E5754001B44C3 /* FTMobileSDK.framework */; };
 		A1F0B0A12F61000100A0A001 /* FTSessionReplay.h in Headers */ = {isa = PBXBuildFile; fileRef = A1F0B0A02F61000100A0A001 /* FTSessionReplay.h */; settings = {ATTRIBUTES = (Public, ); }; };
+		A1F0B1002FA9000100A0A001 /* FTUIHostingViewRecorder.h in Headers */ = {isa = PBXBuildFile; fileRef = A1F0B1022FA9000100A0A001 /* FTUIHostingViewRecorder.h */; };
+		A1F0B1012FA9000100A0A001 /* FTUIHostingViewRecorder.m in Sources */ = {isa = PBXBuildFile; fileRef = A1F0B1032FA9000100A0A001 /* FTUIHostingViewRecorder.m */; };
+		A1F0B1052FA9000100A0A001 /* FTSwiftUIReflection.swift in Sources */ = {isa = PBXBuildFile; fileRef = A1F0B1042FA9000100A0A001 /* FTSwiftUIReflection.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -1189,10 +1189,6 @@
 		17018C752F50253200688324 /* FTUIDatePickerRecorder.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = FTUIDatePickerRecorder.m; sourceTree = "<group>"; };
 		17018C762F50253200688324 /* FTUIImageResource.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = FTUIImageResource.h; sourceTree = "<group>"; };
 		17018C772F50253200688324 /* FTUIImageResource.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = FTUIImageResource.m; sourceTree = "<group>"; };
-		A1F0B1022FA9000100A0A001 /* FTUIHostingViewRecorder.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = FTUIHostingViewRecorder.h; sourceTree = "<group>"; };
-		A1F0B1032FA9000100A0A001 /* FTUIHostingViewRecorder.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = FTUIHostingViewRecorder.m; sourceTree = "<group>"; };
-		A1F0B1042FA9000100A0A001 /* FTSwiftUIReflection.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FTSwiftUIReflection.swift; sourceTree = "<group>"; };
-		A1F0B1062FA9000100A0A001 /* FTSessionReplaySwiftBridge.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = FTSessionReplaySwiftBridge.h; sourceTree = "<group>"; };
 		17018C782F50253200688324 /* FTUIImageViewRecorder.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = FTUIImageViewRecorder.h; sourceTree = "<group>"; };
 		17018C792F50253200688324 /* FTUIImageViewRecorder.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = FTUIImageViewRecorder.m; sourceTree = "<group>"; };
 		17018C7A2F50253200688324 /* FTUILabelRecorder.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = FTUILabelRecorder.h; sourceTree = "<group>"; };
@@ -1733,6 +1729,9 @@
 		4A88425A239E5754001B44C3 /* FTMobileSDK.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = FTMobileSDK.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 		A1F0B0012F61000100A0A001 /* FTSessionReplay.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = FTSessionReplay.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 		A1F0B0A02F61000100A0A001 /* FTSessionReplay.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = FTSessionReplay.h; sourceTree = "<group>"; };
+		A1F0B1022FA9000100A0A001 /* FTUIHostingViewRecorder.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = FTUIHostingViewRecorder.h; sourceTree = "<group>"; };
+		A1F0B1032FA9000100A0A001 /* FTUIHostingViewRecorder.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = FTUIHostingViewRecorder.m; sourceTree = "<group>"; };
+		A1F0B1042FA9000100A0A001 /* FTSwiftUIReflection.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FTSwiftUIReflection.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -1855,15 +1854,6 @@
 				17018C952F50253200688324 /* FTWKWebViewRecorder.m */,
 			);
 			path = ViewsRecorder;
-			sourceTree = "<group>";
-		};
-		A1F0B1072FA9000100A0A001 /* SwiftUI */ = {
-			isa = PBXGroup;
-			children = (
-				A1F0B1062FA9000100A0A001 /* FTSessionReplaySwiftBridge.h */,
-				A1F0B1042FA9000100A0A001 /* FTSwiftUIReflection.swift */,
-			);
-			path = SwiftUI;
 			sourceTree = "<group>";
 		};
 		17018C9F2F50253200688324 /* ViewTreeSnapshot */ = {
@@ -2781,6 +2771,14 @@
 			name = Products;
 			sourceTree = "<group>";
 		};
+		A1F0B1072FA9000100A0A001 /* SwiftUI */ = {
+			isa = PBXGroup;
+			children = (
+				A1F0B1042FA9000100A0A001 /* FTSwiftUIReflection.swift */,
+			);
+			path = SwiftUI;
+			sourceTree = "<group>";
+		};
 /* End PBXGroup section */
 
 /* Begin PBXHeadersBuildPhase section */
@@ -3568,8 +3566,6 @@
 				Base,
 			);
 			mainGroup = 4A884250239E5754001B44C3;
-			packageReferences = (
-			);
 			productRefGroup = 4A88425B239E5754001B44C3 /* Products */;
 			projectDirPath = "";
 			projectRoot = "";
@@ -4302,7 +4298,6 @@
 				PRODUCT_NAME = "$(TARGET_NAME:c99extidentifier)";
 				SKIP_INSTALL = YES;
 				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
-				SWIFT_OBJC_BRIDGING_HEADER = "FTMobileSDK/FTSessionReplay/Recorder/SRWireframe/ViewTreeSnapshot/ViewsRecorder/SwiftUI/FTSessionReplaySwiftBridge.h";
 				SWIFT_VERSION = 5.0;
 				TARGETED_DEVICE_FAMILY = "1,2";
 			};
@@ -4337,7 +4332,6 @@
 				PRODUCT_BUNDLE_IDENTIFIER = com.ft.mobile.sdk.FTMobileExtension;
 				PRODUCT_NAME = "$(TARGET_NAME:c99extidentifier)";
 				SKIP_INSTALL = YES;
-				SWIFT_OBJC_BRIDGING_HEADER = "FTMobileSDK/FTSessionReplay/Recorder/SRWireframe/ViewTreeSnapshot/ViewsRecorder/SwiftUI/FTSessionReplaySwiftBridge.h";
 				SWIFT_VERSION = 5.0;
 				TARGETED_DEVICE_FAMILY = "1,2";
 			};
@@ -4499,6 +4493,7 @@
 				SKIP_INSTALL = YES;
 				SUPPORTED_PLATFORMS = "appletvos appletvsimulator iphoneos iphonesimulator";
 				SUPPORTS_MACCATALYST = YES;
+				SWIFT_INSTALL_OBJC_HEADER = NO;
 				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
 				SWIFT_VERSION = 5.0;
 				TARGETED_DEVICE_FAMILY = "1,2,3";
@@ -4545,6 +4540,7 @@
 				SKIP_INSTALL = YES;
 				SUPPORTED_PLATFORMS = "appletvos appletvsimulator iphoneos iphonesimulator";
 				SUPPORTS_MACCATALYST = YES;
+				SWIFT_INSTALL_OBJC_HEADER = NO;
 				SWIFT_VERSION = 5.0;
 				TARGETED_DEVICE_FAMILY = "1,2,3";
 				TVOS_DEPLOYMENT_TARGET = 12.0;

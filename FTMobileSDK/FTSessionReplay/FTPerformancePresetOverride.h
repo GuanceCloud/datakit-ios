@@ -13,6 +13,7 @@ NS_ASSUME_NONNULL_BEGIN
 @interface FTPerformancePresetOverride : NSObject
 @property (nonatomic, assign) long long maxFileSize;
 @property (nonatomic, assign) long long maxObjectSize;
+@property (nonatomic, assign) int maxObjectsInFile;
 
 @property (nonatomic, assign) NSTimeInterval maxFileAgeForWrite;
 @property (nonatomic, assign) NSTimeInterval minFileAgeForRead;

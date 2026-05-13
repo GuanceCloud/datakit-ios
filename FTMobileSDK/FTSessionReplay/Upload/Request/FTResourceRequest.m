@@ -47,7 +47,7 @@
     mutableRequest.HTTPMethod = self.httpMethod;
     
     for (FTEnrichedResource *resource in self.resources) {
-        [self.multipartFormBody addFormData:@"files" filename:resource.identifier data:resource.data mimeType:@"application/octet-stream"];
+        [self.multipartFormBody addFormData:@"files" filename:resource.identifier data:resource.data mimeType:resource.mimeType];
     }
     NSMutableDictionary *formFields = [NSMutableDictionary dictionary];
     [formFields setValue:firstResource.appId forKey:FT_APP_ID];
