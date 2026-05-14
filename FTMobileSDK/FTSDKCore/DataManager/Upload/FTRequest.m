@@ -15,6 +15,7 @@
 #import "FTDataCompression.h"
 #import "FTInnerLog.h"
 #import "FTInternalConstants.h"
+#import "FTDataFilterManager.h"
 #import <objc/runtime.h>
 @interface FTRequest()
 
@@ -42,14 +43,21 @@
 }
 -(NSURL *)absoluteURL{
     FTNetworkConfigState state = [FTNetworkInfoManager sharedInstance].configState;
+    NSString *urlString = nil;
     switch (state) {
         case FTNetworkConfigStateDatakitMode:
-            return [NSURL URLWithString:[NSString stringWithFormat:@"%@%@",FTNetworkInfoManager.sharedInstance.datakitUrl,self.path]];
+            urlString = [NSString stringWithFormat:@"%@%@",FTNetworkInfoManager.sharedInstance.datakitUrl,self.path];
+            break;
         case FTNetworkConfigStateDatawayMode:
-            return [NSURL URLWithString:[NSString stringWithFormat:@"%@%@?token=%@&to_headless=true",FTNetworkInfoManager.sharedInstance.datawayUrl,self.path,FTNetworkInfoManager.sharedInstance.clientToken]];
+            urlString = [NSString stringWithFormat:@"%@%@?token=%@&to_headless=true",FTNetworkInfoManager.sharedInstance.datawayUrl,self.path,FTNetworkInfoManager.sharedInstance.clientToken];
+            break;
         default:
             return nil;
     }
+    if ([self.path hasPrefix:@"/v1/write/"] && [FTDataFilterManager sharedInstance].shouldDisableServerFilter) {
+        urlString = [urlString stringByAppendingFormat:[urlString containsString:@"?"] ? @"&%@" : @"?%@", @"disable_filter=true"];
+    }
+    return [NSURL URLWithString:urlString];
    
 }
 -(NSString *)contentType{

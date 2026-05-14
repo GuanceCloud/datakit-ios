@@ -110,7 +110,8 @@ Pod::Spec.new do |s|
 		c.subspec 'DataManager' do |bb|
 			bb.source_files =  ['FTMobileSDK/FTSDKCore/DataManager/*{.h,.m}',
 			'FTMobileSDK/FTSDKCore/DataManager/Upload/*{.h,.m}',
-			'FTMobileSDK/FTSDKCore/DataManager/Storage/**/*{.h,.m}']
+			'FTMobileSDK/FTSDKCore/DataManager/Storage/**/*{.h,.m}',
+			'FTMobileSDK/FTSDKCore/DataFilter/*{.h,.m}']
 			bb.dependency 'FTMobileSDK/FTSDKCore/BaseUtils/Thread'
 			bb.dependency 'FTMobileSDK/FTSDKCore/BaseUtils/Base'
 			bb.dependency 'FTMobileSDK/FTSDKCore/Protocol'

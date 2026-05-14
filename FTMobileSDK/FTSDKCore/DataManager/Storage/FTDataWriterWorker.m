@@ -18,6 +18,8 @@
 #import "NSDictionary+FTCopyProperties.h"
 #import <os/lock.h>
 #import "FTDateUtil.h"
+#import "FTDataFilterManager.h"
+#import "FTBaseInfoHandler.h"
 @interface FTDataWriterWorker()
 @property (atomic, assign) BOOL isCache;
 @property (nonatomic, assign) NSTimeInterval cacheInvalidTimeInterval;
@@ -116,6 +118,22 @@
     if (array) {
         recordTags = array[0];
         recordFields = array[1];
+    }
+    NSString *category = nil;
+    if ([op isEqualToString:FT_DATA_TYPE_LOGGING]) {
+        category = @"logging";
+    } else if ([op isEqualToString:FT_DATA_TYPE_RUM] || [op isEqualToString:FT_DATA_TYPE_RUM_CACHE]) {
+        category = @"rum";
+    }
+    if (category) {
+        NSString *uuid = [FTBaseInfoHandler random16UUID];
+        if ([[FTDataFilterManager sharedInstance] isFilteredWithCategory:category
+                                                                  source:source
+                                                                    uuid:uuid
+                                                                    tags:recordTags
+                                                                  fields:recordFields]) {
+            return;
+        }
     }
     long long recordTime = updateTime > 0 ? updateTime : time;
     FTRecordModel *model = [[FTRecordModel alloc] initWithSource:source op:op tags:recordTags fields:recordFields tm:recordTime];

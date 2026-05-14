@@ -62,7 +62,8 @@ let package = Package(
             ],
             cSettings: [
                 .headerSearchPath("FTMobileAgent/Core"),
-                .headerSearchPath("FTMobileAgent/AutoTrack")
+                .headerSearchPath("FTMobileAgent/AutoTrack"),
+                .headerSearchPath("FTSDKCore/DataFilter")
             ]
         ),
         .target(
@@ -186,6 +187,7 @@ let package = Package(
                 "FTSDKCore/FTWKWebView",
                 "FTSDKCore/DataManager",
                 "FTSDKCore/RemoteConfig",
+                "FTSDKCore/DataFilter",
             ],
             resources: [
                 .copy("Resources/PrivacyInfo.xcprivacy"),
@@ -196,6 +198,7 @@ let package = Package(
                 .headerSearchPath("FTSDKCore/DataManager/Storage"),
                 .headerSearchPath("FTSDKCore/DataManager/Storage/fmdb"),
                 .headerSearchPath("FTSDKCore/FTWKWebView/JSBridge"),
+                .headerSearchPath("FTSDKCore/DataFilter"),
             ]
         ),
 

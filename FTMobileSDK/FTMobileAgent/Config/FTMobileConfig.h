@@ -141,6 +141,15 @@ typedef FTTraceContext*_Nullable(^FTTraceInterceptor)(NSURLRequest *_Nonnull req
 /// Set data modifier, can make judgments for a specific row, then decide whether to replace a certain value
 @property (nonatomic, copy) FTLineDataModifier lineDataModifier;
 
+/// Whether to enable SDK-side DataKit-compatible blacklist filtering, including local and remote filters. Default: YES.
+@property (nonatomic, assign) BOOL enableDataFilter;
+
+/// Minimum interval for pulling remote blacklist filters, in seconds. Default: 30 minutes.
+@property (nonatomic, assign) int dataFilterUpdateInterval;
+
+/// Local DataKit-compatible blacklist filter rules managed by the app. Supported keys: logging, rum.
+@property (nonatomic, copy) NSDictionary<NSString *, NSArray<NSString *> *> *dataFilters;
+
 /// Set whether to enable remote dynamic configuration
 @property (nonatomic, assign) BOOL remoteConfiguration;
 

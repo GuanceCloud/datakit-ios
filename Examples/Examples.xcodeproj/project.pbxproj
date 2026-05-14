@@ -36,7 +36,6 @@
 		174BC8802BFCB05500478EE1 /* FTDictionaryCopyTest.m in Sources */ = {isa = PBXBuildFile; fileRef = 174BC87F2BFCB05500478EE1 /* FTDictionaryCopyTest.m */; };
 		17510DD829C99F2E00C8F1E4 /* FTMobileExtension.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 17510DD729C99F2E00C8F1E4 /* FTMobileExtension.framework */; };
 		1757C83C2D9D222600163865 /* SessionReplayConfigTests.m in Sources */ = {isa = PBXBuildFile; fileRef = 1757C83B2D9D222600163865 /* SessionReplayConfigTests.m */; };
-		17CA1A022F91A00100E2AE8A /* FTCALayerChangeAggregatorTests.m in Sources */ = {isa = PBXBuildFile; fileRef = 17CA1A012F91A00100E2AE8A /* FTCALayerChangeAggregatorTests.m */; };
 		17593AE22906917700A15CD9 /* FTResourceDelegateTest.m in Sources */ = {isa = PBXBuildFile; fileRef = 17593AE12906917700A15CD9 /* FTResourceDelegateTest.m */; };
 		175C7CFC29E6CE1B00A7F271 /* LoggerVC.m in Sources */ = {isa = PBXBuildFile; fileRef = 175C7CF929E6CE1A00A7F271 /* LoggerVC.m */; };
 		1764E40229AC9B0500E70DBB /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1764E40129AC9B0500E70DBB /* AppDelegate.swift */; };
@@ -141,6 +140,7 @@
 		17C4F1792D671C2300F97A7F /* TestUIControlVC.m in Sources */ = {isa = PBXBuildFile; fileRef = 17C4F1782D671C2300F97A7F /* TestUIControlVC.m */; };
 		17C4F17B2D671C8200F97A7F /* Province.plist in Resources */ = {isa = PBXBuildFile; fileRef = 17C4F17A2D671C8200F97A7F /* Province.plist */; };
 		17C7631F28267154009582B6 /* FTLineProtocol.m in Sources */ = {isa = PBXBuildFile; fileRef = 17C7631E28267154009582B6 /* FTLineProtocol.m */; };
+		17CA1A022F91A00100E2AE8A /* FTCALayerChangeAggregatorTests.m in Sources */ = {isa = PBXBuildFile; fileRef = 17CA1A012F91A00100E2AE8A /* FTCALayerChangeAggregatorTests.m */; };
 		17CBD84F2F5FB78300FD9D8B /* TestImageVC.m in Sources */ = {isa = PBXBuildFile; fileRef = 17CBD84E2F5FB78300FD9D8B /* TestImageVC.m */; };
 		17CBD8762F67EFB100FD9D8B /* CustomCollectionViewCell.m in Sources */ = {isa = PBXBuildFile; fileRef = 17CBD8752F67EFB100FD9D8B /* CustomCollectionViewCell.m */; };
 		17D339EE2807AB0C0083C2B3 /* FTModelHelper.m in Sources */ = {isa = PBXBuildFile; fileRef = 17D339ED2807AB0C0083C2B3 /* FTModelHelper.m */; };
@@ -199,6 +199,7 @@
 		7CA16CD426B8ECD10079840D /* TestWkWebViewHandler.m in Sources */ = {isa = PBXBuildFile; fileRef = 7CA16CD326B8ECD10079840D /* TestWkWebViewHandler.m */; };
 		7CA16CE326B9110F0079840D /* TestWKProxy.m in Sources */ = {isa = PBXBuildFile; fileRef = 7CA16CE226B9110F0079840D /* TestWKProxy.m */; };
 		AA7E4075B29B727120ABB917 /* Pods_FTMobileSDKUnitTests.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 7C9B67E2BBE800FB64098407 /* Pods_FTMobileSDKUnitTests.framework */; };
+		FDB05F65091D0063D8C9C8DE /* FTDataFilterTest.m in Sources */ = {isa = PBXBuildFile; fileRef = 5C9C12EDDB1B60125668C322 /* FTDataFilterTest.m */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -306,7 +307,6 @@
 		17510DD429C99F0900C8F1E4 /* FTMobileExtension.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; path = FTMobileExtension.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 		17510DD729C99F2E00C8F1E4 /* FTMobileExtension.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; path = FTMobileExtension.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 		1757C83B2D9D222600163865 /* SessionReplayConfigTests.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = SessionReplayConfigTests.m; sourceTree = "<group>"; };
-		17CA1A012F91A00100E2AE8A /* FTCALayerChangeAggregatorTests.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = FTCALayerChangeAggregatorTests.m; sourceTree = "<group>"; };
 		17593AE12906917700A15CD9 /* FTResourceDelegateTest.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = FTResourceDelegateTest.m; sourceTree = "<group>"; };
 		175C7CF929E6CE1A00A7F271 /* LoggerVC.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = LoggerVC.m; sourceTree = "<group>"; };
 		175C7CFA29E6CE1A00A7F271 /* LoggerVC.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = LoggerVC.h; sourceTree = "<group>"; };
@@ -384,6 +384,7 @@
 		17C4F1782D671C2300F97A7F /* TestUIControlVC.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = TestUIControlVC.m; sourceTree = "<group>"; };
 		17C4F17A2D671C8200F97A7F /* Province.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Province.plist; sourceTree = "<group>"; };
 		17C7631E28267154009582B6 /* FTLineProtocol.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = FTLineProtocol.m; sourceTree = "<group>"; };
+		17CA1A012F91A00100E2AE8A /* FTCALayerChangeAggregatorTests.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = FTCALayerChangeAggregatorTests.m; sourceTree = "<group>"; };
 		17CBD84D2F5FB78300FD9D8B /* TestImageVC.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = TestImageVC.h; sourceTree = "<group>"; };
 		17CBD84E2F5FB78300FD9D8B /* TestImageVC.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = TestImageVC.m; sourceTree = "<group>"; };
 		17CBD8742F67EFB100FD9D8B /* CustomCollectionViewCell.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = CustomCollectionViewCell.h; sourceTree = "<group>"; };
@@ -457,6 +458,7 @@
 		4AECBCD924497DBF0023DEF7 /* CoreBluetooth.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = CoreBluetooth.framework; path = System/Library/Frameworks/CoreBluetooth.framework; sourceTree = SDKROOT; };
 		59BE44A167B22E3C25B21E27 /* Pods-FTMobileSDKUnitTests(tvOS).release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-FTMobileSDKUnitTests(tvOS).release.xcconfig"; path = "Target Support Files/Pods-FTMobileSDKUnitTests(tvOS)/Pods-FTMobileSDKUnitTests(tvOS).release.xcconfig"; sourceTree = "<group>"; };
 		59FAE36B0890D4D4215266C5 /* Pods-FTMobileSDKUnitTests tvOS.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-FTMobileSDKUnitTests tvOS.debug.xcconfig"; path = "Target Support Files/Pods-FTMobileSDKUnitTests tvOS/Pods-FTMobileSDKUnitTests tvOS.debug.xcconfig"; sourceTree = "<group>"; };
+		5C9C12EDDB1B60125668C322 /* FTDataFilterTest.m */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.c.objc; path = FTDataFilterTest.m; sourceTree = "<group>"; };
 		624ACC96BC35031EEC518A8F /* Pods-FTMobileSDKUnitTests.pre.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-FTMobileSDKUnitTests.pre.xcconfig"; path = "Target Support Files/Pods-FTMobileSDKUnitTests/Pods-FTMobileSDKUnitTests.pre.xcconfig"; sourceTree = "<group>"; };
 		74BB6862F3CC6EB0BBAF0B5E /* Pods-FTMobileSDKUnitTests tvOS.pre.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-FTMobileSDKUnitTests tvOS.pre.xcconfig"; path = "Target Support Files/Pods-FTMobileSDKUnitTests tvOS/Pods-FTMobileSDKUnitTests tvOS.pre.xcconfig"; sourceTree = "<group>"; };
 		75183B7772B5B81DFCAE161F /* Pods-FTMobileSDKUnitTests.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-FTMobileSDKUnitTests.debug.xcconfig"; path = "Target Support Files/Pods-FTMobileSDKUnitTests/Pods-FTMobileSDKUnitTests.debug.xcconfig"; sourceTree = "<group>"; };
@@ -965,6 +967,7 @@
 				179BEB7D2D2B983D004AA5A6 /* FTResourceTest.swift */,
 				1712C5FA2B63B1BB00C4BD38 /* FTMobileSDKUnitTests-Bridging-Header.h */,
 				178378792D8D0BB600C590AE /* RUM */,
+				DDD1ED5FC12CFB64A803FDBF /* DataFilter */,
 			);
 			path = FTMobileSDKUnitTests;
 			sourceTree = "<group>";
@@ -1015,6 +1018,15 @@
 			);
 			name = Pods;
 			path = ../Pods;
+			sourceTree = "<group>";
+		};
+		DDD1ED5FC12CFB64A803FDBF /* DataFilter */ = {
+			isa = PBXGroup;
+			children = (
+				5C9C12EDDB1B60125668C322 /* FTDataFilterTest.m */,
+			);
+			name = DataFilter;
+			path = DataFilter;
 			sourceTree = "<group>";
 		};
 /* End PBXGroup section */
@@ -1653,6 +1665,7 @@
 				177892BD29A60FA10007B47F /* PerformanceRumTest.m in Sources */,
 				174058C028D815810092E096 /* FTJavaScriptBridgeTest.m in Sources */,
 				1757C83C2D9D222600163865 /* SessionReplayConfigTests.m in Sources */,
+				FDB05F65091D0063D8C9C8DE /* FTDataFilterTest.m in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

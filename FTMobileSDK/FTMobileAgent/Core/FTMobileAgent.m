@@ -38,6 +38,7 @@
 #import "FTDataWriterWorker.h"
 #import "FTModuleManager.h"
 #import "FTRemoteConfigManager.h"
+#import "../../FTSDKCore/DataFilter/FTDataFilterManager.h"
 #import "FTRemoteConfigurationProtocol.h"
 #import "FTRemoteConfigError.h"
 #import "FTConfig+RemoteConfig.h"
@@ -195,6 +196,9 @@ static FTMobileAgent *sharedInstance = nil;
         .setSdkVersion(SDK_VERSION)
         .setCompressionIntakeRequests(config.compressIntakeRequests)
         .setEnableDataIntegerCompatible(config.enableDataIntegerCompatible);
+    [[FTDataFilterManager sharedInstance] enable:config.enableDataFilter
+                                    localFilters:config.dataFilters
+                                  updateInterval:config.dataFilterUpdateInterval];
     BOOL autoSync = config.autoSync&&[FTNetworkInfoManager sharedInstance].isNetworkConfigured;
     // Start data processing manager
     [FTTrackDataManager startWithAutoSync:autoSync syncPageSize:config.syncPageSize syncSleepTime:config.syncSleepTime];
@@ -399,6 +403,7 @@ static FTMobileAgent *sharedInstance = nil;
     }
     
     [FTNetworkInfoManager sharedInstance].setUploadURL(datakitUrl,datawayUrl,clientToken);
+    [[FTDataFilterManager sharedInstance] updateRemoteFilterIfNeededWithForce:YES];
     FTTrackDataManager *trackManager = [FTTrackDataManager sharedInstance];
     BOOL autoSync = [self sharedInstance].sdkConfig.autoSync && [FTNetworkInfoManager sharedInstance].isNetworkConfigured;
     if (trackManager.autoSync != autoSync) {
@@ -418,6 +423,7 @@ static FTMobileAgent *sharedInstance = nil;
     [[FTGlobalRumManager sharedInstance] shutDown];
     [[FTURLSessionInstrumentation sharedInstance] shutDown];
     [[FTRemoteConfigManager sharedInstance] shutDown];
+    [[FTDataFilterManager sharedInstance] shutDown];
     [FTTrackDataManager shutDown];
     [[FTPresetProperty sharedInstance] shutDown];
     [[FTNetworkInfoManager sharedInstance] clearUploadInfo];
