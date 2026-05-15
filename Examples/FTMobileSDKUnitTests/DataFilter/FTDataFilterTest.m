@@ -59,4 +59,14 @@
                                           fields:@{@"message": @"socket reset"}]);
 }
 
+- (void)testInvalidRegexInvalidatesRule {
+    FTDataFilter *filter = [[FTDataFilter alloc] initWithFilters:@{
+        @"logging": @[@"{ status = 'error' and message =~ '[' }"]
+    }];
+    XCTAssertFalse([filter isMatchedWithCategory:@"logging"
+                                          source:@"df_rum_ios_log"
+                                            tags:@{@"status": @"error"}
+                                          fields:@{@"message": @"socket reset"}]);
+}
+
 @end

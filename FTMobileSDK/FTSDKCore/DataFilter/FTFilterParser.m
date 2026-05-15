@@ -6,6 +6,7 @@
 //
 
 #import "FTFilterParser.h"
+#import "FTInnerLog.h"
 
 typedef NS_ENUM(NSUInteger, FTFilterOperator) {
     FTFilterOperatorEqual,
@@ -24,6 +25,7 @@ typedef NS_ENUM(NSUInteger, FTFilterOperator) {
 @property (nonatomic, copy) NSString *key;
 @property (nonatomic, assign) FTFilterOperator op;
 @property (nonatomic, strong) id value;
+@property (nonatomic, strong) NSRegularExpression *regex;
 - (BOOL)evaluate:(NSDictionary<NSString *, id> *)values;
 @end
 
@@ -40,9 +42,9 @@ typedef NS_ENUM(NSUInteger, FTFilterOperator) {
         case FTFilterOperatorNotEqual:
             return ![[self stringValue:actual] isEqualToString:[self stringValue:self.value]];
         case FTFilterOperatorRegex:
-            return [self stringValue:actual] && [self regex:[self stringValue:self.value] matches:[self stringValue:actual]];
+            return [self regexMatches:[self stringValue:actual]];
         case FTFilterOperatorNotRegex:
-            return ![self regex:[self stringValue:self.value] matches:[self stringValue:actual]];
+            return ![self regexMatches:[self stringValue:actual]];
         case FTFilterOperatorGreaterThan:
             return [self numberValue:actual] > [self numberValue:self.value];
         case FTFilterOperatorGreaterThanOrEqual:
@@ -86,17 +88,12 @@ typedef NS_ENUM(NSUInteger, FTFilterOperator) {
     return NO;
 }
 
-- (BOOL)regex:(NSString *)pattern matches:(NSString *)value {
-    if (pattern.length == 0 || value.length == 0) {
-        return NO;
-    }
-    NSError *error = nil;
-    NSRegularExpression *regex = [NSRegularExpression regularExpressionWithPattern:pattern options:0 error:&error];
-    if (error || !regex) {
+- (BOOL)regexMatches:(NSString *)value {
+    if (!self.regex || value.length == 0) {
         return NO;
     }
     NSRange range = NSMakeRange(0, value.length);
-    return [regex firstMatchInString:value options:0 range:range] != nil;
+    return [self.regex firstMatchInString:value options:0 range:range] != nil;
 }
 
 @end
@@ -136,13 +133,16 @@ typedef NS_ENUM(NSUInteger, FTFilterOperator) {
     NSMutableArray *groups = [NSMutableArray array];
     for (NSString *orPart in [self splitString:body byLogicalOperator:@"or"]) {
         NSMutableArray *conditions = [NSMutableArray array];
+        BOOL groupValid = YES;
         for (NSString *andPart in [self splitString:orPart byLogicalOperator:@"and"]) {
             FTFilterCondition *condition = [self parseCondition:andPart];
-            if (condition) {
-                [conditions addObject:condition];
+            if (!condition) {
+                groupValid = NO;
+                break;
             }
+            [conditions addObject:condition];
         }
-        if (conditions.count > 0) {
+        if (groupValid && conditions.count > 0) {
             [groups addObject:[conditions copy]];
         }
     }
@@ -176,7 +176,31 @@ typedef NS_ENUM(NSUInteger, FTFilterOperator) {
     result.key = [self normalizedKey:key];
     result.op = [self filterOperatorWithString:matchedOperator];
     result.value = [self parsedValue:value];
+    if (![self compileRegexIfNeededForCondition:result rawValue:value rawCondition:raw]) {
+        return nil;
+    }
     return result;
+}
+
++ (BOOL)compileRegexIfNeededForCondition:(FTFilterCondition *)condition
+                                rawValue:(NSString *)rawValue
+                            rawCondition:(NSString *)rawCondition {
+    if (condition.op != FTFilterOperatorRegex && condition.op != FTFilterOperatorNotRegex) {
+        return YES;
+    }
+    NSString *pattern = [condition.value isKindOfClass:NSString.class] ? condition.value : [condition.value description];
+    if (pattern.length == 0) {
+        FTInnerLogWarning(@"[data-filter] Invalid regex filter condition: %@", rawCondition);
+        return NO;
+    }
+    NSError *error = nil;
+    NSRegularExpression *regex = [NSRegularExpression regularExpressionWithPattern:pattern options:0 error:&error];
+    if (error || !regex) {
+        FTInnerLogWarning(@"[data-filter] Invalid regex filter condition: %@, error: %@", rawCondition, error.localizedDescription);
+        return NO;
+    }
+    condition.regex = regex;
+    return YES;
 }
 
 + (NSRange)rangeOfOperator:(NSString *)op inString:(NSString *)string {
