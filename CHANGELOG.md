@@ -1,3 +1,9 @@
+# 1.6.4-alpha.3
+1. Added SDK-side DataKit-compatible data filtering with local and remote filter rules for RUM and logging data.
+2. Improved upload state handling and callback synchronization to avoid duplicate or conflicting upload execution.
+3. Improved SDK internal request filtering by marking internal requests with `X-FT-SDK-Internal-Request`.
+4. Updated privacy manifest declarations.
+---
 # 1.6.4-alpha.2
 1. Fixed CocoaPods validation Swift version.
 ---
