@@ -150,11 +150,11 @@ typedef NS_ENUM(NSUInteger, FTFilterOperator) {
 }
 
 + (nullable FTFilterCondition *)parseCondition:(NSString *)raw {
-    NSString *condition = [self trimmed:raw];
+    NSString *condition = [self stripEnclosingParentheses:[self trimmed:raw]];
     if (condition.length == 0) {
         return nil;
     }
-    NSArray<NSString *> *operators = @[@" not in ", @" in ", @">=", @"<=", @"!=", @"==", @"!~", @"=~", @"=", @">", @"<"];
+    NSArray<NSString *> *operators = @[@" notmatch ", @" not match ", @" match ", @" notin ", @" not in ", @" in ", @">=", @"<=", @"!=", @"==", @"!~", @"=~", @"=", @">", @"<"];
     NSString *matchedOperator = nil;
     NSRange matchedRange = NSMakeRange(NSNotFound, 0);
     for (NSString *op in operators) {
@@ -180,6 +180,47 @@ typedef NS_ENUM(NSUInteger, FTFilterOperator) {
         return nil;
     }
     return result;
+}
+
++ (NSString *)stripEnclosingParentheses:(NSString *)raw {
+    NSString *result = [self trimmed:raw];
+    while ([result hasPrefix:@"("] && [result hasSuffix:@")"] && [self hasMatchingEnclosingParentheses:result]) {
+        result = [self trimmed:[result substringWithRange:NSMakeRange(1, result.length - 2)]];
+    }
+    return result;
+}
+
++ (BOOL)hasMatchingEnclosingParentheses:(NSString *)string {
+    NSInteger depth = 0;
+    BOOL inQuote = NO;
+    unichar quote = 0;
+    for (NSUInteger index = 0; index < string.length; index++) {
+        unichar ch = [string characterAtIndex:index];
+        if ((ch == '\'' || ch == '"') && (index == 0 || [string characterAtIndex:index - 1] != '\\')) {
+            if (!inQuote) {
+                inQuote = YES;
+                quote = ch;
+            } else if (quote == ch) {
+                inQuote = NO;
+            }
+            continue;
+        }
+        if (inQuote) {
+            continue;
+        }
+        if (ch == '(') {
+            depth++;
+        } else if (ch == ')') {
+            depth--;
+            if (depth == 0 && index < string.length - 1) {
+                return NO;
+            }
+            if (depth < 0) {
+                return NO;
+            }
+        }
+    }
+    return depth == 0;
 }
 
 + (BOOL)compileRegexIfNeededForCondition:(FTFilterCondition *)condition
@@ -262,6 +303,10 @@ typedef NS_ENUM(NSUInteger, FTFilterOperator) {
     if ([value isEqualToString:@">="]) return FTFilterOperatorGreaterThanOrEqual;
     if ([value isEqualToString:@"<"]) return FTFilterOperatorLessThan;
     if ([value isEqualToString:@"<="]) return FTFilterOperatorLessThanOrEqual;
+    if ([value isEqualToString:@"notmatch"]) return FTFilterOperatorNotIn;
+    if ([value isEqualToString:@"match"]) return FTFilterOperatorIn;
+    if ([value isEqualToString:@"not match"]) return FTFilterOperatorNotIn;
+    if ([value isEqualToString:@"notin"]) return FTFilterOperatorNotIn;
     if ([value isEqualToString:@"in"]) return FTFilterOperatorIn;
     if ([value isEqualToString:@"not in"]) return FTFilterOperatorNotIn;
     return FTFilterOperatorEqual;

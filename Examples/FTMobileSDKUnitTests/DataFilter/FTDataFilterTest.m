@@ -59,6 +59,75 @@
                                           fields:@{@"message": @"socket reset"}]);
 }
 
+- (void)testSupportsBacktickKeysBracketMatchAndParenthesizedCondition {
+    FTDataFilter *filter = [[FTDataFilter alloc] initWithFilters:@{
+        @"logging": @[@"{  `source` in [ 'df_rum_ios_log' ]  and ( `status` match [ 'ok' ] )}"]
+    }];
+    XCTAssertTrue([filter isMatchedWithCategory:@"logging"
+                                         source:@"df_rum_ios_log"
+                                           tags:@{@"status": @"ok"}
+                                         fields:@{}]);
+    XCTAssertFalse([filter isMatchedWithCategory:@"logging"
+                                          source:@"df_rum_ios_log"
+                                            tags:@{@"status": @"error"}
+                                          fields:@{}]);
+    XCTAssertFalse([filter isMatchedWithCategory:@"logging"
+                                          source:@"other_source"
+                                            tags:@{@"status": @"ok"}
+                                          fields:@{}]);
+}
+
+- (void)testSupportsBacktickKeysBracketNotmatchAndParenthesizedCondition {
+    FTDataFilter *filter = [[FTDataFilter alloc] initWithFilters:@{
+        @"logging": @[@"{  `source` in [ 'df_rum_ios_log' ]  and ( `status` notmatch [ 'ok' ] )}"]
+    }];
+    XCTAssertTrue([filter isMatchedWithCategory:@"logging"
+                                         source:@"df_rum_ios_log"
+                                           tags:@{@"status": @"error"}
+                                         fields:@{}]);
+    XCTAssertFalse([filter isMatchedWithCategory:@"logging"
+                                          source:@"df_rum_ios_log"
+                                            tags:@{@"status": @"ok"}
+                                          fields:@{}]);
+    XCTAssertFalse([filter isMatchedWithCategory:@"logging"
+                                          source:@"other_source"
+                                            tags:@{@"status": @"error"}
+                                          fields:@{}]);
+}
+
+- (void)testSupportsBacktickKeysBracketNotinAndParenthesizedCondition {
+    FTDataFilter *filter = [[FTDataFilter alloc] initWithFilters:@{
+        @"logging": @[@"{  `source` in [ 'df_rum_ios_log' ]  and ( `status` notin [ 'ok' ] )}"]
+    }];
+    XCTAssertTrue([filter isMatchedWithCategory:@"logging"
+                                         source:@"df_rum_ios_log"
+                                           tags:@{@"status": @"error"}
+                                         fields:@{}]);
+    XCTAssertFalse([filter isMatchedWithCategory:@"logging"
+                                          source:@"df_rum_ios_log"
+                                            tags:@{@"status": @"ok"}
+                                          fields:@{}]);
+    XCTAssertFalse([filter isMatchedWithCategory:@"logging"
+                                          source:@"other_source"
+                                            tags:@{@"status": @"error"}
+                                          fields:@{}]);
+}
+
+- (void)testOperatorsAreCaseInsensitive {
+    NSArray<NSString *> *rules = @[
+        @"{ `source` IN [ 'df_rum_ios_log' ] and `status` MATCH [ 'ok' ] }",
+        @"{ `source` IN [ 'df_rum_ios_log' ] and `status` NOTIN [ 'error' ] }",
+        @"{ `source` IN [ 'df_rum_ios_log' ] and `status` NOTMATCH [ 'error' ] }"
+    ];
+    for (NSString *rule in rules) {
+        FTDataFilter *filter = [[FTDataFilter alloc] initWithFilters:@{@"logging": @[rule]}];
+        XCTAssertTrue([filter isMatchedWithCategory:@"logging"
+                                             source:@"df_rum_ios_log"
+                                               tags:@{@"status": @"ok"}
+                                             fields:@{}]);
+    }
+}
+
 - (void)testInvalidRegexInvalidatesRule {
     FTDataFilter *filter = [[FTDataFilter alloc] initWithFilters:@{
         @"logging": @[@"{ status = 'error' and message =~ '[' }"]
