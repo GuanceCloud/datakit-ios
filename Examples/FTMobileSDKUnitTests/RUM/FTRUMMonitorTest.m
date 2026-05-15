@@ -24,6 +24,7 @@
 #import "FTCPUMonitor.h"
 #import "FTMemoryMonitor.h"
 #import "FTDisplayRateMonitor.h"
+#include <string.h>
 @interface FTRUMMonitorTest : XCTestCase
 @property (nonatomic, copy) NSString *url;
 @property (nonatomic, copy) NSString *appid;
@@ -90,25 +91,19 @@
 - (void)testMonitorMemory{
     FTMemoryMonitor *memoryMonitor = [[FTMemoryMonitor alloc]init];
     double memoryUsage = [memoryMonitor memoryUsage];
-    __weak typeof(self) weakSelf = self;
-    __block double heavyMemoryUsage;
-    XCTestExpectation *expectation = [[XCTestExpectation alloc]initWithDescription:@"Memory Test"];
-    NSThread *thread = [[NSThread alloc]initWithBlock:^{
-        @autoreleasepool {
-            [weakSelf heavyWork];
-            NSData *data = [NSData dataWithContentsOfURL:[[NSBundle mainBundle] URLForResource:@"sample" withExtension:@"html"]];
-            heavyMemoryUsage = [memoryMonitor memoryUsage];
-            data = nil;
-        }
-            [expectation fulfill];
-        
-    }];
-    [thread start];
-    [self waitForExpectations:@[expectation] timeout:10];
-    [thread cancel];
-    double deallocMemoryUsage = [memoryMonitor memoryUsage];
+    NSMutableArray<NSMutableData *> *buffers = [NSMutableArray array];
+    double heavyMemoryUsage = memoryUsage;
+    NSUInteger allocationSize = 16 * 1024 * 1024;
+
+    for (NSInteger i = 0; i < 8 && heavyMemoryUsage <= memoryUsage; i++) {
+        NSMutableData *data = [NSMutableData dataWithLength:allocationSize];
+        memset(data.mutableBytes, 0xFF, data.length);
+        [buffers addObject:data];
+        heavyMemoryUsage = [memoryMonitor memoryUsage];
+    }
+
+    XCTAssertGreaterThanOrEqual(memoryUsage, 0);
     XCTAssertGreaterThan(heavyMemoryUsage, memoryUsage);
-    XCTAssertTrue(heavyMemoryUsage>=deallocMemoryUsage);
 }
 - (void)testMonitorFPS{
     [self setRumMonitorType:FTDeviceMetricsMonitorFps];

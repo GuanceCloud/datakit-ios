@@ -381,26 +381,31 @@
     [[FTTrackDataManager sharedInstance] addTrackData:[FTModelHelper createRUMModel:@"testNetworkFail_NetworkRetry"] type:FTAddDataRUM];
   
     self.expectation = [self expectationWithDescription:@"isUploadingEqualNO"];
-    [[FTTrackDataManager sharedInstance].dataUploadWorker addObserver:self forKeyPath:@"isUploading" options:NSKeyValueObservingOptionNew context:nil];
-    CFTimeInterval startTime = CACurrentMediaTime();
-    NSString *packageId = [FTRumRequest.serialGenerator getCurrentSerialNumber];
-    [[FTTrackDataManager sharedInstance] flushSyncData];
-    [self waitForExpectations:@[self.expectation]];
-    CFTimeInterval endTime = CACurrentMediaTime();
-    CFTimeInterval duration = endTime-startTime;
-    NSLog(@"endTime-startTime:%f",duration);
-    XCTAssertTrue(duration>7 && duration<9);
-    NSString *endPackageId = [FTRumRequest.serialGenerator getCurrentSerialNumber];
-    XCTAssertTrue([endPackageId isEqualToString:packageId]);
-    XCTAssertTrue(set.count == 6);
-    
-    
-    NSString *first = [[NSString alloc]initWithData:[FTTestUtils transStreamToData:datas.firstObject] encoding:NSUTF8StringEncoding];
-    NSString *last = [[NSString alloc]initWithData:[FTTestUtils transStreamToData:datas.lastObject] encoding:NSUTF8StringEncoding];
-    
-    [self compareSdkID:first second:last increase:0];
-    [FTTrackDataManager shutDown];
-    [OHHTTPStubs removeStub:stub];
+    FTDataUploadWorker *worker = [FTTrackDataManager sharedInstance].dataUploadWorker;
+    [worker addObserver:self forKeyPath:@"isUploading" options:NSKeyValueObservingOptionNew context:nil];
+    @try {
+        CFTimeInterval startTime = CACurrentMediaTime();
+        NSString *packageId = [FTRumRequest.serialGenerator getCurrentSerialNumber];
+        [[FTTrackDataManager sharedInstance] flushSyncData];
+        [self waitForExpectations:@[self.expectation]];
+        CFTimeInterval endTime = CACurrentMediaTime();
+        CFTimeInterval duration = endTime-startTime;
+        NSLog(@"endTime-startTime:%f",duration);
+        XCTAssertTrue(duration>7 && duration<9);
+        NSString *endPackageId = [FTRumRequest.serialGenerator getCurrentSerialNumber];
+        XCTAssertTrue([endPackageId isEqualToString:packageId]);
+        XCTAssertTrue(set.count == 6);
+
+
+        NSString *first = [[NSString alloc]initWithData:[FTTestUtils transStreamToData:datas.firstObject] encoding:NSUTF8StringEncoding];
+        NSString *last = [[NSString alloc]initWithData:[FTTestUtils transStreamToData:datas.lastObject] encoding:NSUTF8StringEncoding];
+
+        [self compareSdkID:first second:last increase:0];
+    } @finally {
+        [worker removeObserver:self forKeyPath:@"isUploading"];
+        [FTTrackDataManager shutDown];
+        [OHHTTPStubs removeStub:stub];
+    }
 }
 - (void)testNetworkFail_403RetryAndKeepData{
     [self verifyUploadRetryAndKeepDataWithStatusCode:403];
@@ -431,15 +436,19 @@
     [[FTTrackDataManager sharedInstance] addTrackData:[FTModelHelper createRUMModel:[NSString stringWithFormat:@"testNetworkFail_%ldRetryAndKeepData",(long)statusCode]] type:FTAddDataRUM];
 
     self.expectation = [self expectationWithDescription:@"isUploadingEqualNO"];
-    [[FTTrackDataManager sharedInstance].dataUploadWorker addObserver:self forKeyPath:@"isUploading" options:NSKeyValueObservingOptionNew context:nil];
-    [[FTTrackDataManager sharedInstance] flushSyncData];
-    [self waitForExpectations:@[self.expectation]];
+    FTDataUploadWorker *worker = [FTTrackDataManager sharedInstance].dataUploadWorker;
+    [worker addObserver:self forKeyPath:@"isUploading" options:NSKeyValueObservingOptionNew context:nil];
+    @try {
+        [[FTTrackDataManager sharedInstance] flushSyncData];
+        [self waitForExpectations:@[self.expectation]];
 
-    XCTAssertTrue(requestCount == 6);
-    XCTAssertTrue([[FTTrackerEventDBTool sharedManager] getUploadDatasCount] == 1);
-
-    [FTTrackDataManager shutDown];
-    [OHHTTPStubs removeStub:stub];
+        XCTAssertTrue(requestCount == 6);
+        XCTAssertTrue([[FTTrackerEventDBTool sharedManager] getUploadDatasCount] == 1);
+    } @finally {
+        [worker removeObserver:self forKeyPath:@"isUploading"];
+        [FTTrackDataManager shutDown];
+        [OHHTTPStubs removeStub:stub];
+    }
 }
 
 - (void)testNetworkSuccessIncreasePackageID{
@@ -463,26 +472,30 @@
     manager.setUploadURL(urlStr,nil,nil)
         .setSdkVersion(@"RequestTest");
     
-    [[FTTrackDataManager sharedInstance].dataUploadWorker addObserver:self forKeyPath:@"isUploading" options:NSKeyValueObservingOptionNew context:nil];
-    NSString *logStartNum = [FTLoggingRequest.serialGenerator getCurrentSerialNumber];
-    for (int i = 0; i<2; i++) {
-        self.expectation = [self expectationWithDescription:@"isUploadingEqualNO"];
-        FTRecordModel *model = [FTModelHelper createRumModel];
-        [[FTTrackDataManager sharedInstance] addTrackData:model type:FTAddDataRUM];
+    FTDataUploadWorker *worker = [FTTrackDataManager sharedInstance].dataUploadWorker;
+    [worker addObserver:self forKeyPath:@"isUploading" options:NSKeyValueObservingOptionNew context:nil];
+    @try {
+        NSString *logStartNum = [FTLoggingRequest.serialGenerator getCurrentSerialNumber];
+        for (int i = 0; i<2; i++) {
+            self.expectation = [self expectationWithDescription:@"isUploadingEqualNO"];
+            FTRecordModel *model = [FTModelHelper createRumModel];
+            [[FTTrackDataManager sharedInstance] addTrackData:model type:FTAddDataRUM];
 
-        [[FTTrackDataManager sharedInstance] flushSyncData];
-        [self waitForExpectations:@[self.expectation]];
+            [[FTTrackDataManager sharedInstance] flushSyncData];
+            [self waitForExpectations:@[self.expectation]];
+        }
+        NSString *logEndtNum = [FTLoggingRequest.serialGenerator getCurrentSerialNumber];
+        XCTAssertTrue([logEndtNum isEqualToString:logStartNum]);
+        XCTAssertTrue(datas.count == 2);
+
+        NSString *bodyStr = [[NSString alloc]initWithData:[FTTestUtils transStreamToData:datas.firstObject] encoding:NSUTF8StringEncoding];
+        NSString *bodyStr2 = [[NSString alloc]initWithData:[FTTestUtils transStreamToData:datas.lastObject] encoding:NSUTF8StringEncoding];
+        [self compareSdkID:bodyStr second:bodyStr2 increase:1];
+    } @finally {
+        [worker removeObserver:self forKeyPath:@"isUploading"];
+        [FTTrackDataManager shutDown];
+        [OHHTTPStubs removeStub:stub];
     }
-    NSString *logEndtNum = [FTLoggingRequest.serialGenerator getCurrentSerialNumber];
-    XCTAssertTrue([logEndtNum isEqualToString:logStartNum]);
-    XCTAssertTrue(datas.count == 2);
-    
-    NSString *bodyStr = [[NSString alloc]initWithData:[FTTestUtils transStreamToData:datas.firstObject] encoding:NSUTF8StringEncoding];
-    NSString *bodyStr2 = [[NSString alloc]initWithData:[FTTestUtils transStreamToData:datas.lastObject] encoding:NSUTF8StringEncoding];
-    [self compareSdkID:bodyStr second:bodyStr2 increase:1];
- 
-    [FTTrackDataManager shutDown];
-    [OHHTTPStubs removeStub:stub];
 }
 - (void)compareSdkID:(NSString *)first second:(NSString*)second increase:(int)increase{
     XCTAssertFalse([first isEqualToString:second]);
