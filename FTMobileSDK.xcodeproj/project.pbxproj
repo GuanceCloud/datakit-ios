@@ -274,6 +274,14 @@
 		17400E7A2B47AAC300ACBA6C /* FTCrashMonitor_NSException.h in Headers */ = {isa = PBXBuildFile; fileRef = 17400E792B47AAC300ACBA6C /* FTCrashMonitor_NSException.h */; };
 		17400E7B2B47AAC300ACBA6C /* FTCrashMonitor_NSException.h in Headers */ = {isa = PBXBuildFile; fileRef = 17400E792B47AAC300ACBA6C /* FTCrashMonitor_NSException.h */; };
 		17400E7C2B47AAC300ACBA6C /* FTCrashMonitor_NSException.h in Headers */ = {isa = PBXBuildFile; fileRef = 17400E792B47AAC300ACBA6C /* FTCrashMonitor_NSException.h */; };
+		174066982FB726D5004E8EA1 /* FTDataFilterManager.m in Sources */ = {isa = PBXBuildFile; fileRef = 987CA8291956A4AD8FE10C01 /* FTDataFilterManager.m */; };
+		174066992FB726DA004E8EA1 /* FTDataFilter.h in Headers */ = {isa = PBXBuildFile; fileRef = B2D46985D7AD29FD5EC838AA /* FTDataFilter.h */; };
+		1740669A2FB726DE004E8EA1 /* FTDataFilter.m in Sources */ = {isa = PBXBuildFile; fileRef = E18715C123058740609EBAF4 /* FTDataFilter.m */; };
+		1740669B2FB726E3004E8EA1 /* FTDataFilterPullRequest.h in Headers */ = {isa = PBXBuildFile; fileRef = F528B7442554E16EF23BA25C /* FTDataFilterPullRequest.h */; };
+		1740669C2FB726E9004E8EA1 /* FTDataFilterManager.h in Headers */ = {isa = PBXBuildFile; fileRef = 47F6EC0BF533F374653792EA /* FTDataFilterManager.h */; };
+		1740669D2FB72708004E8EA1 /* FTDataFilterPullRequest.m in Sources */ = {isa = PBXBuildFile; fileRef = 5002DCB49C4918ECDA43D078 /* FTDataFilterPullRequest.m */; };
+		1740669E2FB72723004E8EA1 /* FTFilterParser.m in Sources */ = {isa = PBXBuildFile; fileRef = 2EFAC0E0A501565008FBFBF9 /* FTFilterParser.m */; };
+		1740669F2FB72727004E8EA1 /* FTFilterParser.h in Headers */ = {isa = PBXBuildFile; fileRef = 98B0592948E762F22C2AAC36 /* FTFilterParser.h */; };
 		17440CAD2CBF8B8300BA4B1A /* FTDataCompression.m in Sources */ = {isa = PBXBuildFile; fileRef = 17440CAC2CBF8B8300BA4B1A /* FTDataCompression.m */; };
 		17440CAE2CBF8B8300BA4B1A /* FTDataCompression.h in Headers */ = {isa = PBXBuildFile; fileRef = 17440CAB2CBF8B8300BA4B1A /* FTDataCompression.h */; };
 		17440CAF2CBF8B8300BA4B1A /* FTDataCompression.m in Sources */ = {isa = PBXBuildFile; fileRef = 17440CAC2CBF8B8300BA4B1A /* FTDataCompression.m */; };
@@ -2805,7 +2813,6 @@
 				47F6EC0BF533F374653792EA /* FTDataFilterManager.h */,
 				987CA8291956A4AD8FE10C01 /* FTDataFilterManager.m */,
 			);
-			name = DataFilter;
 			path = DataFilter;
 			sourceTree = "<group>";
 		};
@@ -3205,6 +3212,7 @@
 				1763BD9229DFF04F009EE026 /* FTTrackDataManager.h in Headers */,
 				17A422D92EE2EF9000416673 /* FTCrashJailbreak.h in Headers */,
 				17E4CB3429CD42DA005C2D99 /* FTSwizzle.h in Headers */,
+				174066992FB726DA004E8EA1 /* FTDataFilter.h in Headers */,
 				1776BD4B2E179FA300612A7F /* FTCrashLogger.h in Headers */,
 				177155BA2B0F5C3000C26DC4 /* FTURLSessionInterceptor+Private.h in Headers */,
 				17AB76B429D432DE008FBBF5 /* FTMemoryMonitor.h in Headers */,
@@ -3253,6 +3261,7 @@
 				17A4224A2EDEFFCA00416673 /* FTCrashMach-O.h in Headers */,
 				17E4CC2229CD42E4005C2D99 /* FTErrorDataProtocol.h in Headers */,
 				17C2FEAC2E432949003D600F /* FTDefaultUIKitViewTrackingHandler.h in Headers */,
+				1740669B2FB726E3004E8EA1 /* FTDataFilterPullRequest.h in Headers */,
 				17A422BA2EE2C06500416673 /* FTCrashBacktrace.h in Headers */,
 				17400E7A2B47AAC300ACBA6C /* FTCrashMonitor_NSException.h in Headers */,
 				176CE2852ED869D400E9E92B /* FTCrashMonitorFlag.h in Headers */,
@@ -3278,6 +3287,7 @@
 				17A422312EDEF67600416673 /* FTCrashCompilerDefines.h in Headers */,
 				176868752ED47AA600C76F0D /* FTCrashUUIDConversion.h in Headers */,
 				17A422412EDEFEEE00416673 /* FTCrashCxaThrowSwapper.h in Headers */,
+				1740669F2FB72727004E8EA1 /* FTFilterParser.h in Headers */,
 				176868782ED47AA600C76F0D /* FTCrashStackCursor_MachineContext.h in Headers */,
 				17A422012EDE8F8D00416673 /* FTCrashObjC.h in Headers */,
 				17A422912EE27DF200416673 /* FTCrashJSONCodecObjC.h in Headers */,
@@ -3361,6 +3371,7 @@
 				178CDB102F0F7AA000EE98D0 /* FTCrashReportFilterBasic.h in Headers */,
 				178CDB112F0F7AA000EE98D0 /* FTCrashReportC.h in Headers */,
 				178CDB122F0F7AA000EE98D0 /* FTCrashC.h in Headers */,
+				1740669C2FB726E9004E8EA1 /* FTDataFilterManager.h in Headers */,
 				178CDB132F0F7AA000EE98D0 /* FTCrashThreadCache.h in Headers */,
 				178CDB142F0F7AA000EE98D0 /* FTCrashReportFixer.h in Headers */,
 				178CDB152F0F7AA000EE98D0 /* FTCrashReportStoreC.h in Headers */,
@@ -4025,6 +4036,7 @@
 				1763BD9E29DFF04F009EE026 /* ZY_FMDatabase.m in Sources */,
 				17AB76C029D432DE008FBBF5 /* FTMonitorUtils.m in Sources */,
 				17E4CC2329CD42E4005C2D99 /* FTErrorDataProtocol.m in Sources */,
+				174066982FB726D5004E8EA1 /* FTDataFilterManager.m in Sources */,
 				17FFE8462D5E1F9200039827 /* FTAutoTrackHandler.m in Sources */,
 				1776062A29D1347500D17137 /* FTWKWebViewJavascriptBridge.m in Sources */,
 				1763BD9C29DFF04F009EE026 /* ZY_FMDatabaseQueue.m in Sources */,
@@ -4041,8 +4053,10 @@
 				17A422D12EE2E64C00416673 /* FTCrashNSErrorHelper.m in Sources */,
 				17132DBE2C2D652E009DFE8F /* NSError+FTDescription.m in Sources */,
 				1763BDB629DFF050009EE026 /* FTTrackDataManager.m in Sources */,
+				1740669A2FB726DE004E8EA1 /* FTDataFilter.m in Sources */,
 				1763BDAE29DFF04F009EE026 /* ZY_FMDatabaseAdditions.m in Sources */,
 				17D068272D26668400D59159 /* NSURLSessionTask+FTSwizzler.m in Sources */,
+				1740669E2FB72723004E8EA1 /* FTFilterParser.m in Sources */,
 				17F10DAE2D13C88A00737EDD /* FTNetworkConnectivity.m in Sources */,
 				178649352A1DB58400521187 /* FTLogger.m in Sources */,
 				172B107A2E339F0600753766 /* FTGlobalRumManager.m in Sources */,
@@ -4127,6 +4141,7 @@
 				176CE27F2ED8667E00E9E92B /* FTCrashMonitorAPI.c in Sources */,
 				17E4CBE829CD42E4005C2D99 /* FTSessionTaskHandler.m in Sources */,
 				1763BD8E29DFF04F009EE026 /* FTTrackerEventDBTool.m in Sources */,
+				1740669D2FB72708004E8EA1 /* FTDataFilterPullRequest.m in Sources */,
 				7B004178A5CB5FA66C1858B2 /* FTSwiftUIRUMViewModifier.swift in Sources */,
 				7B004179A5CB5FA66C1858B2 /* FTSwiftUIViewNameExtractor.swift in Sources */,
 			);
