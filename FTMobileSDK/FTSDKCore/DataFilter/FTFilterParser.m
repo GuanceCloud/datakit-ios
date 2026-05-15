@@ -25,7 +25,7 @@ typedef NS_ENUM(NSUInteger, FTFilterOperator) {
 @property (nonatomic, copy) NSString *key;
 @property (nonatomic, assign) FTFilterOperator op;
 @property (nonatomic, strong) id value;
-@property (nonatomic, strong) NSRegularExpression *regex;
+@property (nonatomic, copy) NSArray<NSRegularExpression *> *regexes;
 - (BOOL)evaluate:(NSDictionary<NSString *, id> *)values;
 @end
 
@@ -89,11 +89,16 @@ typedef NS_ENUM(NSUInteger, FTFilterOperator) {
 }
 
 - (BOOL)regexMatches:(NSString *)value {
-    if (!self.regex || value.length == 0) {
+    if (self.regexes.count == 0 || value.length == 0) {
         return NO;
     }
     NSRange range = NSMakeRange(0, value.length);
-    return [self.regex firstMatchInString:value options:0 range:range] != nil;
+    for (NSRegularExpression *regex in self.regexes) {
+        if ([regex firstMatchInString:value options:0 range:range] != nil) {
+            return YES;
+        }
+    }
+    return NO;
 }
 
 @end
@@ -229,18 +234,27 @@ typedef NS_ENUM(NSUInteger, FTFilterOperator) {
     if (condition.op != FTFilterOperatorRegex && condition.op != FTFilterOperatorNotRegex) {
         return YES;
     }
-    NSString *pattern = [condition.value isKindOfClass:NSString.class] ? condition.value : [condition.value description];
-    if (pattern.length == 0) {
+    NSArray *patterns = [condition.value isKindOfClass:NSArray.class] ? condition.value : @[condition.value ?: @""];
+    if (patterns.count == 0) {
         FTInnerLogWarning(@"[data-filter] Invalid regex filter condition: %@", rawCondition);
         return NO;
     }
-    NSError *error = nil;
-    NSRegularExpression *regex = [NSRegularExpression regularExpressionWithPattern:pattern options:0 error:&error];
-    if (error || !regex) {
-        FTInnerLogWarning(@"[data-filter] Invalid regex filter condition: %@, error: %@", rawCondition, error.localizedDescription);
-        return NO;
+    NSMutableArray<NSRegularExpression *> *regexes = [NSMutableArray arrayWithCapacity:patterns.count];
+    for (id patternValue in patterns) {
+        NSString *pattern = [patternValue isKindOfClass:NSString.class] ? patternValue : [patternValue description];
+        if (pattern.length == 0) {
+            FTInnerLogWarning(@"[data-filter] Invalid regex filter condition: %@", rawCondition);
+            return NO;
+        }
+        NSError *error = nil;
+        NSRegularExpression *regex = [NSRegularExpression regularExpressionWithPattern:pattern options:0 error:&error];
+        if (error || !regex) {
+            FTInnerLogWarning(@"[data-filter] Invalid regex filter condition: %@, error: %@", rawCondition, error.localizedDescription);
+            return NO;
+        }
+        [regexes addObject:regex];
     }
-    condition.regex = regex;
+    condition.regexes = [regexes copy];
     return YES;
 }
 
@@ -303,9 +317,9 @@ typedef NS_ENUM(NSUInteger, FTFilterOperator) {
     if ([value isEqualToString:@">="]) return FTFilterOperatorGreaterThanOrEqual;
     if ([value isEqualToString:@"<"]) return FTFilterOperatorLessThan;
     if ([value isEqualToString:@"<="]) return FTFilterOperatorLessThanOrEqual;
-    if ([value isEqualToString:@"notmatch"]) return FTFilterOperatorNotIn;
-    if ([value isEqualToString:@"match"]) return FTFilterOperatorIn;
-    if ([value isEqualToString:@"not match"]) return FTFilterOperatorNotIn;
+    if ([value isEqualToString:@"notmatch"]) return FTFilterOperatorNotRegex;
+    if ([value isEqualToString:@"match"]) return FTFilterOperatorRegex;
+    if ([value isEqualToString:@"not match"]) return FTFilterOperatorNotRegex;
     if ([value isEqualToString:@"notin"]) return FTFilterOperatorNotIn;
     if ([value isEqualToString:@"in"]) return FTFilterOperatorIn;
     if ([value isEqualToString:@"not in"]) return FTFilterOperatorNotIn;

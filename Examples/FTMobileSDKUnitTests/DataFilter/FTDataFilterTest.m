@@ -61,7 +61,7 @@
 
 - (void)testSupportsBacktickKeysBracketMatchAndParenthesizedCondition {
     FTDataFilter *filter = [[FTDataFilter alloc] initWithFilters:@{
-        @"logging": @[@"{  `source` in [ 'df_rum_ios_log' ]  and ( `status` match [ 'ok' ] )}"]
+        @"logging": @[@"{  `source` in [ 'df_rum_ios_log' ]  and ( `status` match [ '^ok$' ] )}"]
     }];
     XCTAssertTrue([filter isMatchedWithCategory:@"logging"
                                          source:@"df_rum_ios_log"
@@ -79,7 +79,7 @@
 
 - (void)testSupportsBacktickKeysBracketNotmatchAndParenthesizedCondition {
     FTDataFilter *filter = [[FTDataFilter alloc] initWithFilters:@{
-        @"logging": @[@"{  `source` in [ 'df_rum_ios_log' ]  and ( `status` notmatch [ 'ok' ] )}"]
+        @"logging": @[@"{  `source` in [ 'df_rum_ios_log' ]  and ( `status` notmatch [ '^ok$' ] )}"]
     }];
     XCTAssertTrue([filter isMatchedWithCategory:@"logging"
                                          source:@"df_rum_ios_log"
@@ -126,6 +126,52 @@
                                                tags:@{@"status": @"ok"}
                                              fields:@{}]);
     }
+}
+
+- (void)testMatchesDataKitLoggingMessagePatternExample {
+    FTDataFilter *filter = [[FTDataFilter alloc] initWithFilters:@{
+        @"logging": @[@"{ source = 'ios_log' and message match ['timeout.*'] }"]
+    }];
+    XCTAssertTrue([filter isMatchedWithCategory:@"logging"
+                                         source:@"ios_log"
+                                           tags:@{}
+                                         fields:@{@"message": @"timeout while uploading"}]);
+    XCTAssertFalse([filter isMatchedWithCategory:@"logging"
+                                          source:@"ios_log"
+                                            tags:@{}
+                                          fields:@{@"message": @"upload completed"}]);
+    XCTAssertFalse([filter isMatchedWithCategory:@"logging"
+                                          source:@"other"
+                                            tags:@{}
+                                          fields:@{@"message": @"timeout while uploading"}]);
+}
+
+- (void)testMatchesDataKitResourceDurationExample {
+    FTDataFilter *filter = [[FTDataFilter alloc] initWithFilters:@{
+        @"rum": @[@"{ source = 'resource' and duration >= 1000000000 }"]
+    }];
+    XCTAssertTrue([filter isMatchedWithCategory:@"rum"
+                                         source:@"resource"
+                                           tags:@{}
+                                         fields:@{@"duration": @1000000000}]);
+    XCTAssertFalse([filter isMatchedWithCategory:@"rum"
+                                          source:@"resource"
+                                            tags:@{}
+                                          fields:@{@"duration": @999999999}]);
+}
+
+- (void)testMatchesDataKitErrorMessagePatternExample {
+    FTDataFilter *filter = [[FTDataFilter alloc] initWithFilters:@{
+        @"rum": @[@"{ source = 'error' and error_message match ['.*password.*'] }"]
+    }];
+    XCTAssertTrue([filter isMatchedWithCategory:@"rum"
+                                         source:@"error"
+                                           tags:@{}
+                                         fields:@{@"error_message": @"password should be redacted"}]);
+    XCTAssertFalse([filter isMatchedWithCategory:@"rum"
+                                          source:@"error"
+                                            tags:@{}
+                                          fields:@{@"error_message": @"token should be redacted"}]);
 }
 
 - (void)testInvalidRegexInvalidatesRule {
