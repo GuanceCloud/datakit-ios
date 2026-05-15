@@ -34,7 +34,7 @@
     if(!appId || !self.resources || self.resources.count == 0){
         return nil;
     }
-    [self addHTTPHeaderFields:mutableRequest packageId:[FTPackageIdGenerator generatePackageId:self.serialNumber count:self.resources.count]];
+    [self addHTTPHeaderFields:mutableRequest packageId:nil];
     
     mutableRequest.HTTPMethod = self.httpMethod;
     

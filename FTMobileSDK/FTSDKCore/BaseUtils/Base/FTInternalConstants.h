@@ -127,4 +127,5 @@ extern long const FT_ANR_THRESHOLD_MS;
 
 #pragma mark ----- HTTP Header Fields -----
 extern NSString * const FT_HTTP_HEADER_X_PKG_ID;          
+extern NSString * const FT_HTTP_HEADER_X_SDK_INTERNAL_REQUEST;
 extern NSString * const FT_HTTP_HEADER_X_CLIENT_TIMESTAMP;

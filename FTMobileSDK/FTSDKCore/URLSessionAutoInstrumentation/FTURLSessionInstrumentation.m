@@ -446,8 +446,8 @@ static dispatch_once_t onceToken;
     if (request == nil) {
         return NO;
     }
-    NSString *pkgIdValue = [request valueForHTTPHeaderField:FT_HTTP_HEADER_X_PKG_ID];
-    if (pkgIdValue && [pkgIdValue hasPrefix:@"rumm-"]) {
+    NSString *internalRequestValue = [request valueForHTTPHeaderField:FT_HTTP_HEADER_X_SDK_INTERNAL_REQUEST];
+    if ([internalRequestValue isEqualToString:@"true"]) {
         return YES;
     }
     return NO;

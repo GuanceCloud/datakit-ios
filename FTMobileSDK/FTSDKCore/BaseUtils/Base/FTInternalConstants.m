@@ -62,4 +62,5 @@ long const FT_ANR_THRESHOLD_MS = 5000;
 long long const FT_ANR_THRESHOLD_NS = 5000000000;
 
 NSString * const FT_HTTP_HEADER_X_PKG_ID = @"X-Pkg-Id";
+NSString * const FT_HTTP_HEADER_X_SDK_INTERNAL_REQUEST = @"X-FT-SDK-Internal-Request";
 NSString * const FT_HTTP_HEADER_X_CLIENT_TIMESTAMP = @"x-client-timestamp";

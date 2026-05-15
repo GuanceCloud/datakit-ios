@@ -107,7 +107,10 @@
     }
     [mutableRequest setValue:@"zh-CN" forHTTPHeaderField:@"Accept-Language"];
     [mutableRequest setValue:self.userAgent forHTTPHeaderField:@"User-Agent"];
-    [mutableRequest setValue:[NSString stringWithFormat:@"rumm-%@",packageId] forHTTPHeaderField:FT_HTTP_HEADER_X_PKG_ID];
+    if (packageId) {
+        [mutableRequest setValue:[NSString stringWithFormat:@"rumm-%@",packageId] forHTTPHeaderField:FT_HTTP_HEADER_X_PKG_ID];
+    }
+    [mutableRequest setValue:@"true" forHTTPHeaderField:FT_HTTP_HEADER_X_SDK_INTERNAL_REQUEST];
 }
 - (NSMutableURLRequest *)adaptedRequest:(NSMutableURLRequest *)mutableRequest{
     if (!self.requestBody || !self.events) {

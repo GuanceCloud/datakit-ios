@@ -35,8 +35,7 @@
 }
 
 - (NSMutableURLRequest *)adaptedRequest:(NSMutableURLRequest *)mutableRequest {
-    NSString *packageId = [FTPackageIdGenerator generatePackageId:self.serialNumber count:self.events.count];
-    [self addHTTPHeaderFields:mutableRequest packageId:packageId];
+    [self addHTTPHeaderFields:mutableRequest packageId:nil];
     mutableRequest.HTTPMethod = self.httpMethod;
     return mutableRequest;
 }

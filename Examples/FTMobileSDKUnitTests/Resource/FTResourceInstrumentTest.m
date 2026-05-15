@@ -22,6 +22,7 @@
 #import "FTGlobalRumManager.h"
 #import "FTRUMManager.h"
 #import "NSURLSessionTask+FTSwizzler.h"
+#import "FTDataFilterPullRequest.h"
 #import "FTRemoteConfigurationRequest.h"
 
 @interface FTURLSessionInstrumentation()
@@ -91,6 +92,62 @@
 }
 - (void)waitForURLSessionInterceptorQueue {
     dispatch_sync([FTURLSessionInterceptor shared].queue, ^{});
+}
+- (NSMutableURLRequest *)adaptedURLRequestWithRequest:(id<FTRequestProtocol>)request {
+    NSMutableURLRequest *urlRequest = [[NSMutableURLRequest alloc] initWithURL:[NSURL URLWithString:@"https://example.com"]];
+    if ([request respondsToSelector:@selector(adaptedRequest:)]) {
+        urlRequest = [request adaptedRequest:urlRequest];
+    }
+    return urlRequest;
+}
+
+- (void)assertSDKRequestIsFiltered:(id<FTRequestProtocol>)request name:(NSString *)name {
+    NSMutableURLRequest *urlRequest = [self adaptedURLRequestWithRequest:request];
+    XCTAssertNotNil(urlRequest, @"%@ request should be created", name);
+    XCTAssertEqualObjects([urlRequest valueForHTTPHeaderField:FT_HTTP_HEADER_X_SDK_INTERNAL_REQUEST], @"true", @"%@ request should carry SDK internal request header", name);
+    XCTAssertTrue([[FTURLSessionInstrumentation sharedInstance] isFTIntakeRequest:urlRequest], @"%@ request should be filtered out", name);
+}
+
+- (id)sdkFilterTestResource {
+    Class resourceClass = NSClassFromString(@"FTEnrichedResource");
+    XCTAssertNotNil(resourceClass);
+    id resource = [[resourceClass alloc] init];
+    [resource setValue:@"resource-id" forKey:@"identifier"];
+    [resource setValue:@"app-id" forKey:@"appId"];
+    [resource setValue:[@"resource-data" dataUsingEncoding:NSUTF8StringEncoding] forKey:@"data"];
+    [resource setValue:@"image/png" forKey:@"mimeType"];
+    return resource;
+}
+
+- (id<FTRequestProtocol>)sdkFilterRequestWithClassName:(NSString *)className events:(NSArray *)events parameters:(NSDictionary *)parameters {
+    Class requestClass = NSClassFromString(className);
+    XCTAssertNotNil(requestClass, @"%@ should be available in unit test target", className);
+    id request = [[requestClass alloc] init];
+    SEL selector = @selector(requestWithEvents:parameters:);
+    XCTAssertTrue([request respondsToSelector:selector], @"%@ should build request with events", className);
+    NSMethodSignature *signature = [request methodSignatureForSelector:selector];
+    NSInvocation *invocation = [NSInvocation invocationWithMethodSignature:signature];
+    invocation.target = request;
+    invocation.selector = selector;
+    [invocation setArgument:&events atIndex:2];
+    [invocation setArgument:&parameters atIndex:3];
+    [invocation invoke];
+    return request;
+}
+
+- (NSData *)sdkFilterTestSegmentData {
+    NSDictionary *segment = @{
+        @"applicationID":@"app-id",
+        @"sessionID":@"session-id",
+        @"viewID":@"view-id",
+        @"records":@[
+            @{
+                @"type":@2,
+                @"timestamp":@1
+            }
+        ]
+    };
+    return [NSJSONSerialization dataWithJSONObject:segment options:kNilOptions error:nil];
 }
 /** Tests that creating a shared session returns a non-nil object. */
 - (void)testSharedSession {
@@ -534,32 +591,54 @@
 
     XCTAssertTrue([instrumentation isFTIntakeRequest:URLRequest], @"RemoteConfig request should be filtered out");
 }
-- (void)testIsFTIntakeRequest{
+- (void)testIsFTIntakeRequest_AllFTRequestSubclasses{
+    [self assertSDKRequestIsFiltered:[FTRequest createRequestWithEvents:@[[FTModelHelper createRumModel]] type:FT_DATA_TYPE_RUM] name:@"FTRumRequest"];
+    [self assertSDKRequestIsFiltered:[FTRequest createRequestWithEvents:@[[FTModelHelper createLogModel]] type:FT_DATA_TYPE_LOGGING] name:@"FTLoggingRequest"];
+
+    id<FTRequestProtocol> segmentRequest = [self sdkFilterRequestWithClassName:@"FTSegmentRequest"
+                                                                         events:@[[self sdkFilterTestSegmentData]]
+                                                                     parameters:@{}];
+    [self assertSDKRequestIsFiltered:segmentRequest name:@"FTSegmentRequest"];
+
+    id<FTRequestProtocol> resourceRequest = [self sdkFilterRequestWithClassName:@"FTResourceRequest"
+                                                                          events:@[[self sdkFilterTestResource]]
+                                                                      parameters:@{}];
+    [self assertSDKRequestIsFiltered:resourceRequest name:@"FTResourceRequest"];
+
+    id<FTRequestProtocol> resourceCheckRequest = [self sdkFilterRequestWithClassName:@"FTResourceCheckRequest"
+                                                                               events:@[@"resource-id"]
+                                                                           parameters:@{FT_APP_ID:@"app-id"}];
+    [self assertSDKRequestIsFiltered:resourceCheckRequest name:@"FTResourceCheckRequest"];
+
+    [self assertSDKRequestIsFiltered:[[FTRemoteConfigurationRequest alloc] init] name:@"FTRemoteConfigurationRequest"];
+    [self assertSDKRequestIsFiltered:[[FTDataFilterPullRequest alloc] init] name:@"FTDataFilterPullRequest"];
+}
+- (void)testIsFTIntakeRequest_InternalRequestHeader{
+    NSMutableURLRequest *request = [NSMutableURLRequest requestWithURL:self.url];
+    [request setValue:@"true" forHTTPHeaderField:FT_HTTP_HEADER_X_SDK_INTERNAL_REQUEST];
+    
+    FTURLSessionInstrumentation *instrumentation = [FTURLSessionInstrumentation sharedInstance];
+    
+    XCTAssertTrue([instrumentation isFTIntakeRequest:request], @"Request with SDK internal request header should be filtered out");
+}
+
+/** Tests that X-Pkg-Id alone no longer marks a request as internal. */
+- (void)testIsFTIntakeRequest_PackageIdHeaderOnly {
     NSMutableURLRequest *request = [NSMutableURLRequest requestWithURL:self.url];
     [request setValue:@"rumm-" forHTTPHeaderField:FT_HTTP_HEADER_X_PKG_ID];
     
     FTURLSessionInstrumentation *instrumentation = [FTURLSessionInstrumentation sharedInstance];
     
-    XCTAssertTrue([instrumentation isFTIntakeRequest:request], @"request should be filtered out");
+    XCTAssertFalse([instrumentation isFTIntakeRequest:request], @"X-Pkg-Id alone should NOT be filtered out");
 }
 
-/** Tests that normal user requests are not filtered. */
-- (void)testIsFTIntakeRequest_NormalRequest {
-    NSMutableURLRequest *request = [NSMutableURLRequest requestWithURL:self.url];
-    [request setValue:@"some-other-value" forHTTPHeaderField:FT_HTTP_HEADER_X_PKG_ID];
-    
-    FTURLSessionInstrumentation *instrumentation = [FTURLSessionInstrumentation sharedInstance];
-    
-    XCTAssertFalse([instrumentation isFTIntakeRequest:request], @"Normal request should NOT be filtered out");
-}
-
-/** Tests that requests without X-PKG-ID header are not filtered. */
-- (void)testIsFTIntakeRequest_NoPackageHeader {
+/** Tests that requests without SDK internal request header are not filtered. */
+- (void)testIsFTIntakeRequest_NoInternalRequestHeader {
     NSMutableURLRequest *request = [NSMutableURLRequest requestWithURL:self.url];
     
     FTURLSessionInstrumentation *instrumentation = [FTURLSessionInstrumentation sharedInstance];
   
-    XCTAssertFalse([instrumentation isFTIntakeRequest:request], @"Request without X-PKG-ID header should NOT be filtered out");
+    XCTAssertFalse([instrumentation isFTIntakeRequest:request], @"Request without SDK internal request header should NOT be filtered out");
 }
 
 /** Tests that nil request returns NO. */

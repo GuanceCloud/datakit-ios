@@ -132,6 +132,7 @@
     FTMobileConfig *config = [[FTMobileConfig alloc]initWithDatakitUrl:datakit];
     config.enableSDKDebugLog = YES;
     config.remoteConfiguration = YES;
+    config.enableDataFilter = NO;
     config.remoteConfigMiniUpdateInterval = less?4:1;
     [FTMobileAgent startWithConfigOptions:config];
     FTRumConfig *rum = [[FTRumConfig alloc]initWithAppid:appId];
@@ -832,6 +833,7 @@
     FTMobileConfig *config = [[FTMobileConfig alloc] init];
     config.remoteConfiguration = YES;
     config.remoteConfigMiniUpdateInterval = 0;
+    config.enableDataFilter = NO;
     [FTMobileAgent startWithConfigOptions:config];
     
     XCTAssertFalse([[FTNetworkInfoManager sharedInstance] isNetworkConfigured]);
@@ -876,6 +878,7 @@
     FTMobileConfig *config = [[FTMobileConfig alloc] init];
     config.remoteConfiguration = YES;
     config.remoteConfigMiniUpdateInterval = 0;
+    config.enableDataFilter = NO;
     [FTMobileAgent startWithConfigOptions:config];
     
     XCTAssertFalse([[FTNetworkInfoManager sharedInstance] isNetworkConfigured]);
@@ -911,6 +914,7 @@
     FTMobileConfig *config = [[FTMobileConfig alloc] initWithDatakitUrl:datakit];
     config.remoteConfiguration = YES;
     config.remoteConfigMiniUpdateInterval = 0;
+    config.enableDataFilter = NO;
     [FTMobileAgent startWithConfigOptions:config];
     
     XCTAssertTrue([[FTNetworkInfoManager sharedInstance] isNetworkConfigured]);
@@ -949,6 +953,7 @@
     FTMobileConfig *config = [[FTMobileConfig alloc] init];
     config.remoteConfiguration = YES;
     config.remoteConfigMiniUpdateInterval = 0;
+    config.enableDataFilter = NO;
     [FTMobileAgent startWithConfigOptions:config];
     
     FTRumConfig *rum = [[FTRumConfig alloc] initWithAppid:appId];
@@ -1000,6 +1005,7 @@
     FTMobileConfig *config = [[FTMobileConfig alloc] init];
     config.remoteConfiguration = YES;
     config.remoteConfigMiniUpdateInterval = 0;
+    config.enableDataFilter = NO;
     [FTMobileAgent startWithConfigOptions:config];
     
     FTRumConfig *rum = [[FTRumConfig alloc] initWithAppid:appId];
@@ -1051,6 +1057,7 @@
     FTMobileConfig *config = [[FTMobileConfig alloc] initWithDatakitUrl:datakit];
     config.remoteConfiguration = YES;
     config.remoteConfigMiniUpdateInterval = 0;
+    config.enableDataFilter = NO;
     [FTMobileAgent startWithConfigOptions:config];
     
 

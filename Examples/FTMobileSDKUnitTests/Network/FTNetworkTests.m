@@ -158,6 +158,7 @@ typedef NS_ENUM(NSInteger, FTNetworkTestsType) {
         config.syncPageSize = pageSize>0?pageSize:10;
         config.enableSDKDebugLog = YES;
         config.compressIntakeRequests = NO;
+        config.enableDataFilter = NO;
         [FTMobileAgent startWithConfigOptions:config];
         if(type == FTNetworkTestAutoSyncData){
             FTRumConfig *rum = [[FTRumConfig alloc]initWithAppid:@"Test"];
