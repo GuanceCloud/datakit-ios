@@ -132,13 +132,20 @@ typedef NS_ENUM(NSInteger, FTNetworkStatus) {
     self.networkType = [self networkTypeWithStatus:networkStatus];
 }
 - (void)connectivityChanged{
+    NSArray *observers = nil;
     [self.observerLock lock];
-    for (id observer in self.networkObservers) {
+    @try {
+        observers = self.networkObservers.allObjects;
+    } @finally {
+        [self.observerLock unlock];
+    }
+    BOOL connected = self.isConnected;
+    NSString *typeDescription = [self networkTypeWithStatus:self.networkStatus];
+    for (id observer in observers) {
         if ([observer respondsToSelector:@selector(connectivityChanged:typeDescription:)]) {
-            [observer connectivityChanged:self.isConnected typeDescription:[self networkTypeWithStatus:self.networkStatus]];
+            [observer connectivityChanged:connected typeDescription:typeDescription];
         }
     }
-    [self.observerLock unlock];
 }
 - (void)addNetworkObserver:(id<FTNetworkChangeObserver>)observer{
     [self.observerLock lock];

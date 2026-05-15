@@ -100,63 +100,64 @@
 #endif
 
 }
+- (void)enumerateAppLifecycleDelegatesWithBlock:(void (^)(id<FTAppLifeCycleDelegate> delegate))block{
+    if (!block) return;
+    NSArray *delegates = nil;
+    [self.delegateLock lock];
+    @try {
+        delegates = self.appLifecycleDelegates.allObjects;
+    } @finally {
+        [self.delegateLock unlock];
+    }
+    for (id<FTAppLifeCycleDelegate> delegate in delegates) {
+        block(delegate);
+    }
+}
 
 - (void)applicationDidFinishLaunching:(NSNotification *)notification{
-    [self.delegateLock lock];
-    for (id delegate in self.appLifecycleDelegates) {
+    [self enumerateAppLifecycleDelegatesWithBlock:^(id<FTAppLifeCycleDelegate> delegate) {
         if ([delegate respondsToSelector:@selector(applicationDidFinishLaunching)]) {
             [delegate applicationDidFinishLaunching];
         }
-    }
-    [self.delegateLock unlock];
+    }];
 }
 - (void)applicationDidBecomeActive:(NSNotification *)notification{
-    [self.delegateLock lock];
-    for (id delegate in self.appLifecycleDelegates) {
+    [self enumerateAppLifecycleDelegatesWithBlock:^(id<FTAppLifeCycleDelegate> delegate) {
         if ([delegate respondsToSelector:@selector(applicationDidBecomeActive)]) {
             [delegate applicationDidBecomeActive];
         }
-    }
-    [self.delegateLock unlock];
+    }];
 }
 - (void)applicationWillResignActive:(NSNotification *)notification{
-    [self.delegateLock lock];
-    for (id delegate in self.appLifecycleDelegates) {
+    [self enumerateAppLifecycleDelegatesWithBlock:^(id<FTAppLifeCycleDelegate> delegate) {
         if ([delegate respondsToSelector:@selector(applicationWillResignActive)]) {
             [delegate applicationWillResignActive];
         }
-    }
-    [self.delegateLock unlock];
+    }];
 }
 
 - (void)applicationWillTerminate:(NSNotification *)notification{
-    [self.delegateLock lock];
-    for (id delegate in self.appLifecycleDelegates) {
+    [self enumerateAppLifecycleDelegatesWithBlock:^(id<FTAppLifeCycleDelegate> delegate) {
         if ([delegate respondsToSelector:@selector(applicationWillTerminate)]) {
             [delegate applicationWillTerminate];
         }
-    }
-    [self.delegateLock unlock];
+    }];
 }
 #if FT_HAS_UIKIT
 - (void)applicationWillEnterForeground:(NSNotification *)notification{
-    [self.delegateLock lock];
-    for (id delegate in self.appLifecycleDelegates) {
+    [self enumerateAppLifecycleDelegatesWithBlock:^(id<FTAppLifeCycleDelegate> delegate) {
         if ([delegate respondsToSelector:@selector(applicationWillEnterForeground)]) {
             [delegate applicationWillEnterForeground];
         }
-    }
-    [self.delegateLock unlock];
+    }];
 }
 
 - (void)applicationDidEnterBackground:(NSNotification *)notification{
-    [self.delegateLock lock];
-    for (id delegate in self.appLifecycleDelegates) {
+    [self enumerateAppLifecycleDelegatesWithBlock:^(id<FTAppLifeCycleDelegate> delegate) {
         if ([delegate respondsToSelector:@selector(applicationDidEnterBackground)]) {
             [delegate applicationDidEnterBackground];
         }
-    }
-    [self.delegateLock unlock];
+    }];
 }
 #endif
 

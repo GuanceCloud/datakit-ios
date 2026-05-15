@@ -9,6 +9,16 @@
 #import <XCTest/XCTest.h>
 #import "FTAppLifeCycle.h"
 #import "FTLog.h"
+@interface FTAppLifeCycleSelfRemovingDelegate : NSObject<FTAppLifeCycleDelegate>
+@property (nonatomic, assign) NSInteger applicationDidBecomeActiveCount;
+@end
+@implementation FTAppLifeCycleSelfRemovingDelegate
+- (void)applicationDidBecomeActive{
+    self.applicationDidBecomeActiveCount += 1;
+    [[FTAppLifeCycle sharedInstance] removeAppLifecycleDelegate:self];
+}
+@end
+
 @interface FTAppLifeCycleTest : XCTestCase<FTAppLifeCycleDelegate>
 @property (nonatomic,assign) NSInteger applicationWillTerminateCount;
 @property (nonatomic,assign) NSInteger applicationDidBecomeActiveCount;
@@ -78,6 +88,17 @@
      postNotificationName:UIApplicationWillTerminateNotification object:nil];
     XCTAssertTrue(self.applicationWillTerminateCount-count == 1);
 
+}
+- (void)testLifecycleDelegateCanRemoveItselfDuringCallback{
+    FTAppLifeCycleSelfRemovingDelegate *delegate = [[FTAppLifeCycleSelfRemovingDelegate alloc] init];
+    [[FTAppLifeCycle sharedInstance] addAppLifecycleDelegate:delegate];
+
+    [[NSNotificationCenter defaultCenter]
+     postNotificationName:UIApplicationDidBecomeActiveNotification object:nil];
+    [[NSNotificationCenter defaultCenter]
+     postNotificationName:UIApplicationDidBecomeActiveNotification object:nil];
+
+    XCTAssertEqual(delegate.applicationDidBecomeActiveCount, 1);
 }
 - (void)applicationWillTerminate{
     self.applicationWillTerminateCount += 1;

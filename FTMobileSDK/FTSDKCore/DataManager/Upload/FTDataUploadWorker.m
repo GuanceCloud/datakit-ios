@@ -25,8 +25,10 @@ static const NSTimeInterval kInitialRetryDelay = 0.5; // Initial 500ms delay
 @property (nonatomic, assign) int syncSleepTime;
 @property (nonatomic, strong) dispatch_queue_t networkQueue;
 
-@property (atomic, assign) BOOL isUploading;
-@property (atomic, assign) BOOL finish;
+/// Actual upload task is running.
+@property (nonatomic, assign) BOOL isUploading;
+/// Delayed auto-upload has been requested but has not started yet.
+@property (nonatomic, assign) BOOL hasPendingUpload;
 
 @property (nonatomic, strong) dispatch_block_t uploadWork;
 @property (nonatomic, strong) dispatch_source_t timerSource;
@@ -35,7 +37,6 @@ static const NSTimeInterval kInitialRetryDelay = 0.5; // Initial 500ms delay
 
 @implementation FTDataUploadWorker{
     pthread_rwlock_t _uploadWorkLock;
-    pthread_rwlock_t _timerWorkLock;
 }
 @synthesize uploadWork = _uploadWork;
 @synthesize timerSource = _timerSource;
@@ -43,7 +44,6 @@ static const NSTimeInterval kInitialRetryDelay = 0.5; // Initial 500ms delay
     self = [super init];
     if (self) {
         pthread_rwlock_init(&_uploadWorkLock, NULL);
-        pthread_rwlock_init(&_timerWorkLock, NULL);
         _uploadPageSize = syncPageSize;
         _syncSleepTime = syncSleepTime;
         _httpClient =[[FTHTTPClient alloc]initWithTimeoutIntervalForRequest:syncPageSize>30?syncPageSize:30];
@@ -73,29 +73,82 @@ static const NSTimeInterval kInitialRetryDelay = 0.5; // Initial 500ms delay
     pthread_rwlock_unlock(&_uploadWorkLock);
     return block_t;
 }
--(void)flushWithSleep:(BOOL)withSleep{
-    if (self.isUploading && !self.finish){
-        return;
+- (BOOL)prepareDelayedUploadIfIdle{
+    @synchronized (self) {
+        if (self.isUploading) {
+            return NO;
+        }
+        self.hasPendingUpload = YES;
+        return YES;
     }
+}
+- (BOOL)isDelayedUploadPending{
+    @synchronized (self) {
+        return self.hasPendingUpload;
+    }
+}
+- (void)clearDelayedUploadPending{
+    @synchronized (self) {
+        self.hasPendingUpload = NO;
+    }
+}
+- (BOOL)beginImmediateUpload{
+    @synchronized (self) {
+        if (self.isUploading) {
+            return NO;
+        }
+        self.hasPendingUpload = NO;
+        self.isUploading = YES;
+        return YES;
+    }
+}
+- (BOOL)beginDelayedUploadIfPending{
+    @synchronized (self) {
+        if (!self.hasPendingUpload || self.isUploading) {
+            return NO;
+        }
+        self.hasPendingUpload = NO;
+        self.isUploading = YES;
+        return YES;
+    }
+}
+- (void)markUploadFinished{
+    @synchronized (self) {
+        self.isUploading = NO;
+    }
+}
+- (void)scheduleDelayedUpload{
     __weak typeof(self) weakSelf = self;
-    if (withSleep) {
-        // If Timer already exists, directly reset the trigger time
-        dispatch_async(self.networkQueue, ^{
-            __strong typeof(weakSelf) strongSelf = weakSelf;
-            if (!strongSelf) return;
+    dispatch_async(self.networkQueue, ^{
+        __strong typeof(weakSelf) strongSelf = weakSelf;
+        if (!strongSelf) return;
+        if ([strongSelf prepareDelayedUploadIfIdle]){
             if (strongSelf.timerSource) {
                 [strongSelf resetExistingTimer];
             } else {
                 [strongSelf createNewTimer];
             }
-        });
+        }
+    });
+}
+-(void)flushWithSleep:(BOOL)withSleep{
+    if (withSleep) {
+        [self scheduleDelayedUpload];
     }else{
+        __weak typeof(self) weakSelf = self;
         dispatch_sync(self.networkQueue, ^{
             __strong typeof(weakSelf) strongSelf = weakSelf;
             if (!strongSelf) return;
             if(strongSelf.timerSource) dispatch_source_cancel(strongSelf.timerSource);
             strongSelf.timerSource = nil;
+            if(strongSelf.uploadWork) dispatch_block_cancel(strongSelf.uploadWork);
+            strongSelf.uploadWork = nil;
         });
+        [self clearDelayedUploadPending];
+        if (![self beginImmediateUpload]) {
+            FTInnerLogDebug(@"[NETWORK]: Network is Uploading. ignore this upload");
+            return;
+        }
         [self _flushSyncData:NO];
     }
 }
@@ -114,11 +167,13 @@ static const NSTimeInterval kInitialRetryDelay = 0.5; // Initial 500ms delay
     dispatch_source_set_event_handler(self.timerSource, ^{
         __strong typeof(weakSelf) strongSelf = weakSelf;
         if (!strongSelf) return;
-        // Execute actual operation after trigger
-        [strongSelf _flushSyncData:YES];
         // Cancel and clean up Timer
         dispatch_source_cancel(strongSelf.timerSource);
         strongSelf.timerSource = nil;
+        if ([strongSelf isDelayedUploadPending]) {
+            // Execute actual operation after trigger
+            [strongSelf _flushSyncData:YES];
+        }
     });
     // Set initial trigger time
     dispatch_time_t delay = dispatch_time(DISPATCH_TIME_NOW, 100 * NSEC_PER_MSEC);
@@ -127,7 +182,7 @@ static const NSTimeInterval kInitialRetryDelay = 0.5; // Initial 500ms delay
     dispatch_resume(self.timerSource);
 }
 -(void)cancelSynchronously{
-    self.finish = YES;
+    [self clearDelayedUploadPending];
     __weak typeof(self) weakSelf = self;
     dispatch_sync(self.networkQueue, ^{
         __strong __typeof(weakSelf) strongSelf = weakSelf;
@@ -141,7 +196,7 @@ static const NSTimeInterval kInitialRetryDelay = 0.5; // Initial 500ms delay
     });
 }
 - (void)cancelAsynchronously{
-    self.finish = YES;
+    [self clearDelayedUploadPending];
     __weak typeof(self) weakSelf = self;
     dispatch_async(self.networkQueue, ^{
         __strong __typeof(weakSelf) strongSelf = weakSelf;
@@ -155,27 +210,29 @@ static const NSTimeInterval kInitialRetryDelay = 0.5; // Initial 500ms delay
     });
 }
 - (void)_flushSyncData:(BOOL)withSleep{
-    if (self.isUploading) {
-        FTInnerLogDebug(@"[NETWORK]: Network is Uploading. ignore this upload");
-        return;
-    }
-    self.isUploading = YES;
     __weak typeof(self) weakSelf = self;
     dispatch_block_t uploadWork = dispatch_block_create(0, ^{
         __strong __typeof(weakSelf) strongSelf = weakSelf;
         if (!strongSelf) {
             return;
         }
-        [strongSelf.errorSampledConsume checkRUMSessionOnErrorDatasExpired];
-        if([[FTTrackerEventDBTool sharedManager] getUploadDatasCount]>0){
-            if([FTNetworkConnectivity sharedInstance].isConnected){
-                [strongSelf privateUpload];
+        if (withSleep && ![strongSelf beginDelayedUploadIfPending]) {
+            FTInnerLogDebug(@"[NETWORK]: Network is Uploading. ignore this upload");
+            return;
+        }
+        @try {
+            [strongSelf.errorSampledConsume checkRUMSessionOnErrorDatasExpired];
+            if([[FTTrackerEventDBTool sharedManager] getUploadDatasCount]>0){
+                if([FTNetworkConnectivity sharedInstance].isConnected){
+                    [strongSelf privateUpload];
+                }else{
+                    FTInnerLogError(@"[NETWORK] Network unreachable, cancel upload");
+                }
             }else{
-                FTInnerLogError(@"[NETWORK] Network unreachable, cancel upload");
+                FTInnerLogDebug(@"[NETWORK]: No Data to upload");
             }
-        }else{
-            strongSelf.isUploading = NO;
-            FTInnerLogDebug(@"[NETWORK]: No Data to upload");
+        } @finally {
+            [strongSelf markUploadFinished];
         }
     });
     self.uploadWork = uploadWork;
@@ -192,12 +249,9 @@ static const NSTimeInterval kInitialRetryDelay = 0.5; // Initial 500ms delay
         FTInnerLogDebug(@"[NETWORK]:privateUpload start upload");
         [self flushWithType:FT_DATA_TYPE_RUM];
         [self flushWithType:FT_DATA_TYPE_LOGGING];
-        self.isUploading = NO;
         FTInnerLogDebug(@"[NETWORK]:privateUpload end upload");
     } @catch (NSException *exception) {
         FTInnerLogError(@"[NETWORK] Failed to execute upload operation %@",exception);
-    } @finally {
-        self.isUploading = NO;
     }
 }
 -(void)flushWithType:(NSString *)type{
@@ -274,7 +328,6 @@ static const NSTimeInterval kInitialRetryDelay = 0.5; // Initial 500ms delay
     return NO;
 }
 -(void)dealloc{
-    pthread_rwlock_destroy(&_timerWorkLock);
     pthread_rwlock_destroy(&_uploadWorkLock);
 }
 @end

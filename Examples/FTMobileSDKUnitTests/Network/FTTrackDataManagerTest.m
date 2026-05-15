@@ -26,6 +26,11 @@
 @property (nonatomic, strong) XCTestExpectation *expectation;
 
 @end
+@interface FTDataUploadWorker (FTTrackDataManagerTest)
+@property (nonatomic, assign, readonly) BOOL isUploading;
+@property (nonatomic, assign, readonly) BOOL hasPendingUpload;
+@property (nonatomic, strong, readonly) dispatch_queue_t networkQueue;
+@end
 
 @implementation FTTrackDataManagerTest
 
@@ -265,6 +270,37 @@
         [FTTrackDataManager shutDown];
     }];
     XCTAssertTrue(interval<0.1);
+}
+- (void)testDelayedUploadOnlyMarksPendingBeforeUploadStarts{
+    [FTTrackDataManager startWithAutoSync:NO syncPageSize:10 syncSleepTime:0];
+    FTDataUploadWorker *worker = [FTTrackDataManager sharedInstance].dataUploadWorker;
+
+    [worker flushWithSleep:YES];
+    dispatch_sync(worker.networkQueue, ^{});
+
+    XCTAssertFalse(worker.isUploading);
+    XCTAssertTrue(worker.hasPendingUpload);
+
+    [FTTrackDataManager shutDown];
+}
+- (void)testManualUploadCancelsPendingDelayedUpload{
+    [self mockHttp];
+    [[FTTrackerEventDBTool sharedManager] deleteAllDatas];
+    [FTTrackDataManager startWithAutoSync:NO syncPageSize:10 syncSleepTime:0];
+    [[FTTrackDataManager sharedInstance] addTrackData:[FTModelHelper createRumModel] type:FTAddDataRUM];
+    FTDataUploadWorker *worker = [FTTrackDataManager sharedInstance].dataUploadWorker;
+
+    [worker flushWithSleep:YES];
+    dispatch_sync(worker.networkQueue, ^{});
+    XCTAssertFalse(worker.isUploading);
+    XCTAssertTrue(worker.hasPendingUpload);
+
+    [[FTTrackDataManager sharedInstance] flushSyncData];
+
+    XCTAssertTrue(worker.isUploading);
+    XCTAssertFalse(worker.hasPendingUpload);
+
+    [FTTrackDataManager shutDown];
 }
 - (void)testDBReachHalfLimit{
     [[FTTrackerEventDBTool sharedManager] deleteAllDatas];
