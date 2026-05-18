@@ -22,7 +22,9 @@ static const int FTDataFilterDefaultUpdateInterval = 30 * 60;
 @property (nonatomic, strong) FTDataFilter *localFilter;
 @property (nonatomic, strong) FTDataFilter *remoteFilter;
 @property (nonatomic, copy) NSString *remoteMD5;
-@property (nonatomic, assign) BOOL isFetching;
+@property (nonatomic, assign) NSUInteger generation;
+@property (nonatomic, copy) NSString *endpointKey;
+@property (nonatomic, assign) NSUInteger activeRequestCount;
 @property (nonatomic, assign) NSTimeInterval lastRequestTimeInterval;
 @property (nonatomic, assign, readwrite) BOOL shouldDisableServerFilter;
 @property (nonatomic, strong) FTHTTPClient *httpClient;
@@ -49,21 +51,40 @@ static dispatch_once_t onceToken;
     return self;
 }
 
+- (BOOL)shouldDisableServerFilter {
+    @synchronized (self) {
+        return _shouldDisableServerFilter;
+    }
+}
+
 - (void)enable:(BOOL)enable
 localFilters:(NSDictionary<NSString *, NSArray<NSString *> *> *)localFilters
 updateInterval:(int)updateInterval {
+    FTDataFilter *localFilter = enable ? [self dataFilterWithFilters:localFilters logPrefix:@"local"] : nil;
+    NSString *endpointKey = [self currentEndpointKey];
     @synchronized (self) {
+        self.generation++;
         self.enable = enable;
         self.updateInterval = updateInterval > 0 ? updateInterval : FTDataFilterDefaultUpdateInterval;
-        self.localFilter = [[FTDataFilter alloc] initWithFilters:[self sanitizedFilters:localFilters]];
+        self.localFilter = localFilter;
         self.remoteFilter = nil;
         self.remoteMD5 = nil;
-        self.shouldDisableServerFilter = NO;
+        self.endpointKey = endpointKey;
+        _shouldDisableServerFilter = NO;
         self.lastRequestTimeInterval = 0;
-        self.isFetching = NO;
+        self.activeRequestCount = 0;
     }
     if (enable) {
         [self updateRemoteFilterIfNeededWithForce:YES];
+    }
+}
+
+- (FTDataFilter *)dataFilterWithFilters:(NSDictionary *)filters logPrefix:(NSString *)logPrefix {
+    @try {
+        return [[FTDataFilter alloc] initWithFilters:[self sanitizedFilters:filters]];
+    } @catch (NSException *exception) {
+        FTInnerLogError(@"[data-filter] Compile %@ filters exception: %@", logPrefix, exception);
+        return [[FTDataFilter alloc] initWithFilters:@{}];
     }
 }
 
@@ -90,16 +111,37 @@ updateInterval:(int)updateInterval {
 }
 
 - (void)updateRemoteFilterIfNeededWithForce:(BOOL)force {
+    NSUInteger requestGeneration = 0;
+    NSString *requestEndpointKey = nil;
     @synchronized (self) {
-        if (!self.enable || self.isFetching || ![FTNetworkInfoManager sharedInstance].isNetworkConfigured) {
+        if (!self.enable || ![FTNetworkInfoManager sharedInstance].isNetworkConfigured) {
+            return;
+        }
+        NSString *endpointKey = [self currentEndpointKey];
+        if (endpointKey.length == 0) {
             return;
         }
         NSTimeInterval now = NSDate.date.timeIntervalSince1970;
+        if (force) {
+            BOOL endpointChanged = self.endpointKey.length > 0 && ![self.endpointKey isEqualToString:endpointKey];
+            self.generation++;
+            self.endpointKey = endpointKey;
+            self.activeRequestCount = 0;
+            if (endpointChanged) {
+                self.remoteFilter = nil;
+                self.remoteMD5 = nil;
+                _shouldDisableServerFilter = NO;
+            }
+        } else if (self.activeRequestCount > 0) {
+            return;
+        }
         if (!force && self.lastRequestTimeInterval > 0 && now - self.lastRequestTimeInterval < self.updateInterval) {
             return;
         }
-        self.isFetching = YES;
+        self.activeRequestCount++;
         self.lastRequestTimeInterval = now;
+        requestGeneration = self.generation;
+        requestEndpointKey = [self.endpointKey copy];
     }
     FTInnerLogDebug(@"[data-filter] Start pulling remote filters.");
     FTDataFilterPullRequest *request = [[FTDataFilterPullRequest alloc] init];
@@ -109,12 +151,19 @@ updateInterval:(int)updateInterval {
         if (!strongSelf) {
             return;
         }
-        [strongSelf handleResponse:httpResponse data:data error:error];
+        [strongSelf handleResponse:httpResponse data:data error:error generation:requestGeneration endpointKey:requestEndpointKey];
     }];
 }
 
-- (void)handleResponse:(NSHTTPURLResponse *)httpResponse data:(NSData *)data error:(NSError *)error {
+- (void)handleResponse:(NSHTTPURLResponse *)httpResponse
+                  data:(NSData *)data
+                 error:(NSError *)error
+            generation:(NSUInteger)generation
+           endpointKey:(NSString *)endpointKey {
     @try {
+        if (![self isCurrentRequestWithGeneration:generation endpointKey:endpointKey]) {
+            return;
+        }
         if (error) {
             FTInnerLogError(@"[data-filter] Pull remote filters failed: %@", error.localizedDescription);
             return;
@@ -128,21 +177,39 @@ updateInterval:(int)updateInterval {
             return;
         }
         NSString *body = [[NSString alloc] initWithData:data encoding:NSUTF8StringEncoding];
+        if (body.length == 0) {
+            FTInnerLogError(@"[data-filter] Pull remote filters failed: invalid response encoding.");
+            return;
+        }
         NSString *md5 = [body ft_md5HashToLower16Bit];
         @synchronized (self) {
+            if (![self isCurrentRequestLockedWithGeneration:generation endpointKey:endpointKey]) {
+                return;
+            }
             if (self.remoteMD5 && [self.remoteMD5 isEqualToString:md5]) {
-                self.shouldDisableServerFilter = YES;
+                _shouldDisableServerFilter = YES;
                 return;
             }
         }
         NSDictionary *response = [FTJSONUtil dictionaryWithJsonString:body];
-        NSDictionary *filters = [self sanitizedFilters:response[@"filters"]];
-        FTDataFilter *remoteFilter = [[FTDataFilter alloc] initWithFilters:filters];
+        if (![response isKindOfClass:NSDictionary.class]) {
+            FTInnerLogError(@"[data-filter] Pull remote filters failed: invalid response json.");
+            return;
+        }
+        id filtersValue = response[@"filters"];
+        if (![filtersValue isKindOfClass:NSDictionary.class]) {
+            FTInnerLogError(@"[data-filter] Pull remote filters failed: invalid filters schema.");
+            return;
+        }
+        FTDataFilter *remoteFilter = [self dataFilterWithFilters:filtersValue logPrefix:@"remote"];
         int interval = [self intervalFromPullInterval:response[@"pull_interval"]];
         @synchronized (self) {
+            if (![self isCurrentRequestLockedWithGeneration:generation endpointKey:endpointKey]) {
+                return;
+            }
             self.remoteFilter = remoteFilter;
             self.remoteMD5 = md5;
-            self.shouldDisableServerFilter = YES;
+            _shouldDisableServerFilter = YES;
             if (interval > 0) {
                 self.updateInterval = interval;
             }
@@ -151,8 +218,36 @@ updateInterval:(int)updateInterval {
     } @catch (NSException *exception) {
         FTInnerLogError(@"[data-filter] Parse remote filters exception: %@", exception);
     } @finally {
-        @synchronized (self) {
-            self.isFetching = NO;
+        [self finishRequestWithGeneration:generation endpointKey:endpointKey];
+    }
+}
+
+- (NSString *)currentEndpointKey {
+    FTNetworkInfoManager *info = [FTNetworkInfoManager sharedInstance];
+    switch (info.configState) {
+        case FTNetworkConfigStateDatakitMode:
+            return info.datakitUrl.length > 0 ? [NSString stringWithFormat:@"datakit:%@", info.datakitUrl] : nil;
+        case FTNetworkConfigStateDatawayMode:
+            return (info.datawayUrl.length > 0 && info.clientToken.length > 0) ? [NSString stringWithFormat:@"dataway:%@:%@", info.datawayUrl, info.clientToken] : nil;
+        default:
+            return nil;
+    }
+}
+
+- (BOOL)isCurrentRequestWithGeneration:(NSUInteger)generation endpointKey:(NSString *)endpointKey {
+    @synchronized (self) {
+        return [self isCurrentRequestLockedWithGeneration:generation endpointKey:endpointKey];
+    }
+}
+
+- (BOOL)isCurrentRequestLockedWithGeneration:(NSUInteger)generation endpointKey:(NSString *)endpointKey {
+    return self.enable && generation == self.generation && endpointKey.length > 0 && [self.endpointKey isEqualToString:endpointKey];
+}
+
+- (void)finishRequestWithGeneration:(NSUInteger)generation endpointKey:(NSString *)endpointKey {
+    @synchronized (self) {
+        if ([self isCurrentRequestLockedWithGeneration:generation endpointKey:endpointKey] && self.activeRequestCount > 0) {
+            self.activeRequestCount--;
         }
     }
 }
@@ -180,15 +275,17 @@ updateInterval:(int)updateInterval {
                           uuid:(NSString *)uuid
                           tags:(NSDictionary *)tags
                         fields:(NSDictionary *)fields {
-    if (!self.enable) {
-        return NO;
-    }
-    [self updateRemoteFilterIfNeededWithForce:NO];
+    BOOL enable = NO;
     FTDataFilter *localFilter = nil;
     FTDataFilter *remoteFilter = nil;
+    [self updateRemoteFilterIfNeededWithForce:NO];
     @synchronized (self) {
+        enable = self.enable;
         localFilter = self.localFilter;
         remoteFilter = self.remoteFilter;
+    }
+    if (!enable) {
+        return NO;
     }
     if ([localFilter isMatchedWithCategory:category source:source tags:tags fields:fields]) {
         FTInnerLogDebug(@"drop data by local filter, category:%@, measurement:%@, uuid:%@", category, source, uuid);
@@ -207,8 +304,10 @@ updateInterval:(int)updateInterval {
         self.localFilter = nil;
         self.remoteFilter = nil;
         self.remoteMD5 = nil;
-        self.shouldDisableServerFilter = NO;
-        self.isFetching = NO;
+        self.generation++;
+        self.endpointKey = nil;
+        _shouldDisableServerFilter = NO;
+        self.activeRequestCount = 0;
         self.lastRequestTimeInterval = 0;
     }
 }

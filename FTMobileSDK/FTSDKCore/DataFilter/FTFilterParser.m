@@ -21,6 +21,13 @@ typedef NS_ENUM(NSUInteger, FTFilterOperator) {
     FTFilterOperatorNotIn,
 };
 
+@interface FTFilterRegexLiteral : NSObject
+@property (nonatomic, copy) NSString *pattern;
+@end
+
+@implementation FTFilterRegexLiteral
+@end
+
 @interface FTFilterCondition : NSObject
 @property (nonatomic, copy) NSString *key;
 @property (nonatomic, assign) FTFilterOperator op;
@@ -106,52 +113,77 @@ typedef NS_ENUM(NSUInteger, FTFilterOperator) {
 @implementation FTFilterParser
 
 + (nullable FTDataFilterRuleBlock)predicateWithRule:(NSString *)rule {
-    NSArray<NSArray<FTFilterCondition *> *> *groups = [self parseRule:rule];
-    if (groups.count == 0) {
+    NSString *body = [self ruleBody:rule];
+    if (body.length == 0) {
         return nil;
     }
-    return ^BOOL(NSDictionary<NSString *,id> *values) {
-        for (NSArray<FTFilterCondition *> *andGroup in groups) {
-            BOOL groupMatched = YES;
-            for (FTFilterCondition *condition in andGroup) {
-                if (![condition evaluate:values]) {
-                    groupMatched = NO;
-                    break;
-                }
-            }
-            if (groupMatched) {
-                return YES;
-            }
-        }
-        return NO;
-    };
+    return [self predicateWithExpression:body];
 }
 
-+ (NSArray<NSArray<FTFilterCondition *> *> *)parseRule:(NSString *)rule {
++ (NSString *)ruleBody:(NSString *)rule {
     if (![rule isKindOfClass:NSString.class] || rule.length == 0) {
-        return @[];
+        return @"";
     }
     NSString *body = [self trimmed:rule];
     if ([body hasPrefix:@"{"] && [body hasSuffix:@"}"] && body.length >= 2) {
         body = [body substringWithRange:NSMakeRange(1, body.length - 2)];
     }
-    NSMutableArray *groups = [NSMutableArray array];
-    for (NSString *orPart in [self splitString:body byLogicalOperator:@"or"]) {
-        NSMutableArray *conditions = [NSMutableArray array];
-        BOOL groupValid = YES;
-        for (NSString *andPart in [self splitString:orPart byLogicalOperator:@"and"]) {
-            FTFilterCondition *condition = [self parseCondition:andPart];
-            if (!condition) {
-                groupValid = NO;
-                break;
-            }
-            [conditions addObject:condition];
-        }
-        if (groupValid && conditions.count > 0) {
-            [groups addObject:[conditions copy]];
-        }
+    return [self trimmed:body];
+}
+
++ (nullable FTDataFilterRuleBlock)predicateWithExpression:(NSString *)expression {
+    NSString *body = [self stripEnclosingParentheses:[self trimmed:expression]];
+    if (body.length == 0) {
+        return nil;
     }
-    return [groups copy];
+    
+    NSArray<NSString *> *orParts = [self splitString:body byLogicalOperator:@"or"];
+    if (orParts.count > 1) {
+        NSMutableArray *predicates = [NSMutableArray arrayWithCapacity:orParts.count];
+        for (NSString *part in orParts) {
+            FTDataFilterRuleBlock predicate = [self predicateWithExpression:part];
+            if (!predicate) {
+                return nil;
+            }
+            [predicates addObject:[predicate copy]];
+        }
+        return ^BOOL(NSDictionary<NSString *, id> *values) {
+            for (FTDataFilterRuleBlock predicate in predicates) {
+                if (predicate(values)) {
+                    return YES;
+                }
+            }
+            return NO;
+        };
+    }
+    
+    NSArray<NSString *> *andParts = [self splitString:body byLogicalOperator:@"and"];
+    if (andParts.count > 1) {
+        NSMutableArray *predicates = [NSMutableArray arrayWithCapacity:andParts.count];
+        for (NSString *part in andParts) {
+            FTDataFilterRuleBlock predicate = [self predicateWithExpression:part];
+            if (!predicate) {
+                return nil;
+            }
+            [predicates addObject:[predicate copy]];
+        }
+        return ^BOOL(NSDictionary<NSString *, id> *values) {
+            for (FTDataFilterRuleBlock predicate in predicates) {
+                if (!predicate(values)) {
+                    return NO;
+                }
+            }
+            return YES;
+        };
+    }
+    
+    FTFilterCondition *condition = [self parseCondition:body];
+    if (!condition) {
+        return nil;
+    }
+    return ^BOOL(NSDictionary<NSString *, id> *values) {
+        return [condition evaluate:values];
+    };
 }
 
 + (nullable FTFilterCondition *)parseCondition:(NSString *)raw {
@@ -159,7 +191,7 @@ typedef NS_ENUM(NSUInteger, FTFilterOperator) {
     if (condition.length == 0) {
         return nil;
     }
-    NSArray<NSString *> *operators = @[@" notmatch ", @" not match ", @" match ", @" notin ", @" not in ", @" in ", @">=", @"<=", @"!=", @"==", @"!~", @"=~", @"=", @">", @"<"];
+    NSArray<NSString *> *operators = @[@" notmatch ", @" not match ", @" match ", @" not_in ", @" notin ", @" not in ", @" in ", @">=", @"<=", @"!=", @"==", @"!~", @"=~", @"=", @">", @"<"];
     NSString *matchedOperator = nil;
     NSRange matchedRange = NSMakeRange(NSNotFound, 0);
     for (NSString *op in operators) {
@@ -181,6 +213,15 @@ typedef NS_ENUM(NSUInteger, FTFilterOperator) {
     result.key = [self normalizedKey:key];
     result.op = [self filterOperatorWithString:matchedOperator];
     result.value = [self parsedValue:value];
+    if ([result.value isKindOfClass:FTFilterRegexLiteral.class]) {
+        FTFilterRegexLiteral *regexLiteral = result.value;
+        result.value = regexLiteral.pattern;
+        if (result.op == FTFilterOperatorEqual) {
+            result.op = FTFilterOperatorRegex;
+        } else if (result.op == FTFilterOperatorNotEqual) {
+            result.op = FTFilterOperatorNotRegex;
+        }
+    }
     if (![self compileRegexIfNeededForCondition:result rawValue:value rawCondition:raw]) {
         return nil;
     }
@@ -201,7 +242,7 @@ typedef NS_ENUM(NSUInteger, FTFilterOperator) {
     unichar quote = 0;
     for (NSUInteger index = 0; index < string.length; index++) {
         unichar ch = [string characterAtIndex:index];
-        if ((ch == '\'' || ch == '"') && (index == 0 || [string characterAtIndex:index - 1] != '\\')) {
+        if ((ch == '\'' || ch == '"' || ch == '`') && (index == 0 || [string characterAtIndex:index - 1] != '\\')) {
             if (!inQuote) {
                 inQuote = YES;
                 quote = ch;
@@ -261,19 +302,35 @@ typedef NS_ENUM(NSUInteger, FTFilterOperator) {
 + (NSRange)rangeOfOperator:(NSString *)op inString:(NSString *)string {
     BOOL inQuote = NO;
     unichar quote = 0;
+    NSInteger parenDepth = 0;
+    NSInteger bracketDepth = 0;
     NSString *lowerString = string.lowercaseString;
     NSString *lowerOp = op.lowercaseString;
     for (NSUInteger index = 0; index + lowerOp.length <= string.length; index++) {
         unichar ch = [string characterAtIndex:index];
-        if ((ch == '\'' || ch == '"') && (index == 0 || [string characterAtIndex:index - 1] != '\\')) {
+        if ((ch == '\'' || ch == '"' || ch == '`') && (index == 0 || [string characterAtIndex:index - 1] != '\\')) {
             if (!inQuote) {
                 inQuote = YES;
                 quote = ch;
             } else if (quote == ch) {
                 inQuote = NO;
             }
+            continue;
         }
-        if (!inQuote && [[lowerString substringWithRange:NSMakeRange(index, lowerOp.length)] isEqualToString:lowerOp]) {
+        if (inQuote) {
+            continue;
+        }
+        if (ch == '(') {
+            parenDepth++;
+        } else if (ch == ')') {
+            parenDepth = MAX(0, parenDepth - 1);
+        } else if (ch == '[') {
+            bracketDepth++;
+        } else if (ch == ']') {
+            bracketDepth = MAX(0, bracketDepth - 1);
+        }
+        if (parenDepth == 0 && bracketDepth == 0 &&
+            [[lowerString substringWithRange:NSMakeRange(index, lowerOp.length)] isEqualToString:lowerOp]) {
             return NSMakeRange(index, lowerOp.length);
         }
     }
@@ -284,28 +341,87 @@ typedef NS_ENUM(NSUInteger, FTFilterOperator) {
     NSMutableArray *parts = [NSMutableArray array];
     BOOL inQuote = NO;
     unichar quote = 0;
+    NSInteger parenDepth = 0;
+    NSInteger bracketDepth = 0;
     NSUInteger start = 0;
     NSString *lower = string.lowercaseString;
-    NSString *needle = [NSString stringWithFormat:@" %@ ", op.lowercaseString];
     for (NSUInteger index = 0; index < string.length; index++) {
         unichar ch = [string characterAtIndex:index];
-        if ((ch == '\'' || ch == '"') && (index == 0 || [string characterAtIndex:index - 1] != '\\')) {
+        if ((ch == '\'' || ch == '"' || ch == '`') && (index == 0 || [string characterAtIndex:index - 1] != '\\')) {
             if (!inQuote) {
                 inQuote = YES;
                 quote = ch;
             } else if (quote == ch) {
                 inQuote = NO;
             }
+            continue;
         }
-        if (!inQuote && index + needle.length <= string.length &&
-            [[lower substringWithRange:NSMakeRange(index, needle.length)] isEqualToString:needle]) {
-            [parts addObject:[string substringWithRange:NSMakeRange(start, index - start)]];
-            index += needle.length - 1;
-            start = index + 1;
+        if (inQuote) {
+            continue;
+        }
+        if (ch == '(') {
+            parenDepth++;
+            continue;
+        }
+        if (ch == ')') {
+            parenDepth = MAX(0, parenDepth - 1);
+            continue;
+        }
+        if (ch == '[') {
+            bracketDepth++;
+            continue;
+        }
+        if (ch == ']') {
+            bracketDepth = MAX(0, bracketDepth - 1);
+            continue;
+        }
+        if (parenDepth == 0 && bracketDepth == 0) {
+            NSUInteger delimiterLength = [self logicalDelimiterLengthInString:lower
+                                                                        index:index
+                                                                     operator:op
+                                                                    character:ch];
+            if (delimiterLength > 0) {
+                [parts addObject:[string substringWithRange:NSMakeRange(start, index - start)]];
+                index += delimiterLength - 1;
+                start = index + 1;
+            }
         }
     }
     [parts addObject:[string substringFromIndex:start]];
     return [parts copy];
+}
+
++ (NSUInteger)logicalDelimiterLengthInString:(NSString *)lower
+                                       index:(NSUInteger)index
+                                    operator:(NSString *)op
+                                   character:(unichar)ch {
+    BOOL isAnd = [op.lowercaseString isEqualToString:@"and"];
+    if (isAnd && ch == ',') {
+        return 1;
+    }
+    NSString *symbol = isAnd ? @"&&" : @"||";
+    if (index + symbol.length <= lower.length &&
+        [[lower substringWithRange:NSMakeRange(index, symbol.length)] isEqualToString:symbol]) {
+        return symbol.length;
+    }
+    NSString *word = op.lowercaseString;
+    if (index + word.length <= lower.length &&
+        [[lower substringWithRange:NSMakeRange(index, word.length)] isEqualToString:word] &&
+        [self isLogicalWordBoundaryInString:lower index:index length:word.length]) {
+        return word.length;
+    }
+    return 0;
+}
+
++ (BOOL)isLogicalWordBoundaryInString:(NSString *)string index:(NSUInteger)index length:(NSUInteger)length {
+    BOOL leftBoundary = index == 0 || ![self isIdentifierCharacter:[string characterAtIndex:index - 1]];
+    NSUInteger end = index + length;
+    BOOL rightBoundary = end >= string.length || ![self isIdentifierCharacter:[string characterAtIndex:end]];
+    return leftBoundary && rightBoundary;
+}
+
++ (BOOL)isIdentifierCharacter:(unichar)ch {
+    return [[NSCharacterSet characterSetWithCharactersInString:@"abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789_"] characterIsMember:ch];
 }
 
 + (FTFilterOperator)filterOperatorWithString:(NSString *)op {
@@ -320,6 +436,7 @@ typedef NS_ENUM(NSUInteger, FTFilterOperator) {
     if ([value isEqualToString:@"notmatch"]) return FTFilterOperatorNotRegex;
     if ([value isEqualToString:@"match"]) return FTFilterOperatorRegex;
     if ([value isEqualToString:@"not match"]) return FTFilterOperatorNotRegex;
+    if ([value isEqualToString:@"not_in"]) return FTFilterOperatorNotIn;
     if ([value isEqualToString:@"notin"]) return FTFilterOperatorNotIn;
     if ([value isEqualToString:@"in"]) return FTFilterOperatorIn;
     if ([value isEqualToString:@"not in"]) return FTFilterOperatorNotIn;
@@ -328,8 +445,17 @@ typedef NS_ENUM(NSUInteger, FTFilterOperator) {
 
 + (id)parsedValue:(NSString *)raw {
     NSString *value = [self trimmed:raw];
+    NSString *lowerValue = value.lowercaseString;
+    if ([lowerValue hasPrefix:@"re("] && [value hasSuffix:@")"] && value.length > 3) {
+        NSString *inner = [value substringWithRange:NSMakeRange(3, value.length - 4)];
+        id patternValue = [self parsedValue:inner];
+        FTFilterRegexLiteral *literal = [FTFilterRegexLiteral new];
+        literal.pattern = [patternValue isKindOfClass:NSString.class] ? patternValue : [patternValue description];
+        return literal;
+    }
     if (([value hasPrefix:@"'"] && [value hasSuffix:@"'"]) ||
-        ([value hasPrefix:@"\""] && [value hasSuffix:@"\""])) {
+        ([value hasPrefix:@"\""] && [value hasSuffix:@"\""]) ||
+        ([value hasPrefix:@"`"] && [value hasSuffix:@"`"])) {
         return [value substringWithRange:NSMakeRange(1, value.length - 2)];
     }
     if (([value hasPrefix:@"("] && [value hasSuffix:@")"]) ||
@@ -354,7 +480,7 @@ typedef NS_ENUM(NSUInteger, FTFilterOperator) {
     NSUInteger start = 0;
     for (NSUInteger index = 0; index < string.length; index++) {
         unichar ch = [string characterAtIndex:index];
-        if ((ch == '\'' || ch == '"') && (index == 0 || [string characterAtIndex:index - 1] != '\\')) {
+        if ((ch == '\'' || ch == '"' || ch == '`') && (index == 0 || [string characterAtIndex:index - 1] != '\\')) {
             if (!inQuote) {
                 inQuote = YES;
                 quote = ch;

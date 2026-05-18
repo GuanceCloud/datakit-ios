@@ -54,7 +54,7 @@
     if (!url) {
         return nil;
     }
-    NSMutableURLRequest *urlRequest = [[NSMutableURLRequest alloc]initWithURL:requestObject.absoluteURL];
+    NSMutableURLRequest *urlRequest = [[NSMutableURLRequest alloc]initWithURL:url];
     if([requestObject respondsToSelector:@selector(adaptedRequest:)]){
         urlRequest = [requestObject adaptedRequest:urlRequest];
     }

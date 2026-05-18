@@ -7,11 +7,88 @@
 
 #import <XCTest/XCTest.h>
 #import "FTDataFilter.h"
+#import "FTDataFilterManager.h"
+#import "FTHTTPClient.h"
+#import "FTNetworkInfoManager.h"
+
+typedef void(^FTDataFilterMockHTTPCompletion)(NSHTTPURLResponse * _Nullable response, NSData * _Nullable data, NSError * _Nullable error);
+
+@interface FTDataFilterMockHTTPClient : FTHTTPClient
+@property (nonatomic, strong) NSMutableArray<FTDataFilterMockHTTPCompletion> *completions;
+- (void)completeRequestAtIndex:(NSUInteger)index responseObject:(id)responseObject;
+- (void)completeRequestAtIndex:(NSUInteger)index rawString:(NSString *)rawString;
+@end
+
+@implementation FTDataFilterMockHTTPClient
+
+- (instancetype)init {
+    self = [super init];
+    if (self) {
+        _completions = [NSMutableArray array];
+    }
+    return self;
+}
+
+- (void)sendRequest:(id<FTRequestProtocol>)request completion:(void (^)(NSHTTPURLResponse * _Nonnull, NSData * _Nullable, NSError * _Nullable))callback {
+    if (callback) {
+        [self.completions addObject:[callback copy]];
+    }
+}
+
+- (void)completeRequestAtIndex:(NSUInteger)index responseObject:(id)responseObject {
+    NSData *data = [NSJSONSerialization dataWithJSONObject:responseObject options:0 error:nil];
+    [self completeRequestAtIndex:index data:data];
+}
+
+- (void)completeRequestAtIndex:(NSUInteger)index rawString:(NSString *)rawString {
+    [self completeRequestAtIndex:index data:[rawString dataUsingEncoding:NSUTF8StringEncoding]];
+}
+
+- (void)completeRequestAtIndex:(NSUInteger)index data:(NSData *)data {
+    if (index >= self.completions.count) {
+        return;
+    }
+    NSURL *url = [NSURL URLWithString:@"http://example.com/v1/datakit/pull"];
+    NSHTTPURLResponse *response = [[NSHTTPURLResponse alloc] initWithURL:url statusCode:200 HTTPVersion:nil headerFields:nil];
+    self.completions[index](response, data, nil);
+}
+
+@end
 
 @interface FTDataFilterTest : XCTestCase
 @end
 
 @implementation FTDataFilterTest
+
+- (void)setUp {
+    [super setUp];
+    [[FTDataFilterManager sharedInstance] shutDown];
+    [[FTDataFilterManager sharedInstance] setValue:[[FTHTTPClient alloc] init] forKey:@"httpClient"];
+    [[FTNetworkInfoManager sharedInstance] clearUploadInfo];
+}
+
+- (void)tearDown {
+    [[FTDataFilterManager sharedInstance] shutDown];
+    [[FTDataFilterManager sharedInstance] setValue:[[FTHTTPClient alloc] init] forKey:@"httpClient"];
+    [[FTNetworkInfoManager sharedInstance] clearUploadInfo];
+    [super tearDown];
+}
+
+- (FTDataFilterManager *)dataFilterManagerWithMockClient:(FTDataFilterMockHTTPClient *)client {
+    FTDataFilterManager *manager = [FTDataFilterManager sharedInstance];
+    [manager setValue:client forKey:@"httpClient"];
+    return manager;
+}
+
+- (void)configureDatakitURL:(NSString *)url {
+    [FTNetworkInfoManager sharedInstance].setUploadURL(url, nil, nil);
+    XCTAssertTrue([FTNetworkInfoManager sharedInstance].isNetworkConfigured);
+}
+
+- (void)configureDatawayURL:(NSString *)url token:(NSString *)token {
+    [FTNetworkInfoManager sharedInstance].setUploadURL(nil, url, token);
+    XCTAssertTrue([FTNetworkInfoManager sharedInstance].isNetworkConfigured);
+}
 
 - (void)testMatchesSourceAndTag {
     FTDataFilter *filter = [[FTDataFilter alloc] initWithFilters:@{
@@ -171,7 +248,94 @@
     XCTAssertFalse([filter isMatchedWithCategory:@"rum"
                                           source:@"error"
                                             tags:@{}
-                                          fields:@{@"error_message": @"token should be redacted"}]);
+                                            fields:@{@"error_message": @"token should be redacted"}]);
+}
+
+- (void)testMatchesCliutilsRegexListExamples {
+    FTDataFilter *filter = [[FTDataFilter alloc] initWithFilters:@{
+        @"logging": @[@"{ abc match ['a.*'] }"]
+    }];
+    XCTAssertTrue([filter isMatchedWithCategory:@"logging"
+                                         source:@"ios_log"
+                                           tags:@{}
+                                         fields:@{@"abc": @"abc123"}]);
+    
+    FTDataFilter *invalidFilter = [[FTDataFilter alloc] initWithFilters:@{
+        @"logging": @[
+            @"{ abc notmatch []}",
+            @"{ abc match ['g(-z]+ng wrong regex']}"
+        ]
+    }];
+    XCTAssertFalse([invalidFilter isMatchedWithCategory:@"logging"
+                                                 source:@"ios_log"
+                                                   tags:@{}
+                                                 fields:@{@"abc": @"abc123"}]);
+}
+
+- (void)testMatchesCliutilsRegexOrExamples {
+    FTDataFilter *filter = [[FTDataFilter alloc] initWithFilters:@{
+        @"logging": @[@"{ abc notmatch ['a.*'] or xyz match ['.*'] }"]
+    }];
+    XCTAssertTrue([filter isMatchedWithCategory:@"logging"
+                                         source:@"ios_log"
+                                           tags:@{@"xyz": @"def"}
+                                         fields:@{@"abc": @"abc123"}]);
+}
+
+- (void)testMatchesCliutilsReFunctionAndNestedOrExample {
+    FTDataFilter *filter = [[FTDataFilter alloc] initWithFilters:@{
+        @"rum": @[@"{ service = re(\".*\") AND (f1 in [\"1\", \"2\", \"3\"] OR t1 match ['def.*'] OR t2 notmatch ['def.*']) }"]
+    }];
+    XCTAssertTrue([filter isMatchedWithCategory:@"rum"
+                                         source:@"resource"
+                                           tags:@{@"service": @"api"}
+                                         fields:@{@"f1": @"2"}]);
+    XCTAssertTrue([filter isMatchedWithCategory:@"rum"
+                                         source:@"resource"
+                                           tags:@{@"service": @"api"}
+                                         fields:@{@"t1": @"def456"}]);
+    XCTAssertTrue([filter isMatchedWithCategory:@"rum"
+                                         source:@"resource"
+                                           tags:@{@"service": @"api"}
+                                         fields:@{@"t2": @"abc"}]);
+    XCTAssertFalse([filter isMatchedWithCategory:@"rum"
+                                          source:@"resource"
+                                            tags:@{@"service": @"api"}
+                                          fields:@{@"t2": @"def456"}]);
+}
+
+- (void)testMatchesCliutilsNotInAndSymbolicOrExample {
+    FTDataFilter *filter = [[FTDataFilter alloc] initWithFilters:@{
+        @"rum": @[@"{abc notin [1.1,1.2,1.3] and (a > 1 || c< 0)}"]
+    }];
+    NSDictionary *matchedFields = @{@"abc": @4, @"a": @(-1), @"c": @(-2)};
+    NSDictionary *unmatchedFields = @{@"abc": @4, @"a": @(-1), @"c": @2};
+    XCTAssertTrue([filter isMatchedWithCategory:@"rum"
+                                         source:@"resource"
+                                           tags:@{}
+                                         fields:matchedFields]);
+    XCTAssertFalse([filter isMatchedWithCategory:@"rum"
+                                          source:@"resource"
+                                            tags:@{}
+                                          fields:unmatchedFields]);
+}
+
+- (void)testMatchesCliutilsReFunctionExamples {
+    FTDataFilter *filter = [[FTDataFilter alloc] initWithFilters:@{
+        @"logging": @[@"{host = re(\"^nginx_.*$\")}"]
+    }];
+    XCTAssertTrue([filter isMatchedWithCategory:@"logging"
+                                         source:@"ios_log"
+                                           tags:@{}
+                                         fields:@{@"host": @"nginx_abc"}]);
+    
+    FTDataFilter *backtickFilter = [[FTDataFilter alloc] initWithFilters:@{
+        @"logging": @[@"{host = re(`nginx_*`)}"]
+    }];
+    XCTAssertFalse([backtickFilter isMatchedWithCategory:@"logging"
+                                                  source:@"ios_log"
+                                                    tags:@{}
+                                                  fields:@{@"host": @"abcdef"}]);
 }
 
 - (void)testInvalidRegexInvalidatesRule {
@@ -182,6 +346,198 @@
                                           source:@"df_rum_ios_log"
                                             tags:@{@"status": @"error"}
                                           fields:@{@"message": @"socket reset"}]);
+}
+
+- (void)testRemoteCallbackAfterShutdownDoesNotCommitState {
+    [self configureDatakitURL:@"http://datakit-a.example"];
+    FTDataFilterMockHTTPClient *client = [FTDataFilterMockHTTPClient new];
+    FTDataFilterManager *manager = [self dataFilterManagerWithMockClient:client];
+    [manager enable:YES localFilters:@{} updateInterval:30];
+    XCTAssertEqual(client.completions.count, 1u);
+    
+    [manager shutDown];
+    [client completeRequestAtIndex:0 responseObject:@{
+        @"filters": @{@"logging": @[@"{ status = 'old_remote' }"]}
+    }];
+    
+    XCTAssertFalse(manager.shouldDisableServerFilter);
+    XCTAssertFalse([manager isFilteredWithCategory:@"logging"
+                                            source:@"ios_log"
+                                              uuid:@"uuid"
+                                              tags:@{@"status": @"old_remote"}
+                                            fields:@{}]);
+}
+
+- (void)testRemoteCallbackFromPreviousGenerationDoesNotOverrideReinit {
+    [self configureDatakitURL:@"http://datakit-a.example"];
+    FTDataFilterMockHTTPClient *client = [FTDataFilterMockHTTPClient new];
+    FTDataFilterManager *manager = [self dataFilterManagerWithMockClient:client];
+    [manager enable:YES localFilters:@{} updateInterval:30];
+    XCTAssertEqual(client.completions.count, 1u);
+    
+    [manager enable:YES localFilters:@{@"logging": @[@"{ status = 'local_new' }"]} updateInterval:30];
+    XCTAssertEqual(client.completions.count, 2u);
+    
+    [client completeRequestAtIndex:0 responseObject:@{
+        @"filters": @{@"logging": @[@"{ status = 'old_remote' }"]}
+    }];
+    XCTAssertFalse(manager.shouldDisableServerFilter);
+    XCTAssertFalse([manager isFilteredWithCategory:@"logging"
+                                            source:@"ios_log"
+                                              uuid:@"uuid"
+                                              tags:@{@"status": @"old_remote"}
+                                            fields:@{}]);
+    XCTAssertTrue([manager isFilteredWithCategory:@"logging"
+                                           source:@"ios_log"
+                                             uuid:@"uuid"
+                                             tags:@{@"status": @"local_new"}
+                                           fields:@{}]);
+    
+    [client completeRequestAtIndex:1 responseObject:@{
+        @"filters": @{@"logging": @[@"{ status = 'new_remote' }"]}
+    }];
+    XCTAssertTrue(manager.shouldDisableServerFilter);
+    XCTAssertTrue([manager isFilteredWithCategory:@"logging"
+                                           source:@"ios_log"
+                                             uuid:@"uuid"
+                                             tags:@{@"status": @"new_remote"}
+                                           fields:@{}]);
+}
+
+- (void)testForceRefreshDiscardsPreviousDatakitEndpointResponse {
+    [self configureDatakitURL:@"http://datakit-a.example"];
+    FTDataFilterMockHTTPClient *client = [FTDataFilterMockHTTPClient new];
+    FTDataFilterManager *manager = [self dataFilterManagerWithMockClient:client];
+    [manager enable:YES localFilters:@{} updateInterval:30];
+    XCTAssertEqual(client.completions.count, 1u);
+    
+    [self configureDatakitURL:@"http://datakit-b.example"];
+    [manager updateRemoteFilterIfNeededWithForce:YES];
+    XCTAssertEqual(client.completions.count, 2u);
+    
+    [client completeRequestAtIndex:0 responseObject:@{
+        @"filters": @{@"logging": @[@"{ status = 'old_endpoint' }"]}
+    }];
+    XCTAssertFalse(manager.shouldDisableServerFilter);
+    XCTAssertFalse([manager isFilteredWithCategory:@"logging"
+                                            source:@"ios_log"
+                                              uuid:@"uuid"
+                                              tags:@{@"status": @"old_endpoint"}
+                                            fields:@{}]);
+    
+    [client completeRequestAtIndex:1 responseObject:@{
+        @"filters": @{@"logging": @[@"{ status = 'new_endpoint' }"]}
+    }];
+    XCTAssertTrue(manager.shouldDisableServerFilter);
+    XCTAssertTrue([manager isFilteredWithCategory:@"logging"
+                                           source:@"ios_log"
+                                             uuid:@"uuid"
+                                             tags:@{@"status": @"new_endpoint"}
+                                           fields:@{}]);
+}
+
+- (void)testForceRefreshDiscardsPreviousDatawayTokenResponse {
+    [self configureDatawayURL:@"http://dataway.example" token:@"token-a"];
+    FTDataFilterMockHTTPClient *client = [FTDataFilterMockHTTPClient new];
+    FTDataFilterManager *manager = [self dataFilterManagerWithMockClient:client];
+    [manager enable:YES localFilters:@{} updateInterval:30];
+    XCTAssertEqual(client.completions.count, 1u);
+    
+    [self configureDatawayURL:@"http://dataway.example" token:@"token-b"];
+    [manager updateRemoteFilterIfNeededWithForce:YES];
+    XCTAssertEqual(client.completions.count, 2u);
+    
+    [client completeRequestAtIndex:0 responseObject:@{
+        @"filters": @{@"logging": @[@"{ status = 'old_token' }"]}
+    }];
+    XCTAssertFalse(manager.shouldDisableServerFilter);
+    XCTAssertFalse([manager isFilteredWithCategory:@"logging"
+                                            source:@"ios_log"
+                                              uuid:@"uuid"
+                                              tags:@{@"status": @"old_token"}
+                                            fields:@{}]);
+    
+    [client completeRequestAtIndex:1 responseObject:@{
+        @"filters": @{@"logging": @[@"{ status = 'new_token' }"]}
+    }];
+    XCTAssertTrue(manager.shouldDisableServerFilter);
+    XCTAssertTrue([manager isFilteredWithCategory:@"logging"
+                                           source:@"ios_log"
+                                             uuid:@"uuid"
+                                             tags:@{@"status": @"new_token"}
+                                           fields:@{}]);
+}
+
+- (void)testInvalidRemoteResponseDoesNotDisableServerFilter {
+    [self configureDatakitURL:@"http://datakit-a.example"];
+    FTDataFilterMockHTTPClient *client = [FTDataFilterMockHTTPClient new];
+    FTDataFilterManager *manager = [self dataFilterManagerWithMockClient:client];
+    [manager enable:YES localFilters:@{} updateInterval:30];
+    XCTAssertEqual(client.completions.count, 1u);
+    
+    [client completeRequestAtIndex:0 rawString:@"not-json"];
+    XCTAssertFalse(manager.shouldDisableServerFilter);
+    
+    [manager updateRemoteFilterIfNeededWithForce:YES];
+    XCTAssertEqual(client.completions.count, 2u);
+    [client completeRequestAtIndex:1 responseObject:@{@"filters": @"bad-schema"}];
+    XCTAssertFalse(manager.shouldDisableServerFilter);
+}
+
+- (void)testInvalidLocalFiltersDoNotCrash {
+    FTDataFilterManager *manager = [FTDataFilterManager sharedInstance];
+    id invalidFilters = @"bad-filters";
+    XCTAssertNoThrow([manager enable:YES
+                        localFilters:(NSDictionary<NSString *,NSArray<NSString *> *> *)invalidFilters
+                      updateInterval:30]);
+    XCTAssertFalse([manager isFilteredWithCategory:@"logging"
+                                            source:@"ios_log"
+                                              uuid:@"uuid"
+                                              tags:@{@"status": @"anything"}
+                                            fields:@{}]);
+}
+
+- (void)testFilteringWhileEnableAndShutdownDoesNotCrash {
+    FTDataFilterManager *manager = [FTDataFilterManager sharedInstance];
+    NSDictionary *filters = @{@"logging": @[@"{ status = 'drop' }"]};
+    dispatch_queue_t queue = dispatch_queue_create("com.ft.data-filter.concurrent-test", DISPATCH_QUEUE_CONCURRENT);
+    dispatch_group_t group = dispatch_group_create();
+    
+    for (NSInteger index = 0; index < 100; index++) {
+        dispatch_group_async(group, queue, ^{
+            @autoreleasepool {
+                [manager enable:YES localFilters:filters updateInterval:30];
+            }
+        });
+        dispatch_group_async(group, queue, ^{
+            @autoreleasepool {
+                [manager isFilteredWithCategory:@"logging"
+                                         source:@"ios_log"
+                                           uuid:@"uuid"
+                                           tags:@{@"status": @"drop"}
+                                         fields:@{}];
+            }
+        });
+        dispatch_group_async(group, queue, ^{
+            @autoreleasepool {
+                [manager shutDown];
+            }
+        });
+    }
+    
+    XCTAssertEqual(dispatch_group_wait(group, dispatch_time(DISPATCH_TIME_NOW, (int64_t)(5 * NSEC_PER_SEC))), 0);
+    [manager enable:YES localFilters:filters updateInterval:30];
+    XCTAssertTrue([manager isFilteredWithCategory:@"logging"
+                                           source:@"ios_log"
+                                             uuid:@"uuid"
+                                             tags:@{@"status": @"drop"}
+                                           fields:@{}]);
+    [manager shutDown];
+    XCTAssertFalse([manager isFilteredWithCategory:@"logging"
+                                            source:@"ios_log"
+                                              uuid:@"uuid"
+                                              tags:@{@"status": @"drop"}
+                                            fields:@{}]);
 }
 
 @end
