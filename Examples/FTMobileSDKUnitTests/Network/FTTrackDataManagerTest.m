@@ -302,6 +302,48 @@
 
     [FTTrackDataManager shutDown];
 }
+- (void)testShutdownCancelsPendingDelayedUploadBeforeStart{
+    [FTTrackDataManager shutDown];
+    [[FTTrackerEventDBTool sharedManager] deleteAllDatas];
+    __block NSInteger requestCount = 0;
+    NSString *urlStr = @"http://www.test.com/some/url/shutdown/pending";
+    id<OHHTTPStubsDescriptor> stub = [OHHTTPStubs stubRequestsPassingTest:^BOOL(NSURLRequest *request) {
+        return [request.URL.absoluteString containsString:urlStr];
+    } withStubResponse:^OHHTTPStubsResponse*(NSURLRequest *request) {
+        @synchronized (self) {
+            requestCount++;
+        }
+        NSString *data = [FTJSONUtil convertToJsonData:@{@"data":@"Hello World!",@"code":@200}];
+        return [OHHTTPStubsResponse responseWithData:[data dataUsingEncoding:NSUTF8StringEncoding] statusCode:200 headers:nil];
+    }];
+    FTNetworkInfoManager *manager = [FTNetworkInfoManager sharedInstance];
+    manager.setUploadURL(urlStr,nil,nil)
+        .setSdkVersion(@"RequestTest");
+
+    [FTTrackDataManager startWithAutoSync:NO syncPageSize:1 syncSleepTime:0];
+    [[FTTrackDataManager sharedInstance] addTrackData:[FTModelHelper createRUMModel:@"testShutdownCancelsPendingDelayedUploadBeforeStart"] type:FTAddDataRUM];
+    FTDataUploadWorker *worker = [FTTrackDataManager sharedInstance].dataUploadWorker;
+
+    [worker flushWithSleep:YES];
+    dispatch_sync(worker.networkQueue, ^{});
+    XCTAssertTrue(worker.hasPendingUpload);
+    [FTTrackDataManager shutDown];
+
+    XCTestExpectation *unexpectedUpload = [self expectationWithDescription:@"pending upload should not start after shutdown"];
+    unexpectedUpload.inverted = YES;
+    dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)(0.3 * NSEC_PER_SEC)), dispatch_get_main_queue(), ^{
+        @synchronized (self) {
+            if (requestCount > 0) {
+                [unexpectedUpload fulfill];
+            }
+        }
+    });
+    [self waitForExpectations:@[unexpectedUpload] timeout:0.5];
+    @synchronized (self) {
+        XCTAssertEqual(requestCount, 0);
+    }
+    [OHHTTPStubs removeStub:stub];
+}
 - (void)testDBReachHalfLimit{
     [[FTTrackerEventDBTool sharedManager] deleteAllDatas];
     [FTTrackDataManager startWithAutoSync:NO syncPageSize:10 syncSleepTime:0];
@@ -412,6 +454,99 @@
 }
 - (void)testNetworkFail_429RetryAndKeepData{
     [self verifyUploadRetryAndKeepDataWithStatusCode:429];
+}
+- (void)testShutdownStopsRetryForInFlightFailedUpload{
+    [FTTrackDataManager shutDown];
+    [[FTTrackerEventDBTool sharedManager] deleteAllDatas];
+    __block NSInteger requestCount = 0;
+    __block BOOL startedFulfilled = NO;
+    dispatch_semaphore_t allowResponse = dispatch_semaphore_create(0);
+    XCTestExpectation *requestStarted = [self expectationWithDescription:@"first failed request started"];
+    NSString *urlStr = @"http://www.test.com/some/url/shutdown/fail";
+    id<OHHTTPStubsDescriptor> stub = [OHHTTPStubs stubRequestsPassingTest:^BOOL(NSURLRequest *request) {
+        return [request.URL.absoluteString containsString:urlStr];
+    } withStubResponse:^OHHTTPStubsResponse*(NSURLRequest *request) {
+        BOOL shouldWait = NO;
+        @synchronized (self) {
+            requestCount++;
+            shouldWait = requestCount == 1;
+            if (!startedFulfilled) {
+                startedFulfilled = YES;
+                [requestStarted fulfill];
+            }
+        }
+        if (shouldWait) {
+            dispatch_semaphore_wait(allowResponse, dispatch_time(DISPATCH_TIME_NOW, (int64_t)(2 * NSEC_PER_SEC)));
+        }
+        NSString *data = [FTJSONUtil convertToJsonData:@{@"data":@"Hello World!",@"code":@403}];
+        return [OHHTTPStubsResponse responseWithData:[data dataUsingEncoding:NSUTF8StringEncoding] statusCode:403 headers:nil];
+    }];
+    FTNetworkInfoManager *manager = [FTNetworkInfoManager sharedInstance];
+    manager.setUploadURL(urlStr,nil,nil)
+        .setSdkVersion(@"RequestTest");
+
+    [FTTrackDataManager startWithAutoSync:NO syncPageSize:1 syncSleepTime:0];
+    [[FTTrackDataManager sharedInstance] addTrackData:[FTModelHelper createRUMModel:@"testShutdownStopsRetryForInFlightFailedUpload"] type:FTAddDataRUM];
+    FTDataUploadWorker *worker = [FTTrackDataManager sharedInstance].dataUploadWorker;
+    [[FTTrackDataManager sharedInstance] flushSyncData];
+    [self waitForExpectations:@[requestStarted] timeout:2];
+
+    [FTTrackDataManager shutDown];
+    dispatch_semaphore_signal(allowResponse);
+    dispatch_sync(worker.networkQueue, ^{});
+
+    @synchronized (self) {
+        XCTAssertEqual(requestCount, 1);
+    }
+    XCTAssertEqual([[FTTrackerEventDBTool sharedManager] getUploadDatasCount], 1);
+    [OHHTTPStubs removeStub:stub];
+}
+- (void)testShutdownCommitsSuccessfulInFlightUploadAndStopsNextBatch{
+    [FTTrackDataManager shutDown];
+    [[FTTrackerEventDBTool sharedManager] deleteAllDatas];
+    __block NSInteger requestCount = 0;
+    __block BOOL startedFulfilled = NO;
+    dispatch_semaphore_t allowResponse = dispatch_semaphore_create(0);
+    XCTestExpectation *requestStarted = [self expectationWithDescription:@"first successful request started"];
+    NSString *urlStr = @"http://www.test.com/some/url/shutdown/success";
+    id<OHHTTPStubsDescriptor> stub = [OHHTTPStubs stubRequestsPassingTest:^BOOL(NSURLRequest *request) {
+        return [request.URL.absoluteString containsString:urlStr];
+    } withStubResponse:^OHHTTPStubsResponse*(NSURLRequest *request) {
+        BOOL shouldWait = NO;
+        @synchronized (self) {
+            requestCount++;
+            shouldWait = requestCount == 1;
+            if (!startedFulfilled) {
+                startedFulfilled = YES;
+                [requestStarted fulfill];
+            }
+        }
+        if (shouldWait) {
+            dispatch_semaphore_wait(allowResponse, dispatch_time(DISPATCH_TIME_NOW, (int64_t)(2 * NSEC_PER_SEC)));
+        }
+        NSString *data = [FTJSONUtil convertToJsonData:@{@"data":@"Hello World!",@"code":@200}];
+        return [OHHTTPStubsResponse responseWithData:[data dataUsingEncoding:NSUTF8StringEncoding] statusCode:200 headers:nil];
+    }];
+    FTNetworkInfoManager *manager = [FTNetworkInfoManager sharedInstance];
+    manager.setUploadURL(urlStr,nil,nil)
+        .setSdkVersion(@"RequestTest");
+
+    [FTTrackDataManager startWithAutoSync:NO syncPageSize:1 syncSleepTime:0];
+    [[FTTrackDataManager sharedInstance] addTrackData:[FTModelHelper createRUMModel:@"testShutdownCommitsSuccessfulInFlightUploadAndStopsNextBatch-1"] type:FTAddDataRUM];
+    [[FTTrackDataManager sharedInstance] addTrackData:[FTModelHelper createRUMModel:@"testShutdownCommitsSuccessfulInFlightUploadAndStopsNextBatch-2"] type:FTAddDataRUM];
+    FTDataUploadWorker *worker = [FTTrackDataManager sharedInstance].dataUploadWorker;
+    [[FTTrackDataManager sharedInstance] flushSyncData];
+    [self waitForExpectations:@[requestStarted] timeout:2];
+
+    [FTTrackDataManager shutDown];
+    dispatch_semaphore_signal(allowResponse);
+    dispatch_sync(worker.networkQueue, ^{});
+
+    @synchronized (self) {
+        XCTAssertEqual(requestCount, 1);
+    }
+    XCTAssertEqual([[FTTrackerEventDBTool sharedManager] getUploadDatasCount], 1);
+    [OHHTTPStubs removeStub:stub];
 }
 - (void)verifyUploadRetryAndKeepDataWithStatusCode:(NSInteger)statusCode{
     [FTTrackDataManager shutDown];

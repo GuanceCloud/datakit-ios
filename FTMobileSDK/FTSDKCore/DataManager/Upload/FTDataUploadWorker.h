@@ -22,6 +22,7 @@ NS_ASSUME_NONNULL_BEGIN
 
 -(void)cancelSynchronously;
 -(void)cancelAsynchronously;
+-(void)invalidateAndCancelPendingUploads;
 -(void)updateSyncPageSize:(int)syncPageSize syncSleepTime:(int)syncSleepTime;
 @end
 

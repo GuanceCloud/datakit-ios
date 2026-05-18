@@ -29,6 +29,8 @@ static const NSTimeInterval kInitialRetryDelay = 0.5; // Initial 500ms delay
 @property (nonatomic, assign) BOOL isUploading;
 /// Delayed auto-upload has been requested but has not started yet.
 @property (nonatomic, assign) BOOL hasPendingUpload;
+/// Worker has been shut down and must not start new upload work.
+@property (nonatomic, assign) BOOL invalidated;
 
 @property (nonatomic, strong) dispatch_block_t uploadWork;
 @property (nonatomic, strong) dispatch_source_t timerSource;
@@ -75,7 +77,7 @@ static const NSTimeInterval kInitialRetryDelay = 0.5; // Initial 500ms delay
 }
 - (BOOL)prepareDelayedUploadIfIdle{
     @synchronized (self) {
-        if (self.isUploading) {
+        if (self.invalidated || self.isUploading) {
             return NO;
         }
         self.hasPendingUpload = YES;
@@ -92,9 +94,14 @@ static const NSTimeInterval kInitialRetryDelay = 0.5; // Initial 500ms delay
         self.hasPendingUpload = NO;
     }
 }
+- (BOOL)isInvalidated{
+    @synchronized (self) {
+        return self.invalidated;
+    }
+}
 - (BOOL)beginImmediateUpload{
     @synchronized (self) {
-        if (self.isUploading) {
+        if (self.invalidated || self.isUploading) {
             return NO;
         }
         self.hasPendingUpload = NO;
@@ -104,7 +111,7 @@ static const NSTimeInterval kInitialRetryDelay = 0.5; // Initial 500ms delay
 }
 - (BOOL)beginDelayedUploadIfPending{
     @synchronized (self) {
-        if (!self.hasPendingUpload || self.isUploading) {
+        if (self.invalidated || !self.hasPendingUpload || self.isUploading) {
             return NO;
         }
         self.hasPendingUpload = NO;
@@ -115,6 +122,12 @@ static const NSTimeInterval kInitialRetryDelay = 0.5; // Initial 500ms delay
 - (void)markUploadFinished{
     @synchronized (self) {
         self.isUploading = NO;
+    }
+}
+- (void)markInvalidated{
+    @synchronized (self) {
+        self.invalidated = YES;
+        self.hasPendingUpload = NO;
     }
 }
 - (void)scheduleDelayedUpload{
@@ -132,6 +145,10 @@ static const NSTimeInterval kInitialRetryDelay = 0.5; // Initial 500ms delay
     });
 }
 -(void)flushWithSleep:(BOOL)withSleep{
+    if ([self isInvalidated]) {
+        FTInnerLogDebug(@"[NETWORK]: Upload worker is invalidated. ignore this upload");
+        return;
+    }
     if (withSleep) {
         [self scheduleDelayedUpload];
     }else{
@@ -170,7 +187,7 @@ static const NSTimeInterval kInitialRetryDelay = 0.5; // Initial 500ms delay
         // Cancel and clean up Timer
         dispatch_source_cancel(strongSelf.timerSource);
         strongSelf.timerSource = nil;
-        if ([strongSelf isDelayedUploadPending]) {
+        if (![strongSelf isInvalidated] && [strongSelf isDelayedUploadPending]) {
             // Execute actual operation after trigger
             [strongSelf _flushSyncData:YES];
         }
@@ -209,7 +226,24 @@ static const NSTimeInterval kInitialRetryDelay = 0.5; // Initial 500ms delay
         strongSelf.timerSource = nil;
     });
 }
+- (void)invalidateAndCancelPendingUploads{
+    [self markInvalidated];
+    __weak typeof(self) weakSelf = self;
+    dispatch_async(self.networkQueue, ^{
+        __strong __typeof(weakSelf) strongSelf = weakSelf;
+        if (!strongSelf) {
+            return;
+        }
+        if(strongSelf.uploadWork) dispatch_block_cancel(strongSelf.uploadWork);
+        strongSelf.uploadWork = nil;
+        if(strongSelf.timerSource) dispatch_source_cancel(strongSelf.timerSource);
+        strongSelf.timerSource = nil;
+    });
+}
 - (void)_flushSyncData:(BOOL)withSleep{
+    if ([self isInvalidated]) {
+        return;
+    }
     __weak typeof(self) weakSelf = self;
     dispatch_block_t uploadWork = dispatch_block_create(0, ^{
         __strong __typeof(weakSelf) strongSelf = weakSelf;
@@ -221,6 +255,9 @@ static const NSTimeInterval kInitialRetryDelay = 0.5; // Initial 500ms delay
             return;
         }
         @try {
+            if ([strongSelf isInvalidated]) {
+                return;
+            }
             [strongSelf.errorSampledConsume checkRUMSessionOnErrorDatasExpired];
             if([[FTTrackerEventDBTool sharedManager] getUploadDatasCount]>0){
                 if([FTNetworkConnectivity sharedInstance].isConnected){
@@ -246,17 +283,28 @@ static const NSTimeInterval kInitialRetryDelay = 0.5; // Initial 500ms delay
 }
 - (void)privateUpload{
     @try {
+        if ([self isInvalidated]) {
+            return;
+        }
         FTInnerLogDebug(@"[NETWORK]:privateUpload start upload");
         [self flushWithType:FT_DATA_TYPE_RUM];
-        [self flushWithType:FT_DATA_TYPE_LOGGING];
+        if (![self isInvalidated]) {
+            [self flushWithType:FT_DATA_TYPE_LOGGING];
+        }
         FTInnerLogDebug(@"[NETWORK]:privateUpload end upload");
     } @catch (NSException *exception) {
         FTInnerLogError(@"[NETWORK] Failed to execute upload operation %@",exception);
     }
 }
 -(void)flushWithType:(NSString *)type{
+    if ([self isInvalidated]) {
+        return;
+    }
     NSArray *events = [[FTTrackerEventDBTool sharedManager] getFirstRecords:self.uploadPageSize withType:type];
     while (events.count > 0) {
+        if ([self isInvalidated]) {
+            break;
+        }
         FTInnerLogDebug(@"[NETWORK][%@] Start reporting events (number of events in this report:%lu)", type,(unsigned long)[events count]);
         FTRequest *request = [FTRequest createRequestWithEvents:events type:type];
         if(![self flushWithRequest:request]){
@@ -274,14 +322,33 @@ static const NSTimeInterval kInitialRetryDelay = 0.5; // Initial 500ms delay
         }else{
             [self.counter uploadRUMCount:events.count];
         }
+        if ([self isInvalidated]) {
+            break;
+        }
         if(events.count < self.uploadPageSize){
             break;
         }else{
             // Reduce synchronization rate to lower CPU usage
-            [NSThread sleepForTimeInterval:0.001*self.syncSleepTime];
+            if (![self sleepBeforeRetryUnlessInvalidated:0.001*self.syncSleepTime]) {
+                break;
+            }
             events = [[FTTrackerEventDBTool sharedManager] getFirstRecords:self.uploadPageSize withType:type];
         }
     }
+}
+- (BOOL)sleepBeforeRetryUnlessInvalidated:(NSTimeInterval)delay{
+    if (delay <= 0) {
+        return ![self isInvalidated];
+    }
+    NSDate *deadline = [NSDate dateWithTimeIntervalSinceNow:delay];
+    while (![self isInvalidated]) {
+        NSTimeInterval remaining = [deadline timeIntervalSinceNow];
+        if (remaining <= 0) {
+            return YES;
+        }
+        [NSThread sleepForTimeInterval:MIN(remaining, 0.05)];
+    }
+    return NO;
 }
 -(BOOL)flushWithRequest:(FTRequest *)request{
     @try {
@@ -289,6 +356,9 @@ static const NSTimeInterval kInitialRetryDelay = 0.5; // Initial 500ms delay
         int retryCount = 0;
         NSTimeInterval delay = kInitialRetryDelay; // Initial delay 500ms
         while (!success) {
+            if ([self isInvalidated]) {
+                return NO;
+            }
             @autoreleasepool {
                 dispatch_semaphore_t  flushSemaphore = dispatch_semaphore_create(0);
                 [self.httpClient sendRequest:request completion:^(NSHTTPURLResponse * _Nonnull httpResponse, NSData * _Nullable data, NSError * _Nullable error) {
@@ -309,9 +379,14 @@ static const NSTimeInterval kInitialRetryDelay = 0.5; // Initial 500ms delay
                 dispatch_semaphore_wait(flushSemaphore, DISPATCH_TIME_FOREVER);
                 
                 if (!success) {
+                    if ([self isInvalidated]) {
+                        return NO;
+                    }
                     if (retryCount < kMaxRetryCount) {
                         FTInnerLogDebug(@"[NETWORK] Request failed, preparing for %dth retry, waiting %.0f milliseconds", retryCount + 1, delay*1000);
-                        [NSThread sleepForTimeInterval:delay];
+                        if (![self sleepBeforeRetryUnlessInvalidated:delay]) {
+                            return NO;
+                        }
                         delay += kInitialRetryDelay; // Backoff
                         retryCount++;
                     } else {

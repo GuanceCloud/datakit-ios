@@ -195,7 +195,7 @@ static FTTrackDataManager *sharedInstance = nil;
 + (void)shutDown{
     @synchronized(sharedInstanceLock) {
         if (sharedInstance) {
-            [sharedInstance.dataUploadWorker cancelAsynchronously];
+            [sharedInstance.dataUploadWorker invalidateAndCancelPendingUploads];
             [sharedInstance.dataCachePolicy insertCacheToDB];
             [[FTAppLifeCycle sharedInstance] removeAppLifecycleDelegate:sharedInstance];
             [[FTTrackerEventDBTool sharedManager] close];
