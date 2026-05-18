@@ -115,6 +115,8 @@ typedef void(^FTDataFilterMockHTTPCompletion)(NSHTTPURLResponse * _Nullable resp
     return YES;
 }
 
+#pragma mark - Remote Pull Schema
+
 - (void)testRemoteDataFilterPullSchemaWithAccessServerURL {
     NSDictionary *environment = NSProcessInfo.processInfo.environment;
     NSString *datakitURLString = environment[@"ACCESS_SERVER_URL"];
@@ -183,263 +185,280 @@ typedef void(^FTDataFilterMockHTTPCompletion)(NSHTTPURLResponse * _Nullable resp
     XCTAssertTrue(manager.shouldDisableServerFilter);
 }
 
-- (void)testMatchesSourceAndTag {
+#pragma mark - Rule Matching
+
+#pragma mark Operators
+
+- (void)testMatchesOnlineConfigInOperator_in {
     FTDataFilter *filter = [[FTDataFilter alloc] initWithFilters:@{
-        @"logging": @[@"{ source = 'df_rum_ios_log' and status = 'error' }"]
+        @"logging": @[@"{  `source` in [ 'df_rum_ios_log' ]  and ( `status` in [ 'ok' , 'info' , 'debug' ] )}"]
+    }];
+    XCTAssertTrue([filter isMatchedWithCategory:@"logging"
+                                         source:@"df_rum_ios_log"
+                                           tags:@{@"status": @"info"}
+                                         fields:@{}]);
+    XCTAssertFalse([filter isMatchedWithCategory:@"logging"
+                                          source:@"df_rum_ios_log"
+                                            tags:@{@"status": @"error"}
+                                          fields:@{}]);
+    XCTAssertFalse([filter isMatchedWithCategory:@"logging"
+                                          source:@"other"
+                                            tags:@{@"status": @"info"}
+                                          fields:@{}]);
+}
+
+- (void)testMatchesOnlineConfigInOperator_not_in {
+    FTDataFilter *filter = [[FTDataFilter alloc] initWithFilters:@{
+        @"logging": @[@"{  `source` in [ 'df_rum_ios_log' ]  and ( `env` notin [ 'prod' , 'gray' ] )}"]
+    }];
+    XCTAssertTrue([filter isMatchedWithCategory:@"logging"
+                                         source:@"df_rum_ios_log"
+                                           tags:@{@"env": @"test"}
+                                         fields:@{}]);
+    XCTAssertFalse([filter isMatchedWithCategory:@"logging"
+                                          source:@"df_rum_ios_log"
+                                            tags:@{@"env": @"prod"}
+                                          fields:@{}]);
+}
+
+- (void)testMatchesOnlineConfigInOperator_match {
+    FTDataFilter *filter = [[FTDataFilter alloc] initWithFilters:@{
+        @"logging": @[@"{  `source` in [ 'df_rum_ios_log' ]  and ( `message` match [ '.*password.*' ] )}"]
+    }];
+    XCTAssertTrue([filter isMatchedWithCategory:@"logging"
+                                         source:@"df_rum_ios_log"
+                                           tags:@{}
+                                         fields:@{@"message": @"user password leaked"}]);
+    XCTAssertFalse([filter isMatchedWithCategory:@"logging"
+                                          source:@"df_rum_ios_log"
+                                            tags:@{}
+                                          fields:@{@"message": @"upload completed"}]);
+}
+
+- (void)testMatchesOnlineConfigInOperator_not_match {
+    FTDataFilter *filter = [[FTDataFilter alloc] initWithFilters:@{
+        @"logging": @[@"{  `source` in [ 'df_rum_ios_log' ]  and ( `message` notmatch [ '.*error.*' ] )}"]
+    }];
+    XCTAssertTrue([filter isMatchedWithCategory:@"logging"
+                                         source:@"df_rum_ios_log"
+                                           tags:@{}
+                                         fields:@{@"message": @"password leaked"}]);
+    XCTAssertFalse([filter isMatchedWithCategory:@"logging"
+                                          source:@"df_rum_ios_log"
+                                            tags:@{}
+                                          fields:@{@"message": @"password error leaked"}]);
+}
+
+#pragma mark Categories
+
+- (void)testMatchesOnlineConfigCategory_logging {
+    FTDataFilter *filter = [[FTDataFilter alloc] initWithFilters:@{
+        @"logging": @[@"{  `source` in [ 'df_rum_ios_log' ]  and ( `status` in [ 'error' ] )}"]
     }];
     XCTAssertTrue([filter isMatchedWithCategory:@"logging"
                                          source:@"df_rum_ios_log"
                                            tags:@{@"status": @"error"}
                                          fields:@{}]);
     XCTAssertFalse([filter isMatchedWithCategory:@"logging"
+                                          source:@"other"
+                                            tags:@{@"status": @"error"}
+                                          fields:@{}]);
+    XCTAssertFalse([filter isMatchedWithCategory:@"logging"
                                           source:@"df_rum_ios_log"
                                             tags:@{@"status": @"info"}
                                           fields:@{}]);
 }
 
-- (void)testMatchesOrAndNumericComparison {
+- (void)testMatchesOnlineConfigCategory_rum {
     FTDataFilter *filter = [[FTDataFilter alloc] initWithFilters:@{
-        @"rum": @[@"{ source = 'resource' and duration >= 1000 or app_id = 'blocked' }"]
+        @"rum": @[@"{  `app_id` in [ 'appid_xxx' ]  and ( `source` in [ 'resource' ]  and  `resource_status` in [ '404' ] )}"]
     }];
+    NSDictionary *matchedTags = @{@"app_id": @"appid_xxx"};
     XCTAssertTrue([filter isMatchedWithCategory:@"rum"
                                          source:@"resource"
-                                           tags:@{}
-                                         fields:@{@"duration": @1000}]);
-    XCTAssertTrue([filter isMatchedWithCategory:@"rum"
-                                         source:@"view"
-                                           tags:@{@"app_id": @"blocked"}
-                                         fields:@{}]);
+                                           tags:matchedTags
+                                         fields:@{@"resource_status": @"404"}]);
+    XCTAssertFalse([filter isMatchedWithCategory:@"rum"
+                                          source:@"error"
+                                            tags:matchedTags
+                                          fields:@{@"resource_status": @"404"}]);
     XCTAssertFalse([filter isMatchedWithCategory:@"rum"
                                           source:@"resource"
-                                            tags:@{}
-                                          fields:@{@"duration": @999}]);
+                                            tags:@{@"app_id": @"other_appid"}
+                                          fields:@{@"resource_status": @"404"}]);
 }
 
-- (void)testSupportsInAndRegex {
+#pragma mark AND OR
+
+- (void)testMatchesOnlineConfigLogic_and {
     FTDataFilter *filter = [[FTDataFilter alloc] initWithFilters:@{
-        @"logging": @[@"{ status in ('error','critical') and message =~ 'timeout|reset' }"]
+        @"logging": @[@"{  `source` in [ 'df_rum_ios_log' ]  and ( `status` in [ 'ok' , 'info' , 'debug' ]  and  `message` match [ 'timeout.*' ] )}"]
     }];
     XCTAssertTrue([filter isMatchedWithCategory:@"logging"
                                          source:@"df_rum_ios_log"
-                                           tags:@{@"status": @"critical"}
-                                         fields:@{@"message": @"socket reset"}]);
+                                           tags:@{@"status": @"info"}
+                                         fields:@{@"message": @"timeout while uploading"}]);
+    XCTAssertFalse([filter isMatchedWithCategory:@"logging"
+                                          source:@"df_rum_ios_log"
+                                            tags:@{@"status": @"error"}
+                                          fields:@{@"message": @"timeout while uploading"}]);
     XCTAssertFalse([filter isMatchedWithCategory:@"logging"
                                           source:@"df_rum_ios_log"
                                             tags:@{@"status": @"info"}
-                                          fields:@{@"message": @"socket reset"}]);
-}
-
-- (void)testSupportsBacktickKeysBracketMatchAndParenthesizedCondition {
-    FTDataFilter *filter = [[FTDataFilter alloc] initWithFilters:@{
-        @"logging": @[@"{  `source` in [ 'df_rum_ios_log' ]  and ( `status` match [ '^ok$' ] )}"]
-    }];
-    XCTAssertTrue([filter isMatchedWithCategory:@"logging"
-                                         source:@"df_rum_ios_log"
-                                           tags:@{@"status": @"ok"}
-                                         fields:@{}]);
-    XCTAssertFalse([filter isMatchedWithCategory:@"logging"
-                                          source:@"df_rum_ios_log"
-                                            tags:@{@"status": @"error"}
-                                          fields:@{}]);
-    XCTAssertFalse([filter isMatchedWithCategory:@"logging"
-                                          source:@"other_source"
-                                            tags:@{@"status": @"ok"}
-                                          fields:@{}]);
-}
-
-- (void)testSupportsBacktickKeysBracketNotmatchAndParenthesizedCondition {
-    FTDataFilter *filter = [[FTDataFilter alloc] initWithFilters:@{
-        @"logging": @[@"{  `source` in [ 'df_rum_ios_log' ]  and ( `status` notmatch [ '^ok$' ] )}"]
-    }];
-    XCTAssertTrue([filter isMatchedWithCategory:@"logging"
-                                         source:@"df_rum_ios_log"
-                                           tags:@{@"status": @"error"}
-                                         fields:@{}]);
-    XCTAssertFalse([filter isMatchedWithCategory:@"logging"
-                                          source:@"df_rum_ios_log"
-                                            tags:@{@"status": @"ok"}
-                                          fields:@{}]);
-    XCTAssertFalse([filter isMatchedWithCategory:@"logging"
-                                          source:@"other_source"
-                                            tags:@{@"status": @"error"}
-                                          fields:@{}]);
-}
-
-- (void)testSupportsBacktickKeysBracketNotinAndParenthesizedCondition {
-    FTDataFilter *filter = [[FTDataFilter alloc] initWithFilters:@{
-        @"logging": @[@"{  `source` in [ 'df_rum_ios_log' ]  and ( `status` notin [ 'ok' ] )}"]
-    }];
-    XCTAssertTrue([filter isMatchedWithCategory:@"logging"
-                                         source:@"df_rum_ios_log"
-                                           tags:@{@"status": @"error"}
-                                         fields:@{}]);
-    XCTAssertFalse([filter isMatchedWithCategory:@"logging"
-                                          source:@"df_rum_ios_log"
-                                            tags:@{@"status": @"ok"}
-                                          fields:@{}]);
-    XCTAssertFalse([filter isMatchedWithCategory:@"logging"
-                                          source:@"other_source"
-                                            tags:@{@"status": @"error"}
-                                          fields:@{}]);
-}
-
-- (void)testOperatorsAreCaseInsensitive {
-    NSArray<NSString *> *rules = @[
-        @"{ `source` IN [ 'df_rum_ios_log' ] and `status` MATCH [ 'ok' ] }",
-        @"{ `source` IN [ 'df_rum_ios_log' ] and `status` NOTIN [ 'error' ] }",
-        @"{ `source` IN [ 'df_rum_ios_log' ] and `status` NOTMATCH [ 'error' ] }"
-    ];
-    for (NSString *rule in rules) {
-        FTDataFilter *filter = [[FTDataFilter alloc] initWithFilters:@{@"logging": @[rule]}];
-        XCTAssertTrue([filter isMatchedWithCategory:@"logging"
-                                             source:@"df_rum_ios_log"
-                                               tags:@{@"status": @"ok"}
-                                             fields:@{}]);
-    }
-}
-
-- (void)testMatchesDataKitLoggingMessagePatternExample {
-    FTDataFilter *filter = [[FTDataFilter alloc] initWithFilters:@{
-        @"logging": @[@"{ source = 'ios_log' and message match ['timeout.*'] }"]
-    }];
-    XCTAssertTrue([filter isMatchedWithCategory:@"logging"
-                                         source:@"ios_log"
-                                           tags:@{}
-                                         fields:@{@"message": @"timeout while uploading"}]);
-    XCTAssertFalse([filter isMatchedWithCategory:@"logging"
-                                          source:@"ios_log"
-                                            tags:@{}
                                           fields:@{@"message": @"upload completed"}]);
     XCTAssertFalse([filter isMatchedWithCategory:@"logging"
                                           source:@"other"
-                                            tags:@{}
+                                            tags:@{@"status": @"info"}
                                           fields:@{@"message": @"timeout while uploading"}]);
 }
 
-- (void)testMatchesDataKitResourceDurationExample {
+- (void)testMatchesOnlineConfigLogic_or {
     FTDataFilter *filter = [[FTDataFilter alloc] initWithFilters:@{
-        @"rum": @[@"{ source = 'resource' and duration >= 1000000000 }"]
+        @"rum": @[@"{  `app_id` in [ 'appid_xxx' ]  and ( `resource_status` in [ '404' ]  or  `resource_status` match [ '5..' ] )}"]
     }];
+    NSDictionary *matchedTags = @{@"app_id": @"appid_xxx"};
     XCTAssertTrue([filter isMatchedWithCategory:@"rum"
                                          source:@"resource"
-                                           tags:@{}
-                                         fields:@{@"duration": @1000000000}]);
+                                           tags:matchedTags
+                                         fields:@{@"resource_status": @"404"}]);
+    XCTAssertTrue([filter isMatchedWithCategory:@"rum"
+                                         source:@"resource"
+                                           tags:matchedTags
+                                         fields:@{@"resource_status": @"500"}]);
     XCTAssertFalse([filter isMatchedWithCategory:@"rum"
                                           source:@"resource"
-                                            tags:@{}
-                                          fields:@{@"duration": @999999999}]);
-}
-
-- (void)testMatchesDataKitErrorMessagePatternExample {
-    FTDataFilter *filter = [[FTDataFilter alloc] initWithFilters:@{
-        @"rum": @[@"{ source = 'error' and error_message match ['.*password.*'] }"]
-    }];
-    XCTAssertTrue([filter isMatchedWithCategory:@"rum"
-                                         source:@"error"
-                                           tags:@{}
-                                         fields:@{@"error_message": @"password should be redacted"}]);
-    XCTAssertFalse([filter isMatchedWithCategory:@"rum"
-                                          source:@"error"
-                                            tags:@{}
-                                            fields:@{@"error_message": @"token should be redacted"}]);
-}
-
-- (void)testMatchesCliutilsRegexListExamples {
-    FTDataFilter *filter = [[FTDataFilter alloc] initWithFilters:@{
-        @"logging": @[@"{ abc match ['a.*'] }"]
-    }];
-    XCTAssertTrue([filter isMatchedWithCategory:@"logging"
-                                         source:@"ios_log"
-                                           tags:@{}
-                                         fields:@{@"abc": @"abc123"}]);
-    
-    FTDataFilter *invalidFilter = [[FTDataFilter alloc] initWithFilters:@{
-        @"logging": @[
-            @"{ abc notmatch []}",
-            @"{ abc match ['g(-z]+ng wrong regex']}"
-        ]
-    }];
-    XCTAssertFalse([invalidFilter isMatchedWithCategory:@"logging"
-                                                 source:@"ios_log"
-                                                   tags:@{}
-                                                 fields:@{@"abc": @"abc123"}]);
-}
-
-- (void)testMatchesCliutilsRegexOrExamples {
-    FTDataFilter *filter = [[FTDataFilter alloc] initWithFilters:@{
-        @"logging": @[@"{ abc notmatch ['a.*'] or xyz match ['.*'] }"]
-    }];
-    XCTAssertTrue([filter isMatchedWithCategory:@"logging"
-                                         source:@"ios_log"
-                                           tags:@{@"xyz": @"def"}
-                                         fields:@{@"abc": @"abc123"}]);
-}
-
-- (void)testMatchesCliutilsReFunctionAndNestedOrExample {
-    FTDataFilter *filter = [[FTDataFilter alloc] initWithFilters:@{
-        @"rum": @[@"{ service = re(\".*\") AND (f1 in [\"1\", \"2\", \"3\"] OR t1 match ['def.*'] OR t2 notmatch ['def.*']) }"]
-    }];
-    XCTAssertTrue([filter isMatchedWithCategory:@"rum"
-                                         source:@"resource"
-                                           tags:@{@"service": @"api"}
-                                         fields:@{@"f1": @"2"}]);
-    XCTAssertTrue([filter isMatchedWithCategory:@"rum"
-                                         source:@"resource"
-                                           tags:@{@"service": @"api"}
-                                         fields:@{@"t1": @"def456"}]);
-    XCTAssertTrue([filter isMatchedWithCategory:@"rum"
-                                         source:@"resource"
-                                           tags:@{@"service": @"api"}
-                                         fields:@{@"t2": @"abc"}]);
+                                            tags:matchedTags
+                                          fields:@{@"resource_status": @"200"}]);
     XCTAssertFalse([filter isMatchedWithCategory:@"rum"
                                           source:@"resource"
-                                            tags:@{@"service": @"api"}
-                                          fields:@{@"t2": @"def456"}]);
+                                            tags:@{@"app_id": @"other_appid"}
+                                          fields:@{@"resource_status": @"500"}]);
 }
 
-- (void)testMatchesCliutilsNotInAndSymbolicOrExample {
-    FTDataFilter *filter = [[FTDataFilter alloc] initWithFilters:@{
-        @"rum": @[@"{abc notin [1.1,1.2,1.3] and (a > 1 || c< 0)}"]
+#pragma mark Remote Response
+
+- (void)testAppliesRemoteResponseFilters {
+    [self configureDatakitURL:@"http://datakit-a.example"];
+    FTDataFilterMockHTTPClient *client = [FTDataFilterMockHTTPClient new];
+    FTDataFilterManager *manager = [self dataFilterManagerWithMockClient:client];
+    [manager enable:YES localFilters:@{} updateInterval:30];
+    XCTAssertEqual(client.completions.count, 1u);
+
+    [client completeRequestAtIndex:0 responseObject:@{
+        @"filters": @{
+            @"logging": @[@"{  `source` in [ 'df_rum_ios_log' ]  and ( `status` in [ 'error' ] )}"],
+            @"rum": @[@"{  `app_id` in [ 'appid_xxx' ]  and ( `source` in [ 'resource' ]  and  `resource_status` match [ '5..' ] )}"]
+        }
     }];
-    NSDictionary *matchedFields = @{@"abc": @4, @"a": @(-1), @"c": @(-2)};
-    NSDictionary *unmatchedFields = @{@"abc": @4, @"a": @(-1), @"c": @2};
-    XCTAssertTrue([filter isMatchedWithCategory:@"rum"
-                                         source:@"resource"
-                                           tags:@{}
-                                         fields:matchedFields]);
-    XCTAssertFalse([filter isMatchedWithCategory:@"rum"
-                                          source:@"resource"
-                                            tags:@{}
-                                          fields:unmatchedFields]);
+
+    NSDictionary *matchedRumTags = @{@"app_id": @"appid_xxx"};
+    XCTAssertTrue(manager.shouldDisableServerFilter);
+    XCTAssertTrue([manager isFilteredWithCategory:@"logging"
+                                           source:@"df_rum_ios_log"
+                                             uuid:@"uuid"
+                                             tags:@{@"status": @"error"}
+                                           fields:@{}]);
+    XCTAssertTrue([manager isFilteredWithCategory:@"rum"
+                                           source:@"resource"
+                                             uuid:@"uuid"
+                                             tags:matchedRumTags
+                                           fields:@{@"resource_status": @"500"}]);
+    XCTAssertFalse([manager isFilteredWithCategory:@"logging"
+                                            source:@"resource"
+                                              uuid:@"uuid"
+                                              tags:@{@"status": @"error"}
+                                            fields:@{}]);
+    XCTAssertFalse([manager isFilteredWithCategory:@"rum"
+                                            source:@"df_rum_ios_log"
+                                              uuid:@"uuid"
+                                              tags:matchedRumTags
+                                            fields:@{@"resource_status": @"500"}]);
+    XCTAssertFalse([manager isFilteredWithCategory:@"rum"
+                                            source:@"resource"
+                                              uuid:@"uuid"
+                                              tags:@{@"app_id": @"other_appid"}
+                                            fields:@{@"resource_status": @"500"}]);
 }
 
-- (void)testMatchesCliutilsReFunctionExamples {
-    FTDataFilter *filter = [[FTDataFilter alloc] initWithFilters:@{
-        @"logging": @[@"{host = re(\"^nginx_.*$\")}"]
+- (void)testMatchesObservedOnlineRuleFormat {
+    NSString *loggingRule = @"{  `source` in [ 'df_rum_ios_log' ]  and ( `status` in [ 'ok' ,  'info' ,  'debug' ]  and  `message` match [ '.*password.*' ]  and  `env` notin [ 'prod' ,  'gray' ]  and  `message` notmatch [ '.*error.*' ] )}";
+    NSString *rumStatusGroupRule = @"{  `app_id` in [ 'appid_xxx' ]  and ( `source` in [ 'resource' ]  and  `resource_status_group` notmatch [ '2xx' ] )}";
+    NSString *rumStatusRule = @"{  `app_id` in [ 'appid_xxx' ]  and ( `resource_status` in [ '404' ]  or  `resource_status` match [ '5..' ] )}";
+
+    [self configureDatakitURL:@"http://datakit-a.example"];
+    FTDataFilterMockHTTPClient *client = [FTDataFilterMockHTTPClient new];
+    FTDataFilterManager *manager = [self dataFilterManagerWithMockClient:client];
+    [manager enable:YES localFilters:@{} updateInterval:30];
+    XCTAssertEqual(client.completions.count, 1u);
+
+    [client completeRequestAtIndex:0 responseObject:@{
+        @"filters": @{
+            @"logging": @[loggingRule],
+            @"rum": @[rumStatusGroupRule, rumStatusRule]
+        },
+        @"pull_interval": @10000000000
     }];
-    XCTAssertTrue([filter isMatchedWithCategory:@"logging"
-                                         source:@"ios_log"
-                                           tags:@{}
-                                         fields:@{@"host": @"nginx_abc"}]);
-    
-    FTDataFilter *backtickFilter = [[FTDataFilter alloc] initWithFilters:@{
-        @"logging": @[@"{host = re(`nginx_*`)}"]
-    }];
-    XCTAssertFalse([backtickFilter isMatchedWithCategory:@"logging"
-                                                  source:@"ios_log"
-                                                    tags:@{}
-                                                  fields:@{@"host": @"abcdef"}]);
+
+    NSDictionary *matchedLoggingTags = @{@"status": @"info", @"env": @"test"};
+    NSDictionary *matchedLoggingFields = @{@"message": @"user password leaked"};
+    XCTAssertTrue([manager isFilteredWithCategory:@"logging"
+                                           source:@"df_rum_ios_log"
+                                             uuid:@"uuid"
+                                             tags:matchedLoggingTags
+                                           fields:matchedLoggingFields]);
+
+    NSDictionary *prodLoggingTags = @{@"status": @"info", @"env": @"prod"};
+    XCTAssertFalse([manager isFilteredWithCategory:@"logging"
+                                            source:@"df_rum_ios_log"
+                                              uuid:@"uuid"
+                                              tags:prodLoggingTags
+                                            fields:matchedLoggingFields]);
+
+    NSDictionary *errorLoggingFields = @{@"message": @"password error leaked"};
+    XCTAssertFalse([manager isFilteredWithCategory:@"logging"
+                                            source:@"df_rum_ios_log"
+                                              uuid:@"uuid"
+                                              tags:matchedLoggingTags
+                                            fields:errorLoggingFields]);
+
+    NSDictionary *matchedRumTags = @{@"app_id": @"appid_xxx"};
+    NSDictionary *matchedRumStatusGroupFields = @{@"resource_status_group": @"4xx"};
+    XCTAssertTrue([manager isFilteredWithCategory:@"rum"
+                                           source:@"resource"
+                                             uuid:@"uuid"
+                                             tags:matchedRumTags
+                                           fields:matchedRumStatusGroupFields]);
+
+    NSDictionary *unmatchedRumStatusGroupFields = @{@"resource_status_group": @"2xx"};
+    XCTAssertFalse([manager isFilteredWithCategory:@"rum"
+                                            source:@"resource"
+                                              uuid:@"uuid"
+                                              tags:matchedRumTags
+                                            fields:unmatchedRumStatusGroupFields]);
+
+    NSDictionary *matchedRumStatusFields = @{@"resource_status": @"404"};
+    XCTAssertTrue([manager isFilteredWithCategory:@"rum"
+                                           source:@"resource"
+                                             uuid:@"uuid"
+                                             tags:matchedRumTags
+                                           fields:matchedRumStatusFields]);
+
+    NSDictionary *matchedRum5xxFields = @{@"resource_status": @"500"};
+    XCTAssertTrue([manager isFilteredWithCategory:@"rum"
+                                           source:@"resource"
+                                             uuid:@"uuid"
+                                             tags:matchedRumTags
+                                           fields:matchedRum5xxFields]);
+
+    NSDictionary *unmatchedRumFields = @{@"resource_status": @"200"};
+    XCTAssertFalse([manager isFilteredWithCategory:@"rum"
+                                            source:@"resource"
+                                              uuid:@"uuid"
+                                              tags:matchedRumTags
+                                            fields:unmatchedRumFields]);
 }
 
-- (void)testInvalidRegexInvalidatesRule {
-    FTDataFilter *filter = [[FTDataFilter alloc] initWithFilters:@{
-        @"logging": @[@"{ status = 'error' and message =~ '[' }"]
-    }];
-    XCTAssertFalse([filter isMatchedWithCategory:@"logging"
-                                          source:@"df_rum_ios_log"
-                                            tags:@{@"status": @"error"}
-                                          fields:@{@"message": @"socket reset"}]);
-}
+#pragma mark - Remote Refresh and Lifecycle Safety
 
 - (void)testRemoteCallbackAfterShutdownDoesNotCommitState {
     [self configureDatakitURL:@"http://datakit-a.example"];
