@@ -110,7 +110,7 @@ static const void * const kURLSessionTaskMetrics = &kURLSessionTaskMetrics;
 }
 
 - (void)setAssociatedObject:(NSURLSessionTask *)task key:(const void *)key value:(id)value{
-    objc_setAssociatedObject(task, &key, task, OBJC_ASSOCIATION_RETAIN);
+    objc_setAssociatedObject(task, &key, value, OBJC_ASSOCIATION_RETAIN);
 }
 - (id)getAssociatedObject:(NSURLSessionTask *)task key:(const void *)key{
     return objc_getAssociatedObject(task, key);
@@ -125,14 +125,15 @@ static const void * const kURLSessionTaskMetrics = &kURLSessionTaskMetrics;
 -(void)URLSession:(NSURLSession *)session task:(NSURLSessionTask *)task didCompleteWithError:(NSError *)error{
 
     NSHTTPURLResponse *httpResponse = (NSHTTPURLResponse *)task.response;
-
-    [[FTExternalDataManager sharedManager] stopResourceWithKey:[self getAssociatedObject:task key:&kURLSessionTaskKey]];
+    
+    NSString *key = [self getAssociatedObject:task key:&kURLSessionTaskKey];
+    [[FTExternalDataManager sharedManager] stopResourceWithKey:key];
     
     FTResourceMetricsModel *metricsModel = [[FTResourceMetricsModel alloc]initWithTaskMetrics:[self getAssociatedObject:task key:&kURLSessionTaskMetrics]];
 
 
     FTResourceContentModel *content = [[FTResourceContentModel alloc]initWithRequest:task.currentRequest response:httpResponse data:[self getAssociatedObject:task key:&kURLSessionTaskData] error:error];
-    [[FTExternalDataManager sharedManager] addResourceWithKey:[self getAssociatedObject:task key:&kURLSessionTaskKey] metrics:metricsModel content:content];
+    [[FTExternalDataManager sharedManager] addResourceWithKey:key metrics:metricsModel content:content];
 }
 #pragma mark ========== UITableViewDataSource ==========
 - (NSInteger)tableView:(UITableView *)tableView numberOfRowsInSection:(NSInteger)section{
