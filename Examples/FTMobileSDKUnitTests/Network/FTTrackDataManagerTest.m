@@ -307,8 +307,13 @@
     [[FTTrackerEventDBTool sharedManager] deleteAllDatas];
     __block NSInteger requestCount = 0;
     NSString *urlStr = @"http://www.test.com/some/url/shutdown/pending";
+    NSString *marker = @"testShutdownCancelsPendingDelayedUploadBeforeStart";
     id<OHHTTPStubsDescriptor> stub = [OHHTTPStubs stubRequestsPassingTest:^BOOL(NSURLRequest *request) {
-        return [request.URL.absoluteString containsString:urlStr];
+        if (![request.URL.absoluteString containsString:urlStr]) {
+            return NO;
+        }
+        NSString *body = [[NSString alloc] initWithData:request.HTTPBody encoding:NSUTF8StringEncoding];
+        return [body containsString:marker];
     } withStubResponse:^OHHTTPStubsResponse*(NSURLRequest *request) {
         @synchronized (self) {
             requestCount++;
@@ -318,10 +323,12 @@
     }];
     FTNetworkInfoManager *manager = [FTNetworkInfoManager sharedInstance];
     manager.setUploadURL(urlStr,nil,nil)
+        .setCompressionIntakeRequests(NO)
         .setSdkVersion(@"RequestTest");
+    XCTAssertEqualObjects(manager.datakitUrl, urlStr);
 
     [FTTrackDataManager startWithAutoSync:NO syncPageSize:1 syncSleepTime:0];
-    [[FTTrackDataManager sharedInstance] addTrackData:[FTModelHelper createRUMModel:@"testShutdownCancelsPendingDelayedUploadBeforeStart"] type:FTAddDataRUM];
+    [[FTTrackDataManager sharedInstance] addTrackData:[FTModelHelper createRUMModel:marker] type:FTAddDataRUM];
     FTDataUploadWorker *worker = [FTTrackDataManager sharedInstance].dataUploadWorker;
 
     [worker flushWithSleep:YES];
@@ -710,6 +717,7 @@
             [[FTTrackDataManager sharedInstance] flushSyncData];
             dispatch_group_leave(group);
         });
+        dispatch_group_enter(group);
         dispatch_async(dispatch_queue_create(0, 0), ^{
             [FTTrackDataManager shutDown];
             dispatch_async(dispatch_get_main_queue(), ^{
@@ -717,7 +725,7 @@
                 [[FTTrackDataManager sharedInstance] setEnableLimitWithDb:NO size:50 discardNew:YES];
                 [[FTTrackDataManager sharedInstance] setLogCacheLimitCount:500000 discardNew:YES];
                 [[FTTrackDataManager sharedInstance] setRUMCacheLimitCount:500000 discardNew:YES];
-                
+                dispatch_group_leave(group);
             });
         });
         count ++;
@@ -727,6 +735,7 @@
     });
     [self waitForExpectations:@[exception]];
     XCTAssertTrue(count == 1000);
+    [FTTrackDataManager shutDown];
     [OHHTTPStubs removeStub:stubs];
 }
 @end

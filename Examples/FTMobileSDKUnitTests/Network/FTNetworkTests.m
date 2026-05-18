@@ -22,6 +22,7 @@
 #import "FTMobileAgent+Private.h"
 #import "FTTrackDataManager+Test.h"
 #import "FTDataUploadWorker.h"
+#import "FTNetworkInfoManager.h"
 #define FT_SDK_COMPILED_FOR_TESTING
 
 typedef NS_ENUM(NSInteger, FTNetworkTestsType) {
@@ -456,25 +457,32 @@ typedef NS_ENUM(NSInteger, FTNetworkTestsType) {
     [self syncSleepTime:0];
 }
 - (void)syncSleepTime:(int)time{
-    FTMobileConfig *config = [[FTMobileConfig alloc]initWithDatakitUrl:@"http://www.test.com/some/url/string"];
+    NSString *urlStr = [NSString stringWithFormat:@"http://www.test.com/some/url/syncSleep/%d", time];
+    NSString *rumUrl = [urlStr stringByAppendingString:@"/v1/write/rum"];
+    FTMobileConfig *config = [[FTMobileConfig alloc]initWithDatakitUrl:urlStr];
+    config.syncPageSize = 10;
     config.syncSleepTime = time;
     config.autoSync = NO;
     [FTMobileAgent startWithConfigOptions:config];
+    XCTAssertEqualObjects([FTNetworkInfoManager sharedInstance].datakitUrl, urlStr);
     __block NSTimeInterval duration = 0;
-    __block NSTimeInterval end = 0;
+    __block NSTimeInterval previousRequestTime = 0;
     [OHHTTPStubs stubRequestsPassingTest:^BOOL(NSURLRequest *request) {
-        if(end>0){
-            duration = ([NSDate timeIntervalSinceReferenceDate] - end)*1000;
-            end = 0;
+        if (![request.URL.absoluteString isEqualToString:rumUrl]) {
+            return NO;
         }
+        NSTimeInterval requestTime = [NSDate timeIntervalSinceReferenceDate];
+        if(previousRequestTime>0){
+            duration = MAX(duration, (requestTime - previousRequestTime)*1000);
+        }
+        previousRequestTime = requestTime;
         return YES;
     } withStubResponse:^OHHTTPStubsResponse*(NSURLRequest *request) {
-        end = [NSDate timeIntervalSinceReferenceDate];
         return [OHHTTPStubsResponse responseWithData:[NSData data] statusCode:200 headers:nil];
     }];
     for (int i = 0 ; i<20; i++) {
-       FTRecordModel *logModel = [FTModelHelper createLogModel:[NSString stringWithFormat:@"%d",i]];
-        [[FTTrackDataManager sharedInstance] addTrackData:logModel type:FTAddDataRUM];
+        FTRecordModel *rumModel = [FTModelHelper createRumModel];
+        [[FTTrackDataManager sharedInstance] addTrackData:rumModel type:FTAddDataRUM];
     }
     self.expectation = [self expectationWithDescription:@"Async operation timeout"];
        
@@ -486,7 +494,7 @@ typedef NS_ENUM(NSInteger, FTNetworkTestsType) {
     }];
     NSInteger newCount = [[FTTrackerEventDBTool sharedManager] getDatasCount];
     XCTAssertTrue(newCount == 0);
-    XCTAssertTrue(duration>time);
+    XCTAssertTrue(duration>time, @"duration: %.3f, syncSleepTime: %d", duration, time);
     [[FTTrackDataManager sharedInstance].dataUploadWorker removeObserver:self forKeyPath:@"isUploading"];
 }
 @end

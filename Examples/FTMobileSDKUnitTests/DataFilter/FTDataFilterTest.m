@@ -8,6 +8,7 @@
 #import <XCTest/XCTest.h>
 #import "FTDataFilter.h"
 #import "FTDataFilterManager.h"
+#import "FTDataFilterPullRequest.h"
 #import "FTHTTPClient.h"
 #import "FTNetworkInfoManager.h"
 
@@ -17,6 +18,7 @@ typedef void(^FTDataFilterMockHTTPCompletion)(NSHTTPURLResponse * _Nullable resp
 @property (nonatomic, strong) NSMutableArray<FTDataFilterMockHTTPCompletion> *completions;
 - (void)completeRequestAtIndex:(NSUInteger)index responseObject:(id)responseObject;
 - (void)completeRequestAtIndex:(NSUInteger)index rawString:(NSString *)rawString;
+- (void)completeRequestAtIndex:(NSUInteger)index data:(NSData *)data;
 @end
 
 @implementation FTDataFilterMockHTTPClient
@@ -88,6 +90,97 @@ typedef void(^FTDataFilterMockHTTPCompletion)(NSHTTPURLResponse * _Nullable resp
 - (void)configureDatawayURL:(NSString *)url token:(NSString *)token {
     [FTNetworkInfoManager sharedInstance].setUploadURL(nil, url, token);
     XCTAssertTrue([FTNetworkInfoManager sharedInstance].isNetworkConfigured);
+}
+
+- (BOOL)validateRemoteFiltersSchema:(NSDictionary *)response {
+    id filters = response[@"filters"];
+    if (![filters isKindOfClass:NSDictionary.class]) {
+        return NO;
+    }
+    NSDictionary *filtersDictionary = filters;
+    for (NSString *category in @[@"logging", @"rum"]) {
+        id rules = filtersDictionary[category];
+        if (!rules) {
+            continue;
+        }
+        if (![rules isKindOfClass:NSArray.class]) {
+            return NO;
+        }
+        for (id rule in rules) {
+            if (![rule isKindOfClass:NSString.class]) {
+                return NO;
+            }
+        }
+    }
+    return YES;
+}
+
+- (void)testRemoteDataFilterPullSchemaWithAccessServerURL {
+    NSDictionary *environment = NSProcessInfo.processInfo.environment;
+    NSString *datakitURLString = environment[@"ACCESS_SERVER_URL"];
+    if (datakitURLString.length == 0) {
+        XCTSkip(@"ACCESS_SERVER_URL is required for the real DataKit filter pull schema test.");
+        return;
+    }
+    NSURL *datakitURL = [NSURL URLWithString:datakitURLString];
+    if (datakitURL.scheme.length == 0 || datakitURL.host.length == 0) {
+        XCTSkip(@"ACCESS_SERVER_URL must be a valid absolute DataKit URL.");
+        return;
+    }
+
+    [self configureDatakitURL:datakitURLString];
+    XCTestExpectation *expectation = [self expectationWithDescription:@"Pull real DataKit filter schema"];
+    __block NSHTTPURLResponse *receivedResponse = nil;
+    __block NSData *receivedData = nil;
+    __block NSError *receivedError = nil;
+
+    FTHTTPClient *httpClient = [[FTHTTPClient alloc] init];
+    FTDataFilterPullRequest *request = [[FTDataFilterPullRequest alloc] init];
+    [httpClient sendRequest:request completion:^(NSHTTPURLResponse * _Nonnull httpResponse, NSData * _Nullable data, NSError * _Nullable error) {
+        receivedResponse = httpResponse;
+        receivedData = data;
+        receivedError = error;
+        [expectation fulfill];
+    }];
+
+    [self waitForExpectations:@[expectation] timeout:35];
+    XCTAssertNil(receivedError);
+    if (receivedError) {
+        return;
+    }
+    if (receivedResponse.statusCode == 403) {
+        XCTSkip(@"ACCESS_SERVER_URL returned 403 for DataKit filter pull; this environment does not allow schema verification.");
+        return;
+    }
+    XCTAssertEqual(receivedResponse.statusCode, 200);
+    XCTAssertTrue(receivedData.length > 0);
+    if (receivedResponse.statusCode != 200 || receivedData.length == 0) {
+        return;
+    }
+
+    NSError *jsonError = nil;
+    id responseObject = [NSJSONSerialization JSONObjectWithData:receivedData options:0 error:&jsonError];
+    XCTAssertNil(jsonError);
+    if (jsonError) {
+        return;
+    }
+    XCTAssertTrue([responseObject isKindOfClass:NSDictionary.class]);
+    if (![responseObject isKindOfClass:NSDictionary.class]) {
+        return;
+    }
+    NSDictionary *responseDictionary = responseObject;
+    BOOL hasValidFilterSchema = [self validateRemoteFiltersSchema:responseDictionary];
+    XCTAssertTrue(hasValidFilterSchema);
+    if (!hasValidFilterSchema) {
+        return;
+    }
+
+    FTDataFilterMockHTTPClient *client = [FTDataFilterMockHTTPClient new];
+    FTDataFilterManager *manager = [self dataFilterManagerWithMockClient:client];
+    [manager enable:YES localFilters:@{} updateInterval:30];
+    XCTAssertEqual(client.completions.count, 1u);
+    [client completeRequestAtIndex:0 data:receivedData];
+    XCTAssertTrue(manager.shouldDisableServerFilter);
 }
 
 - (void)testMatchesSourceAndTag {
