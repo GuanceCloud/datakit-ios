@@ -180,14 +180,6 @@ typedef BOOL (^FTSessionTaskErrorFilter)(NSError *_Nonnull error);
 ///  - Return nil to ignore it.
 @property (nonatomic, strong, nullable) FTActionTrackingHandler actionTrackingHandler;
 
-#if TARGET_OS_IOS
-/// Experimental: The handler deciding if an automatically detected SwiftUI RUM Action should be recorded.
-/// It takes effect when enableTraceUserAction = YES and this handler is not nil.
-/// Set FTDefaultSwiftUIActionTrackingHandler to use the SDK default SwiftUI action names.
-/// This experimental API may change in future releases.
-@property (nonatomic, strong, nullable) id<FTSwiftUIRUMActionsHandler> swiftUIActionTrackingHandler;
-#endif
-
 /// Enable freeze collection and set freeze threshold.
 /// - Parameter enableTrackAppFreeze: Set whether to collect freezes
 /// - Parameter freezeDurationMs: Freeze threshold, unit milliseconds 100 < freezeDurationMs, default 250ms

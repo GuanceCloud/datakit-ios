@@ -39,23 +39,6 @@ typedef NS_ENUM(NSUInteger, FTLaunchType) {
 - (nullable FTRUMAction *)rumLaunchActionWithLaunchType:(FTLaunchType)type;
 @end
 
-#if TARGET_OS_IOS || TARGET_OS_TV
-#define FTSwiftUIActionNameButton @"SwiftUI_Button"
-#define FTSwiftUIActionNameNavigationLink @"SwiftUI_NavigationLink"
-#define FTSwiftUIActionNameUnidentifiedElement @"SwiftUI_Unidentified_Element"
-
-/// Experimental: iOS handler deciding if an automatically detected SwiftUI RUM Action should be recorded.
-/// This experimental API may change in future releases.
-@protocol FTSwiftUIRUMActionsHandler <NSObject>
-
-/// Experimental: Deciding if the SwiftUI RUM Action should be recorded.
-/// @param componentName a default SwiftUI component name detected by the SDK.
-/// @return RUM Action if it should be recorded, `nil` otherwise.
-- (nullable FTRUMAction *)rumActionWithSwiftUIComponentName:(NSString *)componentName;
-
-@end
-#endif
-
 /// TVOS: The handler deciding if a given RUM Action should be recorded.
 @protocol FTUIPressRUMActionsHandler <NSObject>
 

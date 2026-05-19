@@ -37,10 +37,6 @@
 #define FT_HAS_SWIFTUI_ACTION_TRACKING 0
 #endif
 
-#if FT_HAS_SWIFTUI_ACTION_TRACKING
-static void *const kFTSwiftUIActionSendEvent = (void *)&kFTSwiftUIActionSendEvent;
-#endif
-
 #if FT_HAS_SWIFTUI_VIEW_TRACKING
 static BOOL FTViewControllerIsFromSwiftUIBundle(UIViewController *viewController) {
     NSBundle *bundle = [NSBundle bundleForClass:viewController.class];
@@ -141,21 +137,11 @@ API_AVAILABLE(ios(13.0), tvos(13.0))
 @property (nonatomic, weak) id<FTRumDatasProtocol> addRumDatasDelegate;
 @property (nonatomic, strong, nullable) FTViewTrackingHandler uiKitViewTrackingHandler;
 @property (nonatomic, strong, nullable) id<FTSwiftUIViewTrackingHandler> swiftUIViewTrackingHandler;
-#if FT_HAS_SWIFTUI_ACTION_TRACKING
-@property (nonatomic, strong, nullable) id<FTSwiftUIRUMActionsHandler> swiftUIActionTrackingHandler;
-@property (nonatomic, copy, nullable) NSString *pendingSwiftUIActionName;
-@property (nonatomic, assign) BOOL currentSendEventConsumedAction;
-@property (nonatomic, assign) NSInteger sendEventTrackingDepth;
-#endif
 #if FT_HAS_SWIFTUI_VIEW_TRACKING
 @property (nonatomic, strong, nullable) FTSwiftUIViewNameExtractor *swiftUIViewNameExtractor API_AVAILABLE(ios(13.0), tvos(13.0));
 #endif
 
 @property (nonatomic, strong, nullable) FTActionTrackingHandler actionTrackingHandler;
-#if FT_HAS_SWIFTUI_ACTION_TRACKING
-- (BOOL)ft_prepareSwiftUIActionCandidateForEvent:(UIEvent *)event;
-- (void)ft_finishSwiftUIActionCandidateForEvent:(UIEvent *)event;
-#endif
 @end
 @implementation FTAutoTrackHandler
 -(instancetype)init{
@@ -178,11 +164,6 @@ API_AVAILABLE(ios(13.0), tvos(13.0))
       addRumDatasDelegate:(id<FTRumDatasProtocol>)delegate
               viewHandler:(FTViewTrackingHandler)viewHandler
        swiftUIViewHandler:(id<FTSwiftUIViewTrackingHandler>)swiftUIViewHandler
-#if FT_HAS_SWIFTUI_ACTION_TRACKING
-     swiftUIActionHandler:(id<FTSwiftUIRUMActionsHandler>)swiftUIActionHandler
-#else
-     swiftUIActionHandler:(id)swiftUIActionHandler
-#endif
             actionHandler:(FTActionTrackingHandler)actionHandler
            displayMonitor:(FTDisplayRateMonitor *)displayMonitor{
     _autoTrackView = trackView;
@@ -213,16 +194,9 @@ API_AVAILABLE(ios(13.0), tvos(13.0))
     }
     if (trackAction) {
         self.actionHandler = self;
-#if FT_HAS_SWIFTUI_ACTION_TRACKING
-        self.swiftUIActionTrackingHandler = swiftUIActionHandler;
-#endif
         [self hookTargetAction];
         self.actionTrackingHandler = actionHandler ? actionHandler : [FTDefaultActionTrackingHandler new];
         self.launchTracker = [[FTAppLaunchTracker alloc]initWithDelegate:self displayMonitor:displayMonitor];
-    }else{
-#if FT_HAS_SWIFTUI_ACTION_TRACKING
-        self.swiftUIActionTrackingHandler = nil;
-#endif
     }
 }
 - (void)hookViewControllerLifeCycle{
@@ -255,27 +229,6 @@ API_AVAILABLE(ios(13.0), tvos(13.0))
             [UIApplication ft_swizzleMethod:@selector(sendEvent:) withMethod:@selector(ft_sendEvent:) error:&error];
 #endif
         });
-#if FT_HAS_SWIFTUI_ACTION_TRACKING
-        if (self.swiftUIActionTrackingHandler) {
-            static dispatch_once_t swiftUIActionOnceToken;
-            dispatch_once(&swiftUIActionOnceToken, ^{
-                FTSwizzlerInstanceMethod(UIApplication.class,
-                                         @selector(sendEvent:),
-                                         FTSWReturnType(void),
-                                         FTSWArguments(UIEvent *event),
-                                         FTSWReplacement({
-                    FTAutoTrackHandler *handler = [FTAutoTrackHandler sharedInstance];
-                    BOOL tracksSwiftUIAction = [handler ft_prepareSwiftUIActionCandidateForEvent:event];
-                    FTSWCallOriginal(event);
-                    if (tracksSwiftUIAction) {
-                        [handler ft_finishSwiftUIActionCandidateForEvent:event];
-                    }
-                }),
-                                         FTSwizzlerModeOncePerClassAndSuperclasses,
-                                         kFTSwiftUIActionSendEvent);
-            });
-        }
-#endif
     } @catch (NSException *exception) {
         FTInnerLogError(@"exception: %@",exception);
     }
@@ -307,98 +260,6 @@ API_AVAILABLE(ios(13.0), tvos(13.0))
     }
 }
 
-#if FT_HAS_SWIFTUI_ACTION_TRACKING
-- (BOOL)ft_prepareSwiftUIActionCandidateForEvent:(UIEvent *)event{
-    if (self.swiftUIActionTrackingHandler == nil || self.sendEventTrackingDepth > 0) {
-        return NO;
-    }
-    NSString *componentName = [self ft_swiftUIComponentNameFromEvent:event];
-    if (componentName.length == 0) {
-        return NO;
-    }
-    self.pendingSwiftUIActionName = componentName;
-    self.currentSendEventConsumedAction = NO;
-    self.sendEventTrackingDepth += 1;
-    return YES;
-}
-
-- (void)ft_finishSwiftUIActionCandidateForEvent:(UIEvent *)event{
-    if (self.sendEventTrackingDepth <= 0) {
-        return;
-    }
-    NSString *componentName = self.pendingSwiftUIActionName;
-    BOOL consumed = self.currentSendEventConsumedAction;
-    self.pendingSwiftUIActionName = nil;
-    self.currentSendEventConsumedAction = NO;
-    self.sendEventTrackingDepth -= 1;
-    if (consumed || componentName.length == 0) {
-        return;
-    }
-    [self ft_notifySwiftUIAutomaticActionWithComponentName:componentName];
-}
-
-- (nullable NSString *)ft_swiftUIComponentNameFromEvent:(UIEvent *)event{
-    if (![event isKindOfClass:UIEvent.class] || event.type != UIEventTypeTouches) {
-        return nil;
-    }
-    NSSet<UITouch *> *allTouches = event.allTouches;
-    if (allTouches.count != 1) {
-        return nil;
-    }
-    UITouch *touch = allTouches.anyObject;
-    if (touch.phase != UITouchPhaseEnded || touch.view == nil) {
-        return nil;
-    }
-    if (![self ft_isSwiftUIViewOrAncestor:touch.view]) {
-        return nil;
-    }
-    NSString *touchDescription = touch.description;
-    if ([touchDescription containsString:@"NavigationLink"]) {
-        return FTSwiftUIActionNameNavigationLink;
-    }
-    if ([touchDescription containsString:@"ButtonGesture"] || [touchDescription containsString:@"Button"]) {
-        return FTSwiftUIActionNameButton;
-    }
-    return FTSwiftUIActionNameUnidentifiedElement;
-}
-
-- (BOOL)ft_isSwiftUIViewOrAncestor:(UIView *)view{
-    UIView *current = view;
-    while (current != nil && ![current isKindOfClass:UIWindow.class]) {
-        if ([current isKindOfClass:UIControl.class] ||
-            [current isKindOfClass:UITableViewCell.class] ||
-            [current isKindOfClass:UICollectionViewCell.class]) {
-            return NO;
-        }
-        NSString *className = NSStringFromClass(current.class);
-        if ([className containsString:@"SwiftUI"] ||
-            [className containsString:@"UIHosting"] ||
-            [className containsString:@"_UIGraphicsView"]) {
-            return YES;
-        }
-        current = current.superview;
-    }
-    return NO;
-}
-
-- (void)ft_markCurrentSendEventConsumedAction{
-    if (self.sendEventTrackingDepth > 0) {
-        self.currentSendEventConsumedAction = YES;
-    }
-}
-
-- (void)ft_notifySwiftUIAutomaticActionWithComponentName:(NSString *)componentName{
-    if (self.swiftUIActionTrackingHandler &&
-        [self.swiftUIActionTrackingHandler respondsToSelector:@selector(rumActionWithSwiftUIComponentName:)]) {
-        FTRUMAction *action = [self.swiftUIActionTrackingHandler rumActionWithSwiftUIComponentName:componentName];
-        if (action == nil) {
-            return;
-        }
-        [self notify_swiftUIActionWithName:action.actionName property:action.property];
-    }
-}
-#endif
-
 #pragma mark ========== FTUIEventHandler ==========
 - (void)notify_sendAction:(UIView *)view{
 #if TARGET_OS_IOS
@@ -407,7 +268,6 @@ API_AVAILABLE(ios(13.0), tvos(13.0))
         if ( action == nil ) return;
         if (self.addRumDatasDelegate && [self.addRumDatasDelegate respondsToSelector:@selector(startAction:actionType:property:)]) {
             [self.addRumDatasDelegate startAction:action.actionName actionType:FT_KEY_ACTION_TYPE_CLICK property:action.property];
-            [self ft_markCurrentSendEventConsumedAction];
         }
     }
 #endif
@@ -420,7 +280,6 @@ API_AVAILABLE(ios(13.0), tvos(13.0))
     }
     if (self.addRumDatasDelegate && [self.addRumDatasDelegate respondsToSelector:@selector(startAction:actionType:property:)]) {
         [self.addRumDatasDelegate startAction:actionName actionType:FT_KEY_ACTION_TYPE_CLICK property:property];
-        [self ft_markCurrentSendEventConsumedAction];
     }
 }
 #endif
@@ -605,12 +464,6 @@ API_AVAILABLE(ios(13.0), tvos(13.0))
     self.actionHandler = nil;
     self.uiKitViewTrackingHandler = nil;
     self.swiftUIViewTrackingHandler = nil;
-#if FT_HAS_SWIFTUI_ACTION_TRACKING
-    self.swiftUIActionTrackingHandler = nil;
-    self.pendingSwiftUIActionName = nil;
-    self.currentSendEventConsumedAction = NO;
-    self.sendEventTrackingDepth = 0;
-#endif
 #if FT_HAS_SWIFTUI_VIEW_TRACKING
     if (@available(iOS 13.0, tvOS 13.0, *)) {
         self.swiftUIViewNameExtractor = nil;

@@ -51,7 +51,6 @@ NS_ASSUME_NONNULL_BEGIN
       addRumDatasDelegate:(id<FTRumDatasProtocol>)delegate
               viewHandler:(nullable FTViewTrackingHandler)viewHandler
        swiftUIViewHandler:(nullable id<FTSwiftUIViewTrackingHandler>)swiftUIViewHandler
-     swiftUIActionHandler:(nullable id<FTSwiftUIRUMActionsHandler>)swiftUIActionHandler
             actionHandler:(nullable FTActionTrackingHandler)actionHandler
            displayMonitor:(nullable FTDisplayRateMonitor *)displayMonitor;
 

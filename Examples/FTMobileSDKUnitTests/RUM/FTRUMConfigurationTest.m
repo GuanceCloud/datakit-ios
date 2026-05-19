@@ -390,7 +390,6 @@ typedef FTRUMAction* _Nullable (^FTLaunchActionTrackingBlock)(FTLaunchType type)
                                       addRumDatasDelegate:mock
                                               viewHandler:nil
                                            swiftUIViewHandler:nil
-                                    swiftUIActionHandler:nil
                                             actionHandler:nil
                                            displayMonitor:nil];
 
@@ -416,7 +415,6 @@ typedef FTRUMAction* _Nullable (^FTLaunchActionTrackingBlock)(FTLaunchType type)
                                       addRumDatasDelegate:mock
                                               viewHandler:nil
                                            swiftUIViewHandler:nil
-                                    swiftUIActionHandler:nil
                                             actionHandler:nil
                                            displayMonitor:nil];
 
@@ -436,12 +434,6 @@ typedef FTRUMAction* _Nullable (^FTLaunchActionTrackingBlock)(FTLaunchType type)
 #endif
 
 #if TARGET_OS_IOS
-- (void)testDefaultSwiftUIActionTrackingHandler{
-    FTDefaultSwiftUIActionTrackingHandler *handler = [FTDefaultSwiftUIActionTrackingHandler new];
-    FTRUMAction *action = [handler rumActionWithSwiftUIComponentName:FTSwiftUIActionNameButton];
-    XCTAssertEqualObjects(action.actionName, FTSwiftUIActionNameButton);
-}
-
 - (void)testSwiftUIManualActionTracking_startAction{
     AddRumDatasHandlerMock *mock = [AddRumDatasHandlerMock new];
     NSDictionary *property = @{@"source": @"swiftui_action"};
@@ -450,7 +442,6 @@ typedef FTRUMAction* _Nullable (^FTLaunchActionTrackingBlock)(FTLaunchType type)
                                       addRumDatasDelegate:mock
                                               viewHandler:nil
                                            swiftUIViewHandler:nil
-                                    swiftUIActionHandler:nil
                                             actionHandler:nil
                                            displayMonitor:nil];
 

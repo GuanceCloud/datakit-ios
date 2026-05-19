@@ -94,7 +94,6 @@
             addRumDatasDelegate:mock
                     viewHandler:nil
              swiftUIViewHandler:nil
-           swiftUIActionHandler:nil
                   actionHandler:nil
                  displayMonitor:nil];
 
@@ -118,7 +117,6 @@
             addRumDatasDelegate:mock
                     viewHandler:nil
              swiftUIViewHandler:nil
-           swiftUIActionHandler:nil
                   actionHandler:nil
                  displayMonitor:nil];
 
@@ -137,7 +135,6 @@
             addRumDatasDelegate:mock
                     viewHandler:nil
              swiftUIViewHandler:nil
-           swiftUIActionHandler:nil
                   actionHandler:nil
                  displayMonitor:nil];
 
