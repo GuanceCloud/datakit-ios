@@ -731,12 +731,6 @@
 		178649362A1DB58400521187 /* FTLogger.m in Sources */ = {isa = PBXBuildFile; fileRef = 178649312A1DB58400521187 /* FTLogger.m */; };
 		178649372A1DB58400521187 /* FTLogger.m in Sources */ = {isa = PBXBuildFile; fileRef = 178649312A1DB58400521187 /* FTLogger.m */; };
 		178AE4122D5A1A0700BDC51B /* FTMobileAgent+Private.h in Headers */ = {isa = PBXBuildFile; fileRef = 17678E2229D28BD200C1DA98 /* FTMobileAgent+Private.h */; };
-		178AFF8E2E4F3438009D3C09 /* FTRUMPlaceholderViewHandler.m in Sources */ = {isa = PBXBuildFile; fileRef = 178AFF8D2E4F3438009D3C09 /* FTRUMPlaceholderViewHandler.m */; };
-		178AFF8F2E4F3438009D3C09 /* FTRUMPlaceholderViewHandler.h in Headers */ = {isa = PBXBuildFile; fileRef = 178AFF8C2E4F3438009D3C09 /* FTRUMPlaceholderViewHandler.h */; };
-		178AFF922E4F3438009D3C09 /* FTRUMPlaceholderViewHandler.h in Headers */ = {isa = PBXBuildFile; fileRef = 178AFF8C2E4F3438009D3C09 /* FTRUMPlaceholderViewHandler.h */; };
-		178AFF932E4F3438009D3C09 /* FTRUMPlaceholderViewHandler.m in Sources */ = {isa = PBXBuildFile; fileRef = 178AFF8D2E4F3438009D3C09 /* FTRUMPlaceholderViewHandler.m */; };
-		178AFF942E4F3438009D3C09 /* FTRUMPlaceholderViewHandler.m in Sources */ = {isa = PBXBuildFile; fileRef = 178AFF8D2E4F3438009D3C09 /* FTRUMPlaceholderViewHandler.m */; };
-		178AFF952E4F3438009D3C09 /* FTRUMPlaceholderViewHandler.h in Headers */ = {isa = PBXBuildFile; fileRef = 178AFF8C2E4F3438009D3C09 /* FTRUMPlaceholderViewHandler.h */; };
 		178CDAC42F0F7A7200EE98D0 /* FTCrash.m in Sources */ = {isa = PBXBuildFile; fileRef = 178CDAC32F0F7A7200EE98D0 /* FTCrash.m */; };
 		178CDAC62F0F7A7200EE98D0 /* FTCrash.m in Sources */ = {isa = PBXBuildFile; fileRef = 178CDAC32F0F7A7200EE98D0 /* FTCrash.m */; };
 		178CDAC72F0F7A7200EE98D0 /* FTCrash.m in Sources */ = {isa = PBXBuildFile; fileRef = 178CDAC32F0F7A7200EE98D0 /* FTCrash.m */; };
@@ -1549,8 +1543,6 @@
 		177AEB5D2A3819C90045D2BA /* FTSDKCore.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = FTSDKCore.h; path = include/FTSDKCore.h; sourceTree = "<group>"; };
 		178649302A1DB58400521187 /* FTLogger.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = FTLogger.h; sourceTree = "<group>"; };
 		178649312A1DB58400521187 /* FTLogger.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = FTLogger.m; sourceTree = "<group>"; };
-		178AFF8C2E4F3438009D3C09 /* FTRUMPlaceholderViewHandler.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = FTRUMPlaceholderViewHandler.h; sourceTree = "<group>"; };
-		178AFF8D2E4F3438009D3C09 /* FTRUMPlaceholderViewHandler.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = FTRUMPlaceholderViewHandler.m; sourceTree = "<group>"; };
 		178CDAC32F0F7A7200EE98D0 /* FTCrash.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = FTCrash.m; sourceTree = "<group>"; };
 		178CDAC82F0F7AA000EE98D0 /* FTCrashC.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = FTCrashC.h; sourceTree = "<group>"; };
 		178CDAC92F0F7AA000EE98D0 /* FTCrashC.c */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.c; path = FTCrashC.c; sourceTree = "<group>"; };
@@ -2507,8 +2499,6 @@
 				17AB76A929D432DE008FBBF5 /* FTRUMResourceHandler.m */,
 				172B10E92E377B3700753766 /* FTRUMDependencies.h */,
 				17E32BAA2BEE21F600F4685C /* FTRUMDependencies.m */,
-				178AFF8C2E4F3438009D3C09 /* FTRUMPlaceholderViewHandler.h */,
-				178AFF8D2E4F3438009D3C09 /* FTRUMPlaceholderViewHandler.m */,
 			);
 			path = RUMCore;
 			sourceTree = "<group>";
@@ -2880,7 +2870,6 @@
 				177155922B046B5800C26DC4 /* FTURLSessionDelegate+Private.h in Headers */,
 				177606BF29D137F100D17137 /* FTTracerProtocol.h in Headers */,
 				1776BA7D2B997D19008424FF /* FTInnerLog.h in Headers */,
-				178AFF922E4F3438009D3C09 /* FTRUMPlaceholderViewHandler.h in Headers */,
 				1776071E29D13A0500D17137 /* FTURLSessionInterceptor.h in Headers */,
 				1776BD452E179F5C00612A7F /* FTCrashDebug.h in Headers */,
 				17A422832EE19DFF00416673 /* FTCrashReportFilter.h in Headers */,
@@ -3049,7 +3038,6 @@
 				1776BD4F2E179FA300612A7F /* FTCrashLogger.h in Headers */,
 				177606FB29D1399300D17137 /* FTExtensionDataManager.h in Headers */,
 				17A422392EDEF6C200416673 /* FTCrashID.h in Headers */,
-				178AFF8F2E4F3438009D3C09 /* FTRUMPlaceholderViewHandler.h in Headers */,
 				177606BC29D137EE00D17137 /* FTRumDatasProtocol.h in Headers */,
 				17C2FEA62E4327C6003D600F /* FTRUMDataModel.h in Headers */,
 				17D0681D2D23F48B00D59159 /* FTTraceContext.h in Headers */,
@@ -3307,7 +3295,6 @@
 				176868862ED47AA600C76F0D /* FTCrashMemory.h in Headers */,
 				17E4CC3729CD42E4005C2D99 /* UIViewController+FTAutoTrack.h in Headers */,
 				173E45DD2D818C8900900F52 /* FTPackageIdGenerator.h in Headers */,
-				178AFF952E4F3438009D3C09 /* FTRUMPlaceholderViewHandler.h in Headers */,
 				17AB770829D432DE008FBBF5 /* FTRUMViewHandler.h in Headers */,
 				17C2FD292E3B448A003D600F /* FTActionTrackingHandler.h in Headers */,
 				17C2FD2A2E3B448A003D600F /* FTRUMView.h in Headers */,
@@ -3806,7 +3793,6 @@
 				1776072D29D13A3500D17137 /* FTWKWebViewJavascriptBridge.m in Sources */,
 				17A422BE2EE2C06500416673 /* FTCrashBacktrace.c in Sources */,
 				1763BD8B29DFF04F009EE026 /* FTRequest.m in Sources */,
-				178AFF932E4F3438009D3C09 /* FTRUMPlaceholderViewHandler.m in Sources */,
 				1776071C29D13A0100D17137 /* FTURLSessionDelegate.m in Sources */,
 				177606B029D1378500D17137 /* FTResourceMetricsModel.m in Sources */,
 				1776BA842B99B668008424FF /* FTOSLogger.m in Sources */,
@@ -3904,7 +3890,6 @@
 				17E32BAE2BEE21F600F4685C /* FTRUMDependencies.m in Sources */,
 				177606FC29D1399500D17137 /* FTExtensionDataManager.m in Sources */,
 				17BCF3802D66EB2A009A63FD /* FTWeakPropertyContainer.m in Sources */,
-				178AFF8E2E4F3438009D3C09 /* FTRUMPlaceholderViewHandler.m in Sources */,
 				176CE25C2ED6F6F900E9E92B /* FTLongTaskDetector.m in Sources */,
 				178CDAE82F0F7AA000EE98D0 /* FTCrashReportFixer.c in Sources */,
 				178CDAE92F0F7AA000EE98D0 /* FTCrashThreadCache.c in Sources */,
@@ -4080,7 +4065,6 @@
 				17AC17462B9856C3003E18A6 /* FTFileLogger.m in Sources */,
 				17E4CB4529CD42DA005C2D99 /* FTRecordModel.m in Sources */,
 				1763BDA829DFF04F009EE026 /* ZY_FMDatabasePool.m in Sources */,
-				178AFF942E4F3438009D3C09 /* FTRUMPlaceholderViewHandler.m in Sources */,
 				1776063229D1347500D17137 /* WKWebView+FTAutoTrack.m in Sources */,
 				17E4CB5529CD42DA005C2D99 /* FTBaseInfoHandler.m in Sources */,
 				17E4CBE529CD42E4005C2D99 /* FTURLSessionInstrumentation.m in Sources */,

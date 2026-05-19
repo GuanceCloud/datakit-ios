@@ -48,6 +48,7 @@
     if (self) {
         self.assistant = self;
         self.isActiveView = YES;
+        self.fallbackView = NO;
         self.updateTime = 0;
         self.view_id = model.view_id;
         self.view_name = model.view_name;

@@ -505,15 +505,18 @@ void *FTRUMQueueIdentityKey = &FTRUMQueueIdentityKey;
 -(BOOL)process:(FTRUMDataModel *)model context:(nonnull NSDictionary *)context{
     FTRUMSessionHandler *current  = self.sessionHandler;
     if (current) {
+        current.appState = self.appState;
         if ([self manage:self.sessionHandler byPropagatingData:model context:context] == nil) {
             //Refresh
             FTRUMSessionHandler *sessionHandler = [[FTRUMSessionHandler alloc]initWithExpiredSession:self.sessionHandler time:model.time];
+            sessionHandler.appState = self.appState;
             self.sessionHandler = sessionHandler;
             [self.sessionHandler.assistant process:model context:context];
         }
     }else{
         //Initialize
         self.sessionHandler = [[FTRUMSessionHandler alloc]initWithModel:model dependencies:self.rumDependencies];
+        self.sessionHandler.appState = self.appState;
         [self.sessionHandler.assistant process:model context:context];
     }
     self.rumDependencies.linkRUMSessionContext = [self.sessionHandler getCurrentSessionInfo];

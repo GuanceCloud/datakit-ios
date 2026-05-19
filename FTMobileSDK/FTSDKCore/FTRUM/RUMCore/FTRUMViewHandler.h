@@ -19,6 +19,7 @@ typedef void(^FTErrorHandled)(void);
 @property (nonatomic, copy) NSString *view_name;
 @property (nonatomic, copy) NSString *view_referrer;
 @property (nonatomic, strong) NSNumber *loading_time;
+@property (nonatomic, assign) BOOL fallbackView;
 
 -(instancetype)initWithModel:(FTRUMViewModel *)model context:(FTRUMContext *)context rumDependencies:(FTRUMDependencies *)rumDependencies;
 

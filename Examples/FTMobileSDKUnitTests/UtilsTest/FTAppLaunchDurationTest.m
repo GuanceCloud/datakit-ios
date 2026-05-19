@@ -122,11 +122,11 @@ void FTClearLaunchTaskRole(void);
     FTSetIsActivePrewarm(NO);
 }
 #endif
-- (void)testLaunchWarmDataNotHasViewData{
+- (void)testLaunchWarmDataHasViewData{
     [self launchData:FTLaunchWarm];
 }
 #endif
-- (void)testLaunchColdDataNotHasViewData{
+- (void)testLaunchColdDataHasViewData{
     [self launchData:FTLaunchCold];
 }
 - (void)testLaunchHotData{
@@ -334,12 +334,12 @@ void FTClearLaunchTaskRole(void);
                     break;
                 case FTLaunchWarm:
                     XCTAssertTrue([tags[FT_KEY_ACTION_TYPE] isEqualToString:FT_LAUNCH_WARM]);
-                    XCTAssertFalse([tags.allKeys containsObject:FT_KEY_VIEW_ID]);
+                    XCTAssertTrue([tags.allKeys containsObject:FT_KEY_VIEW_ID]);
                     XCTAssertTrue([tags.allKeys containsObject:FT_APP_ID]);
                     break;
                 case FTLaunchCold:
                     XCTAssertTrue([tags[FT_KEY_ACTION_TYPE] isEqualToString:FT_LAUNCH_COLD]);
-                    XCTAssertFalse([tags.allKeys containsObject:FT_KEY_VIEW_ID]);
+                    XCTAssertTrue([tags.allKeys containsObject:FT_KEY_VIEW_ID]);
                     XCTAssertTrue([tags.allKeys containsObject:FT_APP_ID]);
                     break;
             }
