@@ -14,7 +14,7 @@ import UIKit
 
 @available(iOS 13.0, tvOS 13.0, *)
 @objc(FTSwiftUIViewNameExtractor)
-final class FTSwiftUIViewNameExtractor: NSObject {
+public final class FTSwiftUIViewNameExtractor: NSObject {
     private protocol TopLevelReflector {
         func descendant(_ path: [Node]) -> Any?
     }
@@ -128,7 +128,7 @@ final class FTSwiftUIViewNameExtractor: NSObject {
 
     private let createReflector: (Any) -> TopLevelReflector
 
-    override convenience init() {
+    public override convenience init() {
         self.init(reflectorFactory: { subject in
             MirrorReflector(subject: subject)
         })
@@ -140,7 +140,7 @@ final class FTSwiftUIViewNameExtractor: NSObject {
     }
 
     @objc(extractNameFromViewController:)
-    func extractName(from viewController: UIViewController) -> String? {
+    public func extractName(from viewController: UIViewController) -> String? {
         let bundleName = Bundle(for: type(of: viewController)).bundleURL.lastPathComponent
         if bundleName == "UIKitCore.framework" || bundleName == "UIKit.framework" {
             return nil

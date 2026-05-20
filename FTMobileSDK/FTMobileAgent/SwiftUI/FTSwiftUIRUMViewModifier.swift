@@ -12,7 +12,7 @@ import Foundation
 import SwiftUI
 
 @objc(FTSwiftUIRUMViewHandling)
-protocol FTSwiftUIRUMViewHandling: AnyObject {
+public protocol FTSwiftUIRUMViewHandling: AnyObject {
     @objc(notifyOnAppearWithIdentity:name:property:loadTime:)
     func notifyOnAppear(identity: String, name: String, property: [String: Any]?, loadTime: NSNumber)
 
@@ -21,14 +21,14 @@ protocol FTSwiftUIRUMViewHandling: AnyObject {
 }
 
 @objc(FTSwiftUIRUMViewBridge)
-final class FTSwiftUIRUMViewBridge: NSObject {
+public final class FTSwiftUIRUMViewBridge: NSObject {
     private final class WeakBox {
         weak var value: FTSwiftUIRUMViewHandling?
     }
 
     private static let handlerBox = WeakBox()
 
-    @objc class var handler: FTSwiftUIRUMViewHandling? {
+    @objc public class var handler: FTSwiftUIRUMViewHandling? {
         get {
             objc_sync_enter(self)
             defer { objc_sync_exit(self) }
@@ -43,20 +43,20 @@ final class FTSwiftUIRUMViewBridge: NSObject {
 }
 
 @objc(FTSwiftUIRUMActionHandling)
-protocol FTSwiftUIRUMActionHandling: AnyObject {
+public protocol FTSwiftUIRUMActionHandling: AnyObject {
     @objc(notifySwiftUITapActionWithName:property:)
     func notifySwiftUITapAction(name: String, property: [String: Any]?)
 }
 
 @objc(FTSwiftUIRUMActionBridge)
-final class FTSwiftUIRUMActionBridge: NSObject {
+public final class FTSwiftUIRUMActionBridge: NSObject {
     private final class WeakBox {
         weak var value: FTSwiftUIRUMActionHandling?
     }
 
     private static let handlerBox = WeakBox()
 
-    @objc class var handler: FTSwiftUIRUMActionHandling? {
+    @objc public class var handler: FTSwiftUIRUMActionHandling? {
         get {
             objc_sync_enter(self)
             defer { objc_sync_exit(self) }
