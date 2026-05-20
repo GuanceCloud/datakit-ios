@@ -16,6 +16,7 @@
 #import "FTRecordModel.h"
 #import "FTNetworkConnectivity.h"
 #import "FTNetworkInfoManager.h"
+#import "FTDataFilterManager.h"
 static const NSInteger kMaxRetryCount = 5;
 static const NSTimeInterval kInitialRetryDelay = 0.5; // Initial 500ms delay
 
@@ -258,6 +259,7 @@ static const NSTimeInterval kInitialRetryDelay = 0.5; // Initial 500ms delay
             if ([strongSelf isInvalidated]) {
                 return;
             }
+            [[FTDataFilterManager sharedInstance] updateRemoteFilterIfNeededWithForce:NO];
             [strongSelf.errorSampledConsume checkRUMSessionOnErrorDatasExpired];
             if([[FTTrackerEventDBTool sharedManager] getUploadDatasCount]>0){
                 if([FTNetworkConnectivity sharedInstance].isConnected){

@@ -18,7 +18,7 @@
 #import "FTDataFilterManager.h"
 #import <objc/runtime.h>
 @interface FTRequest()
-
+- (BOOL)shouldAppendDisableServerFilter;
 @end
 @implementation FTRequest
 +(void)initialize{
@@ -54,11 +54,26 @@
         default:
             return nil;
     }
-    if ([self.path hasPrefix:@"/v1/write/"] && [FTDataFilterManager sharedInstance].shouldDisableServerFilter) {
+    if ([self shouldAppendDisableServerFilter]) {
         urlString = [urlString stringByAppendingFormat:[urlString containsString:@"?"] ? @"&%@" : @"?%@", @"disable_filter=true"];
     }
     return [NSURL URLWithString:urlString];
    
+}
+- (BOOL)shouldAppendDisableServerFilter{
+    if (![self.path hasPrefix:@"/v1/write/"] || ![FTDataFilterManager sharedInstance].shouldDisableServerFilter || self.events.count == 0) {
+        return NO;
+    }
+    for (id event in self.events) {
+        if (![event isKindOfClass:FTRecordModel.class]) {
+            return NO;
+        }
+        FTRecordModel *model = event;
+        if (!model.remoteFilterChecked) {
+            return NO;
+        }
+    }
+    return YES;
 }
 -(NSString *)contentType{
     return @"text/plain;charset=UTF-8";

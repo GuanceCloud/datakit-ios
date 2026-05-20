@@ -12,6 +12,7 @@
 #import "FTInnerLog.h"
 #import "FTConstants.h"
 #import "FTSDKCompat.h"
+static NSString * const FT_DB_REMOTE_FILTER_CHECKED = @"remote_filter_checked";
 @interface FTTrackerEventDBTool ()
 @property (nonatomic, strong) NSString *dbPath;
 @property (nonatomic, strong) ZY_FMDatabaseQueue *dbQueue;
@@ -73,6 +74,7 @@ static dispatch_once_t onceToken;
 }
 -(void)createEventTable{
     if ([self zy_isExistTable:FT_DB_TRACE_EVENT_TABLE_NAME]) {
+        [self migrateEventTableIfNeeded];
         return;
     }
     [[self dbQueue] inTransaction:^(ZY_FMDatabase *db, BOOL *rollback) {
@@ -80,6 +82,7 @@ static dispatch_once_t onceToken;
                                    @"tm":@"INTEGER",
                                    @"data":@"TEXT",
                                    @"op":@"TEXT",
+                                   FT_DB_REMOTE_FILTER_CHECKED:@"INTEGER DEFAULT 0",
         };
         
         NSMutableString *sql = [[NSMutableString alloc] initWithString:[NSString stringWithFormat:@"CREATE TABLE IF NOT EXISTS %@ (",FT_DB_TRACE_EVENT_TABLE_NAME]];
@@ -101,6 +104,29 @@ static dispatch_once_t onceToken;
         FTInnerLogDebug(@"createTable success == %d",success);
     }];
 }
+- (void)migrateEventTableIfNeeded{
+    [self zy_inDatabase:^(ZY_FMDatabase *db){
+        if (![self table:FT_DB_TRACE_EVENT_TABLE_NAME hasColumn:FT_DB_REMOTE_FILTER_CHECKED database:db]) {
+            NSString *sqlStr = [NSString stringWithFormat:@"ALTER TABLE %@ ADD COLUMN %@ INTEGER DEFAULT 0",FT_DB_TRACE_EVENT_TABLE_NAME,FT_DB_REMOTE_FILTER_CHECKED];
+            BOOL success = [db executeUpdate:sqlStr];
+            FTInnerLogDebug(@"migrate %@ column %@ success == %d",FT_DB_TRACE_EVENT_TABLE_NAME,FT_DB_REMOTE_FILTER_CHECKED,success);
+        }
+    }];
+}
+- (BOOL)table:(NSString *)tableName hasColumn:(NSString *)columnName database:(ZY_FMDatabase *)db{
+    NSString *sqlStr = [NSString stringWithFormat:@"PRAGMA table_info(%@)",tableName];
+    ZY_FMResultSet *set = [db executeQuery:sqlStr];
+    BOOL hasColumn = NO;
+    while ([set next]) {
+        NSString *name = [set stringForColumn:@"name"];
+        if ([name isEqualToString:columnName]) {
+            hasColumn = YES;
+            break;
+        }
+    }
+    [set close];
+    return hasColumn;
+}
 -(void)enableWAL{
     [self zy_inDatabase:^(ZY_FMDatabase *db){
         [db executeQuery:@"PRAGMA journal_mode=WAL;"];
@@ -109,8 +135,8 @@ static dispatch_once_t onceToken;
 -(BOOL)insertItem:(FTRecordModel *)item{
     __block BOOL success = NO;
     [self zy_inDatabase:^(ZY_FMDatabase *db){
-        NSString *sqlStr = [NSString stringWithFormat:@"INSERT INTO %@ ( tm , data , op) VALUES (  ? , ? , ? );",FT_DB_TRACE_EVENT_TABLE_NAME];
-        success=  [db executeUpdate:sqlStr,@(item.tm),item.data,item.op];
+        NSString *sqlStr = [NSString stringWithFormat:@"INSERT INTO %@ ( tm , data , op , %@) VALUES (  ? , ? , ? , ? );",FT_DB_TRACE_EVENT_TABLE_NAME,FT_DB_REMOTE_FILTER_CHECKED];
+        success=  [db executeUpdate:sqlStr,@(item.tm),item.data,item.op,@(item.remoteFilterChecked)];
     }];
     return success;
 }
@@ -119,8 +145,8 @@ static dispatch_once_t onceToken;
         __block BOOL needRollback = NO;
         [[self dbQueue] inTransaction:^(ZY_FMDatabase *db, BOOL *rollback) {
             [items enumerateObjectsUsingBlock:^(FTRecordModel *item, NSUInteger idx, BOOL * _Nonnull stop) {
-                NSString *sqlStr = [NSString stringWithFormat:@"INSERT INTO %@ ( tm ,data, op) VALUES (  ? , ? , ? );",FT_DB_TRACE_EVENT_TABLE_NAME];
-                if(![db executeUpdate:sqlStr,@(item.tm),item.data,item.op]){
+                NSString *sqlStr = [NSString stringWithFormat:@"INSERT INTO %@ ( tm , data , op , %@) VALUES (  ? , ? , ? , ? );",FT_DB_TRACE_EVENT_TABLE_NAME,FT_DB_REMOTE_FILTER_CHECKED];
+                if(![db executeUpdate:sqlStr,@(item.tm),item.data,item.op,@(item.remoteFilterChecked)]){
                     *stop = YES;
                     needRollback = YES;
                 }
@@ -163,6 +189,8 @@ static dispatch_once_t onceToken;
             item.data= [set stringForColumn:@"data"];
             item.op = [set stringForColumn:@"op"];
             item._id = [NSString stringWithFormat:@"%ld",[set longForColumn:@"_id"]];
+            int remoteFilterCheckedColumn = [set columnIndexForName:FT_DB_REMOTE_FILTER_CHECKED];
+            item.remoteFilterChecked = remoteFilterCheckedColumn >= 0 ? [set boolForColumnIndex:remoteFilterCheckedColumn] : NO;
             [array addObject:item];
         }
         [set close];

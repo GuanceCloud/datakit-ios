@@ -11,6 +11,11 @@
 #import "FTDataFilterPullRequest.h"
 #import "FTHTTPClient.h"
 #import "FTNetworkInfoManager.h"
+#import "FTDataUploadWorker.h"
+#import "FTRequest.h"
+#import "FTRecordModel.h"
+#import "FTConstants.h"
+#import "FTTrackerEventDBTool.h"
 
 typedef void(^FTDataFilterMockHTTPCompletion)(NSHTTPURLResponse * _Nullable response, NSData * _Nullable data, NSError * _Nullable error);
 
@@ -594,6 +599,102 @@ typedef void(^FTDataFilterMockHTTPCompletion)(NSHTTPURLResponse * _Nullable resp
     XCTAssertEqual(client.completions.count, 2u);
     [client completeRequestAtIndex:1 responseObject:@{@"filters": @"bad-schema"}];
     XCTAssertFalse(manager.shouldDisableServerFilter);
+}
+
+- (void)testRemoteFilterIntervalCheckRunsOnUploadPollingNotFiltering {
+    [self configureDatakitURL:@"http://datakit-a.example"];
+    FTDataFilterMockHTTPClient *client = [FTDataFilterMockHTTPClient new];
+    FTDataFilterManager *manager = [self dataFilterManagerWithMockClient:client];
+    [manager enable:YES localFilters:@{} updateInterval:30];
+    XCTAssertEqual(client.completions.count, 1u);
+    [client completeRequestAtIndex:0 responseObject:@{@"filters": @{@"logging": @[]}}];
+
+    [manager setValue:@0 forKey:@"lastRequestTimeInterval"];
+    XCTAssertFalse([manager isFilteredWithCategory:@"logging"
+                                            source:@"ios_log"
+                                              uuid:@"uuid"
+                                              tags:@{@"status": @"info"}
+                                            fields:@{}]);
+    XCTAssertEqual(client.completions.count, 1u);
+
+    FTDataUploadWorker *worker = [[FTDataUploadWorker alloc] initWithSyncPageSize:10 syncSleepTime:0];
+    [worker flushWithSleep:NO];
+    dispatch_queue_t networkQueue = [worker valueForKey:@"networkQueue"];
+    dispatch_sync(networkQueue, ^{});
+
+    XCTAssertEqual(client.completions.count, 2u);
+    [worker invalidateAndCancelPendingUploads];
+}
+
+- (void)testRemoteFilterCheckedFlagReflectsRemoteFilterAvailability {
+    [self configureDatakitURL:@"http://datakit-a.example"];
+    FTDataFilterMockHTTPClient *client = [FTDataFilterMockHTTPClient new];
+    FTDataFilterManager *manager = [self dataFilterManagerWithMockClient:client];
+    [manager enable:YES localFilters:@{} updateInterval:30];
+    XCTAssertEqual(client.completions.count, 1u);
+
+    BOOL remoteFilterChecked = NO;
+    XCTAssertFalse([manager isFilteredWithCategory:@"logging"
+                                            source:@"ios_log"
+                                              uuid:@"uuid"
+                                              tags:@{@"status": @"info"}
+                                            fields:@{}
+                               remoteFilterChecked:&remoteFilterChecked]);
+    XCTAssertFalse(remoteFilterChecked);
+
+    [client completeRequestAtIndex:0 responseObject:@{
+        @"filters": @{@"logging": @[@"{  status in [ 'error' ]  }"]}
+    }];
+    XCTAssertTrue(manager.shouldDisableServerFilter);
+    XCTAssertFalse([manager isFilteredWithCategory:@"logging"
+                                            source:@"ios_log"
+                                              uuid:@"uuid"
+                                              tags:@{@"status": @"info"}
+                                            fields:@{}
+                               remoteFilterChecked:&remoteFilterChecked]);
+    XCTAssertTrue(remoteFilterChecked);
+    XCTAssertTrue([manager isFilteredWithCategory:@"logging"
+                                           source:@"ios_log"
+                                             uuid:@"uuid"
+                                             tags:@{@"status": @"error"}
+                                           fields:@{}
+                              remoteFilterChecked:&remoteFilterChecked]);
+    XCTAssertTrue(remoteFilterChecked);
+}
+
+- (void)testDisableServerFilterRequiresAllEventsRemoteFilterChecked {
+    [self configureDatakitURL:@"http://datakit-a.example"];
+    FTDataFilterMockHTTPClient *client = [FTDataFilterMockHTTPClient new];
+    FTDataFilterManager *manager = [self dataFilterManagerWithMockClient:client];
+    [manager enable:YES localFilters:@{} updateInterval:30];
+    XCTAssertEqual(client.completions.count, 1u);
+    [client completeRequestAtIndex:0 responseObject:@{@"filters": @{@"logging": @[]}}];
+    XCTAssertTrue(manager.shouldDisableServerFilter);
+
+    FTRecordModel *checkedModel = [[FTRecordModel alloc] initWithSource:@"ios_log" op:FT_DATA_TYPE_LOGGING tags:@{} fields:@{} tm:1];
+    checkedModel.remoteFilterChecked = YES;
+    FTRequest *checkedRequest = [FTRequest createRequestWithEvents:@[checkedModel] type:FT_DATA_TYPE_LOGGING];
+    XCTAssertTrue([checkedRequest.absoluteURL.absoluteString containsString:@"disable_filter=true"]);
+
+    FTRecordModel *uncheckedModel = [[FTRecordModel alloc] initWithSource:@"ios_log" op:FT_DATA_TYPE_LOGGING tags:@{} fields:@{} tm:2];
+    uncheckedModel.remoteFilterChecked = NO;
+    FTRequest *uncheckedRequest = [FTRequest createRequestWithEvents:@[uncheckedModel] type:FT_DATA_TYPE_LOGGING];
+    XCTAssertFalse([uncheckedRequest.absoluteURL.absoluteString containsString:@"disable_filter=true"]);
+
+    FTRequest *mixedRequest = [FTRequest createRequestWithEvents:@[checkedModel, uncheckedModel] type:FT_DATA_TYPE_LOGGING];
+    XCTAssertFalse([mixedRequest.absoluteURL.absoluteString containsString:@"disable_filter=true"]);
+}
+
+- (void)testRemoteFilterCheckedFlagPersistsInDatabase {
+    [[FTTrackerEventDBTool sharedManager] deleteAllDatas];
+    FTRecordModel *model = [[FTRecordModel alloc] initWithSource:@"ios_log" op:FT_DATA_TYPE_LOGGING tags:@{} fields:@{} tm:1];
+    model.remoteFilterChecked = YES;
+
+    XCTAssertTrue([[FTTrackerEventDBTool sharedManager] insertItem:model]);
+    NSArray *records = [[FTTrackerEventDBTool sharedManager] getFirstRecords:1 withType:FT_DATA_TYPE_LOGGING];
+    FTRecordModel *storedModel = records.firstObject;
+    XCTAssertTrue(storedModel.remoteFilterChecked);
+    [[FTTrackerEventDBTool sharedManager] deleteAllDatas];
 }
 
 - (void)testInvalidLocalFiltersDoNotCrash {

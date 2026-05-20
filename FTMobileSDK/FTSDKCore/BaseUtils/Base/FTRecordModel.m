@@ -21,6 +21,7 @@
     if (self) {
         _tm = [NSDate ft_currentNanosecondTimeStamp];
         _op = @"";
+        _remoteFilterChecked = NO;
     }
     return self;
 }
@@ -46,6 +47,7 @@
             _op = op;
             _data = jsonData;
             _tm = tm;
+            _remoteFilterChecked = NO;
             FTInnerLogDebug(@"write data = %@",data);
             return self;
         }

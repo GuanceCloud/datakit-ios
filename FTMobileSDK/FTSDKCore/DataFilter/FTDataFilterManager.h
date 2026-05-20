@@ -24,6 +24,12 @@ updateInterval:(int)updateInterval;
                           uuid:(NSString *)uuid
                           tags:(NSDictionary *)tags
                         fields:(NSDictionary *)fields;
+- (BOOL)isFilteredWithCategory:(NSString *)category
+                        source:(NSString *)source
+                          uuid:(NSString *)uuid
+                          tags:(NSDictionary *)tags
+                        fields:(NSDictionary *)fields
+           remoteFilterChecked:(BOOL * _Nullable)remoteFilterChecked;
 - (void)shutDown;
 
 @end

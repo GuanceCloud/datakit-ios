@@ -123,18 +123,21 @@
     } else if ([op isEqualToString:FT_DATA_TYPE_RUM] || [op isEqualToString:FT_DATA_TYPE_RUM_CACHE]) {
         category = @"rum";
     }
+    BOOL remoteFilterChecked = NO;
     if (category) {
         NSString *uuid = [FTBaseInfoHandler random16UUID];
         if ([[FTDataFilterManager sharedInstance] isFilteredWithCategory:category
                                                                   source:source
                                                                     uuid:uuid
                                                                     tags:recordTags
-                                                                  fields:recordFields]) {
+                                                                  fields:recordFields
+                                                     remoteFilterChecked:&remoteFilterChecked]) {
             return;
         }
     }
     long long recordTime = updateTime > 0 ? updateTime : time;
     FTRecordModel *model = [[FTRecordModel alloc] initWithSource:source op:op tags:recordTags fields:recordFields tm:recordTime];
+    model.remoteFilterChecked = remoteFilterChecked;
     FTAddDataType addType = FTAddDataLogging;
     if ([op isEqualToString:FT_DATA_TYPE_RUM_CACHE]) {
         addType = FTAddDataRUMCache;

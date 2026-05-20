@@ -18,6 +18,8 @@ NS_ASSUME_NONNULL_BEGIN
 @property (nonatomic, copy) NSString *data;
 /// Data type, \RUM\Logging
 @property (nonatomic, copy) NSString *op;
+/// Whether this data has been checked by SDK remote DataFilter before being stored.
+@property (nonatomic, assign) BOOL remoteFilterChecked;
 
 /// Store database generated primary key
 @property (nonatomic, copy) NSString * _id;

@@ -275,10 +275,26 @@ updateInterval:(int)updateInterval {
                           uuid:(NSString *)uuid
                           tags:(NSDictionary *)tags
                         fields:(NSDictionary *)fields {
+    return [self isFilteredWithCategory:category
+                                 source:source
+                                   uuid:uuid
+                                   tags:tags
+                                 fields:fields
+                    remoteFilterChecked:nil];
+}
+
+- (BOOL)isFilteredWithCategory:(NSString *)category
+                        source:(NSString *)source
+                          uuid:(NSString *)uuid
+                          tags:(NSDictionary *)tags
+                        fields:(NSDictionary *)fields
+           remoteFilterChecked:(BOOL *)remoteFilterChecked {
     BOOL enable = NO;
     FTDataFilter *localFilter = nil;
     FTDataFilter *remoteFilter = nil;
-    [self updateRemoteFilterIfNeededWithForce:NO];
+    if (remoteFilterChecked) {
+        *remoteFilterChecked = NO;
+    }
     @synchronized (self) {
         enable = self.enable;
         localFilter = self.localFilter;
@@ -290,6 +306,9 @@ updateInterval:(int)updateInterval {
     if ([localFilter isMatchedWithCategory:category source:source tags:tags fields:fields]) {
         FTInnerLogDebug(@"drop data by local filter, category:%@, measurement:%@, uuid:%@", category, source, uuid);
         return YES;
+    }
+    if (remoteFilterChecked && remoteFilter) {
+        *remoteFilterChecked = YES;
     }
     if ([remoteFilter isMatchedWithCategory:category source:source tags:tags fields:fields]) {
         FTInnerLogDebug(@"drop data by remote filter, category:%@, measurement:%@, uuid:%@", category, source, uuid);
