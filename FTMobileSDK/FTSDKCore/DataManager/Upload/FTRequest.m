@@ -61,7 +61,10 @@
    
 }
 - (BOOL)shouldAppendDisableServerFilter{
-    if (![self.path hasPrefix:@"/v1/write/"] || ![FTDataFilterManager sharedInstance].shouldDisableServerFilter || self.events.count == 0) {
+    if ([FTNetworkInfoManager sharedInstance].configState != FTNetworkConfigStateDatakitMode ||
+        ![self.path hasPrefix:@"/v1/write/"] ||
+        ![FTDataFilterManager sharedInstance].shouldDisableServerFilter ||
+        self.events.count == 0) {
         return NO;
     }
     for (id event in self.events) {
