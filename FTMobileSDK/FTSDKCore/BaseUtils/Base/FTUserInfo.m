@@ -42,7 +42,7 @@ NSString * const kFTUserInfo = @"FT_USER_INFO";
     }
     return self;
 }
--(void)updateUser:(NSString *)Id name:(NSString *)name email:(NSString *)email extra:(NSDictionary *)extra{
+-(NSDictionary *)updateUser:(NSString *)Id name:(NSString *)name email:(NSString *)email extra:(NSDictionary *)extra{
     NSMutableDictionary *dict = [NSMutableDictionary new];
     [dict setValue:Id forKey:FT_USER_ID];
     [dict setValue:name forKey:FT_USER_NAME];
@@ -55,8 +55,9 @@ NSString * const kFTUserInfo = @"FT_USER_INFO";
     self.extra = extra;
     self.email = email;
     self.isSignIn = YES;
+    return [self userInfoDict];
 }
--(void)clearUser{
+-(NSDictionary *)clearUser{
     [[NSUserDefaults standardUserDefaults] setObject:nil forKey:kFTUserInfo];
     NSString *userId = [FTUserInfo userSessionId];
     self.userId = userId;
@@ -64,13 +65,14 @@ NSString * const kFTUserInfo = @"FT_USER_INFO";
     self.extra = nil;
     self.email = nil;
     self.isSignIn = NO;
+    return [self userInfoDict];
 }
 - (NSDictionary *)userInfoDict{
     NSMutableDictionary *dict = [NSMutableDictionary new];
-    dict[FT_USER_ID] = self.userId;
-    dict[FT_USER_NAME] = self.name;
-    dict[FT_USER_EMAIL] = self.email;
-    dict[FT_IS_SIGNIN] = self.isSignIn ? @"T" : @"F";
+    [dict setValue:self.userId forKey:FT_USER_ID];
+    [dict setValue:self.name forKey:FT_USER_NAME];
+    [dict setValue:self.email forKey:FT_USER_EMAIL];
+    [dict setValue:self.isSignIn ? @"T" : @"F" forKey:FT_IS_SIGNIN];
     if (self.extra) [dict addEntriesFromDictionary:self.extra];
     return [dict copy];
 }

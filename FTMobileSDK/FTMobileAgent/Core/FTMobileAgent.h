@@ -96,15 +96,21 @@ NS_ASSUME_NONNULL_BEGIN
 /// Unbind current user
 - (void)unbindUser;
 
-/// Add SDK global tags, applies to RUM and Log data
+/// Add SDK global tags, applies to RUM and Log data.
+///
+/// The SDK must be initialized first. Calls made before `startWithConfigOptions:` succeeds are ignored.
 /// - Parameter context: custom data
 + (void)appendGlobalContext:(NSDictionary <NSString*,id>*)context;
 
-/// Add RUM custom tags, applies to RUM data
+/// Add RUM custom tags, applies to RUM data.
+///
+/// RUM must be initialized first. Calls made before `startRumWithConfigOptions:` succeeds are ignored.
 /// - Parameter context: custom data
 + (void)appendRUMGlobalContext:(NSDictionary <NSString*,id>*)context;
 
-/// Add Log global tags, applies to Log data
+/// Add Log global tags, applies to Log data.
+///
+/// Logger must be initialized first. Calls made before `startLoggerWithConfigOptions:` succeeds are ignored.
 /// - Parameter context: custom data
 + (void)appendLogGlobalContext:(NSDictionary <NSString*,id>*)context;
 

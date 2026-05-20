@@ -23,6 +23,7 @@
 #include <mach-o/arch.h>
 #include <sys/sysctl.h>
 #import "FTThreadDispatchManager.h"
+#import "FTAppLifeCycle.h"
 #if FT_HOST_MAC
 #import <AppKit/AppKit.h>
 #import <IOKit/IOKitLib.h>
@@ -149,13 +150,37 @@ static id FTPresetApplyModifier(FTDataModifier modifier, NSString *key, id value
     if (!modifier) {
         return value;
     }
-    id modifiedValue = modifier(key, value);
+    id modifiedValue = nil;
+#if defined(DEBUG) && DEBUG
+    modifiedValue = modifier(key, value);
+#else
+    @try {
+        modifiedValue = modifier(key, value);
+    } @catch (NSException *exception) {
+        FTInnerLogWarning(@"dataModifier exception for key: %@, exception: %@", key, exception);
+        return value;
+    }
+#endif
     if (!modifiedValue) {
         return value;
     }
     if (expectedClass && ![modifiedValue isKindOfClass:expectedClass]) {
         FTInnerLogWarning(@"dataModifier returned invalid value type for key: %@, value: %@, type: %@", key, modifiedValue, [modifiedValue class]);
         return value;
+    }
+    return modifiedValue;
+}
+
+static id FTPresetModifiedValue(FTDataModifier modifier, NSString *key, id value, Class expectedClass) {
+    if (!value || value == (id)kCFNull || [value isKindOfClass:NSNull.class] || key.length == 0) {
+        return nil;
+    }
+    if (expectedClass == NSDictionary.class && [value isKindOfClass:NSDictionary.class] && [(NSDictionary *)value count] == 0) {
+        return nil;
+    }
+    id modifiedValue = FTPresetApplyModifier(modifier, key, value, expectedClass);
+    if (expectedClass == NSDictionary.class && [modifiedValue isKindOfClass:NSDictionary.class] && [(NSDictionary *)modifiedValue count] == 0) {
+        return nil;
     }
     return modifiedValue;
 }
@@ -177,6 +202,20 @@ static NSDictionary *FTPresetApplyModifierToDictionary(NSDictionary *dictionary,
         }
     }];
     return [result copy];
+}
+
+static NSDictionary *FTPresetOptionalDictionary(id object) {
+    if (![object isKindOfClass:NSDictionary.class]) {
+        return nil;
+    }
+    NSDictionary *dictionary = [(NSDictionary *)object copy];
+    return dictionary.count > 0 ? dictionary : nil;
+}
+
+static NSDictionary *FTPresetMergeTags(NSDictionary *baseTags, NSDictionary *moduleTags) {
+    NSMutableDictionary *mergedTags = [NSMutableDictionary dictionaryWithDictionary:baseTags ?: @{}];
+    [mergedTags addEntriesFromDictionary:moduleTags ?: @{}];
+    return [mergedTags copy];
 }
 
 static Class FTPresetExpectedValueClass(id value) {
@@ -222,21 +261,7 @@ static Class FTPresetExpectedValueClass(id value) {
     return names;
 }
 - (id)ft_modifiedValue:(id)value key:(NSString *)key expectedClass:(Class)expectedClass modifier:(FTDataModifier)modifier {
-    if (!value || value == (id)kCFNull || [value isKindOfClass:NSNull.class] || key.length == 0) {
-        return nil;
-    }
-    if (!modifier) {
-        return value;
-    }
-    id modifiedValue = modifier(key, value);
-    if (!modifiedValue) {
-        return value;
-    }
-    if (expectedClass && ![modifiedValue isKindOfClass:expectedClass]) {
-        FTInnerLogWarning(@"dataModifier returned invalid value type for key: %@, value: %@, type: %@", key, modifiedValue, [modifiedValue class]);
-        return value;
-    }
-    return modifiedValue;
+    return FTPresetModifiedValue(modifier, key, value, expectedClass);
 }
 - (void)ft_applyModifier:(FTDataModifier)modifier {
     if (!modifier) {
@@ -294,15 +319,11 @@ static Class FTPresetExpectedValueClass(id value) {
 @property (nonatomic, strong) NSDictionary *sdkPkgInfo;
 @property (nonatomic, copy) NSString *sdkVersion;
 @property (nonatomic, copy) NSString *sdkName;
-@property (nonatomic, copy) NSString *networkType;
 
 @property (nonatomic, strong) NSDictionary *globalContext;
 @property (nonatomic, strong) NSDictionary *dynamicGlobalContext;
-@property (nonatomic, strong) NSDictionary *userInfo;
 
-- (void)appendGlobalContext:(NSDictionary *)context modifier:(FTDataModifier)modifier;
-- (void)updateUserInfo:(NSDictionary *)userInfo modifier:(FTDataModifier)modifier;
-- (void)updateNetworkType:(NSString *)networkType modifier:(FTDataModifier)modifier;
+- (void)appendGlobalContext:(NSDictionary *)context;
 @end
 @implementation FTBasePropertyModel
 + (NSDictionary<NSString *, NSString *> *)ft_codingKeys {
@@ -318,7 +339,6 @@ static Class FTPresetExpectedValueClass(id value) {
             @"sdkPkgInfo": FT_SDK_PKG_INFO,
             @"sdkVersion": FT_SDK_VERSION,
             @"sdkName": FT_SDK_NAME,
-            @"networkType": FT_NETWORK_TYPE,
         };
     });
     return keys;
@@ -327,29 +347,21 @@ static Class FTPresetExpectedValueClass(id value) {
     static NSSet *names = nil;
     static dispatch_once_t onceToken;
     dispatch_once(&onceToken, ^{
-        names = [NSSet setWithArray:@[@"globalContext", @"dynamicGlobalContext", @"userInfo"]];
+        names = [NSSet setWithArray:@[@"globalContext", @"dynamicGlobalContext"]];
     });
     return names;
 }
-- (void)appendGlobalContext:(NSDictionary *)context modifier:(FTDataModifier)modifier {
-    NSDictionary *newContext = FTPresetApplyModifierToDictionary(context, modifier);
-    if (newContext.count == 0) {
+- (void)appendGlobalContext:(NSDictionary *)context {
+    if (context.count == 0) {
         return;
     }
     NSMutableDictionary *result = [NSMutableDictionary dictionaryWithDictionary:self.dynamicGlobalContext ?: @{}];
-    [result addEntriesFromDictionary:newContext];
+    [result addEntriesFromDictionary:context];
     self.dynamicGlobalContext = [result copy];
-}
-- (void)updateUserInfo:(NSDictionary *)userInfo modifier:(FTDataModifier)modifier {
-    self.userInfo = FTPresetApplyModifierToDictionary(userInfo, modifier);
-}
-- (void)updateNetworkType:(NSString *)networkType modifier:(FTDataModifier)modifier {
-    self.networkType = [self ft_modifiedValue:networkType key:FT_NETWORK_TYPE expectedClass:NSString.class modifier:modifier];
 }
 @end
 
 @interface FTRUMPropertyModel : FTPresetPropertyModel
-@property (nonatomic, strong) FTBasePropertyModel *baseModel;
 @property (nonatomic, copy) NSString *device;
 @property (nonatomic, copy) NSString *deviceModel;
 @property (nonatomic, copy) NSString *os;
@@ -359,12 +371,15 @@ static Class FTPresetExpectedValueClass(id value) {
 @property (nonatomic, copy) NSString *appId;
 @property (nonatomic, strong) NSDictionary *rumGlobalContext;
 @property (nonatomic, strong) NSDictionary *dynamicRUMGlobalContext;
+@property (nonatomic, strong) NSDictionary *userInfo;
 @property (nonatomic, copy) NSString *customKeys;
 @property (nonatomic, copy) NSString *screenSize;
-- (void)appendRUMGlobalContext:(NSDictionary *)context modifier:(FTDataModifier)modifier;
+@property (nonatomic, copy) NSString *networkType;
+- (void)appendRUMGlobalContext:(NSDictionary *)context;
+- (void)updateUserInfo:(NSDictionary *)userInfo;
 - (void)updateCustomKeys;
-- (void)updateScreenSize:(NSString *)screenSize modifier:(FTDataModifier)modifier;
-- (NSDictionary *)tags;
+- (void)updateScreenSize:(NSString *)screenSize;
+- (void)updateNetworkType:(NSString *)networkType;
 @end
 @implementation FTRUMPropertyModel
 + (NSDictionary<NSString *, NSString *> *)ft_codingKeys {
@@ -381,6 +396,7 @@ static Class FTPresetExpectedValueClass(id value) {
             @"appId": FT_APP_ID,
             @"customKeys": FT_RUM_CUSTOM_KEYS,
             @"screenSize": FT_SCREEN_SIZE,
+            @"networkType": FT_NETWORK_TYPE,
         };
     });
     return keys;
@@ -389,27 +405,21 @@ static Class FTPresetExpectedValueClass(id value) {
     static NSSet *names = nil;
     static dispatch_once_t onceToken;
     dispatch_once(&onceToken, ^{
-        names = [NSSet setWithArray:@[@"rumGlobalContext", @"dynamicRUMGlobalContext"]];
+        names = [NSSet setWithArray:@[@"rumGlobalContext", @"dynamicRUMGlobalContext", @"userInfo"]];
     });
     return names;
 }
-+ (NSSet<NSString *> *)ft_ignoredPropertyNames {
-    static NSSet *names = nil;
-    static dispatch_once_t onceToken;
-    dispatch_once(&onceToken, ^{
-        names = [NSSet setWithObject:@"baseModel"];
-    });
-    return names;
-}
-- (void)appendRUMGlobalContext:(NSDictionary *)context modifier:(FTDataModifier)modifier {
-    NSDictionary *newContext = FTPresetApplyModifierToDictionary(context, modifier);
-    if (newContext.count == 0) {
+- (void)appendRUMGlobalContext:(NSDictionary *)context {
+    if (context.count == 0) {
         return;
     }
     NSMutableDictionary *result = [NSMutableDictionary dictionaryWithDictionary:self.dynamicRUMGlobalContext ?: @{}];
-    [result addEntriesFromDictionary:newContext];
+    [result addEntriesFromDictionary:context];
     self.dynamicRUMGlobalContext = [result copy];
     [self updateCustomKeys];
+}
+- (void)updateUserInfo:(NSDictionary *)userInfo {
+    self.userInfo = [NSObject ft_normalizedDictionaryWithObject:userInfo];
 }
 - (void)updateCustomKeys {
     NSMutableArray *allKeys = [NSMutableArray array];
@@ -423,22 +433,18 @@ static Class FTPresetExpectedValueClass(id value) {
     }
     self.customKeys = allKeys.count > 0 ? [FTJSONUtil convertToJsonDataWithObject:allKeys] : nil;
 }
-- (void)updateScreenSize:(NSString *)screenSize modifier:(FTDataModifier)modifier {
-    self.screenSize = [self ft_modifiedValue:screenSize key:FT_SCREEN_SIZE expectedClass:NSString.class modifier:modifier];
+- (void)updateScreenSize:(NSString *)screenSize {
+    self.screenSize = screenSize;
 }
-- (NSDictionary *)tags {
-    NSMutableDictionary *dict = [NSMutableDictionary dictionaryWithDictionary:[self.baseModel ft_tags]];
-    [dict addEntriesFromDictionary:[self ft_tags]];
-    return [dict copy];
+- (void)updateNetworkType:(NSString *)networkType {
+    self.networkType = networkType;
 }
 @end
 
 @interface FTLogPropertyModel : FTPresetPropertyModel
-@property (nonatomic, strong) FTBasePropertyModel *baseModel;
 @property (nonatomic, strong) NSDictionary *logGlobalContext;
 @property (nonatomic, strong) NSDictionary *dynamicLogGlobalContext;
-- (void)appendLogGlobalContext:(NSDictionary *)context modifier:(FTDataModifier)modifier;
-- (NSDictionary *)tags;
+- (void)appendLogGlobalContext:(NSDictionary *)context;
 @end
 @implementation FTLogPropertyModel
 + (NSSet<NSString *> *)ft_flattenPropertyNames {
@@ -449,31 +455,17 @@ static Class FTPresetExpectedValueClass(id value) {
     });
     return names;
 }
-+ (NSSet<NSString *> *)ft_ignoredPropertyNames {
-    static NSSet *names = nil;
-    static dispatch_once_t onceToken;
-    dispatch_once(&onceToken, ^{
-        names = [NSSet setWithObject:@"baseModel"];
-    });
-    return names;
-}
-- (void)appendLogGlobalContext:(NSDictionary *)context modifier:(FTDataModifier)modifier {
-    NSDictionary *newContext = FTPresetApplyModifierToDictionary(context, modifier);
-    if (newContext.count == 0) {
+- (void)appendLogGlobalContext:(NSDictionary *)context {
+    if (context.count == 0) {
         return;
     }
     NSMutableDictionary *result = [NSMutableDictionary dictionaryWithDictionary:self.dynamicLogGlobalContext ?: @{}];
-    [result addEntriesFromDictionary:newContext];
+    [result addEntriesFromDictionary:context];
     self.dynamicLogGlobalContext = [result copy];
-}
-- (NSDictionary *)tags {
-    NSMutableDictionary *dict = [NSMutableDictionary dictionaryWithDictionary:[self.baseModel ft_tags]];
-    [dict addEntriesFromDictionary:[self ft_tags]];
-    return [dict copy];
 }
 @end
 
-@interface FTPresetProperty ()<FTNetworkChangeObserver>
+@interface FTPresetProperty ()<FTNetworkChangeObserver, FTAppLifeCycleDelegate>
 @property (nonatomic, copy) FTDataModifier dataModifier;
 @property (nonatomic, copy) FTLineDataModifier lineDataModifier;
 @property (nonatomic, strong, readwrite) NSDictionary *sessionReplayTags;
@@ -487,7 +479,6 @@ static Class FTPresetExpectedValueClass(id value) {
 @end
 @implementation FTPresetProperty{
     pthread_rwlock_t _rwLock;
-    BOOL _rumScreenSizeResolved;
 }
 @synthesize dataModifier = _dataModifier;
 @synthesize lineDataModifier = _lineDataModifier;
@@ -506,6 +497,7 @@ static Class FTPresetExpectedValueClass(id value) {
     if (self){
         _mobileDevice = [[MobileDevice alloc]init];
         _userInfo = [FTUserInfo new];
+        [[FTNetworkConnectivity sharedInstance] start];
         pthread_rwlock_init(&_rwLock, NULL);
     }
     return self;
@@ -517,18 +509,19 @@ static Class FTPresetExpectedValueClass(id value) {
                  service:(NSString *)service
            globalContext:(NSDictionary *)globalContext
                  pkgInfo:(NSDictionary *)pkgInfo{
+    FTDataModifier modifier = self.dataModifier;
     FTBasePropertyModel *baseModel = [FTBasePropertyModel new];
     baseModel.applicationUUID = self.mobileDevice.appUUID;
     baseModel.deviceUUID = self.mobileDevice.deviceUUID;
     baseModel.service = service;
     baseModel.version = version;
     baseModel.env = env;
-    baseModel.sdkPkgInfo = [NSObject ft_normalizedDictionaryWithObject:pkgInfo];
+    baseModel.sdkPkgInfo = FTPresetOptionalDictionary(pkgInfo);
     baseModel.sdkVersion = sdkVersion;
     baseModel.sdkName = FT_SDK_NAME_VALUE;
-    baseModel.globalContext = [NSObject ft_normalizedDictionaryWithObject:globalContext];
-    [baseModel ft_applyModifier:self.dataModifier];
-    
+    baseModel.globalContext = FTPresetOptionalDictionary(globalContext);
+    [baseModel ft_applyModifier:modifier];
+
     NSMutableDictionary *srDict = [NSMutableDictionary dictionary];
     [srDict setValue:service forKey:FT_KEY_SERVICE];
     [srDict setValue:version forKey:FT_VERSION];
@@ -539,16 +532,18 @@ static Class FTPresetExpectedValueClass(id value) {
     
     [self safeWrite:^{
         self->_basePropertyModel = baseModel;
-        self->_sessionReplayTags = srDict;
+        self->_sessionReplayTags = [srDict copy];
     }];
+    [[FTNetworkConnectivity sharedInstance] addNetworkObserver:self];
 }
 // rumTags
 - (void)setRUMAppID:(NSString *)appID
          sampleRate:(int)sampleRate
  sessionOnErrorSampleRate:(int)sessionOnErrorSampleRate
    rumGlobalContext:(NSDictionary *)rumGlobalContext {
+    [self removeRUMScreenSizeActiveRetryIfNeeded];
+    BOOL isAppExtension = FTPresetIsAppExtension();
     FTRUMPropertyModel *rumModel = [FTRUMPropertyModel new];
-    rumModel.baseModel = [self currentBasePropertyModel];
     rumModel.device = self.mobileDevice.device;
     rumModel.deviceModel = self.mobileDevice.model;
     rumModel.os = self.mobileDevice.os;
@@ -556,67 +551,51 @@ static Class FTPresetExpectedValueClass(id value) {
     rumModel.osVersionMajor = self.mobileDevice.osVersionMajor;
     rumModel.cpuArch = self.mobileDevice.cpuArch;
     rumModel.appId = appID;
-    rumModel.rumGlobalContext = [NSObject ft_normalizedDictionaryWithObject:rumGlobalContext];
+    rumModel.networkType = [FTNetworkConnectivity sharedInstance].networkType;
+    if (!isAppExtension) {
+        rumModel.screenSize = [self.mobileDevice screenSize];
+    }
+    rumModel.rumGlobalContext = FTPresetOptionalDictionary(rumGlobalContext);
+
+    __block NSDictionary *userInfo = nil;
+    pthread_rwlock_rdlock(&_rwLock);
+    userInfo = [self->_userInfo userInfoDict];
+    pthread_rwlock_unlock(&_rwLock);
+    rumModel.userInfo = userInfo;
+
     [rumModel ft_applyModifier:self.dataModifier];
     [rumModel updateCustomKeys];
-    [[FTNetworkConnectivity sharedInstance] addNetworkObserver:self];
-    NSString *networkType = [FTNetworkConnectivity sharedInstance].networkType;
-    FTDataModifier modifier = self.dataModifier;
+
+    BOOL needsScreenSizeRetry = !isAppExtension && rumModel.screenSize.length == 0;
     [self safeWrite:^{
-        [self->_basePropertyModel updateUserInfo:[self->_userInfo userInfoDict] modifier:modifier];
-        [self->_basePropertyModel updateNetworkType:networkType modifier:modifier];
         self->_rumPropertyModel = rumModel;
-        self->_rumScreenSizeResolved = NO;
     }];
+    if (needsScreenSizeRetry) {
+        [self registerRUMScreenSizeActiveRetryIfNeeded];
+    }
 }
 - (void)connectivityChanged:(BOOL)connected typeDescription:(NSString *)typeDescription{
     FTDataModifier modifier = self.dataModifier;
+    NSString *modifiedNetworkType = FTPresetModifiedValue(modifier, FT_NETWORK_TYPE, typeDescription, NSString.class);
     [self safeWrite:^{
-        [self->_basePropertyModel updateNetworkType:typeDescription modifier:modifier];
+        [self->_rumPropertyModel updateNetworkType:modifiedNetworkType];
     }];
 }
 - (void)setLogGlobalContext:(NSDictionary *)logGlobalContext {
     FTLogPropertyModel *logModel = [FTLogPropertyModel new];
-    logModel.baseModel = [self currentBasePropertyModel];
-    logModel.logGlobalContext = [NSObject ft_normalizedDictionaryWithObject:logGlobalContext];
+    logModel.logGlobalContext = FTPresetOptionalDictionary(logGlobalContext);
     [logModel ft_applyModifier:self.dataModifier];
     [self safeWrite:^{
         self->_logPropertyModel = logModel;
     }];
 }
 #pragma mark ----property setter/getter thread safe ----
--(FTBasePropertyModel *)currentBasePropertyModel{
-    __block FTBasePropertyModel *model;
-    pthread_rwlock_rdlock(&_rwLock);
-    model = self->_basePropertyModel;
-    pthread_rwlock_unlock(&_rwLock);
-    return model;
-}
--(FTLogPropertyModel *)ensureLogPropertyModel{
-    __block FTLogPropertyModel *model;
-    __block FTBasePropertyModel *baseModel;
-    pthread_rwlock_rdlock(&_rwLock);
-    model = self->_logPropertyModel;
-    baseModel = self->_basePropertyModel;
-    pthread_rwlock_unlock(&_rwLock);
-    if (model || !baseModel) {
-        return model;
-    }
-    model = [FTLogPropertyModel new];
-    model.baseModel = baseModel;
-    [self safeWrite:^{
-        if (!self->_logPropertyModel) {
-            self->_logPropertyModel = model;
-        }
-        model = self->_logPropertyModel;
-    }];
-    return model;
-}
 -(NSDictionary *)loggerTags{
-    [self ensureLogPropertyModel];
     __block NSDictionary *tags;
     pthread_rwlock_rdlock(&_rwLock);
-    tags = [[self->_logPropertyModel tags] copy];
+    if (self->_logPropertyModel) {
+        tags = FTPresetMergeTags([self->_basePropertyModel ft_tags], [self->_logPropertyModel ft_tags]);
+    }
     pthread_rwlock_unlock(&_rwLock);
     return tags ?: @{};
 }
@@ -644,38 +623,48 @@ static Class FTPresetExpectedValueClass(id value) {
     pthread_rwlock_unlock(&_rwLock);
     return obj;
 }
--(void)ensureRUMScreenSize{
-    __block BOOL needsScreenSize = NO;
-    __block FTRUMPropertyModel *rumModel;
-    pthread_rwlock_rdlock(&_rwLock);
-    rumModel = self->_rumPropertyModel;
-    needsScreenSize = rumModel != nil && !self->_rumScreenSizeResolved && rumModel.screenSize.length == 0;
-    pthread_rwlock_unlock(&_rwLock);
-    if (!needsScreenSize) {
-        return;
-    }
-    if (FTPresetIsAppExtension()) {
-        [self safeWrite:^{
-            self->_rumScreenSizeResolved = YES;
-        }];
-        return;
-    }
-    NSString *screen = [self.mobileDevice screenSize];
-    FTDataModifier modifier = self.dataModifier;
-    [self safeWrite:^{
-        if (self->_rumPropertyModel.screenSize.length == 0) {
-            if (screen.length > 0) {
-                [self->_rumPropertyModel updateScreenSize:screen modifier:modifier];
-            }
-            self->_rumScreenSizeResolved = YES;
-        }
-    }];
-}
--(NSDictionary *)rumTags{
-    [self ensureRUMScreenSize];
+-(NSDictionary *)sessionReplayTags{
     __block NSDictionary *tags;
     pthread_rwlock_rdlock(&_rwLock);
-    tags = [[self->_rumPropertyModel tags] copy];
+    tags = [self->_sessionReplayTags copy];
+    pthread_rwlock_unlock(&_rwLock);
+    return tags;
+}
+-(void)setSessionReplayTags:(NSDictionary *)sessionReplayTags{
+    NSDictionary *tags = [sessionReplayTags copy];
+    [self safeWrite:^{
+        self->_sessionReplayTags = tags;
+    }];
+}
+#pragma mark -- screen size retry --
+- (void)registerRUMScreenSizeActiveRetryIfNeeded{
+#if FT_HAS_UIKIT
+    if (FTPresetIsAppExtension()) {
+        return;
+    }
+    [[FTAppLifeCycle sharedInstance] addAppLifecycleDelegate:self];
+#endif
+}
+- (void)removeRUMScreenSizeActiveRetryIfNeeded{
+#if FT_HAS_UIKIT
+    [[FTAppLifeCycle sharedInstance] removeAppLifecycleDelegate:self];
+#endif
+}
+- (void)applicationDidBecomeActive{
+    NSString *screenSize = [self.mobileDevice screenSize];
+    if (screenSize) {
+        FTDataModifier dataModifier = [self.dataModifier copy];
+        NSString *modifiedScreenSize = FTPresetModifiedValue(dataModifier, FT_SCREEN_SIZE, screenSize, NSString.class);
+        [self safeWrite:^{
+            [self->_rumPropertyModel updateScreenSize:modifiedScreenSize];
+        }];
+    }
+    [self removeRUMScreenSizeActiveRetryIfNeeded];
+}
+-(NSDictionary *)rumTags{
+    NSDictionary *tags = nil;
+    pthread_rwlock_rdlock(&_rwLock);
+    tags = FTPresetMergeTags([self->_basePropertyModel ft_tags], [self->_rumPropertyModel ft_tags]);
     pthread_rwlock_unlock(&_rwLock);
     return tags ?: @{};
 }
@@ -699,48 +688,58 @@ static Class FTPresetExpectedValueClass(id value) {
 }
 -(void)updateUser:(NSString *)Id name:(NSString *)name email:(NSString *)email extra:(NSDictionary *)extra{
     FTDataModifier modifier = self.dataModifier;
+    __block NSDictionary *userInfo = nil;
     [self safeWrite:^{
-        [self->_userInfo updateUser:Id name:name email:email extra:extra];
-        NSDictionary *userInfoDict = [self->_userInfo userInfoDict];
-        [self->_basePropertyModel updateUserInfo:userInfoDict modifier:modifier];
+        userInfo = [self->_userInfo updateUser:Id name:name email:email extra:extra];
+    }];
+    NSDictionary *modifiedUserInfo = FTPresetApplyModifierToDictionary(userInfo, modifier);
+    [self safeWrite:^{
+        [self->_rumPropertyModel updateUserInfo:modifiedUserInfo];
     }];
 }
 -(void)clearUser{
     FTDataModifier modifier = self.dataModifier;
+    __block NSDictionary *userInfo = nil;
     [self safeWrite:^{
-        [self->_userInfo clearUser];
-        NSDictionary *userInfoDict = [self->_userInfo userInfoDict];
-        [self->_basePropertyModel updateUserInfo:userInfoDict modifier:modifier];
+        userInfo = [self->_userInfo clearUser];
+    }];
+    NSDictionary *modifiedUserInfo = FTPresetApplyModifierToDictionary(userInfo, modifier);
+    [self safeWrite:^{
+        [self->_rumPropertyModel updateUserInfo:modifiedUserInfo];
     }];
 }
 - (NSDictionary *)loggerDynamicTags{
     return [self loggerTags] ?: @{};
 }
 -(void)setSessionReplaySource:(NSString *)sessionReplaySource{
-    NSMutableDictionary *srDict = [self.sessionReplayTags mutableCopy] ?: [NSMutableDictionary dictionary];
-    [srDict setValue:sessionReplaySource forKey:FT_KEY_SOURCE];
-    self.sessionReplayTags = srDict;
+    [self safeWrite:^{
+        NSMutableDictionary *srDict = [self->_sessionReplayTags mutableCopy] ?: [NSMutableDictionary dictionary];
+        [srDict setValue:sessionReplaySource forKey:FT_KEY_SOURCE];
+        self->_sessionReplayTags = [srDict copy];
+    }];
 }
 - (NSDictionary *)rumDynamicTags{
     return [self rumTags] ?: @{};
 }
 - (void)appendGlobalContext:(NSDictionary *)context{
     FTDataModifier modifier = self.dataModifier;
+    NSDictionary *modifiedContext = FTPresetApplyModifierToDictionary(context, modifier);
     [self safeWrite:^{
-        [self->_basePropertyModel appendGlobalContext:context modifier:modifier];
+        [self->_basePropertyModel appendGlobalContext:modifiedContext];
     }];
 }
 - (void)appendRUMGlobalContext:(NSDictionary *)context{
     FTDataModifier modifier = self.dataModifier;
+    NSDictionary *modifiedContext = FTPresetApplyModifierToDictionary(context, modifier);
     [self safeWrite:^{
-        [self->_rumPropertyModel appendRUMGlobalContext:context modifier:modifier];
+        [self->_rumPropertyModel appendRUMGlobalContext:modifiedContext];
     }];
 }
 - (void)appendLogGlobalContext:(NSDictionary *)context{
-    [self ensureLogPropertyModel];
     FTDataModifier modifier = self.dataModifier;
+    NSDictionary *modifiedContext = FTPresetApplyModifierToDictionary(context, modifier);
     [self safeWrite:^{
-        [self->_logPropertyModel appendLogGlobalContext:context modifier:modifier];
+        [self->_logPropertyModel appendLogGlobalContext:modifiedContext];
     }];
 }
 - (NSDictionary *)applyModifier:(NSDictionary *)dict{
@@ -760,7 +759,18 @@ static Class FTPresetExpectedValueClass(id value) {
 
     FTLinePropertyBag *lineBag = [[FTLinePropertyBag alloc] initWithTags:tags fields:fields];
     // Execute Block and validate return value
-    FTLinePropertyBag *changedBag = [lineBag bagByApplyingChangedValues:tempLineModifier(measurement, lineBag.mergedDictionary)];
+    NSDictionary *changedValues = nil;
+#if defined(DEBUG) && DEBUG
+    changedValues = tempLineModifier(measurement, lineBag.mergedDictionary);
+#else
+    @try {
+        changedValues = tempLineModifier(measurement, lineBag.mergedDictionary);
+    } @catch (NSException *exception) {
+        FTInnerLogWarning(@"lineDataModifier exception for measurement: %@, exception: %@", measurement, exception);
+        return nil;
+    }
+#endif
+    FTLinePropertyBag *changedBag = [lineBag bagByApplyingChangedValues:changedValues];
     return @[ changedBag.tags, changedBag.fields ];
 }
 + (NSString *)getApplicationUUID{
@@ -1219,11 +1229,12 @@ static uintptr_t firstCmdAfterHeader(const struct mach_header* const header) {
 #endif
 }
 - (void)shutDown{
+    [[FTNetworkConnectivity sharedInstance] removeNetworkObserver:self];
+    [self removeRUMScreenSizeActiveRetryIfNeeded];
     [self safeWrite:^{
         self->_basePropertyModel = nil;
         self->_rumPropertyModel = nil;
         self->_logPropertyModel = nil;
-        self->_rumScreenSizeResolved = NO;
         self->_dataModifier = nil;
         self->_lineDataModifier = nil;
         self->_sessionReplayTags = nil;

@@ -244,7 +244,7 @@
             }
         }
     }];
-    XCTAssertTrue(newArray.count == hasLaunchData?1:0);
+    XCTAssertTrue(newArray.count == (hasLaunchData ? 2 : 1));
 }
 /**
  * Verify whether resource, action, error, long_task data is synchronized to view
@@ -737,8 +737,8 @@
             hasResourceData = YES;
             XCTAssertTrue([tags.allKeys containsObject:FT_RUM_KEY_SESSION_ID]);
             XCTAssertTrue([tags.allKeys containsObject:FT_RUM_KEY_SESSION_TYPE]);
-            XCTAssertFalse([tags.allKeys containsObject:FT_KEY_VIEW_ID]);
-            XCTAssertFalse([tags.allKeys containsObject:FT_KEY_VIEW_NAME]);
+            XCTAssertTrue([tags.allKeys containsObject:FT_KEY_VIEW_ID]);
+            XCTAssertTrue([tags.allKeys containsObject:FT_KEY_VIEW_NAME]);
             *stop = YES;
         }
     }];

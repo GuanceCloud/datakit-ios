@@ -31,12 +31,12 @@ NS_ASSUME_NONNULL_BEGIN
 ///   - name:  Name
 ///   - email: Email
 ///   - extra: Additional information
--(void)updateUser:(NSString *)Id name:(nullable NSString *)name email:(nullable NSString *)email extra:(nullable NSDictionary *)extra;
+-(NSDictionary *)updateUser:(NSString *)Id name:(nullable NSString *)name email:(nullable NSString *)email extra:(nullable NSDictionary *)extra;
 
 - (NSDictionary *)userInfoDict;
 
 /// Clear locally saved user information
--(void)clearUser;
+-(NSDictionary *)clearUser;
 @end
 
 NS_ASSUME_NONNULL_END

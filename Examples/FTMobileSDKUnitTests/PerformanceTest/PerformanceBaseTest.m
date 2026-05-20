@@ -27,9 +27,25 @@
     FTMobileConfig *config = [[FTMobileConfig alloc]initWithDatakitUrl:url];
     [[FTPresetProperty sharedInstance] startWithVersion:[[[NSBundle mainBundle] infoDictionary] objectForKey:@"CFBundleShortVersionString"] sdkVersion:SDK_VERSION env:config.env service:config.service globalContext:config.globalContext pkgInfo:nil];
     FTPresetProperty  *presetProperty = [FTPresetProperty sharedInstance];
+    [presetProperty setRUMAppID:@"test_app_id" sampleRate:100 sessionOnErrorSampleRate:0 rumGlobalContext:@{@"rum_key":@"rum_value"}];
                                          
     [self measureBlock:^{
       [presetProperty rumTags];
+    }];
+}
+- (void)testGetRumPropertyAfterUpdatePerformance {
+    NSProcessInfo *processInfo = [NSProcessInfo processInfo];
+    NSString *url = [processInfo environment][@"ACCESS_SERVER_URL"];
+    FTMobileConfig *config = [[FTMobileConfig alloc]initWithDatakitUrl:url];
+    [[FTPresetProperty sharedInstance] startWithVersion:[[[NSBundle mainBundle] infoDictionary] objectForKey:@"CFBundleShortVersionString"] sdkVersion:SDK_VERSION env:config.env service:config.service globalContext:config.globalContext pkgInfo:nil];
+    FTPresetProperty  *presetProperty = [FTPresetProperty sharedInstance];
+    [presetProperty setRUMAppID:@"test_app_id" sampleRate:100 sessionOnErrorSampleRate:0 rumGlobalContext:@{@"rum_key":@"rum_value"}];
+
+    __block NSInteger index = 0;
+    [self measureBlock:^{
+        [presetProperty appendRUMGlobalContext:@{[NSString stringWithFormat:@"rum_update_%ld", (long)index]:@"value"}];
+        [presetProperty rumTags];
+        index++;
     }];
 }
 - (void)testGetLoggerPropertyPerformance {

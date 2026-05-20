@@ -32,6 +32,7 @@
 #import "NSDictionary+FTCopyProperties.h"
 @interface FTPresetProperty (Testing)
 - (FTUserInfo *)userInfo;
+- (void)connectivityChanged:(BOOL)connected typeDescription:(NSString *)typeDescription;
 @end
 static id FTPropertyTestCallClassSelector(Class cls, SEL selector) {
 #pragma clang diagnostic push
@@ -56,6 +57,24 @@ static NSArray<NSString *> *FTPropertyTestPropertyNamesForClass(Class cls) {
         cls = class_getSuperclass(cls);
     }
     return [propertyNames copy];
+}
+
+static NSDictionary *FTPropertyTestLastLogTags(void) {
+    [[FTTrackDataManager sharedInstance] insertCacheToDB];
+    NSArray *datas = [[FTTrackerEventDBTool sharedManager] getFirstRecords:10 withType:FT_DATA_TYPE_LOGGING];
+    FTRecordModel *model = [datas lastObject];
+    NSDictionary *dict = [FTJSONUtil dictionaryWithJsonString:model.data];
+    return dict[FT_OPDATA][FT_TAGS];
+}
+static void FTPropertyTestAssertContainsKeys(XCTestCase *testCase, NSDictionary *tags, NSArray<NSString *> *keys) {
+    for (NSString *key in keys) {
+        XCTAssertNotNil(tags[key], @"%@ should contain %@", testCase.name, key);
+    }
+}
+static void FTPropertyTestAssertMissingKeys(XCTestCase *testCase, NSDictionary *tags, NSArray<NSString *> *keys) {
+    for (NSString *key in keys) {
+        XCTAssertNil(tags[key], @"%@ should not contain %@", testCase.name, key);
+    }
 }
 
 @interface FTPropertyTest : XCTestCase
@@ -279,6 +298,17 @@ static NSArray<NSString *> *FTPropertyTestPropertyNamesForClass(Class cls) {
     XCTAssertNotNil(emptyServiceConfig.service);
     XCTAssertNoThrow([emptyServiceConfig convertToDictionary]);
 }
+- (void)testPresetPropertyNilPkgInfoDoesNotOutputEmptyDictionary{
+    FTMobileConfig *config = [[FTMobileConfig alloc]initWithDatakitUrl:self.url];
+    config.autoSync = NO;
+    [FTMobileAgent startWithConfigOptions:config];
+    FTRumConfig *rumConfig = [[FTRumConfig alloc]initWithAppid:_appid];
+    [[FTMobileAgent sharedInstance] startRumWithConfigOptions:rumConfig];
+
+    NSDictionary *rumTags = [[FTPresetProperty sharedInstance] rumTags];
+    XCTAssertNil(rumTags[FT_SDK_PKG_INFO]);
+    [FTMobileAgent shutDown];
+}
 - (void)testAppendGlobalContextNilNoCrash{
     FTMobileConfig *config = [[FTMobileConfig alloc]initWithDatakitUrl:self.url];
     config.autoSync = NO;
@@ -310,6 +340,101 @@ static NSArray<NSString *> *FTPropertyTestPropertyNamesForClass(Class cls) {
     NSArray *logDatas = [[FTTrackerEventDBTool sharedManager] getFirstRecords:10 withType:FT_DATA_TYPE_LOGGING];
     XCTAssertTrue(rumDatas.count > 0);
     XCTAssertTrue(logDatas.count > 0);
+    [FTMobileAgent shutDown];
+}
+- (void)testPresetRUMAndLoggerTagsContainOwnedKeys{
+    FTMobileConfig *config = [[FTMobileConfig alloc]initWithDatakitUrl:self.url];
+    config.autoSync = NO;
+    config.globalContext = @{@"global_key":@"global_value"};
+    [FTMobileAgent startWithConfigOptions:config];
+    FTRumConfig *rumConfig = [[FTRumConfig alloc]initWithAppid:_appid];
+    rumConfig.globalContext = @{@"rum_key":@"rum_value"};
+    [[FTMobileAgent sharedInstance] startRumWithConfigOptions:rumConfig];
+    FTLoggerConfig *loggerConfig = [[FTLoggerConfig alloc]init];
+    loggerConfig.globalContext = @{@"log_key":@"log_value"};
+    [[FTMobileAgent sharedInstance] startLoggerWithConfigOptions:loggerConfig];
+    [[FTMobileAgent sharedInstance] bindUserWithUserID:@"log_user" userName:@"log_name" userEmail:@"log@test.com"];
+    [[FTPresetProperty sharedInstance] connectivityChanged:YES typeDescription:@"wifi"];
+
+    NSArray *baseKeys = @[FT_APPLICATION_UUID, FT_COMMON_PROPERTY_DEVICE_UUID, FT_KEY_SERVICE, FT_VERSION, FT_ENV, FT_SDK_VERSION, FT_SDK_NAME, @"global_key"];
+    NSArray *rumKeys = @[FT_COMMON_PROPERTY_DEVICE, FT_COMMON_PROPERTY_DEVICE_MODEL, FT_COMMON_PROPERTY_OS, FT_COMMON_PROPERTY_OS_VERSION, FT_COMMON_PROPERTY_OS_VERSION_MAJOR, FT_CPU_ARCH, FT_APP_ID, FT_NETWORK_TYPE, FT_USER_ID, FT_USER_NAME, FT_USER_EMAIL, FT_IS_SIGNIN, @"rum_key"];
+    NSArray *logKeys = @[@"log_key"];
+    NSDictionary *rumTags = [[FTPresetProperty sharedInstance] rumTags];
+    NSDictionary *loggerTags = [[FTPresetProperty sharedInstance] loggerTags];
+
+    FTPropertyTestAssertContainsKeys(self, rumTags, baseKeys);
+    FTPropertyTestAssertContainsKeys(self, rumTags, rumKeys);
+    FTPropertyTestAssertContainsKeys(self, loggerTags, baseKeys);
+    FTPropertyTestAssertContainsKeys(self, loggerTags, logKeys);
+    FTPropertyTestAssertMissingKeys(self, loggerTags, rumKeys);
+    [FTMobileAgent shutDown];
+}
+- (void)testLogWithoutRUMDoesNotIncludeRUMTags{
+    FTMobileConfig *config = [[FTMobileConfig alloc]initWithDatakitUrl:self.url];
+    config.autoSync = NO;
+    [FTMobileAgent startWithConfigOptions:config];
+    FTLoggerConfig *loggerConfig = [[FTLoggerConfig alloc]init];
+    [[FTMobileAgent sharedInstance] startLoggerWithConfigOptions:loggerConfig];
+    [[FTMobileAgent sharedInstance] bindUserWithUserID:@"log_user" userName:@"log_name" userEmail:@"log@test.com"];
+
+    FTDataWriterWorker *writer = [FTTrackDataManager sharedInstance].dataWriterWorker;
+    [writer loggingTags:nil field:@{FT_KEY_MESSAGE:@"log"} time:[NSDate ft_currentNanosecondTimeStamp] linkRum:YES];
+
+    NSDictionary *tags = FTPropertyTestLastLogTags();
+    NSArray *rumOnlyKeys = @[FT_APP_ID, FT_NETWORK_TYPE, FT_USER_ID, FT_USER_NAME, FT_USER_EMAIL, FT_IS_SIGNIN];
+    FTPropertyTestAssertMissingKeys(self, tags, rumOnlyKeys);
+    [FTMobileAgent shutDown];
+}
+- (void)testLogLinkRumControlsRUMTags{
+    FTMobileConfig *config = [[FTMobileConfig alloc]initWithDatakitUrl:self.url];
+    config.autoSync = NO;
+    [FTMobileAgent startWithConfigOptions:config];
+    FTRumConfig *rumConfig = [[FTRumConfig alloc]initWithAppid:_appid];
+    rumConfig.globalContext = @{@"rum_key":@"rum_value"};
+    [[FTMobileAgent sharedInstance] startRumWithConfigOptions:rumConfig];
+    FTLoggerConfig *loggerConfig = [[FTLoggerConfig alloc]init];
+    [[FTMobileAgent sharedInstance] startLoggerWithConfigOptions:loggerConfig];
+    [[FTMobileAgent sharedInstance] bindUserWithUserID:@"log_user" userName:@"log_name" userEmail:@"log@test.com"];
+    [[FTPresetProperty sharedInstance] connectivityChanged:YES typeDescription:@"wifi"];
+
+    FTDataWriterWorker *writer = [FTTrackDataManager sharedInstance].dataWriterWorker;
+    NSArray *rumLinkedKeys = @[FT_APP_ID, FT_NETWORK_TYPE, FT_USER_ID, FT_USER_NAME, FT_USER_EMAIL, FT_IS_SIGNIN, @"rum_key"];
+
+    [writer loggingTags:nil field:@{FT_KEY_MESSAGE:@"log"} time:[NSDate ft_currentNanosecondTimeStamp] linkRum:NO];
+    FTPropertyTestAssertMissingKeys(self, FTPropertyTestLastLogTags(), rumLinkedKeys);
+    [[FTTrackerEventDBTool sharedManager] deleteAllDatas];
+
+    [writer loggingTags:nil field:@{FT_KEY_MESSAGE:@"log"} time:[NSDate ft_currentNanosecondTimeStamp] linkRum:YES];
+    NSDictionary *tags = FTPropertyTestLastLogTags();
+    FTPropertyTestAssertContainsKeys(self, tags, rumLinkedKeys);
+
+    XCTAssertEqualObjects(tags[FT_USER_ID], @"log_user");
+    XCTAssertEqualObjects(tags[FT_USER_NAME], @"log_name");
+    XCTAssertEqualObjects(tags[FT_USER_EMAIL], @"log@test.com");
+    XCTAssertEqualObjects(tags[FT_IS_SIGNIN], @"T");
+    XCTAssertEqualObjects(tags[FT_NETWORK_TYPE], @"wifi");
+    [FTMobileAgent shutDown];
+}
+- (void)testNetworkTypeDataModifierUsesNetworkTypeKey{
+    __block NSString *modifierKey = nil;
+    FTMobileConfig *config = [[FTMobileConfig alloc]initWithDatakitUrl:self.url];
+    config.autoSync = NO;
+    config.dataModifier = ^id _Nullable(NSString * _Nonnull key, id  _Nonnull value) {
+        if ([value isEqual:@"wifi"]) {
+            modifierKey = key;
+            return @"cellular";
+        }
+        return nil;
+    };
+    [FTMobileAgent startWithConfigOptions:config];
+    FTRumConfig *rumConfig = [[FTRumConfig alloc]initWithAppid:_appid];
+    [[FTMobileAgent sharedInstance] startRumWithConfigOptions:rumConfig];
+
+    FTPresetProperty *preset = [FTPresetProperty sharedInstance];
+    [preset connectivityChanged:YES typeDescription:@"wifi"];
+
+    XCTAssertEqualObjects(modifierKey, FT_NETWORK_TYPE);
+    XCTAssertEqualObjects([preset rumTags][FT_NETWORK_TYPE], @"cellular");
     [FTMobileAgent shutDown];
 }
 - (void)testRecordModelNilTagsFieldsNoCrash{
@@ -380,6 +505,8 @@ static NSArray<NSString *> *FTPropertyTestPropertyNamesForClass(Class cls) {
     FTRumConfig *rumConfig = [[FTRumConfig alloc]initWithAppid:_appid];
     rumConfig.enableTraceUserAction = YES;
     [[FTMobileAgent sharedInstance] startRumWithConfigOptions:rumConfig];
+    FTLoggerConfig *loggerConfig = [[FTLoggerConfig alloc]init];
+    [[FTMobileAgent sharedInstance] startLoggerWithConfigOptions:loggerConfig];
     [[FTMobileAgent sharedInstance] unbindUser];
     [FTMobileAgent appendRUMGlobalContext:@{@"append_rum":@"rum",@"key":@"value"}];
     [FTMobileAgent appendGlobalContext:@{@"append_sdk":@"sdk",@"key2":@"value"}];
@@ -398,6 +525,77 @@ static NSArray<NSString *> *FTPropertyTestPropertyNamesForClass(Class cls) {
     XCTAssertEqualObjects(logTags[@"key3"], @"value");
     XCTAssertEqualObjects(logTags[@"key2"], @"value");
     [FTMobileAgent shutDown];
+}
+- (void)testAppendModuleContextBeforeModuleStartIsDiscarded{
+    FTMobileConfig *config = [[FTMobileConfig alloc]initWithDatakitUrl:self.url];
+    config.autoSync = NO;
+    [FTMobileAgent startWithConfigOptions:config];
+
+    [FTMobileAgent appendGlobalContext:@{@"early_base":@"base"}];
+    [FTMobileAgent appendRUMGlobalContext:@{@"early_rum":@"rum"}];
+    [FTMobileAgent appendLogGlobalContext:@{@"early_log":@"log"}];
+
+    FTRumConfig *rumConfig = [[FTRumConfig alloc]initWithAppid:_appid];
+    [[FTMobileAgent sharedInstance] startRumWithConfigOptions:rumConfig];
+    FTLoggerConfig *loggerConfig = [[FTLoggerConfig alloc]init];
+    [[FTMobileAgent sharedInstance] startLoggerWithConfigOptions:loggerConfig];
+
+    NSDictionary *rumTags = [[FTPresetProperty sharedInstance] rumTags];
+    NSDictionary *logTags = [[FTPresetProperty sharedInstance] loggerTags];
+    XCTAssertEqualObjects(rumTags[@"early_base"], @"base");
+    XCTAssertEqualObjects(logTags[@"early_base"], @"base");
+    XCTAssertNil(rumTags[@"early_rum"]);
+    XCTAssertNil(logTags[@"early_log"]);
+
+    [FTMobileAgent appendRUMGlobalContext:@{@"late_rum":@"rum"}];
+    [FTMobileAgent appendLogGlobalContext:@{@"late_log":@"log"}];
+    NSDictionary *updatedRumTags = [[FTPresetProperty sharedInstance] rumTags];
+    NSDictionary *updatedLogTags = [[FTPresetProperty sharedInstance] loggerTags];
+    XCTAssertEqualObjects(updatedRumTags[@"late_rum"], @"rum");
+    XCTAssertEqualObjects(updatedLogTags[@"late_log"], @"log");
+    [FTMobileAgent shutDown];
+}
+- (void)testRUMTagsReflectUpdates{
+    FTPresetProperty *preset = [FTPresetProperty sharedInstance];
+    [preset startWithVersion:@"1.0.0"
+                  sdkVersion:@"2.0.0"
+                         env:@"test"
+                     service:@"test_service"
+               globalContext:@{@"init_key": @"init_value"}
+                     pkgInfo:nil];
+    [preset setRUMAppID:@"test_app" sampleRate:100 sessionOnErrorSampleRate:0 rumGlobalContext:@{@"rum_key": @"rum_value"}];
+
+    NSDictionary *firstTags = [preset rumTags];
+    NSDictionary *secondTags = [preset rumTags];
+    XCTAssertEqualObjects(firstTags, secondTags);
+    XCTAssertEqualObjects(secondTags[@"init_key"], @"init_value");
+    XCTAssertEqualObjects(secondTags[@"rum_key"], @"rum_value");
+
+    [preset appendGlobalContext:@{@"global_added": @"global_value"}];
+    NSDictionary *globalTags = [preset rumTags];
+    XCTAssertNotEqualObjects(firstTags, globalTags);
+    XCTAssertEqualObjects(globalTags[@"global_added"], @"global_value");
+
+    [preset appendRUMGlobalContext:@{@"rum_added": @"rum_added_value"}];
+    NSDictionary *rumTags = [preset rumTags];
+    XCTAssertEqualObjects(rumTags[@"rum_added"], @"rum_added_value");
+    XCTAssertTrue([rumTags[FT_RUM_CUSTOM_KEYS] containsString:@"rum_added"]);
+
+    [preset updateUser:@"test_user" name:@"test_name" email:@"test@test.com" extra:@{@"extra": @"value"}];
+    NSDictionary *userTags = [preset rumTags];
+    XCTAssertEqualObjects(userTags[FT_USER_ID], @"test_user");
+    XCTAssertEqualObjects(userTags[FT_USER_NAME], @"test_name");
+    XCTAssertEqualObjects(userTags[@"extra"], @"value");
+
+    [preset clearUser];
+    NSDictionary *clearedUserTags = [preset rumTags];
+    XCTAssertNotEqualObjects(userTags, clearedUserTags);
+    XCTAssertNotEqualObjects(clearedUserTags[FT_USER_ID], @"test_user");
+    XCTAssertNil(clearedUserTags[FT_USER_NAME]);
+    XCTAssertNil(clearedUserTags[@"extra"]);
+
+    [preset shutDown];
+    XCTAssertEqualObjects([preset rumTags], @{});
 }
 - (void)testLineDataModifier_update{
     FTMobileConfig *config = [[FTMobileConfig alloc]initWithDatakitUrl:self.url];
@@ -578,6 +776,7 @@ static NSArray<NSString *> *FTPropertyTestPropertyNamesForClass(Class cls) {
                globalContext:@{@"init_key": @"init_value"}
                      pkgInfo:@{@"pkg_name": @"test_pkg"}];
     [preset setRUMAppID:@"aaa" sampleRate:100 sessionOnErrorSampleRate:0 rumGlobalContext:@{@"a":@"b"}];
+    [preset setLogGlobalContext:@{@"log_init":@"log_value"}];
     
     NSInteger writeThreadCount = 5;
     NSInteger readThreadCount = 10;
@@ -594,6 +793,9 @@ static NSArray<NSString *> *FTPropertyTestPropertyNamesForClass(Class cls) {
                 [preset appendLogGlobalContext:@{key: value}];
                 [preset appendRUMGlobalContext:@{[NSString stringWithFormat:@"rum_key_%ld_%ld", i, j]: value}];
                 [preset updateUser:[NSString stringWithFormat:@"write_key_%ld_%ld", i, j] name:[NSString stringWithFormat:@"rum_key_%ld_%ld", i, j] email:[NSString stringWithFormat:@"%ld@test.com", (long)i] extra:@{key: value}];
+                if (j % 10 == 0) {
+                    [preset clearUser];
+                }
 
             }
             [expectation fulfill];

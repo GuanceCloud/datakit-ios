@@ -66,9 +66,7 @@
         return;
     }
     @try {
-        FTPresetProperty *preset = [FTPresetProperty sharedInstance];
         NSMutableDictionary *contextTags = [NSMutableDictionary dictionary];
-        [contextTags addEntriesFromDictionary:[preset rumTags]];
         [contextTags addEntriesFromDictionary:[NSObject ft_normalizedDictionaryWithObject:dynamicContext]];
         [self writeSource:source
                        op:cache ? FT_DATA_TYPE_RUM_CACHE:FT_DATA_TYPE_RUM
@@ -152,7 +150,9 @@
     if (![source isKindOfClass:NSString.class] || source.length == 0) {
         return;
     }
-    [self rumWrite:source tags:tags fields:fields dynamicContext:@{} time:time updateTime:0 cache:NO];
+    FTPresetProperty *preset = [FTPresetProperty sharedInstance];
+    NSDictionary *dynamicContext = [preset rumTags];
+    [self rumWrite:source tags:tags fields:fields dynamicContext:dynamicContext time:time updateTime:0 cache:NO];
 }
 // FT_DATA_TYPE_LOGGING
 -(void)loggingTags:(nullable NSDictionary *)tags field:(nullable NSDictionary *)field time:(long long)time linkRum:(BOOL)linkRum{
