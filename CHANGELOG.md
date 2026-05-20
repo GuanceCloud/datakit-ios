@@ -1,7 +1,11 @@
-# 1.6.4-beta.1
-1. Improved DataKit-compatible data filter rule parsing and invalid rule handling.
-2. Hardened remote data filter refresh to prevent stale callbacks from shutdown, reinit, or upload endpoint changes from overwriting current filter state.
-3. Improved upload worker shutdown isolation so stale workers stop retrying and stop starting new upload loops, while successful in-flight uploads can still delete their corresponding local records.
+# 1.6.4-alpha.4
+1. Improved DataFilter rule parsing and invalid rule handling for RUM and logging blacklist rules.
+2. Hardened remote DataFilter refresh to prevent stale callbacks after shutdown, reinit, or upload endpoint changes from overwriting current filter state.
+3. Appended `disable_filter=true` only in Datakit mode when every uploaded record in the batch has already been checked by remote DataFilter.
+4. Improved upload worker shutdown isolation so stale workers stop retrying and stop starting new upload loops, while successful in-flight uploads can still delete their corresponding local records.
+5. Replaced RUM placeholder view handling with fallback view resolution to improve view tracking consistency when the original view is unavailable.
+6. Removed SwiftUI automatic action tracking support.
+7. Improved preset property tag handling for nil, empty, and user info update scenarios.
 ---
 # 1.6.4-alpha.3
 1. Added SDK-side DataKit-compatible data filtering with local and remote filter rules for RUM and logging data.
