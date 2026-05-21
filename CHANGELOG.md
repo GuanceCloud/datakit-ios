@@ -1,3 +1,12 @@
+# 1.6.4
+1. Added Session Replay support for SwiftUI views.
+2. Added RUM SwiftUI view tracking and manual tap action tracking support.
+3. Added the `app_launch_type` field to cold start actions to distinguish foreground and background launches.
+4. Added `FTMobileConfig.enableDataFilter` and `FTMobileConfig.dataFilters` to enable SDK-side DataFilter and configure local blacklist rules. DataFilter rules are applied after `lineDataModifier` and before local cache writes.
+5. Improved upload worker shutdown isolation, upload callback synchronization, and RUM upload behavior to avoid duplicate uploads, stale retry loops, upload execution conflicts, and duplicate View data during uploads.
+6. Replaced RUM placeholder View handling with fallback View resolution to improve View tracking consistency when the original View is unavailable.
+7. Improved preset property tag handling for nil, empty, and user info update scenarios.
+---
 # 1.6.4-beta.1
 1. Used the remotely delivered pull interval to control DataFilter refresh frequency.
 2. Fixed CocoaPods linker warnings.
