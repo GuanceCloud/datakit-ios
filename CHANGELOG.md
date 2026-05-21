@@ -1,3 +1,7 @@
+# 1.6.4-beta.1
+1. Used the remotely delivered pull interval to control DataFilter refresh frequency.
+2. Fixed CocoaPods linker warnings.
+---
 # 1.6.4-alpha.4
 1. Improved DataFilter rule parsing and invalid rule handling for RUM and logging blacklist rules.
 2. Hardened remote DataFilter refresh to prevent stale callbacks after shutdown, reinit, or upload endpoint changes from overwriting current filter state.
