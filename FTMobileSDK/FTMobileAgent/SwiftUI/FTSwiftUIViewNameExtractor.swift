@@ -14,6 +14,7 @@ import UIKit
 
 @available(iOS 13.0, tvOS 13.0, *)
 @objc(FTSwiftUIViewNameExtractor)
+@_spi(Private)
 public final class FTSwiftUIViewNameExtractor: NSObject {
     private protocol TopLevelReflector {
         func descendant(_ path: [Node]) -> Any?

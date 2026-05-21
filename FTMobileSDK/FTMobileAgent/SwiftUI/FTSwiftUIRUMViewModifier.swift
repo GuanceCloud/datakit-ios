@@ -12,6 +12,7 @@ import Foundation
 import SwiftUI
 
 @objc(FTSwiftUIRUMViewHandling)
+@_spi(Private)
 public protocol FTSwiftUIRUMViewHandling: AnyObject {
     @objc(notifyOnAppearWithIdentity:name:property:loadTime:)
     func notifyOnAppear(identity: String, name: String, property: [String: Any]?, loadTime: NSNumber)
@@ -21,6 +22,7 @@ public protocol FTSwiftUIRUMViewHandling: AnyObject {
 }
 
 @objc(FTSwiftUIRUMViewBridge)
+@_spi(Private)
 public final class FTSwiftUIRUMViewBridge: NSObject {
     private final class WeakBox {
         weak var value: FTSwiftUIRUMViewHandling?
@@ -43,12 +45,14 @@ public final class FTSwiftUIRUMViewBridge: NSObject {
 }
 
 @objc(FTSwiftUIRUMActionHandling)
+@_spi(Private)
 public protocol FTSwiftUIRUMActionHandling: AnyObject {
     @objc(notifySwiftUITapActionWithName:property:)
     func notifySwiftUITapAction(name: String, property: [String: Any]?)
 }
 
 @objc(FTSwiftUIRUMActionBridge)
+@_spi(Private)
 public final class FTSwiftUIRUMActionBridge: NSObject {
     private final class WeakBox {
         weak var value: FTSwiftUIRUMActionHandling?
