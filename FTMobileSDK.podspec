@@ -14,7 +14,7 @@ Pod::Spec.new do |s|
 	s.ios.deployment_target = '12.0'
 	s.osx.deployment_target = '10.14'
 	s.tvos.deployment_target = '12.0'
-	s.libraries    = 'c++', 'z'
+	s.libraries    = 'z'
 	s.pod_target_xcconfig = {
 		'DEFINES_MODULE' => 'YES',
 		'GCC_ENABLE_CPP_EXCEPTIONS' => 'YES'

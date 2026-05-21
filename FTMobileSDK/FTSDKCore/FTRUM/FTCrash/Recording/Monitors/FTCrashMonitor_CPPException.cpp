@@ -132,7 +132,7 @@ static void CPPExceptionTerminate(void)
         FTCrash_MonitorContext *crashContext = g_state.callbacks.notify(
             thisThread,
             (FTCrash_ExceptionHandlingRequirements) {
-                .asyncSafety = true, .isFatal = true, .shouldRecordAllThreads = true, .shouldWriteReport = true });
+                .shouldRecordAllThreads = true, .shouldWriteReport = true, .isFatal = true, .asyncSafety = true });
         if (crashContext->requirements.shouldExitImmediately) {
             goto skip_handling;
         }
