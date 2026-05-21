@@ -1,6 +1,7 @@
 # 1.6.4-beta.1
 1. Used the remotely delivered pull interval to control DataFilter refresh frequency.
 2. Fixed CocoaPods linker warnings.
+3. Marked SwiftUI bridge symbols as private SPI to keep Swift packaging compatibility without exposing them as public API.
 ---
 # 1.6.4-alpha.4
 1. Improved DataFilter rule parsing and invalid rule handling for RUM and logging blacklist rules.
