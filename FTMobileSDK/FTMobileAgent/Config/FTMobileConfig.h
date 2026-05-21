@@ -144,9 +144,6 @@ typedef FTTraceContext*_Nullable(^FTTraceInterceptor)(NSURLRequest *_Nonnull req
 /// Whether to enable SDK-side DataKit-compatible blacklist filtering, including local and remote filters. Default: YES.
 @property (nonatomic, assign) BOOL enableDataFilter;
 
-/// Minimum interval for pulling remote blacklist filters, in seconds. Default: 30 minutes.
-@property (nonatomic, assign) int dataFilterUpdateInterval;
-
 /// Local DataKit-compatible blacklist filter rules managed by the app. Supported keys: logging, rum.
 @property (nonatomic, copy) NSDictionary<NSString *, NSArray<NSString *> *> *dataFilters;
 

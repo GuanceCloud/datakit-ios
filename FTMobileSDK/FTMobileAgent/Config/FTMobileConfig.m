@@ -102,7 +102,6 @@
         _enableDataIntegerCompatible = YES;
         _enableLimitWithDbSize = NO;
         _enableDataFilter = YES;
-        _dataFilterUpdateInterval = 30*60;
         _dataFilters = @{};
         _remoteConfiguration = NO;
         _remoteConfigMiniUpdateInterval = 12*60*60;
@@ -147,9 +146,6 @@
 -(void)setRemoteConfigMiniUpdateInterval:(int)remoteConfigMiniUpdateInterval{
     _remoteConfigMiniUpdateInterval = MAX(0, remoteConfigMiniUpdateInterval);
 }
--(void)setDataFilterUpdateInterval:(int)dataFilterUpdateInterval{
-    _dataFilterUpdateInterval = MAX(0, dataFilterUpdateInterval);
-}
 -(NSDictionary *)pkgInfo{
     NSDictionary *dict = nil;
     @synchronized (self) {
@@ -188,7 +184,6 @@
     options.dataModifier = [self.dataModifier copy];
     options.lineDataModifier = [self.lineDataModifier copy];
     options.enableDataFilter = self.enableDataFilter;
-    options.dataFilterUpdateInterval = self.dataFilterUpdateInterval;
     options.dataFilters = [self.dataFilters copy];
     options.remoteConfiguration = self.remoteConfiguration;
     options.remoteConfigMiniUpdateInterval = self.remoteConfigMiniUpdateInterval;
@@ -204,7 +199,6 @@
             if ([dict ft_hasValidValueForKey:@"clientToken"]) self.clientToken = [dict valueForKey:@"clientToken"];
             if ([dict ft_hasValidValueForKey:@"env"]) self.env = [dict valueForKey:@"env"];
             if ([dict ft_hasValidValueForKey:@"enableDataFilter"]) self.enableDataFilter = [[dict valueForKey:@"enableDataFilter"] boolValue];
-            if ([dict ft_hasValidValueForKey:@"dataFilterUpdateInterval"]) self.dataFilterUpdateInterval = [[dict valueForKey:@"dataFilterUpdateInterval"] intValue];
             if ([dict ft_hasValidValueForKey:@"dataFilters"]) self.dataFilters = [dict valueForKey:@"dataFilters"];
         }
         return self;
@@ -221,7 +215,6 @@
     [dict setValue:self.datakitUrl forKey:@"datakitUrl"];
     [dict setValue:self.env forKey:@"env"];
     [dict setValue:@(self.enableDataFilter) forKey:@"enableDataFilter"];
-    [dict setValue:@(self.dataFilterUpdateInterval) forKey:@"dataFilterUpdateInterval"];
     [dict setValue:self.dataFilters forKey:@"dataFilters"];
     return dict;
 }
@@ -250,7 +243,6 @@
     [dict setValue:self.dataModifier forKey:@"dataModifier"];
     [dict setValue:self.lineDataModifier forKey:@"lineDataModifier"];
     [dict setValue:@(self.enableDataFilter) forKey:@"enableDataFilter"];
-    [dict setValue:@(self.dataFilterUpdateInterval) forKey:@"dataFilterUpdateInterval"];
     [dict setValue:self.dataFilters forKey:@"dataFilters"];
     [dict setValue:@(self.remoteConfiguration) forKey:@"remoteConfiguration"];
     [dict setValue:@(self.remoteConfigMiniUpdateInterval) forKey:@"remoteConfigMiniUpdateInterval"];

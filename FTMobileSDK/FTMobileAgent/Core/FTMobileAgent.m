@@ -197,8 +197,7 @@ static FTMobileAgent *sharedInstance = nil;
         .setCompressionIntakeRequests(config.compressIntakeRequests)
         .setEnableDataIntegerCompatible(config.enableDataIntegerCompatible);
     [[FTDataFilterManager sharedInstance] enable:config.enableDataFilter
-                                    localFilters:config.dataFilters
-                                  updateInterval:config.dataFilterUpdateInterval];
+                                    localFilters:config.dataFilters];
     BOOL autoSync = config.autoSync&&[FTNetworkInfoManager sharedInstance].isNetworkConfigured;
     // Start data processing manager
     [FTTrackDataManager startWithAutoSync:autoSync syncPageSize:config.syncPageSize syncSleepTime:config.syncSleepTime];

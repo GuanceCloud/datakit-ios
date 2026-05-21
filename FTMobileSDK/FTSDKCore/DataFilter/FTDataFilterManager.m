@@ -13,8 +13,12 @@
 #import "FTJSONUtil.h"
 #import "FTNetworkInfoManager.h"
 #import "NSString+FTAdd.h"
+#include <limits.h>
 
-static const int FTDataFilterDefaultUpdateInterval = 30 * 60;
+static const int FTDataFilterDefaultUpdateInterval = 10;
+static const long long FTDataFilterNumericPullIntervalNanosecondThreshold = 1000000LL;
+static const long long FTDataFilterNanosecondsPerMillisecond = 1000000LL;
+static const long long FTDataFilterMillisecondsPerSecond = 1000LL;
 
 @interface FTDataFilterManager()
 @property (nonatomic, assign) BOOL enable;
@@ -58,14 +62,13 @@ static dispatch_once_t onceToken;
 }
 
 - (void)enable:(BOOL)enable
-localFilters:(NSDictionary<NSString *, NSArray<NSString *> *> *)localFilters
-updateInterval:(int)updateInterval {
+localFilters:(NSDictionary<NSString *, NSArray<NSString *> *> *)localFilters {
     FTDataFilter *localFilter = enable ? [self dataFilterWithFilters:localFilters logPrefix:@"local"] : nil;
     NSString *endpointKey = [self currentEndpointKey];
     @synchronized (self) {
         self.generation++;
         self.enable = enable;
-        self.updateInterval = updateInterval > 0 ? updateInterval : FTDataFilterDefaultUpdateInterval;
+        self.updateInterval = FTDataFilterDefaultUpdateInterval;
         self.localFilter = localFilter;
         self.remoteFilter = nil;
         self.remoteMD5 = nil;
@@ -253,21 +256,59 @@ updateInterval:(int)updateInterval {
 }
 
 - (int)intervalFromPullInterval:(id)value {
+    if ([value isKindOfClass:NSNumber.class]) {
+        return [self intervalFromNumericPullInterval:[value longLongValue]];
+    }
     if (![value isKindOfClass:NSString.class] || [value length] == 0) {
         return 0;
     }
-    NSString *interval = [value lowercaseString];
+    return [self intervalFromPullIntervalString:value];
+}
+
+- (int)intervalFromNumericPullInterval:(long long)value {
+    if (value <= 0) {
+        return 0;
+    }
+    if (value < FTDataFilterNumericPullIntervalNanosecondThreshold) {
+        return [self safeIntervalFromSeconds:value];
+    }
+    long long milliseconds = value / FTDataFilterNanosecondsPerMillisecond;
+    return [self safeIntervalFromSeconds:MAX(1LL, milliseconds / FTDataFilterMillisecondsPerSecond)];
+}
+
+- (int)intervalFromPullIntervalString:(NSString *)value {
+    NSString *interval = [[value stringByTrimmingCharactersInSet:[NSCharacterSet whitespaceAndNewlineCharacterSet]] lowercaseString];
+    if (interval.length == 0) {
+        return 0;
+    }
     NSCharacterSet *digits = [NSCharacterSet decimalDigitCharacterSet];
     NSString *numberString = [[interval componentsSeparatedByCharactersInSet:digits.invertedSet] componentsJoinedByString:@""];
-    int number = numberString.intValue;
+    long long number = numberString.longLongValue;
     if (number <= 0) {
         return 0;
     }
-    if ([interval hasSuffix:@"ms"]) return MAX(1, number / 1000);
-    if ([interval hasSuffix:@"s"]) return number;
-    if ([interval hasSuffix:@"h"]) return number * 60 * 60;
-    if ([interval hasSuffix:@"m"]) return number * 60;
-    return number;
+    if ([interval hasSuffix:@"ms"]) return [self safeIntervalFromSeconds:MAX(1LL, number / FTDataFilterMillisecondsPerSecond)];
+    if ([interval hasSuffix:@"s"]) return [self safeIntervalFromSeconds:number];
+    if ([interval hasSuffix:@"h"]) return [self safeIntervalFromValue:number multiplier:60 * 60];
+    if ([interval hasSuffix:@"m"]) return [self safeIntervalFromValue:number multiplier:60];
+    return [self safeIntervalFromSeconds:number];
+}
+
+- (int)safeIntervalFromValue:(long long)value multiplier:(long long)multiplier {
+    if (value <= 0 || multiplier <= 0) {
+        return 0;
+    }
+    if (value > (long long)INT_MAX / multiplier) {
+        return INT_MAX;
+    }
+    return [self safeIntervalFromSeconds:value * multiplier];
+}
+
+- (int)safeIntervalFromSeconds:(long long)seconds {
+    if (seconds <= 0) {
+        return 0;
+    }
+    return (int)MIN(seconds, (long long)INT_MAX);
 }
 
 - (BOOL)isFilteredWithCategory:(NSString *)category

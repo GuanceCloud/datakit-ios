@@ -16,8 +16,7 @@ NS_ASSUME_NONNULL_BEGIN
 + (instancetype)sharedInstance;
 
 - (void)enable:(BOOL)enable
-localFilters:(NSDictionary<NSString *, NSArray<NSString *> *> *)localFilters
-updateInterval:(int)updateInterval;
+localFilters:(NSDictionary<NSString *, NSArray<NSString *> *> *)localFilters;
 - (void)updateRemoteFilterIfNeededWithForce:(BOOL)force;
 - (BOOL)isFilteredWithCategory:(NSString *)category
                         source:(NSString *)source

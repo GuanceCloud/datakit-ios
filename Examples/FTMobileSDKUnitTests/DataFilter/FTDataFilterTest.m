@@ -184,7 +184,7 @@ typedef void(^FTDataFilterMockHTTPCompletion)(NSHTTPURLResponse * _Nullable resp
 
     FTDataFilterMockHTTPClient *client = [FTDataFilterMockHTTPClient new];
     FTDataFilterManager *manager = [self dataFilterManagerWithMockClient:client];
-    [manager enable:YES localFilters:@{} updateInterval:30];
+    [manager enable:YES localFilters:@{}];
     XCTAssertEqual(client.completions.count, 1u);
     [client completeRequestAtIndex:0 data:receivedData];
     XCTAssertTrue(manager.shouldDisableServerFilter);
@@ -346,7 +346,8 @@ typedef void(^FTDataFilterMockHTTPCompletion)(NSHTTPURLResponse * _Nullable resp
     [self configureDatakitURL:@"http://datakit-a.example"];
     FTDataFilterMockHTTPClient *client = [FTDataFilterMockHTTPClient new];
     FTDataFilterManager *manager = [self dataFilterManagerWithMockClient:client];
-    [manager enable:YES localFilters:@{} updateInterval:30];
+    [manager enable:YES localFilters:@{}];
+    XCTAssertEqual([[manager valueForKey:@"updateInterval"] intValue], 10);
     XCTAssertEqual(client.completions.count, 1u);
 
     [client completeRequestAtIndex:0 responseObject:@{
@@ -393,7 +394,7 @@ typedef void(^FTDataFilterMockHTTPCompletion)(NSHTTPURLResponse * _Nullable resp
     [self configureDatakitURL:@"http://datakit-a.example"];
     FTDataFilterMockHTTPClient *client = [FTDataFilterMockHTTPClient new];
     FTDataFilterManager *manager = [self dataFilterManagerWithMockClient:client];
-    [manager enable:YES localFilters:@{} updateInterval:30];
+    [manager enable:YES localFilters:@{}];
     XCTAssertEqual(client.completions.count, 1u);
 
     [client completeRequestAtIndex:0 responseObject:@{
@@ -403,6 +404,7 @@ typedef void(^FTDataFilterMockHTTPCompletion)(NSHTTPURLResponse * _Nullable resp
         },
         @"pull_interval": @10000000000
     }];
+    XCTAssertEqual([[manager valueForKey:@"updateInterval"] intValue], 10);
 
     NSDictionary *matchedLoggingTags = @{@"status": @"info", @"env": @"test"};
     NSDictionary *matchedLoggingFields = @{@"message": @"user password leaked"};
@@ -463,13 +465,36 @@ typedef void(^FTDataFilterMockHTTPCompletion)(NSHTTPURLResponse * _Nullable resp
                                             fields:unmatchedRumFields]);
 }
 
+- (void)testRemotePullIntervalParsesNumberLikeAndroid {
+    [self configureDatakitURL:@"http://datakit-a.example"];
+    FTDataFilterMockHTTPClient *client = [FTDataFilterMockHTTPClient new];
+    FTDataFilterManager *manager = [self dataFilterManagerWithMockClient:client];
+    [manager enable:YES localFilters:@{}];
+    XCTAssertEqual([[manager valueForKey:@"updateInterval"] intValue], 10);
+    XCTAssertEqual(client.completions.count, 1u);
+
+    [client completeRequestAtIndex:0 responseObject:@{
+        @"filters": @{@"logging": @[]},
+        @"pull_interval": @10000000000
+    }];
+    XCTAssertEqual([[manager valueForKey:@"updateInterval"] intValue], 10);
+
+    [manager updateRemoteFilterIfNeededWithForce:YES];
+    XCTAssertEqual(client.completions.count, 2u);
+    [client completeRequestAtIndex:1 responseObject:@{
+        @"filters": @{@"logging": @[]},
+        @"pull_interval": @60
+    }];
+    XCTAssertEqual([[manager valueForKey:@"updateInterval"] intValue], 60);
+}
+
 #pragma mark - Remote Refresh and Lifecycle Safety
 
 - (void)testRemoteCallbackAfterShutdownDoesNotCommitState {
     [self configureDatakitURL:@"http://datakit-a.example"];
     FTDataFilterMockHTTPClient *client = [FTDataFilterMockHTTPClient new];
     FTDataFilterManager *manager = [self dataFilterManagerWithMockClient:client];
-    [manager enable:YES localFilters:@{} updateInterval:30];
+    [manager enable:YES localFilters:@{}];
     XCTAssertEqual(client.completions.count, 1u);
     
     [manager shutDown];
@@ -489,10 +514,10 @@ typedef void(^FTDataFilterMockHTTPCompletion)(NSHTTPURLResponse * _Nullable resp
     [self configureDatakitURL:@"http://datakit-a.example"];
     FTDataFilterMockHTTPClient *client = [FTDataFilterMockHTTPClient new];
     FTDataFilterManager *manager = [self dataFilterManagerWithMockClient:client];
-    [manager enable:YES localFilters:@{} updateInterval:30];
+    [manager enable:YES localFilters:@{}];
     XCTAssertEqual(client.completions.count, 1u);
     
-    [manager enable:YES localFilters:@{@"logging": @[@"{ status = 'local_new' }"]} updateInterval:30];
+    [manager enable:YES localFilters:@{@"logging": @[@"{ status = 'local_new' }"]}];
     XCTAssertEqual(client.completions.count, 2u);
     
     [client completeRequestAtIndex:0 responseObject:@{
@@ -525,7 +550,7 @@ typedef void(^FTDataFilterMockHTTPCompletion)(NSHTTPURLResponse * _Nullable resp
     [self configureDatakitURL:@"http://datakit-a.example"];
     FTDataFilterMockHTTPClient *client = [FTDataFilterMockHTTPClient new];
     FTDataFilterManager *manager = [self dataFilterManagerWithMockClient:client];
-    [manager enable:YES localFilters:@{} updateInterval:30];
+    [manager enable:YES localFilters:@{}];
     XCTAssertEqual(client.completions.count, 1u);
     
     [self configureDatakitURL:@"http://datakit-b.example"];
@@ -557,7 +582,7 @@ typedef void(^FTDataFilterMockHTTPCompletion)(NSHTTPURLResponse * _Nullable resp
     [self configureDatawayURL:@"http://dataway.example" token:@"token-a"];
     FTDataFilterMockHTTPClient *client = [FTDataFilterMockHTTPClient new];
     FTDataFilterManager *manager = [self dataFilterManagerWithMockClient:client];
-    [manager enable:YES localFilters:@{} updateInterval:30];
+    [manager enable:YES localFilters:@{}];
     XCTAssertEqual(client.completions.count, 1u);
     
     [self configureDatawayURL:@"http://dataway.example" token:@"token-b"];
@@ -589,7 +614,7 @@ typedef void(^FTDataFilterMockHTTPCompletion)(NSHTTPURLResponse * _Nullable resp
     [self configureDatakitURL:@"http://datakit-a.example"];
     FTDataFilterMockHTTPClient *client = [FTDataFilterMockHTTPClient new];
     FTDataFilterManager *manager = [self dataFilterManagerWithMockClient:client];
-    [manager enable:YES localFilters:@{} updateInterval:30];
+    [manager enable:YES localFilters:@{}];
     XCTAssertEqual(client.completions.count, 1u);
     
     [client completeRequestAtIndex:0 rawString:@"not-json"];
@@ -605,7 +630,7 @@ typedef void(^FTDataFilterMockHTTPCompletion)(NSHTTPURLResponse * _Nullable resp
     [self configureDatakitURL:@"http://datakit-a.example"];
     FTDataFilterMockHTTPClient *client = [FTDataFilterMockHTTPClient new];
     FTDataFilterManager *manager = [self dataFilterManagerWithMockClient:client];
-    [manager enable:YES localFilters:@{} updateInterval:30];
+    [manager enable:YES localFilters:@{}];
     XCTAssertEqual(client.completions.count, 1u);
     [client completeRequestAtIndex:0 responseObject:@{@"filters": @{@"logging": @[]}}];
 
@@ -630,7 +655,7 @@ typedef void(^FTDataFilterMockHTTPCompletion)(NSHTTPURLResponse * _Nullable resp
     [self configureDatakitURL:@"http://datakit-a.example"];
     FTDataFilterMockHTTPClient *client = [FTDataFilterMockHTTPClient new];
     FTDataFilterManager *manager = [self dataFilterManagerWithMockClient:client];
-    [manager enable:YES localFilters:@{} updateInterval:30];
+    [manager enable:YES localFilters:@{}];
     XCTAssertEqual(client.completions.count, 1u);
 
     BOOL remoteFilterChecked = NO;
@@ -666,7 +691,7 @@ typedef void(^FTDataFilterMockHTTPCompletion)(NSHTTPURLResponse * _Nullable resp
     [self configureDatakitURL:@"http://datakit-a.example"];
     FTDataFilterMockHTTPClient *client = [FTDataFilterMockHTTPClient new];
     FTDataFilterManager *manager = [self dataFilterManagerWithMockClient:client];
-    [manager enable:YES localFilters:@{} updateInterval:30];
+    [manager enable:YES localFilters:@{}];
     XCTAssertEqual(client.completions.count, 1u);
     [client completeRequestAtIndex:0 responseObject:@{@"filters": @{@"logging": @[]}}];
     XCTAssertTrue(manager.shouldDisableServerFilter);
@@ -701,8 +726,7 @@ typedef void(^FTDataFilterMockHTTPCompletion)(NSHTTPURLResponse * _Nullable resp
     FTDataFilterManager *manager = [FTDataFilterManager sharedInstance];
     id invalidFilters = @"bad-filters";
     XCTAssertNoThrow([manager enable:YES
-                        localFilters:(NSDictionary<NSString *,NSArray<NSString *> *> *)invalidFilters
-                      updateInterval:30]);
+                        localFilters:(NSDictionary<NSString *,NSArray<NSString *> *> *)invalidFilters]);
     XCTAssertFalse([manager isFilteredWithCategory:@"logging"
                                             source:@"ios_log"
                                               uuid:@"uuid"
@@ -719,7 +743,7 @@ typedef void(^FTDataFilterMockHTTPCompletion)(NSHTTPURLResponse * _Nullable resp
     for (NSInteger index = 0; index < 100; index++) {
         dispatch_group_async(group, queue, ^{
             @autoreleasepool {
-                [manager enable:YES localFilters:filters updateInterval:30];
+                [manager enable:YES localFilters:filters];
             }
         });
         dispatch_group_async(group, queue, ^{
@@ -739,7 +763,7 @@ typedef void(^FTDataFilterMockHTTPCompletion)(NSHTTPURLResponse * _Nullable resp
     }
     
     XCTAssertEqual(dispatch_group_wait(group, dispatch_time(DISPATCH_TIME_NOW, (int64_t)(5 * NSEC_PER_SEC))), 0);
-    [manager enable:YES localFilters:filters updateInterval:30];
+    [manager enable:YES localFilters:filters];
     XCTAssertTrue([manager isFilteredWithCategory:@"logging"
                                            source:@"ios_log"
                                              uuid:@"uuid"
