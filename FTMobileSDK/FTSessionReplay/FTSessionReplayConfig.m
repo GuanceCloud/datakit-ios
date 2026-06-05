@@ -37,6 +37,7 @@ NSString * const FTImagePrivacyLevelStringMap[] = {
         _touchPrivacy = FTTouchPrivacyLevelHide;
         _textAndInputPrivacy = FTTextAndInputPrivacyLevelMaskAll;
         _privacy = FTSRPrivacyMask;
+        _enableHeatmap = NO;
     }
     return self;
 }
@@ -91,10 +92,11 @@ NSString * const FTImagePrivacyLevelStringMap[] = {
     config.textAndInputPrivacy = self.textAndInputPrivacy;
     config.additionalNodeRecorders = [self.additionalNodeRecorders copy];
     config.enableLinkRUMKeys = [self.enableLinkRUMKeys copy];
+    config.enableHeatmap = self.enableHeatmap;
     return config;
 }
 -(NSString *)debugDescription{
-    return [NSString stringWithFormat:@"====== Config ======\n sampleRate:%d\n sessionReplayOnErrorSampleRate:%d\n textAndInputPrivacy:%@\n touchPrivacy:%@\n imagePrivacy:%@\n ================== ",self.sampleRate,self.sessionReplayOnErrorSampleRate,FTTextAndInputPrivacyLevelStringMap[self.textAndInputPrivacy],FTTouchPrivacyLevelStringMap[self.touchPrivacy],FTImagePrivacyLevelStringMap[self.imagePrivacy]];
+    return [NSString stringWithFormat:@"====== Config ======\n sampleRate:%d\n sessionReplayOnErrorSampleRate:%d\n textAndInputPrivacy:%@\n touchPrivacy:%@\n imagePrivacy:%@\n enableHeatmap:%@\n ================== ",self.sampleRate,self.sessionReplayOnErrorSampleRate,FTTextAndInputPrivacyLevelStringMap[self.textAndInputPrivacy],FTTouchPrivacyLevelStringMap[self.touchPrivacy],FTImagePrivacyLevelStringMap[self.imagePrivacy],self.enableHeatmap ? @"true" : @"false"];
 }
 #pragma mark remote
 -(void)mergeWithRemoteConfigModel:(FTRemoteConfigModel *)model{

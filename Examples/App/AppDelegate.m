@@ -116,7 +116,7 @@
         srConfig.touchPrivacy = FTTouchPrivacyLevelShow;
         srConfig.imagePrivacy = FTImagePrivacyLevelMaskNone;
         srConfig.sampleRate = 100;
-
+        srConfig.enableHeatmap = YES;
         [[FTRumSessionReplay sharedInstance] startWithSessionReplayConfig:srConfig];
 
     }

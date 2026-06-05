@@ -86,7 +86,7 @@ typedef NS_ENUM(NSInteger, SampleState) {
     FTResourceProcessor *resourceProcessor = [[FTResourceProcessor alloc]initWithQueue:self.processorsQueue resourceWriter:resource];
     FTSnapshotProcessor *srProcessor = [[FTSnapshotProcessor alloc]initWithQueue:self.processorsQueue writer:recordStorage.writer resourceProcessor:resourceProcessor];
 
-    FTRecorder *windowRecorder = [[FTRecorder alloc]initWithWindowObserver:self.windowObserver snapshotProcessor:srProcessor  additionalNodeRecorders:self.config.additionalNodeRecorders];
+    FTRecorder *windowRecorder = [[FTRecorder alloc]initWithWindowObserver:self.windowObserver snapshotProcessor:srProcessor additionalNodeRecorders:self.config.additionalNodeRecorders enableHeatmap:self.config.enableHeatmap];
     self.windowRecorder = windowRecorder;
 }
 - (void)setSampleState:(SampleState)sampleState{
@@ -126,6 +126,7 @@ typedef NS_ENUM(NSInteger, SampleState) {
         FTSRContext *context = [[FTSRContext alloc]init];
         context.sessionID = rumContext[FT_RUM_KEY_SESSION_ID];
         context.viewID = viewID;
+        context.viewPath = rumContext[FT_KEY_VIEW_NAME];
         context.applicationID = rumContext[FT_APP_ID];
         context.date = [NSDate date];
         context.imagePrivacy = self.config.imagePrivacy;

@@ -28,6 +28,7 @@
     config.imagePrivacy = FTImagePrivacyLevelMaskNone;
     config.textAndInputPrivacy = FTTextAndInputPrivacyLevelMaskAllInputs;
     config.touchPrivacy = FTTouchPrivacyLevelShow;
+    config.enableHeatmap = YES;
     
     FTSessionReplayConfig *copyConfig = [config copy];
     XCTAssertTrue(config != copyConfig);
@@ -35,6 +36,11 @@
     XCTAssertTrue(config.imagePrivacy == copyConfig.imagePrivacy);
     XCTAssertTrue(config.textAndInputPrivacy == copyConfig.textAndInputPrivacy);
     XCTAssertTrue(config.touchPrivacy == copyConfig.touchPrivacy);
+    XCTAssertTrue(copyConfig.enableHeatmap);
+}
+- (void)testConfigDefaultHeatmapDisabled{
+    FTSessionReplayConfig *config = [FTSessionReplayConfig new];
+    XCTAssertFalse(config.enableHeatmap);
 }
 - (void)testConfigPrivacyReflection{
     FTSessionReplayConfig *config = [FTSessionReplayConfig new];

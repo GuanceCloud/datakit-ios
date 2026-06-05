@@ -13,39 +13,85 @@
 #import "FTAutoTrackHandler.h"
 @implementation UIApplication (FTAutoTrack)
 #if TARGET_OS_IOS
--(BOOL)ft_sendAction:(SEL)action to:(id)target from:(id)sender forEvent:(UIEvent *)event{
-    [self ftTrack:action to:target from:sender forEvent:event];
-    return [self ft_sendAction:action to:target from:sender forEvent:event];
+- (void)ft_sendEvent:(UIEvent *)event{
+    [self ftTrackTouchEvent:event];
+    [self ft_sendEvent:event];
 }
-- (void)ftTrack:(SEL)action to:(id)target from:(id )sender forEvent:(UIEvent *)event {
-   // Filter out redundant click events from the bottom and top navigation bars, only collect UITabBarButton and _UIButtonBarButton
-    if ([sender isKindOfClass:UITabBarItem.class] || [sender isKindOfClass:UIBarButtonItem.class]) {
+- (void)ftTrackTouchEvent:(UIEvent *)event {
+    UITouch *touch = [self ft_touchFromEvent:event];
+    if (!touch || touch.phase != UITouchPhaseEnded) {
         return;
     }
-    if ([target isKindOfClass:UIViewController.class]) {
-        if([target isActionBlackListContainsViewController]){
-            return;
-        }
-    }
-    if(![sender isKindOfClass:UIView.class]){
+    UIView *touchView = touch.view;
+    if (!touchView || [self ft_isViewInKeyboard:touchView] || [self ft_isActionBlacklistedForView:touchView]) {
         return;
     }
-    UIView *view = (UIView *)sender;
+    UIView *actionTargetView = [self ft_actionTargetViewForTouchView:touchView];
+    if (!actionTargetView) {
+        return;
+    }
     id<FTUIEventHandler> actionHandler = [FTAutoTrackHandler sharedInstance].actionHandler;
-    if ([sender isKindOfClass:UISwitch.class] ||
-        [sender isKindOfClass:UIStepper.class] ||
-        [sender isKindOfClass:UIPageControl.class] ||
-        [sender isKindOfClass:UISegmentedControl.class]) {
-        if(actionHandler  && [actionHandler respondsToSelector:@selector(notify_sendAction:)]){
-            [actionHandler notify_sendAction:view];
-        }
-    } else if ([event isKindOfClass:[UIEvent class]] && event.type == UIEventTypeTouches &&
-               [[[event allTouches] anyObject] phase] == UITouchPhaseEnded) {
-        if(actionHandler  && [actionHandler respondsToSelector:@selector(notify_sendAction:)]){
-            [actionHandler notify_sendAction:view];
-        }
+    NSValue *locationInHeatmapTargetView = [self ft_locationValueFromTouch:touch inView:touchView];
+    if(actionHandler  && [actionHandler respondsToSelector:@selector(notify_sendAction:heatmapTargetView:locationInHeatmapTargetView:)]){
+        [actionHandler notify_sendAction:actionTargetView heatmapTargetView:touchView locationInHeatmapTargetView:locationInHeatmapTargetView];
+    } else if(actionHandler  && [actionHandler respondsToSelector:@selector(notify_sendAction:locationInView:)]){
+        [actionHandler notify_sendAction:actionTargetView locationInView:locationInHeatmapTargetView];
+    } else if(actionHandler  && [actionHandler respondsToSelector:@selector(notify_sendAction:)]){
+        [actionHandler notify_sendAction:actionTargetView];
     }
-    
+}
+- (UITouch *)ft_touchFromEvent:(UIEvent *)event {
+    if (![event isKindOfClass:[UIEvent class]] || event.type != UIEventTypeTouches) {
+        return nil;
+    }
+    NSSet<UITouch *> *allTouches = [event allTouches];
+    if (allTouches.count != 1) {
+        return nil;
+    }
+    return [allTouches anyObject];
+}
+- (NSValue *)ft_locationValueFromTouch:(UITouch *)touch inView:(UIView *)view {
+    if (!touch || !view) {
+        return nil;
+    }
+    return [NSValue valueWithCGPoint:[touch locationInView:view]];
+}
+- (UIView *)ft_actionTargetViewForTouchView:(UIView *)view {
+    if ([view isKindOfClass:UIControl.class] || [view isAlertClick]) {
+        return view;
+    }
+    UIView *targetView = view.superview;
+    while (targetView) {
+        if ([targetView isKindOfClass:UIControl.class] ||
+            [targetView isKindOfClass:UITableViewCell.class] ||
+            [targetView isKindOfClass:UICollectionViewCell.class] ||
+            [targetView isAlertClick]) {
+            return targetView;
+        }
+        targetView = targetView.superview;
+    }
+    return nil;
+}
+- (BOOL)ft_isActionBlacklistedForView:(UIView *)view {
+    UIResponder *responder = view;
+    while (responder) {
+        if ([responder isKindOfClass:UIViewController.class]) {
+            UIViewController *viewController = (UIViewController *)responder;
+            return [viewController isActionBlackListContainsViewController];
+        }
+        responder = responder.nextResponder;
+    }
+    return NO;
+}
+- (BOOL)ft_isViewInKeyboard:(UIView *)view {
+    UIView *targetView = view;
+    while (targetView) {
+        if ([NSStringFromClass(targetView.class) containsString:@"Keyboard"]) {
+            return YES;
+        }
+        targetView = targetView.superview;
+    }
+    return [NSStringFromClass(view.window.class) containsString:@"Keyboard"];
 }
 #elif TARGET_OS_TV
 - (void)ft_sendEvent:(UIEvent *)event{

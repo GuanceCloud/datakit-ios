@@ -22,6 +22,8 @@ NS_ASSUME_NONNULL_BEGIN
 
 @protocol FTUIEventHandler <NSObject>
 -(void)notify_sendAction:(UIView *)view;
+-(void)notify_sendAction:(UIView *)view locationInView:(nullable NSValue *)locationInView;
+-(void)notify_sendAction:(UIView *)view heatmapTargetView:(nullable UIView *)heatmapTargetView locationInHeatmapTargetView:(nullable NSValue *)locationInHeatmapTargetView;
 -(void)notify_sendActionWithPressType:(UIPressType)type view:(UIView *)view;
 #if TARGET_OS_IOS
 -(void)notify_swiftUIActionWithName:(NSString *)actionName property:(nullable NSDictionary *)property;

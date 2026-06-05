@@ -10,6 +10,7 @@
 #import "FTSRWireframe.h"
 #import "FTSRUtils.h"
 #import "FTViewAttributes.h"
+#import "FTSessionReplayCoreImports.h"
 @interface FTSessionReplayWireframesBuilder()
 @property (nonatomic, strong) NSMutableSet<NSNumber *> *webViewSlotIDs;
 @property (nonatomic, strong) NSMutableDictionary *linkRUMKeysInfo;
@@ -25,7 +26,9 @@
     return self;
 }
 - (FTSRWireframe *)createShapeWireframeWithID:(int64_t)identifier attributes:(FTViewAttributes *)attributes{
-    return [[FTSRShapeWireframe alloc]initWithIdentifier:identifier attributes:attributes];
+    FTSRWireframe *wireframe = [[FTSRShapeWireframe alloc]initWithIdentifier:identifier attributes:attributes];
+    wireframe.permanentId = self.heatmapIdentifier.rawValue;
+    return wireframe;
 }
 - (FTSRShapeBorder *)createShapeBorderWithColor:(nullable CGColorRef)color width:(CGFloat)width {
     if (!color || width<=0) return nil;
@@ -36,6 +39,7 @@
     wireframe.clip = [[FTSRContentClip alloc]initWithFrame:attributes.frame clip:attributes.clip];
     wireframe.slotId = [NSString stringWithFormat:@"%lld",identifier];
     wireframe.isVisible = @(YES);
+    wireframe.permanentId = self.heatmapIdentifier.rawValue;
     wireframe.shapeStyle = [[FTSRShapeStyle alloc]initWithBackgroundColor:[FTSRUtils colorHexString:attributes.backgroundColor.CGColor] cornerRadius:@(attributes.layerCornerRadius) opacity:@(attributes.alpha)];
     [self.webViewSlotIDs removeObject:@(identifier)];
     if (linkRUMKeysInfo.count>0) {
@@ -47,6 +51,7 @@
 - (FTSRImageWireframe *)createImageWireframeWithID:(int64_t)identifier resource:(id<FTSRResource>)resource frame:(CGRect)frame clip:(CGRect)clip{
     FTSRImageWireframe *imageWireframe = [[FTSRImageWireframe alloc]initWithIdentifier:identifier frame:frame];
     imageWireframe.resourceId = [resource calculateIdentifier];
+    imageWireframe.permanentId = self.heatmapIdentifier.rawValue;
     imageWireframe.clip = [[FTSRContentClip alloc]initWithFrame:frame clip:clip];
     [self.resources addObject:resource];
     return imageWireframe;
@@ -77,5 +82,4 @@
     return [_webViewSlotIDs copy];
 }
 @end
-
 

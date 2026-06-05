@@ -26,6 +26,7 @@
 #import "FTDefaultActionTrackingHandler.h"
 #import "FTDBDataCachePolicy.h"
 #import "AddRumDatasHandlerMock.h"
+#import "FTModuleManager.h"
 typedef FTRUMView* _Nullable (^FTViewTrackingBlock)(UIViewController *viewController);
 typedef FTRUMAction* _Nullable (^FTActionTrackingBlock)(UIView *view);
 typedef FTRUMAction* _Nullable (^FTLaunchActionTrackingBlock)(FTLaunchType type);
@@ -37,6 +38,12 @@ typedef FTRUMAction* _Nullable (^FTLaunchActionTrackingBlock)(FTLaunchType type)
 #if TARGET_OS_IOS
 - (void)notify_swiftUIActionWithName:(NSString *)actionName property:(nullable NSDictionary *)property;
 #endif
+@end
+#endif
+
+#if TARGET_OS_IOS
+@interface UIApplication (FTAutoTrackTest)
+- (void)ftTrackTouchEvent:(UIEvent *)event;
 @end
 #endif
 
@@ -83,6 +90,28 @@ typedef FTRUMAction* _Nullable (^FTLaunchActionTrackingBlock)(FTLaunchType type)
     return nil;
 }
 @end
+
+@interface TestHeatmapIdentifierRegistry : NSObject<FTHeatmapIdentifierRegistry>
+@property (nonatomic, strong) NSDictionary<NSValue *, FTHeatmapIdentifier *> *identifiers;
+- (instancetype)initWithIdentifiers:(NSDictionary<NSValue *, FTHeatmapIdentifier *> *)identifiers;
+@end
+@implementation TestHeatmapIdentifierRegistry
+- (instancetype)initWithIdentifiers:(NSDictionary<NSValue *, FTHeatmapIdentifier *> *)identifiers {
+    self = [super init];
+    if (self) {
+        _identifiers = identifiers;
+    }
+    return self;
+}
+- (void)setHeatmapIdentifiers:(NSDictionary<NSValue *,FTHeatmapIdentifier *> *)heatmapIdentifiers {
+    self.identifiers = heatmapIdentifiers;
+}
+- (FTHeatmapIdentifier *)heatmapIdentifierForObject:(id)object {
+    NSValue *objectIdentifier = [FTHeatmapIdentifier objectIdentifierForObject:object];
+    return objectIdentifier ? self.identifiers[objectIdentifier] : nil;
+}
+@end
+
 @interface FTRUMConfigurationTest : XCTestCase
 @property (nonatomic, copy) NSString *url;
 @property (nonatomic, copy) NSString *appid;
@@ -452,6 +481,43 @@ typedef FTRUMAction* _Nullable (^FTLaunchActionTrackingBlock)(FTLaunchType type)
     XCTAssertEqualObjects(mock.lastActionName, @"swiftui_tap");
     XCTAssertEqualObjects(mock.lastActionType, FT_KEY_ACTION_TYPE_CLICK);
     XCTAssertEqualObjects(mock.lastActionProperty, property);
+}
+#endif
+
+#if TARGET_OS_IOS
+- (void)testHeatmapAttributes_useRenderedSubviewIdentifierWhenButtonHasNoIdentifier {
+    AddRumDatasHandlerMock *mock = [AddRumDatasHandlerMock new];
+    TestTrackingHandler *handler = [TestTrackingHandler new];
+    UIButton *button = [[UIButton alloc]initWithFrame:CGRectMake(0, 0, 100, 40)];
+    UILabel *label = [[UILabel alloc]initWithFrame:CGRectMake(10, 5, 80, 20)];
+    [button addSubview:label];
+    FTHeatmapIdentifier *labelIdentifier = [[FTHeatmapIdentifier alloc]initWithRawValue:@"label-id"];
+    TestHeatmapIdentifierRegistry *registry = [[TestHeatmapIdentifierRegistry alloc]initWithIdentifiers:@{
+        [FTHeatmapIdentifier objectIdentifierForObject:label]: labelIdentifier,
+    }];
+    [[FTModuleManager sharedInstance] registerService:@protocol(FTHeatmapIdentifierRegistry) instance:registry];
+    __block UIView *actionTargetView = nil;
+    handler.actionTrackingBlock = ^FTRUMAction * _Nullable(UIView *view) {
+        actionTargetView = view;
+        return [[FTRUMAction alloc]initWithActionName:@"button_tap"];
+    };
+    [[FTAutoTrackHandler sharedInstance] startWithTrackView:NO
+                                                     action:YES
+                                      addRumDatasDelegate:mock
+                                              viewHandler:nil
+                                       swiftUIViewHandler:nil
+                                            actionHandler:handler
+                                           displayMonitor:nil];
+
+    UITouchMock *touch = [[UITouchMock alloc]initWithPhase:UITouchPhaseEnded view:label location:CGPointMake(10, 5)];
+    [[UIApplication sharedApplication] ftTrackTouchEvent:[UIEvent mockWithTouch:touch]];
+
+    XCTAssertEqual(actionTargetView, button);
+    XCTAssertEqualObjects(mock.lastHeatmapAttributes.targetPermanentID, @"label-id");
+    XCTAssertEqual(mock.lastHeatmapAttributes.targetWidth, 80);
+    XCTAssertEqual(mock.lastHeatmapAttributes.targetHeight, 20);
+    XCTAssertEqual(mock.lastHeatmapAttributes.positionX, 10);
+    XCTAssertEqual(mock.lastHeatmapAttributes.positionY, 5);
 }
 #endif
 

@@ -192,6 +192,9 @@ void *FTRUMQueueIdentityKey = &FTRUMQueueIdentityKey;
 }
 #pragma mark - Action -
 - (void)startAction:(NSString *)actionName actionType:(NSString *)actionType property:(NSDictionary *)property{
+    [self startAction:actionName actionType:actionType property:property heatmapAttributes:nil];
+}
+- (void)startAction:(NSString *)actionName actionType:(NSString *)actionType property:(NSDictionary *)property heatmapAttributes:(FTHeatmapAttributes *)heatmapAttributes{
     NSDate *time = [NSDate date];
     dispatch_async(self.rumQueue, ^{
         @try {
@@ -200,6 +203,7 @@ void *FTRUMQueueIdentityKey = &FTRUMQueueIdentityKey;
             actionModel.time = time;
             actionModel.type = FTRUMDataStartAction;
             actionModel.fields = property;
+            actionModel.heatmapAttributes = heatmapAttributes;
             [self process:actionModel context:context];
         } @catch (NSException *exception) {
             FTInnerLogError(@"exception %@",exception);

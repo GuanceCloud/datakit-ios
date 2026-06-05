@@ -27,11 +27,13 @@
 @implementation FTRecorder
 -(instancetype)initWithWindowObserver:(FTWindowObserver *)observer
                     snapshotProcessor:(FTSnapshotProcessor *)snapshotProcessor
-              additionalNodeRecorders:(NSArray<id <FTSRWireframesRecorder>>*)additionalNodeRecorders;{
+              additionalNodeRecorders:(NSArray<id <FTSRWireframesRecorder>>*)additionalNodeRecorders
+                         enableHeatmap:(BOOL)enableHeatmap;{
     self = [super init];
     if(self){
         _windowObserver = observer;
         _viewSnapShotBuilder = [[FTViewTreeSnapshotBuilder alloc]initWithAdditionalNodeRecorders:additionalNodeRecorders];
+        _viewSnapShotBuilder.enableHeatmap = enableHeatmap;
         _snapshotProcessor = snapshotProcessor;
     }
     return self;

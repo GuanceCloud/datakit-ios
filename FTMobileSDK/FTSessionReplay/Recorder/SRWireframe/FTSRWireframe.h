@@ -75,6 +75,8 @@ NS_ASSUME_NONNULL_BEGIN
 @property (nonatomic) NSNumber *height;
 /// Control type
 @property (nonatomic, copy) NSString *type;
+/// Stable heatmap identifier shared with RUM Action target metadata.
+@property (nonatomic, copy, nullable) NSString *permanentId;
 /// Clip information
 @property (nonatomic, strong,nullable) FTSRContentClip *clip;
 

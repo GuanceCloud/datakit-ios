@@ -24,6 +24,7 @@
 #import "FTAppLaunchTracker.h"
 #import "FTDefaultUIKitViewTrackingHandler.h"
 #import "FTDefaultActionTrackingHandler.h"
+#import "FTModuleManager.h"
 
 #if TARGET_OS_IOS || TARGET_OS_TV
 #define FT_HAS_SWIFTUI_VIEW_TRACKING 1
@@ -218,9 +219,7 @@ API_AVAILABLE(ios(13.0), tvos(13.0))
         dispatch_once(&actionOnceToken, ^{
             NSError *error = NULL;
 #if TARGET_OS_IOS
-            [UITableView ft_swizzleMethod:@selector(setDelegate:) withMethod:@selector(ft_setDelegate:) error:&error];
-            [UICollectionView ft_swizzleMethod:@selector(setDelegate:) withMethod:@selector(ft_setDelegate:) error:&error];
-            [UIApplication ft_swizzleMethod:@selector(sendAction:to:from:forEvent:) withMethod:@selector(ft_sendAction:to:from:forEvent:) error:&error];
+            [UIApplication ft_swizzleMethod:@selector(sendEvent:) withMethod:@selector(ft_sendEvent:) error:&error];
             [UITapGestureRecognizer ft_swizzleMethod:@selector(initWithTarget:action:) withMethod:@selector(ft_initWithTarget:action:) error:&error];
             [UILongPressGestureRecognizer ft_swizzleMethod:@selector(initWithTarget:action:) withMethod:@selector(ft_initWithTarget:action:) error:&error];
             [UITapGestureRecognizer ft_swizzleMethod:@selector(addTarget:action:) withMethod:@selector(ft_addTarget:action:) error:&error];
@@ -262,15 +261,59 @@ API_AVAILABLE(ios(13.0), tvos(13.0))
 
 #pragma mark ========== FTUIEventHandler ==========
 - (void)notify_sendAction:(UIView *)view{
+    [self notify_sendAction:view heatmapTargetView:view locationInHeatmapTargetView:nil];
+}
+
+- (void)notify_sendAction:(UIView *)view locationInView:(NSValue *)locationInView{
+    [self notify_sendAction:view heatmapTargetView:view locationInHeatmapTargetView:locationInView];
+}
+
+- (void)notify_sendAction:(UIView *)view heatmapTargetView:(UIView *)heatmapTargetView locationInHeatmapTargetView:(NSValue *)locationInHeatmapTargetView {
 #if TARGET_OS_IOS
     if (self.actionTrackingHandler && [self.actionTrackingHandler respondsToSelector:@selector(rumActionWithTargetView:)]) {
         FTRUMAction *action = [self.actionTrackingHandler rumActionWithTargetView:view];
         if ( action == nil ) return;
-        if (self.addRumDatasDelegate && [self.addRumDatasDelegate respondsToSelector:@selector(startAction:actionType:property:)]) {
+        FTHeatmapAttributes *heatmapAttributes = [self heatmapAttributesForView:heatmapTargetView ?: view locationInView:locationInHeatmapTargetView];
+        if (self.addRumDatasDelegate && [self.addRumDatasDelegate respondsToSelector:@selector(startAction:actionType:property:heatmapAttributes:)]) {
+            [self.addRumDatasDelegate startAction:action.actionName actionType:FT_KEY_ACTION_TYPE_CLICK property:action.property heatmapAttributes:heatmapAttributes];
+        } else if (self.addRumDatasDelegate && [self.addRumDatasDelegate respondsToSelector:@selector(startAction:actionType:property:)]) {
             [self.addRumDatasDelegate startAction:action.actionName actionType:FT_KEY_ACTION_TYPE_CLICK property:action.property];
         }
     }
 #endif
+}
+
+- (FTHeatmapAttributes *)heatmapAttributesForView:(UIView *)view locationInView:(NSValue *)locationInView {
+    if (!view || !locationInView) {
+        return nil;
+    }
+    id<FTHeatmapIdentifierRegistry> registry = [[FTModuleManager sharedInstance] getRegisterService:@protocol(FTHeatmapIdentifierRegistry)];
+    CGPoint location = [locationInView CGPointValue];
+    FTHeatmapIdentifier *viewIdentifier = [registry heatmapIdentifierForObject:view];
+    if (viewIdentifier) {
+        return [[FTHeatmapAttributes alloc]initWithIdentifier:viewIdentifier size:view.bounds.size location:location];
+    }
+    UIView *identifierView = [self heatmapIdentifierViewFromView:view point:location registry:registry];
+    FTHeatmapIdentifier *identifier = [registry heatmapIdentifierForObject:identifierView];
+    if (!identifier) {
+        return nil;
+    }
+    CGPoint identifierLocation = identifierView == view ? location : [view convertPoint:location toView:identifierView];
+    return [[FTHeatmapAttributes alloc]initWithIdentifier:identifier size:identifierView.bounds.size location:identifierLocation];
+}
+
+- (UIView *)heatmapIdentifierViewFromView:(UIView *)view point:(CGPoint)point registry:(id<FTHeatmapIdentifierRegistry>)registry {
+    if (!view || !registry || view.hidden || view.alpha <= 0 || !CGRectContainsPoint(view.bounds, point)) {
+        return nil;
+    }
+    for (UIView *subview in [view.subviews reverseObjectEnumerator]) {
+        CGPoint subviewPoint = [view convertPoint:point toView:subview];
+        UIView *identifierView = [self heatmapIdentifierViewFromView:subview point:subviewPoint registry:registry];
+        if (identifierView) {
+            return identifierView;
+        }
+    }
+    return [registry heatmapIdentifierForObject:view] ? view : nil;
 }
 
 #if FT_HAS_SWIFTUI_ACTION_TRACKING

@@ -72,6 +72,9 @@ typedef NS_ENUM(NSUInteger,FTTextAndInputPrivacyLevel){
 /// Session Replay requires the association of the specified RUM key.
 @property (nonatomic, copy) NSArray *enableLinkRUMKeys;
 
+/// Enables heatmap identifier generation and RUM Action correlation. Default: NO.
+@property (nonatomic, assign) BOOL enableHeatmap;
+
 @end
 
 NS_ASSUME_NONNULL_END
