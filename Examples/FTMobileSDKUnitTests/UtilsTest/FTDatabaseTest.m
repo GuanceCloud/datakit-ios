@@ -17,6 +17,12 @@
 #import "FTConstants.h"
 #import "FTBaseInfoHandler.h"
 #import "FTInnerLog.h"
+#import "FTDBDataCachePolicy.h"
+
+@interface FTTrackDataManager ()
+@property (nonatomic, strong) FTDBDataCachePolicy *dataCachePolicy;
+@end
+
 @interface FTDatabaseTest : XCTestCase
 @property (nonatomic, copy) NSString *dbName;
 @end
@@ -35,6 +41,7 @@
 
 - (void)tearDown {
     NSString *path = [FTTrackerEventDBTool sharedManager].dbQueue.path;
+    [FTTrackDataManager shutDown];
     [[FTTrackerEventDBTool sharedManager] shutDown];
     NSError *errpr;
     [[NSFileManager defaultManager] removeItemAtPath:path error:&errpr];
@@ -82,6 +89,14 @@
 }
 - (void)testInsertLoggingItems{
     [FTTrackDataManager startWithAutoSync:NO syncPageSize:10 syncSleepTime:0];
+    XCTestExpectation *expectation = [self expectationWithDescription:@"log cache flushes automatically when full"];
+    __block BOOL didFulfill = NO;
+    [FTTrackDataManager sharedInstance].dataCachePolicy.callback = ^{
+        if (!didFulfill) {
+            didFulfill = YES;
+            [expectation fulfill];
+        }
+    };
     NSInteger oldCount =  [[FTTrackerEventDBTool sharedManager] getDatasCount];
     for (int i = 0; i<20; i++) {
         FTRecordModel *model = [FTRecordModel new];
@@ -89,6 +104,9 @@
         model.data = [NSString stringWithFormat:@"testData%d",i];
         [[FTTrackDataManager sharedInstance] addTrackData:model type:FTAddDataLogging];
     }
+    [self waitForExpectationsWithTimeout:2 handler:nil];
+    [FTTrackDataManager sharedInstance].dataCachePolicy.callback = nil;
+
     NSInteger newCount =  [[FTTrackerEventDBTool sharedManager] getDatasCount];
     XCTAssertTrue(newCount-oldCount == 20);
 }

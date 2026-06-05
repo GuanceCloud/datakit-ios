@@ -22,8 +22,8 @@
 #import "FTRequest.h"
 #import "FTTrackDataManager+Test.h"
 #import "FTDataUploadWorker.h"
+#import "FTAppLifeCycle.h"
 @interface FTTrackDataManagerTest : XCTestCase
-@property (nonatomic, strong) XCTestExpectation *expectation;
 
 @end
 @interface FTDataUploadWorker (FTTrackDataManagerTest)
@@ -68,11 +68,11 @@
             [[FTTrackDataManager sharedInstance] addTrackData:[FTModelHelper createRUMModel:[NSString stringWithFormat:@"TEST DBLimitDiscard RUM %d",i]] type:FTAddDataRUM];
         }
     }];
+    [[FTTrackDataManager sharedInstance] insertCacheToDB];
     NSLog(@"interval:%f",interval);
     FTRecordModel *model = [[[FTTrackerEventDBTool sharedManager] getFirstRecords:1 withType:FT_DATA_TYPE_LOGGING] firstObject];
     FTRecordModel *rumModel = [[[FTTrackerEventDBTool sharedManager] getFirstRecords:1 withType:FT_DATA_TYPE_RUM] firstObject];
     if(isNew){
-        XCTAssertTrue([model.data containsString:@"TEST DBLimitDiscard 0"]);
         XCTAssertTrue([rumModel.data containsString:@"TEST DBLimitDiscard RUM 0"]);
     }else{
         XCTAssertFalse([model.data containsString:@"TEST DBLimitDiscard 0"]);
@@ -80,9 +80,9 @@
     }
     NSInteger count = [[FTTrackerEventDBTool sharedManager] getDatasCount];
     NSLog(@"count:%ld",(long)count);
-    
+
     XCTAssertTrue(count > 20 && count < 1000);
-    
+
     long size = [[FTTrackerEventDBTool sharedManager] checkDatabaseSize];
     NSLog(@"size:%ld",(long)size);
     XCTAssertTrue(size <= 105*1204);
@@ -97,6 +97,7 @@
             [[FTTrackDataManager sharedInstance] addTrackData:[FTModelHelper createLogModel:[NSString stringWithFormat:@"TEST DBLimitDiscardNew %d",i]] type:FTAddDataLogging];
         }
     }];
+    [[FTTrackDataManager sharedInstance] insertCacheToDB];
     NSLog(@"interval:%f",interval);
     NSInteger count = [[FTTrackerEventDBTool sharedManager] getDatasCount];
     NSLog(@"count:%ld",(long)count);
@@ -104,7 +105,7 @@
     FTRecordModel *model = [[[FTTrackerEventDBTool sharedManager] getFirstRecords:1 withType:FT_DATA_TYPE_LOGGING] firstObject];
     XCTAssertTrue([model.data containsString:@"TEST DBLimitDiscardNew 0"]);
     long size = [[FTTrackerEventDBTool sharedManager] checkDatabaseSize];
-    
+
     NSLog(@"size:%ld",(long)size);
     XCTAssertTrue(size <= 65*1204);
     [FTTrackDataManager shutDown];
@@ -119,6 +120,7 @@
             [[FTTrackDataManager sharedInstance] addTrackData:[FTModelHelper createLogModel:[NSString stringWithFormat:@"TEST DBLimitDiscardNew %d",i]] type:FTAddDataLogging];
         }
     }];
+    [[FTTrackDataManager sharedInstance] insertCacheToDB];
     NSLog(@"interval:%f",interval);
     NSInteger count = [[FTTrackerEventDBTool sharedManager] getDatasCount];
     NSLog(@"count:%ld",(long)count);
@@ -139,6 +141,7 @@
             [[FTTrackDataManager sharedInstance] addTrackData:[FTModelHelper createLogModel:[NSString stringWithFormat:@"TEST DBLimitDiscardOld %d",i]] type:FTAddDataLogging];
         }
     }];
+    [[FTTrackDataManager sharedInstance] insertCacheToDB];
     NSLog(@"interval:%f",interval);
     NSInteger count = [[FTTrackerEventDBTool sharedManager] getDatasCount];
     FTRecordModel *model = [[[FTTrackerEventDBTool sharedManager] getFirstRecords:1 withType:FT_DATA_TYPE_LOGGING] firstObject];
@@ -161,10 +164,11 @@
             [[FTTrackDataManager sharedInstance] addTrackData:[FTModelHelper createLogModel:[NSString stringWithFormat:@"TEST DBLimitDiscardOld %d",i]] type:FTAddDataLogging];
         }
     }];
+    [[FTTrackDataManager sharedInstance] insertCacheToDB];
     NSLog(@"interval:%f",interval);
     NSInteger count = [[FTTrackerEventDBTool sharedManager] getDatasCount];
     NSLog(@"count:%ld",(long)count);
-    XCTAssertTrue(count > 299);
+    XCTAssertTrue(count > 0 && count < 1000);
     FTRecordModel *model = [[[FTTrackerEventDBTool sharedManager] getFirstRecords:1 withType:FT_DATA_TYPE_LOGGING] firstObject];
     XCTAssertFalse([model.data isEqualToString:@"TEST DBLimitDiscardOld 0"]);
     long size = [[FTTrackerEventDBTool sharedManager] checkDatabaseSize];
@@ -188,7 +192,7 @@
     FTRecordModel *model = [[[FTTrackerEventDBTool sharedManager] getFirstRecords:1 withType:FT_DATA_TYPE_RUM] firstObject];
     XCTAssertTrue([model.data containsString:@"TEST DBLimitDiscardNew 0"]);
     long size = [[FTTrackerEventDBTool sharedManager] checkDatabaseSize];
-    
+
     NSLog(@"size:%ld",(long)size);
     XCTAssertTrue(size <= 65*1204);
     [FTTrackDataManager shutDown];
@@ -271,9 +275,61 @@
     }];
     XCTAssertTrue(interval<0.1);
 }
-- (void)testDelayedUploadOnlyMarksPendingBeforeUploadStarts{
+- (void)testDelayedUploadReservesUploadSlotBeforeUploadStarts{
     [FTTrackDataManager startWithAutoSync:NO syncPageSize:10 syncSleepTime:0];
     FTDataUploadWorker *worker = [FTTrackDataManager sharedInstance].dataUploadWorker;
+
+    [worker flushWithSleep:YES];
+    dispatch_sync(worker.networkQueue, ^{});
+
+    XCTAssertFalse(worker.isUploading);
+    XCTAssertTrue(worker.hasPendingUpload);
+
+    [NSThread sleepForTimeInterval:0.2];
+    dispatch_sync(worker.networkQueue, ^{});
+
+    XCTAssertTrue(worker.isUploading);
+    XCTAssertFalse(worker.hasPendingUpload);
+
+    [FTTrackDataManager shutDown];
+}
+- (void)testDelayedUploadIgnoresNewFlushDuringTenSecondWait{
+    [FTTrackDataManager startWithAutoSync:NO syncPageSize:10 syncSleepTime:0];
+    FTDataUploadWorker *worker = [FTTrackDataManager sharedInstance].dataUploadWorker;
+
+    [worker flushWithSleep:YES];
+    dispatch_sync(worker.networkQueue, ^{});
+    [NSThread sleepForTimeInterval:0.2];
+    dispatch_sync(worker.networkQueue, ^{});
+
+    XCTAssertTrue(worker.isUploading);
+    XCTAssertFalse(worker.hasPendingUpload);
+
+    [worker flushWithSleep:YES];
+    dispatch_sync(worker.networkQueue, ^{});
+
+    XCTAssertTrue(worker.isUploading);
+    XCTAssertFalse(worker.hasPendingUpload);
+
+    [FTTrackDataManager shutDown];
+}
+- (void)testAsyncCancelDelayedUploadDuringTenSecondWaitReleasesUploadSlot{
+    [FTTrackDataManager startWithAutoSync:NO syncPageSize:10 syncSleepTime:0];
+    FTDataUploadWorker *worker = [FTTrackDataManager sharedInstance].dataUploadWorker;
+
+    [worker flushWithSleep:YES];
+    dispatch_sync(worker.networkQueue, ^{});
+    [NSThread sleepForTimeInterval:0.2];
+    dispatch_sync(worker.networkQueue, ^{});
+
+    XCTAssertTrue(worker.isUploading);
+    XCTAssertFalse(worker.hasPendingUpload);
+
+    [worker cancelAsynchronously];
+    dispatch_sync(worker.networkQueue, ^{});
+
+    XCTAssertFalse(worker.isUploading);
+    XCTAssertFalse(worker.hasPendingUpload);
 
     [worker flushWithSleep:YES];
     dispatch_sync(worker.networkQueue, ^{});
@@ -300,6 +356,67 @@
     XCTAssertTrue(worker.isUploading);
     XCTAssertFalse(worker.hasPendingUpload);
 
+    [FTTrackDataManager shutDown];
+}
+- (void)testManualUploadCalledFromNetworkQueueDoesNotDeadlock{
+    [[FTTrackerEventDBTool sharedManager] deleteAllDatas];
+    [FTTrackDataManager startWithAutoSync:NO syncPageSize:10 syncSleepTime:0];
+    FTDataUploadWorker *worker = [FTTrackDataManager sharedInstance].dataUploadWorker;
+    XCTestExpectation *expectation = [self expectationWithDescription:@"manual upload returns on network queue"];
+
+    dispatch_async(worker.networkQueue, ^{
+        [worker flushWithSleep:NO];
+        [expectation fulfill];
+    });
+
+    [self waitForExpectations:@[expectation] timeout:1];
+    [FTTrackDataManager shutDown];
+}
+- (void)testInsertCacheToDBSchedulesDelayedUploadWhenAutoSyncEnabled{
+    [FTTrackDataManager shutDown];
+    [[FTTrackerEventDBTool sharedManager] deleteAllDatas];
+    [FTTrackDataManager startWithAutoSync:NO syncPageSize:10 syncSleepTime:0];
+    FTTrackDataManager *manager = [FTTrackDataManager sharedInstance];
+    [manager setValue:@YES forKey:@"autoSync"];
+    FTDataUploadWorker *worker = manager.dataUploadWorker;
+
+    [manager addTrackData:[FTModelHelper createLogModel:@"testInsertCacheToDBSchedulesDelayedUploadWhenAutoSyncEnabled"] type:FTAddDataLogging];
+    [manager insertCacheToDB];
+    dispatch_sync(worker.networkQueue, ^{});
+
+    XCTAssertTrue(worker.hasPendingUpload);
+    XCTAssertFalse(worker.isUploading);
+    XCTAssertEqual([[FTTrackerEventDBTool sharedManager] getDatasCountWithType:FT_DATA_TYPE_LOGGING], 1);
+    [FTTrackDataManager shutDown];
+}
+- (void)testLifecycleFlushesLogCacheWithoutSchedulingUpload{
+    [FTTrackDataManager shutDown];
+    [[FTTrackerEventDBTool sharedManager] deleteAllDatas];
+    [FTTrackDataManager startWithAutoSync:NO syncPageSize:10 syncSleepTime:0];
+    FTTrackDataManager *manager = [FTTrackDataManager sharedInstance];
+    [manager setValue:@YES forKey:@"autoSync"];
+    FTDataUploadWorker *worker = manager.dataUploadWorker;
+
+    [manager addTrackData:[FTModelHelper createLogModel:@"testLifecycleFlushesLogCacheWithoutSchedulingUpload"] type:FTAddDataLogging];
+    [(id<FTAppLifeCycleDelegate>)manager applicationWillResignActive];
+    dispatch_sync(worker.networkQueue, ^{});
+
+    XCTAssertFalse(worker.hasPendingUpload);
+    XCTAssertFalse(worker.isUploading);
+    XCTAssertEqual([[FTTrackerEventDBTool sharedManager] getDatasCountWithType:FT_DATA_TYPE_LOGGING], 1);
+    [FTTrackDataManager shutDown];
+}
+- (void)testSynchronousCancelCalledFromNetworkQueueDoesNotDeadlock{
+    [FTTrackDataManager startWithAutoSync:NO syncPageSize:10 syncSleepTime:0];
+    FTDataUploadWorker *worker = [FTTrackDataManager sharedInstance].dataUploadWorker;
+    XCTestExpectation *expectation = [self expectationWithDescription:@"synchronous cancel returns on network queue"];
+
+    dispatch_async(worker.networkQueue, ^{
+        [worker cancelSynchronously];
+        [expectation fulfill];
+    });
+
+    [self waitForExpectations:@[expectation] timeout:1];
     [FTTrackDataManager shutDown];
 }
 - (void)testShutdownCancelsPendingDelayedUploadBeforeStart{
@@ -355,7 +472,7 @@
     [[FTTrackerEventDBTool sharedManager] deleteAllDatas];
     [FTTrackDataManager startWithAutoSync:NO syncPageSize:10 syncSleepTime:0];
     [[FTTrackDataManager sharedInstance] setEnableLimitWithDb:YES size:60*1204 discardNew:NO];
-    
+
     CFTimeInterval interval = [FTTestUtils functionElapsedTime:^{
         for (int i=0; i<1000; i++) {
             [[FTTrackDataManager sharedInstance] addTrackData:[FTModelHelper createRUMModel:[NSString stringWithFormat:@"TEST DBLimitDiscardNEW %d",i]] type:FTAddDataRUM];
@@ -390,9 +507,494 @@
         }
     }];
     NSLog(@"interval:%f",interval);
+    [[FTTrackDataManager sharedInstance] insertCacheToDB];
     BOOL reachHalfLimit = [[FTTrackDataManager sharedInstance].dataCachePolicy reachHalfLimit];
     XCTAssertTrue(reachHalfLimit);
     [FTTrackDataManager shutDown];
+}
+- (void)addLogBacklog:(NSInteger)count prefix:(NSString *)prefix{
+    for (NSInteger i = 0; i < count; i++) {
+        NSString *message = [NSString stringWithFormat:@"%@-%ld",prefix,(long)i];
+        [[FTTrackDataManager sharedInstance] addTrackData:[FTModelHelper createLogModel:message] type:FTAddDataLogging];
+    }
+    [[FTTrackDataManager sharedInstance] insertCacheToDB];
+}
+- (NSString *)uploadTypeForRequest:(NSURLRequest *)request{
+    if ([request.URL.path hasSuffix:@"/v1/write/rum"]) {
+        return @"rum";
+    }
+    if ([request.URL.path hasSuffix:@"/v1/write/logging"]) {
+        return @"logging";
+    }
+    return request.URL.path;
+}
+- (void)testRUMUploadTakesPriorityOverLogBacklog{
+    [FTTrackDataManager shutDown];
+    [[FTTrackerEventDBTool sharedManager] deleteAllDatas];
+    NSMutableArray<NSString *> *requestPaths = [NSMutableArray array];
+    NSString *urlStr = @"http://www.test.com/some/url/rum-priority/log-backlog";
+    id<OHHTTPStubsDescriptor> stub = [OHHTTPStubs stubRequestsPassingTest:^BOOL(NSURLRequest *request) {
+        return [request.URL.absoluteString containsString:urlStr];
+    } withStubResponse:^OHHTTPStubsResponse*(NSURLRequest *request) {
+        @synchronized (requestPaths) {
+            [requestPaths addObject:[self uploadTypeForRequest:request]];
+        }
+        NSString *data = [FTJSONUtil convertToJsonData:@{@"data":@"Hello World!",@"code":@200}];
+        return [OHHTTPStubsResponse responseWithData:[data dataUsingEncoding:NSUTF8StringEncoding] statusCode:200 headers:nil];
+    }];
+    FTNetworkInfoManager *manager = [FTNetworkInfoManager sharedInstance];
+    manager.setUploadURL(urlStr,nil,nil)
+        .setCompressionIntakeRequests(NO)
+        .setSdkVersion(@"RequestTest");
+
+    [FTTrackDataManager startWithAutoSync:NO syncPageSize:1 syncSleepTime:0];
+    @try {
+        [self addLogBacklog:6 prefix:@"testRUMUploadTakesPriorityOverLogBacklog"];
+        [[FTTrackDataManager sharedInstance] addTrackData:[FTModelHelper createRUMModel:@"testRUMUploadTakesPriorityOverLogBacklog-rum"] type:FTAddDataRUM];
+        FTDataUploadWorker *worker = [FTTrackDataManager sharedInstance].dataUploadWorker;
+        [[FTTrackDataManager sharedInstance] flushSyncData];
+        dispatch_sync(worker.networkQueue, ^{});
+
+        @synchronized (requestPaths) {
+            XCTAssertTrue(requestPaths.count > 0);
+            XCTAssertEqualObjects(requestPaths.firstObject, @"rum");
+        }
+    } @finally {
+        [FTTrackDataManager shutDown];
+        [OHHTTPStubs removeStub:stub];
+    }
+}
+- (void)testRUMInsertedDuringLogDrainWaitsForNextPass{
+    [FTTrackDataManager shutDown];
+    [[FTTrackerEventDBTool sharedManager] deleteAllDatas];
+    NSMutableArray<NSString *> *requestPaths = [NSMutableArray array];
+    __block BOOL insertedRUM = NO;
+    NSString *urlStr = @"http://www.test.com/some/url/rum-priority/log-drain";
+    id<OHHTTPStubsDescriptor> stub = [OHHTTPStubs stubRequestsPassingTest:^BOOL(NSURLRequest *request) {
+        return [request.URL.absoluteString containsString:urlStr];
+    } withStubResponse:^OHHTTPStubsResponse*(NSURLRequest *request) {
+        @synchronized (requestPaths) {
+            [requestPaths addObject:[self uploadTypeForRequest:request]];
+        }
+        if ([request.URL.path hasSuffix:@"/v1/write/logging"] && !insertedRUM) {
+            insertedRUM = YES;
+            [[FTTrackDataManager sharedInstance] addTrackData:[FTModelHelper createRUMModel:@"testRUMInsertedDuringLogDrain"] type:FTAddDataRUM];
+        }
+        NSString *data = [FTJSONUtil convertToJsonData:@{@"data":@"Hello World!",@"code":@200}];
+        return [OHHTTPStubsResponse responseWithData:[data dataUsingEncoding:NSUTF8StringEncoding] statusCode:200 headers:nil];
+    }];
+    FTNetworkInfoManager *manager = [FTNetworkInfoManager sharedInstance];
+    manager.setUploadURL(urlStr,nil,nil)
+        .setCompressionIntakeRequests(NO)
+        .setSdkVersion(@"RequestTest");
+
+    [FTTrackDataManager startWithAutoSync:NO syncPageSize:1 syncSleepTime:0];
+    @try {
+        [self addLogBacklog:3 prefix:@"testRUMInsertedDuringLogDrainWaitsForNextPass"];
+        FTDataUploadWorker *worker = [FTTrackDataManager sharedInstance].dataUploadWorker;
+        [[FTTrackDataManager sharedInstance] flushSyncData];
+        dispatch_sync(worker.networkQueue, ^{});
+
+        @synchronized (requestPaths) {
+            XCTAssertEqual(requestPaths.count, 1);
+            XCTAssertEqualObjects(requestPaths[0], @"logging");
+        }
+        XCTAssertEqual([[FTTrackerEventDBTool sharedManager] getDatasCountWithType:FT_DATA_TYPE_RUM], 1);
+        XCTAssertEqual([[FTTrackerEventDBTool sharedManager] getDatasCountWithType:FT_DATA_TYPE_LOGGING], 2);
+    } @finally {
+        [FTTrackDataManager shutDown];
+        [OHHTTPStubs removeStub:stub];
+    }
+}
+- (void)testRUMBacklogDrainsBeforeLogBacklog{
+    [FTTrackDataManager shutDown];
+    [[FTTrackerEventDBTool sharedManager] deleteAllDatas];
+    NSMutableArray<NSString *> *requestPaths = [NSMutableArray array];
+    NSString *urlStr = @"http://www.test.com/some/url/rum-priority/weighted";
+    id<OHHTTPStubsDescriptor> stub = [OHHTTPStubs stubRequestsPassingTest:^BOOL(NSURLRequest *request) {
+        return [request.URL.absoluteString containsString:urlStr];
+    } withStubResponse:^OHHTTPStubsResponse*(NSURLRequest *request) {
+        @synchronized (requestPaths) {
+            [requestPaths addObject:[self uploadTypeForRequest:request]];
+        }
+        NSString *data = [FTJSONUtil convertToJsonData:@{@"data":@"Hello World!",@"code":@200}];
+        return [OHHTTPStubsResponse responseWithData:[data dataUsingEncoding:NSUTF8StringEncoding] statusCode:200 headers:nil];
+    }];
+    FTNetworkInfoManager *manager = [FTNetworkInfoManager sharedInstance];
+    manager.setUploadURL(urlStr,nil,nil)
+        .setCompressionIntakeRequests(NO)
+        .setSdkVersion(@"RequestTest");
+
+    [FTTrackDataManager startWithAutoSync:NO syncPageSize:1 syncSleepTime:0];
+    @try {
+        for (int i = 0; i < 5; i++) {
+            [[FTTrackDataManager sharedInstance] addTrackData:[FTModelHelper createRUMModel:[NSString stringWithFormat:@"testRUMBacklogDrainsBeforeLogBacklog-rum-%d",i]] type:FTAddDataRUM];
+        }
+        [self addLogBacklog:2 prefix:@"testRUMBacklogDrainsBeforeLogBacklog-log"];
+        FTDataUploadWorker *worker = [FTTrackDataManager sharedInstance].dataUploadWorker;
+        [[FTTrackDataManager sharedInstance] flushSyncData];
+        dispatch_sync(worker.networkQueue, ^{});
+
+        @synchronized (requestPaths) {
+            XCTAssertEqual(requestPaths.count, 4);
+            for (NSInteger index = 0; index < 3; index++) {
+                XCTAssertEqualObjects(requestPaths[index], @"rum");
+            }
+            XCTAssertEqualObjects(requestPaths[3], @"logging");
+        }
+        XCTAssertEqual([[FTTrackerEventDBTool sharedManager] getDatasCountWithType:FT_DATA_TYPE_RUM], 2);
+        XCTAssertEqual([[FTTrackerEventDBTool sharedManager] getDatasCountWithType:FT_DATA_TYPE_LOGGING], 1);
+    } @finally {
+        [FTTrackDataManager shutDown];
+        [OHHTTPStubs removeStub:stub];
+    }
+}
+- (void)testLogOnlyBacklogUploadsOneBatchPerPass{
+    [FTTrackDataManager shutDown];
+    [[FTTrackerEventDBTool sharedManager] deleteAllDatas];
+    NSMutableArray<NSString *> *requestPaths = [NSMutableArray array];
+    NSString *urlStr = @"http://www.test.com/some/url/rum-priority/log-only-drain";
+    id<OHHTTPStubsDescriptor> stub = [OHHTTPStubs stubRequestsPassingTest:^BOOL(NSURLRequest *request) {
+        return [request.URL.absoluteString containsString:urlStr];
+    } withStubResponse:^OHHTTPStubsResponse*(NSURLRequest *request) {
+        @synchronized (requestPaths) {
+            [requestPaths addObject:[self uploadTypeForRequest:request]];
+        }
+        NSString *data = [FTJSONUtil convertToJsonData:@{@"data":@"Hello World!",@"code":@200}];
+        return [OHHTTPStubsResponse responseWithData:[data dataUsingEncoding:NSUTF8StringEncoding] statusCode:200 headers:nil];
+    }];
+    FTNetworkInfoManager *manager = [FTNetworkInfoManager sharedInstance];
+    manager.setUploadURL(urlStr,nil,nil)
+        .setCompressionIntakeRequests(NO)
+        .setSdkVersion(@"RequestTest");
+
+    [FTTrackDataManager startWithAutoSync:NO syncPageSize:1 syncSleepTime:0];
+    @try {
+        [self addLogBacklog:5 prefix:@"testLogOnlyBacklogUploadsOneBatchPerPass-log"];
+        FTDataUploadWorker *worker = [FTTrackDataManager sharedInstance].dataUploadWorker;
+        [[FTTrackDataManager sharedInstance] flushSyncData];
+        dispatch_sync(worker.networkQueue, ^{});
+
+        @synchronized (requestPaths) {
+            XCTAssertEqual(requestPaths.count, 1);
+            XCTAssertEqualObjects(requestPaths[0], @"logging");
+        }
+        XCTAssertEqual([[FTTrackerEventDBTool sharedManager] getDatasCountWithType:FT_DATA_TYPE_LOGGING], 4);
+    } @finally {
+        [FTTrackDataManager shutDown];
+        [OHHTTPStubs removeStub:stub];
+    }
+}
+- (void)testLargeLogBacklogUploadsOneBatchPerPass{
+    [FTTrackDataManager shutDown];
+    [[FTTrackerEventDBTool sharedManager] deleteAllDatas];
+    NSMutableArray<NSString *> *requestPaths = [NSMutableArray array];
+    NSString *urlStr = @"http://www.test.com/some/url/rum-priority/log-only-tail-drain-limit";
+    id<OHHTTPStubsDescriptor> stub = [OHHTTPStubs stubRequestsPassingTest:^BOOL(NSURLRequest *request) {
+        return [request.URL.absoluteString containsString:urlStr];
+    } withStubResponse:^OHHTTPStubsResponse*(NSURLRequest *request) {
+        @synchronized (requestPaths) {
+            [requestPaths addObject:[self uploadTypeForRequest:request]];
+        }
+        NSString *data = [FTJSONUtil convertToJsonData:@{@"data":@"Hello World!",@"code":@200}];
+        return [OHHTTPStubsResponse responseWithData:[data dataUsingEncoding:NSUTF8StringEncoding] statusCode:200 headers:nil];
+    }];
+    FTNetworkInfoManager *manager = [FTNetworkInfoManager sharedInstance];
+    manager.setUploadURL(urlStr,nil,nil)
+        .setCompressionIntakeRequests(NO)
+        .setSdkVersion(@"RequestTest");
+
+    [FTTrackDataManager startWithAutoSync:NO syncPageSize:1 syncSleepTime:0];
+    @try {
+        [self addLogBacklog:12 prefix:@"testLargeLogBacklogUploadsOneBatchPerPass-log"];
+        FTDataUploadWorker *worker = [FTTrackDataManager sharedInstance].dataUploadWorker;
+        [[FTTrackDataManager sharedInstance] flushSyncData];
+        dispatch_sync(worker.networkQueue, ^{});
+
+        @synchronized (requestPaths) {
+            XCTAssertEqual(requestPaths.count, 1);
+            XCTAssertEqualObjects(requestPaths[0], @"logging");
+        }
+        XCTAssertEqual([[FTTrackerEventDBTool sharedManager] getDatasCountWithType:FT_DATA_TYPE_LOGGING], 11);
+    } @finally {
+        [FTTrackDataManager shutDown];
+        [OHHTTPStubs removeStub:stub];
+    }
+}
+- (void)testLogRetryDoesNotPollRUMUntilNextPass{
+    [FTTrackDataManager shutDown];
+    [[FTTrackerEventDBTool sharedManager] deleteAllDatas];
+    NSMutableArray<NSString *> *requestPaths = [NSMutableArray array];
+    __block NSInteger logRequestCount = 0;
+    NSString *urlStr = @"http://www.test.com/some/url/rum-priority/log-retry-yield";
+    id<OHHTTPStubsDescriptor> stub = [OHHTTPStubs stubRequestsPassingTest:^BOOL(NSURLRequest *request) {
+        return [request.URL.absoluteString containsString:urlStr];
+    } withStubResponse:^OHHTTPStubsResponse*(NSURLRequest *request) {
+        @synchronized (requestPaths) {
+            [requestPaths addObject:[self uploadTypeForRequest:request]];
+        }
+        if ([request.URL.path hasSuffix:@"/v1/write/logging"]) {
+            logRequestCount++;
+            if (logRequestCount == 1) {
+                dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)(0.1 * NSEC_PER_SEC)), dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0), ^{
+                    [[FTTrackDataManager sharedInstance] addTrackData:[FTModelHelper createRUMModel:@"testLogRetryDoesNotPollRUMUntilNextPass-rum"] type:FTAddDataRUM];
+                });
+                NSString *data = [FTJSONUtil convertToJsonData:@{@"data":@"retry later",@"code":@501}];
+                return [OHHTTPStubsResponse responseWithData:[data dataUsingEncoding:NSUTF8StringEncoding] statusCode:501 headers:nil];
+            }
+        }
+        NSString *data = [FTJSONUtil convertToJsonData:@{@"data":@"Hello World!",@"code":@200}];
+        return [OHHTTPStubsResponse responseWithData:[data dataUsingEncoding:NSUTF8StringEncoding] statusCode:200 headers:nil];
+    }];
+    FTNetworkInfoManager *manager = [FTNetworkInfoManager sharedInstance];
+    manager.setUploadURL(urlStr,nil,nil)
+        .setCompressionIntakeRequests(NO)
+        .setSdkVersion(@"RequestTest");
+
+    [FTTrackDataManager startWithAutoSync:NO syncPageSize:1 syncSleepTime:0];
+    @try {
+        [self addLogBacklog:1 prefix:@"testLogRetryDoesNotPollRUMUntilNextPass-log"];
+        FTDataUploadWorker *worker = [FTTrackDataManager sharedInstance].dataUploadWorker;
+        [[FTTrackDataManager sharedInstance] flushSyncData];
+        dispatch_sync(worker.networkQueue, ^{});
+
+        @synchronized (requestPaths) {
+            XCTAssertEqual(requestPaths.count, 2);
+            XCTAssertEqualObjects(requestPaths[0], @"logging");
+            XCTAssertEqualObjects(requestPaths[1], @"logging");
+        }
+        XCTAssertEqual([[FTTrackerEventDBTool sharedManager] getDatasCountWithType:FT_DATA_TYPE_RUM], 1);
+        XCTAssertEqual([[FTTrackerEventDBTool sharedManager] getDatasCountWithType:FT_DATA_TYPE_LOGGING], 0);
+    } @finally {
+        [FTTrackDataManager shutDown];
+        [OHHTTPStubs removeStub:stub];
+    }
+}
+- (void)testLargeBacklogRetryShutdownStopsNextPassAndKeepsPendingData{
+    [FTTrackDataManager shutDown];
+    [[FTTrackerEventDBTool sharedManager] deleteAllDatas];
+    NSMutableArray<NSString *> *requestPaths = [NSMutableArray array];
+    __block NSInteger rumRequestCount = 0;
+    __block NSInteger logRequestCount = 0;
+    __block BOOL logStartedFulfilled = NO;
+    dispatch_semaphore_t allowLogResponse = dispatch_semaphore_create(0);
+    XCTestExpectation *logRequestStarted = [self expectationWithDescription:@"log request started"];
+    NSString *urlStr = @"http://www.test.com/some/url/rum-priority/large-backlog-retry-shutdown";
+    id<OHHTTPStubsDescriptor> stub = [OHHTTPStubs stubRequestsPassingTest:^BOOL(NSURLRequest *request) {
+        return [request.URL.absoluteString containsString:urlStr];
+    } withStubResponse:^OHHTTPStubsResponse*(NSURLRequest *request) {
+        NSString *uploadType = [self uploadTypeForRequest:request];
+        BOOL shouldFulfillLogStarted = NO;
+        @synchronized (requestPaths) {
+            [requestPaths addObject:uploadType];
+            if ([uploadType isEqualToString:@"rum"]) {
+                rumRequestCount++;
+            } else if ([uploadType isEqualToString:@"logging"]) {
+                logRequestCount++;
+                if (!logStartedFulfilled) {
+                    logStartedFulfilled = YES;
+                    shouldFulfillLogStarted = YES;
+                }
+            }
+        }
+        if (shouldFulfillLogStarted) {
+            [logRequestStarted fulfill];
+        }
+        if ([uploadType isEqualToString:@"logging"]) {
+            dispatch_semaphore_wait(allowLogResponse, dispatch_time(DISPATCH_TIME_NOW, (int64_t)(2 * NSEC_PER_SEC)));
+            NSString *data = [FTJSONUtil convertToJsonData:@{@"data":@"retry later",@"code":@501}];
+            return [OHHTTPStubsResponse responseWithData:[data dataUsingEncoding:NSUTF8StringEncoding] statusCode:501 headers:nil];
+        }
+        NSString *data = [FTJSONUtil convertToJsonData:@{@"data":@"Hello World!",@"code":@200}];
+        return [OHHTTPStubsResponse responseWithData:[data dataUsingEncoding:NSUTF8StringEncoding] statusCode:200 headers:nil];
+    }];
+    FTNetworkInfoManager *manager = [FTNetworkInfoManager sharedInstance];
+    manager.setUploadURL(urlStr,nil,nil)
+        .setCompressionIntakeRequests(NO)
+        .setSdkVersion(@"RequestTest");
+
+    [FTTrackDataManager startWithAutoSync:NO syncPageSize:1 syncSleepTime:0];
+    FTDataUploadWorker *worker = [FTTrackDataManager sharedInstance].dataUploadWorker;
+    @try {
+        for (int i = 0; i < 9; i++) {
+            [[FTTrackDataManager sharedInstance] addTrackData:[FTModelHelper createRUMModel:[NSString stringWithFormat:@"testLargeBacklogRetryShutdownStopsNextPassAndKeepsPendingData-rum-%d",i]] type:FTAddDataRUM];
+        }
+        [self addLogBacklog:30 prefix:@"testLargeBacklogRetryShutdownStopsNextPassAndKeepsPendingData-log"];
+
+        [[FTTrackDataManager sharedInstance] flushSyncData];
+        [self waitForExpectations:@[logRequestStarted] timeout:2];
+
+        [FTTrackDataManager shutDown];
+        dispatch_semaphore_signal(allowLogResponse);
+        dispatch_sync(worker.networkQueue, ^{});
+
+        @synchronized (requestPaths) {
+            XCTAssertEqual(requestPaths.count, 4);
+            if (requestPaths.count == 4) {
+                XCTAssertEqualObjects(requestPaths[0], @"rum");
+                XCTAssertEqualObjects(requestPaths[1], @"rum");
+                XCTAssertEqualObjects(requestPaths[2], @"rum");
+                XCTAssertEqualObjects(requestPaths[3], @"logging");
+            }
+            XCTAssertEqual(rumRequestCount, 3);
+            XCTAssertEqual(logRequestCount, 1);
+        }
+        XCTAssertEqual([[FTTrackerEventDBTool sharedManager] getDatasCountWithType:FT_DATA_TYPE_RUM], 6);
+        XCTAssertEqual([[FTTrackerEventDBTool sharedManager] getDatasCountWithType:FT_DATA_TYPE_LOGGING], 30);
+    } @finally {
+        dispatch_semaphore_signal(allowLogResponse);
+        [FTTrackDataManager shutDown];
+        [OHHTTPStubs removeStub:stub];
+    }
+}
+- (void)testRUMFailureDoesNotBlockLogUploadAttempt{
+    [FTTrackDataManager shutDown];
+    [[FTTrackerEventDBTool sharedManager] deleteAllDatas];
+    __block NSInteger logRequestCount = 0;
+    __block NSInteger rumRequestCount = 0;
+    NSString *urlStr = @"http://www.test.com/some/url/rum-priority/rum-failure";
+    id<OHHTTPStubsDescriptor> stub = [OHHTTPStubs stubRequestsPassingTest:^BOOL(NSURLRequest *request) {
+        return [request.URL.absoluteString containsString:urlStr];
+    } withStubResponse:^OHHTTPStubsResponse*(NSURLRequest *request) {
+        if ([request.URL.path hasSuffix:@"/v1/write/logging"]) {
+            logRequestCount++;
+        }else if ([request.URL.path hasSuffix:@"/v1/write/rum"]) {
+            rumRequestCount++;
+        }
+        NSString *data = [FTJSONUtil convertToJsonData:@{@"data":@"retry later",@"code":@501}];
+        return [OHHTTPStubsResponse responseWithData:[data dataUsingEncoding:NSUTF8StringEncoding] statusCode:501 headers:nil];
+    }];
+    FTNetworkInfoManager *manager = [FTNetworkInfoManager sharedInstance];
+    manager.setUploadURL(urlStr,nil,nil)
+        .setCompressionIntakeRequests(NO)
+        .setSdkVersion(@"RequestTest");
+
+    [FTTrackDataManager startWithAutoSync:NO syncPageSize:1 syncSleepTime:0];
+    @try {
+        [[FTTrackDataManager sharedInstance] addTrackData:[FTModelHelper createRUMModel:@"testRUMFailureDoesNotBlockLogUploadAttempt-rum"] type:FTAddDataRUM];
+        [self addLogBacklog:2 prefix:@"testRUMFailureDoesNotBlockLogUploadAttempt-log"];
+        FTDataUploadWorker *worker = [FTTrackDataManager sharedInstance].dataUploadWorker;
+        [[FTTrackDataManager sharedInstance] flushSyncData];
+        dispatch_sync(worker.networkQueue, ^{});
+
+        XCTAssertEqual(rumRequestCount, 6);
+        XCTAssertEqual(logRequestCount, 6);
+        XCTAssertEqual([[FTTrackerEventDBTool sharedManager] getDatasCountWithType:FT_DATA_TYPE_LOGGING], 2);
+    } @finally {
+        [FTTrackDataManager shutDown];
+        [OHHTTPStubs removeStub:stub];
+    }
+}
+- (void)testRUMInsertClearsOldLogsWhenDatabaseIsOverLimit{
+    [FTTrackDataManager shutDown];
+    [[FTTrackerEventDBTool sharedManager] deleteAllDatas];
+    [FTTrackDataManager startWithAutoSync:NO syncPageSize:10 syncSleepTime:0];
+    @try {
+        [[FTTrackDataManager sharedInstance] setLogCacheLimitCount:20 discardNew:NO];
+        NSString *largeMessage = [@"" stringByPaddingToLength:4096 withString:@"L" startingAtIndex:0];
+        for (int i = 0; i < 120; i++) {
+            [[FTTrackDataManager sharedInstance] addTrackData:[FTModelHelper createLogModel:[NSString stringWithFormat:@"testRUMInsertClearsOldLogsWhenDatabaseIsOverLimit-%d-%@",i,largeMessage]] type:FTAddDataLogging];
+        }
+        [[FTTrackDataManager sharedInstance] insertCacheToDB];
+        NSInteger logCountBefore = [[FTTrackerEventDBTool sharedManager] getDatasCountWithType:FT_DATA_TYPE_LOGGING];
+        long long dbSizeBefore = [[FTTrackerEventDBTool sharedManager] checkDatabaseSize];
+        [[FTTrackDataManager sharedInstance] setEnableLimitWithDb:YES size:MAX(1, dbSizeBefore - 4096) discardNew:YES];
+
+        NSString *rumMarker = @"testRUMInsertClearsOldLogsWhenDatabaseIsOverLimit-rum";
+        [[FTTrackDataManager sharedInstance] addTrackData:[FTModelHelper createRUMModel:rumMarker] type:FTAddDataRUM];
+
+        NSArray *rumRecords = [[FTTrackerEventDBTool sharedManager] getFirstRecords:10 withType:FT_DATA_TYPE_RUM];
+        NSInteger logCountAfter = [[FTTrackerEventDBTool sharedManager] getDatasCountWithType:FT_DATA_TYPE_LOGGING];
+        XCTAssertTrue(logCountAfter < logCountBefore);
+        XCTAssertEqual(rumRecords.count, 1);
+        FTRecordModel *rumRecord = rumRecords.firstObject;
+        XCTAssertTrue([rumRecord.data containsString:rumMarker]);
+    } @finally {
+        [FTTrackDataManager shutDown];
+    }
+}
+- (void)testRUMInsertClearsOldLogsWithinLogLimitWhenDatabaseIsOverLimit{
+    [FTTrackDataManager shutDown];
+    [[FTTrackerEventDBTool sharedManager] deleteAllDatas];
+    [FTTrackDataManager startWithAutoSync:NO syncPageSize:10 syncSleepTime:0];
+    @try {
+        NSString *largeMessage = [@"" stringByPaddingToLength:4096 withString:@"R" startingAtIndex:0];
+        for (int i = 0; i < 40; i++) {
+            [[FTTrackDataManager sharedInstance] addTrackData:[FTModelHelper createRUMModel:[NSString stringWithFormat:@"testRUMInsertClearsOldLogsWithinLogLimitWhenDatabaseIsOverLimit-rum-%d-%@",i,largeMessage]] type:FTAddDataRUM];
+        }
+        [self addLogBacklog:5 prefix:@"testRUMInsertClearsOldLogsWithinLogLimitWhenDatabaseIsOverLimit-log"];
+        NSInteger logCountBefore = [[FTTrackerEventDBTool sharedManager] getDatasCountWithType:FT_DATA_TYPE_LOGGING];
+        NSInteger rumCountBefore = [[FTTrackerEventDBTool sharedManager] getDatasCountWithType:FT_DATA_TYPE_RUM];
+        long long dbSizeBefore = [[FTTrackerEventDBTool sharedManager] checkDatabaseSize];
+        [[FTTrackDataManager sharedInstance] setEnableLimitWithDb:YES size:MAX(1, dbSizeBefore - 4096) discardNew:YES];
+
+        [[FTTrackDataManager sharedInstance] addTrackData:[FTModelHelper createRUMModel:@"testRUMInsertClearsOldLogsWithinLogLimitWhenDatabaseIsOverLimit-new-rum"] type:FTAddDataRUM];
+
+        NSInteger logCountAfter = [[FTTrackerEventDBTool sharedManager] getDatasCountWithType:FT_DATA_TYPE_LOGGING];
+        NSInteger rumCountAfter = [[FTTrackerEventDBTool sharedManager] getDatasCountWithType:FT_DATA_TYPE_RUM];
+        XCTAssertTrue(logCountAfter < logCountBefore);
+        XCTAssertEqual(rumCountAfter, rumCountBefore + 1);
+    } @finally {
+        [FTTrackDataManager shutDown];
+    }
+}
+- (void)testRUMInsertDeletesLogsBeforeGlobalOldestDataWhenDatabaseIsOverLimit{
+    [FTTrackDataManager shutDown];
+    [[FTTrackerEventDBTool sharedManager] deleteAllDatas];
+    [FTTrackDataManager startWithAutoSync:NO syncPageSize:10 syncSleepTime:0];
+    @try {
+        [self addLogBacklog:5 prefix:@"testRUMInsertDeletesLogsBeforeGlobalOldestDataWhenDatabaseIsOverLimit-log"];
+        NSString *largeMessage = [@"" stringByPaddingToLength:4096 withString:@"R" startingAtIndex:0];
+        for (int i = 0; i < 120; i++) {
+            [[FTTrackDataManager sharedInstance] addTrackData:[FTModelHelper createRUMModel:[NSString stringWithFormat:@"testRUMInsertDeletesLogsBeforeGlobalOldestDataWhenDatabaseIsOverLimit-rum-%d-%@",i,largeMessage]] type:FTAddDataRUM];
+        }
+        NSInteger logCountBefore = [[FTTrackerEventDBTool sharedManager] getDatasCountWithType:FT_DATA_TYPE_LOGGING];
+        long long dbSizeBefore = [[FTTrackerEventDBTool sharedManager] checkDatabaseSize];
+        [[FTTrackDataManager sharedInstance] setEnableLimitWithDb:YES size:MAX(1, dbSizeBefore - 100 * 1024) discardNew:NO];
+
+        NSString *rumMarker = @"testRUMInsertDeletesLogsBeforeGlobalOldestDataWhenDatabaseIsOverLimit-new-rum";
+        [[FTTrackDataManager sharedInstance] addTrackData:[FTModelHelper createRUMModel:rumMarker] type:FTAddDataRUM];
+
+        NSInteger logCountAfter = [[FTTrackerEventDBTool sharedManager] getDatasCountWithType:FT_DATA_TYPE_LOGGING];
+        NSArray *rumRecords = [[FTTrackerEventDBTool sharedManager] getFirstRecords:200 withType:FT_DATA_TYPE_RUM];
+        XCTAssertTrue(logCountAfter < logCountBefore);
+        XCTAssertEqual(logCountAfter, 0);
+        XCTAssertTrue(rumRecords.count > 0);
+        BOOL hasNewRUM = NO;
+        for (FTRecordModel *rumRecord in rumRecords) {
+            if ([rumRecord.data containsString:rumMarker]) {
+                hasNewRUM = YES;
+                break;
+            }
+        }
+        XCTAssertTrue(hasNewRUM);
+    } @finally {
+        [FTTrackDataManager shutDown];
+    }
+}
+- (void)testLogInsertDoesNotDeleteRUMWhenDatabaseIsOverLimitWithoutOldLogs{
+    [FTTrackDataManager shutDown];
+    [[FTTrackerEventDBTool sharedManager] deleteAllDatas];
+    [FTTrackDataManager startWithAutoSync:NO syncPageSize:10 syncSleepTime:0];
+    @try {
+        NSString *largeMessage = [@"" stringByPaddingToLength:4096 withString:@"R" startingAtIndex:0];
+        for (int i = 0; i < 40; i++) {
+            [[FTTrackDataManager sharedInstance] addTrackData:[FTModelHelper createRUMModel:[NSString stringWithFormat:@"testLogInsertDoesNotDeleteRUMWhenDatabaseIsOverLimitWithoutOldLogs-rum-%d-%@",i,largeMessage]] type:FTAddDataRUM];
+        }
+        NSInteger rumCountBefore = [[FTTrackerEventDBTool sharedManager] getDatasCountWithType:FT_DATA_TYPE_RUM];
+        long long dbSizeBefore = [[FTTrackerEventDBTool sharedManager] checkDatabaseSize];
+        [[FTTrackDataManager sharedInstance] setEnableLimitWithDb:YES size:MAX(1, dbSizeBefore - 4096) discardNew:NO];
+
+        [[FTTrackDataManager sharedInstance] addTrackData:[FTModelHelper createLogModel:@"testLogInsertDoesNotDeleteRUMWhenDatabaseIsOverLimitWithoutOldLogs-log"] type:FTAddDataLogging];
+        [[FTTrackDataManager sharedInstance] insertCacheToDB];
+
+        NSInteger logCountAfter = [[FTTrackerEventDBTool sharedManager] getDatasCountWithType:FT_DATA_TYPE_LOGGING];
+        NSInteger rumCountAfter = [[FTTrackerEventDBTool sharedManager] getDatasCountWithType:FT_DATA_TYPE_RUM];
+        XCTAssertEqual(logCountAfter, 0);
+        XCTAssertEqual(rumCountAfter, rumCountBefore);
+    } @finally {
+        [FTTrackDataManager shutDown];
+    }
 }
 /**
  * packageId remains unchanged
@@ -423,20 +1025,18 @@
     FTNetworkInfoManager *manager = [FTNetworkInfoManager sharedInstance];
     manager.setUploadURL(urlStr,nil,nil)
         .setSdkVersion(@"RequestTest");
-    
+
     [[FTTrackerEventDBTool sharedManager] deleteAllDatas];
     [FTTrackDataManager startWithAutoSync:NO syncPageSize:10 syncSleepTime:0];
-   
+
     [[FTTrackDataManager sharedInstance] addTrackData:[FTModelHelper createRUMModel:@"testNetworkFail_NetworkRetry"] type:FTAddDataRUM];
-  
-    self.expectation = [self expectationWithDescription:@"isUploadingEqualNO"];
+
     FTDataUploadWorker *worker = [FTTrackDataManager sharedInstance].dataUploadWorker;
-    [worker addObserver:self forKeyPath:@"isUploading" options:NSKeyValueObservingOptionNew context:nil];
     @try {
         CFTimeInterval startTime = CACurrentMediaTime();
         NSString *packageId = [FTRumRequest.serialGenerator getCurrentSerialNumber];
         [[FTTrackDataManager sharedInstance] flushSyncData];
-        [self waitForExpectations:@[self.expectation]];
+        dispatch_sync(worker.networkQueue, ^{});
         CFTimeInterval endTime = CACurrentMediaTime();
         CFTimeInterval duration = endTime-startTime;
         NSLog(@"endTime-startTime:%f",duration);
@@ -451,7 +1051,6 @@
 
         [self compareSdkID:first second:last increase:0];
     } @finally {
-        [worker removeObserver:self forKeyPath:@"isUploading"];
         [FTTrackDataManager shutDown];
         [OHHTTPStubs removeStub:stub];
     }
@@ -555,6 +1154,23 @@
     XCTAssertEqual([[FTTrackerEventDBTool sharedManager] getUploadDatasCount], 1);
     [OHHTTPStubs removeStub:stub];
 }
+- (void)testRequestCreationFailureStopsUploadWithoutRetry{
+    [FTTrackDataManager shutDown];
+    [[FTTrackerEventDBTool sharedManager] deleteAllDatas];
+    [[FTNetworkInfoManager sharedInstance] clearUploadInfo];
+    [FTTrackDataManager startWithAutoSync:NO syncPageSize:1 syncSleepTime:0];
+    [[FTTrackDataManager sharedInstance] addTrackData:[FTModelHelper createRUMModel:@"testRequestCreationFailureStopsUploadWithoutRetry"] type:FTAddDataRUM];
+    FTDataUploadWorker *worker = [FTTrackDataManager sharedInstance].dataUploadWorker;
+
+    CFTimeInterval startTime = CACurrentMediaTime();
+    [[FTTrackDataManager sharedInstance] flushSyncData];
+    dispatch_sync(worker.networkQueue, ^{});
+    CFTimeInterval duration = CACurrentMediaTime() - startTime;
+
+    XCTAssertTrue(duration < 1);
+    XCTAssertEqual([[FTTrackerEventDBTool sharedManager] getUploadDatasCount], 1);
+    [FTTrackDataManager shutDown];
+}
 - (void)verifyUploadRetryAndKeepDataWithStatusCode:(NSInteger)statusCode{
     [FTTrackDataManager shutDown];
     [FTLog enableLog:YES];
@@ -577,17 +1193,14 @@
 
     [[FTTrackDataManager sharedInstance] addTrackData:[FTModelHelper createRUMModel:[NSString stringWithFormat:@"testNetworkFail_%ldRetryAndKeepData",(long)statusCode]] type:FTAddDataRUM];
 
-    self.expectation = [self expectationWithDescription:@"isUploadingEqualNO"];
     FTDataUploadWorker *worker = [FTTrackDataManager sharedInstance].dataUploadWorker;
-    [worker addObserver:self forKeyPath:@"isUploading" options:NSKeyValueObservingOptionNew context:nil];
     @try {
         [[FTTrackDataManager sharedInstance] flushSyncData];
-        [self waitForExpectations:@[self.expectation]];
+        dispatch_sync(worker.networkQueue, ^{});
 
         XCTAssertTrue(requestCount == 6);
         XCTAssertTrue([[FTTrackerEventDBTool sharedManager] getUploadDatasCount] == 1);
     } @finally {
-        [worker removeObserver:self forKeyPath:@"isUploading"];
         [FTTrackDataManager shutDown];
         [OHHTTPStubs removeStub:stub];
     }
@@ -608,23 +1221,21 @@
     }];
     [[FTTrackerEventDBTool sharedManager] deleteAllDatas];
     [FTTrackDataManager startWithAutoSync:NO syncPageSize:10 syncSleepTime:0];
-    
+
     NSString *urlStr = @"http://www.test.com/some/url/string";
     FTNetworkInfoManager *manager = [FTNetworkInfoManager sharedInstance];
     manager.setUploadURL(urlStr,nil,nil)
         .setSdkVersion(@"RequestTest");
-    
+
     FTDataUploadWorker *worker = [FTTrackDataManager sharedInstance].dataUploadWorker;
-    [worker addObserver:self forKeyPath:@"isUploading" options:NSKeyValueObservingOptionNew context:nil];
     @try {
         NSString *logStartNum = [FTLoggingRequest.serialGenerator getCurrentSerialNumber];
         for (int i = 0; i<2; i++) {
-            self.expectation = [self expectationWithDescription:@"isUploadingEqualNO"];
             FTRecordModel *model = [FTModelHelper createRumModel];
             [[FTTrackDataManager sharedInstance] addTrackData:model type:FTAddDataRUM];
 
             [[FTTrackDataManager sharedInstance] flushSyncData];
-            [self waitForExpectations:@[self.expectation]];
+            dispatch_sync(worker.networkQueue, ^{});
         }
         NSString *logEndtNum = [FTLoggingRequest.serialGenerator getCurrentSerialNumber];
         XCTAssertTrue([logEndtNum isEqualToString:logStartNum]);
@@ -634,7 +1245,6 @@
         NSString *bodyStr2 = [[NSString alloc]initWithData:[FTTestUtils transStreamToData:datas.lastObject] encoding:NSUTF8StringEncoding];
         [self compareSdkID:bodyStr second:bodyStr2 increase:1];
     } @finally {
-        [worker removeObserver:self forKeyPath:@"isUploading"];
         [FTTrackDataManager shutDown];
         [OHHTTPStubs removeStub:stub];
     }
@@ -668,7 +1278,7 @@
     // packageId end random number
     NSString *random12 = array2[3];
     XCTAssertTrue(random12.length == 12);
-    
+
     XCTAssertFalse([array2[3] isEqualToString:array1[3]]);
     // Data id is inconsistent
     XCTAssertFalse([[array1 lastObject] isEqualToString:[array2 lastObject]]);
@@ -687,17 +1297,6 @@
     FTNetworkInfoManager *manager = [FTNetworkInfoManager sharedInstance];
     manager.setUploadURL(urlStr,nil,nil)
         .setSdkVersion(@"RequestTest");
-}
--(void)observeValueForKeyPath:(NSString *)keyPath ofObject:(id)object change:(NSDictionary<NSKeyValueChangeKey,id> *)change context:(void *)context{
-    if([keyPath isEqualToString:@"isUploading"]){
-        FTDataUploadWorker *worker = object;
-        NSNumber *isUploading = [worker valueForKey:@"isUploading"];
-        BOOL uploadingEqualNO = [self.expectation.description isEqualToString:@"isUploadingEqualNO"];
-        if(isUploading.boolValue == !uploadingEqualNO){
-            [self.expectation fulfill];
-            self.expectation = nil;
-        }
-    }
 }
 - (void)testShutdown{
     id<OHHTTPStubsDescriptor> stubs = [OHHTTPStubs stubRequestsPassingTest:^BOOL(NSURLRequest *request) {

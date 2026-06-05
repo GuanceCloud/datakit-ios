@@ -10,7 +10,7 @@
 #import <UIKit/UIKit.h>
 #import "FTSRNodeWireframesBuilder.h"
 
-@class FTViewAttributes;
+@class FTViewAttributes, FTSRColorSnapshot;
 NS_ASSUME_NONNULL_BEGIN
 @interface FTUISwitchBuilder : NSObject<FTSRNodeWireframesBuilder>
 @property (nonatomic, strong) FTViewAttributes *attributes;
@@ -25,9 +25,9 @@ NS_ASSUME_NONNULL_BEGIN
 @property (nonatomic, assign) BOOL isOn;
 @property (nonatomic, assign) BOOL isMasked;
 
-@property (nonatomic, strong) UIColor * onTintColor;
-@property (nonatomic, strong) UIColor * offTintColor;
-@property (nonatomic, strong) UIColor * thumbTintColor;
+@property (nonatomic, strong, nullable) FTSRColorSnapshot * onTintColor;
+@property (nonatomic, strong, nullable) FTSRColorSnapshot * offTintColor;
+@property (nonatomic, strong, nullable) FTSRColorSnapshot * thumbTintColor;
 
 @end
 @interface FTUISwitchRecorder : NSObject<FTSRWireframesRecorder>

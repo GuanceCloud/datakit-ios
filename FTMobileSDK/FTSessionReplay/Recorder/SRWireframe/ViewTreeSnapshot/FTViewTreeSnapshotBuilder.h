@@ -18,6 +18,7 @@ NS_ASSUME_NONNULL_BEGIN
 @property (nonatomic, assign) BOOL enableHeatmap;
 - (FTViewTreeSnapshot *)takeSnapshot:(NSArray <UIView *> *)rootViews referenceView:(UIView *)referenceView context:(FTSRContext *)context;
 -(instancetype)initWithAdditionalNodeRecorders:(nullable NSArray <id <FTSRWireframesRecorder>>*)additionalNodeRecorders;
+-(instancetype)initWithAdditionalNodeRecorders:(nullable NSArray <id <FTSRWireframesRecorder>>*)additionalNodeRecorders enableSwiftUI:(BOOL)enableSwiftUI;
 @end
 
 NS_ASSUME_NONNULL_END

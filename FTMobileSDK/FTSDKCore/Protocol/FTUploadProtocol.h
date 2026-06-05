@@ -17,7 +17,8 @@
 @protocol FTSessionOnErrorDataHandler <NSObject>
 /// Handle Session On Error Datas
 - (void)checkRUMSessionOnErrorDatasExpired;
-///  If there is no data in file cache, return 0
+///  Persisted RUM error timeline for session-on-error sampled cache data.
+///  This is not the fatal error time from the previous process.
 - (long long)getErrorTimeLineFromFileCache;
 
 ///  Get the time of fatal error from the previous process

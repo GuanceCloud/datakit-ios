@@ -14,8 +14,8 @@ struct SwiftUIDemoView: View {
     @State private var isEnabled = true
     @State private var sampleRate = 0.75
     @State private var selectedTab = DemoTab.overview
-    @State private var manualTapCount = 0
-    @State private var modifierTapCount = 0
+    @State private var automaticTapCount = 0
+    @State private var customTapCount = 0
 
     var body: some View {
         ScrollView {
@@ -52,7 +52,7 @@ struct SwiftUIDemoView: View {
                 }
             }
 
-            Text("This page is intentionally UI-only. SDK API examples remain in the existing Swift pages.")
+            Text("This page exercises SwiftUI view tracking, automatic actions, and optional custom RUM events.")
                 .font(.footnote)
                 .foregroundColor(.secondary)
         }
@@ -154,46 +154,39 @@ struct SwiftUIDemoView: View {
 
     private var rumTrackingExamples: some View {
         VStack(alignment: .leading, spacing: 12) {
-            SectionTitle(title: "RUM Tracking", subtitle: "SwiftUI manual view and action events")
+            SectionTitle(title: "RUM Tracking", subtitle: "SwiftUI view tracking, automatic taps, and custom actions")
 
             VStack(spacing: 12) {
                 Button {
-                    manualTapCount += 1
-                    FTRUMSwiftUI.trackTapAction(
-                        name: "swiftui_manual_tap_action",
-                        property: [
-                            "button": "manual",
-                            "tap_count": manualTapCount
-                        ]
-                    )
+                    automaticTapCount += 1
                 } label: {
                     HStack {
-                        Label("Manual action", systemImage: "hand.tap")
+                        Label("Automatic action", systemImage: "hand.tap")
                         Spacer()
-                        Text("\(manualTapCount)")
+                        Text("\(automaticTapCount)")
                             .foregroundColor(.secondary)
                     }
                 }
                 .buttonStyle(.borderedProminent)
 
                 Button {
-                    modifierTapCount += 1
+                    customTapCount += 1
+                    FTRUMSwiftUI.trackTapAction(
+                        name: "swiftui_custom_tap_action",
+                        property: [
+                            "button": "custom",
+                            "tap_count": customTapCount
+                        ]
+                    )
                 } label: {
                     HStack {
-                        Label("Modifier action", systemImage: "cursorarrow.click.2")
+                        Label("Custom action", systemImage: "cursorarrow.click.2")
                         Spacer()
-                        Text("\(modifierTapCount)")
+                        Text("\(customTapCount)")
                             .foregroundColor(.secondary)
                     }
                 }
                 .buttonStyle(.bordered)
-                .ftTrackRUMTapAction(
-                    name: "swiftui_modifier_tap_action",
-                    property: [
-                        "button": "modifier",
-                        "tap_count": modifierTapCount
-                    ]
-                )
             }
             .padding(16)
             .background(Color(.secondarySystemGroupedBackground))

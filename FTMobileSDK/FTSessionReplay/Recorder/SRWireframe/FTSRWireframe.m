@@ -271,8 +271,8 @@ static BOOL objectIsEqual(id new,id old){
     if(self){
         self.type = @"shape";
         if (attributes){
-            FTSRShapeBorder *border = [[FTSRShapeBorder alloc]initWithColor:[FTSRUtils colorHexString:attributes.layerBorderColor]  width:attributes.layerBorderWidth];
-            FTSRShapeStyle *backgroundStyle = [[FTSRShapeStyle alloc]initWithBackgroundColor:[FTSRUtils colorHexString:attributes.backgroundColor.CGColor] cornerRadius:@(attributes.layerCornerRadius) opacity:@(attributes.alpha)];
+            FTSRShapeBorder *border = [[FTSRShapeBorder alloc]initWithColor:attributes.layerBorderColor.hexString  width:attributes.layerBorderWidth];
+            FTSRShapeStyle *backgroundStyle = [[FTSRShapeStyle alloc]initWithBackgroundColor:attributes.backgroundColor.hexString cornerRadius:@(attributes.layerCornerRadius) opacity:@(attributes.alpha)];
             self.border = border;
             self.clip = [[FTSRContentClip alloc]initWithFrame:attributes.frame clip:attributes.clip];
             self.shapeStyle = backgroundStyle;

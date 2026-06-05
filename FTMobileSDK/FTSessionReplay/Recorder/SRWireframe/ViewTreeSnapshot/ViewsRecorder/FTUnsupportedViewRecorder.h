@@ -19,6 +19,7 @@ NS_ASSUME_NONNULL_BEGIN
 @end
 @interface FTUnsupportedViewRecorder : NSObject<FTSRWireframesRecorder>
 @property (nonatomic, copy) NSString *identifier;
+- (instancetype)initWithSwiftUIEnabled:(BOOL)swiftUIEnabled;
 
 @end
 NS_ASSUME_NONNULL_END

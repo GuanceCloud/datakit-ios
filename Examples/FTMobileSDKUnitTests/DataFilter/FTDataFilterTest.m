@@ -16,6 +16,7 @@
 #import "FTRecordModel.h"
 #import "FTConstants.h"
 #import "FTTrackerEventDBTool.h"
+#import "FTTrackerEventDBTool+Test.h"
 
 typedef void(^FTDataFilterMockHTTPCompletion)(NSHTTPURLResponse * _Nullable response, NSData * _Nullable data, NSError * _Nullable error);
 
@@ -24,6 +25,8 @@ typedef void(^FTDataFilterMockHTTPCompletion)(NSHTTPURLResponse * _Nullable resp
 - (void)completeRequestAtIndex:(NSUInteger)index responseObject:(id)responseObject;
 - (void)completeRequestAtIndex:(NSUInteger)index rawString:(NSString *)rawString;
 - (void)completeRequestAtIndex:(NSUInteger)index data:(NSData *)data;
+- (void)completeRequestAtIndex:(NSUInteger)index statusCode:(NSInteger)statusCode responseObject:(id)responseObject;
+- (void)completeRequestAtIndex:(NSUInteger)index statusCode:(NSInteger)statusCode data:(NSData *)data error:(NSError *)error;
 @end
 
 @implementation FTDataFilterMockHTTPClient
@@ -52,14 +55,27 @@ typedef void(^FTDataFilterMockHTTPCompletion)(NSHTTPURLResponse * _Nullable resp
 }
 
 - (void)completeRequestAtIndex:(NSUInteger)index data:(NSData *)data {
+    [self completeRequestAtIndex:index statusCode:200 data:data error:nil];
+}
+
+- (void)completeRequestAtIndex:(NSUInteger)index statusCode:(NSInteger)statusCode responseObject:(id)responseObject {
+    NSData *data = [NSJSONSerialization dataWithJSONObject:responseObject options:0 error:nil];
+    [self completeRequestAtIndex:index statusCode:statusCode data:data error:nil];
+}
+
+- (void)completeRequestAtIndex:(NSUInteger)index statusCode:(NSInteger)statusCode data:(NSData *)data error:(NSError *)error {
     if (index >= self.completions.count) {
         return;
     }
     NSURL *url = [NSURL URLWithString:@"http://example.com/v1/datakit/pull"];
-    NSHTTPURLResponse *response = [[NSHTTPURLResponse alloc] initWithURL:url statusCode:200 HTTPVersion:nil headerFields:nil];
-    self.completions[index](response, data, nil);
+    NSHTTPURLResponse *response = [[NSHTTPURLResponse alloc] initWithURL:url statusCode:statusCode HTTPVersion:nil headerFields:nil];
+    self.completions[index](response, data, error);
 }
 
+@end
+
+@interface FTTrackerEventDBTool (DataFilterMigrationTest)
+- (void)createEventTable;
 @end
 
 @interface FTDataFilterTest : XCTestCase
@@ -626,6 +642,32 @@ typedef void(^FTDataFilterMockHTTPCompletion)(NSHTTPURLResponse * _Nullable resp
     XCTAssertFalse(manager.shouldDisableServerFilter);
 }
 
+- (void)testRemoteErrorStatusDoesNotDisableServerFilter {
+    NSArray<NSNumber *> *statusCodes = @[@403, @429, @500];
+    for (NSNumber *statusCode in statusCodes) {
+        [self configureDatakitURL:[NSString stringWithFormat:@"http://datakit-status-%@.example", statusCode]];
+        FTDataFilterMockHTTPClient *client = [FTDataFilterMockHTTPClient new];
+        FTDataFilterManager *manager = [self dataFilterManagerWithMockClient:client];
+        [manager enable:YES localFilters:@{}];
+        XCTAssertEqual(client.completions.count, 1u);
+
+        [client completeRequestAtIndex:0 statusCode:statusCode.integerValue responseObject:@{
+            @"filters": @{@"logging": @[@"{  status in [ 'error' ]  }"]}
+        }];
+
+        XCTAssertFalse(manager.shouldDisableServerFilter);
+        BOOL remoteFilterChecked = YES;
+        XCTAssertFalse([manager isFilteredWithCategory:@"logging"
+                                                source:@"ios_log"
+                                                  uuid:@"uuid"
+                                                  tags:@{@"status": @"error"}
+                                                fields:@{}
+                                   remoteFilterChecked:&remoteFilterChecked]);
+        XCTAssertFalse(remoteFilterChecked);
+        [manager shutDown];
+    }
+}
+
 - (void)testRemoteFilterIntervalCheckRunsOnUploadPollingNotFiltering {
     [self configureDatakitURL:@"http://datakit-a.example"];
     FTDataFilterMockHTTPClient *client = [FTDataFilterMockHTTPClient new];
@@ -720,6 +762,40 @@ typedef void(^FTDataFilterMockHTTPCompletion)(NSHTTPURLResponse * _Nullable resp
     FTRecordModel *storedModel = records.firstObject;
     XCTAssertTrue(storedModel.remoteFilterChecked);
     [[FTTrackerEventDBTool sharedManager] deleteAllDatas];
+}
+
+- (void)testOldDatabaseWithoutRemoteFilterCheckedColumnMigratesWithDefaultFalse {
+    FTTrackerEventDBTool *dbTool = [FTTrackerEventDBTool sharedManager];
+    NSString *oldData = @"old-db-line";
+    __block BOOL setupSuccess = NO;
+    [dbTool.dbQueue inDatabase:^(ZY_FMDatabase *db) {
+        [db executeUpdate:[NSString stringWithFormat:@"DROP TABLE IF EXISTS %@", FT_DB_TRACE_EVENT_TABLE_NAME]];
+        setupSuccess = [db executeUpdate:[NSString stringWithFormat:@"CREATE TABLE %@ (_id INTEGER primary key AUTOINCREMENT, tm INTEGER, data TEXT, op TEXT)", FT_DB_TRACE_EVENT_TABLE_NAME]];
+        setupSuccess = setupSuccess && [db executeUpdate:[NSString stringWithFormat:@"INSERT INTO %@ (tm, data, op) VALUES (?, ?, ?)", FT_DB_TRACE_EVENT_TABLE_NAME], @1, oldData, FT_DATA_TYPE_LOGGING];
+    }];
+    XCTAssertTrue(setupSuccess);
+
+    [dbTool createEventTable];
+
+    __block BOOL migrated = NO;
+    [dbTool.dbQueue inDatabase:^(ZY_FMDatabase *db) {
+        ZY_FMResultSet *set = [db executeQuery:[NSString stringWithFormat:@"PRAGMA table_info(%@)", FT_DB_TRACE_EVENT_TABLE_NAME]];
+        while ([set next]) {
+            if ([[set stringForColumn:@"name"] isEqualToString:@"remote_filter_checked"]) {
+                migrated = YES;
+                break;
+            }
+        }
+        [set close];
+    }];
+    XCTAssertTrue(migrated);
+
+    NSArray *records = [dbTool getFirstRecords:1 withType:FT_DATA_TYPE_LOGGING];
+    XCTAssertEqual(records.count, 1u);
+    FTRecordModel *storedModel = records.firstObject;
+    XCTAssertEqualObjects(storedModel.data, oldData);
+    XCTAssertFalse(storedModel.remoteFilterChecked);
+    [dbTool deleteAllDatas];
 }
 
 - (void)testInvalidLocalFiltersDoNotCrash {

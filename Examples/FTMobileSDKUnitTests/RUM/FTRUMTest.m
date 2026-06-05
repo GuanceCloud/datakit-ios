@@ -2335,6 +2335,7 @@
 - (void)setRumConfigEnableResourceHostIP:(BOOL)enable enableTraceUserResource:(BOOL)resource{
     FTMobileConfig *config = [[FTMobileConfig alloc]initWithDatakitUrl:self.url];
     config.autoSync = NO;
+    config.enableDataFilter = NO;
     config.enableSDKDebugLog = YES;
     FTRumConfig *rumConfig = [[FTRumConfig alloc]initWithAppid:self.appid];
     rumConfig.enableTraceUserAction = YES;

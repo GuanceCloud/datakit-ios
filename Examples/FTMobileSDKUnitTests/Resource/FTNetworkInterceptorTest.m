@@ -61,6 +61,7 @@
     NSString *appid = [processInfo environment][@"APP_ID"];
     FTMobileConfig *config = [[FTMobileConfig alloc]initWithDatakitUrl:url];
     config.enableSDKDebugLog = YES;
+    config.enableDataFilter = NO;
     config.autoSync = NO;
     FTRumConfig *rumConfig = [[FTRumConfig alloc]initWithAppid:appid];
     if(resourcePropertyProvider){

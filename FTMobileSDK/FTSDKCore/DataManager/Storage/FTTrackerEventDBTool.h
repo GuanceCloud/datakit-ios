@@ -49,6 +49,7 @@ NS_ASSUME_NONNULL_BEGIN
 -(BOOL)deleteDataWithType:(NSString *)type count:(NSInteger)count;
 
 -(BOOL)deleteDataWithCount:(NSInteger)count;
+-(BOOL)deleteUploadDataWithCount:(NSInteger)count;
 
 - (BOOL)deleteDatasWithType:(NSString *)type;
 

@@ -30,7 +30,7 @@
     FTUINavigationBarBuilder *builder = [[FTUINavigationBarBuilder alloc]init];
     builder.attributes = attributes;
     builder.wireframeID = [context.viewIDGenerator SRViewID:bar nodeRecorder:self];
-    builder.color = [self inferNavigationBarColor:bar];
+    builder.color = [FTSRColorSnapshot snapshotWithColor:[self inferNavigationBarColor:bar] traitCollection:bar.traitCollection];
     builder.wireframeRect = [self inferNavigationBarFrame:bar context:context];
     
     FTSpecificElement *element = [[FTSpecificElement alloc]initWithSubtreeStrategy:NodeSubtreeStrategyRecord];
@@ -70,7 +70,7 @@
 @end
 @implementation FTUINavigationBarBuilder
 - (NSArray<FTSRWireframe *> *)buildWireframesWithBuilder:(FTSessionReplayWireframesBuilder *)builder{
-    FTSRShapeWireframe *wireframe = [[FTSRShapeWireframe alloc]initWithIdentifier:self.wireframeID frame:self.wireframeRect clip:self.attributes.clip backgroundColor:[FTSRUtils colorHexString:self.color.CGColor] cornerRadius:@(self.attributes.layerCornerRadius) opacity:@(self.attributes.alpha)];
+    FTSRShapeWireframe *wireframe = [[FTSRShapeWireframe alloc]initWithIdentifier:self.wireframeID frame:self.wireframeRect clip:self.attributes.clip backgroundColor:self.color.hexString cornerRadius:@(self.attributes.layerCornerRadius) opacity:@(self.attributes.alpha)];
     wireframe.border = [[FTSRShapeBorder alloc]initWithColor:[FTSRUtils colorHexString:[[UIColor lightGrayColor] colorWithAlphaComponent:0.5].CGColor] width:1];
     return @[wireframe];
 }

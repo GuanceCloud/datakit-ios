@@ -27,6 +27,18 @@
 #import "FTSessionReplayConfig.h"
 #import "FTModuleManager.h"
 #import "FTRemoteConfigManager.h"
+#import "FTScheduler.h"
+#import "FTQueue.h"
+#import "FTRecordingCoordinator.h"
+#import "FTFeatureStorage.h"
+#import "FTFeatureDirectories.h"
+#import "FTDirectory.h"
+#import "FTFile.h"
+#import "FTFileWriter.h"
+#import "FTPerformancePreset.h"
+#import "FTTmpCacheManager.h"
+#import "FTUploadProtocol.h"
+#import "FTDateUtil.h"
 typedef NS_ENUM(NSInteger, SampleState) {
     SampleStateNormal,
     SampleStateError,
@@ -40,6 +52,138 @@ typedef NS_ENUM(NSInteger, SampleState) {
 @property (nonatomic, strong) dispatch_queue_t processorsQueue;
 @property (nonatomic, strong) FTSessionReplayConfig *config;
 @property (nonatomic, assign) SampleState sampleState;
+@property (nonatomic, strong) id<FTScheduler> scheduler;
+- (FTRecordingCoordinator *)ft_recordingCoordinator;
+- (void)evaluateRecordingConditions;
+@end
+
+@implementation FTSessionReplayFeature(Testing)
+@dynamic processorsQueue;
+@dynamic config;
+- (FTRecordingCoordinator *)ft_recordingCoordinator {
+    return [self valueForKey:@"recordingCoordinator"];
+}
+- (SampleState)sampleState {
+    return (SampleState)[self ft_recordingCoordinator].sampleState;
+}
+- (void)setSampleState:(SampleState)sampleState {
+    [[self ft_recordingCoordinator] setSampleState:(FTRecordingSampleState)sampleState];
+}
+- (id<FTScheduler>)scheduler {
+    return [self ft_recordingCoordinator].scheduler;
+}
+- (void)setScheduler:(id<FTScheduler>)scheduler {
+    [self ft_recordingCoordinator].scheduler = scheduler;
+}
+- (void)evaluateRecordingConditions {
+    [[self ft_recordingCoordinator] evaluateRecordingConditions];
+}
+@end
+
+@interface FTFeatureStorage(Testing)
+@property (nonatomic, strong) dispatch_queue_t queue;
+@end
+
+@implementation FTFeatureStorage(Testing)
+@dynamic queue;
+@end
+
+@interface FTTmpCacheManager(Testing)
+- (void)cleanupLastProcess;
+- (void)receive:(NSString *)key message:(NSDictionary *)message;
+@end
+
+@interface FTTestSyncQueue : NSObject<FTQueue>
+@end
+@implementation FTTestSyncQueue
+- (void)run:(void (^)(void))block {
+    if (block) {
+        block();
+    }
+}
+@end
+
+@interface FTTestSessionReplayScheduler : NSObject<FTScheduler>
+@property (nonatomic, strong, readonly) id<FTQueue> queue;
+@property (nonatomic, assign) NSInteger startCount;
+@property (nonatomic, assign) NSInteger stopCount;
+@end
+@implementation FTTestSessionReplayScheduler
+- (instancetype)init {
+    self = [super init];
+    if (self) {
+        _queue = [[FTTestSyncQueue alloc] init];
+    }
+    return self;
+}
+- (void)scheduleWithOperation:(void (^)(void))operation {}
+- (void)start {
+    self.startCount += 1;
+}
+- (void)stop {
+    self.stopCount += 1;
+}
+@end
+
+@interface FTTestSessionReplayCacheWriter : NSObject<FTCacheWriter>
+@property (nonatomic, assign) NSInteger activeCount;
+@property (nonatomic, assign) NSInteger inactiveCount;
+@property (nonatomic, strong) XCTestExpectation *activeExpectation;
+@property (nonatomic, strong) XCTestExpectation *inactiveExpectation;
+@end
+@implementation FTTestSessionReplayCacheWriter
+- (void)write:(NSData *)datas {}
+- (void)write:(NSData *)datas forceNewFile:(BOOL)update {}
+- (void)active {
+    self.activeCount += 1;
+    [self.activeExpectation fulfill];
+    self.activeExpectation = nil;
+}
+- (void)inactive {
+    self.inactiveCount += 1;
+    [self.inactiveExpectation fulfill];
+    self.inactiveExpectation = nil;
+}
+- (void)cleanup {}
+@end
+
+@interface FTTestSessionOnErrorDataHandler : NSObject<FTSessionOnErrorDataHandler>
+@property (nonatomic, assign) long long errorTimeLine;
+@property (nonatomic, assign) long long lastProcessFatalErrorTime;
+@end
+@implementation FTTestSessionOnErrorDataHandler
+- (instancetype)init {
+    self = [super init];
+    if (self) {
+        _lastProcessFatalErrorTime = 0;
+    }
+    return self;
+}
+- (void)checkRUMSessionOnErrorDatasExpired {}
+- (long long)getErrorTimeLineFromFileCache {
+    return self.errorTimeLine;
+}
+- (long long)getLastProcessFatalErrorTime {
+    return self.lastProcessFatalErrorTime;
+}
+@end
+
+@interface FTTestTmpCacheContext : NSObject
+@property (nonatomic, strong) FTDirectory *cacheDirectory;
+@property (nonatomic, strong) FTDirectory *realDirectory;
+@property (nonatomic, strong) FTTmpCacheManager *manager;
+@property (nonatomic, strong) FTTestSessionOnErrorDataHandler *handler;
+@property (nonatomic, strong) dispatch_queue_t queue;
+@end
+@implementation FTTestTmpCacheContext
+@end
+
+@interface FTTestFeatureStorageContext : NSObject
+@property (nonatomic, strong) FTFeatureStorage *storage;
+@property (nonatomic, strong) FTDirectory *grantedDirectory;
+@property (nonatomic, strong) FTDirectory *errorSampledDirectory;
+@end
+@implementation FTTestFeatureStorageContext
 @end
 #endif
 
@@ -183,7 +327,7 @@ typedef NS_ENUM(NSInteger, SampleState) {
     [[FTExternalDataManager sharedManager] addErrorWithType:@"test" message:@"testSessionOnErrorSampleRate_sampling" stack:@"testSessionOnErrorSampleRate_sampling"];
     [FTModelHelper addActionWithContext:@{@"test":@"error"}];
     [[FTGlobalRumManager sharedInstance].rumManager syncProcess];
-    
+
     NSArray *newArray = [[FTTrackerEventDBTool sharedManager] getAllDatas];
     XCTAssertTrue(newArray.count>oldArray.count);
     __block BOOL hasError = NO;
@@ -218,7 +362,7 @@ typedef NS_ENUM(NSInteger, SampleState) {
     [writerManager rumWrite:FT_RUM_SOURCE_VIEW tags:@{@"view_id":@"1"} fields:@{@"test":@"normal"} dynamicContext:@{} time:[NSDate ft_currentNanosecondTimeStamp]];
     [writerManager isCacheWriter:YES];
     [writerManager rumWrite:FT_RUM_SOURCE_VIEW tags:@{@"view_id":@"2"} fields:@{@"test":@"cache"} dynamicContext:@{} time:[NSDate ft_currentNanosecondTimeStamp]];
-    
+
     NSArray *newArray = [[FTTrackerEventDBTool sharedManager] getAllDatas];
     for (FTRecordModel *model in newArray) {
         XCTAssertTrue([model.op isEqualToString:FT_DATA_TYPE_RUM_CACHE]);
@@ -235,7 +379,7 @@ typedef NS_ENUM(NSInteger, SampleState) {
     [writerManager rumWrite:FT_RUM_SOURCE_VIEW tags:@{@"view_id":@"1"} fields:@{@"test":@"cache"} dynamicContext:@{} time:123 updateTime:[[NSDate date] timeIntervalSince1970]*1e9];
     [writerManager rumWrite:FT_RUM_SOURCE_ERROR tags:@{@"view_id":@"2"} fields:@{@"test":@"normal"} dynamicContext:@{} time:[[NSDate date] timeIntervalSince1970]*1e9];
     [writerManager rumWrite:FT_RUM_SOURCE_VIEW tags:@{@"view_id":@"2"} fields:@{@"test":@"normal"} dynamicContext:@{} time:123 updateTime:[[NSDate date] timeIntervalSince1970]*1e9];
-    
+
     [writerManager checkRUMSessionOnErrorDatasExpired];
     NSArray<FTRecordModel *> *newArray = [[FTTrackerEventDBTool sharedManager] getAllDatas];
     NSArray *datas = [newArray subarrayWithRange:NSMakeRange(0, newArray.count-1)];
@@ -244,14 +388,14 @@ typedef NS_ENUM(NSInteger, SampleState) {
         XCTAssertTrue([model.op isEqualToString:FT_DATA_TYPE_RUM]);
     }
     XCTAssertTrue(newArray.count - oldArray.count == 3);
-    
+
 }
 /// Delete cache data when there is no error data written
 - (void)testSessionOnErrorDatasInvalid_noErrorData{
     [FTTrackDataManager startWithAutoSync:NO syncPageSize:10 syncSleepTime:0];
     FTDataWriterWorker *writerManager = [[FTDataWriterWorker alloc]initWithCacheInvalidTimeInterval:1];
     NSArray *oldArray = [[FTTrackerEventDBTool sharedManager] getAllDatas];
-    
+
     [writerManager isCacheWriter:YES];
     [writerManager rumWrite:FT_RUM_SOURCE_VIEW tags:@{@"view_id":@"1"} fields:@{@"test":@"cache"} dynamicContext:@{} time:123 updateTime:[[NSDate date] timeIntervalSince1970]*1e9];
     [self waitForTimeInterval:1.5];
@@ -274,7 +418,7 @@ typedef NS_ENUM(NSInteger, SampleState) {
     [writerManager rumWrite:FT_RUM_SOURCE_VIEW tags:@{@"view_id":@"2"} fields:@{@"test":@"cache"} dynamicContext:@{} time:123 updateTime:[[NSDate date] timeIntervalSince1970]*1e9];
     NSArray *oldArray = [[FTTrackerEventDBTool sharedManager] getAllDatas];
     [self waitForTimeInterval:0.5];
-    
+
     [writerManager rumWrite:FT_RUM_SOURCE_ERROR tags:@{@"view_id":@"2"} fields:@{@"test":@"normal"} dynamicContext:@{} time:[[NSDate date] timeIntervalSince1970]*1e9];
 
     [writerManager checkRUMSessionOnErrorDatasExpired];
@@ -285,7 +429,7 @@ typedef NS_ENUM(NSInteger, SampleState) {
     XCTAssertTrue(newArray.count - oldArray.count == 0);
     XCTAssertTrue(newArray.count == 2);
 }
-/// Test the case where the last process exceeds the time interval  
+/// Test the case where the last process exceeds the time interval
 - (void)testSampledErrorSessionDatasConsume_lastProcess_exceed_time_interval{
     [FTTrackDataManager startWithAutoSync:NO syncPageSize:10 syncSleepTime:0];
     FTDataWriterWorker *writerManager = [[FTDataWriterWorker alloc]initWithCacheInvalidTimeInterval:1];
@@ -294,10 +438,10 @@ typedef NS_ENUM(NSInteger, SampleState) {
     [writerManager rumWrite:FT_RUM_SOURCE_ERROR tags:@{@"view_id":@"2"} fields:@{@"test":@"normal"} dynamicContext:@{} time:[[NSDate date] timeIntervalSince1970]*1e9];
     [self waitForTimeInterval:0.1];
     [writerManager rumWrite:FT_RUM_SOURCE_VIEW tags:@{@"view_id":@"3"} fields:@{@"test":@"normal"} dynamicContext:@{} time:[[NSDate date] timeIntervalSince1970]*1e9];
-    
+
     // Simulate entering a new process and exceeding the time interval
     writerManager.processStartTime = [[[NSDate date] dateByAddingTimeInterval:2] timeIntervalSince1970]*1e9;
-    
+
     [writerManager checkLastProcessErrorSampled];
     [writerManager checkRUMSessionOnErrorDatasExpired];
     NSArray<FTRecordModel *> *newArray = [[FTTrackerEventDBTool sharedManager] getAllDatas];
@@ -312,7 +456,7 @@ typedef NS_ENUM(NSInteger, SampleState) {
     [writerManager isCacheWriter:YES];
     [writerManager rumWrite:FT_RUM_SOURCE_VIEW tags:@{@"view_id":@"1"} fields:@{@"test":@"delete"} dynamicContext:@{} time:123 updateTime:[[NSDate date] timeIntervalSince1970]*1e9];
     [writerManager rumWrite:FT_RUM_SOURCE_VIEW tags:@{@"view_id":@"2"} fields:@{@"test":@"delete"} dynamicContext:@{} time:123 updateTime:[[NSDate date] timeIntervalSince1970]*1e9];
-    
+
     // Simulate entering a new process
     writerManager.processStartTime = [[NSDate date] timeIntervalSince1970]*1e9;
     [writerManager checkLastProcessErrorSampled];
@@ -335,10 +479,10 @@ typedef NS_ENUM(NSInteger, SampleState) {
     [writerManager rumWrite:FT_RUM_SOURCE_ERROR tags:@{@"view_id":@"2"} fields:@{@"test":@"normal"} dynamicContext:@{} time:[[NSDate date] timeIntervalSince1970]*1e9];
     [self waitForTimeInterval:0.1];
     [writerManager rumWrite:FT_RUM_SOURCE_VIEW tags:@{@"view_id":@"3"} fields:@{@"test":@"normal"} dynamicContext:@{} time:[[NSDate date] timeIntervalSince1970]*1e9];
-    
+
     // Simulate entering a new process and exceeding the time interval
     writerManager.processStartTime = [[[NSDate date] dateByAddingTimeInterval:2] timeIntervalSince1970]*1e9;
-    
+
     [writerManager checkLastProcessErrorSampled];
     [writerManager lastFatalErrorIfFound:0];
     [writerManager checkRUMSessionOnErrorDatasExpired];
@@ -361,7 +505,7 @@ typedef NS_ENUM(NSInteger, SampleState) {
 
     // Simulate entering a new process and exceeding the time interval
     writerManager.processStartTime = [[date dateByAddingTimeInterval:2] timeIntervalSince1970]*1e9;
-    
+
     [writerManager checkLastProcessErrorSampled];
     NSArray<FTRecordModel *> *array = [[FTTrackerEventDBTool sharedManager] getAllDatas];
     XCTAssertTrue(array.count == 3);
@@ -369,9 +513,9 @@ typedef NS_ENUM(NSInteger, SampleState) {
     NSArray<FTRecordModel *> *array2 = [[FTTrackerEventDBTool sharedManager] getAllDatas];
     XCTAssertTrue(array2.count == 4);
     [writerManager lastFatalErrorIfFound:[[date dateByAddingTimeInterval:0.5] timeIntervalSince1970]*1e9];
-    
+
     [writerManager checkRUMSessionOnErrorDatasExpired];
-    
+
     NSArray<FTRecordModel *> *newArray = [[FTTrackerEventDBTool sharedManager] getAllDatas];
     XCTAssertTrue(newArray.count == 3);
     XCTAssertTrue([newArray.firstObject.op isEqualToString:FT_DATA_TYPE_RUM]);
@@ -384,62 +528,351 @@ typedef NS_ENUM(NSInteger, SampleState) {
     [FTModelHelper startViewWithName:@"FirstView"];
     FTRUMManager *rum = [FTGlobalRumManager sharedInstance].rumManager;
     FTRUMSessionHandler *session = [rum valueForKey:@"sessionHandler"];
-    
+
     // -> SampleRate:100 sessionOnErrorSampleRate:0
     [[FTGlobalRumManager sharedInstance] updateSampleRate:100 sessionOnErrorSampleRate:0];
     [rum syncProcess];
     FTRUMSessionHandler *newSession1 = [rum valueForKey:@"sessionHandler"];
     XCTAssertTrue(session != newSession1);
-    
+
     // -> SampleRate:0 sessionOnErrorSampleRate:0
     [[FTGlobalRumManager sharedInstance] updateSampleRate:0 sessionOnErrorSampleRate:0];
     [rum syncProcess];
-    
+
     FTRUMSessionHandler *newSession2 = [rum valueForKey:@"sessionHandler"];
     XCTAssertTrue(newSession1 != newSession2);
-    
+
     // -> SampleRate:0 sessionOnErrorSampleRate:100
     [[FTGlobalRumManager sharedInstance] updateSampleRate:0 sessionOnErrorSampleRate:100];
     [rum syncProcess];
-    
+
     FTRUMSessionHandler *newSession3 = [rum valueForKey:@"sessionHandler"];
     XCTAssertTrue(newSession2 != newSession3);
-    
+
     // -> SampleRate:0 sessionOnErrorSampleRate:100
     [[FTGlobalRumManager sharedInstance] updateSampleRate:0 sessionOnErrorSampleRate:100];
     [rum syncProcess];
-    
+
     FTRUMSessionHandler *newSession4 = [rum valueForKey:@"sessionHandler"];
     XCTAssertTrue(newSession3 == newSession4);
-    
+
     // -> SampleRate:50 sessionOnErrorSampleRate:100
     [[FTGlobalRumManager sharedInstance] updateSampleRate:50 sessionOnErrorSampleRate:100];
     [rum syncProcess];
-    
+
     FTRUMSessionHandler *newSession5 = [rum valueForKey:@"sessionHandler"];
     XCTAssertTrue(newSession4 == newSession5);
-    
+
     // -> SampleRate:50 sessionOnErrorSampleRate:50
     [[FTGlobalRumManager sharedInstance] updateSampleRate:50 sessionOnErrorSampleRate:50];
     [rum syncProcess];
-    
+
     FTRUMSessionHandler *newSession6 = [rum valueForKey:@"sessionHandler"];
     XCTAssertTrue(newSession5 == newSession6);
 }
 
 #if !TARGET_OS_TV
+- (FTTestFeatureStorageContext *)sessionReplayStorageContextWithName:(NSString *)name {
+    FTTestFeatureStorageContext *context = [[FTTestFeatureStorageContext alloc] init];
+    NSString *basePath = [NSString stringWithFormat:@"ft-session-replay-test/%@/%@", name, NSUUID.UUID.UUIDString];
+    context.grantedDirectory = [[FTDirectory alloc] initWithSubdirectoryPath:[basePath stringByAppendingPathComponent:@"granted"]];
+    context.errorSampledDirectory = [[FTDirectory alloc] initWithSubdirectoryPath:[basePath stringByAppendingPathComponent:@"cache"]];
+    FTFeatureDirectories *directories = [[FTFeatureDirectories alloc] initWithGranted:context.grantedDirectory
+                                                                              pending:nil
+                                                                         errorSampled:context.errorSampledDirectory];
+    context.storage = [[FTFeatureStorage alloc] initWithFeatureName:name
+                                                              queue:dispatch_queue_create([[NSString stringWithFormat:@"com.ft.test.%@", name] UTF8String], DISPATCH_QUEUE_SERIAL)
+                                                        directories:directories
+                                                        performance:[[FTPerformancePreset alloc] init]];
+    dispatch_sync(context.storage.queue, ^{
+    });
+    return context;
+}
+
+- (void)waitForSessionReplayFeatureAsyncWork:(FTSessionReplayFeature *)feature {
+    dispatch_sync(feature.processorsQueue, ^{
+    });
+}
+
+- (void)waitForSessionReplayFeatureAsyncWork:(FTSessionReplayFeature *)feature storages:(NSArray<FTFeatureStorage *> *)storages {
+    [self waitForSessionReplayFeatureAsyncWork:feature];
+    for (FTFeatureStorage *storage in storages) {
+        [self waitForStorageQueueDrain:storage];
+    }
+}
+
+- (void)waitForStorageQueueDrain:(FTFeatureStorage *)storage {
+    dispatch_sync(storage.queue, ^{
+    });
+}
+
+- (NSString *)createErrorWindowCacheFileInContext:(FTTestFeatureStorageContext *)context errorTime:(long long)errorTime offsetSeconds:(long long)offsetSeconds {
+    return [self createSessionReplayCacheFileInDirectory:context.errorSampledDirectory time:errorTime + offsetSeconds * 1000LL * 1000LL * 1000LL];
+}
+
+- (void)sendRumErrorAtTime:(long long)errorTime storages:(NSArray<FTFeatureStorage *> *)storages {
+    [[FTModuleManager sharedInstance] postMessageWithKey:FTMessageKeyRumError message:@{@"error_date":@(errorTime)} sync:YES];
+    for (FTFeatureStorage *storage in storages) {
+        [self waitForStorageQueueDrain:storage];
+    }
+}
+
+- (FTTestTmpCacheContext *)tmpCacheContextWithName:(NSString *)name {
+    FTTestTmpCacheContext *context = [[FTTestTmpCacheContext alloc] init];
+    NSString *basePath = [NSString stringWithFormat:@"ft-session-replay-tmp-cache-test/%@/%@", name, NSUUID.UUID.UUIDString];
+    FTDirectory *rootDirectory = [[FTDirectory alloc] initWithSubdirectoryPath:basePath];
+    context.cacheDirectory = [rootDirectory createSubdirectoryWithPath:@"cache"];
+    context.realDirectory = [rootDirectory createSubdirectoryWithPath:@"normal"];
+    context.queue = dispatch_queue_create([[NSString stringWithFormat:@"com.ft.test.tmp-cache.%@", name] UTF8String], DISPATCH_QUEUE_SERIAL);
+    context.handler = [[FTTestSessionOnErrorDataHandler alloc] init];
+
+    dispatch_suspend(context.queue);
+    context.manager = [[FTTmpCacheManager alloc] initWithCacheFileWriter:[[FTTestSessionReplayCacheWriter alloc] init]
+                                                          cacheDirectory:context.cacheDirectory
+                                                               directory:context.realDirectory
+                                                                   queue:context.queue];
+    [context.manager setValue:context.handler forKey:@"sessionOnErrorHandler"];
+    dispatch_resume(context.queue);
+    [self waitForTmpCacheQueueDrain:context];
+    return context;
+}
+
+- (void)waitForTmpCacheQueueDrain:(FTTestTmpCacheContext *)context {
+    dispatch_sync(context.queue, ^{
+    });
+}
+
+- (NSString *)sessionReplayCacheFileNameForTime:(long long)time {
+    NSDate *date = [NSDate dateWithTimeIntervalSince1970:(NSTimeInterval)time / 1e9];
+    return [NSString stringWithFormat:@"%.f", round(date.timeIntervalSinceReferenceDate * 1000)];
+}
+
+- (NSString *)createSessionReplayCacheFileInDirectory:(FTDirectory *)directory time:(long long)time {
+    NSString *fileName = [self sessionReplayCacheFileNameForTime:time];
+    FTFile *file = [directory createFile:fileName];
+    [file write:[fileName dataUsingEncoding:NSUTF8StringEncoding]];
+    return fileName;
+}
+
+- (void)testTmpCacheManagerUploadCleanupOnlyDeletesExpiredFiles {
+    FTTestTmpCacheContext *context = [self tmpCacheContextWithName:@"upload-cleanup"];
+    long long now = [NSDate ft_currentNanosecondTimeStamp];
+    NSString *expiredFile = [self createSessionReplayCacheFileInDirectory:context.cacheDirectory time:now - 61LL * 1000LL * 1000LL * 1000LL];
+    NSString *recentFile = [self createSessionReplayCacheFileInDirectory:context.cacheDirectory time:now - 30LL * 1000LL * 1000LL * 1000LL];
+    context.handler.errorTimeLine = now;
+
+    [context.manager cleanup];
+    [self waitForTmpCacheQueueDrain:context];
+
+    XCTAssertFalse([context.cacheDirectory hasFileWithName:expiredFile]);
+    XCTAssertFalse([context.realDirectory hasFileWithName:expiredFile]);
+    XCTAssertTrue([context.cacheDirectory hasFileWithName:recentFile]);
+    XCTAssertFalse([context.realDirectory hasFileWithName:recentFile]);
+}
+
+- (void)testTmpCacheManagerCurrentErrorMovesOnlyErrorWindowFiles {
+    FTTestTmpCacheContext *context = [self tmpCacheContextWithName:@"current-error"];
+    long long errorTime = [NSDate ft_currentNanosecondTimeStamp];
+    NSString *expiredFile = [self createSessionReplayCacheFileInDirectory:context.cacheDirectory time:errorTime - 61LL * 1000LL * 1000LL * 1000LL];
+    NSString *windowFile = [self createSessionReplayCacheFileInDirectory:context.cacheDirectory time:errorTime - 30LL * 1000LL * 1000LL * 1000LL];
+    NSString *afterErrorFile = [self createSessionReplayCacheFileInDirectory:context.cacheDirectory time:errorTime + 1LL * 1000LL * 1000LL * 1000LL];
+
+    [context.manager receive:FTMessageKeyRumError message:@{@"error_date":@(errorTime)}];
+    [self waitForTmpCacheQueueDrain:context];
+
+    XCTAssertFalse([context.cacheDirectory hasFileWithName:expiredFile]);
+    XCTAssertFalse([context.realDirectory hasFileWithName:expiredFile]);
+    XCTAssertFalse([context.cacheDirectory hasFileWithName:windowFile]);
+    XCTAssertTrue([context.realDirectory hasFileWithName:windowFile]);
+    XCTAssertTrue([context.cacheDirectory hasFileWithName:afterErrorFile]);
+    XCTAssertFalse([context.realDirectory hasFileWithName:afterErrorFile]);
+}
+
+- (void)testTmpCacheManagerLastProcessWithoutFatalDeletesPreviousProcessFiles {
+    FTTestTmpCacheContext *context = [self tmpCacheContextWithName:@"last-process-no-fatal"];
+    long long processStartTime = [[FTDateUtil processStartTimestamp] ft_nanosecondTimeStamp];
+    NSString *previousProcessFile = [self createSessionReplayCacheFileInDirectory:context.cacheDirectory time:processStartTime - 1LL * 1000LL * 1000LL * 1000LL];
+    NSString *currentProcessFile = [self createSessionReplayCacheFileInDirectory:context.cacheDirectory time:[NSDate ft_currentNanosecondTimeStamp]];
+    context.handler.lastProcessFatalErrorTime = 0;
+
+    [context.manager cleanupLastProcess];
+    [self waitForTmpCacheQueueDrain:context];
+
+    XCTAssertFalse([context.cacheDirectory hasFileWithName:previousProcessFile]);
+    XCTAssertFalse([context.realDirectory hasFileWithName:previousProcessFile]);
+    XCTAssertTrue([context.cacheDirectory hasFileWithName:currentProcessFile]);
+    XCTAssertFalse([context.realDirectory hasFileWithName:currentProcessFile]);
+}
+
+- (void)testTmpCacheManagerLastProcessPersistedErrorTimelineMovesOnlyErrorWindowFiles {
+    FTTestTmpCacheContext *context = [self tmpCacheContextWithName:@"last-process-error-timeline"];
+    long long processStartTime = [[FTDateUtil processStartTimestamp] ft_nanosecondTimeStamp];
+    long long errorTime = processStartTime - 30LL * 1000LL * 1000LL * 1000LL;
+    NSString *expiredFile = [self createSessionReplayCacheFileInDirectory:context.cacheDirectory time:errorTime - 61LL * 1000LL * 1000LL * 1000LL];
+    NSString *windowFile = [self createSessionReplayCacheFileInDirectory:context.cacheDirectory time:errorTime - 30LL * 1000LL * 1000LL * 1000LL];
+    NSString *afterErrorPreviousProcessFile = [self createSessionReplayCacheFileInDirectory:context.cacheDirectory time:errorTime + 1LL * 1000LL * 1000LL * 1000LL];
+    NSString *currentProcessFile = [self createSessionReplayCacheFileInDirectory:context.cacheDirectory time:[NSDate ft_currentNanosecondTimeStamp]];
+    context.handler.errorTimeLine = errorTime;
+    context.handler.lastProcessFatalErrorTime = 0;
+
+    [context.manager cleanupLastProcess];
+    [self waitForTmpCacheQueueDrain:context];
+
+    XCTAssertFalse([context.cacheDirectory hasFileWithName:expiredFile]);
+    XCTAssertFalse([context.realDirectory hasFileWithName:expiredFile]);
+    XCTAssertFalse([context.cacheDirectory hasFileWithName:windowFile]);
+    XCTAssertTrue([context.realDirectory hasFileWithName:windowFile]);
+    XCTAssertFalse([context.cacheDirectory hasFileWithName:afterErrorPreviousProcessFile]);
+    XCTAssertFalse([context.realDirectory hasFileWithName:afterErrorPreviousProcessFile]);
+    XCTAssertTrue([context.cacheDirectory hasFileWithName:currentProcessFile]);
+    XCTAssertFalse([context.realDirectory hasFileWithName:currentProcessFile]);
+}
+
+- (void)testTmpCacheManagerLastProcessFatalMovesOnlyErrorWindowFiles {
+    FTTestTmpCacheContext *context = [self tmpCacheContextWithName:@"last-process-fatal"];
+    long long processStartTime = [[FTDateUtil processStartTimestamp] ft_nanosecondTimeStamp];
+    long long fatalErrorTime = processStartTime - 30LL * 1000LL * 1000LL * 1000LL;
+    NSString *expiredFile = [self createSessionReplayCacheFileInDirectory:context.cacheDirectory time:fatalErrorTime - 61LL * 1000LL * 1000LL * 1000LL];
+    NSString *windowFile = [self createSessionReplayCacheFileInDirectory:context.cacheDirectory time:fatalErrorTime - 30LL * 1000LL * 1000LL * 1000LL];
+    NSString *afterErrorPreviousProcessFile = [self createSessionReplayCacheFileInDirectory:context.cacheDirectory time:fatalErrorTime + 1LL * 1000LL * 1000LL * 1000LL];
+    NSString *currentProcessFile = [self createSessionReplayCacheFileInDirectory:context.cacheDirectory time:[NSDate ft_currentNanosecondTimeStamp]];
+    context.handler.lastProcessFatalErrorTime = fatalErrorTime;
+
+    [context.manager cleanupLastProcess];
+    [self waitForTmpCacheQueueDrain:context];
+
+    XCTAssertFalse([context.cacheDirectory hasFileWithName:expiredFile]);
+    XCTAssertFalse([context.realDirectory hasFileWithName:expiredFile]);
+    XCTAssertFalse([context.cacheDirectory hasFileWithName:windowFile]);
+    XCTAssertTrue([context.realDirectory hasFileWithName:windowFile]);
+    XCTAssertFalse([context.cacheDirectory hasFileWithName:afterErrorPreviousProcessFile]);
+    XCTAssertFalse([context.realDirectory hasFileWithName:afterErrorPreviousProcessFile]);
+    XCTAssertTrue([context.cacheDirectory hasFileWithName:currentProcessFile]);
+    XCTAssertFalse([context.realDirectory hasFileWithName:currentProcessFile]);
+}
+
+- (void)testSessionReplayRecordingStartsForErrorSampleState{
+    FTSessionReplayFeature *feature = [[FTSessionReplayFeature alloc] initWithConfig:[[FTSessionReplayConfig alloc] init]];
+    FTTestSessionReplayScheduler *scheduler = [[FTTestSessionReplayScheduler alloc] init];
+    feature.scheduler = scheduler;
+    feature.sampleState = SampleStateError;
+
+    [feature startRecording];
+
+    XCTAssertEqual(scheduler.startCount, 1);
+    XCTAssertEqual(scheduler.stopCount, 0);
+}
+
+- (void)testSessionReplayRecordingStopsForNoneSampleState{
+    FTSessionReplayFeature *feature = [[FTSessionReplayFeature alloc] initWithConfig:[[FTSessionReplayConfig alloc] init]];
+    FTTestSessionReplayScheduler *scheduler = [[FTTestSessionReplayScheduler alloc] init];
+    feature.scheduler = scheduler;
+    feature.sampleState = SampleStateError;
+    [feature startRecording];
+
+    feature.sampleState = SampleStateNone;
+    [feature evaluateRecordingConditions];
+
+    XCTAssertEqual(scheduler.startCount, 1);
+    XCTAssertEqual(scheduler.stopCount, 1);
+}
+
+- (void)testFeatureStorageUpdatesCacheWriterActiveStateForTrackingConsent{
+    FTTestFeatureStorageContext *context = [self sessionReplayStorageContextWithName:@"session-replay-storage"];
+    XCTAssertNotNil(context.storage.cacheWriter);
+
+    long long activeErrorTime = [NSDate ft_currentNanosecondTimeStamp];
+    NSString *activeWindowFile = [self createErrorWindowCacheFileInContext:context errorTime:activeErrorTime offsetSeconds:-30];
+    [context.storage updateTrackingConsent:FTTrackingConsentErrorSampled];
+    [self waitForStorageQueueDrain:context.storage];
+    [self sendRumErrorAtTime:activeErrorTime storages:@[context.storage]];
+    XCTAssertFalse([context.errorSampledDirectory hasFileWithName:activeWindowFile]);
+    XCTAssertTrue([context.grantedDirectory hasFileWithName:activeWindowFile]);
+
+    long long inactiveErrorTime = activeErrorTime + 2LL * 1000LL * 1000LL * 1000LL;
+    NSString *inactiveWindowFile = [self createErrorWindowCacheFileInContext:context errorTime:inactiveErrorTime offsetSeconds:-30];
+    [context.storage updateTrackingConsent:FTTrackingConsentGranted];
+    [self waitForStorageQueueDrain:context.storage];
+    [self sendRumErrorAtTime:inactiveErrorTime storages:@[context.storage]];
+    XCTAssertTrue([context.errorSampledDirectory hasFileWithName:inactiveWindowFile]);
+    XCTAssertFalse([context.grantedDirectory hasFileWithName:inactiveWindowFile]);
+}
+
+- (void)testSessionReplaySampleRateUpdateTogglesRecordAndResourceCacheWriters{
+    FTSessionReplayConfig *config = [[FTSessionReplayConfig alloc] init];
+    config.sampleRate = 0;
+    config.sessionReplayOnErrorSampleRate = 100;
+    FTSessionReplayFeature *feature = [[FTSessionReplayFeature alloc] initWithConfig:config];
+    FTTestFeatureStorageContext *recordContext = [self sessionReplayStorageContextWithName:@"session-replay-record"];
+    FTTestFeatureStorageContext *resourceContext = [self sessionReplayStorageContextWithName:@"session-replay-resource"];
+    [feature startWithRecordStorage:recordContext.storage resourceStorage:resourceContext.storage resourceDataStore:nil];
+
+    [[FTModuleManager sharedInstance] postMessageWithKey:FTMessageKeyRUMContext message:@{
+        FT_RUM_KEY_SESSION_ID:[NSUUID UUID].UUIDString
+    } sync:YES];
+    [self waitForSessionReplayFeatureAsyncWork:feature storages:@[recordContext.storage, resourceContext.storage]];
+    XCTAssertEqual(feature.sampleState, SampleStateError);
+    long long errorSampledTime = [NSDate ft_currentNanosecondTimeStamp];
+    NSString *recordErrorFile = [self createErrorWindowCacheFileInContext:recordContext errorTime:errorSampledTime offsetSeconds:-30];
+    NSString *resourceErrorFile = [self createErrorWindowCacheFileInContext:resourceContext errorTime:errorSampledTime offsetSeconds:-30];
+    [self sendRumErrorAtTime:errorSampledTime storages:@[recordContext.storage, resourceContext.storage]];
+    XCTAssertTrue([recordContext.grantedDirectory hasFileWithName:recordErrorFile]);
+    XCTAssertTrue([resourceContext.grantedDirectory hasFileWithName:resourceErrorFile]);
+
+    FTRemoteConfigModel *model = [[FTRemoteConfigModel alloc] init];
+    model.sessionReplaySampleRate = @(1);
+    model.sessionReplayOnErrorSampleRate = @(1);
+    [[FTRemoteConfigManager sharedInstance] setLastRemoteModel:model];
+    [[FTModuleManager sharedInstance] postMessageWithKey:FTMessageKeySRSampleRateUpdate message:@{} sync:YES];
+    [self waitForSessionReplayFeatureAsyncWork:feature storages:@[recordContext.storage, resourceContext.storage]];
+    XCTAssertEqual(feature.sampleState, SampleStateNormal);
+    long long grantedTime = errorSampledTime + 2LL * 1000LL * 1000LL * 1000LL;
+    NSString *recordGrantedFile = [self createErrorWindowCacheFileInContext:recordContext errorTime:grantedTime offsetSeconds:-30];
+    NSString *resourceGrantedFile = [self createErrorWindowCacheFileInContext:resourceContext errorTime:grantedTime offsetSeconds:-30];
+    [self sendRumErrorAtTime:grantedTime storages:@[recordContext.storage, resourceContext.storage]];
+    XCTAssertTrue([recordContext.errorSampledDirectory hasFileWithName:recordGrantedFile]);
+    XCTAssertTrue([resourceContext.errorSampledDirectory hasFileWithName:resourceGrantedFile]);
+
+    model.sessionReplaySampleRate = @(0);
+    model.sessionReplayOnErrorSampleRate = @(0);
+    [[FTRemoteConfigManager sharedInstance] setLastRemoteModel:model];
+    [[FTModuleManager sharedInstance] postMessageWithKey:FTMessageKeySRSampleRateUpdate message:@{} sync:YES];
+    [self waitForSessionReplayFeatureAsyncWork:feature storages:@[recordContext.storage, resourceContext.storage]];
+    XCTAssertEqual(feature.sampleState, SampleStateNone);
+
+    model.sessionReplaySampleRate = @(0);
+    model.sessionReplayOnErrorSampleRate = @(1);
+    [[FTRemoteConfigManager sharedInstance] setLastRemoteModel:model];
+    [[FTModuleManager sharedInstance] postMessageWithKey:FTMessageKeySRSampleRateUpdate message:@{} sync:YES];
+    [self waitForSessionReplayFeatureAsyncWork:feature storages:@[recordContext.storage, resourceContext.storage]];
+    XCTAssertEqual(feature.sampleState, SampleStateError);
+    long long secondErrorSampledTime = errorSampledTime + 4LL * 1000LL * 1000LL * 1000LL;
+    NSString *recordSecondErrorFile = [self createErrorWindowCacheFileInContext:recordContext errorTime:secondErrorSampledTime offsetSeconds:-30];
+    NSString *resourceSecondErrorFile = [self createErrorWindowCacheFileInContext:resourceContext errorTime:secondErrorSampledTime offsetSeconds:-30];
+    [self sendRumErrorAtTime:secondErrorSampledTime storages:@[recordContext.storage, resourceContext.storage]];
+    XCTAssertTrue([recordContext.grantedDirectory hasFileWithName:recordSecondErrorFile]);
+    XCTAssertTrue([resourceContext.grantedDirectory hasFileWithName:resourceSecondErrorFile]);
+
+    model.sessionReplaySampleRate = @(0);
+    model.sessionReplayOnErrorSampleRate = @(0);
+    [[FTRemoteConfigManager sharedInstance] setLastRemoteModel:model];
+    [[FTModuleManager sharedInstance] postMessageWithKey:FTMessageKeySRSampleRateUpdate message:@{} sync:YES];
+    [self waitForSessionReplayFeatureAsyncWork:feature storages:@[recordContext.storage, resourceContext.storage]];
+    XCTAssertEqual(feature.sampleState, SampleStateNone);
+}
+
 - (void)testSessionReplaySampleRateUpdate{
-    
+
     FTSessionReplayConfig *config = [[FTSessionReplayConfig alloc]init];
     config.sampleRate = 0;
     config.sessionReplayOnErrorSampleRate = 100;
     FTSessionReplayFeature *feature = [[FTSessionReplayFeature alloc]initWithConfig:config];
     [[FTModuleManager sharedInstance] postMessageWithKey:FTMessageKeyRUMContext message:@{FT_RUM_KEY_SESSION_ID:[NSUUID UUID].UUIDString} sync:YES];
-    
+
     dispatch_sync(feature.processorsQueue, ^{});
     XCTAssertTrue(feature.sampleState == SampleStateError);
-    
-  
+
+
     FTRemoteConfigModel *model =  [[FTRemoteConfigModel alloc]init];
     model.sessionReplaySampleRate = @(1);
     model.sessionReplayOnErrorSampleRate = @(1);
@@ -448,7 +881,7 @@ typedef NS_ENUM(NSInteger, SampleState) {
     [[FTModuleManager sharedInstance] postMessageWithKey:FTMessageKeySRSampleRateUpdate message:@{} sync:YES];
     dispatch_sync(feature.processorsQueue, ^{});
     XCTAssertTrue(feature.sampleState == SampleStateNormal);
-    
+
     model.sessionReplaySampleRate = @(0.5);
     model.sessionReplayOnErrorSampleRate = @(1);
 
@@ -456,7 +889,7 @@ typedef NS_ENUM(NSInteger, SampleState) {
     [[FTModuleManager sharedInstance] postMessageWithKey:FTMessageKeySRSampleRateUpdate message:@{} sync:YES];
     dispatch_sync(feature.processorsQueue, ^{});
     XCTAssertTrue(feature.sampleState == SampleStateNormal);
-    
+
     model.sessionReplaySampleRate = @(0);
     model.sessionReplayOnErrorSampleRate = @(0);
 
@@ -464,7 +897,7 @@ typedef NS_ENUM(NSInteger, SampleState) {
     [[FTModuleManager sharedInstance] postMessageWithKey:FTMessageKeySRSampleRateUpdate message:@{} sync:YES];
     dispatch_sync(feature.processorsQueue, ^{});
     XCTAssertTrue(feature.sampleState == SampleStateNone);
-    
+
     model.sessionReplaySampleRate = @(0);
     model.sessionReplayOnErrorSampleRate = @(1);
 
@@ -482,10 +915,10 @@ typedef NS_ENUM(NSInteger, SampleState) {
     [[FTModuleManager sharedInstance] postMessageWithKey:FTMessageKeyRUMContext message:@{
         FT_RUM_KEY_SESSION_ID:[NSUUID UUID].UUIDString,
         FT_RUM_KEY_SAMPLED_FOR_ERROR_SESSION:@(YES)} sync:YES];
-    
+
     dispatch_sync(feature.processorsQueue, ^{});
     XCTAssertTrue(feature.sampleState == SampleStateError);
-      
+
     FTRemoteConfigModel *model =  [[FTRemoteConfigModel alloc]init];
     model.sessionReplaySampleRate = @(1);
     model.sessionReplayOnErrorSampleRate = @(1);
@@ -494,7 +927,7 @@ typedef NS_ENUM(NSInteger, SampleState) {
     [[FTModuleManager sharedInstance] postMessageWithKey:FTMessageKeySRSampleRateUpdate message:@{} sync:YES];
     dispatch_sync(feature.processorsQueue, ^{});
     XCTAssertTrue(feature.sampleState == SampleStateError);
-    
+
     model.sessionReplaySampleRate = @(0.5);
     model.sessionReplayOnErrorSampleRate = @(1);
 
@@ -502,7 +935,7 @@ typedef NS_ENUM(NSInteger, SampleState) {
     [[FTModuleManager sharedInstance] postMessageWithKey:FTMessageKeySRSampleRateUpdate message:@{} sync:YES];
     dispatch_sync(feature.processorsQueue, ^{});
     XCTAssertTrue(feature.sampleState == SampleStateError);
-    
+
     model.sessionReplaySampleRate = @(0);
     model.sessionReplayOnErrorSampleRate = @(0);
 
@@ -510,7 +943,7 @@ typedef NS_ENUM(NSInteger, SampleState) {
     [[FTModuleManager sharedInstance] postMessageWithKey:FTMessageKeySRSampleRateUpdate message:@{} sync:YES];
     dispatch_sync(feature.processorsQueue, ^{});
     XCTAssertTrue(feature.sampleState == SampleStateNone);
-    
+
     model.sessionReplaySampleRate = @(0);
     model.sessionReplayOnErrorSampleRate = @(1);
 

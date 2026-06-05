@@ -167,7 +167,7 @@ static dispatch_once_t onceToken;
     FTRemoteConfigurationRequest *request = [[FTRemoteConfigurationRequest alloc] init];
     __weak typeof(self) weakSelf = self;
     
-    [[FTTrackDataManager sharedInstance].httpClient sendRequest:request completion:^(NSHTTPURLResponse * _Nonnull httpResponse, NSData * _Nullable data, NSError * _Nullable error) {
+    [[FTTrackDataManager sharedInstance].httpClient sendRequest:request completion:^(NSHTTPURLResponse * _Nullable httpResponse, NSData * _Nullable data, NSError * _Nullable error) {
         __strong typeof(weakSelf) strongSelf = weakSelf;
         if (!strongSelf) {
             if (completion) {
@@ -182,7 +182,7 @@ static dispatch_once_t onceToken;
     }];
 }
 
-- (void)handleRemoteConfigResponse:(NSHTTPURLResponse *)httpResponse 
+- (void)handleRemoteConfigResponse:(NSHTTPURLResponse * _Nullable)httpResponse
                               data:(NSData *)data 
                              error:(NSError *)error 
                         completion:(FTRemoteConfigFetchCompletionBlock)completion {

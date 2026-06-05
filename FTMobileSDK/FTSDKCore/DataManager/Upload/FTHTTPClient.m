@@ -7,6 +7,9 @@
 //
 
 #import "FTHTTPClient.h"
+#import "FTInternalConstants.h"
+
+NSErrorDomain const FTHTTPClientErrorDomain = @"com.guance.ft.httpclient";
 
 @interface FTHTTPClient()
 @property (nonatomic, strong) NSURLSession *session;
@@ -26,7 +29,7 @@
     return self;
 }
 - (NSURLSessionDataTask *)realSendRequest:(id<FTRequestProtocol>)request
-                           completion:(void(^_Nullable)(NSHTTPURLResponse * _Nonnull httpResponse,
+                           completion:(void(^_Nullable)(NSHTTPURLResponse * _Nullable httpResponse,
                              NSData * _Nullable data,
                              NSError * _Nullable error))callback{
     
@@ -40,8 +43,10 @@
                     completionHandler:^(NSData * _Nullable data, NSURLResponse * _Nullable response, NSError * _Nullable error) {
         
         NSHTTPURLResponse *httpResponse = (NSHTTPURLResponse *)response;
-        
-            callback(httpResponse,data,error);
+        if (!callback) {
+            return;
+        }
+        callback(httpResponse,data,error);
        
     }];
     
@@ -55,6 +60,7 @@
         return nil;
     }
     NSMutableURLRequest *urlRequest = [[NSMutableURLRequest alloc]initWithURL:url];
+    [urlRequest setValue:@"true" forHTTPHeaderField:FT_HTTP_HEADER_X_SDK_INTERNAL_REQUEST];
     if([requestObject respondsToSelector:@selector(adaptedRequest:)]){
         urlRequest = [requestObject adaptedRequest:urlRequest];
     }
@@ -66,8 +72,11 @@
                                       NSData * _Nullable data,
                                       NSError * _Nullable error))callback{
     NSURLSessionDataTask *task = [self realSendRequest:request completion:callback];
-    if(!task){
-        callback(nil,nil,nil);
+    if(!task && callback){
+        NSError *error = [NSError errorWithDomain:FTHTTPClientErrorDomain
+                                             code:FTHTTPClientErrorCodeRequestCreationFailed
+                                         userInfo:@{NSLocalizedDescriptionKey:@"Failed to create upload request"}];
+        callback(nil,nil,error);
     }
 }
 -(void)dealloc{

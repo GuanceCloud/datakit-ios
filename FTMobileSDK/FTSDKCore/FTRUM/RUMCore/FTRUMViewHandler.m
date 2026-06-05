@@ -265,12 +265,11 @@
     [fields setValue:@(self.updateTime) forKey:FT_KEY_VIEW_UPDATE_TIME];
     [fields setValue:@(self.isActiveView) forKey:FT_KEY_IS_ACTIVE];
     [fields addEntriesFromDictionary:[self.context.sessionState sessionFields]];
-
-    [fields setValue:@(self.rumDependencies.sampledForErrorSession) forKey:FT_RUM_KEY_SAMPLED_FOR_ERROR_SESSION];
+    [fields setValue:@(self.context.sessionState.sampled_for_error_session) forKey:FT_RUM_KEY_SAMPLED_FOR_ERROR_SESSION];
     [fields addEntriesFromDictionary:self.rumDependencies.sessionReplaySampledFields];
     // session-replay
     if (self.rumDependencies.sessionHasReplay != nil) {
-        BOOL sessionHasReplay = self.sessionHasReplay || self.rumDependencies.sessionHasReplay;
+        BOOL sessionHasReplay = self.sessionHasReplay || self.rumDependencies.sessionHasReplay.boolValue;
         [fields setValue:@(sessionHasReplay) forKey:FT_SESSION_HAS_REPLAY];
         if (sessionHasReplay) {
             NSDictionary *dict = [self.rumDependencies.sessionReplayStats valueForKey:self.view_id];

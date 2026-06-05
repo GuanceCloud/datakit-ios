@@ -12,6 +12,7 @@ NS_ASSUME_NONNULL_BEGIN
 
 @interface UIColor (FTSRIdentifier)
 @property(nonatomic, copy) NSString *srIdentifier;
+- (UIColor *)ftsr_resolvedColorWithTraitCollection:(nullable UITraitCollection *)traitCollection;
 
 @end
 

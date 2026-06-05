@@ -158,7 +158,7 @@ localFilters:(NSDictionary<NSString *, NSArray<NSString *> *> *)localFilters {
     }];
 }
 
-- (void)handleResponse:(NSHTTPURLResponse *)httpResponse
+- (void)handleResponse:(NSHTTPURLResponse * _Nullable)httpResponse
                   data:(NSData *)data
                  error:(NSError *)error
             generation:(NSUInteger)generation

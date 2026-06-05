@@ -19,7 +19,7 @@
         _viewID = dict[@"viewID"];
         _start = LONG_MAX;
         _end = LONG_MIN;
-        _source = @"ios";
+        _source = dict[@"source"] ?: @"ios";
         NSArray *array = dict[@"records"];
         for (NSDictionary *record in array) {
             NSInteger type = [record[@"type"] integerValue];

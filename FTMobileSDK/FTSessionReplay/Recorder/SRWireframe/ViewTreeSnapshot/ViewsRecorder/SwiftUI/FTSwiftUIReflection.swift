@@ -170,8 +170,8 @@ public final class FTSwiftUIRecordingAttributes: NSObject {
     @objc dynamic var frame: CGRect = .zero
     @objc dynamic var clip: CGRect = .zero
     @objc dynamic var alpha: CGFloat = 1
-    @objc dynamic var backgroundColor: UIColor?
-    @objc dynamic var borderColor: UIColor?
+    @objc dynamic var backgroundColor: CGColor?
+    @objc dynamic var borderColor: CGColor?
     @objc dynamic var borderWidth: CGFloat = 0
     @objc dynamic var cornerRadius: CGFloat = 0
     @objc dynamic var textPrivacy: Int = 0
@@ -319,8 +319,8 @@ private struct FTSwiftUIWireframesBuilder {
     let rootFrame: CGRect
     let rootClip: CGRect
     let rootAlpha: CGFloat
-    let rootBackgroundColor: UIColor?
-    let rootBorderColor: UIColor?
+    let rootBackgroundColor: CGColor?
+    let rootBorderColor: CGColor?
     let rootBorderWidth: CGFloat
     let rootCornerRadius: CGFloat
 
@@ -346,9 +346,9 @@ private struct FTSwiftUIWireframesBuilder {
             id: wireframeID,
             frame: rootFrame,
             clip: rootClip,
-            borderColor: rootBorderColor?.cgColor,
+            borderColor: rootBorderColor,
             borderWidth: rootBorderWidth,
-            backgroundColor: rootBackgroundColor?.cgColor,
+            backgroundColor: rootBackgroundColor,
             cornerRadius: rootCornerRadius,
             opacity: rootAlpha
         )
@@ -409,9 +409,18 @@ private struct FTSwiftUIWireframesBuilder {
 
         case let .text(view, _):
             let storage = view.text.storage
-            let style = storage.attribute(.paragraphStyle, at: 0, effectiveRange: nil) as? NSParagraphStyle
-            let foregroundColor = storage.attribute(.foregroundColor, at: 0, effectiveRange: nil) as? UIColor
-            let font = storage.attribute(.font, at: 0, effectiveRange: nil) as? UIFont
+            let style: NSParagraphStyle?
+            let foregroundColor: UIColor?
+            let font: UIFont?
+            if storage.length > 0 {
+                style = storage.attribute(.paragraphStyle, at: 0, effectiveRange: nil) as? NSParagraphStyle
+                foregroundColor = storage.attribute(.foregroundColor, at: 0, effectiveRange: nil) as? UIColor
+                font = storage.attribute(.font, at: 0, effectiveRange: nil) as? UIFont
+            } else {
+                style = nil
+                foregroundColor = nil
+                font = nil
+            }
             return makeText(
                 id: id,
                 frame: frame,
@@ -1554,6 +1563,9 @@ private extension UIImage.Orientation {
 @available(iOS 13.0, *)
 private extension FTSwiftUIResourcePayload {
     static func imageResource(image: UIImage, tintColor: UIColor?) -> FTSwiftUIResourcePayload? {
+        guard image.size.width > 0, image.size.height > 0 else {
+            return nil
+        }
         let renderedImage: UIImage
         if let tintColor {
             UIGraphicsBeginImageContextWithOptions(image.size, false, image.scale)

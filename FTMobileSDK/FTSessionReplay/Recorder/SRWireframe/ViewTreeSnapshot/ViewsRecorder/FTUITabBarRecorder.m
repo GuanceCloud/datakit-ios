@@ -52,7 +52,7 @@
     }
     UITabBar *tabBar = (UITabBar *)view;
     FTUITabBarBuilder *builder = [[FTUITabBarBuilder alloc]init];
-    builder.color = [self inferTabBarColor:tabBar];
+    builder.color = [FTSRColorSnapshot snapshotWithColor:[self inferTabBarColor:tabBar] traitCollection:tabBar.traitCollection];
     builder.wireframeID = [context.viewIDGenerator SRViewID:tabBar nodeRecorder:self];
     builder.wireframeRect = [self inferBarFrame:tabBar context:context];
     builder.attributes = attributes;
@@ -116,7 +116,7 @@
 
 @implementation FTUITabBarBuilder
 - (NSArray<FTSRWireframe *> *)buildWireframesWithBuilder:(FTSessionReplayWireframesBuilder *)builder{
-    FTSRShapeWireframe *wireframe = [[FTSRShapeWireframe alloc]initWithIdentifier:self.wireframeID frame:self.wireframeRect clip:self.attributes.clip backgroundColor:[FTSRUtils colorHexString:self.color.CGColor] cornerRadius:@(self.attributes.layerCornerRadius) opacity:@(self.attributes.alpha)];
+    FTSRShapeWireframe *wireframe = [[FTSRShapeWireframe alloc]initWithIdentifier:self.wireframeID frame:self.wireframeRect clip:self.attributes.clip backgroundColor:self.color.hexString cornerRadius:@(self.attributes.layerCornerRadius) opacity:@(self.attributes.alpha)];
     wireframe.border = [[FTSRShapeBorder alloc]initWithColor:[FTSRUtils colorHexString:[[UIColor lightGrayColor] colorWithAlphaComponent:0.5].CGColor] width:0.5];
     return @[wireframe];
 }

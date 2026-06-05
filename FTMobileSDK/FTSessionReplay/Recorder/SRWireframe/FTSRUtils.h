@@ -24,6 +24,14 @@ CGRect FTCGRectFitWithContentMode(CGRect rect, CGSize size, UIViewContentMode mo
 CGRect FTCGRectPutInside(CGRect oriRect, CGRect inRect, HorizontalAlignment horizontal,VerticalAlignment vertical);
 
 CGFloat FTCGSizeAspectRatio(CGSize size);
+@interface FTSRColorSnapshot : NSObject
+@property (nonatomic, readonly, nullable) CGColorRef cgColor;
+@property (nonatomic, readonly) CGFloat alpha;
+@property (nonatomic, copy, readonly, nullable) NSString *hexString;
++ (nullable instancetype)snapshotWithColor:(nullable UIColor *)color traitCollection:(nullable UITraitCollection *)traitCollection;
++ (nullable instancetype)snapshotWithCGColor:(nullable CGColorRef)cgColor;
+@end
+
 @interface FTSRUtils : NSObject
 + (NSString *)colorHexString:(CGColorRef)color;
 + (BOOL)isSensitiveText:(id<UITextInputTraits>)textInputTraits;

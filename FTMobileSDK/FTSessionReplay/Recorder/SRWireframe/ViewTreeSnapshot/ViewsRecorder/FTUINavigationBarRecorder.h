@@ -9,13 +9,13 @@
 #import <Foundation/Foundation.h>
 #import <UIKit/UIKit.h>
 #import "FTSRNodeWireframesBuilder.h"
-@class FTViewAttributes;
+@class FTViewAttributes, FTSRColorSnapshot;
 NS_ASSUME_NONNULL_BEGIN
 @interface FTUINavigationBarBuilder : NSObject<FTSRNodeWireframesBuilder>
 @property (nonatomic, assign) int64_t wireframeID;
 @property (nonatomic, strong) FTViewAttributes *attributes;
 @property (nonatomic, assign) CGRect wireframeRect;
-@property (nonatomic, strong) UIColor *color;
+@property (nonatomic, strong, nullable) FTSRColorSnapshot *color;
 @end
 @interface FTUINavigationBarRecorder : NSObject<FTSRWireframesRecorder>
 @property (nonatomic, copy) NSString *identifier;

@@ -11,7 +11,7 @@
 #import "FTSRRecord.h"
 #import "FTViewAttributes.h"
 #import "FTFileWriter.h"
-#import "FTResourceWriter.h"
+#import "FTResourcesWriter.h"
 #import "FTSessionReplayCoreImports.h"
 
 @interface FTResourceProcessor()

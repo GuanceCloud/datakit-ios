@@ -1,33 +1,35 @@
 //
-//  FTResourceWriter.m
+//  FTResourcesWriter.m
 //  FTMobileSDK
 //
 //  Created by hulilei on 2024/6/25.
 //  Copyright © 2024 DataFlux-cn. All rights reserved.
 //
 
-#import "FTResourceWriter.h"
+#import "FTResourcesWriter.h"
 #import "FTSRRecord.h"
 #import "FTFileWriter.h"
 #import <pthread.h>
 #import "FTFeatureDataStore.h"
+#import "FTFeatureScope.h"
 #import "FTSessionReplayCoreImports.h"
 
 NSString *const FT_StoreCreationKey = @"ft-store-creation";
 NSString *const FT_KnownResourcesKey = @"ft-known-resources";
-@interface FTResourceWriter(){
+@interface FTResourcesWriter(){
     pthread_rwlock_t _lock;
 }
+@property (nonatomic, strong) FTFeatureScope *featureScope;
 @property (nonatomic, strong) NSMutableSet *knownIdentifiers;
-@property (nonatomic, strong) FTFeatureDataStore *dataStore;
+@property (nonatomic, strong, nullable) id<FTDataStore> dataStore;
 @property (nonatomic, assign) NSTimeInterval dataStoreResetTime;
 @end
-@implementation FTResourceWriter
+@implementation FTResourcesWriter
 
-- (instancetype)initWithWriter:(id<FTWriter>)writer dataStore:(id<FTDataStore>)dataStore{
+- (instancetype)initWithFeatureScope:(FTFeatureScope *)featureScope dataStore:(nullable id<FTDataStore>)dataStore{
     self = [super init];
     if(self){
-        _writer = writer;
+        _featureScope = featureScope;
         _knownIdentifiers = [[NSMutableSet alloc]init];
         _dataStore = dataStore;
         _dataStoreResetTime = 30*24*60*60;//30 day
@@ -49,6 +51,9 @@ NSString *const FT_KnownResourcesKey = @"ft-known-resources";
     pthread_rwlock_unlock(&_lock);
 }
 - (void)readKnownIdentifiers{
+    if (!self.dataStore) {
+        return;
+    }
     __weak typeof(self) weakSelf = self;
     [self.dataStore valueForKey:FT_StoreCreationKey callback:^(NSError *error, NSData *data, FTDataStoreKeyVersion version) {
         __strong __typeof(weakSelf) strongSelf = weakSelf;
@@ -85,14 +90,27 @@ NSString *const FT_KnownResourcesKey = @"ft-known-resources";
     }];
 }
 - (void)write:(NSArray<FTEnrichedResource*>*)resources{
-    NSMutableSet *unknownResources = [NSMutableSet new];
-    NSSet *currentKnownIdentifiers = self.knownIdentifiers;
-    [resources enumerateObjectsUsingBlock:^(FTEnrichedResource * _Nonnull obj, NSUInteger idx, BOOL * _Nonnull stop) {
-        if(![currentKnownIdentifiers containsObject:obj.identifier]){
-            [self.writer write:[obj toJSONData]];
-            [unknownResources addObject:obj.identifier];
+    __weak typeof(self) weakSelf = self;
+    [self.featureScope eventWriteContext:^(FTFeatureContext *context, id<FTWriter> writer) {
+        __strong __typeof(weakSelf) strongSelf = weakSelf;
+        if (!strongSelf) {
+            return;
         }
+        if (context.trackingConsent == FTTrackingConsentNotGranted) {
+            return;
+        }
+        NSMutableSet *unknownResources = [NSMutableSet new];
+        NSSet *currentKnownIdentifiers = strongSelf.knownIdentifiers;
+        [resources enumerateObjectsUsingBlock:^(FTEnrichedResource * _Nonnull obj, NSUInteger idx, BOOL * _Nonnull stop) {
+            if(![currentKnownIdentifiers containsObject:obj.identifier]){
+                [writer write:[obj toJSONData]];
+                [unknownResources addObject:obj.identifier];
+            }
+        }];
+        [strongSelf storeUnknownResources:unknownResources];
     }];
+}
+- (void)storeUnknownResources:(NSSet *)unknownResources{
     if(unknownResources.count>0){
         [self mutate:^{
             [self->_knownIdentifiers unionSet:unknownResources];

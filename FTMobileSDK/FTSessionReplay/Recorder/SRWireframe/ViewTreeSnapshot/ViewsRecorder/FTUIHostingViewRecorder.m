@@ -13,6 +13,7 @@
 #import "FTSwiftUIReflectionBridge.h"
 #import "FTViewAttributes.h"
 #import "FTViewTreeRecordingContext.h"
+#import "FTSessionReplayCoreImports.h"
 
 typedef NS_ENUM(NSInteger, FTSwiftUIWireframePayloadKind) {
     FTSwiftUIWireframePayloadKindShape = 0,
@@ -114,7 +115,7 @@ typedef NS_ENUM(NSInteger, FTSwiftUIWireframePayloadKind) {
         return nil;
     }
     FTSwiftUIReflectionBridge *bridge = self.reflectionBridge;
-    UIColor *borderColor = attributes.layerBorderColor ? [UIColor colorWithCGColor:attributes.layerBorderColor] : nil;
+    CGColorRef borderColor = attributes.layerBorderColor.cgColor;
     FTSwiftUIRecordingAttributes *recordingAttributes = [self recordingAttributesWithViewAttributes:attributes
                                                                                         borderColor:borderColor
                                                                                         textPrivacy:[attributes resolveTextAndInputPrivacyLevel:context.recorder]
@@ -127,7 +128,7 @@ typedef NS_ENUM(NSInteger, FTSwiftUIWireframePayloadKind) {
 }
 
 - (FTSwiftUIRecordingAttributes *)recordingAttributesWithViewAttributes:(FTViewAttributes *)attributes
-                                                             borderColor:(UIColor *)borderColor
+                                                             borderColor:(CGColorRef)borderColor
                                                              textPrivacy:(FTTextAndInputPrivacyLevel)textPrivacy
                                                             imagePrivacy:(FTImagePrivacyLevel)imagePrivacy
                                                              wireframeID:(int64_t)wireframeID API_AVAILABLE(ios(13.0)) {
@@ -140,7 +141,7 @@ typedef NS_ENUM(NSInteger, FTSwiftUIWireframePayloadKind) {
     recordingAttributes.frame = attributes.frame;
     recordingAttributes.clip = attributes.clip;
     recordingAttributes.alpha = attributes.alpha;
-    recordingAttributes.backgroundColor = attributes.backgroundColor;
+    recordingAttributes.backgroundColor = attributes.backgroundColor.cgColor;
     recordingAttributes.borderColor = borderColor;
     recordingAttributes.borderWidth = attributes.layerBorderWidth;
     recordingAttributes.cornerRadius = attributes.layerCornerRadius;
@@ -189,8 +190,7 @@ typedef NS_ENUM(NSInteger, FTSwiftUIWireframePayloadKind) {
 
 - (NSArray<FTSRWireframe *> *)buildWireframesWithBuilder:(FTSessionReplayWireframesBuilder *)builder {
     if (@available(iOS 13.0, *)) {
-        FTSwiftUIRecordingBuilder *recordingBuilder = self.recordingBuilder;
-        FTSwiftUIRecordingResult *recordingResult = [recordingBuilder build];
+        FTSwiftUIRecordingResult *recordingResult = [self buildRecordingResultSafely];
         if (recordingResult) {
             if (!self.didAppendResources) {
                 [builder addResources:[self resourcesFromPayloads:recordingResult.resources]];
@@ -201,14 +201,37 @@ typedef NS_ENUM(NSInteger, FTSwiftUIWireframePayloadKind) {
             return wireframes;
         }
     }
-    return @[];
+    return [self fallbackWireframes];
+}
+
+- (nullable FTSwiftUIRecordingResult *)buildRecordingResultSafely API_AVAILABLE(ios(13.0)) {
+    FTSwiftUIRecordingBuilder *recordingBuilder = self.recordingBuilder;
+    if (!recordingBuilder) {
+        return nil;
+    }
+    @try {
+        return [recordingBuilder build];
+    } @catch (NSException *exception) {
+        FTInnerLogError(@"[Session Replay] SwiftUI recording build exception: %@", exception.description);
+        return nil;
+    }
+}
+
+- (NSArray<FTSRWireframe *> *)fallbackWireframes {
+    FTSRShapeWireframe *wireframe = [[FTSRShapeWireframe alloc] initWithIdentifier:self.wireframeID attributes:self.attributes];
+    return wireframe ? @[wireframe] : @[];
 }
 
 - (NSArray<FTSRWireframe *> *)wireframesFromPayloads:(NSArray<id> *)payloads
                                       textObfuscator:(id<FTSRTextObfuscatingProtocol>)textObfuscator API_AVAILABLE(ios(13.0)) {
     NSMutableArray<FTSRWireframe *> *wireframes = [NSMutableArray arrayWithCapacity:payloads.count];
     for (id payload in payloads) {
-        FTSRWireframe *wireframe = [self wireframeFromPayload:payload textObfuscator:textObfuscator];
+        FTSRWireframe *wireframe = nil;
+        @try {
+            wireframe = [self wireframeFromPayload:payload textObfuscator:textObfuscator];
+        } @catch (NSException *exception) {
+            FTInnerLogError(@"[Session Replay] SwiftUI wireframe payload exception: %@", exception.description);
+        }
         if (wireframe) {
             [wireframes addObject:wireframe];
         }
@@ -219,11 +242,18 @@ typedef NS_ENUM(NSInteger, FTSwiftUIWireframePayloadKind) {
 - (NSArray<id<FTSRResource>> *)resourcesFromPayloads:(NSArray<id> *)payloads API_AVAILABLE(ios(13.0)) {
     NSMutableArray<id<FTSRResource>> *resources = [NSMutableArray arrayWithCapacity:payloads.count];
     for (id payload in payloads) {
-        NSString *identifier = [payload valueForKey:@"identifier"];
-        NSString *mimeType = [payload valueForKey:@"mimeType"];
-        NSData *data = [payload valueForKey:@"data"];
-        FTSwiftUIDataResource *resource = [[FTSwiftUIDataResource alloc] initWithIdentifier:identifier mimeType:mimeType data:data];
-        [resources addObject:resource];
+        @try {
+            NSString *identifier = [payload valueForKey:@"identifier"];
+            NSString *mimeType = [payload valueForKey:@"mimeType"] ?: @"image/png";
+            NSData *data = [payload valueForKey:@"data"];
+            if (![identifier isKindOfClass:NSString.class] || identifier.length == 0 || ![data isKindOfClass:NSData.class]) {
+                continue;
+            }
+            FTSwiftUIDataResource *resource = [[FTSwiftUIDataResource alloc] initWithIdentifier:identifier mimeType:mimeType data:data];
+            [resources addObject:resource];
+        } @catch (NSException *exception) {
+            FTInnerLogError(@"[Session Replay] SwiftUI resource payload exception: %@", exception.description);
+        }
     }
     return resources;
 }

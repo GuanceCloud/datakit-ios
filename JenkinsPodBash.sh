@@ -13,16 +13,12 @@ git push github $VERSION
 
 if [[ $? -eq 0 ]];then
 
-  sed  -i '' 's/SDK_VERSION.*/SDK_VERSION @"'$VERSION'"/g' FTMobileSDK/FTMobileAgent/Core/FTMobileAgentVersion.h
-
-  sed  -i '' -E '/^[[:space:]]*s[[:space:]]*\.[[:space:]]*version[[:space:]]*=/s/"[^"]*"/"'"$VERSION"'"/' FTMobileSDK.podspec
+  sh UpdateSDKVersion.sh "$VERSION"
 
   pod trunk push FTMobileSDK.podspec --verbose --allow-warnings
 
 else
   exit  1
 fi
-
-
 
 

@@ -157,7 +157,7 @@
     if([FTSRTextObfuscatingFactory shouldMaskInputElements:[attributes resolveTextAndInputPrivacyLevel:context.recorder]]){
         self.labelRecorder.builderOverride = ^FTUILabelBuilder * _Nullable(FTUILabelBuilder *builder) {
             FTUILabelBuilder *labelBuilder = builder;
-            labelBuilder.textColor = [FTSystemColors labelColor];
+            labelBuilder.textColor = [FTSRColorSnapshot snapshotWithColor:[FTSystemColors labelColor] traitCollection:nil];
             return labelBuilder;
         };
     }

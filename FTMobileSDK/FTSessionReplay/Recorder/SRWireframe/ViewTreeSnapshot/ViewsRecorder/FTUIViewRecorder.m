@@ -33,7 +33,7 @@
 -(FTSRNodeSemantics *)recorder:(UIView *)view attributes:(FTViewAttributes *)attributes context:(FTViewTreeRecordingContext *)context{
     FTViewAttributes *attr = attributes;
     if ([context.viewControllerContext isRootView:ViewControllerTypeAlert]){
-        attr.backgroundColor = [FTSystemColors systemBackground];
+        attr.backgroundColor = [FTSRColorSnapshot snapshotWithColor:[FTSystemColors systemBackground] traitCollection:view.traitCollection];
         attr.layerBorderColor = nil;
         attr.layerBorderWidth = 0;
         attr.layerCornerRadius = 16;
@@ -84,4 +84,3 @@
 }
 
 @end
-

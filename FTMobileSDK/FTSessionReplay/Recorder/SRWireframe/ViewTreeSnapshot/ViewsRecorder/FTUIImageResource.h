@@ -12,6 +12,7 @@
 NS_ASSUME_NONNULL_BEGIN
 @interface FTUIImageResource : NSObject<FTSRResource>
 -(instancetype)initWithImage:(UIImage *)image tintColor:(UIColor *)tintColor;
+-(instancetype)initWithImage:(UIImage *)image tintColor:(nullable UIColor *)tintColor traitCollection:(nullable UITraitCollection *)traitCollection;
 @end
 
 NS_ASSUME_NONNULL_END

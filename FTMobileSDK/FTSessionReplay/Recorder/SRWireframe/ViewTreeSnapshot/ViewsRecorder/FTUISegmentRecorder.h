@@ -10,7 +10,7 @@
 #import <UIKit/UIKit.h>
 #import "FTSRNodeWireframesBuilder.h"
 
-@class FTViewAttributes;
+@class FTViewAttributes, FTSRColorSnapshot;
 NS_ASSUME_NONNULL_BEGIN
 @interface FTUISegmentBuilder:NSObject<FTSRNodeWireframesBuilder>
 @property (nonatomic, assign) CGRect wireframeRect;
@@ -19,7 +19,7 @@ NS_ASSUME_NONNULL_BEGIN
 @property (nonatomic, strong, nullable) NSNumber *selectedSegmentIndex;
 @property (nonatomic, strong) NSArray *segmentTitles;
 @property (nonatomic, strong) NSArray *segmentWireframeIDs;
-@property (nonatomic, strong) UIColor *selectedSegmentTintColor;
+@property (nonatomic, strong, nullable) FTSRColorSnapshot *selectedSegmentTintColor;
 @property (nonatomic, strong) id<FTSRTextObfuscatingProtocol> textObfuscator;
 @end
 @interface FTUISegmentRecorder : NSObject<FTSRWireframesRecorder>

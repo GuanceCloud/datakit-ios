@@ -21,11 +21,12 @@
 #import "FTSessionReplayWireframesBuilder.h"
 #import "FTWKWebViewHandler+SessionReplay.h"
 #import "FTResourceProcessor.h"
+#import "FTRecordWriter.h"
 NSTimeInterval const kFullSnapshotInterval = 20.0;
 
 @interface FTSnapshotProcessor()
 @property (nonatomic, strong) dispatch_queue_t queue;
-@property (nonatomic, strong) id<FTWriter> writer;
+@property (nonatomic, strong) FTRecordWriter *recordWriter;
 /// Record basic data of the previous page to determine if it's a new page
 @property (nonatomic, strong) FTViewTreeSnapshot *lastSnapshot;
 @property (nonatomic, assign) CFTimeInterval lastSnapshotTimestamp;
@@ -33,16 +34,15 @@ NSTimeInterval const kFullSnapshotInterval = 20.0;
 @property (nonatomic, strong) NSArray<FTSRWireframe *> *lastSRWireframes;
 @property (nonatomic, strong) FTNodesFlattener *flattener;
 @property (nonatomic, strong) NSMutableDictionary *recordsCountByViewID;
-@property (nonatomic, assign) BOOL onErrorSampled;
 @property (nonatomic, strong) NSDictionary *lastBindInfo;
 @property (nonatomic, strong) FTResourceProcessor *resourceProcessor;
 @end
 @implementation FTSnapshotProcessor
--(instancetype)initWithQueue:(dispatch_queue_t)queue writer:(id<FTWriter>)writer resourceProcessor:(FTResourceProcessor *)resourceProcessor{
+-(instancetype)initWithQueue:(dispatch_queue_t)queue recordWriter:(FTRecordWriter *)recordWriter resourceProcessor:(FTResourceProcessor *)resourceProcessor{
     self = [super init];
     if(self){
         _queue = queue;
-        _writer = writer;
+        _recordWriter = recordWriter;
         _flattener = [[FTNodesFlattener alloc]init];
         _recordsCountByViewID = [NSMutableDictionary new];
         _resourceProcessor = resourceProcessor;
@@ -148,7 +148,7 @@ NSTimeInterval const kFullSnapshotInterval = 20.0;
             // 5.2. Write data to file
             NSData *data = [fullRecord toJSONData];
             if(data){
-                [self.writer write:data forceNewFile:isNewView];
+                [self.recordWriter write:data forceNewFile:isNewView];
                 // 6.Record current data for comparison with next data
                 self.lastSnapshot = viewTreeSnapshot;
                 self.lastSRWireframes = wireframes;
@@ -167,10 +167,6 @@ NSTimeInterval const kFullSnapshotInterval = 20.0;
         FTInnerLogError(@"[Session Replay] EXCEPTION: %@", exception.description);
     }
 }
-- (void)changeWriter:(id<FTWriter>)writer needUpdateFullSnapshot:(BOOL)update{
-    _writer = writer;
-    _onErrorSampled = update;
-}
 - (void)trackRecord:(FTEnrichedRecord *)record{
     NSString *key = record.viewID;
     NSDictionary *existingValue = [self.recordsCountByViewID valueForKey:key];
@@ -185,7 +181,7 @@ NSTimeInterval const kFullSnapshotInterval = 20.0;
 }
 #pragma mark ===== sessionErrorSampled =====
 - (BOOL)isTimeForFullSnapshot:(BOOL)isNewView{
-    if(self.onErrorSampled){
+    if(self.recordWriter.isErrorSampled){
         CFTimeInterval currentTime = CACurrentMediaTime();
         if (isNewView) {
             self.lastSnapshotTimestamp = currentTime;

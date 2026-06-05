@@ -10,14 +10,14 @@
 #import <UIKit/UIKit.h>
 #import "FTSRNodeWireframesBuilder.h"
 
-@class FTViewAttributes,FTViewTreeRecorder;
+@class FTViewAttributes,FTViewTreeRecorder, FTSRColorSnapshot;
 NS_ASSUME_NONNULL_BEGIN
 
 @interface FTUIActivityIndicatorBuilder : NSObject<FTSRNodeWireframesBuilder>
 @property (nonatomic, strong) FTViewAttributes *attributes;
 @property (nonatomic, assign) CGRect wireframeRect;
 @property (nonatomic, assign) int64_t wireframeID;
-@property (nonatomic, strong) UIColor * backgroundColor;
+@property (nonatomic, strong, nullable) FTSRColorSnapshot * backgroundColor;
 @end
 
 @interface FTUIActivityIndicatorRecorder : NSObject<FTSRWireframesRecorder>

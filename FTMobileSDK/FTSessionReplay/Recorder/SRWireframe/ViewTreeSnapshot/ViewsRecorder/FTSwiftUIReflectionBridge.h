@@ -16,8 +16,8 @@ API_AVAILABLE(ios(13.0))
 @property (nonatomic, assign) CGRect frame;
 @property (nonatomic, assign) CGRect clip;
 @property (nonatomic, assign) CGFloat alpha;
-@property (nonatomic, strong, nullable) UIColor *backgroundColor;
-@property (nonatomic, strong, nullable) UIColor *borderColor;
+@property (nonatomic, nullable) CGColorRef backgroundColor;
+@property (nonatomic, nullable) CGColorRef borderColor;
 @property (nonatomic, assign) CGFloat borderWidth;
 @property (nonatomic, assign) CGFloat cornerRadius;
 @property (nonatomic, assign) NSInteger textPrivacy;

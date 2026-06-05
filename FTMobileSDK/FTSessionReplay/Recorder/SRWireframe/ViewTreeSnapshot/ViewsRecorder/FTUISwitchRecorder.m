@@ -39,9 +39,9 @@
     builder.isOn = switchView.isOn;
     builder.isEnabled = switchView.isEnabled;
     builder.isMasked = [FTSRTextObfuscatingFactory shouldMaskInputElements:[attributes resolveTextAndInputPrivacyLevel:context.recorder]];
-    builder.thumbTintColor = switchView.thumbTintColor;
-    builder.onTintColor = switchView.onTintColor;
-    builder.offTintColor = switchView.tintColor;
+    builder.thumbTintColor = [FTSRColorSnapshot snapshotWithColor:switchView.thumbTintColor traitCollection:switchView.traitCollection];
+    builder.onTintColor = [FTSRColorSnapshot snapshotWithColor:switchView.onTintColor traitCollection:switchView.traitCollection];
+    builder.offTintColor = [FTSRColorSnapshot snapshotWithColor:switchView.tintColor traitCollection:switchView.traitCollection];
     builder.backgroundWireframeID = [ids[0] intValue];
     builder.trackWireframeID = [ids[1] intValue];
     builder.thumbWireframeID = [ids[2] intValue];
@@ -77,7 +77,7 @@
 }
 - (NSArray<FTSRWireframe *> *)createNoMaskWireframes{
     CGFloat cornerRadius = self.wireframeRect.size.height * 0.5;
-    NSString *trackColor = self.isOn? (self.onTintColor!=nil ? [FTSRUtils colorHexString:self.onTintColor.CGColor] : [FTSystemColors systemGreenColorStr]) : (self.offTintColor!=nil ? [FTSRUtils colorHexString:self.offTintColor.CGColor] : [FTSystemColors tertiarySystemFillColorStr]);
+    NSString *trackColor = self.isOn? (self.onTintColor.hexString ?: [FTSystemColors systemGreenColorStr]) : (self.offTintColor.hexString ?: [FTSystemColors tertiarySystemFillColorStr]);
     FTSRShapeWireframe *wireframe = [[FTSRShapeWireframe alloc]
                                      initWithIdentifier:self.trackWireframeID
                                      frame:self.wireframeRect
@@ -88,7 +88,7 @@
     
     CGRect thumbContainer = CGRectInset(self.wireframeRect, 2, 2);
     CGRect thumbFrame = FTCGRectPutInside(CGRectMake(0, 0, thumbContainer.size.height, thumbContainer.size.height), thumbContainer, self.isOn?HorizontalAlignmentRight:HorizontalAlignmentLeft, VerticalAlignmentMiddle);
-    NSString *thumbColor = self.thumbTintColor ? [FTSRUtils colorHexString:self.thumbTintColor.CGColor] : (self.isDarkMode && !self.isEnabled)? [FTSRUtils colorHexString:UIColor.grayColor.CGColor]:[FTSRUtils colorHexString:UIColor.whiteColor.CGColor];
+    NSString *thumbColor = self.thumbTintColor.hexString ?: (self.isDarkMode && !self.isEnabled ? [FTSRUtils colorHexString:UIColor.grayColor.CGColor] : [FTSRUtils colorHexString:UIColor.whiteColor.CGColor]);
 
     FTSRShapeWireframe *thumbWireframe = [[FTSRShapeWireframe alloc]
                                           initWithIdentifier:self.thumbWireframeID

@@ -100,7 +100,7 @@
         shouldRecordImage = [self shouldRecordImagePredicate:imageView privacy:[attributes resolveImagePrivacyLevel:context.recorder]];
     }
     if (shouldRecordImage && imageView.image) {
-        imageResource = [[FTUIImageResource alloc]initWithImage:imageView.image tintColor:self.tintColorProvider(imageView)];
+        imageResource = [[FTUIImageResource alloc]initWithImage:imageView.image tintColor:self.tintColorProvider(imageView) traitCollection:imageView.traitCollection];
     }
     NSArray *ids = [context.viewIDGenerator SRViewIDs:view size:2 nodeRecorder:self];
     FTUIImageViewBuilder *builder = [[FTUIImageViewBuilder alloc]init];

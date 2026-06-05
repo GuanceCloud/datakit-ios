@@ -47,8 +47,8 @@
     builder.attributes = attributes;
     builder.text = textView.text;
     builder.textAlignment = textView.textAlignment;
-    builder.textColor = textView.textColor;
-    builder.font = textView.font;
+    builder.textColor = [FTSRColorSnapshot snapshotWithColor:textView.textColor traitCollection:textView.traitCollection];
+    builder.fontSize = textView.font.pointSize;
     builder.contentRect = CGRectMake(textView.contentOffset.x, textView.contentOffset.y, textView.contentSize.width, textView.contentSize.height);
     builder.textObfuscator = self.textObfuscator(context,attributes,[FTSRUtils isSensitiveText:textView],textView.isEditable);
     builder.contentRect = CGRectMake(textView.contentOffset.x, textView.contentOffset.y, textView.contentSize.width, textView.contentSize.height);
@@ -68,10 +68,10 @@
     FTSRTextWireframe *wireframe = [[FTSRTextWireframe alloc]initWithIdentifier:self.wireframeID frame:frame];
     wireframe.text = [self.textObfuscator mask:self.text];
     wireframe.clip = [[FTSRContentClip alloc]initWithFrame:frame clip:self.attributes.clip];
-    FTSRShapeStyle *shapeStyle = [[FTSRShapeStyle alloc]initWithBackgroundColor:[FTSRUtils colorHexString:self.attributes.backgroundColor.CGColor] cornerRadius:@(self.attributes.layerCornerRadius) opacity:@(self.attributes.alpha)];
+    FTSRShapeStyle *shapeStyle = [[FTSRShapeStyle alloc]initWithBackgroundColor:self.attributes.backgroundColor.hexString cornerRadius:@(self.attributes.layerCornerRadius) opacity:@(self.attributes.alpha)];
     wireframe.shapeStyle = shapeStyle;
     FTAlignment *alignment = [[FTAlignment alloc]initWithTextAlignment:NSTextAlignmentLeft vertical:@"top"];
-    wireframe.textStyle = [[FTSRTextStyle alloc]initWithSize:self.font.pointSize color:[FTSRUtils colorHexString:self.textColor.CGColor] family:nil];
+    wireframe.textStyle = [[FTSRTextStyle alloc]initWithSize:self.fontSize color:self.textColor.hexString family:nil];
     FTSRTextPosition *position = [[FTSRTextPosition alloc]init];
     position.alignment = alignment;
     position.padding = [[FTPadding alloc]initWithLeft:0 top:0 right:0 bottom:0];

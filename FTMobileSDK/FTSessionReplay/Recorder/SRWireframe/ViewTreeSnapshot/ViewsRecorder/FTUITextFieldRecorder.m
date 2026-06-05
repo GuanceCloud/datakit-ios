@@ -98,10 +98,10 @@ typedef id<FTSRTextObfuscatingProtocol>(^FTTextFieldObfuscator)(FTViewTreeRecord
     builder.attributes = attributes;
     builder.wireframeID = [context.viewIDGenerator SRViewID:textField nodeRecorder:self];
     builder.text = text;
-    builder.textColor = textField.textColor;
+    builder.textColor = [FTSRColorSnapshot snapshotWithColor:textField.textColor traitCollection:textField.traitCollection];
     builder.textAlignment = textField.textAlignment;
     builder.isPlaceholderText = isPlaceholder;
-    builder.font = textField.font;
+    builder.fontSize = textField.font.pointSize;
     builder.fontScalingEnabled = textField.adjustsFontSizeToFitWidth;
     builder.textObfuscator = self.textObfuscator(context,attributes,[FTSRUtils isSensitiveText:textField],isPlaceholder);
     return builder;
@@ -113,13 +113,13 @@ typedef id<FTSRTextObfuscatingProtocol>(^FTTextFieldObfuscator)(FTViewTreeRecord
     FTSRTextWireframe *wireframe = [[FTSRTextWireframe alloc]initWithIdentifier:self.wireframeID frame:self.wireframeRect];
     wireframe.text = [self.textObfuscator mask:self.text];
     wireframe.clip = [[FTSRContentClip alloc]initWithFrame:self.wireframeRect clip:self.attributes.clip];
-    wireframe.shapeStyle = [[FTSRShapeStyle alloc]initWithBackgroundColor:[FTSRUtils colorHexString:self.attributes.backgroundColor.CGColor] cornerRadius:@(self.attributes.layerCornerRadius) opacity:@(self.attributes.alpha)];
+    wireframe.shapeStyle = [[FTSRShapeStyle alloc]initWithBackgroundColor:self.attributes.backgroundColor.hexString cornerRadius:@(self.attributes.layerCornerRadius) opacity:@(self.attributes.alpha)];
     FTAlignment *alignment = [[FTAlignment alloc]initWithTextAlignment:self.textAlignment vertical:@"center"];
     FTSRTextPosition *position = [[FTSRTextPosition alloc]init];
     position.alignment = alignment;
     position.padding = [[FTPadding alloc]initWithLeft:0 top:0 right:0 bottom:0];
     wireframe.textPosition = position;
-    FTSRTextStyle *textStyle = [[FTSRTextStyle alloc]initWithSize:self.font.pointSize color:self.isPlaceholderText? [FTSystemColors placeholderTextColorStr]:[FTSRUtils colorHexString:self.textColor.CGColor] family:nil];
+    FTSRTextStyle *textStyle = [[FTSRTextStyle alloc]initWithSize:self.fontSize color:self.isPlaceholderText? [FTSystemColors placeholderTextColorStr]:self.textColor.hexString family:nil];
     wireframe.textStyle = textStyle;
     return @[wireframe];
 }

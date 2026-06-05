@@ -139,6 +139,7 @@ static long long FTHeatmapInt64FromCGFloat(CGFloat value) {
     return _sharedInstance;
 }
 - (NSArray *)messageReceiversSnapshot{
+    [self.receiverArray compact];
     NSMutableArray *receivers = [NSMutableArray array];
     for (id receiver in self.receiverArray.allObjects) {
         if (receiver) {
@@ -181,6 +182,7 @@ static long long FTHeatmapInt64FromCGFloat(CGFloat value) {
 }
 - (void)addMessageReceiver:(id<FTMessageReceiver>)receiver{
     dispatch_async(self.queue, ^{
+        [self.receiverArray compact];
         if (![self.receiverArray.allObjects containsObject:receiver]) {
             [self.receiverArray addPointer:(__bridge void *)receiver];
         }
@@ -188,14 +190,27 @@ static long long FTHeatmapInt64FromCGFloat(CGFloat value) {
 }
 
 - (void)removeMessageReceiver:(id<FTMessageReceiver>)receiver{
-    [self syncProcess:^{
-        for (NSUInteger i=0; i<self.receiverArray.count; i++) {
-            if ([self.receiverArray pointerAtIndex:i] == (__bridge void *)receiver) {
-                [self.receiverArray removePointerAtIndex:i];
-                break;
-            }
+    void *receiverPointer = (__bridge void *)receiver;
+    dispatch_block_t block = ^{
+        [self removeMessageReceiverWithPointer:receiverPointer];
+    };
+    if(dispatch_get_specific(FTMessageBusQueueIdentityKey) == NULL){
+        dispatch_async(self.queue, block);
+    }else{
+        block();
+    }
+}
+- (void)removeMessageReceiverWithPointer:(void *)receiverPointer{
+    if (receiverPointer == NULL) {
+        return;
+    }
+    for (NSUInteger i=0; i<self.receiverArray.count; i++) {
+        if ([self.receiverArray pointerAtIndex:i] == receiverPointer) {
+            [self.receiverArray removePointerAtIndex:i];
+            break;
         }
-    }];
+    }
+    [self.receiverArray compact];
 }
 - (void)registerService:(Protocol *)service instance:(id)instance{
     NSString *key = NSStringFromProtocol(service);

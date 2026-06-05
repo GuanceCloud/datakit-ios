@@ -13,6 +13,7 @@
 #import "FTSRTextObfuscatingFactory.h"
 #import "FTSessionReplayPrivacyOverrides+Extension.h"
 NS_ASSUME_NONNULL_BEGIN
+@class FTSRColorSnapshot;
 
 @interface FTSRContext : NSObject
 @property (nonatomic, assign) FTTextAndInputPrivacyLevel textAndInputPrivacy;
@@ -29,8 +30,8 @@ NS_ASSUME_NONNULL_BEGIN
 @interface FTViewAttributes : NSObject
 @property (nonatomic, assign) CGRect frame;
 @property (nonatomic, assign) CGRect clip;
-@property (nonatomic, strong) UIColor * backgroundColor;
-@property (nullable) CGColorRef layerBorderColor;
+@property (nonatomic, strong, nullable) FTSRColorSnapshot *backgroundColor;
+@property (nonatomic, strong, nullable) FTSRColorSnapshot *layerBorderColor;
 @property (nonatomic, assign) CGFloat layerBorderWidth;
 @property (nonatomic, assign) CGFloat layerCornerRadius;
 @property (nonatomic, assign) CGFloat alpha;

@@ -22,7 +22,6 @@
     dependencies.fatalErrorContext = self.fatalErrorContext;
     dependencies.sessionHasReplay = self.sessionHasReplay;
     dependencies.sampledForErrorReplay = self.sampledForErrorReplay;
-    dependencies.sampledForErrorSession = self.sampledForErrorSession;
     dependencies.sessionReplaySampledFields = self.sessionReplaySampledFields;
     dependencies.sessionReplayStats = self.sessionReplayStats;
     return dependencies;

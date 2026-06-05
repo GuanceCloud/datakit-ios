@@ -23,7 +23,6 @@
 #import "FTBaseInfoHandler.h"
 #import "FTTestUtils.h"
 @interface FTRequestTest : XCTestCase
-@property (nonatomic, strong) XCTestExpectation *expectation;
 @end
 
 @implementation FTRequestTest
@@ -104,17 +103,6 @@
     XCTAssertTrue([FTTestUtils base36ToDecimal:newRumSerialNum] - [FTTestUtils base36ToDecimal:currentRumSerialNum] == 1);
     XCTAssertTrue([FTTestUtils base36ToDecimal:newtLogSerialNum] - [FTTestUtils base36ToDecimal:currentLogSerialNum] == 1);
 }
--(void)observeValueForKeyPath:(NSString *)keyPath ofObject:(id)object change:(NSDictionary<NSKeyValueChangeKey,id> *)change context:(void *)context{
-    if([keyPath isEqualToString:@"isUploading"]){
-        FTTrackDataManager *manager = object;
-        NSNumber *isUploading = [manager valueForKey:@"isUploading"];
-        if(!isUploading.boolValue){
-            [self.expectation fulfill];
-            self.expectation = nil;
-        }
-    }
-}
-
 - (void)testWrongFormat{
     [self mockHttp];
     FTRecordModel *model = [FTModelHelper createWrongFormatRumModel];

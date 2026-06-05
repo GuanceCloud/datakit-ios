@@ -1,3 +1,11 @@
+# 1.6.5-alpha.1
+1. Fixed Session Replay crashes related to dynamic `UIColor` resolution and background snapshot processing
+2. Added `FTSessionReplayConfig.enableSwiftUI` to explicitly enable SwiftUI recording in Session Replay. The default is `NO`.
+3. Added support for custom Session Replay `source` values on iOS segment uploads.
+4. Improved Session Replay writer management based on tracking consent.
+5. Fixed Session Replay error-sampled sessions so recording starts when error replay sampling is active.
+6. Improved Session Replay, RUM, and Log upload scheduling and retry handling.
+---
 # 1.6.4
 1. Added Session Replay support for SwiftUI views.
 2. Added RUM SwiftUI view tracking and manual tap action tracking support.

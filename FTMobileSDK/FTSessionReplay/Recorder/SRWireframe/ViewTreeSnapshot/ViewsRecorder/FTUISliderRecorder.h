@@ -10,7 +10,7 @@
 #import <UIKit/UIKit.h>
 #import "FTSRNodeWireframesBuilder.h"
 
-@class FTViewAttributes;
+@class FTViewAttributes, FTSRColorSnapshot;
 NS_ASSUME_NONNULL_BEGIN
 @interface FTUISliderBuilder : NSObject<FTSRNodeWireframesBuilder>
 @property (nonatomic, strong) FTViewAttributes *attributes;
@@ -28,9 +28,9 @@ NS_ASSUME_NONNULL_BEGIN
 @property (nonatomic, assign) float max;
 @property (nonatomic, assign) float value;
 
-@property (nonatomic, strong) UIColor *minTrackTintColor;
-@property (nonatomic, strong) UIColor *maxTrackTintColor;
-@property (nonatomic, strong) UIColor *thumbTintColor;
+@property (nonatomic, strong, nullable) FTSRColorSnapshot *minTrackTintColor;
+@property (nonatomic, strong, nullable) FTSRColorSnapshot *maxTrackTintColor;
+@property (nonatomic, strong, nullable) FTSRColorSnapshot *thumbTintColor;
 
 @end
 @interface FTUISliderRecorder : NSObject<FTSRWireframesRecorder>

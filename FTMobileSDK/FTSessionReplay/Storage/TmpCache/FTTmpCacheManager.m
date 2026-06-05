@@ -12,6 +12,7 @@
 #import "FTSessionReplayCoreImports.h"
 
 void *FTTmpCacheQueueIdentityKey = &FTTmpCacheQueueIdentityKey;
+static long long const FTErrorSampledCacheWindowNanoseconds = 60LL * 1000LL * 1000LL * 1000LL;
 
 @interface FTTmpCacheManager()<FTMessageReceiver>
 @property (nonatomic, strong) dispatch_queue_t queue;
@@ -56,10 +57,7 @@ void *FTTmpCacheQueueIdentityKey = &FTTmpCacheQueueIdentityKey;
         self.hasErrorForceUpdate = YES;
         NSNumber *errorDate = [message valueForKey:@"error_date"];
         if (errorDate != nil) {
-            long long lastErrorTimeStamp = [errorDate longLongValue];
-            long long expirationTimeStamp = lastErrorTimeStamp - 60*1e9;
-
-            [self cleanupWithExpirationTimeStamp:expirationTimeStamp lastErrorTimeStamp:lastErrorTimeStamp sync:NO];
+            [self consumeErrorSampledFilesBeforeErrorTime:[errorDate longLongValue] sync:NO];
         }
     }
 }
@@ -73,16 +71,19 @@ void *FTTmpCacheQueueIdentityKey = &FTTmpCacheQueueIdentityKey;
             return;
         }
         /// Check if there is error sampling for the previous process data, only do update operation
-        long long lastErrorTimeStamp = [self.sessionOnErrorHandler getErrorTimeLineFromFileCache];
-        long long expirationTimeStamp = [[NSDate dateWithTimeIntervalSinceReferenceDate:[FTDateUtil.processStartTimestamp ft_nanosecondTimeStamp]] ft_nanosecondTimeStamp];
+        long long lastErrorTimeStamp = [strongSelf.sessionOnErrorHandler getErrorTimeLineFromFileCache];
+        long long processStartTimeStamp = [[FTDateUtil processStartTimestamp] ft_nanosecondTimeStamp];
         if(lastErrorTimeStamp>0){
-            [strongSelf cleanupWithExpirationTimeStamp:0 lastErrorTimeStamp:lastErrorTimeStamp sync:YES];
+            [strongSelf consumeErrorSampledFilesBeforeErrorTime:lastErrorTimeStamp sync:YES];
         }
         /// Previous process anr judgment, update\delete
         for (int i = 0; i <= 3; i++) {
             long long errorTimeStamp = [strongSelf.sessionOnErrorHandler getLastProcessFatalErrorTime];
             if (errorTimeStamp != -1 || i == 3) {
-                [strongSelf cleanupWithExpirationTimeStamp:expirationTimeStamp lastErrorTimeStamp:errorTimeStamp sync:YES];
+                if (errorTimeStamp > 0) {
+                    [strongSelf consumeErrorSampledFilesBeforeErrorTime:errorTimeStamp sync:YES];
+                }
+                [strongSelf cleanupExpiredFilesBeforeTime:processStartTimeStamp sync:YES];
                 break;
             }
             sleep(1);
@@ -92,10 +93,13 @@ void *FTTmpCacheQueueIdentityKey = &FTTmpCacheQueueIdentityKey;
 #pragma mark ========== CURRENT PROCESS ==========
 - (void)cleanup{
     long long expirationTimeStamp = [[[NSDate date] dateByAddingTimeInterval:-60] ft_nanosecondTimeStamp];
-    long long lastErrorTimeStamp = [self.sessionOnErrorHandler getErrorTimeLineFromFileCache];
-    [self cleanupWithExpirationTimeStamp:expirationTimeStamp lastErrorTimeStamp:lastErrorTimeStamp sync:NO];
+    [self cleanupExpiredFilesBeforeTime:expirationTimeStamp sync:NO];
 }
-- (void)cleanupWithExpirationTimeStamp:(long long)expirationTimeStamp lastErrorTimeStamp:(long long)lastErrorTimeStamp sync:(BOOL)sync{
+- (void)consumeErrorSampledFilesBeforeErrorTime:(long long)errorTimeStamp sync:(BOOL)sync{
+    if (errorTimeStamp <= 0) {
+        return;
+    }
+    long long expirationTimeStamp = errorTimeStamp - FTErrorSampledCacheWindowNanoseconds;
     __weak typeof(self) weakSelf = self;
     dispatch_block_t block = ^{
         __strong __typeof(weakSelf) strongSelf = weakSelf;
@@ -104,21 +108,36 @@ void *FTTmpCacheQueueIdentityKey = &FTTmpCacheQueueIdentityKey;
         }
         @try {
             NSArray <FTFile *> *files = strongSelf.cacheDirectory.files;
-            NSEnumerator *enumerator = [files objectEnumerator];
-            FTFile *file;
-            while ((file = [enumerator nextObject])) {
-                // Parse time slice from filename
+            for (FTFile *file in files) {
                 long long fileTimeStamp = [file.fileCreationDate ft_nanosecondTimeStamp];
-                // Files generated before error, move to upload
-                if (lastErrorTimeStamp > fileTimeStamp) {
-                    NSURL *destinationFileURL = [strongSelf.realWriterUrl URLByAppendingPathComponent:file.name];
-                    NSError *lastCriticalError = nil;
-                    [[NSFileManager defaultManager] moveItemAtURL:file.url toURL:destinationFileURL error:&lastCriticalError];
-                    FTInnerLogDebug(@"[Session Replay][ErrorSampled] consumeErrorSampledData: %@",file.name);
-                    continue;
+                if (fileTimeStamp < expirationTimeStamp) {
+                    [file deleteFile];
+                    FTInnerLogDebug(@"[Session Replay][ErrorSampled] delete expire file: %@",file.name);
+                } else if (fileTimeStamp < errorTimeStamp) {
+                    [strongSelf moveCacheFileToRealDirectory:file];
                 }
-                // Delete expired files generated by current process
-                if (expirationTimeStamp > 0 && fileTimeStamp < expirationTimeStamp) {
+            }
+        } @catch (NSException *exception) {
+            FTInnerLogError(@"[Session Replay][Error Sampled] EXCEPTION: %@", exception.description);
+        }
+    };
+    [self performCleanupBlock:block sync:sync];
+}
+- (void)cleanupExpiredFilesBeforeTime:(long long)expirationTimeStamp sync:(BOOL)sync{
+    if (expirationTimeStamp <= 0) {
+        return;
+    }
+    __weak typeof(self) weakSelf = self;
+    dispatch_block_t block = ^{
+        __strong __typeof(weakSelf) strongSelf = weakSelf;
+        if (!strongSelf) {
+            return;
+        }
+        @try {
+            NSArray <FTFile *> *files = strongSelf.cacheDirectory.files;
+            for (FTFile *file in files) {
+                long long fileTimeStamp = [file.fileCreationDate ft_nanosecondTimeStamp];
+                if (fileTimeStamp < expirationTimeStamp) {
                     [file deleteFile];
                     FTInnerLogDebug(@"[Session Replay][ErrorSampled] delete expire file: %@",file.name);
                 }
@@ -127,6 +146,18 @@ void *FTTmpCacheQueueIdentityKey = &FTTmpCacheQueueIdentityKey;
             FTInnerLogError(@"[Session Replay][Error Sampled] EXCEPTION: %@", exception.description);
         }
     };
+    [self performCleanupBlock:block sync:sync];
+}
+- (void)moveCacheFileToRealDirectory:(FTFile *)file{
+    NSURL *destinationFileURL = [self.realWriterUrl URLByAppendingPathComponent:file.name];
+    NSError *lastCriticalError = nil;
+    [[NSFileManager defaultManager] moveItemAtURL:file.url toURL:destinationFileURL error:&lastCriticalError];
+    FTInnerLogDebug(@"[Session Replay][ErrorSampled] consumeErrorSampledData: %@",file.name);
+}
+- (void)performCleanupBlock:(dispatch_block_t)block sync:(BOOL)sync{
+    if (!block) {
+        return;
+    }
     if (sync) {
         block();
     }else{

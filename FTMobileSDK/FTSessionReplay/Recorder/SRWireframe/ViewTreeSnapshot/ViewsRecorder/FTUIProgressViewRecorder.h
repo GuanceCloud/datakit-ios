@@ -10,7 +10,7 @@
 #import <UIKit/UIKit.h>
 #import "FTSRNodeWireframesBuilder.h"
 NS_ASSUME_NONNULL_BEGIN
-@class FTViewAttributes,FTViewTreeRecorder;
+@class FTViewAttributes,FTViewTreeRecorder, FTSRColorSnapshot;
 
 @interface FTUIProgressViewBuilder : NSObject<FTSRNodeWireframesBuilder>
 @property (nonatomic, strong) FTViewAttributes *attributes;
@@ -18,8 +18,8 @@ NS_ASSUME_NONNULL_BEGIN
 @property (nonatomic, assign) int backgroundWireframeID;
 @property (nonatomic, assign) int progressTrackWireframeID;
 @property (nonatomic, assign) float progress;
-@property (nonatomic, strong) UIColor * progressTintColor;
-@property (nonatomic, strong) UIColor * backgroundColor;
+@property (nonatomic, strong, nullable) FTSRColorSnapshot * progressTintColor;
+@property (nonatomic, strong, nullable) FTSRColorSnapshot * backgroundColor;
 @end
 @interface FTUIProgressViewRecorder : NSObject<FTSRWireframesRecorder>
 @property (nonatomic, copy) NSString *identifier;

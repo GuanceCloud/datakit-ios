@@ -8,6 +8,35 @@
 
 #import <XCTest/XCTest.h>
 #import "FTThreadDispatchManager.h"
+#import "FTModuleManager.h"
+#import "FTMessageReceiver.h"
+
+@interface FTBlockingMessageReceiver : NSObject<FTMessageReceiver>
+@property (nonatomic, assign) BOOL blocksReceive;
+@property (nonatomic, assign) NSInteger receiveCount;
+@property (nonatomic, strong) dispatch_semaphore_t didEnterReceive;
+@property (nonatomic, strong) dispatch_semaphore_t unblockReceive;
+@end
+
+@implementation FTBlockingMessageReceiver
+- (instancetype)init{
+    self = [super init];
+    if (self) {
+        _didEnterReceive = dispatch_semaphore_create(0);
+        _unblockReceive = dispatch_semaphore_create(0);
+    }
+    return self;
+}
+- (void)receive:(NSString *)key message:(NSDictionary *)message{
+    @synchronized (self) {
+        self.receiveCount += 1;
+    }
+    if (self.blocksReceive) {
+        dispatch_semaphore_signal(self.didEnterReceive);
+        dispatch_semaphore_wait(self.unblockReceive, dispatch_time(DISPATCH_TIME_NOW, (int64_t)(2 * NSEC_PER_SEC)));
+    }
+}
+@end
 
 @interface FTThreadDispatchTest : XCTestCase
 
@@ -70,5 +99,40 @@
         XCTAssertFalse([string isEqualToString:@"1234"]);
 
     });
+}
+- (void)testRemoveMessageReceiverDoesNotWaitForBusyMessageBus{
+    FTModuleManager *manager = [FTModuleManager sharedInstance];
+    FTBlockingMessageReceiver *receiver = [[FTBlockingMessageReceiver alloc]init];
+    [manager addMessageReceiver:receiver];
+    [manager postMessageWithKey:@"ft_test_message_bus_flush_add" message:@{} sync:YES];
+
+    receiver.blocksReceive = YES;
+    [manager postMessageWithKey:@"ft_test_message_bus_block" message:@{}];
+    long entered = dispatch_semaphore_wait(receiver.didEnterReceive, dispatch_time(DISPATCH_TIME_NOW, (int64_t)(1 * NSEC_PER_SEC)));
+    XCTAssertEqual(entered, 0);
+
+    XCTestExpectation *removeReturned = [self expectationWithDescription:@"remove should not wait for message-bus work"];
+    dispatch_async(dispatch_get_global_queue(QOS_CLASS_USER_INITIATED, 0), ^{
+        [manager removeMessageReceiver:receiver];
+        [removeReturned fulfill];
+    });
+
+    XCTWaiterResult result = [XCTWaiter waitForExpectations:@[removeReturned] timeout:0.2];
+    XCTAssertEqual(result, XCTWaiterResultCompleted);
+
+    dispatch_semaphore_signal(receiver.unblockReceive);
+    [manager postMessageWithKey:@"ft_test_message_bus_flush_remove" message:@{} sync:YES];
+}
+- (void)testRemoveMessageReceiverTakesEffectBeforeFollowingSyncPost{
+    FTModuleManager *manager = [FTModuleManager sharedInstance];
+    FTBlockingMessageReceiver *receiver = [[FTBlockingMessageReceiver alloc]init];
+    [manager addMessageReceiver:receiver];
+    [manager postMessageWithKey:@"ft_test_message_bus_flush_add" message:@{} sync:YES];
+    NSInteger countAfterAdd = receiver.receiveCount;
+
+    [manager removeMessageReceiver:receiver];
+    [manager postMessageWithKey:@"ft_test_message_bus_after_remove" message:@{} sync:YES];
+
+    XCTAssertEqual(receiver.receiveCount, countAfterAdd);
 }
 @end

@@ -37,7 +37,6 @@
 @property (nonatomic, strong) FTMobileConfig *config;
 @property (nonatomic, copy) NSString *url;
 @property (nonatomic, copy) NSString *appid;
-@property (nonatomic, strong) XCTestExpectation *expectation;
 
 @end
 
@@ -59,6 +58,21 @@
     // Put teardown code here. This method is called after the invocation of each test method in the class.
     [super tearDown];
     [FTMobileAgent shutDown];
+}
+- (void)waitForUploadWorkerIdleWithTimeout:(NSTimeInterval)timeout{
+    FTDataUploadWorker *worker = [FTTrackDataManager sharedInstance].dataUploadWorker;
+    dispatch_queue_t networkQueue = [worker valueForKey:@"networkQueue"];
+    NSDate *deadline = [NSDate dateWithTimeIntervalSinceNow:timeout];
+    while ([deadline timeIntervalSinceNow] > 0) {
+        dispatch_sync(networkQueue, ^{});
+        BOOL isUploading = [[worker valueForKey:@"isUploading"] boolValue];
+        BOOL hasPendingUpload = [[worker valueForKey:@"hasPendingUpload"] boolValue];
+        if (!isUploading && !hasPendingUpload) {
+            return;
+        }
+        [NSThread sleepForTimeInterval:0.01];
+    }
+    XCTFail(@"Upload worker did not become idle within %.2f seconds", timeout);
 }
 - (void)setRightSDKConfig{
     FTMobileConfig *config = [[FTMobileConfig alloc]initWithDatakitUrl:self.url];
@@ -370,19 +384,17 @@
     [[FTTrackDataManager sharedInstance] insertCacheToDB];
     NSArray *oldDatas = [[FTTrackerEventDBTool sharedManager] getFirstRecords:10 withType:FT_DATA_TYPE_LOGGING];
     XCTAssertTrue(oldDatas.count>0);
-    [[FTTrackDataManager sharedInstance].dataUploadWorker addObserver:self forKeyPath:@"isUploading" options:NSKeyValueObservingOptionNew context:nil];
-    self.expectation = [self expectationWithDescription:@"Async operation timeout"];
+    XCTestExpectation *expectation = [self expectationWithDescription:@"Async operation timeout"];
 
     [[NSNotificationCenter defaultCenter] postNotificationName:UIApplicationDidBecomeActiveNotification object:nil];
     dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)(1 * NSEC_PER_SEC)), dispatch_get_main_queue(), ^{
-        [self.expectation fulfill];
+        [expectation fulfill];
     });
     [self waitForExpectationsWithTimeout:30 handler:^(NSError *error) {
         XCTAssertNil(error);
     }];
     NSArray *newDatas = [[FTTrackerEventDBTool sharedManager] getFirstRecords:10 withType:FT_DATA_TYPE_LOGGING];
     XCTAssertTrue(newDatas.count>=oldDatas.count);
-    [[FTTrackDataManager sharedInstance].dataUploadWorker removeObserver:self forKeyPath:@"isUploading"];
 }
 - (void)testAutoSync_YES{
     [FTNetworkMock networkOHHTTPStubs];
@@ -401,28 +413,10 @@
     [[FTTrackDataManager sharedInstance] insertCacheToDB];
     NSArray *oldDatas = [[FTTrackerEventDBTool sharedManager] getFirstRecords:10 withType:FT_DATA_TYPE_LOGGING];
     XCTAssertTrue(oldDatas.count>0);
-    [[FTTrackDataManager sharedInstance].dataUploadWorker addObserver:self forKeyPath:@"isUploading" options:NSKeyValueObservingOptionNew context:nil];
-    self.expectation = [self expectationWithDescription:@"Async operation timeout"];
-
     [[NSNotificationCenter defaultCenter] postNotificationName:UIApplicationDidBecomeActiveNotification object:nil];
-   
-    [self waitForExpectationsWithTimeout:30 handler:^(NSError *error) {
-        XCTAssertNil(error);
-    }];
+    [self waitForUploadWorkerIdleWithTimeout:30];
     NSArray *newDatas = [[FTTrackerEventDBTool sharedManager] getFirstRecords:10 withType:FT_DATA_TYPE_LOGGING];
     XCTAssertTrue(newDatas.count<oldDatas.count);
-    [[FTTrackDataManager sharedInstance].dataUploadWorker removeObserver:self forKeyPath:@"isUploading"];
-}
--(void)observeValueForKeyPath:(NSString *)keyPath ofObject:(id)object change:(NSDictionary<NSKeyValueChangeKey,id> *)change context:(void *)context{
-    if([keyPath isEqualToString:@"isUploading"]){
-        FTTrackDataManager *manager = object;
-        NSNumber *isUploading = [manager valueForKey:@"isUploading"];
-        if(isUploading.boolValue == NO){
-            [self.expectation fulfill];
-            self.expectation = nil;
-        }
-        
-    }
 }
 #pragma mark ========== copy ==========
 - (void)testSDKConfigCopy{

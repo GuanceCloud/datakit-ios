@@ -10,7 +10,7 @@
 #import "FTFeature.h"
 
 NS_ASSUME_NONNULL_BEGIN
-@protocol FTRemoteFeature,FTWriter,FTDataStore,FTCacheWriter,FTScheduler;
+@protocol FTRemoteFeature,FTDataStore,FTCacheWriter,FTScheduler;
 @class FTSessionReplayConfig,FTFeatureStorage;
 @interface FTSessionReplayFeature : NSObject<FTRemoteFeature>
 @property (nonatomic, copy) NSString *name;
@@ -19,7 +19,7 @@ NS_ASSUME_NONNULL_BEGIN
 
 -(instancetype)initWithConfig:(FTSessionReplayConfig *)config;
 
--(void)startWithRecordStorage:(FTFeatureStorage *)recordStorage resourceWriter:(id <FTWriter>)resourceWriter resourceDataStore:(nullable id<FTDataStore>)dataStore;
+-(void)startWithRecordStorage:(FTFeatureStorage *)recordStorage resourceStorage:(FTFeatureStorage *)resourceStorage resourceDataStore:(nullable id<FTDataStore>)dataStore;
 
 - (void)startRecording;
 

@@ -42,9 +42,9 @@
     builder.min = slider.minimumValue;
     builder.max = slider.maximumValue;
     builder.value = slider.value;
-    builder.minTrackTintColor = slider.minimumTrackTintColor?slider.minimumTrackTintColor:slider.tintColor;
-    builder.maxTrackTintColor = slider.maximumTrackTintColor;
-    builder.thumbTintColor = slider.thumbTintColor;
+    builder.minTrackTintColor = [FTSRColorSnapshot snapshotWithColor:slider.minimumTrackTintColor?slider.minimumTrackTintColor:slider.tintColor traitCollection:slider.traitCollection];
+    builder.maxTrackTintColor = [FTSRColorSnapshot snapshotWithColor:slider.maximumTrackTintColor traitCollection:slider.traitCollection];
+    builder.thumbTintColor = [FTSRColorSnapshot snapshotWithColor:slider.thumbTintColor traitCollection:slider.traitCollection];
     
     FTSpecificElement *element = [[FTSpecificElement alloc]initWithSubtreeStrategy:NodeSubtreeStrategyIgnore];
     element.nodes = @[builder];
@@ -95,7 +95,7 @@
                                           initWithIdentifier:self.thumbWireframeID
                                           frame:thumbFrame
                                           clip:self.attributes.clip
-                                          backgroundColor:self.isEnabled?(self.thumbTintColor?[FTSRUtils colorHexString:self.thumbTintColor.CGColor]:[FTSRUtils colorHexString:[UIColor whiteColor].CGColor]):[FTSystemColors tertiarySystemBackgroundColorStr]
+                                          backgroundColor:self.isEnabled?(self.thumbTintColor.hexString?:[FTSRUtils colorHexString:[UIColor whiteColor].CGColor]):[FTSystemColors tertiarySystemBackgroundColorStr]
                                           cornerRadius:@(cornerRadius)
                                           opacity:@(self.attributes.alpha)];
     thumbWireframe.border = [[FTSRShapeBorder alloc]
@@ -113,15 +113,14 @@
                                       initWithIdentifier:self.minTrackWireframeID 
                                       frame:realL
                                       clip:self.attributes.clip
-                                      backgroundColor:self.minTrackTintColor?[FTSRUtils
-                                                                              colorHexString:self.minTrackTintColor.CGColor]:[FTSystemColors tintColorStr]
+                                      backgroundColor:self.minTrackTintColor.hexString?:[FTSystemColors tintColorStr]
                                       cornerRadius:@(0)
                                       opacity:self.isEnabled?@(self.attributes.alpha):@(0.5)];
     FTSRShapeWireframe *rWireframe = [[FTSRShapeWireframe alloc]
                                       initWithIdentifier:self.maxTrackWireframeID
                                       frame:realR
                                       clip:self.attributes.clip
-                                      backgroundColor:self.maxTrackTintColor?[FTSRUtils colorHexString:self.maxTrackTintColor.CGColor]:[FTSystemColors tertiarySystemFillColorStr]
+                                      backgroundColor:self.maxTrackTintColor.hexString?:[FTSystemColors tertiarySystemFillColorStr]
                                       cornerRadius:@(0)
                                       opacity:self.isEnabled?@(self.attributes.alpha):@(0.5)];
     if(self.attributes.hasAnyAppearance){

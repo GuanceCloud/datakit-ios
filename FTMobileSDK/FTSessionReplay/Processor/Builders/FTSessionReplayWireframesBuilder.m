@@ -40,7 +40,7 @@
     wireframe.slotId = [NSString stringWithFormat:@"%lld",identifier];
     wireframe.isVisible = @(YES);
     wireframe.permanentId = self.heatmapIdentifier.rawValue;
-    wireframe.shapeStyle = [[FTSRShapeStyle alloc]initWithBackgroundColor:[FTSRUtils colorHexString:attributes.backgroundColor.CGColor] cornerRadius:@(attributes.layerCornerRadius) opacity:@(attributes.alpha)];
+    wireframe.shapeStyle = [[FTSRShapeStyle alloc]initWithBackgroundColor:attributes.backgroundColor.hexString cornerRadius:@(attributes.layerCornerRadius) opacity:@(attributes.alpha)];
     [self.webViewSlotIDs removeObject:@(identifier)];
     if (linkRUMKeysInfo.count>0) {
         [self.linkRUMKeysInfo addEntriesFromDictionary:linkRUMKeysInfo];

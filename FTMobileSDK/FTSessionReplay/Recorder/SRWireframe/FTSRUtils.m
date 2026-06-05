@@ -7,6 +7,7 @@
 //
 
 #import "FTSRUtils.h"
+#import "UIColor+FTSRIdentifier.h"
 CGRect FTCGRectScaleAspectFitRect(CGSize size,CGSize contentSize){
     CGFloat imageAspectRatio = contentSize.height / contentSize.width;
     CGFloat x, y, width, height;
@@ -154,6 +155,44 @@ CGFloat FTCGSizeAspectRatio(CGSize size){
     return 0;
     
 }
+
+@interface FTSRColorSnapshot ()
+@property (nonatomic, nullable) CGColorRef cgColor;
+@property (nonatomic, copy) NSString *hexString;
+@end
+
+@implementation FTSRColorSnapshot
++ (nullable instancetype)snapshotWithColor:(nullable UIColor *)color traitCollection:(nullable UITraitCollection *)traitCollection{
+    UIColor *resolvedColor = [color ftsr_resolvedColorWithTraitCollection:traitCollection];
+    return [self snapshotWithCGColor:resolvedColor.CGColor];
+}
++ (nullable instancetype)snapshotWithCGColor:(nullable CGColorRef)cgColor{
+    CGColorRef validColor = [FTSRUtils safeCast:cgColor];
+    if (!validColor) {
+        return nil;
+    }
+    return [[self alloc] initWithCGColor:validColor];
+}
+- (instancetype)initWithCGColor:(CGColorRef)cgColor{
+    self = [super init];
+    if (self) {
+        _cgColor = CGColorRetain(cgColor);
+        _alpha = [FTSRUtils getCGColorAlpha:_cgColor];
+    }
+    return self;
+}
+- (void)dealloc{
+    if (_cgColor) {
+        CGColorRelease(_cgColor);
+    }
+}
+- (NSString *)hexString{
+    if (!_hexString && _cgColor) {
+        _hexString = [FTSRUtils colorHexString:_cgColor];
+    }
+    return _hexString;
+}
+@end
 
 @implementation FTSRUtils
 + (NSString *)colorHexString:(CGColorRef)color {

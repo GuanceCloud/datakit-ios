@@ -18,8 +18,8 @@
         self.frame = frame;
         self.clip = clip;
         self.alpha = view.alpha;
-        self.backgroundColor = view.backgroundColor;
-        self.layerBorderColor = view.layer.borderColor;
+        self.backgroundColor = [FTSRColorSnapshot snapshotWithColor:view.backgroundColor traitCollection:view.traitCollection];
+        self.layerBorderColor = [FTSRColorSnapshot snapshotWithCGColor:view.layer.borderColor];
         self.layerBorderWidth = view.layer.borderWidth;
         self.layerCornerRadius = view.layer.cornerRadius;
         self.isHidden = view.isHidden;
@@ -33,15 +33,13 @@
     return  !self.isHidden && self.alpha > 0 && !CGRectEqualToRect(self.frame, CGRectZero) && !CGRectIsEmpty(CGRectIntersection(self.frame, self.clip));
 }
 -(BOOL)hasAnyAppearance{
-    CGFloat borderAlpha = [FTSRUtils getCGColorAlpha:self.layerBorderColor];
-    BOOL hasBorderAppearance = self.layerBorderWidth > 0 && borderAlpha > 0 ;
+    BOOL hasBorderAppearance = self.layerBorderWidth > 0 && self.layerBorderColor.alpha > 0 ;
     
-    CGFloat fillAlpha = [FTSRUtils getCGColorAlpha:self.backgroundColor.CGColor];
-    BOOL hasFillAppearance = fillAlpha > 0 ;
+    BOOL hasFillAppearance = self.backgroundColor.alpha > 0 ;
     return self.isVisible && (hasBorderAppearance || hasFillAppearance);
 }
 -(BOOL)isTranslucent{
-    return  !self.isVisible || self.alpha < 1 || ([FTSRUtils getCGColorAlpha:self.backgroundColor.CGColor] < 1);
+    return  !self.isVisible || self.alpha < 1 || self.backgroundColor.alpha < 1;
 }
 -(FTTextAndInputPrivacyLevel)resolveTextAndInputPrivacyLevel:(FTSRContext *)context{
     if (self.textAndInputPrivacy != nil) {
@@ -58,12 +56,16 @@
 - (instancetype)copyWithZone:(NSZone *)zone {
     FTViewAttributes *attributes = [[[self class] allocWithZone:zone] init];
     attributes.frame = self.frame;
+    attributes.clip = self.clip;
     attributes.alpha = self.alpha;
     attributes.backgroundColor = self.backgroundColor;
     attributes.layerBorderColor = self.layerBorderColor;
     attributes.layerBorderWidth = self.layerBorderWidth;
     attributes.layerCornerRadius = self.layerCornerRadius;
     attributes.isHidden = self.isHidden;
+    attributes.imagePrivacy = self.imagePrivacy;
+    attributes.textAndInputPrivacy = self.textAndInputPrivacy;
+    attributes.hide = self.hide;
     return attributes;
 }
 @end

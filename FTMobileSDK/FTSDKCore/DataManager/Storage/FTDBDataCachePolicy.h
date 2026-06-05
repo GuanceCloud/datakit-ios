@@ -26,6 +26,7 @@ typedef void (^LogDataWriteDBCallback)(void);
 /// Determine whether log storage has reached half capacity
 - (BOOL)reachHalfLimit;
 - (void)insertCacheToDB;
+- (void)insertCacheToDBWithoutCallback;
 @end
 
 NS_ASSUME_NONNULL_END

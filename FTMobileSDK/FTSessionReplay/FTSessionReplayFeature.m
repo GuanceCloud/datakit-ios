@@ -11,44 +11,32 @@
 #import "FTPerformancePresetOverride.h"
 #import "FTSessionReplayCoreImports.h"
 #import "FTRecorder.h"
-#import "FTViewAttributes.h"
 #import "FTSessionReplayTouches.h"
 #import "FTWindowObserver.h"
+#import "FTRecordingCoordinator.h"
 #import "FTSessionReplayConfig+Private.h"
 #import "FTTLV.h"
 #import "FTResourceProcessor.h"
-#import "FTResourceWriter.h"
+#import "FTResourcesWriter.h"
 #import "FTSnapshotProcessor.h"
+#import "FTRecordWriter.h"
 #import "FTSRRecord.h"
 #import "FTFileWriter.h"
 #import "FTFeatureStorage.h"
+#import "FTFeatureScope.h"
 #import "FTLimitedSizeSet.h"
 #import "FTWKWebViewHandler+SessionReplay.h"
-#import "FTSessionReplayConfig+Private.h"
-#import "FTScheduler.h"
 #import "FTScreenChangeScheduler.h"
 
-typedef NS_ENUM(NSInteger, SampleState) {
-    SampleStateNormal,
-    SampleStateError,
-    SampleStateNone
-};
 @interface FTSessionReplayFeature()<FTMessageReceiver,FTSRWebTrackingProtocol>
-@property (nonatomic, strong) NSTimer *timer;
-@property (atomic, strong) NSDictionary *currentRUMContext;
-@property (atomic, strong) NSDictionary *bindInfo;
-@property (nonatomic, strong) FTRecorder *windowRecorder;
-@property (nonatomic, strong) FTSessionReplayTouches *touches;
 @property (nonatomic, strong) FTWindowObserver *windowObserver;
 @property (nonatomic, strong) dispatch_queue_t processorsQueue;
 @property (nonatomic, strong) FTSessionReplayConfig *config;
-@property (nonatomic, assign) BOOL recordingEnabled;
-@property (nonatomic, assign) SampleState sampleState;
-@property (nonatomic, strong) FTFeatureStorage *recordStorage;
-@property (nonatomic, strong) id<FTWriter> webViewWriter;
+@property (nonatomic, strong) FTFeatureScope *recordScope;
+@property (nonatomic, strong) FTFeatureScope *resourceScope;
 @property (nonatomic, copy) NSString *lastViewID;
 @property (nonatomic, strong) FTLimitedSizeSet *needCheckSlots;
-@property (nonatomic, strong) id<FTScheduler> scheduler;
+@property (nonatomic, strong) FTRecordingCoordinator *recordingCoordinator;
 
 @end
 @implementation FTSessionReplayFeature
@@ -65,78 +53,54 @@ typedef NS_ENUM(NSInteger, SampleState) {
         performancePresetOverride.uploadDelayChangeRate = 0.75;
         _performanceOverride = performancePresetOverride;
         _windowObserver = [[FTWindowObserver alloc]init];
-        _touches = [[FTSessionReplayTouches alloc]initWithWindowObserver:_windowObserver];
+        FTSessionReplayTouches *touches = [[FTSessionReplayTouches alloc]initWithWindowObserver:_windowObserver];
         _config = [config copy];
-        _recordingEnabled = NO;
         _needCheckSlots = [[FTLimitedSizeSet alloc]initWithMaxCount:10];
-        _sampleState = SampleStateNone;
+        FTScreenChangeScheduler *scheduler = [[FTScreenChangeScheduler alloc]initWithMinimumInterval:0.1];
         __weak typeof(self) weakSelf = self;
-        _scheduler = [[FTScreenChangeScheduler alloc]initWithMinimumInterval:0.1];
-        [_scheduler scheduleWithOperation:^{
-            [weakSelf captureNextRecord];
+        _recordingCoordinator = [[FTRecordingCoordinator alloc]initWithConfig:_config
+                                                               processorsQueue:_processorsQueue
+                                                                     scheduler:scheduler
+                                                                       touches:touches
+                                                      trackingConsentDidChange:^(FTTrackingConsent trackingConsent) {
+            __strong typeof(weakSelf) strongSelf = weakSelf;
+            if (!strongSelf) {
+                return;
+            }
+            [strongSelf.recordScope updateTrackingConsent];
+            [strongSelf.resourceScope updateTrackingConsent];
         }];
         [[FTModuleManager sharedInstance] addMessageReceiver:self];
         [[FTModuleManager sharedInstance] registerService:NSProtocolFromString(@"FTSRWebTrackingProtocol") instance:self];
     }
     return self;
 }
--(void)startWithRecordStorage:(FTFeatureStorage *)recordStorage resourceWriter:(id <FTWriter>)resourceWriter resourceDataStore:(nullable id<FTDataStore>)dataStore{
-    _recordStorage = recordStorage;
-    FTResourceWriter *resource = [[FTResourceWriter alloc]initWithWriter:resourceWriter dataStore:dataStore];
-    FTResourceProcessor *resourceProcessor = [[FTResourceProcessor alloc]initWithQueue:self.processorsQueue resourceWriter:resource];
-    FTSnapshotProcessor *srProcessor = [[FTSnapshotProcessor alloc]initWithQueue:self.processorsQueue writer:recordStorage.writer resourceProcessor:resourceProcessor];
-
-    FTRecorder *windowRecorder = [[FTRecorder alloc]initWithWindowObserver:self.windowObserver snapshotProcessor:srProcessor additionalNodeRecorders:self.config.additionalNodeRecorders enableHeatmap:self.config.enableHeatmap];
-    self.windowRecorder = windowRecorder;
-}
-- (void)setSampleState:(SampleState)sampleState{
-    if (_sampleState == sampleState) {
-        return;
-    }
-    _sampleState = sampleState;
-    [FTThreadDispatchManager performBlockDispatchMainAsync:^{
-        if(sampleState == SampleStateError){
-            [self.recordStorage.cacheWriter active];
-            self.webViewWriter = self.recordStorage.webViewCacheWriter;
-            [self.windowRecorder.snapshotProcessor changeWriter:self.recordStorage.cacheWriter needUpdateFullSnapshot:YES];
-        }else{
-            [self.recordStorage.cacheWriter inactive];
-            self.webViewWriter = self.recordStorage.webViewWriter;
-            [self.windowRecorder.snapshotProcessor changeWriter:self.recordStorage.writer needUpdateFullSnapshot:NO];
+-(void)startWithRecordStorage:(FTFeatureStorage *)recordStorage resourceStorage:(FTFeatureStorage *)resourceStorage resourceDataStore:(nullable id<FTDataStore>)dataStore{
+    __weak typeof(self) weakSelf = self;
+    FTTrackingConsentProvider trackingConsentProvider = ^FTTrackingConsent{
+        __strong typeof(weakSelf) strongSelf = weakSelf;
+        if (!strongSelf) {
+            return FTTrackingConsentNotGranted;
         }
-    }];
+        return strongSelf.recordingCoordinator.trackingConsent;
+    };
+    FTFeatureScope *recordScope = [[FTFeatureScope alloc]initWithStorage:recordStorage trackingConsentProvider:trackingConsentProvider];
+    self.recordScope = recordScope;
+    FTFeatureScope *resourceScope = [[FTFeatureScope alloc]initWithStorage:resourceStorage trackingConsentProvider:trackingConsentProvider];
+    self.resourceScope = resourceScope;
+
+    FTResourcesWriter *resource = [[FTResourcesWriter alloc]initWithFeatureScope:resourceScope dataStore:dataStore];
+    FTResourceProcessor *resourceProcessor = [[FTResourceProcessor alloc]initWithQueue:self.processorsQueue resourceWriter:resource];
+    FTRecordWriter *recordWriter = [[FTRecordWriter alloc]initWithFeatureScope:recordScope];
+    FTSnapshotProcessor *srProcessor = [[FTSnapshotProcessor alloc]initWithQueue:self.processorsQueue recordWriter:recordWriter resourceProcessor:resourceProcessor];
+
+    FTRecorder *windowRecorder = [[FTRecorder alloc]initWithWindowObserver:self.windowObserver snapshotProcessor:srProcessor additionalNodeRecorders:self.config.additionalNodeRecorders enableSwiftUI:self.config.enableSwiftUI enableHeatmap:self.config.enableHeatmap];
+    self.recordingCoordinator.recorder = windowRecorder;
+    [self.recordScope updateTrackingConsent];
+    [self.resourceScope updateTrackingConsent];
 }
 - (void)startRecording{
-    __weak typeof(self) weakSelf = self;
-    [self.scheduler.queue run:^{
-        if (!weakSelf) {
-            return;
-        }
-        weakSelf.recordingEnabled = YES;
-        [weakSelf evaluateRecordingConditions];
-    }];
-}
-- (void)captureNextRecord{
-    @try {
-        NSDictionary *rumContext = [self.currentRUMContext copy];
-        NSString *viewID = rumContext[FT_KEY_VIEW_ID];
-        if (!viewID) {
-            return;
-        }
-        FTSRContext *context = [[FTSRContext alloc]init];
-        context.sessionID = rumContext[FT_RUM_KEY_SESSION_ID];
-        context.viewID = viewID;
-        context.viewPath = rumContext[FT_KEY_VIEW_NAME];
-        context.applicationID = rumContext[FT_APP_ID];
-        context.date = [NSDate date];
-        context.imagePrivacy = self.config.imagePrivacy;
-        context.touchPrivacy = self.config.touchPrivacy;
-        context.textAndInputPrivacy = self.config.textAndInputPrivacy;
-        context.bindInfo = self.bindInfo;
-        [self.windowRecorder taskSnapShot:context touchSnapshot:[self.touches takeTouchSnapshotWithContext:context]];
-    } @catch (NSException *exception) {
-        FTInnerLogError(@"[session-replay] EXCEPTION: %@", exception.description);
-    }
+    [self.recordingCoordinator startRecording];
 }
 #pragma mark =========== FTMessageReceiver ============
 - (void)receive:(NSString *)key message:(NSDictionary *)message {
@@ -150,20 +114,10 @@ typedef NS_ENUM(NSInteger, SampleState) {
 }
 #pragma mark - deal receive message
 - (void)handleRUMContextMessage:(NSDictionary *)message{
-    __weak typeof(self) weakSelf = self;
-    dispatch_async(self.processorsQueue, ^{
-        __strong __typeof(weakSelf) strongSelf = weakSelf;
-        if (!strongSelf) {
-            return;
-        }
-        if ([strongSelf.currentRUMContext isEqualToDictionary:message]) return;
-        
-        [strongSelf onRUMContextChanged:message];
-    });
+    [self.recordingCoordinator handleRUMContextMessage:message];
 }
 - (void)handleWebViewSRMessage:(NSDictionary *)message{
     __weak typeof(self) weakSelf = self;
-    id <FTWriter> webViewWriter = self.webViewWriter;
     dispatch_async(self.processorsQueue, ^{
         __strong __typeof(weakSelf) strongSelf = weakSelf;
         if (!strongSelf) {
@@ -176,23 +130,28 @@ typedef NS_ENUM(NSInteger, SampleState) {
             NSDictionary *event = message[@"data"];
             NSDictionary *bindInfo = message[FT_LINK_RUM_KEYS];
             if (event && slotID && viewID) {
-                NSDictionary *currentRumContext = strongSelf.currentRUMContext;
+                NSDictionary *currentRumContext = strongSelf.recordingCoordinator.currentRUMContext;
                 if (!currentRumContext) {
                     return;
                 }
-                NSMutableDictionary *newEvent = [event mutableCopy];
-                [newEvent setValue:slotID forKey:@"slotId"];
-                [strongSelf checkLocalFiles:newEvent slotID:slotID];
-                BOOL force = strongSelf.lastViewID == nil || ![strongSelf.lastViewID isEqualToString:viewID];
-                FTSRWebRecord *record = [[FTSRWebRecord alloc]init];
-                record.viewID = viewID;
-                record.sessionID = currentRumContext[FT_RUM_KEY_SESSION_ID];
-                record.applicationID = currentRumContext[FT_APP_ID];
-                record.records = @[newEvent];
-                record.bindInfo = bindInfo;
-                NSData *data = [record toJSONData];
-                [webViewWriter write:data forceNewFile:force];
-                strongSelf.lastViewID = viewID;
+                [strongSelf.recordScope webViewEventWriteContext:^(FTFeatureContext *context, id<FTWriter> writer) {
+                    if (context.trackingConsent == FTTrackingConsentNotGranted) {
+                        return;
+                    }
+                    NSMutableDictionary *newEvent = [event mutableCopy];
+                    [newEvent setValue:slotID forKey:@"slotId"];
+                    [strongSelf checkLocalFiles:newEvent slotID:slotID];
+                    BOOL force = strongSelf.lastViewID == nil || ![strongSelf.lastViewID isEqualToString:viewID];
+                    FTSRWebRecord *record = [[FTSRWebRecord alloc]init];
+                    record.viewID = viewID;
+                    record.sessionID = currentRumContext[FT_RUM_KEY_SESSION_ID];
+                    record.applicationID = currentRumContext[FT_APP_ID];
+                    record.records = @[newEvent];
+                    record.bindInfo = bindInfo;
+                    NSData *data = [record toJSONData];
+                    [writer write:data forceNewFile:force];
+                    strongSelf.lastViewID = viewID;
+                }];
             }
         } @catch (NSException *exception) {
             FTInnerLogError(@"[Session Replay] EXCEPTION: %@", exception.description);
@@ -200,88 +159,7 @@ typedef NS_ENUM(NSInteger, SampleState) {
     });
 }
 - (void)handleSRSampleRateUpdateMessage{
-    __weak typeof(self) weakSelf = self;
-    dispatch_async(self.processorsQueue, ^{
-        __strong typeof(weakSelf) strongSelf = weakSelf;
-        if (!strongSelf) return;
-        [strongSelf evaluateRecordingConditionsForSamplingRateUpdate];
-    });
-}
-- (void)onRUMContextChanged:(NSDictionary *)context{
-    NSDictionary *rumContext = [self.currentRUMContext copy];
-    if(rumContext == nil || ![context[FT_RUM_KEY_SESSION_ID] isEqualToString:rumContext[FT_RUM_KEY_SESSION_ID]]){
-        [self updateSamplingStatusWithRUMContext:context];
-    }
-    [self checkLinkRumKeys:context];
-    self.currentRUMContext = context;
-    [self evaluateRecordingConditions];
-}
-- (void)updateSamplingStatusWithRUMContext:(NSDictionary *)context{
-    BOOL isErrorSession = [context[FT_RUM_KEY_SAMPLED_FOR_ERROR_SESSION] boolValue];
-    BOOL isNormalSampled = [FTBaseInfoHandler randomSampling:self.config.sampleRate];
-    BOOL isErrorSampled = isNormalSampled? NO: [FTBaseInfoHandler randomSampling:self.config.sessionReplayOnErrorSampleRate];
-  
-    BOOL needSampleForErrorReplay = (isErrorSession && isNormalSampled) || isErrorSampled;
-
-    SampleState sampleState = needSampleForErrorReplay ? SampleStateError
-                            : (isNormalSampled ? SampleStateNormal : SampleStateNone);
-    self.sampleState = sampleState;
-}
-- (void)checkLinkRumKeys:(NSDictionary *)rumContext{
-    // link rum
-    NSDictionary *bindInfo = rumContext[FT_LINK_RUM_KEYS];
-    if (bindInfo) {
-        NSArray *whiteLists = self.config.enableLinkRUMKeys;
-        if (whiteLists.count>0) {
-            NSMutableDictionary *infoDict = [[NSMutableDictionary alloc]init];
-            NSEnumerator *en = [whiteLists objectEnumerator];
-            NSString *key;
-            while ((key = en.nextObject) != nil) {
-                [infoDict setValue:bindInfo[key] forKey:key];
-            }
-            self.bindInfo = [infoDict copy];
-        }
-    }
-}
-- (void)evaluateRecordingConditions{
-    if (self.recordingEnabled && self.sampleState == SampleStateNormal) {
-        [self.scheduler start];
-    } else {
-        [self.scheduler stop];
-    }
-    [self updateHasReplay];
-}
-- (void)evaluateRecordingConditionsForSamplingRateUpdate{
-    [self.config mergeWithRemoteConfigModel:[FTRemoteConfigManager sharedInstance].lastRemoteModel];
-    BOOL needUpdate = NO;
-
-    if (self.sampleState != SampleStateNone) {
-        if (self.config.sampleRate == 0 && self.config.sessionReplayOnErrorSampleRate == 0) {
-            needUpdate = YES;
-        }if (self.sampleState == SampleStateError && self.config.sampleRate == 100) {
-            needUpdate = YES;
-        }
-    } else {
-        if (self.config.sampleRate == 100 || self.config.sessionReplayOnErrorSampleRate == 100) {
-            needUpdate = YES;
-        }
-    }
-    
-    if (needUpdate) {
-        [self updateSamplingStatusWithRUMContext:[self.currentRUMContext copy]];
-        [self evaluateRecordingConditions];
-    }
-}
-- (void)updateHasReplay{
-    // FT_SESSION_HAS_REPLAY, whether there is session replay data collection, cache type also counts
-    // FT_RUM_KEY_SAMPLED_FOR_ERROR_REPLAY, cache type data
-    BOOL hasReplay = self.recordingEnabled && self.sampleState != SampleStateNone;
-    [[FTModuleManager sharedInstance] postMessageWithKey:FTMessageKeySessionHasReplay message:@{
-        FT_SESSION_HAS_REPLAY:@(hasReplay),
-        FT_RUM_SESSION_REPLAY_SAMPLE_RATE:@(self.config.sampleRate),
-        FT_RUM_SESSION_REPLAY_ON_ERROR_SAMPLE_RATE:@(self.config.sessionReplayOnErrorSampleRate),
-        FT_RUM_KEY_SAMPLED_FOR_ERROR_REPLAY:@(self.sampleState == SampleStateError)
-    }];
+    [self.recordingCoordinator handleSampleRateUpdate];
 }
 #pragma mark -- deal web sr local file
 - (void)checkLocalFiles:(NSMutableDictionary *)rootNodeDict slotID:(NSString *)slotID{
@@ -413,10 +291,6 @@ typedef NS_ENUM(NSInteger, SampleState) {
     return @"mask";
 }
 -(void)dealloc{
-    if(self.timer){
-        [self.timer invalidate];
-        self.timer = nil;
-    }
     [[FTModuleManager sharedInstance] removeMessageReceiver:self];
     FTInnerLogDebug(@"[session-replay] SessionReplayFeature dealloc");
 }

@@ -61,10 +61,18 @@
         self.parentType = ViewControllerTypeActivity;
     }else if ([viewController isKindOfClass:SFSafariViewController.class]){
         self.parentType = ViewControllerTypeSafari;
-    }else if([NSStringFromClass(viewController.class) containsString:@"UIHostingController"]){
+    }else if([FTViewControllerContext isSwiftUIViewController:viewController]){
         self.parentType = ViewControllerTypeSwiftUI;
     }else{
         self.parentType = ViewControllerTypeOther;
     }
+}
++ (BOOL)isSwiftUIViewController:(UIViewController *)viewController{
+    NSString *bundleName = [NSBundle bundleForClass:viewController.class].bundleURL.lastPathComponent;
+    if ([bundleName isEqualToString:@"SwiftUI.framework"]) {
+        return YES;
+    }
+    NSString *className = NSStringFromClass(viewController.class);
+    return [className hasPrefix:@"SwiftUI."] || [className hasPrefix:@"_TtC7SwiftUI"] || [className hasPrefix:@"_TtGC7SwiftUI"] || [className containsString:@"UIHostingController"];
 }
 @end

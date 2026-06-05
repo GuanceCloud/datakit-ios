@@ -275,6 +275,20 @@ static dispatch_once_t onceToken;
     }];
     return is;
 }
+-(BOOL)deleteUploadDataWithCount:(NSInteger)count{
+    __block BOOL is;
+    __weak __typeof(self) weakSelf = self;
+    [self zy_inDatabase:^(ZY_FMDatabase *db){
+        NSString *sqlStr = [NSString stringWithFormat:@"DELETE FROM %@ WHERE _id in (SELECT _id from '%@' WHERE op = ? or op = ? ORDER by _id ASC LIMIT ?)",FT_DB_TRACE_EVENT_TABLE_NAME,FT_DB_TRACE_EVENT_TABLE_NAME];
+        is = [db executeUpdate:sqlStr,FT_DATA_TYPE_LOGGING,FT_DATA_TYPE_RUM,@(count)];
+        if(weakSelf.enableLimitWithDbSize){
+            NSString *str = [NSString stringWithFormat:@"PRAGMA incremental_vacuum(%ld)", (long)count];
+            ZY_FMResultSet *set = [db executeQuery:str];
+            [set close];
+        }
+    }];
+    return is;
+}
 -(BOOL)deleteAllDatas{
     __block BOOL is;
     [self zy_inDatabase:^(ZY_FMDatabase *db){

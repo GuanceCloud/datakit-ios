@@ -41,7 +41,7 @@
     builder.textObfuscator = self.textObfuscator(context,attributes);
     builder.selectedSegmentIndex = [FTSRTextObfuscatingFactory shouldMaskInputElements:[attributes resolveTextAndInputPrivacyLevel:context.recorder]]? nil : @(segment.selectedSegmentIndex);
     if (@available(iOS 13.0, *)) {
-        builder.selectedSegmentTintColor = segment.selectedSegmentTintColor;
+        builder.selectedSegmentTintColor = [FTSRColorSnapshot snapshotWithColor:segment.selectedSegmentTintColor traitCollection:segment.traitCollection];
     }
     builder.backgroundWireframeID = [ids[0] intValue];
     builder.segmentWireframeIDs = [ids subarrayWithRange:NSMakeRange(1, ids.count-1)];
@@ -63,7 +63,7 @@
     if(self.segmentWireframeIDs.count <= 0 || self.segmentWireframeIDs.count != self.segmentTitles.count || [self.selectedSegmentIndex intValue]< 0){
         return @[];
     }
-    NSString *color = self.attributes.backgroundColor? [FTSRUtils colorHexString:self.attributes.backgroundColor.CGColor]:[FTSystemColors tertiarySystemFillColorStr];
+    NSString *color = self.attributes.backgroundColor.hexString?:[FTSystemColors tertiarySystemFillColorStr];
 
     FTSRShapeWireframe *background = [[FTSRShapeWireframe alloc]initWithIdentifier:self.backgroundWireframeID frame:self.wireframeRect clip:self.attributes.clip backgroundColor:color cornerRadius:@(8) opacity:@(self.attributes.alpha)];
     
@@ -81,7 +81,7 @@
             isSelected = [self.selectedSegmentIndex intValue] == i;
         }
         segment.border = [[FTSRShapeBorder alloc]initWithColor:isSelected?[FTSystemColors secondarySystemFillColorStr]:[FTSystemColors clearColorStr] width:1];
-        segment.shapeStyle = [[FTSRShapeStyle alloc]initWithBackgroundColor:isSelected?(self.selectedSegmentTintColor?[FTSRUtils colorHexString:self.selectedSegmentTintColor.CGColor]:[FTSystemColors tertiarySystemBackgroundColorStr]):[FTSystemColors clearColorStr] cornerRadius:@(8) opacity:@(self.attributes.alpha)];
+        segment.shapeStyle = [[FTSRShapeStyle alloc]initWithBackgroundColor:isSelected?(self.selectedSegmentTintColor.hexString?:[FTSystemColors tertiarySystemBackgroundColorStr]):[FTSystemColors clearColorStr] cornerRadius:@(8) opacity:@(self.attributes.alpha)];
         segment.text = [self.textObfuscator mask:self.segmentTitles[i]]?:@"";
         segment.textStyle = [[FTSRTextStyle alloc]initWithSize:14 color:[FTSystemColors labelColorStr] family:nil];
         FTSRTextPosition *textPosition = [[FTSRTextPosition alloc]init];
@@ -93,4 +93,3 @@
     return segments;
 }
 @end
-

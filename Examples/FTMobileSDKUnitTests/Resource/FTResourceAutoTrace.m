@@ -48,6 +48,8 @@
     NSString *appid = [processInfo environment][@"APP_ID"];
     FTMobileConfig *config = [[FTMobileConfig alloc]initWithDatakitUrl:url];
     config.autoSync = NO;
+    config.enableDataFilter = NO;
+    config.enableSDKDebugLog = YES;
     FTRumConfig *rumConfig = [[FTRumConfig alloc]initWithAppid:appid];
     rumConfig.enableTraceUserResource = enable;
     [FTMobileAgent startWithConfigOptions:config];
@@ -206,6 +208,7 @@
     [self waitForExpectationsWithTimeout:30 handler:^(NSError *error) {
         XCTAssertNil(error);
     }];
+    [session finishTasksAndInvalidate];
     dispatch_sync([FTURLSessionInterceptor shared].queue, ^{});
     [[FTGlobalRumManager sharedInstance].rumManager syncProcess];
     NSArray *newArray = [[FTTrackerEventDBTool sharedManager] getAllDatas];
@@ -255,8 +258,7 @@
     }];
     XCTestExpectation *expectation = [self expectationWithDescription:@"SDK shutdown test"];
     dispatch_group_t group = dispatch_group_create();
-    NSInteger count = 0;
-    __block BOOL isSDKClose = NO;
+    dispatch_queue_t lifecycleQueue = dispatch_queue_create("com.ft.resource_auto_trace.lifecycle", DISPATCH_QUEUE_SERIAL);
     for (int i = 0; i<100; i++) {
         dispatch_group_enter(group);
         dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0), ^{
@@ -264,15 +266,13 @@
                 dispatch_group_leave(group);
             }];
         });
-        dispatch_async(dispatch_queue_create(0, 0), ^{
-            if(!isSDKClose){
-                isSDKClose = YES;
-                [FTMobileAgent shutDown];
-            }
-            dispatch_async(dispatch_get_main_queue(), ^{
+        dispatch_group_enter(group);
+        dispatch_async(lifecycleQueue, ^{
+            [FTMobileAgent shutDown];
+            dispatch_sync(dispatch_get_main_queue(), ^{
                 [self initSDK];
-                isSDKClose = NO;
             });
+            dispatch_group_leave(group);
         });
     }
     dispatch_group_notify(group, dispatch_get_main_queue(), ^{
@@ -288,6 +288,7 @@
     NSString *appid = [processInfo environment][@"APP_ID"];
     FTMobileConfig *config = [[FTMobileConfig alloc]initWithDatakitUrl:url];
     config.autoSync = NO;
+    config.enableDataFilter = NO;
     FTRumConfig *rumConfig = [[FTRumConfig alloc]initWithAppid:appid];
     rumConfig.enableTraceUserResource = YES;
     [FTMobileAgent startWithConfigOptions:config];

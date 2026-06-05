@@ -10,7 +10,7 @@
 #import <UIKit/UIKit.h>
 #import "FTSRNodeWireframesBuilder.h"
 
-@class FTViewAttributes;
+@class FTViewAttributes, FTSRColorSnapshot;
 @protocol FTSRTextObfuscatingProtocol;
 NS_ASSUME_NONNULL_BEGIN
 typedef id<FTSRTextObfuscatingProtocol>_Nullable(^FTTextViewObfuscator)(FTViewTreeRecordingContext *context,FTViewAttributes *attributes,BOOL isSensitive,BOOL isEditable);
@@ -20,8 +20,8 @@ typedef id<FTSRTextObfuscatingProtocol>_Nullable(^FTTextViewObfuscator)(FTViewTr
 
 @property (nonatomic, copy) NSString *text;
 @property (nonatomic, assign) NSTextAlignment textAlignment;
-@property (nonatomic, strong) UIColor * textColor;
-@property (nonatomic, strong) UIFont *font;
+@property (nonatomic, strong, nullable) FTSRColorSnapshot * textColor;
+@property (nonatomic, assign) CGFloat fontSize;
 @property (nonatomic, assign) CGRect contentRect;
 @property (nonatomic, strong) id<FTSRTextObfuscatingProtocol> textObfuscator;
 @end

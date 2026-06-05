@@ -28,7 +28,25 @@ static char *srIdentifierKey = "FTSRIdentifierKey";
     CGFloat g = 0;
     CGFloat b = 0;
     CGFloat a = 0;
-    [self getRed:&r green:&g blue:&b alpha:&a];
+    if (![self getRed:&r green:&g blue:&b alpha:&a]) {
+        CGColorRef color = self.CGColor;
+        if (color) {
+            size_t count = CGColorGetNumberOfComponents(color);
+            const CGFloat *components = CGColorGetComponents(color);
+            if (count == 2) {
+                r = components[0];
+                g = components[0];
+                b = components[0];
+                a = CGColorGetAlpha(color);
+            }
+        }
+    }
     return [NSString stringWithFormat:@"%02X%02X%02X%02X",(int)round(r * 255), (int)round(g * 255), (int)round(b * 255), (int)round(a * 255)];
+}
+- (UIColor *)ftsr_resolvedColorWithTraitCollection:(nullable UITraitCollection *)traitCollection{
+    if (@available(iOS 13.0, *)) {
+        return [self resolvedColorWithTraitCollection:traitCollection ?: [UITraitCollection currentTraitCollection]];
+    }
+    return self;
 }
 @end

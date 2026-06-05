@@ -7,20 +7,28 @@
 //
 
 #import <Foundation/Foundation.h>
-@class FTPerformancePreset,FTDirectory;
+@class FTPerformancePreset,FTDirectory,FTFeatureDirectories;
 NS_ASSUME_NONNULL_BEGIN
 @protocol FTWriter,FTReader,FTCacheWriter;
+typedef NS_ENUM(NSInteger, FTTrackingConsent) {
+    FTTrackingConsentGranted,
+    FTTrackingConsentNotGranted,
+    FTTrackingConsentPending,
+    FTTrackingConsentErrorSampled,
+};
 @interface FTFeatureStorage : NSObject
 -(instancetype)initWithFeatureName:(NSString *)featureName
                              queue:(dispatch_queue_t)queue
-                         directory:(FTDirectory *)directory
-                    cacheDirectory:(FTDirectory *)cacheDirectory
+                       directories:(FTFeatureDirectories *)directories
                        performance:(FTPerformancePreset *)performance;
-- (id<FTWriter>)writer;
-- (nullable id<FTCacheWriter>)cacheWriter;
-- (id<FTWriter>)webViewWriter;
-- (nullable id<FTWriter>)webViewCacheWriter;
+
+- (void)updateTrackingConsent:(FTTrackingConsent)trackingConsent;
+- (id<FTWriter>)writerForTrackingConsent:(FTTrackingConsent)trackingConsent NS_SWIFT_NAME(writer(for:));
+- (id<FTWriter>)webViewWriterForTrackingConsent:(FTTrackingConsent)trackingConsent NS_SWIFT_NAME(webViewWriter(for:));
 - (id<FTReader>)reader;
+- (nullable id<FTCacheWriter>)cacheWriter;
+- (void)migrateUnauthorizedDataToConsent:(FTTrackingConsent)trackingConsent;
+- (void)clearUnauthorizedData;
 - (void)clearAllData;
 - (void)setIgnoreFilesAgeWhenReading:(BOOL)ignore;
 @end

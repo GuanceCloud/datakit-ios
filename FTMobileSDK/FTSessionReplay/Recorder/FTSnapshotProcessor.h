@@ -9,14 +9,12 @@
 #import <Foundation/Foundation.h>
 
 NS_ASSUME_NONNULL_BEGIN
-@class FTViewTreeSnapshot,FTTouchSnapshot,FTResourceProcessor;
-@protocol FTWriter;
+@class FTViewTreeSnapshot,FTTouchSnapshot,FTResourceProcessor,FTRecordWriter;
 @interface FTSnapshotProcessor : NSObject
 
--(instancetype)initWithQueue:(dispatch_queue_t)queue writer:(id<FTWriter>)writer resourceProcessor:(FTResourceProcessor *)resourceProcessor;
+-(instancetype)initWithQueue:(dispatch_queue_t)queue recordWriter:(FTRecordWriter *)recordWriter resourceProcessor:(FTResourceProcessor *)resourceProcessor;
 - (void)process:(FTViewTreeSnapshot *)viewTreeSnapshot touchSnapshot:(nullable FTTouchSnapshot *)touchSnapshot;
 
-- (void)changeWriter:(id<FTWriter>)writer needUpdateFullSnapshot:(BOOL)update;
 @end
 
 NS_ASSUME_NONNULL_END

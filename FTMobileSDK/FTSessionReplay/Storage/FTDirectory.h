@@ -21,6 +21,7 @@ NS_ASSUME_NONNULL_BEGIN
 - (BOOL)hasFileWithName:(NSString *)fileName;
 - (nullable FTFile *)fileWithName:(NSString *)fileName;
 - (nullable FTDirectory *)createSubdirectoryWithPath:(NSString *)path;
+- (void)moveAllFilesToDestinationDirectory:(FTDirectory *)directory;
 - (void)deleteAllFiles;
 @end
 
