@@ -10,6 +10,25 @@ STATIC_DIR="${STAGING_DIR}/SDK-Static"
 DYNAMIC_DIR="${STAGING_DIR}/SDK-Dynamic"
 SDK_ZIP="${BUILD_DIR}/SDK.zip"
 
+STATIC_XCFRAMEWORKS=(
+  "FTMobileSDK.xcframework"
+  "FTSessionReplay.xcframework"
+  "FTMobileExtension.xcframework"
+  "FTMobileExtension-DisableSwizzlingResource.xcframework"
+  "FTMobileSDK-DisableSwizzlingResource.xcframework"
+)
+
+DYNAMIC_XCFRAMEWORKS=(
+  "FTMobileSDK-Dynamic.xcframework"
+  "FTSessionReplay-Dynamic.xcframework"
+  "FTMobileSDK-Dynamic-DisableSwizzlingResource.xcframework"
+)
+
+PACKAGE_XCFRAMEWORKS=(
+  "${STATIC_XCFRAMEWORKS[@]}"
+  "${DYNAMIC_XCFRAMEWORKS[@]}"
+)
+
 INTERMEDIATE_DIRS=(
   "FTMobileSDK"
   "FTMobileSDK-Dynamic"
@@ -35,11 +54,12 @@ show_help() {
   echo "  bash $0"
   echo ""
   echo "Output:"
-  echo "  build/SDK.zip"
+  local xcframework_name
+  for xcframework_name in "${PACKAGE_XCFRAMEWORKS[@]}"; do
+    echo "  build/${xcframework_name}.zip"
+  done
   echo ""
-  echo "Unzip structure:"
-  echo "  SDK-Static/*.xcframework"
-  echo "  SDK-Dynamic/*.xcframework"
+  echo "Each zip contains one XCFramework at the archive root."
 }
 
 cleanup_temp_files() {
@@ -50,6 +70,15 @@ cleanup_temp_files() {
   local dir_name
   for dir_name in "${INTERMEDIATE_DIRS[@]}"; do
     rm -rf "${BUILD_DIR}/${dir_name}"
+  done
+}
+
+remove_output_zips() {
+  rm -f "${SDK_ZIP}"
+
+  local xcframework_name
+  for xcframework_name in "${PACKAGE_XCFRAMEWORKS[@]}"; do
+    rm -f "${BUILD_DIR}/${xcframework_name}.zip"
   done
 }
 
@@ -69,7 +98,7 @@ check_env() {
 
 prepare_output() {
   mkdir -p "${BUILD_DIR}"
-  rm -f "${SDK_ZIP}"
+  remove_output_zips
   cleanup_temp_files
   mkdir -p "${STATIC_DIR}" "${DYNAMIC_DIR}"
 }
@@ -120,15 +149,18 @@ validate_package_dir() {
 }
 
 validate_zip() {
-  if [[ ! -s "${SDK_ZIP}" ]]; then
-    error "Zip file not found or empty: ${SDK_ZIP}"
+  local zip_path="$1"
+  local xcframework_name="$2"
+
+  if [[ ! -s "${zip_path}" ]]; then
+    error "Zip file not found or empty: ${zip_path}"
   fi
 
-  if ! zipinfo -1 "${SDK_ZIP}" > /dev/null 2>&1; then
-    error "Invalid zip file: ${SDK_ZIP}"
+  if ! zipinfo -1 "${zip_path}" "${xcframework_name}/Info.plist" > /dev/null 2>&1; then
+    error "Invalid zip file or missing XCFramework Info.plist: ${zip_path}"
   fi
 
-  info "Validated zip: ${SDK_ZIP}"
+  info "Validated zip: ${zip_path}"
 }
 
 build_dynamic_package() {
@@ -149,9 +181,7 @@ build_dynamic_package() {
     --disable-swizzling-resource
 
   validate_package_dir "${DYNAMIC_DIR}" \
-    "FTMobileSDK-Dynamic.xcframework" \
-    "FTSessionReplay-Dynamic.xcframework" \
-    "FTMobileSDK-Dynamic-DisableSwizzlingResource.xcframework"
+    "${DYNAMIC_XCFRAMEWORKS[@]}"
 }
 
 build_static_package() {
@@ -183,20 +213,32 @@ build_static_package() {
     --disable-swizzling-resource
 
   validate_package_dir "${STATIC_DIR}" \
-    "FTMobileSDK.xcframework" \
-    "FTSessionReplay.xcframework" \
-    "FTMobileExtension.xcframework" \
-    "FTMobileExtension-DisableSwizzlingResource.xcframework" \
-    "FTMobileSDK-DisableSwizzlingResource.xcframework"
+    "${STATIC_XCFRAMEWORKS[@]}"
 }
 
-create_sdk_zip() {
-  info "Compressing SDK package -> ${SDK_ZIP}"
+create_xcframework_zip() {
+  local package_dir="$1"
+  local xcframework_name="$2"
+  local zip_path="${BUILD_DIR}/${xcframework_name}.zip"
+
+  info "Compressing ${xcframework_name} -> ${zip_path}"
   (
-    cd "${STAGING_DIR}"
-    zip -r -q "${SDK_ZIP}" "SDK-Static" "SDK-Dynamic"
+    cd "${package_dir}"
+    zip -r -q "${zip_path}" "${xcframework_name}"
   )
-  validate_zip
+  validate_zip "${zip_path}" "${xcframework_name}"
+}
+
+create_xcframework_zips() {
+  local xcframework_name
+
+  for xcframework_name in "${STATIC_XCFRAMEWORKS[@]}"; do
+    create_xcframework_zip "${STATIC_DIR}" "${xcframework_name}"
+  done
+
+  for xcframework_name in "${DYNAMIC_XCFRAMEWORKS[@]}"; do
+    create_xcframework_zip "${DYNAMIC_DIR}" "${xcframework_name}"
+  done
 }
 
 main() {
@@ -219,9 +261,13 @@ main() {
   prepare_output
   build_static_package
   build_dynamic_package
-  create_sdk_zip
+  create_xcframework_zips
 
-  info "SDK zip: ${SDK_ZIP}"
+  info "SDK zip files:"
+  local xcframework_name
+  for xcframework_name in "${PACKAGE_XCFRAMEWORKS[@]}"; do
+    info "  ${BUILD_DIR}/${xcframework_name}.zip"
+  done
 }
 
 main "$@"
