@@ -1190,6 +1190,29 @@
 		A1F0B1002FA9000100A0A001 /* FTUIHostingViewRecorder.h in Headers */ = {isa = PBXBuildFile; fileRef = A1F0B1022FA9000100A0A001 /* FTUIHostingViewRecorder.h */; };
 		A1F0B1012FA9000100A0A001 /* FTUIHostingViewRecorder.m in Sources */ = {isa = PBXBuildFile; fileRef = A1F0B1032FA9000100A0A001 /* FTUIHostingViewRecorder.m */; };
 		A1F0B1052FA9000100A0A001 /* FTSwiftUIReflection.swift in Sources */ = {isa = PBXBuildFile; fileRef = A1F0B1042FA9000100A0A001 /* FTSwiftUIReflection.swift */; };
+		A1F0B1302FA9000100A0A001 /* CGColor+Hex.swift in Sources */ = {isa = PBXBuildFile; fileRef = A1F0B1202FA9000100A0A001 /* CGColor+Hex.swift */; };
+		A1F0B1312FA9000100A0A001 /* CGImage+SwiftUI.swift in Sources */ = {isa = PBXBuildFile; fileRef = A1F0B1212FA9000100A0A001 /* CGImage+SwiftUI.swift */; };
+		A1F0B1322FA9000100A0A001 /* Color.swift in Sources */ = {isa = PBXBuildFile; fileRef = A1F0B1222FA9000100A0A001 /* Color.swift */; };
+		A1F0B1332FA9000100A0A001 /* Color+Reflection.swift in Sources */ = {isa = PBXBuildFile; fileRef = A1F0B1232FA9000100A0A001 /* Color+Reflection.swift */; };
+		A1F0B1342FA9000100A0A001 /* DisplayList.swift in Sources */ = {isa = PBXBuildFile; fileRef = A1F0B1242FA9000100A0A001 /* DisplayList.swift */; };
+		A1F0B1352FA9000100A0A001 /* DisplayList+Reflection.swift in Sources */ = {isa = PBXBuildFile; fileRef = A1F0B1252FA9000100A0A001 /* DisplayList+Reflection.swift */; };
+		A1F0B1362FA9000100A0A001 /* Drawing.swift in Sources */ = {isa = PBXBuildFile; fileRef = A1F0B1262FA9000100A0A001 /* Drawing.swift */; };
+		A1F0B1372FA9000100A0A001 /* GraphicsFilter.swift in Sources */ = {isa = PBXBuildFile; fileRef = A1F0B1272FA9000100A0A001 /* GraphicsFilter.swift */; };
+		A1F0B1382FA9000100A0A001 /* GraphicsFilter+Reflection.swift in Sources */ = {isa = PBXBuildFile; fileRef = A1F0B1282FA9000100A0A001 /* GraphicsFilter+Reflection.swift */; };
+		A1F0B1392FA9000100A0A001 /* GraphicsImage.swift in Sources */ = {isa = PBXBuildFile; fileRef = A1F0B1292FA9000100A0A001 /* GraphicsImage.swift */; };
+		A1F0B13A2FA9000100A0A001 /* GraphicsImage+Reflection.swift in Sources */ = {isa = PBXBuildFile; fileRef = A1F0B12A2FA9000100A0A001 /* GraphicsImage+Reflection.swift */; };
+		A1F0B13B2FA9000100A0A001 /* ImageRenderer.swift in Sources */ = {isa = PBXBuildFile; fileRef = A1F0B12B2FA9000100A0A001 /* ImageRenderer.swift */; };
+		A1F0B13C2FA9000100A0A001 /* ImageRepresentable.swift in Sources */ = {isa = PBXBuildFile; fileRef = A1F0B12C2FA9000100A0A001 /* ImageRepresentable.swift */; };
+		A1F0B13D2FA9000100A0A001 /* Path+SVG.swift in Sources */ = {isa = PBXBuildFile; fileRef = A1F0B12D2FA9000100A0A001 /* Path+SVG.swift */; };
+		A1F0B13E2FA9000100A0A001 /* Reflection.swift in Sources */ = {isa = PBXBuildFile; fileRef = A1F0B12E2FA9000100A0A001 /* Reflection.swift */; };
+		A1F0B13F2FA9000100A0A001 /* ReflectionMirror.swift in Sources */ = {isa = PBXBuildFile; fileRef = A1F0B12F2FA9000100A0A001 /* ReflectionMirror.swift */; };
+		A1F0B1402FA9000100A0A001 /* Reflector.swift in Sources */ = {isa = PBXBuildFile; fileRef = A1F0B1502FA9000100A0A001 /* Reflector.swift */; };
+		A1F0B1412FA9000100A0A001 /* ShapeResource.swift in Sources */ = {isa = PBXBuildFile; fileRef = A1F0B1512FA9000100A0A001 /* ShapeResource.swift */; };
+		A1F0B1422FA9000100A0A001 /* ShapeResourceBuilder.swift in Sources */ = {isa = PBXBuildFile; fileRef = A1F0B1522FA9000100A0A001 /* ShapeResourceBuilder.swift */; };
+		A1F0B1432FA9000100A0A001 /* SwiftUIWireframesBuilder.swift in Sources */ = {isa = PBXBuildFile; fileRef = A1F0B1532FA9000100A0A001 /* SwiftUIWireframesBuilder.swift */; };
+		A1F0B1442FA9000100A0A001 /* Text.swift in Sources */ = {isa = PBXBuildFile; fileRef = A1F0B1542FA9000100A0A001 /* Text.swift */; };
+		A1F0B1452FA9000100A0A001 /* Text+Reflection.swift in Sources */ = {isa = PBXBuildFile; fileRef = A1F0B1552FA9000100A0A001 /* Text+Reflection.swift */; };
+		A1F0B1462FA9000100A0A001 /* XoshiroRandomNumberGenerator.swift in Sources */ = {isa = PBXBuildFile; fileRef = A1F0B1562FA9000100A0A001 /* XoshiroRandomNumberGenerator.swift */; };
 		A1F0C0032FAB000100A0A001 /* FTUploadStatus.h in Headers */ = {isa = PBXBuildFile; fileRef = A1F0C0012FAB000100A0A001 /* FTUploadStatus.h */; };
 		A1F0C0042FAB000100A0A001 /* FTUploadStatus.m in Sources */ = {isa = PBXBuildFile; fileRef = A1F0C0022FAB000100A0A001 /* FTUploadStatus.m */; };
 		B400847070460A7056D4AD5C /* FTDataFilterPullRequest.h in Headers */ = {isa = PBXBuildFile; fileRef = F528B7442554E16EF23BA25C /* FTDataFilterPullRequest.h */; };
@@ -1775,6 +1798,29 @@
 		A1F0B1022FA9000100A0A001 /* FTUIHostingViewRecorder.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = FTUIHostingViewRecorder.h; sourceTree = "<group>"; };
 		A1F0B1032FA9000100A0A001 /* FTUIHostingViewRecorder.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = FTUIHostingViewRecorder.m; sourceTree = "<group>"; };
 		A1F0B1042FA9000100A0A001 /* FTSwiftUIReflection.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FTSwiftUIReflection.swift; sourceTree = "<group>"; };
+		A1F0B1202FA9000100A0A001 /* CGColor+Hex.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "CGColor+Hex.swift"; sourceTree = "<group>"; };
+		A1F0B1212FA9000100A0A001 /* CGImage+SwiftUI.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "CGImage+SwiftUI.swift"; sourceTree = "<group>"; };
+		A1F0B1222FA9000100A0A001 /* Color.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Color.swift; sourceTree = "<group>"; };
+		A1F0B1232FA9000100A0A001 /* Color+Reflection.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "Color+Reflection.swift"; sourceTree = "<group>"; };
+		A1F0B1242FA9000100A0A001 /* DisplayList.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DisplayList.swift; sourceTree = "<group>"; };
+		A1F0B1252FA9000100A0A001 /* DisplayList+Reflection.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "DisplayList+Reflection.swift"; sourceTree = "<group>"; };
+		A1F0B1262FA9000100A0A001 /* Drawing.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Drawing.swift; sourceTree = "<group>"; };
+		A1F0B1272FA9000100A0A001 /* GraphicsFilter.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GraphicsFilter.swift; sourceTree = "<group>"; };
+		A1F0B1282FA9000100A0A001 /* GraphicsFilter+Reflection.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "GraphicsFilter+Reflection.swift"; sourceTree = "<group>"; };
+		A1F0B1292FA9000100A0A001 /* GraphicsImage.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GraphicsImage.swift; sourceTree = "<group>"; };
+		A1F0B12A2FA9000100A0A001 /* GraphicsImage+Reflection.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "GraphicsImage+Reflection.swift"; sourceTree = "<group>"; };
+		A1F0B12B2FA9000100A0A001 /* ImageRenderer.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ImageRenderer.swift; sourceTree = "<group>"; };
+		A1F0B12C2FA9000100A0A001 /* ImageRepresentable.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ImageRepresentable.swift; sourceTree = "<group>"; };
+		A1F0B12D2FA9000100A0A001 /* Path+SVG.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "Path+SVG.swift"; sourceTree = "<group>"; };
+		A1F0B12E2FA9000100A0A001 /* Reflection.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Reflection.swift; sourceTree = "<group>"; };
+		A1F0B12F2FA9000100A0A001 /* ReflectionMirror.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ReflectionMirror.swift; sourceTree = "<group>"; };
+		A1F0B1502FA9000100A0A001 /* Reflector.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Reflector.swift; sourceTree = "<group>"; };
+		A1F0B1512FA9000100A0A001 /* ShapeResource.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ShapeResource.swift; sourceTree = "<group>"; };
+		A1F0B1522FA9000100A0A001 /* ShapeResourceBuilder.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ShapeResourceBuilder.swift; sourceTree = "<group>"; };
+		A1F0B1532FA9000100A0A001 /* SwiftUIWireframesBuilder.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SwiftUIWireframesBuilder.swift; sourceTree = "<group>"; };
+		A1F0B1542FA9000100A0A001 /* Text.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Text.swift; sourceTree = "<group>"; };
+		A1F0B1552FA9000100A0A001 /* Text+Reflection.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "Text+Reflection.swift"; sourceTree = "<group>"; };
+		A1F0B1562FA9000100A0A001 /* XoshiroRandomNumberGenerator.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = XoshiroRandomNumberGenerator.swift; sourceTree = "<group>"; };
 		A1F0C0012FAB000100A0A001 /* FTUploadStatus.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = FTUploadStatus.h; sourceTree = "<group>"; };
 		A1F0C0022FAB000100A0A001 /* FTUploadStatus.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = FTUploadStatus.m; sourceTree = "<group>"; };
 		ABC7A3EB51D767D3CD90D051 /* FTSwiftUIViewNameExtractor.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = FTSwiftUIViewNameExtractor.swift; sourceTree = "<group>"; };
@@ -2852,7 +2898,30 @@
 		A1F0B1072FA9000100A0A001 /* SwiftUI */ = {
 			isa = PBXGroup;
 			children = (
+				A1F0B1202FA9000100A0A001 /* CGColor+Hex.swift */,
+				A1F0B1212FA9000100A0A001 /* CGImage+SwiftUI.swift */,
+				A1F0B1222FA9000100A0A001 /* Color.swift */,
+				A1F0B1232FA9000100A0A001 /* Color+Reflection.swift */,
+				A1F0B1242FA9000100A0A001 /* DisplayList.swift */,
+				A1F0B1252FA9000100A0A001 /* DisplayList+Reflection.swift */,
+				A1F0B1262FA9000100A0A001 /* Drawing.swift */,
+				A1F0B1272FA9000100A0A001 /* GraphicsFilter.swift */,
+				A1F0B1282FA9000100A0A001 /* GraphicsFilter+Reflection.swift */,
+				A1F0B1292FA9000100A0A001 /* GraphicsImage.swift */,
+				A1F0B12A2FA9000100A0A001 /* GraphicsImage+Reflection.swift */,
+				A1F0B12B2FA9000100A0A001 /* ImageRenderer.swift */,
+				A1F0B12C2FA9000100A0A001 /* ImageRepresentable.swift */,
+				A1F0B12D2FA9000100A0A001 /* Path+SVG.swift */,
+				A1F0B12E2FA9000100A0A001 /* Reflection.swift */,
+				A1F0B12F2FA9000100A0A001 /* ReflectionMirror.swift */,
+				A1F0B1502FA9000100A0A001 /* Reflector.swift */,
+				A1F0B1512FA9000100A0A001 /* ShapeResource.swift */,
+				A1F0B1522FA9000100A0A001 /* ShapeResourceBuilder.swift */,
 				A1F0B1042FA9000100A0A001 /* FTSwiftUIReflection.swift */,
+				A1F0B1532FA9000100A0A001 /* SwiftUIWireframesBuilder.swift */,
+				A1F0B1542FA9000100A0A001 /* Text.swift */,
+				A1F0B1552FA9000100A0A001 /* Text+Reflection.swift */,
+				A1F0B1562FA9000100A0A001 /* XoshiroRandomNumberGenerator.swift */,
 			);
 			path = SwiftUI;
 			sourceTree = "<group>";
@@ -4229,7 +4298,30 @@
 				17018D432F50253200688324 /* FTUIDatePickerRecorder.m in Sources */,
 				17018D1F2F50253200688324 /* FTUIImageResource.m in Sources */,
 				A1F0B1012FA9000100A0A001 /* FTUIHostingViewRecorder.m in Sources */,
+				A1F0B1302FA9000100A0A001 /* CGColor+Hex.swift in Sources */,
+				A1F0B1312FA9000100A0A001 /* CGImage+SwiftUI.swift in Sources */,
+				A1F0B1322FA9000100A0A001 /* Color.swift in Sources */,
+				A1F0B1332FA9000100A0A001 /* Color+Reflection.swift in Sources */,
+				A1F0B1342FA9000100A0A001 /* DisplayList.swift in Sources */,
+				A1F0B1352FA9000100A0A001 /* DisplayList+Reflection.swift in Sources */,
+				A1F0B1362FA9000100A0A001 /* Drawing.swift in Sources */,
+				A1F0B1372FA9000100A0A001 /* GraphicsFilter.swift in Sources */,
+				A1F0B1382FA9000100A0A001 /* GraphicsFilter+Reflection.swift in Sources */,
+				A1F0B1392FA9000100A0A001 /* GraphicsImage.swift in Sources */,
+				A1F0B13A2FA9000100A0A001 /* GraphicsImage+Reflection.swift in Sources */,
+				A1F0B13B2FA9000100A0A001 /* ImageRenderer.swift in Sources */,
+				A1F0B13C2FA9000100A0A001 /* ImageRepresentable.swift in Sources */,
+				A1F0B13D2FA9000100A0A001 /* Path+SVG.swift in Sources */,
+				A1F0B13E2FA9000100A0A001 /* Reflection.swift in Sources */,
+				A1F0B13F2FA9000100A0A001 /* ReflectionMirror.swift in Sources */,
+				A1F0B1402FA9000100A0A001 /* Reflector.swift in Sources */,
+				A1F0B1412FA9000100A0A001 /* ShapeResource.swift in Sources */,
+				A1F0B1422FA9000100A0A001 /* ShapeResourceBuilder.swift in Sources */,
 				A1F0B1052FA9000100A0A001 /* FTSwiftUIReflection.swift in Sources */,
+				A1F0B1432FA9000100A0A001 /* SwiftUIWireframesBuilder.swift in Sources */,
+				A1F0B1442FA9000100A0A001 /* Text.swift in Sources */,
+				A1F0B1452FA9000100A0A001 /* Text+Reflection.swift in Sources */,
+				A1F0B1462FA9000100A0A001 /* XoshiroRandomNumberGenerator.swift in Sources */,
 				17018D322F50253200688324 /* FTUIImageViewRecorder.m in Sources */,
 				17018D4D2F50253200688324 /* FTUILabelRecorder.m in Sources */,
 				17018D3E2F50253200688324 /* FTUINavigationBarRecorder.m in Sources */,

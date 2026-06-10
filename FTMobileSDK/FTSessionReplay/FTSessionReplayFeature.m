@@ -44,7 +44,8 @@
     self = [super init];
     if(self){
         _name = @"session-replay";
-        _processorsQueue = dispatch_queue_create("com.ft.session-replay.processors", 0);
+        dispatch_queue_attr_t attr = dispatch_queue_attr_make_with_qos_class(DISPATCH_QUEUE_SERIAL, QOS_CLASS_UTILITY, 0);
+        _processorsQueue = dispatch_queue_create("com.ft.session-replay.processors", attr);
         _requestBuilder = [[FTSegmentRequest alloc]init];
         FTPerformancePresetOverride *performancePresetOverride = [[FTPerformancePresetOverride alloc]initWithMeanFileAge:2 minUploadDelay:0.6];
         performancePresetOverride.maxFileSize = FT_MAX_DATA_LENGTH;

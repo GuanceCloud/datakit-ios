@@ -16,6 +16,7 @@
 #import "FTInnerLog.h"
 #import "FTInternalConstants.h"
 #import "FTDataFilterManager.h"
+#import "FTJSONUtil.h"
 #import <objc/runtime.h>
 @interface FTRequest()
 - (BOOL)shouldAppendDisableServerFilter;
@@ -131,7 +132,8 @@
     [mutableRequest setValue:@"true" forHTTPHeaderField:FT_HTTP_HEADER_X_SDK_INTERNAL_REQUEST];
 }
 - (NSMutableURLRequest *)adaptedRequest:(NSMutableURLRequest *)mutableRequest{
-    if (!self.requestBody || !self.events) {
+    id<FTRequestBodyProtocol> requestBody = self.requestBody;
+    if (!requestBody || !self.events) {
         return nil;
     }
     //Set header
@@ -140,7 +142,7 @@
     //Set request method
     mutableRequest.HTTPMethod = self.httpMethod;
     //body
-    NSString *body = [self.requestBody getRequestBodyWithEventArray:self.events packageId:packageId enableIntegerCompatible:self.enableDataIntegerCompatible];
+    NSString *body = [requestBody getRequestBodyWithEventArray:self.events packageId:packageId enableIntegerCompatible:self.enableDataIntegerCompatible];
     mutableRequest.HTTPBody = [body dataUsingEncoding:NSUTF8StringEncoding];
     return [self compression:mutableRequest];
 }
@@ -165,11 +167,75 @@
     return @"/v1/write/logging";
 }
 @end
+@interface FTRumRequest()
++ (NSArray *)deduplicatedRumViewEvents:(NSArray *)events;
++ (NSString *)rumViewIdForEvent:(FTRecordModel *)event;
+@end
 @implementation FTRumRequest
+-(instancetype)initWithEvents:(NSArray<FTRecordModel *> *)events{
+    self = [super initWithEvents:[FTRumRequest deduplicatedRumViewEvents:events]];
+    return self;
+}
 -(id<FTRequestBodyProtocol>)requestBody{
     return [[FTRequestLineBody alloc]init];
 }
 -(NSString *)path{
     return @"/v1/write/rum";
+}
++ (NSArray *)deduplicatedRumViewEvents:(NSArray *)events{
+    if (events.count <= 1) {
+        return events;
+    }
+    NSMutableDictionary<NSString *, NSNumber *> *selectedIndexes = [NSMutableDictionary dictionary];
+    [events enumerateObjectsUsingBlock:^(FTRecordModel *obj, NSUInteger idx, BOOL * _Nonnull stop) {
+        NSString *viewId = [self rumViewIdForEvent:obj];
+        if (viewId.length == 0) {
+            return;
+        }
+        NSNumber *selectedIndex = selectedIndexes[viewId];
+        if (!selectedIndex) {
+            selectedIndexes[viewId] = @(idx);
+            return;
+        }
+        FTRecordModel *selectedEvent = events[selectedIndex.unsignedIntegerValue];
+        if (obj._id.longLongValue > selectedEvent._id.longLongValue) {
+            selectedIndexes[viewId] = @(idx);
+        }
+    }];
+    if (selectedIndexes.count == 0) {
+        return events;
+    }
+    NSMutableArray *deduplicatedEvents = [NSMutableArray arrayWithCapacity:events.count];
+    [events enumerateObjectsUsingBlock:^(FTRecordModel *obj, NSUInteger idx, BOOL * _Nonnull stop) {
+        NSString *viewId = [self rumViewIdForEvent:obj];
+        NSNumber *selectedIndex = viewId.length > 0 ? selectedIndexes[viewId] : nil;
+        if (!selectedIndex || selectedIndex.unsignedIntegerValue == idx) {
+            [deduplicatedEvents addObject:obj];
+        }
+    }];
+    return [deduplicatedEvents copy];
+}
++ (NSString *)rumViewIdForEvent:(FTRecordModel *)event{
+    if (![event isKindOfClass:FTRecordModel.class] || ![event.op isEqualToString:FT_DATA_TYPE_RUM]) {
+        return nil;
+    }
+    NSDictionary *item = [FTJSONUtil dictionaryWithJsonString:event.data];
+    if (![item isKindOfClass:NSDictionary.class]) {
+        return nil;
+    }
+    NSDictionary *opdata = item[FT_OPDATA];
+    if (![opdata isKindOfClass:NSDictionary.class]) {
+        return nil;
+    }
+    NSString *sourceRaw = opdata[FT_KEY_SOURCE]?:opdata[FT_MEASUREMENT];
+    if (![sourceRaw isKindOfClass:NSString.class] || ![sourceRaw isEqualToString:FT_RUM_SOURCE_VIEW]) {
+        return nil;
+    }
+    NSDictionary *tags = opdata[FT_TAGS];
+    if (![tags isKindOfClass:NSDictionary.class]) {
+        return nil;
+    }
+    NSString *viewId = tags[FT_KEY_VIEW_ID];
+    return [viewId isKindOfClass:NSString.class] ? viewId : nil;
 }
 @end

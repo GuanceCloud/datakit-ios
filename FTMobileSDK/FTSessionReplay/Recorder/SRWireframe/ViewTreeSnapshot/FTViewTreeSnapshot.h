@@ -15,23 +15,23 @@ typedef NS_ENUM(NSUInteger,NodeSubtreeStrategy){
     NodeSubtreeStrategyIgnore
 };
 
-@protocol FTSRWireframesBuilder,FTSRResource;
+@protocol FTSRNodeWireframesBuilder,FTSRResource;
 @interface FTSRNodeSemantics : NSObject
 @property (nonatomic, assign) int importance;
-@property (nonatomic, strong) NSArray<id<FTSRWireframesBuilder>> *nodes;
+@property (nonatomic, strong) NSArray<id<FTSRNodeWireframesBuilder>> *nodes;
 @property (nonatomic, assign) NodeSubtreeStrategy subtreeStrategy;
 -(instancetype)initWithSubtreeStrategy:(NodeSubtreeStrategy)subtreeStrategy;
 
 @end
 
-@protocol FTSRWireframesBuilder;
+@protocol FTSRNodeWireframesBuilder;
 @protocol FTSRResource;
 @class FTSRContext;
 @interface FTViewTreeSnapshot : NSObject
 @property (nonatomic, strong) NSDate *date;
 @property (nonatomic, strong) FTSRContext *context;
 @property (nonatomic, assign) CGSize viewportSize;
-@property (nonatomic, strong) NSArray<id<FTSRWireframesBuilder>> *nodes;
+@property (nonatomic, strong) NSArray<id<FTSRNodeWireframesBuilder>> *nodes;
 @property (nonatomic, strong) NSArray<id<FTSRResource>> *resources;
 @property (nonatomic, strong) NSSet<NSNumber *>* webViewSlotIDs;
 @end

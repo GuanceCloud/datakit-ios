@@ -135,8 +135,15 @@
             return;
         }
     }
-    long long recordTime = updateTime > 0 ? updateTime : time;
-    FTRecordModel *model = [[FTRecordModel alloc] initWithSource:source op:op tags:recordTags fields:recordFields tm:recordTime];
+    FTRecordModel *model = [[FTRecordModel alloc] initWithSource:source op:op tags:recordTags fields:recordFields tm:time];
+    if (!model) {
+        return;
+    }
+    // View updates keep the event time in payload, but use updateTime for DB tm
+    // so error-sampled cache deletion/expiration evaluates the active view by update time.
+    if (updateTime > 0 && [source isEqualToString:FT_RUM_SOURCE_VIEW]) {
+        model.tm = updateTime;
+    }
     model.remoteFilterChecked = remoteFilterChecked;
     FTAddDataType addType = FTAddDataLogging;
     if ([op isEqualToString:FT_DATA_TYPE_RUM_CACHE]) {

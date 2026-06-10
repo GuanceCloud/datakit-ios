@@ -234,8 +234,7 @@ let package = Package(
         ),
         .target(
             name: "FTSessionReplaySwiftUI",
-            path: "FTMobileSDK/FTSessionReplay/Recorder/SRWireframe/ViewTreeSnapshot/ViewsRecorder/SwiftUI",
-            sources: ["FTSwiftUIReflection.swift"]
+            path: "FTMobileSDK/FTSessionReplay/Recorder/SRWireframe/ViewTreeSnapshot/ViewsRecorder/SwiftUI"
         ),
     ]
 )

@@ -1,3 +1,27 @@
+# 1.6.5
+1. Added `FTSessionReplayConfig.enableSwiftUI` to explicitly enable SwiftUI recording in Session Replay. SwiftUI recording is disabled by default.
+2. Added support for custom Session Replay `source` values on iOS segment uploads to support Flutter Session Replay scenarios.
+3. Fixed Session Replay crashes caused by dynamic `UIColor` resolution, and improved background snapshot processing and SwiftUI recording stability.
+4. Improved Session Replay data cache handling after sampling state changes so error-sampled sessions start recording reliably and recording continuity stays stable.
+5. Improved Session Replay, RUM, and Log upload scheduling and retry handling, including upload worker isolation, lifecycle-triggered cache flush behavior, and Session Replay segment/resource retry status handling.
+6. Improved Session Replay rendering correctness and performance by optimizing node flattening, raising snapshot processor queue priority, inheriting view-tree privacy overrides, and clipping unsupported placeholders correctly.
+7. Fixed RUM View timing and upload package consistency by preserving event time and deduplicating View data before package ID generation.
+---
+# 1.6.5-beta.1
+1. Fixed Session Replay SwiftUI recorder registration so SwiftUI recording stays disabled unless `FTSessionReplayConfig.enableSwiftUI` is enabled.
+2. Improved Session Replay SwiftUI reflection alignment and type-safe display list access to reduce SwiftUI recording crash risk.
+3. Reverted the WebView Session Replay file naming change from 1.6.5-alpha and restored the w file prefix.
+---
+# 1.6.5-alpha.2
+1. Fixed a RUM View time display issue where View data could use update time instead of event time.
+2. Fixed RUM View deduplication before upload package ID generation so package counts, `sdk_data_id`, and payload lines stay consistent.
+3. Improved Session Replay writer registration when tracking consent changes, ensuring cache writers are available synchronously.
+4. Improved Session Replay SwiftUI recording stability and rendering support.
+5. Improved Session Replay node flattening performance.
+6. Improved Session Replay processor queue priority.
+7. Fixed Session Replay view-tree privacy override inheritance.
+8. Fixed unsupported Session Replay placeholders so they are clipped correctly.
+---
 # 1.6.5-alpha.1
 1. Fixed Session Replay crashes related to dynamic `UIColor` resolution and background snapshot processing
 2. Added `FTSessionReplayConfig.enableSwiftUI` to explicitly enable SwiftUI recording in Session Replay. The default is `NO`.

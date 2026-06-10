@@ -12,6 +12,16 @@ SPM_HOME="${BUILD_DIR}/SwiftPackageHome"
 SPM_MODULE_CACHE="${BUILD_DIR}/SwiftPackageModuleCache"
 SPM_DESTINATION="generic/platform=iOS"
 XCODEBUILD_OPTIONS="${XCODEBUILD_OPTIONS--quiet}"
+FRAMEWORK_ZIPS=(
+  "FTMobileSDK.xcframework.zip"
+  "FTSessionReplay.xcframework.zip"
+  "FTMobileExtension.xcframework.zip"
+  "FTMobileExtension-DisableSwizzlingResource.xcframework.zip"
+  "FTMobileSDK-DisableSwizzlingResource.xcframework.zip"
+  "FTMobileSDK-Dynamic.xcframework.zip"
+  "FTSessionReplay-Dynamic.xcframework.zip"
+  "FTMobileSDK-Dynamic-DisableSwizzlingResource.xcframework.zip"
+)
 SPM_SCHEMES=(
   "FTMobileSDK"
   "FTMobileExtension"
@@ -44,7 +54,7 @@ Usage:
 
 Checks:
   cocoapods   pod lib lint FTMobileSDK.podspec
-  framework   BuildSDKPackages.sh, then validates build/SDK.zip
+  framework   BuildSDKPackages.sh, then validates generated .xcframework.zip files
   spm         Swift Package manifest + iOS xcodebuild build for all products
 
 Options:
@@ -171,13 +181,18 @@ validate_framework_package() {
 
   bash "${FRAMEWORK_SCRIPT}"
 
-  local sdk_zip="${BUILD_DIR}/SDK.zip"
-  if [[ ! -s "${sdk_zip}" ]]; then
-    error "SDK zip was not generated: ${sdk_zip}"
-    return 1
-  fi
+  local zip_name
+  for zip_name in "${FRAMEWORK_ZIPS[@]}"; do
+    local zip_path="${BUILD_DIR}/${zip_name}"
+    local xcframework_name="${zip_name%.zip}"
 
-  zipinfo -1 "${sdk_zip}" > /dev/null
+    if [[ ! -s "${zip_path}" ]]; then
+      error "Framework zip was not generated: ${zip_path}"
+      return 1
+    fi
+
+    zipinfo -1 "${zip_path}" "${xcframework_name}/Info.plist" > /dev/null || return 1
+  done
 }
 
 prepare_spm_validation_dir() {

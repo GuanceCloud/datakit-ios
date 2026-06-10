@@ -61,7 +61,7 @@ void *FTRUMQueueIdentityKey = &FTRUMQueueIdentityKey;
         @try {
             __strong __typeof(weakSelf) strongSelf = weakSelf;
             if (!strongSelf) return;
-            if(key == FTMessageKeySessionHasReplay){
+            if([key isEqualToString:FTMessageKeySessionHasReplay]){
                 NSMutableDictionary *mutableMessage = [messageCopy mutableCopy];
                 BOOL hasReplay = [mutableMessage[FT_SESSION_HAS_REPLAY] boolValue];
                 BOOL sampledForErrorReplay = [mutableMessage[FT_RUM_KEY_SAMPLED_FOR_ERROR_REPLAY] boolValue];
@@ -76,7 +76,7 @@ void *FTRUMQueueIdentityKey = &FTRUMQueueIdentityKey;
                 strongSelf.rumDependencies.sessionReplaySampledFields = [mutableMessage copy];
                 strongSelf.rumDependencies.sampledForErrorReplay = sampledForErrorReplay;
                 FTInnerLogDebug(@"[RUM] session(id:%@)  has replay:%@ sampledForErrorReplay:%@",strongSelf.sessionHandler.context.sessionState.session_id,(hasReplay?@"true":@"false"),(sampledForErrorReplay?@"true":@"false"));
-            }else if(key == FTMessageKeyRecordsCountByViewID){
+            }else if([key isEqualToString:FTMessageKeyRecordsCountByViewID]){
                 strongSelf.rumDependencies.sessionReplayStats = messageCopy;
             }
         } @catch (NSException *exception) {

@@ -14,6 +14,7 @@
 #import "FTViewAttributes.h"
 #import "FTViewTreeRecordingContext.h"
 #import "FTSessionReplayCoreImports.h"
+#import "FTUIImageResource.h"
 
 typedef NS_ENUM(NSInteger, FTSwiftUIWireframePayloadKind) {
     FTSwiftUIWireframePayloadKindShape = 0,
@@ -31,10 +32,7 @@ typedef NS_ENUM(NSInteger, FTSwiftUIWireframePayloadKind) {
 
 @interface FTUIHostingViewRecorder()
 @property (nonatomic, strong) id reflectionBridge;
-@end
-
-@interface FTUIHostingViewBuilder()
-@property (nonatomic, assign) BOOL didAppendResources;
++ (Class)swiftUIGraphicsViewClass;
 @end
 
 @implementation FTUIHostingViewRecorder
@@ -72,12 +70,8 @@ typedef NS_ENUM(NSInteger, FTSwiftUIWireframePayloadKind) {
     }
 
     if (@available(iOS 13.0, *)) {
-        FTSRNodeSemantics *semantics = self.semanticsOverride(view, attributes);
-        if (semantics) {
-            return semantics;
-        }
         int64_t wireframeID = [context.viewIDGenerator SRViewID:view nodeRecorder:self];
-        
+
         FTSwiftUIRenderer *renderer = [self rendererForHostingView:view];
         if (renderer) {
             if (!attributes.isVisible) {
@@ -152,8 +146,17 @@ typedef NS_ENUM(NSInteger, FTSwiftUIWireframePayloadKind) {
 }
 
 + (BOOL)isSwiftUIGraphicsView:(UIView *)view {
-    NSString *className = NSStringFromClass(view.class);
-    return [className containsString:@"SwiftUI._UIGraphicsView"] || [className containsString:@"_UIGraphicsView"];
+    Class graphicsViewClass = [FTUIHostingViewRecorder swiftUIGraphicsViewClass];
+    return graphicsViewClass != Nil && [view.class isSubclassOfClass:graphicsViewClass];
+}
+
++ (Class)swiftUIGraphicsViewClass {
+    static Class graphicsViewClass = Nil;
+    static dispatch_once_t onceToken;
+    dispatch_once(&onceToken, ^{
+        graphicsViewClass = NSClassFromString(@"SwiftUI._UIGraphicsView");
+    });
+    return graphicsViewClass;
 }
 
 @end
@@ -192,12 +195,9 @@ typedef NS_ENUM(NSInteger, FTSwiftUIWireframePayloadKind) {
     if (@available(iOS 13.0, *)) {
         FTSwiftUIRecordingResult *recordingResult = [self buildRecordingResultSafely];
         if (recordingResult) {
-            if (!self.didAppendResources) {
-                [builder addResources:[self resourcesFromPayloads:recordingResult.resources]];
-                self.didAppendResources = YES;
-            }
             NSArray<FTSRWireframe *> *wireframes = [self wireframesFromPayloads:recordingResult.wireframes
-                                                                 textObfuscator:self.textObfuscator];
+                                                                 textObfuscator:self.textObfuscator
+                                                                        builder:builder];
             return wireframes;
         }
     }
@@ -223,12 +223,13 @@ typedef NS_ENUM(NSInteger, FTSwiftUIWireframePayloadKind) {
 }
 
 - (NSArray<FTSRWireframe *> *)wireframesFromPayloads:(NSArray<id> *)payloads
-                                      textObfuscator:(id<FTSRTextObfuscatingProtocol>)textObfuscator API_AVAILABLE(ios(13.0)) {
+                                      textObfuscator:(id<FTSRTextObfuscatingProtocol>)textObfuscator
+                                             builder:(FTSessionReplayWireframesBuilder *)builder API_AVAILABLE(ios(13.0)) {
     NSMutableArray<FTSRWireframe *> *wireframes = [NSMutableArray arrayWithCapacity:payloads.count];
     for (id payload in payloads) {
         FTSRWireframe *wireframe = nil;
         @try {
-            wireframe = [self wireframeFromPayload:payload textObfuscator:textObfuscator];
+            wireframe = [self wireframeFromPayload:payload textObfuscator:textObfuscator builder:builder];
         } @catch (NSException *exception) {
             FTInnerLogError(@"[Session Replay] SwiftUI wireframe payload exception: %@", exception.description);
         }
@@ -239,27 +240,28 @@ typedef NS_ENUM(NSInteger, FTSwiftUIWireframePayloadKind) {
     return wireframes;
 }
 
-- (NSArray<id<FTSRResource>> *)resourcesFromPayloads:(NSArray<id> *)payloads API_AVAILABLE(ios(13.0)) {
-    NSMutableArray<id<FTSRResource>> *resources = [NSMutableArray arrayWithCapacity:payloads.count];
-    for (id payload in payloads) {
-        @try {
-            NSString *identifier = [payload valueForKey:@"identifier"];
-            NSString *mimeType = [payload valueForKey:@"mimeType"] ?: @"image/png";
-            NSData *data = [payload valueForKey:@"data"];
-            if (![identifier isKindOfClass:NSString.class] || identifier.length == 0 || ![data isKindOfClass:NSData.class]) {
-                continue;
-            }
-            FTSwiftUIDataResource *resource = [[FTSwiftUIDataResource alloc] initWithIdentifier:identifier mimeType:mimeType data:data];
-            [resources addObject:resource];
-        } @catch (NSException *exception) {
-            FTInnerLogError(@"[Session Replay] SwiftUI resource payload exception: %@", exception.description);
+- (nullable id<FTSRResource>)resourceFromPayload:(id)payload API_AVAILABLE(ios(13.0)) {
+    UIImage *image = [payload valueForKey:@"image"];
+    if ([image isKindOfClass:UIImage.class]) {
+        UIColor *tintColor = [payload valueForKey:@"tintColor"];
+        if (![tintColor isKindOfClass:UIColor.class]) {
+            tintColor = nil;
         }
+        return [[FTUIImageResource alloc] initWithImage:image tintColor:tintColor traitCollection:nil];
     }
-    return resources;
+
+    NSString *identifier = [payload valueForKey:@"resourceIdentifier"];
+    NSString *mimeType = [payload valueForKey:@"mimeType"] ?: @"image/png";
+    NSData *data = [payload valueForKey:@"resourceData"];
+    if (![identifier isKindOfClass:NSString.class] || identifier.length == 0 || ![data isKindOfClass:NSData.class]) {
+        return nil;
+    }
+    return [[FTSwiftUIDataResource alloc] initWithIdentifier:identifier mimeType:mimeType data:data];
 }
 
 - (FTSRWireframe *)wireframeFromPayload:(id)payload
-                         textObfuscator:(id<FTSRTextObfuscatingProtocol>)textObfuscator API_AVAILABLE(ios(13.0)) {
+                         textObfuscator:(id<FTSRTextObfuscatingProtocol>)textObfuscator
+                                builder:(FTSessionReplayWireframesBuilder *)builder API_AVAILABLE(ios(13.0)) {
     NSInteger kind = [[payload valueForKey:@"kind"] integerValue];
     int64_t identifier = [[payload valueForKey:@"identifier"] longLongValue];
     CGRect frame = [[payload valueForKey:@"frame"] CGRectValue];
@@ -296,8 +298,20 @@ typedef NS_ENUM(NSInteger, FTSwiftUIWireframePayloadKind) {
             return wireframe;
         }
         case FTSwiftUIWireframePayloadKindImage: {
+            id<FTSRResource> resource = [self resourceFromPayload:payload];
+            if (resource) {
+                FTSRImageWireframe *wireframe = [builder createImageWireframeWithID:identifier resource:resource frame:frame clip:clip];
+                wireframe.mimeType = resource.mimeType ?: ([payload valueForKey:@"mimeType"] ?: @"image/png");
+                return wireframe;
+            }
+            NSString *resourceIdentifier = [payload valueForKey:@"resourceIdentifier"];
+            if (![resourceIdentifier isKindOfClass:NSString.class] || resourceIdentifier.length == 0) {
+                FTSRPlaceholderWireframe *wireframe = [[FTSRPlaceholderWireframe alloc] initWithIdentifier:identifier frame:frame label:@"Unsupported image type"];
+                wireframe.clip = [[FTSRContentClip alloc] initWithFrame:frame clip:clip];
+                return wireframe;
+            }
             FTSRImageWireframe *wireframe = [[FTSRImageWireframe alloc] initWithIdentifier:identifier frame:frame];
-            wireframe.resourceId = [payload valueForKey:@"resourceIdentifier"];
+            wireframe.resourceId = resourceIdentifier;
             wireframe.mimeType = [payload valueForKey:@"mimeType"] ?: @"image/png";
             wireframe.clip = [[FTSRContentClip alloc] initWithFrame:frame clip:clip];
             return wireframe;

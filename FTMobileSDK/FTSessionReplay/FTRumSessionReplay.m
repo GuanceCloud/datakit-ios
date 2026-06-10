@@ -64,12 +64,13 @@ static dispatch_once_t onceToken;
     return self;
 }
 - (void)startWithSessionReplayConfig:(FTSessionReplayConfig *)config{
-    FTInnerLogInfo(@"[session-replay] %@",config.debugDescription);
     if(config.sampleRate<=0&&config.sessionReplayOnErrorSampleRate<=0){
+        FTInnerLogWarning(@"[session-replay] skipped: both sampleRate and sessionReplayOnErrorSampleRate are disabled");
         return;
     }
     FTSessionReplayConfig *copyConfig = [config copy];
     [copyConfig mergeWithRemoteConfigModel:[FTRemoteConfigManager sharedInstance].lastRemoteModel];
+    FTInnerLogInfo(@"[session-replay] %@",copyConfig.debugDescription);
     [[FTWKWebViewHandler sharedInstance] setEnableLinkRUMKeys:copyConfig.enableLinkRUMKeys];
     FTSessionReplayFeature *sessionReplayFeature = [[FTSessionReplayFeature alloc]initWithConfig:copyConfig];
     FTFeatureStores *srStore = [self registerFeature:sessionReplayFeature];

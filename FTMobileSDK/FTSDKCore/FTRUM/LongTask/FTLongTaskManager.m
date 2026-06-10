@@ -199,8 +199,6 @@ void *FTLongTaskManagerQueueTag = &FTLongTaskManagerQueueTag;
                 if(error){
                     FTInnerLogError(@"[LongTask] delete file：%@ fail. reason: %@",strongSelf.dataStorePath,error.description);
                 }
-            }else{
-                FTInnerLogDebug(@"[LongTask] delete file: %@ is not exist",strongSelf.dataStorePath);
             }
             strongSelf.fileHandle = nil;
         } @catch (NSException *exception) {

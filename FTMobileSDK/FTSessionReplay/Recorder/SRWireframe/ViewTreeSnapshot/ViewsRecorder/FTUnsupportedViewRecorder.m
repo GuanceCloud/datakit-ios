@@ -53,6 +53,7 @@
 
 - (NSArray<FTSRWireframe *> *)buildWireframesWithBuilder:(FTSessionReplayWireframesBuilder *)builder{
     FTSRPlaceholderWireframe *wireframe = [[FTSRPlaceholderWireframe alloc]initWithIdentifier:self.wireframeID frame:self.attributes.frame label:self.unsupportedClassName];
+    wireframe.clip = [[FTSRContentClip alloc] initWithFrame:self.attributes.frame clip:self.attributes.clip];
     return @[wireframe];
 }
 

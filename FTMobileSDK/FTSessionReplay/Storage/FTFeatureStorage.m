@@ -17,6 +17,8 @@
 #import "FTSessionReplayCoreImports.h"
 #import "FTTmpCacheManager.h"
 
+static NSString * const FTWebViewFilePrefix = @"w";
+
 @interface FTNoOpWriter : NSObject<FTWriter>
 @end
 
@@ -64,9 +66,11 @@
         _authorizedFilesOrchestrator = [self orchestratorForDirectory:directories.granted];
         _unauthorizedFilesOrchestrator = [self orchestratorForDirectory:directories.pending];
         _cacheAuthorizedFilesOrchestrator = [self orchestratorForDirectory:directories.errorSampled];
-        _webAuthorizedFilesOrchestrator = [self orchestratorForDirectory:directories.granted];
-        _webUnauthorizedFilesOrchestrator = [self orchestratorForDirectory:directories.pending];
-        _webCacheAuthorizedFilesOrchestrator = [self orchestratorForDirectory:directories.errorSampled];
+        // WebView records share the native record directories. Keep the "w" file prefix
+        // to avoid same-millisecond native/web file collisions and preserve web file identity.
+        _webAuthorizedFilesOrchestrator = [self orchestratorForDirectory:directories.granted prefix:FTWebViewFilePrefix];
+        _webUnauthorizedFilesOrchestrator = [self orchestratorForDirectory:directories.pending prefix:FTWebViewFilePrefix];
+        _webCacheAuthorizedFilesOrchestrator = [self orchestratorForDirectory:directories.errorSampled prefix:FTWebViewFilePrefix];
         _authorizedWriter = [self fileWriterForOrchestrator:_authorizedFilesOrchestrator] ?: _noOpWriter;
         _pendingWriter = [self fileWriterForOrchestrator:_unauthorizedFilesOrchestrator] ?: _noOpWriter;
         if (_cacheAuthorizedFilesOrchestrator) {
@@ -96,22 +100,15 @@
         }
         _cacheWriterActive = shouldActivateCacheWriter;
     }
-    __weak typeof(self) weakSelf = self;
-    dispatch_async(self.queue, ^{
-        __strong typeof(weakSelf) strongSelf = weakSelf;
-        if (!strongSelf) {
-            return;
-        }
-        id<FTCacheWriter> cacheWriter = strongSelf.cacheWriter;
-        if (!cacheWriter) {
-            return;
-        }
-        if(shouldActivateCacheWriter){
-            [cacheWriter active];
-        }else{
-            [cacheWriter inactive];
-        }
-    });
+    id<FTCacheWriter> cacheWriter = self.cacheWriter;
+    if (!cacheWriter) {
+        return;
+    }
+    if(shouldActivateCacheWriter){
+        [cacheWriter active];
+    }else{
+        [cacheWriter inactive];
+    }
 }
 - (id<FTWriter>)writerForTrackingConsent:(FTTrackingConsent)trackingConsent{
     [self updateTrackingConsent:trackingConsent];
@@ -140,11 +137,18 @@
     }
 }
 - (FTFilesOrchestrator *)orchestratorForDirectory:(FTDirectory *)directory{
+    return [self orchestratorForDirectory:directory prefix:nil];
+}
+- (FTFilesOrchestrator *)orchestratorForDirectory:(FTDirectory *)directory prefix:(NSString *)prefix{
     if (!directory) {
         return nil;
     }
-    return [[FTFilesOrchestrator alloc]initWithDirectory:directory
-                                             performance:self.performance];
+    if (prefix.length > 0) {
+        return [[FTFilesOrchestrator alloc]initWithDirectory:directory
+                                                 performance:self.performance
+                                                      prefix:prefix];
+    }
+    return [[FTFilesOrchestrator alloc]initWithDirectory:directory performance:self.performance];
 }
 - (void)performStorageOperation:(void(^)(void))operation failureMessage:(NSString *)failureMessage{
     dispatch_async(self.queue, ^{

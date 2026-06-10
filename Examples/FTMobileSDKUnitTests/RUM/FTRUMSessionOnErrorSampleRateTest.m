@@ -22,6 +22,8 @@
 #import "FTInnerLog.h"
 #import "NSDate+FTUtil.h"
 #import "FTRUMSessionHandler.h"
+#import "FTJSONUtil.h"
+#import "FTRequestBody.h"
 #if !TARGET_OS_TV
 #import "FTSessionReplayFeature.h"
 #import "FTSessionReplayConfig.h"
@@ -369,6 +371,93 @@ typedef NS_ENUM(NSInteger, SampleState) {
     }
     XCTAssertTrue(newArray.count - oldArray.count == 2);
 }
+- (void)testRUMWriterSeparatesPayloadTimeFromRecordTime{
+    [FTTrackDataManager startWithAutoSync:NO syncPageSize:10 syncSleepTime:0];
+    FTDataWriterWorker *writerManager = [[FTDataWriterWorker alloc]init];
+    long long eventTime = 123;
+    long long updateTime = [NSDate ft_currentNanosecondTimeStamp];
+
+    [writerManager isCacheWriter:YES];
+    [writerManager rumWrite:FT_RUM_SOURCE_VIEW
+                       tags:@{@"view_id":@"time"}
+                     fields:@{@"test":@"cache"}
+             dynamicContext:@{}
+                       time:eventTime
+                 updateTime:updateTime];
+
+    NSArray<FTRecordModel *> *records = [[FTTrackerEventDBTool sharedManager] getFirstRecords:1 withType:FT_DATA_TYPE_RUM_CACHE];
+    FTRecordModel *model = records.firstObject;
+    NSDictionary *data = [FTJSONUtil dictionaryWithJsonString:model.data];
+    NSNumber *payloadTime = data[FT_OPDATA][FT_TIME];
+    XCTAssertEqual(model.tm, updateTime);
+    XCTAssertEqual(payloadTime.longLongValue, eventTime);
+
+    FTRequestLineBody *line = [[FTRequestLineBody alloc]init];
+    NSString *lineStr = [line getRequestBodyWithEventArray:@[model] packageId:@"1" enableIntegerCompatible:NO];
+    NSString *lineTime = [[lineStr componentsSeparatedByString:@" "] lastObject];
+    XCTAssertEqual(lineTime.longLongValue, eventTime);
+}
+- (void)testRUMWriterSeparatesPayloadTimeFromRecordTimeForNormalRUM{
+    [FTTrackDataManager startWithAutoSync:NO syncPageSize:10 syncSleepTime:0];
+    FTDataWriterWorker *writerManager = [[FTDataWriterWorker alloc]init];
+    long long eventTime = 123;
+    long long updateTime = [NSDate ft_currentNanosecondTimeStamp];
+
+    [writerManager isCacheWriter:NO];
+    [writerManager rumWrite:FT_RUM_SOURCE_VIEW
+                       tags:@{@"view_id":@"time"}
+                     fields:@{@"test":@"normal"}
+             dynamicContext:@{}
+                       time:eventTime
+                 updateTime:updateTime];
+
+    NSArray<FTRecordModel *> *records = [[FTTrackerEventDBTool sharedManager] getFirstRecords:1 withType:FT_DATA_TYPE_RUM];
+    XCTAssertEqual(records.count, 1);
+    FTRecordModel *model = records.firstObject;
+    NSDictionary *data = [FTJSONUtil dictionaryWithJsonString:model.data];
+    NSNumber *payloadTime = data[FT_OPDATA][FT_TIME];
+    XCTAssertEqualObjects(model.op, FT_DATA_TYPE_RUM);
+    XCTAssertEqual(model.tm, updateTime);
+    XCTAssertEqual(payloadTime.longLongValue, eventTime);
+
+    FTRequestLineBody *line = [[FTRequestLineBody alloc]init];
+    NSString *lineStr = [line getRequestBodyWithEventArray:@[model] packageId:@"1" enableIntegerCompatible:NO];
+    NSString *lineTime = [[lineStr componentsSeparatedByString:@" "] lastObject];
+    XCTAssertEqual(lineTime.longLongValue, eventTime);
+}
+- (void)testRUMWriterKeepsNonViewRecordTimeAsEventTime{
+    [FTTrackDataManager startWithAutoSync:NO syncPageSize:10 syncSleepTime:0];
+    FTDataWriterWorker *writerManager = [[FTDataWriterWorker alloc]init];
+    long long eventTime = 123;
+    long long updateTime = [NSDate ft_currentNanosecondTimeStamp];
+    NSArray<NSString *> *sources = @[FT_RUM_SOURCE_ACTION, FT_RUM_SOURCE_ERROR, FT_RUM_SOURCE_LONG_TASK];
+
+    [writerManager isCacheWriter:YES];
+    for (NSString *source in sources) {
+        [writerManager rumWrite:source
+                           tags:@{@"view_id":@"time"}
+                         fields:@{@"test":@"cache"}
+                 dynamicContext:@{}
+                           time:eventTime
+                     updateTime:updateTime];
+    }
+
+    NSArray<FTRecordModel *> *records = [[FTTrackerEventDBTool sharedManager] getFirstRecords:sources.count withType:FT_DATA_TYPE_RUM_CACHE];
+    XCTAssertEqual(records.count, sources.count);
+    [records enumerateObjectsUsingBlock:^(FTRecordModel *model, NSUInteger idx, BOOL *stop) {
+        NSDictionary *data = [FTJSONUtil dictionaryWithJsonString:model.data];
+        NSDictionary *opdata = data[FT_OPDATA];
+        NSNumber *payloadTime = opdata[FT_TIME];
+        XCTAssertEqualObjects(opdata[FT_KEY_SOURCE], sources[idx]);
+        XCTAssertEqual(model.tm, eventTime);
+        XCTAssertEqual(payloadTime.longLongValue, eventTime);
+
+        FTRequestLineBody *line = [[FTRequestLineBody alloc]init];
+        NSString *lineStr = [line getRequestBodyWithEventArray:@[model] packageId:@"1" enableIntegerCompatible:NO];
+        NSString *lineTime = [[lineStr componentsSeparatedByString:@" "] lastObject];
+        XCTAssertEqual(lineTime.longLongValue, eventTime);
+    }];
+}
 /// Determine whether the type of data added after calling the -switchCacheWriter method is rum_cache after adding error data
 - (void)testSwitchCacheWriter_addErrorDataTurnRUMWriter{
     [FTTrackDataManager startWithAutoSync:NO syncPageSize:10 syncSleepTime:0];
@@ -461,7 +550,7 @@ typedef NS_ENUM(NSInteger, SampleState) {
     writerManager.processStartTime = [[NSDate date] timeIntervalSince1970]*1e9;
     [writerManager checkLastProcessErrorSampled];
 
-    [writerManager rumWrite:FT_RUM_SOURCE_ERROR tags:@{@"view_id":@"3"} fields:@{@"test":@"delete"} dynamicContext:@{} time:123 updateTime:[[NSDate date] timeIntervalSince1970]*1e9];
+    [writerManager rumWrite:FT_RUM_SOURCE_ERROR tags:@{@"view_id":@"3"} fields:@{@"test":@"delete"} dynamicContext:@{} time:[[NSDate date] timeIntervalSince1970]*1e9 updateTime:0];
 
     [writerManager checkRUMSessionOnErrorDatasExpired];
     NSArray<FTRecordModel *> *newArray = [[FTTrackerEventDBTool sharedManager] getAllDatas];
@@ -796,6 +885,50 @@ typedef NS_ENUM(NSInteger, SampleState) {
     [self sendRumErrorAtTime:inactiveErrorTime storages:@[context.storage]];
     XCTAssertTrue([context.errorSampledDirectory hasFileWithName:inactiveWindowFile]);
     XCTAssertFalse([context.grantedDirectory hasFileWithName:inactiveWindowFile]);
+}
+
+- (void)testFeatureStorageRegistersCacheWriterBeforeReturningErrorSampledWriter{
+    FTTestFeatureStorageContext *context = [self sessionReplayStorageContextWithName:@"session-replay-register-before-return"];
+    long long errorTime = [NSDate ft_currentNanosecondTimeStamp];
+    NSString *windowFile = [self createErrorWindowCacheFileInContext:context errorTime:errorTime offsetSeconds:-30];
+
+    dispatch_suspend(context.storage.queue);
+    id<FTWriter> writer = [context.storage writerForTrackingConsent:FTTrackingConsentErrorSampled];
+    XCTAssertNotNil(writer);
+    [[FTModuleManager sharedInstance] postMessageWithKey:FTMessageKeyRumError message:@{@"error_date":@(errorTime)} sync:YES];
+    dispatch_resume(context.storage.queue);
+    [self waitForStorageQueueDrain:context.storage];
+
+    XCTAssertFalse([context.errorSampledDirectory hasFileWithName:windowFile]);
+    XCTAssertTrue([context.grantedDirectory hasFileWithName:windowFile]);
+    [context.storage updateTrackingConsent:FTTrackingConsentGranted];
+}
+
+- (void)testFeatureStorageWebViewGrantedWriterUsesWebPrefix{
+    FTTestFeatureStorageContext *context = [self sessionReplayStorageContextWithName:@"session-replay-web-granted-prefix"];
+    id<FTWriter> writer = [context.storage webViewWriterForTrackingConsent:FTTrackingConsentGranted];
+
+    [writer write:[@"web-granted" dataUsingEncoding:NSUTF8StringEncoding] forceNewFile:YES];
+    [self waitForStorageQueueDrain:context.storage];
+
+    NSArray<FTFile *> *files = context.grantedDirectory.files;
+    XCTAssertEqual(files.count, 1);
+    NSString *fileName = files.firstObject.url.lastPathComponent;
+    XCTAssertTrue([fileName hasPrefix:@"w_"], @"fileName:%@", fileName);
+}
+
+- (void)testFeatureStorageWebViewErrorSampledWriterUsesWebPrefix{
+    FTTestFeatureStorageContext *context = [self sessionReplayStorageContextWithName:@"session-replay-web-cache-prefix"];
+    id<FTWriter> writer = [context.storage webViewWriterForTrackingConsent:FTTrackingConsentErrorSampled];
+
+    [writer write:[@"web-error-sampled" dataUsingEncoding:NSUTF8StringEncoding] forceNewFile:YES];
+    [self waitForStorageQueueDrain:context.storage];
+
+    NSArray<FTFile *> *files = context.errorSampledDirectory.files;
+    XCTAssertEqual(files.count, 1);
+    NSString *fileName = files.firstObject.url.lastPathComponent;
+    XCTAssertTrue([fileName hasPrefix:@"w_"], @"fileName:%@", fileName);
+    [context.storage updateTrackingConsent:FTTrackingConsentGranted];
 }
 
 - (void)testSessionReplaySampleRateUpdateTogglesRecordAndResourceCacheWriters{

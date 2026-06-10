@@ -111,6 +111,38 @@
     NSMutableURLRequest *mRequest = [request adaptedRequest:urlRequest];
     XCTAssertTrue([mRequest.HTTPBody isEqual: [@"" dataUsingEncoding:NSUTF8StringEncoding]]);
 }
+- (void)testRumRequestPackageIdCountUsesDeduplicatedViewEvents{
+    [FTNetworkInfoManager sharedInstance].setCompressionIntakeRequests(NO);
+    NSDictionary *tags = @{
+        FT_KEY_VIEW_ID:@"same_view_id",
+        FT_KEY_VIEW_NAME:@"view",
+        FT_RUM_KEY_SESSION_ID:[FTBaseInfoHandler randomUUID],
+        FT_RUM_KEY_SESSION_TYPE:@"user",
+    };
+    FTRecordModel *oldView = [[FTRecordModel alloc]initWithSource:FT_RUM_SOURCE_VIEW op:FT_DATA_TYPE_RUM tags:tags fields:@{@"value":@"old"} tm:1];
+    oldView._id = @"1";
+    FTRecordModel *newView = [[FTRecordModel alloc]initWithSource:FT_RUM_SOURCE_VIEW op:FT_DATA_TYPE_RUM tags:tags fields:@{@"value":@"new"} tm:2];
+    newView._id = @"2";
+
+    FTRequest *request = [FTRequest createRequestWithEvents:@[oldView,newView] type:FT_DATA_TYPE_RUM];
+    NSMutableURLRequest *urlRequest = [[NSMutableURLRequest alloc]initWithURL:[NSURL URLWithString:@"http://www.test.com/v1/write/rum"] cachePolicy:NSURLRequestUseProtocolCachePolicy timeoutInterval:30.0];
+    NSMutableURLRequest *mRequest = [request adaptedRequest:urlRequest];
+
+    NSString *packageHeader = [mRequest.allHTTPHeaderFields valueForKey:FT_HTTP_HEADER_X_PKG_ID];
+    XCTAssertTrue([packageHeader hasPrefix:@"rumm-"]);
+    NSString *packageId = [packageHeader substringFromIndex:[@"rumm-" length]];
+    NSArray *packageIdParts = [packageId componentsSeparatedByString:@"."];
+    XCTAssertTrue(packageIdParts.count == 4);
+    XCTAssertTrue([packageIdParts[2] isEqualToString:@"1"]);
+
+    NSString *bodyStr = [[NSString alloc]initWithData:mRequest.HTTPBody encoding:NSUTF8StringEncoding];
+    NSArray *lines = [bodyStr componentsSeparatedByString:@"\n"];
+    XCTAssertTrue(lines.count == 1);
+    NSString *expectedDataIdPrefix = [NSString stringWithFormat:@"sdk_data_id=%@.",packageId];
+    XCTAssertTrue([bodyStr containsString:expectedDataIdPrefix]);
+    XCTAssertFalse([bodyStr containsString:@"value=\"old\""]);
+    XCTAssertTrue([bodyStr containsString:@"value=\"new\""]);
+}
 - (void)testSdkDataID_RUM{
     [self sdkDataIDTest:YES];
 }

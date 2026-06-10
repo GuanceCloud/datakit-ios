@@ -8,19 +8,57 @@
 
 #import "FTNodesFlattener.h"
 #import "FTViewAttributes.h"
+#import <stdlib.h>
 @implementation FTNodesFlattener
 - (NSArray<id<FTSRNodeWireframesBuilder>>*)flattenNodes:(FTViewTreeSnapshot *)snapShot{
-    NSMutableArray<id<FTSRNodeWireframesBuilder>> *nodes = (NSMutableArray<id<FTSRNodeWireframesBuilder>>*) [NSMutableArray new];
-    for (id<FTSRNodeWireframesBuilder>node in snapShot.nodes) {
-        [nodes enumerateObjectsWithOptions:NSEnumerationReverse usingBlock:^(id<FTSRNodeWireframesBuilder> preNode, NSUInteger idx, BOOL * _Nonnull stop) {
-            if (CGRectContainsRect(node.wireframeRect, preNode.wireframeRect) && node.attributes.hasAnyAppearance && !node.attributes.isTranslucent){
-                [nodes removeObjectAtIndex:idx];
+    NSArray<id<FTSRNodeWireframesBuilder>> *snapshotNodes = snapShot.nodes ?: @[];
+    NSUInteger nodeCount = snapshotNodes.count;
+    if (nodeCount == 0) {
+        return @[];
+    }
+
+    CGRect viewportRect = CGRectMake(0, 0, snapShot.viewportSize.width, snapShot.viewportSize.height);
+    NSMutableArray<id<FTSRNodeWireframesBuilder>> *flattened = [NSMutableArray arrayWithCapacity:nodeCount];
+    CGRect *opaqueFrames = calloc(nodeCount, sizeof(CGRect));
+    if (!opaqueFrames) {
+        NSMutableArray<id<FTSRNodeWireframesBuilder>> *visibleNodes = [NSMutableArray arrayWithCapacity:nodeCount];
+        for (id<FTSRNodeWireframesBuilder> node in snapshotNodes) {
+            CGRect nodeFrame = node.wireframeRect;
+            if (CGRectIntersectsRect(viewportRect, nodeFrame)) {
+                [visibleNodes addObject:node];
             }
-        }];
-        if (CGRectIntersectsRect(CGRectMake(0, 0,snapShot.viewportSize.width, snapShot.viewportSize.height), node.wireframeRect)){
-            [nodes addObject:node];
+        }
+        return visibleNodes;
+    }
+
+    NSUInteger opaqueFramesCount = 0;
+    for (NSUInteger index = nodeCount; index > 0; index--) {
+        id<FTSRNodeWireframesBuilder> node = snapshotNodes[index - 1];
+        CGRect nodeFrame = node.wireframeRect;
+        if (!CGRectIntersectsRect(viewportRect, nodeFrame)) {
+            continue;
+        }
+
+        BOOL isOccluded = NO;
+        for (NSUInteger opaqueFrameIndex = 0; opaqueFrameIndex < opaqueFramesCount; opaqueFrameIndex++) {
+            if (CGRectContainsRect(opaqueFrames[opaqueFrameIndex], nodeFrame)) {
+                isOccluded = YES;
+                break;
+            }
+        }
+        if (isOccluded) {
+            continue;
+        }
+
+        [flattened addObject:node];
+        FTViewAttributes *attributes = node.attributes;
+        if (attributes.hasAnyAppearance && !attributes.isTranslucent) {
+            opaqueFrames[opaqueFramesCount] = nodeFrame;
+            opaqueFramesCount++;
         }
     }
-    return nodes;
+
+    free(opaqueFrames);
+    return [[flattened reverseObjectEnumerator] allObjects];
 }
 @end

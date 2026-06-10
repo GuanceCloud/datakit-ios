@@ -9,6 +9,7 @@
 #import <XCTest/XCTest.h>
 #import "FTSessionReplayConfig.h"
 #import "FTSRViewID.h"
+#import "FTSRWireframe.h"
 #import "FTUnsupportedViewRecorder.h"
 #import "FTViewAttributes.h"
 #import "FTViewTreeRecordingContext.h"
@@ -54,7 +55,7 @@
     XCTAssertFalse(config.enableSwiftUI);
     
     FTViewTreeSnapshotBuilder *builder = [[FTViewTreeSnapshotBuilder alloc] initWithAdditionalNodeRecorders:nil enableSwiftUI:config.enableSwiftUI];
-    XCTAssertTrue([self recorders:builder.recorders containClassName:@"FTUIHostingViewRecorder"]);
+    XCTAssertFalse([self recorders:builder.recorders containClassName:@"FTUIHostingViewRecorder"]);
 }
 - (void)testEnableSwiftUIKeepsSwiftUIRecorderRegistered{
     FTSessionReplayConfig *config = [FTSessionReplayConfig new];
@@ -74,6 +75,32 @@
     XCTAssertNotNil(semantics);
     XCTAssertEqual(semantics.subtreeStrategy, NodeSubtreeStrategyIgnore);
     XCTAssertEqual(semantics.nodes.count, 1);
+}
+- (void)testUnsupportedRecorderPlaceholderUsesAttributesClip{
+    FTUnsupportedViewRecorder *recorder = [[FTUnsupportedViewRecorder alloc] initWithSwiftUIEnabled:NO];
+    UIView *view = [[UIView alloc] initWithFrame:CGRectMake(0, 0, 100, 100)];
+    FTViewTreeRecordingContext *context = [self swiftUIRootContext];
+    FTViewAttributes *attributes = [[FTViewAttributes alloc] initWithView:view
+                                                           frameInRootView:CGRectMake(0, 0, 100, 100)
+                                                                      clip:CGRectMake(10, 20, 70, 60)
+                                                                 overrides:nil];
+
+    FTSRNodeSemantics *semantics = [recorder recorder:view attributes:attributes context:context];
+    XCTAssertNotNil(semantics);
+    XCTAssertEqual(semantics.nodes.count, 1);
+
+    FTUnsupportedViewBuilder *builder = (FTUnsupportedViewBuilder *)semantics.nodes.firstObject;
+    NSArray<FTSRWireframe *> *wireframes = [builder buildWireframesWithBuilder:nil];
+    XCTAssertEqual(wireframes.count, 1);
+
+    FTSRPlaceholderWireframe *wireframe = (FTSRPlaceholderWireframe *)wireframes.firstObject;
+
+    XCTAssertTrue([wireframe isKindOfClass:FTSRPlaceholderWireframe.class]);
+    XCTAssertNotNil(wireframe.clip);
+    XCTAssertEqualObjects(wireframe.clip.left, @10);
+    XCTAssertEqualObjects(wireframe.clip.top, @20);
+    XCTAssertEqualObjects(wireframe.clip.right, @20);
+    XCTAssertEqualObjects(wireframe.clip.bottom, @20);
 }
 - (void)testUnsupportedRecorderAllowsSwiftUIRootWhenSwiftUIEnabled{
     FTUnsupportedViewRecorder *recorder = [[FTUnsupportedViewRecorder alloc] initWithSwiftUIEnabled:YES];

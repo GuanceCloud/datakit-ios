@@ -29,12 +29,18 @@
     return self;
 }
 - (void)load {
+    if (self.isExchanged) {
+        return;
+    }
     self.isExchanged=YES;
     Class cls = NSClassFromString(@"__NSCFURLSessionConfiguration") ?: NSClassFromString(@"NSURLSessionConfiguration");
     [self swizzleSelector:@selector(protocolClasses) fromClass:cls toClass:[self class]];
     
 }
 - (void)unload {
+    if (!self.isExchanged) {
+        return;
+    }
     self.isExchanged=NO;
     Class cls = NSClassFromString(@"__NSCFURLSessionConfiguration") ?: NSClassFromString(@"NSURLSessionConfiguration");
     [self swizzleSelector:@selector(protocolClasses) fromClass:cls toClass:[self class]];
@@ -50,6 +56,13 @@
 
 - (NSArray *)protocolClasses {
     // If there are other monitoring protocols, they can also be added here
-    return @[[FTURLProtocol class]];
+    NSMutableArray *protocolClasses = [NSMutableArray array];
+    // Keep OHHTTPStubs ahead of FTURLProtocol so stubbed tests never hit real network.
+    Class httpStubsProtocolClass = NSClassFromString(@"OHHTTPStubsProtocol");
+    if (httpStubsProtocolClass) {
+        [protocolClasses addObject:httpStubsProtocolClass];
+    }
+    [protocolClasses addObject:[FTURLProtocol class]];
+    return [protocolClasses copy];
 }
 @end

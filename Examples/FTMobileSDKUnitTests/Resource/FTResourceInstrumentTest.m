@@ -93,6 +93,17 @@
 - (void)waitForURLSessionInterceptorQueue {
     dispatch_sync([FTURLSessionInterceptor shared].queue, ^{});
 }
+- (void)waitForTraceHandlerReleasedWithTask:(NSURLSessionTask *)task timeout:(NSTimeInterval)timeout {
+    NSDate *deadline = [NSDate dateWithTimeIntervalSinceNow:timeout];
+    while ([deadline timeIntervalSinceNow] > 0) {
+        [self waitForURLSessionInterceptorQueue];
+        if ([[FTURLSessionInterceptor shared] getTraceHandler:task] == nil) {
+            return;
+        }
+        [[NSRunLoop currentRunLoop] runUntilDate:[NSDate dateWithTimeIntervalSinceNow:0.01]];
+    }
+    [self waitForURLSessionInterceptorQueue];
+}
 - (NSMutableURLRequest *)adaptedURLRequestWithRequest:(id<FTRequestProtocol>)request {
     NSMutableURLRequest *urlRequest = [[NSMutableURLRequest alloc] initWithURL:[NSURL URLWithString:@"https://example.com"]];
     if ([request respondsToSelector:@selector(adaptedRequest:)]) {
@@ -169,7 +180,7 @@
     [self waitForURLSessionInterceptorQueue];
     XCTAssertNotNil([[FTURLSessionInterceptor shared] getTraceHandler:dataTask]);
     [self waitForExpectations:@[expectation] timeout:3];
-    [self waitForURLSessionInterceptorQueue];
+    [self waitForTraceHandlerReleasedWithTask:dataTask timeout:1];
     XCTAssertNil([[FTURLSessionInterceptor shared] getTraceHandler:dataTask]);
     [OHHTTPStubs removeStub:stubs];
 }
@@ -503,7 +514,7 @@
     [self waitForURLSessionInterceptorQueue];
     XCTAssertNotNil([[FTURLSessionInterceptor shared] getTraceHandler:dataTask]);
     [self waitForExpectationsWithTimeout:10.0 handler:nil];
-    [self waitForURLSessionInterceptorQueue];
+    [self waitForTraceHandlerReleasedWithTask:dataTask timeout:1];
     XCTAssertNil([[FTURLSessionInterceptor shared] getTraceHandler:dataTask]);
     [dataTask cancel];
 }
