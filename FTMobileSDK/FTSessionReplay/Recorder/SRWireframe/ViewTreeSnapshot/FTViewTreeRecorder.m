@@ -76,7 +76,7 @@
             NSArray<NSNumber *> *typeIndices = [self typeIndicesForSubviews:view.subviews];
             for (NSUInteger index = 0; index < view.subviews.count; index++) {
                 UIView *subView = view.subviews[index];
-                PrivacyOverrides *privacy = [PrivacyOverrides mergeChild:subView.sessionReplayPrivacyOverrides parent:view.sessionReplayPrivacyOverrides];
+                PrivacyOverrides *privacy = [PrivacyOverrides mergeChild:subView.sessionReplayPrivacyOverrides parent:overrides];
                 [self recordRecursively:nodes view:subView context:newContext overrides:privacy typeIndex:[typeIndices[index] integerValue]];
             }
             break;

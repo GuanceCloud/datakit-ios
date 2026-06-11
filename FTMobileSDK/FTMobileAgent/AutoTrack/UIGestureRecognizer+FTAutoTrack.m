@@ -31,14 +31,11 @@
         BOOL isTrackClass = [view isKindOfClass:UILabel.class] || [view isKindOfClass:UIImageView.class] ||isAlterType;
         if(isTrackClass){
             id<FTUIEventHandler> actionHandler = [FTAutoTrackHandler sharedInstance].actionHandler;
-            if(actionHandler  && [actionHandler respondsToSelector:@selector(notify_sendAction:heatmapTargetView:locationInHeatmapTargetView:)]){
-                NSValue *locationInView = [NSValue valueWithCGPoint:[gesture locationInView:view]];
-                [actionHandler notify_sendAction:view heatmapTargetView:view locationInHeatmapTargetView:locationInView];
-            } else if(actionHandler  && [actionHandler respondsToSelector:@selector(notify_sendAction:locationInView:)]){
-                NSValue *locationInView = [NSValue valueWithCGPoint:[gesture locationInView:view]];
-                [actionHandler notify_sendAction:view locationInView:locationInView];
-            } else if(actionHandler  && [actionHandler respondsToSelector:@selector(notify_sendAction:)]){
-                [actionHandler notify_sendAction:view];
+            if(actionHandler){
+                FTHeatmapLocationResolver locationResolver = ^CGPoint(UIView *targetView) {
+                    return [gesture locationInView:targetView];
+                };
+                [actionHandler notify_sendAction:view heatmapTargetView:view locationResolver:locationResolver];
             }
         }
         

@@ -34,39 +34,7 @@
 #import "FTFatalErrorContext.h"
 #import "FTErrorMonitorInfo.h"
 #import "FTModuleManager.h"
-
-@interface FTHeatmapIdentifierStore : NSObject<FTHeatmapIdentifierRegistry>
-@property (nonatomic, strong) dispatch_queue_t queue;
-@property (nonatomic, copy) NSDictionary<NSValue *, FTHeatmapIdentifier *> *identifiers;
-@end
-
-@implementation FTHeatmapIdentifierStore
-- (instancetype)init {
-    self = [super init];
-    if (self) {
-        _queue = dispatch_queue_create("com.ft.heatmap-identifier-store", DISPATCH_QUEUE_CONCURRENT);
-        _identifiers = @{};
-    }
-    return self;
-}
-- (void)setHeatmapIdentifiers:(NSDictionary<NSValue *,FTHeatmapIdentifier *> *)heatmapIdentifiers {
-    NSDictionary *identifiers = [heatmapIdentifiers copy] ?: @{};
-    dispatch_barrier_sync(self.queue, ^{
-        self.identifiers = identifiers;
-    });
-}
-- (FTHeatmapIdentifier *)heatmapIdentifierForObject:(id)object {
-    NSValue *key = [FTHeatmapIdentifier objectIdentifierForObject:object];
-    if (!key) {
-        return nil;
-    }
-    __block FTHeatmapIdentifier *identifier = nil;
-    dispatch_sync(self.queue, ^{
-        identifier = self.identifiers[key];
-    });
-    return identifier;
-}
-@end
+#import "FTHeatmapIdentifierStore.h"
 
 @interface FTGlobalRumManager ()<FTRunloopDetectorDelegate,FTAppLifeCycleDelegate>
 @property (nonatomic, strong) FTRumConfig *rumConfig;
@@ -115,7 +83,7 @@ static NSObject *sharedInstanceLock;
     self.heatmapIdentifierStore = [[FTHeatmapIdentifierStore alloc]init];
     [[FTModuleManager sharedInstance] registerService:@protocol(FTHeatmapIdentifierRegistry) instance:self.heatmapIdentifierStore];
     self.rumManager = [[FTRUMManager alloc]initWithRumDependencies:self.dependencies];
-    [[FTAutoTrackHandler sharedInstance] startWithTrackView:rumConfig.enableTraceUserView action:rumConfig.enableTraceUserAction addRumDatasDelegate:self.rumManager viewHandler:rumConfig.viewTrackingHandler swiftUIViewHandler:rumConfig.swiftUIViewTrackingHandler actionHandler:rumConfig.actionTrackingHandler displayMonitor:displayMonitor];
+    [[FTAutoTrackHandler sharedInstance] startWithTrackView:rumConfig.enableTraceUserView action:rumConfig.enableTraceUserAction addRumDatasDelegate:self.rumManager viewHandler:rumConfig.viewTrackingHandler swiftUIViewHandler:rumConfig.swiftUIViewTrackingHandler actionHandler:rumConfig.actionTrackingHandler displayMonitor:displayMonitor heatmapIdentifierRegistry:self.heatmapIdentifierStore];
     [[FTAppLifeCycle sharedInstance] addAppLifecycleDelegate:self];
     BOOL lastSessionHadCrash = NO;
     if(rumConfig.enableTrackAppCrash){

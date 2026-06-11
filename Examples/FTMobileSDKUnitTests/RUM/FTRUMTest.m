@@ -43,7 +43,7 @@
 #import "FTCrashReportFields.h"
 #import "FTFatalErrorContext.h"
 #import "FTNetworkConnectivity.h"
-#import "FTModuleManager.h"
+#import "FTHeatmap.h"
 
 @interface FTTestCrashReportWrapper : FTCrashReportWrapper
 @end

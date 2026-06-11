@@ -15,15 +15,15 @@
 #import "FTActionTrackingHandler.h"
 NS_ASSUME_NONNULL_BEGIN
 @class FTDisplayRateMonitor;
+@protocol FTHeatmapIdentifierRegistry;
+typedef CGPoint (^FTHeatmapLocationResolver)(UIView *view);
 @protocol FTUIViewControllerHandler <NSObject>
 -(void)notify_viewDidAppear:(UIViewController *)viewController animated:(BOOL)animated;
 -(void)notify_viewDidDisappear:(UIViewController *)viewController animated:(BOOL)animated;
 @end
 
 @protocol FTUIEventHandler <NSObject>
--(void)notify_sendAction:(UIView *)view;
--(void)notify_sendAction:(UIView *)view locationInView:(nullable NSValue *)locationInView;
--(void)notify_sendAction:(UIView *)view heatmapTargetView:(nullable UIView *)heatmapTargetView locationInHeatmapTargetView:(nullable NSValue *)locationInHeatmapTargetView;
+-(void)notify_sendAction:(UIView *)view heatmapTargetView:(nullable UIView *)heatmapTargetView locationResolver:(nullable FTHeatmapLocationResolver)locationResolver;
 -(void)notify_sendActionWithPressType:(UIPressType)type view:(UIView *)view;
 #if TARGET_OS_IOS
 -(void)notify_swiftUIActionWithName:(NSString *)actionName property:(nullable NSDictionary *)property;
@@ -55,6 +55,15 @@ NS_ASSUME_NONNULL_BEGIN
        swiftUIViewHandler:(nullable id<FTSwiftUIViewTrackingHandler>)swiftUIViewHandler
             actionHandler:(nullable FTActionTrackingHandler)actionHandler
            displayMonitor:(nullable FTDisplayRateMonitor *)displayMonitor;
+
+-(void)startWithTrackView:(BOOL)enable
+                   action:(BOOL)enable
+      addRumDatasDelegate:(id<FTRumDatasProtocol>)delegate
+              viewHandler:(nullable FTViewTrackingHandler)viewHandler
+       swiftUIViewHandler:(nullable id<FTSwiftUIViewTrackingHandler>)swiftUIViewHandler
+            actionHandler:(nullable FTActionTrackingHandler)actionHandler
+           displayMonitor:(nullable FTDisplayRateMonitor *)displayMonitor
+heatmapIdentifierRegistry:(nullable id<FTHeatmapIdentifierRegistry>)heatmapIdentifierRegistry;
 
 -(void)shutDown;
 @end

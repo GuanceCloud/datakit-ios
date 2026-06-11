@@ -27,6 +27,7 @@
 #import "FTMobileSDK/FTSDKCore/DataManager/Upload/FTRequest.h"
 #import "FTMobileSDK/FTSDKCore/DataManager/Upload/FTRequestBody.h"
 #import "FTMobileSDK/FTSDKCore/FTWKWebView/FTWKWebViewHandler.h"
+#import "FTMobileSDK/FTSDKCore/FTRUM/Heatmap/FTHeatmap.h"
 #import "FTMobileSDK/FTSDKCore/Protocol/FTMessageReceiver.h"
 #import "FTMobileSDK/FTSDKCore/Protocol/FTModuleManager.h"
 #import "FTMobileSDK/FTSDKCore/Protocol/FTSRWebTrackingProtocol.h"

@@ -11,7 +11,7 @@
 #import "FTConstants.h"
 #import "FTBaseInfoHandler.h"
 #import "FTRUMContext.h"
-#import "FTModuleManager.h"
+#import "FTHeatmap.h"
 
 static const NSTimeInterval actionMaxDuration = 5; // 5 seconds
 static const NSTimeInterval discreteActionTimeoutDuration = 0.1;

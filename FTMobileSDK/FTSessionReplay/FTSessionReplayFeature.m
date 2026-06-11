@@ -76,7 +76,13 @@
     }
     return self;
 }
+- (void)configureHeatmapIdentifierRegistry {
+    id<FTHeatmapIdentifierRegistry> registry = [[FTModuleManager sharedInstance] getRegisterService:@protocol(FTHeatmapIdentifierRegistry)];
+    [registry setEnableHeatmap:self.config.enableHeatmap];
+    [registry setHeatmapIdentifiers:@{}];
+}
 -(void)startWithRecordStorage:(FTFeatureStorage *)recordStorage resourceStorage:(FTFeatureStorage *)resourceStorage resourceDataStore:(nullable id<FTDataStore>)dataStore{
+    [self configureHeatmapIdentifierRegistry];
     __weak typeof(self) weakSelf = self;
     FTTrackingConsentProvider trackingConsentProvider = ^FTTrackingConsent{
         __strong typeof(weakSelf) strongSelf = weakSelf;

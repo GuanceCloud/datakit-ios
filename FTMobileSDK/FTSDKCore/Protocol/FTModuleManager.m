@@ -8,10 +8,6 @@
 
 #import "FTModuleManager.h"
 #import "FTMessageReceiver.h"
-#import <CommonCrypto/CommonDigest.h>
-#import <limits.h>
-#import <math.h>
-#import <string.h>
 NSString *const FTMessageKeyRUMContext = @"rum_context";
 NSString *const FTMessageKeySRProperty = @"sr_property";
 NSString *const FTMessageKeyWebViewSR = @"webView_session_replay";
@@ -21,97 +17,6 @@ NSString *const FTMessageKeyRumError = @"rum_error";
 NSString *const FTMessageKeySRSampleRateUpdate = @"sr_sample_rate_update";
 
 void *FTMessageBusQueueIdentityKey = &FTMessageBusQueueIdentityKey;
-
-static long long FTHeatmapInt64FromCGFloat(CGFloat value) {
-    if (!isfinite(value)) {
-        return 0;
-    }
-    CGFloat roundedValue = round(value);
-    if (roundedValue > LLONG_MAX) {
-        return LLONG_MAX;
-    }
-    if (roundedValue < LLONG_MIN) {
-        return LLONG_MIN;
-    }
-    return (long long)roundedValue;
-}
-
-@implementation FTHeatmapIdentifier
-- (instancetype)initWithRawValue:(NSString *)rawValue {
-    self = [super init];
-    if (self) {
-        _rawValue = [rawValue copy];
-    }
-    return self;
-}
-- (instancetype)initWithElementPath:(NSArray<NSString *> *)elementPath
-                          viewName:(NSString *)viewName
-                   bundleIdentifier:(NSString *)bundleIdentifier {
-    NSMutableArray<NSString *> *canonicalPath = [NSMutableArray array];
-    [canonicalPath addObject:bundleIdentifier.length > 0 ? bundleIdentifier : @"unknown"];
-    [canonicalPath addObject:[NSString stringWithFormat:@"view:%@", viewName ?: @""]];
-    [canonicalPath addObjectsFromArray:elementPath ?: @[]];
-    NSString *rawPath = [canonicalPath componentsJoinedByString:@"/"];
-    const char *input = [rawPath UTF8String];
-    unsigned char digest[CC_MD5_DIGEST_LENGTH];
-    CC_MD5(input, (CC_LONG)strlen(input), digest);
-    NSMutableString *identifier = [NSMutableString stringWithCapacity:CC_MD5_DIGEST_LENGTH * 2];
-    for (int i = 0; i < CC_MD5_DIGEST_LENGTH; i++) {
-        [identifier appendFormat:@"%02x", digest[i]];
-    }
-    return [self initWithRawValue:identifier];
-}
-+ (NSValue *)objectIdentifierForObject:(id)object {
-    return object ? [NSValue valueWithNonretainedObject:object] : nil;
-}
-- (id)copyWithZone:(NSZone *)zone {
-    return [[FTHeatmapIdentifier allocWithZone:zone] initWithRawValue:self.rawValue];
-}
-- (BOOL)isEqual:(id)object {
-    if (self == object) {
-        return YES;
-    }
-    if (![object isKindOfClass:FTHeatmapIdentifier.class]) {
-        return NO;
-    }
-    return [self.rawValue isEqualToString:((FTHeatmapIdentifier *)object).rawValue];
-}
-- (NSUInteger)hash {
-    return self.rawValue.hash;
-}
-@end
-
-@implementation FTHeatmapAttributes
-- (instancetype)initWithIdentifier:(FTHeatmapIdentifier *)identifier
-                              size:(CGSize)size
-                          location:(CGPoint)location {
-    self = [super init];
-    if (self) {
-        _targetPermanentID = [identifier.rawValue copy];
-        _targetWidth = FTHeatmapInt64FromCGFloat(size.width);
-        _targetHeight = FTHeatmapInt64FromCGFloat(size.height);
-        _positionX = FTHeatmapInt64FromCGFloat(location.x);
-        _positionY = FTHeatmapInt64FromCGFloat(location.y);
-    }
-    return self;
-}
-- (NSDictionary *)heatmapActionDictionary {
-    if (self.targetPermanentID.length == 0) {
-        return @{};
-    }
-    return @{
-        @"action_position": @{
-            @"x": @(self.positionX),
-            @"y": @(self.positionY),
-        },
-        @"action_target": @{
-            @"height": @(self.targetHeight),
-            @"permanentId": self.targetPermanentID,
-            @"width": @(self.targetWidth),
-        },
-    };
-}
-@end
 
 @interface FTModuleManager()
 @property (nonatomic, strong, readonly) NSPointerArray *receiverArray;

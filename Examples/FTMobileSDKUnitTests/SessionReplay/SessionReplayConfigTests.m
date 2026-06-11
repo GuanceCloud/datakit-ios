@@ -14,6 +14,41 @@
 #import "FTViewAttributes.h"
 #import "FTViewTreeRecordingContext.h"
 #import "FTViewTreeSnapshotBuilder.h"
+#import "FTModuleManager.h"
+#import "FTHeatmap.h"
+#import "FTSessionReplayFeature.h"
+#import "FTFeatureStorage.h"
+#import "FTFeatureDirectories.h"
+#import "FTDirectory.h"
+#import "FTPerformancePreset.h"
+
+@interface SessionReplayHeatmapIdentifierRegistry : NSObject<FTHeatmapIdentifierRegistry>
+@property (nonatomic, copy) NSDictionary<NSValue *, FTHeatmapIdentifier *> *identifiers;
+@property (nonatomic, assign) BOOL enableHeatmap;
+@end
+
+@implementation SessionReplayHeatmapIdentifierRegistry
+- (void)setHeatmapIdentifiers:(NSDictionary<NSValue *,FTHeatmapIdentifier *> *)heatmapIdentifiers {
+    self.identifiers = [heatmapIdentifiers copy] ?: @{};
+}
+- (FTHeatmapIdentifier *)heatmapIdentifierForObject:(id)object {
+    NSValue *objectIdentifier = [FTHeatmapIdentifier objectIdentifierForObject:object];
+    return objectIdentifier ? self.identifiers[objectIdentifier] : nil;
+}
+@end
+
+static FTFeatureStorage *FTMakeSessionReplayFeatureStorage(NSString *name) {
+    NSString *basePath = [NSString stringWithFormat:@"ft-session-replay-heatmap-test/%@/%@", name, NSUUID.UUID.UUIDString];
+    FTDirectory *grantedDirectory = [[FTDirectory alloc]initWithSubdirectoryPath:[basePath stringByAppendingPathComponent:@"granted"]];
+    FTFeatureDirectories *directories = [[FTFeatureDirectories alloc]initWithGranted:grantedDirectory
+                                                                             pending:nil
+                                                                        errorSampled:nil];
+    NSString *queueLabel = [NSString stringWithFormat:@"com.ft.test.%@", name];
+    return [[FTFeatureStorage alloc]initWithFeatureName:name
+                                                  queue:dispatch_queue_create(queueLabel.UTF8String, DISPATCH_QUEUE_SERIAL)
+                                            directories:directories
+                                            performance:[[FTPerformancePreset alloc]init]];
+}
 
 @interface SessionReplayConfigTests : XCTestCase
 
@@ -50,6 +85,48 @@
     FTSessionReplayConfig *config = [FTSessionReplayConfig new];
     XCTAssertFalse(config.enableHeatmap);
 }
+#if TARGET_OS_IOS
+- (void)testSessionReplayFeatureSyncsHeatmapEnabledToRegistryOnStart {
+    NSObject *staleObject = [NSObject new];
+    FTHeatmapIdentifier *staleIdentifier = [[FTHeatmapIdentifier alloc]initWithRawValue:@"stale-id"];
+    SessionReplayHeatmapIdentifierRegistry *registry = [SessionReplayHeatmapIdentifierRegistry new];
+    registry.identifiers = @{
+        [FTHeatmapIdentifier objectIdentifierForObject:staleObject]: staleIdentifier,
+    };
+    [[FTModuleManager sharedInstance] registerService:@protocol(FTHeatmapIdentifierRegistry) instance:registry];
+    FTSessionReplayConfig *config = [FTSessionReplayConfig new];
+    config.enableHeatmap = YES;
+    FTSessionReplayFeature *feature = [[FTSessionReplayFeature alloc]initWithConfig:config];
+    FTFeatureStorage *recordStorage = FTMakeSessionReplayFeatureStorage(@"session-replay-records");
+    FTFeatureStorage *resourceStorage = FTMakeSessionReplayFeatureStorage(@"session-replay-resources");
+
+    [feature startWithRecordStorage:recordStorage resourceStorage:resourceStorage resourceDataStore:nil];
+
+    XCTAssertTrue(registry.enableHeatmap);
+    XCTAssertEqual(registry.identifiers.count, 0);
+}
+
+- (void)testSnapshotWritesHeatmapIdentifiersForRecordedUILabelAndUISwitch {
+    UIView *rootView = [[UIView alloc]initWithFrame:CGRectMake(0, 0, 240, 120)];
+    rootView.backgroundColor = UIColor.whiteColor;
+    UILabel *label = [[UILabel alloc]initWithFrame:CGRectMake(10, 10, 80, 20)];
+    label.text = @"Title";
+    [rootView addSubview:label];
+    UISwitch *switchView = [[UISwitch alloc]initWithFrame:CGRectMake(120, 10, 51, 31)];
+    [rootView addSubview:switchView];
+    SessionReplayHeatmapIdentifierRegistry *registry = [SessionReplayHeatmapIdentifierRegistry new];
+    [[FTModuleManager sharedInstance] registerService:@protocol(FTHeatmapIdentifierRegistry) instance:registry];
+    FTViewTreeSnapshotBuilder *builder = [[FTViewTreeSnapshotBuilder alloc]initWithAdditionalNodeRecorders:nil enableSwiftUI:NO];
+    builder.enableHeatmap = YES;
+    FTSRContext *context = [FTSRContext new];
+    context.viewPath = @"DemoViewController";
+
+    [builder takeSnapshot:@[rootView] referenceView:rootView context:context];
+
+    XCTAssertNotNil([registry heatmapIdentifierForObject:label]);
+    XCTAssertNotNil([registry heatmapIdentifierForObject:switchView]);
+}
+#endif
 - (void)testSwiftUIRecordingDisabledByDefault{
     FTSessionReplayConfig *config = [FTSessionReplayConfig new];
     XCTAssertFalse(config.enableSwiftUI);
