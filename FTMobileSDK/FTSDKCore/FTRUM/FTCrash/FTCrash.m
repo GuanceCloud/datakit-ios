@@ -21,6 +21,7 @@
 #import "FTCrashReportWrapper.h"
 #import "FTCrashReportStore.h"
 #import "FTCrashMonitor_AppState.h"
+#import "FTCrashMonitor_System.h"
 #import "FTCrashReport.h"
 #import "FTCrashBinaryImageCache.h"
 
@@ -70,6 +71,10 @@ static mach_port_t main_thread_id;
     [crash.crashReportWrapper setEnableMemory:memory];
     [crash install];
     [crash sendCrashReport];
+}
++ (void)setEnableAccessIDFV:(BOOL)enableAccessIDFV
+{
+    ftcrashcm_system_setEnableAccessIDFV(enableAccessIDFV);
 }
 - (instancetype)init {
     self = [super init];

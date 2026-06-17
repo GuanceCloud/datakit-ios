@@ -51,7 +51,6 @@ static BOOL FTPresetIsAppExtension(void) {
         _device = @"APPLE";
 #if FT_HAS_UIKIT
         _model = [FTPresetProperty deviceInfo];
-        _deviceUUID = [[UIDevice currentDevice] identifierForVendor].UUIDString;
         _os = [UIDevice currentDevice].systemName;
         if (!FTPresetIsAppExtension()) {
             _appUUID = [FTPresetProperty getApplicationUUID];
@@ -131,6 +130,18 @@ static BOOL FTPresetIsAppExtension(void) {
     return nil;
 }
 #endif
+- (NSString *)deviceUUIDWithEnableAccessIDFV:(BOOL)enableAccessIDFV{
+#if FT_HAS_UIKIT
+    if (!enableAccessIDFV) {
+        return nil;
+    }
+    return [[UIDevice currentDevice] identifierForVendor].UUIDString;
+#elif FT_HOST_MAC
+    return self.deviceUUID;
+#else
+    return nil;
+#endif
+}
 @end
 
 static NSString *FTPresetStringKey(id key) {
@@ -508,11 +519,26 @@ static Class FTPresetExpectedValueClass(id value) {
                      env:(NSString *)env
                  service:(NSString *)service
            globalContext:(NSDictionary *)globalContext
-                 pkgInfo:(NSDictionary *)pkgInfo{
+                  pkgInfo:(NSDictionary *)pkgInfo{
+    [self startWithVersion:version
+                sdkVersion:sdkVersion
+                       env:env
+                   service:service
+             globalContext:globalContext
+                   pkgInfo:pkgInfo
+          enableAccessIDFV:YES];
+}
+- (void)startWithVersion:(NSString *)version
+              sdkVersion:(NSString *)sdkVersion
+                     env:(NSString *)env
+                 service:(NSString *)service
+           globalContext:(NSDictionary *)globalContext
+                  pkgInfo:(NSDictionary *)pkgInfo
+         enableAccessIDFV:(BOOL)enableAccessIDFV{
     FTDataModifier modifier = self.dataModifier;
     FTBasePropertyModel *baseModel = [FTBasePropertyModel new];
     baseModel.applicationUUID = self.mobileDevice.appUUID;
-    baseModel.deviceUUID = self.mobileDevice.deviceUUID;
+    baseModel.deviceUUID = [self.mobileDevice deviceUUIDWithEnableAccessIDFV:enableAccessIDFV];
     baseModel.service = service;
     baseModel.version = version;
     baseModel.env = env;

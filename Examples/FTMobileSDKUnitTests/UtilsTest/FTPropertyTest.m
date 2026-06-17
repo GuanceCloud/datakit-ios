@@ -126,6 +126,19 @@ static void FTPropertyTestAssertMissingKeys(XCTestCase *testCase, NSDictionary *
     XCTAssertTrue([env isEqualToString:@"pre"]);
     [FTMobileAgent shutDown];
 }
+- (void)testEnableAccessIDFVConfigRoundTrip{
+    FTMobileConfig *config = [[FTMobileConfig alloc]initWithDatakitUrl:self.url];
+    XCTAssertTrue(config.enableAccessIDFV);
+    config.enableAccessIDFV = NO;
+
+    FTMobileConfig *copiedConfig = [config copy];
+    NSDictionary *dict = [config convertToDictionary];
+    FTMobileConfig *dictConfig = [[FTMobileConfig alloc]initWithDictionary:dict];
+
+    XCTAssertFalse(copiedConfig.enableAccessIDFV);
+    XCTAssertEqualObjects(dict[@"enableAccessIDFV"], @NO);
+    XCTAssertFalse(dictConfig.enableAccessIDFV);
+}
 /**
  * url is empty string
  * Verification standard: when url is empty string, FTMobileAgent calling - startWithConfigOptions: will crash as true
@@ -369,6 +382,23 @@ static void FTPropertyTestAssertMissingKeys(XCTestCase *testCase, NSDictionary *
     FTPropertyTestAssertMissingKeys(self, loggerTags, rumKeys);
     [FTMobileAgent shutDown];
 }
+- (void)testDisableAccessIDFVRemovesDeviceUUID{
+    FTMobileConfig *config = [[FTMobileConfig alloc]initWithDatakitUrl:self.url];
+    config.autoSync = NO;
+    config.enableAccessIDFV = NO;
+    [FTMobileAgent startWithConfigOptions:config];
+    FTRumConfig *rumConfig = [[FTRumConfig alloc]initWithAppid:_appid];
+    [[FTMobileAgent sharedInstance] startRumWithConfigOptions:rumConfig];
+    FTLoggerConfig *loggerConfig = [[FTLoggerConfig alloc]init];
+    [[FTMobileAgent sharedInstance] startLoggerWithConfigOptions:loggerConfig];
+
+    NSDictionary *rumTags = [[FTPresetProperty sharedInstance] rumTags];
+    NSDictionary *loggerTags = [[FTPresetProperty sharedInstance] loggerTags];
+
+    FTPropertyTestAssertMissingKeys(self, rumTags, @[FT_COMMON_PROPERTY_DEVICE_UUID]);
+    FTPropertyTestAssertMissingKeys(self, loggerTags, @[FT_COMMON_PROPERTY_DEVICE_UUID]);
+    [FTMobileAgent shutDown];
+}
 - (void)testLogWithoutRUMDoesNotIncludeRUMTags{
     FTMobileConfig *config = [[FTMobileConfig alloc]initWithDatakitUrl:self.url];
     config.autoSync = NO;
@@ -562,7 +592,8 @@ static void FTPropertyTestAssertMissingKeys(XCTestCase *testCase, NSDictionary *
                          env:@"test"
                      service:@"test_service"
                globalContext:@{@"init_key": @"init_value"}
-                     pkgInfo:nil];
+                     pkgInfo:nil
+            enableAccessIDFV:YES];
     [preset setRUMAppID:@"test_app" sampleRate:100 sessionOnErrorSampleRate:0 rumGlobalContext:@{@"rum_key": @"rum_value"}];
 
     NSDictionary *firstTags = [preset rumTags];
@@ -774,7 +805,8 @@ static void FTPropertyTestAssertMissingKeys(XCTestCase *testCase, NSDictionary *
                          env:@"test"
                      service:@"test_service"
                globalContext:@{@"init_key": @"init_value"}
-                     pkgInfo:@{@"pkg_name": @"test_pkg"}];
+                     pkgInfo:@{@"pkg_name": @"test_pkg"}
+            enableAccessIDFV:YES];
     [preset setRUMAppID:@"aaa" sampleRate:100 sessionOnErrorSampleRate:0 rumGlobalContext:@{@"a":@"b"}];
     [preset setLogGlobalContext:@{@"log_init":@"log_value"}];
     
@@ -837,7 +869,8 @@ static void FTPropertyTestAssertMissingKeys(XCTestCase *testCase, NSDictionary *
                          env:@"test"
                      service:@"test_service"
                globalContext:@{@"test_key": @"test_value"}
-                     pkgInfo:@{@"pkg_name": @"test_pkg"}];
+                     pkgInfo:@{@"pkg_name": @"test_pkg"}
+            enableAccessIDFV:YES];
     [preset appendGlobalContext:@{@"shutdown_key": @"shutdown_value"}];
     [preset updateUser:@"test_user" name:@"test_name" email:@"test@test.com" extra:@{@"extra": @"value"}];
     
@@ -897,7 +930,8 @@ static void FTPropertyTestAssertMissingKeys(XCTestCase *testCase, NSDictionary *
                          env:@"test"
                      service:@"test_service"
                globalContext:@{@"test_key": @"test_value"}
-                     pkgInfo:@{@"pkg_name": @"test_pkg"}];
+                     pkgInfo:@{@"pkg_name": @"test_pkg"}
+            enableAccessIDFV:YES];
     [preset appendGlobalContext:@{@"shutdown_key": @"shutdown_value"}];
     [preset setRUMAppID:@"111" sampleRate:100 sessionOnErrorSampleRate:100 rumGlobalContext:@{@"a":@"b"}];
     [preset setLogGlobalContext:@{@"c":@"d"}];

@@ -55,6 +55,9 @@ NS_ASSUME_NONNULL_BEGIN
        enableMonitorMemory:(BOOL)memory
           enableMonitorCpu:(BOOL)cpu;
 
+/// Set whether crash system monitor can access IDFV.
++ (void)setEnableAccessIDFV:(BOOL)enableAccessIDFV;
+
 @end
 
 NS_ASSUME_NONNULL_END
