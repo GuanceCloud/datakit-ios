@@ -38,7 +38,7 @@
 #import "FTDataWriterWorker.h"
 #import "FTModuleManager.h"
 #import "FTRemoteConfigManager.h"
-#import "../../FTSDKCore/DataFilter/FTDataFilterManager.h"
+#import "FTDataFilterManager.h"
 #import "FTRemoteConfigurationProtocol.h"
 #import "FTRemoteConfigError.h"
 #import "FTConfig+RemoteConfig.h"
@@ -461,5 +461,8 @@ static FTMobileAgent *sharedInstance = nil;
 }
 - (void)additionalConfigurationWithSource:(NSString *)source{
     [FTPresetProperty sharedInstance].sessionReplaySource = source;
+}
++ (NSString *)sdkVersion{
+    return SDK_VERSION;
 }
 @end

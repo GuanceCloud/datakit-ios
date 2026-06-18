@@ -20,5 +20,8 @@
 - (void)syncProcess;
 /// Must be set before sessionReplay configuration
 - (void)additionalConfigurationWithSource:(NSString *)source;
+
+/// Current SDK version string.
++ (NSString *)sdkVersion;
 @end
 #endif /* FTMobileAgent_Private_h */
