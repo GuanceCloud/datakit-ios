@@ -31,6 +31,8 @@
 #import "FTNetworkInfoManager.h"
 #import "FTUploadStatus.h"
 #import "FTUIImageResource.h"
+#import "UIImage+FTSRIdentifier.h"
+#import "UIColor+FTSRIdentifier.h"
 #import "FTSRWireframe.h"
 
 BOOL isNull(id value)
@@ -237,6 +239,26 @@ BOOL isNAN(id value) {
         [[UIColor blackColor] setFill];
         UIRectFill((CGRect){CGPointZero, size});
     }];
+}
+
+- (void)testImageSrIdentifierCopiesMutableString{
+    UIImage *image = [self sessionReplayTestImage];
+    NSMutableString *identifier = [NSMutableString stringWithString:@"image-id"];
+    image.srIdentifier = identifier;
+
+    [identifier appendString:@"-mutated"];
+
+    XCTAssertEqualObjects(image.srIdentifier, @"image-id");
+}
+
+- (void)testColorSrIdentifierCopiesMutableString{
+    UIColor *color = [UIColor redColor];
+    NSMutableString *identifier = [NSMutableString stringWithString:@"color-id"];
+    color.srIdentifier = identifier;
+
+    [identifier appendString:@"-mutated"];
+
+    XCTAssertEqualObjects(color.srIdentifier, @"color-id");
 }
 
 - (void)testImageResourceResolvesDynamicTintColorBeforeBackgroundProcessing API_AVAILABLE(ios(13.0)){

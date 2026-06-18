@@ -55,7 +55,7 @@ static BOOL delegateConformsToFTProtocol(id delegate) {
         return [conformNum boolValue];
     } else {
         BOOL conform = [delegate conformsToProtocol:@protocol(FTURLSessionDelegateProviding)];
-        objc_setAssociatedObject(delegate, kFTConformsToFTProtocol, @(conform), OBJC_ASSOCIATION_RETAIN);
+        objc_setAssociatedObject(delegate, kFTConformsToFTProtocol, @(conform), OBJC_ASSOCIATION_RETAIN_NONATOMIC);
         return conform;
     }
 }
