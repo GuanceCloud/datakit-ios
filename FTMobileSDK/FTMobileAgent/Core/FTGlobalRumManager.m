@@ -14,6 +14,7 @@
 #import "FTWKWebViewHandler+Private.h"
 #import "FTWKWebViewJavascriptBridge.h"
 #endif
+#import "FTSDKCompat.h"
 #import "FTLongTaskManager.h"
 #import "FTJSONUtil.h"
 #import "FTAutoTrackHandler.h"
@@ -59,7 +60,7 @@ static NSObject *sharedInstanceLock;
 -(void)setRumConfig:(FTRumConfig *)rumConfig writer:(id<FTRUMDataWriteProtocol>)writer{
     _rumConfig = rumConfig;
     FTDisplayRateMonitor *displayMonitor = nil;
-#if !FT_MAC
+#if FT_HAS_UIKIT
         if (rumConfig.deviceMetricsMonitorType & DeviceMetricsMonitorFps || rumConfig.enableTraceUserAction) {
             displayMonitor = [[FTDisplayRateMonitor alloc]init];
         }

@@ -31,6 +31,7 @@
 -(void)setDisplayMonitor:(FTDisplayRateMonitor *)displayMonitor{
     if (self.type & DeviceMetricsMonitorFps) {
         _displayMonitor = displayMonitor;
+        displayMonitor.autoStartWithAppLifecycle = YES;
         [displayMonitor start];
     }
 }

@@ -27,7 +27,7 @@ NS_ASSUME_NONNULL_BEGIN
 @interface FTAppLaunchTracker : NSObject
 @property (class, nonatomic, assign) NSDate *sdkStartDate;
 @property (nonatomic,weak) id<FTAppLaunchDataDelegate> delegate;
-- (instancetype)initWithDelegate:(nullable id)delegate displayMonitor:( FTDisplayRateMonitor *)displayMonitor;
+- (instancetype)initWithDelegate:(nullable id)delegate displayMonitor:(nullable FTDisplayRateMonitor *)displayMonitor;
 
 @end
 

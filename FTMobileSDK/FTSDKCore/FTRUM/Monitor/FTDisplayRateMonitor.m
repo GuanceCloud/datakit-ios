@@ -80,6 +80,9 @@
     }];
 }
 - (void)stop{
+    if (self.startCount <= 0) {
+        return;
+    }
     self.startCount -= 1;
     if (self.startCount == 0) {
         [self.displayLink invalidate];
@@ -88,11 +91,15 @@
     }
 }
 - (void)applicationDidBecomeActive{
-    [self start];
+    if (self.autoStartWithAppLifecycle && self.displayLink == nil) {
+        [self start];
+    }
 }
 
 - (void)applicationWillResignActive{
-    [self stop];
+    if (self.autoStartWithAppLifecycle) {
+        [self stop];
+    }
 }
 -(void)dealloc{
     [self stop];

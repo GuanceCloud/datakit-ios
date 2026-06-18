@@ -14,6 +14,8 @@ typedef void (^FirstFrameCallBack)(NSDate *date);
 /// FPS monitor
 @interface FTDisplayRateMonitor : NSObject
 @property (nonatomic, copy, nullable) FirstFrameCallBack callBack;
+/// Whether DisplayLink should follow app active/resign lifecycle. Enable this for continuous FPS monitoring.
+@property (nonatomic, assign) BOOL autoStartWithAppLifecycle;
 
 - (NSDate *)firstFrameDate;
 
