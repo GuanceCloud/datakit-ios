@@ -34,6 +34,9 @@
 #import "UIImage+FTSRIdentifier.h"
 #import "UIColor+FTSRIdentifier.h"
 #import "FTSRWireframe.h"
+#if !TARGET_OS_TV
+#import "WKWebView+FTAutoTrack.h"
+#endif
 
 BOOL isNull(id value)
 {
@@ -260,6 +263,21 @@ BOOL isNAN(id value) {
 
     XCTAssertEqualObjects(color.srIdentifier, @"color-id");
 }
+
+#if !TARGET_OS_TV
+- (void)testWebViewLinkRumKeysInfoCopiesMutableDictionary{
+    WKWebView *webView = [[WKWebView alloc] initWithFrame:CGRectZero];
+    NSMutableDictionary *linkRumKeysInfo = [@{@"view_id": @"view-1"} mutableCopy];
+    webView.ft_linkRumKeysInfo = linkRumKeysInfo;
+
+    linkRumKeysInfo[@"view_id"] = @"view-2";
+    linkRumKeysInfo[@"extra"] = @"value";
+
+    XCTAssertEqualObjects(webView.ft_linkRumKeysInfo[@"view_id"], @"view-1");
+    XCTAssertNil(webView.ft_linkRumKeysInfo[@"extra"]);
+    XCTAssertFalse([webView.ft_linkRumKeysInfo isKindOfClass:[NSMutableDictionary class]]);
+}
+#endif
 
 - (void)testImageResourceResolvesDynamicTintColorBeforeBackgroundProcessing API_AVAILABLE(ios(13.0)){
     __block NSInteger providerCallCount = 0;
