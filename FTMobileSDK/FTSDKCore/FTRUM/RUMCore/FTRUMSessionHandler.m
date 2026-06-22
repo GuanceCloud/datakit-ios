@@ -98,6 +98,7 @@ static NSString * const FTRUMFallbackViewNameRoot = @"RootView";
     if (model.type == FTRUMSampleRateUpdate) {
         return  [self checkSessionStateForSamplingRateUpdate];
     }
+    _lastInteractionTime = [NSDate date];
     if (!self.sampling) {
         if(self.sessionOnErrorSampling == NO){
             return YES;
@@ -110,7 +111,6 @@ static NSString * const FTRUMFallbackViewNameRoot = @"RootView";
         }
     }
     self.rumDependencies.fatalErrorContext.dynamicContext = context;
-    _lastInteractionTime = [NSDate date];
     if ([self needsFallbackViewForModel:model]) {
         [self prepareFallbackViewForModel:model context:context];
     }

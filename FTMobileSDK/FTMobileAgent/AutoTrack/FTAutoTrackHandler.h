@@ -10,7 +10,6 @@
 #import <UIKit/UIKit.h>
 #import "FTRumDatasProtocol.h"
 #import "FTAutoTrackProperty.h"
-#import "FTRumConfig.h"
 #import "FTViewTrackingHandler.h"
 #import "FTActionTrackingHandler.h"
 NS_ASSUME_NONNULL_BEGIN

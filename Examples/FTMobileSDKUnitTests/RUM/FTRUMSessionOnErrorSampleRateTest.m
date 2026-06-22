@@ -659,6 +659,37 @@ typedef NS_ENUM(NSInteger, SampleState) {
     FTRUMSessionHandler *newSession6 = [rum valueForKey:@"sessionHandler"];
     XCTAssertTrue(newSession5 == newSession6);
 }
+- (void)testUnsampledSessionUpdatesLastInteractionTimeBeforeDrop{
+    [self sdkInitWithRumSampleRate:0 sessionOnErrorSampleRate:0];
+    FTRUMManager *rum = [FTGlobalRumManager sharedInstance].rumManager;
+
+    [FTModelHelper addActionWithContext:@{@"test":@"unsampled_idle"}];
+    [rum syncProcess];
+
+    FTRUMSessionHandler *session = [rum valueForKey:@"sessionHandler"];
+    NSDate *lastInteractionTime = [session valueForKey:@"lastInteractionTime"];
+    XCTAssertNotNil(lastInteractionTime);
+}
+- (void)testUnsampledSessionRecreatedAfterIdleTimeout{
+    [self sdkInitWithRumSampleRate:0 sessionOnErrorSampleRate:0];
+    FTRUMManager *rum = [FTGlobalRumManager sharedInstance].rumManager;
+
+    [FTModelHelper addActionWithContext:@{@"test":@"initial_unsampled"}];
+    [rum syncProcess];
+
+    FTRUMSessionHandler *session = [rum valueForKey:@"sessionHandler"];
+    NSDate *expiredInteractionTime = [NSDate dateWithTimeIntervalSinceNow:-(16 * 60)];
+    [session setValue:expiredInteractionTime forKey:@"lastInteractionTime"];
+
+    [FTModelHelper addActionWithContext:@{@"test":@"new_unsampled_session"}];
+    [rum syncProcess];
+
+    FTRUMSessionHandler *newSession = [rum valueForKey:@"sessionHandler"];
+    NSDate *newLastInteractionTime = [newSession valueForKey:@"lastInteractionTime"];
+    XCTAssertTrue(session != newSession);
+    XCTAssertNotNil(newLastInteractionTime);
+    XCTAssertTrue([newLastInteractionTime compare:expiredInteractionTime] == NSOrderedDescending);
+}
 
 #if !TARGET_OS_TV
 - (FTTestFeatureStorageContext *)sessionReplayStorageContextWithName:(NSString *)name {

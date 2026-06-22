@@ -43,6 +43,7 @@
 #import "FTCrashReportFields.h"
 #import "FTFatalErrorContext.h"
 #import "FTNetworkConnectivity.h"
+#import "FTAppLifeCycle.h"
 
 @interface FTTestCrashReportWrapper : FTCrashReportWrapper
 @end
@@ -77,6 +78,33 @@
     [[FTGlobalRumManager sharedInstance].rumManager syncProcess];
     [FTMobileAgent shutDown];
 }
+- (void)testInitialAppStateUpdatesFatalErrorContext{
+    FTRUMDependencies *dependencies = [[FTRUMDependencies alloc]init];
+    FTFatalErrorContext *fatalErrorContext = [[FTFatalErrorContext alloc]initWithErrorInfoProvider:nil];
+    dependencies.fatalErrorContext = fatalErrorContext;
+    FTRUMManager *manager = [[FTRUMManager alloc]initWithRumDependencies:dependencies];
+
+    FTFatalErrorContextModel *contextModel = [fatalErrorContext currentContextModel];
+    XCTAssertEqualObjects(contextModel.appState, AppStateStringMap[manager.appState]);
+
+    [manager syncProcess];
+}
+#if FT_HAS_UIKIT
+- (void)testWillEnterForegroundKeepsBackgroundAppState{
+    FTRUMDependencies *dependencies = [[FTRUMDependencies alloc]init];
+    dependencies.fatalErrorContext = [[FTFatalErrorContext alloc]initWithErrorInfoProvider:nil];
+    FTRUMManager *manager = [[FTRUMManager alloc]initWithRumDependencies:dependencies];
+    manager.appState = FTAppStateBackground;
+
+    id<FTAppLifeCycleDelegate> delegate = (id<FTAppLifeCycleDelegate>)manager;
+    if ([delegate respondsToSelector:@selector(applicationWillEnterForeground)]) {
+        [delegate applicationWillEnterForeground];
+    }
+
+    XCTAssertEqual(manager.appState, FTAppStateBackground);
+    [manager syncProcess];
+}
+#endif
 #pragma mark ========== Session ==========
 
 - (void)testSessionIdChecks{

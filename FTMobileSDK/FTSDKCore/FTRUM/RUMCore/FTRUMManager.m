@@ -24,6 +24,13 @@
 #import "FTRUMContext.h"
 #import "FTMessageReceiver.h"
 #import "FTRUMViewHandler.h"
+#import "FTAppLifeCycle.h"
+#if FT_HAS_UIKIT
+#import <UIKit/UIKit.h>
+#endif
+#if FT_HOST_MAC
+#import <AppKit/AppKit.h>
+#endif
 
 NSString * const AppStateStringMap[] = {
     [FTAppStateUnknown] = @"unknown",
@@ -33,22 +40,25 @@ NSString * const AppStateStringMap[] = {
 };
 void *FTRUMQueueIdentityKey = &FTRUMQueueIdentityKey;
 
-@interface FTRUMManager()<FTRUMSessionProtocol,FTMessageReceiver>
+@interface FTRUMManager()<FTRUMSessionProtocol,FTMessageReceiver,FTAppLifeCycleDelegate>
 @property (nonatomic, strong) FTRUMDependencies *rumDependencies;
 @property (nonatomic, strong) FTRUMSessionHandler *sessionHandler;
 @property (nonatomic, strong) FTReadWriteHelper<NSMutableDictionary *> *preViewDuration;
 @property (nonatomic, strong) dispatch_queue_t rumQueue;
+@property (atomic,copy,readwrite) NSString *viewReferrer;
+@property (atomic,copy,nullable) NSString *viewReferrerId;
 @end
 @implementation FTRUMManager
 -(instancetype)initWithRumDependencies:(FTRUMDependencies *)dependencies{
     self = [super init];
     if(self){
         _rumDependencies = dependencies;
-        _appState = FTAppStateStartUp;
+        self.appState = [self initialAppState];
         _preViewDuration = [[FTReadWriteHelper alloc]initWithValue:[NSMutableDictionary new]] ;
         _rumQueue = dispatch_queue_create("com.ft.rum", DISPATCH_QUEUE_SERIAL);
         dispatch_queue_set_specific(_rumQueue, FTRUMQueueIdentityKey, &FTRUMQueueIdentityKey, NULL);
         [[FTModuleManager sharedInstance] addMessageReceiver:self];
+        [[FTAppLifeCycle sharedInstance] addAppLifecycleDelegate:self];
         [self notifyRumInit];
         self.assistant = self;
     }
@@ -87,6 +97,42 @@ void *FTRUMQueueIdentityKey = &FTRUMQueueIdentityKey;
 -(void)setAppState:(FTAppState)appState{
     _appState = appState;
     self.rumDependencies.fatalErrorContext.appState = AppStateStringMap[appState];
+}
+-(FTAppState)initialAppState{
+#if FT_HAS_UIKIT
+    if ([UIApplication respondsToSelector:@selector(sharedApplication)]) {
+        UIApplication *application = [UIApplication performSelector:@selector(sharedApplication)];
+        if (!application) {
+            return FTAppStateStartUp;
+        }
+        switch (application.applicationState) {
+            case UIApplicationStateActive:
+                return FTAppStateRun;
+            case UIApplicationStateBackground:
+                return FTAppStateBackground;
+            case UIApplicationStateInactive:
+            default:
+                return FTAppStateStartUp;
+        }
+    }
+    return FTAppStateStartUp;
+#elif FT_HOST_MAC
+    return [NSApplication sharedApplication].active ? FTAppStateRun : FTAppStateUnknown;
+#else
+    return FTAppStateStartUp;
+#endif
+}
+#pragma mark ========== RUM App State ==========
+-(void)applicationDidBecomeActive{
+    self.appState = FTAppStateRun;
+}
+-(void)applicationWillResignActive{
+#if FT_HOST_MAC
+    self.appState = FTAppStateUnknown;
+#endif
+}
+-(void)applicationDidEnterBackground{
+    self.appState = FTAppStateBackground;
 }
 -(void)updateSampleRate:(int)sampleRate sessionOnErrorSampleRate:(int)sessionOnErrorSampleRate{
     dispatch_async(self.rumQueue, ^{
@@ -589,5 +635,9 @@ void *FTRUMQueueIdentityKey = &FTRUMQueueIdentityKey;
     }else{
         block();
     }
+}
+- (void)dealloc{
+    [[FTAppLifeCycle sharedInstance] removeAppLifecycleDelegate:self];
+    [[FTModuleManager sharedInstance] removeMessageReceiver:self];
 }
 @end
