@@ -16,4 +16,5 @@ FTMobileSDK/build/
 .swiftpm
 build
 xcuserdata
+FTdSYMSymbols/
 .build
