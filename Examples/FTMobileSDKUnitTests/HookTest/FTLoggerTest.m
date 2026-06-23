@@ -49,6 +49,19 @@
     [FTMobileAgent shutDown];
     self.logExpectation = nil;
 }
+- (void)testInnerLogDisabledDoesNotEvaluateArguments{
+    [FTLog enableLog:NO];
+    __block NSInteger evaluationCount = 0;
+    NSString *(^expensiveLogValue)(void) = ^NSString *{
+        evaluationCount += 1;
+        return @"expensive";
+    };
+    FTInnerLogDebug(@"%@", expensiveLogValue());
+    FTInnerLogInfo(@"%@", expensiveLogValue());
+    FTInnerLogError(@"%@", expensiveLogValue());
+    FT_CONSOLE_LOG(StatusInfo, @"info", expensiveLogValue(), @{@"value": expensiveLogValue()});
+    XCTAssertEqual(evaluationCount, 0);
+}
 - (void)testEnableCustomLog{
     [self setRightSDKConfig];
     NSInteger count =  [[FTTrackerEventDBTool sharedManager] getDatasCount];
