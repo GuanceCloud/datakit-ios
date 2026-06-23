@@ -78,7 +78,7 @@ API_AVAILABLE(ios(13.0), tvos(13.0))
 @property (nonatomic, copy) NSString *viewName;
 @property (nonatomic, copy) NSString *identify;
 @property (nonatomic, strong) NSNumber *loadTime;
-@property (nonatomic, weak) UIViewController *viewController;
+@property (nonatomic, weak, nullable) UIViewController *viewController;
 @property (nonatomic, assign) BOOL isUntrackedModal;
 @property (nonatomic, copy) NSDictionary *property;
 @property (nonatomic, copy) NSString *viewControllerUUID;
@@ -91,8 +91,8 @@ API_AVAILABLE(ios(13.0), tvos(13.0))
 -(instancetype)initWithViewController:(UIViewController *)viewController identify:(NSString *)identify{
     self = [super init];
     if(self){
-        _viewName = viewController.ft_viewControllerName;
-        _identify = identify;
+        _viewName = [viewController.ft_viewControllerName copy];
+        _identify = [identify copy];
         _isUntrackedModal = NO;
         _viewController = viewController;
         _viewControllerUUID = [FTBaseInfoHandler randomUUID];
@@ -134,7 +134,7 @@ API_AVAILABLE(ios(13.0), tvos(13.0))
 @property (nonatomic, assign) BOOL autoTrackAction;
 @property (nonatomic, strong) FTAppLaunchTracker *launchTracker;
 /// Pass event object, pass collected view and action data to RUM
-@property (nonatomic, weak) id<FTRumDatasProtocol> addRumDatasDelegate;
+@property (nonatomic, weak, nullable) id<FTRumDatasProtocol> addRumDatasDelegate;
 @property (nonatomic, strong, nullable) FTViewTrackingHandler uiKitViewTrackingHandler;
 @property (nonatomic, strong, nullable) id<FTSwiftUIViewTrackingHandler> swiftUIViewTrackingHandler;
 #if FT_HAS_SWIFTUI_VIEW_TRACKING

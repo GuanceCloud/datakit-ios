@@ -42,7 +42,7 @@ typedef NS_ENUM(NSInteger, FTUploadWorkerState) {
 /// YES when a delayed auto-upload is still in the 100ms debounce window.
 @property (nonatomic, assign, readonly) BOOL hasPendingUpload;
 
-@property (nonatomic, strong) dispatch_block_t uploadWork;
+@property (nonatomic, copy) dispatch_block_t uploadWork;
 @property (nonatomic, strong) dispatch_source_t timerSource;
 
 @end
@@ -78,7 +78,7 @@ typedef NS_ENUM(NSInteger, FTUploadWorkerState) {
 }
 -(void)setUploadWork:(dispatch_block_t)uploadWork{
     pthread_rwlock_wrlock(&_uploadWorkLock);
-    _uploadWork = uploadWork;
+    _uploadWork = [uploadWork copy];
     pthread_rwlock_unlock(&_uploadWorkLock);
 }
 -(dispatch_block_t)uploadWork{

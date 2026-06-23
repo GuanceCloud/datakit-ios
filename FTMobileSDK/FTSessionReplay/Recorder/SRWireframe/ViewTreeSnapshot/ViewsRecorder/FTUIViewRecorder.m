@@ -26,7 +26,7 @@
     self = [super init];
     if(self){
         _identifier = [[NSUUID UUID] UUIDString];
-        _semanticsOverride = semanticsOverride;
+        _semanticsOverride = [semanticsOverride copy];
     }
     return self;
 }

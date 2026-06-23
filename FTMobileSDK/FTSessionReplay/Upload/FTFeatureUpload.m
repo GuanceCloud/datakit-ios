@@ -30,8 +30,8 @@
 }
 @property (nonatomic, strong) FTHTTPClient *httpClient;
 @property (nonatomic, strong) dispatch_queue_t queue;
-@property (nonatomic, strong) dispatch_block_t readWork;
-@property (nonatomic, strong) dispatch_block_t uploadWork;
+@property (nonatomic, copy) dispatch_block_t readWork;
+@property (nonatomic, copy) dispatch_block_t uploadWork;
 @property (nonatomic, strong) id<FTReader> fileReader;
 @property (nonatomic, strong) id<FTCacheWriter> cacheWriter;
 @property (nonatomic, strong) id<FTFeatureRequestBuilder> requestBuilder;
@@ -70,7 +70,7 @@
     if(self){
         NSString *serialLabel = [NSString stringWithFormat:@"com.ft.%@-upload", featureName];
         _queue = dispatch_queue_create([serialLabel UTF8String], 0);
-        _featureName = featureName;
+        _featureName = [featureName copy];
         pthread_rwlock_init(&_readWorkLock, NULL);
         pthread_rwlock_init(&_uploadWorkLock, NULL);
         _fileReader = fileReader;
@@ -123,7 +123,7 @@
 #pragma mark ========== block_item readwrite lock ==========
 -(void)setReadWork:(dispatch_block_t)readWork{
     pthread_rwlock_wrlock(&_readWorkLock);
-    _readWork = readWork;
+    _readWork = [readWork copy];
     pthread_rwlock_unlock(&_readWorkLock);
 }
 -(dispatch_block_t)readWork{
@@ -135,7 +135,7 @@
 }
 -(void)setUploadWork:(dispatch_block_t)uploadWork{
     pthread_rwlock_wrlock(&_uploadWorkLock);
-    _uploadWork = uploadWork;
+    _uploadWork = [uploadWork copy];
     pthread_rwlock_unlock(&_uploadWorkLock);
 }
 -(dispatch_block_t)uploadWork{

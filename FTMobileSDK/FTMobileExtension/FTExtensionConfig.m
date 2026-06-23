@@ -15,7 +15,7 @@
 - (instancetype)initWithGroupIdentifier:(NSString *)groupIdentifier{
     self = [super init];
     if(self){
-        _groupIdentifier = groupIdentifier;
+        _groupIdentifier = [groupIdentifier copy];
         _memoryMaxCount = 1000;
     }
     return self;

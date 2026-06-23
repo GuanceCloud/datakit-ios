@@ -34,11 +34,11 @@
  * Default: YES
  */
 @property (nonatomic, readwrite, assign) BOOL introspectMemory;
-@property (nonatomic, readwrite, retain) NSString *bundleName;
+@property (nonatomic, readwrite, copy) NSString *bundleName;
 
 @property (nonatomic, strong) FTCrashReportStore *reportStore;
 @property (nonatomic, strong) FTCrashReportWrapper *crashReportWrapper;
-@property (nonatomic, weak) id<FTRUMDataWriteProtocol> writer;
+@property (nonatomic, weak, nullable) id<FTRUMDataWriteProtocol> writer;
 @end
 
 static FTCrash *sharedHandler = nil;

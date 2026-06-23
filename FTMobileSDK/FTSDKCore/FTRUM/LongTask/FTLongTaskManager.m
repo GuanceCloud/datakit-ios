@@ -85,7 +85,7 @@ static NSString *const kSDKDirName      = @"com.ft.sdk";
 @end
 void *FTLongTaskManagerQueueTag = &FTLongTaskManagerQueueTag;
 @interface FTLongTaskManager()<FTLongTaskProtocol>
-@property (nonatomic, weak) id<FTRunloopDetectorDelegate> delegate;
+@property (nonatomic, weak, nullable) id<FTRunloopDetectorDelegate> delegate;
 @property (nonatomic, strong) FTRUMDependencies *dependencies;
 @property (nonatomic, strong) FTLongTaskDetector *longTaskDetector;
 @property (nonatomic, strong) dispatch_queue_t queue;
@@ -95,7 +95,7 @@ void *FTLongTaskManagerQueueTag = &FTLongTaskManagerQueueTag;
 @property (nonatomic, assign) BOOL enableANR;
 @property (nonatomic, assign) BOOL enableFreeze;
 @property (nonatomic, assign) long freezeDurationMs;
-@property (nonatomic, weak) id<FTBacktraceReporting> backtraceReporting;
+@property (nonatomic, weak, nullable) id<FTBacktraceReporting> backtraceReporting;
 @end
 @implementation FTLongTaskManager
 -(instancetype)initWithDependencies:(FTRUMDependencies *)dependencies

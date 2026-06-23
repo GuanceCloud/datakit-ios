@@ -8,13 +8,13 @@
 
 #import "FTWeakPropertyContainer.h"
 @interface FTWeakPropertyContainer()
-@property (nonatomic, weak) id weakProperty;
+@property (nonatomic, weak, nullable) id weakProperty;
 
 @end
 
 @implementation FTWeakPropertyContainer
 
-+ (instancetype)containerWithWeakProperty:(id)weakProperty {
++ (instancetype)containerWithWeakProperty:(nullable id)weakProperty {
    FTWeakPropertyContainer *container = [[FTWeakPropertyContainer alloc]init];
    container.weakProperty = weakProperty;
    return container;

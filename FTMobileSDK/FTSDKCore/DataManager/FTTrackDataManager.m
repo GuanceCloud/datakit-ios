@@ -28,7 +28,7 @@
 /// Whether to enable automatic upload logic (on startup, network status changes, write interval 10s)
 @property (atomic, assign) BOOL autoSync;
 @property (nonatomic, strong) FTDBDataCachePolicy *dataCachePolicy;
-@property (nonatomic, strong) dispatch_block_t uploadWork;
+@property (nonatomic, copy) dispatch_block_t uploadWork;
 @property (nonatomic, strong) dispatch_source_t timerSource;
 @property (nonatomic, strong) FTDataUploadWorker *dataUploadWorker;
 @end

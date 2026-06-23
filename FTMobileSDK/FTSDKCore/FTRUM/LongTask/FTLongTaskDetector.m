@@ -22,7 +22,7 @@
     CFRunLoopActivity _activity;     // Status
 }
 
-@property (nonatomic, weak) id<FTLongTaskProtocol> longTaskDelegate;
+@property (nonatomic, weak, nullable) id<FTLongTaskProtocol> longTaskDelegate;
 @property (nonatomic, assign) BOOL isCancel;
 @property (nonatomic, assign) NSInteger countTime; // Time-consuming count
 @property (nonatomic, strong) dispatch_queue_t longTaskQueue;

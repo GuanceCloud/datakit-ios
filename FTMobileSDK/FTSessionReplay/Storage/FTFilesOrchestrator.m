@@ -31,7 +31,7 @@
 -(instancetype)initWithDirectory:(FTDirectory *)directory performance:(id <FTStoragePerformancePreset>)performance prefix:(NSString *)prefix{
     self = [self initWithDirectory:directory performance:performance];
     if (self) {
-        _prefix = prefix;
+        _prefix = [prefix copy];
     }
     return self;
 }

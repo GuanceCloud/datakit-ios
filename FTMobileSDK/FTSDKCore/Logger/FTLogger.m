@@ -23,7 +23,7 @@
 void *FTLoggerQueueIdentityKey = &FTLoggerQueueIdentityKey;
 
 @interface FTLogger ()
-@property (nonatomic, weak) id<FTLoggerDataWriteProtocol> loggerWriter;
+@property (nonatomic, weak, nullable) id<FTLoggerDataWriteProtocol> loggerWriter;
 @property (nonatomic, strong) NSSet *logLevelFilterSet;
 @property (nonatomic, strong) dispatch_queue_t loggerQueue;
 @property (nonatomic, strong) FTLoggerConfig *config;

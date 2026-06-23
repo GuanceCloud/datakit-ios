@@ -25,8 +25,8 @@ NS_ASSUME_NONNULL_BEGIN
 -(void)ftAppColdStart:(NSDate *)launchTime duration:(NSNumber *)duration isPreWarming:(BOOL)isPreWarming fields:(NSDictionary *)fields;
 @end
 @interface FTAppLaunchTracker : NSObject
-@property (class, nonatomic, assign) NSDate *sdkStartDate;
-@property (nonatomic,weak) id<FTAppLaunchDataDelegate> delegate;
+@property (class, nonatomic, strong) NSDate *sdkStartDate;
+@property (nonatomic, weak, nullable) id<FTAppLaunchDataDelegate> delegate;
 - (instancetype)initWithDelegate:(nullable id)delegate displayMonitor:(nullable FTDisplayRateMonitor *)displayMonitor;
 
 @end

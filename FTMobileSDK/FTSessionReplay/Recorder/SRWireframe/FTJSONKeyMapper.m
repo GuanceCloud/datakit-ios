@@ -13,10 +13,10 @@
     if (!(self = [super init]))
         return nil;
 
-    _modelToJSONKeyBlock = ^NSString *(NSString *keyName)
+    _modelToJSONKeyBlock = [^NSString *(NSString *keyName)
     {
         return [toJSON valueForKeyPath:keyName] ?: keyName;
-    };
+    } copy];
 
     return self;
 }

@@ -11,9 +11,9 @@
 NS_ASSUME_NONNULL_BEGIN
 
 @interface FTWeakPropertyContainer : NSObject
-@property (readonly, nonatomic, weak) id weakProperty;
+@property (readonly, nonatomic, weak, nullable) id weakProperty;
 
-+ (instancetype)containerWithWeakProperty:(id)weakProperty;
++ (instancetype)containerWithWeakProperty:(nullable id)weakProperty;
 @end
 
 NS_ASSUME_NONNULL_END

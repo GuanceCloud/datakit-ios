@@ -12,7 +12,7 @@ NS_ASSUME_NONNULL_BEGIN
 typedef NSString *_Nullable(^FTJSONModelKeyMapBlock)(NSString *keyName);
 
 @interface FTJSONKeyMapper : NSObject
-@property (readonly, nonatomic) FTJSONModelKeyMapBlock modelToJSONKeyBlock;
+@property (readonly, nonatomic, copy) FTJSONModelKeyMapBlock modelToJSONKeyBlock;
 - (instancetype)initWithModelToJSONDictionary:(NSDictionary <NSString *, NSString *> *)toJSON;
 - (NSString *)convertValue:(NSString *)value;
 @end

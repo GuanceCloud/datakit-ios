@@ -20,7 +20,7 @@ void *FTInterceptorQueueIdentityKey = &FTInterceptorQueueIdentityKey;
 
 @interface FTURLSessionInterceptor ()
 @property (nonatomic, strong) FTReadWriteHelper<NSMutableDictionary <id,FTSessionTaskHandler *>*> *traceHandlers;
-@property (nonatomic, weak) id<FTTracerProtocol> tracer;
+@property (nonatomic, weak, nullable) id<FTTracerProtocol> tracer;
 @property (nonatomic, strong) dispatch_queue_t queue;
 @end
 @implementation FTURLSessionInterceptor
@@ -107,25 +107,25 @@ static NSObject *sharedInstanceLock;
     _tracer = tracer;
 }
 -(void)setIntakeUrlHandler:(FTIntakeUrl)intakeUrlHandler{
-    _intakeUrlHandler = intakeUrlHandler;
+    _intakeUrlHandler = [intakeUrlHandler copy];
 }
 -(FTIntakeUrl)intakeUrlHandler{
     return _intakeUrlHandler;
 }
 -(void)setResourceUrlHandler:(FTResourceUrlHandler)resourceUrlHandler{
-    _resourceUrlHandler = resourceUrlHandler;
+    _resourceUrlHandler = [resourceUrlHandler copy];
 }
 -(FTResourceUrlHandler)resourceUrlHandler{
     return _resourceUrlHandler;
 }
 -(void)setTraceInterceptor:(TraceInterceptor)traceInterceptor{
-    _traceInterceptor = traceInterceptor;
+    _traceInterceptor = [traceInterceptor copy];
 }
 -(TraceInterceptor)traceInterceptor{
     return _traceInterceptor;
 }
 -(void)setResourcePropertyProvider:(ResourcePropertyProvider)resourcePropertyProvider{
-    _resourcePropertyProvider = resourcePropertyProvider;
+    _resourcePropertyProvider = [resourcePropertyProvider copy];
 }
 -(ResourcePropertyProvider)resourcePropertyProvider{
     return _resourcePropertyProvider;
@@ -140,7 +140,7 @@ static NSObject *sharedInstanceLock;
     return _rumResourceHandler;
 }
 -(void)setSessionTaskErrorFilter:(SessionTaskErrorFilter)sessionTaskErrorFilter{
-    _sessionTaskErrorFilter = sessionTaskErrorFilter;
+    _sessionTaskErrorFilter = [sessionTaskErrorFilter copy];
 }
 -(SessionTaskErrorFilter)sessionTaskErrorFilter{
     return _sessionTaskErrorFilter;

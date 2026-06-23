@@ -30,11 +30,11 @@ NS_ASSUME_NONNULL_BEGIN
 @interface FTAutoTrackHandler : NSObject
 
 /// Handle ViewController lifecycle rum: startView, stopView
-@property (nonatomic, weak) id<FTUIViewControllerHandler> viewControllerHandler;
+@property (nonatomic, weak, nullable) id<FTUIViewControllerHandler> viewControllerHandler;
 
-@property (nonatomic, weak) id<FTUIEventHandler> actionHandler;
+@property (nonatomic, weak, nullable) id<FTUIEventHandler> actionHandler;
 
-@property (nonatomic, weak, readonly) id<FTRumDatasProtocol> addRumDatasDelegate;
+@property (nonatomic, weak, nullable, readonly) id<FTRumDatasProtocol> addRumDatasDelegate;
 @property (nonatomic, strong, nullable, readonly) FTViewTrackingHandler uiKitViewTrackingHandler;
 @property (nonatomic, strong, nullable, readonly) FTActionTrackingHandler actionTrackingHandler;
 

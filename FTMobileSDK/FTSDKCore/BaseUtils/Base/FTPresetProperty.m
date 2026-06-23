@@ -627,7 +627,7 @@ static Class FTPresetExpectedValueClass(id value) {
 }
 -(void)setDataModifier:(FTDataModifier)dataModifier{
     pthread_rwlock_wrlock(&_rwLock);
-    _dataModifier = dataModifier;
+    _dataModifier = [dataModifier copy];
     pthread_rwlock_unlock(&_rwLock);
 }
 -(FTDataModifier)dataModifier{
@@ -639,7 +639,7 @@ static Class FTPresetExpectedValueClass(id value) {
 }
 -(void)setLineDataModifier:(FTLineDataModifier)lineDataModifier{
     pthread_rwlock_wrlock(&_rwLock);
-    _lineDataModifier = lineDataModifier;
+    _lineDataModifier = [lineDataModifier copy];
     pthread_rwlock_unlock(&_rwLock);
 }
 -(FTLineDataModifier)lineDataModifier{

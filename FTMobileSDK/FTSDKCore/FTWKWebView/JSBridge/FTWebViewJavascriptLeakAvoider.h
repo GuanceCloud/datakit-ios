@@ -13,7 +13,7 @@
 NS_ASSUME_NONNULL_BEGIN
 
 @interface FTWebViewJavascriptLeakAvoider : NSObject<WKScriptMessageHandler>
-@property(nonatomic,weak)id <WKScriptMessageHandler>  delegate;
+@property(nonatomic, weak, nullable) id <WKScriptMessageHandler> delegate;
 - (instancetype)initWithDelegate:(id <WKScriptMessageHandler> )delegate;
 
 @end
