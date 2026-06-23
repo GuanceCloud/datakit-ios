@@ -14,7 +14,7 @@
 -(instancetype)initWithCompletionHandler:(Completion)completionHandler{
     self = [super init];
     if(self){
-        _completionHandler = completionHandler;
+        _completionHandler = [completionHandler copy];
     }
     return self;
 }
@@ -37,7 +37,7 @@
 -(instancetype)initWithCompletionHandler:(Completion)completionHandler{
     self = [super init];
     if(self){
-        _completionHandler = completionHandler;
+        _completionHandler = [completionHandler copy];
     }
     return self;
 }

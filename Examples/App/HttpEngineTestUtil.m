@@ -17,7 +17,7 @@
 -(instancetype)initWithCompletion:(Completion)completion{
     self = [super init];
     if(self){
-        _completion = completion;
+        _completion = [completion copy];
     }
     return self;
 }
@@ -54,7 +54,7 @@
 -(instancetype)initWithCompletion:(Completion)completion{
     self = [super init];
     if(self){
-        _completion = completion;
+        _completion = [completion copy];
     }
     return self;
 }
@@ -93,7 +93,7 @@
 {
     self = [super init];
     if(self){
-        _completion = completion;
+        _completion = [completion copy];
         [self session:type provider:provider requestInterceptor:requestInterceptor traceInterceptor:traceInterceptor completion:completion];
     }
     return self;
