@@ -16,7 +16,8 @@
 - (void)ftTrackGestureRecognizerAppClick:(UIGestureRecognizer *)gesture{
     @try {
         // The gesture is in the Ended state
-        if (gesture.state != UIGestureRecognizerStateEnded) {
+        if (gesture.state != UIGestureRecognizerStateEnded &&
+            gesture.state != UIGestureRecognizerStateCancelled) {
             return;
         }
         UIView *view = gesture.view;
@@ -30,8 +31,11 @@
         BOOL isTrackClass = [view isKindOfClass:UILabel.class] || [view isKindOfClass:UIImageView.class] ||isAlterType;
         if(isTrackClass){
             id<FTUIEventHandler> actionHandler = [FTAutoTrackHandler sharedInstance].actionHandler;
-            if(actionHandler  && [actionHandler respondsToSelector:@selector(notify_sendAction:)]){
-                [actionHandler notify_sendAction:view];
+            if(actionHandler){
+                FTHeatmapLocationResolver locationResolver = ^CGPoint(UIView *targetView) {
+                    return [gesture locationInView:targetView];
+                };
+                [actionHandler notify_sendAction:view heatmapTargetView:view locationResolver:locationResolver];
             }
         }
         

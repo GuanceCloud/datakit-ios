@@ -25,6 +25,9 @@
 #import "FTCrash.h"
 #import "FTFatalErrorContext.h"
 #import "FTErrorMonitorInfo.h"
+#import "FTModuleManager.h"
+#import "FTHeatmapIdentifierStore.h"
+
 @interface FTGlobalRumManager ()<FTRunloopDetectorDelegate>
 @property (nonatomic, strong) FTRUMDependencies *dependencies;
 @property (nonatomic, strong) FTLongTaskManager *longTaskManager;
@@ -87,13 +90,17 @@ static NSObject *sharedInstanceLock;
     return dependencies;
 }
 - (void)setupAutoTrackWithRumConfig:(FTRumConfig *)rumConfig displayMonitor:(FTDisplayRateMonitor *)displayMonitor{
+    self.heatmapIdentifierStore = [[FTHeatmapIdentifierStore alloc]init];
+    [[FTModuleManager sharedInstance] registerService:@protocol(FTHeatmapIdentifierRegistry) instance:self.heatmapIdentifierStore];
     [[FTAutoTrackHandler sharedInstance] startWithTrackView:rumConfig.enableTraceUserView
                                                      action:rumConfig.enableTraceUserAction
-                                      addRumDatasDelegate:self.rumManager
-                                              viewHandler:rumConfig.viewTrackingHandler
-                                       swiftUIViewHandler:rumConfig.swiftUIViewTrackingHandler
-                                            actionHandler:rumConfig.actionTrackingHandler
-                                           displayMonitor:displayMonitor];
+                                        addRumDatasDelegate:self.rumManager
+                                                viewHandler:rumConfig.viewTrackingHandler
+                                         swiftUIViewHandler:rumConfig.swiftUIViewTrackingHandler
+                                              actionHandler:rumConfig.actionTrackingHandler
+                                             displayMonitor:displayMonitor
+                                  heatmapIdentifierRegistry:self.heatmapIdentifierStore
+    ];
 }
 - (BOOL)setupCrashWithRumConfig:(FTRumConfig *)rumConfig
                           writer:(id<FTRUMDataWriteProtocol>)writer

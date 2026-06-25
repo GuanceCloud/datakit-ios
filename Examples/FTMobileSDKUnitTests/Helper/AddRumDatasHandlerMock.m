@@ -90,4 +90,8 @@
     self.lastActionType = actionType;
     self.lastActionProperty = property;
 }
+- (void)startAction:(nonnull NSString *)actionName actionType:(nonnull NSString *)actionType property:(nullable NSDictionary *)property heatmapAttributes:(nullable FTHeatmapAttributes *)heatmapAttributes {
+    [self startAction:actionName actionType:actionType property:property];
+    self.lastHeatmapAttributes = heatmapAttributes;
+}
 @end

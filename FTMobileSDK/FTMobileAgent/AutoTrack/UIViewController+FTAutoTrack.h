@@ -12,7 +12,6 @@ NS_ASSUME_NONNULL_BEGIN
 
 @interface UIViewController (FTAutoTrack)<FTRumViewProperty>
 -(BOOL)isBlackListContainsViewController;
-- (BOOL)isActionBlackListContainsViewController;
 -(NSString *)ft_viewControllerName;
 -(void)ft_viewDidLoad;
 -(void)ft_viewDidAppear:(BOOL)animated;

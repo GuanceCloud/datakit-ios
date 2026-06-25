@@ -10,7 +10,7 @@
 #import <UIKit/UIKit.h>
 
 NS_ASSUME_NONNULL_BEGIN
-@class FTSRWireframe,FTViewAttributes,FTViewTreeRecordingContext,FTSRNodeSemantics,FTSessionReplayWireframesBuilder;
+@class FTSRWireframe,FTViewAttributes,FTViewTreeRecordingContext,FTSRNodeSemantics,FTSessionReplayWireframesBuilder,FTHeatmapIdentifier;
 @protocol FTSRTextObfuscatingProtocol;
 
 typedef FTSRNodeSemantics* _Nullable(^SemanticsOverride)(UIView *  view, FTViewAttributes* attributes);
@@ -20,6 +20,8 @@ typedef id<FTSRTextObfuscatingProtocol> _Nullable(^FTTextObfuscator)(FTViewTreeR
 - (FTViewAttributes*)attributes;
 - (CGRect)wireframeRect;
 - (NSArray<FTSRWireframe *>*)buildWireframesWithBuilder:(FTSessionReplayWireframesBuilder *)builder;;
+@optional
+@property (nonatomic, strong, readonly, nullable) FTHeatmapIdentifier *heatmapIdentifier;
 @end
 
 @protocol FTSRWireframesRecorder <NSObject>

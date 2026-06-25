@@ -44,6 +44,7 @@
 #import "FTFatalErrorContext.h"
 #import "FTNetworkConnectivity.h"
 #import "FTAppLifeCycle.h"
+#import "FTHeatmap.h"
 
 @interface FTTestCrashReportWrapper : FTCrashReportWrapper
 @end
@@ -814,6 +815,34 @@
             }
         }
     }];
+}
+- (void)testStartActionHeatmapPayloadWritesDDPositionAndTarget {
+    [self setRumConfig];
+    [FTModelHelper startViewWithName:@"heatmap_view"];
+    FTHeatmapIdentifier *identifier = [[FTHeatmapIdentifier alloc]initWithRawValue:@"096f3eb388a38ad189fd0aaee84e98a3"];
+    FTHeatmapAttributes *attributes = [[FTHeatmapAttributes alloc]initWithIdentifier:identifier size:CGSizeMake(78, 18) location:CGPointMake(23, 7)];
+    id<FTRumDatasProtocol> rum = [FTGlobalRumManager sharedInstance].rumManager;
+    if ([rum respondsToSelector:@selector(startAction:actionType:property:heatmapAttributes:)]) {
+        [rum startAction:@"heatmap_action" actionType:FT_KEY_ACTION_TYPE_CLICK property:nil heatmapAttributes:attributes];
+    }
+    [self waitForTimeInterval:0.2];
+    [self addLongTaskData:nil];
+    [[FTGlobalRumManager sharedInstance].rumManager syncProcess];
+
+    NSArray *newArray = [[FTTrackerEventDBTool sharedManager] getFirstRecords:50 withType:FT_DATA_TYPE_RUM];
+    __block BOOL hasHeatmapAction = NO;
+    [FTModelHelper resolveModelArray:newArray callBack:^(NSString * _Nonnull source, NSDictionary * _Nonnull tags, NSDictionary * _Nonnull fields, BOOL * _Nonnull stop) {
+        if ([source isEqualToString:FT_RUM_SOURCE_ACTION] && [tags[FT_KEY_ACTION_NAME] isEqualToString:@"heatmap_action"]) {
+            XCTAssertEqualObjects(fields[@"action_position"][@"x"], @23);
+            XCTAssertEqualObjects(fields[@"action_position"][@"y"], @7);
+            XCTAssertEqualObjects(fields[@"action_target"][@"width"], @78);
+            XCTAssertEqualObjects(fields[@"action_target"][@"height"], @18);
+            XCTAssertEqualObjects(fields[@"action_target"][@"permanentId"], @"096f3eb388a38ad189fd0aaee84e98a3");
+            hasHeatmapAction = YES;
+            *stop = YES;
+        }
+    }];
+    XCTAssertTrue(hasHeatmapAction);
 }
 - (void)testWrongFormatActionName{
     [self setRumConfig];
