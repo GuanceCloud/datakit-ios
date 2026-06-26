@@ -521,6 +521,9 @@
 		176CE25F2ED6F6F900E9E92B /* FTLongTaskManager.m in Sources */ = {isa = PBXBuildFile; fileRef = 176CE25B2ED6F6F900E9E92B /* FTLongTaskManager.m */; };
 		176CE2602ED6F6F900E9E92B /* FTLongTaskDetector.m in Sources */ = {isa = PBXBuildFile; fileRef = 176CE25A2ED6F6F900E9E92B /* FTLongTaskDetector.m */; };
 		176CE2612ED6F6F900E9E92B /* FTLongTaskManager.m in Sources */ = {isa = PBXBuildFile; fileRef = 176CE25B2ED6F6F900E9E92B /* FTLongTaskManager.m */; };
+		2A95B54DC0AB421F962D3280 /* FTLongTaskANRData.m in Sources */ = {isa = PBXBuildFile; fileRef = 726F07D959BB40C99F3CEBAA /* FTLongTaskANRData.m */; };
+		CD3FFAA737E24ABE97419082 /* FTLongTaskANRData.m in Sources */ = {isa = PBXBuildFile; fileRef = 726F07D959BB40C99F3CEBAA /* FTLongTaskANRData.m */; };
+		DA671E5B3AA745CEA0AD642C /* FTLongTaskANRData.m in Sources */ = {isa = PBXBuildFile; fileRef = 726F07D959BB40C99F3CEBAA /* FTLongTaskANRData.m */; };
 		176CE26B2ED8591F00E9E92B /* FTCrashMonitorRegistry.c in Sources */ = {isa = PBXBuildFile; fileRef = 176CE26A2ED8591F00E9E92B /* FTCrashMonitorRegistry.c */; };
 		176CE26C2ED8591F00E9E92B /* FTCrashMonitorRegistry.h in Headers */ = {isa = PBXBuildFile; fileRef = 176CE2692ED8591F00E9E92B /* FTCrashMonitorRegistry.h */; };
 		176CE26D2ED8591F00E9E92B /* FTCrashMonitorRegistry.h in Headers */ = {isa = PBXBuildFile; fileRef = 176CE2692ED8591F00E9E92B /* FTCrashMonitorRegistry.h */; };
@@ -1534,6 +1537,8 @@
 		176CE2502ED6E67100E9E92B /* FTCrashDate.c */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.c; path = FTCrashDate.c; sourceTree = "<group>"; };
 		176CE25A2ED6F6F900E9E92B /* FTLongTaskDetector.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = FTLongTaskDetector.m; sourceTree = "<group>"; };
 		176CE25B2ED6F6F900E9E92B /* FTLongTaskManager.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = FTLongTaskManager.m; sourceTree = "<group>"; };
+		3FD513100204470295B10051 /* FTLongTaskANRData.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = FTLongTaskANRData.h; sourceTree = "<group>"; };
+		726F07D959BB40C99F3CEBAA /* FTLongTaskANRData.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = FTLongTaskANRData.m; sourceTree = "<group>"; };
 		176CE2692ED8591F00E9E92B /* FTCrashMonitorRegistry.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = FTCrashMonitorRegistry.h; sourceTree = "<group>"; };
 		176CE26A2ED8591F00E9E92B /* FTCrashMonitorRegistry.c */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.c; path = FTCrashMonitorRegistry.c; sourceTree = "<group>"; };
 		176CE2732ED862A400E9E92B /* FTCrashExceptionHandlingRequirements.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = FTCrashExceptionHandlingRequirements.h; sourceTree = "<group>"; };
@@ -2488,6 +2493,8 @@
 				17717B642F0E8618002158F6 /* FTLongTaskManager.h */,
 				176CE25A2ED6F6F900E9E92B /* FTLongTaskDetector.m */,
 				176CE25B2ED6F6F900E9E92B /* FTLongTaskManager.m */,
+				3FD513100204470295B10051 /* FTLongTaskANRData.h */,
+				726F07D959BB40C99F3CEBAA /* FTLongTaskANRData.m */,
 			);
 			path = LongTask;
 			sourceTree = "<group>";
@@ -3837,6 +3844,7 @@
 				176CE2602ED6F6F900E9E92B /* FTLongTaskDetector.m in Sources */,
 				17A421E22EDDB12B00416673 /* FTCrashMonitor_Signal.c in Sources */,
 				176CE2612ED6F6F900E9E92B /* FTLongTaskManager.m in Sources */,
+				2A95B54DC0AB421F962D3280 /* FTLongTaskANRData.m in Sources */,
 				1768691D2ED47AA600C76F0D /* FTCrashStackCursor.c in Sources */,
 				1745E3242EF900BB00C8FA9B /* FTRUMContext.m in Sources */,
 				1768691E2ED47AA600C76F0D /* FTCrashCPU_x86_64.c in Sources */,
@@ -4027,6 +4035,7 @@
 				17A422442EDEFEEE00416673 /* FTCrashCxaThrowSwapper.c in Sources */,
 				176CE2822ED8667E00E9E92B /* FTCrashMonitorAPI.c in Sources */,
 				176CE25D2ED6F6F900E9E92B /* FTLongTaskManager.m in Sources */,
+				CD3FFAA737E24ABE97419082 /* FTLongTaskANRData.m in Sources */,
 				17400E772B47AAB400ACBA6C /* FTCrashMonitor_NSException.m in Sources */,
 				1776069629D1373300D17137 /* FTJSONUtil.m in Sources */,
 				1776BD4E2E179FA300612A7F /* FTCrashLogger.c in Sources */,
@@ -4192,6 +4201,7 @@
 				176CE25E2ED6F6F900E9E92B /* FTLongTaskDetector.m in Sources */,
 				17A422922EE27DF200416673 /* FTCrashJSONCodecObjC.m in Sources */,
 				176CE25F2ED6F6F900E9E92B /* FTLongTaskManager.m in Sources */,
+				DA671E5B3AA745CEA0AD642C /* FTLongTaskANRData.m in Sources */,
 				17E4CC5529CD42F3005C2D99 /* FTMobileSDKDocs.docc in Sources */,
 				1776BD4A2E179FA300612A7F /* FTCrashLogger.c in Sources */,
 				17AC17462B9856C3003E18A6 /* FTFileLogger.m in Sources */,
