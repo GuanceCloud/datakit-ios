@@ -12,7 +12,7 @@
 static NSInteger const FTHeatmapFallbackMaxVisitedViews = 100;
 
 @interface FTAutoTrackHeatmapResolver ()
-@property (nonatomic, strong, nullable) id<FTHeatmapIdentifierRegistry> registry;
+@property (nonatomic, weak, nullable) id<FTHeatmapIdentifierRegistry> registry;
 @end
 
 @implementation FTAutoTrackHeatmapResolver

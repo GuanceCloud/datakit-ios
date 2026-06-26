@@ -588,6 +588,21 @@ static void FTStartAutoTrackActionTest(AddRumDatasHandlerMock *mock,
     XCTAssertEqual(locationResolveCount, 0);
 }
 
+- (void)testHeatmapResolver_doesNotRetainRegistry {
+    __weak TestHeatmapIdentifierRegistry *weakRegistry = nil;
+    FTAutoTrackHeatmapResolver *resolver = nil;
+    @autoreleasepool {
+        TestHeatmapIdentifierRegistry *registry = [[TestHeatmapIdentifierRegistry alloc]initWithIdentifiers:@{}];
+        weakRegistry = registry;
+        resolver = [[FTAutoTrackHeatmapResolver alloc]initWithRegistry:registry];
+        XCTAssertNotNil(resolver);
+        XCTAssertNotNil(weakRegistry);
+    }
+
+    XCTAssertNotNil(resolver);
+    XCTAssertNil(weakRegistry);
+}
+
 - (void)testHeatmapResolver_enabledEmptyRegistryReturnsNil {
     UIButton *button = [[UIButton alloc]initWithFrame:CGRectMake(0, 0, 100, 40)];
     TestHeatmapIdentifierRegistry *registry = [[TestHeatmapIdentifierRegistry alloc]initWithIdentifiers:@{}];

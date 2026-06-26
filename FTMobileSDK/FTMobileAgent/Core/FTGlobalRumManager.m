@@ -31,6 +31,7 @@
 @interface FTGlobalRumManager ()<FTRunloopDetectorDelegate>
 @property (nonatomic, strong) FTRUMDependencies *dependencies;
 @property (nonatomic, strong) FTLongTaskManager *longTaskManager;
+@property (nonatomic, strong) FTHeatmapIdentifierStore *heatmapIdentifierStore;
 @end
 
 @implementation FTGlobalRumManager
@@ -90,7 +91,7 @@ static NSObject *sharedInstanceLock;
     return dependencies;
 }
 - (void)setupAutoTrackWithRumConfig:(FTRumConfig *)rumConfig displayMonitor:(FTDisplayRateMonitor *)displayMonitor{
-    self.heatmapIdentifierStore = [[FTHeatmapIdentifierStore alloc]init];
+    self.heatmapIdentifierStore = [[FTHeatmapIdentifierStore alloc] init];
     [[FTModuleManager sharedInstance] registerService:@protocol(FTHeatmapIdentifierRegistry) instance:self.heatmapIdentifierStore];
     [[FTAutoTrackHandler sharedInstance] startWithTrackView:rumConfig.enableTraceUserView
                                                      action:rumConfig.enableTraceUserAction
@@ -155,6 +156,7 @@ static NSObject *sharedInstanceLock;
 #pragma mark ========== Shutdown ==========
 - (void)shutDown{
     [[FTAutoTrackHandler sharedInstance] shutDown];
+    self.heatmapIdentifierStore = nil;
     [_longTaskManager shutDown];
 #if !TARGET_OS_TV
     [FTWKWebViewHandler shutDown];

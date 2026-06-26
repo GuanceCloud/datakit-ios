@@ -63,6 +63,7 @@ let package = Package(
             cSettings: [
                 .headerSearchPath("FTMobileAgent/Core"),
                 .headerSearchPath("FTMobileAgent/AutoTrack"),
+                .headerSearchPath("FTSDKCore/FTRUM/Heatmap"),
                 .headerSearchPath("FTSDKCore/DataFilter")
             ]
         ),
@@ -111,6 +112,7 @@ let package = Package(
                 .headerSearchPath("FTCrash/Recording"),
                 .headerSearchPath("FTCrash/Recording/Monitors"),
                 .headerSearchPath("RUMCore"),
+                .headerSearchPath("Heatmap")
             ]
         ),
         .target(
