@@ -1,0 +1,230 @@
+name: Publish iOS Release Assets
+
+on:
+  push:
+    tags:
+      - "*"
+  workflow_dispatch:
+    inputs:
+      tag:
+        description: "Git tag to publish, for example 1.6.3 or refs/tags/1.6.3"
+        required: true
+        type: string
+      asset_preset:
+        description: "Asset group to upload"
+        required: true
+        default: "all"
+        type: choice
+        options:
+          - all
+          - static
+          - dynamic
+          - core
+          - session-replay
+          - extension
+          - custom
+      asset_names:
+        description: "Comma-separated zip names when asset_preset is custom"
+        required: false
+        type: string
+      overwrite:
+        description: "Replace existing release assets"
+        required: true
+        default: false
+        type: boolean
+
+permissions:
+  contents: write
+
+jobs:
+  publish-assets:
+    runs-on: macos-latest
+    timeout-minutes: 120
+
+    steps:
+      - name: Checkout tag
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          ref: ${{ github.event_name == 'workflow_dispatch' && inputs.tag || github.ref }}
+
+      - name: Resolve publish options
+        shell: bash
+        run: |
+          set -euo pipefail
+
+          if [[ "${{ github.event_name }}" == "workflow_dispatch" ]]; then
+            raw_tag="${{ inputs.tag }}"
+            asset_preset="${{ inputs.asset_preset }}"
+            asset_names="${{ inputs.asset_names }}"
+            overwrite="${{ inputs.overwrite }}"
+            should_publish="true"
+          else
+            raw_tag="${GITHUB_REF_NAME}"
+            asset_preset="all"
+            asset_names=""
+            overwrite="false"
+
+            tag_lower="$(printf '%s' "$raw_tag" | tr '[:upper:]' '[:lower:]')"
+            if [[ "$tag_lower" == *alpha* || "$tag_lower" == *beta* ]]; then
+              should_publish="false"
+              echo "Skip automatic asset upload for alpha/beta tag: $raw_tag"
+            else
+              should_publish="true"
+            fi
+          fi
+
+          tag_name="${raw_tag#refs/tags/}"
+          [[ -n "$tag_name" ]] || { echo "Tag is required" >&2; exit 1; }
+
+          echo "TAG_NAME=$tag_name" >> "$GITHUB_ENV"
+          echo "ASSET_PRESET=$asset_preset" >> "$GITHUB_ENV"
+          echo "ASSET_NAMES=$asset_names" >> "$GITHUB_ENV"
+          echo "OVERWRITE_ASSETS=$overwrite" >> "$GITHUB_ENV"
+          echo "SHOULD_PUBLISH=$should_publish" >> "$GITHUB_ENV"
+
+      - name: Verify tag checkout
+        if: env.SHOULD_PUBLISH == 'true'
+        shell: bash
+        run: |
+          set -euo pipefail
+          git rev-parse --verify --quiet "refs/tags/${TAG_NAME}^{commit}" >/dev/null
+          echo "Publishing assets for tag: ${TAG_NAME}"
+
+      - name: Show Xcode version
+        if: env.SHOULD_PUBLISH == 'true'
+        run: xcodebuild -version
+
+      - name: Build XCFramework zip assets
+        if: env.SHOULD_PUBLISH == 'true'
+        shell: bash
+        run: |
+          set -euo pipefail
+          bash BuildSDKPackages.sh
+
+      - name: Upload release assets
+        if: env.SHOULD_PUBLISH == 'true'
+        shell: bash
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+
+          all_assets=(
+            "FTMobileSDK.xcframework.zip"
+            "FTMobileSDK-DisableSwizzlingResource.xcframework.zip"
+            "FTSessionReplay.xcframework.zip"
+            "FTMobileExtension.xcframework.zip"
+            "FTMobileExtension-DisableSwizzlingResource.xcframework.zip"
+            "FTMobileSDK-Dynamic.xcframework.zip"
+            "FTMobileSDK-Dynamic-DisableSwizzlingResource.xcframework.zip"
+            "FTSessionReplay-Dynamic.xcframework.zip"
+          )
+
+          static_assets=(
+            "FTMobileSDK.xcframework.zip"
+            "FTMobileSDK-DisableSwizzlingResource.xcframework.zip"
+            "FTSessionReplay.xcframework.zip"
+            "FTMobileExtension.xcframework.zip"
+            "FTMobileExtension-DisableSwizzlingResource.xcframework.zip"
+          )
+
+          dynamic_assets=(
+            "FTMobileSDK-Dynamic.xcframework.zip"
+            "FTMobileSDK-Dynamic-DisableSwizzlingResource.xcframework.zip"
+            "FTSessionReplay-Dynamic.xcframework.zip"
+          )
+
+          core_assets=(
+            "FTMobileSDK.xcframework.zip"
+            "FTMobileSDK-DisableSwizzlingResource.xcframework.zip"
+            "FTMobileSDK-Dynamic.xcframework.zip"
+            "FTMobileSDK-Dynamic-DisableSwizzlingResource.xcframework.zip"
+          )
+
+          session_replay_assets=(
+            "FTSessionReplay.xcframework.zip"
+            "FTSessionReplay-Dynamic.xcframework.zip"
+          )
+
+          extension_assets=(
+            "FTMobileExtension.xcframework.zip"
+            "FTMobileExtension-DisableSwizzlingResource.xcframework.zip"
+          )
+
+          trim_spaces() {
+            local value="$1"
+            value="${value#"${value%%[![:space:]]*}"}"
+            value="${value%"${value##*[![:space:]]}"}"
+            printf '%s' "$value"
+          }
+
+          is_known_asset() {
+            local candidate="$1"
+            local known
+            for known in "${all_assets[@]}"; do
+              [[ "$candidate" == "$known" ]] && return 0
+            done
+            return 1
+          }
+
+          selected_assets=()
+          case "$ASSET_PRESET" in
+            all)
+              selected_assets=("${all_assets[@]}")
+              ;;
+            static)
+              selected_assets=("${static_assets[@]}")
+              ;;
+            dynamic)
+              selected_assets=("${dynamic_assets[@]}")
+              ;;
+            core)
+              selected_assets=("${core_assets[@]}")
+              ;;
+            session-replay)
+              selected_assets=("${session_replay_assets[@]}")
+              ;;
+            extension)
+              selected_assets=("${extension_assets[@]}")
+              ;;
+            custom)
+              [[ -n "$ASSET_NAMES" ]] || { echo "asset_names is required for custom preset" >&2; exit 1; }
+              IFS="," read -r -a raw_assets <<< "$ASSET_NAMES"
+              for raw_asset in "${raw_assets[@]}"; do
+                asset="$(trim_spaces "$raw_asset")"
+                [[ -n "$asset" ]] || continue
+                selected_assets+=("$asset")
+              done
+              ;;
+            *)
+              echo "Unsupported asset preset: $ASSET_PRESET" >&2
+              exit 1
+              ;;
+          esac
+
+          [[ ${#selected_assets[@]} -gt 0 ]] || { echo "No assets selected" >&2; exit 1; }
+
+          asset_paths=()
+          for asset in "${selected_assets[@]}"; do
+            is_known_asset "$asset" || { echo "Unsupported asset name: $asset" >&2; exit 1; }
+            path="build/$asset"
+            [[ -s "$path" ]] || { echo "Missing built asset: $path" >&2; exit 1; }
+            asset_paths+=("$path")
+            echo "Selected asset: $path"
+          done
+
+          if ! gh release view "$TAG_NAME" >/dev/null 2>&1; then
+            release_args=(--title "$TAG_NAME" --verify-tag --notes "iOS SDK release assets for $TAG_NAME")
+            if [[ "$TAG_NAME" == *-* ]]; then
+              release_args+=(--prerelease)
+            fi
+            gh release create "$TAG_NAME" "${release_args[@]}"
+          fi
+
+          upload_args=()
+          if [[ "$OVERWRITE_ASSETS" == "true" ]]; then
+            upload_args+=(--clobber)
+          fi
+
+          gh release upload "$TAG_NAME" "${asset_paths[@]}" "${upload_args[@]}"
