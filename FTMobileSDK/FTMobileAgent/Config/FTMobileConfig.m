@@ -105,7 +105,6 @@
         _dataFilters = @{};
         _remoteConfiguration = NO;
         _remoteConfigMiniUpdateInterval = 12*60*60;
-        _enableAccessIDFV = YES;
     }
     return self;
 }
@@ -169,7 +168,6 @@
     options.datawayUrl = self.datawayUrl;
     options.clientToken = self.clientToken;
     options.enableSDKDebugLog = self.enableSDKDebugLog;
-    options.enableAccessIDFV = self.enableAccessIDFV;
     options.env = self.env;
     options.globalContext = [self.globalContext copy];
     options.groupIdentifiers = [self.groupIdentifiers copy];
@@ -200,7 +198,6 @@
             if ([dict ft_hasValidValueForKey:@"datawayUrl"]) self.datawayUrl = [dict valueForKey:@"datawayUrl"];
             if ([dict ft_hasValidValueForKey:@"clientToken"]) self.clientToken = [dict valueForKey:@"clientToken"];
             if ([dict ft_hasValidValueForKey:@"env"]) self.env = [dict valueForKey:@"env"];
-            if ([dict ft_hasValidValueForKey:@"enableAccessIDFV"]) self.enableAccessIDFV = [[dict valueForKey:@"enableAccessIDFV"] boolValue];
             if ([dict ft_hasValidValueForKey:@"enableDataFilter"]) self.enableDataFilter = [[dict valueForKey:@"enableDataFilter"] boolValue];
             if ([dict ft_hasValidValueForKey:@"dataFilters"]) self.dataFilters = [dict valueForKey:@"dataFilters"];
         }
@@ -217,7 +214,6 @@
     [dict setValue:self.clientToken forKey:@"clientToken"];
     [dict setValue:self.datakitUrl forKey:@"datakitUrl"];
     [dict setValue:self.env forKey:@"env"];
-    [dict setValue:@(self.enableAccessIDFV) forKey:@"enableAccessIDFV"];
     [dict setValue:@(self.enableDataFilter) forKey:@"enableDataFilter"];
     [dict setValue:self.dataFilters forKey:@"dataFilters"];
     return dict;
@@ -232,7 +228,6 @@
         [dict setValue:self.clientToken.length>0?[NSString stringWithFormat:@"*****%@",[self.clientToken substringFromIndex:self.clientToken.length/2]]:nil forKey:@"clientToken"];
     }
     [dict setValue:@(self.enableSDKDebugLog) forKey:@"enableSDKDebugLog"];
-    [dict setValue:@(self.enableAccessIDFV) forKey:@"enableAccessIDFV"];
     [dict setValue:self.env forKey:@"env"];
     [dict setValue:self.groupIdentifiers forKey:@"groupIdentifiers"];
     [dict setValue:self.globalContext forKey:@"globalContext"];

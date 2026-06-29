@@ -10,6 +10,7 @@
 #if FT_HAS_UIKIT
 #import <UIKit/UIKit.h>
 #endif
+#import "FTIDFVProvider.h"
 #import "FTPresetProperty.h"
 #import <sys/utsname.h>
 #import "FTJSONUtil.h"
@@ -130,12 +131,9 @@ static BOOL FTPresetIsAppExtension(void) {
     return nil;
 }
 #endif
-- (NSString *)deviceUUIDWithEnableAccessIDFV:(BOOL)enableAccessIDFV{
-#if FT_HAS_UIKIT
-    if (!enableAccessIDFV) {
-        return nil;
-    }
-    return [[UIDevice currentDevice] identifierForVendor].UUIDString;
+- (NSString *)deviceIdentifier{
+#if FT_HAS_UIDEVICE
+    return [FTIDFVProvider identifierForVendor];
 #elif FT_HOST_MAC
     return self.deviceUUID;
 #else
@@ -520,25 +518,10 @@ static Class FTPresetExpectedValueClass(id value) {
                  service:(NSString *)service
            globalContext:(NSDictionary *)globalContext
                   pkgInfo:(NSDictionary *)pkgInfo{
-    [self startWithVersion:version
-                sdkVersion:sdkVersion
-                       env:env
-                   service:service
-             globalContext:globalContext
-                   pkgInfo:pkgInfo
-          enableAccessIDFV:YES];
-}
-- (void)startWithVersion:(NSString *)version
-              sdkVersion:(NSString *)sdkVersion
-                     env:(NSString *)env
-                 service:(NSString *)service
-           globalContext:(NSDictionary *)globalContext
-                  pkgInfo:(NSDictionary *)pkgInfo
-         enableAccessIDFV:(BOOL)enableAccessIDFV{
     FTDataModifier modifier = self.dataModifier;
     FTBasePropertyModel *baseModel = [FTBasePropertyModel new];
     baseModel.applicationUUID = self.mobileDevice.appUUID;
-    baseModel.deviceUUID = [self.mobileDevice deviceUUIDWithEnableAccessIDFV:enableAccessIDFV];
+    baseModel.deviceUUID = [self.mobileDevice deviceIdentifier];
     baseModel.service = service;
     baseModel.version = version;
     baseModel.env = env;

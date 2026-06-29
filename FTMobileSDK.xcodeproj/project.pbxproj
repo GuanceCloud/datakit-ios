@@ -791,6 +791,12 @@
 		1799581729D43FDE0033B46E /* FTPresetProperty.m in Sources */ = {isa = PBXBuildFile; fileRef = 1799581229D43FDE0033B46E /* FTPresetProperty.m */; };
 		1799581829D43FDE0033B46E /* FTPresetProperty.m in Sources */ = {isa = PBXBuildFile; fileRef = 1799581229D43FDE0033B46E /* FTPresetProperty.m */; };
 		1799581929D4403A0033B46E /* FTPresetProperty.h in Headers */ = {isa = PBXBuildFile; fileRef = 1799581129D43FDE0033B46E /* FTPresetProperty.h */; };
+		17F1D0032FDE100100D17137 /* FTIDFVProvider.h in Headers */ = {isa = PBXBuildFile; fileRef = 17F1D0012FDE100100D17137 /* FTIDFVProvider.h */; };
+		17F1D0042FDE100100D17137 /* FTIDFVProvider.h in Headers */ = {isa = PBXBuildFile; fileRef = 17F1D0012FDE100100D17137 /* FTIDFVProvider.h */; settings = {ATTRIBUTES = (Public, ); }; };
+		17F1D0052FDE100100D17137 /* FTIDFVProvider.h in Headers */ = {isa = PBXBuildFile; fileRef = 17F1D0012FDE100100D17137 /* FTIDFVProvider.h */; };
+		17F1D0062FDE100100D17137 /* FTIDFVProvider.m in Sources */ = {isa = PBXBuildFile; fileRef = 17F1D0022FDE100100D17137 /* FTIDFVProvider.m */; };
+		17F1D0072FDE100100D17137 /* FTIDFVProvider.m in Sources */ = {isa = PBXBuildFile; fileRef = 17F1D0022FDE100100D17137 /* FTIDFVProvider.m */; };
+		17F1D0082FDE100100D17137 /* FTIDFVProvider.m in Sources */ = {isa = PBXBuildFile; fileRef = 17F1D0022FDE100100D17137 /* FTIDFVProvider.m */; };
 		179A537B2F84EDDE00FE4B6F /* FTCALayerChange.m in Sources */ = {isa = PBXBuildFile; fileRef = 1701B1A42F56FB0200E2AE8A /* FTCALayerChange.m */; };
 		179A537C2F84EDDE00FE4B6F /* FTCALayerChangeSnapshot.m in Sources */ = {isa = PBXBuildFile; fileRef = 1701B1AC2F56FBB100E2AE8A /* FTCALayerChangeSnapshot.m */; };
 		179A537D2F84EDDE00FE4B6F /* FTCALayerSwizzler.m in Sources */ = {isa = PBXBuildFile; fileRef = 1701B1B42F57D11100E2AE8A /* FTCALayerSwizzler.m */; };
@@ -1609,6 +1615,8 @@
 		178CDAD72F0F7AA000EE98D0 /* FTCrashThreadCache.c */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.c; path = FTCrashThreadCache.c; sourceTree = "<group>"; };
 		1799581129D43FDE0033B46E /* FTPresetProperty.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = FTPresetProperty.h; sourceTree = "<group>"; };
 		1799581229D43FDE0033B46E /* FTPresetProperty.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = FTPresetProperty.m; sourceTree = "<group>"; };
+		17F1D0012FDE100100D17137 /* FTIDFVProvider.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = FTIDFVProvider.h; sourceTree = "<group>"; };
+		17F1D0022FDE100100D17137 /* FTIDFVProvider.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = FTIDFVProvider.m; sourceTree = "<group>"; };
 		179A539C2F86455600FE4B6F /* FTSessionReplayCoreImports.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = FTSessionReplayCoreImports.h; sourceTree = "<group>"; };
 		179A53B62F877A0E00FE4B6F /* FTInternalConstants.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = FTInternalConstants.h; sourceTree = "<group>"; };
 		179A53B72F877A0E00FE4B6F /* FTInternalConstants.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = FTInternalConstants.m; sourceTree = "<group>"; };
@@ -2674,6 +2682,8 @@
 				17018DB52F50257100688324 /* FTWeakMapTable.m */,
 				1799581129D43FDE0033B46E /* FTPresetProperty.h */,
 				1799581229D43FDE0033B46E /* FTPresetProperty.m */,
+				17F1D0012FDE100100D17137 /* FTIDFVProvider.h */,
+				17F1D0022FDE100100D17137 /* FTIDFVProvider.m */,
 				17E4CB0529CD42DA005C2D99 /* NSString+FTAdd.h */,
 				17E4CB1429CD42DA005C2D99 /* NSString+FTAdd.m */,
 				179A53B62F877A0E00FE4B6F /* FTInternalConstants.h */,
@@ -3153,6 +3163,7 @@
 				17A422152EDE94AD00416673 /* FTCrashSignalInfo.h in Headers */,
 				173E45E02D818C8900900F52 /* FTPackageIdGenerator.h in Headers */,
 				1799581529D43FDE0033B46E /* FTPresetProperty.h in Headers */,
+				17F1D0042FDE100100D17137 /* FTIDFVProvider.h in Headers */,
 				1776073829D1416200D17137 /* FTUserInfo.h in Headers */,
 				17400E7C2B47AAC300ACBA6C /* FTCrashMonitor_NSException.h in Headers */,
 				1712695B2DC21026002D238B /* FTDataUploadWorker.h in Headers */,
@@ -3259,6 +3270,7 @@
 				17717B8F2F0F5250002158F6 /* FTErrorMonitorInfo.h in Headers */,
 				17C2FD042E3B3E09003D600F /* FTRumConfig.h in Headers */,
 				1799581429D43FDE0033B46E /* FTPresetProperty.h in Headers */,
+				17F1D0032FDE100100D17137 /* FTIDFVProvider.h in Headers */,
 				17A421C52EDDB06E00416673 /* FTCrashMonitorHelper.h in Headers */,
 				177155912B046B5800C26DC4 /* FTURLSessionDelegate+Private.h in Headers */,
 				176CE2572ED6E67100E9E92B /* FTCrashDate.h in Headers */,
@@ -3384,6 +3396,7 @@
 				17A421BC2EDDAC6300416673 /* FTCrashExceptionHandlingPlan.h in Headers */,
 				1776BA802B99B668008424FF /* FTOSLogger.h in Headers */,
 				1799581929D4403A0033B46E /* FTPresetProperty.h in Headers */,
+				17F1D0052FDE100100D17137 /* FTIDFVProvider.h in Headers */,
 				17717B3D2F0E7E69002158F6 /* FTRemoteConfigModel.h in Headers */,
 				17717B3E2F0E7E69002158F6 /* FTRemoteConfigModel+Private.h in Headers */,
 				175C7D0D29E9434B00A7F271 /* FTResourceMetricsModel.h in Headers */,
@@ -3823,6 +3836,7 @@
 				1776068E29D1372800D17137 /* FTRecordModel.m in Sources */,
 				17A421D02EDDB0D500416673 /* FTCrashMonitor_CPPException.cpp in Sources */,
 				1799581829D43FDE0033B46E /* FTPresetProperty.m in Sources */,
+				17F1D0082FDE100100D17137 /* FTIDFVProvider.m in Sources */,
 				17717B422F0E7E71002158F6 /* FTRemoteConfigError.m in Sources */,
 				17C2FE4B2E3B8CE8003D600F /* FTRUMDataModel.m in Sources */,
 				1776069729D1373300D17137 /* FTJSONUtil.m in Sources */,
@@ -4091,6 +4105,7 @@
 				17AB76D629D432DE008FBBF5 /* FTRUMMonitor.m in Sources */,
 				1776068329D1371300D17137 /* FTBaseInfoHandler.m in Sources */,
 				1799581729D43FDE0033B46E /* FTPresetProperty.m in Sources */,
+				17F1D0072FDE100100D17137 /* FTIDFVProvider.m in Sources */,
 				17C2FE322E3B87A9003D600F /* FTRUMAction.m in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -4252,6 +4267,7 @@
 				17C2FEB72E432B9A003D600F /* FTDefaultActionTrackingHandler.m in Sources */,
 				1712695E2DC21026002D238B /* FTDataUploadWorker.m in Sources */,
 				1799581629D43FDE0033B46E /* FTPresetProperty.m in Sources */,
+				17F1D0062FDE100100D17137 /* FTIDFVProvider.m in Sources */,
 				178CDAC72F0F7A7200EE98D0 /* FTCrash.m in Sources */,
 				17A4230F2EEAB9E400416673 /* FTFatalErrorContext.m in Sources */,
 				17717B552F0E7EF3002158F6 /* FTAppLaunchTracker.m in Sources */,

@@ -37,8 +37,6 @@ NS_ASSUME_NONNULL_BEGIN
 /// - Parameter globalContext: Global custom properties
 - (void)startWithVersion:(NSString *)version sdkVersion:(NSString *)sdkVersion env:(NSString *)env service:(NSString *)service globalContext:(nullable NSDictionary *)globalContext pkgInfo:(nullable NSDictionary *)pkgInfo;
 
-- (void)startWithVersion:(NSString *)version sdkVersion:(NSString *)sdkVersion env:(NSString *)env service:(NSString *)service globalContext:(nullable NSDictionary *)globalContext pkgInfo:(nullable NSDictionary *)pkgInfo enableAccessIDFV:(BOOL)enableAccessIDFV;
-
 - (void)setDataModifier:(nullable FTDataModifier)dataModifier lineDataModifier:(nullable FTLineDataModifier)lineDataModifier;
 
 - (void)setRUMAppID:(NSString *)appID sampleRate:(int)sampleRate sessionOnErrorSampleRate:(int)sessionOnErrorSampleRate rumGlobalContext:(nullable NSDictionary *)rumGlobalContext;

@@ -38,10 +38,6 @@ extern "C" {
  */
 FTCrashMonitorAPI *ftcrashcm_system_getAPI(void);
 
-/** Set whether the system monitor can access IDFV when building device app hash.
- */
-void ftcrashcm_system_setEnableAccessIDFV(bool enableAccessIDFV);
-
 #ifdef __cplusplus
 }
 #endif

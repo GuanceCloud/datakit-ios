@@ -72,10 +72,6 @@ static mach_port_t main_thread_id;
     [crash install];
     [crash sendCrashReport];
 }
-+ (void)setEnableAccessIDFV:(BOOL)enableAccessIDFV
-{
-    ftcrashcm_system_setEnableAccessIDFV(enableAccessIDFV);
-}
 - (instancetype)init {
     self = [super init];
     if (self) {

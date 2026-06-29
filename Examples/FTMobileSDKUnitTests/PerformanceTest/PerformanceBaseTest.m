@@ -25,7 +25,7 @@
     NSProcessInfo *processInfo = [NSProcessInfo processInfo];
     NSString *url = [processInfo environment][@"ACCESS_SERVER_URL"];
     FTMobileConfig *config = [[FTMobileConfig alloc]initWithDatakitUrl:url];
-    [[FTPresetProperty sharedInstance] startWithVersion:[[[NSBundle mainBundle] infoDictionary] objectForKey:@"CFBundleShortVersionString"] sdkVersion:SDK_VERSION env:config.env service:config.service globalContext:config.globalContext pkgInfo:nil enableAccessIDFV:YES];
+    [[FTPresetProperty sharedInstance] startWithVersion:[[[NSBundle mainBundle] infoDictionary] objectForKey:@"CFBundleShortVersionString"] sdkVersion:SDK_VERSION env:config.env service:config.service globalContext:config.globalContext pkgInfo:nil];
     FTPresetProperty  *presetProperty = [FTPresetProperty sharedInstance];
     [presetProperty setRUMAppID:@"test_app_id" sampleRate:100 sessionOnErrorSampleRate:0 rumGlobalContext:@{@"rum_key":@"rum_value"}];
                                          
@@ -37,7 +37,7 @@
     NSProcessInfo *processInfo = [NSProcessInfo processInfo];
     NSString *url = [processInfo environment][@"ACCESS_SERVER_URL"];
     FTMobileConfig *config = [[FTMobileConfig alloc]initWithDatakitUrl:url];
-    [[FTPresetProperty sharedInstance] startWithVersion:[[[NSBundle mainBundle] infoDictionary] objectForKey:@"CFBundleShortVersionString"] sdkVersion:SDK_VERSION env:config.env service:config.service globalContext:config.globalContext pkgInfo:nil enableAccessIDFV:YES];
+    [[FTPresetProperty sharedInstance] startWithVersion:[[[NSBundle mainBundle] infoDictionary] objectForKey:@"CFBundleShortVersionString"] sdkVersion:SDK_VERSION env:config.env service:config.service globalContext:config.globalContext pkgInfo:nil];
     FTPresetProperty  *presetProperty = [FTPresetProperty sharedInstance];
     [presetProperty setRUMAppID:@"test_app_id" sampleRate:100 sessionOnErrorSampleRate:0 rumGlobalContext:@{@"rum_key":@"rum_value"}];
 
@@ -52,7 +52,7 @@
     NSProcessInfo *processInfo = [NSProcessInfo processInfo];
     NSString *url = [processInfo environment][@"ACCESS_SERVER_URL"];
     FTMobileConfig *config = [[FTMobileConfig alloc]initWithDatakitUrl:url];
-    [[FTPresetProperty sharedInstance] startWithVersion:[[[NSBundle mainBundle] infoDictionary] objectForKey:@"CFBundleShortVersionString"] sdkVersion:SDK_VERSION env:config.env service:config.service globalContext:config.globalContext pkgInfo:nil enableAccessIDFV:YES];
+    [[FTPresetProperty sharedInstance] startWithVersion:[[[NSBundle mainBundle] infoDictionary] objectForKey:@"CFBundleShortVersionString"] sdkVersion:SDK_VERSION env:config.env service:config.service globalContext:config.globalContext pkgInfo:nil];
     FTPresetProperty  *presetProperty = [FTPresetProperty sharedInstance];
     [self measureBlock:^{
          [presetProperty loggerTags];

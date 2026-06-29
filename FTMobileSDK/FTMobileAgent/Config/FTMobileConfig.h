@@ -106,8 +106,6 @@ typedef FTTraceContext*_Nullable(^FTTraceInterceptor)(NSURLRequest *_Nonnull req
 @property (nonatomic, copy) NSString *env;
 /// Set whether to allow SDK to print Debug logs.
 @property (nonatomic, assign) BOOL enableSDKDebugLog;
-/// Whether to allow SDK access to IDFV for device_uuid. Default: YES.
-@property (nonatomic, assign) BOOL enableAccessIDFV;
 /// Application version number. Default `CFBundleShortVersionString` value
 @property (nonatomic, copy) NSString *version DEPRECATED_MSG_ATTRIBUTE("Deprecated, version will uniformly use `CFBundleShortVersionString` value");
 /// Business or service name, default: df_rum_ios

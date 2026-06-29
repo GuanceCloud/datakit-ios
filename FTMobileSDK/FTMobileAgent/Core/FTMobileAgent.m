@@ -184,15 +184,12 @@ static FTMobileAgent *sharedInstance = nil;
     [FTLog enableLog:config.enableSDKDebugLog];
     NSString *version = [[[NSBundle mainBundle] infoDictionary] objectForKey:@"CFBundleShortVersionString"];
     [[FTPresetProperty sharedInstance] setDataModifier:config.dataModifier lineDataModifier:config.lineDataModifier];
-    [FTCrash setEnableAccessIDFV:config.enableAccessIDFV];
     [[FTPresetProperty sharedInstance] startWithVersion:version
                                              sdkVersion:SDK_VERSION
                                                     env:config.env
                                                 service:config.service
                                           globalContext:config.globalContext
-                                                pkgInfo:config.pkgInfo
-                                       enableAccessIDFV:config.enableAccessIDFV
-    ];
+                                                pkgInfo:config.pkgInfo];
     [FTExtensionDataManager sharedInstance].groupIdentifierArray = config.groupIdentifiers;
     [FTNetworkInfoManager sharedInstance]
         .setUploadURL(config.datakitUrl,config.datawayUrl,config.clientToken)
