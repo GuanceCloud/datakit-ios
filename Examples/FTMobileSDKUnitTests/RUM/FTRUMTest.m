@@ -837,7 +837,7 @@
             XCTAssertEqualObjects(fields[@"action_position"][@"y"], @7);
             XCTAssertEqualObjects(fields[@"action_target"][@"width"], @78);
             XCTAssertEqualObjects(fields[@"action_target"][@"height"], @18);
-            XCTAssertEqualObjects(fields[@"action_target"][@"permanentId"], @"096f3eb388a38ad189fd0aaee84e98a3");
+            XCTAssertEqualObjects(fields[@"action_target"][@"permanent_id"], @"096f3eb388a38ad189fd0aaee84e98a3");
             hasHeatmapAction = YES;
             *stop = YES;
         }

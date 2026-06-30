@@ -96,7 +96,7 @@ static long long FTHeatmapInt64FromCGFloat(CGFloat value) {
         },
         @"action_target": @{
             @"height": @(self.targetHeight),
-            @"permanentId": self.targetPermanentID,
+            @"permanent_id": self.targetPermanentID,
             @"width": @(self.targetWidth),
         },
     };
