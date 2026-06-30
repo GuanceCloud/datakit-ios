@@ -9,7 +9,7 @@
 #import "FTAutoTrackHeatmapResolver.h"
 #import "UIView+FTAutoTrack.h"
 
-static NSInteger const FTHeatmapFallbackMaxVisitedViews = 100;
+static NSInteger const FTHeatmapFallbackMaxVisitedViews = 50;
 
 @interface FTAutoTrackHeatmapResolver ()
 @property (nonatomic, weak, nullable) id<FTHeatmapIdentifierRegistry> registry;
