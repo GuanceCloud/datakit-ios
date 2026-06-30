@@ -27,7 +27,13 @@ static dispatch_once_t onceToken;
 {
     return [FTTrackerEventDBTool shareDatabaseWithPath:nil dbName:nil];
 }
++ (instancetype)sharedManagerWithEnableLimitWithDbSize:(BOOL)enableLimitWithDbSize{
+    return [FTTrackerEventDBTool shareDatabaseWithPath:nil dbName:nil enableLimitWithDbSize:enableLimitWithDbSize];
+}
 + (instancetype)shareDatabaseWithPath:(NSString *)dbPath dbName:(NSString *)dbName{
+    return [FTTrackerEventDBTool shareDatabaseWithPath:dbPath dbName:dbName enableLimitWithDbSize:NO];
+}
++ (instancetype)shareDatabaseWithPath:(NSString *)dbPath dbName:(NSString *)dbName enableLimitWithDbSize:(BOOL)enableLimitWithDbSize{
     dispatch_once(&onceToken, ^{
         NSString *path = dbPath;
         NSString *name = dbName;
@@ -48,7 +54,7 @@ static dispatch_once_t onceToken;
             dbTool.dbPath = path;
             FTInnerLogDebug(@"db path:%@",path);
             dbTool.dbQueue = dbQueue;
-            dbTool.enableLimitWithDbSize = NO;
+            dbTool.enableLimitWithDbSize = enableLimitWithDbSize;
             [dbTool createTable];
         }
     });
@@ -66,6 +72,9 @@ static dispatch_once_t onceToken;
 }
 - (void)createTable{
     @try {
+        if (self.enableLimitWithDbSize) {
+            [self autoVacuum];
+        }
         [self createEventTable];
         [self enableWAL];
     } @catch (NSException *exception) {
@@ -129,7 +138,8 @@ static dispatch_once_t onceToken;
 }
 -(void)enableWAL{
     [self zy_inDatabase:^(ZY_FMDatabase *db){
-        [db executeQuery:@"PRAGMA journal_mode=WAL;"];
+        ZY_FMResultSet *set = [db executeQuery:@"PRAGMA journal_mode=WAL;"];
+        [set close];
     }];
 }
 -(BOOL)insertItem:(FTRecordModel *)item{
@@ -338,7 +348,6 @@ static dispatch_once_t onceToken;
     return is;
 }
 - (void)close{
-    [self vacuumDB];
     [[self dbQueue] close];
 }
 static long pageSize = 0;
@@ -395,13 +404,7 @@ static long pageSize = 0;
         block(db);
     }];
 }
-- (BOOL)vacuumDB{
-    __block BOOL is;
-    [self zy_inDatabase:^(ZY_FMDatabase *db){
-        is = [db executeUpdate:@"vacuum;"];
-    }];
-    return is;
-}
+
 - (BOOL)autoVacuum{
     __block BOOL is;
     [self zy_inDatabase:^(ZY_FMDatabase *db){
@@ -411,12 +414,6 @@ static long pageSize = 0;
         }
     }];
     return is;
-}
--(void)setEnableLimitWithDbSize:(BOOL)enableLimitWithDbSize{
-    _enableLimitWithDbSize = enableLimitWithDbSize;
-    if(enableLimitWithDbSize){
-        [self autoVacuum];
-    }
 }
 /**
  * Only used for testing.

@@ -29,6 +29,9 @@ NS_ASSUME_NONNULL_BEGIN
 /// Singleton
 + (nullable FTTrackerEventDBTool *)sharedManager;
 /// Singleton
+/// @param enableLimitWithDbSize whether to enable DB size limit related storage recovery
++ (nullable FTTrackerEventDBTool *)sharedManagerWithEnableLimitWithDbSize:(BOOL)enableLimitWithDbSize;
+/// Singleton
 /// @param dbPath database path
 /// @param dbName database name
 + (nullable FTTrackerEventDBTool *)shareDatabaseWithPath:(nullable NSString *)dbPath dbName:(nullable NSString *)dbName;
@@ -81,7 +84,6 @@ NS_ASSUME_NONNULL_BEGIN
 
 - (long long)checkDatabaseSize;
 
-- (void)setEnableLimitWithDbSize:(BOOL)enableLimitWithDbSize;
 /// close db
 - (void)close;
 @end

@@ -33,6 +33,7 @@
 
 @interface FTTrackDataManager ()
 @property (nonatomic, strong) FTDBDataCachePolicy *dataCachePolicy;
+- (void)applicationDidEnterBackground;
 @end
 
 @interface FTDatabaseTest : XCTestCase
@@ -137,6 +138,17 @@
     NSInteger newCount =  [[FTTrackerEventDBTool sharedManager] getDatasCount];
     XCTAssertTrue(newCount-oldCount == 15);
 }
+
+- (void)testApplicationDidEnterBackgroundFlushesCacheToDatabase{
+    [FTTrackDataManager startWithAutoSync:NO syncPageSize:10 syncSleepTime:0];
+    FTRecordModel *model = [FTModelHelper createLogModel:@"testData"];
+    [[FTTrackDataManager sharedInstance] addTrackData:model type:FTAddDataLogging];
+    XCTAssertEqual([[FTTrackerEventDBTool sharedManager] getDatasCount], 0);
+
+    [[FTTrackDataManager sharedInstance] applicationDidEnterBackground];
+
+    XCTAssertEqual([[FTTrackerEventDBTool sharedManager] getDatasCount], 1);
+}
                      
 -(void)testGetAllDatas{
     for (int i = 0; i<15; i++) {
@@ -210,7 +222,11 @@
 }
 
 - (void)testEnableLimitDBSize_deleteData{
-    [[FTTrackerEventDBTool sharedManager] setEnableLimitWithDbSize:YES];
+    NSString *path = [FTTrackerEventDBTool sharedManager].dbQueue.path;
+    [[FTTrackerEventDBTool sharedManager] shutDown];
+    [[NSFileManager defaultManager] removeItemAtPath:path error:nil];
+    [FTTrackerEventDBTool sharedManagerWithEnableLimitWithDbSize:YES];
+    [[FTTrackerEventDBTool sharedManager] deleteAllDatas];
     for (int i = 0; i<100; i++) {
         FTRecordModel *logModel = [FTModelHelper createLogModel:[NSString stringWithFormat:@"testData%d",i]];
         FTRecordModel *rumModel = [FTModelHelper createRUMModel:[NSString stringWithFormat:@"testData%d",i]];

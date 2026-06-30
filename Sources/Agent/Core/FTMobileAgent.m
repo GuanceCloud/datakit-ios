@@ -213,6 +213,7 @@ static FTMobileAgent *sharedInstance = nil;
                                     localFilters:config.dataFilters];
     BOOL autoSync = config.autoSync&&[FTNetworkInfoManager sharedInstance].isNetworkConfigured;
     // Start data processing manager
+    [FTTrackerEventDBTool sharedManagerWithEnableLimitWithDbSize:config.enableLimitWithDbSize];
     [FTTrackDataManager startWithAutoSync:autoSync syncPageSize:config.syncPageSize syncSleepTime:config.syncSleepTime];
     [[FTTrackDataManager sharedInstance] setEnableLimitWithDb:config.enableLimitWithDbSize size:config.dbCacheLimit discardNew:config.dbDiscardType == FTDBDiscard];
     
