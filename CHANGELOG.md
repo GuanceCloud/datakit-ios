@@ -1,3 +1,8 @@
+# 1.6.6-alpha.1
+1. Fixed URLSession Resource collection to keep request and trace data stable during asynchronous processing.
+2. Fixed an ANR risk caused by SQLite `VACUUM` during app background transitions.
+3. Added legacy CocoaPods subspec aliases `GuanceSDK/Extension` and `GuanceSDK/FTSessionReplay`.
+---
 # 1.6.5
 1. Added `FTSessionReplayConfig.enableSwiftUI` to explicitly enable SwiftUI recording in Session Replay. SwiftUI recording is disabled by default.
 2. Added support for custom Session Replay `source` values on iOS segment uploads to support Flutter Session Replay scenarios.
