@@ -36,13 +36,18 @@
 #import "NSURLSessionTask+FTSwizzler.h"
 #import "FTDataFilterPullRequest.h"
 #import "FTRemoteConfigurationRequest.h"
+#import "FTResourceContentModel.h"
+#import "FTRumResourceProtocol.h"
+#import "FTTracerProtocol.h"
 
 @interface FTURLSessionInstrumentation()
 - (BOOL)isFTIntakeRequest:(NSURLRequest *)request;
 @end
 @interface FTURLSessionInterceptor()
 @property (nonatomic, strong) dispatch_queue_t queue;
+@property (nonatomic, weak, nullable) id<FTRumResourceProtocol> rumResourceHandler;
 - (FTSessionTaskHandler *)getTraceHandler:(id)key;
+- (void)setTracer:(id<FTTracerProtocol>)tracer;
 @end
 /** This class is used to wrap an NSURLSession object during testing. */
 @interface FTURLSessionProxy : NSProxy {
@@ -73,6 +78,56 @@
 }
 
 @end
+
+@interface FTURLSessionSnapshotRumResourceHandler : NSObject<FTRumResourceProtocol>
+@property (nonatomic, strong) FTResourceContentModel *content;
+@property (nonatomic, copy) NSString *spanID;
+@property (nonatomic, copy) NSString *traceID;
+@end
+
+@implementation FTURLSessionSnapshotRumResourceHandler
+- (void)startResourceWithKey:(NSString *)key {
+}
+- (void)startResourceWithKey:(NSString *)key property:(NSDictionary *)property {
+}
+- (void)stopResourceWithKey:(NSString *)key {
+}
+- (void)stopResourceWithKey:(NSString *)key property:(NSDictionary *)property {
+}
+- (void)addResourceWithKey:(NSString *)key metrics:(FTResourceMetricsModel *)metrics content:(FTResourceContentModel *)content {
+    self.content = content;
+}
+- (void)addResourceWithKey:(NSString *)key metrics:(FTResourceMetricsModel *)metrics content:(FTResourceContentModel *)content spanID:(NSString *)spanID traceID:(NSString *)traceID {
+    self.content = content;
+    self.spanID = spanID;
+    self.traceID = traceID;
+}
+@end
+
+@interface FTURLSessionSnapshotTracer : NSObject<FTTracerProtocol>
+@property (nonatomic, assign) BOOL enableAutoTrace;
+@property (nonatomic, assign) BOOL enableLinkRumData;
+@property (nonatomic, copy) NSDictionary *lastUnpackedHeader;
+@end
+
+@implementation FTURLSessionSnapshotTracer
+- (NSDictionary *)networkTraceHeaderWithUrl:(NSURL *)url {
+    return @{};
+}
+- (NSDictionary *)networkTraceHeaderWithUrl:(NSURL *)url handler:(UnpackTraceHeaderHandler)handler {
+    if (handler) {
+        handler(@"generated-trace", @"generated-span");
+    }
+    return @{};
+}
+- (void)unpackTraceHeader:(NSDictionary *)header handler:(UnpackTraceHeaderHandler)handler {
+    self.lastUnpackedHeader = [header copy];
+    if (handler) {
+        handler(header[@"x-trace-id"], header[@"x-span-id"]);
+    }
+}
+@end
+
 @interface FTResourceInstrumentTest : XCTestCase
 @property (nonatomic, strong) NSURL *url;
 @property (nonatomic, strong) XCTestExpectation *expectation;
@@ -115,6 +170,95 @@
         [[NSRunLoop currentRunLoop] runUntilDate:[NSDate dateWithTimeIntervalSinceNow:0.01]];
     }
     [self waitForURLSessionInterceptorQueue];
+}
+- (void)testURLSessionRequestSnapshotCapturesStableRequestAttributes {
+    NSURL *url = [NSURL URLWithString:@"https://snapshot.example.com/direct"];
+    NSMutableData *body = [[@"body" dataUsingEncoding:NSUTF8StringEncoding] mutableCopy];
+    NSMutableURLRequest *request = [NSMutableURLRequest requestWithURL:url];
+    request.HTTPMethod = @"PUT";
+    request.HTTPBody = body;
+    [request setValue:@"start" forHTTPHeaderField:@"X-Snapshot"];
+    NSData *requestBody = request.HTTPBody;
+
+    FTURLSessionRequestSnapshot *snapshot = [FTURLSessionRequestSnapshot snapshotWithRequest:request];
+    [request setValue:@"mutated" forHTTPHeaderField:@"X-Snapshot"];
+    request.HTTPMethod = @"GET";
+
+    XCTAssertEqualObjects(snapshot.URL, url);
+    XCTAssertEqualObjects(snapshot.HTTPMethod, @"PUT");
+    XCTAssertEqualObjects(snapshot.allHTTPHeaderFields[@"X-Snapshot"], @"start");
+    XCTAssertEqualObjects(snapshot.request.URL, url);
+    XCTAssertEqualObjects(snapshot.request.HTTPMethod, @"PUT");
+    XCTAssertEqualObjects(snapshot.request.allHTTPHeaderFields[@"X-Snapshot"], @"start");
+    XCTAssertTrue(snapshot.HTTPBody == requestBody);
+}
+- (void)testInterceptTaskStoresCurrentRequestSnapshot {
+    NSURLSession *session = [NSURLSession sessionWithConfiguration:[NSURLSessionConfiguration ephemeralSessionConfiguration]];
+    NSURL *url = [NSURL URLWithString:@"https://snapshot.example.com/start"];
+    NSMutableURLRequest *request = [NSMutableURLRequest requestWithURL:url];
+    request.HTTPMethod = @"POST";
+    request.HTTPBody = [@"initial-body" dataUsingEncoding:NSUTF8StringEncoding];
+    [request setValue:@"start" forHTTPHeaderField:@"X-Snapshot"];
+
+    NSURLSessionDataTask *task = [session dataTaskWithRequest:request];
+    [[FTURLSessionInterceptor shared] interceptTask:task];
+
+    NSMutableURLRequest *mutatedRequest = [NSMutableURLRequest requestWithURL:url];
+    mutatedRequest.HTTPMethod = @"GET";
+    mutatedRequest.HTTPBody = [@"mutated-body" dataUsingEncoding:NSUTF8StringEncoding];
+    [mutatedRequest setValue:@"mutated" forHTTPHeaderField:@"X-Snapshot"];
+    [task setValue:mutatedRequest forKey:@"currentRequest"];
+
+    [self waitForURLSessionInterceptorQueue];
+    FTSessionTaskHandler *handler = [[FTURLSessionInterceptor shared] getTraceHandler:task];
+
+    XCTAssertEqualObjects(handler.request.allHTTPHeaderFields[@"X-Snapshot"], @"start");
+    XCTAssertEqualObjects(handler.request.HTTPMethod, @"POST");
+    XCTAssertEqualObjects([[NSString alloc] initWithData:handler.request.HTTPBody encoding:NSUTF8StringEncoding], @"initial-body");
+
+    [task cancel];
+    [session invalidateAndCancel];
+}
+- (void)testTaskCompletedUsesStartRequestSnapshotForTraceHeader {
+    FTURLSessionInterceptor *interceptor = [FTURLSessionInterceptor shared];
+    FTURLSessionSnapshotRumResourceHandler *rumResourceHandler = [FTURLSessionSnapshotRumResourceHandler new];
+    FTURLSessionSnapshotTracer *tracer = [FTURLSessionSnapshotTracer new];
+    tracer.enableLinkRumData = YES;
+    interceptor.rumResourceHandler = rumResourceHandler;
+    [interceptor setTracer:tracer];
+
+    NSURLSession *session = [NSURLSession sessionWithConfiguration:[NSURLSessionConfiguration ephemeralSessionConfiguration]];
+    NSURL *url = [NSURL URLWithString:@"https://snapshot.example.com/complete"];
+    NSMutableURLRequest *request = [NSMutableURLRequest requestWithURL:url];
+    [request setValue:@"start" forHTTPHeaderField:@"X-Snapshot"];
+    [request setValue:@"start-trace" forHTTPHeaderField:@"x-trace-id"];
+    [request setValue:@"start-span" forHTTPHeaderField:@"x-span-id"];
+
+    NSURLSessionDataTask *task = [session dataTaskWithRequest:request];
+    [interceptor interceptTask:task];
+    [self waitForURLSessionInterceptorQueue];
+
+    NSMutableURLRequest *mutatedRequest = [NSMutableURLRequest requestWithURL:url];
+    [mutatedRequest setValue:@"mutated" forHTTPHeaderField:@"X-Snapshot"];
+    [mutatedRequest setValue:@"mutated-trace" forHTTPHeaderField:@"x-trace-id"];
+    [mutatedRequest setValue:@"mutated-span" forHTTPHeaderField:@"x-span-id"];
+    [task setValue:mutatedRequest forKey:@"currentRequest"];
+
+    __block NSURLRequest *providerRequest;
+    [interceptor taskCompleted:task error:nil extraProvider:^NSDictionary * _Nullable(NSURLRequest * _Nullable request, NSURLResponse * _Nullable response, NSData * _Nullable data, NSError * _Nullable error) {
+        providerRequest = request;
+        return @{};
+    }];
+    [self waitForURLSessionInterceptorQueue];
+
+    XCTAssertEqualObjects(providerRequest.allHTTPHeaderFields[@"X-Snapshot"], @"start");
+    XCTAssertEqualObjects(rumResourceHandler.content.requestHeader[@"X-Snapshot"], @"start");
+    XCTAssertEqualObjects(tracer.lastUnpackedHeader[@"x-trace-id"], @"start-trace");
+    XCTAssertEqualObjects(rumResourceHandler.traceID, @"start-trace");
+    XCTAssertEqualObjects(rumResourceHandler.spanID, @"start-span");
+
+    [task cancel];
+    [session invalidateAndCancel];
 }
 - (NSMutableURLRequest *)adaptedURLRequestWithRequest:(id<FTRequestProtocol>)request {
     NSMutableURLRequest *urlRequest = [[NSMutableURLRequest alloc] initWithURL:[NSURL URLWithString:@"https://example.com"]];

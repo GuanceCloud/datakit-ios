@@ -197,7 +197,7 @@ static NSObject *sharedInstanceLock;
                     }];
                     [task setValue:mutableRequest forKey:@"currentRequest"];
                 }
-                [self traceInterceptTask:task linkTraceContext:context];
+                [self traceInterceptTask:task linkTraceContext:context requestURL:currentRequest.URL];
             }
             return;
         }else if(_tracer&&_tracer.enableAutoTrace){
@@ -214,14 +214,14 @@ static NSObject *sharedInstanceLock;
         FTInnerLogError(@"exception: %@",exception);
     }
 }
-- (void)traceInterceptTask:(NSURLSessionTask *)task linkTraceContext:(nullable FTTraceContext *)traceContext{
+- (void)traceInterceptTask:(NSURLSessionTask *)task linkTraceContext:(nullable FTTraceContext *)traceContext requestURL:(nullable NSURL *)requestURL{
     dispatch_async(self.queue, ^{
         @try {
             if(traceContext&&traceContext.spanId&&traceContext.traceId){
-                if(!task.currentRequest){
+                if(!requestURL){
                     return;
                 }
-                if(![self isTraceUrl:task.currentRequest.URL]){
+                if(![self isTraceUrl:requestURL]){
                     return;
                 }
                 FTSessionTaskHandler *handler = [self getTraceHandler:task];
@@ -240,11 +240,11 @@ static NSObject *sharedInstanceLock;
 #pragma mark - RUM
 // rum:start resource
 - (void)interceptTask:(NSURLSessionTask *)task{
-    NSURLRequest *originalRequest = task.originalRequest;
+    FTURLSessionRequestSnapshot *requestSnapshot = [FTURLSessionRequestSnapshot snapshotWithRequest:task.currentRequest];
     dispatch_async(self.queue, ^{
         @try {
             FTSessionTaskHandler *handler = [self getTraceHandler:task];
-            if(!originalRequest || !originalRequest.URL || ![self isTraceUrl:originalRequest.URL]){
+            if(!requestSnapshot || !requestSnapshot.URL || ![self isTraceUrl:requestSnapshot.URL]){
                 if(handler)[self removeTraceHandlerWithKey:task];
                 return;
             }
@@ -252,7 +252,7 @@ static NSObject *sharedInstanceLock;
                 handler = [[FTSessionTaskHandler alloc]init];
                 [self setTraceHandler:handler forKey:task];
             }
-            handler.request = task.currentRequest;
+            handler.requestSnapshot = requestSnapshot;
             [self startResourceWithKey:handler.identifier];
         }@catch (NSException *exception) {
             FTInnerLogError(@"exception: %@",exception);
@@ -264,6 +264,9 @@ static NSObject *sharedInstanceLock;
     [self taskMetricsCollected:task metrics:metrics custom:YES];
 }
 -(void)taskMetricsCollected:(NSURLSessionTask *)task metrics:(NSURLSessionTaskMetrics *)metrics custom:(BOOL)custom{
+    NSURLResponse *completedResponse = task.response;
+    NSError *completedError = task.error;
+    BOOL hasCompletion = task.ft_hasCompletion;
     dispatch_async(self.queue, ^{
         @try {
             FTSessionTaskHandler *handler = [self getTraceHandler:task];
@@ -274,8 +277,10 @@ static NSObject *sharedInstanceLock;
             if(!custom){
                 if (@available(iOS 15.0,tvOS 15.0,macOS 12.0, *)) {
                     //macOS 10.15, iOS 13.0, watchOS 6.0, tvOS 13.0, *
-                    if(!task.ft_hasCompletion){
-                        [self taskCompleted:task error:task.error];
+                    if(!hasCompletion){
+                        ResourcePropertyProvider provider = self.resourcePropertyProvider;
+                        SessionTaskErrorFilter filter = self.sessionTaskErrorFilter;
+                        [self handleTaskCompleted:task response:completedResponse error:completedError extraProvider:provider errorFilter:filter];
                     }
                 }
             }
@@ -307,36 +312,41 @@ static NSObject *sharedInstanceLock;
 - (void)taskCompleted:(NSURLSessionTask *)task error:(NSError *)error extraProvider:(nullable ResourcePropertyProvider)extraProvider errorFilter:(nullable SessionTaskErrorFilter)errorFilter{
     ResourcePropertyProvider provider = extraProvider?:self.resourcePropertyProvider;
     SessionTaskErrorFilter filter = errorFilter?:self.sessionTaskErrorFilter;
+    NSURLResponse *completedResponse = task.response;
     dispatch_async(self.queue, ^{
         @try {
-            FTSessionTaskHandler *handler = [self getTraceHandler:task];
-            if(!handler){
-                return;
-            }
-            BOOL filterError = NO;
-            if (filter && error) {
-                filterError = filter(error);
-            }
-            [handler taskCompleted:task error:filterError?nil:error];
-            [self removeTraceHandlerWithKey:task];
-            NSDictionary *property;
-            if(provider){
-                property = provider(handler.request, handler.response, handler.data, handler.error);
-                property = [property ft_deepCopy];
-            }
-            [self stopResourceWithKey:handler.identifier property:property];
-            __block NSString *span_id = handler.spanID,*trace_id=handler.traceID;
-            if (self.tracer.enableLinkRumData&&span_id==nil&&trace_id==nil) {
-                [self.tracer unpackTraceHeader:task.currentRequest.allHTTPHeaderFields handler:^(NSString * _Nullable traceId, NSString * _Nullable spanID) {
-                    span_id = spanID;
-                    trace_id = traceId;
-                }];
-            }
-            [self addResourceWithKey:handler.identifier metrics:handler.metricsModel content:handler.contentModel spanID:span_id traceID:trace_id];
+            [self handleTaskCompleted:task response:completedResponse error:error extraProvider:provider errorFilter:filter];
         }@catch (NSException *exception) {
             FTInnerLogError(@"exception: %@",exception);
         }
     });
+}
+
+- (void)handleTaskCompleted:(NSURLSessionTask *)task response:(NSURLResponse *)response error:(NSError *)error extraProvider:(nullable ResourcePropertyProvider)extraProvider errorFilter:(nullable SessionTaskErrorFilter)errorFilter{
+    FTSessionTaskHandler *handler = [self getTraceHandler:task];
+    if(!handler){
+        return;
+    }
+    BOOL filterError = NO;
+    if (errorFilter && error) {
+        filterError = errorFilter(error);
+    }
+    [handler taskCompletedWithResponse:response error:filterError?nil:error];
+    [self removeTraceHandlerWithKey:task];
+    NSDictionary *property;
+    if(extraProvider){
+        property = extraProvider(handler.request, handler.response, handler.data, handler.error);
+        property = [property ft_deepCopy];
+    }
+    [self stopResourceWithKey:handler.identifier property:property];
+    __block NSString *span_id = handler.spanID,*trace_id=handler.traceID;
+    if (self.tracer.enableLinkRumData&&span_id==nil&&trace_id==nil) {
+        [self.tracer unpackTraceHeader:handler.requestSnapshot.allHTTPHeaderFields handler:^(NSString * _Nullable traceId, NSString * _Nullable spanID) {
+            span_id = spanID;
+            trace_id = traceId;
+        }];
+    }
+    [self addResourceWithKey:handler.identifier metrics:handler.metricsModel content:handler.contentModel spanID:span_id traceID:trace_id];
 }
 
 #pragma mark --------- external data ----------

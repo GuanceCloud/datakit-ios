@@ -23,6 +23,61 @@
 #import "FTResourceContentModel.h"
 #import "FTResourceMetricsModel+Private.h"
 #import "FTBaseInfoHandler.h"
+#import "FTInnerLog.h"
+
+@interface FTURLSessionRequestSnapshot ()
+@property (nonatomic, strong, readwrite) NSURL *URL;
+@property (nonatomic, copy, readwrite) NSString *HTTPMethod;
+@property (nonatomic, copy, readwrite) NSDictionary<NSString *, NSString *> *allHTTPHeaderFields;
+@property (nonatomic, strong, readwrite) NSData *HTTPBody;
+@property (nonatomic, copy, readwrite) NSURLRequest *request;
+- (instancetype)initWithURL:(NSURL *)URL
+                 HTTPMethod:(nullable NSString *)HTTPMethod
+        allHTTPHeaderFields:(nullable NSDictionary<NSString *, NSString *> *)allHTTPHeaderFields
+                   HTTPBody:(nullable NSData *)HTTPBody NS_DESIGNATED_INITIALIZER;
+@end
+
+@implementation FTURLSessionRequestSnapshot
++ (instancetype)snapshotWithRequest:(NSURLRequest *)request{
+    if (!request) {
+        return nil;
+    }
+    @try {
+        NSURL *URL = request.URL;
+        if (!URL) {
+            return nil;
+        }
+        return [[FTURLSessionRequestSnapshot alloc]initWithURL:URL
+                                                    HTTPMethod:request.HTTPMethod
+                                           allHTTPHeaderFields:request.allHTTPHeaderFields
+                                                      HTTPBody:request.HTTPBody];
+    }@catch (NSException *exception) {
+        FTInnerLogError(@"exception: %@", exception);
+        return nil;
+    }
+}
+- (instancetype)initWithURL:(NSURL *)URL
+                 HTTPMethod:(NSString *)HTTPMethod
+        allHTTPHeaderFields:(NSDictionary<NSString *,NSString *> *)allHTTPHeaderFields
+                   HTTPBody:(NSData *)HTTPBody{
+    self = [super init];
+    if (self) {
+        _URL = URL;
+        _HTTPMethod = [HTTPMethod copy];
+        _allHTTPHeaderFields = [allHTTPHeaderFields copy];
+        _HTTPBody = HTTPBody;
+        NSMutableURLRequest *request = [NSMutableURLRequest requestWithURL:URL];
+        if (_HTTPMethod) {
+            request.HTTPMethod = _HTTPMethod;
+        }
+        request.allHTTPHeaderFields = _allHTTPHeaderFields;
+        request.HTTPBody = _HTTPBody;
+        _request = [request copy];
+    }
+    return self;
+}
+@end
+
 @interface FTSessionTaskHandler ()
 @property (nonatomic, strong) NSMutableData *mutableData;
 @end
@@ -36,6 +91,10 @@
         _identifier = identifier;
     }
     return self;
+}
+- (void)setRequestSnapshot:(FTURLSessionRequestSnapshot *)requestSnapshot{
+    _requestSnapshot = requestSnapshot;
+    self.request = requestSnapshot.request;
 }
 - (void)taskReceivedData:(NSData *)data{
     if(!self.mutableData){
@@ -57,14 +116,13 @@
     }
     self.metricsModel = metricsModel;
 }
-- (void)taskCompleted:(NSURLSessionTask *)task error:(NSError *)error{
+- (void)taskCompletedWithResponse:(NSURLResponse *)response error:(NSError *)error{
     self.error = error;
-    self.response = task.response;
+    self.response = response;
     if (self.mutableData) {
         self.data = [self.mutableData copy];
         self.mutableData = nil;
     }
-    self.request = self.request?:task.currentRequest;
     FTResourceContentModel *model = [[FTResourceContentModel alloc]initWithRequest:self.request response:self.response data:self.data error:error];
     self.contentModel = model;
 }
