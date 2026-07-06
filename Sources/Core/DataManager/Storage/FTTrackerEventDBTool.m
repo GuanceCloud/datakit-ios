@@ -13,10 +13,11 @@
 #import "FTConstants.h"
 #import "FTSDKCompat.h"
 static NSString * const FT_DB_REMOTE_FILTER_CHECKED = @"remote_filter_checked";
+static NSInteger const FT_DB_AUTO_VACUUM_INCREMENTAL = 2;
 @interface FTTrackerEventDBTool ()
 @property (nonatomic, strong) NSString *dbPath;
 @property (nonatomic, strong) ZY_FMDatabaseQueue *dbQueue;
-@property (nonatomic, assign) BOOL enableLimitWithDbSize;
+@property (nonatomic, assign) BOOL incrementalAutoVacuumEnabled;
 
 @end
 @implementation FTTrackerEventDBTool
@@ -54,8 +55,7 @@ static dispatch_once_t onceToken;
             dbTool.dbPath = path;
             FTInnerLogDebug(@"db path:%@",path);
             dbTool.dbQueue = dbQueue;
-            dbTool.enableLimitWithDbSize = enableLimitWithDbSize;
-            [dbTool createTable];
+            [dbTool createTableWithEnableLimitWithDbSize:enableLimitWithDbSize];
         }
     });
     if (!dbTool) {
@@ -70,10 +70,10 @@ static dispatch_once_t onceToken;
 - (id)mutableCopyWithZone:(struct _NSZone *)zone {
     return self;
 }
-- (void)createTable{
+- (void)createTableWithEnableLimitWithDbSize:(BOOL)enableLimitWithDbSize{
     @try {
-        if (self.enableLimitWithDbSize) {
-            [self autoVacuum];
+        if (enableLimitWithDbSize) {
+            [self enableIncrementalAutoVacuum];
         }
         [self createEventTable];
         [self enableWAL];
@@ -249,7 +249,7 @@ static dispatch_once_t onceToken;
     [self zy_inDatabase:^(ZY_FMDatabase *db){
         NSString *sqlStr = [NSString stringWithFormat:@"DELETE FROM %@ WHERE op = ? AND _id <= ? ;",FT_DB_TRACE_EVENT_TABLE_NAME];
         is = [db executeUpdate:sqlStr,type,identify];
-        if(weakSelf.enableLimitWithDbSize){
+        if(is && weakSelf.incrementalAutoVacuumEnabled){
             NSString *str = [NSString stringWithFormat:@"PRAGMA incremental_vacuum(%ld)", (long)count];
             ZY_FMResultSet *set = [db executeQuery:str];
             [set close];
@@ -263,7 +263,7 @@ static dispatch_once_t onceToken;
     [self zy_inDatabase:^(ZY_FMDatabase *db){
         NSString *sqlStr = [NSString stringWithFormat:@"DELETE FROM %@ WHERE _id in (SELECT _id from '%@' WHERE  op = ? ORDER by _id ASC LIMIT ? )",FT_DB_TRACE_EVENT_TABLE_NAME,FT_DB_TRACE_EVENT_TABLE_NAME];
         is = [db executeUpdate:sqlStr,type,@(count)];
-        if(weakSelf.enableLimitWithDbSize){
+        if(is && weakSelf.incrementalAutoVacuumEnabled){
             NSString *str = [NSString stringWithFormat:@"PRAGMA incremental_vacuum(%ld)", (long)count];
             ZY_FMResultSet *set = [db executeQuery:str];
             [set close];
@@ -277,7 +277,7 @@ static dispatch_once_t onceToken;
     [self zy_inDatabase:^(ZY_FMDatabase *db){
         NSString *sqlStr = [NSString stringWithFormat:@"DELETE FROM %@ WHERE _id in (SELECT _id from '%@' ORDER by _id ASC LIMIT ?)",FT_DB_TRACE_EVENT_TABLE_NAME,FT_DB_TRACE_EVENT_TABLE_NAME];
         is = [db executeUpdate:sqlStr,@(count)];
-        if(weakSelf.enableLimitWithDbSize){
+        if(is && weakSelf.incrementalAutoVacuumEnabled){
             NSString *str = [NSString stringWithFormat:@"PRAGMA incremental_vacuum(%ld)", (long)count];
             ZY_FMResultSet *set = [db executeQuery:str];
             [set close];
@@ -291,7 +291,7 @@ static dispatch_once_t onceToken;
     [self zy_inDatabase:^(ZY_FMDatabase *db){
         NSString *sqlStr = [NSString stringWithFormat:@"DELETE FROM %@ WHERE _id in (SELECT _id from '%@' WHERE op = ? or op = ? ORDER by _id ASC LIMIT ?)",FT_DB_TRACE_EVENT_TABLE_NAME,FT_DB_TRACE_EVENT_TABLE_NAME];
         is = [db executeUpdate:sqlStr,FT_DATA_TYPE_LOGGING,FT_DATA_TYPE_RUM,@(count)];
-        if(weakSelf.enableLimitWithDbSize){
+        if(is && weakSelf.incrementalAutoVacuumEnabled){
             NSString *str = [NSString stringWithFormat:@"PRAGMA incremental_vacuum(%ld)", (long)count];
             ZY_FMResultSet *set = [db executeQuery:str];
             [set close];
@@ -405,12 +405,24 @@ static long pageSize = 0;
     }];
 }
 
-- (BOOL)autoVacuum{
+- (NSInteger)autoVacuumModeWithDatabase:(ZY_FMDatabase *)db{
+    NSInteger mode = 0;
+    ZY_FMResultSet *set = [db executeQuery:@"PRAGMA auto_vacuum"];
+    if ([set next]) {
+        mode = [set intForColumnIndex:0];
+    }
+    [set close];
+    return mode;
+}
+
+- (BOOL)enableIncrementalAutoVacuum{
     __block BOOL is;
     [self zy_inDatabase:^(ZY_FMDatabase *db){
         is = [db executeUpdate:@"PRAGMA auto_vacuum = INCREMENTAL"];
+        NSInteger mode = [self autoVacuumModeWithDatabase:db];
+        self.incrementalAutoVacuumEnabled = mode == FT_DB_AUTO_VACUUM_INCREMENTAL;
         if(is){
-            FTInnerLogDebug(@"PRAGMA auto_vacuum = INCREMENTAL Success");
+            FTInnerLogDebug(@"PRAGMA auto_vacuum = INCREMENTAL Success, incrementalAutoVacuumEnabled = %d",self.incrementalAutoVacuumEnabled);
         }
     }];
     return is;

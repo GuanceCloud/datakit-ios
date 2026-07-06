@@ -13,6 +13,8 @@ NS_ASSUME_NONNULL_BEGIN
 
 @interface FTTrackerEventDBTool (Test)
 @property (nonatomic, strong) ZY_FMDatabaseQueue *dbQueue;
+@property (nonatomic, assign) BOOL incrementalAutoVacuumEnabled;
++ (nullable FTTrackerEventDBTool *)shareDatabaseWithPath:(nullable NSString *)dbPath dbName:(nullable NSString *)dbName enableLimitWithDbSize:(BOOL)enableLimitWithDbSize;
 - (BOOL)zy_isExistTable:(NSString *)tableName;
 - (long)checkDatabaseSize;
 - (void)shutDown;

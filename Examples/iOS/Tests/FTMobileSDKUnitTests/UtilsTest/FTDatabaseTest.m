@@ -42,6 +42,18 @@
 
 @implementation FTDatabaseTest
 
+static NSInteger FTAutoVacuumModeForDBTool(FTTrackerEventDBTool *dbTool) {
+    __block NSInteger mode = -1;
+    [dbTool.dbQueue inDatabase:^(ZY_FMDatabase *db) {
+        ZY_FMResultSet *set = [db executeQuery:@"PRAGMA auto_vacuum"];
+        if ([set next]) {
+            mode = [set intForColumnIndex:0];
+        }
+        [set close];
+    }];
+    return mode;
+}
+
 - (void)setUp {
     // Put setup code here. This method is called before the invocation of each test method in the class.
     [FTLog enableLog:YES];
@@ -219,6 +231,25 @@
     [[FTTrackerEventDBTool sharedManager] deleteAllDatas];
     NSInteger newCount =  [[FTTrackerEventDBTool sharedManager] getDatasCount];
     XCTAssertTrue(oldCount>0 && newCount == 0);
+}
+
+- (void)testEnableLimitDBSize_oldDatabaseKeepsIncrementalVacuumDisabledAndDeleteWorks{
+    for (int i = 0; i<10; i++) {
+        FTRecordModel *model = [FTModelHelper createLogModel:[NSString stringWithFormat:@"testData%d",i]];
+        [[FTTrackerEventDBTool sharedManager] insertItem:model];
+    }
+    XCTAssertEqual(FTAutoVacuumModeForDBTool([FTTrackerEventDBTool sharedManager]), 0);
+
+    [[FTTrackerEventDBTool sharedManager] shutDown];
+    [FTTrackerEventDBTool shareDatabaseWithPath:nil dbName:self.dbName enableLimitWithDbSize:YES];
+
+    FTTrackerEventDBTool *dbTool = [FTTrackerEventDBTool sharedManager];
+    XCTAssertFalse(dbTool.incrementalAutoVacuumEnabled);
+    XCTAssertEqual(FTAutoVacuumModeForDBTool(dbTool), 0);
+    XCTAssertEqual([dbTool getDatasCountWithType:FT_DATA_TYPE_LOGGING], 10);
+
+    XCTAssertTrue([dbTool deleteDataWithType:FT_DATA_TYPE_LOGGING count:4]);
+    XCTAssertEqual([dbTool getDatasCountWithType:FT_DATA_TYPE_LOGGING], 6);
 }
 
 - (void)testEnableLimitDBSize_deleteData{
