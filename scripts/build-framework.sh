@@ -14,9 +14,9 @@
 #   --disable-swizzling-resource: Disable URLSession method swizzling (avoids swizzling conflicts)
 
 # SDK Usage Scenarios:
-#   Main Project SDK: static/dynamic
-#   Widget Extension SDK: static only
-#   Session Replay SDK: static/dynamic
+#   Main Project SDK: static/dynamic, iOS/tvOS/macOS
+#   Widget Extension SDK: static only, iOS
+#   Session Replay SDK: static/dynamic, iOS
 
 # Output Path: Packaged SDK is saved to the repository "build" folder
 
@@ -34,6 +34,7 @@ LIB_TYPE="static"
 SCHEME_NAME=""
 PRODUCT_NAME=""
 WORK_DIR="${WORK_DIR:-${REPO_ROOT}/build}"
+ARCHIVE_PLATFORMS=()
 
 # ======================== [Utility Functions] ========================
 # Output logs to stderr to avoid polluting path outputs
@@ -59,9 +60,9 @@ show_help() {
   echo "  bash $0 <PRODUCT_NAME>-dynamic [--disable-swizzling-resource]"
   echo ""
   echo "Products:"
-  echo "  ${sdk_product_name}"
-  echo "  ${session_replay_product_name}"
-  echo "  ${widget_extension_product_name} (static only)"
+  echo "  ${sdk_product_name} (iOS/tvOS/macOS)"
+  echo "  ${session_replay_product_name} (iOS)"
+  echo "  ${widget_extension_product_name} (static only, iOS)"
   echo ""
   echo "Options:"
   echo "  --dynamic                       Build a dynamic XCFramework"
@@ -170,10 +171,61 @@ parse_product() {
   fi
 }
 
+set_archive_platforms() {
+  case "${SCHEME_NAME}" in
+    FTSDK)
+      ARCHIVE_PLATFORMS=("iphoneos" "iphonesimulator" "appletvos" "appletvsimulator" "macosx")
+      ;;
+    FTSessionReplay|FTWidgetExtension)
+      ARCHIVE_PLATFORMS=("iphoneos" "iphonesimulator")
+      ;;
+    *)
+      error "❌ Unsupported scheme for archive platforms: ${SCHEME_NAME}"
+      ;;
+  esac
+}
+
+platform_destination() {
+  case "$1" in
+    iphoneos)
+      echo "generic/platform=iOS"
+      ;;
+    iphonesimulator)
+      echo "generic/platform=iOS Simulator"
+      ;;
+    appletvos)
+      echo "generic/platform=tvOS"
+      ;;
+    appletvsimulator)
+      echo "generic/platform=tvOS Simulator"
+      ;;
+    macosx)
+      echo "generic/platform=macOS"
+      ;;
+    *)
+      error "❌ Unsupported archive platform: $1"
+      ;;
+  esac
+}
+
+framework_path_for_platform() {
+  local archive_root="$1"
+  local platform="$2"
+  local product_name="$3"
+  echo "${archive_root}/${platform}.xcarchive/Products/Library/Frameworks/${product_name}.framework"
+}
+
+dsym_path_for_platform() {
+  local archive_root="$1"
+  local platform="$2"
+  local product_name="$3"
+  echo "${archive_root}/${platform}.xcarchive/dSYMs/${product_name}.framework.dSYM"
+}
+
 # ======================== [Step 1: Compile Single Archive (aligned with your compilation logic)] ========================
 # Parameter 1: Scheme name
 # Parameter 2: Product name
-# Parameter 3: Compilation platform (iphoneos/iphonesimulator)
+# Parameter 3: Compilation platform (iphoneos/iphonesimulator/appletvos/appletvsimulator/macosx)
 # Parameter 4: Whether to disable Swizzling (0/1)
 # Parameter 5: Archive output path (e.g., ./build/ios.xcarchive)
 build_archive() {
@@ -181,22 +233,12 @@ build_archive() {
   local product_name="$2"
   local platform="$3"
   local disable_swizzling="$4"
-  local archive_path="$5"
-  local derived_data_path="${archive_path}/DerivedData"
+  local archive_root="$5"
+  local archive_path="${archive_root}/${platform}.xcarchive"
+  local derived_data_path="${archive_root}/DerivedData/${platform}"
   local destination
 
-  archive_path+="/${platform}.xcarchive"
-  case "${platform}" in
-    iphoneos)
-      destination="generic/platform=iOS"
-      ;;
-    iphonesimulator)
-      destination="generic/platform=iOS Simulator"
-      ;;
-    *)
-      error "❌ Unsupported archive platform: ${platform}"
-      ;;
-  esac
+  destination="$(platform_destination "${platform}")"
 
   info "📦 Starting to compile ${product_name} for ${platform} → ${archive_path} (${LIB_TYPE})"
 
@@ -244,50 +286,42 @@ create_xcframework() {
   local framework_name="$2"
   local ARCHIVE_PATH="$3"
 
-  local ios_framework="${ARCHIVE_PATH}/iphoneos.xcarchive/Products/Library/Frameworks/${product_name}.framework"
-  local sim_framework="${ARCHIVE_PATH}/iphonesimulator.xcarchive/Products/Library/Frameworks/${product_name}.framework"
- 
+  local create_args=()
+  local platform
+  local framework_path
+  local dsym_path
   local XCF_FRAMEWORK_PATH="${ARCHIVE_PATH}/${framework_name}.xcframework"
-  
-  # 2. Verify framework path validity
-  if [[ ! -d "${ios_framework}" ]]; then
-    error "❌ Physical device Framework does not exist: ${ios_framework}"
-  fi
-  if [[ ! -d "${sim_framework}" ]]; then
-    error "❌ Simulator Framework does not exist: ${sim_framework}"
-  fi
-  
+
+  for platform in "${ARCHIVE_PLATFORMS[@]}"; do
+    framework_path="$(framework_path_for_platform "${ARCHIVE_PATH}" "${platform}" "${product_name}")"
+    if [[ ! -d "${framework_path}" ]]; then
+      error "❌ Framework does not exist for ${platform}: ${framework_path}"
+    fi
+    create_args+=("-framework" "${framework_path}")
+
+    if [[ "${LIB_TYPE}" == "dynamic" ]]; then
+      dsym_path="$(dsym_path_for_platform "${ARCHIVE_PATH}" "${platform}" "${product_name}")"
+      if [[ ! -d "${dsym_path}" ]]; then
+        error "❌ dSYM does not exist for ${platform}: ${dsym_path}"
+      fi
+      create_args+=("-debug-symbols" "${dsym_path}")
+    fi
+  done
+
 
   # 4. Delete old XCFramework (avoid conflicts)
   rm -rf "${XCF_FRAMEWORK_PATH}"
 
-  # 5. Generate XCFramework (fully replicate your branch logic)
   if [[ "${LIB_TYPE}" == "dynamic" ]]; then
-    local ios_dsym="${ARCHIVE_PATH}/iphoneos.xcarchive/dSYMs/${product_name}.framework.dSYM"
-    local sim_dsym="${ARCHIVE_PATH}/iphonesimulator.xcarchive/dSYMs/${product_name}.framework.dSYM"
-
-    if [[ ! -d "${ios_dsym}" ]]; then
-      error "❌ Physical device dSYM does not exist: ${ios_dsym}"
-    fi
-    if [[ ! -d "${sim_dsym}" ]]; then
-      error "❌ Simulator dSYM does not exist: ${sim_dsym}"
-    fi
- 
     info  "\n📦 Generating xcframework (with standard path dSYM)..."
-    # Dynamic library: use -debug-symbols parameter (your core logic)
     xcodebuild -create-xcframework \
-          -framework "${ios_framework}" \
-          -debug-symbols "${ios_dsym}" \
-          -framework "${sim_framework}" \
-          -debug-symbols "${sim_dsym}" \
-          -output "${XCF_FRAMEWORK_PATH}"
+      "${create_args[@]}" \
+      -output "${XCF_FRAMEWORK_PATH}"
     info "✅ Dynamic library XCFramework generated successfully: ${XCF_FRAMEWORK_PATH}"
   else
-    # Static library: only combine frameworks, no dSYM files
     info  "\n📦 Generating static library xcframework..."
     xcodebuild -create-xcframework \
-      -framework "${ios_framework}" \
-      -framework "${sim_framework}" \
+      "${create_args[@]}" \
       -output "${XCF_FRAMEWORK_PATH}"
     info "✅ Static library xcframework generated successfully"
   fi
@@ -299,8 +333,9 @@ create_xcframework() {
     error "❌ Invalid XCFramework, Info.plist not found: ${XCF_FRAMEWORK_PATH}"
   fi
   
-  rm -rf "${ARCHIVE_PATH}/iphoneos.xcarchive"
-  rm -rf "${ARCHIVE_PATH}/iphonesimulator.xcarchive"
+  for platform in "${ARCHIVE_PLATFORMS[@]}"; do
+    rm -rf "${ARCHIVE_PATH}/${platform}.xcarchive"
+  done
 }
 
 # ======================== [Main Workflow (strict step-by-step: clean → parse → compile → combine)] ========================
@@ -357,6 +392,7 @@ main() {
 
   # Step 2: Parse product name (get neutral scheme name + framework name + library type)
   parse_product "${product}"
+  set_archive_platforms
   
   local framework_name="${PRODUCT_NAME}"
   
@@ -373,10 +409,12 @@ main() {
   
   clean_build "${archive_path}"
   
-  info "🔧  → PRODUCT_NAME: ${PRODUCT_NAME} | FRAMEWORK_NAME: ${framework_name} | LIB_TYPE: ${LIB_TYPE}"
+  info "🔧  → PRODUCT_NAME: ${PRODUCT_NAME} | FRAMEWORK_NAME: ${framework_name} | LIB_TYPE: ${LIB_TYPE} | PLATFORMS: ${ARCHIVE_PLATFORMS[*]}"
   # Step 4: archive
-  build_archive "${SCHEME_NAME}" "${PRODUCT_NAME}" "iphoneos" "${disable_swizzling}" "${archive_path}"
-  build_archive "${SCHEME_NAME}" "${PRODUCT_NAME}" "iphonesimulator" "${disable_swizzling}" "${archive_path}"
+  local platform
+  for platform in "${ARCHIVE_PLATFORMS[@]}"; do
+    build_archive "${SCHEME_NAME}" "${PRODUCT_NAME}" "${platform}" "${disable_swizzling}" "${archive_path}"
+  done
 
   # Step 5: Combine archives to generate XCFramework (core: combine after compilation completes)
   create_xcframework "${PRODUCT_NAME}" "${framework_name}" "${archive_path}"
