@@ -50,6 +50,11 @@ Pod::Spec.new do |s|
 		e.dependency 'GuanceSDK/Core/Logger'
 	end
 
+	s.subspec 'Extension' do |e|
+		e.platform = :ios, '12.0'
+		e.dependency "#{s.name}/WidgetExtension"
+	end
+
 	s.subspec 'Core' do |c|
 		c.ios.deployment_target = '12.0'
 		c.osx.deployment_target = '10.14'
@@ -128,5 +133,10 @@ Pod::Spec.new do |s|
 			 'HEADER_SEARCH_PATHS' => header_search_paths,
 			 'GCC_PREPROCESSOR_DEFINITIONS' => '$(inherited) GUANCE_COCOAPODS=1'
 		 }
+	end
+
+	s.subspec 'FTSessionReplay' do |sr|
+		sr.platform = :ios, '12.0'
+		sr.dependency "#{s.name}/SessionReplay"
 	end
 end
