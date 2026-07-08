@@ -7,7 +7,7 @@ Pod::Spec.new do |s|
 	s.homepage     = "https://github.com/GuanceCloud/datakit-ios.git"
 
 	s.license      = { type: 'Apache', :file => 'LICENSE'}
-	s.authors             = { "hulilei" => "hulilei@jiagouyun.com","Brandon Zhang" => "zhangbo@jiagouyun.com" }
+	s.authors             = { "hulilei" => "hulilei@guance.com","Brandon Zhang" => "zhangbo@guance.com" }
 	s.default_subspec = 'FTMobileAgent'
 	s.swift_versions = ['5.0']
 
