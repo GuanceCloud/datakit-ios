@@ -20,8 +20,8 @@ NS_ASSUME_NONNULL_BEGIN
 @property (nonatomic, copy) NSURLResponse *response;
 /// The local error that occurred during this interception. Returns `nil` if the task completed successfully.
 @property (nonatomic, strong) NSError *error;
-/// The task data received during this interception. Returns `nil` if the task completed with an error.
-@property (nonatomic, strong) NSData *data;
+/// The task data received during this interception. Returns `nil` if the buffered response body should not be cached.
+@property (nonatomic, strong, nullable) NSData *data;
 /// Request duration for each stage required by RUM resource (optional)
 @property (nonatomic, strong) FTResourceMetricsModel *metricsModel;
 /// Basic data required by RUM resource
@@ -39,6 +39,9 @@ NS_ASSUME_NONNULL_BEGIN
 ///
 /// Internally, traceHandle will bind the data to contentModel after receiving -taskCompleted
 - (void)taskReceivedData:(NSData *)data;
+/// Complete response data received from a URLSession completion handler.
+/// This data is already retained by URLSession and should not be buffered again.
+- (void)taskReceivedCompleteData:(NSData *)data;
 
 /// Data for each stage of the request
 /// - Parameter metrics: Metrics information

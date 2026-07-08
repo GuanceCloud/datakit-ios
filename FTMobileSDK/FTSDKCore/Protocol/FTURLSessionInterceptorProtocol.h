@@ -80,6 +80,11 @@ typedef BOOL (^SessionTaskErrorFilter)(NSError *_Nonnull error);
 ///   - task: request task
 ///   - data: request return data
 - (void)taskReceivedData:(NSURLSessionTask *)task data:(NSData *)data;
+/// Collect complete request return data from URLSession completion handler
+/// - Parameters:
+///   - task: request task
+///   - data: complete request return data
+- (void)taskReceivedCompleteData:(NSURLSessionTask *)task data:(NSData *)data;
 /// Request end -stopResource
 /// - Parameters:
 ///   - task: request task

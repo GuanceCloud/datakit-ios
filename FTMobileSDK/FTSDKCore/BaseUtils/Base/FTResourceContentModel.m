@@ -52,6 +52,8 @@ static inline NSString *ResourceTypeToString(ResourceType type) {
 -(instancetype)initWithRequest:(NSURLRequest *)request response:(NSURLResponse *)response data:(NSData *)data error:(NSError *)error{
     self = [super init];
     if(self){
+        _responseBody = @"";
+        _httpStatusCode = -1;
         _url = request.URL;
         _requestHeader = request.allHTTPHeaderFields;
         _httpMethod = request.HTTPMethod;
@@ -60,8 +62,11 @@ static inline NSString *ResourceTypeToString(ResourceType type) {
             _responseHeader = httpResponse.allHeaderFields;
             _httpStatusCode = httpResponse.statusCode;
         }
-        if (data) {
-            _responseBody = [[NSString alloc] initWithData:data encoding:NSUTF8StringEncoding];
+        if (data && (error || _httpStatusCode >= 400)) {
+            NSString *responseBody = [[NSString alloc] initWithData:data encoding:NSUTF8StringEncoding];
+            if (responseBody) {
+                _responseBody = responseBody;
+            }
         }
         _error = error;
         _resourceType = [self resourceTypeWithRequest:request]?:[self resourceTypeWithResponse:response];
@@ -104,4 +109,3 @@ static inline NSString *ResourceTypeToString(ResourceType type) {
 }
 
 @end
-
