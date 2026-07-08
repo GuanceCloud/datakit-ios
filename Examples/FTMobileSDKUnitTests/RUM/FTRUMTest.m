@@ -516,6 +516,44 @@
     }];
     XCTAssertTrue(hasResource);
 }
+- (void)testInactiveViewUpdateDoesNotOverrideCurrentRUMContext{
+    [self setRumConfig];
+    NSString *resourceKey = [FTBaseInfoHandler randomUUID];
+    NSDictionary *firstProperty = @{@"view_context":@"first"};
+    NSDictionary *secondProperty = @{@"view_context":@"second"};
+
+    [[FTExternalDataManager sharedManager] startViewWithName:@"first_view" property:firstProperty];
+    [[FTExternalDataManager sharedManager] startResourceWithKey:resourceKey];
+    [[FTExternalDataManager sharedManager] startViewWithName:@"second_view" property:secondProperty];
+    [[FTGlobalRumManager sharedInstance].rumManager syncProcess];
+
+    FTResourceContentModel *resource = [FTResourceContentModel new];
+    resource.url = [NSURL URLWithString:@"https://example.com/resource"];
+    resource.httpStatusCode = 200;
+    resource.httpMethod = @"GET";
+    [[FTExternalDataManager sharedManager] stopResourceWithKey:resourceKey];
+    [[FTExternalDataManager sharedManager] addResourceWithKey:resourceKey metrics:nil content:resource];
+    [[FTGlobalRumManager sharedInstance].rumManager syncProcess];
+
+    FTRUMManager *rum = [FTGlobalRumManager sharedInstance].rumManager;
+    FTRUMDependencies *dependencies = [rum valueForKey:@"rumDependencies"];
+    FTFatalErrorContextModel *contextModel = [dependencies.fatalErrorContext currentContextModel];
+    NSDictionary *lastViewTags = contextModel.lastViewContext[@"tags"];
+    NSDictionary *lastViewFields = contextModel.lastViewContext[@"fields"];
+
+    XCTAssertEqualObjects(lastViewTags[FT_KEY_VIEW_NAME], @"second_view");
+    XCTAssertTrue([lastViewFields[FT_KEY_IS_ACTIVE] boolValue]);
+
+    __block NSDictionary *rumContext;
+    [rum getLinkRUMDataWithCompletion:^(NSDictionary * _Nullable context) {
+        rumContext = context;
+    }];
+    [rum syncProcess];
+
+    NSDictionary *bindInfo = rumContext[FT_LINK_RUM_KEYS];
+    XCTAssertEqualObjects(rumContext[FT_KEY_VIEW_NAME], @"second_view");
+    XCTAssertEqualObjects(bindInfo[@"view_context"], @"second");
+}
 /**
  * Verify the format of source:resource data
  */
