@@ -21,6 +21,7 @@
 #import "FTWKWebViewHandler.h"
 #import "FTWeakMapTable.h"
 #import "FTWKWebViewRumDelegate.h"
+#import <TargetConditionals.h>
 #if !TARGET_OS_TV
 NS_ASSUME_NONNULL_BEGIN
 

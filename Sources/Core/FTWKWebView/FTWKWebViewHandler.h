@@ -19,6 +19,7 @@
 //
 
 #import <Foundation/Foundation.h>
+#import <TargetConditionals.h>
 #if !TARGET_OS_TV
 #import <WebKit/WebKit.h>
 NS_ASSUME_NONNULL_BEGIN

@@ -31,7 +31,9 @@
 
 static NSString *const FTIDFVProviderDefaultsKey = @"ft_idfv_cache";
 static NSString *FTIDFVProviderMemoryCache = nil;
-static NSString *FTIDFVProviderNormalizedIdentifier(id value);
+#if FT_HAS_UIDEVICE
+static NSString *_Nullable FTIDFVProviderNormalizedIdentifier(id _Nullable value);
+#endif
 
 @implementation FTIDFVProvider
 
@@ -85,7 +87,8 @@ static NSString *FTIDFVProviderNormalizedIdentifier(id value);
     }
 }
 
-static NSString *FTIDFVProviderNormalizedIdentifier(id value) {
+#if FT_HAS_UIDEVICE
+static NSString *_Nullable FTIDFVProviderNormalizedIdentifier(id _Nullable value) {
     if (![value isKindOfClass:NSString.class]) {
         return nil;
     }
@@ -96,5 +99,6 @@ static NSString *FTIDFVProviderNormalizedIdentifier(id value) {
     NSUUID *uuid = [[NSUUID alloc] initWithUUIDString:identifier];
     return uuid.UUIDString;
 }
+#endif
 
 @end

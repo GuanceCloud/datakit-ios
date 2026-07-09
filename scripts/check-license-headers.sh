@@ -29,6 +29,9 @@ EOF
 
 is_supported_file() {
   case "$1" in
+    Sources/SessionReplay/*.h|Sources/SessionReplay/*.m|Sources/SessionReplay/*.mm|Sources/SessionReplay/*.swift|Sources/SessionReplay/**/*.h|Sources/SessionReplay/**/*.m|Sources/SessionReplay/**/*.mm|Sources/SessionReplay/**/*.swift)
+      return 0
+      ;;
     Sources/*.h|Sources/*.m|Sources/*.mm|Sources/*.swift|Sources/**/*.h|Sources/**/*.m|Sources/**/*.mm|Sources/**/*.swift)
       return 0
       ;;

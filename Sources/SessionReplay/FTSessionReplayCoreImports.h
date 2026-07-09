@@ -26,6 +26,30 @@
 
 #if defined(SWIFT_PACKAGE)
 @import _GuanceSDKCore;
+#elif defined(GUANCE_SESSION_REPLAY_FRAMEWORK)
+#import "FTBaseInfoHandler.h"
+#import "FTConstants.h"
+#import "FTDateUtil.h"
+#import "FTInnerLog.h"
+#import "FTJSONUtil.h"
+#import "FTNetworkConnectivity.h"
+#import "FTPresetProperty.h"
+#import "FTReadWriteHelper.h"
+#import "NSDate+FTUtil.h"
+#import "FTSwizzler.h"
+#import "FTThreadDispatchManager.h"
+#import "FTTrackDataManager.h"
+#import "FTHTTPClient.h"
+#import "FTNetworkInfoManager.h"
+#import "FTRequest.h"
+#import "FTRequestBody.h"
+#import "FTHeatmap.h"
+#import "FTWKWebViewHandler.h"
+#import "FTMessageReceiver.h"
+#import "FTModuleManager.h"
+#import "FTSRWebTrackingProtocol.h"
+#import "FTRemoteConfigManager.h"
+#import "FTRemoteConfigModel.h"
 #else
 #import "Sources/Core/BaseUtils/Base/FTBaseInfoHandler.h"
 #import "Sources/Core/BaseUtils/Base/FTConstants.h"

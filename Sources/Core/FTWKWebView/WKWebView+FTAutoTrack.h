@@ -18,6 +18,7 @@
 //  limitations under the License.
 //
 
+#import <TargetConditionals.h>
 #if !TARGET_OS_TV
 #import <WebKit/WebKit.h>
 
