@@ -100,7 +100,7 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
-          bash BuildSDKPackages.sh
+          bash scripts/build-sdk-packages.sh
 
       - name: Upload release assets
         if: env.SHOULD_PUBLISH == 'true'
@@ -111,45 +111,45 @@ jobs:
           set -euo pipefail
 
           all_assets=(
-            "FTMobileSDK.xcframework.zip"
-            "FTMobileSDK-DisableSwizzlingResource.xcframework.zip"
-            "FTSessionReplay.xcframework.zip"
-            "FTMobileExtension.xcframework.zip"
-            "FTMobileExtension-DisableSwizzlingResource.xcframework.zip"
-            "FTMobileSDK-Dynamic.xcframework.zip"
-            "FTMobileSDK-Dynamic-DisableSwizzlingResource.xcframework.zip"
-            "FTSessionReplay-Dynamic.xcframework.zip"
+            "GuanceSDK.xcframework.zip"
+            "GuanceSDK-DisableSwizzlingResource.xcframework.zip"
+            "GuanceSessionReplay.xcframework.zip"
+            "GuanceWidgetExtension.xcframework.zip"
+            "GuanceWidgetExtension-DisableSwizzlingResource.xcframework.zip"
+            "GuanceSDK-Dynamic.xcframework.zip"
+            "GuanceSDK-Dynamic-DisableSwizzlingResource.xcframework.zip"
+            "GuanceSessionReplay-Dynamic.xcframework.zip"
           )
 
           static_assets=(
-            "FTMobileSDK.xcframework.zip"
-            "FTMobileSDK-DisableSwizzlingResource.xcframework.zip"
-            "FTSessionReplay.xcframework.zip"
-            "FTMobileExtension.xcframework.zip"
-            "FTMobileExtension-DisableSwizzlingResource.xcframework.zip"
+            "GuanceSDK.xcframework.zip"
+            "GuanceSDK-DisableSwizzlingResource.xcframework.zip"
+            "GuanceSessionReplay.xcframework.zip"
+            "GuanceWidgetExtension.xcframework.zip"
+            "GuanceWidgetExtension-DisableSwizzlingResource.xcframework.zip"
           )
 
           dynamic_assets=(
-            "FTMobileSDK-Dynamic.xcframework.zip"
-            "FTMobileSDK-Dynamic-DisableSwizzlingResource.xcframework.zip"
-            "FTSessionReplay-Dynamic.xcframework.zip"
+            "GuanceSDK-Dynamic.xcframework.zip"
+            "GuanceSDK-Dynamic-DisableSwizzlingResource.xcframework.zip"
+            "GuanceSessionReplay-Dynamic.xcframework.zip"
           )
 
           core_assets=(
-            "FTMobileSDK.xcframework.zip"
-            "FTMobileSDK-DisableSwizzlingResource.xcframework.zip"
-            "FTMobileSDK-Dynamic.xcframework.zip"
-            "FTMobileSDK-Dynamic-DisableSwizzlingResource.xcframework.zip"
+            "GuanceSDK.xcframework.zip"
+            "GuanceSDK-DisableSwizzlingResource.xcframework.zip"
+            "GuanceSDK-Dynamic.xcframework.zip"
+            "GuanceSDK-Dynamic-DisableSwizzlingResource.xcframework.zip"
           )
 
           session_replay_assets=(
-            "FTSessionReplay.xcframework.zip"
-            "FTSessionReplay-Dynamic.xcframework.zip"
+            "GuanceSessionReplay.xcframework.zip"
+            "GuanceSessionReplay-Dynamic.xcframework.zip"
           )
 
           extension_assets=(
-            "FTMobileExtension.xcframework.zip"
-            "FTMobileExtension-DisableSwizzlingResource.xcframework.zip"
+            "GuanceWidgetExtension.xcframework.zip"
+            "GuanceWidgetExtension-DisableSwizzlingResource.xcframework.zip"
           )
 
           trim_spaces() {

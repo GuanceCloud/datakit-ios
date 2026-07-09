@@ -1,13 +1,13 @@
 #!/bin/bash
 
 # Usage Examples (Command → Output XCFramework Name):
-#   bash BuildFramework.sh GuanceSDK                                  → GuanceSDK.xcframework
-#   bash BuildFramework.sh GuanceSDK --dynamic                        → GuanceSDK-Dynamic.xcframework
-#   bash BuildFramework.sh GuanceSDK --disable-swizzling-resource     → GuanceSDK-DisableSwizzlingResource.xcframework
-#   bash BuildFramework.sh GuanceSDK --dynamic --disable-swizzling-resource → GuanceSDK-Dynamic-DisableSwizzlingResource.xcframework
-#   bash BuildFramework.sh GuanceWidgetExtension                      → GuanceWidgetExtension.xcframework
-#   bash BuildFramework.sh GuanceSessionReplay                        → GuanceSessionReplay.xcframework
-#   bash BuildFramework.sh GuanceSessionReplay --dynamic              → GuanceSessionReplay-Dynamic.xcframework
+#   bash scripts/build-framework.sh GuanceSDK                                  → GuanceSDK.xcframework
+#   bash scripts/build-framework.sh GuanceSDK --dynamic                        → GuanceSDK-Dynamic.xcframework
+#   bash scripts/build-framework.sh GuanceSDK --disable-swizzling-resource     → GuanceSDK-DisableSwizzlingResource.xcframework
+#   bash scripts/build-framework.sh GuanceSDK --dynamic --disable-swizzling-resource → GuanceSDK-Dynamic-DisableSwizzlingResource.xcframework
+#   bash scripts/build-framework.sh GuanceWidgetExtension                      → GuanceWidgetExtension.xcframework
+#   bash scripts/build-framework.sh GuanceSessionReplay                        → GuanceSessionReplay.xcframework
+#   bash scripts/build-framework.sh GuanceSessionReplay --dynamic              → GuanceSessionReplay-Dynamic.xcframework
 
 # Parameter Notes:
 #   --dynamic: Build dynamic library (default: static library)
@@ -18,20 +18,22 @@
 #   Widget Extension SDK: static only
 #   Session Replay SDK: static/dynamic
 
-# Output Path: Packaged SDK is saved to the "build" folder in the current directory
+# Output Path: Packaged SDK is saved to the repository "build" folder
 
 set -euo pipefail
 # ======================== CORE ========================
+SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
+REPO_ROOT="$(cd "${SCRIPT_DIR}/.." && pwd)"
 SWIZZLING_MACRO="FT_DISABLE_SWIZZLING_RESOURCE"
 CONFIGURATION="Release"
-PROJECT="${PROJECT:-FTSDK.xcodeproj}"
-BASE_CONFIG="${BASE_CONFIG:-Base.xcconfig}"
+PROJECT="${PROJECT:-${REPO_ROOT}/FTSDK.xcodeproj}"
+BASE_CONFIG="${BASE_CONFIG:-${REPO_ROOT}/Base.xcconfig}"
 XCODEBUILD_OPTIONS="${XCODEBUILD_OPTIONS--quiet}"
 
 LIB_TYPE="static"
 SCHEME_NAME=""
 PRODUCT_NAME=""
-WORK_DIR="./build"
+WORK_DIR="${WORK_DIR:-${REPO_ROOT}/build}"
 
 # ======================== [Utility Functions] ========================
 # Output logs to stderr to avoid polluting path outputs
@@ -182,7 +184,7 @@ build_archive() {
   local archive_path="$5"
   local derived_data_path="${archive_path}/DerivedData"
   local destination
-  
+
   archive_path+="/${platform}.xcarchive"
   case "${platform}" in
     iphoneos)
@@ -195,7 +197,7 @@ build_archive() {
       error "❌ Unsupported archive platform: ${platform}"
       ;;
   esac
-  
+
   info "📦 Starting to compile ${product_name} for ${platform} → ${archive_path} (${LIB_TYPE})"
 
   # Distinguish static/dynamic library parameters (aligned with your script)
@@ -255,6 +257,7 @@ create_xcframework() {
     error "❌ Simulator Framework does not exist: ${sim_framework}"
   fi
   
+
   # 4. Delete old XCFramework (avoid conflicts)
   rm -rf "${XCF_FRAMEWORK_PATH}"
 
@@ -365,7 +368,8 @@ main() {
   fi
   
   # Step 3
-  local archive_path="$(cd "$(dirname "${WORK_DIR}/${framework_name}")" && pwd)/$(basename "${WORK_DIR}/${framework_name}")"
+  mkdir -p "${WORK_DIR}"
+  local archive_path="$(cd "${WORK_DIR}" && pwd)/${framework_name}"
   
   clean_build "${archive_path}"
   

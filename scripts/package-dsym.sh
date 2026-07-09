@@ -21,12 +21,12 @@
 # # Set CONFIG_DSYM_DEST_DIR to override the zip output directory.
 #
 # # Example 1: package dSYM only.
-# # Adjust the path if FTdSYMPackager.sh is not in SRCROOT.
-# FT_DSYM_PACKAGER="${SRCROOT}/FTdSYMPackager.sh"
+# # Adjust the path if package-dsym.sh is not in SRCROOT/scripts.
+# FT_DSYM_PACKAGER="${SRCROOT}/scripts/package-dsym.sh"
 # if [ -f "${FT_DSYM_PACKAGER}" ]; then
 # bash "${FT_DSYM_PACKAGER}"
 # else
-# echo "error: FTdSYMPackager.sh not found at ${FT_DSYM_PACKAGER}"
+# echo "error: package-dsym.sh not found at ${FT_DSYM_PACKAGER}"
 # fi
 #
 # --- END OF SCRIPT ---
@@ -37,12 +37,12 @@
 #######################################################
 #
 # Package symbol table files:
-# bash FTdSYMPackager.sh <dSYMBOL_src_dir>
+# bash scripts/package-dsym.sh <dSYMBOL_src_dir>
 # or
-# bash FTdSYMPackager.sh -dSYMFolderPath <dSYMBOL_src_dir>
+# bash scripts/package-dsym.sh -dSYMFolderPath <dSYMBOL_src_dir>
 #
 # Optional:
-# bash FTdSYMPackager.sh -dSYMFolderPath <dSYMBOL_src_dir> -version <app_version>
+# bash scripts/package-dsym.sh -dSYMFolderPath <dSYMBOL_src_dir> -version <app_version>
 #
 # Search for FT_DSYM_ZIP_FILE in Xcode logs to view the generated zip file path.
 # The last output line is also the raw generated zip file path.
@@ -68,8 +68,8 @@ function exitWithMessage(){
 }
 
 function printUsage(){
-    echo "Usage: FTdSYMPackager.sh <dSYMBOL_src_dir>"
-    echo "   or: FTdSYMPackager.sh -dSYMFolderPath <dSYMBOL_src_dir> [-version <app_version>]"
+    echo "Usage: scripts/package-dsym.sh <dSYMBOL_src_dir>"
+    echo "   or: scripts/package-dsym.sh -dSYMFolderPath <dSYMBOL_src_dir> [-version <app_version>]"
 }
 
 function sanitizeFileNamePart(){

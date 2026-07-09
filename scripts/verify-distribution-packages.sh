@@ -3,9 +3,10 @@
 set -uo pipefail
 
 SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
-BUILD_DIR="${SCRIPT_DIR}/build"
-PODSPEC="${SCRIPT_DIR}/GuanceSDK.podspec"
-FRAMEWORK_SCRIPT="${SCRIPT_DIR}/BuildSDKPackages.sh"
+REPO_ROOT="$(cd "${SCRIPT_DIR}/.." && pwd)"
+BUILD_DIR="${REPO_ROOT}/build"
+PODSPEC="${REPO_ROOT}/GuanceSDK.podspec"
+FRAMEWORK_SCRIPT="${SCRIPT_DIR}/build-sdk-packages.sh"
 SPM_VALIDATION_DIR="${BUILD_DIR}/SwiftPackageValidation"
 SPM_DERIVED_DATA="${BUILD_DIR}/SwiftPackageDerivedData"
 SPM_HOME="${BUILD_DIR}/SwiftPackageHome"
@@ -55,11 +56,11 @@ error() {
 show_help() {
   cat <<'EOF'
 Usage:
-  bash VerifyDistributionPackages.sh [options]
+  bash scripts/verify-distribution-packages.sh [options]
 
 Checks:
   cocoapods   pod lib lint GuanceSDK.podspec
-  framework   BuildSDKPackages.sh, then validates generated .xcframework.zip files
+  framework   scripts/build-sdk-packages.sh, then validates generated .xcframework.zip files
   spm         Swift Package manifest + xcodebuild builds for each product's supported platforms
 
 Options:
@@ -82,9 +83,9 @@ Environment:
   SPM_DESTINATION          Same as --spm-destination.
 
 Examples:
-  bash VerifyDistributionPackages.sh
-  bash VerifyDistributionPackages.sh --only cocoapods,spm
-  POD_LINT_OPTIONS="--allow-warnings --verbose --no-clean" bash VerifyDistributionPackages.sh --only cocoapods
+  bash scripts/verify-distribution-packages.sh
+  bash scripts/verify-distribution-packages.sh --only cocoapods,spm
+  POD_LINT_OPTIONS="--allow-warnings --verbose --no-clean" bash scripts/verify-distribution-packages.sh --only cocoapods
 EOF
 }
 
@@ -307,8 +308,8 @@ prepare_spm_validation_dir() {
   rm -rf "${SPM_VALIDATION_DIR}" "${SPM_DERIVED_DATA}" "${SPM_HOME}" "${SPM_MODULE_CACHE}"
   mkdir -p "${SPM_VALIDATION_DIR}" "${SPM_HOME}" "${SPM_MODULE_CACHE}"
 
-  cp "${SCRIPT_DIR}/Package.swift" "${SPM_VALIDATION_DIR}/Package.swift"
-  ln -s "${SCRIPT_DIR}/Sources" "${SPM_VALIDATION_DIR}/Sources"
+  cp "${REPO_ROOT}/Package.swift" "${SPM_VALIDATION_DIR}/Package.swift"
+  ln -s "${REPO_ROOT}/Sources" "${SPM_VALIDATION_DIR}/Sources"
 }
 
 build_swift_package_scheme() {
@@ -334,8 +335,8 @@ validate_swift_package() {
   require_command "swift" || return 1
   require_command "xcodebuild" || return 1
 
-  if [[ ! -f "${SCRIPT_DIR}/Package.swift" ]]; then
-    error "Package.swift not found: ${SCRIPT_DIR}/Package.swift"
+  if [[ ! -f "${REPO_ROOT}/Package.swift" ]]; then
+    error "Package.swift not found: ${REPO_ROOT}/Package.swift"
     return 1
   fi
 

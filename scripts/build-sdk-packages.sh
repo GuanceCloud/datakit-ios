@@ -3,8 +3,9 @@
 set -euo pipefail
 
 SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
-BUILD_SCRIPT="${SCRIPT_DIR}/BuildFramework.sh"
-BUILD_DIR="${SCRIPT_DIR}/build"
+REPO_ROOT="$(cd "${SCRIPT_DIR}/.." && pwd)"
+BUILD_SCRIPT="${SCRIPT_DIR}/build-framework.sh"
+BUILD_DIR="${REPO_ROOT}/build"
 STAGING_DIR="${BUILD_DIR}/.SDKPackageStaging"
 STATIC_DIR="${STAGING_DIR}/SDK-Static"
 DYNAMIC_DIR="${STAGING_DIR}/SDK-Dynamic"
@@ -51,7 +52,7 @@ error() {
 
 show_help() {
   echo "Usage:"
-  echo "  bash $0"
+  echo "  bash scripts/build-sdk-packages.sh"
   echo ""
   echo "Output:"
   local xcframework_name

@@ -3,12 +3,12 @@
 # This is the upload dSYM script
 #
 # Recommended for new integrations:
-# 1. Use FTdSYMPackager.sh to generate the dSYM zip file.
+# 1. Use package-dsym.sh to generate the dSYM zip file.
 # 2. Upload the generated zip manually, or use Guance's OpenAPI sourcemap
 #    upload scripts:
 #    https://docs.guance.com/real-user-monitoring/sourcemap/script-upload-sourcemap/#sourcemap
 # 3. In Xcode Build Phases, reference the packager with an absolute path:
-#    bash "${SRCROOT}/FTdSYMPackager.sh"
+#    bash "${SRCROOT}/scripts/package-dsym.sh"
 #
 # Keep this script only for legacy DataKit upload integrations.
 #
