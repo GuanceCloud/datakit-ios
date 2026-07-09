@@ -509,6 +509,17 @@
     XCTAssertTrue(reachHalfLimit);
     [FTTrackDataManager shutDown];
 }
+- (void)testLogCountUpdatesImmediatelyAfterAdd{
+    [[FTTrackerEventDBTool sharedManager] deleteAllDatas];
+    [FTTrackDataManager startWithAutoSync:NO syncPageSize:10 syncSleepTime:0];
+    [[FTTrackDataManager sharedInstance] setLogCacheLimitCount:1 discardNew:NO];
+
+    [[FTTrackDataManager sharedInstance] addTrackData:[FTModelHelper createLogModel:@"TEST LogCountUpdatesImmediatelyAfterAdd"] type:FTAddDataLogging];
+
+    XCTAssertTrue([[FTTrackDataManager sharedInstance].dataCachePolicy reachHalfLimit]);
+    [[FTTrackDataManager sharedInstance] insertCacheToDB];
+    [FTTrackDataManager shutDown];
+}
 - (void)testLogCountReachHalfLimit{
     [[FTTrackerEventDBTool sharedManager] deleteAllDatas];
     [FTTrackDataManager startWithAutoSync:NO syncPageSize:10 syncSleepTime:0];
@@ -519,9 +530,9 @@
         }
     }];
     NSLog(@"interval:%f",interval);
-    [[FTTrackDataManager sharedInstance] insertCacheToDB];
     BOOL reachHalfLimit = [[FTTrackDataManager sharedInstance].dataCachePolicy reachHalfLimit];
     XCTAssertTrue(reachHalfLimit);
+    [[FTTrackDataManager sharedInstance] insertCacheToDB];
     [FTTrackDataManager shutDown];
 }
 - (void)addLogBacklog:(NSInteger)count prefix:(NSString *)prefix{

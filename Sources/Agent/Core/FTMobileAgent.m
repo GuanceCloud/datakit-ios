@@ -51,11 +51,12 @@
 #import "FTDataWriterWorker.h"
 #import "FTModuleManager.h"
 #import "FTRemoteConfigManager.h"
-#import "../../Core/DataFilter/FTDataFilterManager.h"
+#import "FTDataFilterManager.h"
 #import "FTRemoteConfigurationProtocol.h"
 #import "FTRemoteConfigError.h"
 #import "FTConfig+RemoteConfig.h"
 #import "FTRemoteConfigTypeDefs.h"
+#import "FTCrash.h"
 #import "FTRemoteConfigError.h"
 #import "FTDateUtil.h"
 #import "FTAppLaunchTracker.h"
@@ -201,8 +202,7 @@ static FTMobileAgent *sharedInstance = nil;
                                                     env:config.env
                                                 service:config.service
                                           globalContext:config.globalContext
-                                                pkgInfo:config.pkgInfo
-    ];
+                                                pkgInfo:config.pkgInfo];
     [FTExtensionDataManager sharedInstance].groupIdentifierArray = config.groupIdentifiers;
     [FTNetworkInfoManager sharedInstance]
         .setUploadURL(config.datakitUrl,config.datawayUrl,config.clientToken)
@@ -472,5 +472,8 @@ static FTMobileAgent *sharedInstance = nil;
 }
 - (void)additionalConfigurationWithSource:(NSString *)source{
     [FTPresetProperty sharedInstance].sessionReplaySource = source;
+}
++ (NSString *)sdkVersion{
+    return SDK_VERSION;
 }
 @end

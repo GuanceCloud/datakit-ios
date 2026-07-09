@@ -20,15 +20,21 @@
 #import <UIKit/UIKit.h>
 #import <WebKit/WKWebView.h>
 NS_ASSUME_NONNULL_BEGIN
-@class FTSRContext,FTSRViewID,FTViewControllerContext;
+@class FTSRContext,FTSRViewID,FTViewControllerContext,FTHeatmapCache,FTHeatmapIdentifier;
 @interface FTViewTreeRecordingContext : NSObject
 @property (nonatomic, strong) FTSRContext *recorder;
 @property (nonatomic, strong) FTSRViewID *viewIDGenerator;
 @property (nonatomic, strong) id<UICoordinateSpace> coordinateSpace;
 @property (nonatomic, strong) FTViewControllerContext *viewControllerContext;
 @property (nonatomic, strong, nullable) NSHashTable<WKWebView*> *webViewCache;
+@property (nonatomic, strong, nullable) FTHeatmapCache *heatmapCache;
+@property (nonatomic, strong) NSMutableArray<NSString *> *nodePath;
 
 @property (nonatomic, assign) CGRect clip;
+@end
+
+@interface FTHeatmapCache : NSObject
+@property (nonatomic, strong) NSMutableDictionary<NSValue *, FTHeatmapIdentifier *> *identifiers;
 @end
 
 typedef NS_ENUM(NSUInteger,ViewControllerType){

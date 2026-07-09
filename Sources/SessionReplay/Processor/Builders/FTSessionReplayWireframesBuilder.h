@@ -19,9 +19,10 @@
 #import <Foundation/Foundation.h>
 #import "FTSRNodeWireframesBuilder.h"
 NS_ASSUME_NONNULL_BEGIN
-@class FTSRWebViewWireframe,FTUIImageResource,FTSRImageWireframe;
+@class FTSRWebViewWireframe,FTUIImageResource,FTSRImageWireframe,FTHeatmapIdentifier;
 @interface FTSessionReplayWireframesBuilder : NSObject
 @property (nonatomic, strong) NSMutableArray<id<FTSRResource>> *resources;
+@property (nonatomic, strong, nullable) FTHeatmapIdentifier *heatmapIdentifier;
 -(instancetype)initWithResources:(NSArray<id <FTSRResource>>*)resources webViewSlotIDs:( NSSet<NSNumber *> *)webViewSlotIDs;
 
 - (void)addResources:(NSArray<id <FTSRResource>>*)resources;

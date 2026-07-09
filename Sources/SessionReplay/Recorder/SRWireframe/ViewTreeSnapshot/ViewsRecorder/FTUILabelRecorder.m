@@ -31,13 +31,21 @@
 -(instancetype)initWithIdentifier:(NSString *)identifier builderOverride:(FTBuilderOverride)builderOverride textObfuscator:(FTTextObfuscator)textObfuscator{
     self = [super init];
     if(self){
-        _identifier = identifier;
-        _builderOverride = builderOverride?builderOverride:^(FTUILabelBuilder *builder){
-            return builder;
-        };
-        _textObfuscator = textObfuscator?textObfuscator:^id<FTSRTextObfuscatingProtocol> _Nullable(FTViewTreeRecordingContext * _Nonnull context,FTViewAttributes *attributes) {
-            return  [FTSRTextObfuscatingFactory staticTextObfuscator:[attributes resolveTextAndInputPrivacyLevel:context.recorder]];
-        };
+        _identifier = [identifier copy];
+        if (builderOverride) {
+            _builderOverride = [builderOverride copy];
+        } else {
+            _builderOverride = ^FTUILabelBuilder *(FTUILabelBuilder *builder){
+                return builder;
+            };
+        }
+        if (textObfuscator) {
+            _textObfuscator = [textObfuscator copy];
+        } else {
+            _textObfuscator = ^id<FTSRTextObfuscatingProtocol> _Nullable(FTViewTreeRecordingContext * _Nonnull context,FTViewAttributes *attributes) {
+                return  [FTSRTextObfuscatingFactory staticTextObfuscator:[attributes resolveTextAndInputPrivacyLevel:context.recorder]];
+            };
+        }
     }
     return self;
 }

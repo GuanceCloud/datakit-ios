@@ -47,7 +47,7 @@ struct FTGraphicsImage {
     let scale: CGFloat
     let orientation: SwiftUI.Image.Orientation
     let contents: Contents
-    let maskColor: Color._Resolved?
+    let maskColor: SwiftUI.Color._Resolved?
 
     var uiImageOrientation: UIImage.Orientation {
         UIImage.Orientation(orientation)

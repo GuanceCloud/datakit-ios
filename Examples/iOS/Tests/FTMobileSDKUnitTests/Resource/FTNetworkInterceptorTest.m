@@ -305,6 +305,18 @@
 - (void)testTraceInterceptor_Priority{
     [self traceInterceptorWithAutoTrace:YES enableSession:YES enableGlobal:YES];
 }
+- (void)testTraceContextCopiesMutableTraceHeader{
+    FTTraceContext *context = [FTTraceContext new];
+    NSMutableDictionary *traceHeader = [@{@"trace_key": @"trace_value"} mutableCopy];
+    context.traceHeader = traceHeader;
+
+    traceHeader[@"trace_key"] = @"mutated_value";
+    traceHeader[@"extra_key"] = @"extra_value";
+
+    XCTAssertEqualObjects(context.traceHeader[@"trace_key"], @"trace_value");
+    XCTAssertNil(context.traceHeader[@"extra_key"]);
+    XCTAssertFalse([context.traceHeader isKindOfClass:[NSMutableDictionary class]]);
+}
 - (void)traceInterceptorWithAutoTrace:(BOOL)autoTrace enableSession:(BOOL)enableSession
                          enableGlobal:(BOOL)enableGlobal{
     TraceInterceptor traceInterceptor = enableSession? ^FTTraceContext *(NSURLRequest *request) {

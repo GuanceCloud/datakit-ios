@@ -28,7 +28,7 @@ static char *associatedOverridesKey = "associatedOverridesKey";
         return overrides;
     }
     overrides = [FTSessionReplayPrivacyOverrides new];
-    objc_setAssociatedObject(self, &associatedOverridesKey, overrides, OBJC_ASSOCIATION_RETAIN);
+    objc_setAssociatedObject(self, &associatedOverridesKey, overrides, OBJC_ASSOCIATION_RETAIN_NONATOMIC);
     return overrides;
 }
 

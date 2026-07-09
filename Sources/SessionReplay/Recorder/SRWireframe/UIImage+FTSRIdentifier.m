@@ -25,7 +25,7 @@ static char *srIdentifierKey = "FTSRIdentifierKey";
 
 @implementation UIImage (FTSRIdentify)
 -(void)setSrIdentifier:(NSString *)srIdentifier{
-    objc_setAssociatedObject(self, &srIdentifierKey, srIdentifier, OBJC_ASSOCIATION_RETAIN);
+    objc_setAssociatedObject(self, &srIdentifierKey, srIdentifier, OBJC_ASSOCIATION_COPY_NONATOMIC);
 }
 - (NSString *)srIdentifier{
     NSString *hash = objc_getAssociatedObject(self, &srIdentifierKey);

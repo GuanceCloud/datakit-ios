@@ -37,8 +37,8 @@
 NS_ASSUME_NONNULL_BEGIN
 
 @interface FTExternalDataManager (Private)<FTRumDatasProtocol,FTExternalResourceProtocol>
-@property (nonatomic, weak) id <FTRumDatasProtocol> delegate;
-@property (nonatomic, weak) id <FTExternalResourceProtocol> resourceDelegate;
+@property (nonatomic, weak, nullable) id <FTRumDatasProtocol> delegate;
+@property (nonatomic, weak, nullable) id <FTExternalResourceProtocol> resourceDelegate;
 
 @end
 

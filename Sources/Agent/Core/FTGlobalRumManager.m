@@ -26,32 +26,26 @@
 #import "FTInnerLog.h"
 #if !TARGET_OS_TV
 #import "FTWKWebViewHandler+Private.h"
-#import "FTWKWebViewJavascriptBridge.h"
 #endif
+#import "FTSDKCompat.h"
 #import "FTLongTaskManager.h"
-#import "FTJSONUtil.h"
 #import "FTAutoTrackHandler.h"
-#import "FTAppLifeCycle.h"
 #import "FTRUMManager.h"
 #import "FTDisplayRateMonitor.h"
-#import "FTTracer.h"
-#import "FTSessionTaskHandler.h"
-#import "FTURLSessionInterceptor.h"
-#import "FTMobileAgent+Private.h"
+#import "FTRumConfig.h"
 #import "FTRUMMonitor.h"
 #import "FTExternalDataManager+Private.h"
 #import "FTInternalConstants.h"
-#import "FTConstants.h"
-#import "FTThreadDispatchManager.h"
-#import "FTBaseInfoHandler.h"
 #import "FTCrash.h"
 #import "FTFatalErrorContext.h"
 #import "FTErrorMonitorInfo.h"
 #import "FTModuleManager.h"
-@interface FTGlobalRumManager ()<FTRunloopDetectorDelegate,FTAppLifeCycleDelegate>
-@property (nonatomic, strong) FTRumConfig *rumConfig;
+#import "FTHeatmapIdentifierStore.h"
+
+@interface FTGlobalRumManager ()<FTRunloopDetectorDelegate>
 @property (nonatomic, strong) FTRUMDependencies *dependencies;
 @property (nonatomic, strong) FTLongTaskManager *longTaskManager;
+@property (nonatomic, strong) FTHeatmapIdentifierStore *heatmapIdentifierStore;
 @end
 
 @implementation FTGlobalRumManager
@@ -71,17 +65,35 @@ static NSObject *sharedInstanceLock;
     }
 }
 -(void)setRumConfig:(FTRumConfig *)rumConfig writer:(id<FTRUMDataWriteProtocol>)writer{
-    _rumConfig = rumConfig;
+    FTDisplayRateMonitor *displayMonitor = [self displayMonitorWithRumConfig:rumConfig];
+    FTRUMMonitor *monitor = [self rumMonitorWithRumConfig:rumConfig displayMonitor:displayMonitor];
+    FTErrorMonitorInfo *errorInfoWrapper = [[FTErrorMonitorInfo alloc]initWithMonitorType:(ErrorMonitorType)rumConfig.errorMonitorType];
+    self.dependencies = [self dependenciesWithRumConfig:rumConfig writer:writer monitor:monitor errorInfoWrapper:errorInfoWrapper];
+    self.rumManager = [[FTRUMManager alloc]initWithRumDependencies:self.dependencies];
+    [self setupAutoTrackWithRumConfig:rumConfig displayMonitor:displayMonitor];
+    BOOL lastSessionHadCrash = [self setupCrashWithRumConfig:rumConfig writer:writer errorInfoWrapper:errorInfoWrapper dependencies:self.dependencies];
+    [self setupLongTaskWithRumConfig:rumConfig dependencies:self.dependencies lastSessionHadCrash:lastSessionHadCrash];
+    [self setupWebViewAndExternalDataWithRumConfig:rumConfig];
+}
+- (FTDisplayRateMonitor *)displayMonitorWithRumConfig:(FTRumConfig *)rumConfig{
     FTDisplayRateMonitor *displayMonitor = nil;
-#if !TARGET_OS_OSX
+#if FT_HAS_UIKIT
     if (rumConfig.deviceMetricsMonitorType & DeviceMetricsMonitorFps || rumConfig.enableTraceUserAction) {
         displayMonitor = [[FTDisplayRateMonitor alloc]init];
     }
 #endif
+    return displayMonitor;
+}
+- (FTRUMMonitor *)rumMonitorWithRumConfig:(FTRumConfig *)rumConfig displayMonitor:(FTDisplayRateMonitor *)displayMonitor{
     FTRUMMonitor *monitor = [[FTRUMMonitor alloc]initWithMonitorType:(DeviceMetricsMonitorType)rumConfig.deviceMetricsMonitorType frequency:(MonitorFrequency)rumConfig.monitorFrequency];
     monitor.displayMonitor = displayMonitor;
+    return monitor;
+}
+- (FTRUMDependencies *)dependenciesWithRumConfig:(FTRumConfig *)rumConfig
+                                          writer:(id<FTRUMDataWriteProtocol>)writer
+                                         monitor:(FTRUMMonitor *)monitor
+                                errorInfoWrapper:(FTErrorMonitorInfo *)errorInfoWrapper{
     FTRUMDependencies *dependencies = [[FTRUMDependencies alloc]init];
-    FTErrorMonitorInfo *errorInfoWrapper = [[FTErrorMonitorInfo alloc]initWithMonitorType:(ErrorMonitorType)rumConfig.errorMonitorType];
     dependencies.appId = rumConfig.appid;
     dependencies.monitor = monitor;
     dependencies.writer = writer;
@@ -90,17 +102,37 @@ static NSObject *sharedInstanceLock;
     dependencies.enableResourceHostIP = rumConfig.enableResourceHostIP;
     dependencies.errorMonitorInfoWrapper = errorInfoWrapper;
     dependencies.fatalErrorContext = [[FTFatalErrorContext alloc]initWithErrorInfoProvider:errorInfoWrapper];
-    self.dependencies = dependencies;
-    self.rumManager = [[FTRUMManager alloc]initWithRumDependencies:self.dependencies];
+    return dependencies;
+}
+- (void)setupAutoTrackWithRumConfig:(FTRumConfig *)rumConfig displayMonitor:(FTDisplayRateMonitor *)displayMonitor{
+    self.heatmapIdentifierStore = [[FTHeatmapIdentifierStore alloc] init];
+    [[FTModuleManager sharedInstance] registerService:@protocol(FTHeatmapIdentifierRegistry) instance:self.heatmapIdentifierStore];
 #if TARGET_OS_OSX
-    [[FTAutoTrackHandler sharedInstance] startWithTrackView:rumConfig.enableTraceUserView action:rumConfig.enableTraceUserAction addRumDatasDelegate:self.rumManager];
+    [[FTAutoTrackHandler sharedInstance] startWithTrackView:rumConfig.enableTraceUserView
+                                                     action:rumConfig.enableTraceUserAction
+                                        addRumDatasDelegate:self.rumManager];
 #else
-    [[FTAutoTrackHandler sharedInstance] startWithTrackView:rumConfig.enableTraceUserView action:rumConfig.enableTraceUserAction addRumDatasDelegate:self.rumManager viewHandler:rumConfig.viewTrackingHandler swiftUIViewHandler:rumConfig.swiftUIViewTrackingHandler actionHandler:rumConfig.actionTrackingHandler displayMonitor:displayMonitor];
+    [[FTAutoTrackHandler sharedInstance] startWithTrackView:rumConfig.enableTraceUserView
+                                                     action:rumConfig.enableTraceUserAction
+                                        addRumDatasDelegate:self.rumManager
+                                                viewHandler:rumConfig.viewTrackingHandler
+                                         swiftUIViewHandler:rumConfig.swiftUIViewTrackingHandler
+                                              actionHandler:rumConfig.actionTrackingHandler
+                                             displayMonitor:displayMonitor
+                                  heatmapIdentifierRegistry:self.heatmapIdentifierStore
+    ];
 #endif
-    [[FTAppLifeCycle sharedInstance] addAppLifecycleDelegate:self];
+}
+- (BOOL)setupCrashWithRumConfig:(FTRumConfig *)rumConfig
+                          writer:(id<FTRUMDataWriteProtocol>)writer
+                errorInfoWrapper:(FTErrorMonitorInfo *)errorInfoWrapper
+                    dependencies:(FTRUMDependencies *)dependencies{
     BOOL lastSessionHadCrash = NO;
     if(rumConfig.enableTrackAppCrash){
-        [FTCrash setupWithMonitoringType:(FTCrashCMonitorType)rumConfig.crashMonitoring writer:writer enableMonitorMemory:[errorInfoWrapper enableMonitorMemory] enableMonitorCpu:[errorInfoWrapper enableMonitorCpu]];
+        [FTCrash setupWithMonitoringType:(FTCrashCMonitorType)rumConfig.crashMonitoring
+                                  writer:writer
+                     enableMonitorMemory:[errorInfoWrapper enableMonitorMemory]
+                        enableMonitorCpu:[errorInfoWrapper enableMonitorCpu]];
         dependencies.fatalErrorContext.onChange = ^(NSDictionary * _Nonnull context) {
             [FTCrash shared].userInfo = context;
         };
@@ -111,12 +143,21 @@ static NSObject *sharedInstanceLock;
             [dependencies.writer lastFatalErrorIfFound:crashDate];
         }
     }
-    //Collect view, resource, jsBridge
+    return lastSessionHadCrash;
+}
+- (void)setupLongTaskWithRumConfig:(FTRumConfig *)rumConfig dependencies:(FTRUMDependencies *)dependencies lastSessionHadCrash:(BOOL)lastSessionHadCrash{
     if (rumConfig.enableTrackAppANR||rumConfig.enableTrackAppFreeze) {
-        _longTaskManager = [[FTLongTaskManager alloc]initWithDependencies:dependencies delegate:self backtraceReporting:[FTCrash shared].backtraceReporting enableTrackAppANR:rumConfig.enableTrackAppANR enableTrackAppFreeze:rumConfig.enableTrackAppFreeze                                        freezeDurationMs:rumConfig.freezeDurationMs];
+        _longTaskManager = [[FTLongTaskManager alloc]initWithDependencies:dependencies
+                                                                  delegate:self
+                                                        backtraceReporting:[FTCrash shared].backtraceReporting
+                                                         enableTrackAppANR:rumConfig.enableTrackAppANR
+                                                      enableTrackAppFreeze:rumConfig.enableTrackAppFreeze
+                                                          freezeDurationMs:rumConfig.freezeDurationMs];
     }else if(!lastSessionHadCrash){
         [dependencies.writer lastFatalErrorIfFound:0];
     }
+}
+- (void)setupWebViewAndExternalDataWithRumConfig:(FTRumConfig *)rumConfig{
 #if !TARGET_OS_TV
     [[FTWKWebViewHandler sharedInstance] startWithEnableTraceWebView:rumConfig.enableTraceWebView allowWebViewHost:rumConfig.allowWebViewHost rumDelegate:self.rumManager];
 #endif
@@ -125,47 +166,6 @@ static NSObject *sharedInstanceLock;
 -(void)updateSampleRate:(int)sampleRate sessionOnErrorSampleRate:(int)sessionOnErrorSampleRate{
     [self.rumManager updateSampleRate:sampleRate sessionOnErrorSampleRate:sessionOnErrorSampleRate];
 }
-#pragma mark ========== jsBridge ==========
-#if !TARGET_OS_TV
-- (void)dealReceiveScriptMessage:(id )message slotId:(NSUInteger)slotId{
-    @try {
-        NSDictionary *messageDic = [message isKindOfClass:NSDictionary.class]?message:[FTJSONUtil dictionaryWithJsonString:message];
-        
-        if (![messageDic isKindOfClass:[NSDictionary class]]) {
-            FTInnerLogError(@"Message body is formatted failure from JS SDK");
-            return;
-        }
-        NSString *name = messageDic[@"name"];
-        if ([name isEqualToString:@"rum"]) {
-            NSDictionary *data = messageDic[@"data"];
-            NSString *measurement = data[FT_MEASUREMENT];
-            NSMutableDictionary *tags = [data[FT_TAGS] mutableCopy];
-            NSString *version = [tags valueForKey:FT_SDK_VERSION];
-            if(version&&version.length>0){
-                [tags setValue:@{@"web":version} forKey:FT_SDK_PKG_INFO];
-            }
-            NSDictionary *fields = data[FT_FIELDS];
-            long long time = [data[@"time"] longLongValue];
-            long long fixTime = time * 1000000;
-            // Web time data is in milliseconds, native needs nanoseconds, need to convert units
-            // Check if overflow
-            if (time == fixTime/1000000) {
-                time = fixTime;
-            }
-            if (measurement && fields.count>0) {
-                if ([measurement isEqualToString:FT_RUM_SOURCE_VIEW]) {
-                    if (tags[FT_KEY_VIEW_REFERRER] == nil) {
-                        [tags setValue:self.rumManager.viewReferrer forKey:FT_KEY_VIEW_REFERRER];
-                    }
-                }
-               [self.rumManager addWebViewData:measurement tags:tags fields:fields tm:time];
-            }
-        }
-    } @catch (NSException *exception) {
-        FTInnerLogError(@"%@ error: %@", self, exception);
-    }
-}
-#endif
 #pragma mark ========== FTRunloopDetectorDelegate ==========
 - (void)longTaskStackDetected:(NSString*)slowStack duration:(long long)duration time:(long long)time{
     [self.rumManager addLongTaskWithStack:slowStack duration:[NSNumber numberWithLongLong:duration] startTime:time];
@@ -173,21 +173,10 @@ static NSObject *sharedInstanceLock;
 - (void)anrStackDetected:(NSString*)slowStack appState:(NSString *)appState time:(long long)time{
     [self.rumManager addErrorWithType:@"anr_error" stateStr:appState message:@"ios_anr" stack:slowStack property:nil time:time];
 }
-#pragma mark ========== RUM-ERROR appState: App Life Cycle ==========
--(void)applicationWillEnterForeground{
-    self.rumManager.appState = FTAppStateStartUp;
-}
--(void)applicationDidBecomeActive{
-    self.rumManager.appState = FTAppStateRun;
-}
--(void)applicationDidEnterBackground{
-    self.rumManager.appState = FTAppStateBackground;
-}
 #pragma mark ========== Shutdown ==========
 - (void)shutDown{
     [[FTAutoTrackHandler sharedInstance] shutDown];
-    [[FTAppLifeCycle sharedInstance] removeAppLifecycleDelegate:self];
-    [[FTAutoTrackHandler sharedInstance] shutDown];
+    self.heatmapIdentifierStore = nil;
     [_longTaskManager shutDown];
 #if !TARGET_OS_TV
     [FTWKWebViewHandler shutDown];

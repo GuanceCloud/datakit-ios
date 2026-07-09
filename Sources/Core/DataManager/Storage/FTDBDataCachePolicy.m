@@ -23,12 +23,12 @@
 #import "FTConstants.h"
 #import "FTInnerLog.h"
 #import "FTSerialTimer.h"
+#import <pthread.h>
 
 static const NSUInteger kLogMemoryCacheFlushCount = 20;
 static const NSTimeInterval kLogMemoryCacheFlushDelay = 0.1;
 static const NSTimeInterval kLogMemoryCacheFlushLeeway = 0.01;
 static const NSInteger kDBLimitRemoveCount = 100;
-static void *FTLogCacheQueueKey = &FTLogCacheQueueKey;
 
 @interface FTDBDataCachePolicy()
 
@@ -38,32 +38,34 @@ static void *FTLogCacheQueueKey = &FTLogCacheQueueKey;
 @property (atomic, assign) int  rumCacheLimitCount;
 /// Whether to discard the latest data when logging type data exceeds the maximum value
 @property (atomic, assign) BOOL rumDiscardNew;
-@property (nonatomic, strong) dispatch_queue_t logCacheQueue;
 @property (nonatomic, strong) NSMutableArray *messageCaches;
 @property (nonatomic, strong) FTSerialTimer *logFlushTimer;
 @property (nonatomic, assign) BOOL enableLimitWithDbSize;
 @property (nonatomic, assign) long dbLimitSize;
+@property (atomic, assign) NSInteger logCount;
+@property (atomic, assign) NSInteger rumCount;
 
 @end
-@implementation FTDBDataCachePolicy
+@implementation FTDBDataCachePolicy{
+    pthread_mutex_t _logCacheLock;
+}
 - (instancetype)init{
     self = [super init];
     if(self){
         _enableLimitWithDbSize = NO;
-        _logCacheQueue = dispatch_queue_create("com.ft.logger.write", DISPATCH_QUEUE_SERIAL);
-        dispatch_queue_set_specific(_logCacheQueue, FTLogCacheQueueKey, FTLogCacheQueueKey, NULL);
+        pthread_mutex_init(&_logCacheLock, NULL);
         _rumCacheLimitCount = FT_DB_RUM_MAX_COUNT;
         _logCacheLimitCount = FT_DB_LOG_MAX_COUNT;
         _rumCount = [[FTTrackerEventDBTool sharedManager] getDatasCountWithType:FT_DATA_TYPE_RUM];
         _messageCaches = [NSMutableArray array];
         _logCount = [[FTTrackerEventDBTool sharedManager] getDatasCountWithType:FT_DATA_TYPE_LOGGING];
         __weak typeof(self) weakSelf = self;
-        _logFlushTimer = [[FTSerialTimer alloc] initWithQueue:_logCacheQueue eventHandler:^{
+        _logFlushTimer = [[FTSerialTimer alloc] initWithEventHandler:^{
             __strong typeof(weakSelf) strongSelf = weakSelf;
             if (!strongSelf) {
                 return;
             }
-            [strongSelf flushLogCacheOnQueue];
+            [strongSelf flushLogCache];
         }];
     }
     return self;
@@ -86,21 +88,18 @@ static void *FTLogCacheQueueKey = &FTLogCacheQueueKey;
     if (!data) {
         return;
     }
-    __weak typeof(self) weakSelf = self;
-    dispatch_async(self.logCacheQueue, ^{
-        __strong typeof(weakSelf) strongSelf = weakSelf;
-        if (!strongSelf) {
-            return;
-        }
-        strongSelf.logCount += 1;
-        [strongSelf.messageCaches addObject:data];
-        if (strongSelf.messageCaches.count >= kLogMemoryCacheFlushCount) {
-            [strongSelf cancelLogCacheFlushOnQueue];
-            [strongSelf flushLogCacheOnQueue];
-        } else {
-            [strongSelf scheduleLogCacheFlushOnQueue];
-        }
-    });
+    BOOL shouldFlush = NO;
+    pthread_mutex_lock(&_logCacheLock);
+    self.logCount += 1;
+    [self.messageCaches addObject:data];
+    shouldFlush = self.messageCaches.count >= kLogMemoryCacheFlushCount;
+    pthread_mutex_unlock(&_logCacheLock);
+    if (shouldFlush) {
+        [self cancelLogCacheFlush];
+        [self flushLogCache];
+    } else {
+        [self scheduleLogCacheFlush];
+    }
 }
 - (BOOL)addRumData:(id)data{
     BOOL countIncludesPendingRUM = NO;
@@ -129,29 +128,6 @@ static void *FTLogCacheQueueKey = &FTLogCacheQueueKey;
    }
    return result;
 }
-- (NSInteger)optLogCachePolicy:(NSInteger)messageCaches{
-    if(self.enableLimitWithDbSize){
-        if([self shouldDropLogForDbLimitWithCount:messageCaches]){
-            self.logCount -= messageCaches;
-            return 0;
-        }
-    }else{
-        NSInteger overflowCount = self.logCount - self.logCacheLimitCount;
-        if(overflowCount>0){
-            FTInnerLogInfo(@"LOG: DiscardData (%@) Counts %ld",self.logDiscardNew?@"NEW":@"OLD",(long)overflowCount);
-            if(self.logDiscardNew){
-                NSInteger keepCount = MAX(0, messageCaches - overflowCount);
-                self.logCount -= (messageCaches - keepCount);
-                return keepCount;
-            }else{
-                self.logCount -= overflowCount;
-                [[FTTrackerEventDBTool sharedManager] deleteDataWithType:FT_DATA_TYPE_LOGGING count:overflowCount];
-                return -1;
-            }
-        }
-    }
-    return -1;
-}
 - (long long)refreshCurrentDbSize{
     long long pageSize = [[FTTrackerEventDBTool sharedManager] checkDatabaseSize];
     self.currentDbSize = pageSize;
@@ -168,7 +144,7 @@ static void *FTLogCacheQueueKey = &FTLogCacheQueueKey;
     }
     NSInteger after = [[FTTrackerEventDBTool sharedManager] getDatasCountWithType:FT_DATA_TYPE_LOGGING];
     NSInteger deletedCount = MAX(0, before - after);
-    self.logCount = MAX(0, self.logCount - deletedCount);
+    [self decreaseLogCount:deletedCount];
     if (deletedCount > 0) {
         FTInnerLogInfo(@"ReachDbLimit: cleared old LOG data count %ld",(long)deletedCount);
     }
@@ -201,7 +177,7 @@ static void *FTLogCacheQueueKey = &FTLogCacheQueueKey;
     NSInteger afterRUMCount = [[FTTrackerEventDBTool sharedManager] getDatasCountWithType:FT_DATA_TYPE_RUM];
     NSInteger deletedLogCount = MAX(0, beforeLogCount - afterLogCount);
     NSInteger deletedRUMCount = MAX(0, beforeRUMCount - afterRUMCount);
-    self.logCount = MAX(0, self.logCount - deletedLogCount);
+    [self decreaseLogCount:deletedLogCount];
     self.rumCount = MAX(0, self.rumCount - deletedRUMCount);
     return deletedLogCount + deletedRUMCount;
 }
@@ -260,42 +236,98 @@ static void *FTLogCacheQueueKey = &FTLogCacheQueueKey;
 }
 // Added log count exceeds half the limit
 - (BOOL)reachLogHalfLimit{
-    return self.logCacheLimitCount > 0 && self.logCount > self.logCacheLimitCount / 2;
+    pthread_mutex_lock(&_logCacheLock);
+    BOOL reach = self.logCacheLimitCount > 0 && self.logCount > self.logCacheLimitCount / 2;
+    pthread_mutex_unlock(&_logCacheLock);
+    return reach;
 }
 - (BOOL)reachRumHalfLimit{
     return self.rumCacheLimitCount > 0 && self.rumCount > self.rumCacheLimitCount / 2;
 }
 
-- (void)scheduleLogCacheFlushOnQueue{
+- (void)scheduleLogCacheFlush{
     [self.logFlushTimer scheduleAfter:kLogMemoryCacheFlushDelay leeway:kLogMemoryCacheFlushLeeway];
 }
-- (void)cancelLogCacheFlushOnQueue{
+- (void)cancelLogCacheFlush{
     [self.logFlushTimer cancel];
 }
-- (void)flushLogCacheOnQueueWithCallback:(BOOL)shouldCallback{
-    if (self.messageCaches.count == 0) {
+- (void)decreaseLogCount:(NSInteger)count{
+    if (count <= 0) {
         return;
     }
-    NSInteger sum = [self optLogCachePolicy:self.messageCaches.count];
-    if (sum>=0) {
-        [self.messageCaches removeObjectsInRange:NSMakeRange(sum, self.messageCaches.count-sum)];
+    pthread_mutex_lock(&_logCacheLock);
+    self.logCount = MAX(0, self.logCount - count);
+    pthread_mutex_unlock(&_logCacheLock);
+}
+- (NSArray *)drainLogCache{
+    pthread_mutex_lock(&_logCacheLock);
+    if (self.messageCaches.count == 0) {
+        pthread_mutex_unlock(&_logCacheLock);
+        return @[];
     }
     NSArray *array = [self.messageCaches copy];
     [self.messageCaches removeAllObjects];
+    pthread_mutex_unlock(&_logCacheLock);
+    return array;
+}
+- (NSArray *)logsByApplyingCachePolicy:(NSArray *)logs{
+    NSInteger logCacheCount = logs.count;
+    if (logCacheCount == 0) {
+        return logs;
+    }
+    if(self.enableLimitWithDbSize){
+        if([self shouldDropLogForDbLimitWithCount:logCacheCount]){
+            [self decreaseLogCount:logCacheCount];
+            return @[];
+        }
+        return logs;
+    }
+    pthread_mutex_lock(&_logCacheLock);
+    NSInteger overflowCount = self.logCount - self.logCacheLimitCount;
+    BOOL logDiscardNew = self.logDiscardNew;
+    pthread_mutex_unlock(&_logCacheLock);
+    if(overflowCount<=0){
+        return logs;
+    }
+    FTInnerLogInfo(@"LOG: DiscardData (%@) Counts %ld",logDiscardNew?@"NEW":@"OLD",(long)overflowCount);
+    if(logDiscardNew){
+        NSInteger keepCount = MAX(0, logCacheCount - overflowCount);
+        NSInteger dropCount = logCacheCount - keepCount;
+        [self decreaseLogCount:dropCount];
+        if (keepCount == 0) {
+            return @[];
+        }
+        return [logs subarrayWithRange:NSMakeRange(0, keepCount)];
+    }else{
+        NSInteger deletedCount = [self deleteOldLogRecordsForDbLimitWithCount:overflowCount];
+        NSInteger dropCount = MIN(MAX(0, overflowCount - deletedCount), logCacheCount);
+        [self decreaseLogCount:dropCount];
+        if (dropCount == 0) {
+            return logs;
+        }
+        if (dropCount == logCacheCount) {
+            return @[];
+        }
+        return [logs subarrayWithRange:NSMakeRange(dropCount, logCacheCount - dropCount)];
+    }
+}
+- (void)flushLogCacheWithCallback:(BOOL)shouldCallback{
+    NSArray *array = [self drainLogCache];
+    array = [self logsByApplyingCachePolicy:array];
     if (array.count == 0) {
         return;
     }
     BOOL result = [[FTTrackerEventDBTool sharedManager] insertItemsWithDatas:array];
     if (!result) {
         FTInnerLogError(@"LOG: Failed to insert cache into database, count %lu",(unsigned long)array.count);
-        self.logCount = MAX(0, self.logCount - (NSInteger)array.count);
+        [self decreaseLogCount:(NSInteger)array.count];
         return;
     }
     [self trimDBBelowLimitAfterInsertIfNeeded];
     if (shouldCallback && self.callback) self.callback();
 }
-- (void)flushLogCacheOnQueue{
-    [self flushLogCacheOnQueueWithCallback:YES];
+- (void)flushLogCache{
+    [self flushLogCacheWithCallback:YES];
 }
 - (void)insertCacheToDB{
     [self insertCacheToDBWithCallback:YES];
@@ -304,30 +336,18 @@ static void *FTLogCacheQueueKey = &FTLogCacheQueueKey;
     [self insertCacheToDBWithCallback:NO];
 }
 - (void)insertCacheToDBWithCallback:(BOOL)shouldCallback{
-    if (dispatch_get_specific(FTLogCacheQueueKey)) {
-        [self cancelLogCacheFlushOnQueue];
-        [self flushLogCacheOnQueueWithCallback:shouldCallback];
-        return;
-    }
-    dispatch_queue_t logCacheQueue = self.logCacheQueue;
-    __weak typeof(self) weakSelf = self;
-    dispatch_sync(logCacheQueue, ^{
-        __strong typeof(weakSelf) strongSelf = weakSelf;
-        if (!strongSelf) {
-            return;
-        }
-        [strongSelf cancelLogCacheFlushOnQueue];
-        [strongSelf flushLogCacheOnQueueWithCallback:shouldCallback];
-    });
+    [self cancelLogCacheFlush];
+    [self flushLogCacheWithCallback:shouldCallback];
 }
 #pragma mark --------- FTUploadCountProtocol ----------
 - (void)uploadLogCount:(NSInteger)count{
-    self.logCount -= count;
+    [self decreaseLogCount:count];
 }
 - (void)uploadRUMCount:(NSInteger)count{
     self.rumCount -= count;
 }
 -(void)dealloc{
     [self.logFlushTimer invalidate];
+    pthread_mutex_destroy(&_logCacheLock);
 }
 @end

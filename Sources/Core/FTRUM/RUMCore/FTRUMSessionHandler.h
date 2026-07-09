@@ -21,7 +21,7 @@
 #import "FTRUMHandler.h"
 #import "FTRUMDependencies.h"
 #import "FTRumDatasProtocol.h"
-@class FTRumConfig,FTRUMMonitor,FTRUMContext;
+@class FTRUMMonitor,FTRUMContext;
 NS_ASSUME_NONNULL_BEGIN
 
 @interface FTRUMSessionHandler : FTRUMHandler

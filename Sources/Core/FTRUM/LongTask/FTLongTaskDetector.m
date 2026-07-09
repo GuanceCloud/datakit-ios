@@ -35,7 +35,7 @@
     CFRunLoopActivity _activity;     // Status
 }
 
-@property (nonatomic, weak) id<FTLongTaskProtocol> longTaskDelegate;
+@property (nonatomic, weak, nullable) id<FTLongTaskProtocol> longTaskDelegate;
 @property (nonatomic, assign) BOOL isCancel;
 @property (nonatomic, assign) NSInteger countTime; // Time-consuming count
 @property (nonatomic, strong) dispatch_queue_t longTaskQueue;
@@ -48,11 +48,14 @@
     if(self){
         _longTaskDelegate = delegate;
         _semaphore = dispatch_semaphore_create(0);
-        _limitFreezeMillisecond = FT_DEFAULT_BLOCK_DURATIONS_MS;
-        _limitMillisecond = MIN(_limitFreezeMillisecond, FT_ANR_THRESHOLD_MS);
+        self.limitFreezeMillisecond = FT_DEFAULT_BLOCK_DURATIONS_MS;
         _longTaskQueue = dispatch_queue_create("com.ft.longtask", 0);
     }
     return self;
+}
+- (void)setLimitFreezeMillisecond:(long)limitFreezeMillisecond {
+    _limitFreezeMillisecond = limitFreezeMillisecond;
+    _limitMillisecond = MIN(limitFreezeMillisecond, FT_ANR_THRESHOLD_MS);
 }
 - (void)startDetecting {
     [self registerObserver];
@@ -131,8 +134,12 @@
     CFRunLoopRemoveObserver(CFRunLoopGetMain(), m_runLoopBeginObserver, kCFRunLoopCommonModes);
 }
 -(void)dealloc{
-    CFRelease(m_runLoopEndObserver);
-    CFRelease(m_runLoopBeginObserver);
+    if (m_runLoopEndObserver) {
+        CFRelease(m_runLoopEndObserver);
+    }
+    if (m_runLoopBeginObserver) {
+        CFRelease(m_runLoopBeginObserver);
+    }
 }
 
 @end

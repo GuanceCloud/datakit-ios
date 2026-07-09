@@ -26,8 +26,8 @@
 #import "NSDictionary+FTCopyProperties.h"
 #import "FTConstants.h"
 @interface FTExternalDataManager()
-@property (nonatomic, weak) id <FTRumDatasProtocol> delegate;
-@property (nonatomic, weak) id <FTExternalResourceProtocol> resourceDelegate;
+@property (nonatomic, weak, nullable) id <FTRumDatasProtocol> delegate;
+@property (nonatomic, weak, nullable) id <FTExternalResourceProtocol> resourceDelegate;
 @end
 @implementation FTExternalDataManager
 + (instancetype)sharedManager{

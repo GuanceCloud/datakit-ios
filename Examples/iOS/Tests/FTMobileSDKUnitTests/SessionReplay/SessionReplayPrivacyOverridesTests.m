@@ -53,7 +53,7 @@
 @end
 
 @interface FTViewTreeRecorder (SessionReplayPrivacyOverridesTests)
-- (void)recordRecursively:(NSMutableArray *)nodes view:(UIView *)view context:(FTViewTreeRecordingContext *)context overrides:(PrivacyOverrides *)overrides;
+- (void)recordRecursively:(NSMutableArray *)nodes view:(UIView *)view context:(FTViewTreeRecordingContext *)context overrides:(PrivacyOverrides *)overrides typeIndex:(NSInteger)typeIndex;
 @end
 
 @interface SessionReplayPrivacyOverridesTests : XCTestCase
@@ -184,7 +184,7 @@
     treeRecorder.nodeRecorders = @[capturingRecorder];
 
     NSMutableArray *nodes = [NSMutableArray array];
-    [treeRecorder recordRecursively:nodes view:container context:context overrides:mergedOverrides];
+    [treeRecorder recordRecursively:nodes view:container context:context overrides:mergedOverrides typeIndex:0];
 
     FTViewAttributes *leafAttributes = capturingRecorder.attributesByIdentifier[@"leaf"];
     XCTAssertEqualObjects(leafAttributes.textAndInputPrivacy, @(FTTextAndInputPrivacyLevelMaskAll));

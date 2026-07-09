@@ -26,19 +26,16 @@
 #import "FTLinkRumDataProvider.h"
 #import "FTWKWebViewRumDelegate.h"
 
-@class FTRumConfig,FTResourceMetricsModel,FTResourceContentModel,FTRUMMonitor;
+@class FTResourceMetricsModel,FTResourceContentModel;
 
 NS_ASSUME_NONNULL_BEGIN
 
 @interface FTRUMManager : FTRUMHandler<FTRumResourceProtocol,FTErrorDataDelegate,FTRumDatasProtocol,FTLinkRumDataProvider,FTWKWebViewRumDelegate>
 @property (nonatomic, assign) FTAppState appState;
-@property (atomic,copy,readwrite) NSString *viewReferrer;
-@property (atomic,copy,nullable) NSString *viewReferrerId;
 
 #pragma mark - init -
 -(instancetype)initWithRumDependencies:(FTRUMDependencies *)dependencies;
 -(void)updateSampleRate:(int)sampleRate sessionOnErrorSampleRate:(int)sessionOnErrorSampleRate;
--(void)notifyRumInit;
 #pragma mark - resource -
 /// HTTP request start
 ///
@@ -68,15 +65,6 @@ NS_ASSUME_NONNULL_BEGIN
 ///   - key: Request identifier
 ///   - property: Custom event properties (optional)
 - (void)stopResourceWithKey:(NSString *)key property:(nullable NSDictionary *)property;
-#pragma mark - webView js -
-
-/// Add WebView data
-/// - Parameters:
-///   - measurement: measurement description
-///   - tags: tags description
-///   - fields: fields description
-///   - tm: tm description
-- (void)addWebViewData:(NSString *)measurement tags:(NSDictionary *)tags fields:(NSDictionary *)fields tm:(long long)tm;
 
 #pragma mark - Error / Long Task -
 

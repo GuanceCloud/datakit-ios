@@ -35,7 +35,7 @@ NSString *const kFTJsCodePrefix = @"/* FTWebViewJavascriptBridge */";
 
 @end
 @interface FTWKWebViewJavascriptBridge()
-@property (nonatomic, weak) WKWebView *webView;
+@property (nonatomic, weak, nullable) WKWebView *webView;
 @end
 @implementation FTWKWebViewJavascriptBridge{
     long _uniqueId;

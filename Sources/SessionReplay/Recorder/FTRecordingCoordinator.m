@@ -144,6 +144,7 @@ static FTTrackingConsent FTTrackingConsentFromSampleState(FTRecordingSampleState
         FTSRContext *context = [[FTSRContext alloc]init];
         context.sessionID = rumContext[FT_RUM_KEY_SESSION_ID];
         context.viewID = viewID;
+        context.viewPath = rumContext[FT_KEY_VIEW_NAME];
         context.applicationID = rumContext[FT_APP_ID];
         context.date = [NSDate date];
         context.imagePrivacy = self.config.imagePrivacy;

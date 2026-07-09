@@ -24,8 +24,7 @@ NS_ASSUME_NONNULL_BEGIN
 typedef void (^LogDataWriteDBCallback)(void);
 
 @interface FTDBDataCachePolicy : NSObject<FTUploadCountProtocol>
-@property (atomic, assign) NSInteger logCount;
-@property (atomic, assign) NSInteger rumCount;
+
 @property (atomic, assign) long currentDbSize;
 @property (nonatomic, assign) BOOL dbDiscardNew;
 @property (nonatomic, copy, nullable) LogDataWriteDBCallback callback;

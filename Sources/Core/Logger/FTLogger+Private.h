@@ -27,7 +27,7 @@ NS_ASSUME_NONNULL_BEGIN
 
 @interface FTLogger ()
 
-@property (nonatomic, weak) id<FTLinkRumDataProvider> linkRumDataProvider;
+@property (nonatomic, weak, nullable) id<FTLinkRumDataProvider> linkRumDataProvider;
 /// Called when SDK starts, enables Logger
 /// - Parameters:
 ///   - enable: Whether to output to console

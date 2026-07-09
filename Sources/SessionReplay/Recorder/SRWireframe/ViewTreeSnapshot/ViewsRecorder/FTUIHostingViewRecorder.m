@@ -60,13 +60,21 @@ typedef NS_ENUM(NSInteger, FTSwiftUIWireframePayloadKind) {
                      textObfuscator:(FTTextObfuscator)textObfuscator {
     self = [super init];
     if (self) {
-        _identifier = identifier;
-        _semanticsOverride = semanticsOverride ?: ^FTSRNodeSemantics * _Nullable(UIView *view, FTViewAttributes *attributes) {
-            return nil;
-        };
-        _textObfuscator = textObfuscator ?: ^id<FTSRTextObfuscatingProtocol> _Nullable(FTViewTreeRecordingContext *context, FTViewAttributes *attributes) {
-            return [FTSRTextObfuscatingFactory staticTextObfuscator:[attributes resolveTextAndInputPrivacyLevel:context.recorder]];
-        };
+        _identifier = [identifier copy];
+        if (semanticsOverride) {
+            _semanticsOverride = [semanticsOverride copy];
+        } else {
+            _semanticsOverride = ^FTSRNodeSemantics * _Nullable(UIView *view, FTViewAttributes *attributes) {
+                return nil;
+            };
+        }
+        if (textObfuscator) {
+            _textObfuscator = [textObfuscator copy];
+        } else {
+            _textObfuscator = ^id<FTSRTextObfuscatingProtocol> _Nullable(FTViewTreeRecordingContext *context, FTViewAttributes *attributes) {
+                return [FTSRTextObfuscatingFactory staticTextObfuscator:[attributes resolveTextAndInputPrivacyLevel:context.recorder]];
+            };
+        }
         if (@available(iOS 13.0, *)) {
             _reflectionBridge = [FTSwiftUIReflectionBridge new];
         }

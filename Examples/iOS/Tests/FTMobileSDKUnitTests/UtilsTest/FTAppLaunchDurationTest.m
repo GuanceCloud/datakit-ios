@@ -34,8 +34,9 @@
 typedef void(^LaunchBlock)( NSNumber * _Nullable duration, FTLaunchType type,NSDictionary *_Nullable fields);
 typedef void(^LaunchDataBlock)(NSString *source, NSDictionary *tags, NSDictionary *fields);
 @interface FTAppLaunchTracker (Testing)
-- (void)handleLaunchPhaseWithDisplayMonitor:(FTDisplayRateMonitor *)displayMonitor;
+- (void)handleLaunchPhaseWithDisplayMonitor:(nullable FTDisplayRateMonitor *)displayMonitor;
 - (void)reportAppLaunchPhaseDuration:(NSDate *)endDate;
+- (void)applicationDidBecomeActive;
 @end
 
 @interface FTAppLaunchDurationTest : XCTestCase<FTAppLaunchDataDelegate,FTRUMDataWriteProtocol>
@@ -152,6 +153,7 @@ NSDate *FTGetModuleInitializationTimestamp(void);
 void FTSetModuleInitializationTimestamp(NSDate *date);
 NSDate *FTGetRuntimeInit(void);
 void FTSetRuntimeInit(NSDate *date);
+BOOL FTGetIsActivePrewarm(void);
 void FTSetIsActivePrewarm(BOOL active);
 #if TARGET_OS_IOS
 void FTSetLaunchTaskRole(NSInteger role);
@@ -213,7 +215,7 @@ void FTClearLaunchTaskRole(void);
 
 - (void)testLaunchWhenSDKInitAfterApplicationDidBecomeActive_cold{
     XCTestExpectation *expectation= [self expectationWithDescription:@"Async operation timeout"];
-    
+
     NSDate *applicationDidBecomeActive = FTGetApplicationDidBecomeActive();
     if (!applicationDidBecomeActive) {
         FTSetApplicationDidBecomeActive([NSDate date]);
@@ -231,6 +233,139 @@ void FTClearLaunchTaskRole(void);
     FTAppLaunchTracker *launchTracker = [[FTAppLaunchTracker alloc]initWithDelegate:self displayMonitor:[FTDisplayRateMonitor new]];
     [self waitForExpectations:@[expectation] timeout:2];
     FTSetApplicationDidBecomeActive(applicationDidBecomeActive);
+}
+- (void)testLaunchColdReportOnlyOnce{
+    NSDate *applicationDidBecomeActive = FTGetApplicationDidBecomeActive();
+    NSDate *endDate = [[NSDate date] dateByAddingTimeInterval:-0.001];
+    FTSetApplicationDidBecomeActive(endDate);
+
+    __block NSUInteger reportCount = 0;
+    self.launchBlock = ^(NSNumber * _Nullable duration, FTLaunchType type, NSDictionary *fields) {
+        reportCount++;
+    };
+    FTAppLaunchTracker *launchTracker = [FTAppLaunchTracker new];
+    launchTracker.delegate = self;
+    [launchTracker reportAppLaunchPhaseDuration:endDate];
+    [launchTracker reportAppLaunchPhaseDuration:endDate];
+
+    XCTAssertEqual(reportCount, 1);
+    FTSetApplicationDidBecomeActive(applicationDidBecomeActive);
+}
+- (void)testLaunchWhenDisplayMonitorNilReportsOnApplicationDidBecomeActive{
+    XCTestExpectation *expectation= [self expectationWithDescription:@"Async operation timeout"];
+
+    NSDate *applicationDidBecomeActive = FTGetApplicationDidBecomeActive();
+    if (applicationDidBecomeActive) {
+        FTSetApplicationDidBecomeActive(nil);
+    }
+    [FTAppLaunchTracker setSdkStartDate:[NSDate date]];
+
+    __block NSUInteger reportCount = 0;
+    self.launchBlock = ^(NSNumber * _Nullable duration, FTLaunchType type, NSDictionary *fields) {
+        reportCount++;
+        XCTAssertTrue(type == FTLaunchCold);
+        XCTAssertFalse([fields.allKeys containsObject:FT_KEY_LAUNCH_UIKITI_INIT_TIME]);
+        XCTAssertFalse([fields.allKeys containsObject:FT_KEY_LAUNCH_APP_INIT_TIME]);
+        XCTAssertFalse([fields.allKeys containsObject:FT_KEY_LAUNCH_FIRST_FRAME_RENDER_TIME]);
+        XCTAssertTrue(duration.longLongValue > 0);
+        [expectation fulfill];
+    };
+
+    self.launchTracker = [[FTAppLaunchTracker alloc] initWithDelegate:self displayMonitor:nil];
+    XCTAssertEqual(reportCount, 0);
+    [self.launchTracker applicationDidBecomeActive];
+
+    [self waitForExpectations:@[expectation] timeout:2];
+    XCTAssertEqual(reportCount, 1);
+    FTSetApplicationDidBecomeActive(applicationDidBecomeActive);
+}
+- (void)testLaunchWithDisplayMonitorWaitsForFirstFrameAfterApplicationDidBecomeActive{
+    XCTestExpectation *expectation= [self expectationWithDescription:@"Async operation timeout"];
+
+    NSDate *applicationDidBecomeActive = FTGetApplicationDidBecomeActive();
+    if (applicationDidBecomeActive) {
+        FTSetApplicationDidBecomeActive(nil);
+    }
+    [FTAppLaunchTracker setSdkStartDate:[NSDate date]];
+
+    __block NSUInteger reportCount = 0;
+    self.launchBlock = ^(NSNumber * _Nullable duration, FTLaunchType type, NSDictionary *fields) {
+        reportCount++;
+        XCTAssertTrue(type == FTLaunchCold);
+        XCTAssertTrue([fields.allKeys containsObject:FT_KEY_LAUNCH_FIRST_FRAME_RENDER_TIME]);
+        XCTAssertTrue(duration.longLongValue > 0);
+        [expectation fulfill];
+    };
+
+    FTDisplayRateMonitor *displayMonitor = [FTDisplayRateMonitor new];
+    self.launchTracker = [[FTAppLaunchTracker alloc] initWithDelegate:self displayMonitor:displayMonitor];
+    [self.launchTracker applicationDidBecomeActive];
+    XCTAssertEqual(reportCount, 0);
+    XCTAssertNotNil(displayMonitor.callBack);
+    displayMonitor.callBack([NSDate date]);
+
+    [self waitForExpectations:@[expectation] timeout:2];
+    XCTAssertEqual(reportCount, 1);
+    FTSetApplicationDidBecomeActive(applicationDidBecomeActive);
+}
+- (void)testLaunchSkipsInvalidPhaseButReportsLaunch{
+    XCTestExpectation *expectation= [self expectationWithDescription:@"Async operation timeout"];
+
+    NSDate *applicationDidBecomeActive = FTGetApplicationDidBecomeActive();
+    NSDate *runtimeInit = FTGetRuntimeInit();
+    NSDate *moduleInitializationTimestamp = FTGetModuleInitializationTimestamp();
+    BOOL isActivePrewarm = FTGetIsActivePrewarm();
+
+    NSDate *endDate = [[NSDate date] dateByAddingTimeInterval:-0.001];
+    FTSetApplicationDidBecomeActive(endDate);
+    FTSetRuntimeInit([endDate dateByAddingTimeInterval:-0.001]);
+    FTSetModuleInitializationTimestamp([endDate dateByAddingTimeInterval:-0.002]);
+    FTSetIsActivePrewarm(NO);
+
+    self.launchBlock = ^(NSNumber * _Nullable duration, FTLaunchType type, NSDictionary *fields) {
+        XCTAssertTrue(type == FTLaunchCold);
+        XCTAssertTrue([fields.allKeys containsObject:FT_KEY_LAUNCH_PRE_RUNTIME_INIT_TIME]);
+        XCTAssertFalse([fields.allKeys containsObject:FT_KEY_LAUNCH_RUNTIME_INIT_TIME]);
+        XCTAssertTrue(duration.longLongValue > 0);
+        [expectation fulfill];
+    };
+    FTAppLaunchTracker *launchTracker = [FTAppLaunchTracker new];
+    launchTracker.delegate = self;
+    [launchTracker reportAppLaunchPhaseDuration:endDate];
+
+    [self waitForExpectations:@[expectation] timeout:2];
+    FTSetApplicationDidBecomeActive(applicationDidBecomeActive);
+    FTSetRuntimeInit(runtimeInit);
+    FTSetModuleInitializationTimestamp(moduleInitializationTimestamp);
+    FTSetIsActivePrewarm(isActivePrewarm);
+}
+- (void)testLaunchSkipsMissingPhaseButReportsLaunch{
+    XCTestExpectation *expectation= [self expectationWithDescription:@"Async operation timeout"];
+
+    NSDate *applicationDidBecomeActive = FTGetApplicationDidBecomeActive();
+    NSDate *runtimeInit = FTGetRuntimeInit();
+    BOOL isActivePrewarm = FTGetIsActivePrewarm();
+
+    NSDate *endDate = [[NSDate date] dateByAddingTimeInterval:-0.001];
+    FTSetApplicationDidBecomeActive(endDate);
+    FTSetRuntimeInit(nil);
+    FTSetIsActivePrewarm(NO);
+
+    self.launchBlock = ^(NSNumber * _Nullable duration, FTLaunchType type, NSDictionary *fields) {
+        XCTAssertTrue(type == FTLaunchCold);
+        XCTAssertFalse([fields.allKeys containsObject:FT_KEY_LAUNCH_PRE_RUNTIME_INIT_TIME]);
+        XCTAssertFalse([fields.allKeys containsObject:FT_KEY_LAUNCH_RUNTIME_INIT_TIME]);
+        XCTAssertTrue(duration.longLongValue > 0);
+        [expectation fulfill];
+    };
+    FTAppLaunchTracker *launchTracker = [FTAppLaunchTracker new];
+    launchTracker.delegate = self;
+    [launchTracker reportAppLaunchPhaseDuration:endDate];
+
+    [self waitForExpectations:@[expectation] timeout:2];
+    FTSetApplicationDidBecomeActive(applicationDidBecomeActive);
+    FTSetRuntimeInit(runtimeInit);
+    FTSetIsActivePrewarm(isActivePrewarm);
 }
 #if TARGET_OS_IOS
 - (void)testLaunchWhenSDKInitAfterApplicationDidBecomeActive_prewarm{
@@ -274,7 +409,7 @@ void FTClearLaunchTaskRole(void);
         XCTAssertTrue(uikitInit);
         XCTAssertTrue(appInit);
         XCTAssertTrue(firstFrame);
-        
+
         XCTAssertTrue([preRuntimeInit[FT_KEY_START] compare:runtimeInit[FT_KEY_START]] == NSOrderedAscending);
         XCTAssertTrue([runtimeInit[FT_KEY_START] compare:uikitInit[FT_KEY_START]] == NSOrderedAscending);
         XCTAssertTrue([uikitInit[FT_KEY_START] compare:appInit[FT_KEY_START]] == NSOrderedAscending);
@@ -289,7 +424,7 @@ void FTClearLaunchTaskRole(void);
 }
 #if TARGET_OS_IOS
 - (void)testLaunchWhenSDKInitBeforeApplicationDidBecomeActive_prewarm{
-    
+
     XCTestExpectation *expectation= [self expectationWithDescription:@"Async operation timeout"];
     FTSetIsActivePrewarm(YES);
     NSDate *applicationDidBecomeActive = FTGetApplicationDidBecomeActive();
@@ -359,7 +494,7 @@ void FTClearLaunchTaskRole(void);
         }
     };
     [manager startViewWithName:@"Test"];
-    
+
     [manager addLaunch:actionName type:actionType launchTime:[NSDate date] duration:@123 property:nil];
     [manager syncProcess];
     [self waitForExpectationsWithTimeout:30 handler:^(NSError *error) {
@@ -374,7 +509,7 @@ void FTClearLaunchTaskRole(void);
         self.launchBlock(duration, isPreWarming?FTLaunchWarm:FTLaunchCold,fields);
     }
 }
-- (void)ftAppHotStart:(NSDate *)launchTime duration:(NSNumber *)duration{ 
+- (void)ftAppHotStart:(NSDate *)launchTime duration:(NSNumber *)duration{
     NSNumber *maxDuration = [launchTime ft_nanosecondTimeIntervalToDate:[NSDate date]];
     XCTAssertTrue(maxDuration.longLongValue>duration.longLongValue);
     if(self.launchBlock){
@@ -388,12 +523,12 @@ void FTClearLaunchTaskRole(void);
 }
 
 - (void)rumWrite:(nonnull NSString *)source tags:(nonnull NSDictionary *)tags fields:(nonnull NSDictionary *)fields dynamicContext:(NSDictionary *)dynamicContext time:(long long)time updateTime:(long long)updateTime {
-    
+
 }
 
 
 - (void)rumWrite:(nonnull NSString *)source tags:(nonnull NSDictionary *)tags fields:(nonnull NSDictionary *)fields dynamicContext:(NSDictionary *)dynamicContext time:(long long)time updateTime:(long long)updateTime cache:(BOOL)cache {
-    
+
 }
 
 

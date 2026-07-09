@@ -100,8 +100,8 @@
 }
 @end
 @interface Sampler : NSObject
-@property (nonatomic) NSNumber *inNewIndex;
-@property (nonatomic) NSNumber *inOldIndex;
+@property (nonatomic, strong) NSNumber *inNewIndex;
+@property (nonatomic, strong) NSNumber *inOldIndex;
 -(instancetype)initNewIndex:(NSNumber *)newIndex oldIndex:(NSNumber *)oldIndex;
 @end
 @implementation Sampler

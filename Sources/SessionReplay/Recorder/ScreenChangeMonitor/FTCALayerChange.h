@@ -27,7 +27,7 @@ typedef NS_OPTIONS(NSUInteger, FTCALayerChangeAspect) {
 };
 
 @interface FTCALayerChange : NSObject
-@property (nonatomic, weak, readonly) CALayer *layer;
+@property (nonatomic, weak, nullable, readonly) CALayer *layer;
 @property (nonatomic, assign) FTCALayerChangeAspect aspects;
 
 - (instancetype)initWithLayer:(CALayer *)layer aspects:(FTCALayerChangeAspect)aspects;

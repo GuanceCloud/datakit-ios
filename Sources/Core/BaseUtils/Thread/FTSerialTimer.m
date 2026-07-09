@@ -21,13 +21,21 @@
 
 #import "FTSerialTimer.h"
 
+static const char *FTSerialTimerDefaultQueueLabel = "com.ft.serial.timer";
+
 @implementation FTSerialTimer{
+    dispatch_queue_t _queue;
     dispatch_source_t _source;
     BOOL _invalidated;
+}
+- (instancetype)initWithEventHandler:(dispatch_block_t)eventHandler{
+    dispatch_queue_t queue = dispatch_queue_create(FTSerialTimerDefaultQueueLabel, DISPATCH_QUEUE_SERIAL);
+    return [self initWithQueue:queue eventHandler:eventHandler];
 }
 - (instancetype)initWithQueue:(dispatch_queue_t)queue eventHandler:(dispatch_block_t)eventHandler{
     self = [super init];
     if (self) {
+        _queue = queue;
         _source = dispatch_source_create(DISPATCH_SOURCE_TYPE_TIMER, 0, 0, queue);
         dispatch_source_set_event_handler(_source, eventHandler);
         dispatch_resume(_source);

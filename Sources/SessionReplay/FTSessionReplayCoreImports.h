@@ -43,6 +43,7 @@
 #import "Sources/Core/DataManager/Upload/FTNetworkInfoManager.h"
 #import "Sources/Core/DataManager/Upload/FTRequest.h"
 #import "Sources/Core/DataManager/Upload/FTRequestBody.h"
+#import "Sources/Core/FTRUM/Heatmap/FTHeatmap.h"
 #import "Sources/Core/FTWKWebView/FTWKWebViewHandler.h"
 #import "Sources/Core/Protocol/FTMessageReceiver.h"
 #import "Sources/Core/Protocol/FTModuleManager.h"

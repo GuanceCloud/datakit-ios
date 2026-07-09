@@ -145,17 +145,19 @@ void *FTErrorMonitorInfoQueueTag = &FTErrorMonitorInfoQueueTag;
     });
 }
 - (void)setLocal:(NSString *)local{
+    NSString *localCopy = [local copy];
     dispatch_async(self.queue, ^{
-        if (![local isEqualToString:self.local]) {
-            self->_local = local;
+        if (![localCopy isEqualToString:self.local]) {
+            self->_local = localCopy;
             [self onChangeCallBack];
         }
     });
 }
 -(void)setTelephonyCarrier:(NSString *)telephonyCarrier{
+    NSString *telephonyCarrierCopy = [telephonyCarrier copy];
     dispatch_async(self.queue, ^{
-        if (![telephonyCarrier isEqualToString:self.telephonyCarrier]) {
-            self->_telephonyCarrier = telephonyCarrier;
+        if (![telephonyCarrierCopy isEqualToString:self.telephonyCarrier]) {
+            self->_telephonyCarrier = telephonyCarrierCopy;
             [self onChangeCallBack];
         }
     });

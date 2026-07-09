@@ -59,8 +59,6 @@
 #import "FTSwizzler.h"
 #import "UIApplication+FTAutoTrack.h"
 #import "UIGestureRecognizer+FTAutoTrack.h"
-#import "UIScrollView+FTAutoTrack.h"
-#import "BlacklistedVCClassNames.h"
 #import "FTBaseInfoHandler.h"
 #import "NSDate+FTUtil.h"
 #import "FTAppLifeCycle.h"
@@ -70,6 +68,7 @@
 #import "FTAppLaunchTracker.h"
 #import "FTDefaultUIKitViewTrackingHandler.h"
 #import "FTDefaultActionTrackingHandler.h"
+#import "FTAutoTrackActionPublisher.h"
 
 #if TARGET_OS_IOS || TARGET_OS_TV
 #define FT_HAS_SWIFTUI_VIEW_TRACKING 1
@@ -124,7 +123,7 @@ API_AVAILABLE(ios(13.0), tvos(13.0))
 @property (nonatomic, copy) NSString *viewName;
 @property (nonatomic, copy) NSString *identify;
 @property (nonatomic, strong) NSNumber *loadTime;
-@property (nonatomic, weak) UIViewController *viewController;
+@property (nonatomic, weak, nullable) UIViewController *viewController;
 @property (nonatomic, assign) BOOL isUntrackedModal;
 @property (nonatomic, copy) NSDictionary *property;
 @property (nonatomic, copy) NSString *viewControllerUUID;
@@ -137,8 +136,8 @@ API_AVAILABLE(ios(13.0), tvos(13.0))
 -(instancetype)initWithViewController:(UIViewController *)viewController identify:(NSString *)identify{
     self = [super init];
     if(self){
-        _viewName = viewController.ft_viewControllerName;
-        _identify = identify;
+        _viewName = [viewController.ft_viewControllerName copy];
+        _identify = [identify copy];
         _isUntrackedModal = NO;
         _viewController = viewController;
         _viewControllerUUID = [FTBaseInfoHandler randomUUID];
@@ -180,7 +179,7 @@ API_AVAILABLE(ios(13.0), tvos(13.0))
 @property (nonatomic, assign) BOOL autoTrackAction;
 @property (nonatomic, strong) FTAppLaunchTracker *launchTracker;
 /// Pass event object, pass collected view and action data to RUM
-@property (nonatomic, weak) id<FTRumDatasProtocol> addRumDatasDelegate;
+@property (nonatomic, weak, nullable) id<FTRumDatasProtocol> addRumDatasDelegate;
 @property (nonatomic, strong, nullable) FTViewTrackingHandler uiKitViewTrackingHandler;
 @property (nonatomic, strong, nullable) id<FTSwiftUIViewTrackingHandler> swiftUIViewTrackingHandler;
 #if FT_HAS_SWIFTUI_VIEW_TRACKING
@@ -188,6 +187,7 @@ API_AVAILABLE(ios(13.0), tvos(13.0))
 #endif
 
 @property (nonatomic, strong, nullable) FTActionTrackingHandler actionTrackingHandler;
+@property (nonatomic, strong, nullable) FTAutoTrackActionPublisher *actionPublisher;
 @end
 @implementation FTAutoTrackHandler
 -(instancetype)init{
@@ -212,10 +212,31 @@ API_AVAILABLE(ios(13.0), tvos(13.0))
        swiftUIViewHandler:(id<FTSwiftUIViewTrackingHandler>)swiftUIViewHandler
             actionHandler:(FTActionTrackingHandler)actionHandler
            displayMonitor:(FTDisplayRateMonitor *)displayMonitor{
+    [self startWithTrackView:trackView
+                      action:trackAction
+         addRumDatasDelegate:delegate
+                 viewHandler:viewHandler
+          swiftUIViewHandler:swiftUIViewHandler
+               actionHandler:actionHandler
+              displayMonitor:displayMonitor
+   heatmapIdentifierRegistry:nil];
+}
+
+-(void)startWithTrackView:(BOOL)trackView
+                   action:(BOOL)trackAction
+      addRumDatasDelegate:(id<FTRumDatasProtocol>)delegate
+              viewHandler:(FTViewTrackingHandler)viewHandler
+       swiftUIViewHandler:(id<FTSwiftUIViewTrackingHandler>)swiftUIViewHandler
+            actionHandler:(FTActionTrackingHandler)actionHandler
+           displayMonitor:(FTDisplayRateMonitor *)displayMonitor
+heatmapIdentifierRegistry:(id<FTHeatmapIdentifierRegistry>)heatmapIdentifierRegistry{
     _autoTrackView = trackView;
     _autoTrackAction = trackAction;
     _stack = [NSMutableArray new];
     _addRumDatasDelegate = delegate;
+    self.actionTrackingHandler = actionHandler ? actionHandler : [FTDefaultActionTrackingHandler new];
+    FTAutoTrackHeatmapResolver *heatmapResolver = [[FTAutoTrackHeatmapResolver alloc]initWithRegistry:heatmapIdentifierRegistry];
+    self.actionPublisher = [[FTAutoTrackActionPublisher alloc]initWithActionTrackingHandler:self.actionTrackingHandler addRumDatasDelegate:delegate heatmapResolver:heatmapResolver];
 #if FT_HAS_SWIFTUI_VIEW_TRACKING
     [self bindSwiftUIRUMViewBridgeIfAvailable];
 #endif
@@ -241,7 +262,6 @@ API_AVAILABLE(ios(13.0), tvos(13.0))
     if (trackAction) {
         self.actionHandler = self;
         [self hookTargetAction];
-        self.actionTrackingHandler = actionHandler ? actionHandler : [FTDefaultActionTrackingHandler new];
         self.launchTracker = [[FTAppLaunchTracker alloc]initWithDelegate:self displayMonitor:displayMonitor];
     }
 }
@@ -264,9 +284,7 @@ API_AVAILABLE(ios(13.0), tvos(13.0))
         dispatch_once(&actionOnceToken, ^{
             NSError *error = NULL;
 #if TARGET_OS_IOS
-            [UITableView ft_swizzleMethod:@selector(setDelegate:) withMethod:@selector(ft_setDelegate:) error:&error];
-            [UICollectionView ft_swizzleMethod:@selector(setDelegate:) withMethod:@selector(ft_setDelegate:) error:&error];
-            [UIApplication ft_swizzleMethod:@selector(sendAction:to:from:forEvent:) withMethod:@selector(ft_sendAction:to:from:forEvent:) error:&error];
+            [UIApplication ft_swizzleMethod:@selector(sendEvent:) withMethod:@selector(ft_sendEvent:) error:&error];
             [UITapGestureRecognizer ft_swizzleMethod:@selector(initWithTarget:action:) withMethod:@selector(ft_initWithTarget:action:) error:&error];
             [UILongPressGestureRecognizer ft_swizzleMethod:@selector(initWithTarget:action:) withMethod:@selector(ft_initWithTarget:action:) error:&error];
             [UITapGestureRecognizer ft_swizzleMethod:@selector(addTarget:action:) withMethod:@selector(ft_addTarget:action:) error:&error];
@@ -307,38 +325,21 @@ API_AVAILABLE(ios(13.0), tvos(13.0))
 }
 
 #pragma mark ========== FTUIEventHandler ==========
-- (void)notify_sendAction:(UIView *)view{
+- (void)notify_sendAction:(UIView *)view heatmapTargetView:(UIView *)heatmapTargetView locationResolver:(FTHeatmapLocationResolver)locationResolver {
 #if TARGET_OS_IOS
-    if (self.actionTrackingHandler && [self.actionTrackingHandler respondsToSelector:@selector(rumActionWithTargetView:)]) {
-        FTRUMAction *action = [self.actionTrackingHandler rumActionWithTargetView:view];
-        if ( action == nil ) return;
-        if (self.addRumDatasDelegate && [self.addRumDatasDelegate respondsToSelector:@selector(startAction:actionType:property:)]) {
-            [self.addRumDatasDelegate startAction:action.actionName actionType:FT_KEY_ACTION_TYPE_CLICK property:action.property];
-        }
-    }
+    [self.actionPublisher publishUIKitActionWithTargetView:view heatmapTargetView:heatmapTargetView locationResolver:locationResolver];
 #endif
 }
 
 #if FT_HAS_SWIFTUI_ACTION_TRACKING
 - (void)notify_swiftUIActionWithName:(NSString *)actionName property:(NSDictionary *)property{
-    if (actionName.length == 0) {
-        return;
-    }
-    if (self.addRumDatasDelegate && [self.addRumDatasDelegate respondsToSelector:@selector(startAction:actionType:property:)]) {
-        [self.addRumDatasDelegate startAction:actionName actionType:FT_KEY_ACTION_TYPE_CLICK property:property];
-    }
+    [self.actionPublisher publishSwiftUIActionWithName:actionName property:property];
 }
 #endif
 
 - (void)notify_sendActionWithPressType:(UIPressType)type view:(nonnull UIView *)view {
 #if TARGET_OS_TV
-    if (self.actionTrackingHandler && [self.actionTrackingHandler respondsToSelector:@selector(rumActionWithPressType:targetView:)]) {
-        FTRUMAction *action = [self.actionTrackingHandler rumActionWithPressType:type targetView:view];
-        if ( action == nil ) return;
-        if (self.addRumDatasDelegate && [self.addRumDatasDelegate respondsToSelector:@selector(startAction:actionType:property:)]) {
-            [self.addRumDatasDelegate startAction:action.actionName actionType:FT_KEY_ACTION_TYPE_CLICK property:action.property];
-        }
-    }
+    [self.actionPublisher publishTVActionWithPressType:type view:view];
 #endif
 }
 
@@ -520,6 +521,7 @@ API_AVAILABLE(ios(13.0), tvos(13.0))
     [self unbindSwiftUIRUMActionBridgeIfNeeded];
 #endif
     self.actionTrackingHandler = nil;
+    self.actionPublisher = nil;
     self.autoTrackView = NO;
     self.autoTrackAction = NO;
 

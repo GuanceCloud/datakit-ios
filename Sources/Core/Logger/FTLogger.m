@@ -36,7 +36,7 @@
 void *FTLoggerQueueIdentityKey = &FTLoggerQueueIdentityKey;
 
 @interface FTLogger ()
-@property (nonatomic, weak) id<FTLoggerDataWriteProtocol> loggerWriter;
+@property (nonatomic, weak, nullable) id<FTLoggerDataWriteProtocol> loggerWriter;
 @property (nonatomic, strong) NSSet *logLevelFilterSet;
 @property (nonatomic, strong) dispatch_queue_t loggerQueue;
 @property (nonatomic, strong) FTLoggerConfig *config;
@@ -106,15 +106,15 @@ void *FTLoggerQueueIdentityKey = &FTLoggerQueueIdentityKey;
 - (void)log:(NSString *)content
      statusType:(FTLogStatus)statusType
    property:(nullable NSDictionary *)property{
-    NSDictionary *copyDict = [property ft_deepCopy];
-    [self _log:content statusType:(LogStatus)statusType status:FTStatusStringMap[statusType] property:copyDict];
+    NSDictionary *safeProperty = [property ft_deepCopy];
+    [self _log:content statusType:(LogStatus)statusType status:FTStatusStringMap[statusType] property:safeProperty];
 }
 - (void)log:(NSString *)content status:(NSString *)status{
     [self log:content status:status property:nil];
 }
 - (void)log:(NSString *)content status:(NSString *)status property:(nullable NSDictionary *)property{
-    NSDictionary *copyDict = [property ft_deepCopy];
-    [self _log:content statusType:StatusCustom status:status property:copyDict];
+    NSDictionary *safeProperty = [property ft_deepCopy];
+    [self _log:content statusType:StatusCustom status:status property:safeProperty];
 }
 -(void)info:(NSString *)content property:(NSDictionary *)property{
     [self log:content statusType:FTStatusInfo property:property];
@@ -131,8 +131,7 @@ void *FTLoggerQueueIdentityKey = &FTLoggerQueueIdentityKey;
 - (void)ok:(NSString *)content property:(NSDictionary *)property{
     [self log:content statusType:FTStatusOk property:property];
 }
-- (void)_log:(NSString *)content statusType:(LogStatus)type status:(NSString *)status property:(nullable NSDictionary *)property{
-    NSDictionary *copyProperty = [property ft_deepCopy];
+- (void)_log:(NSString *)content statusType:(LogStatus)type status:(NSString *)status property:(nullable NSDictionary *)safeProperty{
     long long timeStamp = [NSDate ft_currentNanosecondTimeStamp];
     FTLoggerConfig *config = self.config;
     if (!config) {
@@ -144,7 +143,7 @@ void *FTLoggerQueueIdentityKey = &FTLoggerQueueIdentityKey;
         return;
     }
     if(config.printCustomLogToConsole){
-        FT_CONSOLE_LOG(type,status,content,copyProperty);
+        FT_CONSOLE_LOG(type,status,content,safeProperty);
     }
     if (!config.enableCustomLog) {
         FTInnerLogInfo(@"[Logging][Disable Custom Log] %@",content);
@@ -171,12 +170,12 @@ void *FTLoggerQueueIdentityKey = &FTLoggerQueueIdentityKey;
                 if (rumContext) {
                     [tags addEntriesFromDictionary:rumContext];
                 }
-                [strongSelf writeLogWithTags:tags content:content property:copyProperty time:timeStamp];
+                [strongSelf writeLogWithTags:tags content:content property:safeProperty time:timeStamp];
             }];
             return;
         }
     }
-    [self writeLogWithTags:tags content:content property:copyProperty time:timeStamp];
+    [self writeLogWithTags:tags content:content property:safeProperty time:timeStamp];
 }
 - (void)writeLogWithTags:(NSDictionary *)tags
                   content:(NSString *)content

@@ -31,7 +31,7 @@ NS_ASSUME_NONNULL_BEGIN
 @property (nonatomic, assign, readonly) NSUInteger line;
 @property (nonatomic, strong, readonly) NSDate *timestamp;
 @property (nonatomic, assign) BOOL userLog;
-@property (nonatomic, strong, readonly) NSDictionary *property;
+@property (nonatomic, copy, readonly) NSDictionary *property;
 - (instancetype)init NS_UNAVAILABLE;
 
 - (instancetype)initWithMessage:(NSString *)message

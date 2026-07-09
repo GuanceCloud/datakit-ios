@@ -69,20 +69,24 @@
 -(instancetype)initWithIdentifier:(NSString *)identifier tintColorProvider:(nullable FTTintColorProvider)tintColorProvider shouldRecordImagePredicateOverride:(nullable FTShouldRecordImagePredicate)shouldRecordImagePredicateOverride{
     self = [super init];
     if(self){
-        _identifier = identifier;
+        _identifier = [identifier copy];
         _semanticsOverride = ^FTSRNodeSemantics*(UIView *view, FTViewAttributes* attributes){
             UIImageView *imageView = (UIImageView *)view;
             return imageView.isSystemShadow?[[FTIgnoredElement alloc]initWithSubtreeStrategy:NodeSubtreeStrategyIgnore]:nil;
         };
-        _tintColorProvider = tintColorProvider?tintColorProvider: ^UIColor*(UIImageView *imageView){
-            if (@available(iOS 13.0, *)) {
-                if(imageView.image){
-                    return imageView.image.isTinted?imageView.tintColor:nil;
+        if (tintColorProvider) {
+            _tintColorProvider = [tintColorProvider copy];
+        } else {
+            _tintColorProvider = ^UIColor*(UIImageView *imageView){
+                if (@available(iOS 13.0, *)) {
+                    if(imageView.image){
+                        return imageView.image.isTinted?imageView.tintColor:nil;
+                    }
                 }
-            }
-            return nil;
-        };
-        _shouldRecordImagePredicateOverride = shouldRecordImagePredicateOverride;
+                return nil;
+            };
+        }
+        _shouldRecordImagePredicateOverride = [shouldRecordImagePredicateOverride copy];
     }
     return self;
 }

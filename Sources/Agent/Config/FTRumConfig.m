@@ -40,7 +40,7 @@
 - (instancetype)initWithAppid:(nonnull NSString *)appid{
     self = [super init];
     if (self) {
-        _appid = appid;
+        _appid = [appid copy];
         _enableTrackAppCrash= NO;
         _samplerate = 100;
         _sessionOnErrorSampleRate = 0;
@@ -109,9 +109,9 @@
             if ([dict ft_hasValidValueForKey:@"globalContext"]) _globalContext = [dict[@"globalContext"] copy];
             if ([dict ft_hasValidValueForKey:@"deviceMetricsMonitorType"]) _deviceMetricsMonitorType = (FTDeviceMetricsMonitorType)[dict[@"deviceMetricsMonitorType"] intValue];
             if ([dict ft_hasValidValueForKey:@"monitorFrequency"]) _monitorFrequency = (FTMonitorFrequency)[dict[@"monitorFrequency"] intValue];
-            if ([dict ft_hasValidValueForKey:@"resourceUrlHandler"]) _resourceUrlHandler = [dict valueForKey:@"resourceUrlHandler"];
-            if ([dict ft_hasValidValueForKey:@"resourceProvider"]) _resourcePropertyProvider = [dict valueForKey:@"resourceProvider"];
-            if ([dict ft_hasValidValueForKey:@"sessionTaskErrorFilter"]) _sessionTaskErrorFilter = [dict valueForKey:@"sessionTaskErrorFilter"];
+            if ([dict ft_hasValidValueForKey:@"resourceUrlHandler"]) _resourceUrlHandler = [[dict valueForKey:@"resourceUrlHandler"] copy];
+            if ([dict ft_hasValidValueForKey:@"resourceProvider"]) _resourcePropertyProvider = [[dict valueForKey:@"resourceProvider"] copy];
+            if ([dict ft_hasValidValueForKey:@"sessionTaskErrorFilter"]) _sessionTaskErrorFilter = [[dict valueForKey:@"sessionTaskErrorFilter"] copy];
             if ([dict ft_hasValidValueForKey:@"sessionOnErrorSampleRate"]) _sessionOnErrorSampleRate = [[dict valueForKey:@"sessionOnErrorSampleRate"] intValue];
             if ([dict ft_hasValidValueForKey:@"crashMonitoring"]) _crashMonitoring = (FTCrashMonitorType)[[dict valueForKey:@"crashMonitoring"] intValue];
             if ([dict ft_hasValidValueForKey:@"rumCacheLimitCount"]) self.rumCacheLimitCount = [dict[@"rumCacheLimitCount"] intValue];

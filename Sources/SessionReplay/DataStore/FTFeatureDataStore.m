@@ -35,7 +35,7 @@
                      directory:(FTDirectory *)directory{
     self = [super init];
     if(self){
-        _feature = feature;
+        _feature = [feature copy];
         _queue = queue;
         _directory = directory;
         _directoryPath = [NSString stringWithFormat:@"%d/%@",DataStoreDefaultKeyVersion,feature];

@@ -39,7 +39,7 @@ static long long const FTErrorSampledCacheWindowNanoseconds = 60LL * 1000LL * 10
 @property (nonatomic, copy) NSString *currentFileID;
 // Force change file for writing
 @property (atomic, assign) BOOL hasErrorForceUpdate;
-@property (nonatomic, weak) id<FTSessionOnErrorDataHandler> sessionOnErrorHandler;
+@property (nonatomic, weak, nullable) id<FTSessionOnErrorDataHandler> sessionOnErrorHandler;
 @end
 @implementation FTTmpCacheManager
 - (instancetype)initWithCacheFileWriter:(id<FTWriter>)cacheWriter cacheDirectory:(FTDirectory *)cacheDirectory directory:(FTDirectory *)directory queue:(dispatch_queue_t)queue{

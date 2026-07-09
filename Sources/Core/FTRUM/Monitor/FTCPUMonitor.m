@@ -22,9 +22,17 @@
 #import "FTAppLifeCycle.h"
 #import <mach/mach.h>
 #import <assert.h>
+#import <stdint.h>
+
+static const uint64_t FTCPUTicksCounterRange = (uint64_t)UINT32_MAX + 1;
+
 @interface FTCPUMonitor()<FTAppLifeCycleDelegate>
-@property (nonatomic, assign)  natural_t totalInactiveTicks;
-@property (nonatomic, assign)  natural_t utilizedTicksWhenResigningActive;
+@property (nonatomic, assign)  uint64_t totalInactiveTicks;
+@property (nonatomic, assign)  uint64_t utilizedTicksWhenResigningActive;
+@property (nonatomic, assign)  uint64_t utilizedTicksRolloverOffset;
+@property (nonatomic, assign)  uint32_t lastRawUtilizedTicks;
+@property (nonatomic, assign)  BOOL hasUtilizedTicksWhenResigningActive;
+@property (nonatomic, assign)  BOOL hasLastRawUtilizedTicks;
 
 @end
 @implementation FTCPUMonitor
@@ -33,44 +41,91 @@
     if (self) {
         self.totalInactiveTicks = 0;
         self.utilizedTicksWhenResigningActive = 0;
+        self.utilizedTicksRolloverOffset = 0;
+        self.lastRawUtilizedTicks = 0;
+        self.hasUtilizedTicksWhenResigningActive = NO;
+        self.hasLastRawUtilizedTicks = NO;
         [[FTAppLifeCycle sharedInstance] addAppLifecycleDelegate:self];
     }
     return self;
 }
 - (double)readCpuUsage{
-    natural_t ticks = [self readUtilizedTicks];
-    natural_t usage = -1;
-    if (ticks>0) {
-        natural_t ongoingInactiveTicks = ticks - (self.utilizedTicksWhenResigningActive>0 ?self.utilizedTicksWhenResigningActive: ticks);
-        natural_t inactiveTicks = self.totalInactiveTicks + ongoingInactiveTicks;
-        usage = ticks - inactiveTicks;
+    uint64_t ticks = 0;
+    double usage = -1;
+    if ([self readUtilizedTicks:&ticks] && ticks>0) {
+        uint64_t inactiveStartTicks = self.hasUtilizedTicksWhenResigningActive ? self.utilizedTicksWhenResigningActive : ticks;
+        if (ticks < inactiveStartTicks) {
+            return usage;
+        }
+        uint64_t ongoingInactiveTicks = ticks - inactiveStartTicks;
+        if (UINT64_MAX - self.totalInactiveTicks < ongoingInactiveTicks) {
+            return usage;
+        }
+        uint64_t inactiveTicks = self.totalInactiveTicks + ongoingInactiveTicks;
+        if (ticks >= inactiveTicks) {
+            usage = (double)(ticks - inactiveTicks);
+        }
     }
     return usage;
 }
 //Total CPU usage
-- (natural_t)readUtilizedTicks {
+- (BOOL)readUtilizedTicks:(uint64_t *)ticks {
+    uint32_t rawTicks = 0;
+    if (![self readRawUtilizedTicks:&rawTicks]) {
+        return NO;
+    }
+
+    if (self.hasLastRawUtilizedTicks && rawTicks < self.lastRawUtilizedTicks) {
+        if (UINT64_MAX - self.utilizedTicksRolloverOffset < FTCPUTicksCounterRange) {
+            return NO;
+        }
+        self.utilizedTicksRolloverOffset += FTCPUTicksCounterRange;
+    }
+
+    self.lastRawUtilizedTicks = rawTicks;
+    self.hasLastRawUtilizedTicks = YES;
+    if (ticks != NULL) {
+        *ticks = self.utilizedTicksRolloverOffset + rawTicks;
+    }
+    return YES;
+}
+
+- (BOOL)readRawUtilizedTicks:(uint32_t *)rawTicks {
     kern_return_t kr;
-    natural_t user = -1;
     mach_msg_type_number_t count;
     host_cpu_load_info_data_t info;
     count = HOST_CPU_LOAD_INFO_COUNT;
     
     kr = host_statistics(mach_host_self(), HOST_CPU_LOAD_INFO, (host_info_t)&info, &count);
     if (kr == KERN_SUCCESS) {
-        user   = info.cpu_ticks[CPU_STATE_USER];
+        if (rawTicks != NULL) {
+            *rawTicks = (uint32_t)info.cpu_ticks[CPU_STATE_USER];
+        }
+        return YES;
     }
-    return user;
+    return NO;
 }
 
 - (void)applicationDidBecomeActive{
-    natural_t currentTicks = [self readUtilizedTicks];
-    if (currentTicks>0 && self.utilizedTicksWhenResigningActive>0) {
-        self.totalInactiveTicks += currentTicks - self.utilizedTicksWhenResigningActive;
+    uint64_t currentTicks = 0;
+    if (self.hasUtilizedTicksWhenResigningActive && [self readUtilizedTicks:&currentTicks]) {
+        if (currentTicks >= self.utilizedTicksWhenResigningActive) {
+            uint64_t inactiveTicks = currentTicks - self.utilizedTicksWhenResigningActive;
+            if (UINT64_MAX - self.totalInactiveTicks >= inactiveTicks) {
+                self.totalInactiveTicks += inactiveTicks;
+            }
+        }
         self.utilizedTicksWhenResigningActive = 0;
+        self.hasUtilizedTicksWhenResigningActive = NO;
     }
 }
 
 - (void)applicationWillResignActive{
-    self.utilizedTicksWhenResigningActive = [self readUtilizedTicks];
+    uint64_t ticks = 0;
+    self.hasUtilizedTicksWhenResigningActive = NO;
+    if ([self readUtilizedTicks:&ticks]) {
+        self.utilizedTicksWhenResigningActive = ticks;
+        self.hasUtilizedTicksWhenResigningActive = YES;
+    }
 }
 @end

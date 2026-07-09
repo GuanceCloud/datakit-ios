@@ -23,6 +23,7 @@
 #if FT_HAS_UIKIT
 #import <UIKit/UIKit.h>
 #endif
+#import "FTIDFVProvider.h"
 #import "FTPresetProperty.h"
 #import <sys/utsname.h>
 #import "FTJSONUtil.h"
@@ -64,7 +65,6 @@ static BOOL FTPresetIsAppExtension(void) {
         _device = @"APPLE";
 #if FT_HAS_UIKIT
         _model = [FTPresetProperty deviceInfo];
-        _deviceUUID = [[UIDevice currentDevice] identifierForVendor].UUIDString;
         _os = [UIDevice currentDevice].systemName;
         if (!FTPresetIsAppExtension()) {
             _appUUID = [FTPresetProperty getApplicationUUID];
@@ -144,6 +144,15 @@ static BOOL FTPresetIsAppExtension(void) {
     return nil;
 }
 #endif
+- (NSString *)deviceIdentifier{
+#if FT_HAS_UIDEVICE
+    return [FTIDFVProvider identifierForVendor];
+#elif FT_HOST_MAC
+    return self.deviceUUID;
+#else
+    return nil;
+#endif
+}
 @end
 
 static NSString *FTPresetStringKey(id key) {
@@ -521,11 +530,11 @@ static Class FTPresetExpectedValueClass(id value) {
                      env:(NSString *)env
                  service:(NSString *)service
            globalContext:(NSDictionary *)globalContext
-                 pkgInfo:(NSDictionary *)pkgInfo{
+                  pkgInfo:(NSDictionary *)pkgInfo{
     FTDataModifier modifier = self.dataModifier;
     FTBasePropertyModel *baseModel = [FTBasePropertyModel new];
     baseModel.applicationUUID = self.mobileDevice.appUUID;
-    baseModel.deviceUUID = self.mobileDevice.deviceUUID;
+    baseModel.deviceUUID = [self.mobileDevice deviceIdentifier];
     baseModel.service = service;
     baseModel.version = version;
     baseModel.env = env;
@@ -614,7 +623,7 @@ static Class FTPresetExpectedValueClass(id value) {
 }
 -(void)setDataModifier:(FTDataModifier)dataModifier{
     pthread_rwlock_wrlock(&_rwLock);
-    _dataModifier = dataModifier;
+    _dataModifier = [dataModifier copy];
     pthread_rwlock_unlock(&_rwLock);
 }
 -(FTDataModifier)dataModifier{
@@ -626,7 +635,7 @@ static Class FTPresetExpectedValueClass(id value) {
 }
 -(void)setLineDataModifier:(FTLineDataModifier)lineDataModifier{
     pthread_rwlock_wrlock(&_rwLock);
-    _lineDataModifier = lineDataModifier;
+    _lineDataModifier = [lineDataModifier copy];
     pthread_rwlock_unlock(&_rwLock);
 }
 -(FTLineDataModifier)lineDataModifier{

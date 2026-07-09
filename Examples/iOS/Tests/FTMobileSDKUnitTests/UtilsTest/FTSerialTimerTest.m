@@ -28,6 +28,22 @@
 
 @implementation FTSerialTimerTest
 
+- (void)testDefaultQueueScheduleAfterFiresOnce{
+    XCTestExpectation *expectation = [self expectationWithDescription:@"timer fired on default queue"];
+    __block NSInteger fireCount = 0;
+    FTSerialTimer *timer = [[FTSerialTimer alloc] initWithEventHandler:^{
+        fireCount += 1;
+        [expectation fulfill];
+    }];
+
+    [timer scheduleAfter:0.02 leeway:0];
+
+    [self waitForExpectations:@[expectation] timeout:1];
+    [NSThread sleepForTimeInterval:0.05];
+    XCTAssertEqual(fireCount, 1);
+    [timer invalidate];
+}
+
 - (void)testScheduleAfterFiresOnce{
     XCTestExpectation *expectation = [self expectationWithDescription:@"timer fired"];
     dispatch_queue_t queue = dispatch_queue_create("com.ft.test.serial_timer.fire", DISPATCH_QUEUE_SERIAL);

@@ -25,7 +25,8 @@ NS_ASSUME_NONNULL_BEGIN
 @property (nonatomic, strong) FTSnapshotProcessor *snapshotProcessor;
 -(instancetype)initWithWindowObserver:(FTWindowObserver *)observer snapshotProcessor:(FTSnapshotProcessor *)snapshotProcessor 
               additionalNodeRecorders:(NSArray<id <FTSRWireframesRecorder>>*)additionalNodeRecorders
-                        enableSwiftUI:(BOOL)enableSwiftUI;
+                        enableSwiftUI:(BOOL)enableSwiftUI
+                        enableHeatmap:(BOOL)enableHeatmap;
 ;
 -(void)taskSnapShot:(FTSRContext *)context touchSnapshot:(nullable FTTouchSnapshot *)touchSnapshot;
 @end

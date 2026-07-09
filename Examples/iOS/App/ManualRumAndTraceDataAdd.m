@@ -122,7 +122,7 @@ static const void * const kURLSessionTaskMetrics = &kURLSessionTaskMetrics;
 }
 
 - (void)setAssociatedObject:(NSURLSessionTask *)task key:(const void *)key value:(id)value{
-    objc_setAssociatedObject(task, &key, value, OBJC_ASSOCIATION_RETAIN);
+    objc_setAssociatedObject(task, key, value, OBJC_ASSOCIATION_RETAIN);
 }
 - (id)getAssociatedObject:(NSURLSessionTask *)task key:(const void *)key{
     return objc_getAssociatedObject(task, key);

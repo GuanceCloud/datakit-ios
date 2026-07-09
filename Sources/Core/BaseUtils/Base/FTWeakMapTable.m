@@ -25,7 +25,7 @@
 @interface WeakWrapper : NSObject<NSCopying>
 
 /// Weakly referenced key object (the actual key being wrapped)
-@property (nonatomic, weak, readonly) id object;
+@property (nonatomic, weak, nullable, readonly) id object;
 
 /// Initialize the wrapper class
 /// @param object The key object that needs a weak reference (must implement hash and isEqual methods)

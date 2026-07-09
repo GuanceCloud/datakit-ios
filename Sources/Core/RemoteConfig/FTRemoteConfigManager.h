@@ -26,7 +26,7 @@ NS_ASSUME_NONNULL_BEGIN
 
 @interface FTRemoteConfigManager : NSObject<FTRemoteConfigurationDataSource>
 
-@property (nonatomic, weak) id<FTRemoteConfigurationProtocol> delegate;
+@property (nonatomic, weak, nullable) id<FTRemoteConfigurationProtocol> delegate;
 
 @property (nonatomic, strong, readonly) FTRemoteConfigModel *lastRemoteModel;
 

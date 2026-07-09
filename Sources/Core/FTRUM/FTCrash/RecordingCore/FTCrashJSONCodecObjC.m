@@ -41,7 +41,7 @@
 @property(nonatomic, readwrite, strong) NSMutableArray *containerStack;
 
 /** Current array or object being decoded (weak ref) */
-@property(nonatomic, readwrite, weak) id currentContainer;
+@property(nonatomic, readwrite, weak, nullable) id currentContainer;
 
 /** Top level array or object in the decoded tree */
 @property(nonatomic, readwrite, strong) id topLevelContainer;

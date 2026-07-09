@@ -22,12 +22,15 @@
 #import "FTInternalConstants.h"
 #import "FTLogMessage.h"
 
-#define FTLOG_MACRO(lvl, frmt, ...) \
-[FTLog log : YES                                     \
-     level : lvl                                     \
-  function : __PRETTY_FUNCTION__                     \
-      line : __LINE__                                \
-    format : (frmt), ## __VA_ARGS__]
+#define FTLOG_MACRO(lvl, frmt, ...) do {             \
+    if ([FTLog isLoggerEnabled]) {                   \
+        [FTLog log : YES                             \
+             level : lvl                             \
+          function : __PRETTY_FUNCTION__             \
+              line : __LINE__                        \
+            format : (frmt), ## __VA_ARGS__];        \
+    }                                                \
+} while(0)
 
 #define FTInnerLogInfo(frmt,...) FTLOG_MACRO(StatusInfo,(frmt), ## __VA_ARGS__)
 
@@ -37,12 +40,15 @@
 
 #define FTInnerLogWarning(frmt,...) FTLOG_MACRO(StatusWarning,(frmt), ## __VA_ARGS__)
 
-#define FT_CONSOLE_LOG(lvl,status,frmt,dict)   \
-[[FTLog sharedInstance] userLog : YES                \
-   message : frmt                                    \
-     level : lvl                                     \
-     status:status                                   \
-   property: dict]
+#define FT_CONSOLE_LOG(lvl,logStatus,frmt,dict) do { \
+    if ([FTLog isLoggerEnabled]) {                   \
+        [[FTLog sharedInstance] userLog : YES        \
+           message : frmt                            \
+             level : lvl                             \
+             status: logStatus                       \
+           property: dict];                          \
+    }                                                \
+} while(0)
 
 #define FTNSLogError(frmt, ...)    do{ if([FTLog isLoggerEnabled]) NSLog((frmt), ##__VA_ARGS__); } while(0)
 
@@ -63,7 +69,6 @@ NS_ASSUME_NONNULL_BEGIN
    function:(const char *)function
        line:(NSUInteger)line
      format:(NSString *)format, ... NS_FORMAT_FUNCTION(5,6);
-
 - (void)userLog:(BOOL)asynchronous
         message:(NSString *)message
           level:(LogStatus)level

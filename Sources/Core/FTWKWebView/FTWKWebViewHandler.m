@@ -40,7 +40,7 @@
 #import "NSDate+FTUtil.h"
 
 @interface FTWKWebViewHandler ()
-@property (nonatomic, weak) id<FTWKWebViewRumDelegate> rumTrackDelegate;
+@property (nonatomic, weak, nullable) id<FTWKWebViewRumDelegate> rumTrackDelegate;
 @property (nonatomic, strong) NSMapTable *webViewBridge;
 @property (nonatomic, copy) NSString *allowWebViewHostsString;
 @property (nonatomic, strong) NSLock *lock;

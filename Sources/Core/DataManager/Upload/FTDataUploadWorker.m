@@ -29,8 +29,11 @@
 #import "FTNetworkConnectivity.h"
 #import "FTNetworkInfoManager.h"
 #import "FTDataFilterManager.h"
+#import "FTSerialTimer.h"
 static const NSInteger kMaxRetryCount = 5;
 static const NSTimeInterval kInitialRetryDelay = 0.5; // Initial 500ms delay
+static const NSTimeInterval kUploadDebounceDelay = 0.1;
+static const NSTimeInterval kUploadDebounceLeeway = 0;
 static const NSInteger kRUMMaxBatchesPerUploadPass = 3;
 static const NSInteger kLogMaxBatchesPerUploadPass = 1;
 static void *FTDataUploadWorkerNetworkQueueKey = &FTDataUploadWorkerNetworkQueueKey;
@@ -54,8 +57,8 @@ typedef NS_ENUM(NSInteger, FTUploadWorkerState) {
 /// YES when a delayed auto-upload is still in the 100ms debounce window.
 @property (nonatomic, assign, readonly) BOOL hasPendingUpload;
 
-@property (nonatomic, strong) dispatch_block_t uploadWork;
-@property (nonatomic, strong) dispatch_source_t timerSource;
+@property (nonatomic, copy) dispatch_block_t uploadWork;
+@property (nonatomic, strong) FTSerialTimer *uploadTimer;
 
 @end
 
@@ -64,7 +67,6 @@ typedef NS_ENUM(NSInteger, FTUploadWorkerState) {
     FTUploadWorkerState _uploadState;
 }
 @synthesize uploadWork = _uploadWork;
-@synthesize timerSource = _timerSource;
 -(instancetype)initWithSyncPageSize:(int)syncPageSize syncSleepTime:(int)syncSleepTime{
     self = [super init];
     if (self) {
@@ -76,6 +78,15 @@ typedef NS_ENUM(NSInteger, FTUploadWorkerState) {
         dispatch_queue_attr_t attributes = dispatch_queue_attr_make_with_qos_class(DISPATCH_QUEUE_SERIAL, QOS_CLASS_UTILITY, 0);
         _networkQueue = dispatch_queue_create("com.ft.network", attributes);
         dispatch_queue_set_specific(_networkQueue, FTDataUploadWorkerNetworkQueueKey, &FTDataUploadWorkerNetworkQueueKey, NULL);
+        __weak typeof(self) weakSelf = self;
+        _uploadTimer = [[FTSerialTimer alloc] initWithQueue:_networkQueue eventHandler:^{
+            __strong typeof(weakSelf) strongSelf = weakSelf;
+            if (!strongSelf) return;
+            [strongSelf.uploadTimer cancel];
+            if (![strongSelf isInvalidated] && strongSelf.hasPendingUpload) {
+                [strongSelf _flushSyncData:YES];
+            }
+        }];
     }
     return self;
 }
@@ -90,7 +101,7 @@ typedef NS_ENUM(NSInteger, FTUploadWorkerState) {
 }
 -(void)setUploadWork:(dispatch_block_t)uploadWork{
     pthread_rwlock_wrlock(&_uploadWorkLock);
-    _uploadWork = uploadWork;
+    _uploadWork = [uploadWork copy];
     pthread_rwlock_unlock(&_uploadWorkLock);
 }
 -(dispatch_block_t)uploadWork{
@@ -188,11 +199,7 @@ typedef NS_ENUM(NSInteger, FTUploadWorkerState) {
         __strong typeof(weakSelf) strongSelf = weakSelf;
         if (!strongSelf) return;
         if ([strongSelf prepareDelayedUpload]){
-            if (strongSelf.timerSource) {
-                [strongSelf resetExistingTimer];
-            } else {
-                [strongSelf createNewTimer];
-            }
+            [strongSelf scheduleDelayedUploadTimer];
         }
     });
 }
@@ -212,42 +219,18 @@ typedef NS_ENUM(NSInteger, FTUploadWorkerState) {
         [self performSynchronouslyOnNetworkQueue:^{
             __strong typeof(weakSelf) strongSelf = weakSelf;
             if (!strongSelf) return;
-            if(strongSelf.timerSource) dispatch_source_cancel(strongSelf.timerSource);
-            strongSelf.timerSource = nil;
+            [strongSelf cancelDelayedUploadTimer];
             if(strongSelf.uploadWork) dispatch_block_cancel(strongSelf.uploadWork);
             strongSelf.uploadWork = nil;
         }];
         [self _flushSyncData:NO];
     }
 }
-// Reset the trigger time of existing Timer
-- (void)resetExistingTimer {
-    // Calculate new trigger time (current time + 100ms)
-    dispatch_time_t newDelay = dispatch_time(DISPATCH_TIME_NOW, 100 * NSEC_PER_MSEC);
-    // Update Timer trigger time (no need to resume again)
-    dispatch_source_set_timer(self.timerSource, newDelay, DISPATCH_TIME_FOREVER, 0);
+- (void)scheduleDelayedUploadTimer{
+    [self.uploadTimer scheduleAfter:kUploadDebounceDelay leeway:kUploadDebounceLeeway];
 }
-- (void)createNewTimer {
-    // Create Timer and associate with global queue (or custom queue)
-    self.timerSource = dispatch_source_create(DISPATCH_SOURCE_TYPE_TIMER, 0, 0, self.networkQueue);
-
-    __weak typeof(self) weakSelf = self;
-    dispatch_source_set_event_handler(self.timerSource, ^{
-        __strong typeof(weakSelf) strongSelf = weakSelf;
-        if (!strongSelf) return;
-        // Cancel and clean up Timer
-        dispatch_source_cancel(strongSelf.timerSource);
-        strongSelf.timerSource = nil;
-        if (![strongSelf isInvalidated] && strongSelf.hasPendingUpload) {
-            // Execute actual operation after trigger
-            [strongSelf _flushSyncData:YES];
-        }
-    });
-    // Set initial trigger time
-    dispatch_time_t delay = dispatch_time(DISPATCH_TIME_NOW, 100 * NSEC_PER_MSEC);
-    dispatch_source_set_timer(self.timerSource, delay, DISPATCH_TIME_FOREVER, 0);
-    // Activate Timer
-    dispatch_resume(self.timerSource);
+- (void)cancelDelayedUploadTimer{
+    [self.uploadTimer cancel];
 }
 -(void)cancelSynchronously{
     [self clearDelayedUploadPending];
@@ -259,8 +242,7 @@ typedef NS_ENUM(NSInteger, FTUploadWorkerState) {
         }
         if(strongSelf.uploadWork) dispatch_block_cancel(strongSelf.uploadWork);
         strongSelf.uploadWork = nil;
-        if(strongSelf.timerSource) dispatch_source_cancel(strongSelf.timerSource);
-        strongSelf.timerSource = nil;
+        [strongSelf cancelDelayedUploadTimer];
     }];
 }
 - (void)cancelAsynchronously{
@@ -273,8 +255,7 @@ typedef NS_ENUM(NSInteger, FTUploadWorkerState) {
         }
         if(strongSelf.uploadWork) dispatch_block_cancel(strongSelf.uploadWork);
         strongSelf.uploadWork = nil;
-        if(strongSelf.timerSource) dispatch_source_cancel(strongSelf.timerSource);
-        strongSelf.timerSource = nil;
+        [strongSelf cancelDelayedUploadTimer];
     });
 }
 - (void)invalidateAndCancelPendingUploads{
@@ -287,8 +268,7 @@ typedef NS_ENUM(NSInteger, FTUploadWorkerState) {
         }
         if(strongSelf.uploadWork) dispatch_block_cancel(strongSelf.uploadWork);
         strongSelf.uploadWork = nil;
-        if(strongSelf.timerSource) dispatch_source_cancel(strongSelf.timerSource);
-        strongSelf.timerSource = nil;
+        [strongSelf.uploadTimer invalidate];
     });
 }
 - (void)_flushSyncData:(BOOL)withSleep{
@@ -467,6 +447,7 @@ typedef NS_ENUM(NSInteger, FTUploadWorkerState) {
     return NO;
 }
 -(void)dealloc{
+    [self.uploadTimer invalidate];
     pthread_rwlock_destroy(&_uploadWorkLock);
 }
 @end

@@ -53,23 +53,6 @@ static char *viewLoadDuration = "viewLoadDuration";
 - (NSString *)ft_viewControllerName{
     return NSStringFromClass([self class]);
 }
-- (BOOL)isActionBlackListContainsViewController{
-    @try {
-        NSDictionary *black = [BlacklistedVCClassNames ft_blacklistedViewControllerClassNames];
-        NSDictionary *blackList = black[FT_BLACK_LIST_VIEW_ACTION];
-        if(blackList && blackList.count>0){
-            for (NSString *publicClass in blackList[@"public"]) {
-                if ([self isKindOfClass:NSClassFromString(publicClass)]) {
-                    return YES;
-                }
-            }
-        }
-        return [(NSArray *)blackList[@"private"] containsObject:NSStringFromClass(self.class)];
-    } @catch(NSException *exception) {
-        FTInnerLogError(@"error: %@",exception);
-    }
-    return NO;
-}
 - (BOOL)isBlackListContainsViewController{
     @try {
         NSDictionary *black = [BlacklistedVCClassNames ft_blacklistedViewControllerClassNames];

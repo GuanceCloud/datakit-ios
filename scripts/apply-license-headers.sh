@@ -86,7 +86,7 @@ is_skipped_path() {
 }
 
 has_third_party_license() {
-  sed -n '1,80p' "$1" | grep -Eq 'Copyright \(c\)|Permission is hereby granted|Karl Stenerud|Apple Inc\.|FMDB'
+  sed -n '1,80p' "$1" | grep -Eq 'Copyright \(c\)|Permission is hereby granted|Karl Stenerud|Apple Inc\.|FMDB|Copyright 2019-Present Datadog|software derived from software developed at Datadog'
 }
 
 list_files() {

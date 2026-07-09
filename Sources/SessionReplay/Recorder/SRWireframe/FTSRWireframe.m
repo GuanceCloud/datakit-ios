@@ -232,6 +232,7 @@ static BOOL objectIsEqual(id new,id old){
     self.height = useNewObjectIfDifferentThanOld(newWireFrame.height,self.height);
     self.x = useNewObjectIfDifferentThanOld(newWireFrame.x,self.x);
     self.y = useNewObjectIfDifferentThanOld(newWireFrame.y,self.y);
+    self.permanentId = useNewObjectIfDifferentThanOld(newWireFrame.permanentId,self.permanentId);
     return self;
 }
 - (BOOL)isEqualToBaseFrame:(FTSRBaseFrame *)baseFrame {
@@ -241,7 +242,8 @@ static BOOL objectIsEqual(id new,id old){
     BOOL haveEqualHeight= objectIsEqual(self.height,object.height);
     BOOL haveEqualX = objectIsEqual(self.x,object.x);
     BOOL haveEqualY = objectIsEqual(self.y,object.y);
-    return haveEqualClip && haveEqualWidth && haveEqualHeight && haveEqualX && haveEqualY && self.identifier == object.identifier;
+    BOOL haveEqualPermanentID = objectIsEqual(self.permanentId, object.permanentId);
+    return haveEqualClip && haveEqualWidth && haveEqualHeight && haveEqualX && haveEqualY && haveEqualPermanentID && self.identifier == object.identifier;
 }
 +(FTJSONKeyMapper *)keyMapper{
     FTJSONKeyMapper *keyMapper = [[FTJSONKeyMapper alloc]initWithModelToJSONDictionary:@{

@@ -169,7 +169,7 @@ static void swizzle(Class classToSwizzle,
         }
         swizzle(classToSwizzle, selector, factoryBlock);
         if (key){
-            [self setFTAssociatedObject:classToSwizzle key:key value:@(YES) association:OBJC_ASSOCIATION_ASSIGN];
+            [self setFTAssociatedObject:classToSwizzle key:key value:@(YES) association:OBJC_ASSOCIATION_RETAIN_NONATOMIC];
         }
     }
     return YES;

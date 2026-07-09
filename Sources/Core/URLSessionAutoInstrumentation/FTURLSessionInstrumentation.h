@@ -41,9 +41,9 @@ NS_ASSUME_NONNULL_BEGIN
 @interface FTURLSessionInstrumentation : NSObject<NSURLSessionDelegate>
 
 /// Session interception handler for processing resource link tracing (trace) and rum resource data collection
-@property (nonatomic, weak ,readonly) id<FTURLSessionInterceptorProtocol> interceptor;
+@property (nonatomic, weak, nullable, readonly) id<FTURLSessionInterceptorProtocol> interceptor;
 /// Object provided to external for handling user-defined resource data
-@property (nonatomic, weak ,readonly) id<FTExternalResourceProtocol> externalResourceHandler;
+@property (nonatomic, weak, nullable, readonly) id<FTExternalResourceProtocol> externalResourceHandler;
 
 /// Determine whether automatic link tracing is allowed
 @property (atomic, assign, readonly) BOOL shouldTraceInterceptor;

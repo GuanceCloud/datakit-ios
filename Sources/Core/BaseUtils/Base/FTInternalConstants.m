@@ -50,7 +50,6 @@ NSTimeInterval const MonitorFrequencyMap[] = {
 };
 
 NSString * const FT_BLACK_LIST_VIEW = @"FT_BLACK_LIST_VIEW";
-NSString * const FT_BLACK_LIST_VIEW_ACTION = @"FT_BLACK_LIST_VIEW_ACTION";
 
 
 NSUInteger const FT_LOGGING_CONTENT_SIZE = 30720;

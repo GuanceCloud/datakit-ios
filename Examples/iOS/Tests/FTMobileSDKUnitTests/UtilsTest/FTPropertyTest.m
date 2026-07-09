@@ -42,10 +42,57 @@
 #import "FTUserInfo.h"
 #import "FTDataWriterWorker.h"
 #import "NSDictionary+FTCopyProperties.h"
+#import "FTIDFVProvider.h"
 @interface FTPresetProperty (Testing)
 - (FTUserInfo *)userInfo;
 - (void)connectivityChanged:(BOOL)connected typeDescription:(NSString *)typeDescription;
 @end
+@interface FTIDFVProvider (PropertyTest)
++ (nullable NSString *)systemIdentifierForVendor;
++ (void)clearMemoryIdentifierCache;
+@end
+static NSString *const FTPropertyTestIDFVDefaultsKey = @"ft_idfv_cache";
+static NSString *_Nullable (^FTPropertyTestIDFVSystemIdentifierLoader)(void) = nil;
+static IMP FTPropertyTestOriginalIDFVSystemIdentifierIMP = NULL;
+
+static NSString *_Nullable FTPropertyTestIDFVSystemIdentifierStub(id cls, SEL selector) {
+    (void)cls;
+    (void)selector;
+    return FTPropertyTestIDFVSystemIdentifierLoader ? FTPropertyTestIDFVSystemIdentifierLoader() : nil;
+}
+
+static Method FTPropertyTestIDFVSystemIdentifierMethod(void) {
+    return class_getClassMethod(FTIDFVProvider.class, @selector(systemIdentifierForVendor));
+}
+
+static void FTPropertyTestSetIDFVSystemIdentifierLoader(NSString *_Nullable (^loader)(void)) {
+    Method method = FTPropertyTestIDFVSystemIdentifierMethod();
+    if (!method) {
+        return;
+    }
+    if (!FTPropertyTestOriginalIDFVSystemIdentifierIMP) {
+        FTPropertyTestOriginalIDFVSystemIdentifierIMP = method_getImplementation(method);
+    }
+    FTPropertyTestIDFVSystemIdentifierLoader = [loader copy];
+    method_setImplementation(method, (IMP)FTPropertyTestIDFVSystemIdentifierStub);
+    [FTIDFVProvider clearMemoryIdentifierCache];
+}
+
+static void FTPropertyTestResetIDFVProvider(void) {
+    Method method = FTPropertyTestIDFVSystemIdentifierMethod();
+    if (method && FTPropertyTestOriginalIDFVSystemIdentifierIMP) {
+        method_setImplementation(method, FTPropertyTestOriginalIDFVSystemIdentifierIMP);
+    }
+    FTPropertyTestIDFVSystemIdentifierLoader = nil;
+    [FTIDFVProvider clearMemoryIdentifierCache];
+    [[NSUserDefaults standardUserDefaults] removeObjectForKey:FTPropertyTestIDFVDefaultsKey];
+}
+
+static void FTPropertyTestStoreRawIDFVCache(NSString *identifier) {
+    [FTIDFVProvider clearMemoryIdentifierCache];
+    [[NSUserDefaults standardUserDefaults] setObject:identifier forKey:FTPropertyTestIDFVDefaultsKey];
+}
+
 static id FTPropertyTestCallClassSelector(Class cls, SEL selector) {
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Warc-performSelector-leaks"
@@ -106,9 +153,11 @@ static void FTPropertyTestAssertMissingKeys(XCTestCase *testCase, NSDictionary *
     self.url = [processInfo environment][@"ACCESS_SERVER_URL"];
     self.appid = [processInfo environment][@"APP_ID"];
     [[FTTrackerEventDBTool sharedManager] deleteAllDatas];
+    FTPropertyTestResetIDFVProvider();
 }
 
 - (void)tearDown {
+    FTPropertyTestResetIDFVProvider();
     [[FTPresetProperty sharedInstance] clearUser];
     // Put teardown code here. This method is called after the invocation of each test method in the class.
 }
@@ -137,6 +186,98 @@ static void FTPropertyTestAssertMissingKeys(XCTestCase *testCase, NSDictionary *
     NSString *env = dict[@"env"];
     XCTAssertTrue([env isEqualToString:@"pre"]);
     [FTMobileAgent shutDown];
+}
+- (void)testIDFVProviderCachesIdentifierInUserDefaults{
+    __block NSInteger loadCount = 0;
+    NSString *expectedIDFV = @"11111111-1111-1111-1111-111111111111";
+    FTPropertyTestSetIDFVSystemIdentifierLoader(^NSString * _Nullable{
+        loadCount++;
+        return expectedIDFV;
+    });
+
+    XCTAssertEqualObjects([FTIDFVProvider identifierForVendor], expectedIDFV);
+    XCTAssertEqual(loadCount, 1);
+
+    [FTIDFVProvider clearMemoryIdentifierCache];
+    XCTAssertEqualObjects([FTIDFVProvider identifierForVendor], expectedIDFV);
+    XCTAssertEqual(loadCount, 1);
+}
+- (void)testIDFVProviderIgnoresInvalidCachedIdentifier{
+    __block NSInteger loadCount = 0;
+    NSString *expectedIDFV = @"22222222-2222-2222-2222-222222222222";
+    FTPropertyTestStoreRawIDFVCache(@"invalid-idfv");
+    FTPropertyTestSetIDFVSystemIdentifierLoader(^NSString * _Nullable{
+        loadCount++;
+        return expectedIDFV;
+    });
+
+    XCTAssertEqualObjects([FTIDFVProvider identifierForVendor], expectedIDFV);
+    XCTAssertEqual(loadCount, 1);
+
+    [FTIDFVProvider clearMemoryIdentifierCache];
+    XCTAssertEqualObjects([FTIDFVProvider identifierForVendor], expectedIDFV);
+    XCTAssertEqual(loadCount, 1);
+}
+- (void)testIDFVProviderConcurrentReadsOnlyLoadOnce{
+    __block NSInteger loadCount = 0;
+    __block BOOL hasMismatch = NO;
+    NSString *expectedIDFV = @"33333333-3333-3333-3333-333333333333";
+    FTPropertyTestSetIDFVSystemIdentifierLoader(^NSString * _Nullable{
+        loadCount++;
+        return expectedIDFV;
+    });
+
+    NSInteger readCount = 50;
+    XCTestExpectation *expectation = [self expectationWithDescription:@"Concurrent IDFV reads completed"];
+    expectation.expectedFulfillmentCount = readCount;
+    for (NSInteger i = 0; i < readCount; i++) {
+        dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0), ^{
+            NSString *identifier = [FTIDFVProvider identifierForVendor];
+            @synchronized (self) {
+                if (![identifier isEqualToString:expectedIDFV]) {
+                    hasMismatch = YES;
+                }
+            }
+            [expectation fulfill];
+        });
+    }
+
+    [self waitForExpectationsWithTimeout:10 handler:^(NSError * _Nullable error) {
+        if (error) {
+            XCTFail(@"Concurrent IDFV reads timeout: %@", error.localizedDescription);
+        }
+    }];
+    XCTAssertFalse(hasMismatch);
+    XCTAssertEqual(loadCount, 1);
+}
+- (void)testPresetPropertyUsesCachedIDFV{
+    __block NSInteger loadCount = 0;
+    NSString *expectedIDFV = @"44444444-4444-4444-4444-444444444444";
+    FTPropertyTestSetIDFVSystemIdentifierLoader(^NSString * _Nullable{
+        loadCount++;
+        return expectedIDFV;
+    });
+
+    FTPresetProperty *preset = [FTPresetProperty sharedInstance];
+    [preset startWithVersion:@"1.0.0"
+                  sdkVersion:@"2.0.0"
+                         env:@"test"
+                     service:@"test_service"
+               globalContext:nil
+                     pkgInfo:nil];
+    XCTAssertEqualObjects([preset rumTags][FT_COMMON_PROPERTY_DEVICE_UUID], expectedIDFV);
+    [preset shutDown];
+
+    [FTIDFVProvider clearMemoryIdentifierCache];
+    [preset startWithVersion:@"1.0.0"
+                  sdkVersion:@"2.0.0"
+                         env:@"test"
+                     service:@"test_service"
+               globalContext:nil
+                     pkgInfo:nil];
+    XCTAssertEqualObjects([preset rumTags][FT_COMMON_PROPERTY_DEVICE_UUID], expectedIDFV);
+    XCTAssertEqual(loadCount, 1);
+    [preset shutDown];
 }
 /**
  * url is empty string

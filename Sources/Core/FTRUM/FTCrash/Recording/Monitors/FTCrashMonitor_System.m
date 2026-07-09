@@ -34,6 +34,7 @@
 
 #import "FTCrashSysCtl.h"
 #import "FTSDKCompat.h"
+#import "FTIDFVProvider.h"
 #import "FTCrashJailbreak.h"
 
 #import <CommonCrypto/CommonDigest.h>
@@ -383,14 +384,18 @@ static const char *getDeviceAndAppHash(void)
     NSMutableData *data = nil;
 
 #if FT_HAS_UIDEVICE
-    if ([[UIDevice currentDevice] respondsToSelector:@selector(identifierForVendor)]) {
+    NSUUID *identifierForVendor = [[NSUUID alloc] initWithUUIDString:[FTIDFVProvider identifierForVendor]];
+    if (identifierForVendor) {
         data = [NSMutableData dataWithLength:16];
-        [[UIDevice currentDevice].identifierForVendor getUUIDBytes:data.mutableBytes];
+        [identifierForVendor getUUIDBytes:data.mutableBytes];
     } else
 #endif
     {
         data = [NSMutableData dataWithLength:6];
         ftcrashsysctl_getMacAddress("en0", [data mutableBytes]);
+    }
+    if (data == nil) {
+        data = [NSMutableData data];
     }
 
     // Append some device-specific data.

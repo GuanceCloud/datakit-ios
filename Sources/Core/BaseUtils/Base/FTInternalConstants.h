@@ -115,7 +115,6 @@ extern NSString * const FTEnvStringMap[];
 extern NSTimeInterval const MonitorFrequencyMap[];
 
 extern NSString * const FT_BLACK_LIST_VIEW;
-extern NSString * const FT_BLACK_LIST_VIEW_ACTION;
 
 extern NSUInteger const FT_LOGGING_CONTENT_SIZE;
 

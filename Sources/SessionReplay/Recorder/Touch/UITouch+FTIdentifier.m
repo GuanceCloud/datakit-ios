@@ -23,13 +23,13 @@ static char *kTouchPrivacyOverride = "kTouchPrivacyOverride";
 
 @implementation UITouch (FTIdentifier)
 -(void)setIdentifier:(NSNumber*)identifier{
-    objc_setAssociatedObject(self, &touchIdentifier, identifier, OBJC_ASSOCIATION_RETAIN);
+    objc_setAssociatedObject(self, &touchIdentifier, identifier, OBJC_ASSOCIATION_RETAIN_NONATOMIC);
 }
 -(NSNumber*)identifier{
     return objc_getAssociatedObject(self, &touchIdentifier);
 }
 -(void)setTouchPrivacyOverride:(NSNumber *)touchPrivacyOverride{
-    objc_setAssociatedObject(self, &kTouchPrivacyOverride, touchPrivacyOverride, OBJC_ASSOCIATION_RETAIN);
+    objc_setAssociatedObject(self, &kTouchPrivacyOverride, touchPrivacyOverride, OBJC_ASSOCIATION_RETAIN_NONATOMIC);
 }
 -(NSNumber *)touchPrivacyOverride{
     return objc_getAssociatedObject(self, &kTouchPrivacyOverride);

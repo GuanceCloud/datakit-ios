@@ -32,7 +32,7 @@ static char *kLinkRumKeysInfo = "kLinkRumKeysInfo";
     return objc_getAssociatedObject(self, &kLinkRumKeysInfo);
 }
 -(void)setFt_linkRumKeysInfo:(NSDictionary *)ft_linkRumKeysInfo{
-    objc_setAssociatedObject(self, &kLinkRumKeysInfo, ft_linkRumKeysInfo, OBJC_ASSOCIATION_RETAIN);
+    objc_setAssociatedObject(self, &kLinkRumKeysInfo, ft_linkRumKeysInfo, OBJC_ASSOCIATION_COPY_NONATOMIC);
 }
 -(WKNavigation *)ft_loadRequest:(NSURLRequest *)request{
     [[FTWKWebViewHandler sharedInstance] innerEnableWebView:self];

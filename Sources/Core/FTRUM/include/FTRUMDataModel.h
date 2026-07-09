@@ -41,7 +41,7 @@ typedef NS_ENUM(NSUInteger, FTRUMDataType) {
 };
 
 NS_ASSUME_NONNULL_BEGIN
-@class FTResourceMetricsModel,FTResourceContentModel;
+@class FTResourceMetricsModel,FTResourceContentModel,FTHeatmapAttributes;
 @interface FTRUMDataModel : NSObject
 @property (nonatomic, strong) NSDate *time;
 @property (nonatomic, assign) FTRUMDataType type;
@@ -54,6 +54,7 @@ NS_ASSUME_NONNULL_BEGIN
 @interface FTRUMActionModel : FTRUMDataModel
 @property (nonatomic, copy) NSString *action_name;
 @property (nonatomic, copy) NSString *action_type;
+@property (nonatomic, strong, nullable) FTHeatmapAttributes *heatmapAttributes;
 -(instancetype)initWithActionName:(NSString *)actionName actionType:(NSString *)actionType;
 
 @end

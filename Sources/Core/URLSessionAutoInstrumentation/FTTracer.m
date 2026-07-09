@@ -51,7 +51,7 @@ static NSUInteger SkyWalkingSequence = 0.0;
         _traceType = traceType;
         _enableLinkRumData = link;
         _enableAutoTrace = trace;
-        _serviceName = serviceName;
+        _serviceName = [serviceName copy];
     }
     return self;
 }

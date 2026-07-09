@@ -23,8 +23,8 @@
 NS_ASSUME_NONNULL_BEGIN
 @class FTHTTPClient;
 @interface FTDataUploadWorker : NSObject
-@property (nonatomic, weak) id<FTUploadCountProtocol> counter;
-@property (nonatomic, weak) id<FTSessionOnErrorDataHandler> errorSampledConsume;
+@property (nonatomic, weak, nullable) id<FTUploadCountProtocol> counter;
+@property (nonatomic, weak, nullable) id<FTSessionOnErrorDataHandler> errorSampledConsume;
 @property (nonatomic, strong) FTHTTPClient *httpClient;
 
 -(instancetype)initWithSyncPageSize:(int)syncPageSize

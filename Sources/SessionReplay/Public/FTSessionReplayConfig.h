@@ -79,11 +79,16 @@ typedef NS_ENUM(NSUInteger,FTTextAndInputPrivacyLevel){
 /// Available privacy level for image masking in session replay. Default: FTImagePrivacyLevelMaskAll
 @property (nonatomic, assign) FTImagePrivacyLevel imagePrivacy;
 
-/// Enable SwiftUI recording in session replay. Default: NO
-@property (nonatomic, assign) BOOL enableSwiftUI;
-
 /// Session Replay requires the association of the specified RUM key.
 @property (nonatomic, copy) NSArray *enableLinkRUMKeys;
+
+/// Experimental: Enables SwiftUI recording in Session Replay. Default: NO.
+/// Some SwiftUI components may be unavailable or represented differently from UIKit views.
+@property (nonatomic, assign) BOOL enableSwiftUI;
+
+/// Experimental: Enables heatmap identifier generation and RUM Action correlation. Default: NO.
+/// Correlation depends on Session Replay snapshots and may be unavailable for views that are not recorded or dynamic view hierarchies.
+@property (nonatomic, assign) BOOL enableHeatmap;
 
 @end
 

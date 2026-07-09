@@ -61,6 +61,19 @@
     [FTMobileAgent shutDown];
     self.logExpectation = nil;
 }
+- (void)testInnerLogDisabledDoesNotEvaluateArguments{
+    [FTLog enableLog:NO];
+    __block NSInteger evaluationCount = 0;
+    NSString *(^expensiveLogValue)(void) = ^NSString *{
+        evaluationCount += 1;
+        return @"expensive";
+    };
+    FTInnerLogDebug(@"%@", expensiveLogValue());
+    FTInnerLogInfo(@"%@", expensiveLogValue());
+    FTInnerLogError(@"%@", expensiveLogValue());
+    FT_CONSOLE_LOG(StatusInfo, @"info", expensiveLogValue(), @{@"value": expensiveLogValue()});
+    XCTAssertEqual(evaluationCount, 0);
+}
 - (void)testEnableCustomLog{
     [self setRightSDKConfig];
     NSInteger count =  [[FTTrackerEventDBTool sharedManager] getDatasCount];
@@ -567,6 +580,26 @@
     NSInteger newCount = [[FTTrackerEventDBTool sharedManager] getDatasCount];
     XCTAssertNoThrow([[FTLogger sharedInstance] ok:@"testSDKShutDown" property:nil]);
     XCTAssertTrue(count == newCount);
+}
+- (void)testSDKShutDownFlushesPendingLogCache{
+    [self setRightSDKConfig];
+    FTLoggerConfig *loggerConfig = [[FTLoggerConfig alloc]init];
+    loggerConfig.enableCustomLog = YES;
+    [[FTMobileAgent sharedInstance] startLoggerWithConfigOptions:loggerConfig];
+
+    [[FTLogger sharedInstance] info:@"testSDKShutDownFlushesPendingLogCache" property:nil];
+    [[FTLogger sharedInstance] syncProcess];
+    XCTAssertEqual([[FTTrackerEventDBTool sharedManager] getDatasCountWithType:FT_DATA_TYPE_LOGGING], 0);
+
+    [FTMobileAgent shutDown];
+
+    NSArray *datas = [[FTTrackerEventDBTool sharedManager] getFirstRecords:10 withType:FT_DATA_TYPE_LOGGING];
+    XCTAssertEqual(datas.count, 1);
+    FTRecordModel *model = datas.lastObject;
+    NSDictionary *dict = [FTJSONUtil dictionaryWithJsonString:model.data];
+    NSDictionary *op = dict[@"opdata"];
+    NSDictionary *fields = op[FT_FIELDS];
+    XCTAssertEqualObjects(fields[FT_KEY_MESSAGE], @"testSDKShutDownFlushesPendingLogCache");
 }
 /**
  *  verify: No crashes occur when add log data and update remote configuration during SDK shutdown.

@@ -21,6 +21,7 @@
 #ifndef FTAddRumDatasProtocol_h
 #define FTAddRumDatasProtocol_h
 NS_ASSUME_NONNULL_BEGIN
+@class FTHeatmapAttributes;
 /// App running state
 typedef NS_ENUM(NSUInteger, FTAppState) {
     /// Unknown
@@ -137,6 +138,11 @@ typedef NS_ENUM(NSUInteger, FTAppState) {
 - (void)addLongTaskWithStack:(NSString *)stack duration:(NSNumber *)duration startTime:(long long)startTime property:(nullable NSDictionary *)property;
 
 @optional
+/**
+ * Start RUM Action with heatmap metadata.
+ */
+- (void)startAction:(NSString *)actionName actionType:(NSString *)actionType property:(nullable NSDictionary *)property heatmapAttributes:(nullable FTHeatmapAttributes *)heatmapAttributes;
+
 /**
  * Enter page
  * @param viewId          page id

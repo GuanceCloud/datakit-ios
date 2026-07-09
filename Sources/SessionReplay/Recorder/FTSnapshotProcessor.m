@@ -73,8 +73,20 @@ NSTimeInterval const kFullSnapshotInterval = 20.0;
         NSMutableArray<FTSRWireframe> *wireframes = (NSMutableArray<FTSRWireframe>*)[[NSMutableArray alloc]init];
         NSArray<id <FTSRNodeWireframesBuilder>> *nodes = [self.flattener flattenNodes:viewTreeSnapshot];
         for (id<FTSRNodeWireframesBuilder> builder in nodes) {
-            [wireframes addObjectsFromArray:[builder buildWireframesWithBuilder:srBuilder]];
+            FTHeatmapIdentifier *heatmapIdentifier = nil;
+            if ([builder respondsToSelector:@selector(heatmapIdentifier)]) {
+                heatmapIdentifier = builder.heatmapIdentifier;
+            }
+            srBuilder.heatmapIdentifier = heatmapIdentifier;
+            NSArray<FTSRWireframe *> *builtWireframes = [builder buildWireframesWithBuilder:srBuilder];
+            if (heatmapIdentifier) {
+                for (FTSRWireframe *wireframe in builtWireframes) {
+                    wireframe.permanentId = heatmapIdentifier.rawValue;
+                }
+            }
+            [wireframes addObjectsFromArray:builtWireframes];
         }
+        srBuilder.heatmapIdentifier = nil;
         // -hiddenWebViewSlotIDs methods must all after all nodes call [builder buildWireframesWithBuilder:srBuilder]
         [[FTWKWebViewHandler sharedInstance] setHiddenSlotIds:[srBuilder hiddenWebViewSlotIDs]];
         NSArray<FTSRWireframe*> *hiddenWebs = [srBuilder hiddenWebViewWireframes];

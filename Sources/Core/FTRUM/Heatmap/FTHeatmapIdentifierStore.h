@@ -1,9 +1,9 @@
 //
-//  UIScrollView+FTAutoTrack.h
+//  FTHeatmapIdentifierStore.h
 //  FTMobileAgent
 //
-//  Created by hulilei on 2021/7/28.
-//  Copyright 2021 Shanghai Guance Information Technology Co., Ltd.
+//  Created by hulilei on 2026/6/11.
+//  Copyright 2026 Shanghai Guance Information Technology Co., Ltd.
 //
 //  Licensed under the Apache License, Version 2.0 (the "License");
 //  you may not use this file except in compliance with the License.
@@ -18,23 +18,13 @@
 //  limitations under the License.
 //
 
-#import <TargetConditionals.h>
-#if TARGET_OS_IOS || TARGET_OS_TV
-#import <UIKit/UIKit.h>
+#import <Foundation/Foundation.h>
+#import "FTHeatmap.h"
 
 NS_ASSUME_NONNULL_BEGIN
 
-@interface UITableView (FTAutoTrack)
-
-- (void)ft_setDelegate:(id <UITableViewDelegate>)delegate;
-
-@end
-
-@interface UICollectionView (FTAutoTrack)
-
-- (void)ft_setDelegate:(id <UICollectionViewDelegate>)delegate;
+@interface FTHeatmapIdentifierStore : NSObject<FTHeatmapIdentifierRegistry>
 
 @end
 
 NS_ASSUME_NONNULL_END
-#endif

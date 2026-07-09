@@ -39,6 +39,7 @@
 #import "FTUnsupportedViewRecorder.h"
 #import "FTUIProgressViewRecorder.h"
 #import "FTUIActivityIndicatorRecorder.h"
+#import "FTSessionReplayCoreImports.h"
 #if !TARGET_OS_TV
 #import "FTWKWebViewRecorder.h"
 #endif
@@ -73,7 +74,10 @@
 - (FTViewTreeSnapshot *)takeSnapshot:(NSArray <UIView *> *)rootViews referenceView:(UIView *)referenceView context:(FTSRContext *)context{
     NSMutableArray *node = [[NSMutableArray alloc]init];
     NSMutableArray *resource = [[NSMutableArray alloc]init];
-    for (UIView *rootView in rootViews) {
+    FTHeatmapCache *heatmapCache = self.enableHeatmap ? [[FTHeatmapCache alloc]init] : nil;
+    NSArray<NSNumber *> *rootTypeIndices = [self typeIndicesForViews:rootViews];
+    for (NSUInteger index = 0; index < rootViews.count; index++) {
+        UIView *rootView = rootViews[index];
         // Determine if window can be displayed
         if(rootView.isHidden == NO && rootView.alpha>0 && !CGRectEqualToRect(rootView.frame, CGRectZero)){
             FTViewTreeRecordingContext *recordingContext = [[FTViewTreeRecordingContext alloc]init];
@@ -83,8 +87,14 @@
             recordingContext.coordinateSpace = referenceView;
             recordingContext.clip = referenceView.bounds;
             recordingContext.viewControllerContext = [FTViewControllerContext new];
-            [self.viewTreeRecorder record:node view:rootView context:recordingContext];
+            recordingContext.heatmapCache = heatmapCache;
+            recordingContext.nodePath = [NSMutableArray array];
+            [self.viewTreeRecorder record:node view:rootView context:recordingContext typeIndex:[rootTypeIndices[index] integerValue]];
         }
+    }
+    if (heatmapCache) {
+        id<FTHeatmapIdentifierRegistry> registry = [[FTModuleManager sharedInstance] getRegisterService:@protocol(FTHeatmapIdentifierRegistry)];
+        [registry setHeatmapIdentifiers:[heatmapCache.identifiers copy]];
     }
     FTViewTreeSnapshot *viewTree = [[FTViewTreeSnapshot alloc]init];
     viewTree.date = context.date;
@@ -99,6 +109,17 @@
     viewTree.webViewSlotIDs = [NSSet setWithArray:hashes];
     viewTree.resources = resource;
     return viewTree;
+}
+- (NSArray<NSNumber *> *)typeIndicesForViews:(NSArray<UIView *> *)views {
+    NSMutableDictionary<NSString *, NSNumber *> *counts = [NSMutableDictionary dictionary];
+    NSMutableArray<NSNumber *> *indices = [NSMutableArray arrayWithCapacity:views.count];
+    for (UIView *view in views) {
+        NSString *className = NSStringFromClass(view.class);
+        NSInteger index = [counts[className] integerValue];
+        [indices addObject:@(index)];
+        counts[className] = @(index + 1);
+    }
+    return indices;
 }
 - (NSArray <id <FTSRWireframesRecorder>> *)createDefaultNodeRecordersWithSwiftUIEnabled:(BOOL)enableSwiftUI{
     NSMutableArray *recorders = @[

@@ -61,7 +61,7 @@
             if ([dict ft_hasValidValueForKey:@"enableLinkRumData"]) _enableLinkRumData = [dict[@"enableLinkRumData"] boolValue];
             if ([dict ft_hasValidValueForKey:@"networkTraceType"]) _networkTraceType =(FTNetworkTraceType)[dict[@"networkTraceType"] intValue];
             if ([dict ft_hasValidValueForKey:@"enableAutoTrace"]) _enableAutoTrace = [dict[@"enableAutoTrace"] boolValue];
-            if ([dict ft_hasValidValueForKey:@"traceInterceptor"]) _traceInterceptor = dict[@"traceInterceptor"];
+            if ([dict ft_hasValidValueForKey:@"traceInterceptor"]) _traceInterceptor = [dict[@"traceInterceptor"] copy];
         }
         return self;
     }else{
@@ -88,19 +88,19 @@
 @implementation FTSDKConfig
 -(instancetype)initWithMetricsUrl:(NSString *)metricsUrl{
     self = [self initWithDatakitUrl:metricsUrl];
-    self->_metricsUrl = metricsUrl;
+    self->_metricsUrl = [metricsUrl copy];
     return self;
 }
 -(instancetype)initWithDatakitUrl:(NSString *)datakitUrl{
     if (self = [self init]) {
-        _datakitUrl = datakitUrl;
+        _datakitUrl = [datakitUrl copy];
     }
     return self;
 }
 - (nonnull instancetype)initWithDatawayUrl:(nonnull NSString *)datawayUrl clientToken:(nonnull NSString *)clientToken{
     if (self = [self init]) {
-        _datawayUrl = datawayUrl;
-        _clientToken = clientToken;
+        _datawayUrl = [datawayUrl copy];
+        _clientToken = [clientToken copy];
     }
     return self;
 }
@@ -136,12 +136,12 @@
 }
 -(void)setEnv:(NSString *)env{
     if(env!=nil && env.length>0){
-        _env = env;
+        _env = [env copy];
     }
 }
 -(void)setService:(NSString *)service{
     if(service!=nil && service.length>0){
-        _service = service;
+        _service = [service copy];
     }
 }
 -(void)setSyncSleepTime:(int)syncSleepTime{

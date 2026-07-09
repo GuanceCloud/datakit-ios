@@ -37,6 +37,39 @@
 #import "FTMemoryMonitor.h"
 #import "FTDisplayRateMonitor.h"
 #include <string.h>
+#include <stdint.h>
+
+@interface FTTestCPUMonitor : FTCPUMonitor
+@property (nonatomic, strong) NSArray<NSNumber *> *rawTicks;
+@property (nonatomic, assign) NSUInteger rawTickIndex;
+- (instancetype)initWithRawTicks:(NSArray<NSNumber *> *)rawTicks;
+@end
+
+@implementation FTTestCPUMonitor
+
+- (instancetype)initWithRawTicks:(NSArray<NSNumber *> *)rawTicks {
+    self = [super init];
+    if (self) {
+        self.rawTicks = rawTicks;
+        self.rawTickIndex = 0;
+    }
+    return self;
+}
+
+- (BOOL)readRawUtilizedTicks:(uint32_t *)rawTicks {
+    if (self.rawTickIndex >= self.rawTicks.count) {
+        return NO;
+    }
+
+    if (rawTicks != NULL) {
+        *rawTicks = self.rawTicks[self.rawTickIndex].unsignedIntValue;
+    }
+    self.rawTickIndex += 1;
+    return YES;
+}
+
+@end
+
 @interface FTRUMMonitorTest : XCTestCase
 @property (nonatomic, copy) NSString *url;
 @property (nonatomic, copy) NSString *appid;
@@ -53,7 +86,7 @@
 }
 
 - (void)tearDown {
-    
+
 }
 - (void)shutDownSDK{
     [[FTGlobalRumManager sharedInstance].rumManager syncProcess];
@@ -147,6 +180,19 @@
     double activeUsage = [cpuMonitor readCpuUsage];
     XCTAssertEqual(resignActiveUsage, resignActiveUsage1);
     XCTAssertGreaterThan(activeUsage-resignActiveUsage, resignActiveUsage-baseUsage);
+}
+- (void)testMonitorCpuHandlesTickCounterRollover{
+    uint32_t rawTicksBeforeRollover = UINT32_MAX - 10;
+    FTTestCPUMonitor *cpuMonitor = [[FTTestCPUMonitor alloc]initWithRawTicks:@[
+        @(rawTicksBeforeRollover),
+        @20,
+    ]];
+
+    double usageBeforeRollover = [cpuMonitor readCpuUsage];
+    double usageAfterRollover = [cpuMonitor readCpuUsage];
+
+    XCTAssertGreaterThan(usageAfterRollover, usageBeforeRollover);
+    XCTAssertEqualWithAccuracy(usageAfterRollover - usageBeforeRollover, 31, 0.001);
 }
 - (void)testMonitorFrequencyDefault{
     FTMonitorItem *item = [[FTMonitorItem alloc]initWithCpuMonitor:[FTCPUMonitor new] memoryMonitor:[FTMemoryMonitor new] displayRateMonitor:[FTDisplayRateMonitor new] frequency:MonitorFrequencyMap[FTMonitorFrequencyDefault]];

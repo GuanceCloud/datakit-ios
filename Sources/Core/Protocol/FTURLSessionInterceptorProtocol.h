@@ -56,7 +56,7 @@ typedef BOOL (^SessionTaskErrorFilter)(NSError *_Nonnull error);
 
 
 /// Collected resource data receiver object
-@property (nonatomic, weak) id<FTRumResourceProtocol> rumResourceHandler;
+@property (nonatomic, weak, nullable) id<FTRumResourceProtocol> rumResourceHandler;
 
 - (void)setTracer:(id<FTTracerProtocol>)tracer;
 /// Implement trace function, add trace parameters to request header

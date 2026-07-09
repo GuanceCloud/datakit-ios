@@ -38,11 +38,13 @@
 -(instancetype)initWithWindowObserver:(FTWindowObserver *)observer
                     snapshotProcessor:(FTSnapshotProcessor *)snapshotProcessor
               additionalNodeRecorders:(NSArray<id <FTSRWireframesRecorder>>*)additionalNodeRecorders
-                        enableSwiftUI:(BOOL)enableSwiftUI;{
+                        enableSwiftUI:(BOOL)enableSwiftUI
+                        enableHeatmap:(BOOL)enableHeatmap{
     self = [super init];
     if(self){
         _windowObserver = observer;
         _viewSnapShotBuilder = [[FTViewTreeSnapshotBuilder alloc]initWithAdditionalNodeRecorders:additionalNodeRecorders enableSwiftUI:enableSwiftUI];
+        _viewSnapShotBuilder.enableHeatmap = enableHeatmap;
         _snapshotProcessor = snapshotProcessor;
     }
     return self;

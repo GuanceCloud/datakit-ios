@@ -38,6 +38,7 @@
 #import "FTInternalConstants.h"
 #import "FTRUMMonitor.h"
 #import "FTRUMManager.h"
+#import "FTHeatmap.h"
 #import "FTRUMHandler.h"
 #import "FTLongTaskDetector.h"
 #import "FTCrash.h"

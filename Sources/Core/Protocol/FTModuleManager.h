@@ -28,6 +28,7 @@ FOUNDATION_EXPORT FTMessageKey const FTMessageKeyWebViewSR;
 FOUNDATION_EXPORT FTMessageKey const FTMessageKeyRumError;
 FOUNDATION_EXPORT FTMessageKey const FTMessageKeySRSampleRateUpdate;
 @protocol FTMessageReceiver;
+
 @interface FTModuleManager : NSObject
 + (instancetype)sharedInstance;
 - (void)postMessageWithKey:(NSString *)key messageBlock:(nullable NSDictionary * (^)(void))messageBlock;

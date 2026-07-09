@@ -35,10 +35,14 @@
 -(instancetype)initWithIdentifier:(NSString *)identifier textObfuscator:(FTTextObfuscator)textObfuscator{
     self = [super init];
     if(self){
-        _identifier = identifier;
-        _textObfuscator = textObfuscator?textObfuscator:^(FTViewTreeRecordingContext *context,FTViewAttributes *attributes){
-            return [FTSRTextObfuscatingFactory inputAndOptionTextObfuscator:[attributes resolveTextAndInputPrivacyLevel:context.recorder]];
-        };
+        _identifier = [identifier copy];
+        if (textObfuscator) {
+            _textObfuscator = [textObfuscator copy];
+        } else {
+            _textObfuscator = ^id<FTSRTextObfuscatingProtocol> _Nullable(FTViewTreeRecordingContext *context,FTViewAttributes *attributes){
+                return [FTSRTextObfuscatingFactory inputAndOptionTextObfuscator:[attributes resolveTextAndInputPrivacyLevel:context.recorder]];
+            };
+        }
         FTViewTreeRecorder *selectionRecorder = [[FTViewTreeRecorder alloc]init];
         selectionRecorder.nodeRecorders = @[[[FTUIViewRecorder alloc]initWithIdentifier:[NSUUID UUID].UUIDString semanticsOverride:^FTSRNodeSemantics* _Nullable(UIView *view, FTViewAttributes *attributes) {
             if (@available(iOS 13, *)) {

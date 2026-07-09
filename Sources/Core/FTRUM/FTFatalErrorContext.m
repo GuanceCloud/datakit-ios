@@ -43,7 +43,7 @@ static BOOL FTObjectIsEqual(id a, id b) {
                globalAttributes:(nullable NSDictionary *)globalAttributes
                errorMonitorInfo:(nullable NSDictionary *)errorMonitorInfo {
     if (self = [super init]) {
-        _appState = appState;
+        _appState = [appState copy];
         _lastSessionState = lastSessionState;
         _lastViewContext = lastViewContext;
         _dynamicContext = dynamicContext;
@@ -81,7 +81,7 @@ static BOOL FTObjectIsEqual(id a, id b) {
 
 @interface FTFatalErrorContext ()
 @property (nonatomic, strong) dispatch_queue_t queue;
-@property (nonatomic, weak) id<FTErrorMonitorInfoProvider> provider;
+@property (nonatomic, weak, nullable) id<FTErrorMonitorInfoProvider> provider;
 
 @property (nonatomic, copy, nullable) NSString *appState;
 @property (nonatomic, strong, nullable) FTRUMSessionState *lastSessionState;
@@ -105,10 +105,11 @@ static BOOL FTObjectIsEqual(id a, id b) {
 }
 
 - (void)setAppState:(nullable NSString *)appState {
+    NSString *appStateCopy = [appState copy];
     dispatch_async(self.queue, ^{
         @try {
-            if (FTObjectIsEqual(self.appState, appState)) return;
-            self->_appState = appState;
+            if (FTObjectIsEqual(self.appState, appStateCopy)) return;
+            self->_appState = appStateCopy;
             [self triggerChangeCallbackIfNeeded];
         } @catch (NSException *exception) {
             FTInnerLogError(@"setAppState exception: %@", exception);

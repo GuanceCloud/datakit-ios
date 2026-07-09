@@ -86,7 +86,13 @@
     }
     return self;
 }
+- (void)configureHeatmapIdentifierRegistry {
+    id<FTHeatmapIdentifierRegistry> registry = [[FTModuleManager sharedInstance] getRegisterService:@protocol(FTHeatmapIdentifierRegistry)];
+    [registry setEnableHeatmap:self.config.enableHeatmap];
+    [registry setHeatmapIdentifiers:@{}];
+}
 -(void)startWithRecordStorage:(FTFeatureStorage *)recordStorage resourceStorage:(FTFeatureStorage *)resourceStorage resourceDataStore:(nullable id<FTDataStore>)dataStore{
+    [self configureHeatmapIdentifierRegistry];
     __weak typeof(self) weakSelf = self;
     FTTrackingConsentProvider trackingConsentProvider = ^FTTrackingConsent{
         __strong typeof(weakSelf) strongSelf = weakSelf;
@@ -105,7 +111,7 @@
     FTRecordWriter *recordWriter = [[FTRecordWriter alloc]initWithFeatureScope:recordScope];
     FTSnapshotProcessor *srProcessor = [[FTSnapshotProcessor alloc]initWithQueue:self.processorsQueue recordWriter:recordWriter resourceProcessor:resourceProcessor];
 
-    FTRecorder *windowRecorder = [[FTRecorder alloc]initWithWindowObserver:self.windowObserver snapshotProcessor:srProcessor additionalNodeRecorders:self.config.additionalNodeRecorders enableSwiftUI:self.config.enableSwiftUI];
+    FTRecorder *windowRecorder = [[FTRecorder alloc]initWithWindowObserver:self.windowObserver snapshotProcessor:srProcessor additionalNodeRecorders:self.config.additionalNodeRecorders enableSwiftUI:self.config.enableSwiftUI enableHeatmap:self.config.enableHeatmap];
     self.recordingCoordinator.recorder = windowRecorder;
     [self.recordScope updateTrackingConsent];
     [self.resourceScope updateTrackingConsent];

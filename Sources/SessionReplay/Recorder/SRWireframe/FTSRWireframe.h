@@ -76,15 +76,17 @@ NS_ASSUME_NONNULL_BEGIN
 @property (nonatomic, assign) int64_t identifier;
 // Don't change to int, use NSNumber so it can be set to nil during update comparison
 /// frame.origin.x in root view
-@property (nonatomic) NSNumber *x;
+@property (nonatomic, strong, nullable) NSNumber *x;
 /// frame.origin.y in root view
-@property (nonatomic) NSNumber *y;
+@property (nonatomic, strong, nullable) NSNumber *y;
 /// UI control width
-@property (nonatomic) NSNumber *width;
+@property (nonatomic, strong, nullable) NSNumber *width;
 /// UI control height
-@property (nonatomic) NSNumber *height;
+@property (nonatomic, strong, nullable) NSNumber *height;
 /// Control type
 @property (nonatomic, copy) NSString *type;
+/// Stable heatmap identifier shared with RUM Action target metadata.
+@property (nonatomic, copy, nullable) NSString *permanentId;
 /// Clip information
 @property (nonatomic, strong,nullable) FTSRContentClip *clip;
 

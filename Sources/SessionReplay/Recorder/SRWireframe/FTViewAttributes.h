@@ -32,6 +32,7 @@ NS_ASSUME_NONNULL_BEGIN
 @property (nonatomic, copy) NSString *applicationID;
 @property (nonatomic, copy) NSString *sessionID;
 @property (nonatomic, copy) NSString *viewID;
+@property (nonatomic, copy, nullable) NSString *viewPath;
 @property (nonatomic, strong) NSDate *date;
 @property (nonatomic, copy) NSDictionary *bindInfo;
 @end

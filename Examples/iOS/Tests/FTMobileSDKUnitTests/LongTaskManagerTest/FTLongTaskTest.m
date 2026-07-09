@@ -31,7 +31,7 @@
 #import "FTModelHelper.h"
 #import "FTRUMManager.h"
 #import "FTGlobalRumManager.h"
-#import "FTLongTaskManager.h"
+#import "FTLongTaskManager+Test.h"
 #import "FTTestUtils.h"
 @interface FTLongTaskTest : KIFTestCase
 
@@ -217,7 +217,7 @@
     [FTModelHelper startViewWithName:@"TestAnrFormat"];
     XCTestExpectation *expect = [self expectationWithDescription:@"Request Time!"];
     FTLongTaskManager *longTaskManager = [[FTGlobalRumManager sharedInstance] valueForKey:@"longTaskManager"];
-    NSString *dataStorePath = [longTaskManager valueForKey:@"dataStorePath"];
+    NSString *dataStorePath = longTaskManager.anrDataStore.dataStorePath;
     long long startTime = [NSDate ft_currentNanosecondTimeStamp];
     dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)(3.5 * NSEC_PER_SEC)), dispatch_get_global_queue(0, 0), ^{
         NSData *data = [NSData dataWithContentsOfFile:dataStorePath];
@@ -259,7 +259,7 @@
 - (void)testShutdownWhenLongTaskNotEnd{
     [self initSDKWithEnableTrackAppANR:YES longTask:NO];
     FTLongTaskManager *longTaskManager = [[FTGlobalRumManager sharedInstance] valueForKey:@"longTaskManager"];
-    NSString *dataStorePath = [longTaskManager valueForKey:@"dataStorePath"];
+    NSString *dataStorePath = longTaskManager.anrDataStore.dataStorePath;
     long long startTime = [NSDate ft_currentNanosecondTimeStamp];
     [tester waitForTimeInterval:0.2];
     dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)(3.5 * NSEC_PER_SEC)), dispatch_get_global_queue(0, 0), ^{
@@ -292,7 +292,7 @@
     NSData *data = [NSData dataWithContentsOfFile:dataStorePath];
     XCTAssertTrue(data.length == 0);
 }
-- (void)test_reportFatalWatchDogIfFound_fatalAnr{
+- (void)test_reportFatalANRDataIfFound_fatalAnr{
     NSString *path = [[NSBundle mainBundle] pathForResource:@"longtask" ofType:@"log"];
     
     NSFileManager *fileManager = [NSFileManager defaultManager];
@@ -337,7 +337,7 @@
     [FTMobileAgent shutDown];
 
 }
-- (void)test_reportFatalWatchDogIfFound_noAnr{
+- (void)test_reportFatalANRDataIfFound_noAnr{
     NSString *path = [[NSBundle mainBundle] pathForResource:@"longtask_no_anr" ofType:@"log"];
     
     NSFileManager *fileManager = [NSFileManager defaultManager];

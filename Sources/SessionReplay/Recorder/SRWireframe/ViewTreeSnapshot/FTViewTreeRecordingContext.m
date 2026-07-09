@@ -19,6 +19,16 @@
 #import "FTViewTreeRecordingContext.h"
 #import <SafariServices/SafariServices.h>
 #import <SwiftUI/SwiftUI.h>
+@implementation FTHeatmapCache
+- (instancetype)init {
+    self = [super init];
+    if (self) {
+        _identifiers = [NSMutableDictionary dictionary];
+    }
+    return self;
+}
+@end
+
 @implementation FTViewTreeRecordingContext
 - (instancetype)copyWithZone:(NSZone *)zone {
     FTViewTreeRecordingContext *options = [[[self class] allocWithZone:zone] init];
@@ -28,6 +38,8 @@
     options.viewControllerContext = self.viewControllerContext;
     options.clip = self.clip;
     options.webViewCache = self.webViewCache;
+    options.heatmapCache = self.heatmapCache;
+    options.nodePath = self.nodePath ? [self.nodePath mutableCopy] : [NSMutableArray array];
     return options;
 }
 @end

@@ -69,7 +69,7 @@ static void *IMP_resolved_method_implementation(void){
 }
 @end
 @interface FTSwizzlerTest : XCTestCase
-@property (nonatomic, weak) id <FTBaseDelegate> delegate;
+@property (nonatomic, weak, nullable) id <FTBaseDelegate> delegate;
 @property (nonatomic, strong) SubSwizzlerClass *sub;
 @property (nonatomic, strong) SubSwizzlerClass *nullSub;
 

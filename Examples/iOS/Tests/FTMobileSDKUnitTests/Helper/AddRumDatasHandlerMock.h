@@ -22,6 +22,7 @@
 #import "FTRumDatasProtocol.h"
 
 NS_ASSUME_NONNULL_BEGIN
+@class FTHeatmapAttributes;
 typedef NS_ENUM(NSInteger, TestRUMType) {
     ViewStart,
     ViewStop,
@@ -45,6 +46,7 @@ typedef NS_ENUM(NSInteger, TestRUMType) {
 @property (nonatomic, copy, nullable) NSString *lastActionName;
 @property (nonatomic, copy, nullable) NSString *lastActionType;
 @property (nonatomic, copy, nullable) NSDictionary *lastActionProperty;
+@property (nonatomic, strong, nullable) FTHeatmapAttributes *lastHeatmapAttributes;
 @end
 
 NS_ASSUME_NONNULL_END

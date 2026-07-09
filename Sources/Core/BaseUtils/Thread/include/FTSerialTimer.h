@@ -25,6 +25,7 @@
 NS_ASSUME_NONNULL_BEGIN
 
 @interface FTSerialTimer : NSObject
+- (instancetype)initWithEventHandler:(dispatch_block_t)eventHandler;
 - (instancetype)initWithQueue:(dispatch_queue_t)queue eventHandler:(dispatch_block_t)eventHandler;
 - (void)scheduleAfter:(NSTimeInterval)delay leeway:(NSTimeInterval)leeway;
 - (void)cancel;

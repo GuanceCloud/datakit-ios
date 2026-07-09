@@ -55,16 +55,6 @@ void *FTMessageBusQueueIdentityKey = &FTMessageBusQueueIdentityKey;
     });
     return _sharedInstance;
 }
-- (NSArray *)messageReceiversSnapshot{
-    [self.receiverArray compact];
-    NSMutableArray *receivers = [NSMutableArray array];
-    for (id receiver in self.receiverArray.allObjects) {
-        if (receiver) {
-            [receivers addObject:receiver];
-        }
-    }
-    return [receivers copy];
-}
 - (void)notifyMessageReceivers:(NSArray *)receivers key:(NSString *)key message:(NSDictionary *)message{
     for (id receiver in receivers) {
         if ([receiver respondsToSelector:@selector(receive:message:)]) {
@@ -78,7 +68,7 @@ void *FTMessageBusQueueIdentityKey = &FTMessageBusQueueIdentityKey;
         if (!message) {
             return;
         }
-        NSArray *receivers = [self messageReceiversSnapshot];
+        NSArray *receivers = self.receiverArray.allObjects;
         [self notifyMessageReceivers:receivers key:key message:message];
     };
     dispatch_async(self.queue, block);
@@ -88,7 +78,7 @@ void *FTMessageBusQueueIdentityKey = &FTMessageBusQueueIdentityKey;
 }
 - (void)postMessageWithKey:(NSString *)key message:(NSDictionary *)message sync:(BOOL)sync{
     dispatch_block_t block = ^{
-        NSArray *receivers = [self messageReceiversSnapshot];
+        NSArray *receivers = self.receiverArray.allObjects;
         [self notifyMessageReceivers:receivers key:key message:message];
     };
     if (sync) {

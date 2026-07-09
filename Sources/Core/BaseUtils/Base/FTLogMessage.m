@@ -23,9 +23,9 @@
 @implementation FTLogMessage
 - (instancetype)initWithMessage:(NSString *)message level:(LogStatus)level function:(NSString *)function line:(NSUInteger)line timestamp:(NSDate *)timestamp {
     if (self = [super init]) {
-        _message = message;
+        _message = [message copy];
         _level = level;
-        _function = function;
+        _function = [function copy];
         _line = line;
         _timestamp = timestamp;
         _userLog = NO;
@@ -34,11 +34,11 @@
 }
 -(instancetype)initWithMessage:(NSString *)message level:(LogStatus)level status:(NSString *)status property:(nullable NSDictionary *)property timestamp:(nonnull NSDate *)timestamp{
     if (self = [super init]) {
-        _message = message;
+        _message = [message copy];
         _level = level;
-        _status = status;
+        _status = [status copy];
         _timestamp = timestamp;
-        _property = property;
+        _property = [property copy];
         _userLog = YES;
     }
     return self;

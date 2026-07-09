@@ -23,6 +23,7 @@
 #import "FTConstants.h"
 #import "FTBaseInfoHandler.h"
 #import "FTRUMContext.h"
+#import "FTHeatmap.h"
 
 static const NSTimeInterval actionMaxDuration = 5; // 5 seconds
 static const NSTimeInterval discreteActionTimeoutDuration = 0.1;
@@ -39,6 +40,7 @@ static const NSTimeInterval discreteActionTimeoutDuration = 0.1;
 @property (nonatomic, assign) NSInteger actionResourcesCount;
 @property (nonatomic, assign) NSInteger actionErrorCount;
 @property (nonatomic, strong) NSDictionary *actionProperty;//Add to field
+@property (nonatomic, strong) FTHeatmapAttributes *heatmapAttributes;
 //private
 @property (nonatomic, assign) NSInteger activeResourcesCount;
 @property (nonatomic, strong) NSDate *lastResourceEndDate;
@@ -54,6 +56,7 @@ static const NSTimeInterval discreteActionTimeoutDuration = 0.1;
         self.action_id = [FTBaseInfoHandler randomUUID];
         self.action_name = model.action_name;
         self.action_type = model.action_type;
+        self.heatmapAttributes = model.heatmapAttributes;
         self.type = model.type;
         context.action_id = self.action_id;
         context.action_name = self.action_name;
@@ -145,6 +148,10 @@ static const NSTimeInterval discreteActionTimeoutDuration = 0.1;
 
     if(self.actionProperty && self.actionProperty.allKeys.count>0){
         [fields addEntriesFromDictionary:self.actionProperty];
+    }
+    NSDictionary *heatmapAction = [self.heatmapAttributes heatmapActionDictionary];
+    if (heatmapAction.count > 0) {
+        [fields addEntriesFromDictionary:heatmapAction];
     }
     NSMutableDictionary *tags = [NSMutableDictionary new];
     [tags addEntriesFromDictionary:sessionViewActionTag];

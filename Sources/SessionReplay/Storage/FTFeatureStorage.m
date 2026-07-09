@@ -68,7 +68,7 @@ static NSString * const FTWebViewFilePrefix = @"w";
                        performance:(FTPerformancePreset *)performance{
     self = [super init];
     if(self){
-        _featureName = featureName;
+        _featureName = [featureName copy];
         _queue = queue;
         _performance = performance;
         _directories = directories;

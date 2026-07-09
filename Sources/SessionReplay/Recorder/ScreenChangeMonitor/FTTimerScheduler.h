@@ -48,7 +48,7 @@ NS_ASSUME_NONNULL_BEGIN
 
 + (instancetype)scheduler;
 
-@property (class, nonatomic, readonly) FTDispatchSourceTimerScheduler *dispatchSource;
+@property (class, nonatomic, strong, readonly) FTDispatchSourceTimerScheduler *dispatchSource;
 @end
 
 NS_ASSUME_NONNULL_END
