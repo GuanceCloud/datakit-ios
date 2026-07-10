@@ -253,9 +253,6 @@ build_archive() {
   if [[ "${disable_swizzling}" == "1" ]]; then
     preprocessor_defs+=" ${SWIZZLING_MACRO}=1"
   fi
-  if [[ "${scheme}" == "FTSessionReplay" ]]; then
-    preprocessor_defs+=" GUANCE_SESSION_REPLAY_FRAMEWORK=1"
-  fi
   
   # Execute compilation (fully aligned with your xcodebuild parameters)
   # shellcheck disable=SC2086
