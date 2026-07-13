@@ -1,3 +1,12 @@
+# 1.6.6-alpha.2
+1. Added experimental Session Replay heatmap correlation through `FTSessionReplayConfig.enableHeatmap`.
+2. Fixed RUM CPU usage calculation when the system tick counter rolls over.
+3. Fixed RUM app launch, app state, and session timeout handling when display monitoring is unavailable or sessions transition between states.
+4. Fixed ANR all-thread backtrace collection retry handling.
+5. Improved logger and message bus performance, including skipping disabled internal log argument evaluation and debouncing log flushes.
+6. Improved Objective-C ownership handling for properties and associated objects to reduce memory-management risks.
+7. Improved SDK framework packaging, including separate XCFramework zip archives, dSYM packaging, tvOS/macOS framework builds, packaging header fixes, and framework Info.plist metadata.
+---
 # 1.6.6-alpha.1
 1. Fixed URLSession Resource collection to keep request and trace data stable during asynchronous processing.
 2. Fixed an ANR risk caused by SQLite `VACUUM` during app background transitions.
