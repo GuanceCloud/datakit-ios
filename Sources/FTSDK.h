@@ -15,7 +15,7 @@
 
 #ifndef FTSDK_h
 #define FTSDK_h
-
+#import <TargetConditionals.h>
 #import "FTSDKConfig.h"
 #import "FTMobileConfig.h"
 #import "FTExternalDataManager.h"
@@ -32,7 +32,9 @@
 #import "FTLoggerConfig.h"
 #import "FTRumConfig.h"
 #import "FTConstants.h"
+#if !TARGET_OS_TV
 #import "FTWKWebViewHandler.h"
+#endif
 #import "FTSDKConfig+Private.h"
 #import "FTMobileConfig+Private.h"
 #import "FTActionTrackingHandler.h"
