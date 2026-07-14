@@ -189,6 +189,7 @@ NS_ASSUME_NONNULL_BEGIN
 - (void)shutDown DEPRECATED_MSG_ATTRIBUTE("Deprecated, please use +shutDown instead");
 @end
 
+/// Legacy name for `FTMobileAgent`, retained for source compatibility.
 @compatibility_alias FTSDKAgent FTMobileAgent;
 
 NS_ASSUME_NONNULL_END

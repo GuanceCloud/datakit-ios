@@ -24,10 +24,12 @@
 #import "FTViewTrackingHandler.h"
 
 NS_ASSUME_NONNULL_BEGIN
+/// Default handler that creates RUM views for automatically tracked UIKit view controllers.
 @interface FTDefaultUIKitViewTrackingHandler : NSObject<FTUIKitViewTrackingHandler>
 
 @end
 
+/// Default handler that creates RUM views from automatically extracted SwiftUI view names.
 @interface FTDefaultSwiftUIViewTrackingHandler : NSObject<FTSwiftUIViewTrackingHandler>
 @end
 NS_ASSUME_NONNULL_END

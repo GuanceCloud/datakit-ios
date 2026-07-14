@@ -22,23 +22,18 @@
 #import "FTLoggerConfig.h"
 #import "FTExtensionConfig.h"
 NS_ASSUME_NONNULL_BEGIN
+/// Manages SDK data collection and logging for an app extension.
 @interface FTExtensionManager : NSObject
-/**
- * @abstract
- * Extension initialization method
- *
- * @param extensionConfig extension configuration items
- */
+/// Starts extension data collection with the specified configuration.
+/// - Parameter extensionConfig: Configuration shared by the host app and extension.
 + (void)startWithExtensionConfig:(FTExtensionConfig *)extensionConfig;
 
+/// Returns the manager initialized by `startWithExtensionConfig:`.
 + (instancetype)sharedInstance;
-/**
- * @abstract
- * Log reporting
- *
- * @param content  log content, can be json string
- * @param status   event level and status, info: prompt, warning: warning, error: error, critical: critical, ok: recovery, default: info
- */
+/// Writes a custom log without additional properties.
+/// - Parameters:
+///   - content: Log content, which can be a JSON string.
+///   - status: Log severity and status.
 -(void)logging:(NSString *)content status:(FTLogStatus)status;
 /// Add custom logs
 /// - Parameters:

@@ -34,13 +34,20 @@ typedef FTRemoteConfigModel*_Nullable(^FTRemoteConfigFetchCompletionBlock)(BOOL 
                                               FTRemoteConfigModel * _Nullable model,
                                               NSDictionary<NSString *, id> * _Nullable content);
 
-
+/// Reasons a remote configuration request cannot provide an updated configuration.
 typedef NS_ENUM(NSInteger, FTRemoteConfigErrorCode) {
-    FTRemoteConfigErrorCodeDisabled = 1001,           // Remote config is disabled
-    FTRemoteConfigErrorCodeIntervalNotMet = 1002,     // Update interval not met
-    FTRemoteConfigErrorCodeRequesting = 1003,         // Request is in progress
-    FTRemoteConfigErrorCodeNetworkFailed = 1004,      // Network request failed
-    FTRemoteConfigErrorCodeParseFailed = 1005,        // Config parse failed
-    FTRemoteConfigErrorCodeSDKNotInitialized = 1006,  // SDK is not initialized
-    FTRemoteConfigErrorCodeSyncConfigMissing = 1007   // Sync URL or AppID is not configured
+    /// Remote configuration is disabled.
+    FTRemoteConfigErrorCodeDisabled = 1001,
+    /// The minimum interval between remote configuration requests has not elapsed.
+    FTRemoteConfigErrorCodeIntervalNotMet = 1002,
+    /// A remote configuration request is already in progress.
+    FTRemoteConfigErrorCodeRequesting = 1003,
+    /// The remote configuration network request failed.
+    FTRemoteConfigErrorCodeNetworkFailed = 1004,
+    /// The remote configuration response could not be parsed.
+    FTRemoteConfigErrorCodeParseFailed = 1005,
+    /// The SDK has not been initialized.
+    FTRemoteConfigErrorCodeSDKNotInitialized = 1006,
+    /// The synchronization URL or application ID is not configured.
+    FTRemoteConfigErrorCodeSyncConfigMissing = 1007
 };

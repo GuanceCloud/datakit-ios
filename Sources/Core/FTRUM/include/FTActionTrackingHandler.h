@@ -67,8 +67,10 @@ typedef NS_ENUM(NSUInteger, FTLaunchType) {
 @end
 
 #if TARGET_OS_TV
+/// Platform-specific handler that decides whether automatically detected RUM actions are recorded.
 typedef id<FTUIPressRUMActionsHandler> FTActionTrackingHandler;
 #elif TARGET_OS_IOS
+/// Platform-specific handler that decides whether automatically detected RUM actions are recorded.
 typedef id<FTUITouchRUMActionsHandler> FTActionTrackingHandler;
 #endif
 
@@ -82,6 +84,7 @@ NS_ASSUME_NONNULL_BEGIN
 @protocol FTUIPressRUMActionsHandler <NSObject>
 @end
 
+/// Placeholder action tracking handler for platforms without UIKit action tracking.
 typedef id FTActionTrackingHandler;
 
 NS_ASSUME_NONNULL_END

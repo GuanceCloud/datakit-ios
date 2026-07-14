@@ -41,12 +41,14 @@ typedef NS_OPTIONS(NSUInteger, FTCrashMonitorType){
     
 };
 
+/// Bitmask that enables all supported crash monitors.
 #define FTCrashMonitorTypeAll                                                                  \
     (FTCrashMonitorTypeMachException | FTCrashMonitorTypeSignal                            \
         | FTCrashMonitorTypeCPPException | FTCrashMonitorTypeNSException                   \
         | FTCrashMonitorTypeApplicationState | FTCrashMonitorTypeSystem)
 
 
+/// Bitmask that enables all crash monitors except Mach exceptions for broader device compatibility.
 #define FTCrashMonitorTypeHighCompatibility                                                          \
     (FTCrashMonitorTypeAll & (~FTCrashMonitorTypeMachException))
 /// Device information in ERROR

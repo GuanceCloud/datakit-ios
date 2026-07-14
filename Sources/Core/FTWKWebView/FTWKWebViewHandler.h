@@ -27,6 +27,7 @@ NS_ASSUME_NONNULL_BEGIN
 /// Handle WKWebView RUM events and associate with native RUM sessions
 @interface FTWKWebViewHandler : NSObject
 
+/// Returns the shared WebView RUM handler.
 + (instancetype)sharedInstance;
 
 /// Enable the SDK to associate RUM events from WebView with native RUM sessions.

@@ -85,6 +85,7 @@ public final class FTSwiftUIRUMActionBridge: NSObject {
     }
 }
 
+/// APIs for manually reporting RUM events from SwiftUI views.
 public enum FTRUMSwiftUI {
     /// Tracks a SwiftUI tap action without adding any extra gesture recognizer.
     ///

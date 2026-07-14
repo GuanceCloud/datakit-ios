@@ -25,6 +25,7 @@
 
 NS_ASSUME_NONNULL_BEGIN
 
+/// Default handler that creates RUM actions for automatically detected UIKit and tvOS interactions.
 @interface FTDefaultActionTrackingHandler : NSObject<FTUITouchRUMActionsHandler,FTUIPressRUMActionsHandler>
 
 @end

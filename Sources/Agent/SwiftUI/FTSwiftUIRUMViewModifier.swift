@@ -23,6 +23,7 @@
 import Foundation
 import SwiftUI
 
+/// A SwiftUI view wrapper that reports RUM view lifecycle events.
 @available(iOS 13.0, tvOS 13.0, *)
 public struct FTRUMTrackedView<Content: View>: View {
     let name: String
@@ -33,6 +34,12 @@ public struct FTRUMTrackedView<Content: View>: View {
     @State private var loadStartTime = DispatchTime.now().uptimeNanoseconds
     @State private var didReportLoadTime = false
 
+    /// Creates a wrapper that reports the lifecycle of its content as a RUM view.
+    ///
+    /// - Parameters:
+    ///   - name: Name reported for the RUM view.
+    ///   - property: Optional custom properties for the RUM view.
+    ///   - content: Content whose appearance and disappearance are tracked.
     public init(
         name: String,
         property: [String: Any]? = nil,
@@ -43,6 +50,7 @@ public struct FTRUMTrackedView<Content: View>: View {
         self.content = content
     }
 
+    /// The wrapped SwiftUI content with RUM lifecycle reporting applied.
     public var body: some View {
         content()
             .onAppear {

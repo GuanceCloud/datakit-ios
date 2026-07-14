@@ -32,7 +32,7 @@ NS_ASSUME_NONNULL_BEGIN
 
 /// The handler deciding if a given RUM View should be recorded.
 @protocol FTUIKitViewTrackingHandler <NSObject>
-// Converts a `UIViewController` into RUM view parameters, or filters it out.
+/// Converts a `UIViewController` into RUM view parameters, or filters it out.
 ///
 /// - Parameter viewController: The view controller that has appeared in the UI.
 /// - Returns: RUM view parameters if the view controller should be tracked, or `nil` to ignore it.
@@ -51,6 +51,7 @@ NS_ASSUME_NONNULL_BEGIN
 - (nullable FTRUMView *)rumViewForExtractedViewName:(NSString *)extractedViewName;
 @end
 
+/// Handler that decides whether automatically detected UIKit views are recorded as RUM views.
 typedef id<FTUIKitViewTrackingHandler> FTViewTrackingHandler;
 
 
@@ -64,6 +65,7 @@ NS_ASSUME_NONNULL_BEGIN
 @protocol FTSwiftUIViewTrackingHandler <NSObject>
 @end
 
+/// Placeholder view tracking handler for platforms without UIKit view tracking.
 typedef id<FTUIKitViewTrackingHandler> FTViewTrackingHandler;
 
 NS_ASSUME_NONNULL_END

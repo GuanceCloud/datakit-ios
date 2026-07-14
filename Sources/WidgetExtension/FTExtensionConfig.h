@@ -22,6 +22,7 @@
 
 NS_ASSUME_NONNULL_BEGIN
 
+/// Configuration for collecting RUM, tracing, and logging data from an app extension.
 @interface FTExtensionConfig : NSObject
 
 /// File sharing Group Identifier. (Required)

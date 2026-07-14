@@ -22,6 +22,7 @@
 
 NS_ASSUME_NONNULL_BEGIN
 
+/// Parameters that describe a RUM view before it is recorded.
 @interface FTRUMView : NSObject
 
 /// The RUM View name
