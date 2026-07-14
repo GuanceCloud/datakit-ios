@@ -20,7 +20,7 @@
 
 #import "FTDataCompression.h"
 #import <Foundation/Foundation.h>
-#import "compression.h"
+#import <compression.h>
 #import <zlib.h>
 @implementation FTDataCompression
 

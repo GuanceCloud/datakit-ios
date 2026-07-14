@@ -23,8 +23,8 @@
 #if TARGET_OS_IOS
 
 #import "FTCompression.h"
-#import "compression.h"
-#import "zlib.h"
+#import <compression.h>
+#import <zlib.h>
 
 @implementation FTCompression
 + (NSData *)compress:(NSData *)data{

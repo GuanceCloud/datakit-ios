@@ -21,7 +21,7 @@
 #import <XCTest/XCTest.h>
 #import "FTDataCompression+Test.h"
 #import "FTJSONUtil.h"
-#import "compression.h"
+#import <compression.h>
 #import <zlib.h>
 @interface FTDataCompressionTest : XCTestCase
 
