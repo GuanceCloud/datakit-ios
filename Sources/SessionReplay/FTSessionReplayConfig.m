@@ -20,20 +20,42 @@
 #import "FTSessionReplayConfig+Private.h"
 #import "FTSessionReplayCoreImports.h"
 
-NSString * const FTTextAndInputPrivacyLevelStringMap[] = {
-    [FTTextAndInputPrivacyLevelMaskAll] = @"MaskAll",
-    [FTTextAndInputPrivacyLevelMaskAllInputs] = @"MaskAllInputs",
-    [FTTextAndInputPrivacyLevelMaskSensitiveInputs] = @"MaskSensitiveInputs",
-};
-NSString * const FTTouchPrivacyLevelStringMap[] = {
-    [FTTouchPrivacyLevelHide] = @"Hide",
-    [FTTouchPrivacyLevelShow] = @"Show",
-};
-NSString * const FTImagePrivacyLevelStringMap[] = {
-    [FTImagePrivacyLevelMaskAll] = @"MaskAll",
-    [FTImagePrivacyLevelMaskNone] = @"MaskNone",
-    [FTImagePrivacyLevelMaskNonBundledOnly] = @"MaskNonBundledOnly",
-};
+static NSString *FTStringFromTextAndInputPrivacyLevel(FTTextAndInputPrivacyLevel level) {
+    switch (level) {
+        case FTTextAndInputPrivacyLevelMaskSensitiveInputs:
+            return @"MaskSensitiveInputs";
+        case FTTextAndInputPrivacyLevelMaskAllInputs:
+            return @"MaskAllInputs";
+        case FTTextAndInputPrivacyLevelMaskAll:
+            return @"MaskAll";
+        default:
+            return @"MaskAll";
+    }
+}
+
+static NSString *FTStringFromTouchPrivacyLevel(FTTouchPrivacyLevel level) {
+    switch (level) {
+        case FTTouchPrivacyLevelShow:
+            return @"Show";
+        case FTTouchPrivacyLevelHide:
+            return @"Hide";
+        default:
+            return @"Hide";
+    }
+}
+
+static NSString *FTStringFromImagePrivacyLevel(FTImagePrivacyLevel level) {
+    switch (level) {
+        case FTImagePrivacyLevelMaskNonBundledOnly:
+            return @"MaskNonBundledOnly";
+        case FTImagePrivacyLevelMaskAll:
+            return @"MaskAll";
+        case FTImagePrivacyLevelMaskNone:
+            return @"MaskNone";
+        default:
+            return @"MaskAll";
+    }
+}
 @interface FTSessionReplayConfig()
 @property (nonatomic, assign) BOOL fineGrainedMaskingSet;
 @end
@@ -108,7 +130,7 @@ NSString * const FTImagePrivacyLevelStringMap[] = {
     return config;
 }
 -(NSString *)debugDescription{
-    return [NSString stringWithFormat:@"====== Config ======\n sampleRate:%d\n sessionReplayOnErrorSampleRate:%d\n textAndInputPrivacy:%@\n touchPrivacy:%@\n imagePrivacy:%@\n enableSwiftUI:%@ enableHeatmap:%@\n ================== ",self.sampleRate,self.sessionReplayOnErrorSampleRate,FTTextAndInputPrivacyLevelStringMap[self.textAndInputPrivacy],FTTouchPrivacyLevelStringMap[self.touchPrivacy],FTImagePrivacyLevelStringMap[self.imagePrivacy],self.enableSwiftUI?@"YES":@"NO",self.enableHeatmap ? @"true" : @"false"];
+    return [NSString stringWithFormat:@"====== Config ======\n sampleRate:%d\n sessionReplayOnErrorSampleRate:%d\n textAndInputPrivacy:%@\n touchPrivacy:%@\n imagePrivacy:%@\n enableSwiftUI:%@ enableHeatmap:%@\n ================== ",self.sampleRate,self.sessionReplayOnErrorSampleRate,FTStringFromTextAndInputPrivacyLevel(self.textAndInputPrivacy),FTStringFromTouchPrivacyLevel(self.touchPrivacy),FTStringFromImagePrivacyLevel(self.imagePrivacy),self.enableSwiftUI?@"YES":@"NO",self.enableHeatmap ? @"true" : @"false"];
 }
 #pragma mark remote
 -(void)mergeWithRemoteConfigModel:(FTRemoteConfigModel *)model{

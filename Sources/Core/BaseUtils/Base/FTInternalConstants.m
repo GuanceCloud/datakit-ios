@@ -19,35 +19,57 @@
 //
 
 #import "FTInternalConstants.h"
-NSString * const FTStatusStringMap[] = {
-    [StatusInfo] = @"info",
-    [StatusWarning] = @"warning",
-    [StatusError] = @"error",
-    [StatusCritical] = @"critical",
-    [StatusOk] = @"ok",
-    [StatusDebug] = @"debug",
-};
-NSString * const FTNetworkTraceStringMap[] = {
-    [ZipkinMultiHeader] = @"zipkin",
-    [ZipkinSingleHeader] = @"zipkin",
-    [Jaeger] = @"jaeger",
-    [DDtrace] = @"ddtrace",
-    [SkyWalking] = @"skywalking",
-    [TraceParent] = @"traceparent",
-};
-NSString * const FTEnvStringMap[] = {
-    [Prod] = @"prod",
-    [Gray] = @"gray",
-    [Pre] = @"pre",
-    [Common] = @"common",
-    [Local] = @"local",
-};
 
-NSTimeInterval const MonitorFrequencyMap[] = {
-    [MonitorFrequencyDefault] = 0.5,
-    [MonitorFrequencyRare] = 1.0,
-    [MonitorFrequencyFrequent] = 0.1
-};
+NSString *FTStringFromLogStatus(LogStatus status) {
+    switch (status) {
+        case StatusInfo:
+            return @"info";
+        case StatusWarning:
+            return @"warning";
+        case StatusError:
+            return @"error";
+        case StatusCritical:
+            return @"critical";
+        case StatusOk:
+            return @"ok";
+        case StatusDebug:
+            return @"debug";
+        case StatusCustom:
+            return @"unknown";
+        default:
+            return @"info";
+    }
+}
+
+NSString *FTStringFromEnv(Env env) {
+    switch (env) {
+        case Prod:
+            return @"prod";
+        case Gray:
+            return @"gray";
+        case Pre:
+            return @"pre";
+        case Common:
+            return @"common";
+        case Local:
+            return @"local";
+        default:
+            return @"prod";
+    }
+}
+
+NSTimeInterval FTIntervalFromMonitorFrequency(MonitorFrequency frequency) {
+    switch (frequency) {
+        case MonitorFrequencyDefault:
+            return 0.5;
+        case MonitorFrequencyFrequent:
+            return 0.1;
+        case MonitorFrequencyRare:
+            return 1.0;
+        default:
+            return 0.5;
+    }
+}
 
 NSString * const FT_BLACK_LIST_VIEW = @"FT_BLACK_LIST_VIEW";
 

@@ -97,6 +97,46 @@ static FTFeatureStorage *FTMakeSessionReplayFeatureStorage(NSString *name) {
     FTSessionReplayConfig *config = [FTSessionReplayConfig new];
     XCTAssertFalse(config.enableHeatmap);
 }
+- (void)testInvalidPrivacyLevelsUseSafeDebugDescriptionDefaults{
+    FTSessionReplayConfig *config = [FTSessionReplayConfig new];
+    NSArray<NSArray *> *textCases = @[
+        @[@(FTTextAndInputPrivacyLevelMaskAll), @"MaskAll"],
+        @[@(FTTextAndInputPrivacyLevelMaskAllInputs), @"MaskAllInputs"],
+        @[@(FTTextAndInputPrivacyLevelMaskSensitiveInputs), @"MaskSensitiveInputs"],
+        @[@((FTTextAndInputPrivacyLevel)-1), @"MaskAll"],
+        @[@(FTTextAndInputPrivacyLevelMaskSensitiveInputs + 1), @"MaskAll"],
+        @[@(NSUIntegerMax), @"MaskAll"],
+    ];
+    for (NSArray *testCase in textCases) {
+        config.textAndInputPrivacy = [testCase[0] unsignedIntegerValue];
+        XCTAssertTrue([config.debugDescription containsString:[@"textAndInputPrivacy:" stringByAppendingString:testCase[1]]]);
+    }
+
+    NSArray<NSArray *> *touchCases = @[
+        @[@(FTTouchPrivacyLevelHide), @"Hide"],
+        @[@(FTTouchPrivacyLevelShow), @"Show"],
+        @[@((FTTouchPrivacyLevel)-1), @"Hide"],
+        @[@(FTTouchPrivacyLevelShow + 1), @"Hide"],
+        @[@(NSUIntegerMax), @"Hide"],
+    ];
+    for (NSArray *testCase in touchCases) {
+        config.touchPrivacy = [testCase[0] unsignedIntegerValue];
+        XCTAssertTrue([config.debugDescription containsString:[@"touchPrivacy:" stringByAppendingString:testCase[1]]]);
+    }
+
+    NSArray<NSArray *> *imageCases = @[
+        @[@(FTImagePrivacyLevelMaskAll), @"MaskAll"],
+        @[@(FTImagePrivacyLevelMaskNone), @"MaskNone"],
+        @[@(FTImagePrivacyLevelMaskNonBundledOnly), @"MaskNonBundledOnly"],
+        @[@((FTImagePrivacyLevel)-1), @"MaskAll"],
+        @[@(FTImagePrivacyLevelMaskNonBundledOnly + 1), @"MaskAll"],
+        @[@(NSUIntegerMax), @"MaskAll"],
+    ];
+    for (NSArray *testCase in imageCases) {
+        config.imagePrivacy = [testCase[0] unsignedIntegerValue];
+        XCTAssertTrue([config.debugDescription containsString:[@"imagePrivacy:" stringByAppendingString:testCase[1]]]);
+    }
+}
 #if TARGET_OS_IOS
 - (void)testSessionReplayFeatureSyncsHeatmapEnabledToRegistryOnStart {
     NSObject *staleObject = [NSObject new];

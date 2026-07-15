@@ -45,12 +45,20 @@
 #import <AppKit/AppKit.h>
 #endif
 
-NSString * const AppStateStringMap[] = {
-    [FTAppStateUnknown] = @"unknown",
-    [FTAppStateStartUp] = @"startup",
-    [FTAppStateRun] = @"run",
-    [FTAppStateBackground] = @"background",
-};
+NSString *FTStringFromAppState(FTAppState state) {
+    switch (state) {
+        case FTAppStateUnknown:
+            return @"unknown";
+        case FTAppStateStartUp:
+            return @"startup";
+        case FTAppStateRun:
+            return @"run";
+        case FTAppStateBackground:
+            return @"background";
+        default:
+            return @"unknown";
+    }
+}
 void *FTRUMQueueIdentityKey = &FTRUMQueueIdentityKey;
 
 @interface FTRUMManager()<FTRUMSessionProtocol,FTMessageReceiver,FTAppLifeCycleDelegate>
@@ -109,7 +117,7 @@ void *FTRUMQueueIdentityKey = &FTRUMQueueIdentityKey;
 }
 -(void)setAppState:(FTAppState)appState{
     _appState = appState;
-    self.rumDependencies.fatalErrorContext.appState = AppStateStringMap[appState];
+    self.rumDependencies.fatalErrorContext.appState = FTStringFromAppState(appState);
 }
 -(FTAppState)initialAppState{
 #if FT_HAS_UIKIT
@@ -360,7 +368,7 @@ void *FTRUMQueueIdentityKey = &FTRUMQueueIdentityKey;
                 [tags setValue:@(content.httpStatusCode) forKey:FT_KEY_RESOURCE_STATUS];
                 
                 if (content.error || content.httpStatusCode>=400) {
-                    NSString *errorSituation = AppStateStringMap[self.appState];
+                    NSString *errorSituation = FTStringFromAppState(self.appState);
                     NSMutableDictionary *errorField = [NSMutableDictionary new];
                     NSMutableDictionary *errorTags = [NSMutableDictionary dictionaryWithDictionary:tags];
                     if(content.error){
@@ -477,13 +485,13 @@ void *FTRUMQueueIdentityKey = &FTRUMQueueIdentityKey;
 
 #pragma mark - error 、 long_task -
 -(void)addErrorWithType:(NSString *)type message:(NSString *)message stack:(NSString *)stack{
-    [self addErrorWithType:type stateStr:AppStateStringMap[self.appState] message:message stack:stack property:nil time:[NSDate ft_currentNanosecondTimeStamp]];
+    [self addErrorWithType:type stateStr:FTStringFromAppState(self.appState) message:message stack:stack property:nil time:[NSDate ft_currentNanosecondTimeStamp]];
 }
 -(void)addErrorWithType:(NSString *)type message:(NSString *)message stack:(NSString *)stack property:(nullable NSDictionary *)property{
-    [self addErrorWithType:type stateStr:AppStateStringMap[self.appState] message:message stack:stack property:property time:[NSDate ft_currentNanosecondTimeStamp]];
+    [self addErrorWithType:type stateStr:FTStringFromAppState(self.appState) message:message stack:stack property:property time:[NSDate ft_currentNanosecondTimeStamp]];
 }
 - (void)addErrorWithType:(NSString *)type state:(FTAppState)state message:(NSString *)message stack:(NSString *)stack property:(nullable NSDictionary *)property{
-    [self addErrorWithType:type stateStr:AppStateStringMap[state] message:message stack:stack property:property time:[NSDate ft_currentNanosecondTimeStamp]];
+    [self addErrorWithType:type stateStr:FTStringFromAppState(state) message:message stack:stack property:property time:[NSDate ft_currentNanosecondTimeStamp]];
 }
 - (void)addErrorWithType:(NSString *)type stateStr:(NSString *)stateStr message:(NSString *)message stack:(NSString *)stack property:(nullable NSDictionary *)property time:(long long)time{
     if (!(type && message && type.length>0 && message.length>0)) {

@@ -526,6 +526,39 @@
         }
     }
 }
+- (void)testInvalidLoggerStatusFallsBackWithoutCrash{
+    [self setRightSDKConfig];
+    FTLoggerConfig *loggerConfig = [[FTLoggerConfig alloc]init];
+    loggerConfig.enableCustomLog = YES;
+    [[FTMobileAgent sharedInstance] startLoggerWithConfigOptions:loggerConfig];
+
+    [[FTLogger sharedInstance] log:@"negativeStatus" statusType:(FTLogStatus)-1 property:nil];
+    [[FTLogger sharedInstance] log:@"largeStatus" statusType:(FTLogStatus)NSIntegerMax property:nil];
+    [[FTLogger sharedInstance] log:@"missingCustomStatus" status:@"" property:nil];
+
+    [[FTMobileAgent sharedInstance] syncProcess];
+    [[FTTrackDataManager sharedInstance] insertCacheToDB];
+    NSArray *newDatas = [[FTTrackerEventDBTool sharedManager] getFirstRecords:10 withType:FT_DATA_TYPE_LOGGING];
+    NSDictionary *expectedStatuses = @{
+        @"negativeStatus": @"info",
+        @"largeStatus": @"info",
+        @"missingCustomStatus": @"unknown",
+    };
+    NSMutableSet *matchedMessages = [NSMutableSet set];
+    for (FTRecordModel *model in newDatas) {
+        NSDictionary *dict = [FTJSONUtil dictionaryWithJsonString:model.data];
+        NSDictionary *op = dict[FT_OPDATA];
+        NSDictionary *tags = op[FT_TAGS];
+        NSDictionary *fields = op[FT_FIELDS];
+        NSString *message = fields[FT_KEY_MESSAGE];
+        NSString *expectedStatus = expectedStatuses[message];
+        if (expectedStatus) {
+            XCTAssertEqualObjects(tags[FT_KEY_STATUS], expectedStatus);
+            [matchedMessages addObject:message];
+        }
+    }
+    XCTAssertEqual(matchedMessages.count, expectedStatuses.count);
+}
 - (void)testPrintCustomLogToConsole{
     [[FTLog sharedInstance] registerInnerLogCacheToDefaultPath];
     [self setRightSDKConfig];

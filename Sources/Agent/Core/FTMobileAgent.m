@@ -365,7 +365,7 @@ static FTMobileAgent *sharedInstance = nil;
                     if (status) {
                         NSString *statusStr;
                         if([status isKindOfClass:NSNumber.class]){
-                            statusStr = FTStatusStringMap[[status intValue]];
+                            statusStr = FTStringFromLogStatus((LogStatus)[status integerValue]);
                         }else{
                             statusStr = status;
                         }

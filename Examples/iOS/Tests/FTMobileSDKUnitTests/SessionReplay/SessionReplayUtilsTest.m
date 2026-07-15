@@ -547,6 +547,38 @@ BOOL isNAN(id value) {
     XCTAssertFalse([result containsObject:@"Upload URL Not Configured"]);
 }
 
+- (void)testUploadConditionsUsesUnknownForInvalidBatteryState{
+    [FTNetworkInfoManager sharedInstance].setUploadURL(@"https://example.com", nil, nil);
+    FTUploadConditions *conditions = [[FTUploadConditions alloc] init];
+    [conditions setValue:@0 forKey:@"batteryLevel"];
+
+    NSArray<NSArray *> *blockingCases = @[
+        @[@(UIDeviceBatteryStateUnplugged), @"Unplugged"],
+        @[@((UIDeviceBatteryState)-1), @"Unknown"],
+        @[@(UIDeviceBatteryStateFull + 1), @"Unknown"],
+        @[@(NSUIntegerMax), @"Unknown"],
+    ];
+    for (NSArray *testCase in blockingCases) {
+        [conditions setValue:testCase[0] forKey:@"batteryState"];
+        NSString *expected = [@"Battery State: " stringByAppendingString:testCase[1]];
+        NSPredicate *predicate = [NSPredicate predicateWithBlock:^BOOL(NSString *condition, NSDictionary *bindings) {
+            return [condition containsString:expected];
+        }];
+        XCTAssertEqual([[conditions checkForUpload] filteredArrayUsingPredicate:predicate].count, 1);
+    }
+
+    [conditions setValue:@(UIDeviceBatteryStateUnknown) forKey:@"batteryState"];
+    XCTAssertNotNil([conditions checkForUpload]);
+
+    NSPredicate *batteryPredicate = [NSPredicate predicateWithBlock:^BOOL(NSString *condition, NSDictionary *bindings) {
+        return [condition containsString:@"Battery Level"];
+    }];
+    [conditions setValue:@(UIDeviceBatteryStateCharging) forKey:@"batteryState"];
+    XCTAssertEqual([[conditions checkForUpload] filteredArrayUsingPredicate:batteryPredicate].count, 0);
+    [conditions setValue:@(UIDeviceBatteryStateFull) forKey:@"batteryState"];
+    XCTAssertEqual([[conditions checkForUpload] filteredArrayUsingPredicate:batteryPredicate].count, 0);
+}
+
 - (void)testResourceRequestContainsBindInfoFields{
     FTEnrichedResource *resource = [[FTEnrichedResource alloc] init];
     resource.identifier = @"resource-id";

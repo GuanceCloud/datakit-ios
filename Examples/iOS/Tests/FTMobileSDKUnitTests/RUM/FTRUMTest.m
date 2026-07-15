@@ -99,9 +99,18 @@
     FTRUMManager *manager = [[FTRUMManager alloc]initWithRumDependencies:dependencies];
 
     FTFatalErrorContextModel *contextModel = [fatalErrorContext currentContextModel];
-    XCTAssertEqualObjects(contextModel.appState, AppStateStringMap[manager.appState]);
+    XCTAssertEqualObjects(contextModel.appState, FTStringFromAppState(manager.appState));
 
     [manager syncProcess];
+}
+- (void)testAppStateConversionFunction{
+    XCTAssertEqualObjects(FTStringFromAppState(FTAppStateUnknown), @"unknown");
+    XCTAssertEqualObjects(FTStringFromAppState(FTAppStateStartUp), @"startup");
+    XCTAssertEqualObjects(FTStringFromAppState(FTAppStateRun), @"run");
+    XCTAssertEqualObjects(FTStringFromAppState(FTAppStateBackground), @"background");
+    XCTAssertEqualObjects(FTStringFromAppState((FTAppState)-1), @"unknown");
+    XCTAssertEqualObjects(FTStringFromAppState((FTAppState)(FTAppStateBackground + 1)), @"unknown");
+    XCTAssertEqualObjects(FTStringFromAppState((FTAppState)NSUIntegerMax), @"unknown");
 }
 #if FT_HAS_UIKIT
 - (void)testWillEnterForegroundKeepsBackgroundAppState{
@@ -1407,6 +1416,26 @@
     XCTAssertTrue(hasActionData);
 
 }
+- (void)testAddErrorInvalidSituationFallsBackToUnknown{
+    [self setRumConfig];
+    [FTModelHelper startView];
+    [[FTExternalDataManager sharedManager] addErrorWithType:@"test"
+                                                     state:(FTAppState)NSUIntegerMax
+                                                   message:@"invalid state"
+                                                     stack:@"stack"
+                                                  property:nil];
+    [[FTGlobalRumManager sharedInstance].rumManager syncProcess];
+    NSArray *newArray = [[FTTrackerEventDBTool sharedManager] getFirstRecords:100 withType:FT_DATA_TYPE_RUM];
+    __block BOOL hasErrorData = NO;
+    [FTModelHelper resolveModelArray:newArray callBack:^(NSString * _Nonnull source, NSDictionary * _Nonnull tags, NSDictionary * _Nonnull fields, BOOL * _Nonnull stop) {
+        if ([source isEqualToString:FT_RUM_SOURCE_ERROR] && [fields[FT_KEY_ERROR_MESSAGE] isEqualToString:@"invalid state"]) {
+            XCTAssertEqualObjects(tags[FT_KEY_ERROR_SITUATION], @"unknown");
+            hasErrorData = YES;
+            *stop = YES;
+        }
+    }];
+    XCTAssertTrue(hasErrorData);
+}
 - (void)testWrongFormatErrorData{
     [self setRumConfig];
     [[FTExternalDataManager sharedManager] addErrorWithType:@"" message:@"testWrongError" stack:@"error testWrongError"];
@@ -2291,7 +2320,7 @@
     sessionState.session_type = @"user";
     sessionState.sampleRate = 100;
     sessionState.sessionOnErrorSampleRate = 0;
-    FTFatalErrorContextModel *context = [[FTFatalErrorContextModel alloc] initWithAppState:AppStateStringMap[FTAppStateRun]
+    FTFatalErrorContextModel *context = [[FTFatalErrorContextModel alloc] initWithAppState:FTStringFromAppState(FTAppStateRun)
                                                                            lastSessionState:sessionState
                                                                             lastViewContext:nil
                                                                              dynamicContext:nil

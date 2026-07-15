@@ -22,6 +22,7 @@
 #import <FTConstants.h>
 #import "NSDate+FTUtil.h"
 #import <FTInternalConstants.h>
+#import "FTRUMManager.h"
 #import "FTMobileAgent.h"
 #import "FTJSONUtil.h"
 #import "FTBaseInfoHandler.h"
@@ -32,7 +33,7 @@
 + (FTRecordModel *)createLogModel:(NSString *)message{
     NSDictionary *filedDict = @{FT_KEY_MESSAGE:message,
     };
-    NSDictionary *tagDict = @{FT_KEY_STATUS:FTStatusStringMap[FTStatusInfo]};
+    NSDictionary *tagDict = @{FT_KEY_STATUS:FTStringFromLogStatus(StatusInfo)};
 
     FTRecordModel *model = [[FTRecordModel alloc]initWithSource:FT_LOGGER_SOURCE op:FT_DATA_TYPE_LOGGING tags:tagDict fields:filedDict tm:[NSDate ft_currentNanosecondTimeStamp]];
     return model;
@@ -44,7 +45,7 @@
     NSDictionary *tags = @{
         FT_KEY_ERROR_TYPE:@"ios_crash",
         FT_KEY_ERROR_SOURCE:@"logger",
-        FT_KEY_ERROR_SITUATION:AppStateStringMap[FTAppStateRun],
+        FT_KEY_ERROR_SITUATION:FTStringFromAppState(FTAppStateRun),
         FT_RUM_KEY_SESSION_ID:[FTBaseInfoHandler randomUUID],
         FT_RUM_KEY_SESSION_TYPE:@"user",
     };
@@ -58,7 +59,7 @@
     NSDictionary *tags = @{
         FT_KEY_ERROR_TYPE:@"ios_crash",
         FT_KEY_ERROR_SOURCE:@"logger",
-        FT_KEY_ERROR_SITUATION:AppStateStringMap[FTAppStateRun],
+        FT_KEY_ERROR_SITUATION:FTStringFromAppState(FTAppStateRun),
         FT_RUM_KEY_SESSION_ID:[FTBaseInfoHandler randomUUID],
         FT_RUM_KEY_SESSION_TYPE:@"user",
     };
@@ -69,7 +70,7 @@
     NSDictionary *tags = @{
         FT_KEY_ERROR_TYPE:@"ios_crash",
         FT_KEY_ERROR_SOURCE:@"logger",
-        FT_KEY_ERROR_SITUATION:AppStateStringMap[FTAppStateRun],
+        FT_KEY_ERROR_SITUATION:FTStringFromAppState(FTAppStateRun),
         FT_RUM_KEY_SESSION_ID:[FTBaseInfoHandler randomUUID],
         FT_RUM_KEY_SESSION_TYPE:@"user",
     };

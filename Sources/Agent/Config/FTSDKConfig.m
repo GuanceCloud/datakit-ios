@@ -112,7 +112,7 @@
 #else
         _service = FT_DEFAULT_SERVICE_NAME;
 #endif
-        _env = FTEnvStringMap[FTEnvProd];
+        _env = FTStringFromEnv(Prod);
         _autoSync = YES;
         _syncPageSize = 10;
         _syncSleepTime = 0;
@@ -132,7 +132,7 @@
     _dbCacheLimit = MAX(FT_MIN_DB_SIZE_LIMIT, dbCacheLimit);
 }
 - (void)setEnvWithType:(FTEnv)envType{
-    _env = FTEnvStringMap[envType];
+    _env = FTStringFromEnv((Env)envType);
 }
 -(void)setEnv:(NSString *)env{
     if(env!=nil && env.length>0){

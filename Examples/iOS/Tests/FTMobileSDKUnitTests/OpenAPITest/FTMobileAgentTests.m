@@ -43,6 +43,7 @@
 #import "FTTestUtils.h"
 #import "FTTrackDataManager+Test.h"
 #import "FTDataUploadWorker.h"
+#import "FTInternalConstants.h"
 #import "FTUserInfo.h"
 #import "FTDefaultActionTrackingHandler.h"
 #import "FTDefaultUIKitViewTrackingHandler.h"
@@ -243,7 +244,7 @@
     NSDictionary *op = dict[FT_OPDATA];
     NSDictionary *tags = op[FT_TAGS];
     NSString *env = [tags valueForKey:@"env"];
-    XCTAssertTrue([env isEqualToString:FTEnvStringMap[FTEnvProd]]);
+    XCTAssertTrue([env isEqualToString:FTStringFromEnv(Prod)]);
     [FTModelHelper startView];
     [FTModelHelper startView];
     [[FTGlobalRumManager sharedInstance].rumManager syncProcess];
@@ -253,7 +254,46 @@
     NSDictionary *rumop = rumdict[FT_OPDATA];
     NSDictionary *rumtags = rumop[FT_TAGS];
     NSString *rumEnv = [rumtags valueForKey:@"env"];
-    XCTAssertTrue([rumEnv isEqualToString:FTEnvStringMap[FTEnvProd]]);
+    XCTAssertTrue([rumEnv isEqualToString:FTStringFromEnv(Prod)]);
+}
+- (void)testEnumConversionFunctions{
+    XCTAssertEqualObjects(FTStringFromLogStatus(StatusInfo), @"info");
+    XCTAssertEqualObjects(FTStringFromLogStatus(StatusWarning), @"warning");
+    XCTAssertEqualObjects(FTStringFromLogStatus(StatusError), @"error");
+    XCTAssertEqualObjects(FTStringFromLogStatus(StatusCritical), @"critical");
+    XCTAssertEqualObjects(FTStringFromLogStatus(StatusOk), @"ok");
+    XCTAssertEqualObjects(FTStringFromLogStatus(StatusDebug), @"debug");
+    XCTAssertEqualObjects(FTStringFromLogStatus(StatusCustom), @"unknown");
+    XCTAssertEqualObjects(FTStringFromLogStatus((LogStatus)-1), @"info");
+    XCTAssertEqualObjects(FTStringFromLogStatus((LogStatus)(StatusCustom + 1)), @"info");
+    XCTAssertEqualObjects(FTStringFromLogStatus((LogStatus)NSIntegerMax), @"info");
+    XCTAssertEqualObjects(FTStringFromLogStatus((LogStatus)NSUIntegerMax), @"info");
+
+    XCTAssertEqualObjects(FTStringFromEnv(Prod), @"prod");
+    XCTAssertEqualObjects(FTStringFromEnv(Gray), @"gray");
+    XCTAssertEqualObjects(FTStringFromEnv(Pre), @"pre");
+    XCTAssertEqualObjects(FTStringFromEnv(Common), @"common");
+    XCTAssertEqualObjects(FTStringFromEnv(Local), @"local");
+    XCTAssertEqualObjects(FTStringFromEnv((Env)-1), @"prod");
+    XCTAssertEqualObjects(FTStringFromEnv((Env)(Local + 1)), @"prod");
+    XCTAssertEqualObjects(FTStringFromEnv((Env)NSIntegerMax), @"prod");
+    XCTAssertEqualObjects(FTStringFromEnv((Env)NSUIntegerMax), @"prod");
+
+    XCTAssertEqualWithAccuracy(FTIntervalFromMonitorFrequency(MonitorFrequencyDefault), 0.5, 0.000001);
+    XCTAssertEqualWithAccuracy(FTIntervalFromMonitorFrequency(MonitorFrequencyFrequent), 0.1, 0.000001);
+    XCTAssertEqualWithAccuracy(FTIntervalFromMonitorFrequency(MonitorFrequencyRare), 1.0, 0.000001);
+    XCTAssertEqualWithAccuracy(FTIntervalFromMonitorFrequency((MonitorFrequency)-1), 0.5, 0.000001);
+    XCTAssertEqualWithAccuracy(FTIntervalFromMonitorFrequency((MonitorFrequency)(MonitorFrequencyRare + 1)), 0.5, 0.000001);
+    XCTAssertEqualWithAccuracy(FTIntervalFromMonitorFrequency((MonitorFrequency)NSUIntegerMax), 0.5, 0.000001);
+}
+- (void)testSetInvalidEnvTypeFallsBackToProd{
+    FTSDKConfig *config = [[FTSDKConfig alloc]initWithDatakitUrl:self.url];
+
+    [config setEnvWithType:(FTEnv)-1];
+    XCTAssertEqualObjects(config.env, @"prod");
+
+    [config setEnvWithType:(FTEnv)NSIntegerMax];
+    XCTAssertEqualObjects(config.env, @"prod");
 }
 - (void)testEnvProperty{
     FTSDKConfig *config = [[FTSDKConfig alloc]initWithDatakitUrl:self.url];

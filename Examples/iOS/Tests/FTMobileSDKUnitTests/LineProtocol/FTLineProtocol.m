@@ -34,6 +34,7 @@
 #import "FTRequestBody.h"
 #import "FTModelHelper.h"
 #import "FTInternalConstants.h"
+#import "FTRUMManager.h"
 @interface FTLineProtocol : XCTestCase
 
 @end
@@ -249,7 +250,7 @@
     NSDictionary *tags = @{
         FT_KEY_ERROR_TYPE:@"ios_crash",
         FT_KEY_ERROR_SOURCE:@"logger",
-        FT_KEY_ERROR_SITUATION:AppStateStringMap[FTAppStateRun],
+        FT_KEY_ERROR_SITUATION:FTStringFromAppState(FTAppStateRun),
         FT_RUM_KEY_SESSION_ID:[FTBaseInfoHandler randomUUID],
         FT_RUM_KEY_SESSION_TYPE:@"user",
     };

@@ -28,12 +28,20 @@
 #import "FTSessionReplayCoreImports.h"
 typedef void (^NotificationBlock)(NSNotification *);
 
-NSString * const FTBatteryStateStringMap[] = {
-    [UIDeviceBatteryStateUnknown] = @"Unknown",
-    [UIDeviceBatteryStateUnplugged] = @"Unplugged",
-    [UIDeviceBatteryStateCharging] = @"Charging",
-    [UIDeviceBatteryStateFull] = @"Full",
-};
+static NSString *FTStringFromBatteryState(UIDeviceBatteryState state) {
+    switch (state) {
+        case UIDeviceBatteryStateUnknown:
+            return @"Unknown";
+        case UIDeviceBatteryStateUnplugged:
+            return @"Unplugged";
+        case UIDeviceBatteryStateCharging:
+            return @"Charging";
+        case UIDeviceBatteryStateFull:
+            return @"Full";
+        default:
+            return @"Unknown";
+    }
+}
 @interface FTUploadConditions()
 @property (nonatomic, assign) BOOL lowPowerModeEnabled;
 @property (nonatomic, strong) UIDevice *device;
@@ -100,7 +108,7 @@ NSString * const FTBatteryStateStringMap[] = {
     BOOL batteryLevelIsEnough = self.batteryLevel > 0.1;
     
     if(!(batteryLevelIsEnough || batteryFullOrCharging)){
-        [conditions addObject:[NSString stringWithFormat:@"Battery Level: %f ,Battery State: %@",self.batteryLevel*100,FTBatteryStateStringMap[self.batteryState]]];
+        [conditions addObject:[NSString stringWithFormat:@"Battery Level: %f ,Battery State: %@",self.batteryLevel*100,FTStringFromBatteryState(self.batteryState)]];
     }
     if(self.lowPowerModeEnabled){
         [conditions addObject:@"Battery Low Power Mode On"];

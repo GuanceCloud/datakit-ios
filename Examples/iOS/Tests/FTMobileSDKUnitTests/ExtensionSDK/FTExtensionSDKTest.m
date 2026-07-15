@@ -35,6 +35,27 @@
 #import "FTTrackerEventDBTool.h"
 #import "FTLogger+Private.h"
 #import "FTTrackDataManager.h"
+#import <objc/runtime.h>
+
+@interface FTExtensionDataManager (EnumMapBoundsTest)
+- (NSArray *)ft_test_readAllEventsWithGroupIdentifier:(NSString *)groupIdentifier;
+- (BOOL)ft_test_deleteEventsWithGroupIdentifier:(NSString *)groupIdentifier;
+@end
+
+static NSArray *FTEnumMapBoundsTestEvents;
+
+@implementation FTExtensionDataManager (EnumMapBoundsTest)
+
+- (NSArray *)ft_test_readAllEventsWithGroupIdentifier:(NSString *)groupIdentifier {
+    return FTEnumMapBoundsTestEvents ?: @[];
+}
+
+- (BOOL)ft_test_deleteEventsWithGroupIdentifier:(NSString *)groupIdentifier {
+    return YES;
+}
+
+@end
+
 @interface FTExtensionSDKTest : XCTestCase
 
 @end
@@ -212,6 +233,64 @@
     XCTAssertTrue(newDatas.count>olddatas.count);
     XCTAssertTrue(newDatas.count == 100);
 }
+- (void)testTrackLegacyLoggerEventWithInvalidStatusFallsBackToInfo{
+    NSString *groupIdentifier = @"group.com.ft.widget.demo";
+    NSDictionary *event = @{
+        @"dataType": FT_DATA_TYPE_LOGGING,
+        @"status": @(NSIntegerMax),
+        @"content": @"legacy invalid status",
+        @"tags": @{},
+        @"fields": @{},
+        @"tm": @1,
+    };
+    FTEnumMapBoundsTestEvents = @[event];
+
+    Method readMethod = class_getInstanceMethod(FTExtensionDataManager.class, @selector(readAllEventsWithGroupIdentifier:));
+    Method testReadMethod = class_getInstanceMethod(FTExtensionDataManager.class, @selector(ft_test_readAllEventsWithGroupIdentifier:));
+    Method deleteMethod = class_getInstanceMethod(FTExtensionDataManager.class, @selector(deleteEventsWithGroupIdentifier:));
+    Method testDeleteMethod = class_getInstanceMethod(FTExtensionDataManager.class, @selector(ft_test_deleteEventsWithGroupIdentifier:));
+    method_exchangeImplementations(readMethod, testReadMethod);
+    method_exchangeImplementations(deleteMethod, testDeleteMethod);
+
+    @try {
+        FTMobileConfig *config = [[FTMobileConfig alloc]initWithDatakitUrl:@"test"];
+        config.groupIdentifiers = @[groupIdentifier];
+        config.autoSync = NO;
+        [FTMobileAgent startWithConfigOptions:config];
+        FTLoggerConfig *loggerConfig = [[FTLoggerConfig alloc]init];
+        loggerConfig.enableCustomLog = YES;
+        [[FTMobileAgent sharedInstance] startLoggerWithConfigOptions:loggerConfig];
+        [[FTTrackerEventDBTool sharedManager] deleteAllDatas];
+
+        XCTestExpectation *expectation = [self expectationWithDescription:@"recover legacy extension log"];
+        [[FTMobileAgent sharedInstance] trackEventFromExtensionWithGroupIdentifier:groupIdentifier completion:^(NSString *identifier, NSArray *events) {
+            XCTAssertEqualObjects(identifier, groupIdentifier);
+            XCTAssertEqual(events.count, 1);
+            [expectation fulfill];
+        }];
+        [self waitForExpectations:@[expectation] timeout:5];
+        [[FTTrackDataManager sharedInstance] insertCacheToDB];
+
+        NSArray *records = [[FTTrackerEventDBTool sharedManager] getFirstRecords:10 withType:FT_DATA_TYPE_LOGGING];
+        __block BOOL foundEvent = NO;
+        for (FTRecordModel *model in records) {
+            NSDictionary *dict = [FTJSONUtil dictionaryWithJsonString:model.data];
+            NSDictionary *opdata = dict[FT_OPDATA];
+            if ([opdata[FT_FIELDS][FT_KEY_MESSAGE] isEqualToString:@"legacy invalid status"]) {
+                XCTAssertEqualObjects(opdata[FT_TAGS][FT_KEY_STATUS], @"info");
+                foundEvent = YES;
+                break;
+            }
+        }
+        XCTAssertTrue(foundEvent);
+    } @finally {
+        [FTMobileAgent shutDown];
+        method_exchangeImplementations(readMethod, testReadMethod);
+        method_exchangeImplementations(deleteMethod, testDeleteMethod);
+        FTEnumMapBoundsTestEvents = nil;
+    }
+}
+
 - (void)testWriteInMobileSDK_BindUserData_globalContext{
     [self saveMobileSdkConfig];
     [self setExtensionSDK];

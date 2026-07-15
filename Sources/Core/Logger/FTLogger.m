@@ -76,7 +76,7 @@ void *FTLoggerQueueIdentityKey = &FTLoggerQueueIdentityKey;
     NSMutableArray *levels = [[NSMutableArray alloc]init];
     for (id level in logLevelFilter) {
         if ([level isKindOfClass:NSNumber.class] && [level intValue]<5 && [level intValue]>=0) {
-            [levels addObject:FTStatusStringMap[[level intValue]]];
+            [levels addObject:FTStringFromLogStatus((LogStatus)[level intValue])];
         }else{
             [levels addObject:level];
         }
@@ -107,14 +107,15 @@ void *FTLoggerQueueIdentityKey = &FTLoggerQueueIdentityKey;
      statusType:(FTLogStatus)statusType
    property:(nullable NSDictionary *)property{
     NSDictionary *safeProperty = [property ft_deepCopy];
-    [self _log:content statusType:(LogStatus)statusType status:FTStatusStringMap[statusType] property:safeProperty];
+    [self _log:content statusType:(LogStatus)statusType status:FTStringFromLogStatus((LogStatus)statusType) property:safeProperty];
 }
 - (void)log:(NSString *)content status:(NSString *)status{
     [self log:content status:status property:nil];
 }
 - (void)log:(NSString *)content status:(NSString *)status property:(nullable NSDictionary *)property{
     NSDictionary *safeProperty = [property ft_deepCopy];
-    [self _log:content statusType:StatusCustom status:status property:safeProperty];
+    NSString *safeStatus = status.length > 0 ? status : FTStringFromLogStatus(StatusCustom);
+    [self _log:content statusType:StatusCustom status:safeStatus property:safeProperty];
 }
 -(void)info:(NSString *)content property:(NSDictionary *)property{
     [self log:content statusType:FTStatusInfo property:property];

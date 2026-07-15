@@ -195,22 +195,27 @@
     XCTAssertEqualWithAccuracy(usageAfterRollover - usageBeforeRollover, 31, 0.001);
 }
 - (void)testMonitorFrequencyDefault{
-    FTMonitorItem *item = [[FTMonitorItem alloc]initWithCpuMonitor:[FTCPUMonitor new] memoryMonitor:[FTMemoryMonitor new] displayRateMonitor:[FTDisplayRateMonitor new] frequency:MonitorFrequencyMap[FTMonitorFrequencyDefault]];
+    FTMonitorItem *item = [[FTMonitorItem alloc]initWithCpuMonitor:[FTCPUMonitor new] memoryMonitor:[FTMemoryMonitor new] displayRateMonitor:[FTDisplayRateMonitor new] frequency:FTIntervalFromMonitorFrequency(MonitorFrequencyDefault)];
     [self waitForTimeInterval:0.6];
     XCTAssertEqual(item.cpu.sampleValueCount, 2);
     XCTAssertEqual(item.memory.sampleValueCount, 2);
 }
 - (void)testMonitorFrequencyRare{
-    FTMonitorItem *item = [[FTMonitorItem alloc]initWithCpuMonitor:[FTCPUMonitor new] memoryMonitor:[FTMemoryMonitor new] displayRateMonitor:[FTDisplayRateMonitor new] frequency:MonitorFrequencyMap[FTMonitorFrequencyRare]];
+    FTMonitorItem *item = [[FTMonitorItem alloc]initWithCpuMonitor:[FTCPUMonitor new] memoryMonitor:[FTMemoryMonitor new] displayRateMonitor:[FTDisplayRateMonitor new] frequency:FTIntervalFromMonitorFrequency(MonitorFrequencyRare)];
     [self waitForTimeInterval:1.1];
     XCTAssertEqual(item.cpu.sampleValueCount, 2);
     XCTAssertEqual(item.memory.sampleValueCount, 2);
 }
 - (void)testMonitorFrequencyFrequent{
-    FTMonitorItem *item = [[FTMonitorItem alloc]initWithCpuMonitor:[FTCPUMonitor new] memoryMonitor:[FTMemoryMonitor new] displayRateMonitor:[FTDisplayRateMonitor new] frequency:MonitorFrequencyMap[FTMonitorFrequencyFrequent]];
+    FTMonitorItem *item = [[FTMonitorItem alloc]initWithCpuMonitor:[FTCPUMonitor new] memoryMonitor:[FTMemoryMonitor new] displayRateMonitor:[FTDisplayRateMonitor new] frequency:FTIntervalFromMonitorFrequency(MonitorFrequencyFrequent)];
     [self waitForTimeInterval:0.6];
     XCTAssertEqual(item.cpu.sampleValueCount, 7);
     XCTAssertEqual(item.memory.sampleValueCount, 7);
+}
+- (void)testInvalidMonitorFrequencyFallsBackToDefault{
+    FTRUMMonitor *monitor = [[FTRUMMonitor alloc]initWithMonitorType:0 frequency:(MonitorFrequency)NSUIntegerMax];
+
+    XCTAssertEqualWithAccuracy(monitor.frequency, 0.5, 0.000001);
 }
 - (void)testMonitorValueScale{
     FTMonitorValue *value = [[FTMonitorValue alloc]init];

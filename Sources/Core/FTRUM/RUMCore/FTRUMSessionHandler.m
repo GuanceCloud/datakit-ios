@@ -27,6 +27,7 @@
 #import "FTRUMContext.h"
 #import "FTModuleManager.h"
 #import "FTInternalConstants.h"
+#import "FTRUMManager.h"
 static const NSTimeInterval sessionTimeoutDuration = 15 * 60; // 15 minutes
 static const NSTimeInterval sessionMaxDuration = 4 * 60 * 60; // 4 hours
 static NSString * const FTRUMFallbackViewNameApplicationLaunch = @"ApplicationLaunch";
@@ -225,10 +226,10 @@ static NSString * const FTRUMFallbackViewNameRoot = @"RootView";
 }
 -(NSString *)fallbackViewNameForModel:(FTRUMDataModel *)model{
     NSString *errorSituation = model.tags[FT_KEY_ERROR_SITUATION];
-    if ([errorSituation isEqualToString:AppStateStringMap[FTAppStateStartUp]]) {
+    if ([errorSituation isEqualToString:FTStringFromAppState(FTAppStateStartUp)]) {
         return FTRUMFallbackViewNameApplicationLaunch;
     }
-    if ([errorSituation isEqualToString:AppStateStringMap[FTAppStateBackground]]) {
+    if ([errorSituation isEqualToString:FTStringFromAppState(FTAppStateBackground)]) {
         return FTRUMFallbackViewNameBackground;
     }
     switch (self.appState) {

@@ -39,7 +39,7 @@
 #if FT_HOST_MAC
         prefix = @"MACOS APP";
 #endif
-        NSString *status = logMessage.status.length>0?[logMessage.status uppercaseString]:[FTStatusStringMap[logMessage.level] uppercaseString];
+        NSString *status = logMessage.status.length>0?[logMessage.status uppercaseString]:[FTStringFromLogStatus(logMessage.level) uppercaseString];
         NSString *consoleMessage = [NSString stringWithFormat:@"[%@][%@] %@",prefix,status, logMessage.message];
         NSMutableArray *mutableStrs = [NSMutableArray array];
         if(logMessage.property && logMessage.property.allKeys.count>0){
@@ -51,7 +51,7 @@
         return consoleMessage;
     }else{
         NSString *prefix = @"FTLog";
-        return [NSString stringWithFormat:@"[%@][%@] %@ [Line %lu] %@",prefix,[FTStatusStringMap[logMessage.level] uppercaseString],logMessage.function,(unsigned long)logMessage.line, logMessage.message];
+        return [NSString stringWithFormat:@"[%@][%@] %@ [Line %lu] %@",prefix,[FTStringFromLogStatus(logMessage.level) uppercaseString],logMessage.function,(unsigned long)logMessage.line, logMessage.message];
     }
 }
 

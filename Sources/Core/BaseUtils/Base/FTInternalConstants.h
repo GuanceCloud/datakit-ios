@@ -108,11 +108,9 @@ typedef NS_ENUM(NSInteger, LogCacheDiscard)  {
     /// When log data exceeds maximum value, discard old data
     DiscardOldest
 };
-extern NSString * const AppStateStringMap[];
-extern NSString * const FTStatusStringMap[];
-extern NSString * const FTNetworkTraceStringMap[];
-extern NSString * const FTEnvStringMap[];
-extern NSTimeInterval const MonitorFrequencyMap[];
+FOUNDATION_EXPORT NSString *FTStringFromLogStatus(LogStatus status);
+FOUNDATION_EXPORT NSString *FTStringFromEnv(Env env);
+FOUNDATION_EXPORT NSTimeInterval FTIntervalFromMonitorFrequency(MonitorFrequency frequency);
 
 extern NSString * const FT_BLACK_LIST_VIEW;
 
