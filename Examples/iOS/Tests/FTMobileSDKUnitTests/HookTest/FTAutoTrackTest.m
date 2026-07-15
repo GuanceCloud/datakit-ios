@@ -201,21 +201,31 @@
     [[tester waitForViewWithAccessibilityLabel:@"home"] tap];
     [tester waitForTimeInterval:1];
     [[tester waitForViewWithAccessibilityLabel:@"UITEST"] tap];
-    [tester waitForTimeInterval:0.1];
+    [tester waitForTimeInterval:0.2];
     [[tester waitForViewWithAccessibilityLabel:@"LABLE_CLICK"] tap];
-    [tester waitForTimeInterval:0.1];
+    [tester waitForTimeInterval:0.2];
     [[tester waitForViewWithAccessibilityLabel:@"LABLE_CLICK"] tap];
+    [tester waitForTimeInterval:0.2];
     [[FTGlobalRumManager sharedInstance].rumManager syncProcess];
     
-    NSArray *newArray = [[FTTrackerEventDBTool sharedManager] getFirstRecords:10 withType:FT_DATA_TYPE_RUM];
+    NSArray *newArray = [[FTTrackerEventDBTool sharedManager] getFirstRecords:50 withType:FT_DATA_TYPE_RUM];
+    __block BOOL hasLabelClickAction = NO;
+    NSMutableArray *clickActionNames = [NSMutableArray array];
     [FTModelHelper resolveModelArray:newArray callBack:^(NSString * _Nonnull source, NSDictionary * _Nonnull tags, NSDictionary * _Nonnull fields, BOOL * _Nonnull stop) {
         if ([source isEqualToString:FT_RUM_SOURCE_ACTION]&&[tags[FT_KEY_ACTION_TYPE] isEqualToString:@"click"]) {
-            XCTAssertTrue([tags[FT_KEY_ACTION_NAME] isEqualToString:@"[UILabel][label]"]);
-            *stop = YES;
+            NSString *actionName = tags[FT_KEY_ACTION_NAME];
+            if (actionName) {
+                [clickActionNames addObject:actionName];
+            }
+            if ([actionName isEqualToString:@"[UILabel][label]"]) {
+                hasLabelClickAction = YES;
+                *stop = YES;
+            }
         }
     }];
     
     XCTAssertTrue(newArray.count>0);
+    XCTAssertTrue(hasLabelClickAction, @"Expected label click action, got %@", clickActionNames);
     [[tester waitForViewWithAccessibilityLabel:@"home"] tap];
     [tester waitForTimeInterval:1];
     
