@@ -1,3 +1,9 @@
+# 1.6.6-alpha.3
+1. Improved RUM duration breakdown response body handling to avoid caching large response bodies and prevent potential OOM.
+2. Fixed RUM crash and link context updates so inactive View writes no longer overwrite the current active View context.
+3. Fixed tvOS umbrella header imports by excluding WebView APIs on tvOS.
+4. Fixed compression imports to use system `compression` and `zlib` headers.
+---
 # 1.6.6-alpha.2
 1. Added experimental Session Replay heatmap correlation through `FTSessionReplayConfig.enableHeatmap`.
 2. Fixed RUM CPU usage calculation when the system tick counter rolls over.
