@@ -25,7 +25,7 @@
 #import "FTLoggerConfig.h"
 #import "FTRecordModel.h"
 #import "FTBaseInfoHandler.h"
-#import "FTGlobalRumManager.h"
+#import "FTGlobalRumManager+Private.h"
 #import "FTConstants.h"
 #import "FTMobileAgent+Private.h"
 #import "FTInnerLog.h"

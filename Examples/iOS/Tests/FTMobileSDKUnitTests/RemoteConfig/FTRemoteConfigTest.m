@@ -36,7 +36,7 @@
 #import "FTRemoteConfigModel+Test.h"
 #import "FTRemoteConfigError.h"
 #import "FTConfig+RemoteConfig.h"
-#import "FTGlobalRumManager.h"
+#import "FTGlobalRumManager+Private.h"
 #import "FTRUMManager.h"
 #import "FTTrackerEventDBTool.h"
 #import "FTModelHelper.h"

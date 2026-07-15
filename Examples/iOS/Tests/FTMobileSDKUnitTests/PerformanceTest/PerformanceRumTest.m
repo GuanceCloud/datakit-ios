@@ -21,7 +21,7 @@
 #import <XCTest/XCTest.h>
 #import "FTMobileAgent+Private.h"
 #import "FTRUMManager.h"
-#import "FTGlobalRumManager.h"
+#import "FTGlobalRumManager+Private.h"
 #import "FTTrackerEventDBTool.h"
 #import "NSDate+FTUtil.h"
 @interface PerformanceRumTest : XCTestCase

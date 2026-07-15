@@ -33,7 +33,7 @@
 #import "NSString+FTAdd.h"
 #import "FTJSONUtil.h"
 #import "FTPresetProperty.h"
-#import "FTGlobalRumManager.h"
+#import "FTGlobalRumManager+Private.h"
 #import "FTRUMManager.h"
 #import "FTModelHelper.h"
 #import "FTSDKConfig+Private.h"

@@ -29,7 +29,7 @@
 #import "FTJSONUtil.h"
 #import "FTConstants.h"
 #import "FTMobileAgent+Private.h"
-#import "FTGlobalRumManager.h"
+#import "FTGlobalRumManager+Private.h"
 #import "FTRUMManager.h"
 #import "FTSDKVersion.h"
 #import "FTMobileConfig+Private.h"

@@ -21,7 +21,7 @@
 #import <XCTest/XCTest.h>
 #import "FTMobileAgent.h"
 #import "FTMobileAgent+Private.h"
-#import "FTGlobalRumManager.h"
+#import "FTGlobalRumManager+Private.h"
 #import "FTConstants.h"
 #import "NSString+FTAdd.h"
 #import "OHHTTPStubs.h"
@@ -37,7 +37,6 @@
 #import <objc/runtime.h>
 #import "FTURLSessionInstrumentation.h"
 #import "FTModelHelper.h"
-#import "FTGlobalRumManager.h"
 #import "FTRUMManager.h"
 #import "FTURLSessionInterceptor.h"
 #import "FTSessionTaskHandler.h"

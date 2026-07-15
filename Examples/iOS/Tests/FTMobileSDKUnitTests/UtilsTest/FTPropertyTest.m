@@ -36,7 +36,7 @@
 #import "FTRequest.h"
 #import "FTHTTPClient.h"
 #import "FTModelHelper.h"
-#import "FTGlobalRumManager.h"
+#import "FTGlobalRumManager+Private.h"
 #import "FTRUMManager.h"
 #import "FTLogger+Private.h"
 #import "FTUserInfo.h"

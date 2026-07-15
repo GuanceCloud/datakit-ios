@@ -30,7 +30,7 @@
 #import "FTConstants.h"
 #import "FTJSONUtil.h"
 #import "XCTestCase+Utils.h"
-#import "FTGlobalRumManager.h"
+#import "FTGlobalRumManager+Private.h"
 #import "FTRUMManager.h"
 
 @interface FTRUMActionTest : XCTestCase

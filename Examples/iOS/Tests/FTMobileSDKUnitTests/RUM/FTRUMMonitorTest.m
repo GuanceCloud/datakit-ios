@@ -27,7 +27,7 @@
 #import "FTRecordModel.h"
 #import "FTConstants.h"
 #import "FTJSONUtil.h"
-#import "FTGlobalRumManager.h"
+#import "FTGlobalRumManager+Private.h"
 #import "FTRUMManager.h"
 #import "FTRUMSessionHandler.h"
 #import "FTRUMViewHandler.h"

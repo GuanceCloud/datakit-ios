@@ -30,7 +30,7 @@
 #import <KIF/KIF.h>
 #import "FTModelHelper.h"
 #import "FTRUMManager.h"
-#import "FTGlobalRumManager.h"
+#import "FTGlobalRumManager+Private.h"
 #import "FTLongTaskManager+Test.h"
 #import "FTTestUtils.h"
 @interface FTLongTaskTest : KIFTestCase

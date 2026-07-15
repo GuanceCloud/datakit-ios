@@ -30,7 +30,7 @@
 #import "FTConstants.h"
 #import "FTTrackDataManager+Test.h"
 #import "FTModelHelper.h"
-#import "FTGlobalRumManager.h"
+#import "FTGlobalRumManager+Private.h"
 #import "FTRUMManager.h"
 #import "FTAutoTrackHandler.h"
 #import "XCTestCase+Utils.h"

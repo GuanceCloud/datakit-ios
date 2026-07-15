@@ -35,7 +35,7 @@
 #import "NSDate+FTUtil.h"
 #import "DemoViewController.h"
 #import "FTConstants.h"
-#import "FTGlobalRumManager.h"
+#import "FTGlobalRumManager+Private.h"
 #import "FTRUMManager.h"
 #import "FTModelHelper.h"
 #import "TestSessionDelegate.h"

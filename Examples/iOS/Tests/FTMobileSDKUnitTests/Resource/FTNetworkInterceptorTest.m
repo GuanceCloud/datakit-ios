@@ -25,7 +25,7 @@
 #import "FTTrackerEventDBTool+Test.h"
 #import "NSDate+FTUtil.h"
 #import "FTModelHelper.h"
-#import "FTGlobalRumManager.h"
+#import "FTGlobalRumManager+Private.h"
 #import "FTRUMManager.h"
 #import "FTConstants.h"
 #import "FTJSONUtil.h"

@@ -19,6 +19,7 @@
 #import "FTSDKConfig.h"
 #import "FTMobileConfig.h"
 #import "FTExternalDataManager.h"
+#import "FTGlobalRumManager.h"
 #import "FTResourceMetricsModel.h"
 #import "FTResourceContentModel.h"
 #import "FTURLSessionDelegate.h"

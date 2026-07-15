@@ -21,7 +21,7 @@
 #import <XCTest/XCTest.h>
 #import "XCTestCase+Utils.h"
 #import "FTModelHelper.h"
-#import "FTGlobalRumManager.h"
+#import "FTGlobalRumManager+Private.h"
 #import "FTTrackerEventDBTool.h"
 #import "FTConstants.h"
 #import "FTRUMManager.h"

@@ -32,7 +32,7 @@
 #import "FTJSONUtil.h"
 #import "FTRUMManager.h"
 #import "FTRUMSessionHandler.h"
-#import "FTGlobalRumManager.h"
+#import "FTGlobalRumManager+Private.h"
 #import "UIView+FTAutoTrack.h"
 #import "FTExternalDataManager.h"
 #import "FTResourceContentModel.h"

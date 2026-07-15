@@ -19,26 +19,126 @@
 //
 
 #import <Foundation/Foundation.h>
-#import "FTRUMDataWriteProtocol.h"
+#import "FTRumDatasProtocol.h"
 NS_ASSUME_NONNULL_BEGIN
-@class  FTRUMManager,FTRumConfig;
+@class FTResourceMetricsModel,FTResourceContentModel;
 
 /// Class for managing RUM, used to enable collection of various RUM data
 @interface FTGlobalRumManager : NSObject
-/// Object for handling RUM data
-@property (nonatomic, strong) FTRUMManager *rumManager;
 
 /// Singleton
 + (instancetype)sharedInstance;
 
-/// Set rum configuration options
-/// - Parameter rumConfig: rum configuration options
-- (void)setRumConfig:(FTRumConfig *)rumConfig writer:(id <FTRUMDataWriteProtocol>)writer;
+/// Singleton
++ (instancetype)sharedManager;
 
--(void)updateSampleRate:(int)sampleRate sessionOnErrorSampleRate:(int)sessionOnErrorSampleRate;
+#pragma mark --------- Rum ----------
+/// Create RUM View
+///
+/// Called before the `-startViewWithName` method, this method is used to record the page loading time. If the loading time cannot be obtained, this method can be omitted.
+/// - Parameters:
+///   - viewName: RUM View name
+///   - loadTime: page loading time
+-(void)onCreateView:(NSString *)viewName loadTime:(NSNumber *)loadTime;
+/// Starts RUM view
+///
+/// - Parameters:
+///   - viewName: RUM View name
+-(void)startViewWithName:(NSString *)viewName;
 
-/// Shut down singleton
-- (void)shutDown;
+/// Starts RUM view
+/// - Parameters:
+///   - viewName: RUM View name
+///   - property: event custom properties (optional)
+-(void)startViewWithName:(NSString *)viewName property:(nullable NSDictionary *)property;
+
+/// Stop RUM View.
+-(void)stopView;
+
+/// Stop RUM View.
+/// - Parameter property: event custom properties (optional)
+-(void)stopViewWithProperty:(nullable NSDictionary *)property;
+
+/// Add Action event
+///
+/// - Parameters:
+///   - actionName: event name
+///   - actionType: event type
+- (void)addActionName:(NSString *)actionName actionType:(NSString *)actionType;
+/// Add Action event
+/// - Parameters:
+///   - actionName: event name
+///   - actionType: event type
+///   - property: event custom properties (optional)
+- (void)addActionName:(NSString *)actionName actionType:(NSString *)actionType property:(nullable NSDictionary *)property;
+
+/// Add Error event
+///
+/// - Parameters:
+///   - type: error type
+///   - message: error message
+///   - stack: stack information
+- (void)addErrorWithType:(NSString *)type message:(NSString *)message stack:(NSString *)stack;
+/// Add Error event
+/// - Parameters:
+///   - type: error type
+///   - message: error message
+///   - stack: stack information
+///   - property: event custom properties (optional)
+- (void)addErrorWithType:(NSString *)type message:(NSString *)message stack:(NSString *)stack property:(nullable NSDictionary *)property;
+
+/// Add Error event
+/// - Parameters:
+///   - type: error type
+///   - state: program running state
+///   - message: error message
+///   - stack: stack information
+///   - property: event custom properties (optional)
+- (void)addErrorWithType:(NSString *)type state:(FTAppState)state message:(NSString *)message stack:(NSString *)stack property:(nullable NSDictionary *)property;
+
+/// Add freeze event
+///
+/// - Parameters:
+///   - stack: freeze stack
+///   - duration: freeze duration (nanoseconds)
+- (void)addLongTaskWithStack:(NSString *)stack duration:(NSNumber *)duration;
+
+/// Add freeze event
+/// - Parameters:
+///   - stack: freeze stack
+///   - duration: freeze duration (nanoseconds)
+///   - property: event custom properties (optional)
+- (void)addLongTaskWithStack:(NSString *)stack duration:(NSNumber *)duration property:(nullable NSDictionary *)property;
+
+/// HTTP request start
+///
+/// - Parameters:
+///   - key: request identifier
+- (void)startResourceWithKey:(NSString *)key;
+/// HTTP request start
+/// - Parameters:
+///   - key: request identifier
+///   - property: event custom properties (optional)
+- (void)startResourceWithKey:(NSString *)key property:(nullable NSDictionary *)property;
+
+/// HTTP add request data
+///
+/// - Parameters:
+///   - key: request identifier
+///   - metrics: request-related performance properties
+///   - content: request-related data
+- (void)addResourceWithKey:(NSString *)key metrics:(nullable FTResourceMetricsModel *)metrics content:(FTResourceContentModel *)content;
+/// HTTP request end
+///
+/// - Parameters:
+///   - key: request identifier
+- (void)stopResourceWithKey:(NSString *)key;
+/// HTTP request end
+/// - Parameters:
+///   - key: request identifier
+///   - property: event custom properties (optional)
+- (void)stopResourceWithKey:(NSString *)key property:(nullable NSDictionary *)property;
+
 @end
 
 NS_ASSUME_NONNULL_END

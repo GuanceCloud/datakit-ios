@@ -22,7 +22,7 @@
 #error This file must be compiled with ARC. Either turn on ARC for the project or use -fobjc-arc flag on this file.
 #endif
 #import <TargetConditionals.h>
-#import "FTGlobalRumManager.h"
+#import "FTGlobalRumManager+Private.h"
 #import "FTInnerLog.h"
 #if !TARGET_OS_TV
 #import "FTWKWebViewHandler+Private.h"
@@ -41,8 +41,11 @@
 #import "FTErrorMonitorInfo.h"
 #import "FTModuleManager.h"
 #import "FTHeatmapIdentifierStore.h"
+#import "NSDate+FTUtil.h"
+#import "NSDictionary+FTCopyProperties.h"
 
 @interface FTGlobalRumManager ()<FTRunloopDetectorDelegate>
+@property (nonatomic, strong) FTRUMManager *rumManager;
 @property (nonatomic, strong) FTRUMDependencies *dependencies;
 @property (nonatomic, strong) FTLongTaskManager *longTaskManager;
 @property (nonatomic, strong) FTHeatmapIdentifierStore *heatmapIdentifierStore;
@@ -64,6 +67,65 @@ static NSObject *sharedInstanceLock;
         return sharedInstance;
     }
 }
++ (instancetype)sharedManager {
+    return [self sharedInstance];
+}
+
+#pragma mark ========== Public RUM compatibility ==========
+- (void)onCreateView:(NSString *)viewName loadTime:(NSNumber *)loadTime{
+    [self.rumManager onCreateView:viewName loadTime:loadTime];
+}
+- (void)startViewWithName:(NSString *)viewName {
+    [self.rumManager startViewWithName:viewName];
+}
+- (void)startViewWithName:(NSString *)viewName property:(NSDictionary *)property{
+    [self.rumManager startViewWithName:viewName property:[property ft_deepCopy]];
+}
+- (void)stopView{
+    [self.rumManager stopView];
+}
+- (void)stopViewWithProperty:(NSDictionary *)property{
+    [self.rumManager stopViewWithProperty:[property ft_deepCopy]];
+}
+- (void)addActionName:(NSString *)actionName actionType:(NSString *)actionType{
+    [self.rumManager startAction:actionName actionType:actionType property:nil];
+}
+- (void)addActionName:(NSString *)actionName actionType:(NSString *)actionType property:(NSDictionary *)property{
+    [self.rumManager startAction:actionName actionType:actionType property:[property ft_deepCopy]];
+}
+- (void)addErrorWithType:(NSString *)type message:(NSString *)message stack:(NSString *)stack{
+    [self.rumManager addErrorWithType:type message:message stack:stack];
+}
+- (void)addErrorWithType:(NSString *)type message:(NSString *)message stack:(NSString *)stack property:(NSDictionary *)property{
+    [self.rumManager addErrorWithType:type message:message stack:stack property:[property ft_deepCopy]];
+}
+- (void)addErrorWithType:(NSString *)type state:(FTAppState)state message:(NSString *)message stack:(NSString *)stack property:(NSDictionary *)property {
+    [self.rumManager addErrorWithType:type state:state message:message stack:stack property:[property ft_deepCopy]];
+}
+- (void)addLongTaskWithStack:(NSString *)stack duration:(NSNumber *)duration{
+    long long startTime = [NSDate ft_currentNanosecondTimeStamp] - [duration longLongValue];
+    [self.rumManager addLongTaskWithStack:stack duration:duration startTime:startTime];
+}
+- (void)addLongTaskWithStack:(NSString *)stack duration:(NSNumber *)duration property:(NSDictionary *)property{
+    long long startTime = [NSDate ft_currentNanosecondTimeStamp] - [duration longLongValue];
+    [self.rumManager addLongTaskWithStack:stack duration:duration startTime:startTime property:[property ft_deepCopy]];
+}
+- (void)startResourceWithKey:(NSString *)key{
+    [self.rumManager startResourceWithKey:key];
+}
+- (void)startResourceWithKey:(NSString *)key property:(NSDictionary *)property{
+    [self.rumManager startResourceWithKey:key property:[property ft_deepCopy]];
+}
+- (void)addResourceWithKey:(NSString *)key metrics:(FTResourceMetricsModel *)metrics content:(FTResourceContentModel *)content{
+    [self.rumManager addResourceWithKey:key metrics:metrics content:content];
+}
+- (void)stopResourceWithKey:(NSString *)key{
+    [self.rumManager stopResourceWithKey:key];
+}
+- (void)stopResourceWithKey:(NSString *)key property:(NSDictionary *)property{
+    [self.rumManager stopResourceWithKey:key property:[property ft_deepCopy]];
+}
+
 -(void)setRumConfig:(FTRumConfig *)rumConfig writer:(id<FTRUMDataWriteProtocol>)writer{
     FTDisplayRateMonitor *displayMonitor = [self displayMonitorWithRumConfig:rumConfig];
     FTRUMMonitor *monitor = [self rumMonitorWithRumConfig:rumConfig displayMonitor:displayMonitor];

@@ -27,7 +27,7 @@
 #import "FTModelHelper.h"
 #import "FTConstants.h"
 #import "FTRUMManager.h"
-#import "FTGlobalRumManager.h"
+#import "FTGlobalRumManager+Private.h"
 #import "FTDataWriterWorker.h"
 #import "XCTestCase+Utils.h"
 #import "FTTrackDataManager.h"

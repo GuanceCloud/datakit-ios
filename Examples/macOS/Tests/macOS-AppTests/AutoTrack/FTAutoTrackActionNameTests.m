@@ -28,7 +28,10 @@
 #import "LoginWindow.h"
 #import "FTMobileAgent+Private.h"
 #import "FTRUMManager.h"
-#import "FTGlobalRumManager.h"
+#import "FTGlobalRumManager+Private.h"
+#import "FTConstants.h"
+#import "FTRecordModel.h"
+#import "FTJSONUtil.h"
 #import "SplitViewVC.h"
 #import "SplitViewItemVC2.h"
 @interface FTAutoTrackActionNameTests : FTTestHelper

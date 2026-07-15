@@ -225,7 +225,8 @@
 		172B10672E3219F500753766 /* FTDateUtil.h in Headers */ = {isa = PBXBuildFile; fileRef = 172B105F2E3219F500753766 /* FTDateUtil.h */; };
 		172B10682E3219F500753766 /* FTDateUtil.m in Sources */ = {isa = PBXBuildFile; fileRef = 172B10602E3219F500753766 /* FTDateUtil.m */; };
 		172B107A2E339F0600753766 /* FTGlobalRumManager.m in Sources */ = {isa = PBXBuildFile; fileRef = 172B10792E339F0600753766 /* FTGlobalRumManager.m */; };
-		172B107B2E339F0600753766 /* FTGlobalRumManager.h in Headers */ = {isa = PBXBuildFile; fileRef = 172B10782E339F0600753766 /* FTGlobalRumManager.h */; };
+		172B107B2E339F0600753766 /* FTGlobalRumManager.h in Headers */ = {isa = PBXBuildFile; fileRef = 172B10782E339F0600753766 /* FTGlobalRumManager.h */; settings = {ATTRIBUTES = (Public, ); }; };
+		172B107C2E339F0600753766 /* FTGlobalRumManager+Private.h in Headers */ = {isa = PBXBuildFile; fileRef = 172B107D2E339F0600753766 /* FTGlobalRumManager+Private.h */; };
 		172B10E52E377B2600753766 /* FTRUMManager.h in Headers */ = {isa = PBXBuildFile; fileRef = 172B10E42E377B2600753766 /* FTRUMManager.h */; };
 		172B10E62E377B2600753766 /* FTRUMManager.h in Headers */ = {isa = PBXBuildFile; fileRef = 172B10E42E377B2600753766 /* FTRUMManager.h */; };
 		172B10EA2E377B3700753766 /* FTRUMDependencies.h in Headers */ = {isa = PBXBuildFile; fileRef = 172B10E92E377B3700753766 /* FTRUMDependencies.h */; };
@@ -1129,6 +1130,7 @@
 		172B10602E3219F500753766 /* FTDateUtil.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = FTDateUtil.m; sourceTree = "<group>"; };
 		172B10782E339F0600753766 /* FTGlobalRumManager.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = FTGlobalRumManager.h; sourceTree = "<group>"; };
 		172B10792E339F0600753766 /* FTGlobalRumManager.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = FTGlobalRumManager.m; sourceTree = "<group>"; };
+		172B107D2E339F0600753766 /* FTGlobalRumManager+Private.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = "FTGlobalRumManager+Private.h"; sourceTree = "<group>"; };
 		172B10E42E377B2600753766 /* FTRUMManager.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; name = FTRUMManager.h; path = Sources/Core/FTRUM/include/FTRUMManager.h; sourceTree = SOURCE_ROOT; };
 		172B10E92E377B3700753766 /* FTRUMDependencies.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; name = FTRUMDependencies.h; path = Sources/Core/FTRUM/include/FTRUMDependencies.h; sourceTree = SOURCE_ROOT; };
 		172B10F32E377BA100753766 /* FTFatalErrorContext.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; name = FTFatalErrorContext.h; path = Sources/Core/FTRUM/include/FTFatalErrorContext.h; sourceTree = SOURCE_ROOT; };
@@ -2062,6 +2064,7 @@
 				17717B6E2F0E8B51002158F6 /* FTConfig+RemoteConfig.m */,
 				172B10782E339F0600753766 /* FTGlobalRumManager.h */,
 				172B10792E339F0600753766 /* FTGlobalRumManager.m */,
+				172B107D2E339F0600753766 /* FTGlobalRumManager+Private.h */,
 				17678E1B29D28BD200C1DA98 /* FTMobileAgent.h */,
 				17A0D0022F90000100A00001 /* FTSDKAgent.h */,
 				17678E2129D28BD200C1DA98 /* FTMobileAgent.m */,
@@ -3034,6 +3037,7 @@
 				17E4CB4729CD42DA005C2D99 /* FTJSONUtil.h in Headers */,
 				172113C72DF1BB5C006189C2 /* FTRemoteConfigurationProtocol.h in Headers */,
 				172B107B2E339F0600753766 /* FTGlobalRumManager.h in Headers */,
+				172B107C2E339F0600753766 /* FTGlobalRumManager+Private.h in Headers */,
 				1763BDAA29DFF04F009EE026 /* ZY_FMDatabase.h in Headers */,
 				17A421CD2EDDB0D500416673 /* FTCrashMonitor_CPPException.h in Headers */,
 				17C2FEA72E4327C6003D600F /* FTRUMDataModel.h in Headers */,

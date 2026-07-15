@@ -23,7 +23,7 @@
 #import "FTConstants.h"
 #import "FTTrackerEventDBTool.h"
 #import "FTRUMManager.h"
-#import "FTGlobalRumManager.h"
+#import "FTGlobalRumManager+Private.h"
 #import "FTTrackerEventDBTool.h"
 #import "FTDateUtil.h"
 #import "FTRecordModel.h"
@@ -64,6 +64,33 @@
     rumConfig.monitorFrequency = FTMonitorFrequencyFrequent;
     [[FTMobileAgent sharedInstance] startRumWithConfigOptions:rumConfig];
     [[FTTrackerEventDBTool sharedManager] deleteAllDatas];
+}
+- (void)testGlobalRumManagerMacOSPublicRUMAPIs{
+    [self setRumConfig];
+    FTGlobalRumManager *manager = [FTGlobalRumManager sharedManager];
+    NSString *resourceKey = [[NSUUID UUID] UUIDString];
+    NSDictionary *property = @{@"manager_property":@"public_rum_api"};
+
+    XCTAssertNoThrow([manager onCreateView:@"GlobalRumManagerPublicView" loadTime:@1000000000]);
+    XCTAssertNoThrow([manager startViewWithName:@"GlobalRumManagerPublicView" property:property]);
+    XCTAssertNoThrow([manager addActionName:@"GlobalRumManagerPublicAction" actionType:@"click" property:property]);
+    XCTAssertNoThrow([manager addErrorWithType:@"macOS" message:@"error_message" stack:@"error_stack" property:property]);
+    XCTAssertNoThrow([manager addErrorWithType:@"macOS" state:FTAppStateRun message:@"state_error_message" stack:@"state_error_stack" property:property]);
+    XCTAssertNoThrow([manager addLongTaskWithStack:@"long_task_stack" duration:@1000000000 property:property]);
+    XCTAssertNoThrow([manager startResourceWithKey:resourceKey property:property]);
+    XCTAssertNoThrow([manager stopResourceWithKey:resourceKey property:property]);
+
+    FTResourceContentModel *content = [[FTResourceContentModel alloc] init];
+    content.url = [NSURL URLWithString:@"https://www.guance.com/public-rum-api"];
+    content.httpMethod = @"GET";
+    content.httpStatusCode = 200;
+    FTResourceMetricsModel *metrics = [[FTResourceMetricsModel alloc] init];
+    metrics.duration = @1000;
+    XCTAssertNoThrow([manager addResourceWithKey:resourceKey metrics:metrics content:content]);
+    XCTAssertNoThrow([manager stopViewWithProperty:property]);
+    [[FTGlobalRumManager sharedInstance].rumManager syncProcess];
+
+    [FTMobileAgent shutDown];
 }
 - (void)testSamplerate0{
     FTMobileConfig *config = [[FTMobileConfig alloc]initWithDatakitUrl:self.url];

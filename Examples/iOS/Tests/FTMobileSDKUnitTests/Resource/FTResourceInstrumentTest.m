@@ -31,7 +31,7 @@
 #import "FTInternalConstants.h"
 #import "FTURLSessionInstrumentation.h"
 #import "FTModelHelper.h"
-#import "FTGlobalRumManager.h"
+#import "FTGlobalRumManager+Private.h"
 #import "FTRUMManager.h"
 #import "NSURLSessionTask+FTSwizzler.h"
 #import "FTDataFilterPullRequest.h"
