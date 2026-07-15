@@ -296,7 +296,23 @@ static NSObject *sharedInstanceLock;
             if(!handler){
                 return;
             }
+            // Use the response when available so incremental body buffering can skip media before completion.
+            handler.response = task.response;
             [handler taskReceivedData:data];
+        }@catch (NSException *exception) {
+            FTInnerLogError(@"exception: %@",exception);
+        }
+    });
+}
+- (void)taskReceivedCompleteData:(NSURLSessionTask *)task data:(NSData *)data{
+    dispatch_async(self.queue, ^{
+        @try {
+            FTSessionTaskHandler *handler = [self getTraceHandler:task];
+            if(!handler){
+                return;
+            }
+            handler.response = task.response;
+            [handler taskReceivedCompleteData:data];
         }@catch (NSException *exception) {
             FTInnerLogError(@"exception: %@",exception);
         }

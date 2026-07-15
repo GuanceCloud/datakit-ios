@@ -163,7 +163,9 @@ typedef BOOL (^FTSessionTaskErrorFilter)(NSError *_Nonnull error);
 @property (nonatomic, assign) int rumCacheLimitCount;
 /// RUM discard strategy
 @property (nonatomic, assign) FTRUMCacheDiscard rumDiscardType;
-/// RUM Resource add custom properties
+/// Adds custom properties to RUM resource events.
+/// The callback receives the request, response, optional buffered response body data, and error.
+/// Response body data is not guaranteed: when the SDK buffers delegate response chunks, media responses and non-media responses larger than 512 KB are not cached and pass nil.
 @property (nonatomic, copy, nullable) FTResourcePropertyProvider resourcePropertyProvider;
 /// Intercept SessionTask Error, confirm interception returns YES, not intercepted returns NO
 @property (nonatomic, copy, nullable) FTSessionTaskErrorFilter sessionTaskErrorFilter;

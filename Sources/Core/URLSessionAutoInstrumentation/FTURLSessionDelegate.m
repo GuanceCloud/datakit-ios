@@ -100,6 +100,9 @@
 -(void)taskReceivedData:(NSURLSessionTask *)task data:(NSData *)data{
     [self.instrumentation.interceptor taskReceivedData:task data:data];
 }
+-(void)taskReceivedCompleteData:(NSURLSessionTask *)task data:(NSData *)data{
+    [self.instrumentation.interceptor taskReceivedCompleteData:task data:data];
+}
 -(void)taskCompleted:(NSURLSessionTask *)task error:(NSError *)error{
     [self dealTaskCompleted:task error:error];
 }

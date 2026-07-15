@@ -34,6 +34,8 @@
 #import "FTURLSessionInterceptor.h"
 #import "FTURLSessionInterceptor+Private.h"
 #import "FTTraceContext.h"
+#import "FTResourceContentModel.h"
+#import "TestSessionDelegate.h"
 #import "OHHTTPStubs.h"
 @interface FTURLSessionInterceptor(Testing)
 @property (nonatomic, strong) dispatch_queue_t queue;
@@ -95,7 +97,124 @@
     [[FTMobileAgent sharedInstance] startTraceWithConfigOptions:traceConfig];
     [[FTTrackerEventDBTool sharedManager] deleteAllDatas];
 }
+- (nullable NSData *)resourceProviderDataForResponseData:(NSData *)responseData contentType:(nullable NSString *)contentType registeredDelegate:(BOOL)registeredDelegate{
+    [OHHTTPStubs removeAllStubs];
+    NSURL *url = [NSURL URLWithString:[NSString stringWithFormat:@"https://response-body-limit.test/%@", [[NSUUID UUID] UUIDString]]];
+    __block BOOL providerCalled = NO;
+    __block NSData *providerData = nil;
+    ResourcePropertyProvider provider = ^NSDictionary * _Nullable(NSURLRequest *request, NSURLResponse *response, NSData * _Nullable data, NSError *error) {
+        providerCalled = YES;
+        providerData = data;
+        return @{};
+    };
+    [self initSDKEnableAutoTrace:YES resourcePropertyProvider:provider];
+    id<OHHTTPStubsDescriptor> stub = [OHHTTPStubs stubRequestsPassingTest:^BOOL(NSURLRequest *request) {
+        return [request.URL.absoluteString isEqualToString:url.absoluteString];
+    } withStubResponse:^OHHTTPStubsResponse*(NSURLRequest *request) {
+        NSDictionary *headers = contentType ? @{@"Content-Type": contentType} : nil;
+        return [OHHTTPStubsResponse responseWithData:responseData statusCode:200 headers:headers];
+    }];
+    XCTestExpectation *expectation = [self expectationWithDescription:@"request"];
+    NSURLSessionDataTask *task = nil;
+    NSURLSession *session = nil;
+    if(registeredDelegate){
+        TestSessionDelegate *delegate = [[TestSessionDelegate alloc]initWithCompletionHandler:^{
+            [expectation fulfill];
+        }];
+        session = [NSURLSession sessionWithConfiguration:[NSURLSessionConfiguration ephemeralSessionConfiguration] delegate:delegate delegateQueue:nil];
+        task = [session dataTaskWithURL:url];
+    }else{
+        task = [[NSURLSession sharedSession] dataTaskWithURL:url completionHandler:^(NSData * _Nullable data, NSURLResponse * _Nullable response, NSError * _Nullable error) {
+            [expectation fulfill];
+        }];
+    }
+    [task resume];
+    [self waitForExpectations:@[expectation] timeout:5];
+    [NSThread sleepForTimeInterval:0.1];
+    dispatch_sync([FTURLSessionInterceptor shared].queue, ^{});
+    [session finishTasksAndInvalidate];
+    [OHHTTPStubs removeStub:stub];
+    XCTAssertTrue(providerCalled);
+    return providerData;
+}
 #pragma mark - RUM
+- (void)testResourcePropertyProviderKeepsSmallNonMediaResponseBody{
+    NSData *data = [@"small-response" dataUsingEncoding:NSUTF8StringEncoding];
+    NSData *providerData = [self resourceProviderDataForResponseData:data contentType:@"application/json" registeredDelegate:YES];
+    XCTAssertEqualObjects(providerData, data);
+}
+
+- (void)testResourcePropertyProviderKeepsMaxSizedNonMediaResponseBody{
+    NSMutableData *data = [NSMutableData dataWithLength:512 * 1024];
+    NSData *providerData = [self resourceProviderDataForResponseData:data contentType:@"application/json" registeredDelegate:YES];
+    XCTAssertEqualObjects(providerData, data);
+}
+
+- (void)testResourcePropertyProviderDropsOversizedNonMediaResponseBody{
+    NSMutableData *data = [NSMutableData dataWithLength:512 * 1024 + 1];
+    NSData *providerData = [self resourceProviderDataForResponseData:data contentType:@"application/json" registeredDelegate:YES];
+    XCTAssertNil(providerData);
+}
+
+- (void)testResourcePropertyProviderDropsImageResponseBody{
+    NSData *data = [@"media-response" dataUsingEncoding:NSUTF8StringEncoding];
+    NSData *providerData = [self resourceProviderDataForResponseData:data contentType:@"image/png" registeredDelegate:YES];
+    XCTAssertNil(providerData);
+}
+
+- (void)testResourcePropertyProviderDropsVideoResponseBody{
+    NSData *data = [@"media-response" dataUsingEncoding:NSUTF8StringEncoding];
+    NSData *providerData = [self resourceProviderDataForResponseData:data contentType:@"video/mp4" registeredDelegate:YES];
+    XCTAssertNil(providerData);
+}
+
+- (void)testResourcePropertyProviderDropsAudioResponseBody{
+    NSData *data = [@"media-response" dataUsingEncoding:NSUTF8StringEncoding];
+    NSData *providerData = [self resourceProviderDataForResponseData:data contentType:@"audio/mpeg" registeredDelegate:YES];
+    XCTAssertNil(providerData);
+}
+
+- (void)testResourcePropertyProviderDropsOctetStreamResponseBody{
+    NSData *data = [@"media-response" dataUsingEncoding:NSUTF8StringEncoding];
+    NSData *providerData = [self resourceProviderDataForResponseData:data contentType:@"application/octet-stream" registeredDelegate:YES];
+    XCTAssertNil(providerData);
+}
+
+- (void)testResourcePropertyProviderKeepsOversizedCompletionHandlerResponseBody{
+    NSMutableData *data = [NSMutableData dataWithLength:512 * 1024 + 1];
+    NSData *providerData = [self resourceProviderDataForResponseData:data contentType:@"application/json" registeredDelegate:NO];
+    XCTAssertEqualObjects(providerData, data);
+}
+
+- (void)testResourcePropertyProviderKeepsMediaCompletionHandlerResponseBody{
+    NSData *data = [@"media-response" dataUsingEncoding:NSUTF8StringEncoding];
+    NSData *providerData = [self resourceProviderDataForResponseData:data contentType:@"image/png" registeredDelegate:NO];
+    XCTAssertEqualObjects(providerData, data);
+}
+
+- (void)testResourceContentModelOnlyConvertsResponseBodyForErrorResource{
+    NSMutableURLRequest *request = [NSMutableURLRequest requestWithURL:[NSURL URLWithString:@"https://test.com"]];
+    request.HTTPMethod = @"GET";
+    NSData *data = [@"response-body" dataUsingEncoding:NSUTF8StringEncoding];
+    NSHTTPURLResponse *successResponse = [[NSHTTPURLResponse alloc] initWithURL:[NSURL URLWithString:@"https://test.com"]
+                                                                     statusCode:200
+                                                                    HTTPVersion:@"1.1"
+                                                                   headerFields:@{@"Content-Type": @"text/plain"}];
+    FTResourceContentModel *successModel = [[FTResourceContentModel alloc] initWithRequest:request response:successResponse data:data error:nil];
+    XCTAssertEqualObjects(successModel.responseBody, @"");
+
+    NSHTTPURLResponse *errorResponse = [[NSHTTPURLResponse alloc] initWithURL:[NSURL URLWithString:@"https://test.com"]
+                                                                   statusCode:500
+                                                                  HTTPVersion:@"1.1"
+                                                                 headerFields:@{@"Content-Type": @"text/plain"}];
+    FTResourceContentModel *statusErrorModel = [[FTResourceContentModel alloc] initWithRequest:request response:errorResponse data:data error:nil];
+    XCTAssertEqualObjects(statusErrorModel.responseBody, @"response-body");
+
+    NSError *networkError = [NSError errorWithDomain:NSURLErrorDomain code:NSURLErrorTimedOut userInfo:nil];
+    FTResourceContentModel *networkErrorModel = [[FTResourceContentModel alloc] initWithRequest:request response:successResponse data:data error:networkError];
+    XCTAssertEqualObjects(networkErrorModel.responseBody, @"response-body");
+}
+
 - (void)testResourceLocalErrorFilter_session{
     [self resourceLocalErrorFilter:YES enableGlobal:NO];
 }

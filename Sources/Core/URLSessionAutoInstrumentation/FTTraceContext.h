@@ -28,7 +28,7 @@ NS_ASSUME_NONNULL_BEGIN
 /// spanId, used to associate with rum
 @property (nonatomic, copy) NSString *spanId;
 /// trace data, SDK will add to request.allHTTPHeaderFields after receiving callback
-@property (nonatomic, strong) NSDictionary<NSString*,NSString*>*traceHeader;
+@property (nonatomic, copy) NSDictionary<NSString*,NSString*>*traceHeader;
 
 @end
 

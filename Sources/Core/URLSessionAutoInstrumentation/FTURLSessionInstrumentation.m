@@ -269,7 +269,7 @@ static dispatch_once_t onceToken;
                             NSURLSessionDataTask *task = taskReference;
                             if (task) {
                                 if (data) {
-                                    [rumInterceptor taskReceivedData:task data:data];
+                                    [rumInterceptor taskReceivedCompleteData:task data:data];
                                 }
                                 [rumInterceptor taskCompleted:task error:error];
                             }
@@ -321,7 +321,7 @@ static dispatch_once_t onceToken;
                         NSURLSessionDataTask *task = taskReference;
                         if (task) {
                             if (data) {
-                                [rumInterceptor taskReceivedData:task data:data];
+                                [rumInterceptor taskReceivedCompleteData:task data:data];
                             }
                             [rumInterceptor taskCompleted:task error:error];
                         }

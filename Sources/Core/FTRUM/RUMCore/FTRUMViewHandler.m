@@ -315,11 +315,13 @@
 
     long long time = [self.viewStartTime ft_nanosecondTimeStamp];
     [self.rumDependencies.writer rumWrite:FT_RUM_SOURCE_VIEW tags:tags fields:fields dynamicContext:context?:@{} time:time updateTime:[updateTime ft_nanosecondTimeStamp]];
-    self.rumDependencies.lastViewUserCustomDatas = viewUserCustomDatas;
-    self.rumDependencies.fatalErrorContext.lastViewContext = @{@"tags":tags,
-                                                               @"fields":fields,
-                                                               @"time":[NSNumber numberWithLongLong:time]
-    };
+    if (self.isActiveView) {
+        self.rumDependencies.lastViewUserCustomDatas = viewUserCustomDatas;
+        self.rumDependencies.fatalErrorContext.lastViewContext = @{@"tags":tags,
+                                                                   @"fields":fields,
+                                                                   @"time":[NSNumber numberWithLongLong:time]
+        };
+    }
 }
 
 @end

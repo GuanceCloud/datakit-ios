@@ -42,6 +42,11 @@ NS_ASSUME_NONNULL_BEGIN
 ///   - task: The data task that provides the data.
 ///   - data: Data object
 - (void)taskReceivedData:(NSURLSessionTask *)task data:(NSData *)data;
+/// Tell the interceptor that the task has received complete data from a completion handler.
+/// - Parameters:
+///   - task: The data task that provides the data.
+///   - data: Complete data object
+- (void)taskReceivedCompleteData:(NSURLSessionTask *)task data:(NSData *)data;
 
 /// Tell the interceptor that metrics have been collected for the given task.
 /// - Parameters:

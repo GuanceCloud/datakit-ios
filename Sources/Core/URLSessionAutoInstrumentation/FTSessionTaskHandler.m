@@ -25,6 +25,8 @@
 #import "FTBaseInfoHandler.h"
 #import "FTInnerLog.h"
 
+static const NSUInteger FTMaxBufferedResponseBodySize = 512 * 1024;
+
 @interface FTURLSessionRequestSnapshot ()
 @property (nonatomic, strong, readwrite) NSURL *URL;
 @property (nonatomic, copy, readwrite) NSString *HTTPMethod;
@@ -80,6 +82,8 @@
 
 @interface FTSessionTaskHandler ()
 @property (nonatomic, strong) NSMutableData *mutableData;
+@property (nonatomic, assign) BOOL responseBodyCacheDisabled;
+@property (nonatomic, assign) BOOL responseBodyReceivedIncrementally;
 @end
 @implementation FTSessionTaskHandler
 -(instancetype)init{
@@ -96,12 +100,51 @@
     _requestSnapshot = requestSnapshot;
     self.request = requestSnapshot.request;
 }
+- (nullable NSString *)normalizedMIMETypeWithResponse:(nullable NSURLResponse *)response{
+    NSString *mimeType = response.MIMEType;
+    if (mimeType.length == 0) {
+        return nil;
+    }
+    NSString *type = [[mimeType componentsSeparatedByString:@";"].firstObject lowercaseString];
+    return [type stringByTrimmingCharactersInSet:[NSCharacterSet whitespaceAndNewlineCharacterSet]];
+}
+- (BOOL)shouldSkipResponseBodyCacheWithResponse:(nullable NSURLResponse *)response{
+    NSString *mimeType = [self normalizedMIMETypeWithResponse:response];
+    if (mimeType.length == 0) {
+        return NO;
+    }
+    return [mimeType hasPrefix:@"image/"] ||
+           [mimeType hasPrefix:@"video/"] ||
+           [mimeType hasPrefix:@"audio/"] ||
+           [mimeType isEqualToString:@"application/octet-stream"];
+}
 - (void)taskReceivedData:(NSData *)data{
+    if (!data || data.length == 0 || self.responseBodyCacheDisabled) {
+        return;
+    }
+    self.responseBodyReceivedIncrementally = YES;
+    if ([self shouldSkipResponseBodyCacheWithResponse:self.response]) {
+        self.mutableData = nil;
+        self.responseBodyCacheDisabled = YES;
+        return;
+    }
+    NSUInteger bufferedLength = self.mutableData.length;
+    if (bufferedLength > FTMaxBufferedResponseBodySize || data.length > FTMaxBufferedResponseBodySize - bufferedLength) {
+        self.mutableData = nil;
+        self.responseBodyCacheDisabled = YES;
+        return;
+    }
     if(!self.mutableData){
         self.mutableData = [NSMutableData dataWithData:data];
     }else{
         [self.mutableData appendData:data];
     }
+}
+- (void)taskReceivedCompleteData:(NSData *)data{
+    if (!data || data.length == 0) {
+        return;
+    }
+    self.data = data;
 }
 - (void)taskReceivedMetrics:(NSURLSessionTaskMetrics *)metrics{
     [self taskReceivedMetrics:metrics custom:NO];
@@ -119,7 +162,10 @@
 - (void)taskCompletedWithResponse:(NSURLResponse *)response error:(NSError *)error{
     self.error = error;
     self.response = response;
-    if (self.mutableData) {
+    if (self.responseBodyReceivedIncrementally && ([self shouldSkipResponseBodyCacheWithResponse:self.response] || self.responseBodyCacheDisabled)) {
+        self.mutableData = nil;
+        self.data = nil;
+    } else if (self.mutableData) {
         self.data = [self.mutableData copy];
         self.mutableData = nil;
     }
