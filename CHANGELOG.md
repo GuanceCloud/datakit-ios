@@ -1,3 +1,12 @@
+# 1.6.6
+1. **Breaking:** Renamed the CocoaPods and SwiftPM distribution products from the `FTMobileSDK` family to the `GuanceSDK` family. Use `GuanceSDK`, `GuanceWidgetExtension`, and `GuanceSessionReplay`; CocoaPods aliases `GuanceSDK/Extension` and `GuanceSDK/FTSessionReplay` remain available.
+2. Added experimental Session Replay heatmap correlation through `FTSessionReplayConfig.enableHeatmap`.
+3. Added missing system `compression` and `zlib` headers.
+4. Improved URLSession Resource stability by preserving request and trace data during asynchronous processing and limiting cached response bodies to reduce OOM risk.
+5. Fixed RUM CPU calculation, app launch, app state, session timeout, crash context, and active View context handling.
+6. Improved ANR reliability by avoiding SQLite `VACUUM` during background transitions and retrying all-thread backtrace collection.
+7. Fixed potential array out-of-bounds crashes caused by invalid enum values.
+---
 # 1.6.6-beta.3
 1. same as 1.6.6-beta.1
 ---
