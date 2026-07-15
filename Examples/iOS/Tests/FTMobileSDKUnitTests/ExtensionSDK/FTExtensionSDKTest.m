@@ -234,6 +234,11 @@ static NSArray *FTEnumMapBoundsTestEvents;
     XCTAssertTrue(newDatas.count == 100);
 }
 - (void)testTrackLegacyLoggerEventWithInvalidStatusFallsBackToInfo{
+    [self saveMobileSdkConfig];
+    [self setExtensionSDK];
+    FTExtensionManager *extensionManager = [FTExtensionManager sharedInstance];
+    FTLoggerConfig *extensionLoggerConfig = [extensionManager valueForKey:@"loggerConfig"];
+    id<FTLinkRumDataProvider> extensionRumProvider = [extensionManager valueForKey:@"rumManager"];
     NSString *groupIdentifier = @"group.com.ft.widget.demo";
     NSDictionary *event = @{
         @"dataType": FT_DATA_TYPE_LOGGING,
@@ -284,7 +289,10 @@ static NSArray *FTEnumMapBoundsTestEvents;
         }
         XCTAssertTrue(foundEvent);
     } @finally {
+        [[FTTrackerEventDBTool sharedManager] deleteAllDatas];
         [FTMobileAgent shutDown];
+        [[FTLogger sharedInstance] startWithLoggerConfig:extensionLoggerConfig writer:(id<FTLoggerDataWriteProtocol>)extensionManager];
+        [FTLogger sharedInstance].linkRumDataProvider = extensionRumProvider;
         method_exchangeImplementations(readMethod, testReadMethod);
         method_exchangeImplementations(deleteMethod, testDeleteMethod);
         FTEnumMapBoundsTestEvents = nil;
