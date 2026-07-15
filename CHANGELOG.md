@@ -1,3 +1,6 @@
+# 1.6.6-beta.2
+1. same as 1.6.6-beta.1
+---
 # 1.6.6-beta.1
 1. Restored the macOS `FTGlobalRumManager` manual RUM APIs for backward compatibility with existing View, Action, Error, LongTask, and Resource integrations.
 2. Fixed potential out-of-bounds crashes caused by invalid enum values in logging, RUM, Session Replay, environment, monitoring, and battery-state paths by applying safe fallback values.
