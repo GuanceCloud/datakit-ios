@@ -206,6 +206,9 @@
     [tester waitForTimeInterval:0.2];
     [[tester waitForViewWithAccessibilityLabel:@"LABLE_CLICK"] tap];
     [tester waitForTimeInterval:0.2];
+
+    // The current RUM action is persisted when the next RUM event is processed.
+    [[FTGlobalRumManager sharedInstance].rumManager stopView];
     [[FTGlobalRumManager sharedInstance].rumManager syncProcess];
     
     NSArray *newArray = [[FTTrackerEventDBTool sharedManager] getFirstRecords:50 withType:FT_DATA_TYPE_RUM];
