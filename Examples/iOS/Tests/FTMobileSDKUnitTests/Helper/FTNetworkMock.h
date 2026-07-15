@@ -25,8 +25,10 @@ NS_ASSUME_NONNULL_BEGIN
 
 @interface FTNetworkMock : NSObject
 + (id<OHHTTPStubsDescriptor>)networkOHHTTPStubs;
+/// Invokes the handler once after the first matching request.
 + (id<OHHTTPStubsDescriptor>)networkOHHTTPStubsHandler:(void (^)(void))handler;
-+ (id<OHHTTPStubsDescriptor>)networkOHHTTPStubsWithUrl:(NSString *)urlStr handler:(nullable void (^)(void))handler;
+/// Invokes the handler once after the first request matching `urlStr`.
++ (id<OHHTTPStubsDescriptor>)networkOHHTTPStubsWithUrl:(nullable NSString *)urlStr handler:(nullable void (^)(void))handler;
 @end
 
 NS_ASSUME_NONNULL_END

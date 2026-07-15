@@ -19,6 +19,7 @@
 //
 
 #import "FTLongTaskManager.h"
+#import "FTLongTaskANRData.h"
 
 NS_ASSUME_NONNULL_BEGIN
 
@@ -26,13 +27,14 @@ NS_ASSUME_NONNULL_BEGIN
 @property (nonatomic, strong) NSFileHandle *fileHandle;
 @property (nonatomic, copy) NSString *dataStorePath;
 @property (nonatomic, strong) dispatch_queue_t queue;
+@property (nonatomic, strong) FTLongTaskANRDataStore *anrDataStore;
 
 - (void)deleteFile;
 - (void)appendData:(NSData *)data;
 - (void)updateLongTaskDate:(long long)time;
 - (void)startLongTask:(long long)startTime;
 - (void)endLongTask;
-- (void)reportFatalWatchDogIfFound;
+- (void)reportPreviousANRIfFound;
 @end
 
 NS_ASSUME_NONNULL_END

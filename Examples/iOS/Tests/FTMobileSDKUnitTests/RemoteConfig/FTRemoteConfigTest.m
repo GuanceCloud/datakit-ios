@@ -68,14 +68,34 @@
 @implementation FTRemoteConfigTest
 
 - (void)setUp {
-    // Put setup code here. This method is called before the invocation of each test method in the class.
-    [[FTRemoteConfigManager sharedInstance] saveRemoteConfig:nil];
-    [[FTRemoteConfigManager sharedInstance] saveLastFetchedTime:0];
+    [super setUp];
+    [self resetRemoteConfigTestState];
 }
 
 - (void)tearDown {
-    // Put teardown code here. This method is called after the invocation of each test method in the class.
     [OHHTTPStubs removeAllStubs];
+    [self resetRemoteConfigTestState];
+    [super tearDown];
+}
+- (void)resetRemoteConfigTestState {
+    self.expectation = nil;
+    [FTMobileAgent shutDown];
+    [[FTRemoteConfigManager sharedInstance] shutDown];
+    [[FTRemoteConfigManager sharedInstance] saveRemoteConfig:nil];
+    [[FTRemoteConfigManager sharedInstance] saveLastFetchedTime:0];
+    [[FTNetworkInfoManager sharedInstance] clearUploadInfo];
+}
+- (NSDictionary *)waitForLastFetchedRemoteConfigMatching:(BOOL (^)(NSDictionary *dict))predicate timeout:(NSTimeInterval)timeout {
+    NSTimeInterval deadline = [NSDate timeIntervalSinceReferenceDate] + timeout;
+    NSDictionary *dict = nil;
+    do {
+        dict = [[FTRemoteConfigManager sharedInstance] getLastFetchedRemoteConfig];
+        if (dict && (!predicate || predicate(dict))) {
+            return dict;
+        }
+        [[NSRunLoop currentRunLoop] runUntilDate:[NSDate dateWithTimeIntervalSinceNow:0.01]];
+    } while ([NSDate timeIntervalSinceReferenceDate] < deadline);
+    return dict;
 }
 - (void)testRequestFormat{
     NSString *datakit = @"http://datakit-test.com";
@@ -398,7 +418,10 @@
         XCTAssertTrue([FTTrackDataManager sharedInstance].dataUploadWorker.syncSleepTime == 300);
         XCTAssertTrue([FTTrackDataManager sharedInstance].dataUploadWorker.uploadPageSize == 15);
     });
-    XCTAssertTrue([[FTRemoteConfigManager sharedInstance] getLastFetchedRemoteConfig] != nil);
+    NSDictionary *lastFetchedRemoteConfig = [self waitForLastFetchedRemoteConfigMatching:^BOOL(NSDictionary *dict) {
+        return dict.count > 0;
+    } timeout:1];
+    XCTAssertTrue(lastFetchedRemoteConfig != nil);
     NSDictionary *traceHeader = [[FTExternalDataManager sharedManager] getTraceHeaderWithUrl:[NSURL URLWithString:@"http:test.com"]];
     XCTAssertTrue([traceHeader[FT_NETWORK_DDTRACE_SAMPLING_PRIORITY] intValue] == 2);
     
@@ -418,7 +441,13 @@
 - (id<OHHTTPStubsDescriptor>)mockRemoteData{
     return [self mockRemoteDataCallBack:nil withOriginalRemoteDict:nil];
 }
+- (id<OHHTTPStubsDescriptor>)mockRemoteDataWithResponseDelay:(NSTimeInterval)responseDelay {
+    return [self mockRemoteDataCallBack:nil withOriginalRemoteDict:nil responseDelay:responseDelay];
+}
 - (id<OHHTTPStubsDescriptor>)mockRemoteDataCallBack:(nullable void (^)(int))callback withOriginalRemoteDict:(nullable NSDictionary *)originalRemoteDict{
+    return [self mockRemoteDataCallBack:callback withOriginalRemoteDict:originalRemoteDict responseDelay:0];
+}
+- (id<OHHTTPStubsDescriptor>)mockRemoteDataCallBack:(nullable void (^)(int))callback withOriginalRemoteDict:(nullable NSDictionary *)originalRemoteDict responseDelay:(NSTimeInterval)responseDelay{
     NSString *datakit = @"http://datakit-test.com";
     NSString *prefix = @"R.appid-test.";
     NSDictionary *defaultOriginalDict = @{
@@ -454,7 +483,11 @@
         if (callback) {
             callback(count);
         }
-        return [OHHTTPStubsResponse responseWithData:[contentStr dataUsingEncoding:NSUTF8StringEncoding] statusCode:200 headers:nil];
+        OHHTTPStubsResponse *response = [OHHTTPStubsResponse responseWithData:[contentStr dataUsingEncoding:NSUTF8StringEncoding] statusCode:200 headers:nil];
+        if (responseDelay > 0) {
+            return [response requestTime:responseDelay responseTime:0];
+        }
+        return response;
     }];
     return stubs;
 }
@@ -659,16 +692,21 @@
     [FTMobileAgent shutDown];
 }
 - (void)testRemoteConfigError_Requesting{
-    id<OHHTTPStubsDescriptor> stubs = [self mockRemoteData];
+    id<OHHTTPStubsDescriptor> stubs = [self mockRemoteDataWithResponseDelay:0.5];
     XCTestExpectation *expectation = [self expectationWithDescription:@"Requesting"];
-    [self sdkInitWithRemoteConfiguration:YES interval:60];
+    XCTestExpectation *initialRequestExpectation = [self expectationWithDescription:@"InitialRequest"];
+    [self sdkInitWithRemoteConfiguration:YES interval:60 block:^FTRemoteConfigModel * _Nullable(BOOL success, NSError * _Nullable error, FTRemoteConfigModel * _Nullable model, NSDictionary<NSString *,id> * _Nullable content) {
+        XCTAssertTrue(success == YES);
+        [initialRequestExpectation fulfill];
+        return nil;
+    }];
     [FTMobileAgent updateRemoteConfigWithMiniUpdateInterval:0 completion:^FTRemoteConfigModel * _Nullable(BOOL success, NSError * _Nullable error, FTRemoteConfigModel * _Nullable model, NSDictionary<NSString *,id> * _Nullable content) {
         XCTAssertTrue(success == NO);
         XCTAssertEqual(error.code, FTRemoteConfigErrorCodeRequesting);
         [expectation fulfill];
         return nil;
     }];
-    [self waitForExpectations:@[expectation] timeout:10];
+    [self waitForExpectations:@[expectation, initialRequestExpectation] timeout:10];
     [OHHTTPStubs removeStub:stubs];
     [FTMobileAgent shutDown];
 }
@@ -829,7 +867,9 @@
    
     [self waitForExpectations:@[expectation] timeout:10];
     XCTAssertTrue([resultModel.toDictionary isEqualToDictionary:[[FTRemoteConfigManager sharedInstance].lastRemoteModel toDictionary]]);
-    NSDictionary *dict = [[FTRemoteConfigManager sharedInstance] getLastFetchedRemoteConfig];
+    NSDictionary *dict = [self waitForLastFetchedRemoteConfigMatching:^BOOL(NSDictionary *dict) {
+        return [dict[@"vips"] isEqualToString:@"[\"user1\"]"];
+    } timeout:1];
     XCTAssertTrue([dict[@"vips"] isEqualToString:@"[\"user1\"]"]);
     
     [OHHTTPStubs removeStub:stubs];

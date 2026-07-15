@@ -316,6 +316,25 @@
     };
     return [NSJSONSerialization dataWithJSONObject:segment options:kNilOptions error:nil];
 }
+- (void)testNetworkMockHandlerRunsOnceForMultipleMatchingRequests {
+    NSURL *url = [NSURL URLWithString:@"https://network-mock.example.com/one-shot"];
+    XCTestExpectation *expectation = [self expectationWithDescription:@"Mock handler should run once"];
+    id<OHHTTPStubsDescriptor> stubs = [FTNetworkMock networkOHHTTPStubsWithUrl:url.absoluteString handler:^{
+        [expectation fulfill];
+    }];
+    NSURLSession *session = [NSURLSession sessionWithConfiguration:[NSURLSessionConfiguration ephemeralSessionConfiguration]];
+    NSURLSessionDataTask *firstTask = [session dataTaskWithURL:url];
+    NSURLSessionDataTask *secondTask = [session dataTaskWithURL:url];
+
+    [firstTask resume];
+    [secondTask resume];
+    [self waitForExpectations:@[expectation] timeout:3];
+    [[NSRunLoop currentRunLoop] runUntilDate:[NSDate dateWithTimeIntervalSinceNow:0.2]];
+
+    [session finishTasksAndInvalidate];
+    [OHHTTPStubs removeStub:stubs];
+}
+
 /** Tests that creating a shared session returns a non-nil object. */
 - (void)testSharedSession {
     __block NSURLSessionDataTask *dataTask;

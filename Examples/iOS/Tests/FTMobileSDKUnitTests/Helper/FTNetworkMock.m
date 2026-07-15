@@ -36,7 +36,9 @@ typedef void (^CompletionHandler)(void);
 + (id<OHHTTPStubsDescriptor>)networkOHHTTPStubsHandler:(void (^)(void))handler{
     return [self networkOHHTTPStubsWithUrl:nil handler:handler];
 }
-+ (id<OHHTTPStubsDescriptor>)networkOHHTTPStubsWithUrl:(NSString *)urlStr handler:(void (^)(void))handler{
++ (id<OHHTTPStubsDescriptor>)networkOHHTTPStubsWithUrl:(nullable NSString *)urlStr handler:(nullable void (^)(void))handler{
+    NSObject *handlerGuard = [NSObject new];
+    __block BOOL didScheduleHandler = NO;
     id<OHHTTPStubsDescriptor> stubs = [OHHTTPStubs stubRequestsPassingTest:^BOOL(NSURLRequest *request) {
         if(urlStr&&urlStr.length>0){
             return [request.URL.absoluteString isEqualToString:urlStr];
@@ -46,9 +48,18 @@ typedef void (^CompletionHandler)(void);
         NSString *data  =[FTJSONUtil convertToJsonData:@{@"data":@"Hello World!",@"code":@200}];
         NSData *requestData = [data dataUsingEncoding:NSUTF8StringEncoding];
         if(handler){
-            dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)(0.1 * NSEC_PER_SEC)), dispatch_get_main_queue(), ^{
-                handler();
-            });
+            BOOL shouldScheduleHandler = NO;
+            @synchronized (handlerGuard) {
+                if (!didScheduleHandler) {
+                    didScheduleHandler = YES;
+                    shouldScheduleHandler = YES;
+                }
+            }
+            if (shouldScheduleHandler) {
+                dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)(0.1 * NSEC_PER_SEC)), dispatch_get_main_queue(), ^{
+                    handler();
+                });
+            }
         }
         return [OHHTTPStubsResponse responseWithData:requestData statusCode:200 headers:nil];
     }];

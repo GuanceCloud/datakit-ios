@@ -563,9 +563,32 @@
     }];
     [rum syncProcess];
 
-    NSDictionary *bindInfo = rumContext[FT_LINK_RUM_KEYS];
+    NSDictionary *activeViewContext = dependencies.lastViewUserCustomDatas;
     XCTAssertEqualObjects(rumContext[FT_KEY_VIEW_NAME], @"second_view");
-    XCTAssertEqualObjects(bindInfo[@"view_context"], @"second");
+    XCTAssertEqualObjects(activeViewContext[@"view_context"], @"second");
+}
+- (void)testStopViewClearsCrashViewContext{
+    [self setRumConfig];
+    NSDictionary *viewProperty = @{@"view_context":@"crash_context"};
+
+    [[FTExternalDataManager sharedManager] startViewWithName:@"crash_view" property:viewProperty];
+    [[FTGlobalRumManager sharedInstance].rumManager syncProcess];
+
+    FTRUMManager *rum = [FTGlobalRumManager sharedInstance].rumManager;
+    FTRUMDependencies *dependencies = [rum valueForKey:@"rumDependencies"];
+    FTFatalErrorContextModel *activeContextModel = [dependencies.fatalErrorContext currentContextModel];
+    NSDictionary *activeViewTags = activeContextModel.lastViewContext[@"tags"];
+    NSDictionary *activeViewFields = activeContextModel.lastViewContext[@"fields"];
+
+    XCTAssertEqualObjects(activeViewTags[FT_KEY_VIEW_NAME], @"crash_view");
+    XCTAssertTrue([activeViewFields[FT_KEY_IS_ACTIVE] boolValue]);
+    XCTAssertEqualObjects(activeViewFields[@"view_context"], @"crash_context");
+
+    [[FTExternalDataManager sharedManager] stopView];
+    [[FTGlobalRumManager sharedInstance].rumManager syncProcess];
+
+    FTFatalErrorContextModel *stoppedContextModel = [dependencies.fatalErrorContext currentContextModel];
+    XCTAssertNil(stoppedContextModel.lastViewContext);
 }
 /**
  * Verify the format of source:resource data

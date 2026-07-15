@@ -36,6 +36,8 @@
 #import "FTRUMSessionHandler.h"
 #import "FTJSONUtil.h"
 #import "FTRequestBody.h"
+#import "FTDataFilterManager.h"
+#import "FTPresetProperty.h"
 #if !TARGET_OS_TV
 #import "FTSessionReplayFeature.h"
 #import "FTSessionReplayConfig.h"
@@ -214,6 +216,7 @@ typedef NS_ENUM(NSInteger, SampleState) {
 
 - (void)setUp {
     // Put setup code here. This method is called before the invocation of each test method in the class.
+    [self resetGlobalWriterState];
     NSProcessInfo *processInfo = [NSProcessInfo processInfo];
     self.url = [processInfo environment][@"ACCESS_SERVER_URL"];
     self.appid = [processInfo environment][@"APP_ID"];
@@ -223,7 +226,13 @@ typedef NS_ENUM(NSInteger, SampleState) {
 
 - (void)tearDown {
     // Put teardown code here. This method is called after the invocation of each test method in the class.
+    [self resetGlobalWriterState];
+}
+- (void)resetGlobalWriterState {
     [FTMobileAgent shutDown];
+    [FTTrackDataManager shutDown];
+    [[FTDataFilterManager sharedInstance] shutDown];
+    [[FTPresetProperty sharedInstance] shutDown];
 }
 - (void)sdkInitWithRumSampleRate:(int)sampleRate sessionOnErrorSampleRate:(int)sessionOnErrorSampleRate{
     FTMobileConfig *config = [[FTMobileConfig alloc]initWithDatakitUrl:self.url];
