@@ -40,6 +40,8 @@
 #import "FTSRRecord.h"
 #import "FTUploadStatus.h"
 
+static NSString * const FTReplayAssetsTagsKey = @"tags";
+
 @interface FTFeatureUpload()<NSCacheDelegate>{
     pthread_rwlock_t _readWorkLock;
     pthread_rwlock_t _uploadWorkLock;
@@ -292,8 +294,7 @@
             }
         }
         if (resources.count == 0) {
-            NSHTTPURLResponse *response = [[NSHTTPURLResponse alloc]initWithURL:[NSURL URLWithString:@"https://localhost"] statusCode:200 HTTPVersion:nil headerFields:nil];
-            return [FTUploadStatus statusWithHTTPResponse:response error:nil previousStatus:self.lastUploadStatus];
+            return [FTUploadStatus successStatus];
         }
         NSArray<NSArray<FTEnrichedResource *> *> *groupedResources = [self groupedResourcesByUploadContext:resources];
         for (NSUInteger idx = 0; idx < groupedResources.count; idx++) {
@@ -328,8 +329,7 @@
                 [self.checkRequest.classSerialGenerator increaseRequestSerialNumber];
             }
         }
-        NSHTTPURLResponse *response = [[NSHTTPURLResponse alloc]initWithURL:[NSURL URLWithString:@"https://localhost"] statusCode:200 HTTPVersion:nil headerFields:nil];
-        return [FTUploadStatus statusWithHTTPResponse:response error:nil previousStatus:self.lastUploadStatus];
+        return [FTUploadStatus successStatus];
     } @catch (NSException *exception) {
         FTInnerLogError(@"exception %@",exception);
     }
@@ -412,11 +412,8 @@
     FTEnrichedResource *resource = resources.firstObject;
     NSMutableDictionary *parameters = [NSMutableDictionary dictionary];
     [parameters setValue:resource.appId forKey:FT_APP_ID];
-    if (baseParameters) {
-        [parameters addEntriesFromDictionary:baseParameters];
-    }
-    if (resource.bindInfo) {
-        [parameters addEntriesFromDictionary:resource.bindInfo];
+    if (resource.bindInfo.count > 0) {
+        [parameters setValue:resource.bindInfo forKey:FTReplayAssetsTagsKey];
     }
     return [parameters copy];
 }

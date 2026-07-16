@@ -29,6 +29,8 @@
 #import "FTSRRecord.h"
 #import "FTResourceCheckRequest.h"
 
+static NSString * const FTReplayAssetsTagsKey = @"tags";
+
 @interface FTResourceRequest()
 @property (nonatomic, strong) NSArray<FTEnrichedResource *> *resources;
 @property (nonatomic, strong) NSDictionary *parameters;
@@ -58,6 +60,15 @@
         return nil;
     }
     FTEnrichedResource *firstResource = self.resources.firstObject;
+    NSString *appId = self.parameters[FT_APP_ID] ?: firstResource.appId;
+    NSDictionary *tags = self.parameters[FTReplayAssetsTagsKey];
+    if (![tags isKindOfClass:NSDictionary.class]) {
+        tags = firstResource.bindInfo ?: @{};
+    }
+    NSString *tagsJSONString = tags.count > 0 ? [FTJSONUtil convertToJsonData:tags] : nil;
+    if (!appId || (tags.count > 0 && !tagsJSONString)) {
+        return nil;
+    }
     [self addHTTPHeaderFields:mutableRequest packageId:[FTPackageIdGenerator generatePackageId:self.serialNumber count:self.resources.count]];
     
     mutableRequest.HTTPMethod = self.httpMethod;
@@ -65,16 +76,9 @@
     for (FTEnrichedResource *resource in self.resources) {
         [self.multipartFormBody addFormData:@"files" filename:resource.identifier data:resource.data mimeType:resource.mimeType];
     }
-    NSMutableDictionary *formFields = [NSMutableDictionary dictionary];
-    [formFields setValue:firstResource.appId forKey:FT_APP_ID];
-    if (self.parameters) {
-        [formFields addEntriesFromDictionary:self.parameters];
-    }
-    if (firstResource.bindInfo) {
-        [formFields addEntriesFromDictionary:firstResource.bindInfo];
-    }
-    for (NSString *key in formFields.allKeys) {
-        [self.multipartFormBody addFormField:key value:formFields[key]];
+    [self.multipartFormBody addFormField:FT_APP_ID value:appId];
+    if (tagsJSONString) {
+        [self.multipartFormBody addFormField:FTReplayAssetsTagsKey value:tagsJSONString];
     }
     
     mutableRequest.HTTPBody = [self.multipartFormBody build];

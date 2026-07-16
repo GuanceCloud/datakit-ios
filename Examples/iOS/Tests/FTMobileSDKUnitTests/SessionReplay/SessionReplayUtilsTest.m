@@ -387,6 +387,16 @@ BOOL isNAN(id value) {
     }
 }
 
+- (void)testUploadStatusCreatesSuccessWithoutHTTPResponse{
+    FTUploadStatus *status = [FTUploadStatus successStatus];
+
+    XCTAssertTrue(status.success);
+    XCTAssertFalse(status.needsRetry);
+    XCTAssertNil(status.responseCode);
+    XCTAssertNil(status.error);
+    XCTAssertEqual(status.attempt, 0);
+}
+
 - (void)testUploadStatusTreatsCurrentFailureCodesAsRetryable{
     NSArray<NSNumber *> *failureCodes = @[@403, @429, @500, @502, @503, @504];
     for (NSNumber *statusCode in failureCodes) {
@@ -579,46 +589,85 @@ BOOL isNAN(id value) {
     XCTAssertEqual([[conditions checkForUpload] filteredArrayUsingPredicate:batteryPredicate].count, 0);
 }
 
-- (void)testResourceRequestContainsBindInfoFields{
+- (void)testResourceRequestContainsReplayAssetTagsField{
     FTEnrichedResource *resource = [[FTEnrichedResource alloc] init];
     resource.identifier = @"resource-id";
     resource.appId = @"app-id";
     resource.data = [@"abc" dataUsingEncoding:NSUTF8StringEncoding];
     resource.mimeType = @"image/png";
-    resource.bindInfo = @{@"user_id":@"123"};
+    resource.bindInfo = @{@"wgtid":@"123"};
     
     FTResourceRequest *request = [[FTResourceRequest alloc] init];
-    [request requestWithEvents:@[resource] parameters:@{@"service":@"demo-service"}];
+    [request requestWithEvents:@[resource] parameters:@{
+        FT_APP_ID:@"app-id",
+        @"tags":@{@"wgtid":@"123"},
+        @"service":@"demo-service"
+    }];
     NSMutableURLRequest *urlRequest = [[NSMutableURLRequest alloc] initWithURL:[NSURL URLWithString:@"https://example.com"]];
     NSMutableURLRequest *adaptedRequest = [request adaptedRequest:urlRequest];
     NSString *body = [[NSString alloc] initWithData:adaptedRequest.HTTPBody encoding:NSUTF8StringEncoding];
     
     XCTAssertTrue([body containsString:@"name=\"app_id\""]);
     XCTAssertTrue([body containsString:@"app-id"]);
-    XCTAssertTrue([body containsString:@"name=\"service\""]);
-    XCTAssertTrue([body containsString:@"demo-service"]);
-    XCTAssertTrue([body containsString:@"name=\"user_id\""]);
+    XCTAssertTrue([body containsString:@"name=\"tags\""]);
+    XCTAssertTrue([body containsString:@"wgtid"]);
     XCTAssertTrue([body containsString:@"123"]);
+    XCTAssertFalse([body containsString:@"name=\"appid\""]);
+    XCTAssertFalse([body containsString:@"name=\"wgtid\""]);
+    XCTAssertFalse([body containsString:@"name=\"service\""]);
+    XCTAssertFalse([body containsString:@"demo-service"]);
 }
 
-- (void)testResourceCheckRequestContainsBindInfoFields{
+- (void)testResourceCheckRequestContainsReplayAssetTagsObject{
     FTResourceCheckRequest *request = [[FTResourceCheckRequest alloc] init];
     [request requestWithEvents:@[@"resource-id"] parameters:@{
         FT_APP_ID:@"app-id",
+        @"tags":@{@"wgtid":@"123"},
         @"service":@"demo-service",
-        @"user_id":@"123"
+        @"wgtid":@"flattened-value"
     }];
     NSMutableURLRequest *urlRequest = [[NSMutableURLRequest alloc] initWithURL:[NSURL URLWithString:@"https://example.com"]];
     NSMutableURLRequest *adaptedRequest = [request adaptedRequest:urlRequest];
     NSDictionary *body = [NSJSONSerialization JSONObjectWithData:adaptedRequest.HTTPBody options:kNilOptions error:nil];
     
     XCTAssertEqualObjects(body[FT_APP_ID], @"app-id");
-    XCTAssertEqualObjects(body[@"service"], @"demo-service");
-    XCTAssertEqualObjects(body[@"user_id"], @"123");
+    XCTAssertEqualObjects(body[@"tags"][@"wgtid"], @"123");
     XCTAssertEqualObjects(body[@"files"], (@[@"resource-id"]));
+    XCTAssertNil(body[@"appid"]);
+    XCTAssertNil(body[@"service"]);
+    XCTAssertNil(body[@"wgtid"]);
 }
 
-- (void)testImageFeatureUploadGroupsByBindInfoBeforeCheckAndWrite{
+- (void)testResourceRequestOmitsReplayAssetTagsWhenEmpty{
+    FTEnrichedResource *resource = [[FTEnrichedResource alloc] init];
+    resource.identifier = @"resource-id";
+    resource.appId = @"app-id";
+    resource.data = [@"abc" dataUsingEncoding:NSUTF8StringEncoding];
+    resource.mimeType = @"image/png";
+
+    FTResourceRequest *request = [[FTResourceRequest alloc] init];
+    [request requestWithEvents:@[resource] parameters:@{FT_APP_ID:@"app-id"}];
+    NSMutableURLRequest *urlRequest = [[NSMutableURLRequest alloc] initWithURL:[NSURL URLWithString:@"https://example.com"]];
+    NSMutableURLRequest *adaptedRequest = [request adaptedRequest:urlRequest];
+    NSString *body = [[NSString alloc] initWithData:adaptedRequest.HTTPBody encoding:NSUTF8StringEncoding];
+
+    XCTAssertTrue([body containsString:@"name=\"app_id\""]);
+    XCTAssertFalse([body containsString:@"name=\"tags\""]);
+}
+
+- (void)testResourceCheckRequestOmitsReplayAssetTagsWhenEmpty{
+    FTResourceCheckRequest *request = [[FTResourceCheckRequest alloc] init];
+    [request requestWithEvents:@[@"resource-id"] parameters:@{FT_APP_ID:@"app-id"}];
+    NSMutableURLRequest *urlRequest = [[NSMutableURLRequest alloc] initWithURL:[NSURL URLWithString:@"https://example.com"]];
+    NSMutableURLRequest *adaptedRequest = [request adaptedRequest:urlRequest];
+    NSDictionary *body = [NSJSONSerialization JSONObjectWithData:adaptedRequest.HTTPBody options:kNilOptions error:nil];
+
+    XCTAssertEqualObjects(body[FT_APP_ID], @"app-id");
+    XCTAssertEqualObjects(body[@"files"], (@[@"resource-id"]));
+    XCTAssertNil(body[@"tags"]);
+}
+
+- (void)testImageFeatureUploadGroupsByLinkedTagsBeforeCheckAndWrite{
     FTMockHTTPClient *httpClient = [[FTMockHTTPClient alloc] init];
     httpClient.contentMap = @{
         @"resource-a":@NO,
@@ -627,9 +676,9 @@ BOOL isNAN(id value) {
     };
     FTImageFeatureUpload *upload = [self createImageUploadWithHTTPClient:httpClient];
     NSArray *event = @[
-        [self resourceDataWithIdentifier:@"resource-a" bindInfo:@{@"user_id":@"user-1"}],
-        [self resourceDataWithIdentifier:@"resource-b" bindInfo:@{@"user_id":@"user-2"}],
-        [self resourceDataWithIdentifier:@"resource-c" bindInfo:@{@"user_id":@"user-1"}]
+        [self resourceDataWithIdentifier:@"resource-a" bindInfo:@{@"wgtid":@"widget-1"}],
+        [self resourceDataWithIdentifier:@"resource-b" bindInfo:@{@"wgtid":@"widget-2"}],
+        [self resourceDataWithIdentifier:@"resource-c" bindInfo:@{@"wgtid":@"widget-1"}]
     ];
     
     FTUploadStatus *status = [upload flushWithEvent:event parameters:@{@"service":@"demo-service"}];
@@ -644,22 +693,38 @@ BOOL isNAN(id value) {
     NSArray *firstFiles = firstCheck[@"files"];
     NSArray *secondFiles = secondCheck[@"files"];
     
-    XCTAssertEqualObjects(firstCheck[@"user_id"], @"user-1");
+    XCTAssertEqualObjects(firstCheck[FT_APP_ID], @"app-id");
+    XCTAssertEqualObjects(firstCheck[@"tags"][@"wgtid"], @"widget-1");
+    XCTAssertNil(firstCheck[@"wgtid"]);
+    XCTAssertNil(firstCheck[@"service"]);
     XCTAssertTrue(firstFiles.count == 2);
     XCTAssertTrue([firstFiles containsObject:@"resource-a"]);
     XCTAssertTrue([firstFiles containsObject:@"resource-c"]);
-    XCTAssertEqualObjects(secondCheck[@"user_id"], @"user-2");
+    XCTAssertEqualObjects(secondCheck[FT_APP_ID], @"app-id");
+    XCTAssertEqualObjects(secondCheck[@"tags"][@"wgtid"], @"widget-2");
+    XCTAssertNil(secondCheck[@"wgtid"]);
+    XCTAssertNil(secondCheck[@"service"]);
     XCTAssertEqualObjects(secondFiles, (@[@"resource-b"]));
     
     NSString *firstWrite = httpClient.writeBodies[0];
     NSString *secondWrite = httpClient.writeBodies[1];
-    XCTAssertTrue([firstWrite containsString:@"user-1"]);
+    XCTAssertTrue([firstWrite containsString:@"name=\"app_id\""]);
+    XCTAssertTrue([firstWrite containsString:@"name=\"tags\""]);
+    XCTAssertTrue([firstWrite containsString:@"widget-1"]);
     XCTAssertTrue([firstWrite containsString:@"resource-a"]);
     XCTAssertTrue([firstWrite containsString:@"resource-c"]);
     XCTAssertFalse([firstWrite containsString:@"resource-b"]);
-    XCTAssertTrue([secondWrite containsString:@"user-2"]);
+    XCTAssertFalse([firstWrite containsString:@"name=\"appid\""]);
+    XCTAssertFalse([firstWrite containsString:@"name=\"wgtid\""]);
+    XCTAssertFalse([firstWrite containsString:@"name=\"service\""]);
+    XCTAssertTrue([secondWrite containsString:@"name=\"app_id\""]);
+    XCTAssertTrue([secondWrite containsString:@"name=\"tags\""]);
+    XCTAssertTrue([secondWrite containsString:@"widget-2"]);
     XCTAssertTrue([secondWrite containsString:@"resource-b"]);
     XCTAssertFalse([secondWrite containsString:@"resource-a"]);
+    XCTAssertFalse([secondWrite containsString:@"name=\"appid\""]);
+    XCTAssertFalse([secondWrite containsString:@"name=\"wgtid\""]);
+    XCTAssertFalse([secondWrite containsString:@"name=\"service\""]);
 }
 
 - (void)testImageFeatureUploadTreats403And429AsFailure{
@@ -675,8 +740,8 @@ BOOL isNAN(id value) {
     };
     FTImageFeatureUpload *upload = [self createImageUploadWithHTTPClient:httpClient];
     NSArray *event = @[
-        [self resourceDataWithIdentifier:@"resource-a" bindInfo:@{@"user_id":@"user-1"}],
-        [self resourceDataWithIdentifier:@"resource-b" bindInfo:@{@"user_id":@"user-1"}]
+        [self resourceDataWithIdentifier:@"resource-a" bindInfo:@{@"wgtid":@"widget-1"}],
+        [self resourceDataWithIdentifier:@"resource-b" bindInfo:@{@"wgtid":@"widget-1"}]
     ];
     
     FTUploadStatus *status = [upload flushWithEvent:event parameters:@{@"service":@"demo-service"}];
@@ -687,14 +752,22 @@ BOOL isNAN(id value) {
     XCTAssertEqual(httpClient.writeBodies.count, 1);
     NSDictionary *checkBody = httpClient.checkBodies.firstObject;
     NSArray *files = checkBody[@"files"];
-    XCTAssertEqualObjects(checkBody[@"user_id"], @"user-1");
+    XCTAssertEqualObjects(checkBody[FT_APP_ID], @"app-id");
+    XCTAssertEqualObjects(checkBody[@"tags"][@"wgtid"], @"widget-1");
+    XCTAssertNil(checkBody[@"wgtid"]);
+    XCTAssertNil(checkBody[@"service"]);
     XCTAssertTrue(files.count == 2);
     XCTAssertTrue([files containsObject:@"resource-a"]);
     XCTAssertTrue([files containsObject:@"resource-b"]);
     
     NSString *writeBody = httpClient.writeBodies.firstObject;
-    XCTAssertTrue([writeBody containsString:@"user-1"]);
+    XCTAssertTrue([writeBody containsString:@"name=\"app_id\""]);
+    XCTAssertTrue([writeBody containsString:@"name=\"tags\""]);
+    XCTAssertTrue([writeBody containsString:@"widget-1"]);
     XCTAssertTrue([writeBody containsString:@"resource-a"]);
     XCTAssertTrue([writeBody containsString:@"resource-b"]);
+    XCTAssertFalse([writeBody containsString:@"name=\"appid\""]);
+    XCTAssertFalse([writeBody containsString:@"name=\"wgtid\""]);
+    XCTAssertFalse([writeBody containsString:@"name=\"service\""]);
 }
 @end

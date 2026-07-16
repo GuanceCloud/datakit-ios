@@ -35,6 +35,14 @@
 
 @implementation FTUploadStatus
 
++ (instancetype)successStatus{
+    FTUploadStatus *status = [[FTUploadStatus alloc] init];
+    status.success = YES;
+    status.needsRetry = NO;
+    status.uploadDebugDescription = @"[success]";
+    return status;
+}
+
 + (instancetype)statusWithHTTPResponse:(nullable NSHTTPURLResponse *)httpResponse
                                  error:(nullable NSError *)error
                         previousStatus:(nullable FTUploadStatus *)previousStatus{
