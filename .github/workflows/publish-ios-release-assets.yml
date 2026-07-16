@@ -222,9 +222,8 @@ jobs:
             gh release create "$TAG_NAME" "${release_args[@]}"
           fi
 
-          upload_args=()
           if [[ "$OVERWRITE_ASSETS" == "true" ]]; then
-            upload_args+=(--clobber)
+            gh release upload "$TAG_NAME" "${asset_paths[@]}" --clobber
+          else
+            gh release upload "$TAG_NAME" "${asset_paths[@]}"
           fi
-
-          gh release upload "$TAG_NAME" "${asset_paths[@]}" "${upload_args[@]}"
