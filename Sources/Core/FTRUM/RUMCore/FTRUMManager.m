@@ -130,7 +130,6 @@ void *FTRUMQueueIdentityKey = &FTRUMQueueIdentityKey;
             case UIApplicationStateActive:
                 return FTAppStateRun;
             case UIApplicationStateBackground:
-                return FTAppStateBackground;
             case UIApplicationStateInactive:
             default:
                 return FTAppStateStartUp;

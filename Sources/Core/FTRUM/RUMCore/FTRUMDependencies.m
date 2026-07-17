@@ -27,6 +27,7 @@
     dependencies.sampleRate = self.sampleRate;
     dependencies.sessionOnErrorSampleRate = self.sessionOnErrorSampleRate;
     dependencies.enableResourceHostIP = self.enableResourceHostIP;
+    dependencies.enableTraceUserAction = self.enableTraceUserAction;
     dependencies.appId = self.appId;
     dependencies.writer = self.writer;
     dependencies.errorMonitorInfoWrapper = self.errorMonitorInfoWrapper;

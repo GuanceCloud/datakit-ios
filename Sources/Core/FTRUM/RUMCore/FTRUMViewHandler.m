@@ -30,6 +30,8 @@
 #import "FTRUMMonitor.h"
 #import "FTRUMContext.h"
 
+static NSString * const FTRUMFallbackViewNameApplicationLaunch = @"ApplicationLaunch";
+
 @interface FTRUMViewHandler()
 @property (nonatomic, strong) FTRUMDependencies *rumDependencies;
 @property (nonatomic, strong) FTRUMContext *context;
@@ -131,6 +133,12 @@
         case FTRUMDataAddAction:
             if (self.isActiveView){
                 [self addAction:model context:context];
+            }
+            break;
+        case FTRUMDataLaunch:
+            if (self.isActiveView && self.fallbackView && [self.view_name isEqualToString:FTRUMFallbackViewNameApplicationLaunch]) {
+                self.viewActionCount += 1;
+                self.needUpdateView = YES;
             }
             break;
         case FTRUMDataError:

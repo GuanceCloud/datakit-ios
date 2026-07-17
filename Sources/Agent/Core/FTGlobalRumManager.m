@@ -162,6 +162,7 @@ static NSObject *sharedInstanceLock;
     dependencies.sessionOnErrorSampleRate = rumConfig.sessionOnErrorSampleRate;
     dependencies.sampleRate = rumConfig.sampleRate;
     dependencies.enableResourceHostIP = rumConfig.enableResourceHostIP;
+    dependencies.enableTraceUserAction = rumConfig.enableTraceUserAction;
     dependencies.errorMonitorInfoWrapper = errorInfoWrapper;
     dependencies.fatalErrorContext = [[FTFatalErrorContext alloc]initWithErrorInfoProvider:errorInfoWrapper];
     return dependencies;

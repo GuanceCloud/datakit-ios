@@ -33,6 +33,7 @@ static const NSTimeInterval sessionMaxDuration = 4 * 60 * 60; // 4 hours
 static NSString * const FTRUMFallbackViewNameApplicationLaunch = @"ApplicationLaunch";
 static NSString * const FTRUMFallbackViewNameBackground = @"BackgroundView";
 static NSString * const FTRUMFallbackViewNameRoot = @"RootView";
+static NSString * const FTRUMFallbackViewReferrerRoot = @"root";
 @interface FTRUMSessionHandler()<FTRUMSessionProtocol>
 @property (nonatomic, strong) FTRUMContext *context;
 @property (nonatomic, strong) NSDate *sessionStartTime;
@@ -67,13 +68,24 @@ static NSString * const FTRUMFallbackViewNameRoot = @"RootView";
         self.appState = expiredSession.appState;
         self.viewHandlers = [NSMutableArray new];
         for (FTRUMViewHandler *viewHandler in expiredSession.viewHandlers) {
-            if(viewHandler.isActiveView){
-                FTRUMViewModel *viewModel = [[FTRUMViewModel alloc]initWithViewID:[FTBaseInfoHandler randomUUID]
-                                                                         viewName:viewHandler.view_name viewReferrer:viewHandler.view_referrer];
-                viewModel.loading_time = viewHandler.loading_time;
-                [self startView:viewModel];
-                ((FTRUMViewHandler *)self.viewHandlers.lastObject).fallbackView = viewHandler.fallbackView;
+            if (!viewHandler.isActiveView) {
+                continue;
             }
+            // Synthetic views are scoped to their original session and must not affect the next one.
+            if (viewHandler.fallbackView) {
+                FTRUMViewModel *viewStopModel = [[FTRUMViewModel alloc]initWithViewID:viewHandler.view_id
+                                                                              viewName:viewHandler.view_name
+                                                                          viewReferrer:viewHandler.view_referrer];
+                viewStopModel.time = time;
+                viewStopModel.type = FTRUMDataViewStop;
+                [viewHandler.assistant process:viewStopModel context:@{}];
+                continue;
+            }
+            FTRUMViewModel *viewModel = [[FTRUMViewModel alloc]initWithViewID:[FTBaseInfoHandler randomUUID]
+                                                                     viewName:viewHandler.view_name viewReferrer:viewHandler.view_referrer];
+            viewModel.time = time;
+            viewModel.loading_time = viewHandler.loading_time;
+            [self startView:viewModel];
         }
     }
     return  self;
@@ -124,10 +136,15 @@ static NSString * const FTRUMFallbackViewNameRoot = @"RootView";
         }
     }
     self.rumDependencies.fatalErrorContext.dynamicContext = context;
-    if ([self needsFallbackViewForModel:model]) {
+    BOOL isApplicationLaunchAction = model.type == FTRUMDataLaunch ? [self isApplicationLaunchActionModel:model] : NO;
+    if ([self needsFallbackViewForModel:model] && !isApplicationLaunchAction) {
         [self prepareFallbackViewForModel:model context:context];
     }
+    BOOL shouldPropagateDataToViewHandlers = YES;
     switch (model.type) {
+        case FTRUMViewPlaceholder:
+            [self startRumInitApplicationLaunchFallbackForModel:model context:context];
+            break;
         case FTRUMDataViewStart:
             [self startView:model];
             break;
@@ -137,6 +154,17 @@ static NSString * const FTRUMFallbackViewNameRoot = @"RootView";
             }
             break;
         case FTRUMDataLaunch:
+            if (isApplicationLaunchAction) {
+                BOOL shouldCloseApplicationLaunchAfterWriting = [self activeRealViewHandler] != nil;
+                [self prepareApplicationLaunchFallbackForModel:model context:context];
+                [self writeLaunchData:(FTRUMLaunchDataModel*)model context:context];
+                self.viewHandlers = [self.assistant manageChildHandlers:self.viewHandlers byPropagatingData:model context:context];
+                shouldPropagateDataToViewHandlers = NO;
+                if (shouldCloseApplicationLaunchAfterWriting) {
+                    [self closeApplicationLaunchFallbackForLaunchModel:(FTRUMLaunchDataModel *)model context:context];
+                }
+                break;
+            }
             [self writeLaunchData:(FTRUMLaunchDataModel*)model context:context];
             break;
         case FTRUMDataWebViewJSBData:
@@ -145,7 +173,9 @@ static NSString * const FTRUMFallbackViewNameRoot = @"RootView";
         default:
             break;
     }
-    self.viewHandlers = [self.assistant manageChildHandlers:self.viewHandlers byPropagatingData:model context:context];
+    if (shouldPropagateDataToViewHandlers) {
+        self.viewHandlers = [self.assistant manageChildHandlers:self.viewHandlers byPropagatingData:model context:context];
+    }
     
     if(![self hasActivityView]){
         [self.rumDependencies.fatalErrorContext setLastViewContext:nil];
@@ -208,21 +238,70 @@ static NSString * const FTRUMFallbackViewNameRoot = @"RootView";
     }
     return nil;
 }
+-(FTRUMViewHandler *)activeRealViewHandler{
+    for (FTRUMViewHandler *viewHandler in [self.viewHandlers reverseObjectEnumerator]) {
+        if(viewHandler.isActiveView && !viewHandler.fallbackView){
+            return viewHandler;
+        }
+    }
+    return nil;
+}
+-(FTRUMViewHandler *)activeFallbackViewHandlerWithName:(NSString *)viewName{
+    for (FTRUMViewHandler *viewHandler in [self.viewHandlers reverseObjectEnumerator]) {
+        if(viewHandler.isActiveView && viewHandler.fallbackView && [viewHandler.view_name isEqualToString:viewName]){
+            return viewHandler;
+        }
+    }
+    return nil;
+}
+-(void)moveViewHandlerToLast:(FTRUMViewHandler *)targetViewHandler{
+    if (!targetViewHandler || self.viewHandlers.lastObject == targetViewHandler) {
+        return;
+    }
+    [self.viewHandlers removeObject:targetViewHandler];
+    [self.viewHandlers addObject:targetViewHandler];
+}
+-(BOOL)isApplicationLaunchActionModel:(FTRUMDataModel *)model{
+    if (model.type != FTRUMDataLaunch) {
+        return NO;
+    }
+    NSString *actionType = ((FTRUMLaunchDataModel *)model).action_type;
+    return [actionType isEqualToString:FT_LAUNCH_COLD]
+        || [actionType isEqualToString:FT_LAUNCH_HOT]
+        || [actionType isEqualToString:FT_LAUNCH_WARM];
+}
 -(void)prepareFallbackViewForModel:(FTRUMDataModel *)model context:(NSDictionary *)context{
     NSString *fallbackViewName = [self fallbackViewNameForModel:model];
     FTRUMViewHandler *activeViewHandler = [self activeViewHandler];
     if(!activeViewHandler){
         [self startFallbackViewWithName:fallbackViewName time:model.time];
     }else if(activeViewHandler.fallbackView && ![activeViewHandler.view_name isEqualToString:fallbackViewName]){
-        FTRUMViewModel *viewModel = [[FTRUMViewModel alloc]initWithViewID:[FTBaseInfoHandler randomUUID]
-                                                                 viewName:fallbackViewName
-                                                             viewReferrer:@""];
-        viewModel.time = model.time;
-        viewModel.loading_time = @0;
-        viewModel.type = FTRUMDataViewStart;
-        self.viewHandlers = [self.assistant manageChildHandlers:self.viewHandlers byPropagatingData:viewModel context:context];
-        [self startFallbackViewWithModel:viewModel];
+        [self startFallbackViewByClosingActiveFallbackWithName:fallbackViewName time:model.time context:context];
     }
+}
+-(void)prepareApplicationLaunchFallbackForModel:(FTRUMDataModel *)model context:(NSDictionary *)context{
+    FTRUMViewHandler *applicationLaunchViewHandler = [self activeFallbackViewHandlerWithName:FTRUMFallbackViewNameApplicationLaunch];
+    if (applicationLaunchViewHandler) {
+        [self moveViewHandlerToLast:applicationLaunchViewHandler];
+        return;
+    }
+    FTRUMViewHandler *activeViewHandler = [self activeViewHandler];
+    if (activeViewHandler && activeViewHandler.fallbackView) {
+        [self startFallbackViewByClosingActiveFallbackWithName:FTRUMFallbackViewNameApplicationLaunch time:model.time context:context];
+    } else {
+        [self startFallbackViewWithName:FTRUMFallbackViewNameApplicationLaunch time:model.time];
+    }
+}
+-(void)startRumInitApplicationLaunchFallbackForModel:(FTRUMDataModel *)model context:(NSDictionary *)context{
+    if (!self.rumDependencies.enableTraceUserAction) {
+        return;
+    }
+    if ([self activeFallbackViewHandlerWithName:FTRUMFallbackViewNameApplicationLaunch]) {
+        return;
+    }
+    FTRUMViewModel *viewModel = [self fallbackViewModelWithName:FTRUMFallbackViewNameApplicationLaunch time:model.time];
+    FTRUMViewHandler *viewHandler = [self startFallbackViewWithModel:viewModel];
+    [viewHandler.assistant process:viewModel context:context];
 }
 -(NSString *)fallbackViewNameForModel:(FTRUMDataModel *)model{
     NSString *errorSituation = model.tags[FT_KEY_ERROR_SITUATION];
@@ -241,19 +320,42 @@ static NSString * const FTRUMFallbackViewNameRoot = @"RootView";
             return FTRUMFallbackViewNameRoot;
     }
 }
--(void)startFallbackViewWithName:(NSString *)viewName time:(NSDate *)time{
+-(FTRUMViewModel *)fallbackViewModelWithName:(NSString *)viewName time:(NSDate *)time{
     FTRUMViewModel *viewModel = [[FTRUMViewModel alloc]initWithViewID:[FTBaseInfoHandler randomUUID]
                                                              viewName:viewName
-                                                         viewReferrer:@""];
+                                                         viewReferrer:FTRUMFallbackViewReferrerRoot];
     viewModel.time = time;
-    viewModel.loading_time = @0;
+    viewModel.loading_time = @(-1);
     viewModel.type = FTRUMDataViewStart;
+    return viewModel;
+}
+-(void)startFallbackViewWithName:(NSString *)viewName time:(NSDate *)time{
+    [self startFallbackViewWithModel:[self fallbackViewModelWithName:viewName time:time]];
+}
+-(void)startFallbackViewByClosingActiveFallbackWithName:(NSString *)viewName time:(NSDate *)time context:(NSDictionary *)context{
+    FTRUMViewModel *viewModel = [self fallbackViewModelWithName:viewName time:time];
+    self.viewHandlers = [self.assistant manageChildHandlers:self.viewHandlers byPropagatingData:viewModel context:context];
     [self startFallbackViewWithModel:viewModel];
 }
--(void)startFallbackViewWithModel:(FTRUMViewModel *)viewModel{
-    FTRUMViewHandler *viewHandler = [[FTRUMViewHandler alloc]initWithModel:viewModel context:self.context rumDependencies:self.rumDependencies needsMonitoring:YES];
+-(FTRUMViewHandler *)startFallbackViewWithModel:(FTRUMViewModel *)viewModel{
+    FTRUMViewHandler *viewHandler = [[FTRUMViewHandler alloc]initWithModel:viewModel context:self.context rumDependencies:self.rumDependencies needsMonitoring:NO];
     viewHandler.fallbackView = YES;
     [self.viewHandlers addObject:viewHandler];
+    return viewHandler;
+}
+-(void)closeApplicationLaunchFallbackForLaunchModel:(FTRUMLaunchDataModel *)model context:(NSDictionary *)context{
+    FTRUMViewHandler *applicationLaunchViewHandler = [self activeFallbackViewHandlerWithName:FTRUMFallbackViewNameApplicationLaunch];
+    if (!applicationLaunchViewHandler) {
+        return;
+    }
+    NSTimeInterval duration = model.duration ? MAX(0, [model.duration doubleValue] / 1000000000.0) : 0;
+    NSDate *closeTime = [applicationLaunchViewHandler.viewStartTime dateByAddingTimeInterval:duration] ?: model.time;
+    FTRUMViewModel *viewModel = [[FTRUMViewModel alloc]initWithViewID:applicationLaunchViewHandler.view_id
+                                                             viewName:applicationLaunchViewHandler.view_name
+                                                         viewReferrer:applicationLaunchViewHandler.view_referrer];
+    viewModel.time = closeTime;
+    viewModel.type = FTRUMDataViewStop;
+    self.viewHandlers = [self.assistant manageChildHandlers:self.viewHandlers byPropagatingData:viewModel context:context];
 }
 -(void)startView:(FTRUMDataModel *)model{
     FTRUMViewHandler *viewHandler = [[FTRUMViewHandler alloc]initWithModel:(FTRUMViewModel *)model context:self.context rumDependencies:self.rumDependencies];

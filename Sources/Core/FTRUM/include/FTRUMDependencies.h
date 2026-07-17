@@ -31,6 +31,7 @@ NS_ASSUME_NONNULL_BEGIN
 @property (nonatomic, assign) int sampleRate;
 @property (nonatomic, assign) int sessionOnErrorSampleRate;
 @property (nonatomic, assign) BOOL enableResourceHostIP;
+@property (nonatomic, assign) BOOL enableTraceUserAction;
 @property (nonatomic, copy) NSString *appId;
 @property (nonatomic, weak, nullable) id<FTRUMDataWriteProtocol> writer;
 @property (nonatomic, strong) id<FTErrorMonitorInfoWrapper> errorMonitorInfoWrapper;
