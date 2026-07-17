@@ -1,0 +1,39 @@
+//
+//  FTUIViewRecorder.h
+//  SessionReplay
+//
+//  Created by hulilei on 2023/8/3.
+//
+/*
+ * This file is licensed under the Apache License Version 2.0.
+ * This file contains software derived from software developed at Datadog (https://www.datadoghq.com/).
+ * Copyright 2019-Present Datadog, Inc.
+ *
+ * Modifications Copyright 2021 Shanghai Guance Information Technology Co., Ltd.
+ * This file has been translated/adapted to Objective-C with project-specific changes.
+ */
+
+#import <TargetConditionals.h>
+#if TARGET_OS_IOS
+
+#import <Foundation/Foundation.h>
+#import <UIKit/UIKit.h>
+#import "FTSRNodeWireframesBuilder.h"
+
+@class FTViewAttributes;
+NS_ASSUME_NONNULL_BEGIN
+
+@interface FTUIViewBuilder : NSObject<FTSRNodeWireframesBuilder>
+@property (nonatomic, assign) int64_t wireframeID;
+@property (nonatomic, strong) FTViewAttributes *attributes;
+@end
+@interface FTUIViewRecorder : NSObject<FTSRWireframesRecorder>
+@property (nonatomic, copy) NSString *identifier;
+@property (nonatomic, copy) SemanticsOverride semanticsOverride;
+-(instancetype)initWithIdentifier:(NSString *)identifier;
+-(instancetype)initWithIdentifier:(NSString *)identifier semanticsOverride:(SemanticsOverride)semanticsOverride;
+@end
+
+NS_ASSUME_NONNULL_END
+
+#endif

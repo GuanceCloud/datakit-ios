@@ -1,0 +1,272 @@
+//
+//  FTRUMMonitorTest.m
+//  FTMobileSDKUnitTests
+//
+//  Created by hulilei on 2022/7/20.
+//  Copyright 2022 Shanghai Guance Information Technology Co., Ltd.
+//
+//  Licensed under the Apache License, Version 2.0 (the "License");
+//  you may not use this file except in compliance with the License.
+//  You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+//  Unless required by applicable law or agreed to in writing, software
+//  distributed under the License is distributed on an "AS IS" BASIS,
+//  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+//  See the License for the specific language governing permissions and
+//  limitations under the License.
+//
+
+#import <XCTest/XCTest.h>
+#import "XCTestCase+Utils.h"
+#import "FTMobileAgent+Private.h"
+#import "NSDate+FTUtil.h"
+#import "FTTrackerEventDBTool.h"
+#import "FTModelHelper.h"
+#import "FTRecordModel.h"
+#import "FTConstants.h"
+#import "FTJSONUtil.h"
+#import "FTGlobalRumManager+Private.h"
+#import "FTRUMManager.h"
+#import "FTRUMSessionHandler.h"
+#import "FTRUMViewHandler.h"
+#import "FTMonitorItem.h"
+#import "FTMonitorValue.h"
+#import "FTCPUMonitor.h"
+#import "FTMemoryMonitor.h"
+#import "FTDisplayRateMonitor.h"
+#include <string.h>
+#include <stdint.h>
+
+@interface FTTestCPUMonitor : FTCPUMonitor
+@property (nonatomic, strong) NSArray<NSNumber *> *rawTicks;
+@property (nonatomic, assign) NSUInteger rawTickIndex;
+- (instancetype)initWithRawTicks:(NSArray<NSNumber *> *)rawTicks;
+@end
+
+@implementation FTTestCPUMonitor
+
+- (instancetype)initWithRawTicks:(NSArray<NSNumber *> *)rawTicks {
+    self = [super init];
+    if (self) {
+        self.rawTicks = rawTicks;
+        self.rawTickIndex = 0;
+    }
+    return self;
+}
+
+- (BOOL)readRawUtilizedTicks:(uint32_t *)rawTicks {
+    if (self.rawTickIndex >= self.rawTicks.count) {
+        return NO;
+    }
+
+    if (rawTicks != NULL) {
+        *rawTicks = self.rawTicks[self.rawTickIndex].unsignedIntValue;
+    }
+    self.rawTickIndex += 1;
+    return YES;
+}
+
+@end
+
+@interface FTRUMMonitorTest : XCTestCase
+@property (nonatomic, copy) NSString *url;
+@property (nonatomic, copy) NSString *appid;
+@property (nonatomic, copy) NSString *track_id;
+@end
+
+@implementation FTRUMMonitorTest
+
+- (void)setUp {
+    NSProcessInfo *processInfo = [NSProcessInfo processInfo];
+    self.url = [processInfo environment][@"ACCESS_SERVER_URL"];
+    self.appid = [processInfo environment][@"APP_ID"];
+    self.track_id = [processInfo environment][@"TRACK_ID"];
+}
+
+- (void)tearDown {
+
+}
+- (void)shutDownSDK{
+    [[FTGlobalRumManager sharedInstance].rumManager syncProcess];
+    [FTMobileAgent shutDown];
+}
+- (void)testNoneMonitor{
+    [self setRumMonitorNone];
+    [FTModelHelper startView];
+    [self waitForTimeInterval:0.5];
+    [FTModelHelper startAction];
+    [FTModelHelper startAction];
+    [[FTGlobalRumManager sharedInstance].rumManager syncProcess];
+    NSArray *newDatas = [[FTTrackerEventDBTool sharedManager] getFirstRecords:10 withType:FT_DATA_TYPE_RUM];
+    [FTModelHelper resolveModelArray:newDatas callBack:^(NSString * _Nonnull source, NSDictionary * _Nonnull tags, NSDictionary * _Nonnull fields, BOOL * _Nonnull stop) {
+        if ([source isEqualToString:FT_RUM_SOURCE_VIEW]) {
+            XCTAssertFalse([fields.allKeys containsObject:FT_FPS_MINI]);
+            XCTAssertFalse([fields.allKeys containsObject:FT_FPS_AVG]);
+            XCTAssertFalse([fields.allKeys containsObject:FT_MEMORY_MAX]);
+            XCTAssertFalse([fields.allKeys containsObject:FT_MEMORY_AVG]);
+            XCTAssertFalse([fields.allKeys containsObject:FT_CPU_TICK_COUNT]);
+            XCTAssertFalse([fields.allKeys containsObject:FT_CPU_TICK_COUNT_PER_SECOND]);
+            *stop = YES;
+        }
+    }];
+    [self shutDownSDK];
+}
+- (void)testMonitorAll{
+    [self setRumMonitorType:FTDeviceMetricsMonitorAll];
+    [FTModelHelper startView];
+    [self waitForTimeInterval:1.5];
+    [FTModelHelper addActionWithContext:nil];
+    [[FTGlobalRumManager sharedInstance].rumManager syncProcess];
+    NSArray *newDatas = [[FTTrackerEventDBTool sharedManager] getFirstRecords:10 withType:FT_DATA_TYPE_RUM];
+    [FTModelHelper resolveModelArray:newDatas callBack:^(NSString * _Nonnull source, NSDictionary * _Nonnull tags, NSDictionary * _Nonnull fields, BOOL * _Nonnull stop) {
+        if ([source isEqualToString:FT_RUM_SOURCE_VIEW]) {
+            XCTAssertTrue([fields.allKeys containsObject:FT_FPS_MINI]);
+            XCTAssertTrue([fields.allKeys containsObject:FT_FPS_AVG]);
+            XCTAssertTrue([fields.allKeys containsObject:FT_MEMORY_MAX]);
+            XCTAssertTrue([fields.allKeys containsObject:FT_MEMORY_AVG]);
+            XCTAssertTrue([fields.allKeys containsObject:FT_CPU_TICK_COUNT]);
+            XCTAssertTrue([fields.allKeys containsObject:FT_CPU_TICK_COUNT_PER_SECOND]);
+            *stop = YES;
+        }
+    }];
+    [self shutDownSDK];
+}
+- (void)testMonitorMemory{
+    FTMemoryMonitor *memoryMonitor = [[FTMemoryMonitor alloc]init];
+    double memoryUsage = [memoryMonitor memoryUsage];
+    NSMutableArray<NSMutableData *> *buffers = [NSMutableArray array];
+    double heavyMemoryUsage = memoryUsage;
+    NSUInteger allocationSize = 16 * 1024 * 1024;
+
+    for (NSInteger i = 0; i < 8 && heavyMemoryUsage <= memoryUsage; i++) {
+        NSMutableData *data = [NSMutableData dataWithLength:allocationSize];
+        memset(data.mutableBytes, 0xFF, data.length);
+        [buffers addObject:data];
+        heavyMemoryUsage = [memoryMonitor memoryUsage];
+    }
+
+    XCTAssertGreaterThanOrEqual(memoryUsage, 0);
+    XCTAssertGreaterThan(heavyMemoryUsage, memoryUsage);
+}
+- (void)testMonitorFPS{
+    [self setRumMonitorType:FTDeviceMetricsMonitorFps];
+    [[NSNotificationCenter defaultCenter]
+     postNotificationName:UIApplicationDidBecomeActiveNotification object:nil];
+    [FTModelHelper startView];
+    [self waitForTimeInterval:1];
+    [FTModelHelper addActionWithContext:nil];
+    [[FTGlobalRumManager sharedInstance].rumManager syncProcess];
+    NSArray *newDatas = [[FTTrackerEventDBTool sharedManager] getFirstRecords:10 withType:FT_DATA_TYPE_RUM];
+    [FTModelHelper resolveModelArray:newDatas callBack:^(NSString * _Nonnull source, NSDictionary * _Nonnull tags, NSDictionary * _Nonnull fields, BOOL * _Nonnull stop) {
+        if ([source isEqualToString:FT_RUM_SOURCE_VIEW]) {
+            XCTAssertTrue([fields.allKeys containsObject:FT_FPS_MINI]&&[fields.allKeys containsObject:FT_FPS_AVG]);
+            XCTAssertFalse([fields.allKeys containsObject:FT_MEMORY_MAX]&&[fields.allKeys containsObject:FT_MEMORY_AVG]&&[fields.allKeys containsObject:FT_CPU_TICK_COUNT]&&[fields.allKeys containsObject:FT_CPU_TICK_COUNT_PER_SECOND]);
+            *stop = YES;
+        }
+    }];
+    [self shutDownSDK];
+}
+- (void)testMonitorCpuIgnoreResignActive{
+    FTCPUMonitor *cpuMonitor = [[FTCPUMonitor alloc]init];
+    double baseUsage = [cpuMonitor readCpuUsage];
+    [[NSNotificationCenter defaultCenter] postNotificationName:UIApplicationWillResignActiveNotification object:nil];
+    double resignActiveUsage1 = [cpuMonitor readCpuUsage];
+    [self heavyWork];
+    double resignActiveUsage = [cpuMonitor readCpuUsage];
+    [[NSNotificationCenter defaultCenter] postNotificationName:UIApplicationDidBecomeActiveNotification object:nil];
+    [self heavyWork];
+    double activeUsage = [cpuMonitor readCpuUsage];
+    XCTAssertEqual(resignActiveUsage, resignActiveUsage1);
+    XCTAssertGreaterThan(activeUsage-resignActiveUsage, resignActiveUsage-baseUsage);
+}
+- (void)testMonitorCpuHandlesTickCounterRollover{
+    uint32_t rawTicksBeforeRollover = UINT32_MAX - 10;
+    FTTestCPUMonitor *cpuMonitor = [[FTTestCPUMonitor alloc]initWithRawTicks:@[
+        @(rawTicksBeforeRollover),
+        @20,
+    ]];
+
+    double usageBeforeRollover = [cpuMonitor readCpuUsage];
+    double usageAfterRollover = [cpuMonitor readCpuUsage];
+
+    XCTAssertGreaterThan(usageAfterRollover, usageBeforeRollover);
+    XCTAssertEqualWithAccuracy(usageAfterRollover - usageBeforeRollover, 31, 0.001);
+}
+- (void)testMonitorFrequencyDefault{
+    FTMonitorItem *item = [[FTMonitorItem alloc]initWithCpuMonitor:[FTCPUMonitor new] memoryMonitor:[FTMemoryMonitor new] displayRateMonitor:[FTDisplayRateMonitor new] frequency:FTIntervalFromMonitorFrequency(MonitorFrequencyDefault)];
+    [self waitForTimeInterval:0.6];
+    XCTAssertEqual(item.cpu.sampleValueCount, 2);
+    XCTAssertEqual(item.memory.sampleValueCount, 2);
+}
+- (void)testMonitorFrequencyRare{
+    FTMonitorItem *item = [[FTMonitorItem alloc]initWithCpuMonitor:[FTCPUMonitor new] memoryMonitor:[FTMemoryMonitor new] displayRateMonitor:[FTDisplayRateMonitor new] frequency:FTIntervalFromMonitorFrequency(MonitorFrequencyRare)];
+    [self waitForTimeInterval:1.1];
+    XCTAssertEqual(item.cpu.sampleValueCount, 2);
+    XCTAssertEqual(item.memory.sampleValueCount, 2);
+}
+- (void)testMonitorFrequencyFrequent{
+    FTMonitorItem *item = [[FTMonitorItem alloc]initWithCpuMonitor:[FTCPUMonitor new] memoryMonitor:[FTMemoryMonitor new] displayRateMonitor:[FTDisplayRateMonitor new] frequency:FTIntervalFromMonitorFrequency(MonitorFrequencyFrequent)];
+    [self waitForTimeInterval:0.6];
+    XCTAssertEqual(item.cpu.sampleValueCount, 7);
+    XCTAssertEqual(item.memory.sampleValueCount, 7);
+}
+- (void)testInvalidMonitorFrequencyFallsBackToDefault{
+    FTRUMMonitor *monitor = [[FTRUMMonitor alloc]initWithMonitorType:0 frequency:(MonitorFrequency)NSUIntegerMax];
+
+    XCTAssertEqualWithAccuracy(monitor.frequency, 0.5, 0.000001);
+}
+- (void)testMonitorValueScale{
+    FTMonitorValue *value = [[FTMonitorValue alloc]init];
+    for (int i = 1; i<=10; i++) {
+        [value addSample:i];
+    }
+    XCTAssertTrue(value.maxValue == 10);
+    XCTAssertTrue(value.minValue == 1);
+    XCTAssertTrue(value.meanValue == 5.5);
+    XCTAssertTrue(value.sampleValueCount == 10);
+    XCTAssertTrue(value.greatestDiff == 9);
+    FTMonitorValue *newValue = [value scaledDown:2];
+    XCTAssertTrue(newValue.maxValue == 5);
+}
+- (void)heavyWork{
+    NSTimeInterval time = 1.0;
+    NSDate *date = [NSDate date];
+    while ([[NSDate new] timeIntervalSinceDate:date] <= time) {
+        for (int i=0; i<1000000; i++) {
+            NSMutableArray *array = [[NSMutableArray alloc]init];
+            [array addObject:@1];
+            [array addObject:@2];
+            [array addObject:@3];
+        }
+    }
+}
+- (void)setRumMonitorNone{
+    FTMobileConfig *config = [[FTMobileConfig alloc]initWithDatakitUrl:self.url];
+    config.autoSync = NO;
+    FTRumConfig *rumConfig = [[FTRumConfig alloc]initWithAppid:self.appid];
+    rumConfig.enableTraceUserAction = YES;
+    rumConfig.enableTraceUserView = YES;
+    rumConfig.enableTraceUserResource = YES;
+    [FTMobileAgent startWithConfigOptions:config];
+    
+    [[FTMobileAgent sharedInstance] startRumWithConfigOptions:rumConfig];
+    [[FTTrackerEventDBTool sharedManager] deleteAllDatas];
+}
+- (void)setRumMonitorType:(FTDeviceMetricsMonitorType)type{
+    FTMobileConfig *config = [[FTMobileConfig alloc]initWithDatakitUrl:self.url];
+    config.autoSync = NO;
+    config.enableSDKDebugLog = YES;
+    FTRumConfig *rumConfig = [[FTRumConfig alloc]initWithAppid:self.appid];
+    rumConfig.enableTraceUserAction = YES;
+    rumConfig.enableTraceUserView = YES;
+    rumConfig.enableTraceUserResource = YES;
+    rumConfig.deviceMetricsMonitorType = type;
+    rumConfig.monitorFrequency = FTMonitorFrequencyFrequent;
+    [FTMobileAgent startWithConfigOptions:config];
+    
+    [[FTMobileAgent sharedInstance] startRumWithConfigOptions:rumConfig];
+    [[FTTrackerEventDBTool sharedManager] deleteAllDatas];
+}
+@end

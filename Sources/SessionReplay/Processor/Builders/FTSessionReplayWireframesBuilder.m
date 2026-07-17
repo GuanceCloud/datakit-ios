@@ -1,0 +1,97 @@
+//
+//  FTSessionReplayWireframesBuilder.m
+//  SessionReplay
+//
+//  Created by hulilei on 2025/4/21.
+//
+/*
+ * This file is licensed under the Apache License Version 2.0.
+ * This file contains software derived from software developed at Datadog (https://www.datadoghq.com/).
+ * Copyright 2019-Present Datadog, Inc.
+ *
+ * Modifications Copyright 2021 Shanghai Guance Information Technology Co., Ltd.
+ * This file has been translated/adapted to Objective-C with project-specific changes.
+ */
+
+#import <TargetConditionals.h>
+#if TARGET_OS_IOS
+
+#import "FTSessionReplayWireframesBuilder.h"
+#import "FTSRWireframe.h"
+#import "FTSRUtils.h"
+#import "FTViewAttributes.h"
+#import "FTSessionReplayCoreImports.h"
+@interface FTSessionReplayWireframesBuilder()
+@property (nonatomic, strong) NSMutableSet<NSNumber *> *webViewSlotIDs;
+@property (nonatomic, strong) NSMutableDictionary *linkRUMKeysInfo;
+@end
+@implementation FTSessionReplayWireframesBuilder
+-(instancetype)initWithResources:(NSArray<id <FTSRResource>>*)resources webViewSlotIDs:( NSSet<NSNumber *> *)webViewSlotIDs{
+    self = [super init];
+    if (self) {
+        _resources = resources ? [NSMutableArray arrayWithArray:resources]: [NSMutableArray new];
+        _webViewSlotIDs = [NSMutableSet setWithSet:webViewSlotIDs];
+        _linkRUMKeysInfo = [NSMutableDictionary new];
+    }
+    return self;
+}
+- (FTSRWireframe *)createShapeWireframeWithID:(int64_t)identifier attributes:(FTViewAttributes *)attributes{
+    FTSRWireframe *wireframe = [[FTSRShapeWireframe alloc]initWithIdentifier:identifier attributes:attributes];
+    wireframe.permanentId = self.heatmapIdentifier.rawValue;
+    return wireframe;
+}
+- (FTSRShapeBorder *)createShapeBorderWithColor:(nullable CGColorRef)color width:(CGFloat)width {
+    if (!color || width<=0) return nil;
+    return [[FTSRShapeBorder alloc] initWithColor:[FTSRUtils colorHexString:color] width:width];
+}
+- (FTSRWebViewWireframe *)visibleWebViewWireframeWithID:(int64_t)identifier attributes:(FTViewAttributes *)attributes linkRUMKeysInfo:(nullable NSDictionary *)linkRUMKeysInfo{
+    FTSRWebViewWireframe *wireframe = [[FTSRWebViewWireframe alloc]initWithIdentifier:identifier frame:attributes.frame];
+    wireframe.clip = [[FTSRContentClip alloc]initWithFrame:attributes.frame clip:attributes.clip];
+    wireframe.slotId = [NSString stringWithFormat:@"%lld",identifier];
+    wireframe.isVisible = @(YES);
+    wireframe.permanentId = self.heatmapIdentifier.rawValue;
+    wireframe.shapeStyle = [[FTSRShapeStyle alloc]initWithBackgroundColor:attributes.backgroundColor.hexString cornerRadius:@(attributes.layerCornerRadius) opacity:@(attributes.alpha)];
+    [self.webViewSlotIDs removeObject:@(identifier)];
+    if (linkRUMKeysInfo.count>0) {
+        [self.linkRUMKeysInfo addEntriesFromDictionary:linkRUMKeysInfo];
+    }
+    return wireframe;
+}
+
+- (FTSRImageWireframe *)createImageWireframeWithID:(int64_t)identifier resource:(id<FTSRResource>)resource frame:(CGRect)frame clip:(CGRect)clip{
+    FTSRImageWireframe *imageWireframe = [[FTSRImageWireframe alloc]initWithIdentifier:identifier frame:frame];
+    imageWireframe.resourceId = [resource calculateIdentifier];
+    imageWireframe.permanentId = self.heatmapIdentifier.rawValue;
+    imageWireframe.clip = [[FTSRContentClip alloc]initWithFrame:frame clip:clip];
+    [self.resources addObject:resource];
+    return imageWireframe;
+}
+- (void)addResources:(NSArray<id <FTSRResource>>*)resources{
+    if (resources && resources.count>0) {
+        [self.resources addObjectsFromArray:resources];
+    }
+}
+- (NSArray <FTSRWireframe*> *)hiddenWebViewWireframes{
+    if (self.webViewSlotIDs.count == 0) {
+        return @[];
+    }
+    NSMutableArray *array = [NSMutableArray new];
+    [self.webViewSlotIDs enumerateObjectsUsingBlock:^(NSNumber * _Nonnull obj, BOOL * _Nonnull stop) {
+        FTSRWebViewWireframe *wireframe = [[FTSRWebViewWireframe alloc]initWithIdentifier:[obj longLongValue] frame:CGRectZero];
+        wireframe.isVisible = @(NO);
+        wireframe.slotId = [NSString stringWithFormat:@"%@",obj];
+        [array addObject:wireframe];
+    }];
+    [self.webViewSlotIDs removeAllObjects];
+    return array;
+}
+- (NSDictionary *)linkRumKeysInfo{
+    return [_linkRUMKeysInfo copy];
+}
+- (NSSet<NSNumber *> *)hiddenWebViewSlotIDs{
+    return [_webViewSlotIDs copy];
+}
+@end
+
+
+#endif

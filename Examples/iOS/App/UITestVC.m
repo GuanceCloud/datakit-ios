@@ -1,0 +1,320 @@
+//
+//  UITestVC.m
+//  ft-sdk-iosTest
+//
+//  Created by hulilei on 2019/12/20.
+//  Copyright 2021 Shanghai Guance Information Technology Co., Ltd.
+//
+//  Licensed under the Apache License, Version 2.0 (the "License");
+//  you may not use this file except in compliance with the License.
+//  You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+//  Unless required by applicable law or agreed to in writing, software
+//  distributed under the License is distributed on an "AS IS" BASIS,
+//  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+//  See the License for the specific language governing permissions and
+//  limitations under the License.
+//
+
+#import "UITestVC.h"
+#import "AppDelegate.h"
+#import "CustomCollectionViewCell.h"
+
+@interface UITestVC ()<UICollectionViewDelegate,UICollectionViewDataSource>
+@property (nonatomic, strong) UITextField *textField;
+@property (nonatomic, strong) UISlider *slider;
+@property (nonatomic, strong) UIProgressView *progressView;
+@property (nonatomic, strong) UIActivityIndicatorView *activityIndicator;
+@property (nonatomic, strong) NSArray<NSString *> *systemImageNames;
+@property (nonatomic, strong) UICollectionViewFlowLayout *flowLayout;
+
+@end
+
+@implementation UITestVC
+-(void)viewDidAppear:(BOOL)animated{
+    [super viewDidAppear:animated];
+}
+- (void)viewDidLoad {
+    [super viewDidLoad];
+    self.title = @"UITEST";
+    // Do any additional setup after loading the view.
+    self.view.backgroundColor = [UIColor whiteColor];
+    [self createUI];
+}
+-(void)createUI{
+    self.systemImageNames = @[
+        @"house.fill",
+        @"heart.fill",
+        @"star.fill",
+        @"bookmark.fill",
+        @"gear",
+        @"person.fill",
+        @"bell.fill",
+        @"envelope.fill",
+        @"camera.fill",
+        @"photo.fill",
+        @"message.fill",
+        @"phone.fill",
+        @"mic.fill",
+        @"video.fill",
+        @"map.fill",
+        @"location.fill",
+        @"car.fill",
+        @"airplane",
+        @"train.side.front.car",
+        @"bicycle"
+    ];
+    CGFloat x = 16;
+    CGFloat y = 16;
+    CGFloat width = self.view.frame.size.width - 2 * x;
+    
+    _scrollView = [[UIScrollView alloc] initWithFrame:CGRectMake(0, 0, CGRectGetWidth(self.view.frame), CGRectGetHeight(self.view.frame)/2)];
+    _scrollView.autoresizingMask = UIViewAutoresizingFlexibleWidth | UIViewAutoresizingFlexibleHeight;
+    [self.view addSubview:_scrollView];
+    UITapGestureRecognizer *tap = [[UITapGestureRecognizer alloc]initWithTarget:self action:@selector(tap)];
+    [_scrollView addGestureRecognizer:tap];
+    _segmentedControl.frame = CGRectMake(100, 0, 100, 40);
+    _segmentedControl = [[UISegmentedControl alloc] initWithItems:@[@"first", @"second", @"third"]];
+    [_segmentedControl addTarget:self action:@selector(segmentedAction:) forControlEvents:UIControlEventValueChanged];
+    [_scrollView addSubview:_segmentedControl];
+    _firstButton = [UIButton buttonWithType:UIButtonTypeCustom];
+    _firstButton.frame = CGRectMake(x, 40, 100, 30);
+    [_firstButton setTitle:@"ActivityStart" forState:UIControlStateNormal];
+    _firstButton.titleLabel.font = [UIFont systemFontOfSize:14];
+    [_firstButton setTitleColor:[UIColor systemBlueColor] forState:UIControlStateNormal];
+    [_firstButton addTarget:self action:@selector(firstAction:) forControlEvents:UIControlEventTouchUpInside];
+    _firstButton.isAccessibilityElement = YES;
+    _firstButton.layer.borderWidth = 1;
+    _firstButton.accessibilityLabel = @"FirstButton";
+    _firstButton.layer.borderColor = [UIColor grayColor].CGColor;
+    [_scrollView addSubview:_firstButton];
+
+    
+    y = CGRectGetMaxY(_firstButton.frame) + 22;
+    _secondButton = [UIButton buttonWithType:UIButtonTypeSystem];
+    _secondButton.frame = CGRectMake(x, y, 100, 30);
+    [_secondButton setTitle:@"ActivityEnd" forState:UIControlStateNormal];
+    [_secondButton addTarget:self action:@selector(secondAction:) forControlEvents:UIControlEventTouchUpInside];
+    _secondButton.accessibilityLabel = @"SecondButton";
+    _secondButton.isAccessibilityElement = YES;
+    [_scrollView addSubview:_secondButton];
+    UITextField *text = [[UITextField alloc]initWithFrame:CGRectMake(x+200, 40, 100, 30)];
+    text.backgroundColor = [UIColor grayColor];
+    [_scrollView addSubview:text];
+    _textField = text;
+    y = CGRectGetMaxY(_secondButton.frame) + 16;
+    _stepper = [[UIStepper alloc] initWithFrame:CGRectMake(x, y, 80, 40)];
+    [_stepper addTarget:self action:@selector(stepperAction:) forControlEvents:UIControlEventValueChanged];
+    [_scrollView addSubview:_stepper];
+
+    _uiswitch = [[UISwitch alloc] init];
+    _uiswitch.frame = CGRectMake(CGRectGetMaxX(_stepper.frame)+30, y, 80, 40);
+    [_uiswitch addTarget:self action:@selector(switchAction:) forControlEvents:UIControlEventValueChanged];
+    [_scrollView addSubview:_uiswitch];
+    
+    _slider = [[UISlider alloc]init];
+    _slider.frame = CGRectMake(CGRectGetMaxX(_uiswitch.frame)+30, y, 120, 40);
+    _slider.minimumValue = 0;
+    _slider.maximumValue = 10;
+    _slider.value = 5;
+    [_scrollView addSubview:_slider];
+    
+    _progressView = [[UIProgressView alloc]init];
+    _progressView.frame = CGRectMake(CGRectGetMaxX(_uiswitch.frame)+30, y-40, 120, 20);
+    _progressView.progress = 0.5;
+    [_scrollView addSubview:_progressView];
+    CGRect frame = CGRectMake(CGRectGetMaxX(_segmentedControl.frame), 0, 0, 40);
+    // Create UIDatePicker object
+    UIDatePicker *datePicker = [[UIDatePicker alloc] initWithFrame:frame];
+    // Set date picker mode: date mode
+    datePicker.datePickerMode = UIDatePickerModeDate;
+    // Set minimum selectable time: yesterday
+    NSTimeInterval time = 24 * 60 * 60; // 24H timestamp value
+    datePicker.minimumDate = [[NSDate alloc] initWithTimeIntervalSinceNow:- time];
+    // Set maximum selectable time: tomorrow
+    datePicker.maximumDate = [[NSDate alloc] initWithTimeIntervalSinceNow:time];
+    // Add Target-Action
+    [datePicker addTarget:self
+                   action:@selector(datePickerValueChanged:)
+         forControlEvents:UIControlEventValueChanged];
+    // Add UIDatePicker object to current view
+    [_scrollView addSubview:datePicker];
+    y = CGRectGetMaxY(_uiswitch.frame) + 20;
+    _label = [[UILabel alloc] initWithFrame:CGRectMake(x, y, width, 50)];
+    _label.textAlignment = NSTextAlignmentCenter;
+    _label.backgroundColor = [UIColor orangeColor];
+    _label.text = @"label";
+    _label.userInteractionEnabled = YES;
+    _label.accessibilityLabel = @"LABLE_CLICK";
+    _label.isAccessibilityElement = YES;
+    [_scrollView addSubview:_label];
+    
+    y = CGRectGetMaxY(_label.frame) + 10;
+    _imageView = [[UIImageView alloc] init];
+    _imageView.userInteractionEnabled = YES;
+    _imageView.frame = CGRectMake(x, y, width, 50);
+    _imageView.backgroundColor = [UIColor lightGrayColor];
+    _imageView.image = [UIImage imageNamed:@"order_status_top"];
+    _imageView.userInteractionEnabled = YES;
+    _imageView.accessibilityLabel = @"IMAGE_CLICK";
+    [_scrollView addSubview:_imageView];
+    
+    _scrollView.contentSize = CGSizeMake(0, CGRectGetMaxY(_imageView.frame) + 16);
+    
+    UITapGestureRecognizer *tap1 = [UITapGestureRecognizer new];
+    [tap1 addTarget:self action:@selector(tap1Action:)];
+    [_label addGestureRecognizer:tap1];
+    
+    UILongPressGestureRecognizer *tap2 = [[UILongPressGestureRecognizer alloc] initWithTarget:self action:@selector(tap2Action:)];
+    
+    [_imageView addGestureRecognizer:tap2];
+    [self setupCollectionView];
+}
+- (void)setupCollectionView{
+    UICollectionViewFlowLayout *layout = [[UICollectionViewFlowLayout alloc]init];
+    layout.scrollDirection = UICollectionViewScrollDirectionVertical;
+    layout.itemSize = CGSizeMake(100, 40);
+    _collectionView = [[UICollectionView alloc] initWithFrame:CGRectZero collectionViewLayout:layout];
+    _collectionView.dataSource = self;
+    _collectionView.delegate = self;
+
+    [self.collectionView registerClass:[CustomCollectionViewCell class]
+            forCellWithReuseIdentifier:@"CustomCollectionViewCell"];
+    [self.view addSubview:_collectionView];
+    _collectionView.translatesAutoresizingMaskIntoConstraints = NO;
+    if (@available(iOS 11.0, *)) {
+        [NSLayoutConstraint activateConstraints:@[
+            [_collectionView.topAnchor constraintEqualToAnchor:_scrollView.bottomAnchor],
+            [_collectionView.leadingAnchor constraintEqualToAnchor:self.view.leadingAnchor],
+            [_collectionView.trailingAnchor constraintEqualToAnchor:self.view.trailingAnchor],
+            [_collectionView.bottomAnchor constraintEqualToAnchor:self.view.safeAreaLayoutGuide.bottomAnchor]
+        ]];
+    }
+}
+- (void)datePickerValueChanged:(id)sender{
+
+}
+- (void)firstAction:(UIButton *)sender {
+    NSLog(@"%@ Touch Up Inside", sender.currentTitle);
+    if (@available(iOS 13.0, *)) {
+        if(!_activityIndicator){
+            UIActivityIndicatorView *activityIndicator = [[UIActivityIndicatorView alloc]initWithActivityIndicatorStyle:UIActivityIndicatorViewStyleMedium];
+            activityIndicator.frame = CGRectMake(0, 0, 50, 50);
+
+            // Set color
+            activityIndicator.color = [UIColor grayColor];
+
+            // Set position
+            activityIndicator.center = self.view.center;
+
+            // Add to view
+            [self.view addSubview:activityIndicator];
+            _activityIndicator = activityIndicator;
+        }
+        [_activityIndicator startAnimating];
+    }
+}
+
+- (void)secondAction:(UIButton *)sender {
+    NSLog(@"%@ Touch Up Inside", sender.currentTitle);
+    [self.activityIndicator stopAnimating];
+}
+- (void)resultAction:(UIButton *)sender{
+    
+}
+- (void)stepperAction:(UIStepper *)sender {
+    NSLog(@"UIStepper on:%f", sender.value);
+    _slider.value = sender.value;
+    [_progressView setProgress:_slider.value/10 animated:YES];
+}
+
+- (void)switchAction:(UISwitch *)sender {
+    NSLog(@"UISwitch on:%d", sender.isOn);
+}
+
+- (void)segmentedAction:(UISegmentedControl *)sender {
+    NSLog(@"UISwitch on:%ld", sender.selectedSegmentIndex);
+}
+
+- (void)labelTouchUpInside:(UITapGestureRecognizer *)recognizer {
+    UILabel *label = (UILabel *)recognizer.view;
+    NSLog(@"%@ was clicked", label.text);
+}
+- (void)tap1Action:(UIGestureRecognizer *)sender {
+    UILabel *label = (UILabel *)sender.view;
+    NSLog(@"%@ was clicked", label.text);
+}
+
+- (void)tap2Action:(UIGestureRecognizer *)sender {
+    UIAlertController *alert = [UIAlertController alertControllerWithTitle:@"Long Press" message:@"press!" preferredStyle:UIAlertControllerStyleAlert];
+    UIAlertAction *cancel = [UIAlertAction actionWithTitle:@"ok" style:UIAlertActionStyleCancel handler:nil];
+    cancel.accessibilityLabel = @"alert cancel";
+    [alert addAction:cancel];
+    [self presentViewController:alert animated:YES completion:nil];
+    NSLog(@"UIImageView was clicked");
+}
+- (void)tap{
+    [_textField resignFirstResponder];
+}
+#pragma mark -
+-(NSInteger)numberOfSectionsInCollectionView:(UICollectionView *)collectionView{
+    return 2;
+}
+-(NSInteger)collectionView:(UICollectionView *)collectionView numberOfItemsInSection:(NSInteger)section{
+    return 20;
+}
+-(__kindof UICollectionViewCell *)collectionView:(UICollectionView *)collectionView cellForItemAtIndexPath:(NSIndexPath *)indexPath{
+    CustomCollectionViewCell *cell = [collectionView dequeueReusableCellWithReuseIdentifier:@"CustomCollectionViewCell"
+                                                                               forIndexPath:indexPath];
+    cell.accessibilityLabel = [NSString stringWithFormat:@"cell: %ld",(long)indexPath.row];
+    
+    if (@available(iOS 13.0, *)) {
+        NSString *imageName = self.systemImageNames[indexPath.item];
+        cell.cellImageView.image = [UIImage systemImageNamed:imageName];
+        
+        
+        NSArray *colors = @[
+            [UIColor systemRedColor],
+            [UIColor systemBlueColor],
+            [UIColor systemGreenColor],
+            [UIColor systemOrangeColor],
+            [UIColor systemPurpleColor]
+        ];
+        cell.cellImageView.tintColor = colors[indexPath.item % colors.count];
+    } else {
+        NSString *imageName = self.systemImageNames[indexPath.item];
+        cell.cellImageView.image = [UIImage imageNamed:imageName];
+    }
+    
+    cell.layer.cornerRadius = 8;
+    cell.layer.masksToBounds = YES;
+    if (@available(iOS 13.0, *)) {
+        cell.backgroundColor = [UIColor secondarySystemBackgroundColor];
+    }
+    
+    return cell;
+}
+-(void)collectionView:(UICollectionView *)collectionView didSelectItemAtIndexPath:(NSIndexPath *)indexPath{
+    UICollectionViewCell *cell = [collectionView cellForItemAtIndexPath:indexPath];
+    [UIView animateWithDuration:0.1 animations:^{
+        cell.transform = CGAffineTransformMakeScale(0.95, 0.95);
+    } completion:^(BOOL finished) {
+        [UIView animateWithDuration:0.1 animations:^{
+            cell.transform = CGAffineTransformIdentity;
+        }];
+    }];
+}
+
+/*
+ #pragma mark - Navigation
+ 
+ // In a storyboard-based application, you will often want to do a little preparation before navigation
+ - (void)prepareForSegue:(UIStoryboardSegue *)segue sender:(id)sender {
+ // Get the new view controller using [segue destinationViewController].
+ // Pass the selected object to the new view controller.
+ }
+ */
+
+@end

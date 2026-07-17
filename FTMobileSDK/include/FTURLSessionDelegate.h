@@ -1,1 +1,0 @@
-../FTSDKCore/URLSessionAutoInstrumentation/FTURLSessionDelegate.h

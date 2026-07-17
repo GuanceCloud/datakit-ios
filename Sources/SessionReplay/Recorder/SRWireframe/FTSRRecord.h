@@ -1,0 +1,115 @@
+//
+//  FTSRRecord.h
+//  SessionReplay
+//
+//  Created by hulilei on 2023/8/29.
+//
+/*
+ * This file is licensed under the Apache License Version 2.0.
+ * This file contains software derived from software developed at Datadog (https://www.datadoghq.com/).
+ * Copyright 2019-Present Datadog, Inc.
+ *
+ * Modifications Copyright 2021 Shanghai Guance Information Technology Co., Ltd.
+ * This file has been translated/adapted to Objective-C with project-specific changes.
+ */
+
+#import <TargetConditionals.h>
+#if TARGET_OS_IOS
+
+#import <Foundation/Foundation.h>
+#import "FTSRBaseFrame.h"
+#import "FTSRWireframe.h"
+NS_ASSUME_NONNULL_BEGIN
+@class FTViewTreeSnapshot,FTSRContext,FTTouchCircle;
+@protocol FTSRRecord;
+@interface FTSRRecord: FTSRBaseFrame
+@property (nonatomic, assign) int type;
+@property (nonatomic, assign) long long timestamp;
+-(instancetype)initWithTimestamp:(long long)timestamp;
+@end
+@protocol FTSRWireframe;
+@interface FTSRFullSnapshotRecord : FTSRRecord
+@property (nonatomic, strong) NSArray<FTSRWireframe> *wireframes;
+@end
+@interface FTSRMetaRecord : FTSRRecord
+@property (nonatomic, assign) int height;
+@property (nonatomic, assign) int width;
+- (instancetype)initWithViewTreeSnapshot:(FTViewTreeSnapshot *)viewTreeSnapshot;
+@end
+@interface FTSRFocusRecord : FTSRRecord
+@property (nonatomic, assign) BOOL hasFocus;
+@end
+
+@interface FTSRIncrementalSnapshotRecord : FTSRRecord
+@property (nonatomic, strong) FTSRBaseFrame *data;
+-(instancetype)initWithData:(FTSRBaseFrame *)data timestamp:(long long)timestamp;
+@end
+@protocol Adds;
+@interface Adds : FTSRBaseFrame
+@property (nonatomic, strong) NSNumber *previousId;
+@property (nonatomic, strong) FTSRWireframe *wireframe;
+@end
+@protocol Removes;
+@interface Removes : FTSRBaseFrame
+@property (nonatomic, assign) long long identifier;
+@end
+@interface FTSRIncrementalData : FTSRBaseFrame
+@property (nonatomic, assign) int source;
+@end
+@interface MutationData : FTSRIncrementalData
+@property (nonatomic, strong) NSArray<Adds> *adds;
+@property (nonatomic, strong) NSArray<Removes> *removes;
+@property (nonatomic, strong) NSArray<FTSRWireframe> *updates;
+
+-(BOOL)createIncrementalSnapshotRecords:(NSArray<FTSRWireframe *>*)newWireframes lastWireframes:(NSArray<FTSRWireframe *>*)lastWireframes error:(NSError **)error;
+- (BOOL)isEmpty;
+@end
+
+@interface ViewportResizeData : FTSRIncrementalData
+@property (nonatomic, assign) int height;
+@property (nonatomic, assign) int width;
+-(instancetype)initWithViewportSize:(CGSize)viewportSize;
+@end
+
+@interface PointerInteractionData : FTSRIncrementalData
+@property (nonatomic, assign) double x;
+@property (nonatomic, assign) double y;
+@property (nonatomic, assign) int pointerId;
+@property (nonatomic, copy) NSString *pointerEventType;
+@property (nonatomic, copy) NSString *pointerType;
+-(instancetype)initWithTouch:(FTTouchCircle *)touch;
+@end
+
+@interface FTEnrichedRecord : FTSRBaseFrame
+@property (nonatomic, strong) NSArray<FTSRRecord> *records;
+@property (nonatomic, copy) NSString *sessionID;
+@property (nonatomic, copy) NSString *applicationID;
+@property (nonatomic, copy) NSString *viewID;
+@property (nonatomic, strong,nullable) NSArray<NSNumber *> *webViewSlotIDs;
+@property (nonatomic, strong) NSDictionary *bindInfo;
+-(instancetype)initWithContext:(FTSRContext*)context records:(NSArray<FTSRRecord>*)records;
+@end
+
+@interface FTEnrichedResource : FTSRBaseFrame<NSCoding>
+@property (nonatomic, copy) NSString *identifier;
+@property (nonatomic, strong) NSData *data;
+@property (nonatomic, copy) NSString *type;
+@property (nonatomic, copy) NSString *mimeType;
+@property (nonatomic, copy) NSString *appId;
+@property (nonatomic, copy, nullable) NSDictionary *bindInfo;
+-(instancetype)initWithData:(NSData *)data;
+
+-(NSString *)getResourceName;
+@end
+
+
+@interface FTSRWebRecord : FTSRBaseFrame
+@property (nonatomic, copy) NSString *sessionID;
+@property (nonatomic, copy) NSString *applicationID;
+@property (nonatomic, copy) NSString *viewID;
+@property (nonatomic, strong) NSArray *records;
+@property (nonatomic, strong) NSDictionary *bindInfo;
+@end
+NS_ASSUME_NONNULL_END
+
+#endif

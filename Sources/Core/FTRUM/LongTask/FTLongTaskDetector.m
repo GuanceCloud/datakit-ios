@@ -1,0 +1,145 @@
+//
+//  FTANRMonitor.m
+//  FTMobileAgent
+//
+//  Created by hulilei on 2020/9/28.
+//  Copyright 2021 Shanghai Guance Information Technology Co., Ltd.
+//
+//  Licensed under the Apache License, Version 2.0 (the "License");
+//  you may not use this file except in compliance with the License.
+//  You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+//  Unless required by applicable law or agreed to in writing, software
+//  distributed under the License is distributed on an "AS IS" BASIS,
+//  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+//  See the License for the specific language governing permissions and
+//  limitations under the License.
+//
+
+#if ! __has_feature(objc_arc)
+#error This file must be compiled with ARC. Either turn on ARC for the project or use -fobjc-arc flag on this file.
+#endif
+#import "FTLongTaskDetector.h"
+#import "FTInnerLog.h"
+#import "FTConstants.h"
+#import <sys/time.h>
+#import "NSDate+FTUtil.h"
+#import "FTErrorDataProtocol.h"
+
+@interface FTLongTaskDetector (){
+    CFRunLoopObserverRef m_runLoopBeginObserver;  // Observer
+    CFRunLoopObserverRef m_runLoopEndObserver;    // Observer
+    dispatch_semaphore_t _semaphore;
+    CFRunLoopActivity _activity;     // Status
+}
+
+@property (nonatomic, weak, nullable) id<FTLongTaskProtocol> longTaskDelegate;
+@property (nonatomic, assign) BOOL isCancel;
+@property (nonatomic, assign) NSInteger countTime; // Time-consuming count
+@property (nonatomic, strong) dispatch_queue_t longTaskQueue;
+@property (nonatomic, assign) long limitMillisecond;
+@property (atomic, assign) long long startTimestamp;
+@end
+@implementation FTLongTaskDetector
+-(instancetype)initWithDelegate:(id<FTLongTaskProtocol>)delegate{
+    self = [super init];
+    if(self){
+        _longTaskDelegate = delegate;
+        _semaphore = dispatch_semaphore_create(0);
+        self.limitFreezeMillisecond = FT_DEFAULT_BLOCK_DURATIONS_MS;
+        _longTaskQueue = dispatch_queue_create("com.ft.longtask", 0);
+    }
+    return self;
+}
+- (void)setLimitFreezeMillisecond:(long)limitFreezeMillisecond {
+    _limitFreezeMillisecond = limitFreezeMillisecond;
+    _limitMillisecond = MIN(limitFreezeMillisecond, FT_ANR_THRESHOLD_MS);
+}
+- (void)startDetecting {
+    [self registerObserver];
+    self.isCancel = NO;
+    __weak __typeof(self) weakSelf = self;
+    dispatch_async(_longTaskQueue, ^{
+        __strong __typeof(weakSelf) strongSelf = weakSelf;
+        if (!strongSelf) {
+            return;
+        }
+        while (!strongSelf.isCancel) {
+            @autoreleasepool {
+                long st = dispatch_semaphore_wait(self->_semaphore, dispatch_time(DISPATCH_TIME_NOW, strongSelf.limitMillisecond*NSEC_PER_MSEC));
+                if(st!=0){
+                    if (self->_activity == kCFRunLoopBeforeSources || self->_activity == kCFRunLoopAfterWaiting) {
+                        strongSelf.countTime++;
+                        if(strongSelf.countTime == 1){
+                            if (strongSelf.longTaskDelegate != nil && [strongSelf.longTaskDelegate  respondsToSelector:@selector(startLongTask:)]) {
+                                [strongSelf.longTaskDelegate startLongTask:strongSelf.startTimestamp];
+                            }
+                        }else{
+                            if (strongSelf.longTaskDelegate != nil && [strongSelf.longTaskDelegate  respondsToSelector:@selector(updateLongTaskDate:)]) {
+                                [strongSelf.longTaskDelegate updateLongTaskDate:[NSDate ft_currentNanosecondTimeStamp]];
+                            }
+                        }
+                        continue;
+                    }
+                }
+                // end semaphore wait
+                if(strongSelf.countTime>0){
+                    if (strongSelf.longTaskDelegate != nil && [strongSelf.longTaskDelegate  respondsToSelector:@selector(endLongTask)]) {
+                        [strongSelf.longTaskDelegate endLongTask];
+                    }
+                }
+                strongSelf.countTime = 0;
+            }
+        }
+    });
+}
+// Register an Observer to monitor the state of the Loop, callback function is runLoopObserverCallBack
+- (void)registerObserver{
+    __weak __typeof(self) weakSelf = self;
+    // Create Runloop observer object
+    CFRunLoopObserverRef beginObserver = CFRunLoopObserverCreateWithHandler(kCFAllocatorDefault,
+                                                                            kCFRunLoopEntry|kCFRunLoopBeforeSources|kCFRunLoopAfterWaiting,
+                                                                            YES,
+                                                                            LONG_MIN,
+                                                                            ^(CFRunLoopObserverRef observer, CFRunLoopActivity activity) {
+        __strong __typeof(weakSelf) strongSelf = weakSelf;
+        if (!strongSelf) return;
+        strongSelf->_activity = activity;
+        strongSelf.startTimestamp = [NSDate ft_currentNanosecondTimeStamp];
+        dispatch_semaphore_signal(strongSelf->_semaphore);
+    });
+    CFRetain(beginObserver);
+    m_runLoopBeginObserver = beginObserver;
+    CFRelease(beginObserver);
+    CFRunLoopObserverRef endObserver = CFRunLoopObserverCreateWithHandler(kCFAllocatorDefault, kCFRunLoopExit|kCFRunLoopBeforeWaiting, YES, LONG_MAX, ^(CFRunLoopObserverRef observer, CFRunLoopActivity activity) {
+        __strong __typeof(weakSelf) strongSelf = weakSelf;
+        if (!strongSelf) return;
+        strongSelf->_activity = activity;
+        strongSelf.startTimestamp = [NSDate ft_currentNanosecondTimeStamp];
+        dispatch_semaphore_signal(strongSelf->_semaphore);
+    });
+    CFRetain(endObserver);
+    m_runLoopEndObserver = endObserver;
+    CFRelease(endObserver);
+    // Add the newly created observer to the current thread's runloop
+    CFRunLoopAddObserver(CFRunLoopGetMain(), beginObserver, kCFRunLoopCommonModes);
+    CFRunLoopAddObserver(CFRunLoopGetMain(), endObserver, kCFRunLoopCommonModes);
+}
+- (void)stopDetecting{
+    self.isCancel = YES;
+    if(!m_runLoopEndObserver) return;
+    CFRunLoopRemoveObserver(CFRunLoopGetMain(), m_runLoopEndObserver, kCFRunLoopCommonModes);
+    CFRunLoopRemoveObserver(CFRunLoopGetMain(), m_runLoopBeginObserver, kCFRunLoopCommonModes);
+}
+-(void)dealloc{
+    if (m_runLoopEndObserver) {
+        CFRelease(m_runLoopEndObserver);
+    }
+    if (m_runLoopBeginObserver) {
+        CFRelease(m_runLoopBeginObserver);
+    }
+}
+
+@end

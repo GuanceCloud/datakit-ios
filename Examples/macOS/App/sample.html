@@ -1,0 +1,193 @@
+<!doctype html>
+<html>
+<head>
+    <title>editor</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, minimal-ui, user-scalable=no">
+    <style type="text/css">
+        div {
+            width: 100%;
+        }
+    </style>
+</head>
+<body>
+<input type="button" value="testView" onclick="testRumView()">
+<script type="text/javascript">
+
+    /**
+     *
+     * Determine phone type based on userAgent
+     *
+     * @returns {String}
+     */
+    function getPhoneType() {
+        var mobile = "";
+        var userAgent = navigator.userAgent.toLowerCase();
+        var keywords = ["android", "iphone", "ipod", "ipad", "windows phone", "mqqbrowser"];
+        if (userAgent.indexOf('windows nt') < 0 || (userAgent.indexOf('windows nt') >= 0 && userAgent.indexOf('compatible; msie 9.0;') >= 0)) {
+            if (userAgent.indexOf('windows nt') < 0 && userAgent.indexOf('mMacintosh') < 0) {
+                for (var i = 0; i < keywords.length; i++) {
+                    var v = keywords[i];
+                    if (userAgent.indexOf(v) >= 0) {
+                        mobile = v;
+                        break;
+                    }
+                }
+
+            }
+        }
+        return mobile;
+    }
+
+    function isIOS(){
+        return true
+    }
+
+    var handler = {
+        initBridge: function (callback) {
+            var self = this;
+            // Check if iPhone
+            if (isIOS()) {
+                setupWebViewJavascriptBridge(function(bridge) {
+                    bridge.registerHandler('testJSFunction', function(data, responseCallback) {
+                        alert('JS method called:'+data);
+                        responseCallback('js executed');
+                    })
+                    self.bridge = bridge
+                })
+            } else {
+                try {
+                    // Android object assignment
+                    self.bridge = WebViewJavascriptBridge;
+                    callback();
+                } catch (e) {
+                    console.log('error', e);
+                }
+
+
+            }
+        }
+
+    };
+
+
+    var webViewCallBackMap = {} //Parameter callback dictionary
+
+    function Foo() {
+
+    }
+
+    function baseSend(params, callback) {
+        var tag = "Unique id:"+ new Date().getTime() // Callback through unique
+
+        if(isIOS()){
+            if(callback){
+                webViewCallBackMap[tag] = callback
+                params["_tag"] = tag
+                handler.bridge.callHandler('sendEvent', JSON.stringify(params), 'mapWebViewCallBack')
+            }else{
+                handler.bridge.callHandler('sendEvent', JSON.stringify(params))
+            }
+
+
+        }else{
+           if(callback){
+                webViewCallBackMap[tag] = callback
+                params["_tag"] = tag
+                handler.bridge.sendEvent(JSON.stringify(params), "webViewCallBackMap")
+            }else{
+                handler.bridge.sendEvent(JSON.stringify(params))
+            }
+        }
+
+    }
+
+    function baseAddEventListener(params, callback) {
+        var tag = "Unique id:"+ new Date().getTime() // Callback through unique
+        webViewCallBackMap[tag] = callback
+        params["_tag"] = tag
+
+        if(isIOS()){
+            handler.bridge.callHandler('addEventListener', JSON.stringify(params), 'mapWebViewCallBack')
+        }else{
+           handler.bridge.addEventListener(JSON.stringify(params), "webViewCallBackMap")
+        }
+    }
+
+    Foo.prototype.sendEvent = baseSend
+    Foo.prototype.addEventListener = baseAddEventListener
+
+    var FT_JS_Bridge = new Foo()
+
+    handler.initBridge(function () {
+
+        var obj = {}
+        obj["name"]= "ready"  //Must call here to notify Native page, if you need Native page to trigger some events after loading is complete, you need to use this callback
+        FT_JS_Bridge.sendEvent(obj);
+    });
+
+    function testRumView() {
+
+        FT_JS_Bridge.sendEvent({})
+
+        FT_JS_Bridge.sendEvent({"name":"rum","data":{
+            "measurement":"view",
+            "tags":{"view_id":"497E6544-0AD3-4A73-90AA-CB56F2CE5261",
+                "view_name":"testJSBridge",
+                "app_id":"appid_testJSBridge",
+                "service":"browser",
+                "sdk_name":"df_web_rum_sdk",
+                "sdk_version":"3.0.19",
+                "userid":"1111111",
+            },"fields":{
+                "loading_time": 2017636060,
+                "time_spent":1110076,
+                "view_action_count":0,
+                "view_error_count":0,
+                "view_long_task_count":0,
+                "view_resource_count":0,
+                "session_id":"12345",
+                "is_active": true,
+            }}}, function (ret, err) {
+           console.log("sendEvent call back:" + JSON.stringify(ret) + "，" + JSON.stringify(err))
+        })
+        return "success"
+    }
+    
+    function testWrongRumData() {
+
+        FT_JS_Bridge.sendEvent("aaaaaaaaa", function (ret, err) {
+           console.log("sendEvent call back:" + JSON.stringify(ret) + "，" + JSON.stringify(err))
+        })
+        return "fail"
+    }
+    
+    function test(){
+        FT_JS_Bridge.sendEvent({})
+        FT_JS_Bridge.addEventListener({}, function (ret, err) {
+           console.log("addEventListener call back:" + JSON.stringify(ret) + "，" + JSON.stringify(err))
+        })
+    }
+    function testC(value) {
+
+        //Return value can be many types.
+
+        //Return string
+        return value + "value";
+
+        //Return object, if you need to pass many things to oc, you can construct such an object for transmission.
+        // var finalObj = {"name":"chaman","age":"18","sex":"male"};
+        // return finalObj;
+    }
+
+
+    //This must be written to initialize some settings
+    function setupWebViewJavascriptBridge(callback) {
+        return callback(FTWebViewJavascriptBridge);
+    }
+
+
+
+
+</script>
+</body>
+</html>

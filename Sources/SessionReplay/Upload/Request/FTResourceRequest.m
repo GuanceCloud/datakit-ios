@@ -1,0 +1,85 @@
+//
+//  FTResourceRequest.m
+//  SessionReplay
+//
+//  Created by hulilei on 2023/1/6.
+//
+//  Copyright 2023 Shanghai Guance Information Technology Co., Ltd.
+//
+//  Licensed under the Apache License, Version 2.0 (the "License");
+//  you may not use this file except in compliance with the License.
+//  You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+//  Unless required by applicable law or agreed to in writing, software
+//  distributed under the License is distributed on an "AS IS" BASIS,
+//  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+//  See the License for the specific language governing permissions and
+//  limitations under the License.
+//
+
+#import <TargetConditionals.h>
+#if TARGET_OS_IOS
+
+#import "FTResourceRequest.h"
+#import "FTRequestMultipartFormBody.h"
+#import "FTSessionReplayCoreImports.h"
+#import "FTCompression.h"
+#import "FTSRRecord.h"
+#import "FTResourceCheckRequest.h"
+
+@interface FTResourceRequest()
+@property (nonatomic, strong) NSArray<FTEnrichedResource *> *resources;
+@property (nonatomic, strong) NSDictionary *parameters;
+@property (nonatomic, strong) id<FTMultipartFormBodyProtocol> multipartFormBody;
+
+@end
+@implementation FTResourceRequest
+-(instancetype)init{
+    self = [super init];
+    if(self){
+        self.multipartFormBody = [[FTRequestMultipartFormBody alloc]init];
+    }
+    return self;
+}
+-(NSString *)path{
+    return @"/v1/write/rum/replay_assets";
+}
+-(NSString *)contentType{
+    return [[NSString alloc]initWithFormat:@"multipart/form-data; boundary=%@",[self.multipartFormBody boundary]];
+}
+-(void)requestWithEvents:(NSArray *)events parameters:(NSDictionary *)parameters{
+    self.resources = events;
+    self.parameters = parameters;
+}
+- (NSMutableURLRequest *)adaptedRequest:(NSMutableURLRequest *)mutableRequest{
+    if(!self.multipartFormBody || !self.resources || self.resources.count == 0){
+        return nil;
+    }
+    FTEnrichedResource *firstResource = self.resources.firstObject;
+    [self addHTTPHeaderFields:mutableRequest packageId:[FTPackageIdGenerator generatePackageId:self.serialNumber count:self.resources.count]];
+    
+    mutableRequest.HTTPMethod = self.httpMethod;
+    
+    for (FTEnrichedResource *resource in self.resources) {
+        [self.multipartFormBody addFormData:@"files" filename:resource.identifier data:resource.data mimeType:resource.mimeType];
+    }
+    NSMutableDictionary *formFields = [NSMutableDictionary dictionary];
+    [formFields setValue:firstResource.appId forKey:FT_APP_ID];
+    if (self.parameters) {
+        [formFields addEntriesFromDictionary:self.parameters];
+    }
+    if (firstResource.bindInfo) {
+        [formFields addEntriesFromDictionary:firstResource.bindInfo];
+    }
+    for (NSString *key in formFields.allKeys) {
+        [self.multipartFormBody addFormField:key value:formFields[key]];
+    }
+    
+    mutableRequest.HTTPBody = [self.multipartFormBody build];
+    return mutableRequest;
+}
+@end
+
+#endif

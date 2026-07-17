@@ -1,0 +1,449 @@
+//
+//  FTJavaScriptBridgeTest.m
+//  FTMobileSDKUnitTests
+//
+//  Created by hulilei on 2022/9/19.
+//  Copyright 2022 Shanghai Guance Information Technology Co., Ltd.
+//
+//  Licensed under the Apache License, Version 2.0 (the "License");
+//  you may not use this file except in compliance with the License.
+//  You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+//  Unless required by applicable law or agreed to in writing, software
+//  distributed under the License is distributed on an "AS IS" BASIS,
+//  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+//  See the License for the specific language governing permissions and
+//  limitations under the License.
+//
+
+#import <KIF/KIF.h>
+#import "TestWKWebViewVC.h"
+#import "FTMobileAgent.h"
+#import "FTTrackerEventDBTool+Test.h"
+#import "FTConstants.h"
+#import "FTTrackerEventDBTool.h"
+#import "NSDate+FTUtil.h"
+#import "FTRecordModel.h"
+#import "FTJSONUtil.h"
+#import "FTConstants.h"
+#import "FTMobileAgent+Private.h"
+#import "FTGlobalRumManager+Private.h"
+#import "FTRUMManager.h"
+#import "FTSDKVersion.h"
+#import "FTMobileConfig+Private.h"
+#import "FTLoggerConfig+Private.h"
+#import "FTRumConfig+Private.h"
+#import "FTWKWebViewHandler+Private.h"
+#import "FTModelHelper.h"
+#import "FTInnerLog.h"
+@interface FTWKWebViewHandler (Testing)
+@property (nonatomic, strong) NSMapTable *webViewRequestTable;
+@property (nonatomic, readwrite, strong) NSSet<NSNumber *> *hiddenSlotIds;
+
+- (id)getWebViewBridge:(WKWebView *)webView;
+- (void)removeAllWebViewBridges;
+- (void)takeSubsequentFullSnapshot;
+@end
+
+@interface FTJavaScriptBridgeTest : KIFTestCase<WKNavigationDelegate,FTWKWebViewRumDelegate>
+@property (nonatomic, strong) TestWKWebViewVC *viewController;
+@property (nonatomic, strong) UIWindow *window;
+@property (nonatomic, strong) UINavigationController *navigationController;
+@property (nonatomic, strong) UITabBarController *tabBarController;
+@property (nonatomic, strong) XCTestExpectation *loadExpect;
+@property (nonatomic, strong) WKNavigation *expectedNavigation;
+@end
+
+@implementation FTJavaScriptBridgeTest
+
+- (void)setUp {
+    // Put setup code here. This method is called before the invocation of each test method in the class.
+    [FTLog enableLog:YES];
+    self.window = [[UIWindow alloc] initWithFrame:UIScreen.mainScreen.bounds];
+    self.window.backgroundColor = [UIColor whiteColor];
+
+    self.viewController = [[TestWKWebViewVC alloc]init];;
+
+    self.tabBarController = [[UITabBarController alloc] init];
+
+    self.navigationController = [[UINavigationController alloc] initWithRootViewController:self.viewController];
+    self.navigationController.tabBarItem.title = @"Element";
+
+    UITableViewController *firstViewController = [[UITableViewController alloc] init];
+    UINavigationController *firstNavigationController = [[UINavigationController alloc] initWithRootViewController:firstViewController];
+
+    self.tabBarController.viewControllers = @[firstNavigationController, self.navigationController];
+    self.window.rootViewController = self.tabBarController;
+
+    [self.viewController view];
+    self.viewController.webView.navigationDelegate = self;
+}
+
+- (void)tearDown {
+    self.window.rootViewController = nil;
+    self.tabBarController = nil;
+    self.navigationController = nil;
+    self.viewController = nil;
+
+    self.window.hidden = YES;
+    self.window = nil;
+    [FTMobileAgent shutDown];
+}
+- (void)setSDKWithEnableWebView:(BOOL)enable{
+    [self setSDK:nil enableWebView:enable];
+}
+- (void)setSDK:(NSDictionary *)pkgInfo enableWebView:(BOOL)enable{
+    NSProcessInfo *processInfo = [NSProcessInfo processInfo];
+    NSString *url = [processInfo environment][@"ACCESS_SERVER_URL"];
+    NSString *appid = [processInfo environment][@"APP_ID"];
+    FTMobileConfig *config = [[FTMobileConfig alloc]initWithDatakitUrl:url];
+    config.autoSync = NO;
+    if(pkgInfo && pkgInfo.count>0){
+        [pkgInfo enumerateKeysAndObjectsUsingBlock:^(id  _Nonnull key, id  _Nonnull obj, BOOL * _Nonnull stop) {
+            [config addPkgInfo:key value:obj];
+        }];
+    }
+    FTTraceConfig *traceConfig = [[FTTraceConfig alloc]init];
+    traceConfig.enableAutoTrace = YES;
+    FTRumConfig *rumConfig = [[FTRumConfig alloc]initWithAppid:appid];
+    rumConfig.enableTraceWebView = enable;
+    [FTMobileAgent startWithConfigOptions:config];
+    [[FTMobileAgent sharedInstance] startTraceWithConfigOptions:traceConfig];
+    [[FTMobileAgent sharedInstance] startRumWithConfigOptions:rumConfig];
+    [[FTTrackerEventDBTool sharedManager] deleteAllDatas];
+}
+/// 1. Verify that webview data is added
+/// 2. Verify data format
+///   Basic tags:
+///    Consistent with native SDK:
+///    sdk_name
+///    sdk_version
+///    service
+///    New tag fields:
+///    sdk_pkg_info:{@"web":"version"}
+///    is_web_view
+///    Others consistent with native SDK
+///
+///   RUM related adjustments:
+///   session_id: Consistent with native SDK
+///   is_active: false
+///    Others consistent with webview
+///
+- (void)testAddRumViewData{
+    [self addRumViewData:NO];
+}
+- (void)testAddRumViewData_Nanosecond{
+    [self addRumViewData:YES];
+}
+///    New tag fields:
+///    sdk_pkg_info:{@"web":"version",addPkgInfo}
+///    is_web_view
+///    view_referrer
+///    Others consistent with native SDK
+- (void)testAddPkgInfo{
+    [self addRumViewData:YES addPkgInfo:@{
+        @"test_sdk1":@"1.0.0",
+        @"test_sdk2":@"1.0.1",
+                                        }];
+}
+- (void)addRumViewData:(BOOL)nano{
+    [self addRumViewData:nano addPkgInfo:nil];
+}
+- (void)addRumViewData:(BOOL)nano addPkgInfo:(NSDictionary *)info{
+    [self setSDK:info enableWebView:YES];
+    long long smallTime = [NSDate ft_currentNanosecondTimeStamp];
+    NSURL *url = [[NSBundle mainBundle] URLForResource:@"sample" withExtension:@"html"];
+    [FTModelHelper startViewWithName:@"TestWKWebViewVC"];
+    [self loadFileURL:url description:@"Load WebView!" timeout:30];
+    XCTestExpectation *jsScript = [self expectationWithDescription:@"Add WebView Rum View Data!"];
+    if(nano){
+        [self.viewController test_addWebViewRumViewNano:^{
+            [jsScript fulfill];
+        }];
+    }else{
+        [self.viewController test_addWebViewRumView:^{
+            [jsScript fulfill];
+        }];
+    }
+    
+    [self waitForExpectationsWithTimeout:5 handler:^(NSError *error) {
+        XCTAssertNil(error);
+    }];
+    [[FTGlobalRumManager sharedInstance].rumManager syncProcess];
+    NSArray *datas =[[FTTrackerEventDBTool sharedManager] getFirstRecords:10 withType:FT_DATA_TYPE_RUM];
+    __block BOOL hasViewData = NO;
+    [datas enumerateObjectsWithOptions:NSEnumerationReverse usingBlock:^(FTRecordModel *obj, NSUInteger idx, BOOL * _Nonnull stop) {
+        NSDictionary *dict = [FTJSONUtil dictionaryWithJsonString:obj.data];
+        NSString *op = dict[@"op"];
+        XCTAssertTrue([op isEqualToString:@"RUM"]);
+        NSDictionary *opdata = dict[FT_OPDATA];
+        NSString *measurement = opdata[FT_KEY_SOURCE];
+        NSDictionary *tags = opdata[FT_TAGS];
+        if ([measurement isEqualToString:FT_RUM_SOURCE_VIEW]) {
+            if(tags[FT_IS_WEBVIEW]){
+                NSDictionary *field = opdata[FT_FIELDS];
+                NSInteger errorCount = [field[FT_KEY_VIEW_ERROR_COUNT] integerValue];
+                NSInteger resourceCount = [field[FT_KEY_VIEW_RESOURCE_COUNT] integerValue];
+                NSInteger longTaskCount = [field[FT_KEY_VIEW_LONG_TASK_COUNT] integerValue];
+                NSString *viewName = tags[FT_KEY_VIEW_NAME];
+                NSString *viewReferrer = tags[FT_KEY_VIEW_REFERRER];
+
+                NSDictionary *tags = opdata[FT_TAGS];
+                XCTAssertTrue(errorCount == 0);
+                XCTAssertTrue(longTaskCount == 0);
+                XCTAssertTrue(resourceCount == 0);
+                XCTAssertTrue([viewName isEqualToString:@"testJSBridge"]);
+                XCTAssertTrue([viewReferrer isEqualToString:@"TestWKWebViewVC"]);
+                // RUM related adjustments
+                XCTAssertFalse([tags[FT_RUM_KEY_SESSION_ID] isEqualToString:@"12345"]);
+                XCTAssertTrue([field[FT_KEY_IS_ACTIVE] isEqual:@(NO)]);
+                NSMutableDictionary *infoDict = [NSMutableDictionary dictionaryWithDictionary:@{@"web":@"3.0.19"}];
+                [infoDict addEntriesFromDictionary:info];
+                XCTAssertTrue([tags[FT_SDK_PKG_INFO] isEqualToDictionary:infoDict]);
+                XCTAssertTrue([tags[FT_SDK_VERSION] isEqualToString:SDK_VERSION]);
+                XCTAssertFalse([tags[FT_SDK_NAME] isEqualToString:@"df_web_rum_sdk"]);
+                XCTAssertFalse([tags[FT_KEY_SERVICE] isEqualToString:@"browser"]);
+                XCTAssertTrue(obj.tm>smallTime && obj.tm < [NSDate ft_currentNanosecondTimeStamp]);
+                hasViewData = YES;
+            }
+        }
+    }];
+    XCTAssertTrue(hasViewData);
+}
+-(void)testDisableWebView{
+    [self setSDKWithEnableWebView:NO];
+
+    NSURL *url = [[NSBundle mainBundle] URLForResource:@"sample" withExtension:@"html"];
+    [self loadFileURL:url description:@"Request Time!" timeout:30];
+    XCTestExpectation *jsScript = [self expectationWithDescription:@"Request Time!"];
+    NSInteger count =[[FTTrackerEventDBTool sharedManager] getDatasCount];
+    [self.viewController test_addWebViewRumView:^{
+        [jsScript fulfill];
+    }];
+    [self waitForExpectationsWithTimeout:30 handler:^(NSError *error) {
+        XCTAssertNil(error);
+    }];
+    [[FTGlobalRumManager sharedInstance].rumManager syncProcess];
+    NSArray *newCount =[[FTTrackerEventDBTool sharedManager] getAllDatas];
+    XCTAssertTrue(newCount.count == count);
+    XCTAssertTrue(self.viewController.webView.configuration.userContentController.userScripts.count == 1);
+}
+- (void)testUserScripts{
+    [self setSDKWithEnableWebView:NO];
+    WKUserScript *userScript = [[WKUserScript alloc]initWithSource:@"window.\(bridgeName) = { send(msg) {}}" injectionTime:WKUserScriptInjectionTimeAtDocumentStart forMainFrameOnly:YES];
+    [self.viewController.webView.configuration.userContentController addUserScript:userScript];
+    NSUInteger userScriptsCount =  self.viewController.webView.configuration.userContentController.userScripts.count;
+    XCTAssertTrue(userScriptsCount >= 1);
+    [[FTWKWebViewHandler sharedInstance] enableWebView:self.viewController.webView];
+    NSUInteger newUserScriptsCount =  self.viewController.webView.configuration.userContentController.userScripts.count;
+    XCTAssertTrue(newUserScriptsCount - userScriptsCount == 1);
+    [[FTWKWebViewHandler sharedInstance] disableWebView:self.viewController.webView];
+    NSUInteger dUserScriptsCount =  self.viewController.webView.configuration.userContentController.userScripts.count;
+    XCTAssertTrue(userScriptsCount == dUserScriptsCount);
+    NSArray *userScripts = self.viewController.webView.configuration.userContentController.userScripts;
+    BOOL equalUs = NO;
+    for (WKUserScript *us in userScripts) {
+        if (us == userScript) {
+            equalUs = YES;
+        }
+    }
+    XCTAssertTrue(equalUs);
+}
+- (void)testDisableWebView_enableByCustom{
+    [self setSDKWithEnableWebView:NO];
+    NSURL *url = [[NSBundle mainBundle] URLForResource:@"sample" withExtension:@"html"];
+    NSUInteger userScriptsCount =  self.viewController.webView.configuration.userContentController.userScripts.count;
+
+    [[FTWKWebViewHandler sharedInstance] enableWebView:self.viewController.webView];
+    NSUInteger newUserScriptsCount =  self.viewController.webView.configuration.userContentController.userScripts.count;
+    XCTAssertTrue(newUserScriptsCount - userScriptsCount == 1);
+    [self loadFileURL:url description:@"Request Time!" timeout:30];
+    XCTestExpectation *jsScript = [self expectationWithDescription:@"Request Time!"];
+    [self.viewController test_addWebViewRumView:^{
+        [jsScript fulfill];
+    }];
+    [self waitForExpectationsWithTimeout:30 handler:^(NSError *error) {
+        XCTAssertNil(error);
+    }];
+    [[FTGlobalRumManager sharedInstance].rumManager syncProcess];
+    NSArray *datas =[[FTTrackerEventDBTool sharedManager] getFirstRecords:10 withType:FT_DATA_TYPE_RUM];
+    __block BOOL hasViewData = NO;
+    [datas enumerateObjectsWithOptions:NSEnumerationReverse usingBlock:^(FTRecordModel *obj, NSUInteger idx, BOOL * _Nonnull stop) {
+        NSDictionary *dict = [FTJSONUtil dictionaryWithJsonString:obj.data];
+        NSString *op = dict[FT_OP];
+        XCTAssertTrue([op isEqualToString:@"RUM"]);
+        NSDictionary *opdata = dict[FT_OPDATA];
+        NSString *measurement = opdata[FT_KEY_SOURCE];
+        NSDictionary *tags = opdata[FT_TAGS];
+        if ([measurement isEqualToString:FT_RUM_SOURCE_VIEW]) {
+            if(tags[FT_IS_WEBVIEW]){
+                NSDictionary *field = opdata[FT_FIELDS];
+                NSInteger errorCount = [field[FT_KEY_VIEW_ERROR_COUNT] integerValue];
+                NSInteger resourceCount = [field[FT_KEY_VIEW_RESOURCE_COUNT] integerValue];
+                NSInteger longTaskCount = [field[FT_KEY_VIEW_LONG_TASK_COUNT] integerValue];
+                NSString *viewName = tags[FT_KEY_VIEW_NAME];
+                XCTAssertTrue(errorCount == 0);
+                XCTAssertTrue(longTaskCount == 0);
+                XCTAssertTrue(resourceCount == 0);
+                XCTAssertTrue([viewName isEqualToString:@"testJSBridge"]);
+                hasViewData = YES;
+            }
+        }
+    }];
+    XCTAssertTrue(hasViewData);
+
+}
+-(void)testEnableWebView{
+    [self setSDKWithEnableWebView:YES];
+    NSURL *url = [[NSBundle mainBundle] URLForResource:@"sample" withExtension:@"html"];
+    [self loadFileURL:url description:@"Request Time!" timeout:30];
+    XCTestExpectation *jsScript = [self expectationWithDescription:@"Request Time!"];
+    [self.viewController test_addWebViewRumView:^{
+        [jsScript fulfill];
+    }];
+    [self waitForExpectationsWithTimeout:30 handler:^(NSError *error) {
+        XCTAssertNil(error);
+    }];
+    [[FTGlobalRumManager sharedInstance].rumManager syncProcess];
+    NSArray *datas =[[FTTrackerEventDBTool sharedManager] getFirstRecords:10 withType:FT_DATA_TYPE_RUM];
+    __block BOOL hasViewData = NO;
+    [datas enumerateObjectsWithOptions:NSEnumerationReverse usingBlock:^(FTRecordModel *obj, NSUInteger idx, BOOL * _Nonnull stop) {
+        NSDictionary *dict = [FTJSONUtil dictionaryWithJsonString:obj.data];
+        NSString *op = dict[FT_OP];
+        XCTAssertTrue([op isEqualToString:@"RUM"]);
+        NSDictionary *opdata = dict[FT_OPDATA];
+        NSString *measurement = opdata[FT_KEY_SOURCE];
+        NSDictionary *tags = opdata[FT_TAGS];
+        if ([measurement isEqualToString:FT_RUM_SOURCE_VIEW]) {
+            if(tags[FT_IS_WEBVIEW]){
+                NSDictionary *field = opdata[FT_FIELDS];
+                NSInteger errorCount = [field[FT_KEY_VIEW_ERROR_COUNT] integerValue];
+                NSInteger resourceCount = [field[FT_KEY_VIEW_RESOURCE_COUNT] integerValue];
+                NSInteger longTaskCount = [field[FT_KEY_VIEW_LONG_TASK_COUNT] integerValue];
+                NSString *viewName = tags[FT_KEY_VIEW_NAME];
+                XCTAssertTrue(errorCount == 0);
+                XCTAssertTrue(longTaskCount == 0);
+                XCTAssertTrue(resourceCount == 0);
+                XCTAssertTrue([viewName isEqualToString:@"testJSBridge"]);
+                hasViewData = YES;
+            }
+        }
+    }];
+    XCTAssertTrue(hasViewData);
+}
+-(void)testSDKShutDownWebViewBridge{
+    [self setSDKWithEnableWebView:YES];
+    NSURL *url = [[NSBundle mainBundle] URLForResource:@"sample" withExtension:@"html"];
+    [FTMobileAgent shutDown];
+    NSInteger oldCount =[[FTTrackerEventDBTool sharedManager] getDatasCount];
+    [self loadFileURL:url description:@"Request Time!" timeout:30];
+    XCTestExpectation *jsScript = [self expectationWithDescription:@"Request Time!"];
+    [self.viewController test_addWebViewRumView:^{
+        [jsScript fulfill];
+    }];
+    [self waitForExpectationsWithTimeout:30 handler:^(NSError *error) {
+        XCTAssertNil(error);
+    }];
+    [[FTGlobalRumManager sharedInstance].rumManager syncProcess];
+    NSInteger newCount =[[FTTrackerEventDBTool sharedManager] getDatasCount];
+    XCTAssertTrue(newCount == oldCount);
+}
+- (void)testMapTableWeakReferenceWebView{
+    WKWebView *webView = [[WKWebView alloc]init];
+    [[FTWKWebViewHandler sharedInstance] startWithEnableTraceWebView:NO allowWebViewHost:nil rumDelegate:self];
+    [[FTWKWebViewHandler sharedInstance] enableWebView:webView];
+    id bridge = [[FTWKWebViewHandler sharedInstance] getWebViewBridge:webView];
+    XCTAssertTrue(bridge != nil);
+    webView = nil;
+    id bridge2 = [[FTWKWebViewHandler sharedInstance] getWebViewBridge:webView];
+    XCTAssertTrue(bridge2 == nil);
+}
+- (void)testSameWebViewAddBridge_moreThanOnce{
+    WKWebView *webView = [[WKWebView alloc]init];
+    [[FTWKWebViewHandler sharedInstance] startWithEnableTraceWebView:NO allowWebViewHost:nil rumDelegate:self];
+    [[FTWKWebViewHandler sharedInstance] enableWebView:webView];
+    id bridge = [[FTWKWebViewHandler sharedInstance] getWebViewBridge:webView];
+    XCTAssertTrue(bridge != nil);
+
+    [[FTWKWebViewHandler sharedInstance] enableWebView:webView];
+    id bridge2 = [[FTWKWebViewHandler sharedInstance] getWebViewBridge:webView];
+    XCTAssertTrue(bridge2 != nil);
+    XCTAssertTrue(bridge == bridge2);
+}
+- (void)testSameWebViewAddBridgeWithDifferentHosts{
+    WKWebView *webView = [[WKWebView alloc]init];
+    FTWKWebViewHandler *handler = [FTWKWebViewHandler sharedInstance];
+    [handler startWithEnableTraceWebView:NO allowWebViewHost:nil rumDelegate:self];
+    [handler enableWebView:webView allowWebViewHost:@[@"example.com"]];
+    id bridge = [handler getWebViewBridge:webView];
+    XCTAssertTrue(bridge != nil);
+
+    [handler enableWebView:webView allowWebViewHost:@[@"example.org"]];
+    id bridge2 = [handler getWebViewBridge:webView];
+    XCTAssertTrue(bridge2 != nil);
+    XCTAssertTrue(bridge == bridge2);
+}
+- (void)testDisableWebViewRemoveBridgeOnlyOnce{
+    WKWebView *webView = [[WKWebView alloc]init];
+    FTWKWebViewHandler *handler = [FTWKWebViewHandler sharedInstance];
+    [handler startWithEnableTraceWebView:NO allowWebViewHost:nil rumDelegate:self];
+    [handler enableWebView:webView];
+    XCTAssertNotNil([handler getWebViewBridge:webView]);
+
+    XCTAssertNoThrow([handler disableWebView:webView]);
+    XCTAssertNil([handler getWebViewBridge:webView]);
+    XCTAssertNoThrow([handler disableWebView:webView]);
+}
+- (void)testRemoveAllWebViewBridgesClearsRegisteredBridges{
+    WKWebView *webView = [[WKWebView alloc]init];
+    FTWKWebViewHandler *handler = [FTWKWebViewHandler sharedInstance];
+    [handler startWithEnableTraceWebView:NO allowWebViewHost:nil rumDelegate:self];
+    [handler enableWebView:webView];
+    XCTAssertNotNil([handler getWebViewBridge:webView]);
+
+    [handler removeAllWebViewBridges];
+    XCTAssertNil([handler getWebViewBridge:webView]);
+}
+- (void)testTakeSubsequentFullSnapshotWithHiddenSlotIds{
+    WKWebView *visibleWebView = [[WKWebView alloc]init];
+    WKWebView *hiddenWebView = [[WKWebView alloc]init];
+    FTWKWebViewHandler *handler = [FTWKWebViewHandler sharedInstance];
+    [handler startWithEnableTraceWebView:NO allowWebViewHost:nil rumDelegate:self];
+    [handler enableWebView:visibleWebView];
+    [handler enableWebView:hiddenWebView];
+    handler.hiddenSlotIds = [NSSet setWithObject:@(hiddenWebView.hash)];
+
+    XCTAssertNoThrow([handler takeSubsequentFullSnapshot]);
+    handler.hiddenSlotIds = [NSSet setWithObject:@(visibleWebView.hash)];
+    XCTAssertNoThrow([handler takeSubsequentFullSnapshot]);
+
+    [handler disableWebView:visibleWebView];
+    [handler disableWebView:hiddenWebView];
+}
+- (void)dealRUMWebViewData:(NSString *)measurement tags:(NSDictionary *)tags fields:(NSDictionary *)fields tm:(long long)tm{
+    
+}
+- (void)loadFileURL:(NSURL *)url description:(NSString *)description timeout:(NSTimeInterval)timeout{
+    self.loadExpect = [self expectationWithDescription:description];
+    self.expectedNavigation = [self.viewController.webView loadFileURL:url allowingReadAccessToURL:url];
+    [self waitForExpectationsWithTimeout:timeout handler:^(NSError *error) {
+        XCTAssertNil(error);
+    }];
+}
+- (void)webView:(WKWebView *)webView didFinishNavigation:(null_unspecified WKNavigation *)navigation{
+    if (!self.loadExpect) {
+        return;
+    }
+    if (self.expectedNavigation && navigation != self.expectedNavigation) {
+        return;
+    }
+    [self.loadExpect fulfill];
+    self.loadExpect = nil;
+    self.expectedNavigation = nil;
+}
+-(NSString *)getLastHasReplayViewID{
+    return nil;
+}
+@end

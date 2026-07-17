@@ -1,3 +1,39 @@
+# 1.6.6
+1. **Breaking:** Renamed the CocoaPods and SwiftPM distribution products from the `FTMobileSDK` family to the `GuanceSDK` family. Use `GuanceSDK`, `GuanceWidgetExtension`, and `GuanceSessionReplay`; CocoaPods aliases `GuanceSDK/Extension` and `GuanceSDK/FTSessionReplay` remain available.
+2. Added experimental Session Replay heatmap correlation through `FTSessionReplayConfig.enableHeatmap`.
+3. Added missing system `compression` and `zlib` headers.
+4. Improved URLSession Resource stability by preserving request and trace data during asynchronous processing and limiting cached response bodies to reduce OOM risk.
+5. Fixed RUM CPU calculation, app launch, app state, session timeout, crash context, and active View context handling.
+6. Improved ANR reliability by avoiding SQLite `VACUUM` during background transitions and retrying all-thread backtrace collection.
+7. Fixed potential array out-of-bounds crashes caused by invalid enum values.
+---
+# 1.6.6-beta.3
+1. same as 1.6.6-beta.1
+---
+# 1.6.6-beta.1
+1. Restored the macOS `FTGlobalRumManager` manual RUM APIs for backward compatibility with existing View, Action, Error, LongTask, and Resource integrations.
+2. Fixed potential out-of-bounds crashes caused by invalid enum values in logging, RUM, Session Replay, environment, monitoring, and battery-state paths by applying safe fallback values.
+---
+# 1.6.6-alpha.3
+1. Improved RUM duration breakdown response body handling to avoid caching large response bodies and prevent potential OOM.
+2. Fixed RUM crash and link context updates so inactive View writes no longer overwrite the current active View context.
+3. Fixed tvOS umbrella header imports by excluding WebView APIs on tvOS.
+4. Fixed compression imports to use system `compression` and `zlib` headers.
+---
+# 1.6.6-alpha.2
+1. Added experimental Session Replay heatmap correlation through `FTSessionReplayConfig.enableHeatmap`.
+2. Fixed RUM CPU usage calculation when the system tick counter rolls over.
+3. Fixed RUM app launch, app state, and session timeout handling when display monitoring is unavailable or sessions transition between states.
+4. Fixed ANR all-thread backtrace collection retry handling.
+5. Improved logger and message bus performance, including skipping disabled internal log argument evaluation and debouncing log flushes.
+6. Improved Objective-C ownership handling for properties and associated objects to reduce memory-management risks.
+7. Improved SDK framework packaging, including separate XCFramework zip archives, dSYM packaging, tvOS/macOS framework builds, packaging header fixes, and framework Info.plist metadata.
+---
+# 1.6.6-alpha.1
+1. Fixed URLSession Resource collection to keep request and trace data stable during asynchronous processing.
+2. Fixed an ANR risk caused by SQLite `VACUUM` during app background transitions.
+3. Added legacy CocoaPods subspec aliases `GuanceSDK/Extension` and `GuanceSDK/FTSessionReplay`.
+---
 # 1.6.5
 1. Added `FTSessionReplayConfig.enableSwiftUI` to explicitly enable SwiftUI recording in Session Replay. SwiftUI recording is disabled by default.
 2. Added support for custom Session Replay `source` values on iOS segment uploads to support Flutter Session Replay scenarios.

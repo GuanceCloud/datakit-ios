@@ -1,0 +1,194 @@
+//
+//  SessionReplayPrivacyOverridesTests.m
+//  FTMobileSDKUnitTests
+//
+//  Created by hulilei on 2025/3/14.
+//  Copyright 2025 Shanghai Guance Information Technology Co., Ltd.
+//
+//  Licensed under the Apache License, Version 2.0 (the "License");
+//  you may not use this file except in compliance with the License.
+//  You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+//  Unless required by applicable law or agreed to in writing, software
+//  distributed under the License is distributed on an "AS IS" BASIS,
+//  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+//  See the License for the specific language governing permissions and
+//  limitations under the License.
+//
+
+#import <XCTest/XCTest.h>
+#import "UIView+FTSRPrivacy.h"
+#import "FTSessionReplayPrivacyOverrides+Extension.h"
+#import "FTSRNodeWireframesBuilder.h"
+#import "FTViewAttributes.h"
+#import "FTViewTreeRecorder.h"
+#import "FTViewTreeRecordingContext.h"
+#import "FTViewTreeSnapshot.h"
+
+@interface FTPrivacyOverrideCapturingRecorder : NSObject<FTSRWireframesRecorder>
+@property (nonatomic, copy) NSString *identifier;
+@property (nonatomic, strong) NSMutableDictionary<NSString *, FTViewAttributes *> *attributesByIdentifier;
+@end
+
+@implementation FTPrivacyOverrideCapturingRecorder
+
+- (instancetype)init {
+    self = [super init];
+    if (self) {
+        _identifier = @"privacy-override-capturing-recorder";
+        _attributesByIdentifier = [NSMutableDictionary dictionary];
+    }
+    return self;
+}
+
+- (FTSRNodeSemantics *)recorder:(UIView *)view attributes:(FTViewAttributes *)attributes context:(FTViewTreeRecordingContext *)context {
+    if (view.accessibilityIdentifier) {
+        self.attributesByIdentifier[view.accessibilityIdentifier] = [attributes copy];
+    }
+    return [FTUnknownElement constant];
+}
+
+@end
+
+@interface FTViewTreeRecorder (SessionReplayPrivacyOverridesTests)
+- (void)recordRecursively:(NSMutableArray *)nodes view:(UIView *)view context:(FTViewTreeRecordingContext *)context overrides:(PrivacyOverrides *)overrides typeIndex:(NSInteger)typeIndex;
+@end
+
+@interface SessionReplayPrivacyOverridesTests : XCTestCase
+
+@end
+
+@implementation SessionReplayPrivacyOverridesTests
+
+- (void)setUp {
+    // Put setup code here. This method is called before the invocation of each test method in the class.
+}
+
+- (void)tearDown {
+    // Put teardown code here. This method is called after the invocation of each test method in the class.
+}
+
+- (void)testTouchPrivacyOverrides{
+    UIView *view = [[UIView alloc]init];
+    XCTAssertTrue(view.sessionReplayPrivacyOverrides.touchPrivacy == FTTouchPrivacyLevelOverrideNone);
+    view.sessionReplayPrivacyOverrides.touchPrivacy = FTTouchPrivacyLevelOverrideHide;
+    XCTAssertTrue([view.sessionReplayPrivacyOverrides.nTouchPrivacy isEqual:@(FTTouchPrivacyLevelHide)]);
+    view.sessionReplayPrivacyOverrides.touchPrivacy = FTTouchPrivacyLevelOverrideShow;
+    XCTAssertTrue([view.sessionReplayPrivacyOverrides.nTouchPrivacy isEqual: @(FTTouchPrivacyLevelShow)]);
+    view.sessionReplayPrivacyOverrides.touchPrivacy = FTTouchPrivacyLevelOverrideNone;
+    XCTAssertTrue(view.sessionReplayPrivacyOverrides.nTouchPrivacy == nil);
+}
+
+- (void)testImagePrivacyOverrides{
+    UIView *view = [[UIView alloc]init];
+    XCTAssertTrue(view.sessionReplayPrivacyOverrides.imagePrivacy == FTImagePrivacyLevelOverrideNone);
+    view.sessionReplayPrivacyOverrides.imagePrivacy = FTImagePrivacyLevelOverrideMaskAll;
+    XCTAssertTrue([view.sessionReplayPrivacyOverrides.nImagePrivacy isEqual:@(FTImagePrivacyLevelMaskAll)]);
+    
+    view.sessionReplayPrivacyOverrides.imagePrivacy = FTImagePrivacyLevelOverrideMaskNone;
+    XCTAssertTrue([view.sessionReplayPrivacyOverrides.nImagePrivacy isEqual: @(FTImagePrivacyLevelMaskNone)]);
+    
+    view.sessionReplayPrivacyOverrides.imagePrivacy = FTImagePrivacyLevelOverrideMaskNonBundledOnly;
+    XCTAssertTrue([view.sessionReplayPrivacyOverrides.nImagePrivacy isEqual:@(FTImagePrivacyLevelMaskNonBundledOnly)]);
+    
+    view.sessionReplayPrivacyOverrides.imagePrivacy = FTImagePrivacyLevelOverrideNone;
+    
+    XCTAssertTrue(view.sessionReplayPrivacyOverrides.nImagePrivacy == nil);
+}
+
+- (void)testTextAndInputPrivacyOverrides{
+    UIView *view = [[UIView alloc]init];
+    XCTAssertTrue(view.sessionReplayPrivacyOverrides.textAndInputPrivacy == FTTextAndInputPrivacyLevelOverrideNone);
+    
+    view.sessionReplayPrivacyOverrides.textAndInputPrivacy = FTTextAndInputPrivacyLevelOverrideMaskAll;
+    XCTAssertTrue([view.sessionReplayPrivacyOverrides.nTextAndInputPrivacy isEqual:@(FTTextAndInputPrivacyLevelMaskAll)]);
+    
+    view.sessionReplayPrivacyOverrides.textAndInputPrivacy = FTTextAndInputPrivacyLevelOverrideMaskAllInputs;
+    XCTAssertTrue([view.sessionReplayPrivacyOverrides.nTextAndInputPrivacy isEqual: @(FTTextAndInputPrivacyLevelMaskAllInputs)]);
+    
+    view.sessionReplayPrivacyOverrides.textAndInputPrivacy = FTTextAndInputPrivacyLevelOverrideMaskSensitiveInputs;
+    XCTAssertTrue([view.sessionReplayPrivacyOverrides.nTextAndInputPrivacy isEqual:@(FTTextAndInputPrivacyLevelMaskSensitiveInputs)]);
+    
+    view.sessionReplayPrivacyOverrides.textAndInputPrivacy = FTTextAndInputPrivacyLevelOverrideNone;
+    
+    XCTAssertTrue(view.sessionReplayPrivacyOverrides.nTextAndInputPrivacy == nil);
+}
+
+- (void)testPrivacyOverridesViewMerge{
+    UIView *view = [[UIView alloc]init];
+    UIView *subView = [[UIView alloc]init];
+    
+    view.sessionReplayPrivacyOverrides.touchPrivacy = FTTouchPrivacyLevelOverrideHide;
+    view.sessionReplayPrivacyOverrides.textAndInputPrivacy = FTTextAndInputPrivacyLevelOverrideMaskSensitiveInputs;
+    view.sessionReplayPrivacyOverrides.imagePrivacy = FTImagePrivacyLevelOverrideMaskNonBundledOnly;
+    view.sessionReplayPrivacyOverrides.hide = NO;
+    
+    subView.sessionReplayPrivacyOverrides.touchPrivacy = FTTouchPrivacyLevelOverrideShow;
+    subView.sessionReplayPrivacyOverrides.textAndInputPrivacy = FTTextAndInputPrivacyLevelOverrideMaskAll;
+    subView.sessionReplayPrivacyOverrides.imagePrivacy = FTImagePrivacyLevelOverrideMaskNone;
+    subView.sessionReplayPrivacyOverrides.hide = YES;
+    
+    FTSessionReplayPrivacyOverrides *overrides = [FTSessionReplayPrivacyOverrides mergeChild:subView.sessionReplayPrivacyOverrides parent:view.sessionReplayPrivacyOverrides];
+    
+    XCTAssertTrue(overrides.hide = YES);
+    XCTAssertTrue([overrides.nTextAndInputPrivacy isEqual:@( FTTextAndInputPrivacyLevelMaskAll)]);
+    XCTAssertTrue([overrides.nImagePrivacy isEqual: @(FTImagePrivacyLevelMaskNone)]);
+    XCTAssertTrue([overrides.nTouchPrivacy isEqual: @(FTTouchPrivacyLevelShow)]);
+    XCTAssertTrue(overrides.hide = YES);
+}
+
+- (void)testPrivacyOverridesViewMerge_childPrivacyNone{
+    UIView *view = [[UIView alloc]init];
+    UIView *subView = [[UIView alloc]init];
+    
+    view.sessionReplayPrivacyOverrides.touchPrivacy = FTTouchPrivacyLevelOverrideHide;
+    view.sessionReplayPrivacyOverrides.textAndInputPrivacy = FTTextAndInputPrivacyLevelOverrideMaskSensitiveInputs;
+    view.sessionReplayPrivacyOverrides.imagePrivacy = FTImagePrivacyLevelOverrideMaskNonBundledOnly;
+    view.sessionReplayPrivacyOverrides.hide = NO;
+    
+    subView.sessionReplayPrivacyOverrides.touchPrivacy = FTTouchPrivacyLevelOverrideNone;
+    subView.sessionReplayPrivacyOverrides.textAndInputPrivacy = FTTextAndInputPrivacyLevelOverrideNone;
+    subView.sessionReplayPrivacyOverrides.imagePrivacy = FTImagePrivacyLevelOverrideNone;
+    subView.sessionReplayPrivacyOverrides.hide = YES;
+    
+    FTSessionReplayPrivacyOverrides *overrides = [FTSessionReplayPrivacyOverrides mergeChild:subView.sessionReplayPrivacyOverrides parent:view.sessionReplayPrivacyOverrides];
+    
+    XCTAssertTrue([overrides.nTextAndInputPrivacy isEqual:@( FTTextAndInputPrivacyLevelMaskSensitiveInputs)]);
+    XCTAssertTrue([overrides.nImagePrivacy isEqual: @(FTImagePrivacyLevelMaskNonBundledOnly)]);
+    XCTAssertTrue([overrides.nTouchPrivacy isEqual: @(FTTouchPrivacyLevelHide)]);
+    XCTAssertTrue(overrides.hide = YES);
+}
+
+- (void)testViewTreeRecorderPassesMergedPrivacyOverridesToDeepChildren {
+    UIView *container = [[UIView alloc] initWithFrame:CGRectMake(0, 0, 100, 100)];
+    container.accessibilityIdentifier = @"container";
+
+    UIView *leaf = [[UIView alloc] initWithFrame:CGRectMake(0, 0, 50, 50)];
+    leaf.accessibilityIdentifier = @"leaf";
+    [container addSubview:leaf];
+
+    PrivacyOverrides *mergedOverrides = [PrivacyOverrides new];
+    mergedOverrides.textAndInputPrivacy = FTTextAndInputPrivacyLevelOverrideMaskAll;
+    mergedOverrides.imagePrivacy = FTImagePrivacyLevelOverrideMaskAll;
+    mergedOverrides.hide = YES;
+
+    FTViewTreeRecordingContext *context = [FTViewTreeRecordingContext new];
+    context.coordinateSpace = container;
+    context.clip = CGRectMake(0, 0, 100, 100);
+    context.viewControllerContext = [FTViewControllerContext new];
+
+    FTPrivacyOverrideCapturingRecorder *capturingRecorder = [FTPrivacyOverrideCapturingRecorder new];
+    FTViewTreeRecorder *treeRecorder = [FTViewTreeRecorder new];
+    treeRecorder.nodeRecorders = @[capturingRecorder];
+
+    NSMutableArray *nodes = [NSMutableArray array];
+    [treeRecorder recordRecursively:nodes view:container context:context overrides:mergedOverrides typeIndex:0];
+
+    FTViewAttributes *leafAttributes = capturingRecorder.attributesByIdentifier[@"leaf"];
+    XCTAssertEqualObjects(leafAttributes.textAndInputPrivacy, @(FTTextAndInputPrivacyLevelMaskAll));
+    XCTAssertEqualObjects(leafAttributes.imagePrivacy, @(FTImagePrivacyLevelMaskAll));
+    XCTAssertTrue(leafAttributes.hide);
+}
+@end

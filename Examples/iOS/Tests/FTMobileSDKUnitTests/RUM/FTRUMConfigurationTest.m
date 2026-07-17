@@ -1,0 +1,1106 @@
+//
+//  FTRUMConfigurationTest.m
+//  FTMobileSDKUnitTests
+//
+//  Created by hulilei on 2025/7/25.
+//  Copyright 2025 Shanghai Guance Information Technology Co., Ltd.
+//
+//  Licensed under the Apache License, Version 2.0 (the "License");
+//  you may not use this file except in compliance with the License.
+//  You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+//  Unless required by applicable law or agreed to in writing, software
+//  distributed under the License is distributed on an "AS IS" BASIS,
+//  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+//  See the License for the specific language governing permissions and
+//  limitations under the License.
+//
+
+#import <XCTest/XCTest.h>
+#import "FTRumConfig.h"
+#import "FTMobileSDK.h"
+#import "FTSDKConfig+Private.h"
+#import "FTLoggerConfig+Private.h"
+#import "FTRumConfig+Private.h"
+#import "FTMobileAgent+Private.h"
+#import "FTTrackerEventDBTool+Test.h"
+#import "FTRecordModel.h"
+#import "FTConstants.h"
+#import "FTTrackDataManager+Test.h"
+#import "FTModelHelper.h"
+#import "FTGlobalRumManager+Private.h"
+#import "FTRUMManager.h"
+#import "FTAutoTrackHandler.h"
+#import "XCTestCase+Utils.h"
+#import "UIEvent+Mock.h"
+#import "FTDefaultUIKitViewTrackingHandler.h"
+#import "FTDefaultActionTrackingHandler.h"
+#import "FTDBDataCachePolicy.h"
+#import "AddRumDatasHandlerMock.h"
+#import "FTAutoTrackEventResolver.h"
+#import "FTAutoTrackHeatmapResolver.h"
+#import "FTAutoTrackActionPublisher.h"
+typedef FTRUMView* _Nullable (^FTViewTrackingBlock)(UIViewController *viewController);
+typedef FTRUMAction* _Nullable (^FTActionTrackingBlock)(UIView *view);
+typedef FTRUMAction* _Nullable (^FTLaunchActionTrackingBlock)(FTLaunchType type);
+
+#if TARGET_OS_IOS || TARGET_OS_TV
+@interface FTAutoTrackHandler (SwiftUIRUMViewTest)
+- (void)notifyOnAppearWithIdentity:(NSString *)identity name:(NSString *)name property:(nullable NSDictionary *)property loadTime:(NSNumber *)loadTime;
+- (void)notifyOnDisappearWithIdentity:(NSString *)identity;
+#if TARGET_OS_IOS
+- (void)notify_swiftUIActionWithName:(NSString *)actionName property:(nullable NSDictionary *)property;
+#endif
+@end
+#endif
+
+#if TARGET_OS_IOS
+@interface UIApplication (FTAutoTrackTest)
+- (void)ftTrackTouchEvent:(UIEvent *)event;
+@end
+#endif
+
+@interface ModalViewController : UIViewController
+
+@end
+
+@implementation ModalViewController
+
+
+@end
+
+@interface FTKeyboardWindowForAutoTrackTest : UIWindow
+@end
+
+@implementation FTKeyboardWindowForAutoTrackTest
+@end
+
+static void FTNotifyAutoTrackTestAction(UIView *view) {
+#if TARGET_OS_IOS
+    [[FTAutoTrackHandler sharedInstance].actionHandler notify_sendAction:view heatmapTargetView:view locationResolver:nil];
+#elif TARGET_OS_TV
+    [[FTAutoTrackHandler sharedInstance].actionHandler notify_sendActionWithPressType:UIPressTypeSelect view:view];
+#endif
+}
+
+@interface TestTrackingHandler : NSObject<FTUIKitViewTrackingHandler,FTUITouchRUMActionsHandler,FTUIPressRUMActionsHandler>
+@property (nonatomic, copy) FTViewTrackingBlock viewTrackingBlock;
+@property (nonatomic, copy) FTActionTrackingBlock actionTrackingBlock;
+@property (nonatomic, copy) FTLaunchActionTrackingBlock launchActionTrackingBlock;
+@end
+@implementation TestTrackingHandler
+
+-(FTRUMView *)rumViewForViewController:(UIViewController *)viewController{
+    if (self.viewTrackingBlock) {
+        return self.viewTrackingBlock(viewController);
+    }
+    return nil;
+}
+-(FTRUMAction *)rumActionWithTargetView:(UIView *)targetView{
+    if (self.actionTrackingBlock) {
+        return self.actionTrackingBlock(targetView);
+    }
+    return nil;
+}
+
+- (nullable FTRUMAction *)rumLaunchActionWithLaunchType:(FTLaunchType)type {
+    if (self.launchActionTrackingBlock) {
+        return self.launchActionTrackingBlock(type);
+    }
+    return nil;
+}
+
+- (FTRUMAction *)rumActionWithPressType:(UIPressType)type targetView:(UIView *)targetView{
+    if (self.actionTrackingBlock) {
+        return self.actionTrackingBlock(targetView);
+    }
+    return nil;
+}
+@end
+
+@interface TestHeatmapIdentifierRegistry : NSObject<FTHeatmapIdentifierRegistry>
+@property (nonatomic, strong) NSDictionary<NSValue *, FTHeatmapIdentifier *> *identifiers;
+@property (nonatomic, assign) BOOL enableHeatmap;
+- (instancetype)initWithIdentifiers:(NSDictionary<NSValue *, FTHeatmapIdentifier *> *)identifiers;
+@end
+@implementation TestHeatmapIdentifierRegistry
+- (instancetype)initWithIdentifiers:(NSDictionary<NSValue *, FTHeatmapIdentifier *> *)identifiers {
+    self = [super init];
+    if (self) {
+        _identifiers = identifiers;
+    }
+    return self;
+}
+- (void)setHeatmapIdentifiers:(NSDictionary<NSValue *,FTHeatmapIdentifier *> *)heatmapIdentifiers {
+    self.identifiers = heatmapIdentifiers;
+}
+- (FTHeatmapIdentifier *)heatmapIdentifierForObject:(id)object {
+    NSValue *objectIdentifier = [FTHeatmapIdentifier objectIdentifierForObject:object];
+    return objectIdentifier ? self.identifiers[objectIdentifier] : nil;
+}
+@end
+
+static FTAutoTrackHeatmapResolver *FTMakeHeatmapResolver(TestHeatmapIdentifierRegistry *registry) {
+    return [[FTAutoTrackHeatmapResolver alloc]initWithRegistry:registry];
+}
+
+static void FTStartAutoTrackActionTest(AddRumDatasHandlerMock *mock,
+                                       TestTrackingHandler *handler,
+                                       id<FTHeatmapIdentifierRegistry> registry) {
+    [[FTAutoTrackHandler sharedInstance] startWithTrackView:NO
+                                                     action:YES
+                                      addRumDatasDelegate:mock
+                                              viewHandler:nil
+                                       swiftUIViewHandler:nil
+                                            actionHandler:handler
+                                           displayMonitor:nil
+                                  heatmapIdentifierRegistry:registry];
+}
+
+@interface FTRUMConfigurationTest : XCTestCase
+@property (nonatomic, copy) NSString *url;
+@property (nonatomic, copy) NSString *appid;
+@end
+
+@implementation FTRUMConfigurationTest
+
+-(void)setUp{
+    NSProcessInfo *processInfo = [NSProcessInfo processInfo];
+    self.url = [processInfo environment][@"ACCESS_SERVER_URL"];
+    self.appid = [processInfo environment][@"APP_ID"];
+    [[FTTrackerEventDBTool sharedManager] deleteAllDatas];
+}
+-(void)tearDown{
+    [[FTGlobalRumManager sharedInstance].rumManager syncProcess];
+    [FTMobileAgent shutDown];
+}
+
+- (void)testRUMFreezeThreshold{
+    FTRumConfig *rumConfig = [[FTRumConfig alloc]initWithAppid:@"appid"];
+    XCTAssertTrue(rumConfig.freezeDurationMs == 250);
+    rumConfig.freezeDurationMs = 0;
+    XCTAssertTrue(rumConfig.freezeDurationMs == 100);
+    rumConfig.freezeDurationMs = 5000;
+    XCTAssertTrue(rumConfig.freezeDurationMs == 5000);
+}
+- (void)testDiscardNew{
+    FTMobileConfig *config = [[FTMobileConfig alloc]initWithDatakitUrl:self.url];
+    config.autoSync = NO;
+    FTRumConfig *rumConfig = [[FTRumConfig alloc]initWithAppid:self.appid];
+    rumConfig.rumCacheLimitCount = 1000;
+    rumConfig.rumDiscardType = FTRUMDiscard;
+    [FTMobileAgent startWithConfigOptions:config];
+    [[FTTrackerEventDBTool sharedManager] deleteAllDatas];
+    [[FTMobileAgent sharedInstance] startRumWithConfigOptions:rumConfig];
+    XCTAssertTrue([[[FTTrackDataManager sharedInstance].dataCachePolicy valueForKey:@"rumCacheLimitCount"] intValue] == 10000);
+    XCTAssertTrue([[[FTTrackDataManager sharedInstance].dataCachePolicy valueForKey:@"rumDiscardNew"] boolValue] == YES);
+
+    [[FTTrackDataManager sharedInstance] setRUMCacheLimitCount:1000 discardNew:YES];
+    for (int i = 0; i<1001; i++) {
+        FTRecordModel *model = [FTRecordModel new];
+        model.op = FT_DATA_TYPE_RUM;
+        model.data = [NSString stringWithFormat:@"testData%d",i];
+        [[FTTrackDataManager sharedInstance] addTrackData:model type:FTAddDataRUM];
+
+    }
+    NSInteger newCount =  [[FTTrackerEventDBTool sharedManager] getDatasCountWithType:FT_DATA_TYPE_RUM];
+    FTRecordModel *model = [[[FTTrackerEventDBTool sharedManager] getFirstRecords:1 withType:FT_DATA_TYPE_RUM] firstObject];
+    XCTAssertTrue([model.data isEqualToString:@"testData0"]);
+    XCTAssertTrue(newCount == 1000);
+}
+
+- (void)testDiscardOldBulk{
+    FTMobileConfig *config = [[FTMobileConfig alloc]initWithDatakitUrl:self.url];
+    config.autoSync = NO;
+    FTRumConfig *rumConfig = [[FTRumConfig alloc]initWithAppid:self.appid];
+    rumConfig.rumCacheLimitCount = 1000;
+    rumConfig.rumDiscardType = FTRUMDiscardOldest;
+    [FTMobileAgent startWithConfigOptions:config];
+    [[FTTrackerEventDBTool sharedManager] deleteAllDatas];
+    [[FTMobileAgent sharedInstance] startRumWithConfigOptions:rumConfig];
+    XCTAssertTrue([[[FTTrackDataManager sharedInstance].dataCachePolicy valueForKey:@"rumCacheLimitCount"] intValue] == 10000);
+    XCTAssertTrue([[[FTTrackDataManager sharedInstance].dataCachePolicy valueForKey:@"rumDiscardNew"] boolValue] == NO);
+    [[FTTrackDataManager sharedInstance] setRUMCacheLimitCount:1000 discardNew:NO];
+
+    for (int i = 0; i<1001; i++) {
+        FTRecordModel *model = [FTRecordModel new];
+        model.op = FT_DATA_TYPE_RUM;
+        model.data = [NSString stringWithFormat:@"testData%d",i];
+        [[FTTrackDataManager sharedInstance] addTrackData:model type:FTAddDataRUM];
+
+    }
+    [[FTTrackDataManager sharedInstance] insertCacheToDB];
+    NSInteger newCount = [[FTTrackerEventDBTool sharedManager] getDatasCountWithType:FT_DATA_TYPE_RUM];
+    FTRecordModel *model = [[[FTTrackerEventDBTool sharedManager] getFirstRecords:1 withType:FT_DATA_TYPE_RUM] firstObject];
+    XCTAssertFalse([model.data isEqualToString:@"testData0"]);
+    XCTAssertTrue(newCount == 1000);
+}
+- (void)testAddPkgInfo{
+    FTMobileConfig *config = [[FTMobileConfig alloc]initWithDatakitUrl:self.url];
+    config.enableSDKDebugLog = YES;
+    config.autoSync = NO;
+    [config addPkgInfo:@"test_sdk" value:@"1.0.0"];
+    [FTMobileAgent startWithConfigOptions:config];
+    FTRumConfig *rumConfig = [[FTRumConfig alloc]initWithAppid:self.appid];
+    [FTMobileAgent startWithConfigOptions:config];
+    [[FTMobileAgent sharedInstance] startRumWithConfigOptions:rumConfig];
+    [FTModelHelper addActionWithContext:nil];
+    [[FTGlobalRumManager sharedInstance].rumManager syncProcess];
+    NSArray *newArray = [[FTTrackerEventDBTool sharedManager] getFirstRecords:10 withType:FT_DATA_TYPE_RUM];
+    XCTAssertTrue(newArray.count >= 1);
+    __block BOOL hasActionData = NO;
+    [FTModelHelper resolveModelArray:newArray callBack:^(NSString * _Nonnull source, NSDictionary * _Nonnull tags, NSDictionary * _Nonnull fields, BOOL * _Nonnull stop) {
+        XCTAssertTrue([tags[FT_SDK_PKG_INFO] isEqualToDictionary:@{@"test_sdk":@"1.0.0"}]);
+        hasActionData = YES;
+        *stop = YES;
+    }];
+    XCTAssertTrue(hasActionData);
+}
+- (void)testViewTrackingStrategy_nil{
+    FTMobileConfig *config = [[FTMobileConfig alloc]initWithDatakitUrl:self.url];
+    config.enableSDKDebugLog = YES;
+    config.autoSync = NO;
+    [FTMobileAgent startWithConfigOptions:config];
+    FTRumConfig *rumConfig = [[FTRumConfig alloc]initWithAppid:self.appid];
+    rumConfig.enableTraceUserView = YES;
+    [FTMobileAgent startWithConfigOptions:config];
+    [[FTMobileAgent sharedInstance] startRumWithConfigOptions:rumConfig];
+    
+    XCTAssertTrue([FTAutoTrackHandler sharedInstance].uiKitViewTrackingHandler != nil);
+    XCTAssertTrue([[FTAutoTrackHandler sharedInstance].uiKitViewTrackingHandler isKindOfClass:FTDefaultUIKitViewTrackingHandler.class]);
+}
+- (void)testViewTrackingStrategy_disableTraceUserView{
+    FTMobileConfig *config = [[FTMobileConfig alloc]initWithDatakitUrl:self.url];
+    config.enableSDKDebugLog = YES;
+    config.autoSync = NO;
+    [FTMobileAgent startWithConfigOptions:config];
+    FTRumConfig *rumConfig = [[FTRumConfig alloc]initWithAppid:self.appid];
+    rumConfig.enableTraceUserView = NO;
+    __block BOOL noView = YES;
+    TestTrackingHandler *handler = [TestTrackingHandler new];
+    handler.viewTrackingBlock = ^FTRUMView * _Nullable(UIViewController * _Nonnull viewController) {
+        FTRUMView *rumView = [[FTRUMView alloc]initWithViewName:[NSString stringWithFormat:@"test:%@",NSStringFromClass(viewController.class)]];
+        noView = NO;
+        return rumView;
+    };
+    rumConfig.viewTrackingHandler = handler;
+    [FTMobileAgent startWithConfigOptions:config];
+    [[FTMobileAgent sharedInstance] startRumWithConfigOptions:rumConfig];
+   
+    NSInteger count = [[FTTrackerEventDBTool sharedManager] getDatasCount];
+
+    UIViewController *vc = [[UIViewController alloc]init];
+
+    [[FTAutoTrackHandler sharedInstance].viewControllerHandler notify_viewDidAppear:vc animated:YES];
+    
+    XCTAssertTrue(noView);
+    [[FTGlobalRumManager sharedInstance].rumManager syncProcess];
+    NSInteger newCount = [[FTTrackerEventDBTool sharedManager] getDatasCount];
+    
+    XCTAssertTrue(count == newCount);
+}
+- (void)testViewTrackingStrategy_enableTraceUserView{
+    FTMobileConfig *config = [[FTMobileConfig alloc]initWithDatakitUrl:self.url];
+    config.enableSDKDebugLog = YES;
+    config.autoSync = NO;
+    [FTMobileAgent startWithConfigOptions:config];
+    FTRumConfig *rumConfig = [[FTRumConfig alloc]initWithAppid:self.appid];
+    rumConfig.enableTraceUserView = YES;
+    __block BOOL noView = YES;
+    TestTrackingHandler *handler = [TestTrackingHandler new];
+    handler.viewTrackingBlock = ^FTRUMView * _Nullable(UIViewController * _Nonnull viewController) {
+        FTRUMView *rumView = [[FTRUMView alloc]initWithViewName:[NSString stringWithFormat:@"test:%@",NSStringFromClass(viewController.class)] property:@{@"test_strategy":@"enableTraceUserView"}];
+        noView = NO;
+        return rumView;
+    };
+    rumConfig.viewTrackingHandler = handler;
+    [FTMobileAgent startWithConfigOptions:config];
+    [[FTMobileAgent sharedInstance] startRumWithConfigOptions:rumConfig];
+   
+    NSInteger count = [[FTTrackerEventDBTool sharedManager] getDatasCount];
+    UIViewController *vc = [[UIViewController alloc]init];
+
+    [[FTAutoTrackHandler sharedInstance].viewControllerHandler notify_viewDidAppear:vc animated:YES];
+    
+    XCTAssertTrue(noView == NO);
+    
+    [[FTGlobalRumManager sharedInstance].rumManager syncProcess];
+    NSArray *datas = [[FTTrackerEventDBTool sharedManager] getFirstRecords:50 withType:FT_DATA_TYPE_RUM];
+    
+    XCTAssertTrue(datas.count > count);
+    
+    [FTModelHelper resolveModelArray:datas callBack:^(NSString * _Nonnull source, NSDictionary * _Nonnull tags, NSDictionary * _Nonnull fields, BOOL * _Nonnull stop) {
+        if ([source isEqualToString:FT_RUM_SOURCE_VIEW]) {
+            NSString *viewName = tags[FT_KEY_VIEW_NAME];
+            XCTAssertTrue([viewName isEqualToString:@"test:UIViewController"]);
+            XCTAssertTrue([fields[@"test_strategy"] isEqualToString:@"enableTraceUserView"]);
+        }
+    }];
+}
+- (void)testViewTrackingStrategy_abandoningViewStop{
+    FTMobileConfig *config = [[FTMobileConfig alloc]initWithDatakitUrl:self.url];
+    config.enableSDKDebugLog = YES;
+    config.autoSync = NO;
+    [FTMobileAgent startWithConfigOptions:config];
+    FTRumConfig *rumConfig = [[FTRumConfig alloc]initWithAppid:self.appid];
+    rumConfig.enableTraceUserView = YES;
+    __block BOOL noView = YES;
+    TestTrackingHandler *handler = [TestTrackingHandler new];
+    handler.viewTrackingBlock = ^FTRUMView * _Nullable(UIViewController * _Nonnull viewController) {
+        if ([viewController isKindOfClass:ModalViewController.class]) {
+            return nil;
+        }
+        FTRUMView *rumView = [[FTRUMView alloc]initWithViewName:[NSString stringWithFormat:@"test:%@",NSStringFromClass(viewController.class)] property:@{@"test_strategy":@"abandoningViewStop"}];
+        noView = NO;
+        return rumView;
+    };
+    rumConfig.viewTrackingHandler = handler;
+    [FTMobileAgent startWithConfigOptions:config];
+    [[FTMobileAgent sharedInstance] startRumWithConfigOptions:rumConfig];
+   
+    NSInteger count = [[FTTrackerEventDBTool sharedManager] getDatasCount];
+    UIViewController *vc = [[UIViewController alloc]init];
+    ModalViewController *abandonVC = [[ModalViewController alloc]init];
+    
+    [[FTAutoTrackHandler sharedInstance].viewControllerHandler notify_viewDidAppear:vc animated:YES];
+    [[FTAutoTrackHandler sharedInstance].viewControllerHandler notify_viewDidAppear:abandonVC animated:YES];
+
+    XCTAssertTrue(noView == NO);
+    
+    [[FTAutoTrackHandler sharedInstance].viewControllerHandler notify_viewDidDisappear:abandonVC animated:YES];
+    
+    [[FTGlobalRumManager sharedInstance].rumManager syncProcess];
+    NSArray *datas = [[FTTrackerEventDBTool sharedManager] getFirstRecords:50 withType:FT_DATA_TYPE_RUM];
+    
+    XCTAssertTrue(datas.count > count);
+    
+    __block int viewUpdateTime = 0;
+    [FTModelHelper resolveModelArray:datas callBack:^(NSString * _Nonnull source, NSDictionary * _Nonnull tags, NSDictionary * _Nonnull fields, BOOL * _Nonnull stop) {
+        if ([source isEqualToString:FT_RUM_SOURCE_VIEW]) {
+            NSString *viewName = tags[FT_KEY_VIEW_NAME];
+            viewUpdateTime = [fields[FT_KEY_VIEW_UPDATE_TIME] intValue];
+            XCTAssertTrue([viewName isEqualToString:@"test:UIViewController"]);
+            XCTAssertTrue([fields[@"test_strategy"] isEqualToString:@"abandoningViewStop"]);
+        }
+    }];
+    
+    XCTAssertTrue(viewUpdateTime == 1);
+}
+- (void)testViewTrackingStrategy_return_nil{
+    FTMobileConfig *config = [[FTMobileConfig alloc]initWithDatakitUrl:self.url];
+    config.enableSDKDebugLog = YES;
+    config.autoSync = NO;
+    [FTMobileAgent startWithConfigOptions:config];
+    FTRumConfig *rumConfig = [[FTRumConfig alloc]initWithAppid:self.appid];
+    rumConfig.enableTraceUserView = YES;
+    TestTrackingHandler *handler = [TestTrackingHandler new];
+    handler.viewTrackingBlock =  ^FTRUMView * _Nullable(UIViewController * _Nonnull viewController) {
+        return nil;
+    };
+    rumConfig.viewTrackingHandler = handler;
+    [FTMobileAgent startWithConfigOptions:config];
+    [[FTMobileAgent sharedInstance] startRumWithConfigOptions:rumConfig];
+    
+    UIViewController *vc = [[UIViewController alloc]init];
+    NSInteger count = [[FTTrackerEventDBTool sharedManager] getDatasCount];
+    
+    [[FTAutoTrackHandler sharedInstance].viewControllerHandler notify_viewDidAppear:vc animated:YES];
+    
+    [[FTGlobalRumManager sharedInstance].rumManager syncProcess];
+    NSInteger newCount = [[FTTrackerEventDBTool sharedManager] getDatasCount];
+    
+    XCTAssertTrue(count == newCount);
+    handler = nil;
+    
+    [[FTAutoTrackHandler sharedInstance].viewControllerHandler notify_viewDidAppear:vc animated:YES];
+
+}
+
+- (void)testViewTrackingStrategy_rumView_isUntrackedModal{
+    FTSDKConfig *config = [[FTSDKConfig alloc]initWithDatakitUrl:self.url];
+    config.enableSDKDebugLog = YES;
+    config.autoSync = NO;
+    [FTMobileAgent startWithConfigOptions:config];
+    FTRumConfig *rumConfig = [[FTRumConfig alloc]initWithAppid:self.appid];
+    rumConfig.enableTraceUserView = YES;
+    TestTrackingHandler *handler = [TestTrackingHandler new];
+    handler.viewTrackingBlock = ^FTRUMView * _Nullable(UIViewController * _Nonnull viewController) {
+        FTRUMView *rumView = [[FTRUMView alloc]initWithViewName:[NSString stringWithFormat:@"test:%@",NSStringFromClass(viewController.class)]];
+        rumView.isUntrackedModal = [viewController isKindOfClass:ModalViewController.class];
+        return rumView;
+    };
+    rumConfig.viewTrackingHandler = handler;
+    [FTMobileAgent startWithConfigOptions:config];
+    [[FTMobileAgent sharedInstance] startRumWithConfigOptions:rumConfig];
+    
+    UIViewController *vc = [[UIViewController alloc]init];
+    NSInteger count = [[FTTrackerEventDBTool sharedManager] getDatasCount];
+    
+    ModalViewController *modalVC = [[ModalViewController alloc]init];
+
+    [[FTAutoTrackHandler sharedInstance].viewControllerHandler notify_viewDidAppear:vc animated:YES];
+    
+    [[FTAutoTrackHandler sharedInstance].viewControllerHandler notify_viewDidAppear:modalVC animated:YES];
+    [self waitForTimeInterval:0.1];
+    [[FTAutoTrackHandler sharedInstance].viewControllerHandler notify_viewDidDisappear:modalVC animated:YES];
+    
+    [[FTGlobalRumManager sharedInstance].rumManager syncProcess];
+    NSArray *datas =[[FTTrackerEventDBTool sharedManager] getFirstRecords:50 withType:FT_DATA_TYPE_RUM];
+    XCTAssertTrue(datas.count > count);
+    NSMutableSet *set = [[NSMutableSet alloc]init];
+    [FTModelHelper resolveModelArray:datas callBack:^(NSString * _Nonnull source, NSDictionary * _Nonnull tags, NSDictionary * _Nonnull fields, BOOL * _Nonnull stop) {
+        if ([source isEqualToString:FT_RUM_SOURCE_VIEW]) {
+            [set addObject:tags[FT_KEY_VIEW_ID]];
+            XCTAssertTrue([tags[FT_KEY_VIEW_NAME] isEqualToString:@"test:UIViewController"]);
+        }
+    }];
+    XCTAssertTrue(set.count == 2);
+}
+#if TARGET_OS_IOS || TARGET_OS_TV
+- (void)testSwiftUIRUMViewTracking_startAndStop{
+    AddRumDatasHandlerMock *mock = [AddRumDatasHandlerMock new];
+    [[FTAutoTrackHandler sharedInstance] startWithTrackView:YES
+                                                     action:NO
+                                      addRumDatasDelegate:mock
+                                              viewHandler:nil
+                                           swiftUIViewHandler:nil
+                                            actionHandler:nil
+                                           displayMonitor:nil];
+
+    NSDictionary *property = @{@"source": @"swiftui"};
+    [[FTAutoTrackHandler sharedInstance] notifyOnAppearWithIdentity:@"swiftui-home"
+                                                               name:@"Home"
+                                                           property:property
+                                                           loadTime:@0];
+    [[FTAutoTrackHandler sharedInstance] notifyOnDisappearWithIdentity:@"swiftui-home"];
+
+    XCTAssertEqual(mock.viewStartCount, 1);
+    XCTAssertEqual(mock.viewStopCount, 1);
+    XCTAssertEqualObjects(mock.lastStartViewName, @"Home");
+    XCTAssertEqualObjects(mock.lastStartProperty, property);
+    XCTAssertEqual(mock.array.count, 2);
+    XCTAssertEqualObjects(mock.array.firstObject.viewId, mock.array.lastObject.viewId);
+}
+
+- (void)testSwiftUIRUMViewTracking_ignoresRepeatedAppearForSameIdentity{
+    AddRumDatasHandlerMock *mock = [AddRumDatasHandlerMock new];
+    [[FTAutoTrackHandler sharedInstance] startWithTrackView:YES
+                                                     action:NO
+                                      addRumDatasDelegate:mock
+                                              viewHandler:nil
+                                           swiftUIViewHandler:nil
+                                            actionHandler:nil
+                                           displayMonitor:nil];
+
+    [[FTAutoTrackHandler sharedInstance] notifyOnAppearWithIdentity:@"swiftui-home"
+                                                               name:@"Home"
+                                                           property:nil
+                                                           loadTime:@0];
+    [[FTAutoTrackHandler sharedInstance] notifyOnAppearWithIdentity:@"swiftui-home"
+                                                               name:@"Home"
+                                                           property:nil
+                                                           loadTime:@0];
+
+    XCTAssertEqual(mock.viewStartCount, 1);
+    XCTAssertEqual(mock.viewStopCount, 0);
+    XCTAssertEqual(mock.array.count, 1);
+}
+#endif
+
+#if TARGET_OS_IOS
+- (void)testSwiftUIManualActionTracking_startAction{
+    AddRumDatasHandlerMock *mock = [AddRumDatasHandlerMock new];
+    NSDictionary *property = @{@"source": @"swiftui_action"};
+    [[FTAutoTrackHandler sharedInstance] startWithTrackView:NO
+                                                     action:NO
+                                      addRumDatasDelegate:mock
+                                              viewHandler:nil
+                                           swiftUIViewHandler:nil
+                                            actionHandler:nil
+                                           displayMonitor:nil];
+
+    [[FTAutoTrackHandler sharedInstance] notify_swiftUIActionWithName:@"swiftui_tap"
+                                                             property:property];
+
+    XCTAssertEqual(mock.actionStartCount, 1);
+    XCTAssertEqualObjects(mock.lastActionName, @"swiftui_tap");
+    XCTAssertEqualObjects(mock.lastActionType, FT_KEY_ACTION_TYPE_CLICK);
+    XCTAssertEqualObjects(mock.lastActionProperty, property);
+}
+#endif
+
+#if TARGET_OS_IOS
+- (void)testAutoTrackEventResolver_returnsNilForInvalidTouchEvents {
+    UIButton *button = [[UIButton alloc]initWithFrame:CGRectMake(0, 0, 100, 40)];
+    UITouchMock *touch = [[UITouchMock alloc]initWithPhase:UITouchPhaseMoved view:button location:CGPointMake(20, 10)];
+    UITouchMock *endedTouch = [[UITouchMock alloc]initWithPhase:UITouchPhaseEnded view:button location:CGPointMake(20, 10)];
+    UITouchMock *secondTouch = [[UITouchMock alloc]initWithPhase:UITouchPhaseEnded view:button location:CGPointMake(30, 10)];
+    UIView *plainView = [[UIView alloc]initWithFrame:CGRectMake(0, 0, 100, 40)];
+    UITouchMock *plainTouch = [[UITouchMock alloc]initWithPhase:UITouchPhaseEnded view:plainView location:CGPointMake(20, 10)];
+    NSSet<UITouch *> *multiTouches = [NSSet setWithArray:@[endedTouch, secondTouch]];
+
+    XCTAssertNil([FTAutoTrackEventResolver actionEventFromTouchEvent:[UIEvent mockWithTouches:nil]]);
+    XCTAssertNil([FTAutoTrackEventResolver actionEventFromTouchEvent:[UIEvent mockWithTouches:multiTouches]]);
+    XCTAssertNil([FTAutoTrackEventResolver actionEventFromTouchEvent:[UIEvent mockWithTouch:touch]]);
+    XCTAssertNil([FTAutoTrackEventResolver actionEventFromTouchEvent:[UIEvent mockWithTouch:plainTouch]]);
+}
+
+- (void)testAutoTrackEventResolver_returnsNilForKeyboardWindow {
+    FTKeyboardWindowForAutoTrackTest *keyboardWindow = [[FTKeyboardWindowForAutoTrackTest alloc]initWithFrame:CGRectMake(0, 0, 100, 40)];
+    UIButton *button = [[UIButton alloc]initWithFrame:keyboardWindow.bounds];
+    [keyboardWindow addSubview:button];
+    UITouchMock *touch = [[UITouchMock alloc]initWithPhase:UITouchPhaseEnded view:button location:CGPointMake(20, 10)];
+
+    XCTAssertNil([FTAutoTrackEventResolver actionEventFromTouchEvent:[UIEvent mockWithTouch:touch]]);
+}
+
+- (void)testAutoTrackEventResolver_buttonLabelTouchUsesButtonActionTarget {
+    UIButton *button = [[UIButton alloc]initWithFrame:CGRectMake(0, 0, 100, 40)];
+    UILabel *label = [[UILabel alloc]initWithFrame:CGRectMake(10, 5, 80, 20)];
+    [button addSubview:label];
+    UITouchMock *touch = [[UITouchMock alloc]initWithPhase:UITouchPhaseEnded view:label location:CGPointMake(12, 8)];
+
+    FTAutoTrackActionEvent *actionEvent = [FTAutoTrackEventResolver actionEventFromTouchEvent:[UIEvent mockWithTouch:touch]];
+
+    XCTAssertEqual(actionEvent.actionTargetView, button);
+    XCTAssertEqual(actionEvent.heatmapTargetView, label);
+    XCTAssertTrue(CGPointEqualToPoint(actionEvent.locationResolver(label), CGPointMake(12, 8)));
+    XCTAssertTrue(CGPointEqualToPoint(actionEvent.locationResolver(button), CGPointMake(22, 13)));
+}
+
+- (void)testAutoTrackEventResolver_cellSubviewTouchUsesCellActionTarget {
+    UITableViewCell *cell = [[UITableViewCell alloc]initWithStyle:UITableViewCellStyleDefault reuseIdentifier:nil];
+    cell.frame = CGRectMake(0, 0, 320, 44);
+    cell.contentView.frame = cell.bounds;
+    UILabel *label = [[UILabel alloc]initWithFrame:CGRectMake(15, 10, 100, 20)];
+    [cell.contentView addSubview:label];
+    UITouchMock *touch = [[UITouchMock alloc]initWithPhase:UITouchPhaseEnded view:label location:CGPointMake(5, 6)];
+
+    FTAutoTrackActionEvent *actionEvent = [FTAutoTrackEventResolver actionEventFromTouchEvent:[UIEvent mockWithTouch:touch]];
+
+    XCTAssertEqual(actionEvent.actionTargetView, cell);
+    XCTAssertEqual(actionEvent.heatmapTargetView, label);
+    XCTAssertTrue(CGPointEqualToPoint(actionEvent.locationResolver(cell.contentView), CGPointMake(20, 16)));
+}
+
+- (void)testHeatmapResolver_disabledHeatmapSkipsLocationResolver {
+    UIButton *button = [[UIButton alloc]initWithFrame:CGRectMake(0, 0, 100, 40)];
+    TestHeatmapIdentifierRegistry *registry = [[TestHeatmapIdentifierRegistry alloc]initWithIdentifiers:@{}];
+    FTAutoTrackHeatmapResolver *resolver = FTMakeHeatmapResolver(registry);
+    __block NSInteger locationResolveCount = 0;
+    FTHeatmapLocationResolver locationResolver = ^CGPoint(UIView *targetView) {
+        locationResolveCount++;
+        return CGPointMake(20, 10);
+    };
+
+    FTHeatmapAttributes *attributes = [resolver heatmapAttributesForActionTargetView:button heatmapTargetView:button locationResolver:locationResolver];
+
+    XCTAssertNil(attributes);
+    XCTAssertEqual(locationResolveCount, 0);
+}
+
+- (void)testHeatmapResolver_doesNotRetainRegistry {
+    __weak TestHeatmapIdentifierRegistry *weakRegistry = nil;
+    FTAutoTrackHeatmapResolver *resolver = nil;
+    @autoreleasepool {
+        TestHeatmapIdentifierRegistry *registry = [[TestHeatmapIdentifierRegistry alloc]initWithIdentifiers:@{}];
+        weakRegistry = registry;
+        resolver = [[FTAutoTrackHeatmapResolver alloc]initWithRegistry:registry];
+        XCTAssertNotNil(resolver);
+        XCTAssertNotNil(weakRegistry);
+    }
+
+    XCTAssertNotNil(resolver);
+    XCTAssertNil(weakRegistry);
+}
+
+- (void)testHeatmapResolver_enabledEmptyRegistryReturnsNil {
+    UIButton *button = [[UIButton alloc]initWithFrame:CGRectMake(0, 0, 100, 40)];
+    TestHeatmapIdentifierRegistry *registry = [[TestHeatmapIdentifierRegistry alloc]initWithIdentifiers:@{}];
+    registry.enableHeatmap = YES;
+    FTAutoTrackHeatmapResolver *resolver = FTMakeHeatmapResolver(registry);
+    __block NSInteger locationResolveCount = 0;
+    FTHeatmapLocationResolver locationResolver = ^CGPoint(UIView *targetView) {
+        locationResolveCount++;
+        return CGPointMake(20, 10);
+    };
+
+    FTHeatmapAttributes *attributes = [resolver heatmapAttributesForActionTargetView:button heatmapTargetView:button locationResolver:locationResolver];
+
+    XCTAssertNil(attributes);
+    XCTAssertGreaterThan(locationResolveCount, 0);
+}
+
+- (void)testHeatmapResolver_directIdentifierWins {
+    UIButton *button = [[UIButton alloc]initWithFrame:CGRectMake(0, 0, 100, 40)];
+    FTHeatmapIdentifier *buttonIdentifier = [[FTHeatmapIdentifier alloc]initWithRawValue:@"button-id"];
+    TestHeatmapIdentifierRegistry *registry = [[TestHeatmapIdentifierRegistry alloc]initWithIdentifiers:@{
+        [FTHeatmapIdentifier objectIdentifierForObject:button]: buttonIdentifier,
+    }];
+    registry.enableHeatmap = YES;
+    FTAutoTrackHeatmapResolver *resolver = FTMakeHeatmapResolver(registry);
+
+    FTHeatmapAttributes *attributes = [resolver heatmapAttributesForActionTargetView:button
+                                                                   heatmapTargetView:button
+                                                                    locationResolver:^CGPoint(UIView *targetView) {
+        return CGPointMake(20, 10);
+    }];
+
+    XCTAssertEqualObjects(attributes.targetPermanentID, @"button-id");
+    XCTAssertEqual(attributes.targetWidth, 100);
+    XCTAssertEqual(attributes.targetHeight, 40);
+    XCTAssertEqual(attributes.positionX, 20);
+    XCTAssertEqual(attributes.positionY, 10);
+}
+
+- (void)testActionPublisher_actionTrackingHandlerNilSkipsActionAndHeatmap {
+    AddRumDatasHandlerMock *mock = [AddRumDatasHandlerMock new];
+    TestTrackingHandler *handler = [TestTrackingHandler new];
+    UIButton *button = [[UIButton alloc]initWithFrame:CGRectMake(0, 0, 100, 40)];
+    FTHeatmapIdentifier *buttonIdentifier = [[FTHeatmapIdentifier alloc]initWithRawValue:@"button-id"];
+    TestHeatmapIdentifierRegistry *registry = [[TestHeatmapIdentifierRegistry alloc]initWithIdentifiers:@{
+        [FTHeatmapIdentifier objectIdentifierForObject:button]: buttonIdentifier,
+    }];
+    registry.enableHeatmap = YES;
+    FTAutoTrackActionPublisher *publisher = [[FTAutoTrackActionPublisher alloc]initWithActionTrackingHandler:handler
+                                                                                         addRumDatasDelegate:mock
+                                                                                             heatmapResolver:FTMakeHeatmapResolver(registry)];
+    handler.actionTrackingBlock = ^FTRUMAction * _Nullable(UIView *view) {
+        return nil;
+    };
+    __block NSInteger locationResolveCount = 0;
+    FTHeatmapLocationResolver locationResolver = ^CGPoint(UIView *targetView) {
+        locationResolveCount++;
+        return CGPointMake(20, 10);
+    };
+
+    [publisher publishUIKitActionWithTargetView:button heatmapTargetView:button locationResolver:locationResolver];
+
+    XCTAssertEqual(mock.actionStartCount, 0);
+    XCTAssertNil(mock.lastHeatmapAttributes);
+    XCTAssertEqual(locationResolveCount, 0);
+}
+
+- (void)testActionPublisher_publishesUIKitActionWithHeatmap {
+    AddRumDatasHandlerMock *mock = [AddRumDatasHandlerMock new];
+    TestTrackingHandler *handler = [TestTrackingHandler new];
+    UIButton *button = [[UIButton alloc]initWithFrame:CGRectMake(0, 0, 100, 40)];
+    UILabel *label = [[UILabel alloc]initWithFrame:CGRectMake(10, 5, 80, 20)];
+    [button addSubview:label];
+    FTHeatmapIdentifier *labelIdentifier = [[FTHeatmapIdentifier alloc]initWithRawValue:@"label-id"];
+    TestHeatmapIdentifierRegistry *registry = [[TestHeatmapIdentifierRegistry alloc]initWithIdentifiers:@{
+        [FTHeatmapIdentifier objectIdentifierForObject:label]: labelIdentifier,
+    }];
+    registry.enableHeatmap = YES;
+    FTAutoTrackActionPublisher *publisher = [[FTAutoTrackActionPublisher alloc]initWithActionTrackingHandler:handler
+                                                                                         addRumDatasDelegate:mock
+                                                                                             heatmapResolver:FTMakeHeatmapResolver(registry)];
+    handler.actionTrackingBlock = ^FTRUMAction * _Nullable(UIView *view) {
+        return [[FTRUMAction alloc]initWithActionName:@"button_tap" property:@{@"source": @"publisher"}];
+    };
+    FTHeatmapLocationResolver locationResolver = ^CGPoint(UIView *targetView) {
+        return [button convertPoint:CGPointMake(20, 10) toView:targetView];
+    };
+
+    [publisher publishUIKitActionWithTargetView:button heatmapTargetView:button locationResolver:locationResolver];
+
+    XCTAssertEqual(mock.actionStartCount, 1);
+    XCTAssertEqualObjects(mock.lastActionName, @"button_tap");
+    XCTAssertEqualObjects(mock.lastActionProperty[@"source"], @"publisher");
+    XCTAssertEqualObjects(mock.lastHeatmapAttributes.targetPermanentID, @"label-id");
+    XCTAssertEqual(mock.lastHeatmapAttributes.positionX, 10);
+    XCTAssertEqual(mock.lastHeatmapAttributes.positionY, 5);
+}
+
+- (void)testActionPublisher_publishesUIKitActionWithoutHeatmap {
+    AddRumDatasHandlerMock *mock = [AddRumDatasHandlerMock new];
+    TestTrackingHandler *handler = [TestTrackingHandler new];
+    UIButton *button = [[UIButton alloc]initWithFrame:CGRectMake(0, 0, 100, 40)];
+    TestHeatmapIdentifierRegistry *registry = [[TestHeatmapIdentifierRegistry alloc]initWithIdentifiers:@{}];
+    FTAutoTrackActionPublisher *publisher = [[FTAutoTrackActionPublisher alloc]initWithActionTrackingHandler:handler
+                                                                                         addRumDatasDelegate:mock
+                                                                                             heatmapResolver:FTMakeHeatmapResolver(registry)];
+    handler.actionTrackingBlock = ^FTRUMAction * _Nullable(UIView *view) {
+        return [[FTRUMAction alloc]initWithActionName:@"button_tap"];
+    };
+
+    [publisher publishUIKitActionWithTargetView:button heatmapTargetView:button locationResolver:nil];
+
+    XCTAssertEqual(mock.actionStartCount, 1);
+    XCTAssertEqualObjects(mock.lastActionName, @"button_tap");
+    XCTAssertNil(mock.lastHeatmapAttributes);
+}
+
+- (void)testActionPublisher_ignoresEmptySwiftUIActionName {
+    AddRumDatasHandlerMock *mock = [AddRumDatasHandlerMock new];
+    FTAutoTrackActionPublisher *publisher = [[FTAutoTrackActionPublisher alloc]initWithActionTrackingHandler:nil
+                                                                                         addRumDatasDelegate:mock
+                                                                                             heatmapResolver:[FTAutoTrackHeatmapResolver new]];
+
+    [publisher publishSwiftUIActionWithName:@"" property:@{@"source": @"swiftui"}];
+
+    XCTAssertEqual(mock.actionStartCount, 0);
+}
+
+- (void)testHeatmapAttributes_fallsBackToRegisteredSubviewUnderActionTarget {
+    AddRumDatasHandlerMock *mock = [AddRumDatasHandlerMock new];
+    TestTrackingHandler *handler = [TestTrackingHandler new];
+    UIButton *button = [[UIButton alloc]initWithFrame:CGRectMake(0, 0, 100, 40)];
+    UILabel *label = [[UILabel alloc]initWithFrame:CGRectMake(10, 5, 80, 20)];
+    [button addSubview:label];
+    FTHeatmapIdentifier *labelIdentifier = [[FTHeatmapIdentifier alloc]initWithRawValue:@"label-id"];
+    TestHeatmapIdentifierRegistry *registry = [[TestHeatmapIdentifierRegistry alloc]initWithIdentifiers:@{
+        [FTHeatmapIdentifier objectIdentifierForObject:label]: labelIdentifier,
+    }];
+    registry.enableHeatmap = YES;
+    __block UIView *actionTargetView = nil;
+    handler.actionTrackingBlock = ^FTRUMAction * _Nullable(UIView *view) {
+        actionTargetView = view;
+        return [[FTRUMAction alloc]initWithActionName:@"button_tap"];
+    };
+    FTStartAutoTrackActionTest(mock, handler, registry);
+
+    UITouchMock *touch = [[UITouchMock alloc]initWithPhase:UITouchPhaseEnded view:button location:CGPointMake(20, 10)];
+    [[UIApplication sharedApplication] ftTrackTouchEvent:[UIEvent mockWithTouch:touch]];
+
+    XCTAssertEqual(actionTargetView, button);
+    XCTAssertEqualObjects(mock.lastHeatmapAttributes.targetPermanentID, @"label-id");
+    XCTAssertEqual(mock.lastHeatmapAttributes.targetWidth, 80);
+    XCTAssertEqual(mock.lastHeatmapAttributes.targetHeight, 20);
+    XCTAssertEqual(mock.lastHeatmapAttributes.positionX, 10);
+    XCTAssertEqual(mock.lastHeatmapAttributes.positionY, 5);
+}
+
+- (void)testHeatmapAttributes_usesTouchViewIdentifierWhenSubviewIsTouched {
+    AddRumDatasHandlerMock *mock = [AddRumDatasHandlerMock new];
+    TestTrackingHandler *handler = [TestTrackingHandler new];
+    UIButton *button = [[UIButton alloc]initWithFrame:CGRectMake(0, 0, 100, 40)];
+    UILabel *label = [[UILabel alloc]initWithFrame:CGRectMake(10, 5, 80, 20)];
+    [button addSubview:label];
+    FTHeatmapIdentifier *labelIdentifier = [[FTHeatmapIdentifier alloc]initWithRawValue:@"label-id"];
+    TestHeatmapIdentifierRegistry *registry = [[TestHeatmapIdentifierRegistry alloc]initWithIdentifiers:@{
+        [FTHeatmapIdentifier objectIdentifierForObject:label]: labelIdentifier,
+    }];
+    registry.enableHeatmap = YES;
+    __block UIView *actionTargetView = nil;
+    handler.actionTrackingBlock = ^FTRUMAction * _Nullable(UIView *view) {
+        actionTargetView = view;
+        return [[FTRUMAction alloc]initWithActionName:@"button_tap"];
+    };
+    FTStartAutoTrackActionTest(mock, handler, registry);
+
+    UITouchMock *touch = [[UITouchMock alloc]initWithPhase:UITouchPhaseEnded view:label location:CGPointMake(10, 5)];
+    [[UIApplication sharedApplication] ftTrackTouchEvent:[UIEvent mockWithTouch:touch]];
+
+    XCTAssertEqual(actionTargetView, button);
+    XCTAssertEqualObjects(mock.lastHeatmapAttributes.targetPermanentID, @"label-id");
+    XCTAssertEqual(mock.lastHeatmapAttributes.targetWidth, 80);
+    XCTAssertEqual(mock.lastHeatmapAttributes.targetHeight, 20);
+    XCTAssertEqual(mock.lastHeatmapAttributes.positionX, 10);
+    XCTAssertEqual(mock.lastHeatmapAttributes.positionY, 5);
+}
+
+- (void)testHeatmapAttributes_fallsBackToRegisteredUIControlActionTarget {
+    AddRumDatasHandlerMock *mock = [AddRumDatasHandlerMock new];
+    TestTrackingHandler *handler = [TestTrackingHandler new];
+    UISwitch *switchView = [[UISwitch alloc]initWithFrame:CGRectMake(0, 0, 51, 31)];
+    UIView *internalView = [[UIView alloc]initWithFrame:CGRectMake(0, 0, 51, 31)];
+    [switchView addSubview:internalView];
+    FTHeatmapIdentifier *switchIdentifier = [[FTHeatmapIdentifier alloc]initWithRawValue:@"switch-id"];
+    TestHeatmapIdentifierRegistry *registry = [[TestHeatmapIdentifierRegistry alloc]initWithIdentifiers:@{
+        [FTHeatmapIdentifier objectIdentifierForObject:switchView]: switchIdentifier,
+    }];
+    registry.enableHeatmap = YES;
+    __block UIView *actionTargetView = nil;
+    handler.actionTrackingBlock = ^FTRUMAction * _Nullable(UIView *view) {
+        actionTargetView = view;
+        return [[FTRUMAction alloc]initWithActionName:@"switch_tap"];
+    };
+    FTStartAutoTrackActionTest(mock, handler, registry);
+
+    UITouchMock *touch = [[UITouchMock alloc]initWithPhase:UITouchPhaseEnded view:internalView location:CGPointMake(12, 8)];
+    [[UIApplication sharedApplication] ftTrackTouchEvent:[UIEvent mockWithTouch:touch]];
+
+    XCTAssertEqual(actionTargetView, switchView);
+    XCTAssertEqualObjects(mock.lastHeatmapAttributes.targetPermanentID, @"switch-id");
+    XCTAssertEqual(mock.lastHeatmapAttributes.targetWidth, 51);
+    XCTAssertEqual(mock.lastHeatmapAttributes.targetHeight, 31);
+    XCTAssertEqual(mock.lastHeatmapAttributes.positionX, 12);
+    XCTAssertEqual(mock.lastHeatmapAttributes.positionY, 8);
+}
+
+- (void)testHeatmapAttributes_fallsBackToTableCellLabelAtTouchPoint {
+    AddRumDatasHandlerMock *mock = [AddRumDatasHandlerMock new];
+    TestTrackingHandler *handler = [TestTrackingHandler new];
+    UITableViewCell *cell = [[UITableViewCell alloc]initWithStyle:UITableViewCellStyleDefault reuseIdentifier:nil];
+    cell.frame = CGRectMake(0, 0, 320, 44);
+    cell.contentView.frame = cell.bounds;
+    UILabel *label = cell.textLabel;
+    label.text = @"Title";
+    label.frame = CGRectMake(15, 10, 100, 20);
+    FTHeatmapIdentifier *labelIdentifier = [[FTHeatmapIdentifier alloc]initWithRawValue:@"cell-label-id"];
+    TestHeatmapIdentifierRegistry *registry = [[TestHeatmapIdentifierRegistry alloc]initWithIdentifiers:@{
+        [FTHeatmapIdentifier objectIdentifierForObject:label]: labelIdentifier,
+    }];
+    registry.enableHeatmap = YES;
+    __block UIView *actionTargetView = nil;
+    handler.actionTrackingBlock = ^FTRUMAction * _Nullable(UIView *view) {
+        actionTargetView = view;
+        return [[FTRUMAction alloc]initWithActionName:@"cell_tap"];
+    };
+    FTStartAutoTrackActionTest(mock, handler, registry);
+
+    UITouchMock *touch = [[UITouchMock alloc]initWithPhase:UITouchPhaseEnded view:cell.contentView location:CGPointMake(20, 15)];
+    [[UIApplication sharedApplication] ftTrackTouchEvent:[UIEvent mockWithTouch:touch]];
+
+    XCTAssertEqual(actionTargetView, cell);
+    XCTAssertEqualObjects(mock.lastHeatmapAttributes.targetPermanentID, @"cell-label-id");
+    XCTAssertEqual(mock.lastHeatmapAttributes.targetWidth, 100);
+    XCTAssertEqual(mock.lastHeatmapAttributes.targetHeight, 20);
+    XCTAssertEqual(mock.lastHeatmapAttributes.positionX, 5);
+    XCTAssertEqual(mock.lastHeatmapAttributes.positionY, 5);
+}
+
+- (void)testHeatmapAttributes_doesNotUseUnrelatedRegisteredSibling {
+    AddRumDatasHandlerMock *mock = [AddRumDatasHandlerMock new];
+    TestTrackingHandler *handler = [TestTrackingHandler new];
+    UIButton *button = [[UIButton alloc]initWithFrame:CGRectMake(0, 0, 100, 40)];
+    UILabel *label = [[UILabel alloc]initWithFrame:CGRectMake(60, 5, 30, 20)];
+    [button addSubview:label];
+    FTHeatmapIdentifier *labelIdentifier = [[FTHeatmapIdentifier alloc]initWithRawValue:@"label-id"];
+    TestHeatmapIdentifierRegistry *registry = [[TestHeatmapIdentifierRegistry alloc]initWithIdentifiers:@{
+        [FTHeatmapIdentifier objectIdentifierForObject:label]: labelIdentifier,
+    }];
+    registry.enableHeatmap = YES;
+    handler.actionTrackingBlock = ^FTRUMAction * _Nullable(UIView *view) {
+        return [[FTRUMAction alloc]initWithActionName:@"button_tap"];
+    };
+    FTStartAutoTrackActionTest(mock, handler, registry);
+
+    UITouchMock *touch = [[UITouchMock alloc]initWithPhase:UITouchPhaseEnded view:button location:CGPointMake(20, 10)];
+    [[UIApplication sharedApplication] ftTrackTouchEvent:[UIEvent mockWithTouch:touch]];
+
+    XCTAssertNil(mock.lastHeatmapAttributes);
+}
+
+- (void)testHeatmapAttributes_actionTrackingHandlerNilSkipsActionAndHeatmap {
+    AddRumDatasHandlerMock *mock = [AddRumDatasHandlerMock new];
+    TestTrackingHandler *handler = [TestTrackingHandler new];
+    UIButton *button = [[UIButton alloc]initWithFrame:CGRectMake(0, 0, 100, 40)];
+    FTHeatmapIdentifier *buttonIdentifier = [[FTHeatmapIdentifier alloc]initWithRawValue:@"button-id"];
+    TestHeatmapIdentifierRegistry *registry = [[TestHeatmapIdentifierRegistry alloc]initWithIdentifiers:@{
+        [FTHeatmapIdentifier objectIdentifierForObject:button]: buttonIdentifier,
+    }];
+    registry.enableHeatmap = YES;
+    handler.actionTrackingBlock = ^FTRUMAction * _Nullable(UIView *view) {
+        return nil;
+    };
+    FTStartAutoTrackActionTest(mock, handler, registry);
+
+    UITouchMock *touch = [[UITouchMock alloc]initWithPhase:UITouchPhaseEnded view:button location:CGPointMake(20, 10)];
+    [[UIApplication sharedApplication] ftTrackTouchEvent:[UIEvent mockWithTouch:touch]];
+
+    XCTAssertEqual(mock.actionStartCount, 0);
+    XCTAssertNil(mock.lastHeatmapAttributes);
+}
+
+- (void)testHeatmapAttributes_disabledHeatmapSkipsLocationResolver {
+    AddRumDatasHandlerMock *mock = [AddRumDatasHandlerMock new];
+    TestTrackingHandler *handler = [TestTrackingHandler new];
+    UIButton *button = [[UIButton alloc]initWithFrame:CGRectMake(0, 0, 100, 40)];
+    TestHeatmapIdentifierRegistry *registry = [[TestHeatmapIdentifierRegistry alloc]initWithIdentifiers:@{}];
+    handler.actionTrackingBlock = ^FTRUMAction * _Nullable(UIView *view) {
+        return [[FTRUMAction alloc]initWithActionName:@"button_tap"];
+    };
+    FTStartAutoTrackActionTest(mock, handler, registry);
+    __block NSInteger locationResolveCount = 0;
+    FTHeatmapLocationResolver locationResolver = ^CGPoint(UIView *targetView) {
+        locationResolveCount++;
+        return CGPointMake(20, 10);
+    };
+
+    id<FTUIEventHandler> actionHandler = [FTAutoTrackHandler sharedInstance].actionHandler;
+    [actionHandler notify_sendAction:button heatmapTargetView:button locationResolver:locationResolver];
+
+    XCTAssertEqual(mock.actionStartCount, 1);
+    XCTAssertNil(mock.lastHeatmapAttributes);
+    XCTAssertEqual(locationResolveCount, 0);
+}
+#endif
+
+- (void)testActionTrackingStrategy_nil{
+    FTMobileConfig *config = [[FTMobileConfig alloc]initWithDatakitUrl:self.url];
+    config.enableSDKDebugLog = YES;
+    config.autoSync = NO;
+    [FTMobileAgent startWithConfigOptions:config];
+    FTRumConfig *rumConfig = [[FTRumConfig alloc]initWithAppid:self.appid];
+    rumConfig.enableTraceUserAction = YES;
+    [FTMobileAgent startWithConfigOptions:config];
+    [[FTMobileAgent sharedInstance] startRumWithConfigOptions:rumConfig];
+    
+    XCTAssertTrue([FTAutoTrackHandler sharedInstance].actionTrackingHandler != nil);
+    XCTAssertTrue([[FTAutoTrackHandler sharedInstance].actionTrackingHandler isKindOfClass:FTDefaultActionTrackingHandler.class]);
+}
+- (void)testActionTrackingStrategy_disableTraceUserAction{
+    FTMobileConfig *config = [[FTMobileConfig alloc]initWithDatakitUrl:self.url];
+    config.enableSDKDebugLog = YES;
+    config.autoSync = NO;
+    [FTMobileAgent startWithConfigOptions:config];
+    FTRumConfig *rumConfig = [[FTRumConfig alloc]initWithAppid:self.appid];
+    rumConfig.enableTraceUserAction = NO;
+    TestTrackingHandler *handler = [TestTrackingHandler new];
+    handler.actionTrackingBlock = ^FTRUMAction * _Nullable(UIView *view) {
+        FTRUMAction *rumAction = [[FTRUMAction alloc]initWithActionName:@"disableTraceUserAction_click" property:@{@"test":@"disableTraceUserAction"}];
+        return rumAction;
+    };
+    rumConfig.actionTrackingHandler = handler;
+    [FTMobileAgent startWithConfigOptions:config];
+    [[FTMobileAgent sharedInstance] startRumWithConfigOptions:rumConfig];
+    
+    NSInteger count = [[FTTrackerEventDBTool sharedManager] getDatasCount];
+    
+
+    UIButton *customButton = [[UIButton alloc]initWithFrame:CGRectMake(0, 0, 100, 30)];
+    
+    FTNotifyAutoTrackTestAction(customButton);
+    [self waitForTimeInterval:0.2];
+    FTNotifyAutoTrackTestAction(customButton);
+
+
+    [self waitForTimeInterval:0.1];
+
+    
+    [[FTGlobalRumManager sharedInstance].rumManager syncProcess];
+    NSArray *datas =[[FTTrackerEventDBTool sharedManager] getFirstRecords:50 withType:FT_DATA_TYPE_RUM];
+    NSMutableSet *set = [[NSMutableSet alloc]init];
+    [FTModelHelper resolveModelArray:datas callBack:^(NSString * _Nonnull source, NSDictionary * _Nonnull tags, NSDictionary * _Nonnull fields, BOOL * _Nonnull stop) {
+        if ([source isEqualToString:FT_RUM_SOURCE_ACTION] && [tags[FT_KEY_ACTION_TYPE] isEqualToString:FT_KEY_ACTION_TYPE_CLICK ]) {
+            [set addObject:tags[FT_KEY_ACTION_ID]];
+        }
+    }];
+    XCTAssertTrue(set.count == 0);
+}
+- (void)testActionTrackingStrategy_enableTraceUserAction{
+    FTMobileConfig *config = [[FTMobileConfig alloc]initWithDatakitUrl:self.url];
+    config.enableSDKDebugLog = YES;
+    config.autoSync = NO;
+    [FTMobileAgent startWithConfigOptions:config];
+    FTRumConfig *rumConfig = [[FTRumConfig alloc]initWithAppid:self.appid];
+    rumConfig.enableTraceUserAction = YES;
+    TestTrackingHandler *handler = [TestTrackingHandler new];
+    handler.actionTrackingBlock = ^FTRUMAction * _Nullable(UIView *view) {
+        FTRUMAction *rumAction = [[FTRUMAction alloc]initWithActionName:@"enableTraceUserAction_click" property:@{@"test":@"enableTraceUserAction"}];
+        return rumAction;
+    };
+    rumConfig.actionTrackingHandler = handler;
+    [FTMobileAgent startWithConfigOptions:config];
+    [[FTMobileAgent sharedInstance] startRumWithConfigOptions:rumConfig];
+    
+    NSInteger count = [[FTTrackerEventDBTool sharedManager] getDatasCount];
+    
+
+    UIButton *customButton = [[UIButton alloc]initWithFrame:CGRectMake(0, 0, 100, 30)];
+    FTNotifyAutoTrackTestAction(customButton);
+    FTNotifyAutoTrackTestAction(customButton);
+    [self waitForTimeInterval:0.2];
+    FTNotifyAutoTrackTestAction(customButton);
+
+
+    [self waitForTimeInterval:0.1];
+
+    
+    [[FTGlobalRumManager sharedInstance].rumManager syncProcess];
+    NSArray *datas =[[FTTrackerEventDBTool sharedManager] getFirstRecords:50 withType:FT_DATA_TYPE_RUM];
+    XCTAssertTrue(datas.count > count);
+    NSMutableSet *set = [[NSMutableSet alloc]init];
+    [FTModelHelper resolveModelArray:datas callBack:^(NSString * _Nonnull source, NSDictionary * _Nonnull tags, NSDictionary * _Nonnull fields, BOOL * _Nonnull stop) {
+        if ([source isEqualToString:FT_RUM_SOURCE_ACTION] && [tags[FT_KEY_ACTION_TYPE] isEqualToString:FT_KEY_ACTION_TYPE_CLICK ]) {
+            [set addObject:tags[FT_KEY_ACTION_ID]];
+            XCTAssertTrue([tags[FT_KEY_ACTION_NAME] isEqualToString:@"enableTraceUserAction_click"]);
+            XCTAssertTrue([fields[@"test"] isEqualToString:@"enableTraceUserAction"]);
+
+        }
+    }];
+    XCTAssertTrue(set.count == 1);
+}
+- (void)testActionTrackingStrategy_return_nil{
+    FTMobileConfig *config = [[FTMobileConfig alloc]initWithDatakitUrl:self.url];
+    config.enableSDKDebugLog = YES;
+    config.autoSync = NO;
+    [FTMobileAgent startWithConfigOptions:config];
+    FTRumConfig *rumConfig = [[FTRumConfig alloc]initWithAppid:self.appid];
+    rumConfig.enableTraceUserAction = YES;
+    TestTrackingHandler *handler = [TestTrackingHandler new];
+    handler.actionTrackingBlock = ^FTRUMAction * _Nullable(UIView *view) {
+        return nil;
+    };
+    rumConfig.actionTrackingHandler = handler;
+    [FTMobileAgent startWithConfigOptions:config];
+    [[FTMobileAgent sharedInstance] startRumWithConfigOptions:rumConfig];
+    
+    NSInteger count = [[FTTrackerEventDBTool sharedManager] getDatasCount];
+    
+
+    UIButton *customButton = [[UIButton alloc]initWithFrame:CGRectMake(0, 0, 100, 30)];
+    FTNotifyAutoTrackTestAction(customButton);
+    FTNotifyAutoTrackTestAction(customButton);
+    [self waitForTimeInterval:0.2];
+    FTNotifyAutoTrackTestAction(customButton);
+    [self waitForTimeInterval:0.1];
+    
+    [[FTGlobalRumManager sharedInstance].rumManager syncProcess];
+    NSArray *datas =[[FTTrackerEventDBTool sharedManager] getFirstRecords:50 withType:FT_DATA_TYPE_RUM];
+    NSMutableSet *set = [[NSMutableSet alloc]init];
+    [FTModelHelper resolveModelArray:datas callBack:^(NSString * _Nonnull source, NSDictionary * _Nonnull tags, NSDictionary * _Nonnull fields, BOOL * _Nonnull stop) {
+        if ([source isEqualToString:FT_RUM_SOURCE_ACTION] && [tags[FT_KEY_ACTION_TYPE] isEqualToString:FT_KEY_ACTION_TYPE_CLICK ]) {
+            [set addObject:tags[FT_KEY_ACTION_ID]];
+        }
+    }];
+    XCTAssertTrue(set.count == 0);
+}
+- (void)testActionTrackingStrategy_launchAction{
+    [[NSNotificationCenter defaultCenter] postNotificationName:UIApplicationDidBecomeActiveNotification object:nil];
+
+    FTMobileConfig *config = [[FTMobileConfig alloc]initWithDatakitUrl:self.url];
+    config.enableSDKDebugLog = YES;
+    config.autoSync = NO;
+    [FTMobileAgent startWithConfigOptions:config];
+    FTRumConfig *rumConfig = [[FTRumConfig alloc]initWithAppid:self.appid];
+    rumConfig.enableTraceUserAction = YES;
+    __block NSString *actionName;
+    TestTrackingHandler *handler = [TestTrackingHandler new];
+    handler.launchActionTrackingBlock = ^FTRUMAction * _Nullable(FTLaunchType type) {
+        switch (type) {
+            case FTLaunchHot:
+                actionName = @"hot";
+                break;
+            case FTLaunchCold:
+                actionName = @"cold";
+                break;
+            case FTLaunchWarm:
+                actionName = @"warm";
+                break;
+        }
+        return [[FTRUMAction alloc]initWithActionName:actionName];
+    };
+    rumConfig.actionTrackingHandler = handler;
+    [FTMobileAgent startWithConfigOptions:config];
+    [[FTMobileAgent sharedInstance] startRumWithConfigOptions:rumConfig];
+    
+    
+    [[FTGlobalRumManager sharedInstance].rumManager syncProcess];
+    NSArray *datas =[[FTTrackerEventDBTool sharedManager] getFirstRecords:50 withType:FT_DATA_TYPE_RUM];
+    __block BOOL hasLaunchAction = NO;
+    [FTModelHelper resolveModelArray:datas callBack:^(NSString * _Nonnull source, NSDictionary * _Nonnull tags, NSDictionary * _Nonnull fields, BOOL * _Nonnull stop) {
+        if ([source isEqualToString:FT_RUM_SOURCE_ACTION] && ![tags[FT_KEY_ACTION_TYPE] isEqualToString:FT_KEY_ACTION_TYPE_CLICK ]) {
+            XCTAssertTrue([tags[FT_KEY_ACTION_NAME] isEqualToString:actionName]);
+            hasLaunchAction = YES;
+            *stop = YES;
+        }
+    }];
+    
+    XCTAssertTrue(hasLaunchAction);
+}
+@end

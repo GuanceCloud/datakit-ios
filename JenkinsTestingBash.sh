@@ -1,3 +1,24 @@
+#!/bin/sh
+if [ -z "${BASH_VERSION:-}" ]; then
+exec /bin/bash "$0" "$@"
+fi
+
+case ":${SHELLOPTS:-}:" in
+*:posix:*)
+exec /bin/bash "$0" "$@"
+;;
+esac
+
+set -eo pipefail
+
+SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
+SCHEME_DIR="${SCRIPT_DIR}/Examples/Examples.xcodeproj/xcshareddata/xcschemes"
+APP_ID="${APP_ID:-}"
+ACCESS_SERVER_URL="${ACCESS_SERVER_URL:-}"
+TRACK_ID="${TRACK_ID:-}"
+TRACE_URL="${TRACE_URL:-}"
+DEVICE_DESTINATION="${DEVICE_DESTINATION:-}"
+
 POSITIONAL=()
 while [[ $# -gt 0 ]]; do
   key="$1"
@@ -39,7 +60,6 @@ while [[ $# -gt 0 ]]; do
   esac
 done
 set -- "${POSITIONAL[@]}" # restore positional parametersCERT_FILE
-set -o pipefail
 
 if command -v xcbeautify > /dev/null 2>&1; then
     XCODEBUILD_FORMATTER="xcbeautify"
@@ -48,7 +68,7 @@ else
     echo "Warning: xcbeautify not found. Falling back to raw xcodebuild output."
 fi
 
-cd "Examples/Examples.xcodeproj/xcshareddata/xcschemes/"
+cd "$SCHEME_DIR"
 
 sed -i '' 's/$APP_ID/'"$APP_ID"'/g' FTMobileSDKUnitTestsForCmd.xcscheme
 sed -i '' 's~$ACCESS_SERVER_URL~'"$ACCESS_SERVER_URL"'~' FTMobileSDKUnitTestsForCmd.xcscheme
@@ -60,7 +80,7 @@ sed -i '' 's~$ACCESS_SERVER_URL~'"$ACCESS_SERVER_URL"'~' FTMobileSDKUnitTestsTVO
 sed -i '' 's/$TRACK_ID/'"$TRACK_ID"'/g' FTMobileSDKUnitTestsTVOSForCmd.xcscheme
 sed -i '' 's~$TRACE_URL~'"$TRACE_URL"'~' FTMobileSDKUnitTestsTVOSForCmd.xcscheme
 
-cd ../../../..
+cd "$SCRIPT_DIR"
 pod install
 
 function findSimulator(){
@@ -70,7 +90,7 @@ function findSimulator(){
     local SIMULATOR_INFO
     local SIMULATOR_ID
 
-    DESTINATIONS=$(xcodebuild -workspace FTMobileSDK.xcworkspace -scheme "${TEST_SCHEME}" -showdestinations)
+    DESTINATIONS=$(xcodebuild -workspace FTSDK.xcworkspace -scheme "${TEST_SCHEME}" -showdestinations)
     SIMULATOR_INFO=$(echo "$DESTINATIONS" | awk -v platform="${TEST_SIMULATOR}" '
       index($0, "{ platform:" platform) > 0 &&
       index($0, "id:") > 0 &&
@@ -105,7 +125,7 @@ else
 fi
 
 ## Test iOS
-xcodebuild test -workspace FTMobileSDK.xcworkspace \
+xcodebuild test -workspace FTSDK.xcworkspace \
 -scheme FTMobileSDKUnitTestsForCmd \
 -only-testing FTMobileSDKUnitTests \
 -destination "$IOS_DESTINATION" | $XCODEBUILD_FORMATTER
@@ -113,7 +133,7 @@ xcodebuild test -workspace FTMobileSDK.xcworkspace \
 TVOS_DESTINATION=$(findSimulator "FTMobileSDKUnitTestsTVOSForCmd" "tvOS Simulator")
 
 ## Test tvOS
-xcodebuild test -workspace FTMobileSDK.xcworkspace \
+xcodebuild test -workspace FTSDK.xcworkspace \
 -scheme FTMobileSDKUnitTestsTVOSForCmd \
 -only-testing FTMobileSDKUnitTests-tvOS \
 -destination "$TVOS_DESTINATION" | $XCODEBUILD_FORMATTER

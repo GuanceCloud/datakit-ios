@@ -2,6 +2,16 @@
 #
 # This is the upload dSYM script
 #
+# Recommended for new integrations:
+# 1. Use package-dsym.sh to generate the dSYM zip file.
+# 2. Upload the generated zip manually, or use Guance's OpenAPI sourcemap
+#    upload scripts:
+#    https://docs.guance.com/real-user-monitoring/sourcemap/script-upload-sourcemap/#sourcemap
+# 3. In Xcode Build Phases, reference the packager with an absolute path:
+#    bash "${SRCROOT}/scripts/package-dsym.sh"
+#
+# Keep this script only for legacy DataKit upload integrations.
+#
 ######################################################
 # 1. Script integration into Xcode project Target
 ######################################################
@@ -67,6 +77,11 @@ function exitWithMessage(){
     echo "${1}"
     echo "--------------------------------"
     exit ${2}
+}
+
+function printUsage(){
+    echo "Usage: dSYMUpload.sh <sdk_url> <rum_app_id> <version> <env> <dataway_token> <dSYMBOL_src_dir> <dSYMBOL_dest_dir>"
+    echo "   or: dSYMUpload.sh -dSYMFolderPath <dSYMBOL_src_dir> -z"
 }
 
 # Upload bSYMBOL file
@@ -299,7 +314,14 @@ fi
 if [ $BuildInXcode = "T" ]; then
 runInXcode
 else
-echo "\nUsage: dSYMUpload.sh <sdk_url> <rum_app_id> <app_version> <app_env> <dataway_token> <dSYMBOL_src_dir> <dSYMBOL_dest_dir>\n or dSYMUpload.sh -dSYMFolderPath <dSYMBOL_src_dir> -z"
+if [[ "${1:-}" == "--help" || "${1:-}" == "-h" ]]; then
+    printUsage
+    exit 0
+fi
+
+if [ $# -eq 0 ]; then
+    printUsage
+fi
 
 max_args=6
 if [ $# -ge $max_args ]; then

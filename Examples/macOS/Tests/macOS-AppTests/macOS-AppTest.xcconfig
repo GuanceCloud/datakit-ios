@@ -1,0 +1,10 @@
+//
+//  macOS-AppTest.xcconfig
+//  MacOSAppTests
+//
+//  Created by hulilei on 2023/4/11.
+//
+
+// Configuration settings file format documentation can be found at:
+// https://help.apple.com/xcode/#/dev745c5c974
+GCC_PREPROCESSOR_DEFINITIONS = $(inherited) COCOAPODS=1 GUANCESDK_COMPILED_FOR_TESTING=1

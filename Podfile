@@ -2,7 +2,7 @@
 # platform :ios, '9.0'
 use_frameworks!
 example_project_path = 'Examples/Examples'
-workspace 'FTMobileSDK.xcworkspace'
+workspace 'FTSDK.xcworkspace'
 project example_project_path
 
 target 'FTMobileSDKUnitTests' do
@@ -52,4 +52,3 @@ post_install do |installer|
     end
   end
 end
-

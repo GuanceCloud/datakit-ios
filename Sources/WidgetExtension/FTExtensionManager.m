@@ -1,0 +1,172 @@
+//
+//  FTExtensionManager.m
+//  FTWidgetExtension
+//
+//  Created by hulilei on 2020/11/13.
+//  Copyright 2021 Shanghai Guance Information Technology Co., Ltd.
+//
+//  Licensed under the Apache License, Version 2.0 (the "License");
+//  you may not use this file except in compliance with the License.
+//  You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+//  Unless required by applicable law or agreed to in writing, software
+//  distributed under the License is distributed on an "AS IS" BASIS,
+//  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+//  See the License for the specific language governing permissions and
+//  limitations under the License.
+//
+
+#import "FTExtensionManager.h"
+#import "FTExtensionDataManager.h"
+#import "FTCrash.h"
+#import "FTInnerLog.h"
+#import "FTRUMManager.h"
+#import "FTRUMDataWriteProtocol.h"
+#import "FTURLSessionInstrumentation.h"
+#import "FTTracer.h"
+#import "FTExternalDataManager+Private.h"
+#import "FTBaseInfoHandler.h"
+#import "NSString+FTAdd.h"
+#import "FTConstants.h"
+#import "FTLogger.h"
+#import "FTSDKConfig+Private.h"
+#import "FTLoggerConfig+Private.h"
+#import "FTRumConfig+Private.h"
+#import "FTInternalConstants.h"
+#import "FTLogger+Private.h"
+#import "FTErrorMonitorInfo.h"
+#import "FTCrashMonitorType.h"
+
+@interface FTExtensionManager ()<FTRUMDataWriteProtocol,FTLoggerDataWriteProtocol>
+@property (nonatomic, strong) FTRUMManager *rumManager;
+@property (nonatomic, strong) FTLoggerConfig *loggerConfig;
+@property (nonatomic, strong) FTExtensionConfig *extensionConfig;
+@end
+@implementation FTExtensionManager
+static FTExtensionManager *sharedInstance = nil;
++ (instancetype)sharedInstance{
+    NSAssert(sharedInstance, @"Please initialize with startWithExtensionConfig: first");
+    return sharedInstance;
+}
++ (void)startWithExtensionConfig:(FTExtensionConfig *)extensionConfig{
+    NSAssert((extensionConfig.groupIdentifier.length!=0 ), @"Please fill in Group Identifier");
+    static dispatch_once_t onceToken;
+    dispatch_once(&onceToken, ^{
+        sharedInstance = [[FTExtensionManager alloc]initWithExtensionConfig:extensionConfig];
+    });
+}
+-(instancetype)initWithExtensionConfig:(FTExtensionConfig *)extensionConfig{
+    self = [super init];
+    if (self) {
+        _extensionConfig = [extensionConfig copy];
+        [FTLog enableLog:_extensionConfig.enableSDKDebugLog];
+        [FTExtensionDataManager sharedInstance].maxCount = _extensionConfig.memoryMaxCount;
+        [self processingConfigItems];
+    }
+    return self;
+}
+- (void)processingConfigItems{
+    NSDictionary *mobileDict = [[FTExtensionDataManager sharedInstance] getMobileConfigWithGroupIdentifier:self.extensionConfig.groupIdentifier];
+    NSDictionary *rumDict = [[FTExtensionDataManager sharedInstance] getRumConfigWithGroupIdentifier:self.extensionConfig.groupIdentifier];
+    NSDictionary *traceDict = [[FTExtensionDataManager sharedInstance] getTraceConfigWithGroupIdentifier:self.extensionConfig.groupIdentifier];
+    NSDictionary *loggerDict = [[FTExtensionDataManager sharedInstance] getLoggerConfigWithGroupIdentifier:self.extensionConfig.groupIdentifier];
+   
+    FTSDKConfig *mobileConfig = [[FTSDKConfig alloc]initWithDictionary:mobileDict];
+    FTRumConfig *rumConfig =[[FTRumConfig alloc]initWithDictionary:rumDict];
+    FTTraceConfig *traceConfig =[[FTTraceConfig alloc]initWithDictionary:traceDict];
+    FTLoggerConfig *loggerConfig = [[FTLoggerConfig alloc]initWithDictionary:loggerDict];
+ 
+    if(rumConfig){
+        rumConfig.enableTraceUserResource = self.extensionConfig.enableRUMAutoTraceResource;
+        rumConfig.enableTrackAppCrash = self.extensionConfig.enableTrackAppCrash;
+        [self startRumWithConfigOptions:rumConfig];
+    }
+    if(traceConfig){
+        traceConfig.enableAutoTrace = self.extensionConfig.enableTracerAutoTrace;
+        [self startTraceWithConfigOptions:traceConfig serviceName:mobileConfig.service?:FT_DEFAULT_SERVICE_NAME];
+    }
+    if(loggerConfig){
+        self.loggerConfig = loggerConfig;
+        [[FTLogger sharedInstance] startWithLoggerConfig:loggerConfig writer:self];
+        [FTLogger sharedInstance].linkRumDataProvider = self.rumManager;
+    }
+}
+- (void)startRumWithConfigOptions:(FTRumConfig *)rumConfigOptions{
+    [[FTURLSessionInstrumentation sharedInstance]setEnableAutoRumTrace:rumConfigOptions.enableTraceUserResource
+                                                    resourceUrlHandler:rumConfigOptions.resourceUrlHandler
+                                              resourcePropertyProvider:rumConfigOptions.resourcePropertyProvider
+                                                sessionTaskErrorFilter:rumConfigOptions.sessionTaskErrorFilter
+    ];
+    id<FTErrorMonitorInfoWrapper> errorInfoWrapper = [[FTErrorMonitorInfo alloc]initWithMonitorType:(ErrorMonitorType)rumConfigOptions.errorMonitorType];
+    FTRUMDependencies *dependencies = [[FTRUMDependencies alloc]init];
+    dependencies.writer = self;
+    dependencies.errorMonitorInfoWrapper = errorInfoWrapper;
+    dependencies.sampleRate = rumConfigOptions.sampleRate;
+    self.rumManager = [[FTRUMManager alloc] initWithRumDependencies:dependencies];
+    self.rumManager.appState = FTAppStateUnknown;
+    id <FTRumDatasProtocol> rum = self.rumManager;
+    [[FTExternalDataManager sharedManager] setDelegate:rum];
+    [FTExternalDataManager sharedManager].resourceDelegate = [FTURLSessionInstrumentation sharedInstance].externalResourceHandler;
+    if (rumConfigOptions.enableTrackAppCrash){
+        FTCrashMonitorType type = (rumConfigOptions.crashMonitoring & (~FTCrashMonitorTypeMachException));
+        [FTCrash setupWithMonitoringType:(FTCrashCMonitorType)type writer:self enableMonitorMemory:[errorInfoWrapper enableMonitorMemory] enableMonitorCpu:[errorInfoWrapper enableMonitorCpu]];
+        dependencies.fatalErrorContext.onChange = ^(NSDictionary * _Nonnull context) {
+            [FTCrash shared].userInfo = context;
+        };
+    }
+    [[FTURLSessionInstrumentation sharedInstance] setRumResourceHandler:self.rumManager];
+}
+
+- (void)startTraceWithConfigOptions:(FTTraceConfig *)traceConfigOptions serviceName:(NSString *)serviceName{
+    [[FTURLSessionInstrumentation sharedInstance] setTraceEnableAutoTrace:traceConfigOptions.enableAutoTrace enableLinkRumData:traceConfigOptions.enableLinkRumData sampleRate:traceConfigOptions.sampleRate traceType:(NetworkTraceType)traceConfigOptions.networkTraceType traceInterceptor:traceConfigOptions.traceInterceptor serviceName:serviceName];
+    [FTExternalDataManager sharedManager].resourceDelegate = [FTURLSessionInstrumentation sharedInstance].externalResourceHandler;
+
+}
+-(void)logging:(NSString *)content status:(FTLogStatus)status{
+    [self logging:content status:status property:nil];
+}
+-(void)logging:(NSString *)content status:(FTLogStatus)status property:(nullable NSDictionary *)property{
+    if (![content isKindOfClass:[NSString class]] || content.length==0) {
+        return;
+    }
+    [[FTLogger sharedInstance] log:content statusType:status property:property];
+}
+-(void)loggingTags:(NSDictionary *)tags field:(NSDictionary *)field time:(long long)time linkRum:(BOOL)linkRum{
+    @try {
+        NSString *bundleIdentifier =  [[[NSBundle mainBundle] infoDictionary] objectForKey:@"CFBundleIdentifier"];
+        if (bundleIdentifier == nil) {
+            return;
+        }
+        NSMutableDictionary *tagDict = [NSMutableDictionary new];
+        [tags setValue:bundleIdentifier forKey:@"extension_identifier"];
+        [tagDict addEntriesFromDictionary:tags];
+        FTInnerLogDebug(@"%@\n",@{@"type":FT_LOGGER_SOURCE,
+                                  @"tags":tagDict
+                                });
+        [[FTExtensionDataManager sharedInstance] writeLoggerTags:tagDict fields:field tm:time groupIdentifier:self.extensionConfig.groupIdentifier];
+    } @catch (NSException *exception) {
+        FTInnerLogError(@"exception %@",exception);
+    }
+}
+- (void)rumWrite:(NSString *)source tags:(NSDictionary *)tags fields:(NSDictionary *)fields dynamicContext:(NSDictionary *)dynamicContext time:(long long)time updateTime:(long long)updateTime{
+    [self rumWrite:source tags:tags fields:fields dynamicContext:dynamicContext time:time];
+}
+- (void)rumWrite:(NSString *)source tags:(NSDictionary *)tags fields:(NSDictionary *)fields dynamicContext:(NSDictionary *)dynamicContext time:(long long)time updateTime:(long long)updateTime cache:(BOOL)cache{
+    [self rumWrite:source tags:tags fields:fields dynamicContext:dynamicContext time:time];
+}
+- (void)rumWriteAssembledData:(nonnull NSString *)source tags:(nonnull NSDictionary *)tags fields:(nonnull NSDictionary *)fields time:(long long)time {
+    [self rumWrite:source tags:tags fields:fields dynamicContext:@{} time:time];
+}
+- (void)rumWrite:(NSString *)source tags:(NSDictionary *)tags fields:(NSDictionary *)fields dynamicContext:(NSDictionary *)dynamicContext time:(long long)time{
+    NSString *bundleIdentifier =  [[[NSBundle mainBundle] infoDictionary] objectForKey:@"CFBundleIdentifier"];
+    NSMutableDictionary *tagDict = [NSMutableDictionary new];
+    [tagDict setValue:bundleIdentifier forKey:@"extension_identifier"];
+    [tagDict addEntriesFromDictionary:tags];
+    FTInnerLogDebug(@"%@\n",@{@"type":source?:@"",
+                              @"tags":tagDict,
+                              @"fields":fields});
+    [[FTExtensionDataManager sharedInstance] writeRumEventType:source tags:tagDict fields:fields tm:time groupIdentifier:self.extensionConfig.groupIdentifier];
+}
+@end

@@ -1,0 +1,40 @@
+//
+//  FTCALayerChangeSnapshot.h
+//  SessionReplay
+//
+//  Created by hulilei on 2026/3/3.
+//
+/*
+ * This file is licensed under the Apache License Version 2.0.
+ * This file contains software derived from software developed at Datadog (https://www.datadoghq.com/).
+ * Copyright 2019-Present Datadog, Inc.
+ *
+ * Modifications Copyright 2021 Shanghai Guance Information Technology Co., Ltd.
+ * This file has been translated/adapted to Objective-C with project-specific changes.
+ */
+
+#import <TargetConditionals.h>
+#if TARGET_OS_IOS
+
+#import <Foundation/Foundation.h>
+#import "FTCALayerChange.h"
+
+NS_ASSUME_NONNULL_BEGIN
+
+@interface FTCALayerChangeSnapshot : NSObject
+@property (nonatomic, copy, readonly) NSDictionary<NSNumber *, FTCALayerChange *> *changes;
+
+- (instancetype)initWithChanges:(NSDictionary<NSNumber *, FTCALayerChange *> *)changes;
+
+- (FTCALayerChangeAspect)aspectsForLayer:(CALayer *)layer;
+
+- (instancetype)removingDeallocatedLayers;
+
+- (BOOL)isEqualToCALayerChangeSnapshot:(FTCALayerChangeSnapshot *)snapshot;
+
+- (NSString *)description;
+@end
+
+NS_ASSUME_NONNULL_END
+
+#endif

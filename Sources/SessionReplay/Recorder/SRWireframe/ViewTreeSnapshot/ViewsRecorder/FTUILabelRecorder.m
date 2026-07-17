@@ -1,0 +1,107 @@
+//
+//  FTUILabelRecorder.m
+//  SessionReplay
+//
+//  Created by hulilei on 2023/8/24.
+//
+/*
+ * This file is licensed under the Apache License Version 2.0.
+ * This file contains software derived from software developed at Datadog (https://www.datadoghq.com/).
+ * Copyright 2019-Present Datadog, Inc.
+ *
+ * Modifications Copyright 2021 Shanghai Guance Information Technology Co., Ltd.
+ * This file has been translated/adapted to Objective-C with project-specific changes.
+ */
+
+#import <TargetConditionals.h>
+#if TARGET_OS_IOS
+
+#import "FTUILabelRecorder.h"
+#import "FTSRWireframe.h"
+#import "FTViewAttributes.h"
+#import "FTSRUtils.h"
+#import "FTViewTreeRecordingContext.h"
+
+@interface FTUILabelRecorder()
+@end
+@implementation FTUILabelRecorder
+-(instancetype)init{
+    return [self initWithIdentifier:[NSUUID UUID].UUIDString builderOverride:nil textObfuscator:nil];
+}
+-(instancetype)initWithIdentifier:(NSString *)identifier builderOverride:(FTBuilderOverride)builderOverride textObfuscator:(FTTextObfuscator)textObfuscator{
+    self = [super init];
+    if(self){
+        _identifier = [identifier copy];
+        if (builderOverride) {
+            _builderOverride = [builderOverride copy];
+        } else {
+            _builderOverride = ^FTUILabelBuilder *(FTUILabelBuilder *builder){
+                return builder;
+            };
+        }
+        if (textObfuscator) {
+            _textObfuscator = [textObfuscator copy];
+        } else {
+            _textObfuscator = ^id<FTSRTextObfuscatingProtocol> _Nullable(FTViewTreeRecordingContext * _Nonnull context,FTViewAttributes *attributes) {
+                return  [FTSRTextObfuscatingFactory staticTextObfuscator:[attributes resolveTextAndInputPrivacyLevel:context.recorder]];
+            };
+        }
+    }
+    return self;
+}
+-(FTSRNodeSemantics *)recorder:(UIView *)view attributes:(FTViewAttributes *)attributes context:(FTViewTreeRecordingContext *)context{
+    if(![view isKindOfClass:[UILabel class]]){
+        return nil;
+    }
+    UILabel *label = (UILabel *)view;
+    BOOL hasVisibleText = attributes.isVisible && label.text.length>0;
+    if(!hasVisibleText && !attributes.hasAnyAppearance){
+        return [FTInvisibleElement constant];
+    }
+    FTUILabelBuilder *builder = [[FTUILabelBuilder alloc]init];
+    builder.text = label.text?:@"";
+    builder.attributes = attributes;
+    builder.wireframeID = [context.viewIDGenerator SRViewID:label nodeRecorder:self];
+    builder.fontScalingEnabled = label.adjustsFontSizeToFitWidth;
+    builder.fontSize = label.font.pointSize;
+    builder.textColor = [FTSRColorSnapshot snapshotWithColor:label.textColor traitCollection:label.traitCollection];
+    builder.textAlignment = label.textAlignment;
+    builder.textObfuscator = self.textObfuscator(context,attributes);
+    builder.lineBreakMode = label.lineBreakMode;
+    FTSpecificElement *element = [[FTSpecificElement alloc]initWithSubtreeStrategy:NodeSubtreeStrategyIgnore];
+    element.nodes = @[self.builderOverride(builder)];
+    return element;
+}
+@end
+
+@implementation FTUILabelBuilder
+
+-(CGRect)wireframeRect{    
+    return self.attributes.frame;
+}
+-(NSArray<FTSRWireframe *> *)buildWireframesWithBuilder:(FTSessionReplayWireframesBuilder *)builder{
+    FTSRTextWireframe *wireframe = [[FTSRTextWireframe alloc]initWithIdentifier:self.wireframeID frame:self.wireframeRect];
+
+    wireframe.text = [self.textObfuscator mask:self.text];
+    wireframe.border = [[FTSRShapeBorder alloc]initWithColor:self.attributes.layerBorderColor.hexString width:self.attributes.layerBorderWidth];
+    wireframe.shapeStyle = [[FTSRShapeStyle alloc]initWithBackgroundColor:self.attributes.backgroundColor.hexString cornerRadius:@(self.attributes.layerCornerRadius) opacity:@(self.attributes.alpha)];
+    CGFloat fontSize = self.fontSize;
+    if (wireframe.text.length > 0 && self.fontScalingEnabled ){
+        // Calculates the approximate font size for available text area √(frameArea / numberOfCharacters)
+        CGFloat area = self.attributes.frame.size.width * self.attributes.frame.size.height;
+        int calculatedFontSize = sqrt(area / wireframe.text.length);
+        if (calculatedFontSize < self.fontSize) {
+            fontSize = calculatedFontSize;
+        }
+    }
+    wireframe.textStyle = [[FTSRTextStyle alloc]initWithSize:fontSize color:self.textColor.hexString family:nil truncationMode:[FTSRUtils getTextStyleTruncationMode:self.lineBreakMode]];
+    wireframe.clip = [[FTSRContentClip alloc] initWithFrame:self.wireframeRect clip:self.attributes.clip];
+    FTSRTextPosition *textPosition = [[FTSRTextPosition alloc]init];
+    textPosition.alignment = [[FTAlignment alloc]initWithTextAlignment:self.textAlignment vertical:@"center"];
+    textPosition.padding = [[FTPadding alloc]initWithLeft:0 top:0 right:0 bottom:0];
+    wireframe.textPosition = textPosition;
+    return @[wireframe];
+}
+@end
+
+#endif

@@ -1,1 +1,0 @@
-../FTSDKCore/BaseUtils/Base/FTResourceContentModel.h

@@ -1,0 +1,112 @@
+//
+//  PerformanceBase.m
+//  FTMobileSDKUnitTests
+//
+//  Created by hulilei on 2023/2/22.
+//  Copyright 2023 Shanghai Guance Information Technology Co., Ltd.
+//
+//  Licensed under the Apache License, Version 2.0 (the "License");
+//  you may not use this file except in compliance with the License.
+//  You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+//  Unless required by applicable law or agreed to in writing, software
+//  distributed under the License is distributed on an "AS IS" BASIS,
+//  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+//  See the License for the specific language governing permissions and
+//  limitations under the License.
+//
+
+#import <XCTest/XCTest.h>
+#import "FTMobileAgent.h"
+#import "FTMobileAgent+Private.h"
+#import "FTConstants.h"
+#import "FTPresetProperty.h"
+#import "FTSDKVersion.h"
+@interface PerformanceBaseTest : XCTestCase
+
+@end
+
+@implementation PerformanceBaseTest
+
+- (void)setUp {
+    // Put setup code here. This method is called before the invocation of each test method in the class.
+        
+}
+- (void)testGetRumPropertyPerformance {
+    NSProcessInfo *processInfo = [NSProcessInfo processInfo];
+    NSString *url = [processInfo environment][@"ACCESS_SERVER_URL"];
+    FTMobileConfig *config = [[FTMobileConfig alloc]initWithDatakitUrl:url];
+    [[FTPresetProperty sharedInstance] startWithVersion:[[[NSBundle mainBundle] infoDictionary] objectForKey:@"CFBundleShortVersionString"] sdkVersion:SDK_VERSION env:config.env service:config.service globalContext:config.globalContext pkgInfo:nil];
+    FTPresetProperty  *presetProperty = [FTPresetProperty sharedInstance];
+    [presetProperty setRUMAppID:@"test_app_id" sampleRate:100 sessionOnErrorSampleRate:0 rumGlobalContext:@{@"rum_key":@"rum_value"}];
+                                         
+    [self measureBlock:^{
+      [presetProperty rumTags];
+    }];
+}
+- (void)testGetRumPropertyAfterUpdatePerformance {
+    NSProcessInfo *processInfo = [NSProcessInfo processInfo];
+    NSString *url = [processInfo environment][@"ACCESS_SERVER_URL"];
+    FTMobileConfig *config = [[FTMobileConfig alloc]initWithDatakitUrl:url];
+    [[FTPresetProperty sharedInstance] startWithVersion:[[[NSBundle mainBundle] infoDictionary] objectForKey:@"CFBundleShortVersionString"] sdkVersion:SDK_VERSION env:config.env service:config.service globalContext:config.globalContext pkgInfo:nil];
+    FTPresetProperty  *presetProperty = [FTPresetProperty sharedInstance];
+    [presetProperty setRUMAppID:@"test_app_id" sampleRate:100 sessionOnErrorSampleRate:0 rumGlobalContext:@{@"rum_key":@"rum_value"}];
+
+    __block NSInteger index = 0;
+    [self measureBlock:^{
+        [presetProperty appendRUMGlobalContext:@{[NSString stringWithFormat:@"rum_update_%ld", (long)index]:@"value"}];
+        [presetProperty rumTags];
+        index++;
+    }];
+}
+- (void)testGetLoggerPropertyPerformance {
+    NSProcessInfo *processInfo = [NSProcessInfo processInfo];
+    NSString *url = [processInfo environment][@"ACCESS_SERVER_URL"];
+    FTMobileConfig *config = [[FTMobileConfig alloc]initWithDatakitUrl:url];
+    [[FTPresetProperty sharedInstance] startWithVersion:[[[NSBundle mainBundle] infoDictionary] objectForKey:@"CFBundleShortVersionString"] sdkVersion:SDK_VERSION env:config.env service:config.service globalContext:config.globalContext pkgInfo:nil];
+    FTPresetProperty  *presetProperty = [FTPresetProperty sharedInstance];
+    [self measureBlock:^{
+         [presetProperty loggerTags];
+    }];
+}
+- (void)testSDKInitPerformance {
+    NSProcessInfo *processInfo = [NSProcessInfo processInfo];
+    NSString *url = [processInfo environment][@"ACCESS_SERVER_URL"];
+    NSString *appid = [processInfo environment][@"APP_ID"];
+    [self measureMetrics:[self class].defaultPerformanceMetrics automaticallyStartMeasuring:NO forBlock:^{
+        [self startMeasuring];
+        FTMobileConfig *config = [[FTMobileConfig alloc]initWithDatakitUrl:url];
+        config.enableSDKDebugLog = YES;
+        [FTMobileAgent startWithConfigOptions:config];
+        FTRumConfig *rumConfig = [[FTRumConfig alloc]init];
+        rumConfig.appid = appid;
+        rumConfig.enableTrackAppCrash = YES;
+        rumConfig.enableTrackAppANR = YES;
+        rumConfig.enableTrackAppFreeze = YES;
+        rumConfig.enableTraceUserAction = YES;
+        rumConfig.enableTraceUserView = YES;
+        rumConfig.enableTraceUserResource = YES;
+        rumConfig.errorMonitorType = FTErrorMonitorAll;
+        rumConfig.deviceMetricsMonitorType = FTDeviceMetricsMonitorAll;
+        FTLoggerConfig *loggerConfig = [[FTLoggerConfig alloc]init];
+        loggerConfig.enableCustomLog = YES;
+        loggerConfig.enableLinkRumData = YES;
+        FTTraceConfig *traceConfig = [[FTTraceConfig alloc]init];
+        traceConfig.enableLinkRumData = YES;
+        traceConfig.networkTraceType = FTNetworkTraceTypeDDtrace;
+        traceConfig.enableAutoTrace = YES;
+        [[FTMobileAgent sharedInstance] startRumWithConfigOptions:rumConfig];
+        [[FTMobileAgent sharedInstance] startLoggerWithConfigOptions:loggerConfig];
+        [[FTMobileAgent sharedInstance] startTraceWithConfigOptions:traceConfig];
+        [self stopMeasuring];
+        [FTMobileAgent shutDown];
+    }];
+   
+}
+- (void)tearDown {
+    // Put teardown code here. This method is called after the invocation of each test method in the class.
+}
+
+@end

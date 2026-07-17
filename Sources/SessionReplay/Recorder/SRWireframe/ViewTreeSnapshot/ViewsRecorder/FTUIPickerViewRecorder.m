@@ -1,0 +1,111 @@
+//
+//  FTUIPickerViewRecorder.m
+//  SessionReplay
+//
+//  Created by hulilei on 2023/8/30.
+//
+/*
+ * This file is licensed under the Apache License Version 2.0.
+ * This file contains software derived from software developed at Datadog (https://www.datadoghq.com/).
+ * Copyright 2019-Present Datadog, Inc.
+ *
+ * Modifications Copyright 2021 Shanghai Guance Information Technology Co., Ltd.
+ * This file has been translated/adapted to Objective-C with project-specific changes.
+ */
+
+#import <TargetConditionals.h>
+#if TARGET_OS_IOS
+
+#import "FTUIPickerViewRecorder.h"
+#import "FTSRWireframe.h"
+#import "FTViewAttributes.h"
+#import "FTSRUtils.h"
+#import "FTViewTreeRecordingContext.h"
+#import "FTViewTreeRecorder.h"
+#import "FTUIViewRecorder.h"
+#import "FTUILabelRecorder.h"
+@interface FTUIPickerViewRecorder()
+@property (nonatomic, strong) FTViewTreeRecorder *selectionRecorder;
+@property (nonatomic, strong) FTViewTreeRecorder *labelsRecorder;
+@end
+@implementation FTUIPickerViewRecorder
+-(instancetype)init{
+    return [self initWithIdentifier:[[NSUUID UUID] UUIDString] textObfuscator:nil];
+}
+-(instancetype)initWithIdentifier:(NSString *)identifier textObfuscator:(FTTextObfuscator)textObfuscator{
+    self = [super init];
+    if(self){
+        _identifier = [identifier copy];
+        if (textObfuscator) {
+            _textObfuscator = [textObfuscator copy];
+        } else {
+            _textObfuscator = ^id<FTSRTextObfuscatingProtocol> _Nullable(FTViewTreeRecordingContext *context,FTViewAttributes *attributes){
+                return [FTSRTextObfuscatingFactory inputAndOptionTextObfuscator:[attributes resolveTextAndInputPrivacyLevel:context.recorder]];
+            };
+        }
+        FTViewTreeRecorder *selectionRecorder = [[FTViewTreeRecorder alloc]init];
+        selectionRecorder.nodeRecorders = @[[[FTUIViewRecorder alloc]initWithIdentifier:[NSUUID UUID].UUIDString semanticsOverride:^FTSRNodeSemantics* _Nullable(UIView *view, FTViewAttributes *attributes) {
+            if (@available(iOS 13, *)) {
+                if(!attributes.isVisible || attributes.alpha<1 || !CATransform3DIsIdentity(view.transform3D) ){
+                    FTIgnoredElement *element = [[FTIgnoredElement alloc]init];
+                    element.subtreeStrategy = NodeSubtreeStrategyIgnore;
+                    return element;
+                }
+            }
+            FTIgnoredElement *element = [[FTIgnoredElement alloc]init];
+            element.subtreeStrategy = NodeSubtreeStrategyRecord;
+            return element;
+        }]];
+        _selectionRecorder = selectionRecorder;
+        _labelsRecorder = [[FTViewTreeRecorder alloc]init];
+        _labelsRecorder.nodeRecorders = @[
+            [[FTUIViewRecorder alloc]initWithIdentifier:_identifier],
+            [[FTUILabelRecorder alloc] initWithIdentifier:_identifier builderOverride:^FTUILabelBuilder * _Nullable(FTUILabelBuilder *builder) {
+                builder.textAlignment = NSTextAlignmentCenter;
+                builder.fontScalingEnabled = YES;
+                return builder;
+            } textObfuscator:_textObfuscator],];
+    }
+    return self;
+}
+
+-(FTSRNodeSemantics *)recorder:(UIView *)view attributes:(FTViewAttributes *)attributes context:(FTViewTreeRecordingContext *)context{
+    if(![view isKindOfClass:UIPickerView.class]){
+        return nil;
+    }
+    if(!attributes.isVisible){
+        return [FTInvisibleElement constant];
+    }
+    NSMutableArray *nodes = [NSMutableArray new];
+    
+    [self.selectionRecorder record:nodes view:view context:context];
+    [self.labelsRecorder record:nodes view:view context:context];
+    
+    if(!attributes.hasAnyAppearance){
+        FTSpecificElement *element = [[FTSpecificElement alloc]initWithSubtreeStrategy:NodeSubtreeStrategyIgnore];
+        element.nodes = nodes;
+        return element;
+    }
+    FTUIPickerViewBuilder *builder = [[FTUIPickerViewBuilder alloc]init];
+    builder.wireframeRect = attributes.frame;
+    builder.attributes = attributes;
+    builder.wireframeID = [context.viewIDGenerator SRViewID:view nodeRecorder:self];
+    
+    [nodes insertObject:builder atIndex:0];
+    
+    FTSpecificElement *element = [[FTSpecificElement alloc]initWithSubtreeStrategy:NodeSubtreeStrategyIgnore];
+    element.nodes = nodes;
+    return element;
+}
+@end
+
+@implementation FTUIPickerViewBuilder
+
+- (NSArray<FTSRWireframe *> *)buildWireframesWithBuilder:(FTSessionReplayWireframesBuilder *)builder {
+    FTSRShapeWireframe *wireframe = [[FTSRShapeWireframe alloc]initWithIdentifier:self.wireframeID attributes:self.attributes];
+    return @[wireframe];
+}
+
+@end
+
+#endif

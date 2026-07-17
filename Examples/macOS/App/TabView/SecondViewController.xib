@@ -1,0 +1,163 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<document type="com.apple.InterfaceBuilder3.Cocoa.XIB" version="3.0" toolsVersion="21225" targetRuntime="MacOSX.Cocoa" propertyAccessControl="none" useAutolayout="YES" customObjectInstantitationMethod="direct">
+    <dependencies>
+        <deployment identifier="macosx"/>
+        <plugIn identifier="com.apple.InterfaceBuilder.CocoaPlugin" version="21225"/>
+        <capability name="documents saved in the Xcode 8 format" minToolsVersion="8.0"/>
+    </dependencies>
+    <objects>
+        <customObject id="-2" userLabel="File's Owner" customClass="SecondViewController">
+            <connections>
+                <outlet property="imageView" destination="GC5-Iv-vk0" id="UcY-R7-8vM"/>
+                <outlet property="lable" destination="X3A-aX-cAF" id="9l6-hY-BlY"/>
+                <outlet property="progressIndicator" destination="wPV-sn-uCi" id="r5m-gZ-AOe"/>
+                <outlet property="stepper" destination="a7O-vE-MuI" id="3QE-aH-QkM"/>
+                <outlet property="view" destination="Hz6-mo-xeY" id="0bl-1N-x8E"/>
+            </connections>
+        </customObject>
+        <customObject id="-1" userLabel="First Responder" customClass="FirstResponder"/>
+        <customObject id="-3" userLabel="Application" customClass="NSObject"/>
+        <customView id="Hz6-mo-xeY">
+            <rect key="frame" x="0.0" y="0.0" width="800" height="269"/>
+            <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
+            <subviews>
+                <datePicker verticalHuggingPriority="750" translatesAutoresizingMaskIntoConstraints="NO" id="ScL-BO-mUs">
+                    <rect key="frame" x="10" y="109" width="150" height="150"/>
+                    <constraints>
+                        <constraint firstAttribute="width" constant="150" id="ol7-cH-0R2"/>
+                        <constraint firstAttribute="height" constant="150" id="qt1-i9-GDd"/>
+                    </constraints>
+                    <datePickerCell key="cell" borderStyle="bezel" alignment="left" datePickerStyle="clockAndCalendar" useCurrentDate="YES" id="udv-QJ-gcZ">
+                        <font key="font" metaFont="system"/>
+                        <date key="date" timeIntervalSinceReferenceDate="705910541.70400298">
+                            <!--2023-05-16 06:15:41 +0000-->
+                        </date>
+                        <color key="backgroundColor" name="controlBackgroundColor" catalog="System" colorSpace="catalog"/>
+                        <color key="textColor" name="controlTextColor" catalog="System" colorSpace="catalog"/>
+                    </datePickerCell>
+                </datePicker>
+                <datePicker verticalHuggingPriority="750" translatesAutoresizingMaskIntoConstraints="NO" id="aRM-GB-P4n">
+                    <rect key="frame" x="220" y="239" width="100" height="20"/>
+                    <constraints>
+                        <constraint firstAttribute="width" constant="100" id="tCs-xG-r2Y"/>
+                        <constraint firstAttribute="height" constant="20" id="wNA-f2-eeU"/>
+                    </constraints>
+                    <datePickerCell key="cell" borderStyle="bezel" alignment="left" datePickerStyle="textField" useCurrentDate="YES" id="RSc-aJ-9Fs">
+                        <font key="font" metaFont="system"/>
+                        <date key="date" timeIntervalSinceReferenceDate="705910541.70791495">
+                            <!--2023-05-16 06:15:41 +0000-->
+                        </date>
+                        <color key="backgroundColor" name="controlBackgroundColor" catalog="System" colorSpace="catalog"/>
+                        <color key="textColor" name="controlTextColor" catalog="System" colorSpace="catalog"/>
+                    </datePickerCell>
+                </datePicker>
+                <datePicker verticalHuggingPriority="750" translatesAutoresizingMaskIntoConstraints="NO" id="j8c-CI-baL">
+                    <rect key="frame" x="220" y="185" width="103" height="28"/>
+                    <constraints>
+                        <constraint firstAttribute="height" constant="24" id="6AY-iW-PF5"/>
+                        <constraint firstAttribute="width" constant="100" id="NvA-DI-XXt"/>
+                    </constraints>
+                    <datePickerCell key="cell" borderStyle="bezel" alignment="left" useCurrentDate="YES" id="hqT-H3-jEq">
+                        <font key="font" metaFont="system"/>
+                        <date key="date" timeIntervalSinceReferenceDate="705910541.71070302">
+                            <!--2023-05-16 06:15:41 +0000-->
+                        </date>
+                        <color key="backgroundColor" name="controlBackgroundColor" catalog="System" colorSpace="catalog"/>
+                        <color key="textColor" name="controlTextColor" catalog="System" colorSpace="catalog"/>
+                    </datePickerCell>
+                </datePicker>
+                <segmentedControl verticalHuggingPriority="750" tag="323" translatesAutoresizingMaskIntoConstraints="NO" id="Ca3-w1-MlW">
+                    <rect key="frame" x="216" y="84" width="108" height="24"/>
+                    <constraints>
+                        <constraint firstAttribute="height" constant="22" id="5oo-4f-JA4"/>
+                        <constraint firstAttribute="width" constant="104" id="h9H-Py-UlX"/>
+                    </constraints>
+                    <segmentedCell key="cell" borderStyle="border" alignment="left" style="rounded" trackingMode="selectOne" id="Gmi-N0-8JD">
+                        <font key="font" metaFont="system"/>
+                        <segments>
+                            <segment width="32"/>
+                            <segment width="32" selected="YES" tag="1"/>
+                            <segment width="32">
+                                <nil key="label"/>
+                            </segment>
+                        </segments>
+                    </segmentedCell>
+                    <connections>
+                        <action selector="segmentClick:" target="-1" id="yDj-b9-69m"/>
+                    </connections>
+                </segmentedControl>
+                <slider verticalHuggingPriority="750" translatesAutoresizingMaskIntoConstraints="NO" id="2o4-sP-blN">
+                    <rect key="frame" x="8" y="62" width="104" height="19"/>
+                    <constraints>
+                        <constraint firstAttribute="height" constant="11" id="LtR-sH-j36"/>
+                        <constraint firstAttribute="width" constant="100" id="eQ6-HR-6dJ"/>
+                    </constraints>
+                    <sliderCell key="cell" state="on" alignment="left" maxValue="100" doubleValue="50" tickMarkPosition="above" sliderType="linear" id="CGm-c0-kmU"/>
+                    <connections>
+                        <action selector="slider:" target="-2" id="iQY-vj-O7m"/>
+                    </connections>
+                </slider>
+                <progressIndicator wantsLayer="YES" maxValue="100" doubleValue="50" style="bar" translatesAutoresizingMaskIntoConstraints="NO" id="wPV-sn-uCi">
+                    <rect key="frame" x="220" y="136" width="100" height="20"/>
+                    <constraints>
+                        <constraint firstAttribute="width" constant="100" id="MqT-SL-O3b"/>
+                        <constraint firstAttribute="height" constant="18" id="zMk-sD-0g7"/>
+                    </constraints>
+                </progressIndicator>
+                <stepper horizontalHuggingPriority="750" verticalHuggingPriority="750" tag="324" translatesAutoresizingMaskIntoConstraints="NO" id="a7O-vE-MuI">
+                    <rect key="frame" x="177" y="235" width="21" height="28"/>
+                    <constraints>
+                        <constraint firstAttribute="width" constant="15" id="AYE-Na-BTk"/>
+                        <constraint firstAttribute="height" constant="20" id="BZa-SN-qKa"/>
+                    </constraints>
+                    <stepperCell key="cell" continuous="YES" alignment="left" maxValue="100" id="NLT-A2-IHe"/>
+                </stepper>
+                <textField horizontalHuggingPriority="251" verticalHuggingPriority="750" tag="325" translatesAutoresizingMaskIntoConstraints="NO" id="X3A-aX-cAF">
+                    <rect key="frame" x="168" y="185" width="44" height="24"/>
+                    <constraints>
+                        <constraint firstAttribute="height" constant="24" id="jMo-ix-OYr"/>
+                        <constraint firstAttribute="width" constant="40" id="mo4-Cj-5JF"/>
+                    </constraints>
+                    <textFieldCell key="cell" lineBreakMode="clipping" title="Label" id="N8F-7N-vh6">
+                        <font key="font" metaFont="system"/>
+                        <color key="textColor" name="labelColor" catalog="System" colorSpace="catalog"/>
+                        <color key="backgroundColor" name="textBackgroundColor" catalog="System" colorSpace="catalog"/>
+                    </textFieldCell>
+                </textField>
+                <imageView horizontalHuggingPriority="251" verticalHuggingPriority="251" tag="326" translatesAutoresizingMaskIntoConstraints="NO" id="GC5-Iv-vk0">
+                    <rect key="frame" x="246" y="17" width="48" height="48"/>
+                    <constraints>
+                        <constraint firstAttribute="width" constant="48" id="8bh-Ws-xeV"/>
+                        <constraint firstAttribute="height" constant="48" id="b2g-Ma-iAg"/>
+                    </constraints>
+                    <imageCell key="cell" refusesFirstResponder="YES" alignment="left" imageScaling="proportionallyDown" id="GBE-pI-qIR"/>
+                </imageView>
+                <switch horizontalHuggingPriority="750" verticalHuggingPriority="750" fixedFrame="YES" baseWritingDirection="leftToRight" alignment="left" translatesAutoresizingMaskIntoConstraints="NO" id="Glm-C0-bYw">
+                    <rect key="frame" x="396" y="187" width="42" height="25"/>
+                    <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
+                </switch>
+            </subviews>
+            <constraints>
+                <constraint firstItem="a7O-vE-MuI" firstAttribute="leading" secondItem="ScL-BO-mUs" secondAttribute="trailing" constant="20" id="2Rb-Vy-06I"/>
+                <constraint firstItem="wPV-sn-uCi" firstAttribute="top" secondItem="j8c-CI-baL" secondAttribute="bottom" constant="30" id="39H-UK-6OH"/>
+                <constraint firstItem="GC5-Iv-vk0" firstAttribute="top" secondItem="Ca3-w1-MlW" secondAttribute="bottom" constant="20" id="3KY-ke-Q9I"/>
+                <constraint firstItem="Ca3-w1-MlW" firstAttribute="centerX" secondItem="wPV-sn-uCi" secondAttribute="centerX" id="6Pz-Rb-3ZD"/>
+                <constraint firstItem="j8c-CI-baL" firstAttribute="top" secondItem="aRM-GB-P4n" secondAttribute="bottom" constant="30" id="9b1-lV-NHG"/>
+                <constraint firstItem="2o4-sP-blN" firstAttribute="top" secondItem="ScL-BO-mUs" secondAttribute="bottom" constant="30" id="EFa-Rx-Ahm"/>
+                <constraint firstItem="ScL-BO-mUs" firstAttribute="leading" secondItem="Hz6-mo-xeY" secondAttribute="leading" constant="10" id="GfC-00-g5r"/>
+                <constraint firstItem="wPV-sn-uCi" firstAttribute="centerX" secondItem="j8c-CI-baL" secondAttribute="centerX" id="KWn-gI-gH9"/>
+                <constraint firstItem="GC5-Iv-vk0" firstAttribute="centerX" secondItem="Ca3-w1-MlW" secondAttribute="centerX" id="MBb-oc-fMz"/>
+                <constraint firstItem="X3A-aX-cAF" firstAttribute="leading" secondItem="ScL-BO-mUs" secondAttribute="trailing" constant="10" id="OwM-07-tqy"/>
+                <constraint firstItem="aRM-GB-P4n" firstAttribute="top" secondItem="Hz6-mo-xeY" secondAttribute="top" constant="10" id="Raj-Zv-TBy"/>
+                <constraint firstItem="aRM-GB-P4n" firstAttribute="leading" secondItem="a7O-vE-MuI" secondAttribute="trailing" constant="25" id="Xkv-GI-f9H"/>
+                <constraint firstItem="ScL-BO-mUs" firstAttribute="top" secondItem="Hz6-mo-xeY" secondAttribute="top" constant="10" id="gi5-gk-cqx"/>
+                <constraint firstItem="2o4-sP-blN" firstAttribute="leading" secondItem="Hz6-mo-xeY" secondAttribute="leading" constant="10" id="ksc-lf-IHn"/>
+                <constraint firstItem="j8c-CI-baL" firstAttribute="leading" secondItem="ScL-BO-mUs" secondAttribute="trailing" constant="60" id="u2t-WW-9lW"/>
+                <constraint firstItem="Ca3-w1-MlW" firstAttribute="top" secondItem="wPV-sn-uCi" secondAttribute="bottom" constant="30" id="wQW-jV-dh9"/>
+                <constraint firstItem="j8c-CI-baL" firstAttribute="centerY" secondItem="X3A-aX-cAF" secondAttribute="centerY" id="xng-eP-a02"/>
+                <constraint firstItem="a7O-vE-MuI" firstAttribute="top" secondItem="Hz6-mo-xeY" secondAttribute="top" constant="10" id="zfp-Bm-wq4"/>
+            </constraints>
+            <point key="canvasLocation" x="-122" y="120.5"/>
+        </customView>
+    </objects>
+</document>

@@ -1,0 +1,127 @@
+//
+//  FTReadWriteHelperTest.m
+//  FTMobileSDKUnitTests
+//
+//  Created by hulilei on 2025/1/19.
+//  Copyright 2025 Shanghai Guance Information Technology Co., Ltd.
+//
+//  Licensed under the Apache License, Version 2.0 (the "License");
+//  you may not use this file except in compliance with the License.
+//  You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+//  Unless required by applicable law or agreed to in writing, software
+//  distributed under the License is distributed on an "AS IS" BASIS,
+//  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+//  See the License for the specific language governing permissions and
+//  limitations under the License.
+//
+
+#import <XCTest/XCTest.h>
+#import <XCTest/XCTest.h>
+#import "FTMobileAgent.h"
+#import "FTMobileAgent+Private.h"
+#import "FTTrackerEventDBTool.h"
+#import "FTRecordModel.h"
+#import "FTBaseInfoHandler.h"
+#import "NSDate+FTUtil.h"
+#import "FTConstants.h"
+#import "FTJSONUtil.h"
+#import "NSString+FTAdd.h"
+#import "FTRequest.h"
+#import "FTHTTPClient.h"
+#import "FTRequestBody.h"
+#import "FTModelHelper.h"
+#import "FTReadWriteHelper.h"
+#import "NSNumber+FTAdd.h"
+#import "NSError+FTDescription.h"
+#import "FTUserInfo.h"
+#import "FTMonitorValue.h"
+@interface FTTestObject : NSObject
+@end
+@implementation FTTestObject
+
+
+@end
+@interface FTReadWriteHelperTest : XCTestCase
+
+@end
+
+@implementation FTReadWriteHelperTest
+
+- (void)setUp {
+    // Put setup code here. This method is called before the invocation of each test method in the class.
+}
+
+- (void)tearDown {
+    // Put teardown code here. This method is called after the invocation of each test method in the class.
+}
+
+- (void)testReadWriteHelper{
+    NSMutableArray *array = @[@"a",@"b",@"c",@"d"].mutableCopy;
+    FTReadWriteHelper *helper = [[FTReadWriteHelper alloc]initWithValue:array];
+    [helper concurrentRead:^(NSMutableArray *value) {
+        XCTAssertTrue(value.count == 4);
+    }];
+    [helper concurrentRead:^(NSMutableArray *value) {
+        XCTAssertTrue(value.count == 4);
+    }];
+    [helper concurrentWrite:^(id  _Nonnull value) {
+        sleep(0.5);
+        [value addObject:@"e"];
+    }];
+    
+    [helper concurrentRead:^(NSMutableArray *value) {
+        XCTAssertTrue(value.count == 5);
+    }];
+    [helper concurrentRead:^(NSMutableArray *value) {
+        XCTAssertTrue([value.lastObject isEqualToString:@"e"]);
+    }];
+}
+- (void)testReadWriteHelperCurrentValue{
+    NSMutableDictionary *dict = @{@"a":@"a",@"b":@"b",@"c":@"c"}.mutableCopy;
+    FTReadWriteHelper *helper = [[FTReadWriteHelper alloc]initWithValue:dict];
+    dispatch_group_t group = dispatch_group_create();
+    XCTestExpectation *exception = [[XCTestExpectation alloc]init];
+    dispatch_async(dispatch_queue_create(0, 0), ^{
+        for (int i = 0; i<10000; i++) {
+            [helper concurrentWrite:^(id  _Nonnull value) {
+                [value addEntriesFromDictionary:@{[NSString stringWithFormat:@"%d",i]:@"val"}];
+            }];
+        }
+    });
+    dispatch_group_enter(group);
+    dispatch_async(dispatch_queue_create(0, 0), ^{
+        for (int j = 0; j<10000; j++) {
+            NSMutableDictionary *newDict = [NSMutableDictionary new];
+            [newDict addEntriesFromDictionary:helper.currentValue];
+            if(j == 9999){
+                dispatch_group_leave(group);
+            }
+        }
+        
+    });
+    dispatch_group_notify(group, dispatch_get_main_queue(), ^{
+        [exception fulfill];
+    });
+}
+- (void)testReadWriteHelperValueTypeCopy{
+    FTTestObject *object = [[FTTestObject alloc]init];
+    XCTAssertThrows([[FTReadWriteHelper alloc]initWithValue:object]);
+}
+- (void)testFTMonitorValueCopy{
+    FTMonitorValue *value = [[FTMonitorValue alloc]init];
+    [value addSample:1234];
+    [value addSample:2345];
+    FTReadWriteHelper *helper = [[FTReadWriteHelper alloc]initWithValue:value];
+    FTMonitorValue *copy = helper.currentValue;
+    XCTAssertTrue(copy != value);
+    XCTAssertTrue(copy.sampleValueCount == value.sampleValueCount);
+    XCTAssertTrue(copy.maxValue == value.maxValue);
+    XCTAssertTrue(copy.minValue == value.minValue);
+    XCTAssertTrue(copy.meanValue == value.meanValue);
+    XCTAssertTrue(copy.greatestDiff == value.greatestDiff);
+
+}
+@end

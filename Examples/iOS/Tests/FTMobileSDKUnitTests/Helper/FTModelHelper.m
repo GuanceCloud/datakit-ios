@@ -1,0 +1,192 @@
+//
+//  FTModelHelper.m
+//  FTMobileSDKUnitTests
+//
+//  Created by hulilei on 2022/4/14.
+//  Copyright 2022 Shanghai Guance Information Technology Co., Ltd.
+//
+//  Licensed under the Apache License, Version 2.0 (the "License");
+//  you may not use this file except in compliance with the License.
+//  You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+//  Unless required by applicable law or agreed to in writing, software
+//  distributed under the License is distributed on an "AS IS" BASIS,
+//  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+//  See the License for the specific language governing permissions and
+//  limitations under the License.
+//
+
+#import "FTModelHelper.h"
+#import <FTConstants.h>
+#import "NSDate+FTUtil.h"
+#import <FTInternalConstants.h>
+#import "FTRUMManager.h"
+#import "FTMobileAgent.h"
+#import "FTJSONUtil.h"
+#import "FTBaseInfoHandler.h"
+@implementation FTModelHelper
++ (FTRecordModel *)createLogModel{
+    return  [FTModelHelper createLogModel:[[NSDate date] ft_stringWithGMTFormat]];
+}
++ (FTRecordModel *)createLogModel:(NSString *)message{
+    NSDictionary *filedDict = @{FT_KEY_MESSAGE:message,
+    };
+    NSDictionary *tagDict = @{FT_KEY_STATUS:FTStringFromLogStatus(StatusInfo)};
+
+    FTRecordModel *model = [[FTRecordModel alloc]initWithSource:FT_LOGGER_SOURCE op:FT_DATA_TYPE_LOGGING tags:tagDict fields:filedDict tm:[NSDate ft_currentNanosecondTimeStamp]];
+    return model;
+}
++ (FTRecordModel *)createRUMModel:(NSString *)message{
+    NSDictionary *field = @{ FT_KEY_ERROR_MESSAGE:message,
+                             FT_KEY_ERROR_STACK:@"rum_model_create",
+    };
+    NSDictionary *tags = @{
+        FT_KEY_ERROR_TYPE:@"ios_crash",
+        FT_KEY_ERROR_SOURCE:@"logger",
+        FT_KEY_ERROR_SITUATION:FTStringFromAppState(FTAppStateRun),
+        FT_RUM_KEY_SESSION_ID:[FTBaseInfoHandler randomUUID],
+        FT_RUM_KEY_SESSION_TYPE:@"user",
+    };
+    FTRecordModel *model = [[FTRecordModel alloc]initWithSource:FT_RUM_SOURCE_ERROR op:FT_DATA_TYPE_RUM tags:tags fields:field tm:[NSDate ft_currentNanosecondTimeStamp]];
+    return model;
+}
++ (FTRecordModel *)createRumModel{
+    NSDictionary *field = @{ FT_KEY_ERROR_MESSAGE:@"rum_model_create",
+                             FT_KEY_ERROR_STACK:@"rum_model_create",
+    };
+    NSDictionary *tags = @{
+        FT_KEY_ERROR_TYPE:@"ios_crash",
+        FT_KEY_ERROR_SOURCE:@"logger",
+        FT_KEY_ERROR_SITUATION:FTStringFromAppState(FTAppStateRun),
+        FT_RUM_KEY_SESSION_ID:[FTBaseInfoHandler randomUUID],
+        FT_RUM_KEY_SESSION_TYPE:@"user",
+    };
+    FTRecordModel *model = [[FTRecordModel alloc]initWithSource:FT_RUM_SOURCE_ERROR op:FT_DATA_TYPE_RUM tags:tags fields:field tm:[NSDate ft_currentNanosecondTimeStamp]];
+    return model;
+}
++ (FTRecordModel *)createWrongFormatRumModel{
+    NSDictionary *tags = @{
+        FT_KEY_ERROR_TYPE:@"ios_crash",
+        FT_KEY_ERROR_SOURCE:@"logger",
+        FT_KEY_ERROR_SITUATION:FTStringFromAppState(FTAppStateRun),
+        FT_RUM_KEY_SESSION_ID:[FTBaseInfoHandler randomUUID],
+        FT_RUM_KEY_SESSION_TYPE:@"user",
+    };
+    FTRecordModel *model = [[FTRecordModel alloc]init];
+    model.op = @"logger";
+    NSDictionary *opData = @{
+        FT_KEY_SOURCE:@"logger",
+        FT_FIELDS:@{},
+        FT_TAGS:tags,
+        FT_TIME:@(model.tm)
+    };
+    NSDictionary *data =@{FT_OP:@"logger",
+                          FT_OPDATA:opData,
+    };
+   
+    model.data = [FTJSONUtil convertToJsonData:data];
+    return model;
+}
++ (void)startView{
+    [FTModelHelper startView:nil];
+}
++ (void)startViewWithName:(NSString *)name{
+    [[FTExternalDataManager sharedManager] onCreateView:name loadTime:@1000000000];
+    [[FTExternalDataManager sharedManager] startViewWithName:name];
+}
++ (void)startView:(NSDictionary *)context{
+    NSString *viewName = [NSString stringWithFormat:@"view%@",[FTBaseInfoHandler randomUUID]];
+    [[FTExternalDataManager sharedManager] onCreateView:viewName loadTime:@1000000000];
+    [[FTExternalDataManager sharedManager] startViewWithName:viewName property:context];
+}
+
++ (void)stopView{
+    [[FTExternalDataManager sharedManager] stopView];
+}
++ (void)stopView:(NSDictionary *)context{
+    [[FTExternalDataManager sharedManager] stopViewWithProperty:context];
+}
++ (void)startResource:(NSString *)key{
+    [[FTExternalDataManager sharedManager] startResourceWithKey:key];
+}
++ (void)stopErrorResource:(NSString *)key{
+    FTResourceContentModel *model = [FTResourceContentModel new];
+    model.url = [NSURL URLWithString:@"https://www.baidu.com/more/"];
+    model.httpStatusCode = 404;
+    model.httpMethod = @"GET";
+    [[FTExternalDataManager sharedManager] stopResourceWithKey:key];
+    [[FTExternalDataManager sharedManager] addResourceWithKey:key metrics:nil content:model];
+}
++ (void)startAction{
+    [[FTExternalDataManager sharedManager] startAction:@"testActionClick" actionType:@"click" property:nil];
+}
++ (void)startActionWithType:(NSString *)type{
+    [[FTExternalDataManager sharedManager] startAction:@"testActionClick2" actionType:type property:nil];
+}
++ (void)addActionWithContext:(NSDictionary *)context{
+    [[FTExternalDataManager sharedManager] addAction:@"testActionWithContext" actionType:@"click" property:context];
+}
++ (void)resolveModelArray:(NSArray *)modelArray callBack:(void(^)(NSString *source,NSDictionary *tags,NSDictionary *fields,BOOL *stop))callBack{
+    [modelArray enumerateObjectsWithOptions:NSEnumerationReverse usingBlock:^(FTRecordModel *obj, NSUInteger idx, BOOL * _Nonnull stop) {
+        NSDictionary *dict = [FTJSONUtil dictionaryWithJsonString:obj.data];
+        NSDictionary *opdata = dict[@"opdata"];
+        NSString *source = opdata[@"source"];
+        NSDictionary *tags = opdata[FT_TAGS];
+        NSDictionary *fields = opdata[FT_FIELDS];
+        if(callBack){
+            callBack(source,tags,fields,stop);
+        }
+    }];
+}
++ (void)resolveModelArray:(NSArray *)modelArray timeCallBack:(void(^)(NSString *source,NSDictionary *tags,NSDictionary *fields,long long time,BOOL *stop))callBack{
+    [modelArray enumerateObjectsWithOptions:NSEnumerationReverse usingBlock:^(FTRecordModel *obj, NSUInteger idx, BOOL * _Nonnull stop) {
+        NSDictionary *dict = [FTJSONUtil dictionaryWithJsonString:obj.data];
+        NSDictionary *opdata = dict[@"opdata"];
+        NSString *source = opdata[@"source"];
+        NSDictionary *tags = opdata[FT_TAGS];
+        NSDictionary *fields = opdata[FT_FIELDS];
+        NSNumber *time = opdata[FT_TIME];
+        if(callBack){
+            callBack(source,tags,fields,[time longLongValue],stop);
+        }
+    }];
+}
++ (void)resolveModelArray:(NSArray *)modelArray idxCallBack:(void(^)(NSString *source,NSDictionary *tags,NSDictionary *fields,BOOL *stop,NSUInteger idx))callBack{
+    [modelArray enumerateObjectsWithOptions:NSEnumerationReverse usingBlock:^(FTRecordModel *obj, NSUInteger idx, BOOL * _Nonnull stop) {
+        NSDictionary *dict = [FTJSONUtil dictionaryWithJsonString:obj.data];
+        NSDictionary *opdata = dict[@"opdata"];
+        NSString *source = opdata[@"source"];
+        NSDictionary *tags = opdata[FT_TAGS];
+        NSDictionary *fields = opdata[FT_FIELDS];
+        if(callBack){
+            callBack(source,tags,fields,stop,idx);
+        }
+    }];
+}
++ (void)resolveModelArray:(NSArray *)modelArray modelIdCallBack:(void(^)(NSString *source,NSDictionary *tags,NSDictionary *fields,BOOL *stop,NSString *modelId))callBack{
+    [modelArray enumerateObjectsWithOptions:NSEnumerationReverse usingBlock:^(FTRecordModel *obj, NSUInteger idx, BOOL * _Nonnull stop) {
+        NSDictionary *dict = [FTJSONUtil dictionaryWithJsonString:obj.data];
+        NSDictionary *opdata = dict[@"opdata"];
+        NSString *source = opdata[@"source"];
+        NSDictionary *tags = opdata[FT_TAGS];
+        NSDictionary *fields = opdata[FT_FIELDS];
+        if(callBack){
+            callBack(source,tags,fields,stop,obj._id);
+        }
+    }];
+}
++ (void)resolveModelArray:(NSArray *)modelArray dataTypeCallBack:(void(^)(NSString *source,NSDictionary *tags,NSDictionary *fields,NSString *type,BOOL *stop))callBack{
+    [modelArray enumerateObjectsWithOptions:NSEnumerationReverse usingBlock:^(FTRecordModel *obj, NSUInteger idx, BOOL * _Nonnull stop) {
+        NSDictionary *dict = [FTJSONUtil dictionaryWithJsonString:obj.data];
+        NSDictionary *opdata = dict[@"opdata"];
+        NSString *source = opdata[@"source"];
+        NSDictionary *tags = opdata[FT_TAGS];
+        NSDictionary *fields = opdata[FT_FIELDS];
+        if(callBack){
+            callBack(source,tags,fields,obj.op,stop);
+        }
+    }];
+}
+@end

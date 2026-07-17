@@ -1,0 +1,55 @@
+//
+//  FTResourceContentModel.h
+//  FTMobileAgent
+//
+//  Created by hulilei on 2021/10/27.
+//  Copyright 2021 Shanghai Guance Information Technology Co., Ltd.
+//
+//  Licensed under the Apache License, Version 2.0 (the "License");
+//  you may not use this file except in compliance with the License.
+//  You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+//  Unless required by applicable law or agreed to in writing, software
+//  distributed under the License is distributed on an "AS IS" BASIS,
+//  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+//  See the License for the specific language governing permissions and
+//  limitations under the License.
+//
+
+#import <Foundation/Foundation.h>
+
+NS_ASSUME_NONNULL_BEGIN
+
+/// Resource data content
+@interface FTResourceContentModel : NSObject
+/// Request URL 
+@property (nonatomic, strong) NSURL *url;
+/// Request headers
+@property (nonatomic, copy) NSDictionary *requestHeader;
+/// Response headers
+@property (nonatomic, copy) NSDictionary *responseHeader;
+/// HTTP method
+@property (nonatomic, copy) NSString *httpMethod;
+/// Request result status code
+@property (nonatomic, assign) NSInteger httpStatusCode;
+/// Request error message
+@property (nonatomic, copy) NSString *errorMessage;
+/// Error information (iOS native)
+@property (nonatomic, strong,nullable) NSError *error;
+/// Response result
+@property (nonatomic, copy) NSString *responseBody;
+/// Resource Type
+@property (nonatomic, copy, nullable) NSString *resourceType;
+
+///  Initialization method
+/// - Parameters:
+///   - request: network request
+///   - response: network request response result
+///   - data: data obtained from network request
+///   - error: error information
+-(instancetype)initWithRequest:(NSURLRequest *)request response:(nullable NSURLResponse *)response data:(nullable NSData *)data error:(nullable NSError *)error;
+@end
+
+NS_ASSUME_NONNULL_END
