@@ -270,7 +270,7 @@ heatmapIdentifierRegistry:(id<FTHeatmapIdentifierRegistry>)heatmapIdentifierRegi
         static dispatch_once_t viewOnceToken;
         dispatch_once(&viewOnceToken, ^{
             NSError *error = NULL;
-            [UIViewController ft_swizzleMethod:@selector(viewDidLoad) withMethod:@selector(ft_viewDidLoad) error:&error];
+            [UIViewController ft_swizzleViewControllerInitLifecycle];
             [UIViewController ft_swizzleMethod:@selector(viewDidAppear:) withMethod:@selector(ft_viewDidAppear:) error:&error];
             [UIViewController ft_swizzleMethod:@selector(viewDidDisappear:) withMethod:@selector(ft_viewDidDisappear:) error:&error];
         });
@@ -348,6 +348,7 @@ heatmapIdentifierRegistry:(id<FTHeatmapIdentifierRegistry>)heatmapIdentifierRegi
     if(!self.autoTrackView){
         return;
     }
+    [UIViewController ft_invalidatePendingViewLoadDurations];
     RUMView *current = [self.stack lastObject];
     if(current){
         [self.addRumDatasDelegate stopViewWithViewID:current.viewControllerUUID property:nil];
