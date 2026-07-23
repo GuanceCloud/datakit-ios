@@ -76,6 +76,29 @@ final class FTTestInteraction: XCTestCase {
         XCTAssertTrue(oldLogger == logger)
         FTMobileAgent.shutDown()
     }
+
+    func testIssueDataProviderPublicAPICompiles() {
+        let rumConfig = FTRumConfig(appid: "appid")
+        rumConfig.issueDataProvider = { issue in
+            let category: FTIssueCategory = issue.category
+            let errorType: String = issue.errorType
+            let stack: String = issue.stack
+            let occurredAt: Int64 = issue.occurredAtNanoseconds
+            let appState: String = issue.appState
+            let threadName: String? = issue.threadName
+            let historical: Bool = issue.isHistorical
+            return [
+                "category": category.rawValue,
+                "error_type_copy": errorType,
+                "stack_copy": stack,
+                "occurred_at_copy": occurredAt,
+                "app_state_copy": appState,
+                "thread_name_copy": threadName ?? "",
+                "historical_issue": historical,
+            ]
+        }
+        XCTAssertNotNil(rumConfig.issueDataProvider)
+    }
     
     // MARK: - Trace - Get trace header
     

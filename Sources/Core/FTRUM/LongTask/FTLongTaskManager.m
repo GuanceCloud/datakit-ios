@@ -27,6 +27,7 @@
 #import "FTErrorMonitorInfo.h"
 #import "FTInnerLog.h"
 #import "FTRUMContext.h"
+#import "FTIssueFieldEnricher.h"
 
 @interface FTLongTaskActiveEvent : NSObject
 @property (nonatomic, assign) long long startTimeNs;
@@ -246,6 +247,23 @@
         [anrFields addEntriesFromDictionary:[contextModel.lastSessionState sessionFields]];
         [anrFields setValue:@"ios_anr" forKey:FT_KEY_ERROR_MESSAGE];
         [anrFields setValue:allBacktrace ?: backtrace forKey:FT_KEY_ERROR_STACK];
+        if (self.dependencies.issueFieldEnricher) {
+            FTIssueInfo *issue = [[FTIssueInfo alloc]
+                initWithCategory:FTIssueCategoryANR
+                errorType:@"anr_error"
+                message:@"ios_anr"
+                stack:allBacktrace ?: backtrace ?: @""
+                occurredAtNanoseconds:startTime
+                appState:contextModel.appState ?: @"unknown"
+                threadName:@"main"
+                historical:YES];
+            NSMutableSet<NSString *> *reservedKeys = [NSMutableSet setWithArray:anrTags.allKeys];
+            [reservedKeys addObjectsFromArray:anrFields.allKeys];
+            NSDictionary *customFields =
+                [self.dependencies.issueFieldEnricher fieldsForIssue:issue
+                                                         reservedKeys:reservedKeys];
+            [anrFields addEntriesFromDictionary:customFields];
+        }
         [self.dependencies.writer rumWriteAssembledData:FT_RUM_SOURCE_ERROR tags:anrTags fields:anrFields time:startTime];
         return startTime;
     }

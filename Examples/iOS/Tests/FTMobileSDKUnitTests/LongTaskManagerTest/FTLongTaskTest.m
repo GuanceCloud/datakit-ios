@@ -34,7 +34,7 @@
 #import "FTLongTaskManager+Test.h"
 #import "FTTestUtils.h"
 @interface FTLongTaskTest : KIFTestCase
-
+@property (nonatomic, copy, nullable) FTIssueDataProvider issueDataProvider;
 @end
 @implementation FTLongTaskTest
 -(void)setUp{
@@ -44,6 +44,7 @@
     [[NSFileManager defaultManager] removeItemAtPath:pathString error:&error];
 }
 -(void)tearDown{
+    self.issueDataProvider = nil;
     [[tester waitForViewWithAccessibilityLabel:@"home"] tap];
     [NSThread sleepForTimeInterval:1];
 }
@@ -58,6 +59,7 @@
     rumConfig.enableTrackAppANR = enable;
     rumConfig.enableTrackAppFreeze = longTask;
     rumConfig.enableTrackAppCrash = YES;
+    rumConfig.issueDataProvider = self.issueDataProvider;
     config.enableSDKDebugLog = YES;
     [FTMobileAgent startWithConfigOptions:config];
     [[FTMobileAgent sharedInstance] startRumWithConfigOptions:rumConfig];
@@ -121,6 +123,13 @@
 
 }
 - (void)testTrackAnrAndAnrStartTime{
+    __block NSInteger providerCallCount = 0;
+    __block FTIssueInfo *receivedIssue = nil;
+    self.issueDataProvider = ^NSDictionary<NSString *,id> * _Nullable(FTIssueInfo *issue) {
+        providerCallCount += 1;
+        receivedIssue = issue;
+        return @{@"current_anr_field": @"current"};
+    };
     [self initSDKWithEnableTrackAppANR:YES longTask:NO];
     long long startTime = [NSDate ft_currentNanosecondTimeStamp];
     [self mockAnr];
@@ -134,10 +143,24 @@
             if ([source isEqualToString:FT_RUM_SOURCE_ERROR]) {
                 noAnr = NO;
                 XCTAssertTrue(startTime-time<1000000000 || time-startTime<1000000000);
+                XCTAssertEqualObjects(fields[@"current_anr_field"], @"current");
                 *stop = YES;
             }
         }];
         XCTAssertTrue(noAnr == NO);
+        XCTAssertEqual(providerCallCount, 1);
+        XCTAssertEqual(receivedIssue.category, FTIssueCategoryANR);
+        XCTAssertEqualObjects(receivedIssue.errorType, @"anr_error");
+        XCTAssertEqualObjects(receivedIssue.message, @"ios_anr");
+        XCTAssertEqualObjects(receivedIssue.appState, @"run");
+        XCTAssertEqualObjects(receivedIssue.threadName, @"main");
+        XCTAssertFalse(receivedIssue.isHistorical);
+        XCTAssertTrue(receivedIssue.occurredAtNanoseconds > 0);
+        [[FTExternalDataManager sharedManager] addErrorWithType:@"anr_error"
+                                                       message:@"manual"
+                                                         stack:@"manual stack"];
+        [[FTGlobalRumManager sharedInstance].rumManager syncProcess];
+        XCTAssertEqual(providerCallCount, 1);
         [expect fulfill];
         
     });
@@ -293,6 +316,13 @@
     XCTAssertTrue(data.length == 0);
 }
 - (void)test_reportFatalANRDataIfFound_fatalAnr{
+    __block NSInteger providerCallCount = 0;
+    __block FTIssueInfo *receivedIssue = nil;
+    self.issueDataProvider = ^NSDictionary<NSString *,id> * _Nullable(FTIssueInfo *issue) {
+        providerCallCount += 1;
+        receivedIssue = issue;
+        return @{@"historical_anr_field": @"historical"};
+    };
     NSString *path = [[NSBundle mainBundle] pathForResource:@"longtask" ofType:@"log"];
     
     NSFileManager *fileManager = [NSFileManager defaultManager];
@@ -321,6 +351,7 @@
             hasLongTask = YES;
         }else if ([source isEqualToString:FT_RUM_SOURCE_ERROR]){
             hasAnr = YES;
+            XCTAssertEqualObjects(fields[@"historical_anr_field"], @"historical");
         }else if ([source isEqualToString:FT_RUM_SOURCE_VIEW]){
             XCTAssertTrue([fields[FT_KEY_VIEW_LONG_TASK_COUNT] isEqual:@1]);
             XCTAssertTrue([fields[FT_KEY_VIEW_UPDATE_TIME] isEqual:@2]);
@@ -333,6 +364,13 @@
     XCTAssertTrue(hasLongTask);
     XCTAssertTrue(hasAnr);
     XCTAssertTrue(hasView);
+    XCTAssertEqual(providerCallCount, 1);
+    XCTAssertEqual(receivedIssue.category, FTIssueCategoryANR);
+    XCTAssertEqualObjects(receivedIssue.errorType, @"anr_error");
+    XCTAssertEqualObjects(receivedIssue.message, @"ios_anr");
+    XCTAssertEqualObjects(receivedIssue.threadName, @"main");
+    XCTAssertTrue(receivedIssue.isHistorical);
+    XCTAssertTrue(receivedIssue.occurredAtNanoseconds > 0);
     XCTAssertFalse([[NSFileManager defaultManager] fileExistsAtPath:fileURL.path]);
     [FTMobileAgent shutDown];
 

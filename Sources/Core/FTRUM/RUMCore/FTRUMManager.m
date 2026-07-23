@@ -19,6 +19,7 @@
 //
 
 #import "FTRUMManager.h"
+#import "FTIssueFieldEnricher.h"
 #import "FTBaseInfoHandler.h"
 #import "FTRUMSessionHandler.h"
 #import "FTMonitorUtils.h"
@@ -484,15 +485,49 @@ void *FTRUMQueueIdentityKey = &FTRUMQueueIdentityKey;
 
 #pragma mark - error 、 long_task -
 -(void)addErrorWithType:(NSString *)type message:(NSString *)message stack:(NSString *)stack{
-    [self addErrorWithType:type stateStr:FTStringFromAppState(self.appState) message:message stack:stack property:nil time:[NSDate ft_currentNanosecondTimeStamp]];
+    [self addErrorWithType:type stateStr:FTStringFromAppState(self.appState) message:message stack:stack property:nil time:[NSDate ft_currentNanosecondTimeStamp] issueInfo:nil];
 }
 -(void)addErrorWithType:(NSString *)type message:(NSString *)message stack:(NSString *)stack property:(nullable NSDictionary *)property{
-    [self addErrorWithType:type stateStr:FTStringFromAppState(self.appState) message:message stack:stack property:property time:[NSDate ft_currentNanosecondTimeStamp]];
+    [self addErrorWithType:type stateStr:FTStringFromAppState(self.appState) message:message stack:stack property:property time:[NSDate ft_currentNanosecondTimeStamp] issueInfo:nil];
 }
 - (void)addErrorWithType:(NSString *)type state:(FTAppState)state message:(NSString *)message stack:(NSString *)stack property:(nullable NSDictionary *)property{
-    [self addErrorWithType:type stateStr:FTStringFromAppState(state) message:message stack:stack property:property time:[NSDate ft_currentNanosecondTimeStamp]];
+    [self addErrorWithType:type stateStr:FTStringFromAppState(state) message:message stack:stack property:property time:[NSDate ft_currentNanosecondTimeStamp] issueInfo:nil];
 }
 - (void)addErrorWithType:(NSString *)type stateStr:(NSString *)stateStr message:(NSString *)message stack:(NSString *)stack property:(nullable NSDictionary *)property time:(long long)time{
+    [self addErrorWithType:type stateStr:stateStr message:message stack:stack property:property time:time issueInfo:nil];
+}
+- (void)addAutomaticIssueWithCategory:(FTIssueCategory)category
+                            errorType:(NSString *)errorType
+                             appState:(NSString *)appState
+                              message:(nullable NSString *)message
+                                stack:(nullable NSString *)stack
+                           threadName:(nullable NSString *)threadName
+                                 time:(long long)time
+                           historical:(BOOL)historical {
+    FTIssueInfo *issueInfo = [[FTIssueInfo alloc]
+        initWithCategory:category
+        errorType:errorType
+        message:message
+        stack:stack ?: @""
+        occurredAtNanoseconds:time
+        appState:appState
+        threadName:threadName
+        historical:historical];
+    [self addErrorWithType:errorType
+                  stateStr:appState
+                   message:message ?: @""
+                     stack:stack ?: @""
+                  property:nil
+                      time:time
+                 issueInfo:issueInfo];
+}
+- (void)addErrorWithType:(NSString *)type
+                stateStr:(NSString *)stateStr
+                 message:(NSString *)message
+                   stack:(NSString *)stack
+                property:(nullable NSDictionary *)property
+                    time:(long long)time
+               issueInfo:(nullable FTIssueInfo *)issueInfo {
     if (!(type && message && type.length>0 && message.length>0)) {
         FTInnerLogError(@"[RUM] Failed to add error due to missing required fields. Please ensure 'type'、'message' are provided.");
         return;
@@ -514,6 +549,15 @@ void *FTRUMQueueIdentityKey = &FTRUMQueueIdentityKey;
             [tags setValue:FT_LOGGER forKey:FT_KEY_ERROR_SOURCE];
             [tags setValue:stateStr forKey:FT_KEY_ERROR_SITUATION];
             [tags addEntriesFromDictionary:[self.rumDependencies.errorMonitorInfoWrapper errorMonitorInfo]];
+            if (issueInfo && self.rumDependencies.issueFieldEnricher) {
+                NSMutableSet<NSString *> *reservedKeys = [NSMutableSet setWithArray:tags.allKeys];
+                [reservedKeys addObjectsFromArray:fields.allKeys];
+                [reservedKeys addObjectsFromArray:context.allKeys];
+                NSDictionary *customFields =
+                    [self.rumDependencies.issueFieldEnricher fieldsForIssue:issueInfo
+                                                               reservedKeys:reservedKeys];
+                [fields addEntriesFromDictionary:customFields];
+            }
             FTRUMErrorData *model = [[FTRUMErrorData alloc]init];
             model.type = FTRUMDataError;
             model.tags = tags;

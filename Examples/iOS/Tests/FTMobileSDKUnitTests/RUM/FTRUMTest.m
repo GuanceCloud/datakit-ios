@@ -2541,6 +2541,51 @@
     XCTAssertEqualObjects(model.fields[FT_KEY_BACKGROUND_CRASH_FREE_DURATION], @45600000000LL);
 }
 
+- (void)testCrashIssueDataProviderUsesHistoricalFactsAndProtectsReservedFields{
+    FTCrashReportWrapper *wrapper = [self mockCrashReportWrapper];
+    NSMutableString *mutableValue = [NSMutableString stringWithString:@"captured"];
+    NSMutableDictionary *returnedFields = [@{
+        @"business_scene": mutableValue,
+        FT_KEY_ERROR_MESSAGE: @"replacement",
+        FT_KEY_FOREGROUND_CRASH_FREE_DURATION: @1,
+    } mutableCopy];
+    __block NSInteger providerCallCount = 0;
+    __block FTIssueInfo *receivedIssue = nil;
+    [wrapper setIssueDataProvider:^NSDictionary<NSString *,id> * _Nullable(FTIssueInfo *issue) {
+        providerCallCount += 1;
+        receivedIssue = issue;
+        return returnedFields;
+    }];
+    NSDictionary *report = [self mockCrashReportWithAppStats:@{
+        FTCrashField_ActiveTimeSinceCrash: @12.3,
+    }];
+    __block NSArray<id<FTCrashReport>> *filteredReports = nil;
+
+    [wrapper filterReports:@[[FTCrashReportDictionary reportWithValue:report]]
+              onCompletion:^(NSArray<id<FTCrashReport>> *reports, NSError *error) {
+        XCTAssertNil(error);
+        filteredReports = reports;
+    }];
+    [mutableValue appendString:@"-changed"];
+    returnedFields[@"business_scene"] = @"replaced";
+
+    XCTAssertEqual(providerCallCount, 1);
+    XCTAssertEqual(receivedIssue.category, FTIssueCategoryCrash);
+    XCTAssertEqualObjects(receivedIssue.errorType, @"ios_crash");
+    XCTAssertEqualObjects(receivedIssue.message, @"mock crash message");
+    XCTAssertEqualObjects(receivedIssue.stack, @"mock crash stack");
+    XCTAssertEqualObjects(receivedIssue.appState, @"run");
+    XCTAssertNil(receivedIssue.threadName);
+    XCTAssertTrue(receivedIssue.isHistorical);
+    XCTAssertTrue(receivedIssue.occurredAtNanoseconds > 0);
+
+    FTCrashReportRUMModel *rumReport = (FTCrashReportRUMModel *)filteredReports.lastObject;
+    RUMModel *model = rumReport.value;
+    XCTAssertEqualObjects(model.fields[@"business_scene"], @"captured");
+    XCTAssertEqualObjects(model.fields[FT_KEY_ERROR_MESSAGE], @"mock crash message");
+    XCTAssertEqualObjects(model.fields[FT_KEY_FOREGROUND_CRASH_FREE_DURATION], @12300000000LL);
+}
+
 - (void)testCrashErrorWithoutAppStatsDoesNotAddCrashFreeDurationFields{
     FTCrashReportWrapper *wrapper = [self mockCrashReportWrapper];
     NSDictionary *report = [self mockCrashReportWithAppStats:nil];

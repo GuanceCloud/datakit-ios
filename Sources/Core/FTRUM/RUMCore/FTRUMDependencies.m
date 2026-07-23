@@ -20,8 +20,21 @@
 
 #import "FTRUMDependencies.h"
 #import "FTConstants.h"
+#import "FTIssueFieldEnricher.h"
+
+@interface FTRUMDependencies ()
+@property (nonatomic, strong, nullable, readwrite) FTIssueFieldEnricher *issueFieldEnricher;
+@end
 
 @implementation FTRUMDependencies
+
+- (void)setIssueDataProvider:(nullable FTIssueDataProvider)issueDataProvider {
+    _issueDataProvider = [issueDataProvider copy];
+    self.issueFieldEnricher = _issueDataProvider
+        ? [[FTIssueFieldEnricher alloc] initWithProvider:_issueDataProvider]
+        : nil;
+}
+
 -(instancetype)copyWithZone:(NSZone *)zone {
     FTRUMDependencies *dependencies = [[[self class] allocWithZone:zone] init];
     dependencies.sampleRate = self.sampleRate;
@@ -33,6 +46,7 @@
     dependencies.errorMonitorInfoWrapper = self.errorMonitorInfoWrapper;
     dependencies.monitor = self.monitor;
     dependencies.fatalErrorContext = self.fatalErrorContext;
+    dependencies.issueDataProvider = self.issueDataProvider;
     dependencies.sessionHasReplay = self.sessionHasReplay;
     dependencies.sampledForErrorReplay = self.sampledForErrorReplay;
     dependencies.sessionReplaySampledFields = self.sessionReplaySampledFields;
