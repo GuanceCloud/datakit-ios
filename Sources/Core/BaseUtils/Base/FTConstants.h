@@ -45,6 +45,8 @@ extern NSString * const FT_TIME;
 extern NSString * const FT_DEFAULT_SERVICE_NAME;
 /// Default tvOS RUM service name.
 extern NSString * const FT_TVOS_SERVICE_NAME;
+/// Default macOS RUM service name.
+extern NSString * const FT_MACOS_SERVICE_NAME;
 /// iOS SDK collector name.
 extern NSString * const FT_IOS_SDK_NAME;
 /// Platform-specific SDK collector name used in RUM SDK attributes.

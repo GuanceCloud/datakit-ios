@@ -23,9 +23,12 @@
 
 #if TARGET_OS_OSX
 #import "Mac/FTAutoTrack.h"
+#import "FTAppLaunchTracker.h"
+#import "FTConstants.h"
 
-@interface FTAutoTrackHandler ()
+@interface FTAutoTrackHandler () <FTAppLaunchDataDelegate>
 @property (nonatomic, weak, nullable) id<FTRumDatasProtocol> addRumDatasDelegate;
+@property (nonatomic, strong, nullable) FTAppLaunchTracker *launchTracker;
 @end
 
 @implementation FTAutoTrackHandler
@@ -44,9 +47,36 @@
     self.addRumDatasDelegate = delegate;
     [FTAutoTrack sharedInstance].addRumDatasDelegate = delegate;
     [[FTAutoTrack sharedInstance] startHookView:trackView action:trackAction];
+    if (trackAction) {
+        self.launchTracker = [[FTAppLaunchTracker alloc] initWithDelegate:self displayMonitor:nil];
+    }
+}
+
+- (void)ftAppHotStart:(NSDate *)launchTime duration:(NSNumber *)duration {
+    if (self.addRumDatasDelegate && [self.addRumDatasDelegate respondsToSelector:@selector(addLaunch:type:launchTime:duration:property:)]) {
+        [self.addRumDatasDelegate addLaunch:@"app_hot_start"
+                                      type:FT_LAUNCH_HOT
+                                launchTime:launchTime
+                                  duration:duration
+                                  property:nil];
+    }
+}
+
+- (void)ftAppColdStart:(NSDate *)launchTime
+              duration:(NSNumber *)duration
+          isPreWarming:(BOOL)isPreWarming
+                fields:(NSDictionary *)fields {
+    if (self.addRumDatasDelegate && [self.addRumDatasDelegate respondsToSelector:@selector(addLaunch:type:launchTime:duration:property:)]) {
+        [self.addRumDatasDelegate addLaunch:isPreWarming ? @"app_warm_start" : @"app_cold_start"
+                                      type:isPreWarming ? FT_LAUNCH_WARM : FT_LAUNCH_COLD
+                                launchTime:launchTime
+                                  duration:duration
+                                  property:fields];
+    }
 }
 
 - (void)shutDown {
+    self.launchTracker = nil;
     self.addRumDatasDelegate = nil;
     [FTAutoTrack sharedInstance].addRumDatasDelegate = nil;
 }

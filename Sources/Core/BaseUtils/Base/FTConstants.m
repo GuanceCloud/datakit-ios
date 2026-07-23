@@ -47,6 +47,7 @@ NSString * const FT_RUM_SOURCE_LONG_TASK = @"long_task";
 NSString * const FT_KEY_SERVICE = @"service";
 NSString * const FT_DEFAULT_SERVICE_NAME = @"df_rum_ios";
 NSString * const FT_TVOS_SERVICE_NAME = @"df_rum_tvos";
+NSString * const FT_MACOS_SERVICE_NAME = @"df_rum_macos";
 NSString * const FT_IOS_SDK_NAME = @"df_ios_rum_sdk";
 NSString * const FT_TVOS_SDK_NAME = @"df_tvos_rum_sdk";
 NSString * const FT_MACOS_SDK_NAME = @"df_macos_rum_sdk";
