@@ -37,4 +37,9 @@
         [FTURLSessionInstrumentation.sharedInstance.interceptor taskCompleted:task error:error];
     }
 }
+-(void)URLSession:(NSURLSession *)session webSocketTask:(NSURLSessionTask *)webSocketTask didOpenWithProtocol:(NSString *)protocol{
+    if(FTURLSessionInstrumentation.sharedInstance.shouldRUMInterceptor){
+        [FTURLSessionInstrumentation.sharedInstance.interceptor taskWebSocketDidOpen:webSocketTask extraProvider:nil];
+    }
+}
 @end

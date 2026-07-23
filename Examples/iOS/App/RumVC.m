@@ -1,5 +1,5 @@
 //
-//  ManualRumAndTraceDataAdd.m
+//  RumVC.m
 //  App
 //
 //  Created by hulilei on 2021/12/3.
@@ -18,7 +18,7 @@
 //  limitations under the License.
 //
 
-#import "ManualRumAndTraceDataAdd.h"
+#import "RumVC.h"
 #import "TableViewCellItem.h"
 #import <GuanceSDK/GuanceSDK.h>
 #import <objc/runtime.h>
@@ -27,12 +27,12 @@ static const void * const kURLSessionTaskKey = &kURLSessionTaskKey;
 static const void * const kURLSessionTaskData = &kURLSessionTaskData;
 static const void * const kURLSessionTaskMetrics = &kURLSessionTaskMetrics;
 
-@interface ManualRumAndTraceDataAdd ()<UITableViewDelegate,UITableViewDataSource,NSURLSessionDelegate,NSURLSessionDataDelegate>
+@interface RumVC ()<UITableViewDelegate,UITableViewDataSource,NSURLSessionDelegate,NSURLSessionDataDelegate>
 @property (nonatomic, strong) UITableView *mtableView;
 @property (nonatomic, strong) NSMutableArray<TableViewCellItem*> *dataSource;
 @end
 
-@implementation ManualRumAndTraceDataAdd
+@implementation RumVC
 
 - (void)viewDidLoad {
     [super viewDidLoad];
@@ -56,7 +56,7 @@ static const void * const kURLSessionTaskMetrics = &kURLSessionTaskMetrics;
         [[FTExternalDataManager sharedManager] startViewWithName:@"TestVC"];
     }];
     TableViewCellItem *item3 = [[TableViewCellItem alloc]initWithTitle:@"RUM stopView" handler:^{
-    
+
         [[FTExternalDataManager sharedManager] stopView];
     }];
     TableViewCellItem *item4 = [[TableViewCellItem alloc]initWithTitle:@"RUM startAction" handler:^{
@@ -77,14 +77,20 @@ static const void * const kURLSessionTaskMetrics = &kURLSessionTaskMetrics;
     TableViewCellItem *item9 = [[TableViewCellItem alloc]initWithTitle:@"RUM Resource Error" handler:^{
         [weakSelf manualRumResource:@"https://httpbin.org/status/404"];
     }];
-    [self.dataSource addObjectsFromArray:@[item1,item2,item3,item4,item5,item6,item7,item8,item9]];
+    TableViewCellItem *item10 = [[TableViewCellItem alloc]initWithTitle:@"Resource WebSocket Success" handler:^{
+        [weakSelf createWebSocketResourceWithURLString:@"wss://testserver.host/ws/echo"];
+    }];
+    TableViewCellItem *item11 = [[TableViewCellItem alloc]initWithTitle:@"Resource WebSocket Error" handler:^{
+        [weakSelf createWebSocketResourceWithURLString:@"wss://testserver.host/status/403"];
+    }];
+    [self.dataSource addObjectsFromArray:@[item1,item2,item3,item4,item5,item6,item7,item8,item9,item10,item11]];
     _mtableView = [[UITableView alloc] initWithFrame:CGRectMake(0, 0, self.view.bounds.size.width, self.view.bounds.size.height)];
     _mtableView.dataSource = self;
     _mtableView.delegate = self;
     [self.view addSubview:_mtableView];
-    
+
     [_mtableView registerClass:[UITableViewCell class] forCellReuseIdentifier:@"UITableViewCell"];
-    
+
 }
 - (void)manualTrace{
     NSString *key = [[NSUUID UUID]UUIDString];
@@ -101,24 +107,42 @@ static const void * const kURLSessionTaskMetrics = &kURLSessionTaskMetrics;
         }];
     }
     NSURLSession *session=[NSURLSession sharedSession];
-    
+
     NSURLSessionTask *task = [session dataTaskWithRequest:request completionHandler:^(NSData * _Nullable data, NSURLResponse * _Nullable response, NSError * _Nullable error) {
 
     }];
-    
+
     [task resume];
-    
+
 }
 - (void)manualRumResource:(NSString *)urlStr{
     NSURL *url = [NSURL URLWithString:urlStr];
     NSMutableURLRequest *request = [NSMutableURLRequest requestWithURL:url];
-    
+
     NSURLSession *session=[NSURLSession sessionWithConfiguration:[NSURLSessionConfiguration defaultSessionConfiguration] delegate:self delegateQueue:[NSOperationQueue mainQueue]];
     NSURLSessionTask *task = [session dataTaskWithRequest:request];
     NSString *resourceKey = [[NSUUID UUID]UUIDString];
     [self setAssociatedObject:task key:&kURLSessionTaskKey value:resourceKey];
     [[FTExternalDataManager sharedManager] startResourceWithKey:resourceKey];
     [task resume];
+}
+
+/// The SDK automatically reports the WebSocket opening handshake as a Resource.
+/// The task is closed after the demo interval so repeated taps do not leave sockets open.
+- (void)createWebSocketResourceWithURLString:(NSString *)urlString{
+    if (@available(iOS 13.0, *)) {
+        NSURL *url = [NSURL URLWithString:urlString];
+        NSURLSessionConfiguration *configuration = [NSURLSessionConfiguration ephemeralSessionConfiguration];
+        NSURLSession *session = [NSURLSession sessionWithConfiguration:configuration
+                                                              delegate:nil
+                                                         delegateQueue:nil];
+        NSURLSessionWebSocketTask *task = [session webSocketTaskWithURL:url];
+        [task resume];
+        dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)(10 * NSEC_PER_SEC)), dispatch_get_main_queue(), ^{
+            [task cancelWithCloseCode:NSURLSessionWebSocketCloseCodeNormalClosure reason:nil];
+            [session invalidateAndCancel];
+        });
+    }
 }
 
 - (void)setAssociatedObject:(NSURLSessionTask *)task key:(const void *)key value:(id)value{
@@ -135,12 +159,11 @@ static const void * const kURLSessionTaskMetrics = &kURLSessionTaskMetrics;
     [self setAssociatedObject:dataTask key:&kURLSessionTaskData value:data];
 }
 -(void)URLSession:(NSURLSession *)session task:(NSURLSessionTask *)task didCompleteWithError:(NSError *)error{
-
     NSHTTPURLResponse *httpResponse = (NSHTTPURLResponse *)task.response;
-    
+
     NSString *key = [self getAssociatedObject:task key:&kURLSessionTaskKey];
     [[FTExternalDataManager sharedManager] stopResourceWithKey:key];
-    
+
     FTResourceMetricsModel *metricsModel = [[FTResourceMetricsModel alloc]initWithTaskMetrics:[self getAssociatedObject:task key:&kURLSessionTaskMetrics]];
 
 

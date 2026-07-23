@@ -349,7 +349,7 @@ void *FTRUMQueueIdentityKey = &FTRUMQueueIdentityKey;
     dispatch_async(self.rumQueue, ^{
         @try {
             NSDictionary *context = [self rumDynamicProperty];
-            if(metrics.resourceFetchTypeLocalCache){
+            if(metrics.resourceFetchTypeLocalCache && !content.webSocketHandshake){
                 FTRUMResourceDataModel *resourceSuccess = [[FTRUMResourceDataModel alloc]initWithType:FTRUMDataResourceAbandon identifier:key];
                 [self process:resourceSuccess context:context];
             }else{
@@ -395,8 +395,14 @@ void *FTRUMQueueIdentityKey = &FTRUMQueueIdentityKey;
                     [self process:resourceError context:context];
                     
                 }
-                [tags setValue:[self getResourceStatusGroup:content.httpStatusCode] forKey:FT_KEY_RESOURCE_STATUS_GROUP];
+                if (!(content.webSocketHandshake && content.httpStatusCode == 0)) {
+                    [tags setValue:[self getResourceStatusGroup:content.httpStatusCode] forKey:FT_KEY_RESOURCE_STATUS_GROUP];
+                }
                 [tags setValue:content.resourceType forKey:FT_KEY_RESOURCE_TYPE];
+                if (content.webSocketHandshake) {
+                    [tags setValue:FT_RESOURCE_WEBSOCKET_COLLECTION_LEVEL_HANDSHAKE forKey:FT_KEY_RESOURCE_WEBSOCKET_COLLECTION_LEVEL];
+                    [tags setValue:content.webSocketHandshakeState forKey:FT_KEY_RESOURCE_WEBSOCKET_HANDSHAKE_STATE];
+                }
                 [tags setValue:[content.url query] forKey:FT_KEY_RESOURCE_URL_QUERY];
                 
                 NSNumber *responseSize = metrics.responseSize;
@@ -410,7 +416,7 @@ void *FTRUMQueueIdentityKey = &FTRUMQueueIdentityKey;
                     [tags setValue:responseConnectType forKey:FT_KEY_RESPONSE_CONTENT_TYPE];
                     [tags setValue:responseConnectEncoding forKey:FT_KEY_RESPONSE_CONTENT_ENCODING];
                     NSString *responseHeaderStr = [FTBaseInfoHandler convertToStringData:content.responseHeader];
-                    if (responseSize == nil) {
+                    if (!content.webSocketHandshake && responseSize == nil) {
                         responseSize = content.responseHeader[@"Content-Length"];
                         responseSize = @([responseSize longLongValue] + [responseHeaderStr dataUsingEncoding:NSUTF8StringEncoding].length);
                     }
@@ -420,14 +426,16 @@ void *FTRUMQueueIdentityKey = &FTRUMQueueIdentityKey;
                 if (content.requestHeader) {
                     NSString *requestHeaderStr = [FTBaseInfoHandler convertToStringData:content.requestHeader];
                     [fields setValue:requestHeaderStr forKey:FT_KEY_REQUEST_HEADER];
-                    if (requestSize == nil) {
+                    if (!content.webSocketHandshake && requestSize == nil) {
                         requestSize = content.requestHeader[@"Content-Length"];
                         requestSize = @([requestSize longLongValue] + [requestHeaderStr dataUsingEncoding:NSUTF8StringEncoding].length);
                     }
                 }
                 
-                [fields setValue:responseSize forKey:FT_KEY_RESOURCE_SIZE];
-                [fields setValue:requestSize forKey:FT_KEY_RESOURCE_REQUEST_SIZE];
+                if (!content.webSocketHandshake) {
+                    [fields setValue:responseSize forKey:FT_KEY_RESOURCE_SIZE];
+                    [fields setValue:requestSize forKey:FT_KEY_RESOURCE_REQUEST_SIZE];
+                }
 
                 [fields setValue:metrics.resourceHttpProtocol forKey:FT_KEY_RESOURCE_HTTP_PROTOCOL];
                 [fields setValue:@(metrics.reusedConnection) forKey:FT_KEY_RESOURCE_CONNECTION_REUSE];
@@ -442,6 +450,7 @@ void *FTRUMQueueIdentityKey = &FTRUMQueueIdentityKey;
                 
                 FTRUMResourceDataModel *resourceSuccess = [[FTRUMResourceDataModel alloc]initWithType:FTRUMDataResourceComplete identifier:key];
                 resourceSuccess.metrics = metrics;
+                resourceSuccess.keepsResourceDuration = content.webSocketHandshake;
                 resourceSuccess.time = time;
                 resourceSuccess.tags = tags;
                 resourceSuccess.fields = fields;

@@ -55,6 +55,7 @@ NS_ASSUME_NONNULL_BEGIN
 /// -  `- URLSession:dataTask:didReceiveData:`
 /// -  `- URLSession:task:didCompleteWithError:`
 /// -  `- URLSession:task:didFinishCollectingMetrics:`
+/// -  `- URLSession:webSocketTask:didOpenWithProtocol:` when forwarding WebSocket task callbacks
 @property (nonatomic, strong) FTURLSessionDelegate *ftURLSessionDelegate;
 
 @end

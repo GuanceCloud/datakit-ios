@@ -202,6 +202,10 @@ extern NSString * const FT_KEY_RESOURCE_URL_QUERY;
 extern NSString * const FT_KEY_RESOURCE_URL_PATH_GROUP;
 /// Resource type attribute key.
 extern NSString * const FT_KEY_RESOURCE_TYPE;
+/// Resource WebSocket collection-level attribute key.
+extern NSString * const FT_KEY_RESOURCE_WEBSOCKET_COLLECTION_LEVEL;
+/// Resource WebSocket opening-handshake state attribute key.
+extern NSString * const FT_KEY_RESOURCE_WEBSOCKET_HANDSHAKE_STATE;
 /// Resource request method attribute key.
 extern NSString * const FT_KEY_RESOURCE_METHOD;
 /// Resource response status attribute key.
@@ -257,6 +261,16 @@ extern NSString * const FT_KEY_RESOURCE_REQUEST_SIZE;
 extern NSString * const FT_KEY_RESOURCE_CONNECTION_REUSE;
 /// Network availability field key captured when the resource starts.
 extern NSString * const FT_KEY_NETWORK_AVAILABLE;
+/// Resource type value for a WebSocket opening handshake.
+extern NSString * const FT_RESOURCE_TYPE_WEBSOCKET;
+/// WebSocket collection-level value for opening-handshake-only Resources.
+extern NSString * const FT_RESOURCE_WEBSOCKET_COLLECTION_LEVEL_HANDSHAKE;
+/// WebSocket opening-handshake success value.
+extern NSString * const FT_RESOURCE_WEBSOCKET_HANDSHAKE_STATE_SUCCESS;
+/// WebSocket opening-handshake HTTP rejection value.
+extern NSString * const FT_RESOURCE_WEBSOCKET_HANDSHAKE_STATE_REJECTED;
+/// WebSocket opening-handshake transport or protocol failure value.
+extern NSString * const FT_RESOURCE_WEBSOCKET_HANDSHAKE_STATE_FAILED;
 #pragma mark --- trace link tag
 /// Trace identifier attribute key used to link Resource data with tracing.
 extern NSString * const FT_KEY_TRACEID;
