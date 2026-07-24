@@ -22,6 +22,7 @@
 #import <TargetConditionals.h>
 #import "FTRemoteConfigurationRequest.h"
 #import "FTMobileAgent.h"
+#import "FTRemoteConfigurationProtocol.h"
 #import "FTSDKConfig+Private.h"
 #import "FTLoggerConfig+Private.h"
 #import "FTRumConfig+Private.h"
@@ -59,6 +60,9 @@
 @property (nonatomic, strong) FTRemoteConfigModel *lastRemoteModel;
 - (void)saveRemoteConfig:(NSDictionary<NSString *, id> *)remoteConfig;
 - (void)saveLastFetchedTime:(NSTimeInterval)lastFetchedTime;
+@end
+
+@interface FTSDKAgent (Testing) <FTRemoteConfigurationProtocol>
 @end
 
 @interface FTRemoteConfigTest : XCTestCase<FTRemoteConfigurationProtocol>
@@ -493,7 +497,7 @@
 }
 - (void)remoteConfigurationDidChange{
     if (self.expectation) {
-        [[FTMobileAgent sharedInstance] performSelector:@selector(remoteConfigurationDidChange)];
+        [[FTSDKAgent sharedInstance] remoteConfigurationDidChange];
         [self.expectation fulfill];
     }
 }
