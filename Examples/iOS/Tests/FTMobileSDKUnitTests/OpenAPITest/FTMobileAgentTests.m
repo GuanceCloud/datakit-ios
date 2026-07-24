@@ -98,6 +98,41 @@
     [[FTMobileAgent sharedInstance] unbindUser];
     [[FTTrackerEventDBTool sharedManager] deleteAllDatas];
 }
+
+- (void)testAgentRuntimeTypesAreIndependent {
+    XCTAssertEqual(NSClassFromString(@"FTSDKAgent"), FTSDKAgent.class);
+    XCTAssertEqual(NSClassFromString(@"FTMobileAgent"), FTMobileAgent.class);
+    XCTAssertNotEqual(FTSDKAgent.class, FTMobileAgent.class);
+    XCTAssertEqual(class_getSuperclass(FTSDKAgent.class), NSObject.class);
+    XCTAssertEqual(class_getSuperclass(FTMobileAgent.class), NSObject.class);
+
+    unsigned int ivarCount = 0;
+    Ivar *ivars = class_copyIvarList(FTMobileAgent.class, &ivarCount);
+    free(ivars);
+    XCTAssertEqual(ivarCount, 0);
+}
+
+- (void)testMobileAgentForwardsToSDKAgent {
+    FTSDKConfig *config = [[FTSDKConfig alloc] initWithDatakitUrl:self.url];
+    config.autoSync = NO;
+    [FTMobileAgent startWithConfigOptions:config];
+    FTRumConfig *rumConfig = [[FTRumConfig alloc] initWithAppid:self.appid];
+    [[FTMobileAgent sharedInstance] startRumWithConfigOptions:rumConfig];
+
+    FTMobileAgent *compatibilityAgent = [FTMobileAgent sharedInstance];
+    FTSDKAgent *sdkAgent = [FTSDKAgent sharedInstance];
+    XCTAssertNotEqual((id)compatibilityAgent, (id)sdkAgent);
+    XCTAssertTrue([compatibilityAgent isMemberOfClass:FTMobileAgent.class]);
+    XCTAssertTrue([sdkAgent isMemberOfClass:FTSDKAgent.class]);
+
+    [compatibilityAgent bindUserWithUserID:@"compatibility-user"];
+    XCTAssertEqualObjects([FTPresetProperty sharedInstance].rumDynamicTags[FT_USER_ID], @"compatibility-user");
+
+    [FTMobileAgent shutDown];
+    XCTAssertThrows([FTSDKAgent sharedInstance]);
+    XCTAssertThrows([FTMobileAgent sharedInstance]);
+}
+
 #pragma mark ========== User data binding ==========
 /// Test compatibility adaptation for old user binding logic in version 1.3.6 and below
 /// Old: key: ft_userid
