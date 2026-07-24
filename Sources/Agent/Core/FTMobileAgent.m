@@ -43,7 +43,9 @@ static FTMobileAgent *compatibilityProxy;
 
 + (instancetype)sharedInstance {
     // Preserve the original precondition: the SDK must be started first.
-    [FTSDKAgent sharedInstance];
+    if (![FTSDKAgent sharedInstance]) {
+        return nil;
+    }
     static dispatch_once_t onceToken;
     dispatch_once(&onceToken, ^{
         compatibilityProxy = [[FTMobileAgent alloc] initCompatibilityProxy];

@@ -426,10 +426,7 @@ static FTSDKAgent *sharedInstance = nil;
 }
 #pragma mark - SDK shutdown
 - (void)shutDown{
-    @synchronized(sharedInstanceLock) {
-        [self releaseInternalResources];
-        [FTSDKAgent shutDown];
-    }
+    [FTSDKAgent shutDown];
 }
 - (void)releaseInternalResources {
     [[FTLogger sharedInstance] shutDown];
