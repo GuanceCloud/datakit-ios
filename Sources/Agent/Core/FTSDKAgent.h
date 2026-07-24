@@ -37,7 +37,7 @@
 NS_ASSUME_NONNULL_BEGIN
 
 /// FTSDK
-@interface FTMobileAgent : NSObject
+@interface FTSDKAgent : NSObject
 
 -(instancetype) init __attribute__((unavailable("Please use sharedInstance to access")));
 
@@ -185,12 +185,9 @@ NS_ASSUME_NONNULL_BEGIN
 - (void)logout DEPRECATED_MSG_ATTRIBUTE("Deprecated, please use -unbindUser instead");
 
 /// Shut down running objects within the SDK
-/// If the SDK is not initialized, using `[[FTMobileAgent sharedInstance] shutDown]` operation in test environment will cause assertion crash, it's recommended to use class method instead `[FTMobileAgent shutDown]`
+/// If the SDK is not initialized, using `[[FTSDKAgent sharedInstance] shutDown]` operation in test environment will cause assertion crash, it's recommended to use class method instead `[FTSDKAgent shutDown]`
 - (void)shutDown DEPRECATED_MSG_ATTRIBUTE("Deprecated, please use +shutDown instead");
 @end
-
-/// Legacy name for `FTMobileAgent`, retained for source compatibility.
-@compatibility_alias FTSDKAgent FTMobileAgent;
 
 NS_ASSUME_NONNULL_END
 
