@@ -129,8 +129,17 @@
     XCTAssertEqualObjects([FTPresetProperty sharedInstance].rumDynamicTags[FT_USER_ID], @"compatibility-user");
 
     [FTMobileAgent shutDown];
+#if NS_BLOCK_ASSERTIONS
+    XCTAssertNil([FTSDKAgent sharedInstance]);
+    XCTAssertNil([FTMobileAgent sharedInstance]);
+#else
     XCTAssertThrows([FTSDKAgent sharedInstance]);
     XCTAssertThrows([FTMobileAgent sharedInstance]);
+#endif
+
+    [FTMobileAgent startWithConfigOptions:config];
+    XCTAssertEqual([FTMobileAgent sharedInstance], compatibilityAgent);
+    XCTAssertNotEqual([FTSDKAgent sharedInstance], sdkAgent);
 }
 
 #pragma mark ========== User data binding ==========
