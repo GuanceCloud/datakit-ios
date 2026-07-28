@@ -302,15 +302,14 @@
     [FTModelHelper stopView];
     [[FTGlobalRumManager sharedInstance].rumManager syncProcess];
     NSArray *newArray = [[FTTrackerEventDBTool sharedManager] getAllDatas];
-    __block BOOL hasLaunchData = NO;
+    __block BOOL hasEmptyViewName = NO;
     [FTModelHelper resolveModelArray:newArray callBack:^(NSString * _Nonnull source, NSDictionary * _Nonnull tags, NSDictionary * _Nonnull fields, BOOL * _Nonnull stop) {
-        if ([source isEqualToString:FT_RUM_SOURCE_ACTION]) {
-            if([tags[FT_KEY_ACTION_NAME] isEqualToString:@"app_cold_start"]){
-                hasLaunchData = YES;
-            }
+        if ([source isEqualToString:FT_RUM_SOURCE_VIEW] && [tags[FT_KEY_VIEW_NAME] length] == 0) {
+            hasEmptyViewName = YES;
+            *stop = YES;
         }
     }];
-    XCTAssertTrue(newArray.count == (hasLaunchData ? 2 : 1));
+    XCTAssertFalse(hasEmptyViewName);
 }
 /**
  * Verify whether resource, action, error, long_task data is synchronized to view
@@ -1212,7 +1211,7 @@
     }];
     XCTAssertTrue(hasViewData);
 }
-- (void)testRumInitCreatesApplicationLaunchWhenAutoActionEnabled{
+- (void)testRumInitDoesNotCreateApplicationLaunchWhenAutoActionEnabled{
     FTMobileConfig *config = [[FTMobileConfig alloc]initWithDatakitUrl:self.url];
     config.autoSync = NO;
     FTRumConfig *rumConfig = [[FTRumConfig alloc]initWithAppid:self.appid];
@@ -1227,17 +1226,12 @@
     __block BOOL hasLaunchAction = NO;
     [FTModelHelper resolveModelArray:array callBack:^(NSString * _Nonnull source, NSDictionary * _Nonnull tags, NSDictionary * _Nonnull fields, BOOL * _Nonnull stop) {
         if ([source isEqualToString:FT_RUM_SOURCE_VIEW] && [tags[FT_KEY_VIEW_NAME] isEqualToString:@"ApplicationLaunch"]) {
-            XCTAssertTrue([tags[FT_KEY_VIEW_ID] length] > 0);
-            XCTAssertTrue([tags[FT_KEY_VIEW_REFERRER] isEqualToString:@"root"]);
-            XCTAssertTrue([fields[FT_KEY_LOADING_TIME] isEqual:@(-1)]);
-            XCTAssertEqual([fields[FT_KEY_VIEW_ACTION_COUNT] integerValue], 0);
-            XCTAssertTrue([fields[FT_KEY_IS_ACTIVE] isEqual:@(YES)]);
             hasApplicationLaunchView = YES;
         } else if ([source isEqualToString:FT_RUM_SOURCE_ACTION]) {
             hasLaunchAction = YES;
         }
     }];
-    XCTAssertTrue(hasApplicationLaunchView);
+    XCTAssertFalse(hasApplicationLaunchView);
     XCTAssertFalse(hasLaunchAction);
 }
 - (void)testRumInitDoesNotCreateApplicationLaunchWhenAutoActionDisabled{
@@ -1269,6 +1263,9 @@
 
     FTRUMManager *rumManager = [FTGlobalRumManager sharedInstance].rumManager;
     [rumManager syncProcess];
+    rumManager.appState = FTAppStateStartUp;
+    [self addErrorData:nil];
+    [rumManager syncProcess];
     FTRUMSessionHandler *session = [rumManager valueForKey:@"sessionHandler"];
     __block NSString *previousSessionID = nil;
     [FTModelHelper resolveModelArray:[[FTTrackerEventDBTool sharedManager] getFirstRecords:10 withType:FT_DATA_TYPE_RUM] callBack:^(NSString * _Nonnull source, NSDictionary * _Nonnull tags, NSDictionary * _Nonnull fields, BOOL * _Nonnull stop) {
@@ -1281,6 +1278,7 @@
     XCTAssertTrue(previousSessionID.length > 0);
 
     [session setValue:[NSDate dateWithTimeIntervalSinceNow:-(15 * 60)] forKey:@"lastInteractionTime"];
+    session.appState = FTAppStateRun;
     rumManager.appState = FTAppStateRun;
     [self addErrorData:nil];
     [rumManager syncProcess];
@@ -1294,25 +1292,29 @@
     }];
     XCTAssertFalse(hasCopiedApplicationLaunch);
 
-    __block NSString *newSessionID = nil;
+    NSString *newSessionID = newSession.context.sessionState.session_id;
+    XCTAssertNotEqual(newSession, session);
+    XCTAssertFalse([previousSessionID isEqualToString:newSessionID]);
+
     __block BOOL stoppedPreviousApplicationLaunch = NO;
     __block BOOL hasNewSessionApplicationLaunch = NO;
+    __block BOOL hasNewSessionRootError = NO;
     [FTModelHelper resolveModelArray:[[FTTrackerEventDBTool sharedManager] getFirstRecords:30 withType:FT_DATA_TYPE_RUM] callBack:^(NSString * _Nonnull source, NSDictionary * _Nonnull tags, NSDictionary * _Nonnull fields, BOOL * _Nonnull stop) {
-        if ([source isEqualToString:FT_RUM_SOURCE_ERROR]) {
-            newSessionID = tags[FT_RUM_KEY_SESSION_ID];
+        NSString *sessionID = tags[FT_RUM_KEY_SESSION_ID];
+        if ([source isEqualToString:FT_RUM_SOURCE_ERROR] && [sessionID isEqualToString:newSessionID]) {
             XCTAssertTrue([tags[FT_KEY_VIEW_NAME] isEqualToString:@"RootView"]);
+            hasNewSessionRootError = YES;
         } else if ([source isEqualToString:FT_RUM_SOURCE_VIEW] && [tags[FT_KEY_VIEW_NAME] isEqualToString:@"ApplicationLaunch"]) {
-            if ([tags[FT_RUM_KEY_SESSION_ID] isEqualToString:previousSessionID] && ![fields[FT_KEY_IS_ACTIVE] boolValue]) {
+            if ([sessionID isEqualToString:previousSessionID] && ![fields[FT_KEY_IS_ACTIVE] boolValue]) {
                 XCTAssertTrue([fields[FT_KEY_TIME_SPENT] longLongValue] > 0);
                 stoppedPreviousApplicationLaunch = YES;
             }
-            if (![tags[FT_RUM_KEY_SESSION_ID] isEqualToString:previousSessionID]) {
+            if ([sessionID isEqualToString:newSessionID]) {
                 hasNewSessionApplicationLaunch = YES;
             }
         }
     }];
-    XCTAssertTrue(newSessionID.length > 0);
-    XCTAssertFalse([previousSessionID isEqualToString:newSessionID]);
+    XCTAssertTrue(hasNewSessionRootError);
     XCTAssertTrue(stoppedPreviousApplicationLaunch);
     XCTAssertFalse(hasNewSessionApplicationLaunch);
 }
@@ -1349,17 +1351,22 @@
     [[FTGlobalRumManager sharedInstance].rumManager syncProcess];
     NSArray *array = [[FTTrackerEventDBTool sharedManager] getFirstRecords:20 withType:FT_DATA_TYPE_RUM];
     __block BOOL hasApplicationLaunchView = NO;
+    __block BOOL hasClosedApplicationLaunchView = NO;
     __block BOOL hasRealView = NO;
     [FTModelHelper resolveModelArray:array callBack:^(NSString * _Nonnull source, NSDictionary * _Nonnull tags, NSDictionary * _Nonnull fields, BOOL * _Nonnull stop) {
         if ([source isEqualToString:FT_RUM_SOURCE_VIEW] && [tags[FT_KEY_VIEW_NAME] isEqualToString:@"ApplicationLaunch"]) {
             XCTAssertTrue([tags[FT_KEY_VIEW_REFERRER] isEqualToString:@"root"]);
             hasApplicationLaunchView = YES;
+            if (![fields[FT_KEY_IS_ACTIVE] boolValue]) {
+                hasClosedApplicationLaunchView = YES;
+            }
         }else if ([source isEqualToString:FT_RUM_SOURCE_VIEW] && [tags[FT_KEY_VIEW_NAME] isEqualToString:viewName]){
             XCTAssertNil(tags[FT_KEY_VIEW_REFERRER]);
             hasRealView = YES;
         }
     }];
     XCTAssertTrue(hasApplicationLaunchView);
+    XCTAssertTrue(hasClosedApplicationLaunchView);
     XCTAssertTrue(hasRealView);
 }
 - (void)testNoActiveView_launchActionUsesFallbackView{
@@ -1370,10 +1377,11 @@
     [[FTMobileAgent sharedInstance] startRumWithConfigOptions:rumConfig];
     [FTGlobalRumManager sharedInstance].rumManager.appState = FTAppStateStartUp;
     NSString *actionName = @"manual_cold_start";
+    NSNumber *duration = @200000000;
     [[FTGlobalRumManager sharedInstance].rumManager addLaunch:actionName
                                                          type:FT_LAUNCH_COLD
                                                    launchTime:[NSDate date]
-                                                     duration:@100
+                                                     duration:duration
                                                      property:nil];
     [[FTGlobalRumManager sharedInstance].rumManager syncProcess];
     NSArray *array = [[FTTrackerEventDBTool sharedManager] getFirstRecords:20 withType:FT_DATA_TYPE_RUM];
@@ -1387,16 +1395,69 @@
             hasLaunchAction = YES;
         }else if ([source isEqualToString:FT_RUM_SOURCE_VIEW] && [tags[FT_KEY_VIEW_NAME] isEqualToString:@"ApplicationLaunch"]) {
             XCTAssertEqual([fields[FT_KEY_VIEW_ACTION_COUNT] integerValue], 1);
+            long long timeSpent = [fields[FT_KEY_TIME_SPENT] longLongValue];
+            long long delta = timeSpent > duration.longLongValue
+                ? timeSpent - duration.longLongValue
+                : duration.longLongValue - timeSpent;
+            XCTAssertTrue(delta < 1000000);
             hasApplicationLaunchView = YES;
         }
     }];
     XCTAssertTrue(hasLaunchAction);
     XCTAssertTrue(hasApplicationLaunchView);
 }
-- (void)testHotAndWarmLaunchActionsUseApplicationLaunchFallback{
+- (void)testInitialLaunchActionReusesStartupFallbackAndUpdatesStartTime{
+    [self setRumConfig];
+    FTRUMManager *rumManager = [FTGlobalRumManager sharedInstance].rumManager;
+    rumManager.appState = FTAppStateStartUp;
+    [self addErrorData:nil];
+    [rumManager syncProcess];
+
+    FTRUMSessionHandler *session = [rumManager valueForKey:@"sessionHandler"];
+    __block FTRUMViewHandler *applicationLaunch = nil;
+    [[session valueForKey:@"viewHandlers"] enumerateObjectsUsingBlock:^(FTRUMViewHandler * _Nonnull viewHandler, NSUInteger idx, BOOL * _Nonnull stop) {
+        if (viewHandler.isApplicationLaunchView) {
+            applicationLaunch = viewHandler;
+            *stop = YES;
+        }
+    }];
+    XCTAssertNotNil(applicationLaunch);
+    NSString *viewID = applicationLaunch.view_id;
+    NSDate *launchTime = [applicationLaunch.viewStartTime dateByAddingTimeInterval:-10];
+
+    NSString *actionName = @"cold_launch_after_startup_fallback";
+    [rumManager addLaunch:actionName
+                     type:FT_LAUNCH_COLD
+               launchTime:launchTime
+                 duration:@100
+                 property:nil];
+    [rumManager syncProcess];
+
+    __block FTRUMViewHandler *reusedApplicationLaunch = nil;
+    [[session valueForKey:@"viewHandlers"] enumerateObjectsUsingBlock:^(FTRUMViewHandler * _Nonnull viewHandler, NSUInteger idx, BOOL * _Nonnull stop) {
+        if (viewHandler.isApplicationLaunchView) {
+            reusedApplicationLaunch = viewHandler;
+            *stop = YES;
+        }
+    }];
+    XCTAssertEqualObjects(reusedApplicationLaunch.view_id, viewID);
+    XCTAssertEqualWithAccuracy([reusedApplicationLaunch.viewStartTime timeIntervalSinceDate:launchTime], 0, 0.001);
+
+    __block BOOL hasLaunchAction = NO;
+    [FTModelHelper resolveModelArray:[[FTTrackerEventDBTool sharedManager] getFirstRecords:20 withType:FT_DATA_TYPE_RUM] callBack:^(NSString * _Nonnull source, NSDictionary * _Nonnull tags, NSDictionary * _Nonnull fields, BOOL * _Nonnull stop) {
+        if ([source isEqualToString:FT_RUM_SOURCE_ACTION] && [tags[FT_KEY_ACTION_NAME] isEqualToString:actionName]) {
+            XCTAssertEqualObjects(tags[FT_KEY_VIEW_ID], viewID);
+            XCTAssertEqualObjects(tags[FT_KEY_VIEW_NAME], @"ApplicationLaunch");
+            hasLaunchAction = YES;
+        }
+    }];
+    XCTAssertTrue(hasLaunchAction);
+}
+- (void)testInitialLaunchActionsUseApplicationLaunchAndHotLaunchUsesRootFallback{
     [self setRumConfig];
     [FTGlobalRumManager sharedInstance].rumManager.appState = FTAppStateRun;
     NSString *hotActionName = @"manual_hot_start";
+    NSString *coldActionName = @"manual_cold_start";
     NSString *warmActionName = @"manual_warm_start";
     [[FTGlobalRumManager sharedInstance].rumManager addLaunch:hotActionName
                                                          type:FT_LAUNCH_HOT
@@ -1404,58 +1465,83 @@
                                                      duration:@100
                                                      property:nil];
     [[FTGlobalRumManager sharedInstance].rumManager syncProcess];
-    FTRUMSessionHandler *session = [[FTGlobalRumManager sharedInstance].rumManager valueForKey:@"sessionHandler"];
-    NSMutableArray<FTRUMHandler*> *viewHandlers = [session valueForKey:@"viewHandlers"];
-    __block FTRUMViewHandler *firstApplicationLaunch = nil;
-    [viewHandlers enumerateObjectsUsingBlock:^(FTRUMHandler * _Nonnull obj, NSUInteger idx, BOOL * _Nonnull stop) {
-        FTRUMViewHandler *viewHandler = (FTRUMViewHandler *)obj;
-        if (viewHandler.isActiveView && [viewHandler.view_name isEqualToString:@"ApplicationLaunch"]) {
-            firstApplicationLaunch = viewHandler;
-            *stop = YES;
-        }
-    }];
-    XCTAssertTrue(firstApplicationLaunch.view_id.length > 0);
-    NSString *firstApplicationLaunchViewId = firstApplicationLaunch.view_id;
-    NSDate *firstApplicationLaunchStartTime = firstApplicationLaunch.viewStartTime;
-    NSDate *warmLaunchTime = firstApplicationLaunchStartTime ? [firstApplicationLaunchStartTime dateByAddingTimeInterval:1] : [NSDate date];
+    NSDate *coldLaunchTime = [NSDate date];
+    [[FTGlobalRumManager sharedInstance].rumManager addLaunch:coldActionName
+                                                         type:FT_LAUNCH_COLD
+                                                   launchTime:coldLaunchTime
+                                                     duration:@100
+                                                     property:nil];
+    [[FTGlobalRumManager sharedInstance].rumManager syncProcess];
+    NSDate *warmLaunchTime = [coldLaunchTime dateByAddingTimeInterval:1];
 
     [[FTGlobalRumManager sharedInstance].rumManager addLaunch:warmActionName
                                                          type:FT_LAUNCH_WARM
                                                    launchTime:warmLaunchTime
-                                                     duration:@100
+                                                         duration:@100
                                                      property:nil];
     [[FTGlobalRumManager sharedInstance].rumManager syncProcess];
-    session = [[FTGlobalRumManager sharedInstance].rumManager valueForKey:@"sessionHandler"];
-    viewHandlers = [session valueForKey:@"viewHandlers"];
-    __block FTRUMViewHandler *reusedApplicationLaunch = nil;
+    FTRUMSessionHandler *session = [[FTGlobalRumManager sharedInstance].rumManager valueForKey:@"sessionHandler"];
+    NSMutableArray<FTRUMHandler*> *viewHandlers = [session valueForKey:@"viewHandlers"];
+    __block BOOL hasActiveRootView = NO;
+    __block BOOL hasActiveApplicationLaunch = NO;
     [viewHandlers enumerateObjectsUsingBlock:^(FTRUMHandler * _Nonnull obj, NSUInteger idx, BOOL * _Nonnull stop) {
         FTRUMViewHandler *viewHandler = (FTRUMViewHandler *)obj;
-        if (viewHandler.isActiveView && [viewHandler.view_name isEqualToString:@"ApplicationLaunch"]) {
-            reusedApplicationLaunch = viewHandler;
-            *stop = YES;
+        if (viewHandler.isActiveView && [viewHandler.view_name isEqualToString:@"RootView"]) {
+            hasActiveRootView = YES;
+        } else if (viewHandler.isActiveView && [viewHandler.view_name isEqualToString:@"ApplicationLaunch"]) {
+            hasActiveApplicationLaunch = YES;
         }
     }];
-    XCTAssertTrue([reusedApplicationLaunch.view_id isEqualToString:firstApplicationLaunchViewId]);
-    XCTAssertTrue([reusedApplicationLaunch.viewStartTime isEqualToDate:firstApplicationLaunchStartTime]);
+    XCTAssertTrue(hasActiveRootView);
+    XCTAssertFalse(hasActiveApplicationLaunch);
+
     NSArray *array = [[FTTrackerEventDBTool sharedManager] getFirstRecords:20 withType:FT_DATA_TYPE_RUM];
     __block BOOL hasHotLaunchAction = NO;
+    __block BOOL hasColdLaunchAction = NO;
     __block BOOL hasWarmLaunchAction = NO;
+    __block NSString *coldApplicationLaunchViewID = nil;
+    __block NSString *warmApplicationLaunchViewID = nil;
     [FTModelHelper resolveModelArray:array callBack:^(NSString * _Nonnull source, NSDictionary * _Nonnull tags, NSDictionary * _Nonnull fields, BOOL * _Nonnull stop) {
-        if ([source isEqualToString:FT_RUM_SOURCE_ACTION]
-            && ([tags[FT_KEY_ACTION_NAME] isEqualToString:hotActionName] || [tags[FT_KEY_ACTION_NAME] isEqualToString:warmActionName])) {
-            XCTAssertTrue([tags[FT_KEY_VIEW_ID] isEqualToString:firstApplicationLaunchViewId]);
+        if (![source isEqualToString:FT_RUM_SOURCE_ACTION]) {
+            return;
+        }
+        if ([tags[FT_KEY_ACTION_NAME] isEqualToString:hotActionName]) {
+            XCTAssertTrue([tags[FT_KEY_VIEW_NAME] isEqualToString:@"RootView"]);
+            hasHotLaunchAction = YES;
+        } else if ([tags[FT_KEY_ACTION_NAME] isEqualToString:coldActionName]) {
             XCTAssertTrue([tags[FT_KEY_VIEW_NAME] isEqualToString:@"ApplicationLaunch"]);
             XCTAssertTrue([tags[FT_KEY_VIEW_ID] length] > 0);
             XCTAssertTrue([tags[FT_KEY_VIEW_REFERRER] isEqualToString:@"root"]);
-            if ([tags[FT_KEY_ACTION_NAME] isEqualToString:hotActionName]) {
-                hasHotLaunchAction = YES;
-            } else if ([tags[FT_KEY_ACTION_NAME] isEqualToString:warmActionName]) {
-                hasWarmLaunchAction = YES;
-            }
+            coldApplicationLaunchViewID = tags[FT_KEY_VIEW_ID];
+            hasColdLaunchAction = YES;
+        } else if ([tags[FT_KEY_ACTION_NAME] isEqualToString:warmActionName]) {
+            XCTAssertTrue([tags[FT_KEY_VIEW_NAME] isEqualToString:@"ApplicationLaunch"]);
+            XCTAssertTrue([tags[FT_KEY_VIEW_ID] length] > 0);
+            XCTAssertTrue([tags[FT_KEY_VIEW_REFERRER] isEqualToString:@"root"]);
+            warmApplicationLaunchViewID = tags[FT_KEY_VIEW_ID];
+            hasWarmLaunchAction = YES;
         }
     }];
     XCTAssertTrue(hasHotLaunchAction);
+    XCTAssertTrue(hasColdLaunchAction);
     XCTAssertTrue(hasWarmLaunchAction);
+    XCTAssertFalse([coldApplicationLaunchViewID isEqualToString:warmApplicationLaunchViewID]);
+
+    __block BOOL hasClosedColdApplicationLaunch = NO;
+    __block BOOL hasClosedWarmApplicationLaunch = NO;
+    [FTModelHelper resolveModelArray:array callBack:^(NSString * _Nonnull source, NSDictionary * _Nonnull tags, NSDictionary * _Nonnull fields, BOOL * _Nonnull stop) {
+        if (![source isEqualToString:FT_RUM_SOURCE_VIEW] || ![tags[FT_KEY_VIEW_NAME] isEqualToString:@"ApplicationLaunch"] || [fields[FT_KEY_IS_ACTIVE] boolValue]) {
+            return;
+        }
+        XCTAssertEqual([fields[FT_KEY_VIEW_ACTION_COUNT] integerValue], 1);
+        if ([tags[FT_KEY_VIEW_ID] isEqualToString:coldApplicationLaunchViewID]) {
+            hasClosedColdApplicationLaunch = YES;
+        } else if ([tags[FT_KEY_VIEW_ID] isEqualToString:warmApplicationLaunchViewID]) {
+            hasClosedWarmApplicationLaunch = YES;
+        }
+    }];
+    XCTAssertTrue(hasClosedColdApplicationLaunch);
+    XCTAssertTrue(hasClosedWarmApplicationLaunch);
 }
 - (void)testLaunchActionUsesApplicationLaunchAndClosesWithActiveView{
     [self setRumConfig];
@@ -1516,6 +1602,133 @@
     }];
     XCTAssertTrue(hasActiveRealView);
     XCTAssertFalse(hasActiveApplicationLaunch);
+
+    NSString *followUpActionName = @"active_view_action_after_launch";
+    [[FTExternalDataManager sharedManager] addAction:followUpActionName actionType:FT_KEY_ACTION_TYPE_CLICK property:nil];
+    [[FTGlobalRumManager sharedInstance].rumManager syncProcess];
+
+    __block BOOL followUpActionUsesRealView = NO;
+    [FTModelHelper resolveModelArray:[[FTTrackerEventDBTool sharedManager] getFirstRecords:50 withType:FT_DATA_TYPE_RUM] callBack:^(NSString * _Nonnull source, NSDictionary * _Nonnull tags, NSDictionary * _Nonnull fields, BOOL * _Nonnull stop) {
+        if ([source isEqualToString:FT_RUM_SOURCE_ACTION] && [tags[FT_KEY_ACTION_NAME] isEqualToString:followUpActionName]) {
+            XCTAssertTrue([tags[FT_KEY_VIEW_NAME] isEqualToString:viewName]);
+            followUpActionUsesRealView = YES;
+        }
+    }];
+    XCTAssertTrue(followUpActionUsesRealView);
+}
+- (void)testInitialLaunchActionDoesNotCloseActiveRootFallbackView{
+    [self setRumConfig];
+    FTRUMManager *rumManager = [FTGlobalRumManager sharedInstance].rumManager;
+    rumManager.appState = FTAppStateRun;
+    NSString *beforeActionName = @"root_action_before_launch";
+    NSString *launchActionName = @"cold_launch_after_root_fallback";
+    NSString *afterActionName = @"root_action_after_launch";
+    NSNumber *duration = @200000000;
+
+    [[FTExternalDataManager sharedManager] addAction:beforeActionName actionType:FT_KEY_ACTION_TYPE_CLICK property:nil];
+    [rumManager syncProcess];
+    FTRUMSessionHandler *session = [rumManager valueForKey:@"sessionHandler"];
+    NSArray<FTRUMViewHandler *> *viewHandlers = [session valueForKey:@"viewHandlers"];
+    FTRUMViewHandler *rootView = viewHandlers.lastObject;
+    XCTAssertTrue([rootView.view_name isEqualToString:@"RootView"]);
+    NSString *rootViewID = rootView.view_id;
+    NSDate *launchTime = [rootView.viewStartTime dateByAddingTimeInterval:-10];
+
+    [rumManager addLaunch:launchActionName type:FT_LAUNCH_COLD launchTime:launchTime duration:duration property:nil];
+    [rumManager syncProcess];
+    XCTAssertTrue(rootView.isActiveView);
+    XCTAssertEqualObjects(rootView.view_id, rootViewID);
+
+    [[FTExternalDataManager sharedManager] addAction:afterActionName actionType:FT_KEY_ACTION_TYPE_CLICK property:nil];
+    [rumManager syncProcess];
+
+    __block BOOL hasClosedApplicationLaunch = NO;
+    __block BOOL launchActionUsesApplicationLaunch = NO;
+    __block BOOL afterActionUsesOriginalRootView = NO;
+    __block NSString *applicationLaunchViewID = nil;
+    [FTModelHelper resolveModelArray:[[FTTrackerEventDBTool sharedManager] getFirstRecords:50 withType:FT_DATA_TYPE_RUM] callBack:^(NSString * _Nonnull source, NSDictionary * _Nonnull tags, NSDictionary * _Nonnull fields, BOOL * _Nonnull stop) {
+        if ([source isEqualToString:FT_RUM_SOURCE_ACTION] && [tags[FT_KEY_ACTION_NAME] isEqualToString:launchActionName]) {
+            XCTAssertTrue([tags[FT_KEY_VIEW_NAME] isEqualToString:@"ApplicationLaunch"]);
+            applicationLaunchViewID = tags[FT_KEY_VIEW_ID];
+            launchActionUsesApplicationLaunch = YES;
+        } else if ([source isEqualToString:FT_RUM_SOURCE_ACTION] && [tags[FT_KEY_ACTION_NAME] isEqualToString:afterActionName]) {
+            XCTAssertEqualObjects(tags[FT_KEY_VIEW_ID], rootViewID);
+            XCTAssertTrue([tags[FT_KEY_VIEW_NAME] isEqualToString:@"RootView"]);
+            afterActionUsesOriginalRootView = YES;
+        }
+    }];
+    XCTAssertTrue(launchActionUsesApplicationLaunch);
+    XCTAssertTrue(afterActionUsesOriginalRootView);
+    XCTAssertTrue(applicationLaunchViewID.length > 0);
+    [FTModelHelper resolveModelArray:[[FTTrackerEventDBTool sharedManager] getFirstRecords:50 withType:FT_DATA_TYPE_RUM] callBack:^(NSString * _Nonnull source, NSDictionary * _Nonnull tags, NSDictionary * _Nonnull fields, BOOL * _Nonnull stop) {
+        if ([source isEqualToString:FT_RUM_SOURCE_VIEW]
+            && [tags[FT_KEY_VIEW_ID] isEqualToString:applicationLaunchViewID]
+            && ![fields[FT_KEY_IS_ACTIVE] boolValue]) {
+            XCTAssertEqual([fields[FT_KEY_VIEW_ACTION_COUNT] integerValue], 1);
+            long long timeSpent = [fields[FT_KEY_TIME_SPENT] longLongValue];
+            long long delta = timeSpent > duration.longLongValue ? timeSpent - duration.longLongValue : duration.longLongValue - timeSpent;
+            XCTAssertTrue(delta < 1000000);
+            hasClosedApplicationLaunch = YES;
+        }
+    }];
+    XCTAssertTrue(hasClosedApplicationLaunch);
+}
+- (void)testInitialLaunchActionDoesNotCloseActiveBackgroundFallbackView{
+    [self setRumConfig];
+    FTRUMManager *rumManager = [FTGlobalRumManager sharedInstance].rumManager;
+    rumManager.appState = FTAppStateBackground;
+    NSString *beforeActionName = @"background_action_before_launch";
+    NSString *launchActionName = @"warm_launch_after_background_fallback";
+    NSString *afterActionName = @"background_action_after_launch";
+    NSNumber *duration = @200000000;
+
+    [[FTExternalDataManager sharedManager] addAction:beforeActionName actionType:FT_KEY_ACTION_TYPE_CLICK property:nil];
+    [rumManager syncProcess];
+    FTRUMSessionHandler *session = [rumManager valueForKey:@"sessionHandler"];
+    NSArray<FTRUMViewHandler *> *viewHandlers = [session valueForKey:@"viewHandlers"];
+    FTRUMViewHandler *backgroundView = viewHandlers.lastObject;
+    XCTAssertTrue([backgroundView.view_name isEqualToString:@"BackgroundView"]);
+    NSString *backgroundViewID = backgroundView.view_id;
+    NSDate *launchTime = [backgroundView.viewStartTime dateByAddingTimeInterval:-10];
+
+    [rumManager addLaunch:launchActionName type:FT_LAUNCH_WARM launchTime:launchTime duration:duration property:nil];
+    [rumManager syncProcess];
+    XCTAssertTrue(backgroundView.isActiveView);
+    XCTAssertEqualObjects(backgroundView.view_id, backgroundViewID);
+
+    [[FTExternalDataManager sharedManager] addAction:afterActionName actionType:FT_KEY_ACTION_TYPE_CLICK property:nil];
+    [rumManager syncProcess];
+
+    __block BOOL hasClosedApplicationLaunch = NO;
+    __block BOOL launchActionUsesApplicationLaunch = NO;
+    __block BOOL afterActionUsesOriginalBackgroundView = NO;
+    __block NSString *applicationLaunchViewID = nil;
+    [FTModelHelper resolveModelArray:[[FTTrackerEventDBTool sharedManager] getFirstRecords:50 withType:FT_DATA_TYPE_RUM] callBack:^(NSString * _Nonnull source, NSDictionary * _Nonnull tags, NSDictionary * _Nonnull fields, BOOL * _Nonnull stop) {
+        if ([source isEqualToString:FT_RUM_SOURCE_ACTION] && [tags[FT_KEY_ACTION_NAME] isEqualToString:launchActionName]) {
+            XCTAssertTrue([tags[FT_KEY_VIEW_NAME] isEqualToString:@"ApplicationLaunch"]);
+            applicationLaunchViewID = tags[FT_KEY_VIEW_ID];
+            launchActionUsesApplicationLaunch = YES;
+        } else if ([source isEqualToString:FT_RUM_SOURCE_ACTION] && [tags[FT_KEY_ACTION_NAME] isEqualToString:afterActionName]) {
+            XCTAssertEqualObjects(tags[FT_KEY_VIEW_ID], backgroundViewID);
+            XCTAssertTrue([tags[FT_KEY_VIEW_NAME] isEqualToString:@"BackgroundView"]);
+            afterActionUsesOriginalBackgroundView = YES;
+        }
+    }];
+    XCTAssertTrue(launchActionUsesApplicationLaunch);
+    XCTAssertTrue(afterActionUsesOriginalBackgroundView);
+    XCTAssertTrue(applicationLaunchViewID.length > 0);
+    [FTModelHelper resolveModelArray:[[FTTrackerEventDBTool sharedManager] getFirstRecords:50 withType:FT_DATA_TYPE_RUM] callBack:^(NSString * _Nonnull source, NSDictionary * _Nonnull tags, NSDictionary * _Nonnull fields, BOOL * _Nonnull stop) {
+        if ([source isEqualToString:FT_RUM_SOURCE_VIEW]
+            && [tags[FT_KEY_VIEW_ID] isEqualToString:applicationLaunchViewID]
+            && ![fields[FT_KEY_IS_ACTIVE] boolValue]) {
+            XCTAssertEqual([fields[FT_KEY_VIEW_ACTION_COUNT] integerValue], 1);
+            long long timeSpent = [fields[FT_KEY_TIME_SPENT] longLongValue];
+            long long delta = timeSpent > duration.longLongValue ? timeSpent - duration.longLongValue : duration.longLongValue - timeSpent;
+            XCTAssertTrue(delta < 1000000);
+            hasClosedApplicationLaunch = YES;
+        }
+    }];
+    XCTAssertTrue(hasClosedApplicationLaunch);
 }
 - (void)testNoActiveView_backgroundFallbackView{
     [self setRumConfig];
@@ -1540,7 +1753,7 @@
     XCTAssertTrue(hasBackgroundView);
     XCTAssertTrue(hasBackgroundAction);
 }
-- (void)testNoActiveView_fallbackViewChangesWithAppState{
+- (void)testRunningFallbackClosesApplicationLaunchBeforeLaunchAction{
     [self setRumConfig];
     [FTGlobalRumManager sharedInstance].rumManager.appState = FTAppStateStartUp;
     [FTModelHelper addActionWithContext:@{@"test":@"startup"}];
@@ -1551,6 +1764,8 @@
     NSArray *array = [[FTTrackerEventDBTool sharedManager] getFirstRecords:20 withType:FT_DATA_TYPE_RUM];
     __block NSString *applicationLaunchViewId = nil;
     __block NSString *rootViewId = nil;
+    __block BOOL hasClosedApplicationLaunchView = NO;
+    __block BOOL hasActiveRootView = NO;
     [FTModelHelper resolveModelArray:array callBack:^(NSString * _Nonnull source, NSDictionary * _Nonnull tags, NSDictionary * _Nonnull fields, BOOL * _Nonnull stop) {
         if ([source isEqualToString:FT_RUM_SOURCE_ACTION] && [fields[@"test"] isEqualToString:@"startup"]) {
             applicationLaunchViewId = tags[FT_KEY_VIEW_ID];
@@ -1560,11 +1775,17 @@
             rootViewId = tags[FT_KEY_VIEW_ID];
             XCTAssertTrue([tags[FT_KEY_VIEW_NAME] isEqualToString:@"RootView"]);
             XCTAssertTrue([tags[FT_KEY_VIEW_REFERRER] isEqualToString:@"root"]);
+        } else if ([source isEqualToString:FT_RUM_SOURCE_VIEW] && [tags[FT_KEY_VIEW_NAME] isEqualToString:@"ApplicationLaunch"]) {
+            hasClosedApplicationLaunchView = hasClosedApplicationLaunchView || ![fields[FT_KEY_IS_ACTIVE] boolValue];
+        } else if ([source isEqualToString:FT_RUM_SOURCE_VIEW] && [tags[FT_KEY_VIEW_NAME] isEqualToString:@"RootView"]) {
+            hasActiveRootView = hasActiveRootView || [fields[FT_KEY_IS_ACTIVE] boolValue];
         }
     }];
     XCTAssertTrue(applicationLaunchViewId.length > 0);
     XCTAssertTrue(rootViewId.length > 0);
     XCTAssertFalse([applicationLaunchViewId isEqualToString:rootViewId]);
+    XCTAssertTrue(hasClosedApplicationLaunchView);
+    XCTAssertTrue(hasActiveRootView);
 }
 - (void)testNoActiveView_runFallbackAssignsEventsToRootView{
     [self setRumConfig];

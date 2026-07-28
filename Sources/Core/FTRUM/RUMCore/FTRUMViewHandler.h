@@ -33,8 +33,12 @@ typedef void(^FTErrorHandled)(void);
 @property (nonatomic, strong) NSNumber *loading_time;
 @property (nonatomic, strong, readonly) NSDate *viewStartTime;
 @property (nonatomic, assign) BOOL fallbackView;
+@property (nonatomic, assign) BOOL isApplicationLaunchView;
+@property (nonatomic, assign) BOOL closeAfterInitialLaunchAction;
 
--(instancetype)initWithModel:(FTRUMViewModel *)model context:(FTRUMContext *)context rumDependencies:(FTRUMDependencies *)rumDependencies;
+- (void)updateViewStartTimeIfEarlierThan:(NSDate *)time;
+
+- (instancetype)initWithModel:(FTRUMViewModel *)model context:(FTRUMContext *)context rumDependencies:(FTRUMDependencies *)rumDependencies;
 
 - (instancetype)initWithModel:(FTRUMViewModel *)model
                       context:(FTRUMContext *)context

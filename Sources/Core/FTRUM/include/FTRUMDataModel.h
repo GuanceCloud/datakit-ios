@@ -84,6 +84,7 @@ NS_ASSUME_NONNULL_BEGIN
 @end
 @interface FTRUMLaunchDataModel : FTRUMActionModel
 @property (nonatomic, strong) NSNumber *duration;
+@property (nonatomic, assign, readonly) BOOL isInitialLaunchAction;
 -(instancetype)initWithDuration:(NSNumber *)duration;
 @end
 @interface FTRUMWebViewData : FTRUMDataModel

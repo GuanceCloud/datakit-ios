@@ -140,7 +140,7 @@ static NSObject *sharedInstanceLock;
 - (FTDisplayRateMonitor *)displayMonitorWithRumConfig:(FTRumConfig *)rumConfig{
     FTDisplayRateMonitor *displayMonitor = nil;
 #if FT_HAS_UIKIT
-    if (rumConfig.deviceMetricsMonitorType & DeviceMetricsMonitorFps || rumConfig.enableTraceUserAction) {
+    if (rumConfig.deviceMetricsMonitorType & FTDeviceMetricsMonitorFps || rumConfig.enableTraceUserAction) {
         displayMonitor = [[FTDisplayRateMonitor alloc]init];
     }
 #endif

@@ -105,6 +105,10 @@
     }
     return self;
 }
+- (BOOL)isInitialLaunchAction {
+    return [self.action_type isEqualToString:FT_LAUNCH_COLD]
+        || [self.action_type isEqualToString:FT_LAUNCH_WARM];
+}
 @end
 
 @implementation FTRUMWebViewData
@@ -123,5 +127,4 @@
 @implementation FTRUMSRLinkInfoData
 
 @end
-
 
