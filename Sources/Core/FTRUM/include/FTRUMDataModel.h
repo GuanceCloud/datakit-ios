@@ -48,6 +48,7 @@ NS_ASSUME_NONNULL_BEGIN
 @property (nonatomic, strong) NSDictionary *tags;
 @property (nonatomic, strong) NSDictionary *fields;
 @property (nonatomic, assign) long long tm;
+@property (nonatomic, assign, readonly) BOOL isUserInteraction;
 -(instancetype)initWithType:(FTRUMDataType)type time:(NSDate *)time;
 @end
 /// Data model for handling Action events

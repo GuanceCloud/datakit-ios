@@ -46,6 +46,16 @@
     }
     return [self.time ft_nanosecondTimeStamp];
 }
+- (BOOL)isUserInteraction{
+    switch (self.type) {
+        case FTRUMDataViewStart:
+        case FTRUMDataStartAction:
+        case FTRUMDataAddAction:
+            return YES;
+        default:
+            return NO;
+    }
+}
 @end
 @implementation FTRUMViewModel
 -(instancetype)initWithViewID:(NSString *)viewID viewName:(NSString *)viewName viewReferrer:(NSString *)viewReferrer{
@@ -127,4 +137,3 @@
 @implementation FTRUMSRLinkInfoData
 
 @end
-

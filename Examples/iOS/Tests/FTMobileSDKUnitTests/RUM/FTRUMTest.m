@@ -145,6 +145,124 @@
 #endif
 #pragma mark ========== Session ==========
 
+- (FTRUMSessionHandler *)sessionStartingAtForEventTimeTest:(NSDate *)startTime{
+    FTRUMDependencies *dependencies = [[FTRUMDependencies alloc] init];
+    dependencies.sampleRate = 0;
+    dependencies.sessionOnErrorSampleRate = 0;
+    dependencies.appId = @"session-event-time-test";
+    FTRUMDataModel *initialModel = [[FTRUMDataModel alloc] initWithType:FTRUMViewPlaceholder time:startTime];
+    return [[FTRUMSessionHandler alloc] initWithModel:initialModel dependencies:dependencies];
+}
+
+- (BOOL)processModel:(FTRUMDataModel *)model inTestSession:(FTRUMSessionHandler *)session{
+    return [session.assistant process:model context:@{}];
+}
+
+- (void)testRUMDataModelUserInteractionClassification{
+    NSSet<NSNumber *> *userInteractionTypes = [NSSet setWithArray:@[
+        @(FTRUMDataViewStart),
+        @(FTRUMDataStartAction),
+        @(FTRUMDataAddAction),
+    ]];
+
+    for (FTRUMDataType type = FTRUMViewPlaceholder; type <= FTRUMSampleRateUpdate; type++) {
+        FTRUMDataModel *model = [[FTRUMDataModel alloc] initWithType:type time:[NSDate date]];
+        XCTAssertEqual(model.isUserInteraction, [userInteractionTypes containsObject:@(type)], @"Unexpected interaction classification for type: %lu", (unsigned long)type);
+    }
+}
+
+- (void)testSessionInitializesInteractionTimeFromSessionStart{
+    NSDate *startTime = [NSDate date];
+    FTRUMSessionHandler *session = [self sessionStartingAtForEventTimeTest:startTime];
+
+    XCTAssertEqualObjects([session valueForKey:@"sessionStartTime"], startTime);
+    XCTAssertEqualObjects([session valueForKey:@"lastInteractionTime"], startTime);
+
+    NSDate *rolloverTime = [startTime dateByAddingTimeInterval:60];
+    FTRUMSessionHandler *newSession = [[FTRUMSessionHandler alloc] initWithExpiredSession:session time:rolloverTime];
+    XCTAssertEqualObjects([newSession valueForKey:@"sessionStartTime"], rolloverTime);
+    XCTAssertEqualObjects([newSession valueForKey:@"lastInteractionTime"], rolloverTime);
+}
+
+- (void)testUserInteractionsAdvanceLastInteractionUsingModelTime{
+    NSDate *startTime = [NSDate date];
+    FTRUMSessionHandler *session = [self sessionStartingAtForEventTimeTest:startTime];
+    NSArray<NSNumber *> *types = @[
+        @(FTRUMDataViewStart),
+        @(FTRUMDataStartAction),
+        @(FTRUMDataAddAction),
+    ];
+
+    [types enumerateObjectsUsingBlock:^(NSNumber *type, NSUInteger index, BOOL *stop) {
+        NSDate *eventTime = [startTime dateByAddingTimeInterval:index + 1];
+        FTRUMDataModel *model = [[FTRUMDataModel alloc] initWithType:type.unsignedIntegerValue time:eventTime];
+        XCTAssertTrue([self processModel:model inTestSession:session]);
+        XCTAssertEqualObjects([session valueForKey:@"lastInteractionTime"], eventTime);
+    }];
+}
+
+- (void)testNonInteractionModelsDoNotAdvanceLastInteractionTime{
+    NSDate *startTime = [NSDate date];
+    FTRUMSessionHandler *session = [self sessionStartingAtForEventTimeTest:startTime];
+    NSArray<NSNumber *> *types = @[
+        @(FTRUMDataStopAction),
+        @(FTRUMDataLaunch),
+        @(FTRUMDataResourceStart),
+        @(FTRUMDataError),
+        @(FTRUMDataLongTask),
+    ];
+
+    [types enumerateObjectsUsingBlock:^(NSNumber *type, NSUInteger index, BOOL *stop) {
+        NSDate *eventTime = [startTime dateByAddingTimeInterval:index + 1];
+        FTRUMDataModel *model = [[FTRUMDataModel alloc] initWithType:type.unsignedIntegerValue time:eventTime];
+        XCTAssertTrue([self processModel:model inTestSession:session]);
+        XCTAssertEqualObjects([session valueForKey:@"lastInteractionTime"], startTime);
+    }];
+}
+
+- (void)testOutOfOrderInteractionDoesNotMoveLastInteractionBackward{
+    NSDate *startTime = [NSDate date];
+    FTRUMSessionHandler *session = [self sessionStartingAtForEventTimeTest:startTime];
+    NSDate *lastInteractionTime = [startTime dateByAddingTimeInterval:10];
+    [session setValue:lastInteractionTime forKey:@"lastInteractionTime"];
+    FTRUMDataModel *olderInteraction = [[FTRUMDataModel alloc] initWithType:FTRUMDataAddAction
+                                                                       time:[startTime dateByAddingTimeInterval:5]];
+
+    XCTAssertTrue([self processModel:olderInteraction inTestSession:session]);
+    XCTAssertEqualObjects([session valueForKey:@"lastInteractionTime"], lastInteractionTime);
+}
+
+- (void)testSessionTimesOutAtEventTimeBoundary{
+    NSDate *startTime = [NSDate date];
+    FTRUMSessionHandler *session = [self sessionStartingAtForEventTimeTest:startTime];
+    FTRUMDataModel *boundaryEvent = [[FTRUMDataModel alloc] initWithType:FTRUMDataError
+                                                                    time:[startTime dateByAddingTimeInterval:15 * 60]];
+
+    XCTAssertFalse([self processModel:boundaryEvent inTestSession:session]);
+}
+
+- (void)testSessionExpiresAtMaximumDurationUsingEventTime{
+    NSDate *startTime = [NSDate date];
+    FTRUMSessionHandler *session = [self sessionStartingAtForEventTimeTest:startTime];
+    [session setValue:[startTime dateByAddingTimeInterval:4 * 60 * 60 - 60] forKey:@"lastInteractionTime"];
+    FTRUMDataModel *boundaryEvent = [[FTRUMDataModel alloc] initWithType:FTRUMDataError
+                                                                    time:[startTime dateByAddingTimeInterval:4 * 60 * 60]];
+
+    XCTAssertFalse([self processModel:boundaryEvent inTestSession:session]);
+}
+
+- (void)testDelayedBackgroundLaunchStaysInCurrentSessionWithoutRenewingIt{
+    NSDate *startTime = [NSDate dateWithTimeIntervalSinceNow:-(20 * 60)];
+    FTRUMSessionHandler *session = [self sessionStartingAtForEventTimeTest:startTime];
+    NSDate *lastInteractionTime = [NSDate date];
+    [session setValue:lastInteractionTime forKey:@"lastInteractionTime"];
+    FTRUMLaunchDataModel *launch = [[FTRUMLaunchDataModel alloc] initWithDuration:@(20 * 60 * NSEC_PER_SEC)];
+    launch.time = startTime;
+
+    XCTAssertTrue([self processModel:launch inTestSession:session]);
+    XCTAssertEqualObjects([session valueForKey:@"lastInteractionTime"], lastInteractionTime);
+}
+
 - (void)testSessionIdChecks{
     [self setRumConfig];
     [self addErrorData:nil];

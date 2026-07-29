@@ -50,6 +50,7 @@ static NSString * const FTRUMFallbackViewReferrerRoot = @"root";
         self.rumDependencies = dependencies;
         self.assistant = self;
         self.sessionStartTime = model.time;
+        self.lastInteractionTime = self.sessionStartTime;
         self.viewHandlers = [NSMutableArray new];
         self.context = [[FTRUMContext alloc] initWithSampleRate:dependencies.sampleRate sessionOnErrorSampleRate:dependencies.sessionOnErrorSampleRate appId:dependencies.appId];
         self.appState = FTAppStateStartUp;
@@ -64,6 +65,7 @@ static NSString * const FTRUMFallbackViewReferrerRoot = @"root";
         self.rumDependencies = expiredSession.rumDependencies;
         self.sampling = [FTBaseInfoHandler randomSampling:expiredSession.rumDependencies.sampleRate];
         self.sessionStartTime = time;
+        self.lastInteractionTime = self.sessionStartTime;
         self.context = [[FTRUMContext alloc]initWithSampleRate:expiredSession.rumDependencies.sampleRate sessionOnErrorSampleRate:expiredSession.rumDependencies.sessionOnErrorSampleRate appId:self.rumDependencies.appId];
         self.appState = expiredSession.appState;
         self.viewHandlers = [NSMutableArray new];
@@ -117,13 +119,15 @@ static NSString * const FTRUMFallbackViewReferrerRoot = @"root";
     }
 }
 - (BOOL)process:(FTRUMDataModel *)model context:(nonnull NSDictionary *)context{
-    if ([self timedOutOrExpired:[NSDate date]]) {
+    if ([self timedOutOrExpired:model.time]) {
         return NO;
     }
     if (model.type == FTRUMSampleRateUpdate) {
         return  [self checkSessionStateForSamplingRateUpdate];
     }
-    _lastInteractionTime = [NSDate date];
+    if (model.isUserInteraction && [model.time compare:self.lastInteractionTime] == NSOrderedDescending) {
+        self.lastInteractionTime = model.time;
+    }
     if (!self.sampling) {
         if(self.sessionOnErrorSampling == NO){
             return YES;
@@ -279,11 +283,14 @@ static NSString * const FTRUMFallbackViewReferrerRoot = @"root";
     FTRUMViewHandler *viewHandler = [[FTRUMViewHandler alloc]initWithModel:(FTRUMViewModel *)model context:self.context rumDependencies:self.rumDependencies];
     [self.viewHandlers addObject:viewHandler];
 }
--(BOOL)timedOutOrExpired:(NSDate*)currentTime{
-    NSTimeInterval timeElapsedSinceLastInteraction = [currentTime timeIntervalSinceDate:_lastInteractionTime];
+- (BOOL)timedOutOrExpired:(NSDate *)eventTime{
+    NSDate *effectiveTime = [eventTime compare:self.lastInteractionTime] == NSOrderedAscending
+        ? self.lastInteractionTime
+        : eventTime;
+    NSTimeInterval timeElapsedSinceLastInteraction = [effectiveTime timeIntervalSinceDate:self.lastInteractionTime];
     BOOL timedOut = timeElapsedSinceLastInteraction >= sessionTimeoutDuration;
 
-    NSTimeInterval sessionDuration = [currentTime  timeIntervalSinceDate:_sessionStartTime];
+    NSTimeInterval sessionDuration = [effectiveTime timeIntervalSinceDate:self.sessionStartTime];
     BOOL expired = sessionDuration >= sessionMaxDuration;
 
     return timedOut || expired;
