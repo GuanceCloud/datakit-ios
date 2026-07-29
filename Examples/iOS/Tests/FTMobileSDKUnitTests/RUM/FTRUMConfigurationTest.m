@@ -155,7 +155,6 @@ static void FTStartAutoTrackActionTest(AddRumDatasHandlerMock *mock,
                                               viewHandler:nil
                                        swiftUIViewHandler:nil
                                             actionHandler:handler
-                                           displayMonitor:nil
                                   heatmapIdentifierRegistry:registry];
 }
 
@@ -466,8 +465,7 @@ static void FTStartAutoTrackActionTest(AddRumDatasHandlerMock *mock,
                                       addRumDatasDelegate:mock
                                               viewHandler:nil
                                            swiftUIViewHandler:nil
-                                            actionHandler:nil
-                                           displayMonitor:nil];
+                                            actionHandler:nil];
 
     NSDictionary *property = @{@"source": @"swiftui"};
     [[FTAutoTrackHandler sharedInstance] notifyOnAppearWithIdentity:@"swiftui-home"
@@ -491,8 +489,7 @@ static void FTStartAutoTrackActionTest(AddRumDatasHandlerMock *mock,
                                       addRumDatasDelegate:mock
                                               viewHandler:nil
                                            swiftUIViewHandler:nil
-                                            actionHandler:nil
-                                           displayMonitor:nil];
+                                            actionHandler:nil];
 
     [[FTAutoTrackHandler sharedInstance] notifyOnAppearWithIdentity:@"swiftui-home"
                                                                name:@"Home"
@@ -518,8 +515,7 @@ static void FTStartAutoTrackActionTest(AddRumDatasHandlerMock *mock,
                                       addRumDatasDelegate:mock
                                               viewHandler:nil
                                            swiftUIViewHandler:nil
-                                            actionHandler:nil
-                                           displayMonitor:nil];
+                                            actionHandler:nil];
 
     [[FTAutoTrackHandler sharedInstance] notify_swiftUIActionWithName:@"swiftui_tap"
                                                              property:property];

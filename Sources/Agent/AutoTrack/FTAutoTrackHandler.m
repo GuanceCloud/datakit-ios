@@ -48,7 +48,7 @@
     [FTAutoTrack sharedInstance].addRumDatasDelegate = delegate;
     [[FTAutoTrack sharedInstance] startHookView:trackView action:trackAction];
     if (trackAction) {
-        self.launchTracker = [[FTAppLaunchTracker alloc] initWithDelegate:self displayMonitor:nil];
+        self.launchTracker = [[FTAppLaunchTracker alloc] initWithDelegate:self];
     }
 }
 
@@ -240,15 +240,13 @@ API_AVAILABLE(ios(13.0), tvos(13.0))
       addRumDatasDelegate:(id<FTRumDatasProtocol>)delegate
               viewHandler:(FTViewTrackingHandler)viewHandler
        swiftUIViewHandler:(id<FTSwiftUIViewTrackingHandler>)swiftUIViewHandler
-            actionHandler:(FTActionTrackingHandler)actionHandler
-           displayMonitor:(FTDisplayRateMonitor *)displayMonitor{
+            actionHandler:(FTActionTrackingHandler)actionHandler{
     [self startWithTrackView:trackView
                       action:trackAction
          addRumDatasDelegate:delegate
                  viewHandler:viewHandler
           swiftUIViewHandler:swiftUIViewHandler
                actionHandler:actionHandler
-              displayMonitor:displayMonitor
    heatmapIdentifierRegistry:nil];
 }
 
@@ -258,7 +256,6 @@ API_AVAILABLE(ios(13.0), tvos(13.0))
               viewHandler:(FTViewTrackingHandler)viewHandler
        swiftUIViewHandler:(id<FTSwiftUIViewTrackingHandler>)swiftUIViewHandler
             actionHandler:(FTActionTrackingHandler)actionHandler
-           displayMonitor:(FTDisplayRateMonitor *)displayMonitor
 heatmapIdentifierRegistry:(id<FTHeatmapIdentifierRegistry>)heatmapIdentifierRegistry{
     _autoTrackView = trackView;
     _autoTrackAction = trackAction;
@@ -292,7 +289,7 @@ heatmapIdentifierRegistry:(id<FTHeatmapIdentifierRegistry>)heatmapIdentifierRegi
     if (trackAction) {
         self.actionHandler = self;
         [self hookTargetAction];
-        self.launchTracker = [[FTAppLaunchTracker alloc]initWithDelegate:self displayMonitor:displayMonitor];
+        self.launchTracker = [[FTAppLaunchTracker alloc]initWithDelegate:self];
     }
 }
 - (void)hookViewControllerLifeCycle{

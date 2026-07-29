@@ -107,8 +107,7 @@
             addRumDatasDelegate:mock
                     viewHandler:nil
              swiftUIViewHandler:nil
-                  actionHandler:nil
-                 displayMonitor:nil];
+                  actionHandler:nil];
 
     [handler notifyOnAppearWithIdentity:@"swiftui-home"
                                    name:@"Home"
@@ -130,8 +129,7 @@
             addRumDatasDelegate:mock
                     viewHandler:nil
              swiftUIViewHandler:nil
-                  actionHandler:nil
-                 displayMonitor:nil];
+                  actionHandler:nil];
 
     [handler notifyOnAppearWithIdentity:@"swiftui-home" name:@"Home" property:nil loadTime:@123];
     [handler notifyOnAppearWithIdentity:@"swiftui-home" name:@"Home" property:nil loadTime:@456];
@@ -148,8 +146,7 @@
             addRumDatasDelegate:mock
                     viewHandler:nil
              swiftUIViewHandler:nil
-                  actionHandler:nil
-                 displayMonitor:nil];
+                  actionHandler:nil];
 
     [handler notifyOnAppearWithIdentity:@"swiftui-home" name:@"Home" property:nil loadTime:@123];
     [handler notifyOnDisappearWithIdentity:@"swiftui-home"];

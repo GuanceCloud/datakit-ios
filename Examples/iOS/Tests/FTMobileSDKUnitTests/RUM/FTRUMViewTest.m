@@ -40,18 +40,18 @@
 
 }
 - (void)testEnableAutoTrackView{
-    [[FTAutoTrackHandler sharedInstance] startWithTrackView:YES action:NO addRumDatasDelegate:nil viewHandler:nil swiftUIViewHandler:nil actionHandler:nil displayMonitor:nil];
+    [[FTAutoTrackHandler sharedInstance] startWithTrackView:YES action:NO addRumDatasDelegate:nil viewHandler:nil swiftUIViewHandler:nil actionHandler:nil];
     
     XCTAssertTrue([FTAutoTrackHandler sharedInstance].viewControllerHandler != nil);
 }
 - (void)testDisableAutoTrackView{
-    [[FTAutoTrackHandler sharedInstance] startWithTrackView:NO action:NO addRumDatasDelegate:nil viewHandler:nil swiftUIViewHandler:nil actionHandler:nil displayMonitor:nil];
+    [[FTAutoTrackHandler sharedInstance] startWithTrackView:NO action:NO addRumDatasDelegate:nil viewHandler:nil swiftUIViewHandler:nil actionHandler:nil];
     
     XCTAssertNil([FTAutoTrackHandler sharedInstance].viewControllerHandler);
 }
 - (void)testViewDidAppear{
     AddRumDatasHandlerMock *handler = [[AddRumDatasHandlerMock alloc]init];
-    [[FTAutoTrackHandler sharedInstance] startWithTrackView:YES action:NO addRumDatasDelegate:handler viewHandler:nil swiftUIViewHandler:nil actionHandler:nil displayMonitor:nil];
+    [[FTAutoTrackHandler sharedInstance] startWithTrackView:YES action:NO addRumDatasDelegate:handler viewHandler:nil swiftUIViewHandler:nil actionHandler:nil];
     
     UIViewController *vc = [[UIViewController alloc]init];
     
@@ -62,7 +62,7 @@
 }
 - (void)testViewDidAppear_itStopsPreviousRUMView{
     AddRumDatasHandlerMock *handler = [[AddRumDatasHandlerMock alloc]init];
-    [[FTAutoTrackHandler sharedInstance] startWithTrackView:YES action:NO addRumDatasDelegate:handler viewHandler:nil swiftUIViewHandler:nil actionHandler:nil displayMonitor:nil];
+    [[FTAutoTrackHandler sharedInstance] startWithTrackView:YES action:NO addRumDatasDelegate:handler viewHandler:nil swiftUIViewHandler:nil actionHandler:nil];
     
     UIViewController *vc = [[UIViewController alloc]init];
     UIViewController *vc2 = [[UIViewController alloc]init];
@@ -76,7 +76,7 @@
 }
 - (void)testViewDidAppear_itDoesNotStartTheSameRUMViewTwice{
     AddRumDatasHandlerMock *handler = [[AddRumDatasHandlerMock alloc]init];
-    [[FTAutoTrackHandler sharedInstance] startWithTrackView:YES action:NO addRumDatasDelegate:handler viewHandler:nil swiftUIViewHandler:nil actionHandler:nil displayMonitor:nil];
+    [[FTAutoTrackHandler sharedInstance] startWithTrackView:YES action:NO addRumDatasDelegate:handler viewHandler:nil swiftUIViewHandler:nil actionHandler:nil];
 
     
     UIViewController *vc = [[UIViewController alloc]init];
@@ -90,7 +90,7 @@
 
 - (void)testWhenViewDidDisappear_itStartsPreviousRUMView{
     AddRumDatasHandlerMock *handler = [[AddRumDatasHandlerMock alloc]init];
-    [[FTAutoTrackHandler sharedInstance] startWithTrackView:YES action:NO addRumDatasDelegate:handler viewHandler:nil swiftUIViewHandler:nil actionHandler:nil displayMonitor:nil];
+    [[FTAutoTrackHandler sharedInstance] startWithTrackView:YES action:NO addRumDatasDelegate:handler viewHandler:nil swiftUIViewHandler:nil actionHandler:nil];
 
     
     UIViewController *vc = [[UIViewController alloc]init];
@@ -112,7 +112,7 @@
 }
 - (void)testWhenViewDidDisappear_itDoesNotStartAnyRUMView{
     AddRumDatasHandlerMock *handler = [[AddRumDatasHandlerMock alloc]init];
-    [[FTAutoTrackHandler sharedInstance] startWithTrackView:YES action:NO addRumDatasDelegate:handler viewHandler:nil swiftUIViewHandler:nil actionHandler:nil displayMonitor:nil];
+    [[FTAutoTrackHandler sharedInstance] startWithTrackView:YES action:NO addRumDatasDelegate:handler viewHandler:nil swiftUIViewHandler:nil actionHandler:nil];
 
     
     UIViewController *vc = [[UIViewController alloc]init];
@@ -125,7 +125,7 @@
 }
 - (void)testWhenViewDidDisappearButPreviousView_itDoesNotStartAnyRUMView{
     AddRumDatasHandlerMock *handler = [[AddRumDatasHandlerMock alloc]init];
-    [[FTAutoTrackHandler sharedInstance] startWithTrackView:YES action:NO addRumDatasDelegate:handler viewHandler:nil swiftUIViewHandler:nil actionHandler:nil displayMonitor:nil];
+    [[FTAutoTrackHandler sharedInstance] startWithTrackView:YES action:NO addRumDatasDelegate:handler viewHandler:nil swiftUIViewHandler:nil actionHandler:nil];
 
     
     UIViewController *vc = [[UIViewController alloc]init];
@@ -137,7 +137,7 @@
 }
 - (void)testWhenAppStateChanges_itStopsAndRestartsRUMView{
     AddRumDatasHandlerMock *handler = [[AddRumDatasHandlerMock alloc]init];
-    [[FTAutoTrackHandler sharedInstance] startWithTrackView:YES action:NO addRumDatasDelegate:handler viewHandler:nil swiftUIViewHandler:nil actionHandler:nil displayMonitor:nil];
+    [[FTAutoTrackHandler sharedInstance] startWithTrackView:YES action:NO addRumDatasDelegate:handler viewHandler:nil swiftUIViewHandler:nil actionHandler:nil];
     
     UIViewController *vc = [[UIViewController alloc]init];
     [vc viewDidAppear:YES];
@@ -157,7 +157,7 @@
 }
 - (void)testGivenViewControllerDidNotStart_whenAppStateChanges_itDoesNothing{
     AddRumDatasHandlerMock *handler = [[AddRumDatasHandlerMock alloc]init];
-    [[FTAutoTrackHandler sharedInstance] startWithTrackView:YES action:NO addRumDatasDelegate:handler viewHandler:nil swiftUIViewHandler:nil actionHandler:nil displayMonitor:nil];
+    [[FTAutoTrackHandler sharedInstance] startWithTrackView:YES action:NO addRumDatasDelegate:handler viewHandler:nil swiftUIViewHandler:nil actionHandler:nil];
 
     
 
@@ -173,7 +173,7 @@
 }
 - (void)testParentViewIsNavigationController{
     AddRumDatasHandlerMock *handler = [[AddRumDatasHandlerMock alloc]init];
-    [[FTAutoTrackHandler sharedInstance] startWithTrackView:YES action:NO addRumDatasDelegate:handler viewHandler:nil swiftUIViewHandler:nil actionHandler:nil displayMonitor:nil];
+    [[FTAutoTrackHandler sharedInstance] startWithTrackView:YES action:NO addRumDatasDelegate:handler viewHandler:nil swiftUIViewHandler:nil actionHandler:nil];
 
     UIViewController *vc = [[UIViewController alloc]init];
 
