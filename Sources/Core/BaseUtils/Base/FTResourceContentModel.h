@@ -42,6 +42,10 @@ NS_ASSUME_NONNULL_BEGIN
 @property (nonatomic, copy) NSString *responseBody;
 /// Resource Type
 @property (nonatomic, copy, nullable) NSString *resourceType;
+/// Whether this Resource represents only a WebSocket opening handshake.
+@property (nonatomic, assign) BOOL webSocketHandshake;
+/// WebSocket opening-handshake result, such as success, rejected, or failed.
+@property (nonatomic, copy, nullable) NSString *webSocketHandshakeState;
 
 ///  Initialization method
 /// - Parameters:

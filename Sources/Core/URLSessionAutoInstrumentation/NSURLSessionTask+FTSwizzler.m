@@ -23,6 +23,7 @@
 #import <objc/runtime.h>
 #import "FTInnerLog.h"
 static char *hasCompletionKey = "hasCompletionKey";
+static char webSocketOriginalURLKey;
 @implementation NSURLSessionTask (FTSwizzler)
 
 -(void)setFt_hasCompletion:(BOOL)hasCompletion{
@@ -34,6 +35,12 @@ static char *hasCompletionKey = "hasCompletionKey";
         return [hasCompletion boolValue];
     }
     return NO;
+}
+-(void)setFt_webSocketOriginalURL:(NSURL *)ft_webSocketOriginalURL{
+    objc_setAssociatedObject(self, &webSocketOriginalURLKey, [ft_webSocketOriginalURL copy], OBJC_ASSOCIATION_RETAIN_NONATOMIC);
+}
+-(NSURL *)ft_webSocketOriginalURL{
+    return objc_getAssociatedObject(self, &webSocketOriginalURLKey);
 }
 - (id<NSURLSessionDelegate>)ft_delegate{
     if (@available(iOS 15.0,tvOS 15.0,macOS 12.0, *)) {
@@ -76,5 +83,30 @@ static char *hasCompletionKey = "hasCompletionKey";
         }
     }
     return YES;
+}
+- (BOOL)ft_isWebSocketTask{
+    Class webSocketTaskClass = NSClassFromString(@"NSURLSessionWebSocketTask");
+    return webSocketTaskClass != Nil && [self isKindOfClass:webSocketTaskClass];
+}
+- (NSURL *)ft_webSocketResourceURL{
+    NSURL *originalURL = self.ft_webSocketOriginalURL;
+    if (originalURL) {
+        return originalURL;
+    }
+    if (![self ft_isWebSocketTask]) {
+        return nil;
+    }
+    NSURL *requestURL = self.currentRequest.URL ?: self.originalRequest.URL;
+    if (!requestURL) {
+        return nil;
+    }
+    NSURLComponents *components = [NSURLComponents componentsWithURL:requestURL resolvingAgainstBaseURL:NO];
+    NSString *scheme = components.scheme.lowercaseString;
+    if ([scheme isEqualToString:@"https"]) {
+        components.scheme = @"wss";
+    } else if ([scheme isEqualToString:@"http"]) {
+        components.scheme = @"ws";
+    }
+    return components.URL ?: requestURL;
 }
 @end

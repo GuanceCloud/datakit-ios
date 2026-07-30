@@ -28,6 +28,7 @@
 #import "FTTraceContext.h"
 #import "NSURLSessionTask+FTSwizzler.h"
 #import "NSDictionary+FTCopyProperties.h"
+#import "FTConstants.h"
 void *FTInterceptorQueueIdentityKey = &FTInterceptorQueueIdentityKey;
 
 @interface FTURLSessionInterceptor ()
@@ -197,7 +198,8 @@ static NSObject *sharedInstanceLock;
                     }];
                     [task setValue:mutableRequest forKey:@"currentRequest"];
                 }
-                [self traceInterceptTask:task linkTraceContext:context requestURL:currentRequest.URL];
+                NSURL *resourceURL = task.ft_webSocketResourceURL ?: currentRequest.URL;
+                [self traceInterceptTask:task linkTraceContext:context requestURL:resourceURL];
             }
             return;
         }else if(_tracer&&_tracer.enableAutoTrace){
@@ -241,10 +243,12 @@ static NSObject *sharedInstanceLock;
 // rum:start resource
 - (void)interceptTask:(NSURLSessionTask *)task{
     FTURLSessionRequestSnapshot *requestSnapshot = [FTURLSessionRequestSnapshot snapshotWithRequest:task.currentRequest];
+    BOOL isWebSocketHandshake = task.ft_isWebSocketTask;
+    NSURL *resourceURL = isWebSocketHandshake ? task.ft_webSocketResourceURL : requestSnapshot.URL;
     dispatch_async(self.queue, ^{
         @try {
             FTSessionTaskHandler *handler = [self getTraceHandler:task];
-            if(!requestSnapshot || !requestSnapshot.URL || ![self isTraceUrl:requestSnapshot.URL]){
+            if(!requestSnapshot || !resourceURL || ![self isTraceUrl:resourceURL]){
                 if(handler)[self removeTraceHandlerWithKey:task];
                 return;
             }
@@ -252,7 +256,18 @@ static NSObject *sharedInstanceLock;
                 handler = [[FTSessionTaskHandler alloc]init];
                 [self setTraceHandler:handler forKey:task];
             }
+            if (isWebSocketHandshake && handler.webSocketHandshakeStarted) {
+                return;
+            }
             handler.requestSnapshot = requestSnapshot;
+            if (isWebSocketHandshake) {
+                handler.webSocketHandshake = YES;
+                handler.webSocketURL = resourceURL;
+                NSMutableURLRequest *webSocketRequest = [requestSnapshot.request mutableCopy];
+                webSocketRequest.URL = resourceURL;
+                handler.request = [webSocketRequest copy];
+                handler.webSocketHandshakeStarted = YES;
+            }
             [self startResourceWithKey:handler.identifier];
         }@catch (NSException *exception) {
             FTInnerLogError(@"exception: %@",exception);
@@ -274,7 +289,7 @@ static NSObject *sharedInstanceLock;
                 return;
             }
             [handler taskReceivedMetrics:metrics custom:custom];
-            if(!custom){
+            if(!handler.webSocketHandshake && !custom){
                 if (@available(iOS 15.0,tvOS 15.0,macOS 12.0, *)) {
                     //macOS 10.15, iOS 13.0, watchOS 6.0, tvOS 13.0, *
                     if(!hasCompletion){
@@ -318,6 +333,28 @@ static NSObject *sharedInstanceLock;
         }
     });
 }
+/// WebSocket open is the successful handshake boundary. It must not wait for later connection close.
+- (void)taskWebSocketDidOpen:(NSURLSessionTask *)task extraProvider:(nullable ResourcePropertyProvider)extraProvider{
+    ResourcePropertyProvider provider = extraProvider?:self.resourcePropertyProvider;
+    NSURLResponse *response = task.response;
+    dispatch_async(self.queue, ^{
+        @try {
+            FTSessionTaskHandler *handler = [self getTraceHandler:task];
+            if (!handler || !handler.webSocketHandshake) {
+                return;
+            }
+            [self completeWebSocketHandshakeForTask:task
+                                            handler:handler
+                                           response:response
+                                             error:nil
+                                             state:FT_RESOURCE_WEBSOCKET_HANDSHAKE_STATE_SUCCESS
+                                     extraProvider:provider
+                                        errorFilter:nil];
+        } @catch (NSException *exception) {
+            FTInnerLogError(@"exception: %@",exception);
+        }
+    });
+}
 /// rum: stopResource
 - (void)taskCompleted:(NSURLSessionTask *)task error:(nullable NSError *)error{
     [self taskCompleted:task error:error extraProvider:nil errorFilter:nil];
@@ -343,6 +380,17 @@ static NSObject *sharedInstanceLock;
     if(!handler){
         return;
     }
+    if (handler.webSocketHandshake) {
+        NSString *state = [self webSocketHandshakeStateWithResponse:response];
+        [self completeWebSocketHandshakeForTask:task
+                                        handler:handler
+                                       response:response
+                                         error:error
+                                         state:state
+                                 extraProvider:extraProvider
+                                    errorFilter:errorFilter];
+        return;
+    }
     BOOL filterError = NO;
     if (errorFilter && error) {
         filterError = errorFilter(error);
@@ -363,6 +411,59 @@ static NSObject *sharedInstanceLock;
         }];
     }
     [self addResourceWithKey:handler.identifier metrics:handler.metricsModel content:handler.contentModel spanID:span_id traceID:trace_id];
+}
+
+- (NSString *)webSocketHandshakeStateWithResponse:(nullable NSURLResponse *)response{
+    NSInteger statusCode = -1;
+    if ([response isKindOfClass:NSHTTPURLResponse.class]) {
+        statusCode = ((NSHTTPURLResponse *)response).statusCode;
+    }
+    if (statusCode >= 100 && statusCode <= 599 && statusCode != 101) {
+        return FT_RESOURCE_WEBSOCKET_HANDSHAKE_STATE_REJECTED;
+    }
+    return FT_RESOURCE_WEBSOCKET_HANDSHAKE_STATE_FAILED;
+}
+
+- (void)completeWebSocketHandshakeForTask:(NSURLSessionTask *)task
+                                  handler:(FTSessionTaskHandler *)handler
+                                 response:(nullable NSURLResponse *)response
+                                   error:(nullable NSError *)error
+                                   state:(NSString *)state
+                           extraProvider:(nullable ResourcePropertyProvider)extraProvider
+                              errorFilter:(nullable SessionTaskErrorFilter)errorFilter{
+    BOOL filterError = errorFilter && error ? errorFilter(error) : NO;
+    NSError *contentError = filterError ? nil : error;
+    [handler taskCompletedWithResponse:response error:contentError];
+
+    FTResourceContentModel *content = handler.contentModel;
+    content.webSocketHandshake = YES;
+    content.webSocketHandshakeState = state;
+    content.resourceType = FT_RESOURCE_TYPE_WEBSOCKET;
+    content.url = handler.webSocketURL ?: handler.request.URL;
+    content.httpMethod = @"GET";
+    if ([state isEqualToString:FT_RESOURCE_WEBSOCKET_HANDSHAKE_STATE_SUCCESS]) {
+        if (content.httpStatusCode < 0) {
+            content.httpStatusCode = 101;
+        }
+    } else if (content.httpStatusCode < 0) {
+        content.httpStatusCode = 0;
+    }
+
+    [self removeTraceHandlerWithKey:task];
+    NSDictionary *property;
+    if(extraProvider){
+        property = extraProvider(handler.request, handler.response, nil, handler.error);
+        property = [property ft_deepCopy];
+    }
+    [self stopResourceWithKey:handler.identifier property:property];
+    __block NSString *span_id = handler.spanID,*trace_id=handler.traceID;
+    if (self.tracer.enableLinkRumData&&span_id==nil&&trace_id==nil) {
+        [self.tracer unpackTraceHeader:handler.requestSnapshot.allHTTPHeaderFields handler:^(NSString * _Nullable traceId, NSString * _Nullable spanID) {
+            span_id = spanID;
+            trace_id = traceId;
+        }];
+    }
+    [self addResourceWithKey:handler.identifier metrics:handler.metricsModel content:content spanID:span_id traceID:trace_id];
 }
 
 #pragma mark --------- external data ----------
