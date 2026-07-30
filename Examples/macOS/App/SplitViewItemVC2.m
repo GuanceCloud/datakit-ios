@@ -24,12 +24,14 @@
 #import "LoggingViewController.h"
 #import "TraceViewController.h"
 #import "WebViewController.h"
+#import "ImageSessionReplayViewController.h"
 @interface SplitViewItemVC2 ()
 @property (nonatomic, strong) TabViewController *mTabView;
 @property (nonatomic, strong) RumViewController *mRumVC;
 @property (nonatomic, strong) LoggingViewController *mLoggerVC;
 @property (nonatomic, strong) TraceViewController *mTraceVC;
 @property (nonatomic, strong) WebViewController *mWebViewVC;
+@property (nonatomic, strong) ImageSessionReplayViewController *mImageSessionReplayVC;
 @property (nonatomic, assign) NSInteger currentIndex;
 @end
 
@@ -42,6 +44,7 @@
     [self insertChildViewController:self.mLoggerVC atIndex:2];
     [self insertChildViewController:self.mTraceVC atIndex:3];
     [self insertChildViewController:self.mWebViewVC atIndex:4];
+    [self insertChildViewController:self.mImageSessionReplayVC atIndex:5];
     [self.view addSubview:self.mTabView.view];
 }
 -(RumViewController *)mPresent{
@@ -74,6 +77,12 @@
     }
     return _mWebViewVC;
 }
+-(ImageSessionReplayViewController *)mImageSessionReplayVC{
+    if(!_mImageSessionReplayVC){
+        _mImageSessionReplayVC = [[ImageSessionReplayViewController alloc]init];
+    }
+    return _mImageSessionReplayVC;
+}
 -(void)showViewIndex:(NSInteger)index{
     if (self.currentIndex != index) {
         NSViewController *from = [self getIndexVC:self.currentIndex];
@@ -101,6 +110,9 @@
             break;
         case 4:
             back = self.mWebViewVC;
+            break;
+        case 5:
+            back = self.mImageSessionReplayVC;
             break;
         default:
             break;

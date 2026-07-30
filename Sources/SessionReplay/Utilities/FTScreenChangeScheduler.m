@@ -14,15 +14,24 @@
  */
 
 #import <TargetConditionals.h>
-#if TARGET_OS_IOS
+#if TARGET_OS_IOS || TARGET_OS_OSX
 
 #import "FTScreenChangeScheduler.h"
 #import "FTQueue.h"
+#if TARGET_OS_IOS
 #import "FTScreenChangeMonitor.h"
+#endif
+#if TARGET_OS_OSX
+const NSTimeInterval FTSessionReplayMacOSCaptureInterval = 0.1;
+#endif
 @interface FTScreenChangeScheduler()
 @property (nonatomic, strong) id<FTQueue> queue;
 @property (nonatomic, assign) NSTimeInterval minimumInterval;
+#if TARGET_OS_IOS
 @property (nonatomic, strong) FTScreenChangeMonitor *monitor;
+#elif TARGET_OS_OSX
+@property (nonatomic, strong, nullable) NSTimer *captureTimer;
+#endif
 @property (nonatomic, strong) NSMutableArray<dispatch_block_t> *operations;
 
 @end
@@ -62,6 +71,7 @@
             return;
         }
         
+        #if TARGET_OS_IOS
         if (strongSelf.monitor) {
             return;
         }
@@ -76,6 +86,24 @@
         } else {
             //
         }
+        #elif TARGET_OS_OSX
+        if (strongSelf.captureTimer) {
+            return;
+        }
+        NSTimer *timer =
+            [NSTimer timerWithTimeInterval:strongSelf.minimumInterval
+                                  repeats:YES
+                                    block:^(NSTimer *timer) {
+            __strong typeof(weakSelf) strongSelf = weakSelf;
+            if (!strongSelf) {
+                [timer invalidate];
+                return;
+            }
+            [strongSelf captureScreen];
+        }];
+        strongSelf.captureTimer = timer;
+        [NSRunLoop.mainRunLoop addTimer:timer forMode:NSRunLoopCommonModes];
+        #endif
     }];
 }
 
@@ -84,15 +112,23 @@
     
     [self.queue run:^{
         __strong typeof(weakSelf) strongSelf = weakSelf;
-        if (!strongSelf || !strongSelf.monitor) {
+        if (!strongSelf) {
             return;
         }
-        
+        #if TARGET_OS_IOS
+        if (!strongSelf.monitor) {
+            return;
+        }
         [strongSelf.monitor stop];
         strongSelf.monitor = nil;
+        #elif TARGET_OS_OSX
+        [strongSelf.captureTimer invalidate];
+        strongSelf.captureTimer = nil;
+        #endif
     }];
 }
 
+#if TARGET_OS_IOS
 - (void)screenDidChange:(FTCALayerChangeSnapshot *)snapshot {
     
     [self.operations enumerateObjectsUsingBlock:^(dispatch_block_t  _Nonnull operation, NSUInteger idx, BOOL * _Nonnull stop) {
@@ -100,6 +136,13 @@
     }];
 
 }
+#elif TARGET_OS_OSX
+- (void)captureScreen {
+    for (dispatch_block_t operation in [self.operations copy]) {
+        operation();
+    }
+}
+#endif
 
 
 @end

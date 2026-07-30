@@ -49,7 +49,7 @@
     self.mWebView.UIDelegate = self;
     [self.view addSubview:self.mWebView];
     NSProcessInfo *processInfo = [NSProcessInfo processInfo];
-    NSString *urlStr = [processInfo environment][@"WEB_URL"];
+    NSString *urlStr = [processInfo environment][@"WEBVIEW_URL"];
     NSURL *url =  [NSURL URLWithString:[NSString stringWithFormat:@"%@?requestUrl=%@/api/user",urlStr,urlStr]];
 
     NSMutableURLRequest *request = [[NSMutableURLRequest alloc] initWithURL:url];

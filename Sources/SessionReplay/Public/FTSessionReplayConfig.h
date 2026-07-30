@@ -14,7 +14,7 @@
  */
 
 #import <TargetConditionals.h>
-#if TARGET_OS_IOS
+#if TARGET_OS_IOS || TARGET_OS_OSX
 
 #import <Foundation/Foundation.h>
 
@@ -40,7 +40,7 @@ typedef NS_ENUM(NSUInteger,FTTouchPrivacyLevel){
 
 /// Available privacy levels for image masking in session replay
 typedef NS_ENUM(NSUInteger,FTImagePrivacyLevel){
-    /// Only SF symbols and images loaded using [UIImage imageNamed:]/UIImage(named:) that are bundled in the application will be recorded
+    /// Only platform system symbols and images bundled in the application will be recorded
     FTImagePrivacyLevelMaskNonBundledOnly,
     /// No images will be recorded
     FTImagePrivacyLevelMaskAll,

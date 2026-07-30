@@ -20,7 +20,7 @@
 //
 
 #import <TargetConditionals.h>
-#if TARGET_OS_IOS
+#if TARGET_OS_IOS || TARGET_OS_OSX
 
 #import "FTRequestMultipartFormBody.h"
 static NSString * const kFTMultipartFormCRLF = @"\r\n";

@@ -14,13 +14,14 @@
  */
 
 #import <TargetConditionals.h>
-#if TARGET_OS_IOS
+#if TARGET_OS_IOS || TARGET_OS_OSX
 
 #import "FTSystemColors.h"
 #import "FTSRUtils.h"
 
-#import <UIKit/UIKit.h>
+#import "FTSessionReplayPlatform.h"
 @implementation FTSystemColors
+#if TARGET_OS_IOS
 /// The track of a slider.
 + (NSString *)systemFillColorStr{
     if (@available(iOS 13.0, *)) {
@@ -99,6 +100,47 @@
 + (NSString *)clearColorStr{
     return [FTSRUtils colorHexString:[UIColor clearColor].CGColor];
 }
+#elif TARGET_OS_OSX
++ (NSString *)systemFillColorStr {
+    return @"#78788033";
+}
++ (NSString *)secondarySystemFillColorStr {
+    return @"#78788029";
+}
++ (NSString *)tertiarySystemFillColorStr {
+    return @"#7676801F";
+}
++ (NSString *)tertiarySystemBackgroundColorStr {
+    return @"#FFFFFFFF";
+}
++ (NSString *)secondarySystemGroupedBackgroundColorStr {
+    return @"#FFFFFFFF";
+}
++ (FTSRPlatformColor *)systemBackground {
+    return NSColor.windowBackgroundColor;
+}
++ (NSString *)systemBackgroundColorStr {
+    return @"#ECECECFF";
+}
++ (FTSRPlatformColor *)labelColor {
+    return NSColor.labelColor;
+}
++ (NSString *)labelColorStr {
+    return @"#000000FF";
+}
++ (NSString *)placeholderTextColorStr {
+    return @"#3C3C434C";
+}
++ (NSString *)tintColorStr {
+    return @"#007AFFFF";
+}
++ (NSString *)systemGreenColorStr {
+    return @"#34C759FF";
+}
++ (NSString *)clearColorStr {
+    return @"#00000000";
+}
+#endif
 @end
 
 #endif

@@ -14,7 +14,7 @@
  */
 
 #import <TargetConditionals.h>
-#if TARGET_OS_IOS
+#if TARGET_OS_IOS || TARGET_OS_OSX
 
 #import "FTRecorder.h"
 #import "FTWindowObserver.h"
@@ -50,14 +50,15 @@
     return self;
 }
 -(void)taskSnapShot:(FTSRContext *)context touchSnapshot:(FTTouchSnapshot *)touchSnapshot{
-    
-    NSArray <UIWindow *> *rootViews = self.windowObserver.windows ;
-    UIWindow *keyWindow = self.windowObserver.keyWindow ;
-    if(rootViews == nil || rootViews.count == 0 || keyWindow == nil){
+
+    NSAssert(NSThread.isMainThread, @"Session Replay view capture must run on the main thread.");
+    NSArray<FTSRPlatformView *> *rootViews = self.windowObserver.rootViews;
+    FTSRPlatformView *referenceView = self.windowObserver.referenceView;
+    if(rootViews == nil || rootViews.count == 0 || referenceView == nil){
         return;
     }
     // 1.Collect view snap shot
-    FTViewTreeSnapshot *viewTreeSnapshot = [self.viewSnapShotBuilder takeSnapshot:rootViews referenceView:keyWindow context:context];
+    FTViewTreeSnapshot *viewTreeSnapshot = [self.viewSnapShotBuilder takeSnapshot:rootViews referenceView:referenceView context:context];
     [self.snapshotProcessor process:viewTreeSnapshot touchSnapshot:touchSnapshot];
 }
 @end

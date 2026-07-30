@@ -14,7 +14,7 @@
  */
 
 #import <TargetConditionals.h>
-#if TARGET_OS_IOS
+#if TARGET_OS_IOS || TARGET_OS_OSX
 
 #import "FTTLV.h"
 NSUInteger const FT_MAX_DATA_LENGTH = 10*1024*1024;

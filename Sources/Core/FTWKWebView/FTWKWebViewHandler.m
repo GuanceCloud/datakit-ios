@@ -273,7 +273,12 @@ static NSObject *sharedInstanceLock;
                                 FTInnerLogDebug(@"[WebView] webView(%lld:%@) bindInfo fail.",slotID,tags[FT_KEY_VIEW_ID]);
                             }
                         }
-                        [tags setValue:@{@"source":@"ios",@"view_id":info.viewId} forKey:@"container"];
+#if TARGET_OS_OSX
+                        NSString *containerSource = @"macos";
+#else
+                        NSString *containerSource = @"ios";
+#endif
+                        [tags setValue:@{@"source":containerSource,@"view_id":info.viewId} forKey:@"container"];
                     }
                     if (tags[FT_KEY_VIEW_REFERRER] == nil) {
                         [tags setValue:info.viewReferrer forKey:FT_KEY_VIEW_REFERRER];

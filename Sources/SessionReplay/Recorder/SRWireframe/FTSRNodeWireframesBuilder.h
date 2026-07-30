@@ -14,16 +14,16 @@
  */
 
 #import <TargetConditionals.h>
-#if TARGET_OS_IOS
+#if TARGET_OS_IOS || TARGET_OS_OSX
 
 #import <Foundation/Foundation.h>
-#import <UIKit/UIKit.h>
+#import "FTSessionReplayPlatform.h"
 
 NS_ASSUME_NONNULL_BEGIN
 @class FTSRWireframe,FTViewAttributes,FTViewTreeRecordingContext,FTSRNodeSemantics,FTSessionReplayWireframesBuilder,FTHeatmapIdentifier;
 @protocol FTSRTextObfuscatingProtocol;
 
-typedef FTSRNodeSemantics* _Nullable(^SemanticsOverride)(UIView *  view, FTViewAttributes* attributes);
+typedef FTSRNodeSemantics* _Nullable(^SemanticsOverride)(FTSRPlatformView *view, FTViewAttributes *attributes);
 typedef id<FTSRTextObfuscatingProtocol> _Nullable(^FTTextObfuscator)(FTViewTreeRecordingContext *context,FTViewAttributes *attributes);
 
 @protocol FTSRNodeWireframesBuilder <NSObject>
@@ -36,7 +36,7 @@ typedef id<FTSRTextObfuscatingProtocol> _Nullable(^FTTextObfuscator)(FTViewTreeR
 
 @protocol FTSRWireframesRecorder <NSObject>
 @property (nonatomic, copy) NSString *identifier;
--(nullable FTSRNodeSemantics *)recorder:(UIView *)view attributes:(FTViewAttributes *)attributes context:(FTViewTreeRecordingContext *)context;
+-(nullable FTSRNodeSemantics *)recorder:(FTSRPlatformView *)view attributes:(FTViewAttributes *)attributes context:(FTViewTreeRecordingContext *)context;
 @end
 
 @protocol FTSRResource <NSObject>

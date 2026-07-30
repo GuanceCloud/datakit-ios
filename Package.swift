@@ -220,6 +220,7 @@ let package = Package(
                 .headerSearchPath("Recorder/SRWireframe"),
                 .headerSearchPath("Recorder/SRWireframe/ViewTreeSnapshot"),
                 .headerSearchPath("Recorder/SRWireframe/ViewTreeSnapshot/ViewsRecorder"),
+                .headerSearchPath("Recorder/SRWireframe/ViewTreeSnapshot/AppKitViewsRecorder"),
                 .headerSearchPath("Recorder/ScreenChangeMonitor"),
                 .headerSearchPath("Storage"),
                 .headerSearchPath("Storage/Writer"),

@@ -14,10 +14,12 @@
  */
 
 #import <TargetConditionals.h>
-#if TARGET_OS_IOS
+#if TARGET_OS_IOS || TARGET_OS_OSX
 
 #import "FTSRUtils.h"
+#if TARGET_OS_IOS
 #import "UIColor+FTSRIdentifier.h"
+#endif
 CGRect FTCGRectScaleAspectFitRect(CGSize size,CGSize contentSize){
     CGFloat imageAspectRatio = contentSize.height / contentSize.width;
     CGFloat x, y, width, height;
@@ -45,6 +47,7 @@ CGRect FTCGRectScaleAspectFillRect(CGSize size,CGSize contentSize){
                       rSize.height
                       );
 }
+#if TARGET_OS_IOS
 CGRect FTCGRectFitWithContentMode(CGRect rect, CGSize contentSize, UIViewContentMode mode) {
     if(rect.size.width>0&&rect.size.height>0&&contentSize.width>0&&contentSize.height>0){
         switch (mode) {
@@ -131,6 +134,7 @@ CGRect FTCGRectFitWithContentMode(CGRect rect, CGSize contentSize, UIViewContent
     }
     return CGRectZero;
 }
+#endif
 CGRect FTCGRectPutInside(CGRect oriRect, CGRect inRect, HorizontalAlignment horizontal,VerticalAlignment vertical){
     CGRect new = oriRect;
     switch (horizontal) {
@@ -172,9 +176,34 @@ CGFloat FTCGSizeAspectRatio(CGSize size){
 @end
 
 @implementation FTSRColorSnapshot
-+ (nullable instancetype)snapshotWithColor:(nullable UIColor *)color traitCollection:(nullable UITraitCollection *)traitCollection{
++ (nullable instancetype)snapshotWithColor:(nullable FTSRPlatformColor *)color traitCollection:(nullable id)traitCollection{
+#if TARGET_OS_IOS
     UIColor *resolvedColor = [color ftsr_resolvedColorWithTraitCollection:traitCollection];
     return [self snapshotWithCGColor:resolvedColor.CGColor];
+#elif TARGET_OS_OSX
+    if (!color) {
+        return nil;
+    }
+    __block NSColor *rgbColor = nil;
+    NSAppearance *appearance = [traitCollection isKindOfClass:NSAppearance.class]
+        ? (NSAppearance *)traitCollection
+        : nil;
+    if (appearance) {
+        if (@available(macOS 11.0, *)) {
+            [appearance performAsCurrentDrawingAppearance:^{
+                rgbColor = [color colorUsingColorSpace:NSColorSpace.sRGBColorSpace];
+            }];
+        } else {
+            NSAppearance *previousAppearance = NSAppearance.currentAppearance;
+            NSAppearance.currentAppearance = appearance;
+            rgbColor = [color colorUsingColorSpace:NSColorSpace.sRGBColorSpace];
+            NSAppearance.currentAppearance = previousAppearance;
+        }
+    } else {
+        rgbColor = [color colorUsingColorSpace:NSColorSpace.sRGBColorSpace];
+    }
+    return [self snapshotWithCGColor:rgbColor.CGColor];
+#endif
 }
 + (nullable instancetype)snapshotWithCGColor:(nullable CGColorRef)cgColor{
     CGColorRef validColor = [FTSRUtils safeCast:cgColor];
@@ -229,6 +258,7 @@ CGFloat FTCGSizeAspectRatio(CGSize size){
     }
     return [NSString stringWithFormat:@"#%@",hex];;
 }
+#if TARGET_OS_IOS
 + (BOOL)isSensitiveText:(id<UITextInputTraits>)textInputTraits{
     if (textInputTraits.isSecureTextEntry) {
         return YES;
@@ -263,6 +293,7 @@ CGFloat FTCGSizeAspectRatio(CGSize size){
     }
     return NO;
 }
+#endif
 + (nullable CGColorRef)safeCast:(CGColorRef)cgColor{
     if(cgColor == nil){
         return nil;

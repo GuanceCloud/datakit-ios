@@ -14,7 +14,7 @@
  */
 
 #import <TargetConditionals.h>
-#if TARGET_OS_IOS
+#if TARGET_OS_IOS || TARGET_OS_OSX
 
 #if !TARGET_OS_TV
 #import "FTWKWebViewRecorder.h"
@@ -34,12 +34,13 @@
     return self;
 }
 
--(FTSRNodeSemantics *)recorder:(UIView *)view attributes:(FTViewAttributes *)attributes context:(FTViewTreeRecordingContext *)context{
+-(FTSRNodeSemantics *)recorder:(FTSRPlatformView *)view attributes:(FTViewAttributes *)attributes context:(FTViewTreeRecordingContext *)context{
     if(![view isKindOfClass:[WKWebView class]]){
         return nil;
     }
     WKWebView *webView = (WKWebView *)view;
     [context.webViewCache addObject:webView];
+    [context.webViewSlotIDs addObject:@(webView.hash)];
     CGFloat frameAdjustment = [self calculateFrameOffset:webView attributes:attributes];
     if (frameAdjustment > 0) {
         attributes.frame =  CGRectOffset(attributes.frame, 0, frameAdjustment);
@@ -54,6 +55,7 @@
 }
 
 - (float)calculateFrameOffset:(WKWebView *)webView attributes:(FTViewAttributes *)attributes{
+#if TARGET_OS_IOS
     if (@available(iOS 11.0, *)) {
         if (webView.scrollView.contentInsetAdjustmentBehavior != UIScrollViewContentInsetAdjustmentNever) {
             CGFloat safeAreaTop = webView.safeAreaInsets.top;
@@ -63,6 +65,7 @@
             }
         }
     }
+#endif
     return -1;
 }
 @end

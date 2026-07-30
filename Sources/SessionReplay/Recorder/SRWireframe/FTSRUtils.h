@@ -14,10 +14,10 @@
  */
 
 #import <TargetConditionals.h>
-#if TARGET_OS_IOS
+#if TARGET_OS_IOS || TARGET_OS_OSX
 
 #import <Foundation/Foundation.h>
-#import <UIKit/UIKit.h>
+#import "FTSessionReplayPlatform.h"
 typedef enum FTSRPrivacy:NSUInteger FTSRPrivacy;
 typedef NS_ENUM(NSUInteger,HorizontalAlignment){
     HorizontalAlignmentLeft,
@@ -30,7 +30,9 @@ typedef NS_ENUM(NSUInteger,VerticalAlignment){
     VerticalAlignmentMiddle,
 };
 NS_ASSUME_NONNULL_BEGIN
+#if TARGET_OS_IOS
 CGRect FTCGRectFitWithContentMode(CGRect rect, CGSize size, UIViewContentMode mode);
+#endif
 CGRect FTCGRectPutInside(CGRect oriRect, CGRect inRect, HorizontalAlignment horizontal,VerticalAlignment vertical);
 
 CGFloat FTCGSizeAspectRatio(CGSize size);
@@ -38,13 +40,15 @@ CGFloat FTCGSizeAspectRatio(CGSize size);
 @property (nonatomic, readonly, nullable) CGColorRef cgColor;
 @property (nonatomic, readonly) CGFloat alpha;
 @property (nonatomic, copy, readonly, nullable) NSString *hexString;
-+ (nullable instancetype)snapshotWithColor:(nullable UIColor *)color traitCollection:(nullable UITraitCollection *)traitCollection;
++ (nullable instancetype)snapshotWithColor:(nullable FTSRPlatformColor *)color traitCollection:(nullable id)traitCollection;
 + (nullable instancetype)snapshotWithCGColor:(nullable CGColorRef)cgColor;
 @end
 
 @interface FTSRUtils : NSObject
 + (NSString *)colorHexString:(CGColorRef)color;
+#if TARGET_OS_IOS
 + (BOOL)isSensitiveText:(id<UITextInputTraits>)textInputTraits;
+#endif
 + (nullable CGColorRef)safeCast:(CGColorRef)cgColor;
 + (CGFloat)getCGColorAlpha:(CGColorRef)color;
 + (nullable NSString *)getTextStyleTruncationMode:(NSLineBreakMode)lineBreakMode;

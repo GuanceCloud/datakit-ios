@@ -14,10 +14,10 @@
  */
 
 #import <TargetConditionals.h>
-#if TARGET_OS_IOS
+#if TARGET_OS_IOS || TARGET_OS_OSX
 
 #import "FTSRWireframe.h"
-#import <UIKit/UIKit.h>
+#import "FTSessionReplayPlatform.h"
 #import "FTViewAttributes.h"
 #import "FTSRUtils.h"
 #import "FTTouchSnapshot.h"

@@ -14,12 +14,16 @@
  */
 
 #import <TargetConditionals.h>
-#if TARGET_OS_IOS
+#if TARGET_OS_IOS || TARGET_OS_OSX
 
 #import <Foundation/Foundation.h>
 #import "FTTimerScheduler.h"
 #import "FTScheduler.h"
 NS_ASSUME_NONNULL_BEGIN
+
+#if TARGET_OS_OSX
+FOUNDATION_EXPORT const NSTimeInterval FTSessionReplayMacOSCaptureInterval;
+#endif
 
 @interface FTScreenChangeScheduler : NSObject<FTScheduler>
 

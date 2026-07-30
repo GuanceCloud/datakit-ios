@@ -20,6 +20,7 @@
 
 #import <Cocoa/Cocoa.h>
 #import "GuanceSDKExampleImports.h"
+#import <GuanceSessionReplay/GuanceSessionReplay.h>
 // Configure preprocessor definitions in Target -> Build Settings -> GCC_PREPROCESSOR_DEFINITIONS
 #if PRE
 #define Track_id       @"0000000001"
@@ -35,11 +36,12 @@ int main(int argc, const char * argv[]) {
     @autoreleasepool {
         // Setup code that might create autoreleased objects goes here.
         NSProcessInfo *processInfo = [NSProcessInfo processInfo];
-        NSString *url = [processInfo environment][@"ACCESS_SERVER_URL"];
+        NSString *datawayUrl = [processInfo environment][@"ACCESS_DATAWAY_URL"];
+        NSString *clientToken = [processInfo environment][@"CLIENT_TOKEN"];
         NSString *appid = [processInfo environment][@"APP_ID"];
         BOOL isRuningUnitTest = [[processInfo environment][@"isUnitTests"] boolValue];
         if(!isRuningUnitTest){
-            FTSDKConfig *config = [[FTSDKConfig alloc]initWithDatakitUrl:url];
+            FTSDKConfig *config = [[FTSDKConfig alloc]initWithDatawayUrl:datawayUrl clientToken:clientToken];
             config.enableSDKDebugLog = YES;
             [FTMobileAgent startWithConfigOptions:config];
             FTRumConfig *rumConfig = [[FTRumConfig alloc]initWithAppid:appid];
@@ -63,6 +65,12 @@ int main(int argc, const char * argv[]) {
             trace.enableLinkRumData = YES;
             [[FTMobileAgent sharedInstance] startTraceWithConfigOptions:trace];
             [[FTMobileAgent sharedInstance] logging:@"main" status:FTStatusInfo];
+
+            FTSessionReplayConfig *sessionReplay = [[FTSessionReplayConfig alloc]init];
+            sessionReplay.imagePrivacy = FTImagePrivacyLevelMaskNone;
+            sessionReplay.textAndInputPrivacy = FTTextAndInputPrivacyLevelMaskSensitiveInputs;
+            sessionReplay.touchPrivacy = FTTouchPrivacyLevelShow;
+            [[FTRumSessionReplay sharedInstance] startWithSessionReplayConfig:sessionReplay];
         }
     }
     return NSApplicationMain(argc, argv);

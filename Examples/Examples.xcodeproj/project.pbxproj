@@ -7,6 +7,9 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		A1F104032FC2000100A0A001 /* ImageSessionReplayViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = A1F104022FC2000100A0A001 /* ImageSessionReplayViewController.m */; };
+		A1F101012FC1000100A0A001 /* FTAppKitSessionReplayTests.m in Sources */ = {isa = PBXBuildFile; fileRef = A1F100012FC1000100A0A001 /* FTAppKitSessionReplayTests.m */; };
+		A1F103012FC1000100A0A001 /* GuanceSessionReplay.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 179A53812F84EED200FE4B6F /* GuanceSessionReplay.framework */; };
 		1707C82329E52ED5009B7D9C /* FTRUMTests.m in Sources */ = {isa = PBXBuildFile; fileRef = 1707C82229E52ED5009B7D9C /* FTRUMTests.m */; };
 		1707C83129E534F9009B7D9C /* macOS-AppTest.xcconfig in Resources */ = {isa = PBXBuildFile; fileRef = 1707C83029E534F9009B7D9C /* macOS-AppTest.xcconfig */; };
 		1707C83529E55C19009B7D9C /* FTLoggerTest.m in Sources */ = {isa = PBXBuildFile; fileRef = 1707C83429E55C19009B7D9C /* FTLoggerTest.m */; };
@@ -331,6 +334,9 @@
 /* End PBXCopyFilesBuildPhase section */
 
 /* Begin PBXFileReference section */
+		A1F104012FC2000100A0A001 /* ImageSessionReplayViewController.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = ImageSessionReplayViewController.h; sourceTree = "<group>"; };
+		A1F104022FC2000100A0A001 /* ImageSessionReplayViewController.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = ImageSessionReplayViewController.m; sourceTree = "<group>"; };
+		A1F100012FC1000100A0A001 /* FTAppKitSessionReplayTests.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = FTAppKitSessionReplayTests.m; sourceTree = "<group>"; };
 		162957DD463DC9E7C9E4D1A0 /* Pods-FTMobileSDKUnitTests-tvOS.pre.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-FTMobileSDKUnitTests-tvOS.pre.xcconfig"; path = "Target Support Files/Pods-FTMobileSDKUnitTests-tvOS/Pods-FTMobileSDKUnitTests-tvOS.pre.xcconfig"; sourceTree = "<group>"; };
 		1707C82229E52ED5009B7D9C /* FTRUMTests.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = FTRUMTests.m; sourceTree = "<group>"; };
 		1707C83029E534F9009B7D9C /* macOS-AppTest.xcconfig */ = {isa = PBXFileReference; lastKnownFileType = text.xcconfig; path = "macOS-AppTest.xcconfig"; sourceTree = "<group>"; };
@@ -709,6 +715,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				A1F103012FC1000100A0A001 /* GuanceSessionReplay.framework in Frameworks */,
 				17F6B0012FE0000100A0A001 /* GuanceSDK.framework in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -1238,6 +1245,8 @@
 				177BA53D29DBCF4200DB7497 /* TraceViewController.xib */,
 				175BC1392A08A34600AEBEB5 /* WebViewController.h */,
 				175BC13A2A08A34600AEBEB5 /* WebViewController.m */,
+				A1F104012FC2000100A0A001 /* ImageSessionReplayViewController.h */,
+				A1F104022FC2000100A0A001 /* ImageSessionReplayViewController.m */,
 			);
 			path = TabView;
 			sourceTree = "<group>";
@@ -1296,6 +1305,7 @@
 		7CDA50DF26DE15EE0062CC39 /* macOS-AppTests */ = {
 			isa = PBXGroup;
 			children = (
+				A1F102012FC1000100A0A001 /* SessionReplay */,
 				171B2F0F2AD39DA4000DB2BC /* TestRumWebView.h */,
 				171B2F102AD39DA4000DB2BC /* TestRumWebView.m */,
 				175BC1F52A0A58FD00AEBEB5 /* FTTestHelper.h */,
@@ -1310,6 +1320,14 @@
 			);
 			name = "macOS-AppTests";
 			path = "Tests/macOS-AppTests";
+			sourceTree = "<group>";
+		};
+		A1F102012FC1000100A0A001 /* SessionReplay */ = {
+			isa = PBXGroup;
+			children = (
+				A1F100012FC1000100A0A001 /* FTAppKitSessionReplayTests.m */,
+			);
+			path = SessionReplay;
 			sourceTree = "<group>";
 		};
 		7CDA50EA26DE15EE0062CC39 /* macOS-AppUITests */ = {
@@ -2130,6 +2148,7 @@
 				7CDA50D626DE15ED0062CC39 /* main.m in Sources */,
 				7CD26F2726EA06BF0025CC50 /* LoginWindow.m in Sources */,
 				175BC13B2A08A34600AEBEB5 /* WebViewController.m in Sources */,
+				A1F104032FC2000100A0A001 /* ImageSessionReplayViewController.m in Sources */,
 				7CDA50CB26DE15EB0062CC39 /* AppDelegate.m in Sources */,
 				7CD26FE226EB223E0025CC50 /* TabViewController.m in Sources */,
 				177BA53E29DBCF4200DB7497 /* TraceViewController.m in Sources */,
@@ -2145,6 +2164,7 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				A1F101012FC1000100A0A001 /* FTAppKitSessionReplayTests.m in Sources */,
 				1715F2952A04A123007EF5BB /* FTAutoTrackActionNameTests.m in Sources */,
 				1707C82329E52ED5009B7D9C /* FTRUMTests.m in Sources */,
 				7CDAF53726DE1C8B00F8F01D /* macOS-AppTests.m in Sources */,

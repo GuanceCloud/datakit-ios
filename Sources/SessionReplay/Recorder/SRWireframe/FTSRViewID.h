@@ -14,15 +14,15 @@
  */
 
 #import <TargetConditionals.h>
-#if TARGET_OS_IOS
+#if TARGET_OS_IOS || TARGET_OS_OSX
 
 #import <Foundation/Foundation.h>
-#import <UIKit/UIKit.h>
+#import "FTSessionReplayPlatform.h"
 NS_ASSUME_NONNULL_BEGIN
 @protocol FTSRWireframesRecorder;
 @interface FTSRViewID : NSObject
-- (int64_t)SRViewID:(UIView *)view nodeRecorder:(id<FTSRWireframesRecorder>)nodeRecorder;
-- (NSArray*)SRViewIDs:(UIView *)view size:(int)size nodeRecorder:(id<FTSRWireframesRecorder>)nodeRecorder;
+- (int64_t)SRViewID:(FTSRPlatformView *)view nodeRecorder:(id<FTSRWireframesRecorder>)nodeRecorder;
+- (NSArray*)SRViewIDs:(FTSRPlatformView *)view size:(int)size nodeRecorder:(id<FTSRWireframesRecorder>)nodeRecorder;
 @end
 
 NS_ASSUME_NONNULL_END

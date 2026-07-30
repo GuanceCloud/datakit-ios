@@ -125,7 +125,8 @@ Pod::Spec.new do |s|
 	end
 
 	s.subspec 'SessionReplay' do |sr|
-		 sr.platform = :ios, '12.0'
+		 sr.ios.deployment_target = '12.0'
+		 sr.osx.deployment_target = '10.14'
 		 sr.public_header_files = 'Sources/SessionReplay/Public/*.h'
 		 sr.source_files = 'Sources/SessionReplay/**/*{.h,.m}'
 		 sr.dependency 'GuanceSDK/Core'
@@ -136,7 +137,8 @@ Pod::Spec.new do |s|
 	end
 
 	s.subspec 'FTSessionReplay' do |sr|
-		sr.platform = :ios, '12.0'
+		sr.ios.deployment_target = '12.0'
+		sr.osx.deployment_target = '10.14'
 		sr.dependency "#{s.name}/SessionReplay"
 	end
 end

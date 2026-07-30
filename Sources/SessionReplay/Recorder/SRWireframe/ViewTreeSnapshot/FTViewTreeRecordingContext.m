@@ -14,11 +14,13 @@
  */
 
 #import <TargetConditionals.h>
-#if TARGET_OS_IOS
+#if TARGET_OS_IOS || TARGET_OS_OSX
 
 #import "FTViewTreeRecordingContext.h"
+#if TARGET_OS_IOS
 #import <SafariServices/SafariServices.h>
 #import <SwiftUI/SwiftUI.h>
+#endif
 @implementation FTHeatmapCache
 - (instancetype)init {
     self = [super init];
@@ -38,6 +40,7 @@
     options.viewControllerContext = self.viewControllerContext;
     options.clip = self.clip;
     options.webViewCache = self.webViewCache;
+    options.webViewSlotIDs = self.webViewSlotIDs;
     options.heatmapCache = self.heatmapCache;
     options.nodePath = self.nodePath ? [self.nodePath mutableCopy] : [NSMutableArray array];
     return options;
@@ -64,6 +67,7 @@
 - (BOOL)isRootView:(ViewControllerType)type {
     return self.parentType == type && self.isRootView == YES;
 }
+#if TARGET_OS_IOS
 - (void)setParentTypeWithViewController:(UIViewController *)viewController{
     if([viewController isKindOfClass:UIAlertController.class]){
         self.parentType = ViewControllerTypeAlert;
@@ -85,6 +89,7 @@
     NSString *className = NSStringFromClass(viewController.class);
     return [className hasPrefix:@"SwiftUI."] || [className hasPrefix:@"_TtC7SwiftUI"] || [className hasPrefix:@"_TtGC7SwiftUI"] || [className containsString:@"UIHostingController"];
 }
+#endif
 @end
 
 #endif
