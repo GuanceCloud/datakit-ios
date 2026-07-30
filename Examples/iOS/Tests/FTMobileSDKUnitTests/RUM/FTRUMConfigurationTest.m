@@ -48,6 +48,58 @@ typedef FTRUMView* _Nullable (^FTViewTrackingBlock)(UIViewController *viewContro
 typedef FTRUMAction* _Nullable (^FTActionTrackingBlock)(UIView *view);
 typedef FTRUMAction* _Nullable (^FTLaunchActionTrackingBlock)(FTLaunchType type);
 
+@class FTCountingIssueDictionary;
+
+@interface FTCountingIssueKeyEnumerator : NSEnumerator
+@property (nonatomic, weak) FTCountingIssueDictionary *dictionary;
+@property (nonatomic, assign) NSUInteger index;
+@end
+
+@interface FTCountingIssueDictionary : NSDictionary
+@property (nonatomic, assign) NSUInteger totalEntryCount;
+@property (nonatomic, assign) NSUInteger invalidEntryCount;
+@property (nonatomic, assign) NSUInteger visitedEntryCount;
+@end
+
+@implementation FTCountingIssueKeyEnumerator
+
+- (id)nextObject {
+    FTCountingIssueDictionary *dictionary = self.dictionary;
+    if (!dictionary || self.index >= dictionary.totalEntryCount) {
+        return nil;
+    }
+    NSUInteger index = self.index++;
+    dictionary.visitedEntryCount += 1;
+    if (index < dictionary.invalidEntryCount) {
+        return @"";
+    }
+    return [NSString stringWithFormat:@"field_%lu", (unsigned long)index];
+}
+
+@end
+
+@implementation FTCountingIssueDictionary
+
+- (NSUInteger)count {
+    return self.totalEntryCount;
+}
+
+- (NSEnumerator *)keyEnumerator {
+    FTCountingIssueKeyEnumerator *enumerator = [FTCountingIssueKeyEnumerator new];
+    enumerator.dictionary = self;
+    return enumerator;
+}
+
+- (id)objectForKey:(id)aKey {
+    return @1;
+}
+
+- (id)copyWithZone:(NSZone *)zone {
+    return self;
+}
+
+@end
+
 #if TARGET_OS_IOS || TARGET_OS_TV
 @interface FTAutoTrackHandler (SwiftUIRUMViewTest)
 - (void)notifyOnAppearWithIdentity:(NSString *)identity name:(NSString *)name property:(nullable NSDictionary *)property loadTime:(NSNumber *)loadTime;
@@ -189,12 +241,17 @@ static void FTStartAutoTrackActionTest(AddRumDatasHandlerMock *mock,
 }
 - (void)testIssueDataProviderConfigurationCopyAndSerialization{
     FTRumConfig *rumConfig = [[FTRumConfig alloc]initWithAppid:@"appid"];
+    __block NSInteger replacementCallCount = 0;
     rumConfig.issueDataProvider = ^NSDictionary<NSString *,id> * _Nullable(FTIssueInfo *issue) {
         return @{@"business_scene": issue.errorType};
     };
 
     FTRumConfig *copiedConfig = [rumConfig copy];
     XCTAssertNotNil(copiedConfig.issueDataProvider);
+    rumConfig.issueDataProvider = ^NSDictionary<NSString *,id> * _Nullable(FTIssueInfo *issue) {
+        replacementCallCount += 1;
+        return @{@"business_scene": @"replacement"};
+    };
     FTIssueInfo *issue = [[FTIssueInfo alloc]initWithCategory:FTIssueCategoryANR
                                                    errorType:@"anr_error"
                                                      message:@"ios_anr"
@@ -204,6 +261,7 @@ static void FTStartAutoTrackActionTest(AddRumDatasHandlerMock *mock,
                                                   threadName:@"main"
                                                   historical:NO];
     XCTAssertEqualObjects(copiedConfig.issueDataProvider(issue)[@"business_scene"], @"anr_error");
+    XCTAssertEqual(replacementCallCount, 0);
 
     NSDictionary *dictionary = [rumConfig convertToDictionary];
     XCTAssertNil(dictionary[@"issueDataProvider"]);
@@ -264,17 +322,19 @@ static void FTStartAutoTrackActionTest(AddRumDatasHandlerMock *mock,
     XCTAssertEqualObjects(fields[@"valid_integer"], @42);
     XCTAssertEqualObjects(fields[@"valid_float"], @3.5);
     XCTAssertEqualObjects(fields[maximumKey], maximumString);
-    XCTAssertEqual(fields.count, 5);
+    XCTAssertEqualObjects(fields[@"session_id"], @"replacement");
+    XCTAssertEqualObjects(fields[@"duration"], @1);
+    XCTAssertEqual(fields.count, 7);
 
     NSMutableDictionary *manyFields = [NSMutableDictionary dictionary];
-    for (NSInteger index = 0; index < 40; index++) {
+    for (NSInteger index = 0; index < 100; index++) {
         manyFields[[NSString stringWithFormat:@"field_%02ld", (long)index]] = @(index);
     }
     FTIssueFieldEnricher *countEnricher = [[FTIssueFieldEnricher alloc]
         initWithProvider:^NSDictionary<NSString *,id> * _Nullable(FTIssueInfo *providedIssue) {
             return manyFields;
         }];
-    XCTAssertEqual([countEnricher fieldsForIssue:issue reservedKeys:nil].count, 32);
+    XCTAssertEqual([countEnricher fieldsForIssue:issue reservedKeys:nil].count, 50);
 
     FTIssueFieldEnricher *totalSizeEnricher = [[FTIssueFieldEnricher alloc]
         initWithProvider:^NSDictionary<NSString *,id> * _Nullable(FTIssueInfo *providedIssue) {
@@ -283,9 +343,47 @@ static void FTStartAutoTrackActionTest(AddRumDatasHandlerMock *mock,
                 @"payload_2": maximumString,
                 @"payload_3": maximumString,
                 @"payload_4": maximumString,
+                @"payload_5": maximumString,
+                @"payload_6": maximumString,
+                @"payload_7": maximumString,
             };
         }];
-    XCTAssertEqual([totalSizeEnricher fieldsForIssue:issue reservedKeys:nil].count, 3);
+    XCTAssertEqual([totalSizeEnricher fieldsForIssue:issue reservedKeys:nil].count, 6);
+}
+
+- (void)testIssueFieldEnricherBoundsProviderDictionaryTraversal {
+    FTIssueInfo *issue = [[FTIssueInfo alloc]initWithCategory:FTIssueCategoryCrash
+                                                   errorType:@"ios_crash"
+                                                     message:@"message"
+                                                       stack:@"stack"
+                                       occurredAtNanoseconds:123
+                                                    appState:@"run"
+                                                  threadName:nil
+                                                  historical:YES];
+    FTCountingIssueDictionary *largeDictionary = [FTCountingIssueDictionary new];
+    largeDictionary.totalEntryCount = 10000;
+    FTIssueFieldEnricher *largeDictionaryEnricher = [[FTIssueFieldEnricher alloc]
+        initWithProvider:^NSDictionary<NSString *,id> * _Nullable(FTIssueInfo *providedIssue) {
+            return largeDictionary;
+        }];
+
+    NSDictionary *fields = [largeDictionaryEnricher fieldsForIssue:issue reservedKeys:nil];
+
+    XCTAssertEqual(fields.count, 50);
+    XCTAssertEqual(largeDictionary.visitedEntryCount, 50);
+
+    FTCountingIssueDictionary *invalidDictionary = [FTCountingIssueDictionary new];
+    invalidDictionary.totalEntryCount = 60;
+    invalidDictionary.invalidEntryCount = 50;
+    FTIssueFieldEnricher *invalidDictionaryEnricher = [[FTIssueFieldEnricher alloc]
+        initWithProvider:^NSDictionary<NSString *,id> * _Nullable(FTIssueInfo *providedIssue) {
+            return invalidDictionary;
+        }];
+
+    NSDictionary *invalidFields = [invalidDictionaryEnricher fieldsForIssue:issue reservedKeys:nil];
+
+    XCTAssertEqual(invalidFields.count, 0);
+    XCTAssertEqual(invalidDictionary.visitedEntryCount, 50);
 }
 
 - (void)testIssueFieldEnricherDefensiveCopyExceptionsConcurrencyReentrancyAndSlowProvider{

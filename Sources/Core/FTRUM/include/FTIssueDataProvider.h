@@ -65,8 +65,13 @@ typedef NS_ENUM(NSUInteger, FTIssueCategory) {
 /// should finish within 10 ms. Avoid UI, network, disk, dispatch waits, thread
 /// switches, and long lock waits.
 ///
-/// Return `nil` or an empty dictionary to add no fields. The SDK accepts at most
-/// 32 non-reserved fields whose keys and values satisfy the documented limits.
+/// Return `nil` or an empty dictionary to add no fields. The SDK scans at most
+/// the first 50 entries encountered in dictionary enumeration order; invalid
+/// entries consume that scan budget. Keys may contain at most 100 UTF-8 bytes,
+/// String values at most 4096 UTF-8 bytes, and all accepted fields together at
+/// most an estimated 25 KiB. String, Boolean, integer, and finite floating-point
+/// values are accepted. Error namespace entries are ignored. If a custom field
+/// collides with an SDK tag or field, the SDK-owned value takes precedence.
 typedef NSDictionary<NSString *, id> * _Nullable (^FTIssueDataProvider)(FTIssueInfo *issue);
 
 NS_ASSUME_NONNULL_END

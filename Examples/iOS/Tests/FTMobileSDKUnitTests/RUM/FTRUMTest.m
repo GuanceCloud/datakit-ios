@@ -2548,6 +2548,7 @@
         @"business_scene": mutableValue,
         FT_KEY_ERROR_MESSAGE: @"replacement",
         FT_KEY_FOREGROUND_CRASH_FREE_DURATION: @1,
+        FT_RUM_KEY_SESSION_ID: @"replacement",
     } mutableCopy];
     __block NSInteger providerCallCount = 0;
     __block FTIssueInfo *receivedIssue = nil;
@@ -2584,6 +2585,77 @@
     XCTAssertEqualObjects(model.fields[@"business_scene"], @"captured");
     XCTAssertEqualObjects(model.fields[FT_KEY_ERROR_MESSAGE], @"mock crash message");
     XCTAssertEqualObjects(model.fields[FT_KEY_FOREGROUND_CRASH_FREE_DURATION], @12300000000LL);
+    XCTAssertNil(model.fields[FT_RUM_KEY_SESSION_ID]);
+}
+
+- (void)testCrashIssueDataProviderExceptionDoesNotDropReport{
+    FTCrashReportWrapper *wrapper = [self mockCrashReportWrapper];
+    [wrapper setIssueDataProvider:^NSDictionary<NSString *,id> * _Nullable(FTIssueInfo *issue) {
+        @throw [NSException exceptionWithName:@"ProviderException" reason:@"test" userInfo:nil];
+    }];
+    NSDictionary *report = [self mockCrashReportWithAppStats:@{
+        FTCrashField_ActiveTimeSinceCrash: @12.3,
+    }];
+    __block NSArray<id<FTCrashReport>> *filteredReports = nil;
+
+    [wrapper filterReports:@[[FTCrashReportDictionary reportWithValue:report]]
+              onCompletion:^(NSArray<id<FTCrashReport>> *reports, NSError *error) {
+        XCTAssertNil(error);
+        filteredReports = reports;
+    }];
+
+    XCTAssertEqual(filteredReports.count, 1);
+    FTCrashReportRUMModel *rumReport = (FTCrashReportRUMModel *)filteredReports.firstObject;
+    XCTAssertTrue([rumReport isKindOfClass:FTCrashReportRUMModel.class]);
+    RUMModel *model = rumReport.value;
+    XCTAssertEqualObjects(model.fields[FT_KEY_ERROR_MESSAGE], @"mock crash message");
+    XCTAssertEqualObjects(model.fields[FT_KEY_ERROR_STACK], @"mock crash stack");
+}
+
+- (void)testActiveIssueDataProviderUsesInitializationSnapshot{
+    FTMobileConfig *mobileConfig = [[FTMobileConfig alloc]initWithDatakitUrl:self.url];
+    mobileConfig.autoSync = NO;
+    [FTMobileAgent startWithConfigOptions:mobileConfig];
+
+    __block NSInteger initialProviderCalls = 0;
+    __block NSInteger replacementProviderCalls = 0;
+    FTRumConfig *rumConfig = [[FTRumConfig alloc]initWithAppid:self.appid];
+    rumConfig.issueDataProvider = ^NSDictionary<NSString *,id> * _Nullable(FTIssueInfo *issue) {
+        initialProviderCalls += 1;
+        return @{@"snapshot_provider": @"initial"};
+    };
+    [[FTMobileAgent sharedInstance] startRumWithConfigOptions:rumConfig];
+    rumConfig.issueDataProvider = ^NSDictionary<NSString *,id> * _Nullable(FTIssueInfo *issue) {
+        replacementProviderCalls += 1;
+        return @{@"snapshot_provider": @"replacement"};
+    };
+
+    [[FTGlobalRumManager sharedInstance].rumManager
+        addAutomaticIssueWithCategory:FTIssueCategoryANR
+                           errorType:@"anr_error"
+                            appState:@"run"
+                             message:@"ios_anr"
+                               stack:@"stack"
+                          threadName:@"main"
+                                time:[NSDate ft_currentNanosecondTimeStamp]
+                          historical:NO];
+    [[FTGlobalRumManager sharedInstance].rumManager syncProcess];
+
+    __block NSString *snapshotValue = nil;
+    NSArray *datas = [[FTTrackerEventDBTool sharedManager] getFirstRecords:20 withType:FT_DATA_TYPE_RUM];
+    [FTModelHelper resolveModelArray:datas
+                           callBack:^(NSString *source,
+                                      NSDictionary *tags,
+                                      NSDictionary *fields,
+                                      BOOL *stop) {
+        if ([source isEqualToString:FT_RUM_SOURCE_ERROR]) {
+            snapshotValue = fields[@"snapshot_provider"];
+            *stop = YES;
+        }
+    }];
+    XCTAssertEqual(initialProviderCalls, 1);
+    XCTAssertEqual(replacementProviderCalls, 0);
+    XCTAssertEqualObjects(snapshotValue, @"initial");
 }
 
 - (void)testCrashErrorWithoutAppStatsDoesNotAddCrashFreeDurationFields{

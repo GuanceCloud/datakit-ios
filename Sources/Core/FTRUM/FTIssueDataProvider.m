@@ -23,10 +23,10 @@
 #import <math.h>
 #import <string.h>
 
-static NSUInteger const FTIssueMaximumFieldCount = 32;
+static NSUInteger const FTIssueMaximumScannedEntryCount = 50;
 static NSUInteger const FTIssueMaximumKeyBytes = 100;
 static NSUInteger const FTIssueMaximumStringBytes = 4096;
-static NSUInteger const FTIssueMaximumTotalBytes = 16 * 1024;
+static NSUInteger const FTIssueMaximumTotalBytes = 25 * 1024;
 static NSTimeInterval const FTIssueSlowProviderThreshold = 0.050;
 
 @implementation FTIssueInfo
@@ -76,12 +76,12 @@ static NSTimeInterval const FTIssueSlowProviderThreshold = 0.050;
         return @{};
     }
 
-    NSDictionary *snapshot = nil;
+    NSDictionary *suppliedFields = nil;
     NSTimeInterval startTime = NSProcessInfo.processInfo.systemUptime;
     @try {
         id result = provider(issue);
         if ([result isKindOfClass:NSDictionary.class]) {
-            snapshot = [result copy];
+            suppliedFields = result;
         }
     } @catch (NSException *exception) {
         FTInnerLogWarning(@"[RUM][IssueProvider] Provider raised an exception for category %lu.",
@@ -93,38 +93,46 @@ static NSTimeInterval const FTIssueSlowProviderThreshold = 0.050;
                           (unsigned long)issue.category,
                           elapsed * 1000.0);
     }
-    if (snapshot.count == 0) {
+    if (!suppliedFields) {
         return @{};
     }
 
-    NSMutableArray<NSString *> *keys = [NSMutableArray array];
+    NSEnumerator *keyEnumerator = nil;
     @try {
-        for (id key in snapshot) {
-            if ([key isKindOfClass:NSString.class]) {
-                [keys addObject:[key copy]];
-            }
-        }
-        [keys sortUsingSelector:@selector(compare:)];
+        keyEnumerator = suppliedFields.keyEnumerator;
     } @catch (NSException *exception) {
-        FTInnerLogWarning(@"[RUM][IssueProvider] Unable to copy Provider result keys.");
+        FTInnerLogWarning(@"[RUM][IssueProvider] Unable to traverse Provider result.");
         return @{};
     }
 
     NSMutableDictionary<NSString *, id> *acceptedFields = [NSMutableDictionary dictionary];
     NSUInteger estimatedBytes = 0;
-    for (NSString *key in keys) {
-        if (acceptedFields.count >= FTIssueMaximumFieldCount) {
+    for (NSUInteger scannedEntries = 0;
+         scannedEntries < FTIssueMaximumScannedEntryCount;
+         scannedEntries++) {
+        id rawKey = nil;
+        @try {
+            rawKey = [keyEnumerator nextObject];
+        } @catch (NSException *exception) {
+            FTInnerLogWarning(@"[RUM][IssueProvider] Unable to traverse Provider result.");
+            return @{};
+        }
+        if (!rawKey) {
             break;
+        }
+        if (![rawKey isKindOfClass:NSString.class]) {
+            continue;
         }
 
         @try {
+            NSString *key = [rawKey copy];
             NSUInteger keyBytes = [key lengthOfBytesUsingEncoding:NSUTF8StringEncoding];
             if (key.length == 0 || keyBytes == 0 || keyBytes > FTIssueMaximumKeyBytes ||
                 [self isReservedKey:key additionalReservedKeys:reservedKeys]) {
                 continue;
             }
 
-            id value = snapshot[key];
+            id value = [suppliedFields objectForKey:rawKey];
             id copiedValue = nil;
             NSUInteger valueBytes = 0;
             if ([value isKindOfClass:NSString.class]) {
@@ -200,51 +208,7 @@ static NSTimeInterval const FTIssueSlowProviderThreshold = 0.050;
     if ([reservedKeys containsObject:key]) {
         return YES;
     }
-
-    static NSSet<NSString *> *exactKeys;
-    static NSArray<NSString *> *prefixes;
-    static dispatch_once_t onceToken;
-    dispatch_once(&onceToken, ^{
-        exactKeys = [NSSet setWithArray:@[
-            @"time",
-            @"tm",
-            @"timestamp",
-            @"date",
-            @"duration",
-            @"app_id",
-            @"service",
-            @"env",
-            @"version",
-            @"sdk_name",
-            @"sdk_version",
-            @"sdk_pkg_info",
-        ]];
-        prefixes = @[
-            @"error.",
-            @"error_",
-            @"session.",
-            @"session_",
-            @"view.",
-            @"view_",
-            @"action.",
-            @"action_",
-            @"resource.",
-            @"resource_",
-            @"crash.",
-            @"crash_",
-            @"foreground_crash_free",
-            @"background_crash_free",
-        ];
-    });
-    if ([exactKeys containsObject:key]) {
-        return YES;
-    }
-    for (NSString *prefix in prefixes) {
-        if ([key hasPrefix:prefix]) {
-            return YES;
-        }
-    }
-    return NO;
+    return [key hasPrefix:@"error."] || [key hasPrefix:@"error_"];
 }
 
 @end
