@@ -83,6 +83,7 @@
     options.enableTraceWebView = self.enableTraceWebView;
     options.allowWebViewHost = [self.allowWebViewHost copy];
     options.sessionTaskErrorFilter = [self.sessionTaskErrorFilter copy];
+    options.issueDataProvider = [self.issueDataProvider copy];
 #if TARGET_OS_IOS || TARGET_OS_TV
     options.viewTrackingHandler = self.viewTrackingHandler;
     options.swiftUIViewTrackingHandler = self.swiftUIViewTrackingHandler;

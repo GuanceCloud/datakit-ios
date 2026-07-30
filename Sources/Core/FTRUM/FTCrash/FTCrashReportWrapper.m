@@ -42,6 +42,7 @@
 #import "FTCrashCPU.h"
 #import "NSDate+FTUtil.h"
 #import "FTRUMContext.h"
+#import "FTIssueFieldEnricher.h"
 #include <sys/sysctl.h>
 
 #if FT_HAS_UIKIT
@@ -116,6 +117,7 @@ getStackEntriesFromThread(FTCrashThread thread, struct FTCrashMachineContext *co
 @property (nonatomic, assign) long long crashDate;
 
 @property (nonatomic, copy) NSString *crashMessage;
+@property (atomic, strong, nullable) FTIssueFieldEnricher *issueFieldEnricher;
 
 /** Convert a crash report to Apple format.
  *
@@ -225,6 +227,11 @@ static NSDictionary *g_registerOrders;
 -(void)setEnableCpu:(BOOL)enableCpu{
     _enableCpu = enableCpu;
 }
+-(void)setIssueDataProvider:(nullable FTIssueDataProvider)issueDataProvider{
+    self.issueFieldEnricher = issueDataProvider
+        ? [[FTIssueFieldEnricher alloc] initWithProvider:issueDataProvider]
+        : nil;
+}
 - (int)majorVersion:(NSDictionary *)report
 {
     NSDictionary *info = [self infoReport:report];
@@ -297,6 +304,28 @@ static NSDictionary *g_registerOrders;
                 [errorFields setValue:FTCrashFreeDurationNanoseconds(appStats[FTCrashField_BGTimeSinceCrash])
                                forKey:FT_KEY_BACKGROUND_CRASH_FREE_DURATION];
                 [errorFields setValue:extra forKey:@"crash_extra"];
+                FTIssueFieldEnricher *issueFieldEnricher = self.issueFieldEnricher;
+                if (issueFieldEnricher) {
+                    NSDictionary *crashedThread = [self crashedThread:report.value];
+                    NSString *threadName = crashedThread[FTCrashField_Name];
+                    if (threadName.length == 0) {
+                        threadName = crashedThread[FTCrashField_DispatchQueue];
+                    }
+                    FTIssueInfo *issue = [[FTIssueInfo alloc]
+                        initWithCategory:FTIssueCategoryCrash
+                        errorType:@"ios_crash"
+                        message:self.crashMessage
+                        stack:appleReportString
+                        occurredAtNanoseconds:self.crashDate
+                        appState:errorContext.appState ?: @"unknown"
+                        threadName:threadName
+                        historical:YES];
+                    NSMutableSet<NSString *> *reservedKeys = [NSMutableSet setWithArray:errorTags.allKeys];
+                    [reservedKeys addObjectsFromArray:errorFields.allKeys];
+                    NSDictionary *customFields = [issueFieldEnricher fieldsForIssue:issue
+                                                                       reservedKeys:reservedKeys];
+                    [errorFields addEntriesFromDictionary:customFields];
+                }
                 errorModel.source = FT_RUM_SOURCE_ERROR;
                 
                 if(errorContext.lastViewContext){

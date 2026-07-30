@@ -1,3 +1,7 @@
+# Unreleased
+1. Added `FTRumConfig.issueDataProvider` to attach validated custom fields to automatically collected Crash and ANR RUM Errors, including historical Crash and watchdog ANR context.
+2. Aligned Issue Provider validation with the cross-platform contract: scan at most 50 entries, accept up to an estimated 25 KiB, reserve the Error namespace, and preserve SDK-owned tag and field values on collisions.
+---
 # 1.6.7-alpha.1
 1. Improved RUM fallback View lifecycle handling for application launch events and session transitions.
 2. Added automatic macOS app launch Action collection.

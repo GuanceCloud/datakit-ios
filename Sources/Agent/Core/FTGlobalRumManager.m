@@ -165,6 +165,7 @@ static NSObject *sharedInstanceLock;
     dependencies.enableTraceUserAction = rumConfig.enableTraceUserAction;
     dependencies.errorMonitorInfoWrapper = errorInfoWrapper;
     dependencies.fatalErrorContext = [[FTFatalErrorContext alloc]initWithErrorInfoProvider:errorInfoWrapper];
+    dependencies.issueDataProvider = rumConfig.issueDataProvider;
     return dependencies;
 }
 #if TARGET_OS_OSX
@@ -198,7 +199,8 @@ static NSObject *sharedInstanceLock;
         [FTCrash setupWithMonitoringType:(FTCrashCMonitorType)rumConfig.crashMonitoring
                                   writer:writer
                      enableMonitorMemory:[errorInfoWrapper enableMonitorMemory]
-                        enableMonitorCpu:[errorInfoWrapper enableMonitorCpu]];
+                        enableMonitorCpu:[errorInfoWrapper enableMonitorCpu]
+                       issueDataProvider:rumConfig.issueDataProvider];
         dependencies.fatalErrorContext.onChange = ^(NSDictionary * _Nonnull context) {
             [FTCrash shared].userInfo = context;
         };
@@ -237,13 +239,21 @@ static NSObject *sharedInstanceLock;
     [self.rumManager addLongTaskWithStack:slowStack duration:[NSNumber numberWithLongLong:duration] startTime:time];
 }
 - (void)anrStackDetected:(NSString*)slowStack appState:(NSString *)appState time:(long long)time{
-    [self.rumManager addErrorWithType:@"anr_error" stateStr:appState message:@"ios_anr" stack:slowStack property:nil time:time];
+    [self.rumManager addAutomaticIssueWithCategory:FTIssueCategoryANR
+                                         errorType:@"anr_error"
+                                          appState:appState
+                                           message:@"ios_anr"
+                                             stack:slowStack
+                                        threadName:@"main"
+                                              time:time
+                                        historical:NO];
 }
 #pragma mark ========== Shutdown ==========
 - (void)shutDown{
     [[FTAutoTrackHandler sharedInstance] shutDown];
     self.heatmapIdentifierStore = nil;
     [_longTaskManager shutDown];
+    [FTCrash clearIssueDataProvider];
 #if !TARGET_OS_TV
     [FTWKWebViewHandler shutDown];
 #endif

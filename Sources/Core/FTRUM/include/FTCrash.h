@@ -21,6 +21,7 @@
 #import "FTCrashMonitorType.h"
 #import "FTErrorDataProtocol.h"
 #import "FTRUMDataWriteProtocol.h"
+#import "FTIssueDataProvider.h"
 
 NS_ASSUME_NONNULL_BEGIN
 
@@ -66,6 +67,14 @@ NS_ASSUME_NONNULL_BEGIN
                     writer:(id<FTRUMDataWriteProtocol>)writer
        enableMonitorMemory:(BOOL)memory
           enableMonitorCpu:(BOOL)cpu;
+
++ (void)setupWithMonitoringType:(FTCrashCMonitorType)monitoring
+                    writer:(id<FTRUMDataWriteProtocol>)writer
+       enableMonitorMemory:(BOOL)memory
+          enableMonitorCpu:(BOOL)cpu
+         issueDataProvider:(nullable FTIssueDataProvider)issueDataProvider;
+
++ (void)clearIssueDataProvider;
 
 @end
 
