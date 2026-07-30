@@ -74,6 +74,8 @@ NS_ASSUME_NONNULL_BEGIN
           enableMonitorCpu:(BOOL)cpu
          issueDataProvider:(nullable FTIssueDataProvider)issueDataProvider;
 
++ (void)clearIssueDataProvider;
+
 @end
 
 NS_ASSUME_NONNULL_END

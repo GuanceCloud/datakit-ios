@@ -117,7 +117,7 @@ getStackEntriesFromThread(FTCrashThread thread, struct FTCrashMachineContext *co
 @property (nonatomic, assign) long long crashDate;
 
 @property (nonatomic, copy) NSString *crashMessage;
-@property (nonatomic, strong, nullable) FTIssueFieldEnricher *issueFieldEnricher;
+@property (atomic, strong, nullable) FTIssueFieldEnricher *issueFieldEnricher;
 
 /** Convert a crash report to Apple format.
  *
@@ -304,7 +304,8 @@ static NSDictionary *g_registerOrders;
                 [errorFields setValue:FTCrashFreeDurationNanoseconds(appStats[FTCrashField_BGTimeSinceCrash])
                                forKey:FT_KEY_BACKGROUND_CRASH_FREE_DURATION];
                 [errorFields setValue:extra forKey:@"crash_extra"];
-                if (self.issueFieldEnricher) {
+                FTIssueFieldEnricher *issueFieldEnricher = self.issueFieldEnricher;
+                if (issueFieldEnricher) {
                     NSDictionary *crashedThread = [self crashedThread:report.value];
                     NSString *threadName = crashedThread[FTCrashField_Name];
                     if (threadName.length == 0) {
@@ -321,8 +322,8 @@ static NSDictionary *g_registerOrders;
                         historical:YES];
                     NSMutableSet<NSString *> *reservedKeys = [NSMutableSet setWithArray:errorTags.allKeys];
                     [reservedKeys addObjectsFromArray:errorFields.allKeys];
-                    NSDictionary *customFields = [self.issueFieldEnricher fieldsForIssue:issue
-                                                                            reservedKeys:reservedKeys];
+                    NSDictionary *customFields = [issueFieldEnricher fieldsForIssue:issue
+                                                                       reservedKeys:reservedKeys];
                     [errorFields addEntriesFromDictionary:customFields];
                 }
                 errorModel.source = FT_RUM_SOURCE_ERROR;

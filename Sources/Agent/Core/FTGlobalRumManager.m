@@ -250,6 +250,7 @@ static NSObject *sharedInstanceLock;
     [[FTAutoTrackHandler sharedInstance] shutDown];
     self.heatmapIdentifierStore = nil;
     [_longTaskManager shutDown];
+    [FTCrash clearIssueDataProvider];
 #if !TARGET_OS_TV
     [FTWKWebViewHandler shutDown];
 #endif

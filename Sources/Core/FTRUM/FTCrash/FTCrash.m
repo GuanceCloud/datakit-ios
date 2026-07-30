@@ -72,6 +72,9 @@ static mach_port_t main_thread_id;
     });
     return sharedHandler;
 }
++ (void)clearIssueDataProvider {
+    [sharedHandler.crashReportWrapper setIssueDataProvider:nil];
+}
 + (void)setupWithMonitoringType:(FTCrashCMonitorType)monitoring
                          writer:(id<FTRUMDataWriteProtocol>)writer
             enableMonitorMemory:(BOOL)memory

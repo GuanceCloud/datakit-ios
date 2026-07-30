@@ -58,6 +58,7 @@
 #import "FTNetworkConnectivity.h"
 #import "FTAppLifeCycle.h"
 #import "FTHeatmap.h"
+#import "FTCrash.h"
 
 @interface FTTestCrashReportWrapper : FTCrashReportWrapper
 @end
@@ -2610,6 +2611,22 @@
     RUMModel *model = rumReport.value;
     XCTAssertEqualObjects(model.fields[FT_KEY_ERROR_MESSAGE], @"mock crash message");
     XCTAssertEqualObjects(model.fields[FT_KEY_ERROR_STACK], @"mock crash stack");
+}
+
+- (void)testRUMShutdownReleasesCrashIssueDataProvider{
+    FTCrashReportWrapper *wrapper = [[FTCrash shared] valueForKey:@"crashReportWrapper"];
+    __weak NSObject *weakCapturedObject = nil;
+    @autoreleasepool {
+        NSObject *capturedObject = [[NSObject alloc] init];
+        weakCapturedObject = capturedObject;
+        [wrapper setIssueDataProvider:^NSDictionary<NSString *,id> * _Nullable(FTIssueInfo *issue) {
+            return @{@"captured_object": capturedObject.description};
+        }];
+    }
+
+    XCTAssertNotNil(weakCapturedObject);
+    [[FTGlobalRumManager sharedInstance] shutDown];
+    XCTAssertNil(weakCapturedObject);
 }
 
 - (void)testActiveIssueDataProviderUsesInitializationSnapshot{
