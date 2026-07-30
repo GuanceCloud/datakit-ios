@@ -107,8 +107,10 @@
 -(instancetype)init{
     if (self = [super init]) {
         _enableSDKDebugLog = NO;
-#if TARGET_OS_TV
+#if FT_HOST_TV
         _service = FT_TVOS_SERVICE_NAME;
+#elif FT_HOST_MAC
+        _service = FT_MACOS_SERVICE_NAME;
 #else
         _service = FT_DEFAULT_SERVICE_NAME;
 #endif

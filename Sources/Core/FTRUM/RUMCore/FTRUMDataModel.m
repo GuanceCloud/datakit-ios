@@ -46,6 +46,16 @@
     }
     return [self.time ft_nanosecondTimeStamp];
 }
+- (BOOL)isUserInteraction{
+    switch (self.type) {
+        case FTRUMDataViewStart:
+        case FTRUMDataStartAction:
+        case FTRUMDataAddAction:
+            return YES;
+        default:
+            return NO;
+    }
+}
 @end
 @implementation FTRUMViewModel
 -(instancetype)initWithViewID:(NSString *)viewID viewName:(NSString *)viewName viewReferrer:(NSString *)viewReferrer{
@@ -105,6 +115,10 @@
     }
     return self;
 }
+- (BOOL)isInitialLaunchAction {
+    return [self.action_type isEqualToString:FT_LAUNCH_COLD]
+        || [self.action_type isEqualToString:FT_LAUNCH_WARM];
+}
 @end
 
 @implementation FTRUMWebViewData
@@ -123,5 +137,3 @@
 @implementation FTRUMSRLinkInfoData
 
 @end
-
-

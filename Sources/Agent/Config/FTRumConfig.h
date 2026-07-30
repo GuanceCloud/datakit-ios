@@ -94,6 +94,7 @@ typedef NS_ENUM(NSInteger, FTRUMCacheDiscard)  {
 
 #import "FTActionTrackingHandler.h"
 #import "FTViewTrackingHandler.h"
+#import "FTIssueDataProvider.h"
 
 NS_ASSUME_NONNULL_BEGIN
 /// RUM filter resource callback, returns: NO means to collect, YES means not to collect.
@@ -149,6 +150,13 @@ typedef BOOL (^FTSessionTaskErrorFilter)(NSError *_Nonnull error);
 ///
 /// runloop collects main thread freezes
 @property (nonatomic, assign) BOOL enableTrackAppANR;
+/// Synchronously supplies validated custom fields for automatically collected
+/// Crash and ANR RUM Errors.
+///
+/// This callback may run concurrently, reentrantly, and on a non-main SDK
+/// processing thread. Keep it thread-safe and fast, and do not perform UI,
+/// network, disk, dispatch waits, or long lock waits.
+@property (nonatomic, copy, nullable) FTIssueDataProvider issueDataProvider;
 /// Device information in ERROR
 @property (nonatomic, assign) FTErrorMonitorType errorMonitorType;
 /// Set monitoring type, if not set then monitoring is not enabled

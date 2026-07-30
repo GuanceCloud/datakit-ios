@@ -32,6 +32,8 @@
 #import "FTDateUtil.h"
 #import "FTDataFilterManager.h"
 #import "FTBaseInfoHandler.h"
+#import "FTSDKCompat.h"
+
 @interface FTDataWriterWorker()
 @property (atomic, assign) BOOL isCache;
 @property (nonatomic, assign) NSTimeInterval cacheInvalidTimeInterval;
@@ -185,11 +187,14 @@
         if (linkRum) {
             [contextTags addEntriesFromDictionary:[preset rumTags]];
         }
-#if TARGET_OS_TV
+#if FT_HOST_TV
         NSString *source = FT_LOGGER_TVOS_SOURCE;
+#elif FT_HOST_MAC
+        NSString *source = FT_LOGGER_MACOS_SOURCE;
 #else
         NSString *source = FT_LOGGER_SOURCE;
 #endif
+
         [self writeSource:source
                        op:FT_DATA_TYPE_LOGGING
               contextTags:contextTags

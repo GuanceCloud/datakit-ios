@@ -31,7 +31,6 @@
 @property (nonatomic, strong) CADisplayLink *displayLink;
 @property (nonatomic, assign) CFTimeInterval lastFrameTimestamp;
 @property (nonatomic, strong) NSPointerArray *dataPublisher;
-@property (nonatomic, strong) NSDate *firstFrameDate;
 @property (atomic, assign) int startCount;
 @end
 @implementation FTDisplayRateMonitor
@@ -61,19 +60,8 @@
                 [value addSample:currentFPS];
             }];
         }
-    }else{
-        // monitor fist frame
-        NSDate *date = [NSDate date];
-        self.firstFrameDate = date;
-        if (self.callBack) {
-            self.callBack(date);
-        }
-        self.callBack = nil;
     }
     self.lastFrameTimestamp = link.timestamp;
-}
--(NSDate *)firstFrameDate{
-    return _firstFrameDate;
 }
 - (void)addMonitorItem:(FTReadWriteHelper<FTMonitorValue *> *)item{
     [FTThreadDispatchManager performBlockDispatchMainAsync:^{

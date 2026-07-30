@@ -27,6 +27,7 @@
 #import "FTTraceManager.h"
 #import "FTLogger.h"
 #import "FTSDKAgent.h"
+#import "FTMobileAgent.h"
 #import "FTRumDatasProtocol.h"
 #import "FTLog.h"
 #import "FTTraceContext.h"

@@ -25,7 +25,7 @@
 #import "FTMobileConfig.h"
 #import "FTConstants.h"
 #import "FTActionTrackingHandler.h"
-#import "FTDisplayRateMonitor.h"
+#import "FTFirstFrameReader.h"
 #import "FTDateUtil.h"
 #if TARGET_OS_IOS
 #import <mach/task_policy.h>
@@ -34,9 +34,38 @@
 typedef void(^LaunchBlock)( NSNumber * _Nullable duration, FTLaunchType type,NSDictionary *_Nullable fields);
 typedef void(^LaunchDataBlock)(NSString *source, NSDictionary *tags, NSDictionary *fields);
 @interface FTAppLaunchTracker (Testing)
-- (void)handleLaunchPhaseWithDisplayMonitor:(nullable FTDisplayRateMonitor *)displayMonitor;
 - (void)reportAppLaunchPhaseDuration:(NSDate *)endDate;
 - (void)applicationDidBecomeActive;
+- (instancetype)initWithDelegate:(nullable id)delegate
+                firstFrameReader:(nullable FTFirstFrameReader *)firstFrameReader;
+@end
+
+@interface FTFirstFrameReader (Testing)
+- (void)didUpdateFrameAtTimestamp:(CFTimeInterval)timestamp;
+@end
+
+@interface FTMockFirstFrameReader : FTFirstFrameReader
+@property (nonatomic, copy, nullable) FTFirstFrameCallback callback;
+@property (nonatomic, assign) NSUInteger startCount;
+@property (nonatomic, assign) NSUInteger stopCount;
+- (void)sendFirstFrameAtDate:(NSDate *)date;
+@end
+
+@implementation FTMockFirstFrameReader
+- (void)startWithCallback:(FTFirstFrameCallback)callback {
+    self.startCount += 1;
+    self.callback = callback;
+}
+- (void)stop {
+    self.stopCount += 1;
+}
+- (void)sendFirstFrameAtDate:(NSDate *)date {
+    FTFirstFrameCallback callback = self.callback;
+    self.callback = nil;
+    if (callback) {
+        callback(date);
+    }
+}
 @end
 
 @interface FTAppLaunchDurationTest : XCTestCase<FTAppLaunchDataDelegate,FTRUMDataWriteProtocol>
@@ -55,6 +84,36 @@ void FTClearLaunchTaskRole(void);
 - (void)setUp {
     // Put setup code here. This method is called before the invocation of each test method in the class.
 }
+
+- (void)testFirstFrameReaderStartedFromBackgroundConsumesOnlyFirstFrame {
+    NSDate *now = [NSDate date];
+    FTFirstFrameReader *reader = [[FTFirstFrameReader alloc]
+                                  initWithDateProvider:^NSDate *{
+        return now;
+    } mediaTimeProvider:^CFTimeInterval{
+        return 100;
+    }];
+    XCTestExpectation *expectation = [self expectationWithDescription:@"First frame callback"];
+    __block NSUInteger callbackCount = 0;
+    __block NSDate *firstFrameDate = nil;
+
+    dispatch_async(dispatch_get_global_queue(QOS_CLASS_USER_INITIATED, 0), ^{
+        [reader startWithCallback:^(NSDate *date) {
+            callbackCount += 1;
+            firstFrameDate = date;
+            [expectation fulfill];
+        }];
+        dispatch_async(dispatch_get_main_queue(), ^{
+            [reader didUpdateFrameAtTimestamp:99.75];
+            [reader didUpdateFrameAtTimestamp:100];
+        });
+    });
+
+    [self waitForExpectations:@[expectation] timeout:2];
+    XCTAssertEqual(callbackCount, 1);
+    XCTAssertEqualWithAccuracy([firstFrameDate timeIntervalSinceDate:now], -0.25, 0.001);
+}
+
 - (void)tearDown {
     // Put teardown code here. This method is called after the invocation of each test method in the class.
     self.launchBlock = nil;
@@ -70,7 +129,7 @@ void FTClearLaunchTaskRole(void);
         XCTAssertTrue(type == FTLaunchCold);
         [expectation fulfill];
     };
-    self.launchTracker = [[FTAppLaunchTracker alloc]initWithDelegate:self displayMonitor:[FTDisplayRateMonitor new]];
+    self.launchTracker = [[FTAppLaunchTracker alloc]initWithDelegate:self];
     [[NSNotificationCenter defaultCenter] postNotificationName:UIApplicationDidFinishLaunchingNotification object:nil];
     sleep(0.1);
     [[NSNotificationCenter defaultCenter] postNotificationName:UIApplicationDidBecomeActiveNotification object:nil];
@@ -88,7 +147,7 @@ void FTClearLaunchTaskRole(void);
     };
     [[NSNotificationCenter defaultCenter] postNotificationName:UIApplicationDidFinishLaunchingNotification object:nil];
     [[NSNotificationCenter defaultCenter] postNotificationName:UIApplicationDidBecomeActiveNotification object:nil];
-    self.launchTracker = [[FTAppLaunchTracker alloc]initWithDelegate:self displayMonitor:[FTDisplayRateMonitor new]];
+    self.launchTracker = [[FTAppLaunchTracker alloc]initWithDelegate:self firstFrameReader:[FTFirstFrameReader new]];
     [self waitForExpectationsWithTimeout:30 handler:^(NSError *error) {
         XCTAssertNil(error);
     }];
@@ -96,7 +155,7 @@ void FTClearLaunchTaskRole(void);
 }
 - (void)testLaunchHot{
     XCTestExpectation *expectation= [self expectationWithDescription:@"Async operation timeout"];
-    self.launchTracker = [[FTAppLaunchTracker alloc]initWithDelegate:self displayMonitor:[FTDisplayRateMonitor new]];
+    self.launchTracker = [[FTAppLaunchTracker alloc]initWithDelegate:self firstFrameReader:[FTFirstFrameReader new]];
     self.launchBlock = ^(NSNumber * _Nullable duration, FTLaunchType type,NSDictionary *fields) {
         if(type == FTLaunchHot){
             [expectation fulfill];
@@ -126,7 +185,7 @@ void FTClearLaunchTaskRole(void);
     [[NSNotificationCenter defaultCenter] postNotificationName:UIApplicationDidFinishLaunchingNotification object:nil];
     sleep(0.1);
     [[NSNotificationCenter defaultCenter] postNotificationName:UIApplicationDidBecomeActiveNotification object:nil];
-    self.launchTracker = [[FTAppLaunchTracker alloc]initWithDelegate:self displayMonitor:[FTDisplayRateMonitor new]];
+    self.launchTracker = [[FTAppLaunchTracker alloc]initWithDelegate:self firstFrameReader:[FTFirstFrameReader new]];
 
     [self waitForExpectationsWithTimeout:5 handler:^(NSError *error) {
         XCTAssertNil(error);
@@ -185,7 +244,7 @@ void FTClearLaunchTaskRole(void);
         XCTAssertEqualObjects(fields[FT_KEY_APP_LAUNCH_TYPE], FT_APP_LAUNCH_TYPE_FOREGROUND);
         [expectation fulfill];
     };
-    FTAppLaunchTracker *launchTracker = [[FTAppLaunchTracker alloc] initWithDelegate:self displayMonitor:[FTDisplayRateMonitor new]];
+    FTAppLaunchTracker *launchTracker = [[FTAppLaunchTracker alloc] initWithDelegate:self firstFrameReader:[FTFirstFrameReader new]];
     [self waitForExpectations:@[expectation] timeout:2];
     self.launchTracker = launchTracker;
     FTClearLaunchTaskRole();
@@ -205,7 +264,7 @@ void FTClearLaunchTaskRole(void);
         XCTAssertEqualObjects(fields[FT_KEY_APP_LAUNCH_TYPE], FT_APP_LAUNCH_TYPE_BACKGROUND);
         [expectation fulfill];
     };
-    FTAppLaunchTracker *launchTracker = [[FTAppLaunchTracker alloc] initWithDelegate:self displayMonitor:[FTDisplayRateMonitor new]];
+    FTAppLaunchTracker *launchTracker = [[FTAppLaunchTracker alloc] initWithDelegate:self firstFrameReader:[FTFirstFrameReader new]];
     [self waitForExpectations:@[expectation] timeout:2];
     self.launchTracker = launchTracker;
     FTClearLaunchTaskRole();
@@ -230,7 +289,7 @@ void FTClearLaunchTaskRole(void);
         XCTAssertTrue(duration.longLongValue > 0);
         [expectation fulfill];
     };
-    FTAppLaunchTracker *launchTracker = [[FTAppLaunchTracker alloc]initWithDelegate:self displayMonitor:[FTDisplayRateMonitor new]];
+    FTAppLaunchTracker *launchTracker = [[FTAppLaunchTracker alloc]initWithDelegate:self firstFrameReader:[FTFirstFrameReader new]];
     [self waitForExpectations:@[expectation] timeout:2];
     FTSetApplicationDidBecomeActive(applicationDidBecomeActive);
 }
@@ -251,7 +310,7 @@ void FTClearLaunchTaskRole(void);
     XCTAssertEqual(reportCount, 1);
     FTSetApplicationDidBecomeActive(applicationDidBecomeActive);
 }
-- (void)testLaunchWhenDisplayMonitorNilReportsOnApplicationDidBecomeActive{
+- (void)testLaunchWhenFirstFrameReaderNilReportsOnApplicationDidBecomeActive{
     XCTestExpectation *expectation= [self expectationWithDescription:@"Async operation timeout"];
 
     NSDate *applicationDidBecomeActive = FTGetApplicationDidBecomeActive();
@@ -271,7 +330,7 @@ void FTClearLaunchTaskRole(void);
         [expectation fulfill];
     };
 
-    self.launchTracker = [[FTAppLaunchTracker alloc] initWithDelegate:self displayMonitor:nil];
+    self.launchTracker = [[FTAppLaunchTracker alloc] initWithDelegate:self firstFrameReader:nil];
     XCTAssertEqual(reportCount, 0);
     [self.launchTracker applicationDidBecomeActive];
 
@@ -279,7 +338,7 @@ void FTClearLaunchTaskRole(void);
     XCTAssertEqual(reportCount, 1);
     FTSetApplicationDidBecomeActive(applicationDidBecomeActive);
 }
-- (void)testLaunchWithDisplayMonitorWaitsForFirstFrameAfterApplicationDidBecomeActive{
+- (void)testLaunchWithFirstFrameReaderWaitsForFirstFrameAfterApplicationDidBecomeActive{
     XCTestExpectation *expectation= [self expectationWithDescription:@"Async operation timeout"];
 
     NSDate *applicationDidBecomeActive = FTGetApplicationDidBecomeActive();
@@ -297,15 +356,17 @@ void FTClearLaunchTaskRole(void);
         [expectation fulfill];
     };
 
-    FTDisplayRateMonitor *displayMonitor = [FTDisplayRateMonitor new];
-    self.launchTracker = [[FTAppLaunchTracker alloc] initWithDelegate:self displayMonitor:displayMonitor];
+    FTMockFirstFrameReader *firstFrameReader = [FTMockFirstFrameReader new];
+    self.launchTracker = [[FTAppLaunchTracker alloc] initWithDelegate:self firstFrameReader:firstFrameReader];
     [self.launchTracker applicationDidBecomeActive];
     XCTAssertEqual(reportCount, 0);
-    XCTAssertNotNil(displayMonitor.callBack);
-    displayMonitor.callBack([NSDate date]);
+    XCTAssertEqual(firstFrameReader.startCount, 1);
+    XCTAssertNotNil(firstFrameReader.callback);
+    [firstFrameReader sendFirstFrameAtDate:[NSDate date]];
 
     [self waitForExpectations:@[expectation] timeout:2];
     XCTAssertEqual(reportCount, 1);
+    XCTAssertEqual(firstFrameReader.stopCount, 1);
     FTSetApplicationDidBecomeActive(applicationDidBecomeActive);
 }
 - (void)testLaunchSkipsInvalidPhaseButReportsLaunch{
@@ -385,7 +446,7 @@ void FTClearLaunchTaskRole(void);
         XCTAssertTrue(duration.longLongValue > 0);
         [expectation fulfill];
     };
-    FTAppLaunchTracker *launchTracker = [[FTAppLaunchTracker alloc] initWithDelegate:self displayMonitor:[FTDisplayRateMonitor new]];
+    FTAppLaunchTracker *launchTracker = [[FTAppLaunchTracker alloc] initWithDelegate:self firstFrameReader:[FTFirstFrameReader new]];
     [self waitForExpectations:@[expectation] timeout:2];
     FTSetIsActivePrewarm(NO);
     FTSetApplicationDidBecomeActive(applicationDidBecomeActive);
@@ -417,8 +478,8 @@ void FTClearLaunchTaskRole(void);
         XCTAssertTrue(duration.longLongValue > 0);
         [expectation fulfill];
     };
-    FTDisplayRateMonitor *display = [FTDisplayRateMonitor new];
-    FTAppLaunchTracker *launchTracker = [[FTAppLaunchTracker alloc] initWithDelegate:self displayMonitor:display];
+    FTFirstFrameReader *firstFrameReader = [FTFirstFrameReader new];
+    FTAppLaunchTracker *launchTracker = [[FTAppLaunchTracker alloc] initWithDelegate:self firstFrameReader:firstFrameReader];
     [self waitForExpectations:@[expectation] timeout:10];
     FTSetApplicationDidBecomeActive(applicationDidBecomeActive);
 }
@@ -441,8 +502,8 @@ void FTClearLaunchTaskRole(void);
         XCTAssertTrue(duration.longLongValue > 0);
         [expectation fulfill];
     };
-    FTDisplayRateMonitor *display = [FTDisplayRateMonitor new];
-    FTAppLaunchTracker *launchTracker = [[FTAppLaunchTracker alloc] initWithDelegate:self displayMonitor:display];
+    FTFirstFrameReader *firstFrameReader = [FTFirstFrameReader new];
+    FTAppLaunchTracker *launchTracker = [[FTAppLaunchTracker alloc] initWithDelegate:self firstFrameReader:firstFrameReader];
     [self waitForExpectations:@[expectation] timeout:5];
     FTSetIsActivePrewarm(NO);
     FTSetApplicationDidBecomeActive(applicationDidBecomeActive);

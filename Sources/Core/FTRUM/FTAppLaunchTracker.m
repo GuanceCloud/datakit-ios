@@ -29,7 +29,7 @@
 #import "FTInnerLog.h"
 #import "NSDate+FTUtil.h"
 #import "FTDateUtil.h"
-#import "FTDisplayRateMonitor.h"
+#import "FTFirstFrameReader.h"
 #import "FTConstants.h"
 #if FT_HOST_IOS
 #import <mach/mach.h>
@@ -95,6 +95,13 @@ ftModuleInitializationHook(void)
 @property (nonatomic, strong) NSDate *launchTime;
 @property (nonatomic, assign) uint64_t launchTimeSystemTimestamp;
 @property (nonatomic, strong) NSDate *didFinishLaunchingTimestamp;
+#if FT_HAS_UIKIT
+@property (nonatomic, strong, nullable) FTFirstFrameReader *firstFrameReader;
+- (instancetype)initWithDelegate:(nullable id)delegate
+                firstFrameReader:(nullable FTFirstFrameReader *)firstFrameReader;
+#endif
+- (instancetype)initWithLaunchDelegate:(nullable id)delegate;
+- (void)handleLaunchPhaseWithoutFirstFrameReader;
 @end
 
 
@@ -132,40 +139,72 @@ ftModuleInitializationHook(void)
     }];
 #endif
 }
-- (instancetype)initWithDelegate:(nullable id)delegate displayMonitor:(nullable FTDisplayRateMonitor *)displayMonitor{
+
+- (instancetype)initWithLaunchDelegate:(nullable id)delegate {
     self = [super init];
     if (self) {
         self.delegate = delegate;
         _didFinishLaunchingTimestamp = FTDateUtil.date;
         [[FTAppLifeCycle sharedInstance] addAppLifecycleDelegate:self];
-
-        [self handleLaunchPhaseWithDisplayMonitor:displayMonitor];
     }
     return self;
 }
-- (void)handleLaunchPhaseWithDisplayMonitor:(nullable FTDisplayRateMonitor *)displayMonitor {
+
+- (instancetype)initWithDelegate:(nullable id)delegate {
+    self = [self initWithLaunchDelegate:delegate];
+    if (self) {
+#if FT_HAS_UIKIT
+        [self handleLaunchPhaseWithFirstFrameReader:[[FTFirstFrameReader alloc] init]];
+#else
+        [self handleLaunchPhaseWithoutFirstFrameReader];
+#endif
+    }
+    return self;
+}
+
+#if FT_HAS_UIKIT
+- (instancetype)initWithDelegate:(nullable id)delegate firstFrameReader:(nullable FTFirstFrameReader *)firstFrameReader {
+    self = [self initWithLaunchDelegate:delegate];
+    if (self) {
+        [self handleLaunchPhaseWithFirstFrameReader:firstFrameReader];
+    }
+    return self;
+}
+#endif
+
+#if FT_HAS_UIKIT
+- (void)handleLaunchPhaseWithFirstFrameReader:(nullable FTFirstFrameReader *)firstFrameReader {
+    if (firstFrameReader == nil) {
+        [self handleLaunchPhaseWithoutFirstFrameReader];
+        return;
+    }
     //applicationDidBecomeActive != nil to determine if UIApplicationDidBecomeActiveNotification notification has been received before, record cold start
     if (applicationDidBecomeActive != nil) {
         [self reportAppLaunchPhaseDuration:applicationDidBecomeActive];
-    } else if (displayMonitor != nil) {
-        NSDate *firstFrame = [displayMonitor firstFrameDate];
-        if (firstFrame == nil) {
-            [displayMonitor start];
-            __weak typeof(self) weakSelf = self;
-            __weak typeof(displayMonitor) weakMonitor = displayMonitor;
-            displayMonitor.callBack = ^(NSDate * _Nonnull date) {
-                __strong typeof(weakSelf) strongSelf = weakSelf;
-                if (!strongSelf) return;
-                [weakMonitor stop];
-                [strongSelf reportAppLaunchPhaseDuration:date];
-            };
-        } else {
-            [self reportAppLaunchPhaseDuration:firstFrame];
-        }
+    } else {
+        self.firstFrameReader = firstFrameReader;
+        __weak typeof(self) weakSelf = self;
+        [firstFrameReader startWithCallback:^(NSDate * _Nonnull date) {
+            __strong typeof(weakSelf) strongSelf = weakSelf;
+            if (!strongSelf) {
+                return;
+            }
+            [strongSelf.firstFrameReader stop];
+            strongSelf.firstFrameReader = nil;
+            [strongSelf reportAppLaunchPhaseDuration:date];
+        }];
+    }
+}
+#endif
+
+- (void)handleLaunchPhaseWithoutFirstFrameReader {
+    if (applicationDidBecomeActive != nil) {
+        [self reportAppLaunchPhaseDuration:applicationDidBecomeActive];
     } else {
         _waitingForActiveLaunchReport = YES;
     }
 }
+
 - (void)reportAppLaunchPhaseDuration:(NSDate *)endDate{
     if (_initialLaunchReported) {
         return;
@@ -311,6 +350,9 @@ ftModuleInitializationHook(void)
 }
 
 -(void)dealloc{
+#if FT_HAS_UIKIT
+    [self.firstFrameReader stop];
+#endif
     [[FTAppLifeCycle sharedInstance] removeAppLifecycleDelegate:self];
 }
 

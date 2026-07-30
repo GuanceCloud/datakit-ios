@@ -26,6 +26,13 @@
 #import <Foundation/Foundation.h>
 @class FTPresetProperty,FTTracer;
 
+@interface FTSDKAgent (Private)
+/// Wait for all data being processed to complete
+- (void)syncProcess;
+/// Must be set before sessionReplay configuration
+- (void)additionalConfigurationWithSource:(NSString *)source;
+@end
+
 @interface FTMobileAgent (Private)
 /// Wait for all data being processed to complete
 - (void)syncProcess;

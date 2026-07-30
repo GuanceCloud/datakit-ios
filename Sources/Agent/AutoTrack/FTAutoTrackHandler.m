@@ -23,9 +23,12 @@
 
 #if TARGET_OS_OSX
 #import "Mac/FTAutoTrack.h"
+#import "FTAppLaunchTracker.h"
+#import "FTConstants.h"
 
-@interface FTAutoTrackHandler ()
+@interface FTAutoTrackHandler () <FTAppLaunchDataDelegate>
 @property (nonatomic, weak, nullable) id<FTRumDatasProtocol> addRumDatasDelegate;
+@property (nonatomic, strong, nullable) FTAppLaunchTracker *launchTracker;
 @end
 
 @implementation FTAutoTrackHandler
@@ -44,9 +47,36 @@
     self.addRumDatasDelegate = delegate;
     [FTAutoTrack sharedInstance].addRumDatasDelegate = delegate;
     [[FTAutoTrack sharedInstance] startHookView:trackView action:trackAction];
+    if (trackAction) {
+        self.launchTracker = [[FTAppLaunchTracker alloc] initWithDelegate:self];
+    }
+}
+
+- (void)ftAppHotStart:(NSDate *)launchTime duration:(NSNumber *)duration {
+    if (self.addRumDatasDelegate && [self.addRumDatasDelegate respondsToSelector:@selector(addLaunch:type:launchTime:duration:property:)]) {
+        [self.addRumDatasDelegate addLaunch:@"app_hot_start"
+                                      type:FT_LAUNCH_HOT
+                                launchTime:launchTime
+                                  duration:duration
+                                  property:nil];
+    }
+}
+
+- (void)ftAppColdStart:(NSDate *)launchTime
+              duration:(NSNumber *)duration
+          isPreWarming:(BOOL)isPreWarming
+                fields:(NSDictionary *)fields {
+    if (self.addRumDatasDelegate && [self.addRumDatasDelegate respondsToSelector:@selector(addLaunch:type:launchTime:duration:property:)]) {
+        [self.addRumDatasDelegate addLaunch:isPreWarming ? @"app_warm_start" : @"app_cold_start"
+                                      type:isPreWarming ? FT_LAUNCH_WARM : FT_LAUNCH_COLD
+                                launchTime:launchTime
+                                  duration:duration
+                                  property:fields];
+    }
 }
 
 - (void)shutDown {
+    self.launchTracker = nil;
     self.addRumDatasDelegate = nil;
     [FTAutoTrack sharedInstance].addRumDatasDelegate = nil;
 }
@@ -210,15 +240,13 @@ API_AVAILABLE(ios(13.0), tvos(13.0))
       addRumDatasDelegate:(id<FTRumDatasProtocol>)delegate
               viewHandler:(FTViewTrackingHandler)viewHandler
        swiftUIViewHandler:(id<FTSwiftUIViewTrackingHandler>)swiftUIViewHandler
-            actionHandler:(FTActionTrackingHandler)actionHandler
-           displayMonitor:(FTDisplayRateMonitor *)displayMonitor{
+            actionHandler:(FTActionTrackingHandler)actionHandler{
     [self startWithTrackView:trackView
                       action:trackAction
          addRumDatasDelegate:delegate
                  viewHandler:viewHandler
           swiftUIViewHandler:swiftUIViewHandler
                actionHandler:actionHandler
-              displayMonitor:displayMonitor
    heatmapIdentifierRegistry:nil];
 }
 
@@ -228,7 +256,6 @@ API_AVAILABLE(ios(13.0), tvos(13.0))
               viewHandler:(FTViewTrackingHandler)viewHandler
        swiftUIViewHandler:(id<FTSwiftUIViewTrackingHandler>)swiftUIViewHandler
             actionHandler:(FTActionTrackingHandler)actionHandler
-           displayMonitor:(FTDisplayRateMonitor *)displayMonitor
 heatmapIdentifierRegistry:(id<FTHeatmapIdentifierRegistry>)heatmapIdentifierRegistry{
     _autoTrackView = trackView;
     _autoTrackAction = trackAction;
@@ -262,7 +289,7 @@ heatmapIdentifierRegistry:(id<FTHeatmapIdentifierRegistry>)heatmapIdentifierRegi
     if (trackAction) {
         self.actionHandler = self;
         [self hookTargetAction];
-        self.launchTracker = [[FTAppLaunchTracker alloc]initWithDelegate:self displayMonitor:displayMonitor];
+        self.launchTracker = [[FTAppLaunchTracker alloc]initWithDelegate:self];
     }
 }
 - (void)hookViewControllerLifeCycle{

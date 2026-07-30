@@ -43,7 +43,7 @@ int main(int argc, const char * argv[]) {
         if(!isRuningUnitTest){
             FTSDKConfig *config = [[FTSDKConfig alloc]initWithDatawayUrl:datawayUrl clientToken:clientToken];
             config.enableSDKDebugLog = YES;
-            [FTMobileAgent startWithConfigOptions:config];
+            [FTSDKAgent startWithConfigOptions:config];
             FTRumConfig *rumConfig = [[FTRumConfig alloc]initWithAppid:appid];
             rumConfig.enableTrackAppANR = YES;
             rumConfig.enableTrackAppCrash = YES;
@@ -54,7 +54,7 @@ int main(int argc, const char * argv[]) {
             rumConfig.errorMonitorType = FTErrorMonitorAll;
             rumConfig.deviceMetricsMonitorType = FTDeviceMetricsMonitorAll;
             rumConfig.globalContext = @{@"track_id":Track_id,@"static_tag":STATIC_TAG};
-            [[FTMobileAgent sharedInstance]startRumWithConfigOptions:rumConfig];
+            [[FTSDKAgent sharedInstance]startRumWithConfigOptions:rumConfig];
             FTLoggerConfig *logger = [[FTLoggerConfig alloc]init];
             logger.enableCustomLog = YES;
             logger.enableLinkRumData = YES;
@@ -63,8 +63,8 @@ int main(int argc, const char * argv[]) {
             FTTraceConfig *trace = [[FTTraceConfig alloc]init];
             trace.enableAutoTrace = YES;
             trace.enableLinkRumData = YES;
-            [[FTMobileAgent sharedInstance] startTraceWithConfigOptions:trace];
-            [[FTMobileAgent sharedInstance] logging:@"main" status:FTStatusInfo];
+            [[FTSDKAgent sharedInstance] startTraceWithConfigOptions:trace];
+            [[FTSDKAgent sharedInstance] logging:@"main" status:FTStatusInfo];
 
             FTSessionReplayConfig *sessionReplay = [[FTSessionReplayConfig alloc]init];
             sessionReplay.imagePrivacy = FTImagePrivacyLevelMaskNone;

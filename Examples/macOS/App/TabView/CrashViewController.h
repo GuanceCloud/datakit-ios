@@ -1,8 +1,8 @@
 //
-//  FTCrashReportWrapper.h
+//  CrashViewController.h
+//  Example
 //
-//  Created by hulilei on 2025/12/12.
-//  Copyright 2025 Shanghai Guance Information Technology Co., Ltd.
+//  Copyright 2026 Shanghai Guance Information Technology Co., Ltd.
 //
 //  Licensed under the Apache License, Version 2.0 (the "License");
 //  you may not use this file except in compliance with the License.
@@ -17,24 +17,11 @@
 //  limitations under the License.
 //
 
-#import <Foundation/Foundation.h>
-#import "FTCrashReportFilter.h"
-#import "FTIssueDataProvider.h"
+#import <Cocoa/Cocoa.h>
 
 NS_ASSUME_NONNULL_BEGIN
-@protocol FTBacktraceReporting;
 
-@interface FTCrashReportWrapper : NSObject<FTCrashReportFilter>
-
--(void)setEnableMemory:(BOOL)enableMemory;
-
--(void)setEnableCpu:(BOOL)enableCpu;
-
--(void)setIssueDataProvider:(nullable FTIssueDataProvider)issueDataProvider;
-
--(nullable NSString *)generateBacktrace:(thread_t)thread;
-
--(nullable NSString *)generateAllThreadsBacktrace;
+@interface CrashViewController : NSViewController
 
 @end
 

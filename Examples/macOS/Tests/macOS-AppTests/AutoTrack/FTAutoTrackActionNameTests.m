@@ -130,8 +130,9 @@
     XCTAssertTrue([[image datakit_actionName] isEqualToString:@"[NSImageView]"]);
 }
 - (void)testActionLaunch{
-    [[NSApplication sharedApplication] activateIgnoringOtherApps:YES];
     [self setRumConfig];
+    [[NSNotificationCenter defaultCenter] postNotificationName:NSApplicationDidBecomeActiveNotification
+                                                        object:[NSApplication sharedApplication]];
     XCTestExpectation *expectation= [self expectationWithDescription:@"Asynchronous operation timeout"];
     dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)(1 * NSEC_PER_SEC)), dispatch_get_main_queue(), ^{
         [expectation fulfill];
@@ -149,9 +150,12 @@
              if([data[FT_KEY_SOURCE] isEqualToString:FT_RUM_SOURCE_ACTION]){
                  NSDictionary *tags = data[FT_TAGS];
                  NSString *actionName = tags[FT_KEY_ACTION_NAME];
-                 XCTAssertTrue([actionName isEqualToString:@"app_cold_start"]);
-                 hasLaunchData = YES;
-                 break;
+                 NSString *actionType = tags[FT_KEY_ACTION_TYPE];
+                 if ([actionType isEqualToString:FT_LAUNCH_COLD]) {
+                     XCTAssertTrue([actionName isEqualToString:@"app_cold_start"]);
+                     hasLaunchData = YES;
+                     break;
+                 }
              }
          }
      }

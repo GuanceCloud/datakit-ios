@@ -132,7 +132,7 @@ static NSObject *sharedInstanceLock;
     FTErrorMonitorInfo *errorInfoWrapper = [[FTErrorMonitorInfo alloc]initWithMonitorType:(ErrorMonitorType)rumConfig.errorMonitorType];
     self.dependencies = [self dependenciesWithRumConfig:rumConfig writer:writer monitor:monitor errorInfoWrapper:errorInfoWrapper];
     self.rumManager = [[FTRUMManager alloc]initWithRumDependencies:self.dependencies];
-    [self setupAutoTrackWithRumConfig:rumConfig displayMonitor:displayMonitor];
+    [self setupAutoTrackWithRumConfig:rumConfig];
     BOOL lastSessionHadCrash = [self setupCrashWithRumConfig:rumConfig writer:writer errorInfoWrapper:errorInfoWrapper dependencies:self.dependencies];
     [self setupLongTaskWithRumConfig:rumConfig dependencies:self.dependencies lastSessionHadCrash:lastSessionHadCrash];
     [self setupWebViewAndExternalDataWithRumConfig:rumConfig];
@@ -140,7 +140,7 @@ static NSObject *sharedInstanceLock;
 - (FTDisplayRateMonitor *)displayMonitorWithRumConfig:(FTRumConfig *)rumConfig{
     FTDisplayRateMonitor *displayMonitor = nil;
 #if FT_HAS_UIKIT
-    if (rumConfig.deviceMetricsMonitorType & DeviceMetricsMonitorFps || rumConfig.enableTraceUserAction) {
+    if (rumConfig.deviceMetricsMonitorType & FTDeviceMetricsMonitorFps) {
         displayMonitor = [[FTDisplayRateMonitor alloc]init];
     }
 #endif
@@ -162,29 +162,34 @@ static NSObject *sharedInstanceLock;
     dependencies.sessionOnErrorSampleRate = rumConfig.sessionOnErrorSampleRate;
     dependencies.sampleRate = rumConfig.sampleRate;
     dependencies.enableResourceHostIP = rumConfig.enableResourceHostIP;
+    dependencies.enableTraceUserAction = rumConfig.enableTraceUserAction;
     dependencies.errorMonitorInfoWrapper = errorInfoWrapper;
     dependencies.fatalErrorContext = [[FTFatalErrorContext alloc]initWithErrorInfoProvider:errorInfoWrapper];
+    dependencies.issueDataProvider = rumConfig.issueDataProvider;
     return dependencies;
 }
-- (void)setupAutoTrackWithRumConfig:(FTRumConfig *)rumConfig displayMonitor:(FTDisplayRateMonitor *)displayMonitor{
+#if TARGET_OS_OSX
+- (void)setupAutoTrackWithRumConfig:(FTRumConfig *)rumConfig{
     self.heatmapIdentifierStore = [[FTHeatmapIdentifierStore alloc] init];
     [[FTModuleManager sharedInstance] registerService:@protocol(FTHeatmapIdentifierRegistry) instance:self.heatmapIdentifierStore];
-#if TARGET_OS_OSX
     [[FTAutoTrackHandler sharedInstance] startWithTrackView:rumConfig.enableTraceUserView
                                                      action:rumConfig.enableTraceUserAction
                                         addRumDatasDelegate:self.rumManager];
+}
 #else
+- (void)setupAutoTrackWithRumConfig:(FTRumConfig *)rumConfig{
+    self.heatmapIdentifierStore = [[FTHeatmapIdentifierStore alloc] init];
+    [[FTModuleManager sharedInstance] registerService:@protocol(FTHeatmapIdentifierRegistry) instance:self.heatmapIdentifierStore];
     [[FTAutoTrackHandler sharedInstance] startWithTrackView:rumConfig.enableTraceUserView
                                                      action:rumConfig.enableTraceUserAction
                                         addRumDatasDelegate:self.rumManager
                                                 viewHandler:rumConfig.viewTrackingHandler
                                          swiftUIViewHandler:rumConfig.swiftUIViewTrackingHandler
                                               actionHandler:rumConfig.actionTrackingHandler
-                                             displayMonitor:displayMonitor
                                   heatmapIdentifierRegistry:self.heatmapIdentifierStore
     ];
-#endif
 }
+#endif
 - (BOOL)setupCrashWithRumConfig:(FTRumConfig *)rumConfig
                           writer:(id<FTRUMDataWriteProtocol>)writer
                 errorInfoWrapper:(FTErrorMonitorInfo *)errorInfoWrapper
@@ -194,7 +199,8 @@ static NSObject *sharedInstanceLock;
         [FTCrash setupWithMonitoringType:(FTCrashCMonitorType)rumConfig.crashMonitoring
                                   writer:writer
                      enableMonitorMemory:[errorInfoWrapper enableMonitorMemory]
-                        enableMonitorCpu:[errorInfoWrapper enableMonitorCpu]];
+                        enableMonitorCpu:[errorInfoWrapper enableMonitorCpu]
+                       issueDataProvider:rumConfig.issueDataProvider];
         dependencies.fatalErrorContext.onChange = ^(NSDictionary * _Nonnull context) {
             [FTCrash shared].userInfo = context;
         };
@@ -233,13 +239,21 @@ static NSObject *sharedInstanceLock;
     [self.rumManager addLongTaskWithStack:slowStack duration:[NSNumber numberWithLongLong:duration] startTime:time];
 }
 - (void)anrStackDetected:(NSString*)slowStack appState:(NSString *)appState time:(long long)time{
-    [self.rumManager addErrorWithType:@"anr_error" stateStr:appState message:@"ios_anr" stack:slowStack property:nil time:time];
+    [self.rumManager addAutomaticIssueWithCategory:FTIssueCategoryANR
+                                         errorType:@"anr_error"
+                                          appState:appState
+                                           message:@"ios_anr"
+                                             stack:slowStack
+                                        threadName:@"main"
+                                              time:time
+                                        historical:NO];
 }
 #pragma mark ========== Shutdown ==========
 - (void)shutDown{
     [[FTAutoTrackHandler sharedInstance] shutDown];
     self.heatmapIdentifierStore = nil;
     [_longTaskManager shutDown];
+    [FTCrash clearIssueDataProvider];
 #if !TARGET_OS_TV
     [FTWKWebViewHandler shutDown];
 #endif

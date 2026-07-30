@@ -24,18 +24,24 @@
 #import "FTRUMMonitor.h"
 #import "FTFatalErrorContext.h"
 #import "FTErrorDataProtocol.h"
+#import "FTIssueDataProvider.h"
 
 NS_ASSUME_NONNULL_BEGIN
+
+@class FTIssueFieldEnricher;
 
 @interface FTRUMDependencies : NSObject
 @property (nonatomic, assign) int sampleRate;
 @property (nonatomic, assign) int sessionOnErrorSampleRate;
 @property (nonatomic, assign) BOOL enableResourceHostIP;
+@property (nonatomic, assign) BOOL enableTraceUserAction;
 @property (nonatomic, copy) NSString *appId;
 @property (nonatomic, weak, nullable) id<FTRUMDataWriteProtocol> writer;
 @property (nonatomic, strong) id<FTErrorMonitorInfoWrapper> errorMonitorInfoWrapper;
 @property (nonatomic, strong) FTRUMMonitor *monitor;
 @property (nonatomic, strong, nullable) FTFatalErrorContext *fatalErrorContext;
+@property (nonatomic, copy, nullable) FTIssueDataProvider issueDataProvider;
+@property (nonatomic, strong, nullable, readonly) FTIssueFieldEnricher *issueFieldEnricher;
 @property (atomic, strong) NSDictionary *linkRUMSessionContext;
 @property (atomic, strong, nullable) NSDictionary *lastViewUserCustomDatas;
 

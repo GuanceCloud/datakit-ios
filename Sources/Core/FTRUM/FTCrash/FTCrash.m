@@ -72,16 +72,31 @@ static mach_port_t main_thread_id;
     });
     return sharedHandler;
 }
++ (void)clearIssueDataProvider {
+    [sharedHandler.crashReportWrapper setIssueDataProvider:nil];
+}
++ (void)setupWithMonitoringType:(FTCrashCMonitorType)monitoring
+                         writer:(id<FTRUMDataWriteProtocol>)writer
+            enableMonitorMemory:(BOOL)memory
+               enableMonitorCpu:(BOOL)cpu {
+    [self setupWithMonitoringType:monitoring
+                           writer:writer
+              enableMonitorMemory:memory
+                 enableMonitorCpu:cpu
+                issueDataProvider:nil];
+}
 + (void)setupWithMonitoringType:(FTCrashCMonitorType)monitoring
                     writer:(id<FTRUMDataWriteProtocol>)writer
        enableMonitorMemory:(BOOL)memory
        enableMonitorCpu:(BOOL)cpu
+      issueDataProvider:(nullable FTIssueDataProvider)issueDataProvider
 {
     FTCrash *crash = sharedHandler ? sharedHandler : [self shared];
     crash.monitoring = monitoring;
     crash.writer = writer;
     [crash.crashReportWrapper setEnableCpu:cpu];
     [crash.crashReportWrapper setEnableMemory:memory];
+    [crash.crashReportWrapper setIssueDataProvider:issueDataProvider];
     [crash install];
     [crash sendCrashReport];
 }

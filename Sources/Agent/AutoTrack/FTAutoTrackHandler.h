@@ -31,7 +31,6 @@
 NS_ASSUME_NONNULL_BEGIN
 
 #if TARGET_OS_IOS || TARGET_OS_TV
-@class FTDisplayRateMonitor;
 @protocol FTHeatmapIdentifierRegistry;
 typedef CGPoint (^FTHeatmapLocationResolver)(UIView *view);
 @protocol FTUIViewControllerHandler <NSObject>
@@ -70,8 +69,7 @@ typedef CGPoint (^FTHeatmapLocationResolver)(UIView *view);
       addRumDatasDelegate:(id<FTRumDatasProtocol>)delegate
               viewHandler:(nullable FTViewTrackingHandler)viewHandler
        swiftUIViewHandler:(nullable id<FTSwiftUIViewTrackingHandler>)swiftUIViewHandler
-            actionHandler:(nullable FTActionTrackingHandler)actionHandler
-           displayMonitor:(nullable FTDisplayRateMonitor *)displayMonitor;
+            actionHandler:(nullable FTActionTrackingHandler)actionHandler;
 
 -(void)startWithTrackView:(BOOL)enable
                    action:(BOOL)enable
@@ -79,7 +77,6 @@ typedef CGPoint (^FTHeatmapLocationResolver)(UIView *view);
               viewHandler:(nullable FTViewTrackingHandler)viewHandler
        swiftUIViewHandler:(nullable id<FTSwiftUIViewTrackingHandler>)swiftUIViewHandler
             actionHandler:(nullable FTActionTrackingHandler)actionHandler
-           displayMonitor:(nullable FTDisplayRateMonitor *)displayMonitor
 heatmapIdentifierRegistry:(nullable id<FTHeatmapIdentifierRegistry>)heatmapIdentifierRegistry;
 
 -(void)shutDown;

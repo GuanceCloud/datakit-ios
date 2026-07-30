@@ -25,6 +25,7 @@
 #import "FTRumResourceProtocol.h"
 #import "FTLinkRumDataProvider.h"
 #import "FTWKWebViewRumDelegate.h"
+#import "FTIssueDataProvider.h"
 
 @class FTResourceMetricsModel,FTResourceContentModel;
 
@@ -70,6 +71,16 @@ FOUNDATION_EXPORT NSString *FTStringFromAppState(FTAppState state);
 
 #pragma mark - Error / Long Task -
 
+/// Adds an automatically collected Issue without routing manual Errors through
+/// Issue Provider logic.
+- (void)addAutomaticIssueWithCategory:(FTIssueCategory)category
+                            errorType:(NSString *)errorType
+                             appState:(NSString *)appState
+                              message:(nullable NSString *)message
+                                stack:(nullable NSString *)stack
+                           threadName:(nullable NSString *)threadName
+                                 time:(long long)time
+                           historical:(BOOL)historical;
 
 /// Freeze
 /// @param stack Freeze stack

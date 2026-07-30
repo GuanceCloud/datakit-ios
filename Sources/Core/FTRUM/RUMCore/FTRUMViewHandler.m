@@ -86,8 +86,8 @@
     return self;
 }
 - (BOOL)process:(FTRUMDataModel *)model context:(nonnull NSDictionary *)context{
-   
     self.needUpdateView = NO;
+    NSDate *viewEndTime = model.time;
     self.actionHandler =(FTRUMActionHandler *)[self.assistant manage:(FTRUMHandler *)self.actionHandler byPropagatingData:model context:context];
     switch (model.type) {
         case FTRUMDataViewStart:{
@@ -133,6 +133,28 @@
                 [self addAction:model context:context];
             }
             break;
+        case FTRUMDataLaunch: {
+            FTRUMLaunchDataModel *launchModel = (FTRUMLaunchDataModel *)model;
+            BOOL canHandleApplicationLaunch = launchModel.isInitialLaunchAction
+                && self.isApplicationLaunchView
+                && self.isActiveView;
+            BOOL handlesHotLaunch = self.isActiveView && [self isHotLaunchActionModel:model];
+            if (canHandleApplicationLaunch) {
+                self.viewActionCount += 1;
+                self.needUpdateView = YES;
+                viewEndTime = [self launchEndTimeForModel:launchModel];
+                if (self.closeAfterInitialLaunchAction) {
+                    self.isActiveView = NO;
+                }
+            } else if (handlesHotLaunch) {
+                self.viewActionCount += 1;
+                self.needUpdateView = YES;
+            }
+            if (canHandleApplicationLaunch || handlesHotLaunch) {
+                [self writeLaunchData:launchModel context:context];
+            }
+            break;
+        }
         case FTRUMDataError:
             if (self.isActiveView) {
                 self.viewErrorCount++;
@@ -164,6 +186,7 @@
         default:
             break;
     }
+
     if ([model isKindOfClass:FTRUMResourceModel.class]) {
         FTRUMResourceDataModel *newModel = (FTRUMResourceDataModel *)model;
         FTRUMResourceHandler *handler =  self.resourceHandlers[newModel.identifier];
@@ -176,9 +199,44 @@
         [self.actionHandler writeActionData:[NSDate date] context:context];
     }
     if (self.needUpdateView) {
-        [self writeViewData:model context:context updateTime:model.time];
+        [self writeViewDataWithContext:context viewEndTime:viewEndTime];
     }
     return !shouldComplete;
+}
+
+- (BOOL)isHotLaunchActionModel:(FTRUMDataModel *)model {
+    return model.type == FTRUMDataLaunch && [((FTRUMLaunchDataModel *)model).action_type isEqualToString:FT_LAUNCH_HOT];
+}
+
+- (NSDate *)launchEndTimeForModel:(FTRUMLaunchDataModel *)model {
+    NSTimeInterval duration = MAX(0, model.duration.doubleValue / 1000000000.0);
+    return [model.time dateByAddingTimeInterval:duration] ?: model.time;
+}
+
+
+- (void)updateViewStartTimeIfEarlierThan:(NSDate *)time {
+    if (time && [time compare:self.viewStartTime] == NSOrderedAscending) {
+        self.viewStartTime = time;
+    }
+}
+
+- (void)writeLaunchData:(FTRUMLaunchDataModel *)model context:(NSDictionary *)context {
+    NSMutableDictionary *tags = [NSMutableDictionary dictionary];
+    [tags addEntriesFromDictionary:[self.context getGlobalSessionViewActionTags]];
+    [tags setValue:[FTBaseInfoHandler randomUUID] forKey:FT_KEY_ACTION_ID];
+    [tags setValue:model.action_name forKey:FT_KEY_ACTION_NAME];
+    [tags setValue:model.action_type forKey:FT_KEY_ACTION_TYPE];
+
+    NSMutableDictionary *fields = [NSMutableDictionary dictionary];
+    if (model.fields) {
+        [fields addEntriesFromDictionary:model.fields];
+    }
+    [fields setValue:model.duration forKey:FT_DURATION];
+    [fields setValue:@(0) forKey:FT_KEY_ACTION_LONG_TASK_COUNT];
+    [fields setValue:@(0) forKey:FT_KEY_ACTION_RESOURCE_COUNT];
+    [fields setValue:@(0) forKey:FT_KEY_ACTION_ERROR_COUNT];
+    [fields addEntriesFromDictionary:self.context.sessionState.sessionFields];
+    [self.rumDependencies.writer rumWrite:FT_RUM_SOURCE_ACTION tags:tags fields:fields dynamicContext:context time:model.tm];
 }
 -(void)setViewErrorCount:(NSInteger)viewErrorCount{
     _viewErrorCount = viewErrorCount;
@@ -250,10 +308,10 @@
     NSString *error = model.type == FTRUMDataLongTask?FT_RUM_SOURCE_LONG_TASK :FT_RUM_SOURCE_ERROR;
     [self.rumDependencies.writer rumWrite:error tags:tags fields:fields dynamicContext:context time:model.tm];
 }
-- (void)writeViewData:(FTRUMDataModel *)model context:(NSDictionary *)context updateTime:(NSDate *)updateTime{
+- (void)writeViewDataWithContext:(NSDictionary *)context viewEndTime:(NSDate *)viewEndTime{
     self.updateTime+=1;
     //Second level
-    NSTimeInterval sTimeSpent = MAX(1e-9, [model.time timeIntervalSinceDate:self.viewStartTime]);
+    NSTimeInterval sTimeSpent = MAX(1e-9, [viewEndTime timeIntervalSinceDate:self.viewStartTime]);
     //Nanosecond level
     NSNumber *nTimeSpent = [NSNumber numberWithLongLong:sTimeSpent * 1000000000];
     
@@ -314,7 +372,7 @@
     [fields addEntriesFromDictionary:self.context.sessionState.sessionFields];
 
     long long time = [self.viewStartTime ft_nanosecondTimeStamp];
-    [self.rumDependencies.writer rumWrite:FT_RUM_SOURCE_VIEW tags:tags fields:fields dynamicContext:context?:@{} time:time updateTime:[updateTime ft_nanosecondTimeStamp]];
+    [self.rumDependencies.writer rumWrite:FT_RUM_SOURCE_VIEW tags:tags fields:fields dynamicContext:context?:@{} time:time updateTime:[viewEndTime ft_nanosecondTimeStamp]];
     if (self.isActiveView) {
         self.rumDependencies.lastViewUserCustomDatas = viewUserCustomDatas;
         self.rumDependencies.fatalErrorContext.lastViewContext = @{@"tags":tags,

@@ -1,3 +1,12 @@
+# Unreleased
+1. Added `FTRumConfig.issueDataProvider` to attach validated custom fields to automatically collected Crash and ANR RUM Errors, including historical Crash and watchdog ANR context.
+2. Aligned Issue Provider validation with the cross-platform contract: scan at most 50 entries, accept up to an estimated 25 KiB, reserve the Error namespace, and preserve SDK-owned tag and field values on collisions.
+---
+# 1.6.7-alpha.1
+1. Improved RUM fallback View lifecycle handling for application launch events and session transitions.
+2. Added automatic macOS app launch Action collection.
+3. Aligned macOS default tags, including `service=df_rum_macos` and Log `source=df_rum_macos_log`.
+---
 # 1.6.6
 1. **Breaking:** Renamed the CocoaPods and SwiftPM distribution products from the `FTMobileSDK` family to the `GuanceSDK` family. Use `GuanceSDK`, `GuanceWidgetExtension`, and `GuanceSessionReplay`; CocoaPods aliases `GuanceSDK/Extension` and `GuanceSDK/FTSessionReplay` remain available.
 2. Added experimental Session Replay heatmap correlation through `FTSessionReplayConfig.enableHeatmap`.
