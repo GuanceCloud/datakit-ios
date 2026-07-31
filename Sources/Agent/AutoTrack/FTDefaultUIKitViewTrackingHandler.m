@@ -23,11 +23,6 @@
 #import "FTDefaultUIKitViewTrackingHandler.h"
 #import "UIViewController+FTAutoTrack.h"
 
-static BOOL FTViewControllerIsFromSwiftUIBundle(UIViewController *viewController) {
-    NSBundle *bundle = [NSBundle bundleForClass:viewController.class];
-    return [bundle.bundleURL.lastPathComponent isEqualToString:@"SwiftUI.framework"];
-}
-
 @implementation FTDefaultUIKitViewTrackingHandler
 - (nullable FTRUMView *)rumViewForViewController:(UIViewController *)viewController{
     if (!viewController.parentViewController ||
@@ -42,7 +37,7 @@ static BOOL FTViewControllerIsFromSwiftUIBundle(UIViewController *viewController
     return nil;
 }
 - (BOOL)shouldTrackViewController:(UIViewController *)viewController{
-    return !FTViewControllerIsFromSwiftUIBundle(viewController) && ![viewController isBlackListContainsViewController];
+    return [UIViewController ft_shouldTrackDefaultViewControllerClass:viewController.class];
 }
 
 - (FTRUMView *)createRUMView:(UIViewController *)viewController{

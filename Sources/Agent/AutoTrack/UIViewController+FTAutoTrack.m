@@ -31,12 +31,15 @@
 #import "BlacklistedVCClassNames.h"
 #import "FTDateUtil.h"
 #import "FTSwizzler.h"
+#import "FTViewControllerSwizzling.h"
+#import <string.h>
 
 @interface FTViewLoadingState : NSObject
 @property (nonatomic, strong, nullable) NSNumber *loadDuration;
 @property (nonatomic, assign) NSUInteger viewDidLoadDepth;
 @property (nonatomic, assign) NSUInteger viewWillAppearDepth;
 @property (nonatomic, assign) NSUInteger viewWillLayoutSubviewsDepth;
+@property (nonatomic, assign) NSUInteger viewDidAppearDepth;
 @property (nonatomic, assign) NSUInteger viewLoadGeneration;
 @property (nonatomic, assign) NSUInteger viewLoadDurationGeneration;
 @property (nonatomic, assign) uint64_t viewLoadStartTime;
@@ -57,14 +60,42 @@
 @end
 
 static const void *viewLoadingStateKey = &viewLoadingStateKey;
-static const void *viewControllerInitSwizzleKey = &viewControllerInitSwizzleKey;
-static const void *viewControllerInitWithNibNameSwizzleKey = &viewControllerInitWithNibNameSwizzleKey;
-static const void *viewControllerInitWithCoderSwizzleKey = &viewControllerInitWithCoderSwizzleKey;
 static const void *viewDidLoadSwizzleKey = &viewDidLoadSwizzleKey;
 static const void *viewWillAppearSwizzleKey = &viewWillAppearSwizzleKey;
 static const void *viewWillLayoutSubviewsSwizzleKey = &viewWillLayoutSubviewsSwizzleKey;
+static const void *viewDidAppearSwizzleKey = &viewDidAppearSwizzleKey;
 static const void *viewLoadDurationDisabledKey = &viewLoadDurationDisabledKey;
+static const void *viewLoadDurationInstrumentedKey = &viewLoadDurationInstrumentedKey;
 static NSUInteger viewLoadGeneration = 0;
+
+static BOOL FTViewControllerClassIsBlacklisted(Class viewControllerClass) {
+    @try {
+        NSDictionary *blackList = [BlacklistedVCClassNames ft_blacklistedViewControllerClassNames][FT_BLACK_LIST_VIEW];
+        for (NSString *className in blackList[@"public"]) {
+            Class blacklistedClass = NSClassFromString(className);
+            if (blacklistedClass != Nil && [viewControllerClass isSubclassOfClass:blacklistedClass]) {
+                return YES;
+            }
+        }
+        return [(NSArray *)blackList[@"private"] containsObject:NSStringFromClass(viewControllerClass)];
+    } @catch (NSException *exception) {
+        FTInnerLogError(@"error: %@", exception);
+    }
+    return NO;
+}
+
+static BOOL FTImagePathIsFromSystemLibrary(const char *imagePath) {
+    return imagePath != NULL && strstr(imagePath, "/System/Library/") != NULL;
+}
+
+static BOOL FTViewControllerClassIsFromSystemImage(Class viewControllerClass) {
+    return FTImagePathIsFromSystemLibrary(class_getImageName(viewControllerClass));
+}
+
+static BOOL FTViewControllerClassIsFromSwiftUIBundle(Class viewControllerClass) {
+    NSBundle *bundle = [NSBundle bundleForClass:viewControllerClass];
+    return [bundle.bundleURL.lastPathComponent isEqualToString:@"SwiftUI.framework"];
+}
 
 @implementation UIViewController (FTAutoTrack)
 + (NSUInteger)ft_currentViewLoadGeneration{
@@ -105,165 +136,162 @@ static NSUInteger viewLoadGeneration = 0;
 
 #pragma mark - UIViewController loading duration swizzling
 
-+ (void)ft_swizzleViewControllerInitLifecycle{
-    static dispatch_once_t onceToken;
-    dispatch_once(&onceToken, ^{
-        [self ft_swizzleViewControllerInitializers];
-        if ([NSThread isMainThread]) {
-            [self ft_swizzleCurrentViewControllerHierarchy];
-        } else {
-            dispatch_async(dispatch_get_main_queue(), ^{
-                [self ft_swizzleCurrentViewControllerHierarchy];
-            });
++ (void)ft_swizzleLoadedCustomViewControllerClasses{
+    [[FTViewControllerSwizzling sharedInstance] swizzleLoadedViewControllerClassesWithCompletion:nil];
+}
++ (NSArray<NSString *> *)ft_loadingTimeCandidateClassNamesFromClassNames:(NSArray<NSString *> *)classNames{
+    NSMutableArray<NSString *> *candidateClassNames = [NSMutableArray array];
+    for (NSString *className in classNames) {
+        // Keep class names across queues. objc_lookUpClass and superclass inspection do not create a
+        // controller instance; lifecycle method replacement remains confined to the main thread.
+        Class viewControllerClass = objc_lookUpClass(className.UTF8String);
+        if ([self ft_isCustomViewControllerClass:viewControllerClass] && ![self ft_viewLoadingDurationDisabledForClass:viewControllerClass]) {
+            [candidateClassNames addObject:className];
         }
-    });
-}
-+ (void)ft_swizzleViewControllerInitializers{
-    FTSwizzlerInstanceMethod(UIViewController.class,
-                             @selector(init),
-                             FTSWReturnType(id),
-                             FTSWArguments(),
-                             FTSWReplacement({
-        id initializedSelf = FTSWCallOriginal();
-        [UIViewController ft_prepareViewLoadingDurationForViewController:initializedSelf];
-        return initializedSelf;
-    }), FTSwizzlerModeOncePerClass, viewControllerInitSwizzleKey);
-    FTSwizzlerInstanceMethod(UIViewController.class,
-                             @selector(initWithNibName:bundle:),
-                             FTSWReturnType(id),
-                             FTSWArguments(NSString *nibNameOrNil, NSBundle *nibBundleOrNil),
-                             FTSWReplacement({
-        id initializedSelf = FTSWCallOriginal(nibNameOrNil, nibBundleOrNil);
-        [UIViewController ft_prepareViewLoadingDurationForViewController:initializedSelf];
-        return initializedSelf;
-    }), FTSwizzlerModeOncePerClass, viewControllerInitWithNibNameSwizzleKey);
-    FTSwizzlerInstanceMethod(UIViewController.class,
-                             @selector(initWithCoder:),
-                             FTSWReturnType(id),
-                             FTSWArguments(NSCoder *coder),
-                             FTSWReplacement({
-        id initializedSelf = FTSWCallOriginal(coder);
-        [UIViewController ft_prepareViewLoadingDurationForViewController:initializedSelf];
-        return initializedSelf;
-    }), FTSwizzlerModeOncePerClass, viewControllerInitWithCoderSwizzleKey);
-}
-+ (void)ft_prepareViewLoadingDurationForViewController:(UIViewController *)viewController{
-    if (viewController == nil) {
-        return;
     }
-    Class viewControllerClass = object_getClass(viewController);
-    @try {
-        if ([self ft_viewLoadingDurationDisabledForClass:viewControllerClass] ||
-            [self ft_shouldSkipViewLoadingDurationForViewController:viewController]) {
-            return;
+    return candidateClassNames;
+}
++ (NSUInteger)ft_installViewControllerLifecycleSwizzlesForClassNames:(NSArray<NSString *> *)classNames{
+    NSUInteger instrumentedClassCount = 0;
+    for (NSString *className in classNames) {
+        Class viewControllerClass = objc_lookUpClass(className.UTF8String);
+        BOOL wasInstrumented = [self ft_viewLoadingDurationInstrumentedForClass:viewControllerClass];
+        if (!wasInstrumented && [self ft_installViewControllerLifecycleSwizzlesForClass:viewControllerClass]) {
+            instrumentedClassCount++;
         }
-        [self ft_swizzleViewControllerLifecycleForClass:viewControllerClass];
-    } @catch (NSException *exception) {
-        [self ft_disableViewLoadingDurationForClass:viewControllerClass exception:exception];
     }
+    return instrumentedClassCount;
 }
-+ (void)ft_swizzleViewControllerLifecycleForClass:(Class)viewControllerClass{
-    if (viewControllerClass == Nil || viewControllerClass == UIViewController.class || ![self ft_isViewControllerSubclass:viewControllerClass]) {
-        return;
++ (BOOL)ft_installViewControllerLifecycleSwizzlesForClass:(Class)viewControllerClass{
+    if (viewControllerClass == Nil || [self ft_viewLoadingDurationDisabledForClass:viewControllerClass]) {
+        return NO;
     }
     if (![NSThread isMainThread]) {
         dispatch_async(dispatch_get_main_queue(), ^{
-            [self ft_swizzleViewControllerLifecycleForClass:viewControllerClass];
+            [self ft_installViewControllerLifecycleSwizzlesForClass:viewControllerClass];
         });
-        return;
+        return NO;
     }
-    if ([self ft_viewLoadingDurationDisabledForClass:viewControllerClass]) {
-        return;
-    }
-    FTSwizzlerInstanceMethod(viewControllerClass,
-                             @selector(viewDidLoad),
-                             FTSWReturnType(void),
-                             FTSWArguments(),
-                             FTSWReplacement({
-        UIViewController *viewController = (UIViewController *)self;
-        FTViewLoadingState *state = [viewController ft_viewLoadingStateCreateIfNeeded:YES];
-        @try {
-            [viewController ft_viewDidLoadWillStartWithState:state];
-        } @catch (NSException *exception) {
-            FTInnerLogError(@"viewDidLoad start record exception: %@", exception);
-        }
-        FTSWCallOriginal();
-        @try {
-            [viewController ft_viewDidLoadDidEndWithState:state];
-        } @catch (NSException *exception) {
-            FTInnerLogError(@"viewDidLoad end record exception: %@", exception);
-        }
-    }), FTSwizzlerModeOncePerClass, viewDidLoadSwizzleKey);
-    FTSwizzlerInstanceMethod(viewControllerClass,
-                             @selector(viewWillAppear:),
-                             FTSWReturnType(void),
-                             FTSWArguments(BOOL animated),
-                             FTSWReplacement({
-        UIViewController *viewController = (UIViewController *)self;
-        FTViewLoadingState *state = [viewController ft_viewLoadingStateCreateIfNeeded:NO];
-        if (state != nil && state.viewLoadDurationCalculated) {
-            FTSWCallOriginal(animated);
-            return;
-        }
-        @try {
-            [viewController ft_viewWillAppearWillStartWithState:state];
-        } @catch (NSException *exception) {
-            FTInnerLogError(@"viewWillAppear start record exception: %@", exception);
-        }
-        FTSWCallOriginal(animated);
-        @try {
-            [viewController ft_viewWillAppearDidEndWithState:state];
-        } @catch (NSException *exception) {
-            FTInnerLogError(@"viewWillAppear end record exception: %@", exception);
-        }
-    }), FTSwizzlerModeOncePerClass, viewWillAppearSwizzleKey);
-    FTSwizzlerInstanceMethod(viewControllerClass,
-                             @selector(viewWillLayoutSubviews),
-                             FTSWReturnType(void),
-                             FTSWArguments(),
-                             FTSWReplacement({
-        UIViewController *viewController = (UIViewController *)self;
-        FTViewLoadingState *state = [viewController ft_viewLoadingStateCreateIfNeeded:NO];
-        if (state != nil && state.viewLoadDurationCalculated) {
+    @try {
+        FTSwizzlerInstanceMethod(viewControllerClass,
+                                 @selector(viewDidLoad),
+                                 FTSWReturnType(void),
+                                 FTSWArguments(),
+                                 FTSWReplacement({
+            UIViewController *viewController = (UIViewController *)self;
+            FTViewLoadingState *state = [viewController ft_viewLoadingStateCreateIfNeeded:YES];
+            @try {
+                [viewController ft_viewDidLoadWillStartWithState:state];
+            } @catch (NSException *exception) {
+                FTInnerLogError(@"viewDidLoad start record exception: %@", exception);
+            }
             FTSWCallOriginal();
-            return;
-        }
-        @try {
-            [viewController ft_viewWillLayoutSubviewsWillStartWithState:state];
-        } @catch (NSException *exception) {
-            FTInnerLogError(@"viewWillLayoutSubviews start record exception: %@", exception);
-        }
-        FTSWCallOriginal();
-        @try {
-            [viewController ft_viewWillLayoutSubviewsDidEndWithState:state];
-        } @catch (NSException *exception) {
-            FTInnerLogError(@"viewWillLayoutSubviews end record exception: %@", exception);
-        }
-    }), FTSwizzlerModeOncePerClass, viewWillLayoutSubviewsSwizzleKey);
+            @try {
+                [viewController ft_viewDidLoadDidEndWithState:state];
+            } @catch (NSException *exception) {
+                FTInnerLogError(@"viewDidLoad end record exception: %@", exception);
+            }
+        }), FTSwizzlerModeOncePerClass, viewDidLoadSwizzleKey);
+        FTSwizzlerInstanceMethod(viewControllerClass,
+                                 @selector(viewWillAppear:),
+                                 FTSWReturnType(void),
+                                 FTSWArguments(BOOL animated),
+                                 FTSWReplacement({
+            UIViewController *viewController = (UIViewController *)self;
+            FTViewLoadingState *state = [viewController ft_viewLoadingStateCreateIfNeeded:NO];
+            if (state != nil && state.viewLoadDurationCalculated) {
+                FTSWCallOriginal(animated);
+                return;
+            }
+            @try {
+                [viewController ft_viewWillAppearWillStartWithState:state];
+            } @catch (NSException *exception) {
+                FTInnerLogError(@"viewWillAppear start record exception: %@", exception);
+            }
+            FTSWCallOriginal(animated);
+            @try {
+                [viewController ft_viewWillAppearDidEndWithState:state];
+            } @catch (NSException *exception) {
+                FTInnerLogError(@"viewWillAppear end record exception: %@", exception);
+            }
+        }), FTSwizzlerModeOncePerClass, viewWillAppearSwizzleKey);
+        FTSwizzlerInstanceMethod(viewControllerClass,
+                                 @selector(viewWillLayoutSubviews),
+                                 FTSWReturnType(void),
+                                 FTSWArguments(),
+                                 FTSWReplacement({
+            UIViewController *viewController = (UIViewController *)self;
+            FTViewLoadingState *state = [viewController ft_viewLoadingStateCreateIfNeeded:NO];
+            if (state != nil && state.viewLoadDurationCalculated) {
+                FTSWCallOriginal();
+                return;
+            }
+            @try {
+                [viewController ft_viewWillLayoutSubviewsWillStartWithState:state];
+            } @catch (NSException *exception) {
+                FTInnerLogError(@"viewWillLayoutSubviews start record exception: %@", exception);
+            }
+            FTSWCallOriginal();
+            @try {
+                [viewController ft_viewWillLayoutSubviewsDidEndWithState:state];
+            } @catch (NSException *exception) {
+                FTInnerLogError(@"viewWillLayoutSubviews end record exception: %@", exception);
+            }
+        }), FTSwizzlerModeOncePerClass, viewWillLayoutSubviewsSwizzleKey);
+        FTSwizzlerInstanceMethod(viewControllerClass,
+                                 @selector(viewDidAppear:),
+                                 FTSWReturnType(void),
+                                 FTSWArguments(BOOL animated),
+                                 FTSWReplacement({
+            UIViewController *viewController = (UIViewController *)self;
+            FTViewLoadingState *state = [viewController ft_viewLoadingStateCreateIfNeeded:YES];
+            BOOL isOutermostAppearance = state.viewDidAppearDepth == 0;
+            uint64_t viewDidAppearStartTime = isOutermostAppearance && !state.viewLoadDurationCalculated ? FTDateUtil.systemTime : 0;
+            state.viewDidAppearDepth++;
+            FTSWCallOriginal(animated);
+            if (state.viewDidAppearDepth > 0) {
+                state.viewDidAppearDepth--;
+            }
+            if (isOutermostAppearance && state.viewDidAppearDepth == 0) {
+                [viewController ft_completeViewLoadingDurationForState:state viewDidAppearStartTime:viewDidAppearStartTime];
+                [[FTAutoTrackHandler sharedInstance].viewControllerHandler notify_viewDidAppear:viewController animated:animated];
+            }
+        }), FTSwizzlerModeOncePerClass, viewDidAppearSwizzleKey);
+        objc_setAssociatedObject(viewControllerClass, viewLoadDurationInstrumentedKey, @(YES), OBJC_ASSOCIATION_RETAIN_NONATOMIC);
+        return YES;
+    } @catch (NSException *exception) {
+        [self ft_disableViewLoadingDurationForClass:viewControllerClass exception:exception];
+        return NO;
+    }
+}
++ (BOOL)ft_viewLoadingDurationInstrumentedForClass:(Class)viewControllerClass{
+    return viewControllerClass != Nil && [objc_getAssociatedObject(viewControllerClass, viewLoadDurationInstrumentedKey) boolValue];
 }
 + (BOOL)ft_isViewControllerSubclass:(Class)viewControllerClass{
-    Class currentClass = class_getSuperclass(viewControllerClass);
-    while (currentClass != Nil) {
+    if (viewControllerClass == Nil || viewControllerClass == UIViewController.class) {
+        return NO;
+    }
+    for (Class currentClass = class_getSuperclass(viewControllerClass); currentClass != Nil; currentClass = class_getSuperclass(currentClass)) {
         if (currentClass == UIViewController.class) {
             return YES;
         }
-        currentClass = class_getSuperclass(currentClass);
     }
     return NO;
 }
-+ (BOOL)ft_shouldSkipViewLoadingDurationForViewController:(UIViewController *)viewController{
-    if (viewController == nil || [viewController isBlackListContainsViewController]) {
-        return YES;
++ (BOOL)ft_isCustomViewControllerClass:(Class)viewControllerClass{
+    if (![self ft_isViewControllerSubclass:viewControllerClass] || class_getImageName(viewControllerClass) == NULL || FTViewControllerClassIsFromSystemImage(viewControllerClass)) {
+        return NO;
     }
-    NSBundle *bundle = [NSBundle bundleForClass:object_getClass(viewController)];
-    if ([bundle.bundleURL.lastPathComponent isEqualToString:@"SwiftUI.framework"]) {
-        return YES;
-    }
-    NSString *bundlePath = [bundle.bundlePath stringByStandardizingPath];
-    NSString *systemLibraryPath = [@"/System/Library/" stringByStandardizingPath];
-    NSString *simulatorSystemLibraryPath = [@"/Applications/Xcode.app/Contents/Developer/Platforms/" stringByStandardizingPath];
-    if ([bundlePath hasPrefix:systemLibraryPath] || ([bundlePath hasPrefix:simulatorSystemLibraryPath] && [bundlePath containsString:@"/System/Library/"])) {
-        return YES;
+    return [self ft_shouldTrackDefaultViewControllerClass:viewControllerClass];
+}
++ (BOOL)ft_shouldTrackDefaultViewControllerClass:(Class)viewControllerClass{
+    return viewControllerClass != Nil && !FTViewControllerClassIsBlacklisted(viewControllerClass) && !FTViewControllerClassIsFromSwiftUIBundle(viewControllerClass);
+}
++ (BOOL)ft_hasViewLoadingDurationInstrumentedClassInHierarchy:(Class)viewControllerClass{
+    for (Class currentClass = viewControllerClass; currentClass != Nil && currentClass != UIViewController.class; currentClass = class_getSuperclass(currentClass)) {
+        if ([objc_getAssociatedObject(currentClass, viewLoadDurationInstrumentedKey) boolValue]) {
+            return YES;
+        }
     }
     return NO;
 }
@@ -285,35 +313,6 @@ static NSUInteger viewLoadGeneration = 0;
     objc_setAssociatedObject(viewControllerClass, viewLoadDurationDisabledKey, @(YES), OBJC_ASSOCIATION_RETAIN_NONATOMIC);
     FTInnerLogError(@"disable view loading duration for class %@ exception: %@", NSStringFromClass(viewControllerClass), exception);
 }
-+ (void)ft_swizzleCurrentViewControllerHierarchy{
-#pragma clang diagnostic push
-#pragma clang diagnostic ignored "-Wdeprecated-declarations"
-    NSArray<UIWindow *> *windows = UIApplication.sharedApplication.windows;
-#pragma clang diagnostic pop
-    for (UIWindow *window in windows) {
-        [self ft_swizzleViewControllerAndChildren:window.rootViewController];
-    }
-}
-+ (void)ft_swizzleViewControllerAndChildren:(UIViewController *)viewController{
-    if (viewController == nil) {
-        return;
-    }
-    NSArray<UIViewController *> *childViewControllers = nil;
-    UIViewController *presentedViewController = nil;
-    @try {
-        [self ft_prepareViewLoadingDurationForViewController:viewController];
-        childViewControllers = [viewController.childViewControllers copy];
-        presentedViewController = viewController.presentedViewController;
-    } @catch (NSException *exception) {
-        [self ft_disableViewLoadingDurationForClass:object_getClass(viewController) exception:exception];
-        return;
-    }
-    for (UIViewController *childViewController in childViewControllers) {
-        [self ft_swizzleViewControllerAndChildren:childViewController];
-    }
-    [self ft_swizzleViewControllerAndChildren:presentedViewController];
-}
-
 #pragma mark - Loading duration state
 
 - (FTViewLoadingState *)ft_viewLoadingStateCreateIfNeeded:(BOOL)createIfNeeded{
@@ -386,6 +385,18 @@ static NSUInteger viewLoadGeneration = 0;
     uint64_t displayDuration = viewDidAppearStartTime >= displayStart ? viewDidAppearStartTime - displayStart : 0;
     [self ft_storeViewLoadDuration:@(state.viewDidLoadDuration + displayDuration) state:state];
 }
+- (void)ft_completeViewLoadingDurationForState:(FTViewLoadingState *)state viewDidAppearStartTime:(uint64_t)viewDidAppearStartTime{
+    [self ft_clearExpiredViewLoadDurationIfNeededForState:state];
+    [self ft_recordViewLoadDurationIfReadyForState:state viewDidAppearStartTime:viewDidAppearStartTime];
+    if (!state.viewLoadDurationReported) {
+        if (state.loadDuration == nil) {
+            [self ft_storeViewLoadDuration:@(-1) state:state];
+        }
+        state.viewLoadDurationReported = YES;
+    } else if (state.loadDuration == nil) {
+        [self ft_storeViewLoadDuration:@0 state:state];
+    }
+}
 - (void)ft_viewDidLoadWillStartWithState:(FTViewLoadingState *)state{
     if (state == nil) {
         return;
@@ -449,37 +460,27 @@ static NSUInteger viewLoadGeneration = 0;
     return NSStringFromClass([self class]);
 }
 - (BOOL)isBlackListContainsViewController{
-    @try {
-        NSDictionary *black = [BlacklistedVCClassNames ft_blacklistedViewControllerClassNames];
-        NSDictionary *blackList = black[FT_BLACK_LIST_VIEW];
-        if(blackList && blackList.count>0){
-            for (NSString *publicClass in blackList[@"public"]) {
-                if ([self isKindOfClass:NSClassFromString(publicClass)]) {
-                    return YES;
-                }
-            }
-        }
-        return [(NSArray *)blackList[@"private"] containsObject:NSStringFromClass(self.class)];
-    } @catch(NSException *exception) {
-        FTInnerLogError(@"error: %@",exception);
-    }
-    return NO;
+    return FTViewControllerClassIsBlacklisted(self.class);
 }
 -(void)ft_viewDidAppear:(BOOL)animated{
-    FTViewLoadingState *state = [self ft_viewLoadingStateCreateIfNeeded:NO];
-    uint64_t viewDidAppearStartTime = state != nil && !state.viewLoadDurationCalculated ? FTDateUtil.systemTime : 0;
-    [self ft_viewDidAppear:animated];
+    if ([UIViewController ft_hasViewLoadingDurationInstrumentedClassInHierarchy:self.class]) {
+        [self ft_viewDidAppear:animated];
+        return;
+    }
+
+    BOOL shouldReportDefaultRUMView = [UIViewController ft_shouldTrackDefaultViewControllerClass:self.class];
+    FTViewLoadingState *state = shouldReportDefaultRUMView ? [self ft_viewLoadingStateCreateIfNeeded:YES] : nil;
+    BOOL isOutermostAppearance = state != nil && state.viewDidAppearDepth == 0;
+    uint64_t viewDidAppearStartTime = isOutermostAppearance && !state.viewLoadDurationCalculated ? FTDateUtil.systemTime : 0;
     if (state != nil) {
-        [self ft_clearExpiredViewLoadDurationIfNeededForState:state];
-        [self ft_recordViewLoadDurationIfReadyForState:state viewDidAppearStartTime:viewDidAppearStartTime];
-        if (!state.viewLoadDurationReported) {
-            if (state.loadDuration == nil) {
-                [self ft_storeViewLoadDuration:@(-1) state:state];
-            }
-            state.viewLoadDurationReported = YES;
-        } else if (state.loadDuration == nil) {
-            [self ft_storeViewLoadDuration:@0 state:state];
-        }
+        state.viewDidAppearDepth++;
+    }
+    [self ft_viewDidAppear:animated];
+    if (state != nil && state.viewDidAppearDepth > 0) {
+        state.viewDidAppearDepth--;
+    }
+    if (isOutermostAppearance && state.viewDidAppearDepth == 0) {
+        [self ft_completeViewLoadingDurationForState:state viewDidAppearStartTime:viewDidAppearStartTime];
     }
     [[FTAutoTrackHandler sharedInstance].viewControllerHandler notify_viewDidAppear:self animated:animated];
 }

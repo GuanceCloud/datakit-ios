@@ -20,6 +20,7 @@
 
 #import <KIF/KIF.h>
 #import <XCTest/XCTest.h>
+#import "FTViewControllerSwizzling.h"
 #import "UIViewController+FTAutoTrack.h"
 #import "UIView+FTAutoTrack.h"
 #import "UITestVC.h"
@@ -85,6 +86,68 @@
 }
 @end
 
+@interface FTAutoTrackNoSuperViewDidAppearViewController : UIViewController
+@property (nonatomic, assign) NSTimeInterval viewDidLoadDelay;
+@end
+
+@implementation FTAutoTrackNoSuperViewDidAppearViewController
+- (void)loadView{
+    self.view = [[UIView alloc] initWithFrame:CGRectMake(0, 0, 320, 480)];
+}
+- (void)viewDidLoad{
+    [super viewDidLoad];
+    if (self.viewDidLoadDelay > 0) {
+        [NSThread sleepForTimeInterval:self.viewDidLoadDelay];
+    }
+}
+- (void)viewWillAppear:(BOOL)animated{
+    [super viewWillAppear:animated];
+}
+- (void)viewDidAppear:(BOOL)animated{
+    // Intentionally does not call super. The concrete class lifecycle swizzle must report this view.
+}
+@end
+
+static FTViewControllerSwizzling *testBundleViewControllerSwizzling = nil;
+static dispatch_group_t testBundleViewControllerSwizzlingGroup = nil;
+
+@interface FTAutoTrackViewLoadingTimeMock : AddRumDatasHandlerMock
+- (NSUInteger)viewCreateCountForViewName:(NSString *)viewName;
+@end
+
+@implementation FTAutoTrackViewLoadingTimeMock {
+    NSMutableArray<NSString *> *_createdViewNames;
+}
+
+- (instancetype)init {
+    self = [super init];
+    if (self) {
+        _createdViewNames = [NSMutableArray array];
+    }
+    return self;
+}
+
+- (void)onCreateView:(NSString *)viewName loadTime:(NSNumber *)loadTime {
+    [super onCreateView:viewName loadTime:loadTime];
+    [_createdViewNames addObject:viewName];
+}
+
+- (NSUInteger)viewCreateCountForViewName:(NSString *)viewName {
+    NSPredicate *matchingName = [NSPredicate predicateWithFormat:@"SELF == %@", viewName];
+    return [_createdViewNames filteredArrayUsingPredicate:matchingName].count;
+}
+
+@end
+
+@interface FTAutoTrackAllViewControllerHandler : NSObject<FTUIKitViewTrackingHandler>
+@end
+
+@implementation FTAutoTrackAllViewControllerHandler
+- (FTRUMView *)rumViewForViewController:(UIViewController *)viewController{
+    return [[FTRUMView alloc] initWithViewName:@"custom-handler-view"];
+}
+@end
+
 @interface FTAutoTrackTest : KIFTestCase
 @property (nonatomic, strong) UIWindow *window;
 @property (nonatomic, strong) UITestVC *testVC;
@@ -110,8 +173,8 @@
     [stack removeAllObjects];
     return handler;
 }
-- (AddRumDatasHandlerMock *)startUIKitAutoTrackWithMockHandler{
-    AddRumDatasHandlerMock *mock = [AddRumDatasHandlerMock new];
+- (FTAutoTrackViewLoadingTimeMock *)startUIKitAutoTrackWithMockHandler{
+    FTAutoTrackViewLoadingTimeMock *mock = [FTAutoTrackViewLoadingTimeMock new];
     FTAutoTrackHandler *handler = [self resetAutoTrackHandlerForSwiftUITest];
     [handler startWithTrackView:YES
                          action:NO
@@ -120,7 +183,27 @@
              swiftUIViewHandler:nil
                   actionHandler:nil
                  displayMonitor:nil];
+    [self prepareLoadingTimeTestBundleInstrumentation];
     return mock;
+}
+- (void)prepareLoadingTimeTestBundleInstrumentation{
+    static dispatch_once_t onceToken;
+    dispatch_once(&onceToken, ^{
+        testBundleViewControllerSwizzlingGroup = dispatch_group_create();
+        dispatch_group_enter(testBundleViewControllerSwizzlingGroup);
+        NSString *testBundleExecutablePath = [NSBundle bundleForClass:FTAutoTrackLoadingTimeTestViewController.class].executablePath;
+        testBundleViewControllerSwizzling = [[FTViewControllerSwizzling alloc] initWithInAppIncludes:@[testBundleExecutablePath]
+                                                                                  scanLoadedFrameworks:NO];
+        [testBundleViewControllerSwizzling swizzleLoadedViewControllerClassesWithCompletion:^{
+            dispatch_group_leave(testBundleViewControllerSwizzlingGroup);
+        }];
+    });
+
+    XCTestExpectation *expectation = [self expectationWithDescription:@"Loading-time test bundle instrumentation"];
+    dispatch_group_notify(testBundleViewControllerSwizzlingGroup, dispatch_get_main_queue(), ^{
+        [expectation fulfill];
+    });
+    [self waitForExpectations:@[expectation] timeout:5];
 }
 - (UIWindow *)attachViewControllerViewToWindow:(UIViewController *)viewController{
     UIWindow *window = [[UIWindow alloc] initWithFrame:CGRectMake(0, 0, 320, 480)];
@@ -217,7 +300,7 @@
     XCTAssertEqualObjects(mock.lastLoadTime, @0);
 }
 - (void)testUIKitLoadingTimeUsesLayoutFallbackUntilViewDidAppearAndIgnoresPreloadGap{
-    AddRumDatasHandlerMock *mock = [self startUIKitAutoTrackWithMockHandler];
+    FTAutoTrackViewLoadingTimeMock *mock = [self startUIKitAutoTrackWithMockHandler];
     FTAutoTrackLoadingTimeTestViewController *viewController = [FTAutoTrackLoadingTimeTestViewController new];
     viewController.viewDidLoadDelay = 0.01;
     viewController.viewWillLayoutSubviewsDelay = 0.02;
@@ -232,13 +315,13 @@
     [viewController viewDidAppear:NO];
 
     XCTAssertEqual(viewController.view.window, window);
-    XCTAssertEqual(mock.viewCreateCount, 1);
+    XCTAssertEqual([mock viewCreateCountForViewName:NSStringFromClass(viewController.class)], 1);
     XCTAssertEqualObjects(mock.lastCreateViewName, NSStringFromClass(viewController.class));
     XCTAssertGreaterThan([mock.lastLoadTime unsignedLongLongValue], (uint64_t)20000000);
     XCTAssertLessThan([mock.lastLoadTime unsignedLongLongValue], (uint64_t)80000000);
 }
 - (void)testUIKitLoadingTimeIgnoresLayoutFallbackBeforeViewIsAttachedToWindow{
-    AddRumDatasHandlerMock *mock = [self startUIKitAutoTrackWithMockHandler];
+    FTAutoTrackViewLoadingTimeMock *mock = [self startUIKitAutoTrackWithMockHandler];
     FTAutoTrackLoadingTimeTestViewController *viewController = [FTAutoTrackLoadingTimeTestViewController new];
 
     [viewController view];
@@ -246,11 +329,11 @@
     [tester waitForTimeInterval:0.1];
     [viewController viewDidAppear:NO];
 
-    XCTAssertEqual(mock.viewCreateCount, 1);
+    XCTAssertEqual([mock viewCreateCountForViewName:NSStringFromClass(viewController.class)], 1);
     XCTAssertEqualObjects(mock.lastLoadTime, @(-1));
 }
 - (void)testUIKitLoadingTimeUsesViewDidAppearStartAfterViewWillAppear{
-    AddRumDatasHandlerMock *mock = [self startUIKitAutoTrackWithMockHandler];
+    FTAutoTrackViewLoadingTimeMock *mock = [self startUIKitAutoTrackWithMockHandler];
     FTAutoTrackLoadingTimeTestViewController *viewController = [FTAutoTrackLoadingTimeTestViewController new];
     viewController.viewDidLoadDelay = 0.02;
     viewController.viewWillAppearDelay = 0.02;
@@ -264,12 +347,12 @@
     [viewController viewWillLayoutSubviews];
     [viewController viewDidAppear:NO];
 
-    XCTAssertEqual(mock.viewCreateCount, 1);
+    XCTAssertEqual([mock viewCreateCountForViewName:NSStringFromClass(viewController.class)], 1);
     XCTAssertGreaterThan([mock.lastLoadTime unsignedLongLongValue], (uint64_t)80000000);
     XCTAssertLessThan([mock.lastLoadTime unsignedLongLongValue], (uint64_t)120000000);
 }
 - (void)testUIKitLoadingTimeUsesViewDidAppearStartWithoutLayout{
-    AddRumDatasHandlerMock *mock = [self startUIKitAutoTrackWithMockHandler];
+    FTAutoTrackViewLoadingTimeMock *mock = [self startUIKitAutoTrackWithMockHandler];
     FTAutoTrackLoadingTimeTestViewController *viewController = [FTAutoTrackLoadingTimeTestViewController new];
     viewController.viewDidLoadDelay = 0.01;
     viewController.viewWillAppearDelay = 0.02;
@@ -281,30 +364,76 @@
     [viewController viewDidAppear:NO];
 
     XCTAssertNil(viewController.ft_viewLoadStartTime);
-    XCTAssertEqual(mock.viewCreateCount, 1);
+    XCTAssertEqual([mock viewCreateCountForViewName:NSStringFromClass(viewController.class)], 1);
     XCTAssertGreaterThan([mock.lastLoadTime unsignedLongLongValue], (uint64_t)20000000);
 }
 - (void)testUIKitLoadingTimeReportsNegativeOneWhenNoDisplayCallbackCompletes{
-    AddRumDatasHandlerMock *mock = [self startUIKitAutoTrackWithMockHandler];
+    FTAutoTrackViewLoadingTimeMock *mock = [self startUIKitAutoTrackWithMockHandler];
     FTAutoTrackLoadingTimeTestViewController *viewController = [FTAutoTrackLoadingTimeTestViewController new];
 
     [viewController view];
     [viewController viewDidAppear:NO];
 
-    XCTAssertEqual(mock.viewCreateCount, 1);
+    XCTAssertEqual([mock viewCreateCountForViewName:NSStringFromClass(viewController.class)], 1);
     XCTAssertEqualObjects(mock.lastLoadTime, @(-1));
 }
-- (void)testUIKitLoadingTimeDoesNotCreateFailureStateOutsideInstrumentedLifecycle{
-    AddRumDatasHandlerMock *mock = [self startUIKitAutoTrackWithMockHandler];
+- (void)testDefaultUIKitTrackingReportsNegativeOneForNonBlacklistedSystemViewControllers{
+    FTAutoTrackViewLoadingTimeMock *mock = [self startUIKitAutoTrackWithMockHandler];
     UIViewController *viewController = [UIViewController new];
+    UINavigationController *navigationController = [UINavigationController new];
 
     [viewController viewDidAppear:NO];
 
-    XCTAssertEqual(mock.viewCreateCount, 1);
+    XCTAssertEqual([mock viewCreateCountForViewName:NSStringFromClass(viewController.class)], 1);
+    XCTAssertEqualObjects(mock.lastLoadTime, @(-1));
+
+    [viewController viewDidDisappear:NO];
+    [viewController viewDidAppear:NO];
+    [navigationController viewDidAppear:NO];
+
+    XCTAssertEqual([mock viewCreateCountForViewName:NSStringFromClass(viewController.class)], 2);
     XCTAssertEqualObjects(mock.lastLoadTime, @0);
 }
+- (void)testUIKitLoadingTimePreScansCustomViewControllersBeforeInstantiation{
+    FTAutoTrackViewLoadingTimeMock *mock = [self startUIKitAutoTrackWithMockHandler];
+    FTAutoTrackNoSuperViewDidAppearViewController *viewController = [FTAutoTrackNoSuperViewDidAppearViewController new];
+    viewController.viewDidLoadDelay = 0.02;
+
+    [viewController view];
+    [viewController viewWillAppear:NO];
+    [viewController viewDidAppear:NO];
+
+    XCTAssertEqual([mock viewCreateCountForViewName:NSStringFromClass(viewController.class)], 1);
+    XCTAssertGreaterThan([mock.lastLoadTime unsignedLongLongValue], (uint64_t)20000000);
+}
+- (void)testUIKitLoadingTimeReportsNegativeOneWhenAnInstrumentedViewHasNoInitialState{
+    FTAutoTrackViewLoadingTimeMock *mock = [self startUIKitAutoTrackWithMockHandler];
+    FTAutoTrackLoadingTimeTestViewController *viewController = [FTAutoTrackLoadingTimeTestViewController new];
+
+    [viewController viewDidAppear:NO];
+
+    XCTAssertEqual([mock viewCreateCountForViewName:NSStringFromClass(viewController.class)], 1);
+    XCTAssertEqualObjects(mock.lastLoadTime, @(-1));
+}
+- (void)testCustomUIKitTrackingHandlerCanTrackSystemViewControllers{
+    AddRumDatasHandlerMock *mock = [AddRumDatasHandlerMock new];
+    FTAutoTrackHandler *handler = [self resetAutoTrackHandlerForSwiftUITest];
+    FTAutoTrackAllViewControllerHandler *viewHandler = [FTAutoTrackAllViewControllerHandler new];
+    [handler startWithTrackView:YES
+                         action:NO
+            addRumDatasDelegate:mock
+                    viewHandler:viewHandler
+             swiftUIViewHandler:nil
+                  actionHandler:nil
+                 displayMonitor:nil];
+
+    [[UIViewController new] viewDidAppear:NO];
+
+    XCTAssertEqual(mock.viewCreateCount, 1);
+    XCTAssertEqualObjects(mock.lastCreateViewName, @"custom-handler-view");
+}
 - (void)testUIKitLoadingTimeReportsNegativeOneWhenBackgroundInvalidatesPendingLoad{
-    AddRumDatasHandlerMock *mock = [self startUIKitAutoTrackWithMockHandler];
+    FTAutoTrackViewLoadingTimeMock *mock = [self startUIKitAutoTrackWithMockHandler];
     FTAutoTrackLoadingTimeTestViewController *viewController = [FTAutoTrackLoadingTimeTestViewController new];
 
     [viewController view];
@@ -315,11 +444,11 @@
 
     XCTAssertNil(viewController.ft_loadDuration);
     XCTAssertNil(viewController.ft_viewLoadStartTime);
-    XCTAssertEqual(mock.viewCreateCount, 1);
+    XCTAssertEqual([mock viewCreateCountForViewName:NSStringFromClass(viewController.class)], 1);
     XCTAssertEqualObjects(mock.lastLoadTime, @(-1));
 }
 - (void)testUIKitLoadingTimeReportsNegativeOneWhenBackgroundInvalidatesPendingAppearance{
-    AddRumDatasHandlerMock *mock = [self startUIKitAutoTrackWithMockHandler];
+    FTAutoTrackViewLoadingTimeMock *mock = [self startUIKitAutoTrackWithMockHandler];
     FTAutoTrackLoadingTimeTestViewController *viewController = [FTAutoTrackLoadingTimeTestViewController new];
 
     [viewController view];
@@ -330,11 +459,11 @@
     [viewController viewDidAppear:NO];
 
     XCTAssertNil(viewController.ft_loadDuration);
-    XCTAssertEqual(mock.viewCreateCount, 1);
+    XCTAssertEqual([mock viewCreateCountForViewName:NSStringFromClass(viewController.class)], 1);
     XCTAssertEqualObjects(mock.lastLoadTime, @(-1));
 }
 - (void)testUIKitLoadingTimeReportsZeroWhenViewReloads{
-    AddRumDatasHandlerMock *mock = [self startUIKitAutoTrackWithMockHandler];
+    FTAutoTrackViewLoadingTimeMock *mock = [self startUIKitAutoTrackWithMockHandler];
     FTAutoTrackLoadingTimeTestViewController *viewController = [FTAutoTrackLoadingTimeTestViewController new];
     viewController.viewWillAppearDelay = 0.01;
 
@@ -345,7 +474,7 @@
     [viewController viewWillAppear:NO];
     [viewController viewDidAppear:NO];
 
-    XCTAssertEqual(mock.viewCreateCount, 2);
+    XCTAssertEqual([mock viewCreateCountForViewName:NSStringFromClass(viewController.class)], 2);
     XCTAssertEqual(mock.viewStopCount, 1);
     XCTAssertEqualObjects(mock.lastLoadTime, @0);
 }
