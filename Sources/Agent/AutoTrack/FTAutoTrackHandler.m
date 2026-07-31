@@ -99,6 +99,7 @@
 #import "FTDefaultUIKitViewTrackingHandler.h"
 #import "FTDefaultActionTrackingHandler.h"
 #import "FTAutoTrackActionPublisher.h"
+#import "FTRumConfig.h"
 
 #if TARGET_OS_IOS || TARGET_OS_TV
 #define FT_HAS_SWIFTUI_VIEW_TRACKING 1
@@ -148,6 +149,10 @@ API_AVAILABLE(ios(13.0), tvos(13.0))
 @property (class, nonatomic, weak, nullable) id<FTSwiftUIRUMActionHandling> handler;
 @end
 #endif
+
+@interface FTRumConfig (FTViewLoadingTimePrivate)
+@property (nonatomic, assign) BOOL enableUIKitViewLoadingTime;
+@end
 
 @interface RUMView:NSObject
 @property (nonatomic, copy) NSString *viewName;
@@ -207,6 +212,7 @@ API_AVAILABLE(ios(13.0), tvos(13.0))
 @property (nonatomic, strong) NSMutableArray<RUMView*> *stack;
 @property (nonatomic, assign) BOOL autoTrackView;
 @property (nonatomic, assign) BOOL autoTrackAction;
+@property (nonatomic, assign) BOOL enableUIKitViewLoadingTime;
 @property (nonatomic, strong) FTAppLaunchTracker *launchTracker;
 /// Pass event object, pass collected view and action data to RUM
 @property (nonatomic, weak, nullable) id<FTRumDatasProtocol> addRumDatasDelegate;
@@ -224,6 +230,7 @@ API_AVAILABLE(ios(13.0), tvos(13.0))
     self = [super init];
     if(self){
         _stack = [NSMutableArray new];
+        _enableUIKitViewLoadingTime = YES;
     }
     return self;
 }
@@ -234,6 +241,18 @@ API_AVAILABLE(ios(13.0), tvos(13.0))
         sharedInstance = [[self alloc] init];
     });
     return sharedInstance;
+}
+- (void)startWithRumConfig:(FTRumConfig *)rumConfig
+       addRumDatasDelegate:(id<FTRumDatasProtocol>)delegate
+   heatmapIdentifierRegistry:(id<FTHeatmapIdentifierRegistry>)heatmapIdentifierRegistry {
+    self.enableUIKitViewLoadingTime = rumConfig.enableUIKitViewLoadingTime;
+    [self startWithTrackView:rumConfig.enableTraceUserView
+                      action:rumConfig.enableTraceUserAction
+         addRumDatasDelegate:delegate
+                 viewHandler:rumConfig.viewTrackingHandler
+          swiftUIViewHandler:rumConfig.swiftUIViewTrackingHandler
+               actionHandler:rumConfig.actionTrackingHandler
+   heatmapIdentifierRegistry:heatmapIdentifierRegistry];
 }
 -(void)startWithTrackView:(BOOL)trackView
                    action:(BOOL)trackAction
@@ -299,7 +318,9 @@ heatmapIdentifierRegistry:(id<FTHeatmapIdentifierRegistry>)heatmapIdentifierRegi
             NSError *error = NULL;
             [UIViewController ft_swizzleMethod:@selector(viewDidAppear:) withMethod:@selector(ft_viewDidAppear:) error:&error];
             [UIViewController ft_swizzleMethod:@selector(viewDidDisappear:) withMethod:@selector(ft_viewDidDisappear:) error:&error];
-            [UIViewController ft_swizzleLoadedCustomViewControllerClasses];
+            if (self.enableUIKitViewLoadingTime) {
+                [UIViewController ft_swizzleLoadedCustomViewControllerClasses];
+            }
         });
     } @catch (NSException *exception) {
         FTInnerLogError(@"exception: %@", exception);

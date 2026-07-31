@@ -27,6 +27,10 @@
 #import "FTInnerLog.h"
 #import "NSDictionary+FTCopyProperties.h"
 
+@interface FTRumConfig ()
+@property (nonatomic, assign) BOOL enableUIKitViewLoadingTime;
+@end
+
 @implementation FTRumConfig
 - (int)sampleRate {
     return _samplerate;
@@ -55,6 +59,7 @@
         _rumCacheLimitCount = FT_DB_RUM_MAX_COUNT;
         _rumDiscardType = FTRUMDiscard;
         _enableTraceWebView = YES;
+        _enableUIKitViewLoadingTime = YES;
         _crashMonitoring = FTCrashMonitorTypeHighCompatibility;
     }
     return self;
@@ -81,6 +86,7 @@
     options.resourcePropertyProvider = [self.resourcePropertyProvider copy];
     options.sessionOnErrorSampleRate = self.sessionOnErrorSampleRate;
     options.enableTraceWebView = self.enableTraceWebView;
+    options.enableUIKitViewLoadingTime = self.enableUIKitViewLoadingTime;
     options.allowWebViewHost = [self.allowWebViewHost copy];
     options.sessionTaskErrorFilter = [self.sessionTaskErrorFilter copy];
     options.issueDataProvider = [self.issueDataProvider copy];
