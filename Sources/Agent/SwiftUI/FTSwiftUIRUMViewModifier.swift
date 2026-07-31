@@ -31,7 +31,6 @@ public struct FTRUMTrackedView<Content: View>: View {
     let content: () -> Content
 
     @State private var identity = UUID().uuidString
-    @State private var loadStartTime = DispatchTime.now().uptimeNanoseconds
     @State private var didReportLoadTime = false
 
     /// Creates a wrapper that reports the lifecycle of its content as a RUM view.
@@ -52,13 +51,14 @@ public struct FTRUMTrackedView<Content: View>: View {
 
     /// The wrapped SwiftUI content with RUM lifecycle reporting applied.
     public var body: some View {
-        content()
+        let loadStartTime = DispatchTime.now().uptimeNanoseconds
+        return content()
             .onAppear {
                 FTSwiftUIRUMViewBridge.handler?.notifyOnAppear(
                     identity: identity,
                     name: name,
                     property: property,
-                    loadTime: loadTimeForAppear()
+                    loadTime: loadTimeForAppear(startTime: loadStartTime)
                 )
             }
             .onDisappear {
@@ -66,13 +66,13 @@ public struct FTRUMTrackedView<Content: View>: View {
             }
     }
 
-    private func loadTimeForAppear() -> NSNumber {
+    private func loadTimeForAppear(startTime: UInt64) -> NSNumber {
         if didReportLoadTime {
             return NSNumber(value: 0)
         }
         didReportLoadTime = true
         let now = DispatchTime.now().uptimeNanoseconds
-        return NSNumber(value: now > loadStartTime ? now - loadStartTime : 0)
+        return NSNumber(value: now >= startTime ? now - startTime : 0)
     }
 }
 
