@@ -272,9 +272,9 @@ heatmapIdentifierRegistry:(id<FTHeatmapIdentifierRegistry>)heatmapIdentifierRegi
 #endif
     if (trackView) {
         self.viewControllerHandler = self;
-        [self hookViewControllerLifeCycle];
         self.uiKitViewTrackingHandler = viewHandler ? viewHandler : [FTDefaultUIKitViewTrackingHandler new];
         self.swiftUIViewTrackingHandler = swiftUIViewHandler;
+        [self hookViewControllerLifeCycle];
         [[FTAppLifeCycle sharedInstance] addAppLifecycleDelegate:self];
     }else{
         self.viewControllerHandler = nil;
@@ -297,9 +297,9 @@ heatmapIdentifierRegistry:(id<FTHeatmapIdentifierRegistry>)heatmapIdentifierRegi
         static dispatch_once_t viewOnceToken;
         dispatch_once(&viewOnceToken, ^{
             NSError *error = NULL;
-            [UIViewController ft_swizzleMethod:@selector(viewDidLoad) withMethod:@selector(ft_viewDidLoad) error:&error];
             [UIViewController ft_swizzleMethod:@selector(viewDidAppear:) withMethod:@selector(ft_viewDidAppear:) error:&error];
             [UIViewController ft_swizzleMethod:@selector(viewDidDisappear:) withMethod:@selector(ft_viewDidDisappear:) error:&error];
+            [UIViewController ft_swizzleLoadedCustomViewControllerClasses];
         });
     } @catch (NSException *exception) {
         FTInnerLogError(@"exception: %@", exception);
@@ -375,6 +375,7 @@ heatmapIdentifierRegistry:(id<FTHeatmapIdentifierRegistry>)heatmapIdentifierRegi
     if(!self.autoTrackView){
         return;
     }
+    [UIViewController ft_invalidatePendingViewLoadDurations];
     RUMView *current = [self.stack lastObject];
     if(current){
         [self.addRumDatasDelegate stopViewWithViewID:current.viewControllerUUID property:nil];

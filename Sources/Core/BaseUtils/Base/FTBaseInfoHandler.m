@@ -29,11 +29,6 @@
 #include <mach-o/dyld.h>
 #include <netdb.h>
 #include <arpa/inet.h>
-#if FT_HOST_IOS
-#import <CoreTelephony/CTTelephonyNetworkInfo.h>
-#import <CoreTelephony/CTCarrier.h>
-#endif
-#include <arpa/inet.h>
 #import <ifaddrs.h>
 #include <net/if.h>
 #import <dns_sd.h>

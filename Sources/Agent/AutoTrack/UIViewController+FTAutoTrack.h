@@ -25,9 +25,12 @@
 NS_ASSUME_NONNULL_BEGIN
 
 @interface UIViewController (FTAutoTrack)<FTRumViewProperty>
++ (void)ft_swizzleLoadedCustomViewControllerClasses;
++ (void)ft_invalidatePendingViewLoadDurations;
++ (BOOL)ft_shouldTrackDefaultViewControllerClass:(Class)viewControllerClass;
++ (BOOL)ft_isCustomViewControllerClass:(Class)viewControllerClass;
 -(BOOL)isBlackListContainsViewController;
 -(NSString *)ft_viewControllerName;
--(void)ft_viewDidLoad;
 -(void)ft_viewDidAppear:(BOOL)animated;
 -(void)ft_viewDidDisappear:(BOOL)animated;
 @end
