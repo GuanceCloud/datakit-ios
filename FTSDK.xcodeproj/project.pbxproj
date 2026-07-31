@@ -25,6 +25,7 @@
 		A1F0F1112FC1000100A0A001 /* FTNSSegmentedControlRecorder.m in Sources */ = {isa = PBXBuildFile; fileRef = A1F0F0112FC1000100A0A001 /* FTNSSegmentedControlRecorder.m */; };
 		A1F0F1122FC1000100A0A001 /* FTNSProgressIndicatorRecorder.m in Sources */ = {isa = PBXBuildFile; fileRef = A1F0F0122FC1000100A0A001 /* FTNSProgressIndicatorRecorder.m */; };
 		A1F0F1132FC1000100A0A001 /* FTNSTableHeaderViewRecorder.m in Sources */ = {isa = PBXBuildFile; fileRef = A1F0F0132FC1000100A0A001 /* FTNSTableHeaderViewRecorder.m */; };
+		A1F0F1142FC1000100A0A001 /* FTNSDatePickerRecorder.m in Sources */ = {isa = PBXBuildFile; fileRef = A1F0F0142FC1000100A0A001 /* FTNSDatePickerRecorder.m */; };
 		03157CEC7CF987963482291D /* FTAutoTrackHeatmapResolver.h in Headers */ = {isa = PBXBuildFile; fileRef = 34A94D2591111F14BECB5094 /* FTAutoTrackHeatmapResolver.h */; };
 		116A037353F194CAC373B6C4 /* FTIDFVProvider.m in Sources */ = {isa = PBXBuildFile; fileRef = AB1F52E89BB980427636D6FA /* FTIDFVProvider.m */; };
 		1231769D4A20CB0E31042CCC /* FTAutoTrackEventResolver.h in Headers */ = {isa = PBXBuildFile; fileRef = F57B9E9A435A2BF46A79A308 /* FTAutoTrackEventResolver.h */; };
@@ -972,6 +973,7 @@
 		A1F0F0112FC1000100A0A001 /* FTNSSegmentedControlRecorder.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = FTNSSegmentedControlRecorder.m; sourceTree = "<group>"; };
 		A1F0F0122FC1000100A0A001 /* FTNSProgressIndicatorRecorder.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = FTNSProgressIndicatorRecorder.m; sourceTree = "<group>"; };
 		A1F0F0132FC1000100A0A001 /* FTNSTableHeaderViewRecorder.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = FTNSTableHeaderViewRecorder.m; sourceTree = "<group>"; };
+		A1F0F0142FC1000100A0A001 /* FTNSDatePickerRecorder.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = FTNSDatePickerRecorder.m; sourceTree = "<group>"; };
 		11F102A299DB57BB4B768266 /* FTHeatmapIdentifierStore.m */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.c.objc; path = FTHeatmapIdentifierStore.m; sourceTree = "<group>"; };
 		17018C612F50253200688324 /* FTDataStore.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = FTDataStore.h; sourceTree = "<group>"; };
 		17018C622F50253200688324 /* FTDataStoreFileReader.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = FTDataStoreFileReader.h; sourceTree = "<group>"; };
@@ -1976,6 +1978,7 @@
 				A1F0F0082FC1000100A0A001 /* FTAppKitRecorderSupport.h */,
 				A1F0F0092FC1000100A0A001 /* FTAppKitRecorderSupport.m */,
 				A1F0F00E2FC1000100A0A001 /* FTNSButtonRecorder.m */,
+				A1F0F0142FC1000100A0A001 /* FTNSDatePickerRecorder.m */,
 				A1F0F00D2FC1000100A0A001 /* FTNSImageViewRecorder.m */,
 				A1F0F0122FC1000100A0A001 /* FTNSProgressIndicatorRecorder.m */,
 				A1F0F0112FC1000100A0A001 /* FTNSSegmentedControlRecorder.m */,
@@ -3786,6 +3789,7 @@
 				A1F0F1052FC1000100A0A001 /* NSView+FTSR.m in Sources */,
 				A1F0F1092FC1000100A0A001 /* FTAppKitRecorderSupport.m in Sources */,
 				A1F0F10E2FC1000100A0A001 /* FTNSButtonRecorder.m in Sources */,
+				A1F0F1142FC1000100A0A001 /* FTNSDatePickerRecorder.m in Sources */,
 				A1F0F10D2FC1000100A0A001 /* FTNSImageViewRecorder.m in Sources */,
 				A1F0F1122FC1000100A0A001 /* FTNSProgressIndicatorRecorder.m in Sources */,
 				A1F0F1112FC1000100A0A001 /* FTNSSegmentedControlRecorder.m in Sources */,
