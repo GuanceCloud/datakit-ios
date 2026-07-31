@@ -32,7 +32,7 @@ SPM_SCHEMES=(
 SPM_SCHEME_PLATFORMS=(
   "ios,macos,tvos"
   "ios"
-  "ios"
+  "ios,macos"
 )
 
 RUN_COCOAPODS=1
@@ -278,6 +278,9 @@ validate_framework_package() {
   require_command "xcodebuild" || return 1
   require_command "zip" || return 1
   require_command "zipinfo" || return 1
+  require_command "unzip" || return 1
+  require_command "plutil" || return 1
+  require_command "grep" || return 1
 
   if [[ ! -f "${FRAMEWORK_SCRIPT}" ]]; then
     error "Framework packaging script not found: ${FRAMEWORK_SCRIPT}"
@@ -300,6 +303,17 @@ validate_framework_package() {
     fi
 
     zipinfo -1 "${zip_path}" "${xcframework_name}/Info.plist" > /dev/null || return 1
+
+    case "${zip_name}" in
+      GuanceSessionReplay.xcframework.zip|GuanceSessionReplay-Dynamic.xcframework.zip)
+        if ! unzip -p "${zip_path}" "${xcframework_name}/Info.plist" \
+          | plutil -p - \
+          | grep -q '"SupportedPlatform" => "macos"'; then
+          error "Session Replay XCFramework is missing a macOS slice: ${zip_path}"
+          return 1
+        fi
+        ;;
+    esac
   done
 }
 

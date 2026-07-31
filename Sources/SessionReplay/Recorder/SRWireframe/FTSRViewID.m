@@ -14,10 +14,14 @@
  */
 
 #import <TargetConditionals.h>
-#if TARGET_OS_IOS
+#if TARGET_OS_IOS || TARGET_OS_OSX
 
 #import "FTSRViewID.h"
+#if TARGET_OS_IOS
 #import "UIView+FTSR.h"
+#elif TARGET_OS_OSX
+#import "NSView+FTSR.h"
+#endif
 #import "FTSRNodeWireframesBuilder.h"
 @interface FTSRViewID()
 @property (nonatomic, assign) int64_t currentID;
@@ -35,7 +39,7 @@
     }
     return self;
 }
-- (int64_t)SRViewID:(UIView *)view nodeRecorder:(id<FTSRWireframesRecorder>)nodeRecorder{
+- (int64_t)SRViewID:(FTSRPlatformView *)view nodeRecorder:(id<FTSRWireframesRecorder>)nodeRecorder{
     if (view.SRNodeID && view.SRNodeID[nodeRecorder.identifier]){
         return [view.SRNodeID[nodeRecorder.identifier] longLongValue];
     }else{
@@ -56,7 +60,7 @@
     self.currentID = self.currentID < self.maxID ? (self.currentID + 1) : 0 ;
     return nextID;
 }
-- (NSArray*)SRViewIDs:(UIView *)view size:(int)size nodeRecorder:(id<FTSRWireframesRecorder>)nodeRecorder{
+- (NSArray*)SRViewIDs:(FTSRPlatformView *)view size:(int)size nodeRecorder:(id<FTSRWireframesRecorder>)nodeRecorder{
     NSArray *viewIDs = view.SRNodeIDs[nodeRecorder.identifier];
     if (viewIDs && viewIDs.count == size){
         return viewIDs;

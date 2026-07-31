@@ -30,6 +30,7 @@
 #import "FTResourceRequest.h"
 #import "FTSessionReplayConfig.h"
 #import "FTSessionReplayFeature.h"
+#import "FTSegmentJSON.h"
 #import "FTSRNodeWireframesBuilder.h"
 #import "FTSRRecord.h"
 #import "FTViewAttributes.h"
@@ -157,6 +158,8 @@ BOOL isNAN(id value) {
 @property (nonatomic, strong) NSMutableArray<NSDictionary *> *checkBodies;
 @property (nonatomic, strong) NSMutableArray<NSString *> *writeBodies;
 @property (nonatomic, strong) NSDictionary<NSString *, NSNumber *> *contentMap;
+@property (nonatomic, assign) NSInteger checkStatusCode;
+@property (nonatomic, strong, nullable) NSData *checkResponseData;
 @property (nonatomic, assign) NSInteger writeStatusCode;
 @end
 
@@ -166,6 +169,7 @@ BOOL isNAN(id value) {
     if (self) {
         _checkBodies = [NSMutableArray new];
         _writeBodies = [NSMutableArray new];
+        _checkStatusCode = 200;
         _writeStatusCode = 200;
     }
     return self;
@@ -177,14 +181,17 @@ BOOL isNAN(id value) {
         urlRequest = [request adaptedRequest:urlRequest];
     }
     if ([request isKindOfClass:[FTResourceCheckRequest class]]) {
-        NSHTTPURLResponse *response = [[NSHTTPURLResponse alloc] initWithURL:urlRequest.URL statusCode:200 HTTPVersion:nil headerFields:nil];
+        NSHTTPURLResponse *response = [[NSHTTPURLResponse alloc] initWithURL:urlRequest.URL
+                                                                 statusCode:self.checkStatusCode
+                                                                HTTPVersion:nil
+                                                               headerFields:@{@"Content-Type": self.checkResponseData ? @"text/html" : @"application/json"}];
         NSDictionary *body = [NSJSONSerialization JSONObjectWithData:urlRequest.HTTPBody options:kNilOptions error:nil];
         [self.checkBodies addObject:body];
         NSMutableDictionary *content = [NSMutableDictionary dictionary];
         for (NSString *identifier in body[@"files"]) {
             content[identifier] = self.contentMap[identifier] ?: @NO;
         }
-        NSData *responseData = [NSJSONSerialization dataWithJSONObject:@{@"content":content} options:kNilOptions error:nil];
+        NSData *responseData = self.checkResponseData ?: [NSJSONSerialization dataWithJSONObject:@{@"content":content} options:kNilOptions error:nil];
         callback(response, responseData, nil);
         return;
     }
@@ -208,6 +215,25 @@ BOOL isNAN(id value) {
 - (void)tearDown {
     // Put teardown code here. This method is called after the invocation of each test method in the class.
     [[FTNetworkInfoManager sharedInstance] clearUploadInfo];
+}
+
+- (void)testSegmentJSONUsesIOSSourceByDefault {
+    NSDictionary *record = @{
+        @"applicationID": @"app-ios",
+        @"sessionID": @"session-ios",
+        @"viewID": @"view-ios",
+        @"records": @[
+            @{
+                @"type": @2,
+                @"timestamp": @1000,
+            },
+        ],
+    };
+    NSData *data = [NSJSONSerialization dataWithJSONObject:record options:0 error:nil];
+
+    FTSegmentJSON *segment = [[FTSegmentJSON alloc] initWithData:data];
+
+    XCTAssertEqualObjects(segment.source, @"ios");
 }
 
 - (NSData *)resourceDataWithIdentifier:(NSString *)identifier bindInfo:(NSDictionary *)bindInfo{
@@ -665,6 +691,43 @@ BOOL isNAN(id value) {
 - (void)testImageFeatureUploadTreats403And429AsFailure{
     [self verifyImageFeatureUploadFailsWithStatusCode:403];
     [self verifyImageFeatureUploadFailsWithStatusCode:429];
+}
+
+- (void)testImageFeatureUploadDoesNotRetry404HTMLResourceCheckResponse{
+    FTMockHTTPClient *httpClient = [[FTMockHTTPClient alloc] init];
+    httpClient.checkStatusCode = 404;
+    httpClient.checkResponseData = [@"\n<!doctype html><html><body>Not Found</body></html>" dataUsingEncoding:NSUTF8StringEncoding];
+    FTImageFeatureUpload *upload = [self createImageUploadWithHTTPClient:httpClient];
+    NSArray *event = @[
+        [self resourceDataWithIdentifier:@"resource-a" bindInfo:@{@"user_id":@"user-1"}]
+    ];
+
+    FTUploadStatus *status = [upload flushWithEvent:event parameters:@{@"service":@"demo-service"}];
+    [upload cancelSynchronously];
+
+    XCTAssertTrue(status.success);
+    XCTAssertFalse(status.needsRetry);
+    XCTAssertEqualObjects(status.responseCode, @404);
+    XCTAssertEqual(httpClient.checkBodies.count, 1);
+    XCTAssertEqual(httpClient.writeBodies.count, 0);
+}
+
+- (void)testImageFeatureUploadRetriesMalformedSuccessfulResourceCheckResponse{
+    FTMockHTTPClient *httpClient = [[FTMockHTTPClient alloc] init];
+    httpClient.checkResponseData = [@"\n<!doctype html><html><body>Unexpected response</body></html>" dataUsingEncoding:NSUTF8StringEncoding];
+    FTImageFeatureUpload *upload = [self createImageUploadWithHTTPClient:httpClient];
+    NSArray *event = @[
+        [self resourceDataWithIdentifier:@"resource-a" bindInfo:@{@"user_id":@"user-1"}]
+    ];
+
+    FTUploadStatus *status = [upload flushWithEvent:event parameters:@{@"service":@"demo-service"}];
+    [upload cancelSynchronously];
+
+    XCTAssertFalse(status.success);
+    XCTAssertTrue(status.needsRetry);
+    XCTAssertEqualObjects(status.responseCode, @200);
+    XCTAssertEqual(httpClient.checkBodies.count, 1);
+    XCTAssertEqual(httpClient.writeBodies.count, 0);
 }
 
 - (void)testImageFeatureUploadMergesSameBindInfoIntoSingleBatch{

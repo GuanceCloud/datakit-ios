@@ -14,15 +14,27 @@
  */
 
 #import <TargetConditionals.h>
-#if TARGET_OS_IOS
+#if TARGET_OS_IOS || TARGET_OS_OSX
 
 #import <Foundation/Foundation.h>
-#import <UIKit/UIKit.h>
+#import "FTSessionReplayPlatform.h"
 NS_ASSUME_NONNULL_BEGIN
 
+#if TARGET_OS_OSX
+typedef NSWindow * _Nullable (^FTSRKeyWindowProvider)(void);
+#endif
+
 @interface FTWindowObserver : NSObject
+#if TARGET_OS_IOS
 @property (nonatomic, strong, nullable) UIWindow *keyWindow;
 - (nullable NSArray<UIWindow *>*)windows;
+#elif TARGET_OS_OSX
+- (instancetype)initWithKeyWindowProvider:(FTSRKeyWindowProvider)keyWindowProvider;
+#endif
+/// Root native views included in the next snapshot.
+- (nullable NSArray<FTSRPlatformView *> *)rootViews;
+/// Coordinate-space reference for the next snapshot.
+- (nullable FTSRPlatformView *)referenceView;
 @end
 
 NS_ASSUME_NONNULL_END

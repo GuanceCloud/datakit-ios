@@ -14,10 +14,10 @@
  */
 
 #import <TargetConditionals.h>
-#if TARGET_OS_IOS
+#if TARGET_OS_IOS || TARGET_OS_OSX
 
 #import <Foundation/Foundation.h>
-#import <UIKit/UIKit.h>
+#import "FTSessionReplayPlatform.h"
 #import <WebKit/WKWebView.h>
 NS_ASSUME_NONNULL_BEGIN
 @class FTViewTreeSnapshot,FTSRContext;
@@ -26,7 +26,7 @@ NS_ASSUME_NONNULL_BEGIN
 @property (nonatomic, strong) NSArray<id <FTSRWireframesRecorder>> *recorders;
 @property (nonatomic, strong) NSHashTable<WKWebView*> *webViewCache;
 @property (nonatomic, assign) BOOL enableHeatmap;
-- (FTViewTreeSnapshot *)takeSnapshot:(NSArray <UIView *> *)rootViews referenceView:(UIView *)referenceView context:(FTSRContext *)context;
+- (FTViewTreeSnapshot *)takeSnapshot:(NSArray <FTSRPlatformView *> *)rootViews referenceView:(FTSRPlatformView *)referenceView context:(FTSRContext *)context;
 -(instancetype)initWithAdditionalNodeRecorders:(nullable NSArray <id <FTSRWireframesRecorder>>*)additionalNodeRecorders;
 -(instancetype)initWithAdditionalNodeRecorders:(nullable NSArray <id <FTSRWireframesRecorder>>*)additionalNodeRecorders enableSwiftUI:(BOOL)enableSwiftUI;
 @end

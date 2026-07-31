@@ -14,7 +14,7 @@
  */
 
 #import <TargetConditionals.h>
-#if TARGET_OS_IOS
+#if TARGET_OS_IOS || TARGET_OS_OSX
 
 #import "FTTimerScheduler.h"
 #import "FTQueue.h"
@@ -52,7 +52,7 @@ static const NSTimeInterval kTimerTolerance = 0.1;
         if (!timer) return nil;
         
         NSTimeInterval tolerance = interval * kTimerTolerance;
-        dispatch_time_t leeway = dispatch_time(DISPATCH_TIME_NOW, (int64_t)(tolerance * NSEC_PER_SEC));
+        uint64_t leeway = (uint64_t)(tolerance * NSEC_PER_SEC);
         
         dispatch_source_set_timer(timer,
                                   dispatch_time(DISPATCH_TIME_NOW, (int64_t)(interval * NSEC_PER_SEC)),

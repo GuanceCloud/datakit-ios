@@ -14,18 +14,18 @@
  */
 
 #import <TargetConditionals.h>
-#if TARGET_OS_IOS
+#if TARGET_OS_IOS || TARGET_OS_OSX
 
 #import <Foundation/Foundation.h>
-#import <UIKit/UIKit.h>
+#import "FTSessionReplayPlatform.h"
 
 NS_ASSUME_NONNULL_BEGIN
 @class FTViewTreeRecordingContext;
 @protocol FTSRWireframesRecorder;
 @interface FTViewTreeRecorder : NSObject
 @property (nonatomic, strong) NSArray<id<FTSRWireframesRecorder>> *nodeRecorders;
-- (void)record:(NSMutableArray *)nodes view:(UIView *)view context:(FTViewTreeRecordingContext *)context;
-- (void)record:(NSMutableArray *)nodes view:(UIView *)view context:(FTViewTreeRecordingContext *)context typeIndex:(NSInteger)typeIndex;
+- (void)record:(NSMutableArray *)nodes view:(FTSRPlatformView *)view context:(FTViewTreeRecordingContext *)context;
+- (void)record:(NSMutableArray *)nodes view:(FTSRPlatformView *)view context:(FTViewTreeRecordingContext *)context typeIndex:(NSInteger)typeIndex;
 @end
 
 NS_ASSUME_NONNULL_END

@@ -14,12 +14,14 @@
  */
 
 #import <TargetConditionals.h>
-#if TARGET_OS_IOS
+#if TARGET_OS_IOS || TARGET_OS_OSX
 
 #import "FTViewTreeSnapshotBuilder.h"
 #import "FTViewAttributes.h"
 #import "FTSRViewID.h"
 #import "FTViewTreeRecordingContext.h"
+#import "FTViewTreeRecorder.h"
+#if TARGET_OS_IOS
 #import "FTUINavigationBarRecorder.h"
 #import "FTUIViewRecorder.h"
 #import "FTUINavigationBarRecorder.h"
@@ -39,8 +41,11 @@
 #import "FTUnsupportedViewRecorder.h"
 #import "FTUIProgressViewRecorder.h"
 #import "FTUIActivityIndicatorRecorder.h"
+#elif TARGET_OS_OSX
+#import "FTAppKitViewRecorders.h"
+#endif
 #import "FTSessionReplayCoreImports.h"
-#if !TARGET_OS_TV
+#if (TARGET_OS_IOS || TARGET_OS_OSX) && !TARGET_OS_TV
 #import "FTWKWebViewRecorder.h"
 #endif
 @interface FTViewTreeSnapshotBuilder()
@@ -71,19 +76,26 @@
     }
     return self;
 }
-- (FTViewTreeSnapshot *)takeSnapshot:(NSArray <UIView *> *)rootViews referenceView:(UIView *)referenceView context:(FTSRContext *)context{
+- (FTViewTreeSnapshot *)takeSnapshot:(NSArray <FTSRPlatformView *> *)rootViews referenceView:(FTSRPlatformView *)referenceView context:(FTSRContext *)context{
     NSMutableArray *node = [[NSMutableArray alloc]init];
     NSMutableArray *resource = [[NSMutableArray alloc]init];
+    NSMutableSet<NSNumber *> *webViewSlotIDs = [NSMutableSet set];
     FTHeatmapCache *heatmapCache = self.enableHeatmap ? [[FTHeatmapCache alloc]init] : nil;
     NSArray<NSNumber *> *rootTypeIndices = [self typeIndicesForViews:rootViews];
     for (NSUInteger index = 0; index < rootViews.count; index++) {
-        UIView *rootView = rootViews[index];
+        FTSRPlatformView *rootView = rootViews[index];
         // Determine if window can be displayed
-        if(rootView.isHidden == NO && rootView.alpha>0 && !CGRectEqualToRect(rootView.frame, CGRectZero)){
+        #if TARGET_OS_IOS
+        BOOL isVisibleRoot = rootView.isHidden == NO && rootView.alpha > 0 && !CGRectEqualToRect(rootView.frame, CGRectZero);
+        #elif TARGET_OS_OSX
+        BOOL isVisibleRoot = rootView.isHidden == NO && rootView.alphaValue > 0 && !CGRectEqualToRect(rootView.bounds, CGRectZero);
+        #endif
+        if(isVisibleRoot){
             FTViewTreeRecordingContext *recordingContext = [[FTViewTreeRecordingContext alloc]init];
             recordingContext.viewIDGenerator = self.idGen;
             recordingContext.recorder = context;
             recordingContext.webViewCache = self.webViewCache;
+            recordingContext.webViewSlotIDs = webViewSlotIDs;
             recordingContext.coordinateSpace = referenceView;
             recordingContext.clip = referenceView.bounds;
             recordingContext.viewControllerContext = [FTViewControllerContext new];
@@ -101,19 +113,14 @@
     viewTree.context = context;
     viewTree.viewportSize = referenceView.bounds.size;
     viewTree.nodes = node;
-    NSArray *webViews = [self.webViewCache allObjects];
-    NSMutableArray *hashes = [NSMutableArray arrayWithCapacity:webViews.count];
-    for (WKWebView *webView in webViews) {
-        [hashes addObject:@(webView.hash)];
-    }
-    viewTree.webViewSlotIDs = [NSSet setWithArray:hashes];
+    viewTree.webViewSlotIDs = [webViewSlotIDs copy];
     viewTree.resources = resource;
     return viewTree;
 }
-- (NSArray<NSNumber *> *)typeIndicesForViews:(NSArray<UIView *> *)views {
+- (NSArray<NSNumber *> *)typeIndicesForViews:(NSArray<FTSRPlatformView *> *)views {
     NSMutableDictionary<NSString *, NSNumber *> *counts = [NSMutableDictionary dictionary];
     NSMutableArray<NSNumber *> *indices = [NSMutableArray arrayWithCapacity:views.count];
-    for (UIView *view in views) {
+    for (FTSRPlatformView *view in views) {
         NSString *className = NSStringFromClass(view.class);
         NSInteger index = [counts[className] integerValue];
         [indices addObject:@(index)];
@@ -122,6 +129,7 @@
     return indices;
 }
 - (NSArray <id <FTSRWireframesRecorder>> *)createDefaultNodeRecordersWithSwiftUIEnabled:(BOOL)enableSwiftUI{
+#if TARGET_OS_IOS
     NSMutableArray *recorders = @[
         [[FTUnsupportedViewRecorder alloc] initWithSwiftUIEnabled:enableSwiftUI],
         [FTUIViewRecorder new],
@@ -149,6 +157,22 @@
         }
     }
     return [recorders copy];
+#elif TARGET_OS_OSX
+    return @[
+        [FTWKWebViewRecorder new],
+        [FTNSTextFieldRecorder new],
+        [FTNSTextViewRecorder new],
+        [FTNSImageViewRecorder new],
+        [FTNSButtonRecorder new],
+        [FTNSSwitchRecorder new],
+        [FTNSSliderRecorder new],
+        [FTNSSegmentedControlRecorder new],
+        [FTNSProgressIndicatorRecorder new],
+        [FTNSDatePickerRecorder new],
+        [FTNSTableHeaderViewRecorder new],
+        [FTNSViewRecorder new],
+    ];
+#endif
 }
 @end
 

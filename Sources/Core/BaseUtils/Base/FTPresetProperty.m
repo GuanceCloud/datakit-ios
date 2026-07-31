@@ -549,9 +549,12 @@ static Class FTPresetExpectedValueClass(id value) {
     [srDict setValue:version forKey:FT_VERSION];
     [srDict setValue:env forKey:FT_ENV];
     [srDict setValue:sdkVersion forKey:FT_SDK_VERSION];
-    [srDict setValue:FT_IOS_SDK_NAME forKey:FT_SDK_NAME];
+    [srDict setValue:FT_SDK_NAME_VALUE forKey:FT_SDK_NAME];
+#if FT_HOST_IOS
     [srDict setValue:@"ios" forKey:FT_KEY_SOURCE];
-    
+#elif FT_HOST_MAC
+    [srDict setValue:@"macos" forKey:FT_KEY_SOURCE];
+#endif
     [self safeWrite:^{
         self->_basePropertyModel = baseModel;
         self->_sessionReplayTags = [srDict copy];

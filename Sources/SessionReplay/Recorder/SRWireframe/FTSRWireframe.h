@@ -14,10 +14,10 @@
  */
 
 #import <TargetConditionals.h>
-#if TARGET_OS_IOS
+#if TARGET_OS_IOS || TARGET_OS_OSX
 
 #import <Foundation/Foundation.h>
-#import <UIKit/UIKit.h>
+#import "FTSessionReplayPlatform.h"
 #import "FTSRBaseFrame.h"
 NS_ASSUME_NONNULL_BEGIN
 @class FTViewTreeSnapshot,FTViewAttributes;

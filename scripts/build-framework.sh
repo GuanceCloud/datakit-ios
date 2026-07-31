@@ -16,7 +16,7 @@
 # SDK Usage Scenarios:
 #   Main Project SDK: static/dynamic, iOS/tvOS/macOS
 #   Widget Extension SDK: static only, iOS
-#   Session Replay SDK: static/dynamic, iOS
+#   Session Replay SDK: static/dynamic, iOS/macOS
 
 # Output Path: Packaged SDK is saved to the repository "build" folder
 
@@ -176,7 +176,10 @@ set_archive_platforms() {
     FTSDK)
       ARCHIVE_PLATFORMS=("iphoneos" "iphonesimulator" "appletvos" "appletvsimulator" "macosx")
       ;;
-    FTSessionReplay|FTWidgetExtension)
+    FTSessionReplay)
+      ARCHIVE_PLATFORMS=("iphoneos" "iphonesimulator" "macosx")
+      ;;
+    FTWidgetExtension)
       ARCHIVE_PLATFORMS=("iphoneos" "iphonesimulator")
       ;;
     *)

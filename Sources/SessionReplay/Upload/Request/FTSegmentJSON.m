@@ -20,10 +20,17 @@
 //
 
 #import <TargetConditionals.h>
-#if TARGET_OS_IOS
+#if TARGET_OS_IOS || TARGET_OS_OSX
 
 #import "FTSegmentJSON.h"
 #import "FTSessionReplayCoreImports.h"
+
+#if TARGET_OS_OSX
+static NSString *const FTSessionReplayDefaultSource = @"macos";
+#else
+static NSString *const FTSessionReplayDefaultSource = @"ios";
+#endif
+
 @implementation FTSegmentJSON
 -(instancetype)initWithData:(NSData *)data{
     self = [super init];
@@ -35,7 +42,7 @@
         _viewID = dict[@"viewID"];
         _start = LONG_MAX;
         _end = LONG_MIN;
-        _source = dict[@"source"] ?: @"ios";
+        _source = dict[@"source"] ?: FTSessionReplayDefaultSource;
         NSArray *array = dict[@"records"];
         for (NSDictionary *record in array) {
             NSInteger type = [record[@"type"] integerValue];

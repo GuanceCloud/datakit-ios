@@ -20,7 +20,7 @@
 //
 
 #import <TargetConditionals.h>
-#if TARGET_OS_IOS
+#if TARGET_OS_IOS || TARGET_OS_OSX
 
 #import "FTFeatureUpload.h"
 #import "FTSessionReplayCoreImports.h"
@@ -352,20 +352,26 @@
             FTInnerLogError(@"[NETWORK][%@] %@", strongSelf.featureName,[NSString stringWithFormat:@"Network failure: %@", error ? error : @"Unknown error"]);
         }else{
             NSInteger statusCode = httpResponse.statusCode;
-            if (statusCode < 200 || statusCode >= 500 || statusCode == 403 || statusCode == 429) {
-                FTInnerLogError(@"[NETWORK][%@] CheckImage Response statusCode : %ld \n Server exception, responseData: %@",strongSelf.featureName,(long)statusCode,[[NSString alloc] initWithData:data encoding:NSUTF8StringEncoding]);
+            if (statusCode < 200 || statusCode >= 300) {
+                FTInnerLogError(@"[NETWORK][%@] CheckImage Response statusCode : %ld, responseData: %@",
+                                strongSelf.featureName,
+                                (long)statusCode,
+                                [[NSString alloc] initWithData:data encoding:NSUTF8StringEncoding]);
             }else{
                 NSString *dataStr = [[NSString alloc] initWithData:data encoding:NSUTF8StringEncoding];
                 NSDictionary *dict = [FTJSONUtil dictionaryWithJsonString:dataStr];
-                responseContent = dict[@"content"];
+                id contentValue = dict[@"content"];
+                if ([contentValue isKindOfClass:NSDictionary.class]) {
+                    responseContent = contentValue;
+                }
                 FTInnerLogDebug(@"[NETWORK][%@] CheckImage Response statusCode : %ld \ncontent:%@",strongSelf.featureName,(long)statusCode,responseContent);
             }
         }
         NSError *statusError = error;
         if (!statusError && [httpResponse isKindOfClass:[NSHTTPURLResponse class]]) {
             NSInteger statusCode = httpResponse.statusCode;
-            BOOL isSuccessfulStatusCode = (statusCode >= 200 && statusCode < 500 && statusCode != 403 && statusCode != 429);
-            if (isSuccessfulStatusCode && (responseContent == nil || responseContent.count == 0)) {
+            BOOL shouldValidateResponseContent = (statusCode >= 200 && statusCode < 300);
+            if (shouldValidateResponseContent && (responseContent == nil || responseContent.count == 0)) {
                 statusError = [NSError errorWithDomain:@"FTSessionReplayUploadErrorDomain"
                                                   code:-1
                                               userInfo:@{NSLocalizedDescriptionKey:@"Resource check response content is empty"}];

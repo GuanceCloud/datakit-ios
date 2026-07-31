@@ -14,19 +14,21 @@
  */
 
 #import <TargetConditionals.h>
-#if TARGET_OS_IOS
+#if TARGET_OS_IOS || TARGET_OS_OSX
 
 #import <Foundation/Foundation.h>
-#import <UIKit/UIKit.h>
+#import "FTSessionReplayPlatform.h"
 #import <WebKit/WKWebView.h>
 NS_ASSUME_NONNULL_BEGIN
 @class FTSRContext,FTSRViewID,FTViewControllerContext,FTHeatmapCache,FTHeatmapIdentifier;
 @interface FTViewTreeRecordingContext : NSObject
 @property (nonatomic, strong) FTSRContext *recorder;
 @property (nonatomic, strong) FTSRViewID *viewIDGenerator;
-@property (nonatomic, strong) id<UICoordinateSpace> coordinateSpace;
+@property (nonatomic, strong) FTSRPlatformView *coordinateSpace;
 @property (nonatomic, strong) FTViewControllerContext *viewControllerContext;
 @property (nonatomic, strong, nullable) NSHashTable<WKWebView*> *webViewCache;
+/// WKWebView slot identifiers emitted while recording the current snapshot.
+@property (nonatomic, strong, nullable) NSMutableSet<NSNumber *> *webViewSlotIDs;
 @property (nonatomic, strong, nullable) FTHeatmapCache *heatmapCache;
 @property (nonatomic, strong) NSMutableArray<NSString *> *nodePath;
 
@@ -49,7 +51,9 @@ typedef NS_ENUM(NSUInteger,ViewControllerType){
 @property (nonatomic, assign) ViewControllerType parentType;
 - (BOOL)isRootView:(ViewControllerType)type;
 - (nullable NSString *)name;
+#if TARGET_OS_IOS
 - (void)setParentTypeWithViewController:(UIViewController *)viewController;
+#endif
 @end
 
 NS_ASSUME_NONNULL_END

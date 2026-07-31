@@ -20,13 +20,17 @@
 //
 
 #import <TargetConditionals.h>
-#if TARGET_OS_IOS
+#if TARGET_OS_IOS || TARGET_OS_OSX
 
 #import <Foundation/Foundation.h>
 
 #import "FTRumSessionReplay.h"
 #import "FTSessionReplayConfig.h"
 #import "FTSessionReplayPrivacyOverrides.h"
+#if TARGET_OS_IOS
 #import "UIView+FTSRPrivacy.h"
+#elif TARGET_OS_OSX
+#import "NSView+FTSRPrivacy.h"
+#endif
 
 #endif

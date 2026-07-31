@@ -173,4 +173,206 @@ static void *const kFTSRSendEvent = (void *)&kFTSRSendEvent;
 }
 @end
 
+#elif TARGET_OS_OSX
+
+#import "FTSessionReplayTouches.h"
+#import <AppKit/AppKit.h>
+#import "FTSessionReplayCoreImports.h"
+#import "FTSessionReplayPrivacyOverrides+Extension.h"
+#import "FTTouchSnapshot.h"
+#import "FTWindowObserver.h"
+#import "NSView+FTSRPrivacy.h"
+
+@interface FTSRMacOSPointerState : NSObject
+@property (nonatomic, assign) int identifier;
+@property (nonatomic, strong, nullable) NSNumber *touchPrivacyOverride;
+@end
+
+@implementation FTSRMacOSPointerState
+@end
+
+@interface FTSessionReplayTouches ()
+/// AppKit sends local mouse events and the capture timer on the main thread.
+/// Store only value snapshots here; never retain NSEvent or NSView past capture.
+@property (nonatomic, strong) NSMutableArray<FTTouchCircle *> *touches;
+@property (nonatomic, strong) NSMutableDictionary<NSNumber *, FTSRMacOSPointerState *> *activePointers;
+@property (nonatomic, assign) int currentID;
+@property (nonatomic, strong) FTWindowObserver *windowObserver;
+@property (nonatomic, strong, nullable) id eventMonitor;
+@end
+
+@implementation FTSessionReplayTouches
+
+- (instancetype)initWithWindowObserver:(FTWindowObserver *)observer {
+    self = [super init];
+    if (self) {
+        _touches = [NSMutableArray array];
+        _activePointers = [NSMutableDictionary dictionary];
+        _currentID = 0;
+        _windowObserver = observer;
+        [self startMonitoringMouseEvents];
+    }
+    return self;
+}
+
+- (void)dealloc {
+    id eventMonitor = _eventMonitor;
+    if (eventMonitor) {
+        [FTThreadDispatchManager performBlockDispatchMainSyncSafe:^{
+            [NSEvent removeMonitor:eventMonitor];
+        }];
+    }
+}
+
+- (void)startMonitoringMouseEvents {
+    NSEventMask eventMask = NSEventMaskLeftMouseDown
+                          | NSEventMaskLeftMouseDragged
+                          | NSEventMaskLeftMouseUp
+                          | NSEventMaskRightMouseDown
+                          | NSEventMaskRightMouseDragged
+                          | NSEventMaskRightMouseUp
+                          | NSEventMaskOtherMouseDown
+                          | NSEventMaskOtherMouseDragged
+                          | NSEventMaskOtherMouseUp;
+    __weak typeof(self) weakSelf = self;
+    [FTThreadDispatchManager performBlockDispatchMainSyncSafe:^{
+        weakSelf.eventMonitor =
+            [NSEvent addLocalMonitorForEventsMatchingMask:eventMask
+                                                  handler:^NSEvent * _Nullable(NSEvent *event) {
+                [weakSelf handleMouseEvent:event];
+                return event;
+            }];
+    }];
+}
+
+- (void)handleMouseEvent:(NSEvent *)event {
+    [self recordMouseEventType:event.type
+                 buttonNumber:event.buttonNumber
+             locationInWindow:event.locationInWindow
+                       window:event.window];
+}
+
+- (void)recordMouseEventType:(NSEventType)type
+                buttonNumber:(NSInteger)buttonNumber
+            locationInWindow:(NSPoint)locationInWindow
+                      window:(nullable NSWindow *)eventWindow {
+    NSAssert(NSThread.isMainThread, @"Session Replay pointer capture must run on the main thread.");
+    NSView *contentView = self.windowObserver.referenceView;
+    NSWindow *keyWindow = contentView.window;
+    if (!contentView || !keyWindow || eventWindow != keyWindow) {
+        return;
+    }
+
+    FTTouchPhase phase;
+    switch (type) {
+        case NSEventTypeLeftMouseDown:
+        case NSEventTypeRightMouseDown:
+        case NSEventTypeOtherMouseDown:
+            phase = TouchDown;
+            break;
+        case NSEventTypeLeftMouseDragged:
+        case NSEventTypeRightMouseDragged:
+        case NSEventTypeOtherMouseDragged:
+            phase = TouchMoved;
+            break;
+        case NSEventTypeLeftMouseUp:
+        case NSEventTypeRightMouseUp:
+        case NSEventTypeOtherMouseUp:
+            phase = TouchUp;
+            break;
+        default:
+            return;
+    }
+
+    NSPoint pointInContentView = [contentView convertPoint:locationInWindow fromView:nil];
+    NSNumber *button = @(buttonNumber);
+    FTSRMacOSPointerState *pointerState = self.activePointers[button];
+
+    if (!pointerState) {
+        if (!NSPointInRect(pointInContentView, contentView.bounds)) {
+            return;
+        }
+        pointerState = [FTSRMacOSPointerState new];
+        pointerState.identifier = [self getNextID];
+        pointerState.touchPrivacyOverride = [self resolveTouchOverrideAtPoint:pointInContentView
+                                                                      inView:contentView];
+        if (phase != TouchUp) {
+            self.activePointers[button] = pointerState;
+        }
+    } else if (phase == TouchDown) {
+        pointerState = [FTSRMacOSPointerState new];
+        pointerState.identifier = [self getNextID];
+        pointerState.touchPrivacyOverride = [self resolveTouchOverrideAtPoint:pointInContentView
+                                                                      inView:contentView];
+        self.activePointers[button] = pointerState;
+    }
+
+    NSPoint replayPoint = pointInContentView;
+    replayPoint.x -= NSMinX(contentView.bounds);
+    if (contentView.isFlipped) {
+        replayPoint.y -= NSMinY(contentView.bounds);
+    } else {
+        replayPoint.y = NSMaxY(contentView.bounds) - pointInContentView.y;
+    }
+
+    FTTouchCircle *circle = [FTTouchCircle new];
+    circle.position = replayPoint;
+    circle.phase = phase;
+    circle.identifier = pointerState.identifier;
+    circle.timestamp = [NSDate ft_currentMillisecondTimeStamp];
+    circle.touchPrivacyOverride = pointerState.touchPrivacyOverride;
+    [self.touches addObject:circle];
+
+    if (phase == TouchUp) {
+        [self.activePointers removeObjectForKey:button];
+    }
+}
+
+- (int)getNextID {
+    int nextID = self.currentID;
+    self.currentID = self.currentID < INT_MAX ? self.currentID + 1 : 0;
+    return nextID;
+}
+
+- (nullable NSNumber *)resolveTouchOverrideAtPoint:(NSPoint)point inView:(NSView *)rootView {
+    NSView *view = [rootView hitTest:point];
+    while (view) {
+        NSNumber *touchPrivacy = view.sessionReplayPrivacyOverrides.nTouchPrivacy;
+        if (touchPrivacy) {
+            return touchPrivacy;
+        }
+        view = view.superview;
+    }
+    return nil;
+}
+
+- (BOOL)shouldRecordTouch:(FTTouchCircle *)touch context:(FTSRContext *)context {
+    FTTouchPrivacyLevel privacy = touch.touchPrivacyOverride
+        ? (FTTouchPrivacyLevel)touch.touchPrivacyOverride.integerValue
+        : context.touchPrivacy;
+    return privacy == FTTouchPrivacyLevelShow;
+}
+
+- (FTTouchSnapshot *)takeTouchSnapshotWithContext:(FTSRContext *)context {
+    NSAssert(NSThread.isMainThread, @"Session Replay pointer snapshot must run on the main thread.");
+    if (self.touches.count == 0) {
+        return nil;
+    }
+    NSArray<FTTouchCircle *> *pendingTouches = [self.touches copy];
+    [self.touches removeAllObjects];
+
+    NSMutableArray<FTTouchCircle *> *visibleTouches = [NSMutableArray array];
+    for (FTTouchCircle *touch in pendingTouches) {
+        if ([self shouldRecordTouch:touch context:context]) {
+            [visibleTouches addObject:touch];
+        }
+    }
+    if (visibleTouches.count > 0) {
+        return [[FTTouchSnapshot alloc] initWithTouches:visibleTouches];
+    }
+    return nil;
+}
+
+@end
+
 #endif

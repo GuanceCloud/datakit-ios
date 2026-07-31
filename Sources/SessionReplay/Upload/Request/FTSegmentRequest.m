@@ -20,7 +20,7 @@
 //
 
 #import <TargetConditionals.h>
-#if TARGET_OS_IOS
+#if TARGET_OS_IOS || TARGET_OS_OSX
 
 #import "FTSegmentRequest.h"
 #import "FTRequestMultipartFormBody.h"
@@ -58,6 +58,10 @@
         FTInnerLogWarning(@"[SegmentRequest] mergeSegments fail");
     }
     self.segment = [merged firstObject];
+    NSString *source = parameters[FT_KEY_SOURCE];
+    if ([source isKindOfClass:NSString.class] && source.length > 0) {
+        self.segment.source = source;
+    }
 }
 - (NSArray *)mergeSegments:(NSArray *)segments{
     NSMutableArray *ori = [NSMutableArray array];
@@ -105,7 +109,8 @@
     // body
     NSDictionary *bindInfo = self.segment.bindInfo;
     self.segment.bindInfo = nil;
-    NSMutableData *mutableData = [NSMutableData dataWithData:[self.segment toJSONData]];
+    NSData *segmentData = [self.segment toJSONData];
+    NSMutableData *mutableData = [NSMutableData dataWithData:segmentData];
     [mutableData appendData:[self.multipartFormBody newlineByte]];
     NSData *compress = [FTCompression compress:mutableData];
     [self.multipartFormBody addFormData:@"segment" filename:[NSString stringWithFormat:@"%@-%lld",self.segment.sessionID,self.segment.start] data:compress mimeType:@"application/octet-stream"];

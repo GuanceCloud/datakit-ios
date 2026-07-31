@@ -14,7 +14,7 @@
  */
 
 #import <TargetConditionals.h>
-#if TARGET_OS_IOS
+#if TARGET_OS_IOS || TARGET_OS_OSX
 
 #import "FTSessionReplayFeature.h"
 #import "FTSegmentRequest.h"
@@ -67,7 +67,13 @@
         FTSessionReplayTouches *touches = [[FTSessionReplayTouches alloc]initWithWindowObserver:_windowObserver];
         _config = [config copy];
         _needCheckSlots = [[FTLimitedSizeSet alloc]initWithMaxCount:10];
-        FTScreenChangeScheduler *scheduler = [[FTScreenChangeScheduler alloc]initWithMinimumInterval:0.1];
+        #if TARGET_OS_OSX
+        NSTimeInterval captureInterval = FTSessionReplayMacOSCaptureInterval;
+        #else
+        NSTimeInterval captureInterval = 0.1;
+        #endif
+        FTScreenChangeScheduler *scheduler = [[FTScreenChangeScheduler alloc]
+            initWithMinimumInterval:captureInterval];
         __weak typeof(self) weakSelf = self;
         _recordingCoordinator = [[FTRecordingCoordinator alloc]initWithConfig:_config
                                                                processorsQueue:_processorsQueue

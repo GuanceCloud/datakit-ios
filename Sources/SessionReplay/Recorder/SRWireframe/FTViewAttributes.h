@@ -14,11 +14,11 @@
  */
 
 #import <TargetConditionals.h>
-#if TARGET_OS_IOS
+#if TARGET_OS_IOS || TARGET_OS_OSX
 
 #import <Foundation/Foundation.h>
 #import "FTViewTreeSnapshot.h"
-#import <UIKit/UIKit.h>
+#import "FTSessionReplayPlatform.h"
 #import "FTSRViewID.h"
 #import "FTSRTextObfuscatingFactory.h"
 #import "FTSessionReplayPrivacyOverrides+Extension.h"
@@ -53,7 +53,7 @@ NS_ASSUME_NONNULL_BEGIN
 @property (nonatomic, strong, nullable) NSNumber *textAndInputPrivacy;
 @property (nonatomic, assign) BOOL hide;
 
--(instancetype)initWithView:(UIView *)view frameInRootView:(CGRect)frame clip:(CGRect)clip overrides:(PrivacyOverrides *)overrides;
+-(instancetype)initWithView:(FTSRPlatformView *)view frameInRootView:(CGRect)frame clip:(CGRect)clip overrides:(PrivacyOverrides *)overrides;
 -(FTTextAndInputPrivacyLevel)resolveTextAndInputPrivacyLevel:(FTSRContext *)context;
 -(FTImagePrivacyLevel)resolveImagePrivacyLevel:(FTSRContext *)context;
 

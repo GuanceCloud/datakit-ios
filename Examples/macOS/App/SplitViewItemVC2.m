@@ -24,6 +24,7 @@
 #import "LoggingViewController.h"
 #import "TraceViewController.h"
 #import "WebViewController.h"
+#import "ImageSessionReplayViewController.h"
 #import "CrashViewController.h"
 @interface SplitViewItemVC2 ()
 @property (nonatomic, strong) TabViewController *mTabView;
@@ -31,6 +32,7 @@
 @property (nonatomic, strong) LoggingViewController *mLoggerVC;
 @property (nonatomic, strong) TraceViewController *mTraceVC;
 @property (nonatomic, strong) WebViewController *mWebViewVC;
+@property (nonatomic, strong) ImageSessionReplayViewController *mImageSessionReplayVC;
 @property (nonatomic, strong) CrashViewController *mCrashVC;
 @property (nonatomic, assign) NSInteger currentIndex;
 @end
@@ -45,6 +47,7 @@
     [self insertChildViewController:self.mTraceVC atIndex:3];
     [self insertChildViewController:self.mWebViewVC atIndex:4];
     [self insertChildViewController:self.mCrashVC atIndex:5];
+    [self insertChildViewController:self.mImageSessionReplayVC atIndex:6];
     [self.view addSubview:self.mTabView.view];
 }
 -(RumViewController *)mPresent{
@@ -76,6 +79,12 @@
         _mWebViewVC = [[WebViewController alloc]init];
     }
     return _mWebViewVC;
+}
+-(ImageSessionReplayViewController *)mImageSessionReplayVC{
+    if(!_mImageSessionReplayVC){
+        _mImageSessionReplayVC = [[ImageSessionReplayViewController alloc]init];
+    }
+    return _mImageSessionReplayVC;
 }
 -(CrashViewController *)mCrashVC{
     if(!_mCrashVC){
@@ -113,6 +122,9 @@
             break;
         case 5:
             back = self.mCrashVC;
+            break;
+        case 6:
+            back = self.mImageSessionReplayVC;
             break;
         default:
             break;

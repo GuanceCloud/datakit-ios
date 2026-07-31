@@ -14,11 +14,18 @@
  */
 
 #import <TargetConditionals.h>
-#if TARGET_OS_IOS
+#if TARGET_OS_IOS || TARGET_OS_OSX
 
 #import "FTWindowObserver.h"
 
+#if TARGET_OS_OSX
+@interface FTWindowObserver ()
+@property (nonatomic, copy) FTSRKeyWindowProvider keyWindowProvider;
+@end
+#endif
+
 @implementation FTWindowObserver
+#if TARGET_OS_IOS
 - (nullable UIApplication *)_findApp{
     if ([UIApplication respondsToSelector:@selector(sharedApplication)]) {
         return [UIApplication performSelector:@selector(sharedApplication)];
@@ -95,6 +102,36 @@
     }
     return [app windows];
 }
+- (NSArray<FTSRPlatformView *> *)rootViews {
+    return self.windows;
+}
+- (FTSRPlatformView *)referenceView {
+    return self.keyWindow;
+}
+#elif TARGET_OS_OSX
+- (instancetype)init {
+    return [self initWithKeyWindowProvider:^NSWindow * _Nullable{
+        return NSApplication.sharedApplication.keyWindow;
+    }];
+}
+- (instancetype)initWithKeyWindowProvider:(FTSRKeyWindowProvider)keyWindowProvider {
+    self = [super init];
+    if (self) {
+        _keyWindowProvider = [keyWindowProvider copy];
+    }
+    return self;
+}
+- (NSWindow *)keyWindow {
+    return self.keyWindowProvider ? self.keyWindowProvider() : nil;
+}
+- (NSArray<FTSRPlatformView *> *)rootViews {
+    NSView *contentView = self.keyWindow.contentView;
+    return contentView ? @[contentView] : nil;
+}
+- (FTSRPlatformView *)referenceView {
+    return self.keyWindow.contentView;
+}
+#endif
 @end
 
 #endif

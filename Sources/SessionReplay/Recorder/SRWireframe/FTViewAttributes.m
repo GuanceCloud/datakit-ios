@@ -14,7 +14,7 @@
  */
 
 #import <TargetConditionals.h>
-#if TARGET_OS_IOS
+#if TARGET_OS_IOS || TARGET_OS_OSX
 
 #import "FTViewAttributes.h"
 #import "FTSRUtils.h"
@@ -22,13 +22,18 @@
 @end
 
 @implementation FTViewAttributes
--(instancetype)initWithView:(UIView *)view frameInRootView:(CGRect)frame clip:(CGRect)clip overrides:(PrivacyOverrides *)overrides{
+-(instancetype)initWithView:(FTSRPlatformView *)view frameInRootView:(CGRect)frame clip:(CGRect)clip overrides:(PrivacyOverrides *)overrides{
     self = [super init];
     if(self){
         self.frame = frame;
         self.clip = clip;
+        #if TARGET_OS_IOS
         self.alpha = view.alpha;
         self.backgroundColor = [FTSRColorSnapshot snapshotWithColor:view.backgroundColor traitCollection:view.traitCollection];
+        #elif TARGET_OS_OSX
+        self.alpha = view.alphaValue;
+        self.backgroundColor = [FTSRColorSnapshot snapshotWithCGColor:view.layer.backgroundColor];
+        #endif
         self.layerBorderColor = [FTSRColorSnapshot snapshotWithCGColor:view.layer.borderColor];
         self.layerBorderWidth = view.layer.borderWidth;
         self.layerCornerRadius = view.layer.cornerRadius;

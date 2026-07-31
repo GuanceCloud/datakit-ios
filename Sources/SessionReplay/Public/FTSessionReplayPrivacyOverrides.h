@@ -14,7 +14,7 @@
  */
 
 #import <TargetConditionals.h>
-#if TARGET_OS_IOS
+#if TARGET_OS_IOS || TARGET_OS_OSX
 
 #import <Foundation/Foundation.h>
 #import "FTSessionReplayConfig.h"
@@ -42,7 +42,7 @@ typedef NS_ENUM(NSUInteger,FTTextAndInputPrivacyLevelOverride) {
 typedef NS_ENUM(NSUInteger,FTImagePrivacyLevelOverride){
     /// Do not override/remove override settings
     FTImagePrivacyLevelOverrideNone,
-    /// Only SF symbols and images loaded using [UIImage imageNamed:]/UIImage(named:) that are bundled in the application will be recorded
+    /// Only platform system symbols and images bundled in the application will be recorded
     FTImagePrivacyLevelOverrideMaskNonBundledOnly,
     /// No images will be recorded
     FTImagePrivacyLevelOverrideMaskAll,
