@@ -182,7 +182,7 @@ static dispatch_group_t testBundleViewControllerSwizzlingGroup = nil;
                     viewHandler:nil
              swiftUIViewHandler:nil
                   actionHandler:nil
-                 displayMonitor:nil];
+   heatmapIdentifierRegistry:nil];
     [self prepareLoadingTimeTestBundleInstrumentation];
     return mock;
 }
@@ -422,7 +422,7 @@ static dispatch_group_t testBundleViewControllerSwizzlingGroup = nil;
                     viewHandler:viewHandler
              swiftUIViewHandler:nil
                   actionHandler:nil
-                 displayMonitor:nil];
+   heatmapIdentifierRegistry:nil];
 
     [[UIViewController new] viewDidAppear:NO];
 

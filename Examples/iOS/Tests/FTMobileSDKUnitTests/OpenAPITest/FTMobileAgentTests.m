@@ -857,10 +857,13 @@
     config.sessionTaskErrorFilter = ^BOOL(NSError * _Nonnull error) {
         return YES;
     };
+    config.issueDataProvider = ^NSDictionary<NSString *,id> * _Nullable(FTIssueInfo * _Nonnull issue) {
+        return nil;
+    };
     config.viewTrackingHandler = [[FTDefaultUIKitViewTrackingHandler alloc]init];
     config.swiftUIViewTrackingHandler = [[FTDefaultSwiftUIViewTrackingHandler alloc]init];
     config.actionTrackingHandler = [[FTDefaultActionTrackingHandler alloc]init];
-    [self verifyDebugDescriptionContainsAllProperties:config filters:@[@"samplerate"]];
+    [self verifyDebugDescriptionContainsAllProperties:config filters:@[@"samplerate",@"enableUIKitViewLoadingTime"]];
 }
 
 - (void)testFTLoggerConfigDebugDescription {

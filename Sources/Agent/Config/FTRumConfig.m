@@ -177,6 +177,7 @@
 #endif
     [dict setValue:@(self.enableTraceWebView) forKey:@"enableTraceWebView"];
     [dict setValue:[self.allowWebViewHost copy] forKey:@"allowWebViewHost"];
+    [dict setValue:[self.issueDataProvider copy] forKey:@"issueDataProvider"];
     return [NSString stringWithFormat:@"%@",dict];
 }
 @end
