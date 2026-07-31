@@ -33,6 +33,7 @@
 #import "FTSwizzler.h"
 #import "FTViewControllerSwizzling.h"
 #import <string.h>
+#import <stdatomic.h>
 
 @interface FTViewLoadingState : NSObject
 @property (nonatomic, strong, nullable) NSNumber *loadDuration;
@@ -54,6 +55,7 @@
 @property (nonatomic, assign) BOOL hasViewLoadDurationGeneration;
 @property (nonatomic, assign) BOOL viewLoadDurationCalculated;
 @property (nonatomic, assign) BOOL viewLoadDurationReported;
+@property (nonatomic, assign) BOOL usesSwiftUIBaseLifecycleLoadingTime;
 @end
 
 @implementation FTViewLoadingState
@@ -66,7 +68,8 @@ static const void *viewWillLayoutSubviewsSwizzleKey = &viewWillLayoutSubviewsSwi
 static const void *viewDidAppearSwizzleKey = &viewDidAppearSwizzleKey;
 static const void *viewLoadDurationDisabledKey = &viewLoadDurationDisabledKey;
 static const void *viewLoadDurationInstrumentedKey = &viewLoadDurationInstrumentedKey;
-static NSUInteger viewLoadGeneration = 0;
+static atomic_uint_fast64_t viewLoadGeneration = ATOMIC_VAR_INIT(0);
+static atomic_bool swiftUIViewLoadingTimeEnabled = ATOMIC_VAR_INIT(false);
 
 static BOOL FTViewControllerClassIsBlacklisted(Class viewControllerClass) {
     @try {
@@ -97,16 +100,20 @@ static BOOL FTViewControllerClassIsFromSwiftUIBundle(Class viewControllerClass) 
     return [bundle.bundleURL.lastPathComponent isEqualToString:@"SwiftUI.framework"];
 }
 
+static BOOL FTViewControllerClassIsFromSwiftUIImage(Class viewControllerClass) {
+    const char *imagePath = class_getImageName(viewControllerClass);
+    return imagePath != NULL && strstr(imagePath, "/SwiftUI.framework/") != NULL;
+}
+
 @implementation UIViewController (FTAutoTrack)
 + (NSUInteger)ft_currentViewLoadGeneration{
-    @synchronized ([UIViewController class]) {
-        return viewLoadGeneration;
-    }
+    return (NSUInteger)atomic_load_explicit(&viewLoadGeneration, memory_order_relaxed);
 }
 + (void)ft_invalidatePendingViewLoadDurations{
-    @synchronized ([UIViewController class]) {
-        viewLoadGeneration++;
-    }
+    atomic_fetch_add_explicit(&viewLoadGeneration, 1, memory_order_relaxed);
+}
++ (void)ft_setSwiftUIViewLoadingTimeEnabled:(BOOL)enabled{
+    atomic_store_explicit(&swiftUIViewLoadingTimeEnabled, enabled, memory_order_relaxed);
 }
 -(void)setFt_viewLoadStartTime:(NSNumber *)viewLoadStartTime{
     FTViewLoadingState *state = [self ft_viewLoadingStateCreateIfNeeded:viewLoadStartTime != nil];
@@ -333,6 +340,7 @@ static BOOL FTViewControllerClassIsFromSwiftUIBundle(Class viewControllerClass) 
     state.hasFirstViewWillLayoutSubviewsStartTime = NO;
     state.viewLoadDurationCalculated = NO;
     state.viewLoadDurationReported = NO;
+    state.usesSwiftUIBaseLifecycleLoadingTime = NO;
     state.viewLoadGeneration = [UIViewController ft_currentViewLoadGeneration];
     state.hasViewLoadGeneration = YES;
 }
@@ -390,6 +398,26 @@ static BOOL FTViewControllerClassIsFromSwiftUIBundle(Class viewControllerClass) 
     [self ft_recordViewLoadDurationIfReadyForState:state viewDidAppearStartTime:viewDidAppearStartTime];
     if (!state.viewLoadDurationReported) {
         if (state.loadDuration == nil) {
+            [self ft_storeViewLoadDuration:@(-1) state:state];
+        }
+        state.viewLoadDurationReported = YES;
+    } else if (state.loadDuration == nil) {
+        [self ft_storeViewLoadDuration:@0 state:state];
+    }
+}
+- (void)ft_completeSwiftUIBaseLifecycleLoadingDurationForState:(FTViewLoadingState *)state viewDidAppearEndTime:(uint64_t)viewDidAppearEndTime{
+    if (state == nil) {
+        return;
+    }
+    [self ft_clearExpiredViewLoadDurationIfNeededForState:state];
+    if (!state.viewLoadDurationReported) {
+        BOOL hasValidStartTime = state.usesSwiftUIBaseLifecycleLoadingTime &&
+            state.hasViewLoadStartTime &&
+            ![self ft_clearExpiredViewLoadingMetricsIfNeededForState:state];
+        if (hasValidStartTime) {
+            uint64_t duration = viewDidAppearEndTime >= state.viewLoadStartTime ? viewDidAppearEndTime - state.viewLoadStartTime : 0;
+            [self ft_storeViewLoadDuration:@(duration) state:state];
+        } else {
             [self ft_storeViewLoadDuration:@(-1) state:state];
         }
         state.viewLoadDurationReported = YES;
@@ -462,14 +490,32 @@ static BOOL FTViewControllerClassIsFromSwiftUIBundle(Class viewControllerClass) 
 - (BOOL)isBlackListContainsViewController{
     return FTViewControllerClassIsBlacklisted(self.class);
 }
+-(void)ft_markViewLoadingTimeUnavailableReported{
+    FTViewLoadingState *state = [self ft_viewLoadingStateCreateIfNeeded:YES];
+    if (state != nil && !state.viewLoadDurationReported) {
+        state.viewLoadDurationReported = YES;
+    }
+}
+-(void)ft_viewDidLoad{
+    if (!atomic_load_explicit(&swiftUIViewLoadingTimeEnabled, memory_order_relaxed)) {
+        [self ft_viewDidLoad];
+        return;
+    }
+    BOOL isSwiftUIViewController = FTViewControllerClassIsFromSwiftUIImage(self.class);
+    FTViewLoadingState *state = isSwiftUIViewController ? [self ft_viewLoadingStateCreateIfNeeded:YES] : nil;
+    if (state != nil) {
+        [self ft_resetViewLoadingMetricsWithStartTime:FTDateUtil.systemTime state:state];
+        state.usesSwiftUIBaseLifecycleLoadingTime = YES;
+    }
+    [self ft_viewDidLoad];
+}
 -(void)ft_viewDidAppear:(BOOL)animated{
     if ([UIViewController ft_hasViewLoadingDurationInstrumentedClassInHierarchy:self.class]) {
         [self ft_viewDidAppear:animated];
         return;
     }
 
-    BOOL shouldReportDefaultRUMView = [UIViewController ft_shouldTrackDefaultViewControllerClass:self.class];
-    FTViewLoadingState *state = shouldReportDefaultRUMView ? [self ft_viewLoadingStateCreateIfNeeded:YES] : nil;
+    FTViewLoadingState *state = [self ft_viewLoadingStateCreateIfNeeded:NO];
     BOOL isOutermostAppearance = state != nil && state.viewDidAppearDepth == 0;
     uint64_t viewDidAppearStartTime = isOutermostAppearance && !state.viewLoadDurationCalculated ? FTDateUtil.systemTime : 0;
     if (state != nil) {
@@ -480,7 +526,11 @@ static BOOL FTViewControllerClassIsFromSwiftUIBundle(Class viewControllerClass) 
         state.viewDidAppearDepth--;
     }
     if (isOutermostAppearance && state.viewDidAppearDepth == 0) {
-        [self ft_completeViewLoadingDurationForState:state viewDidAppearStartTime:viewDidAppearStartTime];
+        if (state.usesSwiftUIBaseLifecycleLoadingTime) {
+            [self ft_completeSwiftUIBaseLifecycleLoadingDurationForState:state viewDidAppearEndTime:FTDateUtil.systemTime];
+        } else {
+            [self ft_completeViewLoadingDurationForState:state viewDidAppearStartTime:viewDidAppearStartTime];
+        }
     }
     [[FTAutoTrackHandler sharedInstance].viewControllerHandler notify_viewDidAppear:self animated:animated];
 }

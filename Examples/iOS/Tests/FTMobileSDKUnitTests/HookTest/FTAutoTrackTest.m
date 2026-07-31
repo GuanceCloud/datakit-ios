@@ -429,6 +429,30 @@ static dispatch_group_t testBundleViewControllerSwizzlingGroup = nil;
     XCTAssertEqual(mock.viewCreateCount, 1);
     XCTAssertEqualObjects(mock.lastCreateViewName, @"custom-handler-view");
 }
+- (void)testCustomUIKitTrackingHandlerReportsNegativeOneForBlacklistedViewControllerWithoutLoadingTime{
+    AddRumDatasHandlerMock *mock = [AddRumDatasHandlerMock new];
+    FTAutoTrackHandler *handler = [self resetAutoTrackHandlerForSwiftUITest];
+    FTAutoTrackAllViewControllerHandler *viewHandler = [FTAutoTrackAllViewControllerHandler new];
+    [handler startWithTrackView:YES
+                         action:NO
+            addRumDatasDelegate:mock
+                    viewHandler:viewHandler
+             swiftUIViewHandler:nil
+                  actionHandler:nil
+   heatmapIdentifierRegistry:nil];
+
+    UINavigationController *viewController = [UINavigationController new];
+    [viewController viewDidAppear:NO];
+
+    XCTAssertEqual(mock.viewCreateCount, 1);
+    XCTAssertEqualObjects(mock.lastLoadTime, @(-1));
+
+    [viewController viewDidDisappear:NO];
+    [viewController viewDidAppear:NO];
+
+    XCTAssertEqual(mock.viewCreateCount, 2);
+    XCTAssertEqualObjects(mock.lastLoadTime, @0);
+}
 - (void)testUIKitLoadingTimeReportsNegativeOneWhenBackgroundInvalidatesPendingLoad{
     FTAutoTrackViewLoadingTimeMock *mock = [self startUIKitAutoTrackWithMockHandler];
     FTAutoTrackLoadingTimeTestViewController *viewController = [FTAutoTrackLoadingTimeTestViewController new];
