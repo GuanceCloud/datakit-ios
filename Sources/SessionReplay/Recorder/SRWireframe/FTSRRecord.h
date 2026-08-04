@@ -99,6 +99,8 @@ NS_ASSUME_NONNULL_BEGIN
 @property (nonatomic, copy, nullable) NSDictionary *bindInfo;
 -(instancetype)initWithData:(NSData *)data;
 
+/// Identifier used only by Session Replay's local resource deduplication.
+-(NSString *)deduplicationIdentifier;
 -(NSString *)getResourceName;
 @end
 

@@ -27,6 +27,9 @@
 #import "FTSessionReplayCoreImports.h"
 #import "FTCompression.h"
 #import "FTSRRecord.h"
+
+static NSString * const FTReplayAssetsTagsKey = @"tags";
+
 @interface FTResourceCheckRequest ()
 @property (nonatomic, strong) NSArray<FTEnrichedResource *> *resources;
 @property (nonatomic, strong) NSDictionary *parameters;
@@ -56,8 +59,9 @@
     
     NSMutableDictionary *params = [NSMutableDictionary dictionary];
     [params setValue:appId forKey:FT_APP_ID];
-    if (self.parameters) {
-        [params addEntriesFromDictionary:self.parameters];
+    NSDictionary *tags = self.parameters[FTReplayAssetsTagsKey];
+    if ([tags isKindOfClass:NSDictionary.class] && tags.count > 0) {
+        [params setValue:tags forKey:FTReplayAssetsTagsKey];
     }
     [params setValue:self.resources forKey:@"files"];
     NSError *jsonError = nil;
