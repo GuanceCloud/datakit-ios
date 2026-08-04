@@ -117,12 +117,19 @@ BOOL isNAN(id value) {
 @end
 
 @interface FTMockResourcesWriter : NSObject<FTResourcesWriting>
-@property (nonatomic, strong) NSArray<FTEnrichedResource *> *writtenResources;
+@property (nonatomic, strong) NSMutableArray<FTEnrichedResource *> *writtenResources;
 @end
 
 @implementation FTMockResourcesWriter
+- (instancetype)init{
+    self = [super init];
+    if (self) {
+        _writtenResources = [NSMutableArray new];
+    }
+    return self;
+}
 - (void)write:(NSArray<FTEnrichedResource *> *)resources{
-    self.writtenResources = resources;
+    [self.writtenResources addObjectsFromArray:resources];
 }
 @end
 
@@ -504,6 +511,119 @@ BOOL isNAN(id value) {
     
     XCTAssertEqual(writer.writtenResources.count, 1);
     XCTAssertEqualObjects(writer.writtenResources.firstObject.bindInfo, context.bindInfo);
+}
+
+- (void)testResourceDeduplicationIdentifierUsesBindInfoValues{
+    FTEnrichedResource *first = [[FTEnrichedResource alloc] init];
+    first.identifier = @"resource-id";
+    first.bindInfo = @{@"wgtid": @"widget-1", @"tenant": @"tenant-1"};
+
+    FTEnrichedResource *sameContext = [[FTEnrichedResource alloc] init];
+    sameContext.identifier = @"resource-id";
+    sameContext.bindInfo = @{@"tenant": @"tenant-1", @"wgtid": @"widget-1"};
+
+    FTEnrichedResource *differentContext = [[FTEnrichedResource alloc] init];
+    differentContext.identifier = @"resource-id";
+    differentContext.bindInfo = @{@"wgtid": @"widget-2", @"tenant": @"tenant-1"};
+
+    FTEnrichedResource *withoutBindInfo = [[FTEnrichedResource alloc] init];
+    withoutBindInfo.identifier = @"resource-id";
+
+    XCTAssertEqualObjects(first.deduplicationIdentifier, sameContext.deduplicationIdentifier);
+    XCTAssertNotEqualObjects(first.deduplicationIdentifier, differentContext.deduplicationIdentifier);
+    XCTAssertEqualObjects(withoutBindInfo.deduplicationIdentifier, withoutBindInfo.identifier);
+}
+
+- (void)testResourceProcessorWritesSameIdentifierForDifferentBindInfo{
+    dispatch_queue_t queue = dispatch_queue_create("com.ft.sr.resource-processor.deduplication.test", DISPATCH_QUEUE_SERIAL);
+    FTMockResourcesWriter *writer = [[FTMockResourcesWriter alloc] init];
+    FTResourceProcessor *processor = [[FTResourceProcessor alloc] initWithQueue:queue resourceWriter:writer];
+    FTMockSRResource *resource = [[FTMockSRResource alloc] init];
+    resource.identifier = @"resource-id";
+    resource.data = [@"abc" dataUsingEncoding:NSUTF8StringEncoding];
+    resource.mimeType = @"image/png";
+
+    FTSRContext *firstContext = [[FTSRContext alloc] init];
+    firstContext.applicationID = @"app-id";
+    firstContext.bindInfo = @{@"wgtid": @"widget-1"};
+    FTSRContext *secondContext = [[FTSRContext alloc] init];
+    secondContext.applicationID = @"app-id";
+    secondContext.bindInfo = @{@"wgtid": @"widget-2"};
+
+    [processor process:@[resource] context:firstContext];
+    [processor process:@[resource] context:secondContext];
+    [processor process:@[resource] context:firstContext];
+    dispatch_sync(queue, ^{
+    });
+
+    XCTAssertEqual(writer.writtenResources.count, 2);
+    XCTAssertEqualObjects(writer.writtenResources[0].bindInfo, firstContext.bindInfo);
+    XCTAssertEqualObjects(writer.writtenResources[1].bindInfo, secondContext.bindInfo);
+}
+
+- (void)testResourcesWriterPersistsSameIdentifierForDifferentBindInfo{
+    dispatch_queue_t queue = dispatch_queue_create("com.ft.sr.resources-writer.deduplication.test", DISPATCH_QUEUE_SERIAL);
+    NSString *basePath = [NSString stringWithFormat:@"ft-session-replay-resource-writer-test/%@", NSUUID.UUID.UUIDString];
+    FTDirectory *grantedDirectory = [[FTDirectory alloc] initWithSubdirectoryPath:basePath];
+    FTFeatureDirectories *directories = [[FTFeatureDirectories alloc] initWithGranted:grantedDirectory
+                                                                              pending:nil
+                                                                         errorSampled:nil];
+    FTFeatureStorage *storage = [[FTFeatureStorage alloc] initWithFeatureName:@"session-replay-resources"
+                                                                        queue:queue
+                                                                  directories:directories
+                                                                  performance:[[FTPerformancePreset alloc] init]];
+    FTFeatureScope *scope = [[FTFeatureScope alloc] initWithStorage:storage trackingConsentProvider:^FTTrackingConsent{
+        return FTTrackingConsentGranted;
+    }];
+    FTMockDataStore *dataStore = [[FTMockDataStore alloc] init];
+    FTResourcesWriter *writer = [[FTResourcesWriter alloc] initWithFeatureScope:scope dataStore:dataStore];
+    FTEnrichedResource *first = [[FTEnrichedResource alloc] init];
+    first.identifier = @"resource-id";
+    first.appId = @"app-id";
+    first.data = [@"abc" dataUsingEncoding:NSUTF8StringEncoding];
+    first.mimeType = @"image/png";
+    first.bindInfo = @{@"wgtid": @"widget-1"};
+    FTEnrichedResource *second = [[FTEnrichedResource alloc] init];
+    second.identifier = @"resource-id";
+    second.appId = @"app-id";
+    second.data = [@"abc" dataUsingEncoding:NSUTF8StringEncoding];
+    second.mimeType = @"image/png";
+    second.bindInfo = @{@"wgtid": @"widget-2"};
+
+    [writer write:@[first]];
+    [writer write:@[second, first]];
+    dispatch_sync(queue, ^{
+    });
+
+    NSSet *knownIdentifiers = [writer valueForKey:@"knownIdentifiers"];
+    XCTAssertEqual(knownIdentifiers.count, 2);
+    XCTAssertTrue([knownIdentifiers containsObject:first.deduplicationIdentifier]);
+    XCTAssertTrue([knownIdentifiers containsObject:second.deduplicationIdentifier]);
+    XCTAssertTrue([dataStore.setKeys containsObject:@"ft-known-resources"]);
+
+    FTResourcesWriter *reloadedWriter = [[FTResourcesWriter alloc] initWithFeatureScope:scope dataStore:dataStore];
+    NSSet *reloadedKnownIdentifiers = [reloadedWriter valueForKey:@"knownIdentifiers"];
+    XCTAssertEqual(reloadedKnownIdentifiers.count, 2);
+    XCTAssertTrue([reloadedKnownIdentifiers containsObject:first.deduplicationIdentifier]);
+    XCTAssertTrue([reloadedKnownIdentifiers containsObject:second.deduplicationIdentifier]);
+
+    [reloadedWriter write:@[first, second]];
+    dispatch_sync(queue, ^{
+    });
+    XCTAssertEqual([[reloadedWriter valueForKey:@"knownIdentifiers"] count], 2);
+
+    FTEnrichedResource *third = [[FTEnrichedResource alloc] init];
+    third.identifier = @"resource-id";
+    third.appId = @"app-id";
+    third.data = [@"abc" dataUsingEncoding:NSUTF8StringEncoding];
+    third.mimeType = @"image/png";
+    third.bindInfo = @{@"wgtid": @"widget-3"};
+    [reloadedWriter write:@[third]];
+    dispatch_sync(queue, ^{
+    });
+    NSSet *updatedKnownIdentifiers = [reloadedWriter valueForKey:@"knownIdentifiers"];
+    XCTAssertEqual(updatedKnownIdentifiers.count, 3);
+    XCTAssertTrue([updatedKnownIdentifiers containsObject:third.deduplicationIdentifier]);
 }
 
 - (void)testResourcesWriterDoesNotPersistKnownIdentifierWhenNotGranted{

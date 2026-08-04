@@ -21,6 +21,7 @@
 #import "FTViewAttributes.h"
 #import "FTSessionReplayCoreImports.h"
 #import "FTTouchSnapshot.h"
+#import <CommonCrypto/CommonDigest.h>
 @implementation FTSRRecord
 -(instancetype)initWithTimestamp:(long long)timestamp{
     return [self initWithType:0 timestamp:timestamp];
@@ -341,6 +342,36 @@
     }
 
     return jsonData;
+}
+-(NSString *)deduplicationIdentifier{
+    if (self.bindInfo.count == 0) {
+        return self.identifier;
+    }
+    id safeBindInfo = [FTJSONUtil JSONSerializableObject:self.bindInfo];
+    if (![safeBindInfo isKindOfClass:NSDictionary.class]) {
+        return self.identifier;
+    }
+    NSDictionary *identifierContext = @{
+        @"resource_id": self.identifier ?: @"",
+        @"bind_info": safeBindInfo
+    };
+    NSError *error = nil;
+    NSJSONWritingOptions options = 0;
+    if (@available(iOS 11.0, *)) {
+        options = NSJSONWritingSortedKeys;
+    }
+    NSData *data = [NSJSONSerialization dataWithJSONObject:identifierContext options:options error:&error];
+    if (!data) {
+        FTInnerLogError(@"[Session Replay] Resource deduplication identifier encoding failed: %@", error.localizedDescription);
+        return self.identifier;
+    }
+    unsigned char digest[CC_MD5_DIGEST_LENGTH];
+    CC_MD5(data.bytes, (CC_LONG)data.length, digest);
+    NSMutableString *hash = [NSMutableString stringWithCapacity:CC_MD5_DIGEST_LENGTH * 2];
+    for (NSUInteger index = 0; index < CC_MD5_DIGEST_LENGTH; index++) {
+        [hash appendFormat:@"%02x", digest[index]];
+    }
+    return [NSString stringWithFormat:@"%@-%@", self.identifier, hash];
 }
 -(NSString *)getResourceName{
     if ([self.mimeType isEqualToString:@"image/svg+xml"]) {

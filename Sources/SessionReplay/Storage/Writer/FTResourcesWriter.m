@@ -112,9 +112,10 @@ NSString *const FT_KnownResourcesKey = @"ft-known-resources";
         NSMutableSet *unknownResources = [NSMutableSet new];
         NSSet *currentKnownIdentifiers = strongSelf.knownIdentifiers;
         [resources enumerateObjectsUsingBlock:^(FTEnrichedResource * _Nonnull obj, NSUInteger idx, BOOL * _Nonnull stop) {
-            if(![currentKnownIdentifiers containsObject:obj.identifier]){
+            NSString *deduplicationIdentifier = obj.deduplicationIdentifier;
+            if(![currentKnownIdentifiers containsObject:deduplicationIdentifier]){
                 [writer write:[obj toJSONData]];
-                [unknownResources addObject:obj.identifier];
+                [unknownResources addObject:deduplicationIdentifier];
             }
         }];
         [strongSelf storeUnknownResources:unknownResources];
