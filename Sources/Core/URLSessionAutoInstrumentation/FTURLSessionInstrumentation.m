@@ -49,10 +49,14 @@ typedef void (^CompletionHandler)(NSData * _Nullable data, NSURLResponse * _Null
 static void *const kFTReceiveDataSelector = (void *)&kFTReceiveDataSelector;
 static void *const kFTCompleteSelector = (void *)&kFTCompleteSelector;
 static void *const kFTCollectMetricsSelector = (void *)&kFTCollectMetricsSelector;
+static void *const kFTWebSocketOpenSelector = (void *)&kFTWebSocketOpenSelector;
 static void *const kFTConformsToFTProtocol = (void *)&kFTConformsToFTProtocol;
 static void *const kFTURLSessionTaskResume = (void *)&kFTURLSessionTaskResume;
 static void *const kFTURLSessionDataTaskWithURL = (void *)&kFTURLSessionDataTaskWithURL;
 static void *const kFTURLSessionDataTaskWithRequest = (void *)&kFTURLSessionDataTaskWithRequest;
+static void *const kFTURLSessionWebSocketTaskWithURL = (void *)&kFTURLSessionWebSocketTaskWithURL;
+static void *const kFTURLSessionWebSocketTaskWithURLProtocols = (void *)&kFTURLSessionWebSocketTaskWithURLProtocols;
+static void *const kFTURLSessionWebSocketTaskWithRequest = (void *)&kFTURLSessionWebSocketTaskWithRequest;
 
 #pragma mark - Utility Functions
 
@@ -230,9 +234,45 @@ static dispatch_once_t onceToken;
     dispatch_once(&onceToken, ^{
         [self swizzleDataTaskWithURL];
         [self swizzleDataTaskWithRequest];
+        [self swizzleWebSocketTaskCreation];
         [self swizzleTaskResume];
     });
 #endif
+}
+
+/// Captures WebSocket URLs before Foundation normalizes ws/wss to http/https on the task request.
+- (void)swizzleWebSocketTaskCreation {
+    if (@available(iOS 13.0, tvOS 13.0, macOS 10.15, *)) {
+        FTSwizzlerInstanceMethod([NSURLSession class],
+                                 @selector(webSocketTaskWithURL:),
+                                 FTSWReturnType(NSURLSessionTask *),
+                                 FTSWArguments(NSURL *url),
+                                 FTSWReplacement({
+            NSURLSessionTask *task = FTSWCallOriginal(url);
+            task.ft_webSocketOriginalURL = url;
+            return task;
+        }), FTSwizzlerModeOncePerClassAndSuperclasses, kFTURLSessionWebSocketTaskWithURL);
+
+        FTSwizzlerInstanceMethod([NSURLSession class],
+                                 @selector(webSocketTaskWithURL:protocols:),
+                                 FTSWReturnType(NSURLSessionTask *),
+                                 FTSWArguments(NSURL *url, NSArray<NSString *> *protocols),
+                                 FTSWReplacement({
+            NSURLSessionTask *task = FTSWCallOriginal(url, protocols);
+            task.ft_webSocketOriginalURL = url;
+            return task;
+        }), FTSwizzlerModeOncePerClassAndSuperclasses, kFTURLSessionWebSocketTaskWithURLProtocols);
+
+        FTSwizzlerInstanceMethod([NSURLSession class],
+                                 @selector(webSocketTaskWithRequest:),
+                                 FTSWReturnType(NSURLSessionTask *),
+                                 FTSWArguments(NSURLRequest *request),
+                                 FTSWReplacement({
+            NSURLSessionTask *task = FTSWCallOriginal(request);
+            task.ft_webSocketOriginalURL = request.URL;
+            return task;
+        }), FTSwizzlerModeOncePerClassAndSuperclasses, kFTURLSessionWebSocketTaskWithRequest);
+    }
 }
 
 /// Swizzle dataTaskWithURL:completionHandler: method
@@ -360,19 +400,23 @@ static dispatch_once_t onceToken;
     SEL receiveDataSelector = @selector(URLSession:dataTask:didReceiveData:);
     SEL completeSelector = @selector(URLSession:task:didCompleteWithError:);
     SEL collectMetricsSelector = @selector(URLSession:task:didFinishCollectingMetrics:);
+    SEL webSocketOpenSelector = @selector(URLSession:webSocketTask:didOpenWithProtocol:);
     
     Class receiveDataClass = [FTSwizzler realDelegateClassFromSelector:receiveDataSelector proxy:delegate];
     Class completeClass = [FTSwizzler realDelegateClassFromSelector:completeSelector proxy:delegate];
     Class collectMetricsClass = [FTSwizzler realDelegateClassFromSelector:collectMetricsSelector proxy:delegate];
+    Class webSocketOpenClass = [FTSwizzler realDelegateClassFromSelector:webSocketOpenSelector proxy:delegate];
     
     // Ensure the delegate class implements the necessary methods
     [self addNoopMethodIfNeededToClass:receiveDataClass selector:receiveDataSelector];
     [self addNoopMethodIfNeededToClass:completeClass selector:completeSelector];
     [self addNoopMethodIfNeededToClass:collectMetricsClass selector:collectMetricsSelector];
+    [self addNoopMethodIfNeededToClass:webSocketOpenClass selector:webSocketOpenSelector];
     
     [self swizzleReceiveDataMethodForClass:receiveDataClass];
     [self swizzleCompleteMethodForClass:completeClass];
     [self swizzleCollectMetricsMethodForClass:collectMetricsClass];
+    [self swizzleWebSocketOpenMethodForClass:webSocketOpenClass];
 }
 
 /// Adds a no-op method to the class if necessary
@@ -414,6 +458,13 @@ static dispatch_once_t onceToken;
                                                                                              __unused NSURLSession *session,
                                                                                              __unused NSURLSessionTask *task,
                                                                                              __unused NSURLSessionTaskMetrics *metrics) {
+        };
+        return imp_implementationWithBlock(block);
+    } else if (selector == @selector(URLSession:webSocketTask:didOpenWithProtocol:)) {
+        void (^block)(id, NSURLSession *, NSURLSessionTask *, NSString *) = ^(__unused id delegate,
+                                                                               __unused NSURLSession *session,
+                                                                               __unused NSURLSessionTask *webSocketTask,
+                                                                               __unused NSString *protocol) {
         };
         return imp_implementationWithBlock(block);
     }
@@ -460,6 +511,20 @@ static dispatch_once_t onceToken;
         }
         FTSWCallOriginal(session, task, metrics);
     }), FTSwizzlerModeOncePerClassAndSuperclasses, kFTCollectMetricsSelector);
+}
+
+/// Swizzle the WebSocket successful-open callback so a long-lived connection completes its Resource at handshake time.
+- (void)swizzleWebSocketOpenMethodForClass:(Class)targetClass {
+    FTSwizzlerInstanceMethod(targetClass,
+                             @selector(URLSession:webSocketTask:didOpenWithProtocol:),
+                             FTSWReturnType(void),
+                             FTSWArguments(NSURLSession *session, NSURLSessionTask *webSocketTask, NSString *protocol),
+                             FTSWReplacement({
+        if (FTURLSessionInstrumentation.sharedInstance.shouldRUMInterceptor) {
+            [FTURLSessionInstrumentation.sharedInstance.interceptor taskWebSocketDidOpen:webSocketTask extraProvider:nil];
+        }
+        FTSWCallOriginal(session, webSocketTask, protocol);
+    }), FTSwizzlerModeOncePerClassAndSuperclasses, kFTWebSocketOpenSelector);
 }
 
 #pragma mark - NSURLSessionTask Resume

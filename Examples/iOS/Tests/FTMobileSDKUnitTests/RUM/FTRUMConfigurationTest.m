@@ -116,6 +116,10 @@ typedef FTRUMAction* _Nullable (^FTLaunchActionTrackingBlock)(FTLaunchType type)
 @end
 #endif
 
+@interface FTRumConfig (FTViewLoadingTimeTest)
+@property (nonatomic, assign) BOOL enableUIKitViewLoadingTime;
+@end
+
 @interface ModalViewController : UIViewController
 
 @end
@@ -237,6 +241,15 @@ static void FTStartAutoTrackActionTest(AddRumDatasHandlerMock *mock,
     XCTAssertTrue(rumConfig.freezeDurationMs == 100);
     rumConfig.freezeDurationMs = 5000;
     XCTAssertTrue(rumConfig.freezeDurationMs == 5000);
+}
+- (void)testUIKitViewLoadingTimePrivateConfiguration {
+    FTRumConfig *rumConfig = [[FTRumConfig alloc]initWithAppid:@"appid"];
+    XCTAssertTrue(rumConfig.enableUIKitViewLoadingTime);
+
+    rumConfig.enableUIKitViewLoadingTime = NO;
+    FTRumConfig *copiedConfig = [rumConfig copy];
+    XCTAssertFalse(copiedConfig.enableUIKitViewLoadingTime);
+    XCTAssertFalse([[rumConfig debugDescription] containsString:@"enableUIKitViewLoadingTime"]);
 }
 - (void)testIssueDataProviderConfigurationCopyAndSerialization{
     FTRumConfig *rumConfig = [[FTRumConfig alloc]initWithAppid:@"appid"];

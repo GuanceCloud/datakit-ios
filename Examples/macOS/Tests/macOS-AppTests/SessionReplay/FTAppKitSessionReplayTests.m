@@ -677,6 +677,93 @@
     XCTAssertEqualObjects(wireframe.isVisible, @YES);
 }
 
+- (void)testAppKitGraphicalDatePickerProducesCalendarWireframes {
+    NSView *root = [[NSView alloc] initWithFrame:NSMakeRect(0, 0, 200, 200)];
+    NSDatePicker *datePicker =
+        [[NSDatePicker alloc] initWithFrame:NSMakeRect(20, 20, 150, 150)];
+    datePicker.datePickerStyle = NSDatePickerStyleClockAndCalendar;
+    datePicker.datePickerElements = NSDatePickerElementFlagYearMonthDay;
+    datePicker.locale = [[NSLocale alloc] initWithLocaleIdentifier:@"en_US_POSIX"];
+    NSCalendar *calendar =
+        [[NSCalendar alloc] initWithCalendarIdentifier:NSCalendarIdentifierGregorian];
+    calendar.timeZone = [NSTimeZone timeZoneForSecondsFromGMT:0];
+    NSDateComponents *components = [NSDateComponents new];
+    components.year = 2026;
+    components.month = 7;
+    components.day = 30;
+    datePicker.dateValue = [calendar dateFromComponents:components];
+    [root addSubview:datePicker];
+    FTViewTreeSnapshotBuilder *builder =
+        [[FTViewTreeSnapshotBuilder alloc] initWithAdditionalNodeRecorders:nil
+                                                             enableSwiftUI:NO];
+
+    FTViewTreeSnapshot *snapshot =
+        [builder takeSnapshot:@[root]
+                referenceView:root
+                      context:[self allowContentContext]];
+    NSArray<FTSRWireframe *> *wireframes = [self wireframesForSnapshot:snapshot];
+    NSPredicate *textPredicate =
+        [NSPredicate predicateWithBlock:^BOOL(FTSRWireframe *wireframe,
+                                               NSDictionary *bindings) {
+            return [wireframe isKindOfClass:FTSRTextWireframe.class];
+        }];
+    NSArray<FTSRTextWireframe *> *texts =
+        (NSArray<FTSRTextWireframe *> *)[wireframes
+            filteredArrayUsingPredicate:textPredicate];
+    NSArray<NSString *> *values = [texts valueForKey:@"text"];
+
+    XCTAssertEqual(snapshot.resources.count, 0u);
+    XCTAssertEqual(wireframes.count, 55u);
+    XCTAssertEqual(texts.count, 53u);
+    XCTAssertTrue([values containsObject:@"30"]);
+    XCTAssertTrue([values indexesOfObjectsPassingTest:^BOOL(NSString *value,
+                                                             NSUInteger index,
+                                                             BOOL *stop) {
+        return [value containsString:@"2026"];
+    }].count > 0);
+}
+
+- (void)testAppKitGraphicalDatePickerMasksDateValueAndSelection {
+    NSView *root = [[NSView alloc] initWithFrame:NSMakeRect(0, 0, 200, 200)];
+    NSDatePicker *datePicker =
+        [[NSDatePicker alloc] initWithFrame:NSMakeRect(20, 20, 150, 150)];
+    datePicker.datePickerStyle = NSDatePickerStyleClockAndCalendar;
+    datePicker.datePickerElements = NSDatePickerElementFlagYearMonthDay;
+    datePicker.locale = [[NSLocale alloc] initWithLocaleIdentifier:@"en_US_POSIX"];
+    NSCalendar *calendar =
+        [[NSCalendar alloc] initWithCalendarIdentifier:NSCalendarIdentifierGregorian];
+    calendar.timeZone = [NSTimeZone timeZoneForSecondsFromGMT:0];
+    NSDateComponents *components = [NSDateComponents new];
+    components.year = 2026;
+    components.month = 7;
+    components.day = 30;
+    datePicker.dateValue = [calendar dateFromComponents:components];
+    [root addSubview:datePicker];
+    FTViewTreeSnapshotBuilder *builder =
+        [[FTViewTreeSnapshotBuilder alloc] initWithAdditionalNodeRecorders:nil
+                                                             enableSwiftUI:NO];
+    FTSRContext *context = [self allowContentContext];
+    context.textAndInputPrivacy = FTTextAndInputPrivacyLevelMaskAllInputs;
+
+    FTViewTreeSnapshot *snapshot =
+        [builder takeSnapshot:@[root] referenceView:root context:context];
+    NSArray<FTSRWireframe *> *wireframes = [self wireframesForSnapshot:snapshot];
+    NSPredicate *textPredicate =
+        [NSPredicate predicateWithBlock:^BOOL(FTSRWireframe *wireframe,
+                                               NSDictionary *bindings) {
+            return [wireframe isKindOfClass:FTSRTextWireframe.class];
+        }];
+    NSArray<FTSRTextWireframe *> *texts =
+        (NSArray<FTSRTextWireframe *> *)[wireframes
+            filteredArrayUsingPredicate:textPredicate];
+
+    for (FTSRTextWireframe *text in texts) {
+        XCTAssertFalse([text.text containsString:@"30"]);
+        XCTAssertFalse([text.text containsString:@"2026"]);
+        XCTAssertEqualObjects(text.shapeStyle.backgroundColor, @"#00000000");
+    }
+}
+
 - (void)testRepresentativeAppKitControlsProduceWireframes {
     NSView *root = [[NSView alloc] initWithFrame:NSMakeRect(0, 0, 400, 240)];
     NSButton *button = [[NSButton alloc] initWithFrame:NSMakeRect(10, 190, 100, 30)];

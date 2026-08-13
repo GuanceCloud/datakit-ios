@@ -215,7 +215,7 @@
 		4AECBCDE24497DBF0023DEF7 /* CoreBluetooth.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 4AECBCD924497DBF0023DEF7 /* CoreBluetooth.framework */; };
 		7C28B872266098B800CECBA6 /* TestJsbridgeData.m in Sources */ = {isa = PBXBuildFile; fileRef = 7C28B871266098B800CECBA6 /* TestJsbridgeData.m */; };
 		7C28B878266098E700CECBA6 /* sample.html in Resources */ = {isa = PBXBuildFile; fileRef = 7C28B877266098E700CECBA6 /* sample.html */; };
-		7C64008B275A1E8300B2708B /* ManualRumAndTraceDataAdd.m in Sources */ = {isa = PBXBuildFile; fileRef = 7C64008A275A1E8300B2708B /* ManualRumAndTraceDataAdd.m */; };
+		7C64008B275A1E8300B2708B /* RumVC.m in Sources */ = {isa = PBXBuildFile; fileRef = 7C64008A275A1E8300B2708B /* RumVC.m */; };
 		7C6E8EC125DE4D4E00D12C12 /* CrashVC.m in Sources */ = {isa = PBXBuildFile; fileRef = 7C6E8EC025DE4D4E00D12C12 /* CrashVC.m */; };
 		7C6E8F1425DF684600D12C12 /* TableViewCellItem.m in Sources */ = {isa = PBXBuildFile; fileRef = 7C6E8F1325DF684600D12C12 /* TableViewCellItem.m */; };
 		7C6E925425E35E9800D12C12 /* Crasher.mm in Sources */ = {isa = PBXBuildFile; fileRef = 7C6E925225E35E9700D12C12 /* Crasher.mm */; };
@@ -565,8 +565,8 @@
 		7C28B871266098B800CECBA6 /* TestJsbridgeData.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = TestJsbridgeData.m; sourceTree = "<group>"; };
 		7C28B877266098E700CECBA6 /* sample.html */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.html; path = sample.html; sourceTree = "<group>"; };
 		7C2DD68F25F9BFF600BFF757 /* SampleApp-Bridging-Header.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = "SampleApp-Bridging-Header.h"; sourceTree = "<group>"; };
-		7C640089275A1E8300B2708B /* ManualRumAndTraceDataAdd.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = ManualRumAndTraceDataAdd.h; sourceTree = "<group>"; };
-		7C64008A275A1E8300B2708B /* ManualRumAndTraceDataAdd.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = ManualRumAndTraceDataAdd.m; sourceTree = "<group>"; };
+		7C640089275A1E8300B2708B /* RumVC.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = RumVC.h; sourceTree = "<group>"; };
+		7C64008A275A1E8300B2708B /* RumVC.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = RumVC.m; sourceTree = "<group>"; };
 		7C6E8EBF25DE4D4E00D12C12 /* CrashVC.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = CrashVC.h; sourceTree = "<group>"; };
 		7C6E8EC025DE4D4E00D12C12 /* CrashVC.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = CrashVC.m; sourceTree = "<group>"; };
 		7C6E8F1225DF684600D12C12 /* TableViewCellItem.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = TableViewCellItem.h; sourceTree = "<group>"; };
@@ -786,7 +786,7 @@
 			path = UtilsTest;
 			sourceTree = "<group>";
 		};
-		172DD33828F7FC27007AE5E9 /* WidgetDemo */ = {
+		172DD33828F7FC27007AE5E9 /* iOS/Extensions/WidgetDemo */ = {
 			isa = PBXGroup;
 			children = (
 				172DD34A28F7FCB8007AE5E9 /* WidgetDemoExtension.entitlements */,
@@ -834,7 +834,7 @@
 			path = Resource;
 			sourceTree = "<group>";
 		};
-		175B13AD29E3AE3A003A5B1B /* Config */ = {
+		175B13AD29E3AE3A003A5B1B /* App/Config */ = {
 			isa = PBXGroup;
 			children = (
 				175B13AE29E3AE87003A5B1B /* Config-Example.publish.xcconfig */,
@@ -844,7 +844,7 @@
 			path = App/Config;
 			sourceTree = "<group>";
 		};
-		1764E40029AC9B0500E70DBB /* SwiftApp */ = {
+		1764E40029AC9B0500E70DBB /* iOS/SwiftApp */ = {
 			isa = PBXGroup;
 			children = (
 				1764E40129AC9B0500E70DBB /* AppDelegate.swift */,
@@ -994,11 +994,11 @@
 			isa = PBXGroup;
 			children = (
 				7CDA50BD26DE15EB0062CC39 /* macOS */,
-				4A116958239113B600C0BC4E /* App */,
-				172DD33828F7FC27007AE5E9 /* WidgetDemo */,
-				1764E40029AC9B0500E70DBB /* SwiftApp */,
-				4A85313723AB85FC00B40B5D /* FTMobileSDKUnitTests */,
-				4A22526D23B5AC7600B0ED41 /* FTMobileSDKUITests */,
+				4A116958239113B600C0BC4E /* iOS/App */,
+				172DD33828F7FC27007AE5E9 /* iOS/Extensions/WidgetDemo */,
+				1764E40029AC9B0500E70DBB /* iOS/SwiftApp */,
+				4A85313723AB85FC00B40B5D /* iOS/Tests/FTMobileSDKUnitTests */,
+				4A22526D23B5AC7600B0ED41 /* iOS/Tests/FTMobileSDKUITests */,
 				17F10EBA2D13EAC800737EDD /* tvOS-App */,
 				17F10EC72D13EACC00737EDD /* tvOS-AppTests */,
 				17F10ECE2D13EACE00737EDD /* tvOS-AppUITests */,
@@ -1025,7 +1025,7 @@
 			name = Products;
 			sourceTree = "<group>";
 		};
-		4A116958239113B600C0BC4E /* App */ = {
+		4A116958239113B600C0BC4E /* iOS/App */ = {
 			isa = PBXGroup;
 			children = (
 				7C02F60C268C498200A0FE90 /* App.entitlements */,
@@ -1037,8 +1037,8 @@
 				4A1169832391145B00C0BC4E /* DemoViewController.mm */,
 				175C7CFA29E6CE1A00A7F271 /* LoggerVC.h */,
 				175C7CF929E6CE1A00A7F271 /* LoggerVC.m */,
-				7C640089275A1E8300B2708B /* ManualRumAndTraceDataAdd.h */,
-				7C64008A275A1E8300B2708B /* ManualRumAndTraceDataAdd.m */,
+				7C640089275A1E8300B2708B /* RumVC.h */,
+				7C64008A275A1E8300B2708B /* RumVC.m */,
 				7C6E8EBF25DE4D4E00D12C12 /* CrashVC.h */,
 				7C6E8EC025DE4D4E00D12C12 /* CrashVC.m */,
 				7C6E925325E35E9800D12C12 /* Crasher.h */,
@@ -1086,7 +1086,7 @@
 			path = iOS/App;
 			sourceTree = "<group>";
 		};
-		4A22526D23B5AC7600B0ED41 /* FTMobileSDKUITests */ = {
+		4A22526D23B5AC7600B0ED41 /* iOS/Tests/FTMobileSDKUITests */ = {
 			isa = PBXGroup;
 			children = (
 				4A22526E23B5AC7600B0ED41 /* FTMobileSDKUITests.m */,
@@ -1141,7 +1141,7 @@
 			name = Frameworks;
 			sourceTree = "<group>";
 		};
-		4A85313723AB85FC00B40B5D /* FTMobileSDKUnitTests */ = {
+		4A85313723AB85FC00B40B5D /* iOS/Tests/FTMobileSDKUnitTests */ = {
 			isa = PBXGroup;
 			children = (
 				178377F52D8413E600C590AE /* SessionReplay */,
@@ -1260,7 +1260,7 @@
 		7CDA50BD26DE15EB0062CC39 /* macOS */ = {
 			isa = PBXGroup;
 			children = (
-				175B13AD29E3AE3A003A5B1B /* Config */,
+				175B13AD29E3AE3A003A5B1B /* App/Config */,
 				7CDA50C826DE15EB0062CC39 /* macOS-App */,
 				7CDA50DF26DE15EE0062CC39 /* macOS-AppTests */,
 				7CDA50EA26DE15EE0062CC39 /* macOS-AppUITests */,
@@ -1839,9 +1839,13 @@
 			inputFileListPaths = (
 				"${PODS_ROOT}/Target Support Files/Pods-FTMobileSDKUnitTests-tvOS/Pods-FTMobileSDKUnitTests-tvOS-frameworks-${CONFIGURATION}-input-files.xcfilelist",
 			);
+			inputPaths = (
+			);
 			name = "[CP] Embed Pods Frameworks";
 			outputFileListPaths = (
 				"${PODS_ROOT}/Target Support Files/Pods-FTMobileSDKUnitTests-tvOS/Pods-FTMobileSDKUnitTests-tvOS-frameworks-${CONFIGURATION}-output-files.xcfilelist",
+			);
+			outputPaths = (
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 			shellPath = /bin/sh;
@@ -1873,9 +1877,13 @@
 			inputFileListPaths = (
 				"${PODS_ROOT}/Target Support Files/Pods-FTMobileSDKUnitTests/Pods-FTMobileSDKUnitTests-frameworks-${CONFIGURATION}-input-files.xcfilelist",
 			);
+			inputPaths = (
+			);
 			name = "[CP] Embed Pods Frameworks";
 			outputFileListPaths = (
 				"${PODS_ROOT}/Target Support Files/Pods-FTMobileSDKUnitTests/Pods-FTMobileSDKUnitTests-frameworks-${CONFIGURATION}-output-files.xcfilelist",
+			);
+			outputPaths = (
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 			shellPath = /bin/sh;
@@ -2047,7 +2055,7 @@
 				17CBD8762F67EFB100FD9D8B /* CustomCollectionViewCell.m in Sources */,
 				7C28B872266098B800CECBA6 /* TestJsbridgeData.m in Sources */,
 				7C8CE50B25F8DD2A0043B213 /* PrintHookTest.swift in Sources */,
-				7C64008B275A1E8300B2708B /* ManualRumAndTraceDataAdd.m in Sources */,
+				7C64008B275A1E8300B2708B /* RumVC.m in Sources */,
 				7CA16CD426B8ECD10079840D /* TestWkWebViewHandler.m in Sources */,
 				4A11695E239113B600C0BC4E /* SceneDelegate.m in Sources */,
 				7C6E8F1425DF684600D12C12 /* TableViewCellItem.m in Sources */,
@@ -2652,10 +2660,7 @@
 				SWIFT_VERSION = 5.0;
 				TARGETED_DEVICE_FAMILY = 3;
 				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/tvOS-App.app/$(BUNDLE_EXECUTABLE_FOLDER_PATH)/tvOS-App";
-				USER_HEADER_SEARCH_PATHS = (
-					"$(inherited)",
-					" ",
-				);
+				USER_HEADER_SEARCH_PATHS = "$(inherited)  ";
 			};
 			name = Debug;
 		};
@@ -2696,10 +2701,7 @@
 				SWIFT_VERSION = 5.0;
 				TARGETED_DEVICE_FAMILY = 3;
 				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/tvOS-App.app/$(BUNDLE_EXECUTABLE_FOLDER_PATH)/tvOS-App";
-				USER_HEADER_SEARCH_PATHS = (
-					"$(inherited)",
-					" ",
-				);
+				USER_HEADER_SEARCH_PATHS = "$(inherited)  ";
 			};
 			name = Pre;
 		};
@@ -2734,10 +2736,7 @@
 				SWIFT_VERSION = 5.0;
 				TARGETED_DEVICE_FAMILY = 3;
 				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/tvOS-App.app/$(BUNDLE_EXECUTABLE_FOLDER_PATH)/tvOS-App";
-				USER_HEADER_SEARCH_PATHS = (
-					"$(inherited)",
-					" ",
-				);
+				USER_HEADER_SEARCH_PATHS = "$(inherited)  ";
 			};
 			name = Release;
 		};
@@ -2866,10 +2865,7 @@
 				SWIFT_VERSION = 5.0;
 				TARGETED_DEVICE_FAMILY = "1,2";
 				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/App.app/$(BUNDLE_EXECUTABLE_FOLDER_PATH)/App";
-				USER_HEADER_SEARCH_PATHS = (
-					"$(inherited)",
-					" ",
-				);
+				USER_HEADER_SEARCH_PATHS = "$(inherited)  ";
 			};
 			name = Pre;
 		};
@@ -3437,10 +3433,7 @@
 				SWIFT_VERSION = 5.0;
 				TARGETED_DEVICE_FAMILY = "1,2";
 				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/App.app/$(BUNDLE_EXECUTABLE_FOLDER_PATH)/App";
-				USER_HEADER_SEARCH_PATHS = (
-					"$(inherited)",
-					" ",
-				);
+				USER_HEADER_SEARCH_PATHS = "$(inherited)  ";
 			};
 			name = Debug;
 		};
@@ -3473,10 +3466,7 @@
 				SWIFT_VERSION = 5.0;
 				TARGETED_DEVICE_FAMILY = "1,2";
 				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/App.app/$(BUNDLE_EXECUTABLE_FOLDER_PATH)/App";
-				USER_HEADER_SEARCH_PATHS = (
-					"$(inherited)",
-					" ",
-				);
+				USER_HEADER_SEARCH_PATHS = "$(inherited)  ";
 			};
 			name = Release;
 		};

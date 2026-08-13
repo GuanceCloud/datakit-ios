@@ -62,6 +62,12 @@ NS_ASSUME_NONNULL_BEGIN
 @property (nonatomic, copy) NSString *spanID;
 /// trace: trace_id. Returns `nil` if trace is not enabled or not associated with RUM.
 @property (nonatomic, copy) NSString *traceID;
+/// Whether this handler owns a WebSocket opening-handshake Resource.
+@property (nonatomic, assign) BOOL webSocketHandshake;
+/// Caller-visible WebSocket URL used for filtering, custom properties, and Resource tags.
+@property (nonatomic, copy, nullable) NSURL *webSocketURL;
+/// Prevents repeated resume calls from starting duplicate handshake Resources.
+@property (nonatomic, assign) BOOL webSocketHandshakeStarted;
 
 /// Initialization method
 /// - Parameter identifier: Unique identifier, based on the identifier

@@ -32,6 +32,7 @@ NS_ASSUME_NONNULL_BEGIN
 
 #if TARGET_OS_IOS || TARGET_OS_TV
 @protocol FTHeatmapIdentifierRegistry;
+@class FTRumConfig;
 typedef CGPoint (^FTHeatmapLocationResolver)(UIView *view);
 @protocol FTUIViewControllerHandler <NSObject>
 -(void)notify_viewDidAppear:(UIViewController *)viewController animated:(BOOL)animated;
@@ -59,6 +60,10 @@ typedef CGPoint (^FTHeatmapLocationResolver)(UIView *view);
 
 /// Singleton
 + (instancetype)sharedInstance;
+
+- (void)startWithRumConfig:(FTRumConfig *)rumConfig
+       addRumDatasDelegate:(id<FTRumDatasProtocol>)delegate
+   heatmapIdentifierRegistry:(nullable id<FTHeatmapIdentifierRegistry>)heatmapIdentifierRegistry;
 
 /// Enable collection
 /// - Parameters:

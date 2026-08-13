@@ -98,6 +98,8 @@ typedef BOOL (^SessionTaskErrorFilter)(NSError *_Nonnull error);
 ///   - task: request task
 ///   - data: complete request return data
 - (void)taskReceivedCompleteData:(NSURLSessionTask *)task data:(NSData *)data;
+/// Complete a WebSocket opening-handshake Resource after URLSession reports a successful open.
+- (void)taskWebSocketDidOpen:(NSURLSessionTask *)task extraProvider:(nullable ResourcePropertyProvider)extraProvider;
 /// Request end -stopResource
 /// - Parameters:
 ///   - task: request task

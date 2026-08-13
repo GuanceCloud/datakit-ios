@@ -190,6 +190,7 @@
         [FTNSSliderRecorder new],
         [FTNSSegmentedControlRecorder new],
         [FTNSProgressIndicatorRecorder new],
+        [FTNSDatePickerRecorder new],
         [FTNSTableHeaderViewRecorder new],
         [FTNSViewRecorder new],
     ];

@@ -117,7 +117,9 @@
         [fields setValue:model.metrics.tcp forKey:FT_KEY_RESOURCE_TCP];
         [fields setValue:model.metrics.dns forKey:FT_KEY_RESOURCE_DNS];
         [fields setValue:model.metrics.firstByte forKey:FT_KEY_RESOURCE_FIRST_BYTE];
-        [fields setValue:model.metrics.fetchInterval forKey:FT_DURATION];
+        if (!model.keepsResourceDuration) {
+            [fields setValue:model.metrics.fetchInterval forKey:FT_DURATION];
+        }
         [fields setValue:model.metrics.trans forKey:FT_KEY_RESOURCE_TRANS];
         [fields setValue:model.metrics.resource_dns_time forKey:FT_KEY_RESOURCE_DNS_TIME];
         [fields setValue:model.metrics.resource_ssl_time forKey:FT_KEY_RESOURCE_SSL_TIME];

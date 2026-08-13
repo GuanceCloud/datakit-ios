@@ -1,6 +1,10 @@
-# Unreleased
-1. Added `FTRumConfig.issueDataProvider` to attach validated custom fields to automatically collected Crash and ANR RUM Errors, including historical Crash and watchdog ANR context.
-2. Aligned Issue Provider validation with the cross-platform contract: scan at most 50 entries, accept up to an estimated 25 KiB, reserve the Error namespace, and preserve SDK-owned tag and field values on collisions.
+# 1.6.7-alpha.2
+1. Added RUM Resource collection for WebSocket handshake requests.
+2. Added `FTRumConfig.issueDataProvider` to attach validated custom fields to automatically collected Crash and ANR RUM Errors, including historical context; improved validation limits and shutdown cleanup.
+3. Added macOS Session Replay recording support for common AppKit views and controls.
+4. Added an `FTMobileAgent` compatibility proxy for existing integrations.
+5. Improved RUM launch, first-frame, delayed initial Action, and session-expiration handling for more stable lifecycle data.
+6. Improved automatic UIKit RUM View `loading_time` measurement for custom ViewControllers by excluding preloading idle time to prevent inflated durations.
 ---
 # 1.6.7-alpha.1
 1. Improved RUM fallback View lifecycle handling for application launch events and session transitions.

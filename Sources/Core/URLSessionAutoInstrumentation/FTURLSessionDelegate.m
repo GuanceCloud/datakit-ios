@@ -18,18 +18,6 @@
 //  limitations under the License.
 //
 
-//  Licensed under the Apache License, Version 2.0 (the "License");
-//  you may not use this file except in compliance with the License.
-//  You may obtain a copy of the License at
-//
-//      http://www.apache.org/licenses/LICENSE-2.0
-//
-//  Unless required by applicable law or agreed to in writing, software
-//  distributed under the License is distributed on an "AS IS" BASIS,
-//  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-//  See the License for the specific language governing permissions and
-//  limitations under the License.
-
 
 #import "FTURLSessionDelegate+Private.h"
 #import "FTURLSessionInstrumentation.h"
@@ -88,7 +76,7 @@
     // custom = YES is mainly to prioritize processing URLSession-level custom provider
     [self.instrumentation.interceptor taskMetricsCollected:task metrics:metrics custom:YES];
     if (@available(iOS 15.0,tvOS 15.0,macOS 12.0, *)) {
-        if(!task.ft_hasCompletion){
+        if(!task.ft_hasCompletion && !task.ft_isWebSocketTask){
             [self dealTaskCompleted:task error:task.error];
         }
     }
@@ -96,6 +84,9 @@
 
 -(void)URLSession:(NSURLSession *)session task:(NSURLSessionTask *)task didCompleteWithError:(NSError *)error{
     [self dealTaskCompleted:task error:error];
+}
+-(void)URLSession:(NSURLSession *)session webSocketTask:(NSURLSessionTask *)webSocketTask didOpenWithProtocol:(NSString *)protocol{
+    [self.instrumentation.interceptor taskWebSocketDidOpen:webSocketTask extraProvider:self.provider];
 }
 -(void)taskReceivedData:(NSURLSessionTask *)task data:(NSData *)data{
     [self.instrumentation.interceptor taskReceivedData:task data:data];

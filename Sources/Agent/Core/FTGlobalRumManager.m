@@ -180,14 +180,9 @@ static NSObject *sharedInstanceLock;
 - (void)setupAutoTrackWithRumConfig:(FTRumConfig *)rumConfig{
     self.heatmapIdentifierStore = [[FTHeatmapIdentifierStore alloc] init];
     [[FTModuleManager sharedInstance] registerService:@protocol(FTHeatmapIdentifierRegistry) instance:self.heatmapIdentifierStore];
-    [[FTAutoTrackHandler sharedInstance] startWithTrackView:rumConfig.enableTraceUserView
-                                                     action:rumConfig.enableTraceUserAction
-                                        addRumDatasDelegate:self.rumManager
-                                                viewHandler:rumConfig.viewTrackingHandler
-                                         swiftUIViewHandler:rumConfig.swiftUIViewTrackingHandler
-                                              actionHandler:rumConfig.actionTrackingHandler
-                                  heatmapIdentifierRegistry:self.heatmapIdentifierStore
-    ];
+    [[FTAutoTrackHandler sharedInstance] startWithRumConfig:rumConfig
+                                         addRumDatasDelegate:self.rumManager
+                                     heatmapIdentifierRegistry:self.heatmapIdentifierStore];
 }
 #endif
 - (BOOL)setupCrashWithRumConfig:(FTRumConfig *)rumConfig

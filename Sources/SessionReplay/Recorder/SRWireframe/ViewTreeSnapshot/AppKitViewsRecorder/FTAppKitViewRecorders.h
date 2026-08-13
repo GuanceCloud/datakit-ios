@@ -47,6 +47,10 @@ NS_ASSUME_NONNULL_BEGIN
 @property (nonatomic, copy) NSString *identifier;
 @end
 
+@interface FTNSDatePickerRecorder : NSObject <FTSRWireframesRecorder>
+@property (nonatomic, copy) NSString *identifier;
+@end
+
 @interface FTNSTableHeaderViewRecorder : NSObject <FTSRWireframesRecorder>
 @property (nonatomic, copy) NSString *identifier;
 @end

@@ -7,6 +7,25 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		A1F0F1012FC1000100A0A001 /* FTSessionReplayPlatform.h in Headers */ = {isa = PBXBuildFile; fileRef = A1F0F0012FC1000100A0A001 /* FTSessionReplayPlatform.h */; };
+		A1F0F1022FC1000100A0A001 /* NSView+FTSRPrivacy.h in Headers */ = {isa = PBXBuildFile; fileRef = A1F0F0022FC1000100A0A001 /* NSView+FTSRPrivacy.h */; settings = {ATTRIBUTES = (Public, ); }; };
+		A1F0F1032FC1000100A0A001 /* NSView+FTSRPrivacy.m in Sources */ = {isa = PBXBuildFile; fileRef = A1F0F0032FC1000100A0A001 /* NSView+FTSRPrivacy.m */; };
+		A1F0F1042FC1000100A0A001 /* NSView+FTSR.h in Headers */ = {isa = PBXBuildFile; fileRef = A1F0F0042FC1000100A0A001 /* NSView+FTSR.h */; };
+		A1F0F1052FC1000100A0A001 /* NSView+FTSR.m in Sources */ = {isa = PBXBuildFile; fileRef = A1F0F0052FC1000100A0A001 /* NSView+FTSR.m */; };
+		A1F0F1062FC1000100A0A001 /* FTAppKitViewRecorders.h in Headers */ = {isa = PBXBuildFile; fileRef = A1F0F0062FC1000100A0A001 /* FTAppKitViewRecorders.h */; };
+		A1F0F1082FC1000100A0A001 /* FTAppKitRecorderSupport.h in Headers */ = {isa = PBXBuildFile; fileRef = A1F0F0082FC1000100A0A001 /* FTAppKitRecorderSupport.h */; };
+		A1F0F1092FC1000100A0A001 /* FTAppKitRecorderSupport.m in Sources */ = {isa = PBXBuildFile; fileRef = A1F0F0092FC1000100A0A001 /* FTAppKitRecorderSupport.m */; };
+		A1F0F10A2FC1000100A0A001 /* FTNSViewRecorder.m in Sources */ = {isa = PBXBuildFile; fileRef = A1F0F00A2FC1000100A0A001 /* FTNSViewRecorder.m */; };
+		A1F0F10B2FC1000100A0A001 /* FTNSTextFieldRecorder.m in Sources */ = {isa = PBXBuildFile; fileRef = A1F0F00B2FC1000100A0A001 /* FTNSTextFieldRecorder.m */; };
+		A1F0F10C2FC1000100A0A001 /* FTNSTextViewRecorder.m in Sources */ = {isa = PBXBuildFile; fileRef = A1F0F00C2FC1000100A0A001 /* FTNSTextViewRecorder.m */; };
+		A1F0F10D2FC1000100A0A001 /* FTNSImageViewRecorder.m in Sources */ = {isa = PBXBuildFile; fileRef = A1F0F00D2FC1000100A0A001 /* FTNSImageViewRecorder.m */; };
+		A1F0F10E2FC1000100A0A001 /* FTNSButtonRecorder.m in Sources */ = {isa = PBXBuildFile; fileRef = A1F0F00E2FC1000100A0A001 /* FTNSButtonRecorder.m */; };
+		A1F0F10F2FC1000100A0A001 /* FTNSSwitchRecorder.m in Sources */ = {isa = PBXBuildFile; fileRef = A1F0F00F2FC1000100A0A001 /* FTNSSwitchRecorder.m */; };
+		A1F0F1102FC1000100A0A001 /* FTNSSliderRecorder.m in Sources */ = {isa = PBXBuildFile; fileRef = A1F0F0102FC1000100A0A001 /* FTNSSliderRecorder.m */; };
+		A1F0F1112FC1000100A0A001 /* FTNSSegmentedControlRecorder.m in Sources */ = {isa = PBXBuildFile; fileRef = A1F0F0112FC1000100A0A001 /* FTNSSegmentedControlRecorder.m */; };
+		A1F0F1122FC1000100A0A001 /* FTNSProgressIndicatorRecorder.m in Sources */ = {isa = PBXBuildFile; fileRef = A1F0F0122FC1000100A0A001 /* FTNSProgressIndicatorRecorder.m */; };
+		A1F0F1132FC1000100A0A001 /* FTNSTableHeaderViewRecorder.m in Sources */ = {isa = PBXBuildFile; fileRef = A1F0F0132FC1000100A0A001 /* FTNSTableHeaderViewRecorder.m */; };
+		A1F0F1142FC1000100A0A001 /* FTNSDatePickerRecorder.m in Sources */ = {isa = PBXBuildFile; fileRef = A1F0F0142FC1000100A0A001 /* FTNSDatePickerRecorder.m */; };
 		03157CEC7CF987963482291D /* FTAutoTrackHeatmapResolver.h in Headers */ = {isa = PBXBuildFile; fileRef = 34A94D2591111F14BECB5094 /* FTAutoTrackHeatmapResolver.h */; };
 		116A037353F194CAC373B6C4 /* FTIDFVProvider.m in Sources */ = {isa = PBXBuildFile; fileRef = AB1F52E89BB980427636D6FA /* FTIDFVProvider.m */; };
 		1231769D4A20CB0E31042CCC /* FTAutoTrackEventResolver.h in Headers */ = {isa = PBXBuildFile; fileRef = F57B9E9A435A2BF46A79A308 /* FTAutoTrackEventResolver.h */; };
@@ -824,6 +843,7 @@
 		17E4CC2629CD42E4005C2D99 /* UIApplication+FTAutoTrack.m in Sources */ = {isa = PBXBuildFile; fileRef = 17E4CBB829CD42E4005C2D99 /* UIApplication+FTAutoTrack.m */; };
 		17E4CC2829CD42E4005C2D99 /* BlacklistedVCClassNames.h in Headers */ = {isa = PBXBuildFile; fileRef = 17E4CBBA29CD42E4005C2D99 /* BlacklistedVCClassNames.h */; };
 		17E4CC2929CD42E4005C2D99 /* UIViewController+FTAutoTrack.m in Sources */ = {isa = PBXBuildFile; fileRef = 17E4CBBB29CD42E4005C2D99 /* UIViewController+FTAutoTrack.m */; };
+		7A1200023000000000000001 /* FTViewControllerSwizzling.m in Sources */ = {isa = PBXBuildFile; fileRef = 7A1200013000000000000001 /* FTViewControllerSwizzling.m */; };
 		17E4CC2D29CD42E4005C2D99 /* UIGestureRecognizer+FTAutoTrack.h in Headers */ = {isa = PBXBuildFile; fileRef = 17E4CBBF29CD42E4005C2D99 /* UIGestureRecognizer+FTAutoTrack.h */; };
 		17E4CC2E29CD42E4005C2D99 /* UIView+FTAutoTrack.m in Sources */ = {isa = PBXBuildFile; fileRef = 17E4CBC029CD42E4005C2D99 /* UIView+FTAutoTrack.m */; };
 		17E4CC3029CD42E4005C2D99 /* UIApplication+FTAutoTrack.h in Headers */ = {isa = PBXBuildFile; fileRef = 17E4CBC229CD42E4005C2D99 /* UIApplication+FTAutoTrack.h */; };
@@ -982,6 +1002,25 @@
 /* End PBXContainerItemProxy section */
 
 /* Begin PBXFileReference section */
+		A1F0F0012FC1000100A0A001 /* FTSessionReplayPlatform.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = FTSessionReplayPlatform.h; sourceTree = "<group>"; };
+		A1F0F0022FC1000100A0A001 /* NSView+FTSRPrivacy.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = "NSView+FTSRPrivacy.h"; sourceTree = "<group>"; };
+		A1F0F0032FC1000100A0A001 /* NSView+FTSRPrivacy.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = "NSView+FTSRPrivacy.m"; sourceTree = "<group>"; };
+		A1F0F0042FC1000100A0A001 /* NSView+FTSR.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = "NSView+FTSR.h"; sourceTree = "<group>"; };
+		A1F0F0052FC1000100A0A001 /* NSView+FTSR.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = "NSView+FTSR.m"; sourceTree = "<group>"; };
+		A1F0F0062FC1000100A0A001 /* FTAppKitViewRecorders.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = FTAppKitViewRecorders.h; sourceTree = "<group>"; };
+		A1F0F0082FC1000100A0A001 /* FTAppKitRecorderSupport.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = FTAppKitRecorderSupport.h; sourceTree = "<group>"; };
+		A1F0F0092FC1000100A0A001 /* FTAppKitRecorderSupport.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = FTAppKitRecorderSupport.m; sourceTree = "<group>"; };
+		A1F0F00A2FC1000100A0A001 /* FTNSViewRecorder.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = FTNSViewRecorder.m; sourceTree = "<group>"; };
+		A1F0F00B2FC1000100A0A001 /* FTNSTextFieldRecorder.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = FTNSTextFieldRecorder.m; sourceTree = "<group>"; };
+		A1F0F00C2FC1000100A0A001 /* FTNSTextViewRecorder.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = FTNSTextViewRecorder.m; sourceTree = "<group>"; };
+		A1F0F00D2FC1000100A0A001 /* FTNSImageViewRecorder.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = FTNSImageViewRecorder.m; sourceTree = "<group>"; };
+		A1F0F00E2FC1000100A0A001 /* FTNSButtonRecorder.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = FTNSButtonRecorder.m; sourceTree = "<group>"; };
+		A1F0F00F2FC1000100A0A001 /* FTNSSwitchRecorder.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = FTNSSwitchRecorder.m; sourceTree = "<group>"; };
+		A1F0F0102FC1000100A0A001 /* FTNSSliderRecorder.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = FTNSSliderRecorder.m; sourceTree = "<group>"; };
+		A1F0F0112FC1000100A0A001 /* FTNSSegmentedControlRecorder.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = FTNSSegmentedControlRecorder.m; sourceTree = "<group>"; };
+		A1F0F0122FC1000100A0A001 /* FTNSProgressIndicatorRecorder.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = FTNSProgressIndicatorRecorder.m; sourceTree = "<group>"; };
+		A1F0F0132FC1000100A0A001 /* FTNSTableHeaderViewRecorder.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = FTNSTableHeaderViewRecorder.m; sourceTree = "<group>"; };
+		A1F0F0142FC1000100A0A001 /* FTNSDatePickerRecorder.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = FTNSDatePickerRecorder.m; sourceTree = "<group>"; };
 		11F102A299DB57BB4B768266 /* FTHeatmapIdentifierStore.m */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.c.objc; path = FTHeatmapIdentifierStore.m; sourceTree = "<group>"; };
 		17018C612F50253200688324 /* FTDataStore.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = FTDataStore.h; sourceTree = "<group>"; };
 		17018C622F50253200688324 /* FTDataStoreFileReader.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = FTDataStoreFileReader.h; sourceTree = "<group>"; };
@@ -1525,6 +1564,8 @@
 		17E4CBB829CD42E4005C2D99 /* UIApplication+FTAutoTrack.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = "UIApplication+FTAutoTrack.m"; sourceTree = "<group>"; };
 		17E4CBBA29CD42E4005C2D99 /* BlacklistedVCClassNames.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = BlacklistedVCClassNames.h; sourceTree = "<group>"; };
 		17E4CBBB29CD42E4005C2D99 /* UIViewController+FTAutoTrack.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = "UIViewController+FTAutoTrack.m"; sourceTree = "<group>"; };
+		7A1200003000000000000001 /* FTViewControllerSwizzling.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = FTViewControllerSwizzling.h; sourceTree = "<group>"; };
+		7A1200013000000000000001 /* FTViewControllerSwizzling.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = FTViewControllerSwizzling.m; sourceTree = "<group>"; };
 		17E4CBBF29CD42E4005C2D99 /* UIGestureRecognizer+FTAutoTrack.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "UIGestureRecognizer+FTAutoTrack.h"; sourceTree = "<group>"; };
 		17E4CBC029CD42E4005C2D99 /* UIView+FTAutoTrack.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = "UIView+FTAutoTrack.m"; sourceTree = "<group>"; };
 		17E4CBC229CD42E4005C2D99 /* UIApplication+FTAutoTrack.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "UIApplication+FTAutoTrack.h"; sourceTree = "<group>"; };
@@ -2017,6 +2058,27 @@
 			);
 			name = SessionReplay;
 			path = Sources/SessionReplay;
+			sourceTree = "<group>";
+		};
+		A1F0F2002FC1000100A0A001 /* AppKitViewsRecorder */ = {
+			isa = PBXGroup;
+			children = (
+				A1F0F0062FC1000100A0A001 /* FTAppKitViewRecorders.h */,
+				A1F0F0082FC1000100A0A001 /* FTAppKitRecorderSupport.h */,
+				A1F0F0092FC1000100A0A001 /* FTAppKitRecorderSupport.m */,
+				A1F0F00E2FC1000100A0A001 /* FTNSButtonRecorder.m */,
+				A1F0F0142FC1000100A0A001 /* FTNSDatePickerRecorder.m */,
+				A1F0F00D2FC1000100A0A001 /* FTNSImageViewRecorder.m */,
+				A1F0F0122FC1000100A0A001 /* FTNSProgressIndicatorRecorder.m */,
+				A1F0F0112FC1000100A0A001 /* FTNSSegmentedControlRecorder.m */,
+				A1F0F0102FC1000100A0A001 /* FTNSSliderRecorder.m */,
+				A1F0F00F2FC1000100A0A001 /* FTNSSwitchRecorder.m */,
+				A1F0F0132FC1000100A0A001 /* FTNSTableHeaderViewRecorder.m */,
+				A1F0F00B2FC1000100A0A001 /* FTNSTextFieldRecorder.m */,
+				A1F0F00C2FC1000100A0A001 /* FTNSTextViewRecorder.m */,
+				A1F0F00A2FC1000100A0A001 /* FTNSViewRecorder.m */,
+			);
+			path = AppKitViewsRecorder;
 			sourceTree = "<group>";
 		};
 		1701B1922F557F9C00E2AE8A /* Utilities */ = {
@@ -2701,6 +2763,8 @@
 				17E4CBC829CD42E4005C2D99 /* BlacklistedVCClassNames.m */,
 				17E4CBC929CD42E4005C2D99 /* UIViewController+FTAutoTrack.h */,
 				17E4CBBB29CD42E4005C2D99 /* UIViewController+FTAutoTrack.m */,
+				7A1200003000000000000001 /* FTViewControllerSwizzling.h */,
+				7A1200013000000000000001 /* FTViewControllerSwizzling.m */,
 				17C2FEA82E432949003D600F /* FTDefaultUIKitViewTrackingHandler.h */,
 				17C2FEA92E432949003D600F /* FTDefaultUIKitViewTrackingHandler.m */,
 				E2C3B3D8C4BFC8F2D4DD8AE9 /* FTAutoTrackActionPublisher.h */,
@@ -2849,26 +2913,6 @@
 				A1F0B1562FA9000100A0A001 /* XoshiroRandomNumberGenerator.swift */,
 			);
 			path = SwiftUI;
-			sourceTree = "<group>";
-		};
-		A1F0F2002FC1000100A0A001 /* AppKitViewsRecorder */ = {
-			isa = PBXGroup;
-			children = (
-				A1F0F0062FC1000100A0A001 /* FTAppKitViewRecorders.h */,
-				A1F0F0082FC1000100A0A001 /* FTAppKitRecorderSupport.h */,
-				A1F0F0092FC1000100A0A001 /* FTAppKitRecorderSupport.m */,
-				A1F0F00E2FC1000100A0A001 /* FTNSButtonRecorder.m */,
-				A1F0F00D2FC1000100A0A001 /* FTNSImageViewRecorder.m */,
-				A1F0F0122FC1000100A0A001 /* FTNSProgressIndicatorRecorder.m */,
-				A1F0F0112FC1000100A0A001 /* FTNSSegmentedControlRecorder.m */,
-				A1F0F0102FC1000100A0A001 /* FTNSSliderRecorder.m */,
-				A1F0F00F2FC1000100A0A001 /* FTNSSwitchRecorder.m */,
-				A1F0F0132FC1000100A0A001 /* FTNSTableHeaderViewRecorder.m */,
-				A1F0F00B2FC1000100A0A001 /* FTNSTextFieldRecorder.m */,
-				A1F0F00C2FC1000100A0A001 /* FTNSTextViewRecorder.m */,
-				A1F0F00A2FC1000100A0A001 /* FTNSViewRecorder.m */,
-			);
-			path = AppKitViewsRecorder;
 			sourceTree = "<group>";
 		};
 		ABC7A3EC51D767D3CD90D051 /* SwiftUI */ = {
@@ -3759,6 +3803,7 @@
 				17AC174E2B98635C003E18A6 /* NSDate+FTUtil.m in Sources */,
 				17C33AA42D93D68B003BB98B /* FTDataWriterWorker.m in Sources */,
 				17E4CC2929CD42E4005C2D99 /* UIViewController+FTAutoTrack.m in Sources */,
+				7A1200023000000000000001 /* FTViewControllerSwizzling.m in Sources */,
 				179A53942F85272200FE4B6F /* FTExtensionConfig.m in Sources */,
 				1759510F2A6FE4DE006FAB9D /* NSNumber+FTAdd.m in Sources */,
 				17E4CB4E29CD42DA005C2D99 /* FTAppLifeCycle.m in Sources */,
@@ -3915,6 +3960,7 @@
 				A1F0F1052FC1000100A0A001 /* NSView+FTSR.m in Sources */,
 				A1F0F1092FC1000100A0A001 /* FTAppKitRecorderSupport.m in Sources */,
 				A1F0F10E2FC1000100A0A001 /* FTNSButtonRecorder.m in Sources */,
+				A1F0F1142FC1000100A0A001 /* FTNSDatePickerRecorder.m in Sources */,
 				A1F0F10D2FC1000100A0A001 /* FTNSImageViewRecorder.m in Sources */,
 				A1F0F1122FC1000100A0A001 /* FTNSProgressIndicatorRecorder.m in Sources */,
 				A1F0F1112FC1000100A0A001 /* FTNSSegmentedControlRecorder.m in Sources */,
