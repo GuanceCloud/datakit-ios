@@ -141,4 +141,16 @@ Pod::Spec.new do |s|
 		sr.osx.deployment_target = '10.14'
 		sr.dependency "#{s.name}/SessionReplay"
 	end
+
+	s.subspec 'ElectronWebView' do |electron|
+		electron.platform = :osx, '10.14'
+		electron.public_header_files = 'Sources/ElectronWebView/Public/*.h'
+		electron.source_files = 'Sources/ElectronWebView/**/*{.h,.m}'
+		electron.dependency 'GuanceSDK/Core'
+		electron.dependency 'GuanceSDK/SessionReplay'
+		electron.pod_target_xcconfig = {
+			'HEADER_SEARCH_PATHS' => header_search_paths,
+			'GCC_PREPROCESSOR_DEFINITIONS' => '$(inherited) GUANCE_COCOAPODS=1'
+		}
+	end
 end

@@ -29,6 +29,9 @@ NS_ASSUME_NONNULL_BEGIN
 @property (nonatomic, copy, nullable) NSString *viewReferrer;
 @property (nonatomic, copy, nullable) NSString *viewId;
 @property (nonatomic, weak, nullable) WKWebView *container;
+/// RUM link values retained independently from WKWebView so non-WebKit
+/// containers, such as Electron WebContents, can reuse the event pipeline.
+@property (nonatomic, copy, nullable) NSDictionary *linkRUMKeysInfo;
 @end
 
 @interface FTWKWebViewJavascriptBridge : NSObject<FTWebViewJavascriptBridgeBaseDelegate,WKScriptMessageHandler>

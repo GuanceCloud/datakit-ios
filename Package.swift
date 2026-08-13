@@ -29,6 +29,10 @@ let package = Package(
                 "GuanceSessionReplaySwiftUI",
             ]
         ),
+        .library(
+            name: "GuanceElectronWebView",
+            targets: ["GuanceElectronWebView"]
+        ),
     ],
     dependencies: [],
     targets: [
@@ -180,6 +184,7 @@ let package = Package(
                 "_FTRUM",
                 "_FTURLSessionAutoInstrumentation",
                 "_FTLogger",
+                "_FTProtocol",
             ],
             path: "Sources",
             sources: [
@@ -204,7 +209,10 @@ let package = Package(
         // MARK: - GuanceSessionReplay
         .target(
             name: "GuanceSessionReplay",
-            dependencies: ["_GuanceSDKCore"],
+            dependencies: [
+                "_GuanceSDKCore",
+                "_FTProtocol",
+            ],
             path: "Sources/SessionReplay",
             exclude: [
                 "Recorder/SRWireframe/ViewTreeSnapshot/ViewsRecorder/SwiftUI",
@@ -235,6 +243,37 @@ let package = Package(
         .target(
             name: "GuanceSessionReplaySwiftUI",
             path: "Sources/SessionReplay/Recorder/SRWireframe/ViewTreeSnapshot/ViewsRecorder/SwiftUI"
+        ),
+        // MARK: - GuanceElectronWebView
+        .target(
+            name: "GuanceElectronWebView",
+            dependencies: [
+                "_GuanceSDKCore",
+                "_FTProtocol",
+                "GuanceSessionReplay",
+            ],
+            path: "Sources/ElectronWebView",
+            exclude: ["JavaScript"],
+            publicHeadersPath: "Public",
+            cSettings: [
+                .headerSearchPath("."),
+                .headerSearchPath("../SessionReplay"),
+                .headerSearchPath("../SessionReplay/Processor/Builders"),
+                .headerSearchPath("../SessionReplay/Recorder"),
+                .headerSearchPath("../SessionReplay/Recorder/SRWireframe"),
+                .headerSearchPath("../SessionReplay/Recorder/SRWireframe/ViewTreeSnapshot"),
+                .headerSearchPath("../SessionReplay/Recorder/SRWireframe/ViewTreeSnapshot/ViewsRecorder"),
+            ]
+        ),
+        .testTarget(
+            name: "GuanceElectronWebViewTests",
+            dependencies: [
+                "GuanceElectronWebView",
+                "_GuanceSDKCore",
+                "_FTRUM",
+                "_FTProtocol",
+            ],
+            path: "Tests/GuanceElectronWebViewTests"
         ),
     ]
 )

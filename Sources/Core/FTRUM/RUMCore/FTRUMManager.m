@@ -216,7 +216,7 @@ void *FTRUMQueueIdentityKey = &FTRUMQueueIdentityKey;
             viewModel.fields = property;
             [self process:viewModel context:context];
             self.viewReferrer = viewName;
-            self.viewReferrerId = self.rumDependencies.sessionHasReplay != nil ? viewId : nil;
+            self.viewReferrerId = viewId;
         } @catch (NSException *exception) {
             FTInnerLogError(@"exception %@",exception);
         }
@@ -668,7 +668,9 @@ void *FTRUMQueueIdentityKey = &FTRUMQueueIdentityKey;
 }
 #pragma mark ========== FTWKWebViewRumDelegate =============
 - (NSString *)getLastHasReplayViewID{
-    return self.viewReferrerId;
+    return self.rumDependencies.sessionHasReplay != nil
+        ? self.viewReferrerId
+        : nil;
 }
 -(NSString *)getLastViewName{
     return self.viewReferrer;

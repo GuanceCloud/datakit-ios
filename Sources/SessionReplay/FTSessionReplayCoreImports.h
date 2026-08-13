@@ -26,6 +26,7 @@
 
 #if defined(SWIFT_PACKAGE)
 @import _GuanceSDKCore;
+@import _FTProtocol;
 #else
 #import "Sources/Core/BaseUtils/Base/FTBaseInfoHandler.h"
 #import "Sources/Core/BaseUtils/Base/FTConstants.h"
@@ -48,6 +49,9 @@
 #import "Sources/Core/Protocol/FTMessageReceiver.h"
 #import "Sources/Core/Protocol/FTModuleManager.h"
 #import "Sources/Core/Protocol/FTSRWebTrackingProtocol.h"
+#if TARGET_OS_OSX
+#import "Sources/Core/Protocol/FTElectronWebViewTrackingProtocol.h"
+#endif
 #import "Sources/Core/RemoteConfig/FTRemoteConfigManager.h"
 #import "Sources/Core/RemoteConfig/FTRemoteConfigModel.h"
 #endif
