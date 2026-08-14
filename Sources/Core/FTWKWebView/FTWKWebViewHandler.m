@@ -22,7 +22,7 @@
 #error This file must be compiled with ARC. Either turn on ARC for the project or use -fobjc-arc flag on this file.
 #endif
 
-#import "../include/FTWKWebViewHandler.h"
+#import "FTWKWebViewHandler.h"
 #import "FTWKWebViewHandler+Private.h"
 #if !TARGET_OS_TV
 #import "WKWebView+FTAutoTrack.h"

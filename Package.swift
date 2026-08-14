@@ -253,7 +253,7 @@ let package = Package(
                 "GuanceSessionReplay",
             ],
             path: "Sources/ElectronWebView",
-            exclude: ["JavaScript"],
+            exclude: ["GuanceElectronRUM"],
             publicHeadersPath: "Public",
             cSettings: [
                 .headerSearchPath("."),

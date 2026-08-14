@@ -6,7 +6,7 @@ const test = require('node:test')
 
 const {
   createElectronRUM,
-} = require('../../Sources/ElectronWebView/JavaScript/main.cjs')
+} = require('../../Sources/ElectronWebView/GuanceElectronRUM/main.cjs')
 
 class FakeIPCMain extends EventEmitter {}
 
@@ -377,7 +377,10 @@ test('bootstrap automatically installs its preload and tracks BrowserView switch
   assert.equal(client.autoAttachEnabled, true)
   assert.equal(defaultSession.setCalls.length, 1)
   assert.equal(defaultSession.preloads.length, 2)
-  assert.match(defaultSession.preloads[1], /ElectronWebView\/JavaScript\/preload\.cjs$/)
+  assert.match(
+    defaultSession.preloads[1],
+    /ElectronWebView\/GuanceElectronRUM\/preload\.cjs$/,
+  )
 
   browserWindow.setBrowserView(firstView)
   const firstRegister = nativeBridge.calls.register.at(-1)

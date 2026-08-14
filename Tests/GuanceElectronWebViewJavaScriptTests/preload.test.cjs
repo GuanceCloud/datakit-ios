@@ -5,7 +5,7 @@ const { EventEmitter } = require('node:events')
 const Module = require('node:module')
 const test = require('node:test')
 
-const preloadPath = '../../Sources/ElectronWebView/JavaScript/preload.cjs'
+const preloadPath = '../../Sources/ElectronWebView/GuanceElectronRUM/preload.cjs'
 
 function loadPreload() {
   delete require.cache[require.resolve(preloadPath)]
@@ -69,6 +69,56 @@ test('preload stays disabled for an unattached WebContents', () => {
   assert.deepEqual(exposed, [])
 })
 
+test('preload skips bridge injection when renderer context isolation is disabled', () => {
+  const exposed = []
+  const warnings = []
+  const originalType = process.type
+  const originalContextIsolated = Object.getOwnPropertyDescriptor(
+    process,
+    'contextIsolated',
+  )
+  const originalWarn = console.warn
+  process.type = 'renderer'
+  Object.defineProperty(process, 'contextIsolated', {
+    configurable: true,
+    value: false,
+  })
+  console.warn = (message) => warnings.push(message)
+
+  try {
+    const { install } = loadPreload()
+    const installed = install({
+      contextBridge: {
+        exposeInMainWorld: (...args) => exposed.push(args),
+      },
+      ipcRenderer: {
+        sendSync: () => {
+          throw new Error('disabled renderer must not request configuration')
+        },
+      },
+    })
+
+    assert.equal(installed, false)
+    assert.deepEqual(exposed, [])
+    assert.deepEqual(warnings, [
+      '[Guance Electron RUM] skipped bridge injection: contextIsolation is disabled',
+    ])
+  } finally {
+    console.warn = originalWarn
+    if (originalType === undefined) {
+      delete process.type
+    } else {
+      process.type = originalType
+    }
+    if (originalContextIsolated) {
+      Object.defineProperty(process, 'contextIsolated', originalContextIsolated)
+    } else {
+      delete process.contextIsolated
+    }
+    delete require.cache[require.resolve(preloadPath)]
+  }
+})
+
 test('preload installs its bridge automatically in an Electron renderer', () => {
   const exposed = new Map()
   const ipcRenderer = new EventEmitter()
@@ -82,8 +132,16 @@ test('preload installs its bridge automatically in an Electron renderer', () => 
   ipcRenderer.send = () => {}
 
   const originalType = process.type
+  const originalContextIsolated = Object.getOwnPropertyDescriptor(
+    process,
+    'contextIsolated',
+  )
   const originalLoad = Module._load
   process.type = 'renderer'
+  Object.defineProperty(process, 'contextIsolated', {
+    configurable: true,
+    value: true,
+  })
   Module._load = function loadElectronForPreload(request, parent, isMain) {
     if (request === 'electron') {
       return {
@@ -106,6 +164,11 @@ test('preload installs its bridge automatically in an Electron renderer', () => 
       delete process.type
     } else {
       process.type = originalType
+    }
+    if (originalContextIsolated) {
+      Object.defineProperty(process, 'contextIsolated', originalContextIsolated)
+    } else {
+      delete process.contextIsolated
     }
     delete require.cache[require.resolve(preloadPath)]
   }

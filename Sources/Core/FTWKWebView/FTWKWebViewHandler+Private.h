@@ -18,7 +18,7 @@
 //  limitations under the License.
 //
 
-#import "../include/FTWKWebViewHandler.h"
+#import "FTWKWebViewHandler.h"
 #import "FTWeakMapTable.h"
 #import "FTWKWebViewRumDelegate.h"
 #import <TargetConditionals.h>

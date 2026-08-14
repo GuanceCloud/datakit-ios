@@ -6,10 +6,22 @@ const CHANNELS = Object.freeze({
 })
 
 let installed = false
+let skipped = false
 
-function install(electron = require('electron')) {
+function install(electron) {
   if (installed) return true
 
+  if (process.type === 'renderer' && process.contextIsolated === false) {
+    if (!skipped) {
+      console.warn(
+        '[Guance Electron RUM] skipped bridge injection: contextIsolation is disabled',
+      )
+      skipped = true
+    }
+    return false
+  }
+
+  electron = electron || require('electron')
   const { contextBridge, ipcRenderer } = electron
   if (!contextBridge || !ipcRenderer) {
     throw new TypeError('install() must run from an Electron preload script')

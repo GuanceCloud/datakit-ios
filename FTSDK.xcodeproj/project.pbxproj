@@ -7,25 +7,6 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
-		A1F0F1012FC1000100A0A001 /* FTSessionReplayPlatform.h in Headers */ = {isa = PBXBuildFile; fileRef = A1F0F0012FC1000100A0A001 /* FTSessionReplayPlatform.h */; };
-		A1F0F1022FC1000100A0A001 /* NSView+FTSRPrivacy.h in Headers */ = {isa = PBXBuildFile; fileRef = A1F0F0022FC1000100A0A001 /* NSView+FTSRPrivacy.h */; settings = {ATTRIBUTES = (Public, ); }; };
-		A1F0F1032FC1000100A0A001 /* NSView+FTSRPrivacy.m in Sources */ = {isa = PBXBuildFile; fileRef = A1F0F0032FC1000100A0A001 /* NSView+FTSRPrivacy.m */; };
-		A1F0F1042FC1000100A0A001 /* NSView+FTSR.h in Headers */ = {isa = PBXBuildFile; fileRef = A1F0F0042FC1000100A0A001 /* NSView+FTSR.h */; };
-		A1F0F1052FC1000100A0A001 /* NSView+FTSR.m in Sources */ = {isa = PBXBuildFile; fileRef = A1F0F0052FC1000100A0A001 /* NSView+FTSR.m */; };
-		A1F0F1062FC1000100A0A001 /* FTAppKitViewRecorders.h in Headers */ = {isa = PBXBuildFile; fileRef = A1F0F0062FC1000100A0A001 /* FTAppKitViewRecorders.h */; };
-		A1F0F1082FC1000100A0A001 /* FTAppKitRecorderSupport.h in Headers */ = {isa = PBXBuildFile; fileRef = A1F0F0082FC1000100A0A001 /* FTAppKitRecorderSupport.h */; };
-		A1F0F1092FC1000100A0A001 /* FTAppKitRecorderSupport.m in Sources */ = {isa = PBXBuildFile; fileRef = A1F0F0092FC1000100A0A001 /* FTAppKitRecorderSupport.m */; };
-		A1F0F10A2FC1000100A0A001 /* FTNSViewRecorder.m in Sources */ = {isa = PBXBuildFile; fileRef = A1F0F00A2FC1000100A0A001 /* FTNSViewRecorder.m */; };
-		A1F0F10B2FC1000100A0A001 /* FTNSTextFieldRecorder.m in Sources */ = {isa = PBXBuildFile; fileRef = A1F0F00B2FC1000100A0A001 /* FTNSTextFieldRecorder.m */; };
-		A1F0F10C2FC1000100A0A001 /* FTNSTextViewRecorder.m in Sources */ = {isa = PBXBuildFile; fileRef = A1F0F00C2FC1000100A0A001 /* FTNSTextViewRecorder.m */; };
-		A1F0F10D2FC1000100A0A001 /* FTNSImageViewRecorder.m in Sources */ = {isa = PBXBuildFile; fileRef = A1F0F00D2FC1000100A0A001 /* FTNSImageViewRecorder.m */; };
-		A1F0F10E2FC1000100A0A001 /* FTNSButtonRecorder.m in Sources */ = {isa = PBXBuildFile; fileRef = A1F0F00E2FC1000100A0A001 /* FTNSButtonRecorder.m */; };
-		A1F0F10F2FC1000100A0A001 /* FTNSSwitchRecorder.m in Sources */ = {isa = PBXBuildFile; fileRef = A1F0F00F2FC1000100A0A001 /* FTNSSwitchRecorder.m */; };
-		A1F0F1102FC1000100A0A001 /* FTNSSliderRecorder.m in Sources */ = {isa = PBXBuildFile; fileRef = A1F0F0102FC1000100A0A001 /* FTNSSliderRecorder.m */; };
-		A1F0F1112FC1000100A0A001 /* FTNSSegmentedControlRecorder.m in Sources */ = {isa = PBXBuildFile; fileRef = A1F0F0112FC1000100A0A001 /* FTNSSegmentedControlRecorder.m */; };
-		A1F0F1122FC1000100A0A001 /* FTNSProgressIndicatorRecorder.m in Sources */ = {isa = PBXBuildFile; fileRef = A1F0F0122FC1000100A0A001 /* FTNSProgressIndicatorRecorder.m */; };
-		A1F0F1132FC1000100A0A001 /* FTNSTableHeaderViewRecorder.m in Sources */ = {isa = PBXBuildFile; fileRef = A1F0F0132FC1000100A0A001 /* FTNSTableHeaderViewRecorder.m */; };
-		A1F0F1142FC1000100A0A001 /* FTNSDatePickerRecorder.m in Sources */ = {isa = PBXBuildFile; fileRef = A1F0F0142FC1000100A0A001 /* FTNSDatePickerRecorder.m */; };
 		03157CEC7CF987963482291D /* FTAutoTrackHeatmapResolver.h in Headers */ = {isa = PBXBuildFile; fileRef = 34A94D2591111F14BECB5094 /* FTAutoTrackHeatmapResolver.h */; };
 		116A037353F194CAC373B6C4 /* FTIDFVProvider.m in Sources */ = {isa = PBXBuildFile; fileRef = AB1F52E89BB980427636D6FA /* FTIDFVProvider.m */; };
 		1231769D4A20CB0E31042CCC /* FTAutoTrackEventResolver.h in Headers */ = {isa = PBXBuildFile; fileRef = F57B9E9A435A2BF46A79A308 /* FTAutoTrackEventResolver.h */; };
@@ -198,7 +179,6 @@
 		17018DC52F5025B200688324 /* FTModuleManager.h in Headers */ = {isa = PBXBuildFile; fileRef = 17018DC02F5025B200688324 /* FTModuleManager.h */; settings = {ATTRIBUTES = (Private, ); }; };
 		17018DC92F5025C100688324 /* FTSRWebTrackingProtocol.h in Headers */ = {isa = PBXBuildFile; fileRef = 17018DC82F5025C100688324 /* FTSRWebTrackingProtocol.h */; };
 		17018DCB2F5025C100688324 /* FTSRWebTrackingProtocol.h in Headers */ = {isa = PBXBuildFile; fileRef = 17018DC82F5025C100688324 /* FTSRWebTrackingProtocol.h */; settings = {ATTRIBUTES = (Private, ); }; };
-		A1E100192FE1000100E10001 /* FTElectronWebViewTrackingProtocol.h in Headers */ = {isa = PBXBuildFile; fileRef = A1E100172FE1000100E10001 /* FTElectronWebViewTrackingProtocol.h */; settings = {ATTRIBUTES = (Private, ); }; };
 		17018DCD2F5025D100688324 /* FTMessageReceiver.h in Headers */ = {isa = PBXBuildFile; fileRef = 17018DCC2F5025D100688324 /* FTMessageReceiver.h */; };
 		17018DCF2F5025D100688324 /* FTMessageReceiver.h in Headers */ = {isa = PBXBuildFile; fileRef = 17018DCC2F5025D100688324 /* FTMessageReceiver.h */; settings = {ATTRIBUTES = (Private, ); }; };
 		1701B1902F55503F00E2AE8A /* FTResourceCheckRequest.h in Headers */ = {isa = PBXBuildFile; fileRef = 1701B18E2F55503F00E2AE8A /* FTResourceCheckRequest.h */; };
@@ -843,7 +823,6 @@
 		17E4CC2629CD42E4005C2D99 /* UIApplication+FTAutoTrack.m in Sources */ = {isa = PBXBuildFile; fileRef = 17E4CBB829CD42E4005C2D99 /* UIApplication+FTAutoTrack.m */; };
 		17E4CC2829CD42E4005C2D99 /* BlacklistedVCClassNames.h in Headers */ = {isa = PBXBuildFile; fileRef = 17E4CBBA29CD42E4005C2D99 /* BlacklistedVCClassNames.h */; };
 		17E4CC2929CD42E4005C2D99 /* UIViewController+FTAutoTrack.m in Sources */ = {isa = PBXBuildFile; fileRef = 17E4CBBB29CD42E4005C2D99 /* UIViewController+FTAutoTrack.m */; };
-		7A1200023000000000000001 /* FTViewControllerSwizzling.m in Sources */ = {isa = PBXBuildFile; fileRef = 7A1200013000000000000001 /* FTViewControllerSwizzling.m */; };
 		17E4CC2D29CD42E4005C2D99 /* UIGestureRecognizer+FTAutoTrack.h in Headers */ = {isa = PBXBuildFile; fileRef = 17E4CBBF29CD42E4005C2D99 /* UIGestureRecognizer+FTAutoTrack.h */; };
 		17E4CC2E29CD42E4005C2D99 /* UIView+FTAutoTrack.m in Sources */ = {isa = PBXBuildFile; fileRef = 17E4CBC029CD42E4005C2D99 /* UIView+FTAutoTrack.m */; };
 		17E4CC3029CD42E4005C2D99 /* UIApplication+FTAutoTrack.h in Headers */ = {isa = PBXBuildFile; fileRef = 17E4CBC229CD42E4005C2D99 /* UIApplication+FTAutoTrack.h */; };
@@ -887,13 +866,12 @@
 		5F733A88A1E1C85F4E0B62A6 /* FTLongTaskANRData.m in Sources */ = {isa = PBXBuildFile; fileRef = 4BB4CA341DCC4265A9E6CBDB /* FTLongTaskANRData.m */; };
 		5F9F56AE980556654C6A2C0A /* FTHeatmap.h in Headers */ = {isa = PBXBuildFile; fileRef = C51D568B54907747E3A2D681 /* FTHeatmap.h */; settings = {ATTRIBUTES = (Private, ); }; };
 		60688BBFEDEAE69B6BE67B9F /* FTAutoTrackEventResolver.m in Sources */ = {isa = PBXBuildFile; fileRef = 4B8C204C1030188EE9472A64 /* FTAutoTrackEventResolver.m */; };
+		7A1200023000000000000001 /* FTViewControllerSwizzling.m in Sources */ = {isa = PBXBuildFile; fileRef = 7A1200013000000000000001 /* FTViewControllerSwizzling.m */; };
 		7B004178A5CB5FA66C1858B2 /* FTSwiftUIRUMViewModifier.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7B004177A5CB5FA66C1858B2 /* FTSwiftUIRUMViewModifier.swift */; };
 		7B004179A5CB5FA66C1858B2 /* FTSwiftUIViewNameExtractor.swift in Sources */ = {isa = PBXBuildFile; fileRef = ABC7A3EB51D767D3CD90D051 /* FTSwiftUIViewNameExtractor.swift */; };
 		7B00417AA5CB5FA66C1858B2 /* FTSwiftUIRUMBridge.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7B00417BA5CB5FA66C1858B2 /* FTSwiftUIRUMBridge.swift */; };
 		916CAE23464ABBD81B017131 /* FTAutoTrackActionPublisher.h in Headers */ = {isa = PBXBuildFile; fileRef = E2C3B3D8C4BFC8F2D4DD8AE9 /* FTAutoTrackActionPublisher.h */; };
 		959054CF77EEEF21DA53DDAD /* FTLongTaskANRData.h in Headers */ = {isa = PBXBuildFile; fileRef = 70EFBC94C123E29E8E56B990 /* FTLongTaskANRData.h */; };
-		A1F0B00A2F61000100A0A001 /* PrivacyInfo.xcprivacy in Resources */ = {isa = PBXBuildFile; fileRef = 171C21BE2B9183D500C67AD6 /* PrivacyInfo.xcprivacy */; };
-		A1F0B00B2F61000100A0A001 /* GuanceSDK.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 4A88425A239E5754001B44C3 /* GuanceSDK.framework */; };
 		A1E100012FE1000100E10001 /* GuanceSDK.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 4A88425A239E5754001B44C3 /* GuanceSDK.framework */; };
 		A1E100022FE1000100E10001 /* GuanceSessionReplay.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = A1F0B0012F61000100A0A001 /* GuanceSessionReplay.framework */; };
 		A1E100032FE1000100E10001 /* FTElectronWebViewHandler.h in Headers */ = {isa = PBXBuildFile; fileRef = 171ECB8D302D945800DFB177 /* FTElectronWebViewHandler.h */; settings = {ATTRIBUTES = (Public, ); }; };
@@ -904,6 +882,9 @@
 		A1E100082FE1000100E10001 /* FTElectronWebViewDescriptor.m in Sources */ = {isa = PBXBuildFile; fileRef = 171ECB91302D945800DFB177 /* FTElectronWebViewDescriptor.m */; };
 		A1E100092FE1000100E10001 /* FTElectronWebViewHandler.m in Sources */ = {isa = PBXBuildFile; fileRef = 171ECB92302D945800DFB177 /* FTElectronWebViewHandler.m */; };
 		A1E1000A2FE1000100E10001 /* FTElectronWebViewRecorder.m in Sources */ = {isa = PBXBuildFile; fileRef = 171ECB95302D945800DFB177 /* FTElectronWebViewRecorder.m */; };
+		A1E100192FE1000100E10001 /* FTElectronWebViewTrackingProtocol.h in Headers */ = {isa = PBXBuildFile; fileRef = A1E100172FE1000100E10001 /* FTElectronWebViewTrackingProtocol.h */; settings = {ATTRIBUTES = (Private, ); }; };
+		A1F0B00A2F61000100A0A001 /* PrivacyInfo.xcprivacy in Resources */ = {isa = PBXBuildFile; fileRef = 171C21BE2B9183D500C67AD6 /* PrivacyInfo.xcprivacy */; };
+		A1F0B00B2F61000100A0A001 /* GuanceSDK.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 4A88425A239E5754001B44C3 /* GuanceSDK.framework */; };
 		A1F0B0A12F61000100A0A001 /* FTSessionReplay.h in Headers */ = {isa = PBXBuildFile; fileRef = A1F0B0A02F61000100A0A001 /* FTSessionReplay.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		A1F0B0B12F61000100A0A001 /* GuanceSessionReplay.h in Headers */ = {isa = PBXBuildFile; fileRef = A1F0B0B02F61000100A0A001 /* GuanceSessionReplay.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		A1F0B1002FA9000100A0A001 /* FTUIHostingViewRecorder.h in Headers */ = {isa = PBXBuildFile; fileRef = A1F0B1022FA9000100A0A001 /* FTUIHostingViewRecorder.h */; };
@@ -969,6 +950,7 @@
 		A1F0F1112FC1000100A0A001 /* FTNSSegmentedControlRecorder.m in Sources */ = {isa = PBXBuildFile; fileRef = A1F0F0112FC1000100A0A001 /* FTNSSegmentedControlRecorder.m */; };
 		A1F0F1122FC1000100A0A001 /* FTNSProgressIndicatorRecorder.m in Sources */ = {isa = PBXBuildFile; fileRef = A1F0F0122FC1000100A0A001 /* FTNSProgressIndicatorRecorder.m */; };
 		A1F0F1132FC1000100A0A001 /* FTNSTableHeaderViewRecorder.m in Sources */ = {isa = PBXBuildFile; fileRef = A1F0F0132FC1000100A0A001 /* FTNSTableHeaderViewRecorder.m */; };
+		A1F0F1142FC1000100A0A001 /* FTNSDatePickerRecorder.m in Sources */ = {isa = PBXBuildFile; fileRef = A1F0F0142FC1000100A0A001 /* FTNSDatePickerRecorder.m */; };
 		A2F100042FF1000100A0A001 /* FTIssueDataProvider.h in Headers */ = {isa = PBXBuildFile; fileRef = A2F100012FF1000100A0A001 /* FTIssueDataProvider.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		A2F100052FF1000100A0A001 /* FTIssueDataProvider.h in Headers */ = {isa = PBXBuildFile; fileRef = A2F100012FF1000100A0A001 /* FTIssueDataProvider.h */; };
 		A2F100062FF1000100A0A001 /* FTIssueDataProvider.m in Sources */ = {isa = PBXBuildFile; fileRef = A2F100032FF1000100A0A001 /* FTIssueDataProvider.m */; };
@@ -1002,25 +984,6 @@
 /* End PBXContainerItemProxy section */
 
 /* Begin PBXFileReference section */
-		A1F0F0012FC1000100A0A001 /* FTSessionReplayPlatform.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = FTSessionReplayPlatform.h; sourceTree = "<group>"; };
-		A1F0F0022FC1000100A0A001 /* NSView+FTSRPrivacy.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = "NSView+FTSRPrivacy.h"; sourceTree = "<group>"; };
-		A1F0F0032FC1000100A0A001 /* NSView+FTSRPrivacy.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = "NSView+FTSRPrivacy.m"; sourceTree = "<group>"; };
-		A1F0F0042FC1000100A0A001 /* NSView+FTSR.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = "NSView+FTSR.h"; sourceTree = "<group>"; };
-		A1F0F0052FC1000100A0A001 /* NSView+FTSR.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = "NSView+FTSR.m"; sourceTree = "<group>"; };
-		A1F0F0062FC1000100A0A001 /* FTAppKitViewRecorders.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = FTAppKitViewRecorders.h; sourceTree = "<group>"; };
-		A1F0F0082FC1000100A0A001 /* FTAppKitRecorderSupport.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = FTAppKitRecorderSupport.h; sourceTree = "<group>"; };
-		A1F0F0092FC1000100A0A001 /* FTAppKitRecorderSupport.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = FTAppKitRecorderSupport.m; sourceTree = "<group>"; };
-		A1F0F00A2FC1000100A0A001 /* FTNSViewRecorder.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = FTNSViewRecorder.m; sourceTree = "<group>"; };
-		A1F0F00B2FC1000100A0A001 /* FTNSTextFieldRecorder.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = FTNSTextFieldRecorder.m; sourceTree = "<group>"; };
-		A1F0F00C2FC1000100A0A001 /* FTNSTextViewRecorder.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = FTNSTextViewRecorder.m; sourceTree = "<group>"; };
-		A1F0F00D2FC1000100A0A001 /* FTNSImageViewRecorder.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = FTNSImageViewRecorder.m; sourceTree = "<group>"; };
-		A1F0F00E2FC1000100A0A001 /* FTNSButtonRecorder.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = FTNSButtonRecorder.m; sourceTree = "<group>"; };
-		A1F0F00F2FC1000100A0A001 /* FTNSSwitchRecorder.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = FTNSSwitchRecorder.m; sourceTree = "<group>"; };
-		A1F0F0102FC1000100A0A001 /* FTNSSliderRecorder.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = FTNSSliderRecorder.m; sourceTree = "<group>"; };
-		A1F0F0112FC1000100A0A001 /* FTNSSegmentedControlRecorder.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = FTNSSegmentedControlRecorder.m; sourceTree = "<group>"; };
-		A1F0F0122FC1000100A0A001 /* FTNSProgressIndicatorRecorder.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = FTNSProgressIndicatorRecorder.m; sourceTree = "<group>"; };
-		A1F0F0132FC1000100A0A001 /* FTNSTableHeaderViewRecorder.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = FTNSTableHeaderViewRecorder.m; sourceTree = "<group>"; };
-		A1F0F0142FC1000100A0A001 /* FTNSDatePickerRecorder.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = FTNSDatePickerRecorder.m; sourceTree = "<group>"; };
 		11F102A299DB57BB4B768266 /* FTHeatmapIdentifierStore.m */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.c.objc; path = FTHeatmapIdentifierStore.m; sourceTree = "<group>"; };
 		17018C612F50253200688324 /* FTDataStore.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = FTDataStore.h; sourceTree = "<group>"; };
 		17018C622F50253200688324 /* FTDataStoreFileReader.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = FTDataStoreFileReader.h; sourceTree = "<group>"; };
@@ -1185,7 +1148,6 @@
 		17018DC02F5025B200688324 /* FTModuleManager.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = FTModuleManager.h; sourceTree = "<group>"; };
 		17018DC12F5025B200688324 /* FTModuleManager.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = FTModuleManager.m; sourceTree = "<group>"; };
 		17018DC82F5025C100688324 /* FTSRWebTrackingProtocol.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = FTSRWebTrackingProtocol.h; sourceTree = "<group>"; };
-		A1E100172FE1000100E10001 /* FTElectronWebViewTrackingProtocol.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = FTElectronWebViewTrackingProtocol.h; sourceTree = "<group>"; };
 		17018DCC2F5025D100688324 /* FTMessageReceiver.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = FTMessageReceiver.h; sourceTree = "<group>"; };
 		1701B18E2F55503F00E2AE8A /* FTResourceCheckRequest.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = FTResourceCheckRequest.h; sourceTree = "<group>"; };
 		1701B18F2F55503F00E2AE8A /* FTResourceCheckRequest.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = FTResourceCheckRequest.m; sourceTree = "<group>"; };
@@ -1214,9 +1176,6 @@
 		171C21BE2B9183D500C67AD6 /* PrivacyInfo.xcprivacy */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.xml; name = PrivacyInfo.xcprivacy; path = Sources/Resources/PrivacyInfo.xcprivacy; sourceTree = "<group>"; };
 		171CE1D62BFB3C550083FC1C /* FTDURLSessionDelegate.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = FTDURLSessionDelegate.h; sourceTree = "<group>"; };
 		171CE1D72BFB3C550083FC1C /* FTDURLSessionDelegate.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = FTDURLSessionDelegate.m; sourceTree = "<group>"; };
-		171ECB89302D945800DFB177 /* main.cjs */ = {isa = PBXFileReference; lastKnownFileType = text; path = main.cjs; sourceTree = "<group>"; };
-		171ECB8A302D945800DFB177 /* preload.cjs */ = {isa = PBXFileReference; lastKnownFileType = text; path = preload.cjs; sourceTree = "<group>"; };
-		171ECB8B302D945800DFB177 /* README.md */ = {isa = PBXFileReference; lastKnownFileType = net.daringfireball.markdown; path = README.md; sourceTree = "<group>"; };
 		171ECB8D302D945800DFB177 /* FTElectronWebViewHandler.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = FTElectronWebViewHandler.h; sourceTree = "<group>"; };
 		171ECB8E302D945800DFB177 /* GuanceElectronWebView.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = GuanceElectronWebView.h; sourceTree = "<group>"; };
 		171ECB90302D945800DFB177 /* FTElectronWebViewDescriptor.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = FTElectronWebViewDescriptor.h; sourceTree = "<group>"; };
@@ -1564,8 +1523,6 @@
 		17E4CBB829CD42E4005C2D99 /* UIApplication+FTAutoTrack.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = "UIApplication+FTAutoTrack.m"; sourceTree = "<group>"; };
 		17E4CBBA29CD42E4005C2D99 /* BlacklistedVCClassNames.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = BlacklistedVCClassNames.h; sourceTree = "<group>"; };
 		17E4CBBB29CD42E4005C2D99 /* UIViewController+FTAutoTrack.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = "UIViewController+FTAutoTrack.m"; sourceTree = "<group>"; };
-		7A1200003000000000000001 /* FTViewControllerSwizzling.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = FTViewControllerSwizzling.h; sourceTree = "<group>"; };
-		7A1200013000000000000001 /* FTViewControllerSwizzling.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = FTViewControllerSwizzling.m; sourceTree = "<group>"; };
 		17E4CBBF29CD42E4005C2D99 /* UIGestureRecognizer+FTAutoTrack.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "UIGestureRecognizer+FTAutoTrack.h"; sourceTree = "<group>"; };
 		17E4CBC029CD42E4005C2D99 /* UIView+FTAutoTrack.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = "UIView+FTAutoTrack.m"; sourceTree = "<group>"; };
 		17E4CBC229CD42E4005C2D99 /* UIApplication+FTAutoTrack.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "UIApplication+FTAutoTrack.h"; sourceTree = "<group>"; };
@@ -1618,12 +1575,15 @@
 		5FC6EB05288F25B0EF280237 /* FTAutoTrackActionPublisher.m */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.c.objc; path = FTAutoTrackActionPublisher.m; sourceTree = "<group>"; };
 		6CDA326D4FE69710B8A24212 /* FTAutoTrackHeatmapResolver.m */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.c.objc; path = FTAutoTrackHeatmapResolver.m; sourceTree = "<group>"; };
 		70EFBC94C123E29E8E56B990 /* FTLongTaskANRData.h */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.c.h; path = FTLongTaskANRData.h; sourceTree = "<group>"; };
+		7A1200003000000000000001 /* FTViewControllerSwizzling.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = FTViewControllerSwizzling.h; sourceTree = "<group>"; };
+		7A1200013000000000000001 /* FTViewControllerSwizzling.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = FTViewControllerSwizzling.m; sourceTree = "<group>"; };
 		7B004177A5CB5FA66C1858B2 /* FTSwiftUIRUMViewModifier.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FTSwiftUIRUMViewModifier.swift; sourceTree = "<group>"; };
 		7B00417BA5CB5FA66C1858B2 /* FTSwiftUIRUMBridge.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FTSwiftUIRUMBridge.swift; sourceTree = "<group>"; };
 		987CA8291956A4AD8FE10C01 /* FTDataFilterManager.m */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.c.objc; path = FTDataFilterManager.m; sourceTree = "<group>"; };
 		98B0592948E762F22C2AAC36 /* FTFilterParser.h */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.c.h; path = FTFilterParser.h; sourceTree = "<group>"; };
-		A1F0B0012F61000100A0A001 /* GuanceSessionReplay.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = GuanceSessionReplay.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 		A1E100002FE1000100E10001 /* GuanceElectronWebView.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = GuanceElectronWebView.framework; sourceTree = BUILT_PRODUCTS_DIR; };
+		A1E100172FE1000100E10001 /* FTElectronWebViewTrackingProtocol.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = FTElectronWebViewTrackingProtocol.h; sourceTree = "<group>"; };
+		A1F0B0012F61000100A0A001 /* GuanceSessionReplay.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = GuanceSessionReplay.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 		A1F0B0A02F61000100A0A001 /* FTSessionReplay.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = FTSessionReplay.h; sourceTree = "<group>"; };
 		A1F0B0B02F61000100A0A001 /* GuanceSessionReplay.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = GuanceSessionReplay.h; sourceTree = "<group>"; };
 		A1F0B1022FA9000100A0A001 /* FTUIHostingViewRecorder.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = FTUIHostingViewRecorder.h; sourceTree = "<group>"; };
@@ -1687,6 +1647,7 @@
 		A1F0F0112FC1000100A0A001 /* FTNSSegmentedControlRecorder.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = FTNSSegmentedControlRecorder.m; sourceTree = "<group>"; };
 		A1F0F0122FC1000100A0A001 /* FTNSProgressIndicatorRecorder.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = FTNSProgressIndicatorRecorder.m; sourceTree = "<group>"; };
 		A1F0F0132FC1000100A0A001 /* FTNSTableHeaderViewRecorder.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = FTNSTableHeaderViewRecorder.m; sourceTree = "<group>"; };
+		A1F0F0142FC1000100A0A001 /* FTNSDatePickerRecorder.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = FTNSDatePickerRecorder.m; sourceTree = "<group>"; };
 		A2F100012FF1000100A0A001 /* FTIssueDataProvider.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; name = FTIssueDataProvider.h; path = Sources/Core/FTRUM/include/FTIssueDataProvider.h; sourceTree = SOURCE_ROOT; };
 		A2F100022FF1000100A0A001 /* FTIssueFieldEnricher.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = FTIssueFieldEnricher.h; sourceTree = "<group>"; };
 		A2F100032FF1000100A0A001 /* FTIssueDataProvider.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = FTIssueDataProvider.m; sourceTree = "<group>"; };
@@ -1719,20 +1680,20 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
-		A1F0B0022F61000100A0A001 /* Frameworks */ = {
-			isa = PBXFrameworksBuildPhase;
-			buildActionMask = 2147483647;
-			files = (
-				A1F0B00B2F61000100A0A001 /* GuanceSDK.framework in Frameworks */,
-			);
-			runOnlyForDeploymentPostprocessing = 0;
-		};
 		A1E1000B2FE1000100E10001 /* Frameworks */ = {
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
 				A1E100012FE1000100E10001 /* GuanceSDK.framework in Frameworks */,
 				A1E100022FE1000100E10001 /* GuanceSessionReplay.framework in Frameworks */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		A1F0B0022F61000100A0A001 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				A1F0B00B2F61000100A0A001 /* GuanceSDK.framework in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -2060,27 +2021,6 @@
 			path = Sources/SessionReplay;
 			sourceTree = "<group>";
 		};
-		A1F0F2002FC1000100A0A001 /* AppKitViewsRecorder */ = {
-			isa = PBXGroup;
-			children = (
-				A1F0F0062FC1000100A0A001 /* FTAppKitViewRecorders.h */,
-				A1F0F0082FC1000100A0A001 /* FTAppKitRecorderSupport.h */,
-				A1F0F0092FC1000100A0A001 /* FTAppKitRecorderSupport.m */,
-				A1F0F00E2FC1000100A0A001 /* FTNSButtonRecorder.m */,
-				A1F0F0142FC1000100A0A001 /* FTNSDatePickerRecorder.m */,
-				A1F0F00D2FC1000100A0A001 /* FTNSImageViewRecorder.m */,
-				A1F0F0122FC1000100A0A001 /* FTNSProgressIndicatorRecorder.m */,
-				A1F0F0112FC1000100A0A001 /* FTNSSegmentedControlRecorder.m */,
-				A1F0F0102FC1000100A0A001 /* FTNSSliderRecorder.m */,
-				A1F0F00F2FC1000100A0A001 /* FTNSSwitchRecorder.m */,
-				A1F0F0132FC1000100A0A001 /* FTNSTableHeaderViewRecorder.m */,
-				A1F0F00B2FC1000100A0A001 /* FTNSTextFieldRecorder.m */,
-				A1F0F00C2FC1000100A0A001 /* FTNSTextViewRecorder.m */,
-				A1F0F00A2FC1000100A0A001 /* FTNSViewRecorder.m */,
-			);
-			path = AppKitViewsRecorder;
-			sourceTree = "<group>";
-		};
 		1701B1922F557F9C00E2AE8A /* Utilities */ = {
 			isa = PBXGroup;
 			children = (
@@ -2112,16 +2052,6 @@
 			path = ScreenChangeMonitor;
 			sourceTree = "<group>";
 		};
-		171ECB8C302D945800DFB177 /* JavaScript */ = {
-			isa = PBXGroup;
-			children = (
-				171ECB89302D945800DFB177 /* main.cjs */,
-				171ECB8A302D945800DFB177 /* preload.cjs */,
-				171ECB8B302D945800DFB177 /* README.md */,
-			);
-			path = JavaScript;
-			sourceTree = "<group>";
-		};
 		171ECB8F302D945800DFB177 /* Public */ = {
 			isa = PBXGroup;
 			children = (
@@ -2134,7 +2064,6 @@
 		171ECB96302D945800DFB177 /* ElectronWebView */ = {
 			isa = PBXGroup;
 			children = (
-				171ECB8C302D945800DFB177 /* JavaScript */,
 				171ECB8F302D945800DFB177 /* Public */,
 				171ECB90302D945800DFB177 /* FTElectronWebViewDescriptor.h */,
 				171ECB91302D945800DFB177 /* FTElectronWebViewDescriptor.m */,
@@ -2915,6 +2844,27 @@
 			path = SwiftUI;
 			sourceTree = "<group>";
 		};
+		A1F0F2002FC1000100A0A001 /* AppKitViewsRecorder */ = {
+			isa = PBXGroup;
+			children = (
+				A1F0F0062FC1000100A0A001 /* FTAppKitViewRecorders.h */,
+				A1F0F0082FC1000100A0A001 /* FTAppKitRecorderSupport.h */,
+				A1F0F0092FC1000100A0A001 /* FTAppKitRecorderSupport.m */,
+				A1F0F00E2FC1000100A0A001 /* FTNSButtonRecorder.m */,
+				A1F0F0142FC1000100A0A001 /* FTNSDatePickerRecorder.m */,
+				A1F0F00D2FC1000100A0A001 /* FTNSImageViewRecorder.m */,
+				A1F0F0122FC1000100A0A001 /* FTNSProgressIndicatorRecorder.m */,
+				A1F0F0112FC1000100A0A001 /* FTNSSegmentedControlRecorder.m */,
+				A1F0F0102FC1000100A0A001 /* FTNSSliderRecorder.m */,
+				A1F0F00F2FC1000100A0A001 /* FTNSSwitchRecorder.m */,
+				A1F0F0132FC1000100A0A001 /* FTNSTableHeaderViewRecorder.m */,
+				A1F0F00B2FC1000100A0A001 /* FTNSTextFieldRecorder.m */,
+				A1F0F00C2FC1000100A0A001 /* FTNSTextViewRecorder.m */,
+				A1F0F00A2FC1000100A0A001 /* FTNSViewRecorder.m */,
+			);
+			path = AppKitViewsRecorder;
+			sourceTree = "<group>";
+		};
 		ABC7A3EC51D767D3CD90D051 /* SwiftUI */ = {
 			isa = PBXGroup;
 			children = (
@@ -3349,6 +3299,18 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
+		A1E1000C2FE1000100E10001 /* Headers */ = {
+			isa = PBXHeadersBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				A1E100032FE1000100E10001 /* FTElectronWebViewHandler.h in Headers */,
+				A1E100042FE1000100E10001 /* GuanceElectronWebView.h in Headers */,
+				A1E100052FE1000100E10001 /* FTElectronWebViewDescriptor.h in Headers */,
+				A1E100062FE1000100E10001 /* FTElectronWebViewHandler+Private.h in Headers */,
+				A1E100072FE1000100E10001 /* FTElectronWebViewRecorder.h in Headers */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 		A1F0B0032F61000100A0A001 /* Headers */ = {
 			isa = PBXHeadersBuildPhase;
 			buildActionMask = 2147483647;
@@ -3463,18 +3425,6 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
-		A1E1000C2FE1000100E10001 /* Headers */ = {
-			isa = PBXHeadersBuildPhase;
-			buildActionMask = 2147483647;
-			files = (
-				A1E100032FE1000100E10001 /* FTElectronWebViewHandler.h in Headers */,
-				A1E100042FE1000100E10001 /* GuanceElectronWebView.h in Headers */,
-				A1E100052FE1000100E10001 /* FTElectronWebViewDescriptor.h in Headers */,
-				A1E100062FE1000100E10001 /* FTElectronWebViewHandler+Private.h in Headers */,
-				A1E100072FE1000100E10001 /* FTElectronWebViewRecorder.h in Headers */,
-			);
-			runOnlyForDeploymentPostprocessing = 0;
-		};
 /* End PBXHeadersBuildPhase section */
 
 /* Begin PBXNativeTarget section */
@@ -3514,24 +3464,6 @@
 			productReference = 4A88425A239E5754001B44C3 /* GuanceSDK.framework */;
 			productType = "com.apple.product-type.framework";
 		};
-		A1F0B0062F61000100A0A001 /* FTSessionReplay */ = {
-			isa = PBXNativeTarget;
-			buildConfigurationList = A1F0B0072F61000100A0A001 /* Build configuration list for PBXNativeTarget "FTSessionReplay" */;
-			buildPhases = (
-				A1F0B0032F61000100A0A001 /* Headers */,
-				A1F0B0052F61000100A0A001 /* Sources */,
-				A1F0B0022F61000100A0A001 /* Frameworks */,
-				A1F0B0042F61000100A0A001 /* Resources */,
-			);
-			buildRules = (
-			);
-			dependencies = (
-			);
-			name = FTSessionReplay;
-			productName = FTSessionReplay;
-			productReference = A1F0B0012F61000100A0A001 /* GuanceSessionReplay.framework */;
-			productType = "com.apple.product-type.framework";
-		};
 		A1E1000F2FE1000100E10001 /* FTElectronWebView */ = {
 			isa = PBXNativeTarget;
 			buildConfigurationList = A1E100102FE1000100E10001 /* Build configuration list for PBXNativeTarget "FTElectronWebView" */;
@@ -3550,6 +3482,24 @@
 			name = FTElectronWebView;
 			productName = FTElectronWebView;
 			productReference = A1E100002FE1000100E10001 /* GuanceElectronWebView.framework */;
+			productType = "com.apple.product-type.framework";
+		};
+		A1F0B0062F61000100A0A001 /* FTSessionReplay */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = A1F0B0072F61000100A0A001 /* Build configuration list for PBXNativeTarget "FTSessionReplay" */;
+			buildPhases = (
+				A1F0B0032F61000100A0A001 /* Headers */,
+				A1F0B0052F61000100A0A001 /* Sources */,
+				A1F0B0022F61000100A0A001 /* Frameworks */,
+				A1F0B0042F61000100A0A001 /* Resources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			name = FTSessionReplay;
+			productName = FTSessionReplay;
+			productReference = A1F0B0012F61000100A0A001 /* GuanceSessionReplay.framework */;
 			productType = "com.apple.product-type.framework";
 		};
 /* End PBXNativeTarget section */
@@ -3609,18 +3559,18 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
+		A1E1000D2FE1000100E10001 /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 		A1F0B0042F61000100A0A001 /* Resources */ = {
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
 				A1F0B00A2F61000100A0A001 /* PrivacyInfo.xcprivacy in Resources */,
-			);
-			runOnlyForDeploymentPostprocessing = 0;
-		};
-		A1E1000D2FE1000100E10001 /* Resources */ = {
-			isa = PBXResourcesBuildPhase;
-			buildActionMask = 2147483647;
-			files = (
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -3952,6 +3902,16 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
+		A1E1000E2FE1000100E10001 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				A1E100082FE1000100E10001 /* FTElectronWebViewDescriptor.m in Sources */,
+				A1E100092FE1000100E10001 /* FTElectronWebViewHandler.m in Sources */,
+				A1E1000A2FE1000100E10001 /* FTElectronWebViewRecorder.m in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 		A1F0B0052F61000100A0A001 /* Sources */ = {
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
@@ -4085,16 +4045,6 @@
 				17018D512F50253200688324 /* UITouch+FTIdentifier.m in Sources */,
 				17018D292F50253200688324 /* UIView+FTSR.m in Sources */,
 				17018D3F2F50253200688324 /* UIView+FTSRPrivacy.m in Sources */,
-			);
-			runOnlyForDeploymentPostprocessing = 0;
-		};
-		A1E1000E2FE1000100E10001 /* Sources */ = {
-			isa = PBXSourcesBuildPhase;
-			buildActionMask = 2147483647;
-			files = (
-				A1E100082FE1000100E10001 /* FTElectronWebViewDescriptor.m in Sources */,
-				A1E100092FE1000100E10001 /* FTElectronWebViewHandler.m in Sources */,
-				A1E1000A2FE1000100E10001 /* FTElectronWebViewRecorder.m in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -4403,91 +4353,6 @@
 			};
 			name = Release;
 		};
-		A1F0B0082F61000100A0A001 /* Debug */ = {
-			isa = XCBuildConfiguration;
-			baseConfigurationReference = A1F0C2012F63000100A0A001 /* Base.xcconfig */;
-			buildSettings = {
-				ARCHS = "$(ARCHS_STANDARD)";
-				CLANG_ENABLE_MODULES = YES;
-				CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER = NO;
-				CODE_SIGN_STYLE = Automatic;
-				DEFINES_MODULE = YES;
-				DEVELOPMENT_TEAM = "";
-				DYLIB_COMPATIBILITY_VERSION = 1;
-				DYLIB_CURRENT_VERSION = 1;
-				DYLIB_INSTALL_NAME_BASE = "@rpath";
-				GCC_INPUT_FILETYPE = automatic;
-				GENERATE_INFOPLIST_FILE = NO;
-				HEADER_SEARCH_PATHS = (
-					"$(PROJECT_DIR)",
-					"$(PROJECT_DIR)/Sources/SessionReplay/Recorder/SRWireframe/ViewTreeSnapshot/AppKitViewsRecorder",
-				);
-				INFOPLIST_FILE = Sources/Info.plist;
-				INFOPLIST_KEY_NSHumanReadableCopyright = "Copyright © 2021 Guance. All rights reserved.";
-				INSTALL_PATH = "$(LOCAL_LIBRARY_DIR)/Frameworks";
-				IPHONEOS_DEPLOYMENT_TARGET = 12.0;
-				LD_RUNPATH_SEARCH_PATHS = (
-					"$(inherited)",
-					"@executable_path/Frameworks",
-					"@loader_path/Frameworks",
-				);
-				MACH_O_TYPE = staticlib;
-				MACOSX_DEPLOYMENT_TARGET = 10.14;
-				MARKETING_VERSION = 1.0;
-				ONLY_ACTIVE_ARCH = NO;
-				PRODUCT_BUNDLE_IDENTIFIER = "$(SESSION_REPLAY_PRODUCT_BUNDLE_IDENTIFIER)";
-				PRODUCT_MODULE_NAME = "$(SESSION_REPLAY_PRODUCT_MODULE_NAME)";
-				PRODUCT_NAME = "$(SESSION_REPLAY_PRODUCT_NAME)";
-				SKIP_INSTALL = YES;
-				SUPPORTED_PLATFORMS = "iphoneos iphonesimulator macosx";
-				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
-				SWIFT_VERSION = 5.0;
-				TARGETED_DEVICE_FAMILY = "1,2";
-			};
-			name = Debug;
-		};
-		A1F0B0092F61000100A0A001 /* Release */ = {
-			isa = XCBuildConfiguration;
-			baseConfigurationReference = A1F0C2012F63000100A0A001 /* Base.xcconfig */;
-			buildSettings = {
-				ARCHS = "$(ARCHS_STANDARD)";
-				CLANG_ENABLE_MODULES = YES;
-				CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER = NO;
-				CODE_SIGN_STYLE = Automatic;
-				DEFINES_MODULE = YES;
-				DEVELOPMENT_TEAM = "";
-				DYLIB_COMPATIBILITY_VERSION = 1;
-				DYLIB_CURRENT_VERSION = 1;
-				DYLIB_INSTALL_NAME_BASE = "@rpath";
-				GCC_INPUT_FILETYPE = automatic;
-				GENERATE_INFOPLIST_FILE = NO;
-				HEADER_SEARCH_PATHS = (
-					"$(PROJECT_DIR)",
-					"$(PROJECT_DIR)/Sources/SessionReplay/Recorder/SRWireframe/ViewTreeSnapshot/AppKitViewsRecorder",
-				);
-				INFOPLIST_FILE = Sources/Info.plist;
-				INFOPLIST_KEY_NSHumanReadableCopyright = "Copyright © 2021 Guance. All rights reserved.";
-				INSTALL_PATH = "$(LOCAL_LIBRARY_DIR)/Frameworks";
-				IPHONEOS_DEPLOYMENT_TARGET = 12.0;
-				LD_RUNPATH_SEARCH_PATHS = (
-					"$(inherited)",
-					"@executable_path/Frameworks",
-					"@loader_path/Frameworks",
-				);
-				MACH_O_TYPE = staticlib;
-				MACOSX_DEPLOYMENT_TARGET = 10.14;
-				MARKETING_VERSION = 1.0;
-				ONLY_ACTIVE_ARCH = NO;
-				PRODUCT_BUNDLE_IDENTIFIER = "$(SESSION_REPLAY_PRODUCT_BUNDLE_IDENTIFIER)";
-				PRODUCT_MODULE_NAME = "$(SESSION_REPLAY_PRODUCT_MODULE_NAME)";
-				PRODUCT_NAME = "$(SESSION_REPLAY_PRODUCT_NAME)";
-				SKIP_INSTALL = YES;
-				SUPPORTED_PLATFORMS = "iphoneos iphonesimulator macosx";
-				SWIFT_VERSION = 5.0;
-				TARGETED_DEVICE_FAMILY = "1,2";
-			};
-			name = Release;
-		};
 		A1E100112FE1000100E10001 /* Debug */ = {
 			isa = XCBuildConfiguration;
 			baseConfigurationReference = A1F0C2012F63000100A0A001 /* Base.xcconfig */;
@@ -4595,6 +4460,91 @@
 			};
 			name = Release;
 		};
+		A1F0B0082F61000100A0A001 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			baseConfigurationReference = A1F0C2012F63000100A0A001 /* Base.xcconfig */;
+			buildSettings = {
+				ARCHS = "$(ARCHS_STANDARD)";
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER = NO;
+				CODE_SIGN_STYLE = Automatic;
+				DEFINES_MODULE = YES;
+				DEVELOPMENT_TEAM = "";
+				DYLIB_COMPATIBILITY_VERSION = 1;
+				DYLIB_CURRENT_VERSION = 1;
+				DYLIB_INSTALL_NAME_BASE = "@rpath";
+				GCC_INPUT_FILETYPE = automatic;
+				GENERATE_INFOPLIST_FILE = NO;
+				HEADER_SEARCH_PATHS = (
+					"$(PROJECT_DIR)",
+					"$(PROJECT_DIR)/Sources/SessionReplay/Recorder/SRWireframe/ViewTreeSnapshot/AppKitViewsRecorder",
+				);
+				INFOPLIST_FILE = Sources/Info.plist;
+				INFOPLIST_KEY_NSHumanReadableCopyright = "Copyright © 2021 Guance. All rights reserved.";
+				INSTALL_PATH = "$(LOCAL_LIBRARY_DIR)/Frameworks";
+				IPHONEOS_DEPLOYMENT_TARGET = 12.0;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+					"@loader_path/Frameworks",
+				);
+				MACH_O_TYPE = staticlib;
+				MACOSX_DEPLOYMENT_TARGET = 10.14;
+				MARKETING_VERSION = 1.0;
+				ONLY_ACTIVE_ARCH = NO;
+				PRODUCT_BUNDLE_IDENTIFIER = "$(SESSION_REPLAY_PRODUCT_BUNDLE_IDENTIFIER)";
+				PRODUCT_MODULE_NAME = "$(SESSION_REPLAY_PRODUCT_MODULE_NAME)";
+				PRODUCT_NAME = "$(SESSION_REPLAY_PRODUCT_NAME)";
+				SKIP_INSTALL = YES;
+				SUPPORTED_PLATFORMS = "iphoneos iphonesimulator macosx";
+				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+			};
+			name = Debug;
+		};
+		A1F0B0092F61000100A0A001 /* Release */ = {
+			isa = XCBuildConfiguration;
+			baseConfigurationReference = A1F0C2012F63000100A0A001 /* Base.xcconfig */;
+			buildSettings = {
+				ARCHS = "$(ARCHS_STANDARD)";
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER = NO;
+				CODE_SIGN_STYLE = Automatic;
+				DEFINES_MODULE = YES;
+				DEVELOPMENT_TEAM = "";
+				DYLIB_COMPATIBILITY_VERSION = 1;
+				DYLIB_CURRENT_VERSION = 1;
+				DYLIB_INSTALL_NAME_BASE = "@rpath";
+				GCC_INPUT_FILETYPE = automatic;
+				GENERATE_INFOPLIST_FILE = NO;
+				HEADER_SEARCH_PATHS = (
+					"$(PROJECT_DIR)",
+					"$(PROJECT_DIR)/Sources/SessionReplay/Recorder/SRWireframe/ViewTreeSnapshot/AppKitViewsRecorder",
+				);
+				INFOPLIST_FILE = Sources/Info.plist;
+				INFOPLIST_KEY_NSHumanReadableCopyright = "Copyright © 2021 Guance. All rights reserved.";
+				INSTALL_PATH = "$(LOCAL_LIBRARY_DIR)/Frameworks";
+				IPHONEOS_DEPLOYMENT_TARGET = 12.0;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+					"@loader_path/Frameworks",
+				);
+				MACH_O_TYPE = staticlib;
+				MACOSX_DEPLOYMENT_TARGET = 10.14;
+				MARKETING_VERSION = 1.0;
+				ONLY_ACTIVE_ARCH = NO;
+				PRODUCT_BUNDLE_IDENTIFIER = "$(SESSION_REPLAY_PRODUCT_BUNDLE_IDENTIFIER)";
+				PRODUCT_MODULE_NAME = "$(SESSION_REPLAY_PRODUCT_MODULE_NAME)";
+				PRODUCT_NAME = "$(SESSION_REPLAY_PRODUCT_NAME)";
+				SKIP_INSTALL = YES;
+				SUPPORTED_PLATFORMS = "iphoneos iphonesimulator macosx";
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+			};
+			name = Release;
+		};
 /* End XCBuildConfiguration section */
 
 /* Begin XCConfigurationList section */
@@ -4625,20 +4575,20 @@
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;
 		};
-		A1F0B0072F61000100A0A001 /* Build configuration list for PBXNativeTarget "FTSessionReplay" */ = {
-			isa = XCConfigurationList;
-			buildConfigurations = (
-				A1F0B0082F61000100A0A001 /* Debug */,
-				A1F0B0092F61000100A0A001 /* Release */,
-			);
-			defaultConfigurationIsVisible = 0;
-			defaultConfigurationName = Release;
-		};
 		A1E100102FE1000100E10001 /* Build configuration list for PBXNativeTarget "FTElectronWebView" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
 				A1E100112FE1000100E10001 /* Debug */,
 				A1E100122FE1000100E10001 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		A1F0B0072F61000100A0A001 /* Build configuration list for PBXNativeTarget "FTSessionReplay" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				A1F0B0082F61000100A0A001 /* Debug */,
+				A1F0B0092F61000100A0A001 /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;
