@@ -1,3 +1,6 @@
+# 1.6.7-beta.1
+1. same as 1.6.7-alpha.3
+---
 # 1.6.7-alpha.3
 1. Added support for uploading and routing Session Replay asset resources through Datakit using linked RUM context tags.
 2. Improved Session Replay resource deduplication to preserve assets across linked RUM contexts.
