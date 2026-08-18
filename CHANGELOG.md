@@ -1,3 +1,8 @@
+# 1.6.7-alpha.3
+1. Added support for uploading and routing Session Replay asset resources through Datakit using linked RUM context tags.
+2. Improved Session Replay resource deduplication to preserve assets across linked RUM contexts.
+3. Fixed SwiftUI RUM View `loading_time` measurement to start from `body` evaluation, preventing pre-render idle time from inflating the duration.
+---
 # 1.6.7-alpha.2
 1. Added RUM Resource collection for WebSocket handshake requests.
 2. Added `FTRumConfig.issueDataProvider` to attach validated custom fields to automatically collected Crash and ANR RUM Errors, including historical context; improved validation limits and shutdown cleanup.
