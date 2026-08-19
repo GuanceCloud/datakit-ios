@@ -211,7 +211,7 @@
 1. Fix the viewReferrer assignment error
 2. Fix WebView memory leaks and viewId binding failures
 3. Fix the repeated addition of webView Script Messages
-4. Same as 1.6.2-alpha.5、same as 1.6.2-alpha.6
+4. Same as 1.6.2-alpha.5 and 1.6.2-alpha.6
 ---
 # 1.6.2-alpha.6
 1. Fix the equality comparison logic of FTPadding
@@ -251,7 +251,7 @@
 4. Same as 1.5.15-alpha.2
 ---
 # 1.5.21
-1. Add `setDatakitURL:` 、`setDatawayURL:clientToken:` APIs to support dynamic upload endpoint configuration
+1. Add `setDatakitURL:` and `setDatawayURL:clientToken:` APIs to support dynamic upload endpoint configuration
 2. Bump minimum deployment target to iOS 12+, macOS 10.14+
 3. Fix view association failure when using `addAction:`
 4. Optimize log & RUM correlation logic, supplement missing `action_id` field
@@ -265,7 +265,7 @@
 1. Rename `updateDatakitURL:` to `setDatakitURL:`, `updateDatawayURL:clientToken:` to `setDatawayURL:clientToken:`
 ---
 # 1.5.21-alpha.2
-1. Add `updateDatakitURL:` 、`updateDatawayURL:clientToken:` APIs to support dynamic upload endpoint configuration
+1. Add `updateDatakitURL:` and `updateDatawayURL:clientToken:` APIs to support dynamic upload endpoint configuration
 2. Bump minimum deployment target to iOS 12+, macOS 10.14+
 3. Fix view association failure when using `addAction:`
 4. Optimize log & RUM correlation logic, supplement missing `action_id` field

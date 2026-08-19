@@ -40,7 +40,7 @@
 @end
 
 @implementation FTAutoTrackActionNameTests
-// NSButton、NSPopUpButton、NSSegmentedControl
+// NSButton, NSPopUpButton, NSSegmentedControl
 - (void)setUp {
     // Put setup code here. This method is called before the invocation of each test method in the class.
     NSProcessInfo *processInfo = [NSProcessInfo processInfo];

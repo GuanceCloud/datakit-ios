@@ -299,7 +299,7 @@ static NSUInteger SkyWalkingSequence = 0.0;
     }
     handler(nil,nil);
 }
-#pragma mark --------- traceID、spanID ----------
+#pragma mark --------- traceID / spanID ----------
 - (NSString *)networkTraceID{
     return [FTBaseInfoHandler randomUUID];
 }

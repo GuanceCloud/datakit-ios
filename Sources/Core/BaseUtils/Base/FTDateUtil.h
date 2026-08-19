@@ -24,7 +24,7 @@ NS_ASSUME_NONNULL_BEGIN
 
 @interface FTDateUtil : NSObject
 + (NSDate *)date;
-/// Returns the absolute timestamp, which has no defined reference point or unit as it is platform dependent.（Nanosecond-level time）
+/// Returns the absolute timestamp, which has no defined reference point or unit as it is platform dependent. (Nanosecond-level time)
 + (uint64_t)systemTime;
 + (NSTimeInterval)systemUptime;
 + (NSDate *)processStartTimestamp;

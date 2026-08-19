@@ -161,7 +161,7 @@
     return self;
 }
 
-// longTask、 ANR、View
+// longTask, ANR, View
 - (void)reportPreviousANRIfFound {
     __weak __typeof(self) weakSelf = self;
     dispatch_async(self.anrDataStore.queue, ^{

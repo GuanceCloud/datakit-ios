@@ -90,7 +90,7 @@
         [FTMobileAgent appendLogGlobalContext:@{@"log_key":@"log_value"}];
         [FTMobileAgent appendRUMGlobalContext:@{@"rum_key":@"rum_value"}];
     }];
-    TableViewCellItem *item12 = [[TableViewCellItem alloc]initWithTitle:@"Manual Rum、Trace Data Add" handler:^{
+    TableViewCellItem *item12 = [[TableViewCellItem alloc]initWithTitle:@"Manual RUM and Trace Data Add" handler:^{
         [weakSelf.navigationController pushViewController:[RumVC new] animated:YES];
 
     }];

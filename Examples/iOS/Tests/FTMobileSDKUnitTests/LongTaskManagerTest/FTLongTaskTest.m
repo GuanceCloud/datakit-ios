@@ -215,7 +215,7 @@
     [FTMobileAgent shutDown];
 }
 /**
- Format ：
+ Format:
  version: 2.0.0
  dictStr  :{startDate:
             duration:
