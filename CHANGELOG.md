@@ -1,3 +1,13 @@
+# 1.6.7
+1. Added RUM Resource collection for WebSocket handshake requests.
+2. Added `FTRumConfig.issueDataProvider` to attach validated custom fields and historical context to automatically collected Crash and ANR RUM Errors.
+3. Added macOS Session Replay recording support for common AppKit views and controls.
+4. Added automatic macOS app launch Action collection and aligned macOS default service and Log source tags.
+5. Added an `FTMobileAgent` compatibility proxy for existing integrations.
+6. Added Session Replay asset uploading and routing through Datakit using linked RUM context tags, with resource preservation and deduplication across linked contexts.
+7. Improved RUM lifecycle handling for fallback Views, application launch, first-frame tracking, delayed initial Actions, and session expiration.
+8. Improved automatic RUM View `loading_time` measurement for UIKit and SwiftUI by excluding pre-render and preloading idle time.
+---
 # 1.6.7-beta.1
 1. same as 1.6.7-alpha.3
 ---
