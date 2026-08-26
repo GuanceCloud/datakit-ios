@@ -51,6 +51,8 @@ typedef void (^FTTrackingConsentChanged)(FTTrackingConsent trackingConsent);
 - (void)handleSampleRateUpdate;
 - (void)setSampleState:(FTRecordingSampleState)sampleState;
 - (void)evaluateRecordingConditions;
+- (void)setExternalRecorderActive:(BOOL)active;
+- (void)setExternalRecorderActive:(BOOL)active forOwner:(NSString *)owner;
 
 @end
 

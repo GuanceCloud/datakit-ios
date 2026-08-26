@@ -24,6 +24,8 @@
 #import "FTScheduler.h"
 #import "FTViewAttributes.h"
 
+static NSString * const FTDefaultExternalRecorderOwner = @"external";
+
 static FTTrackingConsent FTTrackingConsentFromSampleState(FTRecordingSampleState sampleState) {
     switch (sampleState) {
         case FTRecordingSampleStateNormal:
@@ -44,6 +46,7 @@ static FTTrackingConsent FTTrackingConsentFromSampleState(FTRecordingSampleState
 @property (nonatomic, assign) FTRecordingSampleState sampleState;
 @property (atomic, assign) BOOL recordingEnabled;
 @property (nonatomic, copy, nullable) FTTrackingConsentChanged trackingConsentDidChange;
+@property (nonatomic, strong) NSMutableSet<NSString *> *activeExternalRecorderOwners;
 @end
 
 @implementation FTRecordingCoordinator
@@ -62,6 +65,7 @@ static FTTrackingConsent FTTrackingConsentFromSampleState(FTRecordingSampleState
         _recordingEnabled = NO;
         _sampleState = FTRecordingSampleStateNone;
         _trackingConsentDidChange = [trackingConsentDidChange copy];
+        _activeExternalRecorderOwners = [NSMutableSet set];
         [self setScheduler:scheduler];
     }
     return self;
@@ -197,12 +201,48 @@ static FTTrackingConsent FTTrackingConsentFromSampleState(FTRecordingSampleState
 
 - (void)evaluateRecordingConditions{
     FTRecordingSampleState sampleState = self.sampleState;
-    if (self.recordingEnabled && sampleState != FTRecordingSampleStateNone) {
+    if (self.recordingEnabled && sampleState != FTRecordingSampleStateNone && !self.config.externalRecorderMode && ![self isExternalRecorderActive]) {
         [self.scheduler start];
     } else {
         [self.scheduler stop];
     }
     [self updateHasReplay];
+}
+
+- (void)setExternalRecorderActive:(BOOL)active{
+    [self setExternalRecorderActive:active forOwner:FTDefaultExternalRecorderOwner];
+}
+
+- (void)setExternalRecorderActive:(BOOL)active forOwner:(NSString *)owner{
+    NSString *normalizedOwner = [owner stringByTrimmingCharactersInSet:NSCharacterSet.whitespaceAndNewlineCharacterSet];
+    if (normalizedOwner.length == 0) {
+        [NSException raise:NSInvalidArgumentException format:@"External recorder owner must not be empty."];
+    }
+
+    BOOL wasActive = NO;
+    BOOL isActive = NO;
+    @synchronized (self.activeExternalRecorderOwners) {
+        wasActive = self.activeExternalRecorderOwners.count > 0;
+        if (active) {
+            [self.activeExternalRecorderOwners addObject:normalizedOwner];
+        } else {
+            [self.activeExternalRecorderOwners removeObject:normalizedOwner];
+        }
+        isActive = self.activeExternalRecorderOwners.count > 0;
+    }
+    if (wasActive == isActive) {
+        return;
+    }
+    if (!isActive && self.recordingEnabled && self.sampleState != FTRecordingSampleStateNone && !self.config.externalRecorderMode) {
+        [self.recorder forceFullSnapshot];
+    }
+    [self evaluateRecordingConditions];
+}
+
+- (BOOL)isExternalRecorderActive{
+    @synchronized (self.activeExternalRecorderOwners) {
+        return self.activeExternalRecorderOwners.count > 0;
+    }
 }
 
 - (void)evaluateRecordingConditionsForSamplingRateUpdate{

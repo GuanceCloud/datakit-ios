@@ -90,6 +90,16 @@ typedef NS_ENUM(NSUInteger,FTTextAndInputPrivacyLevel){
 /// Correlation depends on Session Replay snapshots and may be unavailable for views that are not recorded or dynamic view hierarchies.
 @property (nonatomic, assign) BOOL enableHeatmap;
 
+/// Enables external-only recorder mode. Default: NO.
+///
+/// In this mode the SDK keeps Session Replay sampling, storage, resource upload,
+/// and RUM linkage active, but does not capture the native view hierarchy. A
+/// framework SDK can supply its own enriched records and image resources through
+/// `FTRumSessionReplay`. Hybrid integrations that switch between native and
+/// framework screens should keep this disabled and use
+/// `setExternalRecorderActive:` at runtime.
+@property (nonatomic, assign) BOOL externalRecorderMode;
+
 @end
 
 NS_ASSUME_NONNULL_END

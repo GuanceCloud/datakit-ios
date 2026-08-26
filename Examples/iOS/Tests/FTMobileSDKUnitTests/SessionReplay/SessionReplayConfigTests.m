@@ -33,6 +33,12 @@
 #import "FTFeatureDirectories.h"
 #import "FTDirectory.h"
 #import "FTPerformancePreset.h"
+#import "FTRecordingCoordinator.h"
+#import "FTScheduler.h"
+#import "FTQueue.h"
+#import "FTSessionReplayTouches.h"
+#import "FTWindowObserver.h"
+#import "FTRecorder.h"
 
 @interface SessionReplayHeatmapIdentifierRegistry : NSObject<FTHeatmapIdentifierRegistry>
 @property (nonatomic, copy) NSDictionary<NSValue *, FTHeatmapIdentifier *> *identifiers;
@@ -46,6 +52,50 @@
 - (FTHeatmapIdentifier *)heatmapIdentifierForObject:(id)object {
     NSValue *objectIdentifier = [FTHeatmapIdentifier objectIdentifierForObject:object];
     return objectIdentifier ? self.identifiers[objectIdentifier] : nil;
+}
+@end
+
+@interface FTExternalRecorderTestQueue : NSObject<FTQueue>
+@end
+
+@implementation FTExternalRecorderTestQueue
+- (void)run:(void (^)(void))block {
+    if (block) {
+        block();
+    }
+}
+@end
+
+@interface FTExternalRecorderTestScheduler : NSObject<FTScheduler>
+@property (nonatomic, strong, readonly) id<FTQueue> queue;
+@property (nonatomic, assign) NSInteger startCount;
+@property (nonatomic, assign) NSInteger stopCount;
+@end
+
+@implementation FTExternalRecorderTestScheduler
+- (instancetype)init {
+    self = [super init];
+    if (self) {
+        _queue = [FTExternalRecorderTestQueue new];
+    }
+    return self;
+}
+- (void)scheduleWithOperation:(void (^)(void))operation {}
+- (void)start {
+    self.startCount += 1;
+}
+- (void)stop {
+    self.stopCount += 1;
+}
+@end
+
+@interface FTExternalRecorderTestRecorder : FTRecorder
+@property (nonatomic, assign) NSInteger forceFullSnapshotCount;
+@end
+
+@implementation FTExternalRecorderTestRecorder
+- (void)forceFullSnapshot {
+    self.forceFullSnapshotCount += 1;
 }
 @end
 
@@ -83,6 +133,7 @@ static FTFeatureStorage *FTMakeSessionReplayFeatureStorage(NSString *name) {
     config.touchPrivacy = FTTouchPrivacyLevelShow;
     config.enableHeatmap = YES;
     config.enableSwiftUI = YES;
+    config.externalRecorderMode = YES;
     
     FTSessionReplayConfig *copyConfig = [config copy];
     XCTAssertTrue(config != copyConfig);
@@ -92,11 +143,46 @@ static FTFeatureStorage *FTMakeSessionReplayFeatureStorage(NSString *name) {
     XCTAssertTrue(config.touchPrivacy == copyConfig.touchPrivacy);
     XCTAssertTrue(config.enableSwiftUI == copyConfig.enableSwiftUI);
     XCTAssertTrue(copyConfig.enableHeatmap);
+    XCTAssertTrue(copyConfig.externalRecorderMode);
 }
 - (void)testConfigDefaultHeatmapDisabled{
     FTSessionReplayConfig *config = [FTSessionReplayConfig new];
     XCTAssertFalse(config.enableHeatmap);
 }
+- (void)testConfigDefaultExternalRecorderModeDisabled{
+    FTSessionReplayConfig *config = [FTSessionReplayConfig new];
+    XCTAssertFalse(config.externalRecorderMode);
+}
+#if TARGET_OS_IOS
+- (void)testExternalRecorderOwnersPauseUntilLastOwnerReleases {
+    FTSessionReplayConfig *config = [FTSessionReplayConfig new];
+    FTExternalRecorderTestScheduler *scheduler = [FTExternalRecorderTestScheduler new];
+    FTSessionReplayTouches *touches = [[FTSessionReplayTouches alloc]initWithWindowObserver:[FTWindowObserver new]];
+    FTRecordingCoordinator *coordinator = [[FTRecordingCoordinator alloc]
+        initWithConfig:config
+        processorsQueue:dispatch_queue_create("com.ft.test.external-recorder", DISPATCH_QUEUE_SERIAL)
+        scheduler:scheduler
+        touches:touches
+        trackingConsentDidChange:nil];
+    FTExternalRecorderTestRecorder *recorder = [FTExternalRecorderTestRecorder new];
+    coordinator.recorder = recorder;
+    [coordinator setSampleState:FTRecordingSampleStateNormal];
+    [coordinator startRecording];
+    XCTAssertEqual(scheduler.startCount, 1);
+
+    [coordinator setExternalRecorderActive:YES forOwner:@"flutter-engine"];
+    XCTAssertEqual(scheduler.stopCount, 1);
+
+    [coordinator setExternalRecorderActive:YES forOwner:@"unity-player"];
+    [coordinator setExternalRecorderActive:NO forOwner:@"flutter-engine"];
+    XCTAssertEqual(scheduler.stopCount, 1);
+    XCTAssertEqual(scheduler.startCount, 1);
+
+    [coordinator setExternalRecorderActive:NO forOwner:@"unity-player"];
+    XCTAssertEqual(recorder.forceFullSnapshotCount, 1);
+    XCTAssertEqual(scheduler.startCount, 2);
+}
+#endif
 - (void)testInvalidPrivacyLevelsUseSafeDebugDescriptionDefaults{
     FTSessionReplayConfig *config = [FTSessionReplayConfig new];
     NSArray<NSArray *> *textCases = @[

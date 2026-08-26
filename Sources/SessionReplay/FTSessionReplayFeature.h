@@ -33,6 +33,13 @@ NS_ASSUME_NONNULL_BEGIN
 
 - (void)startRecording;
 
+- (nullable NSDictionary *)currentExternalRUMContext;
+- (void)setExternalHasReplay:(BOOL)hasReplay;
+- (void)setExternalRecordCountForViewID:(NSString *)viewID count:(NSUInteger)count;
+- (void)writeExternalSegment:(NSString *)segment viewID:(NSString *)viewID;
+- (nullable NSString *)saveExternalImageResourceData:(NSData *)data mimeType:(NSString *)mimeType;
+- (void)setExternalRecorderActive:(BOOL)active;
+- (void)setExternalRecorderActive:(BOOL)active forOwner:(NSString *)owner;
 
 @end
 

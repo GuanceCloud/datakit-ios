@@ -29,6 +29,7 @@ NS_ASSUME_NONNULL_BEGIN
                         enableHeatmap:(BOOL)enableHeatmap;
 ;
 -(void)taskSnapShot:(FTSRContext *)context touchSnapshot:(nullable FTTouchSnapshot *)touchSnapshot;
+-(void)forceFullSnapshot;
 @end
 
 NS_ASSUME_NONNULL_END
