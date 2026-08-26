@@ -52,6 +52,7 @@ static void *FTElectronWebViewDescriptorAssociationKey =
 @property (nonatomic, copy, nullable)
     FTElectronWebViewCommandHandler commandHandler;
 @property (nonatomic, strong) FTElectronWebViewRecorder *recorder;
+@property (nonatomic, assign) int64_t nextStandaloneSlotID;
 - (void)clearNativeAssociationForDescriptor:
     (nullable FTElectronWebViewDescriptor *)descriptor;
 @end
@@ -73,6 +74,8 @@ static void *FTElectronWebViewDescriptorAssociationKey =
         _descriptors = [NSMutableDictionary dictionary];
         _lock = [[NSRecursiveLock alloc] init];
         _recorder = [[FTElectronWebViewRecorder alloc] init];
+        NSTimeInterval milliseconds = NSDate.date.timeIntervalSince1970 * 1000;
+        _nextStandaloneSlotID = (int64_t)milliseconds * 1000;
     }
     return self;
 }
@@ -110,6 +113,7 @@ static void *FTElectronWebViewDescriptorAssociationKey =
         [[FTElectronWebViewDescriptor alloc] init];
     descriptor.webContentsID = webContentsID;
     descriptor.slotID = slotID;
+    descriptor.standalone = NO;
     descriptor.hostView = hostView;
     descriptor.bounds = bounds;
     descriptor.webContentsVisible = visible;
@@ -129,6 +133,44 @@ static void *FTElectronWebViewDescriptorAssociationKey =
                    webContentsID, slotID, hostView, NSStringFromRect(bounds),
                    (long)zIndex, descriptor.visible);
     return YES;
+}
+
+- (nullable NSNumber *)registerStandaloneWebContentsID:
+    (int64_t)webContentsID
+                                                 visible:(BOOL)visible {
+    if (webContentsID <= 0) {
+        FTInnerLogWarning(@"[ElectronWebView] rejected invalid standalone "
+                          @"registration webContents=%lld",
+                          webContentsID);
+        return nil;
+    }
+
+    FTElectronWebViewDescriptor *descriptor =
+        [[FTElectronWebViewDescriptor alloc] init];
+    descriptor.webContentsID = webContentsID;
+    descriptor.standalone = YES;
+    descriptor.webContentsVisible = visible;
+    descriptor.visible = visible;
+    descriptor.requiresFullSnapshot = visible;
+    descriptor.bindInfo = [[FTBindInfo alloc] init];
+
+    [self.lock lock];
+    if (self.nextStandaloneSlotID == INT64_MAX) {
+        self.nextStandaloneSlotID = 1;
+    } else {
+        self.nextStandaloneSlotID += 1;
+    }
+    descriptor.slotID = self.nextStandaloneSlotID;
+    FTElectronWebViewDescriptor *previous =
+        self.descriptors[@(webContentsID)];
+    [self clearNativeAssociationForDescriptor:previous];
+    self.descriptors[@(webContentsID)] = descriptor;
+    [self.lock unlock];
+
+    FTInnerLogInfo(@"[ElectronWebView] registered standalone webContents=%lld "
+                   @"slot=%lld visible=%d",
+                   webContentsID, descriptor.slotID, visible);
+    return @(descriptor.slotID);
 }
 
 - (BOOL)updateWebContentsID:(int64_t)webContentsID
@@ -156,6 +198,25 @@ static void *FTElectronWebViewDescriptorAssociationKey =
         if (!wasVisible && descriptor.visible) {
             descriptor.requiresFullSnapshot = YES;
         }
+    }
+    [self.lock unlock];
+    return descriptor != nil;
+}
+
+- (BOOL)updateStandaloneWebContentsID:(int64_t)webContentsID
+                               visible:(BOOL)visible {
+    [self.lock lock];
+    FTElectronWebViewDescriptor *descriptor =
+        self.descriptors[@(webContentsID)];
+    if (descriptor && descriptor.isStandalone) {
+        BOOL wasVisible = descriptor.visible;
+        descriptor.webContentsVisible = visible;
+        descriptor.visible = visible;
+        if (!wasVisible && visible) {
+            descriptor.requiresFullSnapshot = YES;
+        }
+    } else {
+        descriptor = nil;
     }
     [self.lock unlock];
     return descriptor != nil;
@@ -341,6 +402,15 @@ static void *FTElectronWebViewDescriptorAssociationKey =
             return;
         }
         for (FTElectronWebViewDescriptor *descriptor in descriptors) {
+            if (descriptor.isStandalone) {
+                if (descriptor.visible) {
+                    commandHandler(
+                        descriptor.webContentsID,
+                        FTElectronWebViewCommandTakeSubsequentFullSnapshot
+                    );
+                }
+                continue;
+            }
             if (!descriptor.visible || descriptor.hostView.window == nil ||
                 ![self isEffectivelyVisible:descriptor.matchedNativeView]) {
                 continue;

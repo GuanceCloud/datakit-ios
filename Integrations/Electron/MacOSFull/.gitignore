@@ -1,0 +1,12 @@
+.build/
+.swiftpm/
+build/
+dist/
+adapter/
+release/
+node_modules/
+native/*.node
+native/**/*.dylib
+native/swift-runtime/*.original
+native/*.bundle/
+*.tgz

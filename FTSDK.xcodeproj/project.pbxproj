@@ -883,6 +883,8 @@
 		A1E100092FE1000100E10001 /* FTElectronWebViewHandler.m in Sources */ = {isa = PBXBuildFile; fileRef = 171ECB92302D945800DFB177 /* FTElectronWebViewHandler.m */; };
 		A1E1000A2FE1000100E10001 /* FTElectronWebViewRecorder.m in Sources */ = {isa = PBXBuildFile; fileRef = 171ECB95302D945800DFB177 /* FTElectronWebViewRecorder.m */; };
 		A1E100192FE1000100E10001 /* FTElectronWebViewTrackingProtocol.h in Headers */ = {isa = PBXBuildFile; fileRef = A1E100172FE1000100E10001 /* FTElectronWebViewTrackingProtocol.h */; settings = {ATTRIBUTES = (Private, ); }; };
+		A1E100202FE1000100E10001 /* FTElectronBridgeServer.h in Headers */ = {isa = PBXBuildFile; fileRef = A1E100222FE1000100E10001 /* FTElectronBridgeServer.h */; settings = {ATTRIBUTES = (Public, ); }; };
+		A1E100212FE1000100E10001 /* FTElectronBridgeServer.m in Sources */ = {isa = PBXBuildFile; fileRef = A1E100232FE1000100E10001 /* FTElectronBridgeServer.m */; };
 		A1F0B00A2F61000100A0A001 /* PrivacyInfo.xcprivacy in Resources */ = {isa = PBXBuildFile; fileRef = 171C21BE2B9183D500C67AD6 /* PrivacyInfo.xcprivacy */; };
 		A1F0B00B2F61000100A0A001 /* GuanceSDK.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 4A88425A239E5754001B44C3 /* GuanceSDK.framework */; };
 		A1F0B0A12F61000100A0A001 /* FTSessionReplay.h in Headers */ = {isa = PBXBuildFile; fileRef = A1F0B0A02F61000100A0A001 /* FTSessionReplay.h */; settings = {ATTRIBUTES = (Public, ); }; };
@@ -1184,6 +1186,8 @@
 		171ECB93302D945800DFB177 /* FTElectronWebViewHandler+Private.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = "FTElectronWebViewHandler+Private.h"; sourceTree = "<group>"; };
 		171ECB94302D945800DFB177 /* FTElectronWebViewRecorder.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = FTElectronWebViewRecorder.h; sourceTree = "<group>"; };
 		171ECB95302D945800DFB177 /* FTElectronWebViewRecorder.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = FTElectronWebViewRecorder.m; sourceTree = "<group>"; };
+		A1E100222FE1000100E10001 /* FTElectronBridgeServer.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = FTElectronBridgeServer.h; sourceTree = "<group>"; };
+		A1E100232FE1000100E10001 /* FTElectronBridgeServer.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = FTElectronBridgeServer.m; sourceTree = "<group>"; };
 		172113B62DF1A200006189C2 /* FTRemoteConfigManager.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = FTRemoteConfigManager.h; sourceTree = "<group>"; };
 		172113B72DF1A200006189C2 /* FTRemoteConfigManager.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = FTRemoteConfigManager.m; sourceTree = "<group>"; };
 		172113BE2DF1B476006189C2 /* FTRemoteConfigurationRequest.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = FTRemoteConfigurationRequest.h; sourceTree = "<group>"; };
@@ -2055,6 +2059,7 @@
 		171ECB8F302D945800DFB177 /* Public */ = {
 			isa = PBXGroup;
 			children = (
+				A1E100222FE1000100E10001 /* FTElectronBridgeServer.h */,
 				171ECB8D302D945800DFB177 /* FTElectronWebViewHandler.h */,
 				171ECB8E302D945800DFB177 /* GuanceElectronWebView.h */,
 			);
@@ -2065,6 +2070,7 @@
 			isa = PBXGroup;
 			children = (
 				171ECB8F302D945800DFB177 /* Public */,
+				A1E100232FE1000100E10001 /* FTElectronBridgeServer.m */,
 				171ECB90302D945800DFB177 /* FTElectronWebViewDescriptor.h */,
 				171ECB91302D945800DFB177 /* FTElectronWebViewDescriptor.m */,
 				171ECB92302D945800DFB177 /* FTElectronWebViewHandler.m */,
@@ -3303,6 +3309,7 @@
 			isa = PBXHeadersBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				A1E100202FE1000100E10001 /* FTElectronBridgeServer.h in Headers */,
 				A1E100032FE1000100E10001 /* FTElectronWebViewHandler.h in Headers */,
 				A1E100042FE1000100E10001 /* GuanceElectronWebView.h in Headers */,
 				A1E100052FE1000100E10001 /* FTElectronWebViewDescriptor.h in Headers */,
@@ -3906,6 +3913,7 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				A1E100212FE1000100E10001 /* FTElectronBridgeServer.m in Sources */,
 				A1E100082FE1000100E10001 /* FTElectronWebViewDescriptor.m in Sources */,
 				A1E100092FE1000100E10001 /* FTElectronWebViewHandler.m in Sources */,
 				A1E1000A2FE1000100E10001 /* FTElectronWebViewRecorder.m in Sources */,

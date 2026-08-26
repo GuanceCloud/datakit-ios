@@ -24,6 +24,7 @@
 
 #if TARGET_OS_OSX
 #import <Foundation/Foundation.h>
+#import "FTElectronBridgeServer.h"
 #import "FTElectronWebViewHandler.h"
 #endif
 

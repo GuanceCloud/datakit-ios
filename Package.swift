@@ -31,7 +31,14 @@ let package = Package(
         ),
         .library(
             name: "GuanceElectronWebView",
-            targets: ["GuanceElectronWebView"]
+            targets: [
+                "_GuanceSDKObjC",
+                "_AgentExternalData",
+                "_FTBaseUtils_Base",
+                "_FTLogger",
+                "GuanceSessionReplay",
+                "GuanceElectronWebView",
+            ]
         ),
     ],
     dependencies: [],
@@ -53,7 +60,10 @@ let package = Package(
                 "_AgentExtension",
                 "_AgentExternalData",
                 "_AgentConfig",
-                "GuanceSDKSwiftUI",
+                .target(
+                    name: "GuanceSDKSwiftUI",
+                    condition: .when(platforms: [.iOS, .tvOS])
+                ),
             ],
             path: "Sources",
             sources: [

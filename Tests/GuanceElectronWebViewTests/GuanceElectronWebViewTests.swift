@@ -52,6 +52,68 @@ final class GuanceElectronWebViewTests: XCTestCase {
         XCTAssertEqual(handler.slotID(forWebContentsID: 12), 1002)
     }
 
+    func testStandaloneRegistrationAllocatesNativeSlotsWithoutAppKitViews() {
+        let firstSlot = handler.registerStandaloneWebContentsID(
+            13,
+            visible: true
+        )
+        let secondSlot = handler.registerStandaloneWebContentsID(
+            14,
+            visible: false
+        )
+
+        XCTAssertNotNil(firstSlot)
+        XCTAssertNotNil(secondSlot)
+        XCTAssertNotEqual(firstSlot, secondSlot)
+        XCTAssertEqual(handler.slotID(forWebContentsID: 13), firstSlot)
+        XCTAssertEqual(handler.slotID(forWebContentsID: 14), secondSlot)
+        XCTAssertEqual(handler.registeredWebContentsCount(), 2)
+        XCTAssertEqual(handler.matchedNativeViewCount(), 0)
+        XCTAssertTrue(
+            handler.receiveMessageQueue(
+                #"[{"handlerName":"sendEvent","data":{"name":"rum"}}]"#,
+                webContentsID: 13
+            )
+        )
+        XCTAssertFalse(
+            handler.receiveMessageQueue(
+                #"[{"handlerName":"sendEvent","data":{"name":"rum"}}]"#,
+                webContentsID: 14
+            )
+        )
+        XCTAssertTrue(
+            handler.updateStandaloneWebContentsID(14, visible: true)
+        )
+        XCTAssertTrue(
+            handler.receiveMessageQueue(
+                #"[{"handlerName":"sendEvent","data":{"name":"rum"}}]"#,
+                webContentsID: 14
+            )
+        )
+    }
+
+    func testStandaloneFullSnapshotCommandTargetsOnlyVisibleRegistrations() throws {
+        var commands: [(Int64, String)] = []
+        handler.start { webContentsID, command in
+            commands.append((webContentsID, command))
+        }
+        XCTAssertNotNil(
+            handler.registerStandaloneWebContentsID(15, visible: true)
+        )
+        XCTAssertNotNil(
+            handler.registerStandaloneWebContentsID(16, visible: false)
+        )
+
+        try invokeTakeSubsequentFullSnapshot()
+
+        XCTAssertEqual(commands.count, 1)
+        XCTAssertEqual(commands.first?.0, 15)
+        XCTAssertEqual(
+            commands.first?.1,
+            FTElectronWebViewCommandTakeSubsequentFullSnapshot
+        )
+    }
+
     func testRejectsUnknownSenderAndRemovesRegistration() {
         let host = NSView(frame: NSRect(x: 0, y: 0, width: 800, height: 500))
         XCTAssertTrue(

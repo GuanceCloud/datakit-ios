@@ -30,7 +30,8 @@ NS_ASSUME_NONNULL_BEGIN
 @interface FTElectronWebViewDescriptor : NSObject
 @property (nonatomic, assign) int64_t webContentsID;
 @property (nonatomic, assign) int64_t slotID;
-@property (nonatomic, weak) NSView *hostView;
+@property (nonatomic, assign, getter=isStandalone) BOOL standalone;
+@property (nonatomic, weak, nullable) NSView *hostView;
 @property (nonatomic, weak, nullable) NSView *matchedNativeView;
 @property (nonatomic, assign) CGRect bounds;
 @property (nonatomic, assign) BOOL webContentsVisible;

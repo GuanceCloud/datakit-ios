@@ -76,12 +76,26 @@ FOUNDATION_EXPORT NSString *const
                       visible:(BOOL)visible
                        zIndex:(NSInteger)zIndex;
 
+/// Registers a WebContents owned by a different process.
+///
+/// The Native process allocates the replay slot. No AppKit object, layout, or
+/// caller-selected slot crosses the process boundary. This method is intended
+/// for `FTElectronBridgeServer`; same-process integrations should continue to
+/// use `registerWebContentsID:slotID:hostView:bounds:visible:zIndex:`.
+- (nullable NSNumber *)registerStandaloneWebContentsID:
+    (int64_t)webContentsID
+                                                 visible:(BOOL)visible;
+
 /// Updates layout state for an existing WebContents registration. Call this on
 /// the main thread when the update corresponds to AppKit layout changes.
 - (BOOL)updateWebContentsID:(int64_t)webContentsID
                      bounds:(CGRect)bounds
                      visible:(BOOL)visible
                      zIndex:(NSInteger)zIndex;
+
+/// Updates only the visibility of a cross-process registration.
+- (BOOL)updateStandaloneWebContentsID:(int64_t)webContentsID
+                               visible:(BOOL)visible;
 
 /// Receives a serialized FTWebViewJavascriptBridge message queue.
 - (BOOL)receiveMessageQueue:(NSString *)messageQueue
