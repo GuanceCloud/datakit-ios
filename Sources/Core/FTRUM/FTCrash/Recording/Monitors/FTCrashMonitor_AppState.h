@@ -65,7 +65,7 @@ typedef struct {
     /** If true, the application crashed on the previous launch. */
     bool crashedLastLaunch;
 
-    /** FTSDK ADD：If crashedLastLaunch true, crashedLastTimestamp is crash timestamp else is 0
+    /** FTSDK ADD: If crashedLastLaunch true, crashedLastTimestamp is crash timestamp else is 0
         Date max: 2106-2-7-06:28:15 UTC
      */
     unsigned int crashedLastTimestamp;

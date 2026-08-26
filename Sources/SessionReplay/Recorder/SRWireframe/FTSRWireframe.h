@@ -51,9 +51,9 @@ NS_ASSUME_NONNULL_BEGIN
 -(instancetype)initWithLeft:(float)left top:(float)top right:(float)right bottom:(float)bottom;
 @end
 @interface FTAlignment : FTSRBaseFrame
-// left、right、center
+// left, right, center
 @property (nonatomic, copy) NSString *horizontal;
-// top、bottom、center
+// top, bottom, center
 @property (nonatomic, copy) NSString *vertical;
 -(instancetype)initWithTextAlignment:(NSTextAlignment)alignment vertical:(NSString *)vertical;
 @end

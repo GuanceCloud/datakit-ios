@@ -36,7 +36,7 @@
             },
              "time":timestamp,
         }}), function (ret, err) {
-           console.log("sendEvent call back:" + JSON.stringify(ret) + "，" + JSON.stringify(err))
+           console.log("sendEvent call back:" + JSON.stringify(ret) + "," + JSON.stringify(err))
         })
         return "success"
     }
@@ -64,7 +64,7 @@
             },
              "time":timestamp,
         }}), function (ret, err) {
-           console.log("sendEvent call back:" + JSON.stringify(ret) + "，" + JSON.stringify(err))
+           console.log("sendEvent call back:" + JSON.stringify(ret) + "," + JSON.stringify(err))
         })
         return "success"
     }
@@ -72,7 +72,7 @@
     function testWrongRumData() {
 
         FTWebViewJavascriptBridge.sendEvent("aaaaaaaaa", function (ret, err) {
-           console.log("sendEvent call back:" + JSON.stringify(ret) + "，" + JSON.stringify(err))
+           console.log("sendEvent call back:" + JSON.stringify(ret) + "," + JSON.stringify(err))
         })
         return "fail"
     }

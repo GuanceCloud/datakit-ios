@@ -49,7 +49,7 @@
     // Put teardown code here. This method is called after the invocation of each test method in the class.
 }
 /**
-    tag： "=" —> "\\="
+    tag: "=" -> "\\="
     field: "=" -> "="
  */
 - (void)testLineProtocol_EqualsSign{
@@ -81,7 +81,7 @@
     XCTAssertEqualObjects([array lastObject],tm);
 }
 /**
-    tag： " " —> "\\ "
+    tag: " " -> "\\ "
     field: " " -> " "
  */
 - (void)testLineProtocol_Blank{
@@ -111,7 +111,7 @@
     XCTAssertTrue([field containsString:tm]);
 }
 /**
-    tag： "," —> "\\,"
+    tag: "," -> "\\,"
     field: "," -> ","
  */
 - (void)testLineProtocol_Comma{
@@ -140,7 +140,7 @@
     XCTAssertTrue([field containsString:tm]);
 }
 /**
-    tag： "\"" —> "\""
+    tag: "\"" -> "\""
     field: "\"" -> "\\\""
  */
 - (void)testLineProtocol_QuotationMarks{

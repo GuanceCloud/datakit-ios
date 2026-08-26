@@ -1,3 +1,21 @@
+# 1.6.7
+1. Added RUM Resource collection for WebSocket handshake requests.
+2. Added `FTRumConfig.issueDataProvider` to attach validated custom fields and historical context to automatically collected Crash and ANR RUM Errors.
+3. Added macOS Session Replay recording support for common AppKit views and controls.
+4. Added automatic macOS app launch Action collection and aligned macOS default service and Log source tags.
+5. Added an `FTMobileAgent` compatibility proxy for existing integrations.
+6. Added Session Replay asset uploading and routing through Datakit using linked RUM context tags, with resource preservation and deduplication across linked contexts.
+7. Improved RUM lifecycle handling for fallback Views, application launch, first-frame tracking, delayed initial Actions, and session expiration.
+8. Improved automatic RUM View `loading_time` measurement for UIKit and SwiftUI by excluding pre-render and preloading idle time.
+---
+# 1.6.7-beta.1
+1. same as 1.6.7-alpha.3
+---
+# 1.6.7-alpha.3
+1. Added support for uploading and routing Session Replay asset resources through Datakit using linked RUM context tags.
+2. Improved Session Replay resource deduplication to preserve assets across linked RUM contexts.
+3. Fixed SwiftUI RUM View `loading_time` measurement to start from `body` evaluation, preventing pre-render idle time from inflating the duration.
+---
 # 1.6.7-alpha.2
 1. Added RUM Resource collection for WebSocket handshake requests.
 2. Added `FTRumConfig.issueDataProvider` to attach validated custom fields to automatically collected Crash and ANR RUM Errors, including historical context; improved validation limits and shutdown cleanup.
@@ -203,7 +221,7 @@
 1. Fix the viewReferrer assignment error
 2. Fix WebView memory leaks and viewId binding failures
 3. Fix the repeated addition of webView Script Messages
-4. Same as 1.6.2-alpha.5、same as 1.6.2-alpha.6
+4. Same as 1.6.2-alpha.5 and 1.6.2-alpha.6
 ---
 # 1.6.2-alpha.6
 1. Fix the equality comparison logic of FTPadding
@@ -243,7 +261,7 @@
 4. Same as 1.5.15-alpha.2
 ---
 # 1.5.21
-1. Add `setDatakitURL:` 、`setDatawayURL:clientToken:` APIs to support dynamic upload endpoint configuration
+1. Add `setDatakitURL:` and `setDatawayURL:clientToken:` APIs to support dynamic upload endpoint configuration
 2. Bump minimum deployment target to iOS 12+, macOS 10.14+
 3. Fix view association failure when using `addAction:`
 4. Optimize log & RUM correlation logic, supplement missing `action_id` field
@@ -257,7 +275,7 @@
 1. Rename `updateDatakitURL:` to `setDatakitURL:`, `updateDatawayURL:clientToken:` to `setDatawayURL:clientToken:`
 ---
 # 1.5.21-alpha.2
-1. Add `updateDatakitURL:` 、`updateDatawayURL:clientToken:` APIs to support dynamic upload endpoint configuration
+1. Add `updateDatakitURL:` and `updateDatawayURL:clientToken:` APIs to support dynamic upload endpoint configuration
 2. Bump minimum deployment target to iOS 12+, macOS 10.14+
 3. Fix view association failure when using `addAction:`
 4. Optimize log & RUM correlation logic, supplement missing `action_id` field

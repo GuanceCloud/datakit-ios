@@ -293,7 +293,7 @@ long long const FTLongTaskANRDataUpdateIntervalNs = 1LL * NSEC_PER_SEC;
     if (fileExists) {
         [fileManager removeItemAtPath:self.dataStorePath error:&error];
         if (error) {
-            FTInnerLogError(@"[LongTask] delete file：%@ fail. reason: %@", self.dataStorePath, error.description);
+            FTInnerLogError(@"[LongTask] delete file: %@ fail. reason: %@", self.dataStorePath, error.description);
         }
     }
     self.fileHandle = nil;

@@ -93,14 +93,14 @@ static FTNetworkInfoManager *sharedInstance = nil;
                 // Datakit
                 self.datakitUrl = datakitUrl;
                 self.configState = FTNetworkConfigStateDatakitMode;
-                FTInnerLogInfo(@"[NetworkInfo] SDK Datakit URL：%@", datakitUrl);
+                FTInnerLogInfo(@"[NetworkInfo] SDK Datakit URL: %@", datakitUrl);
             } else if (datawayUrl.length > 0 && clientToken.length > 0) {
                 // Dataway
                 self.datawayUrl = datawayUrl;
                 self.clientToken = clientToken;
                 self.configState = FTNetworkConfigStateDatawayMode;
-                FTInnerLogInfo(@"[NetworkInfo] SDK Dataway URL：%@", datawayUrl);
-                FTInnerLogInfo(@"[NetworkInfo] SDK Dataway Client Token：%@",
+                FTInnerLogInfo(@"[NetworkInfo] SDK Dataway URL: %@", datawayUrl);
+                FTInnerLogInfo(@"[NetworkInfo] SDK Dataway Client Token: %@",
                                clientToken.length>0?[NSString stringWithFormat:@"*****%@",[clientToken substringFromIndex:clientToken.length/2]]:nil);
             } else {
                 self.configState = FTNetworkConfigStateNotConfigured;
@@ -146,7 +146,7 @@ static FTNetworkInfoManager *sharedInstance = nil;
         dispatch_barrier_async(self.concurrentQueue, ^{
             self.compression = value;
         });
-        FTInnerLogInfo(@"SDK compressIntakeRequests ：%@",value?@"true":@"false");
+        FTInnerLogInfo(@"SDK compressIntakeRequests: %@",value?@"true":@"false");
         return self;
     };
 }

@@ -492,7 +492,7 @@ void *FTRUMQueueIdentityKey = &FTRUMQueueIdentityKey;
 }
 
 
-#pragma mark - error 、 long_task -
+#pragma mark - error / long_task -
 -(void)addErrorWithType:(NSString *)type message:(NSString *)message stack:(NSString *)stack{
     [self addErrorWithType:type stateStr:FTStringFromAppState(self.appState) message:message stack:stack property:nil time:[NSDate ft_currentNanosecondTimeStamp] issueInfo:nil];
 }
@@ -538,7 +538,7 @@ void *FTRUMQueueIdentityKey = &FTRUMQueueIdentityKey;
                     time:(long long)time
                issueInfo:(nullable FTIssueInfo *)issueInfo {
     if (!(type && message && type.length>0 && message.length>0)) {
-        FTInnerLogError(@"[RUM] Failed to add error due to missing required fields. Please ensure 'type'、'message' are provided.");
+        FTInnerLogError(@"[RUM] Failed to add error due to missing required fields. Please ensure 'type' and 'message' are provided.");
         return;
     }
     [[FTModuleManager sharedInstance] postMessageWithKey:FTMessageKeyRumError message:@{@"error_date":@(time),

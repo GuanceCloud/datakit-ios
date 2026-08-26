@@ -7,9 +7,6 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
-		A1F104032FC2000100A0A001 /* ImageSessionReplayViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = A1F104022FC2000100A0A001 /* ImageSessionReplayViewController.m */; };
-		A1F101012FC1000100A0A001 /* FTAppKitSessionReplayTests.m in Sources */ = {isa = PBXBuildFile; fileRef = A1F100012FC1000100A0A001 /* FTAppKitSessionReplayTests.m */; };
-		A1F103012FC1000100A0A001 /* GuanceSessionReplay.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 179A53812F84EED200FE4B6F /* GuanceSessionReplay.framework */; };
 		1707C82329E52ED5009B7D9C /* FTRUMTests.m in Sources */ = {isa = PBXBuildFile; fileRef = 1707C82229E52ED5009B7D9C /* FTRUMTests.m */; };
 		1707C83129E534F9009B7D9C /* macOS-AppTest.xcconfig in Resources */ = {isa = PBXBuildFile; fileRef = 1707C83029E534F9009B7D9C /* macOS-AppTest.xcconfig */; };
 		1707C83529E55C19009B7D9C /* FTLoggerTest.m in Sources */ = {isa = PBXBuildFile; fileRef = 1707C83429E55C19009B7D9C /* FTLoggerTest.m */; };
@@ -141,7 +138,6 @@
 		17933E3B2D68578900524BF2 /* AddRumDatasHandlerMock.m in Sources */ = {isa = PBXBuildFile; fileRef = 17933E392D68578900524BF2 /* AddRumDatasHandlerMock.m */; };
 		1799582629D6874F0033B46E /* RumViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 1799582429D6874F0033B46E /* RumViewController.m */; };
 		1799582729D6874F0033B46E /* RumViewController.xib in Resources */ = {isa = PBXBuildFile; fileRef = 1799582529D6874F0033B46E /* RumViewController.xib */; };
-		17F209EA2D1540990076F57C /* CrashViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 17F209E92D1540990076F57C /* CrashViewController.m */; };
 		179A539E2F8649A100FE4B6F /* GuanceSDK.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 1763BD6729DFEAF6009EE026 /* GuanceSDK.framework */; };
 		179A53A12F8649A200FE4B6F /* GuanceSessionReplay.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 179A53812F84EED200FE4B6F /* GuanceSessionReplay.framework */; };
 		179A53A42F8649D500FE4B6F /* GuanceSessionReplay.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 179A53A32F8649D500FE4B6F /* GuanceSessionReplay.framework */; };
@@ -187,6 +183,7 @@
 		17F209E52D1540680076F57C /* LogViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1764E41829ACB5BB00E70DBB /* LogViewController.swift */; };
 		17F209E62D1540990076F57C /* Crasher.mm in Sources */ = {isa = PBXBuildFile; fileRef = 7C6E925225E35E9700D12C12 /* Crasher.mm */; };
 		17F209E72D1540990076F57C /* Crasher.mm in Sources */ = {isa = PBXBuildFile; fileRef = 7C6E925225E35E9700D12C12 /* Crasher.mm */; };
+		17F209EA2D1540990076F57C /* CrashViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 17F209E92D1540990076F57C /* CrashViewController.m */; };
 		17F5A0112FCB010100D17137 /* FTSerialTimerTest.m in Sources */ = {isa = PBXBuildFile; fileRef = 17F5A0102FCB010100D17137 /* FTSerialTimerTest.m */; };
 		17F5A0122FCB010100D17137 /* FTSerialTimerTest.m in Sources */ = {isa = PBXBuildFile; fileRef = 17F5A0102FCB010100D17137 /* FTSerialTimerTest.m */; };
 		17F5C5232C60D62A007F2B2C /* FTSessionConfiguration.m in Sources */ = {isa = PBXBuildFile; fileRef = 17F5C51F2C60D629007F2B2C /* FTSessionConfiguration.m */; };
@@ -249,6 +246,9 @@
 		7CF30EDF26F09D5E003CA20A /* CollectionViewItem.m in Sources */ = {isa = PBXBuildFile; fileRef = 7CF30EDD26F09D5E003CA20A /* CollectionViewItem.m */; };
 		7CF30EE026F09D5E003CA20A /* CollectionViewItem.xib in Resources */ = {isa = PBXBuildFile; fileRef = 7CF30EDE26F09D5E003CA20A /* CollectionViewItem.xib */; };
 		7CF30EE726F1EF9E003CA20A /* MainWindow.m in Sources */ = {isa = PBXBuildFile; fileRef = 7CF30EE626F1EF9D003CA20A /* MainWindow.m */; };
+		A1F101012FC1000100A0A001 /* FTAppKitSessionReplayTests.m in Sources */ = {isa = PBXBuildFile; fileRef = A1F100012FC1000100A0A001 /* FTAppKitSessionReplayTests.m */; };
+		A1F103012FC1000100A0A001 /* GuanceSessionReplay.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 179A53812F84EED200FE4B6F /* GuanceSessionReplay.framework */; };
+		A1F104032FC2000100A0A001 /* ImageSessionReplayViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = A1F104022FC2000100A0A001 /* ImageSessionReplayViewController.m */; };
 		AA7E4075B29B727120ABB917 /* Pods_FTMobileSDKUnitTests.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 7C9B67E2BBE800FB64098407 /* Pods_FTMobileSDKUnitTests.framework */; };
 		FDB05F65091D0063D8C9C8DE /* FTDataFilterTest.m in Sources */ = {isa = PBXBuildFile; fileRef = 5C9C12EDDB1B60125668C322 /* FTDataFilterTest.m */; };
 /* End PBXBuildFile section */
@@ -336,9 +336,6 @@
 /* End PBXCopyFilesBuildPhase section */
 
 /* Begin PBXFileReference section */
-		A1F104012FC2000100A0A001 /* ImageSessionReplayViewController.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = ImageSessionReplayViewController.h; sourceTree = "<group>"; };
-		A1F104022FC2000100A0A001 /* ImageSessionReplayViewController.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = ImageSessionReplayViewController.m; sourceTree = "<group>"; };
-		A1F100012FC1000100A0A001 /* FTAppKitSessionReplayTests.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = FTAppKitSessionReplayTests.m; sourceTree = "<group>"; };
 		162957DD463DC9E7C9E4D1A0 /* Pods-FTMobileSDKUnitTests-tvOS.pre.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-FTMobileSDKUnitTests-tvOS.pre.xcconfig"; path = "Target Support Files/Pods-FTMobileSDKUnitTests-tvOS/Pods-FTMobileSDKUnitTests-tvOS.pre.xcconfig"; sourceTree = "<group>"; };
 		1707C82229E52ED5009B7D9C /* FTRUMTests.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = FTRUMTests.m; sourceTree = "<group>"; };
 		1707C83029E534F9009B7D9C /* macOS-AppTest.xcconfig */ = {isa = PBXFileReference; lastKnownFileType = text.xcconfig; path = "macOS-AppTest.xcconfig"; sourceTree = "<group>"; };
@@ -456,8 +453,6 @@
 		1799582329D6874F0033B46E /* RumViewController.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = RumViewController.h; sourceTree = "<group>"; };
 		1799582429D6874F0033B46E /* RumViewController.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = RumViewController.m; sourceTree = "<group>"; };
 		1799582529D6874F0033B46E /* RumViewController.xib */ = {isa = PBXFileReference; lastKnownFileType = file.xib; path = RumViewController.xib; sourceTree = "<group>"; };
-		17F209E82D1540990076F57C /* CrashViewController.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = CrashViewController.h; sourceTree = "<group>"; };
-		17F209E92D1540990076F57C /* CrashViewController.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = CrashViewController.m; sourceTree = "<group>"; };
 		179A53812F84EED200FE4B6F /* GuanceSessionReplay.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; path = GuanceSessionReplay.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 		179A53A32F8649D500FE4B6F /* GuanceSessionReplay.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; path = GuanceSessionReplay.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 		179A53BE2F877BD500FE4B6F /* FTMobileAgentDynamicConfigTests.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = FTMobileAgentDynamicConfigTests.m; sourceTree = "<group>"; };
@@ -511,6 +506,8 @@
 		17F10ECC2D13EACE00737EDD /* tvOS_AppUITestsLaunchTests.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = tvOS_AppUITestsLaunchTests.m; sourceTree = "<group>"; };
 		17F10ECD2D13EACE00737EDD /* tvOS_AppUITestsLaunchTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = tvOS_AppUITestsLaunchTests.swift; sourceTree = "<group>"; };
 		17F10ED32D13F11400737EDD /* GuanceSDK.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; path = GuanceSDK.framework; sourceTree = BUILT_PRODUCTS_DIR; };
+		17F209E82D1540990076F57C /* CrashViewController.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = CrashViewController.h; sourceTree = "<group>"; };
+		17F209E92D1540990076F57C /* CrashViewController.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = CrashViewController.m; sourceTree = "<group>"; };
 		17F5A0102FCB010100D17137 /* FTSerialTimerTest.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = FTSerialTimerTest.m; sourceTree = "<group>"; };
 		17F5C51F2C60D629007F2B2C /* FTSessionConfiguration.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = FTSessionConfiguration.m; sourceTree = "<group>"; };
 		17F5C5202C60D62A007F2B2C /* FTURLProtocol.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = FTURLProtocol.m; sourceTree = "<group>"; };
@@ -633,6 +630,9 @@
 		8446B522E6054C6EEE68965C /* Pods-FTMobileSDKUnitTests-tvOS.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-FTMobileSDKUnitTests-tvOS.release.xcconfig"; path = "Target Support Files/Pods-FTMobileSDKUnitTests-tvOS/Pods-FTMobileSDKUnitTests-tvOS.release.xcconfig"; sourceTree = "<group>"; };
 		91C1E5A38666EF7793AD416F /* Pods_FTMobileSDKUnitTests_tvOS.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = Pods_FTMobileSDKUnitTests_tvOS.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 		9A42D1F771C28BA3324823AC /* Pods-FTMobileSDKUnitTests tvOS.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-FTMobileSDKUnitTests tvOS.release.xcconfig"; path = "Target Support Files/Pods-FTMobileSDKUnitTests tvOS/Pods-FTMobileSDKUnitTests tvOS.release.xcconfig"; sourceTree = "<group>"; };
+		A1F100012FC1000100A0A001 /* FTAppKitSessionReplayTests.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = FTAppKitSessionReplayTests.m; sourceTree = "<group>"; };
+		A1F104012FC2000100A0A001 /* ImageSessionReplayViewController.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = ImageSessionReplayViewController.h; sourceTree = "<group>"; };
+		A1F104022FC2000100A0A001 /* ImageSessionReplayViewController.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = ImageSessionReplayViewController.m; sourceTree = "<group>"; };
 		CC1B0A2F389AA3B88F436B9F /* Pods_SwiftApp.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = Pods_SwiftApp.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 		DD2604B4D308A74CFA896B76 /* Pods-FTMobileSDKUnitTests-tvOS.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-FTMobileSDKUnitTests-tvOS.debug.xcconfig"; path = "Target Support Files/Pods-FTMobileSDKUnitTests-tvOS/Pods-FTMobileSDKUnitTests-tvOS.debug.xcconfig"; sourceTree = "<group>"; };
 		EE4C59F8080E745DFE6C2E40 /* Pods-FTMobileSDKUnitTests.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-FTMobileSDKUnitTests.release.xcconfig"; path = "Target Support Files/Pods-FTMobileSDKUnitTests/Pods-FTMobileSDKUnitTests.release.xcconfig"; sourceTree = "<group>"; };
@@ -786,7 +786,7 @@
 			path = UtilsTest;
 			sourceTree = "<group>";
 		};
-		172DD33828F7FC27007AE5E9 /* iOS/Extensions/WidgetDemo */ = {
+		172DD33828F7FC27007AE5E9 /* WidgetDemo */ = {
 			isa = PBXGroup;
 			children = (
 				172DD34A28F7FCB8007AE5E9 /* WidgetDemoExtension.entitlements */,
@@ -834,7 +834,7 @@
 			path = Resource;
 			sourceTree = "<group>";
 		};
-		175B13AD29E3AE3A003A5B1B /* App/Config */ = {
+		175B13AD29E3AE3A003A5B1B /* Config */ = {
 			isa = PBXGroup;
 			children = (
 				175B13AE29E3AE87003A5B1B /* Config-Example.publish.xcconfig */,
@@ -844,7 +844,7 @@
 			path = App/Config;
 			sourceTree = "<group>";
 		};
-		1764E40029AC9B0500E70DBB /* iOS/SwiftApp */ = {
+		1764E40029AC9B0500E70DBB /* SwiftApp */ = {
 			isa = PBXGroup;
 			children = (
 				1764E40129AC9B0500E70DBB /* AppDelegate.swift */,
@@ -994,11 +994,11 @@
 			isa = PBXGroup;
 			children = (
 				7CDA50BD26DE15EB0062CC39 /* macOS */,
-				4A116958239113B600C0BC4E /* iOS/App */,
-				172DD33828F7FC27007AE5E9 /* iOS/Extensions/WidgetDemo */,
-				1764E40029AC9B0500E70DBB /* iOS/SwiftApp */,
-				4A85313723AB85FC00B40B5D /* iOS/Tests/FTMobileSDKUnitTests */,
-				4A22526D23B5AC7600B0ED41 /* iOS/Tests/FTMobileSDKUITests */,
+				4A116958239113B600C0BC4E /* App */,
+				172DD33828F7FC27007AE5E9 /* WidgetDemo */,
+				1764E40029AC9B0500E70DBB /* SwiftApp */,
+				4A85313723AB85FC00B40B5D /* FTMobileSDKUnitTests */,
+				4A22526D23B5AC7600B0ED41 /* FTMobileSDKUITests */,
 				17F10EBA2D13EAC800737EDD /* tvOS-App */,
 				17F10EC72D13EACC00737EDD /* tvOS-AppTests */,
 				17F10ECE2D13EACE00737EDD /* tvOS-AppUITests */,
@@ -1025,7 +1025,7 @@
 			name = Products;
 			sourceTree = "<group>";
 		};
-		4A116958239113B600C0BC4E /* iOS/App */ = {
+		4A116958239113B600C0BC4E /* App */ = {
 			isa = PBXGroup;
 			children = (
 				7C02F60C268C498200A0FE90 /* App.entitlements */,
@@ -1086,7 +1086,7 @@
 			path = iOS/App;
 			sourceTree = "<group>";
 		};
-		4A22526D23B5AC7600B0ED41 /* iOS/Tests/FTMobileSDKUITests */ = {
+		4A22526D23B5AC7600B0ED41 /* FTMobileSDKUITests */ = {
 			isa = PBXGroup;
 			children = (
 				4A22526E23B5AC7600B0ED41 /* FTMobileSDKUITests.m */,
@@ -1141,7 +1141,7 @@
 			name = Frameworks;
 			sourceTree = "<group>";
 		};
-		4A85313723AB85FC00B40B5D /* iOS/Tests/FTMobileSDKUnitTests */ = {
+		4A85313723AB85FC00B40B5D /* FTMobileSDKUnitTests */ = {
 			isa = PBXGroup;
 			children = (
 				178377F52D8413E600C590AE /* SessionReplay */,
@@ -1260,7 +1260,7 @@
 		7CDA50BD26DE15EB0062CC39 /* macOS */ = {
 			isa = PBXGroup;
 			children = (
-				175B13AD29E3AE3A003A5B1B /* App/Config */,
+				175B13AD29E3AE3A003A5B1B /* Config */,
 				7CDA50C826DE15EB0062CC39 /* macOS-App */,
 				7CDA50DF26DE15EE0062CC39 /* macOS-AppTests */,
 				7CDA50EA26DE15EE0062CC39 /* macOS-AppUITests */,
@@ -1328,14 +1328,6 @@
 			path = "Tests/macOS-AppTests";
 			sourceTree = "<group>";
 		};
-		A1F102012FC1000100A0A001 /* SessionReplay */ = {
-			isa = PBXGroup;
-			children = (
-				A1F100012FC1000100A0A001 /* FTAppKitSessionReplayTests.m */,
-			);
-			path = SessionReplay;
-			sourceTree = "<group>";
-		};
 		7CDA50EA26DE15EE0062CC39 /* macOS-AppUITests */ = {
 			isa = PBXGroup;
 			children = (
@@ -1364,6 +1356,14 @@
 			);
 			name = Pods;
 			path = ../Pods;
+			sourceTree = "<group>";
+		};
+		A1F102012FC1000100A0A001 /* SessionReplay */ = {
+			isa = PBXGroup;
+			children = (
+				A1F100012FC1000100A0A001 /* FTAppKitSessionReplayTests.m */,
+			);
+			path = SessionReplay;
 			sourceTree = "<group>";
 		};
 		DDD1ED5FC12CFB64A803FDBF /* DataFilter */ = {
@@ -1839,13 +1839,9 @@
 			inputFileListPaths = (
 				"${PODS_ROOT}/Target Support Files/Pods-FTMobileSDKUnitTests-tvOS/Pods-FTMobileSDKUnitTests-tvOS-frameworks-${CONFIGURATION}-input-files.xcfilelist",
 			);
-			inputPaths = (
-			);
 			name = "[CP] Embed Pods Frameworks";
 			outputFileListPaths = (
 				"${PODS_ROOT}/Target Support Files/Pods-FTMobileSDKUnitTests-tvOS/Pods-FTMobileSDKUnitTests-tvOS-frameworks-${CONFIGURATION}-output-files.xcfilelist",
-			);
-			outputPaths = (
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 			shellPath = /bin/sh;
@@ -1877,13 +1873,9 @@
 			inputFileListPaths = (
 				"${PODS_ROOT}/Target Support Files/Pods-FTMobileSDKUnitTests/Pods-FTMobileSDKUnitTests-frameworks-${CONFIGURATION}-input-files.xcfilelist",
 			);
-			inputPaths = (
-			);
 			name = "[CP] Embed Pods Frameworks";
 			outputFileListPaths = (
 				"${PODS_ROOT}/Target Support Files/Pods-FTMobileSDKUnitTests/Pods-FTMobileSDKUnitTests-frameworks-${CONFIGURATION}-output-files.xcfilelist",
-			);
-			outputPaths = (
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 			shellPath = /bin/sh;
@@ -2660,7 +2652,10 @@
 				SWIFT_VERSION = 5.0;
 				TARGETED_DEVICE_FAMILY = 3;
 				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/tvOS-App.app/$(BUNDLE_EXECUTABLE_FOLDER_PATH)/tvOS-App";
-				USER_HEADER_SEARCH_PATHS = "$(inherited)  ";
+				USER_HEADER_SEARCH_PATHS = (
+					"$(inherited)",
+					" ",
+				);
 			};
 			name = Debug;
 		};
@@ -2701,7 +2696,10 @@
 				SWIFT_VERSION = 5.0;
 				TARGETED_DEVICE_FAMILY = 3;
 				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/tvOS-App.app/$(BUNDLE_EXECUTABLE_FOLDER_PATH)/tvOS-App";
-				USER_HEADER_SEARCH_PATHS = "$(inherited)  ";
+				USER_HEADER_SEARCH_PATHS = (
+					"$(inherited)",
+					" ",
+				);
 			};
 			name = Pre;
 		};
@@ -2736,7 +2734,10 @@
 				SWIFT_VERSION = 5.0;
 				TARGETED_DEVICE_FAMILY = 3;
 				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/tvOS-App.app/$(BUNDLE_EXECUTABLE_FOLDER_PATH)/tvOS-App";
-				USER_HEADER_SEARCH_PATHS = "$(inherited)  ";
+				USER_HEADER_SEARCH_PATHS = (
+					"$(inherited)",
+					" ",
+				);
 			};
 			name = Release;
 		};
@@ -2865,7 +2866,10 @@
 				SWIFT_VERSION = 5.0;
 				TARGETED_DEVICE_FAMILY = "1,2";
 				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/App.app/$(BUNDLE_EXECUTABLE_FOLDER_PATH)/App";
-				USER_HEADER_SEARCH_PATHS = "$(inherited)  ";
+				USER_HEADER_SEARCH_PATHS = (
+					"$(inherited)",
+					" ",
+				);
 			};
 			name = Pre;
 		};
@@ -3433,7 +3437,10 @@
 				SWIFT_VERSION = 5.0;
 				TARGETED_DEVICE_FAMILY = "1,2";
 				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/App.app/$(BUNDLE_EXECUTABLE_FOLDER_PATH)/App";
-				USER_HEADER_SEARCH_PATHS = "$(inherited)  ";
+				USER_HEADER_SEARCH_PATHS = (
+					"$(inherited)",
+					" ",
+				);
 			};
 			name = Debug;
 		};
@@ -3466,7 +3473,10 @@
 				SWIFT_VERSION = 5.0;
 				TARGETED_DEVICE_FAMILY = "1,2";
 				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/App.app/$(BUNDLE_EXECUTABLE_FOLDER_PATH)/App";
-				USER_HEADER_SEARCH_PATHS = "$(inherited)  ";
+				USER_HEADER_SEARCH_PATHS = (
+					"$(inherited)",
+					" ",
+				);
 			};
 			name = Release;
 		};

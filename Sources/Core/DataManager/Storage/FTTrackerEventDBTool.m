@@ -362,7 +362,7 @@ static long pageSize = 0;
             [pageSizeSet close];
             
             if (pageSize <= 0) {
-                FTInnerLogError(@"get page_size fail，default set 4096");
+                FTInnerLogError(@"get page_size fail, default set 4096");
                 pageSize = 4096;
             }
         }
