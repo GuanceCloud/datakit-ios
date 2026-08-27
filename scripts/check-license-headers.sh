@@ -130,6 +130,11 @@ while IFS= read -r file; do
   fi
 done < <(list_files)
 
+if ! bash "${SCRIPT_DIR}/apply-license-headers.sh" --check; then
+  error "License headers are present but not normalized."
+  failed=1
+fi
+
 if [[ "${failed}" -ne 0 ]]; then
   error "License header check failed. Checked ${checked} files."
   exit 1
