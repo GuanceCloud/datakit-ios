@@ -1,3 +1,6 @@
+# 1.6.8-alpha.2
+1. Added reusable external Session Replay recorder control for framework integrations, including external-only recording, owner-aware native capture switching, linked RUM context access, enriched segment writes, and image resource storage.
+---
 # 1.6.7
 1. Added RUM Resource collection for WebSocket handshake requests.
 2. Added `FTRumConfig.issueDataProvider` to attach validated custom fields and historical context to automatically collected Crash and ANR RUM Errors.
