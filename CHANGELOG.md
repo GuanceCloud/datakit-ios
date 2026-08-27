@@ -1,3 +1,7 @@
+# 1.6.8-alpha.1
+1. Added `GuanceElectronWebView` integration through Swift Package Manager and CocoaPods for macOS Electron Web RUM and Session Replay.
+2. Added Electron Full Mode and Native-owned Mixed Mode, including automatic/manual BrowserWindow attachment and authenticated cross-process Bridge communication.
+---
 # 1.6.7
 1. Added RUM Resource collection for WebSocket handshake requests.
 2. Added `FTRumConfig.issueDataProvider` to attach validated custom fields and historical context to automatically collected Crash and ANR RUM Errors.
