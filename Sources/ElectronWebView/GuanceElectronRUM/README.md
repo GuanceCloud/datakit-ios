@@ -2,13 +2,15 @@
 
 Use this guide when a macOS Native application embeds Electron pages.
 
-Copy this `GuanceElectronRUM` directory into the Electron project.
+Electron Main, IPC, and preload integration are provided by the published
+`@cloudcare/electron-native-adapter` npm package. This directory only keeps the
+precompiled universal macOS `GuanceElectronBridge.node` used by the package's
+`embedded` mode. Do not copy JavaScript integration files from this repository
+into an Electron application.
 
-This directory includes a precompiled universal macOS
-`GuanceElectronBridge.node` for `arm64` and `x86_64`. It is a Main-process
-adapter, not a second Native SDK: it calls the already-loaded
-`FTElectronWebViewHandler` in the same process and never initializes Guance SDK
-products.
+The bridge supports `arm64` and `x86_64`. It is a Main-process adapter, not a
+second Native SDK: it calls the already-loaded `FTElectronWebViewHandler` in the
+same process and never initializes Guance SDK products.
 
 ## 1. Install the Native SDK
 
@@ -44,7 +46,7 @@ frameworks manually: `GuanceSDK`, `GuanceSessionReplay`, and
 ## 2. Initialize the Native SDK
 
 Initialize Native RUM, start the Electron handler, then start Native Session
-Replay.
+Replay before Electron navigation.
 
 ```objc
 #import <GuanceSDK/FTSDKAgent.h>
@@ -70,83 +72,121 @@ replayConfig.sampleRate = 100;
 
 Configuration:
 
-- `enableTraceWebView = YES`: automatically collects Electron windows and
-  BrowserViews.
+- `enableTraceWebView = YES`: allows automatic BrowserWindow attachment.
 - `allowWebViewHost = nil` or `@[]`: collects all H5 hosts.
 - `allowWebViewHost = @[@"example.com"]`: collects `example.com` and its
   subdomains.
 
-## 3. Initialize once in Electron Main
+## 3. Install the Electron adapter
 
-Call `bootstrap` before the first Electron page calls `loadURL()` or
-`loadFile()`. The `BrowserWindow` may be created before or after `bootstrap`.
+Install the JavaScript adapter from npm:
+
+```bash
+npm install @cloudcare/electron-native-adapter
+```
+
+The npm package intentionally contains no `.node` binary. Copy
+`GuanceElectronBridge.node` into the Electron application's unpacked resources
+using its existing macOS Native SDK packaging workflow.
+
+## 4. Configure Electron Main and preload
+
+Call `bootstrap()` before the first collected page calls `loadURL()` or
+`loadFile()`:
 
 ```js
-const { app, BrowserWindow } = require('electron')
-const GuanceElectronRUM = require('./GuanceElectronRUM/main.cjs')
-const nativeBridge = require('./GuanceElectronRUM/GuanceElectronBridge.node')
+const path = require('node:path')
+const electron = require('electron')
+const {
+  bootstrap,
+} = require('@cloudcare/electron-native-adapter')
 
-app.whenReady().then(() => {
-  GuanceElectronRUM.bootstrap({ nativeBridge })
+const nativeBridge = require(path.join(
+  process.resourcesPath,
+  'GuanceElectronBridge.node',
+))
 
-  const mainWindow = new BrowserWindow({
-    webPreferences: { contextIsolation: true },
+electron.app.whenReady().then(async () => {
+  const client = await bootstrap({
+    electron,
+    native: {
+      mode: 'embedded',
+      bridge: nativeBridge,
+    },
+    autoAttach: true,
+    onError(error) {
+      console.error('[Guance Electron RUM]', error)
+    },
   })
-  mainWindow.loadURL(mainURL)
+
+  const mainWindow = new electron.BrowserWindow({
+    webPreferences: {
+      contextIsolation: true,
+      preload: require.resolve(
+        '@cloudcare/electron-native-adapter/preload/standalone',
+      ),
+    },
+  })
+  await mainWindow.loadURL(mainURL)
+
+  electron.app.once('before-quit', () => {
+    void client.stop()
+  })
 })
 ```
 
-No extra call is needed for subsequent `BrowserWindow` or `BrowserView`
-instances.
-
-### WebContents requirement
-
-`contextIsolation` is configured per WebContents and is enabled by default in
-current Electron releases. No extra configuration is required when the
-application keeps that default. Every `BrowserWindow` and `BrowserView` that
-loads an H5 page collected by Guance must keep `contextIsolation` enabled.
-
-If the application explicitly disables it, restore it for the affected window
-or view:
+If the application already has a preload, compose the bridge there instead:
 
 ```js
-const detailWindow = new BrowserWindow({
-  webPreferences: { contextIsolation: true },
-})
+const {
+  installElectronRumPreload,
+} = require('@cloudcare/electron-native-adapter/preload/install')
 
-const contentView = new BrowserView({
-  webPreferences: { contextIsolation: true },
-})
+installElectronRumPreload()
 ```
 
-This allows the Guance preload to expose its restricted bridge without giving
-the H5 page direct Electron IPC access. A legacy page that depends on
-`contextIsolation: false` keeps running, but Guance skips bridge injection and
-prints a warning in that renderer's DevTools. Web RUM and Web Session Replay
-are not collected for that page.
+Every collected BrowserWindow or BrowserView must keep
+`contextIsolation: true`. A renderer without the shared preload does not expose
+`window.FTWebViewJavascriptBridge` and cannot forward Web RUM or Web Session
+Replay.
 
-For a release build, sign `GuanceElectronBridge.node` with the same signing
-workflow as the application. The bridge source and rebuild script are kept in
-the integration example; rebuild only when its Node-API surface, required
-architecture, or Electron compatibility changes.
-
-To collect only selected windows, disable automatic attachment and attach the
-window before loading its page:
+To attach selected windows explicitly:
 
 ```js
-const electronRUM = GuanceElectronRUM.bootstrap({
-  nativeBridge,
+const client = await bootstrap({
+  electron,
+  native: { mode: 'embedded', bridge: nativeBridge },
   autoAttach: false,
 })
 
-const detailWindow = new BrowserWindow(detailOptions)
-electronRUM.attachWindow(detailWindow)
-detailWindow.loadURL(detailURL)
+const detailWindow = new electron.BrowserWindow(detailOptions)
+const detach = client.attachWindow(detailWindow)
+await detailWindow.loadURL(detailURL)
+
+// Later:
+detach()
 ```
 
-## 4. Initialize the Web SDK in every H5 page
+BrowserView/WebContents layout is explicit in the shared lifecycle:
 
-Initialize the Guance Web SDK normally, then start Web Session Replay.
+```js
+client.attachWindow(browserView, {
+  browserWindow,
+  visible: true,
+  zIndex: 0,
+  bounds: browserView.getBounds(),
+})
+
+client.updateWindow(browserView, {
+  visible: true,
+  bounds: browserView.getBounds(),
+})
+```
+
+## 5. Initialize the Web SDK
+
+Initialize the Guance Web SDK normally in every H5 page, then start Web Session
+Replay:
 
 ```js
 import { datafluxRum } from '@cloudcare/browser-rum'
@@ -164,17 +204,16 @@ datafluxRum.startSessionReplayRecording()
 
 Do not add Electron-specific bridge code in the H5 page.
 
-## 5. Verify
+## 6. Package and verify
 
-1. Open an Electron page and run this in its DevTools:
+For a release build, keep `GuanceElectronBridge.node` outside ASAR and sign it
+with the same signing workflow as the application. Rebuild it only when its
+Node-API surface, required architecture, or Electron compatibility changes.
 
-   ```js
-   Boolean(window.FTWebViewJavascriptBridge)
-   ```
+Verify the integration:
 
-   The result should be `true`.
-
-2. Trigger an H5 action or request. New Native and H5 RUM events should have
-   the same uploaded `session_id`.
-
+1. Open a collected page and confirm
+   `Boolean(window.FTWebViewJavascriptBridge)` is `true`.
+2. Trigger an H5 action or request. Native and H5 RUM events should share the
+   uploaded `session_id`.
 3. Trigger Native and H5 interactions. Session Replay should contain both.
