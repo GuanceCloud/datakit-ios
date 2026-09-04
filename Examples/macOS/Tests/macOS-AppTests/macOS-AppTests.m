@@ -26,6 +26,10 @@
 #import "FTConstants.h"
 #import "FTMobileAgent+Private.h"
 #import "FTJSONUtil.h"
+#import "FTSDKConfig+Private.h"
+@interface FTSDKAgent (WebViewLogTesting)
+- (nullable NSArray *)effectiveAllowWebViewHost;
+@end
 @interface MacOSAppTests : XCTestCase
 @property (nonatomic, copy) NSString *url;
 @property (nonatomic, copy) NSString *traceUrl;
@@ -119,6 +123,46 @@
     XCTAssertTrue([copyConfig.service isEqualTo:config.service]);
     XCTAssertTrue([copyConfig.version isEqualTo:config.version]);
     XCTAssertTrue([copyConfig.globalContext isEqual:config.globalContext]);
+}
+- (void)testWebViewConfigCopy {
+    FTSDKConfig *config = [[FTSDKConfig alloc] initWithDatakitUrl:self.url];
+    config.allowWebViewHost = @[];
+    FTSDKConfig *copyConfig = [config copy];
+    XCTAssertTrue(copyConfig.allowWebViewHostConfigured);
+    XCTAssertEqualObjects(copyConfig.allowWebViewHost, @[]);
+
+    FTLoggerConfig *loggerConfig = [[FTLoggerConfig alloc] init];
+    XCTAssertFalse(loggerConfig.enableWebViewLog);
+    loggerConfig.enableWebViewLog = YES;
+    FTLoggerConfig *copyLoggerConfig = [loggerConfig copy];
+    XCTAssertTrue(copyLoggerConfig.enableWebViewLog);
+}
+- (void)testWebViewHostPriority {
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wdeprecated-declarations"
+    FTMobileConfig *legacyBase = [[FTMobileConfig alloc] initWithDatakitUrl:self.url];
+    [FTMobileAgent startWithConfigOptions:legacyBase];
+    FTRumConfig *legacyRum = [[FTRumConfig alloc] initWithAppid:@"webview-host-app"];
+    legacyRum.allowWebViewHost = @[@"legacy.example.com"];
+    [[FTMobileAgent sharedInstance] startRumWithConfigOptions:legacyRum];
+    XCTAssertEqualObjects([[FTSDKAgent sharedInstance] effectiveAllowWebViewHost], @[@"legacy.example.com"]);
+    [FTMobileAgent shutDown];
+
+    FTMobileConfig *explicitNilBase = [[FTMobileConfig alloc] initWithDatakitUrl:self.url];
+    explicitNilBase.allowWebViewHost = nil;
+    [FTMobileAgent startWithConfigOptions:explicitNilBase];
+    [[FTMobileAgent sharedInstance] startRumWithConfigOptions:legacyRum];
+    XCTAssertNil([[FTSDKAgent sharedInstance] effectiveAllowWebViewHost]);
+    [FTMobileAgent shutDown];
+
+    FTMobileConfig *remoteBase = [[FTMobileConfig alloc] initWithDatakitUrl:self.url];
+    remoteBase.allowWebViewHost = @[@"base.example.com"];
+    [FTMobileAgent startWithConfigOptions:remoteBase];
+    FTSDKConfig *activeBase = [[FTSDKAgent sharedInstance] valueForKey:@"sdkConfig"];
+    activeBase.remoteAllowWebViewHost = @[];
+    XCTAssertEqualObjects([[FTSDKAgent sharedInstance] effectiveAllowWebViewHost], @[]);
+    [FTMobileAgent shutDown];
+#pragma clang diagnostic pop
 }
 - (void)testRUMConfigCopy{
     FTRumConfig *rumConfig = [[FTRumConfig alloc]initWithAppid:@"app_id1111"];

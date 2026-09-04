@@ -192,7 +192,8 @@
         FT_ENV:@"test",
         FT_R_SERVICE_NAME:@"test_remote",
         FT_R_SYNC_PAGE_SIZE:@(120),
-        FT_R_SYNC_SLEEP_TIME:@(100)
+        FT_R_SYNC_SLEEP_TIME:@(100),
+        FT_R_RUM_ALLOW_WEBVIEW_HOST:@"[]"
     };
     NSString *datakit = @"http://datakit-test.com";
     FTSDKConfig *config = [[FTSDKConfig alloc]initWithDatakitUrl:datakit];
@@ -203,6 +204,7 @@
     XCTAssertTrue(![config.service isEqualToString:copyConfig.service] && [copyConfig.service isEqualToString:@"test_remote"]);
     XCTAssertTrue(config.syncPageSize != copyConfig.syncPageSize && copyConfig.syncPageSize == 120);
     XCTAssertTrue(config.syncSleepTime != copyConfig.syncSleepTime && copyConfig.syncSleepTime == 100);
+    XCTAssertEqualObjects(copyConfig.remoteAllowWebViewHost, @[]);
     
     NSDictionary *testRumDict = @{
         FT_R_RUM_SAMPLERATE:@(0.5),
@@ -258,6 +260,7 @@
         FT_R_LOG_SAMPLERATE:@(0.8),
         FT_R_LOG_LEVEL_FILTERS:@"[\"info\",\"error\"]",
         FT_R_LOG_ENABLE_CUSTOM_LOG:@(YES),
+        FT_R_LOG_ENABLE_WEBVIEW_LOG:@(YES),
     };
     FTLoggerConfig *logger = [[FTLoggerConfig alloc]init];
     FTLoggerConfig *copyLogger = [logger copy];
@@ -266,6 +269,7 @@
 
     XCTAssertTrue(logger.sampleRate != copyLogger.sampleRate && copyLogger.sampleRate == 80);
     XCTAssertTrue(logger.enableCustomLog != copyLogger.enableCustomLog && copyLogger.enableCustomLog == YES);
+    XCTAssertTrue(logger.enableWebViewLog != copyLogger.enableWebViewLog && copyLogger.enableWebViewLog == YES);
     XCTAssertTrue(![logger.logLevelFilter isEqual:copyLogger.logLevelFilter]);
     NSArray *array = @[@"info",@"error"];
     XCTAssertTrue([copyLogger.logLevelFilter isEqualToArray:array]);
@@ -359,6 +363,7 @@
         FT_R_LOG_SAMPLERATE:@"0.8",
         FT_R_LOG_LEVEL_FILTERS:@"[info]",
         FT_R_LOG_ENABLE_CUSTOM_LOG:@"1",
+        FT_R_LOG_ENABLE_WEBVIEW_LOG:@"1",
     };
     FTLoggerConfig *logger = [[FTLoggerConfig alloc]init];
     FTLoggerConfig *copyLogger = [logger copy];
@@ -367,6 +372,7 @@
 
     XCTAssertTrue(logger.samplerate == copyLogger.samplerate);
     XCTAssertTrue(logger.enableCustomLog == copyLogger.enableCustomLog);
+    XCTAssertTrue(logger.enableWebViewLog == copyLogger.enableWebViewLog);
     XCTAssertTrue(logger.logLevelFilter == copyLogger.logLevelFilter);
     
     
@@ -381,6 +387,20 @@
     XCTAssertTrue(srConfig.sampleRate == copySrConfig.sampleRate);
     XCTAssertTrue(srConfig.sessionReplayOnErrorSampleRate == copySrConfig.sessionReplayOnErrorSampleRate);
 #endif
+}
+- (void)testRemoteWebViewConfigurationSerializationPreservesEmptyHosts {
+    FTRemoteConfigModel *model = [[FTRemoteConfigModel alloc] initWithDict:@{
+        FT_R_RUM_ALLOW_WEBVIEW_HOST: @"[]",
+        FT_R_LOG_ENABLE_WEBVIEW_LOG: @(YES),
+    }];
+
+    XCTAssertEqualObjects(model.rumAllowWebViewHost, @[]);
+    XCTAssertEqualObjects(model.logEnableWebViewLog, @(YES));
+    XCTAssertEqualObjects(model.toDictionary[FT_R_RUM_ALLOW_WEBVIEW_HOST], @"[]");
+    XCTAssertEqualObjects(model.toDictionary[FT_R_LOG_ENABLE_WEBVIEW_LOG], @(YES));
+    FTRemoteConfigModel *copy = [model copy];
+    XCTAssertEqualObjects(copy.rumAllowWebViewHost, @[]);
+    XCTAssertEqualObjects(copy.logEnableWebViewLog, @(YES));
 }
 - (void)testDefaultUpdateRemoteConfig{
     [[FTTrackerEventDBTool sharedManager] deleteAllDatas];
@@ -400,6 +420,7 @@
     [[FTMobileAgent sharedInstance] startRumWithConfigOptions:rum];
     FTLoggerConfig *log = [[FTLoggerConfig alloc]init];
     log.enableCustomLog = NO;
+    log.enableWebViewLog = NO;
     log.samplerate = 0;
     FTTraceConfig *trace = [[FTTraceConfig alloc]init];
     trace.samplerate = 0;
@@ -415,6 +436,7 @@
         FTLoggerConfig *log = [FTLogger sharedInstance].config;
         XCTAssertTrue([[FTLogger sharedInstance].logLevelFilterSet containsObject:@"logTest"]);
         XCTAssertTrue(log.enableCustomLog == YES);
+        XCTAssertTrue(log.enableWebViewLog == YES);
         XCTAssertTrue(log.samplerate == 100);
     });
     XCTAssertTrue([FTTrackDataManager sharedInstance].autoSync == NO);
@@ -462,6 +484,7 @@
         FT_R_COMPRESS_INTAKE_REQUESTS: @YES,
         FT_R_LOG_LEVEL_FILTERS: @"[\"logTest\"]",
         FT_R_LOG_ENABLE_CUSTOM_LOG: @YES,
+        FT_R_LOG_ENABLE_WEBVIEW_LOG: @YES,
         FT_R_TRACE_SAMPLERATE:@(1),
         FT_R_RUM_SAMPLERATE:@(1),
         FT_R_LOG_SAMPLERATE:@(1),

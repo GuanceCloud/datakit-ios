@@ -181,7 +181,7 @@ typedef BOOL (^FTSessionTaskErrorFilter)(NSError *_Nonnull error);
 /// Set whether to enable WebView data collection, default YES
 @property (nonatomic, assign) BOOL enableTraceWebView;
 /// Set specific hosts or domains allowed to collect WebView data, nil means collect all.
-@property (nonatomic, copy, nullable) NSArray *allowWebViewHost;
+@property (nonatomic, copy, nullable) NSArray *allowWebViewHost DEPRECATED_MSG_ATTRIBUTE("Use FTSDKConfig.allowWebViewHost.");
 
 /// A handler for user-defined collection of `ViewControllers` as RUM views for tracking.
 /// It takes effect when enableTraceUserView = YES.

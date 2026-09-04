@@ -38,13 +38,48 @@
 #import "FTLoggerConfig+Private.h"
 #import "FTRumConfig+Private.h"
 #import "FTRemoteConfigModel+Test.h"
+#import "FTWebViewLogEventMapper.h"
+#import "FTInternalConstants.h"
+#import "FTHTTPClient.h"
+#import "FTDataUploadWorker.h"
 
+@interface FTDataUploadWorker (WebViewLogUploadTesting)
+- (BOOL)flushWithType:(NSString *)type maxBatchesPerUploadPass:(NSInteger)maxBatchesPerUploadPass;
+@end
+
+@interface FTWebViewLogHTTPClientStub : FTHTTPClient
+@property (nonatomic, copy) NSString *capturedUpload;
+@end
+
+@implementation FTWebViewLogHTTPClientStub
+- (void)sendRequest:(id<FTRequestProtocol>)request
+         completion:(void (^)(NSHTTPURLResponse * _Nullable, NSData * _Nullable, NSError * _Nullable))callback {
+    NSMutableURLRequest *urlRequest = [[NSMutableURLRequest alloc] initWithURL:request.absoluteURL];
+    if ([request respondsToSelector:@selector(adaptedRequest:)]) {
+        urlRequest = [request adaptedRequest:urlRequest];
+    }
+    NSString *requestBody = [[NSString alloc] initWithData:urlRequest.HTTPBody encoding:NSUTF8StringEncoding];
+    self.capturedUpload = [NSString stringWithFormat:@"%@\n%@\n%@\n%@",
+                           NSStringFromClass([(NSObject *)request class]), request.path,
+                           request.absoluteURL.absoluteString, requestBody];
+    NSHTTPURLResponse *response = [[NSHTTPURLResponse alloc] initWithURL:request.absoluteURL
+                                                             statusCode:200
+                                                            HTTPVersion:@"HTTP/1.1"
+                                                           headerFields:nil];
+    callback(response, [NSData data], nil);
+}
+@end
 
 @interface FTLoggerTest : XCTestCase<FTLoggerDataWriteProtocol>
 
 @property (nonatomic, copy) NSString *url;
 @property (nonatomic, copy) NSString *appid;
 @property (nonatomic, strong) XCTestExpectation *logExpectation;
+@property (nonatomic, strong) XCTestExpectation *webViewLogExpectation;
+@property (nonatomic, copy) NSDictionary *lastLogTags;
+@property (nonatomic, copy) NSDictionary *lastLogFields;
+@property (nonatomic, assign) long long lastLogTime;
+@property (nonatomic, assign) BOOL lastLogLinkRum;
 @end
 
 @implementation FTLoggerTest
@@ -59,7 +94,178 @@
 - (void)tearDown {
     // Put teardown code here. This method is called after the invocation of each test method in the class.
     [FTMobileAgent shutDown];
+    [[FTLogger sharedInstance] shutDown];
     self.logExpectation = nil;
+    self.webViewLogExpectation = nil;
+    self.lastLogTags = nil;
+    self.lastLogFields = nil;
+    self.lastLogTime = 0;
+    self.lastLogLinkRum = NO;
+}
+- (void)testWebViewLogMapper {
+    NSDictionary *event = @{
+        @"date": @1700000000123LL,
+        @"_gc": @{ @"sdk_name": @"df_web_rum_sdk", @"sdk_version": @"3.3.6" },
+        @"application": @{ @"id": @"browser-app" },
+        @"session": @{ @"id": @"browser-session", @"type": @"user" },
+        @"view": @{ @"id": @"browser-view", @"url_query": @"q=1" },
+        @"user_action": @{ @"id": @"browser-action" },
+        @"error": @{ @"source": @"source", @"type": @"TypeError", @"message": @"failure", @"stack": @"stack" },
+        @"http": @{ @"url": @"https://example.com/path", @"status_code": @404 },
+        @"message": @{ @"nested": @(YES) },
+        @"status": @"warn",
+        @"service": @"browser-service",
+        @"custom_number": @42,
+        @"custom_object": @{ @"nested": @(YES) },
+    };
+
+    FTWebViewLogEvent *mapped = [FTWebViewLogEventMapper mapEvent:event];
+    XCTAssertNotNil(mapped);
+    XCTAssertEqualObjects(mapped.content, @"{\"nested\":true}");
+    XCTAssertEqualObjects(mapped.status, @"warning");
+    XCTAssertEqual(mapped.time, 1700000000123000000LL);
+    XCTAssertEqualObjects(mapped.tags[FT_IS_WEBVIEW], @(YES));
+    XCTAssertEqualObjects(mapped.tags[FT_SDK_NAME], @"df_web_rum_sdk");
+    XCTAssertEqualObjects(mapped.tags[FT_SDK_VERSION], @"3.3.6");
+    XCTAssertEqualObjects(mapped.tags[FT_KEY_SERVICE], @"browser-service");
+    XCTAssertEqualObjects(mapped.tags[FT_RUM_KEY_SESSION_ID], @"browser-session");
+    XCTAssertEqualObjects(mapped.tags[FT_KEY_VIEW_ID], @"browser-view");
+    XCTAssertEqualObjects(mapped.tags[FT_KEY_ACTION_ID], @"browser-action");
+    XCTAssertEqualObjects(mapped.fields[@"error_message"], @"failure");
+    XCTAssertEqualObjects(mapped.fields[@"error_stack"], @"stack");
+    XCTAssertEqualObjects(mapped.fields[@"custom_number"], @42);
+    XCTAssertEqualObjects(mapped.fields[@"custom_object"], @"{\"nested\":true}");
+    XCTAssertNotNil(mapped.fields[@"application"]);
+
+    [FTWebViewLogEventMapper replaceRumLinkDataInEvent:mapped
+                                          applicationId:@"native-app"
+                                               sessionId:@"native-session"];
+    XCTAssertEqualObjects(mapped.tags[FT_APP_ID], @"native-app");
+    XCTAssertEqualObjects(mapped.tags[FT_RUM_KEY_SESSION_ID], @"native-session");
+    XCTAssertEqualObjects([FTJSONUtil dictionaryWithJsonString:mapped.fields[@"application"]][@"id"], @"native-app");
+    XCTAssertEqualObjects([FTJSONUtil dictionaryWithJsonString:mapped.fields[@"session"]][@"id"], @"native-session");
+    XCTAssertEqualObjects(mapped.tags[FT_KEY_VIEW_ID], @"browser-view");
+    XCTAssertEqualObjects(mapped.tags[FT_KEY_ACTION_ID], @"browser-action");
+
+    [FTWebViewLogEventMapper removeRumLinkDataFromEvent:mapped];
+    XCTAssertNil(mapped.tags[FT_APP_ID]);
+    XCTAssertNil(mapped.tags[FT_RUM_KEY_SESSION_ID]);
+    XCTAssertNil(mapped.tags[FT_KEY_VIEW_ID]);
+    XCTAssertNil(mapped.tags[FT_KEY_ACTION_ID]);
+    XCTAssertNil(mapped.fields[@"application"]);
+    XCTAssertNil(mapped.fields[@"session"]);
+    XCTAssertNil(mapped.fields[@"view"]);
+    XCTAssertNil(mapped.fields[@"user_action"]);
+}
+- (void)testWebViewLogMapperValidationAndTimeFallback {
+    XCTAssertNil([FTWebViewLogEventMapper mapEvent:@{}]);
+    XCTAssertNil([FTWebViewLogEventMapper mapEvent:(NSDictionary *)@[]]);
+
+    long long before = [NSDate ft_currentNanosecondTimeStamp];
+    FTWebViewLogEvent *mapped = [FTWebViewLogEventMapper mapEvent:@{ @"message": @123, @"date": @"invalid", @"status": @"" }];
+    long long after = [NSDate ft_currentNanosecondTimeStamp];
+    XCTAssertEqualObjects(mapped.content, @"123");
+    XCTAssertEqualObjects(mapped.status, @"info");
+    XCTAssertGreaterThanOrEqual(mapped.time, before);
+    XCTAssertLessThanOrEqual(mapped.time, after);
+}
+- (void)testWebViewLoggerUsesIndependentSwitchSamplingFilterAndContentLimit {
+    FTLoggerConfig *config = [[FTLoggerConfig alloc] init];
+    config.enableCustomLog = NO;
+    config.printCustomLogToConsole = NO;
+    config.enableWebViewLog = YES;
+    config.sampleRate = 100;
+    config.logLevelFilter = @[@(FTStatusWarning)];
+    [[FTLogger sharedInstance] startWithLoggerConfig:config writer:self];
+
+    NSString *longMessage = [@"x" stringByPaddingToLength:FT_LOGGING_CONTENT_SIZE + 10 withString:@"x" startingAtIndex:0];
+    [[FTLogger sharedInstance] logWebViewEvent:@{ @"message": longMessage, @"status": @"warn" }
+                               linkToNativeRum:NO];
+    [[FTLogger sharedInstance] syncProcess];
+    XCTAssertEqualObjects(self.lastLogTags[FT_KEY_STATUS], @"warning");
+    XCTAssertEqualObjects(self.lastLogTags[FT_IS_WEBVIEW], @(YES));
+    XCTAssertEqual([self.lastLogFields[FT_KEY_MESSAGE] length], FT_LOGGING_CONTENT_SIZE);
+
+    self.lastLogFields = nil;
+    [[FTLogger sharedInstance] logWebViewEvent:@{ @"message": @"filtered", @"status": @"info" }
+                               linkToNativeRum:NO];
+    [[FTLogger sharedInstance] syncProcess];
+    XCTAssertNil(self.lastLogFields);
+
+    config.sampleRate = 0;
+    config.logLevelFilter = nil;
+    [[FTLogger sharedInstance] updateLoggerConfiguration:config];
+    [[FTLogger sharedInstance] logWebViewEvent:@{ @"message": @"sampled-out" }
+                               linkToNativeRum:NO];
+    [[FTLogger sharedInstance] syncProcess];
+    XCTAssertNil(self.lastLogFields);
+
+    config.sampleRate = 100;
+    config.enableWebViewLog = NO;
+    [[FTLogger sharedInstance] updateLoggerConfiguration:config];
+    [[FTLogger sharedInstance] logWebViewEvent:@{ @"message": @"disabled" }
+                               linkToNativeRum:NO];
+    [[FTLogger sharedInstance] syncProcess];
+    XCTAssertNil(self.lastLogFields);
+}
+- (void)testWebViewLogReplacesOnlyNativeApplicationAndSessionLinks {
+    [self setRightSDKConfig];
+    FTRumConfig *rumConfig = [[FTRumConfig alloc] initWithAppid:self.appid];
+    rumConfig.enableTraceWebView = YES;
+    [[FTMobileAgent sharedInstance] startRumWithConfigOptions:rumConfig];
+
+    FTLoggerConfig *loggerConfig = [[FTLoggerConfig alloc] init];
+    loggerConfig.enableWebViewLog = YES;
+    loggerConfig.enableLinkRumData = YES;
+    [[FTMobileAgent sharedInstance] startLoggerWithConfigOptions:loggerConfig];
+    [[FTLogger sharedInstance] setValue:self forKey:@"loggerWriter"];
+    [FTModelHelper startView];
+    [FTModelHelper startAction];
+
+    XCTestExpectation *webViewLogExpectation = [self expectationWithDescription:@"WebView log linked"];
+    self.webViewLogExpectation = webViewLogExpectation;
+    [[FTLogger sharedInstance] logWebViewEvent:@{
+        @"application": @{ @"id": @"browser-app" },
+        @"session": @{ @"id": @"browser-session" },
+        @"view": @{ @"id": @"browser-view" },
+        @"user_action": @{ @"id": @"browser-action" },
+        @"message": @"linked-web-log",
+    } linkToNativeRum:YES];
+    [self waitForExpectations:@[webViewLogExpectation] timeout:2];
+
+    XCTAssertEqualObjects(self.lastLogTags[FT_APP_ID], self.appid);
+    XCTAssertNotEqualObjects(self.lastLogTags[FT_RUM_KEY_SESSION_ID], @"browser-session");
+    XCTAssertEqualObjects(self.lastLogTags[FT_KEY_VIEW_ID], @"browser-view");
+    XCTAssertEqualObjects(self.lastLogTags[FT_KEY_ACTION_ID], @"browser-action");
+    XCTAssertEqualObjects([FTJSONUtil dictionaryWithJsonString:self.lastLogFields[@"application"]][@"id"], self.appid);
+    XCTAssertEqualObjects([FTJSONUtil dictionaryWithJsonString:self.lastLogFields[@"session"]][@"id"], self.lastLogTags[FT_RUM_KEY_SESSION_ID]);
+    XCTAssertTrue(self.lastLogLinkRum);
+}
+- (void)testWebViewLogUploadsThroughNativeLoggingEndpointAndDeletesCache {
+    FTMobileConfig *config = [[FTMobileConfig alloc] initWithDatakitUrl:@"http://127.0.0.1:9529"];
+    config.autoSync = NO;
+    config.compressIntakeRequests = NO;
+    [FTMobileAgent startWithConfigOptions:config];
+    FTLoggerConfig *loggerConfig = [[FTLoggerConfig alloc] init];
+    loggerConfig.enableWebViewLog = YES;
+    loggerConfig.enableCustomLog = NO;
+    [[FTMobileAgent sharedInstance] startLoggerWithConfigOptions:loggerConfig];
+
+    [[FTLogger sharedInstance] logWebViewEvent:@{ @"message": @"ios-web-upload-log" }
+                               linkToNativeRum:NO];
+    [[FTLogger sharedInstance] syncProcess];
+    [[FTTrackDataManager sharedInstance] insertCacheToDB];
+    XCTAssertEqual([[FTTrackerEventDBTool sharedManager] getDatasCountWithType:FT_DATA_TYPE_LOGGING], 1);
+
+    FTWebViewLogHTTPClientStub *httpClient = [[FTWebViewLogHTTPClientStub alloc] initWithTimeoutIntervalForRequest:1];
+    FTDataUploadWorker *uploadWorker = [[FTDataUploadWorker alloc] initWithSyncPageSize:10 syncSleepTime:0];
+    uploadWorker.httpClient = httpClient;
+    [uploadWorker flushWithType:FT_DATA_TYPE_LOGGING maxBatchesPerUploadPass:1];
+    [uploadWorker invalidateAndCancelPendingUploads];
+
+    XCTAssertTrue([httpClient.capturedUpload containsString:@"/v1/write/logging"], @"%@", httpClient.capturedUpload);
+    XCTAssertTrue([httpClient.capturedUpload containsString:@"ios-web-upload-log"]);
+    XCTAssertEqual([[FTTrackerEventDBTool sharedManager] getDatasCountWithType:FT_DATA_TYPE_LOGGING], 0);
 }
 - (void)testInnerLogDisabledDoesNotEvaluateArguments{
     [FTLog enableLog:NO];
@@ -905,6 +1111,14 @@
     
 }
 - (void)loggingTags:(nullable NSDictionary *)tags field:(nullable NSDictionary *)field time:(long long)time linkRum:(BOOL)linkRum {
+    self.lastLogTags = tags;
+    self.lastLogFields = field;
+    self.lastLogTime = time;
+    self.lastLogLinkRum = linkRum;
+    if (self.webViewLogExpectation) {
+        [self.webViewLogExpectation fulfill];
+        self.webViewLogExpectation = nil;
+    }
     if (self.logExpectation) {
         XCTAssertTrue([tags.allKeys containsObject:FT_RUM_KEY_SESSION_ID]);
         XCTAssertTrue([tags.allKeys containsObject:FT_RUM_KEY_SESSION_TYPE]);

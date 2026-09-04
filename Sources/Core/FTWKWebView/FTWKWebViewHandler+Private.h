@@ -29,6 +29,13 @@ NS_ASSUME_NONNULL_BEGIN
 
 - (void)startWithEnableTraceWebView:(BOOL)enable allowWebViewHost:(nullable NSArray *)hosts rumDelegate:(id<FTWKWebViewRumDelegate>)delegate;
 
+- (void)configureWithEnableTraceWebView:(BOOL)enableTraceWebView
+                       enableWebViewLog:(BOOL)enableWebViewLog
+                       allowWebViewHost:(nullable NSArray *)hosts
+                            rumDelegate:(nullable id<FTWKWebViewRumDelegate>)delegate;
+
+- (void)updateEnableWebViewLog:(BOOL)enableWebViewLog;
+
 - (void)innerEnableWebView:(WKWebView *)webView;
 
 - (void)disableWebView:(WKWebView *)webView;

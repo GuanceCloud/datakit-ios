@@ -21,6 +21,7 @@
 #import <Foundation/Foundation.h>
 #import "FTConfig+RemoteConfig.h"
 #import "FTSDKConfig.h"
+#import "FTSDKConfig+Private.h"
 #import "FTLoggerConfig.h"
 #import "FTRumConfig.h"
 #import "FTJSONUtil.h"
@@ -48,6 +49,9 @@
         if (model.syncSleepTime != nil) {
             self.syncSleepTime = [model.syncSleepTime intValue];
         }
+        if (model.rumAllowWebViewHost != nil) {
+            self.remoteAllowWebViewHost = model.rumAllowWebViewHost;
+        }
     } @catch (NSException *exception) {
         FTInnerLogError(@"mergeRemoteConfigIntoCoreConfig fail");
     }
@@ -65,6 +69,9 @@
         }
         if (model.logEnableCustomLog != nil) {
             self.enableCustomLog = [model.logEnableCustomLog boolValue];
+        }
+        if (model.logEnableWebViewLog != nil) {
+            self.enableWebViewLog = [model.logEnableWebViewLog boolValue];
         }
         if (model.logLevelFilters) {
             self.logLevelFilter = model.logLevelFilters;
@@ -113,7 +120,10 @@
            self.enableTraceWebView = [model.rumEnableTraceWebView boolValue];
         }
         if (model.rumAllowWebViewHost) {
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wdeprecated-declarations"
            self.allowWebViewHost = model.rumAllowWebViewHost;
+#pragma clang diagnostic pop
         }
     } @catch (NSException *exception) {
         FTInnerLogError(@"mergeRemoteConfigIntoRUMConfig fail");

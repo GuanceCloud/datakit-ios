@@ -87,7 +87,7 @@
     options.sessionOnErrorSampleRate = self.sessionOnErrorSampleRate;
     options.enableTraceWebView = self.enableTraceWebView;
     options.enableUIKitViewLoadingTime = self.enableUIKitViewLoadingTime;
-    options.allowWebViewHost = [self.allowWebViewHost copy];
+    options->_allowWebViewHost = [_allowWebViewHost copy];
     options.sessionTaskErrorFilter = [self.sessionTaskErrorFilter copy];
     options.issueDataProvider = [self.issueDataProvider copy];
 #if TARGET_OS_IOS || TARGET_OS_TV
@@ -162,7 +162,7 @@
     [dict setValue:@(self.sessionOnErrorSampleRate) forKey:@"sessionOnErrorSampleRate"];
     [dict setValue:@(self.crashMonitoring) forKey:@"crashMonitoring"];
     [dict setValue:@(self.enableTraceWebView) forKey:@"enableTraceWebView"];
-    [dict setValue:self.allowWebViewHost forKey:@"allowWebViewHost"];
+    [dict setValue:_allowWebViewHost forKey:@"allowWebViewHost"];
     return dict;
 }
 -(NSString *)debugDescription{
@@ -176,7 +176,7 @@
     [dict setValue:self.actionTrackingHandler forKey:@"actionTrackingHandler"];
 #endif
     [dict setValue:@(self.enableTraceWebView) forKey:@"enableTraceWebView"];
-    [dict setValue:[self.allowWebViewHost copy] forKey:@"allowWebViewHost"];
+    [dict setValue:[_allowWebViewHost copy] forKey:@"allowWebViewHost"];
     [dict setValue:[self.issueDataProvider copy] forKey:@"issueDataProvider"];
     return [NSString stringWithFormat:@"%@",dict];
 }

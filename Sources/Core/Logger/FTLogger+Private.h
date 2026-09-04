@@ -37,6 +37,8 @@ NS_ASSUME_NONNULL_BEGIN
 ///   - writer: Data write object
 - (void)startWithLoggerConfig:(FTLoggerConfig *)config writer:(id<FTLoggerDataWriteProtocol>)writer;
 
+/// Ingests one Browser Logs SDK event received through the WebView Bridge.
+- (void)logWebViewEvent:(NSDictionary *)event linkToNativeRum:(BOOL)linkToNativeRum;
 
 /// Synchronously execute log processing queue
 - (void)syncProcess;

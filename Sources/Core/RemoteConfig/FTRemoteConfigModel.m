@@ -62,6 +62,7 @@ NSString * const FT_R_TRACE_TRACE_TYPE = @"traceType";
 NSString * const FT_R_LOG_SAMPLERATE = @"logSampleRate";
 NSString * const FT_R_LOG_LEVEL_FILTERS = @"logLevelFilters";
 NSString * const FT_R_LOG_ENABLE_CUSTOM_LOG = @"logEnableCustomLog";
+NSString * const FT_R_LOG_ENABLE_WEBVIEW_LOG = @"logEnableWebViewLog";
 
 NSString * const FT_R_SR_SAMPLERATE = @"sessionReplaySampleRate";
 NSString * const FT_R_SR_ON_ERROR_SAMPLE_RATE = @"sessionReplayOnErrorSampleRate";
@@ -120,7 +121,7 @@ NSString * const FT_MD5 = @"MD5";
     
     if (rumAllowWebViewHost) {
         NSArray *hosts = [FTJSONUtil arrayWithJsonString:rumAllowWebViewHost];
-        if (hosts.count > 0) {
+        if (hosts) {
             self.rumAllowWebViewHost = hosts;
         }
     }
@@ -140,6 +141,7 @@ NSString * const FT_MD5 = @"MD5";
         }
     }
     SetNumberFromDict(dict,FT_R_LOG_ENABLE_CUSTOM_LOG,self.logEnableCustomLog);
+    SetNumberFromDict(dict,FT_R_LOG_ENABLE_WEBVIEW_LOG,self.logEnableWebViewLog);
 
     // ---- SessionReplay ----
     SetNumberFromDict(dict,FT_R_SR_SAMPLERATE,self.sessionReplaySampleRate);
@@ -213,7 +215,7 @@ NSString * const FT_MD5 = @"MD5";
         dict[FT_R_RUM_ENABLE_TRACE_WEBVIEW] = self.rumEnableTraceWebView;
     }
 
-    if (self.rumAllowWebViewHost && self.rumAllowWebViewHost.count > 0) {
+    if (self.rumAllowWebViewHost) {
         NSString *hostJson = [FTJSONUtil convertToJsonDataWithObject:self.rumAllowWebViewHost];
         if (hostJson) {
             dict[FT_R_RUM_ALLOW_WEBVIEW_HOST] = hostJson;
@@ -245,6 +247,9 @@ NSString * const FT_MD5 = @"MD5";
     if (self.logEnableCustomLog != nil) {
         dict[FT_R_LOG_ENABLE_CUSTOM_LOG] = self.logEnableCustomLog;
     }
+    if (self.logEnableWebViewLog != nil) {
+        dict[FT_R_LOG_ENABLE_WEBVIEW_LOG] = self.logEnableWebViewLog;
+    }
     // ===== 5. SessionReplay  =====
     if (self.sessionReplaySampleRate != nil) {
         dict[FT_R_SR_SAMPLERATE] = self.sessionReplaySampleRate;
@@ -271,7 +276,7 @@ NSString * const FT_MD5 = @"MD5";
                             // Trace
                             FT_R_TRACE_SAMPLERATE, FT_R_TRACE_ENABLE_AUTO_TRACE, FT_R_TRACE_TRACE_TYPE,
                             // Log
-                            FT_R_LOG_SAMPLERATE, FT_R_LOG_LEVEL_FILTERS, FT_R_LOG_ENABLE_CUSTOM_LOG,
+                            FT_R_LOG_SAMPLERATE, FT_R_LOG_LEVEL_FILTERS, FT_R_LOG_ENABLE_CUSTOM_LOG, FT_R_LOG_ENABLE_WEBVIEW_LOG,
                             // SessionReplay
                             FT_R_SR_SAMPLERATE,FT_R_SR_ON_ERROR_SAMPLE_RATE,
                             // MD5
@@ -323,6 +328,7 @@ NSString * const FT_MD5 = @"MD5";
     copyModel.logSampleRate = self.logSampleRate;
     copyModel.logLevelFilters = [self.logLevelFilters copy];
     copyModel.logEnableCustomLog = self.logEnableCustomLog;
+    copyModel.logEnableWebViewLog = self.logEnableWebViewLog;
     
     // ---- SessionReplay ----
     copyModel.sessionReplaySampleRate = self.sessionReplaySampleRate;

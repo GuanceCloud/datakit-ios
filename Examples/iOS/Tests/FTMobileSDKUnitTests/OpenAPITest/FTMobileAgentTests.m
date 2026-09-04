@@ -47,6 +47,9 @@
 #import "FTUserInfo.h"
 #import "FTDefaultActionTrackingHandler.h"
 #import "FTDefaultUIKitViewTrackingHandler.h"
+@interface FTSDKAgent (WebViewLogTesting)
+- (nullable NSArray *)effectiveAllowWebViewHost;
+@end
 @interface FTMobileAgentTests : KIFTestCase
 @property (nonatomic, strong) FTSDKConfig *config;
 @property (nonatomic, copy) NSString *url;
@@ -538,6 +541,7 @@
     datakitConfig.remoteConfigMiniUpdateInterval = -1;
     XCTAssertTrue(datakitConfig.remoteConfigMiniUpdateInterval == 0);
     datakitConfig.remoteConfiguration = YES;
+    datakitConfig.allowWebViewHost = @[];
     FTSDKConfig *copyConfig = [datakitConfig copy];
     XCTAssertTrue(copyConfig.enableSDKDebugLog == datakitConfig.enableSDKDebugLog);
     XCTAssertTrue([copyConfig.datakitUrl isEqualToString:datakitConfig.datakitUrl]);
@@ -550,10 +554,45 @@
     XCTAssertTrue(copyConfig.enableLimitWithDbSize == datakitConfig.enableLimitWithDbSize);
     XCTAssertTrue(copyConfig.remoteConfiguration == datakitConfig.remoteConfiguration);
     XCTAssertTrue(copyConfig.remoteConfigMiniUpdateInterval == datakitConfig.remoteConfigMiniUpdateInterval);
+    XCTAssertTrue(copyConfig.allowWebViewHostConfigured);
+    XCTAssertEqualObjects(copyConfig.allowWebViewHost, @[]);
+
+    FTSDKConfig *explicitNilConfig = [[FTSDKConfig alloc] initWithDatakitUrl:self.url];
+    explicitNilConfig.allowWebViewHost = nil;
+    FTSDKConfig *explicitNilCopy = [explicitNilConfig copy];
+    XCTAssertTrue(explicitNilCopy.allowWebViewHostConfigured);
+    XCTAssertNil(explicitNilCopy.allowWebViewHost);
     FTSDKConfig *datawayConfig = [[FTSDKConfig alloc]initWithDatawayUrl:self.url clientToken:@"clientToken"];
     FTSDKConfig *copy = [datawayConfig copy];
     XCTAssertTrue([copy.datawayUrl isEqualToString:datawayConfig.datawayUrl]);
     XCTAssertTrue([copy.clientToken isEqualToString:datawayConfig.clientToken]);
+}
+- (void)testWebViewHostPriority {
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wdeprecated-declarations"
+    FTSDKConfig *legacyBase = [[FTSDKConfig alloc] initWithDatakitUrl:self.url];
+    [FTMobileAgent startWithConfigOptions:legacyBase];
+    FTRumConfig *legacyRum = [[FTRumConfig alloc] initWithAppid:self.appid];
+    legacyRum.allowWebViewHost = @[@"legacy.example.com"];
+    [[FTMobileAgent sharedInstance] startRumWithConfigOptions:legacyRum];
+    XCTAssertEqualObjects([[FTSDKAgent sharedInstance] effectiveAllowWebViewHost], @[@"legacy.example.com"]);
+    [FTMobileAgent shutDown];
+
+    FTSDKConfig *explicitNilBase = [[FTSDKConfig alloc] initWithDatakitUrl:self.url];
+    explicitNilBase.allowWebViewHost = nil;
+    [FTMobileAgent startWithConfigOptions:explicitNilBase];
+    [[FTMobileAgent sharedInstance] startRumWithConfigOptions:legacyRum];
+    XCTAssertNil([[FTSDKAgent sharedInstance] effectiveAllowWebViewHost]);
+    [FTMobileAgent shutDown];
+
+    FTSDKConfig *remoteBase = [[FTSDKConfig alloc] initWithDatakitUrl:self.url];
+    remoteBase.allowWebViewHost = @[@"base.example.com"];
+    [FTMobileAgent startWithConfigOptions:remoteBase];
+    FTSDKConfig *activeBase = [[FTSDKAgent sharedInstance] valueForKey:@"sdkConfig"];
+    activeBase.remoteAllowWebViewHost = @[];
+    XCTAssertEqualObjects([[FTSDKAgent sharedInstance] effectiveAllowWebViewHost], @[]);
+    [FTMobileAgent shutDown];
+#pragma clang diagnostic pop
 }
 - (void)testRUMConfigCopy{
     FTRumConfig *rumConfig = [[FTRumConfig alloc]initWithAppid:@"app_id1111"];
@@ -654,7 +693,9 @@
 }
 - (void)testLoggerConfigCopy{
     FTLoggerConfig *loggerConfig = [[FTLoggerConfig alloc]init];
+    XCTAssertFalse(loggerConfig.enableWebViewLog);
     loggerConfig.enableCustomLog = YES;
+    loggerConfig.enableWebViewLog = YES;
     loggerConfig.sampleRate = 50;
     loggerConfig.discardType = FTDiscard;
     loggerConfig.enableLinkRumData = YES;
@@ -663,6 +704,7 @@
     loggerConfig.globalContext = @{@"aa":@"bb"};
     FTLoggerConfig *copyLoggerConfig = [loggerConfig copy];
     XCTAssertTrue(copyLoggerConfig.enableCustomLog == loggerConfig.enableCustomLog);
+    XCTAssertTrue(copyLoggerConfig.enableWebViewLog == loggerConfig.enableWebViewLog);
     XCTAssertTrue(copyLoggerConfig.sampleRate == loggerConfig.sampleRate);
     XCTAssertTrue(copyLoggerConfig.discardType == loggerConfig.discardType);
     XCTAssertTrue(copyLoggerConfig.enableLinkRumData == loggerConfig.enableLinkRumData);
@@ -677,6 +719,7 @@
     FTLoggerConfig *loggerConfig = [[FTLoggerConfig alloc]init];
     loggerConfig.printCustomLogToConsole = YES;
     loggerConfig.enableCustomLog = YES;
+    loggerConfig.enableWebViewLog = YES;
     loggerConfig.enableLinkRumData = YES;
     NSDictionary *dict = [loggerConfig convertToDictionary];
     FTLoggerConfig *newLogger = [[FTLoggerConfig alloc]initWithDictionary:dict];
@@ -684,6 +727,7 @@
     XCTAssertTrue(loggerConfig.globalContext == newLogger.globalContext);
     XCTAssertTrue(loggerConfig.samplerate == newLogger.samplerate);
     XCTAssertTrue(loggerConfig.enableLinkRumData == newLogger.enableLinkRumData);
+    XCTAssertTrue(loggerConfig.enableWebViewLog == newLogger.enableWebViewLog);
     XCTAssertTrue(loggerConfig.printCustomLogToConsole == newLogger.printCustomLogToConsole);
 }
 - (void)testShutDown{
