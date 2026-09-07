@@ -182,57 +182,63 @@ void *FTLoggerQueueIdentityKey = &FTLoggerQueueIdentityKey;
 }
 - (void)logWebViewEvent:(NSDictionary *)event linkToNativeRum:(BOOL)linkToNativeRum {
     FTLoggerConfig *config = self.config;
-    if (!config || !config.enableWebViewLog) {
+    if (!config || !config.enableWebViewLog || ![event isKindOfClass:NSDictionary.class]) {
         return;
     }
-    NSDictionary *safeEvent = [event ft_deepCopy];
-    FTWebViewLogEvent *logEvent = [FTWebViewLogEventMapper mapEvent:safeEvent];
-    if (!logEvent) {
-        FTInnerLogWarning(@"[WebView][Logging] Invalid Browser Log event");
-        return;
-    }
-    if (self.logLevelFilterSet && ![self.logLevelFilterSet containsObject:logEvent.status]) {
-        FTInnerLogInfo(@"[WebView][Logging][Not Filtered] %@",logEvent.content);
-        return;
-    }
-    if (![FTBaseInfoHandler randomSampling:config.sampleRate]) {
-        FTInnerLogInfo(@"[WebView][Logging][Not Sampled] %@",logEvent.content);
-        return;
-    }
+    NSDictionary *eventPayload = event;
+    NSSet *logLevelFilterSet = [self.logLevelFilterSet copy];
+    int sampleRate = config.sampleRate;
+    BOOL enableLinkRumData = config.enableLinkRumData;
+    dispatch_async(self.loggerQueue, ^{
+        NSDictionary *safeEvent = [eventPayload ft_deepCopy];
+        FTWebViewLogEvent *logEvent = [FTWebViewLogEventMapper mapEvent:safeEvent];
+        if (!logEvent) {
+            FTInnerLogWarning(@"[WebView][Logging] Invalid Browser Log event");
+            return;
+        }
+        if (logLevelFilterSet && ![logLevelFilterSet containsObject:logEvent.status]) {
+            FTInnerLogInfo(@"[WebView][Logging][Not Filtered] %@",logEvent.content);
+            return;
+        }
+        if (![FTBaseInfoHandler randomSampling:sampleRate]) {
+            FTInnerLogInfo(@"[WebView][Logging][Not Sampled] %@",logEvent.content);
+            return;
+        }
 
-    NSMutableDictionary *tags = [logEvent.tags mutableCopy];
-    tags[FT_KEY_STATUS] = logEvent.status;
-    logEvent.tags = [tags copy];
-    if (!config.enableLinkRumData) {
-        [FTWebViewLogEventMapper removeRumLinkDataFromEvent:logEvent];
-        [self writeWebViewLogEvent:logEvent linkRum:NO];
-        return;
-    }
-    if (!linkToNativeRum) {
-        [self writeWebViewLogEvent:logEvent linkRum:NO];
-        return;
-    }
+        NSMutableDictionary *tags = [logEvent.tags mutableCopy];
+        tags[FT_KEY_STATUS] = logEvent.status;
+        logEvent.tags = [tags copy];
+        if (!enableLinkRumData) {
+            [FTWebViewLogEventMapper removeRumLinkDataFromEvent:logEvent];
+            [self writeWebViewLogEvent:logEvent linkRum:NO];
+            return;
+        }
+        if (!linkToNativeRum) {
+            [self writeWebViewLogEvent:logEvent linkRum:NO];
+            return;
+        }
 
-    NSString *applicationId = [FTPresetProperty sharedInstance].rumTags[FT_APP_ID];
-    id<FTLinkRumDataProvider> provider = self.linkRumDataProvider;
-    if (provider && [provider respondsToSelector:@selector(getLinkRUMDataWithCompletion:)]) {
-        __weak typeof(self) weakSelf = self;
-        [provider getLinkRUMDataWithCompletion:^(NSDictionary * _Nullable rumContext) {
-            __strong typeof(weakSelf) strongSelf = weakSelf;
-            if (!strongSelf) return;
-            NSString *sessionId = [rumContext[FT_RUM_KEY_SESSION_ID] isKindOfClass:NSString.class]
-                ? rumContext[FT_RUM_KEY_SESSION_ID] : nil;
-            [FTWebViewLogEventMapper replaceRumLinkDataInEvent:logEvent
-                                                 applicationId:applicationId
-                                                      sessionId:sessionId];
-            [strongSelf writeWebViewLogEvent:logEvent linkRum:YES];
-        }];
-        return;
-    }
-    [FTWebViewLogEventMapper replaceRumLinkDataInEvent:logEvent
-                                         applicationId:applicationId
-                                              sessionId:nil];
-    [self writeWebViewLogEvent:logEvent linkRum:YES];
+        NSString *applicationId = [FTPresetProperty sharedInstance].rumTags[FT_APP_ID];
+        id<FTLinkRumDataProvider> provider = self.linkRumDataProvider;
+        if (provider && [provider respondsToSelector:@selector(getLinkRUMDataWithCompletion:)]) {
+            __weak typeof(self) weakSelf = self;
+            [provider getLinkRUMDataWithCompletion:^(NSDictionary * _Nullable rumContext) {
+                __strong typeof(weakSelf) strongSelf = weakSelf;
+                if (!strongSelf) return;
+                NSString *sessionId = [rumContext[FT_RUM_KEY_SESSION_ID] isKindOfClass:NSString.class]
+                    ? rumContext[FT_RUM_KEY_SESSION_ID] : nil;
+                [FTWebViewLogEventMapper replaceRumLinkDataInEvent:logEvent
+                                                     applicationId:applicationId
+                                                          sessionId:sessionId];
+                [strongSelf writeWebViewLogEvent:logEvent linkRum:YES];
+            }];
+            return;
+        }
+        [FTWebViewLogEventMapper replaceRumLinkDataInEvent:logEvent
+                                             applicationId:applicationId
+                                                  sessionId:nil];
+        [self writeWebViewLogEvent:logEvent linkRum:YES];
+    });
 }
 - (void)writeLogWithTags:(NSDictionary *)tags
                   content:(NSString *)content
@@ -257,7 +263,7 @@ void *FTLoggerQueueIdentityKey = &FTLoggerQueueIdentityKey;
     });
 }
 - (void)writeWebViewLogEvent:(FTWebViewLogEvent *)event linkRum:(BOOL)linkRum {
-    dispatch_async(self.loggerQueue, ^{
+    dispatch_block_t writeBlock = ^{
         id<FTLoggerDataWriteProtocol> writer = self.loggerWriter;
         if (!writer) {
             FTInnerLogError(@"SDK configuration error, unable to collect WebView logs");
@@ -270,7 +276,12 @@ void *FTLoggerQueueIdentityKey = &FTLoggerQueueIdentityKey;
                       field:[fields copy]
                        time:event.time
                     linkRum:linkRum];
-    });
+    };
+    if (dispatch_get_specific(FTLoggerQueueIdentityKey) != NULL) {
+        writeBlock();
+    } else {
+        dispatch_async(self.loggerQueue, writeBlock);
+    }
 }
 /**
  *  just for test

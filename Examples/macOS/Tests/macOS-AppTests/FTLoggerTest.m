@@ -67,11 +67,24 @@
     callback(response, [NSData data], nil);
 }
 @end
-@interface FTLoggerTest : FTTestHelper <WKNavigationDelegate>
+@interface FTWebViewLogThreadProbe : NSObject
+@property (atomic, assign) BOOL descriptionCalledOnMainThread;
+@property (nonatomic, strong) XCTestExpectation *descriptionExpectation;
+@end
+@implementation FTWebViewLogThreadProbe
+- (NSString *)description {
+    self.descriptionCalledOnMainThread = NSThread.isMainThread;
+    [self.descriptionExpectation fulfill];
+    self.descriptionExpectation = nil;
+    return @"mac-web-view-thread-probe";
+}
+@end
+@interface FTLoggerTest : FTTestHelper <WKNavigationDelegate, FTLoggerDataWriteProtocol>
 @property (nonatomic, copy) NSString *url;
 @property (nonatomic, copy) NSString *appid;
 @property (nonatomic, strong) XCTestExpectation *webViewLoadExpectation;
 @property (nonatomic, strong) NSWindow *webViewWindow;
+@property (nonatomic, copy) NSDictionary *lastWebViewLogFields;
 
 @end
 
@@ -91,6 +104,7 @@
     self.webViewLoadExpectation = nil;
     [self.webViewWindow close];
     self.webViewWindow = nil;
+    self.lastWebViewLogFields = nil;
 }
 - (void)testWebViewLogMapperAndRemoteConfiguration {
     FTRemoteConfigModel *remote = [[FTRemoteConfigModel alloc] initWithDict:@{
@@ -206,6 +220,29 @@
     [[FTTrackDataManager sharedInstance] insertCacheToDB];
     XCTAssertEqual([[FTTrackerEventDBTool sharedManager] getDatasCountWithType:FT_DATA_TYPE_LOGGING], 1);
 }
+- (void)testWebViewLogMappingRunsOffMainThread {
+    FTLoggerConfig *loggerConfig = [[FTLoggerConfig alloc] init];
+    loggerConfig.enableWebViewLog = YES;
+    [[FTLogger sharedInstance] startWithLoggerConfig:loggerConfig writer:self];
+
+    FTWebViewLogThreadProbe *probe = [FTWebViewLogThreadProbe new];
+    XCTestExpectation *descriptionExpectation = [self expectationWithDescription:@"Map WebView Log off main thread"];
+    probe.descriptionExpectation = descriptionExpectation;
+    void (^sendEvent)(void) = ^{
+        [[FTLogger sharedInstance] logWebViewEvent:@{ @"message": probe }
+                                   linkToNativeRum:NO];
+    };
+    if (NSThread.isMainThread) {
+        sendEvent();
+    } else {
+        dispatch_sync(dispatch_get_main_queue(), sendEvent);
+    }
+
+    [self waitForExpectations:@[descriptionExpectation] timeout:2];
+    [[FTLogger sharedInstance] syncProcess];
+    XCTAssertFalse(probe.descriptionCalledOnMainThread);
+    XCTAssertEqualObjects(self.lastWebViewLogFields[FT_KEY_MESSAGE], @"mac-web-view-thread-probe");
+}
 - (void)testLogOnlyWKWebViewBridgeInstallsAndRoutesSubsequentValidEvent {
     FTSDKConfig *config = [[FTSDKConfig alloc] initWithDatakitUrl:self.url];
     config.autoSync = NO;
@@ -286,6 +323,12 @@
         [self.webViewLoadExpectation fulfill];
         self.webViewLoadExpectation = nil;
     }
+}
+- (void)loggingTags:(nullable NSDictionary *)tags
+               field:(nullable NSDictionary *)field
+                time:(long long)time
+             linkRum:(BOOL)linkRum {
+    self.lastWebViewLogFields = field;
 }
 - (void)testEnableCustomLog{
     [self setRightSDKConfig];

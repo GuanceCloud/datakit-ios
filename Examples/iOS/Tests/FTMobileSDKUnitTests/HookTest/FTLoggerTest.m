@@ -70,6 +70,20 @@
 }
 @end
 
+@interface FTWebViewLogThreadProbe : NSObject
+@property (atomic, assign) BOOL descriptionCalledOnMainThread;
+@property (nonatomic, strong) XCTestExpectation *descriptionExpectation;
+@end
+
+@implementation FTWebViewLogThreadProbe
+- (NSString *)description {
+    self.descriptionCalledOnMainThread = NSThread.isMainThread;
+    [self.descriptionExpectation fulfill];
+    self.descriptionExpectation = nil;
+    return @"web-view-thread-probe";
+}
+@end
+
 @interface FTLoggerTest : XCTestCase<FTLoggerDataWriteProtocol>
 
 @property (nonatomic, copy) NSString *url;
@@ -207,6 +221,29 @@
                                linkToNativeRum:NO];
     [[FTLogger sharedInstance] syncProcess];
     XCTAssertNil(self.lastLogFields);
+}
+- (void)testWebViewLogMappingRunsOffMainThread {
+    FTLoggerConfig *config = [[FTLoggerConfig alloc] init];
+    config.enableWebViewLog = YES;
+    [[FTLogger sharedInstance] startWithLoggerConfig:config writer:self];
+
+    FTWebViewLogThreadProbe *probe = [FTWebViewLogThreadProbe new];
+    XCTestExpectation *descriptionExpectation = [self expectationWithDescription:@"Map WebView Log off main thread"];
+    probe.descriptionExpectation = descriptionExpectation;
+    void (^sendEvent)(void) = ^{
+        [[FTLogger sharedInstance] logWebViewEvent:@{ @"message": probe }
+                                   linkToNativeRum:NO];
+    };
+    if (NSThread.isMainThread) {
+        sendEvent();
+    } else {
+        dispatch_sync(dispatch_get_main_queue(), sendEvent);
+    }
+
+    [self waitForExpectations:@[descriptionExpectation] timeout:2];
+    [[FTLogger sharedInstance] syncProcess];
+    XCTAssertFalse(probe.descriptionCalledOnMainThread);
+    XCTAssertEqualObjects(self.lastLogFields[FT_KEY_MESSAGE], @"web-view-thread-probe");
 }
 - (void)testWebViewLogReplacesOnlyNativeApplicationAndSessionLinks {
     [self setRightSDKConfig];
