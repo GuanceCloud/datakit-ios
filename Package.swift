@@ -42,7 +42,7 @@ let package = Package(
         ),
         .library(
             name: "GuanceElectronNative",
-            type: .dynamic,
+            type: .static,
             targets: ["GuanceElectronNative"]
         ),
     ],
