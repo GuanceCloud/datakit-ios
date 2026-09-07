@@ -1,3 +1,7 @@
+# 1.6.8-alpha.3
+1. Added the macOS `GuanceElectronNative` dynamic Swift Package Manager product for building the Electron native runtime bridge.
+2. Reorganized the Electron integration so the Native SDK owns the bridge and Node-API addon sources, while the standalone Electron Adapter repository owns JavaScript adapter code, packaging, and host integration.
+---
 # 1.6.8-alpha.1
 1. Added `GuanceElectronWebView` integration through Swift Package Manager and CocoaPods for macOS Electron Web RUM and Session Replay.
 2. Added Electron Full Mode and Native-owned Mixed Mode, including automatic/manual BrowserWindow attachment and authenticated cross-process Bridge communication.
