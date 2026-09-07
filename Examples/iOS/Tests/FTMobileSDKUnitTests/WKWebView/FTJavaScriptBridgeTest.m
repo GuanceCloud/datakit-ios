@@ -171,7 +171,7 @@
     NSSet<NSString *> *expectedMessages = [NSSet setWithArray:@[@"manual-web-log", @"console-web-log", @"error-web-log"]];
     XCTAssertEqualObjects(messages, expectedMessages);
 
-    [[FTWKWebViewHandler sharedInstance] updateEnableWebViewLog:NO];
+    [[FTWKWebViewHandler sharedInstance] startWithEnableWebViewLog:NO logDelegate:[FTLogger sharedInstance]];
     XCTestExpectation *disabledExpectation = [self expectationWithDescription:@"Send disabled Browser log"];
     [self.viewController.webView evaluateJavaScript:@"FTWebViewJavascriptBridge.sendEvent(JSON.stringify({name:'log',data:{message:'disabled-web-log'}}));"
                                    completionHandler:^(id response, NSError *error) {
@@ -421,7 +421,7 @@
 }
 - (void)testMapTableWeakReferenceWebView{
     WKWebView *webView = [[WKWebView alloc]init];
-    [[FTWKWebViewHandler sharedInstance] startWithEnableTraceWebView:NO allowWebViewHost:nil rumDelegate:self];
+    [[FTWKWebViewHandler sharedInstance] startWithEnableTraceWebView:NO rumDelegate:self];
     [[FTWKWebViewHandler sharedInstance] enableWebView:webView];
     id bridge = [[FTWKWebViewHandler sharedInstance] getWebViewBridge:webView];
     XCTAssertTrue(bridge != nil);
@@ -431,7 +431,7 @@
 }
 - (void)testSameWebViewAddBridge_moreThanOnce{
     WKWebView *webView = [[WKWebView alloc]init];
-    [[FTWKWebViewHandler sharedInstance] startWithEnableTraceWebView:NO allowWebViewHost:nil rumDelegate:self];
+    [[FTWKWebViewHandler sharedInstance] startWithEnableTraceWebView:NO rumDelegate:self];
     [[FTWKWebViewHandler sharedInstance] enableWebView:webView];
     id bridge = [[FTWKWebViewHandler sharedInstance] getWebViewBridge:webView];
     XCTAssertTrue(bridge != nil);
@@ -444,7 +444,7 @@
 - (void)testSameWebViewAddBridgeWithDifferentHosts{
     WKWebView *webView = [[WKWebView alloc]init];
     FTWKWebViewHandler *handler = [FTWKWebViewHandler sharedInstance];
-    [handler startWithEnableTraceWebView:NO allowWebViewHost:nil rumDelegate:self];
+    [handler startWithEnableTraceWebView:NO rumDelegate:self];
     [handler enableWebView:webView allowWebViewHost:@[@"example.com"]];
     id bridge = [handler getWebViewBridge:webView];
     XCTAssertTrue(bridge != nil);
@@ -457,7 +457,7 @@
 - (void)testDisableWebViewRemoveBridgeOnlyOnce{
     WKWebView *webView = [[WKWebView alloc]init];
     FTWKWebViewHandler *handler = [FTWKWebViewHandler sharedInstance];
-    [handler startWithEnableTraceWebView:NO allowWebViewHost:nil rumDelegate:self];
+    [handler startWithEnableTraceWebView:NO rumDelegate:self];
     [handler enableWebView:webView];
     XCTAssertNotNil([handler getWebViewBridge:webView]);
 
@@ -468,7 +468,7 @@
 - (void)testRemoveAllWebViewBridgesClearsRegisteredBridges{
     WKWebView *webView = [[WKWebView alloc]init];
     FTWKWebViewHandler *handler = [FTWKWebViewHandler sharedInstance];
-    [handler startWithEnableTraceWebView:NO allowWebViewHost:nil rumDelegate:self];
+    [handler startWithEnableTraceWebView:NO rumDelegate:self];
     [handler enableWebView:webView];
     XCTAssertNotNil([handler getWebViewBridge:webView]);
 
@@ -479,7 +479,7 @@
     WKWebView *visibleWebView = [[WKWebView alloc]init];
     WKWebView *hiddenWebView = [[WKWebView alloc]init];
     FTWKWebViewHandler *handler = [FTWKWebViewHandler sharedInstance];
-    [handler startWithEnableTraceWebView:NO allowWebViewHost:nil rumDelegate:self];
+    [handler startWithEnableTraceWebView:NO rumDelegate:self];
     [handler enableWebView:visibleWebView];
     [handler enableWebView:hiddenWebView];
     handler.hiddenSlotIds = [NSSet setWithObject:@(hiddenWebView.hash)];

@@ -38,10 +38,10 @@
 #import "FTWeakMapTable.h"
 #import "FTThreadDispatchManager.h"
 #import "NSDate+FTUtil.h"
-#import "FTLogger+Private.h"
 
 @interface FTWKWebViewHandler ()
 @property (nonatomic, weak, nullable) id<FTWKWebViewRumDelegate> rumTrackDelegate;
+@property (nonatomic, weak, nullable) id<FTWKWebViewLogDelegate> logDelegate;
 @property (nonatomic, strong) NSMapTable *webViewBridge;
 @property (nonatomic, copy) NSString *allowWebViewHostsString;
 @property (nonatomic, strong) NSLock *lock;
@@ -84,41 +84,40 @@ static NSObject *sharedInstanceLock;
         self.lock = [NSLock new];
         self.enableTraceWebView = NO;
         self.enableWebViewLog = NO;
+        self.allowWebViewHostsString = @"null";
     }
     return self;
 }
-- (void)startWithEnableTraceWebView:(BOOL)enable allowWebViewHost:(NSArray *)hosts rumDelegate:(id<FTWKWebViewRumDelegate>)delegate{
-    [self configureWithEnableTraceWebView:enable
-                        enableWebViewLog:self.enableWebViewLog
-                        allowWebViewHost:hosts
-                             rumDelegate:delegate];
-}
-- (void)configureWithEnableTraceWebView:(BOOL)enableTraceWebView
-                       enableWebViewLog:(BOOL)enableWebViewLog
-                       allowWebViewHost:(NSArray *)hosts
-                            rumDelegate:(id<FTWKWebViewRumDelegate>)delegate {
-    BOOL shouldInstall = enableTraceWebView || enableWebViewLog;
+- (void)setAllowWebViewHost:(NSArray *)hosts {
+    NSString *hostsString = [self transHostsArrayToString:hosts];
     [self.lock lock];
     @try {
-        _enableTraceWebView = enableTraceWebView;
-        _enableWebViewLog = enableWebViewLog;
-        _allowWebViewHostsString = [[self transHostsArrayToString:hosts] copy];
+        _allowWebViewHostsString = [hostsString copy];
+    } @finally {
+        [self.lock unlock];
+    }
+}
+- (void)startWithEnableTraceWebView:(BOOL)enable rumDelegate:(id<FTWKWebViewRumDelegate>)delegate{
+    [self.lock lock];
+    @try {
+        _enableTraceWebView = enable;
         _rumTrackDelegate = delegate;
     } @finally {
         [self.lock unlock];
     }
-    if (shouldInstall) {
+    if (enable) {
         [self setWKWebViewTrace];
     }
 }
-- (void)updateEnableWebViewLog:(BOOL)enableWebViewLog {
+- (void)startWithEnableWebViewLog:(BOOL)enable logDelegate:(id<FTWKWebViewLogDelegate>)delegate {
     [self.lock lock];
     @try {
-        _enableWebViewLog = enableWebViewLog;
+        _enableWebViewLog = enable;
+        _logDelegate = delegate;
     } @finally {
         [self.lock unlock];
     }
-    if (enableWebViewLog) {
+    if (enable) {
         [self setWKWebViewTrace];
     }
 }
@@ -275,18 +274,20 @@ static NSObject *sharedInstanceLock;
         BOOL enableTraceWebView = NO;
         BOOL enableWebViewLog = NO;
         id<FTWKWebViewRumDelegate> rumDelegate = nil;
+        id<FTWKWebViewLogDelegate> logDelegate = nil;
         [self.lock lock];
         @try {
             enableTraceWebView = _enableTraceWebView;
             enableWebViewLog = _enableWebViewLog;
             rumDelegate = _rumTrackDelegate;
+            logDelegate = _logDelegate;
         } @finally {
             [self.lock unlock];
         }
         if ([name isEqualToString:@"log"]) {
             id data = messageDic[@"data"];
             if (enableWebViewLog && [data isKindOfClass:NSDictionary.class]) {
-                [[FTLogger sharedInstance] logWebViewEvent:data linkToNativeRum:enableTraceWebView && rumDelegate != nil];
+                [logDelegate logWebViewEvent:data linkToNativeRum:enableTraceWebView && rumDelegate != nil];
             }
             return;
         }

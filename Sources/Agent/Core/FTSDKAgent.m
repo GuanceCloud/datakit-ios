@@ -69,7 +69,6 @@
 @property (nonatomic, strong) FTRumConfig *rumConfig;
 @property (nonatomic, strong) FTTraceConfig *traceConfig;
 @property (nonatomic, strong) FTSDKConfig *sdkConfig;
-- (void)applyCurrentWebViewConfiguration;
 - (nullable NSArray *)effectiveAllowWebViewHost;
 @end
 @implementation FTSDKAgent
@@ -126,6 +125,13 @@ static FTSDKAgent *sharedInstance = nil;
                 [[FTRemoteConfigManager sharedInstance] innerUpdateRemoteConfig];
                 [_rumConfig mergeWithRemoteConfigModel:[FTRemoteConfigManager sharedInstance].lastRemoteModel];
             }
+#if !TARGET_OS_TV
+            // Compatibility only: explicit base hosts (including nil) and remote
+            // overrides take precedence over the deprecated RUM host configuration.
+            if (!_sdkConfig.allowWebViewHostConfigured && _sdkConfig.remoteAllowWebViewHost == nil) {
+                [[FTWKWebViewHandler sharedInstance] setAllowWebViewHost:[self effectiveAllowWebViewHost]];
+            }
+#endif
             [self applyRUMConfig:_rumConfig];
         }
     } @catch (NSException *exception) {
@@ -171,7 +177,10 @@ static FTSDKAgent *sharedInstance = nil;
     [self.loggerConfig mergeWithRemoteConfigModel:[FTRemoteConfigManager sharedInstance].lastRemoteModel];
     [[FTLogger sharedInstance] updateLoggerConfiguration:self.loggerConfig];
 #if !TARGET_OS_TV
-    [[FTWKWebViewHandler sharedInstance] updateEnableWebViewLog:self.loggerConfig.enableWebViewLog];
+    if (self.loggerConfig) {
+        [[FTWKWebViewHandler sharedInstance] startWithEnableWebViewLog:self.loggerConfig.enableWebViewLog
+                                                         logDelegate:[FTLogger sharedInstance]];
+    }
 #endif
     [[FTModuleManager sharedInstance] postMessageWithKey:FTMessageKeySRSampleRateUpdate message:@{}];
 }
@@ -226,6 +235,9 @@ static FTSDKAgent *sharedInstance = nil;
     [[FTTrackDataManager sharedInstance] setEnableLimitWithDb:config.enableLimitWithDbSize size:config.dbCacheLimit discardNew:config.dbDiscardType == FTDBDiscard];
 
     [[FTExtensionDataManager sharedInstance] writeMobileConfig:[config convertToDictionary]];
+#if !TARGET_OS_TV
+    [[FTWKWebViewHandler sharedInstance] setAllowWebViewHost:[self effectiveAllowWebViewHost]];
+#endif
     FTInnerLogInfo(@"Init Mobile Config Success: \n%@",config.debugDescription);
 }
 - (void)applyRUMConfig:(FTRumConfig *)rumConfig{
@@ -244,7 +256,10 @@ static FTSDKAgent *sharedInstance = nil;
     if (_loggerConfig) {
         [FTLogger sharedInstance].linkRumDataProvider = [FTGlobalRumManager sharedInstance].rumManager;
     }
-    [self applyCurrentWebViewConfiguration];
+#if !TARGET_OS_TV
+    [[FTWKWebViewHandler sharedInstance] startWithEnableTraceWebView:rumConfig.enableTraceWebView
+                                                       rumDelegate:[FTGlobalRumManager sharedInstance].rumManager];
+#endif
     FTInnerLogInfo(@"Init RUM Config Success: \n%@",rumConfig.debugDescription);
 }
 - (void)applyLogConfig:(FTLoggerConfig *)loggerConfig{
@@ -253,7 +268,10 @@ static FTSDKAgent *sharedInstance = nil;
     [[FTExtensionDataManager sharedInstance] writeLoggerConfig:[loggerConfig convertToDictionary]];
     [[FTLogger sharedInstance] startWithLoggerConfig:loggerConfig writer:[FTTrackDataManager sharedInstance].dataWriterWorker];
     [FTLogger sharedInstance].linkRumDataProvider = [FTGlobalRumManager sharedInstance].rumManager;
-    [self applyCurrentWebViewConfiguration];
+#if !TARGET_OS_TV
+    [[FTWKWebViewHandler sharedInstance] startWithEnableWebViewLog:loggerConfig.enableWebViewLog
+                                                     logDelegate:[FTLogger sharedInstance]];
+#endif
     FTInnerLogInfo(@"Init Logger Config Success: \n%@",loggerConfig.debugDescription);
 }
 - (NSArray *)effectiveAllowWebViewHost {
@@ -268,16 +286,6 @@ static FTSDKAgent *sharedInstance = nil;
     NSArray *legacyHosts = self.rumConfig.allowWebViewHost;
 #pragma clang diagnostic pop
     return legacyHosts;
-}
-- (void)applyCurrentWebViewConfiguration {
-#if !TARGET_OS_TV
-    BOOL enableRum = self.rumConfig != nil && self.rumConfig.enableTraceWebView;
-    BOOL enableLog = self.loggerConfig != nil && self.loggerConfig.enableWebViewLog;
-    [[FTWKWebViewHandler sharedInstance] configureWithEnableTraceWebView:enableRum
-                                                       enableWebViewLog:enableLog
-                                                       allowWebViewHost:[self effectiveAllowWebViewHost]
-                                                            rumDelegate:[FTGlobalRumManager sharedInstance].rumManager];
-#endif
 }
 - (void)applyTraceConfig:(FTTraceConfig *)traceConfig{
     [[FTURLSessionInstrumentation sharedInstance] setTraceEnableAutoTrace:traceConfig.enableAutoTrace

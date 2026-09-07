@@ -191,6 +191,8 @@
 		17018DB82F50257100688324 /* FTWeakMapTable.m in Sources */ = {isa = PBXBuildFile; fileRef = 17018DB52F50257100688324 /* FTWeakMapTable.m */; };
 		17018DB92F50257100688324 /* FTWeakMapTable.h in Headers */ = {isa = PBXBuildFile; fileRef = 17018DB42F50257100688324 /* FTWeakMapTable.h */; };
 		17018DBE2F50259B00688324 /* FTWKWebViewRumDelegate.h in Headers */ = {isa = PBXBuildFile; fileRef = 17018DBC2F50259B00688324 /* FTWKWebViewRumDelegate.h */; };
+		FB0700012FA0000000000001 /* FTWKWebViewLogDelegate.h in Headers */ = {isa = PBXBuildFile; fileRef = FB0700012FA0000000000003 /* FTWKWebViewLogDelegate.h */; };
+		FB0700012FA0000000000002 /* FTWKWebViewLogDelegate.h in Headers */ = {isa = PBXBuildFile; fileRef = FB0700012FA0000000000003 /* FTWKWebViewLogDelegate.h */; };
 		17018DBF2F50259B00688324 /* FTWKWebViewRumDelegate.h in Headers */ = {isa = PBXBuildFile; fileRef = 17018DBC2F50259B00688324 /* FTWKWebViewRumDelegate.h */; };
 		17018DC22F5025B200688324 /* FTModuleManager.m in Sources */ = {isa = PBXBuildFile; fileRef = 17018DC12F5025B200688324 /* FTModuleManager.m */; };
 		17018DC32F5025B200688324 /* FTModuleManager.h in Headers */ = {isa = PBXBuildFile; fileRef = 17018DC02F5025B200688324 /* FTModuleManager.h */; };
@@ -1138,6 +1140,7 @@
 		17018DB42F50257100688324 /* FTWeakMapTable.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = FTWeakMapTable.h; sourceTree = "<group>"; };
 		17018DB52F50257100688324 /* FTWeakMapTable.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = FTWeakMapTable.m; sourceTree = "<group>"; };
 		17018DBC2F50259B00688324 /* FTWKWebViewRumDelegate.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = FTWKWebViewRumDelegate.h; sourceTree = "<group>"; };
+		FB0700012FA0000000000003 /* FTWKWebViewLogDelegate.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = FTWKWebViewLogDelegate.h; sourceTree = "<group>"; };
 		17018DC02F5025B200688324 /* FTModuleManager.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = FTModuleManager.h; sourceTree = "<group>"; };
 		17018DC12F5025B200688324 /* FTModuleManager.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = FTModuleManager.m; sourceTree = "<group>"; };
 		17018DC82F5025C100688324 /* FTSRWebTrackingProtocol.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = FTSRWebTrackingProtocol.h; sourceTree = "<group>"; };
@@ -2611,6 +2614,7 @@
 				17018DC02F5025B200688324 /* FTModuleManager.h */,
 				17018DC12F5025B200688324 /* FTModuleManager.m */,
 				17018DBC2F50259B00688324 /* FTWKWebViewRumDelegate.h */,
+				FB0700012FA0000000000003 /* FTWKWebViewLogDelegate.h */,
 				17717B492F0E7E9A002158F6 /* FTRemoteConfigTypeDefs.h */,
 				171269622DC9B2D2002D238B /* FTUploadProtocol.h */,
 				174D91AA2A20B98300D85AAA /* FTLoggerDataWriteProtocol.h */,
@@ -2985,6 +2989,7 @@
 				176CE2012ED57F6C00E9E92B /* FTCrashMonitorAPI.h in Headers */,
 				1776069129D1372B00D17137 /* FTLog.h in Headers */,
 				17018DBE2F50259B00688324 /* FTWKWebViewRumDelegate.h in Headers */,
+				FB0700012FA0000000000001 /* FTWKWebViewLogDelegate.h in Headers */,
 				176CE2442ED6DF3900E9E92B /* FTCrashSysCtl.h in Headers */,
 				17A9BE332C5CE8A200DEC5FE /* FTResourceMetricsModel+Private.h in Headers */,
 				17AB76CA29D432DE008FBBF5 /* FTMonitorValue.h in Headers */,
@@ -3168,6 +3173,7 @@
 				176CE21C2ED586DF00E9E92B /* FTCrashMonitor_AppState.h in Headers */,
 				1776062D29D1347500D17137 /* FTWebViewJavascriptLeakAvoider.h in Headers */,
 				17018DBF2F50259B00688324 /* FTWKWebViewRumDelegate.h in Headers */,
+				FB0700012FA0000000000002 /* FTWKWebViewLogDelegate.h in Headers */,
 				17E4CC2029CD42E4005C2D99 /* FTRumDatasProtocol.h in Headers */,
 				17678E2A29D28BD200C1DA98 /* FTSDKVersion.h in Headers */,
 				178CDB0F2F0F7AA000EE98D0 /* FTCrashReportVersion.h in Headers */,
