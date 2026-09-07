@@ -34,7 +34,7 @@
 #import "FTFileLogger.h"
 #import "FTTestUtils.h"
 #import "FTLogger+Private.h"
-#import "FTMobileConfig+Private.h"
+#import "FTSDKConfig+Private.h"
 #import "FTLoggerConfig+Private.h"
 #import "FTRumConfig+Private.h"
 #import "FTRemoteConfigModel+Test.h"
@@ -279,7 +279,7 @@
     XCTAssertTrue(self.lastLogLinkRum);
 }
 - (void)testWebViewLogUploadsThroughNativeLoggingEndpointAndDeletesCache {
-    FTMobileConfig *config = [[FTMobileConfig alloc] initWithDatakitUrl:@"http://127.0.0.1:9529"];
+    FTSDKConfig *config = [[FTSDKConfig alloc] initWithDatakitUrl:@"http://127.0.0.1:9529"];
     config.autoSync = NO;
     config.compressIntakeRequests = NO;
     [FTMobileAgent startWithConfigOptions:config];
@@ -453,7 +453,7 @@
 }
 - (void)setRightSDKConfig{
     [[FTTrackerEventDBTool sharedManager] deleteAllDatas];
-    FTMobileConfig *config = [[FTMobileConfig alloc]initWithDatakitUrl:self.url];
+    FTSDKConfig *config = [[FTSDKConfig alloc]initWithDatakitUrl:self.url];
     config.enableSDKDebugLog = YES;
     config.autoSync = NO;
     [FTMobileAgent startWithConfigOptions:config];
@@ -556,7 +556,7 @@
 - (void)testSampleRate0{
     [self setRightSDKConfig];
     FTLoggerConfig *loggerConfig = [[FTLoggerConfig alloc]init];
-    loggerConfig.samplerate = 0;
+    loggerConfig.sampleRate = 0;
     loggerConfig.enableCustomLog = YES;
     [[FTMobileAgent sharedInstance] startLoggerWithConfigOptions:loggerConfig];
     NSArray *oldDatas = [[FTTrackerEventDBTool sharedManager] getFirstRecords:10 withType:FT_DATA_TYPE_LOGGING];
@@ -616,7 +616,7 @@
 }
 - (void)testAddPkgInfo{
     [[FTTrackerEventDBTool sharedManager] deleteAllDatas];
-    FTMobileConfig *config = [[FTMobileConfig alloc]initWithDatakitUrl:self.url];
+    FTSDKConfig *config = [[FTSDKConfig alloc]initWithDatakitUrl:self.url];
     config.enableSDKDebugLog = YES;
     config.autoSync = NO;
     [config addPkgInfo:@"test_sdk" value:@"1.0.0"];
@@ -638,7 +638,7 @@
 }
 - (void)testLoggerFormat_sdkName{
     [[FTTrackerEventDBTool sharedManager] deleteAllDatas];
-    FTMobileConfig *config = [[FTMobileConfig alloc]initWithDatakitUrl:self.url];
+    FTSDKConfig *config = [[FTSDKConfig alloc]initWithDatakitUrl:self.url];
     config.enableSDKDebugLog = YES;
     config.autoSync = NO;
     [FTMobileAgent startWithConfigOptions:config];
@@ -888,7 +888,7 @@
     
    
     FTLoggerConfig *remote = [[FTLoggerConfig alloc]init];
-    remote.samplerate = 80;
+    remote.sampleRate = 80;
     remote.logLevelFilter = @[@"info"];
     remote.enableCustomLog = YES;
     

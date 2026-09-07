@@ -534,7 +534,7 @@
     XCTAssertTrue([dict0[FT_KEY_VIEW_NAME] isEqualToString:dict2[FT_KEY_VIEW_NAME]]);
 }
 - (void)testDisableTraceUserView_whenAppWillEnterForeground{
-    FTMobileConfig *config = [[FTMobileConfig alloc]initWithDatakitUrl:self.url];
+    FTSDKConfig *config = [[FTSDKConfig alloc]initWithDatakitUrl:self.url];
     FTRumConfig *rumConfig = [[FTRumConfig alloc]initWithAppid:self.appid];
     rumConfig.enableTraceUserAction = YES;
     rumConfig.enableTraceUserResource = YES;
@@ -572,7 +572,7 @@
 }
 
 - (void)testUpdateViewLoadingTime{
-    FTMobileConfig *config = [[FTMobileConfig alloc]initWithDatakitUrl:self.url];
+    FTSDKConfig *config = [[FTSDKConfig alloc]initWithDatakitUrl:self.url];
     FTRumConfig *rumConfig = [[FTRumConfig alloc]initWithAppid:self.appid];
     [FTMobileAgent startWithConfigOptions:config];
     
@@ -608,7 +608,7 @@
 }
 
 - (void)testUpdateViewLoadingTime_whenViewInactive{
-    FTMobileConfig *config = [[FTMobileConfig alloc]initWithDatakitUrl:self.url];
+    FTSDKConfig *config = [[FTSDKConfig alloc]initWithDatakitUrl:self.url];
     FTRumConfig *rumConfig = [[FTRumConfig alloc]initWithAppid:self.appid];
     [FTMobileAgent startWithConfigOptions:config];
     
@@ -1331,7 +1331,7 @@
     XCTAssertTrue(hasViewData);
 }
 - (void)testRumInitDoesNotCreateApplicationLaunchWhenAutoActionEnabled{
-    FTMobileConfig *config = [[FTMobileConfig alloc]initWithDatakitUrl:self.url];
+    FTSDKConfig *config = [[FTSDKConfig alloc]initWithDatakitUrl:self.url];
     config.autoSync = NO;
     FTRumConfig *rumConfig = [[FTRumConfig alloc]initWithAppid:self.appid];
     rumConfig.enableTraceUserAction = YES;
@@ -1354,7 +1354,7 @@
     XCTAssertFalse(hasLaunchAction);
 }
 - (void)testRumInitDoesNotCreateApplicationLaunchWhenAutoActionDisabled{
-    FTMobileConfig *config = [[FTMobileConfig alloc]initWithDatakitUrl:self.url];
+    FTSDKConfig *config = [[FTSDKConfig alloc]initWithDatakitUrl:self.url];
     config.autoSync = NO;
     FTRumConfig *rumConfig = [[FTRumConfig alloc]initWithAppid:self.appid];
     [FTMobileAgent startWithConfigOptions:config];
@@ -1372,7 +1372,7 @@
     XCTAssertFalse(hasApplicationLaunchView);
 }
 - (void)testSessionRefreshStopsFallbackViewWithoutCopyingIt{
-    FTMobileConfig *config = [[FTMobileConfig alloc]initWithDatakitUrl:self.url];
+    FTSDKConfig *config = [[FTSDKConfig alloc]initWithDatakitUrl:self.url];
     config.autoSync = NO;
     FTRumConfig *rumConfig = [[FTRumConfig alloc]initWithAppid:self.appid];
     rumConfig.enableTraceUserAction = YES;
@@ -1489,7 +1489,7 @@
     XCTAssertTrue(hasRealView);
 }
 - (void)testNoActiveView_launchActionUsesFallbackView{
-    FTMobileConfig *config = [[FTMobileConfig alloc]initWithDatakitUrl:self.url];
+    FTSDKConfig *config = [[FTSDKConfig alloc]initWithDatakitUrl:self.url];
     config.autoSync = NO;
     FTRumConfig *rumConfig = [[FTRumConfig alloc]initWithAppid:self.appid];
     [FTMobileAgent startWithConfigOptions:config];
@@ -2147,7 +2147,7 @@
 }
 #pragma mark ========== RUM Config ==========
 - (void)testSampleRate0{
-    FTMobileConfig *config = [[FTMobileConfig alloc]initWithDatakitUrl:self.url];
+    FTSDKConfig *config = [[FTSDKConfig alloc]initWithDatakitUrl:self.url];
     FTRumConfig *rumConfig = [[FTRumConfig alloc]initWithAppid:self.appid];
     rumConfig.enableTraceUserAction = YES;
     rumConfig.samplerate = 0;
@@ -2184,7 +2184,7 @@
  * Need to set networkTraceType = FTNetworkTraceTypeDDtrace
  */
 - (void)testTraceLinkRumData{
-    FTMobileConfig *config = [[FTMobileConfig alloc]initWithDatakitUrl:self.url];
+    FTSDKConfig *config = [[FTSDKConfig alloc]initWithDatakitUrl:self.url];
     config.enableSDKDebugLog = YES;
     FTRumConfig *rumConfig = [[FTRumConfig alloc]initWithAppid:self.appid];
     rumConfig.enableTraceUserAction = YES;
@@ -2247,7 +2247,7 @@
     XCTAssertTrue(hasResourceData == YES);
 }
 - (void)testRUMGlobalContext{
-    FTMobileConfig *config = [[FTMobileConfig alloc]initWithDatakitUrl:self.url];
+    FTSDKConfig *config = [[FTSDKConfig alloc]initWithDatakitUrl:self.url];
     FTRumConfig *rumConfig = [[FTRumConfig alloc]initWithAppid:self.appid];
     rumConfig.enableTraceUserAction = YES;
     rumConfig.globalContext = @{@"track_id":@"testGlobalTrack"};
@@ -2281,7 +2281,7 @@
     XCTAssertTrue([context[@"testRUMGlobalContext_mutable"] isEqualToString:@"testRUMGlobalContext"]);
 }
 - (void)testAppendRUMGlobalContext{
-    FTMobileConfig *config = [[FTMobileConfig alloc]initWithDatakitUrl:self.url];
+    FTSDKConfig *config = [[FTSDKConfig alloc]initWithDatakitUrl:self.url];
     FTRumConfig *rumConfig = [[FTRumConfig alloc]initWithAppid:self.appid];
     rumConfig.enableTraceUserAction = YES;
     rumConfig.globalContext = @{@"track_id":@"testGlobalTrack"};
@@ -2684,7 +2684,7 @@
 }
 #pragma mark ========== Fallback View ==========
 - (void)testFallback_sdkInit{
-    FTMobileConfig *config = [[FTMobileConfig alloc]initWithDatakitUrl:self.url];
+    FTSDKConfig *config = [[FTSDKConfig alloc]initWithDatakitUrl:self.url];
     config.autoSync = NO;
     FTRumConfig *rumConfig = [[FTRumConfig alloc]initWithAppid:self.appid];
     [FTMobileAgent startWithConfigOptions:config];
@@ -2729,7 +2729,7 @@
     XCTAssertTrue(hasResource);
 }
 - (void)testFallback_viewStop{
-    FTMobileConfig *config = [[FTMobileConfig alloc]initWithDatakitUrl:self.url];
+    FTSDKConfig *config = [[FTSDKConfig alloc]initWithDatakitUrl:self.url];
     config.autoSync = NO;
     FTRumConfig *rumConfig = [[FTRumConfig alloc]initWithAppid:self.appid];
     [FTMobileAgent startWithConfigOptions:config];
@@ -2778,7 +2778,7 @@
 }
 
 - (void)testFallback_viewStop_addDatathenStartView{
-    FTMobileConfig *config = [[FTMobileConfig alloc]initWithDatakitUrl:self.url];
+    FTSDKConfig *config = [[FTSDKConfig alloc]initWithDatakitUrl:self.url];
     config.autoSync = NO;
     FTRumConfig *rumConfig = [[FTRumConfig alloc]initWithAppid:self.appid];
     [FTMobileAgent startWithConfigOptions:config];
@@ -2830,7 +2830,7 @@
     XCTAssertTrue(hasResource);
 }
 - (void)testFallback_sessionTimeOut{
-    FTMobileConfig *config = [[FTMobileConfig alloc]initWithDatakitUrl:self.url];
+    FTSDKConfig *config = [[FTSDKConfig alloc]initWithDatakitUrl:self.url];
     config.autoSync = NO;
     FTRumConfig *rumConfig = [[FTRumConfig alloc]initWithAppid:self.appid];
     [FTMobileAgent startWithConfigOptions:config];
@@ -2969,7 +2969,7 @@
 }
 
 - (void)testActiveIssueDataProviderUsesInitializationSnapshot{
-    FTMobileConfig *mobileConfig = [[FTMobileConfig alloc]initWithDatakitUrl:self.url];
+    FTSDKConfig *mobileConfig = [[FTSDKConfig alloc]initWithDatakitUrl:self.url];
     mobileConfig.autoSync = NO;
     [FTMobileAgent startWithConfigOptions:mobileConfig];
 
@@ -3219,7 +3219,7 @@
     [self setRumConfigEnableResourceHostIP:enable enableTraceUserResource:YES];
 }
 - (void)setRumConfigEnableResourceHostIP:(BOOL)enable enableTraceUserResource:(BOOL)resource{
-    FTMobileConfig *config = [[FTMobileConfig alloc]initWithDatakitUrl:self.url];
+    FTSDKConfig *config = [[FTSDKConfig alloc]initWithDatakitUrl:self.url];
     config.autoSync = NO;
     config.enableDataFilter = NO;
     config.enableSDKDebugLog = YES;

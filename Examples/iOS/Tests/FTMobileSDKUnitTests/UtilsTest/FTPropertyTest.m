@@ -496,7 +496,7 @@ static void FTPropertyTestAssertMissingKeys(XCTestCase *testCase, NSDictionary *
     [FTMobileAgent shutDown];
 }
 - (void)testPresetRUMAndLoggerTagsContainOwnedKeys{
-    FTMobileConfig *config = [[FTMobileConfig alloc]initWithDatakitUrl:self.url];
+    FTSDKConfig *config = [[FTSDKConfig alloc]initWithDatakitUrl:self.url];
     config.autoSync = NO;
     config.globalContext = @{@"global_key":@"global_value"};
     [FTMobileAgent startWithConfigOptions:config];
@@ -523,7 +523,7 @@ static void FTPropertyTestAssertMissingKeys(XCTestCase *testCase, NSDictionary *
     [FTMobileAgent shutDown];
 }
 - (void)testLogWithoutRUMDoesNotIncludeRUMTags{
-    FTMobileConfig *config = [[FTMobileConfig alloc]initWithDatakitUrl:self.url];
+    FTSDKConfig *config = [[FTSDKConfig alloc]initWithDatakitUrl:self.url];
     config.autoSync = NO;
     [FTMobileAgent startWithConfigOptions:config];
     FTLoggerConfig *loggerConfig = [[FTLoggerConfig alloc]init];
@@ -539,7 +539,7 @@ static void FTPropertyTestAssertMissingKeys(XCTestCase *testCase, NSDictionary *
     [FTMobileAgent shutDown];
 }
 - (void)testLogLinkRumControlsRUMTags{
-    FTMobileConfig *config = [[FTMobileConfig alloc]initWithDatakitUrl:self.url];
+    FTSDKConfig *config = [[FTSDKConfig alloc]initWithDatakitUrl:self.url];
     config.autoSync = NO;
     [FTMobileAgent startWithConfigOptions:config];
     FTRumConfig *rumConfig = [[FTRumConfig alloc]initWithAppid:_appid];
@@ -570,7 +570,7 @@ static void FTPropertyTestAssertMissingKeys(XCTestCase *testCase, NSDictionary *
 }
 - (void)testNetworkTypeDataModifierUsesNetworkTypeKey{
     __block NSString *modifierKey = nil;
-    FTMobileConfig *config = [[FTMobileConfig alloc]initWithDatakitUrl:self.url];
+    FTSDKConfig *config = [[FTSDKConfig alloc]initWithDatakitUrl:self.url];
     config.autoSync = NO;
     config.dataModifier = ^id _Nullable(NSString * _Nonnull key, id  _Nonnull value) {
         if ([value isEqual:@"wifi"]) {
@@ -599,7 +599,7 @@ static void FTPropertyTestAssertMissingKeys(XCTestCase *testCase, NSDictionary *
     XCTAssertEqualObjects(opData[FT_FIELDS], @{});
 }
 - (void)testDataModifier_globalContext{
-    FTMobileConfig *config = [[FTMobileConfig alloc]initWithDatakitUrl:self.url];
+    FTSDKConfig *config = [[FTSDKConfig alloc]initWithDatakitUrl:self.url];
     config.autoSync = NO;
     config.globalContext = @{@"sdk_config":@"sdk"};
     config.dataModifier = ^id _Nullable(NSString * _Nonnull key, id  _Nonnull value) {
@@ -642,7 +642,7 @@ static void FTPropertyTestAssertMissingKeys(XCTestCase *testCase, NSDictionary *
     [FTMobileAgent shutDown];
 }
 - (void)testDataModifier_appendGlobalContext{
-    FTMobileConfig *config = [[FTMobileConfig alloc]initWithDatakitUrl:self.url];
+    FTSDKConfig *config = [[FTSDKConfig alloc]initWithDatakitUrl:self.url];
     config.autoSync = NO;
     config.dataModifier = ^id _Nullable(NSString * _Nonnull key, id  _Nonnull value) {
         if ([key isEqualToString:@"append_rum"]) {
@@ -680,7 +680,7 @@ static void FTPropertyTestAssertMissingKeys(XCTestCase *testCase, NSDictionary *
     [FTMobileAgent shutDown];
 }
 - (void)testAppendModuleContextBeforeModuleStartIsDiscarded{
-    FTMobileConfig *config = [[FTMobileConfig alloc]initWithDatakitUrl:self.url];
+    FTSDKConfig *config = [[FTSDKConfig alloc]initWithDatakitUrl:self.url];
     config.autoSync = NO;
     [FTMobileAgent startWithConfigOptions:config];
 

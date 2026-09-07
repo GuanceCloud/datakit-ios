@@ -40,7 +40,7 @@
 -(instancetype)init{
     self = [super init];
     if (self) {
-        _samplerate= 100;
+        _samplerate = 100;
         _networkTraceType = FTNetworkTraceTypeDDtrace;
     }
     return self;
