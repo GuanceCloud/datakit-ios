@@ -40,6 +40,11 @@ let package = Package(
                 "GuanceElectronWebView",
             ]
         ),
+        .library(
+            name: "GuanceElectronNative",
+            type: .dynamic,
+            targets: ["GuanceElectronNative"]
+        ),
     ],
     dependencies: [],
     targets: [
@@ -274,6 +279,22 @@ let package = Package(
                 .headerSearchPath("../SessionReplay/Recorder/SRWireframe/ViewTreeSnapshot/ViewsRecorder"),
             ]
         ),
+        .target(
+            name: "GuanceElectronNative",
+            dependencies: [
+                "_GuanceSDKObjC",
+                "_AgentExternalData",
+                "_FTBaseUtils_Base",
+                "_FTLogger",
+                "GuanceSessionReplay",
+                "GuanceElectronWebView",
+            ],
+            path: "Sources/ElectronNative/Bridge",
+            publicHeadersPath: "Public",
+            linkerSettings: [
+                .linkedFramework("AppKit"),
+            ]
+        ),
         .testTarget(
             name: "GuanceElectronWebViewTests",
             dependencies: [
@@ -283,6 +304,11 @@ let package = Package(
                 "_FTProtocol",
             ],
             path: "Tests/GuanceElectronWebViewTests"
+        ),
+        .testTarget(
+            name: "GuanceElectronNativeTests",
+            dependencies: ["GuanceElectronNative"],
+            path: "Tests/GuanceElectronNativeTests"
         ),
     ]
 )
