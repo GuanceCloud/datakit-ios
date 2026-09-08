@@ -1,3 +1,12 @@
+# Unreleased
+
+1. Added WebView Log Bridge support, independently enabled through `FTLoggerConfig.enableWebViewLog`, for Browser Logger API calls and automatic Console and JavaScript error logs, reusing native Logger sampling, level filtering, RUM correlation, and uploading.
+2. Added `FTSDKConfig.allowWebViewHost` as a shared host allowlist for WebView RUM and Log collection; deprecated `FTRumConfig.allowWebViewHost`.
+3. Added the `logEnableWebViewLog` remote configuration option to enable or disable WebView Log collection at runtime.
+4. Fixed numeric conversion overflow at Int64 boundaries in heatmap data.
+
+---
+
 # 1.6.7
 1. Added RUM Resource collection for WebSocket handshake requests.
 2. Added `FTRumConfig.issueDataProvider` to attach validated custom fields and historical context to automatically collected Crash and ANR RUM Errors.
