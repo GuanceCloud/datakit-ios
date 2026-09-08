@@ -110,6 +110,7 @@
         loggerConfig.enableCustomLog = YES;
         loggerConfig.enableLinkRumData = YES;
         loggerConfig.printCustomLogToConsole = YES;
+        loggerConfig.enableWebViewLog = YES;
         loggerConfig.logLevelFilter = @[@(FTStatusError),@(FTStatusCritical)];
         loggerConfig.discardType = FTDiscardOldest;
         loggerConfig.globalContext = @{@"log_id":@"log_id_1"};//eg.
