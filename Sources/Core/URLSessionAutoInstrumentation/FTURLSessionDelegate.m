@@ -74,7 +74,8 @@
 }
 -(void)URLSession:(NSURLSession *)session task:(NSURLSessionTask *)task didFinishCollectingMetrics:(NSURLSessionTaskMetrics *)metrics{
     // custom = YES is mainly to prioritize processing URLSession-level custom provider
-    [self.instrumentation.interceptor taskMetricsCollected:task metrics:metrics custom:YES];
+    FTURLSessionInterceptor *interceptor = (FTURLSessionInterceptor *)self.instrumentation.interceptor;
+    [interceptor taskMetricsCollected:task metrics:metrics custom:YES extraProvider:self.provider];
     if (@available(iOS 15.0,tvOS 15.0,macOS 12.0, *)) {
         if(!task.ft_hasCompletion && !task.ft_isWebSocketTask){
             [self dealTaskCompleted:task error:task.error];

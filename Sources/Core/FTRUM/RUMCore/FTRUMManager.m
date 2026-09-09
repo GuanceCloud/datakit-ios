@@ -450,7 +450,6 @@ void *FTRUMQueueIdentityKey = &FTRUMQueueIdentityKey;
                 
                 FTRUMResourceDataModel *resourceSuccess = [[FTRUMResourceDataModel alloc]initWithType:FTRUMDataResourceComplete identifier:key];
                 resourceSuccess.metrics = metrics;
-                resourceSuccess.keepsResourceDuration = content.webSocketHandshake;
                 resourceSuccess.time = time;
                 resourceSuccess.tags = tags;
                 resourceSuccess.fields = fields;

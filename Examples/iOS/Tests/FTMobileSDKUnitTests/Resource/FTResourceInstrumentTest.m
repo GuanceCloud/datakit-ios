@@ -40,6 +40,8 @@
 #import "FTRumResourceProtocol.h"
 #import "FTTracerProtocol.h"
 #import "FTBaseInfoHandler.h"
+#import "FTDateUtil.h"
+#import "FTDURLSessionDelegate.h"
 
 @interface FTURLSessionInstrumentation()
 - (BOOL)isFTIntakeRequest:(NSURLRequest *)request;
@@ -48,11 +50,18 @@
 @property (nonatomic, strong) dispatch_queue_t queue;
 @property (nonatomic, weak, nullable) id<FTRumResourceProtocol> rumResourceHandler;
 @property (nonatomic, copy, nullable) FTResourceUrlHandler resourceUrlHandler;
+@property (nonatomic, copy, nullable) ResourcePropertyProvider resourcePropertyProvider;
+@property (nonatomic, copy, nullable) SessionTaskErrorFilter sessionTaskErrorFilter;
 - (FTSessionTaskHandler *)getTraceHandler:(id)key;
 - (void)setTracer:(id<FTTracerProtocol>)tracer;
+- (void)taskMetricsCollected:(NSURLSessionTask *)task metrics:(NSURLSessionTaskMetrics *)metrics custom:(BOOL)custom;
 - (void)taskWebSocketDidOpen:(NSURLSessionTask *)task extraProvider:(nullable ResourcePropertyProvider)extraProvider;
 - (void)taskCompleted:(NSURLSessionTask *)task error:(nullable NSError *)error;
-- (void)handleTaskCompleted:(NSURLSessionTask *)task response:(nullable NSURLResponse *)response error:(nullable NSError *)error extraProvider:(nullable ResourcePropertyProvider)extraProvider errorFilter:(nullable SessionTaskErrorFilter)errorFilter;
+- (void)taskCompleted:(NSURLSessionTask *)task error:(nullable NSError *)error extraProvider:(nullable ResourcePropertyProvider)extraProvider errorFilter:(nullable SessionTaskErrorFilter)errorFilter;
+- (void)handleTaskCompleted:(NSURLSessionTask *)task response:(nullable NSURLResponse *)response error:(nullable NSError *)error extraProvider:(nullable ResourcePropertyProvider)extraProvider errorFilter:(nullable SessionTaskErrorFilter)errorFilter endTime:(uint64_t)endTime;
+@end
+@interface FTDURLSessionDelegate (WebSocketTesting)
+- (void)URLSession:(NSURLSession *)session webSocketTask:(NSURLSessionTask *)task didOpenWithProtocol:(nullable NSString *)protocol;
 @end
 /** This class is used to wrap an NSURLSession object during testing. */
 @interface FTURLSessionProxy : NSProxy {
@@ -92,6 +101,7 @@
 @property (nonatomic, assign) NSInteger startCount;
 @property (nonatomic, assign) NSInteger stopCount;
 @property (nonatomic, assign) NSInteger addCount;
+@property (nonatomic, copy) NSDictionary *stopProperty;
 @end
 
 @implementation FTURLSessionSnapshotRumResourceHandler
@@ -106,6 +116,7 @@
 }
 - (void)stopResourceWithKey:(NSString *)key property:(NSDictionary *)property {
     self.stopCount += 1;
+    self.stopProperty = property;
 }
 - (void)addResourceWithKey:(NSString *)key metrics:(FTResourceMetricsModel *)metrics content:(FTResourceContentModel *)content {
     self.content = content;
@@ -142,6 +153,57 @@
     if (handler) {
         handler(header[@"x-trace-id"], header[@"x-span-id"]);
     }
+}
+@end
+
+@interface FTWebSocketTestClock : NSObject
+@property (atomic, assign) uint64_t time;
+@end
+@implementation FTWebSocketTestClock
+@end
+
+
+// Models the task snapshot visible at the real metrics callback boundary.
+@interface FTWebSocketMetricsTestTask : NSObject<NSCopying>
+@property (nonatomic, strong) NSURLRequest *currentRequest;
+@property (nonatomic, strong) NSURLResponse *response;
+@property (nonatomic, strong) NSError *error;
+@property (nonatomic, assign) NSURLSessionTaskState state;
+@end
+@implementation FTWebSocketMetricsTestTask
+- (BOOL)ft_isWebSocketTask { return YES; }
+- (BOOL)ft_hasCompletion { return NO; }
+- (NSURL *)ft_webSocketResourceURL { return self.currentRequest.URL; }
+- (id)copyWithZone:(NSZone *)zone { return self; }
+@end
+
+@interface FTWebSocketTestTransactionMetrics : NSURLSessionTaskTransactionMetrics
+@end
+@implementation FTWebSocketTestTransactionMetrics
+- (NSURLSessionTaskMetricsResourceFetchType)resourceFetchType { return NSURLSessionTaskMetricsResourceFetchTypeNetworkLoad; }
+@end
+@interface FTWebSocketTestTaskMetrics : NSURLSessionTaskMetrics
+@end
+@implementation FTWebSocketTestTaskMetrics
+- (NSDateInterval *)taskInterval {
+    return [[NSDateInterval alloc] initWithStartDate:[NSDate dateWithTimeIntervalSince1970:1700000000] duration:4];
+}
+- (NSArray *)transactionMetrics { return @[[FTWebSocketTestTransactionMetrics new]]; }
+@end
+
+// An existing customer forwards only the three callbacks required before WebSocket support.
+@interface FTWebSocketLegacyForwardingDelegate : NSObject<FTURLSessionDelegateProviding, NSURLSessionDataDelegate>
+@property (nonatomic, strong) FTURLSessionDelegate *ftURLSessionDelegate;
+@end
+@implementation FTWebSocketLegacyForwardingDelegate
+- (void)URLSession:(NSURLSession *)session dataTask:(NSURLSessionDataTask *)task didReceiveData:(NSData *)data {
+    [self.ftURLSessionDelegate URLSession:session dataTask:task didReceiveData:data];
+}
+- (void)URLSession:(NSURLSession *)session task:(NSURLSessionTask *)task didFinishCollectingMetrics:(NSURLSessionTaskMetrics *)metrics {
+    [self.ftURLSessionDelegate URLSession:session task:task didFinishCollectingMetrics:metrics];
+}
+- (void)URLSession:(NSURLSession *)session task:(NSURLSessionTask *)task didCompleteWithError:(NSError *)error {
+    [self.ftURLSessionDelegate URLSession:session task:task didCompleteWithError:error];
 }
 @end
 
@@ -277,6 +339,143 @@
     [task cancel];
     [session invalidateAndCancel];
 }
+
+- (void)assertWebSocketFinalizationWithStatus:(NSInteger)status error:(NSError *)error taskState:(NSURLSessionTaskState)taskState expectedState:(NSString *)expectedState customDelegate:(BOOL)customDelegate {
+    if (@available(iOS 13.0, *)) {
+        FTURLSessionInterceptor *interceptor = [FTURLSessionInterceptor shared];
+        FTURLSessionSnapshotRumResourceHandler *writer = [FTURLSessionSnapshotRumResourceHandler new];
+        interceptor.rumResourceHandler = writer;
+        FTWebSocketLegacyForwardingDelegate *delegate = [FTWebSocketLegacyForwardingDelegate new];
+        delegate.ftURLSessionDelegate = [FTURLSessionDelegate new];
+        FTDURLSessionDelegate *automaticDelegate = [FTDURLSessionDelegate new];
+        NSURLSession *session = [NSURLSession sharedSession];
+        __block NSInteger providerCalls = 0;
+        __block NSInteger filterCalls = 0;
+        ResourcePropertyProvider provider = ^NSDictionary *(NSURLRequest *request, NSURLResponse *response, NSData *data, NSError *filteredError) {
+            providerCalls++;
+            XCTAssertNil(data);
+            XCTAssertNil(filteredError);
+            return @{@"resource_provider": @YES};
+        };
+        SessionTaskErrorFilter filter = ^BOOL(NSError *receivedError) {
+            filterCalls++;
+            XCTAssertEqual(receivedError, error);
+            return YES;
+        };
+        if (customDelegate) {
+            delegate.ftURLSessionDelegate.provider = provider;
+            delegate.ftURLSessionDelegate.errorFilter = filter;
+        } else {
+            interceptor.resourcePropertyProvider = provider;
+            interceptor.sessionTaskErrorFilter = filter;
+        }
+        FTWebSocketMetricsTestTask *snapshot = [FTWebSocketMetricsTestTask new];
+        snapshot.currentRequest = [NSURLRequest requestWithURL:[NSURL URLWithString:@"wss://websocket.example.com/legacy"]];
+        snapshot.response = status > 0 ? [[NSHTTPURLResponse alloc] initWithURL:snapshot.currentRequest.URL statusCode:status HTTPVersion:@"HTTP/1.1" headerFields:nil] : nil;
+        snapshot.error = error;
+        snapshot.state = taskState;
+        NSURLSessionTask *task = (id)snapshot;
+        [interceptor interceptTask:task];
+        [self waitForURLSessionInterceptorQueue];
+        FTWebSocketTestTaskMetrics *metrics = [FTWebSocketTestTaskMetrics new];
+        if (customDelegate) {
+            XCTAssertFalse([delegate respondsToSelector:@selector(URLSession:webSocketTask:didOpenWithProtocol:)]);
+            [delegate URLSession:session task:task didFinishCollectingMetrics:metrics];
+        } else {
+            [automaticDelegate URLSession:session task:task didFinishCollectingMetrics:metrics];
+        }
+        [self waitForURLSessionInterceptorQueue];
+        // Automatic collection must retain metrics without inferring handshake success.
+        // Only legacy forwarding may finish success before an open/completion callback.
+        if (!customDelegate || error) {
+            XCTAssertEqual(writer.addCount, 0);
+            XCTAssertEqual(writer.stopCount, 0);
+            XCTAssertEqual(providerCalls, 0);
+            XCTAssertEqual(filterCalls, 0);
+            FTSessionTaskHandler *handler = [interceptor getTraceHandler:task];
+            XCTAssertNotNil(handler);
+            XCTAssertEqual(handler.metricsModel.fetchEndNsTimeInterval - handler.metricsModel.fetchStartNsTimeInterval, 4000000000);
+        }
+        if (error) {
+            if (customDelegate) {
+                [delegate URLSession:session task:task didCompleteWithError:error];
+            } else {
+                [automaticDelegate URLSession:session task:task didCompleteWithError:error];
+            }
+        } else if (!customDelegate) {
+            [automaticDelegate URLSession:session webSocketTask:task didOpenWithProtocol:nil];
+        }
+        [self waitForURLSessionInterceptorQueue];
+        XCTAssertEqual(writer.addCount, 1);
+        XCTAssertEqual(writer.stopCount, 1);
+        XCTAssertNil([interceptor getTraceHandler:task]);
+        XCTAssertEqualObjects(writer.content.webSocketHandshakeState, expectedState);
+        XCTAssertEqual(writer.content.httpStatusCode, status);
+        XCTAssertEqual(writer.metrics.fetchEndNsTimeInterval - writer.metrics.fetchStartNsTimeInterval, 4000000000);
+        XCTAssertEqual(providerCalls, 1);
+        XCTAssertEqual(filterCalls, error ? 1 : 0);
+        XCTAssertEqualObjects(writer.stopProperty[@"resource_provider"], @YES);
+        XCTAssertNil(writer.content.error);
+        [automaticDelegate URLSession:session task:task didFinishCollectingMetrics:metrics];
+        [automaticDelegate URLSession:session webSocketTask:task didOpenWithProtocol:nil];
+        [automaticDelegate URLSession:session task:task didCompleteWithError:error];
+        [delegate URLSession:session task:task didCompleteWithError:error];
+        [self waitForURLSessionInterceptorQueue];
+        XCTAssertEqual(writer.addCount, 1);
+        XCTAssertEqual(writer.stopCount, 1);
+        XCTAssertEqual(providerCalls, 1);
+        XCTAssertEqual(filterCalls, error ? 1 : 0);
+    }
+}
+- (void)testWebSocketLegacyForwardingCompletesSuccessFromMetrics {
+    [self assertWebSocketFinalizationWithStatus:101 error:nil taskState:NSURLSessionTaskStateRunning expectedState:FT_RESOURCE_WEBSOCKET_HANDSHAKE_STATE_SUCCESS customDelegate:YES];
+}
+- (void)testWebSocketLegacyForwardingPreservesUpgradeValidationFailure {
+    [self assertWebSocketFinalizationWithStatus:101 error:[NSError errorWithDomain:NSURLErrorDomain code:NSURLErrorBadServerResponse userInfo:nil] taskState:NSURLSessionTaskStateCompleted expectedState:FT_RESOURCE_WEBSOCKET_HANDSHAKE_STATE_FAILED customDelegate:YES];
+}
+- (void)testWebSocketLegacyForwardingUsesCompletionForRejection {
+    [self assertWebSocketFinalizationWithStatus:403 error:[NSError errorWithDomain:NSURLErrorDomain code:NSURLErrorBadServerResponse userInfo:nil] taskState:NSURLSessionTaskStateCompleted expectedState:FT_RESOURCE_WEBSOCKET_HANDSHAKE_STATE_REJECTED customDelegate:YES];
+}
+- (void)testWebSocketLegacyForwardingUsesCompletionForTransportFailure {
+    [self assertWebSocketFinalizationWithStatus:0 error:[NSError errorWithDomain:NSURLErrorDomain code:NSURLErrorTimedOut userInfo:nil] taskState:NSURLSessionTaskStateCompleted expectedState:FT_RESOURCE_WEBSOCKET_HANDSHAKE_STATE_FAILED customDelegate:YES];
+}
+- (void)testWebSocketAutomaticMetricsWaitsForOpen {
+    [self assertWebSocketFinalizationWithStatus:101 error:nil taskState:NSURLSessionTaskStateRunning expectedState:FT_RESOURCE_WEBSOCKET_HANDSHAKE_STATE_SUCCESS customDelegate:NO];
+}
+- (void)testWebSocketAutomaticMetricsUsesCompletionForUpgradeValidationFailure {
+    [self assertWebSocketFinalizationWithStatus:101 error:[NSError errorWithDomain:NSURLErrorDomain code:NSURLErrorBadServerResponse userInfo:nil] taskState:NSURLSessionTaskStateCompleted expectedState:FT_RESOURCE_WEBSOCKET_HANDSHAKE_STATE_FAILED customDelegate:NO];
+}
+- (void)testWebSocketAutomaticMetricsUsesCompletionForRejection {
+    [self assertWebSocketFinalizationWithStatus:403 error:[NSError errorWithDomain:NSURLErrorDomain code:NSURLErrorBadServerResponse userInfo:nil] taskState:NSURLSessionTaskStateCompleted expectedState:FT_RESOURCE_WEBSOCKET_HANDSHAKE_STATE_REJECTED customDelegate:NO];
+}
+- (void)testWebSocketAutomaticMetricsUsesCompletionForTransportFailure {
+    [self assertWebSocketFinalizationWithStatus:0 error:[NSError errorWithDomain:NSURLErrorDomain code:NSURLErrorTimedOut userInfo:nil] taskState:NSURLSessionTaskStateCompleted expectedState:FT_RESOURCE_WEBSOCKET_HANDSHAKE_STATE_FAILED customDelegate:NO];
+}
+
+- (void)testWebSocketResourceURLRestoresSchemesForAllCreationAPIs {
+    if (@available(iOS 13.0, *)) {
+        NSURLSession *session = [NSURLSession sessionWithConfiguration:[NSURLSessionConfiguration ephemeralSessionConfiguration]];
+        for (NSString *scheme in @[@"ws", @"wss"]) {
+            NSURL *url = [NSURL URLWithString:[NSString stringWithFormat:@"%@://websocket.example.com:8443/socket%%2Froom?token=a%%2Bb&room=one%%20two", scheme]];
+            NSArray<NSURLSessionTask *> *tasks = @[
+                [session webSocketTaskWithURL:url],
+                [session webSocketTaskWithURL:url protocols:@[@"chat"]],
+                [session webSocketTaskWithRequest:[NSURLRequest requestWithURL:url]]
+            ];
+            for (NSURLSessionTask *task in tasks) {
+                XCTAssertTrue(task.ft_isWebSocketTask);
+                XCTAssertEqualObjects(task.ft_webSocketResourceURL.absoluteString, url.absoluteString);
+                [task cancel];
+            }
+        }
+        NSURLSessionTask *httpTask = [session dataTaskWithURL:[NSURL URLWithString:@"https://websocket.example.com/http"]];
+        XCTAssertFalse(httpTask.ft_isWebSocketTask);
+        XCTAssertNil(httpTask.ft_webSocketResourceURL);
+        [httpTask cancel];
+        [session invalidateAndCancel];
+    }
+}
+
 - (void)testWebSocketHandshakeCompletesAtOpenWithOriginalURL {
     if (@available(iOS 13.0, *)) {
         FTURLSessionInterceptor *interceptor = [FTURLSessionInterceptor shared];
@@ -285,21 +484,13 @@
 
         NSURL *webSocketURL = [NSURL URLWithString:@"wss://websocket.example.com/socket?token=redacted"];
         NSURLSession *session = [NSURLSession sessionWithConfiguration:[NSURLSessionConfiguration ephemeralSessionConfiguration]];
-        NSURLSessionTask *task = [session webSocketTaskWithURL:webSocketURL];
-        NSURL *protocolURL = [NSURL URLWithString:@"ws://websocket.example.com/protocol"];
-        NSURLSessionTask *protocolTask = [session webSocketTaskWithURL:protocolURL protocols:@[@"chat"]];
-        NSURL *requestURL = [NSURL URLWithString:@"wss://websocket.example.com/request"];
-        NSURLSessionTask *requestTask = [session webSocketTaskWithRequest:[NSURLRequest requestWithURL:requestURL]];
+        NSURLSessionWebSocketTask *task = [session webSocketTaskWithURL:webSocketURL];
         XCTAssertTrue(task.ft_isWebSocketTask);
-        XCTAssertEqualObjects(task.ft_webSocketOriginalURL, webSocketURL);
         XCTAssertEqualObjects(task.ft_webSocketResourceURL, webSocketURL);
-        XCTAssertEqualObjects(protocolTask.ft_webSocketOriginalURL, protocolURL);
-        XCTAssertEqualObjects(requestTask.ft_webSocketOriginalURL, requestURL);
 
-        task.ft_webSocketOriginalURL = nil;
-        [task setValue:[NSURLRequest requestWithURL:[NSURL URLWithString:@"https://websocket.example.com/socket?token=redacted"]] forKey:@"currentRequest"];
+        // Redirects or request rewriting must not replace the original Resource URL.
+        [task setValue:[NSURLRequest requestWithURL:[NSURL URLWithString:@"https://redirect.example.com/changed"]] forKey:@"currentRequest"];
         XCTAssertEqualObjects(task.ft_webSocketResourceURL.absoluteString, @"wss://websocket.example.com/socket?token=redacted");
-        task.ft_webSocketOriginalURL = webSocketURL;
 
         [interceptor interceptTask:task];
         [self waitForURLSessionInterceptorQueue];
@@ -319,12 +510,16 @@
         __block NSURLRequest *providerRequest;
         __block NSData *providerData;
         __block BOOL providerCalled = NO;
-        [interceptor taskWebSocketDidOpen:task extraProvider:^NSDictionary * _Nullable(NSURLRequest * _Nullable request, NSURLResponse * _Nullable response, NSData * _Nullable data, NSError * _Nullable error) {
+        FTURLSessionDelegate *delegate = [FTURLSessionDelegate new];
+        XCTAssertTrue([delegate conformsToProtocol:@protocol(NSURLSessionWebSocketDelegate)]);
+        delegate.provider = ^NSDictionary * _Nullable(NSURLRequest * _Nullable request, NSURLResponse * _Nullable response, NSData * _Nullable data, NSError * _Nullable error) {
             providerCalled = YES;
             providerRequest = request;
             providerData = data;
             return @{};
-        }];
+        };
+        // Forward through the system delegate protocol, including an absent subprotocol.
+        [delegate URLSession:session webSocketTask:task didOpenWithProtocol:nil];
         [self waitForURLSessionInterceptorQueue];
 
         XCTAssertNil([interceptor getTraceHandler:task]);
@@ -347,10 +542,127 @@
         XCTAssertEqual(rumResourceHandler.addCount, 1);
 
         [task cancel];
-        [protocolTask cancel];
-        [requestTask cancel];
         [session invalidateAndCancel];
     }
+}
+
+- (void)assertWebSocketDurationWithSuccess:(BOOL)success earlyMetrics:(BOOL)earlyMetrics {
+    if (@available(iOS 13.0, *)) {
+        [FTModelHelper startViewWithName:@"WebSocketDuration"];
+        FTRUMManager *rumManager = [FTGlobalRumManager sharedInstance].rumManager;
+        FTURLSessionInterceptor *interceptor = [FTURLSessionInterceptor shared];
+        interceptor.rumResourceHandler = rumManager;
+        NSURL *url = [NSURL URLWithString:@"wss://websocket.example.com/duration"];
+        NSURLSession *session = [NSURLSession sessionWithConfiguration:[NSURLSessionConfiguration ephemeralSessionConfiguration]];
+        NSURLSessionTask *task = [session webSocketTaskWithURL:url];
+        FTWebSocketTestClock *clock = [FTWebSocketTestClock new];
+        clock.time = 1000000000;
+        Method clockMethod = class_getClassMethod(FTDateUtil.class, @selector(continuousTime));
+        IMP testClock = imp_implementationWithBlock(^uint64_t(id receiver) {
+            return clock.time;
+        });
+        IMP originalClock = method_setImplementation(clockMethod, testClock);
+        NSTimeInterval epoch = [[NSDate date] timeIntervalSince1970];
+        Method dateMethod = class_getClassMethod(NSDate.class, @selector(date));
+        IMP testDate = imp_implementationWithBlock(^NSDate *(id receiver) {
+            return [NSDate dateWithTimeIntervalSince1970:epoch + clock.time / (NSTimeInterval)NSEC_PER_SEC];
+        });
+        IMP originalDate = method_setImplementation(dateMethod, testDate);
+        @try {
+            // The start must be captured at entry, before the queued work runs at t=3s.
+            long long expectedStart = [[NSDate date] ft_nanosecondTimeStamp];
+            dispatch_suspend(interceptor.queue);
+            [interceptor interceptTask:task];
+            clock.time = 3000000000;
+            dispatch_resume(interceptor.queue);
+            [self waitForURLSessionInterceptorQueue];
+            [interceptor interceptTask:task]; // A repeated resume must keep the first start.
+            [self waitForURLSessionInterceptorQueue];
+            FTSessionTaskHandler *handler = [interceptor getTraceHandler:task];
+            long long expectedMetricsStart = earlyMetrics ? expectedStart - NSEC_PER_SEC : expectedStart;
+            long long expectedDuration = earlyMetrics ? 4500000000 : 4000000000;
+            if (earlyMetrics) {
+                // Foundation's interval starts at task creation (t=0), before resume
+                // at t=1, and ends at t=4.5, before the open/completion callback at t=5.
+                clock.time = 4500000000;
+                FTResourceMetricsModel *metrics = [FTResourceMetricsModel new];
+                metrics.fetchStartNsTimeInterval = expectedMetricsStart;
+                metrics.fetchEndNsTimeInterval = expectedMetricsStart + expectedDuration;
+                metrics.dnsStartNsTimeInterval = expectedStart;
+                metrics.dnsEndNsTimeInterval = metrics.dnsStartNsTimeInterval + 100000000;
+                handler.metricsModel = metrics;
+            }
+
+            __block BOOL providerCalled = NO;
+            ResourcePropertyProvider provider = ^NSDictionary *(NSURLRequest *request, NSURLResponse *response, NSData *data, NSError *error) {
+                providerCalled = YES;
+                clock.time = 12000000000;
+                return @{FT_DURATION: @99000000000};
+            };
+            // Both terminal callbacks arrive at t=5s, but are handled at t=9s.
+            clock.time = 5000000000;
+            dispatch_suspend(interceptor.queue);
+            if (success) {
+                [interceptor taskWebSocketDidOpen:task extraProvider:provider];
+            } else {
+                NSError *error = [NSError errorWithDomain:NSURLErrorDomain code:NSURLErrorTimedOut userInfo:nil];
+                [interceptor taskCompleted:task error:error extraProvider:provider errorFilter:^BOOL(NSError *error) {
+                    clock.time = 10000000000;
+                    return YES;
+                }];
+            }
+            clock.time = 9000000000;
+            dispatch_resume(interceptor.queue);
+            [self waitForURLSessionInterceptorQueue];
+            XCTAssertTrue(providerCalled);
+            XCTAssertNil([interceptor getTraceHandler:task]);
+            XCTAssertNotNil(handler.metricsModel);
+            XCTAssertEqual(handler.metricsModel.fetchStartNsTimeInterval, expectedMetricsStart);
+            XCTAssertEqual(handler.metricsModel.fetchEndNsTimeInterval - handler.metricsModel.fetchStartNsTimeInterval, expectedDuration);
+
+            // Later duplicate/close callbacks must not replace the first terminal time.
+            clock.time = 20000000000;
+            [interceptor taskMetricsCollected:task metrics:nil];
+            [interceptor taskWebSocketDidOpen:task extraProvider:nil];
+            [interceptor taskCompleted:task error:nil];
+            [self waitForURLSessionInterceptorQueue];
+            [rumManager syncProcess];
+            NSArray *records = [[FTTrackerEventDBTool sharedManager] getAllDatas];
+            __block NSUInteger resourceCount = 0;
+            [FTModelHelper resolveModelArray:records timeCallBack:^(NSString *source, NSDictionary *tags, NSDictionary *fields, long long time, BOOL *stop) {
+                if ([source isEqualToString:FT_RUM_SOURCE_RESOURCE] && [tags[FT_KEY_RESOURCE_URL] isEqualToString:url.absoluteString]) {
+                    resourceCount += 1;
+                    XCTAssertEqual(time, expectedMetricsStart);
+                    XCTAssertEqualObjects(fields[FT_DURATION], @(expectedDuration), @"System taskInterval must take precedence; callback-boundary duration is only a fallback");
+                    XCTAssertEqualObjects(tags[FT_KEY_RESOURCE_WEBSOCKET_HANDSHAKE_STATE], success ? FT_RESOURCE_WEBSOCKET_HANDSHAKE_STATE_SUCCESS : FT_RESOURCE_WEBSOCKET_HANDSHAKE_STATE_FAILED);
+                    XCTAssertEqualObjects(fields[FT_KEY_RESOURCE_DNS], earlyMetrics ? @100000000 : nil);
+                    NSDictionary *expectedDNSTime = earlyMetrics ? @{FT_KEY_START: @1000000000, FT_DURATION: @100000000} : nil;
+                    XCTAssertEqualObjects(fields[FT_KEY_RESOURCE_DNS_TIME], expectedDNSTime);
+                }
+            }];
+            XCTAssertEqual(resourceCount, 1);
+        } @finally {
+            method_setImplementation(dateMethod, originalDate);
+            imp_removeBlock(testDate);
+            method_setImplementation(clockMethod, originalClock);
+            imp_removeBlock(testClock);
+            [task cancel];
+            [session invalidateAndCancel];
+        }
+    }
+}
+
+- (void)testWebSocketOpenDurationPrefersTaskMetricsOverCallbackBoundaries {
+    [self assertWebSocketDurationWithSuccess:YES earlyMetrics:YES];
+}
+- (void)testWebSocketOpenDurationUsesCallbackBoundariesWithoutMetrics {
+    [self assertWebSocketDurationWithSuccess:YES earlyMetrics:NO];
+}
+- (void)testWebSocketFailureDurationPrefersTaskMetricsOverCallbackBoundaries {
+    [self assertWebSocketDurationWithSuccess:NO earlyMetrics:YES];
+}
+- (void)testWebSocketFailureDurationUsesCallbackBoundariesWithoutMetrics {
+    [self assertWebSocketDurationWithSuccess:NO earlyMetrics:NO];
 }
 
 - (void)testWebSocketHandshakeFailureStateMapping {
@@ -365,7 +677,7 @@
         [self waitForURLSessionInterceptorQueue];
         NSHTTPURLResponse *rejectedResponse = [[NSHTTPURLResponse alloc] initWithURL:rejectedTask.ft_webSocketResourceURL statusCode:403 HTTPVersion:@"HTTP/1.1" headerFields:nil];
         NSError *rejectedError = [NSError errorWithDomain:NSURLErrorDomain code:NSURLErrorBadServerResponse userInfo:nil];
-        [interceptor handleTaskCompleted:rejectedTask response:rejectedResponse error:rejectedError extraProvider:nil errorFilter:nil];
+        [interceptor handleTaskCompleted:rejectedTask response:rejectedResponse error:rejectedError extraProvider:nil errorFilter:nil endTime:[FTDateUtil continuousTime]];
         [self waitForURLSessionInterceptorQueue];
         XCTAssertEqualObjects(rumResourceHandler.content.webSocketHandshakeState, FT_RESOURCE_WEBSOCKET_HANDSHAKE_STATE_REJECTED);
         XCTAssertEqual(rumResourceHandler.content.httpStatusCode, 403);
@@ -375,7 +687,7 @@
         [interceptor interceptTask:failedTask];
         [self waitForURLSessionInterceptorQueue];
         NSError *failedError = [NSError errorWithDomain:NSURLErrorDomain code:NSURLErrorTimedOut userInfo:nil];
-        [interceptor handleTaskCompleted:failedTask response:nil error:failedError extraProvider:nil errorFilter:nil];
+        [interceptor handleTaskCompleted:failedTask response:nil error:failedError extraProvider:nil errorFilter:nil endTime:[FTDateUtil continuousTime]];
         [self waitForURLSessionInterceptorQueue];
         XCTAssertEqualObjects(rumResourceHandler.content.webSocketHandshakeState, FT_RESOURCE_WEBSOCKET_HANDSHAKE_STATE_FAILED);
         XCTAssertEqual(rumResourceHandler.content.httpStatusCode, 0);
@@ -386,7 +698,7 @@
         [self waitForURLSessionInterceptorQueue];
         NSHTTPURLResponse *upgradeResponse = [[NSHTTPURLResponse alloc] initWithURL:protocolErrorTask.ft_webSocketResourceURL statusCode:101 HTTPVersion:@"HTTP/1.1" headerFields:nil];
         NSError *protocolError = [NSError errorWithDomain:NSURLErrorDomain code:NSURLErrorBadServerResponse userInfo:nil];
-        [interceptor handleTaskCompleted:protocolErrorTask response:upgradeResponse error:protocolError extraProvider:nil errorFilter:nil];
+        [interceptor handleTaskCompleted:protocolErrorTask response:upgradeResponse error:protocolError extraProvider:nil errorFilter:nil endTime:[FTDateUtil continuousTime]];
         [self waitForURLSessionInterceptorQueue];
         XCTAssertEqualObjects(rumResourceHandler.content.webSocketHandshakeState, FT_RESOURCE_WEBSOCKET_HANDSHAKE_STATE_FAILED);
         XCTAssertEqual(rumResourceHandler.content.httpStatusCode, 101);
@@ -397,7 +709,7 @@
         [self waitForURLSessionInterceptorQueue];
         [interceptor handleTaskCompleted:filteredFailureTask response:nil error:failedError extraProvider:nil errorFilter:^BOOL(NSError *error) {
             return YES;
-        }];
+        } endTime:[FTDateUtil continuousTime]];
         [self waitForURLSessionInterceptorQueue];
         XCTAssertEqualObjects(rumResourceHandler.content.webSocketHandshakeState, FT_RESOURCE_WEBSOCKET_HANDSHAKE_STATE_FAILED);
         XCTAssertEqual(rumResourceHandler.content.httpStatusCode, 0);
@@ -406,7 +718,7 @@
         NSURLSessionTask *rejectedWithoutErrorTask = [session webSocketTaskWithURL:[NSURL URLWithString:@"wss://websocket.example.com/rejected-without-error"]];
         [interceptor interceptTask:rejectedWithoutErrorTask];
         [self waitForURLSessionInterceptorQueue];
-        [interceptor handleTaskCompleted:rejectedWithoutErrorTask response:rejectedResponse error:nil extraProvider:nil errorFilter:nil];
+        [interceptor handleTaskCompleted:rejectedWithoutErrorTask response:rejectedResponse error:nil extraProvider:nil errorFilter:nil endTime:[FTDateUtil continuousTime]];
         [self waitForURLSessionInterceptorQueue];
         XCTAssertEqualObjects(rumResourceHandler.content.webSocketHandshakeState, FT_RESOURCE_WEBSOCKET_HANDSHAKE_STATE_REJECTED);
         XCTAssertEqual(rumResourceHandler.content.httpStatusCode, 403);
@@ -425,7 +737,7 @@
             [interceptor interceptTask:transportFailureTask];
             [self waitForURLSessionInterceptorQueue];
             NSError *transportError = [NSError errorWithDomain:NSURLErrorDomain code:errorCode.integerValue userInfo:nil];
-            [interceptor handleTaskCompleted:transportFailureTask response:nil error:transportError extraProvider:nil errorFilter:nil];
+            [interceptor handleTaskCompleted:transportFailureTask response:nil error:transportError extraProvider:nil errorFilter:nil endTime:[FTDateUtil continuousTime]];
             [self waitForURLSessionInterceptorQueue];
             XCTAssertEqualObjects(rumResourceHandler.content.webSocketHandshakeState, FT_RESOURCE_WEBSOCKET_HANDSHAKE_STATE_FAILED, @"error %@ must remain a failed handshake", errorCode);
             XCTAssertEqual(rumResourceHandler.content.httpStatusCode, 0);
@@ -483,7 +795,7 @@
     [self waitForURLSessionInterceptorQueue];
 
     NSHTTPURLResponse *response = [[NSHTTPURLResponse alloc] initWithURL:url statusCode:200 HTTPVersion:@"HTTP/1.1" headerFields:nil];
-    [interceptor handleTaskCompleted:task response:response error:nil extraProvider:nil errorFilter:nil];
+    [interceptor handleTaskCompleted:task response:response error:nil extraProvider:nil errorFilter:nil endTime:[FTDateUtil continuousTime]];
     [self waitForURLSessionInterceptorQueue];
 
     XCTAssertEqual(rumResourceHandler.addCount, 1);
@@ -495,7 +807,7 @@
     [session invalidateAndCancel];
 }
 
-- (void)testWebSocketHandshakeResourceWritesMetricsWithoutSize {
+- (void)testResourceWriterUsesSuppliedMetricsForWebSocketAndHTTP {
     [FTModelHelper startViewWithName:@"WebSocketHandshake"];
     NSString *key = [FTBaseInfoHandler randomUUID];
     NSURL *url = [NSURL URLWithString:@"wss://websocket.example.com/socket"];
@@ -510,16 +822,18 @@
     content.responseHeader = @{@"Content-Length":@"64"};
 
     FTResourceMetricsModel *metrics = [FTResourceMetricsModel new];
-    metrics.fetchStartNsTimeInterval = 1000000000;
-    metrics.fetchEndNsTimeInterval = 9000000000;
-    metrics.dnsStartNsTimeInterval = 1100000000;
-    metrics.dnsEndNsTimeInterval = 1200000000;
-    metrics.connectStartNsTimeInterval = 1200000000;
-    metrics.connectEndNsTimeInterval = 2200000000;
-    metrics.sslStartNsTimeInterval = 1300000000;
-    metrics.sslEndNsTimeInterval = 2100000000;
-    metrics.requestStartNsTimeInterval = 2200000000;
-    metrics.responseStartNsTimeInterval = 2500000000;
+    // Preserve the exact nanosecond timestamp without a round-trip through NSDate.
+    const long long metricsStartTime = 1700000000123456789;
+    metrics.fetchStartNsTimeInterval = metricsStartTime;
+    metrics.fetchEndNsTimeInterval = metricsStartTime + 8000000000;
+    metrics.dnsStartNsTimeInterval = metricsStartTime + 100000000;
+    metrics.dnsEndNsTimeInterval = metricsStartTime + 200000000;
+    metrics.connectStartNsTimeInterval = metricsStartTime + 200000000;
+    metrics.connectEndNsTimeInterval = metricsStartTime + 1200000000;
+    metrics.sslStartNsTimeInterval = metricsStartTime + 300000000;
+    metrics.sslEndNsTimeInterval = metricsStartTime + 1100000000;
+    metrics.requestStartNsTimeInterval = metricsStartTime + 1200000000;
+    metrics.responseStartNsTimeInterval = metricsStartTime + 1500000000;
     metrics.resourceHttpProtocol = @"http/1.1";
     metrics.reusedConnection = NO;
 
@@ -540,14 +854,25 @@
     [rumManager startResourceWithKey:failedKey];
     [rumManager stopResourceWithKey:failedKey];
     [rumManager addResourceWithKey:failedKey metrics:nil content:failedContent];
+    NSString *httpKey = [FTBaseInfoHandler randomUUID];
+    NSURL *httpURL = [NSURL URLWithString:@"https://resource.example.com/http"];
+    FTResourceContentModel *httpContent = [FTResourceContentModel new];
+    httpContent.url = httpURL;
+    httpContent.httpMethod = @"GET";
+    httpContent.httpStatusCode = 200;
+    [rumManager startResourceWithKey:httpKey];
+    [rumManager stopResourceWithKey:httpKey];
+    [rumManager addResourceWithKey:httpKey metrics:metrics content:httpContent];
     [rumManager syncProcess];
 
     NSArray *records = [[FTTrackerEventDBTool sharedManager] getAllDatas];
     __block BOOL foundResource = NO;
     __block BOOL foundFailedResource = NO;
-    [FTModelHelper resolveModelArray:records callBack:^(NSString * _Nonnull source, NSDictionary * _Nonnull tags, NSDictionary * _Nonnull fields, BOOL * _Nonnull stop) {
+    __block BOOL foundHTTPResource = NO;
+    [FTModelHelper resolveModelArray:records timeCallBack:^(NSString *source, NSDictionary *tags, NSDictionary *fields, long long time, BOOL *stop) {
         if ([source isEqualToString:FT_RUM_SOURCE_RESOURCE] && [tags[FT_KEY_RESOURCE_URL] isEqualToString:url.absoluteString]) {
             foundResource = YES;
+            XCTAssertEqual(time, metricsStartTime);
             XCTAssertEqualObjects(tags[FT_KEY_RESOURCE_TYPE], FT_RESOURCE_TYPE_WEBSOCKET);
             XCTAssertEqualObjects(tags[FT_KEY_RESOURCE_WEBSOCKET_COLLECTION_LEVEL], FT_RESOURCE_WEBSOCKET_COLLECTION_LEVEL_HANDSHAKE);
             XCTAssertEqualObjects(tags[FT_KEY_RESOURCE_WEBSOCKET_HANDSHAKE_STATE], FT_RESOURCE_WEBSOCKET_HANDSHAKE_STATE_SUCCESS);
@@ -556,8 +881,10 @@
             XCTAssertNil(fields[FT_KEY_RESOURCE_SIZE]);
             XCTAssertNil(fields[FT_KEY_RESOURCE_REQUEST_SIZE]);
             XCTAssertNotNil(fields[FT_DURATION]);
-            XCTAssertNotEqualObjects(fields[FT_DURATION], @8000000000);
+            XCTAssertEqualObjects(fields[FT_DURATION], @8000000000);
             XCTAssertEqualObjects(fields[FT_KEY_RESOURCE_DNS], @100000000);
+            XCTAssertEqualObjects(fields[FT_KEY_RESOURCE_DNS_TIME], (@{FT_KEY_START:@100000000, FT_DURATION:@100000000}));
+            XCTAssertEqual(time + [fields[FT_KEY_RESOURCE_DNS_TIME][FT_KEY_START] longLongValue], metricsStartTime + 100000000);
             XCTAssertEqualObjects(fields[FT_KEY_RESOURCE_TCP], @1000000000);
             XCTAssertEqualObjects(fields[FT_KEY_RESOURCE_SSL], @800000000);
             XCTAssertEqualObjects(fields[FT_KEY_RESOURCE_TTFB], @300000000);
@@ -569,9 +896,70 @@
             XCTAssertEqualObjects(tags[FT_KEY_RESOURCE_STATUS], @0);
             XCTAssertNil(tags[FT_KEY_RESOURCE_STATUS_GROUP]);
         }
+        if ([source isEqualToString:FT_RUM_SOURCE_RESOURCE] && [tags[FT_KEY_RESOURCE_URL] isEqualToString:httpURL.absoluteString]) {
+            foundHTTPResource = YES;
+            XCTAssertEqual(time, metricsStartTime);
+            XCTAssertEqualObjects(fields[FT_DURATION], @8000000000);
+            XCTAssertNil(tags[FT_KEY_RESOURCE_WEBSOCKET_COLLECTION_LEVEL]);
+            XCTAssertNil(tags[FT_KEY_RESOURCE_WEBSOCKET_HANDSHAKE_STATE]);
+        }
     }];
     XCTAssertTrue(foundResource);
     XCTAssertTrue(foundFailedResource);
+    XCTAssertTrue(foundHTTPResource);
+}
+
+- (void)testResourceWriterTimestampFallsBackWithoutMetricsStart {
+    [FTModelHelper startViewWithName:@"ResourceTimestampFallback"];
+    FTRUMManager *rumManager = [FTGlobalRumManager sharedInstance].rumManager;
+    FTResourceMetricsModel *emptyMetrics = [FTResourceMetricsModel new];
+    FTResourceMetricsModel *invalidStartMetrics = [FTResourceMetricsModel new];
+    invalidStartMetrics.fetchStartNsTimeInterval = -1;
+    invalidStartMetrics.fetchEndNsTimeInterval = 9000000000;
+    NSArray *inputs = @[NSNull.null, emptyMetrics, invalidStartMetrics];
+    long long epochSeconds = (long long)[[NSDate date] timeIntervalSince1970] + 1;
+    __block long long clockSeconds = epochSeconds;
+    NSMutableDictionary<NSString *, NSNumber *> *expectedTimes = [NSMutableDictionary new];
+    Method dateMethod = class_getClassMethod(NSDate.class, @selector(date));
+    IMP testDate = imp_implementationWithBlock(^NSDate *(id receiver) {
+        return [NSDate dateWithTimeIntervalSince1970:clockSeconds];
+    });
+    IMP originalDate = method_setImplementation(dateMethod, testDate);
+    @try {
+        for (NSUInteger index = 0; index < inputs.count; index++) {
+            NSString *key = [FTBaseInfoHandler randomUUID];
+            NSString *url = [NSString stringWithFormat:@"https://resource.example.com/missing-start/%lu", (unsigned long)index];
+            FTResourceContentModel *content = [FTResourceContentModel new];
+            content.url = [NSURL URLWithString:url];
+            content.httpMethod = @"GET";
+            content.httpStatusCode = 200;
+            clockSeconds = epochSeconds + index * 3;
+            expectedTimes[url] = @(clockSeconds * NSEC_PER_SEC);
+            [rumManager startResourceWithKey:key];
+            [rumManager syncProcess];
+            clockSeconds += 2;
+            [rumManager stopResourceWithKey:key];
+            FTResourceMetricsModel *metrics = inputs[index] == NSNull.null ? nil : inputs[index];
+            [rumManager addResourceWithKey:key metrics:metrics content:content];
+            [rumManager syncProcess];
+        }
+    } @finally {
+        method_setImplementation(dateMethod, originalDate);
+        imp_removeBlock(testDate);
+    }
+    __block NSUInteger resourceCount = 0;
+    NSArray *records = [[FTTrackerEventDBTool sharedManager] getAllDatas];
+    [FTModelHelper resolveModelArray:records timeCallBack:^(NSString *source, NSDictionary *tags, NSDictionary *fields, long long time, BOOL *stop) {
+        NSNumber *expectedTime = expectedTimes[tags[FT_KEY_RESOURCE_URL]];
+        if ([source isEqualToString:FT_RUM_SOURCE_RESOURCE] && expectedTime) {
+            resourceCount++;
+            XCTAssertEqual(time, expectedTime.longLongValue);
+            if ([tags[FT_KEY_RESOURCE_URL] hasSuffix:@"/0"]) {
+                XCTAssertEqualObjects(fields[FT_DURATION], @2000000000);
+            }
+        }
+    }];
+    XCTAssertEqual(resourceCount, inputs.count);
 }
 
 - (NSMutableURLRequest *)adaptedURLRequestWithRequest:(id<FTRequestProtocol>)request {

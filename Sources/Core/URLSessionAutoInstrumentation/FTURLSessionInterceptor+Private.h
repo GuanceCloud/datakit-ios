@@ -26,6 +26,7 @@
 NS_ASSUME_NONNULL_BEGIN
 
 @interface FTURLSessionInterceptor ()<FTURLSessionInterceptorProtocol,FTExternalResourceProtocol>
+- (void)taskMetricsCollected:(NSURLSessionTask *)task metrics:(NSURLSessionTaskMetrics *)metrics custom:(BOOL)custom extraProvider:(nullable ResourcePropertyProvider)extraProvider;
 - (void)shutDown;
 @end
 

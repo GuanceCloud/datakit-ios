@@ -26,6 +26,8 @@ NS_ASSUME_NONNULL_BEGIN
 + (NSDate *)date;
 /// Returns the absolute timestamp, which has no defined reference point or unit as it is platform dependent. (Nanosecond-level time)
 + (uint64_t)systemTime;
+/// Monotonic nanoseconds including system sleep. Only differences between values are meaningful.
++ (uint64_t)continuousTime;
 + (NSTimeInterval)systemUptime;
 + (NSDate *)processStartTimestamp;
 @end

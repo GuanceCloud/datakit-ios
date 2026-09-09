@@ -24,15 +24,13 @@ NS_ASSUME_NONNULL_BEGIN
 
 @interface NSURLSessionTask (FTSwizzler)
 @property (nonatomic, assign) BOOL ft_hasCompletion;
-/// Caller-visible WebSocket URL captured before Foundation normalizes ws/wss to http/https.
-@property (nonatomic, copy, nullable) NSURL *ft_webSocketOriginalURL;
 
 - (id<NSURLSessionDelegate>)ft_delegate;
 
 - (BOOL)ft_isSupportedForInstrumentation;
 /// Returns YES for system URLSession WebSocket tasks when the runtime supports them.
 - (BOOL)ft_isWebSocketTask;
-/// Returns the captured WebSocket URL or a ws/wss reconstruction for tasks created before capture was enabled.
+/// Restores ws/wss from the original request URL, falling back to the current request when absent.
 - (nullable NSURL *)ft_webSocketResourceURL;
 @end
 
