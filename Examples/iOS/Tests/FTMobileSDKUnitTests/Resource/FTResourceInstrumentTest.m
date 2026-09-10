@@ -448,6 +448,16 @@
 - (void)testWebSocketAutomaticMetricsUsesCompletionForRejection {
     [self assertWebSocketFinalizationWithStatus:403 error:[NSError errorWithDomain:NSURLErrorDomain code:NSURLErrorBadServerResponse userInfo:nil] taskState:NSURLSessionTaskStateCompleted expectedState:FT_RESOURCE_WEBSOCKET_HANDSHAKE_STATE_REJECTED customDelegate:NO];
 }
+- (void)testWebSocketNon101HTTPResponsesAreRejectedOutsideStandardStatusRange {
+    NSError *error = [NSError errorWithDomain:NSURLErrorDomain code:NSURLErrorBadServerResponse userInfo:nil];
+    // An exposed HTTP response that did not accept the handshake is a rejection,
+    // regardless of whether its status belongs to the standard HTTP status range.
+    for (NSNumber *status in @[@99, @600]) {
+        for (NSNumber *customDelegate in @[@NO, @YES]) {
+            [self assertWebSocketFinalizationWithStatus:status.integerValue error:error taskState:NSURLSessionTaskStateCompleted expectedState:FT_RESOURCE_WEBSOCKET_HANDSHAKE_STATE_REJECTED customDelegate:customDelegate.boolValue];
+        }
+    }
+}
 - (void)testWebSocketAutomaticMetricsUsesCompletionForTransportFailure {
     [self assertWebSocketFinalizationWithStatus:0 error:[NSError errorWithDomain:NSURLErrorDomain code:NSURLErrorTimedOut userInfo:nil] taskState:NSURLSessionTaskStateCompleted expectedState:FT_RESOURCE_WEBSOCKET_HANDSHAKE_STATE_FAILED customDelegate:NO];
 }

@@ -453,11 +453,7 @@ static NSObject *sharedInstanceLock;
 }
 
 - (NSString *)webSocketHandshakeStateWithResponse:(nullable NSURLResponse *)response{
-    NSInteger statusCode = -1;
-    if ([response isKindOfClass:NSHTTPURLResponse.class]) {
-        statusCode = ((NSHTTPURLResponse *)response).statusCode;
-    }
-    if (statusCode >= 100 && statusCode <= 599 && statusCode != 101) {
+    if ([response isKindOfClass:NSHTTPURLResponse.class] && ((NSHTTPURLResponse *)response).statusCode != 101) {
         return FT_RESOURCE_WEBSOCKET_HANDSHAKE_STATE_REJECTED;
     }
     return FT_RESOURCE_WEBSOCKET_HANDSHAKE_STATE_FAILED;
