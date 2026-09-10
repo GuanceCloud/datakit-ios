@@ -189,9 +189,12 @@ void *FTLoggerQueueIdentityKey = &FTLoggerQueueIdentityKey;
     NSSet *logLevelFilterSet = [self.logLevelFilterSet copy];
     int sampleRate = config.sampleRate;
     BOOL enableLinkRumData = config.enableLinkRumData;
+    long long receivedTime = [NSDate ft_currentNanosecondTimeStamp];
     dispatch_async(self.loggerQueue, ^{
         NSDictionary *safeEvent = [eventPayload ft_deepCopy];
-        FTWebViewLogEvent *logEvent = [FTWebViewLogEventMapper mapEvent:safeEvent];
+        FTWebViewLogEvent *logEvent =
+            [FTWebViewLogEventMapper mapEvent:safeEvent
+                      fallbackNanosecondTime:receivedTime];
         if (!logEvent) {
             FTInnerLogWarning(@"[WebView][Logging] Invalid Browser Log event");
             return;

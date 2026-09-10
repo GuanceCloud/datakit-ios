@@ -31,6 +31,8 @@ NS_ASSUME_NONNULL_BEGIN
 
 @interface FTWebViewLogEventMapper : NSObject
 + (nullable FTWebViewLogEvent *)mapEvent:(NSDictionary *)event;
++ (nullable FTWebViewLogEvent *)mapEvent:(NSDictionary *)event
+                fallbackNanosecondTime:(long long)fallbackNanosecondTime;
 + (void)removeRumLinkDataFromEvent:(FTWebViewLogEvent *)event;
 + (void)replaceRumLinkDataInEvent:(FTWebViewLogEvent *)event
                     applicationId:(nullable NSString *)applicationId
