@@ -42,6 +42,23 @@
 #import "FTInternalConstants.h"
 #import "FTHTTPClient.h"
 #import "FTDataUploadWorker.h"
+#import <objc/runtime.h>
+
+static long long FTWebViewLogTestNanosecondTime;
+
+@interface NSDate (FTWebViewLogTimeTesting)
++ (long long)ft_test_currentNanosecondTimeStamp;
+@end
+
+@implementation NSDate (FTWebViewLogTimeTesting)
++ (long long)ft_test_currentNanosecondTimeStamp {
+    return FTWebViewLogTestNanosecondTime;
+}
+@end
+
+@interface FTLogger (FTWebViewLogTimeTesting)
+@property (nonatomic, strong, readonly) dispatch_queue_t loggerQueue;
+@end
 
 @interface FTDataUploadWorker (WebViewLogUploadTesting)
 - (BOOL)flushWithType:(NSString *)type maxBatchesPerUploadPass:(NSInteger)maxBatchesPerUploadPass;
@@ -175,13 +192,56 @@
     XCTAssertNil([FTWebViewLogEventMapper mapEvent:@{}]);
     XCTAssertNil([FTWebViewLogEventMapper mapEvent:(NSDictionary *)@[]]);
 
-    long long before = [NSDate ft_currentNanosecondTimeStamp];
-    FTWebViewLogEvent *mapped = [FTWebViewLogEventMapper mapEvent:@{ @"message": @123, @"date": @"invalid", @"status": @"" }];
-    long long after = [NSDate ft_currentNanosecondTimeStamp];
+    long long fallbackTime = 1700000000456000000LL;
+    FTWebViewLogEvent *mapped = [FTWebViewLogEventMapper
+        mapEvent:@{ @"message": @123, @"date": @"invalid", @"status": @"" }
+        fallbackNanosecondTime:fallbackTime];
     XCTAssertEqualObjects(mapped.content, @"123");
     XCTAssertEqualObjects(mapped.status, @"info");
-    XCTAssertGreaterThanOrEqual(mapped.time, before);
-    XCTAssertLessThanOrEqual(mapped.time, after);
+    XCTAssertEqual(mapped.time, fallbackTime);
+}
+- (void)testWebViewLogFallbackTimeIsCapturedBeforeAsynchronousMapping {
+    FTLoggerConfig *config = [[FTLoggerConfig alloc] init];
+    config.enableWebViewLog = YES;
+    config.sampleRate = 100;
+    [[FTLogger sharedInstance] startWithLoggerConfig:config writer:self];
+
+    dispatch_queue_t loggerQueue = [FTLogger sharedInstance].loggerQueue;
+    dispatch_semaphore_t processingStarted = dispatch_semaphore_create(0);
+    dispatch_semaphore_t continueProcessing = dispatch_semaphore_create(0);
+    dispatch_async(loggerQueue, ^{
+        dispatch_semaphore_signal(processingStarted);
+        dispatch_semaphore_wait(continueProcessing, DISPATCH_TIME_FOREVER);
+    });
+    XCTAssertEqual(dispatch_semaphore_wait(
+        processingStarted,
+        dispatch_time(DISPATCH_TIME_NOW, NSEC_PER_SEC)
+    ), 0);
+
+    Method currentTimeMethod = class_getClassMethod(
+        NSDate.class,
+        @selector(ft_currentNanosecondTimeStamp)
+    );
+    Method controlledTimeMethod = class_getClassMethod(
+        NSDate.class,
+        @selector(ft_test_currentNanosecondTimeStamp)
+    );
+    method_exchangeImplementations(currentTimeMethod, controlledTimeMethod);
+    long long ingressTime = 1700000000123000000LL;
+    @try {
+        FTWebViewLogTestNanosecondTime = ingressTime;
+        [[FTLogger sharedInstance] logWebViewEvent:@{
+            @"message": @"delayed",
+            @"date": @"invalid"
+        } linkToNativeRum:NO];
+        FTWebViewLogTestNanosecondTime = 1700000000456000000LL;
+        dispatch_semaphore_signal(continueProcessing);
+        [[FTLogger sharedInstance] syncProcess];
+    } @finally {
+        method_exchangeImplementations(currentTimeMethod, controlledTimeMethod);
+    }
+
+    XCTAssertEqual(self.lastLogTime, ingressTime);
 }
 - (void)testWebViewLoggerUsesIndependentSwitchSamplingFilterAndContentLimit {
     FTLoggerConfig *config = [[FTLoggerConfig alloc] init];
