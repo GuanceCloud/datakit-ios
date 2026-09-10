@@ -149,6 +149,11 @@ let package = Package(
             path: "Sources/Core/Logger",
             publicHeadersPath: "."
         ),
+        .testTarget(
+            name: "FTLoggerTests",
+            dependencies: ["_FTLogger"],
+            path: "Tests/FTLoggerTests"
+        ),
 
         // MARK: - BaseUtils
         .target(
