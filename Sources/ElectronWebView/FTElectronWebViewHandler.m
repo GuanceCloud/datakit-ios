@@ -375,6 +375,8 @@ static void *FTElectronWebViewDescriptorAssociationKey =
     return @{
         @"enableTraceWebView":
             webViewConfiguration[@"enableTraceWebView"] ?: @NO,
+        @"enableWebViewLog":
+            webViewConfiguration[@"enableWebViewLog"] ?: @NO,
         @"allowedWebViewHosts":
             webViewConfiguration[@"allowedWebViewHosts"] ?: NSNull.null,
         @"capabilities": sessionReplay ? @"[\"records\"]" : @"[]",

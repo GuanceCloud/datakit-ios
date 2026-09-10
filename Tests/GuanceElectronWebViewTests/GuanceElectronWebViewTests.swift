@@ -9,6 +9,17 @@ import _FTProtocol
 @objc(WebContentsViewCocoa)
 private final class TestWebContentsView: NSView {}
 
+private final class WebViewLogProbe: NSObject {
+    private(set) var events: [NSDictionary] = []
+    private(set) var nativeRUMLinks: [Bool] = []
+
+    @objc(logWebViewEvent:linkToNativeRum:)
+    func logWebViewEvent(_ event: NSDictionary, linkToNativeRum: Bool) {
+        events.append(event)
+        nativeRUMLinks.append(linkToNativeRum)
+    }
+}
+
 final class GuanceElectronWebViewTests: XCTestCase {
     private let handler = FTElectronWebViewHandler.sharedInstance()
 
@@ -272,14 +283,17 @@ final class GuanceElectronWebViewTests: XCTestCase {
     }
 
     func testBridgeConfigurationUsesSafeDefaults() throws {
+        let nativeHandler = FTWKWebViewHandler.sharedInstance()
         try configureNativeWebView(
-            FTWKWebViewHandler.sharedInstance(),
+            nativeHandler,
             enabled: false,
             allowedHosts: nil
         )
+        try configureNativeWebViewLog(nativeHandler, enabled: false, delegate: nil)
         let configuration = handler.bridgeConfiguration()
 
         XCTAssertEqual(configuration["enableTraceWebView"] as? Bool, false)
+        XCTAssertEqual(configuration["enableWebViewLog"] as? Bool, false)
         XCTAssertTrue(configuration["allowedWebViewHosts"] is NSNull)
         XCTAssertNotNil(configuration["capabilities"] as? String)
         XCTAssertNotNil(configuration["privacyLevel"] as? String)
@@ -301,6 +315,56 @@ final class GuanceElectronWebViewTests: XCTestCase {
             configuration["allowedWebViewHosts"] as? [String],
             ["example.com", "internal.test"]
         )
+    }
+
+    func testRoutesBrowserLogInEmbeddedAndStandaloneModesWithoutRUM() throws {
+        let nativeHandler = FTWKWebViewHandler.sharedInstance()
+        let logProbe = WebViewLogProbe()
+        try configureNativeWebView(
+            nativeHandler,
+            enabled: false,
+            allowedHosts: nil
+        )
+        try configureNativeWebViewLog(
+            nativeHandler,
+            enabled: true,
+            delegate: logProbe
+        )
+        XCTAssertEqual(
+            handler.bridgeConfiguration()["enableWebViewLog"] as? Bool,
+            true
+        )
+
+        let host = NSView(frame: NSRect(x: 0, y: 0, width: 800, height: 500))
+        XCTAssertTrue(
+            handler.registerWebContentsID(
+                71,
+                slotID: 7001,
+                hostView: host,
+                bounds: host.bounds,
+                visible: true,
+                zIndex: 0
+            )
+        )
+        XCTAssertNotNil(
+            handler.registerStandaloneWebContentsID(72, visible: true)
+        )
+        let embeddedMessage =
+            #"[{"handlerName":"sendEvent","data":{"name":"log","data":{"message":"embedded-log","date":1700000000123}}}]"#
+        let standaloneMessage =
+            #"[{"handlerName":"sendEvent","data":{"name":"log","data":{"message":"standalone-log","date":1700000000456}}}]"#
+
+        XCTAssertTrue(
+            handler.receiveMessageQueue(embeddedMessage, webContentsID: 71)
+        )
+        XCTAssertTrue(
+            handler.receiveMessageQueue(standaloneMessage, webContentsID: 72)
+        )
+        XCTAssertEqual(
+            logProbe.events.compactMap { $0["message"] as? String },
+            ["embedded-log", "standalone-log"]
+        )
+        XCTAssertEqual(logProbe.nativeRUMLinks, [false, false])
     }
 
     func testParameterlessStartPreservesBridgeCommandHandler() throws {
@@ -810,6 +874,33 @@ final class GuanceElectronWebViewTests: XCTestCase {
             enabled,
             nil
         )
+    }
+
+    private func configureNativeWebViewLog(
+        _ nativeHandler: FTWKWebViewHandler,
+        enabled: Bool,
+        delegate: AnyObject?
+    ) throws {
+        let selector = NSSelectorFromString(
+            "startWithEnableWebViewLog:logDelegate:"
+        )
+        guard let method = class_getInstanceMethod(
+            FTWKWebViewHandler.self,
+            selector
+        ) else {
+            throw TestError.missingRuntimeMethod
+        }
+        typealias Invocation = @convention(c) (
+            AnyObject,
+            Selector,
+            Bool,
+            AnyObject?
+        ) -> Void
+        let invocation = unsafeBitCast(
+            method_getImplementation(method),
+            to: Invocation.self
+        )
+        invocation(nativeHandler, selector, enabled, delegate)
     }
 
     private func invokeTakeSubsequentFullSnapshot() throws {

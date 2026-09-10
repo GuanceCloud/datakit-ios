@@ -1,0 +1,126 @@
+name: Publish Electron Native Runtime
+
+on:
+  push:
+    tags:
+      - "[0-9]*"
+  workflow_dispatch:
+    inputs:
+      tag:
+        description: "SDK tag to build and publish, including prereleases"
+        required: true
+        type: string
+
+permissions:
+  contents: read
+
+concurrency:
+  group: electron-runtime-${{ inputs.tag || github.ref_name }}
+  cancel-in-progress: false
+
+jobs:
+  build:
+    runs-on: macos-15
+    timeout-minutes: 45
+    outputs:
+      tag: ${{ steps.release.outputs.tag }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          ref: ${{ inputs.tag || github.ref }}
+      - name: Verify release checkout
+        id: release
+        env:
+          RAW_TAG: ${{ inputs.tag || github.ref_name }}
+        run: |
+          set -euo pipefail
+          tag_name="${RAW_TAG#refs/tags/}"
+          git check-ref-format "refs/tags/$tag_name"
+          test "$(git rev-parse HEAD)" = "$(git rev-parse "refs/tags/${tag_name}^{commit}")"
+          echo "tag=$tag_name" >> "$GITHUB_OUTPUT"
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+      - name: Check build tooling
+        run: |
+          xcodebuild -version
+          swift --version
+          node --test scripts/electron/*.test.mjs
+      - name: Build and package Universal managed runtime
+        env:
+          SDK_TAG: ${{ steps.release.outputs.tag }}
+        run: node scripts/build-electron-runtime.mjs --version "$SDK_TAG"
+      - uses: actions/upload-artifact@v4
+        with:
+          name: electron-native-runtime
+          path: build/electron-native/*.tar.gz*
+          if-no-files-found: error
+          retention-days: 7
+
+  verify:
+    needs: build
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - runner: macos-15
+            architecture: arm64
+          - runner: macos-15-intel
+            architecture: x64
+    runs-on: ${{ matrix.runner }}
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ needs.build.outputs.tag }}
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+      - uses: actions/download-artifact@v4
+        with:
+          name: electron-native-runtime
+          path: build/electron-native
+      - name: Install minimum supported Electron 22 for load verification
+        run: npm install --prefix build/electron-check --no-save --package-lock=false electron@22
+      - name: Verify Universal runtime in Node and Electron
+        env:
+          SDK_TAG: ${{ needs.build.outputs.tag }}
+        run: |
+          set -euo pipefail
+          sdk_version="${SDK_TAG#v}"
+          filename="guance-electron-runtime-${sdk_version}-darwin-universal.tar.gz"
+          (cd build/electron-native && shasum -a 256 -c "${filename}.sha256")
+          destination="build/runtime-check/universal"
+          mkdir -p "$destination"
+          tar -xzf "build/electron-native/${filename}" -C "$destination"
+          node scripts/verify-electron-runtime.mjs "${destination}/runtime"
+          ELECTRON_RUN_AS_NODE=1 build/electron-check/node_modules/.bin/electron \
+            scripts/verify-electron-runtime.mjs "${destination}/runtime"
+
+  publish:
+    needs: [build, verify]
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/download-artifact@v4
+        with:
+          name: electron-native-runtime
+          path: assets
+      - name: Upload immutable release assets
+        env:
+          GH_TOKEN: ${{ github.token }}
+          GH_REPO: ${{ github.repository }}
+          SDK_TAG: ${{ needs.build.outputs.tag }}
+        run: |
+          set -euo pipefail
+          if ! gh release view "$SDK_TAG" >/dev/null 2>&1; then
+            release_args=(--verify-tag --title "$SDK_TAG" --notes "Native SDK release assets for $SDK_TAG")
+            if [[ "$SDK_TAG" == *-* ]]; then release_args+=(--prerelease); fi
+            # The iOS asset workflow may create this release at the same time.
+            gh release create "$SDK_TAG" "${release_args[@]}" || gh release view "$SDK_TAG" >/dev/null
+          fi
+          sdk_version="${SDK_TAG#v}"
+          filename="guance-electron-runtime-${sdk_version}-darwin-universal.tar.gz"
+          gh release upload "$SDK_TAG" "assets/$filename" "assets/${filename}.sha256"

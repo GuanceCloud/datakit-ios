@@ -94,6 +94,7 @@ static NSDictionary *GESnapshotForRemoteConfig(id model) {
         @[@"logSampleRate", @"logSampleRate"],
         @[@"logLevelFilters", @"logLevelFilters"],
         @[@"logEnableCustomLog", @"logEnableCustomLog"],
+        @[@"logEnableWebViewLog", @"logEnableWebViewLog"],
         @[@"sessionReplaySampleRate", @"sessionReplaySampleRate"],
         @[@"sessionReplayOnErrorSampleRate", @"sessionReplayOnErrorSampleRate"],
     ];
@@ -225,8 +226,11 @@ static NSDictionary *GESnapshotForRemoteConfig(id model) {
     }
     if ([payload[@"enableTraceWebView"] isKindOfClass:NSNumber.class]) config.enableTraceWebView = [payload[@"enableTraceWebView"] boolValue];
     if (payload[@"allowWebViewHost"]) {
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wdeprecated-declarations"
         config.allowWebViewHost = payload[@"allowWebViewHost"] == NSNull.null
             ? nil : payload[@"allowWebViewHost"];
+#pragma clang diagnostic pop
     }
     [[FTMobileAgent sharedInstance] startRumWithConfigOptions:config];
     [[FTElectronWebViewHandler sharedInstance] start];
@@ -242,6 +246,7 @@ static NSDictionary *GESnapshotForRemoteConfig(id model) {
     if ([payload[@"sampleRate"] isKindOfClass:NSNumber.class]) config.sampleRate = [payload[@"sampleRate"] intValue];
     if ([payload[@"enableLinkRumData"] isKindOfClass:NSNumber.class]) config.enableLinkRumData = [payload[@"enableLinkRumData"] boolValue];
     if ([payload[@"enableCustomLog"] isKindOfClass:NSNumber.class]) config.enableCustomLog = [payload[@"enableCustomLog"] boolValue];
+    if ([payload[@"enableWebViewLog"] isKindOfClass:NSNumber.class]) config.enableWebViewLog = [payload[@"enableWebViewLog"] boolValue];
     if ([payload[@"printCustomLogToConsole"] isKindOfClass:NSNumber.class]) config.printCustomLogToConsole = [payload[@"printCustomLogToConsole"] boolValue];
     if ([payload[@"logCacheLimitCount"] isKindOfClass:NSNumber.class]) config.logCacheLimitCount = [payload[@"logCacheLimitCount"] intValue];
     if ([payload[@"discardStrategy"] isKindOfClass:NSString.class]) {
