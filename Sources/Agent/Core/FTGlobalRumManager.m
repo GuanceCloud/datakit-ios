@@ -221,9 +221,6 @@ static NSObject *sharedInstanceLock;
     }
 }
 - (void)setupWebViewAndExternalDataWithRumConfig:(FTRumConfig *)rumConfig{
-#if !TARGET_OS_TV
-    [[FTWKWebViewHandler sharedInstance] startWithEnableTraceWebView:rumConfig.enableTraceWebView allowWebViewHost:rumConfig.allowWebViewHost rumDelegate:self.rumManager];
-#endif
     [FTExternalDataManager sharedManager].delegate = self.rumManager;
 }
 -(void)updateSampleRate:(int)sampleRate sessionOnErrorSampleRate:(int)sessionOnErrorSampleRate{

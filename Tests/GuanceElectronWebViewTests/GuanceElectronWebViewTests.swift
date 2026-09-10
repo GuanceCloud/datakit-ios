@@ -765,31 +765,49 @@ final class GuanceElectronWebViewTests: XCTestCase {
         enabled: Bool,
         allowedHosts: [String]?
     ) throws {
-        let selector = NSSelectorFromString(
-            "startWithEnableTraceWebView:allowWebViewHost:rumDelegate:"
-        )
-        guard let method = class_getInstanceMethod(
+        let hostsSelector = NSSelectorFromString("setAllowWebViewHost:")
+        guard let hostsMethod = class_getInstanceMethod(
             FTWKWebViewHandler.self,
-            selector
+            hostsSelector
         ) else {
             throw TestError.missingRuntimeMethod
         }
-        typealias Invocation = @convention(c) (
+        typealias HostsInvocation = @convention(c) (
+            AnyObject,
+            Selector,
+            NSArray?
+        ) -> Void
+        let setHosts = unsafeBitCast(
+            method_getImplementation(hostsMethod),
+            to: HostsInvocation.self
+        )
+        setHosts(
+            nativeHandler,
+            hostsSelector,
+            allowedHosts as NSArray?
+        )
+
+        let rumSelector = NSSelectorFromString("startWithEnableTraceWebView:rumDelegate:")
+        guard let rumMethod = class_getInstanceMethod(
+            FTWKWebViewHandler.self,
+            rumSelector
+        ) else {
+            throw TestError.missingRuntimeMethod
+        }
+        typealias RUMInvocation = @convention(c) (
             AnyObject,
             Selector,
             Bool,
-            NSArray?,
             AnyObject?
         ) -> Void
-        let invocation = unsafeBitCast(
-            method_getImplementation(method),
-            to: Invocation.self
+        let startRUM = unsafeBitCast(
+            method_getImplementation(rumMethod),
+            to: RUMInvocation.self
         )
-        invocation(
+        startRUM(
             nativeHandler,
-            selector,
+            rumSelector,
             enabled,
-            allowedHosts as NSArray?,
             nil
         )
     }

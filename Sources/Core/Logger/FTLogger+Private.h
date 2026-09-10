@@ -21,11 +21,12 @@
 #import "FTLogger.h"
 #import "FTLoggerDataWriteProtocol.h"
 #import "FTLinkRumDataProvider.h"
+#import "FTWKWebViewLogDelegate.h"
 
 NS_ASSUME_NONNULL_BEGIN
 @class FTLoggerConfig;
 
-@interface FTLogger ()
+@interface FTLogger () <FTWKWebViewLogDelegate>
 
 @property (nonatomic, weak, nullable) id<FTLinkRumDataProvider> linkRumDataProvider;
 /// Called when SDK starts, enables Logger
@@ -36,7 +37,6 @@ NS_ASSUME_NONNULL_BEGIN
 ///   - sampletRate: Collection rate
 ///   - writer: Data write object
 - (void)startWithLoggerConfig:(FTLoggerConfig *)config writer:(id<FTLoggerDataWriteProtocol>)writer;
-
 
 /// Synchronously execute log processing queue
 - (void)syncProcess;

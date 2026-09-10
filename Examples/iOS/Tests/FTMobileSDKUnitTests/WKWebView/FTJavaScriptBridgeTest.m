@@ -38,6 +38,8 @@
 #import "FTWKWebViewHandler+Private.h"
 #import "FTModelHelper.h"
 #import "FTInnerLog.h"
+#import "FTLogger+Private.h"
+#import "FTTrackDataManager.h"
 @interface FTWKWebViewHandler (Testing)
 @property (nonatomic, strong) NSMapTable *webViewRequestTable;
 @property (nonatomic, readwrite, strong) NSSet<NSNumber *> *hiddenSlotIds;
@@ -113,6 +115,73 @@
     [[FTMobileAgent sharedInstance] startTraceWithConfigOptions:traceConfig];
     [[FTMobileAgent sharedInstance] startRumWithConfigOptions:rumConfig];
     [[FTTrackerEventDBTool sharedManager] deleteAllDatas];
+}
+- (void)setSDKWithEnableWebViewRum:(BOOL)enableWebViewRum
+                 enableWebViewLog:(BOOL)enableWebViewLog
+                       linkRumData:(BOOL)linkRumData {
+    NSProcessInfo *processInfo = [NSProcessInfo processInfo];
+    FTMobileConfig *config = [[FTMobileConfig alloc] initWithDatakitUrl:[processInfo environment][@"ACCESS_SERVER_URL"]];
+    config.autoSync = NO;
+    [FTMobileAgent startWithConfigOptions:config];
+    if (enableWebViewRum) {
+        FTRumConfig *rumConfig = [[FTRumConfig alloc] initWithAppid:[processInfo environment][@"APP_ID"]];
+        rumConfig.enableTraceWebView = YES;
+        [[FTMobileAgent sharedInstance] startRumWithConfigOptions:rumConfig];
+    }
+    FTLoggerConfig *loggerConfig = [[FTLoggerConfig alloc] init];
+    loggerConfig.enableCustomLog = NO;
+    loggerConfig.enableWebViewLog = enableWebViewLog;
+    loggerConfig.enableLinkRumData = linkRumData;
+    [[FTMobileAgent sharedInstance] startLoggerWithConfigOptions:loggerConfig];
+    [[FTTrackerEventDBTool sharedManager] deleteAllDatas];
+}
+- (void)testLogOnlyWebViewBridgeCollectsBrowserLogsAndIgnoresInvalidEvents {
+    [self setSDKWithEnableWebViewRum:NO enableWebViewLog:YES linkRumData:NO];
+    [[FTWKWebViewHandler sharedInstance] enableWebView:self.viewController.webView];
+    NSURL *url = [[NSBundle mainBundle] URLForResource:@"sample" withExtension:@"html"];
+    [self loadFileURL:url description:@"Load WebView Log Bridge" timeout:30];
+
+    XCTestExpectation *scriptExpectation = [self expectationWithDescription:@"Send Browser logs"];
+    NSString *script =
+        @"FTWebViewJavascriptBridge.sendEvent(JSON.stringify({name:'log',data:{status:'info'}}));"
+        @"FTWebViewJavascriptBridge.sendEvent(JSON.stringify({name:'log',data:{message:'manual-web-log',status:'info'}}));"
+        @"FTWebViewJavascriptBridge.sendEvent(JSON.stringify({name:'log',data:{message:'console-web-log',status:'warn'}}));"
+        @"FTWebViewJavascriptBridge.sendEvent(JSON.stringify({name:'log',data:{message:'error-web-log',status:'error',error:{message:'failure',stack:'stack'}}}));";
+    [self.viewController.webView evaluateJavaScript:script completionHandler:^(id response, NSError *error) {
+        XCTAssertNil(error);
+        [scriptExpectation fulfill];
+    }];
+    [self waitForExpectations:@[scriptExpectation] timeout:10];
+    NSArray *records = nil;
+    NSTimeInterval deadline = [NSDate timeIntervalSinceReferenceDate] + 3;
+    do {
+        [[NSRunLoop currentRunLoop] runUntilDate:[NSDate dateWithTimeIntervalSinceNow:0.05]];
+        [[FTLogger sharedInstance] syncProcess];
+        [[FTTrackDataManager sharedInstance] insertCacheToDB];
+        records = [[FTTrackerEventDBTool sharedManager] getFirstRecords:10 withType:FT_DATA_TYPE_LOGGING];
+    } while (records.count < 3 && [NSDate timeIntervalSinceReferenceDate] < deadline);
+
+    XCTAssertEqual(records.count, 3);
+    NSMutableSet<NSString *> *messages = [NSMutableSet set];
+    for (FTRecordModel *model in records) {
+        NSDictionary *opdata = [FTJSONUtil dictionaryWithJsonString:model.data][FT_OPDATA];
+        [messages addObject:opdata[FT_FIELDS][FT_KEY_MESSAGE]];
+        XCTAssertEqualObjects(opdata[FT_TAGS][FT_IS_WEBVIEW], @(YES));
+    }
+    NSSet<NSString *> *expectedMessages = [NSSet setWithArray:@[@"manual-web-log", @"console-web-log", @"error-web-log"]];
+    XCTAssertEqualObjects(messages, expectedMessages);
+
+    [[FTWKWebViewHandler sharedInstance] startWithEnableWebViewLog:NO logDelegate:[FTLogger sharedInstance]];
+    XCTestExpectation *disabledExpectation = [self expectationWithDescription:@"Send disabled Browser log"];
+    [self.viewController.webView evaluateJavaScript:@"FTWebViewJavascriptBridge.sendEvent(JSON.stringify({name:'log',data:{message:'disabled-web-log'}}));"
+                                   completionHandler:^(id response, NSError *error) {
+        XCTAssertNil(error);
+        [disabledExpectation fulfill];
+    }];
+    [self waitForExpectations:@[disabledExpectation] timeout:10];
+    [[FTLogger sharedInstance] syncProcess];
+    [[FTTrackDataManager sharedInstance] insertCacheToDB];
+    XCTAssertEqual([[FTTrackerEventDBTool sharedManager] getDatasCountWithType:FT_DATA_TYPE_LOGGING], 3);
 }
 /// 1. Verify that webview data is added
 /// 2. Verify data format
@@ -352,7 +421,7 @@
 }
 - (void)testMapTableWeakReferenceWebView{
     WKWebView *webView = [[WKWebView alloc]init];
-    [[FTWKWebViewHandler sharedInstance] startWithEnableTraceWebView:NO allowWebViewHost:nil rumDelegate:self];
+    [[FTWKWebViewHandler sharedInstance] startWithEnableTraceWebView:NO rumDelegate:self];
     [[FTWKWebViewHandler sharedInstance] enableWebView:webView];
     id bridge = [[FTWKWebViewHandler sharedInstance] getWebViewBridge:webView];
     XCTAssertTrue(bridge != nil);
@@ -362,7 +431,7 @@
 }
 - (void)testSameWebViewAddBridge_moreThanOnce{
     WKWebView *webView = [[WKWebView alloc]init];
-    [[FTWKWebViewHandler sharedInstance] startWithEnableTraceWebView:NO allowWebViewHost:nil rumDelegate:self];
+    [[FTWKWebViewHandler sharedInstance] startWithEnableTraceWebView:NO rumDelegate:self];
     [[FTWKWebViewHandler sharedInstance] enableWebView:webView];
     id bridge = [[FTWKWebViewHandler sharedInstance] getWebViewBridge:webView];
     XCTAssertTrue(bridge != nil);
@@ -375,7 +444,7 @@
 - (void)testSameWebViewAddBridgeWithDifferentHosts{
     WKWebView *webView = [[WKWebView alloc]init];
     FTWKWebViewHandler *handler = [FTWKWebViewHandler sharedInstance];
-    [handler startWithEnableTraceWebView:NO allowWebViewHost:nil rumDelegate:self];
+    [handler startWithEnableTraceWebView:NO rumDelegate:self];
     [handler enableWebView:webView allowWebViewHost:@[@"example.com"]];
     id bridge = [handler getWebViewBridge:webView];
     XCTAssertTrue(bridge != nil);
@@ -388,7 +457,7 @@
 - (void)testDisableWebViewRemoveBridgeOnlyOnce{
     WKWebView *webView = [[WKWebView alloc]init];
     FTWKWebViewHandler *handler = [FTWKWebViewHandler sharedInstance];
-    [handler startWithEnableTraceWebView:NO allowWebViewHost:nil rumDelegate:self];
+    [handler startWithEnableTraceWebView:NO rumDelegate:self];
     [handler enableWebView:webView];
     XCTAssertNotNil([handler getWebViewBridge:webView]);
 
@@ -399,7 +468,7 @@
 - (void)testRemoveAllWebViewBridgesClearsRegisteredBridges{
     WKWebView *webView = [[WKWebView alloc]init];
     FTWKWebViewHandler *handler = [FTWKWebViewHandler sharedInstance];
-    [handler startWithEnableTraceWebView:NO allowWebViewHost:nil rumDelegate:self];
+    [handler startWithEnableTraceWebView:NO rumDelegate:self];
     [handler enableWebView:webView];
     XCTAssertNotNil([handler getWebViewBridge:webView]);
 
@@ -410,7 +479,7 @@
     WKWebView *visibleWebView = [[WKWebView alloc]init];
     WKWebView *hiddenWebView = [[WKWebView alloc]init];
     FTWKWebViewHandler *handler = [FTWKWebViewHandler sharedInstance];
-    [handler startWithEnableTraceWebView:NO allowWebViewHost:nil rumDelegate:self];
+    [handler startWithEnableTraceWebView:NO rumDelegate:self];
     [handler enableWebView:visibleWebView];
     [handler enableWebView:hiddenWebView];
     handler.hiddenSlotIds = [NSSet setWithObject:@(hiddenWebView.hash)];

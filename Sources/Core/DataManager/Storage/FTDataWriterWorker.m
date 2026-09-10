@@ -108,21 +108,34 @@
     if (![source isKindOfClass:NSString.class] || source.length == 0 || ![op isKindOfClass:NSString.class] || op.length == 0) {
         return;
     }
+    BOOL webViewLog = [op isEqualToString:FT_DATA_TYPE_LOGGING]
+        && [tags[FT_IS_WEBVIEW] respondsToSelector:@selector(boolValue)]
+        && [tags[FT_IS_WEBVIEW] boolValue];
     FTPresetProperty *preset = [FTPresetProperty sharedInstance];
     NSDictionary *eventTags = [preset applyModifier:tags];
     NSDictionary *eventFields = [preset applyModifier:fields];
     NSDictionary *safeContextTags = [NSObject ft_normalizedDictionaryWithObject:contextTags];
     NSMutableDictionary *tagsDict = [eventTags mutableCopy] ?: [NSMutableDictionary dictionary];
     [tagsDict addEntriesFromDictionary:safeContextTags];
-    NSDictionary *pkgInfo = eventTags[FT_SDK_PKG_INFO];
-    if (pkgInfo && pkgInfo.count > 0) {
-        NSDictionary *info = safeContextTags[FT_SDK_PKG_INFO];
-        if (info) {
-            NSMutableDictionary *mutableInfo = [info mutableCopy];
-            [mutableInfo addEntriesFromDictionary:pkgInfo];
-            pkgInfo = mutableInfo;
+    NSDictionary *eventPkgInfo = [eventTags[FT_SDK_PKG_INFO] isKindOfClass:NSDictionary.class]
+        ? eventTags[FT_SDK_PKG_INFO] : nil;
+    NSDictionary *contextPkgInfo = [safeContextTags[FT_SDK_PKG_INFO] isKindOfClass:NSDictionary.class]
+        ? safeContextTags[FT_SDK_PKG_INFO] : nil;
+    NSMutableDictionary *pkgInfo = [contextPkgInfo mutableCopy] ?: [NSMutableDictionary dictionary];
+    [pkgInfo addEntriesFromDictionary:eventPkgInfo ?: @{}];
+    if (webViewLog) {
+        id browserService = eventTags[FT_KEY_SERVICE];
+        if (browserService) {
+            tagsDict[FT_KEY_SERVICE] = browserService;
         }
-        tagsDict[FT_SDK_PKG_INFO] = pkgInfo;
+        id browserSDKVersion = eventTags[FT_SDK_VERSION];
+        if (browserSDKVersion) {
+            pkgInfo[@"web"] = browserSDKVersion;
+        }
+        tagsDict[FT_IS_WEBVIEW] = @(YES);
+    }
+    if (pkgInfo.count > 0) {
+        tagsDict[FT_SDK_PKG_INFO] = [pkgInfo copy];
     }
     NSArray *array = [preset applyLineModifier:source tags:tagsDict fields:eventFields];
     NSDictionary *recordTags = tagsDict;

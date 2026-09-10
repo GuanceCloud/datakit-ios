@@ -38,6 +38,7 @@
         _samplerate = 100;
         _enableLinkRumData = NO;
         _enableCustomLog = NO;
+        _enableWebViewLog = NO;
         _logCacheLimitCount = FT_DB_LOG_MAX_COUNT;
     }
     return self;
@@ -47,6 +48,7 @@
     options.sampleRate = self.sampleRate;
     options.enableLinkRumData = self.enableLinkRumData;
     options.enableCustomLog = self.enableCustomLog;
+    options.enableWebViewLog = self.enableWebViewLog;
     options.logLevelFilter = [self.logLevelFilter copy];
     options.discardType = self.discardType;
     options.globalContext = [self.globalContext copy];
@@ -61,6 +63,7 @@
             if ([dict ft_hasValidValueForKey:@"sampleRate"]) _samplerate = [dict[@"sampleRate"] intValue];
             if ([dict ft_hasValidValueForKey:@"enableLinkRumData"]) _enableLinkRumData = [dict[@"enableLinkRumData"] boolValue];
             if ([dict ft_hasValidValueForKey:@"enableCustomLog"]) _enableCustomLog = [dict[@"enableCustomLog"] boolValue];
+            if ([dict ft_hasValidValueForKey:@"enableWebViewLog"]) _enableWebViewLog = [dict[@"enableWebViewLog"] boolValue];
             if ([dict ft_hasValidValueForKey:@"logLevelFilter"]) _logLevelFilter = [dict[@"logLevelFilter"] copy];
             if ([dict ft_hasValidValueForKey:@"discardType"]) _discardType = (FTLogCacheDiscard)[dict[@"discardType"] intValue];
             if ([dict ft_hasValidValueForKey:@"globalContext"]) _globalContext = [dict[@"globalContext"] copy];
@@ -80,6 +83,7 @@
     [dict setValue:@(self.sampleRate) forKey:@"sampleRate"];
     [dict setValue:@(self.enableLinkRumData) forKey:@"enableLinkRumData"];
     [dict setValue:@(self.enableCustomLog) forKey:@"enableCustomLog"];
+    [dict setValue:@(self.enableWebViewLog) forKey:@"enableWebViewLog"];
     [dict setValue:self.logLevelFilter forKey:@"logLevelFilter"];
     [dict setValue:@(self.discardType) forKey:@"discardType"];
     [dict setValue:self.globalContext forKey:@"globalContext"];

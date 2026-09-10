@@ -22,6 +22,7 @@
 #error This file must be compiled with ARC. Either turn on ARC for the project or use -fobjc-arc flag on this file.
 #endif
 #import "FTSDKConfig.h"
+#import "FTSDKConfig+Private.h"
 #import "FTConstants.h"
 #import "FTBaseInfoHandler.h"
 #import "FTInternalConstants.h"
@@ -39,7 +40,7 @@
 -(instancetype)init{
     self = [super init];
     if (self) {
-        _samplerate= 100;
+        _samplerate = 100;
         _networkTraceType = FTNetworkTraceTypeDDtrace;
     }
     return self;
@@ -168,6 +169,10 @@
 -(void)setRemoteConfigMiniUpdateInterval:(int)remoteConfigMiniUpdateInterval{
     _remoteConfigMiniUpdateInterval = MAX(0, remoteConfigMiniUpdateInterval);
 }
+- (void)setAllowWebViewHost:(NSArray<NSString *> *)allowWebViewHost {
+    _allowWebViewHostConfigured = YES;
+    _allowWebViewHost = [allowWebViewHost copy];
+}
 -(NSDictionary *)pkgInfo{
     NSDictionary *dict = nil;
     @synchronized (self) {
@@ -207,6 +212,9 @@
     options.lineDataModifier = [self.lineDataModifier copy];
     options.enableDataFilter = self.enableDataFilter;
     options.dataFilters = [self.dataFilters copy];
+    options->_allowWebViewHost = [self.allowWebViewHost copy];
+    options.allowWebViewHostConfigured = self.allowWebViewHostConfigured;
+    options.remoteAllowWebViewHost = [self.remoteAllowWebViewHost copy];
     options.remoteConfiguration = self.remoteConfiguration;
     options.remoteConfigMiniUpdateInterval = self.remoteConfigMiniUpdateInterval;
     options.remoteConfigFetchCompletionBlock = [self.remoteConfigFetchCompletionBlock copy];
@@ -222,6 +230,7 @@
             if ([dict ft_hasValidValueForKey:@"env"]) self.env = [dict valueForKey:@"env"];
             if ([dict ft_hasValidValueForKey:@"enableDataFilter"]) self.enableDataFilter = [[dict valueForKey:@"enableDataFilter"] boolValue];
             if ([dict ft_hasValidValueForKey:@"dataFilters"]) self.dataFilters = [dict valueForKey:@"dataFilters"];
+            if ([dict ft_hasValidValueForKey:@"allowWebViewHost"]) self.allowWebViewHost = [dict valueForKey:@"allowWebViewHost"];
         }
         return self;
     }else{
@@ -238,6 +247,7 @@
     [dict setValue:self.env forKey:@"env"];
     [dict setValue:@(self.enableDataFilter) forKey:@"enableDataFilter"];
     [dict setValue:self.dataFilters forKey:@"dataFilters"];
+    [dict setValue:self.allowWebViewHost forKey:@"allowWebViewHost"];
     return dict;
 }
 -(NSString *)debugDescription{
@@ -266,6 +276,7 @@
     [dict setValue:self.lineDataModifier forKey:@"lineDataModifier"];
     [dict setValue:@(self.enableDataFilter) forKey:@"enableDataFilter"];
     [dict setValue:self.dataFilters forKey:@"dataFilters"];
+    [dict setValue:self.allowWebViewHost forKey:@"allowWebViewHost"];
     [dict setValue:@(self.remoteConfiguration) forKey:@"remoteConfiguration"];
     [dict setValue:@(self.remoteConfigMiniUpdateInterval) forKey:@"remoteConfigMiniUpdateInterval"];
     [dict setValue:self.remoteConfigFetchCompletionBlock forKey:@"remoteConfigFetchCompletionBlock"];

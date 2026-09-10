@@ -54,6 +54,8 @@ NS_ASSUME_NONNULL_BEGIN
 @property (nonatomic, assign) BOOL enableLinkRumData;
 /// Whether to upload custom logs
 @property (nonatomic, assign) BOOL enableCustomLog;
+/// Whether to collect Browser Logs SDK events from WebViews, default: NO
+@property (nonatomic, assign) BOOL enableWebViewLog;
 /// Whether to print custom logs to console
 @property (nonatomic, assign) BOOL printCustomLogToConsole;
 /// Log maximum cache size, minimum setting 1000, default 5000

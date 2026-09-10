@@ -29,10 +29,12 @@ static long long FTHeatmapInt64FromCGFloat(CGFloat value) {
         return 0;
     }
     CGFloat roundedValue = round(value);
-    if (roundedValue > LLONG_MAX) {
+    // CGFloat cannot represent LLONG_MAX exactly on 64-bit platforms. Use an
+    // inclusive comparison so the rounded 2^63 boundary is clamped before cast.
+    if (roundedValue >= (CGFloat)LLONG_MAX) {
         return LLONG_MAX;
     }
-    if (roundedValue < LLONG_MIN) {
+    if (roundedValue <= (CGFloat)LLONG_MIN) {
         return LLONG_MIN;
     }
     return (long long)roundedValue;
