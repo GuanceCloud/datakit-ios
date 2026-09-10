@@ -1,0 +1,29 @@
+{
+  "name": "orbitdesk-native-external-example",
+  "productName": "OrbitDesk Native Host",
+  "version": "1.0.0",
+  "private": true,
+  "description": "macOS example where a Swift host owns Guance Native SDK and Electron connects in external mode.",
+  "main": "electron/main.cjs",
+  "license": "Apache-2.0",
+  "scripts": {
+    "prepare:electron": "node scripts/prepare-electron-accessory.mjs",
+    "dev": "node scripts/dev.mjs",
+    "start": "npm run dev",
+    "smoke": "node scripts/dev.mjs --smoke",
+    "native:build": "node scripts/build-native-host.mjs",
+    "native:test": "node scripts/test-native-host.mjs",
+    "typecheck": "tsc --noEmit",
+    "build:renderer": "tsc --noEmit && vite build"
+  },
+  "dependencies": {
+    "@cloudcare/browser-logs": "3.3.6",
+    "@cloudcare/browser-rum": "3.3.6",
+    "@cloudcare/electron-native-adapter": "file:../cloudcare-electron-native-adapter-0.0.0-local.tgz"
+  },
+  "devDependencies": {
+    "electron": "43.6.0",
+    "typescript": "5.9.3",
+    "vite": "6.4.3"
+  }
+}

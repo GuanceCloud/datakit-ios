@@ -1,0 +1,16 @@
+node_modules/
+dist/
+release/
+native-build/
+.cloudcare/
+.guance/
+.build/
+.swiftpm/
+.env
+.env.*
+!.env.example
+*.log
+*.tgz
+!cloudcare-electron-native-adapter-0.0.0-local.tgz
+*.zip
+.DS_Store

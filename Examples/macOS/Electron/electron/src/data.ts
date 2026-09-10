@@ -1,0 +1,108 @@
+import type { RequestDefinition, WorkspaceTask } from './types'
+
+export const initialTasks: WorkspaceTask[] = [
+  {
+    id: 'task-101',
+    title: 'Complete the desktop experience review',
+    project: 'OrbitDesk',
+    description: 'Review window sizing, keyboard navigation, empty states, and macOS interactions.',
+    status: 'In Progress',
+    priority: 'High',
+    dueDate: '2026-07-30',
+    progress: 68,
+    owner: 'HL',
+  },
+  {
+    id: 'task-102',
+    title: 'Review core RUM signals',
+    project: 'Observability',
+    description: 'Verify that View, Action, Resource, and Error events are reported reliably.',
+    status: 'In Review',
+    priority: 'High',
+    dueDate: '2026-07-31',
+    progress: 92,
+    owner: 'QY',
+  },
+  {
+    id: 'task-103',
+    title: 'Design the request lab',
+    project: 'API Lab',
+    description: 'Provide triggerable APIs with status, duration, and response previews.',
+    status: 'Completed',
+    priority: 'Medium',
+    dueDate: '2026-07-28',
+    progress: 100,
+    owner: 'MW',
+  },
+  {
+    id: 'task-104',
+    title: 'Document offline behavior',
+    project: 'Documentation',
+    description: 'Document SDK packaging, local-page session storage, and weak-network behavior.',
+    status: 'Planned',
+    priority: 'Medium',
+    dueDate: '2026-08-02',
+    progress: 12,
+    owner: 'HL',
+  },
+  {
+    id: 'task-105',
+    title: 'Verify custom actions',
+    project: 'Observability',
+    description: 'Add searchable business actions for filters, task creation, and requests.',
+    status: 'In Progress',
+    priority: 'Medium',
+    dueDate: '2026-08-01',
+    progress: 45,
+    owner: 'QY',
+  },
+  {
+    id: 'task-106',
+    title: 'Prepare demo data',
+    project: 'OrbitDesk',
+    description: 'Populate tasks, progress distribution, and recent activity for first launch.',
+    status: 'Completed',
+    priority: 'Low',
+    dueDate: '2026-07-27',
+    progress: 100,
+    owner: 'MW',
+  },
+]
+
+export const requestDefinitions: RequestDefinition[] = [
+  {
+    id: 'products',
+    label: 'Load product catalog',
+    description: 'GET /products · returns 6 products',
+    endpoint: 'https://dummyjson.com/products?limit=6',
+    tone: 'blue',
+  },
+  {
+    id: 'users',
+    label: 'Sync team members',
+    description: 'GET /users · returns 6 users',
+    endpoint: 'https://dummyjson.com/users?limit=6',
+    tone: 'orange',
+  },
+  {
+    id: 'quote',
+    label: 'Get daily inspiration',
+    description: 'GET /quotes/random · returns one quote',
+    endpoint: 'https://dummyjson.com/quotes/random',
+    tone: 'violet',
+  },
+  {
+    id: 'failure',
+    label: 'Simulate a failed request',
+    description: 'GET /missing · expected 404 response',
+    endpoint: 'https://dummyjson.com/this-route-does-not-exist',
+    tone: 'red',
+  },
+]
+
+export const pageNames = {
+  dashboard: 'Dashboard',
+  tasks: 'Tasks',
+  requests: 'Request Lab',
+  settings: 'Settings',
+} as const

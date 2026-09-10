@@ -1,0 +1,64 @@
+{
+  "name": "orbitdesk-electron-managed-example",
+  "productName": "OrbitDesk Managed",
+  "version": "1.0.0",
+  "private": true,
+  "description": "macOS example where Electron owns the Guance Native SDK through managed mode.",
+  "main": "electron/main.cjs",
+  "license": "Apache-2.0",
+  "scripts": {
+    "dev": "node scripts/dev.mjs",
+    "start": "npm run dev",
+    "smoke": "node scripts/dev.mjs --smoke",
+    "typecheck": "tsc --noEmit",
+    "build:renderer": "tsc --noEmit && vite build",
+    "package:dir": "npm run build:renderer && electron-builder --mac dir"
+  },
+  "dependencies": {
+    "@cloudcare/browser-logs": "3.3.6",
+    "@cloudcare/browser-rum": "3.3.6",
+    "@cloudcare/electron-native-adapter": "file:../cloudcare-electron-native-adapter-0.0.0-local.tgz"
+  },
+  "devDependencies": {
+    "electron": "43.6.0",
+    "electron-builder": "26.0.20",
+    "typescript": "5.9.3",
+    "vite": "6.4.3"
+  },
+  "build": {
+    "appId": "com.guance.example.orbitdesk-managed",
+    "productName": "OrbitDesk Managed",
+    "electronDist": "node_modules/electron/dist",
+    "asar": true,
+    "directories": {
+      "output": "release"
+    },
+    "files": [
+      "dist/**/*",
+      "electron/**/*",
+      "package.json"
+    ],
+    "extraResources": [
+      {
+        "from": ".cloudcare/native/darwin/runtime",
+        "to": "native"
+      }
+    ],
+    "mac": {
+      "category": "public.app-category.productivity",
+      "target": "dir",
+      "identity": null,
+      "hardenedRuntime": false,
+      "gatekeeperAssess": false,
+      "binaries": [
+        "Contents/Resources/native/guance_electron.node"
+      ],
+      "extendInfo": {
+        "NSAppTransportSecurity": {
+          "NSAllowsArbitraryLoads": true,
+          "NSAllowsLocalNetworking": true
+        }
+      }
+    }
+  }
+}
