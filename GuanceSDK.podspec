@@ -67,7 +67,7 @@ Pod::Spec.new do |s|
 		end
 
 		c.subspec 'URLSessionAutoInstrumentation' do |a|
-			a.source_files = 'Sources/Core/URLSessionAutoInstrumentation/**/*{.h,.m}'
+			a.source_files = 'Sources/Core/NetworkAutoInstrumentation/**/*{.h,.m}'
 			a.dependency 'GuanceSDK/Core/Protocol'
 			a.dependency 'GuanceSDK/Core/BaseUtils/Swizzle'
 		end

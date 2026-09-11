@@ -2526,7 +2526,7 @@
 				1776061C29D1347400D17137 /* FTWKWebView */,
 				17E4CBAE29CD42E4005C2D99 /* Protocol */,
 				17E4CB8829CD42E4005C2D99 /* FTRUM */,
-				17E4CB6629CD42E3005C2D99 /* URLSessionAutoInstrumentation */,
+				17E4CB6629CD42E3005C2D99 /* NetworkAutoInstrumentation */,
 				17E4CACF29CD42DA005C2D99 /* BaseUtils */,
 				84BB163A3EBC3774C7A8C5E8 /* DataFilter */,
 			);
@@ -2548,7 +2548,7 @@
 			path = Sources/Agent;
 			sourceTree = "<group>";
 		};
-		17E4CB6629CD42E3005C2D99 /* URLSessionAutoInstrumentation */ = {
+		17E4CB6629CD42E3005C2D99 /* NetworkAutoInstrumentation */ = {
 			isa = PBXGroup;
 			children = (
 				17E4CB7029CD42E4005C2D99 /* FTTracer.h */,
@@ -2570,7 +2570,7 @@
 				17D068202D26668400D59159 /* NSURLSessionTask+FTSwizzler.h */,
 				17D068212D26668400D59159 /* NSURLSessionTask+FTSwizzler.m */,
 			);
-			path = URLSessionAutoInstrumentation;
+			path = NetworkAutoInstrumentation;
 			sourceTree = "<group>";
 		};
 		17E4CB7E29CD42E4005C2D99 /* Extension */ = {
