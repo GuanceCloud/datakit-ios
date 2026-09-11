@@ -36,17 +36,46 @@
 #import "FTLoggerConfig+Private.h"
 #import "FTRumConfig+Private.h"
 #import "FTWKWebViewHandler+Private.h"
+#import "FTWKWebViewJavascriptBridge.h"
 #import "FTModelHelper.h"
 #import "FTInnerLog.h"
 #import "FTLogger+Private.h"
+#import "FTModuleManager.h"
+#import "FTMessageReceiver.h"
 #import "FTTrackDataManager.h"
 @interface FTWKWebViewHandler (Testing)
 @property (nonatomic, strong) NSMapTable *webViewRequestTable;
 @property (nonatomic, readwrite, strong) NSSet<NSNumber *> *hiddenSlotIds;
 
 - (id)getWebViewBridge:(WKWebView *)webView;
+- (void)dealReceiveScriptMessage:(id)message slotId:(int64_t)slotID info:(FTBindInfo *)info;
 - (void)removeAllWebViewBridges;
 - (void)takeSubsequentFullSnapshot;
+@end
+
+@interface FTJavaScriptBridgeDelegateStub : NSObject <FTWKWebViewLogDelegate, FTWKWebViewRumDelegate, FTMessageReceiver>
+@property (nonatomic, assign) NSUInteger logCount;
+@property (nonatomic, assign) NSUInteger rumCount;
+@property (nonatomic, assign) NSUInteger sessionReplayCount;
+@property (nonatomic, assign) BOOL linkToNativeRum;
+@end
+
+@implementation FTJavaScriptBridgeDelegateStub
+- (void)logWebViewEvent:(NSDictionary *)event linkToNativeRum:(BOOL)linkToNativeRum {
+    self.logCount++;
+    self.linkToNativeRum = linkToNativeRum;
+}
+- (void)dealRUMWebViewData:(NSString *)measurement tags:(NSDictionary *)tags fields:(NSDictionary *)fields tm:(long long)tm {
+    self.rumCount++;
+}
+- (NSString *)getLastHasReplayViewID { return nil; }
+- (NSString *)getLastViewName { return nil; }
+- (void)bindSRInfo:(NSDictionary *)info containerViewID:(NSString *)viewID {}
+- (void)receive:(NSString *)key message:(NSDictionary *)message {
+    if ([key isEqualToString:FTMessageKeyWebViewSR]) {
+        self.sessionReplayCount++;
+    }
+}
 @end
 
 @interface FTJavaScriptBridgeTest : KIFTestCase<WKNavigationDelegate,FTWKWebViewRumDelegate>
@@ -363,6 +392,64 @@
     }];
     XCTAssertTrue(hasViewData);
 
+}
+- (void)testManuallyEnabledWebViewOverridesOnlyDisabledRUMSwitch {
+    FTWKWebViewHandler *handler = [[FTWKWebViewHandler alloc] init];
+    FTJavaScriptBridgeDelegateStub *delegate = [[FTJavaScriptBridgeDelegateStub alloc] init];
+    FTModuleManager *moduleManager = [FTModuleManager sharedInstance];
+    [moduleManager addMessageReceiver:delegate];
+    [moduleManager postMessageWithKey:@"test_barrier" message:@{} sync:YES];
+    [handler startWithEnableTraceWebView:NO rumDelegate:delegate];
+    [handler startWithEnableWebViewLog:NO logDelegate:delegate];
+
+    WKWebView *manualWebView = [[WKWebView alloc] initWithFrame:CGRectZero];
+    WKWebView *automaticWebView = [[WKWebView alloc] initWithFrame:CGRectZero];
+    [handler enableWebView:manualWebView];
+
+    FTBindInfo *manualInfo = [[FTBindInfo alloc] init];
+    manualInfo.container = manualWebView;
+    FTBindInfo *automaticInfo = [[FTBindInfo alloc] init];
+    automaticInfo.container = automaticWebView;
+    NSDictionary *log = @{ @"name": @"log", @"data": @{ @"message": @"manual" } };
+    NSDictionary *rum = @{ @"name": @"rum", @"data": @{
+        @"measurement": @"action", @"tags": @{},
+        @"fields": @{ @"action_name": @"manual" }, @"time": @1000
+    } };
+    NSDictionary *sessionReplay = @{ @"name": @"session_replay", @"data": @{} };
+
+    [handler dealReceiveScriptMessage:log slotId:manualWebView.hash info:manualInfo];
+    [handler dealReceiveScriptMessage:rum slotId:manualWebView.hash info:manualInfo];
+    [handler dealReceiveScriptMessage:sessionReplay slotId:manualWebView.hash info:manualInfo];
+    [moduleManager postMessageWithKey:@"test_barrier" message:@{} sync:YES];
+    XCTAssertEqual(delegate.logCount, 0U);
+    XCTAssertEqual(delegate.rumCount, 1U);
+    XCTAssertEqual(delegate.sessionReplayCount, 1U);
+
+    [handler startWithEnableWebViewLog:YES logDelegate:delegate];
+    [handler dealReceiveScriptMessage:log slotId:manualWebView.hash info:manualInfo];
+    XCTAssertEqual(delegate.logCount, 1U);
+    XCTAssertTrue(delegate.linkToNativeRum);
+    [handler startWithEnableWebViewLog:NO logDelegate:delegate];
+
+    [handler dealReceiveScriptMessage:log slotId:automaticWebView.hash info:automaticInfo];
+    [handler dealReceiveScriptMessage:rum slotId:automaticWebView.hash info:automaticInfo];
+    [handler dealReceiveScriptMessage:sessionReplay slotId:automaticWebView.hash info:automaticInfo];
+    [moduleManager postMessageWithKey:@"test_barrier" message:@{} sync:YES];
+    XCTAssertEqual(delegate.logCount, 1U);
+    XCTAssertEqual(delegate.rumCount, 1U);
+    XCTAssertEqual(delegate.sessionReplayCount, 1U);
+
+    [handler disableWebView:manualWebView];
+    [handler dealReceiveScriptMessage:log slotId:manualWebView.hash info:manualInfo];
+    [handler dealReceiveScriptMessage:rum slotId:manualWebView.hash info:manualInfo];
+    [handler dealReceiveScriptMessage:sessionReplay slotId:manualWebView.hash info:manualInfo];
+    [moduleManager postMessageWithKey:@"test_barrier" message:@{} sync:YES];
+    XCTAssertEqual(delegate.logCount, 1U);
+    XCTAssertEqual(delegate.rumCount, 1U);
+    XCTAssertEqual(delegate.sessionReplayCount, 1U);
+
+    [moduleManager removeMessageReceiver:delegate];
+    [moduleManager postMessageWithKey:@"test_barrier" message:@{} sync:YES];
 }
 -(void)testEnableWebView{
     [self setSDKWithEnableWebView:YES];
