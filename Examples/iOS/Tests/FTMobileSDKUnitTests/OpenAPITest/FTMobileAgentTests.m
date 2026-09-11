@@ -59,7 +59,6 @@
 
 @interface FTWKWebViewHandler (ConfigurationTesting)
 - (id)getWebViewBridge:(WKWebView *)webView;
-- (void)dealReceiveScriptMessage:(id)message slotId:(int64_t)slotID info:(id)info;
 @end
 
 @interface FTIOSWebViewDelegateStub : NSObject <FTWKWebViewLogDelegate, FTWKWebViewRumDelegate>
@@ -120,8 +119,8 @@
         [handler innerEnableWebView:webView];
         id bridge = [handler getWebViewBridge:webView];
         XCTAssertNotNil(bridge);
-        [handler dealReceiveScriptMessage:log slotId:0 info:nil];
-        [handler dealReceiveScriptMessage:rum slotId:0 info:nil];
+        [handler processWebViewBridgeEvent:log slotId:0 bindInfo:nil];
+        [handler processWebViewBridgeEvent:rum slotId:0 bindInfo:nil];
         XCTAssertEqual(delegate.logCount, rumFirst.boolValue ? 0U : 1U);
         XCTAssertEqual(delegate.rumCount, rumFirst.boolValue ? 1U : 0U);
         XCTAssertFalse(delegate.linkToNativeRum);
@@ -139,39 +138,39 @@
         // Successful routing below verifies that host configuration preserves both delegates.
         delegate.logCount = 0;
         delegate.rumCount = 0;
-        [handler dealReceiveScriptMessage:@{@"name": @"log", @"data": @[]} slotId:0 info:nil];
-        [handler dealReceiveScriptMessage:log slotId:0 info:nil];
-        [handler dealReceiveScriptMessage:rum slotId:0 info:nil];
+        [handler processWebViewBridgeEvent:@{@"name": @"log", @"data": @[]} slotId:0 bindInfo:nil];
+        [handler processWebViewBridgeEvent:log slotId:0 bindInfo:nil];
+        [handler processWebViewBridgeEvent:rum slotId:0 bindInfo:nil];
         XCTAssertEqual(delegate.logCount, 1U);
         XCTAssertEqual(delegate.rumCount, 1U);
         XCTAssertEqual(delegate.lastLog, payload);
         XCTAssertTrue(delegate.linkToNativeRum);
 
         [handler startWithEnableTraceWebView:NO rumDelegate:delegate];
-        [handler dealReceiveScriptMessage:log slotId:0 info:nil];
-        [handler dealReceiveScriptMessage:rum slotId:0 info:nil];
+        [handler processWebViewBridgeEvent:log slotId:0 bindInfo:nil];
+        [handler processWebViewBridgeEvent:rum slotId:0 bindInfo:nil];
         XCTAssertEqual(delegate.logCount, 2U);
         XCTAssertEqual(delegate.rumCount, 1U);
         XCTAssertFalse(delegate.linkToNativeRum);
         [handler startWithEnableTraceWebView:YES rumDelegate:nil];
-        [handler dealReceiveScriptMessage:log slotId:0 info:nil];
+        [handler processWebViewBridgeEvent:log slotId:0 bindInfo:nil];
         XCTAssertFalse(delegate.linkToNativeRum);
 
         [handler startWithEnableTraceWebView:YES rumDelegate:delegate];
         [handler startWithEnableWebViewLog:NO logDelegate:delegate];
-        [handler dealReceiveScriptMessage:log slotId:0 info:nil];
-        [handler dealReceiveScriptMessage:rum slotId:0 info:nil];
+        [handler processWebViewBridgeEvent:log slotId:0 bindInfo:nil];
+        [handler processWebViewBridgeEvent:rum slotId:0 bindInfo:nil];
         XCTAssertEqual(delegate.logCount, 3U);
         XCTAssertEqual(delegate.rumCount, 2U);
         [handler startWithEnableWebViewLog:YES logDelegate:delegate];
-        [handler dealReceiveScriptMessage:log slotId:0 info:nil];
+        [handler processWebViewBridgeEvent:log slotId:0 bindInfo:nil];
         XCTAssertEqual(delegate.logCount, 4U);
         XCTAssertTrue(delegate.linkToNativeRum);
 
         __weak FTIOSWebViewDelegateStub *weakDelegate = delegate;
         delegate = nil;
         XCTAssertNil(weakDelegate);
-        XCTAssertNoThrow([handler dealReceiveScriptMessage:log slotId:0 info:nil]);
+        XCTAssertNoThrow([handler processWebViewBridgeEvent:log slotId:0 bindInfo:nil]);
         [handler disableWebView:webView];
     }
 }

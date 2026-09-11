@@ -95,7 +95,7 @@ static NSObject *sharedInstanceLock;
     return self;
 }
 - (void)setAllowWebViewHost:(NSArray *)hosts {
-    NSArray *allowedHosts = hosts.count > 0 ? [hosts copy] : nil;
+    NSArray *allowedHosts = [hosts copy];
     NSString *allowedHostsString = [self transHostsArrayToString:allowedHosts];
     [self.lock lock];
     @try {

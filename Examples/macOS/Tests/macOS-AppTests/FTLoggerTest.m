@@ -44,7 +44,7 @@
 @end
 @interface FTWKWebViewHandler (WebViewLogTesting)
 - (nullable id)getWebViewBridge:(WKWebView *)webView;
-- (void)dealReceiveScriptMessage:(id)message slotId:(int64_t)slotID info:(FTBindInfo *)info;
+- (void)processWebViewBridgeEvent:(id)message slotId:(int64_t)slotID bindInfo:(FTBindInfo *)info;
 @end
 @interface FTWebViewLogHTTPClientStub : FTHTTPClient
 @property (nonatomic, copy) NSString *capturedUpload;
@@ -244,6 +244,9 @@
     XCTAssertEqualObjects(self.lastWebViewLogFields[FT_KEY_MESSAGE], @"mac-web-view-thread-probe");
 }
 - (void)testLogOnlyWKWebViewBridgeInstallsAndRoutesSubsequentValidEvent {
+    // The macOS test host may initialize the SDK before XCTest invokes this
+    // test. Reset it so the logger configuration below is always the first one.
+    [FTMobileAgent shutDown];
     FTSDKConfig *config = [[FTSDKConfig alloc] initWithDatakitUrl:self.url];
     config.autoSync = NO;
     [FTMobileAgent startWithConfigOptions:config];
@@ -276,12 +279,12 @@
 
     FTBindInfo *bindInfo = [[FTBindInfo alloc] init];
     bindInfo.container = webView;
-    [[FTWKWebViewHandler sharedInstance] dealReceiveScriptMessage:@{ @"name": @"log", @"data": @{ @"status": @"info" } }
+    [[FTWKWebViewHandler sharedInstance] processWebViewBridgeEvent:@{ @"name": @"log", @"data": @{ @"status": @"info" } }
                                                            slotId:webView.hash
-                                                              info:bindInfo];
-    [[FTWKWebViewHandler sharedInstance] dealReceiveScriptMessage:@{ @"name": @"log", @"data": @{ @"message": @"mac-bridge-log", @"status": @"info" } }
+                                                              bindInfo:bindInfo];
+    [[FTWKWebViewHandler sharedInstance] processWebViewBridgeEvent:@{ @"name": @"log", @"data": @{ @"message": @"mac-bridge-log", @"status": @"info" } }
                                                            slotId:webView.hash
-                                                              info:bindInfo];
+                                                              bindInfo:bindInfo];
     [[FTLogger sharedInstance] syncProcess];
     [[FTTrackDataManager sharedInstance] insertCacheToDB];
     NSArray *records = [[FTTrackerEventDBTool sharedManager] getFirstRecords:10 withType:FT_DATA_TYPE_LOGGING];

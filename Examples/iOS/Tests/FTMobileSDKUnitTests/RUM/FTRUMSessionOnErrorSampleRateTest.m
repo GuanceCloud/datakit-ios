@@ -205,6 +205,7 @@ typedef NS_ENUM(NSInteger, SampleState) {
 
 @interface FTDataWriterWorker(Testing)
 @property (nonatomic, assign) long long processStartTime;
+@property (nonatomic, strong) dispatch_queue_t errorSampledConsumeQueue;
 - (void)checkLastProcessErrorSampled;
 @end
 @interface FTRUMSessionOnErrorSampleRateTest : XCTestCase
@@ -447,8 +448,11 @@ typedef NS_ENUM(NSInteger, SampleState) {
     XCTAssertEqual(lineTime.longLongValue, eventTime);
 }
 - (void)testRUMWriterKeepsNonViewRecordTimeAsEventTime{
-    [FTTrackDataManager startWithAutoSync:NO syncPageSize:10 syncSleepTime:0];
-    FTDataWriterWorker *writerManager = [[FTDataWriterWorker alloc]init];
+    FTTrackDataManager *trackDataManager = [FTTrackDataManager startWithAutoSync:NO syncPageSize:10 syncSleepTime:0];
+    FTDataWriterWorker *writerManager = trackDataManager.dataWriterWorker;
+    // The writer checks data left by the previous process asynchronously.
+    // Finish that lifecycle step before inserting records for this test.
+    dispatch_sync(writerManager.errorSampledConsumeQueue, ^{});
     long long eventTime = 123;
     long long updateTime = [NSDate ft_currentNanosecondTimeStamp];
     NSArray<NSString *> *sources = @[FT_RUM_SOURCE_ACTION, FT_RUM_SOURCE_ERROR, FT_RUM_SOURCE_LONG_TASK];
