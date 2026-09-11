@@ -1,4 +1,8 @@
-
+# 1.6.8-alpha.6
+1. Added macOS Electron Universal runtime packaging and GitHub Actions publishing, with arm64, x86_64, and SHA-256 verification.
+2. Added macOS Electron Full Mode and Native-owned Mixed Mode integration examples.
+3. Merge from 1.6.8-alpha.5.
+---
 # 1.6.8-alpha.5
 1. Merge from 1.6.8-alpha.2 and 1.6.8-alpha.4.
 ---
