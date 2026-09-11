@@ -42,6 +42,7 @@
 #import "FTURLSessionDelegate+Private.h"
 #import "FTInnerLog.h"
 #import "FTDURLSessionDelegate.h"
+#import "FTURLConnectionInstrumentation.h"
 
 typedef void (^CompletionHandler)(NSData * _Nullable data, NSURLResponse * _Nullable response, NSError * _Nullable error);
 
@@ -497,6 +498,9 @@ static dispatch_once_t onceToken;
     }
     NSURLRequest *currentRequest = task.currentRequest;
     if (!currentRequest) {
+        return;
+    }
+    if (FTRequestIsOwnedByURLConnection(currentRequest)) {
         return;
     }
     if ([self isFTIntakeRequest:currentRequest]) {

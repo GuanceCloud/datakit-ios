@@ -91,6 +91,9 @@ typedef FTTraceContext*_Nullable(^FTTraceInterceptor)(NSURLRequest *_Nonnull req
 @property (nonatomic, assign) BOOL enableLinkRumData;
 /// Set whether to enable automatic http trace
 @property (nonatomic, assign) BOOL enableAutoTrace;
+/// Enable automatic Trace header injection for NSURLConnection. Default: NO.
+/// This switch is independent from `enableAutoTrace`, which controls NSURLSession.
+@property (nonatomic, assign) BOOL enableAutoTraceURLConnection;
 @end
 
 /// SDK basic configuration items

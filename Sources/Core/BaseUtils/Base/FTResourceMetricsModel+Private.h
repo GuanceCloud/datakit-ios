@@ -24,6 +24,11 @@ NS_ASSUME_NONNULL_BEGIN
 
 @interface FTResourceMetricsModel ()
 @property (nonatomic, assign) BOOL resourceFetchTypeLocalCache;
+/// Skip legacy Content-Length + serialized-header size fallback. Used when a collector
+/// explicitly reports body-byte semantics and leaves an unobservable value nil.
+@property (nonatomic, assign) BOOL disableHeaderSizeFallback;
+/// Suppress connection-reuse output when the collector cannot observe it.
+@property (nonatomic, assign) BOOL connectionReuseUnavailable;
 /// Same as DNS resolution time, format is {duration: number(ns), start: number(ns)}
 /// duration: same as resource_dns metric;
 /// start: represents the time period from the start of the request to the start of resource resolution, unit is ns. That is domainLookupStart - startTime

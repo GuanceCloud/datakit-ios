@@ -66,6 +66,11 @@ NS_ASSUME_NONNULL_BEGIN
 ///   - property: Event custom properties (optional)
 - (void)stopResourceWithKey:(NSString *)key property:(nullable NSDictionary *)property;
 @optional
+/// HTTP request start at the supplied event time. Internal automatic collectors use this
+/// to preserve the network boundary when reporting is processed asynchronously.
+- (void)startResourceWithKey:(NSString *)key property:(nullable NSDictionary *)property time:(NSDate *)time;
+/// HTTP request end at the supplied event time.
+- (void)stopResourceWithKey:(NSString *)key property:(nullable NSDictionary *)property time:(NSDate *)time;
 /// HTTP request data including tracer information spanID, traceID
 /// - Parameters:
 ///   - key: Request identifier

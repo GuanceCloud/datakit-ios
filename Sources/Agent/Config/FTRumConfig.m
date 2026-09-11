@@ -53,6 +53,7 @@
         _enableTraceUserAction = NO;
         _enableTraceUserView = NO;
         _enableTraceUserResource = NO;
+        _enableTraceURLConnectionResource = NO;
         _enableResourceHostIP = NO;
         _monitorFrequency = FTMonitorFrequencyDefault;
         _freezeDurationMs = FT_DEFAULT_BLOCK_DURATIONS_MS;
@@ -73,6 +74,7 @@
     options.enableTraceUserAction = self.enableTraceUserAction;
     options.enableTraceUserView = self.enableTraceUserView;
     options.enableTraceUserResource = self.enableTraceUserResource;
+    options.enableTraceURLConnectionResource = self.enableTraceURLConnectionResource;
     options.enableResourceHostIP = self.enableResourceHostIP;
     options.appid = [self.appid copy];
     options.errorMonitorType = self.errorMonitorType;
@@ -110,6 +112,7 @@
             if ([dict ft_hasValidValueForKey:@"enableTraceUserAction"]) _enableTraceUserAction = [dict[@"enableTraceUserAction"] boolValue];
             if ([dict ft_hasValidValueForKey:@"enableTraceUserView"]) _enableTraceUserView = [dict[@"enableTraceUserView"] boolValue];
             if ([dict ft_hasValidValueForKey:@"enableTraceUserResource"]) _enableTraceUserResource = [dict[@"enableTraceUserResource"] boolValue];
+            if ([dict ft_hasValidValueForKey:@"enableTraceURLConnectionResource"]) _enableTraceURLConnectionResource = [dict[@"enableTraceURLConnectionResource"] boolValue];
             if ([dict ft_hasValidValueForKey:@"enableResourceHostIP"]) _enableResourceHostIP = [dict[@"enableResourceHostIP"] boolValue];
             if ([dict ft_hasValidValueForKey:@"appid"]) _appid = [dict[@"appid"] copy];
             if ([dict ft_hasValidValueForKey:@"errorMonitorType"]) _errorMonitorType = (FTErrorMonitorType)[dict[@"errorMonitorType"] intValue];
@@ -151,6 +154,7 @@
     [dict setValue:@(self.enableTraceUserAction) forKey:@"enableTraceUserAction"];
     [dict setValue:@(self.enableTraceUserView) forKey:@"enableTraceUserView"];
     [dict setValue:@(self.enableTraceUserResource) forKey:@"enableTraceUserResource"];
+    [dict setValue:@(self.enableTraceURLConnectionResource) forKey:@"enableTraceURLConnectionResource"];
     [dict setValue:@(self.enableResourceHostIP) forKey:@"enableResourceHostIP"];
     [dict setValue:@(self.errorMonitorType) forKey:@"errorMonitorType"];
     [dict setValue:self.appid forKey:@"appid"];

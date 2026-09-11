@@ -42,9 +42,21 @@
 #import "FTBaseInfoHandler.h"
 #import "FTDateUtil.h"
 #import "FTDURLSessionDelegate.h"
+#import "FTURLConnectionHandler.h"
+#import "FTURLConnectionInstrumentation.h"
+#import "FTURLConnectionDelegate.h"
+#import "FTURLConnectionDelegateInstrumentor.h"
+#import "FTResourceMetricsModel+Private.h"
+#import "FTTraceContext.h"
 
 @interface FTURLSessionInstrumentation()
 - (BOOL)isFTIntakeRequest:(NSURLRequest *)request;
+- (void)interceptResume:(NSURLSessionTask *)task;
+@end
+@interface FTURLConnectionInstrumentation (Testing)
+- (nullable id)prepareRequest:(NSURLRequest *)request delegate:(nullable id)delegate;
+- (void)activateHandler:(FTURLConnectionHandler *)handler;
+- (void)finishPreparingHandler:(FTURLConnectionHandler *)handler;
 @end
 @interface FTURLSessionInterceptor()
 @property (nonatomic, strong) dispatch_queue_t queue;
@@ -102,6 +114,11 @@
 @property (nonatomic, assign) NSInteger stopCount;
 @property (nonatomic, assign) NSInteger addCount;
 @property (nonatomic, copy) NSDictionary *stopProperty;
+@property (nonatomic, copy) NSString *startKey;
+@property (nonatomic, copy) NSString *stopKey;
+@property (nonatomic, copy) NSString *addKey;
+@property (nonatomic, strong) NSDate *startDate;
+@property (nonatomic, strong) NSDate *stopDate;
 @end
 
 @implementation FTURLSessionSnapshotRumResourceHandler
@@ -110,17 +127,31 @@
 }
 - (void)startResourceWithKey:(NSString *)key property:(NSDictionary *)property {
     self.startCount += 1;
+    self.startKey = key;
+}
+- (void)startResourceWithKey:(NSString *)key property:(NSDictionary *)property time:(NSDate *)time {
+    self.startCount += 1;
+    self.startKey = key;
+    self.startDate = time;
 }
 - (void)stopResourceWithKey:(NSString *)key {
     self.stopCount += 1;
 }
 - (void)stopResourceWithKey:(NSString *)key property:(NSDictionary *)property {
     self.stopCount += 1;
+    self.stopKey = key;
     self.stopProperty = property;
+}
+- (void)stopResourceWithKey:(NSString *)key property:(NSDictionary *)property time:(NSDate *)time {
+    self.stopCount += 1;
+    self.stopKey = key;
+    self.stopProperty = property;
+    self.stopDate = time;
 }
 - (void)addResourceWithKey:(NSString *)key metrics:(FTResourceMetricsModel *)metrics content:(FTResourceContentModel *)content {
     self.content = content;
     self.metrics = metrics;
+    self.addKey = key;
     self.addCount += 1;
 }
 - (void)addResourceWithKey:(NSString *)key metrics:(FTResourceMetricsModel *)metrics content:(FTResourceContentModel *)content spanID:(NSString *)spanID traceID:(NSString *)traceID {
@@ -128,9 +159,197 @@
     self.metrics = metrics;
     self.spanID = spanID;
     self.traceID = traceID;
+    self.addKey = key;
     self.addCount += 1;
 }
 @end
+
+@interface FTURLConnectionProbeInputStream : NSInputStream
+@property (nonatomic, assign) NSUInteger readCount;
+@end
+
+@implementation FTURLConnectionProbeInputStream
+- (NSInteger)read:(uint8_t *)buffer maxLength:(NSUInteger)len {
+    self.readCount += 1;
+    return 0;
+}
+- (BOOL)getBuffer:(uint8_t * _Nullable *)buffer length:(NSUInteger *)len { return NO; }
+- (BOOL)hasBytesAvailable { return NO; }
+- (void)open {}
+- (void)close {}
+- (NSStreamStatus)streamStatus { return NSStreamStatusNotOpen; }
+@end
+
+@interface FTURLConnectionDelegateTestClock : NSObject <FTURLConnectionClock>
+@property (nonatomic, strong) NSDate *currentDate;
+@property (nonatomic, assign) uint64_t currentContinuousTime;
+@end
+
+@implementation FTURLConnectionDelegateTestClock
+- (NSDate *)date { return self.currentDate; }
+- (uint64_t)continuousTime { return self.currentContinuousTime; }
+@end
+
+// No Foundation initializer/network activity: only the callback's connection
+// identity and original request are needed for deterministic hook unit tests.
+@interface FTURLConnectionCallbackConnection : NSObject
+@property (nonatomic, copy) NSURLRequest *originalRequest;
+@end
+@implementation FTURLConnectionCallbackConnection
+@end
+
+@interface FTURLConnectionChallengeSender : NSObject <NSURLAuthenticationChallengeSender>
+@end
+@implementation FTURLConnectionChallengeSender
+- (void)useCredential:(NSURLCredential *)credential forAuthenticationChallenge:(NSURLAuthenticationChallenge *)challenge {}
+- (void)continueWithoutCredentialForAuthenticationChallenge:(NSURLAuthenticationChallenge *)challenge {}
+- (void)cancelAuthenticationChallenge:(NSURLAuthenticationChallenge *)challenge {}
+- (void)performDefaultHandlingForAuthenticationChallenge:(NSURLAuthenticationChallenge *)challenge {}
+- (void)rejectProtectionSpaceAndContinueWithChallenge:(NSURLAuthenticationChallenge *)challenge {}
+@end
+
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wdeprecated-declarations"
+@interface FTURLConnectionForwardingDelegate : NSObject <NSURLConnectionDataDelegate>
+@property (nonatomic, strong, nullable) NSURLRequest *redirectResult;
+@property (nonatomic, strong, nullable) NSCachedURLResponse *cacheResult;
+@property (nonatomic, assign) BOOL useCredentialStorage;
+@property (nonatomic, assign) NSUInteger redirectCalls;
+@property (nonatomic, assign) NSUInteger responseCalls;
+@property (nonatomic, assign) NSUInteger dataCalls;
+@property (nonatomic, assign) NSUInteger finishCalls;
+@property (nonatomic, assign) NSUInteger failureCalls;
+@property (nonatomic, strong, nullable) NSData *lastData;
+@property (nonatomic, strong, nullable) NSThread *lastCallbackThread;
+@property (nonatomic, assign) NSUInteger uploadCalls;
+@property (nonatomic, strong) NSInputStream *streamResult;
+@property (nonatomic, strong) NSURLAuthenticationChallenge *lastChallenge;
+@property (nonatomic, assign) NSUInteger challengeCalls;
+@end
+
+@implementation FTURLConnectionForwardingDelegate
+- (NSURLRequest *)connection:(NSURLConnection *)connection willSendRequest:(NSURLRequest *)request redirectResponse:(NSURLResponse *)response {
+    self.redirectCalls += 1;
+    self.lastCallbackThread = NSThread.currentThread;
+    return self.redirectResult;
+}
+- (void)connection:(NSURLConnection *)connection didReceiveResponse:(NSURLResponse *)response {
+    self.responseCalls += 1;
+    self.lastCallbackThread = NSThread.currentThread;
+}
+- (void)connection:(NSURLConnection *)connection didReceiveData:(NSData *)data {
+    self.dataCalls += 1;
+    self.lastData = data;
+    self.lastCallbackThread = NSThread.currentThread;
+}
+- (void)connectionDidFinishLoading:(NSURLConnection *)connection {
+    self.finishCalls += 1;
+    self.lastCallbackThread = NSThread.currentThread;
+}
+- (void)connection:(NSURLConnection *)connection didSendBodyData:(NSInteger)bytes
+ totalBytesWritten:(NSInteger)total totalBytesExpectedToWrite:(NSInteger)expected {
+    self.uploadCalls += 1;
+}
+- (void)connection:(NSURLConnection *)connection didFailWithError:(NSError *)error {
+    self.failureCalls += 1;
+    self.lastCallbackThread = NSThread.currentThread;
+}
+- (NSCachedURLResponse *)connection:(NSURLConnection *)connection willCacheResponse:(NSCachedURLResponse *)cachedResponse {
+    return self.cacheResult;
+}
+- (BOOL)connectionShouldUseCredentialStorage:(NSURLConnection *)connection {
+    return self.useCredentialStorage;
+}
+- (NSInputStream *)connection:(NSURLConnection *)connection needNewBodyStream:(NSURLRequest *)request {
+    return self.streamResult;
+}
+- (void)connection:(NSURLConnection *)connection willSendRequestForAuthenticationChallenge:(NSURLAuthenticationChallenge *)challenge {
+    self.challengeCalls += 1;
+    self.lastChallenge = challenge;
+}
+@end
+
+@interface FTURLConnectionRedirectChildDelegate : FTURLConnectionForwardingDelegate
+@property (nonatomic, strong) NSURL *finalURL;
+@property (nonatomic, assign) BOOL rejectsRedirect;
+@end
+@implementation FTURLConnectionRedirectChildDelegate
+- (NSURLRequest *)connection:(NSURLConnection *)connection willSendRequest:(NSURLRequest *)request redirectResponse:(NSURLResponse *)response {
+    NSMutableURLRequest *result = [[super connection:connection willSendRequest:request redirectResponse:response] mutableCopy];
+    result.URL = self.finalURL;
+    return self.rejectsRedirect ? nil : result;
+}
+@end
+
+@interface FTURLConnectionDownloadOnlyDelegate : NSObject <NSURLConnectionDownloadDelegate>
+@end
+@implementation FTURLConnectionDownloadOnlyDelegate
+- (void)connectionDidFinishDownloading:(NSURLConnection *)connection destinationURL:(NSURL *)destinationURL {}
+@end
+
+@interface FTURLConnectionThrowingDelegate : FTURLConnectionForwardingDelegate
+@property (nonatomic, assign) BOOL throwsOnData;
+@end
+@implementation FTURLConnectionThrowingDelegate
+- (void)connection:(NSURLConnection *)connection didReceiveData:(NSData *)data {
+    if (self.throwsOnData) {
+        @throw [NSException exceptionWithName:@"FTBusinessException" reason:@"test" userInfo:nil];
+    }
+    [super connection:connection didReceiveData:data];
+}
+@end
+
+@interface FTURLConnectionThrowingHandler : FTURLConnectionHandler
+@end
+@implementation FTURLConnectionThrowingHandler
+- (void)didReceiveData:(NSData *)data {
+    @throw [NSException exceptionWithName:@"FTObservationException" reason:@"test" userInfo:nil];
+}
+@end
+
+// Matches the observation/decision selector set in Creator 2.x's
+// HttpAsynConnection. This is a native fixture, not Cocos engine validation.
+@interface FTURLConnectionCocosStyleDelegate : NSObject <NSURLConnectionDataDelegate>
+@property (nonatomic, assign) NSUInteger responseCalls;
+@property (nonatomic, assign) NSUInteger dataCalls;
+@property (nonatomic, assign) NSUInteger finishCalls;
+@property (nonatomic, assign) NSUInteger failureCalls;
+@property (nonatomic, assign) NSUInteger challengeCalls;
+@property (nonatomic, strong) NSURLResponse *response;
+@property (nonatomic, strong) NSData *lastData;
+@property (nonatomic, strong) NSError *error;
+@property (nonatomic, strong) NSURLAuthenticationChallenge *challenge;
+@property (nonatomic, strong) NSThread *callbackThread;
+@property (nonatomic, copy) dispatch_block_t onFinish;
+@end
+
+@implementation FTURLConnectionCocosStyleDelegate
+- (void)connection:(NSURLConnection *)connection didReceiveResponse:(NSURLResponse *)response {
+    self.responseCalls += 1;
+    self.response = response;
+    self.callbackThread = NSThread.currentThread;
+}
+- (void)connection:(NSURLConnection *)connection didReceiveData:(NSData *)data {
+    self.dataCalls += 1;
+    self.lastData = data;
+    self.callbackThread = NSThread.currentThread;
+}
+- (void)connectionDidFinishLoading:(NSURLConnection *)connection {
+    self.finishCalls += 1;
+    self.callbackThread = NSThread.currentThread;
+    if (self.onFinish) self.onFinish();
+}
+- (void)connection:(NSURLConnection *)connection didFailWithError:(NSError *)error {
+    self.failureCalls += 1;
+    self.error = error;
+    self.callbackThread = NSThread.currentThread;
+}
+- (void)connection:(NSURLConnection *)connection willSendRequestForAuthenticationChallenge:(NSURLAuthenticationChallenge *)challenge {
+    self.challengeCalls += 1;
+    self.challenge = challenge;
+}
+@end
+#pragma clang diagnostic pop
 
 @interface FTURLSessionSnapshotTracer : NSObject<FTTracerProtocol>
 @property (nonatomic, assign) BOOL enableAutoTrace;
@@ -250,6 +469,1231 @@
     }
     [self waitForURLSessionInterceptorQueue];
 }
+
+- (FTURLConnectionHandler *)urlConnectionHandlerWithRequest:(NSURLRequest *)request
+                                                    provider:(ResourcePropertyProvider)provider
+                                                 errorFilter:(SessionTaskErrorFilter)errorFilter
+                                                      writer:(id<FTRumResourceProtocol>)writer {
+    return [[FTURLConnectionHandler alloc] initWithRequest:request
+                                           resourceEnabled:YES
+                                                  provider:provider
+                                               errorFilter:errorFilter
+                                        rumResourceHandler:writer];
+}
+
+- (void)testURLConnectionHandlerUsesNetworkBoundariesAndExactBodyBytes {
+    NSURL *url = [NSURL URLWithString:@"https://urlconnection.example.test/exact"];
+    NSMutableURLRequest *request = [NSMutableURLRequest requestWithURL:url];
+    request.HTTPMethod = @"POST";
+    request.HTTPBody = [@"body" dataUsingEncoding:NSUTF8StringEncoding];
+    FTURLSessionSnapshotRumResourceHandler *writer = [FTURLSessionSnapshotRumResourceHandler new];
+    __block NSURLRequest *providerRequest;
+    __block NSURLResponse *providerResponse;
+    __block NSData *providerData;
+    __block NSError *providerError;
+    ResourcePropertyProvider provider = ^NSDictionary *(NSURLRequest *observedRequest,
+                                                        NSURLResponse *observedResponse,
+                                                        NSData *data,
+                                                        NSError *error) {
+        providerRequest = observedRequest;
+        providerResponse = observedResponse;
+        providerData = data;
+        providerError = error;
+        return @{@"provider_value": @7};
+    };
+    FTURLConnectionHandler *handler = [self urlConnectionHandlerWithRequest:request
+                                                                    provider:provider
+                                                                 errorFilter:nil
+                                                                      writer:writer];
+    NSDate *startDate = [NSDate dateWithTimeIntervalSince1970:1700000000];
+    NSDate *terminalDate = [NSDate dateWithTimeIntervalSince1970:1700000009];
+    NSHTTPURLResponse *response = [[NSHTTPURLResponse alloc] initWithURL:url
+                                                              statusCode:201
+                                                             HTTPVersion:@"HTTP/1.1"
+                                                            headerFields:@{@"Content-Length": @"999"}];
+
+    XCTAssertTrue([handler recordStartWithDate:startDate continuousTime:1000000000]);
+    XCTAssertFalse([handler recordStartWithDate:[NSDate dateWithTimeIntervalSince1970:1700000005]
+                                  continuousTime:6000000000]);
+    [handler activate];
+    [handler reportStartIfNeeded];
+    [handler didReceiveResponse:response];
+    [handler didReceiveData:[@"abc" dataUsingEncoding:NSUTF8StringEncoding]];
+    [handler didReceiveData:[@"defgh" dataUsingEncoding:NSUTF8StringEncoding]];
+    XCTAssertTrue([handler recordTerminalWithResponse:nil
+                                                error:nil
+                                                 date:terminalDate
+                                       continuousTime:5500000000]);
+    XCTAssertFalse([handler recordTerminalWithResponse:nil
+                                                 error:[NSError errorWithDomain:NSURLErrorDomain code:NSURLErrorTimedOut userInfo:nil]
+                                                  date:[NSDate dateWithTimeIntervalSince1970:1700000012]
+                                        continuousTime:12000000000]);
+    [handler reportTerminalIfNeeded];
+    [handler reportTerminalIfNeeded];
+
+    XCTAssertEqual(writer.startCount, 1);
+    XCTAssertEqual(writer.stopCount, 1);
+    XCTAssertEqual(writer.addCount, 1);
+    XCTAssertEqualObjects(writer.startKey, handler.identifier);
+    XCTAssertEqualObjects(writer.stopKey, handler.identifier);
+    XCTAssertEqualObjects(writer.addKey, handler.identifier);
+    XCTAssertEqualObjects(writer.startDate, startDate);
+    XCTAssertEqualObjects(writer.stopDate, terminalDate);
+    XCTAssertEqual(writer.metrics.fetchStartNsTimeInterval, 1700000000000000000LL);
+    XCTAssertEqual(writer.metrics.fetchEndNsTimeInterval, 1700000004500000000LL);
+    XCTAssertEqualObjects(writer.metrics.fetchInterval, @4500000000LL);
+    XCTAssertEqualObjects(writer.metrics.requestSize, @4);
+    XCTAssertEqualObjects(writer.metrics.responseSize, @8);
+    XCTAssertTrue(writer.metrics.disableHeaderSizeFallback);
+    XCTAssertTrue(writer.metrics.connectionReuseUnavailable);
+    XCTAssertEqual(writer.metrics.dnsStartNsTimeInterval, 0);
+    XCTAssertEqual(writer.metrics.connectStartNsTimeInterval, 0);
+    XCTAssertEqual(writer.metrics.sslStartNsTimeInterval, 0);
+    XCTAssertEqual(writer.metrics.requestStartNsTimeInterval, 0);
+    XCTAssertEqual(writer.metrics.responseStartNsTimeInterval, 0);
+    XCTAssertNil(writer.metrics.remoteAddress);
+    XCTAssertNil(writer.metrics.resourceHttpProtocol);
+    XCTAssertEqualObjects(writer.content.url, url);
+    XCTAssertEqualObjects(writer.content.httpMethod, @"POST");
+    XCTAssertEqual(writer.content.httpStatusCode, 201);
+    XCTAssertNil(writer.content.error);
+    XCTAssertEqualObjects(providerRequest.URL, url);
+    XCTAssertEqual(providerResponse, response);
+    XCTAssertEqualObjects(providerData, [@"abcdefgh" dataUsingEncoding:NSUTF8StringEncoding]);
+    XCTAssertNil(providerError);
+    XCTAssertEqualObjects(writer.stopProperty, @{@"provider_value": @7});
+}
+
+- (void)testURLConnectionHandlerDoesNotReportAConnectionThatNeverStarted {
+    NSURLRequest *request = [NSURLRequest requestWithURL:[NSURL URLWithString:@"https://urlconnection.example.test/unstarted"]];
+    FTURLSessionSnapshotRumResourceHandler *writer = [FTURLSessionSnapshotRumResourceHandler new];
+    FTURLConnectionHandler *handler = [self urlConnectionHandlerWithRequest:request provider:nil errorFilter:nil writer:writer];
+    [handler activate];
+    XCTAssertTrue([handler recordTerminalWithResponse:nil
+                                                error:[NSError errorWithDomain:NSURLErrorDomain code:NSURLErrorCancelled userInfo:nil]
+                                                 date:[NSDate dateWithTimeIntervalSince1970:1700000010]
+                                       continuousTime:9000000000]);
+    [handler reportTerminalIfNeeded];
+    XCTAssertEqual(handler.state, FTURLConnectionHandlerStateTerminal);
+    XCTAssertEqual(writer.startCount, 0);
+    XCTAssertEqual(writer.stopCount, 0);
+    XCTAssertEqual(writer.addCount, 0);
+}
+
+- (void)testURLConnectionHandlerTerminalRaceHasOneWinner {
+    NSURLRequest *request = [NSURLRequest requestWithURL:[NSURL URLWithString:@"https://urlconnection.example.test/race"]];
+    FTURLSessionSnapshotRumResourceHandler *writer = [FTURLSessionSnapshotRumResourceHandler new];
+    FTURLConnectionHandler *handler = [self urlConnectionHandlerWithRequest:request provider:nil errorFilter:nil writer:writer];
+    [handler recordStartWithDate:[NSDate dateWithTimeIntervalSince1970:1700000000] continuousTime:100];
+    [handler activate];
+    __block NSUInteger winners = 0;
+    dispatch_apply(100, dispatch_get_global_queue(QOS_CLASS_USER_INITIATED, 0), ^(size_t index) {
+        BOOL won = [handler recordTerminalWithResponse:nil
+                                                error:index % 2 ? nil : [NSError errorWithDomain:NSURLErrorDomain code:NSURLErrorCancelled userInfo:nil]
+                                                 date:[NSDate dateWithTimeIntervalSince1970:1700000001 + index]
+                                       continuousTime:200 + index];
+        if (won) {
+            @synchronized (handler) {
+                winners += 1;
+            }
+        }
+    });
+    [handler reportTerminalIfNeeded];
+    [handler didReceiveData:[NSMutableData dataWithLength:32]];
+    [handler reportTerminalIfNeeded];
+    XCTAssertEqual(winners, 1u);
+    XCTAssertEqual(writer.startCount, 1);
+    XCTAssertEqual(writer.stopCount, 1);
+    XCTAssertEqual(writer.addCount, 1);
+    XCTAssertEqualObjects(writer.metrics.responseSize, @0);
+}
+
+- (void)testURLConnectionHandlerOnlyBuffersUpTo512KiBForProvider {
+    NSURL *url = [NSURL URLWithString:@"https://urlconnection.example.test/buffer"];
+    for (NSNumber *bodySize in @[@(512 * 1024), @(512 * 1024 + 1)]) {
+        __block NSData *providerData;
+        FTURLSessionSnapshotRumResourceHandler *writer = [FTURLSessionSnapshotRumResourceHandler new];
+        FTURLConnectionHandler *handler = [self urlConnectionHandlerWithRequest:[NSURLRequest requestWithURL:url]
+                                                                        provider:^NSDictionary *(NSURLRequest *request, NSURLResponse *response, NSData *data, NSError *error) {
+            providerData = data;
+            return @{};
+        } errorFilter:nil writer:writer];
+        [handler recordStartWithDate:[NSDate dateWithTimeIntervalSince1970:1700000000] continuousTime:100];
+        [handler activate];
+        NSUInteger firstChunk = MIN(bodySize.unsignedIntegerValue, 300 * 1024);
+        [handler didReceiveData:[NSMutableData dataWithLength:firstChunk]];
+        [handler didReceiveData:[NSMutableData dataWithLength:bodySize.unsignedIntegerValue - firstChunk]];
+        [handler recordTerminalWithResponse:nil error:nil date:[NSDate dateWithTimeIntervalSince1970:1700000001] continuousTime:200];
+        [handler reportTerminalIfNeeded];
+        XCTAssertEqualObjects(writer.metrics.responseSize, bodySize);
+        if (bodySize.unsignedIntegerValue == 512 * 1024) {
+            XCTAssertEqual(providerData.length, 512 * 1024);
+        } else {
+            XCTAssertNil(providerData);
+        }
+    }
+}
+
+- (void)testURLConnectionHandlerCountsWithoutBufferingWhenProviderIsAbsent {
+    NSURLRequest *request = [NSURLRequest requestWithURL:[NSURL URLWithString:@"https://urlconnection.example.test/no-provider"]];
+    FTURLSessionSnapshotRumResourceHandler *writer = [FTURLSessionSnapshotRumResourceHandler new];
+    FTURLConnectionHandler *handler = [self urlConnectionHandlerWithRequest:request provider:nil errorFilter:nil writer:writer];
+    [handler recordStartWithDate:[NSDate dateWithTimeIntervalSince1970:1700000000] continuousTime:100];
+    [handler activate];
+    [handler didReceiveData:[NSMutableData dataWithLength:700 * 1024]];
+    [handler recordTerminalWithResponse:nil error:nil date:[NSDate dateWithTimeIntervalSince1970:1700000001] continuousTime:200];
+    [handler reportTerminalIfNeeded];
+    XCTAssertEqualObjects(writer.metrics.responseSize, @(700 * 1024));
+    XCTAssertEqual(writer.content.responseBody.length, 0u);
+}
+
+- (void)testURLConnectionHandlerDoesNotReadHTTPBodyStream {
+    FTURLConnectionProbeInputStream *stream = [FTURLConnectionProbeInputStream new];
+    NSMutableURLRequest *request = [NSMutableURLRequest requestWithURL:[NSURL URLWithString:@"https://urlconnection.example.test/stream"]];
+    request.HTTPMethod = @"POST";
+    request.HTTPBodyStream = stream;
+    FTURLSessionSnapshotRumResourceHandler *writer = [FTURLSessionSnapshotRumResourceHandler new];
+    FTURLConnectionHandler *handler = [self urlConnectionHandlerWithRequest:request provider:nil errorFilter:nil writer:writer];
+    [handler recordStartWithDate:[NSDate dateWithTimeIntervalSince1970:1700000000] continuousTime:100];
+    [handler activate];
+    [handler recordTerminalWithResponse:nil error:nil date:[NSDate dateWithTimeIntervalSince1970:1700000001] continuousTime:200];
+    [handler reportTerminalIfNeeded];
+    XCTAssertEqual(stream.readCount, 0u);
+    XCTAssertNil(writer.metrics.requestSize);
+    XCTAssertTrue(writer.metrics.disableHeaderSizeFallback);
+}
+
+- (void)testURLConnectionUploadProgressOverridesHTTPBodyFallback {
+    NSMutableURLRequest *request = [NSMutableURLRequest requestWithURL:[NSURL URLWithString:@"https://urlconnection.example.test/upload-progress"]];
+    request.HTTPMethod = @"POST";
+    request.HTTPBody = [NSMutableData dataWithLength:100];
+    FTURLSessionSnapshotRumResourceHandler *writer = [FTURLSessionSnapshotRumResourceHandler new];
+    FTURLConnectionHandler *handler = [self urlConnectionHandlerWithRequest:request provider:nil errorFilter:nil writer:writer];
+    [handler recordStartWithDate:[NSDate dateWithTimeIntervalSince1970:1700000000] continuousTime:100];
+    [handler activate];
+    [handler didSendBodyDataWithTotalBytesWritten:20];
+    [handler didSendBodyDataWithTotalBytesWritten:35];
+    [handler didSendBodyDataWithTotalBytesWritten:30];
+    [handler recordTerminalWithResponse:nil error:[NSError errorWithDomain:NSURLErrorDomain code:NSURLErrorCancelled userInfo:nil]
+                                  date:[NSDate dateWithTimeIntervalSince1970:1700000001] continuousTime:200];
+    [handler reportTerminalIfNeeded];
+    XCTAssertEqualObjects(writer.metrics.requestSize, @35);
+}
+
+- (void)testURLConnectionHandlerFiltersErrorBeforeProviderAndContent {
+    NSError *networkError = [NSError errorWithDomain:NSURLErrorDomain code:NSURLErrorTimedOut userInfo:nil];
+    __block NSError *filteredProviderError = networkError;
+    __block NSUInteger filterCalls = 0;
+    FTURLSessionSnapshotRumResourceHandler *writer = [FTURLSessionSnapshotRumResourceHandler new];
+    FTURLConnectionHandler *handler = [self urlConnectionHandlerWithRequest:[NSURLRequest requestWithURL:[NSURL URLWithString:@"https://urlconnection.example.test/filter"]]
+                                                                    provider:^NSDictionary *(NSURLRequest *request, NSURLResponse *response, NSData *data, NSError *error) {
+        filteredProviderError = error;
+        return @{};
+    } errorFilter:^BOOL(NSError *error) {
+        filterCalls += 1;
+        XCTAssertEqual(error, networkError);
+        return YES;
+    } writer:writer];
+    [handler recordStartWithDate:[NSDate dateWithTimeIntervalSince1970:1700000000] continuousTime:100];
+    [handler activate];
+    [handler recordTerminalWithResponse:nil error:networkError date:[NSDate dateWithTimeIntervalSince1970:1700000001] continuousTime:200];
+    [handler reportTerminalIfNeeded];
+    XCTAssertEqual(filterCalls, 1u);
+    XCTAssertNil(filteredProviderError);
+    XCTAssertNil(writer.content.error);
+}
+
+- (void)testURLConnectionHandlerUsesUniqueIdentifiers {
+    NSURLRequest *request = [NSURLRequest requestWithURL:[NSURL URLWithString:@"https://urlconnection.example.test/same"]];
+    FTURLConnectionHandler *first = [self urlConnectionHandlerWithRequest:request provider:nil errorFilter:nil writer:nil];
+    FTURLConnectionHandler *second = [self urlConnectionHandlerWithRequest:request provider:nil errorFilter:nil writer:nil];
+    XCTAssertNotEqualObjects(first.identifier, second.identifier);
+    XCTAssertEqual(first.identifier.length, 32u);
+    XCTAssertEqual(second.identifier.length, 32u);
+}
+
+- (FTURLConnectionInstrumentation *)urlConnectionInstrumentationWithResource:(BOOL)resourceEnabled
+                                                                        trace:(BOOL)traceEnabled
+                                                                         link:(BOOL)linkEnabled
+                                                                   sampleRate:(int)sampleRate
+                                                                  interceptor:(TraceInterceptor)interceptor
+                                                                       writer:(id<FTRumResourceProtocol>)writer {
+    FTURLConnectionInstrumentation *instrumentation = [FTURLConnectionInstrumentation new];
+    [instrumentation setRumResourceHandler:writer];
+    [instrumentation setEnableAutoRumResource:resourceEnabled
+                           resourceUrlHandler:nil
+                     resourcePropertyProvider:nil
+                       sessionTaskErrorFilter:nil];
+    [instrumentation setTraceEnableAutoTrace:traceEnabled
+                           enableLinkRumData:linkEnabled
+                                  sampleRate:sampleRate
+                                   traceType:DDtrace
+                            traceInterceptor:interceptor
+                                 serviceName:@"urlconnection-tests"];
+    return instrumentation;
+}
+
+- (void)testURLConnectionResourceAndTraceSwitchesAreIndependent {
+    NSURLRequest *request = [NSURLRequest requestWithURL:[NSURL URLWithString:@"https://urlconnection.example.test/switches"]];
+    for (NSNumber *resourceValue in @[@NO, @YES]) {
+        for (NSNumber *traceValue in @[@NO, @YES]) {
+            BOOL resourceEnabled = resourceValue.boolValue;
+            BOOL traceEnabled = traceValue.boolValue;
+            FTURLSessionSnapshotRumResourceHandler *writer = [FTURLSessionSnapshotRumResourceHandler new];
+            FTURLConnectionInstrumentation *instrumentation = [self urlConnectionInstrumentationWithResource:resourceEnabled
+                                                                                                         trace:traceEnabled
+                                                                                                          link:YES
+                                                                                                    sampleRate:100
+                                                                                                   interceptor:nil
+                                                                                                        writer:writer];
+            id preparation = [instrumentation prepareRequest:request delegate:nil];
+            if (!resourceEnabled && !traceEnabled) {
+                XCTAssertNil(preparation);
+                continue;
+            }
+            XCTAssertNotNil(preparation);
+            NSURLRequest *preparedRequest = [preparation valueForKey:@"request"];
+            FTURLConnectionHandler *handler = [preparation valueForKey:@"handler"];
+            XCTAssertTrue(FTRequestIsOwnedByURLConnection(preparedRequest));
+            if (traceEnabled) {
+                XCTAssertGreaterThan([preparedRequest valueForHTTPHeaderField:FT_NETWORK_DDTRACE_TRACEID].length, 0u);
+                XCTAssertGreaterThan([preparedRequest valueForHTTPHeaderField:FT_NETWORK_DDTRACE_SPANID].length, 0u);
+                XCTAssertEqualObjects(handler.traceID, [preparedRequest valueForHTTPHeaderField:FT_NETWORK_DDTRACE_TRACEID]);
+                XCTAssertEqualObjects(handler.spanID, [preparedRequest valueForHTTPHeaderField:FT_NETWORK_DDTRACE_SPANID]);
+            } else {
+                XCTAssertNil([preparedRequest valueForHTTPHeaderField:FT_NETWORK_DDTRACE_TRACEID]);
+                XCTAssertNil(handler.traceID);
+                XCTAssertNil(handler.spanID);
+            }
+            [handler recordStartWithDate:[NSDate dateWithTimeIntervalSince1970:1700000000] continuousTime:100];
+            [instrumentation activateHandler:handler];
+            [instrumentation handler:handler didReachTerminalWithResponse:nil error:nil];
+            [instrumentation syncProcess];
+            XCTAssertEqual(writer.startCount, resourceEnabled ? 1 : 0);
+            XCTAssertEqual(writer.stopCount, resourceEnabled ? 1 : 0);
+            XCTAssertEqual(writer.addCount, resourceEnabled ? 1 : 0);
+        }
+    }
+}
+
+- (void)testURLConnectionExistingTraceHeaderHasPriorityAndMatchesResourceLink {
+    __block NSUInteger interceptorCalls = 0;
+    FTURLSessionSnapshotRumResourceHandler *writer = [FTURLSessionSnapshotRumResourceHandler new];
+    FTURLConnectionInstrumentation *instrumentation = [self urlConnectionInstrumentationWithResource:YES
+                                                                                                 trace:YES
+                                                                                                  link:YES
+                                                                                            sampleRate:100
+                                                                                           interceptor:^FTTraceContext *(NSURLRequest *request) {
+        interceptorCalls += 1;
+        return nil;
+    } writer:writer];
+    NSMutableURLRequest *request = [NSMutableURLRequest requestWithURL:[NSURL URLWithString:@"https://urlconnection.example.test/existing"]];
+    [request setValue:@"123456789" forHTTPHeaderField:FT_NETWORK_DDTRACE_TRACEID];
+    [request setValue:@"987654321" forHTTPHeaderField:FT_NETWORK_DDTRACE_SPANID];
+    id preparation = [instrumentation prepareRequest:request delegate:nil];
+    NSURLRequest *preparedRequest = [preparation valueForKey:@"request"];
+    FTURLConnectionHandler *handler = [preparation valueForKey:@"handler"];
+    XCTAssertEqual(interceptorCalls, 0u);
+    XCTAssertEqualObjects([preparedRequest valueForHTTPHeaderField:FT_NETWORK_DDTRACE_TRACEID], @"123456789");
+    XCTAssertEqualObjects([preparedRequest valueForHTTPHeaderField:FT_NETWORK_DDTRACE_SPANID], @"987654321");
+    XCTAssertEqualObjects(handler.traceID, @"123456789");
+    XCTAssertEqualObjects(handler.spanID, @"987654321");
+    XCTAssertNil(handler.injectedTraceHeaders);
+}
+
+- (void)testURLConnectionCustomTraceContextAndNilVeto {
+    FTTraceContext *context = [FTTraceContext new];
+    context.traceId = @"context-trace";
+    context.spanId = @"context-span";
+    context.traceHeader = @{
+        FT_NETWORK_DDTRACE_TRACEID: @"222",
+        FT_NETWORK_DDTRACE_SPANID: @"333",
+        @"X-Custom-Trace": @"custom-value",
+    };
+    FTURLConnectionInstrumentation *instrumentation = [self urlConnectionInstrumentationWithResource:YES
+                                                                                                 trace:YES
+                                                                                                  link:YES
+                                                                                            sampleRate:100
+                                                                                           interceptor:^FTTraceContext *(NSURLRequest *request) {
+        return context;
+    } writer:nil];
+    NSURLRequest *request = [NSURLRequest requestWithURL:[NSURL URLWithString:@"https://urlconnection.example.test/custom"]];
+    id preparation = [instrumentation prepareRequest:request delegate:nil];
+    NSURLRequest *preparedRequest = [preparation valueForKey:@"request"];
+    FTURLConnectionHandler *handler = [preparation valueForKey:@"handler"];
+    XCTAssertEqualObjects([preparedRequest valueForHTTPHeaderField:@"X-Custom-Trace"], @"custom-value");
+    XCTAssertEqualObjects([preparedRequest valueForHTTPHeaderField:FT_NETWORK_DDTRACE_TRACEID], handler.traceID);
+    XCTAssertEqualObjects([preparedRequest valueForHTTPHeaderField:FT_NETWORK_DDTRACE_SPANID], handler.spanID);
+
+    FTURLConnectionInstrumentation *vetoInstrumentation = [self urlConnectionInstrumentationWithResource:YES
+                                                                                                      trace:YES
+                                                                                                       link:YES
+                                                                                                 sampleRate:100
+                                                                                                interceptor:^FTTraceContext *(NSURLRequest *request) {
+        return nil;
+    } writer:nil];
+    id vetoPreparation = [vetoInstrumentation prepareRequest:request delegate:nil];
+    NSURLRequest *vetoRequest = [vetoPreparation valueForKey:@"request"];
+    FTURLConnectionHandler *vetoHandler = [vetoPreparation valueForKey:@"handler"];
+    XCTAssertNil([vetoRequest valueForHTTPHeaderField:FT_NETWORK_DDTRACE_TRACEID]);
+    XCTAssertNil([vetoRequest valueForHTTPHeaderField:FT_NETWORK_DDTRACE_SPANID]);
+    XCTAssertNil(vetoHandler.traceID);
+    XCTAssertNil(vetoHandler.spanID);
+}
+
+- (void)testURLConnectionSamplingUpdatesBeforeNextRequest {
+    NSURLRequest *request = [NSURLRequest requestWithURL:[NSURL URLWithString:@"https://urlconnection.example.test/sampling"]];
+    FTURLConnectionInstrumentation *instrumentation = [self urlConnectionInstrumentationWithResource:NO
+                                                                                                 trace:YES
+                                                                                                  link:YES
+                                                                                            sampleRate:0
+                                                                                           interceptor:nil
+                                                                                                writer:nil];
+    NSURLRequest *unsampledRequest = [[instrumentation prepareRequest:request delegate:nil] valueForKey:@"request"];
+    XCTAssertEqualObjects([unsampledRequest valueForHTTPHeaderField:FT_NETWORK_DDTRACE_SAMPLING_PRIORITY], @"-1");
+    [instrumentation updateTraceSampleRate:100];
+    NSURLRequest *sampledRequest = [[instrumentation prepareRequest:request delegate:nil] valueForKey:@"request"];
+    XCTAssertEqualObjects([sampledRequest valueForHTTPHeaderField:FT_NETWORK_DDTRACE_SAMPLING_PRIORITY], @"2");
+}
+
+- (void)testURLConnectionLinkDisabledInjectsHeadersWithoutResourceTraceTags {
+    FTURLConnectionInstrumentation *instrumentation = [self urlConnectionInstrumentationWithResource:YES
+                                                                                                 trace:YES
+                                                                                                  link:NO
+                                                                                            sampleRate:100
+                                                                                           interceptor:nil
+                                                                                                writer:nil];
+    id preparation = [instrumentation prepareRequest:[NSURLRequest requestWithURL:[NSURL URLWithString:@"https://urlconnection.example.test/no-link"]]
+                                             delegate:nil];
+    NSURLRequest *preparedRequest = [preparation valueForKey:@"request"];
+    FTURLConnectionHandler *handler = [preparation valueForKey:@"handler"];
+    XCTAssertGreaterThan([preparedRequest valueForHTTPHeaderField:FT_NETWORK_DDTRACE_TRACEID].length, 0u);
+    XCTAssertGreaterThan([preparedRequest valueForHTTPHeaderField:FT_NETWORK_DDTRACE_SPANID].length, 0u);
+    XCTAssertNil(handler.traceID);
+    XCTAssertNil(handler.spanID);
+}
+
+- (void)testURLConnectionOwnerAndSDKRequestsAreExcluded {
+    FTURLConnectionInstrumentation *instrumentation = [self urlConnectionInstrumentationWithResource:YES
+                                                                                                 trace:YES
+                                                                                                  link:YES
+                                                                                            sampleRate:100
+                                                                                           interceptor:nil
+                                                                                                writer:nil];
+    NSURLRequest *request = [NSURLRequest requestWithURL:[NSURL URLWithString:@"https://urlconnection.example.test/owner"]];
+    id preparation = [instrumentation prepareRequest:request delegate:nil];
+    NSURLRequest *ownedRequest = [preparation valueForKey:@"request"];
+    XCTAssertTrue(FTRequestIsOwnedByURLConnection(ownedRequest));
+    XCTAssertNil([instrumentation prepareRequest:ownedRequest delegate:nil]);
+
+    NSMutableURLRequest *SDKRequest = [request mutableCopy];
+    [SDKRequest setValue:@"true" forHTTPHeaderField:FT_HTTP_HEADER_X_SDK_INTERNAL_REQUEST];
+    XCTAssertNil([instrumentation prepareRequest:SDKRequest delegate:nil]);
+}
+
+- (void)testURLConnectionOwnerSurvivesNSURLProtocolStyleForwardToNSURLSession {
+    FTURLConnectionInstrumentation *urlConnectionInstrumentation =
+        [self urlConnectionInstrumentationWithResource:YES
+                                                  trace:NO
+                                                   link:NO
+                                             sampleRate:100
+                                            interceptor:nil
+                                                 writer:nil];
+    NSURLRequest *sourceRequest = [NSURLRequest requestWithURL:
+        [NSURL URLWithString:@"https://urlconnection.example.test/protocol-forward"]];
+    NSURLRequest *ownedRequest = [[urlConnectionInstrumentation prepareRequest:sourceRequest delegate:nil]
+                                  valueForKey:@"request"];
+    XCTAssertTrue(FTRequestIsOwnedByURLConnection(ownedRequest));
+
+    NSURLSession *session = [NSURLSession sessionWithConfiguration:NSURLSessionConfiguration.ephemeralSessionConfiguration];
+    NSURLSessionDataTask *forwardedTask = [session dataTaskWithRequest:ownedRequest];
+    XCTAssertTrue(FTRequestIsOwnedByURLConnection(forwardedTask.currentRequest));
+    [[FTURLSessionInstrumentation sharedInstance] interceptResume:forwardedTask];
+    [self waitForURLSessionInterceptorQueue];
+    XCTAssertNil([[FTURLSessionInterceptor shared] getTraceHandler:forwardedTask]);
+
+    NSURLSessionDataTask *ordinaryTask = [session dataTaskWithRequest:sourceRequest];
+    [[FTURLSessionInstrumentation sharedInstance] interceptResume:ordinaryTask];
+    [self waitForURLSessionInterceptorQueue];
+    XCTAssertNotNil([[FTURLSessionInterceptor shared] getTraceHandler:ordinaryTask]);
+
+    NSError *cancelError = [NSError errorWithDomain:NSURLErrorDomain
+                                                code:NSURLErrorCancelled
+                                            userInfo:nil];
+    [[FTURLSessionInterceptor shared] taskCompleted:ordinaryTask
+                                             error:cancelError
+                                     extraProvider:nil];
+    [self waitForURLSessionInterceptorQueue];
+    [forwardedTask cancel];
+    [ordinaryTask cancel];
+    [session invalidateAndCancel];
+}
+
+- (void)testURLConnectionCrossOriginRedirectRemovesOnlyInjectedHeaders {
+    FTURLConnectionInstrumentation *instrumentation = [self urlConnectionInstrumentationWithResource:YES
+                                                                                                 trace:YES
+                                                                                                  link:YES
+                                                                                            sampleRate:100
+                                                                                           interceptor:nil
+                                                                                                writer:nil];
+    NSURLRequest *request = [NSURLRequest requestWithURL:[NSURL URLWithString:@"https://first.example.test/start"]];
+    id preparation = [instrumentation prepareRequest:request delegate:nil];
+    FTURLConnectionHandler *handler = [preparation valueForKey:@"handler"];
+    NSDictionary<NSString *, NSString *> *originalInjectedHeaders = [handler.injectedTraceHeaders copy];
+    XCTAssertGreaterThan(originalInjectedHeaders.count, 0u);
+
+    NSMutableURLRequest *redirect = [NSMutableURLRequest requestWithURL:[NSURL URLWithString:@"https://second.example.test/final"]];
+    [originalInjectedHeaders enumerateKeysAndObjectsUsingBlock:^(NSString *key, NSString *value, BOOL *stop) {
+        [redirect setValue:value forHTTPHeaderField:key];
+    }];
+    [redirect setValue:@"business" forHTTPHeaderField:@"X-Business"];
+    NSURLRequest *effectiveRedirect = [instrumentation handler:handler redirectedRequest:redirect response:nil];
+    XCTAssertEqualObjects([effectiveRedirect valueForHTTPHeaderField:@"X-Business"], @"business");
+    for (NSString *key in originalInjectedHeaders) {
+        XCTAssertNil([effectiveRedirect valueForHTTPHeaderField:key]);
+    }
+    XCTAssertNil(handler.traceID);
+    XCTAssertNil(handler.spanID);
+    XCTAssertNil(handler.injectedTraceHeaders);
+    XCTAssertTrue(FTRequestIsOwnedByURLConnection(effectiveRedirect));
+}
+
+- (void)testURLConnectionSameOriginRedirectKeepsInjectedContext {
+    FTURLConnectionInstrumentation *instrumentation = [self urlConnectionInstrumentationWithResource:YES
+                                                                                                 trace:YES
+                                                                                                  link:YES
+                                                                                            sampleRate:100
+                                                                                           interceptor:nil
+                                                                                                writer:nil];
+    id preparation = [instrumentation prepareRequest:[NSURLRequest requestWithURL:[NSURL URLWithString:@"https://same.example.test:443/start"]]
+                                             delegate:nil];
+    NSURLRequest *preparedRequest = [preparation valueForKey:@"request"];
+    FTURLConnectionHandler *handler = [preparation valueForKey:@"handler"];
+    NSMutableURLRequest *redirect = [NSMutableURLRequest requestWithURL:[NSURL URLWithString:@"https://same.example.test/final"]];
+    [handler.injectedTraceHeaders enumerateKeysAndObjectsUsingBlock:^(NSString *key, NSString *value, BOOL *stop) {
+        [redirect setValue:value forHTTPHeaderField:key];
+    }];
+    NSURLRequest *effectiveRedirect = [instrumentation handler:handler redirectedRequest:redirect response:nil];
+    XCTAssertEqualObjects([effectiveRedirect valueForHTTPHeaderField:FT_NETWORK_DDTRACE_TRACEID],
+                          [preparedRequest valueForHTTPHeaderField:FT_NETWORK_DDTRACE_TRACEID]);
+    XCTAssertEqualObjects(handler.traceID, [effectiveRedirect valueForHTTPHeaderField:FT_NETWORK_DDTRACE_TRACEID]);
+    XCTAssertEqualObjects(handler.spanID, [effectiveRedirect valueForHTTPHeaderField:FT_NETWORK_DDTRACE_SPANID]);
+}
+
+- (void)testURLConnectionDefaultDelegateObservesCallbacksWithoutAddingDecisionMethods {
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wdeprecated-declarations"
+    for (NSNumber *fails in @[@NO, @YES]) {
+        FTURLSessionSnapshotRumResourceHandler *writer = [FTURLSessionSnapshotRumResourceHandler new];
+        FTURLConnectionInstrumentation *instrumentation = [self urlConnectionInstrumentationWithResource:YES
+                                                                                                     trace:NO
+                                                                                                      link:NO
+                                                                                                sampleRate:100
+                                                                                               interceptor:nil
+                                                                                                    writer:writer];
+        FTURLConnectionDelegateTestClock *clock = [FTURLConnectionDelegateTestClock new];
+        clock.currentDate = [NSDate dateWithTimeIntervalSince1970:1700000000];
+        clock.currentContinuousTime = 1000000000;
+        [instrumentation setValue:clock forKey:@"clock"];
+        __block NSUInteger providerCalls = 0;
+        __block NSData *observedData;
+        __block NSURLResponse *observedResponse;
+        __block NSError *observedError;
+        [instrumentation setEnableAutoRumResource:YES resourceUrlHandler:nil resourcePropertyProvider:
+            ^NSDictionary *(NSURLRequest *request, NSURLResponse *response, NSData *data, NSError *error) {
+                providerCalls += 1;
+                observedData = data;
+                observedResponse = response;
+                observedError = error;
+                return nil;
+            } sessionTaskErrorFilter:nil];
+
+        NSURL *url = [NSURL URLWithString:@"https://urlconnection.example.test/default-delegate"];
+        id preparation = [instrumentation prepareRequest:[NSURLRequest requestWithURL:url] delegate:nil];
+        FTURLConnectionDelegate *delegate = [preparation valueForKey:@"delegate"];
+        FTURLConnectionHandler *handler = [preparation valueForKey:@"handler"];
+        XCTAssertEqual(delegate.class, FTURLConnectionDelegate.class);
+        NSURLConnection *connection = (id)[FTURLConnectionCallbackConnection new];
+        [FTURLConnectionInstrumentation associateHandler:handler withConnection:connection];
+        XCTAssertEqual([FTURLConnectionInstrumentation handlerForConnection:connection], handler);
+        XCTAssertFalse([delegate respondsToSelector:@selector(connection:willCacheResponse:)]);
+        XCTAssertFalse([delegate respondsToSelector:@selector(connectionShouldUseCredentialStorage:)]);
+        XCTAssertFalse([delegate respondsToSelector:@selector(connection:willSendRequestForAuthenticationChallenge:)]);
+        XCTAssertFalse([delegate respondsToSelector:@selector(connection:didReceiveAuthenticationChallenge:)]);
+        XCTAssertFalse([delegate respondsToSelector:@selector(connection:needNewBodyStream:)]);
+
+        [handler recordStartWithDate:clock.currentDate continuousTime:clock.currentContinuousTime];
+        [instrumentation activateHandler:handler];
+        NSHTTPURLResponse *response = [[NSHTTPURLResponse alloc] initWithURL:url statusCode:200
+                                                              HTTPVersion:@"HTTP/1.1" headerFields:nil];
+        NSURLRequest *redirect = [NSURLRequest requestWithURL:
+            [NSURL URLWithString:@"https://urlconnection.example.test/default-final"]];
+        XCTAssertEqualObjects([delegate connection:connection willSendRequest:redirect redirectResponse:response].URL, redirect.URL);
+        [delegate connection:connection didReceiveResponse:response];
+        [delegate connection:connection didReceiveData:[@"abc" dataUsingEncoding:NSUTF8StringEncoding]];
+        [delegate connection:connection didReceiveData:[@"defgh" dataUsingEncoding:NSUTF8StringEncoding]];
+        [delegate connection:connection didSendBodyData:9 totalBytesWritten:9 totalBytesExpectedToWrite:9];
+
+        NSDate *terminalDate = [NSDate dateWithTimeIntervalSince1970:1700000004.5];
+        clock.currentDate = terminalDate;
+        clock.currentContinuousTime = 5500000000;
+        NSError *error = fails.boolValue ? [NSError errorWithDomain:NSURLErrorDomain code:NSURLErrorTimedOut userInfo:nil] : nil;
+        if (error) {
+            [delegate connection:connection didFailWithError:error];
+        } else {
+            [delegate connectionDidFinishLoading:connection];
+        }
+        // Delayed processing and repeated/late callbacks cannot replace the first terminal.
+        clock.currentDate = [NSDate dateWithTimeIntervalSince1970:1700000100];
+        clock.currentContinuousTime = 101000000000;
+        [delegate connection:connection didReceiveData:[@"late" dataUsingEncoding:NSUTF8StringEncoding]];
+        [delegate connectionDidFinishLoading:connection];
+        [delegate connection:connection didFailWithError:[NSError errorWithDomain:NSURLErrorDomain code:NSURLErrorCancelled userInfo:nil]];
+        [instrumentation syncProcess];
+
+        XCTAssertEqual(providerCalls, 1u);
+        XCTAssertEqualObjects(observedData, [@"abcdefgh" dataUsingEncoding:NSUTF8StringEncoding]);
+        XCTAssertEqual(observedResponse, response);
+        XCTAssertEqualObjects(observedError, error);
+        XCTAssertEqual(writer.startCount, 1);
+        XCTAssertEqual(writer.stopCount, 1);
+        XCTAssertEqual(writer.addCount, 1);
+        XCTAssertEqualObjects(writer.startKey, handler.identifier);
+        XCTAssertEqualObjects(writer.stopKey, handler.identifier);
+        XCTAssertEqualObjects(writer.addKey, handler.identifier);
+        XCTAssertEqualObjects(writer.stopDate, terminalDate);
+        XCTAssertEqual(writer.metrics.fetchStartNsTimeInterval, 1700000000000000000LL);
+        XCTAssertEqual(writer.metrics.fetchEndNsTimeInterval, 1700000004500000000LL);
+        XCTAssertEqualObjects(writer.metrics.fetchInterval, @4500000000LL);
+        XCTAssertEqualObjects(writer.metrics.responseSize, @8);
+        XCTAssertEqualObjects(writer.metrics.requestSize, @9);
+        XCTAssertEqual(writer.content.httpStatusCode, 200);
+        XCTAssertEqualObjects(writer.content.error, error);
+        [instrumentation shutDown];
+    }
+#pragma clang diagnostic pop
+}
+
+- (void)testURLConnectionDelegateHooksPreserveIdentityDecisionsAndCallbackThread {
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wdeprecated-declarations"
+    FTURLSessionSnapshotRumResourceHandler *writer = [FTURLSessionSnapshotRumResourceHandler new];
+    FTURLConnectionInstrumentation *instrumentation = [self urlConnectionInstrumentationWithResource:YES
+                                                                                                 trace:NO
+                                                                                                  link:NO
+                                                                                            sampleRate:100
+                                                                                           interceptor:nil
+                                                                                                writer:writer];
+    NSURL *url = [NSURL URLWithString:@"https://urlconnection.example.test/delegate"];
+    FTURLConnectionForwardingDelegate *applicationDelegate = [FTURLConnectionForwardingDelegate new];
+    IMP cacheIMP = class_getMethodImplementation(applicationDelegate.class, @selector(connection:willCacheResponse:));
+    IMP streamIMP = class_getMethodImplementation(applicationDelegate.class, @selector(connection:needNewBodyStream:));
+    IMP authenticationIMP = class_getMethodImplementation(applicationDelegate.class, @selector(connection:willSendRequestForAuthenticationChallenge:));
+    applicationDelegate.redirectResult = [NSURLRequest requestWithURL:[NSURL URLWithString:@"https://urlconnection.example.test/final"]];
+    applicationDelegate.useCredentialStorage = YES;
+    id preparation = [instrumentation prepareRequest:[NSURLRequest requestWithURL:url] delegate:applicationDelegate];
+    id<NSURLConnectionDataDelegate> delegate = [preparation valueForKey:@"delegate"];
+    FTURLConnectionHandler *handler = [preparation valueForKey:@"handler"];
+    XCTAssertEqual((id)delegate, applicationDelegate);
+    XCTAssertEqual(object_getClass(delegate), FTURLConnectionForwardingDelegate.class);
+    XCTAssertEqual(class_getMethodImplementation(object_getClass(delegate), @selector(connection:willCacheResponse:)), cacheIMP);
+    XCTAssertEqual(class_getMethodImplementation(object_getClass(delegate), @selector(connection:needNewBodyStream:)), streamIMP);
+    XCTAssertEqual(class_getMethodImplementation(object_getClass(delegate), @selector(connection:willSendRequestForAuthenticationChallenge:)), authenticationIMP);
+    NSURLConnection *connection = (id)[FTURLConnectionCallbackConnection new];
+    [FTURLConnectionInstrumentation associateHandler:handler withConnection:connection];
+    [handler recordStartWithDate:[NSDate dateWithTimeIntervalSince1970:1700000000] continuousTime:100];
+    [instrumentation activateHandler:handler];
+
+    NSHTTPURLResponse *response = [[NSHTTPURLResponse alloc] initWithURL:url statusCode:200 HTTPVersion:@"HTTP/1.1" headerFields:nil];
+    NSCachedURLResponse *inputCache = [[NSCachedURLResponse alloc] initWithResponse:response data:[@"input" dataUsingEncoding:NSUTF8StringEncoding]];
+    NSCachedURLResponse *outputCache = [[NSCachedURLResponse alloc] initWithResponse:response data:[@"output" dataUsingEncoding:NSUTF8StringEncoding]];
+    applicationDelegate.cacheResult = outputCache;
+    XCTAssertTrue([delegate respondsToSelector:@selector(connection:willCacheResponse:)]);
+    XCTAssertEqual([delegate connection:connection willCacheResponse:inputCache], outputCache);
+    XCTAssertTrue([delegate connectionShouldUseCredentialStorage:connection]);
+    applicationDelegate.streamResult = [FTURLConnectionProbeInputStream new];
+    XCTAssertEqual([delegate connection:connection needNewBodyStream:handler.request], applicationDelegate.streamResult);
+    XCTAssertEqual(((FTURLConnectionProbeInputStream *)applicationDelegate.streamResult).readCount, 0u);
+    NSURLProtectionSpace *space = [[NSURLProtectionSpace alloc] initWithHost:@"urlconnection.example.test" port:443 protocol:@"https" realm:nil authenticationMethod:NSURLAuthenticationMethodHTTPBasic];
+    NSURLAuthenticationChallenge *challenge = [[NSURLAuthenticationChallenge alloc] initWithProtectionSpace:space proposedCredential:nil previousFailureCount:0 failureResponse:nil error:nil sender:[FTURLConnectionChallengeSender new]];
+    [delegate connection:connection willSendRequestForAuthenticationChallenge:challenge];
+    XCTAssertEqual(applicationDelegate.lastChallenge, challenge);
+    XCTAssertEqual(applicationDelegate.challengeCalls, 1u);
+
+    NSURLRequest *redirectResult = [delegate connection:connection
+                                     willSendRequest:[NSURLRequest requestWithURL:[NSURL URLWithString:@"https://urlconnection.example.test/system-redirect"]]
+                                    redirectResponse:response];
+    XCTAssertEqualObjects(redirectResult.URL, applicationDelegate.redirectResult.URL);
+    XCTAssertEqual(applicationDelegate.redirectCalls, 1u);
+
+    __block NSThread *callbackThread;
+    dispatch_queue_t callbackQueue = dispatch_queue_create("com.ft.urlconnection.callback-test", DISPATCH_QUEUE_SERIAL);
+    dispatch_sync(callbackQueue, ^{
+        callbackThread = NSThread.currentThread;
+        [delegate connection:connection didReceiveResponse:response];
+        [delegate connection:connection didReceiveData:[@"abc" dataUsingEncoding:NSUTF8StringEncoding]];
+    });
+    XCTAssertEqual(applicationDelegate.lastCallbackThread, callbackThread);
+    XCTAssertEqual(applicationDelegate.responseCalls, 1u);
+    XCTAssertEqual(applicationDelegate.dataCalls, 1u);
+    XCTAssertEqualObjects(applicationDelegate.lastData, [@"abc" dataUsingEncoding:NSUTF8StringEncoding]);
+
+    [delegate connectionDidFinishLoading:connection];
+    [delegate connection:connection didReceiveData:[@"late" dataUsingEncoding:NSUTF8StringEncoding]];
+    [delegate connection:connection didFailWithError:[NSError errorWithDomain:NSURLErrorDomain code:NSURLErrorTimedOut userInfo:nil]];
+    [instrumentation syncProcess];
+    XCTAssertEqual(applicationDelegate.finishCalls, 1u);
+    XCTAssertEqual(applicationDelegate.failureCalls, 1u);
+    XCTAssertEqual(applicationDelegate.dataCalls, 2u);
+    XCTAssertEqual(writer.startCount, 1);
+    XCTAssertEqual(writer.stopCount, 1);
+    XCTAssertEqual(writer.addCount, 1);
+    XCTAssertEqualObjects(writer.metrics.responseSize, @3);
+
+    applicationDelegate.redirectResult = nil;
+    XCTAssertNil([delegate connection:connection
+                   willSendRequest:[NSURLRequest requestWithURL:[NSURL URLWithString:@"https://other.example.test/cancel"]]
+                  redirectResponse:response]);
+    XCTAssertEqual(applicationDelegate.redirectCalls, 2u);
+#pragma clang diagnostic pop
+}
+
+- (NSURLConnection *)callbackConnectionWithPreparation:(id)preparation {
+    FTURLConnectionCallbackConnection *connection = [FTURLConnectionCallbackConnection new];
+    connection.originalRequest = [preparation valueForKey:@"request"];
+    [FTURLConnectionInstrumentation associateHandler:[preparation valueForKey:@"handler"] withConnection:(id)connection];
+    return (id)connection;
+}
+
+- (void)testURLConnectionHooksAddDefaultsToOriginalClassWithoutChangingISA {
+    NSString *name = [@"FTConnectionEmpty_" stringByAppendingString:[NSUUID.UUID.UUIDString stringByReplacingOccurrencesOfString:@"-" withString:@""]];
+    Class originalClass = objc_allocateClassPair(NSObject.class, name.UTF8String, 0);
+    objc_registerClassPair(originalClass);
+    NSObject *delegate = [originalClass new];
+    NSObject *untouched = [originalClass new];
+    IMP classIMP = class_getMethodImplementation(originalClass, @selector(class));
+    IMP respondsIMP = class_getMethodImplementation(originalClass, @selector(respondsToSelector:));
+    __weak id weakDelegate = delegate;
+    XCTAssertFalse([untouched respondsToSelector:@selector(connection:didReceiveData:)]);
+    XCTAssertTrue([FTURLConnectionDelegateInstrumentor instrumentDelegate:delegate]);
+    XCTAssertEqual(delegate.class, originalClass);
+    XCTAssertEqual(object_getClass(delegate), originalClass);
+    XCTAssertEqual(class_getSuperclass(originalClass), NSObject.class);
+    XCTAssertEqual(class_getMethodImplementation(originalClass, @selector(class)), classIMP);
+    XCTAssertEqual(class_getMethodImplementation(originalClass, @selector(respondsToSelector:)), respondsIMP);
+    XCTAssertTrue([delegate respondsToSelector:@selector(connection:didReceiveData:)]);
+    XCTAssertTrue([untouched respondsToSelector:@selector(connection:didReceiveData:)]);
+    XCTAssertFalse([[NSObject new] respondsToSelector:@selector(connection:didReceiveData:)]);
+    XCTAssertFalse([delegate respondsToSelector:@selector(connection:willCacheResponse:)]);
+    XCTAssertFalse([delegate respondsToSelector:@selector(connectionShouldUseCredentialStorage:)]);
+    XCTAssertFalse([delegate respondsToSelector:@selector(connection:willSendRequestForAuthenticationChallenge:)]);
+    XCTAssertFalse([delegate respondsToSelector:@selector(connection:needNewBodyStream:)]);
+    IMP dataIMP = class_getMethodImplementation(originalClass, @selector(connection:didReceiveData:));
+    IMP redirectIMP = class_getMethodImplementation(originalClass, @selector(connection:willSendRequest:redirectResponse:));
+    XCTAssertTrue([FTURLConnectionDelegateInstrumentor instrumentDelegate:delegate]);
+    XCTAssertTrue([FTURLConnectionDelegateInstrumentor instrumentDelegate:untouched]);
+    XCTAssertEqual(object_getClass(delegate), originalClass);
+    XCTAssertEqual(class_getMethodImplementation(originalClass, @selector(connection:didReceiveData:)), dataIMP);
+    XCTAssertEqual(class_getMethodImplementation(originalClass, @selector(connection:willSendRequest:redirectResponse:)), redirectIMP);
+    // No handler means no Resource, no singleton creation, and pass-through redirect.
+    [[FTURLConnectionInstrumentation existingInstance] shutDown];
+    XCTAssertNil([FTURLConnectionInstrumentation existingInstance]);
+    NSURLConnection *untracked = (id)[FTURLConnectionCallbackConnection new];
+    NSURLRequest *request = [NSURLRequest requestWithURL:[NSURL URLWithString:@"https://urlconnection.example.test/untracked"]];
+    id<NSURLConnectionDataDelegate> observer = (id)untouched;
+    XCTAssertEqual([observer connection:untracked willSendRequest:request redirectResponse:nil], request);
+    [observer connection:untracked didReceiveResponse:nil];
+    [observer connection:untracked didReceiveData:[@"abc" dataUsingEncoding:NSUTF8StringEncoding]];
+    [observer connection:untracked didSendBodyData:3 totalBytesWritten:3 totalBytesExpectedToWrite:3];
+    [observer connectionDidFinishLoading:untracked];
+    [observer connection:untracked didFailWithError:[NSError errorWithDomain:NSURLErrorDomain code:NSURLErrorCancelled userInfo:nil]];
+    XCTAssertNil([FTURLConnectionInstrumentation existingInstance]);
+    // The instrumentor must not retain application delegates.
+    delegate = nil;
+    XCTAssertNil(weakDelegate);
+}
+
+- (void)testURLConnectionHooksLeaveUnsupportedDelegatesUntouched {
+    NSObject *rootDelegate = [NSObject new];
+    XCTAssertFalse([FTURLConnectionDelegateInstrumentor instrumentDelegate:rootDelegate]);
+    XCTAssertEqual(object_getClass(rootDelegate), NSObject.class);
+    XCTAssertFalse([rootDelegate respondsToSelector:@selector(connection:didReceiveData:)]);
+    FTURLConnectionDownloadOnlyDelegate *download = [FTURLConnectionDownloadOnlyDelegate new];
+    Class downloadClass = object_getClass(download);
+    XCTAssertFalse([FTURLConnectionDelegateInstrumentor instrumentDelegate:download]);
+    XCTAssertEqual(object_getClass(download), downloadClass);
+    XCTAssertFalse([download respondsToSelector:@selector(connectionDidFinishLoading:)]);
+    FTURLSessionProxy *proxy = [[FTURLSessionProxy alloc] initWithSession:[FTURLConnectionForwardingDelegate new]];
+    Class proxyClass = object_getClass(proxy);
+    XCTAssertFalse([FTURLConnectionDelegateInstrumentor instrumentDelegate:proxy]);
+    XCTAssertEqual(object_getClass(proxy), proxyClass);
+}
+
+- (void)testURLConnectionHooksDoNotShadowFastForwardedObservations {
+    NSString *name = [@"FTConnectionForwarder_" stringByAppendingString:[NSUUID.UUID.UUIDString stringByReplacingOccurrencesOfString:@"-" withString:@""]];
+    Class forwardingClass = objc_allocateClassPair(NSObject.class, name.UTF8String, 0);
+    SEL dataSelector = @selector(connection:didReceiveData:);
+    // Store the target on the instance, not in the process-lifetime IMP block.
+    static char targetKey;
+    class_addMethod(forwardingClass, @selector(forwardingTargetForSelector:), imp_implementationWithBlock(^id(id object, SEL selector) {
+        return selector == dataSelector ? objc_getAssociatedObject(object, &targetKey) : nil;
+    }), method_getTypeEncoding(class_getInstanceMethod(NSObject.class, @selector(forwardingTargetForSelector:))));
+    objc_registerClassPair(forwardingClass);
+    NSObject *delegate = [forwardingClass new];
+    FTURLConnectionForwardingDelegate *target = [FTURLConnectionForwardingDelegate new];
+    objc_setAssociatedObject(delegate, &targetKey, target, OBJC_ASSOCIATION_RETAIN_NONATOMIC);
+    XCTAssertFalse([delegate respondsToSelector:dataSelector]);
+    XCTAssertFalse([FTURLConnectionDelegateInstrumentor instrumentDelegate:delegate]);
+    XCTAssertEqual(object_getClass(delegate), forwardingClass);
+    XCTAssertEqual(class_getInstanceMethod(forwardingClass, dataSelector), NULL);
+    XCTAssertEqual(class_getInstanceMethod(forwardingClass, @selector(connection:didFailWithError:)), NULL);
+    NSData *data = [@"forwarded" dataUsingEncoding:NSUTF8StringEncoding];
+    [(id<NSURLConnectionDataDelegate>)delegate connection:(id)[FTURLConnectionCallbackConnection new] didReceiveData:data];
+    XCTAssertEqual(target.dataCalls, 1u);
+    XCTAssertEqual(target.lastData, data);
+}
+
+- (void)testURLConnectionCocosStyleDelegateAddsOnlyMissingCallbacksAndRegistersIdempotently {
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wdeprecated-declarations"
+    // A fresh class isolates method installation from other test registrations.
+    NSString *name = [@"FTCocosStyle_" stringByAppendingString:[NSUUID.UUID.UUIDString stringByReplacingOccurrencesOfString:@"-" withString:@""]];
+    Class originalClass = objc_allocateClassPair(FTURLConnectionCocosStyleDelegate.class, name.UTF8String, 0);
+    objc_registerClassPair(originalClass);
+    FTURLConnectionCocosStyleDelegate *delegate = [originalClass new];
+    FTURLConnectionCocosStyleDelegate *secondDelegate = [originalClass new];
+    FTURLConnectionCocosStyleDelegate *untouched = [originalClass new];
+    id originalPointer = delegate;
+    SEL redirect = @selector(connection:willSendRequest:redirectResponse:);
+    SEL upload = @selector(connection:didSendBodyData:totalBytesWritten:totalBytesExpectedToWrite:);
+    SEL authentication = @selector(connection:willSendRequestForAuthenticationChallenge:);
+    IMP originalAuthentication = class_getMethodImplementation(originalClass, authentication);
+    IMP originalClassIMP = class_getMethodImplementation(originalClass, @selector(class));
+    IMP originalRespondsIMP = class_getMethodImplementation(originalClass, @selector(respondsToSelector:));
+    XCTAssertFalse([delegate respondsToSelector:redirect]);
+    XCTAssertFalse([delegate respondsToSelector:upload]);
+
+    FTURLSessionSnapshotRumResourceHandler *writer = [FTURLSessionSnapshotRumResourceHandler new];
+    FTURLConnectionInstrumentation *instrumentation = [self urlConnectionInstrumentationWithResource:YES trace:NO link:YES sampleRate:100 interceptor:nil writer:writer];
+    FTURLConnectionDelegateTestClock *clock = [FTURLConnectionDelegateTestClock new];
+    clock.currentDate = [NSDate dateWithTimeIntervalSince1970:1700000000];
+    clock.currentContinuousTime = 1000000000;
+    [instrumentation setValue:clock forKey:@"clock"];
+    NSMutableURLRequest *request = [NSMutableURLRequest requestWithURL:[NSURL URLWithString:@"https://cocos-style.example.test/start"]];
+    request.HTTPMethod = @"POST";
+    request.HTTPBody = [@"request-body" dataUsingEncoding:NSUTF8StringEncoding];
+    [request setValue:@"123" forHTTPHeaderField:FT_NETWORK_DDTRACE_TRACEID];
+    [request setValue:@"456" forHTTPHeaderField:FT_NETWORK_DDTRACE_SPANID];
+    id preparation = [instrumentation prepareRequest:request delegate:delegate];
+    FTURLConnectionHandler *handler = [preparation valueForKey:@"handler"];
+    NSURLConnection *connection = [self callbackConnectionWithPreparation:preparation];
+    XCTAssertEqual([preparation valueForKey:@"delegate"], originalPointer);
+    XCTAssertEqual(delegate.class, originalClass);
+    Class installedClass = object_getClass(delegate);
+    XCTAssertEqual(installedClass, originalClass);
+    XCTAssertEqual(class_getSuperclass(installedClass), FTURLConnectionCocosStyleDelegate.class);
+    XCTAssertEqual(class_getInstanceSize(installedClass), class_getInstanceSize(originalClass));
+    XCTAssertEqual(class_getMethodImplementation(installedClass, @selector(class)), originalClassIMP);
+    XCTAssertEqual(class_getMethodImplementation(installedClass, @selector(respondsToSelector:)), originalRespondsIMP);
+    XCTAssertEqual(class_getMethodImplementation(installedClass, authentication), originalAuthentication);
+    XCTAssertTrue([delegate respondsToSelector:redirect]);
+    XCTAssertTrue([delegate respondsToSelector:upload]);
+    XCTAssertTrue([untouched respondsToSelector:redirect]);
+    XCTAssertTrue([untouched respondsToSelector:upload]);
+
+    // The same class is shared by all instances; registering any of them again
+    // must keep every previously installed IMP.
+    IMP registeredDataIMP = class_getMethodImplementation(installedClass, @selector(connection:didReceiveData:));
+    IMP registeredRedirectIMP = class_getMethodImplementation(installedClass, redirect);
+    XCTAssertTrue([FTURLConnectionDelegateInstrumentor instrumentDelegate:delegate]);
+    XCTAssertTrue([FTURLConnectionDelegateInstrumentor instrumentDelegate:secondDelegate]);
+    XCTAssertEqual(object_getClass(secondDelegate), installedClass);
+    XCTAssertTrue([FTURLConnectionDelegateInstrumentor instrumentDelegate:secondDelegate]);
+    XCTAssertEqual(object_getClass(delegate), installedClass);
+    XCTAssertEqual(class_getMethodImplementation(installedClass, @selector(connection:didReceiveData:)), registeredDataIMP);
+    XCTAssertEqual(class_getMethodImplementation(installedClass, redirect), registeredRedirectIMP);
+    unsigned int count = 0;
+    Method *methods = class_copyMethodList(installedClass, &count);
+    NSMutableSet *ownSelectors = [NSMutableSet set];
+    for (unsigned int index = 0; index < count; index++) {
+        [ownSelectors addObject:NSStringFromSelector(method_getName(methods[index]))];
+    }
+    free(methods);
+    XCTAssertEqualObjects(ownSelectors, ([NSSet setWithArray:@[NSStringFromSelector(redirect), NSStringFromSelector(upload), @"connection:didReceiveData:", @"connection:didReceiveResponse:", @"connection:didFailWithError:", @"connectionDidFinishLoading:"]]));
+    XCTAssertFalse([delegate respondsToSelector:@selector(connection:willCacheResponse:)]);
+    XCTAssertFalse([delegate respondsToSelector:@selector(connection:needNewBodyStream:)]);
+    XCTAssertFalse([delegate respondsToSelector:@selector(connectionShouldUseCredentialStorage:)]);
+
+    NSURLProtectionSpace *space = [[NSURLProtectionSpace alloc] initWithHost:request.URL.host port:443 protocol:@"https" realm:nil authenticationMethod:NSURLAuthenticationMethodHTTPBasic];
+    NSURLAuthenticationChallenge *challenge = [[NSURLAuthenticationChallenge alloc] initWithProtectionSpace:space proposedCredential:nil previousFailureCount:0 failureResponse:nil error:nil sender:[FTURLConnectionChallengeSender new]];
+    [delegate connection:connection willSendRequestForAuthenticationChallenge:challenge];
+    XCTAssertEqual(delegate.challenge, challenge);
+    XCTAssertEqual(delegate.challengeCalls, 1u);
+    XCTAssertTrue([handler recordStartWithDate:clock.currentDate continuousTime:clock.currentContinuousTime]);
+    [instrumentation activateHandler:handler];
+    NSMutableURLRequest *redirectRequest = [[preparation valueForKey:@"request"] mutableCopy];
+    redirectRequest.URL = [NSURL URLWithString:@"https://cocos-style.example.test/final"];
+    NSURLRequest *effectiveRedirect = [(id<NSURLConnectionDataDelegate>)delegate connection:connection willSendRequest:redirectRequest redirectResponse:nil];
+    XCTAssertEqualObjects(effectiveRedirect.URL, redirectRequest.URL);
+    XCTAssertEqualObjects([effectiveRedirect valueForHTTPHeaderField:FT_NETWORK_DDTRACE_TRACEID], @"123");
+    XCTAssertEqualObjects([effectiveRedirect valueForHTTPHeaderField:FT_NETWORK_DDTRACE_SPANID], @"456");
+    [(id<NSURLConnectionDataDelegate>)delegate connection:connection didSendBodyData:9 totalBytesWritten:9 totalBytesExpectedToWrite:9];
+
+    NSHTTPURLResponse *response = [[NSHTTPURLResponse alloc] initWithURL:redirectRequest.URL statusCode:201 HTTPVersion:@"HTTP/1.1" headerFields:@{@"Content-Length": @"999"}];
+    NSData *lastChunk = [@"defgh" dataUsingEncoding:NSUTF8StringEncoding];
+    delegate.onFinish = ^{
+        // Business callback work is outside the terminal timestamp, no sleeps.
+        clock.currentContinuousTime = 9000000000;
+    };
+    __block NSThread *callbackThread;
+    dispatch_sync(dispatch_queue_create("com.ft.urlconnection.cocos-shape", DISPATCH_QUEUE_SERIAL), ^{
+        callbackThread = NSThread.currentThread;
+        [delegate connection:connection didReceiveResponse:response];
+        [delegate connection:connection didReceiveData:[@"abc" dataUsingEncoding:NSUTF8StringEncoding]];
+        [delegate connection:connection didReceiveData:lastChunk];
+        clock.currentDate = [NSDate dateWithTimeIntervalSince1970:1700000002.5];
+        clock.currentContinuousTime = 3500000000;
+        [delegate connectionDidFinishLoading:connection];
+    });
+    [instrumentation syncProcess];
+    XCTAssertEqual(delegate.callbackThread, callbackThread);
+    XCTAssertEqual(delegate.response, response);
+    XCTAssertEqual(delegate.lastData, lastChunk);
+    XCTAssertEqual(delegate.responseCalls, 1u);
+    XCTAssertEqual(delegate.dataCalls, 2u);
+    XCTAssertEqual(delegate.finishCalls, 1u);
+    XCTAssertEqual(delegate.failureCalls, 0u);
+    XCTAssertEqual(writer.startCount, 1);
+    XCTAssertEqual(writer.stopCount, 1);
+    XCTAssertEqual(writer.addCount, 1);
+    XCTAssertEqualObjects(writer.startKey, handler.identifier);
+    XCTAssertEqualObjects(writer.stopKey, handler.identifier);
+    XCTAssertEqualObjects(writer.addKey, handler.identifier);
+    XCTAssertEqualObjects(writer.metrics.responseSize, @8);
+    XCTAssertEqualObjects(writer.metrics.requestSize, @9);
+    XCTAssertEqual(writer.metrics.fetchStartNsTimeInterval, 1700000000000000000LL);
+    XCTAssertEqual(writer.metrics.fetchEndNsTimeInterval, 1700000002500000000LL);
+    XCTAssertEqual(writer.metrics.fetchEndNsTimeInterval - writer.metrics.fetchStartNsTimeInterval, 2500000000LL);
+    XCTAssertEqualObjects(writer.startDate, [NSDate dateWithTimeIntervalSince1970:1700000000]);
+    XCTAssertEqualObjects(writer.stopDate, [NSDate dateWithTimeIntervalSince1970:1700000002.5]);
+    XCTAssertEqualObjects(writer.traceID, @"123");
+    XCTAssertEqualObjects(writer.spanID, @"456");
+    // The class-wide defaults do not enroll another instance's untracked request.
+    NSURLConnection *untracked = (id)[FTURLConnectionCallbackConnection new];
+    [untouched connection:untracked didReceiveData:[@"untracked" dataUsingEncoding:NSUTF8StringEncoding]];
+    [untouched connectionDidFinishLoading:untracked];
+    [instrumentation syncProcess];
+    XCTAssertEqual(untouched.dataCalls, 1u);
+    XCTAssertEqual(untouched.finishCalls, 1u);
+    XCTAssertEqual(writer.addCount, 1);
+    XCTAssertEqualObjects(writer.metrics.responseSize, @8);
+    [instrumentation shutDown];
+#pragma clang diagnostic pop
+}
+
+- (void)testURLConnectionRedirectHookObservesOnlyTheFinalSuperclassReturn {
+    FTURLSessionSnapshotRumResourceHandler *writer = [FTURLSessionSnapshotRumResourceHandler new];
+    FTURLConnectionInstrumentation *instrumentation = [self urlConnectionInstrumentationWithResource:YES trace:YES link:YES sampleRate:100 interceptor:nil writer:writer];
+    NSMutableURLRequest *request = [NSMutableURLRequest requestWithURL:[NSURL URLWithString:@"https://urlconnection.example.test/start"]];
+    [request setValue:@"123" forHTTPHeaderField:FT_NETWORK_DDTRACE_TRACEID];
+    [request setValue:@"456" forHTTPHeaderField:FT_NETWORK_DDTRACE_SPANID];
+    FTURLConnectionForwardingDelegate *parent = [FTURLConnectionForwardingDelegate new];
+    XCTAssertTrue([FTURLConnectionDelegateInstrumentor instrumentDelegate:parent]);
+    FTURLConnectionRedirectChildDelegate *delegate = [FTURLConnectionRedirectChildDelegate new];
+    NSMutableURLRequest *intermediate = [request mutableCopy];
+    intermediate.URL = [NSURL URLWithString:@"https://other.example.test/intermediate"];
+    delegate.redirectResult = intermediate;
+    delegate.finalURL = [NSURL URLWithString:@"https://urlconnection.example.test/final"];
+    id preparation = [instrumentation prepareRequest:request delegate:delegate];
+    FTURLConnectionHandler *handler = [preparation valueForKey:@"handler"];
+    NSURLConnection *connection = [self callbackConnectionWithPreparation:preparation];
+    NSURLRequest *result = [delegate connection:connection willSendRequest:request redirectResponse:nil];
+    XCTAssertEqualObjects(result.URL, delegate.finalURL);
+    XCTAssertEqualObjects(handler.request.URL, delegate.finalURL);
+    // Observing the intermediate parent return would incorrectly clear linking.
+    XCTAssertEqualObjects(handler.traceID, @"123");
+    XCTAssertEqualObjects(handler.spanID, @"456");
+    XCTAssertEqualObjects([result valueForHTTPHeaderField:FT_NETWORK_DDTRACE_TRACEID], @"123");
+    XCTAssertEqualObjects([result valueForHTTPHeaderField:FT_NETWORK_DDTRACE_SPANID], @"456");
+    XCTAssertEqual(delegate.redirectCalls, 1u);
+    delegate.rejectsRedirect = YES;
+    XCTAssertNil([delegate connection:connection willSendRequest:request redirectResponse:nil]);
+    XCTAssertEqual(delegate.redirectCalls, 2u);
+    XCTAssertEqualObjects(handler.request.URL, delegate.finalURL);
+    [instrumentation shutDown];
+}
+
+- (void)checkURLConnectionSuperclassHooksParentFirst:(BOOL)parentFirst callsSuper:(BOOL)callsSuper overridesData:(BOOL)overridesData {
+    // Fresh classes ensure each registration order is really exercised, even
+    // when XCTest repeats this test in the same process.
+    NSString *suffix = [NSUUID.UUID.UUIDString stringByReplacingOccurrencesOfString:@"-" withString:@""];
+    Class parent = objc_allocateClassPair(NSObject.class, [@"FTConnectionParent_" stringByAppendingString:suffix].UTF8String, 0);
+    SEL selector = @selector(connection:didReceiveData:);
+    const char *encoding = method_getTypeEncoding(class_getInstanceMethod(FTURLConnectionDelegate.class, selector));
+    __block NSUInteger parentCalls = 0;
+    __block NSUInteger childCalls = 0;
+    class_addMethod(parent, selector, imp_implementationWithBlock(^(id object, NSURLConnection *connection, NSData *data) {
+        parentCalls += 1;
+    }), encoding);
+    objc_registerClassPair(parent);
+    Class child = objc_allocateClassPair(parent, [@"FTConnectionChild_" stringByAppendingString:suffix].UTF8String, 0);
+    if (overridesData) {
+        class_addMethod(child, selector, imp_implementationWithBlock(^(id object, NSURLConnection *connection, NSData *data) {
+            childCalls += 1;
+            if (callsSuper) {
+                IMP parentIMP = method_getImplementation(class_getInstanceMethod(parent, selector));
+                ((void (*)(id, SEL, NSURLConnection *, NSData *))parentIMP)(object, selector, connection, data);
+            }
+        }), encoding);
+    }
+    objc_registerClassPair(child);
+    id parentDelegate = [parent new];
+    id childDelegate = [child new];
+    XCTAssertTrue([FTURLConnectionDelegateInstrumentor instrumentDelegate:parentFirst ? parentDelegate : childDelegate]);
+    XCTAssertTrue([FTURLConnectionDelegateInstrumentor instrumentDelegate:parentFirst ? childDelegate : parentDelegate]);
+
+    FTURLSessionSnapshotRumResourceHandler *writer = [FTURLSessionSnapshotRumResourceHandler new];
+    FTURLConnectionInstrumentation *instrumentation = [self urlConnectionInstrumentationWithResource:YES trace:NO link:NO sampleRate:100 interceptor:nil writer:writer];
+    FTURLConnectionDelegateTestClock *clock = [FTURLConnectionDelegateTestClock new];
+    clock.currentDate = [NSDate dateWithTimeIntervalSince1970:1700000002];
+    clock.currentContinuousTime = 3000000000;
+    [instrumentation setValue:clock forKey:@"clock"];
+    id preparation = [instrumentation prepareRequest:[NSURLRequest requestWithURL:[NSURL URLWithString:@"https://urlconnection.example.test/hierarchy"]] delegate:childDelegate];
+    XCTAssertEqual([preparation valueForKey:@"delegate"], childDelegate);
+    FTURLConnectionHandler *handler = [preparation valueForKey:@"handler"];
+    NSURLConnection *connection = [self callbackConnectionWithPreparation:preparation];
+    [handler recordStartWithDate:[NSDate dateWithTimeIntervalSince1970:1700000000] continuousTime:1000000000];
+    [instrumentation activateHandler:handler];
+    [(id<NSURLConnectionDataDelegate>)childDelegate connection:connection didReceiveData:[@"abc" dataUsingEncoding:NSUTF8StringEncoding]];
+    [(id<NSURLConnectionDataDelegate>)childDelegate connection:connection didReceiveData:[@"defgh" dataUsingEncoding:NSUTF8StringEncoding]];
+    [(id<NSURLConnectionDataDelegate>)childDelegate connectionDidFinishLoading:connection];
+    [instrumentation syncProcess];
+    XCTAssertEqual(childCalls, overridesData ? 2u : 0u);
+    XCTAssertEqual(parentCalls, !overridesData || callsSuper ? 2u : 0u);
+    XCTAssertEqualObjects(writer.metrics.responseSize, @8);
+    XCTAssertEqualObjects(writer.metrics.fetchInterval, @2000000000LL);
+    XCTAssertEqualObjects(writer.addKey, handler.identifier);
+    XCTAssertEqual(writer.startCount, 1);
+    XCTAssertEqual(writer.stopCount, 1);
+    XCTAssertEqual(writer.addCount, 1);
+    [instrumentation shutDown];
+}
+
+- (void)testURLConnectionSuperclassHooksObserveExactlyOnceInBothRegistrationOrders {
+    for (NSNumber *parentFirst in @[@YES, @NO]) {
+        for (NSNumber *callsSuper in @[@YES, @NO]) {
+            [self checkURLConnectionSuperclassHooksParentFirst:parentFirst.boolValue callsSuper:callsSuper.boolValue overridesData:YES];
+        }
+        [self checkURLConnectionSuperclassHooksParentFirst:parentFirst.boolValue callsSuper:NO overridesData:NO];
+    }
+}
+
+- (void)testURLConnectionHooksKeepConcurrentSameDelegateRequestsSeparate {
+    FTURLSessionSnapshotRumResourceHandler *writer = [FTURLSessionSnapshotRumResourceHandler new];
+    FTURLConnectionInstrumentation *instrumentation = [self urlConnectionInstrumentationWithResource:YES trace:NO link:NO sampleRate:100 interceptor:nil writer:writer];
+    FTURLConnectionDelegateTestClock *clock = [FTURLConnectionDelegateTestClock new];
+    [instrumentation setValue:clock forKey:@"clock"];
+    FTURLConnectionForwardingDelegate *delegate = [FTURLConnectionForwardingDelegate new];
+    NSURLRequest *request = [NSURLRequest requestWithURL:[NSURL URLWithString:@"https://urlconnection.example.test/same-url"]];
+    id first = [instrumentation prepareRequest:request delegate:delegate];
+    id second = [instrumentation prepareRequest:request delegate:delegate];
+    XCTAssertEqual([first valueForKey:@"delegate"], delegate);
+    XCTAssertEqual([second valueForKey:@"delegate"], delegate);
+    FTURLConnectionHandler *firstHandler = [first valueForKey:@"handler"];
+    FTURLConnectionHandler *secondHandler = [second valueForKey:@"handler"];
+    XCTAssertNotEqualObjects(firstHandler.identifier, secondHandler.identifier);
+    NSURLConnection *firstConnection = [self callbackConnectionWithPreparation:first];
+    NSURLConnection *secondConnection = [self callbackConnectionWithPreparation:second];
+    NSDate *start = [NSDate dateWithTimeIntervalSince1970:1700000000];
+    [firstHandler recordStartWithDate:start continuousTime:1000000000];
+    [secondHandler recordStartWithDate:start continuousTime:1000000000];
+    [instrumentation activateHandler:firstHandler];
+    [instrumentation activateHandler:secondHandler];
+    [delegate connection:firstConnection didReceiveData:[@"abc" dataUsingEncoding:NSUTF8StringEncoding]];
+    [delegate connection:secondConnection didReceiveData:[@"1234567" dataUsingEncoding:NSUTF8StringEncoding]];
+    clock.currentDate = [NSDate dateWithTimeIntervalSince1970:1700000001];
+    clock.currentContinuousTime = 2000000000;
+    [delegate connectionDidFinishLoading:firstConnection];
+    [instrumentation syncProcess];
+    XCTAssertEqualObjects(writer.addKey, firstHandler.identifier);
+    XCTAssertEqualObjects(writer.metrics.responseSize, @3);
+    XCTAssertEqualObjects(writer.metrics.fetchInterval, @1000000000LL);
+    clock.currentDate = [NSDate dateWithTimeIntervalSince1970:1700000002];
+    clock.currentContinuousTime = 3000000000;
+    [delegate connectionDidFinishLoading:secondConnection];
+    [delegate connectionDidFinishLoading:firstConnection];
+    [delegate connection:firstConnection didReceiveData:[@"late" dataUsingEncoding:NSUTF8StringEncoding]];
+    [instrumentation syncProcess];
+    XCTAssertEqualObjects(writer.addKey, secondHandler.identifier);
+    XCTAssertEqualObjects(writer.metrics.responseSize, @7);
+    XCTAssertEqualObjects(writer.metrics.fetchInterval, @2000000000LL);
+    XCTAssertEqual(writer.startCount, 2);
+    XCTAssertEqual(writer.stopCount, 2);
+    XCTAssertEqual(writer.addCount, 2);
+    XCTAssertEqual(delegate.dataCalls, 3u); // Late business callbacks are not suppressed.
+    XCTAssertEqual(delegate.finishCalls, 3u);
+    [instrumentation shutDown];
+    [delegate connection:secondConnection didReceiveData:[@"after-shutdown" dataUsingEncoding:NSUTF8StringEncoding]];
+    [delegate connectionDidFinishLoading:secondConnection];
+    [instrumentation syncProcess];
+    XCTAssertEqual(delegate.dataCalls, 4u);
+    XCTAssertEqual(delegate.finishCalls, 4u);
+    XCTAssertEqual(writer.addCount, 2);
+}
+
+- (void)testURLConnectionHookScopeRestoresAfterBusinessExceptionAndIsolatesObserverException {
+    FTURLSessionSnapshotRumResourceHandler *writer = [FTURLSessionSnapshotRumResourceHandler new];
+    FTURLConnectionInstrumentation *instrumentation = [self urlConnectionInstrumentationWithResource:YES trace:NO link:NO sampleRate:100 interceptor:nil writer:writer];
+    NSURLRequest *request = [NSURLRequest requestWithURL:[NSURL URLWithString:@"https://urlconnection.example.test/exception"]];
+    FTURLConnectionThrowingDelegate *delegate = [FTURLConnectionThrowingDelegate new];
+    id preparation = [instrumentation prepareRequest:request delegate:delegate];
+    FTURLConnectionHandler *handler = [preparation valueForKey:@"handler"];
+    NSURLConnection *connection = [self callbackConnectionWithPreparation:preparation];
+    [handler recordStartWithDate:[NSDate dateWithTimeIntervalSince1970:1700000000] continuousTime:1000000000];
+    [instrumentation activateHandler:handler];
+    delegate.throwsOnData = YES;
+    XCTAssertThrowsSpecificNamed([delegate connection:connection didReceiveData:[@"abc" dataUsingEncoding:NSUTF8StringEncoding]], NSException, @"FTBusinessException");
+    delegate.throwsOnData = NO;
+    [delegate connection:connection didReceiveData:[@"de" dataUsingEncoding:NSUTF8StringEncoding]];
+    [delegate connectionDidFinishLoading:connection];
+    [instrumentation syncProcess];
+    XCTAssertEqualObjects(writer.metrics.responseSize, @5);
+    XCTAssertEqual(delegate.dataCalls, 1u);
+
+    FTURLConnectionThrowingHandler *throwingHandler = [[FTURLConnectionThrowingHandler alloc] initWithRequest:request resourceEnabled:YES provider:nil errorFilter:nil rumResourceHandler:writer];
+    throwingHandler.instrumentation = instrumentation;
+    throwingHandler.generation = handler.generation;
+    [FTURLConnectionInstrumentation associateHandler:throwingHandler withConnection:connection];
+    XCTAssertNoThrow([delegate connection:connection didReceiveData:[@"x" dataUsingEncoding:NSUTF8StringEncoding]]);
+    XCTAssertEqual(delegate.dataCalls, 2u);
+    [instrumentation shutDown];
+}
+
+- (void)testURLConnectionPreparationResolvesEarlyReturnedInstanceOnlyByExactUUID {
+    // The real initializer/factory entry-point tests complement this isolated
+    // ownership test; this is not a substitute for running Foundation/ARC tests.
+    [[FTURLConnectionInstrumentation existingInstance] shutDown];
+    FTURLConnectionInstrumentation *instrumentation = [FTURLConnectionInstrumentation sharedInstance];
+    FTURLSessionSnapshotRumResourceHandler *writer = [FTURLSessionSnapshotRumResourceHandler new];
+    [instrumentation setRumResourceHandler:writer];
+    [instrumentation setEnableAutoRumResource:YES resourceUrlHandler:nil resourcePropertyProvider:nil sessionTaskErrorFilter:nil];
+    FTURLConnectionDelegateTestClock *clock = [FTURLConnectionDelegateTestClock new];
+    clock.currentDate = [NSDate dateWithTimeIntervalSince1970:1700000002];
+    clock.currentContinuousTime = 3000000000;
+    [instrumentation setValue:clock forKey:@"clock"];
+    NSURLRequest *request = [NSURLRequest requestWithURL:[NSURL URLWithString:@"https://urlconnection.example.test/early"]];
+    id preparation = [instrumentation prepareRequest:request delegate:nil];
+    FTURLConnectionHandler *handler = [preparation valueForKey:@"handler"];
+    id<NSURLConnectionDataDelegate> delegate = [preparation valueForKey:@"delegate"];
+    FTURLConnectionCallbackConnection *returnedConnection = [FTURLConnectionCallbackConnection new];
+    returnedConnection.originalRequest = [preparation valueForKey:@"request"];
+    FTURLConnectionCallbackConnection *untrackedConnection = [FTURLConnectionCallbackConnection new];
+    untrackedConnection.originalRequest = request; // Same URL is deliberately insufficient.
+    XCTAssertNil([FTURLConnectionInstrumentation handlerForConnection:(id)untrackedConnection]);
+    [handler recordStartWithDate:[NSDate dateWithTimeIntervalSince1970:1700000000] continuousTime:1000000000];
+    [delegate connection:(id)returnedConnection didReceiveData:[@"early" dataUsingEncoding:NSUTF8StringEncoding]];
+    [delegate connectionDidFinishLoading:(id)returnedConnection];
+    [instrumentation syncProcess];
+    XCTAssertEqual(writer.startCount, 0); // No Resource until init has returned non-nil.
+    XCTAssertEqual(writer.addCount, 0);
+    [instrumentation finishPreparingHandler:handler];
+    [instrumentation activateHandler:handler];
+    [instrumentation syncProcess];
+    XCTAssertEqualObjects(writer.metrics.responseSize, @5);
+    XCTAssertEqualObjects(writer.metrics.fetchInterval, @2000000000LL);
+    XCTAssertEqualObjects(writer.addKey, handler.identifier);
+    XCTAssertEqual(writer.addCount, 1);
+    FTURLConnectionCallbackConnection *lateCopy = [FTURLConnectionCallbackConnection new];
+    lateCopy.originalRequest = returnedConnection.originalRequest;
+    XCTAssertNil([FTURLConnectionInstrumentation handlerForConnection:(id)lateCopy]);
+    [instrumentation shutDown];
+    [delegate connectionDidFinishLoading:(id)returnedConnection];
+    XCTAssertNil([FTURLConnectionInstrumentation existingInstance]);
+    XCTAssertEqual(writer.addCount, 1);
+}
+
+- (void)testURLConnectionLateTerminalAfterShutdownCannotEnterRestartedGeneration {
+    NSURLRequest *request = [NSURLRequest requestWithURL:[NSURL URLWithString:@"https://urlconnection.example.test/generation"]];
+    FTURLSessionSnapshotRumResourceHandler *oldWriter = [FTURLSessionSnapshotRumResourceHandler new];
+    FTURLConnectionInstrumentation *oldInstrumentation = [self urlConnectionInstrumentationWithResource:YES
+                                                                                                     trace:NO
+                                                                                                      link:NO
+                                                                                                sampleRate:100
+                                                                                               interceptor:nil
+                                                                                                    writer:oldWriter];
+    id oldPreparation = [oldInstrumentation prepareRequest:request delegate:nil];
+    FTURLConnectionHandler *oldHandler = [oldPreparation valueForKey:@"handler"];
+    [oldHandler recordStartWithDate:[NSDate dateWithTimeIntervalSince1970:1700000000] continuousTime:100];
+    [oldInstrumentation activateHandler:oldHandler];
+    [oldInstrumentation syncProcess];
+    XCTAssertEqual(oldWriter.startCount, 1);
+    [oldInstrumentation shutDown];
+
+    FTURLSessionSnapshotRumResourceHandler *newWriter = [FTURLSessionSnapshotRumResourceHandler new];
+    FTURLConnectionInstrumentation *newInstrumentation = [self urlConnectionInstrumentationWithResource:YES
+                                                                                                     trace:NO
+                                                                                                      link:NO
+                                                                                                sampleRate:100
+                                                                                               interceptor:nil
+                                                                                                    writer:newWriter];
+    id newPreparation = [newInstrumentation prepareRequest:request delegate:nil];
+    FTURLConnectionHandler *newHandler = [newPreparation valueForKey:@"handler"];
+    [newHandler recordStartWithDate:[NSDate dateWithTimeIntervalSince1970:1700000010] continuousTime:1000];
+    [newInstrumentation activateHandler:newHandler];
+    [newInstrumentation handler:newHandler didReachTerminalWithResponse:nil error:nil];
+    [newInstrumentation syncProcess];
+
+    [oldInstrumentation handler:oldHandler
+     didReachTerminalWithResponse:nil
+                           error:[NSError errorWithDomain:NSURLErrorDomain code:NSURLErrorTimedOut userInfo:nil]];
+    [oldInstrumentation syncProcess];
+    XCTAssertEqual(oldWriter.stopCount, 0);
+    XCTAssertEqual(oldWriter.addCount, 0);
+    XCTAssertEqual(newWriter.startCount, 1);
+    XCTAssertEqual(newWriter.stopCount, 1);
+    XCTAssertEqual(newWriter.addCount, 1);
+}
+
+
+- (void)testURLConnectionMetricsDoNotFallBackToHeadersOrInventPhases {
+    [FTModelHelper startViewWithName:@"URLConnectionFields"];
+    NSURL *url = [NSURL URLWithString:@"https://urlconnection.example.test/rum-fields"];
+    NSMutableURLRequest *request = [NSMutableURLRequest requestWithURL:url];
+    [request setValue:@"777" forHTTPHeaderField:@"Content-Length"];
+    FTRUMManager *rumManager = [FTGlobalRumManager sharedInstance].rumManager;
+    FTURLConnectionHandler *handler = [self urlConnectionHandlerWithRequest:request provider:nil errorFilter:nil writer:rumManager];
+    NSDate *startDate = [NSDate dateWithTimeIntervalSince1970:1700000000];
+    NSHTTPURLResponse *response = [[NSHTTPURLResponse alloc] initWithURL:url
+                                                              statusCode:200
+                                                             HTTPVersion:@"HTTP/1.1"
+                                                            headerFields:@{@"Content-Length": @"999"}];
+    [handler recordStartWithDate:startDate continuousTime:1000000000];
+    [handler activate];
+    [handler didReceiveResponse:response];
+    [handler didReceiveData:[NSMutableData dataWithLength:4]];
+    [handler recordTerminalWithResponse:nil error:nil date:[NSDate dateWithTimeIntervalSince1970:1700000003] continuousTime:4000000000];
+    [handler reportTerminalIfNeeded];
+    [rumManager syncProcess];
+
+    __block NSUInteger count = 0;
+    [FTModelHelper resolveModelArray:[[FTTrackerEventDBTool sharedManager] getAllDatas]
+                         timeCallBack:^(NSString *source, NSDictionary *tags, NSDictionary *fields, long long time, BOOL *stop) {
+        if ([source isEqualToString:FT_RUM_SOURCE_RESOURCE] && [tags[FT_KEY_RESOURCE_URL] isEqualToString:url.absoluteString]) {
+            count += 1;
+            XCTAssertEqual(time, 1700000000000000000LL);
+            XCTAssertEqualObjects(fields[FT_DURATION], @3000000000LL);
+            XCTAssertEqualObjects(fields[FT_KEY_RESOURCE_SIZE], @4);
+            XCTAssertEqualObjects(fields[FT_KEY_RESOURCE_REQUEST_SIZE], @0);
+            XCTAssertNil(fields[FT_KEY_RESOURCE_CONNECTION_REUSE]);
+            XCTAssertNil(fields[FT_KEY_RESOURCE_DNS]);
+            XCTAssertNil(fields[FT_KEY_RESOURCE_TCP]);
+            XCTAssertNil(fields[FT_KEY_RESOURCE_SSL]);
+            XCTAssertNil(fields[FT_KEY_RESOURCE_TTFB]);
+        }
+    }];
+    XCTAssertEqual(count, 1u);
+}
+
 - (void)testURLSessionRequestSnapshotCapturesStableRequestAttributes {
     NSURL *url = [NSURL URLWithString:@"https://snapshot.example.com/direct"];
     NSMutableData *body = [[@"body" dataUsingEncoding:NSUTF8StringEncoding] mutableCopy];

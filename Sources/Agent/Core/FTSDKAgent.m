@@ -41,6 +41,7 @@
 #import "FTSDKVersion.h"
 #import "FTNetworkInfoManager.h"
 #import "FTURLSessionInstrumentation.h"
+#import "FTURLConnectionInstrumentation.h"
 #import "FTInternalConstants.h"
 #import "FTSDKConfig+Private.h"
 #import "FTLoggerConfig+Private.h"
@@ -172,6 +173,10 @@ static FTSDKAgent *sharedInstance = nil;
     [self.traceConfig mergeWithRemoteConfigModel:model];
     [[FTGlobalRumManager sharedInstance] updateSampleRate:self.rumConfig.sampleRate sessionOnErrorSampleRate:self.rumConfig.sessionOnErrorSampleRate];
     [[FTURLSessionInstrumentation sharedInstance] updateTraceSampleRate:self.traceConfig.sampleRate];
+    FTURLConnectionInstrumentation *urlConnectionInstrumentation = [FTURLConnectionInstrumentation existingInstance];
+    [urlConnectionInstrumentation updateTraceSampleRate:self.traceConfig.sampleRate];
+    [urlConnectionInstrumentation updateResourceEnabled:self.rumConfig.enableTraceURLConnectionResource];
+    [urlConnectionInstrumentation updateTraceEnabled:self.traceConfig.enableAutoTraceURLConnection];
     [FTNetworkInfoManager sharedInstance].setCompressionIntakeRequests(self.sdkConfig.compressIntakeRequests);
     [[FTTrackDataManager sharedInstance] updateAutoSync:self.sdkConfig.autoSync syncPageSize:self.sdkConfig.syncPageSize syncSleepTime:self.sdkConfig.syncSleepTime];
     [self.loggerConfig mergeWithRemoteConfigModel:[FTRemoteConfigManager sharedInstance].lastRemoteModel];
@@ -251,6 +256,13 @@ static FTSDKAgent *sharedInstance = nil;
                                                 sessionTaskErrorFilter:rumConfig.sessionTaskErrorFilter
     ];
     [[FTURLSessionInstrumentation sharedInstance] setRumResourceHandler:[FTGlobalRumManager sharedInstance].rumManager];
+    [[FTURLConnectionInstrumentation sharedInstance]
+        setRumResourceHandler:[FTGlobalRumManager sharedInstance].rumManager];
+    [[FTURLConnectionInstrumentation sharedInstance]
+        setEnableAutoRumResource:rumConfig.enableTraceURLConnectionResource
+        resourceUrlHandler:rumConfig.resourceUrlHandler
+        resourcePropertyProvider:rumConfig.resourcePropertyProvider
+        sessionTaskErrorFilter:rumConfig.sessionTaskErrorFilter];
     [FTExternalDataManager sharedManager].resourceDelegate = [FTURLSessionInstrumentation sharedInstance].externalResourceHandler;
     [[FTExtensionDataManager sharedInstance] writeRumConfig:[rumConfig convertToDictionary]];
     if (_loggerConfig) {
@@ -295,6 +307,13 @@ static FTSDKAgent *sharedInstance = nil;
                                                          traceInterceptor:traceConfig.traceInterceptor
                                                               serviceName:self.sdkConfig.service
     ];
+    [[FTURLConnectionInstrumentation sharedInstance]
+        setTraceEnableAutoTrace:traceConfig.enableAutoTraceURLConnection
+        enableLinkRumData:traceConfig.enableLinkRumData
+        sampleRate:traceConfig.sampleRate
+        traceType:(NetworkTraceType)traceConfig.networkTraceType
+        traceInterceptor:traceConfig.traceInterceptor
+        serviceName:self.sdkConfig.service];
     [FTExternalDataManager sharedManager].resourceDelegate = [FTURLSessionInstrumentation sharedInstance].externalResourceHandler;
     [[FTExtensionDataManager sharedInstance] writeTraceConfig:[traceConfig convertToDictionary]];
     FTInnerLogInfo(@"Init Trace Config Success: \n%@",traceConfig.debugDescription);
@@ -308,6 +327,7 @@ static FTSDKAgent *sharedInstance = nil;
 - (void)isIntakeUrl:(BOOL(^)(NSURL *url))handler{
     if(handler){
         [[FTURLSessionInstrumentation sharedInstance] setIntakeUrlHandler:handler];
+        [[FTURLConnectionInstrumentation sharedInstance] setIntakeUrlHandler:handler];
     }
 }
 -(void)logging:(NSString *)content status:(FTLogStatus)status{
@@ -471,6 +491,7 @@ static FTSDKAgent *sharedInstance = nil;
 }
 - (void)releaseInternalResources {
     [[FTLogger sharedInstance] shutDown];
+    [[FTURLConnectionInstrumentation existingInstance] shutDown];
     [[FTGlobalRumManager sharedInstance] shutDown];
     [[FTURLSessionInstrumentation sharedInstance] shutDown];
     [[FTRemoteConfigManager sharedInstance] shutDown];
