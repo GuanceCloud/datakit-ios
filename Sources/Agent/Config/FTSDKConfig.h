@@ -91,6 +91,9 @@ typedef FTTraceContext*_Nullable(^FTTraceInterceptor)(NSURLRequest *_Nonnull req
 @property (nonatomic, assign) BOOL enableLinkRumData;
 /// Set whether to enable automatic http trace
 @property (nonatomic, assign) BOOL enableAutoTrace;
+/// Enable automatic Trace header injection for NSURLConnection. Default: NO.
+/// This switch is independent from `enableAutoTrace`, which controls NSURLSession.
+@property (nonatomic, assign) BOOL enableAutoTraceURLConnection;
 @end
 
 /// SDK basic configuration items
@@ -160,6 +163,11 @@ typedef FTTraceContext*_Nullable(^FTTraceInterceptor)(NSURLRequest *_Nonnull req
 
 /// Local DataKit-compatible blacklist filter rules managed by the app. Supported keys: logging, rum.
 @property (nonatomic, copy) NSDictionary<NSString *, NSArray<NSString *> *> *dataFilters;
+
+/// Hosts or domains allowed to use the automatic WebView Bridge.
+///
+/// `nil` allows every host. An empty array allows no hosts.
+@property (nonatomic, copy, nullable) NSArray<NSString *> *allowWebViewHost;
 
 /// Set whether to enable remote dynamic configuration
 @property (nonatomic, assign) BOOL remoteConfiguration;

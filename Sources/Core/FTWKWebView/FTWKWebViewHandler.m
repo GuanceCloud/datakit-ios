@@ -41,10 +41,13 @@
 
 @interface FTWKWebViewHandler ()
 @property (nonatomic, weak, nullable) id<FTWKWebViewRumDelegate> rumTrackDelegate;
+@property (nonatomic, weak, nullable) id<FTWKWebViewLogDelegate> logDelegate;
 @property (nonatomic, strong) NSMapTable *webViewBridge;
+@property (nonatomic, strong) NSHashTable<WKWebView *> *manuallyEnabledWebViews;
 @property (nonatomic, copy) NSString *allowWebViewHostsString;
 @property (nonatomic, strong) NSLock *lock;
 @property (nonatomic, assign) BOOL enableTraceWebView;
+@property (nonatomic, assign) BOOL enableWebViewLog;
 @end
 
 // FTWKWebViewHandler+SessionReplay.h
@@ -79,18 +82,46 @@ static NSObject *sharedInstanceLock;
     self = [super init];
     if (self) {
         self.webViewBridge = [NSMapTable weakToStrongObjectsMapTable];
+        self.manuallyEnabledWebViews = [NSHashTable weakObjectsHashTable];
         self.lock = [NSLock new];
         self.enableTraceWebView = NO;
+        self.enableWebViewLog = NO;
+        self.allowWebViewHostsString = @"null";
     }
     return self;
 }
-- (void)startWithEnableTraceWebView:(BOOL)enable allowWebViewHost:(NSArray *)hosts rumDelegate:(id<FTWKWebViewRumDelegate>)delegate{
-    _enableTraceWebView = enable;
+- (void)setAllowWebViewHost:(NSArray *)hosts {
+    NSString *hostsString = [self transHostsArrayToString:hosts];
+    [self.lock lock];
+    @try {
+        _allowWebViewHostsString = [hostsString copy];
+    } @finally {
+        [self.lock unlock];
+    }
+}
+- (void)startWithEnableTraceWebView:(BOOL)enable rumDelegate:(id<FTWKWebViewRumDelegate>)delegate{
+    [self.lock lock];
+    @try {
+        _enableTraceWebView = enable;
+        _rumTrackDelegate = delegate;
+    } @finally {
+        [self.lock unlock];
+    }
     if (enable) {
         [self setWKWebViewTrace];
     }
-    self.allowWebViewHostsString = [self transHostsArrayToString:hosts];
-    self.rumTrackDelegate = delegate;
+}
+- (void)startWithEnableWebViewLog:(BOOL)enable logDelegate:(id<FTWKWebViewLogDelegate>)delegate {
+    [self.lock lock];
+    @try {
+        _enableWebViewLog = enable;
+        _logDelegate = delegate;
+    } @finally {
+        [self.lock unlock];
+    }
+    if (enable) {
+        [self setWKWebViewTrace];
+    }
 }
 - (void)setWKWebViewTrace{
     static dispatch_once_t onceTokenWebView;
@@ -143,6 +174,7 @@ static NSObject *sharedInstanceLock;
     [self.lock lock];
     @try {
         [self.webViewBridge removeObjectForKey:webView];
+        [self.manuallyEnabledWebViews removeObject:webView];
     } @finally {
         [self.lock unlock];
     }
@@ -153,6 +185,7 @@ static NSObject *sharedInstanceLock;
     @try {
         allBridges = [[self.webViewBridge.objectEnumerator allObjects] copy];
         [self.webViewBridge removeAllObjects];
+        [self.manuallyEnabledWebViews removeAllObjects];
     } @finally {
         [self.lock unlock];
     }
@@ -169,6 +202,7 @@ static NSObject *sharedInstanceLock;
     @try {
         bridge = [self.webViewBridge objectForKey:webView];
         [self.webViewBridge removeObjectForKey:webView];
+        [self.manuallyEnabledWebViews removeObject:webView];
     } @finally {
         [self.lock unlock];
     }
@@ -176,7 +210,7 @@ static NSObject *sharedInstanceLock;
 }
 - (NSString *)transHostsArrayToString:(NSArray *)hosts{
     @try {
-        if(hosts && hosts.count>0){
+        if(hosts){
             NSArray *hostsCopy = [hosts copy];
             NSMutableArray<NSString *> *quotedHosts = [[NSMutableArray alloc] initWithCapacity:hostsCopy.count];
             [hostsCopy enumerateObjectsUsingBlock:^(NSString * _Nonnull host, NSUInteger idx, BOOL * _Nonnull stop) {
@@ -192,19 +226,41 @@ static NSObject *sharedInstanceLock;
     return @"null";
 }
 - (void)innerEnableWebView:(WKWebView *)webView{
-    if (self.enableTraceWebView) {
-        [self _enableWebView:webView allowedWebViewHostsString:self.allowWebViewHostsString];
+    BOOL shouldInstall = NO;
+    NSString *hostsString = nil;
+    [self.lock lock];
+    @try {
+        shouldInstall = _enableTraceWebView || _enableWebViewLog;
+        hostsString = [_allowWebViewHostsString copy];
+    } @finally {
+        [self.lock unlock];
+    }
+    if (shouldInstall) {
+        [self _enableWebView:webView allowedWebViewHostsString:hostsString manuallyEnabled:NO];
     }
 }
 - (void)enableWebView:(WKWebView *)webView{
-    [self _enableWebView:webView allowedWebViewHostsString:self.allowWebViewHostsString];
+    [self _enableWebView:webView allowedWebViewHostsString:self.allowWebViewHostsString manuallyEnabled:YES];
 }
 - (void)enableWebView:(WKWebView *)webView allowWebViewHost:(NSArray *)hosts{
     NSString *allowedHosts = [self transHostsArrayToString:hosts];
-    [self _enableWebView:webView allowedWebViewHostsString:allowedHosts];
+    [self _enableWebView:webView allowedWebViewHostsString:allowedHosts manuallyEnabled:YES];
 }
-- (void)_enableWebView:(WKWebView *)webView allowedWebViewHostsString:(NSString *)hostsString{
+- (void)_enableWebView:(WKWebView *)webView
+allowedWebViewHostsString:(NSString *)hostsString
+        manuallyEnabled:(BOOL)manuallyEnabled {
     @try {
+        if (!webView) {
+            return;
+        }
+        if (manuallyEnabled) {
+            [self.lock lock];
+            @try {
+                [self.manuallyEnabledWebViews addObject:webView];
+            } @finally {
+                [self.lock unlock];
+            }
+        }
         if ([self getWebViewBridge:webView]) {
             return;
         }
@@ -215,7 +271,7 @@ static NSObject *sharedInstanceLock;
         __weak typeof(self) weakSelf = self;
         [bridge registerHandler:@"sendEvent" handler:^(id data, int64_t slotId,WVJBResponseCallback responseCallback) {
             __strong __typeof(weakSelf) strongSelf = weakSelf;
-            if (!strongSelf || !strongSelf.rumTrackDelegate) return;
+            if (!strongSelf) return;
             [strongSelf dealReceiveScriptMessage:data slotId:slotId info:bindInfo];
         }];
         [self addWebView:webView bridge:bridge];
@@ -233,7 +289,34 @@ static NSObject *sharedInstanceLock;
             return;
         }
         NSString *name = messageDic[@"name"];
+        BOOL enableTraceWebView = NO;
+        BOOL enableWebViewLog = NO;
+        BOOL manuallyEnabled = NO;
+        id<FTWKWebViewRumDelegate> rumDelegate = nil;
+        id<FTWKWebViewLogDelegate> logDelegate = nil;
+        WKWebView *container = info.container;
+        [self.lock lock];
+        @try {
+            enableTraceWebView = _enableTraceWebView;
+            enableWebViewLog = _enableWebViewLog;
+            manuallyEnabled = container && [_manuallyEnabledWebViews containsObject:container];
+            rumDelegate = _rumTrackDelegate;
+            logDelegate = _logDelegate;
+        } @finally {
+            [self.lock unlock];
+        }
+        if ([name isEqualToString:@"log"]) {
+            id data = messageDic[@"data"];
+            if (enableWebViewLog && logDelegate && [data isKindOfClass:NSDictionary.class]) {
+                BOOL linkToNativeRum = (enableTraceWebView || manuallyEnabled) && rumDelegate != nil;
+                [logDelegate logWebViewEvent:data linkToNativeRum:linkToNativeRum];
+            }
+            return;
+        }
         if ([name isEqualToString:@"rum"]) {
+            if ((!enableTraceWebView && !manuallyEnabled) || !rumDelegate) {
+                return;
+            }
             NSDictionary *data = messageDic[@"data"];
             NSString *measurement = data[FT_MEASUREMENT];
             NSMutableDictionary *tags = [data[FT_TAGS] mutableCopy];
@@ -252,10 +335,10 @@ static NSObject *sharedInstanceLock;
             if (measurement && fields.count>0) {
                 if ([measurement isEqualToString:FT_RUM_SOURCE_VIEW]) {
                     if (!info.viewId) {
-                        info.viewId = self.rumTrackDelegate ? [self.rumTrackDelegate getLastHasReplayViewID] : nil;
+                        info.viewId = [rumDelegate getLastHasReplayViewID];
                     }
                     if (!info.viewReferrer) {
-                        info.viewReferrer = self.rumTrackDelegate ? [self.rumTrackDelegate getLastViewName] : nil;
+                        info.viewReferrer = [rumDelegate getLastViewName];
                     }
                     if (info.viewId) {
                         NSArray *linkRUMKeys = self.enableLinkRUMKeys;
@@ -291,9 +374,12 @@ static NSObject *sharedInstanceLock;
                         @"error_crash":@(NO)
                     } sync:NO];
                 }
-                [self.rumTrackDelegate dealRUMWebViewData:measurement tags:tags fields:fields tm:time];
+                [rumDelegate dealRUMWebViewData:measurement tags:tags fields:fields tm:time];
             }
         }else if ([name isEqualToString:@"session_replay"]){
+            if ((!enableTraceWebView && !manuallyEnabled) || !rumDelegate) {
+                return;
+            }
             NSMutableDictionary *dict = [messageDic mutableCopy];
             [dict setValue:[NSString stringWithFormat:@"%lld",slotID] forKey:@"slotId"];
             [dict setValue:info.container.ft_linkRumKeysInfo forKey:FT_LINK_RUM_KEYS];
@@ -314,6 +400,7 @@ static NSObject *sharedInstanceLock;
 }
 + (void)shutDown{
     @synchronized(sharedInstanceLock) {
+        [sharedInstance removeAllWebViewBridges];
         sharedInstance = nil;
     }
 }

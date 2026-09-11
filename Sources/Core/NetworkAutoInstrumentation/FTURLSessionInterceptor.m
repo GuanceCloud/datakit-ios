@@ -22,13 +22,15 @@
 #import "FTURLSessionInterceptor+Private.h"
 #import "FTSessionTaskHandler.h"
 #import "FTResourceContentModel.h"
-#import "FTResourceMetricsModel.h"
+#import "FTResourceMetricsModel+Private.h"
 #import "FTReadWriteHelper.h"
 #import "FTInnerLog.h"
 #import "FTTraceContext.h"
 #import "NSURLSessionTask+FTSwizzler.h"
 #import "NSDictionary+FTCopyProperties.h"
 #import "FTConstants.h"
+#import "FTDateUtil.h"
+#import "NSDate+FTUtil.h"
 void *FTInterceptorQueueIdentityKey = &FTInterceptorQueueIdentityKey;
 
 @interface FTURLSessionInterceptor ()
@@ -242,8 +244,10 @@ static NSObject *sharedInstanceLock;
 #pragma mark - RUM
 // rum:start resource
 - (void)interceptTask:(NSURLSessionTask *)task{
-    FTURLSessionRequestSnapshot *requestSnapshot = [FTURLSessionRequestSnapshot snapshotWithRequest:task.currentRequest];
     BOOL isWebSocketHandshake = task.ft_isWebSocketTask;
+    uint64_t startTime = isWebSocketHandshake ? [FTDateUtil continuousTime] : 0;
+    long long startNsTimeInterval = isWebSocketHandshake ? [[NSDate date] ft_nanosecondTimeStamp] : 0;
+    FTURLSessionRequestSnapshot *requestSnapshot = [FTURLSessionRequestSnapshot snapshotWithRequest:task.currentRequest];
     NSURL *resourceURL = isWebSocketHandshake ? task.ft_webSocketResourceURL : requestSnapshot.URL;
     dispatch_async(self.queue, ^{
         @try {
@@ -262,6 +266,8 @@ static NSObject *sharedInstanceLock;
             handler.requestSnapshot = requestSnapshot;
             if (isWebSocketHandshake) {
                 handler.webSocketHandshake = YES;
+                handler.webSocketHandshakeStartTime = startTime;
+                handler.webSocketHandshakeStartNsTimeInterval = startNsTimeInterval;
                 handler.webSocketURL = resourceURL;
                 NSMutableURLRequest *webSocketRequest = [requestSnapshot.request mutableCopy];
                 webSocketRequest.URL = resourceURL;
@@ -279,8 +285,14 @@ static NSObject *sharedInstanceLock;
     [self taskMetricsCollected:task metrics:metrics custom:YES];
 }
 -(void)taskMetricsCollected:(NSURLSessionTask *)task metrics:(NSURLSessionTaskMetrics *)metrics custom:(BOOL)custom{
+    [self taskMetricsCollected:task metrics:metrics custom:custom extraProvider:nil];
+}
+- (void)taskMetricsCollected:(NSURLSessionTask *)task metrics:(NSURLSessionTaskMetrics *)metrics custom:(BOOL)custom extraProvider:(nullable ResourcePropertyProvider)extraProvider{
+    uint64_t endTime = [FTDateUtil continuousTime];
     NSURLResponse *completedResponse = task.response;
     NSError *completedError = task.error;
+    NSURLSessionTaskState taskState = task.state;
+    ResourcePropertyProvider webSocketProvider = extraProvider ?: self.resourcePropertyProvider;
     BOOL hasCompletion = task.ft_hasCompletion;
     dispatch_async(self.queue, ^{
         @try {
@@ -289,13 +301,36 @@ static NSObject *sharedInstanceLock;
                 return;
             }
             [handler taskReceivedMetrics:metrics custom:custom];
-            if(!handler.webSocketHandshake && !custom){
+            if (handler.webSocketHandshake) {
+                // Automatic collection uses didOpen for success and completion for failure.
+                // Metrics only supplies timing data on that path.
+                if (!custom) {
+                    return;
+                }
+                NSInteger status = [completedResponse isKindOfClass:NSHTTPURLResponse.class] ? ((NSHTTPURLResponse *)completedResponse).statusCode : 0;
+                // Existing public forwarding has no required open callback, so retain its
+                // metrics compatibility path. A 101 alone is insufficient: validation can fail.
+                BOOL successfulResponse = status == 101 || (status >= 200 && status < 300);
+                if (taskState == NSURLSessionTaskStateRunning && !completedError && successfulResponse) {
+                    [self completeWebSocketHandshakeForTask:task
+                                                   handler:handler
+                                                  response:completedResponse
+                                                    error:nil
+                                                    state:FT_RESOURCE_WEBSOCKET_HANDSHAKE_STATE_SUCCESS
+                                                  endTime:endTime
+                                            extraProvider:webSocketProvider
+                                               errorFilter:nil];
+                }
+                // Failures retain the completion path and its task-specific error filter.
+                return;
+            }
+            if(!custom){
                 if (@available(iOS 15.0,tvOS 15.0,macOS 12.0, *)) {
                     //macOS 10.15, iOS 13.0, watchOS 6.0, tvOS 13.0, *
                     if(!hasCompletion){
                         ResourcePropertyProvider provider = self.resourcePropertyProvider;
                         SessionTaskErrorFilter filter = self.sessionTaskErrorFilter;
-                        [self handleTaskCompleted:task response:completedResponse error:completedError extraProvider:provider errorFilter:filter];
+                        [self handleTaskCompleted:task response:completedResponse error:completedError extraProvider:provider errorFilter:filter endTime:endTime];
                     }
                 }
             }
@@ -335,6 +370,7 @@ static NSObject *sharedInstanceLock;
 }
 /// WebSocket open is the successful handshake boundary. It must not wait for later connection close.
 - (void)taskWebSocketDidOpen:(NSURLSessionTask *)task extraProvider:(nullable ResourcePropertyProvider)extraProvider{
+    uint64_t endTime = [FTDateUtil continuousTime];
     ResourcePropertyProvider provider = extraProvider?:self.resourcePropertyProvider;
     NSURLResponse *response = task.response;
     dispatch_async(self.queue, ^{
@@ -348,6 +384,7 @@ static NSObject *sharedInstanceLock;
                                            response:response
                                              error:nil
                                              state:FT_RESOURCE_WEBSOCKET_HANDSHAKE_STATE_SUCCESS
+                                           endTime:endTime
                                      extraProvider:provider
                                         errorFilter:nil];
         } @catch (NSException *exception) {
@@ -363,19 +400,20 @@ static NSObject *sharedInstanceLock;
     [self taskCompleted:task error:error extraProvider:extraProvider errorFilter:nil];
 }
 - (void)taskCompleted:(NSURLSessionTask *)task error:(NSError *)error extraProvider:(nullable ResourcePropertyProvider)extraProvider errorFilter:(nullable SessionTaskErrorFilter)errorFilter{
+    uint64_t endTime = [FTDateUtil continuousTime];
     ResourcePropertyProvider provider = extraProvider?:self.resourcePropertyProvider;
     SessionTaskErrorFilter filter = errorFilter?:self.sessionTaskErrorFilter;
     NSURLResponse *completedResponse = task.response;
     dispatch_async(self.queue, ^{
         @try {
-            [self handleTaskCompleted:task response:completedResponse error:error extraProvider:provider errorFilter:filter];
+            [self handleTaskCompleted:task response:completedResponse error:error extraProvider:provider errorFilter:filter endTime:endTime];
         }@catch (NSException *exception) {
             FTInnerLogError(@"exception: %@",exception);
         }
     });
 }
 
-- (void)handleTaskCompleted:(NSURLSessionTask *)task response:(NSURLResponse *)response error:(NSError *)error extraProvider:(nullable ResourcePropertyProvider)extraProvider errorFilter:(nullable SessionTaskErrorFilter)errorFilter{
+- (void)handleTaskCompleted:(NSURLSessionTask *)task response:(NSURLResponse *)response error:(NSError *)error extraProvider:(nullable ResourcePropertyProvider)extraProvider errorFilter:(nullable SessionTaskErrorFilter)errorFilter endTime:(uint64_t)endTime{
     FTSessionTaskHandler *handler = [self getTraceHandler:task];
     if(!handler){
         return;
@@ -387,6 +425,7 @@ static NSObject *sharedInstanceLock;
                                        response:response
                                          error:error
                                          state:state
+                                       endTime:endTime
                                  extraProvider:extraProvider
                                     errorFilter:errorFilter];
         return;
@@ -414,11 +453,7 @@ static NSObject *sharedInstanceLock;
 }
 
 - (NSString *)webSocketHandshakeStateWithResponse:(nullable NSURLResponse *)response{
-    NSInteger statusCode = -1;
-    if ([response isKindOfClass:NSHTTPURLResponse.class]) {
-        statusCode = ((NSHTTPURLResponse *)response).statusCode;
-    }
-    if (statusCode >= 100 && statusCode <= 599 && statusCode != 101) {
+    if ([response isKindOfClass:NSHTTPURLResponse.class] && ((NSHTTPURLResponse *)response).statusCode != 101) {
         return FT_RESOURCE_WEBSOCKET_HANDSHAKE_STATE_REJECTED;
     }
     return FT_RESOURCE_WEBSOCKET_HANDSHAKE_STATE_FAILED;
@@ -429,8 +464,17 @@ static NSObject *sharedInstanceLock;
                                  response:(nullable NSURLResponse *)response
                                    error:(nullable NSError *)error
                                    state:(NSString *)state
+                                 endTime:(uint64_t)endTime
                            extraProvider:(nullable ResourcePropertyProvider)extraProvider
                               errorFilter:(nullable SessionTaskErrorFilter)errorFilter{
+    // Prefer Foundation's opening-handshake task interval, preserving phase offsets.
+    // Only synthesize an interval when metrics are missing or have no valid duration.
+    FTResourceMetricsModel *metrics = handler.metricsModel ?: [FTResourceMetricsModel new];
+    if (!metrics.fetchInterval) {
+        metrics.fetchStartNsTimeInterval = handler.webSocketHandshakeStartNsTimeInterval;
+        metrics.fetchEndNsTimeInterval = metrics.fetchStartNsTimeInterval + (long long)(endTime - handler.webSocketHandshakeStartTime);
+    }
+    handler.metricsModel = metrics;
     BOOL filterError = errorFilter && error ? errorFilter(error) : NO;
     NSError *contentError = filterError ? nil : error;
     [handler taskCompletedWithResponse:response error:contentError];

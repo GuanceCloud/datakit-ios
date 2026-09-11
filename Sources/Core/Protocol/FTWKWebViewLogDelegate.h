@@ -1,9 +1,8 @@
 //
-//  FTSDKVersion.h
-//  FTSDK
+//  FTWKWebViewLogDelegate.h
+//  FTMobileSDK
 //
-//  Created by hulilei on 2021/8/23.
-//  Copyright 2021 Shanghai Guance Information Technology Co., Ltd.
+//  Copyright 2026 Shanghai Guance Information Technology Co., Ltd.
 //
 //  Licensed under the Apache License, Version 2.0 (the "License");
 //  you may not use this file except in compliance with the License.
@@ -18,9 +17,14 @@
 //  limitations under the License.
 //
 
-#ifndef FTSDKVersion_h
-#define FTSDKVersion_h
+#import <Foundation/Foundation.h>
 
-#define SDK_VERSION  @"1.6.8-alpha.4"
+NS_ASSUME_NONNULL_BEGIN
 
-#endif /* FTSDKVersion_h */
+@protocol FTWKWebViewLogDelegate <NSObject>
+/// Receives a Browser Log payload. Native application/session linking is eligible
+/// only while WebView RUM is active; Logger still owns the final linking decision.
+- (void)logWebViewEvent:(NSDictionary *)event linkToNativeRum:(BOOL)linkToNativeRum;
+@end
+
+NS_ASSUME_NONNULL_END

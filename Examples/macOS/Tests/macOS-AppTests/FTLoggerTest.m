@@ -28,9 +28,63 @@
 #import "FTRecordModel.h"
 #import "FTDateUtil.h"
 #import "FTJSONUtil.h"
-@interface FTLoggerTest : FTTestHelper
+#import "FTLogger+Private.h"
+#import "FTWebViewLogEventMapper.h"
+#import "FTConfig+RemoteConfig.h"
+#import "FTRemoteConfigModel.h"
+#import "FTRemoteConfigModel+Private.h"
+#import "FTSDKVersion.h"
+#import "FTWKWebViewHandler+Private.h"
+#import "FTWKWebViewJavascriptBridge.h"
+#import "FTHTTPClient.h"
+#import "FTDataUploadWorker.h"
+#import <WebKit/WebKit.h>
+@interface FTDataUploadWorker (WebViewLogUploadTesting)
+- (BOOL)flushWithType:(NSString *)type maxBatchesPerUploadPass:(NSInteger)maxBatchesPerUploadPass;
+@end
+@interface FTWKWebViewHandler (WebViewLogTesting)
+- (nullable id)getWebViewBridge:(WKWebView *)webView;
+- (void)dealReceiveScriptMessage:(id)message slotId:(int64_t)slotID info:(FTBindInfo *)info;
+@end
+@interface FTWebViewLogHTTPClientStub : FTHTTPClient
+@property (nonatomic, copy) NSString *capturedUpload;
+@end
+@implementation FTWebViewLogHTTPClientStub
+- (void)sendRequest:(id<FTRequestProtocol>)request
+         completion:(void (^)(NSHTTPURLResponse * _Nullable, NSData * _Nullable, NSError * _Nullable))callback {
+    NSMutableURLRequest *urlRequest = [[NSMutableURLRequest alloc] initWithURL:request.absoluteURL];
+    if ([request respondsToSelector:@selector(adaptedRequest:)]) {
+        urlRequest = [request adaptedRequest:urlRequest];
+    }
+    NSString *requestBody = [[NSString alloc] initWithData:urlRequest.HTTPBody encoding:NSUTF8StringEncoding];
+    self.capturedUpload = [NSString stringWithFormat:@"%@\n%@\n%@\n%@",
+                           NSStringFromClass([(NSObject *)request class]), request.path,
+                           request.absoluteURL.absoluteString, requestBody];
+    NSHTTPURLResponse *response = [[NSHTTPURLResponse alloc] initWithURL:request.absoluteURL
+                                                             statusCode:200
+                                                            HTTPVersion:@"HTTP/1.1"
+                                                           headerFields:nil];
+    callback(response, [NSData data], nil);
+}
+@end
+@interface FTWebViewLogThreadProbe : NSObject
+@property (atomic, assign) BOOL descriptionCalledOnMainThread;
+@property (nonatomic, strong) XCTestExpectation *descriptionExpectation;
+@end
+@implementation FTWebViewLogThreadProbe
+- (NSString *)description {
+    self.descriptionCalledOnMainThread = NSThread.isMainThread;
+    [self.descriptionExpectation fulfill];
+    self.descriptionExpectation = nil;
+    return @"mac-web-view-thread-probe";
+}
+@end
+@interface FTLoggerTest : FTTestHelper <WKNavigationDelegate, FTLoggerDataWriteProtocol>
 @property (nonatomic, copy) NSString *url;
 @property (nonatomic, copy) NSString *appid;
+@property (nonatomic, strong) XCTestExpectation *webViewLoadExpectation;
+@property (nonatomic, strong) NSWindow *webViewWindow;
+@property (nonatomic, copy) NSDictionary *lastWebViewLogFields;
 
 @end
 
@@ -47,6 +101,234 @@
     // Put teardown code here. This method is called after the invocation of each test method in the class.
     [[FTTrackDataManager sharedInstance] insertCacheToDB];
     [FTMobileAgent shutDown];
+    self.webViewLoadExpectation = nil;
+    [self.webViewWindow close];
+    self.webViewWindow = nil;
+    self.lastWebViewLogFields = nil;
+}
+- (void)testWebViewLogMapperAndRemoteConfiguration {
+    FTRemoteConfigModel *remote = [[FTRemoteConfigModel alloc] initWithDict:@{
+        @"logEnableWebViewLog": @(YES),
+        @"rumAllowWebViewHost": @"[]",
+    }];
+    XCTAssertEqualObjects(remote.logEnableWebViewLog, @(YES));
+    XCTAssertEqualObjects(remote.rumAllowWebViewHost, @[]);
+    XCTAssertEqualObjects(remote.toDictionary[@"rumAllowWebViewHost"], @"[]");
+
+    FTLoggerConfig *remoteLogger = [[FTLoggerConfig alloc] init];
+    [remoteLogger mergeWithRemoteConfigModel:remote];
+    XCTAssertTrue(remoteLogger.enableWebViewLog);
+
+    FTWebViewLogEvent *event = [FTWebViewLogEventMapper mapEvent:@{
+        @"date": @1700000000123LL,
+        @"_gc": @{ @"sdk_name": @"df_web_rum_sdk", @"sdk_version": @"3.3.6" },
+        @"application": @{ @"id": @"browser-app" },
+        @"session": @{ @"id": @"browser-session" },
+        @"view": @{ @"id": @"browser-view" },
+        @"user_action": @{ @"id": @"browser-action" },
+        @"error": @{ @"message": @"failure", @"stack": @"stack" },
+        @"message": @[@"complex", @1],
+        @"status": @"warn",
+        @"custom": @{ @"nested": @(YES) },
+    }];
+    XCTAssertEqualObjects(event.content, @"[\"complex\",1]");
+    XCTAssertEqualObjects(event.status, @"warning");
+    XCTAssertEqual(event.time, 1700000000123000000LL);
+    XCTAssertEqualObjects(event.tags[FT_IS_WEBVIEW], @(YES));
+    XCTAssertEqualObjects(event.fields[@"error_message"], @"failure");
+    XCTAssertEqualObjects(event.fields[@"custom"], @"{\"nested\":true}");
+
+    [FTWebViewLogEventMapper replaceRumLinkDataInEvent:event applicationId:@"native-app" sessionId:@"native-session"];
+    XCTAssertEqualObjects(event.tags[FT_APP_ID], @"native-app");
+    XCTAssertEqualObjects(event.tags[FT_RUM_KEY_SESSION_ID], @"native-session");
+    XCTAssertEqualObjects(event.tags[FT_KEY_VIEW_ID], @"browser-view");
+    XCTAssertEqualObjects(event.tags[FT_KEY_ACTION_ID], @"browser-action");
+    [FTWebViewLogEventMapper removeRumLinkDataFromEvent:event];
+    XCTAssertNil(event.tags[FT_APP_ID]);
+    XCTAssertNil(event.tags[FT_RUM_KEY_SESSION_ID]);
+    XCTAssertNil(event.tags[FT_KEY_VIEW_ID]);
+    XCTAssertNil(event.tags[FT_KEY_ACTION_ID]);
+}
+- (void)testWebViewLogUsesNativeLoggerStorageAndCollisionRules {
+    FTSDKConfig *config = [[FTSDKConfig alloc] initWithDatakitUrl:self.url];
+    config.autoSync = NO;
+    config.env = @"native-env";
+    config.service = @"native-service";
+    [FTMobileAgent startWithConfigOptions:config];
+
+    FTLoggerConfig *loggerConfig = [[FTLoggerConfig alloc] init];
+    loggerConfig.enableCustomLog = NO;
+    loggerConfig.enableWebViewLog = YES;
+    loggerConfig.enableLinkRumData = NO;
+    loggerConfig.globalContext = @{ @"global_tag": @"native", @"browser_custom": @"native" };
+    [[FTMobileAgent sharedInstance] startLoggerWithConfigOptions:loggerConfig];
+
+    [[FTLogger sharedInstance] logWebViewEvent:@{
+        @"_gc": @{ @"sdk_name": @"df_web_rum_sdk", @"sdk_version": @"3.3.6" },
+        @"application": @{ @"id": @"browser-app" },
+        @"session": @{ @"id": @"browser-session" },
+        @"view": @{ @"id": @"browser-view" },
+        @"user_action": @{ @"id": @"browser-action" },
+        @"message": @"mac-web-log",
+        @"status": @"info",
+        @"service": @"browser-service",
+        @"env": @"browser-env",
+        @"browser_custom": @"browser",
+    } linkToNativeRum:NO];
+    [[FTLogger sharedInstance] syncProcess];
+    [[FTTrackDataManager sharedInstance] insertCacheToDB];
+
+    FTRecordModel *model = [[[FTTrackerEventDBTool sharedManager] getFirstRecords:10 withType:FT_DATA_TYPE_LOGGING] lastObject];
+    NSDictionary *opdata = [FTJSONUtil dictionaryWithJsonString:model.data][FT_OPDATA];
+    NSDictionary *tags = opdata[FT_TAGS];
+    NSDictionary *fields = opdata[FT_FIELDS];
+    XCTAssertEqualObjects(opdata[FT_KEY_SOURCE], FT_LOGGER_MACOS_SOURCE);
+    XCTAssertEqualObjects(fields[FT_KEY_MESSAGE], @"mac-web-log");
+    XCTAssertEqualObjects(tags[FT_IS_WEBVIEW], @(YES));
+    XCTAssertEqualObjects(tags[FT_KEY_SERVICE], @"browser-service");
+    XCTAssertEqualObjects(tags[FT_SDK_NAME], FT_SDK_NAME_VALUE);
+    XCTAssertEqualObjects(tags[FT_SDK_VERSION], SDK_VERSION);
+    XCTAssertEqualObjects(tags[FT_SDK_PKG_INFO][@"web"], @"3.3.6");
+    XCTAssertEqualObjects(tags[@"env"], @"native-env");
+    XCTAssertEqualObjects(tags[@"browser_custom"], @"native");
+    XCTAssertNil(tags[FT_APP_ID]);
+    XCTAssertNil(tags[FT_RUM_KEY_SESSION_ID]);
+    XCTAssertNil(tags[FT_KEY_VIEW_ID]);
+    XCTAssertNil(tags[FT_KEY_ACTION_ID]);
+}
+- (void)testWebViewLogUsesLoggerSamplingAndLevelFilter {
+    [self setRightSDKConfig];
+    FTLoggerConfig *loggerConfig = [[FTLoggerConfig alloc] init];
+    loggerConfig.enableCustomLog = NO;
+    loggerConfig.enableWebViewLog = YES;
+    loggerConfig.sampleRate = 0;
+    [[FTMobileAgent sharedInstance] startLoggerWithConfigOptions:loggerConfig];
+    [[FTLogger sharedInstance] logWebViewEvent:@{ @"message": @"sampled-out", @"status": @"warning" }
+                               linkToNativeRum:NO];
+    [[FTLogger sharedInstance] syncProcess];
+    [[FTTrackDataManager sharedInstance] insertCacheToDB];
+    XCTAssertEqual([[FTTrackerEventDBTool sharedManager] getDatasCountWithType:FT_DATA_TYPE_LOGGING], 0);
+
+    loggerConfig.sampleRate = 100;
+    loggerConfig.logLevelFilter = @[@(FTStatusWarning)];
+    [[FTLogger sharedInstance] updateLoggerConfiguration:loggerConfig];
+    [[FTLogger sharedInstance] logWebViewEvent:@{ @"message": @"filtered", @"status": @"info" }
+                               linkToNativeRum:NO];
+    [[FTLogger sharedInstance] logWebViewEvent:@{ @"message": @"accepted", @"status": @"warn" }
+                               linkToNativeRum:NO];
+    [[FTLogger sharedInstance] syncProcess];
+    [[FTTrackDataManager sharedInstance] insertCacheToDB];
+    XCTAssertEqual([[FTTrackerEventDBTool sharedManager] getDatasCountWithType:FT_DATA_TYPE_LOGGING], 1);
+}
+- (void)testWebViewLogMappingRunsOffMainThread {
+    FTLoggerConfig *loggerConfig = [[FTLoggerConfig alloc] init];
+    loggerConfig.enableWebViewLog = YES;
+    [[FTLogger sharedInstance] startWithLoggerConfig:loggerConfig writer:self];
+
+    FTWebViewLogThreadProbe *probe = [FTWebViewLogThreadProbe new];
+    XCTestExpectation *descriptionExpectation = [self expectationWithDescription:@"Map WebView Log off main thread"];
+    probe.descriptionExpectation = descriptionExpectation;
+    void (^sendEvent)(void) = ^{
+        [[FTLogger sharedInstance] logWebViewEvent:@{ @"message": probe }
+                                   linkToNativeRum:NO];
+    };
+    if (NSThread.isMainThread) {
+        sendEvent();
+    } else {
+        dispatch_sync(dispatch_get_main_queue(), sendEvent);
+    }
+
+    [self waitForExpectations:@[descriptionExpectation] timeout:2];
+    [[FTLogger sharedInstance] syncProcess];
+    XCTAssertFalse(probe.descriptionCalledOnMainThread);
+    XCTAssertEqualObjects(self.lastWebViewLogFields[FT_KEY_MESSAGE], @"mac-web-view-thread-probe");
+}
+- (void)testLogOnlyWKWebViewBridgeInstallsAndRoutesSubsequentValidEvent {
+    FTSDKConfig *config = [[FTSDKConfig alloc] initWithDatakitUrl:self.url];
+    config.autoSync = NO;
+    [FTMobileAgent startWithConfigOptions:config];
+    FTLoggerConfig *loggerConfig = [[FTLoggerConfig alloc] init];
+    loggerConfig.enableWebViewLog = YES;
+    loggerConfig.enableCustomLog = NO;
+    [[FTMobileAgent sharedInstance] startLoggerWithConfigOptions:loggerConfig];
+
+    WKWebView *webView = [[WKWebView alloc] initWithFrame:NSMakeRect(0, 0, 320, 240)];
+    self.webViewWindow = [[NSWindow alloc] initWithContentRect:NSMakeRect(0, 0, 320, 240)
+                                                     styleMask:NSWindowStyleMaskTitled
+                                                       backing:NSBackingStoreBuffered
+                                                         defer:NO];
+    self.webViewWindow.contentView = webView;
+    [self.webViewWindow orderFront:nil];
+    [[FTWKWebViewHandler sharedInstance] enableWebView:webView];
+    webView.navigationDelegate = self;
+    self.webViewLoadExpectation = [self expectationWithDescription:@"WebView loaded"];
+    [webView loadHTMLString:@"<html><body>WebView Log</body></html>" baseURL:[NSURL URLWithString:@"https://example.com"]];
+    [self waitForExpectations:@[self.webViewLoadExpectation] timeout:10];
+
+    XCTAssertNotNil([[FTWKWebViewHandler sharedInstance] getWebViewBridge:webView]);
+    XCTestExpectation *scriptExpectation = [self expectationWithDescription:@"Bridge installed"];
+    [webView evaluateJavaScript:@"typeof FTWebViewJavascriptBridge.sendEvent" completionHandler:^(id result, NSError *error) {
+        XCTAssertNil(error);
+        XCTAssertEqualObjects(result, @"function");
+        [scriptExpectation fulfill];
+    }];
+    [self waitForExpectations:@[scriptExpectation] timeout:10];
+
+    FTBindInfo *bindInfo = [[FTBindInfo alloc] init];
+    bindInfo.container = webView;
+    [[FTWKWebViewHandler sharedInstance] dealReceiveScriptMessage:@{ @"name": @"log", @"data": @{ @"status": @"info" } }
+                                                           slotId:webView.hash
+                                                              info:bindInfo];
+    [[FTWKWebViewHandler sharedInstance] dealReceiveScriptMessage:@{ @"name": @"log", @"data": @{ @"message": @"mac-bridge-log", @"status": @"info" } }
+                                                           slotId:webView.hash
+                                                              info:bindInfo];
+    [[FTLogger sharedInstance] syncProcess];
+    [[FTTrackDataManager sharedInstance] insertCacheToDB];
+    NSArray *records = [[FTTrackerEventDBTool sharedManager] getFirstRecords:10 withType:FT_DATA_TYPE_LOGGING];
+
+    XCTAssertEqual(records.count, 1);
+    FTRecordModel *model = records.lastObject;
+    NSDictionary *opdata = [FTJSONUtil dictionaryWithJsonString:model.data][FT_OPDATA];
+    XCTAssertEqualObjects(opdata[FT_FIELDS][FT_KEY_MESSAGE], @"mac-bridge-log");
+    XCTAssertEqualObjects(opdata[FT_TAGS][FT_IS_WEBVIEW], @(YES));
+}
+- (void)testWebViewLogUploadsThroughNativeLoggingEndpointAndDeletesCache {
+    FTSDKConfig *config = [[FTSDKConfig alloc] initWithDatakitUrl:self.url];
+    config.autoSync = NO;
+    config.compressIntakeRequests = NO;
+    [FTMobileAgent startWithConfigOptions:config];
+    FTLoggerConfig *loggerConfig = [[FTLoggerConfig alloc] init];
+    loggerConfig.enableWebViewLog = YES;
+    loggerConfig.enableCustomLog = NO;
+    [[FTMobileAgent sharedInstance] startLoggerWithConfigOptions:loggerConfig];
+
+    [[FTLogger sharedInstance] logWebViewEvent:@{ @"message": @"mac-web-upload-log" }
+                               linkToNativeRum:NO];
+    [[FTLogger sharedInstance] syncProcess];
+    [[FTTrackDataManager sharedInstance] insertCacheToDB];
+    XCTAssertEqual([[FTTrackerEventDBTool sharedManager] getDatasCountWithType:FT_DATA_TYPE_LOGGING], 1);
+
+    FTWebViewLogHTTPClientStub *httpClient = [[FTWebViewLogHTTPClientStub alloc] initWithTimeoutIntervalForRequest:1];
+    FTDataUploadWorker *uploadWorker = [[FTDataUploadWorker alloc] initWithSyncPageSize:10 syncSleepTime:0];
+    uploadWorker.httpClient = httpClient;
+    [uploadWorker flushWithType:FT_DATA_TYPE_LOGGING maxBatchesPerUploadPass:1];
+    [uploadWorker invalidateAndCancelPendingUploads];
+
+    XCTAssertTrue([httpClient.capturedUpload containsString:@"/v1/write/logging"], @"%@", httpClient.capturedUpload);
+    XCTAssertTrue([httpClient.capturedUpload containsString:@"mac-web-upload-log"]);
+    XCTAssertEqual([[FTTrackerEventDBTool sharedManager] getDatasCountWithType:FT_DATA_TYPE_LOGGING], 0);
+}
+- (void)webView:(WKWebView *)webView didFinishNavigation:(WKNavigation *)navigation {
+    if (self.webViewLoadExpectation) {
+        [self.webViewLoadExpectation fulfill];
+        self.webViewLoadExpectation = nil;
+    }
+}
+- (void)loggingTags:(nullable NSDictionary *)tags
+               field:(nullable NSDictionary *)field
+                time:(long long)time
+             linkRum:(BOOL)linkRum {
+    self.lastWebViewLogFields = field;
 }
 - (void)testEnableCustomLog{
     [self setRightSDKConfig];

@@ -1,6 +1,16 @@
+# 1.6.8-alpha.4
+1. Added automatic NSURLConnection RUM Resource collection and Trace correlation, independently enabled through `FTRumConfig.enableTraceURLConnectionResource` and `FTTraceConfig.enableAutoTraceURLConnection`; both default to disabled.
+2. Added WebView Log Bridge support through `FTLoggerConfig.enableWebViewLog` for Browser Logger API calls and automatic Console and JavaScript error logs, with reduced main-thread processing overhead.
+3. Added `FTSDKConfig.allowWebViewHost` as a shared host allowlist for WebView RUM and Log collection; deprecated `FTRumConfig.allowWebViewHost`.
+4. Added the `logEnableWebViewLog` remote configuration option to enable or disable WebView Log collection at runtime.
+5. Fixed numeric conversion overflow at Int64 boundaries in heatmap data.
+6. Fixed RUM Resource timing and WebSocket handshake rejection classification.
+---
+
 # 1.6.8-alpha.2
 1. Added reusable external Session Replay recorder control for framework integrations, including external-only recording, owner-aware native capture switching, linked RUM context access, enriched segment writes, and image resource storage.
 ---
+
 # 1.6.7
 1. Added RUM Resource collection for WebSocket handshake requests.
 2. Added `FTRumConfig.issueDataProvider` to attach validated custom fields and historical context to automatically collected Crash and ANR RUM Errors.

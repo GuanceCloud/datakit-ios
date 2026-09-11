@@ -53,6 +53,7 @@
         _enableTraceUserAction = NO;
         _enableTraceUserView = NO;
         _enableTraceUserResource = NO;
+        _enableTraceURLConnectionResource = NO;
         _enableResourceHostIP = NO;
         _monitorFrequency = FTMonitorFrequencyDefault;
         _freezeDurationMs = FT_DEFAULT_BLOCK_DURATIONS_MS;
@@ -73,6 +74,7 @@
     options.enableTraceUserAction = self.enableTraceUserAction;
     options.enableTraceUserView = self.enableTraceUserView;
     options.enableTraceUserResource = self.enableTraceUserResource;
+    options.enableTraceURLConnectionResource = self.enableTraceURLConnectionResource;
     options.enableResourceHostIP = self.enableResourceHostIP;
     options.appid = [self.appid copy];
     options.errorMonitorType = self.errorMonitorType;
@@ -87,7 +89,7 @@
     options.sessionOnErrorSampleRate = self.sessionOnErrorSampleRate;
     options.enableTraceWebView = self.enableTraceWebView;
     options.enableUIKitViewLoadingTime = self.enableUIKitViewLoadingTime;
-    options.allowWebViewHost = [self.allowWebViewHost copy];
+    options->_allowWebViewHost = [_allowWebViewHost copy];
     options.sessionTaskErrorFilter = [self.sessionTaskErrorFilter copy];
     options.issueDataProvider = [self.issueDataProvider copy];
 #if TARGET_OS_IOS || TARGET_OS_TV
@@ -110,6 +112,7 @@
             if ([dict ft_hasValidValueForKey:@"enableTraceUserAction"]) _enableTraceUserAction = [dict[@"enableTraceUserAction"] boolValue];
             if ([dict ft_hasValidValueForKey:@"enableTraceUserView"]) _enableTraceUserView = [dict[@"enableTraceUserView"] boolValue];
             if ([dict ft_hasValidValueForKey:@"enableTraceUserResource"]) _enableTraceUserResource = [dict[@"enableTraceUserResource"] boolValue];
+            if ([dict ft_hasValidValueForKey:@"enableTraceURLConnectionResource"]) _enableTraceURLConnectionResource = [dict[@"enableTraceURLConnectionResource"] boolValue];
             if ([dict ft_hasValidValueForKey:@"enableResourceHostIP"]) _enableResourceHostIP = [dict[@"enableResourceHostIP"] boolValue];
             if ([dict ft_hasValidValueForKey:@"appid"]) _appid = [dict[@"appid"] copy];
             if ([dict ft_hasValidValueForKey:@"errorMonitorType"]) _errorMonitorType = (FTErrorMonitorType)[dict[@"errorMonitorType"] intValue];
@@ -151,6 +154,7 @@
     [dict setValue:@(self.enableTraceUserAction) forKey:@"enableTraceUserAction"];
     [dict setValue:@(self.enableTraceUserView) forKey:@"enableTraceUserView"];
     [dict setValue:@(self.enableTraceUserResource) forKey:@"enableTraceUserResource"];
+    [dict setValue:@(self.enableTraceURLConnectionResource) forKey:@"enableTraceURLConnectionResource"];
     [dict setValue:@(self.enableResourceHostIP) forKey:@"enableResourceHostIP"];
     [dict setValue:@(self.errorMonitorType) forKey:@"errorMonitorType"];
     [dict setValue:self.appid forKey:@"appid"];
@@ -162,7 +166,7 @@
     [dict setValue:@(self.sessionOnErrorSampleRate) forKey:@"sessionOnErrorSampleRate"];
     [dict setValue:@(self.crashMonitoring) forKey:@"crashMonitoring"];
     [dict setValue:@(self.enableTraceWebView) forKey:@"enableTraceWebView"];
-    [dict setValue:self.allowWebViewHost forKey:@"allowWebViewHost"];
+    [dict setValue:_allowWebViewHost forKey:@"allowWebViewHost"];
     return dict;
 }
 -(NSString *)debugDescription{
@@ -176,7 +180,7 @@
     [dict setValue:self.actionTrackingHandler forKey:@"actionTrackingHandler"];
 #endif
     [dict setValue:@(self.enableTraceWebView) forKey:@"enableTraceWebView"];
-    [dict setValue:[self.allowWebViewHost copy] forKey:@"allowWebViewHost"];
+    [dict setValue:[_allowWebViewHost copy] forKey:@"allowWebViewHost"];
     [dict setValue:[self.issueDataProvider copy] forKey:@"issueDataProvider"];
     return [NSString stringWithFormat:@"%@",dict];
 }

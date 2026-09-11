@@ -68,6 +68,10 @@ NS_ASSUME_NONNULL_BEGIN
 @property (nonatomic, copy, nullable) NSURL *webSocketURL;
 /// Prevents repeated resume calls from starting duplicate handshake Resources.
 @property (nonatomic, assign) BOOL webSocketHandshakeStarted;
+/// Epoch nanoseconds captured at the first handshake interception, before queueing.
+@property (nonatomic, assign) long long webSocketHandshakeStartNsTimeInterval;
+/// Continuous-clock nanoseconds captured with the first handshake start.
+@property (nonatomic, assign) uint64_t webSocketHandshakeStartTime;
 
 /// Initialization method
 /// - Parameter identifier: Unique identifier, based on the identifier

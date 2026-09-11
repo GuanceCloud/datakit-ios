@@ -43,6 +43,7 @@
 #import "FTAutoTrackHeatmapResolver.h"
 #import "FTAutoTrackActionPublisher.h"
 #import "FTIssueFieldEnricher.h"
+#import <limits.h>
 #import <math.h>
 typedef FTRUMView* _Nullable (^FTViewTrackingBlock)(UIViewController *viewController);
 typedef FTRUMAction* _Nullable (^FTActionTrackingBlock)(UIView *view);
@@ -938,6 +939,19 @@ static void FTStartAutoTrackActionTest(AddRumDatasHandlerMock *mock,
     XCTAssertEqual(attributes.targetHeight, 40);
     XCTAssertEqual(attributes.positionX, 20);
     XCTAssertEqual(attributes.positionY, 10);
+}
+
+- (void)testHeatmapAttributes_clampsCGFloatAtLongLongLimits {
+    FTHeatmapIdentifier *identifier = [[FTHeatmapIdentifier alloc]initWithRawValue:@"button-id"];
+    CGFloat upperLimit = (CGFloat)LLONG_MAX;
+    CGFloat lowerLimit = (CGFloat)LLONG_MIN;
+
+    FTHeatmapAttributes *attributes = [[FTHeatmapAttributes alloc]initWithIdentifier:identifier
+                                                                                size:CGSizeMake(upperLimit, lowerLimit)
+                                                                            location:CGPointZero];
+
+    XCTAssertEqual(attributes.targetWidth, LLONG_MAX);
+    XCTAssertEqual(attributes.targetHeight, LLONG_MIN);
 }
 
 - (void)testActionPublisher_actionTrackingHandlerNilSkipsActionAndHeatmap {

@@ -98,6 +98,8 @@
         rumConfig.enableTraceUserAction = YES;
         rumConfig.enableTraceUserView = YES;
         rumConfig.enableTraceUserResource = YES;
+        // NSURLConnection collection is independent of NSURLSession and defaults to NO.
+        rumConfig.enableTraceURLConnectionResource = YES;
 //        rumConfig.resourceUrlHandler = ^(NSURL *url){
 //            return NO;
 //        };
@@ -110,6 +112,7 @@
         loggerConfig.enableCustomLog = YES;
         loggerConfig.enableLinkRumData = YES;
         loggerConfig.printCustomLogToConsole = YES;
+        loggerConfig.enableWebViewLog = YES;
         loggerConfig.logLevelFilter = @[@(FTStatusError),@(FTStatusCritical)];
         loggerConfig.discardType = FTDiscardOldest;
         loggerConfig.globalContext = @{@"log_id":@"log_id_1"};//eg.
@@ -117,6 +120,7 @@
         traceConfig.enableLinkRumData = YES;
         traceConfig.networkTraceType = FTNetworkTraceTypeDDtrace;
         traceConfig.enableAutoTrace = YES;
+        traceConfig.enableAutoTraceURLConnection = YES;
         [FTMobileAgent startWithConfigOptions:config];
         [[FTMobileAgent sharedInstance] startRumWithConfigOptions:rumConfig];
         [[FTMobileAgent sharedInstance] startLoggerWithConfigOptions:loggerConfig];

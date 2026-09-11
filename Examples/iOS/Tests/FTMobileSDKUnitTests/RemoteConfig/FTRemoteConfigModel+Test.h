@@ -32,6 +32,7 @@ extern NSString * const FT_R_RUM_SESSION_ON_ERROR_SAMPLE_RATE;
 extern NSString * const FT_R_RUM_ENABLE_TRACE_USER_ACTION;
 extern NSString * const FT_R_RUM_ENABLE_TRACE_USER_VIEW;
 extern NSString * const FT_R_RUM_ENABLE_TRACE_USER_RESOURCE;
+extern NSString * const FT_R_RUM_ENABLE_TRACE_URLCONNECTION_RESOURCE;
 extern NSString * const FT_R_RUM_ENABLE_RESOURCE_HOST_IP;
 extern NSString * const FT_R_RUM_ENABLE_TRACE_APP_FREEZE;
 extern NSString * const FT_R_RUM_FREEZE_DURATION_MS;
@@ -42,11 +43,13 @@ extern NSString * const FT_R_RUM_ALLOW_WEBVIEW_HOST;
 
 extern NSString * const FT_R_TRACE_SAMPLERATE;
 extern NSString * const FT_R_TRACE_ENABLE_AUTO_TRACE;
+extern NSString * const FT_R_TRACE_ENABLE_AUTO_TRACE_URLCONNECTION;
 extern NSString * const FT_R_TRACE_TRACE_TYPE;
 
 extern NSString * const FT_R_LOG_SAMPLERATE;
 extern NSString * const FT_R_LOG_LEVEL_FILTERS;
 extern NSString * const FT_R_LOG_ENABLE_CUSTOM_LOG;
+extern NSString * const FT_R_LOG_ENABLE_WEBVIEW_LOG;
 extern NSString * const FT_R_SR_SAMPLERATE;
 extern NSString * const FT_R_SR_ON_ERROR_SAMPLE_RATE;
 

@@ -118,7 +118,7 @@ let package = Package(
                 "_FTProtocol",
                 "_FTBaseUtils_Swizzle",
             ],
-            path: "Sources/Core/URLSessionAutoInstrumentation",
+            path: "Sources/Core/NetworkAutoInstrumentation",
             publicHeadersPath: "."
         ),
         .target(
@@ -129,6 +129,11 @@ let package = Package(
             ],
             path: "Sources/Core/Logger",
             publicHeadersPath: "."
+        ),
+        .testTarget(
+            name: "FTLoggerTests",
+            dependencies: ["_FTLogger"],
+            path: "Tests/FTLoggerTests"
         ),
 
         // MARK: - BaseUtils

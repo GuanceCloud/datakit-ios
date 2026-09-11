@@ -21,13 +21,21 @@
 #import "FTWKWebViewHandler.h"
 #import "FTWeakMapTable.h"
 #import "FTWKWebViewRumDelegate.h"
+#import "FTWKWebViewLogDelegate.h"
 #import <TargetConditionals.h>
 #if !TARGET_OS_TV
 NS_ASSUME_NONNULL_BEGIN
 
 @interface FTWKWebViewHandler ()
 
-- (void)startWithEnableTraceWebView:(BOOL)enable allowWebViewHost:(nullable NSArray *)hosts rumDelegate:(id<FTWKWebViewRumDelegate>)delegate;
+/// Configures shared hosts without changing either module's switch or delegate.
+- (void)setAllowWebViewHost:(nullable NSArray *)hosts;
+
+/// Configures WebView RUM without changing shared hosts or Log configuration.
+- (void)startWithEnableTraceWebView:(BOOL)enable rumDelegate:(nullable id<FTWKWebViewRumDelegate>)delegate;
+
+/// Configures WebView Log, including remote refresh, without changing hosts or RUM.
+- (void)startWithEnableWebViewLog:(BOOL)enable logDelegate:(nullable id<FTWKWebViewLogDelegate>)delegate;
 
 - (void)innerEnableWebView:(WKWebView *)webView;
 

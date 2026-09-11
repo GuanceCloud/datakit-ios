@@ -47,6 +47,7 @@ NSString * const FT_R_RUM_SESSION_ON_ERROR_SAMPLE_RATE = @"rumSessionOnErrorSamp
 NSString * const FT_R_RUM_ENABLE_TRACE_USER_ACTION = @"rumEnableTraceUserAction";
 NSString * const FT_R_RUM_ENABLE_TRACE_USER_VIEW = @"rumEnableTraceUserView";
 NSString * const FT_R_RUM_ENABLE_TRACE_USER_RESOURCE = @"rumEnableTraceUserResource";
+NSString * const FT_R_RUM_ENABLE_TRACE_URLCONNECTION_RESOURCE = @"rumEnableTraceURLConnectionResource";
 NSString * const FT_R_RUM_ENABLE_RESOURCE_HOST_IP = @"rumEnableResourceHostIP";
 NSString * const FT_R_RUM_ENABLE_TRACE_APP_FREEZE = @"rumEnableTrackAppUIBlock";
 NSString * const FT_R_RUM_FREEZE_DURATION_MS = @"rumBlockDurationMs";
@@ -57,11 +58,13 @@ NSString * const FT_R_RUM_ALLOW_WEBVIEW_HOST = @"rumAllowWebViewHost";
 
 NSString * const FT_R_TRACE_SAMPLERATE = @"traceSampleRate";
 NSString * const FT_R_TRACE_ENABLE_AUTO_TRACE = @"traceEnableAutoTrace";
+NSString * const FT_R_TRACE_ENABLE_AUTO_TRACE_URLCONNECTION = @"traceEnableAutoTraceURLConnection";
 NSString * const FT_R_TRACE_TRACE_TYPE = @"traceType";
 
 NSString * const FT_R_LOG_SAMPLERATE = @"logSampleRate";
 NSString * const FT_R_LOG_LEVEL_FILTERS = @"logLevelFilters";
 NSString * const FT_R_LOG_ENABLE_CUSTOM_LOG = @"logEnableCustomLog";
+NSString * const FT_R_LOG_ENABLE_WEBVIEW_LOG = @"logEnableWebViewLog";
 
 NSString * const FT_R_SR_SAMPLERATE = @"sessionReplaySampleRate";
 NSString * const FT_R_SR_ON_ERROR_SAMPLE_RATE = @"sessionReplayOnErrorSampleRate";
@@ -108,6 +111,7 @@ NSString * const FT_MD5 = @"MD5";
     SetNumberFromDict(dict,FT_R_RUM_ENABLE_TRACE_USER_ACTION,self.rumEnableTraceUserAction);
     SetNumberFromDict(dict,FT_R_RUM_ENABLE_TRACE_USER_VIEW,self.rumEnableTraceUserView);    
     SetNumberFromDict(dict,FT_R_RUM_ENABLE_TRACE_USER_RESOURCE,self.rumEnableTraceUserResource);
+    SetNumberFromDict(dict,FT_R_RUM_ENABLE_TRACE_URLCONNECTION_RESOURCE,self.rumEnableTraceURLConnectionResource);
     SetNumberFromDict(dict,FT_R_RUM_ENABLE_RESOURCE_HOST_IP,self.rumEnableResourceHostIP);
     SetNumberFromDict(dict,FT_R_RUM_ENABLE_TRACE_APP_FREEZE,self.rumEnableTrackAppUIBlock);
     SetNumberFromDict(dict,FT_R_RUM_FREEZE_DURATION_MS,self.rumBlockDurationMs);
@@ -120,13 +124,14 @@ NSString * const FT_MD5 = @"MD5";
     
     if (rumAllowWebViewHost) {
         NSArray *hosts = [FTJSONUtil arrayWithJsonString:rumAllowWebViewHost];
-        if (hosts.count > 0) {
+        if (hosts) {
             self.rumAllowWebViewHost = hosts;
         }
     }
     // ---- Trace ----
     SetNumberFromDict(dict,FT_R_TRACE_SAMPLERATE,self.traceSampleRate);
     SetNumberFromDict(dict,FT_R_TRACE_ENABLE_AUTO_TRACE,self.traceEnableAutoTrace);
+    SetNumberFromDict(dict,FT_R_TRACE_ENABLE_AUTO_TRACE_URLCONNECTION,self.traceEnableAutoTraceURLConnection);
     SetStringFromDict(dict,FT_R_TRACE_TRACE_TYPE,self.traceType);
 
     // ---- Log ----
@@ -140,6 +145,7 @@ NSString * const FT_MD5 = @"MD5";
         }
     }
     SetNumberFromDict(dict,FT_R_LOG_ENABLE_CUSTOM_LOG,self.logEnableCustomLog);
+    SetNumberFromDict(dict,FT_R_LOG_ENABLE_WEBVIEW_LOG,self.logEnableWebViewLog);
 
     // ---- SessionReplay ----
     SetNumberFromDict(dict,FT_R_SR_SAMPLERATE,self.sessionReplaySampleRate);
@@ -194,6 +200,9 @@ NSString * const FT_MD5 = @"MD5";
     if (self.rumEnableTraceUserResource != nil) {
         dict[FT_R_RUM_ENABLE_TRACE_USER_RESOURCE] = self.rumEnableTraceUserResource;
     }
+    if (self.rumEnableTraceURLConnectionResource != nil) {
+        dict[FT_R_RUM_ENABLE_TRACE_URLCONNECTION_RESOURCE] = self.rumEnableTraceURLConnectionResource;
+    }
     if (self.rumEnableResourceHostIP != nil) {
         dict[FT_R_RUM_ENABLE_RESOURCE_HOST_IP] = self.rumEnableResourceHostIP;
     }
@@ -213,7 +222,7 @@ NSString * const FT_MD5 = @"MD5";
         dict[FT_R_RUM_ENABLE_TRACE_WEBVIEW] = self.rumEnableTraceWebView;
     }
 
-    if (self.rumAllowWebViewHost && self.rumAllowWebViewHost.count > 0) {
+    if (self.rumAllowWebViewHost) {
         NSString *hostJson = [FTJSONUtil convertToJsonDataWithObject:self.rumAllowWebViewHost];
         if (hostJson) {
             dict[FT_R_RUM_ALLOW_WEBVIEW_HOST] = hostJson;
@@ -226,6 +235,9 @@ NSString * const FT_MD5 = @"MD5";
     }
     if (self.traceEnableAutoTrace != nil) {
         dict[FT_R_TRACE_ENABLE_AUTO_TRACE] = self.traceEnableAutoTrace;
+    }
+    if (self.traceEnableAutoTraceURLConnection != nil) {
+        dict[FT_R_TRACE_ENABLE_AUTO_TRACE_URLCONNECTION] = self.traceEnableAutoTraceURLConnection;
     }
     if (self.traceType) {
         dict[FT_R_TRACE_TRACE_TYPE] = self.traceType;
@@ -244,6 +256,9 @@ NSString * const FT_MD5 = @"MD5";
     }
     if (self.logEnableCustomLog != nil) {
         dict[FT_R_LOG_ENABLE_CUSTOM_LOG] = self.logEnableCustomLog;
+    }
+    if (self.logEnableWebViewLog != nil) {
+        dict[FT_R_LOG_ENABLE_WEBVIEW_LOG] = self.logEnableWebViewLog;
     }
     // ===== 5. SessionReplay  =====
     if (self.sessionReplaySampleRate != nil) {
@@ -266,12 +281,12 @@ NSString * const FT_MD5 = @"MD5";
                             FT_R_ENV, FT_R_SERVICE_NAME, FT_R_AUTO_SYNC, FT_R_COMPRESS_INTAKE_REQUESTS, FT_R_SYNC_PAGE_SIZE, FT_R_SYNC_SLEEP_TIME,
                             // RUM
                             FT_R_RUM_SAMPLERATE, FT_R_RUM_SESSION_ON_ERROR_SAMPLE_RATE, FT_R_RUM_ENABLE_TRACE_USER_ACTION, FT_R_RUM_ENABLE_TRACE_USER_VIEW,
-                            FT_R_RUM_ENABLE_TRACE_USER_RESOURCE, FT_R_RUM_ENABLE_RESOURCE_HOST_IP, FT_R_RUM_ENABLE_TRACE_APP_FREEZE, FT_R_RUM_FREEZE_DURATION_MS,
+                            FT_R_RUM_ENABLE_TRACE_USER_RESOURCE, FT_R_RUM_ENABLE_TRACE_URLCONNECTION_RESOURCE, FT_R_RUM_ENABLE_RESOURCE_HOST_IP, FT_R_RUM_ENABLE_TRACE_APP_FREEZE, FT_R_RUM_FREEZE_DURATION_MS,
                             FT_R_RUM_ENABLE_TRACK_APP_CRASH, FT_R_RUM_ENABLE_TRACK_APP_ANR, FT_R_RUM_ENABLE_TRACE_WEBVIEW, FT_R_RUM_ALLOW_WEBVIEW_HOST,
                             // Trace
-                            FT_R_TRACE_SAMPLERATE, FT_R_TRACE_ENABLE_AUTO_TRACE, FT_R_TRACE_TRACE_TYPE,
+                            FT_R_TRACE_SAMPLERATE, FT_R_TRACE_ENABLE_AUTO_TRACE, FT_R_TRACE_ENABLE_AUTO_TRACE_URLCONNECTION, FT_R_TRACE_TRACE_TYPE,
                             // Log
-                            FT_R_LOG_SAMPLERATE, FT_R_LOG_LEVEL_FILTERS, FT_R_LOG_ENABLE_CUSTOM_LOG,
+                            FT_R_LOG_SAMPLERATE, FT_R_LOG_LEVEL_FILTERS, FT_R_LOG_ENABLE_CUSTOM_LOG, FT_R_LOG_ENABLE_WEBVIEW_LOG,
                             // SessionReplay
                             FT_R_SR_SAMPLERATE,FT_R_SR_ON_ERROR_SAMPLE_RATE,
                             // MD5
@@ -306,6 +321,7 @@ NSString * const FT_MD5 = @"MD5";
     copyModel.rumEnableTraceUserAction = self.rumEnableTraceUserAction;
     copyModel.rumEnableTraceUserView = self.rumEnableTraceUserView;
     copyModel.rumEnableTraceUserResource = self.rumEnableTraceUserResource;
+    copyModel.rumEnableTraceURLConnectionResource = self.rumEnableTraceURLConnectionResource;
     copyModel.rumEnableResourceHostIP = self.rumEnableResourceHostIP;
     copyModel.rumEnableTrackAppUIBlock = self.rumEnableTrackAppUIBlock;
     copyModel.rumBlockDurationMs = self.rumBlockDurationMs;
@@ -317,12 +333,14 @@ NSString * const FT_MD5 = @"MD5";
     // ---- Trace ----
     copyModel.traceSampleRate = self.traceSampleRate;
     copyModel.traceEnableAutoTrace = self.traceEnableAutoTrace;
+    copyModel.traceEnableAutoTraceURLConnection = self.traceEnableAutoTraceURLConnection;
     copyModel.traceType = [self.traceType copy];
     
     // ---- Log ----
     copyModel.logSampleRate = self.logSampleRate;
     copyModel.logLevelFilters = [self.logLevelFilters copy];
     copyModel.logEnableCustomLog = self.logEnableCustomLog;
+    copyModel.logEnableWebViewLog = self.logEnableWebViewLog;
     
     // ---- SessionReplay ----
     copyModel.sessionReplaySampleRate = self.sessionReplaySampleRate;

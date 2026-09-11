@@ -132,6 +132,9 @@ typedef BOOL (^FTSessionTaskErrorFilter)(NSError *_Nonnull error);
 @property (nonatomic, assign) BOOL enableTraceUserView;
 /// Set whether to track user network requests (only applies to native http)
 @property (nonatomic, assign) BOOL enableTraceUserResource;
+/// Set whether to automatically collect NSURLConnection requests as RUM Resources. Default: NO.
+/// This switch is independent from `enableTraceUserResource`, which controls NSURLSession.
+@property (nonatomic, assign) BOOL enableTraceURLConnectionResource;
 /// Set whether to collect network request Host IP (only applies to native http, iOS 13 and above)
 @property (nonatomic, assign) BOOL enableResourceHostIP;
 /// Custom collection resource rules.
@@ -181,7 +184,7 @@ typedef BOOL (^FTSessionTaskErrorFilter)(NSError *_Nonnull error);
 /// Set whether to enable WebView data collection, default YES
 @property (nonatomic, assign) BOOL enableTraceWebView;
 /// Set specific hosts or domains allowed to collect WebView data, nil means collect all.
-@property (nonatomic, copy, nullable) NSArray *allowWebViewHost;
+@property (nonatomic, copy, nullable) NSArray *allowWebViewHost DEPRECATED_MSG_ATTRIBUTE("Use FTSDKConfig.allowWebViewHost.");
 
 /// A handler for user-defined collection of `ViewControllers` as RUM views for tracking.
 /// It takes effect when enableTraceUserView = YES.
