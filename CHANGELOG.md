@@ -1,3 +1,7 @@
+# 1.6.8-alpha.5
+1. Added reusable external Session Replay recorder control for framework integrations, including external-only recording, owner-aware native capture switching, linked RUM context access, enriched segment writes, and image resource storage.
+---
+
 # 1.6.8-alpha.4
 1. Added automatic NSURLConnection RUM Resource collection and Trace correlation, independently enabled through `FTRumConfig.enableTraceURLConnectionResource` and `FTTraceConfig.enableAutoTraceURLConnection`; both default to disabled.
 2. Added WebView Log Bridge support through `FTLoggerConfig.enableWebViewLog` for Browser Logger API calls and automatic Console and JavaScript error logs, with reduced main-thread processing overhead.
