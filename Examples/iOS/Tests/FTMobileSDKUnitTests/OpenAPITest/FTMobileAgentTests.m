@@ -1099,6 +1099,7 @@
     config.globalContext = @{@"key": @"value"};
     config.groupIdentifiers = @[@"group1"];
     config.remoteConfiguration = YES;
+    config.allowWebViewHost = @[@"test"];
     config.remoteConfigMiniUpdateInterval = 3600;
     config.dataModifier = ^id _Nullable(NSString * _Nonnull key, id  _Nonnull value) {
         return nil;
@@ -1111,13 +1112,13 @@
     };
     [config addPkgInfo:@"key" value:@"value"];
     
-    [self verifyDebugDescriptionContainsAllProperties:config filters:@[@"version",@"metricsUrl"]];
+    [self verifyDebugDescriptionContainsAllProperties:config filters:@[@"version",@"metricsUrl",@"allowWebViewHostConfigured",@"remoteAllowWebViewHost"]];
 }
 
 - (void)testFTRumConfigDebugDescription {
     FTRumConfig *config = [[FTRumConfig alloc] initWithAppid:@"test-appid"];
     
-    config.samplerate = 75;
+    config.sampleRate = 75;
     config.sessionOnErrorSampleRate = 100;
     config.enableTraceUserAction = YES;
     config.enableTraceUserView = YES;
@@ -1153,7 +1154,7 @@
     FTLoggerConfig *config = [[FTLoggerConfig alloc] init];
     
     config.discardType = FTDiscardOldest;
-    config.samplerate = 80;
+    config.sampleRate = 80;
     config.enableLinkRumData = YES;
     config.enableCustomLog = YES;
     config.printCustomLogToConsole = YES;
@@ -1167,7 +1168,7 @@
 - (void)testFTTraceConfigDebugDescription {
     FTTraceConfig *config = [[FTTraceConfig alloc] init];
     
-    config.samplerate = 90;
+    config.sampleRate = 90;
     config.enableLinkRumData = YES;
     config.networkTraceType = FTNetworkTraceTypeZipkinMultiHeader;
     config.enableAutoTrace = YES;
