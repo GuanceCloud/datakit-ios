@@ -15,7 +15,7 @@ Follow the [workspace prerequisites](../README.md#prerequisites), then run from 
 ```sh
 cp .env.example .env.local
 npm install
-npx ft-electron-native managed
+npx guance-electron-native --sdk-version <version>
 npm run dev
 ```
 
@@ -25,7 +25,7 @@ tracking setting and the example does not synthesize launch data through a
 custom Action API. Sampling values under `GUANCE_NATIVE_*_SAMPLE_RATE` use the
 Adapter's cross-platform `0..1` public units.
 
-The CLI downloads the universal runtime into `.cloudcare/native/darwin/runtime`. No Xcode installation or local Native SDK checkout is required when a matching published runtime is available.
+Replace `<version>` with the Native SDK version to install. The CLI downloads the universal runtime into `.cloudcare/native/darwin/runtime`; the version is required and there is no `managed` subcommand. No Xcode installation or local Native SDK checkout is required when a matching published runtime is available. For an unpublished version, add `--runtime-archive /path/to/runtime.tar.gz` with its matching `.sha256` sidecar; the version must match the archive manifest.
 
 For a packaged development build:
 
