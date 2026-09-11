@@ -37,6 +37,12 @@ static const long long FTNanosecondsPerMillisecond = 1000000LL;
 @implementation FTWebViewLogEventMapper
 
 + (FTWebViewLogEvent *)mapEvent:(NSDictionary *)event {
+    return [self mapEvent:event
+       fallbackNanosecondTime:[NSDate ft_currentNanosecondTimeStamp]];
+}
+
++ (FTWebViewLogEvent *)mapEvent:(NSDictionary *)event
+        fallbackNanosecondTime:(long long)fallbackNanosecondTime {
     if (![event isKindOfClass:NSDictionary.class]) {
         return nil;
     }
@@ -72,7 +78,8 @@ static const long long FTNanosecondsPerMillisecond = 1000000LL;
     result.status = [self normalizedStatus:[self valueAtPath:@"status" inObject:event]];
     result.tags = [tags copy];
     result.fields = [fields copy];
-    result.time = [self resolvedNanosecondTime:event[@"date"]];
+    result.time = [self resolvedNanosecondTime:event[@"date"]
+                                fallbackTime:fallbackNanosecondTime];
     return result;
 }
 
@@ -283,7 +290,7 @@ static const long long FTNanosecondsPerMillisecond = 1000000LL;
     return [status isEqualToString:@"warn"] ? @"warning" : status;
 }
 
-+ (long long)resolvedNanosecondTime:(id)value {
++ (long long)resolvedNanosecondTime:(id)value fallbackTime:(long long)fallbackTime {
     if ([value isKindOfClass:NSNumber.class]
         && CFGetTypeID((__bridge CFTypeRef)value) != CFBooleanGetTypeID()) {
         double millisecondsDouble = [value doubleValue];
@@ -295,7 +302,7 @@ static const long long FTNanosecondsPerMillisecond = 1000000LL;
             }
         }
     }
-    return [NSDate ft_currentNanosecondTimeStamp];
+    return fallbackTime;
 }
 
 + (void)replaceRumLinkIdInEvent:(FTWebViewLogEvent *)event
