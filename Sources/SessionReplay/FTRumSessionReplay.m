@@ -117,6 +117,42 @@ static dispatch_once_t onceToken;
     return nil;
 }
 
+- (FTSessionReplayFeature *)sessionReplayFeature {
+    id feature = self.features[@"session-replay"];
+    if ([feature isKindOfClass:FTSessionReplayFeature.class]) {
+        return feature;
+    }
+    return nil;
+}
+
+- (NSDictionary *)currentExternalRUMContext {
+    return [[self sessionReplayFeature] currentExternalRUMContext];
+}
+
+- (void)setExternalRecorderActive:(BOOL)active {
+    [[self sessionReplayFeature] setExternalRecorderActive:active];
+}
+
+- (void)setExternalRecorderActive:(BOOL)active forOwner:(NSString *)owner {
+    [[self sessionReplayFeature] setExternalRecorderActive:active forOwner:owner];
+}
+
+- (void)setExternalHasReplay:(BOOL)hasReplay {
+    [[self sessionReplayFeature] setExternalHasReplay:hasReplay];
+}
+
+- (void)setExternalRecordCountForViewID:(NSString *)viewID count:(NSUInteger)count {
+    [[self sessionReplayFeature] setExternalRecordCountForViewID:viewID count:count];
+}
+
+- (void)writeExternalSegment:(NSString *)segment viewID:(NSString *)viewID {
+    [[self sessionReplayFeature] writeExternalSegment:segment viewID:viewID];
+}
+
+- (NSString *)saveExternalImageResourceData:(NSData *)data mimeType:(NSString *)mimeType {
+    return [[self sessionReplayFeature] saveExternalImageResourceData:data mimeType:mimeType];
+}
+
 @end
 
 #endif

@@ -29,6 +29,7 @@
 #import "FTURLSessionDelegate+Private.h"
 #import "FTInnerLog.h"
 #import "FTDURLSessionDelegate.h"
+#import "FTURLConnectionInstrumentation.h"
 
 typedef void (^CompletionHandler)(NSData * _Nullable data, NSURLResponse * _Nullable response, NSError * _Nullable error);
 
@@ -41,9 +42,6 @@ static void *const kFTConformsToFTProtocol = (void *)&kFTConformsToFTProtocol;
 static void *const kFTURLSessionTaskResume = (void *)&kFTURLSessionTaskResume;
 static void *const kFTURLSessionDataTaskWithURL = (void *)&kFTURLSessionDataTaskWithURL;
 static void *const kFTURLSessionDataTaskWithRequest = (void *)&kFTURLSessionDataTaskWithRequest;
-static void *const kFTURLSessionWebSocketTaskWithURL = (void *)&kFTURLSessionWebSocketTaskWithURL;
-static void *const kFTURLSessionWebSocketTaskWithURLProtocols = (void *)&kFTURLSessionWebSocketTaskWithURLProtocols;
-static void *const kFTURLSessionWebSocketTaskWithRequest = (void *)&kFTURLSessionWebSocketTaskWithRequest;
 
 #pragma mark - Utility Functions
 
@@ -221,45 +219,9 @@ static dispatch_once_t onceToken;
     dispatch_once(&onceToken, ^{
         [self swizzleDataTaskWithURL];
         [self swizzleDataTaskWithRequest];
-        [self swizzleWebSocketTaskCreation];
         [self swizzleTaskResume];
     });
 #endif
-}
-
-/// Captures WebSocket URLs before Foundation normalizes ws/wss to http/https on the task request.
-- (void)swizzleWebSocketTaskCreation {
-    if (@available(iOS 13.0, tvOS 13.0, macOS 10.15, *)) {
-        FTSwizzlerInstanceMethod([NSURLSession class],
-                                 @selector(webSocketTaskWithURL:),
-                                 FTSWReturnType(NSURLSessionTask *),
-                                 FTSWArguments(NSURL *url),
-                                 FTSWReplacement({
-            NSURLSessionTask *task = FTSWCallOriginal(url);
-            task.ft_webSocketOriginalURL = url;
-            return task;
-        }), FTSwizzlerModeOncePerClassAndSuperclasses, kFTURLSessionWebSocketTaskWithURL);
-
-        FTSwizzlerInstanceMethod([NSURLSession class],
-                                 @selector(webSocketTaskWithURL:protocols:),
-                                 FTSWReturnType(NSURLSessionTask *),
-                                 FTSWArguments(NSURL *url, NSArray<NSString *> *protocols),
-                                 FTSWReplacement({
-            NSURLSessionTask *task = FTSWCallOriginal(url, protocols);
-            task.ft_webSocketOriginalURL = url;
-            return task;
-        }), FTSwizzlerModeOncePerClassAndSuperclasses, kFTURLSessionWebSocketTaskWithURLProtocols);
-
-        FTSwizzlerInstanceMethod([NSURLSession class],
-                                 @selector(webSocketTaskWithRequest:),
-                                 FTSWReturnType(NSURLSessionTask *),
-                                 FTSWArguments(NSURLRequest *request),
-                                 FTSWReplacement({
-            NSURLSessionTask *task = FTSWCallOriginal(request);
-            task.ft_webSocketOriginalURL = request.URL;
-            return task;
-        }), FTSwizzlerModeOncePerClassAndSuperclasses, kFTURLSessionWebSocketTaskWithRequest);
-    }
 }
 
 /// Swizzle dataTaskWithURL:completionHandler: method
@@ -523,6 +485,9 @@ static dispatch_once_t onceToken;
     }
     NSURLRequest *currentRequest = task.currentRequest;
     if (!currentRequest) {
+        return;
+    }
+    if (FTRequestIsOwnedByURLConnection(currentRequest)) {
         return;
     }
     if ([self isFTIntakeRequest:currentRequest]) {

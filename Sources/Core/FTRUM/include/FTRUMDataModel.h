@@ -82,8 +82,6 @@ NS_ASSUME_NONNULL_BEGIN
 @end
 @interface FTRUMResourceDataModel : FTRUMResourceModel
 @property (nonatomic, strong) FTResourceMetricsModel *metrics;
-/// Keeps the Resource lifecycle duration when metrics provide an independent task interval.
-@property (nonatomic, assign) BOOL keepsResourceDuration;
 @end
 @interface FTRUMLaunchDataModel : FTRUMActionModel
 @property (nonatomic, strong) NSNumber *duration;

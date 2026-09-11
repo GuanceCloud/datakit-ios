@@ -1,7 +1,7 @@
 Pod::Spec.new do |s|
 
 	s.name         = "GuanceSDK"
-	s.version      = "1.6.8-alpha.3"
+	s.version      = "1.6.8-alpha.5"
 	s.summary      = "Guance Cloud iOS Data Collection SDK"
 	#s.description  = ""
 	s.homepage     = "https://github.com/GuanceCloud/datakit-ios.git"
@@ -67,7 +67,7 @@ Pod::Spec.new do |s|
 		end
 
 		c.subspec 'URLSessionAutoInstrumentation' do |a|
-			a.source_files = 'Sources/Core/URLSessionAutoInstrumentation/**/*{.h,.m}'
+			a.source_files = 'Sources/Core/NetworkAutoInstrumentation/**/*{.h,.m}'
 			a.dependency 'GuanceSDK/Core/Protocol'
 			a.dependency 'GuanceSDK/Core/BaseUtils/Swizzle'
 		end

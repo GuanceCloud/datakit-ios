@@ -101,6 +101,9 @@
         if (model.rumEnableTraceUserResource != nil) {
             self.enableTraceUserResource = [model.rumEnableTraceUserResource boolValue];
         }
+        if (model.rumEnableTraceURLConnectionResource != nil) {
+            self.enableTraceURLConnectionResource = [model.rumEnableTraceURLConnectionResource boolValue];
+        }
         if (model.rumEnableResourceHostIP != nil) {
            self.enableResourceHostIP = [model.rumEnableResourceHostIP boolValue];
         }
@@ -141,6 +144,9 @@
         }
         if (model.traceEnableAutoTrace != nil) {
             self.enableAutoTrace = [model.traceEnableAutoTrace boolValue];
+        }
+        if (model.traceEnableAutoTraceURLConnection != nil) {
+            self.enableAutoTraceURLConnection = [model.traceEnableAutoTraceURLConnection boolValue];
         }
         if (model.traceType) {
             FTNetworkTraceType networkTraceType = FTNetworkTraceTypeDDtrace;

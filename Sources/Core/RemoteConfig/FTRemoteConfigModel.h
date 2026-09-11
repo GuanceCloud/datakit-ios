@@ -47,6 +47,8 @@ NS_ASSUME_NONNULL_BEGIN
 @property (nonatomic, strong, nullable) NSNumber *rumEnableTraceUserView;
 /// Whether native resource requests should be automatically tracked.
 @property (nonatomic, strong, nullable) NSNumber *rumEnableTraceUserResource;
+/// Whether NSURLConnection RUM Resource collection is enabled.
+@property (nonatomic, strong, nullable) NSNumber *rumEnableTraceURLConnectionResource;
 /// Whether resource host IP collection is enabled.
 @property (nonatomic, strong, nullable) NSNumber *rumEnableResourceHostIP;
 /// Whether application UI-block or freeze monitoring is enabled.
@@ -66,6 +68,8 @@ NS_ASSUME_NONNULL_BEGIN
 @property (nonatomic, strong, nullable) NSNumber *traceSampleRate;
 /// Whether native network auto-tracing is enabled.
 @property (nonatomic, strong, nullable) NSNumber *traceEnableAutoTrace;
+/// Whether NSURLConnection automatic Trace injection is enabled.
+@property (nonatomic, strong, nullable) NSNumber *traceEnableAutoTraceURLConnection;
 /// Trace propagation type, such as `ddTrace`, `zipkinMultiHeader`, `zipkinSingleHeader`, `traceparent`, `skywalking`, or `jaeger`.
 @property (nonatomic, copy, nullable) NSString *traceType;
 

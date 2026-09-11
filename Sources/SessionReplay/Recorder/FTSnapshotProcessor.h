@@ -24,6 +24,7 @@ NS_ASSUME_NONNULL_BEGIN
 
 -(instancetype)initWithQueue:(dispatch_queue_t)queue recordWriter:(FTRecordWriter *)recordWriter resourceProcessor:(FTResourceProcessor *)resourceProcessor;
 - (void)process:(FTViewTreeSnapshot *)viewTreeSnapshot touchSnapshot:(nullable FTTouchSnapshot *)touchSnapshot;
+- (void)forceFullSnapshot;
 
 @end
 

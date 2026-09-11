@@ -1,6 +1,21 @@
+
+# 1.6.8-alpha.5
+1. Merge from 1.6.8-alpha.2 and 1.6.8-alpha.4.
+---
+# 1.6.8-alpha.4
+1. Added automatic NSURLConnection RUM Resource collection and Trace correlation, independently enabled through `FTRumConfig.enableTraceURLConnectionResource` and `FTTraceConfig.enableAutoTraceURLConnection`; both default to disabled.
+2. Added WebView Log Bridge support through `FTLoggerConfig.enableWebViewLog` for Browser Logger API calls and automatic Console and JavaScript error logs, with reduced main-thread processing overhead.
+3. Added `FTSDKConfig.allowWebViewHost` as a shared host allowlist for WebView RUM and Log collection; deprecated `FTRumConfig.allowWebViewHost`.
+4. Added the `logEnableWebViewLog` remote configuration option to enable or disable WebView Log collection at runtime.
+5. Fixed numeric conversion overflow at Int64 boundaries in heatmap data.
+6. Fixed RUM Resource timing and WebSocket handshake rejection classification.
+---
 # 1.6.8-alpha.3
 1. Added the macOS `GuanceElectronNative` static Swift Package Manager product for building the Electron native runtime bridge.
 2. Reorganized the Electron integration so the Native SDK owns the bridge and Node-API addon sources, while the standalone Electron Adapter repository owns JavaScript adapter code, packaging, and host integration.
+---
+# 1.6.8-alpha.2
+1. Added reusable external Session Replay recorder control for framework integrations, including external-only recording, owner-aware native capture switching, linked RUM context access, enriched segment writes, and image resource storage.
 ---
 # 1.6.8-alpha.1
 1. Added `GuanceElectronWebView` integration through Swift Package Manager and CocoaPods for macOS Electron Web RUM and Session Replay.

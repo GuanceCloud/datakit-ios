@@ -51,6 +51,7 @@
     options.enableLinkRumData = self.enableLinkRumData;
     options.networkTraceType = self.networkTraceType;
     options.enableAutoTrace = self.enableAutoTrace;
+    options.enableAutoTraceURLConnection = self.enableAutoTraceURLConnection;
     options.traceInterceptor = [self.traceInterceptor copy];
     return options;
 }
@@ -62,6 +63,7 @@
             if ([dict ft_hasValidValueForKey:@"enableLinkRumData"]) _enableLinkRumData = [dict[@"enableLinkRumData"] boolValue];
             if ([dict ft_hasValidValueForKey:@"networkTraceType"]) _networkTraceType =(FTNetworkTraceType)[dict[@"networkTraceType"] intValue];
             if ([dict ft_hasValidValueForKey:@"enableAutoTrace"]) _enableAutoTrace = [dict[@"enableAutoTrace"] boolValue];
+            if ([dict ft_hasValidValueForKey:@"enableAutoTraceURLConnection"]) _enableAutoTraceURLConnection = [dict[@"enableAutoTraceURLConnection"] boolValue];
             if ([dict ft_hasValidValueForKey:@"traceInterceptor"]) _traceInterceptor = [dict[@"traceInterceptor"] copy];
         }
         return self;
@@ -75,6 +77,7 @@
     [dict setValue:@(self.enableLinkRumData) forKey:@"enableLinkRumData"];
     [dict setValue:@(self.networkTraceType) forKey:@"networkTraceType"];
     [dict setValue:@(self.enableAutoTrace) forKey:@"enableAutoTrace"];
+    [dict setValue:@(self.enableAutoTraceURLConnection) forKey:@"enableAutoTraceURLConnection"];
     return dict;
 }
 -(NSString *)debugDescription{

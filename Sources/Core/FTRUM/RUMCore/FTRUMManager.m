@@ -314,11 +314,13 @@ void *FTRUMQueueIdentityKey = &FTRUMQueueIdentityKey;
     [self startResourceWithKey:key property:nil];
 }
 - (void)startResourceWithKey:(NSString *)key property:(nullable NSDictionary *)property{
+    [self startResourceWithKey:key property:property time:[NSDate date]];
+}
+- (void)startResourceWithKey:(NSString *)key property:(nullable NSDictionary *)property time:(NSDate *)time{
     if (!key) {
         FTInnerLogError(@"[RUM] Failed to start resource due to missing required fields. Please ensure 'key' are provided.");
         return;
     }
-    NSDate *time = [NSDate date];
     dispatch_async(self.rumQueue, ^{
         @try {
             NSDictionary *context = [self rumDynamicProperty];
@@ -416,7 +418,7 @@ void *FTRUMQueueIdentityKey = &FTRUMQueueIdentityKey;
                     [tags setValue:responseConnectType forKey:FT_KEY_RESPONSE_CONTENT_TYPE];
                     [tags setValue:responseConnectEncoding forKey:FT_KEY_RESPONSE_CONTENT_ENCODING];
                     NSString *responseHeaderStr = [FTBaseInfoHandler convertToStringData:content.responseHeader];
-                    if (!content.webSocketHandshake && responseSize == nil) {
+                    if (!content.webSocketHandshake && responseSize == nil && !metrics.disableHeaderSizeFallback) {
                         responseSize = content.responseHeader[@"Content-Length"];
                         responseSize = @([responseSize longLongValue] + [responseHeaderStr dataUsingEncoding:NSUTF8StringEncoding].length);
                     }
@@ -426,7 +428,7 @@ void *FTRUMQueueIdentityKey = &FTRUMQueueIdentityKey;
                 if (content.requestHeader) {
                     NSString *requestHeaderStr = [FTBaseInfoHandler convertToStringData:content.requestHeader];
                     [fields setValue:requestHeaderStr forKey:FT_KEY_REQUEST_HEADER];
-                    if (!content.webSocketHandshake && requestSize == nil) {
+                    if (!content.webSocketHandshake && requestSize == nil && !metrics.disableHeaderSizeFallback) {
                         requestSize = content.requestHeader[@"Content-Length"];
                         requestSize = @([requestSize longLongValue] + [requestHeaderStr dataUsingEncoding:NSUTF8StringEncoding].length);
                     }
@@ -438,7 +440,9 @@ void *FTRUMQueueIdentityKey = &FTRUMQueueIdentityKey;
                 }
 
                 [fields setValue:metrics.resourceHttpProtocol forKey:FT_KEY_RESOURCE_HTTP_PROTOCOL];
-                [fields setValue:@(metrics.reusedConnection) forKey:FT_KEY_RESOURCE_CONNECTION_REUSE];
+                if (!metrics.connectionReuseUnavailable) {
+                    [fields setValue:@(metrics.reusedConnection) forKey:FT_KEY_RESOURCE_CONNECTION_REUSE];
+                }
                 
                 if(self.rumDependencies.enableResourceHostIP){
                     [tags setValue:metrics.remoteAddress forKey:FT_KEY_RESOURCE_HOST_IP];
@@ -450,7 +454,6 @@ void *FTRUMQueueIdentityKey = &FTRUMQueueIdentityKey;
                 
                 FTRUMResourceDataModel *resourceSuccess = [[FTRUMResourceDataModel alloc]initWithType:FTRUMDataResourceComplete identifier:key];
                 resourceSuccess.metrics = metrics;
-                resourceSuccess.keepsResourceDuration = content.webSocketHandshake;
                 resourceSuccess.time = time;
                 resourceSuccess.tags = tags;
                 resourceSuccess.fields = fields;
@@ -472,11 +475,13 @@ void *FTRUMQueueIdentityKey = &FTRUMQueueIdentityKey;
     [self stopResourceWithKey:key property:nil];
 }
 - (void)stopResourceWithKey:(NSString *)key property:(NSDictionary *)property{
+    [self stopResourceWithKey:key property:property time:[NSDate date]];
+}
+- (void)stopResourceWithKey:(NSString *)key property:(NSDictionary *)property time:(NSDate *)time{
     if (!key) {
         FTInnerLogError(@"[RUM] Failed to stop resource due to missing required fields. Please ensure 'key' are provided.");
         return;
     }
-    NSDate *time = [NSDate date];
     dispatch_async(self.rumQueue, ^{
         @try {
             NSDictionary *context = [self rumDynamicProperty];

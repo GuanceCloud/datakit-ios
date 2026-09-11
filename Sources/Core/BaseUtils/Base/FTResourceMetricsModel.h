@@ -53,9 +53,11 @@ NS_ASSUME_NONNULL_BEGIN
 @property (nonatomic, assign) long long redirectionStartNsTimeInterval;
 /// Redirect end time
 @property (nonatomic, assign) long long redirectionEndNsTimeInterval;
-/// Response body + header
+/// Observed response transfer bytes. NSURLSession metrics include body + header;
+/// collectors without header-byte visibility may report body bytes only.
 @property (nonatomic, strong, nullable) NSNumber *responseSize;
-/// Request body + header
+/// Observed request transfer bytes. NSURLSession metrics include body + header;
+/// collectors without header-byte visibility may report body bytes only.
 @property (nonatomic, strong, nullable) NSNumber *requestSize;
 /// Remote address
 @property (nonatomic, copy, nullable) NSString *remoteAddress;

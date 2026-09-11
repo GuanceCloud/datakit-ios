@@ -61,6 +61,9 @@
     FTViewTreeSnapshot *viewTreeSnapshot = [self.viewSnapShotBuilder takeSnapshot:rootViews referenceView:referenceView context:context];
     [self.snapshotProcessor process:viewTreeSnapshot touchSnapshot:touchSnapshot];
 }
+-(void)forceFullSnapshot{
+    [self.snapshotProcessor forceFullSnapshot];
+}
 @end
  
 

@@ -822,10 +822,12 @@
 }
 - (void)testRUMConfigCopy{
     FTRumConfig *rumConfig = [[FTRumConfig alloc]initWithAppid:@"app_id1111"];
+    XCTAssertFalse(rumConfig.enableTraceURLConnectionResource);
     rumConfig.sampleRate = 50;
     rumConfig.enableTraceUserAction = YES;
     rumConfig.enableTraceUserView = YES;
     rumConfig.enableTraceUserResource = YES;
+    rumConfig.enableTraceURLConnectionResource = YES;
     rumConfig.enableResourceHostIP = YES;
     rumConfig.enableTrackAppANR = YES;
     rumConfig.enableTrackAppCrash = YES;
@@ -855,6 +857,7 @@
     XCTAssertTrue(copyRumConfig.enableTraceUserAction == rumConfig.enableTraceUserAction);
     XCTAssertTrue(copyRumConfig.enableTraceUserView == rumConfig.enableTraceUserView);
     XCTAssertTrue(copyRumConfig.enableTraceUserResource == rumConfig.enableTraceUserResource);
+    XCTAssertTrue(copyRumConfig.enableTraceURLConnectionResource == rumConfig.enableTraceURLConnectionResource);
     XCTAssertTrue(copyRumConfig.enableResourceHostIP == rumConfig.enableResourceHostIP);
     XCTAssertTrue(copyRumConfig.enableTrackAppANR == rumConfig.enableTrackAppANR);
     XCTAssertTrue(copyRumConfig.enableTrackAppCrash == rumConfig.enableTrackAppCrash);
@@ -876,6 +879,7 @@
 - (void)testRUMConfigInitWithDict{
     XCTAssertNil([[FTRumConfig alloc]initWithDictionary:nil]);
     FTRumConfig *rumConfig = [[FTRumConfig alloc]init];
+    rumConfig.enableTraceURLConnectionResource = YES;
     rumConfig.resourceUrlHandler = ^BOOL(NSURL *url) {
         return NO;
     };
@@ -883,6 +887,8 @@
     FTRumConfig *newRum = [[FTRumConfig alloc]initWithDictionary:dict];
     XCTAssertTrue(rumConfig.enableTrackAppANR == newRum.enableTrackAppANR);
     XCTAssertTrue(rumConfig.enableTraceUserView == newRum.enableTraceUserView);
+    XCTAssertTrue(rumConfig.enableTraceURLConnectionResource == newRum.enableTraceURLConnectionResource);
+    XCTAssertEqualObjects(dict[@"enableTraceURLConnectionResource"], @YES);
     XCTAssertTrue(rumConfig.sampleRate == newRum.sampleRate);
     XCTAssertTrue(rumConfig.enableTrackAppCrash == newRum.enableTrackAppCrash);
     XCTAssertTrue(rumConfig.enableTraceUserAction == newRum.enableTraceUserAction);
@@ -896,12 +902,15 @@
 }
 - (void)testTraceConfigCopy{
     FTTraceConfig *traceConfig = [[FTTraceConfig alloc]init];
+    XCTAssertFalse(traceConfig.enableAutoTraceURLConnection);
     traceConfig.enableAutoTrace = YES;
+    traceConfig.enableAutoTraceURLConnection = YES;
     traceConfig.enableLinkRumData = YES;
     traceConfig.sampleRate = 50;
     traceConfig.networkTraceType = FTNetworkTraceTypeTraceparent;
     FTTraceConfig *copyTraceConfig = [traceConfig copy];
     XCTAssertTrue(copyTraceConfig.enableAutoTrace == traceConfig.enableAutoTrace);
+    XCTAssertTrue(copyTraceConfig.enableAutoTraceURLConnection == traceConfig.enableAutoTraceURLConnection);
     XCTAssertTrue(copyTraceConfig.enableLinkRumData == traceConfig.enableLinkRumData);
     XCTAssertTrue(copyTraceConfig.samplerate == traceConfig.sampleRate);
     XCTAssertTrue(copyTraceConfig.networkTraceType == traceConfig.networkTraceType);
@@ -910,9 +919,12 @@
 - (void)testTraceConfigInitWithDict{
     XCTAssertNil([[FTTraceConfig alloc]initWithDictionary:nil]);
     FTTraceConfig *traceConfig = [[FTTraceConfig alloc]init];
+    traceConfig.enableAutoTraceURLConnection = YES;
     NSDictionary *dict = [traceConfig convertToDictionary];
     FTTraceConfig *newTrace = [[FTTraceConfig alloc]initWithDictionary:dict];
     XCTAssertTrue(traceConfig.enableAutoTrace == newTrace.enableAutoTrace);
+    XCTAssertTrue(traceConfig.enableAutoTraceURLConnection == newTrace.enableAutoTraceURLConnection);
+    XCTAssertEqualObjects(dict[@"enableAutoTraceURLConnection"], @YES);
     XCTAssertTrue(traceConfig.networkTraceType == newTrace.networkTraceType);
     XCTAssertTrue(traceConfig.sampleRate == newTrace.sampleRate);
     XCTAssertTrue(traceConfig.enableLinkRumData == newTrace.enableLinkRumData);
@@ -1086,6 +1098,7 @@
     config.globalContext = @{@"key": @"value"};
     config.groupIdentifiers = @[@"group1"];
     config.remoteConfiguration = YES;
+    config.allowWebViewHost = @[@"test"];
     config.remoteConfigMiniUpdateInterval = 3600;
     config.dataModifier = ^id _Nullable(NSString * _Nonnull key, id  _Nonnull value) {
         return nil;
@@ -1098,13 +1111,13 @@
     };
     [config addPkgInfo:@"key" value:@"value"];
     
-    [self verifyDebugDescriptionContainsAllProperties:config filters:@[@"version",@"metricsUrl"]];
+    [self verifyDebugDescriptionContainsAllProperties:config filters:@[@"version",@"metricsUrl",@"allowWebViewHostConfigured",@"remoteAllowWebViewHost"]];
 }
 
 - (void)testFTRumConfigDebugDescription {
     FTRumConfig *config = [[FTRumConfig alloc] initWithAppid:@"test-appid"];
     
-    config.samplerate = 75;
+    config.sampleRate = 75;
     config.sessionOnErrorSampleRate = 100;
     config.enableTraceUserAction = YES;
     config.enableTraceUserView = YES;
@@ -1140,7 +1153,7 @@
     FTLoggerConfig *config = [[FTLoggerConfig alloc] init];
     
     config.discardType = FTDiscardOldest;
-    config.samplerate = 80;
+    config.sampleRate = 80;
     config.enableLinkRumData = YES;
     config.enableCustomLog = YES;
     config.printCustomLogToConsole = YES;
@@ -1154,7 +1167,7 @@
 - (void)testFTTraceConfigDebugDescription {
     FTTraceConfig *config = [[FTTraceConfig alloc] init];
     
-    config.samplerate = 90;
+    config.sampleRate = 90;
     config.enableLinkRumData = YES;
     config.networkTraceType = FTNetworkTraceTypeZipkinMultiHeader;
     config.enableAutoTrace = YES;

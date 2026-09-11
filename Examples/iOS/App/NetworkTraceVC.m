@@ -110,7 +110,19 @@
         [session finishTasksAndInvalidate];
     }];
     
-    self.datas = @[@[item1],@[item2,item3,item4],@[item5]];
+    TableViewCellItem *urlConnectionItem = [[TableViewCellItem alloc]initWithTitle:@"NSURLConnection Resource auto collection" handler:^{
+        // AppDelegate enables enableTraceURLConnectionResource / enableAutoTraceURLConnection.
+        // No manual Resource calls are needed, even with a nil business delegate.
+        NSURL *connectionURL = [NSURL URLWithString:@"https://httpbin.org/get?example=urlconnection"];
+        NSURLRequest *request = [NSURLRequest requestWithURL:connectionURL
+                                               cachePolicy:NSURLRequestReloadIgnoringLocalCacheData
+                                           timeoutInterval:15];
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wdeprecated-declarations"
+        __unused NSURLConnection *connection = [[NSURLConnection alloc] initWithRequest:request delegate:nil];
+#pragma clang diagnostic pop
+    }];
+    self.datas = @[@[item1,urlConnectionItem],@[item2,item3,item4],@[item5]];
     self.mTableView.dataSource = self;
     self.mTableView.delegate = self;
     [self.mTableView registerClass:UITableViewCell.class forCellReuseIdentifier:@"UITableViewCell"];

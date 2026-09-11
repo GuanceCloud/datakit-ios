@@ -71,6 +71,7 @@ static NSString *FTStringFromImagePrivacyLevel(FTImagePrivacyLevel level) {
         _privacy = FTSRPrivacyMask;
         _enableHeatmap = NO;
         _enableSwiftUI = NO;
+        _externalRecorderMode = NO;
     }
     return self;
 }
@@ -127,10 +128,11 @@ static NSString *FTStringFromImagePrivacyLevel(FTImagePrivacyLevel level) {
     config.additionalNodeRecorders = [self.additionalNodeRecorders copy];
     config.enableLinkRUMKeys = [self.enableLinkRUMKeys copy];
     config.enableHeatmap = self.enableHeatmap;
+    config.externalRecorderMode = self.externalRecorderMode;
     return config;
 }
 -(NSString *)debugDescription{
-    return [NSString stringWithFormat:@"====== Config ======\n sampleRate:%d\n sessionReplayOnErrorSampleRate:%d\n textAndInputPrivacy:%@\n touchPrivacy:%@\n imagePrivacy:%@\n enableSwiftUI:%@ enableHeatmap:%@\n ================== ",self.sampleRate,self.sessionReplayOnErrorSampleRate,FTStringFromTextAndInputPrivacyLevel(self.textAndInputPrivacy),FTStringFromTouchPrivacyLevel(self.touchPrivacy),FTStringFromImagePrivacyLevel(self.imagePrivacy),self.enableSwiftUI?@"YES":@"NO",self.enableHeatmap ? @"true" : @"false"];
+    return [NSString stringWithFormat:@"====== Config ======\n sampleRate:%d\n sessionReplayOnErrorSampleRate:%d\n textAndInputPrivacy:%@\n touchPrivacy:%@\n imagePrivacy:%@\n enableSwiftUI:%@ enableHeatmap:%@ externalRecorderMode:%@\n ================== ",self.sampleRate,self.sessionReplayOnErrorSampleRate,FTStringFromTextAndInputPrivacyLevel(self.textAndInputPrivacy),FTStringFromTouchPrivacyLevel(self.touchPrivacy),FTStringFromImagePrivacyLevel(self.imagePrivacy),self.enableSwiftUI?@"YES":@"NO",self.enableHeatmap ? @"true" : @"false",self.externalRecorderMode ? @"true" : @"false"];
 }
 #pragma mark remote
 -(void)mergeWithRemoteConfigModel:(FTRemoteConfigModel *)model{

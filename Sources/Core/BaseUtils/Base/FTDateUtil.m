@@ -40,6 +40,9 @@ struct timeval ft_processStartTime(void) {
 + (uint64_t)systemTime{
     return clock_gettime_nsec_np(CLOCK_UPTIME_RAW);
 }
++ (uint64_t)continuousTime{
+    return clock_gettime_nsec_np(CLOCK_MONOTONIC_RAW);
+}
 + (CFTimeInterval)systemUptime{
     return NSProcessInfo.processInfo.systemUptime;
 }

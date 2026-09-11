@@ -49,7 +49,7 @@ NS_ASSUME_NONNULL_BEGIN
 /// `URLSession` proxy delegate object that supports automated collection.
 ///
 /// All requests made by 'URLSession' using this delegate object will be intercepted by the SDK.
-@interface FTURLSessionDelegate : NSObject <NSURLSessionTaskDelegate,NSURLSessionDataDelegate,FTURLSessionDelegateProviding>
+@interface FTURLSessionDelegate : NSObject <NSURLSessionTaskDelegate,NSURLSessionDataDelegate,NSURLSessionWebSocketDelegate,FTURLSessionDelegateProviding>
 
 /// Intercept Request and return modified Request, can be used for custom link tracing
 @property (nonatomic,copy) RequestInterceptor requestInterceptor;

@@ -103,6 +103,10 @@
 }
 - (void)writeResourceData:(FTRUMDataModel *)data context:(NSDictionary *)context{
     FTRUMResourceDataModel *model = (FTRUMResourceDataModel *)data;
+    long long resourceStartTime = model.metrics.fetchStartNsTimeInterval;
+    if (resourceStartTime <= 0) {
+        resourceStartTime = [self.time ft_nanosecondTimeStamp];
+    }
     NSMutableDictionary *fields = [NSMutableDictionary new];
     if(self.resourceProperty && self.resourceProperty.allKeys.count>0){
         [fields addEntriesFromDictionary:self.resourceProperty];
@@ -117,9 +121,7 @@
         [fields setValue:model.metrics.tcp forKey:FT_KEY_RESOURCE_TCP];
         [fields setValue:model.metrics.dns forKey:FT_KEY_RESOURCE_DNS];
         [fields setValue:model.metrics.firstByte forKey:FT_KEY_RESOURCE_FIRST_BYTE];
-        if (!model.keepsResourceDuration) {
-            [fields setValue:model.metrics.fetchInterval forKey:FT_DURATION];
-        }
+        [fields setValue:model.metrics.fetchInterval forKey:FT_DURATION];
         [fields setValue:model.metrics.trans forKey:FT_KEY_RESOURCE_TRANS];
         [fields setValue:model.metrics.resource_dns_time forKey:FT_KEY_RESOURCE_DNS_TIME];
         [fields setValue:model.metrics.resource_ssl_time forKey:FT_KEY_RESOURCE_SSL_TIME];
@@ -134,6 +136,6 @@
     [tags addEntriesFromDictionary:sessionTag];
     [tags addEntriesFromDictionary:data.tags];
     [tags setValue:model.identifier forKey:FT_KEY_RESOURCE_ID];
-    [self.dependencies.writer rumWrite:FT_RUM_SOURCE_RESOURCE tags:tags fields:fields dynamicContext:context time:[self.time ft_nanosecondTimeStamp]];
+    [self.dependencies.writer rumWrite:FT_RUM_SOURCE_RESOURCE tags:tags fields:fields dynamicContext:context time:resourceStartTime];
 }
 @end

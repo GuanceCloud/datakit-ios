@@ -137,7 +137,7 @@ let package = Package(
                 "_FTProtocol",
                 "_FTBaseUtils_Swizzle",
             ],
-            path: "Sources/Core/URLSessionAutoInstrumentation",
+            path: "Sources/Core/NetworkAutoInstrumentation",
             publicHeadersPath: "."
         ),
         .target(

@@ -217,6 +217,7 @@
         FT_R_RUM_ENABLE_RESOURCE_HOST_IP:@(YES),
         FT_R_RUM_ENABLE_TRACE_USER_ACTION:@(YES),
         FT_R_RUM_ENABLE_TRACE_USER_RESOURCE:@(YES),
+        FT_R_RUM_ENABLE_TRACE_URLCONNECTION_RESOURCE:@(YES),
         FT_R_RUM_ENABLE_TRACE_APP_FREEZE:@(YES),
         FT_R_RUM_SESSION_ON_ERROR_SAMPLE_RATE:@(0.5),
     };
@@ -238,12 +239,14 @@
     XCTAssertTrue(rumConfig.enableResourceHostIP != copyRumConfig.enableResourceHostIP && copyRumConfig.enableResourceHostIP == YES);
     XCTAssertTrue(rumConfig.enableTraceUserAction != copyRumConfig.enableTraceUserAction && copyRumConfig.enableTraceUserAction == YES);
     XCTAssertTrue(rumConfig.enableTraceUserResource != copyRumConfig.enableTraceUserResource && copyRumConfig.enableTraceUserResource == YES);
+    XCTAssertTrue(rumConfig.enableTraceURLConnectionResource != copyRumConfig.enableTraceURLConnectionResource && copyRumConfig.enableTraceURLConnectionResource == YES);
     XCTAssertTrue(rumConfig.sessionOnErrorSampleRate != copyRumConfig.sessionOnErrorSampleRate && copyRumConfig.sessionOnErrorSampleRate == 50);
     
     NSDictionary *testTraceDict = @{
         FT_R_TRACE_SAMPLERATE:@(0.4),
         FT_R_TRACE_TRACE_TYPE:@"jaeger",
         FT_R_TRACE_ENABLE_AUTO_TRACE:@(YES),
+        FT_R_TRACE_ENABLE_AUTO_TRACE_URLCONNECTION:@(YES),
     };
     
     FTTraceConfig *trace = [[FTTraceConfig alloc]init];
@@ -254,6 +257,7 @@
     XCTAssertTrue(trace.sampleRate != copyTrace.sampleRate && copyTrace.sampleRate == 40);
     XCTAssertTrue(trace.networkTraceType != copyTrace.networkTraceType && copyTrace.networkTraceType == FTNetworkTraceTypeJaeger);
     XCTAssertTrue(trace.enableAutoTrace != copyTrace.enableAutoTrace && copyTrace.enableAutoTrace == YES);
+    XCTAssertTrue(trace.enableAutoTraceURLConnection != copyTrace.enableAutoTraceURLConnection && copyTrace.enableAutoTraceURLConnection == YES);
     
     
     NSDictionary *testLoggerDict = @{
@@ -401,6 +405,20 @@
     FTRemoteConfigModel *copy = [model copy];
     XCTAssertEqualObjects(copy.rumAllowWebViewHost, @[]);
     XCTAssertEqualObjects(copy.logEnableWebViewLog, @(YES));
+}
+
+- (void)testRemoteURLConnectionConfigurationSerializationAndCopy {
+    FTRemoteConfigModel *model = [[FTRemoteConfigModel alloc] initWithDict:@{
+        FT_R_RUM_ENABLE_TRACE_URLCONNECTION_RESOURCE: @YES,
+        FT_R_TRACE_ENABLE_AUTO_TRACE_URLCONNECTION: @NO,
+    }];
+    XCTAssertEqualObjects(model.rumEnableTraceURLConnectionResource, @YES);
+    XCTAssertEqualObjects(model.traceEnableAutoTraceURLConnection, @NO);
+    XCTAssertEqualObjects(model.toDictionary[FT_R_RUM_ENABLE_TRACE_URLCONNECTION_RESOURCE], @YES);
+    XCTAssertEqualObjects(model.toDictionary[FT_R_TRACE_ENABLE_AUTO_TRACE_URLCONNECTION], @NO);
+    FTRemoteConfigModel *copy = [model copy];
+    XCTAssertEqualObjects(copy.rumEnableTraceURLConnectionResource, @YES);
+    XCTAssertEqualObjects(copy.traceEnableAutoTraceURLConnection, @NO);
 }
 - (void)testDefaultUpdateRemoteConfig{
     [[FTTrackerEventDBTool sharedManager] deleteAllDatas];
