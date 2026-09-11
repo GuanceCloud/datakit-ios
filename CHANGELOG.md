@@ -1,5 +1,5 @@
 # 1.6.8-alpha.5
-1. Added reusable external Session Replay recorder control for framework integrations, including external-only recording, owner-aware native capture switching, linked RUM context access, enriched segment writes, and image resource storage.
+1. Merge from 1.6.8-alpha.2 and 1.6.8-alpha.4.
 ---
 
 # 1.6.8-alpha.4
