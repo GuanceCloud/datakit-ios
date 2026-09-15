@@ -6,8 +6,9 @@ export type WebRumStatus = 'active' | 'error'
 export type WebLogLevel = 'debug' | 'info' | 'warn' | 'error'
 
 const bridgeOnlyConfiguration = {
-  applicationId: value('VITE_GUANCE_APPLICATION_ID') || 'native-bridge',
-  datakitOrigin: value('VITE_GUANCE_DATAKIT_ORIGIN') || 'http://127.0.0.1:9529',
+  // Browser SDK initialization placeholders; events go through the checked bridge.
+  applicationId: 'native-bridge',
+  datakitOrigin: 'http://127.0.0.1:9529',
 } as const
 
 let active = false
@@ -59,7 +60,10 @@ export function initializeWebRUM(info: NativeHostInfo): WebRumStatus {
   }
 
   const globalContext = {
-    hybrid_architecture: 'appkit-window-electron-surface',
+    hybrid_architecture: 'native-owner-electron-child-process',
+    electron_instance_id: info.instanceID,
+    electron_process_id: info.processID,
+    electron_web_contents_id: info.webContentsID,
     electron_surface: info.surface,
     electron_version: info.electronVersion,
     desktop_arch: info.arch,

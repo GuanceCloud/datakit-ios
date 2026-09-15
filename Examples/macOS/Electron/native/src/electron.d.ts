@@ -1,6 +1,9 @@
 declare global {
   interface NativeHostInfo {
     electronVersion: string
+    instanceID: number
+    processID: number
+    webContentsID: number
     platform: string
     arch: string
     surface: string

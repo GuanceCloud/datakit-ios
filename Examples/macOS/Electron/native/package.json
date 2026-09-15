@@ -11,6 +11,7 @@
     "dev": "node scripts/dev.mjs",
     "start": "npm run dev",
     "smoke": "node scripts/dev.mjs --smoke",
+    "smoke:multi": "node scripts/dev.mjs --smoke --multi",
     "native:build": "node scripts/build-native-host.mjs",
     "native:test": "node scripts/test-native-host.mjs",
     "typecheck": "tsc --noEmit",
@@ -19,7 +20,7 @@
   "dependencies": {
     "@cloudcare/browser-logs": "3.3.6",
     "@cloudcare/browser-rum": "3.3.6",
-    "@cloudcare/electron-native-adapter": "file:../cloudcare-electron-native-adapter-0.0.0-local.tgz"
+    "@cloudcare/electron-native-adapter": "^0.1.0-alpha.3"
   },
   "devDependencies": {
     "electron": "43.6.0",

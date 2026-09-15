@@ -53,7 +53,7 @@ async function build() {
       })
     }
   }
-  fs.rmSync(path.join(outputDirectory, 'electron.pid'), { force: true })
+  fs.rmSync(path.join(outputDirectory, 'electron-pids.json'), { force: true })
   const outputExecutable = path.join(outputDirectory, 'OrbitDeskNativeHost')
   fs.copyFileSync(executable, outputExecutable)
   fs.chmodSync(outputExecutable, 0o755)

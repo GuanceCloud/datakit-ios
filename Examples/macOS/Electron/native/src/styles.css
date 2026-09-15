@@ -41,6 +41,7 @@ h2 { margin: 0; font-size: 22px; letter-spacing: -.02em; }
 .activity time { color: #99958f; font-size: 11px; }
 .avatar { display: grid; width: 38px; height: 38px; place-items: center; border-radius: 13px; background: #ececff; color: #5057a7; font-size: 11px; font-weight: 800; }
 .focus-card { display: flex; flex-direction: column; }
+.focus-card .soft-button { margin-top: 12px; }
 .ring { display: grid; width: 150px; height: 150px; margin: 24px auto; place-content: center; text-align: center; border-radius: 50%; background: radial-gradient(circle, #fff 58%, transparent 59%), conic-gradient(#5963c4 0 68%, #e8e7e2 68%); }
 .ring strong { font-size: 28px; }.ring span { color: #817e78; font-size: 11px; }
 .task-card { padding-bottom: 12px; }

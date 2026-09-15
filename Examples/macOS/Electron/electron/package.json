@@ -17,7 +17,7 @@
   "dependencies": {
     "@cloudcare/browser-logs": "3.3.6",
     "@cloudcare/browser-rum": "3.3.6",
-    "@cloudcare/electron-native-adapter": "file:../cloudcare-electron-native-adapter-0.0.0-local.tgz"
+    "@cloudcare/electron-native-adapter": "^0.1.0-alpha.3"
   },
   "devDependencies": {
     "electron": "43.6.0",

@@ -8,7 +8,7 @@ const pageCopy: Record<string, { eyebrow: string; title: string; description: st
   dashboard: {
     eyebrow: 'ELECTRON BUSINESS SURFACE',
     title: 'Operations Dashboard',
-    description: 'Electron WebContents renders this surface while AppKit owns the outer window and lifecycle.',
+    description: 'This independent Electron process forwards Web RUM, Logs and Replay to the shared Native Host.',
   },
   tasks: {
     eyebrow: 'MIGRATED ELECTRON PAGE',
@@ -36,6 +36,7 @@ app.innerHTML = `
         <p class="eyebrow">${copy.eyebrow}</p>
         <h1>${copy.title}</h1>
         <p class="hero-copy">${copy.description}</p>
+        <p id="process-identity" class="hero-copy">Connecting to Native Host…</p>
       </div>
       <div class="runtime-pill"><span></span> Electron 43 · External Adapter</div>
     </header>
@@ -53,7 +54,14 @@ else renderPopup(content)
 const nativeHost = window.nativeHost
 if (nativeHost) {
   void nativeHost.getInfo()
-    .then((info) => nativeHost.rendererReady(initializeWebRUM(info)))
+    .then((info) => {
+      document.querySelector('#process-identity')!.textContent =
+        `Electron #${info.instanceID} · Main PID ${info.processID} · WebContents ${info.webContentsID}`
+      const status = initializeWebRUM(info)
+      const probeButton = document.querySelector<HTMLButtonElement>('#write-probe')
+      if (probeButton) probeButton.disabled = status !== 'active'
+      nativeHost.rendererReady(status)
+    })
     .catch((error) => {
       console.error('[Guance Web RUM] initialization failed', error)
       nativeHost.rendererReady('error')
@@ -80,6 +88,8 @@ function renderDashboard(root: HTMLElement): void {
         <p class="kicker">NATIVE + ELECTRON</p><h2>Migration Progress</h2>
         <div class="ring"><strong>68%</strong><span>Pages migrated</span></div>
         <button id="open-popup" class="primary-button">Open Electron Customer Popup</button>
+        <button id="write-probe" class="soft-button" disabled>Write Test Action + Log</button>
+        <p id="probe-status" class="muted" aria-live="polite">Use this in both Electron processes to compare data.</p>
       </article>
     </div>
   `
@@ -94,6 +104,16 @@ function renderDashboard(root: HTMLElement): void {
     trackAction('Open Electron customer popup')
     sendLog('OrbitDesk customer popup requested', { surface: 'dashboard' })
     void window.nativeHost?.openPopup()
+  })
+  let probeSequence = 0
+  root.querySelector('#write-probe')?.addEventListener('click', () => {
+    probeSequence += 1
+    const context = { probe_sequence: probeSequence, surface: 'dashboard' }
+    trackAction('Electron child write probe', context)
+    const logged = sendLog('Electron child write probe', context)
+    root.querySelector('#probe-status')!.textContent = logged
+      ? `Probe ${probeSequence}: Action + Log submitted to the bridge.`
+      : `Probe ${probeSequence}: Action submitted; Browser Logs disabled.`
   })
 }
 

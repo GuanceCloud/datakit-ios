@@ -9,6 +9,7 @@ import { loadProjectEnvironment } from './env.mjs'
 const scriptsDirectory = path.dirname(fileURLToPath(import.meta.url))
 const projectRoot = path.resolve(scriptsDirectory, '..')
 const smoke = process.argv.includes('--smoke')
+const multiSmoke = smoke && process.argv.includes('--multi')
 const environment = loadProjectEnvironment(projectRoot)
 const installedElectronExecutable = createRequire(import.meta.url)('electron')
 const electronExecutable = path.join(
@@ -16,7 +17,7 @@ const electronExecutable = path.join(
   'native-build/OrbitDeskElectronAccessory.app/Contents/MacOS/Electron',
 )
 const nativeHostExecutable = path.join(projectRoot, 'native-build', 'OrbitDeskNativeHost')
-const electronPIDFile = path.join(projectRoot, 'native-build', 'electron.pid')
+const electronPIDFile = path.join(projectRoot, 'native-build', 'electron-pids.json')
 
 if (smoke) {
   const defaults = {
@@ -31,6 +32,7 @@ if (smoke) {
     if (!environment[key]) environment[key] = value
   }
   environment.GUANCE_EXAMPLE_SMOKE = '1'
+  environment.GUANCE_EXAMPLE_SMOKE_MULTI = multiSmoke ? '1' : '0'
 }
 
 function run(command, args) {
@@ -103,16 +105,41 @@ const nativeHost = spawn(nativeHostExecutable, [], {
     ORBITDESK_ELECTRON_PROJECT_ROOT: projectRoot,
     ORBITDESK_ELECTRON_PID_FILE: electronPIDFile,
   },
-  stdio: 'inherit',
+  stdio: ['inherit', 'pipe', 'inherit'],
 })
 
 let closing = false
 let smokeTimer
+const readyPIDs = new Set()
+let concurrentChildrenReady = false
+let outputBuffer = ''
+nativeHost.stdout.setEncoding('utf8')
+nativeHost.stdout.on('data', (chunk) => {
+  process.stdout.write(chunk)
+  outputBuffer += chunk.toString()
+  const lines = outputBuffer.split('\n')
+  outputBuffer = lines.pop()
+  for (const line of lines) {
+    const match = line.match(/Renderer and Native adapter ready · Electron #\d+ · PID (\d+) · RUM active/)
+    if (match) readyPIDs.add(Number(match[1]))
+    if (multiSmoke && readyPIDs.size === 2) {
+      const pids = readElectronPIDs()
+      if (pids.length === 2 && pids.every((pid) => readyPIDs.has(pid) && isAlive(pid))) {
+        concurrentChildrenReady = true
+      }
+    }
+  }
+})
 
-function readElectronPID() {
-  if (!fs.existsSync(electronPIDFile)) return null
-  const pid = Number.parseInt(fs.readFileSync(electronPIDFile, 'utf8'), 10)
-  return Number.isInteger(pid) && pid > 1 ? pid : null
+function readElectronPIDs() {
+  try {
+    const pids = JSON.parse(fs.readFileSync(electronPIDFile, 'utf8'))
+    return Array.isArray(pids) ? pids.filter((pid) => Number.isInteger(pid) && pid > 1) : []
+  } catch { return [] }
+}
+
+function isAlive(pid) {
+  try { process.kill(pid, 0); return true } catch { return false }
 }
 
 function signalElectron(pid, signal) {
@@ -128,11 +155,11 @@ function close(code = 0) {
   if (closing) return
   closing = true
   clearTimeout(smokeTimer)
-  const electronPID = readElectronPID()
-  signalElectron(electronPID, 'SIGTERM')
+  const electronPIDs = readElectronPIDs()
+  for (const pid of electronPIDs) signalElectron(pid, 'SIGTERM')
   if (nativeHost.exitCode === null) nativeHost.kill('SIGTERM')
   if (vite?.exitCode === null) vite.kill('SIGTERM')
-  signalElectron(electronPID, 'SIGKILL')
+  for (const pid of electronPIDs) signalElectron(pid, 'SIGKILL')
   try { fs.rmSync(electronPIDFile, { force: true }) } catch {}
   process.exit(code)
 }
@@ -146,5 +173,11 @@ if (smoke) {
 
 process.once('SIGINT', () => close(0))
 process.once('SIGTERM', () => close(0))
-nativeHost.once('exit', (code) => close(code ?? 0))
+// Use exit, not close: an orphan child may still hold the inherited stdout pipe.
+nativeHost.once('exit', (code) => {
+  if (multiSmoke && !concurrentChildrenReady) {
+    console.error('[external-example] Two concurrent Electron children did not both become ready')
+    close(1)
+  } else close(code ?? 1)
+})
 vite?.once('exit', (code) => { if (!closing) close(code ?? 1) })

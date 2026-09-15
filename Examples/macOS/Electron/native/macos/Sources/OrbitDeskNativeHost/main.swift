@@ -36,10 +36,13 @@ private func percentage(_ key: String, fallback: Int) -> Int {
 private final class NativeHostAppDelegate: NSObject, NSApplicationDelegate {
     private var window: NSWindow?
     private var statusLabel: NSTextField?
+    private var processesLabel: NSTextField?
     private var launchElectronButton: NSButton?
-    private let bridgeServer = FTElectronBridgeServer()
-    private var electronProcess: Process?
-    private var electronPIDFile: String?
+    private var launchAnotherElectronButton: NSButton?
+    private let electronProcesses = ElectronProcessController(pidFileURL: {
+        let path = environment("ORBITDESK_ELECTRON_PID_FILE")
+        return path.isEmpty ? nil : URL(fileURLWithPath: path)
+    }())
     private var rumActive = false
     private var bridgeReady = false
     private(set) var exitStatus: Int32 = 0
@@ -49,11 +52,24 @@ private final class NativeHostAppDelegate: NSObject, NSApplicationDelegate {
     }
 
     func applicationDidFinishLaunching(_ notification: Notification) {
+        electronProcesses.onExit = { [weak self] child in
+            guard let self else { return }
+            self.updateProcessControls()
+            self.statusLabel?.stringValue = "Electron #\(child.instanceID) exited · \(self.electronProcesses.children.count) running"
+            print("[native-host] Electron #\(child.instanceID) PID \(child.process.processIdentifier) exited: \(child.process.terminationStatus)")
+            if self.isSmokeTest {
+                if child.process.terminationStatus != 0 { self.exitStatus = 1 }
+                if self.electronProcesses.children.isEmpty { NSApp.terminate(nil) }
+            }
+        }
         do {
             try startNativeSDKAndBridge()
             createWindow(status: "Native SDK active · Click Open Electron to launch the UI process")
             if isSmokeTest {
                 try launchElectron()
+                if boolean("GUANCE_EXAMPLE_SMOKE_MULTI", fallback: false) {
+                    try launchElectron()
+                }
             }
         } catch {
             createWindow(status: "Startup failed: \(error.localizedDescription)")
@@ -65,9 +81,7 @@ private final class NativeHostAppDelegate: NSObject, NSApplicationDelegate {
     }
 
     private func startNativeSDKAndBridge() throws {
-        let appID = environment("GUANCE_NATIVE_APP_ID").isEmpty
-            ? environment("VITE_GUANCE_APPLICATION_ID")
-            : environment("GUANCE_NATIVE_APP_ID")
+        let appID = environment("GUANCE_NATIVE_APP_ID")
         let datakitURL = environment("GUANCE_NATIVE_DATAKIT_URL")
         let datawayURL = environment("GUANCE_NATIVE_DATAWAY_URL")
         let clientToken = environment("GUANCE_NATIVE_CLIENT_TOKEN")
@@ -128,7 +142,6 @@ private final class NativeHostAppDelegate: NSObject, NSApplicationDelegate {
             FTSDKAgent.sharedInstance().startLogger(withConfigOptions: loggerConfig)
         }
 
-        try bridgeServer.start()
         bridgeReady = true
 
         if boolean("GUANCE_NATIVE_SESSION_REPLAY", fallback: true) {
@@ -157,33 +170,23 @@ private final class NativeHostAppDelegate: NSObject, NSApplicationDelegate {
         task.executableURL = launchConfiguration.executableURL
         task.currentDirectoryURL = launchConfiguration.projectRootURL
         task.arguments = [launchConfiguration.projectRootURL.path]
-        task.environment = bridgeServer.environmentByAdding(
-            toEnvironment: nativeHostEnvironment.childProcessEnvironment
-        )
-        task.terminationHandler = { [weak self] process in
-            DispatchQueue.main.async {
-                self?.electronProcess = nil
-                self?.launchElectronButton?.isEnabled = self?.bridgeReady == true
-                self?.statusLabel?.stringValue = "Electron exited"
-                if self?.isSmokeTest == true {
-                    self?.exitStatus = process.terminationStatus
-                    NSApp.terminate(nil)
-                }
-            }
-        }
-        try task.run()
-        electronProcess = task
-        launchElectronButton?.isEnabled = false
-        statusLabel?.stringValue = "Electron launched · Native Bridge Server remains active"
-        let pidFile = environment("ORBITDESK_ELECTRON_PID_FILE")
-        if !pidFile.isEmpty {
-            try String(task.processIdentifier).write(
-                toFile: pidFile,
-                atomically: true,
-                encoding: .utf8
-            )
-            electronPIDFile = pidFile
-        }
+        // Include this example's .env.local settings (e.g. the Vite URL).
+        // The controller retains a separate server and injects its credentials.
+        task.environment = nativeHostEnvironment.childProcessEnvironment
+        let child = try electronProcesses.launch(task)
+        updateProcessControls()
+        statusLabel?.stringValue = "Electron #\(child.instanceID) launched · independent Bridge Server"
+        print("[native-host] Launched Electron #\(child.instanceID) PID \(task.processIdentifier)")
+    }
+
+    private func updateProcessControls() {
+        let children = electronProcesses.children.values.sorted { $0.instanceID < $1.instanceID }
+        launchElectronButton?.isEnabled = bridgeReady && children.isEmpty
+        launchAnotherElectronButton?.isEnabled = bridgeReady && children.count == 1
+        processesLabel?.stringValue = children.isEmpty
+            ? "No Electron child processes running"
+            : children.map { "Electron #\($0.instanceID) · PID \($0.process.processIdentifier) · independent bridge" }
+                .joined(separator: "\n")
     }
 
     private func createWindow(status: String) {
@@ -192,7 +195,7 @@ private final class NativeHostAppDelegate: NSObject, NSApplicationDelegate {
             return
         }
         let window = NSWindow(
-            contentRect: NSRect(x: 0, y: 0, width: 720, height: 480),
+            contentRect: NSRect(x: 0, y: 0, width: 800, height: 520),
             styleMask: [.titled, .closable, .miniaturizable],
             backing: .buffered,
             defer: false
@@ -202,13 +205,17 @@ private final class NativeHostAppDelegate: NSObject, NSApplicationDelegate {
 
         let title = NSTextField(labelWithString: "macOS Native Host")
         title.font = .systemFont(ofSize: 30, weight: .bold)
-        let detail = NSTextField(labelWithString:
-            "The Native process owns the Guance SDK; Electron only connects to the Bridge Server."
+        let detail = NSTextField(wrappingLabelWithString:
+            "One Native SDK, up to two Electron Main processes. Each child has its own Bridge Server."
         )
         detail.textColor = .secondaryLabelColor
         let statusLabel = NSTextField(labelWithString: status)
         statusLabel.textColor = .systemBlue
         self.statusLabel = statusLabel
+
+        let processesLabel = NSTextField(labelWithString: "No Electron child processes running")
+        processesLabel.font = .monospacedSystemFont(ofSize: 13, weight: .regular)
+        self.processesLabel = processesLabel
 
         let openElectron = NSButton(
             title: "Open Electron",
@@ -217,6 +224,16 @@ private final class NativeHostAppDelegate: NSObject, NSApplicationDelegate {
         )
         openElectron.isEnabled = bridgeReady
         self.launchElectronButton = openElectron
+        let openAnotherElectron = NSButton(
+            title: "Open Another Electron",
+            target: self,
+            action: #selector(openAnotherElectron)
+        )
+        openAnotherElectron.isEnabled = false
+        self.launchAnotherElectronButton = openAnotherElectron
+        let processButtons = NSStackView(views: [openElectron, openAnotherElectron])
+        processButtons.orientation = .horizontal
+        processButtons.spacing = 12
         let action = NSButton(
             title: "Record Native Action",
             target: self,
@@ -232,11 +249,11 @@ private final class NativeHostAppDelegate: NSObject, NSApplicationDelegate {
             target: self,
             action: #selector(flushData)
         )
-        let buttons = NSStackView(views: [openElectron, action, request, flush])
+        let buttons = NSStackView(views: [action, request, flush])
         buttons.orientation = .horizontal
         buttons.spacing = 12
 
-        let stack = NSStackView(views: [title, detail, statusLabel, buttons])
+        let stack = NSStackView(views: [title, detail, statusLabel, processesLabel, processButtons, buttons])
         stack.orientation = .vertical
         stack.alignment = .leading
         stack.spacing = 22
@@ -258,17 +275,16 @@ private final class NativeHostAppDelegate: NSObject, NSApplicationDelegate {
     }
 
     @objc private func openElectron() {
-        if let electronProcess, electronProcess.isRunning {
-            NSRunningApplication(processIdentifier: electronProcess.processIdentifier)?
-                .activate(options: [.activateAllWindows])
-            statusLabel?.stringValue = "Electron is already running"
-            return
-        }
-        launchElectronButton?.isEnabled = false
+        guard bridgeReady, electronProcesses.children.isEmpty else { return }
+        openAnotherElectron()
+    }
+
+    @objc private func openAnotherElectron() {
+        guard bridgeReady, electronProcesses.children.count < 2 else { return }
         do {
             try launchElectron()
         } catch {
-            launchElectronButton?.isEnabled = bridgeReady
+            updateProcessControls()
             statusLabel?.stringValue = "Electron launch failed: \(error.localizedDescription)"
         }
     }
@@ -312,18 +328,7 @@ private final class NativeHostAppDelegate: NSObject, NSApplicationDelegate {
 
     func applicationWillTerminate(_ notification: Notification) {
         bridgeReady = false
-        bridgeServer.stop()
-        if let electronProcess, electronProcess.isRunning {
-            let pid = electronProcess.processIdentifier
-            electronProcess.terminate()
-            Thread.sleep(forTimeInterval: 0.25)
-            if electronProcess.isRunning {
-                Darwin.kill(pid, SIGKILL)
-            }
-        }
-        if let electronPIDFile {
-            try? FileManager.default.removeItem(atPath: electronPIDFile)
-        }
+        electronProcesses.terminateAll()
     }
 }
 

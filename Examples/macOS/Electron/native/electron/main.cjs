@@ -2,12 +2,16 @@
 
 const { app, BrowserWindow, ipcMain, Menu, shell } = require("electron");
 const electron = require("electron");
+const fs = require("node:fs");
 const path = require("node:path");
 const { pathToFileURL } = require("node:url");
 const { bootstrap } = require("@cloudcare/electron-native-adapter");
 
 const isDevelopment = Boolean(process.env.VITE_DEV_SERVER_URL);
 const smoke = process.env.GUANCE_EXAMPLE_SMOKE === "1";
+const multiSmoke = process.env.GUANCE_EXAMPLE_SMOKE_MULTI === "1";
+const instanceID = Number(process.env.ORBITDESK_ELECTRON_INSTANCE_ID) || process.pid;
+const processLabel = `Electron #${instanceID} · PID ${process.pid}`;
 const projectRoot = path.resolve(__dirname, "..");
 let client;
 let mainWindow;
@@ -17,6 +21,12 @@ let smokeTimer;
 const replayStates = new Map();
 
 app.setName("OrbitDesk External Electron");
+// Independent Chromium profiles avoid cross-process locks and shared Web sessions.
+const userDataPath = path.join(app.getPath("userData"),
+  `host-${process.ppid}`, `electron-${instanceID}`);
+fs.mkdirSync(userDataPath, { recursive: true });
+app.setPath("userData", userDataPath);
+app.setPath("sessionData", userDataPath);
 if (process.platform === "darwin") app.setActivationPolicy("accessory");
 
 function rendererURL(surface) {
@@ -35,7 +45,7 @@ function createWindow(surface = "dashboard") {
     minWidth: popup ? 680 : 900,
     minHeight: popup ? 520 : 680,
     show: false,
-    title: popup ? "OrbitDesk · Electron Customer Details" : "OrbitDesk · External Mode",
+    title: `OrbitDesk · ${processLabel} · ${popup ? "Customer Details" : "External Mode"}`,
     titleBarStyle: "hiddenInset",
     backgroundColor: "#f7f6f2",
     webPreferences: {
@@ -46,6 +56,7 @@ function createWindow(surface = "dashboard") {
     },
   });
   const webContentsId = window.webContents.id;
+  window.on("page-title-updated", (event) => event.preventDefault());
 
   if (!popup) mainWindow = window;
   window.once("ready-to-show", () => window.show());
@@ -90,6 +101,9 @@ function createMenu() {
 
 ipcMain.handle("native-host:get-info", (event) => ({
   electronVersion: process.versions.electron,
+  instanceID,
+  processID: process.pid,
+  webContentsID: event.sender.id,
   platform: process.platform,
   arch: process.arch,
   surface: event.sender.getURL().includes("surface=popup") ? "popup" : "dashboard",
@@ -101,13 +115,14 @@ ipcMain.on("native-host:set-replay-recording", (event, recording) => {
   replayStates.set(event.sender.id, recording === true);
 });
 ipcMain.on("native-host:renderer-ready", (_event, rumStatus) => {
-  console.info("[external-example] Renderer and Native adapter ready");
+  console.info(`[external-example] Renderer and Native adapter ready · ${processLabel} · RUM ${rumStatus}`);
   if (smoke) {
     if (rumStatus !== "active") {
       exitCode = 1;
       console.error("[external-example] Web RUM did not connect to the Native SDK bridge");
     }
-    setTimeout(() => app.quit(), 500);
+    // Keep both children alive together, then let #2 outlive #1.
+    setTimeout(() => app.quit(), multiSmoke ? instanceID * 2_000 : 500);
   }
 });
 
@@ -119,7 +134,7 @@ app.whenReady().then(async () => {
     autoAttach: true,
     onError: (error) => console.error("[external-example] adapter error", error),
   });
-  console.info("[external-example] external mode connected");
+  console.info(`[external-example] external mode connected · ${processLabel}`);
   createMenu();
   createWindow();
   if (smoke) {
