@@ -52,7 +52,6 @@ static void *FTElectronWebViewDescriptorAssociationKey =
 @property (nonatomic, copy, nullable)
     FTElectronWebViewCommandHandler commandHandler;
 @property (nonatomic, strong) FTElectronWebViewRecorder *recorder;
-@property (nonatomic, assign) int64_t nextStandaloneSlotID;
 - (void)clearNativeAssociationForDescriptor:
     (nullable FTElectronWebViewDescriptor *)descriptor;
 @end
@@ -74,8 +73,6 @@ static void *FTElectronWebViewDescriptorAssociationKey =
         _descriptors = [NSMutableDictionary dictionary];
         _lock = [[NSRecursiveLock alloc] init];
         _recorder = [[FTElectronWebViewRecorder alloc] init];
-        NSTimeInterval milliseconds = NSDate.date.timeIntervalSince1970 * 1000;
-        _nextStandaloneSlotID = (int64_t)milliseconds * 1000;
     }
     return self;
 }
@@ -151,16 +148,24 @@ static void *FTElectronWebViewDescriptorAssociationKey =
     descriptor.standalone = YES;
     descriptor.webContentsVisible = visible;
     descriptor.visible = visible;
-    descriptor.requiresFullSnapshot = visible;
     descriptor.bindInfo = [[FTBindInfo alloc] init];
 
-    [self.lock lock];
-    if (self.nextStandaloneSlotID == INT64_MAX) {
-        self.nextStandaloneSlotID = 1;
-    } else {
-        self.nextStandaloneSlotID += 1;
+    // Receivers have independent registration tables, but replay slots share
+    // the Native host's namespace. Allocate them once across all receivers.
+    static int64_t nextStandaloneSlotID;
+    static dispatch_once_t onceToken;
+    dispatch_once(&onceToken, ^{
+        nextStandaloneSlotID =
+            (int64_t)(NSDate.date.timeIntervalSince1970 * 1000) * 1000;
+    });
+    @synchronized (FTElectronWebViewHandler.class) {
+        // Keep slots exactly representable in the JSON acknowledgement.
+        if (nextStandaloneSlotID >= 9007199254740991LL) {
+            return nil;
+        }
+        descriptor.slotID = ++nextStandaloneSlotID;
     }
-    descriptor.slotID = self.nextStandaloneSlotID;
+    [self.lock lock];
     FTElectronWebViewDescriptor *previous =
         self.descriptors[@(webContentsID)];
     [self clearNativeAssociationForDescriptor:previous];
@@ -209,12 +214,8 @@ static void *FTElectronWebViewDescriptorAssociationKey =
     FTElectronWebViewDescriptor *descriptor =
         self.descriptors[@(webContentsID)];
     if (descriptor && descriptor.isStandalone) {
-        BOOL wasVisible = descriptor.visible;
         descriptor.webContentsVisible = visible;
         descriptor.visible = visible;
-        if (!wasVisible && visible) {
-            descriptor.requiresFullSnapshot = YES;
-        }
     } else {
         descriptor = nil;
     }
@@ -405,12 +406,7 @@ static void *FTElectronWebViewDescriptorAssociationKey =
         }
         for (FTElectronWebViewDescriptor *descriptor in descriptors) {
             if (descriptor.isStandalone) {
-                if (descriptor.visible) {
-                    commandHandler(
-                        descriptor.webContentsID,
-                        FTElectronWebViewCommandTakeSubsequentFullSnapshot
-                    );
-                }
+                // Cross-process Browser Replay owns its own snapshot lifecycle.
                 continue;
             }
             if (!descriptor.visible || descriptor.hostView.window == nil ||

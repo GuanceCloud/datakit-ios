@@ -103,7 +103,7 @@ final class GuanceElectronWebViewTests: XCTestCase {
         )
     }
 
-    func testStandaloneFullSnapshotCommandTargetsOnlyVisibleRegistrations() throws {
+    func testStandaloneRegistrationsNeverReceiveNativeFullSnapshotCommands() throws {
         var commands: [(Int64, String)] = []
         handler.start { webContentsID, command in
             commands.append((webContentsID, command))
@@ -117,12 +117,7 @@ final class GuanceElectronWebViewTests: XCTestCase {
 
         try invokeTakeSubsequentFullSnapshot()
 
-        XCTAssertEqual(commands.count, 1)
-        XCTAssertEqual(commands.first?.0, 15)
-        XCTAssertEqual(
-            commands.first?.1,
-            FTElectronWebViewCommandTakeSubsequentFullSnapshot
-        )
+        XCTAssertTrue(commands.isEmpty)
     }
 
     func testRejectsUnknownSenderAndRemovesRegistration() {
@@ -375,6 +370,17 @@ final class GuanceElectronWebViewTests: XCTestCase {
 
         handler.start()
 
+        // External servers must not replace the managed callback on start,
+        // or clear it when either server stops.
+        let firstServer = FTElectronBridgeServer()
+        let secondServer = FTElectronBridgeServer()
+        try firstServer.start()
+        try secondServer.start()
+        defer {
+            firstServer.stop()
+            secondServer.stop()
+        }
+
         let host = NSView(frame: NSRect(x: 0, y: 0, width: 800, height: 500))
         let window = NSWindow(
             contentRect: host.bounds,
@@ -408,6 +414,14 @@ final class GuanceElectronWebViewTests: XCTestCase {
             commands.first?.1,
             FTElectronWebViewCommandTakeSubsequentFullSnapshot
         )
+        firstServer.stop()
+        commands.removeAll()
+        try invokeTakeSubsequentFullSnapshot()
+        XCTAssertEqual(commands.map { $0.0 }, [72])
+        secondServer.stop()
+        commands.removeAll()
+        try invokeTakeSubsequentFullSnapshot()
+        XCTAssertEqual(commands.map { $0.0 }, [72])
         withExtendedLifetime(window) {}
     }
 

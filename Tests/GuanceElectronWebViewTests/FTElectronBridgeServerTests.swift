@@ -53,6 +53,69 @@ final class FTElectronBridgeServerTests: XCTestCase {
         XCTAssertFalse(FileManager.default.fileExists(atPath: socketPath))
     }
 
+    func testProcessConfigurationStartsServerAndPreservesExplicitEnvironment() throws {
+        let server = FTElectronBridgeServer()
+        defer { server.stop() }
+        let process = Process()
+        process.environment = [
+            "EXISTING": "keep",
+            FTElectronBridgeSocketPathEnvironmentKey: "stale-path",
+            FTElectronBridgeAuthenticationTokenEnvironmentKey: "stale-token",
+        ]
+        try server.configureElectronProcess(process)
+        XCTAssertTrue(server.isRunning)
+        XCTAssertFalse(process.isRunning)
+        XCTAssertEqual(process.environment?["EXISTING"], "keep")
+        XCTAssertEqual(process.environment?[FTElectronBridgeSocketPathEnvironmentKey],
+                       server.socketPath)
+        XCTAssertEqual(process.environment?[FTElectronBridgeAuthenticationTokenEnvironmentKey],
+                       server.authenticationToken)
+        XCTAssertEqual(process.environment?[FTElectronBridgeProtocolVersionEnvironmentKey], "1")
+        let firstEnvironment = process.environment
+        try server.configureElectronProcess(process)
+        XCTAssertEqual(process.environment, firstEnvironment)
+    }
+
+    func testProcessesReadTheirOwnBridgeEnvironmentWithoutChangingParent() throws {
+        let parentEnvironment = ProcessInfo.processInfo.environment
+        let first = FTElectronBridgeServer()
+        let second = FTElectronBridgeServer()
+        defer { first.stop(); second.stop() }
+        let keys = [
+            FTElectronBridgeSocketPathEnvironmentKey,
+            FTElectronBridgeAuthenticationTokenEnvironmentKey,
+            FTElectronBridgeProtocolVersionEnvironmentKey,
+        ]
+        let processes = [Process(), Process()]
+        let outputs = [Pipe(), Pipe()]
+        for (index, server) in [first, second].enumerated() {
+            let process = processes[index]
+            process.executableURL = URL(fileURLWithPath: "/bin/sh")
+            process.arguments = [
+                "-c",
+                #"printf '%s\n' "$GUANCE_ELECTRON_SOCKET_PATH" "$GUANCE_ELECTRON_AUTH_TOKEN" "$GUANCE_ELECTRON_PROTOCOL_VERSION""#,
+            ]
+            process.standardOutput = outputs[index]
+            try server.configureElectronProcess(process)
+            for (key, value) in parentEnvironment where !keys.contains(key) {
+                XCTAssertEqual(process.environment?[key], value, "Inherited key: \(key)")
+            }
+            try process.run()
+        }
+        for (index, server) in [first, second].enumerated() {
+            let data = outputs[index].fileHandleForReading.readDataToEndOfFile()
+            processes[index].waitUntilExit()
+            XCTAssertEqual(processes[index].terminationStatus, 0)
+            let values = String(decoding: data, as: UTF8.self).split(separator: "\n").map(String.init)
+            XCTAssertEqual(values, [try XCTUnwrap(server.socketPath),
+                                    try XCTUnwrap(server.authenticationToken), "1"])
+            XCTAssertThrowsError(try server.configureElectronProcess(processes[index]))
+        }
+        XCTAssertNotEqual(first.socketPath, second.socketPath)
+        XCTAssertNotEqual(first.authenticationToken, second.authenticationToken)
+        XCTAssertEqual(ProcessInfo.processInfo.environment, parentEnvironment)
+    }
+
     func testAuthenticatedProtocolOwnsAndCleansStandaloneRegistration() throws {
         let server = FTElectronBridgeServer()
         try server.start()
@@ -89,7 +152,8 @@ final class FTElectronBridgeServerTests: XCTestCase {
         XCTAssertEqual(registration["type"] as? String, "ack")
         XCTAssertEqual(registration["ok"] as? Bool, true)
         XCTAssertNotNil(registration["slotID"] as? NSNumber)
-        XCTAssertNotNil(handler.slotID(forWebContentsID: 401))
+        // External registrations never occupy the managed singleton's table.
+        XCTAssertNil(handler.slotID(forWebContentsID: 401))
 
         try writeJSON([
             "protocolVersion": 1,
@@ -198,6 +262,80 @@ final class FTElectronBridgeServerTests: XCTestCase {
         ], to: descriptor)
         XCTAssertThrowsError(try readJSON(from: descriptor))
         XCTAssertEqual(handler.registeredWebContentsCount(), 0)
+    }
+
+    func testConcurrentServersIsolateIdenticalWebContentsIDsAndDisconnects() throws {
+        let first = FTElectronBridgeServer()
+        let second = FTElectronBridgeServer()
+        try first.start()
+        try second.start()
+        defer { first.stop(); second.stop() }
+        XCTAssertNotEqual(first.socketPath, second.socketPath)
+        XCTAssertNotEqual(first.authenticationToken, second.authenticationToken)
+        let a = try authenticate(first)
+        let b = try authenticate(second)
+        defer { Darwin.close(a); Darwin.close(b) }
+
+        let slotA = try request(a, type: "register", sequence: 1)["slotID"] as? NSNumber
+        let slotB = try request(b, type: "register", sequence: 1)["slotID"] as? NSNumber
+        XCTAssertNotNil(slotA)
+        XCTAssertNotNil(slotB)
+        XCTAssertNotEqual(slotA, slotB)
+        XCTAssertEqual(handler.registeredWebContentsCount(), 0)
+
+        // Hiding A must not suppress B's events with the same local ID.
+        XCTAssertEqual(try request(a, type: "update", sequence: 2,
+                                  extra: ["visible": false])["ok"] as? Bool, true)
+        let payload = #"[{"handlerName":"sendEvent","data":{"name":"rum"}}]"#
+        XCTAssertEqual(try request(a, type: "event", sequence: 3,
+                                  extra: ["payload": payload])["ok"] as? Bool, false)
+        XCTAssertEqual(try request(b, type: "event", sequence: 2,
+                                  extra: ["payload": payload])["ok"] as? Bool, true)
+        XCTAssertEqual(try request(a, type: "close", sequence: 4)["ok"] as? Bool, true)
+
+        // A reconnect owns a new registration; stopping it leaves B usable.
+        let reconnected = try authenticate(first)
+        defer { Darwin.close(reconnected) }
+        let newSlot = try request(reconnected, type: "register", sequence: 1)["slotID"] as? NSNumber
+        XCTAssertNotNil(newSlot)
+        XCTAssertNotEqual(newSlot, slotA)
+        XCTAssertNotEqual(newSlot, slotB)
+        first.stop()
+        XCTAssertEqual(try request(b, type: "event", sequence: 3,
+                                  extra: ["payload": payload])["ok"] as? Bool, true)
+        XCTAssertEqual(try request(b, type: "unregister", sequence: 4)["ok"] as? Bool, true)
+        XCTAssertEqual(try request(b, type: "close", sequence: 5)["ok"] as? Bool, true)
+    }
+
+    private func authenticate(_ server: FTElectronBridgeServer) throws -> Int32 {
+        let descriptor = try connect(to: XCTUnwrap(server.socketPath))
+        do {
+            try writeJSON([
+                "protocolVersion": 1, "type": "hello",
+                "connectionID": "same-client-local-id",
+                "authenticationToken": try XCTUnwrap(server.authenticationToken),
+            ], to: descriptor)
+            XCTAssertEqual(try readJSON(from: descriptor)["type"] as? String, "ready")
+            return descriptor
+        } catch {
+            Darwin.close(descriptor)
+            throw error
+        }
+    }
+
+    private func request(
+        _ descriptor: Int32, type: String, sequence: Int,
+        extra: [String: Any] = [:]
+    ) throws -> [String: Any] {
+        var message: [String: Any] = [
+            "protocolVersion": 1, "type": type,
+            "connectionID": "same-client-local-id",
+            "sequence": sequence, "requestID": String(sequence),
+            "webContentsID": 1,
+        ]
+        message.merge(extra) { _, value in value }
+        try writeJSON(message, to: descriptor)
+        return try readJSON(from: descriptor)
     }
 
     private func connect(to socketPath: String) throws -> Int32 {

@@ -37,6 +37,10 @@ FOUNDATION_EXPORT NSString *const
 /// APIs before starting this server. The server owns only its local IPC
 /// endpoint and remote Electron registrations. It never initializes, flushes,
 /// or shuts down the Native SDK.
+///
+/// Retain one server per concurrently running Electron Main process. Servers
+/// have independent endpoints and WebContents registrations. Browser Replay
+/// controls its own snapshots; this server sends no Native snapshot commands.
 @interface FTElectronBridgeServer : NSObject
 
 @property (nonatomic, assign, readonly, getter=isRunning) BOOL running;
@@ -47,6 +51,16 @@ FOUNDATION_EXPORT NSString *const
 /// Starts an owner-only Unix-domain-socket endpoint with generated launch
 /// credentials. Starting an already-running instance is idempotent.
 - (BOOL)startWithError:(NSError * _Nullable * _Nullable)error;
+
+/// Starts this server if necessary and merges its generated credentials into
+/// an unlaunched Electron process's environment. If no environment was supplied,
+/// inherits the host's environment. Existing non-bridge keys are preserved;
+/// bridge keys are replaced with this server's credentials. Does not launch the
+/// process or change the host's environment. Repeated calls before launch are
+/// safe. Use a distinct server for each concurrent Electron Main process.
+- (BOOL)configureElectronProcess:(NSTask *)process
+                           error:(NSError * _Nullable * _Nullable)error
+    NS_SWIFT_NAME(configureElectronProcess(_:));
 
 /// Stops the server, disconnects Electron, removes remote registrations, and
 /// deletes the socket. Native SDK state and uploads remain active.

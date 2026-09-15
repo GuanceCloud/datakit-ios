@@ -51,6 +51,7 @@ typedef NS_ENUM(NSInteger, FTElectronBridgeServerErrorCode) {
     FTElectronBridgeServerErrorSocketCreation = 2,
     FTElectronBridgeServerErrorSocketBind = 3,
     FTElectronBridgeServerErrorSocketListen = 4,
+    FTElectronBridgeServerErrorProcessAlreadyLaunched = 5,
 };
 
 static NSError *FTElectronBridgeServerError(
@@ -79,6 +80,9 @@ static BOOL FTElectronBridgeSetNonBlocking(int descriptor) {
 @property (nonatomic, copy, nullable) NSString *connectionID;
 @property (nonatomic, strong) NSMutableData *readBuffer;
 @property (nonatomic, strong) NSMutableSet<NSNumber *> *remoteWebContentsIDs;
+// Each server owns its local WebContents namespace. This receiver never
+// registers as the in-process Native recorder or installs a command callback.
+@property (nonatomic, strong) FTElectronWebViewHandler *webViewHandler;
 @property (nonatomic, assign) BOOL authenticated;
 @property (nonatomic, assign) int64_t expectedSequence;
 @end
@@ -96,6 +100,7 @@ static BOOL FTElectronBridgeSetNonBlocking(int descriptor) {
         _clientDescriptor = -1;
         _readBuffer = [NSMutableData data];
         _remoteWebContentsIDs = [NSMutableSet set];
+        _webViewHandler = [[FTElectronWebViewHandler alloc] init];
         _expectedSequence = 1;
     }
     return self;
@@ -220,12 +225,6 @@ static BOOL FTElectronBridgeSetNonBlocking(int descriptor) {
         });
         dispatch_resume(self.acceptSource);
 
-        [[FTElectronWebViewHandler sharedInstance]
-            startWithCommandHandler:^(int64_t webContentsID,
-                                      NSString *command) {
-                [weakSelf sendCommand:command
-                        webContentsID:webContentsID];
-            }];
         FTInnerLogInfo(@"[ElectronBridgeServer] listening at %@", socketPath);
         result = YES;
     });
@@ -256,25 +255,44 @@ static BOOL FTElectronBridgeSetNonBlocking(int descriptor) {
         }
         self.socketPathStorage = nil;
         self.authenticationTokenStorage = nil;
-        [[FTElectronWebViewHandler sharedInstance]
-            startWithCommandHandler:nil];
         FTInnerLogInfo(@"[ElectronBridgeServer] stopped");
     });
+}
+
+- (BOOL)configureElectronProcess:(NSTask *)process
+                           error:(NSError * _Nullable * _Nullable)error {
+    if (process.processIdentifier != 0) {
+        if (error) {
+            *error = FTElectronBridgeServerError(
+                FTElectronBridgeServerErrorProcessAlreadyLaunched,
+                @"Configure Electron before launching the process"
+            );
+        }
+        return NO;
+    }
+    if (![self startWithError:error]) {
+        return NO;
+    }
+    process.environment = [self environmentByAddingToEnvironment:
+        process.environment ?: NSProcessInfo.processInfo.environment];
+    return YES;
 }
 
 - (NSDictionary<NSString *, NSString *> *)environmentByAddingToEnvironment:
     (nullable NSDictionary<NSString *, NSString *> *)environment {
     NSMutableDictionary<NSString *, NSString *> *result =
         environment ? [environment mutableCopy] : [NSMutableDictionary dictionary];
-    NSString *path = self.socketPath;
-    NSString *token = self.authenticationToken;
-    if (path.length > 0 && token.length > 0) {
-        result[FTElectronBridgeSocketPathEnvironmentKey] = path;
-        result[FTElectronBridgeAuthenticationTokenEnvironmentKey] = token;
-        result[FTElectronBridgeProtocolVersionEnvironmentKey] =
-            [NSString stringWithFormat:@"%ld",
-                (long)FTElectronBridgeProtocolVersion];
-    }
+    dispatch_sync(self.serverQueue, ^{
+        if (self.runningStorage) {
+            result[FTElectronBridgeSocketPathEnvironmentKey] =
+                self.socketPathStorage;
+            result[FTElectronBridgeAuthenticationTokenEnvironmentKey] =
+                self.authenticationTokenStorage;
+            result[FTElectronBridgeProtocolVersionEnvironmentKey] =
+                [NSString stringWithFormat:@"%ld",
+                    (long)FTElectronBridgeProtocolVersion];
+        }
+    });
     return result.copy;
 }
 
@@ -342,7 +360,7 @@ static BOOL FTElectronBridgeSetNonBlocking(int descriptor) {
         self.clientDescriptor = -1;
     }
     FTElectronWebViewHandler *handler =
-        [FTElectronWebViewHandler sharedInstance];
+        self.webViewHandler;
     for (NSNumber *webContentsID in self.remoteWebContentsIDs) {
         [handler unregisterWebContentsID:webContentsID.longLongValue];
     }
@@ -446,7 +464,7 @@ static BOOL FTElectronBridgeSetNonBlocking(int descriptor) {
     if ([type isEqualToString:@"register"] && webContentsID.longLongValue > 0) {
         BOOL visible = [message[@"visible"]
             isKindOfClass:NSNumber.class] ? [message[@"visible"] boolValue] : YES;
-        slotID = [[FTElectronWebViewHandler sharedInstance]
+        slotID = [self.webViewHandler
             registerStandaloneWebContentsID:webContentsID.longLongValue
                                      visible:visible];
         success = slotID != nil;
@@ -457,7 +475,7 @@ static BOOL FTElectronBridgeSetNonBlocking(int descriptor) {
                [self.remoteWebContentsIDs containsObject:webContentsID]) {
         BOOL visible = [message[@"visible"]
             isKindOfClass:NSNumber.class] ? [message[@"visible"] boolValue] : NO;
-        success = [[FTElectronWebViewHandler sharedInstance]
+        success = [self.webViewHandler
             updateStandaloneWebContentsID:webContentsID.longLongValue
                                    visible:visible];
     } else if ([type isEqualToString:@"event"] &&
@@ -467,12 +485,12 @@ static BOOL FTElectronBridgeSetNonBlocking(int descriptor) {
         success = payload.length > 0 &&
             [payload lengthOfBytesUsingEncoding:NSUTF8StringEncoding] <=
                 FTElectronBridgeMaximumEnvelopeBytes &&
-            [[FTElectronWebViewHandler sharedInstance]
+            [self.webViewHandler
                 receiveMessageQueue:payload
                        webContentsID:webContentsID.longLongValue];
     } else if ([type isEqualToString:@"unregister"] &&
                [self.remoteWebContentsIDs containsObject:webContentsID]) {
-        [[FTElectronWebViewHandler sharedInstance]
+        [self.webViewHandler
             unregisterWebContentsID:webContentsID.longLongValue];
         [self.remoteWebContentsIDs removeObject:webContentsID];
         success = YES;
@@ -518,7 +536,7 @@ static BOOL FTElectronBridgeSetNonBlocking(int descriptor) {
     self.authenticated = YES;
     self.connectionID = connectionID;
     NSDictionary *configuration =
-        [[FTElectronWebViewHandler sharedInstance] bridgeConfiguration];
+        [self.webViewHandler bridgeConfiguration];
     [self sendJSON:@{
         @"protocolVersion": @(FTElectronBridgeProtocolVersion),
         @"type": @"ready",
@@ -546,27 +564,6 @@ static BOOL FTElectronBridgeSetNonBlocking(int descriptor) {
         response[@"slotID"] = slotID;
     }
     [self sendJSON:response];
-}
-
-- (void)sendCommand:(NSString *)command
-       webContentsID:(int64_t)webContentsID {
-    if (![command isEqualToString:
-            FTElectronWebViewCommandTakeSubsequentFullSnapshot]) {
-        return;
-    }
-    dispatch_async(self.serverQueue, ^{
-        if (!self.authenticated ||
-            ![self.remoteWebContentsIDs containsObject:@(webContentsID)]) {
-            return;
-        }
-        [self sendJSON:@{
-            @"protocolVersion": @(FTElectronBridgeProtocolVersion),
-            @"type": @"command",
-            @"connectionID": self.connectionID ?: @"",
-            @"webContentsID": @(webContentsID),
-            @"command": command,
-        }];
-    });
 }
 
 - (void)sendJSON:(NSDictionary *)object {
