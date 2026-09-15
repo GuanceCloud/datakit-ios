@@ -1,3 +1,7 @@
+# 1.6.8-alpha.7
+
+1. Improved multi-process isolation and simplified child process configuration for macOS Electron Native-owned Mixed Mode.
+---
 # 1.6.8-alpha.6
 1. Added macOS Electron Universal runtime packaging and GitHub Actions publishing, with arm64, x86_64, and SHA-256 verification.
 2. Added macOS Electron Full Mode and Native-owned Mixed Mode integration examples.
