@@ -294,29 +294,17 @@
 -(instancetype)initWithData:(NSData *)data{
     self = [super init];
     if(self){
-        if (@available(iOS 11.0, *)) {
-            NSError *error;
-            NSSet *allowedClasses = [NSSet setWithObjects:
-                                             [FTEnrichedResource class],
-                                             [FTSRBaseFrame class],
-                                             [NSString class],
-                                             [NSData class],
-                                             [NSDictionary class],
-                                             nil];
-                    
-            FTEnrichedResource *resource = [NSKeyedUnarchiver unarchivedObjectOfClasses:allowedClasses fromData:data error:&error];
-            return resource;
-        }else{
-#pragma clang diagnostic push
-#pragma clang diagnostic ignored "-Wdeprecated-declarations"
-            NSDictionary  *dict = [NSKeyedUnarchiver unarchiveObjectWithData:data];
-#pragma clang diagnostic pop
-            _type = @"resource";
-            _mimeType = dict[@"mimeType"];
-            _appId = dict[@"appId"];
-            _identifier = dict[@"identifier"];
-            _data = dict[@"data"];
-        }
+        NSError *error;
+        NSSet *allowedClasses = [NSSet setWithObjects:
+                                         [FTEnrichedResource class],
+                                         [FTSRBaseFrame class],
+                                         [NSString class],
+                                         [NSData class],
+                                         [NSDictionary class],
+                                         nil];
+
+        FTEnrichedResource *resource = [NSKeyedUnarchiver unarchivedObjectOfClasses:allowedClasses fromData:data error:&error];
+        return resource;
         
     }
     return self;
@@ -325,16 +313,8 @@
 -(NSData *)toJSONData{
     NSData* jsonData = nil;
     @try {
-        if (@available(iOS 11.0, *)) {
-            NSError *error;
-            jsonData = [NSKeyedArchiver archivedDataWithRootObject:self requiringSecureCoding:NO error:&error];
-        } else {
-            NSDictionary* dict = [self toDictionary];
-#pragma clang diagnostic push
-#pragma clang diagnostic ignored "-Wdeprecated-declarations"
-            jsonData = [NSKeyedArchiver archivedDataWithRootObject:dict];
-#pragma clang diagnostic pop
-        }
+        NSError *error;
+        jsonData = [NSKeyedArchiver archivedDataWithRootObject:self requiringSecureCoding:NO error:&error];
     }
     @catch (NSException *exception) {
         FTInnerLogError(@"EXCEPTION: %@", exception.description);
@@ -356,11 +336,7 @@
         @"bind_info": safeBindInfo
     };
     NSError *error = nil;
-    NSJSONWritingOptions options = 0;
-    if (@available(iOS 11.0, *)) {
-        options = NSJSONWritingSortedKeys;
-    }
-    NSData *data = [NSJSONSerialization dataWithJSONObject:identifierContext options:options error:&error];
+    NSData *data = [NSJSONSerialization dataWithJSONObject:identifierContext options:NSJSONWritingSortedKeys error:&error];
     if (!data) {
         FTInnerLogError(@"[Session Replay] Resource deduplication identifier encoding failed: %@", error.localizedDescription);
         return self.identifier;

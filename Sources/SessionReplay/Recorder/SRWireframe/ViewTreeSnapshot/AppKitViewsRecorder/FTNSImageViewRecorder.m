@@ -9,8 +9,8 @@
 #import "FTAppKitViewRecorders.h"
 #import <AppKit/AppKit.h>
 #import <CommonCrypto/CommonDigest.h>
-#import <CoreServices/CoreServices.h>
 #import <ImageIO/ImageIO.h>
+#import <UniformTypeIdentifiers/UniformTypeIdentifiers.h>
 #import <objc/runtime.h>
 #import "FTSRNodeWireframesBuilder.h"
 #import "FTSRViewID.h"
@@ -129,7 +129,7 @@ static NSData *FTSRPNGData(CGImageRef image) {
     NSMutableData *data = [NSMutableData data];
     CGImageDestinationRef destination =
         CGImageDestinationCreateWithData((__bridge CFMutableDataRef)data,
-                                         kUTTypePNG,
+                                         (__bridge CFStringRef)UTTypePNG.identifier,
                                          1,
                                          NULL);
     if (!destination) {

@@ -101,17 +101,14 @@
     if(bar.backgroundColor){
         return bar.backgroundColor;
     }
-    if (@available(iOS 13.0, *)) {
-        switch ([UITraitCollection currentTraitCollection].userInterfaceStyle) {
-            case UIUserInterfaceStyleLight:
-                return [UIColor whiteColor];
-            case UIUserInterfaceStyleDark:
-                return [UIColor blackColor];
-            default:
-                return [UIColor whiteColor];
-        }
+    switch ([UITraitCollection currentTraitCollection].userInterfaceStyle) {
+        case UIUserInterfaceStyleLight:
+            return [UIColor whiteColor];
+        case UIUserInterfaceStyleDark:
+            return [UIColor blackColor];
+        default:
+            return [UIColor whiteColor];
     }
-    return UIColor.whiteColor;
 }
 
 - (CGRect)inferBarFrame:(UITabBar *)bar context:(FTViewTreeRecordingContext *)context{

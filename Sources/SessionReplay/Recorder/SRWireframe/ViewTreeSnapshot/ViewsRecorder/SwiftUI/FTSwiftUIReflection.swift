@@ -20,7 +20,6 @@ import QuartzCore
 import SwiftUI
 import UIKit
 
-@available(iOS 13.0, *)
 @objc(FTSwiftUIRecordingResult)
 @_spi(Private)
 public final class FTSwiftUIRecordingResult: NSObject {
@@ -34,7 +33,6 @@ public final class FTSwiftUIRecordingResult: NSObject {
     }
 }
 
-@available(iOS 13.0, *)
 @objc(FTSwiftUIRenderer)
 @_spi(Private)
 public final class FTSwiftUIRenderer: NSObject {
@@ -46,7 +44,6 @@ public final class FTSwiftUIRenderer: NSObject {
     }
 }
 
-@available(iOS 13.0, *)
 @objc(FTSwiftUIRecordingBuilder)
 @_spi(Private)
 public final class FTSwiftUIRecordingBuilder: NSObject {
@@ -74,7 +71,6 @@ public final class FTSwiftUIRecordingBuilder: NSObject {
     }
 }
 
-@available(iOS 13.0, *)
 @objc(FTSwiftUIWireframePayload)
 @_spi(Private)
 public final class FTSwiftUIWireframePayload: NSObject {
@@ -145,7 +141,6 @@ public final class FTSwiftUIWireframePayload: NSObject {
     }
 }
 
-@available(iOS 13.0, *)
 @objc(FTSwiftUIResourcePayload)
 @_spi(Private)
 public final class FTSwiftUIResourcePayload: NSObject {
@@ -161,7 +156,6 @@ public final class FTSwiftUIResourcePayload: NSObject {
     }
 }
 
-@available(iOS 13.0, *)
 @objc(FTSwiftUIRecordingAttributes)
 @_spi(Private)
 public final class FTSwiftUIRecordingAttributes: NSObject {
@@ -177,7 +171,6 @@ public final class FTSwiftUIRecordingAttributes: NSObject {
     @objc dynamic var wireframeID: Int64 = 0
 }
 
-@available(iOS 13.0, *)
 @objc(FTSwiftUIReflectionRecording)
 @_spi(Private)
 public protocol FTSwiftUIReflectionRecording: NSObjectProtocol {
@@ -191,7 +184,6 @@ public protocol FTSwiftUIReflectionRecording: NSObjectProtocol {
     func recordingBuilder(renderer: FTSwiftUIRenderer, attributes: FTSwiftUIRecordingAttributes) -> FTSwiftUIRecordingBuilder?
 }
 
-@available(iOS 13.0, *)
 @objc(FTSwiftUIReflectionBridge)
 @_spi(Private)
 public final class FTSwiftUIReflectionBridge: NSObject, FTSwiftUIReflectionRecording {

@@ -18,7 +18,6 @@
 import CoreGraphics
 import SwiftUI
 
-@available(iOS 13.0, tvOS 13.0, *)
 extension FTGraphicsImage: FTReflection {
     init(from reflector: FTReflector) throws {
         scale = try reflector.descendant("scale")
@@ -32,7 +31,6 @@ extension FTGraphicsImage: FTReflection {
     }
 }
 
-@available(iOS 13.0, tvOS 13.0, *)
 extension FTGraphicsImage.Contents: FTReflection {
     init(from reflector: FTReflector) throws {
         switch (reflector.displayStyle, reflector.descendantIfPresent(0)) {
@@ -46,7 +44,6 @@ extension FTGraphicsImage.Contents: FTReflection {
     }
 }
 
-@available(iOS 13.0, tvOS 13.0, *)
 extension FTGraphicsImage.Location: FTReflection {
     init(from reflector: FTReflector) throws {
         switch (reflector.displayStyle, reflector.descendantIfPresent(0)) {
@@ -58,7 +55,6 @@ extension FTGraphicsImage.Location: FTReflection {
     }
 }
 
-@available(iOS 13.0, tvOS 13.0, *)
 extension FTGraphicsImage.VectorImage: FTReflection {
     init(from reflector: FTReflector) throws {
         location = try reflector.descendant("location")

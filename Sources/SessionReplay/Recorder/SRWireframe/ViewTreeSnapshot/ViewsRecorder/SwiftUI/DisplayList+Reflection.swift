@@ -27,35 +27,30 @@ private extension CGColor {
     }
 }
 
-@available(iOS 13.0, tvOS 13.0, *)
 extension FTDisplayList: FTReflection {
     init(from reflector: FTReflector) throws {
         items = try reflector.descendant("items")
     }
 }
 
-@available(iOS 13.0, tvOS 13.0, *)
 extension FTDisplayList.Identity: FTReflection {
     init(from reflector: FTReflector) throws {
         value = try reflector.descendant("value")
     }
 }
 
-@available(iOS 13.0, tvOS 13.0, *)
 extension FTDisplayList.Seed: FTReflection {
     init(from reflector: FTReflector) throws {
         value = try reflector.descendant("value")
     }
 }
 
-@available(iOS 13.0, tvOS 13.0, *)
 extension FTDisplayList.ViewRenderer: FTReflection {
     init(from reflector: FTReflector) throws {
         renderer = try reflector.descendant("renderer")
     }
 }
 
-@available(iOS 13.0, tvOS 13.0, *)
 extension FTDisplayList.ViewUpdater: FTReflection {
     init(from reflector: FTReflector) throws {
         viewCache = try reflector.descendant("viewCache")
@@ -63,21 +58,18 @@ extension FTDisplayList.ViewUpdater: FTReflection {
     }
 }
 
-@available(iOS 13.0, tvOS 13.0, *)
 extension FTDisplayList.ViewUpdater.ViewCache: FTReflection {
     init(from reflector: FTReflector) throws {
         map = try reflector.descendant("map")
     }
 }
 
-@available(iOS 13.0, tvOS 13.0, *)
 extension FTDisplayList.ViewUpdater.ViewCache.Key: FTReflection {
     init(from reflector: FTReflector) throws {
         id = try reflector.descendant("id")
     }
 }
 
-@available(iOS 13.0, tvOS 13.0, *)
 extension FTDisplayList.ViewUpdater.ViewInfo: FTReflection {
     init(from reflector: FTReflector) throws {
         let layer = try reflector.descendant(type: CALayer.self, "layer")
@@ -100,14 +92,12 @@ extension FTDisplayList.ViewUpdater.ViewInfo: FTReflection {
     }
 }
 
-@available(iOS 13.0, tvOS 13.0, *)
 extension FTDisplayList.Index.ID: FTReflection {
     init(from reflector: FTReflector) throws {
         identity = try reflector.descendant("identity")
     }
 }
 
-@available(iOS 13.0, tvOS 13.0, *)
 extension FTDisplayList.Effect: FTReflection {
     init(from reflector: FTReflector) throws {
         switch (reflector.displayStyle, reflector.descendantIfPresent(0)) {
@@ -125,7 +115,6 @@ extension FTDisplayList.Effect: FTReflection {
     }
 }
 
-@available(iOS 13.0, tvOS 13.0, *)
 extension FTDisplayList.Content: FTReflection {
     init(from reflector: FTReflector) throws {
         seed = try reflector.descendant("seed")
@@ -133,7 +122,6 @@ extension FTDisplayList.Content: FTReflection {
     }
 }
 
-@available(iOS 13.0, tvOS 13.0, *)
 extension FTDisplayList.Content.Value: FTReflection {
     init(from reflector: FTReflector) throws {
         switch (reflector.displayStyle, reflector.descendantIfPresent(0)) {
@@ -163,7 +151,6 @@ extension FTDisplayList.Content.Value: FTReflection {
     }
 }
 
-@available(iOS 13.0, tvOS 13.0, *)
 extension FTDisplayList.Item: FTReflection {
     init(from reflector: FTReflector) throws {
         identity = try reflector.descendant("identity")
@@ -172,7 +159,6 @@ extension FTDisplayList.Item: FTReflection {
     }
 }
 
-@available(iOS 13.0, tvOS 13.0, *)
 extension FTDisplayList.Item.Value: FTReflection {
     init(from reflector: FTReflector) throws {
         switch (reflector.displayStyle, reflector.descendantIfPresent(0)) {

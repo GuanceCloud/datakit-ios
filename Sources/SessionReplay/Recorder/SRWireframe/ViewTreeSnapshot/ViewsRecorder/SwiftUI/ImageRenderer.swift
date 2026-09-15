@@ -18,7 +18,6 @@
 import Foundation
 import UIKit
 
-@available(iOS 13.0, tvOS 13.0, *)
 final class FTImageRenderer {
     private final class Key: NSObject {
         private let contents: FTAnyImageRepresentable

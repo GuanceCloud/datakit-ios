@@ -94,49 +94,42 @@
 - (FTSRNodeSemantics *)recorder:(NSView *)view
                       attributes:(FTViewAttributes *)attributes
                          context:(FTViewTreeRecordingContext *)context {
-    if (@available(macOS 10.15, *)) {
-        if (![view isKindOfClass:NSSwitch.class]) {
-            return nil;
-        }
-        NSSwitch *toggle = (NSSwitch *)view;
-        if (!attributes.isVisible) {
-            return [FTInvisibleElement constant];
-        }
-        FTNSSwitchBuilder *builder = [FTNSSwitchBuilder new];
-        builder.attributes = attributes;
-        builder.wireframeIDs =
-            [context.viewIDGenerator SRViewIDs:view size:3 nodeRecorder:self];
-        builder.on = toggle.state == NSControlStateValueOn;
-        builder.enabled = toggle.isEnabled;
-        builder.masked = [FTSRTextObfuscatingFactory
-            shouldMaskInputElements:
-                [attributes resolveTextAndInputPrivacyLevel:context.recorder]];
-        builder.onColor =
-            FTSRAppKitHexColor(NSColor.controlAccentColor,
-                              toggle.effectiveAppearance,
-                              @"#34C759FF");
-        builder.offColor =
-            FTSRAppKitHexColor(NSColor.controlColor,
-                              toggle.effectiveAppearance,
-                              @"#78788033");
-        builder.thumbColor =
-            FTSRAppKitHexColor(NSColor.whiteColor,
-                              toggle.effectiveAppearance,
-                              @"#FFFFFFFF");
-        NSColor *separatorColor = NSColor.gridColor;
-        if (@available(macOS 10.14, *)) {
-            separatorColor = NSColor.separatorColor;
-        }
-        builder.thumbBorderColor =
-            FTSRAppKitHexColor(separatorColor,
-                              toggle.effectiveAppearance,
-                              @"#0000001F");
-        FTSpecificElement *element = [[FTSpecificElement alloc]
-            initWithSubtreeStrategy:NodeSubtreeStrategyIgnore];
-        element.nodes = @[builder];
-        return element;
+    if (![view isKindOfClass:NSSwitch.class]) {
+        return nil;
     }
-    return nil;
+    NSSwitch *toggle = (NSSwitch *)view;
+    if (!attributes.isVisible) {
+        return [FTInvisibleElement constant];
+    }
+    FTNSSwitchBuilder *builder = [FTNSSwitchBuilder new];
+    builder.attributes = attributes;
+    builder.wireframeIDs =
+        [context.viewIDGenerator SRViewIDs:view size:3 nodeRecorder:self];
+    builder.on = toggle.state == NSControlStateValueOn;
+    builder.enabled = toggle.isEnabled;
+    builder.masked = [FTSRTextObfuscatingFactory
+        shouldMaskInputElements:
+            [attributes resolveTextAndInputPrivacyLevel:context.recorder]];
+    builder.onColor =
+        FTSRAppKitHexColor(NSColor.controlAccentColor,
+                          toggle.effectiveAppearance,
+                          @"#34C759FF");
+    builder.offColor =
+        FTSRAppKitHexColor(NSColor.controlColor,
+                          toggle.effectiveAppearance,
+                          @"#78788033");
+    builder.thumbColor =
+        FTSRAppKitHexColor(NSColor.whiteColor,
+                          toggle.effectiveAppearance,
+                          @"#FFFFFFFF");
+    builder.thumbBorderColor =
+        FTSRAppKitHexColor(NSColor.separatorColor,
+                          toggle.effectiveAppearance,
+                          @"#0000001F");
+    FTSpecificElement *element = [[FTSpecificElement alloc]
+        initWithSubtreeStrategy:NodeSubtreeStrategyIgnore];
+    element.nodes = @[builder];
+    return element;
 }
 @end
 
