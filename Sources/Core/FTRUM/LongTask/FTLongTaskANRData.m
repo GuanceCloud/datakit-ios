@@ -101,14 +101,10 @@ long long const FTLongTaskANRDataUpdateIntervalNs = 1LL * NSEC_PER_SEC;
     if (!_fileHandle) {
         _fileHandle = [NSFileHandle fileHandleForUpdatingAtPath:[self createFile]];
         @try {
-            if (@available(macOS 10.15, iOS 13.0, tvOS 13.0, watchOS 6.0, *)) {
-                __autoreleasing NSError *error = nil;
-                [_fileHandle seekToEndReturningOffset:nil error:&error];
-                if (error) {
-                    FTInnerLogError(@"[LongTask] error %@", error.description);
-                }
-            } else {
-                [_fileHandle seekToEndOfFile];
+            __autoreleasing NSError *error = nil;
+            [_fileHandle seekToEndReturningOffset:nil error:&error];
+            if (error) {
+                FTInnerLogError(@"[LongTask] error %@", error.description);
             }
         } @catch (NSException *exception) {
             FTInnerLogError(@"[LongTask] exception %@", exception);
@@ -276,13 +272,9 @@ long long const FTLongTaskANRDataUpdateIntervalNs = 1LL * NSEC_PER_SEC;
 
 - (void)writeData:(NSData *)data {
     NSError *error = nil;
-    if (@available(macOS 10.15, iOS 13.0, tvOS 13.0, *)) {
-        [self.fileHandle writeData:data error:&error];
-        if (error) {
-            FTInnerLogError(@"[LongTask] writeData error %@", error.description);
-        }
-    } else {
-        [self.fileHandle writeData:data];
+    [self.fileHandle writeData:data error:&error];
+    if (error) {
+        FTInnerLogError(@"[LongTask] writeData error %@", error.description);
     }
 }
 
@@ -310,14 +302,10 @@ long long const FTLongTaskANRDataUpdateIntervalNs = 1LL * NSEC_PER_SEC;
 - (void)dealloc {
     if (_fileHandle) {
         @try {
-            if (@available(macOS 10.15, iOS 13.0, tvOS 13.0, *)) {
-                NSError *error = nil;
-                [_fileHandle synchronizeAndReturnError:&error];
-                if (error) {
-                    FTInnerLogError(@"[FTLog][FTFileLogger] Failed to synchronize file: %@", error.description);
-                }
-            } else {
-                [_fileHandle synchronizeFile];
+            NSError *error = nil;
+            [_fileHandle synchronizeAndReturnError:&error];
+            if (error) {
+                FTInnerLogError(@"[FTLog][FTFileLogger] Failed to synchronize file: %@", error.description);
             }
         } @catch (NSException *exception) {
             FTInnerLogError(@"[FTLog][FTFileLogger] Failed to synchronize file: %@", exception);

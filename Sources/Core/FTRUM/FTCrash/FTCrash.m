@@ -177,11 +177,7 @@ static mach_port_t main_thread_id;
     NSData *userInfoJSON = nil;
     
     if (userInfo != nil) {
-        if (@available(iOS 11.0, *)) {
-            userInfoJSON = [NSJSONSerialization dataWithJSONObject:userInfo options:NSJSONWritingSortedKeys error:&error];
-        } else {
-            userInfoJSON = [NSJSONSerialization dataWithJSONObject:userInfo options:0 error:&error];
-        }
+        userInfoJSON = [NSJSONSerialization dataWithJSONObject:userInfo options:NSJSONWritingSortedKeys error:&error];
         
         if (userInfoJSON == nil) {
             FTInnerLogError(@"Could not serialize user info: %@", error.localizedDescription);

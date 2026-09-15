@@ -24,7 +24,6 @@ import Foundation
 import SwiftUI
 
 /// A SwiftUI view wrapper that reports RUM view lifecycle events.
-@available(iOS 13.0, tvOS 13.0, *)
 public struct FTRUMTrackedView<Content: View>: View {
     let name: String
     let property: [String: Any]?
@@ -77,7 +76,6 @@ public struct FTRUMTrackedView<Content: View>: View {
 }
 
 #if os(iOS)
-@available(iOS 13.0, *)
 private struct FTRUMTapActionModifier: ViewModifier {
     let name: String
     let property: [String: Any]?
@@ -93,7 +91,6 @@ private struct FTRUMTapActionModifier: ViewModifier {
 }
 #endif
 
-@available(iOS 13.0, tvOS 13.0, *)
 public extension View {
     /// Manually tracks this SwiftUI view as a RUM View using SwiftUI's public `onAppear` and `onDisappear` lifecycle.
     ///
@@ -110,7 +107,6 @@ public extension View {
 }
 
 #if os(iOS)
-@available(iOS 13.0, *)
 public extension View {
     /// Tracks this SwiftUI view as a RUM tap action by adding a simultaneous `TapGesture`.
     ///

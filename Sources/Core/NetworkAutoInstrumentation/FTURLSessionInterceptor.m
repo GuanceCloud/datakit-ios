@@ -325,13 +325,10 @@ static NSObject *sharedInstanceLock;
                 return;
             }
             if(!custom){
-                if (@available(iOS 15.0,tvOS 15.0,macOS 12.0, *)) {
-                    //macOS 10.15, iOS 13.0, watchOS 6.0, tvOS 13.0, *
-                    if(!hasCompletion){
-                        ResourcePropertyProvider provider = self.resourcePropertyProvider;
-                        SessionTaskErrorFilter filter = self.sessionTaskErrorFilter;
-                        [self handleTaskCompleted:task response:completedResponse error:completedError extraProvider:provider errorFilter:filter endTime:endTime];
-                    }
+                if(!hasCompletion){
+                    ResourcePropertyProvider provider = self.resourcePropertyProvider;
+                    SessionTaskErrorFilter filter = self.sessionTaskErrorFilter;
+                    [self handleTaskCompleted:task response:completedResponse error:completedError extraProvider:provider errorFilter:filter endTime:endTime];
                 }
             }
         }@catch (NSException *exception) {

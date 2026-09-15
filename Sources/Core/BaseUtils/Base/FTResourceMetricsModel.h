@@ -72,7 +72,7 @@ NS_ASSUME_NONNULL_BEGIN
 /// - Parameters:
 ///   - metrics: SessionTaskMetric
 /// - Returns: metrics instance.
--(instancetype)initWithTaskMetrics:(NSURLSessionTaskMetrics *)metrics API_AVAILABLE(ios(10.0),macos(10.12));
+-(instancetype)initWithTaskMetrics:(NSURLSessionTaskMetrics *)metrics;
 
 #pragma mark ========== 1.6.0 Deprecated ==========
 /// Resource loading DNS resolution time domainLookupEnd - domainLookupStart

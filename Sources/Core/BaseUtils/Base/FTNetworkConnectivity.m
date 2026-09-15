@@ -208,12 +208,10 @@ typedef NS_ENUM(NSInteger, FTNetworkStatus) {
             if (!currentStatus) {
                 return FTConnectivityUnknown;
             }
-            if (@available(iOS 14.1, *)) {
-                NSArray *typeStrings5G = @[CTRadioAccessTechnologyNRNSA,
-                                           CTRadioAccessTechnologyNR];
-                if ([typeStrings5G containsObject:currentStatus]) {
-                    return @"5G";
-                }
+            NSArray *typeStrings5G = @[CTRadioAccessTechnologyNRNSA,
+                                       CTRadioAccessTechnologyNR];
+            if ([typeStrings5G containsObject:currentStatus]) {
+                return @"5G";
             }
             if ([typeStrings4G containsObject:currentStatus]) {
                 return @"4G";

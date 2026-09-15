@@ -125,7 +125,6 @@ static BOOL FTViewControllerIsFromSwiftUIBundle(UIViewController *viewController
 #endif
 
 #if FT_HAS_SWIFTUI_VIEW_TRACKING
-API_AVAILABLE(ios(13.0), tvos(13.0))
 @interface FTSwiftUIViewNameExtractor : NSObject
 - (nullable NSString *)extractNameFromViewController:(UIViewController *)viewController;
 @end
@@ -227,7 +226,7 @@ API_AVAILABLE(ios(13.0), tvos(13.0))
 @property (nonatomic, strong, nullable) FTViewTrackingHandler uiKitViewTrackingHandler;
 @property (nonatomic, strong, nullable) id<FTSwiftUIViewTrackingHandler> swiftUIViewTrackingHandler;
 #if FT_HAS_SWIFTUI_VIEW_TRACKING
-@property (nonatomic, strong, nullable) FTSwiftUIViewNameExtractor *swiftUIViewNameExtractor API_AVAILABLE(ios(13.0), tvos(13.0));
+@property (nonatomic, strong, nullable) FTSwiftUIViewNameExtractor *swiftUIViewNameExtractor;
 #endif
 
 @property (nonatomic, strong, nullable) FTActionTrackingHandler actionTrackingHandler;
@@ -309,9 +308,7 @@ heatmapIdentifierRegistry:(id<FTHeatmapIdentifierRegistry>)heatmapIdentifierRegi
         self.swiftUIViewTrackingHandler = nil;
 #if FT_HAS_SWIFTUI_VIEW_TRACKING
         [UIViewController ft_setSwiftUIViewLoadingTimeEnabled:NO];
-        if (@available(iOS 13.0, tvOS 13.0, *)) {
-            self.swiftUIViewNameExtractor = nil;
-        }
+        self.swiftUIViewNameExtractor = nil;
 #endif
     }
     if (trackAction) {
@@ -591,9 +588,7 @@ heatmapIdentifierRegistry:(id<FTHeatmapIdentifierRegistry>)heatmapIdentifierRegi
     [UIViewController ft_setSwiftUIViewLoadingTimeEnabled:NO];
 #endif
 #if FT_HAS_SWIFTUI_VIEW_TRACKING
-    if (@available(iOS 13.0, tvOS 13.0, *)) {
-        self.swiftUIViewNameExtractor = nil;
-    }
+    self.swiftUIViewNameExtractor = nil;
     [self unbindSwiftUIRUMViewBridgeIfNeeded];
 #endif
 #if FT_HAS_SWIFTUI_ACTION_TRACKING
@@ -609,45 +604,34 @@ heatmapIdentifierRegistry:(id<FTHeatmapIdentifierRegistry>)heatmapIdentifierRegi
 
 #if FT_HAS_SWIFTUI_VIEW_TRACKING
 - (void)bindSwiftUIRUMViewBridgeIfAvailable{
-    if (@available(iOS 13.0, tvOS 13.0, *)) {
-        FTSwiftUIRUMViewBridge.handler = self;
-    }
+    FTSwiftUIRUMViewBridge.handler = self;
 }
 
 - (void)unbindSwiftUIRUMViewBridgeIfNeeded{
-    if (@available(iOS 13.0, tvOS 13.0, *)) {
-        if (FTSwiftUIRUMViewBridge.handler == self) {
-            FTSwiftUIRUMViewBridge.handler = nil;
-        }
+    if (FTSwiftUIRUMViewBridge.handler == self) {
+        FTSwiftUIRUMViewBridge.handler = nil;
     }
 }
 #endif
 
 #if FT_HAS_SWIFTUI_ACTION_TRACKING
 - (void)bindSwiftUIRUMActionBridgeIfAvailable{
-    if (@available(iOS 13.0, *)) {
-        FTSwiftUIRUMActionBridge.handler = self;
-    }
+    FTSwiftUIRUMActionBridge.handler = self;
 }
 
 - (void)unbindSwiftUIRUMActionBridgeIfNeeded{
-    if (@available(iOS 13.0, *)) {
-        if (FTSwiftUIRUMActionBridge.handler == self) {
-            FTSwiftUIRUMActionBridge.handler = nil;
-        }
+    if (FTSwiftUIRUMActionBridge.handler == self) {
+        FTSwiftUIRUMActionBridge.handler = nil;
     }
 }
 #endif
 
 #if FT_HAS_SWIFTUI_VIEW_TRACKING
 - (nullable NSString *)extractSwiftUIViewNameFromViewController:(UIViewController *)viewController{
-    if (@available(iOS 13.0, tvOS 13.0, *)) {
-        return [self.swiftUIViewNameExtractor extractNameFromViewController:viewController];
-    }
-    return nil;
+    return [self.swiftUIViewNameExtractor extractNameFromViewController:viewController];
 }
 
-- (FTSwiftUIViewNameExtractor *)swiftUIViewNameExtractor API_AVAILABLE(ios(13.0), tvos(13.0)){
+- (FTSwiftUIViewNameExtractor *)swiftUIViewNameExtractor{
     if (!_swiftUIViewNameExtractor) {
         _swiftUIViewNameExtractor = [FTSwiftUIViewNameExtractor new];
     }

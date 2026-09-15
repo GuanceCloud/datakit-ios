@@ -76,10 +76,8 @@
     // custom = YES is mainly to prioritize processing URLSession-level custom provider
     FTURLSessionInterceptor *interceptor = (FTURLSessionInterceptor *)self.instrumentation.interceptor;
     [interceptor taskMetricsCollected:task metrics:metrics custom:YES extraProvider:self.provider];
-    if (@available(iOS 15.0,tvOS 15.0,macOS 12.0, *)) {
-        if(!task.ft_hasCompletion && !task.ft_isWebSocketTask){
-            [self dealTaskCompleted:task error:task.error];
-        }
+    if(!task.ft_hasCompletion && !task.ft_isWebSocketTask){
+        [self dealTaskCompleted:task error:task.error];
     }
 }
 
