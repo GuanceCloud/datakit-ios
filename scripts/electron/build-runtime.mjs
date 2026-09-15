@@ -160,8 +160,6 @@ function buildArchitecture({ buildRoot, architecture, configuration, environment
   const scratchPath = path.join(buildRoot, '.build', 'swift', `static-${configuration}-${architectureName}`)
   const releaseHygieneFlags = [
     '-Xcc',
-    '-fvisibility=hidden',
-    '-Xcc',
     `-ffile-prefix-map=${sdkRoot}=.`,
   ]
   const commonSwiftArguments = [

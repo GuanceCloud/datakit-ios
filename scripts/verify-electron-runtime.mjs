@@ -30,7 +30,9 @@ if (manifest.schemaVersion !== 1 ||
 if (!Array.isArray(manifest.architectures) || manifest.architectures.length === 0) {
   throw new Error('Native runtime manifest has no architectures')
 }
-execFileSync('/usr/bin/lipo', [addon, '-verify_arch', ...manifest.architectures])
+for (const architecture of manifest.architectures) {
+  execFileSync('/usr/bin/lipo', [addon, '-verify_arch', architecture])
+}
 execFileSync('/usr/bin/codesign', ['--verify', '--verbose=2', addon], {
   stdio: ['ignore', 'ignore', 'pipe'],
 })
