@@ -28,3 +28,6 @@
 #import "FTResourceContentModel.h"
 #import "FTResourceMetricsModel.h"
 #import "FTLogger.h"
+#import "FTConstants.h"
+#import "FTLog.h"
+#import "FTRumDatasProtocol.h"
