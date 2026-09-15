@@ -10,6 +10,11 @@ on:
         description: "SDK tag to build and publish, including prereleases"
         required: true
         type: string
+      overwrite:
+        description: "Replace existing Electron runtime assets"
+        required: true
+        default: false
+        type: boolean
 
 permissions:
   contents: read
@@ -108,11 +113,12 @@ jobs:
         with:
           name: electron-native-runtime
           path: assets
-      - name: Upload immutable release assets
+      - name: Upload release assets
         env:
           GH_TOKEN: ${{ github.token }}
           GH_REPO: ${{ github.repository }}
           SDK_TAG: ${{ needs.build.outputs.tag }}
+          OVERWRITE_ASSETS: ${{ github.event_name == 'workflow_dispatch' && inputs.overwrite || false }}
         run: |
           set -euo pipefail
           if ! gh release view "$SDK_TAG" >/dev/null 2>&1; then
@@ -123,4 +129,8 @@ jobs:
           fi
           sdk_version="${SDK_TAG#v}"
           filename="guance-electron-runtime-${sdk_version}-darwin-universal.tar.gz"
-          gh release upload "$SDK_TAG" "assets/$filename" "assets/${filename}.sha256"
+          if [[ "$OVERWRITE_ASSETS" == "true" ]]; then
+            gh release upload "$SDK_TAG" "assets/$filename" "assets/${filename}.sha256" --clobber
+          else
+            gh release upload "$SDK_TAG" "assets/$filename" "assets/${filename}.sha256"
+          fi
