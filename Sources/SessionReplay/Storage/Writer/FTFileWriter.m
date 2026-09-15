@@ -44,6 +44,12 @@
             NSData *data = datas;
             FTTLV *tlv = [[FTTLV alloc]initWithType:1 value:data];
             data = [tlv serialize];
+            if (!data) {
+                FTInnerLogWarning(@"[Session Replay] Dropping data: payload size %llu bytes exceeds the maximum allowed size of %llu bytes.",
+                                  (unsigned long long)datas.length,
+                                  (unsigned long long)FT_MAX_DATA_LENGTH);
+                return;
+            }
             long long fileSize = data.length;
             id<FTWritableFile> file = [self.orchestrator getWritableFile:fileSize forceNewFile:force];
             [file append:data];

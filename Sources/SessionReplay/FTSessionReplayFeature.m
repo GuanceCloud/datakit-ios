@@ -371,17 +371,23 @@
     if (data.length == 0) {
         return;
     }
+    NSString *capturedViewID = [viewID copy];
     __weak typeof(self) weakSelf = self;
-    [self.recordScope eventWriteContext:^(FTFeatureContext *context, id<FTWriter> writer) {
+    dispatch_async(self.processorsQueue, ^{
         __strong typeof(weakSelf) strongSelf = weakSelf;
-        if (!strongSelf || context.trackingConsent == FTTrackingConsentNotGranted) {
+        if (!strongSelf) {
             return;
         }
-        BOOL force = strongSelf.lastExternalViewID == nil || ![strongSelf.lastExternalViewID isEqualToString:viewID];
-        [writer write:data forceNewFile:force];
-        strongSelf.lastExternalViewID = viewID;
-        [strongSelf setExternalHasReplay:YES];
-    }];
+        [strongSelf.recordScope eventWriteContext:^(FTFeatureContext *context, id<FTWriter> writer) {
+            if (context.trackingConsent == FTTrackingConsentNotGranted) {
+                return;
+            }
+            BOOL force = strongSelf.lastExternalViewID == nil || ![strongSelf.lastExternalViewID isEqualToString:capturedViewID];
+            [writer write:data forceNewFile:force];
+            strongSelf.lastExternalViewID = capturedViewID;
+            [strongSelf setExternalHasReplay:YES];
+        }];
+    });
 }
 
 - (NSString *)saveExternalImageResourceData:(NSData *)data mimeType:(NSString *)mimeType {
@@ -397,13 +403,21 @@
     if (identifier.length == 0) {
         return nil;
     }
-    FTEnrichedResource *resource = [[FTEnrichedResource alloc] init];
-    resource.identifier = identifier;
-    resource.data = data;
-    resource.appId = applicationID;
-    resource.mimeType = mimeType;
-    resource.bindInfo = rumContext[FT_LINK_RUM_KEYS];
-    [self.externalResourceWriter write:@[resource]];
+    NSData *capturedData = [data copy];
+    NSString *capturedIdentifier = [identifier copy];
+    NSString *capturedApplicationID = [applicationID copy];
+    NSString *capturedMimeType = [mimeType copy];
+    NSDictionary *capturedBindInfo = [rumContext[FT_LINK_RUM_KEYS] copy];
+    id<FTResourcesWriting> resourceWriter = self.externalResourceWriter;
+    dispatch_async(self.processorsQueue, ^{
+        FTEnrichedResource *resource = [[FTEnrichedResource alloc] init];
+        resource.identifier = capturedIdentifier;
+        resource.data = capturedData;
+        resource.appId = capturedApplicationID;
+        resource.mimeType = capturedMimeType;
+        resource.bindInfo = capturedBindInfo;
+        [resourceWriter write:@[resource]];
+    });
     return identifier;
 }
 

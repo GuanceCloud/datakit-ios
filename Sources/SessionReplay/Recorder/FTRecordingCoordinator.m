@@ -216,7 +216,8 @@ static FTTrackingConsent FTTrackingConsentFromSampleState(FTRecordingSampleState
 - (void)setExternalRecorderActive:(BOOL)active forOwner:(NSString *)owner{
     NSString *normalizedOwner = [owner stringByTrimmingCharactersInSet:NSCharacterSet.whitespaceAndNewlineCharacterSet];
     if (normalizedOwner.length == 0) {
-        [NSException raise:NSInvalidArgumentException format:@"External recorder owner must not be empty."];
+        FTInnerLogError(@"[session-replay] External recorder owner must not be empty.");
+        return;
     }
 
     BOOL wasActive = NO;

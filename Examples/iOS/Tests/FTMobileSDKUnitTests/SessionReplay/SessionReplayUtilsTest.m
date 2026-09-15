@@ -40,6 +40,9 @@
 #import "FTFeatureDirectories.h"
 #import "FTDirectory.h"
 #import "FTDataStore.h"
+#import "FTFileWriter.h"
+#import "FTFilesOrchestrator.h"
+#import "FTTLV.h"
 #import "FTUploadConditions.h"
 #import "FTNetworkInfoManager.h"
 #import "FTUploadStatus.h"
@@ -134,6 +137,28 @@ BOOL isNAN(id value) {
 }
 @end
 
+static void *FTExternalImageProcessorQueueKey = &FTExternalImageProcessorQueueKey;
+
+@interface FTMockExternalImageResourceWriter : NSObject<FTResourcesWriting>
+@property (nonatomic, strong) NSMutableArray<FTEnrichedResource *> *writtenResources;
+@property (nonatomic, assign) BOOL allWritesOnProcessorQueue;
+@end
+
+@implementation FTMockExternalImageResourceWriter
+- (instancetype)init{
+    self = [super init];
+    if (self) {
+        _writtenResources = [NSMutableArray new];
+        _allWritesOnProcessorQueue = YES;
+    }
+    return self;
+}
+- (void)write:(NSArray<FTEnrichedResource *> *)resources{
+    self.allWritesOnProcessorQueue = self.allWritesOnProcessorQueue && dispatch_get_specific(FTExternalImageProcessorQueueKey) != NULL;
+    [self.writtenResources addObjectsFromArray:resources];
+}
+@end
+
 @interface FTMockDataStore : NSObject<FTDataStore>
 @property (nonatomic, strong) NSMutableDictionary<NSString *, NSData *> *values;
 @property (nonatomic, strong) NSMutableArray<NSString *> *setKeys;
@@ -158,6 +183,78 @@ BOOL isNAN(id value) {
 - (void)valueForKey:(NSString *)key callback:(DataStoreValueResult)callback{
     NSData *data = self.values[key];
     callback(nil, data, data ? DataStoreDefaultKeyVersion : (FTDataStoreKeyVersion)-1);
+}
+@end
+
+@interface FTMockFilesOrchestrator : NSObject<FTFilesOrchestratorType>
+@property (nonatomic, strong) id<FTStoragePerformancePreset> performance;
+@property (nonatomic, assign) BOOL ignoreFilesAgeWhenReading;
+@property (nonatomic, assign) NSInteger writableFileRequestCount;
+@end
+
+@implementation FTMockFilesOrchestrator
+- (id<FTWritableFile>)getWritableFile:(long long)writeSize{
+    return [self getWritableFile:writeSize forceNewFile:NO];
+}
+- (id<FTWritableFile>)getWritableFile:(long long)writeSize forceNewFile:(BOOL)force{
+    self.writableFileRequestCount += 1;
+    return nil;
+}
+- (NSArray<FTFile *> *)getReadableFiles:(NSSet *)excludedFileNames limit:(int)limit{
+    return @[];
+}
+- (void)deleteReadableFile:(id<FTReadableFile>)readableFile{
+}
+@end
+
+static void *FTExternalSegmentProcessorQueueKey = &FTExternalSegmentProcessorQueueKey;
+
+@interface FTMockExternalSegmentWriter : NSObject<FTWriter>
+@property (nonatomic, strong) NSMutableArray<NSData *> *writtenData;
+@property (nonatomic, strong) NSMutableArray<NSNumber *> *forceNewFileValues;
+@property (nonatomic, assign) BOOL allWritesOnProcessorQueue;
+@end
+
+@implementation FTMockExternalSegmentWriter
+- (instancetype)init{
+    self = [super init];
+    if (self) {
+        _writtenData = [NSMutableArray new];
+        _forceNewFileValues = [NSMutableArray new];
+        _allWritesOnProcessorQueue = YES;
+    }
+    return self;
+}
+- (void)write:(NSData *)datas{
+    [self write:datas forceNewFile:NO];
+}
+- (void)write:(NSData *)datas forceNewFile:(BOOL)force{
+    @synchronized (self) {
+        self.allWritesOnProcessorQueue = self.allWritesOnProcessorQueue && dispatch_get_specific(FTExternalSegmentProcessorQueueKey) != NULL;
+        [self.writtenData addObject:datas];
+        [self.forceNewFileValues addObject:@(force)];
+    }
+}
+@end
+
+@interface FTMockExternalSegmentScope : FTFeatureScope
+@property (nonatomic, strong) id<FTWriter> writer;
+- (instancetype)initWithWriter:(id<FTWriter>)writer;
+@end
+
+@implementation FTMockExternalSegmentScope
+- (instancetype)initWithWriter:(id<FTWriter>)writer{
+    self = [super initWithStorage:nil trackingConsentProvider:nil];
+    if (self) {
+        _writer = writer;
+    }
+    return self;
+}
+- (FTTrackingConsent)trackingConsent{
+    return FTTrackingConsentGranted;
+}
+- (void)eventWriteContext:(FTFeatureWriteContext)block{
+    block([[FTFeatureContext alloc]initWithTrackingConsent:FTTrackingConsentGranted], self.writer);
 }
 @end
 
@@ -222,6 +319,111 @@ BOOL isNAN(id value) {
 - (void)tearDown {
     // Put teardown code here. This method is called after the invocation of each test method in the class.
     [[FTNetworkInfoManager sharedInstance] clearUploadInfo];
+}
+
+- (void)testFileWriterDropsPayloadExceedingMaximumLengthBeforeRequestingFile {
+    dispatch_queue_t queue = dispatch_queue_create("com.ft.test.session-replay-file-writer", DISPATCH_QUEUE_SERIAL);
+    FTMockFilesOrchestrator *orchestrator = [FTMockFilesOrchestrator new];
+    FTFileWriter *writer = [[FTFileWriter alloc]initWithOrchestrator:orchestrator queue:queue];
+    NSData *payload = [NSMutableData dataWithLength:FT_MAX_DATA_LENGTH + 1];
+
+    [writer write:payload];
+    dispatch_sync(queue, ^{});
+
+    XCTAssertEqual(orchestrator.writableFileRequestCount, 0);
+}
+
+- (void)testTLVAcceptsPayloadAtMaximumLength {
+    NSData *payload = [NSMutableData dataWithLength:FT_MAX_DATA_LENGTH];
+    FTTLV *tlv = [[FTTLV alloc]initWithType:1 value:payload];
+
+    XCTAssertNotNil([tlv serialize]);
+}
+
+- (void)testExternalSegmentsAreProcessedSeriallyOnProcessorsQueue {
+    FTSessionReplayFeature *feature = [[FTSessionReplayFeature alloc]initWithConfig:[FTSessionReplayConfig new]];
+    FTMockExternalSegmentWriter *writer = [FTMockExternalSegmentWriter new];
+    FTMockExternalSegmentScope *scope = [[FTMockExternalSegmentScope alloc]initWithWriter:writer];
+    [feature setValue:scope forKey:@"recordScope"];
+    dispatch_queue_t processorsQueue = [feature valueForKey:@"processorsQueue"];
+    dispatch_queue_set_specific(processorsQueue, FTExternalSegmentProcessorQueueKey, FTExternalSegmentProcessorQueueKey, NULL);
+
+    dispatch_apply(50, dispatch_get_global_queue(QOS_CLASS_USER_INITIATED, 0), ^(size_t index) {
+        [feature writeExternalSegment:[NSString stringWithFormat:@"segment-%zu", index] viewID:@"view-1"];
+    });
+    XCTestExpectation *processed = [self expectationWithDescription:@"External segments processed"];
+    dispatch_async(processorsQueue, ^{
+        [processed fulfill];
+    });
+    [self waitForExpectations:@[processed] timeout:2];
+
+    XCTAssertEqual(writer.writtenData.count, 50);
+    XCTAssertTrue(writer.allWritesOnProcessorQueue);
+    NSUInteger forceNewFileCount = [writer.forceNewFileValues indexesOfObjectsPassingTest:^BOOL(NSNumber *value, NSUInteger idx, BOOL *stop) {
+        return value.boolValue;
+    }].count;
+    XCTAssertEqual(forceNewFileCount, 1);
+}
+
+- (void)testExternalSegmentsForceNewFileWhenViewChangesInSubmissionOrder {
+    FTSessionReplayFeature *feature = [[FTSessionReplayFeature alloc]initWithConfig:[FTSessionReplayConfig new]];
+    FTMockExternalSegmentWriter *writer = [FTMockExternalSegmentWriter new];
+    FTMockExternalSegmentScope *scope = [[FTMockExternalSegmentScope alloc]initWithWriter:writer];
+    [feature setValue:scope forKey:@"recordScope"];
+    dispatch_queue_t processorsQueue = [feature valueForKey:@"processorsQueue"];
+    dispatch_queue_set_specific(processorsQueue, FTExternalSegmentProcessorQueueKey, FTExternalSegmentProcessorQueueKey, NULL);
+
+    [feature writeExternalSegment:@"segment-1" viewID:@"view-1"];
+    [feature writeExternalSegment:@"segment-2" viewID:@"view-1"];
+    [feature writeExternalSegment:@"segment-3" viewID:@"view-2"];
+    XCTestExpectation *processed = [self expectationWithDescription:@"External segments processed in order"];
+    dispatch_async(processorsQueue, ^{
+        [processed fulfill];
+    });
+    [self waitForExpectations:@[processed] timeout:2];
+
+    XCTAssertEqualObjects(writer.forceNewFileValues, (@[@YES, @NO, @YES]));
+    XCTAssertTrue(writer.allWritesOnProcessorQueue);
+}
+
+- (void)testExternalImageResourceWriterCapturesInputBeforeAsynchronousProcessing {
+    FTSessionReplayFeature *feature = [[FTSessionReplayFeature alloc]initWithConfig:[FTSessionReplayConfig new]];
+    FTMockExternalImageResourceWriter *writer = [FTMockExternalImageResourceWriter new];
+    FTMockExternalSegmentScope *resourceScope = [[FTMockExternalSegmentScope alloc]initWithWriter:[FTMockExternalSegmentWriter new]];
+    [feature setValue:writer forKey:@"externalResourceWriter"];
+    [feature setValue:resourceScope forKey:@"resourceScope"];
+    NSDictionary *bindInfo = @{@"env": @"test"};
+    id recordingCoordinator = [feature valueForKey:@"recordingCoordinator"];
+    [recordingCoordinator setValue:@{
+        FT_APP_ID: @"app-id",
+        FT_LINK_RUM_KEYS: bindInfo,
+    } forKey:@"currentRUMContext"];
+    dispatch_queue_t processorsQueue = [feature valueForKey:@"processorsQueue"];
+    dispatch_queue_set_specific(processorsQueue, FTExternalImageProcessorQueueKey, FTExternalImageProcessorQueueKey, NULL);
+    dispatch_suspend(processorsQueue);
+
+    NSMutableData *data = [[@"image-data" dataUsingEncoding:NSUTF8StringEncoding] mutableCopy];
+    NSData *expectedData = [data copy];
+    NSString *identifier = [feature saveExternalImageResourceData:data mimeType:@"image/png"];
+    [data appendData:[@"-mutated" dataUsingEncoding:NSUTF8StringEncoding]];
+
+    XCTAssertNotNil(identifier);
+    XCTAssertEqual(writer.writtenResources.count, 0);
+    dispatch_resume(processorsQueue);
+    XCTestExpectation *processed = [self expectationWithDescription:@"External image resource processed"];
+    dispatch_async(processorsQueue, ^{
+        [processed fulfill];
+    });
+    [self waitForExpectations:@[processed] timeout:2];
+
+    XCTAssertEqual(writer.writtenResources.count, 1);
+    XCTAssertTrue(writer.allWritesOnProcessorQueue);
+    FTEnrichedResource *resource = writer.writtenResources.firstObject;
+    XCTAssertEqualObjects(resource.identifier, identifier);
+    XCTAssertEqualObjects(resource.data, expectedData);
+    XCTAssertEqualObjects(resource.appId, @"app-id");
+    XCTAssertEqualObjects(resource.mimeType, @"image/png");
+    XCTAssertEqualObjects(resource.bindInfo, bindInfo);
 }
 
 - (void)testSegmentJSONUsesIOSSourceByDefault {
