@@ -19,7 +19,6 @@ import CoreGraphics
 import Foundation
 import UIKit
 
-@available(iOS 13.0, tvOS 13.0, *)
 struct FTDrawing: FTImageRepresentable {
     private enum Constants {
         static let cls: AnyClass? = NSClassFromString("RBMovedDisplayListContents")

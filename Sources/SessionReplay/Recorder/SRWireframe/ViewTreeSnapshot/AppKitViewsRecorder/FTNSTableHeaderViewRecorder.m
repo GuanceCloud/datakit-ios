@@ -147,12 +147,8 @@
         FTSRAppKitHexColor(NSColor.controlTextColor,
                           headerView.effectiveAppearance,
                           @"#000000FF");
-    NSColor *separatorColor = NSColor.gridColor;
-    if (@available(macOS 10.14, *)) {
-        separatorColor = NSColor.separatorColor;
-    }
     builder.borderColor =
-        FTSRAppKitHexColor(separatorColor,
+        FTSRAppKitHexColor(NSColor.separatorColor,
                           headerView.effectiveAppearance,
                           @"#0000001F");
     FTTextAndInputPrivacyLevel privacy =

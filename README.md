@@ -15,9 +15,9 @@ performance data on iOS, tvOS, and macOS.
 
 ## Supported Platforms
 
-- iOS 12.0+
-- tvOS 12.0+
-- macOS 10.14+
+- iOS 15.0+
+- tvOS 15.0+
+- macOS 12.0+
 
 macOS support previously maintained in
 [GuanceCloud/datakit-macos](https://github.com/GuanceCloud/datakit-macos) has

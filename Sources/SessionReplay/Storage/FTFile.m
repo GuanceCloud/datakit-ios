@@ -38,16 +38,9 @@
 - (void)append:(NSData *)data{
     NSError *error;
     NSFileHandle *fileHandle = [NSFileHandle fileHandleForWritingToURL:self.url error:&error];
-    if (@available(macOS 10.15, iOS 13.0, *)) {
-        __autoreleasing NSError *error = nil;
-        [fileHandle seekToEndReturningOffset:nil error:&error];
-        [fileHandle writeData:data error:&error];
-        [fileHandle closeAndReturnError:&error];
-    } else {
-        [fileHandle seekToEndOfFile];
-        [fileHandle writeData:data];
-        [fileHandle closeFile];
-    }
+    [fileHandle seekToEndReturningOffset:nil error:&error];
+    [fileHandle writeData:data error:&error];
+    [fileHandle closeAndReturnError:&error];
 }
 - (void)write:(NSData *)data{
     NSError *error;

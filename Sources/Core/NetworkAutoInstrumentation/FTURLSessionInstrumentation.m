@@ -239,8 +239,7 @@ static dispatch_once_t onceToken;
 
 /// Swizzle dataTaskWithURL:completionHandler: method
 - (void)swizzleDataTaskWithURL {
-    if (@available(iOS 13.0, macOS 10.15, *)) {
-        FTSwizzlerInstanceMethod([NSURLSession class],
+    FTSwizzlerInstanceMethod([NSURLSession class],
                                  @selector(dataTaskWithURL:completionHandler:),
                                  FTSWReturnType(NSURLSessionDataTask *),
                                  FTSWArguments(NSURL *url, CompletionHandler completionHandler),
@@ -287,7 +286,6 @@ static dispatch_once_t onceToken;
             taskReference = task;
             return task;
         }), FTSwizzlerModeOncePerClassAndSuperclasses, kFTURLSessionDataTaskWithURL);
-    }
 }
 
 /// Swizzle dataTaskWithRequest:completionHandler: method

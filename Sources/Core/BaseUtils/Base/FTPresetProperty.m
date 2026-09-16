@@ -94,16 +94,14 @@ static BOOL FTPresetIsAppExtension(void) {
         UIApplication *app = [self sharedApplication];
         NSMutableSet *result = [NSMutableSet set];
         
-        if (@available(iOS 13.0, tvOS 13.0, *)) {
-            NSArray<UIScene *> *scenes = [self getApplicationConnectedScenes:app];
-            for (UIScene *scene in scenes) {
-                if (scene.activationState == UISceneActivationStateForegroundActive
-                    && scene.delegate &&
-                    [scene.delegate respondsToSelector:@selector(window)]) {
-                    id window = [scene.delegate performSelector:@selector(window)];
-                    if (window) {
-                        [result addObject:window];
-                    }
+        NSArray<UIScene *> *scenes = [self getApplicationConnectedScenes:app];
+        for (UIScene *scene in scenes) {
+            if (scene.activationState == UISceneActivationStateForegroundActive
+                && scene.delegate &&
+                [scene.delegate respondsToSelector:@selector(window)]) {
+                id window = [scene.delegate performSelector:@selector(window)];
+                if (window) {
+                    [result addObject:window];
                 }
             }
         }
@@ -116,7 +114,7 @@ static BOOL FTPresetIsAppExtension(void) {
                                                       timeout:0.1];
     return windows ?: @[];
 }
-- (NSArray<UIScene *> *)getApplicationConnectedScenes:(UIApplication *)application API_AVAILABLE(ios(13.0), tvos(13.0)){
+- (NSArray<UIScene *> *)getApplicationConnectedScenes:(UIApplication *)application{
     if (application && [application respondsToSelector:@selector(connectedScenes)]) {
         return [application.connectedScenes allObjects];
     }
@@ -1105,7 +1103,7 @@ static uintptr_t firstCmdAfterHeader(const struct mach_header* const header) {
 }
 #if FT_HOST_MAC
 + (NSString *)getDeviceUUID{
-    io_registry_entry_t ioRegistryRoot = IORegistryEntryFromPath(kIOMasterPortDefault, "IOService:/");
+    io_registry_entry_t ioRegistryRoot = IORegistryEntryFromPath(kIOMainPortDefault, "IOService:/");
     CFStringRef uuidCf = (CFStringRef) IORegistryEntryCreateCFProperty(ioRegistryRoot, CFSTR(kIOPlatformUUIDKey), kCFAllocatorDefault, 0);
     IOObjectRelease(ioRegistryRoot);
     NSString * uuid = (__bridge NSString *)uuidCf;

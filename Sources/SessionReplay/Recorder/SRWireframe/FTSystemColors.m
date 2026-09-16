@@ -24,75 +24,39 @@
 #if TARGET_OS_IOS
 /// The track of a slider.
 + (NSString *)systemFillColorStr{
-    if (@available(iOS 13.0, *)) {
-        return [FTSRUtils colorHexString:[UIColor systemFillColor].CGColor];
-    } else {
-        return @"#78788033";
-    }
+    return [FTSRUtils colorHexString:[UIColor systemFillColor].CGColor];
 }
 /// The background of a switch.
 + (NSString *)secondarySystemFillColorStr{
-    if (@available(iOS 13.0, *)) {
-        return [FTSRUtils colorHexString:[UIColor secondarySystemFillColor].CGColor];
-    } else {
-        return @"#78788029";
-    }
+    return [FTSRUtils colorHexString:[UIColor secondarySystemFillColor].CGColor];
 }
 /// Input fields, search bars, buttons.
 + (NSString *)tertiarySystemFillColorStr{
-    if (@available(iOS 13.0, *)) {
-        return [FTSRUtils colorHexString:[UIColor tertiarySystemFillColor].CGColor];
-    } else {
-        return @"#7676801F";
-    }
+    return [FTSRUtils colorHexString:[UIColor tertiarySystemFillColor].CGColor];
 }
 + (NSString *)tertiarySystemBackgroundColorStr{
-    if (@available(iOS 13.0, *)) {
-        return [FTSRUtils colorHexString:[UIColor tertiarySystemBackgroundColor].CGColor];
-    } else {
-        return @"#FFFFFFFF";
-    }
+    return [FTSRUtils colorHexString:[UIColor tertiarySystemBackgroundColor].CGColor];
 }
 + (NSString *)secondarySystemGroupedBackgroundColorStr{
-    if (@available(iOS 13.0, *)) {
-        return [FTSRUtils colorHexString:[UIColor secondarySystemGroupedBackgroundColor].CGColor];
-    } else {
-        return @"#FFFFFFFF";
-    }
+    return [FTSRUtils colorHexString:[UIColor secondarySystemGroupedBackgroundColor].CGColor];
 }
 + (UIColor *)systemBackground{
-    if (@available(iOS 13.0, *)) {
-        return [UIColor systemBackgroundColor];
-    } else {
-        return [UIColor colorWithRed:255 / 255 green:255 / 255 blue:255 / 255 alpha:1];
-    }
+    return [UIColor systemBackgroundColor];
 }
 + (NSString *)systemBackgroundColorStr{
     return [FTSRUtils colorHexString:self.systemBackground.CGColor];
 }
 + (UIColor *)labelColor{
-    if (@available(iOS 13.0, *)) {
-        return [UIColor labelColor];
-    }else{
-        return [UIColor colorWithRed:0/ 255 green:0 / 255 blue:0 / 255 alpha:1];
-    }
+    return [UIColor labelColor];
 }
 + (NSString *)labelColorStr{
     return [FTSRUtils colorHexString:[self labelColor].CGColor];
 }
 + (NSString *)placeholderTextColorStr{
-    if (@available(iOS 13.0, *)) {
-        return [FTSRUtils colorHexString:[UIColor placeholderTextColor].CGColor];
-    } else {
-        return @"#3C3C434C";
-    }
+    return [FTSRUtils colorHexString:[UIColor placeholderTextColor].CGColor];
 }
 + (NSString *)tintColorStr{
-    if (@available(iOS 15.0, *)) {
-        return [FTSRUtils colorHexString:[UIColor tintColor].CGColor];
-    } else {
-        return @"#007AFFFF";
-    }
+    return [FTSRUtils colorHexString:[UIColor tintColor].CGColor];
 }
 + (NSString *)systemGreenColorStr{
     return [FTSRUtils colorHexString:[UIColor systemGreenColor].CGColor];

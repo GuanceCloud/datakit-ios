@@ -142,13 +142,11 @@ static NSArray<UIWindow *> *FTCurrentApplicationWindows(void) {
         return @[];
     }
     NSMutableOrderedSet<UIWindow *> *windows = [NSMutableOrderedSet orderedSet];
-    if (@available(iOS 13.0, tvOS 13.0, *)) {
-        for (UIScene *scene in application.connectedScenes) {
-            if (![scene isKindOfClass:UIWindowScene.class]) {
-                continue;
-            }
-            [windows addObjectsFromArray:((UIWindowScene *)scene).windows];
+    for (UIScene *scene in application.connectedScenes) {
+        if (![scene isKindOfClass:UIWindowScene.class]) {
+            continue;
         }
+        [windows addObjectsFromArray:((UIWindowScene *)scene).windows];
     }
     id<UIApplicationDelegate> delegate = application.delegate;
     if ([delegate respondsToSelector:@selector(window)] && delegate.window != nil) {
@@ -287,23 +285,21 @@ static NSArray<UIViewController *> *FTViewControllerHierarchyFromRootViewControl
     if (self.sceneWillConnectObserver != nil) {
         return;
     }
-    if (@available(iOS 13.0, tvOS 13.0, *)) {
-        __weak typeof(self) weakSelf = self;
-        self.sceneWillConnectObserver = [[NSNotificationCenter defaultCenter] addObserverForName:UISceneWillConnectNotification object:nil queue:nil usingBlock:^(NSNotification * _Nonnull note) {
-            FTViewControllerSwizzling *strongSelf = weakSelf;
-            if (strongSelf == nil) {
-                return;
-            }
-            [[NSNotificationCenter defaultCenter] removeObserver:strongSelf.sceneWillConnectObserver];
-            strongSelf.sceneWillConnectObserver = nil;
-            // UIScene posts this notification on the main thread after its delegate has
-            // configured the scene's windows. Swizzle synchronously here, before the
-            // root controller receives its initial lifecycle callbacks.
-            if ([note.object isKindOfClass:UIWindowScene.class]) {
-                [strongSelf swizzleViewControllerHierarchyForWindows:((UIWindowScene *)note.object).windows];
-            }
-        }];
-    }
+    __weak typeof(self) weakSelf = self;
+    self.sceneWillConnectObserver = [[NSNotificationCenter defaultCenter] addObserverForName:UISceneWillConnectNotification object:nil queue:nil usingBlock:^(NSNotification * _Nonnull note) {
+        FTViewControllerSwizzling *strongSelf = weakSelf;
+        if (strongSelf == nil) {
+            return;
+        }
+        [[NSNotificationCenter defaultCenter] removeObserver:strongSelf.sceneWillConnectObserver];
+        strongSelf.sceneWillConnectObserver = nil;
+        // UIScene posts this notification on the main thread after its delegate has
+        // configured the scene's windows. Swizzle synchronously here, before the
+        // root controller receives its initial lifecycle callbacks.
+        if ([note.object isKindOfClass:UIWindowScene.class]) {
+            [strongSelf swizzleViewControllerHierarchyForWindows:((UIWindowScene *)note.object).windows];
+        }
+    }];
 }
 
 - (void)swizzleCurrentRootViewControllerHierarchy {

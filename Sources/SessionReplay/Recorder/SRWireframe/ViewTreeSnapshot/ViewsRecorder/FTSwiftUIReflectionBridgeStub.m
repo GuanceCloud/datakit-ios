@@ -41,15 +41,15 @@
 
 @implementation FTSwiftUIReflectionBridge
 
-- (FTSwiftUIRecordingAttributes *)makeRecordingAttributes API_AVAILABLE(ios(13.0)) {
+- (FTSwiftUIRecordingAttributes *)makeRecordingAttributes {
     return [FTSwiftUIRecordingAttributes new];
 }
 
-- (nullable FTSwiftUIRenderer *)rendererForHostingView:(UIView *)view API_AVAILABLE(ios(13.0)) {
+- (nullable FTSwiftUIRenderer *)rendererForHostingView:(UIView *)view {
     return nil;
 }
 
-- (nullable FTSwiftUIRecordingBuilder *)recordingBuilderForRenderer:(FTSwiftUIRenderer *)renderer attributes:(FTSwiftUIRecordingAttributes *)attributes API_AVAILABLE(ios(13.0)) {
+- (nullable FTSwiftUIRecordingBuilder *)recordingBuilderForRenderer:(FTSwiftUIRenderer *)renderer attributes:(FTSwiftUIRecordingAttributes *)attributes {
     return nil;
 }
 

@@ -57,25 +57,21 @@
     UIDatePicker *datePicker = (UIDatePicker *)view;
     NSMutableArray *nodes = [NSMutableArray new];
     NSMutableArray *resources = [NSMutableArray new];
-    if (@available(iOS 13.4, *)) {
-        switch (datePicker.datePickerStyle) {
-            case UIDatePickerStyleCompact:
-            {
-                [self.compactRecorder recorder:datePicker attributes:attributes context:context nodes:nodes resources:resources];
-            }
-                break;
-            case UIDatePickerStyleInline:{
-                [self.inlineRecorder recorder:datePicker attributes:attributes context:context nodes:nodes resources:resources];
-            }
-                break;
-            case UIDatePickerStyleWheels:
-            default:{
-                [self.wheelRecorder recorder:datePicker attributes:attributes context:context nodes:nodes resources:resources];
-            }
-                break;
+    switch (datePicker.datePickerStyle) {
+        case UIDatePickerStyleCompact:
+        {
+            [self.compactRecorder recorder:datePicker attributes:attributes context:context nodes:nodes resources:resources];
         }
-    } else {
-        [self.wheelRecorder recorder:datePicker attributes:attributes context:context nodes:nodes resources:resources];
+            break;
+        case UIDatePickerStyleInline:{
+            [self.inlineRecorder recorder:datePicker attributes:attributes context:context nodes:nodes resources:resources];
+        }
+            break;
+        case UIDatePickerStyleWheels:
+        default:{
+            [self.wheelRecorder recorder:datePicker attributes:attributes context:context nodes:nodes resources:resources];
+        }
+            break;
     }
     BOOL isDisplayedInPopover = NO;
     if(view.superview){

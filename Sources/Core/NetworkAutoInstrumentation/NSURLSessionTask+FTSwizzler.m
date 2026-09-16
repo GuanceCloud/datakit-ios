@@ -36,10 +36,8 @@ static char *hasCompletionKey = "hasCompletionKey";
     return NO;
 }
 - (id<NSURLSessionDelegate>)ft_delegate{
-    if (@available(iOS 15.0,tvOS 15.0,macOS 12.0, *)) {
-        if(self.delegate){
-            return self.delegate;
-        }
+    if(self.delegate){
+        return self.delegate;
     }
     NSURLSession *session = [self valueForKey:@"session"];
     if(session){

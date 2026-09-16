@@ -339,11 +339,7 @@ ftModuleInitializationHook(void)
 - (BOOL)isActivePrewarmAvailable{
 #    if FT_HOST_IOS
     // User data shows that iOS 14 app launches also have prewarming, which contradicts Apple's documentation that support starts from iOS 15.
-    if (@available(iOS 14, *)) {
-        return YES;
-    } else {
-        return NO;
-    }
+    return YES;
 #    else
     return NO;
 #    endif

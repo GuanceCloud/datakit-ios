@@ -19,7 +19,6 @@ import CoreGraphics
 import SwiftUI
 import UIKit
 
-@available(iOS 13.0, tvOS 13.0, *)
 struct FTGraphicsImage {
     enum Contents {
         case cgImage(CGImage)
@@ -54,7 +53,6 @@ struct FTGraphicsImage {
     }
 }
 
-@available(iOS 13.0, tvOS 13.0, *)
 extension UIImage.Orientation {
     init(_ orientation: SwiftUI.Image.Orientation) {
         switch orientation {

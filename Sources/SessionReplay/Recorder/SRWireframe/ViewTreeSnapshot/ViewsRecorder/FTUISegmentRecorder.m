@@ -50,9 +50,7 @@
     builder.wireframeRect = attributes.frame;
     builder.textObfuscator = self.textObfuscator(context,attributes);
     builder.selectedSegmentIndex = [FTSRTextObfuscatingFactory shouldMaskInputElements:[attributes resolveTextAndInputPrivacyLevel:context.recorder]]? nil : @(segment.selectedSegmentIndex);
-    if (@available(iOS 13.0, *)) {
-        builder.selectedSegmentTintColor = [FTSRColorSnapshot snapshotWithColor:segment.selectedSegmentTintColor traitCollection:segment.traitCollection];
-    }
+    builder.selectedSegmentTintColor = [FTSRColorSnapshot snapshotWithColor:segment.selectedSegmentTintColor traitCollection:segment.traitCollection];
     builder.backgroundWireframeID = [ids[0] intValue];
     builder.segmentWireframeIDs = [ids subarrayWithRange:NSMakeRange(1, ids.count-1)];
     NSMutableArray *titles = [NSMutableArray new];

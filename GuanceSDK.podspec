@@ -11,9 +11,9 @@ Pod::Spec.new do |s|
 	s.default_subspec = 'Agent'
 	s.swift_versions = ['5.0']
 
-	s.ios.deployment_target = '12.0'
-	s.osx.deployment_target = '10.14'
-	s.tvos.deployment_target = '12.0'
+	s.ios.deployment_target = '15.0'
+	s.osx.deployment_target = '12.0'
+	s.tvos.deployment_target = '15.0'
 	s.libraries    = 'z'
 	header_search_paths = '$(inherited) $(PODS_TARGET_SRCROOT) $(PODS_TARGET_SRCROOT)/Sources $(PODS_TARGET_SRCROOT)/Sources/Core/** $(PODS_TARGET_SRCROOT)/Sources/Agent/** $(PODS_TARGET_SRCROOT)/Sources/WidgetExtension $(PODS_TARGET_SRCROOT)/Sources/SessionReplay/**'
 	s.pod_target_xcconfig = {
@@ -32,9 +32,9 @@ Pod::Spec.new do |s|
 
 	s.subspec  'Agent' do | agent |
 		core_path='Sources/Agent/'
-		agent.ios.deployment_target = '12.0'
-		agent.osx.deployment_target = '10.14'
-		agent.tvos.deployment_target = '12.0'
+		agent.ios.deployment_target = '15.0'
+		agent.osx.deployment_target = '12.0'
+		agent.tvos.deployment_target = '15.0'
 		agent.source_files = 'Sources/*.{h}',
 			'Sources/Agent/**/*{.h,.m}'
 		agent.ios.exclude_files = 'Sources/Agent/AutoTrack/Mac/**/*'
@@ -43,7 +43,7 @@ Pod::Spec.new do |s|
 	end
 
 	s.subspec 'WidgetExtension' do |e|
-		e.platform = :ios, '12.0'
+		e.platform = :ios, '15.0'
 		e.source_files = 'Sources/WidgetExtension/*{.h,.m}','Sources/Agent/Config/*.{h,m}','Sources/Agent/ExternalData/*{.h,.m}','Sources/Agent/Extension/*{.h,.m}'
 		e.dependency 'GuanceSDK/Core/FTRUM'
 		e.dependency 'GuanceSDK/Core/URLSessionAutoInstrumentation'
@@ -51,14 +51,14 @@ Pod::Spec.new do |s|
 	end
 
 	s.subspec 'Extension' do |e|
-		e.platform = :ios, '12.0'
+		e.platform = :ios, '15.0'
 		e.dependency "#{s.name}/WidgetExtension"
 	end
 
 	s.subspec 'Core' do |c|
-		c.ios.deployment_target = '12.0'
-		c.osx.deployment_target = '10.14'
-		c.tvos.deployment_target = '12.0'
+		c.ios.deployment_target = '15.0'
+		c.osx.deployment_target = '12.0'
+		c.tvos.deployment_target = '15.0'
 
 		c.subspec 'FTRUM' do |r|
 			r.source_files = 'Sources/Core/FTRUM/**/*.{h,m,c,cpp}'
@@ -104,8 +104,8 @@ Pod::Spec.new do |s|
 		end
 
 		c.subspec 'FTWKWebView' do |j|
-			j.ios.deployment_target = '12.0'
-			j.osx.deployment_target = '10.14'
+			j.ios.deployment_target = '15.0'
+			j.osx.deployment_target = '12.0'
 			j.source_files = 'Sources/Core/FTWKWebView/**/*{.h,.m}'
 			j.dependency 'GuanceSDK/Core/Protocol'
 			j.dependency 'GuanceSDK/Core/BaseUtils/Swizzle'
@@ -125,8 +125,8 @@ Pod::Spec.new do |s|
 	end
 
 	s.subspec 'SessionReplay' do |sr|
-		 sr.ios.deployment_target = '12.0'
-		 sr.osx.deployment_target = '10.14'
+		 sr.ios.deployment_target = '15.0'
+		 sr.osx.deployment_target = '12.0'
 		 sr.public_header_files = 'Sources/SessionReplay/Public/*.h'
 		 sr.source_files = 'Sources/SessionReplay/**/*{.h,.m}'
 		 sr.dependency 'GuanceSDK/Core'
@@ -137,8 +137,8 @@ Pod::Spec.new do |s|
 	end
 
 	s.subspec 'FTSessionReplay' do |sr|
-		sr.ios.deployment_target = '12.0'
-		sr.osx.deployment_target = '10.14'
+		sr.ios.deployment_target = '15.0'
+		sr.osx.deployment_target = '12.0'
 		sr.dependency "#{s.name}/SessionReplay"
 	end
 end

@@ -18,6 +18,9 @@
 //
 
 #import <Foundation/Foundation.h>
+#import "FTActionTrackingHandler.h"
+#import "FTViewTrackingHandler.h"
+#import "FTIssueDataProvider.h"
 
 /// Crash monitoring type
 typedef NS_OPTIONS(NSUInteger, FTCrashMonitorType){
@@ -92,10 +95,6 @@ typedef NS_ENUM(NSInteger, FTRUMCacheDiscard)  {
     FTRUMDiscardOldest
 };
 
-#import "FTActionTrackingHandler.h"
-#import "FTViewTrackingHandler.h"
-#import "FTIssueDataProvider.h"
-
 NS_ASSUME_NONNULL_BEGIN
 /// RUM filter resource callback, returns: NO means to collect, YES means not to collect.
 typedef BOOL(^FTResourceUrlHandler)(NSURL * url);
@@ -135,7 +134,7 @@ typedef BOOL (^FTSessionTaskErrorFilter)(NSError *_Nonnull error);
 /// Set whether to automatically collect NSURLConnection requests as RUM Resources. Default: NO.
 /// This switch is independent from `enableTraceUserResource`, which controls NSURLSession.
 @property (nonatomic, assign) BOOL enableTraceURLConnectionResource;
-/// Set whether to collect network request Host IP (only applies to native http, iOS 13 and above)
+/// Set whether to collect network request Host IP (only applies to native HTTP requests)
 @property (nonatomic, assign) BOOL enableResourceHostIP;
 /// Custom collection resource rules.
 /// Determine whether to collect corresponding resource data based on the requested resource URL, default is to collect all. Returns: NO means to collect, YES means not to collect.

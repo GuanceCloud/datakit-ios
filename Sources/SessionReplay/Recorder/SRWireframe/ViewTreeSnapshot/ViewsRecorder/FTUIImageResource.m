@@ -54,10 +54,8 @@
 }
 -(NSData *)calculateData{
     UIColor *tintColor = _tintCGColor ? [UIColor colorWithCGColor:_tintCGColor] : nil;
-    if (@available(iOS 13.0, *)) {
-        if(self.image.isSymbolImage && tintColor){
-            return [[self.image imageWithTintColor:tintColor] ft_pngDataWithTintColor:nil];
-        }
+    if(self.image.isSymbolImage && tintColor){
+        return [[self.image imageWithTintColor:tintColor] ft_pngDataWithTintColor:nil];
     }
     return [self.image ft_pngDataWithTintColor:tintColor];
 }
