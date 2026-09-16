@@ -85,6 +85,7 @@ NSString * const FT_VERSION = @"version";
 #pragma mark ========== RUM ==========
 NSString * const FT_TERMINAL_APP = @"app";
 NSString * const FT_APP_ID = @"app_id";
+NSString * const FT_VISITOR_ID = @"visitor_id";
 NSString * const FT_DURATION = @"duration";
 //session tag
 NSString * const FT_RUM_KEY_SESSION_ID = @"session_id";

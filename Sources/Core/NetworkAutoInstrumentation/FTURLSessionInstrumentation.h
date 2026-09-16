@@ -86,6 +86,9 @@ NS_ASSUME_NONNULL_BEGIN
 /// - Parameter handler: RUM module data receiving object
 - (void)setRumResourceHandler:(id<FTRumResourceProtocol>)handler;
 
+/// Enables Visitor ID request interception independently from Trace and RUM Resource switches.
+- (void)setVisitorIDEnabled:(BOOL)enabled;
+
 /// Set URL filtering
 /// - Parameter intakeUrlHandler: Callback to determine whether to collect, return YES to collect, NO to filter out
 - (void)setIntakeUrlHandler:(FTIntakeUrl)intakeUrlHandler;

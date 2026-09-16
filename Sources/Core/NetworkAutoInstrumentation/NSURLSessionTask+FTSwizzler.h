@@ -21,9 +21,14 @@
 #import <Foundation/Foundation.h>
 
 NS_ASSUME_NONNULL_BEGIN
+@class FTVisitorIDRequestSnapshot;
 
 @interface NSURLSessionTask (FTSwizzler)
 @property (nonatomic, assign) BOOL ft_hasCompletion;
+/// Whether Visitor ID matching has already been evaluated for this task.
+@property (nonatomic, assign) BOOL ft_visitorIDWasEvaluated;
+/// Visitor ID captured on the first eligible resume. Retained for repeated resume and request correlation.
+@property (nonatomic, strong, nullable) FTVisitorIDRequestSnapshot *ft_visitorIDSnapshot;
 
 - (id<NSURLSessionDelegate>)ft_delegate;
 

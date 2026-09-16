@@ -26,6 +26,7 @@
 #import "FTJSONUtil.h"
 #import "FTInnerLog.h"
 #import "NSDictionary+FTCopyProperties.h"
+#import "FTVisitorIDConfig+Private.h"
 
 @interface FTRumConfig ()
 @property (nonatomic, assign) BOOL enableUIKitViewLoadingTime;
@@ -92,6 +93,7 @@
     options->_allowWebViewHost = [_allowWebViewHost copy];
     options.sessionTaskErrorFilter = [self.sessionTaskErrorFilter copy];
     options.issueDataProvider = [self.issueDataProvider copy];
+    options.visitorIDConfig = [self.visitorIDConfig copy];
 #if TARGET_OS_IOS || TARGET_OS_TV
     options.viewTrackingHandler = self.viewTrackingHandler;
     options.swiftUIViewTrackingHandler = self.swiftUIViewTrackingHandler;
@@ -128,6 +130,9 @@
             if ([dict ft_hasValidValueForKey:@"rumDiscardType"]) _rumDiscardType = (FTRUMCacheDiscard)[dict[@"rumDiscardType"] intValue];
             if ([dict ft_hasValidValueForKey:@"enableTraceWebView"]) _enableTraceWebView = [dict[@"enableTraceWebView"] boolValue];
             if ([dict ft_hasValidValueForKey:@"allowWebViewHost"]) _allowWebViewHost = [dict[@"allowWebViewHost"] copy];
+            if ([dict ft_hasValidValueForKey:@"visitorIDConfig"] && [dict[@"visitorIDConfig"] isKindOfClass:NSDictionary.class]) {
+                _visitorIDConfig = [[FTVisitorIDConfig alloc] initWithDictionary:dict[@"visitorIDConfig"]];
+            }
         }
         return self;
     }else{
@@ -167,6 +172,7 @@
     [dict setValue:@(self.crashMonitoring) forKey:@"crashMonitoring"];
     [dict setValue:@(self.enableTraceWebView) forKey:@"enableTraceWebView"];
     [dict setValue:_allowWebViewHost forKey:@"allowWebViewHost"];
+    [dict setValue:[self.visitorIDConfig convertToDictionary] forKey:@"visitorIDConfig"];
     return dict;
 }
 -(NSString *)debugDescription{
@@ -182,6 +188,7 @@
     [dict setValue:@(self.enableTraceWebView) forKey:@"enableTraceWebView"];
     [dict setValue:[_allowWebViewHost copy] forKey:@"allowWebViewHost"];
     [dict setValue:[self.issueDataProvider copy] forKey:@"issueDataProvider"];
+    [dict setValue:self.visitorIDConfig.debugDescription forKey:@"visitorIDConfig"];
     return [NSString stringWithFormat:@"%@",dict];
 }
 @end

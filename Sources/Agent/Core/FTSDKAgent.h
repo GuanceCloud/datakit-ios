@@ -144,6 +144,16 @@ NS_ASSUME_NONNULL_BEGIN
 /// Clear all data that hasn't been uploaded to the server yet
 + (void)clearAllData;
 
+/// Rotates the SDK-managed anonymous Visitor ID.
+///
+/// Call this when the application needs to begin a new anonymous visitor
+/// lifecycle, for example after a user signs out or switches accounts. This
+/// does not unbind the user, restart the RUM Session, or change Trace state.
+/// Requests already sent keep their original Visitor ID snapshot. Calling this
+/// before Visitor ID is enabled clears any previously persisted record. Avoid
+/// automatically calling it for transient HTTP 401 or request failures.
++ (void)resetVisitorID;
+
 /// Trigger request to get remote configuration environment variables
 /// The minimum update time interval defaults to FTSDKConfig.remoteConfigMiniUpdateInterval. If the time interval since the last request doesn't meet the setting, no request will be initiated
 + (void)updateRemoteConfig;

@@ -37,8 +37,15 @@
 #import "FTResourceContentModel.h"
 #import "TestSessionDelegate.h"
 #import "OHHTTPStubs.h"
+#import "FTVisitorIDManager.h"
+#import "FTURLSessionInstrumentation.h"
+#import "NSURLSessionTask+FTSwizzler.h"
 @interface FTURLSessionInterceptor(Testing)
 @property (nonatomic, strong) dispatch_queue_t queue;
+@end
+
+@interface FTURLSessionInstrumentation (VisitorIDTesting)
+- (void)interceptResume:(NSURLSessionTask *)task;
 @end
 
 @interface FTNetworkInterceptorTest : XCTestCase
@@ -50,12 +57,181 @@
 - (void)setUp {
     // Put setup code here. This method is called before the invocation of each test method in the class.
     [OHHTTPStubs removeAllStubs];
+    [[FTVisitorIDManager sharedInstance] shutDown];
+    [[FTVisitorIDManager sharedInstance] reset];
 }
 
 - (void)tearDown {
     // Put teardown code here. This method is called after the invocation of each test method in the class.
     [FTMobileAgent shutDown];
+    [[FTURLSessionInstrumentation sharedInstance] setVisitorIDEnabled:NO];
+    [[FTVisitorIDManager sharedInstance] shutDown];
+    [[FTVisitorIDManager sharedInstance] reset];
 }
+
+- (void)configureVisitorIDForHost:(NSString *)host {
+    [[FTVisitorIDManager sharedInstance]
+        configureWithEnabled:YES
+                  headerName:@"x-visitor"
+                         ttl:86400
+                  urlMatcher:^BOOL(NSURL *url) {
+        return [url.host isEqualToString:host];
+    }];
+    [[FTURLSessionInstrumentation sharedInstance] setVisitorIDEnabled:YES];
+}
+
+- (void)applyVisitorInterceptionToTask:(NSURLSessionTask *)task {
+    [[FTURLSessionInstrumentation sharedInstance] interceptResume:task];
+}
+
+- (void)testVisitorIDInjectsIntoDataUploadAndDownloadWithoutTraceOrRUMResource {
+    [self configureVisitorIDForHost:@"api.example.com"];
+    NSURLSession *session = [NSURLSession sessionWithConfiguration:NSURLSessionConfiguration.ephemeralSessionConfiguration];
+    NSURL *url = [NSURL URLWithString:@"https://api.example.com/resource"];
+    NSMutableURLRequest *uploadRequest = [NSMutableURLRequest requestWithURL:url];
+    uploadRequest.HTTPMethod = @"POST";
+    NSArray<NSURLSessionTask *> *tasks = @[
+        [session dataTaskWithURL:url],
+        [session uploadTaskWithRequest:uploadRequest fromData:[@"body" dataUsingEncoding:NSUTF8StringEncoding]],
+        [session downloadTaskWithURL:url],
+    ];
+
+    NSString *expected = nil;
+    for (NSURLSessionTask *task in tasks) {
+        [self applyVisitorInterceptionToTask:task];
+        NSString *header = [task.currentRequest valueForHTTPHeaderField:@"x-visitor"];
+        XCTAssertEqual(header.length, 33);
+        XCTAssertTrue([header hasPrefix:@"p"] || [header hasPrefix:@"s"]);
+        XCTAssertEqualObjects(task.ft_visitorIDSnapshot.value, header);
+        if (expected) {
+            XCTAssertEqualObjects(header, expected);
+        } else {
+            expected = header;
+        }
+        [task cancel];
+    }
+    [session invalidateAndCancel];
+}
+
+- (void)testVisitorIDMatchingOverwriteUnmatchedPreservationAndInternalExclusion {
+    [self configureVisitorIDForHost:@"api.example.com"];
+    NSURLSession *session = [NSURLSession sessionWithConfiguration:NSURLSessionConfiguration.ephemeralSessionConfiguration];
+
+    NSMutableURLRequest *matchedRequest = [NSMutableURLRequest requestWithURL:[NSURL URLWithString:@"https://api.example.com/one"]];
+    [matchedRequest setValue:@"business-value" forHTTPHeaderField:@"x-visitor"];
+    NSURLSessionDataTask *matched = [session dataTaskWithRequest:matchedRequest];
+    [self applyVisitorInterceptionToTask:matched];
+    NSString *managed = [matched.currentRequest valueForHTTPHeaderField:@"x-visitor"];
+    XCTAssertNotEqualObjects(managed, @"business-value");
+    XCTAssertEqualObjects(managed, matched.ft_visitorIDSnapshot.value);
+
+    NSMutableURLRequest *unmatchedRequest = [NSMutableURLRequest requestWithURL:[NSURL URLWithString:@"https://other.example/one"]];
+    [unmatchedRequest setValue:@"business-value" forHTTPHeaderField:@"x-visitor"];
+    NSURLSessionDataTask *unmatched = [session dataTaskWithRequest:unmatchedRequest];
+    [self applyVisitorInterceptionToTask:unmatched];
+    XCTAssertEqualObjects([unmatched.currentRequest valueForHTTPHeaderField:@"x-visitor"], @"business-value");
+    XCTAssertNil(unmatched.ft_visitorIDSnapshot);
+
+    NSMutableURLRequest *internalRequest = [NSMutableURLRequest requestWithURL:[NSURL URLWithString:@"https://api.example.com/intake"]];
+    [internalRequest setValue:@"true" forHTTPHeaderField:FT_HTTP_HEADER_X_SDK_INTERNAL_REQUEST];
+    NSURLSessionDataTask *internal = [session dataTaskWithRequest:internalRequest];
+    [self applyVisitorInterceptionToTask:internal];
+    XCTAssertNil([internal.currentRequest valueForHTTPHeaderField:@"x-visitor"]);
+    XCTAssertNil(internal.ft_visitorIDSnapshot);
+
+    [matched cancel];
+    [unmatched cancel];
+    [internal cancel];
+    [session invalidateAndCancel];
+}
+
+- (void)testVisitorIDTaskSnapshotSurvivesResetAndRepeatedResume {
+    [self configureVisitorIDForHost:@"api.example.com"];
+    NSURLSession *session = [NSURLSession sessionWithConfiguration:NSURLSessionConfiguration.ephemeralSessionConfiguration];
+    NSURL *url = [NSURL URLWithString:@"https://api.example.com/one"];
+    NSURLSessionDataTask *oldTask = [session dataTaskWithURL:url];
+    [self applyVisitorInterceptionToTask:oldTask];
+    NSString *oldValue = [oldTask.currentRequest valueForHTTPHeaderField:@"x-visitor"];
+
+    [[FTVisitorIDManager sharedInstance] reset];
+    NSString *newValue = [FTVisitorIDManager sharedInstance].snapshot.value;
+    XCTAssertNotEqualObjects(newValue, oldValue);
+    [self applyVisitorInterceptionToTask:oldTask];
+    XCTAssertEqualObjects([oldTask.currentRequest valueForHTTPHeaderField:@"x-visitor"], oldValue);
+    XCTAssertEqualObjects(oldTask.ft_visitorIDSnapshot.value, oldValue);
+
+    NSURLSessionDataTask *newTask = [session dataTaskWithURL:url];
+    [self applyVisitorInterceptionToTask:newTask];
+    XCTAssertEqualObjects([newTask.currentRequest valueForHTTPHeaderField:@"x-visitor"], newValue);
+
+    [oldTask cancel];
+    [newTask cancel];
+    [session invalidateAndCancel];
+}
+
+- (void)testVisitorIDMatcherRunsOnlyWhenCreatingTaskSnapshot {
+    __block NSUInteger matcherCalls = 0;
+    [[FTVisitorIDManager sharedInstance]
+        configureWithEnabled:YES
+                  headerName:@"x-visitor"
+                         ttl:86400
+                  urlMatcher:^BOOL(NSURL *url) {
+        matcherCalls += 1;
+        return [url.host isEqualToString:@"api.example.com"];
+    }];
+    [[FTURLSessionInstrumentation sharedInstance] setVisitorIDEnabled:YES];
+
+    NSURLSession *session = [NSURLSession sessionWithConfiguration:NSURLSessionConfiguration.ephemeralSessionConfiguration];
+    NSURLSessionDataTask *task = [session dataTaskWithURL:[NSURL URLWithString:@"https://api.example.com/start"]];
+    [self applyVisitorInterceptionToTask:task];
+    NSString *original = task.ft_visitorIDSnapshot.value;
+    XCTAssertEqual(matcherCalls, 1u);
+
+    NSMutableURLRequest *rewrittenRequest = [task.currentRequest mutableCopy];
+    rewrittenRequest.URL = [NSURL URLWithString:@"https://other.example/final"];
+    [task setValue:rewrittenRequest forKey:@"currentRequest"];
+    [self applyVisitorInterceptionToTask:task];
+
+    XCTAssertEqual(matcherCalls, 1u);
+    XCTAssertEqualObjects(task.ft_visitorIDSnapshot.value, original);
+    XCTAssertEqualObjects([task.currentRequest valueForHTTPHeaderField:@"x-visitor"], original);
+
+    [task cancel];
+    [session invalidateAndCancel];
+}
+
+- (void)testVisitorIDUnmatchedTaskDoesNotMatchAgainAfterRequestChanges {
+    __block NSUInteger matcherCalls = 0;
+    [[FTVisitorIDManager sharedInstance]
+        configureWithEnabled:YES
+                  headerName:@"x-visitor"
+                         ttl:86400
+                  urlMatcher:^BOOL(NSURL *url) {
+        matcherCalls += 1;
+        return [url.host isEqualToString:@"api.example.com"];
+    }];
+    [[FTURLSessionInstrumentation sharedInstance] setVisitorIDEnabled:YES];
+
+    NSURLSession *session = [NSURLSession sessionWithConfiguration:NSURLSessionConfiguration.ephemeralSessionConfiguration];
+    NSURLSessionDataTask *task = [session dataTaskWithURL:[NSURL URLWithString:@"https://other.example/start"]];
+    [self applyVisitorInterceptionToTask:task];
+    XCTAssertEqual(matcherCalls, 1u);
+    XCTAssertTrue(task.ft_visitorIDWasEvaluated);
+    XCTAssertNil(task.ft_visitorIDSnapshot);
+
+    NSMutableURLRequest *rewrittenRequest = [task.currentRequest mutableCopy];
+    rewrittenRequest.URL = [NSURL URLWithString:@"https://api.example.com/final"];
+    [task setValue:rewrittenRequest forKey:@"currentRequest"];
+    [self applyVisitorInterceptionToTask:task];
+
+    XCTAssertEqual(matcherCalls, 1u);
+    XCTAssertNil(task.ft_visitorIDSnapshot);
+    XCTAssertNil([task.currentRequest valueForHTTPHeaderField:@"x-visitor"]);
+
+    [task cancel];
+    [session invalidateAndCancel];
+}
+
 - (void)initSDKEnableAutoTrace:(BOOL)enable{
     [self initSDKEnableAutoTrace:enable traceInterceptor:nil];
 }
@@ -385,11 +561,7 @@
             
         }
     }];
-    if(autoTrace){
-        XCTAssertTrue(hasResourceCount == 2);
-    }else{
-        XCTAssertTrue(hasResourceCount == 1);
-    }
+    XCTAssertEqual(hasResourceCount, autoTrace ? 2 : 1);
     [[FTTrackerEventDBTool sharedManager] deleteAllDatas];
 }
 #pragma mark - Trace
@@ -498,11 +670,7 @@
             }
         }
     }];
-    if(autoTrace){
-        XCTAssertTrue(hasResourceCount == 2);
-    }else{
-        XCTAssertTrue(hasResourceCount == 1);
-    }
+    XCTAssertEqual(hasResourceCount, autoTrace ? 2 : 1);
     [[FTTrackerEventDBTool sharedManager] deleteAllDatas];
 }
 @end

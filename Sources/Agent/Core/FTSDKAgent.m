@@ -61,6 +61,8 @@
 #import "FTRemoteConfigError.h"
 #import "FTDateUtil.h"
 #import "FTAppLaunchTracker.h"
+#import "FTVisitorIDConfig+Private.h"
+#import "FTVisitorIDManager.h"
 #if !TARGET_OS_TV
 #import "FTWKWebViewHandler+Private.h"
 #endif
@@ -247,6 +249,19 @@ static FTSDKAgent *sharedInstance = nil;
 }
 - (void)applyRUMConfig:(FTRumConfig *)rumConfig{
     FTInnerLogInfo(@"[RUM] APPID:%@",rumConfig.appid);
+    NSError *visitorError = nil;
+    FTVisitorIDConfig *visitorConfig = [rumConfig.visitorIDConfig validatedCopyWithError:&visitorError];
+    if (rumConfig.visitorIDConfig && !visitorConfig) {
+        FTInnerLogWarning(@"Invalid Visitor ID configuration; Visitor ID is disabled: %@", visitorError.localizedDescription);
+    }
+    [[FTVisitorIDManager sharedInstance]
+        configureWithEnabled:visitorConfig != nil
+                  headerName:visitorConfig.header
+                         ttl:visitorConfig.ttlHours * 60.0 * 60.0
+                  urlMatcher:visitorConfig ? ^BOOL(NSURL *url) {
+                      return [visitorConfig matchesURL:url];
+                  } : nil];
+    [[FTURLSessionInstrumentation sharedInstance] setVisitorIDEnabled:visitorConfig != nil];
     [[FTPresetProperty sharedInstance] setRUMAppID:rumConfig.appid sampleRate:rumConfig.sampleRate sessionOnErrorSampleRate:rumConfig.sessionOnErrorSampleRate rumGlobalContext:rumConfig.globalContext];
     [[FTTrackDataManager sharedInstance] setRUMCacheLimitCount:rumConfig.rumCacheLimitCount discardNew:rumConfig.rumDiscardType == FTRUMDiscard];
     [[FTGlobalRumManager sharedInstance] setRumConfig:rumConfig writer:[FTTrackDataManager sharedInstance].dataWriterWorker];
@@ -494,6 +509,7 @@ static FTSDKAgent *sharedInstance = nil;
     [[FTURLConnectionInstrumentation existingInstance] shutDown];
     [[FTGlobalRumManager sharedInstance] shutDown];
     [[FTURLSessionInstrumentation sharedInstance] shutDown];
+    [[FTVisitorIDManager sharedInstance] shutDown];
     [[FTRemoteConfigManager sharedInstance] shutDown];
     [[FTDataFilterManager sharedInstance] shutDown];
     [FTTrackDataManager shutDown];
@@ -524,6 +540,9 @@ static FTSDKAgent *sharedInstance = nil;
     @catch (NSException *exception) {
         FTInnerLogError(@"%@ error: %@", self, exception);
     }
+}
++ (void)resetVisitorID{
+    [[FTVisitorIDManager sharedInstance] reset];
 }
 - (void)syncProcess{
     [[FTGlobalRumManager sharedInstance].rumManager syncProcess];

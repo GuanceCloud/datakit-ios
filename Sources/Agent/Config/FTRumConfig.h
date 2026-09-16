@@ -21,6 +21,7 @@
 #import "FTActionTrackingHandler.h"
 #import "FTViewTrackingHandler.h"
 #import "FTIssueDataProvider.h"
+#import "FTVisitorIDConfig.h"
 
 /// Crash monitoring type
 typedef NS_OPTIONS(NSUInteger, FTCrashMonitorType){
@@ -179,6 +180,14 @@ typedef BOOL (^FTSessionTaskErrorFilter)(NSError *_Nonnull error);
 @property (nonatomic, copy, nullable) FTResourcePropertyProvider resourcePropertyProvider;
 /// Intercept SessionTask Error, confirm interception returns YES, not intercepted returns NO
 @property (nonatomic, copy, nullable) FTSessionTaskErrorFilter sessionTaskErrorFilter;
+
+/// SDK-managed anonymous Visitor ID configuration. Default: nil (disabled).
+///
+/// A non-nil valid configuration injects the configured header into matching
+/// URLSession data/upload/download requests and adds the same event/request
+/// snapshot to native RUM as `visitor_id`. It is independent of RUM and Trace
+/// sampling and must not be used for authentication or authorization.
+@property (nonatomic, copy, nullable) FTVisitorIDConfig *visitorIDConfig;
 
 /// Set whether to enable WebView data collection, default YES
 @property (nonatomic, assign) BOOL enableTraceWebView;

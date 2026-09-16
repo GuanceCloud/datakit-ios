@@ -778,6 +778,22 @@ static void FTPropertyTestAssertMissingKeys(XCTestCase *testCase, NSDictionary *
     XCTAssertTrue([array[1][@"field1"] isEqualToString:@"value4"]);
     [FTMobileAgent shutDown];
 }
+- (void)testLinePropertyBagNSNullDeletesExistingValuesWithoutAppendingUnknownKeys{
+    FTLinePropertyBag *bag = [[FTLinePropertyBag alloc]
+        initWithTags:@{@"visitor_id": @"p-old", @"keep_tag": @"tag"}
+              fields:@{@"remove_field": @1, @"keep_field": @2}];
+    FTLinePropertyBag *changed = [bag bagByApplyingChangedValues:@{
+        @"visitor_id": NSNull.null,
+        @"remove_field": NSNull.null,
+        @"keep_tag": @"updated",
+        @"unknown": @"must-not-be-added",
+    }];
+    XCTAssertNil(changed.tags[@"visitor_id"]);
+    XCTAssertNil(changed.fields[@"remove_field"]);
+    XCTAssertEqualObjects(changed.tags[@"keep_tag"], @"updated");
+    XCTAssertEqualObjects(changed.fields[@"keep_field"], @2);
+    XCTAssertNil(changed.mergedDictionary[@"unknown"]);
+}
 - (void)testLineDataModifier_append{
     FTMobileConfig *config = [[FTMobileConfig alloc]initWithDatakitUrl:self.url];
     config.autoSync = NO;

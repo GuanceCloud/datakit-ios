@@ -123,9 +123,17 @@
     NSSet *fieldKeys = [NSSet setWithArray:self.fields.allKeys];
     [safeChangedValues enumerateKeysAndObjectsUsingBlock:^(id key, id obj, BOOL *stop) {
         if ([tagKeys containsObject:key]) {
-            mutableTags[key] = obj;
+            if ([obj isKindOfClass:NSNull.class]) {
+                [mutableTags removeObjectForKey:key];
+            } else {
+                mutableTags[key] = obj;
+            }
         } else if ([fieldKeys containsObject:key]) {
-            mutableFields[key] = obj;
+            if ([obj isKindOfClass:NSNull.class]) {
+                [mutableFields removeObjectForKey:key];
+            } else {
+                mutableFields[key] = obj;
+            }
         }
     }];
     return [[FTLinePropertyBag alloc] initWithTags:mutableTags fields:mutableFields];

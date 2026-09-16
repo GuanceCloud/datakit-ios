@@ -49,6 +49,7 @@ let package = Package(
                 "_AgentExtension",
                 "_AgentExternalData",
                 "_AgentConfig",
+                "_FTVisitorID",
                 "GuanceSDKSwiftUI",
             ],
             path: "Sources",
@@ -100,6 +101,7 @@ let package = Package(
                 "_FTBaseUtils_Base",
                 "_FTBaseUtils_Thread",
                 "_FTProtocol",
+                "_FTVisitorID",
             ],
             path: "Sources/Core/FTRUM",
             cSettings: [
@@ -117,6 +119,7 @@ let package = Package(
             dependencies: [
                 "_FTProtocol",
                 "_FTBaseUtils_Swizzle",
+                "_FTVisitorID",
             ],
             path: "Sources/Core/NetworkAutoInstrumentation",
             publicHeadersPath: "."
@@ -128,6 +131,12 @@ let package = Package(
                 "_FTProtocol",
             ],
             path: "Sources/Core/Logger",
+            publicHeadersPath: "."
+        ),
+        .target(
+            name: "_FTVisitorID",
+            dependencies: ["_FTBaseUtils_Base"],
+            path: "Sources/Core/VisitorID",
             publicHeadersPath: "."
         ),
         .testTarget(

@@ -33,6 +33,7 @@
 #import "FTTraceContext.h"
 #import "FTLoggerConfig.h"
 #import "FTRumConfig.h"
+#import "FTVisitorIDConfig.h"
 #import "FTConstants.h"
 #if !TARGET_OS_TV
 #import "FTWKWebViewHandler.h"

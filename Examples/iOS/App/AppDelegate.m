@@ -100,6 +100,12 @@
         rumConfig.enableTraceUserResource = YES;
         // NSURLConnection collection is independent of NSURLSession and defaults to NO.
         rumConfig.enableTraceURLConnectionResource = YES;
+        // Opt in to Visitor ID only for application endpoints that explicitly accept the header.
+        FTVisitorIDConfig *visitorConfig = [[FTVisitorIDConfig alloc] init];
+        visitorConfig.header = @"x-guance-visitor";
+        visitorConfig.ttlHours = 24;
+        [visitorConfig addMatchWithURLPrefix:@"https://httpbin.org/"];
+        rumConfig.visitorIDConfig = visitorConfig;
 //        rumConfig.resourceUrlHandler = ^(NSURL *url){
 //            return NO;
 //        };
