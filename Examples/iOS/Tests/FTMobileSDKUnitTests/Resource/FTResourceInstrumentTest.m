@@ -715,7 +715,7 @@
 - (FTURLConnectionInstrumentation *)urlConnectionInstrumentationWithResource:(BOOL)resourceEnabled
                                                                         trace:(BOOL)traceEnabled
                                                                          link:(BOOL)linkEnabled
-                                                                   sampleRate:(int)sampleRate
+                                                                   sampleRate:(float)traceSamplingRate
                                                                   interceptor:(TraceInterceptor)interceptor
                                                                        writer:(id<FTRumResourceProtocol>)writer {
     FTURLConnectionInstrumentation *instrumentation = [FTURLConnectionInstrumentation new];
@@ -726,7 +726,7 @@
                        sessionTaskErrorFilter:nil];
     [instrumentation setTraceEnableAutoTrace:traceEnabled
                            enableLinkRumData:linkEnabled
-                                  sampleRate:sampleRate
+                           traceSamplingRate:traceSamplingRate
                                    traceType:DDtrace
                             traceInterceptor:interceptor
                                  serviceName:@"urlconnection-tests"];
@@ -851,7 +851,7 @@
                                                                                                 writer:nil];
     NSURLRequest *unsampledRequest = [[instrumentation prepareRequest:request delegate:nil] valueForKey:@"request"];
     XCTAssertEqualObjects([unsampledRequest valueForHTTPHeaderField:FT_NETWORK_DDTRACE_SAMPLING_PRIORITY], @"-1");
-    [instrumentation updateTraceSampleRate:100];
+    [instrumentation updateTraceSamplingRate:100];
     NSURLRequest *sampledRequest = [[instrumentation prepareRequest:request delegate:nil] valueForKey:@"request"];
     XCTAssertEqualObjects([sampledRequest valueForHTTPHeaderField:FT_NETWORK_DDTRACE_SAMPLING_PRIORITY], @"2");
 }

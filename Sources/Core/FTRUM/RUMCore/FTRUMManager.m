@@ -155,7 +155,7 @@ void *FTRUMQueueIdentityKey = &FTRUMQueueIdentityKey;
 -(void)applicationDidEnterBackground{
     self.appState = FTAppStateBackground;
 }
--(void)updateSampleRate:(int)sampleRate sessionOnErrorSampleRate:(int)sessionOnErrorSampleRate{
+-(void)updateSampleRate:(float)sampleRate sessionOnErrorSampleRate:(float)sessionOnErrorSampleRate{
     dispatch_async(self.rumQueue, ^{
         @try {
             self.rumDependencies.sampleRate = sampleRate;

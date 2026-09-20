@@ -171,10 +171,10 @@ static FTSDKAgent *sharedInstance = nil;
     [self.sdkConfig mergeWithRemoteConfigModel:model];
     [self.rumConfig mergeWithRemoteConfigModel:model];
     [self.traceConfig mergeWithRemoteConfigModel:model];
-    [[FTGlobalRumManager sharedInstance] updateSampleRate:self.rumConfig.sampleRate sessionOnErrorSampleRate:self.rumConfig.sessionOnErrorSampleRate];
-    [[FTURLSessionInstrumentation sharedInstance] updateTraceSampleRate:self.traceConfig.sampleRate];
+    [[FTGlobalRumManager sharedInstance] updateSampleRate:self.rumConfig.sessionSamplingRate sessionOnErrorSampleRate:self.rumConfig.sessionOnErrorSamplingRate];
+    [[FTURLSessionInstrumentation sharedInstance] updateTraceSamplingRate:self.traceConfig.traceSamplingRate];
     FTURLConnectionInstrumentation *urlConnectionInstrumentation = [FTURLConnectionInstrumentation existingInstance];
-    [urlConnectionInstrumentation updateTraceSampleRate:self.traceConfig.sampleRate];
+    [urlConnectionInstrumentation updateTraceSamplingRate:self.traceConfig.traceSamplingRate];
     [urlConnectionInstrumentation updateResourceEnabled:self.rumConfig.enableTraceURLConnectionResource];
     [urlConnectionInstrumentation updateTraceEnabled:self.traceConfig.enableAutoTraceURLConnection];
     [FTNetworkInfoManager sharedInstance].setCompressionIntakeRequests(self.sdkConfig.compressIntakeRequests);
@@ -247,7 +247,7 @@ static FTSDKAgent *sharedInstance = nil;
 }
 - (void)applyRUMConfig:(FTRumConfig *)rumConfig{
     FTInnerLogInfo(@"[RUM] APPID:%@",rumConfig.appid);
-    [[FTPresetProperty sharedInstance] setRUMAppID:rumConfig.appid sampleRate:rumConfig.sampleRate sessionOnErrorSampleRate:rumConfig.sessionOnErrorSampleRate rumGlobalContext:rumConfig.globalContext];
+    [[FTPresetProperty sharedInstance] setRUMAppID:rumConfig.appid sampleRate:rumConfig.sessionSamplingRate sessionOnErrorSampleRate:rumConfig.sessionOnErrorSamplingRate rumGlobalContext:rumConfig.globalContext];
     [[FTTrackDataManager sharedInstance] setRUMCacheLimitCount:rumConfig.rumCacheLimitCount discardNew:rumConfig.rumDiscardType == FTRUMDiscard];
     [[FTGlobalRumManager sharedInstance] setRumConfig:rumConfig writer:[FTTrackDataManager sharedInstance].dataWriterWorker];
     [[FTURLSessionInstrumentation sharedInstance]setEnableAutoRumTrace:rumConfig.enableTraceUserResource
@@ -302,7 +302,7 @@ static FTSDKAgent *sharedInstance = nil;
 - (void)applyTraceConfig:(FTTraceConfig *)traceConfig{
     [[FTURLSessionInstrumentation sharedInstance] setTraceEnableAutoTrace:traceConfig.enableAutoTrace
                                                         enableLinkRumData:traceConfig.enableLinkRumData
-                                                               sampleRate:traceConfig.sampleRate
+                                                        traceSamplingRate:traceConfig.traceSamplingRate
                                                                 traceType:(NetworkTraceType)traceConfig.networkTraceType
                                                          traceInterceptor:traceConfig.traceInterceptor
                                                               serviceName:self.sdkConfig.service
@@ -310,7 +310,7 @@ static FTSDKAgent *sharedInstance = nil;
     [[FTURLConnectionInstrumentation sharedInstance]
         setTraceEnableAutoTrace:traceConfig.enableAutoTraceURLConnection
         enableLinkRumData:traceConfig.enableLinkRumData
-        sampleRate:traceConfig.sampleRate
+        traceSamplingRate:traceConfig.traceSamplingRate
         traceType:(NetworkTraceType)traceConfig.networkTraceType
         traceInterceptor:traceConfig.traceInterceptor
         serviceName:self.sdkConfig.service];

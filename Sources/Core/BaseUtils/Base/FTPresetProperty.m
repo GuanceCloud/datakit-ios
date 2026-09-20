@@ -561,8 +561,8 @@ static Class FTPresetExpectedValueClass(id value) {
 }
 // rumTags
 - (void)setRUMAppID:(NSString *)appID
-         sampleRate:(int)sampleRate
- sessionOnErrorSampleRate:(int)sessionOnErrorSampleRate
+         sampleRate:(float)sampleRate
+ sessionOnErrorSampleRate:(float)sessionOnErrorSampleRate
    rumGlobalContext:(NSDictionary *)rumGlobalContext {
     [self removeRUMScreenSizeActiveRetryIfNeeded];
     BOOL isAppExtension = FTPresetIsAppExtension();

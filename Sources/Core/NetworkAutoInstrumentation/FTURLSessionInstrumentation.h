@@ -67,17 +67,17 @@ NS_ASSUME_NONNULL_BEGIN
 /// - Parameters:
 ///   - enableAutoTrace: Whether to enable automatic link tracing
 ///   - enableLinkRumData: Whether to associate with RUM
-///   - sampleRate: Sampling rate
+///   - traceSamplingRate: Trace sampling rate percentage in the range [0, 100]
 ///   - traceType: Link type
 ///   - serviceName: serviceName
 - (void)setTraceEnableAutoTrace:(BOOL)enableAutoTrace
               enableLinkRumData:(BOOL)enableLinkRumData
-                     sampleRate:(int)sampleRate
+              traceSamplingRate:(float)traceSamplingRate
                       traceType:(NetworkTraceType)traceType
                traceInterceptor:(TraceInterceptor)traceInterceptor
                     serviceName:(NSString *)serviceName;
 
-- (void)updateTraceSampleRate:(int)sampleRate;
+- (void)updateTraceSamplingRate:(float)traceSamplingRate;
 
 
 /// Set RUM resource data processing object that conforms to FTRumResourceProtocol

@@ -32,22 +32,35 @@
 
 @implementation FTTraceConfig
 - (int)sampleRate {
-    return _samplerate;
+    return (int)_traceSamplingRate;
 }
 - (void)setSampleRate:(int)sampleRate {
-    _samplerate = sampleRate;
+    self.traceSamplingRate = (float)sampleRate;
+}
+- (int)samplerate {
+    return (int)_traceSamplingRate;
+}
+- (void)setSamplerate:(int)samplerate {
+    self.traceSamplingRate = (float)samplerate;
+}
+- (void)setTraceSamplingRate:(float)traceSamplingRate {
+    if (![FTBaseInfoHandler isValidSamplingRate:traceSamplingRate]) {
+        FTInnerLogWarning(@"[sampling] Ignore invalid traceSamplingRate: %g", traceSamplingRate);
+        return;
+    }
+    _traceSamplingRate = traceSamplingRate;
 }
 -(instancetype)init{
     self = [super init];
     if (self) {
-        _samplerate = 100;
+        _traceSamplingRate = 100.0f;
         _networkTraceType = FTNetworkTraceTypeDDtrace;
     }
     return self;
 }
 - (instancetype)copyWithZone:(NSZone *)zone {
     FTTraceConfig *options = [[[self class] allocWithZone:zone] init];
-    options.sampleRate = self.sampleRate;
+    options->_traceSamplingRate = _traceSamplingRate;
     options.enableLinkRumData = self.enableLinkRumData;
     options.networkTraceType = self.networkTraceType;
     options.enableAutoTrace = self.enableAutoTrace;
@@ -58,8 +71,9 @@
 -(instancetype)initWithDictionary:(NSDictionary *)dict{
     if(dict){
         if (self = [self init]) {
-            if ([dict ft_hasValidValueForKey:@"samplerate"]) _samplerate = [dict[@"samplerate"] intValue];
-            if ([dict ft_hasValidValueForKey:@"sampleRate"]) _samplerate = [dict[@"sampleRate"] intValue];
+            if ([dict ft_hasValidValueForKey:@"samplerate"]) self.traceSamplingRate = (float)[dict[@"samplerate"] intValue];
+            if ([dict ft_hasValidValueForKey:@"sampleRate"]) self.traceSamplingRate = (float)[dict[@"sampleRate"] intValue];
+            if ([dict ft_hasValidValueForKey:@"traceSamplingRate"]) self.traceSamplingRate = [dict[@"traceSamplingRate"] floatValue];
             if ([dict ft_hasValidValueForKey:@"enableLinkRumData"]) _enableLinkRumData = [dict[@"enableLinkRumData"] boolValue];
             if ([dict ft_hasValidValueForKey:@"networkTraceType"]) _networkTraceType =(FTNetworkTraceType)[dict[@"networkTraceType"] intValue];
             if ([dict ft_hasValidValueForKey:@"enableAutoTrace"]) _enableAutoTrace = [dict[@"enableAutoTrace"] boolValue];
@@ -73,7 +87,8 @@
 }
 -(NSDictionary *)convertToDictionary{
     NSMutableDictionary *dict = [NSMutableDictionary new];
-    [dict setValue:@(self.sampleRate) forKey:@"sampleRate"];
+    [dict setValue:@((int)_traceSamplingRate) forKey:@"sampleRate"];
+    [dict setValue:@(_traceSamplingRate) forKey:@"traceSamplingRate"];
     [dict setValue:@(self.enableLinkRumData) forKey:@"enableLinkRumData"];
     [dict setValue:@(self.networkTraceType) forKey:@"networkTraceType"];
     [dict setValue:@(self.enableAutoTrace) forKey:@"enableAutoTrace"];
@@ -82,12 +97,15 @@
 }
 -(NSString *)debugDescription{
     NSMutableDictionary *dict = [[self convertToDictionary] mutableCopy];
+    [dict setValue:@(self.traceSamplingRate) forKey:@"traceSamplingRate"];
     [dict setValue:[self.traceInterceptor copy] forKey:@"traceInterceptor"];
     return [NSString stringWithFormat:@"%@",dict];
 }
 @end
 @interface FTSDKConfig()
 @property (nonatomic, strong) NSMutableDictionary *sdkPkgInfo;
+@property (nonatomic, copy) NSString *metricsUrl;
+@property (nonatomic, copy) NSString *version;
 @end
 @implementation FTSDKConfig
 -(instancetype)initWithMetricsUrl:(NSString *)metricsUrl{

@@ -27,15 +27,15 @@ NS_ASSUME_NONNULL_BEGIN
 @interface FTTracer : NSObject<FTTracerProtocol>
 /// Set trace configuration
 /// - Parameters:
-///   - sampleRate: Sampling rate
+///   - traceSamplingRate: Trace sampling rate percentage in the range [0, 100]
 ///   - traceType: Link tracking type
 ///   - link: Whether to associate with rum
--(instancetype)initWithSampleRate:(int)sampleRate
+-(instancetype)initWithTraceSamplingRate:(float)traceSamplingRate
                         traceType:(NetworkTraceType)traceType
                       serviceName:(NSString *)serviceName
                   enableAutoTrace:(BOOL)trace
                 enableLinkRumData:(BOOL)link;
-- (void)updateTraceSampleRate:(int)sampleRate;
+- (void)updateTraceSamplingRate:(float)traceSamplingRate;
 #if FTSDKUNITTEST
 -(NSUInteger)getSkyWalkingSequence;
 #endif

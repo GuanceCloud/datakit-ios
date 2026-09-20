@@ -144,17 +144,17 @@ static dispatch_once_t onceToken;
 
 - (void)setTraceEnableAutoTrace:(BOOL)enableAutoTrace
               enableLinkRumData:(BOOL)enableLinkRumData
-                     sampleRate:(int)sampleRate
+              traceSamplingRate:(float)traceSamplingRate
                       traceType:(NetworkTraceType)traceType
                traceInterceptor:(TraceInterceptor)traceInterceptor
                     serviceName:(NSString *)serviceName {
     [self swizzleURLSession];
     
-    _tracer = [[FTTracer alloc] initWithSampleRate:sampleRate
-                                         traceType:(NetworkTraceType)traceType
-                                       serviceName:serviceName
-                                   enableAutoTrace:enableAutoTrace
-                                 enableLinkRumData:enableLinkRumData];
+    _tracer = [[FTTracer alloc] initWithTraceSamplingRate:traceSamplingRate
+                                                traceType:(NetworkTraceType)traceType
+                                              serviceName:serviceName
+                                          enableAutoTrace:enableAutoTrace
+                                        enableLinkRumData:enableLinkRumData];
     
     [self.interceptor setTracer:_tracer];
     self.interceptor.traceInterceptor = traceInterceptor;
@@ -173,8 +173,8 @@ static dispatch_once_t onceToken;
     self.interceptor.sessionTaskErrorFilter = sessionTaskErrorFilter;
 }
 
-- (void)updateTraceSampleRate:(int)sampleRate {
-    [_tracer updateTraceSampleRate:sampleRate];
+- (void)updateTraceSamplingRate:(float)traceSamplingRate {
+    [_tracer updateTraceSamplingRate:traceSamplingRate];
 }
 
 - (void)setRumResourceHandler:(id<FTRumResourceProtocol>)handler {

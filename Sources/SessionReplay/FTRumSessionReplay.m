@@ -74,7 +74,7 @@ static dispatch_once_t onceToken;
     return self;
 }
 - (void)startWithSessionReplayConfig:(FTSessionReplayConfig *)config{
-    if(config.sampleRate<=0&&config.sessionReplayOnErrorSampleRate<=0){
+    if(config.sessionReplaySamplingRate<=0&&config.sessionReplayOnErrorSamplingRate<=0){
         FTInnerLogWarning(@"[session-replay] skipped: both sampleRate and sessionReplayOnErrorSampleRate are disabled");
         return;
     }

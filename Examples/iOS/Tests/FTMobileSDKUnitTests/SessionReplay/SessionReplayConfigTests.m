@@ -33,6 +33,8 @@
 #import "FTFeatureDirectories.h"
 #import "FTDirectory.h"
 #import "FTPerformancePreset.h"
+#include <float.h>
+#include <math.h>
 
 @interface SessionReplayHeatmapIdentifierRegistry : NSObject<FTHeatmapIdentifierRegistry>
 @property (nonatomic, copy) NSDictionary<NSValue *, FTHeatmapIdentifier *> *identifiers;
@@ -94,6 +96,50 @@ static FTFeatureStorage *FTMakeSessionReplayFeatureStorage(NSString *name) {
     XCTAssertTrue(config.enableSwiftUI == copyConfig.enableSwiftUI);
     XCTAssertTrue(copyConfig.enableHeatmap);
     XCTAssertTrue(copyConfig.externalRecorderMode);
+}
+- (void)testSamplingRateAPICompatibility{
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wdeprecated-declarations"
+    FTSessionReplayConfig *config = [FTSessionReplayConfig new];
+    XCTAssertEqualWithAccuracy(config.sessionReplaySamplingRate, 100.0f, FLT_EPSILON);
+    XCTAssertEqualWithAccuracy(config.sessionReplayOnErrorSamplingRate, 0.0f, FLT_EPSILON);
+    config.sampleRate = 31;
+    config.sessionReplayOnErrorSampleRate = 42;
+    XCTAssertEqualWithAccuracy(config.sessionReplaySamplingRate, 31.0f, FLT_EPSILON);
+    XCTAssertEqualWithAccuracy(config.sessionReplayOnErrorSamplingRate, 42.0f, FLT_EPSILON);
+
+    config.sessionReplaySamplingRate = 0.1f;
+    config.sessionReplayOnErrorSamplingRate = 0.2f;
+    XCTAssertEqual(config.sampleRate, 0);
+    XCTAssertEqual(config.sessionReplayOnErrorSampleRate, 0);
+    config.sampleRate = 91;
+    config.sessionReplayOnErrorSampleRate = 92;
+    XCTAssertEqualWithAccuracy(config.sessionReplaySamplingRate, 91.0f, FLT_EPSILON);
+    XCTAssertEqualWithAccuracy(config.sessionReplayOnErrorSamplingRate, 92.0f, FLT_EPSILON);
+    config.sampleRate = -1;
+    config.sampleRate = 101;
+    config.sessionReplayOnErrorSampleRate = -1;
+    config.sessionReplayOnErrorSampleRate = 101;
+    XCTAssertEqualWithAccuracy(config.sessionReplaySamplingRate, 91.0f, FLT_EPSILON);
+    XCTAssertEqualWithAccuracy(config.sessionReplayOnErrorSamplingRate, 92.0f, FLT_EPSILON);
+
+    config.sessionReplaySamplingRate = 0.0f;
+    config.sessionReplaySamplingRate = NAN;
+    config.sessionReplaySamplingRate = INFINITY;
+    config.sessionReplaySamplingRate = -0.1f;
+    config.sessionReplaySamplingRate = 100.1f;
+    XCTAssertEqualWithAccuracy(config.sessionReplaySamplingRate, 0.0f, FLT_EPSILON);
+    config.sessionReplayOnErrorSamplingRate = 0.2f;
+    config.sessionReplayOnErrorSamplingRate = NAN;
+    config.sessionReplayOnErrorSamplingRate = INFINITY;
+    config.sessionReplayOnErrorSamplingRate = -0.1f;
+    config.sessionReplayOnErrorSamplingRate = 100.1f;
+    XCTAssertEqualWithAccuracy(config.sessionReplayOnErrorSamplingRate, 0.2f, FLT_EPSILON);
+
+    FTSessionReplayConfig *copy = [config copy];
+    XCTAssertEqualWithAccuracy(copy.sessionReplaySamplingRate, 0.0f, FLT_EPSILON);
+    XCTAssertEqualWithAccuracy(copy.sessionReplayOnErrorSamplingRate, 0.2f, FLT_EPSILON);
+#pragma clang diagnostic pop
 }
 - (void)testConfigDefaultHeatmapDisabled{
     FTSessionReplayConfig *config = [FTSessionReplayConfig new];
@@ -248,22 +294,28 @@ static FTFeatureStorage *FTMakeSessionReplayFeatureStorage(NSString *name) {
     XCTAssertNil(semantics);
 }
 - (void)testConfigPrivacyReflection{
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wdeprecated-declarations"
     FTSessionReplayConfig *config = [FTSessionReplayConfig new];
     config.privacy = FTSRPrivacyMask;
-    
+
+    XCTAssertEqual(config.privacy, FTSRPrivacyMask);
     XCTAssertTrue(config.imagePrivacy == FTImagePrivacyLevelMaskAll);
     XCTAssertTrue(config.touchPrivacy == FTTouchPrivacyLevelHide);
     XCTAssertTrue(config.textAndInputPrivacy == FTTextAndInputPrivacyLevelMaskAll);
-    
+
     config.privacy = FTSRPrivacyMaskUserInput;
+    XCTAssertEqual(config.privacy, FTSRPrivacyMaskUserInput);
     XCTAssertTrue(config.imagePrivacy == FTImagePrivacyLevelMaskNonBundledOnly);
     XCTAssertTrue(config.touchPrivacy == FTTouchPrivacyLevelHide);
     XCTAssertTrue(config.textAndInputPrivacy == FTTextAndInputPrivacyLevelMaskAllInputs);
-   
+
     config.privacy = FTSRPrivacyAllow;
+    XCTAssertEqual(config.privacy, FTSRPrivacyAllow);
     XCTAssertTrue(config.imagePrivacy == FTImagePrivacyLevelMaskNone);
     XCTAssertTrue(config.touchPrivacy == FTTouchPrivacyLevelShow);
     XCTAssertTrue(config.textAndInputPrivacy == FTTextAndInputPrivacyLevelMaskSensitiveInputs);
+#pragma clang diagnostic pop
 }
 
 - (void)testConfigPrivacyOverride{

@@ -22,6 +22,19 @@
 
 NS_ASSUME_NONNULL_BEGIN
 
+FOUNDATION_EXPORT NSString * const FT_R_RUM_SAMPLING_RATE;
+FOUNDATION_EXPORT NSString * const FT_R_RUM_SAMPLERATE;
+FOUNDATION_EXPORT NSString * const FT_R_RUM_SESSION_ON_ERROR_SAMPLING_RATE;
+FOUNDATION_EXPORT NSString * const FT_R_RUM_SESSION_ON_ERROR_SAMPLE_RATE;
+FOUNDATION_EXPORT NSString * const FT_R_LOG_SAMPLING_RATE;
+FOUNDATION_EXPORT NSString * const FT_R_LOG_SAMPLERATE;
+FOUNDATION_EXPORT NSString * const FT_R_TRACE_SAMPLING_RATE;
+FOUNDATION_EXPORT NSString * const FT_R_TRACE_SAMPLERATE;
+FOUNDATION_EXPORT NSString * const FT_R_SR_SAMPLING_RATE;
+FOUNDATION_EXPORT NSString * const FT_R_SR_SAMPLERATE;
+FOUNDATION_EXPORT NSString * const FT_R_SR_ON_ERROR_SAMPLING_RATE;
+FOUNDATION_EXPORT NSString * const FT_R_SR_ON_ERROR_SAMPLE_RATE;
+
 @interface FTRemoteConfigModel (Private)
 
 @property (nonatomic, copy, readonly, nullable) NSString *md5Str;
@@ -32,6 +45,8 @@ NS_ASSUME_NONNULL_BEGIN
 - (instancetype)initWithDict:(NSDictionary *)dict md5:(NSString *)md5;
 
 - (NSDictionary *)toDictionary;
+- (FTRemoteConfigModel *)modelByNormalizingSamplingWithPreviousModel:(nullable FTRemoteConfigModel *)previousModel
+                                                   includeRawContext:(BOOL)includeRawContext;
 @end
 
 NS_ASSUME_NONNULL_END

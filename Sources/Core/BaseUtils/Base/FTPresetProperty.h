@@ -51,7 +51,7 @@ NS_ASSUME_NONNULL_BEGIN
 
 - (void)setDataModifier:(nullable FTDataModifier)dataModifier lineDataModifier:(nullable FTLineDataModifier)lineDataModifier;
 
-- (void)setRUMAppID:(NSString *)appID sampleRate:(int)sampleRate sessionOnErrorSampleRate:(int)sessionOnErrorSampleRate rumGlobalContext:(nullable NSDictionary *)rumGlobalContext;
+- (void)setRUMAppID:(NSString *)appID sampleRate:(float)sampleRate sessionOnErrorSampleRate:(float)sessionOnErrorSampleRate rumGlobalContext:(nullable NSDictionary *)rumGlobalContext;
 
 -(void)setLogGlobalContext:(nullable NSDictionary *)logGlobalContext;
 

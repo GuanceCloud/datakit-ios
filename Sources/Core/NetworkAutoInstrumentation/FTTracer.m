@@ -31,7 +31,7 @@ static NSUInteger SkyWalkingSequence = 0.0;
 @property (nonatomic, strong) NSLock *lock;
 @property (nonatomic, copy) NSString *skyTraceID;
 @property (nonatomic, copy) NSString *skyParentInstance;
-@property (atomic, assign) int sampleRate;
+@property (atomic, assign) float traceSamplingRate;
 @property (nonatomic, assign) NetworkTraceType traceType;
 @property (nonatomic, copy) NSString *serviceName;
 
@@ -40,14 +40,14 @@ static NSUInteger SkyWalkingSequence = 0.0;
 @synthesize enableLinkRumData = _enableLinkRumData;
 @synthesize enableAutoTrace = _enableAutoTrace;
 
-- (instancetype)initWithSampleRate:(int)sampleRate
+- (instancetype)initWithTraceSamplingRate:(float)traceSamplingRate
                                  traceType:(NetworkTraceType)traceType
                                serviceName:(nonnull NSString *)serviceName
                            enableAutoTrace:(BOOL)trace
                          enableLinkRumData:(BOOL)link{
     self = [super init];
     if(self){
-        _sampleRate = sampleRate;
+        _traceSamplingRate = traceSamplingRate;
         _traceType = traceType;
         _enableLinkRumData = link;
         _enableAutoTrace = trace;
@@ -55,11 +55,11 @@ static NSUInteger SkyWalkingSequence = 0.0;
     }
     return self;
 }
-- (void)updateTraceSampleRate:(int)sampleRate{
-    self.sampleRate = sampleRate;
+- (void)updateTraceSamplingRate:(float)traceSamplingRate{
+    self.traceSamplingRate = traceSamplingRate;
 }
 - (NSDictionary *)networkTraceHeaderWithUrl:(NSURL *)url{
-    BOOL sampled = [FTBaseInfoHandler randomSampling:self.sampleRate];
+    BOOL sampled = [FTBaseInfoHandler randomSamplingWithRate:self.traceSamplingRate];
     switch (self.traceType) {
         case Jaeger:
             return [self getJaegerHeader:sampled handler:nil];
@@ -76,7 +76,7 @@ static NSUInteger SkyWalkingSequence = 0.0;
     }
 }
 - (NSDictionary *)networkTraceHeaderWithUrl:(NSURL *)url handler:(UnpackTraceHeaderHandler)handler{
-    BOOL sampled = [FTBaseInfoHandler randomSampling:self.sampleRate];
+    BOOL sampled = [FTBaseInfoHandler randomSamplingWithRate:self.traceSamplingRate];
     switch (self.traceType) {
         case Jaeger:
             return [self getJaegerHeader:sampled handler:handler];

@@ -3062,6 +3062,16 @@
     XCTAssertNil(model.fields[FT_KEY_BACKGROUND_CRASH_FREE_DURATION]);
 }
 
+- (void)testFractionalSamplingRatesArePreservedInSessionFields {
+    FTRUMSessionState *sessionState = [[FTRUMSessionState alloc] init];
+    sessionState.sampleRate = 0.1f;
+    sessionState.sessionOnErrorSampleRate = 12.5f;
+
+    NSDictionary *fields = [sessionState sessionFields];
+    XCTAssertEqualWithAccuracy([fields[FT_RUM_SESSION_SAMPLE_RATE] floatValue], 0.1f, 0.00001f);
+    XCTAssertEqualWithAccuracy([fields[FT_RUM_SESSION_ON_ERROR_SAMPLE_RATE] floatValue], 12.5f, 0.00001f);
+}
+
 #pragma mark ========== Mock Data ==========
 
 - (FTCrashReportWrapper *)mockCrashReportWrapper{

@@ -54,7 +54,7 @@ static NSString * const FTRUMFallbackViewReferrerRoot = @"root";
         self.viewHandlers = [NSMutableArray new];
         self.context = [[FTRUMContext alloc] initWithSampleRate:dependencies.sampleRate sessionOnErrorSampleRate:dependencies.sessionOnErrorSampleRate appId:dependencies.appId];
         self.appState = FTAppStateStartUp;
-        self.sampling = [FTBaseInfoHandler randomSampling:dependencies.sampleRate];
+        self.sampling = [FTBaseInfoHandler randomSamplingWithRate:dependencies.sampleRate];
     }
     return  self;
 }
@@ -63,7 +63,7 @@ static NSString * const FTRUMFallbackViewReferrerRoot = @"root";
     if (self) {
         self.assistant = self;
         self.rumDependencies = expiredSession.rumDependencies;
-        self.sampling = [FTBaseInfoHandler randomSampling:expiredSession.rumDependencies.sampleRate];
+        self.sampling = [FTBaseInfoHandler randomSamplingWithRate:expiredSession.rumDependencies.sampleRate];
         self.sessionStartTime = time;
         self.lastInteractionTime = self.sessionStartTime;
         self.context = [[FTRUMContext alloc]initWithSampleRate:expiredSession.rumDependencies.sampleRate sessionOnErrorSampleRate:expiredSession.rumDependencies.sessionOnErrorSampleRate appId:self.rumDependencies.appId];
@@ -97,8 +97,8 @@ static NSString * const FTRUMFallbackViewReferrerRoot = @"root";
     [self updateWriterCacheWriterState:NO];
     FTRUMSessionState *sessionState = self.context.sessionState;
     if (!sampling) {
-        CGFloat errorSampleRate = self.rumDependencies.sessionOnErrorSampleRate;
-        BOOL sessionOnErrorSamplingResult = [FTBaseInfoHandler randomSampling:errorSampleRate];
+        float errorSampleRate = self.rumDependencies.sessionOnErrorSampleRate;
+        BOOL sessionOnErrorSamplingResult = [FTBaseInfoHandler randomSamplingWithRate:errorSampleRate];
         self.sessionOnErrorSampling = sessionOnErrorSamplingResult;
         
         if (sessionOnErrorSamplingResult) {

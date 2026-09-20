@@ -37,10 +37,10 @@ NS_ASSUME_NONNULL_BEGIN
 /// Sleep interval, in milliseconds, between synchronization requests.
 @property (nonatomic, strong, nullable) NSNumber *syncSleepTime;
 
-/// RUM sample rate in the range `[0, 1]`, applied to View, Action, LongTask, and Error data in the same session.
-@property (nonatomic, strong, nullable) NSNumber *rumSampleRate;
-/// On-error RUM compensation sample rate used when a session was not selected by `rumSampleRate`.
-@property (nonatomic, strong, nullable) NSNumber *rumSessionOnErrorSampleRate;
+/// RUM session sample rate in percent, in the range `[0, 100]`.
+@property (nonatomic, strong, nullable) NSNumber *sessionSamplingRate;
+/// On-error RUM compensation sample rate in percent, in the range `[0, 100]`.
+@property (nonatomic, strong, nullable) NSNumber *sessionOnErrorSamplingRate;
 /// Whether native user actions should be automatically tracked.
 @property (nonatomic, strong, nullable) NSNumber *rumEnableTraceUserAction;
 /// Whether native views should be automatically tracked.
@@ -64,8 +64,8 @@ NS_ASSUME_NONNULL_BEGIN
 /// WebView host allowlist for data tracking; nil allows all hosts and an empty array allows none.
 @property (nonatomic, copy, nullable) NSArray *rumAllowWebViewHost;
 
-/// Trace sample rate in the range `[0, 1]`.
-@property (nonatomic, strong, nullable) NSNumber *traceSampleRate;
+/// Trace sample rate in percent, in the range `[0, 100]`.
+@property (nonatomic, strong, nullable) NSNumber *traceSamplingRate;
 /// Whether native network auto-tracing is enabled.
 @property (nonatomic, strong, nullable) NSNumber *traceEnableAutoTrace;
 /// Whether NSURLConnection automatic Trace injection is enabled.
@@ -73,8 +73,8 @@ NS_ASSUME_NONNULL_BEGIN
 /// Trace propagation type, such as `ddTrace`, `zipkinMultiHeader`, `zipkinSingleHeader`, `traceparent`, `skywalking`, or `jaeger`.
 @property (nonatomic, copy, nullable) NSString *traceType;
 
-/// Log sample rate in the range `[0, 1]`.
-@property (nonatomic, strong, nullable) NSNumber *logSampleRate;
+/// Log sample rate in percent, in the range `[0, 100]`.
+@property (nonatomic, strong, nullable) NSNumber *logSamplingRate;
 /// Log level filter list, such as `info` and `warn`.
 @property (nonatomic, copy, nullable) NSArray *logLevelFilters;
 /// Whether custom log upload is enabled.
@@ -82,10 +82,27 @@ NS_ASSUME_NONNULL_BEGIN
 /// Whether Browser Logs SDK events from WebViews are collected.
 @property (nonatomic, strong, nullable) NSNumber *logEnableWebViewLog;
 
-/// Session Replay sample rate in the range `[0, 1]`.
-@property (nonatomic, strong, nullable) NSNumber *sessionReplaySampleRate;
-/// On-error Session Replay compensation sample rate used when a session was not selected by `sessionReplaySampleRate`.
-@property (nonatomic, strong, nullable) NSNumber *sessionReplayOnErrorSampleRate;
+/// Session Replay sample rate in percent, in the range `[0, 100]`.
+@property (nonatomic, strong, nullable) NSNumber *sessionReplaySamplingRate;
+/// On-error Session Replay compensation sample rate in percent, in the range `[0, 100]`.
+@property (nonatomic, strong, nullable) NSNumber *sessionReplayOnErrorSamplingRate;
+@end
+
+/// Deprecated Remote Configuration sampling fields retained for backward compatibility.
+@interface FTRemoteConfigModel (Deprecated)
+
+/// Deprecated legacy RUM sample rate in the range `[0, 1]`.
+@property (nonatomic, strong, nullable) NSNumber *rumSampleRate DEPRECATED_MSG_ATTRIBUTE("Use sessionSamplingRate.");
+/// Deprecated legacy on-error RUM compensation sample rate in the range `[0, 1]`.
+@property (nonatomic, strong, nullable) NSNumber *rumSessionOnErrorSampleRate DEPRECATED_MSG_ATTRIBUTE("Use sessionOnErrorSamplingRate.");
+/// Deprecated legacy Trace sample rate in the range `[0, 1]`.
+@property (nonatomic, strong, nullable) NSNumber *traceSampleRate DEPRECATED_MSG_ATTRIBUTE("Use traceSamplingRate.");
+/// Deprecated legacy Log sample rate in the range `[0, 1]`.
+@property (nonatomic, strong, nullable) NSNumber *logSampleRate DEPRECATED_MSG_ATTRIBUTE("Use logSamplingRate.");
+/// Deprecated legacy Session Replay sample rate in the range `[0, 1]`.
+@property (nonatomic, strong, nullable) NSNumber *sessionReplaySampleRate DEPRECATED_MSG_ATTRIBUTE("Use sessionReplaySamplingRate.");
+/// Deprecated legacy on-error Session Replay compensation sample rate in the range `[0, 1]`.
+@property (nonatomic, strong, nullable) NSNumber *sessionReplayOnErrorSampleRate DEPRECATED_MSG_ATTRIBUTE("Use sessionReplayOnErrorSamplingRate.");
 
 @end
 

@@ -173,8 +173,8 @@ static FTTrackingConsent FTTrackingConsentFromSampleState(FTRecordingSampleState
 
 - (void)updateSamplingStatusWithRUMContext:(NSDictionary *)context{
     BOOL isErrorSession = [context[FT_RUM_KEY_SAMPLED_FOR_ERROR_SESSION] boolValue];
-    BOOL isNormalSampled = [FTBaseInfoHandler randomSampling:self.config.sampleRate];
-    BOOL isErrorSampled = isNormalSampled ? NO : [FTBaseInfoHandler randomSampling:self.config.sessionReplayOnErrorSampleRate];
+    BOOL isNormalSampled = [FTBaseInfoHandler randomSamplingWithRate:self.config.sessionReplaySamplingRate];
+    BOOL isErrorSampled = isNormalSampled ? NO : [FTBaseInfoHandler randomSamplingWithRate:self.config.sessionReplayOnErrorSamplingRate];
 
     BOOL needSampleForErrorReplay = (isErrorSession && isNormalSampled) || isErrorSampled;
 
@@ -252,14 +252,14 @@ static FTTrackingConsent FTTrackingConsentFromSampleState(FTRecordingSampleState
     FTRecordingSampleState sampleState = self.sampleState;
 
     if (sampleState != FTRecordingSampleStateNone) {
-        if (self.config.sampleRate == 0 && self.config.sessionReplayOnErrorSampleRate == 0) {
+        if (self.config.sessionReplaySamplingRate == 0 && self.config.sessionReplayOnErrorSamplingRate == 0) {
             needUpdate = YES;
         }
-        if (sampleState == FTRecordingSampleStateError && self.config.sampleRate == 100) {
+        if (sampleState == FTRecordingSampleStateError && self.config.sessionReplaySamplingRate == 100) {
             needUpdate = YES;
         }
     } else {
-        if (self.config.sampleRate == 100 || self.config.sessionReplayOnErrorSampleRate == 100) {
+        if (self.config.sessionReplaySamplingRate == 100 || self.config.sessionReplayOnErrorSamplingRate == 100) {
             needUpdate = YES;
         }
     }
@@ -275,8 +275,8 @@ static FTTrackingConsent FTTrackingConsentFromSampleState(FTRecordingSampleState
     BOOL hasReplay = self.recordingEnabled && sampleState != FTRecordingSampleStateNone;
     [[FTModuleManager sharedInstance] postMessageWithKey:FTMessageKeySessionHasReplay message:@{
         FT_SESSION_HAS_REPLAY:@(hasReplay),
-        FT_RUM_SESSION_REPLAY_SAMPLE_RATE:@(self.config.sampleRate),
-        FT_RUM_SESSION_REPLAY_ON_ERROR_SAMPLE_RATE:@(self.config.sessionReplayOnErrorSampleRate),
+        FT_RUM_SESSION_REPLAY_SAMPLE_RATE:@(self.config.sessionReplaySamplingRate),
+        FT_RUM_SESSION_REPLAY_ON_ERROR_SAMPLE_RATE:@(self.config.sessionReplayOnErrorSamplingRate),
         FT_RUM_KEY_SAMPLED_FOR_ERROR_REPLAY:@(sampleState == FTRecordingSampleStateError)
     }];
 }
