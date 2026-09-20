@@ -22,6 +22,7 @@ NS_ASSUME_NONNULL_BEGIN
 @class FTRemoteConfigModel;
 @interface FTSessionReplayConfig ()
 @property (nonatomic, strong) NSArray<id <FTSRWireframesRecorder>>*additionalNodeRecorders;
+@property (nonatomic, assign) BOOL externalRecorderMode;
 -(void)mergeWithRemoteConfigModel:(FTRemoteConfigModel *)model;
 @end
 

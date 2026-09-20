@@ -143,6 +143,8 @@
 		17018D972F50253200688324 /* FTTLV.h in Headers */ = {isa = PBXBuildFile; fileRef = 17018CE82F50253200688324 /* FTTLV.h */; };
 		17018D982F50253200688324 /* FTTmpCacheManager.h in Headers */ = {isa = PBXBuildFile; fileRef = 17018CD72F50253200688324 /* FTTmpCacheManager.h */; };
 		17018D992F50253200688324 /* FTRumSessionReplay.h in Headers */ = {isa = PBXBuildFile; fileRef = 17018C6D2F50253200688324 /* FTRumSessionReplay.h */; settings = {ATTRIBUTES = (Public, ); }; };
+		A1F0A2032FEE000100A0A001 /* FTRumSessionReplay+ExternalRecorder.h in Headers */ = {isa = PBXBuildFile; fileRef = A1F0A2012FEE000100A0A001 /* FTRumSessionReplay+ExternalRecorder.h */; settings = {ATTRIBUTES = (Public, ); }; };
+		A1F0A2042FEE000100A0A001 /* FTSessionReplayConfig+ExternalRecorder.h in Headers */ = {isa = PBXBuildFile; fileRef = A1F0A2022FEE000100A0A001 /* FTSessionReplayConfig+ExternalRecorder.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		17018D9A2F50253200688324 /* FTUploadConditions.h in Headers */ = {isa = PBXBuildFile; fileRef = 17018CFD2F50253200688324 /* FTUploadConditions.h */; };
 		17018D9B2F50253200688324 /* FTViewTreeRecordingContext.h in Headers */ = {isa = PBXBuildFile; fileRef = 17018C992F50253200688324 /* FTViewTreeRecordingContext.h */; };
 		17018D9C2F50253200688324 /* FTFeatureRequestBuilder.h in Headers */ = {isa = PBXBuildFile; fileRef = 17018CED2F50253200688324 /* FTFeatureRequestBuilder.h */; };
@@ -1018,6 +1020,8 @@
 		17018C6A2F50253200688324 /* FTSessionReplayWireframesBuilder.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = FTSessionReplayWireframesBuilder.m; sourceTree = "<group>"; };
 		17018C6D2F50253200688324 /* FTRumSessionReplay.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = FTRumSessionReplay.h; sourceTree = "<group>"; };
 		17018C6E2F50253200688324 /* FTSessionReplayConfig.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = FTSessionReplayConfig.h; sourceTree = "<group>"; };
+		A1F0A2012FEE000100A0A001 /* FTRumSessionReplay+ExternalRecorder.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = "FTRumSessionReplay+ExternalRecorder.h"; sourceTree = "<group>"; };
+		A1F0A2022FEE000100A0A001 /* FTSessionReplayConfig+ExternalRecorder.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = "FTSessionReplayConfig+ExternalRecorder.h"; sourceTree = "<group>"; };
 		17018C6F2F50253200688324 /* FTSessionReplayPrivacyOverrides.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = FTSessionReplayPrivacyOverrides.h; sourceTree = "<group>"; };
 		17018C702F50253200688324 /* UIView+FTSRPrivacy.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = "UIView+FTSRPrivacy.h"; sourceTree = "<group>"; };
 		17018C722F50253200688324 /* FTUIActivityIndicatorRecorder.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = FTUIActivityIndicatorRecorder.h; sourceTree = "<group>"; };
@@ -1772,7 +1776,9 @@
 				A1F0B0B02F61000100A0A001 /* GuanceSessionReplay.h */,
 				A1F0B0A02F61000100A0A001 /* FTSessionReplay.h */,
 				17018C6D2F50253200688324 /* FTRumSessionReplay.h */,
+				A1F0A2012FEE000100A0A001 /* FTRumSessionReplay+ExternalRecorder.h */,
 				17018C6E2F50253200688324 /* FTSessionReplayConfig.h */,
+				A1F0A2022FEE000100A0A001 /* FTSessionReplayConfig+ExternalRecorder.h */,
 				17018C6F2F50253200688324 /* FTSessionReplayPrivacyOverrides.h */,
 				A1F0F0022FC1000100A0A001 /* NSView+FTSRPrivacy.h */,
 				17018C702F50253200688324 /* UIView+FTSRPrivacy.h */,
@@ -3451,6 +3457,8 @@
 				17018D972F50253200688324 /* FTTLV.h in Headers */,
 				17018D982F50253200688324 /* FTTmpCacheManager.h in Headers */,
 				17018D992F50253200688324 /* FTRumSessionReplay.h in Headers */,
+				A1F0A2032FEE000100A0A001 /* FTRumSessionReplay+ExternalRecorder.h in Headers */,
+				A1F0A2042FEE000100A0A001 /* FTSessionReplayConfig+ExternalRecorder.h in Headers */,
 				17018D9A2F50253200688324 /* FTUploadConditions.h in Headers */,
 				A1F0C0032FAB000100A0A001 /* FTUploadStatus.h in Headers */,
 				17018D9B2F50253200688324 /* FTViewTreeRecordingContext.h in Headers */,

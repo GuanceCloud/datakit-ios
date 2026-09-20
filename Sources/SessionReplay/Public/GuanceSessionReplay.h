@@ -25,6 +25,8 @@ FOUNDATION_EXPORT double GuanceSessionReplayVersionNumber;
 FOUNDATION_EXPORT const unsigned char GuanceSessionReplayVersionString[];
 
 #import "FTSessionReplay.h"
+#import "FTRumSessionReplay+ExternalRecorder.h"
+#import "FTSessionReplayConfig+ExternalRecorder.h"
 #import "NSView+FTSRPrivacy.h"
 #import "UIView+FTSRPrivacy.h"
 

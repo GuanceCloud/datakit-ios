@@ -20,6 +20,7 @@
 
 #import <XCTest/XCTest.h>
 #import "FTSessionReplayConfig.h"
+#import "FTSessionReplayConfig+ExternalRecorder.h"
 #import "FTSRViewID.h"
 #import "FTSRWireframe.h"
 #import "FTUnsupportedViewRecorder.h"
