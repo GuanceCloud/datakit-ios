@@ -28,11 +28,13 @@ SPM_SCHEMES=(
   "GuanceSDK"
   "GuanceWidgetExtension"
   "GuanceSessionReplay"
+  "GuanceElectronWebView"
 )
 SPM_SCHEME_PLATFORMS=(
   "ios,macos,tvos"
   "ios"
   "ios,macos"
+  "macos"
 )
 
 RUN_COCOAPODS=1
@@ -324,6 +326,7 @@ prepare_spm_validation_dir() {
 
   cp "${REPO_ROOT}/Package.swift" "${SPM_VALIDATION_DIR}/Package.swift"
   ln -s "${REPO_ROOT}/Sources" "${SPM_VALIDATION_DIR}/Sources"
+  ln -s "${REPO_ROOT}/Tests" "${SPM_VALIDATION_DIR}/Tests"
 }
 
 build_swift_package_scheme() {

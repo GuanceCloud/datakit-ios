@@ -14,4 +14,6 @@
 //
 
 @_exported import _GuanceSDKObjC
+#if canImport(UIKit)
 @_exported import GuanceSDKSwiftUI
+#endif

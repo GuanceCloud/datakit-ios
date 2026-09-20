@@ -66,7 +66,6 @@
 #if !TARGET_OS_TV
 #import "FTWebViewJavascriptBridgeBase.h"
 #import "FTWKWebViewHandler.h"
-#import "FTWKWebViewHandler+Private.h"
 #import "FTWKWebViewJavascriptBridge.h"
 #endif
 #import "FTDataWriterWorker.h"

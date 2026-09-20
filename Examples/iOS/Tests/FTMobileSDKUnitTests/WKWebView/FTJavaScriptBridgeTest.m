@@ -48,7 +48,6 @@
 @property (nonatomic, readwrite, strong) NSSet<NSNumber *> *hiddenSlotIds;
 
 - (id)getWebViewBridge:(WKWebView *)webView;
-- (void)dealReceiveScriptMessage:(id)message slotId:(int64_t)slotID info:(FTBindInfo *)info;
 - (void)removeAllWebViewBridges;
 - (void)takeSubsequentFullSnapshot;
 @end
@@ -417,32 +416,32 @@
     } };
     NSDictionary *sessionReplay = @{ @"name": @"session_replay", @"data": @{} };
 
-    [handler dealReceiveScriptMessage:log slotId:manualWebView.hash info:manualInfo];
-    [handler dealReceiveScriptMessage:rum slotId:manualWebView.hash info:manualInfo];
-    [handler dealReceiveScriptMessage:sessionReplay slotId:manualWebView.hash info:manualInfo];
+    [handler processWebViewBridgeEvent:log slotId:manualWebView.hash bindInfo:manualInfo];
+    [handler processWebViewBridgeEvent:rum slotId:manualWebView.hash bindInfo:manualInfo];
+    [handler processWebViewBridgeEvent:sessionReplay slotId:manualWebView.hash bindInfo:manualInfo];
     [moduleManager postMessageWithKey:@"test_barrier" message:@{} sync:YES];
     XCTAssertEqual(delegate.logCount, 0U);
     XCTAssertEqual(delegate.rumCount, 1U);
     XCTAssertEqual(delegate.sessionReplayCount, 1U);
 
     [handler startWithEnableWebViewLog:YES logDelegate:delegate];
-    [handler dealReceiveScriptMessage:log slotId:manualWebView.hash info:manualInfo];
+    [handler processWebViewBridgeEvent:log slotId:manualWebView.hash bindInfo:manualInfo];
     XCTAssertEqual(delegate.logCount, 1U);
     XCTAssertTrue(delegate.linkToNativeRum);
     [handler startWithEnableWebViewLog:NO logDelegate:delegate];
 
-    [handler dealReceiveScriptMessage:log slotId:automaticWebView.hash info:automaticInfo];
-    [handler dealReceiveScriptMessage:rum slotId:automaticWebView.hash info:automaticInfo];
-    [handler dealReceiveScriptMessage:sessionReplay slotId:automaticWebView.hash info:automaticInfo];
+    [handler processWebViewBridgeEvent:log slotId:automaticWebView.hash bindInfo:automaticInfo];
+    [handler processWebViewBridgeEvent:rum slotId:automaticWebView.hash bindInfo:automaticInfo];
+    [handler processWebViewBridgeEvent:sessionReplay slotId:automaticWebView.hash bindInfo:automaticInfo];
     [moduleManager postMessageWithKey:@"test_barrier" message:@{} sync:YES];
     XCTAssertEqual(delegate.logCount, 1U);
     XCTAssertEqual(delegate.rumCount, 1U);
     XCTAssertEqual(delegate.sessionReplayCount, 1U);
 
     [handler disableWebView:manualWebView];
-    [handler dealReceiveScriptMessage:log slotId:manualWebView.hash info:manualInfo];
-    [handler dealReceiveScriptMessage:rum slotId:manualWebView.hash info:manualInfo];
-    [handler dealReceiveScriptMessage:sessionReplay slotId:manualWebView.hash info:manualInfo];
+    [handler processWebViewBridgeEvent:log slotId:manualWebView.hash bindInfo:manualInfo];
+    [handler processWebViewBridgeEvent:rum slotId:manualWebView.hash bindInfo:manualInfo];
+    [handler processWebViewBridgeEvent:sessionReplay slotId:manualWebView.hash bindInfo:manualInfo];
     [moduleManager postMessageWithKey:@"test_barrier" message:@{} sync:YES];
     XCTAssertEqual(delegate.logCount, 1U);
     XCTAssertEqual(delegate.rumCount, 1U);

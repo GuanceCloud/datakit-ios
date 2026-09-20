@@ -1,7 +1,7 @@
 Pod::Spec.new do |s|
 
 	s.name         = "GuanceSDK"
-	s.version      = "1.6.8-alpha.5"
+	s.version      = "1.6.8-alpha.7"
 	s.summary      = "Guance Cloud iOS Data Collection SDK"
 	#s.description  = ""
 	s.homepage     = "https://github.com/GuanceCloud/datakit-ios.git"
@@ -140,5 +140,17 @@ Pod::Spec.new do |s|
 		sr.ios.deployment_target = '15.0'
 		sr.osx.deployment_target = '12.0'
 		sr.dependency "#{s.name}/SessionReplay"
+	end
+
+	s.subspec 'ElectronWebView' do |electron|
+		electron.platform = :osx, '12.0'
+		electron.public_header_files = 'Sources/ElectronWebView/Public/*.h'
+		electron.source_files = 'Sources/ElectronWebView/**/*{.h,.m}'
+		electron.dependency 'GuanceSDK/Core'
+		electron.dependency 'GuanceSDK/SessionReplay'
+		electron.pod_target_xcconfig = {
+			'HEADER_SEARCH_PATHS' => header_search_paths,
+			'GCC_PREPROCESSOR_DEFINITIONS' => '$(inherited) GUANCE_COCOAPODS=1'
+		}
 	end
 end
