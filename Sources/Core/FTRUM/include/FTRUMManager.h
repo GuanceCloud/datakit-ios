@@ -38,7 +38,7 @@ FOUNDATION_EXPORT NSString *FTStringFromAppState(FTAppState state);
 
 #pragma mark - init -
 -(instancetype)initWithRumDependencies:(FTRUMDependencies *)dependencies;
--(void)updateSampleRate:(int)sampleRate sessionOnErrorSampleRate:(int)sessionOnErrorSampleRate;
+-(void)updateSampleRate:(float)sampleRate sessionOnErrorSampleRate:(float)sessionOnErrorSampleRate;
 #pragma mark - resource -
 /// HTTP request start
 ///

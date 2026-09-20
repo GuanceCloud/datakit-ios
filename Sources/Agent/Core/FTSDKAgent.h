@@ -64,9 +64,6 @@ NS_ASSUME_NONNULL_BEGIN
 ///   - loggerConfigOptions: logger configuration items.
 - (void)startLoggerWithConfigOptions:(FTLoggerConfig *)loggerConfigOptions;
 
-/// Set filter Resource domain
-/// - Parameter handler: Determine whether to collect callback, returns YES to collect, NO to filter out
-- (void)isIntakeUrl:(BOOL(^)(NSURL *url))handler DEPRECATED_MSG_ATTRIBUTE("Deprecated, please set `resourceUrlHandler` when configuring FTRumConfig as replacement");
 /// Configure Trace Config to enable Trace functionality
 ///
 /// - Parameters:
@@ -175,6 +172,10 @@ NS_ASSUME_NONNULL_BEGIN
 + (void)setDatawayURL:(NSString *)url clientToken:(NSString *)token;
 
 #pragma mark ========== DEPRECATED ==========
+/// Set filter Resource domain
+/// - Parameter handler: Determine whether to collect callback, returns YES to collect, NO to filter out
+- (void)isIntakeUrl:(BOOL(^)(NSURL *url))handler DEPRECATED_MSG_ATTRIBUTE("Deprecated, please set `resourceUrlHandler` when configuring FTRumConfig as replacement");
+
 /// Trigger request to get remote configuration environment variables
 /// - Parameters:
 ///   - miniUpdateInterval: minimum time interval since last request

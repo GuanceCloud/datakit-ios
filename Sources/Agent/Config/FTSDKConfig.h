@@ -77,10 +77,8 @@ typedef FTTraceContext*_Nullable(^FTTraceInterceptor)(NSURLRequest *_Nonnull req
 @interface FTTraceConfig : NSObject
 /// Disable new initialization
 + (instancetype)new NS_UNAVAILABLE;
-/// Sampling configuration, property values: 0 to 100, 100 means 100% collection, no data sample compression.
-@property (nonatomic, assign) int sampleRate;
-/// Deprecated. Use `sampleRate`.
-@property (nonatomic, assign) int samplerate DEPRECATED_MSG_ATTRIBUTE("Use sampleRate.");
+/// Trace sampling rate in percent. Values range from 0 to 100 and may contain a fractional part. Default: 100.
+@property (nonatomic, assign) float traceSamplingRate;
 /// Set network request information collection to use link tracing type, default is DDtrace
 @property (nonatomic, assign) FTNetworkTraceType networkTraceType;
 /// Support custom trace through URLRequest, after confirming interception, returns TraceContext, returns nil if not intercepted
@@ -96,12 +94,18 @@ typedef FTTraceContext*_Nullable(^FTTraceInterceptor)(NSURLRequest *_Nonnull req
 @property (nonatomic, assign) BOOL enableAutoTraceURLConnection;
 @end
 
+/// Deprecated Trace configuration APIs retained for backward compatibility.
+@interface FTTraceConfig (Deprecated)
+
+/// Deprecated. Use `traceSamplingRate`. Setting this property validates and updates `traceSamplingRate`; reading it returns an integer-percent projection.
+@property (nonatomic, assign) int sampleRate DEPRECATED_MSG_ATTRIBUTE("Use traceSamplingRate.");
+/// Deprecated. Use `traceSamplingRate`. Setting this property validates and updates `traceSamplingRate`; reading it returns an integer-percent projection.
+@property (nonatomic, assign) int samplerate DEPRECATED_MSG_ATTRIBUTE("Use traceSamplingRate.");
+
+@end
+
 /// SDK basic configuration items
 @interface FTSDKConfig : NSObject
-/// Designated initializer, set metricsUrl
-/// - Parameter metricsUrl: Data reporting address
-- (instancetype)initWithMetricsUrl:(NSString *)metricsUrl DEPRECATED_MSG_ATTRIBUTE("Deprecated, please use -initWithDatakitUrl: instead");
-
 /// Local environment deployment, set datakitUrl
 /// - Parameter datakitUrl: datakit data reporting address
 - (instancetype)initWithDatakitUrl:(NSString *)datakitUrl;
@@ -111,8 +115,6 @@ typedef FTTraceContext*_Nullable(^FTTraceInterceptor)(NSURLRequest *_Nonnull req
 /// - Parameter clientToken: dataway token
 - (instancetype)initWithDatawayUrl:(NSString *)datawayUrl clientToken:(NSString *)clientToken;
 
-/// Data reporting address
-@property (nonatomic, copy) NSString *metricsUrl DEPRECATED_MSG_ATTRIBUTE("Deprecated, please use datakitUrl instead");
 /// Data reporting datakit address
 @property (nonatomic, copy) NSString *datakitUrl;
 /// Data reporting dataway address
@@ -123,8 +125,6 @@ typedef FTTraceContext*_Nullable(^FTTraceInterceptor)(NSURLRequest *_Nonnull req
 @property (nonatomic, copy) NSString *env;
 /// Set whether to allow SDK to print Debug logs.
 @property (nonatomic, assign) BOOL enableSDKDebugLog;
-/// Application version number. Default `CFBundleShortVersionString` value
-@property (nonatomic, copy) NSString *version DEPRECATED_MSG_ATTRIBUTE("Deprecated, version will uniformly use `CFBundleShortVersionString` value");
 /// Business or service name, default: df_rum_ios
 @property (nonatomic, copy) NSString *service;
 /// Whether data is automatically synchronized and uploaded, default: YES
@@ -190,6 +190,20 @@ typedef FTTraceContext*_Nullable(^FTTraceInterceptor)(NSURLRequest *_Nonnull req
 /// Set syncPageSize based on provided FTSyncPageSize type
 /// - Parameter pageSize: Data synchronization size
 - (void)setSyncPageSizeWithType:(FTSyncPageSize)pageSize;
+
+@end
+
+
+/// Deprecated SDK configuration APIs retained for backward compatibility.
+@interface FTSDKConfig (Deprecated)
+
+/// Designated initializer, set metricsUrl
+/// - Parameter metricsUrl: Data reporting address
+- (instancetype)initWithMetricsUrl:(NSString *)metricsUrl DEPRECATED_MSG_ATTRIBUTE("Deprecated, please use -initWithDatakitUrl: instead");
+/// Data reporting address
+@property (nonatomic, copy) NSString *metricsUrl DEPRECATED_MSG_ATTRIBUTE("Deprecated, please use datakitUrl instead");
+/// Application version number. Default `CFBundleShortVersionString` value
+@property (nonatomic, copy) NSString *version DEPRECATED_MSG_ATTRIBUTE("Deprecated, version will uniformly use `CFBundleShortVersionString` value");
 
 @end
 

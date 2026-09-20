@@ -103,7 +103,8 @@ static FTExtensionManager *sharedInstance = nil;
     FTRUMDependencies *dependencies = [[FTRUMDependencies alloc]init];
     dependencies.writer = self;
     dependencies.errorMonitorInfoWrapper = errorInfoWrapper;
-    dependencies.sampleRate = rumConfigOptions.sampleRate;
+    dependencies.sampleRate = rumConfigOptions.sessionSamplingRate;
+    dependencies.sessionOnErrorSampleRate = rumConfigOptions.sessionOnErrorSamplingRate;
     self.rumManager = [[FTRUMManager alloc] initWithRumDependencies:dependencies];
     self.rumManager.appState = FTAppStateUnknown;
     id <FTRumDatasProtocol> rum = self.rumManager;
@@ -120,7 +121,7 @@ static FTExtensionManager *sharedInstance = nil;
 }
 
 - (void)startTraceWithConfigOptions:(FTTraceConfig *)traceConfigOptions serviceName:(NSString *)serviceName{
-    [[FTURLSessionInstrumentation sharedInstance] setTraceEnableAutoTrace:traceConfigOptions.enableAutoTrace enableLinkRumData:traceConfigOptions.enableLinkRumData sampleRate:traceConfigOptions.sampleRate traceType:(NetworkTraceType)traceConfigOptions.networkTraceType traceInterceptor:traceConfigOptions.traceInterceptor serviceName:serviceName];
+    [[FTURLSessionInstrumentation sharedInstance] setTraceEnableAutoTrace:traceConfigOptions.enableAutoTrace enableLinkRumData:traceConfigOptions.enableLinkRumData traceSamplingRate:traceConfigOptions.traceSamplingRate traceType:(NetworkTraceType)traceConfigOptions.networkTraceType traceInterceptor:traceConfigOptions.traceInterceptor serviceName:serviceName];
     [FTExternalDataManager sharedManager].resourceDelegate = [FTURLSessionInstrumentation sharedInstance].externalResourceHandler;
 
 }

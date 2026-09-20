@@ -46,10 +46,8 @@ NS_ASSUME_NONNULL_BEGIN
 + (instancetype)new NS_UNAVAILABLE;
 /// Log discard strategy
 @property (nonatomic, assign) FTLogCacheDiscard  discardType;
-/// Sampling configuration, property values: 0 to 100, 100 means 100% collection, no data sample compression.
-@property (nonatomic, assign) int sampleRate;
-/// Deprecated. Use `sampleRate`.
-@property (nonatomic, assign) int samplerate DEPRECATED_MSG_ATTRIBUTE("Use sampleRate.");
+/// Log sampling rate in percent. Values range from 0 to 100 and may contain a fractional part. Default: 100.
+@property (nonatomic, assign) float logSamplingRate;
 /// Whether to associate logger data with rum
 @property (nonatomic, assign) BOOL enableLinkRumData;
 /// Whether to upload custom logs
@@ -69,6 +67,16 @@ NS_ASSUME_NONNULL_BEGIN
 @property (nonatomic, copy) NSArray *logLevelFilter;
 /// Logger global tag
 @property (nonatomic, copy) NSDictionary<NSString*,NSString*> *globalContext;
+@end
+
+/// Deprecated Logger configuration APIs retained for backward compatibility.
+@interface FTLoggerConfig (Deprecated)
+
+/// Deprecated. Use `logSamplingRate`. Setting this property validates and updates `logSamplingRate`; reading it returns an integer-percent projection.
+@property (nonatomic, assign) int sampleRate DEPRECATED_MSG_ATTRIBUTE("Use logSamplingRate.");
+/// Deprecated. Use `logSamplingRate`. Setting this property validates and updates `logSamplingRate`; reading it returns an integer-percent projection.
+@property (nonatomic, assign) int samplerate DEPRECATED_MSG_ATTRIBUTE("Use logSamplingRate.");
+
 @end
 
 NS_ASSUME_NONNULL_END

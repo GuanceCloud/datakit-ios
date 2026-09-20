@@ -22,20 +22,34 @@
 #import "FTConstants.h"
 #import "FTJSONUtil.h"
 #import "FTInnerLog.h"
+#import "FTBaseInfoHandler.h"
 #import "NSDictionary+FTCopyProperties.h"
 
 @implementation FTLoggerConfig
 - (int)sampleRate {
-    return _samplerate;
+    return (int)_logSamplingRate;
 }
 - (void)setSampleRate:(int)sampleRate {
-    _samplerate = sampleRate;
+    self.logSamplingRate = (float)sampleRate;
+}
+- (int)samplerate {
+    return (int)_logSamplingRate;
+}
+- (void)setSamplerate:(int)samplerate {
+    self.logSamplingRate = (float)samplerate;
+}
+- (void)setLogSamplingRate:(float)logSamplingRate {
+    if (![FTBaseInfoHandler isValidSamplingRate:logSamplingRate]) {
+        FTInnerLogWarning(@"[sampling] Ignore invalid logSamplingRate: %g", logSamplingRate);
+        return;
+    }
+    _logSamplingRate = logSamplingRate;
 }
 -(instancetype)init{
     self = [super init];
     if (self) {
         _discardType = FTDiscard;
-        _samplerate = 100;
+        _logSamplingRate = 100.0f;
         _enableLinkRumData = NO;
         _enableCustomLog = NO;
         _enableWebViewLog = NO;
@@ -45,7 +59,7 @@
 }
 - (instancetype)copyWithZone:(NSZone *)zone {
     FTLoggerConfig *options = [[[self class] allocWithZone:zone] init];
-    options.sampleRate = self.sampleRate;
+    options->_logSamplingRate = _logSamplingRate;
     options.enableLinkRumData = self.enableLinkRumData;
     options.enableCustomLog = self.enableCustomLog;
     options.enableWebViewLog = self.enableWebViewLog;
@@ -59,8 +73,9 @@
 -(instancetype)initWithDictionary:(NSDictionary *)dict{
     if(dict){
         if (self = [self init]) {
-            if ([dict ft_hasValidValueForKey:@"samplerate"]) _samplerate = [dict[@"samplerate"] intValue];
-            if ([dict ft_hasValidValueForKey:@"sampleRate"]) _samplerate = [dict[@"sampleRate"] intValue];
+            if ([dict ft_hasValidValueForKey:@"samplerate"]) self.logSamplingRate = (float)[dict[@"samplerate"] intValue];
+            if ([dict ft_hasValidValueForKey:@"sampleRate"]) self.logSamplingRate = (float)[dict[@"sampleRate"] intValue];
+            if ([dict ft_hasValidValueForKey:@"logSamplingRate"]) self.logSamplingRate = [dict[@"logSamplingRate"] floatValue];
             if ([dict ft_hasValidValueForKey:@"enableLinkRumData"]) _enableLinkRumData = [dict[@"enableLinkRumData"] boolValue];
             if ([dict ft_hasValidValueForKey:@"enableCustomLog"]) _enableCustomLog = [dict[@"enableCustomLog"] boolValue];
             if ([dict ft_hasValidValueForKey:@"enableWebViewLog"]) _enableWebViewLog = [dict[@"enableWebViewLog"] boolValue];
@@ -80,7 +95,8 @@
 }
 -(NSDictionary *)convertToDictionary{
     NSMutableDictionary *dict = [NSMutableDictionary new];
-    [dict setValue:@(self.sampleRate) forKey:@"sampleRate"];
+    [dict setValue:@((int)_logSamplingRate) forKey:@"sampleRate"];
+    [dict setValue:@(_logSamplingRate) forKey:@"logSamplingRate"];
     [dict setValue:@(self.enableLinkRumData) forKey:@"enableLinkRumData"];
     [dict setValue:@(self.enableCustomLog) forKey:@"enableCustomLog"];
     [dict setValue:@(self.enableWebViewLog) forKey:@"enableWebViewLog"];
@@ -93,6 +109,8 @@
 }
 
 -(NSString *)debugDescription{
-    return [NSString stringWithFormat:@"%@",[self convertToDictionary]];
+    NSMutableDictionary *dict = [[self convertToDictionary] mutableCopy];
+    [dict setValue:@(self.logSamplingRate) forKey:@"logSamplingRate"];
+    return [NSString stringWithFormat:@"%@",dict];
 }
 @end

@@ -156,7 +156,7 @@ void *FTLoggerQueueIdentityKey = &FTLoggerQueueIdentityKey;
         FTInnerLogInfo(@"[Logging][Not Filtered] %@",content);
         return;
     }
-    if (![FTBaseInfoHandler randomSampling:config.sampleRate]){
+    if (![FTBaseInfoHandler randomSamplingWithRate:config.logSamplingRate]){
         FTInnerLogInfo(@"[Logging][Not Sampled] %@",content);
         return;
     }
@@ -187,7 +187,7 @@ void *FTLoggerQueueIdentityKey = &FTLoggerQueueIdentityKey;
     }
     NSDictionary *eventPayload = event;
     NSSet *logLevelFilterSet = [self.logLevelFilterSet copy];
-    int sampleRate = config.sampleRate;
+    float logSamplingRate = config.logSamplingRate;
     BOOL enableLinkRumData = config.enableLinkRumData;
     long long receivedTime = [NSDate ft_currentNanosecondTimeStamp];
     dispatch_async(self.loggerQueue, ^{
@@ -203,7 +203,7 @@ void *FTLoggerQueueIdentityKey = &FTLoggerQueueIdentityKey;
             FTInnerLogInfo(@"[WebView][Logging][Not Filtered] %@",logEvent.content);
             return;
         }
-        if (![FTBaseInfoHandler randomSampling:sampleRate]) {
+        if (![FTBaseInfoHandler randomSamplingWithRate:logSamplingRate]) {
             FTInnerLogInfo(@"[WebView][Logging][Not Sampled] %@",logEvent.content);
             return;
         }

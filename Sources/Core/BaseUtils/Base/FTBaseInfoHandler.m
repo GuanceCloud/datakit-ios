@@ -32,11 +32,17 @@
 #import <ifaddrs.h>
 #include <net/if.h>
 #import <dns_sd.h>
+#include <math.h>
+#include <stdint.h>
 #define IOS_CELLULAR    @"pdp_ip0"
 #define IOS_WIFI        @"en0"
 #define IOS_VPN         @"utun0"
 #define IP_ADDR_IPv4    @"ipv4"
 #define IP_ADDR_IPv6    @"ipv6"
+
+@interface FTBaseInfoHandler ()
++ (BOOL)ft_randomSamplingWithRate:(float)sampling randomValue:(uint32_t)randomValue;
+@end
 
 @implementation FTBaseInfoHandler : NSObject
 
@@ -70,12 +76,27 @@
     return string;
 }
 + (BOOL)randomSampling:(int)sampling{
-    if(sampling<=0){
+    return [self randomSamplingWithRate:(float)sampling];
+}
+
++ (BOOL)isValidSamplingRate:(float)sampling {
+    return isfinite(sampling) && sampling >= 0.0f && sampling <= 100.0f;
+}
+
++ (BOOL)randomSamplingWithRate:(float)sampling {
+    return [self ft_randomSamplingWithRate:sampling randomValue:arc4random()];
+}
+
++ (BOOL)ft_randomSamplingWithRate:(float)sampling randomValue:(uint32_t)randomValue {
+    if (![self isValidSamplingRate:sampling]) {
         return NO;
     }
-    if(sampling<100){
-        int x = arc4random_uniform(100)+1;
-        return x <= sampling ? YES:NO;
+    if(sampling <= 0.0f){
+        return NO;
+    }
+    if(sampling < 100.0f){
+        double threshold = ((double)sampling / 100.0) * ((double)UINT32_MAX + 1.0);
+        return (double)randomValue < threshold;
     }
     return YES;
 }

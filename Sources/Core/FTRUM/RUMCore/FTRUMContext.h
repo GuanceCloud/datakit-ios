@@ -28,8 +28,8 @@ NS_ASSUME_NONNULL_BEGIN
 @property (nonatomic, copy) NSString *session_id;
 @property (nonatomic, copy) NSString *session_type;
 // view session fields
-@property (nonatomic, assign) int sampleRate;
-@property (nonatomic, assign) int sessionOnErrorSampleRate;
+@property (nonatomic, assign) float sampleRate;
+@property (nonatomic, assign) float sessionOnErrorSampleRate;
 @property (nonatomic, assign) long long session_error_timestamp;
 @property (nonatomic, assign) BOOL sampled_for_error_session;
 
@@ -49,7 +49,7 @@ NS_ASSUME_NONNULL_BEGIN
 @property (nonatomic, copy, nullable) NSString *action_id;
 @property (nonatomic, copy, nullable) NSString *action_name;
 
-- (instancetype)initWithSampleRate:(int)sampleRate sessionOnErrorSampleRate:(int)sessionOnErrorSampleRate appId:(NSString *)appId;
+- (instancetype)initWithSampleRate:(float)sampleRate sessionOnErrorSampleRate:(float)sessionOnErrorSampleRate appId:(NSString *)appId;
 
 - (instancetype)init NS_UNAVAILABLE;
 

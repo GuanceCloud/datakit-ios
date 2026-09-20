@@ -117,13 +117,12 @@ typedef BOOL (^FTSessionTaskErrorFilter)(NSError *_Nonnull error);
 + (instancetype)new NS_UNAVAILABLE;
 /// User access monitoring application ID unique identifier, automatically generated when creating monitoring in the user access monitoring console.
 @property (nonatomic, copy) NSString *appid;
-/// Sampling configuration, property values: 0 to 100, 100 means 100% collection, no data sample compression.
-@property (nonatomic, assign) int sampleRate;
-/// Deprecated. Use `sampleRate`.
-@property (nonatomic, assign) int samplerate DEPRECATED_MSG_ATTRIBUTE("Use sampleRate.");
-/// Collect sessions that have errors
+/// RUM session sampling rate in percent. Values range from 0 to 100 and may contain a fractional part. Default: 100.
+@property (nonatomic, assign) float sessionSamplingRate;
+/// Collect sessions that have errors.
 /// When the feature is enabled, if a Session that was not originally selected by the sampling rate encounters an error, the SDK will collect data from these originally uncollected Sessions
-@property (nonatomic, assign) int sessionOnErrorSampleRate;
+/// Values range from 0 to 100 and may contain a fractional part. Default: 0.
+@property (nonatomic, assign) float sessionOnErrorSamplingRate;
 /// Set whether to track user actions, currently supports app launch and click actions,
 /// Only effective when View events are present
 @property (nonatomic, assign) BOOL enableTraceUserAction;
@@ -182,8 +181,6 @@ typedef BOOL (^FTSessionTaskErrorFilter)(NSError *_Nonnull error);
 
 /// Set whether to enable WebView data collection, default YES
 @property (nonatomic, assign) BOOL enableTraceWebView;
-/// Set specific hosts or domains allowed to collect WebView data, nil means collect all.
-@property (nonatomic, copy, nullable) NSArray *allowWebViewHost DEPRECATED_MSG_ATTRIBUTE("Use FTSDKConfig.allowWebViewHost.");
 
 /// A handler for user-defined collection of `ViewControllers` as RUM views for tracking.
 /// It takes effect when enableTraceUserView = YES.
@@ -212,5 +209,19 @@ typedef BOOL (^FTSessionTaskErrorFilter)(NSError *_Nonnull error);
 /// - Parameter enableTrackAppFreeze: Set whether to collect freezes
 /// - Parameter freezeDurationMs: Freeze threshold, unit milliseconds 100 < freezeDurationMs, default 250ms
 -(void)setEnableTrackAppFreeze:(BOOL)enableTrackAppFreeze freezeDurationMs:(long)freezeDurationMs;
+@end
+
+/// Deprecated RUM configuration APIs retained for backward compatibility.
+@interface FTRumConfig (Deprecated)
+
+/// Deprecated. Use `sessionSamplingRate`. Setting this property validates and updates `sessionSamplingRate`; reading it returns an integer-percent projection.
+@property (nonatomic, assign) int sampleRate DEPRECATED_MSG_ATTRIBUTE("Use sessionSamplingRate.");
+/// Deprecated. Use `sessionSamplingRate`. Setting this property validates and updates `sessionSamplingRate`; reading it returns an integer-percent projection.
+@property (nonatomic, assign) int samplerate DEPRECATED_MSG_ATTRIBUTE("Use sessionSamplingRate.");
+/// Deprecated. Use `sessionOnErrorSamplingRate`. Setting this property validates and updates `sessionOnErrorSamplingRate`; reading it returns an integer-percent projection.
+@property (nonatomic, assign) int sessionOnErrorSampleRate DEPRECATED_MSG_ATTRIBUTE("Use sessionOnErrorSamplingRate.");
+/// Set specific hosts or domains allowed to collect WebView data, nil means collect all.
+@property (nonatomic, copy, nullable) NSArray *allowWebViewHost DEPRECATED_MSG_ATTRIBUTE("Use FTSDKConfig.allowWebViewHost.");
+
 @end
 NS_ASSUME_NONNULL_END
