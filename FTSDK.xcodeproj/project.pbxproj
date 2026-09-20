@@ -2076,14 +2076,9 @@
 		17402E182BAD8F8C00DE3176 /* FTLog */ = {
 			isa = PBXGroup;
 			children = (
-				17E4CB0C29CD42DA005C2D99 /* FTLog.h */,
 				17E4CB0229CD42DA005C2D99 /* FTLog.m */,
-				1776BA7A2B997D19008424FF /* FTInnerLog.h */,
-				17AC17392B98525B003E18A6 /* FTLogMessage.h */,
 				17AC173A2B98525B003E18A6 /* FTLogMessage.m */,
-				17AC17412B9856C3003E18A6 /* FTFileLogger.h */,
 				17AC17422B9856C3003E18A6 /* FTFileLogger.m */,
-				1776BA7E2B99B668008424FF /* FTOSLogger.h */,
 				1776BA7F2B99B668008424FF /* FTOSLogger.m */,
 			);
 			name = FTLog;
@@ -2460,6 +2455,7 @@
 		17E4CACF29CD42DA005C2D99 /* BaseUtils */ = {
 			isa = PBXGroup;
 			children = (
+				A2F200012FF2000100A0A001 /* include */,
 				17E4CAEC29CD42DA005C2D99 /* Swizzle */,
 				17E4CAF329CD42DA005C2D99 /* Thread */,
 				17E4CAFA29CD42DA005C2D99 /* Base */,
@@ -2467,11 +2463,46 @@
 			path = BaseUtils;
 			sourceTree = "<group>";
 		};
+		A2F200012FF2000100A0A001 /* include */ = {
+			isa = PBXGroup;
+			children = (
+				17E4CAFC29CD42DA005C2D99 /* FTAppLifeCycle.h */,
+				17E4CAFE29CD42DA005C2D99 /* FTBaseInfoHandler.h */,
+				17E4CB0B29CD42DA005C2D99 /* FTConstants.h */,
+				17E5ED8C2DD2095000E5A971 /* FTDataModifier.h */,
+				172B105F2E3219F500753766 /* FTDateUtil.h */,
+				17AC17412B9856C3003E18A6 /* FTFileLogger.h */,
+				2E353646E3D068CDA08C838C /* FTIDFVProvider.h */,
+				1776BA7A2B997D19008424FF /* FTInnerLog.h */,
+				179A53B62F877A0E00FE4B6F /* FTInternalConstants.h */,
+				17E4CB0329CD42DA005C2D99 /* FTJSONUtil.h */,
+				17E4CB0C29CD42DA005C2D99 /* FTLog.h */,
+				17AC17392B98525B003E18A6 /* FTLogMessage.h */,
+				17F10DAB2D13C88A00737EDD /* FTNetworkConnectivity.h */,
+				1776BA7E2B99B668008424FF /* FTOSLogger.h */,
+				1799581129D43FDE0033B46E /* FTPresetProperty.h */,
+				17E4CB1929CD42DA005C2D99 /* FTReadWriteHelper.h */,
+				17E4CB0D29CD42DA005C2D99 /* FTRecordModel.h */,
+				17E4CB0829CD42DA005C2D99 /* FTResourceContentModel.h */,
+				17A9BE312C5CE8A100DEC5FE /* FTResourceMetricsModel+Private.h */,
+				17E4CB0929CD42DA005C2D99 /* FTResourceMetricsModel.h */,
+				17E4CAEE29CD42DA005C2D99 /* FTSwizzle.h */,
+				17E4CAED29CD42DA005C2D99 /* FTSwizzler.h */,
+				1776073429D1416200D17137 /* FTUserInfo.h */,
+				17018DB42F50257100688324 /* FTWeakMapTable.h */,
+				17BCF37C2D66EB2A009A63FD /* FTWeakPropertyContainer.h */,
+				17AC17492B98635C003E18A6 /* NSDate+FTUtil.h */,
+				174BC8772BFC9F8A00478EE1 /* NSDictionary+FTCopyProperties.h */,
+				17132DBB2C2D652E009DFE8F /* NSError+FTDescription.h */,
+				1759510A2A6FE4DE006FAB9D /* NSNumber+FTAdd.h */,
+				17E4CB0529CD42DA005C2D99 /* NSString+FTAdd.h */,
+			);
+			path = include;
+			sourceTree = "<group>";
+		};
 		17E4CAEC29CD42DA005C2D99 /* Swizzle */ = {
 			isa = PBXGroup;
 			children = (
-				17E4CAED29CD42DA005C2D99 /* FTSwizzler.h */,
-				17E4CAEE29CD42DA005C2D99 /* FTSwizzle.h */,
 				17E4CAF029CD42DA005C2D99 /* FTSwizzle.m */,
 				17E4CAF129CD42DA005C2D99 /* FTSwizzler.m */,
 			);
@@ -2492,49 +2523,26 @@
 			isa = PBXGroup;
 			children = (
 				17402E182BAD8F8C00DE3176 /* FTLog */,
-				1776073429D1416200D17137 /* FTUserInfo.h */,
 				1776073529D1416200D17137 /* FTUserInfo.m */,
-				17E4CB0B29CD42DA005C2D99 /* FTConstants.h */,
 				17E4CAFB29CD42DA005C2D99 /* FTConstants.m */,
-				17E4CAFC29CD42DA005C2D99 /* FTAppLifeCycle.h */,
 				17E4CB0A29CD42DA005C2D99 /* FTAppLifeCycle.m */,
-				17E4CAFE29CD42DA005C2D99 /* FTBaseInfoHandler.h */,
 				17E4CB1129CD42DA005C2D99 /* FTBaseInfoHandler.m */,
-				17132DBB2C2D652E009DFE8F /* NSError+FTDescription.h */,
 				17132DBC2C2D652E009DFE8F /* NSError+FTDescription.m */,
-				17E4CB0D29CD42DA005C2D99 /* FTRecordModel.h */,
 				17E4CB0129CD42DA005C2D99 /* FTRecordModel.m */,
-				17E4CB0329CD42DA005C2D99 /* FTJSONUtil.h */,
 				17E4CB1629CD42DA005C2D99 /* FTJSONUtil.m */,
-				17018DB42F50257100688324 /* FTWeakMapTable.h */,
 				17018DB52F50257100688324 /* FTWeakMapTable.m */,
-				1799581129D43FDE0033B46E /* FTPresetProperty.h */,
 				1799581229D43FDE0033B46E /* FTPresetProperty.m */,
-				17E4CB0529CD42DA005C2D99 /* NSString+FTAdd.h */,
 				17E4CB1429CD42DA005C2D99 /* NSString+FTAdd.m */,
-				179A53B62F877A0E00FE4B6F /* FTInternalConstants.h */,
 				179A53B72F877A0E00FE4B6F /* FTInternalConstants.m */,
-				172B105F2E3219F500753766 /* FTDateUtil.h */,
 				172B10602E3219F500753766 /* FTDateUtil.m */,
-				17E4CB1929CD42DA005C2D99 /* FTReadWriteHelper.h */,
 				17E4CB0729CD42DA005C2D99 /* FTReadWriteHelper.m */,
-				17E4CB0829CD42DA005C2D99 /* FTResourceContentModel.h */,
 				17E4CB1829CD42DA005C2D99 /* FTResourceContentModel.m */,
-				17E4CB0929CD42DA005C2D99 /* FTResourceMetricsModel.h */,
-				17A9BE312C5CE8A100DEC5FE /* FTResourceMetricsModel+Private.h */,
 				17E4CB1729CD42DA005C2D99 /* FTResourceMetricsModel.m */,
-				1759510A2A6FE4DE006FAB9D /* NSNumber+FTAdd.h */,
 				1759510B2A6FE4DE006FAB9D /* NSNumber+FTAdd.m */,
-				17AC17492B98635C003E18A6 /* NSDate+FTUtil.h */,
 				17AC174A2B98635C003E18A6 /* NSDate+FTUtil.m */,
-				174BC8772BFC9F8A00478EE1 /* NSDictionary+FTCopyProperties.h */,
 				174BC8782BFC9F8A00478EE1 /* NSDictionary+FTCopyProperties.m */,
-				17F10DAB2D13C88A00737EDD /* FTNetworkConnectivity.h */,
 				17F10DAC2D13C88A00737EDD /* FTNetworkConnectivity.m */,
-				17BCF37C2D66EB2A009A63FD /* FTWeakPropertyContainer.h */,
 				17BCF37D2D66EB2A009A63FD /* FTWeakPropertyContainer.m */,
-				17E5ED8C2DD2095000E5A971 /* FTDataModifier.h */,
-				2E353646E3D068CDA08C838C /* FTIDFVProvider.h */,
 				AB1F52E89BB980427636D6FA /* FTIDFVProvider.m */,
 			);
 			path = Base;

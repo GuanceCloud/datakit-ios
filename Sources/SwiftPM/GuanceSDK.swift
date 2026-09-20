@@ -14,4 +14,4 @@
 //
 
 @_exported import _GuanceSDKObjC
-@_exported import GuanceSDKSwiftUI
+@_exported import _GuanceSDKSwiftUI

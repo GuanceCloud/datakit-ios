@@ -62,14 +62,14 @@ Pod::Spec.new do |s|
 
 		c.subspec 'FTRUM' do |r|
 			r.source_files = 'Sources/Core/FTRUM/**/*.{h,m,c,cpp}'
-			r.dependency 'GuanceSDK/Core/BaseUtils/Base'
+			r.dependency 'GuanceSDK/Core/BaseUtils'
 			r.dependency 'GuanceSDK/Core/Protocol'
 		end
 
 		c.subspec 'URLSessionAutoInstrumentation' do |a|
 			a.source_files = 'Sources/Core/NetworkAutoInstrumentation/**/*{.h,.m}'
 			a.dependency 'GuanceSDK/Core/Protocol'
-			a.dependency 'GuanceSDK/Core/BaseUtils/Swizzle'
+			a.dependency 'GuanceSDK/Core/BaseUtils'
 		end
 
 		c.subspec 'Protocol' do |r|
@@ -82,24 +82,12 @@ Pod::Spec.new do |s|
 		end
 
 		c.subspec 'BaseUtils' do |b|
-			b.subspec 'Base' do |bb|
-				bb.source_files = 'Sources/Core/BaseUtils/Base/**/*{.h,.m,.c}'
-				bb.dependency 'GuanceSDK/Core/BaseUtils/Thread'
-			end
-
-			b.subspec 'Thread' do |bb|
-				bb.source_files = 'Sources/Core/BaseUtils/Thread/**/*{.h,.m}'
-			end
-
-			b.subspec 'Swizzle' do |bb|
-				bb.source_files = 'Sources/Core/BaseUtils/Swizzle/*{.h,.m,.c}'
-				bb.dependency 'GuanceSDK/Core/BaseUtils/Base'
-			end
+				b.source_files = 'Sources/Core/BaseUtils/**/*{.h,.m,.c}'
 		end
 
 		c.subspec 'Logger' do |l|
 			l.source_files = 'Sources/Core/Logger/*{.h,.m}'
-			l.dependency 'GuanceSDK/Core/BaseUtils/Base'
+			l.dependency 'GuanceSDK/Core/BaseUtils'
 			l.dependency 'GuanceSDK/Core/Protocol'
 		end
 
@@ -108,7 +96,7 @@ Pod::Spec.new do |s|
 			j.osx.deployment_target = '12.0'
 			j.source_files = 'Sources/Core/FTWKWebView/**/*{.h,.m}'
 			j.dependency 'GuanceSDK/Core/Protocol'
-			j.dependency 'GuanceSDK/Core/BaseUtils/Swizzle'
+			j.dependency 'GuanceSDK/Core/BaseUtils'
 		end
 
 		c.subspec 'DataManager' do |bb|
@@ -118,8 +106,7 @@ Pod::Spec.new do |s|
 				'Sources/Core/DataManager/Storage/**/*{.h,.m}',
 				'Sources/Core/DataFilter/*{.h,.m}'
 			]
-			bb.dependency 'GuanceSDK/Core/BaseUtils/Thread'
-			bb.dependency 'GuanceSDK/Core/BaseUtils/Base'
+			bb.dependency 'GuanceSDK/Core/BaseUtils'
 			bb.dependency 'GuanceSDK/Core/Protocol'
 		end
 	end

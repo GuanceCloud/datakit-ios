@@ -13,10 +13,7 @@ let package = Package(
     products: [
         .library(
             name: "GuanceSDK",
-            targets: [
-                "GuanceSDK",
-                "GuanceSDKSwiftUI",
-            ]
+            targets: ["GuanceSDK"]
         ),
         .library(
             name: "GuanceWidgetExtension",
@@ -24,10 +21,7 @@ let package = Package(
         ),
         .library(
             name: "GuanceSessionReplay",
-            targets: [
-                "GuanceSessionReplay",
-                "GuanceSessionReplaySwiftUI",
-            ]
+            targets: ["GuanceSessionReplay"]
         ),
     ],
     dependencies: [],
@@ -37,7 +31,7 @@ let package = Package(
             name: "GuanceSDK",
             dependencies: [
                 "_GuanceSDKObjC",
-                "GuanceSDKSwiftUI",
+                "_GuanceSDKSwiftUI",
             ],
             path: "Sources/SwiftPM",
             sources: ["GuanceSDK.swift"]
@@ -49,9 +43,10 @@ let package = Package(
                 "_AgentExtension",
                 "_AgentExternalData",
                 "_AgentConfig",
-                "GuanceSDKSwiftUI",
+                "_GuanceSDKSwiftUI",
             ],
             path: "Sources",
+            exclude: ["Agent/Core/module.modulemap"],
             sources: [
                 "Agent/Core",
                 "Agent/AutoTrack",
@@ -65,13 +60,13 @@ let package = Package(
             ]
         ),
         .target(
-            name: "GuanceSDKSwiftUI",
+            name: "_GuanceSDKSwiftUI",
             path: "Sources/Agent/SwiftUI"
         ),
         .target(
             name: "_AgentConfig",
             dependencies: [
-                "_FTBaseUtils_Base",
+                "_FTBaseUtils",
                 "_FTRUM",
                 "_FTProtocol",
             ],
@@ -83,7 +78,7 @@ let package = Package(
             name: "_AgentExternalData",
             dependencies: [
                 "_FTProtocol",
-                "_FTBaseUtils_Base",
+                "_FTBaseUtils",
             ],
             path: "Sources/Agent/ExternalData",
             publicHeadersPath: "."
@@ -97,8 +92,7 @@ let package = Package(
         .target(
             name: "_FTRUM",
             dependencies: [
-                "_FTBaseUtils_Base",
-                "_FTBaseUtils_Thread",
+                "_FTBaseUtils",
                 "_FTProtocol",
             ],
             path: "Sources/Core/FTRUM",
@@ -116,7 +110,7 @@ let package = Package(
             name: "_FTURLSessionAutoInstrumentation",
             dependencies: [
                 "_FTProtocol",
-                "_FTBaseUtils_Swizzle",
+                "_FTBaseUtils",
             ],
             path: "Sources/Core/NetworkAutoInstrumentation",
             publicHeadersPath: "."
@@ -124,7 +118,7 @@ let package = Package(
         .target(
             name: "_FTLogger",
             dependencies: [
-                "_FTBaseUtils_Base",
+                "_FTBaseUtils",
                 "_FTProtocol",
             ],
             path: "Sources/Core/Logger",
@@ -138,16 +132,11 @@ let package = Package(
 
         // MARK: - BaseUtils
         .target(
-            name: "_FTBaseUtils_Base",
+            name: "_FTBaseUtils",
             dependencies: ["_FTBaseUtils_Thread"],
-            path: "Sources/Core/BaseUtils/Base",
-            publicHeadersPath: "."
-        ),
-        .target(
-            name: "_FTBaseUtils_Swizzle",
-            dependencies: ["_FTBaseUtils_Base"],
-            path: "Sources/Core/BaseUtils/Swizzle",
-            publicHeadersPath: "."
+            path: "Sources/Core/BaseUtils",
+            sources: ["Base", "Swizzle"],
+            publicHeadersPath: "include"
         ),
         .target(
             name: "_FTBaseUtils_Thread",
@@ -157,7 +146,7 @@ let package = Package(
         // MARK: - GuanceWidgetExtension
         .target(
             name: "_AgentExtension",
-            dependencies: ["_FTBaseUtils_Base"],
+            dependencies: ["_FTBaseUtils"],
             path: "Sources/Agent/Extension",
             publicHeadersPath: "."
         ),
@@ -209,7 +198,10 @@ let package = Package(
         // MARK: - GuanceSessionReplay
         .target(
             name: "GuanceSessionReplay",
-            dependencies: ["_GuanceSDKCore"],
+            dependencies: [
+                "_GuanceSDKCore",
+                "_GuanceSessionReplaySwiftUI",
+            ],
             path: "Sources/SessionReplay",
             exclude: [
                 "Recorder/SRWireframe/ViewTreeSnapshot/ViewsRecorder/SwiftUI",
@@ -238,7 +230,7 @@ let package = Package(
             ]
         ),
         .target(
-            name: "GuanceSessionReplaySwiftUI",
+            name: "_GuanceSessionReplaySwiftUI",
             path: "Sources/SessionReplay/Recorder/SRWireframe/ViewTreeSnapshot/ViewsRecorder/SwiftUI"
         ),
     ]

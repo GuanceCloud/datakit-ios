@@ -1,0 +1,6 @@
+module _GuanceSDKObjC {
+    umbrella "."
+    header "../AutoTrack/FTDefaultActionTrackingHandler.h"
+    header "../AutoTrack/FTDefaultUIKitViewTrackingHandler.h"
+    export *
+}
