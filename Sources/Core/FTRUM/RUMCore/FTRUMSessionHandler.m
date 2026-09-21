@@ -63,10 +63,10 @@ static NSString * const FTRUMFallbackViewReferrerRoot = @"root";
     if (self) {
         self.assistant = self;
         self.rumDependencies = expiredSession.rumDependencies;
-        self.sampling = [FTBaseInfoHandler randomSamplingWithRate:expiredSession.rumDependencies.sampleRate];
         self.sessionStartTime = time;
         self.lastInteractionTime = self.sessionStartTime;
         self.context = [[FTRUMContext alloc]initWithSampleRate:expiredSession.rumDependencies.sampleRate sessionOnErrorSampleRate:expiredSession.rumDependencies.sessionOnErrorSampleRate appId:self.rumDependencies.appId];
+        self.sampling = [FTBaseInfoHandler randomSamplingWithRate:expiredSession.rumDependencies.sampleRate];
         self.appState = expiredSession.appState;
         self.viewHandlers = [NSMutableArray new];
         for (FTRUMViewHandler *viewHandler in expiredSession.viewHandlers) {

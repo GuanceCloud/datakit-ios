@@ -185,6 +185,68 @@
     XCTAssertEqualObjects([newSession valueForKey:@"lastInteractionTime"], rolloverTime);
 }
 
+- (void)testSampledSessionRenewalPublishesRenewedSessionStateToFatalErrorContext{
+    FTRUMDependencies *dependencies = [[FTRUMDependencies alloc] init];
+    dependencies.sampleRate = 100;
+    dependencies.sessionOnErrorSampleRate = 0;
+    dependencies.appId = @"sampled-session-renewal-test";
+    dependencies.fatalErrorContext = [[FTFatalErrorContext alloc] initWithErrorInfoProvider:nil];
+    NSDate *startTime = [NSDate date];
+    FTRUMDataModel *initialModel = [[FTRUMDataModel alloc] initWithType:FTRUMViewPlaceholder time:startTime];
+    FTRUMSessionHandler *session = [[FTRUMSessionHandler alloc] initWithModel:initialModel dependencies:dependencies];
+
+    FTRUMSessionHandler *renewedSession = [[FTRUMSessionHandler alloc]
+        initWithExpiredSession:session
+        time:[startTime dateByAddingTimeInterval:16 * 60]];
+    FTRUMSessionState *publishedState = dependencies.fatalErrorContext.currentContextModel.lastSessionState;
+
+    XCTAssertNotNil(publishedState);
+    XCTAssertNotEqualObjects(renewedSession.context.sessionState.session_id, session.context.sessionState.session_id);
+    XCTAssertEqualObjects(publishedState, renewedSession.context.sessionState);
+    XCTAssertEqual(publishedState.sampleRate, 100);
+    XCTAssertFalse(publishedState.sampled_for_error_session);
+}
+
+- (void)testErrorSampledSessionRenewalPublishesRenewedSessionStateToFatalErrorContext{
+    FTRUMDependencies *dependencies = [[FTRUMDependencies alloc] init];
+    dependencies.sampleRate = 0;
+    dependencies.sessionOnErrorSampleRate = 100;
+    dependencies.appId = @"error-sampled-session-renewal-test";
+    dependencies.fatalErrorContext = [[FTFatalErrorContext alloc] initWithErrorInfoProvider:nil];
+    NSDate *startTime = [NSDate date];
+    FTRUMDataModel *initialModel = [[FTRUMDataModel alloc] initWithType:FTRUMViewPlaceholder time:startTime];
+    FTRUMSessionHandler *session = [[FTRUMSessionHandler alloc] initWithModel:initialModel dependencies:dependencies];
+
+    FTRUMSessionHandler *renewedSession = [[FTRUMSessionHandler alloc]
+        initWithExpiredSession:session
+        time:[startTime dateByAddingTimeInterval:16 * 60]];
+    FTRUMSessionState *publishedState = dependencies.fatalErrorContext.currentContextModel.lastSessionState;
+
+    XCTAssertNotNil(publishedState);
+    XCTAssertNotEqualObjects(renewedSession.context.sessionState.session_id, session.context.sessionState.session_id);
+    XCTAssertEqualObjects(publishedState, renewedSession.context.sessionState);
+    XCTAssertEqual(publishedState.sessionOnErrorSampleRate, 100);
+    XCTAssertTrue(publishedState.sampled_for_error_session);
+}
+
+- (void)testUnsampledSessionRenewalKeepsFatalErrorSessionStateNil{
+    FTRUMDependencies *dependencies = [[FTRUMDependencies alloc] init];
+    dependencies.sampleRate = 0;
+    dependencies.sessionOnErrorSampleRate = 0;
+    dependencies.appId = @"unsampled-session-renewal-test";
+    dependencies.fatalErrorContext = [[FTFatalErrorContext alloc] initWithErrorInfoProvider:nil];
+    NSDate *startTime = [NSDate date];
+    FTRUMDataModel *initialModel = [[FTRUMDataModel alloc] initWithType:FTRUMViewPlaceholder time:startTime];
+    FTRUMSessionHandler *session = [[FTRUMSessionHandler alloc] initWithModel:initialModel dependencies:dependencies];
+
+    FTRUMSessionHandler *renewedSession = [[FTRUMSessionHandler alloc]
+        initWithExpiredSession:session
+        time:[startTime dateByAddingTimeInterval:16 * 60]];
+
+    XCTAssertNotNil(renewedSession.context.sessionState);
+    XCTAssertNil(dependencies.fatalErrorContext.currentContextModel.lastSessionState);
+}
+
 - (void)testUserInteractionsAdvanceLastInteractionUsingModelTime{
     NSDate *startTime = [NSDate date];
     FTRUMSessionHandler *session = [self sessionStartingAtForEventTimeTest:startTime];

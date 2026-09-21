@@ -329,6 +329,7 @@
             return;
         }
         FTLongTaskActiveEvent *event = self.longTaskEvent;
+        self.longTaskEvent = nil;
         [event observeTimeNs:[NSDate ft_currentNanosecondTimeStamp]];
         if (event.isLongTask && self.enableFreeze && self.delegate && [self.delegate respondsToSelector:@selector(longTaskStackDetected:duration:time:)]) {
             [self.delegate longTaskStackDetected:event.mainThreadBacktrace duration:event.durationNs time:event.startTimeNs];
