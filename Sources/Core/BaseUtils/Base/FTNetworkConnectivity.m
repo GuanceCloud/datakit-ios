@@ -141,7 +141,8 @@ typedef NS_ENUM(NSInteger, FTNetworkStatus) {
     return @{FT_KEY_NETWORK_AVAILABLE:@(self.networkAvailable)};
 }
 -(void)setNetworkStatus:(FTNetworkStatus)networkStatus{
-    self.networkType = [self networkTypeWithStatus:networkStatus];
+    _networkStatus = networkStatus;
+    self.networkType = [self networkTypeWithStatus:_networkStatus];
 }
 - (void)connectivityChanged{
     NSArray *observers = nil;
