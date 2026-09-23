@@ -1,7 +1,7 @@
 Pod::Spec.new do |s|
 
 	s.name         = "GuanceSDK"
-	s.version      = "1.6.8-alpha.7"
+	s.version      = "1.6.8-alpha.8"
 	s.summary      = "Guance Cloud iOS Data Collection SDK"
 	#s.description  = ""
 	s.homepage     = "https://github.com/GuanceCloud/datakit-ios.git"
@@ -29,6 +29,12 @@ Pod::Spec.new do |s|
     s.resource_bundle = {
       "FTSDKPrivacyInfo" => "Sources/Resources/PrivacyInfo.xcprivacy"
     }
+
+    s.subspec 'Diagnostics' do |d|
+        d.source_files = 'Sources/Diagnostics/**/*.{h,m}'
+        d.public_header_files = 'Sources/Diagnostics/include/*.h'
+        d.dependency 'GuanceSDK/Core/BaseUtils/Base'
+    end
 
 	s.subspec  'Agent' do | agent |
 		core_path='Sources/Agent/'

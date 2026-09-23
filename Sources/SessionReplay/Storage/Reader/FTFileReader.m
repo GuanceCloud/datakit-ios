@@ -13,6 +13,7 @@
  * This file has been translated/adapted to Objective-C with project-specific changes.
  */
 
+#import "FTDiagnosticsBridge.h"
 #import <TargetConditionals.h>
 #if TARGET_OS_IOS || TARGET_OS_OSX
 
@@ -43,6 +44,11 @@
     NSArray *datas = [reader all];
     if(datas.count == 0){
         return nil;
+    }
+    if([file isKindOfClass:FTFile.class] && [FTDiagnosticsBridge enabled]) {
+        FTFile *observed=(FTFile *)file;
+        [FTDiagnosticsBridge batch:@"replay" count:datas.count bytes:observed.size
+                             ageMs:MAX(0,(int64_t)(-observed.fileCreationDate.timeIntervalSinceNow*1000)) source:@"file_creation_time"];
     }
     return [[FTBatch alloc]initWithFile:file datas:datas];
 }

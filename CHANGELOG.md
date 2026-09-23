@@ -1,3 +1,13 @@
+# 1.6.8-alpha.8
+
+1. **Breaking:** Raised minimum supported versions to iOS 15, tvOS 15, and macOS 12.
+2. Added optional local SDK diagnostics through CocoaPods (`GuanceSDK/Diagnostics`) and Swift Package Manager (`GuanceDiagnostics`), with independent lifecycle, bounded storage, and export. Collection is disabled by default and diagnostics are not uploaded automatically.
+3. Added diagnostic observations for storage, batch selection, retries, cleanup, and SDK HTTP upload attempts.
+4. Unified RUM, Log, Trace, and Session Replay sampling APIs with support for fractional percentages, preserving deprecated APIs and legacy remote configuration behavior.
+5. Improved external Session Replay write validation and separated external recorder APIs into dedicated public headers.
+6. Fixed network connectivity status updates and duplicate ANR reports after RUM session renewal.
+7. Completed Widget Extension framework umbrella header exports.
+---
 # 1.6.8-alpha.7
 
 1. Improved multi-process isolation and simplified child process configuration for macOS Electron Native-owned Mixed Mode.
