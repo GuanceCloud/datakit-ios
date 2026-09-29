@@ -1,3 +1,7 @@
+# 1.6.8-alpha.9
+
+1. Fixed automatic uploads being indefinitely delayed by continuous data writes by preserving the first scheduled upload deadline.
+---
 # 1.6.8-alpha.8
 
 1. **Breaking:** Raised minimum supported versions to iOS 15, tvOS 15, and macOS 12.
