@@ -138,7 +138,9 @@ typedef NS_ENUM(NSInteger, FTUploadWorkerState) {
             _uploadState = FTUploadWorkerStateDebouncing;
             return YES;
         }
-        return _uploadState == FTUploadWorkerStateDebouncing;
+        // Coalesce new writes without moving the first upload deadline.
+        // A trailing debounce can starve auto-upload under continuous traffic.
+        return NO;
     }
 }
 - (void)clearDelayedUploadPending{
