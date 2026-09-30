@@ -100,13 +100,21 @@ NSString *const FT_KnownResourcesKey = @"ft-known-resources";
     }];
 }
 - (void)write:(NSArray<FTEnrichedResource*>*)resources{
+    [self writeResources:resources externalNormalDirectory:NO];
+}
+- (void)writeExternalResourcesToNormalDirectory:(NSArray<FTEnrichedResource*>*)resources{
+    [self writeResources:resources externalNormalDirectory:YES];
+}
+- (void)writeResources:(NSArray<FTEnrichedResource*>*)resources externalNormalDirectory:(BOOL)externalNormalDirectory{
     __weak typeof(self) weakSelf = self;
-    [self.featureScope eventWriteContext:^(FTFeatureContext *context, id<FTWriter> writer) {
+    FTFeatureWriteContext writeContext = ^(FTFeatureContext *context, id<FTWriter> writer) {
         __strong __typeof(weakSelf) strongSelf = weakSelf;
         if (!strongSelf) {
             return;
         }
-        if (context.trackingConsent == FTTrackingConsentNotGranted) {
+        if (context.trackingConsent == FTTrackingConsentNotGranted ||
+            (externalNormalDirectory && context.trackingConsent != FTTrackingConsentGranted &&
+             context.trackingConsent != FTTrackingConsentErrorSampled)) {
             return;
         }
         NSMutableSet *unknownResources = [NSMutableSet new];
@@ -119,7 +127,12 @@ NSString *const FT_KnownResourcesKey = @"ft-known-resources";
             }
         }];
         [strongSelf storeUnknownResources:unknownResources];
-    }];
+    };
+    if (externalNormalDirectory) {
+        [self.featureScope normalResourceWriteContext:writeContext];
+    } else {
+        [self.featureScope eventWriteContext:writeContext];
+    }
 }
 - (void)storeUnknownResources:(NSSet *)unknownResources{
     if(unknownResources.count>0){

@@ -17,6 +17,7 @@
 #if TARGET_OS_IOS
 
 #import "FTUIImageViewRecorder.h"
+#import "FTSessionReplayWireframesBuilder.h"
 #import "FTSRWireframe.h"
 #import "FTViewAttributes.h"
 #import "FTSRUtils.h"

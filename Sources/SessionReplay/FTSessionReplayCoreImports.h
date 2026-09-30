@@ -24,9 +24,6 @@
 
 #pragma once
 
-#if defined(SWIFT_PACKAGE)
-@import _GuanceSDKCore;
-#else
 #import "Sources/Core/BaseUtils/include/FTBaseInfoHandler.h"
 #import "Sources/Core/BaseUtils/include/FTConstants.h"
 #import "Sources/Core/BaseUtils/include/FTDateUtil.h"
@@ -44,12 +41,11 @@
 #import "Sources/Core/DataManager/Upload/FTRequest.h"
 #import "Sources/Core/DataManager/Upload/FTRequestBody.h"
 #import "Sources/Core/FTRUM/Heatmap/FTHeatmap.h"
-#import "Sources/Core/FTWKWebView/FTWKWebViewHandler.h"
+#import "Sources/Core/Public/FTWKWebViewHandler.h"
 #import "Sources/Core/Protocol/FTMessageReceiver.h"
 #import "Sources/Core/Protocol/FTModuleManager.h"
 #import "Sources/Core/Protocol/FTSRWebTrackingProtocol.h"
 #import "Sources/Core/RemoteConfig/FTRemoteConfigManager.h"
-#import "Sources/Core/RemoteConfig/FTRemoteConfigModel.h"
-#endif
+#import "Sources/Core/Public/FTRemoteConfigModel.h"
 
 #endif

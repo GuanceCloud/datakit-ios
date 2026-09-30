@@ -34,6 +34,9 @@ typedef NS_ENUM(NSInteger, FTTrackingConsent) {
 
 - (void)updateTrackingConsent:(FTTrackingConsent)trackingConsent;
 - (id<FTWriter>)writerForTrackingConsent:(FTTrackingConsent)trackingConsent NS_SWIFT_NAME(writer(for:));
+/// External images remain in the normal resource directory when error sampled.
+/// This never treats a pending or unsampled state as authorization.
+- (id<FTWriter>)normalResourceWriterForTrackingConsent:(FTTrackingConsent)trackingConsent;
 - (id<FTWriter>)webViewWriterForTrackingConsent:(FTTrackingConsent)trackingConsent NS_SWIFT_NAME(webViewWriter(for:));
 - (id<FTReader>)reader;
 - (nullable id<FTCacheWriter>)cacheWriter;

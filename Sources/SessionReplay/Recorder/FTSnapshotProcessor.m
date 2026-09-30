@@ -17,6 +17,7 @@
 #if TARGET_OS_IOS || TARGET_OS_OSX
 
 #import "FTSnapshotProcessor.h"
+#import "FTViewTreeSnapshot.h"
 #import "FTViewTreeSnapshotBuilder.h"
 #import "FTViewAttributes.h"
 #import "FTViewAttributes.h"

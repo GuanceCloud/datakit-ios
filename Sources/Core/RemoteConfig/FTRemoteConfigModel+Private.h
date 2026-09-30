@@ -31,7 +31,6 @@ NS_ASSUME_NONNULL_BEGIN
 - (instancetype)initWithDict:(NSDictionary *)dict;
 - (instancetype)initWithDict:(NSDictionary *)dict md5:(NSString *)md5;
 
-- (NSDictionary *)toDictionary;
 @end
 
 NS_ASSUME_NONNULL_END

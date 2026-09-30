@@ -20,6 +20,7 @@
 
 #import <XCTest/XCTest.h>
 #import "FTSessionReplayConfig.h"
+#import "FTSessionReplayConfig+FrameworkIntegration.h"
 #import "FTSRViewID.h"
 #import "FTSRWireframe.h"
 #import "FTUnsupportedViewRecorder.h"
@@ -84,6 +85,8 @@ static FTFeatureStorage *FTMakeSessionReplayFeatureStorage(NSString *name) {
     config.enableHeatmap = YES;
     config.enableSwiftUI = YES;
     config.externalRecorderMode = YES;
+    FTUnsupportedViewRecorder *recorder = [[FTUnsupportedViewRecorder alloc] initWithSwiftUIEnabled:NO];
+    config.additionalNodeRecorders = @[recorder];
     
     FTSessionReplayConfig *copyConfig = [config copy];
     XCTAssertTrue(config != copyConfig);
@@ -94,6 +97,8 @@ static FTFeatureStorage *FTMakeSessionReplayFeatureStorage(NSString *name) {
     XCTAssertTrue(config.enableSwiftUI == copyConfig.enableSwiftUI);
     XCTAssertTrue(copyConfig.enableHeatmap);
     XCTAssertTrue(copyConfig.externalRecorderMode);
+    XCTAssertEqual(copyConfig.additionalNodeRecorders.count, 1);
+    XCTAssertEqualObjects(copyConfig.additionalNodeRecorders.firstObject, recorder);
 }
 - (void)testConfigDefaultHeatmapDisabled{
     FTSessionReplayConfig *config = [FTSessionReplayConfig new];

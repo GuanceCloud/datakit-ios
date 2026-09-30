@@ -85,15 +85,4 @@ public final class FTSwiftUIRUMActionBridge: NSObject {
     }
 }
 
-/// APIs for manually reporting RUM events from SwiftUI views.
-public enum FTRUMSwiftUI {
-    /// Tracks a SwiftUI tap action without adding any extra gesture recognizer.
-    ///
-    /// Prefer calling this inside a `Button` action or `.onTapGesture` closure when the target view is in a
-    /// `List`, `NavigationLink`, scroll view, or already uses custom gestures.
-    public static func trackTapAction(name: String, property: [String: Any]? = nil) {
-        FTSwiftUIRUMActionBridge.handler?.notifySwiftUITapAction(name: name, property: property)
-    }
-}
-
 #endif

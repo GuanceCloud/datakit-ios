@@ -24,6 +24,7 @@ NS_ASSUME_NONNULL_BEGIN
 @protocol FTResourcesWriting <NSObject>
 
 - (void)write:(NSArray<FTEnrichedResource*>*)resources;
+- (void)writeExternalResourcesToNormalDirectory:(NSArray<FTEnrichedResource*>*)resources;
 
 @end
 @interface FTResourcesWriter : NSObject<FTResourcesWriting>

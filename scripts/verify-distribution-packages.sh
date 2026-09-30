@@ -7,10 +7,17 @@ REPO_ROOT="$(cd "${SCRIPT_DIR}/.." && pwd)"
 BUILD_DIR="${REPO_ROOT}/build"
 PODSPEC="${REPO_ROOT}/GuanceSDK.podspec"
 FRAMEWORK_SCRIPT="${SCRIPT_DIR}/build-sdk-packages.sh"
+POD_CONSUMER_DIR="${REPO_ROOT}/Tests/CocoaPodsConsumer"
+POD_CONSUMER_VALIDATION_DIR="${BUILD_DIR}/CocoaPodsConsumerValidation"
+POD_CONSUMER_DERIVED_DATA="${BUILD_DIR}/CocoaPodsConsumerDerivedData"
+FRAMEWORK_CONSUMER_DIR="${REPO_ROOT}/Tests/XCFrameworkConsumer"
+FRAMEWORK_CONSUMER_VALIDATION_DIR="${BUILD_DIR}/XCFrameworkConsumerValidation"
+FRAMEWORK_CONSUMER_DERIVED_DATA="${BUILD_DIR}/XCFrameworkConsumerDerivedData"
 SPM_VALIDATION_DIR="${BUILD_DIR}/SwiftPackageValidation"
 SPM_DERIVED_DATA="${BUILD_DIR}/SwiftPackageDerivedData"
-SPM_HOME="${BUILD_DIR}/SwiftPackageHome"
 SPM_MODULE_CACHE="${BUILD_DIR}/SwiftPackageModuleCache"
+SPM_CONSUMER_DIR="${REPO_ROOT}/Tests/SwiftPMConsumer"
+SPM_CONSUMER_DERIVED_DATA="${BUILD_DIR}/SwiftPackageConsumerDerivedData"
 SPM_DESTINATION="${SPM_DESTINATION:-}"
 SPM_PLATFORMS="${SPM_PLATFORMS:-ios,macos,tvos}"
 XCODEBUILD_OPTIONS="${XCODEBUILD_OPTIONS--quiet}"
@@ -33,6 +40,26 @@ SPM_SCHEME_PLATFORMS=(
   "ios,macos,tvos"
   "ios"
   "ios,macos"
+)
+SPM_CONSUMER_SCHEMES=(
+  "ObjCConsumer"
+  "SessionReplayObjCConsumer"
+  "SwiftConsumer"
+  "SwiftUIConsumer"
+)
+SPM_BASE_CONSUMER_SCHEMES=(
+  "ObjCConsumer"
+  "SwiftConsumer"
+)
+POD_CONSUMER_SCHEMES=(
+  "ObjCConsumer"
+  "SwiftConsumer"
+  "SwiftUIConsumer"
+)
+FRAMEWORK_CONSUMER_SCHEMES=(
+  "ObjCConsumer"
+  "SwiftConsumer"
+  "SwiftUIConsumer"
 )
 
 RUN_COCOAPODS=1
@@ -59,9 +86,9 @@ Usage:
   bash scripts/verify-distribution-packages.sh [options]
 
 Checks:
-  cocoapods   pod lib lint GuanceSDK.podspec
-  framework   scripts/build-sdk-packages.sh, then validates generated .xcframework.zip files
-  spm         Swift Package manifest + xcodebuild builds for each product's supported platforms
+  cocoapods   pod lib lint + Objective-C/Swift/SwiftUI consumer links
+  framework   builds XCFramework zips + Objective-C/Swift/SwiftUI consumer links
+  spm         Swift Package manifest + product builds + Objective-C/Swift/SwiftUI consumer links
 
 Options:
   --only <list>            Comma-separated checks to run: cocoapods,framework,spm
@@ -262,6 +289,8 @@ run_step() {
 
 validate_cocoapods() {
   require_command "pod" || return 1
+  require_command "ruby" || return 1
+  require_command "xcodebuild" || return 1
 
   if [[ ! -f "${PODSPEC}" ]]; then
     error "Podspec not found: ${PODSPEC}"
@@ -269,9 +298,87 @@ validate_cocoapods() {
   fi
 
   local lint_options="${POD_LINT_OPTIONS:---allow-warnings --verbose}"
+  local ruby_command
+  ruby_command="$(command -v ruby)"
   info "Running pod lib lint with options: ${lint_options}"
   # shellcheck disable=SC2086
-  pod lib lint "${PODSPEC}" ${lint_options}
+  pod lib lint "${PODSPEC}" ${lint_options} || return 1
+
+  if [[ ! -f "${POD_CONSUMER_DIR}/Podfile" || ! -f "${POD_CONSUMER_DIR}/generate_project.rb" ]]; then
+    error "CocoaPods consumer fixture not found: ${POD_CONSUMER_DIR}"
+    return 1
+  fi
+
+  rm -rf "${POD_CONSUMER_VALIDATION_DIR}" "${POD_CONSUMER_DERIVED_DATA}"
+  mkdir -p "${POD_CONSUMER_VALIDATION_DIR}"
+  cp -R "${POD_CONSUMER_DIR}/." "${POD_CONSUMER_VALIDATION_DIR}"
+
+  (
+    cd "${POD_CONSUMER_VALIDATION_DIR}" || exit 1
+    "${ruby_command}" generate_project.rb || exit 1
+    pod install --no-repo-update || exit 1
+
+    local scheme
+    for scheme in "${POD_CONSUMER_SCHEMES[@]}"; do
+      info "Building CocoaPods consumer: ${scheme} (iOS Simulator)"
+      # shellcheck disable=SC2086
+      xcodebuild build \
+        ${XCODEBUILD_OPTIONS} \
+        -workspace "${POD_CONSUMER_VALIDATION_DIR}/Consumer.xcworkspace" \
+        -scheme "${scheme}" \
+        -destination "generic/platform=iOS Simulator" \
+        -derivedDataPath "${POD_CONSUMER_DERIVED_DATA}" \
+        CODE_SIGNING_ALLOWED=NO \
+        CODE_SIGNING_REQUIRED=NO || exit 1
+    done
+  )
+}
+
+validate_xcframework_consumers() {
+  local linkage="$1"
+  local zip_name="$2"
+  local extracted_name="$3"
+  local validation_dir="${FRAMEWORK_CONSUMER_VALIDATION_DIR}/${linkage}"
+  local derived_data="${FRAMEWORK_CONSUMER_DERIVED_DATA}/${linkage}"
+  local zip_path="${BUILD_DIR}/${zip_name}"
+  local ruby_command
+  ruby_command="$(command -v ruby)"
+
+  if [[ ! -f "${FRAMEWORK_CONSUMER_DIR}/generate_project.rb" ]]; then
+    error "XCFramework consumer fixture not found: ${FRAMEWORK_CONSUMER_DIR}"
+    return 1
+  fi
+
+  rm -rf "${validation_dir}" "${derived_data}"
+  mkdir -p "${validation_dir}/Artifacts"
+  cp -R "${FRAMEWORK_CONSUMER_DIR}/." "${validation_dir}"
+  unzip -q "${zip_path}" -d "${validation_dir}/Artifacts" || return 1
+
+  if [[ "${extracted_name}" != "GuanceSDK.xcframework" ]]; then
+    mv \
+      "${validation_dir}/Artifacts/${extracted_name}" \
+      "${validation_dir}/Artifacts/GuanceSDK.xcframework" || return 1
+  fi
+
+  (
+    cd "${validation_dir}" || exit 1
+    GUANCE_XCFRAMEWORK_LINKAGE="${linkage}" \
+      "${ruby_command}" generate_project.rb || exit 1
+  )
+
+  local scheme
+  for scheme in "${FRAMEWORK_CONSUMER_SCHEMES[@]}"; do
+    info "Building ${linkage} XCFramework consumer: ${scheme} (iOS Simulator)"
+    # shellcheck disable=SC2086
+    xcodebuild build \
+      ${XCODEBUILD_OPTIONS} \
+      -project "${validation_dir}/Consumer.xcodeproj" \
+      -scheme "${scheme}" \
+      -destination "generic/platform=iOS Simulator" \
+      -derivedDataPath "${derived_data}" \
+      CODE_SIGNING_ALLOWED=NO \
+      CODE_SIGNING_REQUIRED=NO || return 1
+  done
 }
 
 validate_framework_package() {
@@ -315,15 +422,26 @@ validate_framework_package() {
         ;;
     esac
   done
+
+  validate_xcframework_consumers \
+    "static" \
+    "GuanceSDK.xcframework.zip" \
+    "GuanceSDK.xcframework" || return 1
+  validate_xcframework_consumers \
+    "dynamic" \
+    "GuanceSDK-Dynamic.xcframework.zip" \
+    "GuanceSDK-Dynamic.xcframework" || return 1
 }
 
 prepare_spm_validation_dir() {
   mkdir -p "${BUILD_DIR}"
-  rm -rf "${SPM_VALIDATION_DIR}" "${SPM_DERIVED_DATA}" "${SPM_HOME}" "${SPM_MODULE_CACHE}"
-  mkdir -p "${SPM_VALIDATION_DIR}" "${SPM_HOME}" "${SPM_MODULE_CACHE}"
+  rm -rf "${SPM_VALIDATION_DIR}" "${SPM_DERIVED_DATA}" "${SPM_CONSUMER_DERIVED_DATA}" "${SPM_MODULE_CACHE}"
+  mkdir -p "${SPM_VALIDATION_DIR}" "${SPM_MODULE_CACHE}"
 
   cp "${REPO_ROOT}/Package.swift" "${SPM_VALIDATION_DIR}/Package.swift"
   ln -s "${REPO_ROOT}/Sources" "${SPM_VALIDATION_DIR}/Sources"
+  mkdir -p "${SPM_VALIDATION_DIR}/Tests"
+  ln -s "${REPO_ROOT}/Tests/FTLoggerTests" "${SPM_VALIDATION_DIR}/Tests/FTLoggerTests"
 }
 
 build_swift_package_scheme() {
@@ -333,8 +451,7 @@ build_swift_package_scheme() {
 
   info "Building Swift Package scheme: ${scheme} (${platform_name}, ${destination})"
   # shellcheck disable=SC2086
-  HOME="${SPM_HOME}" \
-    CLANG_MODULE_CACHE_PATH="${SPM_MODULE_CACHE}" \
+  CLANG_MODULE_CACHE_PATH="${SPM_MODULE_CACHE}" \
     xcodebuild build \
     ${XCODEBUILD_OPTIONS} \
     -scheme "${scheme}" \
@@ -343,6 +460,52 @@ build_swift_package_scheme() {
     CLANG_MODULE_CACHE_PATH="${SPM_MODULE_CACHE}" \
     CODE_SIGNING_ALLOWED=NO \
     CODE_SIGNING_REQUIRED=NO
+}
+
+build_swift_package_consumers() {
+  local platform="$1"
+  if [[ ! -f "${SPM_CONSUMER_DIR}/Package.swift" ]]; then
+    error "Swift Package consumer fixture not found: ${SPM_CONSUMER_DIR}/Package.swift"
+    return 1
+  fi
+
+  local destination
+  local platform_name
+  local schemes=()
+  case "${platform}" in
+    ios)
+      destination="generic/platform=iOS Simulator"
+      platform_name="iOS Simulator"
+      schemes=("${SPM_CONSUMER_SCHEMES[@]}")
+      ;;
+    macos)
+      destination="generic/platform=macOS"
+      platform_name="macOS"
+      schemes=("${SPM_BASE_CONSUMER_SCHEMES[@]}")
+      ;;
+    *)
+      warn "Skipping Swift Package consumers on $(spm_platform_display_name "${platform}")"
+      return 0
+      ;;
+  esac
+
+  local scheme
+  for scheme in "${schemes[@]}"; do
+    info "Building Swift Package consumer: ${scheme} (${platform_name})"
+    (
+      cd "${SPM_CONSUMER_DIR}" || exit 1
+      # shellcheck disable=SC2086
+      CLANG_MODULE_CACHE_PATH="${SPM_MODULE_CACHE}" \
+        xcodebuild build \
+        ${XCODEBUILD_OPTIONS} \
+        -scheme "${scheme}" \
+        -destination "${destination}" \
+        -derivedDataPath "${SPM_CONSUMER_DERIVED_DATA}" \
+        CLANG_MODULE_CACHE_PATH="${SPM_MODULE_CACHE}" \
+        CODE_SIGNING_ALLOWED=NO \
+        CODE_SIGNING_REQUIRED=NO
+    ) || return 1
+  done
 }
 
 validate_swift_package() {
@@ -359,8 +522,7 @@ validate_swift_package() {
   (
     set -e
     cd "${SPM_VALIDATION_DIR}" || exit 1
-    HOME="${SPM_HOME}" \
-      CLANG_MODULE_CACHE_PATH="${SPM_MODULE_CACHE}" \
+    CLANG_MODULE_CACHE_PATH="${SPM_MODULE_CACHE}" \
       swift package describe > /dev/null
 
     local selected_platforms
@@ -407,6 +569,10 @@ validate_swift_package() {
         destination="$(spm_platform_destination "${platform}")"
         build_swift_package_scheme "${scheme}" "${destination}" "$(spm_platform_display_name "${platform}")"
       done
+    done
+
+    for platform in "${selected_platform_array[@]}"; do
+      build_swift_package_consumers "${platform}"
     done
   )
 }

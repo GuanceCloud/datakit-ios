@@ -57,6 +57,8 @@ static NSString *FTStringFromImagePrivacyLevel(FTImagePrivacyLevel level) {
     }
 }
 @interface FTSessionReplayConfig()
+@property (nonatomic, strong, nullable) NSArray<id<FTSRWireframesRecorder>> *additionalNodeRecorders;
+@property (nonatomic, assign) BOOL externalRecorderMode;
 @property (nonatomic, assign) BOOL fineGrainedMaskingSet;
 @end
 @implementation FTSessionReplayConfig

@@ -17,6 +17,8 @@
 #if TARGET_OS_IOS || TARGET_OS_OSX
 
 #import "FTSRRecord.h"
+#import "FTJSONKeyMapper.h"
+#import "FTViewTreeSnapshot.h"
 #import "FTSRUtils.h"
 #import "FTViewAttributes.h"
 #import "FTSessionReplayCoreImports.h"

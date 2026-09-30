@@ -23,6 +23,10 @@
 import Foundation
 import SwiftUI
 
+#if canImport(_GuanceSDKSwiftSupport)
+@_spi(Private) import _GuanceSDKSwiftSupport
+#endif
+
 /// A SwiftUI view wrapper that reports RUM view lifecycle events.
 public struct FTRUMTrackedView<Content: View>: View {
     let name: String

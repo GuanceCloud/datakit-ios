@@ -17,26 +17,13 @@
 #if TARGET_OS_IOS || TARGET_OS_OSX
 
 #import <Foundation/Foundation.h>
-#import "FTSessionReplayWireframesBuilder.h"
+#import "FTSRNodeSemantics.h"
 
 NS_ASSUME_NONNULL_BEGIN
-typedef NS_ENUM(NSUInteger,NodeSubtreeStrategy){
-    NodeSubtreeStrategyRecord,
-    NodeSubtreeStrategyIgnore
-};
-
 @protocol FTSRNodeWireframesBuilder,FTSRResource;
-@interface FTSRNodeSemantics : NSObject
-@property (nonatomic, assign) int importance;
-@property (nonatomic, strong) NSArray<id<FTSRNodeWireframesBuilder>> *nodes;
-@property (nonatomic, assign) NodeSubtreeStrategy subtreeStrategy;
--(instancetype)initWithSubtreeStrategy:(NodeSubtreeStrategy)subtreeStrategy;
-
-@end
-
 @protocol FTSRNodeWireframesBuilder;
 @protocol FTSRResource;
-@class FTSRContext;
+@class FTSRContext, FTViewAttributes, FTSessionReplayWireframesBuilder;
 @interface FTViewTreeSnapshot : NSObject
 @property (nonatomic, strong) NSDate *date;
 @property (nonatomic, strong) FTSRContext *context;
@@ -51,23 +38,6 @@ typedef NS_ENUM(NSUInteger,NodeSubtreeStrategy){
 @property (nonatomic, strong) FTSessionReplayWireframesBuilder *builder;
 @end
 
-@interface FTUnknownElement : FTSRNodeSemantics
-+ (instancetype)constant;
-@end
-@interface FTInvisibleElement : FTSRNodeSemantics
-+ (instancetype)constant;
-@end
-@interface FTIgnoredElement : FTSRNodeSemantics
-
-@end
-
-@interface FTAmbiguousElement : FTSRNodeSemantics
-
-@end
-
-@interface FTSpecificElement : FTSRNodeSemantics
-
-@end
 NS_ASSUME_NONNULL_END
 
 #endif

@@ -59,6 +59,10 @@ NS_ASSUME_NONNULL_BEGIN
 ///   - error:  If an error occurred, returns an error object indicating how the transmission failed, otherwise returns `nil`.
 ///   - extraProvider: Additional custom RUM resource properties
 - (void)taskCompleted:(NSURLSessionTask *)task error:(nullable NSError *)error extraProvider:(nullable ResourcePropertyProvider)extraProvider;
+
+/// Internal use only: remove a Trace handler by its task or external Resource key.
+/// Call on the same interceptor instance that created the handler.
+- (void)removeTraceHandlerWithKey:(id)key;
 @end
 
 NS_ASSUME_NONNULL_END

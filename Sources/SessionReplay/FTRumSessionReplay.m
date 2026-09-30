@@ -74,6 +74,11 @@ static dispatch_once_t onceToken;
     return self;
 }
 - (void)startWithSessionReplayConfig:(FTSessionReplayConfig *)config{
+    @synchronized (self) {
+    if ([self sessionReplayFeature]) {
+        FTInnerLogInfo(@"[session-replay] already initialized; reusing existing feature stores");
+        return;
+    }
     if(config.sampleRate<=0&&config.sessionReplayOnErrorSampleRate<=0){
         FTInnerLogWarning(@"[session-replay] skipped: both sampleRate and sessionReplayOnErrorSampleRate are disabled");
         return;
@@ -95,6 +100,7 @@ static dispatch_once_t onceToken;
     [sessionReplayFeature startWithRecordStorage:srStore.storage resourceStorage:resourceStore.storage resourceDataStore:resourceDataStore];
     [sessionReplayFeature startRecording];
     FTInnerLogInfo(@"[session-replay] initialized success");
+    }
 }
 - (FTFeatureStores *)registerFeature:(id<FTRemoteFeature>)feature{
     FTFeatureDirectories *directories = [self.coreDirectory featureDirectoriesForFeatureName:feature.name];
@@ -151,6 +157,10 @@ static dispatch_once_t onceToken;
 
 - (NSString *)saveExternalImageResourceData:(NSData *)data mimeType:(NSString *)mimeType {
     return [[self sessionReplayFeature] saveExternalImageResourceData:data mimeType:mimeType];
+}
+
+- (void)updateExternalRecordCount:(NSUInteger)count viewID:(NSString *)viewID {
+    [[self sessionReplayFeature] setExternalRecordCountForViewID:viewID count:count];
 }
 
 @end

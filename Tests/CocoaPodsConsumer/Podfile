@@ -1,0 +1,18 @@
+platform :ios, '15.0'
+
+workspace 'Consumer'
+project 'Consumer.xcodeproj'
+use_frameworks!
+
+target 'ObjCConsumer' do
+  pod 'GuanceSDK', :path => '../..'
+  pod 'GuanceSDK/SessionReplay', :path => '../..'
+end
+
+target 'SwiftConsumer' do
+  pod 'GuanceSDK', :path => '../..'
+end
+
+target 'SwiftUIConsumer' do
+  pod 'GuanceSDK', :path => '../..'
+end

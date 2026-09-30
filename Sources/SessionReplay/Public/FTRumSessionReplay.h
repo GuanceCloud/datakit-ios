@@ -19,6 +19,13 @@
 #import <Foundation/Foundation.h>
 #import "FTSessionReplayConfig.h"
 NS_ASSUME_NONNULL_BEGIN
+
+FOUNDATION_EXPORT NSString * const FTSessionReplayRUMContextApplicationIDKey;
+FOUNDATION_EXPORT NSString * const FTSessionReplayRUMContextSessionIDKey;
+FOUNDATION_EXPORT NSString * const FTSessionReplayRUMContextViewIDKey;
+FOUNDATION_EXPORT NSString * const FTSessionReplayRUMContextGlobalContextKey;
+FOUNDATION_EXPORT NSString * const FTSessionReplayRUMContextSampledForErrorSessionKey;
+
 @interface FTRumSessionReplay : NSObject
 
 /// Singleton
@@ -51,6 +58,8 @@ NS_ASSUME_NONNULL_BEGIN
 
 /// Stores an encoded image resource and returns its content identifier.
 - (nullable NSString *)saveExternalImageResourceData:(NSData *)data mimeType:(NSString *)mimeType;
+
+- (void)updateExternalRecordCount:(NSUInteger)count viewID:(NSString *)viewID;
 @end
 
 NS_ASSUME_NONNULL_END

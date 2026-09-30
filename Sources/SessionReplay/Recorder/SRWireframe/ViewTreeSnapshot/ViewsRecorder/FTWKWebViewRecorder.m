@@ -18,6 +18,7 @@
 
 #if !TARGET_OS_TV
 #import "FTWKWebViewRecorder.h"
+#import "FTSessionReplayWireframesBuilder.h"
 #import "FTViewAttributes.h"
 #import "FTSRWireframe.h"
 #import "FTSRUtils.h"

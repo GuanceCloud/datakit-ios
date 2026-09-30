@@ -133,6 +133,13 @@ static NSString * const FTWebViewFilePrefix = @"w";
             return self.cacheWriter ?: self.noOpWriter;
     }
 }
+- (id<FTWriter>)normalResourceWriterForTrackingConsent:(FTTrackingConsent)trackingConsent{
+    [self updateTrackingConsent:trackingConsent];
+    if (trackingConsent == FTTrackingConsentGranted || trackingConsent == FTTrackingConsentErrorSampled) {
+        return self.authorizedWriter;
+    }
+    return self.noOpWriter;
+}
 - (id<FTWriter>)webViewWriterForTrackingConsent:(FTTrackingConsent)trackingConsent{
     [self updateTrackingConsent:trackingConsent];
     switch (trackingConsent) {

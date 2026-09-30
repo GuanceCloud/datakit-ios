@@ -83,6 +83,19 @@
     block(context, writer);
 }
 
+- (void)normalResourceWriteContext:(FTFeatureWriteContext)block{
+    if (!block) {
+        return;
+    }
+    FTFeatureContext *context;
+    id<FTWriter> writer;
+    @synchronized (self) {
+        context = [self featureContext];
+        writer = [self.storage normalResourceWriterForTrackingConsent:context.trackingConsent];
+    }
+    block(context, writer);
+}
+
 - (void)webViewEventWriteContext:(FTFeatureWriteContext)block{
     if (!block) {
         return;

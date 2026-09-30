@@ -35,8 +35,9 @@ Pod::Spec.new do |s|
 		agent.ios.deployment_target = '15.0'
 		agent.osx.deployment_target = '12.0'
 		agent.tvos.deployment_target = '15.0'
-		agent.source_files = 'Sources/*.{h}',
-			'Sources/Agent/**/*{.h,.m}'
+		agent.source_files = 'Sources/Agent/Public/*.{h}',
+			'Sources/Agent/**/*{.h,.m,.swift}'
+		agent.exclude_files = 'Sources/Agent/AutoTrack/FTSwiftUIBridgeStub.m'
 		agent.ios.exclude_files = 'Sources/Agent/AutoTrack/Mac/**/*'
 		agent.tvos.exclude_files = 'Sources/Agent/AutoTrack/Mac/**/*'
 		agent.dependency 'GuanceSDK/Core'
@@ -44,7 +45,7 @@ Pod::Spec.new do |s|
 
 	s.subspec 'WidgetExtension' do |e|
 		e.platform = :ios, '15.0'
-		e.source_files = 'Sources/WidgetExtension/*{.h,.m}','Sources/Agent/Config/*.{h,m}','Sources/Agent/ExternalData/*{.h,.m}','Sources/Agent/Extension/*{.h,.m}'
+		e.source_files = 'Sources/WidgetExtension/*{.h,.m}','Sources/Agent/Config/*.{h,m}','Sources/Agent/ExternalData/*{.h,.m}','Sources/Agent/Extension/*{.h,.m}','Sources/Agent/Shared/Public/*.h'
 		e.dependency 'GuanceSDK/Core/FTRUM'
 		e.dependency 'GuanceSDK/Core/URLSessionAutoInstrumentation'
 		e.dependency 'GuanceSDK/Core/Logger'
@@ -77,7 +78,7 @@ Pod::Spec.new do |s|
 		end
 
 		c.subspec 'RemoteConfig' do |r|
-			r.source_files = 'Sources/Core/RemoteConfig/*{.h,.m}'
+			r.source_files = 'Sources/Core/RemoteConfig/*{.h,.m}', 'Sources/Core/Public/FTRemoteConfigModel.h'
 			r.dependency 'GuanceSDK/Core/DataManager'
 		end
 
@@ -94,7 +95,7 @@ Pod::Spec.new do |s|
 		c.subspec 'FTWKWebView' do |j|
 			j.ios.deployment_target = '15.0'
 			j.osx.deployment_target = '12.0'
-			j.source_files = 'Sources/Core/FTWKWebView/**/*{.h,.m}'
+			j.source_files = 'Sources/Core/FTWKWebView/**/*{.h,.m}', 'Sources/Core/Public/FTWKWebViewHandler.h'
 			j.dependency 'GuanceSDK/Core/Protocol'
 			j.dependency 'GuanceSDK/Core/BaseUtils'
 		end

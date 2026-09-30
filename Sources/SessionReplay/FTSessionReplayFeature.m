@@ -17,6 +17,7 @@
 #if TARGET_OS_IOS || TARGET_OS_OSX
 
 #import "FTSessionReplayFeature.h"
+#import "FTRumSessionReplay.h"
 #import "FTSegmentRequest.h"
 #import "FTPerformancePresetOverride.h"
 #import "FTSessionReplayCoreImports.h"
@@ -38,6 +39,12 @@
 #import "FTWKWebViewHandler+SessionReplay.h"
 #import "FTScreenChangeScheduler.h"
 #import <CommonCrypto/CommonDigest.h>
+
+NSString * const FTSessionReplayRUMContextApplicationIDKey = @"applicationId";
+NSString * const FTSessionReplayRUMContextSessionIDKey = @"sessionId";
+NSString * const FTSessionReplayRUMContextViewIDKey = @"viewId";
+NSString * const FTSessionReplayRUMContextGlobalContextKey = @"globalContext";
+NSString * const FTSessionReplayRUMContextSampledForErrorSessionKey = @"sampledForErrorSession";
 
 @interface FTSessionReplayFeature()<FTMessageReceiver,FTSRWebTrackingProtocol>
 @property (nonatomic, strong) FTWindowObserver *windowObserver;
@@ -320,11 +327,7 @@
     [self.recordingCoordinator setExternalRecorderActive:active forOwner:owner];
 }
 
-- (NSDictionary *)currentExternalRUMContext {
-    if (self.recordScope.trackingConsent == FTTrackingConsentNotGranted) {
-        return nil;
-    }
-    NSDictionary *rumContext = [self.recordingCoordinator.currentRUMContext copy];
+- (NSDictionary<NSString *, id> *)externalContextFromRUMContext:(NSDictionary *)rumContext {
     NSString *applicationID = rumContext[FT_APP_ID];
     NSString *sessionID = rumContext[FT_RUM_KEY_SESSION_ID];
     NSString *viewID = rumContext[FT_KEY_VIEW_ID];
@@ -332,15 +335,23 @@
         return nil;
     }
     NSMutableDictionary *context = [@{
-        @"applicationId": applicationID,
-        @"sessionId": sessionID,
-        @"viewId": viewID,
+        FTSessionReplayRUMContextApplicationIDKey: [applicationID copy],
+        FTSessionReplayRUMContextSessionIDKey: [sessionID copy],
+        FTSessionReplayRUMContextViewIDKey: [viewID copy],
+        FTSessionReplayRUMContextSampledForErrorSessionKey: @([rumContext[FT_RUM_KEY_SAMPLED_FOR_ERROR_SESSION] boolValue]),
     } mutableCopy];
     NSDictionary *bindInfo = rumContext[FT_LINK_RUM_KEYS];
-    if (bindInfo.count > 0) {
-        context[@"globalContext"] = bindInfo;
+    if ([bindInfo isKindOfClass:NSDictionary.class] && bindInfo.count > 0) {
+        context[FTSessionReplayRUMContextGlobalContextKey] = [bindInfo copy];
     }
     return [context copy];
+}
+
+- (NSDictionary *)currentExternalRUMContext {
+    if (self.recordScope.trackingConsent == FTTrackingConsentNotGranted) {
+        return nil;
+    }
+    return [self externalContextFromRUMContext:[self.recordingCoordinator.currentRUMContext copy]];
 }
 
 - (void)setExternalHasReplay:(BOOL)hasReplay {
@@ -407,7 +418,16 @@
     NSString *capturedIdentifier = [identifier copy];
     NSString *capturedApplicationID = [applicationID copy];
     NSString *capturedMimeType = [mimeType copy];
-    NSDictionary *capturedBindInfo = [rumContext[FT_LINK_RUM_KEYS] copy];
+    NSDictionary *candidateBindInfo = rumContext[FT_LINK_RUM_KEYS];
+    NSMutableDictionary *filteredBindInfo = [NSMutableDictionary new];
+    if ([candidateBindInfo isKindOfClass:NSDictionary.class]) {
+        for (id key in self.config.enableLinkRUMKeys) {
+            if ([key isKindOfClass:NSString.class] && candidateBindInfo[key]) {
+                filteredBindInfo[key] = candidateBindInfo[key];
+            }
+        }
+    }
+    NSDictionary *capturedBindInfo = [filteredBindInfo copy];
     id<FTResourcesWriting> resourceWriter = self.externalResourceWriter;
     dispatch_async(self.processorsQueue, ^{
         FTEnrichedResource *resource = [[FTEnrichedResource alloc] init];
@@ -416,7 +436,7 @@
         resource.appId = capturedApplicationID;
         resource.mimeType = capturedMimeType;
         resource.bindInfo = capturedBindInfo;
-        [resourceWriter write:@[resource]];
+        [resourceWriter writeExternalResourcesToNormalDirectory:@[resource]];
     });
     return identifier;
 }

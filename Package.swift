@@ -13,7 +13,10 @@ let package = Package(
     products: [
         .library(
             name: "GuanceSDK",
-            targets: ["GuanceSDK"]
+            targets: [
+                "GuanceSDK",
+                "GuanceSDKSwiftUI",
+            ]
         ),
         .library(
             name: "GuanceWidgetExtension",
@@ -30,58 +33,69 @@ let package = Package(
         .target(
             name: "GuanceSDK",
             dependencies: [
-                "_GuanceSDKObjC",
-                "_GuanceSDKSwiftUI",
-            ],
-            path: "Sources/SwiftPM",
-            sources: ["GuanceSDK.swift"]
-        ),
-        .target(
-            name: "_GuanceSDKObjC",
-            dependencies: [
                 "_GuanceSDKCore",
-                "_AgentExtension",
-                "_AgentExternalData",
-                "_AgentConfig",
-                "_GuanceSDKSwiftUI",
+                "_AgentShared",
+                "_GuanceSDKSwiftSupport",
+                "_FTRUM",
+                "_FTURLSessionAutoInstrumentation",
+                "_FTLogger",
+                "_FTBaseUtils",
+                "_FTProtocol",
             ],
             path: "Sources",
-            exclude: ["Agent/Core/module.modulemap"],
             sources: [
                 "Agent/Core",
                 "Agent/AutoTrack",
             ],
-            publicHeadersPath: "Agent/Core",
+            publicHeadersPath: "Agent/Public",
             cSettings: [
                 .headerSearchPath("Agent/Core"),
                 .headerSearchPath("Agent/AutoTrack"),
+                .headerSearchPath("Agent/Config"),
+                .headerSearchPath("Agent/ExternalData"),
+                .headerSearchPath("Core/include"),
                 .headerSearchPath("Core/FTRUM/Heatmap"),
                 .headerSearchPath("Core/DataFilter")
             ]
         ),
         .target(
-            name: "_GuanceSDKSwiftUI",
-            path: "Sources/Agent/SwiftUI"
+            name: "GuanceSDKSwiftUI",
+            dependencies: [
+                "GuanceSDK",
+                "_GuanceSDKSwiftSupport",
+            ],
+            path: "Sources/Agent/SwiftUI",
+            exclude: [
+                "FTSwiftUIRUMBridge.swift",
+                "FTSwiftUIViewNameExtractor.swift",
+            ],
+            sources: [
+                "FTRUMSwiftUI.swift",
+                "FTSwiftUIRUMViewModifier.swift",
+            ]
         ),
         .target(
-            name: "_AgentConfig",
+            name: "_GuanceSDKSwiftSupport",
+            path: "Sources/Agent/SwiftUI",
+            exclude: [
+                "FTRUMSwiftUI.swift",
+                "FTSwiftUIRUMViewModifier.swift",
+            ],
+            sources: [
+                "FTSwiftUIRUMBridge.swift",
+                "FTSwiftUIViewNameExtractor.swift",
+            ]
+        ),
+        .target(
+            name: "_AgentShared",
             dependencies: [
                 "_FTBaseUtils",
                 "_FTRUM",
                 "_FTProtocol",
             ],
             path: "Sources/Agent",
-            sources: ["Config"],
-            publicHeadersPath: "Config"
-        ),
-        .target(
-            name: "_AgentExternalData",
-            dependencies: [
-                "_FTProtocol",
-                "_FTBaseUtils",
-            ],
-            path: "Sources/Agent/ExternalData",
-            publicHeadersPath: "."
+            sources: ["Config", "ExternalData", "Extension"],
+            publicHeadersPath: "Shared/Public"
         ),
         .target(
             name: "_FTProtocol",
@@ -145,26 +159,22 @@ let package = Package(
 
         // MARK: - GuanceWidgetExtension
         .target(
-            name: "_AgentExtension",
-            dependencies: ["_FTBaseUtils"],
-            path: "Sources/Agent/Extension",
-            publicHeadersPath: "."
-        ),
-        .target(
             name: "GuanceWidgetExtension",
             dependencies: [
-                "_AgentExtension",
+                "_AgentShared",
                 "_FTRUM",
                 "_FTURLSessionAutoInstrumentation",
-                "_AgentExternalData",
                 "_FTLogger",
-                "_AgentConfig",
             ],
             path: "Sources/WidgetExtension",
             resources: [
                 .copy("../Resources/PrivacyInfo.xcprivacy"),
             ],
-            publicHeadersPath: "."
+            publicHeadersPath: ".",
+            cSettings: [
+                .headerSearchPath("../Agent/Config"),
+                .headerSearchPath("../Agent/ExternalData"),
+            ]
         ),
 
         // MARK: - GuanceSDKCore
@@ -185,8 +195,9 @@ let package = Package(
             resources: [
                 .copy("Resources/PrivacyInfo.xcprivacy"),
             ],
-            publicHeadersPath: "Core/include",
+            publicHeadersPath: "Core/Public",
             cSettings: [
+                .headerSearchPath("Core/include"),
                 .headerSearchPath("Core/DataManager/Upload"),
                 .headerSearchPath("Core/DataManager/Storage"),
                 .headerSearchPath("Core/DataManager/Storage/fmdb"),
@@ -209,6 +220,7 @@ let package = Package(
             publicHeadersPath: "Public",
             cSettings: [
                 .headerSearchPath("../.."),
+                .headerSearchPath("../Core/include"),
                 .headerSearchPath("."),
                 .headerSearchPath("Processor/Builders"),
                 .headerSearchPath("DataStore"),

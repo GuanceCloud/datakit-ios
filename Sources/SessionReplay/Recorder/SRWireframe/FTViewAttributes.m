@@ -17,6 +17,7 @@
 #if TARGET_OS_IOS || TARGET_OS_OSX
 
 #import "FTViewAttributes.h"
+#import "FTSessionReplayPrivacyOverrides+Extension.h"
 #import "FTSRUtils.h"
 @implementation FTSRContext
 @end

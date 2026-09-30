@@ -17,6 +17,7 @@
 #if TARGET_OS_IOS
 
 #import "FTUIHostingViewRecorder.h"
+#import "FTSessionReplayWireframesBuilder.h"
 #import "FTSRWireframe.h"
 #import "FTSRUtils.h"
 #import "FTSRTextObfuscatingFactory.h"
