@@ -106,6 +106,8 @@ Environment:
                            Default: --allow-warnings --verbose
   XCODEBUILD_OPTIONS       Extra options for Swift Package xcodebuild.
                            Default: -quiet
+  RUBY_EXECUTABLE          Ruby with the xcodeproj gem for consumer project generation.
+                           Default: ruby from PATH. Set GEM_HOME as needed.
   SPM_PLATFORMS            Same as --spm-platforms.
   SPM_DESTINATION          Same as --spm-destination.
 
@@ -287,9 +289,17 @@ run_step() {
   fi
 }
 
+resolve_xcodeproj_ruby() {
+  local ruby_path="${RUBY_EXECUTABLE:-$(command -v ruby)}"
+  if [[ -z "${ruby_path}" ]] || ! "${ruby_path}" -e 'require "xcodeproj"' > /dev/null 2>&1; then
+    error "Ruby cannot load xcodeproj. Set RUBY_EXECUTABLE and GEM_HOME to the Ruby environment used by CocoaPods."
+    return 1
+  fi
+  echo "${ruby_path}"
+}
+
 validate_cocoapods() {
   require_command "pod" || return 1
-  require_command "ruby" || return 1
   require_command "xcodebuild" || return 1
 
   if [[ ! -f "${PODSPEC}" ]]; then
@@ -299,7 +309,7 @@ validate_cocoapods() {
 
   local lint_options="${POD_LINT_OPTIONS:---allow-warnings --verbose}"
   local ruby_command
-  ruby_command="$(command -v ruby)"
+  ruby_command="$(resolve_xcodeproj_ruby)" || return 1
   info "Running pod lib lint with options: ${lint_options}"
   # shellcheck disable=SC2086
   pod lib lint "${PODSPEC}" ${lint_options} || return 1
@@ -342,7 +352,7 @@ validate_xcframework_consumers() {
   local derived_data="${FRAMEWORK_CONSUMER_DERIVED_DATA}/${linkage}"
   local zip_path="${BUILD_DIR}/${zip_name}"
   local ruby_command
-  ruby_command="$(command -v ruby)"
+  ruby_command="$(resolve_xcodeproj_ruby)" || return 1
 
   if [[ ! -f "${FRAMEWORK_CONSUMER_DIR}/generate_project.rb" ]]; then
     error "XCFramework consumer fixture not found: ${FRAMEWORK_CONSUMER_DIR}"
@@ -364,7 +374,7 @@ validate_xcframework_consumers() {
     cd "${validation_dir}" || exit 1
     GUANCE_XCFRAMEWORK_LINKAGE="${linkage}" \
       "${ruby_command}" generate_project.rb || exit 1
-  )
+  ) || return 1
 
   local scheme
   for scheme in "${FRAMEWORK_CONSUMER_SCHEMES[@]}"; do
