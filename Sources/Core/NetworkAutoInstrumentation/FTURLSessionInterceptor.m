@@ -31,6 +31,7 @@
 #import "FTConstants.h"
 #import "FTDateUtil.h"
 #import "NSDate+FTUtil.h"
+#import "FTVisitorIDManager+Private.h"
 void *FTInterceptorQueueIdentityKey = &FTInterceptorQueueIdentityKey;
 
 @interface FTURLSessionInterceptor ()
@@ -248,6 +249,7 @@ static NSObject *sharedInstanceLock;
     uint64_t startTime = isWebSocketHandshake ? [FTDateUtil continuousTime] : 0;
     long long startNsTimeInterval = isWebSocketHandshake ? [[NSDate date] ft_nanosecondTimeStamp] : 0;
     FTURLSessionRequestSnapshot *requestSnapshot = [FTURLSessionRequestSnapshot snapshotWithRequest:task.currentRequest];
+    NSString *requestVisitorID = task.ft_visitorIDSnapshot.value;
     NSURL *resourceURL = isWebSocketHandshake ? task.ft_webSocketResourceURL : requestSnapshot.URL;
     dispatch_async(self.queue, ^{
         @try {
@@ -274,7 +276,7 @@ static NSObject *sharedInstanceLock;
                 handler.request = [webSocketRequest copy];
                 handler.webSocketHandshakeStarted = YES;
             }
-            [self startResourceWithKey:handler.identifier];
+            [self startResourceWithKey:handler.identifier requestVisitorID:requestVisitorID];
         }@catch (NSException *exception) {
             FTInnerLogError(@"exception: %@",exception);
         }
@@ -538,6 +540,25 @@ static NSObject *sharedInstanceLock;
 - (void)startResourceWithKey:(NSString *)key{
     if (self.rumResourceHandler && [self.rumResourceHandler respondsToSelector:@selector(startResourceWithKey:)]) {
         [self.rumResourceHandler startResourceWithKey:key];
+    }
+}
+- (void)startResourceWithKey:(NSString *)key requestVisitorID:(nullable NSString *)visitorID{
+    NSDate *time = [NSDate date];
+    if (!self.rumResourceHandler) {
+        return;
+    }
+    FTVisitorIDManager *visitorIDManager = [FTVisitorIDManager sharedInstance];
+    [visitorIDManager bindResourceVisitorID:visitorID forKey:key];
+    @try {
+        if ([self.rumResourceHandler respondsToSelector:@selector(startResourceWithKey:property:time:)]) {
+            [self.rumResourceHandler startResourceWithKey:key property:nil time:time];
+        } else {
+            [self startResourceWithKey:key];
+        }
+    } @finally {
+        // FTRUMManager consumes the association synchronously. Remove it here when a
+        // custom Resource handler did not consume it, so the one-shot bridge cannot leak.
+        [visitorIDManager consumeResourceVisitorIDForKey:key];
     }
 }
 - (void)startResourceWithKey:(NSString *)key property:(nullable NSDictionary *)property{

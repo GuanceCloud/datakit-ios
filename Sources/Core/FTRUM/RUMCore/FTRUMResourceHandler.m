@@ -32,6 +32,8 @@
 @property (nonatomic, strong) NSDate *time;
 @property (nonatomic, strong) NSMutableDictionary *resourceProperty;
 @property (nonatomic, strong) NSNumber *networkAvailable;
+@property (nonatomic, copy, nullable) NSString *visitorIDSnapshot;
+- (NSDictionary *)context:(NSDictionary *)context byApplyingVisitorID:(NSString *)visitorID;
 @end
 @implementation FTRUMResourceHandler
 -(instancetype)initWithModel:(FTRUMResourceDataModel *)model context:(FTRUMContext *)context dependencies:(nonnull FTRUMDependencies *)dependencies{
@@ -41,6 +43,7 @@
         self.identifier = model.identifier;
         self.assistant = self;
         self.time = model.time;
+        self.visitorIDSnapshot = model.visitorIDSnapshot;
         self.resourceProperty = [[NSMutableDictionary alloc]init];
         if(model.fields && model.fields.allKeys.count>0){
             [self.resourceProperty addEntriesFromDictionary:model.fields];
@@ -66,7 +69,11 @@
                     return NO;
                 case FTRUMDataResourceStop:{
                     if(data.fields && data.fields.allKeys.count>0){
-                        [self.resourceProperty addEntriesFromDictionary:data.fields];
+                        NSMutableDictionary *fields = [data.fields mutableCopy];
+                        if (self.visitorIDSnapshot.length > 0) {
+                            [fields removeObjectForKey:FT_VISITOR_ID];
+                        }
+                        [self.resourceProperty addEntriesFromDictionary:fields];
                     }
                 }
                     break;
@@ -99,6 +106,11 @@
     [fields setValue:self.dependencies.sessionHasReplay forKey:FT_SESSION_HAS_REPLAY];
     [fields addEntriesFromDictionary:model.fields];
     [fields addEntriesFromDictionary:self.context.sessionState.sessionFields];
+    if (self.visitorIDSnapshot.length > 0) {
+        [tags removeObjectForKey:FT_VISITOR_ID];
+        [fields removeObjectForKey:FT_VISITOR_ID];
+        context = [self context:context byApplyingVisitorID:self.visitorIDSnapshot];
+    }
     [self.dependencies.writer rumWrite:FT_RUM_SOURCE_ERROR tags:tags fields:fields dynamicContext:context time:model.tm];
 }
 - (void)writeResourceData:(FTRUMDataModel *)data context:(NSDictionary *)context{
@@ -136,6 +148,16 @@
     [tags addEntriesFromDictionary:sessionTag];
     [tags addEntriesFromDictionary:data.tags];
     [tags setValue:model.identifier forKey:FT_KEY_RESOURCE_ID];
+    if (self.visitorIDSnapshot.length > 0) {
+        [tags removeObjectForKey:FT_VISITOR_ID];
+        [fields removeObjectForKey:FT_VISITOR_ID];
+        context = [self context:context byApplyingVisitorID:self.visitorIDSnapshot];
+    }
     [self.dependencies.writer rumWrite:FT_RUM_SOURCE_RESOURCE tags:tags fields:fields dynamicContext:context time:resourceStartTime];
+}
+- (NSDictionary *)context:(NSDictionary *)context byApplyingVisitorID:(NSString *)visitorID{
+    NSMutableDictionary *managedContext = [context mutableCopy] ?: [NSMutableDictionary dictionary];
+    managedContext[FT_VISITOR_ID] = visitorID;
+    return [managedContext copy];
 }
 @end

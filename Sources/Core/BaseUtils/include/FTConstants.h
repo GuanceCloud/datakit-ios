@@ -122,6 +122,8 @@ extern NSString * const FT_DURATION;
 extern NSString * const FT_TERMINAL_APP;
 /// RUM application identifier attribute key.
 extern NSString * const FT_APP_ID;
+/// SDK-managed anonymous Visitor identifier attribute key.
+extern NSString * const FT_VISITOR_ID;
 
 #pragma mark ---------- session ----------
 /// RUM session identifier attribute key.

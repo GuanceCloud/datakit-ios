@@ -30,6 +30,7 @@
 #import "FTInnerLog.h"
 #import "FTDURLSessionDelegate.h"
 #import "FTURLConnectionInstrumentation.h"
+#import "FTVisitorIDManager.h"
 
 typedef void (^CompletionHandler)(NSData * _Nullable data, NSURLResponse * _Nullable response, NSError * _Nullable error);
 
@@ -67,6 +68,9 @@ static BOOL delegateConformsToFTProtocol(id delegate) {
 @property (nonatomic, strong) FTTracer *tracer;
 @property (atomic, assign, readwrite) BOOL shouldTraceInterceptor;
 @property (atomic, assign, readwrite) BOOL shouldRUMInterceptor;
+@property (atomic, assign) BOOL shouldVisitorIDInterceptor;
+@property (atomic, assign) BOOL didWarnVisitorHeaderReplacement;
+- (void)injectVisitorIDIntoTask:(NSURLSessionTask *)task;
 @end
 
 @implementation FTURLSessionInstrumentation
@@ -117,6 +121,7 @@ static dispatch_once_t onceToken;
     if (self) {
         _shouldRUMInterceptor = NO;
         _shouldTraceInterceptor = NO;
+        _shouldVisitorIDInterceptor = NO;
     }
     return self;
 }
@@ -168,6 +173,13 @@ static dispatch_once_t onceToken;
     self.interceptor.rumResourceHandler = handler;
 }
 
+- (void)setVisitorIDEnabled:(BOOL)enabled {
+    if (enabled) {
+        [self swizzleURLSession];
+    }
+    self.shouldVisitorIDInterceptor = enabled;
+}
+
 - (void)setIntakeUrlHandler:(FTIntakeUrl)intakeUrlHandler {
     self.interceptor.intakeUrlHandler = intakeUrlHandler;
 }
@@ -176,6 +188,7 @@ static dispatch_once_t onceToken;
 - (void)disableAutomaticRegistration {
     self.shouldRUMInterceptor = NO;
     self.shouldTraceInterceptor = NO;
+    self.shouldVisitorIDInterceptor = NO;
 }
 
 #pragma mark - Interceptor Management
@@ -495,7 +508,46 @@ static dispatch_once_t onceToken;
     id<FTURLSessionInterceptorProtocol> traceInterceptor = [[FTURLSessionInstrumentation sharedInstance] traceInterceptor:delegate];
     id<FTURLSessionInterceptorProtocol> rumInterceptor = [[FTURLSessionInstrumentation sharedInstance] rumInterceptor:delegate];
     [traceInterceptor traceInterceptTask:task];
+    BOOL supportsVisitorID = [task isKindOfClass:NSURLSessionDataTask.class] ||
+        [task isKindOfClass:NSURLSessionDownloadTask.class];
+    if (self.shouldVisitorIDInterceptor && supportsVisitorID && !task.ft_isWebSocketTask) {
+        [self injectVisitorIDIntoTask:task];
+    }
     [rumInterceptor interceptTask:task];
+}
+
+- (void)injectVisitorIDIntoTask:(NSURLSessionTask *)task {
+    @try {
+        @synchronized (task) {
+            NSURLRequest *request = task.currentRequest;
+            if (!request.URL) {
+                return;
+            }
+            FTVisitorIDRequestSnapshot *snapshot = task.ft_visitorIDSnapshot;
+            if (!task.ft_visitorIDWasEvaluated) {
+                task.ft_visitorIDWasEvaluated = YES;
+                snapshot = [[FTVisitorIDManager sharedInstance] requestSnapshotForURL:request.URL];
+                task.ft_visitorIDSnapshot = snapshot;
+            }
+            if (!snapshot) {
+                return;
+            }
+            NSString *existing = [request valueForHTTPHeaderField:snapshot.headerName];
+            if (existing && ![existing isEqualToString:snapshot.value]) {
+                @synchronized (self) {
+                    if (!self.didWarnVisitorHeaderReplacement) {
+                        self.didWarnVisitorHeaderReplacement = YES;
+                        FTInnerLogWarning(@"Existing Visitor ID header replaced with SDK-managed value");
+                    }
+                }
+            }
+            NSMutableURLRequest *mutableRequest = [request mutableCopy];
+            [mutableRequest setValue:snapshot.value forHTTPHeaderField:snapshot.headerName];
+            [task setValue:mutableRequest forKey:@"currentRequest"];
+        }
+    } @catch (NSException *exception) {
+        FTInnerLogWarning(@"Visitor ID request injection failed: %@", exception.reason);
+    }
 }
 
 - (BOOL)isFTIntakeRequest:(NSURLRequest *)request{

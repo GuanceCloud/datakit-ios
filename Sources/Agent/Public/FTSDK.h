@@ -32,6 +32,7 @@
 #import "FTTraceContext.h"
 #import "FTLoggerConfig.h"
 #import "FTRumConfig.h"
+#import "FTVisitorIDConfig.h"
 #import "FTConstants.h"
 #import "FTModuleManager.h"
 #import "FTMessageReceiver.h"

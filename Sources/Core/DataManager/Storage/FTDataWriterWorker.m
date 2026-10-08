@@ -111,11 +111,15 @@
     BOOL webViewLog = [op isEqualToString:FT_DATA_TYPE_LOGGING]
         && [tags[FT_IS_WEBVIEW] respondsToSelector:@selector(boolValue)]
         && [tags[FT_IS_WEBVIEW] boolValue];
+    BOOL webViewRUM = ([op isEqualToString:FT_DATA_TYPE_RUM] || [op isEqualToString:FT_DATA_TYPE_RUM_CACHE])
+        && [tags[FT_IS_WEBVIEW] respondsToSelector:@selector(boolValue)]
+        && [tags[FT_IS_WEBVIEW] boolValue];
     FTPresetProperty *preset = [FTPresetProperty sharedInstance];
     NSDictionary *eventTags = [preset applyModifier:tags];
     NSDictionary *eventFields = [preset applyModifier:fields];
     NSDictionary *safeContextTags = [NSObject ft_normalizedDictionaryWithObject:contextTags];
     NSMutableDictionary *tagsDict = [eventTags mutableCopy] ?: [NSMutableDictionary dictionary];
+    id browserVisitorID = webViewRUM ? eventTags[FT_VISITOR_ID] : nil;
     [tagsDict addEntriesFromDictionary:safeContextTags];
     NSDictionary *eventPkgInfo = [eventTags[FT_SDK_PKG_INFO] isKindOfClass:NSDictionary.class]
         ? eventTags[FT_SDK_PKG_INFO] : nil;
@@ -133,6 +137,13 @@
             pkgInfo[@"web"] = browserSDKVersion;
         }
         tagsDict[FT_IS_WEBVIEW] = @(YES);
+    }
+    if (webViewRUM) {
+        if (browserVisitorID) {
+            tagsDict[FT_VISITOR_ID] = browserVisitorID;
+        } else {
+            [tagsDict removeObjectForKey:FT_VISITOR_ID];
+        }
     }
     if (pkgInfo.count > 0) {
         tagsDict[FT_SDK_PKG_INFO] = [pkgInfo copy];

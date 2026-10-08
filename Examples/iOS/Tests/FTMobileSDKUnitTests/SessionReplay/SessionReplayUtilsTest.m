@@ -690,7 +690,7 @@ static void *FTExternalSegmentProcessorQueueKey = &FTExternalSegmentProcessorQue
         attributes = [[FTViewAttributes alloc] initWithView:view
                                             frameInRootView:view.frame
                                                        clip:view.frame
-                                                  overrides:[PrivacyOverrides new]];
+                                                  overrides:[FTSessionReplayPrivacyOverrides new]];
     }];
     NSInteger providerCallsAfterSnapshot = providerCallCount;
     

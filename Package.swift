@@ -57,6 +57,7 @@ let package = Package(
                 "_FTLogger",
                 "_FTBaseUtils",
                 "_FTProtocol",
+                "_FTVisitorID",
             ],
             path: "Sources",
             sources: [
@@ -124,6 +125,7 @@ let package = Package(
             dependencies: [
                 "_FTBaseUtils",
                 "_FTProtocol",
+                "_FTVisitorID",
             ],
             path: "Sources/Core/FTRUM",
             cSettings: [
@@ -141,6 +143,7 @@ let package = Package(
             dependencies: [
                 "_FTProtocol",
                 "_FTBaseUtils",
+                "_FTVisitorID",
             ],
             path: "Sources/Core/NetworkAutoInstrumentation",
             publicHeadersPath: "."
@@ -152,6 +155,12 @@ let package = Package(
                 "_FTProtocol",
             ],
             path: "Sources/Core/Logger",
+            publicHeadersPath: "."
+        ),
+        .target(
+            name: "_FTVisitorID",
+            dependencies: ["_FTBaseUtils"],
+            path: "Sources/Core/VisitorID",
             publicHeadersPath: "."
         ),
         .testTarget(

@@ -65,12 +65,19 @@ Pod::Spec.new do |s|
 			r.source_files = 'Sources/Core/FTRUM/**/*.{h,m,c,cpp}'
 			r.dependency 'GuanceSDK/Core/BaseUtils'
 			r.dependency 'GuanceSDK/Core/Protocol'
+			r.dependency 'GuanceSDK/Core/VisitorID'
 		end
 
 		c.subspec 'URLSessionAutoInstrumentation' do |a|
 			a.source_files = 'Sources/Core/NetworkAutoInstrumentation/**/*{.h,.m}'
 			a.dependency 'GuanceSDK/Core/Protocol'
 			a.dependency 'GuanceSDK/Core/BaseUtils'
+			a.dependency 'GuanceSDK/Core/VisitorID'
+		end
+
+		c.subspec 'VisitorID' do |v|
+			v.source_files = 'Sources/Core/VisitorID/**/*{.h,.m}'
+			v.dependency 'GuanceSDK/Core/BaseUtils'
 		end
 
 		c.subspec 'Protocol' do |r|

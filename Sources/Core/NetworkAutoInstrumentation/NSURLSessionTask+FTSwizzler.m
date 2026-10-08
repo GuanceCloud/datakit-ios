@@ -23,7 +23,23 @@
 #import <objc/runtime.h>
 #import "FTInnerLog.h"
 static char *hasCompletionKey = "hasCompletionKey";
+static char *visitorIDWasEvaluatedKey = "visitorIDWasEvaluatedKey";
+static char *visitorIDSnapshotKey = "visitorIDSnapshotKey";
 @implementation NSURLSessionTask (FTSwizzler)
+
+-(void)setFt_visitorIDWasEvaluated:(BOOL)evaluated{
+    objc_setAssociatedObject(self, &visitorIDWasEvaluatedKey, @(evaluated), OBJC_ASSOCIATION_RETAIN_NONATOMIC);
+}
+-(BOOL)ft_visitorIDWasEvaluated{
+    return [objc_getAssociatedObject(self, &visitorIDWasEvaluatedKey) boolValue];
+}
+
+-(void)setFt_visitorIDSnapshot:(FTVisitorIDRequestSnapshot *)snapshot{
+    objc_setAssociatedObject(self, &visitorIDSnapshotKey, snapshot, OBJC_ASSOCIATION_RETAIN_NONATOMIC);
+}
+-(FTVisitorIDRequestSnapshot *)ft_visitorIDSnapshot{
+    return objc_getAssociatedObject(self, &visitorIDSnapshotKey);
+}
 
 -(void)setFt_hasCompletion:(BOOL)hasCompletion{
     objc_setAssociatedObject(self, &hasCompletionKey, @(hasCompletion), OBJC_ASSOCIATION_RETAIN_NONATOMIC);
