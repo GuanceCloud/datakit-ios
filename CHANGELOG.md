@@ -1,3 +1,15 @@
+# 1.6.8-alpha.8
+
+1. **Breaking:** Raised minimum supported versions to iOS 15, tvOS 15, and macOS 12; Swift Package Manager now requires Swift tools 5.5.
+2. Exposed public APIs required for React Native and Flutter Swift Package Manager integrations, including custom Session Replay recorders, wireframe builders, and external recording.
+3. Added fractional percentage sampling for RUM, Log, Trace, and Session Replay, with validated configuration values and compatibility with deprecated sampling APIs and legacy remote configuration.
+4. Improved external Session Replay write ordering, image resource handling for error-sampled sessions, and repeated initialization safety.
+5. Fixed missing public header exports in GuanceWidgetExtension.
+6. Fixed network connectivity status not being retained after updates.
+7. Fixed duplicate ANR reporting after RUM session renewal.
+8. Added opt-in SDK-managed Visitor ID support through `FTRumConfig.visitorIDConfig`, including persistent identifiers with configurable fixed TTL, automatic custom-header injection for matching URLSession requests, native RUM `visitor_id` correlation, and manual reset via `+[FTSDKAgent resetVisitorID]`.
+---
+
 # 1.6.8-alpha.7
 
 1. Improved multi-process isolation and simplified child process configuration for macOS Electron Native-owned Mixed Mode.
