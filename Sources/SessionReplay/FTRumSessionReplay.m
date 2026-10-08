@@ -17,6 +17,7 @@
 #if TARGET_OS_IOS || TARGET_OS_OSX
 
 #import "FTRumSessionReplay.h"
+#import "FTRumSessionReplay+ExternalRecorder.h"
 #import "FTResourcesFeature.h"
 #import "FTFeatureUpload.h"
 #import "FTFileWriter.h"
@@ -52,6 +53,7 @@
 @property (nonatomic, strong) NSMutableDictionary<NSString*,FTFeatureStores*>*stores;
 @property (nonatomic, strong) NSMutableDictionary<NSString*,id<FTRemoteFeature>>*features;
 @property (nonatomic, copy) NSString *source;
+- (nullable FTSessionReplayFeature *)sessionReplayFeature;
 @end
 @implementation FTRumSessionReplay
 static FTRumSessionReplay *sharedInstance = nil;
@@ -79,7 +81,7 @@ static dispatch_once_t onceToken;
         FTInnerLogInfo(@"[session-replay] already initialized; reusing existing feature stores");
         return;
     }
-    if(config.sampleRate<=0&&config.sessionReplayOnErrorSampleRate<=0){
+    if(config.sessionReplaySamplingRate<=0&&config.sessionReplayOnErrorSamplingRate<=0){
         FTInnerLogWarning(@"[session-replay] skipped: both sampleRate and sessionReplayOnErrorSampleRate are disabled");
         return;
     }
@@ -131,7 +133,11 @@ static dispatch_once_t onceToken;
     return nil;
 }
 
-- (NSDictionary *)currentExternalRUMContext {
+@end
+
+@implementation FTRumSessionReplay (ExternalRecorder)
+
+- (NSDictionary<NSString *, id> *)currentExternalRUMContext {
     return [[self sessionReplayFeature] currentExternalRUMContext];
 }
 

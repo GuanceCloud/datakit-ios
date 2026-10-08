@@ -38,6 +38,9 @@
 #import "FTWeakMapTable.h"
 #import "FTThreadDispatchManager.h"
 #import "NSDate+FTUtil.h"
+#if TARGET_OS_OSX
+#import "FTElectronWebViewTrackingProtocol.h"
+#endif
 
 @interface FTWKWebViewHandler ()
 @property (nonatomic, weak, nullable) id<FTWKWebViewRumDelegate> rumTrackDelegate;
@@ -45,6 +48,7 @@
 @property (nonatomic, strong) NSMapTable *webViewBridge;
 @property (nonatomic, strong) NSHashTable<WKWebView *> *manuallyEnabledWebViews;
 @property (nonatomic, copy) NSString *allowWebViewHostsString;
+@property (nonatomic, copy, nullable) NSArray *allowedWebViewHosts;
 @property (nonatomic, strong) NSLock *lock;
 @property (nonatomic, assign) BOOL enableTraceWebView;
 @property (nonatomic, assign) BOOL enableWebViewLog;
@@ -91,10 +95,12 @@ static NSObject *sharedInstanceLock;
     return self;
 }
 - (void)setAllowWebViewHost:(NSArray *)hosts {
-    NSString *hostsString = [self transHostsArrayToString:hosts];
+    NSArray *allowedHosts = [hosts copy];
+    NSString *allowedHostsString = [self transHostsArrayToString:allowedHosts];
     [self.lock lock];
     @try {
-        _allowWebViewHostsString = [hostsString copy];
+        _allowedWebViewHosts = allowedHosts;
+        _allowWebViewHostsString = allowedHostsString;
     } @finally {
         [self.lock unlock];
     }
@@ -122,6 +128,18 @@ static NSObject *sharedInstanceLock;
     if (enable) {
         [self setWKWebViewTrace];
     }
+}
+- (NSDictionary<NSString *, id> *)webViewTraceConfiguration{
+    [self.lock lock];
+    BOOL rumEnabled = _enableTraceWebView;
+    BOOL logEnabled = _enableWebViewLog;
+    NSArray *allowedHosts = [_allowedWebViewHosts copy];
+    [self.lock unlock];
+    return @{
+        @"enableTraceWebView": @(rumEnabled),
+        @"enableWebViewLog": @(logEnabled),
+        @"allowedWebViewHosts": allowedHosts ?: NSNull.null,
+    };
 }
 - (void)setWKWebViewTrace{
     static dispatch_once_t onceTokenWebView;
@@ -272,7 +290,7 @@ allowedWebViewHostsString:(NSString *)hostsString
         [bridge registerHandler:@"sendEvent" handler:^(id data, int64_t slotId,WVJBResponseCallback responseCallback) {
             __strong __typeof(weakSelf) strongSelf = weakSelf;
             if (!strongSelf) return;
-            [strongSelf dealReceiveScriptMessage:data slotId:slotId info:bindInfo];
+            [strongSelf processWebViewBridgeEvent:data slotId:slotId bindInfo:bindInfo];
         }];
         [self addWebView:webView bridge:bridge];
     }
@@ -280,7 +298,9 @@ allowedWebViewHostsString:(NSString *)hostsString
         FTInnerLogError(@"exception: %@",exception);
     }
 }
-- (void)dealReceiveScriptMessage:(id )message slotId:(int64_t)slotID info:(FTBindInfo *)info{
+- (void)processWebViewBridgeEvent:(id)message
+                           slotId:(int64_t)slotID
+                         bindInfo:(FTBindInfo *)info{
     @try {
         NSDictionary *messageDic = [message isKindOfClass:NSDictionary.class]?message:[FTJSONUtil dictionaryWithJsonString:message];
         
@@ -334,15 +354,21 @@ allowedWebViewHostsString:(NSString *)hostsString
             }
             if (measurement && fields.count>0) {
                 if ([measurement isEqualToString:FT_RUM_SOURCE_VIEW]) {
-                    if (!info.viewId) {
-                        info.viewId = [rumDelegate getLastHasReplayViewID];
-                    }
-                    if (!info.viewReferrer) {
+                    NSString *nativeViewID = [rumDelegate getLastHasReplayViewID];
+                    BOOL nativeViewChanged = nativeViewID != info.viewId
+                        && ![nativeViewID isEqualToString:info.viewId];
+                    if (nativeViewChanged) {
+                        info.viewId = nativeViewID;
+                        info.viewReferrer = [rumDelegate getLastViewName];
+                        info.linkRUMKeysInfo = nil;
+                        info.container.ft_linkRumKeysInfo = nil;
+                    } else if (!info.viewReferrer) {
                         info.viewReferrer = [rumDelegate getLastViewName];
                     }
                     if (info.viewId) {
                         NSArray *linkRUMKeys = self.enableLinkRUMKeys;
-                        if (linkRUMKeys.count>0 && (info.container.ft_linkRumKeysInfo == nil ||  info.container.ft_linkRumKeysInfo.count == 0)) {
+                        NSDictionary *linkRUMKeysInfo = info.linkRUMKeysInfo ?: info.container.ft_linkRumKeysInfo;
+                        if (linkRUMKeys.count>0 && linkRUMKeysInfo.count == 0) {
                             NSMutableDictionary *infoDict = [[NSMutableDictionary alloc]init];
                             NSEnumerator *en = [linkRUMKeys objectEnumerator];
                             NSString *key;
@@ -350,8 +376,9 @@ allowedWebViewHostsString:(NSString *)hostsString
                                 [infoDict setValue:fields[key] forKey:key];
                             }
                             if (infoDict.count>0) {
-                                info.container.ft_linkRumKeysInfo = [infoDict copy];
-                                [self bindInfo:info.container.ft_linkRumKeysInfo viewId:info.viewId];
+                                info.linkRUMKeysInfo = [infoDict copy];
+                                info.container.ft_linkRumKeysInfo = info.linkRUMKeysInfo;
+                                [self bindInfo:info.linkRUMKeysInfo viewId:info.viewId];
                             }else{
                                 FTInnerLogDebug(@"[WebView] webView(%lld:%@) bindInfo fail.",slotID,tags[FT_KEY_VIEW_ID]);
                             }
@@ -382,7 +409,8 @@ allowedWebViewHostsString:(NSString *)hostsString
             }
             NSMutableDictionary *dict = [messageDic mutableCopy];
             [dict setValue:[NSString stringWithFormat:@"%lld",slotID] forKey:@"slotId"];
-            [dict setValue:info.container.ft_linkRumKeysInfo forKey:FT_LINK_RUM_KEYS];
+            [dict setValue:(info.linkRUMKeysInfo ?: info.container.ft_linkRumKeysInfo)
+                    forKey:FT_LINK_RUM_KEYS];
             [[FTModuleManager sharedInstance] postMessageWithKey:FTMessageKeyWebViewSR message:dict];
         }
     } @catch (NSException *exception) {
@@ -464,6 +492,12 @@ allowedWebViewHostsString:(NSString *)hostsString
             [webView evaluateJavaScript:@"DATAFLUX_RUM.takeSubsequentFullSnapshot()" completionHandler:nil];
         }];
     }
+#if TARGET_OS_OSX
+    id<FTElectronWebViewTrackingProtocol> electronProvider =
+        [[FTModuleManager sharedInstance]
+            getRegisterService:NSProtocolFromString(@"FTElectronWebViewTrackingProtocol")];
+    [electronProvider takeSubsequentFullSnapshot];
+#endif
 }
 - (void)bindInfo:(NSDictionary *)info viewId:(NSString *)viewId{
     if(self.rumTrackDelegate){

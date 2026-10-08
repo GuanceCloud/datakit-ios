@@ -56,10 +56,11 @@
 #import "FTLogger+Private.h"
 #import "FTRemoteConfigManager.h"
 #import "FTRemoteConfigModel+Private.h"
+#include <float.h>
+#include <math.h>
 
 @interface FTWKWebViewHandler (ConfigurationTesting)
 - (id)getWebViewBridge:(WKWebView *)webView;
-- (void)dealReceiveScriptMessage:(id)message slotId:(int64_t)slotID info:(id)info;
 @end
 
 @interface FTIOSWebViewDelegateStub : NSObject <FTWKWebViewLogDelegate, FTWKWebViewRumDelegate>
@@ -120,8 +121,8 @@
         [handler innerEnableWebView:webView];
         id bridge = [handler getWebViewBridge:webView];
         XCTAssertNotNil(bridge);
-        [handler dealReceiveScriptMessage:log slotId:0 info:nil];
-        [handler dealReceiveScriptMessage:rum slotId:0 info:nil];
+        [handler processWebViewBridgeEvent:log slotId:0 bindInfo:nil];
+        [handler processWebViewBridgeEvent:rum slotId:0 bindInfo:nil];
         XCTAssertEqual(delegate.logCount, rumFirst.boolValue ? 0U : 1U);
         XCTAssertEqual(delegate.rumCount, rumFirst.boolValue ? 1U : 0U);
         XCTAssertFalse(delegate.linkToNativeRum);
@@ -139,39 +140,39 @@
         // Successful routing below verifies that host configuration preserves both delegates.
         delegate.logCount = 0;
         delegate.rumCount = 0;
-        [handler dealReceiveScriptMessage:@{@"name": @"log", @"data": @[]} slotId:0 info:nil];
-        [handler dealReceiveScriptMessage:log slotId:0 info:nil];
-        [handler dealReceiveScriptMessage:rum slotId:0 info:nil];
+        [handler processWebViewBridgeEvent:@{@"name": @"log", @"data": @[]} slotId:0 bindInfo:nil];
+        [handler processWebViewBridgeEvent:log slotId:0 bindInfo:nil];
+        [handler processWebViewBridgeEvent:rum slotId:0 bindInfo:nil];
         XCTAssertEqual(delegate.logCount, 1U);
         XCTAssertEqual(delegate.rumCount, 1U);
         XCTAssertEqual(delegate.lastLog, payload);
         XCTAssertTrue(delegate.linkToNativeRum);
 
         [handler startWithEnableTraceWebView:NO rumDelegate:delegate];
-        [handler dealReceiveScriptMessage:log slotId:0 info:nil];
-        [handler dealReceiveScriptMessage:rum slotId:0 info:nil];
+        [handler processWebViewBridgeEvent:log slotId:0 bindInfo:nil];
+        [handler processWebViewBridgeEvent:rum slotId:0 bindInfo:nil];
         XCTAssertEqual(delegate.logCount, 2U);
         XCTAssertEqual(delegate.rumCount, 1U);
         XCTAssertFalse(delegate.linkToNativeRum);
         [handler startWithEnableTraceWebView:YES rumDelegate:nil];
-        [handler dealReceiveScriptMessage:log slotId:0 info:nil];
+        [handler processWebViewBridgeEvent:log slotId:0 bindInfo:nil];
         XCTAssertFalse(delegate.linkToNativeRum);
 
         [handler startWithEnableTraceWebView:YES rumDelegate:delegate];
         [handler startWithEnableWebViewLog:NO logDelegate:delegate];
-        [handler dealReceiveScriptMessage:log slotId:0 info:nil];
-        [handler dealReceiveScriptMessage:rum slotId:0 info:nil];
+        [handler processWebViewBridgeEvent:log slotId:0 bindInfo:nil];
+        [handler processWebViewBridgeEvent:rum slotId:0 bindInfo:nil];
         XCTAssertEqual(delegate.logCount, 3U);
         XCTAssertEqual(delegate.rumCount, 2U);
         [handler startWithEnableWebViewLog:YES logDelegate:delegate];
-        [handler dealReceiveScriptMessage:log slotId:0 info:nil];
+        [handler processWebViewBridgeEvent:log slotId:0 bindInfo:nil];
         XCTAssertEqual(delegate.logCount, 4U);
         XCTAssertTrue(delegate.linkToNativeRum);
 
         __weak FTIOSWebViewDelegateStub *weakDelegate = delegate;
         delegate = nil;
         XCTAssertNil(weakDelegate);
-        XCTAssertNoThrow([handler dealReceiveScriptMessage:log slotId:0 info:nil]);
+        XCTAssertNoThrow([handler processWebViewBridgeEvent:log slotId:0 bindInfo:nil]);
         [handler disableWebView:webView];
     }
 }
@@ -739,6 +740,19 @@
     XCTAssertTrue([copy.datawayUrl isEqualToString:datawayConfig.datawayUrl]);
     XCTAssertTrue([copy.clientToken isEqualToString:datawayConfig.clientToken]);
 }
+- (void)testDeprecatedConfigCategoriesRetainSynthesizedAccessors{
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wdeprecated-declarations"
+    FTSDKConfig *sdkConfig = [[FTSDKConfig alloc] initWithMetricsUrl:@"https://example.com"];
+    XCTAssertEqualObjects(sdkConfig.metricsUrl, @"https://example.com");
+    sdkConfig.version = @"1.2.3";
+    XCTAssertEqualObjects(sdkConfig.version, @"1.2.3");
+
+    FTRumConfig *rumConfig = [[FTRumConfig alloc] initWithAppid:@"app-id"];
+    rumConfig.allowWebViewHost = @[@"example.com"];
+    XCTAssertEqualObjects(rumConfig.allowWebViewHost, @[@"example.com"]);
+#pragma clang diagnostic pop
+}
 - (void)testWebViewHostConfigurationIsIndependentOfModuleStartup {
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Wdeprecated-declarations"
@@ -875,6 +889,120 @@
     XCTAssertTrue(copyRumConfig.rumDiscardType == rumConfig.rumDiscardType);
     XCTAssertTrue(copyRumConfig.rumCacheLimitCount == rumConfig.rumCacheLimitCount);
     XCTAssertTrue([copyRumConfig.debugDescription isEqualToString:rumConfig.debugDescription]);
+}
+- (void)testSamplingRateAPICompatibility{
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wdeprecated-declarations"
+    FTRumConfig *rumConfig = [[FTRumConfig alloc] initWithAppid:@"app-id"];
+    XCTAssertEqualWithAccuracy(rumConfig.sessionSamplingRate, 100.0f, FLT_EPSILON);
+    XCTAssertEqualWithAccuracy(rumConfig.sessionOnErrorSamplingRate, 0.0f, FLT_EPSILON);
+    rumConfig.sampleRate = 37;
+    rumConfig.sessionOnErrorSampleRate = 23;
+    XCTAssertEqualWithAccuracy(rumConfig.sessionSamplingRate, 37.0f, FLT_EPSILON);
+    XCTAssertEqualWithAccuracy(rumConfig.sessionOnErrorSamplingRate, 23.0f, FLT_EPSILON);
+
+    rumConfig.sessionSamplingRate = 0.1f;
+    rumConfig.sessionOnErrorSamplingRate = 0.2f;
+    XCTAssertEqual(rumConfig.sampleRate, 0);
+    XCTAssertEqual(rumConfig.sessionOnErrorSampleRate, 0);
+    rumConfig.sampleRate = 88;
+    rumConfig.sessionOnErrorSampleRate = 77;
+    XCTAssertEqualWithAccuracy(rumConfig.sessionSamplingRate, 88.0f, FLT_EPSILON);
+    XCTAssertEqualWithAccuracy(rumConfig.sessionOnErrorSamplingRate, 77.0f, FLT_EPSILON);
+    rumConfig.sampleRate = -1;
+    rumConfig.samplerate = 101;
+    rumConfig.sessionOnErrorSampleRate = -1;
+    rumConfig.sessionOnErrorSampleRate = 101;
+    XCTAssertEqualWithAccuracy(rumConfig.sessionSamplingRate, 88.0f, FLT_EPSILON);
+    XCTAssertEqualWithAccuracy(rumConfig.sessionOnErrorSamplingRate, 77.0f, FLT_EPSILON);
+
+    rumConfig.sessionSamplingRate = 0.1f;
+    rumConfig.sessionOnErrorSamplingRate = 0.2f;
+    rumConfig.sessionSamplingRate = NAN;
+    rumConfig.sessionSamplingRate = INFINITY;
+    rumConfig.sessionSamplingRate = -0.1f;
+    rumConfig.sessionSamplingRate = 100.1f;
+    XCTAssertEqualWithAccuracy(rumConfig.sessionSamplingRate, 0.1f, FLT_EPSILON);
+    rumConfig.sessionOnErrorSamplingRate = NAN;
+    rumConfig.sessionOnErrorSamplingRate = INFINITY;
+    rumConfig.sessionOnErrorSamplingRate = -0.1f;
+    rumConfig.sessionOnErrorSamplingRate = 100.1f;
+    XCTAssertEqualWithAccuracy(rumConfig.sessionOnErrorSamplingRate, 0.2f, FLT_EPSILON);
+
+    FTRumConfig *rumCopy = [rumConfig copy];
+    XCTAssertEqualWithAccuracy(rumCopy.sessionSamplingRate, 0.1f, FLT_EPSILON);
+    XCTAssertEqualWithAccuracy(rumCopy.sessionOnErrorSamplingRate, 0.2f, FLT_EPSILON);
+    NSDictionary *rumDictionary = rumConfig.convertToDictionary;
+    XCTAssertEqualObjects(rumDictionary[@"sampleRate"], @0);
+    XCTAssertEqualObjects(rumDictionary[@"sessionOnErrorSampleRate"], @0);
+    XCTAssertEqualWithAccuracy([rumDictionary[@"sessionSamplingRate"] floatValue], 0.1f, FLT_EPSILON);
+    XCTAssertEqualWithAccuracy([rumDictionary[@"sessionOnErrorSamplingRate"] floatValue], 0.2f, FLT_EPSILON);
+    FTRumConfig *rumFromDictionary = [[FTRumConfig alloc] initWithDictionary:rumDictionary];
+    XCTAssertEqualWithAccuracy(rumFromDictionary.sessionSamplingRate, 0.1f, FLT_EPSILON);
+    XCTAssertEqualWithAccuracy(rumFromDictionary.sessionOnErrorSamplingRate, 0.2f, FLT_EPSILON);
+    FTRumConfig *rumWithBothKeys = [[FTRumConfig alloc] initWithDictionary:@{
+        @"sampleRate": @88,
+        @"sessionSamplingRate": @0.3f,
+        @"sessionOnErrorSampleRate": @77,
+        @"sessionOnErrorSamplingRate": @0.4f,
+    }];
+    XCTAssertEqualWithAccuracy(rumWithBothKeys.sessionSamplingRate, 0.3f, FLT_EPSILON);
+    XCTAssertEqualWithAccuracy(rumWithBothKeys.sessionOnErrorSamplingRate, 0.4f, FLT_EPSILON);
+    FTRumConfig *rumWithInvalidLegacyKeys = [[FTRumConfig alloc] initWithDictionary:@{
+        @"sampleRate": @(-1),
+        @"sessionOnErrorSampleRate": @101,
+    }];
+    XCTAssertEqualWithAccuracy(rumWithInvalidLegacyKeys.sessionSamplingRate, 100.0f, FLT_EPSILON);
+    XCTAssertEqualWithAccuracy(rumWithInvalidLegacyKeys.sessionOnErrorSamplingRate, 0.0f, FLT_EPSILON);
+
+    FTLoggerConfig *loggerConfig = [[FTLoggerConfig alloc] init];
+    loggerConfig.sampleRate = 1;
+    XCTAssertEqual(loggerConfig.sampleRate, 1);
+    XCTAssertEqualWithAccuracy(loggerConfig.logSamplingRate, 1.0f, FLT_EPSILON);
+    loggerConfig.logSamplingRate = 0.1f;
+    XCTAssertEqual(loggerConfig.sampleRate, 0);
+    loggerConfig.sampleRate = 80;
+    XCTAssertEqualWithAccuracy(loggerConfig.logSamplingRate, 80.0f, FLT_EPSILON);
+    loggerConfig.sampleRate = -1;
+    loggerConfig.samplerate = 101;
+    XCTAssertEqualWithAccuracy(loggerConfig.logSamplingRate, 80.0f, FLT_EPSILON);
+    loggerConfig.logSamplingRate = 0.1f;
+    loggerConfig.logSamplingRate = NAN;
+    loggerConfig.logSamplingRate = 100.1f;
+    XCTAssertEqualWithAccuracy(loggerConfig.logSamplingRate, 0.1f, FLT_EPSILON);
+    XCTAssertEqualWithAccuracy(((FTLoggerConfig *)loggerConfig.copy).logSamplingRate, 0.1f, FLT_EPSILON);
+    FTLoggerConfig *loggerWithBothKeys = [[FTLoggerConfig alloc] initWithDictionary:@{
+        @"sampleRate": @80,
+        @"logSamplingRate": @0.2f,
+    }];
+    XCTAssertEqualWithAccuracy(loggerWithBothKeys.logSamplingRate, 0.2f, FLT_EPSILON);
+    FTLoggerConfig *loggerWithInvalidLegacyKey = [[FTLoggerConfig alloc] initWithDictionary:@{@"sampleRate": @101}];
+    XCTAssertEqualWithAccuracy(loggerWithInvalidLegacyKey.logSamplingRate, 100.0f, FLT_EPSILON);
+
+    FTTraceConfig *traceConfig = [[FTTraceConfig alloc] init];
+    traceConfig.sampleRate = 1;
+    XCTAssertEqual(traceConfig.sampleRate, 1);
+    XCTAssertEqualWithAccuracy(traceConfig.traceSamplingRate, 1.0f, FLT_EPSILON);
+    traceConfig.traceSamplingRate = 0.1f;
+    XCTAssertEqual(traceConfig.sampleRate, 0);
+    traceConfig.samplerate = 90;
+    XCTAssertEqualWithAccuracy(traceConfig.traceSamplingRate, 90.0f, FLT_EPSILON);
+    traceConfig.sampleRate = -1;
+    traceConfig.samplerate = 101;
+    XCTAssertEqualWithAccuracy(traceConfig.traceSamplingRate, 90.0f, FLT_EPSILON);
+    traceConfig.traceSamplingRate = 0.1f;
+    traceConfig.traceSamplingRate = -0.1f;
+    traceConfig.traceSamplingRate = INFINITY;
+    XCTAssertEqualWithAccuracy(traceConfig.traceSamplingRate, 0.1f, FLT_EPSILON);
+    XCTAssertEqualWithAccuracy(((FTTraceConfig *)traceConfig.copy).traceSamplingRate, 0.1f, FLT_EPSILON);
+    FTTraceConfig *traceWithBothKeys = [[FTTraceConfig alloc] initWithDictionary:@{
+        @"sampleRate": @90,
+        @"traceSamplingRate": @0.2f,
+    }];
+    XCTAssertEqualWithAccuracy(traceWithBothKeys.traceSamplingRate, 0.2f, FLT_EPSILON);
+    FTTraceConfig *traceWithInvalidLegacyKey = [[FTTraceConfig alloc] initWithDictionary:@{@"sampleRate": @(-1)}];
+    XCTAssertEqualWithAccuracy(traceWithInvalidLegacyKey.traceSamplingRate, 100.0f, FLT_EPSILON);
+#pragma clang diagnostic pop
 }
 // block not processed
 - (void)testRUMConfigInitWithDict{

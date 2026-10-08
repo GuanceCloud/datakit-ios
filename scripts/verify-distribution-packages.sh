@@ -35,11 +35,13 @@ SPM_SCHEMES=(
   "GuanceSDK"
   "GuanceWidgetExtension"
   "GuanceSessionReplay"
+  "GuanceElectronWebView"
 )
 SPM_SCHEME_PLATFORMS=(
   "ios,macos,tvos"
   "ios"
   "ios,macos"
+  "macos"
 )
 SPM_CONSUMER_SCHEMES=(
   "ObjCConsumer"
@@ -452,6 +454,8 @@ prepare_spm_validation_dir() {
   ln -s "${REPO_ROOT}/Sources" "${SPM_VALIDATION_DIR}/Sources"
   mkdir -p "${SPM_VALIDATION_DIR}/Tests"
   ln -s "${REPO_ROOT}/Tests/FTLoggerTests" "${SPM_VALIDATION_DIR}/Tests/FTLoggerTests"
+  ln -s "${REPO_ROOT}/Tests/GuanceElectronWebViewTests" "${SPM_VALIDATION_DIR}/Tests/GuanceElectronWebViewTests"
+  ln -s "${REPO_ROOT}/Tests/GuanceElectronNativeTests" "${SPM_VALIDATION_DIR}/Tests/GuanceElectronNativeTests"
 }
 
 build_swift_package_scheme() {

@@ -159,8 +159,8 @@ static NSObject *sharedInstanceLock;
     dependencies.appId = rumConfig.appid;
     dependencies.monitor = monitor;
     dependencies.writer = writer;
-    dependencies.sessionOnErrorSampleRate = rumConfig.sessionOnErrorSampleRate;
-    dependencies.sampleRate = rumConfig.sampleRate;
+    dependencies.sessionOnErrorSampleRate = rumConfig.sessionOnErrorSamplingRate;
+    dependencies.sampleRate = rumConfig.sessionSamplingRate;
     dependencies.enableResourceHostIP = rumConfig.enableResourceHostIP;
     dependencies.enableTraceUserAction = rumConfig.enableTraceUserAction;
     dependencies.errorMonitorInfoWrapper = errorInfoWrapper;
@@ -223,7 +223,7 @@ static NSObject *sharedInstanceLock;
 - (void)setupWebViewAndExternalDataWithRumConfig:(FTRumConfig *)rumConfig{
     [FTExternalDataManager sharedManager].delegate = self.rumManager;
 }
--(void)updateSampleRate:(int)sampleRate sessionOnErrorSampleRate:(int)sessionOnErrorSampleRate{
+-(void)updateSampleRate:(float)sampleRate sessionOnErrorSampleRate:(float)sessionOnErrorSampleRate{
     [self.rumManager updateSampleRate:sampleRate sessionOnErrorSampleRate:sessionOnErrorSampleRate];
 }
 #pragma mark ========== FTRunloopDetectorDelegate ==========

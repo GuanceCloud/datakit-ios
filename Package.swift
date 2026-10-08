@@ -26,6 +26,22 @@ let package = Package(
             name: "GuanceSessionReplay",
             targets: ["GuanceSessionReplay"]
         ),
+        .library(
+            name: "GuanceElectronWebView",
+            targets: [
+                "GuanceSDK",
+                "_AgentShared",
+                "_FTBaseUtils",
+                "_FTLogger",
+                "GuanceSessionReplay",
+                "GuanceElectronWebView",
+            ]
+        ),
+        .library(
+            name: "GuanceElectronNative",
+            type: .static,
+            targets: ["GuanceElectronNative"]
+        ),
     ],
     dependencies: [],
     targets: [
@@ -184,6 +200,7 @@ let package = Package(
                 "_FTRUM",
                 "_FTURLSessionAutoInstrumentation",
                 "_FTLogger",
+                "_FTProtocol",
             ],
             path: "Sources",
             sources: [
@@ -244,6 +261,57 @@ let package = Package(
         .target(
             name: "_GuanceSessionReplaySwiftUI",
             path: "Sources/SessionReplay/Recorder/SRWireframe/ViewTreeSnapshot/ViewsRecorder/SwiftUI"
+        ),
+        // MARK: - GuanceElectronWebView
+        .target(
+            name: "GuanceElectronWebView",
+            dependencies: [
+                "_GuanceSDKCore",
+                "_FTProtocol",
+                "GuanceSessionReplay",
+            ],
+            path: "Sources/ElectronWebView",
+            publicHeadersPath: "Public",
+            cSettings: [
+                .headerSearchPath("."),
+                .headerSearchPath("../SessionReplay"),
+                .headerSearchPath("../SessionReplay/Processor/Builders"),
+                .headerSearchPath("../SessionReplay/Recorder"),
+                .headerSearchPath("../SessionReplay/Recorder/SRWireframe"),
+                .headerSearchPath("../SessionReplay/Recorder/SRWireframe/ViewTreeSnapshot"),
+                .headerSearchPath("../SessionReplay/Recorder/SRWireframe/ViewTreeSnapshot/ViewsRecorder"),
+            ]
+        ),
+        .target(
+            name: "GuanceElectronNative",
+            dependencies: [
+                "GuanceSDK",
+                "_AgentShared",
+                "_FTBaseUtils",
+                "_FTLogger",
+                "GuanceSessionReplay",
+                "GuanceElectronWebView",
+            ],
+            path: "Sources/ElectronNative/Bridge",
+            publicHeadersPath: "Public",
+            linkerSettings: [
+                .linkedFramework("AppKit"),
+            ]
+        ),
+        .testTarget(
+            name: "GuanceElectronWebViewTests",
+            dependencies: [
+                "GuanceElectronWebView",
+                "_GuanceSDKCore",
+                "_FTRUM",
+                "_FTProtocol",
+            ],
+            path: "Tests/GuanceElectronWebViewTests"
+        ),
+        .testTarget(
+            name: "GuanceElectronNativeTests",
+            dependencies: ["GuanceElectronNative", "GuanceSessionReplay"],
+            path: "Tests/GuanceElectronNativeTests"
         ),
     ]
 )

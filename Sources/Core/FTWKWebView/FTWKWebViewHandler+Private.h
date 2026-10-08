@@ -26,6 +26,8 @@
 #if !TARGET_OS_TV
 NS_ASSUME_NONNULL_BEGIN
 
+@class FTBindInfo;
+
 @interface FTWKWebViewHandler ()
 
 /// Configures shared hosts without changing either module's switch or delegate.
@@ -40,6 +42,14 @@ NS_ASSUME_NONNULL_BEGIN
 - (void)innerEnableWebView:(WKWebView *)webView;
 
 - (void)disableWebView:(WKWebView *)webView;
+
+/// Processes a message emitted by a supported web-container bridge.
+///
+/// Electron uses this entry point after its Main process has resolved the
+/// trusted webContents identifier to a native Session Replay slot.
+- (void)processWebViewBridgeEvent:(id)message
+                           slotId:(int64_t)slotID
+                         bindInfo:(FTBindInfo *)bindInfo;
 
 + (void)shutDown;
 @end

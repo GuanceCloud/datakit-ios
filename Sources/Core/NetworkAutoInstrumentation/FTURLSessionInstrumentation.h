@@ -18,19 +18,6 @@
 //  limitations under the License.
 //
 
-//  Licensed under the Apache License, Version 2.0 (the "License");
-//  you may not use this file except in compliance with the License.
-//  You may obtain a copy of the License at
-//
-//      http://www.apache.org/licenses/LICENSE-2.0
-//
-//  Unless required by applicable law or agreed to in writing, software
-//  distributed under the License is distributed on an "AS IS" BASIS,
-//  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-//  See the License for the specific language governing permissions and
-//  limitations under the License.
-
-
 #import <Foundation/Foundation.h>
 #import "FTURLSessionInterceptorProtocol.h"
 #import "FTTracerProtocol.h"
@@ -67,17 +54,17 @@ NS_ASSUME_NONNULL_BEGIN
 /// - Parameters:
 ///   - enableAutoTrace: Whether to enable automatic link tracing
 ///   - enableLinkRumData: Whether to associate with RUM
-///   - sampleRate: Sampling rate
+///   - traceSamplingRate: Trace sampling rate percentage in the range [0, 100]
 ///   - traceType: Link type
 ///   - serviceName: serviceName
 - (void)setTraceEnableAutoTrace:(BOOL)enableAutoTrace
               enableLinkRumData:(BOOL)enableLinkRumData
-                     sampleRate:(int)sampleRate
+              traceSamplingRate:(float)traceSamplingRate
                       traceType:(NetworkTraceType)traceType
                traceInterceptor:(TraceInterceptor)traceInterceptor
                     serviceName:(NSString *)serviceName;
 
-- (void)updateTraceSampleRate:(int)sampleRate;
+- (void)updateTraceSamplingRate:(float)traceSamplingRate;
 
 
 /// Set RUM resource data processing object that conforms to FTRumResourceProtocol

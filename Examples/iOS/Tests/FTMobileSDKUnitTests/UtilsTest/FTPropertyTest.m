@@ -43,9 +43,32 @@
 #import "FTDataWriterWorker.h"
 #import "NSDictionary+FTCopyProperties.h"
 #import "FTIDFVProvider.h"
+#import "FTNetworkConnectivity.h"
 @interface FTPresetProperty (Testing)
 - (FTUserInfo *)userInfo;
 - (void)connectivityChanged:(BOOL)connected typeDescription:(NSString *)typeDescription;
+@end
+typedef NS_ENUM(NSInteger, FTPropertyTestNetworkStatus) {
+    FTPropertyTestNetworkStatusNotReachable = 0,
+    FTPropertyTestNetworkStatusWiFi = 2,
+    FTPropertyTestNetworkStatusEthernet = 3,
+    FTPropertyTestNetworkStatusUnknown = 4,
+};
+@interface FTNetworkConnectivity (PropertyTest)
+@property (nonatomic, assign) FTPropertyTestNetworkStatus networkStatus;
+- (void)connectivityChanged;
+@end
+@interface FTNetworkChangeObserverSpy : NSObject <FTNetworkChangeObserver>
+@property (nonatomic, assign) NSInteger callbackCount;
+@property (nonatomic, assign) BOOL connected;
+@property (nonatomic, copy) NSString *typeDescription;
+@end
+@implementation FTNetworkChangeObserverSpy
+- (void)connectivityChanged:(BOOL)connected typeDescription:(NSString *)typeDescription {
+    self.callbackCount += 1;
+    self.connected = connected;
+    self.typeDescription = typeDescription;
+}
 @end
 @interface FTIDFVProvider (PropertyTest)
 + (nullable NSString *)systemIdentifierForVendor;
@@ -589,6 +612,39 @@ static void FTPropertyTestAssertMissingKeys(XCTestCase *testCase, NSDictionary *
     XCTAssertEqualObjects(modifierKey, FT_NETWORK_TYPE);
     XCTAssertEqualObjects([preset rumTags][FT_NETWORK_TYPE], @"cellular");
     [FTMobileAgent shutDown];
+}
+- (void)testNetworkStatusSetterPersistsStatusAndUpdatesNetworkType {
+    FTNetworkConnectivity *connectivity = [[FTNetworkConnectivity alloc] init];
+
+    connectivity.networkStatus = FTPropertyTestNetworkStatusWiFi;
+    XCTAssertEqual(connectivity.networkStatus, FTPropertyTestNetworkStatusWiFi);
+    XCTAssertEqualObjects(connectivity.networkType, @"wifi");
+
+    connectivity.networkStatus = FTPropertyTestNetworkStatusEthernet;
+    XCTAssertEqual(connectivity.networkStatus, FTPropertyTestNetworkStatusEthernet);
+    XCTAssertEqualObjects(connectivity.networkType, @"ethernet");
+
+    connectivity.networkStatus = FTPropertyTestNetworkStatusUnknown;
+    XCTAssertEqual(connectivity.networkStatus, FTPropertyTestNetworkStatusUnknown);
+    XCTAssertEqualObjects(connectivity.networkType, @"unknown");
+
+    connectivity.networkStatus = FTPropertyTestNetworkStatusNotReachable;
+    XCTAssertEqual(connectivity.networkStatus, FTPropertyTestNetworkStatusNotReachable);
+    XCTAssertEqualObjects(connectivity.networkType, @"unreachable");
+}
+- (void)testConnectivityChangedNotifiesStoredNetworkType {
+    FTNetworkConnectivity *connectivity = [[FTNetworkConnectivity alloc] init];
+    FTNetworkChangeObserverSpy *observer = [[FTNetworkChangeObserverSpy alloc] init];
+    [connectivity addNetworkObserver:observer];
+
+    connectivity.networkStatus = FTPropertyTestNetworkStatusWiFi;
+    [connectivity connectivityChanged];
+
+    XCTAssertEqual(observer.callbackCount, 1);
+    XCTAssertEqualObjects(observer.typeDescription, @"wifi");
+    XCTAssertEqualObjects(observer.typeDescription, connectivity.networkType);
+
+    [connectivity removeNetworkObserver:observer];
 }
 - (void)testRecordModelNilTagsFieldsNoCrash{
     FTRecordModel *model = [[FTRecordModel alloc]initWithSource:FT_RUM_SOURCE_ACTION op:FT_DATA_TYPE_RUM tags:nil fields:nil tm:[NSDate ft_currentNanosecondTimeStamp]];

@@ -38,6 +38,12 @@ NS_ASSUME_NONNULL_BEGIN
 /// - Parameter sampling: User-set sampling rate
 /// - Returns: Whether to perform sampling
 + (BOOL)randomSampling:(int)sampling;
+/// Sampling-rate determination for percentage values that may contain a fractional part.
+/// - Parameter sampling: Sampling rate in the range `0...100`.
+/// - Returns: Whether to perform sampling.
++ (BOOL)randomSamplingWithRate:(float)sampling;
+/// Returns whether a percentage sampling rate is finite and inside `0...100`.
++ (BOOL)isValidSamplingRate:(float)sampling;
 /// Get random uuid string (no `-`, all lowercase)
 + (NSString *)randomUUID;
 + (NSString *)random16UUID;

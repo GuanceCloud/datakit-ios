@@ -28,7 +28,7 @@ NS_ASSUME_NONNULL_BEGIN
 @property (nonatomic, strong) FTRUMSessionState *sessionState;
 @end
 @implementation FTRUMContext
-- (instancetype)initWithSampleRate:(int)sampleRate sessionOnErrorSampleRate:(int)sessionOnErrorSampleRate appId:(NSString *)appId{
+- (instancetype)initWithSampleRate:(float)sampleRate sessionOnErrorSampleRate:(float)sessionOnErrorSampleRate appId:(NSString *)appId{
     self = [super init];
     if (self) {
         self.appId = appId;

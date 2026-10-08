@@ -27,6 +27,9 @@
 #import "FTJSONUtil.h"
 #import "FTInnerLog.h"
 
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wdeprecated-declarations"
+
 @implementation FTSDKConfig (RemoteConfig)
 
 -(void)mergeWithRemoteConfigModel:(FTRemoteConfigModel *)model{
@@ -63,9 +66,11 @@
 
 -(void)mergeWithRemoteConfigModel:(FTRemoteConfigModel *)model{
     @try {
-        
         if (model.logSampleRate != nil) {
-            self.sampleRate = [model.logSampleRate doubleValue] * 100;
+            self.logSamplingRate = model.logSampleRate.floatValue * 100.0f;
+        }
+        if (model.logSamplingRate != nil) {
+            self.logSamplingRate = model.logSamplingRate.floatValue;
         }
         if (model.logEnableCustomLog != nil) {
             self.enableCustomLog = [model.logEnableCustomLog boolValue];
@@ -87,10 +92,16 @@
 -(void)mergeWithRemoteConfigModel:(FTRemoteConfigModel *)model{
     @try {
         if (model.rumSampleRate != nil) {
-            self.sampleRate = [model.rumSampleRate doubleValue] * 100;
+            self.sessionSamplingRate = model.rumSampleRate.floatValue * 100.0f;
+        }
+        if (model.sessionSamplingRate != nil) {
+            self.sessionSamplingRate = model.sessionSamplingRate.floatValue;
         }
         if (model.rumSessionOnErrorSampleRate != nil) {
-            self.sessionOnErrorSampleRate = [model.rumSessionOnErrorSampleRate doubleValue] * 100;
+            self.sessionOnErrorSamplingRate = model.rumSessionOnErrorSampleRate.floatValue * 100.0f;
+        }
+        if (model.sessionOnErrorSamplingRate != nil) {
+            self.sessionOnErrorSamplingRate = model.sessionOnErrorSamplingRate.floatValue;
         }
         if (model.rumEnableTraceUserAction != nil) {
             self.enableTraceUserAction = [model.rumEnableTraceUserAction boolValue];
@@ -140,7 +151,10 @@
 -(void)mergeWithRemoteConfigModel:(FTRemoteConfigModel *)model{
     @try {
         if (model.traceSampleRate != nil) {
-            self.sampleRate = [model.traceSampleRate doubleValue] * 100;
+            self.traceSamplingRate = model.traceSampleRate.floatValue * 100.0f;
+        }
+        if (model.traceSamplingRate != nil) {
+            self.traceSamplingRate = model.traceSamplingRate.floatValue;
         }
         if (model.traceEnableAutoTrace != nil) {
             self.enableAutoTrace = [model.traceEnableAutoTrace boolValue];
@@ -172,3 +186,4 @@
     }
 }
 @end
+#pragma clang diagnostic pop

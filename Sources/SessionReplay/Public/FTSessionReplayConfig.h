@@ -61,14 +61,12 @@ typedef NS_ENUM(NSUInteger,FTTextAndInputPrivacyLevel){
 /// Session Replay configuration
 @interface FTSessionReplayConfig : NSObject
 
-/// Sampling configuration, property value: 0 to 100, 100 means 100% collection, no data sample compression.
-@property (nonatomic, assign) int sampleRate;
+/// Session Replay sampling rate in percent. Values range from 0 to 100 and may contain a fractional part. Default: 100.
+@property (nonatomic, assign) float sessionReplaySamplingRate;
 
 /// After enabling, unsampled sessions record 1 minute before errors occur.
-@property (nonatomic, assign) int sessionReplayOnErrorSampleRate;
-
-/// Privacy level for content masking in session replay. Default is FTSRPrivacyMask
-@property (nonatomic, assign) FTSRPrivacy privacy DEPRECATED_MSG_ATTRIBUTE("Deprecated, please use `touchPrivacy`, `textAndInputPrivacy`, `imagePrivacy` instead");
+/// Values range from 0 to 100 and may contain a fractional part. Default: 0.
+@property (nonatomic, assign) float sessionReplayOnErrorSamplingRate;
 
 /// Available privacy level for touch masking in session replay. Default: FTTouchPrivacyLevelHide
 @property (nonatomic, assign) FTTouchPrivacyLevel touchPrivacy;
@@ -89,6 +87,18 @@ typedef NS_ENUM(NSUInteger,FTTextAndInputPrivacyLevel){
 /// Experimental: Enables heatmap identifier generation and RUM Action correlation. Default: NO.
 /// Correlation depends on Session Replay snapshots and may be unavailable for views that are not recorded or dynamic view hierarchies.
 @property (nonatomic, assign) BOOL enableHeatmap;
+
+@end
+
+/// Deprecated Session Replay configuration APIs retained for backward compatibility.
+@interface FTSessionReplayConfig (Deprecated)
+
+/// Deprecated. Use `sessionReplaySamplingRate`. Setting this property validates and updates `sessionReplaySamplingRate`; reading it returns an integer-percent projection.
+@property (nonatomic, assign) int sampleRate DEPRECATED_MSG_ATTRIBUTE("Use sessionReplaySamplingRate.");
+/// Deprecated. Use `sessionReplayOnErrorSamplingRate`. Setting this property validates and updates `sessionReplayOnErrorSamplingRate`; reading it returns an integer-percent projection.
+@property (nonatomic, assign) int sessionReplayOnErrorSampleRate DEPRECATED_MSG_ATTRIBUTE("Use sessionReplayOnErrorSamplingRate.");
+/// Privacy level for content masking in session replay. Default is FTSRPrivacyMask
+@property (nonatomic, assign) FTSRPrivacy privacy DEPRECATED_MSG_ATTRIBUTE("Deprecated, please use `touchPrivacy`, `textAndInputPrivacy`, `imagePrivacy` instead");
 
 @end
 

@@ -21,6 +21,7 @@
 #import "FTRemoteConfigModel.h"
 #import "FTRemoteConfigModel+Private.h"
 #import "FTJSONUtil.h"
+#include <math.h>
 
 #define isNSNumber(obj) (obj && [obj isKindOfClass:[NSNumber class]])
 #define isNSString(obj) (obj && [obj isKindOfClass:[NSString class]])
@@ -35,6 +36,54 @@
     if (isNSString(val)) prop = val; \
 } while (0)
 
+static BOOL FTIsRemoteSamplingNumberValid(NSNumber *value, double maximum) {
+    if (![value isKindOfClass:NSNumber.class] || CFGetTypeID((__bridge CFTypeRef)value) == CFBooleanGetTypeID()) {
+        return NO;
+    }
+    double rate = value.doubleValue;
+    return isfinite(rate) && rate >= 0.0 && rate <= maximum;
+}
+
+static void FTNormalizeRemoteSamplingPair(NSMutableDictionary *dict,
+                                          NSDictionary *rawContext,
+                                          BOOL includeRawContext,
+                                          NSString *newKey,
+                                          NSNumber *newValue,
+                                          NSNumber *previousNewValue,
+                                          NSString *legacyKey,
+                                          NSNumber *legacyValue,
+                                          NSNumber *previousLegacyValue) {
+    BOOL newPresent = newValue != nil || (includeRawContext && rawContext[newKey] != nil);
+    BOOL legacyPresent = legacyValue != nil || (includeRawContext && rawContext[legacyKey] != nil);
+
+    [dict removeObjectForKey:newKey];
+    [dict removeObjectForKey:legacyKey];
+
+    if (newPresent) {
+        if (FTIsRemoteSamplingNumberValid(newValue, 100.0)) {
+            dict[newKey] = newValue;
+            if (legacyPresent && FTIsRemoteSamplingNumberValid(legacyValue, 1.0)) {
+                dict[legacyKey] = legacyValue;
+            }
+            return;
+        }
+    } else if (legacyPresent && FTIsRemoteSamplingNumberValid(legacyValue, 1.0)) {
+        dict[legacyKey] = legacyValue;
+        return;
+    } else if (!legacyPresent) {
+        return;
+    }
+
+    if (FTIsRemoteSamplingNumberValid(previousNewValue, 100.0)) {
+        dict[newKey] = previousNewValue;
+        if (FTIsRemoteSamplingNumberValid(previousLegacyValue, 1.0)) {
+            dict[legacyKey] = previousLegacyValue;
+        }
+    } else if (FTIsRemoteSamplingNumberValid(previousLegacyValue, 1.0)) {
+        dict[legacyKey] = previousLegacyValue;
+    }
+}
+
 NSString * const FT_R_ENV = @"env";
 NSString * const FT_R_SERVICE_NAME = @"serviceName";
 NSString * const FT_R_AUTO_SYNC = @"autoSync";
@@ -43,7 +92,9 @@ NSString * const FT_R_SYNC_PAGE_SIZE = @"syncPageSize";
 NSString * const FT_R_SYNC_SLEEP_TIME = @"syncSleepTime";
 
 NSString * const FT_R_RUM_SAMPLERATE = @"rumSampleRate";
+NSString * const FT_R_RUM_SAMPLING_RATE = @"sessionSamplingRate";
 NSString * const FT_R_RUM_SESSION_ON_ERROR_SAMPLE_RATE = @"rumSessionOnErrorSampleRate";
+NSString * const FT_R_RUM_SESSION_ON_ERROR_SAMPLING_RATE = @"sessionOnErrorSamplingRate";
 NSString * const FT_R_RUM_ENABLE_TRACE_USER_ACTION = @"rumEnableTraceUserAction";
 NSString * const FT_R_RUM_ENABLE_TRACE_USER_VIEW = @"rumEnableTraceUserView";
 NSString * const FT_R_RUM_ENABLE_TRACE_USER_RESOURCE = @"rumEnableTraceUserResource";
@@ -57,25 +108,37 @@ NSString * const FT_R_RUM_ENABLE_TRACE_WEBVIEW = @"rumEnableTraceWebView";
 NSString * const FT_R_RUM_ALLOW_WEBVIEW_HOST = @"rumAllowWebViewHost";
 
 NSString * const FT_R_TRACE_SAMPLERATE = @"traceSampleRate";
+NSString * const FT_R_TRACE_SAMPLING_RATE = @"traceSamplingRate";
 NSString * const FT_R_TRACE_ENABLE_AUTO_TRACE = @"traceEnableAutoTrace";
 NSString * const FT_R_TRACE_ENABLE_AUTO_TRACE_URLCONNECTION = @"traceEnableAutoTraceURLConnection";
 NSString * const FT_R_TRACE_TRACE_TYPE = @"traceType";
 
 NSString * const FT_R_LOG_SAMPLERATE = @"logSampleRate";
+NSString * const FT_R_LOG_SAMPLING_RATE = @"logSamplingRate";
 NSString * const FT_R_LOG_LEVEL_FILTERS = @"logLevelFilters";
 NSString * const FT_R_LOG_ENABLE_CUSTOM_LOG = @"logEnableCustomLog";
 NSString * const FT_R_LOG_ENABLE_WEBVIEW_LOG = @"logEnableWebViewLog";
 
 NSString * const FT_R_SR_SAMPLERATE = @"sessionReplaySampleRate";
+NSString * const FT_R_SR_SAMPLING_RATE = @"sessionReplaySamplingRate";
 NSString * const FT_R_SR_ON_ERROR_SAMPLE_RATE = @"sessionReplayOnErrorSampleRate";
+NSString * const FT_R_SR_ON_ERROR_SAMPLING_RATE = @"sessionReplayOnErrorSamplingRate";
 
 NSString * const FT_MD5 = @"MD5";
 
 @interface FTRemoteConfigModel()
 @property (nonatomic, copy, readwrite, nullable) NSString *md5Str;
 @property (nonatomic, strong, readwrite, nullable) NSDictionary *context;
+@property (nonatomic, strong, nullable) NSNumber *rumSampleRate;
+@property (nonatomic, strong, nullable) NSNumber *rumSessionOnErrorSampleRate;
+@property (nonatomic, strong, nullable) NSNumber *traceSampleRate;
+@property (nonatomic, strong, nullable) NSNumber *logSampleRate;
+@property (nonatomic, strong, nullable) NSNumber *sessionReplaySampleRate;
+@property (nonatomic, strong, nullable) NSNumber *sessionReplayOnErrorSampleRate;
 
 @end
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wdeprecated-declarations"
 @implementation FTRemoteConfigModel
 
 - (instancetype)initWithDict:(NSDictionary *)dict md5:(NSString *)md5{
@@ -106,7 +169,9 @@ NSString * const FT_MD5 = @"MD5";
     SetNumberFromDict(dict,FT_R_SYNC_SLEEP_TIME,self.syncSleepTime);
 
     // ---- RUM ----
+    SetNumberFromDict(dict,FT_R_RUM_SAMPLING_RATE,self.sessionSamplingRate);
     SetNumberFromDict(dict,FT_R_RUM_SAMPLERATE,self.rumSampleRate);
+    SetNumberFromDict(dict,FT_R_RUM_SESSION_ON_ERROR_SAMPLING_RATE,self.sessionOnErrorSamplingRate);
     SetNumberFromDict(dict,FT_R_RUM_SESSION_ON_ERROR_SAMPLE_RATE,self.rumSessionOnErrorSampleRate);
     SetNumberFromDict(dict,FT_R_RUM_ENABLE_TRACE_USER_ACTION,self.rumEnableTraceUserAction);
     SetNumberFromDict(dict,FT_R_RUM_ENABLE_TRACE_USER_VIEW,self.rumEnableTraceUserView);    
@@ -129,12 +194,14 @@ NSString * const FT_MD5 = @"MD5";
         }
     }
     // ---- Trace ----
+    SetNumberFromDict(dict,FT_R_TRACE_SAMPLING_RATE,self.traceSamplingRate);
     SetNumberFromDict(dict,FT_R_TRACE_SAMPLERATE,self.traceSampleRate);
     SetNumberFromDict(dict,FT_R_TRACE_ENABLE_AUTO_TRACE,self.traceEnableAutoTrace);
     SetNumberFromDict(dict,FT_R_TRACE_ENABLE_AUTO_TRACE_URLCONNECTION,self.traceEnableAutoTraceURLConnection);
     SetStringFromDict(dict,FT_R_TRACE_TRACE_TYPE,self.traceType);
 
     // ---- Log ----
+    SetNumberFromDict(dict,FT_R_LOG_SAMPLING_RATE,self.logSamplingRate);
     SetNumberFromDict(dict,FT_R_LOG_SAMPLERATE,self.logSampleRate);
     NSString *logLevelFilters;
     SetStringFromDict(dict,FT_R_LOG_LEVEL_FILTERS,logLevelFilters);
@@ -148,7 +215,9 @@ NSString * const FT_MD5 = @"MD5";
     SetNumberFromDict(dict,FT_R_LOG_ENABLE_WEBVIEW_LOG,self.logEnableWebViewLog);
 
     // ---- SessionReplay ----
+    SetNumberFromDict(dict,FT_R_SR_SAMPLING_RATE,self.sessionReplaySamplingRate);
     SetNumberFromDict(dict,FT_R_SR_SAMPLERATE,self.sessionReplaySampleRate);
+    SetNumberFromDict(dict,FT_R_SR_ON_ERROR_SAMPLING_RATE,self.sessionReplayOnErrorSamplingRate);
     SetNumberFromDict(dict,FT_R_SR_ON_ERROR_SAMPLE_RATE,self.sessionReplayOnErrorSampleRate);
     
     // ---- MD5 ----
@@ -159,9 +228,6 @@ NSString * const FT_MD5 = @"MD5";
 }
 
 - (NSDictionary *)toDictionary{
-    if (!self.context) {
-            return @{};
-        }
     NSMutableDictionary *dict = [NSMutableDictionary dictionary];
     
     // ===== 1. CORE  =====
@@ -185,10 +251,16 @@ NSString * const FT_MD5 = @"MD5";
     }
     
     // ===== 2. RUM  =====
-    if (self.rumSampleRate != nil) {
+    if (FTIsRemoteSamplingNumberValid(self.sessionSamplingRate, 100.0)) {
+        dict[FT_R_RUM_SAMPLING_RATE] = self.sessionSamplingRate;
+    }
+    if (FTIsRemoteSamplingNumberValid(self.rumSampleRate, 1.0)) {
         dict[FT_R_RUM_SAMPLERATE] = self.rumSampleRate;
     }
-    if (self.rumSessionOnErrorSampleRate != nil) {
+    if (FTIsRemoteSamplingNumberValid(self.sessionOnErrorSamplingRate, 100.0)) {
+        dict[FT_R_RUM_SESSION_ON_ERROR_SAMPLING_RATE] = self.sessionOnErrorSamplingRate;
+    }
+    if (FTIsRemoteSamplingNumberValid(self.rumSessionOnErrorSampleRate, 1.0)) {
         dict[FT_R_RUM_SESSION_ON_ERROR_SAMPLE_RATE] = self.rumSessionOnErrorSampleRate;
     }
     if (self.rumEnableTraceUserAction != nil) {
@@ -230,7 +302,10 @@ NSString * const FT_MD5 = @"MD5";
     }
     
     // ===== 3. Trace  =====
-    if (self.traceSampleRate != nil) {
+    if (FTIsRemoteSamplingNumberValid(self.traceSamplingRate, 100.0)) {
+        dict[FT_R_TRACE_SAMPLING_RATE] = self.traceSamplingRate;
+    }
+    if (FTIsRemoteSamplingNumberValid(self.traceSampleRate, 1.0)) {
         dict[FT_R_TRACE_SAMPLERATE] = self.traceSampleRate;
     }
     if (self.traceEnableAutoTrace != nil) {
@@ -244,7 +319,10 @@ NSString * const FT_MD5 = @"MD5";
     }
     
     // ===== 4. Log  =====
-    if (self.logSampleRate != nil) {
+    if (FTIsRemoteSamplingNumberValid(self.logSamplingRate, 100.0)) {
+        dict[FT_R_LOG_SAMPLING_RATE] = self.logSamplingRate;
+    }
+    if (FTIsRemoteSamplingNumberValid(self.logSampleRate, 1.0)) {
         dict[FT_R_LOG_SAMPLERATE] = self.logSampleRate;
     }
 
@@ -261,10 +339,16 @@ NSString * const FT_MD5 = @"MD5";
         dict[FT_R_LOG_ENABLE_WEBVIEW_LOG] = self.logEnableWebViewLog;
     }
     // ===== 5. SessionReplay  =====
-    if (self.sessionReplaySampleRate != nil) {
+    if (FTIsRemoteSamplingNumberValid(self.sessionReplaySamplingRate, 100.0)) {
+        dict[FT_R_SR_SAMPLING_RATE] = self.sessionReplaySamplingRate;
+    }
+    if (FTIsRemoteSamplingNumberValid(self.sessionReplaySampleRate, 1.0)) {
         dict[FT_R_SR_SAMPLERATE] = self.sessionReplaySampleRate;
     }
-    if (self.sessionReplayOnErrorSampleRate != nil) {
+    if (FTIsRemoteSamplingNumberValid(self.sessionReplayOnErrorSamplingRate, 100.0)) {
+        dict[FT_R_SR_ON_ERROR_SAMPLING_RATE] = self.sessionReplayOnErrorSamplingRate;
+    }
+    if (FTIsRemoteSamplingNumberValid(self.sessionReplayOnErrorSampleRate, 1.0)) {
         dict[FT_R_SR_ON_ERROR_SAMPLE_RATE] = self.sessionReplayOnErrorSampleRate;
     }
     
@@ -280,15 +364,15 @@ NSString * const FT_MD5 = @"MD5";
                             // CORE
                             FT_R_ENV, FT_R_SERVICE_NAME, FT_R_AUTO_SYNC, FT_R_COMPRESS_INTAKE_REQUESTS, FT_R_SYNC_PAGE_SIZE, FT_R_SYNC_SLEEP_TIME,
                             // RUM
-                            FT_R_RUM_SAMPLERATE, FT_R_RUM_SESSION_ON_ERROR_SAMPLE_RATE, FT_R_RUM_ENABLE_TRACE_USER_ACTION, FT_R_RUM_ENABLE_TRACE_USER_VIEW,
+                            FT_R_RUM_SAMPLING_RATE, FT_R_RUM_SAMPLERATE, FT_R_RUM_SESSION_ON_ERROR_SAMPLING_RATE, FT_R_RUM_SESSION_ON_ERROR_SAMPLE_RATE, FT_R_RUM_ENABLE_TRACE_USER_ACTION, FT_R_RUM_ENABLE_TRACE_USER_VIEW,
                             FT_R_RUM_ENABLE_TRACE_USER_RESOURCE, FT_R_RUM_ENABLE_TRACE_URLCONNECTION_RESOURCE, FT_R_RUM_ENABLE_RESOURCE_HOST_IP, FT_R_RUM_ENABLE_TRACE_APP_FREEZE, FT_R_RUM_FREEZE_DURATION_MS,
                             FT_R_RUM_ENABLE_TRACK_APP_CRASH, FT_R_RUM_ENABLE_TRACK_APP_ANR, FT_R_RUM_ENABLE_TRACE_WEBVIEW, FT_R_RUM_ALLOW_WEBVIEW_HOST,
                             // Trace
-                            FT_R_TRACE_SAMPLERATE, FT_R_TRACE_ENABLE_AUTO_TRACE, FT_R_TRACE_ENABLE_AUTO_TRACE_URLCONNECTION, FT_R_TRACE_TRACE_TYPE,
+                            FT_R_TRACE_SAMPLING_RATE, FT_R_TRACE_SAMPLERATE, FT_R_TRACE_ENABLE_AUTO_TRACE, FT_R_TRACE_ENABLE_AUTO_TRACE_URLCONNECTION, FT_R_TRACE_TRACE_TYPE,
                             // Log
-                            FT_R_LOG_SAMPLERATE, FT_R_LOG_LEVEL_FILTERS, FT_R_LOG_ENABLE_CUSTOM_LOG, FT_R_LOG_ENABLE_WEBVIEW_LOG,
+                            FT_R_LOG_SAMPLING_RATE, FT_R_LOG_SAMPLERATE, FT_R_LOG_LEVEL_FILTERS, FT_R_LOG_ENABLE_CUSTOM_LOG, FT_R_LOG_ENABLE_WEBVIEW_LOG,
                             // SessionReplay
-                            FT_R_SR_SAMPLERATE,FT_R_SR_ON_ERROR_SAMPLE_RATE,
+                            FT_R_SR_SAMPLING_RATE, FT_R_SR_SAMPLERATE, FT_R_SR_ON_ERROR_SAMPLING_RATE, FT_R_SR_ON_ERROR_SAMPLE_RATE,
                             // MD5
                             FT_MD5,
                             nil];
@@ -303,6 +387,33 @@ NSString * const FT_MD5 = @"MD5";
     
     return [dict copy];
 }
+
+- (FTRemoteConfigModel *)modelByNormalizingSamplingWithPreviousModel:(FTRemoteConfigModel *)previousModel
+                                                   includeRawContext:(BOOL)includeRawContext {
+    NSMutableDictionary *dict = [[self toDictionary] mutableCopy];
+    NSDictionary *rawContext = self.context ?: @{};
+
+    FTNormalizeRemoteSamplingPair(dict, rawContext, includeRawContext,
+                                  FT_R_RUM_SAMPLING_RATE, self.sessionSamplingRate, previousModel.sessionSamplingRate,
+                                  FT_R_RUM_SAMPLERATE, self.rumSampleRate, previousModel.rumSampleRate);
+    FTNormalizeRemoteSamplingPair(dict, rawContext, includeRawContext,
+                                  FT_R_RUM_SESSION_ON_ERROR_SAMPLING_RATE, self.sessionOnErrorSamplingRate, previousModel.sessionOnErrorSamplingRate,
+                                  FT_R_RUM_SESSION_ON_ERROR_SAMPLE_RATE, self.rumSessionOnErrorSampleRate, previousModel.rumSessionOnErrorSampleRate);
+    FTNormalizeRemoteSamplingPair(dict, rawContext, includeRawContext,
+                                  FT_R_LOG_SAMPLING_RATE, self.logSamplingRate, previousModel.logSamplingRate,
+                                  FT_R_LOG_SAMPLERATE, self.logSampleRate, previousModel.logSampleRate);
+    FTNormalizeRemoteSamplingPair(dict, rawContext, includeRawContext,
+                                  FT_R_TRACE_SAMPLING_RATE, self.traceSamplingRate, previousModel.traceSamplingRate,
+                                  FT_R_TRACE_SAMPLERATE, self.traceSampleRate, previousModel.traceSampleRate);
+    FTNormalizeRemoteSamplingPair(dict, rawContext, includeRawContext,
+                                  FT_R_SR_SAMPLING_RATE, self.sessionReplaySamplingRate, previousModel.sessionReplaySamplingRate,
+                                  FT_R_SR_SAMPLERATE, self.sessionReplaySampleRate, previousModel.sessionReplaySampleRate);
+    FTNormalizeRemoteSamplingPair(dict, rawContext, includeRawContext,
+                                  FT_R_SR_ON_ERROR_SAMPLING_RATE, self.sessionReplayOnErrorSamplingRate, previousModel.sessionReplayOnErrorSamplingRate,
+                                  FT_R_SR_ON_ERROR_SAMPLE_RATE, self.sessionReplayOnErrorSampleRate, previousModel.sessionReplayOnErrorSampleRate);
+
+    return [[FTRemoteConfigModel alloc] initWithDict:dict];
+}
 #pragma mark - NSCopying
 - (id)copyWithZone:(NSZone *)zone {
     FTRemoteConfigModel *copyModel = [[[self class] allocWithZone:zone] init];
@@ -316,7 +427,9 @@ NSString * const FT_MD5 = @"MD5";
     copyModel.syncSleepTime = self.syncSleepTime;
     
     // ---- RUM ----
+    copyModel.sessionSamplingRate = self.sessionSamplingRate;
     copyModel.rumSampleRate = self.rumSampleRate;
+    copyModel.sessionOnErrorSamplingRate = self.sessionOnErrorSamplingRate;
     copyModel.rumSessionOnErrorSampleRate = self.rumSessionOnErrorSampleRate;
     copyModel.rumEnableTraceUserAction = self.rumEnableTraceUserAction;
     copyModel.rumEnableTraceUserView = self.rumEnableTraceUserView;
@@ -331,19 +444,23 @@ NSString * const FT_MD5 = @"MD5";
     copyModel.rumAllowWebViewHost = [self.rumAllowWebViewHost copy];
     
     // ---- Trace ----
+    copyModel.traceSamplingRate = self.traceSamplingRate;
     copyModel.traceSampleRate = self.traceSampleRate;
     copyModel.traceEnableAutoTrace = self.traceEnableAutoTrace;
     copyModel.traceEnableAutoTraceURLConnection = self.traceEnableAutoTraceURLConnection;
     copyModel.traceType = [self.traceType copy];
     
     // ---- Log ----
+    copyModel.logSamplingRate = self.logSamplingRate;
     copyModel.logSampleRate = self.logSampleRate;
     copyModel.logLevelFilters = [self.logLevelFilters copy];
     copyModel.logEnableCustomLog = self.logEnableCustomLog;
     copyModel.logEnableWebViewLog = self.logEnableWebViewLog;
     
     // ---- SessionReplay ----
+    copyModel.sessionReplaySamplingRate = self.sessionReplaySamplingRate;
     copyModel.sessionReplaySampleRate = self.sessionReplaySampleRate;
+    copyModel.sessionReplayOnErrorSamplingRate = self.sessionReplayOnErrorSamplingRate;
     copyModel.sessionReplayOnErrorSampleRate = self.sessionReplayOnErrorSampleRate;
     
     copyModel.context = [self.context copy];
@@ -351,3 +468,4 @@ NSString * const FT_MD5 = @"MD5";
     return copyModel;
 }
 @end
+#pragma clang diagnostic pop

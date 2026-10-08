@@ -20,12 +20,6 @@
 #import "FTSessionReplayConfig.h"
 NS_ASSUME_NONNULL_BEGIN
 
-FOUNDATION_EXPORT NSString * const FTSessionReplayRUMContextApplicationIDKey;
-FOUNDATION_EXPORT NSString * const FTSessionReplayRUMContextSessionIDKey;
-FOUNDATION_EXPORT NSString * const FTSessionReplayRUMContextViewIDKey;
-FOUNDATION_EXPORT NSString * const FTSessionReplayRUMContextGlobalContextKey;
-FOUNDATION_EXPORT NSString * const FTSessionReplayRUMContextSampledForErrorSessionKey;
-
 @interface FTRumSessionReplay : NSObject
 
 /// Singleton
@@ -35,31 +29,6 @@ FOUNDATION_EXPORT NSString * const FTSessionReplayRUMContextSampledForErrorSessi
 /// - Parameter config: Session Replay configuration items
 - (void)startWithSessionReplayConfig:(FTSessionReplayConfig *)config;
 
-/// Returns the active RUM application, session, view, and linked context for an
-/// external Session Replay recorder. Returns nil while replay is not sampled.
-- (nullable NSDictionary *)currentExternalRUMContext;
-
-/// Pauses or resumes native view recording for the default external recorder.
-/// Sampling, RUM linkage, storage, and upload remain active while paused.
-- (void)setExternalRecorderActive:(BOOL)active;
-
-/// Updates recorder ownership for a framework or engine instance. Native view
-/// recording resumes only after every active owner has released ownership.
-- (void)setExternalRecorderActive:(BOOL)active forOwner:(NSString *)owner;
-
-/// Updates the RUM session replay flag.
-- (void)setExternalHasReplay:(BOOL)hasReplay;
-
-/// Updates the accumulated external record count for a RUM view.
-- (void)setExternalRecordCountForViewID:(NSString *)viewID count:(NSUInteger)count;
-
-/// Writes a framework-generated enriched record JSON segment.
-- (void)writeExternalSegment:(NSString *)segment viewID:(NSString *)viewID;
-
-/// Stores an encoded image resource and returns its content identifier.
-- (nullable NSString *)saveExternalImageResourceData:(NSData *)data mimeType:(NSString *)mimeType;
-
-- (void)updateExternalRecordCount:(NSUInteger)count viewID:(NSString *)viewID;
 @end
 
 NS_ASSUME_NONNULL_END

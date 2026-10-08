@@ -17,7 +17,7 @@
 #if TARGET_OS_IOS || TARGET_OS_OSX
 
 #import "FTSessionReplayFeature.h"
-#import "FTRumSessionReplay.h"
+#import "FTRumSessionReplay+ExternalRecorder.h"
 #import "FTSegmentRequest.h"
 #import "FTPerformancePresetOverride.h"
 #import "FTSessionReplayCoreImports.h"
@@ -357,8 +357,8 @@ NSString * const FTSessionReplayRUMContextSampledForErrorSessionKey = @"sampledF
 - (void)setExternalHasReplay:(BOOL)hasReplay {
     [[FTModuleManager sharedInstance] postMessageWithKey:FTMessageKeySessionHasReplay message:@{
         FT_SESSION_HAS_REPLAY: @(hasReplay),
-        FT_RUM_SESSION_REPLAY_SAMPLE_RATE: @(self.config.sampleRate),
-        FT_RUM_SESSION_REPLAY_ON_ERROR_SAMPLE_RATE: @(self.config.sessionReplayOnErrorSampleRate),
+        FT_RUM_SESSION_REPLAY_SAMPLE_RATE: @(self.config.sessionReplaySamplingRate),
+        FT_RUM_SESSION_REPLAY_ON_ERROR_SAMPLE_RATE: @(self.config.sessionReplayOnErrorSamplingRate),
         FT_RUM_KEY_SAMPLED_FOR_ERROR_REPLAY: @(self.recordingCoordinator.sampleState == FTRecordingSampleStateError),
     }];
 }

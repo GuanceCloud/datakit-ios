@@ -25,7 +25,7 @@
 NS_ASSUME_NONNULL_BEGIN
 
 @interface WKWebView (FTAutoTrack)
-@property (nonatomic, strong) NSDictionary *ft_linkRumKeysInfo;
+@property (nonatomic, strong, nullable) NSDictionary *ft_linkRumKeysInfo;
 -(WKNavigation *)ft_loadRequest:(NSURLRequest *)request;
 -(WKNavigation *)ft_loadHTMLString:(NSString *)string baseURL:(NSURL *)baseURL;
 -(WKNavigation *)ft_loadFileURL:(NSURL *)URL allowingReadAccessToURL:(NSURL *)readAccessURL;

@@ -30,6 +30,7 @@
 #import "FTResourceRequest.h"
 #import "FTSessionReplayConfig.h"
 #import "FTSessionReplayFeature.h"
+#import "FTRumSessionReplay+ExternalRecorder.h"
 #import "FTRecordingCoordinator.h"
 #import "FTSegmentJSON.h"
 #import "FTSRNodeWireframesBuilder.h"

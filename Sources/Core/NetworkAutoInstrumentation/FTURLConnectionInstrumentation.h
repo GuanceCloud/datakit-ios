@@ -42,11 +42,11 @@ NS_EXTENSION_UNAVAILABLE("NSURLConnection automatic instrumentation is not suppo
           sessionTaskErrorFilter:(nullable SessionTaskErrorFilter)sessionTaskErrorFilter;
 - (void)setTraceEnableAutoTrace:(BOOL)enabled
               enableLinkRumData:(BOOL)enableLinkRumData
-                     sampleRate:(int)sampleRate
+              traceSamplingRate:(float)traceSamplingRate
                       traceType:(NetworkTraceType)traceType
                traceInterceptor:(nullable TraceInterceptor)traceInterceptor
                     serviceName:(NSString *)serviceName;
-- (void)updateTraceSampleRate:(int)sampleRate;
+- (void)updateTraceSamplingRate:(float)traceSamplingRate;
 - (void)updateResourceEnabled:(BOOL)enabled;
 - (void)updateTraceEnabled:(BOOL)enabled;
 - (void)setRumResourceHandler:(nullable id<FTRumResourceProtocol>)handler;

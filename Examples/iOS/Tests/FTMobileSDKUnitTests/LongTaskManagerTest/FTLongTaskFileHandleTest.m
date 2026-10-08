@@ -58,6 +58,8 @@ typedef void (^FTWriteCallBack)(NSDictionary *fields, NSDictionary *tags);
 @property (nonatomic, copy) FTWriteCallBack  writeCallBack;
 @property (nonatomic, strong) FTLongTaskBacktraceMock *backtraceMock;
 @property (nonatomic, assign) long long lastFatalErrorDate;
+@property (nonatomic, strong) FTFatalErrorContext *fatalErrorContext;
+@property (nonatomic, strong) NSMutableArray<NSNumber *> *reportedANRTimes;
 
 @end
 
@@ -66,6 +68,7 @@ typedef void (^FTWriteCallBack)(NSDictionary *fields, NSDictionary *tags);
 
 - (void)setUp {
     // Put setup code here. This method is called before the invocation of each test method in the class.
+    self.reportedANRTimes = [NSMutableArray array];
 }
 
 - (void)tearDown {
@@ -83,6 +86,7 @@ typedef void (^FTWriteCallBack)(NSDictionary *fields, NSDictionary *tags);
     dependencies.writer = self;
     FTFatalErrorContext *errorContext = [[FTFatalErrorContext alloc]initWithErrorInfoProvider:nil];
     [errorContext setLastSessionState:[[FTRUMSessionState alloc] init]];
+    self.fatalErrorContext = errorContext;
     dependencies.fatalErrorContext = errorContext;
     if (!backtraceReporting) {
         [FTCrash setupWithMonitoringType:FTCrashCMonitorTypeSystem writer:self enableMonitorMemory:YES enableMonitorCpu:YES];
@@ -308,6 +312,21 @@ typedef void (^FTWriteCallBack)(NSDictionary *fields, NSDictionary *tags);
     self.backtraceMock = nil;
     [longTaskManager shutDown];
 }
+- (void)testLongTask_completedANRIsNotReportedAgainWhenNextCycleCannotStart{
+    FTLongTaskBacktraceMock *backtraceMock = [[FTLongTaskBacktraceMock alloc] init];
+    backtraceMock.mainThreadBacktrace = @"mainThreadBacktrace";
+    FTLongTaskManager *longTaskManager = [self mockLongTaskManagerWithBacktraceReporting:backtraceMock enableFreeze:NO];
+    long long completedANRTime = [NSDate ft_currentNanosecondTimeStamp] - 6LL * NSEC_PER_SEC;
+    [longTaskManager startLongTask:completedANRTime];
+    [longTaskManager endLongTask];
+
+    [self.fatalErrorContext setLastSessionState:nil];
+    [longTaskManager startLongTask:[NSDate ft_currentNanosecondTimeStamp]];
+    [longTaskManager endLongTask];
+
+    XCTAssertEqualObjects(self.reportedANRTimes, (@[@(completedANRTime)]));
+    [longTaskManager shutDown];
+}
 - (void)testLongTask_rewritesANRDataWhenAllThreadsBacktraceCapturedAfterInitialWrite{
     FTLongTaskBacktraceMock *backtraceMock = [[FTLongTaskBacktraceMock alloc] init];
     backtraceMock.mainThreadBacktrace = @"mainThreadBacktrace";
@@ -415,6 +434,7 @@ typedef void (^FTWriteCallBack)(NSDictionary *fields, NSDictionary *tags);
     }
 }
 -(void)anrStackDetected:(NSString *)slowStack appState:(NSString *)appState time:(long long)time{
+    [self.reportedANRTimes addObject:@(time)];
     if(self.callBack){
         self.callBack(slowStack, 0);
     }
