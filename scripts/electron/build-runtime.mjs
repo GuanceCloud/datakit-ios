@@ -8,7 +8,7 @@ export const NODE_API_VERSION = 8
 const PRODUCT_NAME = 'GuanceElectronNative'
 const STATIC_LIBRARY_NAME = `lib${PRODUCT_NAME}.a`
 const ADDON_NAME = 'guance_electron.node'
-const MINIMUM_MACOS_VERSION = '10.14'
+export const MINIMUM_MACOS_VERSION = '12.0'
 
 export function validateNativeSDKSource(sdkRoot) {
   const resolvedRoot = path.resolve(sdkRoot)

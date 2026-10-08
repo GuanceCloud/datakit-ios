@@ -42,6 +42,20 @@ test('addon links the SDK statically, preserves ObjC categories, and pins Node-A
   assert.equal(args.some((arg) => arg.includes('.dylib')), false)
 })
 
+for (const architecture of ['arm64', 'x86_64']) {
+  test(`${architecture} addon requires macOS 12 like the Native SDK`, () => {
+    const packageManifest = fs.readFileSync(new URL('../../Package.swift', import.meta.url), 'utf8')
+    assert.match(packageManifest, /\.macOS\(\.v12\)/u)
+    const args = nativeAddonLinkArguments({
+      architecture, nodeHeadersPath: '/node/include', outputPath: '/output/guance_electron.node',
+      sdkRoot: '/sdk', staticLibraryPath: '/build/libGuanceElectronNative.a',
+    })
+    assert.deepEqual(args.filter((arg) => arg.startsWith('-mmacosx-version-min=')), [
+      '-mmacosx-version-min=12.0',
+    ])
+  })
+}
+
 test('resource changes alter manifest checksums and links are rejected', (t) => {
   const root = fixture(t)
   const runtime = path.join(root, 'runtime')

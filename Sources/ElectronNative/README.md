@@ -38,8 +38,9 @@ Each archive contains:
 The manifest records the Native SDK version and revision (when available),
 architectures (arm64 / x86_64), minimum macOS version, Node-API version,
 static linkage, build configuration, and SHA-256 of every runtime file.
-The minimum macOS value describes the Native binary; the selected Electron
-version may have a higher minimum.
+The Native binary requires macOS 12 or newer; the selected Electron version
+may have a higher minimum. Verification checks that the manifest and every
+architecture slice declare the same minimum macOS version.
 
 ## Verification and publishing
 

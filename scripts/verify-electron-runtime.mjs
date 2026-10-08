@@ -2,7 +2,7 @@ import { execFileSync } from 'node:child_process'
 import fs from 'node:fs'
 import { createRequire } from 'node:module'
 import path from 'node:path'
-import { runtimeFileHashes } from './electron/build-runtime.mjs'
+import { MINIMUM_MACOS_VERSION, runtimeFileHashes } from './electron/build-runtime.mjs'
 
 if (!process.argv[2]) throw new Error('Usage: node scripts/verify-electron-runtime.mjs <runtime-directory>')
 const runtime = path.resolve(process.argv[2])
@@ -27,11 +27,21 @@ if (manifest.schemaVersion !== 1 ||
     !['release', 'debug'].includes(manifest.configuration)) {
   throw new Error(`Invalid Native runtime manifest: ${manifestPath}`)
 }
+if (manifest.minimumMacOSVersion !== MINIMUM_MACOS_VERSION) {
+  throw new Error(`Native runtime manifest must require macOS ${MINIMUM_MACOS_VERSION}`)
+}
 if (!Array.isArray(manifest.architectures) || manifest.architectures.length === 0) {
   throw new Error('Native runtime manifest has no architectures')
 }
 for (const architecture of manifest.architectures) {
   execFileSync('/usr/bin/lipo', [addon, '-verify_arch', architecture])
+  const sliceLoadCommands = execFileSync('/usr/bin/otool', ['-l', '-arch', architecture, addon], {
+    encoding: 'utf8',
+  })
+  const minimumOSVersion = sliceLoadCommands.match(/^\s+minos ([0-9.]+)$/mu)?.[1]
+  if (minimumOSVersion !== MINIMUM_MACOS_VERSION) {
+    throw new Error(`Native runtime ${architecture} binary must require macOS ${MINIMUM_MACOS_VERSION}; found ${minimumOSVersion ?? 'no minimum version'}`)
+  }
 }
 execFileSync('/usr/bin/codesign', ['--verify', '--verbose=2', addon], {
   stdio: ['ignore', 'ignore', 'pipe'],
