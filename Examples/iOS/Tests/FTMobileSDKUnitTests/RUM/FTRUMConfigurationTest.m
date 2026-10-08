@@ -183,6 +183,40 @@ typedef FTRUMAction* _Nullable (^FTLaunchActionTrackingBlock)(FTLaunchType type)
     XCTAssertNil([emptyRule validatedCopyWithError:nil]);
 }
 
+- (void)testVisitorHeaderRequiresFullStringMatch {
+    NSArray<NSString *> *headers = @[
+        @"x-visitor\n", @"x-visitor\r", @"x-visitor\r\n",
+        @"host\n", @"cookie\r\n", @"traceparent\n",
+        @"\nx-visitor", @"x-\nvisitor", @"x-visitor\t",
+        @" x-visitor", @"x-visitor ", @"x-visitor\u2028", @"x-visitor\u2029",
+        [NSString stringWithFormat:@"x-visitor%C", (unichar)0x0085],
+        [NSString stringWithFormat:@"x-visitor%C", (unichar)0],
+    ];
+    for (NSString *header in headers) {
+        FTVisitorIDConfig *config = [FTVisitorIDConfig new];
+        config.header = header;
+        [config addMatchWithURLPrefix:@"https://api.example.com/"];
+        NSError *error = nil;
+        XCTAssertNil([config validatedCopyWithError:&error], @"Accepted invalid header bytes: %@",
+                     [header dataUsingEncoding:NSUTF8StringEncoding]);
+        XCTAssertNotNil(error);
+    }
+}
+
+- (void)testVisitorHeaderAcceptsLowercaseHTTPTokenCharacters {
+    for (NSString *header in @[@"x-visitor-id", @"visitorid",
+                               @"!#$%&'*+-.^_`|~0123456789abcdefghijklmnopqrstuvwxyz"]) {
+        FTVisitorIDConfig *config = [FTVisitorIDConfig new];
+        config.header = header;
+        [config addMatchWithURLPrefix:@"https://api.example.com/"];
+        NSError *error = nil;
+        FTVisitorIDConfig *validated = [config validatedCopyWithError:&error];
+        XCTAssertNotNil(validated);
+        XCTAssertNil(error);
+        XCTAssertEqualObjects(validated.header, header);
+    }
+}
+
 - (void)testVisitorMatcherExceptionIsANonMatchAndDoesNotAbortLaterRules {
     FTVisitorIDConfig *config = [FTVisitorIDConfig new];
     config.header = @"x-visitor";

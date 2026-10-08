@@ -248,7 +248,7 @@ typedef NS_ENUM(NSUInteger, FTVisitorIDMatcherType) {
 
 - (BOOL)validHeader:(NSString *)header {
     if (![header isKindOfClass:NSString.class] || header.length == 0 ||
-        [header rangeOfString:@"^[!#$%&'*+\\-.^_`|~0-9a-z]+$" options:NSRegularExpressionSearch].location == NSNotFound) {
+        [header rangeOfString:@"\\A[!#$%&'*+\\-.^_`|~0-9a-z]+\\z" options:NSRegularExpressionSearch].location == NSNotFound) {
         return NO;
     }
     for (NSString *prefix in @[@"proxy-", @"sec-", @"x-datadog-", @"x-b3-"]) {
