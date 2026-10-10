@@ -1,3 +1,12 @@
+# 1.6.8-alpha.10
+
+1. Exposed public APIs required for React Native and Flutter Swift Package Manager integrations, including custom Session Replay recorders, wireframe builders, and external recording.
+2. Improved external Session Replay write ordering, image resource handling for error-sampled sessions, and repeated initialization safety.
+3. Added opt-in SDK-managed Visitor ID support through `FTRumConfig.visitorIDConfig`, including persistent identifiers with configurable fixed TTL, automatic custom-header injection for matching URLSession requests, native RUM `visitor_id` correlation, and manual reset via `+[FTSDKAgent resetVisitorID]`.
+4. Added RUM session start reasons, process start timestamps, and interval-based app state reporting; improved automatic View and Action handling during background transitions.
+5. Fixed prewarmed app launch duration measurement to start from runtime initialization.
+---
+
 # 1.6.8-alpha.9
 
 1. Fixed automatic uploads being indefinitely delayed by continuous data writes by preserving the first scheduled upload deadline.
