@@ -12,6 +12,7 @@ esac
 set -eo pipefail
 
 SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
+bash "${SCRIPT_DIR}/tools/diagnostics/test.sh"
 SCHEME_DIR="${SCRIPT_DIR}/Examples/Examples.xcodeproj/xcshareddata/xcschemes"
 APP_ID="${APP_ID:-}"
 ACCESS_SERVER_URL="${ACCESS_SERVER_URL:-}"

@@ -18,6 +18,7 @@
 //  limitations under the License.
 //
 
+#import "FTDiagnosticsBridge.h"
 #import "FTDataUploadWorker.h"
 #import "FTHTTPClient.h"
 #import <pthread.h>
@@ -137,7 +138,9 @@ typedef NS_ENUM(NSInteger, FTUploadWorkerState) {
             _uploadState = FTUploadWorkerStateDebouncing;
             return YES;
         }
-        return _uploadState == FTUploadWorkerStateDebouncing;
+        // Coalesce new writes without moving the first upload deadline.
+        // A trailing debounce can starve auto-upload under continuous traffic.
+        return NO;
     }
 }
 - (void)clearDelayedUploadPending{
@@ -347,6 +350,11 @@ typedef NS_ENUM(NSInteger, FTUploadWorkerState) {
             return NO;
         }
         FTInnerLogDebug(@"[NETWORK][%@] Start reporting events (number of events in this report:%lu)", type,(unsigned long)[events count]);
+        if([FTDiagnosticsBridge enabled]) {
+            int64_t oldest=INT64_MAX;for(FTRecordModel *item in events)oldest=MIN(oldest,item.tm/1000000);
+            [FTDiagnosticsBridge batch:type count:events.count bytes:-1
+                                 ageMs:MAX(0,(int64_t)(NSDate.date.timeIntervalSince1970*1000)-oldest) source:@"oldest_event_timestamp"];
+        }
         FTRequest *request = [FTRequest createRequestWithEvents:events type:type];
         if (!request) {
             FTInnerLogError(@"[NETWORK][%@] Failed to create request", type);
@@ -409,6 +417,8 @@ typedef NS_ENUM(NSInteger, FTUploadWorkerState) {
                         return;
                     }
                     NSInteger statusCode = httpResponse.statusCode;
+                    if(statusCode>=300 && statusCode<500 && statusCode!=403 && statusCode!=429)
+                        [FTDiagnosticsBridge record:@"discard" channel:type count:request.events.count bytes:-1 reason:@"non_retryable_response"];
                     success = (statusCode >=200 && statusCode < 500 && statusCode != 403 && statusCode != 429);
                     FTInnerLogDebug(@"[NETWORK] Upload Response statusCode : %ld",(long)statusCode);
                     if (!success && data.length>0) {
@@ -431,6 +441,7 @@ typedef NS_ENUM(NSInteger, FTUploadWorkerState) {
                         if ([self isInvalidated]) {
                             return NO;
                         }
+                        [FTDiagnosticsBridge record:@"retry" channel:type count:1 bytes:-1 reason:@"retry_scheduled"];
                         requestRetryCount++;
                         delay += kInitialRetryDelay; // Backoff
                     } else {

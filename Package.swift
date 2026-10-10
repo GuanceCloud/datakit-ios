@@ -11,6 +11,7 @@ let package = Package(
         .tvOS(.v15),
     ],
     products: [
+        .library(name: "GuanceDiagnostics", targets: ["GuanceDiagnostics"]),
         .library(
             name: "GuanceSDK",
             targets: [
@@ -45,6 +46,8 @@ let package = Package(
     ],
     dependencies: [],
     targets: [
+        .target(name: "GuanceDiagnostics", dependencies: ["_FTBaseUtils"],
+                path: "Sources/Diagnostics", publicHeadersPath: "include"),
         // MARK: - GuanceSDK
         .target(
             name: "GuanceSDK",

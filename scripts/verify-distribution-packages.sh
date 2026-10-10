@@ -32,12 +32,14 @@ FRAMEWORK_ZIPS=(
   "GuanceSDK-Dynamic-DisableSwizzlingResource.xcframework.zip"
 )
 SPM_SCHEMES=(
+  "GuanceDiagnostics"
   "GuanceSDK"
   "GuanceWidgetExtension"
   "GuanceSessionReplay"
   "GuanceElectronWebView"
 )
 SPM_SCHEME_PLATFORMS=(
+  "ios,macos,tvos"
   "ios,macos,tvos"
   "ios"
   "ios,macos"

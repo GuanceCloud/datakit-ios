@@ -44,6 +44,19 @@
 @property (nonatomic, strong, readonly) dispatch_queue_t networkQueue;
 @end
 
+@interface FTUploadSchedulingProbe : FTDataUploadWorker
+@property (nonatomic, assign) NSUInteger timerSchedules;
+@end
+@interface FTDataUploadWorker (FTUploadSchedulingProbe)
+- (void)scheduleDelayedUploadTimer;
+@end
+@implementation FTUploadSchedulingProbe
+- (void)scheduleDelayedUploadTimer {
+    self.timerSchedules++;
+    [super scheduleDelayedUploadTimer];
+}
+@end
+
 @implementation FTTrackDataManagerTest
 
 - (void)setUp {
@@ -286,6 +299,28 @@
         [FTTrackDataManager shutDown];
     }];
     XCTAssertTrue(interval<0.1);
+}
+- (void)testContinuousAutoFlushKeepsFirstUploadDeadline {
+    FTUploadSchedulingProbe *worker = [[FTUploadSchedulingProbe alloc] initWithSyncPageSize:10 syncSleepTime:0];
+    @try {
+        // Queue a burst before the timer runs. New requests must join the
+        // existing reservation instead of pushing its deadline back.
+        dispatch_sync(worker.networkQueue, ^{
+            for (NSUInteger i = 0; i < 100; i++) [worker flushWithSleep:YES];
+        });
+        dispatch_sync(worker.networkQueue, ^{});
+        XCTAssertEqual(worker.timerSchedules, 1u);
+        [NSThread sleepForTimeInterval:0.2];
+        dispatch_sync(worker.networkQueue, ^{});
+        XCTAssertTrue(worker.isUploading);
+        XCTAssertFalse(worker.hasPendingUpload);
+        [worker cancelSynchronously];
+        [worker flushWithSleep:YES];
+        dispatch_sync(worker.networkQueue, ^{});
+        XCTAssertEqual(worker.timerSchedules, 2u);
+    } @finally {
+        [worker cancelSynchronously];
+    }
 }
 - (void)testDelayedUploadReservesUploadSlotBeforeUploadStarts{
     [FTTrackDataManager startWithAutoSync:NO syncPageSize:10 syncSleepTime:0];

@@ -39,3 +39,7 @@ releases, and issue tracking across all supported Apple platforms.
 ## Third Party Licenses
 
 * Datadog [dd-sdk-ios](https://github.com/DataDog/dd-sdk-ios/blob/develop/LICENSE)
+
+## SDK self-monitoring
+
+Optional local diagnostics: [integration and metric contract](Sources/Diagnostics/README.md).

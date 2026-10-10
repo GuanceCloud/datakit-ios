@@ -6,6 +6,7 @@
 //  Copyright © 2019 hll. All rights reserved.
 //
 
+#import "FTDiagnosticsBridge.h"
 #import "FTTrackerEventDBTool.h"
 #import "ZY_FMDB.h"
 #import "FTRecordModel.h"
@@ -148,6 +149,9 @@ static dispatch_once_t onceToken;
         NSString *sqlStr = [NSString stringWithFormat:@"INSERT INTO %@ ( tm , data , op , %@) VALUES (  ? , ? , ? , ? );",FT_DB_TRACE_EVENT_TABLE_NAME,FT_DB_REMOTE_FILTER_CHECKED];
         success=  [db executeUpdate:sqlStr,@(item.tm),item.data,item.op,@(item.remoteFilterChecked)];
     }];
+    if ([FTDiagnosticsBridge enabled]) [FTDiagnosticsBridge record:success ? @"storage_write" : @"discard"
+        channel:item.op count:1 bytes:success ? [item.data lengthOfBytesUsingEncoding:NSUTF8StringEncoding] : -1
+        reason:success ? @"sqlite_insert" : @"sqlite_write_failed"];
     return success;
 }
 -(BOOL)insertItemsWithDatas:(NSArray<FTRecordModel*> *)items{
@@ -163,6 +167,11 @@ static dispatch_once_t onceToken;
             }];
             *rollback = needRollback;
         }];
+        if ([FTDiagnosticsBridge enabled]) for (FTRecordModel *item in items) {
+            [FTDiagnosticsBridge record:needRollback ? @"discard" : @"storage_write" channel:item.op count:1
+                                  bytes:needRollback ? -1 : [item.data lengthOfBytesUsingEncoding:NSUTF8StringEncoding]
+                                 reason:needRollback ? @"sqlite_rollback" : @"sqlite_insert"];
+        }
         return !needRollback;
     }
     return NO;
@@ -238,6 +247,7 @@ static dispatch_once_t onceToken;
         ZY_FMResultSet *set = [db executeQuery:sqlStr,op];
         while ([set next]) {
             count= [set intForColumn:@"count"];
+            [FTDiagnosticsBridge record:@"backlog" channel:op count:count bytes:-1 reason:@"observed_storage"];
         }
         [set close];
     }];
@@ -249,6 +259,7 @@ static dispatch_once_t onceToken;
     [self zy_inDatabase:^(ZY_FMDatabase *db){
         NSString *sqlStr = [NSString stringWithFormat:@"DELETE FROM %@ WHERE op = ? AND _id <= ? ;",FT_DB_TRACE_EVENT_TABLE_NAME];
         is = [db executeUpdate:sqlStr,type,identify];
+        if(is && [FTDiagnosticsBridge enabled]) [FTDiagnosticsBridge record:@"storage_remove" channel:type count:db.changes bytes:-1 reason:@"upload_cleanup"];
         if(is && weakSelf.incrementalAutoVacuumEnabled){
             NSString *str = [NSString stringWithFormat:@"PRAGMA incremental_vacuum(%ld)", (long)count];
             ZY_FMResultSet *set = [db executeQuery:str];
@@ -263,6 +274,7 @@ static dispatch_once_t onceToken;
     [self zy_inDatabase:^(ZY_FMDatabase *db){
         NSString *sqlStr = [NSString stringWithFormat:@"DELETE FROM %@ WHERE _id in (SELECT _id from '%@' WHERE  op = ? ORDER by _id ASC LIMIT ? )",FT_DB_TRACE_EVENT_TABLE_NAME,FT_DB_TRACE_EVENT_TABLE_NAME];
         is = [db executeUpdate:sqlStr,type,@(count)];
+        if(is && [FTDiagnosticsBridge enabled]) [FTDiagnosticsBridge record:@"storage_remove" channel:type count:db.changes bytes:-1 reason:@"capacity_cleanup"];
         if(is && weakSelf.incrementalAutoVacuumEnabled){
             NSString *str = [NSString stringWithFormat:@"PRAGMA incremental_vacuum(%ld)", (long)count];
             ZY_FMResultSet *set = [db executeQuery:str];
@@ -277,6 +289,7 @@ static dispatch_once_t onceToken;
     [self zy_inDatabase:^(ZY_FMDatabase *db){
         NSString *sqlStr = [NSString stringWithFormat:@"DELETE FROM %@ WHERE _id in (SELECT _id from '%@' ORDER by _id ASC LIMIT ?)",FT_DB_TRACE_EVENT_TABLE_NAME,FT_DB_TRACE_EVENT_TABLE_NAME];
         is = [db executeUpdate:sqlStr,@(count)];
+        if(is && [FTDiagnosticsBridge enabled]) [FTDiagnosticsBridge record:@"storage_remove" channel:@"other" count:db.changes bytes:-1 reason:@"capacity_cleanup"];
         if(is && weakSelf.incrementalAutoVacuumEnabled){
             NSString *str = [NSString stringWithFormat:@"PRAGMA incremental_vacuum(%ld)", (long)count];
             ZY_FMResultSet *set = [db executeQuery:str];
@@ -291,6 +304,7 @@ static dispatch_once_t onceToken;
     [self zy_inDatabase:^(ZY_FMDatabase *db){
         NSString *sqlStr = [NSString stringWithFormat:@"DELETE FROM %@ WHERE _id in (SELECT _id from '%@' WHERE op = ? or op = ? ORDER by _id ASC LIMIT ?)",FT_DB_TRACE_EVENT_TABLE_NAME,FT_DB_TRACE_EVENT_TABLE_NAME];
         is = [db executeUpdate:sqlStr,FT_DATA_TYPE_LOGGING,FT_DATA_TYPE_RUM,@(count)];
+        if(is && [FTDiagnosticsBridge enabled]) [FTDiagnosticsBridge record:@"storage_remove" channel:@"other" count:db.changes bytes:-1 reason:@"capacity_cleanup"];
         if(is && weakSelf.incrementalAutoVacuumEnabled){
             NSString *str = [NSString stringWithFormat:@"PRAGMA incremental_vacuum(%ld)", (long)count];
             ZY_FMResultSet *set = [db executeQuery:str];
@@ -304,6 +318,7 @@ static dispatch_once_t onceToken;
     [self zy_inDatabase:^(ZY_FMDatabase *db){
         NSString *sqlStr = [NSString stringWithFormat:@"DELETE FROM %@;",FT_DB_TRACE_EVENT_TABLE_NAME];
         is = [db executeUpdate:sqlStr];
+        if(is && [FTDiagnosticsBridge enabled]) [FTDiagnosticsBridge record:@"storage_remove" channel:@"other" count:db.changes bytes:-1 reason:@"explicit_cleanup"];
     }];
     return is;
 }
@@ -312,6 +327,7 @@ static dispatch_once_t onceToken;
     [self zy_inDatabase:^(ZY_FMDatabase *db){
         NSString *sqlStr = [NSString stringWithFormat:@"DELETE FROM %@ WHERE  op = ? ",FT_DB_TRACE_EVENT_TABLE_NAME];
         is = [db executeUpdate:sqlStr,type];
+        if(is && [FTDiagnosticsBridge enabled]) [FTDiagnosticsBridge record:@"storage_remove" channel:type count:db.changes bytes:-1 reason:@"explicit_cleanup"];
     }];
     return is;
 }
@@ -320,6 +336,7 @@ static dispatch_once_t onceToken;
     [self zy_inDatabase:^(ZY_FMDatabase *db){
         NSString *sqlStr = [NSString stringWithFormat:@"DELETE FROM %@ WHERE _id in (SELECT _id from '%@' WHERE  op = ? AND tm < ? )",FT_DB_TRACE_EVENT_TABLE_NAME,FT_DB_TRACE_EVENT_TABLE_NAME];
         is = [db executeUpdate:sqlStr,type,@(toTime)];
+        if(is && [FTDiagnosticsBridge enabled]) [FTDiagnosticsBridge record:@"storage_remove" channel:type count:db.changes bytes:-1 reason:@"expired_or_cache_cleanup"];
     }];
     return is;
 }
@@ -328,6 +345,7 @@ static dispatch_once_t onceToken;
     [self zy_inDatabase:^(ZY_FMDatabase *db){
         NSString *sqlStr = [NSString stringWithFormat:@"DELETE FROM %@ WHERE _id in (SELECT _id from '%@' WHERE  op = ? AND tm >= ? AND tm <= ? )",FT_DB_TRACE_EVENT_TABLE_NAME,FT_DB_TRACE_EVENT_TABLE_NAME];
         is = [db executeUpdate:sqlStr,type,@(fromTime),@(toTime)];
+        if(is && [FTDiagnosticsBridge enabled]) [FTDiagnosticsBridge record:@"storage_remove" channel:type count:db.changes bytes:-1 reason:@"expired_or_cache_cleanup"];
     }];
     return is;
 }

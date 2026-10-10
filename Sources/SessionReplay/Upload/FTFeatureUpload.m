@@ -19,6 +19,7 @@
 //  limitations under the License.
 //
 
+#import "FTDiagnosticsBridge.h"
 #import <TargetConditionals.h>
 #if TARGET_OS_IOS || TARGET_OS_OSX
 
@@ -191,6 +192,7 @@ static NSString * const FTReplayAssetsTagsKey = @"tags";
                     [strongSelf.fileReader markBatchAsRead:batch];
                 }else{
                     strongSelf.lastUploadStatus = uploadStatus;
+                    [FTDiagnosticsBridge record:@"retry" channel:@"replay" count:1 bytes:-1 reason:@"retry_scheduled"];
                     [strongSelf.delay increase];
                     FTInnerLogWarning(@"[NETWORK][%@] Upload failed, will retry: %@, next retry delay: %.3fs",strongSelf.featureName,uploadStatus.debugDescription,strongSelf.delay.current);
                     [strongSelf scheduleNextCycle];
