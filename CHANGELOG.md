@@ -8,6 +8,8 @@
 6. Fixed network connectivity status not being retained after updates.
 7. Fixed duplicate ANR reporting after RUM session renewal.
 8. Added opt-in SDK-managed Visitor ID support through `FTRumConfig.visitorIDConfig`, including persistent identifiers with configurable fixed TTL, automatic custom-header injection for matching URLSession requests, native RUM `visitor_id` correlation, and manual reset via `+[FTSDKAgent resetVisitorID]`.
+9. Added RUM session start reasons, process start timestamps, and interval-based app state reporting; improved automatic View and Action handling during background transitions.
+10. Fixed prewarmed app launch duration measurement to start from runtime initialization.
 ---
 
 # 1.6.8-alpha.7
