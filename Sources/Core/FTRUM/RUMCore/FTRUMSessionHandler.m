@@ -115,6 +115,7 @@ static NSString *FTRUMSessionStartReasonForCause(FTRUMSessionRenewalCause cause)
                                                                      viewName:viewHandler.view_name viewReferrer:viewHandler.view_referrer];
             viewModel.time = time;
             viewModel.loading_time = viewHandler.loading_time;
+            viewModel.trackingType = viewHandler.trackingType;
             [self startView:viewModel];
         }
     }
@@ -147,6 +148,11 @@ static NSString *FTRUMSessionStartReasonForCause(FTRUMSessionRenewalCause cause)
     }
 }
 - (BOOL)process:(FTRUMDataModel *)model context:(nonnull NSDictionary *)context{
+    // Lifecycle control closes existing Views without renewing or extending the Session.
+    if (model.type == FTRUMDataAppStateChange) {
+        [self propagateDataToViews:model context:context];
+        return YES;
+    }
     self.renewalCause = [self renewalCauseAtTime:model.time];
     if (self.renewalCause != FTRUMSessionRenewalCauseNone) {
         return NO;
@@ -202,14 +208,18 @@ static NSString *FTRUMSessionStartReasonForCause(FTRUMSessionRenewalCause cause)
         default:
             break;
     }
+    [self propagateDataToViews:model context:context];
+    return YES;
+}
+
+- (void)propagateDataToViews:(FTRUMDataModel *)model context:(NSDictionary *)context {
     self.viewHandlers = [self.assistant manageChildHandlers:self.viewHandlers byPropagatingData:model context:context];
-    
     if(![self hasActivityView]){
         [self.rumDependencies.fatalErrorContext setLastViewContext:nil];
         self.rumDependencies.lastViewUserCustomDatas = nil;
     }
-    return  YES;
 }
+
 - (BOOL)checkSessionStateForSamplingRateUpdate{
     // 1. The previous session is being sampled; end the current session if the updated sampling rate is set to non-sampling
     if (self.sampling) {

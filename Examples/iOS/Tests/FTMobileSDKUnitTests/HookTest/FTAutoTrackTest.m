@@ -34,6 +34,7 @@
 #import "FTJSONUtil.h"
 #import "FTTrackerEventDBTool.h"
 #import "NSDate+FTUtil.h"
+#import "FTDateUtil.h"
 #import "DemoViewController.h"
 #import "FTConstants.h"
 #import "FTGlobalRumManager+Private.h"
@@ -112,6 +113,7 @@ static FTViewControllerSwizzling *testBundleViewControllerSwizzling = nil;
 static dispatch_group_t testBundleViewControllerSwizzlingGroup = nil;
 
 @interface FTAutoTrackViewLoadingTimeMock : AddRumDatasHandlerMock
+@property (nonatomic, strong, nullable) NSDate *capturedLoadStartDate;
 - (NSUInteger)viewCreateCountForViewName:(NSString *)viewName;
 @end
 
@@ -130,6 +132,11 @@ static dispatch_group_t testBundleViewControllerSwizzlingGroup = nil;
 - (void)onCreateView:(NSString *)viewName loadTime:(NSNumber *)loadTime {
     [super onCreateView:viewName loadTime:loadTime];
     [_createdViewNames addObject:viewName];
+}
+
+- (void)onCreateView:(NSString *)viewName loadTime:(NSNumber *)loadTime loadStartDate:(NSDate *)loadStartDate {
+    self.capturedLoadStartDate = loadStartDate;
+    [self onCreateView:viewName loadTime:loadTime];
 }
 
 - (NSUInteger)viewCreateCountForViewName:(NSString *)viewName {
@@ -316,6 +323,10 @@ static dispatch_group_t testBundleViewControllerSwizzlingGroup = nil;
     XCTAssertEqualObjects(mock.lastCreateViewName, NSStringFromClass(viewController.class));
     XCTAssertGreaterThan([mock.lastLoadTime unsignedLongLongValue], (uint64_t)20000000);
     XCTAssertLessThan([mock.lastLoadTime unsignedLongLongValue], (uint64_t)80000000);
+    XCTAssertNotNil(mock.capturedLoadStartDate);
+    XCTAssertLessThan([mock.capturedLoadStartDate timeIntervalSinceNow], 0.0);
+    XCTAssertNil(viewController.ft_viewLoadStartTime);
+    XCTAssertNil(viewController.ft_viewLoadStartDate);
 }
 - (void)testUIKitLoadingTimeIgnoresLayoutFallbackBeforeViewIsAttachedToWindow{
     FTAutoTrackViewLoadingTimeMock *mock = [self startUIKitAutoTrackWithMockHandler];

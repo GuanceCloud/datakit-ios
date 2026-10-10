@@ -20,6 +20,16 @@
 
 #import <Foundation/Foundation.h>
 
+typedef NS_ENUM(NSUInteger, FTRUMAppState) {
+    FTRUMAppStateUnknown,
+    FTRUMAppStateForegroundOnly,
+    FTRUMAppStateBackgroundOnly,
+    FTRUMAppStateBackgroundAndForeground,
+};
+
+FOUNDATION_EXPORT NSString * _Nonnull FTStringFromRUMAppState(FTRUMAppState state);
+FOUNDATION_EXPORT FTRUMAppState FTRUMAppStateFromString(NSString * _Nullable state);
+
 
 typedef NS_ENUM(NSUInteger, FTError) {
   NetWorkException = 101,        //Network issue

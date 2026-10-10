@@ -50,6 +50,9 @@ NS_ASSUME_NONNULL_BEGIN
 /// Add delegate class that conforms to FTAppLifeCycleDelegate protocol
 /// - Parameter delegate: Delegate class that conforms to FTAppLifeCycleDelegate protocol
 - (void)addAppLifecycleDelegate:(id<FTAppLifeCycleDelegate>)delegate;
+/// Insert at the beginning; an existing delegate is moved without duplication.
+/// The order applies to the next delegate snapshot, not a callback in progress.
+- (void)insertAppLifecycleDelegate:(id<FTAppLifeCycleDelegate>)delegate;
 /// Remove delegate class that conforms to FTAppLifeCycleDelegate protocol
 /// - Parameter delegate: Delegate class that conforms to FTAppLifeCycleDelegate protocol
 - (void)removeAppLifecycleDelegate:(id<FTAppLifeCycleDelegate>)delegate;

@@ -30,6 +30,7 @@
 @property (nonatomic, strong) FTRUMDependencies *dependencies;
 @property (nonatomic, copy,readwrite) NSString *identifier;
 @property (nonatomic, strong) NSDate *time;
+@property (nonatomic, strong, nullable) NSDate *resourceStopTime;
 @property (nonatomic, strong) NSMutableDictionary *resourceProperty;
 @property (nonatomic, strong) NSNumber *networkAvailable;
 @end
@@ -65,6 +66,7 @@
                     [self writeResourceData:data context:context];
                     return NO;
                 case FTRUMDataResourceStop:{
+                    self.resourceStopTime = data.time;
                     if(data.fields && data.fields.allKeys.count>0){
                         [self.resourceProperty addEntriesFromDictionary:data.fields];
                     }
@@ -114,7 +116,8 @@
     [fields addEntriesFromDictionary:data.fields];
     [fields setValue:self.networkAvailable forKey:FT_KEY_NETWORK_AVAILABLE];
     [fields setValue:self.dependencies.sessionHasReplay forKey:FT_SESSION_HAS_REPLAY];
-    [fields setValue:[self.time ft_nanosecondTimeIntervalToDate:data.time] forKey:FT_DURATION];
+    NSDate *fallbackEnd = self.resourceStopTime ?: data.time;
+    [fields setValue:[self.time ft_nanosecondTimeIntervalToDate:fallbackEnd] forKey:FT_DURATION];
     if(model.metrics){
         [fields setValue:model.metrics.ttfb forKey:FT_KEY_RESOURCE_TTFB];
         [fields setValue:model.metrics.ssl forKey:FT_KEY_RESOURCE_SSL];
@@ -130,6 +133,8 @@
         [fields setValue:model.metrics.resource_redirect_time forKey:FT_KEY_RESOURCE_REDIRECT_TIME];
         [fields setValue:model.metrics.resource_connect_time forKey:FT_KEY_RESOURCE_CONNECT_TIME];
     }
+    fields[@"app_state"] = [self.dependencies.appStateHistory stateFrom:resourceStartTime
+                                                               duration:[fields[FT_DURATION] longLongValue]];
     [fields addEntriesFromDictionary:self.context.sessionState.sessionFields];
     NSDictionary *sessionTag = [self.context getGlobalSessionViewActionTags];
     NSMutableDictionary *tags = [NSMutableDictionary new];

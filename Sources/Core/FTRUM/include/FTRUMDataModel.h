@@ -19,6 +19,8 @@
 //
 
 #import <Foundation/Foundation.h>
+#import "FTInternalConstants.h"
+#import "FTRumDatasProtocol.h"
 typedef NS_ENUM(NSUInteger, FTRUMDataType) {
     FTRUMViewPlaceholder,
     FTRUMDataLaunch,
@@ -38,6 +40,7 @@ typedef NS_ENUM(NSUInteger, FTRUMDataType) {
     FTRUMDataWebViewJSBData,
     FTRUMSRLinkInfo,
     FTRUMSampleRateUpdate,
+    FTRUMDataAppStateChange,
 };
 
 NS_ASSUME_NONNULL_BEGIN
@@ -51,6 +54,15 @@ NS_ASSUME_NONNULL_BEGIN
 @property (nonatomic, assign, readonly) BOOL isUserInteraction;
 -(instancetype)initWithType:(FTRUMDataType)type time:(NSDate *)time;
 @end
+
+/// Lifecycle control command; time is the boundary recorded by AppStateHistory.
+@interface FTRUMAppStateChangeModel : FTRUMDataModel
+@property (nonatomic, assign, readonly) FTRUMAppState appState;
+@property (nonatomic, assign, readonly) BOOL timeComparable;
+- (instancetype)initWithAppState:(FTRUMAppState)appState time:(NSDate *)time;
+- (instancetype)initWithAppState:(FTRUMAppState)appState time:(NSDate *)time timeComparable:(BOOL)timeComparable;
+@end
+
 /// Data model for handling Action events
 @interface FTRUMActionModel : FTRUMDataModel
 @property (nonatomic, copy) NSString *action_name;
@@ -64,7 +76,9 @@ NS_ASSUME_NONNULL_BEGIN
 @property (nonatomic, copy) NSString *view_id;
 @property (nonatomic, copy) NSString *view_name;
 @property (nonatomic, copy) NSString *view_referrer;
+@property (nonatomic, assign) FTRUMViewTrackingType trackingType;
 @property (nonatomic, strong) NSNumber *loading_time;
+@property (nonatomic, strong, nullable) NSDate *loading_start_date;
 -(instancetype)initWithViewID:(NSString *)viewID viewName:(NSString *)viewName viewReferrer:(NSString *)viewReferrer;
 @end
 

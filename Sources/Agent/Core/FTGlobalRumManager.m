@@ -75,11 +75,17 @@ static NSObject *sharedInstanceLock;
 - (void)onCreateView:(NSString *)viewName loadTime:(NSNumber *)loadTime{
     [self.rumManager onCreateView:viewName loadTime:loadTime];
 }
+- (void)onCreateView:(NSString *)viewName loadTime:(NSNumber *)loadTime loadStartDate:(NSDate *)loadStartDate {
+    [self.rumManager onCreateView:viewName loadTime:loadTime loadStartDate:loadStartDate];
+}
 - (void)startViewWithName:(NSString *)viewName {
     [self.rumManager startViewWithName:viewName];
 }
 - (void)startViewWithName:(NSString *)viewName property:(NSDictionary *)property{
     [self.rumManager startViewWithName:viewName property:[property ft_deepCopy]];
+}
+- (void)startViewWithName:(NSString *)viewName property:(nullable NSDictionary *)property trackingType:(FTRUMViewTrackingType)trackingType {
+    [self.rumManager startViewWithName:viewName property:[property ft_deepCopy] trackingType:trackingType];
 }
 - (void)stopView{
     [self.rumManager stopView];

@@ -61,6 +61,20 @@
             [self.delegateLock unlock]; 
         }
 }
+- (void)insertAppLifecycleDelegate:(id<FTAppLifeCycleDelegate>)delegate {
+    if (!delegate) return;
+    [self.delegateLock lock];
+    @try {
+        for (NSUInteger index = self.appLifecycleDelegates.count; index > 0; index--) {
+            if ([self.appLifecycleDelegates pointerAtIndex:index - 1] == (__bridge void *)delegate) {
+                [self.appLifecycleDelegates removePointerAtIndex:index - 1];
+            }
+        }
+        [self.appLifecycleDelegates insertPointer:(__bridge void *)delegate atIndex:0];
+    } @finally {
+        [self.delegateLock unlock];
+    }
+}
 - (void)removeAppLifecycleDelegate:(id<FTAppLifeCycleDelegate>)delegate{
     if (!delegate) return;
        [self.delegateLock lock];

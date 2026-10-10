@@ -25,6 +25,8 @@
 #import "NSDate+FTUtil.h"
 #import "NSDictionary+FTCopyProperties.h"
 #import "FTConstants.h"
+#import <limits.h>
+#import <math.h>
 @interface FTExternalDataManager()
 @property (nonatomic, weak, nullable) id <FTRumDatasProtocol> delegate;
 @property (nonatomic, weak, nullable) id <FTExternalResourceProtocol> resourceDelegate;
@@ -50,6 +52,16 @@
         [self.delegate onCreateView:viewName loadTime:loadTime];
     }
 }
+- (void)onCreateView:(NSString *)viewName loadTime:(NSNumber *)loadTime loadStartEpochMs:(nullable NSNumber *)loadStartEpochMs {
+    double epochMs = loadStartEpochMs.doubleValue;
+    NSDate *loadStartDate = loadStartEpochMs && isfinite(epochMs) && epochMs > 0 && epochMs < (double)LLONG_MAX / 1000000.0
+        ? [NSDate dateWithTimeIntervalSince1970:epochMs / 1000.0] : nil;
+    if (self.delegate && [self.delegate respondsToSelector:@selector(onCreateView:loadTime:loadStartDate:)]) {
+        [self.delegate onCreateView:viewName loadTime:loadTime loadStartDate:loadStartDate];
+    } else {
+        [self onCreateView:viewName loadTime:loadTime];
+    }
+}
 -(void)startViewWithName:(NSString *)viewName {
     if(self.delegate && [self.delegate respondsToSelector:@selector(startViewWithName:)]){
         [self.delegate startViewWithName:viewName];
@@ -59,6 +71,13 @@
     NSDictionary *copyDict = [property ft_deepCopy];
     if(self.delegate && [self.delegate respondsToSelector:@selector(startViewWithName:property:)]){
         [self.delegate startViewWithName:viewName property:copyDict];
+    }
+}
+- (void)startViewWithName:(NSString *)viewName property:(nullable NSDictionary *)property trackingType:(FTRUMViewTrackingType)trackingType {
+    if ([self.delegate respondsToSelector:@selector(startViewWithName:property:trackingType:)]) {
+        [self.delegate startViewWithName:viewName property:[property ft_deepCopy] trackingType:trackingType];
+    } else {
+        [self startViewWithName:viewName property:property];
     }
 }
 -(void)updateViewLoadingTime:(NSNumber *)duration{

@@ -131,6 +131,11 @@ let package = Package(
                 .headerSearchPath("Heatmap")
             ]
         ),
+        .testTarget(
+            name: "FTRUMTests",
+            dependencies: ["_FTRUM", "_FTProtocol", "_FTBaseUtils_Base", "_AgentExternalData"],
+            path: "Tests/FTRUMTests"
+        ),
         .target(
             name: "_FTURLSessionAutoInstrumentation",
             dependencies: [
