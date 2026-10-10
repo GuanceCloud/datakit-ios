@@ -194,6 +194,7 @@
     NSString *backtrace = anrData.mainThreadBacktrace.length > 0 ? anrData.mainThreadBacktrace : nil;
 
     NSMutableDictionary *fields = [NSMutableDictionary dictionary];
+    [fields addEntriesFromDictionary:[contextModel.lastSessionState sessionFields]];
     [fields setValue:@(duration) forKey:FT_DURATION];
     [fields setValue:backtrace forKey:FT_KEY_LONG_TASK_STACK];
     NSDictionary *lastViews = contextModel.lastViewContext;

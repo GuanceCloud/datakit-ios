@@ -27,6 +27,7 @@
 #import "FTMobileSDK.h"
 #import "FTMobileAgent+Private.h"
 #import "NSDate+FTUtil.h"
+#import "FTDateUtil.h"
 #import "NSString+FTAdd.h"
 #import "FTRecordModel.h"
 #import "FTJSONUtil.h"
@@ -59,6 +60,7 @@
 #import "FTAppLifeCycle.h"
 #import "FTHeatmap.h"
 #import "FTCrash.h"
+#import <sys/sysctl.h>
 
 @interface FTTestCrashReportWrapper : FTCrashReportWrapper
 @end
@@ -178,11 +180,105 @@
 
     XCTAssertEqualObjects([session valueForKey:@"sessionStartTime"], startTime);
     XCTAssertEqualObjects([session valueForKey:@"lastInteractionTime"], startTime);
+    XCTAssertEqualObjects(session.context.sessionState.sessionFields[FT_RUM_KEY_SESSION_START_REASON], @"sdk_init");
 
     NSDate *rolloverTime = [startTime dateByAddingTimeInterval:60];
     FTRUMSessionHandler *newSession = [[FTRUMSessionHandler alloc] initWithExpiredSession:session time:rolloverTime];
     XCTAssertEqualObjects([newSession valueForKey:@"sessionStartTime"], rolloverTime);
     XCTAssertEqualObjects([newSession valueForKey:@"lastInteractionTime"], rolloverTime);
+    XCTAssertEqualObjects(newSession.context.sessionState.sessionFields[FT_RUM_KEY_SESSION_START_REASON], FT_RUM_SESSION_START_REASON_UNKNOWN);
+}
+
+- (void)testProcessStartTimeUsesProcessTimestampAcrossSessions{
+    int mib[4] = {CTL_KERN, KERN_PROC, KERN_PROC_PID, getpid()};
+    struct kinfo_proc processInfo = {0};
+    size_t length = sizeof(processInfo);
+    XCTAssertEqual(sysctl(mib, 4, &processInfo, &length, NULL, 0), 0);
+    XCTAssertEqual(length, sizeof(processInfo));
+    struct timeval startTime = processInfo.kp_proc.p_un.__p_starttime;
+    long long expectedTimeNs = startTime.tv_sec * 1000000000LL + startTime.tv_usec * 1000LL;
+    XCTAssertTrue(expectedTimeNs > 0);
+    XCTAssertEqual([FTDateUtil processStartNanosecondTimestamp], expectedTimeNs);
+    NSDate *eventTime = [NSDate date];
+    FTRUMSessionHandler *session = [self sessionStartingAtForEventTimeTest:eventTime];
+    FTRUMSessionHandler *renewedSession = [[FTRUMSessionHandler alloc] initWithExpiredSession:session
+                                                                                         time:[eventTime dateByAddingTimeInterval:15 * 60]];
+
+    XCTAssertEqualObjects(session.context.sessionState.sessionFields[FT_RUM_KEY_PROCESS_START_TIME_NS], @(expectedTimeNs));
+    XCTAssertEqualObjects(renewedSession.context.sessionState.sessionFields[FT_RUM_KEY_PROCESS_START_TIME_NS], @(expectedTimeNs));
+    XCTAssertNotEqual(expectedTimeNs, [eventTime ft_nanosecondTimeStamp]);
+}
+
+- (void)testSessionStartReasonSurvivesStateCopyAndSerialization{
+    FTRUMSessionState *state = [self sessionStartingAtForEventTimeTest:[NSDate date]].context.sessionState;
+    FTRUMSessionState *copiedState = [state copy];
+    FTRUMSessionState *restoredState = [[FTRUMSessionState alloc] initWithDict:[state toDictionary]];
+
+    XCTAssertEqualObjects(copiedState.session_start_reason, FT_RUM_SESSION_START_REASON_SDK_INIT);
+    XCTAssertEqualObjects(restoredState.session_start_reason, FT_RUM_SESSION_START_REASON_SDK_INIT);
+    XCTAssertEqualObjects(copiedState.process_start_time_ns, state.process_start_time_ns);
+    XCTAssertEqualObjects(restoredState.process_start_time_ns, state.process_start_time_ns);
+    XCTAssertEqualObjects(copiedState, state);
+    XCTAssertEqualObjects(restoredState, state);
+
+    NSMutableDictionary *legacyDictionary = [[state toDictionary] mutableCopy];
+    [legacyDictionary removeObjectForKey:FT_RUM_KEY_SESSION_START_REASON];
+    [legacyDictionary removeObjectForKey:FT_RUM_KEY_PROCESS_START_TIME_NS];
+    FTRUMSessionState *legacyState = [[FTRUMSessionState alloc] initWithDict:legacyDictionary];
+    XCTAssertNil(legacyState.session_start_reason);
+    XCTAssertNil(legacyState.sessionFields[FT_RUM_KEY_SESSION_START_REASON]);
+    XCTAssertNil(legacyState.sessionFields[FT_RUM_KEY_PROCESS_START_TIME_NS]);
+
+    legacyDictionary[FT_RUM_KEY_PROCESS_START_TIME_NS] = @0;
+    FTRUMSessionState *invalidState = [[FTRUMSessionState alloc] initWithDict:legacyDictionary];
+    XCTAssertNil(invalidState.sessionFields[FT_RUM_KEY_PROCESS_START_TIME_NS]);
+}
+
+- (void)testSessionStartReasonAtInactivityBoundary{
+    NSDate *startTime = [NSDate dateWithTimeIntervalSince1970:1000000];
+    FTRUMSessionHandler *session = [self sessionStartingAtForEventTimeTest:startTime];
+    FTRUMDataModel *beforeBoundary = [[FTRUMDataModel alloc] initWithType:FTRUMViewPlaceholder
+                                                                     time:[startTime dateByAddingTimeInterval:15 * 60 - 1]];
+    FTRUMDataModel *atBoundary = [[FTRUMDataModel alloc] initWithType:FTRUMViewPlaceholder
+                                                                 time:[startTime dateByAddingTimeInterval:15 * 60]];
+
+    XCTAssertTrue([self processModel:beforeBoundary inTestSession:session]);
+    XCTAssertFalse([self processModel:atBoundary inTestSession:session]);
+    FTRUMSessionHandler *renewedSession = [[FTRUMSessionHandler alloc] initWithExpiredSession:session time:atBoundary.time];
+    XCTAssertEqualObjects(renewedSession.context.sessionState.sessionFields[FT_RUM_KEY_SESSION_START_REASON], FT_RUM_SESSION_START_REASON_INACTIVITY_TIMEOUT);
+    XCTAssertEqualObjects(session.context.sessionState.sessionFields[FT_RUM_KEY_SESSION_START_REASON], FT_RUM_SESSION_START_REASON_SDK_INIT);
+}
+
+- (void)testSessionStartReasonAtMaximumDurationWithRecentInteractions{
+    NSDate *startTime = [NSDate dateWithTimeIntervalSince1970:1000000];
+    FTRUMSessionHandler *session = [self sessionStartingAtForEventTimeTest:startTime];
+    for (NSUInteger minute = 10; minute < 240; minute += 10) {
+        FTRUMDataModel *interaction = [[FTRUMDataModel alloc] initWithType:FTRUMDataAddAction
+                                                                      time:[startTime dateByAddingTimeInterval:minute * 60]];
+        XCTAssertTrue([self processModel:interaction inTestSession:session]);
+    }
+    FTRUMDataModel *atMaximum = [[FTRUMDataModel alloc] initWithType:FTRUMViewPlaceholder
+                                                                 time:[startTime dateByAddingTimeInterval:4 * 60 * 60]];
+    XCTAssertFalse([self processModel:atMaximum inTestSession:session]);
+    FTRUMSessionHandler *renewedSession = [[FTRUMSessionHandler alloc] initWithExpiredSession:session time:atMaximum.time];
+    XCTAssertEqualObjects(renewedSession.context.sessionState.sessionFields[FT_RUM_KEY_SESSION_START_REASON], FT_RUM_SESSION_START_REASON_MAX_DURATION);
+}
+
+- (void)testSessionStartReasonWhenSamplingRateChangeRenewsSession{
+    FTRUMDependencies *dependencies = [[FTRUMDependencies alloc] init];
+    dependencies.sampleRate = 100;
+    dependencies.sessionOnErrorSampleRate = 0;
+    dependencies.appId = @"sampling-change-test";
+    NSDate *startTime = [NSDate dateWithTimeIntervalSince1970:1000000];
+    FTRUMDataModel *initialModel = [[FTRUMDataModel alloc] initWithType:FTRUMViewPlaceholder time:startTime];
+    FTRUMSessionHandler *session = [[FTRUMSessionHandler alloc] initWithModel:initialModel dependencies:dependencies];
+    dependencies.sampleRate = 0;
+    FTRUMDataModel *updateModel = [[FTRUMDataModel alloc] initWithType:FTRUMSampleRateUpdate
+                                                                  time:[startTime dateByAddingTimeInterval:60]];
+
+    XCTAssertFalse([self processModel:updateModel inTestSession:session]);
+    FTRUMSessionHandler *renewedSession = [[FTRUMSessionHandler alloc] initWithExpiredSession:session time:updateModel.time];
+    XCTAssertEqualObjects(renewedSession.context.sessionState.sessionFields[FT_RUM_KEY_SESSION_START_REASON], @"sampling_changed");
 }
 
 - (void)testSampledSessionRenewalPublishesRenewedSessionStateToFatalErrorContext{
@@ -1453,6 +1549,8 @@
         if ([source isEqualToString:FT_RUM_SOURCE_VIEW] && [tags[FT_KEY_VIEW_NAME] isEqualToString:@"ApplicationLaunch"]) {
             previousSessionID = tags[FT_RUM_KEY_SESSION_ID];
             XCTAssertTrue([fields[FT_KEY_IS_ACTIVE] boolValue]);
+            XCTAssertEqualObjects(fields[FT_RUM_KEY_SESSION_START_REASON], @"sdk_init");
+            XCTAssertEqualObjects(fields[FT_RUM_KEY_PROCESS_START_TIME_NS], session.context.sessionState.process_start_time_ns);
             *stop = YES;
         }
     }];
@@ -1484,10 +1582,14 @@
         NSString *sessionID = tags[FT_RUM_KEY_SESSION_ID];
         if ([source isEqualToString:FT_RUM_SOURCE_ERROR] && [sessionID isEqualToString:newSessionID]) {
             XCTAssertTrue([tags[FT_KEY_VIEW_NAME] isEqualToString:@"RootView"]);
+            XCTAssertEqualObjects(fields[FT_RUM_KEY_SESSION_START_REASON], FT_RUM_SESSION_START_REASON_INACTIVITY_TIMEOUT);
+            XCTAssertEqualObjects(fields[FT_RUM_KEY_PROCESS_START_TIME_NS], session.context.sessionState.process_start_time_ns);
             hasNewSessionRootError = YES;
         } else if ([source isEqualToString:FT_RUM_SOURCE_VIEW] && [tags[FT_KEY_VIEW_NAME] isEqualToString:@"ApplicationLaunch"]) {
             if ([sessionID isEqualToString:previousSessionID] && ![fields[FT_KEY_IS_ACTIVE] boolValue]) {
                 XCTAssertTrue([fields[FT_KEY_TIME_SPENT] longLongValue] > 0);
+                XCTAssertEqualObjects(fields[FT_RUM_KEY_SESSION_START_REASON], FT_RUM_SESSION_START_REASON_SDK_INIT);
+                XCTAssertEqualObjects(fields[FT_RUM_KEY_PROCESS_START_TIME_NS], session.context.sessionState.process_start_time_ns);
                 stoppedPreviousApplicationLaunch = YES;
             }
             if ([sessionID isEqualToString:newSessionID]) {
@@ -1511,6 +1613,8 @@
         if ([tags[FT_KEY_VIEW_NAME] isEqualToString:@"ApplicationLaunch"]) {
             XCTAssertTrue([tags[FT_KEY_VIEW_ID] length] > 0);
             XCTAssertTrue([tags[FT_KEY_VIEW_REFERRER] isEqualToString:@"root"]);
+            XCTAssertEqualObjects(fields[FT_RUM_KEY_SESSION_START_REASON], FT_RUM_SESSION_START_REASON_SDK_INIT);
+            XCTAssertNotNil(fields[FT_RUM_KEY_PROCESS_START_TIME_NS]);
             if ([source isEqualToString:FT_RUM_SOURCE_VIEW]) {
                 XCTAssertTrue([fields[FT_KEY_LOADING_TIME] isEqual:@(-1)]);
                 hasApplicationLaunchView = YES;
