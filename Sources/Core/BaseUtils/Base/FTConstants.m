@@ -90,9 +90,16 @@ NSString * const FT_DURATION = @"duration";
 //session tag
 NSString * const FT_RUM_KEY_SESSION_ID = @"session_id";
 NSString * const FT_RUM_KEY_SESSION_TYPE = @"session_type";
+// session field
+NSString * const FT_RUM_KEY_SESSION_START_REASON = @"session_start_reason";
+NSString * const FT_RUM_KEY_PROCESS_START_TIME_NS = @"process_start_time_ns";
+NSString * const FT_RUM_SESSION_START_REASON_SDK_INIT = @"sdk_init";
+NSString * const FT_RUM_SESSION_START_REASON_INACTIVITY_TIMEOUT = @"inactivity_timeout";
+NSString * const FT_RUM_SESSION_START_REASON_MAX_DURATION = @"max_duration";
+NSString * const FT_RUM_SESSION_START_REASON_SAMPLING_CHANGED = @"sampling_changed";
+NSString * const FT_RUM_SESSION_START_REASON_UNKNOWN = @"unknown";
 
 NSString * const FT_SESSION_ERROR_TIMESTAMP = @"session_error_timestamp";
-//session field
 NSString * const FT_RUM_SESSION_ON_ERROR_SAMPLE_RATE = @"session_on_error_sample_rate";
 NSString * const FT_RUM_SESSION_REPLAY_ON_ERROR_SAMPLE_RATE = @"session_replay_on_error_sample_rate";
 NSString * const FT_RUM_SESSION_SAMPLE_RATE = @"session_sample_rate";

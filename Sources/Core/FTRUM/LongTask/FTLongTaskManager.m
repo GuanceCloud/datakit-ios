@@ -194,8 +194,10 @@
     NSString *backtrace = anrData.mainThreadBacktrace.length > 0 ? anrData.mainThreadBacktrace : nil;
 
     NSMutableDictionary *fields = [NSMutableDictionary dictionary];
+    [fields addEntriesFromDictionary:[contextModel.lastSessionState sessionFields]];
     [fields setValue:@(duration) forKey:FT_DURATION];
     [fields setValue:backtrace forKey:FT_KEY_LONG_TASK_STACK];
+    fields[@"app_state"] = @"unknown";
     NSDictionary *lastViews = contextModel.lastViewContext;
     BOOL sessionOnError = contextModel.lastSessionState.sampled_for_error_session;
     if (sessionOnError && isAnr) {
@@ -225,6 +227,7 @@
         lastViewsFields[FT_KEY_VIEW_LONG_TASK_RATE] = @(viewLongTaskRate);
         lastViewsFields[FT_KEY_VIEW_UPDATE_TIME] = @([lastViewsFields[FT_KEY_VIEW_UPDATE_TIME] intValue] + 1);
         lastViewsFields[FT_KEY_IS_ACTIVE] = @(NO);
+        lastViewsFields[@"app_state"] = @"unknown";
         NSNumber *time = lastViews[@"time"];
 
         [self.dependencies.writer rumWrite:FT_RUM_SOURCE_VIEW tags:lastViews[@"tags"] fields:lastViewsFields dynamicContext:contextModel.globalAttributes time:[time longLongValue] updateTime:longTaskEndTime cache:sessionOnError];

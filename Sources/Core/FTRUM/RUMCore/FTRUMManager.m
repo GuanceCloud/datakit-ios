@@ -35,6 +35,7 @@
 #import "FTPresetProperty.h"
 #import "FTNetworkConnectivity.h"
 #import "NSDate+FTUtil.h"
+#import <limits.h>
 #import "FTRUMContext.h"
 #import "FTMessageReceiver.h"
 #import "FTRUMViewHandler.h"
@@ -61,9 +62,17 @@ NSString *FTStringFromAppState(FTAppState state) {
             return @"unknown";
     }
 }
+
+static NSString *FTRUMIntervalState(FTAppState state) {
+    switch (state) {
+        case FTAppStateRun: return FTStringFromRUMAppState(FTRUMAppStateForegroundOnly);
+        case FTAppStateBackground: return FTStringFromRUMAppState(FTRUMAppStateBackgroundOnly);
+        default: return FTStringFromRUMAppState(FTRUMAppStateUnknown);
+    }
+}
 void *FTRUMQueueIdentityKey = &FTRUMQueueIdentityKey;
 
-@interface FTRUMManager()<FTRUMSessionProtocol,FTMessageReceiver,FTAppLifeCycleDelegate>
+@interface FTRUMManager()<FTRUMSessionProtocol,FTMessageReceiver,FTRUMAppStateHistoryDelegate>
 @property (nonatomic, strong) FTRUMDependencies *rumDependencies;
 @property (nonatomic, strong) FTRUMSessionHandler *sessionHandler;
 @property (nonatomic, strong) FTReadWriteHelper<NSMutableDictionary *> *preViewDuration;
@@ -78,13 +87,16 @@ void *FTRUMQueueIdentityKey = &FTRUMQueueIdentityKey;
     if(self){
         _rumDependencies = dependencies;
         self.appState = [self initialAppState];
+        dependencies.appStateHistory = [[FTRUMAppStateHistory alloc] initWithState:FTRUMIntervalState(self.appState)
+                                                                          timeNs:[NSDate ft_currentNanosecondTimeStamp]];
         _preViewDuration = [[FTReadWriteHelper alloc]initWithValue:[NSMutableDictionary new]] ;
         _rumQueue = dispatch_queue_create("com.ft.rum", DISPATCH_QUEUE_SERIAL);
         dispatch_queue_set_specific(_rumQueue, FTRUMQueueIdentityKey, &FTRUMQueueIdentityKey, NULL);
         [[FTModuleManager sharedInstance] addMessageReceiver:self];
-        [[FTAppLifeCycle sharedInstance] addAppLifecycleDelegate:self];
-        [self notifyRumInit];
         self.assistant = self;
+        dependencies.appStateHistory.delegate = self;
+        [dependencies.appStateHistory startMonitoring];
+        [self notifyRumInit];
     }
     return self;
 }
@@ -127,9 +139,10 @@ void *FTRUMQueueIdentityKey = &FTRUMQueueIdentityKey;
     if ([UIApplication respondsToSelector:@selector(sharedApplication)]) {
         UIApplication *application = [UIApplication performSelector:@selector(sharedApplication)];
         if (!application) {
-            return FTAppStateStartUp;
+            return FTAppStateUnknown;
         }
-        switch (application.applicationState) {
+        UIApplicationState initialState = application.applicationState;
+        switch (initialState) {
             case UIApplicationStateActive:
                 return FTAppStateRun;
             case UIApplicationStateBackground:
@@ -138,24 +151,30 @@ void *FTRUMQueueIdentityKey = &FTRUMQueueIdentityKey;
                 return FTAppStateStartUp;
         }
     }
-    return FTAppStateStartUp;
+    return FTAppStateUnknown;
 #elif FT_HOST_MAC
     return [NSApplication sharedApplication].active ? FTAppStateRun : FTAppStateUnknown;
 #else
-    return FTAppStateStartUp;
+    return FTAppStateUnknown;
 #endif
 }
 #pragma mark ========== RUM App State ==========
--(void)applicationDidBecomeActive{
-    self.appState = FTAppStateRun;
-}
--(void)applicationWillResignActive{
-#if FT_HOST_MAC
-    self.appState = FTAppStateUnknown;
-#endif
-}
--(void)applicationDidEnterBackground{
-    self.appState = FTAppStateBackground;
+- (void)appStateHistory:(FTRUMAppStateHistory *)history didChangeState:(FTRUMAppState)state time:(NSDate *)time {
+    switch (state) {
+        case FTRUMAppStateForegroundOnly: self.appState = FTAppStateRun; break;
+        case FTRUMAppStateBackgroundOnly: self.appState = FTAppStateBackground; break;
+        default: self.appState = FTAppStateUnknown; break;
+    }
+    if (state != FTRUMAppStateBackgroundOnly) return;
+    BOOL timeComparable = history.isTimeComparable;
+    dispatch_async(self.rumQueue, ^{
+        @try {
+            FTRUMAppStateChangeModel *model = [[FTRUMAppStateChangeModel alloc] initWithAppState:state time:time timeComparable:timeComparable];
+            [self process:model context:[self rumDynamicProperty]];
+        } @catch (NSException *exception) {
+            FTInnerLogError(@"exception %@", exception);
+        }
+    });
 }
 -(void)updateSampleRate:(float)sampleRate sessionOnErrorSampleRate:(float)sessionOnErrorSampleRate{
     NSString *visitorID = [self currentVisitorIDSnapshot];
@@ -189,24 +208,52 @@ void *FTRUMQueueIdentityKey = &FTRUMQueueIdentityKey;
 #pragma mark - View -
 -(void)onCreateView:(NSString *)viewName loadTime:(NSNumber *)loadTime{
     [self.preViewDuration concurrentWrite:^(NSMutableDictionary * _Nonnull value) {
-        [value setValue:loadTime forKey:viewName];
+        [value setValue:loadTime ? @{@"duration": loadTime} : nil forKey:viewName];
+    }];
+}
+
+- (void)onCreateView:(NSString *)viewName loadTime:(NSNumber *)loadTime loadStartDate:(nullable NSDate *)loadStartDate {
+    if (viewName.length == 0 || loadTime == nil) {
+        return;
+    }
+    NSMutableDictionary *info = [@{@"duration": loadTime} mutableCopy];
+    if (loadStartDate) info[@"load_start_date"] = loadStartDate;
+    [self.preViewDuration concurrentWrite:^(NSMutableDictionary * _Nonnull value) {
+        value[viewName] = info;
     }];
 }
 -(void)startViewWithName:(NSString *)viewName{
     [self startViewWithName:viewName property:nil];
 }
 -(void)startViewWithName:(NSString *)viewName property:(nullable NSDictionary *)property{
-    [self startViewWithViewID:[FTBaseInfoHandler randomUUID] viewName:viewName property:property];
+    [self startViewWithName:viewName property:property trackingType:FTRUMViewTrackingTypeManual];
+}
+- (void)startViewWithName:(NSString *)viewName property:(nullable NSDictionary *)property trackingType:(FTRUMViewTrackingType)trackingType {
+    [self startViewWithViewID:[FTBaseInfoHandler randomUUID] viewName:viewName property:property trackingType:trackingType];
 }
 -(void)startViewWithViewID:(NSString *)viewId viewName:(NSString *)viewName property:(nullable NSDictionary *)property{
+    [self startViewWithViewID:viewId viewName:viewName property:property trackingType:FTRUMViewTrackingTypeAutomatic];
+}
+- (void)startViewWithViewID:(NSString *)viewId viewName:(NSString *)viewName property:(nullable NSDictionary *)property trackingType:(FTRUMViewTrackingType)trackingType {
+    if (trackingType != FTRUMViewTrackingTypeManual && trackingType != FTRUMViewTrackingTypeAutomatic) {
+        FTInnerLogError(@"[RUM] Failed to start view due to invalid tracking type.");
+        return;
+    }
     __block NSNumber *duration = @0;
+    __block NSDate *loadingStartDate = nil;
     if (!(viewId&&viewId.length>0&&viewName&&viewName.length>0)) {
         FTInnerLogError(@"[RUM] Failed to start view due to missing required fields. Please ensure 'viewName' are provided.");
         return;
     }
-    [self.preViewDuration concurrentRead:^(NSMutableDictionary * _Nonnull value) {
-        if ([value.allKeys containsObject:viewName]) {
-            duration = value[viewName];
+    [self.preViewDuration synchronousWrite:^(NSMutableDictionary * _Nonnull value) {
+        id info = value[viewName];
+        if (info) {
+            if ([info isKindOfClass:NSDictionary.class]) {
+                duration = info[@"duration"] ?: @0;
+                loadingStartDate = info[@"load_start_date"];
+            } else if ([info isKindOfClass:NSNumber.class]) {
+                duration = info;
+            }
             [value removeObjectForKey:viewName];
         }
     }];
@@ -219,6 +266,8 @@ void *FTRUMQueueIdentityKey = &FTRUMQueueIdentityKey;
             FTRUMViewModel *viewModel = [[FTRUMViewModel alloc]initWithViewID:viewId viewName:viewName viewReferrer:self.viewReferrer];
             viewModel.time = time;
             viewModel.loading_time = duration?:@0;
+            viewModel.loading_start_date = duration.longLongValue > 0 && [loadingStartDate compare:time] == NSOrderedAscending ? loadingStartDate : nil;
+            viewModel.trackingType = trackingType;
             viewModel.type = FTRUMDataViewStart;
             viewModel.fields = property;
             viewModel.visitorIDSnapshot = visitorID;
@@ -681,6 +730,7 @@ void *FTRUMQueueIdentityKey = &FTRUMQueueIdentityKey;
         }
     }
     FTRUMSessionHandler *current  = self.sessionHandler;
+    if (!current && model.type == FTRUMDataAppStateChange) return YES;
     if (current) {
         current.appState = self.appState;
         if ([self manage:self.sessionHandler byPropagatingData:model context:context] == nil) {
@@ -774,7 +824,8 @@ void *FTRUMQueueIdentityKey = &FTRUMQueueIdentityKey;
     }
 }
 - (void)dealloc{
-    [[FTAppLifeCycle sharedInstance] removeAppLifecycleDelegate:self];
+    self.rumDependencies.appStateHistory.delegate = nil;
+    [self.rumDependencies.appStateHistory stopMonitoring];
     [[FTModuleManager sharedInstance] removeMessageReceiver:self];
 }
 @end

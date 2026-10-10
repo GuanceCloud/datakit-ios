@@ -34,6 +34,8 @@ NS_ASSUME_NONNULL_BEGIN
 /// Thread-safe write data
 /// - Parameter block: Write data block
 - (void)concurrentWrite:(void (^)(ValueType value))block;
+/// Execute a barrier write before returning; use when the caller needs values produced by the block.
+- (void)synchronousWrite:(void (^)(ValueType value))block;
 /// Thread-safe read data, copy the read data, ValueType must conform to NSCopying protocol, otherwise it will crash
 /// - Returns: Read data.
 - (ValueType)currentValue;

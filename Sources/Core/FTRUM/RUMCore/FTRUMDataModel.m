@@ -57,6 +57,19 @@
     }
 }
 @end
+@implementation FTRUMAppStateChangeModel
+- (instancetype)initWithAppState:(FTRUMAppState)appState time:(NSDate *)time {
+    return [self initWithAppState:appState time:time timeComparable:YES];
+}
+- (instancetype)initWithAppState:(FTRUMAppState)appState time:(NSDate *)time timeComparable:(BOOL)timeComparable {
+    self = [super initWithType:FTRUMDataAppStateChange time:time];
+    if (self) {
+        _appState = appState;
+        _timeComparable = timeComparable;
+    }
+    return self;
+}
+@end
 @implementation FTRUMViewModel
 -(instancetype)initWithViewID:(NSString *)viewID viewName:(NSString *)viewName viewReferrer:(NSString *)viewReferrer{
     self = [super init];

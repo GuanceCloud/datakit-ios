@@ -25,6 +25,7 @@
 #import "FTFatalErrorContext.h"
 #import "FTErrorDataProtocol.h"
 #import "FTIssueDataProvider.h"
+#import "FTRUMAppStateHistory.h"
 
 NS_ASSUME_NONNULL_BEGIN
 
@@ -44,6 +45,7 @@ NS_ASSUME_NONNULL_BEGIN
 @property (nonatomic, strong, nullable, readonly) FTIssueFieldEnricher *issueFieldEnricher;
 @property (atomic, strong) NSDictionary *linkRUMSessionContext;
 @property (atomic, strong, nullable) NSDictionary *lastViewUserCustomDatas;
+@property (nonatomic, strong, nullable) FTRUMAppStateHistory *appStateHistory;
 
 //The following properties need to be readwrite in rumQueue
 @property (nonatomic, strong) NSNumber *sessionHasReplay;

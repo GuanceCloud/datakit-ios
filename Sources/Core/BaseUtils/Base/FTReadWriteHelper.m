@@ -43,6 +43,11 @@
         block(self.value);
     });
 }
+- (void)synchronousWrite:(void (^)(id value))block{
+    dispatch_barrier_sync(self.concurrentQueue, ^{
+        block(self.value);
+    });
+}
 - (id)currentValue{
     __block id returnValue;
     dispatch_sync(self.concurrentQueue, ^{

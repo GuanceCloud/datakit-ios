@@ -25,6 +25,7 @@
 NS_ASSUME_NONNULL_BEGIN
 
 @interface UIViewController (FTAutoTrack)<FTRumViewProperty>
+@property (nonatomic, strong, nullable, readonly) NSDate *ft_viewLoadStartDate;
 + (void)ft_swizzleLoadedCustomViewControllerClasses;
 + (void)ft_invalidatePendingViewLoadDurations;
 + (void)ft_setSwiftUIViewLoadingTimeEnabled:(BOOL)enabled;

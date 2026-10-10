@@ -22,6 +22,7 @@
 #import "FTRUMActionHandler.h"
 #import "FTRUMResourceHandler.h"
 #import "FTConstants.h"
+#import "FTInternalConstants.h"
 #import "NSDate+FTUtil.h"
 #import "FTBaseInfoHandler.h"
 #import "FTMonitorItem.h"
@@ -42,6 +43,7 @@
 @property (nonatomic, assign) NSInteger viewActionCount;
 @property (nonatomic, assign) BOOL didReceiveStartData;
 @property (nonatomic, strong) NSDate *viewStartTime;
+@property (nonatomic, strong, nullable) NSDate *loadingStartDate;
 @property (nonatomic, assign) BOOL needUpdateView;
 @property (nonatomic, strong) FTMonitorItem *monitorItem;
 @property (nonatomic, strong) NSMutableDictionary *viewProperty;//Stored in field
@@ -60,12 +62,14 @@
     if (self) {
         self.assistant = self;
         self.isActiveView = YES;
+        _trackingType = model.trackingType;
         self.fallbackView = NO;
         self.updateTime = 0;
         self.view_id = model.view_id;
         self.view_name = model.view_name;
         self.view_referrer = model.view_referrer;
         self.loading_time = model.loading_time;
+        self.loadingStartDate = model.loading_start_date ? : model.time;
         self.didReceiveStartData = NO;
         self.viewStartTime = model.time;
         self.resourceHandlers = [NSMutableDictionary new];
@@ -86,6 +90,26 @@
     return self;
 }
 - (BOOL)process:(FTRUMDataModel *)model context:(nonnull NSDictionary *)context{
+    if (model.type == FTRUMDataAppStateChange) {
+        FTRUMAppStateChangeModel *stateModel = (FTRUMAppStateChangeModel *)model;
+        if (stateModel.appState != FTRUMAppStateBackgroundOnly || !self.isActiveView || self.fallbackView ||
+            self.trackingType != FTRUMViewTrackingTypeAutomatic ||
+            (stateModel.timeComparable && [model.time compare:self.viewStartTime] == NSOrderedAscending)) {
+            return self.isActiveView || self.resourceHandlers.count > 0;
+        }
+        // Reuse Stop so the associated Action closes at the same lifecycle boundary.
+        FTRUMViewModel *stopModel = [[FTRUMViewModel alloc] initWithViewID:self.view_id viewName:self.view_name viewReferrer:self.view_referrer];
+        stopModel.type = FTRUMDataViewStop;
+        stopModel.time = model.time;
+        return [self process:stopModel context:context];
+    }
+    if (model.type == FTRUMDataViewStop) {
+        FTRUMViewModel *stopModel = (FTRUMViewModel *)model;
+        // A duplicate or unrelated Stop must not affect this View or its Action.
+        if (!self.isActiveView || ![self.view_id isEqualToString:stopModel.view_id]) {
+            return self.isActiveView || self.resourceHandlers.count > 0;
+        }
+    }
     self.needUpdateView = NO;
     NSDate *viewEndTime = model.time;
     self.actionHandler =(FTRUMActionHandler *)[self.assistant manage:(FTRUMHandler *)self.actionHandler byPropagatingData:model context:context];
@@ -108,6 +132,7 @@
             if (self.isActiveView) {
                 FTRUMViewLoadingModel *loadingModel = (FTRUMViewLoadingModel *)model;
                 self.loading_time = loadingModel.duration;
+                self.loadingStartDate = self.viewStartTime;
             }
             break;
         case FTRUMDataViewStop:{
@@ -121,6 +146,7 @@
             }
         }
             break;
+
         case FTRUMDataStartAction:
             if (self.isActiveView && self.actionHandler == nil) {
                 [self startAction:model];
@@ -220,6 +246,7 @@
     }
 }
 
+
 - (void)writeLaunchData:(FTRUMLaunchDataModel *)model context:(NSDictionary *)context {
     NSMutableDictionary *tags = [NSMutableDictionary dictionary];
     [tags addEntriesFromDictionary:[self.context getGlobalSessionViewActionTags]];
@@ -301,6 +328,12 @@
     NSMutableDictionary *fields = [NSMutableDictionary new];
     [fields addEntriesFromDictionary:model.fields];
     [fields addEntriesFromDictionary:self.context.sessionState.sessionFields];
+    if (model.type == FTRUMDataLongTask) {
+        long long eventStart = model.tm;
+        long long duration = [model.fields[FT_DURATION] longLongValue];
+        fields[@"app_state"] = [self.rumDependencies.appStateHistory stateFrom:eventStart
+                                                                                              duration:duration];
+    }
     if (self.rumDependencies.sessionHasReplay != nil) {
         BOOL sessionHasReplay = self.sessionHasReplay || self.rumDependencies.sessionHasReplay.boolValue;
         [fields setValue:@(sessionHasReplay) forKey:FT_SESSION_HAS_REPLAY];
@@ -370,6 +403,11 @@
         [fields setValue:self.loading_time forKey:FT_KEY_LOADING_TIME];
     }
     [fields addEntriesFromDictionary:self.context.sessionState.sessionFields];
+    long long viewEndNs = [viewEndTime ft_nanosecondTimeStamp];
+    long long stateStartNs = [self.loadingStartDate ft_nanosecondTimeStamp];
+    fields[@"app_state"] = viewEndNs == stateStartNs
+        ? [self.rumDependencies.appStateHistory stateAt:stateStartNs]
+        : [self.rumDependencies.appStateHistory stateFrom:stateStartNs to:viewEndNs];
 
     long long time = [self.viewStartTime ft_nanosecondTimeStamp];
     [self.rumDependencies.writer rumWrite:FT_RUM_SOURCE_VIEW tags:tags fields:fields dynamicContext:context?:@{} time:time updateTime:[viewEndTime ft_nanosecondTimeStamp]];

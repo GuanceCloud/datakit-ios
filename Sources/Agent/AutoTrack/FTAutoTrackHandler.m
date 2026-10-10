@@ -157,6 +157,7 @@ static BOOL FTViewControllerIsFromSwiftUIBundle(UIViewController *viewController
 @property (nonatomic, copy) NSString *viewName;
 @property (nonatomic, copy) NSString *identify;
 @property (nonatomic, strong) NSNumber *loadTime;
+@property (nonatomic, strong, nullable) NSDate *loadStartDate;
 @property (nonatomic, assign) BOOL hasLoadDuration;
 @property (nonatomic, weak, nullable) UIViewController *viewController;
 @property (nonatomic, assign) BOOL isUntrackedModal;
@@ -181,6 +182,7 @@ static BOOL FTViewControllerIsFromSwiftUIBundle(UIViewController *viewController
         // UIKit controller). Keep that distinct from a real reload, which is the
         // only path that uses zero.
         NSNumber *loadDuration = viewController.ft_loadDuration;
+        _loadStartDate = viewController.ft_viewLoadStartDate;
         _loadTime = @(-1);
         if(loadDuration != nil){
             _loadTime = loadDuration;
@@ -206,6 +208,7 @@ static BOOL FTViewControllerIsFromSwiftUIBundle(UIViewController *viewController
 - (void)resetView{
     _viewControllerUUID = [FTBaseInfoHandler randomUUID];
     _loadTime = @0;
+    _loadStartDate = nil;
 }
 @end
 @interface FTAutoTrackHandler()<FTAppLifeCycleDelegate,FTUIViewControllerHandler,FTUIEventHandler,FTAppLaunchDataDelegate
@@ -297,12 +300,13 @@ heatmapIdentifierRegistry:(id<FTHeatmapIdentifierRegistry>)heatmapIdentifierRegi
     [self bindSwiftUIRUMActionBridgeIfAvailable];
 #endif
     if (trackView) {
+        [[FTAppLifeCycle sharedInstance] addAppLifecycleDelegate:self];
         self.viewControllerHandler = self;
         self.uiKitViewTrackingHandler = viewHandler ? viewHandler : [FTDefaultUIKitViewTrackingHandler new];
         self.swiftUIViewTrackingHandler = swiftUIViewHandler;
         [self hookViewControllerLifeCycle];
-        [[FTAppLifeCycle sharedInstance] addAppLifecycleDelegate:self];
     }else{
+        [[FTAppLifeCycle sharedInstance] removeAppLifecycleDelegate:self];
         self.viewControllerHandler = nil;
         self.uiKitViewTrackingHandler = nil;
         self.swiftUIViewTrackingHandler = nil;
@@ -414,10 +418,6 @@ heatmapIdentifierRegistry:(id<FTHeatmapIdentifierRegistry>)heatmapIdentifierRegi
         return;
     }
     [UIViewController ft_invalidatePendingViewLoadDurations];
-    RUMView *current = [self.stack lastObject];
-    if(current){
-        [self.addRumDatasDelegate stopViewWithViewID:current.viewControllerUUID property:nil];
-    }
 }
 -(void)applicationWillEnterForeground{
     if(!self.autoTrackView){
@@ -559,7 +559,11 @@ heatmapIdentifierRegistry:(id<FTHeatmapIdentifierRegistry>)heatmapIdentifierRegi
     // Ensure that untracked modal views do not affect the duration of tracked views
     // When an untracked modal view pops up, close the last tracked View; when the modal view is closed, restart tracking the last View
     if(!view.isUntrackedModal){
-        [self.addRumDatasDelegate onCreateView:view.viewName loadTime:view.loadTime];
+        if ([self.addRumDatasDelegate respondsToSelector:@selector(onCreateView:loadTime:loadStartDate:)]) {
+            [self.addRumDatasDelegate onCreateView:view.viewName loadTime:view.loadTime loadStartDate:view.loadStartDate];
+        } else {
+            [self.addRumDatasDelegate onCreateView:view.viewName loadTime:view.loadTime];
+        }
         if (!view.hasLoadDuration && view.viewController != nil) {
             // The handler explicitly chose a controller without loading-time
             // lifecycle instrumentation. Record its consumed first appearance
@@ -579,6 +583,7 @@ heatmapIdentifierRegistry:(id<FTHeatmapIdentifierRegistry>)heatmapIdentifierRegi
     }
 }
 -(void)shutDown{
+    [[FTAppLifeCycle sharedInstance] removeAppLifecycleDelegate:self];
     self.addRumDatasDelegate = nil;
     self.viewControllerHandler = nil;
     self.actionHandler = nil;
@@ -599,7 +604,6 @@ heatmapIdentifierRegistry:(id<FTHeatmapIdentifierRegistry>)heatmapIdentifierRegi
     self.autoTrackView = NO;
     self.autoTrackAction = NO;
 
-    [[FTAppLifeCycle sharedInstance] removeAppLifecycleDelegate:self];
 }
 
 #if FT_HAS_SWIFTUI_VIEW_TRACKING

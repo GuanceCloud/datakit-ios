@@ -30,9 +30,12 @@
 #import <KIF/KIF.h>
 #import "FTModelHelper.h"
 #import "FTRUMManager.h"
+#import "FTRUMDependencies.h"
 #import "FTGlobalRumManager+Private.h"
 #import "FTLongTaskManager+Test.h"
 #import "FTTestUtils.h"
+#import "FTAppLifeCycle.h"
+#import "FTDateUtil.h"
 @interface FTLongTaskTest : KIFTestCase
 @property (nonatomic, copy, nullable) FTIssueDataProvider issueDataProvider;
 @end
@@ -89,6 +92,47 @@
     [self waitForExpectationsWithTimeout:45 handler:^(NSError *error) {
         XCTAssertNil(error);
     }];
+    [FTMobileAgent shutDown];
+}
+
+- (void)testLongTaskUsesObservedIntervalWhileANRKeepsErrorSituation {
+    [self initSDKWithEnableTrackAppANR:YES longTask:YES];
+    [FTModelHelper startViewWithName:@"tracked-anr-state"];
+    [[FTGlobalRumManager sharedInstance].rumManager syncProcess];
+    FTLongTaskManager *manager = [[FTGlobalRumManager sharedInstance] valueForKey:@"longTaskManager"];
+    long long startTime = [NSDate ft_currentNanosecondTimeStamp] - 6000000000LL;
+    FTRUMDependencies *dependencies = [manager valueForKey:@"dependencies"];
+    id<FTRUMAppStateHistoryDelegate> stateDelegate = dependencies.appStateHistory.delegate;
+    [dependencies.appStateHistory stopMonitoring];
+    dependencies.appStateHistory = [[FTRUMAppStateHistory alloc] initWithState:@"foreground"
+                                                                          timeNs:startTime - 1];
+    dependencies.appStateHistory.delegate = stateDelegate;
+    [dependencies.appStateHistory startMonitoring];
+    [manager startLongTask:startTime];
+    [[NSNotificationCenter defaultCenter] postNotificationName:UIApplicationWillEnterForegroundNotification object:nil];
+    [[NSNotificationCenter defaultCenter] postNotificationName:UIApplicationDidEnterBackgroundNotification object:nil];
+    [manager endLongTask];
+    [[FTGlobalRumManager sharedInstance].rumManager syncProcess];
+
+    __block BOOL foundLongTask = NO;
+    __block BOOL foundANR = NO;
+    [FTModelHelper resolveModelArray:[[FTTrackerEventDBTool sharedManager] getAllDatas] callBack:^(NSString *source, NSDictionary *tags, NSDictionary *fields, BOOL *stop) {
+        if ([source isEqualToString:FT_RUM_SOURCE_LONG_TASK]) {
+            foundLongTask = YES;
+            XCTAssertEqualObjects(fields[@"app_state"], @"foreground_and_background");
+            XCTAssertEqualObjects(fields[FT_RUM_KEY_SESSION_START_REASON], FT_RUM_SESSION_START_REASON_SDK_INIT);
+            XCTAssertNotNil(fields[FT_RUM_KEY_PROCESS_START_TIME_NS]);
+        }
+        if ([source isEqualToString:FT_RUM_SOURCE_ERROR] && [tags[FT_KEY_ERROR_TYPE] isEqualToString:@"anr_error"]) {
+            foundANR = YES;
+            XCTAssertNil(fields[@"app_state"]);
+            XCTAssertNotNil(tags[FT_KEY_ERROR_SITUATION]);
+            XCTAssertEqualObjects(fields[FT_RUM_KEY_SESSION_START_REASON], FT_RUM_SESSION_START_REASON_SDK_INIT);
+            XCTAssertNotNil(fields[FT_RUM_KEY_PROCESS_START_TIME_NS]);
+        }
+    }];
+    XCTAssertTrue(foundLongTask);
+    XCTAssertTrue(foundANR);
     [FTMobileAgent shutDown];
 }
 
@@ -357,6 +401,7 @@
             XCTAssertTrue([fields[FT_KEY_VIEW_UPDATE_TIME] isEqual:@2]);
             XCTAssertTrue([fields[FT_KEY_VIEW_ERROR_COUNT] isEqual:@1]);
             XCTAssertTrue([fields[FT_KEY_TIME_SPENT] isEqual:@5667554048]);
+            XCTAssertEqualObjects(fields[@"app_state"], @"unknown");
             XCTAssertEqualWithAccuracy([fields[FT_KEY_VIEW_LONG_TASK_RATE] doubleValue], 0.9613205417816246, 0.000001);
             hasView = YES;
         }

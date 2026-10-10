@@ -27,6 +27,7 @@ typedef void(^FTErrorHandled)(void);
 @interface FTRUMViewHandler : FTRUMHandler<FTRUMSessionProtocol>
 @property (nonatomic, strong,readonly) FTRUMContext *context;
 @property (nonatomic, assign,readwrite) BOOL isActiveView;
+@property (nonatomic, assign, readonly) FTRUMViewTrackingType trackingType;
 @property (nonatomic, copy) NSString *view_id;
 @property (nonatomic, copy) NSString *view_name;
 @property (nonatomic, copy) NSString *view_referrer;

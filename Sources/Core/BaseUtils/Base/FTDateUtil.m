@@ -20,6 +20,7 @@
 
 #import "FTDateUtil.h"
 #import <sys/sysctl.h>
+#import <limits.h>
 
 struct timeval ft_processStartTime(void) {
     int mib[4] = {CTL_KERN, KERN_PROC, KERN_PROC_PID, getpid()};
@@ -49,5 +50,13 @@ struct timeval ft_processStartTime(void) {
 + (NSDate *)processStartTimestamp{
     struct timeval startTime = ft_processStartTime();
     return [NSDate dateWithTimeIntervalSince1970:startTime.tv_sec + startTime.tv_usec / 1E6];
+}
++ (long long)processStartNanosecondTimestamp{
+    struct timeval startTime = ft_processStartTime();
+    if (startTime.tv_sec <= 0 || startTime.tv_usec < 0 || startTime.tv_usec >= 1000000
+        || startTime.tv_sec > (LLONG_MAX - startTime.tv_usec * 1000LL) / 1000000000LL) {
+        return 0;
+    }
+    return startTime.tv_sec * 1000000000LL + startTime.tv_usec * 1000LL;
 }
 @end

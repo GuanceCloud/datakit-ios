@@ -19,7 +19,6 @@
 //
 
 #import "FTRUMDependencies.h"
-#import "FTConstants.h"
 #import "FTIssueFieldEnricher.h"
 
 @interface FTRUMDependencies ()
@@ -51,6 +50,7 @@
     dependencies.sampledForErrorReplay = self.sampledForErrorReplay;
     dependencies.sessionReplaySampledFields = self.sessionReplaySampledFields;
     dependencies.sessionReplayStats = self.sessionReplayStats;
+    dependencies.appStateHistory = self.appStateHistory;
     return dependencies;
 }
 @end

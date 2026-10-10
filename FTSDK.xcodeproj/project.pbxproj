@@ -726,6 +726,10 @@
 		17AB76DF29D432DE008FBBF5 /* FTRUMActionHandler.h in Headers */ = {isa = PBXBuildFile; fileRef = 17AB76A429D432DE008FBBF5 /* FTRUMActionHandler.h */; };
 		17AB76E429D432DE008FBBF5 /* FTRUMManager.m in Sources */ = {isa = PBXBuildFile; fileRef = 17AB76A629D432DE008FBBF5 /* FTRUMManager.m */; };
 		17AB76E529D432DE008FBBF5 /* FTRUMManager.m in Sources */ = {isa = PBXBuildFile; fileRef = 17AB76A629D432DE008FBBF5 /* FTRUMManager.m */; };
+		A2F10D032FF2000100A0A001 /* FTRUMAppStateHistory.h in Headers */ = {isa = PBXBuildFile; fileRef = A2F10D012FF2000100A0A001 /* FTRUMAppStateHistory.h */; };
+		A2F10D042FF2000100A0A001 /* FTRUMAppStateHistory.h in Headers */ = {isa = PBXBuildFile; fileRef = A2F10D012FF2000100A0A001 /* FTRUMAppStateHistory.h */; };
+		A2F10D052FF2000100A0A001 /* FTRUMAppStateHistory.m in Sources */ = {isa = PBXBuildFile; fileRef = A2F10D022FF2000100A0A001 /* FTRUMAppStateHistory.m */; };
+		A2F10D062FF2000100A0A001 /* FTRUMAppStateHistory.m in Sources */ = {isa = PBXBuildFile; fileRef = A2F10D022FF2000100A0A001 /* FTRUMAppStateHistory.m */; };
 		17AB76E729D432DE008FBBF5 /* FTRUMSessionHandler.h in Headers */ = {isa = PBXBuildFile; fileRef = 17AB76A729D432DE008FBBF5 /* FTRUMSessionHandler.h */; };
 		17AB76E829D432DE008FBBF5 /* FTRUMSessionHandler.h in Headers */ = {isa = PBXBuildFile; fileRef = 17AB76A729D432DE008FBBF5 /* FTRUMSessionHandler.h */; };
 		17AB76EA29D432DE008FBBF5 /* FTRUMViewHandler.m in Sources */ = {isa = PBXBuildFile; fileRef = 17AB76A829D432DE008FBBF5 /* FTRUMViewHandler.m */; };
@@ -1499,6 +1503,8 @@
 		17AB76A229D432DE008FBBF5 /* FTMonitorUtils.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = FTMonitorUtils.h; sourceTree = "<group>"; };
 		17AB76A429D432DE008FBBF5 /* FTRUMActionHandler.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = FTRUMActionHandler.h; sourceTree = "<group>"; };
 		17AB76A629D432DE008FBBF5 /* FTRUMManager.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = FTRUMManager.m; sourceTree = "<group>"; };
+		A2F10D012FF2000100A0A001 /* FTRUMAppStateHistory.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; name = FTRUMAppStateHistory.h; path = Sources/Core/FTRUM/include/FTRUMAppStateHistory.h; sourceTree = SOURCE_ROOT; };
+		A2F10D022FF2000100A0A001 /* FTRUMAppStateHistory.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = FTRUMAppStateHistory.m; sourceTree = "<group>"; };
 		17AB76A729D432DE008FBBF5 /* FTRUMSessionHandler.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = FTRUMSessionHandler.h; sourceTree = "<group>"; };
 		17AB76A829D432DE008FBBF5 /* FTRUMViewHandler.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = FTRUMViewHandler.m; sourceTree = "<group>"; };
 		17AB76A929D432DE008FBBF5 /* FTRUMResourceHandler.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = FTRUMResourceHandler.m; sourceTree = "<group>"; };
@@ -2532,6 +2538,8 @@
 				17AB76A929D432DE008FBBF5 /* FTRUMResourceHandler.m */,
 				172B10E92E377B3700753766 /* FTRUMDependencies.h */,
 				17E32BAA2BEE21F600F4685C /* FTRUMDependencies.m */,
+				A2F10D012FF2000100A0A001 /* FTRUMAppStateHistory.h */,
+				A2F10D022FF2000100A0A001 /* FTRUMAppStateHistory.m */,
 			);
 			path = RUMCore;
 			sourceTree = "<group>";
@@ -3008,6 +3016,7 @@
 				A4D101092FFB000100A0A001 /* FTVisitorIDManager+Private.h in Headers */,
 				A2F100052FF1000100A0A001 /* FTIssueDataProvider.h in Headers */,
 				172B10EC2E377B3700753766 /* FTRUMDependencies.h in Headers */,
+				A2F10D032FF2000100A0A001 /* FTRUMAppStateHistory.h in Headers */,
 				177606A429D1376600D17137 /* FTReadWriteHelper.h in Headers */,
 				17717B7A2F0F4FA9002158F6 /* FTCrash.h in Headers */,
 				17717B7B2F0F4FA9002158F6 /* FTCrashMonitorType.h in Headers */,
@@ -3231,6 +3240,7 @@
 				17E4CB5129CD42DA005C2D99 /* FTRecordModel.h in Headers */,
 				17A422172EDE94AD00416673 /* FTCrashSignalInfo.h in Headers */,
 				172B10EA2E377B3700753766 /* FTRUMDependencies.h in Headers */,
+				A2F10D042FF2000100A0A001 /* FTRUMAppStateHistory.h in Headers */,
 				17E4CC1E29CD42E4005C2D99 /* FTRumResourceProtocol.h in Headers */,
 				17A421DB2EDDB0F100416673 /* FTCrashMonitor_MachException.h in Headers */,
 				1763BD9429DFF04F009EE026 /* FTRequest.h in Headers */,
@@ -3768,6 +3778,7 @@
 				1745E3212EF900BB00C8FA9B /* FTRUMContext.m in Sources */,
 				176CE2582ED6E67100E9E92B /* FTCrashDate.c in Sources */,
 				17E32BAE2BEE21F600F4685C /* FTRUMDependencies.m in Sources */,
+				A2F10D052FF2000100A0A001 /* FTRUMAppStateHistory.m in Sources */,
 				177606FC29D1399500D17137 /* FTExtensionDataManager.m in Sources */,
 				172505DD2FFF749300DECE44 /* FTHeatmapIdentifierStore.m in Sources */,
 				17BCF3802D66EB2A009A63FD /* FTWeakPropertyContainer.m in Sources */,
@@ -3996,6 +4007,7 @@
 				176CE2272ED6CC0B00E9E92B /* FTCrashJSONCodec.c in Sources */,
 				17D0681A2D23F48B00D59159 /* FTTraceContext.m in Sources */,
 				17E32BAB2BEE21F600F4685C /* FTRUMDependencies.m in Sources */,
+				A2F10D062FF2000100A0A001 /* FTRUMAppStateHistory.m in Sources */,
 				17AB76B729D432DE008FBBF5 /* FTCPUMonitor.m in Sources */,
 				1776062B29D1347500D17137 /* FTWebViewJavascriptLeakAvoider.m in Sources */,
 				174BC87A2BFC9F8A00478EE1 /* NSDictionary+FTCopyProperties.m in Sources */,

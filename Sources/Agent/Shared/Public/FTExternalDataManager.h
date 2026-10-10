@@ -19,8 +19,8 @@
 //
 
 #import <Foundation/Foundation.h>
+#import "FTRumDatasProtocol.h"
 NS_ASSUME_NONNULL_BEGIN
-typedef enum FTAppState:NSUInteger FTAppState;
 
 @class FTResourceMetricsModel,FTResourceContentModel;
 
@@ -37,6 +37,11 @@ typedef enum FTAppState:NSUInteger FTAppState;
 ///   - viewName: RUM View name
 ///   - loadTime: page loading time
 -(void)onCreateView:(NSString *)viewName loadTime:(NSNumber *)loadTime;
+/// Automatic cross-platform View loading. loadStartEpochMs is the wall-clock time
+/// when loading began; loadTime remains a monotonic duration in nanoseconds.
+- (void)onCreateView:(NSString *)viewName
+           loadTime:(NSNumber *)loadTime
+   loadStartEpochMs:(nullable NSNumber *)loadStartEpochMs;
 /// Starts RUM view
 ///
 /// - Parameters:
@@ -48,6 +53,13 @@ typedef enum FTAppState:NSUInteger FTAppState;
 ///   - viewName: RUM View name
 ///   - property: event custom properties (optional)
 -(void)startViewWithName:(NSString *)viewName property:(nullable NSDictionary *)property;
+
+/// Automatic adapter Views are stopped by Native at the background boundary.
+/// Adapters must not also send a background stopView callback. Route changes and
+/// foreground View starts remain the adapter's responsibility. Old APIs are manual.
+- (void)startViewWithName:(NSString *)viewName
+                property:(nullable NSDictionary *)property
+            trackingType:(FTRUMViewTrackingType)trackingType;
 
 /// Update view loading time to current RUM view.
 /// Must be called between `-startView` and `-stopView` methods to take effect.

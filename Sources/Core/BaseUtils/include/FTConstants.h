@@ -130,6 +130,15 @@ extern NSString * const FT_VISITOR_ID;
 extern NSString * const FT_RUM_KEY_SESSION_ID;
 /// RUM session type attribute key.
 extern NSString * const FT_RUM_KEY_SESSION_TYPE;
+/// Reason the current RUM session was created. Stored as an event field.
+extern NSString * const FT_RUM_KEY_SESSION_START_REASON;
+/// Current process start time in Unix epoch nanoseconds. Stored as an event field.
+extern NSString * const FT_RUM_KEY_PROCESS_START_TIME_NS;
+extern NSString * const FT_RUM_SESSION_START_REASON_SDK_INIT;
+extern NSString * const FT_RUM_SESSION_START_REASON_INACTIVITY_TIMEOUT;
+extern NSString * const FT_RUM_SESSION_START_REASON_MAX_DURATION;
+extern NSString * const FT_RUM_SESSION_START_REASON_SAMPLING_CHANGED;
+extern NSString * const FT_RUM_SESSION_START_REASON_UNKNOWN;
 /// Timestamp key for the error that triggered on-error session sampling.
 extern NSString * const FT_SESSION_ERROR_TIMESTAMP;
 /// Flag key indicating whether the session was sampled by on-error RUM sampling.
