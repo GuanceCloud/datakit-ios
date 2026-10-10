@@ -1,5 +1,5 @@
 import XCTest
-@testable import _FTLogger
+import GuanceSDK
 
 final class FTWebViewLogTimeTests: XCTestCase {
     func testInvalidBrowserDateUsesExplicitIngressTime() throws {

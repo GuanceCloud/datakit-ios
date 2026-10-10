@@ -41,7 +41,6 @@
 		174BC8802BFCB05500478EE1 /* FTDictionaryCopyTest.m in Sources */ = {isa = PBXBuildFile; fileRef = 174BC87F2BFCB05500478EE1 /* FTDictionaryCopyTest.m */; };
 		17510DD829C99F2E00C8F1E4 /* GuanceWidgetExtension.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 17510DD729C99F2E00C8F1E4 /* GuanceWidgetExtension.framework */; };
 		1757C83C2D9D222600163865 /* SessionReplayConfigTests.m in Sources */ = {isa = PBXBuildFile; fileRef = 1757C83B2D9D222600163865 /* SessionReplayConfigTests.m */; };
-		17F0C0022FE0000100ABCDEF /* FTRecordingCoordinatorTests.m in Sources */ = {isa = PBXBuildFile; fileRef = 17F0C0012FE0000100ABCDEF /* FTRecordingCoordinatorTests.m */; };
 		17593AE22906917700A15CD9 /* FTResourceDelegateTest.m in Sources */ = {isa = PBXBuildFile; fileRef = 17593AE12906917700A15CD9 /* FTResourceDelegateTest.m */; };
 		175BC13B2A08A34600AEBEB5 /* WebViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 175BC13A2A08A34600AEBEB5 /* WebViewController.m */; };
 		175BC13D2A08A45700AEBEB5 /* sample.html in Resources */ = {isa = PBXBuildFile; fileRef = 175BC13C2A08A45700AEBEB5 /* sample.html */; };
@@ -163,6 +162,7 @@
 		17D339EE2807AB0C0083C2B3 /* FTModelHelper.m in Sources */ = {isa = PBXBuildFile; fileRef = 17D339ED2807AB0C0083C2B3 /* FTModelHelper.m */; };
 		17D6A7402FD7094C00E60B01 /* FTNodesFlattenerTests.m in Sources */ = {isa = PBXBuildFile; fileRef = 17D6A73F2FD7094C00E60B01 /* FTNodesFlattenerTests.m */; };
 		17E0792E291E60830014A420 /* FTExtensionSDKTest.m in Sources */ = {isa = PBXBuildFile; fileRef = 17E0792D291E60830014A420 /* FTExtensionSDKTest.m */; };
+		17F0C0022FE0000100ABCDEF /* FTRecordingCoordinatorTests.m in Sources */ = {isa = PBXBuildFile; fileRef = 17F0C0012FE0000100ABCDEF /* FTRecordingCoordinatorTests.m */; };
 		17F10EBB2D13EAC800737EDD /* NibViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 17F10EAD2D13EAC800737EDD /* NibViewController.swift */; };
 		17F10EBC2D13EAC800737EDD /* SplitViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 17F10EAF2D13EAC800737EDD /* SplitViewController.swift */; };
 		17F10EBD2D13EAC800737EDD /* TableViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 17F10EB02D13EAC800737EDD /* TableViewController.swift */; };
@@ -247,6 +247,8 @@
 		7CF30EDF26F09D5E003CA20A /* CollectionViewItem.m in Sources */ = {isa = PBXBuildFile; fileRef = 7CF30EDD26F09D5E003CA20A /* CollectionViewItem.m */; };
 		7CF30EE026F09D5E003CA20A /* CollectionViewItem.xib in Resources */ = {isa = PBXBuildFile; fileRef = 7CF30EDE26F09D5E003CA20A /* CollectionViewItem.xib */; };
 		7CF30EE726F1EF9E003CA20A /* MainWindow.m in Sources */ = {isa = PBXBuildFile; fileRef = 7CF30EE626F1EF9D003CA20A /* MainWindow.m */; };
+		A10610100000000000000001 /* RUMAutomaticViewLifecycleTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = A10610100000000000000002 /* RUMAutomaticViewLifecycleTests.swift */; };
+		A10610100000000000000003 /* FTWebViewLogTimeTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = A10610100000000000000004 /* FTWebViewLogTimeTests.swift */; };
 		A1F101012FC1000100A0A001 /* FTAppKitSessionReplayTests.m in Sources */ = {isa = PBXBuildFile; fileRef = A1F100012FC1000100A0A001 /* FTAppKitSessionReplayTests.m */; };
 		A1F103012FC1000100A0A001 /* GuanceSessionReplay.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 179A53812F84EED200FE4B6F /* GuanceSessionReplay.framework */; };
 		A1F104032FC2000100A0A001 /* ImageSessionReplayViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = A1F104022FC2000100A0A001 /* ImageSessionReplayViewController.m */; };
@@ -379,7 +381,6 @@
 		17510DD429C99F0900C8F1E4 /* GuanceWidgetExtension.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; path = GuanceWidgetExtension.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 		17510DD729C99F2E00C8F1E4 /* GuanceWidgetExtension.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; path = GuanceWidgetExtension.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 		1757C83B2D9D222600163865 /* SessionReplayConfigTests.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = SessionReplayConfigTests.m; sourceTree = "<group>"; };
-		17F0C0012FE0000100ABCDEF /* FTRecordingCoordinatorTests.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = FTRecordingCoordinatorTests.m; sourceTree = "<group>"; };
 		17593AE12906917700A15CD9 /* FTResourceDelegateTest.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = FTResourceDelegateTest.m; sourceTree = "<group>"; };
 		175B13AE29E3AE87003A5B1B /* Config-Example.publish.xcconfig */ = {isa = PBXFileReference; lastKnownFileType = text.xcconfig; path = "Config-Example.publish.xcconfig"; sourceTree = "<group>"; };
 		175B13B029E3AEA5003A5B1B /* Config-Example.pre.xcconfig */ = {isa = PBXFileReference; lastKnownFileType = text.xcconfig; path = "Config-Example.pre.xcconfig"; sourceTree = "<group>"; };
@@ -488,6 +489,7 @@
 		17E0792D291E60830014A420 /* FTExtensionSDKTest.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = FTExtensionSDKTest.m; sourceTree = "<group>"; };
 		17E1927929C9883A0067B23D /* GuanceSDK.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; path = GuanceSDK.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 		17EAFA462D15535F004223E2 /* GuanceSDK.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; path = GuanceSDK.framework; sourceTree = BUILT_PRODUCTS_DIR; };
+		17F0C0012FE0000100ABCDEF /* FTRecordingCoordinatorTests.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = FTRecordingCoordinatorTests.m; sourceTree = "<group>"; };
 		17F10E6C2D13CBCB00737EDD /* tvOS-App.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = "tvOS-App.app"; sourceTree = BUILT_PRODUCTS_DIR; };
 		17F10E7E2D13CBCD00737EDD /* tvOS-AppTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = "tvOS-AppTests.xctest"; sourceTree = BUILT_PRODUCTS_DIR; };
 		17F10E882D13CBCD00737EDD /* tvOS-AppUITests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = "tvOS-AppUITests.xctest"; sourceTree = BUILT_PRODUCTS_DIR; };
@@ -632,6 +634,8 @@
 		8446B522E6054C6EEE68965C /* Pods-FTMobileSDKUnitTests-tvOS.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-FTMobileSDKUnitTests-tvOS.release.xcconfig"; path = "Target Support Files/Pods-FTMobileSDKUnitTests-tvOS/Pods-FTMobileSDKUnitTests-tvOS.release.xcconfig"; sourceTree = "<group>"; };
 		91C1E5A38666EF7793AD416F /* Pods_FTMobileSDKUnitTests_tvOS.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = Pods_FTMobileSDKUnitTests_tvOS.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 		9A42D1F771C28BA3324823AC /* Pods-FTMobileSDKUnitTests tvOS.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-FTMobileSDKUnitTests tvOS.release.xcconfig"; path = "Target Support Files/Pods-FTMobileSDKUnitTests tvOS/Pods-FTMobileSDKUnitTests tvOS.release.xcconfig"; sourceTree = "<group>"; };
+		A10610100000000000000002 /* RUMAutomaticViewLifecycleTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RUMAutomaticViewLifecycleTests.swift; sourceTree = "<group>"; };
+		A10610100000000000000004 /* FTWebViewLogTimeTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FTWebViewLogTimeTests.swift; sourceTree = "<group>"; };
 		A1F100012FC1000100A0A001 /* FTAppKitSessionReplayTests.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = FTAppKitSessionReplayTests.m; sourceTree = "<group>"; };
 		A1F104012FC2000100A0A001 /* ImageSessionReplayViewController.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = ImageSessionReplayViewController.h; sourceTree = "<group>"; };
 		A1F104022FC2000100A0A001 /* ImageSessionReplayViewController.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = ImageSessionReplayViewController.m; sourceTree = "<group>"; };
@@ -895,6 +899,7 @@
 				178378752D8D0BB600C590AE /* FTRUMMonitorTest.m */,
 				178378762D8D0BB600C590AE /* FTRUMSessionOnErrorSampleRateTest.m */,
 				178378772D8D0BB600C590AE /* FTRUMTest.m */,
+				A10610100000000000000002 /* RUMAutomaticViewLifecycleTests.swift */,
 				178378782D8D0BB600C590AE /* FTRUMViewTest.m */,
 			);
 			path = RUM;
@@ -1102,6 +1107,7 @@
 			isa = PBXGroup;
 			children = (
 				174058BA28D813190092E096 /* FTLoggerTest.m */,
+				A10610100000000000000004 /* FTWebViewLogTimeTests.swift */,
 				4A8531A223B3322500B40B5D /* FTAutoTrackTest.m */,
 			);
 			path = HookTest;
@@ -2114,8 +2120,10 @@
 				174058BD28D813A20092E096 /* FTLongTaskTest.m in Sources */,
 				17B1715A28154A6E004002C9 /* FTRequestTest.m in Sources */,
 				179BEB7E2D2B983D004AA5A6 /* FTResourceTest.swift in Sources */,
+				A10610100000000000000001 /* RUMAutomaticViewLifecycleTests.swift in Sources */,
 				4A8531A323B3322500B40B5D /* FTAutoTrackTest.m in Sources */,
 				174058BB28D813190092E096 /* FTLoggerTest.m in Sources */,
+				A10610100000000000000003 /* FTWebViewLogTimeTests.swift in Sources */,
 				17933E3A2D68578900524BF2 /* AddRumDatasHandlerMock.m in Sources */,
 				17B1715528115AE0004002C9 /* FTAppLifeCycleTest.m in Sources */,
 				172931D92BF6148600AA9D53 /* FTNetworkMock.m in Sources */,
@@ -2818,6 +2826,17 @@
 				);
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_FILE = "$(SRCROOT)/iOS/App/Info.plist";
+				INFOPLIST_KEY_CFBundleDisplayName = "$(PRODUCT_NAME)";
+				INFOPLIST_KEY_NSBluetoothAlwaysUsageDescription = "Allow Bluetooth usage";
+				INFOPLIST_KEY_NSCameraUsageDescription = "Allow camera usage";
+				INFOPLIST_KEY_NSLocationAlwaysUsageDescription = "Location permission";
+				INFOPLIST_KEY_NSLocationWhenInUseUsageDescription = "Location permission";
+				INFOPLIST_KEY_NSMotionUsageDescription = "Allow sensor data access";
+				INFOPLIST_KEY_UILaunchStoryboardName = LaunchScreen;
+				INFOPLIST_KEY_UIMainStoryboardFile = Main;
+				INFOPLIST_KEY_UIRequiredDeviceCapabilities = armv7;
+				INFOPLIST_KEY_UISupportedInterfaceOrientations = "UIInterfaceOrientationPortrait UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
+				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPad = "UIInterfaceOrientationPortrait UIInterfaceOrientationPortraitUpsideDown UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited)";
 				LIBRARY_SEARCH_PATHS = "$(inherited)";
 				MARKETING_VERSION = 1.0.1;
@@ -3315,6 +3334,17 @@
 				);
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_FILE = "$(SRCROOT)/iOS/App/Info.plist";
+				INFOPLIST_KEY_CFBundleDisplayName = "$(PRODUCT_NAME)";
+				INFOPLIST_KEY_NSBluetoothAlwaysUsageDescription = "Allow Bluetooth usage";
+				INFOPLIST_KEY_NSCameraUsageDescription = "Allow camera usage";
+				INFOPLIST_KEY_NSLocationAlwaysUsageDescription = "Location permission";
+				INFOPLIST_KEY_NSLocationWhenInUseUsageDescription = "Location permission";
+				INFOPLIST_KEY_NSMotionUsageDescription = "Allow sensor data access";
+				INFOPLIST_KEY_UILaunchStoryboardName = LaunchScreen;
+				INFOPLIST_KEY_UIMainStoryboardFile = Main;
+				INFOPLIST_KEY_UIRequiredDeviceCapabilities = armv7;
+				INFOPLIST_KEY_UISupportedInterfaceOrientations = "UIInterfaceOrientationPortrait UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
+				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPad = "UIInterfaceOrientationPortrait UIInterfaceOrientationPortraitUpsideDown UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited)";
 				LIBRARY_SEARCH_PATHS = "$(inherited)";
 				MARKETING_VERSION = 1.0.1;
@@ -3347,6 +3377,17 @@
 				GCC_PREPROCESSOR_DEFINITIONS = "$(inherited)";
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_FILE = "$(SRCROOT)/iOS/App/Info.plist";
+				INFOPLIST_KEY_CFBundleDisplayName = "$(PRODUCT_NAME)";
+				INFOPLIST_KEY_NSBluetoothAlwaysUsageDescription = "Allow Bluetooth usage";
+				INFOPLIST_KEY_NSCameraUsageDescription = "Allow camera usage";
+				INFOPLIST_KEY_NSLocationAlwaysUsageDescription = "Location permission";
+				INFOPLIST_KEY_NSLocationWhenInUseUsageDescription = "Location permission";
+				INFOPLIST_KEY_NSMotionUsageDescription = "Allow sensor data access";
+				INFOPLIST_KEY_UILaunchStoryboardName = LaunchScreen;
+				INFOPLIST_KEY_UIMainStoryboardFile = Main;
+				INFOPLIST_KEY_UIRequiredDeviceCapabilities = armv7;
+				INFOPLIST_KEY_UISupportedInterfaceOrientations = "UIInterfaceOrientationPortrait UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
+				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPad = "UIInterfaceOrientationPortrait UIInterfaceOrientationPortraitUpsideDown UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited)";
 				LIBRARY_SEARCH_PATHS = "$(inherited)";
 				MARKETING_VERSION = 1.0.1;

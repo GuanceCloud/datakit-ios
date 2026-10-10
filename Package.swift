@@ -138,11 +138,6 @@ let package = Package(
                 .headerSearchPath("Heatmap")
             ]
         ),
-        .testTarget(
-            name: "FTRUMTests",
-            dependencies: ["_FTRUM", "_FTProtocol", "_FTBaseUtils_Base", "_AgentExternalData"],
-            path: "Tests/FTRUMTests"
-        ),
         .target(
             name: "_FTURLSessionAutoInstrumentation",
             dependencies: [
@@ -167,11 +162,6 @@ let package = Package(
             dependencies: ["_FTBaseUtils"],
             path: "Sources/Core/VisitorID",
             publicHeadersPath: "."
-        ),
-        .testTarget(
-            name: "FTLoggerTests",
-            dependencies: ["_FTLogger"],
-            path: "Tests/FTLoggerTests"
         ),
 
         // MARK: - BaseUtils

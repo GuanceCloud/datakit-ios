@@ -453,7 +453,6 @@ prepare_spm_validation_dir() {
   cp "${REPO_ROOT}/Package.swift" "${SPM_VALIDATION_DIR}/Package.swift"
   ln -s "${REPO_ROOT}/Sources" "${SPM_VALIDATION_DIR}/Sources"
   mkdir -p "${SPM_VALIDATION_DIR}/Tests"
-  ln -s "${REPO_ROOT}/Tests/FTLoggerTests" "${SPM_VALIDATION_DIR}/Tests/FTLoggerTests"
   ln -s "${REPO_ROOT}/Tests/GuanceElectronWebViewTests" "${SPM_VALIDATION_DIR}/Tests/GuanceElectronWebViewTests"
   ln -s "${REPO_ROOT}/Tests/GuanceElectronNativeTests" "${SPM_VALIDATION_DIR}/Tests/GuanceElectronNativeTests"
 }

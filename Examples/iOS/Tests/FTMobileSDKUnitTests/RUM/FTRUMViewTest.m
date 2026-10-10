@@ -135,7 +135,7 @@
     XCTAssertTrue(handler.viewStartCount == 0);
     XCTAssertTrue(handler.viewStopCount == 0);
 }
-- (void)testWhenAppStateChanges_itStopsAndRestartsRUMView{
+- (void)testWhenAppStateChanges_itRestartsViewWithoutDuplicateAutoTrackStop{
     AddRumDatasHandlerMock *handler = [[AddRumDatasHandlerMock alloc]init];
     [[FTAutoTrackHandler sharedInstance] startWithTrackView:YES action:NO addRumDatasDelegate:handler viewHandler:nil swiftUIViewHandler:nil actionHandler:nil];
     
@@ -143,17 +143,18 @@
     [vc viewDidAppear:YES];
    
     [[NSNotificationCenter defaultCenter] postNotificationName:UIApplicationDidEnterBackgroundNotification object:nil];
-    
-    [self waitForTimeInterval:0.2];
+    // RUMManager owns the background Stop; AutoTrack must not emit another one.
+    XCTAssertEqual(handler.viewStartCount, 1);
+    XCTAssertEqual(handler.viewStopCount, 0);
     
     [[NSNotificationCenter defaultCenter] postNotificationName:UIApplicationWillEnterForegroundNotification object:nil];
-    XCTAssertTrue(handler.viewStartCount == 2);
-    XCTAssertTrue(handler.viewStopCount == 1);
-    XCTAssertTrue(handler.array[0].type == ViewStart);
-    XCTAssertTrue(handler.array[1].type == ViewStop);
-    XCTAssertTrue(handler.array[2].type == ViewStart);
-    XCTAssertTrue([handler.array[0].viewId isEqualToString:handler.array[1].viewId]);
-    XCTAssertFalse([handler.array[0].viewId isEqualToString:handler.array[2].viewId]);
+    XCTAssertEqual(handler.viewStartCount, 2);
+    XCTAssertEqual(handler.viewStopCount, 0);
+    XCTAssertEqual(handler.array.count, 2u);
+    if (handler.array.count != 2) return;
+    XCTAssertEqual(handler.array[0].type, ViewStart);
+    XCTAssertEqual(handler.array[1].type, ViewStart);
+    XCTAssertNotEqualObjects(handler.array[0].viewId, handler.array[1].viewId);
 }
 - (void)testGivenViewControllerDidNotStart_whenAppStateChanges_itDoesNothing{
     AddRumDatasHandlerMock *handler = [[AddRumDatasHandlerMock alloc]init];

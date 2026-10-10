@@ -385,6 +385,7 @@
 // Models the task snapshot visible at the real metrics callback boundary.
 @interface FTWebSocketMetricsTestTask : NSObject<NSCopying>
 @property (nonatomic, strong) NSURLRequest *currentRequest;
+@property (nonatomic, strong, nullable) FTVisitorIDRequestSnapshot *ft_visitorIDSnapshot;
 @property (nonatomic, strong) NSURLResponse *response;
 @property (nonatomic, strong) NSError *error;
 @property (nonatomic, assign) NSURLSessionTaskState state;

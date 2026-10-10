@@ -1,8 +1,6 @@
 import Foundation
 import XCTest
-import _FTRUM
-import _FTProtocol
-import _AgentExternalData
+import GuanceSDK
 
 private final class LifecycleWriter: NSObject, FTRUMDataWriteProtocol {
     struct Event {

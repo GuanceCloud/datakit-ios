@@ -1245,6 +1245,9 @@
 
 - (void)testFTRumConfigDebugDescription {
     FTRumConfig *config = [[FTRumConfig alloc] initWithAppid:@"test-appid"];
+    config.visitorIDConfig = [[FTVisitorIDConfig alloc] init];
+    config.visitorIDConfig.header = @"x-visitor-id";
+    [config.visitorIDConfig addMatchWithURLPrefix:@"https://example.com"];
     
     config.sampleRate = 75;
     config.sessionOnErrorSampleRate = 100;

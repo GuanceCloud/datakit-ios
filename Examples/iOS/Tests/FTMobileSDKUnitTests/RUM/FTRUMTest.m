@@ -64,7 +64,12 @@
 #import "FTHeatmap.h"
 #import "FTCrash.h"
 #import "FTLongTaskANRData.h"
+#import "FTModuleManager.h"
 #import <sys/sysctl.h>
+
+@interface FTModuleManager (RUMDeallocationTest)
+- (void)syncProcess;
+@end
 
 @interface FTTestCrashReportWrapper : FTCrashReportWrapper
 @end
@@ -464,7 +469,35 @@
         FTRUMManager *manager = [[FTRUMManager alloc] initWithRumDependencies:dependencies];
         weakManager = manager;
         [manager syncProcess];
+        // Initialization also registers the manager asynchronously on the message bus.
+        [[FTModuleManager sharedInstance] syncProcess];
     }
+    XCTAssertNil(weakManager);
+    XCTAssertNil(dependencies.appStateHistory.delegate);
+    XCTAssertFalse([[dependencies.appStateHistory valueForKey:@"monitoring"] boolValue]);
+}
+
+- (void)testManagerDeallocationAfterDelayedMessageBusRegistrationStopsHistory {
+    FTRUMDependencies *dependencies = [FTRUMDependencies new];
+    FTModuleManager *messageBus = [FTModuleManager sharedInstance];
+    dispatch_queue_t messageQueue = [messageBus valueForKey:@"queue"];
+    __weak FTRUMManager *weakManager;
+    dispatch_suspend(messageQueue);
+    @try {
+        @autoreleasepool {
+            FTRUMManager *manager = [[FTRUMManager alloc] initWithRumDependencies:dependencies];
+            weakManager = manager;
+            [manager syncProcess];
+        }
+        @autoreleasepool {
+            // A pending registration legitimately retains the manager until it runs.
+            XCTAssertNotNil(weakManager);
+        }
+        XCTAssertTrue([[dependencies.appStateHistory valueForKey:@"monitoring"] boolValue]);
+    } @finally {
+        dispatch_resume(messageQueue);
+    }
+    [messageBus syncProcess];
     XCTAssertNil(weakManager);
     XCTAssertNil(dependencies.appStateHistory.delegate);
     XCTAssertFalse([[dependencies.appStateHistory valueForKey:@"monitoring"] boolValue]);
@@ -3155,8 +3188,15 @@
 }
 - (void)testErrorSituation{
     [self setRumConfig];
-//    [[FTExternalDataManager sharedManager] addErrorWithType:@"ios_crash" message:@"testSituation_unknown" stack:@"error stack"];
-    [FTGlobalRumManager sharedInstance].rumManager.appState = FTAppStateStartUp;
+    FTRUMManager *manager = [FTGlobalRumManager sharedInstance].rumManager;
+    FTRUMDependencies *dependencies = [manager valueForKey:@"rumDependencies"];
+    [dependencies.appStateHistory stopMonitoring];
+    // Model an inactive startup consistently in both manager and lifecycle history.
+    dependencies.appStateHistory = [[FTRUMAppStateHistory alloc]
+        initWithState:@"unknown" timeNs:[NSDate ft_currentNanosecondTimeStamp]];
+    dependencies.appStateHistory.delegate = (id<FTRUMAppStateHistoryDelegate>)manager;
+    [dependencies.appStateHistory startMonitoring];
+    manager.appState = FTAppStateStartUp;
     [[FTExternalDataManager sharedManager] addErrorWithType:@"ios_crash" message:@"testSituation_startup" stack:@"error stack"];
     [[NSNotificationCenter defaultCenter]
      postNotificationName:UIApplicationDidBecomeActiveNotification object:nil];
@@ -3174,10 +3214,10 @@
             NSString *errorMessage = fields[FT_KEY_ERROR_MESSAGE];
             NSString *errorSituation = tags[FT_KEY_ERROR_SITUATION];
             NSString *situation = [errorMessage substringFromIndex:14];
-            XCTAssertTrue([errorSituation isEqualToString:situation]);
+            XCTAssertEqualObjects(errorSituation, situation);
         }
     }];
-    XCTAssertTrue(hasDatasCount == 3);
+    XCTAssertEqual(hasDatasCount, 3);
     
 }
 #pragma mark ========== Long Task ==========
