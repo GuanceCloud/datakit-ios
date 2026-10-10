@@ -72,6 +72,7 @@ typedef void(^LaunchDataBlock)(NSString *source, NSDictionary *tags, NSDictionar
 @property (nonatomic, strong) FTAppLaunchTracker *launchTracker;
 @property (nonatomic, copy) LaunchBlock launchBlock;
 @property (nonatomic, copy) LaunchDataBlock launchDataBlock;
+@property (nonatomic, strong) NSDate *lastLaunchTime;
 
 @end
 
@@ -451,6 +452,34 @@ void FTClearLaunchTaskRole(void);
     FTSetIsActivePrewarm(NO);
     FTSetApplicationDidBecomeActive(applicationDidBecomeActive);
 }
+
+- (void)testPrewarmDurationStartsAtObjCRuntimeInitialization{
+    NSDate *previousRuntimeInit = FTGetRuntimeInit();
+    NSDate *previousActive = FTGetApplicationDidBecomeActive();
+    BOOL previousPrewarm = FTGetIsActivePrewarm();
+    NSDate *objcInit = [NSDate dateWithTimeIntervalSinceNow:-8];
+    NSDate *endDate = [objcInit dateByAddingTimeInterval:5];
+    FTSetRuntimeInit(objcInit);
+    FTSetApplicationDidBecomeActive(endDate);
+    FTSetIsActivePrewarm(YES);
+
+    __block NSUInteger reportCount = 0;
+    self.launchBlock = ^(NSNumber * _Nullable duration, FTLaunchType type, NSDictionary *fields) {
+        reportCount++;
+        XCTAssertEqual(type, FTLaunchWarm);
+        XCTAssertEqualObjects(duration, @(5000000000LL));
+        XCTAssertNil(fields[FT_KEY_APP_LAUNCH_TYPE]);
+    };
+    FTAppLaunchTracker *tracker = [FTAppLaunchTracker new];
+    tracker.delegate = self;
+    [tracker reportAppLaunchPhaseDuration:endDate];
+
+    XCTAssertEqual(reportCount, 1);
+    XCTAssertEqualObjects(self.lastLaunchTime, objcInit);
+    FTSetRuntimeInit(previousRuntimeInit);
+    FTSetApplicationDidBecomeActive(previousActive);
+    FTSetIsActivePrewarm(previousPrewarm);
+}
 #endif
 - (void)testLaunchWhenSDKInitBeforeApplicationDidBecomeActive_cold{
     XCTestExpectation *expectation= [self expectationWithDescription:@"Async operation timeout"];
@@ -563,6 +592,7 @@ void FTClearLaunchTaskRole(void);
     }];
 }
 - (void)ftAppColdStart:(NSDate *)launchTime duration:(NSNumber *)duration isPreWarming:(BOOL)isPreWarming fields:(nonnull NSDictionary *)fields{
+    self.lastLaunchTime = launchTime;
     NSNumber *maxDuration = [launchTime ft_nanosecondTimeIntervalToDate:[NSDate date]];
     XCTAssertTrue(maxDuration.longLongValue>duration.longLongValue);
     XCTAssertNotNil(fields);
