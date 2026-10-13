@@ -34,6 +34,9 @@
 @end
 
 @implementation FTRumConfig
+// Keep deprecated sampling accessors for backward compatibility.
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wdeprecated-implementations"
 - (int)sampleRate {
     return (int)_sessionSamplingRate;
 }
@@ -46,6 +49,7 @@
 - (void)setSamplerate:(int)samplerate {
     self.sessionSamplingRate = (float)samplerate;
 }
+#pragma clang diagnostic pop
 - (void)setSessionSamplingRate:(float)sessionSamplingRate {
     if (![FTBaseInfoHandler isValidSamplingRate:sessionSamplingRate]) {
         FTInnerLogWarning(@"[sampling] Ignore invalid sessionSamplingRate: %g", sessionSamplingRate);
@@ -53,12 +57,16 @@
     }
     _sessionSamplingRate = sessionSamplingRate;
 }
+// Keep deprecated sampling accessors for backward compatibility.
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wdeprecated-implementations"
 - (int)sessionOnErrorSampleRate {
     return (int)_sessionOnErrorSamplingRate;
 }
 - (void)setSessionOnErrorSampleRate:(int)sessionOnErrorSampleRate {
     self.sessionOnErrorSamplingRate = (float)sessionOnErrorSampleRate;
 }
+#pragma clang diagnostic pop
 - (void)setSessionOnErrorSamplingRate:(float)sessionOnErrorSamplingRate {
     if (![FTBaseInfoHandler isValidSamplingRate:sessionOnErrorSamplingRate]) {
         FTInnerLogWarning(@"[sampling] Ignore invalid sessionOnErrorSamplingRate: %g", sessionOnErrorSamplingRate);

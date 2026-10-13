@@ -31,6 +31,9 @@
 #import "NSDictionary+FTCopyProperties.h"
 
 @implementation FTTraceConfig
+// Keep deprecated sampling accessors for backward compatibility.
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wdeprecated-implementations"
 - (int)sampleRate {
     return (int)_traceSamplingRate;
 }
@@ -43,6 +46,7 @@
 - (void)setSamplerate:(int)samplerate {
     self.traceSamplingRate = (float)samplerate;
 }
+#pragma clang diagnostic pop
 - (void)setTraceSamplingRate:(float)traceSamplingRate {
     if (![FTBaseInfoHandler isValidSamplingRate:traceSamplingRate]) {
         FTInnerLogWarning(@"[sampling] Ignore invalid traceSamplingRate: %g", traceSamplingRate);

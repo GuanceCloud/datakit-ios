@@ -26,6 +26,9 @@
 #import "NSDictionary+FTCopyProperties.h"
 
 @implementation FTLoggerConfig
+// Keep deprecated sampling accessors for backward compatibility.
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wdeprecated-implementations"
 - (int)sampleRate {
     return (int)_logSamplingRate;
 }
@@ -38,6 +41,7 @@
 - (void)setSamplerate:(int)samplerate {
     self.logSamplingRate = (float)samplerate;
 }
+#pragma clang diagnostic pop
 - (void)setLogSamplingRate:(float)logSamplingRate {
     if (![FTBaseInfoHandler isValidSamplingRate:logSamplingRate]) {
         FTInnerLogWarning(@"[sampling] Ignore invalid logSamplingRate: %g", logSamplingRate);

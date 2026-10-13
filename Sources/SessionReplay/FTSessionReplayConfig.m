@@ -66,12 +66,16 @@ static NSString *FTStringFromImagePrivacyLevel(FTImagePrivacyLevel level) {
 @property (nonatomic, assign) FTSRPrivacy privacy;
 @end
 @implementation FTSessionReplayConfig
+// Keep deprecated sampling accessors for backward compatibility.
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wdeprecated-implementations"
 - (int)sampleRate {
     return (int)_sessionReplaySamplingRate;
 }
 - (void)setSampleRate:(int)sampleRate {
     self.sessionReplaySamplingRate = (float)sampleRate;
 }
+#pragma clang diagnostic pop
 - (void)setSessionReplaySamplingRate:(float)sessionReplaySamplingRate {
     if (![FTBaseInfoHandler isValidSamplingRate:sessionReplaySamplingRate]) {
         FTInnerLogWarning(@"[sampling] Ignore invalid sessionReplaySamplingRate: %g", sessionReplaySamplingRate);
@@ -79,12 +83,16 @@ static NSString *FTStringFromImagePrivacyLevel(FTImagePrivacyLevel level) {
     }
     _sessionReplaySamplingRate = sessionReplaySamplingRate;
 }
+// Keep deprecated sampling accessors for backward compatibility.
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wdeprecated-implementations"
 - (int)sessionReplayOnErrorSampleRate {
     return (int)_sessionReplayOnErrorSamplingRate;
 }
 - (void)setSessionReplayOnErrorSampleRate:(int)sessionReplayOnErrorSampleRate {
     self.sessionReplayOnErrorSamplingRate = (float)sessionReplayOnErrorSampleRate;
 }
+#pragma clang diagnostic pop
 - (void)setSessionReplayOnErrorSamplingRate:(float)sessionReplayOnErrorSamplingRate {
     if (![FTBaseInfoHandler isValidSamplingRate:sessionReplayOnErrorSamplingRate]) {
         FTInnerLogWarning(@"[sampling] Ignore invalid sessionReplayOnErrorSamplingRate: %g", sessionReplayOnErrorSamplingRate);
