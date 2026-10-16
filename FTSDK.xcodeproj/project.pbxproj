@@ -1009,7 +1009,9 @@
 		C0DE02082F70000100C0DE01 /* FTURLConnectionDelegate.m in Sources */ = {isa = PBXBuildFile; fileRef = C0DE00082F70000100C0DE01 /* FTURLConnectionDelegate.m */; };
 		E1702663932F40D15F2FFE16 /* FTAutoTrackHeatmapResolver.m in Sources */ = {isa = PBXBuildFile; fileRef = 6CDA326D4FE69710B8A24212 /* FTAutoTrackHeatmapResolver.m */; };
 		FB0700012FA0000000000001 /* FTWKWebViewLogDelegate.h in Headers */ = {isa = PBXBuildFile; fileRef = FB0700012FA0000000000003 /* FTWKWebViewLogDelegate.h */; };
+		F71610012FA0000000000001 /* FTWebViewVisitorIDProvider.h in Headers */ = {isa = PBXBuildFile; fileRef = F71610012FA0000000000003 /* FTWebViewVisitorIDProvider.h */; };
 		FB0700012FA0000000000002 /* FTWKWebViewLogDelegate.h in Headers */ = {isa = PBXBuildFile; fileRef = FB0700012FA0000000000003 /* FTWKWebViewLogDelegate.h */; };
+		F71610012FA0000000000002 /* FTWebViewVisitorIDProvider.h in Headers */ = {isa = PBXBuildFile; fileRef = F71610012FA0000000000003 /* FTWebViewVisitorIDProvider.h */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -1736,6 +1738,7 @@
 		F57B9E9A435A2BF46A79A308 /* FTAutoTrackEventResolver.h */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.c.h; path = FTAutoTrackEventResolver.h; sourceTree = "<group>"; };
 		F80DFD5D41004F0E6D6A17C3 /* FTHeatmap.m */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.c.objc; path = FTHeatmap.m; sourceTree = "<group>"; };
 		FB0700012FA0000000000003 /* FTWKWebViewLogDelegate.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = FTWKWebViewLogDelegate.h; sourceTree = "<group>"; };
+		F71610012FA0000000000003 /* FTWebViewVisitorIDProvider.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = FTWebViewVisitorIDProvider.h; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -2757,6 +2760,7 @@
 				17018DC12F5025B200688324 /* FTModuleManager.m */,
 				17018DBC2F50259B00688324 /* FTWKWebViewRumDelegate.h */,
 				FB0700012FA0000000000003 /* FTWKWebViewLogDelegate.h */,
+				F71610012FA0000000000003 /* FTWebViewVisitorIDProvider.h */,
 				17717B492F0E7E9A002158F6 /* FTRemoteConfigTypeDefs.h */,
 				171269622DC9B2D2002D238B /* FTUploadProtocol.h */,
 				174D91AA2A20B98300D85AAA /* FTLoggerDataWriteProtocol.h */,
@@ -3188,6 +3192,7 @@
 				1776069129D1372B00D17137 /* FTLog.h in Headers */,
 				17018DBE2F50259B00688324 /* FTWKWebViewRumDelegate.h in Headers */,
 				FB0700012FA0000000000001 /* FTWKWebViewLogDelegate.h in Headers */,
+				F71610012FA0000000000001 /* FTWebViewVisitorIDProvider.h in Headers */,
 				176CE2442ED6DF3900E9E92B /* FTCrashSysCtl.h in Headers */,
 				17A9BE332C5CE8A200DEC5FE /* FTResourceMetricsModel+Private.h in Headers */,
 				17AB76CA29D432DE008FBBF5 /* FTMonitorValue.h in Headers */,
@@ -3379,6 +3384,7 @@
 				1776062D29D1347500D17137 /* FTWebViewJavascriptLeakAvoider.h in Headers */,
 				17018DBF2F50259B00688324 /* FTWKWebViewRumDelegate.h in Headers */,
 				FB0700012FA0000000000002 /* FTWKWebViewLogDelegate.h in Headers */,
+				F71610012FA0000000000002 /* FTWebViewVisitorIDProvider.h in Headers */,
 				17E4CC2029CD42E4005C2D99 /* FTRumDatasProtocol.h in Headers */,
 				17678E2A29D28BD200C1DA98 /* FTSDKVersion.h in Headers */,
 				178CDB0F2F0F7AA000EE98D0 /* FTCrashReportVersion.h in Headers */,

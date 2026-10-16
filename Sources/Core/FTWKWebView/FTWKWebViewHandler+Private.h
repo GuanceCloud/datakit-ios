@@ -22,13 +22,18 @@
 #import "FTWeakMapTable.h"
 #import "FTWKWebViewRumDelegate.h"
 #import "FTWKWebViewLogDelegate.h"
+#import "FTWebViewVisitorIDProvider.h"
 #import <TargetConditionals.h>
 #if !TARGET_OS_TV
 NS_ASSUME_NONNULL_BEGIN
 
 @class FTBindInfo;
 
-@interface FTWKWebViewHandler ()
+@interface FTWKWebViewHandler () <FTWebViewVisitorIDProvider>
+
+/// Composition-root supplied reader. Atomic access permits replacing the reader
+/// while existing bridges continue to obtain the current value on every call.
+@property (atomic, weak, nullable) id<FTWebViewVisitorIDProvider> visitorIDProvider;
 
 /// Configures shared hosts without changing either module's switch or delegate.
 - (void)setAllowWebViewHost:(nullable NSArray *)hosts;

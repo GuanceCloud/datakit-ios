@@ -284,6 +284,7 @@ static FTSDKAgent *sharedInstance = nil;
         [FTLogger sharedInstance].linkRumDataProvider = [FTGlobalRumManager sharedInstance].rumManager;
     }
 #if !TARGET_OS_TV
+    [FTWKWebViewHandler sharedInstance].visitorIDProvider = [FTVisitorIDManager sharedInstance];
     [[FTWKWebViewHandler sharedInstance] startWithEnableTraceWebView:rumConfig.enableTraceWebView
                                                        rumDelegate:[FTGlobalRumManager sharedInstance].rumManager];
 #endif

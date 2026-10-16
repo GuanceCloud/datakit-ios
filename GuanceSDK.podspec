@@ -84,6 +84,7 @@ Pod::Spec.new do |s|
 		c.subspec 'VisitorID' do |v|
 			v.source_files = 'Sources/Core/VisitorID/**/*{.h,.m}'
 			v.dependency 'GuanceSDK/Core/BaseUtils'
+			v.dependency 'GuanceSDK/Core/Protocol'
 		end
 
 		c.subspec 'Protocol' do |r|
