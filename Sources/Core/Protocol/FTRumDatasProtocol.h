@@ -147,10 +147,10 @@ typedef NS_ENUM(NSUInteger, FTRUMViewTrackingType) {
 - (void)startViewWithName:(NSString *)viewName
                 property:(nullable NSDictionary *)property
             trackingType:(FTRUMViewTrackingType)trackingType;
-/// Internal automatic View loading path. The date is captured at the actual load start.
+/// Internal automatic View loading path. The Unix epoch nanosecond timestamp is captured at the actual load start.
 - (void)onCreateView:(NSString *)viewName
            loadTime:(NSNumber *)loadTime
-      loadStartDate:(nullable NSDate *)loadStartDate;
+      loadStartEpochNs:(nullable NSNumber *)loadStartEpochNs;
 /**
  * Start RUM Action with heatmap metadata.
  */

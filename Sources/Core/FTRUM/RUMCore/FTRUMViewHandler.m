@@ -43,7 +43,7 @@
 @property (nonatomic, assign) NSInteger viewActionCount;
 @property (nonatomic, assign) BOOL didReceiveStartData;
 @property (nonatomic, strong) NSDate *viewStartTime;
-@property (nonatomic, strong, nullable) NSDate *loadingStartDate;
+@property (nonatomic, assign) long long loadingStartEpochNs;
 @property (nonatomic, assign) BOOL needUpdateView;
 @property (nonatomic, strong) FTMonitorItem *monitorItem;
 @property (nonatomic, strong) NSMutableDictionary *viewProperty;//Stored in field
@@ -69,7 +69,7 @@
         self.view_name = model.view_name;
         self.view_referrer = model.view_referrer;
         self.loading_time = model.loading_time;
-        self.loadingStartDate = model.loading_start_date ? : model.time;
+        self.loadingStartEpochNs = model.loading_start_epoch_ns ? model.loading_start_epoch_ns.longLongValue : [model.time ft_nanosecondTimeStamp];
         self.didReceiveStartData = NO;
         self.viewStartTime = model.time;
         self.resourceHandlers = [NSMutableDictionary new];
@@ -132,7 +132,7 @@
             if (self.isActiveView) {
                 FTRUMViewLoadingModel *loadingModel = (FTRUMViewLoadingModel *)model;
                 self.loading_time = loadingModel.duration;
-                self.loadingStartDate = self.viewStartTime;
+                self.loadingStartEpochNs = [self.viewStartTime ft_nanosecondTimeStamp];
             }
             break;
         case FTRUMDataViewStop:{
@@ -404,7 +404,7 @@
     }
     [fields addEntriesFromDictionary:self.context.sessionState.sessionFields];
     long long viewEndNs = [viewEndTime ft_nanosecondTimeStamp];
-    long long stateStartNs = [self.loadingStartDate ft_nanosecondTimeStamp];
+    long long stateStartNs = self.loadingStartEpochNs;
     fields[@"app_state"] = viewEndNs == stateStartNs
         ? [self.rumDependencies.appStateHistory stateAt:stateStartNs]
         : [self.rumDependencies.appStateHistory stateFrom:stateStartNs to:viewEndNs];

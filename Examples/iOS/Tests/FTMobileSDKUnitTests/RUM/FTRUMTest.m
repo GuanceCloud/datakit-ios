@@ -161,6 +161,9 @@
 }
 @end
 
+#import <limits.h>
+#import <math.h>
+
 @interface FTRUMTest : XCTestCase
 @property (nonatomic, copy) NSString *url;
 @property (nonatomic, copy) NSString *appid;
@@ -835,8 +838,8 @@
     [history recordState:@"foreground" timeNs:now - 1500000000LL];
     dependencies.appStateHistory = history;
 
-    NSDate *loadStartDate = [NSDate dateWithTimeIntervalSince1970:(now - 3000000000LL) / 1000000000.0];
-    [manager onCreateView:@"auto-loading-gap" loadTime:@(2000000000LL) loadStartDate:loadStartDate];
+    NSNumber *loadStartEpochNs = @(now - 3000000000LL);
+    [manager onCreateView:@"auto-loading-gap" loadTime:@(2000000000LL) loadStartEpochNs:loadStartEpochNs];
     [manager startViewWithName:@"auto-loading-gap"];
     [manager stopView];
     [manager syncProcess];
@@ -864,8 +867,8 @@
     [history recordState:@"foreground" timeNs:now - 1000000000LL];
     dependencies.appStateHistory = history;
 
-    NSDate *loadStartDate = [NSDate dateWithTimeIntervalSince1970:(now - 3000000000LL) / 1000000000.0];
-    [manager onCreateView:@"custom-native-auto-view" loadTime:@(1000000000LL) loadStartDate:loadStartDate];
+    NSNumber *loadStartEpochNs = @(now - 3000000000LL);
+    [manager onCreateView:@"custom-native-auto-view" loadTime:@(1000000000LL) loadStartEpochNs:loadStartEpochNs];
     [manager startViewWithViewID:@"native-auto-view-id" viewName:@"custom-native-auto-view" property:@{@"custom": @"value"}];
     [manager stopViewWithViewID:@"native-auto-view-id" property:nil];
     [manager syncProcess];
@@ -908,7 +911,56 @@
     XCTAssertTrue(found);
 }
 
-- (void)testExternalAutomaticViewUsesEpochMillisecondLoadingStart {
+- (void)testExternalLoadingStartPreservesIntegerNanoseconds {
+    [self setRumConfig];
+    FTRUMManager *manager = [FTGlobalRumManager sharedInstance].rumManager;
+    FTRUMDependencies *dependencies = [manager valueForKey:@"rumDependencies"];
+    // Foreground lasts exactly one ns before background. Rounding the loading
+    // start through NSDate would change which states this interval includes.
+    long long startNs = 1700000000000000123LL;
+    FTRUMAppStateHistory *history = [[FTRUMAppStateHistory alloc] initWithState:@"foreground" timeNs:startNs];
+    [history recordState:@"background" timeNs:startNs + 1];
+    dependencies.appStateHistory = history;
+    [[FTExternalDataManager sharedManager] onCreateView:@"precise-loading"
+                                              loadTime:@1234567
+                                      loadStartEpochNs:@(startNs)];
+    [manager startViewWithName:@"precise-loading"];
+    [manager syncProcess];
+    NSObject *session = [manager valueForKey:@"sessionHandler"];
+    NSObject *view = [[session valueForKey:@"viewHandlers"] lastObject];
+    XCTAssertEqual([[view valueForKey:@"loadingStartEpochNs"] longLongValue], startNs);
+    [manager stopView];
+    [manager syncProcess];
+    __block BOOL found = NO;
+    [FTModelHelper resolveModelArray:[[FTTrackerEventDBTool sharedManager] getAllDatas] callBack:^(NSString *source, NSDictionary *tags, NSDictionary *fields, BOOL *stop) {
+        if ([source isEqualToString:FT_RUM_SOURCE_VIEW] && [tags[FT_KEY_VIEW_NAME] isEqualToString:@"precise-loading"]) {
+            found = YES;
+            XCTAssertEqualObjects(fields[@"app_state"], @"foreground_and_background");
+            XCTAssertEqualObjects(fields[FT_KEY_LOADING_TIME], @1234567);
+        }
+    }];
+    XCTAssertTrue(found);
+}
+
+- (void)testInvalidLoadingStartFallsBackToViewStart {
+    [self setRumConfig];
+    FTRUMManager *manager = [FTGlobalRumManager sharedInstance].rumManager;
+    NSArray *inputs = @[[NSNull null], @0, @(-1), @(NAN), @(INFINITY), @(ULLONG_MAX), @(LLONG_MAX)];
+    for (id input in inputs) {
+        NSNumber *start = input == NSNull.null ? nil : input;
+        [[FTExternalDataManager sharedManager] onCreateView:@"invalid-loading" loadTime:@123 loadStartEpochNs:start];
+        [manager startViewWithName:@"invalid-loading"];
+        [manager syncProcess];
+        NSObject *session = [manager valueForKey:@"sessionHandler"];
+        NSObject *view = [[session valueForKey:@"viewHandlers"] lastObject];
+        NSDate *viewStart = [view valueForKey:@"viewStartTime"];
+        XCTAssertEqual([[view valueForKey:@"loadingStartEpochNs"] longLongValue], [viewStart ft_nanosecondTimeStamp], @"input: %@", input);
+        [manager stopView];
+        [manager syncProcess];
+    }
+}
+
+- (void)testExternalAutomaticViewUsesEpochNanosecondLoadingStart {
     [self setRumConfig];
     FTRUMManager *manager = [FTGlobalRumManager sharedInstance].rumManager;
     FTRUMDependencies *dependencies = [manager valueForKey:@"rumDependencies"];
@@ -919,10 +971,10 @@
     [history recordState:@"foreground" timeNs:now - 1000000000LL];
     dependencies.appStateHistory = history;
 
-    NSNumber *loadStartEpochMs = @((now - 3000000000LL) / 1000000LL);
+    NSNumber *loadStartEpochNs = @(now - 3000000000LL);
     [[FTExternalDataManager sharedManager] onCreateView:@"external-auto-loading"
                                               loadTime:@(1000000000LL)
-                                      loadStartEpochMs:loadStartEpochMs];
+                                      loadStartEpochNs:loadStartEpochNs];
     [manager startViewWithName:@"external-auto-loading"];
     [manager stopView];
     [manager syncProcess];
@@ -941,7 +993,7 @@
 - (void)testAutomaticViewLoadingOverThirtySecondsIsPreserved {
     [self setRumConfig];
     FTRUMManager *manager = [FTGlobalRumManager sharedInstance].rumManager;
-    [manager onCreateView:@"auto-over-max" loadTime:@(30000000001LL) loadStartDate:nil];
+    [manager onCreateView:@"auto-over-max" loadTime:@(30000000001LL) loadStartEpochNs:nil];
     [manager startViewWithName:@"auto-over-max"];
     [manager stopView];
     [manager syncProcess];
@@ -962,7 +1014,7 @@
 - (void)testAutomaticViewLoadingAtThirtySecondsIsPreserved {
     [self setRumConfig];
     FTRUMManager *manager = [FTGlobalRumManager sharedInstance].rumManager;
-    [manager onCreateView:@"auto-at-max" loadTime:@(30000000000LL) loadStartDate:nil];
+    [manager onCreateView:@"auto-at-max" loadTime:@(30000000000LL) loadStartEpochNs:nil];
     [manager startViewWithName:@"auto-at-max"];
     [manager stopView];
     [manager syncProcess];

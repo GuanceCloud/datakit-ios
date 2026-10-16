@@ -37,11 +37,13 @@ NS_ASSUME_NONNULL_BEGIN
 ///   - viewName: RUM View name
 ///   - loadTime: page loading time
 -(void)onCreateView:(NSString *)viewName loadTime:(NSNumber *)loadTime;
-/// Automatic cross-platform View loading. loadStartEpochMs is the wall-clock time
-/// when loading began; loadTime remains a monotonic duration in nanoseconds.
+/// Automatic cross-platform View loading. loadStartEpochNs is the Unix epoch timestamp
+/// in nanoseconds captured when loading began. Bridges receiving milliseconds must
+/// convert to integer nanoseconds before calling. loadTime is a monotonic duration
+/// in nanoseconds. Pass nil when the loading start is unavailable.
 - (void)onCreateView:(NSString *)viewName
            loadTime:(NSNumber *)loadTime
-   loadStartEpochMs:(nullable NSNumber *)loadStartEpochMs;
+   loadStartEpochNs:(nullable NSNumber *)loadStartEpochNs;
 /// Starts RUM view
 ///
 /// - Parameters:

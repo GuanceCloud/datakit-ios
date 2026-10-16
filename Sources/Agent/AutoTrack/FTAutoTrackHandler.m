@@ -157,7 +157,7 @@ static BOOL FTViewControllerIsFromSwiftUIBundle(UIViewController *viewController
 @property (nonatomic, copy) NSString *viewName;
 @property (nonatomic, copy) NSString *identify;
 @property (nonatomic, strong) NSNumber *loadTime;
-@property (nonatomic, strong, nullable) NSDate *loadStartDate;
+@property (nonatomic, strong, nullable) NSNumber *loadStartEpochNs;
 @property (nonatomic, assign) BOOL hasLoadDuration;
 @property (nonatomic, weak, nullable) UIViewController *viewController;
 @property (nonatomic, assign) BOOL isUntrackedModal;
@@ -182,7 +182,7 @@ static BOOL FTViewControllerIsFromSwiftUIBundle(UIViewController *viewController
         // UIKit controller). Keep that distinct from a real reload, which is the
         // only path that uses zero.
         NSNumber *loadDuration = viewController.ft_loadDuration;
-        _loadStartDate = viewController.ft_viewLoadStartDate;
+        _loadStartEpochNs = viewController.ft_viewLoadStartEpochNs;
         _loadTime = @(-1);
         if(loadDuration != nil){
             _loadTime = loadDuration;
@@ -208,7 +208,7 @@ static BOOL FTViewControllerIsFromSwiftUIBundle(UIViewController *viewController
 - (void)resetView{
     _viewControllerUUID = [FTBaseInfoHandler randomUUID];
     _loadTime = @0;
-    _loadStartDate = nil;
+    _loadStartEpochNs = nil;
 }
 @end
 @interface FTAutoTrackHandler()<FTAppLifeCycleDelegate,FTUIViewControllerHandler,FTUIEventHandler,FTAppLaunchDataDelegate
@@ -559,8 +559,8 @@ heatmapIdentifierRegistry:(id<FTHeatmapIdentifierRegistry>)heatmapIdentifierRegi
     // Ensure that untracked modal views do not affect the duration of tracked views
     // When an untracked modal view pops up, close the last tracked View; when the modal view is closed, restart tracking the last View
     if(!view.isUntrackedModal){
-        if ([self.addRumDatasDelegate respondsToSelector:@selector(onCreateView:loadTime:loadStartDate:)]) {
-            [self.addRumDatasDelegate onCreateView:view.viewName loadTime:view.loadTime loadStartDate:view.loadStartDate];
+        if ([self.addRumDatasDelegate respondsToSelector:@selector(onCreateView:loadTime:loadStartEpochNs:)]) {
+            [self.addRumDatasDelegate onCreateView:view.viewName loadTime:view.loadTime loadStartEpochNs:view.loadStartEpochNs];
         } else {
             [self.addRumDatasDelegate onCreateView:view.viewName loadTime:view.loadTime];
         }

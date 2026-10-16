@@ -75,8 +75,8 @@ static NSObject *sharedInstanceLock;
 - (void)onCreateView:(NSString *)viewName loadTime:(NSNumber *)loadTime{
     [self.rumManager onCreateView:viewName loadTime:loadTime];
 }
-- (void)onCreateView:(NSString *)viewName loadTime:(NSNumber *)loadTime loadStartDate:(NSDate *)loadStartDate {
-    [self.rumManager onCreateView:viewName loadTime:loadTime loadStartDate:loadStartDate];
+- (void)onCreateView:(NSString *)viewName loadTime:(NSNumber *)loadTime loadStartEpochNs:(NSNumber *)loadStartEpochNs {
+    [self.rumManager onCreateView:viewName loadTime:loadTime loadStartEpochNs:loadStartEpochNs];
 }
 - (void)startViewWithName:(NSString *)viewName {
     [self.rumManager startViewWithName:viewName];

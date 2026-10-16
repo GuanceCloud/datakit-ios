@@ -113,7 +113,7 @@ static FTViewControllerSwizzling *testBundleViewControllerSwizzling = nil;
 static dispatch_group_t testBundleViewControllerSwizzlingGroup = nil;
 
 @interface FTAutoTrackViewLoadingTimeMock : AddRumDatasHandlerMock
-@property (nonatomic, strong, nullable) NSDate *capturedLoadStartDate;
+@property (nonatomic, strong, nullable) NSNumber *capturedLoadStartEpochNs;
 - (NSUInteger)viewCreateCountForViewName:(NSString *)viewName;
 @end
 
@@ -134,8 +134,8 @@ static dispatch_group_t testBundleViewControllerSwizzlingGroup = nil;
     [_createdViewNames addObject:viewName];
 }
 
-- (void)onCreateView:(NSString *)viewName loadTime:(NSNumber *)loadTime loadStartDate:(NSDate *)loadStartDate {
-    self.capturedLoadStartDate = loadStartDate;
+- (void)onCreateView:(NSString *)viewName loadTime:(NSNumber *)loadTime loadStartEpochNs:(NSNumber *)loadStartEpochNs {
+    self.capturedLoadStartEpochNs = loadStartEpochNs;
     [self onCreateView:viewName loadTime:loadTime];
 }
 
@@ -323,10 +323,10 @@ static dispatch_group_t testBundleViewControllerSwizzlingGroup = nil;
     XCTAssertEqualObjects(mock.lastCreateViewName, NSStringFromClass(viewController.class));
     XCTAssertGreaterThan([mock.lastLoadTime unsignedLongLongValue], (uint64_t)20000000);
     XCTAssertLessThan([mock.lastLoadTime unsignedLongLongValue], (uint64_t)80000000);
-    XCTAssertNotNil(mock.capturedLoadStartDate);
-    XCTAssertLessThan([mock.capturedLoadStartDate timeIntervalSinceNow], 0.0);
+    XCTAssertNotNil(mock.capturedLoadStartEpochNs);
+    XCTAssertLessThan(mock.capturedLoadStartEpochNs.longLongValue, [NSDate ft_currentNanosecondTimeStamp]);
     XCTAssertNil(viewController.ft_viewLoadStartTime);
-    XCTAssertNil(viewController.ft_viewLoadStartDate);
+    XCTAssertNil(viewController.ft_viewLoadStartEpochNs);
 }
 - (void)testUIKitLoadingTimeIgnoresLayoutFallbackBeforeViewIsAttachedToWindow{
     FTAutoTrackViewLoadingTimeMock *mock = [self startUIKitAutoTrackWithMockHandler];

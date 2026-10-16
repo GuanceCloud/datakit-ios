@@ -36,6 +36,7 @@
 #import "FTNetworkConnectivity.h"
 #import "NSDate+FTUtil.h"
 #import <limits.h>
+#import <math.h>
 #import "FTRUMContext.h"
 #import "FTMessageReceiver.h"
 #import "FTRUMViewHandler.h"
@@ -212,12 +213,16 @@ void *FTRUMQueueIdentityKey = &FTRUMQueueIdentityKey;
     }];
 }
 
-- (void)onCreateView:(NSString *)viewName loadTime:(NSNumber *)loadTime loadStartDate:(nullable NSDate *)loadStartDate {
+- (void)onCreateView:(NSString *)viewName loadTime:(NSNumber *)loadTime loadStartEpochNs:(nullable NSNumber *)loadStartEpochNs {
     if (viewName.length == 0 || loadTime == nil) {
         return;
     }
     NSMutableDictionary *info = [@{@"duration": loadTime} mutableCopy];
-    if (loadStartDate) info[@"load_start_date"] = loadStartDate;
+    if ([loadStartEpochNs isKindOfClass:NSNumber.class] && isfinite(loadStartEpochNs.doubleValue) &&
+        [loadStartEpochNs compare:@0] == NSOrderedDescending &&
+        [loadStartEpochNs compare:@(LLONG_MAX)] != NSOrderedDescending) {
+        info[@"load_start_epoch_ns"] = @(loadStartEpochNs.longLongValue);
+    }
     [self.preViewDuration concurrentWrite:^(NSMutableDictionary * _Nonnull value) {
         value[viewName] = info;
     }];
@@ -240,7 +245,7 @@ void *FTRUMQueueIdentityKey = &FTRUMQueueIdentityKey;
         return;
     }
     __block NSNumber *duration = @0;
-    __block NSDate *loadingStartDate = nil;
+    __block NSNumber *loadingStartEpochNs = nil;
     if (!(viewId&&viewId.length>0&&viewName&&viewName.length>0)) {
         FTInnerLogError(@"[RUM] Failed to start view due to missing required fields. Please ensure 'viewName' are provided.");
         return;
@@ -250,7 +255,7 @@ void *FTRUMQueueIdentityKey = &FTRUMQueueIdentityKey;
         if (info) {
             if ([info isKindOfClass:NSDictionary.class]) {
                 duration = info[@"duration"] ?: @0;
-                loadingStartDate = info[@"load_start_date"];
+                loadingStartEpochNs = info[@"load_start_epoch_ns"];
             } else if ([info isKindOfClass:NSNumber.class]) {
                 duration = info;
             }
@@ -266,7 +271,7 @@ void *FTRUMQueueIdentityKey = &FTRUMQueueIdentityKey;
             FTRUMViewModel *viewModel = [[FTRUMViewModel alloc]initWithViewID:viewId viewName:viewName viewReferrer:self.viewReferrer];
             viewModel.time = time;
             viewModel.loading_time = duration?:@0;
-            viewModel.loading_start_date = duration.longLongValue > 0 && [loadingStartDate compare:time] == NSOrderedAscending ? loadingStartDate : nil;
+            viewModel.loading_start_epoch_ns = duration.longLongValue > 0 && loadingStartEpochNs.longLongValue < [time ft_nanosecondTimeStamp] ? loadingStartEpochNs : nil;
             viewModel.trackingType = trackingType;
             viewModel.type = FTRUMDataViewStart;
             viewModel.fields = property;

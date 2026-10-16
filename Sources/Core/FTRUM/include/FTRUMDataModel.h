@@ -80,7 +80,7 @@ NS_ASSUME_NONNULL_BEGIN
 @property (nonatomic, copy) NSString *view_referrer;
 @property (nonatomic, assign) FTRUMViewTrackingType trackingType;
 @property (nonatomic, strong) NSNumber *loading_time;
-@property (nonatomic, strong, nullable) NSDate *loading_start_date;
+@property (nonatomic, strong, nullable) NSNumber *loading_start_epoch_ns;
 -(instancetype)initWithViewID:(NSString *)viewID viewName:(NSString *)viewName viewReferrer:(NSString *)viewReferrer;
 @end
 

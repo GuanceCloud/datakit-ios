@@ -30,6 +30,7 @@
 #import "FTAutoTrackHandler.h"
 #import "BlacklistedVCClassNames.h"
 #import "FTDateUtil.h"
+#import "NSDate+FTUtil.h"
 #import "FTSwizzler.h"
 #import "FTViewControllerSwizzling.h"
 #import <string.h>
@@ -37,7 +38,7 @@
 
 @interface FTViewLoadingState : NSObject
 @property (nonatomic, strong, nullable) NSNumber *loadDuration;
-@property (nonatomic, strong, nullable) NSDate *viewLoadStartDate;
+@property (nonatomic, strong, nullable) NSNumber *viewLoadStartEpochNs;
 @property (nonatomic, assign) NSUInteger viewDidLoadDepth;
 @property (nonatomic, assign) NSUInteger viewWillAppearDepth;
 @property (nonatomic, assign) NSUInteger viewWillLayoutSubviewsDepth;
@@ -107,8 +108,8 @@ static BOOL FTViewControllerClassIsFromSwiftUIImage(Class viewControllerClass) {
 }
 
 @implementation UIViewController (FTAutoTrack)
-- (NSDate *)ft_viewLoadStartDate{
-    return [self ft_viewLoadingStateCreateIfNeeded:NO].viewLoadStartDate;
+- (NSNumber *)ft_viewLoadStartEpochNs{
+    return [self ft_viewLoadingStateCreateIfNeeded:NO].viewLoadStartEpochNs;
 }
 + (NSUInteger)ft_currentViewLoadGeneration{
     return (NSUInteger)atomic_load_explicit(&viewLoadGeneration, memory_order_relaxed);
@@ -143,7 +144,7 @@ static BOOL FTViewControllerClassIsFromSwiftUIImage(Class viewControllerClass) {
     if (ft_loadDuration == nil) {
         state.hasViewLoadDurationGeneration = NO;
         state.hasViewLoadStartTime = NO;
-        state.viewLoadStartDate = nil;
+        state.viewLoadStartEpochNs = nil;
     }
 }
 
@@ -338,7 +339,7 @@ static BOOL FTViewControllerClassIsFromSwiftUIImage(Class viewControllerClass) {
 }
 - (void)ft_resetViewLoadingMetricsWithStartTime:(uint64_t)startTime state:(FTViewLoadingState *)state{
     state.loadDuration = nil;
-    state.viewLoadStartDate = [NSDate date];
+    state.viewLoadStartEpochNs = @([NSDate ft_currentNanosecondTimeStamp]);
     state.hasViewLoadDurationGeneration = NO;
     state.viewLoadStartTime = startTime;
     state.hasViewLoadStartTime = YES;
@@ -353,7 +354,7 @@ static BOOL FTViewControllerClassIsFromSwiftUIImage(Class viewControllerClass) {
 }
 - (void)ft_clearPendingViewLoadingMetricsForState:(FTViewLoadingState *)state{
     state.hasViewLoadStartTime = NO;
-    state.viewLoadStartDate = nil;
+    state.viewLoadStartEpochNs = nil;
     state.hasViewDidLoadDuration = NO;
     state.hasFirstViewWillAppearStartTime = NO;
     state.hasFirstViewWillLayoutSubviewsStartTime = NO;
@@ -362,7 +363,7 @@ static BOOL FTViewControllerClassIsFromSwiftUIImage(Class viewControllerClass) {
 - (BOOL)ft_clearExpiredViewLoadingMetricsIfNeededForState:(FTViewLoadingState *)state{
     if (state.hasViewLoadGeneration && state.viewLoadGeneration != [UIViewController ft_currentViewLoadGeneration]) {
         state.loadDuration = nil;
-        state.viewLoadStartDate = nil;
+        state.viewLoadStartEpochNs = nil;
         state.hasViewLoadDurationGeneration = NO;
         [self ft_clearPendingViewLoadingMetricsForState:state];
         state.viewLoadDurationCalculated = YES;
@@ -374,18 +375,18 @@ static BOOL FTViewControllerClassIsFromSwiftUIImage(Class viewControllerClass) {
     if (state.loadDuration != nil && state.hasViewLoadDurationGeneration && state.viewLoadDurationGeneration != [UIViewController ft_currentViewLoadGeneration]) {
         state.loadDuration = nil;
         state.hasViewLoadDurationGeneration = NO;
-        state.viewLoadStartDate = nil;
+        state.viewLoadStartEpochNs = nil;
     }
 }
 - (void)ft_storeViewLoadDuration:(NSNumber *)duration state:(FTViewLoadingState *)state{
     BOOL hasLoadStart = state.hasViewLoadStartTime && duration.longLongValue > 0;
-    NSDate *loadStartDate = hasLoadStart ? state.viewLoadStartDate : nil;
+    NSNumber *loadStartEpochNs = hasLoadStart ? state.viewLoadStartEpochNs : nil;
     state.loadDuration = duration;
     state.viewLoadDurationGeneration = [UIViewController ft_currentViewLoadGeneration];
     state.hasViewLoadDurationGeneration = YES;
     [self ft_clearPendingViewLoadingMetricsForState:state];
     state.hasViewLoadStartTime = hasLoadStart;
-    state.viewLoadStartDate = loadStartDate;
+    state.viewLoadStartEpochNs = loadStartEpochNs;
     state.viewLoadDurationCalculated = YES;
 }
 - (void)ft_recordViewLoadDurationIfReadyForState:(FTViewLoadingState *)state viewDidAppearStartTime:(uint64_t)viewDidAppearStartTime{

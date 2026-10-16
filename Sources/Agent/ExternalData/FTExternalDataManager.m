@@ -25,8 +25,6 @@
 #import "NSDate+FTUtil.h"
 #import "NSDictionary+FTCopyProperties.h"
 #import "FTConstants.h"
-#import <limits.h>
-#import <math.h>
 @interface FTExternalDataManager()
 @property (nonatomic, weak, nullable) id <FTRumDatasProtocol> delegate;
 @property (nonatomic, weak, nullable) id <FTExternalResourceProtocol> resourceDelegate;
@@ -52,12 +50,9 @@
         [self.delegate onCreateView:viewName loadTime:loadTime];
     }
 }
-- (void)onCreateView:(NSString *)viewName loadTime:(NSNumber *)loadTime loadStartEpochMs:(nullable NSNumber *)loadStartEpochMs {
-    double epochMs = loadStartEpochMs.doubleValue;
-    NSDate *loadStartDate = loadStartEpochMs && isfinite(epochMs) && epochMs > 0 && epochMs < (double)LLONG_MAX / 1000000.0
-        ? [NSDate dateWithTimeIntervalSince1970:epochMs / 1000.0] : nil;
-    if (self.delegate && [self.delegate respondsToSelector:@selector(onCreateView:loadTime:loadStartDate:)]) {
-        [self.delegate onCreateView:viewName loadTime:loadTime loadStartDate:loadStartDate];
+- (void)onCreateView:(NSString *)viewName loadTime:(NSNumber *)loadTime loadStartEpochNs:(nullable NSNumber *)loadStartEpochNs {
+    if (self.delegate && [self.delegate respondsToSelector:@selector(onCreateView:loadTime:loadStartEpochNs:)]) {
+        [self.delegate onCreateView:viewName loadTime:loadTime loadStartEpochNs:loadStartEpochNs];
     } else {
         [self onCreateView:viewName loadTime:loadTime];
     }
