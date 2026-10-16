@@ -37,7 +37,7 @@
 #import "FTRUMSessionHandler.h"
 #import "FTGlobalRumManager+Private.h"
 #import "UIView+FTAutoTrack.h"
-#import "FTExternalDataManager.h"
+#import "FTExternalDataManager+FrameworkIntegration.h"
 #import "FTResourceContentModel.h"
 #import "FTResourceMetricsModel.h"
 #import "FTURLSessionInterceptor.h"

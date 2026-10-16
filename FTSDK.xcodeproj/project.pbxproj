@@ -7,6 +7,8 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		A6F100022FFF000100A0A001 /* FTExternalDataManager+FrameworkIntegration.h in Headers */ = {isa = PBXBuildFile; fileRef = A6F100012FFF000100A0A001 /* FTExternalDataManager+FrameworkIntegration.h */; settings = {ATTRIBUTES = (Public, ); }; };
+		A6F100032FFF000100A0A001 /* FTExternalDataManager+FrameworkIntegration.h in Headers */ = {isa = PBXBuildFile; fileRef = A6F100012FFF000100A0A001 /* FTExternalDataManager+FrameworkIntegration.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		A1F0F1012FC1000100A0A001 /* FTSessionReplayPlatform.h in Headers */ = {isa = PBXBuildFile; fileRef = A1F0F0012FC1000100A0A001 /* FTSessionReplayPlatform.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		A1F0A2062FEE000100A0A001 /* FTSRNodeSemantics.h in Headers */ = {isa = PBXBuildFile; fileRef = A1F0A2082FEE000100A0A001 /* FTSRNodeSemantics.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		A1F0A2042FEE000100A0A001 /* FTSessionReplayConfig+FrameworkIntegration.h in Headers */ = {isa = PBXBuildFile; fileRef = A1F0A2022FEE000100A0A001 /* FTSessionReplayConfig+FrameworkIntegration.h */; settings = {ATTRIBUTES = (Public, ); }; };
@@ -1030,6 +1032,7 @@
 /* End PBXContainerItemProxy section */
 
 /* Begin PBXFileReference section */
+		A6F100012FFF000100A0A001 /* FTExternalDataManager+FrameworkIntegration.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = "FTExternalDataManager+FrameworkIntegration.h"; sourceTree = "<group>"; };
 		A1F0F0012FC1000100A0A001 /* FTSessionReplayPlatform.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = FTSessionReplayPlatform.h; sourceTree = "<group>"; };
 		A1F0A2082FEE000100A0A001 /* FTSRNodeSemantics.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = FTSRNodeSemantics.h; sourceTree = "<group>"; };
 		A1F0A2022FEE000100A0A001 /* FTSessionReplayConfig+FrameworkIntegration.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = "FTSessionReplayConfig+FrameworkIntegration.h"; sourceTree = "<group>"; };
@@ -2824,6 +2827,7 @@
 				17678E1829D28BD200C1DA98 /* FTMobileConfig.h */,
 				17C2FD032E3B3E09003D600F /* FTRumConfig.h */,
 				17E4CBD129CD42E4005C2D99 /* FTExternalDataManager.h */,
+				A6F100012FFF000100A0A001 /* FTExternalDataManager+FrameworkIntegration.h */,
 				17E4CB7F29CD42E4005C2D99 /* FTExtensionDataManager.h */,
 			);
 			name = Public;
@@ -3066,6 +3070,7 @@
 				17C2FD272E3B448A003D600F /* FTViewTrackingHandler.h in Headers */,
 				17C2FD282E3B448A003D600F /* FTRUMAction.h in Headers */,
 				1776064429D1360800D17137 /* FTExternalDataManager.h in Headers */,
+				A6F100022FFF000100A0A001 /* FTExternalDataManager+FrameworkIntegration.h in Headers */,
 				17A423272EEAE57300416673 /* FTCrashNSDictionaryHelper.h in Headers */,
 				1776071D29D13A0400D17137 /* FTURLSessionInterceptor.h in Headers */,
 				17A421D52EDDB0F100416673 /* FTCrashMonitor_MachException.h in Headers */,
@@ -3280,6 +3285,7 @@
 				17A4233A2EEAE65700416673 /* FTCrashVarArgs.h in Headers */,
 				17AB76E729D432DE008FBBF5 /* FTRUMSessionHandler.h in Headers */,
 				175C7D0A29E9428A00A7F271 /* FTExternalDataManager.h in Headers */,
+				A6F100032FFF000100A0A001 /* FTExternalDataManager+FrameworkIntegration.h in Headers */,
 				17E4CC2829CD42E4005C2D99 /* BlacklistedVCClassNames.h in Headers */,
 				17E4CB4029CD42DA005C2D99 /* FTAppLifeCycle.h in Headers */,
 				1776073629D1416200D17137 /* FTUserInfo.h in Headers */,

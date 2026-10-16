@@ -17,6 +17,10 @@ int main(void) {
         (void)actionHandler;
         (void)viewHandler;
 #endif
+        // Verify that framework adapters can use these APIs via the SPM product.
+        FTExternalDataManager *adapter = [FTExternalDataManager sharedManager];
+        [adapter onCreateView:@"framework-view" loadTime:@1000000 loadStartEpochNs:@1700000000000000123LL];
+        [adapter startViewWithName:@"framework-view" property:nil trackingType:FTRUMViewTrackingTypeAutomatic];
         (void)config;
         (void)agent;
     }

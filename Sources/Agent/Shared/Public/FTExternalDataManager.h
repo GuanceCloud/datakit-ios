@@ -37,13 +37,6 @@ NS_ASSUME_NONNULL_BEGIN
 ///   - viewName: RUM View name
 ///   - loadTime: page loading time
 -(void)onCreateView:(NSString *)viewName loadTime:(NSNumber *)loadTime;
-/// Automatic cross-platform View loading. loadStartEpochNs is the Unix epoch timestamp
-/// in nanoseconds captured when loading began. Bridges receiving milliseconds must
-/// convert to integer nanoseconds before calling. loadTime is a monotonic duration
-/// in nanoseconds. Pass nil when the loading start is unavailable.
-- (void)onCreateView:(NSString *)viewName
-           loadTime:(NSNumber *)loadTime
-   loadStartEpochNs:(nullable NSNumber *)loadStartEpochNs;
 /// Starts RUM view
 ///
 /// - Parameters:
@@ -55,13 +48,6 @@ NS_ASSUME_NONNULL_BEGIN
 ///   - viewName: RUM View name
 ///   - property: event custom properties (optional)
 -(void)startViewWithName:(NSString *)viewName property:(nullable NSDictionary *)property;
-
-/// Automatic adapter Views are stopped by Native at the background boundary.
-/// Adapters must not also send a background stopView callback. Route changes and
-/// foreground View starts remain the adapter's responsibility. Old APIs are manual.
-- (void)startViewWithName:(NSString *)viewName
-                property:(nullable NSDictionary *)property
-            trackingType:(FTRUMViewTrackingType)trackingType;
 
 /// Update view loading time to current RUM view.
 /// Must be called between `-startView` and `-stopView` methods to take effect.
