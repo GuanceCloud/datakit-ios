@@ -24,23 +24,41 @@
 #import "FTLongTaskDetector.h"
 #import "FTInnerLog.h"
 #import "FTConstants.h"
+#import "FTDateUtil.h"
+#import <os/lock.h>
 #import <sys/time.h>
 #import "NSDate+FTUtil.h"
 #import "FTErrorDataProtocol.h"
+
+typedef struct {
+    CFRunLoopActivity activity;
+    long long startTimestampNs;
+    uint64_t generation;
+} FTRunLoopSnapshot;
+
+typedef NS_ENUM(NSUInteger, FTLongTaskDetectionState) {
+    FTLongTaskDetectionStateIdle,
+    FTLongTaskDetectionStateWaitingForNormalTimeout,
+    FTLongTaskDetectionStateStartDispatched,
+};
 
 @interface FTLongTaskDetector (){
     CFRunLoopObserverRef m_runLoopBeginObserver;  // Observer
     CFRunLoopObserverRef m_runLoopEndObserver;    // Observer
     dispatch_semaphore_t _semaphore;
+    os_unfair_lock _runLoopLock;
     CFRunLoopActivity _activity;     // Status
+    long long _runLoopStartTimestampNs;
+    uint64_t _runLoopGeneration;
+    long long _resumeBaselineNs;
+    uint64_t _resumeGeneration;
+    FTLongTaskDetectionState _detectionState;
 }
 
 @property (nonatomic, weak, nullable) id<FTLongTaskProtocol> longTaskDelegate;
 @property (nonatomic, assign) BOOL isCancel;
-@property (nonatomic, assign) NSInteger countTime; // Time-consuming count
 @property (nonatomic, strong) dispatch_queue_t longTaskQueue;
 @property (nonatomic, assign) long limitMillisecond;
-@property (atomic, assign) long long startTimestamp;
 @end
 @implementation FTLongTaskDetector
 -(instancetype)initWithDelegate:(id<FTLongTaskProtocol>)delegate{
@@ -48,6 +66,9 @@
     if(self){
         _longTaskDelegate = delegate;
         _semaphore = dispatch_semaphore_create(0);
+        os_unfair_lock lock = OS_UNFAIR_LOCK_INIT;
+        _runLoopLock = lock;
+        _detectionState = FTLongTaskDetectionStateIdle;
         self.limitFreezeMillisecond = FT_DEFAULT_BLOCK_DURATIONS_MS;
         _longTaskQueue = dispatch_queue_create("com.ft.longtask", 0);
     }
@@ -56,6 +77,66 @@
 - (void)setLimitFreezeMillisecond:(long)limitFreezeMillisecond {
     _limitFreezeMillisecond = limitFreezeMillisecond;
     _limitMillisecond = MIN(limitFreezeMillisecond, FT_ANR_THRESHOLD_MS);
+}
+- (FTRunLoopSnapshot)runLoopSnapshot {
+    os_unfair_lock_lock(&_runLoopLock);
+    FTRunLoopSnapshot snapshot = {_activity, _runLoopStartTimestampNs, _runLoopGeneration};
+    os_unfair_lock_unlock(&_runLoopLock);
+    return snapshot;
+}
+
+- (void)recordRunLoopActivity:(CFRunLoopActivity)activity atTimeNs:(long long)timeNs {
+    os_unfair_lock_lock(&_runLoopLock);
+    _activity = activity;
+    _runLoopStartTimestampNs = timeNs;
+    _runLoopGeneration++;
+    os_unfair_lock_unlock(&_runLoopLock);
+    dispatch_semaphore_signal(_semaphore);
+}
+
+- (void)processWaitResult:(long)waitResult elapsedNanoseconds:(uint64_t)elapsedNanoseconds currentEpochNs:(long long)currentEpochNs {
+    FTRunLoopSnapshot snapshot = [self runLoopSnapshot];
+    if (_detectionState == FTLongTaskDetectionStateWaitingForNormalTimeout && snapshot.generation != _resumeGeneration) {
+        // A real RunLoop callback supplied a new start; queued semaphore signals do not.
+        _resumeBaselineNs = 0;
+        _detectionState = FTLongTaskDetectionStateIdle;
+    }
+
+    BOOL busyTimeout = waitResult != 0 &&
+        (snapshot.activity == kCFRunLoopBeforeSources || snapshot.activity == kCFRunLoopAfterWaiting);
+    if (busyTimeout) {
+        if (_detectionState != FTLongTaskDetectionStateStartDispatched && self.limitMillisecond > 0 && currentEpochNs > 0 &&
+            elapsedNanoseconds > (uint64_t)self.limitMillisecond * 2 * NSEC_PER_MSEC) {
+            // The detector was not scheduled promptly. The earlier RunLoop time is no longer a
+            // trustworthy start for a new sample; require another normal timeout first.
+            _resumeBaselineNs = currentEpochNs;
+            _resumeGeneration = snapshot.generation;
+            _detectionState = FTLongTaskDetectionStateWaitingForNormalTimeout;
+            return;
+        }
+        if (_detectionState == FTLongTaskDetectionStateStartDispatched) {
+            if (self.longTaskDelegate && [self.longTaskDelegate respondsToSelector:@selector(updateLongTaskDate:)]) {
+                [self.longTaskDelegate updateLongTaskDate:currentEpochNs];
+            }
+        } else {
+            long long effectiveStartNs = snapshot.startTimestampNs;
+            if (_detectionState == FTLongTaskDetectionStateWaitingForNormalTimeout && _resumeBaselineNs > effectiveStartNs) {
+                effectiveStartNs = _resumeBaselineNs;
+            }
+            _resumeBaselineNs = 0;
+            _detectionState = FTLongTaskDetectionStateStartDispatched;
+            if (self.longTaskDelegate && [self.longTaskDelegate respondsToSelector:@selector(startLongTask:)]) {
+                [self.longTaskDelegate startLongTask:effectiveStartNs];
+            }
+        }
+        return;
+    }
+    if (_detectionState == FTLongTaskDetectionStateStartDispatched) {
+        if (self.longTaskDelegate && [self.longTaskDelegate respondsToSelector:@selector(endLongTask)]) {
+            [self.longTaskDelegate endLongTask];
+        }
+        _detectionState = FTLongTaskDetectionStateIdle;
+    }
 }
 - (void)startDetecting {
     [self registerObserver];
@@ -68,29 +149,11 @@
         }
         while (!strongSelf.isCancel) {
             @autoreleasepool {
-                long st = dispatch_semaphore_wait(self->_semaphore, dispatch_time(DISPATCH_TIME_NOW, strongSelf.limitMillisecond*NSEC_PER_MSEC));
-                if(st!=0){
-                    if (self->_activity == kCFRunLoopBeforeSources || self->_activity == kCFRunLoopAfterWaiting) {
-                        strongSelf.countTime++;
-                        if(strongSelf.countTime == 1){
-                            if (strongSelf.longTaskDelegate != nil && [strongSelf.longTaskDelegate  respondsToSelector:@selector(startLongTask:)]) {
-                                [strongSelf.longTaskDelegate startLongTask:strongSelf.startTimestamp];
-                            }
-                        }else{
-                            if (strongSelf.longTaskDelegate != nil && [strongSelf.longTaskDelegate  respondsToSelector:@selector(updateLongTaskDate:)]) {
-                                [strongSelf.longTaskDelegate updateLongTaskDate:[NSDate ft_currentNanosecondTimeStamp]];
-                            }
-                        }
-                        continue;
-                    }
-                }
-                // end semaphore wait
-                if(strongSelf.countTime>0){
-                    if (strongSelf.longTaskDelegate != nil && [strongSelf.longTaskDelegate  respondsToSelector:@selector(endLongTask)]) {
-                        [strongSelf.longTaskDelegate endLongTask];
-                    }
-                }
-                strongSelf.countTime = 0;
+                uint64_t waitStart = [FTDateUtil continuousTime];
+                long waitResult = dispatch_semaphore_wait(self->_semaphore, dispatch_time(DISPATCH_TIME_NOW, strongSelf.limitMillisecond*NSEC_PER_MSEC));
+                uint64_t waitEnd = [FTDateUtil continuousTime];
+                uint64_t elapsed = waitEnd >= waitStart ? waitEnd - waitStart : 0;
+                [strongSelf processWaitResult:waitResult elapsedNanoseconds:elapsed currentEpochNs:[NSDate ft_currentNanosecondTimeStamp]];
             }
         }
     });
@@ -106,9 +169,7 @@
                                                                             ^(CFRunLoopObserverRef observer, CFRunLoopActivity activity) {
         __strong __typeof(weakSelf) strongSelf = weakSelf;
         if (!strongSelf) return;
-        strongSelf->_activity = activity;
-        strongSelf.startTimestamp = [NSDate ft_currentNanosecondTimeStamp];
-        dispatch_semaphore_signal(strongSelf->_semaphore);
+        [strongSelf recordRunLoopActivity:activity atTimeNs:[NSDate ft_currentNanosecondTimeStamp]];
     });
     CFRetain(beginObserver);
     m_runLoopBeginObserver = beginObserver;
@@ -116,9 +177,7 @@
     CFRunLoopObserverRef endObserver = CFRunLoopObserverCreateWithHandler(kCFAllocatorDefault, kCFRunLoopExit|kCFRunLoopBeforeWaiting, YES, LONG_MAX, ^(CFRunLoopObserverRef observer, CFRunLoopActivity activity) {
         __strong __typeof(weakSelf) strongSelf = weakSelf;
         if (!strongSelf) return;
-        strongSelf->_activity = activity;
-        strongSelf.startTimestamp = [NSDate ft_currentNanosecondTimeStamp];
-        dispatch_semaphore_signal(strongSelf->_semaphore);
+        [strongSelf recordRunLoopActivity:activity atTimeNs:[NSDate ft_currentNanosecondTimeStamp]];
     });
     CFRetain(endObserver);
     m_runLoopEndObserver = endObserver;

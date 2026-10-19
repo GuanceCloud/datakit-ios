@@ -29,6 +29,36 @@
 #import "NSDate+FTUtil.h"
 #import "FTLongTaskDetector.h"
 #import "FTJSONUtil.h"
+
+@interface FTLongTaskDetector (FTWaitTest)
+- (void)recordRunLoopActivity:(CFRunLoopActivity)activity atTimeNs:(long long)timeNs;
+- (void)processWaitResult:(long)st elapsedNanoseconds:(uint64_t)elapsedNanoseconds currentEpochNs:(long long)currentEpochNs;
+@end
+
+@interface FTLongTaskManager (FTFixedEndTimeTest)
+- (void)endLongTaskAtTimeNs:(long long)timeNs;
+@end
+
+@interface FTLongTaskDetectorDelegateMock : NSObject <FTLongTaskProtocol>
+@property (nonatomic, strong) NSMutableArray<NSNumber *> *starts;
+@property (nonatomic, strong) NSMutableArray<NSNumber *> *updates;
+@property (nonatomic, assign) NSUInteger ends;
+@end
+
+@implementation FTLongTaskDetectorDelegateMock
+- (instancetype)init {
+    self = [super init];
+    if (self) {
+        _starts = [NSMutableArray array];
+        _updates = [NSMutableArray array];
+    }
+    return self;
+}
+- (void)startLongTask:(long long)startTime { [self.starts addObject:@(startTime)]; }
+- (void)updateLongTaskDate:(long long)time { [self.updates addObject:@(time)]; }
+- (void)endLongTask { self.ends++; }
+@end
+
 typedef void (^FTLongTaskCallBack)(NSString *slowStack, long long duration);
 typedef void (^FTWriteCallBack)(NSDictionary *fields, NSDictionary *tags);
 
@@ -401,10 +431,108 @@ typedef void (^FTWriteCallBack)(NSDictionary *fields, NSDictionary *tags);
 }
 - (void)testLongTaskDetector_customFreezeDurationUpdatesLimitMillisecond{
     FTLongTaskDetector *detector = [[FTLongTaskDetector alloc] initWithDelegate:(id<FTLongTaskProtocol>)self];
+    XCTAssertEqual([[detector valueForKey:@"limitMillisecond"] longValue], 250);
     detector.limitFreezeMillisecond = 300;
     XCTAssertEqual([[detector valueForKey:@"limitMillisecond"] longValue], 300);
     detector.limitFreezeMillisecond = 6000;
     XCTAssertEqual([[detector valueForKey:@"limitMillisecond"] longValue], FT_ANR_THRESHOLD_MS);
+}
+- (void)testLongTaskDetector_rebasesFirstStartAfterOverlongWait {
+    FTLongTaskDetectorDelegateMock *delegate = [[FTLongTaskDetectorDelegateMock alloc] init];
+    FTLongTaskDetector *detector = [[FTLongTaskDetector alloc] initWithDelegate:delegate];
+    [detector recordRunLoopActivity:kCFRunLoopBeforeSources atTimeNs:1000LL * NSEC_PER_MSEC];
+
+    [detector processWaitResult:1 elapsedNanoseconds:600LL * NSEC_PER_MSEC currentEpochNs:1600LL * NSEC_PER_MSEC];
+    XCTAssertEqual(delegate.starts.count, 0);
+    XCTAssertEqual(delegate.updates.count, 0);
+
+    [detector processWaitResult:1 elapsedNanoseconds:250LL * NSEC_PER_MSEC currentEpochNs:1850LL * NSEC_PER_MSEC];
+    XCTAssertEqualObjects(delegate.starts, (@[@(1600LL * NSEC_PER_MSEC)]));
+    XCTAssertEqual(delegate.updates.count, 0);
+}
+- (void)testLongTaskDetector_rebasedSampleHasExactDurationAndNoANR {
+    FTLongTaskBacktraceMock *backtraceMock = [[FTLongTaskBacktraceMock alloc] init];
+    backtraceMock.mainThreadBacktrace = @"mainThreadBacktrace";
+    FTLongTaskManager *manager = [self mockLongTaskManagerWithBacktraceReporting:backtraceMock
+                                                                      enableANR:YES
+                                                                   enableFreeze:YES
+                                                               freezeDurationMs:250];
+    [[manager valueForKey:@"longTaskDetector"] stopDetecting];
+    FTLongTaskDetector *detector = [[FTLongTaskDetector alloc] initWithDelegate:(id<FTLongTaskProtocol>)manager];
+    [detector recordRunLoopActivity:kCFRunLoopBeforeSources atTimeNs:1000LL * NSEC_PER_MSEC];
+    [detector processWaitResult:1 elapsedNanoseconds:600LL * NSEC_PER_MSEC currentEpochNs:1600LL * NSEC_PER_MSEC];
+    XCTAssertNil([manager valueForKey:@"longTaskEvent"]);
+
+    [detector processWaitResult:1 elapsedNanoseconds:250LL * NSEC_PER_MSEC currentEpochNs:1850LL * NSEC_PER_MSEC];
+    XCTAssertEqual([[[manager valueForKey:@"longTaskEvent"] valueForKey:@"startTimeNs"] longLongValue], 1600LL * NSEC_PER_MSEC);
+    __block NSUInteger reportedLongTasks = 0;
+    self.callBack = ^(NSString *slowStack, long long duration) {
+        XCTAssertEqualObjects(slowStack, @"mainThreadBacktrace");
+        XCTAssertEqual(duration, 300LL * NSEC_PER_MSEC);
+        reportedLongTasks++;
+    };
+    [manager endLongTaskAtTimeNs:1900LL * NSEC_PER_MSEC];
+    XCTAssertEqual(reportedLongTasks, 1);
+    XCTAssertEqual(self.reportedANRTimes.count, 0);
+    [manager shutDown];
+    self.callBack = nil;
+}
+- (void)testLongTaskDetector_usesFreshRunLoopStartAfterOverlongWait {
+    FTLongTaskDetectorDelegateMock *delegate = [[FTLongTaskDetectorDelegateMock alloc] init];
+    FTLongTaskDetector *detector = [[FTLongTaskDetector alloc] initWithDelegate:delegate];
+    [detector recordRunLoopActivity:kCFRunLoopBeforeSources atTimeNs:1000LL * NSEC_PER_MSEC];
+    [detector processWaitResult:1 elapsedNanoseconds:600LL * NSEC_PER_MSEC currentEpochNs:1600LL * NSEC_PER_MSEC];
+    [detector recordRunLoopActivity:kCFRunLoopBeforeSources atTimeNs:1700LL * NSEC_PER_MSEC];
+    [detector processWaitResult:1 elapsedNanoseconds:250LL * NSEC_PER_MSEC currentEpochNs:1950LL * NSEC_PER_MSEC];
+    XCTAssertEqualObjects(delegate.starts, (@[@(1700LL * NSEC_PER_MSEC)]));
+}
+- (void)testLongTaskDetector_queuedSignalDoesNotClearRebasedStart {
+    FTLongTaskDetectorDelegateMock *delegate = [[FTLongTaskDetectorDelegateMock alloc] init];
+    FTLongTaskDetector *detector = [[FTLongTaskDetector alloc] initWithDelegate:delegate];
+    [detector recordRunLoopActivity:kCFRunLoopAfterWaiting atTimeNs:1000LL * NSEC_PER_MSEC];
+    [detector processWaitResult:1 elapsedNanoseconds:600LL * NSEC_PER_MSEC currentEpochNs:1600LL * NSEC_PER_MSEC];
+    [detector processWaitResult:0 elapsedNanoseconds:0 currentEpochNs:1600LL * NSEC_PER_MSEC];
+    [detector processWaitResult:1 elapsedNanoseconds:250LL * NSEC_PER_MSEC currentEpochNs:1850LL * NSEC_PER_MSEC];
+    XCTAssertEqualObjects(delegate.starts, (@[@(1600LL * NSEC_PER_MSEC)]));
+}
+- (void)testLongTaskDetector_repeatedOverlongWaitUsesLatestResumeTime {
+    FTLongTaskDetectorDelegateMock *delegate = [[FTLongTaskDetectorDelegateMock alloc] init];
+    FTLongTaskDetector *detector = [[FTLongTaskDetector alloc] initWithDelegate:delegate];
+    [detector recordRunLoopActivity:kCFRunLoopBeforeSources atTimeNs:1000LL * NSEC_PER_MSEC];
+    [detector processWaitResult:1 elapsedNanoseconds:600LL * NSEC_PER_MSEC currentEpochNs:1600LL * NSEC_PER_MSEC];
+    [detector processWaitResult:1 elapsedNanoseconds:700LL * NSEC_PER_MSEC currentEpochNs:2300LL * NSEC_PER_MSEC];
+    XCTAssertEqual(delegate.starts.count, 0);
+    [detector processWaitResult:1 elapsedNanoseconds:250LL * NSEC_PER_MSEC currentEpochNs:2550LL * NSEC_PER_MSEC];
+    XCTAssertEqualObjects(delegate.starts, (@[@(2300LL * NSEC_PER_MSEC)]));
+}
+- (void)testLongTaskDetector_overlongWaitBoundaryUsesEffectiveLimit {
+    FTLongTaskDetectorDelegateMock *delegate = [[FTLongTaskDetectorDelegateMock alloc] init];
+    FTLongTaskDetector *detector = [[FTLongTaskDetector alloc] initWithDelegate:delegate];
+    [detector recordRunLoopActivity:kCFRunLoopBeforeSources atTimeNs:1000LL * NSEC_PER_MSEC];
+    [detector processWaitResult:1 elapsedNanoseconds:500LL * NSEC_PER_MSEC currentEpochNs:1500LL * NSEC_PER_MSEC];
+    XCTAssertEqualObjects(delegate.starts, (@[@(1000LL * NSEC_PER_MSEC)]));
+
+    for (NSNumber *configuredMs in @[@100, @6000]) {
+        FTLongTaskDetectorDelegateMock *otherDelegate = [[FTLongTaskDetectorDelegateMock alloc] init];
+        FTLongTaskDetector *otherDetector = [[FTLongTaskDetector alloc] initWithDelegate:otherDelegate];
+        otherDetector.limitFreezeMillisecond = configuredMs.longValue;
+        long effectiveLimitMs = MIN(configuredMs.longValue, FT_ANR_THRESHOLD_MS);
+        [otherDetector recordRunLoopActivity:kCFRunLoopBeforeSources atTimeNs:1000LL * NSEC_PER_MSEC];
+        [otherDetector processWaitResult:1 elapsedNanoseconds:(uint64_t)(2 * effectiveLimitMs) * NSEC_PER_MSEC + 1
+                          currentEpochNs:(1000LL + 2 * effectiveLimitMs) * NSEC_PER_MSEC + 1];
+        XCTAssertEqual(otherDelegate.starts.count, 0);
+    }
+}
+- (void)testLongTaskDetector_overlongWaitDoesNotResetStartedEvent {
+    FTLongTaskDetectorDelegateMock *delegate = [[FTLongTaskDetectorDelegateMock alloc] init];
+    FTLongTaskDetector *detector = [[FTLongTaskDetector alloc] initWithDelegate:delegate];
+    [detector recordRunLoopActivity:kCFRunLoopBeforeSources atTimeNs:1000LL * NSEC_PER_MSEC];
+    [detector processWaitResult:1 elapsedNanoseconds:250LL * NSEC_PER_MSEC currentEpochNs:1250LL * NSEC_PER_MSEC];
+    [detector processWaitResult:1 elapsedNanoseconds:600LL * NSEC_PER_MSEC currentEpochNs:1850LL * NSEC_PER_MSEC];
+    [detector processWaitResult:0 elapsedNanoseconds:0 currentEpochNs:1900LL * NSEC_PER_MSEC];
+    XCTAssertEqualObjects(delegate.starts, (@[@(1000LL * NSEC_PER_MSEC)]));
+    XCTAssertEqualObjects(delegate.updates, (@[@(1850LL * NSEC_PER_MSEC)]));
+    XCTAssertEqual(delegate.ends, 1);
 }
 -(void)testLongTaskFilePath{
 #if TARGET_OS_TV
