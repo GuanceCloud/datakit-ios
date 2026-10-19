@@ -53,6 +53,11 @@ NS_ASSUME_NONNULL_BEGIN
 ///   - property: Event custom properties (optional)
 - (void)stopResourceWithKey:(NSString *)key property:(nullable NSDictionary *)property;
 @optional
+/// Internal automatic admission. Reserve before collector queueing, then admit
+/// or abandon using the same key. Reservations retain original View ownership.
+- (void)reserveResourceWithKey:(NSString *)key property:(nullable NSDictionary *)property time:(NSDate *)time;
+- (void)admitResourceWithKey:(NSString *)key property:(nullable NSDictionary *)property time:(NSDate *)time;
+- (void)abandonResourceWithKey:(NSString *)key time:(NSDate *)time;
 /// HTTP request start at the supplied event time. Internal automatic collectors use this
 /// to preserve the network boundary when reporting is processed asynchronously.
 - (void)startResourceWithKey:(NSString *)key property:(nullable NSDictionary *)property time:(NSDate *)time;

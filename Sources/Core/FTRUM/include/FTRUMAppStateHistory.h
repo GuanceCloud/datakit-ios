@@ -38,6 +38,11 @@ NS_ASSUME_NONNULL_BEGIN
 - (void)stopMonitoring;
 // Unix epoch nanoseconds captured on entry to the lifecycle delegate callback.
 - (instancetype)initWithState:(NSString *)state timeNs:(long long)timeNs;
+/// Preserve actual background admission independently from startup/unknown display state.
+- (instancetype)initWithState:(NSString *)state timeNs:(long long)timeNs background:(BOOL)background;
+/// Inclusive start, exclusive end (a zero-length interval checks its start).
+/// Explicit inactive/unknown observations are allowed; absent or incomparable history is not.
+- (BOOL)hasBackgroundOrUnavailableHistoryFrom:(long long)startNs to:(long long)endNs;
 - (BOOL)recordState:(NSString *)state timeNs:(long long)timeNs;
 - (NSString *)stateAt:(long long)timeNs;
 // Interval queries use [start, end) and aggregate only known foreground/background states.

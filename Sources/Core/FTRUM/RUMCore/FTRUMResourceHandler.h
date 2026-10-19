@@ -35,6 +35,7 @@ typedef void(^FTErrorEventSent)(void);
 @property (nonatomic, copy) FTResourceEventSent resourceHandler;
 /// resource error processing completion callback
 @property (nonatomic, copy) FTErrorEventSent errorHandler;
+@property (nonatomic, copy, nullable) void (^metricHandler)(long long startNs, long long endNs);
 /// Initialization method
 /// - Parameters:
 ///   - model: rum data model

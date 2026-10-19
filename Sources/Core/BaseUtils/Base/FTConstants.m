@@ -114,6 +114,8 @@ NSString * const FT_KEY_VIEW_REFERRER = @"view_referrer";
 NSString * const FT_KEY_VIEW_NAME = @"view_name";
 //view field
 NSString * const FT_KEY_LOADING_TIME = @"loading_time";
+NSString * const FT_KEY_INTERACTION_TO_NEXT_VIEW_TIME = @"interaction_to_next_view_time";
+NSString * const FT_KEY_NETWORK_SETTLED_TIME = @"network_settled_time";
 NSString * const FT_KEY_TIME_SPENT = @"time_spent";
 NSString * const FT_KEY_VIEW_UPDATE_TIME = @"view_update_time";
 NSString * const FT_KEY_VIEW_ERROR_COUNT = @"view_error_count";

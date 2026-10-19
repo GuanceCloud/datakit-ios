@@ -95,6 +95,9 @@
 -(void)taskCompleted:(NSURLSessionTask *)task error:(NSError *)error{
     [self dealTaskCompleted:task error:error];
 }
+- (void)taskCompleted:(NSURLSessionTask *)task error:(NSError *)error endTime:(uint64_t)endTime {
+    [(id<FTURLSessionInterceptorProtocol>)self.instrumentation.interceptor taskCompleted:task error:error extraProvider:self.provider errorFilter:self.errorFilter endTime:endTime];
+}
 -(void)dealTaskCompleted:(NSURLSessionTask *)task error:(NSError *)error{
     [self.instrumentation.interceptor taskCompleted:task error:error extraProvider:self.provider errorFilter:self.errorFilter];
 }

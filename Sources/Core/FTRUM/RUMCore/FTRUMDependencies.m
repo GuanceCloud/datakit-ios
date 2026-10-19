@@ -42,6 +42,7 @@
     dependencies.enableTraceUserAction = self.enableTraceUserAction;
     dependencies.appId = self.appId;
     dependencies.writer = self.writer;
+    dependencies.scheduleViewMetricsUpdate = self.scheduleViewMetricsUpdate;
     dependencies.errorMonitorInfoWrapper = self.errorMonitorInfoWrapper;
     dependencies.monitor = self.monitor;
     dependencies.fatalErrorContext = self.fatalErrorContext;

@@ -21,6 +21,7 @@
 #import <Foundation/Foundation.h>
 NS_ASSUME_NONNULL_BEGIN
 @class FTResourceContentModel,FTResourceMetricsModel;
+@protocol FTRumResourceProtocol;
 /// Immutable request data captured before URLSession mutates task.currentRequest on its private queues.
 @interface FTURLSessionRequestSnapshot : NSObject
 /// Request URL captured from URLSessionTask.currentRequest.
@@ -64,6 +65,10 @@ NS_ASSUME_NONNULL_BEGIN
 @property (nonatomic, copy) NSString *traceID;
 /// Whether this handler owns a WebSocket opening-handshake Resource.
 @property (nonatomic, assign) BOOL webSocketHandshake;
+@property (nonatomic, strong, nullable) NSDate *resourceStartDate;
+@property (nonatomic, weak, nullable) id<FTRumResourceProtocol> resourceReceiver;
+@property (nonatomic, assign) BOOL hasResourceReceiver;
+@property (nonatomic, assign) uint64_t resourceStartContinuousTime;
 /// Caller-visible WebSocket URL used for filtering, custom properties, and Resource tags.
 @property (nonatomic, copy, nullable) NSURL *webSocketURL;
 /// Prevents repeated resume calls from starting duplicate handshake Resources.

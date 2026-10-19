@@ -37,6 +37,8 @@ NS_ASSUME_NONNULL_BEGIN
 @property (nonatomic, assign) BOOL enableResourceHostIP;
 @property (nonatomic, assign) BOOL enableTraceUserAction;
 @property (nonatomic, copy) NSString *appId;
+/// Schedules an internal window-close command on rumQueue; never a user event.
+@property (nonatomic, copy, nullable) void (^scheduleViewMetricsUpdate)(NSString *viewID, long long deadlineNs);
 @property (nonatomic, weak, nullable) id<FTRUMDataWriteProtocol> writer;
 @property (nonatomic, strong) id<FTErrorMonitorInfoWrapper> errorMonitorInfoWrapper;
 @property (nonatomic, strong) FTRUMMonitor *monitor;
