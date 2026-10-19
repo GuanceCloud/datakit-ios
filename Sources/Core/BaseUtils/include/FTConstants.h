@@ -168,6 +168,9 @@ extern NSString * const FT_KEY_VIEW_NAME;
 #pragma mark --- field
 /// View loading time field key.
 extern NSString * const FT_KEY_LOADING_TIME;
+/// View duration fields, signed 64-bit integer nanoseconds; absent when unavailable.
+extern NSString * const FT_KEY_INTERACTION_TO_NEXT_VIEW_TIME;
+extern NSString * const FT_KEY_NETWORK_SETTLED_TIME;
 /// Time-spent field key for session or view duration.
 extern NSString * const FT_KEY_TIME_SPENT;
 /// View error count field key.

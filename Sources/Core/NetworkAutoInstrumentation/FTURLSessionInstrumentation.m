@@ -19,6 +19,7 @@
 //
 
 #import "FTURLSessionInstrumentation.h"
+#import "FTDateUtil.h"
 #import "FTSwizzler.h"
 #import "FTSwizzle.h"
 #import "FTURLSessionInterceptor+Private.h"
@@ -263,6 +264,7 @@ static dispatch_once_t onceToken;
 
             if (originalHandler) {
                 handler = ^(NSData *data, NSURLResponse *response, NSError *error) {
+                    uint64_t endTime = [FTDateUtil continuousTime];
                     @try {
                         originalHandler(data, response, error);
                     } @finally {
@@ -272,7 +274,11 @@ static dispatch_once_t onceToken;
                                 if (data) {
                                     [rumInterceptor taskReceivedCompleteData:task data:data];
                                 }
-                                [rumInterceptor taskCompleted:task error:error];
+                                if ([rumInterceptor respondsToSelector:@selector(taskCompleted:error:endTime:)]) {
+                                    [rumInterceptor taskCompleted:task error:error endTime:endTime];
+                                } else {
+                                    [rumInterceptor taskCompleted:task error:error];
+                                }
                             }
                         } @catch (NSException *exception) {
                             FTInnerLogError(@"exception: %@", exception);
@@ -314,6 +320,7 @@ static dispatch_once_t onceToken;
 
         if (originalHandler) {
             handler = ^(NSData *data, NSURLResponse *response, NSError *error) {
+                uint64_t endTime = [FTDateUtil continuousTime];
                 @try {
                     originalHandler(data, response, error);
                 } @finally {
@@ -323,7 +330,11 @@ static dispatch_once_t onceToken;
                             if (data) {
                                 [rumInterceptor taskReceivedCompleteData:task data:data];
                             }
-                            [rumInterceptor taskCompleted:task error:error];
+                            if ([rumInterceptor respondsToSelector:@selector(taskCompleted:error:endTime:)]) {
+                                [rumInterceptor taskCompleted:task error:error endTime:endTime];
+                            } else {
+                                [rumInterceptor taskCompleted:task error:error];
+                            }
                         }
                     } @catch (NSException *exception) {
                         FTInnerLogError(@"exception: %@", exception);

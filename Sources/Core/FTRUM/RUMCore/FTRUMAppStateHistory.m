@@ -32,12 +32,20 @@
 @implementation FTRUMAppStateHistory
 
 - (instancetype)initWithState:(NSString *)state timeNs:(long long)timeNs {
+    return [self initWithState:state timeNs:timeNs background:[state isEqualToString:@"background"]];
+}
+- (instancetype)initWithState:(NSString *)state timeNs:(long long)timeNs background:(BOOL)background {
     self = [super init];
     if (self) {
         _transitions = [NSMutableArray array];
         _epochComparable = YES;
         _lifecycleState = FTRUMAppStateFromString(state);
         [self recordState:state timeNs:timeNs];
+        if (self.transitions.count) {
+            NSMutableDictionary *initial = [self.transitions[0] mutableCopy];
+            initial[@"background"] = @(background);
+            self.transitions[0] = initial;
+        }
     }
     return self;
 }
@@ -118,9 +126,9 @@
         NSString *normalized = ([state isEqualToString:@"foreground"] || [state isEqualToString:@"background"])
             ? state : @"unknown";
         if (last && timeNs == [last[@"time"] longLongValue]) {
-            self.transitions[self.transitions.count - 1] = @{@"state": normalized, @"time": @(timeNs)};
+            self.transitions[self.transitions.count - 1] = @{@"state": normalized, @"time": @(timeNs), @"background": @([normalized isEqualToString:@"background"])};
         } else {
-            [self.transitions addObject:@{@"state": normalized, @"time": @(timeNs)}];
+            [self.transitions addObject:@{@"state": normalized, @"time": @(timeNs), @"background": @([normalized isEqualToString:@"background"])}];
         }
         if (self.transitions.count > 128) {
             [self.transitions removeObjectAtIndex:0];
@@ -180,6 +188,25 @@
         }
         if (foreground) return @"foreground";
         return background ? @"background" : @"unknown";
+    }
+}
+- (BOOL)hasBackgroundOrUnavailableHistoryFrom:(long long)startNs to:(long long)endNs {
+    @synchronized (self) {
+        if (startNs <= 0 || endNs < startNs || !self.epochComparable || self.transitions.count == 0 ||
+            startNs < [self.transitions.firstObject[@"time"] longLongValue]) return YES;
+        BOOL background = NO;
+        for (NSDictionary *transition in self.transitions) {
+            long long time = [transition[@"time"] longLongValue];
+            if (time <= startNs) {
+                background = [transition[@"background"] boolValue];
+            } else if (time < endNs) {
+                if (background) return YES;
+                background = [transition[@"background"] boolValue];
+            } else {
+                break;
+            }
+        }
+        return background;
     }
 }
 @end

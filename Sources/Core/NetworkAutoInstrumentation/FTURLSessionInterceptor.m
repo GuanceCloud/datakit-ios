@@ -19,6 +19,7 @@
 //
 
 #import "FTURLSessionInterceptor.h"
+#import <objc/runtime.h>
 #import "FTURLSessionInterceptor+Private.h"
 #import "FTSessionTaskHandler.h"
 #import "FTResourceContentModel.h"
@@ -244,28 +245,54 @@ static NSObject *sharedInstanceLock;
 }
 #pragma mark - RUM
 // rum:start resource
+- (NSDate *)resourceBoundaryDate { return [NSDate date]; }
+- (uint64_t)resourceBoundaryContinuousTime { return [FTDateUtil continuousTime]; }
 - (void)interceptTask:(NSURLSessionTask *)task{
+    NSDate *resourceStartDate = [self resourceBoundaryDate];
+    uint64_t resourceStartContinuousTime = [self resourceBoundaryContinuousTime];
+    static char reservationKey;
+    NSString *resourceIdentifier;
+    @synchronized (task) {
+        if (objc_getAssociatedObject(task, &reservationKey)) return;
+        resourceIdentifier = [self getTraceHandler:task].identifier ?: [NSUUID UUID].UUIDString;
+        objc_setAssociatedObject(task, &reservationKey, resourceIdentifier, OBJC_ASSOCIATION_COPY_NONATOMIC);
+    }
+    id<FTRumResourceProtocol> receiver = self.rumResourceHandler;
+    BOOL reserved = [receiver respondsToSelector:@selector(reserveResourceWithKey:property:time:)] &&
+        [receiver respondsToSelector:@selector(admitResourceWithKey:property:time:)] &&
+        [receiver respondsToSelector:@selector(abandonResourceWithKey:time:)];
     BOOL isWebSocketHandshake = task.ft_isWebSocketTask;
-    uint64_t startTime = isWebSocketHandshake ? [FTDateUtil continuousTime] : 0;
-    long long startNsTimeInterval = isWebSocketHandshake ? [[NSDate date] ft_nanosecondTimeStamp] : 0;
+    uint64_t startTime = isWebSocketHandshake ? resourceStartContinuousTime : 0;
+    long long startNsTimeInterval = isWebSocketHandshake ? [resourceStartDate ft_nanosecondTimeStamp] : 0;
     FTURLSessionRequestSnapshot *requestSnapshot = [FTURLSessionRequestSnapshot snapshotWithRequest:task.currentRequest];
     NSString *requestVisitorID = task.ft_visitorIDSnapshot.value;
     NSURL *resourceURL = isWebSocketHandshake ? task.ft_webSocketResourceURL : requestSnapshot.URL;
+    if (reserved) {
+        FTVisitorIDManager *visitorIDManager = [FTVisitorIDManager sharedInstance];
+        [visitorIDManager bindResourceVisitorID:requestVisitorID forKey:resourceIdentifier];
+        [receiver reserveResourceWithKey:resourceIdentifier property:nil time:resourceStartDate];
+        [visitorIDManager consumeResourceVisitorIDForKey:resourceIdentifier];
+    }
     dispatch_async(self.queue, ^{
         @try {
             FTSessionTaskHandler *handler = [self getTraceHandler:task];
             if(!requestSnapshot || !resourceURL || ![self isTraceUrl:resourceURL]){
+                if (reserved) [receiver abandonResourceWithKey:resourceIdentifier time:resourceStartDate];
                 if(handler)[self removeTraceHandlerWithKey:task];
                 return;
             }
             if(!handler){
-                handler = [[FTSessionTaskHandler alloc]init];
+                handler = [[FTSessionTaskHandler alloc]initWithIdentifier:resourceIdentifier];
                 [self setTraceHandler:handler forKey:task];
             }
             if (isWebSocketHandshake && handler.webSocketHandshakeStarted) {
                 return;
             }
             handler.requestSnapshot = requestSnapshot;
+            handler.resourceStartDate = resourceStartDate;
+            handler.resourceReceiver = receiver;
+            handler.hasResourceReceiver = YES;
+            handler.resourceStartContinuousTime = resourceStartContinuousTime;
             if (isWebSocketHandshake) {
                 handler.webSocketHandshake = YES;
                 handler.webSocketHandshakeStartTime = startTime;
@@ -276,8 +303,14 @@ static NSObject *sharedInstanceLock;
                 handler.request = [webSocketRequest copy];
                 handler.webSocketHandshakeStarted = YES;
             }
-            [self startResourceWithKey:handler.identifier requestVisitorID:requestVisitorID];
+            if (reserved) {
+                [receiver admitResourceWithKey:handler.identifier property:nil time:resourceStartDate];
+            } else {
+                [self startResourceWithKey:handler.identifier requestVisitorID:requestVisitorID time:resourceStartDate];
+            }
         }@catch (NSException *exception) {
+            if (reserved) [receiver abandonResourceWithKey:resourceIdentifier time:resourceStartDate];
+            [self removeTraceHandlerWithKey:task];
             FTInnerLogError(@"exception: %@",exception);
         }
     });
@@ -398,8 +431,13 @@ static NSObject *sharedInstanceLock;
 - (void)taskCompleted:(NSURLSessionTask *)task error:(nullable NSError *)error extraProvider:(nullable ResourcePropertyProvider)extraProvider{
     [self taskCompleted:task error:error extraProvider:extraProvider errorFilter:nil];
 }
-- (void)taskCompleted:(NSURLSessionTask *)task error:(NSError *)error extraProvider:(nullable ResourcePropertyProvider)extraProvider errorFilter:(nullable SessionTaskErrorFilter)errorFilter{
-    uint64_t endTime = [FTDateUtil continuousTime];
+- (void)taskCompleted:(NSURLSessionTask *)task error:(NSError *)error extraProvider:(nullable ResourcePropertyProvider)extraProvider errorFilter:(nullable SessionTaskErrorFilter)errorFilter {
+    [self taskCompleted:task error:error extraProvider:extraProvider errorFilter:errorFilter endTime:[FTDateUtil continuousTime]];
+}
+- (void)taskCompleted:(NSURLSessionTask *)task error:(NSError *)error endTime:(uint64_t)endTime {
+    [self taskCompleted:task error:error extraProvider:nil errorFilter:nil endTime:endTime];
+}
+- (void)taskCompleted:(NSURLSessionTask *)task error:(NSError *)error extraProvider:(nullable ResourcePropertyProvider)extraProvider errorFilter:(nullable SessionTaskErrorFilter)errorFilter endTime:(uint64_t)endTime {
     ResourcePropertyProvider provider = extraProvider?:self.resourcePropertyProvider;
     SessionTaskErrorFilter filter = errorFilter?:self.sessionTaskErrorFilter;
     NSURLResponse *completedResponse = task.response;
@@ -440,7 +478,15 @@ static NSObject *sharedInstanceLock;
         property = extraProvider(handler.request, handler.response, handler.data, handler.error);
         property = [property ft_deepCopy];
     }
-    [self stopResourceWithKey:handler.identifier property:property];
+    NSDate *endDate = handler.resourceStartDate && endTime >= handler.resourceStartContinuousTime
+        ? [handler.resourceStartDate dateByAddingTimeInterval:(endTime - handler.resourceStartContinuousTime) / 1e9]
+        : nil;
+    id<FTRumResourceProtocol> resourceReceiver = handler.hasResourceReceiver ? handler.resourceReceiver : self.rumResourceHandler;
+    if (endDate && [resourceReceiver respondsToSelector:@selector(stopResourceWithKey:property:time:)]) {
+        [resourceReceiver stopResourceWithKey:handler.identifier property:property time:endDate];
+    } else if (endDate) {
+        [resourceReceiver stopResourceWithKey:handler.identifier property:property];
+    }
     __block NSString *span_id = handler.spanID,*trace_id=handler.traceID;
     if (self.tracer.enableLinkRumData&&span_id==nil&&trace_id==nil) {
         [self.tracer unpackTraceHeader:handler.requestSnapshot.allHTTPHeaderFields handler:^(NSString * _Nullable traceId, NSString * _Nullable spanID) {
@@ -448,7 +494,11 @@ static NSObject *sharedInstanceLock;
             trace_id = traceId;
         }];
     }
-    [self addResourceWithKey:handler.identifier metrics:handler.metricsModel content:handler.contentModel spanID:span_id traceID:trace_id];
+    if ([resourceReceiver respondsToSelector:@selector(addResourceWithKey:metrics:content:spanID:traceID:)]) {
+        [resourceReceiver addResourceWithKey:handler.identifier metrics:handler.metricsModel content:handler.contentModel spanID:span_id traceID:trace_id];
+    } else {
+        [resourceReceiver addResourceWithKey:handler.identifier metrics:handler.metricsModel content:handler.contentModel];
+    }
 }
 
 - (NSString *)webSocketHandshakeStateWithResponse:(nullable NSURLResponse *)response{
@@ -498,7 +548,15 @@ static NSObject *sharedInstanceLock;
         property = extraProvider(handler.request, handler.response, nil, handler.error);
         property = [property ft_deepCopy];
     }
-    [self stopResourceWithKey:handler.identifier property:property];
+    NSDate *endDate = handler.resourceStartDate && endTime >= handler.resourceStartContinuousTime
+        ? [handler.resourceStartDate dateByAddingTimeInterval:(endTime - handler.resourceStartContinuousTime) / 1e9]
+        : nil;
+    id<FTRumResourceProtocol> resourceReceiver = handler.hasResourceReceiver ? handler.resourceReceiver : self.rumResourceHandler;
+    if (endDate && [resourceReceiver respondsToSelector:@selector(stopResourceWithKey:property:time:)]) {
+        [resourceReceiver stopResourceWithKey:handler.identifier property:property time:endDate];
+    } else if (endDate) {
+        [resourceReceiver stopResourceWithKey:handler.identifier property:property];
+    }
     __block NSString *span_id = handler.spanID,*trace_id=handler.traceID;
     if (self.tracer.enableLinkRumData&&span_id==nil&&trace_id==nil) {
         [self.tracer unpackTraceHeader:handler.requestSnapshot.allHTTPHeaderFields handler:^(NSString * _Nullable traceId, NSString * _Nullable spanID) {
@@ -506,7 +564,11 @@ static NSObject *sharedInstanceLock;
             trace_id = traceId;
         }];
     }
-    [self addResourceWithKey:handler.identifier metrics:handler.metricsModel content:content spanID:span_id traceID:trace_id];
+    if ([resourceReceiver respondsToSelector:@selector(addResourceWithKey:metrics:content:spanID:traceID:)]) {
+        [resourceReceiver addResourceWithKey:handler.identifier metrics:handler.metricsModel content:content spanID:span_id traceID:trace_id];
+    } else {
+        [resourceReceiver addResourceWithKey:handler.identifier metrics:handler.metricsModel content:content];
+    }
 }
 
 #pragma mark --------- external data ----------
@@ -542,8 +604,7 @@ static NSObject *sharedInstanceLock;
         [self.rumResourceHandler startResourceWithKey:key];
     }
 }
-- (void)startResourceWithKey:(NSString *)key requestVisitorID:(nullable NSString *)visitorID{
-    NSDate *time = [NSDate date];
+- (void)startResourceWithKey:(NSString *)key requestVisitorID:(nullable NSString *)visitorID time:(NSDate *)time{
     if (!self.rumResourceHandler) {
         return;
     }

@@ -30,6 +30,9 @@
 @property (nonatomic, strong) FTRUMDependencies *dependencies;
 @property (nonatomic, copy,readwrite) NSString *identifier;
 @property (nonatomic, strong) NSDate *time;
+@property (nonatomic, assign) long long startNs;
+@property (nonatomic, strong, nullable) NSNumber *stopNs;
+@property (nonatomic, assign) BOOL completed;
 @property (nonatomic, strong, nullable) NSDate *resourceStopTime;
 @property (nonatomic, strong) NSMutableDictionary *resourceProperty;
 @property (nonatomic, strong) NSNumber *networkAvailable;
@@ -44,6 +47,7 @@
         self.identifier = model.identifier;
         self.assistant = self;
         self.time = model.time;
+        self.startNs = model.tm;
         self.visitorIDSnapshot = model.visitorIDSnapshot;
         self.resourceProperty = [[NSMutableDictionary alloc]init];
         if(model.fields && model.fields.allKeys.count>0){
@@ -58,18 +62,22 @@
 }
 
 - (BOOL)process:(nonnull FTRUMDataModel *)data context:(nonnull NSDictionary *)context{
+    if (self.completed) return NO;
     if ([data isKindOfClass:FTRUMResourceModel.class]) {
         FTRUMResourceDataModel *newData = (FTRUMResourceDataModel *)data;
         if ([newData.identifier isEqualToString:self.identifier]) {
             switch (data.type) {
                 case FTRUMDataResourceComplete:
+                    self.completed = YES;
                     if (self.resourceHandler) {
                         self.resourceHandler(YES);
                     }
                     [self writeResourceData:data context:context];
                     return NO;
                 case FTRUMDataResourceStop:{
+                    if (self.stopNs) break;
                     self.resourceStopTime = data.time;
+                    self.stopNs = @(data.tm);
                     if(data.fields && data.fields.allKeys.count>0){
                         NSMutableDictionary *fields = [data.fields mutableCopy];
                         if (self.visitorIDSnapshot.length > 0) {
@@ -79,6 +87,9 @@
                     }
                 }
                     break;
+                case FTRUMDataResourceStart:
+                    if (data.fields) [self.resourceProperty addEntriesFromDictionary:data.fields];
+                    break;
                 case FTRUMDataResourceError:{
                     if(self.errorHandler){
                         self.errorHandler();
@@ -87,6 +98,7 @@
                 }
                     break;
                 case FTRUMDataResourceAbandon:
+                    self.completed = YES;
                     if (self.resourceHandler) {
                         self.resourceHandler(NO);
                     }
@@ -158,7 +170,16 @@
         [fields removeObjectForKey:FT_VISITOR_ID];
         context = [self context:context byApplyingVisitorID:self.visitorIDSnapshot];
     }
-    [self.dependencies.writer rumWrite:FT_RUM_SOURCE_RESOURCE tags:tags fields:fields dynamicContext:context time:resourceStartTime];
+    BOOL accepted = FTRUMWriteAccepted(self.dependencies.writer, FT_RUM_SOURCE_RESOURCE, tags, fields, context, resourceStartTime);
+    if (accepted && self.metricHandler) {
+        long long startNs = model.metrics.fetchStartNsTimeInterval;
+        long long endNs = model.metrics.fetchEndNsTimeInterval;
+        if (startNs <= 0 || endNs < startNs) {
+            startNs = self.startNs;
+            endNs = self.stopNs ? self.stopNs.longLongValue : 0;
+        }
+        if (endNs >= startNs && startNs > 0) self.metricHandler(startNs, endNs);
+    }
 }
 - (NSDictionary *)context:(NSDictionary *)context byApplyingVisitorID:(NSString *)visitorID{
     NSMutableDictionary *managedContext = [context mutableCopy] ?: [NSMutableDictionary dictionary];
