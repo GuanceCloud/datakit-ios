@@ -163,8 +163,8 @@ static const NSTimeInterval discreteActionTimeoutDuration = 0.1;
     [tags addEntriesFromDictionary:sessionViewActionTag];
     [tags setValue:self.action_type forKey:FT_KEY_ACTION_TYPE];
     BOOL accepted = FTRUMWriteAccepted(self.dependencies.writer, FT_RUM_SOURCE_ACTION, tags, fields, context, self.actionStartNs);
-    if (accepted && [self.action_type isEqualToString:FT_KEY_ACTION_TYPE_CLICK] && self.acceptedClickHandler) {
-        self.acceptedClickHandler(self.actionStartNs);
+    if (accepted && self.acceptedActionHandler) {
+        self.acceptedActionHandler(self.actionStartNs, self.action_name, self.action_type);
     }
     if (self.handler) {
         self.handler();

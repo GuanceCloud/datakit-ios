@@ -41,8 +41,6 @@ typedef NS_ENUM(NSUInteger, FTRUMDataType) {
     FTRUMSRLinkInfo,
     FTRUMSampleRateUpdate,
     FTRUMDataAppStateChange,
-    FTRUMDataViewMetricsUpdate,
-    FTRUMDataResourceReserve,
 };
 
 NS_ASSUME_NONNULL_BEGIN
@@ -95,8 +93,7 @@ NS_ASSUME_NONNULL_BEGIN
 
 @interface FTRUMResourceModel : FTRUMDataModel
 @property (nonatomic, copy) NSString *identifier;
-/// Internal automatic admission must resolve the View reserved before queueing.
-@property (nonatomic, assign) BOOL requiresReservation;
+/// Resource terminals retain the View associated when Start is processed.
 @property (nonatomic, copy, nullable) NSString *ownerViewID;
 
 -(instancetype)initWithType:(FTRUMDataType)type identifier:(NSString *)identifier;

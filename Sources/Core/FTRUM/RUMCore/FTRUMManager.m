@@ -94,21 +94,6 @@ void *FTRUMQueueIdentityKey = &FTRUMQueueIdentityKey;
         _preViewDuration = [[FTReadWriteHelper alloc]initWithValue:[NSMutableDictionary new]] ;
         _rumQueue = dispatch_queue_create("com.ft.rum", DISPATCH_QUEUE_SERIAL);
         dispatch_queue_set_specific(_rumQueue, FTRUMQueueIdentityKey, &FTRUMQueueIdentityKey, NULL);
-        __weak typeof(self) weakSelf = self;
-        dependencies.scheduleViewMetricsUpdate = ^(NSString *viewID, long long deadlineNs) {
-            NSDate *deadline = [NSDate dateWithTimeIntervalSince1970:deadlineNs / 1e9];
-            __strong typeof(weakSelf) owner = weakSelf;
-            if (!owner) return;
-            dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)(MAX(0, deadline.timeIntervalSinceNow) * NSEC_PER_SEC)), owner.rumQueue, ^{
-                __strong typeof(weakSelf) manager = weakSelf;
-                if (!manager) return;
-                FTRUMViewModel *update = [[FTRUMViewModel alloc] initWithViewID:viewID viewName:@"" viewReferrer:@""];
-                update.type = FTRUMDataViewMetricsUpdate;
-                update.time = deadline;
-                update.tm = deadlineNs;
-                [manager process:update context:[manager rumDynamicProperty]];
-            });
-        };
         [[FTModuleManager sharedInstance] addMessageReceiver:self];
         self.assistant = self;
         dependencies.appStateHistory.delegate = self;
@@ -406,23 +391,6 @@ void *FTRUMQueueIdentityKey = &FTRUMQueueIdentityKey;
     [self startResourceWithKey:key property:property time:[NSDate date]];
 }
 - (void)startResourceWithKey:(NSString *)key property:(nullable NSDictionary *)property time:(NSDate *)time {
-    [self enqueueResourceStart:key property:property time:time type:FTRUMDataResourceStart reserved:NO];
-}
-- (void)reserveResourceWithKey:(NSString *)key property:(NSDictionary *)property time:(NSDate *)time {
-    [self enqueueResourceStart:key property:property time:time type:FTRUMDataResourceReserve reserved:NO];
-}
-- (void)admitResourceWithKey:(NSString *)key property:(NSDictionary *)property time:(NSDate *)time {
-    [self enqueueResourceStart:key property:property time:time type:FTRUMDataResourceStart reserved:YES];
-}
-- (void)abandonResourceWithKey:(NSString *)key time:(NSDate *)time {
-    if (!key) return;
-    dispatch_async(self.rumQueue, ^{
-        FTRUMResourceDataModel *model = [[FTRUMResourceDataModel alloc] initWithType:FTRUMDataResourceAbandon identifier:key];
-        model.time = time;
-        [self process:model context:@{}];
-    });
-}
-- (void)enqueueResourceStart:(NSString *)key property:(NSDictionary *)property time:(NSDate *)time type:(FTRUMDataType)type reserved:(BOOL)reserved {
     if (!key) {
         FTInnerLogError(@"[RUM] Failed to start resource due to missing required fields. Please ensure 'key' are provided.");
         return;
@@ -432,8 +400,7 @@ void *FTRUMQueueIdentityKey = &FTRUMQueueIdentityKey;
     dispatch_async(self.rumQueue, ^{
         @try {
             NSDictionary *context = [self rumDynamicProperty];
-            FTRUMResourceDataModel *resourceStart = [[FTRUMResourceDataModel alloc]initWithType:type identifier:key];
-            resourceStart.requiresReservation = reserved;
+            FTRUMResourceDataModel *resourceStart = [[FTRUMResourceDataModel alloc]initWithType:FTRUMDataResourceStart identifier:key];
             resourceStart.time = time;
             NSMutableDictionary *fields = property ? [property mutableCopy] : [NSMutableDictionary dictionary];
             NSDictionary *networkFields = [[FTNetworkConnectivity sharedInstance] networkResourceFields];
@@ -770,7 +737,7 @@ void *FTRUMQueueIdentityKey = &FTRUMQueueIdentityKey;
         }
     }
     FTRUMSessionHandler *current  = self.sessionHandler;
-    if (!current && (model.type == FTRUMDataAppStateChange || model.type == FTRUMDataViewMetricsUpdate)) return YES;
+    if (!current && model.type == FTRUMDataAppStateChange) return YES;
     if (current) {
         current.appState = self.appState;
         if ([self manage:self.sessionHandler byPropagatingData:model context:context] == nil) {
