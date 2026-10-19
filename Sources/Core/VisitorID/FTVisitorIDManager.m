@@ -177,6 +177,10 @@ static const NSInteger FTVisitorIDRecordVersion = 1;
     }
 }
 
+- (NSString *)currentVisitorID {
+    return self.snapshot.value;
+}
+
 - (FTVisitorIDSnapshot *)snapshot {
     [self.lock lock];
     @try {

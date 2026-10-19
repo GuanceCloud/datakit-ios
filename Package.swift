@@ -162,7 +162,7 @@ let package = Package(
         ),
         .target(
             name: "_FTVisitorID",
-            dependencies: ["_FTBaseUtils"],
+            dependencies: ["_FTBaseUtils", "_FTProtocol"],
             path: "Sources/Core/VisitorID",
             publicHeadersPath: "."
         ),
@@ -317,7 +317,7 @@ let package = Package(
         ),
         .testTarget(
             name: "GuanceElectronNativeTests",
-            dependencies: ["GuanceElectronNative", "GuanceSessionReplay"],
+            dependencies: ["GuanceElectronNative", "GuanceSessionReplay", "GuanceSDK", "_GuanceSDKCore", "_FTProtocol"],
             path: "Tests/GuanceElectronNativeTests"
         ),
     ]

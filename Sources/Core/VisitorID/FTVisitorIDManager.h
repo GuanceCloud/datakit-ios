@@ -18,6 +18,7 @@
 //
 
 #import <Foundation/Foundation.h>
+#import "FTWebViewVisitorIDProvider.h"
 
 NS_ASSUME_NONNULL_BEGIN
 
@@ -39,7 +40,7 @@ typedef BOOL (^FTVisitorIDURLMatcher)(NSURL *url);
 @end
 
 /// Process-wide owner of Visitor ID generation, persistence, expiry, and reset.
-@interface FTVisitorIDManager : NSObject
+@interface FTVisitorIDManager : NSObject <FTWebViewVisitorIDProvider>
 
 + (instancetype)sharedInstance;
 

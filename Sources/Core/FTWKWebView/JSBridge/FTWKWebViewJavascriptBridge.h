@@ -23,6 +23,7 @@
 #if !TARGET_OS_TV
 #import <WebKit/WebKit.h>
 #import "FTWebViewJavascriptBridgeBase.h"
+#import "FTWebViewVisitorIDProvider.h"
 
 NS_ASSUME_NONNULL_BEGIN
 @interface FTBindInfo:NSObject
@@ -35,6 +36,8 @@ NS_ASSUME_NONNULL_BEGIN
 @end
 
 @interface FTWKWebViewJavascriptBridge : NSObject<FTWebViewJavascriptBridgeBaseDelegate,WKScriptMessageHandler>
+/// Called for each synchronous read; no identifier is cached in the bridge.
+@property (nonatomic, weak, nullable) id<FTWebViewVisitorIDProvider> visitorIDProvider;
 + (instancetype)bridgeForWebView:(WKWebView*)webView allowWebViewHostsString:(NSString *)hostsString;
 - (void)removeScriptMessageHandler;
 - (void)registerHandler:(NSString*)handlerName handler:(nullable WVJBHandler)handler;

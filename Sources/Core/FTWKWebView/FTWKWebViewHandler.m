@@ -287,6 +287,7 @@ allowedWebViewHostsString:(NSString *)hostsString
         FTBindInfo *bindInfo = [[FTBindInfo alloc] init];
         bindInfo.container = webView;
         __weak typeof(self) weakSelf = self;
+        bridge.visitorIDProvider = self;
         [bridge registerHandler:@"sendEvent" handler:^(id data, int64_t slotId,WVJBResponseCallback responseCallback) {
             __strong __typeof(weakSelf) strongSelf = weakSelf;
             if (!strongSelf) return;
@@ -417,6 +418,12 @@ allowedWebViewHostsString:(NSString *)hostsString
         FTInnerLogError(@"%@ error: %@", self, exception);
     }
 }
+- (NSString *)currentVisitorID {
+    // Take a strong reference for this synchronous read; existing bridges also
+    // observe later provider replacement/removal and RUM startup.
+    id<FTWebViewVisitorIDProvider> provider = self.visitorIDProvider;
+    return [provider currentVisitorID];
+}
 - (void)disableWebView:(WKWebView *)webView{
     @try {
         FTWKWebViewJavascriptBridge *bridge = [self removeBridgeForWebView:webView];
@@ -428,6 +435,7 @@ allowedWebViewHostsString:(NSString *)hostsString
 }
 + (void)shutDown{
     @synchronized(sharedInstanceLock) {
+        sharedInstance.visitorIDProvider = nil;
         [sharedInstance removeAllWebViewBridges];
         sharedInstance = nil;
     }
