@@ -319,6 +319,11 @@ static NSString *FTRUMSessionStartReasonForCause(FTRUMSessionRenewalCause cause)
     FTRUMViewHandler *activeViewHandler = [self activeViewHandler];
     applicationLaunchViewHandler = [self startFallbackViewWithName:FTRUMFallbackViewNameApplicationLaunch time:model.time];
     applicationLaunchViewHandler.closeAfterInitialLaunchAction = activeViewHandler != nil;
+    if (activeViewHandler) {
+        // A late initial-launch report uses a temporary fallback alongside the
+        // active page. It must not become the predecessor of the next page.
+        self.lastViewMetrics = applicationLaunchViewHandler.previousViewMetrics;
+    }
 }
 -(NSString *)fallbackViewNameForModel:(FTRUMDataModel *)model{
     NSString *errorSituation = model.tags[FT_KEY_ERROR_SITUATION];

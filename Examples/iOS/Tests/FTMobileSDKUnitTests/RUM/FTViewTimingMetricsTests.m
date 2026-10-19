@@ -169,6 +169,64 @@ static long long const FTMetricEpoch = 1800000000000000000LL;
     metrics.fetchEndNsTimeInterval = FTMetricEpoch + end * 1000000LL;
     return metrics;
 }
+- (void)testINVFirstStartedActionNavigatesWithoutOtherEvents {
+    for (NSNumber *delay in @[@50, @200]) {
+        [self setUp];
+        [self view:@"first-page" at:0 stop:NO];
+        FTRUMActionModel *click = [[FTRUMActionModel alloc] initWithActionName:@"first-click" actionType:@"click"];
+        click.type = FTRUMDataStartAction;
+        [self send:click at:800];
+        [self view:@"second-page" at:800 + delay.integerValue stop:NO];
+        XCTAssertEqualObjects([self fields:@"second-page"][@"interaction_to_next_view_time"], @(delay.longLongValue * 1000000LL));
+    }
+}
+- (void)testINVFirstStartedActionSurvivesExplicitViewStop {
+    [self view:@"first-page" at:0 stop:NO];
+    FTRUMActionModel *click = [[FTRUMActionModel alloc] initWithActionName:@"first-click" actionType:@"click"];
+    click.type = FTRUMDataStartAction;
+    [self send:click at:800];
+    [self view:@"first-page" at:850 stop:YES];
+    [self view:@"second-page" at:1000 stop:NO];
+    XCTAssertEqualObjects([self fields:@"second-page"][@"interaction_to_next_view_time"], @200000000);
+}
+- (void)testINVFirstNavigationAfterColdLaunchReport {
+    [self view:@"home" at:0 stop:NO];
+    FTRUMLaunchDataModel *launch = [[FTRUMLaunchDataModel alloc] initWithDuration:@500000000];
+    launch.action_name = @"app_cold_start";
+    launch.action_type = FT_LAUNCH_COLD;
+    [self send:launch at:0];
+    FTRUMActionModel *click = [[FTRUMActionModel alloc] initWithActionName:@"first-navigation" actionType:@"click"];
+    click.type = FTRUMDataStartAction;
+    [self send:click at:800];
+    [self view:@"destination" at:1000 stop:NO];
+    XCTAssertEqualObjects([self fields:@"destination"][@"interaction_to_next_view_time"], @200000000);
+}
+- (void)testINVExampleFirstNavigationLogReplay {
+    void (^sendAt)(FTRUMDataModel *, long long) = ^(FTRUMDataModel *model, long long ns) {
+        model.time = [NSDate dateWithTimeIntervalSince1970:ns / 1e9];
+        model.tm = ns;
+        [self.session.assistant process:model context:@{}];
+    };
+    FTRUMViewModel *(^view)(NSString *, BOOL) = ^FTRUMViewModel *(NSString *identifier, BOOL stop) {
+        FTRUMViewModel *model = [[FTRUMViewModel alloc] initWithViewID:identifier viewName:@"UITestVC" viewReferrer:@""];
+        model.type = stop ? FTRUMDataViewStop : FTRUMDataViewStart;
+        return model;
+    };
+    // Exact event timestamps from the reported example navigation.
+    sendAt(view(@"home", NO), 1792152202551974912LL);
+    FTRUMLaunchDataModel *launch = [[FTRUMLaunchDataModel alloc] initWithDuration:@68587731122LL];
+    launch.action_name = @"app_cold_start"; launch.action_type = FT_LAUNCH_COLD;
+    sendAt(launch, 1792152134474966016LL);
+    FTRUMActionModel *click = [[FTRUMActionModel alloc] initWithActionName:@"EventFlowLog" actionType:@"click"];
+    click.type = FTRUMDataStartAction;
+    sendAt(click, 1792152208923889152LL);
+    sendAt(view(@"home", YES), 1792152211454923264LL);
+    sendAt(view(@"first-UITestVC", NO), 1792152211454923264LL);
+    XCTAssertEqualObjects([self fields:@"first-UITestVC"][@"interaction_to_next_view_time"], @2531034112LL);
+    sendAt(view(@"first-UITestVC", YES), 1792152212332869120LL);
+    sendAt(view(@"restarted-UITestVC", NO), 1792152212332869120LL);
+    XCTAssertNil([self fields:@"restarted-UITestVC"][@"interaction_to_next_view_time"]);
+}
 - (void)testINVUsesLatestClickEventTimeAndSkipsOtherTypes {
     [self view:@"A" at:0 stop:NO];
     [self click:@"new" at:900 type:@"click"];
