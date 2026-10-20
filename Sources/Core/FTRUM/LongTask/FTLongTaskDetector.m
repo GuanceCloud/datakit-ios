@@ -30,15 +30,6 @@
 #import "NSDate+FTUtil.h"
 #import "FTErrorDataProtocol.h"
 
-_Static_assert(ATOMIC_LONG_LOCK_FREE == 2 && ATOMIC_LLONG_LOCK_FREE == 2,
-               "RunLoop snapshot atomics must be lock-free on supported targets");
-
-typedef struct {
-    CFRunLoopActivity activity;
-    long long startTimestampNs;
-    uint64_t generation;
-} FTRunLoopSnapshot;
-
 typedef NS_ENUM(NSUInteger, FTLongTaskDetectionState) {
     FTLongTaskDetectionStateIdle,
     FTLongTaskDetectionStateWaitingForNormalTimeout,
@@ -81,19 +72,21 @@ typedef NS_ENUM(NSUInteger, FTLongTaskDetectionState) {
     _limitFreezeMillisecond = limitFreezeMillisecond;
     _limitMillisecond = MIN(limitFreezeMillisecond, FT_ANR_THRESHOLD_MS);
 }
-- (BOOL)runLoopSnapshot:(FTRunLoopSnapshot *)snapshot {
+- (BOOL)readRunLoopActivity:(CFRunLoopActivity *)activity startTimestampNs:(long long *)startTimestampNs generation:(uint64_t *)generation {
     // The main RunLoop is the only writer. An even sequence brackets one complete callback.
-    // A stalled reader never holds up the main thread; discard a snapshot being updated.
+    // A stalled reader never holds up the main thread; discard a read overlapping an update.
     for (NSUInteger attempt = 0; attempt < 3; attempt++) {
         unsigned long long before = atomic_load_explicit(&_runLoopSequence, memory_order_seq_cst);
         if (before & 1) {
             continue;
         }
-        CFRunLoopActivity activity = atomic_load_explicit(&_activity, memory_order_seq_cst);
-        long long startTimestampNs = atomic_load_explicit(&_runLoopStartTimestampNs, memory_order_seq_cst);
+        CFRunLoopActivity readActivity = atomic_load_explicit(&_activity, memory_order_seq_cst);
+        long long readStartTimestampNs = atomic_load_explicit(&_runLoopStartTimestampNs, memory_order_seq_cst);
         unsigned long long after = atomic_load_explicit(&_runLoopSequence, memory_order_seq_cst);
         if (before == after) {
-            *snapshot = (FTRunLoopSnapshot){activity, startTimestampNs, after / 2};
+            *activity = readActivity;
+            *startTimestampNs = readStartTimestampNs;
+            *generation = after / 2;
             return YES;
         }
     }
@@ -110,25 +103,27 @@ typedef NS_ENUM(NSUInteger, FTLongTaskDetectionState) {
 }
 
 - (void)processWaitResult:(long)waitResult elapsedNanoseconds:(uint64_t)elapsedNanoseconds currentEpochNs:(long long)currentEpochNs {
-    FTRunLoopSnapshot snapshot;
-    if (![self runLoopSnapshot:&snapshot]) {
+    CFRunLoopActivity activity;
+    long long startTimestampNs;
+    uint64_t generation;
+    if (![self readRunLoopActivity:&activity startTimestampNs:&startTimestampNs generation:&generation]) {
         return;
     }
-    if (_detectionState == FTLongTaskDetectionStateWaitingForNormalTimeout && snapshot.generation != _resumeGeneration) {
+    if (_detectionState == FTLongTaskDetectionStateWaitingForNormalTimeout && generation != _resumeGeneration) {
         // A real RunLoop callback supplied a new start; queued semaphore signals do not.
         _resumeBaselineNs = 0;
         _detectionState = FTLongTaskDetectionStateIdle;
     }
 
     BOOL busyTimeout = waitResult != 0 &&
-        (snapshot.activity == kCFRunLoopBeforeSources || snapshot.activity == kCFRunLoopAfterWaiting);
+        (activity == kCFRunLoopBeforeSources || activity == kCFRunLoopAfterWaiting);
     if (busyTimeout) {
         if (_detectionState != FTLongTaskDetectionStateStartDispatched && self.limitMillisecond > 0 && currentEpochNs > 0 &&
             elapsedNanoseconds > (uint64_t)self.limitMillisecond * 2 * NSEC_PER_MSEC) {
             // The detector was not scheduled promptly. The earlier RunLoop time is no longer a
             // trustworthy start for a new sample; require another normal timeout first.
             _resumeBaselineNs = currentEpochNs;
-            _resumeGeneration = snapshot.generation;
+            _resumeGeneration = generation;
             _detectionState = FTLongTaskDetectionStateWaitingForNormalTimeout;
             return;
         }
@@ -137,7 +132,7 @@ typedef NS_ENUM(NSUInteger, FTLongTaskDetectionState) {
                 [self.longTaskDelegate updateLongTaskDate:currentEpochNs];
             }
         } else {
-            long long effectiveStartNs = snapshot.startTimestampNs;
+            long long effectiveStartNs = startTimestampNs;
             if (_detectionState == FTLongTaskDetectionStateWaitingForNormalTimeout && _resumeBaselineNs > effectiveStartNs) {
                 effectiveStartNs = _resumeBaselineNs;
             }

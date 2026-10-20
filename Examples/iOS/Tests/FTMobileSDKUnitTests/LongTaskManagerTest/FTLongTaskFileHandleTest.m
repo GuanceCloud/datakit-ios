@@ -32,15 +32,9 @@
 #import <objc/runtime.h>
 #import <os/lock.h>
 
-typedef struct {
-    CFRunLoopActivity activity;
-    long long startTimestampNs;
-    uint64_t generation;
-} FTRunLoopSnapshotForTest;
-
 @interface FTLongTaskDetector (FTWaitTest)
 - (void)recordRunLoopActivity:(CFRunLoopActivity)activity atTimeNs:(long long)timeNs;
-- (BOOL)runLoopSnapshot:(FTRunLoopSnapshotForTest *)snapshot;
+- (BOOL)readRunLoopActivity:(CFRunLoopActivity *)activity startTimestampNs:(long long *)startTimestampNs generation:(uint64_t *)generation;
 - (void)processWaitResult:(long)st elapsedNanoseconds:(uint64_t)elapsedNanoseconds currentEpochNs:(long long)currentEpochNs;
 @end
 
@@ -470,7 +464,7 @@ typedef void (^FTWriteCallBack)(NSDictionary *fields, NSDictionary *tags);
     }
     XCTAssertEqual(callbackResult, 0, @"RunLoop callback must not wait for a stalled detector thread");
 }
-- (void)testLongTaskDetector_runLoopSnapshotKeepsCallbackFieldsTogether {
+- (void)testLongTaskDetector_runLoopReadKeepsCallbackFieldsTogether {
     FTLongTaskDetectorDelegateMock *delegate = [[FTLongTaskDetectorDelegateMock alloc] init];
     FTLongTaskDetector *detector = [[FTLongTaskDetector alloc] initWithDelegate:delegate];
     dispatch_semaphore_t writerDone = dispatch_semaphore_create(0);
@@ -484,24 +478,28 @@ typedef void (^FTWriteCallBack)(NSDictionary *fields, NSDictionary *tags);
 
     BOOL consistent = YES;
     for (NSUInteger attempt = 0; attempt < 10000; attempt++) {
-        FTRunLoopSnapshotForTest snapshot;
-        if (![detector runLoopSnapshot:&snapshot] || snapshot.generation == 0) {
+        CFRunLoopActivity activity;
+        long long startTimestampNs;
+        uint64_t generation;
+        if (![detector readRunLoopActivity:&activity startTimestampNs:&startTimestampNs generation:&generation] || generation == 0) {
             continue;
         }
-        CFRunLoopActivity expectedActivity = snapshot.generation & 1 ? kCFRunLoopBeforeSources : kCFRunLoopAfterWaiting;
-        if (snapshot.activity != expectedActivity || snapshot.startTimestampNs != (long long)snapshot.generation * NSEC_PER_MSEC) {
+        CFRunLoopActivity expectedActivity = generation & 1 ? kCFRunLoopBeforeSources : kCFRunLoopAfterWaiting;
+        if (activity != expectedActivity || startTimestampNs != (long long)generation * NSEC_PER_MSEC) {
             consistent = NO;
             break;
         }
     }
     XCTAssertEqual(dispatch_semaphore_wait(writerDone, dispatch_time(DISPATCH_TIME_NOW, 5 * NSEC_PER_SEC)), 0);
-    FTRunLoopSnapshotForTest finalSnapshot;
-    BOOL finalSnapshotValid = [detector runLoopSnapshot:&finalSnapshot];
-    XCTAssertTrue(finalSnapshotValid);
-    if (finalSnapshotValid) {
-        XCTAssertEqual(finalSnapshot.generation, 5000);
-        XCTAssertEqual(finalSnapshot.startTimestampNs, 5000LL * NSEC_PER_MSEC);
-        XCTAssertEqual(finalSnapshot.activity, kCFRunLoopAfterWaiting);
+    CFRunLoopActivity finalActivity;
+    long long finalStartTimestampNs;
+    uint64_t finalGeneration;
+    BOOL finalReadValid = [detector readRunLoopActivity:&finalActivity startTimestampNs:&finalStartTimestampNs generation:&finalGeneration];
+    XCTAssertTrue(finalReadValid);
+    if (finalReadValid) {
+        XCTAssertEqual(finalGeneration, 5000);
+        XCTAssertEqual(finalStartTimestampNs, 5000LL * NSEC_PER_MSEC);
+        XCTAssertEqual(finalActivity, kCFRunLoopAfterWaiting);
     }
     XCTAssertTrue(consistent);
 }
