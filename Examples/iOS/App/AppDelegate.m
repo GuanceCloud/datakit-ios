@@ -80,11 +80,11 @@
                 NSString *userId = content[@"custom_userid"];
                 // example this user uid = @"user_1"
                 if ([userId isEqualToString:@"user_1"]) {
-                    model.rumSampleRate = @(1);
-                    model.logSampleRate = @(1);
-                    model.traceSampleRate = @(1);
-                    model.sessionReplaySampleRate = @(1);
-                    model.sessionReplayOnErrorSampleRate = @(0);
+                    model.sessionSamplingRate = @(1);
+                    model.logSamplingRate = @(1);
+                    model.traceSamplingRate = @(1);
+                    model.sessionReplaySamplingRate = @(1);
+                    model.sessionReplayOnErrorSamplingRate = @(0);
                 }
             }
             //if the model is not modified, `return nil`(use original model) == `return model`
