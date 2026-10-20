@@ -67,11 +67,6 @@
 		177BA53E29DBCF4200DB7497 /* TraceViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 177BA53C29DBCF4200DB7497 /* TraceViewController.m */; };
 		177BA53F29DBCF4200DB7497 /* TraceViewController.xib in Resources */ = {isa = PBXBuildFile; fileRef = 177BA53D29DBCF4200DB7497 /* TraceViewController.xib */; };
 		178377F82D84141A00C590AE /* SessionReplayPrivacyOverridesTests.m in Sources */ = {isa = PBXBuildFile; fileRef = 178377F62D84141A00C590AE /* SessionReplayPrivacyOverridesTests.m */; };
-		1783787A2D8D0BB600C590AE /* FTRUMMonitorTest.m in Sources */ = {isa = PBXBuildFile; fileRef = 178378752D8D0BB600C590AE /* FTRUMMonitorTest.m */; };
-		1783787B2D8D0BB600C590AE /* FTRUMSessionOnErrorSampleRateTest.m in Sources */ = {isa = PBXBuildFile; fileRef = 178378762D8D0BB600C590AE /* FTRUMSessionOnErrorSampleRateTest.m */; };
-		1783787C2D8D0BB600C590AE /* FTRUMViewTest.m in Sources */ = {isa = PBXBuildFile; fileRef = 178378782D8D0BB600C590AE /* FTRUMViewTest.m */; };
-		1783787D2D8D0BB600C590AE /* FTRUMTest.m in Sources */ = {isa = PBXBuildFile; fileRef = 178378772D8D0BB600C590AE /* FTRUMTest.m */; };
-		1783787E2D8D0BB600C590AE /* FTRUMActionTest.m in Sources */ = {isa = PBXBuildFile; fileRef = 178378742D8D0BB600C590AE /* FTRUMActionTest.m */; };
 		1783787F2D8D0BB600C590AE /* FTRUMMonitorTest.m in Sources */ = {isa = PBXBuildFile; fileRef = 178378752D8D0BB600C590AE /* FTRUMMonitorTest.m */; };
 		178378802D8D0BB600C590AE /* FTRUMSessionOnErrorSampleRateTest.m in Sources */ = {isa = PBXBuildFile; fileRef = 178378762D8D0BB600C590AE /* FTRUMSessionOnErrorSampleRateTest.m */; };
 		178378812D8D0BB600C590AE /* FTRUMViewTest.m in Sources */ = {isa = PBXBuildFile; fileRef = 178378782D8D0BB600C590AE /* FTRUMViewTest.m */; };
@@ -120,11 +115,6 @@
 		178AE4082D579B8400BDC51B /* DebugLogsVC.swift in Sources */ = {isa = PBXBuildFile; fileRef = 178AE4072D579B8400BDC51B /* DebugLogsVC.swift */; };
 		178AE40A2D579D4E00BDC51B /* LogDetailVC.swift in Sources */ = {isa = PBXBuildFile; fileRef = 178AE4092D579D4E00BDC51B /* LogDetailVC.swift */; };
 		178AE40D2D58525800BDC51B /* GuanceSDK.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 178AE40C2D58525800BDC51B /* GuanceSDK.framework */; };
-		178AFCFF2E49CBF7009D3C09 /* FTRUMMonitorTest.m in Sources */ = {isa = PBXBuildFile; fileRef = 178AFCFA2E49CBF7009D3C09 /* FTRUMMonitorTest.m */; };
-		178AFD002E49CBF7009D3C09 /* FTRUMActionTest.m in Sources */ = {isa = PBXBuildFile; fileRef = 178AFCF82E49CBF7009D3C09 /* FTRUMActionTest.m */; };
-		178AFD012E49CBF7009D3C09 /* FTRUMTest.m in Sources */ = {isa = PBXBuildFile; fileRef = 178AFCFC2E49CBF7009D3C09 /* FTRUMTest.m */; };
-		178AFD022E49CBF7009D3C09 /* FTRUMSessionOnErrorSampleRateTest.m in Sources */ = {isa = PBXBuildFile; fileRef = 178AFCFB2E49CBF7009D3C09 /* FTRUMSessionOnErrorSampleRateTest.m */; };
-		178AFD032E49CBF7009D3C09 /* FTRUMViewTest.m in Sources */ = {isa = PBXBuildFile; fileRef = 178AFCFD2E49CBF7009D3C09 /* FTRUMViewTest.m */; };
 		178AFD042E49CBF7009D3C09 /* FTRUMConfigurationTest.m in Sources */ = {isa = PBXBuildFile; fileRef = 178AFCF92E49CBF7009D3C09 /* FTRUMConfigurationTest.m */; };
 		178AFD052E49CBF7009D3C09 /* FTRUMMonitorTest.m in Sources */ = {isa = PBXBuildFile; fileRef = 178AFCFA2E49CBF7009D3C09 /* FTRUMMonitorTest.m */; };
 		178AFD062E49CBF7009D3C09 /* FTRUMActionTest.m in Sources */ = {isa = PBXBuildFile; fileRef = 178AFCF82E49CBF7009D3C09 /* FTRUMActionTest.m */; };
@@ -795,7 +785,7 @@
 			path = UtilsTest;
 			sourceTree = "<group>";
 		};
-		172DD33828F7FC27007AE5E9 /* WidgetDemo */ = {
+		172DD33828F7FC27007AE5E9 /* iOS/Extensions/WidgetDemo */ = {
 			isa = PBXGroup;
 			children = (
 				172DD34A28F7FCB8007AE5E9 /* WidgetDemoExtension.entitlements */,
@@ -843,7 +833,7 @@
 			path = Resource;
 			sourceTree = "<group>";
 		};
-		175B13AD29E3AE3A003A5B1B /* Config */ = {
+		175B13AD29E3AE3A003A5B1B /* App/Config */ = {
 			isa = PBXGroup;
 			children = (
 				175B13AE29E3AE87003A5B1B /* Config-Example.publish.xcconfig */,
@@ -853,7 +843,7 @@
 			path = App/Config;
 			sourceTree = "<group>";
 		};
-		1764E40029AC9B0500E70DBB /* SwiftApp */ = {
+		1764E40029AC9B0500E70DBB /* iOS/SwiftApp */ = {
 			isa = PBXGroup;
 			children = (
 				1764E40129AC9B0500E70DBB /* AppDelegate.swift */,
@@ -1006,11 +996,11 @@
 			isa = PBXGroup;
 			children = (
 				7CDA50BD26DE15EB0062CC39 /* macOS */,
-				4A116958239113B600C0BC4E /* App */,
-				172DD33828F7FC27007AE5E9 /* WidgetDemo */,
-				1764E40029AC9B0500E70DBB /* SwiftApp */,
-				4A85313723AB85FC00B40B5D /* FTMobileSDKUnitTests */,
-				4A22526D23B5AC7600B0ED41 /* FTMobileSDKUITests */,
+				4A116958239113B600C0BC4E /* iOS/App */,
+				172DD33828F7FC27007AE5E9 /* iOS/Extensions/WidgetDemo */,
+				1764E40029AC9B0500E70DBB /* iOS/SwiftApp */,
+				4A85313723AB85FC00B40B5D /* iOS/Tests/FTMobileSDKUnitTests */,
+				4A22526D23B5AC7600B0ED41 /* iOS/Tests/FTMobileSDKUITests */,
 				17F10EBA2D13EAC800737EDD /* tvOS-App */,
 				17F10EC72D13EACC00737EDD /* tvOS-AppTests */,
 				17F10ECE2D13EACE00737EDD /* tvOS-AppUITests */,
@@ -1037,7 +1027,7 @@
 			name = Products;
 			sourceTree = "<group>";
 		};
-		4A116958239113B600C0BC4E /* App */ = {
+		4A116958239113B600C0BC4E /* iOS/App */ = {
 			isa = PBXGroup;
 			children = (
 				7C02F60C268C498200A0FE90 /* App.entitlements */,
@@ -1098,7 +1088,7 @@
 			path = iOS/App;
 			sourceTree = "<group>";
 		};
-		4A22526D23B5AC7600B0ED41 /* FTMobileSDKUITests */ = {
+		4A22526D23B5AC7600B0ED41 /* iOS/Tests/FTMobileSDKUITests */ = {
 			isa = PBXGroup;
 			children = (
 				4A22526E23B5AC7600B0ED41 /* FTMobileSDKUITests.m */,
@@ -1154,7 +1144,7 @@
 			name = Frameworks;
 			sourceTree = "<group>";
 		};
-		4A85313723AB85FC00B40B5D /* FTMobileSDKUnitTests */ = {
+		4A85313723AB85FC00B40B5D /* iOS/Tests/FTMobileSDKUnitTests */ = {
 			isa = PBXGroup;
 			children = (
 				178377F52D8413E600C590AE /* SessionReplay */,
@@ -1273,7 +1263,7 @@
 		7CDA50BD26DE15EB0062CC39 /* macOS */ = {
 			isa = PBXGroup;
 			children = (
-				175B13AD29E3AE3A003A5B1B /* Config */,
+				175B13AD29E3AE3A003A5B1B /* App/Config */,
 				7CDA50C826DE15EB0062CC39 /* macOS-App */,
 				7CDA50DF26DE15EE0062CC39 /* macOS-AppTests */,
 				7CDA50EA26DE15EE0062CC39 /* macOS-AppUITests */,
@@ -1852,9 +1842,13 @@
 			inputFileListPaths = (
 				"${PODS_ROOT}/Target Support Files/Pods-FTMobileSDKUnitTests-tvOS/Pods-FTMobileSDKUnitTests-tvOS-frameworks-${CONFIGURATION}-input-files.xcfilelist",
 			);
+			inputPaths = (
+			);
 			name = "[CP] Embed Pods Frameworks";
 			outputFileListPaths = (
 				"${PODS_ROOT}/Target Support Files/Pods-FTMobileSDKUnitTests-tvOS/Pods-FTMobileSDKUnitTests-tvOS-frameworks-${CONFIGURATION}-output-files.xcfilelist",
+			);
+			outputPaths = (
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 			shellPath = /bin/sh;
@@ -1886,9 +1880,13 @@
 			inputFileListPaths = (
 				"${PODS_ROOT}/Target Support Files/Pods-FTMobileSDKUnitTests/Pods-FTMobileSDKUnitTests-frameworks-${CONFIGURATION}-input-files.xcfilelist",
 			);
+			inputPaths = (
+			);
 			name = "[CP] Embed Pods Frameworks";
 			outputFileListPaths = (
 				"${PODS_ROOT}/Target Support Files/Pods-FTMobileSDKUnitTests/Pods-FTMobileSDKUnitTests-frameworks-${CONFIGURATION}-output-files.xcfilelist",
+			);
+			outputPaths = (
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 			shellPath = /bin/sh;
@@ -1963,11 +1961,6 @@
 				178378832D8D0BB600C590AE /* FTRUMActionTest.m in Sources */,
 				178AE37B2D55B74F00BDC51B /* FTResourceDelegateTest.m in Sources */,
 				178AE37C2D55B74F00BDC51B /* FTURLProtocol.m in Sources */,
-				178AFCFF2E49CBF7009D3C09 /* FTRUMMonitorTest.m in Sources */,
-				178AFD002E49CBF7009D3C09 /* FTRUMActionTest.m in Sources */,
-				178AFD012E49CBF7009D3C09 /* FTRUMTest.m in Sources */,
-				178AFD022E49CBF7009D3C09 /* FTRUMSessionOnErrorSampleRateTest.m in Sources */,
-				178AFD032E49CBF7009D3C09 /* FTRUMViewTest.m in Sources */,
 				178AFD042E49CBF7009D3C09 /* FTRUMConfigurationTest.m in Sources */,
 				178AE37D2D55B74F00BDC51B /* FTAppLaunchDurationTest.m in Sources */,
 				178AE37E2D55B74F00BDC51B /* FTNetworkTests.m in Sources */,
@@ -2140,12 +2133,7 @@
 				1712C5F72B60F0B100C4BD38 /* TestSessionDelegate.m in Sources */,
 				177892BF29A60FD00007B47F /* PerformanceLoggingTest.m in Sources */,
 				4A1D78A424F63FBF006125D0 /* FTMobileAgentTests.m in Sources */,
-				1783787A2D8D0BB600C590AE /* FTRUMMonitorTest.m in Sources */,
-				1783787B2D8D0BB600C590AE /* FTRUMSessionOnErrorSampleRateTest.m in Sources */,
-				1783787C2D8D0BB600C590AE /* FTRUMViewTest.m in Sources */,
-				1783787D2D8D0BB600C590AE /* FTRUMTest.m in Sources */,
 				170D62332DFB0B7A00E9131F /* FTRemoteConfigTest.m in Sources */,
-				1783787E2D8D0BB600C590AE /* FTRUMActionTest.m in Sources */,
 				177892BD29A60FA10007B47F /* PerformanceRumTest.m in Sources */,
 				174058C028D815810092E096 /* FTJavaScriptBridgeTest.m in Sources */,
 				1757C83C2D9D222600163865 /* SessionReplayConfigTests.m in Sources */,
@@ -2670,10 +2658,7 @@
 				SWIFT_VERSION = 5.0;
 				TARGETED_DEVICE_FAMILY = 3;
 				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/tvOS-App.app/$(BUNDLE_EXECUTABLE_FOLDER_PATH)/tvOS-App";
-				USER_HEADER_SEARCH_PATHS = (
-					"$(inherited)",
-					" ",
-				);
+				USER_HEADER_SEARCH_PATHS = "$(inherited)  ";
 			};
 			name = Debug;
 		};
@@ -2714,10 +2699,7 @@
 				SWIFT_VERSION = 5.0;
 				TARGETED_DEVICE_FAMILY = 3;
 				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/tvOS-App.app/$(BUNDLE_EXECUTABLE_FOLDER_PATH)/tvOS-App";
-				USER_HEADER_SEARCH_PATHS = (
-					"$(inherited)",
-					" ",
-				);
+				USER_HEADER_SEARCH_PATHS = "$(inherited)  ";
 			};
 			name = Pre;
 		};
@@ -2752,10 +2734,7 @@
 				SWIFT_VERSION = 5.0;
 				TARGETED_DEVICE_FAMILY = 3;
 				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/tvOS-App.app/$(BUNDLE_EXECUTABLE_FOLDER_PATH)/tvOS-App";
-				USER_HEADER_SEARCH_PATHS = (
-					"$(inherited)",
-					" ",
-				);
+				USER_HEADER_SEARCH_PATHS = "$(inherited)  ";
 			};
 			name = Release;
 		};
@@ -2896,10 +2875,7 @@
 				SWIFT_VERSION = 5.0;
 				TARGETED_DEVICE_FAMILY = "1,2";
 				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/App.app/$(BUNDLE_EXECUTABLE_FOLDER_PATH)/App";
-				USER_HEADER_SEARCH_PATHS = (
-					"$(inherited)",
-					" ",
-				);
+				USER_HEADER_SEARCH_PATHS = "$(inherited)  ";
 			};
 			name = Pre;
 		};
@@ -2945,8 +2921,8 @@
 				);
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_FILE = tvOS/App/Info.plist;
+				INFOPLIST_KEY_ITSAppUsesNonExemptEncryption = NO;
 				INFOPLIST_KEY_UILaunchStoryboardName = LaunchScreen;
-				INFOPLIST_KEY_UIMainStoryboardFile = Main;
 				INFOPLIST_KEY_UIUserInterfaceStyle = Automatic;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
@@ -2984,8 +2960,8 @@
 				GCC_C_LANGUAGE_STANDARD = gnu17;
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_FILE = tvOS/App/Info.plist;
+				INFOPLIST_KEY_ITSAppUsesNonExemptEncryption = NO;
 				INFOPLIST_KEY_UILaunchStoryboardName = LaunchScreen;
-				INFOPLIST_KEY_UIMainStoryboardFile = Main;
 				INFOPLIST_KEY_UIUserInterfaceStyle = Automatic;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
@@ -3022,8 +2998,8 @@
 				GCC_C_LANGUAGE_STANDARD = gnu17;
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_FILE = tvOS/App/Info.plist;
+				INFOPLIST_KEY_ITSAppUsesNonExemptEncryption = NO;
 				INFOPLIST_KEY_UILaunchStoryboardName = LaunchScreen;
-				INFOPLIST_KEY_UIMainStoryboardFile = Main;
 				INFOPLIST_KEY_UIUserInterfaceStyle = Automatic;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
@@ -3491,10 +3467,7 @@
 				SWIFT_VERSION = 5.0;
 				TARGETED_DEVICE_FAMILY = "1,2";
 				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/App.app/$(BUNDLE_EXECUTABLE_FOLDER_PATH)/App";
-				USER_HEADER_SEARCH_PATHS = (
-					"$(inherited)",
-					" ",
-				);
+				USER_HEADER_SEARCH_PATHS = "$(inherited)  ";
 			};
 			name = Debug;
 		};
@@ -3527,10 +3500,7 @@
 				SWIFT_VERSION = 5.0;
 				TARGETED_DEVICE_FAMILY = "1,2";
 				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/App.app/$(BUNDLE_EXECUTABLE_FOLDER_PATH)/App";
-				USER_HEADER_SEARCH_PATHS = (
-					"$(inherited)",
-					" ",
-				);
+				USER_HEADER_SEARCH_PATHS = "$(inherited)  ";
 			};
 			name = Release;
 		};

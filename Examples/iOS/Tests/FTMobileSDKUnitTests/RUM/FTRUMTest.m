@@ -52,7 +52,6 @@
 #import "FTRumConfig+Private.h"
 #import "FTAutoTrackHandler.h"
 #import "UIViewController+FTAutoTrack.h"
-#import "DemoViewController.h"
 #import "FTRUMContext.h"
 #import "FTRUMViewHandler.h"
 #import "FTCrashReportWrapper.h"
@@ -65,6 +64,12 @@
 #import "FTCrash.h"
 #import "FTLongTaskANRData.h"
 #import "FTModuleManager.h"
+
+// A shared UIKit fixture for iOS and tvOS lifecycle tests.
+@interface FTRUMLifecycleTestViewController : UIViewController
+@end
+@implementation FTRUMLifecycleTestViewController
+@end
 
 @interface FTModuleManager (RUMDeallocationTest)
 - (void)syncProcess;
@@ -574,7 +579,7 @@
     FTRUMManager *manager = [FTGlobalRumManager sharedInstance].rumManager;
     [[self lifecycleForManager:manager] applicationDidBecomeActive];
 
-    DemoViewController *controller = [DemoViewController new];
+    FTRUMLifecycleTestViewController *controller = [FTRUMLifecycleTestViewController new];
     [[FTAutoTrackHandler sharedInstance].viewControllerHandler notify_viewDidAppear:controller animated:NO];
     [manager syncProcess];
     NSString *viewID = [[manager valueForKey:@"sessionHandler"] getCurrentViewID];
@@ -651,7 +656,7 @@
     FTRUMManager *manager = [FTGlobalRumManager sharedInstance].rumManager;
     [[self lifecycleForManager:manager] applicationDidBecomeActive];
 
-    DemoViewController *controller = [DemoViewController new];
+    FTRUMLifecycleTestViewController *controller = [FTRUMLifecycleTestViewController new];
     [[FTAutoTrackHandler sharedInstance].viewControllerHandler notify_viewDidAppear:controller animated:NO];
     [manager syncProcess];
     NSString *previousViewID = [[manager valueForKey:@"sessionHandler"] getCurrentViewID];
