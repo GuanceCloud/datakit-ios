@@ -30,6 +30,8 @@
 NS_ASSUME_NONNULL_BEGIN
 
 @class FTIssueFieldEnricher;
+@protocol FTRUMNetworkSettledResourcePredicate;
+@protocol FTRUMNextViewActionPredicate;
 
 @interface FTRUMDependencies : NSObject
 @property (nonatomic, assign) float sampleRate;
@@ -37,8 +39,6 @@ NS_ASSUME_NONNULL_BEGIN
 @property (nonatomic, assign) BOOL enableResourceHostIP;
 @property (nonatomic, assign) BOOL enableTraceUserAction;
 @property (nonatomic, copy) NSString *appId;
-/// Schedules an internal window-close command on rumQueue; never a user event.
-@property (nonatomic, copy, nullable) void (^scheduleViewMetricsUpdate)(NSString *viewID, long long deadlineNs);
 @property (nonatomic, weak, nullable) id<FTRUMDataWriteProtocol> writer;
 @property (nonatomic, strong) id<FTErrorMonitorInfoWrapper> errorMonitorInfoWrapper;
 @property (nonatomic, strong) FTRUMMonitor *monitor;
@@ -48,6 +48,10 @@ NS_ASSUME_NONNULL_BEGIN
 @property (atomic, strong) NSDictionary *linkRUMSessionContext;
 @property (atomic, strong, nullable) NSDictionary *lastViewUserCustomDatas;
 @property (nonatomic, strong, nullable) FTRUMAppStateHistory *appStateHistory;
+/// Internal per-View rule injection; not a public SDK configuration option.
+@property (nonatomic, strong, nullable) id<FTRUMNetworkSettledResourcePredicate> networkSettledResourcePredicate;
+/// Internal INV rule injection; default is click within an inclusive three seconds.
+@property (nonatomic, strong, nullable) id<FTRUMNextViewActionPredicate> nextViewActionPredicate;
 
 //The following properties need to be readwrite in rumQueue
 @property (nonatomic, strong) NSNumber *sessionHasReplay;

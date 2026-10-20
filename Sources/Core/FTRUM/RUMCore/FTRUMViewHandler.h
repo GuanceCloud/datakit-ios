@@ -37,7 +37,6 @@ typedef void(^FTErrorHandled)(void);
 @property (nonatomic, strong, nullable) FTRUMViewMetrics *previousViewMetrics;
 - (void)refreshInteractionMetricWithContext:(NSDictionary *)context;
 @property (nonatomic, assign) BOOL fallbackView;
-@property (nonatomic, assign) BOOL reservationOnlyView;
 @property (nonatomic, assign) BOOL isApplicationLaunchView;
 @property (nonatomic, assign) BOOL closeAfterInitialLaunchAction;
 

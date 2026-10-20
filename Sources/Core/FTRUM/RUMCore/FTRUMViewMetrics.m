@@ -18,57 +18,79 @@
 //
 
 #import "FTRUMViewMetrics.h"
-#import "FTRUMAppStateHistory.h"
+
+@implementation FTRUMNextViewActionParams
+- (instancetype)initWithType:(NSString *)type name:(NSString *)name gapNs:(long long)gapNs nextViewName:(NSString *)nextViewName {
+    if ((self = [super init])) {
+        _actionType = [type copy];
+        _actionName = [name copy];
+        _timeToNextViewNs = gapNs;
+        _nextViewName = [nextViewName copy];
+    }
+    return self;
+}
+@end
+
+@interface FTRUMTimeBasedNextViewActionPredicate ()
+@property (nonatomic, assign) long long maxTimeNs;
+@end
+@implementation FTRUMTimeBasedNextViewActionPredicate
+- (instancetype)init { return [self initWithMaxTimeNs:3000000000LL]; }
+- (instancetype)initWithMaxTimeNs:(long long)maxTimeNs {
+    if ((self = [super init])) _maxTimeNs = maxTimeNs;
+    return self;
+}
+- (BOOL)isLastAction:(FTRUMNextViewActionParams *)params {
+    return [params.actionType isEqualToString:@"click"] && params.timeToNextViewNs >= 0 && params.timeToNextViewNs <= self.maxTimeNs;
+}
+@end
+
+@interface FTRUMInteractionAction : NSObject
+@property (nonatomic, assign) long long startNs;
+@property (nonatomic, copy) NSString *name;
+@property (nonatomic, copy) NSString *type;
+@end
+@implementation FTRUMInteractionAction
+@end
 
 @interface FTRUMViewMetrics ()
 @property (nonatomic, assign, readwrite) long long startNs;
-@property (nonatomic, strong) NSMutableArray<NSNumber *> *clickStarts;
-@property (nonatomic, strong) NSMutableArray<NSArray<NSNumber *> *> *resourceIntervals;
-@property (nonatomic, assign) long long maximumResourceEndNs;
+@property (nonatomic, strong) NSMutableArray<FTRUMInteractionAction *> *actions;
+@property (nonatomic, strong) id<FTRUMNextViewActionPredicate> predicate;
 @end
 @implementation FTRUMViewMetrics
-- (instancetype)initWithStartNs:(long long)startNs {
+- (instancetype)initWithStartNs:(long long)startNs predicate:(id<FTRUMNextViewActionPredicate>)predicate {
     if ((self = [super init])) {
         _startNs = startNs;
-        _clickStarts = [NSMutableArray new];
-        _resourceIntervals = [NSMutableArray new];
+        _actions = [NSMutableArray new];
+        _predicate = predicate ?: [FTRUMTimeBasedNextViewActionPredicate new];
     }
     return self;
 }
 - (void)moveStartEarlierTo:(long long)startNs {
     if (startNs <= 0 || startNs >= self.startNs) return;
     self.startNs = startNs;
-    self.maximumResourceEndNs = 0;
-    for (NSArray<NSNumber *> *interval in self.resourceIntervals) {
-        long long start = interval[0].longLongValue;
-        if (start >= startNs && start - startNs <= 100000000LL) {
-            self.maximumResourceEndNs = MAX(self.maximumResourceEndNs, interval[1].longLongValue);
-        }
+}
+- (void)recordActionStart:(long long)startNs name:(NSString *)name type:(NSString *)type {
+    FTRUMInteractionAction *action = [FTRUMInteractionAction new];
+    action.startNs = startNs;
+    action.name = name;
+    action.type = type;
+    [self.actions addObject:action];
+}
+- (NSNumber *)interactionToViewAt:(long long)nextStartNs name:(NSString *)nextViewName {
+    // Sort by the original boundary, never callback arrival. Do not prune: another
+    // destination or an earlier View origin may qualify an otherwise rejected Action.
+    NSArray<FTRUMInteractionAction *> *ordered = [self.actions sortedArrayUsingComparator:^NSComparisonResult(FTRUMInteractionAction *a, FTRUMInteractionAction *b) {
+        if (a.startNs == b.startNs) return NSOrderedSame;
+        return a.startNs > b.startNs ? NSOrderedAscending : NSOrderedDescending;
+    }];
+    for (FTRUMInteractionAction *action in ordered) {
+        if (self.startNs <= 0 || action.startNs < self.startNs || action.startNs > nextStartNs) continue;
+        long long gapNs = nextStartNs - action.startNs;
+        FTRUMNextViewActionParams *params = [[FTRUMNextViewActionParams alloc] initWithType:action.type name:action.name gapNs:gapNs nextViewName:nextViewName];
+        if ([self.predicate isLastAction:params]) return @(gapNs);
     }
-}
-- (void)recordClickStart:(long long)startNs {
-    [self.clickStarts addObject:@(startNs)];
-}
-- (NSNumber *)interactionToViewAt:(long long)nextStartNs {
-    if (self.ignoredPredecessor) return [self.ignoredPredecessor interactionToViewAt:nextStartNs];
-    NSNumber *latest;
-    for (NSNumber *start in self.clickStarts) {
-        if (start.longLongValue < self.startNs || start.longLongValue > nextStartNs || nextStartNs - start.longLongValue > 3000000000LL) continue;
-        if (!latest || start.longLongValue > latest.longLongValue) latest = start;
-    }
-    return latest ? @(nextStartNs - latest.longLongValue) : nil;
-}
-- (void)recordResourceStart:(long long)startNs end:(long long)endNs {
-    if (self.startNs <= 0 || startNs <= 0 || endNs < startNs) return;
-    // Later starts cannot become initial when the View origin moves earlier.
-    if (startNs >= self.startNs && startNs - self.startNs > 100000000LL) return;
-    [self.resourceIntervals addObject:@[@(startNs), @(endNs)]];
-    if (startNs >= self.startNs) self.maximumResourceEndNs = MAX(self.maximumResourceEndNs, endNs);
-}
-- (BOOL)hasInitialResource { return self.maximumResourceEndNs != 0; }
-- (NSNumber *)networkSettledTimeWithHistory:(FTRUMAppStateHistory *)history {
-    if (self.maximumResourceEndNs == 0) return nil;
-    if (!history || [history hasBackgroundOrUnavailableHistoryFrom:self.startNs to:self.maximumResourceEndNs]) return nil;
-    return @(self.maximumResourceEndNs - self.startNs);
+    return nil;
 }
 @end

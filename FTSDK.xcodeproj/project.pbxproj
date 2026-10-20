@@ -1016,6 +1016,8 @@
 		F71610012FA0000000000001 /* FTWebViewVisitorIDProvider.h in Headers */ = {isa = PBXBuildFile; fileRef = F71610012FA0000000000003 /* FTWebViewVisitorIDProvider.h */; };
 		FB0700012FA0000000000002 /* FTWKWebViewLogDelegate.h in Headers */ = {isa = PBXBuildFile; fileRef = FB0700012FA0000000000003 /* FTWKWebViewLogDelegate.h */; };
 		F71610012FA0000000000002 /* FTWebViewVisitorIDProvider.h in Headers */ = {isa = PBXBuildFile; fileRef = F71610012FA0000000000003 /* FTWebViewVisitorIDProvider.h */; };
+		CCB4A914D0BA6DA0B096F223 /* FTRUMNetworkSettledMetric.m in Sources */ = {isa = PBXBuildFile; fileRef = 94A311B73A8A85CC516D42D7 /* FTRUMNetworkSettledMetric.m */; };
+		FDA43B9FCC704F04829FBC14 /* FTRUMNetworkSettledMetric.m in Sources */ = {isa = PBXBuildFile; fileRef = 94A311B73A8A85CC516D42D7 /* FTRUMNetworkSettledMetric.m */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -1746,6 +1748,8 @@
 		F80DFD5D41004F0E6D6A17C3 /* FTHeatmap.m */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.c.objc; path = FTHeatmap.m; sourceTree = "<group>"; };
 		FB0700012FA0000000000003 /* FTWKWebViewLogDelegate.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = FTWKWebViewLogDelegate.h; sourceTree = "<group>"; };
 		F71610012FA0000000000003 /* FTWebViewVisitorIDProvider.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = FTWebViewVisitorIDProvider.h; sourceTree = "<group>"; };
+		0D529FB7EFF3AB3ED99E91CC /* FTRUMNetworkSettledMetric.h */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.c.h; path = FTRUMNetworkSettledMetric.h; sourceTree = "<group>"; };
+		94A311B73A8A85CC516D42D7 /* FTRUMNetworkSettledMetric.m */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.c.objc; path = FTRUMNetworkSettledMetric.m; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -2549,6 +2553,8 @@
 				17AB76A729D432DE008FBBF5 /* FTRUMSessionHandler.h */,
 				17AB76AC29D432DE008FBBF5 /* FTRUMSessionHandler.m */,
 				17AB76B329D432DE008FBBF5 /* FTRUMViewHandler.h */,
+				0D529FB7EFF3AB3ED99E91CC /* FTRUMNetworkSettledMetric.h */,
+				94A311B73A8A85CC516D42D7 /* FTRUMNetworkSettledMetric.m */,
 				1E904DD527FD437A98E127C0 /* FTRUMViewMetrics.h */,
 				17AB76A829D432DE008FBBF5 /* FTRUMViewHandler.m */,
 				6A0AA2D915CB4F10926AA233 /* FTRUMViewMetrics.m */,
@@ -3793,6 +3799,7 @@
 				A2F1F0062FF0000100A0A001 /* FTFirstFrameReader.m in Sources */,
 				17A422482EDEFFCA00416673 /* FTCrashMach-O.c in Sources */,
 				17AB76EB29D432DE008FBBF5 /* FTRUMViewHandler.m in Sources */,
+				FDA43B9FCC704F04829FBC14 /* FTRUMNetworkSettledMetric.m in Sources */,
 				061DE0EABC0F4118BCBD0513 /* FTRUMViewMetrics.m in Sources */,
 				176CE2452ED6DF3900E9E92B /* FTCrashSysCtl.c in Sources */,
 				17D0681C2D23F48B00D59159 /* FTTraceContext.m in Sources */,
@@ -4044,6 +4051,7 @@
 				172B10112E2F8FEB00753766 /* FTRumConfig.m in Sources */,
 				1776BA812B99B668008424FF /* FTOSLogger.m in Sources */,
 				17AB76EA29D432DE008FBBF5 /* FTRUMViewHandler.m in Sources */,
+				CCB4A914D0BA6DA0B096F223 /* FTRUMNetworkSettledMetric.m in Sources */,
 				49D4A4EB625B4D04A14523D1 /* FTRUMViewMetrics.m in Sources */,
 				17018DC42F5025B200688324 /* FTModuleManager.m in Sources */,
 				17E4CB3D29CD42DA005C2D99 /* FTThreadDispatchManager.m in Sources */,

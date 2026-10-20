@@ -250,34 +250,24 @@ static NSObject *sharedInstanceLock;
 - (void)interceptTask:(NSURLSessionTask *)task{
     NSDate *resourceStartDate = [self resourceBoundaryDate];
     uint64_t resourceStartContinuousTime = [self resourceBoundaryContinuousTime];
-    static char reservationKey;
+    static char resourceStartKey;
     NSString *resourceIdentifier;
     @synchronized (task) {
-        if (objc_getAssociatedObject(task, &reservationKey)) return;
+        if (objc_getAssociatedObject(task, &resourceStartKey)) return;
         resourceIdentifier = [self getTraceHandler:task].identifier ?: [NSUUID UUID].UUIDString;
-        objc_setAssociatedObject(task, &reservationKey, resourceIdentifier, OBJC_ASSOCIATION_COPY_NONATOMIC);
+        objc_setAssociatedObject(task, &resourceStartKey, resourceIdentifier, OBJC_ASSOCIATION_COPY_NONATOMIC);
     }
     id<FTRumResourceProtocol> receiver = self.rumResourceHandler;
-    BOOL reserved = [receiver respondsToSelector:@selector(reserveResourceWithKey:property:time:)] &&
-        [receiver respondsToSelector:@selector(admitResourceWithKey:property:time:)] &&
-        [receiver respondsToSelector:@selector(abandonResourceWithKey:time:)];
     BOOL isWebSocketHandshake = task.ft_isWebSocketTask;
     uint64_t startTime = isWebSocketHandshake ? resourceStartContinuousTime : 0;
     long long startNsTimeInterval = isWebSocketHandshake ? [resourceStartDate ft_nanosecondTimeStamp] : 0;
     FTURLSessionRequestSnapshot *requestSnapshot = [FTURLSessionRequestSnapshot snapshotWithRequest:task.currentRequest];
     NSString *requestVisitorID = task.ft_visitorIDSnapshot.value;
     NSURL *resourceURL = isWebSocketHandshake ? task.ft_webSocketResourceURL : requestSnapshot.URL;
-    if (reserved) {
-        FTVisitorIDManager *visitorIDManager = [FTVisitorIDManager sharedInstance];
-        [visitorIDManager bindResourceVisitorID:requestVisitorID forKey:resourceIdentifier];
-        [receiver reserveResourceWithKey:resourceIdentifier property:nil time:resourceStartDate];
-        [visitorIDManager consumeResourceVisitorIDForKey:resourceIdentifier];
-    }
     dispatch_async(self.queue, ^{
         @try {
             FTSessionTaskHandler *handler = [self getTraceHandler:task];
             if(!requestSnapshot || !resourceURL || ![self isTraceUrl:resourceURL]){
-                if (reserved) [receiver abandonResourceWithKey:resourceIdentifier time:resourceStartDate];
                 if(handler)[self removeTraceHandlerWithKey:task];
                 return;
             }
@@ -303,13 +293,8 @@ static NSObject *sharedInstanceLock;
                 handler.request = [webSocketRequest copy];
                 handler.webSocketHandshakeStarted = YES;
             }
-            if (reserved) {
-                [receiver admitResourceWithKey:handler.identifier property:nil time:resourceStartDate];
-            } else {
-                [self startResourceWithKey:handler.identifier requestVisitorID:requestVisitorID time:resourceStartDate];
-            }
+            [self startResourceWithKey:handler.identifier requestVisitorID:requestVisitorID time:resourceStartDate receiver:receiver];
         }@catch (NSException *exception) {
-            if (reserved) [receiver abandonResourceWithKey:resourceIdentifier time:resourceStartDate];
             [self removeTraceHandlerWithKey:task];
             FTInnerLogError(@"exception: %@",exception);
         }
@@ -604,17 +589,17 @@ static NSObject *sharedInstanceLock;
         [self.rumResourceHandler startResourceWithKey:key];
     }
 }
-- (void)startResourceWithKey:(NSString *)key requestVisitorID:(nullable NSString *)visitorID time:(NSDate *)time{
-    if (!self.rumResourceHandler) {
+- (void)startResourceWithKey:(NSString *)key requestVisitorID:(nullable NSString *)visitorID time:(NSDate *)time receiver:(id<FTRumResourceProtocol>)receiver{
+    if (!receiver) {
         return;
     }
     FTVisitorIDManager *visitorIDManager = [FTVisitorIDManager sharedInstance];
     [visitorIDManager bindResourceVisitorID:visitorID forKey:key];
     @try {
-        if ([self.rumResourceHandler respondsToSelector:@selector(startResourceWithKey:property:time:)]) {
-            [self.rumResourceHandler startResourceWithKey:key property:nil time:time];
+        if ([receiver respondsToSelector:@selector(startResourceWithKey:property:time:)]) {
+            [receiver startResourceWithKey:key property:nil time:time];
         } else {
-            [self startResourceWithKey:key];
+            if ([receiver respondsToSelector:@selector(startResourceWithKey:)]) [receiver startResourceWithKey:key];
         }
     } @finally {
         // FTRUMManager consumes the association synchronously. Remove it here when a

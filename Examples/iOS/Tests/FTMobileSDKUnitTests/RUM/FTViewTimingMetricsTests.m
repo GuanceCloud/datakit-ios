@@ -26,6 +26,8 @@
 #import "FTJSONUtil.h"
 #import "FTConstants.h"
 #import "FTRUMViewMetrics.h"
+#import "FTRUMNetworkSettledMetric.h"
+#import "FTRUMDependencies.h"
 #import "FTRUMManager.h"
 #import "FTURLSessionInterceptor+Private.h"
 #import "FTDataWriterWorker.h"
@@ -37,6 +39,24 @@
 #import <unistd.h>
 
 static long long const FTMetricEpoch = 1800000000000000000LL;
+
+@interface FTMetricPredicate : NSObject <FTRUMNetworkSettledResourcePredicate>
+@property (nonatomic, copy) BOOL (^evaluate)(FTRUMNetworkSettledResourceParams *params);
+@property (nonatomic, assign) NSUInteger calls;
+@end
+@implementation FTMetricPredicate
+- (BOOL)isInitialResource:(FTRUMNetworkSettledResourceParams *)params {
+    self.calls += 1;
+    return self.evaluate(params);
+}
+@end
+
+@interface FTINVPredicate : NSObject <FTRUMNextViewActionPredicate>
+@property (nonatomic, copy) BOOL (^evaluate)(FTRUMNextViewActionParams *params);
+@end
+@implementation FTINVPredicate
+- (BOOL)isLastAction:(FTRUMNextViewActionParams *)params { return self.evaluate(params); }
+@end
 
 @interface FTMetricWriter : NSObject <FTRUMDataWriteProtocol>
 @property (nonatomic, strong) NSMutableArray<NSDictionary *> *events;
@@ -244,6 +264,144 @@ static long long const FTMetricEpoch = 1800000000000000000LL;
     sendAt(view(@"restarted-UITestVC", NO), 1792152212332869120LL);
     XCTAssertNil([self fields:@"restarted-UITestVC"][@"interaction_to_next_view_time"]);
 }
+- (void)testResourceIncompleteFetchUsesOneCapturedIntervalForEventAndTNS {
+    [self view:@"A" at:0 stop:NO];
+    [self resource:@"r" type:FTRUMDataResourceStart at:20 metrics:nil];
+    [self resource:@"r" type:FTRUMDataResourceStop at:300 metrics:nil];
+    FTResourceMetricsModel *partial = [FTResourceMetricsModel new];
+    partial.fetchStartNsTimeInterval = FTMetricEpoch + 80000000;
+    [self resource:@"r" type:FTRUMDataResourceComplete at:2000 metrics:partial];
+    NSDictionary *event = nil;
+    for (NSDictionary *candidate in self.writer.events) if ([candidate[@"source"] isEqual:@"resource"]) event = candidate;
+    XCTAssertEqualObjects(event[@"time"], @(FTMetricEpoch + 20000000));
+    XCTAssertEqualObjects(event[@"fields"][@"duration"], @280000000);
+    XCTAssertEqualObjects([self fields:@"A"][@"network_settled_time"], @300000000);
+}
+- (void)testLegacyDurationWithoutEndpointDoesNotInventNetworkSettledTime {
+    [self view:@"A" at:0 stop:NO];
+    [self resource:@"r" type:FTRUMDataResourceStart at:20 metrics:nil];
+    FTResourceMetricsModel *legacy = [FTResourceMetricsModel new];
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wdeprecated-declarations"
+    legacy.duration = @500000000;
+#pragma clang diagnostic pop
+    [self resource:@"r" type:FTRUMDataResourceComplete at:9000 metrics:legacy];
+    NSDictionary *event = nil;
+    for (NSDictionary *candidate in self.writer.events) if ([candidate[@"source"] isEqual:@"resource"]) event = candidate;
+    XCTAssertEqualObjects(event[@"time"], @(FTMetricEpoch + 20000000));
+    XCTAssertEqualObjects(event[@"fields"][@"duration"], @500000000);
+    XCTAssertNil([self fields:@"A"][@"network_settled_time"]);
+}
+- (void)testNetworkMetricPersistsInLaterWholeViewSnapshot {
+    [self view:@"A" at:0 stop:NO];
+    [self resource:@"r" type:FTRUMDataResourceStart at:10 metrics:nil];
+    [self resource:@"r" type:FTRUMDataResourceComplete at:40 metrics:[self metricsFrom:10 to:40]];
+    XCTAssertEqualObjects([self fields:@"A"][@"network_settled_time"], @40000000);
+    [self click:@"later-event" at:500 type:@"custom"];
+    XCTAssertEqualObjects([self fields:@"A"][@"network_settled_time"], @40000000);
+    XCTAssertEqualObjects([self fields:@"A"][@"view_action_count"], @1);
+}
+- (void)testResourceFetchIntervalSharedByEventAndTNS {
+    [self view:@"A" at:0 stop:NO];
+    [self resource:@"r" type:FTRUMDataResourceStart at:120 metrics:nil];
+    [self resource:@"r" type:FTRUMDataResourceStop at:500 metrics:nil];
+    [self resource:@"r" type:FTRUMDataResourceComplete at:2000 metrics:[self metricsFrom:80 to:400]];
+    NSDictionary *event = nil;
+    for (NSDictionary *candidate in self.writer.events) if ([candidate[@"source"] isEqual:@"resource"]) event = candidate;
+    XCTAssertEqualObjects(event[@"time"], @(FTMetricEpoch + 80000000));
+    XCTAssertEqualObjects(event[@"fields"][@"duration"], @320000000);
+    XCTAssertEqualObjects([self fields:@"A"][@"network_settled_time"], @400000000);
+}
+- (void)testTNSPublishesCompletedBatchesWhileViewIsActive {
+    [self view:@"A" at:0 stop:NO];
+    [self resource:@"a" type:FTRUMDataResourceStart at:10 metrics:nil];
+    [self resource:@"a" type:FTRUMDataResourceComplete at:40 metrics:[self metricsFrom:10 to:40]];
+    XCTAssertEqualObjects([self fields:@"A"][@"network_settled_time"], @40000000);
+    [self resource:@"b" type:FTRUMDataResourceStart at:80 metrics:nil];
+    XCTAssertEqualObjects([self fields:@"A"][@"network_settled_time"], @40000000);
+    [self resource:@"b" type:FTRUMDataResourceComplete at:300 metrics:[self metricsFrom:80 to:300]];
+    XCTAssertEqualObjects([self fields:@"A"][@"network_settled_time"], @300000000);
+    XCTAssertEqualObjects([self fields:@"A"][@"is_active"], @YES);
+}
+- (void)testTNSNoninitialPendingResourceDoesNotDelayInitialBatch {
+    [self view:@"A" at:0 stop:NO];
+    [self resource:@"initial" type:FTRUMDataResourceStart at:10 metrics:nil];
+    [self resource:@"later" type:FTRUMDataResourceStart at:101 metrics:nil];
+    [self resource:@"initial" type:FTRUMDataResourceComplete at:300 metrics:[self metricsFrom:10 to:300]];
+    XCTAssertEqualObjects([self fields:@"A"][@"network_settled_time"], @300000000);
+    [self resource:@"later" type:FTRUMDataResourceComplete at:2000 metrics:[self metricsFrom:101 to:2000]];
+    XCTAssertEqualObjects([self fields:@"A"][@"network_settled_time"], @300000000);
+}
+- (void)testTNSLaterMetricsReclassifyResourceAndUpdateCompletedBatch {
+    [self view:@"A" at:0 stop:NO];
+    [self resource:@"a" type:FTRUMDataResourceStart at:10 metrics:nil];
+    [self resource:@"a" type:FTRUMDataResourceComplete at:40 metrics:[self metricsFrom:10 to:40]];
+    XCTAssertEqualObjects([self fields:@"A"][@"network_settled_time"], @40000000);
+    [self resource:@"b" type:FTRUMDataResourceStart at:120 metrics:nil];
+    XCTAssertEqualObjects([self fields:@"A"][@"network_settled_time"], @40000000);
+    [self resource:@"b" type:FTRUMDataResourceComplete at:500 metrics:[self metricsFrom:80 to:400]];
+    XCTAssertEqualObjects([self fields:@"A"][@"network_settled_time"], @400000000);
+}
+- (void)testINVInternalRuleCanSelectCustomActionByNameAndNextView {
+    FTINVPredicate *predicate = [FTINVPredicate new];
+    predicate.evaluate = ^BOOL(FTRUMNextViewActionParams *params) {
+        return [params.actionType isEqual:@"custom"] && [params.actionName isEqual:@"navigate"] &&
+            [params.nextViewName isEqual:@"same-name"] && params.timeToNextViewNs <= 5000000000LL;
+    };
+    self.dependencies.nextViewActionPredicate = predicate;
+    [self view:@"A" at:0 stop:NO];
+    [self click:@"navigate" at:500 type:@"custom"];
+    [self click:@"unrelated" at:900 type:@"click"];
+    [self view:@"B" at:1000 stop:NO];
+    XCTAssertEqualObjects([self fields:@"B"][@"interaction_to_next_view_time"], @500000000);
+}
+- (void)testINVInternalThresholdCanExceedThreeSecondsAndSurvivesDependencyCopy {
+    self.dependencies.nextViewActionPredicate = [[FTRUMTimeBasedNextViewActionPredicate alloc] initWithMaxTimeNs:5000000000LL];
+    FTRUMDependencies *copy = [self.dependencies copy];
+    XCTAssertEqual(copy.nextViewActionPredicate, self.dependencies.nextViewActionPredicate);
+    [self view:@"A" at:0 stop:NO];
+    [self click:@"navigate" at:0 type:@"click"];
+    [self view:@"B" at:4000 stop:NO];
+    XCTAssertEqualObjects([self fields:@"B"][@"interaction_to_next_view_time"], @4000000000LL);
+}
+- (void)testINVRuleQueriesKeepRejectedCandidatesForOtherDestinations {
+    FTINVPredicate *predicate = [FTINVPredicate new];
+    predicate.evaluate = ^BOOL(FTRUMNextViewActionParams *params) {
+        return [params.nextViewName isEqual:@"destination"] && [params.actionName isEqual:@"navigate"];
+    };
+    FTRUMViewMetrics *metric = [[FTRUMViewMetrics alloc] initWithStartNs:FTMetricEpoch predicate:predicate];
+    [metric recordActionStart:FTMetricEpoch + 900000000 name:@"unrelated" type:@"custom"];
+    [metric recordActionStart:FTMetricEpoch + 800000000 name:@"navigate" type:@"custom"];
+    XCTAssertNil([metric interactionToViewAt:FTMetricEpoch + 1000000000 name:@"other"]);
+    XCTAssertEqualObjects([metric interactionToViewAt:FTMetricEpoch + 1000000000 name:@"destination"], @200000000);
+    XCTAssertEqualObjects([metric interactionToViewAt:FTMetricEpoch + 1000000000 name:@"destination"], @200000000);
+}
+- (void)testINVCustomRuleCannotSelectInvalidActionButCanReevaluateEarlierOrigin {
+    FTINVPredicate *predicate = [FTINVPredicate new];
+    predicate.evaluate = ^BOOL(FTRUMNextViewActionParams *params) { return YES; };
+    FTRUMViewMetrics *metric = [[FTRUMViewMetrics alloc] initWithStartNs:FTMetricEpoch + 100000000 predicate:predicate];
+    [metric recordActionStart:FTMetricEpoch + 80000000 name:@"before-origin" type:@"custom"];
+    [metric recordActionStart:FTMetricEpoch + 1100000000 name:@"future" type:@"custom"];
+    XCTAssertNil([metric interactionToViewAt:FTMetricEpoch + 1000000000 name:@"B"]);
+    [metric moveStartEarlierTo:FTMetricEpoch];
+    XCTAssertEqualObjects([metric interactionToViewAt:FTMetricEpoch + 1000000000 name:@"B"], @920000000);
+}
+- (void)testINVCustomRuleHonorsFilteringAndUpdatesForLateAcceptedAction {
+    FTINVPredicate *predicate = [FTINVPredicate new];
+    predicate.evaluate = ^BOOL(FTRUMNextViewActionParams *params) { return [params.actionType isEqual:@"custom"]; };
+    self.dependencies.nextViewActionPredicate = predicate;
+    self.writer.discardAction = @"discard";
+    [self view:@"A" at:0 stop:NO];
+    [self click:@"keep" at:700 type:@"custom"];
+    [self click:@"discard" at:900 type:@"custom"];
+    FTRUMViewHandler *previous = [[self.session valueForKey:@"viewHandlers"] lastObject];
+    [self view:@"B" at:1000 stop:NO];
+    XCTAssertEqualObjects([self fields:@"B"][@"interaction_to_next_view_time"], @300000000);
+    [previous.metrics recordActionStart:FTMetricEpoch + 800000000 name:@"late" type:@"custom"];
+    FTRUMDataModel *refresh = [[FTRUMDataModel alloc] initWithType:FTRUMViewPlaceholder time:[self date:1200]];
+    [self send:refresh at:1200];
+    XCTAssertEqualObjects([self fields:@"B"][@"interaction_to_next_view_time"], @200000000);
+}
 - (void)testINVUsesLatestClickEventTimeAndSkipsOtherTypes {
     [self view:@"A" at:0 stop:NO];
     [self click:@"new" at:900 type:@"click"];
@@ -275,7 +433,7 @@ static long long const FTMetricEpoch = 1800000000000000000LL;
     [self view:@"B" at:1000 stop:NO];
     XCTAssertEqualObjects([self fields:@"B"][@"interaction_to_next_view_time"], @300000000);
 }
-- (void)testTNSWaitsForStopAndAllResourcesAndUsesMaximumEnd {
+- (void)testTNSWaitsForAllResourcesAfterStopAndUsesMaximumEnd {
     [self view:@"A" at:0 stop:NO];
     [self resource:@"a" type:FTRUMDataResourceStart at:20 metrics:nil];
     [self resource:@"b" type:FTRUMDataResourceStart at:80 metrics:nil];
@@ -346,7 +504,7 @@ static long long const FTMetricEpoch = 1800000000000000000LL;
     FTRUMViewHandler *previous = [[self.session valueForKey:@"viewHandlers"] lastObject];
     [self view:@"B" at:1000 stop:NO];
     XCTAssertNil([self fields:@"B"][@"interaction_to_next_view_time"]);
-    [previous.metrics recordClickStart:FTMetricEpoch + 800000000];
+    [previous.metrics recordActionStart:FTMetricEpoch + 800000000 name:@"late" type:@"click"];
     FTRUMDataModel *update = [[FTRUMDataModel alloc] initWithType:FTRUMViewPlaceholder time:[self date:1200]];
     [self send:update at:1200];
     XCTAssertEqualObjects([self fields:@"B"][@"interaction_to_next_view_time"], @200000000);
@@ -358,18 +516,15 @@ static long long const FTMetricEpoch = 1800000000000000000LL;
     [self view:@"C" at:1100 stop:NO];
     XCTAssertNil([self fields:@"C"][@"interaction_to_next_view_time"]);
 }
-- (void)testTNSShortViewWaitsForWindowClosureAndPreservesZero {
+- (void)testTNSShortViewClosesWithoutTimerAndPreservesZero {
     [self view:@"A" at:0 stop:NO];
     [self resource:@"a" type:FTRUMDataResourceStart at:0 metrics:nil];
     [self resource:@"a" type:FTRUMDataResourceComplete at:0 metrics:[self metricsFrom:0 to:0]];
-    [self view:@"A" at:50 stop:YES];
-    XCTAssertNil([self fields:@"A"][@"network_settled_time"]);
-    NSNumber *timeSpentBeforeWindow = [self fields:@"A"][@"time_spent"];
-    FTRUMViewModel *window = [[FTRUMViewModel alloc] initWithViewID:@"A" viewName:@"" viewReferrer:@""];
-    window.type = FTRUMDataViewMetricsUpdate;
-    [self send:window at:100];
     XCTAssertEqualObjects([self fields:@"A"][@"network_settled_time"], @0);
-    XCTAssertEqualObjects([self fields:@"A"][@"time_spent"], timeSpentBeforeWindow);
+    [self view:@"A" at:50 stop:YES];
+    XCTAssertEqualObjects([self fields:@"A"][@"network_settled_time"], @0);
+    NSArray *remainingViews = [self.session valueForKey:@"viewHandlers"];
+    XCTAssertEqual(remainingViews.count, 0);
 }
 - (void)testTNSMissingEndAndNegativeDurationAreExcluded {
     [self view:@"A" at:0 stop:NO];
@@ -427,26 +582,20 @@ static long long const FTMetricEpoch = 1800000000000000000LL;
         [[FTDataFilterManager sharedInstance] shutDown];
     }
 }
-- (void)testReservationRetainsOriginalViewAcrossDelayedAdmission {
+- (void)testStartedResourceRetainsOriginalViewAfterViewStop {
     [self view:@"A" at:0 stop:NO];
-    [self resource:@"a" type:FTRUMDataResourceReserve at:20 metrics:nil];
+    [self resource:@"a" type:FTRUMDataResourceStart at:20 metrics:nil];
     [self view:@"B" at:1000 stop:NO];
-    FTRUMResourceDataModel *admit = [[FTRUMResourceDataModel alloc] initWithType:FTRUMDataResourceStart identifier:@"a"];
-    admit.requiresReservation = YES;
-    [self send:admit at:20];
     [self resource:@"a" type:FTRUMDataResourceStop at:500 metrics:nil];
     [self resource:@"a" type:FTRUMDataResourceComplete at:2000 metrics:nil];
     XCTAssertEqualObjects([self fields:@"A"][@"network_settled_time"], @500000000);
     XCTAssertNil([self fields:@"B"][@"network_settled_time"]);
 }
-- (void)testOldSessionReservationCannotBeAdmittedIntoNewSession {
+- (void)testOldSessionResourceCannotCompleteIntoNewSession {
     [self view:@"A" at:0 stop:NO];
-    [self resource:@"a" type:FTRUMDataResourceReserve at:20 metrics:nil];
+    [self resource:@"a" type:FTRUMDataResourceStart at:20 metrics:nil];
     self.session = [[FTRUMSessionHandler alloc] initWithExpiredSession:self.session time:[self date:1000]];
     [self view:@"B" at:1100 stop:NO];
-    FTRUMResourceDataModel *admit = [[FTRUMResourceDataModel alloc] initWithType:FTRUMDataResourceStart identifier:@"a"];
-    admit.requiresReservation = YES;
-    [self send:admit at:20];
     [self resource:@"a" type:FTRUMDataResourceComplete at:2000 metrics:[self metricsFrom:20 to:500]];
     [self view:@"B" at:2500 stop:YES];
     XCTAssertEqualObjects([self fields:@"B"][@"view_resource_count"], @0);
@@ -489,7 +638,7 @@ static long long const FTMetricEpoch = 1800000000000000000LL;
     [instrumentation shutDown];
 }
 
-- (void)testCollectorQueueAndProviderDelayDoNotChangeBoundariesOrView {
+- (void)testCollectorDelayPreservesBoundariesButUsesCurrentView {
     FTRUMManager *manager = [[FTRUMManager alloc] initWithRumDependencies:self.dependencies];
     [manager syncProcess];
     [self.dependencies.appStateHistory stopMonitoring];
@@ -521,11 +670,20 @@ static long long const FTMetricEpoch = 1800000000000000000LL;
         interceptor.boundaryTime = 9000000000;
         return @{};
     };
-    [interceptor taskCompleted:task error:nil endTime:500000000];
+    [interceptor taskCompleted:task error:nil endTime:520000000];
     dispatch_sync(networkQueue, ^{});
     [manager syncProcess];
-    XCTAssertEqualObjects([self fields:@"collectorA"][@"network_settled_time"], @500000000);
+    XCTAssertNil([self fields:@"collectorA"][@"network_settled_time"]);
     XCTAssertNil([self fields:@"collectorB"][@"network_settled_time"]);
+    NSUInteger resources = 0;
+    for (NSDictionary *event in self.writer.events) {
+        if (![event[@"source"] isEqualToString:@"resource"]) continue;
+        resources++;
+        XCTAssertEqualObjects(event[@"tags"][@"view_id"], @"collectorB");
+        XCTAssertEqualObjects(event[@"time"], @(FTMetricEpoch + 20000000));
+        XCTAssertEqualObjects(event[@"fields"][@"duration"], @500000000);
+    }
+    XCTAssertEqual(resources, 1u);
     interceptor.resourcePropertyProvider = nil;
     [interceptor shutDown];
 }
@@ -543,31 +701,37 @@ static long long const FTMetricEpoch = 1800000000000000000LL;
     [self view:@"background" at:4000 stop:YES];
     XCTAssertNil([self fields:@"background"][@"network_settled_time"]);
 }
-- (void)testRejectedURLReservationDoesNotCreateAViewOrHideClick {
+- (void)testRejectedURLDoesNotCreateAViewOrHideClick {
     [self view:@"A" at:0 stop:NO];
     [self click:@"click" at:800 type:@"click"];
     [self view:@"A" at:900 stop:YES];
-    NSUInteger viewsBefore = self.writer.events.count;
-    [self resource:@"filtered" type:FTRUMDataResourceReserve at:950 metrics:nil];
-    [self resource:@"filtered" type:FTRUMDataResourceAbandon at:950 metrics:nil];
-    XCTAssertEqual(self.writer.events.count, viewsBefore);
+    FTRUMManager *manager = [[FTRUMManager alloc] initWithRumDependencies:self.dependencies];
+    [manager syncProcess];
+    [manager setValue:self.session forKey:@"sessionHandler"];
+    FTMetricInterceptor *interceptor = [FTMetricInterceptor new];
+    interceptor.rumResourceHandler = manager;
+    interceptor.boundaryDate = [self date:950];
+    interceptor.resourceUrlHandler = ^BOOL(NSURL *url) { return YES; };
+    NSUInteger before = self.writer.events.count;
+    [interceptor interceptTask:[FTMetricTask new]];
+    dispatch_sync([interceptor valueForKey:@"queue"], ^{});
+    [manager syncProcess];
+    XCTAssertEqual(self.writer.events.count, before);
     [self view:@"B" at:1000 stop:NO];
     XCTAssertEqualObjects([self fields:@"B"][@"interaction_to_next_view_time"], @200000000);
+    [interceptor shutDown];
 }
-- (void)testURLReservationDecisionAfterNextViewCorrectsPredecessor {
+
+- (void)testStartedResourceFallbackIsTheImmediatePredecessor {
     [self view:@"A" at:0 stop:NO];
     [self click:@"click" at:800 type:@"click"];
     [self view:@"A" at:900 stop:YES];
-    [self resource:@"pending" type:FTRUMDataResourceReserve at:950 metrics:nil];
+    [self resource:@"pending" type:FTRUMDataResourceStart at:950 metrics:nil];
     [self view:@"B" at:1000 stop:NO];
-    XCTAssertEqualObjects([self fields:@"B"][@"interaction_to_next_view_time"], @200000000);
-    FTRUMResourceDataModel *admit = [[FTRUMResourceDataModel alloc] initWithType:FTRUMDataResourceStart identifier:@"pending"];
-    admit.requiresReservation = YES;
-    [self send:admit at:950];
-    // An admitted fallback View now lies between A and B and has no click.
+    // A Resource fallback View now lies between A and B and has no click.
     XCTAssertNil([self fields:@"B"][@"interaction_to_next_view_time"]);
 }
-- (void)testURLConnectionStartReservationPrecedesActivationAndProvider {
+- (void)testURLConnectionActivationPreservesStartTimeAndUsesCurrentView {
     FTRUMManager *manager = [[FTRUMManager alloc] initWithRumDependencies:self.dependencies];
     [manager syncProcess];
     [self.dependencies.appStateHistory stopMonitoring];
@@ -588,15 +752,85 @@ static long long const FTMetricEpoch = 1800000000000000000LL;
     [handler recordTerminalWithResponse:nil error:[NSError errorWithDomain:NSURLErrorDomain code:NSURLErrorTimedOut userInfo:nil] date:[self date:500] continuousTime:500000000];
     [handler reportTerminalIfNeeded];
     [manager syncProcess];
-    XCTAssertEqualObjects([self fields:@"connectionA"][@"network_settled_time"], @500000000);
+    XCTAssertNil([self fields:@"connectionA"][@"network_settled_time"]);
     XCTAssertNil([self fields:@"connectionB"][@"network_settled_time"]);
 }
 - (void)testMetricsFollowEarlierViewOriginAndReclassifyExistingIntervals {
-    FTRUMViewMetrics *metrics = [[FTRUMViewMetrics alloc] initWithStartNs:FTMetricEpoch + 100000000];
-    [metrics recordResourceStart:FTMetricEpoch + 80000000 end:FTMetricEpoch + 400000000];
-    [metrics recordResourceStart:FTMetricEpoch + 120000000 end:FTMetricEpoch + 900000000];
-    [metrics moveStartEarlierTo:FTMetricEpoch];
-    XCTAssertEqualObjects([metrics networkSettledTimeWithHistory:self.dependencies.appStateHistory], @400000000);
+    FTRUMNetworkSettledMetric *metric = [[FTRUMNetworkSettledMetric alloc] initWithStartNs:FTMetricEpoch + 100000000 viewName:@"page" predicate:nil];
+    [metric startResourceWithKey:@"early" startNs:FTMetricEpoch + 80000000 URL:nil];
+    [metric completeResourceWithKey:@"early" endNs:FTMetricEpoch + 400000000];
+    [metric startResourceWithKey:@"later" startNs:FTMetricEpoch + 120000000 URL:nil];
+    [metric completeResourceWithKey:@"later" endNs:FTMetricEpoch + 900000000];
+    [metric moveStartEarlierTo:FTMetricEpoch];
+    XCTAssertEqualObjects([metric valueWithHistory:self.dependencies.appStateHistory], @400000000);
+}
+- (void)testInternalNetworkRuleCanUse200msWithoutChangingViewOrResource {
+    self.dependencies.networkSettledResourcePredicate = [[FTRUMTimeBasedNetworkSettledPredicate alloc] initWithThresholdNs:200000000];
+    [self view:@"A" at:0 stop:NO];
+    [self resource:@"r" type:FTRUMDataResourceStart at:120 metrics:nil];
+    [self resource:@"r" type:FTRUMDataResourceComplete at:2000 metrics:[self metricsFrom:120 to:500]];
+    XCTAssertEqualObjects([self fields:@"A"][@"network_settled_time"], @500000000);
+    FTRUMDependencies *copy = [self.dependencies copy];
+    XCTAssertEqual(copy.networkSettledResourcePredicate, self.dependencies.networkSettledResourcePredicate);
+}
+- (void)testURLRuleUsesFinalOriginalInformationAndIgnoresExcludedSlowRequest {
+    FTMetricPredicate *predicate = [FTMetricPredicate new];
+    predicate.evaluate = ^BOOL(FTRUMNetworkSettledResourceParams *params) {
+        return [params.resourceURL hasSuffix:@"/include"] && [params.viewName isEqual:@"same-name"];
+    };
+    self.dependencies.networkSettledResourcePredicate = predicate;
+    [self view:@"A" at:0 stop:NO];
+    [self resource:@"include" type:FTRUMDataResourceStart at:120 metrics:nil];
+    [self resource:@"exclude" type:FTRUMDataResourceStart at:20 metrics:nil];
+    FTRUMResourceDataModel *complete = [[FTRUMResourceDataModel alloc] initWithType:FTRUMDataResourceComplete identifier:@"include"];
+    complete.tags = @{FT_KEY_RESOURCE_URL:@"https://example.test/include"};
+    complete.metrics = [self metricsFrom:120 to:500];
+    [self send:complete at:2000];
+    XCTAssertEqualObjects([self fields:@"A"][@"network_settled_time"], @500000000);
+    complete = [[FTRUMResourceDataModel alloc] initWithType:FTRUMDataResourceComplete identifier:@"exclude"];
+    complete.tags = @{FT_KEY_RESOURCE_URL:@"https://example.test/exclude"};
+    complete.metrics = [self metricsFrom:20 to:9000];
+    [self send:complete at:10000];
+    XCTAssertEqualObjects([self fields:@"A"][@"network_settled_time"], @500000000);
+}
+- (void)testNetworkValueReadsArePureAndRetainCompletedBatchWhilePending {
+    FTMetricPredicate *predicate = [FTMetricPredicate new];
+    predicate.evaluate = ^BOOL(FTRUMNetworkSettledResourceParams *params) { return YES; };
+    FTRUMNetworkSettledMetric *metric = [[FTRUMNetworkSettledMetric alloc] initWithStartNs:FTMetricEpoch viewName:@"A" predicate:predicate];
+    [metric startResourceWithKey:@"a" startNs:FTMetricEpoch + 10000000 URL:nil];
+    [metric completeResourceWithKey:@"a" endNs:FTMetricEpoch + 40000000];
+    [metric startResourceWithKey:@"b" startNs:FTMetricEpoch + 80000000 URL:nil];
+    NSUInteger calls = predicate.calls;
+    XCTAssertEqualObjects([metric valueWithHistory:self.dependencies.appStateHistory], @40000000);
+    XCTAssertEqualObjects([metric valueWithHistory:self.dependencies.appStateHistory], @40000000);
+    XCTAssertEqual(predicate.calls, calls);
+    [metric completeResourceWithKey:@"b" endNs:FTMetricEpoch + 300000000];
+    XCTAssertEqualObjects([metric valueWithHistory:self.dependencies.appStateHistory], @300000000);
+    [metric completeResourceWithKey:@"b" endNs:FTMetricEpoch + 900000000];
+    [metric updateResourceWithKey:@"b" startNs:FTMetricEpoch URL:@"late"];
+    XCTAssertEqualObjects([metric valueWithHistory:self.dependencies.appStateHistory], @300000000);
+}
+- (void)testNetworkRuleReevaluatesPreviouslyExcludedCompletedIntervalsAfterOriginChange {
+    FTMetricPredicate *predicate = [FTMetricPredicate new];
+    predicate.evaluate = ^BOOL(FTRUMNetworkSettledResourceParams *params) {
+        return params.timeSinceViewStartNs >= 150000000 && params.timeSinceViewStartNs <= 250000000;
+    };
+    FTRUMNetworkSettledMetric *metric = [[FTRUMNetworkSettledMetric alloc] initWithStartNs:FTMetricEpoch + 100000000 viewName:@"A" predicate:predicate];
+    [metric startResourceWithKey:@"r" startNs:FTMetricEpoch + 200000000 URL:nil];
+    [metric completeResourceWithKey:@"r" endNs:FTMetricEpoch + 500000000];
+    XCTAssertNil([metric valueWithHistory:self.dependencies.appStateHistory]);
+    [metric moveStartEarlierTo:FTMetricEpoch];
+    XCTAssertEqualObjects([metric valueWithHistory:self.dependencies.appStateHistory], @500000000);
+}
+- (void)testNetworkReclassifiedPendingResourceWaitsWithoutLosingPreviousBatch {
+    FTRUMNetworkSettledMetric *metric = [[FTRUMNetworkSettledMetric alloc] initWithStartNs:FTMetricEpoch viewName:@"A" predicate:nil];
+    [metric startResourceWithKey:@"a" startNs:FTMetricEpoch + 10000000 URL:nil];
+    [metric completeResourceWithKey:@"a" endNs:FTMetricEpoch + 40000000];
+    [metric startResourceWithKey:@"b" startNs:FTMetricEpoch + 120000000 URL:nil];
+    [metric updateResourceWithKey:@"b" startNs:FTMetricEpoch + 80000000 URL:@"https://example.test"];
+    XCTAssertEqualObjects([metric valueWithHistory:self.dependencies.appStateHistory], @40000000);
+    [metric completeResourceWithKey:@"b" endNs:FTMetricEpoch + 400000000];
+    XCTAssertEqualObjects([metric valueWithHistory:self.dependencies.appStateHistory], @400000000);
 }
 - (void)testDuplicateTerminalsDoNotAffectTheNextViewsAction {
     [self view:@"A" at:0 stop:NO];

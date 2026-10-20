@@ -56,7 +56,6 @@ static BOOL FTURLConnectionURLsHaveSameOrigin(NSURL *left, NSURL *right) {
 @property (nonatomic, assign) uint64_t startContinuousTime;
 @property (nonatomic, assign) uint64_t terminalContinuousTime;
 @property (nonatomic, assign) BOOL activated;
-@property (nonatomic, assign) BOOL startReserved;
 @property (nonatomic, assign) BOOL startReported;
 @property (nonatomic, assign) BOOL terminalReported;
 @end
@@ -107,14 +106,7 @@ static BOOL FTURLConnectionURLsHaveSameOrigin(NSURL *left, NSURL *right) {
         self.startContinuousTime = continuousTime;
         changed = YES;
     }
-    id<FTRumResourceProtocol> receiver = self.rumResourceHandler;
-    BOOL reserve = changed && self.resourceEnabled &&
-        [receiver respondsToSelector:@selector(reserveResourceWithKey:property:time:)] &&
-        [receiver respondsToSelector:@selector(admitResourceWithKey:property:time:)] &&
-        [receiver respondsToSelector:@selector(abandonResourceWithKey:time:)];
-    if (changed) self.startReserved = reserve;
     [self.lock unlock];
-    if (reserve) [receiver reserveResourceWithKey:self.identifier property:nil time:date];
     return changed;
 }
 
@@ -129,12 +121,7 @@ static BOOL FTURLConnectionURLsHaveSameOrigin(NSURL *left, NSURL *right) {
     self.activated = NO;
     self.resourceEnabled = NO;
     self.state = FTURLConnectionHandlerStateTerminal;
-    BOOL abandon = self.startReserved && !self.terminalReported;
-    self.startReserved = NO;
-    id<FTRumResourceProtocol> receiver = self.rumResourceHandler;
-    NSDate *date = self.startDate;
     [self.lock unlock];
-    if (abandon) [receiver abandonResourceWithKey:self.identifier time:date];
 }
 
 - (void)didReceiveResponse:(NSURLResponse *)response {
@@ -280,12 +267,9 @@ static BOOL FTURLConnectionURLsHaveSameOrigin(NSURL *left, NSURL *right) {
     NSString *identifier = [self.identifier copy];
     NSDate *startDate = self.startDate;
     id<FTRumResourceProtocol> handler = self.rumResourceHandler;
-    BOOL reserved = self.startReserved;
     [self.lock unlock];
 
-    if (reserved) {
-        [handler admitResourceWithKey:identifier property:nil time:startDate];
-    } else if ([handler respondsToSelector:@selector(startResourceWithKey:property:time:)]) {
+    if ([handler respondsToSelector:@selector(startResourceWithKey:property:time:)]) {
         [handler startResourceWithKey:identifier property:nil time:startDate];
     } else {
         [handler startResourceWithKey:identifier property:nil];

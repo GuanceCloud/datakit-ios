@@ -26,8 +26,17 @@
 #import "FTResourceMetricsModel+Private.h"
 #import "FTRUMContext.h"
 #import "FTModuleManager.h"
+#import "FTRUMNetworkSettledMetric.h"
+
+// A single normalized interval serves both Resource output and TNS.
+typedef struct {
+    long long startNs;
+    long long endNs;
+    BOOL valid;
+} FTRUMResourceTiming;
 @interface FTRUMResourceHandler()<FTRUMSessionProtocol>
 @property (nonatomic, strong) FTRUMDependencies *dependencies;
+@property (nonatomic, strong) FTRUMNetworkSettledMetric *networkMetric;
 @property (nonatomic, copy,readwrite) NSString *identifier;
 @property (nonatomic, strong) NSDate *time;
 @property (nonatomic, assign) long long startNs;
@@ -40,7 +49,7 @@
 - (NSDictionary *)context:(NSDictionary *)context byApplyingVisitorID:(NSString *)visitorID;
 @end
 @implementation FTRUMResourceHandler
--(instancetype)initWithModel:(FTRUMResourceDataModel *)model context:(FTRUMContext *)context dependencies:(nonnull FTRUMDependencies *)dependencies{
+-(instancetype)initWithModel:(FTRUMResourceDataModel *)model context:(FTRUMContext *)context dependencies:(nonnull FTRUMDependencies *)dependencies networkMetric:(FTRUMNetworkSettledMetric *)networkMetric{
     self = [super init];
     if (self) {
         self.dependencies = dependencies;
@@ -48,6 +57,8 @@
         self.assistant = self;
         self.time = model.time;
         self.startNs = model.tm;
+        self.networkMetric = networkMetric;
+        [networkMetric startResourceWithKey:model.identifier startNs:model.tm URL:model.tags[FT_KEY_RESOURCE_URL]];
         self.visitorIDSnapshot = model.visitorIDSnapshot;
         self.resourceProperty = [[NSMutableDictionary alloc]init];
         if(model.fields && model.fields.allKeys.count>0){
@@ -99,6 +110,7 @@
                     break;
                 case FTRUMDataResourceAbandon:
                     self.completed = YES;
+                    [self.networkMetric dropResourceWithKey:self.identifier];
                     if (self.resourceHandler) {
                         self.resourceHandler(NO);
                     }
@@ -127,12 +139,20 @@
     }
     [self.dependencies.writer rumWrite:FT_RUM_SOURCE_ERROR tags:tags fields:fields dynamicContext:context time:model.tm];
 }
+- (FTRUMResourceTiming)timingForModel:(FTRUMResourceDataModel *)model {
+    long long startNs = model.metrics.fetchStartNsTimeInterval;
+    long long endNs = model.metrics.fetchEndNsTimeInterval;
+    if (startNs > 0 && endNs >= startNs) return (FTRUMResourceTiming){startNs, endNs, YES};
+    startNs = self.startNs;
+    endNs = self.stopNs.longLongValue;
+    return (FTRUMResourceTiming){startNs, endNs, startNs > 0 && self.stopNs && endNs >= startNs};
+}
 - (void)writeResourceData:(FTRUMDataModel *)data context:(NSDictionary *)context{
     FTRUMResourceDataModel *model = (FTRUMResourceDataModel *)data;
-    long long resourceStartTime = model.metrics.fetchStartNsTimeInterval;
-    if (resourceStartTime <= 0) {
-        resourceStartTime = [self.time ft_nanosecondTimeStamp];
-    }
+    FTRUMResourceTiming timing = [self timingForModel:model];
+    long long resourceStartTime = timing.startNs;
+    // Keep the original URL before any writer modifier or filter can transform it.
+    [self.networkMetric updateResourceWithKey:self.identifier startNs:timing.startNs URL:model.tags[FT_KEY_RESOURCE_URL]];
     NSMutableDictionary *fields = [NSMutableDictionary new];
     if(self.resourceProperty && self.resourceProperty.allKeys.count>0){
         [fields addEntriesFromDictionary:self.resourceProperty];
@@ -141,14 +161,16 @@
     [fields setValue:self.networkAvailable forKey:FT_KEY_NETWORK_AVAILABLE];
     [fields setValue:self.dependencies.sessionHasReplay forKey:FT_SESSION_HAS_REPLAY];
     NSDate *fallbackEnd = self.resourceStopTime ?: data.time;
-    [fields setValue:[self.time ft_nanosecondTimeIntervalToDate:fallbackEnd] forKey:FT_DURATION];
+    // Legacy duration-only metrics remain event-only when no interval can be established.
+    NSNumber *duration = timing.valid ? @(timing.endNs - timing.startNs)
+        : (model.metrics.fetchInterval ?: [self.time ft_nanosecondTimeIntervalToDate:fallbackEnd]);
+    [fields setValue:duration forKey:FT_DURATION];
     if(model.metrics){
         [fields setValue:model.metrics.ttfb forKey:FT_KEY_RESOURCE_TTFB];
         [fields setValue:model.metrics.ssl forKey:FT_KEY_RESOURCE_SSL];
         [fields setValue:model.metrics.tcp forKey:FT_KEY_RESOURCE_TCP];
         [fields setValue:model.metrics.dns forKey:FT_KEY_RESOURCE_DNS];
         [fields setValue:model.metrics.firstByte forKey:FT_KEY_RESOURCE_FIRST_BYTE];
-        [fields setValue:model.metrics.fetchInterval forKey:FT_DURATION];
         [fields setValue:model.metrics.trans forKey:FT_KEY_RESOURCE_TRANS];
         [fields setValue:model.metrics.resource_dns_time forKey:FT_KEY_RESOURCE_DNS_TIME];
         [fields setValue:model.metrics.resource_ssl_time forKey:FT_KEY_RESOURCE_SSL_TIME];
@@ -171,14 +193,10 @@
         context = [self context:context byApplyingVisitorID:self.visitorIDSnapshot];
     }
     BOOL accepted = FTRUMWriteAccepted(self.dependencies.writer, FT_RUM_SOURCE_RESOURCE, tags, fields, context, resourceStartTime);
-    if (accepted && self.metricHandler) {
-        long long startNs = model.metrics.fetchStartNsTimeInterval;
-        long long endNs = model.metrics.fetchEndNsTimeInterval;
-        if (startNs <= 0 || endNs < startNs) {
-            startNs = self.startNs;
-            endNs = self.stopNs ? self.stopNs.longLongValue : 0;
-        }
-        if (endNs >= startNs && startNs > 0) self.metricHandler(startNs, endNs);
+    if (accepted && timing.valid) {
+        [self.networkMetric completeResourceWithKey:self.identifier endNs:timing.endNs];
+    } else {
+        [self.networkMetric dropResourceWithKey:self.identifier];
     }
 }
 - (NSDictionary *)context:(NSDictionary *)context byApplyingVisitorID:(NSString *)visitorID{
