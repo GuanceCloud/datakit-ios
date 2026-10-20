@@ -1918,19 +1918,30 @@
 }
 - (void)testStopResourceInBackground{
     [self setRumConfig];
-    UIViewController *vc = [[UIViewController alloc] init];
-    vc.view.backgroundColor = UIColor.whiteColor;
-    [vc viewDidAppear:YES];
+    FTRUMManager *manager = [FTGlobalRumManager sharedInstance].rumManager;
+    NSString *viewID = [FTBaseInfoHandler randomUUID];
+    // Exercise RUM background handling without relying on synthetic UIKit callbacks.
+    [manager startViewWithViewID:viewID viewName:@"background-resource-page" property:nil];
+    [manager syncProcess];
+    FTRUMSessionHandler *sessionHandler = [manager valueForKey:@"sessionHandler"];
+    NSArray<FTRUMViewHandler *> *initialViews = [sessionHandler valueForKey:@"viewHandlers"];
+    NSPredicate *ownsView = [NSPredicate predicateWithBlock:^BOOL(FTRUMViewHandler *view, NSDictionary *bindings) {
+        return [view.view_id isEqualToString:viewID];
+    }];
+    NSArray<FTRUMViewHandler *> *trackedViews = [initialViews filteredArrayUsingPredicate:ownsView];
+    XCTAssertEqual(trackedViews.count, 1u);
+    XCTAssertTrue(trackedViews.firstObject.isActiveView);
+    XCTAssertEqual(trackedViews.firstObject.trackingType, FTRUMViewTrackingTypeAutomatic);
 
     NSString *key = [FTBaseInfoHandler randomUUID];
     NSURL *url = [NSURL URLWithString:@"https://www.baidu.com/more/"];
     [[FTExternalDataManager sharedManager] startResourceWithKey:key];
     [[NSNotificationCenter defaultCenter]
      postNotificationName:UIApplicationDidEnterBackgroundNotification object:nil];
-    [[FTGlobalRumManager sharedInstance].rumManager syncProcess];
-    FTRUMSessionHandler *sessionHandler = [[FTGlobalRumManager sharedInstance].rumManager valueForKey:@"sessionHandler"];
-    NSArray *viewHandlers = [sessionHandler valueForKey:@"viewHandlers"];
-    XCTAssertTrue(viewHandlers.count>0);
+    [manager syncProcess];
+    NSArray<FTRUMViewHandler *> *viewHandlers = [[sessionHandler valueForKey:@"viewHandlers"] filteredArrayUsingPredicate:ownsView];
+    XCTAssertEqual(viewHandlers.count, 1u);
+    XCTAssertFalse(viewHandlers.firstObject.isActiveView);
 
     FTResourceContentModel *model = [FTResourceContentModel new];
     model.url = url;
@@ -1938,9 +1949,17 @@
     model.httpMethod = @"GET";
     [[FTExternalDataManager sharedManager] stopResourceWithKey:key];
     [[FTExternalDataManager sharedManager] addResourceWithKey:key metrics:nil content:model];
-    [[FTGlobalRumManager sharedInstance].rumManager syncProcess];
-    NSArray *newViewHandlers = [sessionHandler valueForKey:@"viewHandlers"];
-    XCTAssertTrue(newViewHandlers.count == 0);
+    [manager syncProcess];
+    NSArray *newViewHandlers = [[sessionHandler valueForKey:@"viewHandlers"] filteredArrayUsingPredicate:ownsView];
+    XCTAssertEqual(newViewHandlers.count, 0u);
+    __block NSUInteger resourceCount = 0;
+    [FTModelHelper resolveModelArray:[[FTTrackerEventDBTool sharedManager] getAllDatas] callBack:^(NSString *source, NSDictionary *tags, NSDictionary *fields, BOOL *stop) {
+        if ([source isEqualToString:FT_RUM_SOURCE_RESOURCE] && [tags[FT_KEY_RESOURCE_ID] isEqualToString:key]) {
+            resourceCount++;
+            XCTAssertEqualObjects(tags[FT_KEY_VIEW_ID], viewID);
+        }
+    }];
+    XCTAssertEqual(resourceCount, 1u);
 }
 // When the next View Start, the duration of the current View is no longer updated (no new View data until the resource ends)
 - (void)testGivenViewUnfinishedResource{

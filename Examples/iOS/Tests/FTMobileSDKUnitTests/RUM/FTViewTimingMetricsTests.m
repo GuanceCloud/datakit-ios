@@ -35,6 +35,9 @@
 #import "FTURLConnectionHandler.h"
 #import "FTURLSessionInstrumentation.h"
 #import "FTReadWriteHelper.h"
+#if __has_include("OHHTTPStubs.h")
+#import "OHHTTPStubs.h"
+#endif
 #import <sys/socket.h>
 #import <netinet/in.h>
 #import <unistd.h>
@@ -631,7 +634,27 @@ static long long const FTMetricEpoch = 1800000000000000000LL;
     XCTAssertEqualObjects([self fields:@"B"][@"view_resource_count"], @0);
     XCTAssertNil([self fields:@"B"][@"network_settled_time"]);
 }
+#if __has_include("OHHTTPStubs.h")
+- (void)testImageRedirectWithUnrelatedHTTPStubIsCollected {
+    id<OHHTTPStubsDescriptor> stub = [OHHTTPStubs stubRequestsPassingTest:^BOOL(NSURLRequest *request) {
+        return YES;
+    } withStubResponse:^OHHTTPStubsResponse *(NSURLRequest *request) {
+        NSData *body = [@"{\"data\":\"Hello World!\",\"code\":200}" dataUsingEncoding:NSUTF8StringEncoding];
+        return [OHHTTPStubsResponse responseWithData:body statusCode:200 headers:nil];
+    }];
+    @try {
+        [self assertImageRedirectIsCollected];
+    } @finally {
+        [OHHTTPStubs removeStub:stub];
+    }
+}
+#endif
+
 - (void)testImageRedirectWithCompletionAndDefaultSessionIsCollected {
+    [self assertImageRedirectIsCollected];
+}
+
+- (void)assertImageRedirectIsCollected {
     FTRUMManager *manager = [[FTRUMManager alloc] initWithRumDependencies:self.dependencies];
     [manager startViewWithName:@"image-page"];
     [manager syncProcess];
@@ -640,6 +663,10 @@ static long long const FTMetricEpoch = 1800000000000000000LL;
     [instrumentation setRumResourceHandler:manager];
     NSURLSessionConfiguration *config = NSURLSessionConfiguration.ephemeralSessionConfiguration;
     config.URLCache = nil;
+#if __has_include("OHHTTPStubs.h")
+    // Exercise the real local redirect without changing other sessions' stubs.
+    [OHHTTPStubs setEnabled:NO forSessionConfiguration:config];
+#endif
     FTMetricImageServer *server = [FTMetricImageServer new];
     XCTAssertTrue([server start]);
     NSURLSession *session = [NSURLSession sessionWithConfiguration:config];
@@ -648,6 +675,8 @@ static long long const FTMetricEpoch = 1800000000000000000LL;
         XCTAssertNil(error);
         XCTAssertEqual(((NSHTTPURLResponse *)response).statusCode, 200);
         XCTAssertEqual(data.length, 68u);
+        XCTAssertEqualObjects(response.URL.path, @"/final.png");
+        XCTAssertEqualObjects(response.MIMEType, @"image/png");
         [completed fulfill];
     }] resume];
     [self waitForExpectations:@[completed] timeout:5];
