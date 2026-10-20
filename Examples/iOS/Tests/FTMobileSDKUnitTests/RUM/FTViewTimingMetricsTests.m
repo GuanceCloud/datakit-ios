@@ -18,6 +18,8 @@
 //
 
 #import <XCTest/XCTest.h>
+#import "FTAutoTrackHandler.h"
+#import "UIViewController+FTAutoTrack.h"
 #import "FTRUMSessionHandler.h"
 #import "FTRUMViewHandler.h"
 #import "FTRUMContext.h"
@@ -43,6 +45,49 @@
 #import <sys/socket.h>
 #import <netinet/in.h>
 #import <unistd.h>
+
+@interface UIViewController (AppearanceReentryTesting)
++ (BOOL)ft_installViewControllerLifecycleSwizzlesForClass:(Class)controllerClass;
+@end
+@interface FTAppearanceOrderBase : UIViewController
+@property (nonatomic, strong) NSMutableArray<NSString *> *events;
+@end
+@implementation FTAppearanceOrderBase
+- (void)viewDidAppear:(BOOL)animated {
+    [self.events addObject:@"base-before"];
+    [super viewDidAppear:animated];
+    [self.events addObject:@"base-after"];
+}
+@end
+@interface FTAppearanceOrderChild : FTAppearanceOrderBase
+@end
+@implementation FTAppearanceOrderChild
+- (void)viewDidAppear:(BOOL)animated {
+    [self.events addObject:@"child-before"];
+    [super viewDidAppear:animated];
+    [self.events addObject:@"child-after"];
+}
+@end
+@interface FTAppearanceOrderNoSuper : FTAppearanceOrderBase
+@end
+@implementation FTAppearanceOrderNoSuper
+- (void)viewDidAppear:(BOOL)animated { [self.events addObject:@"no-super"]; }
+@end
+@interface FTAppearanceOrderThrowing : FTAppearanceOrderBase
+@property (nonatomic, assign) BOOL throwsOnAppearance;
+@end
+@implementation FTAppearanceOrderThrowing
+- (void)viewDidAppear:(BOOL)animated {
+    [self.events addObject:@"business"];
+    if (self.throwsOnAppearance) [NSException raise:@"appearance-test" format:@"test exception"];
+}
+@end
+@interface FTAppearanceOrderSpy : NSObject
+@property (nonatomic, strong) NSMutableArray<NSString *> *events;
+@end
+@implementation FTAppearanceOrderSpy
+- (void)notify_viewDidAppear:(UIViewController *)controller animated:(BOOL)animated { [self.events addObject:@"sdk"]; }
+@end
 
 static long long const FTMetricEpoch = 1800000000000000000LL;
 
@@ -244,6 +289,57 @@ static long long const FTMetricEpoch = 1800000000000000000LL;
     metrics.fetchStartNsTimeInterval = FTMetricEpoch + start * 1000000LL;
     metrics.fetchEndNsTimeInterval = FTMetricEpoch + end * 1000000LL;
     return metrics;
+}
+- (void)testAppearanceReportsBeforeBusinessCallbackAndDeduplicatesSuperclassHooks {
+    XCTAssertTrue([UIViewController ft_installViewControllerLifecycleSwizzlesForClass:FTAppearanceOrderBase.class]);
+    XCTAssertTrue([UIViewController ft_installViewControllerLifecycleSwizzlesForClass:FTAppearanceOrderChild.class]);
+    FTAutoTrackHandler *handler = [FTAutoTrackHandler sharedInstance];
+    id previous = [handler valueForKey:@"viewControllerHandler"];
+    FTAppearanceOrderSpy *spy = [FTAppearanceOrderSpy new];
+    spy.events = [NSMutableArray new];
+    [handler setValue:spy forKey:@"viewControllerHandler"];
+    @try {
+        FTAppearanceOrderChild *controller = [FTAppearanceOrderChild new];
+        controller.events = spy.events;
+        [controller viewDidAppear:NO];
+        XCTAssertEqualObjects(spy.events, (@[@"sdk", @"child-before", @"base-before", @"base-after", @"child-after"]));
+        [spy.events removeAllObjects];
+        [controller viewDidAppear:NO];
+        XCTAssertEqualObjects(spy.events, (@[@"sdk", @"child-before", @"base-before", @"base-after", @"child-after"]));
+    } @finally { [handler setValue:previous forKey:@"viewControllerHandler"]; }
+}
+- (void)testAppearanceWithoutSuperStillReportsBeforeBusinessCallback {
+    XCTAssertTrue([UIViewController ft_installViewControllerLifecycleSwizzlesForClass:FTAppearanceOrderNoSuper.class]);
+    FTAutoTrackHandler *handler = [FTAutoTrackHandler sharedInstance];
+    id previous = [handler valueForKey:@"viewControllerHandler"];
+    FTAppearanceOrderSpy *spy = [FTAppearanceOrderSpy new];
+    spy.events = [NSMutableArray new];
+    [handler setValue:spy forKey:@"viewControllerHandler"];
+    @try {
+        FTAppearanceOrderNoSuper *controller = [FTAppearanceOrderNoSuper new];
+        controller.events = spy.events;
+        [controller viewDidAppear:NO];
+        XCTAssertEqualObjects(spy.events, (@[@"sdk", @"no-super"]));
+    } @finally { [handler setValue:previous forKey:@"viewControllerHandler"]; }
+}
+- (void)testAppearanceExceptionRestoresDepthForTheNextAppearance {
+    XCTAssertTrue([UIViewController ft_installViewControllerLifecycleSwizzlesForClass:FTAppearanceOrderThrowing.class]);
+    FTAutoTrackHandler *handler = [FTAutoTrackHandler sharedInstance];
+    id previous = [handler valueForKey:@"viewControllerHandler"];
+    FTAppearanceOrderSpy *spy = [FTAppearanceOrderSpy new];
+    spy.events = [NSMutableArray new];
+    [handler setValue:spy forKey:@"viewControllerHandler"];
+    @try {
+        FTAppearanceOrderThrowing *controller = [FTAppearanceOrderThrowing new];
+        controller.events = spy.events;
+        controller.throwsOnAppearance = YES;
+        XCTAssertThrowsSpecificNamed([controller viewDidAppear:NO], NSException, @"appearance-test");
+        XCTAssertEqualObjects(spy.events, (@[@"sdk", @"business"]));
+        [spy.events removeAllObjects];
+        controller.throwsOnAppearance = NO;
+        [controller viewDidAppear:NO];
+        XCTAssertEqualObjects(spy.events, (@[@"sdk", @"business"]));
+    } @finally { [handler setValue:previous forKey:@"viewControllerHandler"]; }
 }
 - (void)testINVFirstStartedActionNavigatesWithoutOtherEvents {
     for (NSNumber *delay in @[@50, @200]) {

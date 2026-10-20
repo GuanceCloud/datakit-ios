@@ -262,13 +262,14 @@ static BOOL FTViewControllerClassIsFromSwiftUIImage(Class viewControllerClass) {
             BOOL isOutermostAppearance = state.viewDidAppearDepth == 0;
             uint64_t viewDidAppearStartTime = isOutermostAppearance && !state.viewLoadDurationCalculated ? FTDateUtil.systemTime : 0;
             state.viewDidAppearDepth++;
-            FTSWCallOriginal(animated);
-            if (state.viewDidAppearDepth > 0) {
+            @try {
+                if (isOutermostAppearance) {
+                    [viewController ft_completeViewLoadingDurationForState:state viewDidAppearStartTime:viewDidAppearStartTime];
+                    [[FTAutoTrackHandler sharedInstance].viewControllerHandler notify_viewDidAppear:viewController animated:animated];
+                }
+                FTSWCallOriginal(animated);
+            } @finally {
                 state.viewDidAppearDepth--;
-            }
-            if (isOutermostAppearance && state.viewDidAppearDepth == 0) {
-                [viewController ft_completeViewLoadingDurationForState:state viewDidAppearStartTime:viewDidAppearStartTime];
-                [[FTAutoTrackHandler sharedInstance].viewControllerHandler notify_viewDidAppear:viewController animated:animated];
             }
         }), FTSwizzlerModeOncePerClass, viewDidAppearSwizzleKey);
         objc_setAssociatedObject(viewControllerClass, viewLoadDurationInstrumentedKey, @(YES), OBJC_ASSOCIATION_RETAIN_NONATOMIC);
@@ -536,18 +537,21 @@ static BOOL FTViewControllerClassIsFromSwiftUIImage(Class viewControllerClass) {
     if (state != nil) {
         state.viewDidAppearDepth++;
     }
-    [self ft_viewDidAppear:animated];
-    if (state != nil && state.viewDidAppearDepth > 0) {
-        state.viewDidAppearDepth--;
-    }
-    if (isOutermostAppearance && state.viewDidAppearDepth == 0) {
-        if (state.usesSwiftUIBaseLifecycleLoadingTime) {
-            [self ft_completeSwiftUIBaseLifecycleLoadingDurationForState:state viewDidAppearEndTime:FTDateUtil.systemTime];
-        } else {
-            [self ft_completeViewLoadingDurationForState:state viewDidAppearStartTime:viewDidAppearStartTime];
+    @try {
+        if (isOutermostAppearance) {
+            if (state.usesSwiftUIBaseLifecycleLoadingTime) {
+                [self ft_completeSwiftUIBaseLifecycleLoadingDurationForState:state viewDidAppearEndTime:FTDateUtil.systemTime];
+            } else {
+                [self ft_completeViewLoadingDurationForState:state viewDidAppearStartTime:viewDidAppearStartTime];
+            }
         }
+        if (!state || isOutermostAppearance) {
+            [[FTAutoTrackHandler sharedInstance].viewControllerHandler notify_viewDidAppear:self animated:animated];
+        }
+        [self ft_viewDidAppear:animated];
+    } @finally {
+        if (state != nil) state.viewDidAppearDepth--;
     }
-    [[FTAutoTrackHandler sharedInstance].viewControllerHandler notify_viewDidAppear:self animated:animated];
 }
 -(void)ft_viewDidDisappear:(BOOL)animated{
     [self ft_viewDidDisappear:animated];
