@@ -327,13 +327,17 @@
     }
 }
 - (void)endLongTask {
+    [self endLongTaskAtTimeNs:[NSDate ft_currentNanosecondTimeStamp]];
+}
+
+- (void)endLongTaskAtTimeNs:(long long)timeNs {
     @try {
         if (!self.longTaskEvent) {
             return;
         }
         FTLongTaskActiveEvent *event = self.longTaskEvent;
         self.longTaskEvent = nil;
-        [event observeTimeNs:[NSDate ft_currentNanosecondTimeStamp]];
+        [event observeTimeNs:timeNs];
         if (event.isLongTask && self.enableFreeze && self.delegate && [self.delegate respondsToSelector:@selector(longTaskStackDetected:duration:time:)]) {
             [self.delegate longTaskStackDetected:event.mainThreadBacktrace duration:event.durationNs time:event.startTimeNs];
         }
