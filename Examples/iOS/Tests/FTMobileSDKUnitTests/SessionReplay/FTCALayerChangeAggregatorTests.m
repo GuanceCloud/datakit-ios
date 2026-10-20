@@ -20,6 +20,12 @@
 
 #import <XCTest/XCTest.h>
 #import "FTCALayerChangeAggregator.h"
+#import "FTScreenChangeMonitor.h"
+#import "FTScreenChangeScheduler.h"
+#import "FTSessionReplayTouches.h"
+#import "FTWindowObserver.h"
+#import <UIKit/UIKit.h>
+#import <objc/runtime.h>
 
 @interface FTTestScheduledTimer : NSObject <FTScheduledTimer>
 @property (nonatomic, assign) NSTimeInterval fireTime;
@@ -153,6 +159,113 @@
         [self.timerScheduler advanceToTime:1.3];
         XCTAssertEqual(self.snapshots.count, 2);
         XCTAssertEqual([self.snapshots.lastObject aspectsForLayer:layer], FTCALayerChangeAspectLayout);
+    }];
+}
+
+- (void)testRetainedSwizzlesRouteOnlyToNewMonitorAfterRestart {
+    [self runOnMainThreadAndWait:^{
+        FTTestTimerScheduler *clock = [FTTestTimerScheduler new];
+        clock.now = 1;
+        __block NSInteger oldDeliveries = 0;
+        __block NSInteger newDeliveries = 0;
+        FTScreenChangeMonitor *oldMonitor = [[FTScreenChangeMonitor alloc] initWithMinimumDeliveryInterval:0.1 timerScheduler:clock handler:^(FTCALayerChangeSnapshot *snapshot) { oldDeliveries += 1; }];
+        [oldMonitor start];
+        IMP installed = method_getImplementation(class_getInstanceMethod(CALayer.class, @selector(layoutSublayers)));
+        CALayer *layer = [CALayer layer];
+        [layer layoutSublayers];
+        dispatch_block_t lateDelivery = [[clock.timers lastObject].action copy];
+        [oldMonitor stop];
+        lateDelivery();
+        XCTAssertEqual(oldDeliveries, 0);
+        FTScreenChangeMonitor *newMonitor = [[FTScreenChangeMonitor alloc] initWithMinimumDeliveryInterval:0.1 timerScheduler:clock handler:^(FTCALayerChangeSnapshot *snapshot) { newDeliveries += 1; }];
+        [newMonitor start];
+        [oldMonitor stop];
+        [layer layoutSublayers];
+        [clock advanceToTime:2];
+        XCTAssertEqual(oldDeliveries, 0);
+        XCTAssertEqual(newDeliveries, 1);
+        for (NSInteger cycle = 0; cycle < 3; cycle++) {
+            [newMonitor stop];
+            [newMonitor start];
+            [layer layoutSublayers];
+            [clock advanceToTime:clock.now + 1];
+        }
+        XCTAssertEqual(newDeliveries, 4);
+        XCTAssertEqual(method_getImplementation(class_getInstanceMethod(CALayer.class, @selector(layoutSublayers))), installed);
+        [newMonitor stop];
+    }];
+}
+
+- (void)testTouchShutdownClearsBufferWithoutReinstallingSwizzle {
+    [self runOnMainThreadAndWait:^{
+        FTSessionReplayTouches *oldTouches = [[FTSessionReplayTouches alloc] initWithWindowObserver:[FTWindowObserver new]];
+        IMP installed = method_getImplementation(class_getInstanceMethod(UIApplication.class, @selector(sendEvent:)));
+        [[oldTouches valueForKey:@"touches"] addObject:@"buffered-value"];
+        [oldTouches shutdown];
+        XCTAssertEqual([[oldTouches valueForKey:@"touches"] count], 0);
+        FTSessionReplayTouches *newTouches = [[FTSessionReplayTouches alloc] initWithWindowObserver:[FTWindowObserver new]];
+        XCTAssertEqual(method_getImplementation(class_getInstanceMethod(UIApplication.class, @selector(sendEvent:))), installed);
+        [oldTouches shutdown];
+        [newTouches shutdown];
+    }];
+}
+
+- (void)testCancelledTimerCannotDeliverAfterSameAggregatorRestarts {
+    [self runOnMainThreadAndWait:^{
+        CALayer *layer = [CALayer layer];
+        [self.aggregator start];
+        [self.aggregator layerDidDisplay:layer];
+        dispatch_block_t oldCallback = [self.timerScheduler.timers.lastObject.action copy];
+        [self.aggregator stop];
+        [self.aggregator start];
+        [self.aggregator layerDidDisplay:layer];
+        oldCallback();
+        XCTAssertEqual(self.snapshots.count, 0);
+        [self.timerScheduler advanceToTime:2];
+        XCTAssertEqual(self.snapshots.count, 1);
+    }];
+}
+
+- (void)testSchedulerWaitsForChangesAndShutdownIsTerminal {
+    [self runOnMainThreadAndWait:^{
+        FTTestTimerScheduler *clock = [FTTestTimerScheduler new];
+        clock.now = 1;
+        FTScreenChangeScheduler *scheduler = [[FTScreenChangeScheduler alloc] initWithMinimumInterval:0.1 timerScheduler:clock];
+        __block NSInteger captures = 0;
+        [scheduler scheduleWithOperation:^{ captures += 1; }];
+        [scheduler start];
+        [scheduler start];
+        XCTAssertEqual(captures, 0);
+        CALayer *layer = [CALayer layer];
+        [layer layoutSublayers];
+        [clock advanceToTime:2];
+        XCTAssertEqual(captures, 1);
+        [scheduler shutdown];
+        [scheduler shutdown];
+        [scheduler start];
+        [scheduler scheduleWithOperation:^{ captures += 1; }];
+        [layer layoutSublayers];
+        [clock advanceToTime:3];
+        XCTAssertEqual(captures, 1);
+        XCTAssertNil([scheduler valueForKey:@"monitor"]);
+        XCTAssertEqual([[scheduler valueForKey:@"operations"] count], 0);
+    }];
+}
+
+- (void)testShutdownInsideDeliveryStopsRemainingOperations {
+    [self runOnMainThreadAndWait:^{
+        FTTestTimerScheduler *clock = [FTTestTimerScheduler new];
+        clock.now = 1;
+        FTScreenChangeScheduler *scheduler = [[FTScreenChangeScheduler alloc] initWithMinimumInterval:0.1 timerScheduler:clock];
+        __block NSInteger captures = 0;
+        [scheduler scheduleWithOperation:^{ captures += 1; [scheduler shutdown]; }];
+        [scheduler scheduleWithOperation:^{ captures += 10; }];
+        [scheduler start];
+        CALayer *layer = [CALayer layer];
+        [layer layoutSublayers];
+        [clock advanceToTime:2];
+        XCTAssertEqual(captures, 1);
+        XCTAssertEqual([[scheduler valueForKey:@"operations"] count], 0);
     }];
 }
 

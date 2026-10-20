@@ -52,6 +52,7 @@ NSString * const FTSessionReplayRUMContextSampledForErrorSessionKey = @"sampledF
 @property (nonatomic, strong) FTSessionReplayConfig *config;
 @property (nonatomic, strong) FTFeatureScope *recordScope;
 @property (nonatomic, strong) FTFeatureScope *resourceScope;
+@property (nonatomic, strong) FTResourceProcessor *resourceProcessor;
 @property (nonatomic, copy) NSString *lastViewID;
 @property (nonatomic, strong) FTLimitedSizeSet *needCheckSlots;
 @property (nonatomic, strong) FTRecordingCoordinator *recordingCoordinator;
@@ -127,6 +128,7 @@ NSString * const FTSessionReplayRUMContextSampledForErrorSessionKey = @"sampledF
     FTResourcesWriter *resource = [[FTResourcesWriter alloc]initWithFeatureScope:resourceScope dataStore:dataStore];
     self.externalResourceWriter = resource;
     FTResourceProcessor *resourceProcessor = [[FTResourceProcessor alloc]initWithQueue:self.processorsQueue resourceWriter:resource];
+    self.resourceProcessor = resourceProcessor;
     FTRecordWriter *recordWriter = [[FTRecordWriter alloc]initWithFeatureScope:recordScope];
     FTSnapshotProcessor *srProcessor = [[FTSnapshotProcessor alloc]initWithQueue:self.processorsQueue recordWriter:recordWriter resourceProcessor:resourceProcessor];
 
@@ -139,6 +141,22 @@ NSString * const FTSessionReplayRUMContextSampledForErrorSessionKey = @"sampledF
 }
 - (void)startRecording{
     [self.recordingCoordinator startRecording];
+}
+- (void)shutDown {
+    @synchronized (self) {
+        [self.recordingCoordinator invalidate];
+        [[FTModuleManager sharedInstance] removeMessageReceiver:self];
+        dispatch_async(self.processorsQueue, ^{
+            self.resourceProcessor = nil;
+            self.externalResourceWriter = nil;
+            self.lastViewID = nil;
+            self.lastExternalViewID = nil;
+            self.needCheckSlots = nil;
+            @synchronized (self.externalRecordsCountByViewID) {
+                [self.externalRecordsCountByViewID removeAllObjects];
+            }
+        });
+    }
 }
 #pragma mark =========== FTMessageReceiver ============
 - (void)receive:(NSString *)key message:(NSDictionary *)message {

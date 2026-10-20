@@ -506,6 +506,8 @@ static FTSDKAgent *sharedInstance = nil;
     [FTSDKAgent shutDown];
 }
 - (void)releaseInternalResources {
+    id<FTSessionReplayLifecycle> replay = [[FTModuleManager sharedInstance] getRegisterService:@protocol(FTSessionReplayLifecycle)];
+    [replay shutDown];
     [[FTLogger sharedInstance] shutDown];
     [[FTURLConnectionInstrumentation existingInstance] shutDown];
     [[FTGlobalRumManager sharedInstance] shutDown];

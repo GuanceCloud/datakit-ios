@@ -32,6 +32,7 @@ NS_ASSUME_NONNULL_BEGIN
 -(void)startWithRecordStorage:(FTFeatureStorage *)recordStorage resourceStorage:(FTFeatureStorage *)resourceStorage resourceDataStore:(nullable id<FTDataStore>)dataStore;
 
 - (void)startRecording;
+- (void)shutDown;
 
 - (nullable NSDictionary *)currentExternalRUMContext;
 - (void)setExternalHasReplay:(BOOL)hasReplay;

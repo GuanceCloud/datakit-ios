@@ -33,6 +33,7 @@ const NSTimeInterval FTSessionReplayMacOSCaptureInterval = 0.1;
 @property (nonatomic, strong, nullable) NSTimer *captureTimer;
 #endif
 @property (nonatomic, strong) NSMutableArray<dispatch_block_t> *operations;
+@property (atomic, assign) BOOL invalidated;
 
 @end
 
@@ -59,6 +60,7 @@ const NSTimeInterval FTSessionReplayMacOSCaptureInterval = 0.1;
         return;
     }
     [self.queue run:^{
+        if (self.invalidated) return;
         [self.operations addObject:[operation copy]];
     }];
 }
@@ -67,7 +69,7 @@ const NSTimeInterval FTSessionReplayMacOSCaptureInterval = 0.1;
     __weak typeof(self) weakSelf = self;
     [self.queue run:^{
         __strong typeof(weakSelf) strongSelf = weakSelf;
-        if (!strongSelf) {
+        if (!strongSelf || strongSelf.invalidated) {
             return;
         }
         
@@ -77,7 +79,7 @@ const NSTimeInterval FTSessionReplayMacOSCaptureInterval = 0.1;
         }
         
         FTScreenChangeMonitor *monitor = [[FTScreenChangeMonitor alloc] initWithMinimumDeliveryInterval:strongSelf.minimumInterval timerScheduler:strongSelf.timerScheduler handler:^(FTCALayerChangeSnapshot * _Nonnull snapshot) {
-            [strongSelf screenDidChange:snapshot];
+            [weakSelf screenDidChange:snapshot];
         }];
         
         if (monitor) {
@@ -107,6 +109,14 @@ const NSTimeInterval FTSessionReplayMacOSCaptureInterval = 0.1;
     }];
 }
 
+- (void)shutdown {
+    self.invalidated = YES;
+    [self.queue run:^{
+        [self stop];
+        [self.operations removeAllObjects];
+    }];
+}
+
 - (void)stop {
     __weak typeof(self) weakSelf = self;
     
@@ -130,15 +140,19 @@ const NSTimeInterval FTSessionReplayMacOSCaptureInterval = 0.1;
 
 #if TARGET_OS_IOS
 - (void)screenDidChange:(FTCALayerChangeSnapshot *)snapshot {
+    if (self.invalidated) return;
     
-    [self.operations enumerateObjectsUsingBlock:^(dispatch_block_t  _Nonnull operation, NSUInteger idx, BOOL * _Nonnull stop) {
+    for (dispatch_block_t operation in [self.operations copy]) {
+        if (self.invalidated) break;
         operation();
-    }];
+    }
 
 }
 #elif TARGET_OS_OSX
 - (void)captureScreen {
+    if (self.invalidated) return;
     for (dispatch_block_t operation in [self.operations copy]) {
+        if (self.invalidated) break;
         operation();
     }
 }

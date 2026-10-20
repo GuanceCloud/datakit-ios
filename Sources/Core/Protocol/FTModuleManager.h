@@ -21,6 +21,10 @@
 #import <Foundation/Foundation.h>
 NS_ASSUME_NONNULL_BEGIN
 typedef NSString *FTMessageKey NS_STRING_ENUM;
+
+@protocol FTSessionReplayLifecycle <NSObject>
+- (void)shutDown;
+@end
 FOUNDATION_EXPORT FTMessageKey const FTMessageKeyRUMContext;
 FOUNDATION_EXPORT FTMessageKey const FTMessageKeyRecordsCountByViewID;
 FOUNDATION_EXPORT FTMessageKey const FTMessageKeySessionHasReplay;

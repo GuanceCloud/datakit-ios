@@ -46,8 +46,9 @@
     return self;
 }
 @end
-@interface FTRumSessionReplay ()
+@interface FTRumSessionReplay ()<FTSessionReplayLifecycle>
 @property (nonatomic, strong) dispatch_queue_t readWriteQueue;
+@property (nonatomic, strong) dispatch_queue_t contextQueue;
 @property (nonatomic, strong) FTCoreDirectory *coreDirectory;
 @property (nonatomic, strong) FTPerformancePreset *performancePreset;
 @property (nonatomic, strong) NSMutableDictionary<NSString*,FTFeatureStores*>*stores;
@@ -69,6 +70,7 @@ static dispatch_once_t onceToken;
     if(self){
         _coreDirectory = [[FTCoreDirectory alloc]initWithSubdirectoryPath:@"com.ft"];
         _readWriteQueue = dispatch_queue_create("com.ft.file.readwrite", 0);
+        _contextQueue = dispatch_queue_create("com.ft.replay.context", DISPATCH_QUEUE_SERIAL);
         _performancePreset = [[FTPerformancePreset alloc]init];
         _stores = [NSMutableDictionary new];
         _features = [NSMutableDictionary new];
@@ -101,6 +103,7 @@ static dispatch_once_t onceToken;
     [self.features setValue:resourcesFeature forKey:resourcesFeature.name];
     [sessionReplayFeature startWithRecordStorage:srStore.storage resourceStorage:resourceStore.storage resourceDataStore:resourceDataStore];
     [sessionReplayFeature startRecording];
+    [[FTModuleManager sharedInstance] registerService:@protocol(FTSessionReplayLifecycle) instance:self];
     FTInnerLogInfo(@"[session-replay] initialized success");
     }
 }
@@ -110,6 +113,7 @@ static dispatch_once_t onceToken;
         FTPerformancePreset *performancePreset = [self.performancePreset updateWithOverride:feature.performanceOverride];
         FTFeatureStorage *storage = [[FTFeatureStorage alloc]initWithFeatureName:feature.name
                                                                            queue:self.readWriteQueue
+                                                                    contextQueue:self.contextQueue
                                                                      directories:directories
                                                                      performance:performancePreset];
         FTFeatureUpload *upload = [FTFeatureUpload createWithFeatureName:feature.name
@@ -125,12 +129,26 @@ static dispatch_once_t onceToken;
     return nil;
 }
 
-- (FTSessionReplayFeature *)sessionReplayFeature {
-    id feature = self.features[@"session-replay"];
-    if ([feature isKindOfClass:FTSessionReplayFeature.class]) {
-        return feature;
+- (void)shutDown {
+    @synchronized (self) {
+        [[self sessionReplayFeature] shutDown];
+        for (FTFeatureStores *store in self.stores.allValues) {
+            [store.storage invalidate];
+            [store.upload cancel];
+        }
+        [self.features removeAllObjects];
+        [self.stores removeAllObjects];
     }
-    return nil;
+}
+
+- (FTSessionReplayFeature *)sessionReplayFeature {
+    @synchronized (self) {
+        id feature = self.features[@"session-replay"];
+        if ([feature isKindOfClass:FTSessionReplayFeature.class]) {
+            return feature;
+        }
+        return nil;
+    }
 }
 
 @end

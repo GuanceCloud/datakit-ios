@@ -35,6 +35,9 @@
 
 - (void)stop;
 
+@optional
+- (void)shutdown;
+
 @end
 
 #endif /* FTScheduler_h */

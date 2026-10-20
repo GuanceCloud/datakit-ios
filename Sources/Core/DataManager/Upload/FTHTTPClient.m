@@ -43,6 +43,7 @@ NSErrorDomain const FTHTTPClientErrorDomain = @"com.ft.sdk.httpclient";
 
 @interface FTHTTPClient()
 @property (nonatomic, strong) NSURLSession *session;
+@property (nonatomic, assign) BOOL cancelled;
 @end
 @implementation FTHTTPClient
 -(instancetype)init{
@@ -112,12 +113,24 @@ NSErrorDomain const FTHTTPClientErrorDomain = @"com.ft.sdk.httpclient";
          completion:(void(^_Nullable)(NSHTTPURLResponse * _Nullable httpResponse,
                                       NSData * _Nullable data,
                                       NSError * _Nullable error))callback{
+    @synchronized (self) {
+    if (self.cancelled) {
+        if (callback) callback(nil, nil, [NSError errorWithDomain:NSURLErrorDomain code:NSURLErrorCancelled userInfo:nil]);
+        return;
+    }
     NSURLSessionDataTask *task = [self realSendRequest:request completion:callback];
     if(!task && callback){
         NSError *error = [NSError errorWithDomain:FTHTTPClientErrorDomain
                                              code:FTHTTPClientErrorCodeRequestCreationFailed
                                          userInfo:@{NSLocalizedDescriptionKey:@"Failed to create upload request"}];
         callback(nil,nil,error);
+    }
+    }
+}
+- (void)cancel {
+    @synchronized (self) {
+        self.cancelled = YES;
+        [self.session invalidateAndCancel];
     }
 }
 -(void)dealloc{

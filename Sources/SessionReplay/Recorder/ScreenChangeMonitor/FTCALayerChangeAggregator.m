@@ -25,6 +25,7 @@
 @property (nonatomic, assign) NSTimeInterval lastDeliveryTime;
 @property (nonatomic, strong) id<FTScheduledTimer> scheduledDelivery;
 @property (nonatomic, copy) void (^handler)(FTCALayerChangeSnapshot *snapshot);
+@property (nonatomic, assign) NSUInteger deliveryGeneration;
 
 #pragma mark - private
 - (void)recordLayer:(CALayer *)layer aspect:(FTCALayerChangeAspect)aspect;
@@ -58,6 +59,7 @@
     }
     
     self.running = YES;
+    self.deliveryGeneration += 1;
     self.lastDeliveryTime = self.timerScheduler.now;
 }
 
@@ -67,6 +69,7 @@
     }
     
     self.running = NO;
+    self.deliveryGeneration += 1;
     [self.pendingChanges removeAllObjects];
     [self.scheduledDelivery cancel];
     self.scheduledDelivery = nil;
@@ -124,10 +127,11 @@
 }
 
 - (void)scheduleDeliveryAfterDelay:(NSTimeInterval)delay {
+    NSUInteger generation = self.deliveryGeneration;
     __weak typeof(self) weakSelf = self;
     self.scheduledDelivery = [self.timerScheduler scheduleAfterInterval:delay action:^{
         __strong typeof(weakSelf) strongSelf = weakSelf;
-        if (!strongSelf) {
+        if (!strongSelf || !strongSelf.isRunning || generation != strongSelf.deliveryGeneration) {
             return;
         }
         
@@ -137,6 +141,7 @@
 }
 
 - (void)deliverPendingChangesWithNow:(NSTimeInterval)now {
+    if (!self.isRunning) return;
     FTCALayerChangeSnapshot *snapshot = [[FTCALayerChangeSnapshot alloc] initWithChanges:self.pendingChanges];
     snapshot = [snapshot removingDeallocatedLayers];
     

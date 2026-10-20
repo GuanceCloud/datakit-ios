@@ -29,6 +29,7 @@ NS_ASSUME_NONNULL_BEGIN
 @interface FTCALayerSwizzler : NSObject
 - (instancetype)initWithObserver:(id<FTCALayerObserver>)observer;
 - (void)swizzleIfNeeded;
+- (void)detachObserver;
 @end
 
 NS_ASSUME_NONNULL_END

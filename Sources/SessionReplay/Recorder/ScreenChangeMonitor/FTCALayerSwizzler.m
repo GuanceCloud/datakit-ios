@@ -24,23 +24,32 @@ static void *const kFTSwizzleDisplay = (void *)&kFTSwizzleDisplay;
 static void *const kFTSwizzleDrawInContext = (void *)&kFTSwizzleDrawInContext;
 static void *const kFTSwizzleLayoutSublayers = (void *)&kFTSwizzleLayoutSublayers;
 
+@interface FTCALayerSwizzler ()
+@property (nonatomic, weak) id<FTCALayerObserver> observer;
+@end
+
 @implementation FTCALayerSwizzler
 
 - (instancetype)initWithObserver:(id<FTCALayerObserver>)observer {
     self = [super init];
     if (self) {
-        ft_currentLayerObserver = observer;
+        _observer = observer;
     }
     return self;
 }
 
 - (void)swizzleIfNeeded {
+    ft_currentLayerObserver = self.observer;
     static dispatch_once_t onceToken;
     dispatch_once(&onceToken, ^{
         [self swizzleDisplay];
         [self swizzleDraw];
         [self swizzleLayoutSublayers];
     });
+}
+
+- (void)detachObserver {
+    if (ft_currentLayerObserver == self.observer) ft_currentLayerObserver = nil;
 }
 
 #pragma mark - Display
