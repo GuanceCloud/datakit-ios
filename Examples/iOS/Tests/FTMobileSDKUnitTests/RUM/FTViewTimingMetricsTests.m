@@ -34,6 +34,7 @@
 #import "FTDataFilterManager.h"
 #import "FTURLConnectionHandler.h"
 #import "FTURLSessionInstrumentation.h"
+#import "FTReadWriteHelper.h"
 #import <sys/socket.h>
 #import <netinet/in.h>
 #import <unistd.h>
@@ -147,6 +148,35 @@ static long long const FTMetricEpoch = 1800000000000000000LL;
 @property (nonatomic, strong) FTRUMSessionHandler *session;
 @end
 @implementation FTViewTimingMetricsTests
+- (void)testResourceStartDoesNotWaitForTraceHandlerStorage {
+    FTMetricInterceptor *interceptor = [FTMetricInterceptor new];
+    interceptor.boundaryDate = [NSDate date];
+    interceptor.boundaryTime = 20000000;
+    FTReadWriteHelper *storage = [interceptor valueForKey:@"traceHandlers"];
+    dispatch_queue_t storageQueue = [storage valueForKey:@"concurrentQueue"];
+    dispatch_queue_t collectorQueue = [interceptor valueForKey:@"queue"];
+    FTMetricTask *task = [FTMetricTask new];
+    XCTestExpectation *returned = [self expectationWithDescription:@"request start does not depend on storage queue progress"];
+    dispatch_semaphore_t finished = dispatch_semaphore_create(0);
+    dispatch_suspend(storageQueue);
+    [storage concurrentWrite:^(id value) {}];
+    XCTWaiterResult result;
+    @try {
+        [NSThread detachNewThreadWithBlock:^{
+            [interceptor interceptTask:task];
+            [returned fulfill];
+            dispatch_semaphore_signal(finished);
+        }];
+        result = [XCTWaiter waitForExpectations:@[returned] timeout:1];
+    } @finally {
+        dispatch_resume(storageQueue);
+    }
+    XCTAssertEqual(result, XCTWaiterResultCompleted);
+    XCTAssertEqual(dispatch_semaphore_wait(finished, dispatch_time(DISPATCH_TIME_NOW, 2 * NSEC_PER_SEC)), 0L);
+    dispatch_sync(collectorQueue, ^{});
+    [interceptor shutDown];
+}
+
 - (void)testSessionStateOmitsRemovedProcessStartTime {
     FTRUMContext *context = [[FTRUMContext alloc] initWithSampleRate:100 sessionOnErrorSampleRate:0 appId:@"test-app"];
     FTRUMSessionState *state = context.sessionState;

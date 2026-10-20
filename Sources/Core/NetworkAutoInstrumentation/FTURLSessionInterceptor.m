@@ -254,7 +254,9 @@ static NSObject *sharedInstanceLock;
     NSString *resourceIdentifier;
     @synchronized (task) {
         if (objc_getAssociatedObject(task, &resourceStartKey)) return;
-        resourceIdentifier = [self getTraceHandler:task].identifier ?: [NSUUID UUID].UUIDString;
+        // Request startup must not wait for asynchronous Trace storage writes.
+        // The collector reuses any existing handler and its Trace context below.
+        resourceIdentifier = [NSUUID UUID].UUIDString;
         objc_setAssociatedObject(task, &resourceStartKey, resourceIdentifier, OBJC_ASSOCIATION_COPY_NONATOMIC);
     }
     id<FTRumResourceProtocol> receiver = self.rumResourceHandler;
