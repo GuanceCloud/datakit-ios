@@ -1,3 +1,13 @@
+# 1.6.8-alpha.11
+
+1. Added native Visitor ID sharing in WebViews, with access to the current identifier subject to the WebView host allowlist.
+2. Added RUM View metrics `interaction_to_next_view_time` and `network_settled_time` to measure the time from a click to the next View start and the time for a View's initial network requests to complete. Matching rules are configurable through `FTRumConfig.nextViewActionPredicate` and `networkSettledResourcePredicate`; synthetic fallback Views are excluded.
+3. Added standalone Session Replay shutdown through `FTRumSessionReplay.shutDown` (`shutdown()` in Swift), allowing replay resources to be released independently of SDK shutdown.
+4. Removed the `process_start_time_ns` field from RUM events and persisted Session state.
+5. Improved Long Task detection under delayed scheduling and prevented RunLoop state updates from blocking the main thread.
+6. Fixed automatic View tracking order so requests started in `viewDidAppear` are attributed to the newly visible View, without duplicate View events.
+---
+
 # 1.6.8-alpha.10
 
 1. Exposed public APIs required for React Native and Flutter Swift Package Manager integrations, including custom Session Replay recorders, wireframe builders, and external recording.

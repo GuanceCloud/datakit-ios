@@ -1,7 +1,7 @@
 Pod::Spec.new do |s|
 
 	s.name         = "GuanceSDK"
-	s.version      = "1.6.8-alpha.10"
+	s.version      = "1.6.8-alpha.11"
 	s.summary      = "Guance Cloud iOS Data Collection SDK"
 	#s.description  = ""
 	s.homepage     = "https://github.com/GuanceCloud/datakit-ios.git"
