@@ -81,6 +81,8 @@
     self = [super init];
     if (self) {
         _appid = [appid copy];
+        _nextViewActionPredicate = [FTRUMTimeBasedNextViewActionPredicate new];
+        _networkSettledResourcePredicate = [FTRUMTimeBasedNetworkSettledPredicate new];
         _enableTrackAppCrash= NO;
         _sessionSamplingRate = 100.0f;
         _sessionOnErrorSamplingRate = 0.0f;
@@ -101,6 +103,9 @@
     }
     return self;
 }
+- (void)setNetworkSettledResourcePredicate:(id<FTRUMNetworkSettledResourcePredicate>)predicate {
+    _networkSettledResourcePredicate = predicate ?: [FTRUMTimeBasedNetworkSettledPredicate new];
+}
 - (instancetype)copyWithZone:(NSZone *)zone {
     FTRumConfig *options = [[[self class] allocWithZone:zone] init];
     options.enableTrackAppCrash = self.enableTrackAppCrash;
@@ -113,6 +118,8 @@
     options.enableTraceURLConnectionResource = self.enableTraceURLConnectionResource;
     options.enableResourceHostIP = self.enableResourceHostIP;
     options.appid = [self.appid copy];
+    options.nextViewActionPredicate = self.nextViewActionPredicate;
+    options.networkSettledResourcePredicate = self.networkSettledResourcePredicate;
     options.errorMonitorType = self.errorMonitorType;
     options.globalContext = [self.globalContext copy];
     options.deviceMetricsMonitorType = self.deviceMetricsMonitorType;

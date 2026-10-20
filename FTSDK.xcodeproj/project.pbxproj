@@ -1018,6 +1018,8 @@
 		F71610012FA0000000000002 /* FTWebViewVisitorIDProvider.h in Headers */ = {isa = PBXBuildFile; fileRef = F71610012FA0000000000003 /* FTWebViewVisitorIDProvider.h */; };
 		CCB4A914D0BA6DA0B096F223 /* FTRUMNetworkSettledMetric.m in Sources */ = {isa = PBXBuildFile; fileRef = 94A311B73A8A85CC516D42D7 /* FTRUMNetworkSettledMetric.m */; };
 		FDA43B9FCC704F04829FBC14 /* FTRUMNetworkSettledMetric.m in Sources */ = {isa = PBXBuildFile; fileRef = 94A311B73A8A85CC516D42D7 /* FTRUMNetworkSettledMetric.m */; };
+		452EDDB618356D6832BDB985 /* FTRUMViewTimingPredicates.h in Headers */ = {isa = PBXBuildFile; fileRef = FB06A5AE300B57DCD5ED5CDA /* FTRUMViewTimingPredicates.h */; settings = {ATTRIBUTES = (Public, ); }; };
+		ECF6A9DD35A3E430BDFA773B /* FTRUMViewTimingPredicates.h in Headers */ = {isa = PBXBuildFile; fileRef = FB06A5AE300B57DCD5ED5CDA /* FTRUMViewTimingPredicates.h */; settings = {ATTRIBUTES = (Public, ); }; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -1750,6 +1752,7 @@
 		F71610012FA0000000000003 /* FTWebViewVisitorIDProvider.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = FTWebViewVisitorIDProvider.h; sourceTree = "<group>"; };
 		0D529FB7EFF3AB3ED99E91CC /* FTRUMNetworkSettledMetric.h */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.c.h; path = FTRUMNetworkSettledMetric.h; sourceTree = "<group>"; };
 		94A311B73A8A85CC516D42D7 /* FTRUMNetworkSettledMetric.m */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.c.objc; path = FTRUMNetworkSettledMetric.m; sourceTree = "<group>"; };
+		FB06A5AE300B57DCD5ED5CDA /* FTRUMViewTimingPredicates.h */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.c.h; name = FTRUMViewTimingPredicates.h; path = Sources/Core/FTRUM/include/FTRUMViewTimingPredicates.h; sourceTree = SOURCE_ROOT; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -2561,6 +2564,7 @@
 				17AB76B229D432DE008FBBF5 /* FTRUMResourceHandler.h */,
 				17AB76A929D432DE008FBBF5 /* FTRUMResourceHandler.m */,
 				172B10E92E377B3700753766 /* FTRUMDependencies.h */,
+				FB06A5AE300B57DCD5ED5CDA /* FTRUMViewTimingPredicates.h */,
 				17E32BAA2BEE21F600F4685C /* FTRUMDependencies.m */,
 				A2F10D012FF2000100A0A001 /* FTRUMAppStateHistory.h */,
 				A2F10D022FF2000100A0A001 /* FTRUMAppStateHistory.m */,
@@ -3044,6 +3048,7 @@
 				A4D101092FFB000100A0A001 /* FTVisitorIDManager+Private.h in Headers */,
 				A2F100052FF1000100A0A001 /* FTIssueDataProvider.h in Headers */,
 				172B10EC2E377B3700753766 /* FTRUMDependencies.h in Headers */,
+				452EDDB618356D6832BDB985 /* FTRUMViewTimingPredicates.h in Headers */,
 				A2F10D032FF2000100A0A001 /* FTRUMAppStateHistory.h in Headers */,
 				177606A429D1376600D17137 /* FTReadWriteHelper.h in Headers */,
 				17717B7A2F0F4FA9002158F6 /* FTCrash.h in Headers */,
@@ -3271,6 +3276,7 @@
 				17E4CB5129CD42DA005C2D99 /* FTRecordModel.h in Headers */,
 				17A422172EDE94AD00416673 /* FTCrashSignalInfo.h in Headers */,
 				172B10EA2E377B3700753766 /* FTRUMDependencies.h in Headers */,
+				ECF6A9DD35A3E430BDFA773B /* FTRUMViewTimingPredicates.h in Headers */,
 				A2F10D042FF2000100A0A001 /* FTRUMAppStateHistory.h in Headers */,
 				17E4CC1E29CD42E4005C2D99 /* FTRumResourceProtocol.h in Headers */,
 				17A421DB2EDDB0F100416673 /* FTCrashMonitor_MachException.h in Headers */,

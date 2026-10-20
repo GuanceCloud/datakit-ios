@@ -310,12 +310,13 @@ static NSString *FTRUMSessionStartReasonForCause(FTRUMSessionRenewalCause cause)
         return;
     }
     FTRUMViewHandler *activeViewHandler = [self activeViewHandler];
+    FTRUMViewMetrics *precedingMetrics = self.lastViewMetrics;
     applicationLaunchViewHandler = [self startFallbackViewWithName:FTRUMFallbackViewNameApplicationLaunch time:model.time];
     applicationLaunchViewHandler.closeAfterInitialLaunchAction = activeViewHandler != nil;
     if (activeViewHandler) {
         // A late initial-launch report uses a temporary fallback alongside the
         // active page. It must not become the predecessor of the next page.
-        self.lastViewMetrics = applicationLaunchViewHandler.previousViewMetrics;
+        self.lastViewMetrics = precedingMetrics;
     }
 }
 -(NSString *)fallbackViewNameForModel:(FTRUMDataModel *)model{
@@ -356,8 +357,8 @@ static NSString *FTRUMSessionStartReasonForCause(FTRUMSessionRenewalCause cause)
     FTRUMViewHandler *viewHandler = [[FTRUMViewHandler alloc]initWithModel:viewModel context:self.context rumDependencies:self.rumDependencies needsMonitoring:NO];
     viewHandler.fallbackView = YES;
     viewHandler.isApplicationLaunchView = [viewModel.view_name isEqualToString:FTRUMFallbackViewNameApplicationLaunch];
-    viewHandler.previousViewMetrics = self.lastViewMetrics;
-    self.lastViewMetrics = viewHandler.metrics;
+    // A real fallback boundary breaks INV linkage; do not bridge across it.
+    self.lastViewMetrics = nil;
     [self.viewHandlers addObject:viewHandler];
     return viewHandler;
 }

@@ -3,6 +3,11 @@
 int main(void) {
     @autoreleasepool {
         FTSDKConfig *config = [[FTSDKConfig alloc] initWithDatakitUrl:@"https://example.com"];
+        FTRumConfig *rum = [[FTRumConfig alloc] initWithAppid:@"app"];
+        rum.nextViewActionPredicate = [[FTRUMTimeBasedNextViewActionPredicate alloc] initWithMaxTimeNs:5000000000LL];
+        rum.networkSettledResourcePredicate = [[FTRUMTimeBasedNetworkSettledPredicate alloc] initWithThresholdNs:200000000];
+        rum.nextViewActionPredicate = nil;
+        rum.networkSettledResourcePredicate = nil;
         FTSDKAgent *agent = [FTSDKAgent sharedInstance];
         FTRemoteConfigModel *remoteConfig = [FTRemoteConfigModel new];
         (void)[remoteConfig toDictionary];

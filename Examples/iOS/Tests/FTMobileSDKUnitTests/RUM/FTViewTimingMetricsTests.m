@@ -29,6 +29,8 @@
 #import "FTRUMNetworkSettledMetric.h"
 #import "FTRUMDependencies.h"
 #import "FTRUMManager.h"
+#import "FTRumConfig.h"
+#import "FTGlobalRumManager+Private.h"
 #import "FTURLSessionInterceptor+Private.h"
 #import "FTDataWriterWorker.h"
 #import "FTDataFilterManager.h"
@@ -60,6 +62,10 @@ static long long const FTMetricEpoch = 1800000000000000000LL;
 @end
 @implementation FTINVPredicate
 - (BOOL)isLastAction:(FTRUMNextViewActionParams *)params { return self.evaluate(params); }
+@end
+
+@interface FTGlobalRumManager (PredicateConfigTests)
+- (FTRUMDependencies *)dependenciesWithRumConfig:(FTRumConfig *)config writer:(id)writer monitor:(id)monitor errorInfoWrapper:(id)wrapper;
 @end
 
 @interface FTMetricWriter : NSObject <FTRUMDataWriteProtocol>
@@ -374,6 +380,39 @@ static long long const FTMetricEpoch = 1800000000000000000LL;
     XCTAssertEqualObjects([self fields:@"A"][@"network_settled_time"], @40000000);
     [self resource:@"b" type:FTRUMDataResourceComplete at:500 metrics:[self metricsFrom:80 to:400]];
     XCTAssertEqualObjects([self fields:@"A"][@"network_settled_time"], @400000000);
+}
+- (void)testRumPredicateDefaultsAndExplicitNilCopySemantics {
+    FTRumConfig *config = [[FTRumConfig alloc] initWithAppid:@"app"];
+    XCTAssertTrue([config.nextViewActionPredicate isKindOfClass:FTRUMTimeBasedNextViewActionPredicate.class]);
+    XCTAssertTrue([config.networkSettledResourcePredicate isKindOfClass:FTRUMTimeBasedNetworkSettledPredicate.class]);
+    config.nextViewActionPredicate = nil;
+    config.networkSettledResourcePredicate = nil;
+    FTRumConfig *copy = [config copy];
+    XCTAssertNil(copy.nextViewActionPredicate);
+    XCTAssertTrue([copy.networkSettledResourcePredicate isKindOfClass:FTRUMTimeBasedNetworkSettledPredicate.class]);
+    FTRUMDependencies *dependencies = [[FTGlobalRumManager sharedInstance] dependenciesWithRumConfig:copy writer:self.writer monitor:nil errorInfoWrapper:nil];
+    XCTAssertNil(dependencies.nextViewActionPredicate);
+    XCTAssertEqual(dependencies.networkSettledResourcePredicate, copy.networkSettledResourcePredicate);
+    self.dependencies = dependencies;
+    dependencies.appStateHistory = [[FTRUMAppStateHistory alloc] initWithState:@"foreground" timeNs:FTMetricEpoch - 1000000000];
+    FTRUMDataModel *initial = [[FTRUMDataModel alloc] initWithType:FTRUMViewPlaceholder time:[self date:0]];
+    self.session = [[FTRUMSessionHandler alloc] initWithModel:initial dependencies:dependencies];
+    [self view:@"A" at:0 stop:NO];
+    [self click:@"click" at:800 type:@"click"];
+    [self view:@"B" at:1000 stop:NO];
+    XCTAssertNil([self fields:@"B"][@"interaction_to_next_view_time"]);
+    [self resource:@"r" type:FTRUMDataResourceStart at:1020 metrics:nil];
+    [self resource:@"r" type:FTRUMDataResourceComplete at:1300 metrics:[self metricsFrom:1020 to:1300]];
+    XCTAssertEqualObjects([self fields:@"B"][@"network_settled_time"], @300000000);
+}
+- (void)testRumCustomPredicatesSurviveConfigCopyAndDependencyConstruction {
+    FTRumConfig *config = [[FTRumConfig alloc] initWithAppid:@"app"];
+    config.nextViewActionPredicate = [[FTRUMTimeBasedNextViewActionPredicate alloc] initWithMaxTimeNs:5000000000LL];
+    config.networkSettledResourcePredicate = [[FTRUMTimeBasedNetworkSettledPredicate alloc] initWithThresholdNs:200000000];
+    FTRumConfig *copy = [config copy];
+    FTRUMDependencies *dependencies = [[FTGlobalRumManager sharedInstance] dependenciesWithRumConfig:copy writer:self.writer monitor:nil errorInfoWrapper:nil];
+    XCTAssertEqual(dependencies.nextViewActionPredicate, config.nextViewActionPredicate);
+    XCTAssertEqual(dependencies.networkSettledResourcePredicate, config.networkSettledResourcePredicate);
 }
 - (void)testINVInternalRuleCanSelectCustomActionByNameAndNextView {
     FTINVPredicate *predicate = [FTINVPredicate new];
@@ -781,6 +820,52 @@ static long long const FTMetricEpoch = 1800000000000000000LL;
     [interceptor shutDown];
 }
 
+- (void)testFallbackSkipsCustomRulesButKeepsResourceAndActionReporting {
+    __block NSUInteger interactionCalls = 0;
+    FTINVPredicate *inv = [FTINVPredicate new];
+    inv.evaluate = ^BOOL(FTRUMNextViewActionParams *params) { interactionCalls += 1; return YES; };
+    FTMetricPredicate *network = [FTMetricPredicate new];
+    network.evaluate = ^BOOL(FTRUMNetworkSettledResourceParams *params) { return YES; };
+    self.dependencies.nextViewActionPredicate = inv;
+    self.dependencies.networkSettledResourcePredicate = network;
+    [self resource:@"fallback" type:FTRUMDataResourceStart at:20 metrics:nil];
+    FTRUMViewHandler *fallback = [[self.session valueForKey:@"viewHandlers"] lastObject];
+    [self resource:@"fallback" type:FTRUMDataResourceComplete at:300 metrics:[self metricsFrom:20 to:300]];
+    [self click:@"fallback-click" at:400 type:@"click"];
+    XCTAssertEqualObjects([self fields:fallback.view_id][@"view_resource_count"], @1);
+    XCTAssertEqualObjects([self fields:fallback.view_id][@"view_action_count"], @1);
+    [self view:@"normal" at:1000 stop:NO];
+    XCTAssertEqual(interactionCalls, 0u);
+    XCTAssertEqual(network.calls, 0u);
+    XCTAssertNil([self fields:@"normal"][@"interaction_to_next_view_time"]);
+}
+- (void)testFallbackDoesNotEmitTimingMetricsOrProvideNextInteraction {
+    [self resource:@"fallback-request" type:FTRUMDataResourceStart at:20 metrics:nil];
+    FTRUMViewHandler *fallback = [[self.session valueForKey:@"viewHandlers"] lastObject];
+    XCTAssertTrue(fallback.fallbackView);
+    [self resource:@"fallback-request" type:FTRUMDataResourceComplete at:300 metrics:[self metricsFrom:20 to:300]];
+    [self click:@"fallback-click" at:400 type:@"click"];
+    XCTAssertNil([self fields:fallback.view_id][@"network_settled_time"]);
+    XCTAssertNil([self fields:fallback.view_id][@"interaction_to_next_view_time"]);
+    [self view:@"normal" at:1000 stop:NO];
+    XCTAssertNil([self fields:@"normal"][@"interaction_to_next_view_time"]);
+    [self resource:@"normal-request" type:FTRUMDataResourceStart at:1020 metrics:nil];
+    [self resource:@"normal-request" type:FTRUMDataResourceComplete at:1300 metrics:[self metricsFrom:1020 to:1300]];
+    XCTAssertEqualObjects([self fields:@"normal"][@"network_settled_time"], @300000000);
+}
+- (void)testFallbackDoesNotInheritPreviousNormalInteraction {
+    [self view:@"A" at:0 stop:NO];
+    [self click:@"click" at:800 type:@"click"];
+    [self view:@"A" at:900 stop:YES];
+    [self resource:@"fallback-request" type:FTRUMDataResourceStart at:1000 metrics:nil];
+    FTRUMViewHandler *fallback = [[self.session valueForKey:@"viewHandlers"] lastObject];
+    [self resource:@"fallback-request" type:FTRUMDataResourceComplete at:1300 metrics:[self metricsFrom:1000 to:1300]];
+    XCTAssertTrue(fallback.fallbackView);
+    XCTAssertNil([self fields:fallback.view_id][@"interaction_to_next_view_time"]);
+    XCTAssertNil([self fields:fallback.view_id][@"network_settled_time"]);
+    [self view:@"B" at:1400 stop:NO];
+    XCTAssertNil([self fields:@"B"][@"interaction_to_next_view_time"]);
+}
 - (void)testStartedResourceFallbackIsTheImmediatePredecessor {
     [self view:@"A" at:0 stop:NO];
     [self click:@"click" at:800 type:@"click"];

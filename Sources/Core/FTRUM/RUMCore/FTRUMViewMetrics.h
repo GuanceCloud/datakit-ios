@@ -18,25 +18,8 @@
 //
 
 #import <Foundation/Foundation.h>
+#import "FTRUMViewTimingPredicates.h"
 NS_ASSUME_NONNULL_BEGIN
-/// Immutable Action inputs, captured before writer modifiers run.
-@interface FTRUMNextViewActionParams : NSObject
-@property (nonatomic, copy, readonly) NSString *actionType;
-@property (nonatomic, copy, readonly) NSString *actionName;
-@property (nonatomic, assign, readonly) long long timeToNextViewNs;
-@property (nonatomic, copy, readonly) NSString *nextViewName;
-- (instancetype)initWithType:(NSString *)type name:(NSString *)name gapNs:(long long)gapNs nextViewName:(NSString *)nextViewName;
-@end
-
-/// Internal, deterministic and nonblocking rule, evaluated on rumQueue.
-@protocol FTRUMNextViewActionPredicate <NSObject>
-- (BOOL)isLastAction:(FTRUMNextViewActionParams *)params;
-@end
-
-@interface FTRUMTimeBasedNextViewActionPredicate : NSObject <FTRUMNextViewActionPredicate>
-- (instancetype)initWithMaxTimeNs:(long long)maxTimeNs;
-@end
-
 /// RUM-queue-owned event-time summary. It may outlive its View handler for INV.
 @interface FTRUMViewMetrics : NSObject
 @property (nonatomic, assign, readonly) long long startNs;

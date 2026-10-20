@@ -102,6 +102,9 @@ static FTExtensionManager *sharedInstance = nil;
     id<FTErrorMonitorInfoWrapper> errorInfoWrapper = [[FTErrorMonitorInfo alloc]initWithMonitorType:(ErrorMonitorType)rumConfigOptions.errorMonitorType];
     FTRUMDependencies *dependencies = [[FTRUMDependencies alloc]init];
     dependencies.writer = self;
+    // Widget extensions do not collect interaction-to-next-view metrics.
+    dependencies.nextViewActionPredicate = nil;
+    dependencies.networkSettledResourcePredicate = rumConfigOptions.networkSettledResourcePredicate;
     dependencies.errorMonitorInfoWrapper = errorInfoWrapper;
     dependencies.sampleRate = rumConfigOptions.sessionSamplingRate;
     dependencies.sessionOnErrorSampleRate = rumConfigOptions.sessionOnErrorSamplingRate;

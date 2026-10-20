@@ -22,6 +22,7 @@
 #import "FTViewTrackingHandler.h"
 #import "FTIssueDataProvider.h"
 #import "FTVisitorIDConfig.h"
+#import "FTRUMViewTimingPredicates.h"
 
 /// Crash monitoring type
 typedef NS_OPTIONS(NSUInteger, FTCrashMonitorType){
@@ -108,6 +109,10 @@ typedef BOOL (^FTSessionTaskErrorFilter)(NSError *_Nonnull error);
 
 /// RUM functionality configuration items
 @interface FTRumConfig : NSObject
+/// Defaults to click within three seconds. Explicit nil disables interaction_to_next_view_time.
+@property (nonatomic, strong, nullable) id<FTRUMNextViewActionPredicate> nextViewActionPredicate;
+/// Defaults to requests starting within 100ms. Setting nil restores that default rule.
+@property (nonatomic, strong, nullable) id<FTRUMNetworkSettledResourcePredicate> networkSettledResourcePredicate;
 /// Designated initializer, set appid
 ///
 /// - Parameters:

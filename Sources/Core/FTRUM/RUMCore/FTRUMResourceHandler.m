@@ -36,7 +36,7 @@ typedef struct {
 } FTRUMResourceTiming;
 @interface FTRUMResourceHandler()<FTRUMSessionProtocol>
 @property (nonatomic, strong) FTRUMDependencies *dependencies;
-@property (nonatomic, strong) FTRUMNetworkSettledMetric *networkMetric;
+@property (nonatomic, strong, nullable) FTRUMNetworkSettledMetric *networkMetric;
 @property (nonatomic, copy,readwrite) NSString *identifier;
 @property (nonatomic, strong) NSDate *time;
 @property (nonatomic, assign) long long startNs;

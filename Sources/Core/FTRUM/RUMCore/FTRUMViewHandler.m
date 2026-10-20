@@ -46,8 +46,8 @@
 @property (nonatomic, assign) NSInteger viewActionCount;
 @property (nonatomic, assign) BOOL didReceiveStartData;
 @property (nonatomic, strong) NSDate *viewStartTime;
-@property (nonatomic, strong, readwrite) FTRUMViewMetrics *metrics;
-@property (nonatomic, strong) FTRUMNetworkSettledMetric *networkMetric;
+@property (nonatomic, strong, nullable, readwrite) FTRUMViewMetrics *metrics;
+@property (nonatomic, strong, nullable) FTRUMNetworkSettledMetric *networkMetric;
 @property (nonatomic, strong, nullable) NSNumber *interactionTime;
 @property (nonatomic, strong, nullable) NSNumber *networkSettledTime;
 @property (nonatomic, assign) BOOL closed;
@@ -100,6 +100,17 @@
         }
     }
     return self;
+}
+- (void)setFallbackView:(BOOL)fallbackView {
+    _fallbackView = fallbackView;
+    if (fallbackView) {
+        // Fallbacks preserve their ordinary event lifecycle, but own no timing metrics.
+        self.metrics = nil;
+        self.previousViewMetrics = nil;
+        self.networkMetric = nil;
+        self.interactionTime = nil;
+        self.networkSettledTime = nil;
+    }
 }
 - (BOOL)process:(FTRUMDataModel *)model context:(nonnull NSDictionary *)context{
     if (self.closed) return NO;

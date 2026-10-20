@@ -19,6 +19,7 @@
 //
 
 #import "FTRUMDependencies.h"
+#import "FTRUMViewTimingPredicates.h"
 #import "FTIssueFieldEnricher.h"
 
 @interface FTRUMDependencies ()
@@ -26,6 +27,14 @@
 @end
 
 @implementation FTRUMDependencies
+- (instancetype)init {
+    if ((self = [super init])) {
+        _nextViewActionPredicate = [FTRUMTimeBasedNextViewActionPredicate new];
+        _networkSettledResourcePredicate = [FTRUMTimeBasedNetworkSettledPredicate new];
+    }
+    return self;
+}
+
 
 - (void)setIssueDataProvider:(nullable FTIssueDataProvider)issueDataProvider {
     _issueDataProvider = [issueDataProvider copy];

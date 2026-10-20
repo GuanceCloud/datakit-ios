@@ -56,14 +56,14 @@
 @interface FTRUMViewMetrics ()
 @property (nonatomic, assign, readwrite) long long startNs;
 @property (nonatomic, strong) NSMutableArray<FTRUMInteractionAction *> *actions;
-@property (nonatomic, strong) id<FTRUMNextViewActionPredicate> predicate;
+@property (nonatomic, strong, nullable) id<FTRUMNextViewActionPredicate> predicate;
 @end
 @implementation FTRUMViewMetrics
 - (instancetype)initWithStartNs:(long long)startNs predicate:(id<FTRUMNextViewActionPredicate>)predicate {
     if ((self = [super init])) {
         _startNs = startNs;
         _actions = [NSMutableArray new];
-        _predicate = predicate ?: [FTRUMTimeBasedNextViewActionPredicate new];
+        _predicate = predicate;
     }
     return self;
 }
@@ -72,6 +72,7 @@
     self.startNs = startNs;
 }
 - (void)recordActionStart:(long long)startNs name:(NSString *)name type:(NSString *)type {
+    if (!self.predicate) return;
     FTRUMInteractionAction *action = [FTRUMInteractionAction new];
     action.startNs = startNs;
     action.name = name;
@@ -79,6 +80,7 @@
     [self.actions addObject:action];
 }
 - (NSNumber *)interactionToViewAt:(long long)nextStartNs name:(NSString *)nextViewName {
+    if (!self.predicate) return nil;
     // Sort by the original boundary, never callback arrival. Do not prune: another
     // destination or an earlier View origin may qualify an otherwise rejected Action.
     NSArray<FTRUMInteractionAction *> *ordered = [self.actions sortedArrayUsingComparator:^NSComparisonResult(FTRUMInteractionAction *a, FTRUMInteractionAction *b) {

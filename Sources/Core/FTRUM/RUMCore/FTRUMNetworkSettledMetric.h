@@ -18,25 +18,9 @@
 //
 
 #import <Foundation/Foundation.h>
+#import "FTRUMViewTimingPredicates.h"
 @class FTRUMAppStateHistory;
 NS_ASSUME_NONNULL_BEGIN
-
-/// Immutable original collection context; never derived from writer-modified fields.
-@interface FTRUMNetworkSettledResourceParams : NSObject
-@property (nonatomic, copy, readonly, nullable) NSString *resourceURL;
-@property (nonatomic, copy, readonly) NSString *viewName;
-@property (nonatomic, assign, readonly) long long timeSinceViewStartNs;
-- (instancetype)initWithURL:(nullable NSString *)URL viewName:(NSString *)viewName offsetNs:(long long)offsetNs;
-@end
-
-/// Internal extension point, fixed for a View. Called on rumQueue with evolving original data.
-@protocol FTRUMNetworkSettledResourcePredicate <NSObject>
-- (BOOL)isInitialResource:(FTRUMNetworkSettledResourceParams *)params;
-@end
-
-@interface FTRUMTimeBasedNetworkSettledPredicate : NSObject <FTRUMNetworkSettledResourcePredicate>
-- (instancetype)initWithThresholdNs:(long long)thresholdNs;
-@end
 
 /// Owns network lifecycle and completed batches. Queries never advance batch state.
 @interface FTRUMNetworkSettledMetric : NSObject

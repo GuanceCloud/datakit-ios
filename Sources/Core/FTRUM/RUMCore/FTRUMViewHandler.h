@@ -33,7 +33,7 @@ typedef void(^FTErrorHandled)(void);
 @property (nonatomic, copy) NSString *view_referrer;
 @property (nonatomic, strong) NSNumber *loading_time;
 @property (nonatomic, strong, readonly) NSDate *viewStartTime;
-@property (nonatomic, strong, readonly) FTRUMViewMetrics *metrics;
+@property (nonatomic, strong, nullable, readonly) FTRUMViewMetrics *metrics;
 @property (nonatomic, strong, nullable) FTRUMViewMetrics *previousViewMetrics;
 - (void)refreshInteractionMetricWithContext:(NSDictionary *)context;
 @property (nonatomic, assign) BOOL fallbackView;

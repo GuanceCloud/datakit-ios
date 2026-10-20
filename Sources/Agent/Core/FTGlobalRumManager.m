@@ -163,6 +163,8 @@ static NSObject *sharedInstanceLock;
                                 errorInfoWrapper:(FTErrorMonitorInfo *)errorInfoWrapper{
     FTRUMDependencies *dependencies = [[FTRUMDependencies alloc]init];
     dependencies.appId = rumConfig.appid;
+    dependencies.nextViewActionPredicate = rumConfig.nextViewActionPredicate;
+    dependencies.networkSettledResourcePredicate = rumConfig.networkSettledResourcePredicate;
     dependencies.monitor = monitor;
     dependencies.writer = writer;
     dependencies.sessionOnErrorSampleRate = rumConfig.sessionOnErrorSamplingRate;
