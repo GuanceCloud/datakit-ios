@@ -29,9 +29,18 @@
 #import "NSDate+FTUtil.h"
 #import "FTLongTaskDetector.h"
 #import "FTJSONUtil.h"
+#import <objc/runtime.h>
+#import <os/lock.h>
+
+typedef struct {
+    CFRunLoopActivity activity;
+    long long startTimestampNs;
+    uint64_t generation;
+} FTRunLoopSnapshotForTest;
 
 @interface FTLongTaskDetector (FTWaitTest)
 - (void)recordRunLoopActivity:(CFRunLoopActivity)activity atTimeNs:(long long)timeNs;
+- (BOOL)runLoopSnapshot:(FTRunLoopSnapshotForTest *)snapshot;
 - (void)processWaitResult:(long)st elapsedNanoseconds:(uint64_t)elapsedNanoseconds currentEpochNs:(long long)currentEpochNs;
 @end
 
@@ -436,6 +445,65 @@ typedef void (^FTWriteCallBack)(NSDictionary *fields, NSDictionary *tags);
     XCTAssertEqual([[detector valueForKey:@"limitMillisecond"] longValue], 300);
     detector.limitFreezeMillisecond = 6000;
     XCTAssertEqual([[detector valueForKey:@"limitMillisecond"] longValue], FT_ANR_THRESHOLD_MS);
+}
+- (void)testLongTaskDetector_runLoopCallbackDoesNotWaitForStalledSnapshotReader {
+    FTLongTaskDetectorDelegateMock *delegate = [[FTLongTaskDetectorDelegateMock alloc] init];
+    FTLongTaskDetector *detector = [[FTLongTaskDetector alloc] initWithDelegate:delegate];
+    Ivar lockIvar = class_getInstanceVariable(FTLongTaskDetector.class, "_runLoopLock");
+    os_unfair_lock *oldSnapshotLock = lockIvar ? (os_unfair_lock *)((uint8_t *)(__bridge void *)detector + ivar_getOffset(lockIvar)) : NULL;
+    if (oldSnapshotLock) {
+        // Simulate the detector being suspended while it owns the snapshot lock.
+        os_unfair_lock_lock(oldSnapshotLock);
+    }
+
+    dispatch_semaphore_t callbackDone = dispatch_semaphore_create(0);
+    dispatch_async(dispatch_get_global_queue(QOS_CLASS_USER_INITIATED, 0), ^{
+        [detector recordRunLoopActivity:kCFRunLoopBeforeSources atTimeNs:1000LL * NSEC_PER_MSEC];
+        dispatch_semaphore_signal(callbackDone);
+    });
+    long callbackResult = dispatch_semaphore_wait(callbackDone, dispatch_time(DISPATCH_TIME_NOW, NSEC_PER_SEC));
+    if (oldSnapshotLock) {
+        os_unfair_lock_unlock(oldSnapshotLock);
+    }
+    if (callbackResult != 0) {
+        dispatch_semaphore_wait(callbackDone, DISPATCH_TIME_FOREVER);
+    }
+    XCTAssertEqual(callbackResult, 0, @"RunLoop callback must not wait for a stalled detector thread");
+}
+- (void)testLongTaskDetector_runLoopSnapshotKeepsCallbackFieldsTogether {
+    FTLongTaskDetectorDelegateMock *delegate = [[FTLongTaskDetectorDelegateMock alloc] init];
+    FTLongTaskDetector *detector = [[FTLongTaskDetector alloc] initWithDelegate:delegate];
+    dispatch_semaphore_t writerDone = dispatch_semaphore_create(0);
+    dispatch_async(dispatch_get_global_queue(QOS_CLASS_USER_INITIATED, 0), ^{
+        for (uint64_t generation = 1; generation <= 5000; generation++) {
+            CFRunLoopActivity activity = generation & 1 ? kCFRunLoopBeforeSources : kCFRunLoopAfterWaiting;
+            [detector recordRunLoopActivity:activity atTimeNs:(long long)generation * NSEC_PER_MSEC];
+        }
+        dispatch_semaphore_signal(writerDone);
+    });
+
+    BOOL consistent = YES;
+    for (NSUInteger attempt = 0; attempt < 10000; attempt++) {
+        FTRunLoopSnapshotForTest snapshot;
+        if (![detector runLoopSnapshot:&snapshot] || snapshot.generation == 0) {
+            continue;
+        }
+        CFRunLoopActivity expectedActivity = snapshot.generation & 1 ? kCFRunLoopBeforeSources : kCFRunLoopAfterWaiting;
+        if (snapshot.activity != expectedActivity || snapshot.startTimestampNs != (long long)snapshot.generation * NSEC_PER_MSEC) {
+            consistent = NO;
+            break;
+        }
+    }
+    XCTAssertEqual(dispatch_semaphore_wait(writerDone, dispatch_time(DISPATCH_TIME_NOW, 5 * NSEC_PER_SEC)), 0);
+    FTRunLoopSnapshotForTest finalSnapshot;
+    BOOL finalSnapshotValid = [detector runLoopSnapshot:&finalSnapshot];
+    XCTAssertTrue(finalSnapshotValid);
+    if (finalSnapshotValid) {
+        XCTAssertEqual(finalSnapshot.generation, 5000);
+        XCTAssertEqual(finalSnapshot.startTimestampNs, 5000LL * NSEC_PER_MSEC);
+        XCTAssertEqual(finalSnapshot.activity, kCFRunLoopAfterWaiting);
+    }
+    XCTAssertTrue(consistent);
 }
 - (void)testLongTaskDetector_rebasesFirstStartAfterOverlongWait {
     FTLongTaskDetectorDelegateMock *delegate = [[FTLongTaskDetectorDelegateMock alloc] init];

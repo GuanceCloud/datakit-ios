@@ -25,10 +25,13 @@
 #import "FTInnerLog.h"
 #import "FTConstants.h"
 #import "FTDateUtil.h"
-#import <os/lock.h>
+#import <stdatomic.h>
 #import <sys/time.h>
 #import "NSDate+FTUtil.h"
 #import "FTErrorDataProtocol.h"
+
+_Static_assert(ATOMIC_LONG_LOCK_FREE == 2 && ATOMIC_LLONG_LOCK_FREE == 2,
+               "RunLoop snapshot atomics must be lock-free on supported targets");
 
 typedef struct {
     CFRunLoopActivity activity;
@@ -46,10 +49,9 @@ typedef NS_ENUM(NSUInteger, FTLongTaskDetectionState) {
     CFRunLoopObserverRef m_runLoopBeginObserver;  // Observer
     CFRunLoopObserverRef m_runLoopEndObserver;    // Observer
     dispatch_semaphore_t _semaphore;
-    os_unfair_lock _runLoopLock;
-    CFRunLoopActivity _activity;     // Status
-    long long _runLoopStartTimestampNs;
-    uint64_t _runLoopGeneration;
+    atomic_ullong _runLoopSequence;
+    _Atomic(CFRunLoopActivity) _activity; // Status
+    atomic_llong _runLoopStartTimestampNs;
     long long _resumeBaselineNs;
     uint64_t _resumeGeneration;
     FTLongTaskDetectionState _detectionState;
@@ -66,8 +68,9 @@ typedef NS_ENUM(NSUInteger, FTLongTaskDetectionState) {
     if(self){
         _longTaskDelegate = delegate;
         _semaphore = dispatch_semaphore_create(0);
-        os_unfair_lock lock = OS_UNFAIR_LOCK_INIT;
-        _runLoopLock = lock;
+        atomic_init(&_runLoopSequence, 0);
+        atomic_init(&_activity, 0);
+        atomic_init(&_runLoopStartTimestampNs, 0);
         _detectionState = FTLongTaskDetectionStateIdle;
         self.limitFreezeMillisecond = FT_DEFAULT_BLOCK_DURATIONS_MS;
         _longTaskQueue = dispatch_queue_create("com.ft.longtask", 0);
@@ -78,24 +81,39 @@ typedef NS_ENUM(NSUInteger, FTLongTaskDetectionState) {
     _limitFreezeMillisecond = limitFreezeMillisecond;
     _limitMillisecond = MIN(limitFreezeMillisecond, FT_ANR_THRESHOLD_MS);
 }
-- (FTRunLoopSnapshot)runLoopSnapshot {
-    os_unfair_lock_lock(&_runLoopLock);
-    FTRunLoopSnapshot snapshot = {_activity, _runLoopStartTimestampNs, _runLoopGeneration};
-    os_unfair_lock_unlock(&_runLoopLock);
-    return snapshot;
+- (BOOL)runLoopSnapshot:(FTRunLoopSnapshot *)snapshot {
+    // The main RunLoop is the only writer. An even sequence brackets one complete callback.
+    // A stalled reader never holds up the main thread; discard a snapshot being updated.
+    for (NSUInteger attempt = 0; attempt < 3; attempt++) {
+        unsigned long long before = atomic_load_explicit(&_runLoopSequence, memory_order_seq_cst);
+        if (before & 1) {
+            continue;
+        }
+        CFRunLoopActivity activity = atomic_load_explicit(&_activity, memory_order_seq_cst);
+        long long startTimestampNs = atomic_load_explicit(&_runLoopStartTimestampNs, memory_order_seq_cst);
+        unsigned long long after = atomic_load_explicit(&_runLoopSequence, memory_order_seq_cst);
+        if (before == after) {
+            *snapshot = (FTRunLoopSnapshot){activity, startTimestampNs, after / 2};
+            return YES;
+        }
+    }
+    return NO;
 }
 
 - (void)recordRunLoopActivity:(CFRunLoopActivity)activity atTimeNs:(long long)timeNs {
-    os_unfair_lock_lock(&_runLoopLock);
-    _activity = activity;
-    _runLoopStartTimestampNs = timeNs;
-    _runLoopGeneration++;
-    os_unfair_lock_unlock(&_runLoopLock);
+    unsigned long long nextSequence = atomic_load_explicit(&_runLoopSequence, memory_order_relaxed) + 2;
+    atomic_store_explicit(&_runLoopSequence, nextSequence - 1, memory_order_seq_cst);
+    atomic_store_explicit(&_activity, activity, memory_order_seq_cst);
+    atomic_store_explicit(&_runLoopStartTimestampNs, timeNs, memory_order_seq_cst);
+    atomic_store_explicit(&_runLoopSequence, nextSequence, memory_order_seq_cst);
     dispatch_semaphore_signal(_semaphore);
 }
 
 - (void)processWaitResult:(long)waitResult elapsedNanoseconds:(uint64_t)elapsedNanoseconds currentEpochNs:(long long)currentEpochNs {
-    FTRunLoopSnapshot snapshot = [self runLoopSnapshot];
+    FTRunLoopSnapshot snapshot;
+    if (![self runLoopSnapshot:&snapshot]) {
+        return;
+    }
     if (_detectionState == FTLongTaskDetectionStateWaitingForNormalTimeout && snapshot.generation != _resumeGeneration) {
         // A real RunLoop callback supplied a new start; queued semaphore signals do not.
         _resumeBaselineNs = 0;
