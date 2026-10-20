@@ -29,7 +29,6 @@ NS_ASSUME_NONNULL_BEGIN
 @property (nonatomic, copy) NSString *session_type;
 // session fields
 @property (nonatomic, copy, nullable) NSString *session_start_reason;
-@property (nonatomic, copy, nullable) NSNumber *process_start_time_ns;
 @property (nonatomic, assign) float sampleRate;
 @property (nonatomic, assign) float sessionOnErrorSampleRate;
 @property (nonatomic, assign) long long session_error_timestamp;

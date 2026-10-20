@@ -127,6 +127,23 @@ static long long const FTMetricEpoch = 1800000000000000000LL;
 @property (nonatomic, strong) FTRUMSessionHandler *session;
 @end
 @implementation FTViewTimingMetricsTests
+- (void)testSessionStateOmitsRemovedProcessStartTime {
+    FTRUMContext *context = [[FTRUMContext alloc] initWithSampleRate:100 sessionOnErrorSampleRate:0 appId:@"test-app"];
+    FTRUMSessionState *state = context.sessionState;
+    state.session_start_reason = FT_RUM_SESSION_START_REASON_SDK_INIT;
+    XCTAssertNil(state.sessionFields[@"process_start_time_ns"]);
+    XCTAssertNil([state toDictionary][@"process_start_time_ns"]);
+    XCTAssertNil([[state copy] sessionFields][@"process_start_time_ns"]);
+
+    NSMutableDictionary *legacy = [[state toDictionary] mutableCopy];
+    legacy[@"process_start_time_ns"] = @1800000000000000000LL;
+    FTRUMSessionState *restored = [[FTRUMSessionState alloc] initWithDict:legacy];
+    XCTAssertNil(restored.sessionFields[@"process_start_time_ns"]);
+    XCTAssertNil([restored toDictionary][@"process_start_time_ns"]);
+    XCTAssertEqualObjects(restored, state);
+    XCTAssertEqualObjects(restored.session_start_reason, FT_RUM_SESSION_START_REASON_SDK_INIT);
+}
+
 - (NSDate *)date:(NSInteger)ms { return [NSDate dateWithTimeIntervalSince1970:(FTMetricEpoch + ms * 1000000LL) / 1e9]; }
 - (void)setUp {
     self.writer = [FTMetricWriter new];

@@ -132,8 +132,6 @@ extern NSString * const FT_RUM_KEY_SESSION_ID;
 extern NSString * const FT_RUM_KEY_SESSION_TYPE;
 /// Reason the current RUM session was created. Stored as an event field.
 extern NSString * const FT_RUM_KEY_SESSION_START_REASON;
-/// Current process start time in Unix epoch nanoseconds. Stored as an event field.
-extern NSString * const FT_RUM_KEY_PROCESS_START_TIME_NS;
 extern NSString * const FT_RUM_SESSION_START_REASON_SDK_INIT;
 extern NSString * const FT_RUM_SESSION_START_REASON_INACTIVITY_TIMEOUT;
 extern NSString * const FT_RUM_SESSION_START_REASON_MAX_DURATION;

@@ -121,14 +121,14 @@
             foundLongTask = YES;
             XCTAssertEqualObjects(fields[@"app_state"], @"foreground_and_background");
             XCTAssertEqualObjects(fields[FT_RUM_KEY_SESSION_START_REASON], FT_RUM_SESSION_START_REASON_SDK_INIT);
-            XCTAssertNotNil(fields[FT_RUM_KEY_PROCESS_START_TIME_NS]);
+            XCTAssertNil(fields[@"process_start_time_ns"]);
         }
         if ([source isEqualToString:FT_RUM_SOURCE_ERROR] && [tags[FT_KEY_ERROR_TYPE] isEqualToString:@"anr_error"]) {
             foundANR = YES;
             XCTAssertNil(fields[@"app_state"]);
             XCTAssertNotNil(tags[FT_KEY_ERROR_SITUATION]);
             XCTAssertEqualObjects(fields[FT_RUM_KEY_SESSION_START_REASON], FT_RUM_SESSION_START_REASON_SDK_INIT);
-            XCTAssertNotNil(fields[FT_RUM_KEY_PROCESS_START_TIME_NS]);
+            XCTAssertNil(fields[@"process_start_time_ns"]);
         }
     }];
     XCTAssertTrue(foundLongTask);

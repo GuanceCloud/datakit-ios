@@ -92,7 +92,6 @@ NSString * const FT_RUM_KEY_SESSION_ID = @"session_id";
 NSString * const FT_RUM_KEY_SESSION_TYPE = @"session_type";
 // session field
 NSString * const FT_RUM_KEY_SESSION_START_REASON = @"session_start_reason";
-NSString * const FT_RUM_KEY_PROCESS_START_TIME_NS = @"process_start_time_ns";
 NSString * const FT_RUM_SESSION_START_REASON_SDK_INIT = @"sdk_init";
 NSString * const FT_RUM_SESSION_START_REASON_INACTIVITY_TIMEOUT = @"inactivity_timeout";
 NSString * const FT_RUM_SESSION_START_REASON_MAX_DURATION = @"max_duration";

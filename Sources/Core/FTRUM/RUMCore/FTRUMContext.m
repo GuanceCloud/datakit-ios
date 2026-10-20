@@ -21,22 +21,8 @@
 #import "FTRUMContext.h"
 #import "FTConstants.h"
 #import "FTBaseInfoHandler.h"
-#import "NSDate+FTUtil.h"
-#import "FTDateUtil.h"
 
 NS_ASSUME_NONNULL_BEGIN
-static NSNumber * _Nullable FTRUMProcessStartTimeNs(void) {
-    static NSNumber *processStartTimeNs;
-    static dispatch_once_t onceToken;
-    dispatch_once(&onceToken, ^{
-        long long startTimeNs = [FTDateUtil processStartNanosecondTimestamp];
-        if (startTimeNs > 0 && startTimeNs <= [NSDate ft_currentNanosecondTimeStamp]) {
-            processStartTimeNs = @(startTimeNs);
-        }
-    });
-    return processStartTimeNs;
-}
-
 @interface FTRUMContext ()
 @property (nonatomic, strong) FTRUMSessionState *sessionState;
 @end
@@ -46,7 +32,6 @@ static NSNumber * _Nullable FTRUMProcessStartTimeNs(void) {
     if (self) {
         self.appId = appId;
         self.sessionState = [[FTRUMSessionState alloc] init];
-        self.sessionState.process_start_time_ns = FTRUMProcessStartTimeNs();
         self.sessionState.sampleRate = sampleRate;
         self.sessionState.sessionOnErrorSampleRate = sessionOnErrorSampleRate;
     }
@@ -107,10 +92,6 @@ static NSNumber * _Nullable FTRUMProcessStartTimeNs(void) {
         self.session_type = dict[FT_RUM_KEY_SESSION_TYPE];
         id startReason = dict[FT_RUM_KEY_SESSION_START_REASON];
         self.session_start_reason = [startReason isKindOfClass:NSString.class] ? startReason : nil;
-        id processStartTime = dict[FT_RUM_KEY_PROCESS_START_TIME_NS];
-        if ([processStartTime isKindOfClass:NSNumber.class] && [processStartTime longLongValue] > 0) {
-            self.process_start_time_ns = processStartTime;
-        }
         self.sampled_for_error_session = [dict[FT_RUM_KEY_SAMPLED_FOR_ERROR_SESSION] boolValue];
         self.session_error_timestamp = [dict[FT_SESSION_ERROR_TIMESTAMP] longLongValue];
         self.sampleRate = [dict[FT_RUM_SESSION_SAMPLE_RATE] floatValue];
@@ -124,7 +105,6 @@ static NSNumber * _Nullable FTRUMProcessStartTimeNs(void) {
     sessionState.session_id = self.session_id;
     sessionState.session_type = self.session_type;
     sessionState.session_start_reason = self.session_start_reason;
-    sessionState.process_start_time_ns = self.process_start_time_ns;
     sessionState.sampleRate = self.sampleRate;
     sessionState.sessionOnErrorSampleRate = self.sessionOnErrorSampleRate;
     sessionState.sampled_for_error_session = self.sampled_for_error_session;
@@ -140,7 +120,6 @@ static NSNumber * _Nullable FTRUMProcessStartTimeNs(void) {
 - (NSDictionary *)sessionFields{
     NSMutableDictionary *fields = [NSMutableDictionary new];
     [fields setValue:self.session_start_reason forKey:FT_RUM_KEY_SESSION_START_REASON];
-    [fields setValue:self.process_start_time_ns forKey:FT_RUM_KEY_PROCESS_START_TIME_NS];
     [fields setValue:@(self.sampleRate) forKey:FT_RUM_SESSION_SAMPLE_RATE];
     [fields setValue:@(self.sessionOnErrorSampleRate) forKey:FT_RUM_SESSION_ON_ERROR_SAMPLE_RATE];
     if (self.session_error_timestamp > 0) {
@@ -163,16 +142,13 @@ static NSNumber * _Nullable FTRUMProcessStartTimeNs(void) {
     BOOL equalSessionType = [self.session_type isEqualToString:state.session_type];
     BOOL equalStartReason = self.session_start_reason == state.session_start_reason
         || [self.session_start_reason isEqualToString:state.session_start_reason];
-    BOOL equalProcessStartTime = self.process_start_time_ns == state.process_start_time_ns
-        || [self.process_start_time_ns isEqualToNumber:state.process_start_time_ns];
-    return equalSessionId && equalSessionType && equalStartReason && equalProcessStartTime && self.sampleRate == state.sampleRate && self.sessionOnErrorSampleRate == state.sessionOnErrorSampleRate && self.sampled_for_error_session == state.sampled_for_error_session && self.session_error_timestamp == state.session_error_timestamp;
+    return equalSessionId && equalSessionType && equalStartReason && self.sampleRate == state.sampleRate && self.sessionOnErrorSampleRate == state.sessionOnErrorSampleRate && self.sampled_for_error_session == state.sampled_for_error_session && self.session_error_timestamp == state.session_error_timestamp;
 }
 - (NSDictionary *)toDictionary{
     NSMutableDictionary *dict = [NSMutableDictionary new];
     [dict setValue:self.session_id forKey:FT_RUM_KEY_SESSION_ID];
     [dict setValue:self.session_type forKey:FT_RUM_KEY_SESSION_TYPE];
     [dict setValue:self.session_start_reason forKey:FT_RUM_KEY_SESSION_START_REASON];
-    [dict setValue:self.process_start_time_ns forKey:FT_RUM_KEY_PROCESS_START_TIME_NS];
     [dict setValue:@(self.sampled_for_error_session) forKey:FT_RUM_KEY_SAMPLED_FOR_ERROR_SESSION];
     [dict setValue:@(self.session_error_timestamp) forKey:FT_SESSION_ERROR_TIMESTAMP];
     [dict setValue:@(self.sampleRate) forKey:FT_RUM_SESSION_SAMPLE_RATE];

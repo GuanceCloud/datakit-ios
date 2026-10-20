@@ -30,8 +30,6 @@ NS_ASSUME_NONNULL_BEGIN
 + (uint64_t)continuousTime;
 + (NSTimeInterval)systemUptime;
 + (NSDate *)processStartTimestamp;
-/// Current process start time in Unix epoch nanoseconds; 0 if unavailable.
-+ (long long)processStartNanosecondTimestamp;
 @end
 
 NS_ASSUME_NONNULL_END
