@@ -1,8 +1,15 @@
+# 1.6.8-beta.1
+
+1. Reduced overhead in automatic UIKit View loading-time collection and removed synchronous waits when passing loading data to RUM processing.
+2. Marked `FTRumConfig.nextViewActionPredicate` as unavailable in app extensions and included View timing predicates in configuration debug output.
+3. Fixed Electron Native Runtime validation failures caused by merged Objective-C Categories, with independent checks for arm64 and x86_64.
+---
+
 # 1.6.8-alpha.11
 
 1. Added native Visitor ID sharing in WebViews, with access to the current identifier subject to the WebView host allowlist.
 2. Added RUM View metrics `interaction_to_next_view_time` and `network_settled_time` to measure the time from a click to the next View start and the time for a View's initial network requests to complete. Matching rules are configurable through `FTRumConfig.nextViewActionPredicate` and `networkSettledResourcePredicate`; synthetic fallback Views are excluded.
-3. Added standalone Session Replay shutdown through `FTRumSessionReplay.shutDown` (`shutdown()` in Swift), allowing replay resources to be released independently of SDK shutdown.
+3. Added automatic Session Replay shutdown when `FTSDKAgent.shutDown` is called, stopping recording and uploads without exposing a standalone Replay shutdown API.
 4. Removed the `process_start_time_ns` field from RUM events and persisted Session state.
 5. Improved Long Task detection under delayed scheduling and prevented RunLoop state updates from blocking the main thread.
 6. Fixed automatic View tracking order so requests started in `viewDidAppear` are attributed to the newly visible View, without duplicate View events.
