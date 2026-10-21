@@ -220,7 +220,7 @@ ftModuleInitializationHook(void)
      */
     BOOL isPreWarming = [self isActivePrewarmAvailable] && isActivePrewarm;
     NSDate *processStart = [FTDateUtil processStartTimestamp];
-    NSDate *launchDate = isPreWarming ? runtimeInit : processStart;
+    NSDate *launchDate = processStart;
     long long appStartTimestamp = launchDate.ft_nanosecondTimeStamp;
     NSNumber *appStartDuration = [launchDate ft_nanosecondTimeIntervalToDate:endDate];
 

@@ -1,6 +1,8 @@
 #if os(macOS)
 import XCTest
 import GuanceSessionReplay
+import GuanceSDK
+import _FTProtocol
 
 final class ReplayLifecycleTests: XCTestCase {
     struct Runtime {
@@ -39,13 +41,38 @@ final class ReplayLifecycleTests: XCTestCase {
         let processors = try XCTUnwrap(feature.value(forKey: "processorsQueue") as? DispatchQueue)
         let writes = try XCTUnwrap(replay.value(forKey: "readWriteQueue") as? DispatchQueue)
         addTeardownBlock {
-            replay.shutdown()
+            (replay as! FTSessionReplayLifecycle).shutDown()
             processors.sync {}
             processors.sync {}
             writes.sync {}
             try FileManager.default.removeItem(at: url)
         }
         return Runtime(replay: replay, feature: feature, coordinator: coordinator, storage: storage, processors: processors, writes: writes, directory: url)
+    }
+
+    func testMainSDKShutdownClosesReplayBeforeProcessorCleanup() throws {
+        FTSDKAgent.shutDown()
+        let config = FTSDKConfig(datakitUrl: "http://127.0.0.1:9529")
+        config.autoSync = false
+        FTSDKAgent.start(withConfigOptions: config)
+        addTeardownBlock { FTSDKAgent.shutDown() }
+        let runtime = try runtime()
+        let stores = try XCTUnwrap(runtime.replay.value(forKey: "stores") as? [String: NSObject])
+        let uploaders = try stores.values.map { try XCTUnwrap($0.value(forKey: "upload") as? NSObject) }
+        XCTAssertEqual(uploaders.count, 2)
+        runtime.processors.suspend()
+        defer { runtime.processors.resume() }
+        FTSDKAgent.shutDown()
+        XCTAssertEqual((runtime.replay.value(forKey: "features") as? [String: NSObject])?.count, 0)
+        XCTAssertEqual((runtime.replay.value(forKey: "stores") as? [String: NSObject])?.count, 0)
+        XCTAssertEqual(runtime.coordinator.value(forKey: "recordingEnabled") as? Bool, false)
+        XCTAssertEqual(runtime.coordinator.value(forKey: "invalidated") as? Bool, true)
+        XCTAssertEqual(runtime.storage.value(forKey: "invalidated") as? Bool, true)
+        for uploader in uploaders {
+            XCTAssertEqual(uploader.value(forKey: "cancelled") as? Bool, true)
+        }
+        FTSDKAgent.shutDown()
+        XCTAssertEqual((runtime.replay.value(forKey: "features") as? [String: NSObject])?.count, 0)
     }
 
     func drain(_ runtime: Runtime) {
@@ -58,7 +85,7 @@ final class ReplayLifecycleTests: XCTestCase {
         let runtime = try runtime()
         runtime.processors.suspend()
         runtime.replay.writeExternalSegment("old-runtime", viewID: "view")
-        runtime.replay.shutdown()
+        (runtime.replay as! FTSessionReplayLifecycle).shutDown()
         runtime.replay.start(with: FTSessionReplayConfig())
         let features = try XCTUnwrap(runtime.replay.value(forKey: "features") as? [String: NSObject])
         XCTAssertFalse(features["session-replay"] === runtime.feature)
@@ -75,7 +102,7 @@ final class ReplayLifecycleTests: XCTestCase {
         runtime.writes.suspend()
         runtime.replay.writeExternalSegment("queued-write", viewID: "view")
         runtime.processors.sync {}
-        runtime.replay.shutdown()
+        (runtime.replay as! FTSessionReplayLifecycle).shutDown()
         runtime.writes.resume()
         drain(runtime)
         XCTAssertEqual(try storedPayloads(runtime), [Data("queued-write".utf8)])
@@ -129,8 +156,8 @@ final class ReplayLifecycleTests: XCTestCase {
             delayedQueue.suspend()
             sendWebRecord(runtime, type: 2, timestamp: 1000)
             if delayPersistence { runtime.processors.sync {} }
-            runtime.replay.shutdown()
-            runtime.replay.shutdown()
+            (runtime.replay as! FTSessionReplayLifecycle).shutDown()
+            (runtime.replay as! FTSessionReplayLifecycle).shutDown()
             let config = FTSessionReplayConfig()
             config.externalRecorderMode = true
             runtime.replay.start(with: config)
@@ -152,7 +179,7 @@ final class ReplayLifecycleTests: XCTestCase {
         scope.setValue(grantedState, forKey: "trackingConsentProvider")
         let queueKey = DispatchSpecificKey<Bool>()
         contextQueue.setSpecific(key: queueKey, value: true)
-        runtime.replay.shutdown()
+        (runtime.replay as! FTSessionReplayLifecycle).shutDown()
         var callbacks = 0
         let write: @convention(block) (NSObject, NSObject) -> Void = { context, writer in
             XCTAssertEqual(DispatchQueue.getSpecific(key: queueKey), true)
@@ -194,7 +221,7 @@ final class ReplayLifecycleTests: XCTestCase {
         dataStore.perform(NSSelectorFromString("valueForKey:callback:"), with: "ft-known-resources", with: read)
         dataStore.perform(NSSelectorFromString("removeValueForKey:"), with: "ft-known-resources")
         dataStore.perform(NSSelectorFromString("valueForKey:callback:"), with: "ft-known-resources", with: readDeleted)
-        runtime.replay.shutdown()
+        (runtime.replay as! FTSessionReplayLifecycle).shutDown()
         runtime.writes.resume()
         withExtendedLifetime(dataStore) { drain(runtime) }
         XCTAssertEqual(callbacks, 2)
@@ -212,7 +239,7 @@ final class ReplayLifecycleTests: XCTestCase {
         XCTAssertEqual(files.count, 1)
         let file = try XCTUnwrap(files.first)
         let batch = try XCTUnwrap(reader.perform(NSSelectorFromString("readBatch:"), with: file)?.takeUnretainedValue() as? NSObject)
-        runtime.replay.shutdown()
+        (runtime.replay as! FTSessionReplayLifecycle).shutDown()
         reader.perform(NSSelectorFromString("markBatchAsRead:"), with: batch)
         XCTAssertEqual(try runtime.files("granted").count, 0)
     }

@@ -29,8 +29,6 @@ NS_ASSUME_NONNULL_BEGIN
 /// - Parameter config: Session Replay configuration items
 - (void)startWithSessionReplayConfig:(FTSessionReplayConfig *)config;
 
-- (void)shutDown NS_SWIFT_NAME(shutdown());
-
 @end
 
 NS_ASSUME_NONNULL_END

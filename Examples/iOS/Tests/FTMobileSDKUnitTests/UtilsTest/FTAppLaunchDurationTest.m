@@ -27,6 +27,7 @@
 #import "FTActionTrackingHandler.h"
 #import "FTFirstFrameReader.h"
 #import "FTDateUtil.h"
+#import <objc/runtime.h>
 #if TARGET_OS_IOS
 #import <mach/task_policy.h>
 #endif
@@ -453,32 +454,66 @@ void FTClearLaunchTaskRole(void);
     FTSetApplicationDidBecomeActive(applicationDidBecomeActive);
 }
 
-- (void)testPrewarmDurationStartsAtObjCRuntimeInitialization{
+- (void)testLaunchDurationStartsAtProcessStartForColdAndPrewarm{
     NSDate *previousRuntimeInit = FTGetRuntimeInit();
+    NSDate *previousModuleInit = FTGetModuleInitializationTimestamp();
     NSDate *previousActive = FTGetApplicationDidBecomeActive();
     BOOL previousPrewarm = FTGetIsActivePrewarm();
-    NSDate *objcInit = [NSDate dateWithTimeIntervalSinceNow:-8];
-    NSDate *endDate = [objcInit dateByAddingTimeInterval:5];
-    FTSetRuntimeInit(objcInit);
-    FTSetApplicationDidBecomeActive(endDate);
-    FTSetIsActivePrewarm(YES);
+    NSDate *processStart = [NSDate dateWithTimeIntervalSince1970:1000];
+    NSDate *objcInit = [NSDate dateWithTimeIntervalSince1970:1002];
+    NSDate *moduleInit = [NSDate dateWithTimeIntervalSince1970:1003];
+    NSDate *endDate = [NSDate dateWithTimeIntervalSince1970:1008];
+    Method processStartMethod = class_getClassMethod(FTDateUtil.class, @selector(processStartTimestamp));
+    IMP replacement = imp_implementationWithBlock(^NSDate *(id receiver) {
+        return processStart;
+    });
+    IMP original = method_setImplementation(processStartMethod, replacement);
 
-    __block NSUInteger reportCount = 0;
-    self.launchBlock = ^(NSNumber * _Nullable duration, FTLaunchType type, NSDictionary *fields) {
-        reportCount++;
-        XCTAssertEqual(type, FTLaunchWarm);
-        XCTAssertEqualObjects(duration, @(5000000000LL));
-        XCTAssertNil(fields[FT_KEY_APP_LAUNCH_TYPE]);
-    };
-    FTAppLaunchTracker *tracker = [FTAppLaunchTracker new];
-    tracker.delegate = self;
-    [tracker reportAppLaunchPhaseDuration:endDate];
-
-    XCTAssertEqual(reportCount, 1);
-    XCTAssertEqualObjects(self.lastLaunchTime, objcInit);
-    FTSetRuntimeInit(previousRuntimeInit);
-    FTSetApplicationDidBecomeActive(previousActive);
-    FTSetIsActivePrewarm(previousPrewarm);
+    @try {
+        FTSetModuleInitializationTimestamp(moduleInit);
+        FTSetApplicationDidBecomeActive(endDate);
+        for (NSNumber *prewarm in @[@NO, @YES]) {
+            for (NSNumber *missingRuntime in @[@NO, @YES]) {
+                BOOL isPrewarm = prewarm.boolValue;
+                BOOL hasRuntime = !missingRuntime.boolValue;
+                FTSetIsActivePrewarm(isPrewarm);
+                FTSetRuntimeInit(hasRuntime ? objcInit : nil);
+                __block NSUInteger reportCount = 0;
+                self.launchBlock = ^(NSNumber *duration, FTLaunchType type, NSDictionary *fields) {
+                    reportCount++;
+                    XCTAssertEqual(type, isPrewarm ? FTLaunchWarm : FTLaunchCold);
+                    XCTAssertEqualObjects(duration, @(8000000000LL));
+                    if (isPrewarm) {
+                        XCTAssertNil(fields[FT_KEY_APP_LAUNCH_TYPE]);
+                    }
+                    if (isPrewarm || !hasRuntime) {
+                        XCTAssertNil(fields[FT_KEY_LAUNCH_PRE_RUNTIME_INIT_TIME]);
+                        XCTAssertNil(fields[FT_KEY_LAUNCH_RUNTIME_INIT_TIME]);
+                    } else {
+                        XCTAssertEqualObjects(fields[FT_KEY_LAUNCH_PRE_RUNTIME_INIT_TIME],
+                                              (@{FT_KEY_START: @0, FT_DURATION: @(2000000000LL)}));
+                        XCTAssertEqualObjects(fields[FT_KEY_LAUNCH_RUNTIME_INIT_TIME],
+                                              (@{FT_KEY_START: @(2000000000LL), FT_DURATION: @(1000000000LL)}));
+                    }
+                };
+                FTAppLaunchTracker *tracker = [FTAppLaunchTracker new];
+                tracker.delegate = self;
+                [tracker reportAppLaunchPhaseDuration:endDate];
+                // A late duplicate terminal callback must not change or repeat the report.
+                [tracker reportAppLaunchPhaseDuration:[endDate dateByAddingTimeInterval:100]];
+                XCTAssertEqual(reportCount, 1);
+                XCTAssertEqualObjects(self.lastLaunchTime, processStart);
+            }
+        }
+    } @finally {
+        method_setImplementation(processStartMethod, original);
+        imp_removeBlock(replacement);
+        FTSetRuntimeInit(previousRuntimeInit);
+        FTSetModuleInitializationTimestamp(previousModuleInit);
+        FTSetApplicationDidBecomeActive(previousActive);
+        FTSetIsActivePrewarm(previousPrewarm);
+        self.launchBlock = nil;
+    }
 }
 #endif
 - (void)testLaunchWhenSDKInitBeforeApplicationDidBecomeActive_cold{
