@@ -1,3 +1,8 @@
+# 1.6.8-beta.2
+
+1. same as 1..6.8-beta.1
+---
+
 # 1.6.8-beta.1
 
 1. Reduced overhead in automatic UIKit View loading-time collection and removed synchronous waits when passing loading data to RUM processing.
