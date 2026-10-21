@@ -3,6 +3,7 @@ import fs from 'node:fs'
 import { createRequire } from 'node:module'
 import path from 'node:path'
 import { MINIMUM_MACOS_VERSION, runtimeFileHashes } from './electron/build-runtime.mjs'
+import { verifyObjectiveCCategories } from './electron/verify-runtime.mjs'
 
 if (!process.argv[2]) throw new Error('Usage: node scripts/verify-electron-runtime.mjs <runtime-directory>')
 const runtime = path.resolve(process.argv[2])
@@ -42,6 +43,11 @@ for (const architecture of manifest.architectures) {
   if (minimumOSVersion !== MINIMUM_MACOS_VERSION) {
     throw new Error(`Native runtime ${architecture} binary must require macOS ${MINIMUM_MACOS_VERSION}; found ${minimumOSVersion ?? 'no minimum version'}`)
   }
+  const objectiveCMetadata = execFileSync('/usr/bin/nm', ['-m', '-arch', architecture, addon], {
+    encoding: 'utf8',
+    maxBuffer: 16 * 1024 * 1024,
+  })
+  verifyObjectiveCCategories(objectiveCMetadata)
 }
 execFileSync('/usr/bin/codesign', ['--verify', '--verbose=2', addon], {
   stdio: ['ignore', 'ignore', 'pipe'],
@@ -57,20 +63,6 @@ const addonDependencies = execFileSync('/usr/bin/otool', ['-L', addon], {
 })
 if (addonDependencies.includes('libGuanceElectronNative')) {
   throw new Error('Node-API addon still dynamically links GuanceElectronNative')
-}
-
-const objectiveCMetadata = execFileSync('/usr/bin/nm', ['-m', addon], {
-  encoding: 'utf8',
-  maxBuffer: 16 * 1024 * 1024,
-})
-for (const category of [
-  '__OBJC_$_CATEGORY_NSApplication_$_FTAutotrack',
-  '__OBJC_$_CATEGORY_NSWindow_$_FTAutoTrack',
-  '__OBJC_$_CATEGORY_WKWebView_$_FTAutoTrack',
-]) {
-  if (!objectiveCMetadata.includes(category)) {
-    throw new Error(`Static Node-API addon is missing Objective-C Category: ${category}`)
-  }
 }
 
 const strings = execFileSync('/usr/bin/strings', [addon], { encoding: 'utf8' })
