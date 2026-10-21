@@ -293,7 +293,7 @@ static dispatch_group_t testBundleViewControllerSwizzlingGroup = nil;
     NSProcessInfo *processInfo = [NSProcessInfo processInfo];
     NSString *url = [processInfo environment][@"ACCESS_SERVER_URL"];
     NSString *appid = [processInfo environment][@"APP_ID"];
-    FTMobileConfig *config = [[FTMobileConfig alloc]initWithDatakitUrl:url];
+    FTSDKConfig *config = [[FTSDKConfig alloc]initWithDatakitUrl:url];
     config.autoSync = NO;
     config.enableSDKDebugLog = YES;
     [FTMobileAgent startWithConfigOptions:config];
@@ -366,6 +366,38 @@ static dispatch_group_t testBundleViewControllerSwizzlingGroup = nil;
     XCTAssertEqual(mock.viewStartCount, 2);
     XCTAssertEqual(mock.viewStopCount, 1);
     XCTAssertEqualObjects(mock.lastLoadTime, @0);
+}
+
+- (void)testUIKitViewStopsBeforeOriginalDisappearanceCallback {
+    FTAutoTrackViewLoadingTimeMock *mock = [self startUIKitAutoTrackWithMockHandler];
+    UIViewController *viewController = [FTAutoTrackLoadingTimeTestViewController new];
+    [viewController viewDidAppear:NO];
+    XCTAssertEqual(mock.viewStartCount, 1);
+    XCTAssertEqual(mock.viewStopCount, 0);
+
+    // This selector holds UIKit's original callback after SDK swizzling.
+    SEL originalSelector = NSSelectorFromString(@"ft_viewDidDisappear:");
+    Method method = class_getInstanceMethod(UIViewController.class, originalSelector);
+    IMP original = method_getImplementation(method);
+    __block NSInteger stopCountAtCallback = -1;
+    __block NSUInteger callbackCount = 0;
+    IMP replacement = imp_implementationWithBlock(^(UIViewController *receiver, BOOL animated) {
+        if (receiver == viewController) {
+            stopCountAtCallback = mock.viewStopCount;
+            callbackCount++;
+        }
+        ((void (*)(id, SEL, BOOL))original)(receiver, originalSelector, animated);
+    });
+    method_setImplementation(method, replacement);
+    @try {
+        [viewController viewDidDisappear:NO];
+        XCTAssertEqual(callbackCount, 1u);
+        XCTAssertEqual(stopCountAtCallback, 1);
+        XCTAssertEqual(mock.viewStopCount, 1);
+    } @finally {
+        method_setImplementation(method, original);
+        imp_removeBlock(replacement);
+    }
 }
 
 - (void)withLoadingNodeClock:(dispatch_block_t)body {

@@ -785,7 +785,7 @@
 			path = UtilsTest;
 			sourceTree = "<group>";
 		};
-		172DD33828F7FC27007AE5E9 /* iOS/Extensions/WidgetDemo */ = {
+		172DD33828F7FC27007AE5E9 /* WidgetDemo */ = {
 			isa = PBXGroup;
 			children = (
 				172DD34A28F7FCB8007AE5E9 /* WidgetDemoExtension.entitlements */,
@@ -833,7 +833,7 @@
 			path = Resource;
 			sourceTree = "<group>";
 		};
-		175B13AD29E3AE3A003A5B1B /* App/Config */ = {
+		175B13AD29E3AE3A003A5B1B /* Config */ = {
 			isa = PBXGroup;
 			children = (
 				175B13AE29E3AE87003A5B1B /* Config-Example.publish.xcconfig */,
@@ -843,7 +843,7 @@
 			path = App/Config;
 			sourceTree = "<group>";
 		};
-		1764E40029AC9B0500E70DBB /* iOS/SwiftApp */ = {
+		1764E40029AC9B0500E70DBB /* SwiftApp */ = {
 			isa = PBXGroup;
 			children = (
 				1764E40129AC9B0500E70DBB /* AppDelegate.swift */,
@@ -996,11 +996,11 @@
 			isa = PBXGroup;
 			children = (
 				7CDA50BD26DE15EB0062CC39 /* macOS */,
-				4A116958239113B600C0BC4E /* iOS/App */,
-				172DD33828F7FC27007AE5E9 /* iOS/Extensions/WidgetDemo */,
-				1764E40029AC9B0500E70DBB /* iOS/SwiftApp */,
-				4A85313723AB85FC00B40B5D /* iOS/Tests/FTMobileSDKUnitTests */,
-				4A22526D23B5AC7600B0ED41 /* iOS/Tests/FTMobileSDKUITests */,
+				4A116958239113B600C0BC4E /* App */,
+				172DD33828F7FC27007AE5E9 /* WidgetDemo */,
+				1764E40029AC9B0500E70DBB /* SwiftApp */,
+				4A85313723AB85FC00B40B5D /* FTMobileSDKUnitTests */,
+				4A22526D23B5AC7600B0ED41 /* FTMobileSDKUITests */,
 				17F10EBA2D13EAC800737EDD /* tvOS-App */,
 				17F10EC72D13EACC00737EDD /* tvOS-AppTests */,
 				17F10ECE2D13EACE00737EDD /* tvOS-AppUITests */,
@@ -1027,7 +1027,7 @@
 			name = Products;
 			sourceTree = "<group>";
 		};
-		4A116958239113B600C0BC4E /* iOS/App */ = {
+		4A116958239113B600C0BC4E /* App */ = {
 			isa = PBXGroup;
 			children = (
 				7C02F60C268C498200A0FE90 /* App.entitlements */,
@@ -1088,7 +1088,7 @@
 			path = iOS/App;
 			sourceTree = "<group>";
 		};
-		4A22526D23B5AC7600B0ED41 /* iOS/Tests/FTMobileSDKUITests */ = {
+		4A22526D23B5AC7600B0ED41 /* FTMobileSDKUITests */ = {
 			isa = PBXGroup;
 			children = (
 				4A22526E23B5AC7600B0ED41 /* FTMobileSDKUITests.m */,
@@ -1144,7 +1144,7 @@
 			name = Frameworks;
 			sourceTree = "<group>";
 		};
-		4A85313723AB85FC00B40B5D /* iOS/Tests/FTMobileSDKUnitTests */ = {
+		4A85313723AB85FC00B40B5D /* FTMobileSDKUnitTests */ = {
 			isa = PBXGroup;
 			children = (
 				178377F52D8413E600C590AE /* SessionReplay */,
@@ -1263,7 +1263,7 @@
 		7CDA50BD26DE15EB0062CC39 /* macOS */ = {
 			isa = PBXGroup;
 			children = (
-				175B13AD29E3AE3A003A5B1B /* App/Config */,
+				175B13AD29E3AE3A003A5B1B /* Config */,
 				7CDA50C826DE15EB0062CC39 /* macOS-App */,
 				7CDA50DF26DE15EE0062CC39 /* macOS-AppTests */,
 				7CDA50EA26DE15EE0062CC39 /* macOS-AppUITests */,
@@ -1842,13 +1842,9 @@
 			inputFileListPaths = (
 				"${PODS_ROOT}/Target Support Files/Pods-FTMobileSDKUnitTests-tvOS/Pods-FTMobileSDKUnitTests-tvOS-frameworks-${CONFIGURATION}-input-files.xcfilelist",
 			);
-			inputPaths = (
-			);
 			name = "[CP] Embed Pods Frameworks";
 			outputFileListPaths = (
 				"${PODS_ROOT}/Target Support Files/Pods-FTMobileSDKUnitTests-tvOS/Pods-FTMobileSDKUnitTests-tvOS-frameworks-${CONFIGURATION}-output-files.xcfilelist",
-			);
-			outputPaths = (
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 			shellPath = /bin/sh;
@@ -1880,13 +1876,9 @@
 			inputFileListPaths = (
 				"${PODS_ROOT}/Target Support Files/Pods-FTMobileSDKUnitTests/Pods-FTMobileSDKUnitTests-frameworks-${CONFIGURATION}-input-files.xcfilelist",
 			);
-			inputPaths = (
-			);
 			name = "[CP] Embed Pods Frameworks";
 			outputFileListPaths = (
 				"${PODS_ROOT}/Target Support Files/Pods-FTMobileSDKUnitTests/Pods-FTMobileSDKUnitTests-frameworks-${CONFIGURATION}-output-files.xcfilelist",
-			);
-			outputPaths = (
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 			shellPath = /bin/sh;
@@ -2658,7 +2650,10 @@
 				SWIFT_VERSION = 5.0;
 				TARGETED_DEVICE_FAMILY = 3;
 				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/tvOS-App.app/$(BUNDLE_EXECUTABLE_FOLDER_PATH)/tvOS-App";
-				USER_HEADER_SEARCH_PATHS = "$(inherited)  ";
+				USER_HEADER_SEARCH_PATHS = (
+					"$(inherited)",
+					" ",
+				);
 			};
 			name = Debug;
 		};
@@ -2699,7 +2694,10 @@
 				SWIFT_VERSION = 5.0;
 				TARGETED_DEVICE_FAMILY = 3;
 				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/tvOS-App.app/$(BUNDLE_EXECUTABLE_FOLDER_PATH)/tvOS-App";
-				USER_HEADER_SEARCH_PATHS = "$(inherited)  ";
+				USER_HEADER_SEARCH_PATHS = (
+					"$(inherited)",
+					" ",
+				);
 			};
 			name = Pre;
 		};
@@ -2734,7 +2732,10 @@
 				SWIFT_VERSION = 5.0;
 				TARGETED_DEVICE_FAMILY = 3;
 				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/tvOS-App.app/$(BUNDLE_EXECUTABLE_FOLDER_PATH)/tvOS-App";
-				USER_HEADER_SEARCH_PATHS = "$(inherited)  ";
+				USER_HEADER_SEARCH_PATHS = (
+					"$(inherited)",
+					" ",
+				);
 			};
 			name = Release;
 		};
@@ -2875,7 +2876,10 @@
 				SWIFT_VERSION = 5.0;
 				TARGETED_DEVICE_FAMILY = "1,2";
 				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/App.app/$(BUNDLE_EXECUTABLE_FOLDER_PATH)/App";
-				USER_HEADER_SEARCH_PATHS = "$(inherited)  ";
+				USER_HEADER_SEARCH_PATHS = (
+					"$(inherited)",
+					" ",
+				);
 			};
 			name = Pre;
 		};
@@ -3467,7 +3471,10 @@
 				SWIFT_VERSION = 5.0;
 				TARGETED_DEVICE_FAMILY = "1,2";
 				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/App.app/$(BUNDLE_EXECUTABLE_FOLDER_PATH)/App";
-				USER_HEADER_SEARCH_PATHS = "$(inherited)  ";
+				USER_HEADER_SEARCH_PATHS = (
+					"$(inherited)",
+					" ",
+				);
 			};
 			name = Debug;
 		};
@@ -3500,7 +3507,10 @@
 				SWIFT_VERSION = 5.0;
 				TARGETED_DEVICE_FAMILY = "1,2";
 				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/App.app/$(BUNDLE_EXECUTABLE_FOLDER_PATH)/App";
-				USER_HEADER_SEARCH_PATHS = "$(inherited)  ";
+				USER_HEADER_SEARCH_PATHS = (
+					"$(inherited)",
+					" ",
+				);
 			};
 			name = Release;
 		};

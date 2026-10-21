@@ -551,8 +551,8 @@ static BOOL FTViewControllerClassIsFromSwiftUIImage(Class viewControllerClass) {
     }
 }
 -(void)ft_viewDidDisappear:(BOOL)animated{
-    [self ft_viewDidDisappear:animated];
     [[FTAutoTrackHandler sharedInstance].viewControllerHandler notify_viewDidDisappear:self animated:animated];
+    [self ft_viewDidDisappear:animated];
 }
 @end
 #endif
