@@ -39,18 +39,20 @@
 @interface FTViewLoadingState : NSObject
 @property (nonatomic, strong, nullable) NSNumber *loadDuration;
 @property (nonatomic, strong, nullable) NSNumber *viewLoadStartEpochNs;
-@property (nonatomic, assign) NSUInteger viewDidLoadDepth;
-@property (nonatomic, assign) NSUInteger viewWillAppearDepth;
-@property (nonatomic, assign) NSUInteger viewWillLayoutSubviewsDepth;
-@property (nonatomic, assign) NSUInteger viewDidAppearDepth;
+@property (nonatomic, assign) BOOL viewDidLoadInProgress;
+@property (nonatomic, assign) BOOL viewWillAppearInProgress;
+@property (nonatomic, assign) BOOL viewWillLayoutSubviewsInProgress;
+@property (nonatomic, assign) BOOL viewDidAppearInProgress;
 @property (nonatomic, assign) NSUInteger viewLoadGeneration;
 @property (nonatomic, assign) NSUInteger viewLoadDurationGeneration;
 @property (nonatomic, assign) uint64_t viewLoadStartTime;
-@property (nonatomic, assign) uint64_t viewDidLoadDuration;
+@property (nonatomic, assign) uint64_t viewDidLoadEndTime;
+@property (nonatomic, assign) uint64_t firstViewDidAppearStartTime;
 @property (nonatomic, assign) uint64_t firstViewWillAppearStartTime;
 @property (nonatomic, assign) uint64_t firstViewWillLayoutSubviewsStartTime;
 @property (nonatomic, assign) BOOL hasViewLoadStartTime;
-@property (nonatomic, assign) BOOL hasViewDidLoadDuration;
+@property (nonatomic, assign) BOOL hasViewDidLoadEndTime;
+@property (nonatomic, assign) BOOL hasFirstViewDidAppearStartTime;
 @property (nonatomic, assign) BOOL hasFirstViewWillAppearStartTime;
 @property (nonatomic, assign) BOOL hasFirstViewWillLayoutSubviewsStartTime;
 @property (nonatomic, assign) BOOL hasViewLoadGeneration;
@@ -194,16 +196,25 @@ static BOOL FTViewControllerClassIsFromSwiftUIImage(Class viewControllerClass) {
                                  FTSWReplacement({
             UIViewController *viewController = (UIViewController *)self;
             FTViewLoadingState *state = [viewController ft_viewLoadingStateCreateIfNeeded:YES];
-            @try {
-                [viewController ft_viewDidLoadWillStartWithState:state];
-            } @catch (NSException *exception) {
-                FTInnerLogError(@"viewDidLoad start record exception: %@", exception);
+            if (state == nil || state.viewDidLoadInProgress) {
+                FTSWCallOriginal();
+                return;
             }
-            FTSWCallOriginal();
+            state.viewDidLoadInProgress = YES;
             @try {
-                [viewController ft_viewDidLoadDidEndWithState:state];
-            } @catch (NSException *exception) {
-                FTInnerLogError(@"viewDidLoad end record exception: %@", exception);
+                @try {
+                    [viewController ft_viewDidLoadWillStartWithState:state];
+                } @catch (NSException *exception) {
+                    FTInnerLogError(@"viewDidLoad start record exception: %@", exception);
+                }
+                FTSWCallOriginal();
+                @try {
+                    [viewController ft_viewDidLoadDidEndWithState:state];
+                } @catch (NSException *exception) {
+                    FTInnerLogError(@"viewDidLoad end record exception: %@", exception);
+                }
+            } @finally {
+                state.viewDidLoadInProgress = NO;
             }
         }), FTSwizzlerModeOncePerClass, viewDidLoadSwizzleKey);
         FTSwizzlerInstanceMethod(viewControllerClass,
@@ -213,20 +224,25 @@ static BOOL FTViewControllerClassIsFromSwiftUIImage(Class viewControllerClass) {
                                  FTSWReplacement({
             UIViewController *viewController = (UIViewController *)self;
             FTViewLoadingState *state = [viewController ft_viewLoadingStateCreateIfNeeded:NO];
-            if (state != nil && state.viewLoadDurationCalculated) {
+            if (state == nil || state.viewLoadDurationCalculated || state.viewWillAppearInProgress || state.hasFirstViewWillAppearStartTime) {
                 FTSWCallOriginal(animated);
                 return;
             }
+            state.viewWillAppearInProgress = YES;
             @try {
-                [viewController ft_viewWillAppearWillStartWithState:state];
-            } @catch (NSException *exception) {
-                FTInnerLogError(@"viewWillAppear start record exception: %@", exception);
-            }
-            FTSWCallOriginal(animated);
-            @try {
-                [viewController ft_viewWillAppearDidEndWithState:state];
-            } @catch (NSException *exception) {
-                FTInnerLogError(@"viewWillAppear end record exception: %@", exception);
+                @try {
+                    [viewController ft_viewWillAppearWillStartWithState:state];
+                } @catch (NSException *exception) {
+                    FTInnerLogError(@"viewWillAppear start record exception: %@", exception);
+                }
+                FTSWCallOriginal(animated);
+                @try {
+                    [viewController ft_clearExpiredViewLoadingMetricsIfNeededForState:state];
+                } @catch (NSException *exception) {
+                    FTInnerLogError(@"viewWillAppear end record exception: %@", exception);
+                }
+            } @finally {
+                state.viewWillAppearInProgress = NO;
             }
         }), FTSwizzlerModeOncePerClass, viewWillAppearSwizzleKey);
         FTSwizzlerInstanceMethod(viewControllerClass,
@@ -236,20 +252,25 @@ static BOOL FTViewControllerClassIsFromSwiftUIImage(Class viewControllerClass) {
                                  FTSWReplacement({
             UIViewController *viewController = (UIViewController *)self;
             FTViewLoadingState *state = [viewController ft_viewLoadingStateCreateIfNeeded:NO];
-            if (state != nil && state.viewLoadDurationCalculated) {
+            if (state == nil || state.viewLoadDurationCalculated || state.viewWillLayoutSubviewsInProgress || state.hasFirstViewWillAppearStartTime || state.hasFirstViewWillLayoutSubviewsStartTime || !state.hasViewDidLoadEndTime) {
                 FTSWCallOriginal();
                 return;
             }
+            state.viewWillLayoutSubviewsInProgress = YES;
             @try {
-                [viewController ft_viewWillLayoutSubviewsWillStartWithState:state];
-            } @catch (NSException *exception) {
-                FTInnerLogError(@"viewWillLayoutSubviews start record exception: %@", exception);
-            }
-            FTSWCallOriginal();
-            @try {
-                [viewController ft_viewWillLayoutSubviewsDidEndWithState:state];
-            } @catch (NSException *exception) {
-                FTInnerLogError(@"viewWillLayoutSubviews end record exception: %@", exception);
+                @try {
+                    [viewController ft_viewWillLayoutSubviewsWillStartWithState:state];
+                } @catch (NSException *exception) {
+                    FTInnerLogError(@"viewWillLayoutSubviews start record exception: %@", exception);
+                }
+                FTSWCallOriginal();
+                @try {
+                    [viewController ft_clearExpiredViewLoadingMetricsIfNeededForState:state];
+                } @catch (NSException *exception) {
+                    FTInnerLogError(@"viewWillLayoutSubviews end record exception: %@", exception);
+                }
+            } @finally {
+                state.viewWillLayoutSubviewsInProgress = NO;
             }
         }), FTSwizzlerModeOncePerClass, viewWillLayoutSubviewsSwizzleKey);
         FTSwizzlerInstanceMethod(viewControllerClass,
@@ -259,17 +280,21 @@ static BOOL FTViewControllerClassIsFromSwiftUIImage(Class viewControllerClass) {
                                  FTSWReplacement({
             UIViewController *viewController = (UIViewController *)self;
             FTViewLoadingState *state = [viewController ft_viewLoadingStateCreateIfNeeded:YES];
-            BOOL isOutermostAppearance = state.viewDidAppearDepth == 0;
-            uint64_t viewDidAppearStartTime = isOutermostAppearance && !state.viewLoadDurationCalculated ? FTDateUtil.systemTime : 0;
-            state.viewDidAppearDepth++;
+            if (state == nil || state.viewDidAppearInProgress) {
+                FTSWCallOriginal(animated);
+                return;
+            }
+            state.viewDidAppearInProgress = YES;
             @try {
-                if (isOutermostAppearance) {
-                    [viewController ft_completeViewLoadingDurationForState:state viewDidAppearStartTime:viewDidAppearStartTime];
-                    [[FTAutoTrackHandler sharedInstance].viewControllerHandler notify_viewDidAppear:viewController animated:animated];
+                if (!state.viewLoadDurationCalculated && !state.hasFirstViewDidAppearStartTime) {
+                    state.firstViewDidAppearStartTime = FTDateUtil.systemTime;
+                    state.hasFirstViewDidAppearStartTime = YES;
                 }
+                [viewController ft_completeViewLoadingDurationForState:state viewDidAppearStartTime:state.firstViewDidAppearStartTime];
+                [[FTAutoTrackHandler sharedInstance].viewControllerHandler notify_viewDidAppear:viewController animated:animated];
                 FTSWCallOriginal(animated);
             } @finally {
-                state.viewDidAppearDepth--;
+                state.viewDidAppearInProgress = NO;
             }
         }), FTSwizzlerModeOncePerClass, viewDidAppearSwizzleKey);
         objc_setAssociatedObject(viewControllerClass, viewLoadDurationInstrumentedKey, @(YES), OBJC_ASSOCIATION_RETAIN_NONATOMIC);
@@ -344,7 +369,8 @@ static BOOL FTViewControllerClassIsFromSwiftUIImage(Class viewControllerClass) {
     state.hasViewLoadDurationGeneration = NO;
     state.viewLoadStartTime = startTime;
     state.hasViewLoadStartTime = YES;
-    state.hasViewDidLoadDuration = NO;
+    state.hasViewDidLoadEndTime = NO;
+    state.hasFirstViewDidAppearStartTime = NO;
     state.hasFirstViewWillAppearStartTime = NO;
     state.hasFirstViewWillLayoutSubviewsStartTime = NO;
     state.viewLoadDurationCalculated = NO;
@@ -356,7 +382,8 @@ static BOOL FTViewControllerClassIsFromSwiftUIImage(Class viewControllerClass) {
 - (void)ft_clearPendingViewLoadingMetricsForState:(FTViewLoadingState *)state{
     state.hasViewLoadStartTime = NO;
     state.viewLoadStartEpochNs = nil;
-    state.hasViewDidLoadDuration = NO;
+    state.hasViewDidLoadEndTime = NO;
+    state.hasFirstViewDidAppearStartTime = NO;
     state.hasFirstViewWillAppearStartTime = NO;
     state.hasFirstViewWillLayoutSubviewsStartTime = NO;
     state.hasViewLoadGeneration = NO;
@@ -394,7 +421,7 @@ static BOOL FTViewControllerClassIsFromSwiftUIImage(Class viewControllerClass) {
     if (state == nil || state.viewLoadDurationCalculated || [self ft_clearExpiredViewLoadingMetricsIfNeededForState:state]) {
         return;
     }
-    if (!state.hasViewDidLoadDuration) {
+    if (!state.hasViewDidLoadEndTime) {
         return;
     }
     uint64_t displayStart = state.firstViewWillAppearStartTime;
@@ -407,7 +434,8 @@ static BOOL FTViewControllerClassIsFromSwiftUIImage(Class viewControllerClass) {
         return;
     }
     uint64_t displayDuration = viewDidAppearStartTime >= displayStart ? viewDidAppearStartTime - displayStart : 0;
-    [self ft_storeViewLoadDuration:@(state.viewDidLoadDuration + displayDuration) state:state];
+    uint64_t loadDuration = state.viewDidLoadEndTime >= state.viewLoadStartTime ? state.viewDidLoadEndTime - state.viewLoadStartTime : 0;
+    [self ft_storeViewLoadDuration:@(loadDuration + displayDuration) state:state];
 }
 - (void)ft_completeViewLoadingDurationForState:(FTViewLoadingState *)state viewDidAppearStartTime:(uint64_t)viewDidAppearStartTime{
     [self ft_clearExpiredViewLoadDurationIfNeededForState:state];
@@ -441,63 +469,28 @@ static BOOL FTViewControllerClassIsFromSwiftUIImage(Class viewControllerClass) {
         [self ft_storeViewLoadDuration:@0 state:state];
     }
 }
+// Only the owning (outermost) wrapper invokes these sampling helpers.
 - (void)ft_viewDidLoadWillStartWithState:(FTViewLoadingState *)state{
-    if (state == nil) {
-        return;
-    }
-    if (state.viewDidLoadDepth == 0) {
-        [self ft_resetViewLoadingMetricsWithStartTime:FTDateUtil.systemTime state:state];
-    }
-    state.viewDidLoadDepth++;
+    [self ft_resetViewLoadingMetricsWithStartTime:FTDateUtil.systemTime state:state];
 }
 - (void)ft_viewDidLoadDidEndWithState:(FTViewLoadingState *)state{
-    if (state == nil || state.viewDidLoadDepth == 0) {
-        return;
-    }
-    state.viewDidLoadDepth--;
-    if (state.viewDidLoadDepth != 0 || [self ft_clearExpiredViewLoadingMetricsIfNeededForState:state] || !state.hasViewLoadStartTime) {
-        return;
-    }
     uint64_t end = FTDateUtil.systemTime;
-    state.viewDidLoadDuration = end >= state.viewLoadStartTime ? end - state.viewLoadStartTime : 0;
-    state.hasViewDidLoadDuration = YES;
+    if ([self ft_clearExpiredViewLoadingMetricsIfNeededForState:state] || !state.hasViewLoadStartTime) {
+        return;
+    }
+    state.viewDidLoadEndTime = end;
+    state.hasViewDidLoadEndTime = YES;
 }
 - (void)ft_viewWillAppearWillStartWithState:(FTViewLoadingState *)state{
-    if (state == nil) {
-        return;
-    }
-    if (state.viewWillAppearDepth == 0 && !state.viewLoadDurationCalculated && ![self ft_clearExpiredViewLoadingMetricsIfNeededForState:state] && state.hasViewDidLoadDuration && !state.hasFirstViewWillAppearStartTime) {
+    if (![self ft_clearExpiredViewLoadingMetricsIfNeededForState:state] && state.hasViewDidLoadEndTime) {
         state.firstViewWillAppearStartTime = FTDateUtil.systemTime;
         state.hasFirstViewWillAppearStartTime = YES;
     }
-    state.viewWillAppearDepth++;
-}
-- (void)ft_viewWillAppearDidEndWithState:(FTViewLoadingState *)state{
-    if (state == nil || state.viewWillAppearDepth == 0) {
-        return;
-    }
-    state.viewWillAppearDepth--;
-    if (state.viewWillAppearDepth == 0) {
-        [self ft_clearExpiredViewLoadingMetricsIfNeededForState:state];
-    }
 }
 - (void)ft_viewWillLayoutSubviewsWillStartWithState:(FTViewLoadingState *)state{
-    if (state == nil) {
-        return;
-    }
-    if (state.viewWillLayoutSubviewsDepth == 0 && self.isViewLoaded && self.view.window != nil && !state.viewLoadDurationCalculated && ![self ft_clearExpiredViewLoadingMetricsIfNeededForState:state] && state.hasViewDidLoadDuration && !state.hasFirstViewWillLayoutSubviewsStartTime) {
+    if (![self ft_clearExpiredViewLoadingMetricsIfNeededForState:state] && self.isViewLoaded && self.view.window != nil) {
         state.firstViewWillLayoutSubviewsStartTime = FTDateUtil.systemTime;
         state.hasFirstViewWillLayoutSubviewsStartTime = YES;
-    }
-    state.viewWillLayoutSubviewsDepth++;
-}
-- (void)ft_viewWillLayoutSubviewsDidEndWithState:(FTViewLoadingState *)state{
-    if (state == nil || state.viewWillLayoutSubviewsDepth == 0) {
-        return;
-    }
-    state.viewWillLayoutSubviewsDepth--;
-    if (state.viewWillLayoutSubviewsDepth == 0 && !state.viewLoadDurationCalculated) {
-        [self ft_clearExpiredViewLoadingMetricsIfNeededForState:state];
     }
 }
 - (NSString *)ft_viewControllerName{
@@ -532,10 +525,14 @@ static BOOL FTViewControllerClassIsFromSwiftUIImage(Class viewControllerClass) {
     }
 
     FTViewLoadingState *state = [self ft_viewLoadingStateCreateIfNeeded:NO];
-    BOOL isOutermostAppearance = state != nil && state.viewDidAppearDepth == 0;
+    if (state.viewDidAppearInProgress) {
+        [self ft_viewDidAppear:animated];
+        return;
+    }
+    BOOL isOutermostAppearance = state != nil;
     uint64_t viewDidAppearStartTime = isOutermostAppearance && !state.viewLoadDurationCalculated ? FTDateUtil.systemTime : 0;
     if (state != nil) {
-        state.viewDidAppearDepth++;
+        state.viewDidAppearInProgress = YES;
     }
     @try {
         if (isOutermostAppearance) {
@@ -550,7 +547,7 @@ static BOOL FTViewControllerClassIsFromSwiftUIImage(Class viewControllerClass) {
         }
         [self ft_viewDidAppear:animated];
     } @finally {
-        if (state != nil) state.viewDidAppearDepth--;
+        if (state != nil) state.viewDidAppearInProgress = NO;
     }
 }
 -(void)ft_viewDidDisappear:(BOOL)animated{

@@ -29,7 +29,6 @@
 #import "FTSDKCompat.h"
 #import "FTConstants.h"
 #import "FTErrorMonitorInfo.h"
-#import "FTReadWriteHelper.h"
 #import "FTModuleManager.h"
 #import "NSError+FTDescription.h"
 #import "FTPresetProperty.h"
@@ -77,7 +76,8 @@ void *FTRUMQueueIdentityKey = &FTRUMQueueIdentityKey;
 @property (nonatomic, strong) FTRUMDependencies *rumDependencies;
 @property (nonatomic, assign) BOOL initialBackground;
 @property (nonatomic, strong) FTRUMSessionHandler *sessionHandler;
-@property (nonatomic, strong) FTReadWriteHelper<NSMutableDictionary *> *preViewDuration;
+// Accessed only on rumQueue; loading data is consumed by the next matching ViewStart.
+@property (nonatomic, strong) NSMutableDictionary<NSString *, NSDictionary *> *preViewDuration;
 @property (nonatomic, strong) dispatch_queue_t rumQueue;
 @property (atomic,copy,readwrite) NSString *viewReferrer;
 @property (atomic,copy,nullable) NSString *viewReferrerId;
@@ -91,7 +91,7 @@ void *FTRUMQueueIdentityKey = &FTRUMQueueIdentityKey;
         self.appState = [self initialAppState];
         dependencies.appStateHistory = [[FTRUMAppStateHistory alloc] initWithState:FTRUMIntervalState(self.appState)
                                                                           timeNs:[NSDate ft_currentNanosecondTimeStamp] background:self.initialBackground];
-        _preViewDuration = [[FTReadWriteHelper alloc]initWithValue:[NSMutableDictionary new]] ;
+        _preViewDuration = [NSMutableDictionary new];
         _rumQueue = dispatch_queue_create("com.ft.rum", DISPATCH_QUEUE_SERIAL);
         dispatch_queue_set_specific(_rumQueue, FTRUMQueueIdentityKey, &FTRUMQueueIdentityKey, NULL);
         [[FTModuleManager sharedInstance] addMessageReceiver:self];
@@ -210,9 +210,14 @@ void *FTRUMQueueIdentityKey = &FTRUMQueueIdentityKey;
 }
 #pragma mark - View -
 -(void)onCreateView:(NSString *)viewName loadTime:(NSNumber *)loadTime{
-    [self.preViewDuration concurrentWrite:^(NSMutableDictionary * _Nonnull value) {
-        [value setValue:loadTime ? @{@"duration": loadTime} : nil forKey:viewName];
-    }];
+    NSString *name = [viewName copy];
+    dispatch_async(self.rumQueue, ^{
+        @try {
+            [self.preViewDuration setValue:loadTime ? @{@"duration": loadTime} : nil forKey:name];
+        } @catch (NSException *exception) {
+            FTInnerLogError(@"exception %@",exception);
+        }
+    });
 }
 
 - (void)onCreateView:(NSString *)viewName loadTime:(NSNumber *)loadTime loadStartEpochNs:(nullable NSNumber *)loadStartEpochNs {
@@ -225,9 +230,15 @@ void *FTRUMQueueIdentityKey = &FTRUMQueueIdentityKey;
         [loadStartEpochNs compare:@(LLONG_MAX)] != NSOrderedDescending) {
         info[@"load_start_epoch_ns"] = @(loadStartEpochNs.longLongValue);
     }
-    [self.preViewDuration concurrentWrite:^(NSMutableDictionary * _Nonnull value) {
-        value[viewName] = info;
-    }];
+    NSString *name = [viewName copy];
+    NSDictionary *loadingInfo = [info copy];
+    dispatch_async(self.rumQueue, ^{
+        @try {
+            self.preViewDuration[name] = loadingInfo;
+        } @catch (NSException *exception) {
+            FTInnerLogError(@"exception %@",exception);
+        }
+    });
 }
 -(void)startViewWithName:(NSString *)viewName{
     [self startViewWithName:viewName property:nil];
@@ -246,31 +257,22 @@ void *FTRUMQueueIdentityKey = &FTRUMQueueIdentityKey;
         FTInnerLogError(@"[RUM] Failed to start view due to invalid tracking type.");
         return;
     }
-    __block NSNumber *duration = @0;
-    __block NSNumber *loadingStartEpochNs = nil;
     if (!(viewId&&viewId.length>0&&viewName&&viewName.length>0)) {
         FTInnerLogError(@"[RUM] Failed to start view due to missing required fields. Please ensure 'viewName' are provided.");
         return;
     }
-    [self.preViewDuration synchronousWrite:^(NSMutableDictionary * _Nonnull value) {
-        id info = value[viewName];
-        if (info) {
-            if ([info isKindOfClass:NSDictionary.class]) {
-                duration = info[@"duration"] ?: @0;
-                loadingStartEpochNs = info[@"load_start_epoch_ns"];
-            } else if ([info isKindOfClass:NSNumber.class]) {
-                duration = info;
-            }
-            [value removeObjectForKey:viewName];
-        }
-    }];
-    
+    // Capture event data before queueing so a busy rumQueue cannot shift the boundary.
     NSDate *time = [NSDate date];
     NSString *visitorID = [self currentVisitorIDSnapshot];
+    NSString *name = [viewName copy];
     dispatch_async(self.rumQueue, ^{
         @try {
+            NSDictionary *info = self.preViewDuration[name];
+            NSNumber *duration = info[@"duration"] ?: @0;
+            NSNumber *loadingStartEpochNs = info[@"load_start_epoch_ns"];
+            [self.preViewDuration removeObjectForKey:name];
             NSDictionary *context = [self rumDynamicProperty];
-            FTRUMViewModel *viewModel = [[FTRUMViewModel alloc]initWithViewID:viewId viewName:viewName viewReferrer:self.viewReferrer];
+            FTRUMViewModel *viewModel = [[FTRUMViewModel alloc]initWithViewID:viewId viewName:name viewReferrer:self.viewReferrer];
             viewModel.time = time;
             viewModel.loading_time = duration?:@0;
             viewModel.loading_start_epoch_ns = duration.longLongValue > 0 && loadingStartEpochNs.longLongValue < [time ft_nanosecondTimeStamp] ? loadingStartEpochNs : nil;
@@ -279,7 +281,7 @@ void *FTRUMQueueIdentityKey = &FTRUMQueueIdentityKey;
             viewModel.fields = property;
             viewModel.visitorIDSnapshot = visitorID;
             [self process:viewModel context:context];
-            self.viewReferrer = viewName;
+            self.viewReferrer = name;
             self.viewReferrerId = viewId;
         } @catch (NSException *exception) {
             FTInnerLogError(@"exception %@",exception);

@@ -44,6 +44,10 @@
 #import "FTNetworkMock.h"
 #import "AddRumDatasHandlerMock.h"
 
+@interface UIViewController (FTLoadingStateTesting)
+- (id)ft_viewLoadingStateCreateIfNeeded:(BOOL)createIfNeeded;
+@end
+
 @interface FTAutoTrackHandler (SwiftUIRUMViewTesting)
 - (void)notifyOnAppearWithIdentity:(NSString *)identity name:(NSString *)name property:(nullable NSDictionary *)property loadTime:(NSNumber *)loadTime;
 - (void)notifyOnDisappearWithIdentity:(NSString *)identity;
@@ -109,6 +113,59 @@
 }
 @end
 
+
+// A deterministic clock advances only inside the simulated application callbacks.
+static uint64_t FTLoadingNodeNow;
+static NSUInteger FTLoadingNodeClockReads;
+@interface FTLoadingNodeParent : UIViewController
+@property (nonatomic) BOOL failLoad;
+@property (nonatomic) NSUInteger throwStage;
+@property (nonatomic) BOOL hideLoadedView;
+@property (nonatomic) BOOL revealLoadedViewDuringLayout;
+@property (nonatomic) BOOL repeatSuper;
+@property (nonatomic) NSUInteger windowChecks;
+@property (nonatomic) BOOL reenterAppearance;
+@end
+@implementation FTLoadingNodeParent
+- (void)loadView { self.view = [[UIView alloc] initWithFrame:CGRectMake(0, 0, 100, 100)]; }
+- (void)viewDidLoad {
+    [super viewDidLoad];
+    FTLoadingNodeNow += 3000000;
+    if (self.failLoad) [NSException raise:@"FTLoadingTestException" format:@"application failure"];
+}
+- (void)viewWillAppear:(BOOL)animated { [super viewWillAppear:animated];
+    if (self.throwStage == 1) [NSException raise:@"FTLoadingTestException" format:@"appearance failure"];
+}
+- (void)viewWillLayoutSubviews { [super viewWillLayoutSubviews];
+    if (self.revealLoadedViewDuringLayout) self.hideLoadedView = NO;
+    if (self.throwStage == 2) [NSException raise:@"FTLoadingTestException" format:@"layout failure"];
+}
+- (BOOL)isViewLoaded { self.windowChecks++; return !self.hideLoadedView && [super isViewLoaded]; }
+- (void)viewDidAppear:(BOOL)animated {
+    [super viewDidAppear:animated];
+    if (self.reenterAppearance) {
+        self.reenterAppearance = NO;
+        [self viewDidAppear:animated];
+    }
+    if (self.throwStage == 3) [NSException raise:@"FTLoadingTestException" format:@"didAppear failure"];
+    FTLoadingNodeNow += 100000000;
+}
+@end
+@interface FTLoadingNodeChild : FTLoadingNodeParent @end
+@implementation FTLoadingNodeChild
+- (void)viewDidLoad {
+    FTLoadingNodeNow += 2000000;
+    [super viewDidLoad];
+    if (self.repeatSuper) [super viewDidLoad];
+    FTLoadingNodeNow += 5000000;
+}
+- (void)viewWillAppear:(BOOL)animated { [super viewWillAppear:animated]; }
+- (void)viewWillLayoutSubviews { [super viewWillLayoutSubviews]; }
+- (void)viewDidAppear:(BOOL)animated { [super viewDidAppear:animated]; }
+@end
+@interface FTLoadingNodeInherited : FTLoadingNodeChild @end
+@implementation FTLoadingNodeInherited @end
+
 static FTViewControllerSwizzling *testBundleViewControllerSwizzling = nil;
 static dispatch_group_t testBundleViewControllerSwizzlingGroup = nil;
 
@@ -147,11 +204,16 @@ static dispatch_group_t testBundleViewControllerSwizzlingGroup = nil;
 @end
 
 @interface FTAutoTrackAllViewControllerHandler : NSObject<FTUIKitViewTrackingHandler>
+@property (nonatomic) uint64_t clockAdvance;
+@property (nonatomic) BOOL rejectView;
+@property (nonatomic, copy) void (^onView)(UIViewController *viewController);
 @end
 
 @implementation FTAutoTrackAllViewControllerHandler
 - (FTRUMView *)rumViewForViewController:(UIViewController *)viewController{
-    return [[FTRUMView alloc] initWithViewName:@"custom-handler-view"];
+    if (self.onView) self.onView(viewController);
+    FTLoadingNodeNow += self.clockAdvance;
+    return self.rejectView ? nil : [[FTRUMView alloc] initWithViewName:@"custom-handler-view"];
 }
 @end
 
@@ -183,6 +245,9 @@ static dispatch_group_t testBundleViewControllerSwizzlingGroup = nil;
 - (FTAutoTrackViewLoadingTimeMock *)startUIKitAutoTrackWithMockHandler{
     FTAutoTrackViewLoadingTimeMock *mock = [FTAutoTrackViewLoadingTimeMock new];
     FTAutoTrackHandler *handler = [self resetAutoTrackHandlerForSwiftUITest];
+    // Waiting pumps the main run loop and can finish a previous test's UI
+    // transition. Keep collection disabled until instrumentation is ready.
+    [self prepareLoadingTimeTestBundleInstrumentation];
     [handler startWithTrackView:YES
                          action:NO
             addRumDatasDelegate:mock
@@ -190,7 +255,6 @@ static dispatch_group_t testBundleViewControllerSwizzlingGroup = nil;
              swiftUIViewHandler:nil
                   actionHandler:nil
    heatmapIdentifierRegistry:nil];
-    [self prepareLoadingTimeTestBundleInstrumentation];
     return mock;
 }
 - (void)prepareLoadingTimeTestBundleInstrumentation{
@@ -303,6 +367,278 @@ static dispatch_group_t testBundleViewControllerSwizzlingGroup = nil;
     XCTAssertEqual(mock.viewStopCount, 1);
     XCTAssertEqualObjects(mock.lastLoadTime, @0);
 }
+
+- (void)withLoadingNodeClock:(dispatch_block_t)body {
+    Method method = class_getClassMethod(FTDateUtil.class, @selector(systemTime));
+    IMP original = method_getImplementation(method);
+    NSThread *testThread = NSThread.currentThread;
+    FTLoadingNodeNow = 0;
+    FTLoadingNodeClockReads = 0;
+    IMP replacement = imp_implementationWithBlock(^uint64_t(id receiver) {
+        if (NSThread.currentThread == testThread) {
+            FTLoadingNodeClockReads++;
+            return FTLoadingNodeNow;
+        }
+        return ((uint64_t (*)(id, SEL))original)(receiver, @selector(systemTime));
+    });
+    method_setImplementation(method, replacement);
+    @try { body(); }
+    @finally { method_setImplementation(method, original); imp_removeBlock(replacement); }
+}
+- (void)testUIKitLoadingNodesUseOutermostBoundaries {
+    FTAutoTrackViewLoadingTimeMock *mock = [self startUIKitAutoTrackWithMockHandler];
+    [self withLoadingNodeClock:^{
+        for (Class cls in @[FTLoadingNodeChild.class, FTLoadingNodeInherited.class]) {
+            FTLoadingNodeParent *vc = [cls new];
+            FTLoadingNodeNow = 0;
+            FTLoadingNodeClockReads = 0;
+            [vc view];
+            XCTAssertEqual(FTLoadingNodeNow, 10000000ULL);
+            XCTAssertEqual(FTLoadingNodeClockReads, 2U);
+            FTLoadingNodeNow = 1000000000;
+            [vc viewWillAppear:NO];
+            FTLoadingNodeNow += 50000000;
+            vc.reenterAppearance = YES;
+            NSUInteger count = mock.viewCreateCount;
+            [vc viewDidAppear:NO];
+            XCTAssertEqualObjects(mock.lastLoadTime, @60000000);
+            XCTAssertEqual(mock.viewCreateCount, count + 1);
+            XCTAssertEqual(FTLoadingNodeClockReads, 4U);
+            [vc viewDidDisappear:NO];
+        }
+    }];
+}
+- (void)testUIKitLoadingNodesSkipUnusedLayoutSampling {
+    FTAutoTrackViewLoadingTimeMock *mock = [self startUIKitAutoTrackWithMockHandler];
+    [self withLoadingNodeClock:^{
+        FTLoadingNodeChild *vc = [FTLoadingNodeChild new];
+        [vc view];
+        UIWindow *window = [self attachViewControllerViewToWindow:vc];
+        [vc viewWillAppear:NO];
+        NSUInteger reads = FTLoadingNodeClockReads;
+        vc.windowChecks = 0;
+        for (NSUInteger i = 0; i < 10; i++) [vc viewWillLayoutSubviews];
+        XCTAssertEqual(vc.windowChecks, 0U);
+        XCTAssertEqual(FTLoadingNodeClockReads, reads);
+        FTLoadingNodeNow += 50000000;
+        [vc viewDidAppear:NO];
+        XCTAssertEqualObjects(mock.lastLoadTime, @60000000);
+        XCTAssertEqual(vc.view.window, window);
+    }];
+}
+- (void)testUIKitLoadingNodesRecoverAfterApplicationException {
+    FTAutoTrackViewLoadingTimeMock *mock = [self startUIKitAutoTrackWithMockHandler];
+    [self withLoadingNodeClock:^{
+        FTLoadingNodeChild *vc = [FTLoadingNodeChild new];
+        [vc view];
+        vc.failLoad = YES;
+        XCTAssertThrowsSpecificNamed([vc viewDidLoad], NSException, @"FTLoadingTestException");
+        [vc viewWillAppear:NO];
+        [vc viewDidAppear:NO];
+        XCTAssertEqualObjects(mock.lastLoadTime, @(-1));
+        [vc viewDidDisappear:NO];
+        vc.failLoad = NO;
+        FTLoadingNodeNow = 0;
+        [vc viewDidLoad];
+        [vc viewWillAppear:NO];
+        FTLoadingNodeNow += 50000000;
+        [vc viewDidAppear:NO];
+        XCTAssertEqualObjects(mock.lastLoadTime, @60000000);
+    }];
+}
+- (void)testUIKitLoadingNodesRepeatedSuperAndLayoutFallback {
+    FTAutoTrackViewLoadingTimeMock *mock = [self startUIKitAutoTrackWithMockHandler];
+    [self withLoadingNodeClock:^{
+        FTLoadingNodeChild *vc = [FTLoadingNodeChild new];
+        vc.repeatSuper = YES;
+        [vc view];
+        XCTAssertEqual(FTLoadingNodeNow, 13000000ULL);
+        [vc viewWillLayoutSubviews]; // Not attached: cannot start appearance.
+        FTLoadingNodeNow = 1000000000;
+        UIWindow *window = [self attachViewControllerViewToWindow:vc];
+        [vc viewWillLayoutSubviews];
+        NSUInteger reads = FTLoadingNodeClockReads;
+        vc.windowChecks = 0;
+        [vc viewWillLayoutSubviews];
+        XCTAssertEqual(vc.windowChecks, 0U);
+        XCTAssertEqual(FTLoadingNodeClockReads, reads);
+        FTLoadingNodeNow += 50000000;
+        [vc viewDidAppear:NO];
+        XCTAssertEqualObjects(mock.lastLoadTime, @63000000);
+        XCTAssertEqual(vc.view.window, window);
+    }];
+}
+
+- (void)testUIKitLoadingNodesLayoutCannotStartInsideSuperclass {
+    FTAutoTrackViewLoadingTimeMock *mock = [self startUIKitAutoTrackWithMockHandler];
+    [self withLoadingNodeClock:^{
+        FTLoadingNodeChild *vc = [FTLoadingNodeChild new];
+        [vc view];
+        UIWindow *window = [self attachViewControllerViewToWindow:vc];
+        [vc viewDidLoad];
+        vc.hideLoadedView = YES;
+        vc.revealLoadedViewDuringLayout = YES;
+        vc.windowChecks = 0;
+        [vc viewWillLayoutSubviews];
+        XCTAssertEqual(vc.windowChecks, 1U);
+        [vc viewDidAppear:NO];
+        XCTAssertEqualObjects(mock.lastLoadTime, @(-1));
+        XCTAssertEqual(vc.view.window, window);
+    }];
+}
+- (void)testUIKitLoadingNodesReleaseEveryLifecycleOwnerAfterException {
+    FTAutoTrackViewLoadingTimeMock *mock = [self startUIKitAutoTrackWithMockHandler];
+    [self withLoadingNodeClock:^{
+        for (NSUInteger stage = 1; stage <= 3; stage++) {
+            FTLoadingNodeChild *vc = [FTLoadingNodeChild new];
+            [vc view];
+            UIWindow *window = [self attachViewControllerViewToWindow:vc];
+            vc.throwStage = stage;
+            if (stage == 1) XCTAssertThrowsSpecificNamed([vc viewWillAppear:NO], NSException, @"FTLoadingTestException");
+            if (stage == 2) XCTAssertThrowsSpecificNamed([vc viewWillLayoutSubviews], NSException, @"FTLoadingTestException");
+            if (stage == 3) XCTAssertThrowsSpecificNamed([vc viewDidAppear:NO], NSException, @"FTLoadingTestException");
+            [vc viewDidDisappear:NO];
+            vc.throwStage = 0;
+            FTLoadingNodeNow = 0;
+            [vc viewDidLoad];
+            if (stage == 2) [vc viewWillLayoutSubviews]; else [vc viewWillAppear:NO];
+            FTLoadingNodeNow += 50000000;
+            [vc viewDidAppear:NO];
+            XCTAssertEqualObjects(mock.lastLoadTime, @60000000);
+            XCTAssertEqual(vc.view.window, window);
+            [vc viewDidDisappear:NO];
+        }
+    }];
+}
+- (void)testUIKitLoadingNodesCustomRuleDoesNotChangeEndpointOrConsumeRejectedView {
+    FTAutoTrackViewLoadingTimeMock *mock = [self startUIKitAutoTrackWithMockHandler];
+    FTAutoTrackAllViewControllerHandler *rule = [FTAutoTrackAllViewControllerHandler new];
+    rule.clockAdvance = 200000000;
+    rule.rejectView = YES;
+    [[FTAutoTrackHandler sharedInstance] setValue:rule forKey:@"uiKitViewTrackingHandler"];
+    [self withLoadingNodeClock:^{
+        FTLoadingNodeChild *vc = [FTLoadingNodeChild new];
+        [vc view];
+        [vc viewWillAppear:NO];
+        FTLoadingNodeNow += 50000000;
+        [vc viewDidAppear:NO];
+        XCTAssertEqual(mock.viewCreateCount, 0);
+        rule.rejectView = NO;
+        [vc viewDidAppear:NO];
+        XCTAssertEqualObjects(mock.lastCreateViewName, @"custom-handler-view");
+        XCTAssertEqualObjects(mock.lastLoadTime, @60000000);
+        XCTAssertEqual(mock.viewCreateCount, 1);
+        [vc viewDidDisappear:NO];
+        [vc viewDidAppear:NO];
+        XCTAssertEqualObjects(mock.lastLoadTime, @0);
+    }];
+}
+- (void)testUIKitLoadingNodesPreferredStartAndBackgroundInvalidation {
+    FTAutoTrackViewLoadingTimeMock *mock = [self startUIKitAutoTrackWithMockHandler];
+    [self withLoadingNodeClock:^{
+        FTLoadingNodeChild *vc = [FTLoadingNodeChild new];
+        [vc view];
+        UIWindow *window = [self attachViewControllerViewToWindow:vc];
+        [vc viewDidLoad]; // Discard lifecycle callbacks caused by attaching the test window.
+        FTLoadingNodeNow = 1000000000;
+        [vc viewWillLayoutSubviews];
+        FTLoadingNodeNow += 20000000;
+        [vc viewWillAppear:NO];
+        FTLoadingNodeNow += 50000000;
+        [vc viewDidAppear:NO];
+        XCTAssertEqualObjects(mock.lastLoadTime, @60000000);
+        [vc viewDidDisappear:NO];
+        [vc viewDidLoad];
+        [vc viewWillAppear:NO];
+        [UIViewController ft_invalidatePendingViewLoadDurations];
+        [vc viewDidAppear:NO];
+        XCTAssertEqualObjects(mock.lastLoadTime, @(-1));
+        XCTAssertEqual(vc.view.window, window);
+    }];
+}
+
+- (void)testUIKitLoadingNodesNotifyWithoutCallingSuper {
+    FTAutoTrackViewLoadingTimeMock *mock = [self startUIKitAutoTrackWithMockHandler];
+    [self withLoadingNodeClock:^{
+        FTAutoTrackNoSuperViewDidAppearViewController *vc = [FTAutoTrackNoSuperViewDidAppearViewController new];
+        [vc view];
+        [vc viewWillAppear:NO];
+        FTLoadingNodeNow += 50000000;
+        [vc viewDidAppear:NO];
+        XCTAssertEqualObjects(mock.lastLoadTime, @50000000);
+        XCTAssertEqual(mock.viewCreateCount, 1);
+    }];
+}
+- (void)testUIKitLoadingNodesBaseAppearanceReentryAndExceptionCleanup {
+    [self assertBaseAppearanceReentryAndExceptionCleanup];
+}
+- (void)testUIKitLoadingNodesBaseAppearanceAfterPendingHostCallback {
+    __block BOOL deliveredPendingAppearance = NO;
+    FTLoadingNodeParent *unrelatedController = [FTLoadingNodeParent new];
+    // Reproduce a host transition left queued by an earlier UI test.
+    dispatch_async(dispatch_get_main_queue(), ^{
+        [unrelatedController viewDidAppear:NO];
+        deliveredPendingAppearance = YES;
+    });
+    [self assertBaseAppearanceReentryAndExceptionCleanup];
+    XCTAssertTrue(deliveredPendingAppearance);
+}
+- (void)assertBaseAppearanceReentryAndExceptionCleanup {
+    FTAutoTrackViewLoadingTimeMock *mock = [self startUIKitAutoTrackWithMockHandler];
+    XCTAssertEqual(mock.viewCreateCount, 0);
+    XCTAssertEqual(mock.viewStartCount, 0);
+    FTAutoTrackAllViewControllerHandler *rule = [FTAutoTrackAllViewControllerHandler new];
+    [[FTAutoTrackHandler sharedInstance] setValue:rule forKey:@"uiKitViewTrackingHandler"];
+    [self withLoadingNodeClock:^{
+        // Exercise the uninstrumented base lifecycle used by SwiftUI controllers.
+        UIViewController *vc = [UIViewController new];
+        vc.ft_viewLoadStartTime = @0;
+        id state = [vc ft_viewLoadingStateCreateIfNeeded:NO];
+        [state setValue:@YES forKey:@"usesSwiftUIBaseLifecycleLoadingTime"];
+        FTLoadingNodeNow = 50000000;
+        rule.onView = ^(UIViewController *controller) {
+            [NSException raise:@"FTLoadingTestException" format:@"custom rule failure"];
+        };
+        XCTAssertThrowsSpecificNamed([vc viewDidAppear:NO], NSException, @"FTLoadingTestException");
+        __block NSUInteger calls = 0;
+        rule.onView = ^(UIViewController *controller) {
+            calls++;
+            if (calls == 1) [controller viewDidAppear:NO];
+        };
+        FTLoadingNodeNow = 100000000;
+        [vc viewDidAppear:NO];
+        XCTAssertEqual(calls, 1U);
+        XCTAssertEqual(mock.viewCreateCount, 1);
+        XCTAssertEqualObjects(mock.lastLoadTime, @50000000);
+        rule.onView = nil;
+    }];
+}
+- (void)testUIKitLoadingNodeBenchmark {
+    [self startUIKitAutoTrackWithMockHandler];
+    XCTAssertTrue(NSThread.isMainThread);
+    Class stateClass = NSClassFromString(@"FTViewLoadingState");
+    NSLog(@"FTLoadingBenchmark implementation=%@ stateBytes=%zu",
+          class_getProperty(stateClass, "viewDidLoadInProgress") ? @"flags" : @"depth",
+          class_getInstanceSize(stateClass));
+    const NSUInteger iterations = 200000;
+    for (Class cls in @[FTLoadingNodeParent.class, FTLoadingNodeChild.class, FTLoadingNodeInherited.class]) {
+        FTLoadingNodeParent *vc = [cls new];
+        [vc view];
+        [vc viewWillAppear:NO];
+        for (NSUInteger phase = 0; phase < 2; phase++) {
+            if (phase) [vc viewDidAppear:NO];
+            for (NSUInteger i = 0; i < 10000; i++) [vc viewWillLayoutSubviews];
+            for (NSUInteger sample = 0; sample < 10; sample++) {
+                uint64_t start = clock_gettime_nsec_np(CLOCK_UPTIME_RAW);
+                for (NSUInteger i = 0; i < iterations; i++) [vc viewWillLayoutSubviews];
+                uint64_t elapsed = clock_gettime_nsec_np(CLOCK_UPTIME_RAW) - start;
+                NSLog(@"FTLoadingBenchmark %@ phase=%lu ns/call=%.2f", NSStringFromClass(cls), (unsigned long)phase, elapsed / (double)iterations);
+            }
+        }
+        [vc viewDidDisappear:NO];
+    }
+}
+
 - (void)testUIKitLoadingTimeUsesLayoutFallbackUntilViewDidAppearAndIgnoresPreloadGap{
     FTAutoTrackViewLoadingTimeMock *mock = [self startUIKitAutoTrackWithMockHandler];
     FTAutoTrackLoadingTimeTestViewController *viewController = [FTAutoTrackLoadingTimeTestViewController new];
@@ -342,22 +678,18 @@ static dispatch_group_t testBundleViewControllerSwizzlingGroup = nil;
 }
 - (void)testUIKitLoadingTimeUsesViewDidAppearStartAfterViewWillAppear{
     FTAutoTrackViewLoadingTimeMock *mock = [self startUIKitAutoTrackWithMockHandler];
-    FTAutoTrackLoadingTimeTestViewController *viewController = [FTAutoTrackLoadingTimeTestViewController new];
-    viewController.viewDidLoadDelay = 0.02;
-    viewController.viewWillAppearDelay = 0.02;
-    viewController.viewWillLayoutSubviewsDelay = 0.05;
-    viewController.viewDidAppearDelay = 0.05;
-
-    [viewController view];
-    [viewController viewWillAppear:NO];
-    XCTAssertNil(viewController.ft_loadDuration);
-
-    [viewController viewWillLayoutSubviews];
-    [viewController viewDidAppear:NO];
-
-    XCTAssertEqual([mock viewCreateCountForViewName:NSStringFromClass(viewController.class)], 1);
-    XCTAssertGreaterThan([mock.lastLoadTime unsignedLongLongValue], (uint64_t)80000000);
-    XCTAssertLessThan([mock.lastLoadTime unsignedLongLongValue], (uint64_t)120000000);
+    [self withLoadingNodeClock:^{
+        FTLoadingNodeChild *vc = [FTLoadingNodeChild new];
+        [vc view]; // 2 ms + 3 ms + 5 ms = 10 ms.
+        [vc viewWillAppear:NO];
+        FTLoadingNodeNow += 20000000;
+        [vc viewWillLayoutSubviews];
+        FTLoadingNodeNow += 50000000;
+        [vc viewDidAppear:NO]; // Application callback advances the clock by another 100 ms.
+        XCTAssertEqualObjects(mock.lastLoadTime, @80000000);
+        XCTAssertEqual(mock.viewCreateCount, 1);
+        XCTAssertEqual(FTLoadingNodeNow, 180000000ULL);
+    }];
 }
 - (void)testUIKitLoadingTimeUsesViewDidAppearStartWithoutLayout{
     FTAutoTrackViewLoadingTimeMock *mock = [self startUIKitAutoTrackWithMockHandler];

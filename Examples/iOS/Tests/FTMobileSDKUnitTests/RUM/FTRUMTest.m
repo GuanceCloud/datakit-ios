@@ -64,6 +64,8 @@
 #import "FTCrash.h"
 #import "FTLongTaskANRData.h"
 #import "FTModuleManager.h"
+#import "FTReadWriteHelper.h"
+#import <objc/runtime.h>
 
 // A shared UIKit fixture for iOS and tvOS lifecycle tests.
 @interface FTRUMLifecycleTestViewController : UIViewController
@@ -162,6 +164,24 @@
 - (BOOL)process:(FTRUMDataModel *)model context:(NSDictionary *)context {
     self.processedModelCount += 1;
     return [super process:model context:context];
+}
+@end
+
+// Capture the manager's queue output before session processing changes the models.
+@interface FTLoadingHandoffTestManager : FTRUMManager
+@property (nonatomic, strong) NSMutableArray<FTRUMViewModel *> *startedViews;
+@property (nonatomic, copy) NSString *testVisitorID;
+@end
+@implementation FTLoadingHandoffTestManager
+- (BOOL)process:(FTRUMDataModel *)model context:(NSDictionary *)context {
+    if (model.type == FTRUMDataViewStart) {
+        if (!self.startedViews) self.startedViews = [NSMutableArray array];
+        [self.startedViews addObject:(FTRUMViewModel *)model];
+    }
+    return YES;
+}
+- (NSString *)currentVisitorIDSnapshot {
+    return self.testVisitorID;
 }
 @end
 
@@ -801,6 +821,112 @@
         }
     }];
     XCTAssertEqual(foundCount, cases.count);
+}
+
+- (void)testViewLoadingCacheWritesFollowRUMQueueOrder {
+    FTRUMManager *manager = [[FTRUMManager alloc] initWithRumDependencies:[FTRUMDependencies new]];
+    [manager syncProcess];
+    dispatch_queue_t queue = [manager valueForKey:@"rumQueue"];
+    __block NSDictionary *beforeCreate;
+    __block NSDictionary *afterCreate;
+    // Read both representations so this regression also runs against the old
+    // helper: its separate queue incorrectly makes the write visible early.
+    NSDictionary *(^snapshot)(void) = ^NSDictionary *{
+        id cache = [manager valueForKey:@"preViewDuration"];
+        return [cache isKindOfClass:FTReadWriteHelper.class] ? [cache currentValue] : [cache copy];
+    };
+    dispatch_suspend(queue);
+    @try {
+        dispatch_async(queue, ^{ beforeCreate = snapshot(); });
+        [manager onCreateView:@"ordered" loadTime:@60000000];
+        dispatch_async(queue, ^{ afterCreate = snapshot(); });
+    } @finally {
+        dispatch_resume(queue);
+    }
+    [manager syncProcess];
+    XCTAssertEqual(beforeCreate.count, 0u);
+    XCTAssertEqualObjects(afterCreate[@"ordered"][@"duration"], @60000000);
+}
+
+- (void)testViewLoadingHandoffConsumesInSubmissionOrder {
+    FTLoadingHandoffTestManager *manager = [[FTLoadingHandoffTestManager alloc] initWithRumDependencies:[FTRUMDependencies new]];
+    [manager syncProcess];
+    dispatch_queue_t queue = [manager valueForKey:@"rumQueue"];
+    dispatch_suspend(queue);
+    @try {
+        [manager onCreateView:@"same" loadTime:@60000000 loadStartEpochNs:@1000000000];
+        [manager startViewWithName:@"same"];
+        [manager startViewWithName:@"same"];
+        // A late creation is available only to a subsequent start.
+        [manager onCreateView:@"same" loadTime:@(-1)];
+        [manager startViewWithName:@"same"];
+        [manager onCreateView:@"same" loadTime:@10];
+        [manager onCreateView:@"same" loadTime:@20];
+        [manager startViewWithName:@"same"];
+        // The legacy overload clears on nil; the precise overload ignores nil.
+        NSNumber *missingDuration = nil;
+        [manager onCreateView:@"same" loadTime:@30];
+        [manager onCreateView:@"same" loadTime:missingDuration];
+        [manager startViewWithName:@"same"];
+        [manager onCreateView:@"same" loadTime:@40];
+        [manager onCreateView:@"same" loadTime:missingDuration loadStartEpochNs:nil];
+        [manager startViewWithName:@"same"];
+        [manager onCreateView:@"other" loadTime:@50];
+        [manager startViewWithName:@"missing"];
+        [manager startViewWithName:@"other"];
+        NSMutableString *name = [@"snapshot" mutableCopy];
+        [manager onCreateView:name loadTime:@70];
+        [name setString:@"changed-after-create"];
+        NSMutableString *startName = [@"snapshot" mutableCopy];
+        // Rejected starts must not consume a pending duration.
+        [manager startViewWithViewID:@"" viewName:startName property:nil];
+        [manager startViewWithName:startName];
+        [startName setString:@"changed-after-start"];
+    } @finally {
+        dispatch_resume(queue);
+    }
+    [manager syncProcess];
+    NSArray *expected = @[@60000000, @0, @(-1), @20, @0, @40, @0, @50, @70];
+    XCTAssertEqual(manager.startedViews.count, expected.count);
+    [manager.startedViews enumerateObjectsUsingBlock:^(FTRUMViewModel *view, NSUInteger idx, BOOL *stop) {
+        XCTAssertEqualObjects(view.loading_time, expected[idx]);
+        XCTAssertEqualObjects(view.loading_start_epoch_ns, idx == 0 ? @1000000000 : nil);
+    }];
+    XCTAssertEqualObjects(manager.startedViews.lastObject.view_name, @"snapshot");
+}
+
+- (void)testViewLoadingHandoffPreservesEventTimeAndVisitorDuringQueueDelay {
+    FTLoadingHandoffTestManager *manager = [[FTLoadingHandoffTestManager alloc] initWithRumDependencies:[FTRUMDependencies new]];
+    [manager syncProcess];
+    dispatch_queue_t queue = [manager valueForKey:@"rumQueue"];
+    NSDate *eventTime = [NSDate dateWithTimeIntervalSince1970:1700000000];
+    Method method = class_getClassMethod(NSDate.class, @selector(date));
+    IMP original = method_getImplementation(method);
+    NSThread *testThread = NSThread.currentThread;
+    IMP replacement = imp_implementationWithBlock(^NSDate *(id receiver) {
+        if (NSThread.currentThread == testThread) return eventTime;
+        return ((NSDate *(*)(id, SEL))original)(receiver, @selector(date));
+    });
+    dispatch_suspend(queue);
+    method_setImplementation(method, replacement);
+    @try {
+        manager.testVisitorID = @"visitor-at-event";
+        [manager onCreateView:@"delayed" loadTime:@60000000 loadStartEpochNs:@1699999999000000000LL];
+        [manager startViewWithName:@"delayed"];
+        manager.testVisitorID = @"visitor-after-event";
+    } @finally {
+        // The real clock is restored before processing can start.
+        method_setImplementation(method, original);
+        imp_removeBlock(replacement);
+        dispatch_resume(queue);
+    }
+    [manager syncProcess];
+    XCTAssertEqual(manager.startedViews.count, 1u);
+    FTRUMViewModel *view = manager.startedViews.firstObject;
+    XCTAssertEqualObjects(view.time, eventTime);
+    XCTAssertEqualObjects(view.visitorIDSnapshot, @"visitor-at-event");
+    XCTAssertEqualObjects(view.loading_time, @60000000);
+    XCTAssertEqualObjects(view.loading_start_epoch_ns, @1699999999000000000LL);
 }
 
 - (void)testManualViewLoadingDoesNotInferStateFromDuration {
