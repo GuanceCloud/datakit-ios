@@ -118,7 +118,7 @@
     options.enableTraceURLConnectionResource = self.enableTraceURLConnectionResource;
     options.enableResourceHostIP = self.enableResourceHostIP;
     options.appid = [self.appid copy];
-    options.nextViewActionPredicate = self.nextViewActionPredicate;
+    options->_nextViewActionPredicate = _nextViewActionPredicate;
     options.networkSettledResourcePredicate = self.networkSettledResourcePredicate;
     options.errorMonitorType = self.errorMonitorType;
     options.globalContext = [self.globalContext copy];
@@ -225,6 +225,8 @@
     NSMutableDictionary *dict = [[self convertToDictionary] mutableCopy];
     [dict setValue:@(self.sessionSamplingRate) forKey:@"sessionSamplingRate"];
     [dict setValue:@(self.sessionOnErrorSamplingRate) forKey:@"sessionOnErrorSamplingRate"];
+    [dict setValue:_nextViewActionPredicate forKey:@"nextViewActionPredicate"];
+    [dict setValue:self.networkSettledResourcePredicate forKey:@"networkSettledResourcePredicate"];
     [dict setValue:[self.resourceUrlHandler copy] forKey:@"resourceUrlHandler"];
     [dict setValue:[self.resourcePropertyProvider copy] forKey:@"resourcePropertyProvider"];
     [dict setValue:[self.sessionTaskErrorFilter copy] forKey:@"sessionTaskErrorFilter"];

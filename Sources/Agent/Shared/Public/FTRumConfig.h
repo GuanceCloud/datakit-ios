@@ -109,10 +109,6 @@ typedef BOOL (^FTSessionTaskErrorFilter)(NSError *_Nonnull error);
 
 /// RUM functionality configuration items
 @interface FTRumConfig : NSObject
-/// Defaults to click within three seconds. Explicit nil disables interaction_to_next_view_time.
-@property (nonatomic, strong, nullable) id<FTRUMNextViewActionPredicate> nextViewActionPredicate;
-/// Defaults to requests starting within 100ms. Setting nil restores that default rule.
-@property (nonatomic, strong, nullable) id<FTRUMNetworkSettledResourcePredicate> networkSettledResourcePredicate;
 /// Designated initializer, set appid
 ///
 /// - Parameters:
@@ -218,6 +214,11 @@ typedef BOOL (^FTSessionTaskErrorFilter)(NSError *_Nonnull error);
 ///  - If need to Start a RUM action, return the FTRUMAction parameters;
 ///  - Return nil to ignore it.
 @property (nonatomic, strong, nullable) FTActionTrackingHandler actionTrackingHandler API_UNAVAILABLE(macos);
+
+/// Defaults to click within three seconds. Explicit nil disables interaction_to_next_view_time.
+@property (nonatomic, strong, nullable) id<FTRUMNextViewActionPredicate> nextViewActionPredicate NS_EXTENSION_UNAVAILABLE("Interaction-to-next-view timing is unavailable in app extensions.");
+/// Defaults to requests starting within 100ms. Setting nil restores that default rule.
+@property (nonatomic, strong, nullable) id<FTRUMNetworkSettledResourcePredicate> networkSettledResourcePredicate;
 
 /// Enable freeze collection and set freeze threshold.
 /// - Parameter enableTrackAppFreeze: Set whether to collect freezes
