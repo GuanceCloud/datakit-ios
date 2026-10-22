@@ -1115,7 +1115,9 @@
     @try {
         tabs.selectedIndex = 0;
         [homeNavigation pushViewController:[NetworkTraceVC new] animated:NO];
-        [tester waitForTappableViewWithAccessibilityLabel:@"RUM, Trace enable Resource auto collection"];
+        [tester waitForAnimationsToFinish];
+        XCTAssertTrue([homeNavigation.topViewController isKindOfClass:NetworkTraceVC.class]);
+        XCTAssertEqual(homeNavigation.topViewController.view.window, tabs.view.window);
         tabs.selectedIndex = 1;
         [tester waitForAnimationsToFinish];
         [self assertShutDownStopsCollection];

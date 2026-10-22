@@ -287,7 +287,10 @@ static dispatch_group_t testBundleViewControllerSwizzlingGroup = nil;
     // Put teardown code here. This method is called after the invocation of each test method in the class.
     [[FTGlobalRumManager sharedInstance].rumManager syncProcess];
     [FTMobileAgent shutDown];
-    [FTMobileAgent clearAllData];
+    // This test class reads the database immediately after UI actions. The
+    // public clearAllData API deletes on a global queue and can race the next
+    // test's writes, so finish cleanup before leaving this test.
+    [[FTTrackerEventDBTool sharedManager] deleteAllDatas];
 }
 - (void)setSdkWithRum:(BOOL)hasRum{
     NSProcessInfo *processInfo = [NSProcessInfo processInfo];
@@ -916,16 +919,18 @@ static dispatch_group_t testBundleViewControllerSwizzlingGroup = nil;
     [tester waitForTimeInterval:1];
     [[tester waitForViewWithAccessibilityLabel:@"UITEST"] tap];
     [tester waitForTimeInterval:0.2];
-    [[tester waitForViewWithAccessibilityLabel:@"LABLE_CLICK"] tap];
+    [[tester waitForTappableViewWithAccessibilityLabel:@"LABLE_CLICK"] tap];
     [tester waitForTimeInterval:0.2];
-    [[tester waitForViewWithAccessibilityLabel:@"LABLE_CLICK"] tap];
+    [[tester waitForTappableViewWithAccessibilityLabel:@"LABLE_CLICK"] tap];
     [tester waitForTimeInterval:0.2];
 
     // The current RUM action is persisted when the next RUM event is processed.
     [[FTGlobalRumManager sharedInstance].rumManager stopView];
     [[FTGlobalRumManager sharedInstance].rumManager syncProcess];
     
-    NSArray *newArray = [[FTTrackerEventDBTool sharedManager] getFirstRecords:50 withType:FT_DATA_TYPE_RUM];
+    // Earlier UI events can occupy the first page; inspect all records from
+    // this test so a persisted click cannot be missed by the page limit.
+    NSArray *newArray = [[FTTrackerEventDBTool sharedManager] getAllDatas];
     __block BOOL hasLabelClickAction = NO;
     NSMutableArray *clickActionNames = [NSMutableArray array];
     [FTModelHelper resolveModelArray:newArray callBack:^(NSString * _Nonnull source, NSDictionary * _Nonnull tags, NSDictionary * _Nonnull fields, BOOL * _Nonnull stop) {
@@ -953,17 +958,27 @@ static dispatch_group_t testBundleViewControllerSwizzlingGroup = nil;
     [tester waitForTimeInterval:1];
     [[tester waitForViewWithAccessibilityLabel:@"IMAGE_CLICK"] longPressAtPoint:CGPointMake(20, 10) duration:1];
     [tester waitForTimeInterval:1];
-    [[tester waitForViewWithAccessibilityLabel:@"alert cancel"] tap];
+    UITabBarController *tabs = (UITabBarController *)UIApplication.sharedApplication.keyWindow.rootViewController;
+    UINavigationController *navigation = (UINavigationController *)tabs.selectedViewController;
+    UIViewController *presenter = navigation.topViewController;
+    XCTAssertTrue([presenter.presentedViewController isKindOfClass:UIAlertController.class]);
+    [presenter dismissViewControllerAnimated:NO completion:nil];
+    [tester waitForAnimationsToFinish];
     
+    [[FTGlobalRumManager sharedInstance].rumManager stopView];
     [[FTGlobalRumManager sharedInstance].rumManager syncProcess];
-    NSArray *newArray = [[FTTrackerEventDBTool sharedManager] getFirstRecords:10 withType:FT_DATA_TYPE_RUM];
+    NSArray *newArray = [[FTTrackerEventDBTool sharedManager] getAllDatas];
+    __block BOOL hasImageClickAction = NO;
     [FTModelHelper resolveModelArray:newArray callBack:^(NSString * _Nonnull source, NSDictionary * _Nonnull tags, NSDictionary * _Nonnull fields, BOOL * _Nonnull stop) {
         if ([source isEqualToString:FT_RUM_SOURCE_ACTION]&&[tags[FT_KEY_ACTION_TYPE] isEqualToString:@"click"]) {
             NSString *actionName = tags[FT_KEY_ACTION_NAME];
-            XCTAssertTrue([actionName isEqualToString:@"[UIImageView](order_status_top)"]);
-            *stop = YES;
+            if ([actionName isEqualToString:@"[UIImageView](order_status_top)"]) {
+                hasImageClickAction = YES;
+                *stop = YES;
+            }
         }
     }];
+    XCTAssertTrue(hasImageClickAction);
     [[tester waitForViewWithAccessibilityLabel:@"home"] tap];
     [tester waitForTimeInterval:0.5];
 }
