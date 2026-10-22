@@ -1,3 +1,8 @@
+# 1.6.8-beta.3
+
+1. same as 1.6.8-beta.2
+---
+
 # 1.6.8-beta.2
 
 1. same as 1..6.8-beta.1
