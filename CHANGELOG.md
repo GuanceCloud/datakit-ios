@@ -1,3 +1,20 @@
+# 1.6.8
+
+1. **Breaking:** Raised minimum supported versions to iOS 15, tvOS 15, and macOS 12.
+2. Added opt-in SDK-managed Visitor ID support through `FTRumConfig.visitorIDConfig`, including a configurable TTL, automatic request header injection for matching URLSession requests, native RUM correlation, manual reset, and host allowlist-controlled Visitor ID sharing in WebViews.
+3. Added RUM View metrics `interaction_to_next_view_time` and `network_settled_time` to measure the time from a click interaction to the next View start and the time from a View start until its initial network requests complete, respectively. Matching rules are configurable through `FTRumConfig.nextViewActionPredicate` and `networkSettledResourcePredicate`.
+4. Added automatic NSURLConnection RUM Resource collection and Trace correlation, enabled through `FTRumConfig.enableTraceURLConnectionResource` and `FTTraceConfig.enableAutoTraceURLConnection`; both default to disabled.
+5. Added WebView Log Bridge support through `FTLoggerConfig.enableWebViewLog` for Browser Logger API calls, console logs, and JavaScript error logs, using the shared host allowlist and supporting remote configuration.
+6. Added macOS Electron RUM and Session Replay integration, including Full Mode, Native-owned Mixed Mode, multi-process isolation, and Universal native runtime package distribution.
+7. Added automatic Session Replay shutdown when `FTSDKAgent.shutDown` is called, stopping recording and uploads.
+8. Unified RUM, Log, Trace, and Session Replay sampling APIs with support for fractional percentages, preserving compatibility with deprecated APIs and legacy remote configuration behavior.
+9. Added event interval-based `app_state` reporting for View, Resource, and LongTask events, and `session_start_reason` for native RUM events. Requests that complete later, cached data, and historical ANRs retain the start reason of their associated session; older cached data without this information uses `unknown`. Improved View and Action handling during app foreground and background transitions.
+10. Fixed RUM Resource timing and WebSocket handshake failure classification, and prevented request initiation from being blocked by asynchronous Trace storage.
+11. Improved Long Task detection under delayed scheduling and prevented RunLoop state updates from blocking the main thread. Fixed duplicate ANR reports after RUM session renewal.
+12. Fixed automatic uploads being indefinitely delayed by continuous data writes and corrected network connectivity status updates.
+13. Added general-purpose external Session Replay integration APIs so framework and engine recorders can reuse RUM context, segment storage, image resources, and replay metadata, while coordinating native recorder pause and resume.
+---
+
 # 1.6.8-beta.4
 
 1. same as 1.6.8-beta.1
