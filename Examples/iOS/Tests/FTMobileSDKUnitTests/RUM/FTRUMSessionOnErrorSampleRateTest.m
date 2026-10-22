@@ -207,6 +207,7 @@ typedef NS_ENUM(NSInteger, SampleState) {
 @property (nonatomic, assign) long long processStartTime;
 @property (nonatomic, strong) dispatch_queue_t errorSampledConsumeQueue;
 - (void)checkLastProcessErrorSampled;
+- (void)checkRUMSessionOnErrorDatasWithExpireTime:(long long)expireTime;
 @end
 @interface FTRUMSessionOnErrorSampleRateTest : XCTestCase
 @property (nonatomic, copy) NSString *url;
@@ -526,24 +527,43 @@ typedef NS_ENUM(NSInteger, SampleState) {
 - (void)testSessionOnErrorDatasInvalid_addErrorData{
     [FTTrackDataManager startWithAutoSync:NO syncPageSize:10 syncSleepTime:0];
     FTDataWriterWorker *writerManager = [[FTDataWriterWorker alloc]initWithCacheInvalidTimeInterval:1];
-    [writerManager isCacheWriter:YES];
-    [writerManager rumWrite:FT_RUM_SOURCE_VIEW tags:@{@"view_id":@"1"} fields:@{@"test":@"delete"} dynamicContext:@{} time:123 updateTime:[[NSDate date] timeIntervalSince1970]*1e9];
-    [self waitForTimeInterval:0.5];
-    [writerManager rumWrite:FT_RUM_SOURCE_VIEW tags:@{@"view_id":@"2"} fields:@{@"test":@"cache"} dynamicContext:@{} time:123 updateTime:[[NSDate date] timeIntervalSince1970]*1e9];
-    NSArray *oldArray = [[FTTrackerEventDBTool sharedManager] getAllDatas];
-    [self waitForTimeInterval:0.5];
+    // Finish recovery of the previous process before adding this fixture's records.
+    dispatch_sync(writerManager.errorSampledConsumeQueue, ^{});
+    writerManager.processStartTime = 10000000000LL;
+    const long long errorTime = 13000000000LL;
+    const long long cutoffTime = 12000000000LL;
+    id previousErrorTime = [[NSUserDefaults standardUserDefaults] objectForKey:@"ft_last_error_time"];
+    @try {
+        [writerManager isCacheWriter:YES];
+        // With a one-second error window, 11s is expired and 12.5s must be retained at 13s.
+        [writerManager rumWrite:FT_RUM_SOURCE_VIEW tags:@{@"view_id":@"1"} fields:@{@"test":@"delete"} dynamicContext:@{} time:123 updateTime:11000000000LL];
+        [writerManager rumWrite:FT_RUM_SOURCE_VIEW tags:@{@"view_id":@"2"} fields:@{@"test":@"cache"} dynamicContext:@{} time:123 updateTime:12500000000LL];
+        XCTAssertEqual([[FTTrackerEventDBTool sharedManager] getAllDatas].count, 2);
 
-    [writerManager rumWrite:FT_RUM_SOURCE_ERROR tags:@{@"view_id":@"2"} fields:@{@"test":@"normal"} dynamicContext:@{} time:[[NSDate date] timeIntervalSince1970]*1e9];
-
-    [writerManager checkRUMSessionOnErrorDatasExpired];
-    NSArray *newArray = [[FTTrackerEventDBTool sharedManager] getAllDatas];
-    for (FTRecordModel *model in newArray) {
-        XCTAssertTrue([model.op isEqualToString:FT_DATA_TYPE_RUM]);
+        [writerManager rumWrite:FT_RUM_SOURCE_ERROR tags:@{@"view_id":@"2"} fields:@{@"test":@"normal"} dynamicContext:@{} time:errorTime];
+        [writerManager checkRUMSessionOnErrorDatasWithExpireTime:cutoffTime];
+        NSArray *newArray = [[FTTrackerEventDBTool sharedManager] getAllDatas];
+        XCTAssertEqual(newArray.count, 2);
+        for (FTRecordModel *model in newArray) {
+            XCTAssertEqualObjects(model.op, FT_DATA_TYPE_RUM);
+        }
+        __block NSInteger viewCount = 0;
+        __block NSInteger errorCount = 0;
+        [FTModelHelper resolveModelArray:newArray callBack:^(NSString *source, NSDictionary *tags, NSDictionary *fields, BOOL *stop) {
+            XCTAssertEqualObjects(tags[@"view_id"], @"2");
+            if ([source isEqualToString:FT_RUM_SOURCE_VIEW]) viewCount++;
+            if ([source isEqualToString:FT_RUM_SOURCE_ERROR]) errorCount++;
+        }];
+        XCTAssertEqual(viewCount, 1);
+        XCTAssertEqual(errorCount, 1);
+    } @finally {
+        if (previousErrorTime) {
+            [[NSUserDefaults standardUserDefaults] setObject:previousErrorTime forKey:@"ft_last_error_time"];
+        } else {
+            [[NSUserDefaults standardUserDefaults] removeObjectForKey:@"ft_last_error_time"];
+        }
     }
-    XCTAssertTrue(newArray.count - oldArray.count == 0);
-    XCTAssertTrue(newArray.count == 2);
 }
-/// Test the case where the last process exceeds the time interval
 - (void)testSampledErrorSessionDatasConsume_lastProcess_exceed_time_interval{
     [FTTrackDataManager startWithAutoSync:NO syncPageSize:10 syncSleepTime:0];
     FTDataWriterWorker *writerManager = [[FTDataWriterWorker alloc]initWithCacheInvalidTimeInterval:1];

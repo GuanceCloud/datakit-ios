@@ -593,7 +593,25 @@ static void *FTExternalSegmentProcessorQueueKey = &FTExternalSegmentProcessorQue
         block();
         [expectation fulfill];
     });
-    [self waitForExpectationsWithTimeout:1 handler:nil];
+    [self waitForExpectations:@[expectation] timeout:10];
+}
+
+- (BOOL)runOnBackgroundThreadAndWait:(dispatch_block_t)block description:(NSString *)description {
+    XCTestExpectation *expectation = [self expectationWithDescription:description];
+    // Exercise the background boundary without competing for a global Utility queue worker.
+    NSThread *thread = [[NSThread alloc] initWithBlock:^{
+        @autoreleasepool {
+            XCTAssertFalse(NSThread.isMainThread);
+            block();
+            [expectation fulfill];
+        }
+    }];
+    thread.name = description;
+    thread.qualityOfService = NSQualityOfServiceUserInitiated;
+    [thread start];
+    XCTWaiterResult result = [XCTWaiter waitForExpectations:@[expectation] timeout:10];
+    XCTAssertEqual(result, XCTWaiterResultCompleted, @"%@ did not complete", description);
+    return result == XCTWaiterResultCompleted;
 }
 
 - (UIImage *)sessionReplayTestImage{
@@ -654,19 +672,26 @@ static void *FTExternalSegmentProcessorQueueKey = &FTExternalSegmentProcessorQue
     
     __block FTUIImageResource *resource = nil;
     [self runOnMainThreadAndWait:^{
-        resource = [[FTUIImageResource alloc] initWithImage:[self sessionReplayTestImage]
+        UIImage *image = [self sessionReplayTestImage];
+        image.srIdentifier = @"dynamic-tint-image";
+        resource = [[FTUIImageResource alloc] initWithImage:image
                                                   tintColor:dynamicColor
                                             traitCollection:traitCollection];
     }];
     NSInteger providerCallsAfterSnapshot = providerCallCount;
     
-    XCTestExpectation *expectation = [self expectationWithDescription:@"Background resource processing"];
-    dispatch_async(dispatch_get_global_queue(QOS_CLASS_UTILITY, 0), ^{
-        [resource calculateIdentifier];
-        [resource calculateData];
-        [expectation fulfill];
-    });
-    [self waitForExpectationsWithTimeout:1 handler:nil];
+    XCTAssertGreaterThan(providerCallsAfterSnapshot, 0);
+    __block NSString *identifier = nil;
+    __block NSData *data = nil;
+    if (![self runOnBackgroundThreadAndWait:^{
+        identifier = [resource calculateIdentifier];
+        data = [resource calculateData];
+    } description:@"Background resource processing"]) {
+        return;
+    }
+    // RGBA (0.1, 0.2, 0.3, 0.4) rounds to the 8-bit identifier 1A334D66.
+    XCTAssertEqualObjects(identifier, @"dynamic-tint-image1A334D66");
+    XCTAssertGreaterThan(data.length, 0);
     
     XCTAssertEqual(backgroundProviderCallCount, 0);
     XCTAssertEqual(providerCallCount, providerCallsAfterSnapshot);
@@ -694,12 +719,14 @@ static void *FTExternalSegmentProcessorQueueKey = &FTExternalSegmentProcessorQue
     }];
     NSInteger providerCallsAfterSnapshot = providerCallCount;
     
-    XCTestExpectation *expectation = [self expectationWithDescription:@"Background wireframe processing"];
-    dispatch_async(dispatch_get_global_queue(QOS_CLASS_UTILITY, 0), ^{
-        __unused FTSRShapeWireframe *wireframe = [[FTSRShapeWireframe alloc] initWithIdentifier:1 attributes:attributes];
-        [expectation fulfill];
-    });
-    [self waitForExpectationsWithTimeout:1 handler:nil];
+    XCTAssertGreaterThan(providerCallsAfterSnapshot, 0);
+    __block FTSRShapeWireframe *wireframe = nil;
+    if (![self runOnBackgroundThreadAndWait:^{
+        wireframe = [[FTSRShapeWireframe alloc] initWithIdentifier:1 attributes:attributes];
+    } description:@"Background wireframe processing"]) {
+        return;
+    }
+    XCTAssertNotNil(wireframe);
     
     XCTAssertEqual(backgroundProviderCallCount, 0);
     XCTAssertEqual(providerCallCount, providerCallsAfterSnapshot);

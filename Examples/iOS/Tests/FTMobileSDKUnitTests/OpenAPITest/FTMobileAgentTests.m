@@ -41,6 +41,8 @@
 #import "FTRumConfig+Private.h"
 #import "FTNetworkMock.h"
 #import "FTTestUtils.h"
+#import "DemoViewController.h"
+#import "NetworkTraceVC.h"
 #import "FTTrackDataManager+Test.h"
 #import "FTDataUploadWorker.h"
 #import "FTInternalConstants.h"
@@ -88,6 +90,8 @@
 @property (nonatomic, strong) FTSDKConfig *config;
 @property (nonatomic, copy) NSString *url;
 @property (nonatomic, copy) NSString *appid;
+@property (nonatomic, strong) UIWindow *shutdownTestWindow;
+@property (nonatomic, strong) UIWindow *shutdownHostWindow;
 
 @end
 
@@ -245,9 +249,13 @@
 }
 
 - (void)tearDown {
-    // Put teardown code here. This method is called after the invocation of each test method in the class.
-    [super tearDown];
     [FTMobileAgent shutDown];
+    self.shutdownTestWindow.hidden = YES;
+    self.shutdownTestWindow.rootViewController = nil;
+    self.shutdownTestWindow = nil;
+    [self.shutdownHostWindow makeKeyAndVisible];
+    self.shutdownHostWindow = nil;
+    [super tearDown];
 }
 - (void)waitForUploadWorkerIdleWithTimeout:(NSTimeInterval)timeout{
     FTDataUploadWorker *worker = [FTTrackDataManager sharedInstance].dataUploadWorker;
@@ -1097,7 +1105,45 @@
     XCTAssertTrue(loggerConfig.enableWebViewLog == newLogger.enableWebViewLog);
     XCTAssertTrue(loggerConfig.printCustomLogToConsole == newLogger.printCustomLogToConsole);
 }
-- (void)testShutDown{
+// Reproduce a previous UI test leaving a child page on the home tab.
+- (void)testShutDownWithHostOnAnotherTab {
+    UITabBarController *tabs = (UITabBarController *)UIApplication.sharedApplication.keyWindow.rootViewController;
+    XCTAssertTrue([tabs isKindOfClass:UITabBarController.class]);
+    UINavigationController *homeNavigation = (UINavigationController *)tabs.viewControllers.firstObject;
+    NSArray *previousStack = [homeNavigation.viewControllers copy];
+    NSUInteger previousTab = tabs.selectedIndex;
+    @try {
+        tabs.selectedIndex = 0;
+        [homeNavigation pushViewController:[NetworkTraceVC new] animated:NO];
+        [tester waitForTappableViewWithAccessibilityLabel:@"RUM, Trace enable Resource auto collection"];
+        tabs.selectedIndex = 1;
+        [tester waitForAnimationsToFinish];
+        [self assertShutDownStopsCollection];
+    } @finally {
+        [homeNavigation setViewControllers:previousStack animated:NO];
+        tabs.selectedIndex = previousTab;
+    }
+}
+
+- (void)testShutDown {
+    [self assertShutDownStopsCollection];
+}
+
+- (void)assertShutDownStopsCollection {
+    // The host may be on another tab with a child page left by a preceding test.
+    self.shutdownHostWindow = UIApplication.sharedApplication.keyWindow;
+    if (self.shutdownHostWindow.windowScene) {
+        self.shutdownTestWindow = [[UIWindow alloc] initWithWindowScene:self.shutdownHostWindow.windowScene];
+    } else {
+        self.shutdownTestWindow = [[UIWindow alloc] initWithFrame:UIScreen.mainScreen.bounds];
+    }
+    DemoViewController *home = [DemoViewController new];
+    home.title = @"home";
+    UINavigationController *navigation = [[UINavigationController alloc] initWithRootViewController:home];
+    self.shutdownTestWindow.rootViewController = navigation;
+    [self.shutdownTestWindow makeKeyAndVisible];
+    [tester waitForTappableViewWithAccessibilityLabel:@"Network data collection"];
+
     FTSDKConfig *config = [[FTSDKConfig alloc]initWithDatakitUrl:self.url];
     config.enableSDKDebugLog = YES;
     config.autoSync = NO;
@@ -1134,15 +1180,16 @@
     [[FTTrackDataManager sharedInstance] insertCacheToDB];
     XCTAssertTrue([[FTTrackerEventDBTool sharedManager] getDatasCount] == count);
     // RUM Action, View, Resource collection is disabled
-    [[tester waitForViewWithAccessibilityLabel:@"home"] tap];
-    [tester waitForTimeInterval:0.5];
+    XCTAssertEqual(navigation.topViewController, home);
     [[FTExternalDataManager sharedManager] startViewWithName:@"test"];
     [[FTExternalDataManager sharedManager] startAction:@"testClick" actionType:@"click" property:nil];
     [[FTExternalDataManager sharedManager] startAction:@"testClick" actionType:@"click" property:nil];
 
     [[FTExternalDataManager sharedManager] addErrorWithType:@"ios" message:@"testMessage" stack:@"testStack"];
-    [[tester waitForViewWithAccessibilityLabel:@"Network data collection"] tap];
-    [[tester waitForViewWithAccessibilityLabel:@"Network data collection"] tap];
+    [tester tapViewWithAccessibilityLabel:@"Network data collection"];
+    [tester waitForAnimationsToFinish];
+    XCTAssertTrue([navigation.topViewController isKindOfClass:NetworkTraceVC.class]);
+    XCTAssertEqual(navigation.viewControllers.count, 2);
     XCTestExpectation *expectation= [self expectationWithDescription:@"Async operation timeout"];
     // Trace functionality is disabled, RUM Resource collection is disabled
     [self networkUploadHandler:^(NSURLResponse *response, NSDictionary *requestHeader, NSError *error) {

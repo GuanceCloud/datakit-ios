@@ -641,10 +641,15 @@
             XCTAssertTrue([sessionTask.currentRequest.allHTTPHeaderFields.allKeys containsObject:@"global_test_trace_key"]);
     }
     
-    NSURLSession *session = [NSURLSession sessionWithConfiguration:[NSURLSessionConfiguration defaultSessionConfiguration]];
+    NSOperationQueue *callbackQueue = [[NSOperationQueue alloc] init];
+    callbackQueue.maxConcurrentOperationCount = 1;
+    NSURLSession *session = [NSURLSession sessionWithConfiguration:[NSURLSessionConfiguration defaultSessionConfiguration]
+                                                        delegate:nil delegateQueue:callbackQueue];
     NSString *urlStr = [[NSProcessInfo processInfo] environment][@"TRACE_URL"];
     NSURLSessionTask *globalTask = [session dataTaskWithURL:[NSURL URLWithString:urlStr] completionHandler:^(NSData * _Nullable data, NSURLResponse * _Nullable response, NSError * _Nullable error) {
-        [globalExpectation fulfill];
+        // Automatic resource completion runs after this user callback returns.
+        // This operation cannot run until the serial delegate callback has finished.
+        [callbackQueue addOperationWithBlock:^{ [globalExpectation fulfill]; }];
     }];
     [globalTask resume];
     XCTAssertFalse([globalTask.currentRequest.allHTTPHeaderFields.allKeys containsObject:@"session_test_trace_key"]);
@@ -652,6 +657,7 @@
         XCTAssertTrue([globalTask.currentRequest.allHTTPHeaderFields.allKeys containsObject:@"global_test_trace_key"]);
     }
     [self waitForExpectations:@[sessionExpectation,globalExpectation] timeout:30];
+    [session finishTasksAndInvalidate];
     dispatch_sync([FTURLSessionInterceptor shared].queue, ^{});
     
     [[FTGlobalRumManager sharedInstance].rumManager syncProcess];

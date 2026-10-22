@@ -20,6 +20,7 @@
 
 #import <XCTest/XCTest.h>
 #import "TestLongTaskVC.h"
+#import "DemoViewController.h"
 #import "FTMobileAgent.h"
 #import "FTMobileAgent+Private.h"
 #import "FTTrackerEventDBTool.h"
@@ -38,9 +39,24 @@
 #import "FTDateUtil.h"
 @interface FTLongTaskTest : KIFTestCase
 @property (nonatomic, copy, nullable) FTIssueDataProvider issueDataProvider;
+@property (nonatomic, strong) UIWindow *testWindow;
+@property (nonatomic, strong) UIWindow *hostWindow;
 @end
 @implementation FTLongTaskTest
 -(void)setUp{
+    [super setUp];
+    self.hostWindow = UIApplication.sharedApplication.keyWindow;
+    // Own the navigation state rather than relying on the preceding KIF test's page or tab.
+    if (self.hostWindow.windowScene) {
+        self.testWindow = [[UIWindow alloc] initWithWindowScene:self.hostWindow.windowScene];
+    } else {
+        self.testWindow = [[UIWindow alloc] initWithFrame:UIScreen.mainScreen.bounds];
+    }
+    DemoViewController *home = [DemoViewController new];
+    home.title = @"home";
+    self.testWindow.rootViewController = [[UINavigationController alloc] initWithRootViewController:home];
+    [self.testWindow makeKeyAndVisible];
+    [tester waitForTappableViewWithAccessibilityLabel:@"TrackAppLongTask"];
     NSString *pathString = [NSSearchPathForDirectoriesInDomains(NSDocumentDirectory, NSUserDomainMask, YES) lastObject];
     pathString = [pathString stringByAppendingPathComponent:@"FTLongTask.txt"];
     NSError *error;
@@ -48,8 +64,14 @@
 }
 -(void)tearDown{
     self.issueDataProvider = nil;
-    [[tester waitForViewWithAccessibilityLabel:@"home"] tap];
-    [NSThread sleepForTimeInterval:1];
+    // KIF failures can skip the shutdown at the end of a test body.
+    [FTMobileAgent shutDown];
+    self.testWindow.hidden = YES;
+    self.testWindow.rootViewController = nil;
+    self.testWindow = nil;
+    [self.hostWindow makeKeyAndVisible];
+    self.hostWindow = nil;
+    [super tearDown];
 }
 - (void)initSDKWithEnableTrackAppANR:(BOOL)enable longTask:(BOOL)longTask{
     NSProcessInfo *processInfo = [NSProcessInfo processInfo];
@@ -71,7 +93,7 @@
     [self initSDKWithEnableTrackAppANR:YES longTask:YES];
     NSInteger lastCount = [[FTTrackerEventDBTool sharedManager] getDatasCountWithType:FT_DATA_TYPE_RUM];
     
-    [[tester waitForViewWithAccessibilityLabel:@"TrackAppLongTask"] tap];
+    [tester tapViewWithAccessibilityLabel:@"TrackAppLongTask"];
     
     XCTestExpectation *expect = [self expectationWithDescription:@"Request timeout!"];
     dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)(1.5 * NSEC_PER_SEC)), dispatch_get_main_queue(), ^{
@@ -138,7 +160,7 @@
 
 - (void)testNoTrackLongTask{
     [self initSDKWithEnableTrackAppANR:NO longTask:NO];
-    [[tester waitForViewWithAccessibilityLabel:@"TrackAppLongTask"] tap];
+    [tester tapViewWithAccessibilityLabel:@"TrackAppLongTask"];
     
     XCTestExpectation *expect = [self expectationWithDescription:@"Request Time!"];
     dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)(1 * NSEC_PER_SEC)), dispatch_get_main_queue(), ^{

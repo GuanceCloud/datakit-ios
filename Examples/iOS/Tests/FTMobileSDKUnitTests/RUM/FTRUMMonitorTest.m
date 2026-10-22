@@ -70,6 +70,10 @@
 
 @end
 
+@interface FTMonitorItem (FrequencyTesting)
+@property (nonatomic, strong) NSTimer *timer;
+@end
+
 @interface FTRUMMonitorTest : XCTestCase
 @property (nonatomic, copy) NSString *url;
 @property (nonatomic, copy) NSString *appid;
@@ -194,23 +198,33 @@
     XCTAssertGreaterThan(usageAfterRollover, usageBeforeRollover);
     XCTAssertEqualWithAccuracy(usageAfterRollover - usageBeforeRollover, 31, 0.001);
 }
+- (void)verifyMonitorFrequency:(MonitorFrequency)frequency interval:(NSTimeInterval)interval samples:(NSInteger)samples {
+    XCTAssertTrue(NSThread.isMainThread);
+    FTMonitorItem *item = [[FTMonitorItem alloc]initWithCpuMonitor:[FTCPUMonitor new] memoryMonitor:[FTMemoryMonitor new] displayRateMonitor:[FTDisplayRateMonitor new] frequency:FTIntervalFromMonitorFrequency(frequency)];
+    NSTimer *timer = item.timer;
+    @try {
+        XCTAssertNotNil(timer);
+        XCTAssertTrue(timer.isValid);
+        XCTAssertEqualWithAccuracy(timer.timeInterval, interval, 0.000001);
+        // Stay on this stack so the RunLoop cannot interleave automatic timer or initial samples.
+        // Model the initial sample and subsequent ticks by firing the real callback explicitly.
+        for (NSInteger sample = 0; sample < samples; sample++) {
+            [timer fire];
+        }
+        XCTAssertEqual(item.cpu.sampleValueCount, samples);
+        XCTAssertEqual(item.memory.sampleValueCount, samples);
+    } @finally {
+        [timer invalidate];
+    }
+}
 - (void)testMonitorFrequencyDefault{
-    FTMonitorItem *item = [[FTMonitorItem alloc]initWithCpuMonitor:[FTCPUMonitor new] memoryMonitor:[FTMemoryMonitor new] displayRateMonitor:[FTDisplayRateMonitor new] frequency:FTIntervalFromMonitorFrequency(MonitorFrequencyDefault)];
-    [self waitForTimeInterval:0.6];
-    XCTAssertEqual(item.cpu.sampleValueCount, 2);
-    XCTAssertEqual(item.memory.sampleValueCount, 2);
+    [self verifyMonitorFrequency:MonitorFrequencyDefault interval:0.5 samples:2];
 }
 - (void)testMonitorFrequencyRare{
-    FTMonitorItem *item = [[FTMonitorItem alloc]initWithCpuMonitor:[FTCPUMonitor new] memoryMonitor:[FTMemoryMonitor new] displayRateMonitor:[FTDisplayRateMonitor new] frequency:FTIntervalFromMonitorFrequency(MonitorFrequencyRare)];
-    [self waitForTimeInterval:1.1];
-    XCTAssertEqual(item.cpu.sampleValueCount, 2);
-    XCTAssertEqual(item.memory.sampleValueCount, 2);
+    [self verifyMonitorFrequency:MonitorFrequencyRare interval:1 samples:2];
 }
 - (void)testMonitorFrequencyFrequent{
-    FTMonitorItem *item = [[FTMonitorItem alloc]initWithCpuMonitor:[FTCPUMonitor new] memoryMonitor:[FTMemoryMonitor new] displayRateMonitor:[FTDisplayRateMonitor new] frequency:FTIntervalFromMonitorFrequency(MonitorFrequencyFrequent)];
-    [self waitForTimeInterval:0.6];
-    XCTAssertEqual(item.cpu.sampleValueCount, 7);
-    XCTAssertEqual(item.memory.sampleValueCount, 7);
+    [self verifyMonitorFrequency:MonitorFrequencyFrequent interval:0.1 samples:7];
 }
 - (void)testInvalidMonitorFrequencyFallsBackToDefault{
     FTRUMMonitor *monitor = [[FTRUMMonitor alloc]initWithMonitorType:0 frequency:(MonitorFrequency)NSUIntegerMax];

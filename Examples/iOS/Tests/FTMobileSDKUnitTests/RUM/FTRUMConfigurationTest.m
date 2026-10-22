@@ -1618,26 +1618,27 @@ static void FTStartAutoTrackActionTest(AddRumDatasHandlerMock *mock,
 - (void)testHeatmapAttributes_fallsBackToRegisteredUIControlActionTarget {
     AddRumDatasHandlerMock *mock = [AddRumDatasHandlerMock new];
     TestTrackingHandler *handler = [TestTrackingHandler new];
-    UISwitch *switchView = [[UISwitch alloc]initWithFrame:CGRectMake(0, 0, 51, 31)];
+    // This tests UIControl fallback, so keep geometry independent of UISwitch system styling.
+    UIControl *control = [[UIControl alloc]initWithFrame:CGRectMake(0, 0, 51, 31)];
     UIView *internalView = [[UIView alloc]initWithFrame:CGRectMake(0, 0, 51, 31)];
-    [switchView addSubview:internalView];
-    FTHeatmapIdentifier *switchIdentifier = [[FTHeatmapIdentifier alloc]initWithRawValue:@"switch-id"];
+    [control addSubview:internalView];
+    FTHeatmapIdentifier *controlIdentifier = [[FTHeatmapIdentifier alloc]initWithRawValue:@"control-id"];
     TestHeatmapIdentifierRegistry *registry = [[TestHeatmapIdentifierRegistry alloc]initWithIdentifiers:@{
-        [FTHeatmapIdentifier objectIdentifierForObject:switchView]: switchIdentifier,
+        [FTHeatmapIdentifier objectIdentifierForObject:control]: controlIdentifier,
     }];
     registry.enableHeatmap = YES;
     __block UIView *actionTargetView = nil;
     handler.actionTrackingBlock = ^FTRUMAction * _Nullable(UIView *view) {
         actionTargetView = view;
-        return [[FTRUMAction alloc]initWithActionName:@"switch_tap"];
+        return [[FTRUMAction alloc]initWithActionName:@"control_tap"];
     };
     FTStartAutoTrackActionTest(mock, handler, registry);
 
     UITouchMock *touch = [[UITouchMock alloc]initWithPhase:UITouchPhaseEnded view:internalView location:CGPointMake(12, 8)];
     [[UIApplication sharedApplication] ftTrackTouchEvent:[UIEvent mockWithTouch:touch]];
 
-    XCTAssertEqual(actionTargetView, switchView);
-    XCTAssertEqualObjects(mock.lastHeatmapAttributes.targetPermanentID, @"switch-id");
+    XCTAssertEqual(actionTargetView, control);
+    XCTAssertEqualObjects(mock.lastHeatmapAttributes.targetPermanentID, @"control-id");
     XCTAssertEqual(mock.lastHeatmapAttributes.targetWidth, 51);
     XCTAssertEqual(mock.lastHeatmapAttributes.targetHeight, 31);
     XCTAssertEqual(mock.lastHeatmapAttributes.positionX, 12);

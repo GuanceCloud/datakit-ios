@@ -59,6 +59,7 @@
 @property (nonatomic, strong,readonly) FTLoggerConfig *config;
 @end
 @interface FTRemoteConfigManager (Testing)
+@property (atomic, assign, readonly) BOOL isFetching;
 @property (nonatomic, strong) FTRemoteConfigModel *lastRemoteModel;
 - (void)saveRemoteConfig:(NSDictionary<NSString *, id> *)remoteConfig;
 - (void)saveLastFetchedTime:(NSTimeInterval)lastFetchedTime;
@@ -974,7 +975,7 @@
     id<OHHTTPStubsDescriptor> stubs = [self mockRemoteData];
     XCTestExpectation *expectation = [self expectationWithDescription:@"Requesting"];
     [self sdkInitWithRemoteConfiguration:YES interval:60];
-    [self waitForTimeInterval:1];
+    [self waitForRemoteConfigApplication];
 
     __block FTRemoteConfigModel *resultModel;
     [FTMobileAgent updateRemoteConfigWithMiniUpdateInterval:0 completion:^FTRemoteConfigModel * _Nullable(BOOL success, NSError * _Nullable error, FTRemoteConfigModel * _Nullable model, NSDictionary<NSString *,id> * _Nullable content) {
@@ -984,6 +985,7 @@
         return nil;
     }];
     [self waitForExpectations:@[expectation] timeout:10];
+    [self waitForRemoteConfigApplication];
     XCTAssertTrue([resultModel.toDictionary isEqualToDictionary:[[FTRemoteConfigManager sharedInstance].lastRemoteModel toDictionary]]);
     [OHHTTPStubs removeStub:stubs];
     [FTMobileAgent shutDown];
@@ -991,23 +993,48 @@
 }
 - (void)testFetchCompletionBlock_return_model_method{
     id<OHHTTPStubsDescriptor> stubs = [self mockRemoteData];
-    XCTestExpectation *expectation = [self expectationWithDescription:@"Requesting"];
+    XCTestExpectation *expectation = [self expectationWithDescription:@"Callback entered"];
+    dispatch_semaphore_t allowReturn = dispatch_semaphore_create(0);
     [self sdkInitWithRemoteConfiguration:YES interval:60];
-    [self waitForTimeInterval:1];
+    [self waitForRemoteConfigApplication];
 
     __block FTRemoteConfigModel *resultModel;
-    [FTMobileAgent updateRemoteConfigWithMiniUpdateInterval:0 completion:^FTRemoteConfigModel * _Nullable(BOOL success, NSError * _Nullable error, FTRemoteConfigModel * _Nullable model, NSDictionary<NSString *,id> * _Nullable content) {
-        XCTAssertTrue(success == YES);
-        resultModel = [model copy];
-        model.autoSync = @(NO);
-        model.syncPageSize = @(1);
-        [expectation fulfill];
-        return model;
+    @try {
+        [FTMobileAgent updateRemoteConfigWithMiniUpdateInterval:0 completion:^FTRemoteConfigModel * _Nullable(BOOL success, NSError * _Nullable error, FTRemoteConfigModel * _Nullable model, NSDictionary<NSString *,id> * _Nullable content) {
+            XCTAssertTrue(success);
+            XCTAssertNil(error);
+            resultModel = [model copy];
+            model.autoSync = @NO;
+            model.syncPageSize = @1;
+            [expectation fulfill];
+            dispatch_semaphore_wait(allowReturn, DISPATCH_TIME_FOREVER);
+            return model;
+        }];
+        [self waitForExpectations:@[expectation] timeout:10];
+        // The return value cannot be applied while the callback is still running.
+        XCTAssertEqualObjects(resultModel.syncPageSize, @15);
+        XCTAssertEqualObjects([FTRemoteConfigManager sharedInstance].lastRemoteModel.syncPageSize, @15);
+        dispatch_semaphore_signal(allowReturn);
+        [self waitForRemoteConfigApplication];
+        FTRemoteConfigModel *appliedModel = [FTRemoteConfigManager sharedInstance].lastRemoteModel;
+        XCTAssertEqualObjects(appliedModel.autoSync, @NO);
+        XCTAssertEqualObjects(appliedModel.syncPageSize, @1);
+    } @finally {
+        dispatch_semaphore_signal(allowReturn);
+        [self waitForRemoteConfigApplication];
+        [OHHTTPStubs removeStub:stubs];
+    }
+}
+
+- (void)waitForRemoteConfigApplication {
+    FTRemoteConfigManager *manager = [FTRemoteConfigManager sharedInstance];
+    // isFetching becomes NO after the callback returns, the delegate applies the
+    // model and persistence completes. Callback fulfillment alone is too early.
+    NSPredicate *idle = [NSPredicate predicateWithBlock:^BOOL(id object, NSDictionary *bindings) {
+        return !manager.isFetching;
     }];
-    [self waitForExpectations:@[expectation] timeout:10];
-    XCTAssertFalse([resultModel.toDictionary isEqualToDictionary:[[FTRemoteConfigManager sharedInstance].lastRemoteModel toDictionary]]);
-    [OHHTTPStubs removeStub:stubs];
-    [FTMobileAgent shutDown];
+    XCTestExpectation *applied = [[XCTNSPredicateExpectation alloc] initWithPredicate:idle object:manager];
+    [self waitForExpectations:@[applied] timeout:10];
 }
 
 - (void)testFetchCompletionBlock_return_nil_global{
@@ -1022,6 +1049,7 @@
     }];
    
     [self waitForExpectations:@[expectation] timeout:10];
+    [self waitForRemoteConfigApplication];
     XCTAssertTrue([resultModel.toDictionary isEqualToDictionary:[[FTRemoteConfigManager sharedInstance].lastRemoteModel toDictionary]]);
     [OHHTTPStubs removeStub:stubs];
     [FTMobileAgent shutDown];
@@ -1041,6 +1069,7 @@
     }];
     
     [self waitForExpectations:@[expectation] timeout:10];
+    [self waitForRemoteConfigApplication];
     XCTAssertFalse([resultModel.toDictionary isEqualToDictionary:[[FTRemoteConfigManager sharedInstance].lastRemoteModel toDictionary]]);
     [OHHTTPStubs removeStub:stubs];
     [FTMobileAgent shutDown];
@@ -1060,7 +1089,7 @@
         return resultModel;
     }];
     
-    [self waitForTimeInterval:1];
+    [self waitForRemoteConfigApplication];
 
     __block FTRemoteConfigModel *resultModel2;
     [FTMobileAgent updateRemoteConfigWithMiniUpdateInterval:0 completion:^FTRemoteConfigModel * _Nullable(BOOL success, NSError * _Nullable error, FTRemoteConfigModel * _Nullable model, NSDictionary<NSString *,id> * _Nullable content) {
@@ -1072,6 +1101,7 @@
     }];
     
     [self waitForExpectations:@[expectation,expectation2] timeout:10];
+    [self waitForRemoteConfigApplication];
     XCTAssertFalse([resultModel.toDictionary isEqualToDictionary:[[FTRemoteConfigManager sharedInstance].lastRemoteModel toDictionary]]);
     XCTAssertTrue([resultModel2.toDictionary isEqualToDictionary:[[FTRemoteConfigManager sharedInstance].lastRemoteModel toDictionary]]);
     [OHHTTPStubs removeStub:stubs];
@@ -1091,7 +1121,7 @@
         return nil;
     }];
     
-    [self waitForTimeInterval:1];
+    [self waitForRemoteConfigApplication];
 
     __block FTRemoteConfigModel *resultModel2;
     [FTMobileAgent updateRemoteConfigWithMiniUpdateInterval:0 completion:^FTRemoteConfigModel * _Nullable(BOOL success, NSError * _Nullable error, FTRemoteConfigModel * _Nullable model, NSDictionary<NSString *,id> * _Nullable content) {
@@ -1103,6 +1133,7 @@
     }];
     
     [self waitForExpectations:@[expectation,expectation2] timeout:10];
+    [self waitForRemoteConfigApplication];
     XCTAssertFalse([resultModel.toDictionary isEqualToDictionary:[[FTRemoteConfigManager sharedInstance].lastRemoteModel toDictionary]]);
     XCTAssertFalse([resultModel2.toDictionary isEqualToDictionary:[[FTRemoteConfigManager sharedInstance].lastRemoteModel toDictionary]]);
     [OHHTTPStubs removeStub:stubs];
@@ -1124,6 +1155,7 @@
     }];
    
     [self waitForExpectations:@[expectation] timeout:10];
+    [self waitForRemoteConfigApplication];
     XCTAssertTrue([resultModel.toDictionary isEqualToDictionary:[[FTRemoteConfigManager sharedInstance].lastRemoteModel toDictionary]]);
     NSDictionary *dict = [self waitForLastFetchedRemoteConfigMatching:^BOOL(NSDictionary *dict) {
         return [dict[@"vips"] isEqualToString:@"[\"user1\"]"];
