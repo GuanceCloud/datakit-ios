@@ -370,6 +370,8 @@ extern NSString * const FT_KEY_APP_LAUNCH_TYPE;
 extern NSString * const FT_APP_LAUNCH_TYPE_FOREGROUND;
 /// Cold launch role value for background launches.
 extern NSString * const FT_APP_LAUNCH_TYPE_BACKGROUND;
+/// Foreground cold launch interrupted by background before its completion.
+extern NSString * const FT_APP_LAUNCH_TYPE_FOREGROUND_AND_BACKGROUND;
 
 #pragma mark ========== Session Replay ==========
 /// Flag key indicating whether the current session has associated Session Replay data.

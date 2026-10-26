@@ -42,6 +42,9 @@ static NSDate *moduleInitializationTimestamp;
 static NSDate *runtimeInit = nil;
 static BOOL isActivePrewarm = NO;
 static BOOL appLaunchReported = NO;
+// Capture the source before activation can change the process task role.
+static NSString *processLaunchType;
+static NSDate *firstLaunchBackgroundDate;
 #if FT_HOST_IOS && defined(DEBUG)
 static NSNumber *launchTaskRoleOverride = nil;
 #endif
@@ -95,6 +98,8 @@ ftModuleInitializationHook(void)
 @property (nonatomic, strong) NSDate *launchTime;
 @property (nonatomic, assign) uint64_t launchTimeSystemTimestamp;
 @property (nonatomic, strong) NSDate *didFinishLaunchingTimestamp;
+@property (nonatomic, copy, nullable) NSString *initialLaunchType;
+@property (nonatomic, strong, nullable) NSDate *firstBackgroundDate;
 #if FT_HAS_UIKIT
 @property (nonatomic, strong, nullable) FTFirstFrameReader *firstFrameReader;
 - (instancetype)initWithDelegate:(nullable id)delegate
@@ -113,6 +118,18 @@ ftModuleInitializationHook(void)
 
 + (void)load{
     runtimeInit = [NSDate date];
+    processLaunchType = FTAppLaunchType(NO);
+#if FT_HAS_UIKIT
+    // Observe from class loading so delayed SDK initialization does not lose an
+    // interruption before the first activation. Capture occurrence time inline.
+    [NSNotificationCenter.defaultCenter addObserverForName:UIApplicationDidEnterBackgroundNotification
+                                                   object:nil queue:nil usingBlock:^(NSNotification *notification) {
+        NSDate *time = [NSDate date];
+        @synchronized (FTAppLaunchTracker.class) {
+            if (!firstLaunchBackgroundDate) firstLaunchBackgroundDate = time;
+        }
+    }];
+#endif
 
     isActivePrewarm = [[NSProcessInfo processInfo].environment[@"ActivePrewarm"] isEqual:@"1"];
 
@@ -140,8 +157,27 @@ ftModuleInitializationHook(void)
 #endif
 }
 
-- (instancetype)initWithLaunchDelegate:(nullable id)delegate {
+- (instancetype)init {
     self = [super init];
+    if (self) {
+        _initialLaunchType = processLaunchType;
+#if FT_HOST_IOS && defined(DEBUG)
+        if (launchTaskRoleOverride) _initialLaunchType = FTAppLaunchType(NO);
+#endif
+        @synchronized (FTAppLaunchTracker.class) {
+            _firstBackgroundDate = firstLaunchBackgroundDate;
+        }
+    }
+    return self;
+}
+
+// Testable occurrence clock; no timestamp is inferred from callback processing.
+- (NSDate *)launchEventDate {
+    return [NSDate date];
+}
+
+- (instancetype)initWithLaunchDelegate:(nullable id)delegate {
+    self = [self init];
     if (self) {
         self.delegate = delegate;
         _didFinishLaunchingTimestamp = FTDateUtil.date;
@@ -225,7 +261,11 @@ ftModuleInitializationHook(void)
     NSNumber *appStartDuration = [launchDate ft_nanosecondTimeIntervalToDate:endDate];
 
     NSMutableDictionary *fields = [NSMutableDictionary new];
-    NSString *appLaunchType = FTAppLaunchType(isPreWarming);
+    NSString *appLaunchType = isPreWarming ? nil : self.initialLaunchType;
+    if ([appLaunchType isEqualToString:FT_APP_LAUNCH_TYPE_FOREGROUND] &&
+        self.firstBackgroundDate && [self.firstBackgroundDate compare:endDate] == NSOrderedAscending) {
+        appLaunchType = FT_APP_LAUNCH_TYPE_FOREGROUND_AND_BACKGROUND;
+    }
     if (appLaunchType) {
         [fields setValue:appLaunchType forKey:FT_KEY_APP_LAUNCH_TYPE];
     }
@@ -334,6 +374,11 @@ ftModuleInitializationHook(void)
     }
 }
 - (void)applicationDidEnterBackground{
+    NSDate *time = [self launchEventDate];
+    if (!_initialLaunchReported && time &&
+        (!self.firstBackgroundDate || [time compare:self.firstBackgroundDate] == NSOrderedAscending)) {
+        self.firstBackgroundDate = time;
+    }
     _applicationDidEnterBackground = YES;
 }
 - (BOOL)isActivePrewarmAvailable{
@@ -354,6 +399,12 @@ ftModuleInitializationHook(void)
 
 #ifdef DEBUG
 // Just for testing
+NSDate *FTGetFirstLaunchBackgroundDate(void) {
+    @synchronized (FTAppLaunchTracker.class) { return firstLaunchBackgroundDate; }
+}
+void FTSetFirstLaunchBackgroundDate(NSDate *date) {
+    @synchronized (FTAppLaunchTracker.class) { firstLaunchBackgroundDate = date; }
+}
 NSDate *FTGetApplicationDidBecomeActive(void) {
     return applicationDidBecomeActive;
 }
