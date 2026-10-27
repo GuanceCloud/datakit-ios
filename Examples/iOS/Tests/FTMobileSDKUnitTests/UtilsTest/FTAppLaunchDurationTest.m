@@ -35,8 +35,12 @@
 typedef void(^LaunchBlock)( NSNumber * _Nullable duration, FTLaunchType type,NSDictionary *_Nullable fields);
 typedef void(^LaunchDataBlock)(NSString *source, NSDictionary *tags, NSDictionary *fields);
 @interface FTAppLaunchTracker (Testing)
++ (void)startObservingLaunchBackground;
++ (void)stopObservingLaunchBackground;
 - (void)reportAppLaunchPhaseDuration:(NSDate *)endDate;
 - (void)applicationDidBecomeActive;
+- (void)applicationDidEnterBackground;
+- (void)applicationWillEnterForeground;
 - (instancetype)initWithDelegate:(nullable id)delegate
                 firstFrameReader:(nullable FTFirstFrameReader *)firstFrameReader;
 @end
@@ -69,11 +73,35 @@ typedef void(^LaunchDataBlock)(NSString *source, NSDictionary *tags, NSDictionar
 }
 @end
 
+// Controlled timestamps can be ahead of the runner's wall clock. Validate
+// their exact duration in the test instead of using the legacy real-time bound.
+@interface FTControlledLaunchDelegate : NSObject<FTAppLaunchDataDelegate>
+@property (nonatomic, copy) LaunchBlock block;
+@end
+@implementation FTControlledLaunchDelegate
+- (void)ftAppHotStart:(NSDate *)time duration:(NSNumber *)duration {
+    XCTFail(@"Expected only the initial launch report");
+}
+- (void)ftAppColdStart:(NSDate *)time duration:(NSNumber *)duration isPreWarming:(BOOL)prewarm fields:(NSDictionary *)fields {
+    self.block(duration, prewarm ? FTLaunchWarm : FTLaunchCold, fields);
+}
+@end
+
+// A controlled occurrence clock keeps lifecycle boundaries independent of
+// when the first-frame completion is eventually processed.
+@interface FTControlledLaunchTracker : FTAppLaunchTracker
+@property (nonatomic, strong) NSDate *eventDate;
+@end
+@implementation FTControlledLaunchTracker
+- (NSDate *)launchEventDate { return self.eventDate; }
+@end
+
 @interface FTAppLaunchDurationTest : XCTestCase<FTAppLaunchDataDelegate,FTRUMDataWriteProtocol>
 @property (nonatomic, strong) FTAppLaunchTracker *launchTracker;
 @property (nonatomic, copy) LaunchBlock launchBlock;
 @property (nonatomic, copy) LaunchDataBlock launchDataBlock;
 @property (nonatomic, strong) NSDate *lastLaunchTime;
+@property (nonatomic, strong) NSDate *savedFirstLaunchBackgroundDate;
 
 @end
 
@@ -81,10 +109,15 @@ typedef void(^LaunchDataBlock)(NSString *source, NSDictionary *tags, NSDictionar
 void FTClearLaunchTaskRole(void);
 #endif
 
+NSDate *FTGetFirstLaunchBackgroundDate(void);
+void FTSetFirstLaunchBackgroundDate(NSDate *date);
+
 @implementation FTAppLaunchDurationTest
 
 - (void)setUp {
-    // Put setup code here. This method is called before the invocation of each test method in the class.
+    self.savedFirstLaunchBackgroundDate = FTGetFirstLaunchBackgroundDate();
+    [FTAppLaunchTracker stopObservingLaunchBackground];
+    FTSetFirstLaunchBackgroundDate(nil);
 }
 
 - (void)testFirstFrameReaderStartedFromBackgroundConsumesOnlyFirstFrame {
@@ -117,6 +150,8 @@ void FTClearLaunchTaskRole(void);
 }
 
 - (void)tearDown {
+    [FTAppLaunchTracker stopObservingLaunchBackground];
+    FTSetFirstLaunchBackgroundDate(self.savedFirstLaunchBackgroundDate);
     // Put teardown code here. This method is called after the invocation of each test method in the class.
     self.launchBlock = nil;
     self.launchTracker = nil;
@@ -233,6 +268,243 @@ void FTClearLaunchTaskRole(void);
 }
 
 #if TARGET_OS_IOS
+- (void)testLaunchBackgroundObserverStopsAfterFirstNotification {
+    __block NSDate *eventDate = [NSDate dateWithTimeIntervalSince1970:1002];
+    __block NSUInteger clockReads = 0;
+    Method clock = class_getClassMethod(FTDateUtil.class, @selector(date));
+    IMP replacement = imp_implementationWithBlock(^NSDate *(id receiver) {
+        clockReads++;
+        return eventDate;
+    });
+    IMP original = method_setImplementation(clock, replacement);
+    @try {
+        [FTAppLaunchTracker startObservingLaunchBackground];
+        [FTAppLaunchTracker startObservingLaunchBackground]; // Do not register twice.
+        [NSNotificationCenter.defaultCenter postNotificationName:UIApplicationDidEnterBackgroundNotification object:nil];
+        XCTAssertEqualObjects(FTGetFirstLaunchBackgroundDate(), [NSDate dateWithTimeIntervalSince1970:1002]);
+        XCTAssertEqual(clockReads, 1u);
+        eventDate = [NSDate dateWithTimeIntervalSince1970:1004];
+        [NSNotificationCenter.defaultCenter postNotificationName:UIApplicationDidEnterBackgroundNotification object:nil];
+        XCTAssertEqualObjects(FTGetFirstLaunchBackgroundDate(), [NSDate dateWithTimeIntervalSince1970:1002]);
+        XCTAssertEqual(clockReads, 1u); // The callback itself must no longer run.
+    } @finally {
+        [FTAppLaunchTracker stopObservingLaunchBackground];
+        method_setImplementation(clock, original);
+        imp_removeBlock(replacement);
+    }
+}
+
+- (void)testBackgroundBeforeFirstActivationSurvivesLateTrackerInitialization {
+    NSDate *savedActive = FTGetApplicationDidBecomeActive();
+    NSDate *savedRuntime = FTGetRuntimeInit();
+    NSDate *savedModule = FTGetModuleInitializationTimestamp();
+    BOOL savedPrewarm = FTGetIsActivePrewarm();
+    NSDate *start = [FTDateUtil processStartTimestamp];
+    __block NSDate *eventDate = [start dateByAddingTimeInterval:4];
+    NSDate *end = [start dateByAddingTimeInterval:10.25];
+    Method clock = class_getClassMethod(FTDateUtil.class, @selector(date));
+    IMP replacement = imp_implementationWithBlock(^NSDate *(id receiver) { return eventDate; });
+    IMP original = method_setImplementation(clock, replacement);
+    FTSetApplicationDidBecomeActive(nil);
+    FTSetIsActivePrewarm(NO);
+    FTSetLaunchTaskRole(TASK_FOREGROUND_APPLICATION);
+    FTSetRuntimeInit([start dateByAddingTimeInterval:2]);
+    FTSetModuleInitializationTimestamp([start dateByAddingTimeInterval:3]);
+    FTControlledLaunchDelegate *delegate = [FTControlledLaunchDelegate new];
+    __block NSUInteger reports = 0;
+    delegate.block = ^(NSNumber *duration, FTLaunchType type, NSDictionary *fields) {
+        reports++;
+        XCTAssertEqual(type, FTLaunchCold);
+        XCTAssertEqualObjects(fields[FT_KEY_APP_LAUNCH_TYPE], @"foreground_and_background");
+        XCTAssertEqualObjects(duration, @(10250000000LL));
+        XCTAssertEqualObjects(fields[FT_KEY_LAUNCH_PRE_RUNTIME_INIT_TIME],
+                              (@{FT_KEY_START: @0, FT_DURATION: @(2000000000LL)}));
+        XCTAssertEqualObjects(fields[FT_KEY_LAUNCH_RUNTIME_INIT_TIME],
+                              (@{FT_KEY_START: @(2000000000LL), FT_DURATION: @(1000000000LL)}));
+        XCTAssertNil(fields[FT_KEY_LAUNCH_UIKITI_INIT_TIME]);
+        XCTAssertNil(fields[FT_KEY_LAUNCH_APP_INIT_TIME]);
+        XCTAssertNil(fields[FT_KEY_LAUNCH_FIRST_FRAME_RENDER_TIME]);
+        // Callback processing must not replace the captured launch endpoint.
+        eventDate = [start dateByAddingTimeInterval:40];
+        [NSNotificationCenter.defaultCenter postNotificationName:UIApplicationDidEnterBackgroundNotification object:nil];
+    };
+    @try {
+        [FTAppLaunchTracker startObservingLaunchBackground];
+        [NSNotificationCenter.defaultCenter postNotificationName:UIApplicationDidEnterBackgroundNotification object:nil];
+        FTSetApplicationDidBecomeActive(end);
+        eventDate = [start dateByAddingTimeInterval:30];
+        FTMockFirstFrameReader *reader = [FTMockFirstFrameReader new];
+        self.launchTracker = [[FTAppLaunchTracker alloc] initWithDelegate:delegate firstFrameReader:reader];
+        [self.launchTracker reportAppLaunchPhaseDuration:[start dateByAddingTimeInterval:50]];
+        XCTAssertEqual(reports, 1u);
+        XCTAssertEqual(reader.startCount, 0u);
+    } @finally {
+        [FTAppLaunchTracker stopObservingLaunchBackground];
+        method_setImplementation(clock, original);
+        imp_removeBlock(replacement);
+        FTSetApplicationDidBecomeActive(savedActive);
+        FTSetRuntimeInit(savedRuntime);
+        FTSetModuleInitializationTimestamp(savedModule);
+        FTSetIsActivePrewarm(savedPrewarm);
+        FTClearLaunchTaskRole();
+        self.launchTracker = nil;
+    }
+}
+
+- (void)assertLaunchOrigin:(NSInteger)origin
+          backgroundOffset:(NSNumber *)backgroundOffset
+              expectedType:(NSString *)expectedType {
+    NSDate *savedActive = FTGetApplicationDidBecomeActive();
+    BOOL savedPrewarm = FTGetIsActivePrewarm();
+    FTSetApplicationDidBecomeActive(nil);
+    FTSetIsActivePrewarm(NO);
+    FTSetLaunchTaskRole(origin);
+    NSDate *start = [FTDateUtil processStartTimestamp];
+    NSDate *end = [start dateByAddingTimeInterval:10.25];
+    FTMockFirstFrameReader *reader = [FTMockFirstFrameReader new];
+    FTControlledLaunchDelegate *delegate = [FTControlledLaunchDelegate new];
+    FTControlledLaunchTracker *tracker = [[FTControlledLaunchTracker alloc] initWithDelegate:delegate firstFrameReader:reader];
+    self.launchTracker = tracker;
+    __block NSUInteger reports = 0;
+    self.launchBlock = ^(NSNumber *duration, FTLaunchType type, NSDictionary *fields) {
+        reports++;
+        XCTAssertEqual(type, FTLaunchCold);
+        XCTAssertEqualObjects(fields[FT_KEY_APP_LAUNCH_TYPE], expectedType);
+        XCTAssertEqual(duration.longLongValue, 10250000000LL);
+        XCTAssertNil(fields[@"app_state"]);
+    };
+    delegate.block = self.launchBlock;
+    @try {
+        if (backgroundOffset) {
+            tracker.eventDate = [start dateByAddingTimeInterval:backgroundOffset.doubleValue];
+            [tracker applicationDidEnterBackground];
+            [tracker applicationDidEnterBackground]; // Duplicate boundary.
+            [tracker applicationWillEnterForeground];
+        }
+        // The role at completion must not replace the original launch source.
+        FTSetLaunchTaskRole(TASK_FOREGROUND_APPLICATION);
+        FTFirstFrameCallback lateCallback = reader.callback;
+        [reader sendFirstFrameAtDate:end];
+        lateCallback(end);
+        XCTAssertEqual(reports, 1u);
+    } @finally {
+        FTSetApplicationDidBecomeActive(savedActive);
+        FTSetIsActivePrewarm(savedPrewarm);
+        FTClearLaunchTaskRole();
+        self.launchBlock = nil;
+        self.launchTracker = nil;
+    }
+}
+
+- (void)testForegroundLaunchInterruptedBeforeFirstFrameIsMixed {
+    [self assertLaunchOrigin:TASK_FOREGROUND_APPLICATION backgroundOffset:@2 expectedType:@"foreground_and_background"];
+}
+- (void)testBackgroundNotificationAfterTrackerInitializationBeforeDelayedFirstFrameIsMixed {
+    NSDate *savedActive = FTGetApplicationDidBecomeActive();
+    BOOL savedPrewarm = FTGetIsActivePrewarm();
+    FTSetApplicationDidBecomeActive(nil);
+    FTSetIsActivePrewarm(NO);
+    FTSetLaunchTaskRole(TASK_FOREGROUND_APPLICATION);
+    NSDate *start = [FTDateUtil processStartTimestamp];
+    NSDate *background = [start dateByAddingTimeInterval:2];
+    NSDate *end = [start dateByAddingTimeInterval:10.25];
+    FTMockFirstFrameReader *reader = [FTMockFirstFrameReader new];
+    FTControlledLaunchDelegate *delegate = [FTControlledLaunchDelegate new];
+    __block NSUInteger reports = 0;
+    delegate.block = ^(NSNumber *duration, FTLaunchType type, NSDictionary *fields) {
+        reports++;
+        XCTAssertEqual(type, FTLaunchCold);
+        XCTAssertEqualObjects(fields[FT_KEY_APP_LAUNCH_TYPE], @"foreground_and_background");
+        XCTAssertEqualObjects(duration, @(10250000000LL));
+    };
+    @try {
+        [FTAppLaunchTracker startObservingLaunchBackground];
+        FTControlledLaunchTracker *tracker = [[FTControlledLaunchTracker alloc] initWithDelegate:delegate firstFrameReader:reader];
+        self.launchTracker = tracker;
+        XCTAssertNil([tracker valueForKey:@"firstBackgroundDate"]);
+        XCTAssertEqual(reader.startCount, 1u);
+        [tracker applicationDidBecomeActive];
+        XCTAssertEqual(reports, 0u);
+
+        // The reader is still waiting: deliver the real lifecycle notification
+        // after initialization, before allowing its first-frame callback to run.
+        tracker.eventDate = background;
+        [NSNotificationCenter.defaultCenter postNotificationName:UIApplicationDidEnterBackgroundNotification object:nil];
+        tracker.eventDate = [start dateByAddingTimeInterval:4];
+        [NSNotificationCenter.defaultCenter postNotificationName:UIApplicationDidEnterBackgroundNotification object:nil];
+        XCTAssertEqualObjects([tracker valueForKey:@"firstBackgroundDate"], background);
+        XCTAssertNil(FTGetFirstLaunchBackgroundDate()); // Global observer was removed at handoff.
+        XCTAssertEqual(reports, 0u);
+
+        FTFirstFrameCallback lateCallback = reader.callback;
+        [reader sendFirstFrameAtDate:end];
+        tracker.eventDate = [start dateByAddingTimeInterval:20];
+        [NSNotificationCenter.defaultCenter postNotificationName:UIApplicationDidEnterBackgroundNotification object:nil];
+        lateCallback([start dateByAddingTimeInterval:30]);
+        XCTAssertEqualObjects([tracker valueForKey:@"firstBackgroundDate"], background);
+        XCTAssertEqual(reports, 1u);
+        XCTAssertEqual(reader.stopCount, 1u);
+    } @finally {
+        [FTAppLaunchTracker stopObservingLaunchBackground];
+        FTSetApplicationDidBecomeActive(savedActive);
+        FTSetIsActivePrewarm(savedPrewarm);
+        FTClearLaunchTaskRole();
+        self.launchTracker = nil;
+    }
+}
+- (void)testBackgroundLaunchRemainsBackgroundAfterEnteringForeground {
+    [self assertLaunchOrigin:TASK_BACKGROUND_APPLICATION backgroundOffset:nil expectedType:@"background"];
+}
+- (void)testBackgroundLaunchWithAnotherBackgroundTransitionRemainsBackground {
+    [self assertLaunchOrigin:TASK_BACKGROUND_APPLICATION backgroundOffset:@2 expectedType:@"background"];
+}
+- (void)testUninterruptedForegroundLaunchRemainsForeground {
+    [self assertLaunchOrigin:TASK_FOREGROUND_APPLICATION backgroundOffset:nil expectedType:@"foreground"];
+}
+- (void)testBackgroundAtFirstFrameEndpointDoesNotChangeLaunchType {
+    [self assertLaunchOrigin:TASK_FOREGROUND_APPLICATION backgroundOffset:@10.25 expectedType:@"foreground"];
+}
+- (void)testBackgroundAfterFirstFrameBeforeDelayedCompletionDoesNotChangeLaunchType {
+    [self assertLaunchOrigin:TASK_FOREGROUND_APPLICATION backgroundOffset:@11 expectedType:@"foreground"];
+}
+
+- (void)assertLateLaunchOrigin:(NSInteger)origin expectedType:(NSString *)expected {
+    NSDate *savedActive = FTGetApplicationDidBecomeActive();
+    BOOL savedPrewarm = FTGetIsActivePrewarm();
+    NSDate *start = [FTDateUtil processStartTimestamp];
+    NSDate *end = [start dateByAddingTimeInterval:10.25];
+    FTSetApplicationDidBecomeActive(end);
+    FTSetIsActivePrewarm(NO);
+    FTSetLaunchTaskRole(origin);
+    FTControlledLaunchDelegate *delegate = [FTControlledLaunchDelegate new];
+    __block NSUInteger reports = 0;
+    delegate.block = ^(NSNumber *duration, FTLaunchType type, NSDictionary *fields) {
+        reports++;
+        XCTAssertEqualObjects(fields[FT_KEY_APP_LAUNCH_TYPE], expected);
+        XCTAssertEqual(duration.longLongValue, 10250000000LL);
+        XCTAssertNil(fields[@"app_state"]);
+    };
+    @try {
+        [NSNotificationCenter.defaultCenter postNotificationName:UIApplicationDidEnterBackgroundNotification object:nil];
+        FTMockFirstFrameReader *reader = [FTMockFirstFrameReader new];
+        self.launchTracker = [[FTAppLaunchTracker alloc] initWithDelegate:delegate firstFrameReader:reader];
+        XCTAssertNil([self.launchTracker valueForKey:@"firstBackgroundDate"]);
+        XCTAssertEqual(reports, 1u);
+        XCTAssertEqual(reader.startCount, 0u);
+    } @finally {
+        FTSetApplicationDidBecomeActive(savedActive);
+        FTSetIsActivePrewarm(savedPrewarm);
+        FTClearLaunchTaskRole();
+        self.launchTracker = nil;
+    }
+}
+- (void)testLateSDKInitializationIgnoresBackgroundAfterLaunchEndpoint {
+    [self assertLateLaunchOrigin:TASK_FOREGROUND_APPLICATION expectedType:@"foreground"];
+}
+- (void)testLateSDKInitializationPreservesBackgroundOrigin {
+    [self assertLateLaunchOrigin:TASK_BACKGROUND_APPLICATION expectedType:@"background"];
+}
+
 - (void)testLaunchColdAppLaunchTypeWhenTaskRoleIsForegroundApplication{
     XCTestExpectation *expectation = [self expectationWithDescription:@"Async operation timeout"];
     FTSetLaunchTaskRole(TASK_FOREGROUND_APPLICATION);
