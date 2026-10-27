@@ -1,3 +1,8 @@
+# 1.6.9-alpha.1
+
+1. Fixed RUM cold launch source detection and added `foreground_and_background` classification for interrupted foreground launches.
+---
+
 # 1.6.8
 
 1. **Breaking:** Raised minimum supported versions to iOS 15, tvOS 15, and macOS 12.
