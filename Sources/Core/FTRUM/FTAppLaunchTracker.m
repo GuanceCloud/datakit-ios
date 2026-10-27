@@ -45,6 +45,9 @@ static BOOL appLaunchReported = NO;
 // Capture the source before activation can change the process task role.
 static NSString *processLaunchType;
 static NSDate *firstLaunchBackgroundDate;
+#if FT_HAS_UIKIT
+static id launchBackgroundObserver;
+#endif
 #if FT_HOST_IOS && defined(DEBUG)
 static NSNumber *launchTaskRoleOverride = nil;
 #endif
@@ -116,19 +119,39 @@ ftModuleInitializationHook(void)
     BOOL _waitingForActiveLaunchReport;
 }
 
+#if FT_HAS_UIKIT
++ (void)stopObservingLaunchBackground {
+    @synchronized (FTAppLaunchTracker.class) {
+        if (launchBackgroundObserver) {
+            [NSNotificationCenter.defaultCenter removeObserver:launchBackgroundObserver];
+            launchBackgroundObserver = nil;
+        }
+    }
+}
+
++ (void)startObservingLaunchBackground {
+    @synchronized (FTAppLaunchTracker.class) {
+        if (launchBackgroundObserver) return;
+        launchBackgroundObserver = [NSNotificationCenter.defaultCenter
+            addObserverForName:UIApplicationDidEnterBackgroundNotification
+                        object:nil queue:nil usingBlock:^(NSNotification *notification) {
+            // Capture on the posting thread, before any asynchronous processing.
+            NSDate *time = FTDateUtil.date;
+            @synchronized (FTAppLaunchTracker.class) {
+                if (!launchBackgroundObserver) return;
+                if (!firstLaunchBackgroundDate) firstLaunchBackgroundDate = time;
+                [FTAppLaunchTracker stopObservingLaunchBackground];
+            }
+        }];
+    }
+}
+#endif
+
 + (void)load{
     runtimeInit = [NSDate date];
     processLaunchType = FTAppLaunchType(NO);
 #if FT_HAS_UIKIT
-    // Observe from class loading so delayed SDK initialization does not lose an
-    // interruption before the first activation. Capture occurrence time inline.
-    [NSNotificationCenter.defaultCenter addObserverForName:UIApplicationDidEnterBackgroundNotification
-                                                   object:nil queue:nil usingBlock:^(NSNotification *notification) {
-        NSDate *time = [NSDate date];
-        @synchronized (FTAppLaunchTracker.class) {
-            if (!firstLaunchBackgroundDate) firstLaunchBackgroundDate = time;
-        }
-    }];
+    [self startObservingLaunchBackground];
 #endif
 
     isActivePrewarm = [[NSProcessInfo processInfo].environment[@"ActivePrewarm"] isEqual:@"1"];
@@ -182,6 +205,17 @@ ftModuleInitializationHook(void)
         self.delegate = delegate;
         _didFinishLaunchingTimestamp = FTDateUtil.date;
         [[FTAppLifeCycle sharedInstance] addAppLifecycleDelegate:self];
+#if FT_HAS_UIKIT
+        // Register first, then transfer any event captured during initialization.
+        // The instance now owns background tracking through the launch endpoint.
+        @synchronized (FTAppLaunchTracker.class) {
+            if (firstLaunchBackgroundDate &&
+                (!self.firstBackgroundDate || [firstLaunchBackgroundDate compare:self.firstBackgroundDate] == NSOrderedAscending)) {
+                self.firstBackgroundDate = firstLaunchBackgroundDate;
+            }
+            [FTAppLaunchTracker stopObservingLaunchBackground];
+        }
+#endif
     }
     return self;
 }
