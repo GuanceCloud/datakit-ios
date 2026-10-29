@@ -23,10 +23,184 @@
 #import <objc/message.h>
 #import <os/lock.h>
 #import "FTInnerLog.h"
+#if DEBUG
 #import <mach-o/dyld.h>
-#import <dlfcn.h>
+#import <mach-o/loader.h>
+#import <uuid/uuid.h>
+#import <stdlib.h>
+#import <string.h>
+#import <limits.h>
+#import <stdatomic.h>
+#if __has_feature(ptrauth_calls)
+#import <ptrauth.h>
+#endif
+#endif
 #if !__has_feature(objc_arc)
 #error This code needs ARC. Use compiler option -fobjc-arc
+#endif
+
+#if DEBUG
+// Only executable segment ranges and image metadata are cached; symbol tables are never read.
+typedef struct {
+    uintptr_t loadAddress;
+    uintptr_t start;
+    uintptr_t end;
+    cpu_type_t cpuType;
+    cpu_subtype_t cpuSubtype;
+    uuid_t uuid;
+    BOOL hasUUID;
+    char name[256];
+} FTSwizzleImageInfo;
+
+typedef struct FTSwizzleImageEntry {
+    FTSwizzleImageInfo info;
+    struct FTSwizzleImageEntry *_Nullable next;
+} FTSwizzleImageEntry;
+
+static os_unfair_lock ftSwizzleImageLock = OS_UNFAIR_LOCK_INIT;
+static FTSwizzleImageEntry *ftSwizzleImages;
+static atomic_int ftSwizzleImageState = ATOMIC_VAR_INIT(0); // 0: uninitialized, 1: registering, 2: ready
+
+static void FTSwizzleImageAdded(const struct mach_header *header, intptr_t slide) {
+    BOOL is64 = header->magic == MH_MAGIC_64;
+    if (!is64 && header->magic != MH_MAGIC) return;
+    const uint8_t *commands = (const uint8_t *)header + (is64 ? sizeof(struct mach_header_64) : sizeof(struct mach_header));
+    const uint8_t *end = commands + header->sizeofcmds;
+    FTSwizzleImageInfo info = {0};
+    info.loadAddress = (uintptr_t)header;
+    info.cpuType = header->cputype;
+    info.cpuSubtype = header->cpusubtype;
+    const char *imageName = "<unknown-image>";
+    char executablePath[PATH_MAX];
+    if (header->filetype == MH_EXECUTE) {
+        uint32_t size = sizeof(executablePath);
+        if (_NSGetExecutablePath(executablePath, &size) == 0) imageName = executablePath;
+    }
+    // Copy metadata while dyld guarantees that this image is mapped.
+    const uint8_t *cursor = commands;
+    for (uint32_t i = 0; i < header->ncmds && (size_t)(end - cursor) >= sizeof(struct load_command); i++) {
+        const struct load_command *command = (const struct load_command *)cursor;
+        if (command->cmdsize < sizeof(*command) || command->cmdsize > (size_t)(end - cursor)) break;
+        if (command->cmd == LC_UUID && command->cmdsize >= sizeof(struct uuid_command)) {
+            memcpy(info.uuid, ((const struct uuid_command *)command)->uuid, sizeof(uuid_t));
+            info.hasUUID = YES;
+        } else if (command->cmd == LC_ID_DYLIB && command->cmdsize >= sizeof(struct dylib_command)) {
+            uint32_t offset = ((const struct dylib_command *)command)->dylib.name.offset;
+            if (offset >= sizeof(struct dylib_command) && offset < command->cmdsize &&
+                memchr(cursor + offset, '\0', command->cmdsize - offset)) {
+                imageName = (const char *)cursor + offset;
+            }
+        }
+        cursor += command->cmdsize;
+    }
+    const char *basename = strrchr(imageName, '/');
+    strlcpy(info.name, basename ? basename + 1 : imageName, sizeof(info.name));
+    FTSwizzleImageEntry *entries = NULL;
+    cursor = commands;
+    for (uint32_t i = 0; i < header->ncmds && (size_t)(end - cursor) >= sizeof(struct load_command); i++) {
+        const struct load_command *command = (const struct load_command *)cursor;
+        if (command->cmdsize < sizeof(*command) || command->cmdsize > (size_t)(end - cursor)) break;
+        uint64_t vmaddr = 0, vmsize = 0;
+        vm_prot_t protection = 0;
+        if (command->cmd == LC_SEGMENT_64 && command->cmdsize >= sizeof(struct segment_command_64)) {
+            const struct segment_command_64 *segment = (const struct segment_command_64 *)command;
+            vmaddr = segment->vmaddr; vmsize = segment->vmsize; protection = segment->initprot;
+        } else if (command->cmd == LC_SEGMENT && command->cmdsize >= sizeof(struct segment_command)) {
+            const struct segment_command *segment = (const struct segment_command *)command;
+            vmaddr = segment->vmaddr; vmsize = segment->vmsize; protection = segment->initprot;
+        }
+        uintptr_t start = (uintptr_t)vmaddr + (uintptr_t)slide;
+        if ((protection & VM_PROT_EXECUTE) && vmsize > 0 && vmsize <= UINTPTR_MAX - start) {
+            FTSwizzleImageEntry *entry = malloc(sizeof(*entry));
+            if (entry) {
+                entry->info = info;
+                entry->info.start = start;
+                entry->info.end = start + (uintptr_t)vmsize;
+                entry->next = entries;
+                entries = entry;
+            }
+        }
+        cursor += command->cmdsize;
+    }
+    // Do not call dyld, Objective-C, or logging APIs while holding this lock.
+    os_unfair_lock_lock(&ftSwizzleImageLock);
+    while (entries) {
+        FTSwizzleImageEntry *next = entries->next;
+        entries->next = ftSwizzleImages;
+        ftSwizzleImages = entries;
+        entries = next;
+    }
+    os_unfair_lock_unlock(&ftSwizzleImageLock);
+}
+
+static void FTSwizzleImageRemoved(const struct mach_header *header, intptr_t slide) {
+    os_unfair_lock_lock(&ftSwizzleImageLock);
+    FTSwizzleImageEntry **entry = &ftSwizzleImages;
+    while (*entry) {
+        if ((*entry)->info.loadAddress == (uintptr_t)header) {
+            FTSwizzleImageEntry *removed = *entry;
+            *entry = removed->next;
+            free(removed);
+        } else {
+            entry = &(*entry)->next;
+        }
+    }
+    os_unfair_lock_unlock(&ftSwizzleImageLock);
+}
+
+static NSString *FTSwizzleDescribeIMP(IMP imp) {
+    int expected = 0;
+    if (atomic_compare_exchange_strong_explicit(&ftSwizzleImageState, &expected, 1,
+                                                memory_order_relaxed, memory_order_relaxed)) {
+        _dyld_register_func_for_remove_image(FTSwizzleImageRemoved);
+        _dyld_register_func_for_add_image(FTSwizzleImageAdded);
+        atomic_store_explicit(&ftSwizzleImageState, 2, memory_order_release);
+    }
+    // Never wait for another thread's registration: this caller may hold dyld's +load lock.
+#if __has_feature(ptrauth_calls)
+    uintptr_t address = (uintptr_t)ptrauth_strip(imp, ptrauth_key_function_pointer);
+#else
+    uintptr_t address = (uintptr_t)imp;
+#endif
+    FTSwizzleImageInfo info = {0};
+    BOOL found = NO;
+    os_unfair_lock_lock(&ftSwizzleImageLock);
+    for (FTSwizzleImageEntry *entry = ftSwizzleImages; entry; entry = entry->next) {
+        if (address >= entry->info.start && address < entry->info.end) {
+            info = entry->info;
+            found = YES;
+            break;
+        }
+    }
+    os_unfair_lock_unlock(&ftSwizzleImageLock);
+    if (!found) {
+        // Block IMP trampolines may live outside dyld images; never guess an image or offset.
+        const char *state = atomic_load_explicit(&ftSwizzleImageState, memory_order_acquire) == 2 ? "unmapped" : "lookup-pending";
+        return [NSString stringWithFormat:@"{address:%p image:<%s>}", (void *)address, state];
+    }
+    uuid_string_t uuid = "<unavailable>";
+    if (info.hasUUID) uuid_unparse_upper(info.uuid, uuid);
+    const char *arch = "unknown";
+    if (info.cpuType == CPU_TYPE_ARM64) {
+        arch = (info.cpuSubtype & ~CPU_SUBTYPE_MASK) == CPU_SUBTYPE_ARM64E ? "arm64e" : "arm64";
+    } else if (info.cpuType == CPU_TYPE_X86_64) {
+        arch = "x86_64";
+    } else if (info.cpuType == CPU_TYPE_ARM) {
+        arch = "arm";
+    } else if (info.cpuType == CPU_TYPE_X86) {
+        arch = "i386";
+    }
+    return [NSString stringWithFormat:@"{address:%p image:%s uuid:%s arch:%s load:%p offset:0x%llx}",
+            (void *)address, info.name, uuid, arch, (void *)info.loadAddress,
+            (unsigned long long)(address - info.loadAddress)];
+}
+
+typedef struct {
+    BOOL enabled;
+    BOOL inherited;
+    IMP before;
+    IMP after;
+} FTSwizzleLogContext;
 #endif
 
 #pragma mark - Swizzling
@@ -59,7 +233,11 @@ typedef IMP (^FTSwizzlerImpProvider)(void);
 
 static void swizzle(Class classToSwizzle,
                     SEL selector,
-                    FTSwizzlerImpFactoryBlock factoryBlock)
+                    FTSwizzlerImpFactoryBlock factoryBlock
+#if DEBUG
+                    , FTSwizzleLogContext *logContext
+#endif
+                    )
 {
     Method method = class_getInstanceMethod(classToSwizzle, selector);
     
@@ -114,18 +292,20 @@ static void swizzle(Class classToSwizzle,
     //
     // We need a lock to be sure that originalIMP has the right value in the
     // originalImpProvider block above.
+#if DEBUG
+    BOOL shouldLogSwizzle = [FTLog isSwizzleLogEnabled];
+    // Adding an override returns NULL, so snapshot the inherited IMP before replacement.
+    IMP inheritedIMPBeforeSwizzle = shouldLogSwizzle ? method_getImplementation(method) : NULL;
+#endif
     os_unfair_lock_lock(&lock);
     originalIMP = class_replaceMethod(classToSwizzle, selector, newIMP, methodType);
     os_unfair_lock_unlock(&lock);
 #if DEBUG
-    Dl_info info;
-    int result = dladdr(originalIMP, &info);
-    if (result != 0 && info.dli_sname != NULL && info.dli_fname != NULL) {
-        const char *fileName = strrchr(info.dli_fname, '/');
-        NSString *filePath = fileName ? [NSString stringWithUTF8String:fileName + 1] : @"unknown file";
-        FTInnerLogInfo(@"[SWIZZLE] --------------------\nClass:%@ \nSelector:%@ \nnewIMP:%p \noriginalIMP:%p (%s)(%@)\n--------------------",classToSwizzle,NSStringFromSelector(selector),newIMP,originalIMP,info.dli_sname,filePath);
-    } else {
-        FTInnerLogInfo(@"[SWIZZLE] --------------------\nClass:%@ \nSelector:%@ \nnewIMP:%p \noriginalIMP:%p failed to resolve address\n--------------------",classToSwizzle,NSStringFromSelector(selector),newIMP,originalIMP);
+    if (shouldLogSwizzle) {
+        logContext->enabled = YES;
+        logContext->before = originalIMP ?: inheritedIMPBeforeSwizzle;
+        logContext->after = newIMP;
+        logContext->inherited = originalIMP == NULL;
     }
 #endif
 }
@@ -150,6 +330,9 @@ static void swizzle(Class classToSwizzle,
         FTInnerLogWarning(@"Key may not be NULL if mode is not FTSwizzlerModeAlways.");
         return NO;
     }
+#if DEBUG
+    FTSwizzleLogContext logContext = {0};
+#endif
     @synchronized (self) {
         if (key){
             if (mode == FTSwizzlerModeOncePerClass) {
@@ -167,11 +350,28 @@ static void swizzle(Class classToSwizzle,
                 }
             }
         }
-        swizzle(classToSwizzle, selector, factoryBlock);
+        swizzle(classToSwizzle, selector, factoryBlock
+#if DEBUG
+                , &logContext
+#endif
+                );
         if (key){
             [self setFTAssociatedObject:classToSwizzle key:key value:@(YES) association:OBJC_ASSOCIATION_RETAIN_NONATOMIC];
         }
     }
+#if DEBUG
+    if (logContext.enabled) {
+        // Registering dyld callbacks must happen outside the swizzle lock to avoid
+        // lock inversion with a concurrent image's +load calling this swizzler.
+        FTInnerLogInfo(@"[SWIZZLE] %c[%s %s] beforeIMP:%@ afterIMP:%@ inherited:%@",
+                       class_isMetaClass(classToSwizzle) ? '+' : '-',
+                       class_getName(classToSwizzle),
+                       sel_getName(selector),
+                       FTSwizzleDescribeIMP(logContext.before),
+                       FTSwizzleDescribeIMP(logContext.after),
+                       logContext.inherited ? @"YES" : @"NO");
+    }
+#endif
     return YES;
 }
 

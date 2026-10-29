@@ -64,6 +64,7 @@ NS_ASSUME_NONNULL_BEGIN
 + (void)enableLog:(BOOL)enableLog;
 + (void)addLogger:(id <FTDebugLogger>)logger;
 + (BOOL)isLoggerEnabled;
++ (BOOL)isSwizzleLogEnabled;
 + (void)log:(BOOL)asynchronous
       level:(LogStatus)level
    function:(const char *)function
