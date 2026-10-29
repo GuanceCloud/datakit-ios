@@ -1,3 +1,8 @@
+# 1.6.9-alpha.2
+
+1. Reduced Debug startup overhead by removing diagnostic symbol lookup during automatic instrumentation. Swizzle diagnostic logging for troubleshooting SDK compatibility issues is disabled by default and also requires SDK debug logging to be enabled.
+---
+
 # 1.6.9-alpha.1
 
 1. Fixed RUM cold launch source detection and added `foreground_and_background` classification for interrupted foreground launches.
