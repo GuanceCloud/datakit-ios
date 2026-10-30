@@ -35,6 +35,7 @@ NS_ASSUME_NONNULL_BEGIN
 - (void)addNetworkObserver:(id<FTNetworkChangeObserver>)observer;
 
 - (void)removeNetworkObserver:(id<FTNetworkChangeObserver>)observer;
+/// Enqueues monitoring startup. Network fields remain unset until the first path update.
 - (void)start;
 - (void)stop;
 @end
