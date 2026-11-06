@@ -1327,7 +1327,7 @@
     config.viewTrackingHandler = [[FTDefaultUIKitViewTrackingHandler alloc]init];
     config.swiftUIViewTrackingHandler = [[FTDefaultSwiftUIViewTrackingHandler alloc]init];
     config.actionTrackingHandler = [[FTDefaultActionTrackingHandler alloc]init];
-    [self verifyDebugDescriptionContainsAllProperties:config filters:@[@"samplerate",@"enableUIKitViewLoadingTime"]];
+    [self verifyDebugDescriptionContainsAllProperties:config filters:@[@"samplerate"]];
 }
 
 - (void)testFTLoggerConfigDebugDescription {

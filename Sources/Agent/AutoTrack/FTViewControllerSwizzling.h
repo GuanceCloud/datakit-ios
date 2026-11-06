@@ -37,6 +37,8 @@ NS_ASSUME_NONNULL_BEGIN
 - (instancetype)initWithInAppIncludes:(nullable NSArray<NSString *> *)inAppIncludes
                  scanLoadedFrameworks:(BOOL)scanLoadedFrameworks;
 - (void)swizzleLoadedViewControllerClassesWithCompletion:(nullable dispatch_block_t)completion;
+/// Refreshes eligible classes after a new RUM startup configuration. Concurrent refreshes coalesce.
+- (void)refreshLoadedViewControllerClasses;
 
 @end
 

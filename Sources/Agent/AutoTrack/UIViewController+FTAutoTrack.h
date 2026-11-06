@@ -29,6 +29,9 @@ NS_ASSUME_NONNULL_BEGIN
 + (void)ft_swizzleLoadedCustomViewControllerClasses;
 + (void)ft_invalidatePendingViewLoadDurations;
 + (void)ft_setSwiftUIViewLoadingTimeEnabled:(BOOL)enabled;
++ (void)ft_setViewLoadingTimeEnabled:(BOOL)enabled;
++ (void)ft_configureViewLoadingTimeEnabled:(BOOL)enabled classNameExcludes:(NSSet<NSString *> *)excludes;
++ (BOOL)ft_shouldCollectViewLoadingTimeForClass:(Class)controllerClass;
 + (BOOL)ft_shouldTrackDefaultViewControllerClass:(Class)viewControllerClass;
 + (BOOL)ft_isCustomViewControllerClass:(Class)viewControllerClass;
 -(BOOL)isBlackListContainsViewController;

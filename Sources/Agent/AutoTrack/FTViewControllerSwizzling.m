@@ -42,6 +42,7 @@
 @property (nonatomic, strong) NSMutableArray<dispatch_block_t> *completionBlocks;
 @property (nonatomic, assign) BOOL started;
 @property (nonatomic, assign) BOOL completed;
+@property (nonatomic, assign) BOOL needsRescan;
 - (void)swizzleViewControllerHierarchyForWindows:(NSArray<UIWindow *> *)windows;
 @end
 
@@ -241,6 +242,20 @@ static NSArray<UIViewController *> *FTViewControllerHierarchyFromRootViewControl
     }
 }
 
+- (void)refreshLoadedViewControllerClasses {
+    dispatch_block_t refresh = ^{
+        if (self.started && !self.completed) {
+            self.needsRescan = YES;
+            return;
+        }
+        self.started = NO;
+        self.completed = NO;
+        [self swizzleLoadedViewControllerClassesWithCompletion:nil];
+    };
+    if ([NSThread isMainThread]) refresh();
+    else dispatch_async(dispatch_get_main_queue(), refresh);
+}
+
 - (void)scanLoadedImagePaths {
     dispatch_async(dispatch_get_global_queue(QOS_CLASS_UTILITY, 0), ^{
         NSArray<NSString *> *loadedImagePaths = FTLoadedImagePaths();
@@ -278,6 +293,10 @@ static NSArray<UIViewController *> *FTViewControllerHierarchyFromRootViewControl
     [self.completionBlocks removeAllObjects];
     for (dispatch_block_t completion in completionBlocks) {
         completion();
+    }
+    if (self.needsRescan) {
+        self.needsRescan = NO;
+        [self refreshLoadedViewControllerClasses];
     }
 }
 

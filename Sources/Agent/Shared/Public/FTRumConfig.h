@@ -130,6 +130,16 @@ typedef BOOL (^FTSessionTaskErrorFilter)(NSError *_Nonnull error);
 @property (nonatomic, assign) BOOL enableTraceUserAction;
 /// Set whether to track page lifecycle (only applies to autotrack)
 @property (nonatomic, assign) BOOL enableTraceUserView;
+/// Automatically collect page loading time when enableTraceUserView is YES. Default: YES.
+/// Applies to UIKit and automatically tracked SwiftUI pages. Setting NO preserves RUM View tracking.
+/// Configure before starting RUM; this does not remove lifecycle hooks already installed.
+@property (nonatomic, assign) BOOL enableTraceUserViewLoadingTime;
+/// Full runtime controller class names excluded from automatic page loading-time collection.
+/// Matching is exact and case-sensitive, without substring, regular-expression or inheritance matching.
+/// Default: empty. Custom page names returned by viewTrackingHandler are not used for this filter.
+/// Excluded controllers retain RUM View tracking. Configure before starting RUM.
+/// Lifecycle overrides must call super for base-class View tracking to receive callbacks.
+@property (nonatomic, copy) NSSet<NSString *> *viewLoadingTimeClassNameExcludes;
 /// Set whether to track user network requests (only applies to native http)
 @property (nonatomic, assign) BOOL enableTraceUserResource;
 /// Set whether to automatically collect NSURLConnection requests as RUM Resources. Default: NO.

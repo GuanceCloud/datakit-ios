@@ -29,7 +29,6 @@
 #import "FTVisitorIDConfig+Private.h"
 
 @interface FTRumConfig ()
-@property (nonatomic, assign) BOOL enableUIKitViewLoadingTime;
 @property (nonatomic, copy, nullable) NSArray *allowWebViewHost;
 @end
 
@@ -98,7 +97,8 @@
         _rumCacheLimitCount = FT_DB_RUM_MAX_COUNT;
         _rumDiscardType = FTRUMDiscard;
         _enableTraceWebView = YES;
-        _enableUIKitViewLoadingTime = YES;
+        _enableTraceUserViewLoadingTime = YES;
+        _viewLoadingTimeClassNameExcludes = [NSSet set];
         _crashMonitoring = FTCrashMonitorTypeHighCompatibility;
     }
     return self;
@@ -131,7 +131,8 @@
     options.resourcePropertyProvider = [self.resourcePropertyProvider copy];
     options->_sessionOnErrorSamplingRate = _sessionOnErrorSamplingRate;
     options.enableTraceWebView = self.enableTraceWebView;
-    options.enableUIKitViewLoadingTime = self.enableUIKitViewLoadingTime;
+    options.enableTraceUserViewLoadingTime = self.enableTraceUserViewLoadingTime;
+    options.viewLoadingTimeClassNameExcludes = self.viewLoadingTimeClassNameExcludes;
     options->_allowWebViewHost = [_allowWebViewHost copy];
     options.sessionTaskErrorFilter = [self.sessionTaskErrorFilter copy];
     options.issueDataProvider = [self.issueDataProvider copy];
@@ -156,6 +157,10 @@
             if ([dict ft_hasValidValueForKey:@"enableTrackAppANR"]) _enableTrackAppANR = [dict[@"enableTrackAppANR"] boolValue];
             if ([dict ft_hasValidValueForKey:@"enableTraceUserAction"]) _enableTraceUserAction = [dict[@"enableTraceUserAction"] boolValue];
             if ([dict ft_hasValidValueForKey:@"enableTraceUserView"]) _enableTraceUserView = [dict[@"enableTraceUserView"] boolValue];
+            if ([dict ft_hasValidValueForKey:@"enableTraceUserViewLoadingTime"]) self.enableTraceUserViewLoadingTime = [dict[@"enableTraceUserViewLoadingTime"] boolValue];
+            if ([dict[@"viewLoadingTimeClassNameExcludes"] isKindOfClass:NSArray.class]) {
+                self.viewLoadingTimeClassNameExcludes = [NSSet setWithArray:dict[@"viewLoadingTimeClassNameExcludes"]];
+            }
             if ([dict ft_hasValidValueForKey:@"enableTraceUserResource"]) _enableTraceUserResource = [dict[@"enableTraceUserResource"] boolValue];
             if ([dict ft_hasValidValueForKey:@"enableTraceURLConnectionResource"]) _enableTraceURLConnectionResource = [dict[@"enableTraceURLConnectionResource"] boolValue];
             if ([dict ft_hasValidValueForKey:@"enableResourceHostIP"]) _enableResourceHostIP = [dict[@"enableResourceHostIP"] boolValue];
@@ -187,6 +192,15 @@
     _enableTrackAppFreeze = enableTrackAppFreeze;
     self.freezeDurationMs = freezeDurationMs;
 }
+- (void)setViewLoadingTimeClassNameExcludes:(NSSet<NSString *> *)excludes {
+    NSMutableSet<NSString *> *validNames = [NSMutableSet set];
+    for (id name in excludes) {
+        if ([name isKindOfClass:NSString.class] && [name length] > 0) {
+            [validNames addObject:[name copy]];
+        }
+    }
+    _viewLoadingTimeClassNameExcludes = [validNames copy];
+}
 -(void)setFreezeDurationMs:(long)freezeDurationMs{
     _freezeDurationMs = MAX(FT_MIN_DEFAULT_BLOCK_DURATIONS_MS,freezeDurationMs);
 }
@@ -203,6 +217,8 @@
     [dict setValue:@(self.enableTrackAppANR) forKey:@"enableTrackAppANR"];
     [dict setValue:@(self.enableTraceUserAction) forKey:@"enableTraceUserAction"];
     [dict setValue:@(self.enableTraceUserView) forKey:@"enableTraceUserView"];
+    [dict setValue:@(self.enableTraceUserViewLoadingTime) forKey:@"enableTraceUserViewLoadingTime"];
+    [dict setValue:self.viewLoadingTimeClassNameExcludes.allObjects forKey:@"viewLoadingTimeClassNameExcludes"];
     [dict setValue:@(self.enableTraceUserResource) forKey:@"enableTraceUserResource"];
     [dict setValue:@(self.enableTraceURLConnectionResource) forKey:@"enableTraceURLConnectionResource"];
     [dict setValue:@(self.enableResourceHostIP) forKey:@"enableResourceHostIP"];

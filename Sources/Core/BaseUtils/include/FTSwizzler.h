@@ -326,6 +326,9 @@ typedef NS_ENUM(NSUInteger, FTSwizzlerMode) {
 #pragma mark - Implementation details
 // Do not write code that depends on anything below this line.
 
+// classToSwizzle is already a Class. Pass it through without sending +class,
+// which would run +initialize on classes discovered before application use.
+
 // Wrapping arguments to pass them as a single argument to another macro.
 #define _FTSWWrapArg(args...) args
 
@@ -345,7 +348,7 @@ typedef NS_ENUM(NSUInteger, FTSwizzlerMode) {
                                  KEY) \
     [FTSwizzler \
      swizzleInstanceMethod:selector \
-     inClass:[classToSwizzle class] \
+     inClass:(classToSwizzle) \
      newImpFactory:^id(FTSwizzlerInfo *swizzleInfo) { \
         FTSWReturnType (*originalImplementation_)(_FTSWDel3Arg(__unsafe_unretained id, \
                                                                SEL, \
@@ -367,7 +370,7 @@ typedef NS_ENUM(NSUInteger, FTSwizzlerMode) {
                               FTSWReplacement) \
     [FTSwizzler \
      swizzleClassMethod:selector \
-     inClass:[classToSwizzle class] \
+     inClass:(classToSwizzle) \
      newImpFactory:^id(FTSwizzlerInfo *swizzleInfo) { \
         FTSWReturnType (*originalImplementation_)(_FTSWDel3Arg(__unsafe_unretained id, \
                                                                SEL, \
