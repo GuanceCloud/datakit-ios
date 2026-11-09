@@ -32,6 +32,8 @@ NS_ASSUME_NONNULL_BEGIN
 
 /// Device name
 + (NSString *)deviceInfo;
+/// Whether this process is an iOS app running on a Mac.
++ (BOOL)isiOSAppOnMac;
 + (NSString *)getApplicationUUID;
 + (NSString *)cpuArch;
 + (NSString *)CPUArchForMajor:(cpu_type_t)majorCode minor:(cpu_subtype_t)minorCode;

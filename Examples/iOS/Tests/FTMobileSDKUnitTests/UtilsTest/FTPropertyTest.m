@@ -48,6 +48,28 @@
 - (FTUserInfo *)userInfo;
 - (void)connectivityChanged:(BOOL)connected typeDescription:(NSString *)typeDescription;
 @end
+@interface FTPresetProperty (DeviceModelTesting)
++ (NSString *)modelIdentifier;
++ (NSString *)unameMachineIdentifier;
+@end
+@interface FTPropertyTestIPadDevice : FTPresetProperty
+@end
+@implementation FTPropertyTestIPadDevice
++ (BOOL)isiOSAppOnMac { return NO; }
++ (NSString *)unameMachineIdentifier { return @"iPad13,4"; }
+@end
+@interface FTPropertyTestMacDevice : FTPropertyTestIPadDevice
+@end
+@implementation FTPropertyTestMacDevice
++ (BOOL)isiOSAppOnMac { return YES; }
++ (NSString *)modelIdentifier { return @"Mac14,2"; }
+@end
+@interface FTPropertyTestUnknownMacDevice : FTPropertyTestMacDevice
+@end
+@implementation FTPropertyTestUnknownMacDevice
++ (NSString *)modelIdentifier { return @"Unknown Mac"; }
+@end
+
 typedef NS_ENUM(NSInteger, FTPropertyTestNetworkStatus) {
     FTPropertyTestNetworkStatusNotReachable = 0,
     FTPropertyTestNetworkStatusWiFi = 2,
@@ -166,6 +188,23 @@ static void FTPropertyTestAssertMissingKeys(XCTestCase *testCase, NSDictionary *
 @end
 
 @implementation FTPropertyTest
+
+- (void)testIOSAppOnMacUsesHostModelInsteadOfIPadModel {
+    XCTAssertEqualObjects([FTPropertyTestMacDevice deviceInfo], @"Mac14,2");
+}
+- (void)testIOSAppOnMacMissingModelDoesNotFallBackToIPad {
+    XCTAssertEqualObjects([FTPropertyTestUnknownMacDevice deviceInfo], @"Unknown Mac");
+}
+- (void)testNativeIPadKeepsDeviceNameMapping {
+    XCTAssertEqualObjects([FTPropertyTestIPadDevice deviceInfo], @"iPad Pro 3 (11-inch) ");
+}
+- (void)testIOSAppOnMacMatchesProcessInfo {
+#if TARGET_OS_IOS
+    XCTAssertEqual([FTPresetProperty isiOSAppOnMac], [NSProcessInfo processInfo].isiOSAppOnMac);
+#else
+    XCTAssertFalse([FTPresetProperty isiOSAppOnMac]);
+#endif
+}
 
 - (void)setUp {
     /**
