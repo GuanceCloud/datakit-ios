@@ -63,6 +63,9 @@ NS_ASSUME_NONNULL_BEGIN
 /// Singleton
 + (instancetype)shared;
 
+/// Prepares early-crash state using the SDK entry time in monotonic nanoseconds.
++ (void)prepareEarlyCrashAtSDKStart:(uint64_t)start;
+
 + (void)setupWithMonitoringType:(FTCrashCMonitorType)monitoring
                     writer:(id<FTRUMDataWriteProtocol>)writer
        enableMonitorMemory:(BOOL)memory

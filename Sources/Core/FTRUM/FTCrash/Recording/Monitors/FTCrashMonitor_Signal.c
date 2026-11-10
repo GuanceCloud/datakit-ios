@@ -24,6 +24,7 @@
 // THE SOFTWARE.
 //
 
+#include "FTEarlyCrash.h"
 #include "FTCrashMonitor_Signal.h"
 
 #include "FTCrashMonitorContext.h"
@@ -93,6 +94,7 @@ static bool shouldWriteReport(int sigNum) { return !(sigNum == SIGTERM && !g_sta
  */
 static void handleSignal(int sigNum, siginfo_t *signalInfo, void *userContext)
 {
+    const uint64_t eventTime = ft_earlyCrashNow();
     FTLOG_DEBUG("Trapped signal %d", sigNum);
     if (isEnabled()) {
         thread_t thisThread = (thread_t)ftcrashthread_self();
@@ -101,6 +103,7 @@ static void handleSignal(int sigNum, siginfo_t *signalInfo, void *userContext)
                                                                   .isFatal = true,
                                                                   .shouldRecordAllThreads = true,
                                                                   .shouldWriteReport = shouldWriteReport(sigNum) });
+        crashContext->earlyCrashTime = eventTime;
         if (crashContext->requirements.shouldExitImmediately) {
             goto exit_immediately;
         }

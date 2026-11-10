@@ -23,6 +23,7 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 // THE SOFTWARE.
 //
+#include "FTEarlyCrash.h"
 #import "FTCrashMonitor_NSException.h"
 #import "FTCrashCompilerDefines.h"
 #import "FTCrashMonitorContext.h"
@@ -97,6 +98,7 @@ static FTCRASH_NOINLINE void initStackCursor(FTCrashStackCursor *cursor, NSExcep
 static FTCRASH_NOINLINE void handleException(NSException *exception, BOOL isUserReported,
                                         BOOL logAllThreads) FTCRASH_KEEP_FUNCTION_IN_STACKTRACE
 {
+    const uint64_t eventTime = ft_earlyCrashNow();
     FTLOG_DEBUG("Trapped exception %@", exception);
     if (isEnabled()) {
         FTLOG_DEBUG("Trapped exception start");
@@ -121,6 +123,7 @@ static FTCRASH_NOINLINE void handleException(NSException *exception, BOOL isUser
                                                                   .isFatal = !isUserReported,
                                                                   .shouldRecordAllThreads = logAllThreads != NO,
                                                                   .shouldWriteReport = true });
+        crashContext->earlyCrashTime = eventTime;
         if (crashContext->requirements.shouldExitImmediately) {
             goto exit_immediately;
         }

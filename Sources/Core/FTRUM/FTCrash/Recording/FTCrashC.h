@@ -41,6 +41,10 @@ extern "C" {
 
 
 
+struct FTCrash_MonitorContext;
+// Internal policy hook shared by the event handler and deterministic tests.
+bool ftcrash_prepareEventForRecording(struct FTCrash_MonitorContext *context);
+
 void ftcrash_install(const char *appName, const char *const installPath,FTCrashCMonitorType monitors);
 
 /** Set the user-supplied data in JSON format.

@@ -31,6 +31,7 @@
 #import "FTNetworkInfoManager.h"
 #import "FTDataFilterManager.h"
 #import "FTSerialTimer.h"
+#import "FTEarlyCrash.h"
 static const NSInteger kMaxRetryCount = 5;
 static const NSTimeInterval kInitialRetryDelay = 0.5; // Initial 500ms delay
 static const NSTimeInterval kUploadDebounceDelay = 0.1;
@@ -320,12 +321,18 @@ typedef NS_ENUM(NSInteger, FTUploadWorkerState) {
     self.uploadWork = uploadWork;
     if (withSleep){
         FTInnerLogDebug(@"[NETWORK]: start upload waiting");
-        dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)(10 * NSEC_PER_SEC)), self.networkQueue, uploadWork);
+        [self scheduleUploadWork:uploadWork afterDelay:[self nextAutomaticUploadDelay]];
     }else{
         FTInnerLogDebug(@"[NETWORK]: start upload");
         dispatch_async(self.networkQueue,uploadWork);
     }
 }
+// Internal scheduling seams; production behavior remains on the network queue.
+- (NSTimeInterval)nextAutomaticUploadDelay { return ft_earlyCrashTakeUploadDelay(); }
+- (void)scheduleUploadWork:(dispatch_block_t)work afterDelay:(NSTimeInterval)delay {
+    dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)(delay * NSEC_PER_SEC)), self.networkQueue, work);
+}
+- (void)waitBeforeRetry:(NSTimeInterval)delay { [NSThread sleepForTimeInterval:delay]; }
 - (BOOL)privateUpload{
     @try {
         if ([self isInvalidated]) {
@@ -437,7 +444,7 @@ typedef NS_ENUM(NSInteger, FTUploadWorkerState) {
                     }
                     if (requestRetryCount < kMaxRetryCount) {
                         FTInnerLogDebug(@"[NETWORK] Request failed, preparing for %dth retry, waiting %.0f milliseconds", requestRetryCount + 1, delay*1000);
-                        [NSThread sleepForTimeInterval:delay];
+                        [self waitBeforeRetry:delay];
                         if ([self isInvalidated]) {
                             return NO;
                         }

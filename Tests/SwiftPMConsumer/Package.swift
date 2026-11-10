@@ -15,7 +15,8 @@ let package = Package(
         .executable(name: "SwiftUIConsumer", targets: ["SwiftUIConsumer"]),
     ],
     dependencies: [
-        .package(path: "../.."),
+        // Keep product dependency names stable across differently named worktrees.
+        .package(name: "ft-sdk-ios", path: "../.."),
     ],
     targets: [
         .executableTarget(

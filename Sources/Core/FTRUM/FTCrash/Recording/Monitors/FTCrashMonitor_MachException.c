@@ -60,6 +60,7 @@
 //   - If they can't handle this exception, respond to the exception request message with 'KERN_FAILURE'.
 //     The kernel will pass control to the host port (if any), and finish crashing the app.
 
+#include "FTEarlyCrash.h"
 #include "FTCrashMonitor_MachException.h"
 
 #include "FTCrashCPU.h"
@@ -149,6 +150,7 @@ typedef struct {
     // These are changeable state.
     // ================================
 
+    uint64_t eventTime;
     FTCrashStackCursor stackCursor;
     atomic_bool isHandlingException;
 
@@ -371,6 +373,7 @@ static exception_type_t waitForException(ExceptionContext *ctx)
 
     kern_return_t kr = mach_msg(&ctx->request->Head, MACH_RCV_MSG | MACH_RCV_LARGE, 0, ctx->request->Head.msgh_size,
                                 ctx->exceptionPort, MACH_MSG_TIMEOUT_NONE, MACH_PORT_NULL);
+    ctx->eventTime = kr == KERN_SUCCESS ? ft_earlyCrashNow() : 0;
     if (kr == KERN_SUCCESS) {
         FTLOG_DEBUG("Thread %s: Trapped mach exception code 0x%llx, subcode 0x%llx", ctx->threadName,
                     ctx->request->code[0], ctx->request->code[1]);
@@ -414,6 +417,7 @@ static void handleException(ExceptionContext *exceptionCtx)
         exceptionCtx->request->thread.name,
         (FTCrash_ExceptionHandlingRequirements) {
             .asyncSafety = true, .isFatal = true, .shouldRecordAllThreads = true, .shouldWriteReport = true });
+    monitorCtx->earlyCrashTime = exceptionCtx->eventTime;
     if (monitorCtx->requirements.shouldExitImmediately) {
         FTLOG_DEBUG("Thread %s: Should exit immediately, so returning", exceptionCtx->threadName);
         return;

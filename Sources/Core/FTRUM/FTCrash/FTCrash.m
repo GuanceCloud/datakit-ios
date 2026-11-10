@@ -37,6 +37,7 @@
 #import "FTCrashMonitor_System.h"
 #import "FTCrashReport.h"
 #import "FTCrashBinaryImageCache.h"
+#import "FTEarlyCrash.h"
 
 @interface FTCrash()<FTAppLifeCycleDelegate,FTBacktraceReporting>
 /** If YES, introspect memory contents during a crash.
@@ -56,6 +57,22 @@
 
 static FTCrash *sharedHandler = nil;
 static mach_port_t main_thread_id;
+
+static NSString *FTCrashDefaultInstallPath(void) {
+    NSArray *directories = NSSearchPathForDirectoriesInDomains(NSCachesDirectory, NSUserDomainMask, YES);
+    if ([directories count] == 0) {
+        FTInnerLogError(@"Could not locate cache directory path.");
+        return nil;
+    }
+    NSString *cachePath = [directories objectAtIndex:0];
+    if ([cachePath length] == 0) {
+        FTInnerLogError(@"Could not locate cache directory path.");
+        return nil;
+    }
+    NSString *bundle = [[[NSBundle mainBundle] infoDictionary] objectForKey:@"CFBundleName"] ?: @"Unknown";
+    NSString *pathEnd = [@"FTCrash" stringByAppendingPathComponent:[bundle stringByReplacingOccurrencesOfString:@"/" withString:@"-"]];
+    return [cachePath stringByAppendingPathComponent:pathEnd];
+}
 
 @implementation FTCrash
 
@@ -134,19 +151,22 @@ static mach_port_t main_thread_id;
     [[[NSBundle mainBundle] infoDictionary] objectForKey:@"CFBundleName"] ?: @"Unknown";
     return [bundleName stringByReplacingOccurrencesOfString:@"/" withString:@"-"];
 }
-- (NSString *)getDefaultInstallPath{
-    NSArray *directories = NSSearchPathForDirectoriesInDomains(NSCachesDirectory, NSUserDomainMask, YES);
-    if ([directories count] == 0) {
-        FTInnerLogError(@"Could not locate cache directory path.");
-        return nil;
+- (NSString *)getDefaultInstallPath { return FTCrashDefaultInstallPath(); }
+
++ (void)prepareEarlyCrashAtSDKStart:(uint64_t)start {
+#if TARGET_OS_IOS && !TARGET_OS_MACCATALYST
+    @try {
+        if ([[NSBundle mainBundle].bundlePath.pathExtension isEqualToString:@"appex"]) return;
+        NSString *directory = [FTCrashDefaultInstallPath() stringByAppendingPathComponent:@"Data"];
+        BOOL created = directory && [[NSFileManager defaultManager] createDirectoryAtPath:directory
+                                        withIntermediateDirectories:YES attributes:nil error:nil];
+        NSString *path = created ? [directory stringByAppendingPathComponent:@"EarlyCrash.marker"] : nil;
+        ft_earlyCrashBegin(start, path.fileSystemRepresentation);
+    } @catch (__unused NSException *exception) {
+        // Optional telemetry must not interfere with SDK/host initialization.
+        ft_earlyCrashBegin(start, NULL);
     }
-    NSString *cachePath = [directories objectAtIndex:0];
-    if ([cachePath length] == 0) {
-        FTInnerLogError(@"Could not locate cache directory path.");
-        return nil;
-    }
-    NSString *pathEnd = [@"FTCrash" stringByAppendingPathComponent:[self getBundleName]];
-    return [cachePath stringByAppendingPathComponent:pathEnd];
+#endif
 }
 
 -(void)setIntrospectMemory:(BOOL)introspectMemory{

@@ -25,6 +25,7 @@
 //
 
 #include "FTCrashC.h"
+#include "FTEarlyCrash.h"
 #include "FTCrashBinaryImageCache.h"
 #include "FTSDKCompat.h"
 #include "FTCrashExceptionHandlingPlan.h"
@@ -96,17 +97,25 @@ static const size_t g_monitorMappingCount = sizeof(g_monitorMappings) / sizeof(g
  *
  * This function gets passed as a callback to a crash handler.
  */
-static void onExceptionEvent(struct FTCrash_MonitorContext *monitorContext)
+bool ftcrash_prepareEventForRecording(struct FTCrash_MonitorContext *monitorContext)
 {
-    // Check if the user wants to modify the plan for this crash.
+    // Persist the original event before callbacks, which may be slow or fail.
+    if (monitorContext->requirements.isFatal && monitorContext->requirements.shouldWriteReport &&
+        !monitorContext->currentSnapshotUserReported) {
+        ft_earlyCrashRecord(monitorContext->earlyCrashTime);
+    }
+    // Preserve the existing report customization policy.
     if (g_willWriteReportCallback) {
         FTCrash_ExceptionHandlingPlan plan = ftcrashexc_monitorContextToPlan(monitorContext);
         g_willWriteReportCallback(&plan, monitorContext);
         ftcrashexc_modifyMonitorContextUsingPlan(monitorContext, &plan);
     }
+    return monitorContext->requirements.shouldWriteReport;
+}
 
-    // If we shouldn't write a report, then there's nothing left to do here.
-    if (!monitorContext->requirements.shouldWriteReport) {
+static void onExceptionEvent(struct FTCrash_MonitorContext *monitorContext)
+{
+    if (!ftcrash_prepareEventForRecording(monitorContext)) {
         return;
     }
 
