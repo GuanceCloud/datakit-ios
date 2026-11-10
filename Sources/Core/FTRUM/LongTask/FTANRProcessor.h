@@ -31,16 +31,19 @@ NS_ASSUME_NONNULL_BEGIN
 @property (nonatomic, assign) long long startTimeNs;
 @property (nonatomic, assign) long long lastObservedTimeNs;
 @property (nonatomic, assign) long long freezeThresholdNs;
+@property (nonatomic, copy, readonly) NSString *startAppState;
 @property (nonatomic, copy, nullable) NSString *mainThreadBacktrace;
 @property (nonatomic, copy, nullable) NSString *allThreadsBacktrace;
-@property (nonatomic, strong, nullable) FTFatalErrorContextModel *errorContextModel;
+@property (nonatomic, strong, readonly, nullable) FTFatalErrorContextModel *errorContextModel;
 @property (nonatomic, assign) BOOL hasPersistedANRData;
 @property (nonatomic, assign, readonly) long long durationNs;
 @property (nonatomic, assign, readonly) BOOL isANR;
 @property (nonatomic, assign, readonly) BOOL isLongTask;
 @property (nonatomic, assign, readonly) BOOL needsAllThreadsBacktrace;
 
-- (instancetype)initWithStartTimeNs:(long long)startTimeNs freezeDurationMs:(long)freezeDurationMs;
+- (instancetype)initWithStartTimeNs:(long long)startTimeNs freezeDurationMs:(long)freezeDurationMs appState:(NSString *)appState;
+/// Refresh environment/session data while preserving the immutable start situation.
+- (void)updateErrorContext:(FTFatalErrorContextModel *)context errorMonitorInfo:(nullable NSDictionary *)errorMonitorInfo;
 - (FTLongTaskANRData *)anrData;
 @end
 

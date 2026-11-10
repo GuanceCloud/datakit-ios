@@ -24,12 +24,17 @@
 #import "FTANRProcessor.h"
 #import "FTConstants.h"
 #import "FTInnerLog.h"
+#import "FTRUMManager.h"
 #import <stdatomic.h>
 
 @implementation FTLongTaskEvent
 - (instancetype)initWithStack:(NSString *)stack startTimeNs:(long long)startTimeNs endTimeNs:(long long)endTimeNs durationNs:(long long)durationNs {
+    return [self initWithStack:stack startTimeNs:startTimeNs endTimeNs:endTimeNs durationNs:durationNs appState:nil];
+}
+- (instancetype)initWithStack:(NSString *)stack startTimeNs:(long long)startTimeNs endTimeNs:(long long)endTimeNs durationNs:(long long)durationNs appState:(NSString *)appState {
     if ((self = [super init])) {
         _stack = [stack copy]; _startTimeNs = startTimeNs; _endTimeNs = endTimeNs; _durationNs = durationNs;
+        _appState = [appState copy];
     }
     return self;
 }
@@ -62,11 +67,12 @@
     }
     return self;
 }
-- (FTLongTaskActiveEvent *)eventAtTime:(long long)time {
+- (FTLongTaskActiveEvent *)eventForTiming:(FTLongTaskTiming)timing {
     FTFatalErrorContextModel *context = self.dependencies.fatalErrorContext.currentContextModel;
     if (!context.lastSessionState) return nil;
-    FTLongTaskActiveEvent *event = [[FTLongTaskActiveEvent alloc] initWithStartTimeNs:time freezeDurationMs:self.freezeDurationMs];
-    event.errorContextModel = context;
+    NSString *situation = FTStringFromAppState(timing.startAppState);
+    FTLongTaskActiveEvent *event = [[FTLongTaskActiveEvent alloc] initWithStartTimeNs:timing.startTimeNs freezeDurationMs:self.freezeDurationMs appState:situation];
+    [event updateErrorContext:context errorMonitorInfo:context.errorMonitorInfo];
     return event;
 }
 - (uint64_t)longTaskDetector:(FTLongTaskDetector *)detector didObserveTiming:(FTLongTaskTiming)timing {
@@ -78,7 +84,7 @@
     }
     // End only settles an event already observed at Checkpoint; it never confirms a new one.
     if (!self.longTaskEvent && timing.phase == FTLongTaskPhaseCheckpoint) {
-        self.longTaskEvent = [self eventAtTime:timing.startTimeNs];
+        self.longTaskEvent = [self eventForTiming:timing];
         self.longTaskEvent.generation = timing.generation;
     }
     FTLongTaskActiveEvent *event = self.longTaskEvent;
@@ -86,7 +92,7 @@
     event.effectiveDurationNs = timing.durationNs;
     event.lastObservedTimeNs = timing.observationTimeNs;
     if (timing.phase == FTLongTaskPhaseEnd) {
-        [self finishEvent:event]; return UINT64_MAX;
+        [self finishEvent:event appState:FTStringFromRUMAppState(timing.appState)]; return UINT64_MAX;
     }
     BOOL (^current)(void) = ^BOOL{ return !atomic_load(&_stopped) && self.longTaskEvent == event && [detector isMonitoringGeneration:timing.generation]; };
     BOOL mainDue = (self.enableFreeze && event.isLongTask) || (self.enableANR && event.durationNs > FTLongTaskANRDataThresholdNs);
@@ -102,18 +108,18 @@
         next = MIN(next, (uint64_t)MAX(1, self.freezeDurationMs) * NSEC_PER_MSEC + NSEC_PER_MSEC);
     return next;
 }
-- (void)finishEvent:(FTLongTaskActiveEvent *)event {
+- (void)finishEvent:(FTLongTaskActiveEvent *)event appState:(NSString *)intervalState {
     self.longTaskEvent = nil;
     if (atomic_load(&_stopped)) return;
     if (self.enableANR) [self.anrProcessor.dataStore deleteFile];
     if (!atomic_load(&_stopped) && event.isLongTask && self.enableFreeze) {
         FTLongTaskEvent *result = [[FTLongTaskEvent alloc] initWithStack:event.mainThreadBacktrace ?: @""
-            startTimeNs:event.startTimeNs endTimeNs:event.lastObservedTimeNs durationNs:event.durationNs];
+            startTimeNs:event.startTimeNs endTimeNs:event.lastObservedTimeNs durationNs:event.durationNs appState:intervalState];
         [self.delegate longTaskDetected:result];
     }
     if (!atomic_load(&_stopped) && self.enableANR && event.isANR) {
         NSString *stack = event.allThreadsBacktrace.length ? event.allThreadsBacktrace : event.mainThreadBacktrace;
-        [self.delegate anrStackDetected:stack ?: @"" appState:event.errorContextModel.appState time:event.startTimeNs];
+        [self.delegate anrStackDetected:stack ?: @"" appState:event.startAppState intervalAppState:intervalState time:event.startTimeNs];
     }
 }
 - (void)shutDown {

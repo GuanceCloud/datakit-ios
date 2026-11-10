@@ -239,7 +239,7 @@ static NSObject *sharedInstanceLock;
 - (void)longTaskDetected:(FTLongTaskEvent *)event {
     [self.rumManager addLongTaskEvent:event];
 }
-- (void)anrStackDetected:(NSString*)slowStack appState:(NSString *)appState time:(long long)time{
+- (void)anrStackDetected:(NSString*)slowStack appState:(NSString *)appState intervalAppState:(NSString *)intervalAppState time:(long long)time{
     [self.rumManager addAutomaticIssueWithCategory:FTIssueCategoryANR
                                          errorType:@"anr_error"
                                           appState:appState
@@ -247,7 +247,8 @@ static NSObject *sharedInstanceLock;
                                              stack:slowStack
                                         threadName:@"main"
                                               time:time
-                                        historical:NO];
+                                        historical:NO
+                                  intervalAppState:intervalAppState];
 }
 #pragma mark ========== Shutdown ==========
 - (void)shutDown{

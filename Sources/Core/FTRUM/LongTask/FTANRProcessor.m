@@ -27,14 +27,21 @@
 
 @implementation FTLongTaskActiveEvent
 
-- (instancetype)initWithStartTimeNs:(long long)startTimeNs freezeDurationMs:(long)freezeDurationMs {
+- (instancetype)initWithStartTimeNs:(long long)startTimeNs freezeDurationMs:(long)freezeDurationMs appState:(NSString *)appState {
     self = [super init];
     if (self) {
         _startTimeNs = startTimeNs;
         _lastObservedTimeNs = startTimeNs;
         _freezeThresholdNs = (long long)freezeDurationMs * NSEC_PER_MSEC;
+        _startAppState = [appState copy];
     }
     return self;
+}
+
+- (void)updateErrorContext:(FTFatalErrorContextModel *)context errorMonitorInfo:(NSDictionary *)errorMonitorInfo {
+    _errorContextModel = [[FTFatalErrorContextModel alloc] initWithAppState:self.startAppState
+        lastSessionState:context.lastSessionState lastViewContext:context.lastViewContext
+        dynamicContext:context.dynamicContext globalAttributes:context.globalAttributes errorMonitorInfo:errorMonitorInfo];
 }
 
 - (long long)durationNs {
@@ -90,7 +97,10 @@
         if (captured) event.allThreadsBacktrace = stack;
         event.nextFullStackAttemptNs = event.effectiveDurationNs + 250 * NSEC_PER_MSEC;
     }
-    if (!event.hasPersistedANRData) event.errorContextModel = [self currentANRDataContextModel];
+    if (!event.hasPersistedANRData) {
+        [event updateErrorContext:self.dependencies.fatalErrorContext.currentContextModel
+                errorMonitorInfo:[self.dependencies.errorMonitorInfoWrapper errorMonitorInfo]];
+    }
     BOOL crossedANR = event.durationNs > FT_ANR_THRESHOLD_NS && event.lastPersistedDurationNs <= FT_ANR_THRESHOLD_NS;
     BOOL due = !event.hasPersistedANRData || captured || crossedANR ||
         event.effectiveDurationNs >= event.lastPersistedDurationNs + FTLongTaskANRDataUpdateIntervalNs;
@@ -145,6 +155,11 @@
     long long longTaskEndTime = anrData.usesEffectiveDuration ? MAX(startTime, anrData.endTimeNs) : startTime + duration;
     BOOL isAnr = duration > FT_ANR_THRESHOLD_NS;
     FTFatalErrorContextModel *contextModel = anrData.errorContextModel;
+    NSString *savedSituation = contextModel.appState;
+    BOOL validSituation = [savedSituation isKindOfClass:NSString.class] &&
+        [@[@"startup", @"run", @"background", @"unknown"] containsObject:savedSituation];
+    // V2 stored a sampling-time state, so it cannot establish the producer start.
+    NSString *errorSituation = anrData.usesEffectiveDuration && validSituation ? savedSituation : @"unknown";
     NSDictionary *tags = [contextModel.lastSessionState sessionTags];
     NSString *backtrace = anrData.mainThreadBacktrace.length > 0 ? anrData.mainThreadBacktrace : nil;
 
@@ -196,14 +211,16 @@
         NSMutableDictionary *anrTags = [NSMutableDictionary dictionary];
         [anrTags setValue:@"anr_error" forKey:FT_KEY_ERROR_TYPE];
         [anrTags setValue:FT_LOGGER forKey:FT_KEY_ERROR_SOURCE];
-        [anrTags setValue:contextModel.appState forKey:FT_KEY_ERROR_SITUATION];
         [anrTags addEntriesFromDictionary:contextModel.errorMonitorInfo];
         [anrTags addEntriesFromDictionary:contextModel.globalAttributes];
         [anrTags addEntriesFromDictionary:contextModel.dynamicContext];
         [anrTags addEntriesFromDictionary:[contextModel.lastSessionState sessionTags]];
         [anrTags addEntriesFromDictionary:tags];
+        // Event facts remain authoritative over saved custom/global context.
+        [anrTags setValue:errorSituation forKey:FT_KEY_ERROR_SITUATION];
 
         NSMutableDictionary *anrFields = [NSMutableDictionary dictionary];
+        anrFields[@"app_state"] = @"unknown";
         [anrFields addEntriesFromDictionary:[contextModel.lastSessionState sessionFields]];
         [anrFields setValue:@"ios_anr" forKey:FT_KEY_ERROR_MESSAGE];
         [anrFields setValue:allBacktrace ?: backtrace forKey:FT_KEY_ERROR_STACK];
@@ -214,7 +231,7 @@
                 message:@"ios_anr"
                 stack:allBacktrace ?: backtrace ?: @""
                 occurredAtNanoseconds:startTime
-                appState:contextModel.appState ?: @"unknown"
+                appState:errorSituation
                 threadName:@"main"
                 historical:YES];
             NSMutableSet<NSString *> *reservedKeys = [NSMutableSet setWithArray:anrTags.allKeys];
@@ -229,15 +246,6 @@
         return startTime;
     }
     return 0;
-}
-- (FTFatalErrorContextModel *)currentANRDataContextModel {
-    FTFatalErrorContextModel *currentContextModel = [self.dependencies.fatalErrorContext currentContextModel];
-    return [[FTFatalErrorContextModel alloc] initWithAppState:currentContextModel.appState
-                                             lastSessionState:currentContextModel.lastSessionState
-                                             lastViewContext:currentContextModel.lastViewContext
-                                              dynamicContext:currentContextModel.dynamicContext
-                                            globalAttributes:currentContextModel.globalAttributes
-                                             errorMonitorInfo:[self.dependencies.errorMonitorInfoWrapper errorMonitorInfo]];
 }
 
 

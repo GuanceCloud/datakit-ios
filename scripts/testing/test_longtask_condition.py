@@ -32,6 +32,7 @@ subprocess.run(common + ['-Dpthread_cond_timedwait_relative_np=FTTestConditionWa
 executable = output / 'LongTaskConditionCheck'
 subprocess.run(common + [str(ROOT / 'scripts/testing/longtask-condition-check.m'),
                         str(detector_object), '-framework', 'Foundation', '-framework', 'CoreFoundation',
+                        '-framework', 'UIKit' if args.simulator else 'AppKit',
                         '-o', str(executable)], check=True)
 if args.simulator:
     subprocess.run(['codesign', '--force', '--sign', '-', str(executable)], check=True, capture_output=True)

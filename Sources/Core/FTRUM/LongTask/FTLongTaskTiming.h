@@ -19,6 +19,8 @@
 //
 
 #import "FTLongTaskDetector.h"
+#import "FTRumDatasProtocol.h"
+#import "FTInternalConstants.h"
 
 NS_ASSUME_NONNULL_BEGIN
 
@@ -31,6 +33,10 @@ typedef struct {
     BOOL running;
     long long startTimeNs;
     uint64_t startContinuousNs;
+    FTAppState startAppState;
+    FTRUMAppState startIntervalState;
+    uint64_t foregroundRevision;
+    uint64_t backgroundRevision;
 } FTLongTaskRunLoopSnapshot;
 
 typedef NS_ENUM(NSUInteger, FTLongTaskPhase) {
@@ -42,6 +48,10 @@ typedef struct {
     long long startTimeNs;
     long long observationTimeNs;
     uint64_t durationNs;
+    /// Captured at producer start, never replaced by a later processing state.
+    FTAppState startAppState;
+    /// At End: all known states observed through worker stop, including excluded gaps.
+    FTRUMAppState appState;
 } FTLongTaskTiming;
 
 /// Internal interface: return an absolute checkpoint on the effective-duration axis.

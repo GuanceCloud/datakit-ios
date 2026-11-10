@@ -29,7 +29,7 @@ NS_ASSUME_NONNULL_BEGIN
 @protocol FTRunloopDetectorDelegate <NSObject>
 /// Automatic collection passes one immutable incident snapshot.
 - (void)longTaskDetected:(FTLongTaskEvent *)event;
-- (void)anrStackDetected:(NSString *)slowStack appState:(NSString *)appState time:(long long)time;
+- (void)anrStackDetected:(NSString *)slowStack appState:(NSString *)appState intervalAppState:(NSString *)intervalAppState time:(long long)time;
 @end
 @interface FTLongTaskManager : NSObject
 -(instancetype)initWithDependencies:(FTRUMDependencies *)dependencies

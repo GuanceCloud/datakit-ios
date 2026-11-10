@@ -390,8 +390,8 @@
         long long duration = [model.fields[FT_DURATION] longLongValue];
         if (model.longTaskEvent && model.longTaskEvent.endTimeNs >= eventStart)
             duration = model.longTaskEvent.endTimeNs - eventStart;
-        fields[@"app_state"] = [self.rumDependencies.appStateHistory stateFrom:eventStart
-                                                                                              duration:duration];
+        fields[@"app_state"] = model.longTaskEvent.appState ?: [self.rumDependencies.appStateHistory stateFrom:eventStart
+                                                                                                       duration:duration];
     }
     if (self.rumDependencies.sessionHasReplay != nil) {
         BOOL sessionHasReplay = self.sessionHasReplay || self.rumDependencies.sessionHasReplay.boolValue;

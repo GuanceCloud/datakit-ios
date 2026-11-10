@@ -133,11 +133,11 @@
     FTLongTaskDetector *detector = [manager valueForKey:@"longTaskDetector"];
     [detector stopDetecting];
     FTTestDrainDetector(detector);
-    FTTestObserveLongTask(manager, FTLongTaskPhaseBegin, startTime, 0, startTime);
-    FTTestObserveLongTask(manager, FTLongTaskPhaseCheckpoint, startTime, 5001*NSEC_PER_MSEC, startTime + 5001*NSEC_PER_MSEC);
+    FTTestObserveLongTaskState(manager, FTLongTaskPhaseBegin, startTime, 0, startTime, FTAppStateRun, FTRUMAppStateForegroundOnly);
+    FTTestObserveLongTaskState(manager, FTLongTaskPhaseCheckpoint, startTime, 5001*NSEC_PER_MSEC, startTime + 5001*NSEC_PER_MSEC, FTAppStateRun, FTRUMAppStateForegroundOnly);
     [[NSNotificationCenter defaultCenter] postNotificationName:UIApplicationWillEnterForegroundNotification object:nil];
     [[NSNotificationCenter defaultCenter] postNotificationName:UIApplicationDidEnterBackgroundNotification object:nil];
-    FTTestObserveLongTask(manager, FTLongTaskPhaseEnd, startTime, 6LL*NSEC_PER_SEC, [NSDate ft_currentNanosecondTimeStamp]);
+    FTTestObserveLongTaskState(manager, FTLongTaskPhaseEnd, startTime, 6LL*NSEC_PER_SEC, [NSDate ft_currentNanosecondTimeStamp], FTAppStateRun, FTRUMAppStateBackgroundAndForeground);
     [[FTGlobalRumManager sharedInstance].rumManager syncProcess];
 
     __block BOOL foundLongTask = NO;
@@ -151,8 +151,8 @@
         }
         if ([source isEqualToString:FT_RUM_SOURCE_ERROR] && [tags[FT_KEY_ERROR_TYPE] isEqualToString:@"anr_error"]) {
             foundANR = YES;
-            XCTAssertNil(fields[@"app_state"]);
-            XCTAssertNotNil(tags[FT_KEY_ERROR_SITUATION]);
+            XCTAssertEqualObjects(fields[@"app_state"], @"foreground_and_background");
+            XCTAssertEqualObjects(tags[FT_KEY_ERROR_SITUATION], @"run");
             XCTAssertEqualObjects(fields[FT_RUM_KEY_SESSION_START_REASON], FT_RUM_SESSION_START_REASON_SDK_INIT);
             XCTAssertNil(fields[@"process_start_time_ns"]);
         }

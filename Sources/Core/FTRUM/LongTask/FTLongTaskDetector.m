@@ -22,11 +22,17 @@
 #import "FTInnerLog.h"
 #import "FTDateUtil.h"
 #import "NSDate+FTUtil.h"
+#import "FTAppLifeCycle.h"
 #import <stdatomic.h>
 #import <pthread.h>
 #import <errno.h>
 #import <objc/runtime.h>
 #import <TargetConditionals.h>
+#if FT_HAS_UIKIT
+#import <UIKit/UIKit.h>
+#elif FT_HOST_MAC
+#import <AppKit/AppKit.h>
+#endif
 
 static const uint64_t FTIdleWaitNs = NSEC_PER_SEC;
 static const uint64_t FTIntervalEndWaitNs = NSEC_PER_SEC;
@@ -36,7 +42,7 @@ static const uint64_t FTCallbackOverlapLimitNs = NSEC_PER_SEC;
 static NSHashTable<FTLongTaskDetector *> *FTSuspendDetectors;
 static void (*FTOriginalPrepareForSuspend)(id, SEL);
 
-@interface FTLongTaskDetector () {
+@interface FTLongTaskDetector () <FTAppLifeCycleDelegate> {
     CFRunLoopObserverRef m_runLoopBeginObserver;
     CFRunLoopObserverRef m_runLoopEndObserver;
     pthread_cond_t _stateChanged;
@@ -53,6 +59,17 @@ static void (*FTOriginalPrepareForSuspend)(id, SEL);
     atomic_bool _runloopRunning;
     atomic_llong _runLoopStartTimestampNs;
     atomic_ullong _runLoopContinuousNs;
+    _Atomic(FTAppState) _runLoopStartAppState;
+    _Atomic(FTRUMAppState) _runLoopStartIntervalState;
+    atomic_ullong _runLoopForegroundRevision;
+    atomic_ullong _runLoopBackgroundRevision;
+
+    // Lifecycle and RunLoop callbacks run on main. Revisions retain the occurrence
+    // of either state, even before the worker starts or after the producer End.
+    FTAppState _currentAppState;
+    FTRUMAppState _currentIntervalState;
+    atomic_ullong _foregroundRevision;
+    atomic_ullong _backgroundRevision;
 
     // Worker arms one sequence. The main thread saves its FIRST closing boundary;
     // later callbacks must not overwrite it before the worker has processed End.
@@ -90,6 +107,12 @@ static void FTPrepareForSuspend(id scene, SEL selector);
         atomic_init(&_runloopRunning, false);
         atomic_init(&_runLoopStartTimestampNs, 0);
         atomic_init(&_runLoopContinuousNs, 0);
+        atomic_init(&_runLoopStartAppState, FTAppStateUnknown);
+        atomic_init(&_runLoopStartIntervalState, FTRUMAppStateUnknown);
+        atomic_init(&_runLoopForegroundRevision, 0);
+        atomic_init(&_runLoopBackgroundRevision, 0);
+        atomic_init(&_foregroundRevision, 0);
+        atomic_init(&_backgroundRevision, 0);
         atomic_init(&_watchedSequence, 0);
         atomic_init(&_closedSequence, 0);
         atomic_init(&_closedContinuousNs, 0);
@@ -104,6 +127,7 @@ static void FTPrepareForSuspend(id scene, SEL selector);
         return;
     }
 
+    [self startAppStateMonitoring];
     [self registerObserver];
     __weak typeof(self) weakSelf = self;
     dispatch_async(self.longTaskQueue, ^{
@@ -113,6 +137,7 @@ static void FTPrepareForSuspend(id scene, SEL selector);
 
 - (void)stopDetecting {
     atomic_store(&_monitoring, false);
+    [[FTAppLifeCycle sharedInstance] removeAppLifecycleDelegate:self];
     [self signalStateChange];
 
     if (m_runLoopBeginObserver) {
@@ -189,6 +214,10 @@ static void FTPrepareForSuspend(id scene, SEL selector);
     atomic_store(&_runloopRunning, running);
     atomic_store(&_runLoopStartTimestampNs, timeNs);
     atomic_store(&_runLoopContinuousNs, continuousNs);
+    atomic_store(&_runLoopStartAppState, _currentAppState);
+    atomic_store(&_runLoopStartIntervalState, _currentIntervalState);
+    atomic_store(&_runLoopForegroundRevision, atomic_load(&_foregroundRevision));
+    atomic_store(&_runLoopBackgroundRevision, atomic_load(&_backgroundRevision));
     atomic_store(&_runLoopSequence, previousSequence + 2); // Publish the complete snapshot.
     [self signalStateChange];
 }
@@ -204,7 +233,11 @@ static void FTPrepareForSuspend(id scene, SEL selector);
             .activity = atomic_load(&_activity),
             .running = atomic_load(&_runloopRunning),
             .startTimeNs = atomic_load(&_runLoopStartTimestampNs),
-            .startContinuousNs = atomic_load(&_runLoopContinuousNs)
+            .startContinuousNs = atomic_load(&_runLoopContinuousNs),
+            .startAppState = atomic_load(&_runLoopStartAppState),
+            .startIntervalState = atomic_load(&_runLoopStartIntervalState),
+            .foregroundRevision = atomic_load(&_runLoopForegroundRevision),
+            .backgroundRevision = atomic_load(&_runLoopBackgroundRevision)
         };
         // A concurrent callback invalidates the entire read, not individual fields.
         if (sequence == atomic_load(&_runLoopSequence)) {
@@ -247,6 +280,77 @@ static void FTPrepareForSuspend(id scene, SEL selector);
 #endif
 }
 
+#pragma mark - Real-time application state
+
+- (void)startAppStateMonitoring {
+    FTAppState situation = FTAppStateUnknown;
+    FTRUMAppState intervalState = FTRUMAppStateUnknown;
+#if FT_HAS_UIKIT
+    if ([UIApplication respondsToSelector:@selector(sharedApplication)]) {
+        UIApplication *application = [UIApplication performSelector:@selector(sharedApplication)];
+        if (application) {
+            UIApplicationState state = application.applicationState;
+            BOOL background = state == UIApplicationStateBackground;
+            situation = background ? FTAppStateBackground :
+                (state == UIApplicationStateActive ? FTAppStateRun : FTAppStateStartUp);
+            intervalState = background ? FTRUMAppStateBackgroundOnly : FTRUMAppStateForegroundOnly;
+        }
+    }
+#elif FT_HOST_MAC
+    if ([NSApplication sharedApplication].active) {
+        situation = FTAppStateRun;
+        intervalState = FTRUMAppStateForegroundOnly;
+    }
+#endif
+    [self recordAppState:situation intervalState:intervalState];
+    [[FTAppLifeCycle sharedInstance] addAppLifecycleDelegate:self];
+}
+
+- (void)recordAppState:(FTAppState)situation intervalState:(FTRUMAppState)intervalState {
+    if (!atomic_load(&_monitoring)) return;
+    _currentAppState = situation;
+    _currentIntervalState = intervalState;
+    // Comparing each revision with the producer's baseline answers whether that
+    // state occurred. No history retention, clock comparison or per-loop reset.
+    if (intervalState == FTRUMAppStateForegroundOnly) atomic_fetch_add(&_foregroundRevision, 1);
+    if (intervalState == FTRUMAppStateBackgroundOnly) atomic_fetch_add(&_backgroundRevision, 1);
+}
+
+- (void)applicationDidBecomeActive {
+    [self recordAppState:FTAppStateRun intervalState:FTRUMAppStateForegroundOnly];
+}
+#if FT_HAS_UIKIT
+- (void)applicationWillEnterForeground {
+    [self recordAppState:FTAppStateRun intervalState:FTRUMAppStateForegroundOnly];
+}
+- (void)applicationDidEnterBackground {
+    [self recordAppState:FTAppStateBackground intervalState:FTRUMAppStateBackgroundOnly];
+}
+#endif
+- (void)applicationWillResignActive {
+#if FT_HOST_MAC
+    [self recordAppState:FTAppStateUnknown intervalState:FTRUMAppStateUnknown];
+#endif
+}
+
+- (FTRUMAppState)observedAppStateSince:(FTLongTaskRunLoopSnapshot)snapshot {
+    // A foreground -> background pair racing these reads must not lose its first
+    // state. Retry if foreground changed around the background read.
+    uint64_t foregroundRevision, backgroundRevision;
+    do {
+        foregroundRevision = atomic_load(&_foregroundRevision);
+        backgroundRevision = atomic_load(&_backgroundRevision);
+    } while (foregroundRevision != atomic_load(&_foregroundRevision));
+    BOOL foreground = snapshot.startIntervalState == FTRUMAppStateForegroundOnly ||
+        foregroundRevision != snapshot.foregroundRevision;
+    BOOL background = snapshot.startIntervalState == FTRUMAppStateBackgroundOnly ||
+        backgroundRevision != snapshot.backgroundRevision;
+    if (foreground && background) return FTRUMAppStateBackgroundAndForeground;
+    if (foreground) return FTRUMAppStateForegroundOnly;
+    if (background) return FTRUMAppStateBackgroundOnly;
+    return FTRUMAppStateUnknown;
+}
+
 #pragma mark - Worker: select an interval, then observe it until it ends
 
 - (void)runMonitor {
@@ -287,7 +391,8 @@ static void FTPrepareForSuspend(id scene, SEL selector);
         .generation = snapshot.sequence / 2,
         .startTimeNs = snapshot.startTimeNs,
         .observationTimeNs = snapshot.startTimeNs,
-        .durationNs = 0
+        .durationNs = 0,
+        .startAppState = snapshot.startAppState
     };
     uint64_t nextCheckpointNs = [self notifyTiming:timing];
 
@@ -337,6 +442,9 @@ static void FTPrepareForSuspend(id scene, SEL selector);
                 timing.durationNs = MIN(timing.durationNs, intervalSpanNs);
                 timing.observationTimeNs = atomic_load(&_closedEpochNs);
                 timing.phase = FTLongTaskPhaseEnd;
+                // Diagnostic observation ends here, not at the earlier producer
+                // boundary. Keep switches during delayed/filtered processing.
+                timing.appState = [self observedAppStateSince:snapshot];
             } else {
                 timing.observationTimeNs = [NSDate ft_currentNanosecondTimeStamp];
                 timing.phase = FTLongTaskPhaseCheckpoint;

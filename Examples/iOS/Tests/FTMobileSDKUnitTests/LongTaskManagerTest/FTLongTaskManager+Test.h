@@ -43,11 +43,19 @@ static inline void FTTestDrainDetector(FTLongTaskDetector *detector) {
     dispatch_sync([detector valueForKey:@"longTaskQueue"], ^{});
 }
 
+static inline uint64_t FTTestObserveLongTaskState(FTLongTaskManager *manager, FTLongTaskPhase phase,
+                                               long long startNs, uint64_t durationNs, long long endNs,
+                                               FTAppState startState, FTRUMAppState appState) {
+    FTManualTimingDetector *detector = [[FTManualTimingDetector alloc] initWithDelegate:manager];
+    FTLongTaskTiming timing = {.phase = phase, .generation = 42, .startTimeNs = startNs,
+        .observationTimeNs = endNs, .durationNs = durationNs, .startAppState = startState, .appState = appState};
+    return [manager longTaskDetector:detector didObserveTiming:timing];
+}
+
 static inline uint64_t FTTestObserveLongTask(FTLongTaskManager *manager, FTLongTaskPhase phase,
                                           long long startNs, uint64_t durationNs, long long endNs) {
-    FTManualTimingDetector *detector = [[FTManualTimingDetector alloc] initWithDelegate:manager];
-    FTLongTaskTiming timing = {phase, 42, startNs, endNs, durationNs};
-    return [manager longTaskDetector:detector didObserveTiming:timing];
+    return FTTestObserveLongTaskState(manager, phase, startNs, durationNs, endNs,
+                                     FTAppStateUnknown, FTRUMAppStateUnknown);
 }
 
 NS_ASSUME_NONNULL_END
