@@ -789,7 +789,7 @@ void *FTRUMQueueIdentityKey = &FTRUMQueueIdentityKey;
 // Only rumQueue reads the live session/View chain. All consumers receive owned values.
 - (void)publishReplayContextToReceiver:(id<FTMessageReceiver>)receiver {
     if (!self.rumContextPublishingEnabled) return;
-    NSMutableDictionary *snapshot = [[self.sessionHandler getReplaySessionInfo] mutableCopy] ?: [NSMutableDictionary new];
+    NSMutableDictionary *snapshot = [[self.sessionHandler getCurrentSessionInfo] mutableCopy] ?: [NSMutableDictionary new];
     if (self.sessionHandler) {
         snapshot[FT_RUM_KEY_SAMPLED_FOR_ERROR_SESSION] = @(self.sessionHandler.context.sessionState.sampled_for_error_session);
         if ([snapshot[FT_KEY_VIEW_ID] length] > 0) {

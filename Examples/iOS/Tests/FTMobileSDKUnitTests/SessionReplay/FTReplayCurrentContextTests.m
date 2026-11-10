@@ -158,7 +158,11 @@
     [self.rum startResourceWithKey:@"pending"];
     [self.rum stopView];
     [self drainRUM];
-    XCTAssertNotNil([self linkedContext][FT_KEY_VIEW_ID]); // Proves retained general linking differs.
+    FTRUMSessionHandler *session = [self.rum valueForKey:@"sessionHandler"];
+    NSArray *retainedViews = [session valueForKey:@"viewHandlers"];
+    XCTAssertEqual(retainedViews.count, 1); // Pending Resource keeps the stopped handler alive.
+    XCTAssertFalse([[retainedViews.lastObject valueForKey:@"isActiveView"] boolValue]);
+    XCTAssertEqualObjects([self linkedContext], [session.context getGlobalSessionTags]);
     [self makeReplay];
     [self.feature startRecording];
     [self drainRUM];

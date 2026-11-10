@@ -33,9 +33,8 @@ NS_ASSUME_NONNULL_BEGIN
 -(instancetype)initWithExpiredSession:(FTRUMSessionHandler *)expiredSession time:(NSDate *)time;
 
 -(nullable NSString *)getCurrentViewID;
+/// Include View/action tags only while the last View is active.
 -(NSDictionary *)getCurrentSessionInfo;
-/// Replay must not link to an inactive View retained for outstanding child events.
-- (NSDictionary *)getReplaySessionInfo;
 @end
 
 NS_ASSUME_NONNULL_END
