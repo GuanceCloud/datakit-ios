@@ -133,6 +133,47 @@ void *FTMessageBusQueueIdentityKey = &FTMessageBusQueueIdentityKey;
     }];
     return instance;
 }
+- (void)unregisterService:(Protocol *)service instance:(id)instance {
+    NSString *key = NSStringFromProtocol(service);
+    [self syncProcess:^{
+        if ([self.registerServices objectForKey:key] == instance) {
+            [self.registerServices removeObjectForKey:key];
+        }
+    }];
+}
+- (void)requestRUMContextForReceiver:(id<FTMessageReceiver>)receiver {
+    __weak id<FTMessageReceiver> weakReceiver = receiver;
+    dispatch_async(self.queue, ^{
+        id<FTMessageReceiver> target = weakReceiver;
+        if (!target || ![self.receiverArray.allObjects containsObject:target]) return;
+        id<FTRUMContextProvider> provider = [self.registerServices objectForKey:NSStringFromProtocol(@protocol(FTRUMContextProvider))];
+        if (provider.rumContextPublishingEnabled) {
+            [provider publishCurrentRUMContextToReceiver:target];
+        } else {
+            [target receive:FTMessageKeyRUMContext message:@{}];
+        }
+    });
+}
+- (void)postRUMContext:(NSDictionary *)context
+             provider:(id<FTRUMContextProvider>)provider
+             receiver:(id<FTMessageReceiver>)receiver {
+    NSDictionary *snapshot = [context copy];
+    __weak id<FTMessageReceiver> weakReceiver = receiver;
+    BOOL targeted = receiver != nil;
+    dispatch_async(self.queue, ^{
+        id current = [self.registerServices objectForKey:NSStringFromProtocol(@protocol(FTRUMContextProvider))];
+        if (current != provider || !provider.rumContextPublishingEnabled) return;
+        NSArray *receivers = self.receiverArray.allObjects;
+        if (targeted) {
+            id<FTMessageReceiver> target = weakReceiver;
+            if (target && [receivers containsObject:target]) {
+                [target receive:FTMessageKeyRUMContext message:snapshot];
+            }
+        } else {
+            [self notifyMessageReceivers:receivers key:FTMessageKeyRUMContext message:snapshot];
+        }
+    });
+}
 - (void)syncProcess{
     [self syncProcess:^{}];
 }

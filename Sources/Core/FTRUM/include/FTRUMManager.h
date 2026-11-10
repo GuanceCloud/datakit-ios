@@ -94,6 +94,9 @@ FOUNDATION_EXPORT NSString *FTStringFromAppState(FTAppState state);
  */
 - (void)addLongTaskWithStack:(NSString *)stack duration:(NSNumber *)duration startTime:(long long)time property:(nullable NSDictionary *)property;
 
+/// Close Replay context publishing before the SDK releases RUM resources.
+- (void)shutDown;
+
 /// Wait for all rum processing data to be processed
 - (void)syncProcess;
 @end

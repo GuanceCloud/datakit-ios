@@ -140,6 +140,8 @@ NSString * const FTSessionReplayRUMContextSampledForErrorSessionKey = @"sampledF
     [self.resourceScope updateTrackingConsent];
 }
 - (void)startRecording{
+    if (self.recordingCoordinator.invalidated) return;
+    [[FTModuleManager sharedInstance] requestRUMContextForReceiver:self];
     [self.recordingCoordinator startRecording];
 }
 - (void)shutDown {

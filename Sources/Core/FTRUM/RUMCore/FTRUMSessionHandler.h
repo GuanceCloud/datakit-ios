@@ -34,6 +34,8 @@ NS_ASSUME_NONNULL_BEGIN
 
 -(nullable NSString *)getCurrentViewID;
 -(NSDictionary *)getCurrentSessionInfo;
+/// Replay must not link to an inactive View retained for outstanding child events.
+- (NSDictionary *)getReplaySessionInfo;
 @end
 
 NS_ASSUME_NONNULL_END

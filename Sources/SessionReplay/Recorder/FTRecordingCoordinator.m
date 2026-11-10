@@ -172,7 +172,8 @@ static FTTrackingConsent FTTrackingConsentFromSampleState(FTRecordingSampleState
     @try {
         NSDictionary *rumContext = [self.currentRUMContext copy];
         NSString *viewID = rumContext[FT_KEY_VIEW_ID];
-        if (!viewID || !self.recorder) {
+        if (viewID.length == 0 || [rumContext[FT_APP_ID] length] == 0 ||
+            [rumContext[FT_RUM_KEY_SESSION_ID] length] == 0 || !self.recorder) {
             return;
         }
         FTSRContext *context = [[FTSRContext alloc]init];
@@ -193,7 +194,9 @@ static FTTrackingConsent FTTrackingConsentFromSampleState(FTRecordingSampleState
 
 - (void)onRUMContextChanged:(NSDictionary *)context{
     NSDictionary *rumContext = [self.currentRUMContext copy];
-    if(rumContext == nil || ![context[FT_RUM_KEY_SESSION_ID] isEqualToString:rumContext[FT_RUM_KEY_SESSION_ID]]){
+    if ([context[FT_RUM_KEY_SESSION_ID] length] == 0) {
+        self.sampleState = FTRecordingSampleStateNone;
+    } else if(rumContext == nil || ![context[FT_RUM_KEY_SESSION_ID] isEqualToString:rumContext[FT_RUM_KEY_SESSION_ID]]){
         [self updateSamplingStatusWithRUMContext:context];
     }
     [self checkLinkRumKeys:context];
@@ -214,6 +217,7 @@ static FTTrackingConsent FTTrackingConsentFromSampleState(FTRecordingSampleState
 }
 
 - (void)checkLinkRumKeys:(NSDictionary *)rumContext{
+    self.bindInfo = nil;
     NSDictionary *bindInfo = rumContext[FT_LINK_RUM_KEYS];
     if (bindInfo) {
         NSArray *whiteLists = self.config.enableLinkRUMKeys;

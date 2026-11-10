@@ -153,6 +153,7 @@
 		17D6A7402FD7094C00E60B01 /* FTNodesFlattenerTests.m in Sources */ = {isa = PBXBuildFile; fileRef = 17D6A73F2FD7094C00E60B01 /* FTNodesFlattenerTests.m */; };
 		17E0792E291E60830014A420 /* FTExtensionSDKTest.m in Sources */ = {isa = PBXBuildFile; fileRef = 17E0792D291E60830014A420 /* FTExtensionSDKTest.m */; };
 		17F0C0022FE0000100ABCDEF /* FTRecordingCoordinatorTests.m in Sources */ = {isa = PBXBuildFile; fileRef = 17F0C0012FE0000100ABCDEF /* FTRecordingCoordinatorTests.m */; };
+		17F0C0122FE0000100ABCDEF /* FTReplayCurrentContextTests.m in Sources */ = {isa = PBXBuildFile; fileRef = 17F0C0112FE0000100ABCDEF /* FTReplayCurrentContextTests.m */; };
 		17F10EBB2D13EAC800737EDD /* NibViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 17F10EAD2D13EAC800737EDD /* NibViewController.swift */; };
 		17F10EBC2D13EAC800737EDD /* SplitViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 17F10EAF2D13EAC800737EDD /* SplitViewController.swift */; };
 		17F10EBD2D13EAC800737EDD /* TableViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 17F10EB02D13EAC800737EDD /* TableViewController.swift */; };
@@ -482,6 +483,7 @@
 		17E1927929C9883A0067B23D /* GuanceSDK.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; path = GuanceSDK.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 		17EAFA462D15535F004223E2 /* GuanceSDK.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; path = GuanceSDK.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 		17F0C0012FE0000100ABCDEF /* FTRecordingCoordinatorTests.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = FTRecordingCoordinatorTests.m; sourceTree = "<group>"; };
+		17F0C0112FE0000100ABCDEF /* FTReplayCurrentContextTests.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = FTReplayCurrentContextTests.m; sourceTree = "<group>"; };
 		17F10E6C2D13CBCB00737EDD /* tvOS-App.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = "tvOS-App.app"; sourceTree = BUILT_PRODUCTS_DIR; };
 		17F10E7E2D13CBCD00737EDD /* tvOS-AppTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = "tvOS-AppTests.xctest"; sourceTree = BUILT_PRODUCTS_DIR; };
 		17F10E882D13CBCD00737EDD /* tvOS-AppUITests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = "tvOS-AppUITests.xctest"; sourceTree = BUILT_PRODUCTS_DIR; };
@@ -878,6 +880,7 @@
 				17CA1A012F91A00100E2AE8A /* FTCALayerChangeAggregatorTests.m */,
 				17D6A73F2FD7094C00E60B01 /* FTNodesFlattenerTests.m */,
 				17F0C0012FE0000100ABCDEF /* FTRecordingCoordinatorTests.m */,
+				17F0C0112FE0000100ABCDEF /* FTReplayCurrentContextTests.m */,
 				178377F62D84141A00C590AE /* SessionReplayPrivacyOverridesTests.m */,
 				1757C83B2D9D222600163865 /* SessionReplayConfigTests.m */,
 				17A61BB92F307BFA00201932 /* SessionReplayUtilsTest.m */,
@@ -2077,6 +2080,7 @@
 				17CA1A022F91A00100E2AE8A /* FTCALayerChangeAggregatorTests.m in Sources */,
 				17D6A7402FD7094C00E60B01 /* FTNodesFlattenerTests.m in Sources */,
 				17F0C0022FE0000100ABCDEF /* FTRecordingCoordinatorTests.m in Sources */,
+				17F0C0122FE0000100ABCDEF /* FTReplayCurrentContextTests.m in Sources */,
 				178AE3BE2D56009A00BDC51B /* UIEvent+Mock.m in Sources */,
 				17593AE22906917700A15CD9 /* FTResourceDelegateTest.m in Sources */,
 				17F5C5242C60D62A007F2B2C /* FTURLProtocol.m in Sources */,
