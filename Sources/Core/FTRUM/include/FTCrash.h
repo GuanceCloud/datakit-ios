@@ -56,15 +56,14 @@ NS_ASSUME_NONNULL_BEGIN
 
 /** If true, the application crashed on the previous launch. */
 @property(nonatomic, readonly, assign) BOOL crashedLastLaunch;
+/** Cached historical result, consumed during monitored-launch state reset. */
+@property(nonatomic, readonly, assign) BOOL previousEarlyCrash;
 
 /** If value > 0, the application crashed on the previous launch. */
 @property(nonatomic, readonly, assign) double crashedLastTimestamp;
 
 /// Singleton
 + (instancetype)shared;
-
-/// Enables current-launch marker writing; preserves the first SDK entry time in monotonic nanoseconds.
-+ (void)prepareEarlyCrashAtSDKStart:(uint64_t)start;
 
 + (void)setupWithMonitoringType:(FTCrashCMonitorType)monitoring
                     writer:(id<FTRUMDataWriteProtocol>)writer

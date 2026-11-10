@@ -17,9 +17,10 @@
 //  limitations under the License.
 //
 
-#include "FTEarlyCrash.h"
+#include "FTCrashMonitor_AppState.h"
 #include <assert.h>
 #include <errno.h>
+#include <fcntl.h>
 #include <pthread.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -32,42 +33,61 @@ static pthread_cond_t arrived = PTHREAD_COND_INITIALIZER;
 static unsigned writes;
 static int mode;
 static int firstPaused;
-static FTEarlyCrashState *state;
+static int resumeFirst;
+static int armed;
 
-// Only FTEarlyCrash.c is compiled with pwrite redirected to this test hook.
-ssize_t ft_earlyCrashTestWrite(int fd, const void *bytes, size_t count, off_t offset) {
+// Only FTCrashFileUtils.c redirects write to this hook; production JSON encoding is unchanged.
+ssize_t ft_earlyCrashTestWrite(int fd, const void *bytes, size_t count) {
+    if (!armed) return write(fd, bytes, count);
     pthread_mutex_lock(&gate);
     unsigned call = ++writes;
-    if (call == 1 && mode == 1) {
+    if (call == 1 && (mode == 1 || mode == 5)) {
         pthread_mutex_unlock(&gate);
-        errno = EINTR;
+        errno = mode == 5 ? EIO : EINTR;
         return -1;
     }
-    if (call == 1 && mode == 0) {
+    if (call == 1 && (mode == 0 || mode == 4)) {
         firstPaused = 1;
         pthread_cond_signal(&arrived);
         // The first handler stays suspended until process exit. Never sleep.
-        for (;;) pthread_cond_wait(&arrived, &gate);
+        while (!resumeFirst) pthread_cond_wait(&arrived, &gate);
     }
     pthread_mutex_unlock(&gate);
     if ((call == 1 && mode == 2) || (call == 2 && mode == 3))
-        return pwrite(fd, bytes, count / 2, offset);
-    return pwrite(fd, bytes, count, offset);
+        return write(fd, bytes, count / 2);
+    return write(fd, bytes, count);
 }
 static void *firstCrash(void *unused) {
     (void)unused;
-    ft_earlyCrashRecordInState(state, UINT64_C(104999000000));
+    ftcrashstate_recordEarlyCrash(UINT64_C(100000000000), UINT64_C(104999000000));
+    return NULL;
+}
+static void *ordinarySave(void *unused) {
+    (void)unused;
+    ftcrashstate_notifyAppTerminate();
     return NULL;
 }
 static void runScenario(const char *path, int scenario) {
     pid_t child = fork(); assert(child >= 0);
     if (!child) {
         mode = scenario;
-        state = ft_earlyCrashCreate(); assert(state);
-        ft_earlyCrashInitialize(state, UINT64_C(100000000000), path);
-        if (mode == 0) {
-            pthread_t thread;
-            assert(pthread_create(&thread, NULL, firstCrash, NULL) == 0);
+        if (mode == 5) {
+            const char history[] = "{\"version\":1,\"previousEarlyCrash\":true,\"earlyCrashDurationNS\":1000000000}";
+            int file = open(path, O_CREAT | O_WRONLY | O_TRUNC, 0600); assert(file >= 0);
+            assert(write(file, history, sizeof(history) - 1) == sizeof(history) - 1); close(file);
+        }
+        ftcrashstate_notifyObjCLoad();
+        ftcrashstate_initialize(path);
+        armed = mode == 5;
+        ftcrashcm_appstate_getAPI()->setEnabled(true);
+        if (mode == 5) {
+            assert(!ftcrashstate_currentState()->previousEarlyCrash);
+            _exit(0); // failed history consumption cannot grant acceleration
+        }
+        armed = 1;
+        pthread_t thread;
+        if (mode == 0 || mode == 4) {
+            assert(pthread_create(&thread, NULL, mode == 4 ? ordinarySave : firstCrash, NULL) == 0);
             pthread_mutex_lock(&gate);
             while (!firstPaused) pthread_cond_wait(&arrived, &gate);
             pthread_mutex_unlock(&gate);
@@ -76,32 +96,40 @@ static void runScenario(const char *path, int scenario) {
         }
         // Another eligible occurrence at exactly five seconds must persist even
         // if the first writer never resumes, or its write was interrupted.
-        ft_earlyCrashRecordInState(state, UINT64_C(105000000000));
+        ftcrashstate_recordEarlyCrash(UINT64_C(100000000000),
+            mode == 4 ? UINT64_C(104999000000) : UINT64_C(105000000000));
+        if (mode == 4) {
+            pthread_mutex_lock(&gate);
+            resumeFirst = 1; pthread_cond_signal(&arrived);
+            pthread_mutex_unlock(&gate);
+            assert(pthread_join(thread, NULL) == 0);
+        }
         _exit(0);
     }
     int status;
     assert(waitpid(child, &status, 0) == child);
     assert(WIFEXITED(status) && WEXITSTATUS(status) == 0);
-    FTEarlyCrashState *next = ft_earlyCrashCreate(); assert(next);
-    ft_earlyCrashInitialize(next, UINT64_C(200000000000), path);
-    unsigned delay = ft_earlyCrashTakeDelayInState(next);
-    fprintf(stderr, "scenario=%s: next launch wait=%u, expected=2\n",
-            scenario == 0 ? "first writer suspended" :
-            (scenario == 1 ? "first write interrupted" :
-             (scenario == 2 ? "first write partial" : "duplicate write partial")), delay);
+    if (scenario == 5) {
+        puts("CrashState failed history consumption: default wait preserved");
+        return;
+    }
+    FTCrash_AppState next = {0};
+    assert(ftcrashstate_readPersistedState(path, &next));
+    unsigned delay = next.previousEarlyCrash ? 2 : 10;
+    fprintf(stderr, "CrashState writer scenario=%d: next wait=%u, expected=2\n", scenario, delay);
     assert(delay == 2);
-    assert(ft_earlyCrashTakeDelayInState(next) == 10);
-    ft_earlyCrashDestroy(next);
+    assert(next.previousEarlyCrashDurationNS == UINT64_C(4999000000));
+
 }
 int main(int argc, char **argv) {
     (void)argv;
     char directory[] = "/tmp/ft-early-reentry-XXXXXX";
     assert(mkdtemp(directory));
-    char path[512]; snprintf(path, sizeof(path), "%s/marker", directory);
+    char path[512]; snprintf(path, sizeof(path), "%s/CrashState.json", directory);
     // All cases terminate the writer process without cleanup, then recover in
     // a different process. Ordinary policy/idempotency checks live in XCTest.
     if (argc > 1) runScenario(path, 1);
-    else { for (int scenario = 0; scenario < 4; scenario++) runScenario(path, scenario); }
+    else { for (int scenario = 0; scenario < 6; scenario++) runScenario(path, scenario); }
     unlink(path); rmdir(directory);
-    puts("Early crash process integration: suspended/interrupted/partial writes survive abrupt writer exit");
+    puts("CrashState integration: 6 interrupted, partial, stale-write and I/O-failure scenarios passed");
 }

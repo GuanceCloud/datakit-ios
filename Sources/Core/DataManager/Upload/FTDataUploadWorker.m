@@ -21,7 +21,7 @@
 #import "FTDiagnosticsBridge.h"
 #import "FTDataUploadWorker.h"
 #import "FTHTTPClient.h"
-#import <pthread.h>
+#import <stdatomic.h>
 #import "FTInnerLog.h"
 #import "FTTrackerEventDBTool.h"
 #import "FTJSONUtil.h"
@@ -32,6 +32,8 @@
 #import "FTDataFilterManager.h"
 #import "FTSerialTimer.h"
 #import "FTEarlyCrash.h"
+static atomic_bool g_firstAutomaticReservation;
+static atomic_bool g_previousEarlyCrash;
 static const NSInteger kMaxRetryCount = 5;
 static const NSTimeInterval kInitialRetryDelay = 0.5; // Initial 500ms delay
 static const NSTimeInterval kUploadDebounceDelay = 0.1;
@@ -43,7 +45,8 @@ static void *FTDataUploadWorkerNetworkQueueKey = &FTDataUploadWorkerNetworkQueue
 typedef NS_ENUM(NSInteger, FTUploadWorkerState) {
     FTUploadWorkerStateIdle,
     FTUploadWorkerStateDebouncing, // 100ms
-    FTUploadWorkerStateDelayedReserved, // 10s
+    FTUploadWorkerStateDelayedReserved, // 2s or 10s
+    FTUploadWorkerStateImmediateReserved, // published, not executing yet
     FTUploadWorkerStateUploading,
     FTUploadWorkerStateInvalidated, // shutdown
 };
@@ -54,25 +57,29 @@ typedef NS_ENUM(NSInteger, FTUploadWorkerState) {
 @property (nonatomic, assign) int syncSleepTime;
 @property (nonatomic, strong) dispatch_queue_t networkQueue;
 
-/// YES when the upload slot is occupied by a delayed reservation or active upload.
+/// YES when a delayed/immediate reservation or active upload occupies the slot.
 @property (nonatomic, assign, readonly) BOOL isUploading;
 /// YES when a delayed auto-upload is still in the 100ms debounce window.
 @property (nonatomic, assign, readonly) BOOL hasPendingUpload;
 
+// Owned by networkQueue, including access from timer/work bodies.
 @property (nonatomic, copy) dispatch_block_t uploadWork;
 @property (nonatomic, strong) FTSerialTimer *uploadTimer;
+@property (nonatomic, strong) NSObject *uploadReservation;
+@property (nonatomic, assign) BOOL firstAutomaticReservation;
+@property (nonatomic, assign) BOOL shortenedFirstWait;
+@property (nonatomic, assign) NSTimeInterval automaticReservedAt;
 
 @end
 
 @implementation FTDataUploadWorker{
-    pthread_rwlock_t _uploadWorkLock;
     FTUploadWorkerState _uploadState;
+    // Submission identity only; upload state is still owned by networkQueue.
+    NSObject *_pendingImmediateSubmission;
 }
-@synthesize uploadWork = _uploadWork;
 -(instancetype)initWithSyncPageSize:(int)syncPageSize syncSleepTime:(int)syncSleepTime{
     self = [super init];
     if (self) {
-        pthread_rwlock_init(&_uploadWorkLock, NULL);
         _uploadState = FTUploadWorkerStateIdle;
         _uploadPageSize = syncPageSize;
         _syncSleepTime = syncSleepTime;
@@ -101,18 +108,6 @@ typedef NS_ENUM(NSInteger, FTUploadWorkerState) {
         strongSelf.syncSleepTime = syncSleepTime;
     });
 }
--(void)setUploadWork:(dispatch_block_t)uploadWork{
-    pthread_rwlock_wrlock(&_uploadWorkLock);
-    _uploadWork = [uploadWork copy];
-    pthread_rwlock_unlock(&_uploadWorkLock);
-}
--(dispatch_block_t)uploadWork{
-    dispatch_block_t block_t;
-    pthread_rwlock_rdlock(&_uploadWorkLock);
-    block_t = _uploadWork;
-    pthread_rwlock_unlock(&_uploadWorkLock);
-    return block_t;
-}
 - (void)performSynchronouslyOnNetworkQueue:(dispatch_block_t)block{
     if (!block) {
         return;
@@ -125,7 +120,8 @@ typedef NS_ENUM(NSInteger, FTUploadWorkerState) {
 }
 - (BOOL)isUploading{
     @synchronized (self) {
-        return _uploadState == FTUploadWorkerStateDelayedReserved || _uploadState == FTUploadWorkerStateUploading;
+        return _uploadState == FTUploadWorkerStateDelayedReserved ||
+            _uploadState == FTUploadWorkerStateImmediateReserved || _uploadState == FTUploadWorkerStateUploading;
     }
 }
 - (BOOL)hasPendingUpload{
@@ -144,9 +140,10 @@ typedef NS_ENUM(NSInteger, FTUploadWorkerState) {
         return NO;
     }
 }
-- (void)clearDelayedUploadPending{
+- (void)clearPendingUpload{
     @synchronized (self) {
-        if (_uploadState == FTUploadWorkerStateDebouncing || _uploadState == FTUploadWorkerStateDelayedReserved) {
+        if (_uploadState == FTUploadWorkerStateDebouncing || _uploadState == FTUploadWorkerStateDelayedReserved ||
+            _uploadState == FTUploadWorkerStateImmediateReserved) {
             _uploadState = FTUploadWorkerStateIdle;
         }
     }
@@ -156,6 +153,14 @@ typedef NS_ENUM(NSInteger, FTUploadWorkerState) {
         return _uploadState == FTUploadWorkerStateInvalidated;
     }
 }
+// Read-only fast rejection preserves the existing behavior while a pass is
+// active. It is only an optimization: queue-side admission remains authoritative,
+// and submission must be asynchronous even after a non-busy snapshot.
+- (BOOL)hasImmediateOrActiveUpload {
+    @synchronized (self) {
+        return _uploadState == FTUploadWorkerStateImmediateReserved || _uploadState == FTUploadWorkerStateUploading;
+    }
+}
 - (BOOL)beginImmediateUpload{
     @synchronized (self) {
         if (_uploadState != FTUploadWorkerStateIdle &&
@@ -163,7 +168,7 @@ typedef NS_ENUM(NSInteger, FTUploadWorkerState) {
             _uploadState != FTUploadWorkerStateDelayedReserved) {
             return NO;
         }
-        _uploadState = FTUploadWorkerStateUploading;
+        _uploadState = FTUploadWorkerStateImmediateReserved;
         return YES;
     }
 }
@@ -176,9 +181,10 @@ typedef NS_ENUM(NSInteger, FTUploadWorkerState) {
         return YES;
     }
 }
-- (BOOL)beginReservedDelayedUpload{
+- (BOOL)beginReservedUpload:(BOOL)withSleep {
     @synchronized (self) {
-        if (_uploadState != FTUploadWorkerStateDelayedReserved) {
+        FTUploadWorkerState expected = withSleep ? FTUploadWorkerStateDelayedReserved : FTUploadWorkerStateImmediateReserved;
+        if (_uploadState != expected) {
             return NO;
         }
         _uploadState = FTUploadWorkerStateUploading;
@@ -195,6 +201,7 @@ typedef NS_ENUM(NSInteger, FTUploadWorkerState) {
 - (void)markInvalidated{
     @synchronized (self) {
         _uploadState = FTUploadWorkerStateInvalidated;
+        _pendingImmediateSubmission = nil;
     }
 }
 - (void)scheduleDelayedUpload{
@@ -215,52 +222,72 @@ typedef NS_ENUM(NSInteger, FTUploadWorkerState) {
     if (withSleep) {
         [self scheduleDelayedUpload];
     }else{
-        if (![self beginImmediateUpload]) {
+        if ([self hasImmediateOrActiveUpload]) {
             FTInnerLogDebug(@"[NETWORK]: Network is Uploading. ignore this upload");
             return;
         }
-        __weak typeof(self) weakSelf = self;
-        [self performSynchronouslyOnNetworkQueue:^{
-            __strong typeof(weakSelf) strongSelf = weakSelf;
-            if (!strongSelf) return;
-            [strongSelf cancelDelayedUploadTimer];
-            if(strongSelf.uploadWork) dispatch_block_cancel(strongSelf.uploadWork);
-            strongSelf.uploadWork = nil;
-        }];
-        [self _flushSyncData:NO];
+        @synchronized (self) {
+            if (_pendingImmediateSubmission) return;
+            NSObject *submission = [NSObject new];
+            _pendingImmediateSubmission = submission;
+            __weak typeof(self) weakSelf = self;
+            // Enqueue under the short submission lock, never wait for the queue.
+            dispatch_async(self.networkQueue, ^{
+                __strong typeof(weakSelf) strongSelf = weakSelf;
+                if (!strongSelf) return;
+                @synchronized (strongSelf) {
+                    // Cancellation may retire this identity before admission.
+                    if (strongSelf->_pendingImmediateSubmission != submission) return;
+                    strongSelf->_pendingImmediateSubmission = nil;
+                    if (![strongSelf beginImmediateUpload]) return;
+                }
+                [strongSelf cancelDelayedUploadTimer];
+                [strongSelf cancelUploadWork];
+                [strongSelf _flushSyncData:NO];
+            });
+        }
     }
 }
 - (void)scheduleDelayedUploadTimer{
     [self.uploadTimer scheduleAfter:kUploadDebounceDelay leeway:kUploadDebounceLeeway];
 }
+// networkQueue only. State and timer lifecycles are handled by each caller.
+- (void)cancelUploadWork {
+    dispatch_block_t work = self.uploadWork;
+    if (work) dispatch_block_cancel(work);
+    self.uploadWork = nil;
+    self.uploadReservation = nil;
+}
 - (void)cancelDelayedUploadTimer{
     [self.uploadTimer cancel];
 }
 -(void)cancelSynchronously{
-    [self clearDelayedUploadPending];
+    @synchronized (self) { _pendingImmediateSubmission = nil; }
     __weak typeof(self) weakSelf = self;
     [self performSynchronouslyOnNetworkQueue:^{
         __strong __typeof(weakSelf) strongSelf = weakSelf;
         if (!strongSelf) {
             return;
         }
-        if(strongSelf.uploadWork) dispatch_block_cancel(strongSelf.uploadWork);
-        strongSelf.uploadWork = nil;
+        [strongSelf clearPendingUpload];
+        [strongSelf cancelUploadWork];
         [strongSelf cancelDelayedUploadTimer];
     }];
 }
 - (void)cancelAsynchronously{
-    [self clearDelayedUploadPending];
-    __weak typeof(self) weakSelf = self;
-    dispatch_async(self.networkQueue, ^{
-        __strong __typeof(weakSelf) strongSelf = weakSelf;
-        if (!strongSelf) {
-            return;
-        }
-        if(strongSelf.uploadWork) dispatch_block_cancel(strongSelf.uploadWork);
-        strongSelf.uploadWork = nil;
-        [strongSelf cancelDelayedUploadTimer];
-    });
+    @synchronized (self) {
+        _pendingImmediateSubmission = nil;
+        __weak typeof(self) weakSelf = self;
+        dispatch_async(self.networkQueue, ^{
+            __strong __typeof(weakSelf) strongSelf = weakSelf;
+            if (!strongSelf) {
+                return;
+            }
+            [strongSelf clearPendingUpload];
+            [strongSelf cancelUploadWork];
+            [strongSelf cancelDelayedUploadTimer];
+        });
+    }
 }
 - (void)invalidateAndCancelPendingUploads{
     [self markInvalidated];
@@ -270,8 +297,7 @@ typedef NS_ENUM(NSInteger, FTUploadWorkerState) {
         if (!strongSelf) {
             return;
         }
-        if(strongSelf.uploadWork) dispatch_block_cancel(strongSelf.uploadWork);
-        strongSelf.uploadWork = nil;
+        [strongSelf cancelUploadWork];
         [strongSelf.uploadTimer invalidate];
     });
 }
@@ -283,13 +309,15 @@ typedef NS_ENUM(NSInteger, FTUploadWorkerState) {
         FTInnerLogDebug(@"[NETWORK]: Network is Uploading. ignore this upload");
         return;
     }
+    NSObject *reservation = [NSObject new];
+    self.uploadReservation = reservation;
     __weak typeof(self) weakSelf = self;
     dispatch_block_t uploadWork = dispatch_block_create(0, ^{
         __strong __typeof(weakSelf) strongSelf = weakSelf;
-        if (!strongSelf) {
+        if (!strongSelf || strongSelf.uploadReservation != reservation) {
             return;
         }
-        if (withSleep && ![strongSelf beginReservedDelayedUpload]) {
+        if (![strongSelf beginReservedUpload:withSleep]) {
             return;
         }
         BOOL needsNextUploadPass = NO;
@@ -310,7 +338,8 @@ typedef NS_ENUM(NSInteger, FTUploadWorkerState) {
             }
         } @finally {
             [strongSelf markUploadFinished];
-            if (needsNextUploadPass && ![strongSelf isInvalidated] && [FTNetworkConnectivity sharedInstance].isConnected) {
+            if (needsNextUploadPass && strongSelf.uploadReservation == reservation &&
+                ![strongSelf isInvalidated] && [FTNetworkConnectivity sharedInstance].isConnected) {
                 FTInnerLogDebug(@"[NETWORK]: Upload pass has remaining data, schedule next upload pass");
                 if ([strongSelf beginImmediateUpload]) {
                     [strongSelf _flushSyncData:NO];
@@ -321,14 +350,10 @@ typedef NS_ENUM(NSInteger, FTUploadWorkerState) {
     self.uploadWork = uploadWork;
     if (withSleep){
         FTInnerLogDebug(@"[NETWORK]: start upload waiting");
-        NSTimeInterval reservedAt = [self automaticUploadNow];
-        [self afterEarlyCrashPreparation:^{
-            __strong typeof(weakSelf) strongSelf = weakSelf;
-            if (!strongSelf || [strongSelf isInvalidated] || strongSelf.uploadWork != uploadWork) return;
-            NSTimeInterval delay = [strongSelf nextAutomaticUploadDelay];
-            [strongSelf scheduleUploadWork:uploadWork
-                               afterDelay:MAX(0, delay - ([strongSelf automaticUploadNow] - reservedAt))];
-        }];
+        self.automaticReservedAt = [self automaticUploadNow];
+        self.firstAutomaticReservation = [self reserveFirstAutomaticUpload];
+        self.shortenedFirstWait = self.firstAutomaticReservation && [self previousEarlyCrashEligible];
+        [self scheduleUploadWork:uploadWork afterDelay:self.shortenedFirstWait ? 2 : 10];
     }else{
         FTInnerLogDebug(@"[NETWORK]: start upload");
         dispatch_async(self.networkQueue,uploadWork);
@@ -336,14 +361,28 @@ typedef NS_ENUM(NSInteger, FTUploadWorkerState) {
 }
 // Internal scheduling seams; production behavior remains on the network queue.
 - (NSTimeInterval)automaticUploadNow { return ft_earlyCrashNow() / 1e9; }
-- (void)afterEarlyCrashPreparation:(dispatch_block_t)completion {
-    ft_earlyCrashLoadHistory();
-    dispatch_queue_t queue = self.networkQueue;
-    dispatch_async(ft_earlyCrashPreparationQueue(), ^{
-        dispatch_async(queue, completion);
+- (BOOL)reserveFirstAutomaticUpload { return !atomic_exchange(&g_firstAutomaticReservation, true); }
+- (BOOL)previousEarlyCrashEligible { return atomic_load(&g_previousEarlyCrash); }
+- (void)rememberPreviousEarlyCrash:(BOOL)previousEarlyCrash {
+    if (previousEarlyCrash) atomic_store(&g_previousEarlyCrash, true);
+}
+- (void)updatePreviousEarlyCrash:(BOOL)previousEarlyCrash {
+    __weak typeof(self) weakSelf = self;
+    dispatch_async(self.networkQueue, ^{
+        __strong typeof(weakSelf) strongSelf = weakSelf;
+        if (!strongSelf || [strongSelf isInvalidated]) return;
+        [strongSelf rememberPreviousEarlyCrash:previousEarlyCrash];
+        if (![strongSelf previousEarlyCrashEligible] || !strongSelf.firstAutomaticReservation ||
+            strongSelf.shortenedFirstWait || !strongSelf.uploadWork) return;
+        @synchronized (strongSelf) {
+            if (strongSelf->_uploadState != FTUploadWorkerStateDelayedReserved) return;
+        }
+        strongSelf.shortenedFirstWait = YES;
+        NSTimeInterval remaining = MAX(0, 2 - ([strongSelf automaticUploadNow] - strongSelf.automaticReservedAt));
+        // A stale timer cannot execute a newer reservation: work checks identity.
+        [strongSelf scheduleUploadWork:strongSelf.uploadWork afterDelay:remaining];
     });
 }
-- (NSTimeInterval)nextAutomaticUploadDelay { return ft_earlyCrashTakeUploadDelay(); }
 - (void)scheduleUploadWork:(dispatch_block_t)work afterDelay:(NSTimeInterval)delay {
     dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)(delay * NSEC_PER_SEC)), self.networkQueue, work);
 }
@@ -481,6 +520,5 @@ typedef NS_ENUM(NSInteger, FTUploadWorkerState) {
 }
 -(void)dealloc{
     [self.uploadTimer invalidate];
-    pthread_rwlock_destroy(&_uploadWorkLock);
 }
 @end

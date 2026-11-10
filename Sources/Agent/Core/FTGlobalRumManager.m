@@ -37,6 +37,7 @@
 #import "FTExternalDataManager+Private.h"
 #import "FTInternalConstants.h"
 #import "FTCrash.h"
+#import "FTTrackDataManager.h"
 #import "FTFatalErrorContext.h"
 #import "FTErrorMonitorInfo.h"
 #import "FTModuleManager.h"
@@ -204,6 +205,9 @@ static NSObject *sharedInstanceLock;
                      enableMonitorMemory:[errorInfoWrapper enableMonitorMemory]
                         enableMonitorCpu:[errorInfoWrapper enableMonitorCpu]
                        issueDataProvider:rumConfig.issueDataProvider];
+#if TARGET_OS_IOS && !TARGET_OS_MACCATALYST
+        [[FTTrackDataManager sharedInstance] updatePreviousEarlyCrash:[FTCrash shared].previousEarlyCrash];
+#endif
         dependencies.fatalErrorContext.onChange = ^(NSDictionary * _Nonnull context) {
             [FTCrash shared].userInfo = context;
         };

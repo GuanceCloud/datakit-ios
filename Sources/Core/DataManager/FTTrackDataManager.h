@@ -51,6 +51,8 @@ NS_ASSUME_NONNULL_BEGIN
          syncSleepTime:(int)syncSleepTime;
 
 - (void)enableAutoSync:(BOOL)autoSync;
+/// Internal startup policy; does not trigger or enable automatic uploads.
+- (void)updatePreviousEarlyCrash:(BOOL)previousEarlyCrash;
 
 - (void)setEnableLimitWithDb:(BOOL)enable size:(long)size discardNew:(BOOL)discardNew;
 - (void)setLogCacheLimitCount:(int)count discardNew:(BOOL)discardNew;

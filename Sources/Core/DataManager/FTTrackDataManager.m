@@ -36,7 +36,6 @@
 #import "FTDataWriterWorker.h"
 #import "FTNetworkInfoManager.h"
 #import "FTSDKCompat.h"
-#import "FTEarlyCrash.h"
 
 @interface FTTrackDataManager ()<FTAppLifeCycleDelegate,FTNetworkChangeObserver>
 /// Whether to enable automatic upload logic (on startup, network status changes, write interval 10s)
@@ -77,8 +76,6 @@ static FTTrackDataManager *sharedInstance = nil;
                   syncSleepTime:(int)syncSleepTime{
     self = [super init];
     if (self) {
-        // Recovery belongs to upload setup, even when auto-sync/Crash are off.
-        ft_earlyCrashLoadHistory();
         _dataCachePolicy = [[FTDBDataCachePolicy alloc]init];
         __weak typeof(self) weakSelf = self;
         _dataCachePolicy.callback = ^{
@@ -102,6 +99,9 @@ static FTTrackDataManager *sharedInstance = nil;
 
 -(FTHTTPClient *)httpClient{
     return _dataUploadWorker.httpClient;
+}
+- (void)updatePreviousEarlyCrash:(BOOL)previousEarlyCrash {
+    [self.dataUploadWorker updatePreviousEarlyCrash:previousEarlyCrash];
 }
 - (void)enableAutoSync:(BOOL)autoSync{
     self.autoSync = autoSync;

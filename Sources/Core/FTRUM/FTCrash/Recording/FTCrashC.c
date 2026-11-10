@@ -102,7 +102,7 @@ bool ftcrash_prepareEventForRecording(struct FTCrash_MonitorContext *monitorCont
     // Persist the original event before callbacks, which may be slow or fail.
     if (monitorContext->requirements.isFatal && monitorContext->requirements.shouldWriteReport &&
         !monitorContext->currentSnapshotUserReported) {
-        ft_earlyCrashRecord(monitorContext->earlyCrashTime);
+        ftcrashstate_recordEarlyCrash(ft_earlyCrashStartTime(), monitorContext->earlyCrashTime);
     }
     // Preserve the existing report customization policy.
     if (g_willWriteReportCallback) {
@@ -183,6 +183,14 @@ void ftcrash_install(const char *appName, const char *const installPath,FTCrashC
     snprintf(path, sizeof(path), "%s/Data/CrashState.json", installPath);
     ftcrashstate_initialize(path);
 
+    // The existing AppState reset consumes history and makes the state file
+    // ready before any fatal monitor is installed. Activation below is
+    // idempotent and will not reset it again.
+#if TARGET_OS_IOS && !TARGET_OS_MACCATALYST
+    if (ft_earlyCrashStartTime() && (monitors & FTCrashCMonitorTypeApplicationState)) {
+        ftcrashcm_appstate_getAPI()->setEnabled(true);
+    }
+#endif
     ftcrashtc_init(60);
         
     ftcrashcm_setEventCallback(onExceptionEvent);

@@ -99,11 +99,6 @@ static mach_port_t main_thread_id;
     [crash.crashReportWrapper setEnableCpu:cpu];
     [crash.crashReportWrapper setEnableMemory:memory];
     [crash.crashReportWrapper setIssueDataProvider:issueDataProvider];
-    if (monitoring != 0) {
-        // The SDK entry has already captured the original clock. A later call
-        // keeps that clock; this only enables current-launch file preparation.
-        [self prepareEarlyCrashAtSDKStart:ft_earlyCrashStartTime()];
-    }
     [crash install];
     [crash sendCrashReport];
 }
@@ -142,13 +137,6 @@ static mach_port_t main_thread_id;
     return [bundleName stringByReplacingOccurrencesOfString:@"/" withString:@"-"];
 }
 - (NSString *)getDefaultInstallPath { return ft_crashInstallPath(); }
-
-+ (void)prepareEarlyCrashAtSDKStart:(uint64_t)start {
-#if TARGET_OS_IOS && !TARGET_OS_MACCATALYST
-    ft_earlyCrashStart(start);
-    ft_earlyCrashEnableRecording();
-#endif
-}
 
 -(void)setIntrospectMemory:(BOOL)introspectMemory{
     _introspectMemory = introspectMemory;
@@ -233,6 +221,14 @@ static mach_port_t main_thread_id;
 }
 - (BOOL)crashedLastLaunch{
     return ftcrashstate_currentState()->crashedLastLaunch;
+}
+- (BOOL)previousEarlyCrash {
+#if TARGET_OS_IOS && !TARGET_OS_MACCATALYST
+    if ([[NSBundle mainBundle].bundlePath.pathExtension isEqualToString:@"appex"]) return NO;
+    return ftcrashcm_appstate_getAPI()->isEnabled() && ftcrashstate_currentState()->previousEarlyCrash;
+#else
+    return NO;
+#endif
 }
 - (void)sendCrashReport{
     dispatch_async(dispatch_get_global_queue(0, 0), ^{
