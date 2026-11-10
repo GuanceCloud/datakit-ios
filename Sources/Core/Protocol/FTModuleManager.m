@@ -28,12 +28,39 @@ NSString *const FTMessageKeySessionHasReplay = @"sr_has_replay";
 NSString *const FTMessageKeyRumError = @"rum_error";
 NSString *const FTMessageKeySRSampleRateUpdate = @"sr_sample_rate_update";
 
+// Bindings are already normalized by their RUM producers. Snapshot Foundation values
+// without applying user-field normalization again (which can turn numbers into strings).
+static id FTContextSnapshotValue(id value) {
+    if ([value isKindOfClass:NSDictionary.class]) {
+        NSMutableDictionary *snapshot = [NSMutableDictionary new];
+        [(NSDictionary *)value enumerateKeysAndObjectsUsingBlock:^(id key, id item, BOOL *stop) {
+            id copied = FTContextSnapshotValue(item);
+            if ([key isKindOfClass:NSString.class] && copied) snapshot[key] = copied;
+        }];
+        return [snapshot copy];
+    }
+    if ([value isKindOfClass:NSArray.class]) {
+        NSMutableArray *snapshot = [NSMutableArray new];
+        for (id item in value) {
+            id copied = FTContextSnapshotValue(item);
+            if (copied) [snapshot addObject:copied];
+        }
+        return [snapshot copy];
+    }
+    if ([value isKindOfClass:NSString.class] || [value isKindOfClass:NSNumber.class] ||
+        [value isKindOfClass:NSNull.class]) return [value copy];
+    return nil;
+}
+
 void *FTMessageBusQueueIdentityKey = &FTMessageBusQueueIdentityKey;
 
 @interface FTModuleManager()
 @property (nonatomic, strong, readonly) NSPointerArray *receiverArray;
 @property (nonatomic, strong) NSMapTable *registerServices;
 @property (nonatomic, strong) NSDictionary *srProperty;
+// Both properties are owned by queue. The source is weak so the store cannot extend RUM lifetime.
+@property (nonatomic, weak) id rumContextSource;
+@property (nonatomic, copy) NSDictionary *rumContext;
 @property (nonatomic, strong) dispatch_queue_t queue;
 @end
 @implementation FTModuleManager
@@ -133,45 +160,35 @@ void *FTMessageBusQueueIdentityKey = &FTMessageBusQueueIdentityKey;
     }];
     return instance;
 }
-- (void)unregisterService:(Protocol *)service instance:(id)instance {
-    NSString *key = NSStringFromProtocol(service);
+- (void)registerRUMContextSource:(id)source {
     [self syncProcess:^{
-        if ([self.registerServices objectForKey:key] == instance) {
-            [self.registerServices removeObjectForKey:key];
-        }
+        self.rumContextSource = source;
+        self.rumContext = nil;
+        [self notifyMessageReceivers:self.receiverArray.allObjects key:FTMessageKeyRUMContext message:@{}];
     }];
 }
-- (void)requestRUMContextForReceiver:(id<FTMessageReceiver>)receiver {
-    __weak id<FTMessageReceiver> weakReceiver = receiver;
+- (void)unregisterRUMContextSource:(id)source {
+    [self syncProcess:^{
+        if (self.rumContextSource != source) return;
+        self.rumContextSource = nil;
+        self.rumContext = nil;
+        [self notifyMessageReceivers:self.receiverArray.allObjects key:FTMessageKeyRUMContext message:@{}];
+    }];
+}
+- (void)postRUMContext:(NSDictionary *)context source:(id)source {
+    // Freeze before enqueueing: the producer may mutate nested values after this call.
+    NSDictionary *snapshot = FTContextSnapshotValue(context);
     dispatch_async(self.queue, ^{
-        id<FTMessageReceiver> target = weakReceiver;
-        if (!target || ![self.receiverArray.allObjects containsObject:target]) return;
-        id<FTRUMContextProvider> provider = [self.registerServices objectForKey:NSStringFromProtocol(@protocol(FTRUMContextProvider))];
-        if (provider.rumContextPublishingEnabled) {
-            [provider publishCurrentRUMContextToReceiver:target];
-        } else {
-            [target receive:FTMessageKeyRUMContext message:@{}];
-        }
+        if (self.rumContextSource != source) return;
+        self.rumContext = snapshot;
+        [self notifyMessageReceivers:self.receiverArray.allObjects key:FTMessageKeyRUMContext message:snapshot];
     });
 }
-- (void)postRUMContext:(NSDictionary *)context
-             provider:(id<FTRUMContextProvider>)provider
-             receiver:(id<FTMessageReceiver>)receiver {
-    NSDictionary *snapshot = [context copy];
-    __weak id<FTMessageReceiver> weakReceiver = receiver;
-    BOOL targeted = receiver != nil;
+- (void)rumContextWithCompletion:(void (^)(NSDictionary *context))completion {
+    if (!completion) return;
     dispatch_async(self.queue, ^{
-        id current = [self.registerServices objectForKey:NSStringFromProtocol(@protocol(FTRUMContextProvider))];
-        if (current != provider || !provider.rumContextPublishingEnabled) return;
-        NSArray *receivers = self.receiverArray.allObjects;
-        if (targeted) {
-            id<FTMessageReceiver> target = weakReceiver;
-            if (target && [receivers containsObject:target]) {
-                [target receive:FTMessageKeyRUMContext message:snapshot];
-            }
-        } else {
-            [self notifyMessageReceivers:receivers key:FTMessageKeyRUMContext message:snapshot];
-        }
+        if (!self.rumContextSource) self.rumContext = nil;
+        completion(self.rumContext ?: @{});
     });
 }
 - (void)syncProcess{

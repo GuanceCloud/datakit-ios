@@ -136,6 +136,15 @@
     [self.rum syncProcess];
     return context;
 }
+- (NSDictionary *)contextFromModule:(FTModuleManager *)modules {
+    __block NSDictionary *context;
+    [modules rumContextWithCompletion:^(NSDictionary *value) { context = value; }];
+    [modules syncProcess];
+    return context;
+}
+- (NSDictionary *)coreContext {
+    return [self contextFromModule:[FTModuleManager sharedInstance]];
+}
 - (void)testDelayedReplayCapturesExistingViewWithoutAnotherRUMEvent {
     [self.rum startViewWithName:@"existing" property:@{@"team":@"ios"}];
     [self drainRUM]; // No receiver exists when the original View notification is delivered.
@@ -254,29 +263,31 @@
     dispatch_queue_t rumQueue = [self.rum valueForKey:@"rumQueue"];
     dispatch_suspend(rumQueue);
     [self.feature startRecording];
-    [[FTModuleManager sharedInstance] syncProcess]; // Request is now queued before View B.
+    [[FTModuleManager sharedInstance] syncProcess]; // Core read sees A before the queued View B is processed.
     [self.rum startViewWithName:@"B"];
     dispatch_resume(rumQueue);
     [self drainRUM];
     NSDictionary *expected = [self linkedContext];
-    // Both A's startup reply and B's live update are pending on the scheduler.
+    // Both A's cached context and B's live update are pending on the scheduler.
     [self.scheduler.queue drain];
     self.scheduler.capture();
     XCTAssertEqual(self.recorder.captures.count, 1);
     XCTAssertEqualObjects(self.recorder.captures.firstObject.viewPath, @"B");
     XCTAssertEqualObjects(self.recorder.captures.firstObject.viewID, expected[FT_KEY_VIEW_ID]);
 }
-- (void)testShutdownBeforeDelayedRUMRequestCannotReviveReplay {
+- (void)testShutdownBeforeDelayedCoreReadCannotReviveReplay {
     [self.rum startViewWithName:@"old"];
     [self drainRUM];
     [self makeReplay];
-    dispatch_queue_t rumQueue = [self.rum valueForKey:@"rumQueue"];
-    dispatch_suspend(rumQueue);
+    dispatch_semaphore_t gate = dispatch_semaphore_create(0);
+    [[FTModuleManager sharedInstance] postMessageWithKey:@"test-only" messageBlock:^NSDictionary *{
+        dispatch_semaphore_wait(gate, DISPATCH_TIME_FOREVER);
+        return nil;
+    }];
     [self.feature startRecording];
-    [[FTModuleManager sharedInstance] syncProcess];
     [self.feature shutDown];
-    dispatch_resume(rumQueue);
-    [self drainRUM];
+    dispatch_semaphore_signal(gate);
+    [[FTModuleManager sharedInstance] syncProcess];
     [self.scheduler.queue drain];
     self.scheduler.capture();
     XCTAssertTrue(self.coordinator.invalidated);
@@ -295,7 +306,7 @@
     XCTAssertNil(self.coordinator.currentRUMContext);
     XCTAssertEqual(self.recorder.captures.count, 0);
 }
-- (void)testMissingProviderClearsContextOnRepeatedStart {
+- (void)testMissingSourceClearsContextOnRepeatedStart {
     [self.rum startViewWithName:@"old"];
     [self drainRUM];
     [self makeReplay];
@@ -349,39 +360,39 @@
     XCTAssertEqualObjects(self.recorder.captures.firstObject.sessionID, newSession[FT_RUM_KEY_SESSION_ID]);
     XCTAssertEqualObjects(self.recorder.captures.firstObject.viewPath, @"fresh");
 }
-- (void)testReplacedProviderDropsSnapshotAlreadyQueuedOnMessageBus {
+- (void)testReplacedSourceDropsSnapshotAlreadyQueuedOnMessageBus {
     [self.rum startViewWithName:@"old"];
     [self drainRUM];
     FTRUMManager *oldRUM = self.rum;
     self.rum = [self newRUM:@"app-B"];
     [self drainRUM];
+    NSDictionary *expected = [self coreContext];
     [self makeReplay];
     FTModuleManager *modules = [FTModuleManager sharedInstance];
     [modules syncProcess];
-    [modules registerService:@protocol(FTRUMContextProvider) instance:oldRUM];
-    FTRUMManager *replacement = self.rum;
     dispatch_semaphore_t gate = dispatch_semaphore_create(0);
-    // Hold the bus until oldRUM has queued a reply behind this replacement operation.
     [modules postMessageWithKey:@"test-only" messageBlock:^NSDictionary *{
         dispatch_semaphore_wait(gate, DISPATCH_TIME_FOREVER);
-        [modules registerService:@protocol(FTRUMContextProvider) instance:replacement];
         return nil;
     }];
-    [(id<FTRUMContextProvider>)oldRUM publishCurrentRUMContextToReceiver:(id)self.feature];
-    [oldRUM syncProcess];
+    [oldRUM startViewWithName:@"late-old"];
+    [oldRUM syncProcess]; // A stale source publication is now queued behind the gate.
     dispatch_semaphore_signal(gate);
     [modules syncProcess];
     [self.scheduler.queue drain];
     XCTAssertNil(self.coordinator.currentRUMContext);
     [oldRUM shutDown];
-    XCTAssertEqual([modules getRegisterService:@protocol(FTRUMContextProvider)], replacement);
+    XCTAssertEqualObjects([self coreContext], expected);
+    XCTAssertEqualObjects(expected[FT_APP_ID], @"app-B");
 }
-- (void)testGlobalRUMShutdownClosesProviderEvenWithRetainedManager {
+- (void)testGlobalRUMShutdownClearsCoreContextEvenWithRetainedManager {
+    [self.rum startViewWithName:@"old"];
+    [self drainRUM];
+    XCTAssertEqualObjects([self coreContext][FT_KEY_VIEW_NAME], @"old");
     FTGlobalRumManager *global = [FTGlobalRumManager sharedInstance];
     global.rumManager = self.rum;
     [global shutDown];
-    XCTAssertFalse([(id<FTRUMContextProvider>)self.rum rumContextPublishingEnabled]);
-    XCTAssertNil([[FTModuleManager sharedInstance] getRegisterService:@protocol(FTRUMContextProvider)]);
+    XCTAssertEqualObjects([self coreContext], @{});
 }
 - (void)testSamplingAndExternalOwnershipStillGateCaptures {
     [self.rum startViewWithName:@"existing"];
@@ -411,6 +422,8 @@
         FTRUMSessionHandler *session = [self.rum valueForKey:@"sessionHandler"];
         session.context.sessionState.sampled_for_error_session = YES;
     });
+    [self.rum startAction:@"context-update" actionType:@"custom" property:nil];
+    [self drainRUM];
     [self makeReplay];
     [self.feature startRecording];
     [self drainRUM];
@@ -441,10 +454,10 @@
     [self drainRUM];
     NSMutableArray *values = [NSMutableArray arrayWithObject:@"before"];
     NSMutableDictionary *binding = [@{@"team":values} mutableCopy];
-    dispatch_sync([self.rum valueForKey:@"rumQueue"], ^{
-        FTRUMDependencies *dependencies = [self.rum valueForKey:@"rumDependencies"];
-        dependencies.lastViewUserCustomDatas = binding;
-    });
+    NSMutableDictionary *published = [[self coreContext] mutableCopy];
+    published[FT_LINK_RUM_KEYS] = binding;
+    [[FTModuleManager sharedInstance] postRUMContext:published source:self.rum];
+    [[FTModuleManager sharedInstance] syncProcess];
     [self makeReplay];
     [self.feature startRecording];
     [self drainRUM];
@@ -458,10 +471,10 @@
 - (void)testBindingSnapshotPreservesNumericTypes {
     [self.rum startViewWithName:@"existing"];
     [self drainRUM];
-    dispatch_sync([self.rum valueForKey:@"rumQueue"], ^{
-        FTRUMDependencies *dependencies = [self.rum valueForKey:@"rumDependencies"];
-        dependencies.lastViewUserCustomDatas = @{@"team":@1.25};
-    });
+    NSMutableDictionary *published = [[self coreContext] mutableCopy];
+    published[FT_LINK_RUM_KEYS] = @{@"team":@1.25};
+    [[FTModuleManager sharedInstance] postRUMContext:published source:self.rum];
+    [[FTModuleManager sharedInstance] syncProcess];
     [self makeReplay];
     [self.feature startRecording];
     [self drainRUM];
@@ -471,5 +484,96 @@
     id value = self.recorder.captures.firstObject.bindInfo[@"team"];
     XCTAssertTrue([value isKindOfClass:NSNumber.class]);
     XCTAssertEqualObjects(value, @1.25);
+}
+
+- (void)testStartRecordingReadsCoreMemoryWhileRUMQueueIsBlocked {
+    [self.rum startViewWithName:@"already-published"];
+    [self drainRUM];
+    NSDictionary *expected = [self linkedContext];
+    [self makeReplay];
+    dispatch_queue_t rumQueue = [self.rum valueForKey:@"rumQueue"];
+    dispatch_suspend(rumQueue);
+    @try {
+        [self.feature startRecording];
+        [[FTModuleManager sharedInstance] syncProcess];
+        [self.scheduler.queue drain];
+        self.scheduler.capture();
+        XCTAssertEqual(self.recorder.captures.count, 1);
+        XCTAssertEqualObjects(self.recorder.captures.firstObject.applicationID, @"app-A");
+        XCTAssertEqualObjects(self.recorder.captures.firstObject.sessionID, expected[FT_RUM_KEY_SESSION_ID]);
+        XCTAssertEqualObjects(self.recorder.captures.firstObject.viewID, expected[FT_KEY_VIEW_ID]);
+    } @finally {
+        dispatch_resume(rumQueue);
+    }
+}
+
+- (void)testCoreContextCallbackIsAsynchronousWithoutRUMProvider {
+    FTModuleManager *modules = [FTModuleManager new];
+    [modules registerRUMContextSource:self]; // Plain identity object, not a RUM provider.
+    NSDictionary *expected = @{FT_APP_ID:@"app-unit", FT_RUM_KEY_SESSION_ID:@"session-unit", FT_KEY_VIEW_ID:@"view-unit"};
+    [modules postRUMContext:expected source:self];
+    XCTestExpectation *read = [self expectationWithDescription:@"Core context callback"];
+    [modules postMessageWithKey:@"test-only" messageBlock:^NSDictionary *{
+        __block BOOL callerReturned = NO;
+        [modules rumContextWithCompletion:^(NSDictionary *context) {
+            XCTAssertTrue(callerReturned);
+            XCTAssertEqualObjects(context, expected);
+            [read fulfill];
+        }];
+        callerReturned = YES;
+        return nil;
+    }];
+    [self waitForExpectations:@[read] timeout:2];
+}
+- (void)testCoreMemoryReadsAndUpdatesRemainFIFO {
+    FTModuleManager *modules = [FTModuleManager new];
+    [modules registerRUMContextSource:self];
+    NSDictionary *first = @{FT_APP_ID:@"app-unit", FT_KEY_VIEW_ID:@"A"};
+    NSDictionary *second = @{FT_APP_ID:@"app-unit", FT_KEY_VIEW_ID:@"B"};
+    NSMutableArray *reads = [NSMutableArray new];
+    [modules postRUMContext:first source:self];
+    [modules rumContextWithCompletion:^(NSDictionary *context) { [reads addObject:context]; }];
+    [modules postRUMContext:second source:self];
+    [modules rumContextWithCompletion:^(NSDictionary *context) { [reads addObject:context]; }];
+    [modules syncProcess];
+    XCTAssertEqualObjects(reads, (@[first, second]));
+}
+- (void)testCoreSnapshotOwnsNestedValuesBeforeBusDelivery {
+    FTModuleManager *modules = [FTModuleManager new];
+    [modules registerRUMContextSource:self];
+    dispatch_semaphore_t gate = dispatch_semaphore_create(0);
+    [modules postMessageWithKey:@"test-only" messageBlock:^NSDictionary *{
+        dispatch_semaphore_wait(gate, DISPATCH_TIME_FOREVER);
+        return nil;
+    }];
+    NSMutableString *name = [@"before" mutableCopy];
+    NSMutableArray *values = [NSMutableArray arrayWithArray:@[@1.25, @YES, NSNull.null]];
+    NSMutableDictionary *bindings = [@{@"name":name, @"values":values} mutableCopy];
+    NSMutableDictionary *context = [@{FT_APP_ID:@"app-unit", FT_LINK_RUM_KEYS:bindings} mutableCopy];
+    [modules postRUMContext:context source:self];
+    [name setString:@"after"];
+    [values addObject:@"after"];
+    context[FT_APP_ID] = @"changed";
+    dispatch_semaphore_signal(gate);
+    NSDictionary *expected = @{FT_APP_ID:@"app-unit", FT_LINK_RUM_KEYS:@{@"name":@"before", @"values":@[@1.25, @YES, NSNull.null]}};
+    XCTAssertEqualObjects([self contextFromModule:modules], expected);
+}
+- (void)testNewCoreSourceStartsEmptyAndRejectsOldPublications {
+    FTModuleManager *modules = [FTModuleManager new];
+    NSObject *replacement = [NSObject new];
+    NSDictionary *first = @{FT_APP_ID:@"app-A", FT_KEY_VIEW_ID:@"old-view"};
+    NSDictionary *second = @{FT_APP_ID:@"app-B", FT_KEY_VIEW_ID:@"new-view"};
+    [modules registerRUMContextSource:self];
+    [modules postRUMContext:first source:self];
+    XCTAssertEqualObjects([self contextFromModule:modules], first);
+    [modules registerRUMContextSource:replacement];
+    XCTAssertEqualObjects([self contextFromModule:modules], @{});
+    [modules postRUMContext:first source:self];
+    XCTAssertEqualObjects([self contextFromModule:modules], @{});
+    [modules postRUMContext:second source:replacement];
+    [modules unregisterRUMContextSource:self]; // Late old shutdown cannot clear the new source.
+    XCTAssertEqualObjects([self contextFromModule:modules], second);
+    [modules unregisterRUMContextSource:replacement];
+    XCTAssertEqualObjects([self contextFromModule:modules], @{});
 }
 @end

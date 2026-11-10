@@ -70,35 +70,10 @@ static NSString *FTRUMIntervalState(FTAppState state) {
         default: return FTStringFromRUMAppState(FTRUMAppStateUnknown);
     }
 }
-// Bindings are already normalized by their RUM producers. Snapshot Foundation values
-// without applying user-field normalization again (which can turn numbers into strings).
-static id FTReplaySnapshotValue(id value) {
-    if ([value isKindOfClass:NSDictionary.class]) {
-        NSMutableDictionary *snapshot = [NSMutableDictionary new];
-        [(NSDictionary *)value enumerateKeysAndObjectsUsingBlock:^(id key, id item, BOOL *stop) {
-            id copied = FTReplaySnapshotValue(item);
-            if ([key isKindOfClass:NSString.class] && copied) snapshot[key] = copied;
-        }];
-        return [snapshot copy];
-    }
-    if ([value isKindOfClass:NSArray.class]) {
-        NSMutableArray *snapshot = [NSMutableArray new];
-        for (id item in value) {
-            id copied = FTReplaySnapshotValue(item);
-            if (copied) [snapshot addObject:copied];
-        }
-        return [snapshot copy];
-    }
-    if ([value isKindOfClass:NSString.class] || [value isKindOfClass:NSNumber.class] ||
-        [value isKindOfClass:NSNull.class]) return [value copy];
-    return nil;
-}
-
 void *FTRUMQueueIdentityKey = &FTRUMQueueIdentityKey;
 
-@interface FTRUMManager()<FTRUMSessionProtocol,FTMessageReceiver,FTRUMAppStateHistoryDelegate,FTRUMContextProvider>
+@interface FTRUMManager()<FTRUMSessionProtocol,FTMessageReceiver,FTRUMAppStateHistoryDelegate>
 @property (nonatomic, strong) FTRUMDependencies *rumDependencies;
-@property (atomic, assign) BOOL rumContextPublishingEnabled;
 @property (nonatomic, assign) BOOL initialBackground;
 @property (nonatomic, strong) FTRUMSessionHandler *sessionHandler;
 // Accessed only on rumQueue; loading data is consumed by the next matching ViewStart.
@@ -120,8 +95,7 @@ void *FTRUMQueueIdentityKey = &FTRUMQueueIdentityKey;
         _rumQueue = dispatch_queue_create("com.ft.rum", DISPATCH_QUEUE_SERIAL);
         dispatch_queue_set_specific(_rumQueue, FTRUMQueueIdentityKey, &FTRUMQueueIdentityKey, NULL);
         [[FTModuleManager sharedInstance] addMessageReceiver:self];
-        _rumContextPublishingEnabled = YES;
-        [[FTModuleManager sharedInstance] registerService:@protocol(FTRUMContextProvider) instance:self];
+        [[FTModuleManager sharedInstance] registerRUMContextSource:self];
         self.assistant = self;
         dependencies.appStateHistory.delegate = self;
         [dependencies.appStateHistory startMonitoring];
@@ -783,34 +757,18 @@ void *FTRUMQueueIdentityKey = &FTRUMQueueIdentityKey;
         [self.sessionHandler.assistant process:model context:context];
     }
     self.rumDependencies.linkRUMSessionContext = [self.sessionHandler getCurrentSessionInfo];
-    [self publishReplayContextToReceiver:nil];
-    return YES;
-}
-// Only rumQueue reads the live session/View chain. All consumers receive owned values.
-- (void)publishReplayContextToReceiver:(id<FTMessageReceiver>)receiver {
-    if (!self.rumContextPublishingEnabled) return;
-    NSMutableDictionary *snapshot = [[self.sessionHandler getCurrentSessionInfo] mutableCopy] ?: [NSMutableDictionary new];
+    NSMutableDictionary *snapshot = [[self getCurrentSessionInfo] mutableCopy] ?: [NSMutableDictionary new];
     if (self.sessionHandler) {
         snapshot[FT_RUM_KEY_SAMPLED_FOR_ERROR_SESSION] = @(self.sessionHandler.context.sessionState.sampled_for_error_session);
         if ([snapshot[FT_KEY_VIEW_ID] length] > 0) {
-            NSDictionary *bindings = self.rumDependencies.lastViewUserCustomDatas;
-            if (bindings) snapshot[FT_LINK_RUM_KEYS] = FTReplaySnapshotValue(bindings);
+            snapshot[FT_LINK_RUM_KEYS] = self.rumDependencies.lastViewUserCustomDatas;
         }
     }
-    [[FTModuleManager sharedInstance] postRUMContext:[snapshot copy] provider:self receiver:receiver];
-}
-- (void)publishCurrentRUMContextToReceiver:(id<FTMessageReceiver>)receiver {
-    __weak typeof(self) weakSelf = self;
-    __weak id<FTMessageReceiver> weakReceiver = receiver;
-    dispatch_async(self.rumQueue, ^{
-        __strong typeof(weakSelf) strongSelf = weakSelf;
-        id<FTMessageReceiver> target = weakReceiver;
-        if (target) [strongSelf publishReplayContextToReceiver:target];
-    });
+    [[FTModuleManager sharedInstance] postRUMContext:snapshot source:self];
+    return YES;
 }
 - (void)shutDown {
-    self.rumContextPublishingEnabled = NO;
-    [[FTModuleManager sharedInstance] unregisterService:@protocol(FTRUMContextProvider) instance:self];
+    [[FTModuleManager sharedInstance] unregisterRUMContextSource:self];
     [[FTModuleManager sharedInstance] removeMessageReceiver:self];
 }
 -(NSDictionary *)rumDynamicProperty{

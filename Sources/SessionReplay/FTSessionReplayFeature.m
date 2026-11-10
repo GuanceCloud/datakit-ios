@@ -141,7 +141,10 @@ NSString * const FTSessionReplayRUMContextSampledForErrorSessionKey = @"sampledF
 }
 - (void)startRecording{
     if (self.recordingCoordinator.invalidated) return;
-    [[FTModuleManager sharedInstance] requestRUMContextForReceiver:self];
+    __weak typeof(self) weakSelf = self;
+    [[FTModuleManager sharedInstance] rumContextWithCompletion:^(NSDictionary *context) {
+        [weakSelf handleRUMContextMessage:context];
+    }];
     [self.recordingCoordinator startRecording];
 }
 - (void)shutDown {

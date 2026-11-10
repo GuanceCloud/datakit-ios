@@ -28,4 +28,4 @@ xcodebuild test -project /tmp/FTReplayCurrentContext-macos/FTReplayCurrentContex
   -scheme FTReplayCurrentContext -destination 'platform=macOS'
 ```
 
-Use a Ruby environment containing `xcodeproj`. The shared suites cover existing-View delayed startup with exact capture IDs, inactive retained Views, empty context, duplicate starts and sampling, missing bindings, delayed RUM/message-bus/scheduler work, provider replacement, shutdown/rebuild and external-recorder ownership. Queue barriers and explicit scheduler capture replace timing sleeps. No test endpoint is required.
+Use a Ruby environment containing `xcodeproj`. The shared suites cover existing-View delayed startup with exact capture IDs, inactive retained Views, empty context, duplicate starts and sampling, missing bindings, delayed RUM/message-bus/scheduler work, Core memory callbacks while rumQueue is blocked, FIFO reads/updates, source replacement, shutdown/rebuild and external-recorder ownership. Queue barriers and explicit scheduler capture replace timing sleeps. No test endpoint is required.
