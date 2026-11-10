@@ -7,6 +7,7 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		041A99BED255A5B712FDE4EE /* FTNetworkConnectivityTests.m in Sources */ = {isa = PBXBuildFile; fileRef = 3A5B5623C3D0A97ADF524CFF /* FTNetworkConnectivityTests.m */; };
 		1707C82329E52ED5009B7D9C /* FTRUMTests.m in Sources */ = {isa = PBXBuildFile; fileRef = 1707C82229E52ED5009B7D9C /* FTRUMTests.m */; };
 		1707C83129E534F9009B7D9C /* macOS-AppTest.xcconfig in Resources */ = {isa = PBXBuildFile; fileRef = 1707C83029E534F9009B7D9C /* macOS-AppTest.xcconfig */; };
 		1707C83529E55C19009B7D9C /* FTLoggerTest.m in Sources */ = {isa = PBXBuildFile; fileRef = 1707C83429E55C19009B7D9C /* FTLoggerTest.m */; };
@@ -243,6 +244,7 @@
 		A1F101012FC1000100A0A001 /* FTAppKitSessionReplayTests.m in Sources */ = {isa = PBXBuildFile; fileRef = A1F100012FC1000100A0A001 /* FTAppKitSessionReplayTests.m */; };
 		A1F103012FC1000100A0A001 /* GuanceSessionReplay.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 179A53812F84EED200FE4B6F /* GuanceSessionReplay.framework */; };
 		A1F104032FC2000100A0A001 /* ImageSessionReplayViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = A1F104022FC2000100A0A001 /* ImageSessionReplayViewController.m */; };
+		A83E1EBBD189DF695543CA79 /* FTNetworkConnectivityTests.m in Sources */ = {isa = PBXBuildFile; fileRef = 3A5B5623C3D0A97ADF524CFF /* FTNetworkConnectivityTests.m */; };
 		AA7E4075B29B727120ABB917 /* Pods_FTMobileSDKUnitTests.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 7C9B67E2BBE800FB64098407 /* Pods_FTMobileSDKUnitTests.framework */; };
 		D639937E5F8355D6DD375DE9 /* FTViewTimingMetricsTests.m in Sources */ = {isa = PBXBuildFile; fileRef = C93EED2A7F0A76A6F3ABCE6F /* FTViewTimingMetricsTests.m */; };
 		FDB05F65091D0063D8C9C8DE /* FTDataFilterTest.m in Sources */ = {isa = PBXBuildFile; fileRef = 5C9C12EDDB1B60125668C322 /* FTDataFilterTest.m */; };
@@ -511,6 +513,7 @@
 		17F5C5222C60D62A007F2B2C /* FTURLProtocol.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = FTURLProtocol.h; sourceTree = "<group>"; };
 		18934C6C78DBFD3D7674BAAF /* Pods-FTMobileSDKUnitTests(tvOS).pre.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-FTMobileSDKUnitTests(tvOS).pre.xcconfig"; path = "Target Support Files/Pods-FTMobileSDKUnitTests(tvOS)/Pods-FTMobileSDKUnitTests(tvOS).pre.xcconfig"; sourceTree = "<group>"; };
 		2BB208A87A6053EA86B34D09 /* Pods-FTMobileSDKUnitTests(tvOS).debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-FTMobileSDKUnitTests(tvOS).debug.xcconfig"; path = "Target Support Files/Pods-FTMobileSDKUnitTests(tvOS)/Pods-FTMobileSDKUnitTests(tvOS).debug.xcconfig"; sourceTree = "<group>"; };
+		3A5B5623C3D0A97ADF524CFF /* FTNetworkConnectivityTests.m */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.c.objc; path = FTNetworkConnectivityTests.m; sourceTree = "<group>"; };
 		4A037EF924F791CB007B2104 /* FTTraceTest.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = FTTraceTest.m; sourceTree = "<group>"; };
 		4A116956239113B600C0BC4E /* App.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = App.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		4A116959239113B600C0BC4E /* AppDelegate.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = AppDelegate.h; sourceTree = "<group>"; };
@@ -921,6 +924,7 @@
 				17B1715928154A6E004002C9 /* FTRequestTest.m */,
 				171F9F6D2CF97E9300BEF0B9 /* FTTrackDataManagerTest.m */,
 				17ABD7392D190E150014422B /* FTTrackDataManager+Test.h */,
+				3A5B5623C3D0A97ADF524CFF /* FTNetworkConnectivityTests.m */,
 			);
 			path = Network;
 			sourceTree = "<group>";
@@ -1982,6 +1986,7 @@
 				178AE39E2D55B74F00BDC51B /* PerformanceRumTest.m in Sources */,
 				178AE3BF2D56009A00BDC51B /* UIEvent+Mock.m in Sources */,
 				2F39483D84494958638FC6DB /* FTViewTimingMetricsTests.m in Sources */,
+				A83E1EBBD189DF695543CA79 /* FTNetworkConnectivityTests.m in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -2131,6 +2136,7 @@
 				1757C83C2D9D222600163865 /* SessionReplayConfigTests.m in Sources */,
 				FDB05F65091D0063D8C9C8DE /* FTDataFilterTest.m in Sources */,
 				D639937E5F8355D6DD375DE9 /* FTViewTimingMetricsTests.m in Sources */,
+				041A99BED255A5B712FDE4EE /* FTNetworkConnectivityTests.m in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
