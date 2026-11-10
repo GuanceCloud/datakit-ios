@@ -20,21 +20,34 @@
 
 #import "FTLongTaskManager.h"
 #import "FTLongTaskANRData.h"
+#import "FTLongTaskTiming.h"
+#import "FTANRProcessor.h"
 
 NS_ASSUME_NONNULL_BEGIN
 
-@interface FTLongTaskManager ()
-@property (nonatomic, strong) NSFileHandle *fileHandle;
-@property (nonatomic, copy) NSString *dataStorePath;
-@property (nonatomic, strong) dispatch_queue_t queue;
-@property (nonatomic, strong) FTLongTaskANRDataStore *anrDataStore;
-
-- (void)deleteFile;
-- (void)appendData:(NSData *)data;
-- (void)updateLongTaskDate:(long long)time;
-- (void)startLongTask:(long long)startTime;
-- (void)endLongTask;
-- (void)reportPreviousANRIfFound;
+@interface FTLongTaskManager (Test) <FTLongTaskTimingDelegate>
 @end
+
+@interface FTManualTimingDetector : FTLongTaskDetector
+@end
+
+static inline FTANRProcessor *FTTestANRProcessor(FTLongTaskManager *manager) {
+    return [manager valueForKey:@"anrProcessor"];
+}
+
+static inline FTLongTaskANRDataStore *FTTestANRStore(FTLongTaskManager *manager) {
+    return FTTestANRProcessor(manager).dataStore;
+}
+
+static inline void FTTestDrainDetector(FTLongTaskDetector *detector) {
+    dispatch_sync([detector valueForKey:@"longTaskQueue"], ^{});
+}
+
+static inline uint64_t FTTestObserveLongTask(FTLongTaskManager *manager, FTLongTaskPhase phase,
+                                          long long startNs, uint64_t durationNs, long long endNs) {
+    FTManualTimingDetector *detector = [[FTManualTimingDetector alloc] initWithDelegate:manager];
+    FTLongTaskTiming timing = {phase, 42, startNs, endNs, durationNs};
+    return [manager longTaskDetector:detector didObserveTiming:timing];
+}
 
 NS_ASSUME_NONNULL_END

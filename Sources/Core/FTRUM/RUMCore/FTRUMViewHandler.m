@@ -19,6 +19,7 @@
 //
 
 #import "FTRUMViewHandler.h"
+#import "FTLongTaskEvent.h"
 #import "FTRUMViewMetrics.h"
 #import "FTRUMNetworkSettledMetric.h"
 #import "FTRUMDependencies.h"
@@ -387,6 +388,8 @@
     if (model.type == FTRUMDataLongTask) {
         long long eventStart = model.tm;
         long long duration = [model.fields[FT_DURATION] longLongValue];
+        if (model.longTaskEvent && model.longTaskEvent.endTimeNs >= eventStart)
+            duration = model.longTaskEvent.endTimeNs - eventStart;
         fields[@"app_state"] = [self.rumDependencies.appStateHistory stateFrom:eventStart
                                                                                               duration:duration];
     }

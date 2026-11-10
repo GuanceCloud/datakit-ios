@@ -1,9 +1,9 @@
 //
-//  FTANRMonitor.m
-//  FTMobileAgent
+//  FTLongTaskDetector.m
+//  FTMobileSDK
 //
-//  Created by hulilei on 2020/9/28.
-//  Copyright 2021 Shanghai Guance Information Technology Co., Ltd.
+//  Created by hulilei on 2026/6/26.
+//  Copyright 2026 Shanghai Guance Information Technology Co., Ltd.
 //
 //  Licensed under the Apache License, Version 2.0 (the "License");
 //  you may not use this file except in compliance with the License.
@@ -18,200 +18,475 @@
 //  limitations under the License.
 //
 
-#if ! __has_feature(objc_arc)
-#error This file must be compiled with ARC. Either turn on ARC for the project or use -fobjc-arc flag on this file.
-#endif
-#import "FTLongTaskDetector.h"
+#import "FTLongTaskTiming.h"
 #import "FTInnerLog.h"
-#import "FTConstants.h"
 #import "FTDateUtil.h"
-#import <stdatomic.h>
-#import <sys/time.h>
 #import "NSDate+FTUtil.h"
-#import "FTErrorDataProtocol.h"
+#import <stdatomic.h>
+#import <pthread.h>
+#import <errno.h>
+#import <objc/runtime.h>
+#import <TargetConditionals.h>
 
-typedef NS_ENUM(NSUInteger, FTLongTaskDetectionState) {
-    FTLongTaskDetectionStateIdle,
-    FTLongTaskDetectionStateWaitingForNormalTimeout,
-    FTLongTaskDetectionStateStartDispatched,
-};
+static const uint64_t FTIdleWaitNs = NSEC_PER_SEC;
+static const uint64_t FTIntervalEndWaitNs = NSEC_PER_SEC;
+static const uint64_t FTCallbackOverlapLimitNs = NSEC_PER_SEC;
 
-@interface FTLongTaskDetector (){
-    CFRunLoopObserverRef m_runLoopBeginObserver;  // Observer
-    CFRunLoopObserverRef m_runLoopEndObserver;    // Observer
-    dispatch_semaphore_t _semaphore;
+// Main-thread-owned weak registrations; the installed hook has process lifetime.
+static NSHashTable<FTLongTaskDetector *> *FTSuspendDetectors;
+static void (*FTOriginalPrepareForSuspend)(id, SEL);
+
+@interface FTLongTaskDetector () {
+    CFRunLoopObserverRef m_runLoopBeginObserver;
+    CFRunLoopObserverRef m_runLoopEndObserver;
+    pthread_cond_t _stateChanged;
+    pthread_mutex_t _waitMutex;
+    BOOL _waitPrimitivesInitialized;
+
+    // SDK shutdown stops this instance; SDK reinitialization creates a new detector.
+    atomic_bool _monitoring;
+
+    // Main-thread publication version: odd = being written, even = ready to read.
+    // Each callback adds 2, so sequence / 2 is the interval's delegate generation.
     atomic_ullong _runLoopSequence;
-    _Atomic(CFRunLoopActivity) _activity; // Status
+    _Atomic(CFRunLoopActivity) _activity;
+    atomic_bool _runloopRunning;
     atomic_llong _runLoopStartTimestampNs;
-    long long _resumeBaselineNs;
-    uint64_t _resumeGeneration;
-    FTLongTaskDetectionState _detectionState;
-}
+    atomic_ullong _runLoopContinuousNs;
 
-@property (nonatomic, weak, nullable) id<FTLongTaskProtocol> longTaskDelegate;
-@property (nonatomic, assign) BOOL isCancel;
+    // Worker arms one sequence. The main thread saves its FIRST closing boundary;
+    // later callbacks must not overwrite it before the worker has processed End.
+    atomic_ullong _watchedSequence;
+    atomic_ullong _closedSequence;
+    atomic_ullong _closedContinuousNs;
+    atomic_llong _closedEpochNs;
+}
+@property (nonatomic, weak) id<FTLongTaskTimingDelegate> longTaskDelegate;
 @property (nonatomic, strong) dispatch_queue_t longTaskQueue;
-@property (nonatomic, assign) long limitMillisecond;
+
 @end
+
+static void FTPrepareForSuspend(id scene, SEL selector);
+
 @implementation FTLongTaskDetector
--(instancetype)initWithDelegate:(id<FTLongTaskProtocol>)delegate{
+
+#pragma mark - Lifecycle and worker queue
+
+- (instancetype)initWithDelegate:(id<FTLongTaskTimingDelegate>)delegate {
     self = [super init];
-    if(self){
+    if (self) {
         _longTaskDelegate = delegate;
-        _semaphore = dispatch_semaphore_create(0);
+        if (pthread_mutex_init(&_waitMutex, NULL) != 0) {
+            return nil;
+        }
+        if (pthread_cond_init(&_stateChanged, NULL) != 0) {
+            pthread_mutex_destroy(&_waitMutex);
+            return nil;
+        }
+        _waitPrimitivesInitialized = YES;
+        atomic_init(&_monitoring, false);
         atomic_init(&_runLoopSequence, 0);
         atomic_init(&_activity, 0);
+        atomic_init(&_runloopRunning, false);
         atomic_init(&_runLoopStartTimestampNs, 0);
-        _detectionState = FTLongTaskDetectionStateIdle;
-        self.limitFreezeMillisecond = FT_DEFAULT_BLOCK_DURATIONS_MS;
-        _longTaskQueue = dispatch_queue_create("com.ft.longtask", 0);
+        atomic_init(&_runLoopContinuousNs, 0);
+        atomic_init(&_watchedSequence, 0);
+        atomic_init(&_closedSequence, 0);
+        atomic_init(&_closedContinuousNs, 0);
+        atomic_init(&_closedEpochNs, 0);
+        _longTaskQueue = dispatch_queue_create("com.ft.longtask", DISPATCH_QUEUE_SERIAL);
     }
     return self;
 }
-- (void)setLimitFreezeMillisecond:(long)limitFreezeMillisecond {
-    _limitFreezeMillisecond = limitFreezeMillisecond;
-    _limitMillisecond = MIN(limitFreezeMillisecond, FT_ANR_THRESHOLD_MS);
+
+- (void)startDetecting {
+    if (atomic_exchange(&_monitoring, true)) {
+        return;
+    }
+
+    [self registerObserver];
+    __weak typeof(self) weakSelf = self;
+    dispatch_async(self.longTaskQueue, ^{
+        [weakSelf runMonitor];
+    });
 }
-- (BOOL)readRunLoopActivity:(CFRunLoopActivity *)activity startTimestampNs:(long long *)startTimestampNs generation:(uint64_t *)generation {
-    // The main RunLoop is the only writer. An even sequence brackets one complete callback.
-    // A stalled reader never holds up the main thread; discard a read overlapping an update.
+
+- (void)stopDetecting {
+    atomic_store(&_monitoring, false);
+    [self signalStateChange];
+
+    if (m_runLoopBeginObserver) {
+        CFRunLoopRemoveObserver(CFRunLoopGetMain(), m_runLoopBeginObserver, kCFRunLoopCommonModes);
+    }
+    if (m_runLoopEndObserver) {
+        CFRunLoopRemoveObserver(CFRunLoopGetMain(), m_runLoopEndObserver, kCFRunLoopCommonModes);
+    }
+    dispatch_block_t removeRegistration = ^{
+        [FTSuspendDetectors removeObject:self];
+    };
+    if (NSThread.isMainThread) {
+        removeRegistration();
+    } else {
+        dispatch_async(dispatch_get_main_queue(), removeRegistration);
+    }
+}
+
+- (void)performAsynchronousBlock:(dispatch_block_t)block {
+    dispatch_async(self.longTaskQueue, block);
+}
+
+- (BOOL)isMonitoringGeneration:(uint64_t)generation {
+    return atomic_load(&_monitoring) && atomic_load(&_runLoopSequence) == generation * 2;
+}
+
+- (void)dealloc {
+    if (_waitPrimitivesInitialized) {
+        pthread_cond_destroy(&_stateChanged);
+        pthread_mutex_destroy(&_waitMutex);
+    }
+    if (m_runLoopBeginObserver) {
+        CFRelease(m_runLoopBeginObserver);
+    }
+    if (m_runLoopEndObserver) {
+        CFRelease(m_runLoopEndObserver);
+    }
+}
+
+#pragma mark - Main-thread RunLoop boundaries
+
+- (void)recordRunLoopBeginActivity:(CFRunLoopActivity)activity atTimeNs:(long long)timeNs {
+    switch (activity) {
+        case kCFRunLoopEntry:
+        case kCFRunLoopAfterWaiting:
+            [self setRunloopRunning:YES activity:activity atTimeNs:timeNs];
+            break;
+        case kCFRunLoopBeforeSources:
+            // Advance the interval without enabling a disabled RunLoop.
+            [self setRunloopRunning:atomic_load(&_runloopRunning) activity:activity atTimeNs:timeNs];
+            break;
+        default:
+            break;
+    }
+}
+
+- (void)recordRunLoopEndActivity:(CFRunLoopActivity)activity atTimeNs:(long long)timeNs {
+    if (activity == kCFRunLoopBeforeWaiting || activity == kCFRunLoopExit) {
+        [self setRunloopRunning:NO activity:activity atTimeNs:timeNs];
+    }
+}
+
+- (void)setRunloopRunning:(BOOL)running activity:(CFRunLoopActivity)activity atTimeNs:(long long)timeNs {
+    uint64_t continuousNs = [FTDateUtil continuousTime];
+    uint64_t previousSequence = atomic_load(&_runLoopSequence);
+    atomic_store(&_runLoopSequence, previousSequence + 1); // Mark snapshot as being written.
+
+    if (previousSequence != 0 && atomic_load(&_watchedSequence) == previousSequence) {
+        atomic_store(&_closedEpochNs, timeNs);
+        atomic_store(&_closedContinuousNs, continuousNs);
+        atomic_store(&_closedSequence, previousSequence); // Publish only after both timestamps.
+    }
+    atomic_store(&_activity, activity);
+    atomic_store(&_runloopRunning, running);
+    atomic_store(&_runLoopStartTimestampNs, timeNs);
+    atomic_store(&_runLoopContinuousNs, continuousNs);
+    atomic_store(&_runLoopSequence, previousSequence + 2); // Publish the complete snapshot.
+    [self signalStateChange];
+}
+
+- (BOOL)readRunLoopSnapshot:(FTLongTaskRunLoopSnapshot *)snapshot {
     for (NSUInteger attempt = 0; attempt < 3; attempt++) {
-        unsigned long long before = atomic_load_explicit(&_runLoopSequence, memory_order_seq_cst);
-        if (before & 1) {
+        uint64_t sequence = atomic_load(&_runLoopSequence);
+        if (sequence & 1) {
             continue;
         }
-        CFRunLoopActivity readActivity = atomic_load_explicit(&_activity, memory_order_seq_cst);
-        long long readStartTimestampNs = atomic_load_explicit(&_runLoopStartTimestampNs, memory_order_seq_cst);
-        unsigned long long after = atomic_load_explicit(&_runLoopSequence, memory_order_seq_cst);
-        if (before == after) {
-            *activity = readActivity;
-            *startTimestampNs = readStartTimestampNs;
-            *generation = after / 2;
+        FTLongTaskRunLoopSnapshot candidate = {
+            .sequence = sequence,
+            .activity = atomic_load(&_activity),
+            .running = atomic_load(&_runloopRunning),
+            .startTimeNs = atomic_load(&_runLoopStartTimestampNs),
+            .startContinuousNs = atomic_load(&_runLoopContinuousNs)
+        };
+        // A concurrent callback invalidates the entire read, not individual fields.
+        if (sequence == atomic_load(&_runLoopSequence)) {
+            *snapshot = candidate;
             return YES;
         }
     }
     return NO;
 }
 
-- (void)recordRunLoopActivity:(CFRunLoopActivity)activity atTimeNs:(long long)timeNs {
-    unsigned long long nextSequence = atomic_load_explicit(&_runLoopSequence, memory_order_relaxed) + 2;
-    atomic_store_explicit(&_runLoopSequence, nextSequence - 1, memory_order_seq_cst);
-    atomic_store_explicit(&_activity, activity, memory_order_seq_cst);
-    atomic_store_explicit(&_runLoopStartTimestampNs, timeNs, memory_order_seq_cst);
-    atomic_store_explicit(&_runLoopSequence, nextSequence, memory_order_seq_cst);
-    dispatch_semaphore_signal(_semaphore);
-}
-
-- (void)processWaitResult:(long)waitResult elapsedNanoseconds:(uint64_t)elapsedNanoseconds currentEpochNs:(long long)currentEpochNs {
-    CFRunLoopActivity activity;
-    long long startTimestampNs;
-    uint64_t generation;
-    if (![self readRunLoopActivity:&activity startTimestampNs:&startTimestampNs generation:&generation]) {
-        return;
-    }
-    if (_detectionState == FTLongTaskDetectionStateWaitingForNormalTimeout && generation != _resumeGeneration) {
-        // A real RunLoop callback supplied a new start; queued semaphore signals do not.
-        _resumeBaselineNs = 0;
-        _detectionState = FTLongTaskDetectionStateIdle;
-    }
-
-    BOOL busyTimeout = waitResult != 0 &&
-        (activity == kCFRunLoopBeforeSources || activity == kCFRunLoopAfterWaiting);
-    if (busyTimeout) {
-        if (_detectionState != FTLongTaskDetectionStateStartDispatched && self.limitMillisecond > 0 && currentEpochNs > 0 &&
-            elapsedNanoseconds > (uint64_t)self.limitMillisecond * 2 * NSEC_PER_MSEC) {
-            // The detector was not scheduled promptly. The earlier RunLoop time is no longer a
-            // trustworthy start for a new sample; require another normal timeout first.
-            _resumeBaselineNs = currentEpochNs;
-            _resumeGeneration = generation;
-            _detectionState = FTLongTaskDetectionStateWaitingForNormalTimeout;
-            return;
-        }
-        if (_detectionState == FTLongTaskDetectionStateStartDispatched) {
-            if (self.longTaskDelegate && [self.longTaskDelegate respondsToSelector:@selector(updateLongTaskDate:)]) {
-                [self.longTaskDelegate updateLongTaskDate:currentEpochNs];
-            }
-        } else {
-            long long effectiveStartNs = startTimestampNs;
-            if (_detectionState == FTLongTaskDetectionStateWaitingForNormalTimeout && _resumeBaselineNs > effectiveStartNs) {
-                effectiveStartNs = _resumeBaselineNs;
-            }
-            _resumeBaselineNs = 0;
-            _detectionState = FTLongTaskDetectionStateStartDispatched;
-            if (self.longTaskDelegate && [self.longTaskDelegate respondsToSelector:@selector(startLongTask:)]) {
-                [self.longTaskDelegate startLongTask:effectiveStartNs];
-            }
-        }
-        return;
-    }
-    if (_detectionState == FTLongTaskDetectionStateStartDispatched) {
-        if (self.longTaskDelegate && [self.longTaskDelegate respondsToSelector:@selector(endLongTask)]) {
-            [self.longTaskDelegate endLongTask];
-        }
-        _detectionState = FTLongTaskDetectionStateIdle;
-    }
-}
-- (void)startDetecting {
-    [self registerObserver];
-    self.isCancel = NO;
-    __weak __typeof(self) weakSelf = self;
-    dispatch_async(_longTaskQueue, ^{
-        __strong __typeof(weakSelf) strongSelf = weakSelf;
-        if (!strongSelf) {
-            return;
-        }
-        while (!strongSelf.isCancel) {
-            @autoreleasepool {
-                uint64_t waitStart = [FTDateUtil continuousTime];
-                long waitResult = dispatch_semaphore_wait(self->_semaphore, dispatch_time(DISPATCH_TIME_NOW, strongSelf.limitMillisecond*NSEC_PER_MSEC));
-                uint64_t waitEnd = [FTDateUtil continuousTime];
-                uint64_t elapsed = waitEnd >= waitStart ? waitEnd - waitStart : 0;
-                [strongSelf processWaitResult:waitResult elapsedNanoseconds:elapsed currentEpochNs:[NSDate ft_currentNanosecondTimeStamp]];
-            }
-        }
-    });
-}
-// Register an Observer to monitor the state of the Loop, callback function is runLoopObserverCallBack
-- (void)registerObserver{
-    __weak __typeof(self) weakSelf = self;
-    // Create Runloop observer object
-    CFRunLoopObserverRef beginObserver = CFRunLoopObserverCreateWithHandler(kCFAllocatorDefault,
-                                                                            kCFRunLoopEntry|kCFRunLoopBeforeSources|kCFRunLoopAfterWaiting,
-                                                                            YES,
-                                                                            LONG_MIN,
-                                                                            ^(CFRunLoopObserverRef observer, CFRunLoopActivity activity) {
-        __strong __typeof(weakSelf) strongSelf = weakSelf;
-        if (!strongSelf) return;
-        [strongSelf recordRunLoopActivity:activity atTimeNs:[NSDate ft_currentNanosecondTimeStamp]];
-    });
-    CFRetain(beginObserver);
-    m_runLoopBeginObserver = beginObserver;
-    CFRelease(beginObserver);
-    CFRunLoopObserverRef endObserver = CFRunLoopObserverCreateWithHandler(kCFAllocatorDefault, kCFRunLoopExit|kCFRunLoopBeforeWaiting, YES, LONG_MAX, ^(CFRunLoopObserverRef observer, CFRunLoopActivity activity) {
-        __strong __typeof(weakSelf) strongSelf = weakSelf;
-        if (!strongSelf) return;
-        [strongSelf recordRunLoopActivity:activity atTimeNs:[NSDate ft_currentNanosecondTimeStamp]];
-    });
-    CFRetain(endObserver);
-    m_runLoopEndObserver = endObserver;
-    CFRelease(endObserver);
-    // Add the newly created observer to the current thread's runloop
-    CFRunLoopAddObserver(CFRunLoopGetMain(), beginObserver, kCFRunLoopCommonModes);
-    CFRunLoopAddObserver(CFRunLoopGetMain(), endObserver, kCFRunLoopCommonModes);
-}
-- (void)stopDetecting{
-    self.isCancel = YES;
-    if(!m_runLoopEndObserver) return;
-    CFRunLoopRemoveObserver(CFRunLoopGetMain(), m_runLoopEndObserver, kCFRunLoopCommonModes);
-    CFRunLoopRemoveObserver(CFRunLoopGetMain(), m_runLoopBeginObserver, kCFRunLoopCommonModes);
-}
--(void)dealloc{
-    if (m_runLoopEndObserver) {
-        CFRelease(m_runLoopEndObserver);
-    }
+- (void)registerObserver {
     if (m_runLoopBeginObserver) {
+        CFRunLoopRemoveObserver(CFRunLoopGetMain(), m_runLoopBeginObserver, kCFRunLoopCommonModes);
         CFRelease(m_runLoopBeginObserver);
     }
+    if (m_runLoopEndObserver) {
+        CFRunLoopRemoveObserver(CFRunLoopGetMain(), m_runLoopEndObserver, kCFRunLoopCommonModes);
+        CFRelease(m_runLoopEndObserver);
+    }
+    __weak typeof(self) weakSelf = self;
+    m_runLoopBeginObserver = CFRunLoopObserverCreateWithHandler(NULL,
+        kCFRunLoopEntry | kCFRunLoopBeforeSources | kCFRunLoopAfterWaiting, YES, LONG_MIN,
+        ^(CFRunLoopObserverRef observer, CFRunLoopActivity activity) {
+            [weakSelf recordRunLoopBeginActivity:activity atTimeNs:[NSDate ft_currentNanosecondTimeStamp]];
+        });
+    m_runLoopEndObserver = CFRunLoopObserverCreateWithHandler(NULL,
+        kCFRunLoopBeforeWaiting | kCFRunLoopExit, YES, LONG_MAX,
+        ^(CFRunLoopObserverRef observer, CFRunLoopActivity activity) {
+            [weakSelf recordRunLoopEndActivity:activity atTimeNs:[NSDate ft_currentNanosecondTimeStamp]];
+        });
+    CFRunLoopAddObserver(CFRunLoopGetMain(), m_runLoopBeginObserver, kCFRunLoopCommonModes);
+    CFRunLoopAddObserver(CFRunLoopGetMain(), m_runLoopEndObserver, kCFRunLoopCommonModes);
+#if TARGET_OS_IOS && !TARGET_OS_MACCATALYST
+    if (NSThread.isMainThread && [[self class] installSuspendHookForClass:NSClassFromString(@"UIWindowScene")]) {
+        if (!FTSuspendDetectors) {
+            FTSuspendDetectors = [NSHashTable weakObjectsHashTable];
+        }
+        [FTSuspendDetectors addObject:self];
+    }
+#endif
 }
 
+#pragma mark - Worker: select an interval, then observe it until it ends
+
+- (void)runMonitor {
+    while (atomic_load(&_monitoring)) {
+        @autoreleasepool {
+            FTLongTaskRunLoopSnapshot snapshot;
+            if (![self readRunLoopSnapshot:&snapshot]) {
+                continue;
+            }
+
+            if (!snapshot.running) {
+                // Idle time is never credited as blocking. A signal or timeout rechecks state.
+                int result = [self waitForRunLoopChangeSinceSequence:snapshot.sequence
+                                                timeoutNanoseconds:FTIdleWaitNs];
+                if (result != 0 && result != ETIMEDOUT) {
+                    break;
+                }
+                continue;
+            }
+
+            [self monitorRunLoopInterval:snapshot];
+        }
+    }
+
+    atomic_store(&_monitoring, false);
+}
+
+- (void)monitorRunLoopInterval:(FTLongTaskRunLoopSnapshot)snapshot {
+    // Arm before validating: any callback after this point must save our End boundary.
+    atomic_store(&_watchedSequence, snapshot.sequence);
+    if (atomic_load(&_runLoopSequence) != snapshot.sequence) {
+        atomic_store(&_watchedSequence, 0);
+        return;
+    }
+
+    FTLongTaskTiming timing = {
+        .phase = FTLongTaskPhaseBegin,
+        .generation = snapshot.sequence / 2,
+        .startTimeNs = snapshot.startTimeNs,
+        .observationTimeNs = snapshot.startTimeNs,
+        .durationNs = 0
+    };
+    uint64_t nextCheckpointNs = [self notifyTiming:timing];
+
+    while (atomic_load(&_monitoring)) {
+        // Drain checkpoint/capture temporaries without waiting for this interval to end.
+        @autoreleasepool {
+            // Checkpoints are absolute effective durations, not wall-clock deadlines.
+            uint64_t waitBudgetNs = FTIntervalEndWaitNs;
+            if (nextCheckpointNs != UINT64_MAX) {
+                waitBudgetNs = nextCheckpointNs > timing.durationNs
+                    ? nextCheckpointNs - timing.durationNs : NSEC_PER_MSEC;
+            }
+            uint64_t waitBeginNs = [FTDateUtil continuousTime];
+            int result = [self waitForRunLoopChangeSinceSequence:snapshot.sequence
+                                            timeoutNanoseconds:waitBudgetNs];
+            if (!atomic_load(&_monitoring)) {
+                break;
+            }
+            if (result != 0 && result != ETIMEDOUT) {
+                FTInnerLogError(@"[LongTask] condition wait failed: %d", result);
+                [self stopDetecting];
+                break;
+            }
+
+            // Wait credit and callback overlap are settled separately, once per round.
+            BOOL intervalEnded = atomic_load(&_closedSequence) == snapshot.sequence;
+            uint64_t waitEndNs = intervalEnded ? atomic_load(&_closedContinuousNs) : [FTDateUtil continuousTime];
+            uint64_t elapsedNs = waitEndNs > waitBeginNs ? waitEndNs - waitBeginNs : 0;
+            if (!intervalEnded && timing.phase == FTLongTaskPhaseBegin) {
+                // Require a normally scheduled wait before the first Checkpoint.
+                // More than twice the budget discards this wait and retries without credit.
+                uint64_t excessWaitNs = elapsedNs > waitBudgetNs ? elapsedNs - waitBudgetNs : 0;
+                if (excessWaitNs > waitBudgetNs) {
+                    continue;
+                }
+            }
+            uint64_t creditedNs = waitBudgetNs;
+            if (intervalEnded || result != ETIMEDOUT) {
+                creditedNs = MIN(elapsedNs, waitBudgetNs);
+            }
+            // A timeout credits only its budget, even if scheduling/suspension delayed our return.
+            timing.durationNs += creditedNs;
+            if (intervalEnded) {
+                // A boundary racing the timeout cannot produce more than the complete interval.
+                uint64_t intervalSpanNs = waitEndNs > snapshot.startContinuousNs
+                    ? waitEndNs - snapshot.startContinuousNs : 0;
+                timing.durationNs = MIN(timing.durationNs, intervalSpanNs);
+                timing.observationTimeNs = atomic_load(&_closedEpochNs);
+                timing.phase = FTLongTaskPhaseEnd;
+            } else {
+                timing.observationTimeNs = [NSDate ft_currentNanosecondTimeStamp];
+                timing.phase = FTLongTaskPhaseCheckpoint;
+            }
+
+            if (intervalEnded || timing.durationNs >= nextCheckpointNs) {
+                uint64_t callbackBeginNs = [FTDateUtil continuousTime];
+                nextCheckpointNs = [self notifyTiming:timing];
+                if (!intervalEnded) {
+                    // Main-thread work can continue while the worker captures/symbolicates.
+                    // Clip to the FIRST producer End, even if the callback returns much later.
+                    uint64_t callbackEndNs = [FTDateUtil continuousTime];
+                    if (atomic_load(&_closedSequence) == snapshot.sequence) {
+                        callbackEndNs = MIN(callbackEndNs, atomic_load(&_closedContinuousNs));
+                    }
+                    uint64_t overlapNs = callbackEndNs > callbackBeginNs ? callbackEndNs - callbackBeginNs : 0;
+                    // A long unobserved callback may include process suspension. Reject only
+                    // this round's overlap; normal overlaps from other rounds remain credited.
+                    if (overlapNs < FTCallbackOverlapLimitNs) {
+                        timing.durationNs += overlapNs;
+                    }
+                }
+            }
+            if (intervalEnded) {
+                break;
+            }
+        }
+    }
+    atomic_store(&_watchedSequence, 0);
+}
+
+#pragma mark - Timed condition wait
+
+- (void)signalStateChange {
+    // State is retained in atomics; signals do not count events. The main thread never
+    // takes the wait mutex. A pre-sleep lost signal is observed at the timed deadline.
+    pthread_cond_signal(&_stateChanged);
+}
+
+- (int)waitForRunLoopChangeSinceSequence:(uint64_t)sequence
+                    timeoutNanoseconds:(uint64_t)timeoutNs {
+    uint64_t waitBeginNs = [FTDateUtil continuousTime];
+    int result = pthread_mutex_lock(&_waitMutex);
+    if (result != 0) {
+        return result;
+    }
+
+    while (YES) {
+        if (!atomic_load(&_monitoring)) {
+            result = ECANCELED;
+            break;
+        }
+        if (result != 0 && result != ETIMEDOUT) {
+            break;
+        }
+
+        uint64_t currentSequence = atomic_load(&_runLoopSequence);
+        if (!(currentSequence & 1) && currentSequence != sequence) {
+            // A complete state change takes precedence over a racing timeout.
+            result = 0;
+            break;
+        }
+        if (result == ETIMEDOUT) {
+            break;
+        }
+
+        uint64_t nowNs = [FTDateUtil continuousTime];
+        uint64_t elapsedNs = nowNs >= waitBeginNs ? nowNs - waitBeginNs : 0;
+        if (elapsedNs >= timeoutNs) {
+            result = ETIMEDOUT;
+            break;
+        }
+        // Spurious wakes use the remaining budget, never a fresh full interval.
+        uint64_t remainingNs = timeoutNs - elapsedNs;
+        struct timespec remaining = {
+            .tv_sec = (time_t)(remainingNs / NSEC_PER_SEC),
+            .tv_nsec = (long)(remainingNs % NSEC_PER_SEC)
+        };
+        // Darwin's relative wait avoids CLOCK_REALTIME adjustments.
+        result = pthread_cond_timedwait_relative_np(&_stateChanged, &_waitMutex, &remaining);
+    }
+    pthread_mutex_unlock(&_waitMutex);
+    return result;
+}
+
+#pragma mark - Timing delegate
+
+- (uint64_t)notifyTiming:(FTLongTaskTiming)timing {
+    id<FTLongTaskTimingDelegate> delegate = self.longTaskDelegate;
+    @try {
+        return delegate ? [delegate longTaskDetector:self didObserveTiming:timing] : UINT64_MAX;
+    } @catch (NSException *exception) {
+        FTInnerLogError(@"[LongTask] callback exception %@", exception);
+        return UINT64_MAX;
+    }
+}
+
+#pragma mark - Scene suspend-preparation boundary
+
+- (void)beginPreparingForSuspend {
+    if (!atomic_load(&_monitoring)) {
+        return;
+    }
+    [self setRunloopRunning:NO activity:0 atTimeNs:[NSDate ft_currentNanosecondTimeStamp]];
+}
+
+- (void)endPreparingForSuspend {
+    if (!atomic_load(&_monitoring)) {
+        return;
+    }
+    [self setRunloopRunning:YES activity:0 atTimeNs:[NSDate ft_currentNanosecondTimeStamp]];
+}
+
++ (BOOL)installSuspendHookForClass:(Class)cls {
+    if (!NSThread.isMainThread || !cls) {
+        return NO;
+    }
+    SEL selector = NSSelectorFromString(@"_prepareForSuspend");
+    Method method = class_getInstanceMethod(cls, selector);
+    if (!method) {
+        return NO;
+    }
+    if (method_getImplementation(method) == (IMP)FTPrepareForSuspend) {
+        return YES;
+    }
+    if (FTOriginalPrepareForSuspend) {
+        return NO;
+    }
+    char *returnType = method_copyReturnType(method);
+    BOOL compatible = returnType && strcmp(returnType, "v") == 0 && method_getNumberOfArguments(method) == 2;
+    free(returnType);
+    if (!compatible) {
+        return NO;
+    }
+    FTOriginalPrepareForSuspend = (void (*)(id, SEL))method_getImplementation(method);
+    class_replaceMethod(cls, selector, (IMP)FTPrepareForSuspend, method_getTypeEncoding(method));
+    return YES;
+}
 @end
+
+static void FTPrepareForSuspend(id scene, SEL selector) {
+    NSArray<FTLongTaskDetector *> *detectors = NSThread.isMainThread ? FTSuspendDetectors.allObjects : nil;
+    for (FTLongTaskDetector *detector in detectors) {
+        [detector beginPreparingForSuspend];
+    }
+    @try {
+        FTOriginalPrepareForSuspend(scene, selector);
+    } @finally {
+        for (FTLongTaskDetector *detector in detectors) {
+            [detector endPreparingForSuspend];
+        }
+    }
+}

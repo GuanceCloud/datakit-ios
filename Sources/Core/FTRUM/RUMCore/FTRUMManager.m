@@ -19,6 +19,7 @@
 //
 
 #import "FTRUMManager.h"
+#import "FTLongTaskEvent.h"
 #import "FTIssueFieldEnricher.h"
 #import "FTBaseInfoHandler.h"
 #import "FTRUMSessionHandler.h"
@@ -674,6 +675,12 @@ void *FTRUMQueueIdentityKey = &FTRUMQueueIdentityKey;
     [self addLongTaskWithStack:stack duration:duration startTime:time property:nil];
 }
 - (void)addLongTaskWithStack:(NSString *)stack duration:(NSNumber *)duration startTime:(long long)time property:(nullable NSDictionary *)property{
+    [self addLongTaskWithStack:stack duration:duration startTime:time property:property event:nil];
+}
+- (void)addLongTaskEvent:(FTLongTaskEvent *)event {
+    [self addLongTaskWithStack:event.stack duration:@(event.durationNs) startTime:event.startTimeNs property:nil event:event];
+}
+- (void)addLongTaskWithStack:(NSString *)stack duration:(NSNumber *)duration startTime:(long long)time property:(nullable NSDictionary *)property event:(nullable FTLongTaskEvent *)event{
     if (!stack || (duration == nil)) {
         FTInnerLogError(@"[RUM] Failed to add longtask due to missing required fields. Please ensure 'stack' and 'duration' are provided.");
         return;
@@ -693,6 +700,7 @@ void *FTRUMQueueIdentityKey = &FTRUMQueueIdentityKey;
             model.tags = @{};
             model.fields = fields;
             model.tm = time;
+            model.longTaskEvent = event;
             model.visitorIDSnapshot = visitorID;
             [self process:model context:context];
         } @catch (NSException *exception) {

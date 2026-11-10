@@ -25,9 +25,10 @@
 #import "FTErrorDataProtocol.h"
 
 NS_ASSUME_NONNULL_BEGIN
+@class FTLongTaskEvent;
 @protocol FTRunloopDetectorDelegate <NSObject>
-@optional
-- (void)longTaskStackDetected:(NSString *)slowStack duration:(long long)duration time:(long long)time;
+/// Automatic collection passes one immutable incident snapshot.
+- (void)longTaskDetected:(FTLongTaskEvent *)event;
 - (void)anrStackDetected:(NSString *)slowStack appState:(NSString *)appState time:(long long)time;
 @end
 @interface FTLongTaskManager : NSObject

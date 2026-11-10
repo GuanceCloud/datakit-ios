@@ -27,7 +27,7 @@
 #import "FTWKWebViewRumDelegate.h"
 #import "FTIssueDataProvider.h"
 
-@class FTResourceMetricsModel,FTResourceContentModel;
+@class FTResourceMetricsModel,FTResourceContentModel,FTLongTaskEvent;
 
 NS_ASSUME_NONNULL_BEGIN
 
@@ -35,6 +35,8 @@ FOUNDATION_EXPORT NSString *FTStringFromAppState(FTAppState state);
 
 @interface FTRUMManager : FTRUMHandler<FTRumResourceProtocol,FTErrorDataDelegate,FTRumDatasProtocol,FTLinkRumDataProvider,FTWKWebViewRumDelegate>
 @property (nonatomic, assign) FTAppState appState;
+/// Internal automatic collection path with immutable event facts.
+- (void)addLongTaskEvent:(FTLongTaskEvent *)event;
 
 #pragma mark - init -
 -(instancetype)initWithRumDependencies:(FTRUMDependencies *)dependencies;
