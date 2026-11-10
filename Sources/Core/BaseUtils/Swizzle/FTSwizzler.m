@@ -231,7 +231,9 @@ typedef IMP (^FTSwizzlerImpProvider)(void);
 #pragma mark └ FTSwizzler
 @implementation FTSwizzler
 
-static void swizzle(Class classToSwizzle,
+// The original-IMP provider captures a runtime Class; copying it must not retain
+// the target and send it a message before the application first uses that class.
+static void swizzle(__unsafe_unretained Class classToSwizzle,
                     SEL selector,
                     FTSwizzlerImpFactoryBlock factoryBlock
 #if DEBUG
@@ -309,13 +311,15 @@ static void swizzle(Class classToSwizzle,
     }
 #endif
 }
-+ (void)setFTAssociatedObject:(id)object
+// These internal helpers receive runtime Class objects. ARC's strong id parameter
+// would send retain/release messages and can trigger +initialize during scanning.
++ (void)setFTAssociatedObject:(__unsafe_unretained id)object
                           key:(const void *)key
                         value:(nullable id)value
                   association:(objc_AssociationPolicy)association {
     objc_setAssociatedObject(object, key, value, association);
 }
-+ (nullable id)getFTAssociatedObject:(id)object key:(const void *)key {
++ (nullable id)getFTAssociatedObject:(__unsafe_unretained id)object key:(const void *)key {
     return objc_getAssociatedObject(object, key);
 }
 +(BOOL)swizzleInstanceMethod:(SEL)selector

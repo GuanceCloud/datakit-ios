@@ -35,6 +35,7 @@
 #import "FTViewControllerSwizzling.h"
 #import <string.h>
 #import <stdatomic.h>
+#import <os/lock.h>
 
 @interface FTViewLoadingState : NSObject
 @property (nonatomic, strong, nullable) NSNumber *loadDuration;
@@ -74,14 +75,40 @@ static const void *viewLoadDurationDisabledKey = &viewLoadDurationDisabledKey;
 static const void *viewLoadDurationInstrumentedKey = &viewLoadDurationInstrumentedKey;
 static atomic_uint_fast64_t viewLoadGeneration = ATOMIC_VAR_INIT(0);
 static atomic_bool swiftUIViewLoadingTimeEnabled = ATOMIC_VAR_INIT(false);
+static os_unfair_lock viewLoadingPolicyLock = OS_UNFAIR_LOCK_INIT;
+static BOOL viewLoadingTimeEnabled = YES;
+static NSSet<NSString *> *viewLoadingClassNameExcludes;
+
+static BOOL FTShouldCollectViewLoadingTimeForClassName(NSString *className) {
+    os_unfair_lock_lock(&viewLoadingPolicyLock);
+    BOOL enabled = viewLoadingTimeEnabled;
+    NSSet<NSString *> *excludes = viewLoadingClassNameExcludes;
+    os_unfair_lock_unlock(&viewLoadingPolicyLock);
+    if (!enabled || className.length == 0) {
+        return NO;
+    }
+    return ![excludes containsObject:className];
+}
+
+static BOOL FTShouldCollectViewLoadingTimeForClass(Class controllerClass) {
+    const char *name = controllerClass != Nil ? class_getName(controllerClass) : NULL;
+    return name != NULL && FTShouldCollectViewLoadingTimeForClassName([NSString stringWithUTF8String:name]);
+}
 
 static BOOL FTViewControllerClassIsBlacklisted(Class viewControllerClass) {
     @try {
         NSDictionary *blackList = [BlacklistedVCClassNames ft_blacklistedViewControllerClassNames][FT_BLACK_LIST_VIEW];
         for (NSString *className in blackList[@"public"]) {
             Class blacklistedClass = NSClassFromString(className);
-            if (blacklistedClass != Nil && [viewControllerClass isSubclassOfClass:blacklistedClass]) {
-                return YES;
+            if (blacklistedClass == Nil) {
+                continue;
+            }
+            // Scanning unused classes must not send them class messages: even an
+            // inherited +isSubclassOfClass: can run application +initialize code.
+            for (Class currentClass = viewControllerClass; currentClass != Nil; currentClass = class_getSuperclass(currentClass)) {
+                if (currentClass == blacklistedClass) {
+                    return YES;
+                }
             }
         }
         return [(NSArray *)blackList[@"private"] containsObject:NSStringFromClass(viewControllerClass)];
@@ -99,18 +126,15 @@ static BOOL FTViewControllerClassIsFromSystemImage(Class viewControllerClass) {
     return FTImagePathIsFromSystemLibrary(class_getImageName(viewControllerClass));
 }
 
-static BOOL FTViewControllerClassIsFromSwiftUIBundle(Class viewControllerClass) {
-    NSBundle *bundle = [NSBundle bundleForClass:viewControllerClass];
-    return [bundle.bundleURL.lastPathComponent isEqualToString:@"SwiftUI.framework"];
-}
-
 static BOOL FTViewControllerClassIsFromSwiftUIImage(Class viewControllerClass) {
+    // bundleForClass: may resolve class methods and run +initialize on an unused class.
     const char *imagePath = class_getImageName(viewControllerClass);
     return imagePath != NULL && strstr(imagePath, "/SwiftUI.framework/") != NULL;
 }
 
 @implementation UIViewController (FTAutoTrack)
 - (NSNumber *)ft_viewLoadStartEpochNs{
+    if (!FTShouldCollectViewLoadingTimeForClass(object_getClass(self))) return nil;
     return [self ft_viewLoadingStateCreateIfNeeded:NO].viewLoadStartEpochNs;
 }
 + (NSUInteger)ft_currentViewLoadGeneration{
@@ -121,6 +145,31 @@ static BOOL FTViewControllerClassIsFromSwiftUIImage(Class viewControllerClass) {
 }
 + (void)ft_setSwiftUIViewLoadingTimeEnabled:(BOOL)enabled{
     atomic_store_explicit(&swiftUIViewLoadingTimeEnabled, enabled, memory_order_relaxed);
+}
++ (void)ft_setViewLoadingTimeEnabled:(BOOL)enabled{
+    // Preserve class exclusions when automatic tracking stops or restarts.
+    os_unfair_lock_lock(&viewLoadingPolicyLock);
+    BOOL changed = viewLoadingTimeEnabled != enabled;
+    viewLoadingTimeEnabled = enabled;
+    os_unfair_lock_unlock(&viewLoadingPolicyLock);
+    if (changed) {
+        [self ft_invalidatePendingViewLoadDurations];
+    }
+}
++ (void)ft_configureViewLoadingTimeEnabled:(BOOL)enabled classNameExcludes:(NSSet<NSString *> *)excludes{
+    NSMutableSet<NSString *> *validNames = [NSMutableSet set];
+    for (id name in excludes) {
+        if ([name isKindOfClass:NSString.class] && [name length] > 0) [validNames addObject:[name copy]];
+    }
+    NSSet<NSString *> *snapshot = [validNames copy];
+    os_unfair_lock_lock(&viewLoadingPolicyLock);
+    viewLoadingTimeEnabled = enabled;
+    viewLoadingClassNameExcludes = snapshot;
+    os_unfair_lock_unlock(&viewLoadingPolicyLock);
+    [self ft_invalidatePendingViewLoadDurations];
+}
++ (BOOL)ft_shouldCollectViewLoadingTimeForClass:(Class)controllerClass{
+    return FTShouldCollectViewLoadingTimeForClass(controllerClass);
 }
 -(void)setFt_viewLoadStartTime:(NSNumber *)viewLoadStartTime{
     FTViewLoadingState *state = [self ft_viewLoadingStateCreateIfNeeded:viewLoadStartTime != nil];
@@ -135,6 +184,7 @@ static BOOL FTViewControllerClassIsFromSwiftUIImage(Class viewControllerClass) {
     return state.hasViewLoadStartTime ? @(state.viewLoadStartTime) : nil;
 }
 -(NSNumber *)ft_loadDuration{
+    if (!FTShouldCollectViewLoadingTimeForClass(object_getClass(self))) return nil;
     return [self ft_viewLoadingStateCreateIfNeeded:NO].loadDuration;
 }
 -(void)setFt_loadDuration:(NSNumber *)ft_loadDuration{
@@ -153,13 +203,16 @@ static BOOL FTViewControllerClassIsFromSwiftUIImage(Class viewControllerClass) {
 #pragma mark - UIViewController loading duration swizzling
 
 + (void)ft_swizzleLoadedCustomViewControllerClasses{
-    [[FTViewControllerSwizzling sharedInstance] swizzleLoadedViewControllerClassesWithCompletion:nil];
+    [[FTViewControllerSwizzling sharedInstance] refreshLoadedViewControllerClasses];
 }
 + (NSArray<NSString *> *)ft_loadingTimeCandidateClassNamesFromClassNames:(NSArray<NSString *> *)classNames{
     NSMutableArray<NSString *> *candidateClassNames = [NSMutableArray array];
     for (NSString *className in classNames) {
-        // Keep class names across queues. objc_lookUpClass and superclass inspection do not create a
-        // controller instance; lifecycle method replacement remains confined to the main thread.
+        // Exclude by name before touching runtime metadata for an unused class.
+        if (!FTShouldCollectViewLoadingTimeForClassName(className)) continue;
+        // Keep class names across queues and inspect runtime metadata only. Class messages
+        // and Foundation class queries can run +initialize before application use.
+        // Lifecycle method replacement remains confined to the main thread.
         Class viewControllerClass = objc_lookUpClass(className.UTF8String);
         if ([self ft_isCustomViewControllerClass:viewControllerClass] && ![self ft_viewLoadingDurationDisabledForClass:viewControllerClass]) {
             [candidateClassNames addObject:className];
@@ -179,7 +232,7 @@ static BOOL FTViewControllerClassIsFromSwiftUIImage(Class viewControllerClass) {
     return instrumentedClassCount;
 }
 + (BOOL)ft_installViewControllerLifecycleSwizzlesForClass:(Class)viewControllerClass{
-    if (viewControllerClass == Nil || [self ft_viewLoadingDurationDisabledForClass:viewControllerClass]) {
+    if (viewControllerClass == Nil || !FTShouldCollectViewLoadingTimeForClass(viewControllerClass) || [self ft_viewLoadingDurationDisabledForClass:viewControllerClass]) {
         return NO;
     }
     if (![NSThread isMainThread]) {
@@ -195,6 +248,10 @@ static BOOL FTViewControllerClassIsFromSwiftUIImage(Class viewControllerClass) {
                                  FTSWArguments(),
                                  FTSWReplacement({
             UIViewController *viewController = (UIViewController *)self;
+            if (!FTShouldCollectViewLoadingTimeForClass(object_getClass(viewController))) {
+                FTSWCallOriginal();
+                return;
+            }
             FTViewLoadingState *state = [viewController ft_viewLoadingStateCreateIfNeeded:YES];
             if (state == nil || state.viewDidLoadInProgress) {
                 FTSWCallOriginal();
@@ -223,6 +280,10 @@ static BOOL FTViewControllerClassIsFromSwiftUIImage(Class viewControllerClass) {
                                  FTSWArguments(BOOL animated),
                                  FTSWReplacement({
             UIViewController *viewController = (UIViewController *)self;
+            if (!FTShouldCollectViewLoadingTimeForClass(object_getClass(viewController))) {
+                FTSWCallOriginal(animated);
+                return;
+            }
             FTViewLoadingState *state = [viewController ft_viewLoadingStateCreateIfNeeded:NO];
             if (state == nil || state.viewLoadDurationCalculated || state.viewWillAppearInProgress || state.hasFirstViewWillAppearStartTime) {
                 FTSWCallOriginal(animated);
@@ -251,6 +312,10 @@ static BOOL FTViewControllerClassIsFromSwiftUIImage(Class viewControllerClass) {
                                  FTSWArguments(),
                                  FTSWReplacement({
             UIViewController *viewController = (UIViewController *)self;
+            if (!FTShouldCollectViewLoadingTimeForClass(object_getClass(viewController))) {
+                FTSWCallOriginal();
+                return;
+            }
             FTViewLoadingState *state = [viewController ft_viewLoadingStateCreateIfNeeded:NO];
             if (state == nil || state.viewLoadDurationCalculated || state.viewWillLayoutSubviewsInProgress || state.hasFirstViewWillAppearStartTime || state.hasFirstViewWillLayoutSubviewsStartTime || !state.hasViewDidLoadEndTime) {
                 FTSWCallOriginal();
@@ -279,6 +344,10 @@ static BOOL FTViewControllerClassIsFromSwiftUIImage(Class viewControllerClass) {
                                  FTSWArguments(BOOL animated),
                                  FTSWReplacement({
             UIViewController *viewController = (UIViewController *)self;
+            if (!FTShouldCollectViewLoadingTimeForClass(object_getClass(viewController))) {
+                FTSWCallOriginal(animated);
+                return;
+            }
             FTViewLoadingState *state = [viewController ft_viewLoadingStateCreateIfNeeded:YES];
             if (state == nil || state.viewDidAppearInProgress) {
                 FTSWCallOriginal(animated);
@@ -319,15 +388,18 @@ static BOOL FTViewControllerClassIsFromSwiftUIImage(Class viewControllerClass) {
     return NO;
 }
 + (BOOL)ft_isCustomViewControllerClass:(Class)viewControllerClass{
+    if (!FTShouldCollectViewLoadingTimeForClass(viewControllerClass)) return NO;
     if (![self ft_isViewControllerSubclass:viewControllerClass] || class_getImageName(viewControllerClass) == NULL || FTViewControllerClassIsFromSystemImage(viewControllerClass)) {
         return NO;
     }
-    return [self ft_shouldTrackDefaultViewControllerClass:viewControllerClass];
+    // System images are already excluded above, including the system SwiftUI framework.
+    return !FTViewControllerClassIsBlacklisted(viewControllerClass);
 }
 + (BOOL)ft_shouldTrackDefaultViewControllerClass:(Class)viewControllerClass{
-    return viewControllerClass != Nil && !FTViewControllerClassIsBlacklisted(viewControllerClass) && !FTViewControllerClassIsFromSwiftUIBundle(viewControllerClass);
+    return viewControllerClass != Nil && !FTViewControllerClassIsBlacklisted(viewControllerClass) && !FTViewControllerClassIsFromSwiftUIImage(viewControllerClass);
 }
 + (BOOL)ft_hasViewLoadingDurationInstrumentedClassInHierarchy:(Class)viewControllerClass{
+    if (!FTShouldCollectViewLoadingTimeForClass(viewControllerClass)) return NO;
     for (Class currentClass = viewControllerClass; currentClass != Nil && currentClass != UIViewController.class; currentClass = class_getSuperclass(currentClass)) {
         if ([objc_getAssociatedObject(currentClass, viewLoadDurationInstrumentedKey) boolValue]) {
             return YES;
@@ -506,7 +578,8 @@ static BOOL FTViewControllerClassIsFromSwiftUIImage(Class viewControllerClass) {
     }
 }
 -(void)ft_viewDidLoad{
-    if (!atomic_load_explicit(&swiftUIViewLoadingTimeEnabled, memory_order_relaxed)) {
+    if (!atomic_load_explicit(&swiftUIViewLoadingTimeEnabled, memory_order_relaxed) ||
+        !FTShouldCollectViewLoadingTimeForClass(object_getClass(self))) {
         [self ft_viewDidLoad];
         return;
     }
@@ -524,7 +597,7 @@ static BOOL FTViewControllerClassIsFromSwiftUIImage(Class viewControllerClass) {
         return;
     }
 
-    FTViewLoadingState *state = [self ft_viewLoadingStateCreateIfNeeded:NO];
+    FTViewLoadingState *state = FTShouldCollectViewLoadingTimeForClass(object_getClass(self)) ? [self ft_viewLoadingStateCreateIfNeeded:NO] : nil;
     if (state.viewDidAppearInProgress) {
         [self ft_viewDidAppear:animated];
         return;
