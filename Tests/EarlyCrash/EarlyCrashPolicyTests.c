@@ -24,6 +24,7 @@
 #include <string.h>
 #include <unistd.h>
 #include <sys/wait.h>
+#include <pthread.h>
 
 #define START UINT64_C(100000000000)
 static FTEarlyCrashState *launch(const char *path) {
@@ -43,6 +44,52 @@ static void runLaunch(const char *program, const char *path, const char *expecte
     assert(waitpid(pid, &status, 0) == pid);
     assert(WIFEXITED(status) && WEXITSTATUS(status) == 0);
 }
+static void testDelayedPreparation(const char *path) {
+    FTEarlyCrashState *state = ft_earlyCrashCreate(); assert(state);
+    ft_earlyCrashStartInState(state, START);
+    // The event occurs within five seconds; preparation is delayed past it.
+    ft_earlyCrashRecordInState(state, START + UINT64_C(4999000000));
+    assert(access(path, F_OK) != 0); // start capture and pending event do no I/O
+    assert(ft_earlyCrashTakeDelayInState(state) == 10); // must not consume allowance
+    ft_earlyCrashInitialize(state, START + UINT64_C(9000000000), path);
+    ft_earlyCrashDestroy(state);
+    state = launch(path);
+    assert(ft_earlyCrashTakeDelayInState(state) == 2);
+    assert(ft_earlyCrashTakeDelayInState(state) == 10);
+    ft_earlyCrashDestroy(state);
+    unlink(path);
+    state = ft_earlyCrashCreate(); assert(state);
+    ft_earlyCrashStartInState(state, START);
+    ft_earlyCrashStartInState(state, START + UINT64_C(9000000000));
+    ft_earlyCrashRecordInState(state, START + UINT64_C(5001000000));
+    ft_earlyCrashInitialize(state, START + UINT64_C(9000000000), path);
+    ft_earlyCrashDestroy(state);
+    state = launch(path);
+    assert(ft_earlyCrashTakeDelayInState(state) == 10); // processing time is irrelevant
+    ft_earlyCrashDestroy(state);
+    unlink(path);
+}
+static void *recordWhilePreparing(void *context) {
+    FTEarlyCrashState *state = context;
+    for (unsigned i = 0; i < 100; i++)
+        ft_earlyCrashRecordInState(state, START + UINT64_C(4999000000));
+    return NULL;
+}
+static void testConcurrentPreparation(const char *path) {
+    for (unsigned i = 0; i < 100; i++) {
+        FTEarlyCrashState *state = ft_earlyCrashCreate(); assert(state);
+        ft_earlyCrashStartInState(state, START);
+        pthread_t thread;
+        assert(pthread_create(&thread, NULL, recordWhilePreparing, state) == 0);
+        ft_earlyCrashInitialize(state, START, path);
+        assert(pthread_join(thread, NULL) == 0);
+        ft_earlyCrashDestroy(state);
+        state = launch(path);
+        assert(ft_earlyCrashTakeDelayInState(state) == 2);
+        ft_earlyCrashDestroy(state);
+        unlink(path);
+    }
+}
 int main(int argc, char **argv) {
     if (argc == 5 && !strcmp(argv[1], "--launch")) {
         ft_earlyCrashBegin(START, argv[2]);
@@ -60,6 +107,8 @@ int main(int argc, char **argv) {
     assert(mkdtemp(directory));
     char path[1024];
     snprintf(path, sizeof(path), "%s/EarlyCrash.marker", directory);
+    testDelayedPreparation(path);
+    testConcurrentPreparation(path);
     // Independent processes, not just reconstructed objects: A crash -> B normal -> C normal.
     runLaunch(argv[0], path, "10", "4999000000");
     runLaunch(argv[0], path, "2", "normal");

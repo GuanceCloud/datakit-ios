@@ -90,7 +90,7 @@ static FTSDKAgent *sharedInstance = nil;
 
     @synchronized(sharedInstanceLock) {
         if (!sharedInstance) {
-            [FTCrash prepareEarlyCrashAtSDKStart:sdkStart];
+            ft_earlyCrashStart(sdkStart);
             sharedInstance = [[FTSDKAgent alloc] initWithConfig:configOptions];
         }
     }

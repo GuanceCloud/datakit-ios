@@ -51,6 +51,8 @@ static void delayedWillWrite(FTCrash_ExceptionHandlingPlan *plan, const FTCrash_
 @property (nonatomic, readonly) dispatch_queue_t networkQueue;
 - (void)_flushSyncData:(BOOL)withSleep;
 - (NSTimeInterval)nextAutomaticUploadDelay;
+- (NSTimeInterval)automaticUploadNow;
+- (void)afterEarlyCrashPreparation:(dispatch_block_t)completion;
 - (void)scheduleUploadWork:(dispatch_block_t)work afterDelay:(NSTimeInterval)delay;
 - (BOOL)privateUpload;
 - (void)waitBeforeRetry:(NSTimeInterval)delay;
@@ -67,8 +69,15 @@ static void delayedWillWrite(FTCrash_ExceptionHandlingPlan *plan, const FTCrash_
 @property NSUInteger uploadCalls;
 @property (copy) dispatch_block_t debounce;
 @property (copy) dispatch_block_t waiting;
+@property BOOL deferPreparation;
+@property (copy) dispatch_block_t preparation;
 @end
 @implementation FTEarlyUploadProbe
+- (NSTimeInterval)automaticUploadNow { return self.now; }
+- (void)afterEarlyCrashPreparation:(dispatch_block_t)completion {
+    if (self.deferPreparation) self.preparation = completion;
+    else completion();
+}
 - (void)scheduleDelayedUploadTimer {
     self.deadline = self.now + 0.1;
     __weak typeof(self) weakSelf = self;
@@ -88,7 +97,7 @@ static void delayedWillWrite(FTCrash_ExceptionHandlingPlan *plan, const FTCrash_
 - (void)close {
     [self invalidateAndCancelPendingUploads];
     dispatch_sync(self.networkQueue, ^{});
-    self.debounce = nil; self.waiting = nil;
+    self.debounce = nil; self.waiting = nil; self.preparation = nil;
 }
 - (void)advanceTo:(double)time {
     dispatch_sync(self.networkQueue, ^{
@@ -302,6 +311,69 @@ static void delayedWillWrite(FTCrash_ExceptionHandlingPlan *plan, const FTCrash_
     XCTAssertEqual(ft_earlyCrashTakeDelayInState(self.launch), 2u);
 }
 
+- (void)testHistoryIsConsumedEvenWithoutAnAutomaticReservation {
+    [self beginPolicyLaunchAt:UINT64_C(100000000000)];
+    ft_earlyCrashRecordInState(self.launch, UINT64_C(104999000000));
+    ft_earlyCrashDestroy(self.launch);
+    self.launch = ft_earlyCrashCreate();
+    ft_earlyCrashRestoreHistoryInState(self.launch, self.marker.fileSystemRepresentation);
+    // B never requests a wait (auto-sync remains disabled). C must still forget A.
+    [self beginPolicyLaunchAt:UINT64_C(300000000000)];
+    XCTAssertEqual(ft_earlyCrashTakeDelayInState(self.launch), 10u);
+}
+- (void)testHistoryRestoreNeedsNeitherSDKClockNorCrashRecording {
+    [self beginPolicyLaunchAt:UINT64_C(100000000000)];
+    ft_earlyCrashRecordInState(self.launch, UINT64_C(104999000000));
+    ft_earlyCrashDestroy(self.launch);
+    self.launch = ft_earlyCrashCreate();
+    // Upload-only recovery must work even without a current SDK capture clock.
+    ft_earlyCrashRestoreHistoryInState(self.launch, self.marker.fileSystemRepresentation);
+    XCTAssertEqual(ft_earlyCrashTakeDelayInState(self.launch), 2u);
+    XCTAssertEqual(ft_earlyCrashTakeDelayInState(self.launch), 10u);
+    XCTAssertFalse([[NSFileManager defaultManager] fileExistsAtPath:self.marker]);
+}
+- (void)testUploadHistoryLookupDoesNotCreateMissingDirectories {
+    ft_earlyCrashDestroy(self.launch);
+    self.launch = ft_earlyCrashCreate();
+    NSString *directory = [self.directory stringByAppendingPathComponent:@"not-created-by-upload"];
+    NSString *path = [directory stringByAppendingPathComponent:@"EarlyCrash.marker"];
+    ft_earlyCrashRestoreHistoryInState(self.launch, path.fileSystemRepresentation);
+    XCTAssertEqual(ft_earlyCrashTakeDelayInState(self.launch), 10u);
+    XCTAssertFalse([[NSFileManager defaultManager] fileExistsAtPath:directory]);
+}
+- (void)testRecordingBeforeUploadKeepsBothHistoryAndCurrentMarker {
+    [self beginPolicyLaunchAt:UINT64_C(100000000000)];
+    ft_earlyCrashRecordInState(self.launch, UINT64_C(105000000000));
+    ft_earlyCrashDestroy(self.launch);
+    self.launch = ft_earlyCrashCreate();
+    ft_earlyCrashStartInState(self.launch, UINT64_C(200000000000));
+    ft_earlyCrashPrepareRecordingInState(self.launch, self.marker.fileSystemRepresentation);
+    ft_earlyCrashRecordInState(self.launch, UINT64_C(204999000000));
+    NSData *current = [NSData dataWithContentsOfFile:self.marker];
+    XCTAssertEqual(current.length, 24u);
+    // A late upload recovery must not mistake B's new marker for A's history.
+    ft_earlyCrashRestoreHistoryInState(self.launch, self.marker.fileSystemRepresentation);
+    XCTAssertEqual(ft_earlyCrashTakeDelayInState(self.launch), 2u);
+    XCTAssertEqual(ft_earlyCrashTakeDelayInState(self.launch), 10u);
+    XCTAssertEqualObjects([NSData dataWithContentsOfFile:self.marker], current);
+    [self beginPolicyLaunchAt:UINT64_C(300000000000)];
+    XCTAssertEqual(ft_earlyCrashTakeDelayInState(self.launch), 2u);
+}
+- (void)testLateCrashConfigurationKeepsOriginalSDKClock {
+    ft_earlyCrashDestroy(self.launch);
+    self.launch = ft_earlyCrashCreate();
+    ft_earlyCrashStartInState(self.launch, UINT64_C(100000000000));
+    ft_earlyCrashStartInState(self.launch, UINT64_C(109000000000));
+    ft_earlyCrashRestoreHistoryInState(self.launch, self.marker.fileSystemRepresentation);
+    XCTAssertFalse([[NSFileManager defaultManager] fileExistsAtPath:self.marker]);
+    ft_earlyCrashPrepareRecordingInState(self.launch, self.marker.fileSystemRepresentation);
+    ft_earlyCrashRecordInState(self.launch, UINT64_C(105001000000));
+    XCTAssertEqual([NSData dataWithContentsOfFile:self.marker].length, 0u);
+    ft_earlyCrashRecordInState(self.launch, UINT64_C(104999000000));
+    XCTAssertEqual([NSData dataWithContentsOfFile:self.marker].length, 24u);
+    [self beginPolicyLaunchAt:UINT64_C(200000000000)];
+    XCTAssertEqual(ft_earlyCrashTakeDelayInState(self.launch), 2u);
+}
 - (void)testPreviousEarlyCrashChangesOnlyFirstReservation {
     FTEarlyUploadProbe *worker = [self workerAfterCrashAt:4999000000];
     [worker flushWithSleep:YES];
@@ -407,7 +479,52 @@ static void delayedWillWrite(FTCrash_ExceptionHandlingPlan *plan, const FTCrash_
     [worker invalidateAndCancelPendingUploads]; dispatch_sync(worker.networkQueue, ^{});
     [worker advanceTo:2.1]; XCTAssertEqual(observer.calls, 0u);
 }
-- (void)testSDKStartupConsumesHistoryAndKeepsCurrentMarkerAcrossReinitialization {
+- (void)testDelayedPreparationKeepsOriginalUploadDeadline {
+    FTEarlyUploadProbe *worker = [self workerAfterCrashAt:4999000000];
+    worker.deferPreparation = YES;
+    [self reserve:worker];
+    XCTAssertNil(worker.waiting);
+    dispatch_sync(worker.networkQueue, ^{
+        worker.now = 1.1;
+        worker.preparation(); worker.preparation = nil;
+    });
+    XCTAssertEqualWithAccuracy(worker.reservedDelay, 1, 0.000001);
+    XCTAssertEqualWithAccuracy(worker.deadline, 2.1, 0.000001);
+}
+- (void)testPreparationFinishingAfterDeadlineSchedulesImmediately {
+    FTEarlyUploadProbe *worker = [self workerAfterCrashAt:4999000000];
+    worker.deferPreparation = YES;
+    [self reserve:worker];
+    dispatch_sync(worker.networkQueue, ^{
+        worker.now = 4;
+        worker.preparation(); worker.preparation = nil;
+    });
+    XCTAssertEqual(worker.reservedDelay, 0);
+    XCTAssertEqual(worker.deadline, 4);
+}
+- (void)testShutdownDuringPreparationDoesNotConsumeShortWait {
+    FTEarlyUploadProbe *worker = [self workerAfterCrashAt:4999000000];
+    worker.deferPreparation = YES;
+    [self reserve:worker];
+    [worker invalidateAndCancelPendingUploads];
+    dispatch_sync(worker.networkQueue, ^{
+        worker.preparation(); worker.preparation = nil;
+    });
+    XCTAssertNil(worker.waiting);
+    XCTAssertEqual(ft_earlyCrashTakeDelayInState(self.launch), 2u);
+}
+- (void)testManualUploadDuringPreparationDoesNotConsumeShortWait {
+    FTEarlyUploadProbe *worker = [self workerAfterCrashAt:4999000000];
+    worker.deferPreparation = YES;
+    [self reserve:worker];
+    [worker flushWithSleep:NO];
+    dispatch_sync(worker.networkQueue, ^{
+        worker.preparation(); worker.preparation = nil;
+    });
+    XCTAssertNil(worker.waiting);
+    XCTAssertEqual(ft_earlyCrashTakeDelayInState(self.launch), 2u);
+}
+- (void)testUploadRestoresHistoryWithoutCrashAndRecordingStartsSeparately {
     XCTAssertTrue(NSThread.isMainThread);
     NSString *bundle = [[NSBundle mainBundle] objectForInfoDictionaryKey:@"CFBundleName"] ?: @"Unknown";
     bundle = [bundle stringByReplacingOccurrencesOfString:@"/" withString:@"-"];
@@ -420,16 +537,43 @@ static void delayedWillWrite(FTCrash_ExceptionHandlingPlan *plan, const FTCrash_
     ft_earlyCrashInitialize(previous, 100000000000, path.fileSystemRepresentation);
     ft_earlyCrashRecordInState(previous, 105000000000);
     ft_earlyCrashDestroy(previous);
+    NSData *history = [NSData dataWithContentsOfFile:path];
+    dispatch_semaphore_t entered = dispatch_semaphore_create(0);
+    dispatch_semaphore_t resume = dispatch_semaphore_create(0);
+    dispatch_async(ft_earlyCrashPreparationQueue(), ^{
+        dispatch_semaphore_signal(entered);
+        dispatch_semaphore_wait(resume, DISPATCH_TIME_FOREVER);
+    });
+    dispatch_semaphore_wait(entered, DISPATCH_TIME_FOREVER);
     FTSDKConfig *config = [[FTSDKConfig alloc] initWithDatakitUrl:@"http://localhost"];
     config.autoSync = NO;
-    [FTSDKAgent startWithConfigOptions:config];
+    @try {
+        [FTSDKAgent startWithConfigOptions:config];
+        // Block the I/O queue: SDK startup must return without touching history.
+        XCTAssertEqualObjects([NSData dataWithContentsOfFile:path], history);
+    } @finally {
+        dispatch_semaphore_signal(resume);
+    }
+    dispatch_sync(ft_earlyCrashPreparationQueue(), ^{});
+    // The upload manager restores history even with autoSync and Crash off,
+    // but must not create this launch's recording file.
+    XCTAssertFalse([[NSFileManager defaultManager] fileExistsAtPath:path]);
     FTDataUploadWorker *production = [[FTTrackDataManager sharedInstance] valueForKey:@"dataUploadWorker"];
+    XCTestExpectation *restored = [self expectationWithDescription:@"upload restores history without RUM/crash"];
+    [production afterEarlyCrashPreparation:^{ [restored fulfill]; }];
+    [self waitForExpectations:@[restored] timeout:5];
+    XCTAssertFalse([[NSFileManager defaultManager] fileExistsAtPath:path]);
     XCTAssertEqual([production nextAutomaticUploadDelay], 2);
     XCTAssertEqual([production nextAutomaticUploadDelay], 10);
     XCTAssertEqual([NSData dataWithContentsOfFile:path].length, 0u);
 
+    // Crash setup prepares current-launch recording independently of upload.
+    [FTCrash prepareEarlyCrashAtSDKStart:ft_earlyCrashNow()];
+    dispatch_sync(ft_earlyCrashPreparationQueue(), ^{});
+    XCTAssertTrue([[NSFileManager defaultManager] fileExistsAtPath:path]);
     FTCrash_MonitorContext context = {0};
-    const uint64_t capture = ft_earlyCrashNow();
+    const uint64_t capture = ft_earlyCrashStartTime() + UINT64_C(4999000000);
+    // Exact occurrence time is independent of test-host/SDK startup duration.
     context.earlyCrashTime = capture;
     context.requirements.shouldWriteReport = true;
     ftcrash_prepareEventForRecording(&context); // nonfatal

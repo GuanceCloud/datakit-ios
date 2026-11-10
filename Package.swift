@@ -206,6 +206,7 @@ let package = Package(
         .target(
             name: "_GuanceSDKCore",
             dependencies: [
+                "_FTBaseUtils",
                 "_FTRUM",
                 "_FTURLSessionAutoInstrumentation",
                 "_FTLogger",

@@ -58,21 +58,6 @@
 static FTCrash *sharedHandler = nil;
 static mach_port_t main_thread_id;
 
-static NSString *FTCrashDefaultInstallPath(void) {
-    NSArray *directories = NSSearchPathForDirectoriesInDomains(NSCachesDirectory, NSUserDomainMask, YES);
-    if ([directories count] == 0) {
-        FTInnerLogError(@"Could not locate cache directory path.");
-        return nil;
-    }
-    NSString *cachePath = [directories objectAtIndex:0];
-    if ([cachePath length] == 0) {
-        FTInnerLogError(@"Could not locate cache directory path.");
-        return nil;
-    }
-    NSString *bundle = [[[NSBundle mainBundle] infoDictionary] objectForKey:@"CFBundleName"] ?: @"Unknown";
-    NSString *pathEnd = [@"FTCrash" stringByAppendingPathComponent:[bundle stringByReplacingOccurrencesOfString:@"/" withString:@"-"]];
-    return [cachePath stringByAppendingPathComponent:pathEnd];
-}
 
 @implementation FTCrash
 
@@ -114,6 +99,11 @@ static NSString *FTCrashDefaultInstallPath(void) {
     [crash.crashReportWrapper setEnableCpu:cpu];
     [crash.crashReportWrapper setEnableMemory:memory];
     [crash.crashReportWrapper setIssueDataProvider:issueDataProvider];
+    if (monitoring != 0) {
+        // The SDK entry has already captured the original clock. A later call
+        // keeps that clock; this only enables current-launch file preparation.
+        [self prepareEarlyCrashAtSDKStart:ft_earlyCrashStartTime()];
+    }
     [crash install];
     [crash sendCrashReport];
 }
@@ -151,21 +141,12 @@ static NSString *FTCrashDefaultInstallPath(void) {
     [[[NSBundle mainBundle] infoDictionary] objectForKey:@"CFBundleName"] ?: @"Unknown";
     return [bundleName stringByReplacingOccurrencesOfString:@"/" withString:@"-"];
 }
-- (NSString *)getDefaultInstallPath { return FTCrashDefaultInstallPath(); }
+- (NSString *)getDefaultInstallPath { return ft_crashInstallPath(); }
 
 + (void)prepareEarlyCrashAtSDKStart:(uint64_t)start {
 #if TARGET_OS_IOS && !TARGET_OS_MACCATALYST
-    @try {
-        if ([[NSBundle mainBundle].bundlePath.pathExtension isEqualToString:@"appex"]) return;
-        NSString *directory = [FTCrashDefaultInstallPath() stringByAppendingPathComponent:@"Data"];
-        BOOL created = directory && [[NSFileManager defaultManager] createDirectoryAtPath:directory
-                                        withIntermediateDirectories:YES attributes:nil error:nil];
-        NSString *path = created ? [directory stringByAppendingPathComponent:@"EarlyCrash.marker"] : nil;
-        ft_earlyCrashBegin(start, path.fileSystemRepresentation);
-    } @catch (__unused NSException *exception) {
-        // Optional telemetry must not interfere with SDK/host initialization.
-        ft_earlyCrashBegin(start, NULL);
-    }
+    ft_earlyCrashStart(start);
+    ft_earlyCrashEnableRecording();
 #endif
 }
 

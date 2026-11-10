@@ -63,7 +63,7 @@ NS_ASSUME_NONNULL_BEGIN
 /// Singleton
 + (instancetype)shared;
 
-/// Prepares early-crash state using the SDK entry time in monotonic nanoseconds.
+/// Enables current-launch marker writing; preserves the first SDK entry time in monotonic nanoseconds.
 + (void)prepareEarlyCrashAtSDKStart:(uint64_t)start;
 
 + (void)setupWithMonitoringType:(FTCrashCMonitorType)monitoring

@@ -321,13 +321,28 @@ typedef NS_ENUM(NSInteger, FTUploadWorkerState) {
     self.uploadWork = uploadWork;
     if (withSleep){
         FTInnerLogDebug(@"[NETWORK]: start upload waiting");
-        [self scheduleUploadWork:uploadWork afterDelay:[self nextAutomaticUploadDelay]];
+        NSTimeInterval reservedAt = [self automaticUploadNow];
+        [self afterEarlyCrashPreparation:^{
+            __strong typeof(weakSelf) strongSelf = weakSelf;
+            if (!strongSelf || [strongSelf isInvalidated] || strongSelf.uploadWork != uploadWork) return;
+            NSTimeInterval delay = [strongSelf nextAutomaticUploadDelay];
+            [strongSelf scheduleUploadWork:uploadWork
+                               afterDelay:MAX(0, delay - ([strongSelf automaticUploadNow] - reservedAt))];
+        }];
     }else{
         FTInnerLogDebug(@"[NETWORK]: start upload");
         dispatch_async(self.networkQueue,uploadWork);
     }
 }
 // Internal scheduling seams; production behavior remains on the network queue.
+- (NSTimeInterval)automaticUploadNow { return ft_earlyCrashNow() / 1e9; }
+- (void)afterEarlyCrashPreparation:(dispatch_block_t)completion {
+    ft_earlyCrashLoadHistory();
+    dispatch_queue_t queue = self.networkQueue;
+    dispatch_async(ft_earlyCrashPreparationQueue(), ^{
+        dispatch_async(queue, completion);
+    });
+}
 - (NSTimeInterval)nextAutomaticUploadDelay { return ft_earlyCrashTakeUploadDelay(); }
 - (void)scheduleUploadWork:(dispatch_block_t)work afterDelay:(NSTimeInterval)delay {
     dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)(delay * NSEC_PER_SEC)), self.networkQueue, work);

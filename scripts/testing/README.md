@@ -25,6 +25,27 @@ Upload tests use deterministic scheduling and retry probes for exact deadlines,
 cache deletion/retention, automatic-upload gating, cancellation and manual upload
 without real waits.
 
+History recovery and current-launch recording preparation run independently on
+`com.ft.early-crash`. The SDK entry captures only the original monotonic start.
+Upload-manager initialization restores and consumes history even when automatic
+upload or Crash collection is disabled, without creating a recording file. Crash
+setup enables recording and prepares its directory and descriptor; existing Crash
+monitor installation remains synchronous. Both operations share the serial queue
+so a later history lookup cannot delete the current launch's marker.
+Crash handlers publish eligible occurrences through lock-free atomics and never
+wait for preparation. Descriptor publication and pending-event handshakes allow
+preparation to persist an occurrence captured before the file was opened. If the
+process exits before that open completes, persistence cannot be guaranteed.
+
+Automatic upload reservations wait asynchronously for history recovery and deduct its
+elapsed time from the original two/ten-second deadline. Canceled or invalidated
+reservations do not consume the allowance while waiting. Manual uploads retain
+their existing path. Regression cases block the preparation queue during real
+SDK startup, inject delayed completion before/after the upload deadline, and
+exercise manual upload/shutdown while preparation is pending. The C suite also
+checks delayed events against the original start and races descriptor publication
+with crash recording across 100 isolated launch states.
+
 The C integration tests retain the cases requiring separate processes. Seven
 `fork`/`exec` launches verify persistence and consumption across actual process
 restarts. Four writer-exit cases pause or interrupt the first write, inject a
