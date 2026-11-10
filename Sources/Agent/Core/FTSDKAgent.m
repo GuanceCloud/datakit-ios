@@ -58,6 +58,7 @@
 #import "FTConfig+RemoteConfig.h"
 #import "FTRemoteConfigTypeDefs.h"
 #import "FTCrash.h"
+#import "FTEarlyCrash.h"
 #import "FTRemoteConfigError.h"
 #import "FTDateUtil.h"
 #import "FTAppLaunchTracker.h"
@@ -84,10 +85,12 @@ static FTSDKAgent *sharedInstance = nil;
 }
 #pragma mark --------- Initialize config settings ----------
 + (void)startWithConfigOptions:(FTSDKConfig *)configOptions{
+    const uint64_t sdkStart = ft_earlyCrashNow();
     NSAssert ((strcmp(dispatch_queue_get_label(DISPATCH_CURRENT_QUEUE_LABEL), dispatch_queue_get_label(dispatch_get_main_queue())) == 0),@"The SDK must be initialized on the main thread, otherwise unpredictable issues may occur (such as missing launch events).");
 
     @synchronized(sharedInstanceLock) {
         if (!sharedInstance) {
+            ft_earlyCrashStart(sdkStart);
             sharedInstance = [[FTSDKAgent alloc] initWithConfig:configOptions];
         }
     }

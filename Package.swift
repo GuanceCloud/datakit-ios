@@ -74,6 +74,7 @@ let package = Package(
                 .headerSearchPath("Agent/Config"),
                 .headerSearchPath("Agent/ExternalData"),
                 .headerSearchPath("Core/include"),
+                .headerSearchPath("Core/BaseUtils/Base"),
                 .headerSearchPath("Core/FTRUM/Heatmap"),
                 .headerSearchPath("Core/DataFilter")
             ]
@@ -133,6 +134,7 @@ let package = Package(
             path: "Sources/Core/FTRUM",
             cSettings: [
                 .headerSearchPath("Monitor"),
+                .headerSearchPath("../BaseUtils/Base"),
                 .headerSearchPath("FTCrash"),
                 .headerSearchPath("FTCrash/RecordingCore"),
                 .headerSearchPath("FTCrash/Recording"),
@@ -204,6 +206,7 @@ let package = Package(
         .target(
             name: "_GuanceSDKCore",
             dependencies: [
+                "_FTBaseUtils",
                 "_FTRUM",
                 "_FTURLSessionAutoInstrumentation",
                 "_FTLogger",
@@ -222,6 +225,7 @@ let package = Package(
             publicHeadersPath: "Core/Public",
             cSettings: [
                 .headerSearchPath("Core/include"),
+                .headerSearchPath("Core/BaseUtils/Base"),
                 .headerSearchPath("Core/DataManager/Upload"),
                 .headerSearchPath("Core/DataManager/Storage"),
                 .headerSearchPath("Core/DataManager/Storage/fmdb"),

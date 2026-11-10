@@ -100,6 +100,9 @@ static FTTrackDataManager *sharedInstance = nil;
 -(FTHTTPClient *)httpClient{
     return _dataUploadWorker.httpClient;
 }
+- (void)updatePreviousEarlyCrash:(BOOL)previousEarlyCrash {
+    [self.dataUploadWorker updatePreviousEarlyCrash:previousEarlyCrash];
+}
 - (void)enableAutoSync:(BOOL)autoSync{
     self.autoSync = autoSync;
     if (autoSync) {

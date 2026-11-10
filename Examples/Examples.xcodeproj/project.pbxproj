@@ -7,6 +7,8 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		EC0000010000000000000042 /* FTCrashStateReadTests.m in Sources */ = {isa = PBXBuildFile; fileRef = EC0000010000000000000041 /* FTCrashStateReadTests.m */; };
+		EC0000010000000000000012 /* FTEarlyCrashUploadTests.m in Sources */ = {isa = PBXBuildFile; fileRef = EC0000010000000000000011 /* FTEarlyCrashUploadTests.m */; };
 		1707C82329E52ED5009B7D9C /* FTRUMTests.m in Sources */ = {isa = PBXBuildFile; fileRef = 1707C82229E52ED5009B7D9C /* FTRUMTests.m */; };
 		1707C83129E534F9009B7D9C /* macOS-AppTest.xcconfig in Resources */ = {isa = PBXBuildFile; fileRef = 1707C83029E534F9009B7D9C /* macOS-AppTest.xcconfig */; };
 		1707C83529E55C19009B7D9C /* FTLoggerTest.m in Sources */ = {isa = PBXBuildFile; fileRef = 1707C83429E55C19009B7D9C /* FTLoggerTest.m */; };
@@ -331,6 +333,8 @@
 /* End PBXCopyFilesBuildPhase section */
 
 /* Begin PBXFileReference section */
+		EC0000010000000000000041 /* FTCrashStateReadTests.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = FTCrashStateReadTests.m; sourceTree = "<group>"; };
+		EC0000010000000000000011 /* FTEarlyCrashUploadTests.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = FTEarlyCrashUploadTests.m; sourceTree = "<group>"; };
 		162957DD463DC9E7C9E4D1A0 /* Pods-FTMobileSDKUnitTests-tvOS.pre.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-FTMobileSDKUnitTests-tvOS.pre.xcconfig"; path = "Target Support Files/Pods-FTMobileSDKUnitTests-tvOS/Pods-FTMobileSDKUnitTests-tvOS.pre.xcconfig"; sourceTree = "<group>"; };
 		1707C82229E52ED5009B7D9C /* FTRUMTests.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = FTRUMTests.m; sourceTree = "<group>"; };
 		1707C83029E534F9009B7D9C /* macOS-AppTest.xcconfig */ = {isa = PBXFileReference; lastKnownFileType = text.xcconfig; path = "macOS-AppTest.xcconfig"; sourceTree = "<group>"; };
@@ -920,6 +924,8 @@
 				4A85318B23B23A4000B40B5D /* FTNetworkTests.m */,
 				17B1715928154A6E004002C9 /* FTRequestTest.m */,
 				171F9F6D2CF97E9300BEF0B9 /* FTTrackDataManagerTest.m */,
+				EC0000010000000000000011 /* FTEarlyCrashUploadTests.m */,
+				EC0000010000000000000041 /* FTCrashStateReadTests.m */,
 				17ABD7392D190E150014422B /* FTTrackDataManager+Test.h */,
 			);
 			path = Network;
@@ -2067,6 +2073,8 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				EC0000010000000000000012 /* FTEarlyCrashUploadTests.m in Sources */,
+				EC0000010000000000000042 /* FTCrashStateReadTests.m in Sources */,
 				179BEB9A2D30CFAF004AA5A6 /* FTNetworkInterceptorTest.m in Sources */,
 				17E0792E291E60830014A420 /* FTExtensionSDKTest.m in Sources */,
 				17132DC72C2D9093009DFE8F /* FTUtilsTest.m in Sources */,

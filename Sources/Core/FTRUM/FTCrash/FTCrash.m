@@ -37,6 +37,7 @@
 #import "FTCrashMonitor_System.h"
 #import "FTCrashReport.h"
 #import "FTCrashBinaryImageCache.h"
+#import "FTEarlyCrash.h"
 
 @interface FTCrash()<FTAppLifeCycleDelegate,FTBacktraceReporting>
 /** If YES, introspect memory contents during a crash.
@@ -56,6 +57,7 @@
 
 static FTCrash *sharedHandler = nil;
 static mach_port_t main_thread_id;
+
 
 @implementation FTCrash
 
@@ -134,20 +136,7 @@ static mach_port_t main_thread_id;
     [[[NSBundle mainBundle] infoDictionary] objectForKey:@"CFBundleName"] ?: @"Unknown";
     return [bundleName stringByReplacingOccurrencesOfString:@"/" withString:@"-"];
 }
-- (NSString *)getDefaultInstallPath{
-    NSArray *directories = NSSearchPathForDirectoriesInDomains(NSCachesDirectory, NSUserDomainMask, YES);
-    if ([directories count] == 0) {
-        FTInnerLogError(@"Could not locate cache directory path.");
-        return nil;
-    }
-    NSString *cachePath = [directories objectAtIndex:0];
-    if ([cachePath length] == 0) {
-        FTInnerLogError(@"Could not locate cache directory path.");
-        return nil;
-    }
-    NSString *pathEnd = [@"FTCrash" stringByAppendingPathComponent:[self getBundleName]];
-    return [cachePath stringByAppendingPathComponent:pathEnd];
-}
+- (NSString *)getDefaultInstallPath { return ft_crashInstallPath(); }
 
 -(void)setIntrospectMemory:(BOOL)introspectMemory{
     _introspectMemory = introspectMemory;
@@ -232,6 +221,14 @@ static mach_port_t main_thread_id;
 }
 - (BOOL)crashedLastLaunch{
     return ftcrashstate_currentState()->crashedLastLaunch;
+}
+- (BOOL)previousEarlyCrash {
+#if TARGET_OS_IOS && !TARGET_OS_MACCATALYST
+    if ([[NSBundle mainBundle].bundlePath.pathExtension isEqualToString:@"appex"]) return NO;
+    return ftcrashcm_appstate_getAPI()->isEnabled() && ftcrashstate_currentState()->previousEarlyCrash;
+#else
+    return NO;
+#endif
 }
 - (void)sendCrashReport{
     dispatch_async(dispatch_get_global_queue(0, 0), ^{
