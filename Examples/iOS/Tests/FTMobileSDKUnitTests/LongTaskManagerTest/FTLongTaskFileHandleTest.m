@@ -64,7 +64,12 @@
 @end
 
 @implementation FTManualTimingDetector
+- (instancetype)initWithDelegate:(id<FTLongTaskTimingDelegate>)delegate {
+    if ((self = [super initWithDelegate:delegate])) _testAppState = FTAppStateUnknown;
+    return self;
+}
 - (BOOL)isMonitoringGeneration:(uint64_t)generation { return !self.intervalEnded; }
+- (FTAppState)currentAppState { return self.testAppState; }
 @end
 
 typedef void (^FTLongTaskCallBack)(NSString *slowStack, long long duration);
@@ -158,8 +163,10 @@ typedef void (^FTWriteCallBack)(NSDictionary *fields, NSDictionary *tags);
 @property (nonatomic, copy) NSDictionary *recoveredErrorTags;
 @property (nonatomic, copy) NSDictionary *recoveredErrorFields;
 @property (nonatomic, strong) FTLongTaskEvent *observedLongTask;
-@property (nonatomic, copy) NSString *observedANRStartState;
+@property (nonatomic, copy) NSString *observedANRSituation;
 @property (nonatomic, copy) NSString *observedANRIntervalState;
+@property (nonatomic) BOOL ignoreBackgroundForTests;
+@property (nonatomic) NSUInteger totalRUMWrites;
 
 @end
 
@@ -235,7 +242,7 @@ typedef void (^FTWriteCallBack)(NSDictionary *fields, NSDictionary *tags);
     // Producer End was 7s; background was observed before the worker processed it.
     FTTestObserveLongTaskState(manager, FTLongTaskPhaseEnd, NSEC_PER_SEC, 6LL*NSEC_PER_SEC,
                               7LL*NSEC_PER_SEC, FTAppStateRun, FTRUMAppStateBackgroundAndForeground);
-    XCTAssertEqualObjects(self.observedANRStartState, @"run");
+    XCTAssertEqualObjects(self.observedANRSituation, @"run");
     XCTAssertEqualObjects(self.observedANRIntervalState, @"foreground_and_background");
     XCTAssertEqualObjects(self.observedLongTask.appState, @"foreground_and_background");
     XCTAssertEqual(self.observedLongTask.endTimeNs, 7LL*NSEC_PER_SEC);
@@ -266,7 +273,7 @@ typedef void (^FTWriteCallBack)(NSDictionary *fields, NSDictionary *tags);
     }
 }
 
-- (void)testSlowCaptureCannotReplaceKnownStartSituation {
+- (void)testContextRefreshCannotReplaceDetectorRecordedSituation {
     FTLongTaskManager *manager = [self timingManagerANR:YES freeze:YES threshold:250];
     self.backtraceMock.onAllThreads = ^{
         [self.fatalErrorContext setAppState:@"background"];
@@ -278,7 +285,7 @@ typedef void (^FTWriteCallBack)(NSDictionary *fields, NSDictionary *tags);
     XCTAssertEqualObjects([FTTestANRStore(manager) readANRData].errorContextModel.appState, @"run");
     FTTestObserveLongTaskState(manager, FTLongTaskPhaseEnd, NSEC_PER_SEC, 6LL*NSEC_PER_SEC,
                               7LL*NSEC_PER_SEC, FTAppStateRun, FTRUMAppStateBackgroundAndForeground);
-    XCTAssertEqualObjects(self.observedANRStartState, @"run");
+    XCTAssertEqualObjects(self.observedANRSituation, @"run");
     XCTAssertEqualObjects(self.observedANRIntervalState, @"foreground_and_background");
     self.backtraceMock.onAllThreads = nil;
     [manager shutDown];
@@ -295,7 +302,7 @@ typedef void (^FTWriteCallBack)(NSDictionary *fields, NSDictionary *tags);
     ];
     for (NSArray *scenario in scenarios) {
         self.observedLongTask = nil;
-        self.observedANRStartState = nil;
+        self.observedANRSituation = nil;
         self.observedANRIntervalState = nil;
         FTLongTaskManager *manager = [self timingManagerANR:YES freeze:YES threshold:250];
         FTAppState startState = [scenario[0] unsignedIntegerValue];
@@ -316,7 +323,7 @@ typedef void (^FTWriteCallBack)(NSDictionary *fields, NSDictionary *tags);
         XCTAssertNotNil(self.observedLongTask);
         XCTAssertEqualObjects(self.observedLongTask.appState, scenario[2]);
         XCTAssertEqualObjects(self.observedANRIntervalState, scenario[2]);
-        XCTAssertEqualObjects(self.observedANRStartState, scenario[3]);
+        XCTAssertEqualObjects(self.observedANRSituation, scenario[3]);
         XCTAssertEqual(self.observedLongTask.endTimeNs, 7LL*NSEC_PER_SEC);
         NSUInteger count = self.reportedANRTimes.count;
         FTTestObserveLongTaskState(manager, FTLongTaskPhaseEnd, NSEC_PER_SEC, 9LL*NSEC_PER_SEC,
@@ -327,7 +334,7 @@ typedef void (^FTWriteCallBack)(NSDictionary *fields, NSDictionary *tags);
     }
 }
 
-- (void)testV3RecoveryPreservesOnlyValidStartSituationsAndReservesIntervalField {
+- (void)testV3RecoveryPreservesOnlyValidRecordedSituationsAndReservesIntervalField {
     for (id value in @[@"startup", @"run", @"background", @"unknown", @"foreground", @42, NSNull.null]) {
         FTLongTaskManager *manager = [self timingManagerANR:YES freeze:YES threshold:250];
         [self.fatalErrorContext setAppState:[value isKindOfClass:NSString.class] ? value : nil];
@@ -439,7 +446,7 @@ typedef void (^FTWriteCallBack)(NSDictionary *fields, NSDictionary *tags);
     dependencies.issueDataProvider = nil;
 }
 
-- (void)testStartSituationSurvivesDelayedCreationAndPersistence {
+- (void)testRecordedSituationSurvivesContextRefreshAndPersistence {
     NSArray *states = @[@"startup", @"run", @"background"];
     NSArray *values = @[@(FTAppStateStartUp), @(FTAppStateRun), @(FTAppStateBackground)];
     for (NSUInteger index = 0; index < states.count; index++) {
@@ -466,7 +473,7 @@ typedef void (^FTWriteCallBack)(NSDictionary *fields, NSDictionary *tags);
     }
 }
 
-- (void)testLegacyV2RecoveryCannotClaimStartStateAndHasUnknownInterval {
+- (void)testLegacyV2RecoveryUsesSavedSituationAndUnknownInterval {
     FTLongTaskManager *manager = [self timingManagerANR:YES freeze:YES threshold:250];
     [self.fatalErrorContext setAppState:@"run"];
     FTLongTaskANRData *data = [[FTLongTaskANRData alloc] initWithStartTimeNs:NSEC_PER_SEC
@@ -474,7 +481,7 @@ typedef void (^FTWriteCallBack)(NSDictionary *fields, NSDictionary *tags);
         errorContextModel:self.fatalErrorContext.currentContextModel];
     data.lastUpdateTimeNs = 7LL*NSEC_PER_SEC;
     XCTAssertEqual([FTTestANRProcessor(manager) reportANRData:data], NSEC_PER_SEC);
-    XCTAssertEqualObjects(self.recoveredErrorTags[FT_KEY_ERROR_SITUATION], @"unknown");
+    XCTAssertEqualObjects(self.recoveredErrorTags[FT_KEY_ERROR_SITUATION], @"run");
     XCTAssertEqualObjects(self.recoveredErrorFields[@"app_state"], @"unknown");
     [manager shutDown];
 }
@@ -510,6 +517,270 @@ typedef void (^FTWriteCallBack)(NSDictionary *fields, NSDictionary *tags);
 }
 // Producer End is delivered before capture returns, while coordinator End is
 // processed afterward on the serial detector queue, matching the real call order.
+- (void)testInternalBackgroundPolicyRejectsBackgroundCheckpoint {
+    self.ignoreBackgroundForTests=YES;
+    FTLongTaskManager *manager=[self timingManagerANR:YES freeze:YES threshold:250];
+    FTTestObserveLongTaskState(manager,FTLongTaskPhaseBegin,NSEC_PER_SEC,0,NSEC_PER_SEC,
+                              FTAppStateBackground,FTRUMAppStateBackgroundOnly);
+    FTTestObserveLongTaskState(manager,FTLongTaskPhaseCheckpoint,NSEC_PER_SEC,5001*NSEC_PER_MSEC,7LL*NSEC_PER_SEC,
+                              FTAppStateBackground,FTRUMAppStateBackgroundOnly);
+    FTTestObserveLongTaskState(manager,FTLongTaskPhaseEnd,NSEC_PER_SEC,5100*NSEC_PER_MSEC,8LL*NSEC_PER_SEC,
+                              FTAppStateBackground,FTRUMAppStateBackgroundOnly);
+    XCTAssertNil(self.observedLongTask);
+    XCTAssertEqual(self.reportedANRTimes.count,0U);
+    XCTAssertEqual(self.backtraceMock.mainThreadCallCount,0);
+    XCTAssertEqual(self.backtraceMock.allThreadsCallCount,0);
+    [manager shutDown];
+}
+
+- (void)testCaptureRefreshPersistsLastRecordedSituation {
+    FTLongTaskManager *manager=[self timingManagerANR:YES freeze:YES threshold:250];
+    FTManualTimingDetector *detector=[[FTManualTimingDetector alloc]initWithDelegate:manager];
+    detector.testAppState=FTAppStateRun;
+    FTLongTaskTiming timing={.phase=FTLongTaskPhaseBegin,.generation=42,.startTimeNs=NSEC_PER_SEC,
+        .observationTimeNs=NSEC_PER_SEC,.startAppState=FTAppStateRun,.recordedAppState=FTAppStateRun};
+    [manager longTaskDetector:detector didObserveTiming:timing];
+    self.backtraceMock.onAllThreads=^{ detector.testAppState=FTAppStateBackground; };
+    timing.phase=FTLongTaskPhaseCheckpoint;timing.durationNs=3001*NSEC_PER_MSEC;timing.observationTimeNs=4LL*NSEC_PER_SEC+NSEC_PER_MSEC;
+    [manager longTaskDetector:detector didObserveTiming:timing];
+    XCTAssertEqualObjects([FTTestANRStore(manager)readANRData].errorContextModel.appState,@"background");
+    [manager shutDown];
+}
+
+- (void)testInternalBackgroundPolicyDefaultsAndCopies {
+    FTRUMDependencies *dependencies=[FTRUMDependencies new];
+    XCTAssertFalse(dependencies.ignoreBackgroundLongTaskAndANR);
+    dependencies.ignoreBackgroundLongTaskAndANR=YES;
+    FTRUMDependencies *copy=[dependencies copy];
+    XCTAssertTrue(copy.ignoreBackgroundLongTaskAndANR);
+}
+
+- (void)testBackgroundAdmissionSnapshotCannotBeOverriddenByCurrentForeground {
+    self.ignoreBackgroundForTests=YES;
+    FTLongTaskManager *manager=[self timingManagerANR:YES freeze:YES threshold:250];
+    FTManualTimingDetector *detector=[[FTManualTimingDetector alloc]initWithDelegate:manager];
+    detector.testAppState=FTAppStateRun;
+    FTLongTaskTiming timing={.phase=FTLongTaskPhaseBegin,.generation=42,.startTimeNs=NSEC_PER_SEC,
+        .observationTimeNs=NSEC_PER_SEC,.startAppState=FTAppStateBackground,.recordedAppState=FTAppStateRun};
+    XCTAssertEqual([manager longTaskDetector:detector didObserveTiming:timing],UINT64_MAX);
+    timing.phase=FTLongTaskPhaseCheckpoint;timing.durationNs=5001*NSEC_PER_MSEC;
+    [manager longTaskDetector:detector didObserveTiming:timing];
+    timing.phase=FTLongTaskPhaseEnd;
+    [manager longTaskDetector:detector didObserveTiming:timing];
+    XCTAssertNil(self.observedLongTask);
+    XCTAssertEqual(self.reportedANRTimes.count,0U);
+    XCTAssertEqual(self.backtraceMock.mainThreadCallCount,0);
+    XCTAssertEqual(self.backtraceMock.allThreadsCallCount,0);
+    [manager shutDown];
+}
+
+- (void)testBackgroundAtEveryCheckpointCancelsAndCannotReviveTheInterval {
+    for (NSUInteger stage=0;stage<7;stage++) {
+        self.ignoreBackgroundForTests=YES;
+        self.observedLongTask=nil;
+        [self.reportedANRTimes removeAllObjects];
+        FTLongTaskManager *manager=[self timingManagerANR:YES freeze:YES threshold:250];
+        FTManualTimingDetector *detector=[[FTManualTimingDetector alloc]initWithDelegate:manager];
+        detector.testAppState=FTAppStateRun;
+        FTLongTaskTiming timing={.phase=FTLongTaskPhaseBegin,.generation=42,.startTimeNs=NSEC_PER_SEC,
+            .observationTimeNs=NSEC_PER_SEC,.startAppState=FTAppStateRun,.recordedAppState=FTAppStateRun};
+        [manager longTaskDetector:detector didObserveTiming:timing];
+        dispatch_block_t background=^{detector.testAppState=FTAppStateBackground;};
+        if(stage==0) background(); // State changed after the timing snapshot, before callback work.
+        if(stage==1) self.backtraceMock.duringMainCapture=background;
+        if(stage==2) self.backtraceMock.onMainThread=background;
+        if(stage==3) self.backtraceMock.duringAllThreadsCapture=background;
+        if(stage==4) self.backtraceMock.onAllThreads=background;
+        timing.phase=FTLongTaskPhaseCheckpoint;timing.durationNs=5001*NSEC_PER_MSEC;
+        timing.observationTimeNs=NSEC_PER_SEC+timing.durationNs;
+        [manager longTaskDetector:detector didObserveTiming:timing];
+        if(stage>=5) {
+            XCTAssertNotNil([FTTestANRStore(manager)readANRData]);
+            background();
+            timing.recordedAppState=FTAppStateBackground;
+            timing.phase=stage==5?FTLongTaskPhaseCheckpoint:FTLongTaskPhaseEnd;
+            timing.durationNs=5100*NSEC_PER_MSEC;
+            [manager longTaskDetector:detector didObserveTiming:timing];
+        }
+        XCTAssertNil([FTTestANRStore(manager)readANRData]);
+        NSUInteger mainCalls=self.backtraceMock.mainThreadCallCount,allCalls=self.backtraceMock.allThreadsCallCount;
+        XCTAssertEqual(mainCalls,stage==0?0U:1U);
+        XCTAssertEqual(allCalls,stage<3?0U:1U);
+        detector.testAppState=FTAppStateRun;timing.recordedAppState=FTAppStateRun;
+        timing.phase=FTLongTaskPhaseCheckpoint;timing.durationNs=6001*NSEC_PER_MSEC;
+        [manager longTaskDetector:detector didObserveTiming:timing];
+        timing.phase=FTLongTaskPhaseEnd;
+        [manager longTaskDetector:detector didObserveTiming:timing];
+        XCTAssertNil(self.observedLongTask);
+        XCTAssertEqual(self.reportedANRTimes.count,0U);
+        XCTAssertEqual(self.backtraceMock.mainThreadCallCount,mainCalls);
+        XCTAssertEqual(self.backtraceMock.allThreadsCallCount,allCalls);
+        self.backtraceMock.duringMainCapture=nil;self.backtraceMock.onMainThread=nil;
+        self.backtraceMock.duringAllThreadsCapture=nil;self.backtraceMock.onAllThreads=nil;
+        // A fresh foreground interval is independent. A late background End from
+        // the cancelled generation must not discard the newly confirmed event.
+        timing.generation=43;timing.startTimeNs=10LL*NSEC_PER_SEC;
+        timing.phase=FTLongTaskPhaseBegin;timing.durationNs=0;
+        [manager longTaskDetector:detector didObserveTiming:timing];
+        timing.phase=FTLongTaskPhaseCheckpoint;timing.durationNs=5001*NSEC_PER_MSEC;
+        timing.observationTimeNs=timing.startTimeNs+timing.durationNs;
+        [manager longTaskDetector:detector didObserveTiming:timing];
+        FTLongTaskTiming late=timing;late.generation=42;late.phase=FTLongTaskPhaseEnd;late.recordedAppState=FTAppStateBackground;
+        [manager longTaskDetector:detector didObserveTiming:late];
+        XCTAssertNotNil([FTTestANRStore(manager)readANRData]);
+        timing.phase=FTLongTaskPhaseEnd;timing.durationNs=5100*NSEC_PER_MSEC;
+        timing.observationTimeNs=timing.startTimeNs+timing.durationNs;timing.appState=FTRUMAppStateForegroundOnly;
+        [manager longTaskDetector:detector didObserveTiming:timing];
+        XCTAssertEqual(self.observedLongTask.durationNs,5100*NSEC_PER_MSEC);
+        XCTAssertEqualObjects(self.reportedANRTimes,(@[@(10LL*NSEC_PER_SEC)]));
+        [manager shutDown];
+    }
+}
+
+- (void)testDisabledBackgroundCollectionAndUnknownAdmissionRemainEligible {
+    for(NSNumber *enabled in @[@NO,@YES]) {
+        self.ignoreBackgroundForTests=enabled.boolValue;
+        [self.reportedANRTimes removeAllObjects];
+        FTLongTaskManager *manager=[self timingManagerANR:YES freeze:YES threshold:250];
+        FTAppState state=enabled.boolValue?FTAppStateUnknown:FTAppStateBackground;
+        FTRUMAppState interval=enabled.boolValue?FTRUMAppStateUnknown:FTRUMAppStateBackgroundOnly;
+        FTTestObserveLongTaskState(manager,FTLongTaskPhaseBegin,NSEC_PER_SEC,0,NSEC_PER_SEC,state,interval);
+        FTTestObserveLongTaskState(manager,FTLongTaskPhaseCheckpoint,NSEC_PER_SEC,5001*NSEC_PER_MSEC,7LL*NSEC_PER_SEC,state,interval);
+        FTTestObserveLongTaskState(manager,FTLongTaskPhaseEnd,NSEC_PER_SEC,5100*NSEC_PER_MSEC,8LL*NSEC_PER_SEC,state,interval);
+        XCTAssertEqualObjects(self.observedANRSituation,enabled.boolValue?@"unknown":@"background");
+        XCTAssertEqualObjects(self.observedLongTask.appState,enabled.boolValue?@"unknown":@"background");
+        XCTAssertEqual(self.reportedANRTimes.count,1U);
+        [manager shutDown];
+    }
+}
+
+- (void)testFreezeOnlyRetainsBoundedBackgroundChecksWithoutRecapturing {
+    self.ignoreBackgroundForTests=YES;
+    FTLongTaskManager *manager=[self timingManagerANR:NO freeze:YES threshold:250];
+    FTManualTimingDetector *detector=[[FTManualTimingDetector alloc]initWithDelegate:manager];
+    detector.testAppState=FTAppStateRun;
+    FTLongTaskTiming timing={.phase=FTLongTaskPhaseBegin,.generation=42,.startTimeNs=NSEC_PER_SEC,
+        .observationTimeNs=NSEC_PER_SEC,.startAppState=FTAppStateRun,.recordedAppState=FTAppStateRun};
+    XCTAssertEqual([manager longTaskDetector:detector didObserveTiming:timing],251*NSEC_PER_MSEC);
+    timing.phase=FTLongTaskPhaseCheckpoint;timing.durationNs=251*NSEC_PER_MSEC;
+    XCTAssertEqual([manager longTaskDetector:detector didObserveTiming:timing],1251*NSEC_PER_MSEC);
+    timing.durationNs=1251*NSEC_PER_MSEC;
+    XCTAssertEqual([manager longTaskDetector:detector didObserveTiming:timing],2251*NSEC_PER_MSEC);
+    XCTAssertEqual(self.backtraceMock.mainThreadCallCount,1);
+    detector.testAppState=FTAppStateBackground;timing.recordedAppState=FTAppStateBackground;
+    XCTAssertEqual([manager longTaskDetector:detector didObserveTiming:timing],UINT64_MAX);
+    timing.phase=FTLongTaskPhaseEnd;
+    [manager longTaskDetector:detector didObserveTiming:timing];
+    XCTAssertNil(self.observedLongTask);
+    [manager shutDown];
+}
+
+- (void)testLastEndSituationIsFrozenBeforeDelegateProcessing {
+    FTLongTaskManager *manager=[self timingManagerANR:YES freeze:YES threshold:250];
+    FTManualTimingDetector *detector=[[FTManualTimingDetector alloc]initWithDelegate:manager];
+    detector.testAppState=FTAppStateRun;
+    FTLongTaskTiming timing={.phase=FTLongTaskPhaseBegin,.generation=42,.startTimeNs=NSEC_PER_SEC,
+        .observationTimeNs=NSEC_PER_SEC,.startAppState=FTAppStateRun,.recordedAppState=FTAppStateRun};
+    [manager longTaskDetector:detector didObserveTiming:timing];
+    timing.phase=FTLongTaskPhaseCheckpoint;timing.durationNs=5001*NSEC_PER_MSEC;
+    timing.observationTimeNs=NSEC_PER_SEC+timing.durationNs;
+    [manager longTaskDetector:detector didObserveTiming:timing];
+    detector.testAppState=FTAppStateBackground;
+    timing.phase=FTLongTaskPhaseEnd;timing.durationNs=5100*NSEC_PER_MSEC;
+    timing.observationTimeNs=NSEC_PER_SEC+timing.durationNs;
+    timing.recordedAppState=FTAppStateBackground;timing.appState=FTRUMAppStateBackgroundAndForeground;
+    self.callBack=^(NSString *stack,long long duration){if(duration>0)detector.testAppState=FTAppStateRun;};
+    [manager longTaskDetector:detector didObserveTiming:timing];
+    XCTAssertEqualObjects(self.observedANRSituation,@"background");
+    XCTAssertEqualObjects(self.observedANRIntervalState,@"foreground_and_background");
+    XCTAssertEqualObjects(self.observedLongTask.appState,@"foreground_and_background");
+    XCTAssertEqual(self.observedLongTask.durationNs,5100*NSEC_PER_MSEC);
+    self.callBack=nil;[manager shutDown];
+}
+
+- (void)testBackgroundBeforeRemainingDeliverySuppressesANR {
+    self.ignoreBackgroundForTests=YES;
+    FTLongTaskManager *manager=[self timingManagerANR:YES freeze:YES threshold:250];
+    FTManualTimingDetector *detector=[[FTManualTimingDetector alloc]initWithDelegate:manager];
+    detector.testAppState=FTAppStateRun;
+    FTLongTaskTiming timing={.phase=FTLongTaskPhaseBegin,.generation=42,.startTimeNs=NSEC_PER_SEC,
+        .observationTimeNs=NSEC_PER_SEC,.startAppState=FTAppStateRun,.recordedAppState=FTAppStateRun};
+    [manager longTaskDetector:detector didObserveTiming:timing];
+    timing.phase=FTLongTaskPhaseCheckpoint;timing.durationNs=5001*NSEC_PER_MSEC;
+    [manager longTaskDetector:detector didObserveTiming:timing];
+    self.callBack=^(NSString *stack,long long duration){if(duration>0)detector.testAppState=FTAppStateBackground;};
+    timing.phase=FTLongTaskPhaseEnd;timing.durationNs=5100*NSEC_PER_MSEC;
+    [manager longTaskDetector:detector didObserveTiming:timing];
+    XCTAssertNotNil(self.observedLongTask);
+    XCTAssertEqual(self.reportedANRTimes.count,0U);
+    XCTAssertNil([FTTestANRStore(manager)readANRData]);
+    self.callBack=nil;[manager shutDown];
+}
+
+- (void)testRecordedStateChangesReplaceBaseAndRecoveryUsesLatestValue {
+    FTLongTaskManager *manager=[self timingManagerANR:YES freeze:YES threshold:250];
+    FTManualTimingDetector *detector=[[FTManualTimingDetector alloc]initWithDelegate:manager];
+    detector.testAppState=FTAppStateRun;
+    FTLongTaskTiming timing={.phase=FTLongTaskPhaseBegin,.generation=42,.startTimeNs=NSEC_PER_SEC,
+        .observationTimeNs=NSEC_PER_SEC,.startAppState=FTAppStateRun,.recordedAppState=FTAppStateRun};
+    [manager longTaskDetector:detector didObserveTiming:timing];
+    uint64_t durations[]={3001,4001,4101,4201,6001};
+    FTAppState states[]={FTAppStateRun,FTAppStateRun,FTAppStateBackground,FTAppStateRun,FTAppStateRun};
+    for(NSUInteger i=0;i<5;i++) {
+        detector.testAppState=states[i];timing.recordedAppState=states[i];
+        timing.phase=FTLongTaskPhaseCheckpoint;timing.durationNs=durations[i]*NSEC_PER_MSEC;
+        timing.observationTimeNs=NSEC_PER_SEC+timing.durationNs;
+        [manager longTaskDetector:detector didObserveTiming:timing];
+        FTLongTaskANRData *saved=[FTTestANRStore(manager)readANRData];
+        XCTAssertEqual(saved.durationNs,durations[i]*NSEC_PER_MSEC);
+        XCTAssertEqualObjects(saved.errorContextModel.appState,i==2?@"background":@"run");
+        NSString *file=[NSString stringWithContentsOfFile:FTTestANRStore(manager).dataStorePath encoding:NSUTF8StringEncoding error:nil];
+        NSString *tail=[file componentsSeparatedByString:@"\n___boundary.info.date___\n"].lastObject;
+        if(i==0||i==2||i==3) XCTAssertEqualObjects(tail,@"");
+        else XCTAssertTrue([tail containsString:@"effectiveDuration"]);
+    }
+    XCTAssertEqual(self.backtraceMock.allThreadsCallCount,1);
+    FTLongTaskANRData *saved=[FTTestANRStore(manager)readANRData];
+    [self.fatalErrorContext setAppState:@"background"]; // New/current context cannot reclassify the file.
+    XCTAssertEqual([FTTestANRProcessor(manager)reportANRData:saved],NSEC_PER_SEC);
+    XCTAssertEqualObjects(self.recoveredErrorTags[FT_KEY_ERROR_SITUATION],@"run");
+    [manager shutDown];
+}
+
+- (void)testRecoveryBackgroundPolicyUsesSavedV2AndV3Situation {
+    self.ignoreBackgroundForTests=YES;
+    for(NSNumber *v3 in @[@NO,@YES]) for(id state in @[@"background",@"run",@"unknown",@"foreground",NSNull.null]) {
+        FTLongTaskManager *manager=[self timingManagerANR:YES freeze:YES threshold:250];
+        FTFatalErrorContextModel *context=[[FTFatalErrorContextModel alloc]initWithAppState:state==NSNull.null?nil:state
+            lastSessionState:self.fatalErrorContext.currentContextModel.lastSessionState lastViewContext:nil
+            dynamicContext:nil globalAttributes:nil errorMonitorInfo:nil];
+        FTLongTaskANRData *data=[[FTLongTaskANRData alloc]initWithStartTimeNs:NSEC_PER_SEC durationNs:6LL*NSEC_PER_SEC
+            mainThreadBacktrace:@"main" allThreadsBacktrace:@"all" errorContextModel:context];
+        data.usesEffectiveDuration=v3.boolValue;data.endTimeNs=7LL*NSEC_PER_SEC;
+        FTLongTaskANRDataStore *store=FTTestANRStore(manager);
+        if(v3.boolValue) [store writeANRData:data];
+        else {
+            NSString *json=[FTJSONUtil convertToJsonDataWithObject:data.convertToDictionary];
+            NSString *file=[NSString stringWithFormat:@"2.0.0\n___boundary.info.date___\n%@\n___boundary.info.date___\n7000000000\n",json];
+            [file writeToFile:store.dataStorePath atomically:YES encoding:NSUTF8StringEncoding error:nil];
+        }
+        [self.fatalErrorContext setAppState:@"background"];
+        NSUInteger writes=self.totalRUMWrites,errors=self.assembledErrors;
+        [FTTestANRProcessor(manager)reportPreviousANRIfFound];dispatch_sync(store.queue,^{});
+        BOOL ignored=[state isEqual:@"background"];
+        XCTAssertEqual(self.totalRUMWrites-writes,ignored?0U:2U);
+        XCTAssertEqual(self.assembledErrors-errors,ignored?0U:1U);
+        XCTAssertEqual(self.lastFatalErrorDate,ignored?0:NSEC_PER_SEC);
+        if(!ignored) {
+            NSString *expected=[@[@"run",@"unknown"] containsObject:state]?state:@"unknown";
+            XCTAssertEqualObjects(self.recoveredErrorTags[FT_KEY_ERROR_SITUATION],expected);
+            XCTAssertEqualObjects(self.recoveredErrorFields[@"app_state"],@"unknown");
+        }
+        XCTAssertFalse([[NSFileManager defaultManager]fileExistsAtPath:store.dataStorePath]);
+        [manager shutDown];
+    }
+}
+
 - (void)testProducerEndDuringMainStackFormattingRetainsCapturedResult {
     for (NSNumber *anr in @[@NO, @YES]) {
         FTLongTaskManager *manager = [self timingManagerANR:anr.boolValue freeze:YES threshold:250];
@@ -1224,6 +1495,7 @@ typedef void (^FTWriteCallBack)(NSDictionary *fields, NSDictionary *tags);
     [FTLog enableLog:YES];
     FTRUMDependencies *dependencies = [[FTRUMDependencies alloc]init];
     dependencies.writer = self;
+    dependencies.ignoreBackgroundLongTaskAndANR = self.ignoreBackgroundForTests;
     FTFatalErrorContext *errorContext = [[FTFatalErrorContext alloc]initWithErrorInfoProvider:nil];
     [errorContext setLastSessionState:[[FTRUMSessionState alloc] init]];
     self.fatalErrorContext = errorContext;
@@ -1707,7 +1979,7 @@ typedef void (^FTWriteCallBack)(NSDictionary *fields, NSDictionary *tags);
     }
 }
 -(void)anrStackDetected:(NSString *)slowStack appState:(NSString *)appState intervalAppState:(NSString *)intervalAppState time:(long long)time{
-    self.observedANRStartState = appState;
+    self.observedANRSituation = appState;
     self.observedANRIntervalState = intervalAppState;
     [self.reportedANRTimes addObject:@(time)];
     if(self.callBack){
@@ -1715,12 +1987,14 @@ typedef void (^FTWriteCallBack)(NSDictionary *fields, NSDictionary *tags);
     }
 }
 -(void)rumWrite:(NSString *)source tags:(NSDictionary *)tags fields:(NSDictionary *)fields dynamicContext:(NSDictionary *)dynamicContext time:(long long)time{
+    self.totalRUMWrites++;
     if(self.writeCallBack){
         self.writeCallBack(fields, tags);
         self.writeCallBack = nil;
     }
 }
 -(void)rumWrite:(NSString *)source tags:(NSDictionary *)tags fields:(NSDictionary *)fields dynamicContext:(NSDictionary *)dynamicContext time:(long long)time updateTime:(long long)updateTime cache:(BOOL)cache{
+    self.totalRUMWrites++;
     if(self.writeCallBack){
         self.writeCallBack(fields, tags);
         self.writeCallBack = nil;
@@ -1741,6 +2015,7 @@ typedef void (^FTWriteCallBack)(NSDictionary *fields, NSDictionary *tags);
         self.recoveredErrorTags = tags;
         self.recoveredErrorFields = fields;
     }
+    self.totalRUMWrites++;
     if(self.writeCallBack){
         self.writeCallBack(fields, tags);
         self.writeCallBack = nil;

@@ -1159,6 +1159,41 @@ static void TestManySwitchesDoNotLeakIntoNextGeneration(void) {
     probe.observe = nil; ResetClock();
 }
 
+static void TestRecordedSituationAdvancesAndFreezesAtEnd(void) {
+    fakeClock=YES;fakeNow=1000*ms;
+    TimingProbe *probe=[TimingProbe new];
+    ControlledDetector *detector=[[ControlledDetector alloc]initWithDelegate:probe];
+    SeedAppState(detector,FTAppStateStartUp,FTRUMAppStateForegroundOnly);
+    [detector recordRunLoopBeginActivity:kCFRunLoopEntry atTimeNs:fakeNow];
+    __block NSUInteger waits=0,observations=0;
+    waitHook=^int(pthread_cond_t*c,pthread_mutex_t*m,const struct timespec*timeout){
+        fakeNow+=TimeoutNs(timeout);waits++;
+        if(waits==1) [detector recordAppState:FTAppStateRun intervalState:FTRUMAppStateForegroundOnly];
+        if(waits==2) [detector recordAppState:FTAppStateBackground intervalState:FTRUMAppStateBackgroundOnly];
+        if(waits==3) {
+            [detector recordAppState:FTAppStateRun intervalState:FTRUMAppStateForegroundOnly];
+            [detector recordRunLoopEndActivity:kCFRunLoopBeforeWaiting atTimeNs:fakeNow];
+            return 0;
+        }
+        return ETIMEDOUT;
+    };
+    probe.observe=^uint64_t(FTLongTaskDetector*d,FTLongTaskTiming t){
+        FTAppState expected[]={FTAppStateStartUp,FTAppStateRun,FTAppStateBackground,FTAppStateRun};
+        Check(observations<4 && t.recordedAppState==expected[observations],"each notification uses its latest atomic point state");
+        Check(t.startAppState==FTAppStateStartUp,"initial state remains available for background admission");
+        observations++;
+        if(t.phase==FTLongTaskPhaseEnd) {
+            Check(t.durationNs==753*ms && t.appState==FTRUMAppStateBackgroundAndForeground,"last point and interval state have independent exact boundaries");
+            [d recordAppState:FTAppStateUnknown intervalState:FTRUMAppStateUnknown];
+            Check(t.recordedAppState==FTAppStateRun,"delegate processing cannot mutate the frozen End point");
+            [d stopDetecting];
+        }
+        return t.durationNs+251*ms;
+    };
+    Run(detector);Check(observations==4,"Begin, two checkpoints and one End carry state");
+    probe.observe=nil;ResetClock();
+}
+
 int main(int argc, const char *argv[]){@autoreleasepool{
     // Native startup installs the process-wide platform hook. Keep it isolated
     // from the separate fake-class hook compatibility checks.
@@ -1167,6 +1202,7 @@ int main(int argc, const char *argv[]){@autoreleasepool{
         puts("PASS: real RunLoop mid-iteration startup and SDK reinitialization");
         return 0;
     }
+    TestRecordedSituationAdvancesAndFreezesAtEnd();
     TestStartupPublishesCompleteBusySnapshot();
     TestIdleWorkerUsesBoundedWait();
     TestBurstIsOneStateChange();
@@ -1202,5 +1238,5 @@ int main(int argc, const char *argv[]){@autoreleasepool{
     TestWorkerStopIncludesPostBoundarySwitchAndFreezesResult();
     TestExcludedWaitAndCaptureStillRetainStateEvidence();
     TestManySwitchesDoNotLeakIntoNextGeneration();
-    puts("PASS: 35 LongTask timing, lifecycle state, suspend, autorelease and condition regressions");
+    puts("PASS: 36 LongTask timing, lifecycle state, suspend, autorelease and condition regressions");
 }return 0;}
