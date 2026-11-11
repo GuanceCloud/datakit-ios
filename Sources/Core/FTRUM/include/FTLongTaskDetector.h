@@ -21,17 +21,11 @@
 #import <Foundation/Foundation.h>
 
 NS_ASSUME_NONNULL_BEGIN
-@protocol FTLongTaskProtocol<NSObject>
-- (void)startLongTask:(long long)startTime;
-- (void)updateLongTaskDate:(long long)time;
-- (void)endLongTask;
-@end
+@protocol FTLongTaskTimingDelegate;
+
 @interface FTLongTaskDetector : NSObject
 
-/// How many milliseconds exceed for one longTask, default 250ms
-@property (nonatomic, assign) long limitFreezeMillisecond;
-
--(instancetype)initWithDelegate:(id<FTLongTaskProtocol>)delegate;
+- (instancetype)initWithDelegate:(id<FTLongTaskTimingDelegate>)delegate;
 
 //must be called from main thread
 - (void)startDetecting;

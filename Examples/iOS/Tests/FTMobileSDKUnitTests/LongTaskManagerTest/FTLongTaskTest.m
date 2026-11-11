@@ -130,10 +130,14 @@
                                                                           timeNs:startTime - 1];
     dependencies.appStateHistory.delegate = stateDelegate;
     [dependencies.appStateHistory startMonitoring];
-    [manager startLongTask:startTime];
+    FTLongTaskDetector *detector = [manager valueForKey:@"longTaskDetector"];
+    [detector stopDetecting];
+    FTTestDrainDetector(detector);
+    FTTestObserveLongTaskState(manager, FTLongTaskPhaseBegin, startTime, 0, startTime, FTAppStateRun, FTRUMAppStateForegroundOnly);
+    FTTestObserveLongTaskState(manager, FTLongTaskPhaseCheckpoint, startTime, 5001*NSEC_PER_MSEC, startTime + 5001*NSEC_PER_MSEC, FTAppStateRun, FTRUMAppStateForegroundOnly);
     [[NSNotificationCenter defaultCenter] postNotificationName:UIApplicationWillEnterForegroundNotification object:nil];
     [[NSNotificationCenter defaultCenter] postNotificationName:UIApplicationDidEnterBackgroundNotification object:nil];
-    [manager endLongTask];
+    FTTestObserveLongTaskState(manager, FTLongTaskPhaseEnd, startTime, 6LL*NSEC_PER_SEC, [NSDate ft_currentNanosecondTimeStamp], FTAppStateRun, FTRUMAppStateBackgroundAndForeground);
     [[FTGlobalRumManager sharedInstance].rumManager syncProcess];
 
     __block BOOL foundLongTask = NO;
@@ -147,8 +151,8 @@
         }
         if ([source isEqualToString:FT_RUM_SOURCE_ERROR] && [tags[FT_KEY_ERROR_TYPE] isEqualToString:@"anr_error"]) {
             foundANR = YES;
-            XCTAssertNil(fields[@"app_state"]);
-            XCTAssertNotNil(tags[FT_KEY_ERROR_SITUATION]);
+            XCTAssertEqualObjects(fields[@"app_state"], @"foreground_and_background");
+            XCTAssertEqualObjects(tags[FT_KEY_ERROR_SITUATION], @"run");
             XCTAssertEqualObjects(fields[FT_RUM_KEY_SESSION_START_REASON], FT_RUM_SESSION_START_REASON_SDK_INIT);
             XCTAssertNil(fields[@"process_start_time_ns"]);
         }
@@ -306,7 +310,7 @@
     [FTModelHelper startViewWithName:@"TestAnrFormat"];
     XCTestExpectation *expect = [self expectationWithDescription:@"Request Time!"];
     FTLongTaskManager *longTaskManager = [[FTGlobalRumManager sharedInstance] valueForKey:@"longTaskManager"];
-    NSString *dataStorePath = longTaskManager.anrDataStore.dataStorePath;
+    NSString *dataStorePath = FTTestANRStore(longTaskManager).dataStorePath;
     long long startTime = [NSDate ft_currentNanosecondTimeStamp];
     dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)(3.5 * NSEC_PER_SEC)), dispatch_get_global_queue(0, 0), ^{
         NSData *data = [NSData dataWithContentsOfFile:dataStorePath];
@@ -348,7 +352,7 @@
 - (void)testShutdownWhenLongTaskNotEnd{
     [self initSDKWithEnableTrackAppANR:YES longTask:NO];
     FTLongTaskManager *longTaskManager = [[FTGlobalRumManager sharedInstance] valueForKey:@"longTaskManager"];
-    NSString *dataStorePath = longTaskManager.anrDataStore.dataStorePath;
+    NSString *dataStorePath = FTTestANRStore(longTaskManager).dataStorePath;
     long long startTime = [NSDate ft_currentNanosecondTimeStamp];
     [tester waitForTimeInterval:0.2];
     dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)(3.5 * NSEC_PER_SEC)), dispatch_get_global_queue(0, 0), ^{
@@ -378,6 +382,7 @@
     [self waitForExpectationsWithTimeout:8 handler:^(NSError *error) {
         XCTAssertNil(error);
     }];
+    dispatch_sync(FTTestANRStore(longTaskManager).queue, ^{});
     NSData *data = [NSData dataWithContentsOfFile:dataStorePath];
     XCTAssertTrue(data.length == 0);
 }

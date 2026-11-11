@@ -19,350 +19,120 @@
 //
 
 #import "FTLongTaskManager.h"
-#import "FTLongTaskDetector.h"
-#import "FTLongTaskANRData.h"
-#import "NSDate+FTUtil.h"
+#import "FTLongTaskTiming.h"
+#import "FTLongTaskEvent.h"
+#import "FTANRProcessor.h"
 #import "FTConstants.h"
-#import "FTFatalErrorContext.h"
-#import "FTErrorMonitorInfo.h"
 #import "FTInnerLog.h"
-#import "FTRUMContext.h"
-#import "FTIssueFieldEnricher.h"
+#import "FTRUMManager.h"
+#import <stdatomic.h>
 
-@interface FTLongTaskActiveEvent : NSObject
-@property (nonatomic, assign) long long startTimeNs;
-@property (nonatomic, assign) long long lastObservedTimeNs;
-@property (nonatomic, assign) long long lastANRDataUpdateTimeNs;
-@property (nonatomic, assign) long long freezeThresholdNs;
-@property (nonatomic, copy) NSString *mainThreadBacktrace;
-@property (nonatomic, copy) NSString *allThreadsBacktrace;
-@property (nonatomic, strong) FTFatalErrorContextModel *errorContextModel;
-@property (nonatomic, assign) BOOL hasPersistedANRData;
-@property (nonatomic, assign, readonly) long long durationNs;
-@property (nonatomic, assign, readonly) BOOL isANR;
-@property (nonatomic, assign, readonly) BOOL isLongTask;
-@property (nonatomic, assign, readonly) BOOL needsAllThreadsBacktrace;
-
-- (void)observeTimeNs:(long long)timeNs;
-- (BOOL)shouldPrepareANRDataAtTimeNs:(long long)timeNs;
-- (BOOL)updateAllThreadsBacktrace:(NSString *)allThreadsBacktrace;
-- (BOOL)shouldAppendANRDataUpdateAtTimeNs:(long long)timeNs;
-- (void)markANRDataPersistedAtTimeNs:(long long)timeNs;
-- (void)markANRDataUpdatedAtTimeNs:(long long)timeNs;
-- (FTLongTaskANRData *)anrData;
-@end
-
-@implementation FTLongTaskActiveEvent
-
-- (instancetype)initWithStartTimeNs:(long long)startTimeNs freezeDurationMs:(long)freezeDurationMs {
-    self = [super init];
-    if (self) {
-        _startTimeNs = startTimeNs;
-        _lastObservedTimeNs = startTimeNs;
-        _lastANRDataUpdateTimeNs = startTimeNs;
-        _freezeThresholdNs = (long long)freezeDurationMs * NSEC_PER_MSEC;
+@implementation FTLongTaskEvent
+- (instancetype)initWithStack:(NSString *)stack startTimeNs:(long long)startTimeNs endTimeNs:(long long)endTimeNs durationNs:(long long)durationNs {
+    return [self initWithStack:stack startTimeNs:startTimeNs endTimeNs:endTimeNs durationNs:durationNs appState:nil];
+}
+- (instancetype)initWithStack:(NSString *)stack startTimeNs:(long long)startTimeNs endTimeNs:(long long)endTimeNs durationNs:(long long)durationNs appState:(NSString *)appState {
+    if ((self = [super init])) {
+        _stack = [stack copy]; _startTimeNs = startTimeNs; _endTimeNs = endTimeNs; _durationNs = durationNs;
+        _appState = [appState copy];
     }
     return self;
 }
-
-- (long long)durationNs {
-    return self.lastObservedTimeNs > self.startTimeNs ? self.lastObservedTimeNs - self.startTimeNs : 0;
-}
-
-- (BOOL)isANR {
-    return self.durationNs > FT_ANR_THRESHOLD_NS;
-}
-
-- (BOOL)isLongTask {
-    return self.durationNs > self.freezeThresholdNs;
-}
-
-- (BOOL)needsAllThreadsBacktrace {
-    return self.allThreadsBacktrace.length == 0;
-}
-
-- (void)observeTimeNs:(long long)timeNs {
-    self.lastObservedTimeNs = timeNs;
-}
-
-- (BOOL)shouldPrepareANRDataAtTimeNs:(long long)timeNs {
-    return timeNs - self.startTimeNs > FTLongTaskANRDataThresholdNs;
-}
-
-- (BOOL)updateAllThreadsBacktrace:(NSString *)allThreadsBacktrace {
-    if (!self.needsAllThreadsBacktrace) {
-        return NO;
-    }
-    if (allThreadsBacktrace.length == 0) {
-        self.allThreadsBacktrace = nil;
-        return NO;
-    }
-    self.allThreadsBacktrace = allThreadsBacktrace;
-    return YES;
-}
-
-- (BOOL)shouldAppendANRDataUpdateAtTimeNs:(long long)timeNs {
-    return timeNs - self.lastANRDataUpdateTimeNs > FTLongTaskANRDataUpdateIntervalNs;
-}
-
-- (void)markANRDataPersistedAtTimeNs:(long long)timeNs {
-    self.hasPersistedANRData = YES;
-    self.lastANRDataUpdateTimeNs = timeNs;
-}
-
-- (void)markANRDataUpdatedAtTimeNs:(long long)timeNs {
-    self.lastANRDataUpdateTimeNs = timeNs;
-}
-
-- (FTLongTaskANRData *)anrData {
-    return [[FTLongTaskANRData alloc] initWithStartTimeNs:self.startTimeNs
-                                                durationNs:self.durationNs
-                                        mainThreadBacktrace:self.mainThreadBacktrace
-                                        allThreadsBacktrace:self.allThreadsBacktrace
-                                          errorContextModel:self.errorContextModel];
-}
-
 @end
 
-@interface FTLongTaskManager()<FTLongTaskProtocol>
-@property (nonatomic, weak, nullable) id<FTRunloopDetectorDelegate> delegate;
+@interface FTLongTaskManager () <FTLongTaskTimingDelegate> {
+    atomic_bool _stopped;
+}
+@property (nonatomic, weak) id<FTRunloopDetectorDelegate> delegate;
 @property (nonatomic, strong) FTRUMDependencies *dependencies;
 @property (nonatomic, strong) FTLongTaskDetector *longTaskDetector;
-@property (nonatomic, strong) FTLongTaskANRDataStore *anrDataStore;
+@property (nonatomic, strong) FTANRProcessor *anrProcessor;
 @property (nonatomic, strong) FTLongTaskActiveEvent *longTaskEvent;
-@property (nonatomic, assign) BOOL enableANR;
-@property (nonatomic, assign) BOOL enableFreeze;
-@property (nonatomic, assign) long freezeDurationMs;
-@property (nonatomic, weak, nullable) id<FTBacktraceReporting> backtraceReporting;
+@property (nonatomic) BOOL enableANR, enableFreeze;
+@property (nonatomic) long freezeDurationMs;
+@property (nonatomic, weak) id<FTBacktraceReporting> backtraceReporting;
 @end
-
 @implementation FTLongTaskManager
-
-- (instancetype)initWithDependencies:(FTRUMDependencies *)dependencies
-                             delegate:(id<FTRunloopDetectorDelegate>)delegate
-                   backtraceReporting:(id<FTBacktraceReporting>)backtraceReporting
-                    enableTrackAppANR:(BOOL)enableANR
-                 enableTrackAppFreeze:(BOOL)enableFreeze
-                     freezeDurationMs:(long)freezeDurationMs {
-    self = [super init];
-    if (self) {
-        _dependencies = dependencies;
-        _delegate = delegate;
-        _enableANR = enableANR;
-        _enableFreeze = enableFreeze;
-        _freezeDurationMs = freezeDurationMs;
-        _anrDataStore = [[FTLongTaskANRDataStore alloc] init];
+- (instancetype)initWithDependencies:(FTRUMDependencies *)dependencies delegate:(id<FTRunloopDetectorDelegate>)delegate
+                  backtraceReporting:(id<FTBacktraceReporting>)backtraceReporting enableTrackAppANR:(BOOL)enableANR
+                 enableTrackAppFreeze:(BOOL)enableFreeze freezeDurationMs:(long)freezeDurationMs {
+    if ((self = [super init])) {
+        atomic_init(&_stopped, false);
+        _dependencies = dependencies; _delegate = delegate; _backtraceReporting = backtraceReporting;
+        _enableANR = enableANR; _enableFreeze = enableFreeze; _freezeDurationMs = freezeDurationMs;
+        _anrProcessor = [[FTANRProcessor alloc] initWithDependencies:dependencies backtraceReporting:backtraceReporting];
         _longTaskDetector = [[FTLongTaskDetector alloc] initWithDelegate:self];
-        _backtraceReporting = backtraceReporting;
-        _longTaskDetector.limitFreezeMillisecond = freezeDurationMs;
-        [self reportPreviousANRIfFound];
+        [self.anrProcessor reportPreviousANRIfFound];
         [_longTaskDetector startDetecting];
     }
     return self;
 }
-
-// longTask, ANR, View
-- (void)reportPreviousANRIfFound {
-    __weak __typeof(self) weakSelf = self;
-    dispatch_async(self.anrDataStore.queue, ^{
-        long long errorDate = 0;
-        __strong __typeof(weakSelf) strongSelf = weakSelf;
-        if (!strongSelf) return;
-        @try {
-            FTLongTaskANRData *anrData = [strongSelf.anrDataStore readANRData];
-            if (anrData) {
-                errorDate = [strongSelf reportANRData:anrData];
-            }
-        } @catch (NSException *exception) {
-            FTInnerLogError(@"[LongTask] exception %@", exception);
-        }
-        [strongSelf.anrDataStore deleteFile];
-        [strongSelf.dependencies.writer lastFatalErrorIfFound:errorDate];
-    });
+- (FTLongTaskActiveEvent *)eventForTiming:(FTLongTaskTiming)timing {
+    FTFatalErrorContextModel *context = self.dependencies.fatalErrorContext.currentContextModel;
+    if (!context.lastSessionState) return nil;
+    NSString *situation = FTStringFromAppState(timing.startAppState);
+    FTLongTaskActiveEvent *event = [[FTLongTaskActiveEvent alloc] initWithStartTimeNs:timing.startTimeNs freezeDurationMs:self.freezeDurationMs appState:situation];
+    [event updateErrorContext:context];
+    return event;
 }
-
-- (long long)reportANRData:(FTLongTaskANRData *)anrData {
-    long long startTime = anrData.startTimeNs;
-    long long duration = anrData.lastUpdateTimeNs - startTime > 0 ? anrData.lastUpdateTimeNs - startTime : anrData.durationNs;
-    if (duration <= 0) {
-        return 0;
-    }
-    long long longTaskEndTime = startTime + duration;
-    BOOL isAnr = duration > FT_ANR_THRESHOLD_NS;
-    FTFatalErrorContextModel *contextModel = anrData.errorContextModel;
-    NSDictionary *tags = [contextModel.lastSessionState sessionTags];
-    NSString *backtrace = anrData.mainThreadBacktrace.length > 0 ? anrData.mainThreadBacktrace : nil;
-
-    NSMutableDictionary *fields = [NSMutableDictionary dictionary];
-    [fields addEntriesFromDictionary:[contextModel.lastSessionState sessionFields]];
-    [fields setValue:@(duration) forKey:FT_DURATION];
-    [fields setValue:backtrace forKey:FT_KEY_LONG_TASK_STACK];
-    fields[@"app_state"] = @"unknown";
-    NSDictionary *lastViews = contextModel.lastViewContext;
-    BOOL sessionOnError = contextModel.lastSessionState.sampled_for_error_session;
-    if (sessionOnError && isAnr) {
-        [fields setValue:@(startTime) forKey:FT_SESSION_ERROR_TIMESTAMP];
-    }
-    if (lastViews) {
-        NSMutableDictionary *lastViewsFields = [NSMutableDictionary dictionaryWithDictionary:lastViews[@"fields"]];
-        long long viewStartTime = [lastViews[@"time"] longLongValue];
-        long long timeSpent = longTaskEndTime - viewStartTime;
-        if (timeSpent <= 0) {
-            timeSpent = 1;
-        }
-        long long oldTimeSpent = [lastViewsFields[FT_KEY_TIME_SPENT] longLongValue];
-        double oldLongTaskRate = [lastViewsFields[FT_KEY_VIEW_LONG_TASK_RATE] doubleValue];
-        long long oldLongTaskDuration = (oldTimeSpent > 0 && oldLongTaskRate > 0) ? (long long)(oldLongTaskRate * oldTimeSpent) : 0;
-        long long newLongTaskDuration = oldLongTaskDuration + duration;
-        double viewLongTaskRate = timeSpent > 0 ? (double)newLongTaskDuration / (double)timeSpent : 0;
-        if (isAnr) {
-            lastViewsFields[FT_KEY_VIEW_ERROR_COUNT] = @([lastViewsFields[FT_KEY_VIEW_ERROR_COUNT] intValue] + 1);
-            BOOL sampledForErrorReplay = [lastViewsFields[FT_RUM_KEY_SAMPLED_FOR_ERROR_REPLAY] boolValue];
-            if ([lastViewsFields.allKeys containsObject:FT_SESSION_HAS_REPLAY] && sampledForErrorReplay) {
-                lastViewsFields[FT_SESSION_HAS_REPLAY] = @(YES);
-            }
-        }
-        lastViewsFields[FT_KEY_VIEW_LONG_TASK_COUNT] = @([lastViewsFields[FT_KEY_VIEW_LONG_TASK_COUNT] intValue] + 1);
-        lastViewsFields[FT_KEY_TIME_SPENT] = @(timeSpent);
-        lastViewsFields[FT_KEY_VIEW_LONG_TASK_RATE] = @(viewLongTaskRate);
-        lastViewsFields[FT_KEY_VIEW_UPDATE_TIME] = @([lastViewsFields[FT_KEY_VIEW_UPDATE_TIME] intValue] + 1);
-        lastViewsFields[FT_KEY_IS_ACTIVE] = @(NO);
-        lastViewsFields[@"app_state"] = @"unknown";
-        NSNumber *time = lastViews[@"time"];
-
-        [self.dependencies.writer rumWrite:FT_RUM_SOURCE_VIEW tags:lastViews[@"tags"] fields:lastViewsFields dynamicContext:contextModel.globalAttributes time:[time longLongValue] updateTime:longTaskEndTime cache:sessionOnError];
-    }
-    [self.dependencies.writer rumWrite:FT_RUM_SOURCE_LONG_TASK tags:tags fields:fields dynamicContext:contextModel.globalAttributes time:startTime updateTime:0 cache:sessionOnError];
-
-    if (isAnr) {
-        NSString *allBacktrace = anrData.allThreadsBacktrace.length > 0 ? anrData.allThreadsBacktrace : nil;
-        NSMutableDictionary *anrTags = [NSMutableDictionary dictionary];
-        [anrTags setValue:@"anr_error" forKey:FT_KEY_ERROR_TYPE];
-        [anrTags setValue:FT_LOGGER forKey:FT_KEY_ERROR_SOURCE];
-        [anrTags setValue:contextModel.appState forKey:FT_KEY_ERROR_SITUATION];
-        [anrTags addEntriesFromDictionary:contextModel.errorMonitorInfo];
-        [anrTags addEntriesFromDictionary:contextModel.globalAttributes];
-        [anrTags addEntriesFromDictionary:contextModel.dynamicContext];
-        [anrTags addEntriesFromDictionary:[contextModel.lastSessionState sessionTags]];
-        [anrTags addEntriesFromDictionary:tags];
-
-        NSMutableDictionary *anrFields = [NSMutableDictionary dictionary];
-        [anrFields addEntriesFromDictionary:[contextModel.lastSessionState sessionFields]];
-        [anrFields setValue:@"ios_anr" forKey:FT_KEY_ERROR_MESSAGE];
-        [anrFields setValue:allBacktrace ?: backtrace forKey:FT_KEY_ERROR_STACK];
-        if (self.dependencies.issueFieldEnricher) {
-            FTIssueInfo *issue = [[FTIssueInfo alloc]
-                initWithCategory:FTIssueCategoryANR
-                errorType:@"anr_error"
-                message:@"ios_anr"
-                stack:allBacktrace ?: backtrace ?: @""
-                occurredAtNanoseconds:startTime
-                appState:contextModel.appState ?: @"unknown"
-                threadName:@"main"
-                historical:YES];
-            NSMutableSet<NSString *> *reservedKeys = [NSMutableSet setWithArray:anrTags.allKeys];
-            [reservedKeys addObjectsFromArray:anrFields.allKeys];
-            NSDictionary *customFields =
-                [self.dependencies.issueFieldEnricher fieldsForIssue:issue
-                                                         reservedKeys:reservedKeys];
-            [anrFields addEntriesFromDictionary:customFields];
-        }
-        [self.dependencies.writer rumWriteAssembledData:FT_RUM_SOURCE_ERROR tags:anrTags fields:anrFields time:startTime];
-        return startTime;
-    }
-    return 0;
-}
-- (FTFatalErrorContextModel *)currentANRDataContextModel {
-    FTFatalErrorContextModel *currentContextModel = [self.dependencies.fatalErrorContext currentContextModel];
-    return [[FTFatalErrorContextModel alloc] initWithAppState:currentContextModel.appState
-                                             lastSessionState:currentContextModel.lastSessionState
-                                             lastViewContext:currentContextModel.lastViewContext
-                                              dynamicContext:currentContextModel.dynamicContext
-                                            globalAttributes:currentContextModel.globalAttributes
-                                             errorMonitorInfo:[self.dependencies.errorMonitorInfoWrapper errorMonitorInfo]];
-}
-
-- (void)startLongTask:(long long)startTime {
-    @try {
-        // If lastSessionContext is nil, the current session is not sampled.
-        FTFatalErrorContextModel *currentContextModel = self.dependencies.fatalErrorContext.currentContextModel;
-        if (!currentContextModel.lastSessionState) {
-            return;
-        }
-        FTLongTaskActiveEvent *event = [[FTLongTaskActiveEvent alloc] initWithStartTimeNs:startTime freezeDurationMs:self.freezeDurationMs];
-        event.errorContextModel = currentContextModel;
-        event.mainThreadBacktrace = [self.backtraceReporting generateMainThreadBacktrace];
-        self.longTaskEvent = event;
-    } @catch (NSException *exception) {
-        FTInnerLogError(@"[LongTask] exception %@", exception);
-    }
-}
-
-- (void)updateLongTaskDate:(long long)time {
-    @try {
-        if (!self.enableANR || !self.longTaskEvent || time <= 0) {
-            return;
-        }
-        FTLongTaskActiveEvent *event = self.longTaskEvent;
-        [event observeTimeNs:time];
-        if ([event shouldPrepareANRDataAtTimeNs:time]) {
-            BOOL didCaptureAllThreadsBacktrace = NO;
-            if (event.needsAllThreadsBacktrace) {
-                didCaptureAllThreadsBacktrace = [event updateAllThreadsBacktrace:[self.backtraceReporting generateAllThreadsBacktrace]];
-            }
-            if (!event.hasPersistedANRData) {
-                event.errorContextModel = [self currentANRDataContextModel];
-                [self.anrDataStore writeANRData:event.anrData updateTimeNs:time resetFile:NO];
-                [event markANRDataPersistedAtTimeNs:time];
-            } else if (didCaptureAllThreadsBacktrace) {
-                [self.anrDataStore writeANRData:event.anrData updateTimeNs:time resetFile:YES];
-                [event markANRDataPersistedAtTimeNs:time];
-            } else if ([event shouldAppendANRDataUpdateAtTimeNs:time]) {
-                [self.anrDataStore appendUpdateTimeNs:time];
-                [event markANRDataUpdatedAtTimeNs:time];
-            }
-        }
-    } @catch (NSException *exception) {
-        FTInnerLogError(@"[LongTask] exception %@", exception);
-    }
-}
-- (void)endLongTask {
-    [self endLongTaskAtTimeNs:[NSDate ft_currentNanosecondTimeStamp]];
-}
-
-- (void)endLongTaskAtTimeNs:(long long)timeNs {
-    @try {
-        if (!self.longTaskEvent) {
-            return;
-        }
-        FTLongTaskActiveEvent *event = self.longTaskEvent;
+- (uint64_t)longTaskDetector:(FTLongTaskDetector *)detector didObserveTiming:(FTLongTaskTiming)timing {
+    if (atomic_load(&_stopped)) return UINT64_MAX;
+    if (timing.phase == FTLongTaskPhaseBegin) {
         self.longTaskEvent = nil;
-        [event observeTimeNs:timeNs];
-        if (event.isLongTask && self.enableFreeze && self.delegate && [self.delegate respondsToSelector:@selector(longTaskStackDetected:duration:time:)]) {
-            [self.delegate longTaskStackDetected:event.mainThreadBacktrace duration:event.durationNs time:event.startTimeNs];
-        }
-        if (self.enableANR) {
-            [self.anrDataStore deleteFile];
-            if (event.isANR && self.delegate && [self.delegate respondsToSelector:@selector(anrStackDetected:appState:time:)]) {
-                NSString *backtrace = event.allThreadsBacktrace.length > 0 ? event.allThreadsBacktrace : (event.mainThreadBacktrace.length > 0 ? event.mainThreadBacktrace : nil);
-                [self.delegate anrStackDetected:backtrace appState:event.errorContextModel.appState time:event.startTimeNs];
-            }
-        }
-    } @catch (NSException *exception) {
-        FTInnerLogError(@"[LongTask] exception %@", exception);
+        uint64_t freeze = self.enableFreeze ? (uint64_t)MAX(1, self.freezeDurationMs) * NSEC_PER_MSEC + NSEC_PER_MSEC : UINT64_MAX;
+        return self.enableANR ? MIN(freeze, FTLongTaskANRDataThresholdNs + NSEC_PER_MSEC) : freeze;
     }
+    // End only settles an event already observed at Checkpoint; it never confirms a new one.
+    if (!self.longTaskEvent && timing.phase == FTLongTaskPhaseCheckpoint) {
+        self.longTaskEvent = [self eventForTiming:timing];
+        self.longTaskEvent.generation = timing.generation;
+    }
+    FTLongTaskActiveEvent *event = self.longTaskEvent;
+    if (!event || event.generation != timing.generation) return UINT64_MAX;
+    event.effectiveDurationNs = timing.durationNs;
+    event.lastObservedTimeNs = timing.observationTimeNs;
+    if (timing.phase == FTLongTaskPhaseEnd) {
+        [self finishEvent:event appState:FTStringFromRUMAppState(timing.appState)]; return UINT64_MAX;
+    }
+    BOOL (^acceptsResult)(void) = ^BOOL{ return !atomic_load(&_stopped) && self.longTaskEvent == event; };
+    BOOL (^intervalActive)(void) = ^BOOL{ return acceptsResult() && [detector isMonitoringGeneration:timing.generation]; };
+    BOOL mainDue = (self.enableFreeze && event.isLongTask) || (self.enableANR && event.durationNs > FTLongTaskANRDataThresholdNs);
+    if (mainDue && !event.mainStackAttempted && intervalActive()) {
+        NSString *stack = [self.backtraceReporting generateMainThreadBacktraceWithCaptureValidation:intervalActive];
+        // A normally ended producer interval still owns its validated raw capture.
+        if (!acceptsResult()) return UINT64_MAX;
+        event.mainStackAttempted = YES;
+        event.mainThreadBacktrace = stack ?: @"";
+    }
+    if (self.enableANR) [self.anrProcessor updateEvent:event intervalActive:intervalActive acceptsResult:acceptsResult];
+    uint64_t next = self.enableANR ? [self.anrProcessor nextCheckpointForEvent:event] : UINT64_MAX;
+    if (self.enableFreeze && !event.mainStackAttempted)
+        next = MIN(next, (uint64_t)MAX(1, self.freezeDurationMs) * NSEC_PER_MSEC + NSEC_PER_MSEC);
+    return next;
 }
-
-- (void)shutDown {
-    [self.longTaskDetector stopDetecting];
+- (void)finishEvent:(FTLongTaskActiveEvent *)event appState:(NSString *)intervalState {
     self.longTaskEvent = nil;
-    [self.anrDataStore deleteFile];
-}
-
-- (void)dealloc {
-    if (_longTaskDetector) {
-        [_longTaskDetector stopDetecting];
+    if (atomic_load(&_stopped)) return;
+    if (self.enableANR && event.hasPersistedANRData) [self.anrProcessor.dataStore deleteFile];
+    if (!atomic_load(&_stopped) && event.isLongTask && self.enableFreeze) {
+        FTLongTaskEvent *result = [[FTLongTaskEvent alloc] initWithStack:event.mainThreadBacktrace ?: @""
+            startTimeNs:event.startTimeNs endTimeNs:event.lastObservedTimeNs durationNs:event.durationNs appState:intervalState];
+        [self.delegate longTaskDetected:result];
+    }
+    if (!atomic_load(&_stopped) && self.enableANR && event.isANR) {
+        NSString *stack = event.allThreadsBacktrace.length ? event.allThreadsBacktrace : event.mainThreadBacktrace;
+        [self.delegate anrStackDetected:stack ?: @"" appState:event.startAppState intervalAppState:intervalState time:event.startTimeNs];
     }
 }
-
+- (void)shutDown {
+    if (atomic_exchange(&_stopped, true)) return;
+    [self.longTaskDetector stopDetecting];
+    [self.anrProcessor.dataStore shutDown];
+    [self.longTaskDetector performAsynchronousBlock:^{
+        self.longTaskEvent = nil;
+    }];
+}
+- (void)dealloc {
+    [_longTaskDetector stopDetecting];
+}
 @end

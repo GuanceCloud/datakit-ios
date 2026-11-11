@@ -22,6 +22,7 @@
 #import "FTJSONUtil.h"
 #import "FTInnerLog.h"
 #import "FTInternalConstants.h"
+#import <stdatomic.h>
 
 static NSString *const kFTLongTaskSDKDirName = @"com.ft.sdk";
 static NSString *const kFTLongTaskANRDataVersion = @"2.0.0";
@@ -30,6 +31,14 @@ static void *FTLongTaskANRDataStoreQueueTag = &FTLongTaskANRDataStoreQueueTag;
 
 long long const FTLongTaskANRDataThresholdNs = 3LL * NSEC_PER_SEC;
 long long const FTLongTaskANRDataUpdateIntervalNs = 1LL * NSEC_PER_SEC;
+
+static BOOL FTIsValidStoredNanoseconds(id value, long long minimum) {
+    if (![value isKindOfClass:NSNumber.class] ||
+        CFGetTypeID((__bridge CFTypeRef)value) == CFBooleanGetTypeID()) return NO;
+    long long nanoseconds = [value longLongValue];
+    // The exact round trip rejects fractions and signed 64-bit overflow without double rounding.
+    return nanoseconds >= minimum && [value compare:@(nanoseconds)] == NSOrderedSame;
+}
 
 @implementation FTLongTaskANRData
 
@@ -57,6 +66,11 @@ long long const FTLongTaskANRDataUpdateIntervalNs = 1LL * NSEC_PER_SEC;
     if (self) {
         _startTimeNs = [dict[@"startDate"] longLongValue];
         _durationNs = [dict[@"duration"] longLongValue];
+        if ([dict[@"effectiveDuration"] isKindOfClass:NSNumber.class]) {
+            _usesEffectiveDuration = YES;
+            _durationNs = [dict[@"effectiveDuration"] longLongValue];
+            _endTimeNs = [dict[@"endDate"] longLongValue];
+        }
         _mainThreadBacktrace = [dict[@"mainThreadBacktrace"] copy];
         _allThreadsBacktrace = [dict[@"allThreadsBacktrace"] copy];
         NSDictionary *contextDict = dict[@"errorContextModel"];
@@ -74,13 +88,21 @@ long long const FTLongTaskANRDataUpdateIntervalNs = 1LL * NSEC_PER_SEC;
     [dict setValue:self.mainThreadBacktrace forKey:@"mainThreadBacktrace"];
     [dict setValue:self.allThreadsBacktrace forKey:@"allThreadsBacktrace"];
     [dict setValue:@(self.durationNs) forKey:@"duration"];
+    if (self.usesEffectiveDuration) {
+        dict[@"effectiveDuration"] = @(self.durationNs);
+        dict[@"endDate"] = @(self.endTimeNs);
+    }
     [dict setValue:[self.errorContextModel toDictionary] forKey:@"errorContextModel"];
     return dict;
 }
 
 @end
 
-@interface FTLongTaskANRDataStore ()
+@interface FTLongTaskANRDataStore () {
+    atomic_bool _closed;
+    NSMutableDictionary *_baseSnapshot; // File-queue owned; retained for retry if an atomic write fails.
+    BOOL _baseSnapshotWritten;
+}
 @property (nonatomic, strong) dispatch_queue_t queue;
 @end
 
@@ -91,26 +113,34 @@ long long const FTLongTaskANRDataUpdateIntervalNs = 1LL * NSEC_PER_SEC;
 - (instancetype)init {
     self = [super init];
     if (self) {
-        _queue = dispatch_queue_create("com.ft.longtask.anr_data", DISPATCH_QUEUE_SERIAL);
-        dispatch_queue_set_specific(_queue, FTLongTaskANRDataStoreQueueTag, FTLongTaskANRDataStoreQueueTag, NULL);
+        // Every SDK instance uses the same file. One queue keeps old cleanup ahead
+        // of recovery/writes from a newly initialized SDK.
+        static dispatch_queue_t fileQueue;
+        static dispatch_once_t onceToken;
+        dispatch_once(&onceToken, ^{
+            fileQueue = dispatch_queue_create("com.ft.longtask.anr_data", DISPATCH_QUEUE_SERIAL);
+            dispatch_queue_set_specific(fileQueue, FTLongTaskANRDataStoreQueueTag, FTLongTaskANRDataStoreQueueTag, NULL);
+        });
+        _queue = fileQueue;
+        atomic_init(&_closed, false);
     }
     return self;
 }
 
-- (NSFileHandle *)fileHandle {
-    if (!_fileHandle) {
-        _fileHandle = [NSFileHandle fileHandleForUpdatingAtPath:[self createFile]];
+- (BOOL)isClosed {
+    return atomic_load(&_closed);
+}
+
+- (void)shutDown {
+    if (atomic_exchange(&_closed, true)) return;
+    // Retain the store until its queued deletion finishes, even if the manager is released.
+    dispatch_async(self.queue, ^{
         @try {
-            __autoreleasing NSError *error = nil;
-            [_fileHandle seekToEndReturningOffset:nil error:&error];
-            if (error) {
-                FTInnerLogError(@"[LongTask] error %@", error.description);
-            }
+            [self deleteFileUnsafe];
         } @catch (NSException *exception) {
             FTInnerLogError(@"[LongTask] exception %@", exception);
         }
-    }
-    return _fileHandle;
+    });
 }
 
 - (NSString *)dataStorePath {
@@ -140,32 +170,13 @@ long long const FTLongTaskANRDataUpdateIntervalNs = 1LL * NSEC_PER_SEC;
     return _dataStorePath;
 }
 
-- (void)setDataStorePath:(NSString *)dataStorePath {
-    if (_dataStorePath != dataStorePath && ![_dataStorePath isEqualToString:dataStorePath]) {
-        _fileHandle = nil;
-    }
-    _dataStorePath = [dataStorePath copy];
-}
-
-- (void)appendData:(NSData *)data {
-    __weak __typeof(self) weakSelf = self;
-    [self performAsync:^{
-        @try {
-            __strong __typeof(weakSelf) strongSelf = weakSelf;
-            if (!strongSelf) return;
-            [strongSelf writeData:data];
-        } @catch (NSException *exception) {
-            FTInnerLogError(@"[LongTask] exception %@", exception);
-        }
-    }];
-}
-
 - (void)deleteFile {
+    if (self.isClosed) return;
     __weak __typeof(self) weakSelf = self;
     dispatch_block_t block = ^{
         @try {
             __strong __typeof(weakSelf) strongSelf = weakSelf;
-            if (!strongSelf) return;
+            if (!strongSelf || strongSelf.isClosed) return;
             [strongSelf deleteFileUnsafe];
         } @catch (NSException *exception) {
             FTInnerLogError(@"[LongTask] exception %@", exception);
@@ -174,41 +185,77 @@ long long const FTLongTaskANRDataUpdateIntervalNs = 1LL * NSEC_PER_SEC;
     [self performSync:block];
 }
 
-- (void)writeANRData:(FTLongTaskANRData *)anrData updateTimeNs:(long long)updateTimeNs resetFile:(BOOL)resetFile {
-    if (!anrData) {
-        return;
-    }
-    __weak __typeof(self) weakSelf = self;
-    [self performAsync:^{
+- (void)writeANRData:(FTLongTaskANRData *)anrData {
+    if (!anrData || self.isClosed) return;
+    NSDictionary *snapshot = [anrData convertToDictionary];
+    __weak typeof(self) weakSelf = self;
+    dispatch_async(self.queue, ^{
+        __strong typeof(weakSelf) self = weakSelf;
+        if (!self || self.isClosed) return;
         @try {
-            __strong __typeof(weakSelf) strongSelf = weakSelf;
-            if (!strongSelf) return;
-            if (resetFile) {
-                [strongSelf deleteFileUnsafe];
-            }
-            NSDictionary *dict = [anrData convertToDictionary];
-            NSString *jsonString = [FTJSONUtil convertToJsonDataWithObject:dict];
-            if (!jsonString) {
-                FTInnerLogError(@"[LongTask] longTask ANR data convert to Json Data Error");
-                return;
-            }
-            NSString *payload = [NSString stringWithFormat:@"%@%@%@%@%lld\n", kFTLongTaskANRDataVersion, kFTLongTaskANRDataBoundary, jsonString, kFTLongTaskANRDataBoundary, updateTimeNs];
-            NSData *data = [payload dataUsingEncoding:NSUTF8StringEncoding];
-            [strongSelf writeData:data];
+            self->_baseSnapshot = [snapshot mutableCopy];
+            [self writeBaseSnapshotUnsafe];
         } @catch (NSException *exception) {
             FTInnerLogError(@"[LongTask] exception %@", exception);
         }
-    }];
+    });
 }
 
-- (void)appendUpdateTimeNs:(long long)updateTimeNs {
-    NSString *lastDate = [NSString stringWithFormat:@"%lld\n", updateTimeNs];
-    [self appendData:[lastDate dataUsingEncoding:NSUTF8StringEncoding]];
+- (void)writeBaseSnapshotUnsafe {
+    _baseSnapshotWritten = NO;
+    NSString *json = [FTJSONUtil convertToJsonDataWithObject:_baseSnapshot];
+    if (!json) return;
+    NSString *payload = [NSString stringWithFormat:@"3.0.0%@%@%@", kFTLongTaskANRDataBoundary, json, kFTLongTaskANRDataBoundary];
+    NSError *error = nil;
+    NSData *data = [payload dataUsingEncoding:NSUTF8StringEncoding];
+    _baseSnapshotWritten = [data writeToFile:self.dataStorePath options:NSDataWritingAtomic error:&error];
+    if (!_baseSnapshotWritten) FTInnerLogError(@"[LongTask] snapshot write failed: %@", error);
+}
+
+- (void)appendTimingWithStartTimeNs:(long long)startTimeNs durationNs:(long long)durationNs endTimeNs:(long long)endTimeNs {
+    if (self.isClosed || startTimeNs <= 0 || durationNs < 0 || endTimeNs < startTimeNs) return;
+    __weak typeof(self) weakSelf = self;
+    dispatch_async(self.queue, ^{
+        __strong typeof(weakSelf) self = weakSelf;
+        if (!self || self.isClosed || [self->_baseSnapshot[@"startDate"] longLongValue] != startTimeNs ||
+            durationNs < [self->_baseSnapshot[@"effectiveDuration"] longLongValue]) return;
+        @try {
+            self->_baseSnapshot[@"effectiveDuration"] = @(durationNs);
+            self->_baseSnapshot[@"duration"] = @(durationNs);
+            self->_baseSnapshot[@"endDate"] = @(endTimeNs);
+            self->_baseSnapshot[@"isANR"] = @(durationNs > FT_ANR_THRESHOLD_NS);
+            if (!self->_baseSnapshotWritten) {
+                // Retry a failed full write before this incident can receive timing-only records.
+                [self writeBaseSnapshotUnsafe];
+                return;
+            }
+            NSString *json = [FTJSONUtil convertToJsonDataWithObject:@{
+                @"effectiveDuration": @(durationNs), @"endDate": @(endTimeNs)
+            }];
+            if (!json) return;
+            // A leading newline isolates any torn previous append; the trailing newline commits this pair.
+            NSData *record = [[NSString stringWithFormat:@"\n%@\n", json] dataUsingEncoding:NSUTF8StringEncoding];
+            NSFileHandle *handle = [NSFileHandle fileHandleForWritingAtPath:self.dataStorePath];
+            if (!handle) {
+                [self writeBaseSnapshotUnsafe];
+                return;
+            }
+            @try {
+                [handle seekToEndOfFile];
+                [handle writeData:record];
+            } @finally {
+                [handle closeFile];
+            }
+        } @catch (NSException *exception) {
+            FTInnerLogError(@"[LongTask] timing append exception %@", exception);
+        }
+    });
 }
 
 - (FTLongTaskANRData *)readANRData {
     __block FTLongTaskANRData *anrData = nil;
     [self performSync:^{
+        if (self.isClosed) return;
         @try {
             NSString *content = [NSString stringWithContentsOfFile:self.dataStorePath encoding:NSUTF8StringEncoding error:nil];
             if (content.length == 0) {
@@ -218,32 +265,45 @@ long long const FTLongTaskANRDataUpdateIntervalNs = 1LL * NSEC_PER_SEC;
             if (datas.count != 3) {
                 return;
             }
-            if (![datas[0] isEqualToString:kFTLongTaskANRDataVersion]) {
+            BOOL effective = [datas[0] isEqualToString:@"3.0.0"];
+            if (!effective && ![datas[0] isEqualToString:kFTLongTaskANRDataVersion]) {
                 return;
             }
             NSDictionary *dict = [FTJSONUtil dictionaryWithJsonString:datas[1]];
-            if (!dict) {
-                return;
+            if (!dict) return;
+            if (effective) {
+                NSNumber *startDate = dict[@"startDate"];
+                if (!FTIsValidStoredNanoseconds(startDate, 1) ||
+                    !FTIsValidStoredNanoseconds(dict[@"effectiveDuration"], 0) ||
+                    !FTIsValidStoredNanoseconds(dict[@"endDate"], startDate.longLongValue)) return;
             }
-            NSArray *updateTimes = [datas[2] componentsSeparatedByString:@"\n"];
-            __block long long lastTime = 0;
-            [updateTimes enumerateObjectsWithOptions:NSEnumerationReverse usingBlock:^(NSString *obj, NSUInteger idx, BOOL *stop) {
-                if (obj.length > 0) {
-                    lastTime = [obj longLongValue];
-                    *stop = YES;
-                }
-            }];
             anrData = [[FTLongTaskANRData alloc] initWithDictionary:dict];
-            anrData.lastUpdateTimeNs = lastTime;
+            NSArray<NSString *> *updateTimes = [datas[2] componentsSeparatedByString:@"\n"];
+            if (effective) {
+                // The last component lacks a terminating newline and may be a torn write.
+                for (NSUInteger index = 0; index + 1 < updateTimes.count; index++) {
+                    if (updateTimes[index].length == 0) continue;
+                    NSDictionary *timing = [FTJSONUtil dictionaryWithJsonString:updateTimes[index]];
+                    if (!FTIsValidStoredNanoseconds(timing[@"effectiveDuration"], anrData.durationNs) ||
+                        !FTIsValidStoredNanoseconds(timing[@"endDate"], anrData.startTimeNs)) continue;
+                    anrData.durationNs = [timing[@"effectiveDuration"] longLongValue];
+                    anrData.endTimeNs = [timing[@"endDate"] longLongValue];
+                }
+                anrData.lastUpdateTimeNs = anrData.endTimeNs;
+            } else {
+                // Legacy v2 retains its epoch-timestamp trailer semantics.
+                [updateTimes enumerateObjectsWithOptions:NSEnumerationReverse usingBlock:^(NSString *obj, NSUInteger idx, BOOL *stop) {
+                    if (obj.length > 0) {
+                        anrData.lastUpdateTimeNs = [obj longLongValue];
+                        *stop = YES;
+                    }
+                }];
+            }
         } @catch (NSException *exception) {
             FTInnerLogError(@"[LongTask] exception %@", exception);
         }
     }];
     return anrData;
-}
-
-- (void)performAsync:(dispatch_block_t)block {
-    dispatch_async(self.queue, block);
 }
 
 - (void)performSync:(dispatch_block_t)block {
@@ -254,31 +314,9 @@ long long const FTLongTaskANRDataUpdateIntervalNs = 1LL * NSEC_PER_SEC;
     }
 }
 
-- (NSString *)createFile {
-    @try {
-        NSFileManager *fileManager = [NSFileManager defaultManager];
-        if ([fileManager fileExistsAtPath:self.dataStorePath]) {
-            return self.dataStorePath;
-        }
-        BOOL isSuccess = [fileManager createFileAtPath:self.dataStorePath contents:nil attributes:nil];
-        if (isSuccess) {
-            return self.dataStorePath;
-        }
-    } @catch (NSException *exception) {
-        FTInnerLogError(@"[LongTask] exception %@", exception);
-    }
-    return nil;
-}
-
-- (void)writeData:(NSData *)data {
-    NSError *error = nil;
-    [self.fileHandle writeData:data error:&error];
-    if (error) {
-        FTInnerLogError(@"[LongTask] writeData error %@", error.description);
-    }
-}
-
 - (void)deleteFileUnsafe {
+    _baseSnapshot = nil;
+    _baseSnapshotWritten = NO;
     NSError *error = nil;
     NSFileManager *fileManager = [NSFileManager defaultManager];
     BOOL fileExists = [fileManager fileExistsAtPath:self.dataStorePath];
@@ -288,7 +326,6 @@ long long const FTLongTaskANRDataUpdateIntervalNs = 1LL * NSEC_PER_SEC;
             FTInnerLogError(@"[LongTask] delete file: %@ fail. reason: %@", self.dataStorePath, error.description);
         }
     }
-    self.fileHandle = nil;
 }
 
 - (NSSearchPathDirectory)supportedDirectory {
@@ -299,18 +336,5 @@ long long const FTLongTaskANRDataUpdateIntervalNs = 1LL * NSEC_PER_SEC;
 #endif
 }
 
-- (void)dealloc {
-    if (_fileHandle) {
-        @try {
-            NSError *error = nil;
-            [_fileHandle synchronizeAndReturnError:&error];
-            if (error) {
-                FTInnerLogError(@"[FTLog][FTFileLogger] Failed to synchronize file: %@", error.description);
-            }
-        } @catch (NSException *exception) {
-            FTInnerLogError(@"[FTLog][FTFileLogger] Failed to synchronize file: %@", exception);
-        }
-    }
-}
 
 @end

@@ -1024,6 +1024,8 @@
 		FDA43B9FCC704F04829FBC14 /* FTRUMNetworkSettledMetric.m in Sources */ = {isa = PBXBuildFile; fileRef = 94A311B73A8A85CC516D42D7 /* FTRUMNetworkSettledMetric.m */; };
 		452EDDB618356D6832BDB985 /* FTRUMViewTimingPredicates.h in Headers */ = {isa = PBXBuildFile; fileRef = FB06A5AE300B57DCD5ED5CDA /* FTRUMViewTimingPredicates.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		ECF6A9DD35A3E430BDFA773B /* FTRUMViewTimingPredicates.h in Headers */ = {isa = PBXBuildFile; fileRef = FB06A5AE300B57DCD5ED5CDA /* FTRUMViewTimingPredicates.h */; settings = {ATTRIBUTES = (Public, ); }; };
+		F10600000000000000000004 /* FTANRProcessor.m in Sources */ = {isa = PBXBuildFile; fileRef = F10600000000000000000003 /* FTANRProcessor.m */; };
+		F10600000000000000000005 /* FTANRProcessor.m in Sources */ = {isa = PBXBuildFile; fileRef = F10600000000000000000003 /* FTANRProcessor.m */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -1760,6 +1762,10 @@
 		0D529FB7EFF3AB3ED99E91CC /* FTRUMNetworkSettledMetric.h */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.c.h; path = FTRUMNetworkSettledMetric.h; sourceTree = "<group>"; };
 		94A311B73A8A85CC516D42D7 /* FTRUMNetworkSettledMetric.m */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.c.objc; path = FTRUMNetworkSettledMetric.m; sourceTree = "<group>"; };
 		FB06A5AE300B57DCD5ED5CDA /* FTRUMViewTimingPredicates.h */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.c.h; name = FTRUMViewTimingPredicates.h; path = Sources/Core/FTRUM/include/FTRUMViewTimingPredicates.h; sourceTree = SOURCE_ROOT; };
+		F10600000000000000000001 /* FTLongTaskTiming.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = FTLongTaskTiming.h; sourceTree = "<group>"; };
+		F10600000000000000000002 /* FTANRProcessor.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = FTANRProcessor.h; sourceTree = "<group>"; };
+		F10600000000000000000003 /* FTANRProcessor.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = FTANRProcessor.m; sourceTree = "<group>"; };
+		F10600000000000000000006 /* FTLongTaskEvent.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; name = FTLongTaskEvent.h; path = Sources/Core/FTRUM/include/FTLongTaskEvent.h; sourceTree = SOURCE_ROOT; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -2436,7 +2442,11 @@
 			children = (
 				17717B632F0E8618002158F6 /* FTLongTaskDetector.h */,
 				17717B642F0E8618002158F6 /* FTLongTaskManager.h */,
+				F10600000000000000000006 /* FTLongTaskEvent.h */,
 				176CE25A2ED6F6F900E9E92B /* FTLongTaskDetector.m */,
+				F10600000000000000000001 /* FTLongTaskTiming.h */,
+				F10600000000000000000002 /* FTANRProcessor.h */,
+				F10600000000000000000003 /* FTANRProcessor.m */,
 				176CE25B2ED6F6F900E9E92B /* FTLongTaskManager.m */,
 				70EFBC94C123E29E8E56B990 /* FTLongTaskANRData.h */,
 				4BB4CA341DCC4265A9E6CBDB /* FTLongTaskANRData.m */,
@@ -3835,6 +3845,7 @@
 				172505DD2FFF749300DECE44 /* FTHeatmapIdentifierStore.m in Sources */,
 				17BCF3802D66EB2A009A63FD /* FTWeakPropertyContainer.m in Sources */,
 				176CE25C2ED6F6F900E9E92B /* FTLongTaskDetector.m in Sources */,
+				F10600000000000000000004 /* FTANRProcessor.m in Sources */,
 				178CDAE82F0F7AA000EE98D0 /* FTCrashReportFixer.c in Sources */,
 				178CDAE92F0F7AA000EE98D0 /* FTCrashThreadCache.c in Sources */,
 				178CDAEA2F0F7AA000EE98D0 /* FTCrashReportStore.m in Sources */,
@@ -4027,6 +4038,7 @@
 				17E4CC3929CD42E4005C2D99 /* UIGestureRecognizer+FTAutoTrack.m in Sources */,
 				17E4CB5A29CD42DA005C2D99 /* FTJSONUtil.m in Sources */,
 				176CE25E2ED6F6F900E9E92B /* FTLongTaskDetector.m in Sources */,
+				F10600000000000000000005 /* FTANRProcessor.m in Sources */,
 				17A422922EE27DF200416673 /* FTCrashJSONCodecObjC.m in Sources */,
 				176CE25F2ED6F6F900E9E92B /* FTLongTaskManager.m in Sources */,
 				1776BD4A2E179FA300612A7F /* FTCrashLogger.c in Sources */,

@@ -19,6 +19,7 @@
 //
 
 #import "FTRUMViewHandler.h"
+#import "FTLongTaskEvent.h"
 #import "FTRUMViewMetrics.h"
 #import "FTRUMNetworkSettledMetric.h"
 #import "FTRUMDependencies.h"
@@ -387,8 +388,8 @@
     if (model.type == FTRUMDataLongTask) {
         long long eventStart = model.tm;
         long long duration = [model.fields[FT_DURATION] longLongValue];
-        fields[@"app_state"] = [self.rumDependencies.appStateHistory stateFrom:eventStart
-                                                                                              duration:duration];
+        fields[@"app_state"] = model.longTaskEvent ? (model.longTaskEvent.appState ?: @"unknown") :
+            [self.rumDependencies.appStateHistory stateFrom:eventStart duration:duration];
     }
     if (self.rumDependencies.sessionHasReplay != nil) {
         BOOL sessionHasReplay = self.sessionHasReplay || self.rumDependencies.sessionHasReplay.boolValue;

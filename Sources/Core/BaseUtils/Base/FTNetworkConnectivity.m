@@ -102,6 +102,33 @@ typedef NS_ENUM(NSInteger, FTNetworkStatus) {
     os_unfair_lock_unlock(&_stateLock);
     return current;
 }
+
+// Private system-call boundaries let each test instance provide its own backend.
+// Production instances always forward to Network.framework/CoreTelephony.
+- (nw_path_monitor_t)createPathMonitor {
+    return nw_path_monitor_create();
+}
+- (void)startPathMonitor:(nw_path_monitor_t)monitor queue:(dispatch_queue_t)queue
+          updateHandler:(nw_path_monitor_update_handler_t)handler {
+    nw_path_monitor_set_update_handler(monitor, handler);
+    nw_path_monitor_set_queue(monitor, queue);
+    nw_path_monitor_start(monitor);
+}
+- (void)cancelPathMonitor:(nw_path_monitor_t)monitor {
+    nw_path_monitor_cancel(monitor);
+}
+- (nw_path_status_t)statusForPath:(nw_path_t)path {
+    return nw_path_get_status(path);
+}
+- (BOOL)path:(nw_path_t)path usesInterfaceType:(nw_interface_type_t)type {
+    return nw_path_uses_interface_type(path, type);
+}
+#if TARGET_OS_IOS && !TARGET_OS_MACCATALYST
+- (CTTelephonyNetworkInfo *)createCellularNetworkInfo {
+    return [[self class] sharedNetworkInfo];
+}
+#endif
+
 - (void)start {
     os_unfair_lock_lock(&_stateLock);
     if (_isNotifying) {
@@ -122,10 +149,10 @@ typedef NS_ENUM(NSInteger, FTNetworkStatus) {
 - (void)startPathMonitorNotifierForGeneration:(NSUInteger)generation {
     // Creation, startup, cancellation and path callbacks share one serial queue.
     if (_pathMonitor) {
-        nw_path_monitor_cancel(_pathMonitor);
+        [self cancelPathMonitor:_pathMonitor];
         _pathMonitor = nil;
     }
-    nw_path_monitor_t monitor = nw_path_monitor_create();
+    nw_path_monitor_t monitor = [self createPathMonitor];
     if (!monitor) {
         os_unfair_lock_lock(&_stateLock);
         if (_generation == generation) _isNotifying = NO;
@@ -134,33 +161,31 @@ typedef NS_ENUM(NSInteger, FTNetworkStatus) {
         return;
     }
     if (![self isCurrentGeneration:generation]) {
-        nw_path_monitor_cancel(monitor);
+        [self cancelPathMonitor:monitor];
         return;
     }
     _pathMonitor = monitor;
     _pathMonitorGeneration = generation;
     __weak typeof(self) weakSelf = self;
-    nw_path_monitor_set_update_handler(monitor, ^(nw_path_t path) {
+    [self startPathMonitor:monitor queue:_monitorQueue updateHandler:^(nw_path_t path) {
         __strong typeof(weakSelf) strongSelf = weakSelf;
         if (![strongSelf isCurrentGeneration:generation]) return;
         [strongSelf updatePath:path generation:generation];
-    });
-    nw_path_monitor_set_queue(monitor, _monitorQueue);
-    nw_path_monitor_start(monitor);
+    }];
 }
 - (void)updatePath:(nw_path_t)path generation:(NSUInteger)generation {
-    nw_path_status_t status = nw_path_get_status(path);
+    nw_path_status_t status = [self statusForPath:path];
     // Preserve the existing connected/available definitions: a path requiring
     // a connection is connected here, but is not yet available for a resource.
     BOOL connected = status != nw_path_status_unsatisfied;
     BOOL available = status == nw_path_status_satisfied;
     FTNetworkStatus networkStatus = FTNetworkStatusUnknown;
     if (connected) {
-        if (nw_path_uses_interface_type(path, nw_interface_type_wired)) {
+        if ([self path:path usesInterfaceType:nw_interface_type_wired]) {
             networkStatus = FTNetworkStatusEthernet;
-        } else if (nw_path_uses_interface_type(path, nw_interface_type_wifi)) {
+        } else if ([self path:path usesInterfaceType:nw_interface_type_wifi]) {
             networkStatus = FTNetworkStatusWiFi;
-        } else if (nw_path_uses_interface_type(path, nw_interface_type_cellular)) {
+        } else if ([self path:path usesInterfaceType:nw_interface_type_cellular]) {
             networkStatus = FTNetworkStatusWWAN;
         }
     }
@@ -277,7 +302,7 @@ typedef NS_ENUM(NSInteger, FTNetworkStatus) {
             NSString *currentStatus = nil;
 
             // Wi-Fi/ethernet startup must not initialize CoreTelephony.
-            if (!_networkInfo) _networkInfo = [[self class] sharedNetworkInfo];
+            if (!_networkInfo) _networkInfo = [self createCellularNetworkInfo];
             if (_networkInfo && [_networkInfo respondsToSelector:@selector(serviceCurrentRadioAccessTechnology)]) {
                 NSDictionary *radioDic = [_networkInfo serviceCurrentRadioAccessTechnology];
                 if (radioDic.allKeys.count) {
@@ -331,7 +356,7 @@ typedef NS_ENUM(NSInteger, FTNetworkStatus) {
         if (!strongSelf) return;
         // A newer start may have been enqueued before this cancellation block.
         if (strongSelf->_pathMonitor && strongSelf->_pathMonitorGeneration < generation) {
-            nw_path_monitor_cancel(strongSelf->_pathMonitor);
+            [strongSelf cancelPathMonitor:strongSelf->_pathMonitor];
             strongSelf->_pathMonitor = nil;
         }
     });
@@ -342,6 +367,6 @@ typedef NS_ENUM(NSInteger, FTNetworkStatus) {
 - (void)dealloc {
     // Work blocks/handlers hold only weak references; no queue work can use
     // this instance once deallocation starts.
-    if (_pathMonitor) nw_path_monitor_cancel(_pathMonitor);
+    if (_pathMonitor) [self cancelPathMonitor:_pathMonitor];
 }
 @end

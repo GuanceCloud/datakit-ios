@@ -20,21 +20,43 @@
 
 #import "FTLongTaskManager.h"
 #import "FTLongTaskANRData.h"
+#import "FTLongTaskTiming.h"
+#import "FTANRProcessor.h"
 
 NS_ASSUME_NONNULL_BEGIN
 
-@interface FTLongTaskManager ()
-@property (nonatomic, strong) NSFileHandle *fileHandle;
-@property (nonatomic, copy) NSString *dataStorePath;
-@property (nonatomic, strong) dispatch_queue_t queue;
-@property (nonatomic, strong) FTLongTaskANRDataStore *anrDataStore;
-
-- (void)deleteFile;
-- (void)appendData:(NSData *)data;
-- (void)updateLongTaskDate:(long long)time;
-- (void)startLongTask:(long long)startTime;
-- (void)endLongTask;
-- (void)reportPreviousANRIfFound;
+@interface FTLongTaskManager (Test) <FTLongTaskTimingDelegate>
 @end
+
+@interface FTManualTimingDetector : FTLongTaskDetector
+@property (nonatomic) BOOL intervalEnded;
+@end
+
+static inline FTANRProcessor *FTTestANRProcessor(FTLongTaskManager *manager) {
+    return [manager valueForKey:@"anrProcessor"];
+}
+
+static inline FTLongTaskANRDataStore *FTTestANRStore(FTLongTaskManager *manager) {
+    return FTTestANRProcessor(manager).dataStore;
+}
+
+static inline void FTTestDrainDetector(FTLongTaskDetector *detector) {
+    dispatch_sync([detector valueForKey:@"longTaskQueue"], ^{});
+}
+
+static inline uint64_t FTTestObserveLongTaskState(FTLongTaskManager *manager, FTLongTaskPhase phase,
+                                               long long startNs, uint64_t durationNs, long long endNs,
+                                               FTAppState startState, FTRUMAppState appState) {
+    FTManualTimingDetector *detector = [[FTManualTimingDetector alloc] initWithDelegate:manager];
+    FTLongTaskTiming timing = {.phase = phase, .generation = 42, .startTimeNs = startNs,
+        .observationTimeNs = endNs, .durationNs = durationNs, .startAppState = startState, .appState = appState};
+    return [manager longTaskDetector:detector didObserveTiming:timing];
+}
+
+static inline uint64_t FTTestObserveLongTask(FTLongTaskManager *manager, FTLongTaskPhase phase,
+                                          long long startNs, uint64_t durationNs, long long endNs) {
+    return FTTestObserveLongTaskState(manager, phase, startNs, durationNs, endNs,
+                                     FTAppStateUnknown, FTRUMAppStateUnknown);
+}
 
 NS_ASSUME_NONNULL_END

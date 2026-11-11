@@ -216,6 +216,12 @@ static mach_port_t main_thread_id;
 -(NSString *)generateAllThreadsBacktrace{
     return [self.crashReportWrapper generateAllThreadsBacktrace];
 }
+- (NSString *)generateMainThreadBacktraceWithCaptureValidation:(FTBacktraceCaptureValidation)validation {
+    return [self.crashReportWrapper generateBacktrace:main_thread_id captureValidation:validation];
+}
+- (NSString *)generateAllThreadsBacktraceWithCaptureValidation:(FTBacktraceCaptureValidation)validation {
+    return [self.crashReportWrapper generateAllThreadsBacktraceWithCaptureValidation:validation];
+}
 - (double)crashedLastTimestamp{
     return ftcrashstate_currentState()->crashedLastTimestamp;
 }

@@ -44,13 +44,15 @@ typedef NS_ENUM(NSUInteger, FTRUMDataType) {
 };
 
 NS_ASSUME_NONNULL_BEGIN
-@class FTResourceMetricsModel,FTResourceContentModel,FTHeatmapAttributes;
+@class FTResourceMetricsModel,FTResourceContentModel,FTHeatmapAttributes,FTLongTaskEvent;
 @interface FTRUMDataModel : NSObject
 @property (nonatomic, strong) NSDate *time;
 @property (nonatomic, assign) FTRUMDataType type;
 @property (nonatomic, strong) NSDictionary *tags;
 @property (nonatomic, strong) NSDictionary *fields;
 @property (nonatomic, assign) long long tm;
+/// Automatic LongTask facts captured before asynchronous RUM processing.
+@property (nonatomic, strong, nullable) FTLongTaskEvent *longTaskEvent;
 /// Immutable Visitor ID captured when this event entered the SDK.
 @property (nonatomic, copy, nullable) NSString *visitorIDSnapshot;
 @property (nonatomic, assign, readonly) BOOL isUserInteraction;

@@ -36,6 +36,7 @@
 #import "NSDictionary+FTCopyProperties.h"
 #include <mach-o/arch.h>
 #include <sys/sysctl.h>
+#include <string.h>
 #import "FTThreadDispatchManager.h"
 #import "FTAppLifeCycle.h"
 #if FT_HOST_MAC
@@ -486,6 +487,8 @@ static Class FTPresetExpectedValueClass(id value) {
 @end
 
 @interface FTPresetProperty ()<FTNetworkChangeObserver, FTAppLifeCycleDelegate>
++ (NSString *)modelIdentifier;
++ (NSString *)unameMachineIdentifier;
 @property (nonatomic, copy) FTDataModifier dataModifier;
 @property (nonatomic, copy) FTLineDataModifier lineDataModifier;
 @property (nonatomic, strong, readwrite) NSDictionary *sessionReplayTags;
@@ -912,10 +915,41 @@ static uintptr_t firstCmdAfterHeader(const struct mach_header* const header) {
     }
     return [NSString stringWithFormat:@"unknown(%d,%d)", majorCode, minorCode];
 }
++ (BOOL)isiOSAppOnMac {
+#if TARGET_OS_IOS
+    if (@available(iOS 14.0, *)) {
+        return [NSProcessInfo processInfo].isiOSAppOnMac;
+    }
+#endif
+    return NO;
+}
++ (NSString *)modelIdentifier {
+    size_t length = 0;
+    if (sysctlbyname("hw.model", NULL, &length, NULL, 0) != 0 || length == 0) {
+        return @"Unknown Mac";
+    }
+    NSMutableData *data = [NSMutableData dataWithLength:length];
+    if (sysctlbyname("hw.model", data.mutableBytes, &length, NULL, 0) != 0 || length == 0) {
+        return @"Unknown Mac";
+    }
+    // Decode only the returned bytes; do not rely on a terminating NUL.
+    const char *bytes = data.bytes;
+    size_t modelLength = strnlen(bytes, MIN(length, data.length));
+    NSString *model = [[NSString alloc] initWithBytes:bytes length:modelLength encoding:NSUTF8StringEncoding];
+    return model.length > 0 ? model : @"Unknown Mac";
+}
++ (NSString *)unameMachineIdentifier {
+    struct utsname systemInfo = {0};
+    if (uname(&systemInfo) != 0) {
+        return @"Unknown";
+    }
+    return [NSString stringWithCString:systemInfo.machine encoding:NSASCIIStringEncoding] ?: @"Unknown";
+}
 + (NSString *)deviceInfo{
-    struct utsname systemInfo;
-    uname(&systemInfo);
-    NSString *platform = [NSString stringWithCString:systemInfo.machine encoding:NSASCIIStringEncoding];
+    if ([self isiOSAppOnMac]) {
+        return [self modelIdentifier];
+    }
+    NSString *platform = [self unameMachineIdentifier];
 #if TARGET_OS_IOS
     //------------------------------iPhone---------------------------
     if ([platform isEqualToString:@"iPhone18,4"]) return @"iPhone Air";

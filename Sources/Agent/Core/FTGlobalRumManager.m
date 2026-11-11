@@ -29,6 +29,7 @@
 #endif
 #import "FTSDKCompat.h"
 #import "FTLongTaskManager.h"
+#import "FTLongTaskEvent.h"
 #import "FTAutoTrackHandler.h"
 #import "FTRUMManager.h"
 #import "FTDisplayRateMonitor.h"
@@ -239,10 +240,10 @@ static NSObject *sharedInstanceLock;
     [self.rumManager updateSampleRate:sampleRate sessionOnErrorSampleRate:sessionOnErrorSampleRate];
 }
 #pragma mark ========== FTRunloopDetectorDelegate ==========
-- (void)longTaskStackDetected:(NSString*)slowStack duration:(long long)duration time:(long long)time{
-    [self.rumManager addLongTaskWithStack:slowStack duration:[NSNumber numberWithLongLong:duration] startTime:time];
+- (void)longTaskDetected:(FTLongTaskEvent *)event {
+    [self.rumManager addLongTaskEvent:event];
 }
-- (void)anrStackDetected:(NSString*)slowStack appState:(NSString *)appState time:(long long)time{
+- (void)anrStackDetected:(NSString*)slowStack appState:(NSString *)appState intervalAppState:(NSString *)intervalAppState time:(long long)time{
     [self.rumManager addAutomaticIssueWithCategory:FTIssueCategoryANR
                                          errorType:@"anr_error"
                                           appState:appState
@@ -250,7 +251,8 @@ static NSObject *sharedInstanceLock;
                                              stack:slowStack
                                         threadName:@"main"
                                               time:time
-                                        historical:NO];
+                                        historical:NO
+                                  intervalAppState:intervalAppState];
 }
 #pragma mark ========== Shutdown ==========
 - (void)shutDown{

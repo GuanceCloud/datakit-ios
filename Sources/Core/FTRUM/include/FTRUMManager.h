@@ -27,7 +27,7 @@
 #import "FTWKWebViewRumDelegate.h"
 #import "FTIssueDataProvider.h"
 
-@class FTResourceMetricsModel,FTResourceContentModel;
+@class FTResourceMetricsModel,FTResourceContentModel,FTLongTaskEvent;
 
 NS_ASSUME_NONNULL_BEGIN
 
@@ -35,6 +35,8 @@ FOUNDATION_EXPORT NSString *FTStringFromAppState(FTAppState state);
 
 @interface FTRUMManager : FTRUMHandler<FTRumResourceProtocol,FTErrorDataDelegate,FTRumDatasProtocol,FTLinkRumDataProvider,FTWKWebViewRumDelegate>
 @property (nonatomic, assign) FTAppState appState;
+/// Internal automatic collection path with immutable event facts.
+- (void)addLongTaskEvent:(FTLongTaskEvent *)event;
 
 #pragma mark - init -
 -(instancetype)initWithRumDependencies:(FTRUMDependencies *)dependencies;
@@ -81,6 +83,17 @@ FOUNDATION_EXPORT NSString *FTStringFromAppState(FTAppState state);
                            threadName:(nullable NSString *)threadName
                                  time:(long long)time
                            historical:(BOOL)historical;
+
+/// Internal ANR path carries the interval classification captured before async RUM processing.
+- (void)addAutomaticIssueWithCategory:(FTIssueCategory)category
+                            errorType:(NSString *)errorType
+                             appState:(NSString *)appState
+                              message:(nullable NSString *)message
+                                stack:(nullable NSString *)stack
+                           threadName:(nullable NSString *)threadName
+                                 time:(long long)time
+                           historical:(BOOL)historical
+                     intervalAppState:(nullable NSString *)intervalAppState;
 
 /// Freeze
 /// @param stack Freeze stack
