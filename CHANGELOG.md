@@ -1,3 +1,14 @@
+# 1.6.9-alpha.3
+
+1. Reduced SDK startup overhead by initializing network connectivity monitoring asynchronously and avoiding eager controller class initialization during automatic View scanning.
+2. Added `FTRumConfig.enableTraceUserViewLoadingTime` and `viewLoadingTimeClassNameExcludes` to disable automatic page loading-time collection globally or for specific controller classes while preserving RUM View tracking.
+3. Added the RUM Resource `network_signal_strength` field to report network link quality on iOS 26, tvOS 26, and macOS 26 or later. Network state is captured when the Resource starts.
+4. Fixed cellular network type detection to use the SIM currently providing the data service.
+5. Fixed device model reporting for iOS apps running on Mac to use the host Mac model.
+6. Improved Long Task and ANR timing, application state classification, captured stack preservation, and monitor startup reliability.
+7. Fixed RUM context correlation when Session Replay starts and prevented ended Views from being used as the current View.
+8. Shortened the first automatic upload wait after an early startup crash and improved crash history persistence and upload scheduling reliability.
+---
 # 1.6.9-alpha.2
 
 1. Reduced Debug startup overhead by removing diagnostic symbol lookup during automatic instrumentation. Swizzle diagnostic logging for troubleshooting SDK compatibility issues is disabled by default and also requires SDK debug logging to be enabled.
