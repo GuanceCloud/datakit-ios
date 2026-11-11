@@ -14,6 +14,21 @@ xcodebuild -project /tmp/FTViewTimingMetrics/FTViewTimingMetrics.xcodeproj \
 
 The same test file is registered in the existing iOS/tvOS unit-test targets. Tests inject exact event timestamps, replaceable internal INV/TNS predicates, collector clocks and queues. They cover actual writer filtering and serialization in addition to numeric lifecycle results. No external endpoint or sleep is required. The suite covers shared Resource/TNS intervals, completed batches, optional URL reclassification, View-origin changes, pure metric reads and full View replacement snapshots.
 
+# Focused Replay Current-Context Tests
+
+Generate a hostless test project linked against this checkout's real `GuanceSDK` and `GuanceSessionReplay` products:
+
+```sh
+ruby scripts/testing/replay-current-context-project.rb /tmp/FTReplayCurrentContext-ios ios
+xcrun simctl list devices available
+xcodebuild test -project /tmp/FTReplayCurrentContext-ios/FTReplayCurrentContext.xcodeproj \
+  -scheme FTReplayCurrentContext -destination 'platform=iOS Simulator,id=<available-device-id>'
+ruby scripts/testing/replay-current-context-project.rb /tmp/FTReplayCurrentContext-macos osx
+xcodebuild test -project /tmp/FTReplayCurrentContext-macos/FTReplayCurrentContext.xcodeproj \
+  -scheme FTReplayCurrentContext -destination 'platform=macOS'
+```
+
+Use a Ruby environment containing `xcodeproj`. The shared suites cover existing-View delayed startup with exact capture IDs, inactive retained Views, empty context, duplicate starts and sampling, missing bindings, delayed RUM/message-bus/scheduler work, Core memory callbacks while rumQueue is blocked, FIFO reads/updates, source replacement, shutdown/rebuild and external-recorder ownership. Queue barriers and explicit scheduler capture replace timing sleeps. No test endpoint is required.
 # Early Crash Upload Tests
 
 `Examples/iOS/Tests/FTMobileSDKUnitTests/Network/FTEarlyCrashUploadTests.m`

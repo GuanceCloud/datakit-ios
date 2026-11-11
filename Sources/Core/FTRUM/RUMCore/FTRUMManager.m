@@ -95,6 +95,7 @@ void *FTRUMQueueIdentityKey = &FTRUMQueueIdentityKey;
         _rumQueue = dispatch_queue_create("com.ft.rum", DISPATCH_QUEUE_SERIAL);
         dispatch_queue_set_specific(_rumQueue, FTRUMQueueIdentityKey, &FTRUMQueueIdentityKey, NULL);
         [[FTModuleManager sharedInstance] addMessageReceiver:self];
+        [[FTModuleManager sharedInstance] registerRUMContextSource:self];
         self.assistant = self;
         dependencies.appStateHistory.delegate = self;
         [dependencies.appStateHistory startMonitoring];
@@ -756,18 +757,19 @@ void *FTRUMQueueIdentityKey = &FTRUMQueueIdentityKey;
         [self.sessionHandler.assistant process:model context:context];
     }
     self.rumDependencies.linkRUMSessionContext = [self.sessionHandler getCurrentSessionInfo];
-    NSMutableDictionary *dict = [NSMutableDictionary new];
-    NSDictionary *sessionDict = [self getCurrentSessionInfo];
-    if (sessionDict){
-        [dict addEntriesFromDictionary:sessionDict];
-        NSDictionary *viewContext = [self.rumDependencies.lastViewUserCustomDatas copy];
-        if (viewContext) {
-            [dict addEntriesFromDictionary:@{FT_LINK_RUM_KEYS:viewContext}];
+    NSMutableDictionary *snapshot = [[self getCurrentSessionInfo] mutableCopy] ?: [NSMutableDictionary new];
+    if (self.sessionHandler) {
+        snapshot[FT_RUM_KEY_SAMPLED_FOR_ERROR_SESSION] = @(self.sessionHandler.context.sessionState.sampled_for_error_session);
+        if ([snapshot[FT_KEY_VIEW_ID] length] > 0) {
+            snapshot[FT_LINK_RUM_KEYS] = self.rumDependencies.lastViewUserCustomDatas;
         }
-        [dict setValue:@(self.sessionHandler.context.sessionState.sampled_for_error_session) forKey:FT_RUM_KEY_SAMPLED_FOR_ERROR_SESSION];
-        [[FTModuleManager sharedInstance] postMessageWithKey:FTMessageKeyRUMContext message:[dict copy]];
     }
+    [[FTModuleManager sharedInstance] postRUMContext:snapshot source:self];
     return YES;
+}
+- (void)shutDown {
+    [[FTModuleManager sharedInstance] unregisterRUMContextSource:self];
+    [[FTModuleManager sharedInstance] removeMessageReceiver:self];
 }
 -(NSDictionary *)rumDynamicProperty{
     @try {

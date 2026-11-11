@@ -403,9 +403,9 @@ static NSString *FTRUMSessionStartReasonForCause(FTRUMSessionRenewalCause cause)
 }
 -(NSDictionary *)getCurrentSessionInfo{
     FTRUMViewHandler *view = (FTRUMViewHandler *)[self.viewHandlers lastObject];
-    if (view) {
+    if (view.isActiveView) {
         return [view.context getGlobalSessionViewActionTags];
     }
-    return [self.context getGlobalSessionViewTags];
+    return [self.context getGlobalSessionTags];
 }
 @end

@@ -94,6 +94,9 @@ FOUNDATION_EXPORT NSString *FTStringFromAppState(FTAppState state);
  */
 - (void)addLongTaskWithStack:(NSString *)stack duration:(NSNumber *)duration startTime:(long long)time property:(nullable NSDictionary *)property;
 
+/// Clear this RUM lifetime from the Core context store before releasing SDK resources.
+- (void)shutDown;
+
 /// Wait for all rum processing data to be processed
 - (void)syncProcess;
 @end

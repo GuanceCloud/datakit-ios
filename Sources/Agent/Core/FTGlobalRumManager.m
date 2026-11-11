@@ -254,6 +254,7 @@ static NSObject *sharedInstanceLock;
 }
 #pragma mark ========== Shutdown ==========
 - (void)shutDown{
+    [self.rumManager shutDown];
     [[FTAutoTrackHandler sharedInstance] shutDown];
     self.heatmapIdentifierStore = nil;
     [_longTaskManager shutDown];
