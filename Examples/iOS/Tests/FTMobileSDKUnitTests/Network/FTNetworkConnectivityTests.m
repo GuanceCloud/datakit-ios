@@ -89,8 +89,14 @@
 
 @interface FTConnectivityRadioInfo : NSObject
 @property (nonatomic, copy) NSDictionary *serviceCurrentRadioAccessTechnology;
+@property (nonatomic, copy, nullable) NSString *dataServiceIdentifier;
 @end
-@implementation FTConnectivityRadioInfo @end
+@implementation FTConnectivityRadioInfo
+- (instancetype)init {
+    if ((self = [super init])) _dataServiceIdentifier = @"sim";
+    return self;
+}
+@end
 
 @interface FTConnectivityBackend : NSObject
 @property (nonatomic, strong) NSMutableArray<FTConnectivityMonitor *> *monitors;
@@ -449,6 +455,46 @@
 }
 
 #if TARGET_OS_IOS && !TARGET_OS_MACCATALYST
+- (void)testCellularTypeFollowsTheActiveDataService {
+    FTConnectivityObserver *observer = [self observe:self.connectivity];
+    FTConnectivityMonitor *monitor = [self startAndDrain:self.connectivity];
+    self.backend.radioInfo.serviceCurrentRadioAccessTechnology = @{
+        @"sim-a": CTRadioAccessTechnologyLTE,
+        @"sim-b": CTRadioAccessTechnologyNR
+    };
+    NSArray *services = @[@"sim-a", @"sim-b", @"sim-a"];
+    NSArray *expectedTypes = @[@"4G", @"5G", @"4G"];
+    for (NSUInteger index = 0; index < services.count; index++) {
+        self.backend.radioInfo.dataServiceIdentifier = services[index];
+        [self emit:monitor status:nw_path_status_satisfied type:nw_interface_type_cellular];
+        XCTAssertEqualObjects(self.connectivity.networkType, expectedTypes[index]);
+        XCTAssertEqualObjects(observer.events.lastObject[@"type"], expectedTypes[index]);
+        XCTAssertEqual(observer.events.count, index + 1);
+        XCTAssertTrue(self.connectivity.isConnected);
+        XCTAssertEqualObjects(self.connectivity.networkResourceFields, (@{FT_KEY_NETWORK_AVAILABLE: @YES}));
+    }
+    XCTAssertEqual(self.backend.radioCreations, 1U);
+}
+
+- (void)testMissingDataServiceDoesNotGuessFromOtherSIMs {
+    FTConnectivityMonitor *monitor = [self startAndDrain:self.connectivity];
+    self.backend.radioInfo.serviceCurrentRadioAccessTechnology = @{
+        @"sim-a": CTRadioAccessTechnologyLTE,
+        @"sim-b": CTRadioAccessTechnologyNR
+    };
+    for (id identifier in @[NSNull.null, @"", @"unregistered-sim"]) {
+        self.backend.radioInfo.dataServiceIdentifier = identifier == NSNull.null ? nil : identifier;
+        [self emit:monitor status:nw_path_status_satisfied type:nw_interface_type_cellular];
+        XCTAssertEqualObjects(self.connectivity.networkType, @"unknown");
+        XCTAssertTrue(self.connectivity.isConnected);
+        XCTAssertEqualObjects(self.connectivity.networkResourceFields, (@{FT_KEY_NETWORK_AVAILABLE: @YES}));
+    }
+    self.backend.radioInfo.dataServiceIdentifier = @"sim-a";
+    self.backend.radioInfo.serviceCurrentRadioAccessTechnology = nil;
+    [self emit:monitor status:nw_path_status_satisfied type:nw_interface_type_cellular];
+    XCTAssertEqualObjects(self.connectivity.networkType, @"unknown");
+}
+
 - (void)testCellularInfoIsLazyAndRadioChangesAreNotDeduplicated {
     FTConnectivityObserver *observer = [self observe:self.connectivity];
     FTConnectivityMonitor *monitor = [self startAndDrain:self.connectivity];

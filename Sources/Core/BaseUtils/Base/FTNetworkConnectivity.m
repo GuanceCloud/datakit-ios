@@ -305,8 +305,10 @@ typedef NS_ENUM(NSInteger, FTNetworkStatus) {
             if (!_networkInfo) _networkInfo = [self createCellularNetworkInfo];
             if (_networkInfo && [_networkInfo respondsToSelector:@selector(serviceCurrentRadioAccessTechnology)]) {
                 NSDictionary *radioDic = [_networkInfo serviceCurrentRadioAccessTechnology];
-                if (radioDic.allKeys.count) {
-                    currentStatus = [radioDic objectForKey:radioDic.allKeys[0]];
+                NSString *dataServiceIdentifier = _networkInfo.dataServiceIdentifier;
+                if (dataServiceIdentifier.length > 0) {
+                    // Other registered SIMs may use a different radio technology.
+                    currentStatus = radioDic[dataServiceIdentifier];
                 }
             }
             
