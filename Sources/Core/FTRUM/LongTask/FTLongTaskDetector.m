@@ -55,7 +55,6 @@ static void (*FTOriginalPrepareForSuspend)(id, SEL);
     // Main-thread publication version: odd = being written, even = ready to read.
     // Each callback adds 2, so sequence / 2 is the interval's delegate generation.
     atomic_ullong _runLoopSequence;
-    _Atomic(CFRunLoopActivity) _activity;
     atomic_bool _runloopRunning;
     atomic_llong _runLoopStartTimestampNs;
     atomic_ullong _runLoopContinuousNs;
@@ -103,7 +102,6 @@ static void FTPrepareForSuspend(id scene, SEL selector);
         _waitPrimitivesInitialized = YES;
         atomic_init(&_monitoring, false);
         atomic_init(&_runLoopSequence, 0);
-        atomic_init(&_activity, 0);
         atomic_init(&_runloopRunning, false);
         atomic_init(&_runLoopStartTimestampNs, 0);
         atomic_init(&_runLoopContinuousNs, 0);
@@ -128,6 +126,9 @@ static void FTPrepareForSuspend(id scene, SEL selector);
     }
 
     [self startAppStateMonitoring];
+    // Startup may occur after Entry/AfterWaiting. Publish a complete busy
+    // boundary before installing observers, so the first BeforeSources is active.
+    [self setRunloopRunning:YES atTimeNs:[NSDate ft_currentNanosecondTimeStamp]];
     [self registerObserver];
     __weak typeof(self) weakSelf = self;
     dispatch_async(self.longTaskQueue, ^{
@@ -183,11 +184,11 @@ static void FTPrepareForSuspend(id scene, SEL selector);
     switch (activity) {
         case kCFRunLoopEntry:
         case kCFRunLoopAfterWaiting:
-            [self setRunloopRunning:YES activity:activity atTimeNs:timeNs];
+            [self setRunloopRunning:YES atTimeNs:timeNs];
             break;
         case kCFRunLoopBeforeSources:
             // Advance the interval without enabling a disabled RunLoop.
-            [self setRunloopRunning:atomic_load(&_runloopRunning) activity:activity atTimeNs:timeNs];
+            [self setRunloopRunning:atomic_load(&_runloopRunning) atTimeNs:timeNs];
             break;
         default:
             break;
@@ -196,11 +197,11 @@ static void FTPrepareForSuspend(id scene, SEL selector);
 
 - (void)recordRunLoopEndActivity:(CFRunLoopActivity)activity atTimeNs:(long long)timeNs {
     if (activity == kCFRunLoopBeforeWaiting || activity == kCFRunLoopExit) {
-        [self setRunloopRunning:NO activity:activity atTimeNs:timeNs];
+        [self setRunloopRunning:NO atTimeNs:timeNs];
     }
 }
 
-- (void)setRunloopRunning:(BOOL)running activity:(CFRunLoopActivity)activity atTimeNs:(long long)timeNs {
+- (void)setRunloopRunning:(BOOL)running atTimeNs:(long long)timeNs {
     uint64_t continuousNs = [FTDateUtil continuousTime];
     uint64_t previousSequence = atomic_load(&_runLoopSequence);
     atomic_store(&_runLoopSequence, previousSequence + 1); // Mark snapshot as being written.
@@ -210,7 +211,6 @@ static void FTPrepareForSuspend(id scene, SEL selector);
         atomic_store(&_closedContinuousNs, continuousNs);
         atomic_store(&_closedSequence, previousSequence); // Publish only after both timestamps.
     }
-    atomic_store(&_activity, activity);
     atomic_store(&_runloopRunning, running);
     atomic_store(&_runLoopStartTimestampNs, timeNs);
     atomic_store(&_runLoopContinuousNs, continuousNs);
@@ -230,7 +230,6 @@ static void FTPrepareForSuspend(id scene, SEL selector);
         }
         FTLongTaskRunLoopSnapshot candidate = {
             .sequence = sequence,
-            .activity = atomic_load(&_activity),
             .running = atomic_load(&_runloopRunning),
             .startTimeNs = atomic_load(&_runLoopStartTimestampNs),
             .startContinuousNs = atomic_load(&_runLoopContinuousNs),
@@ -548,14 +547,14 @@ static void FTPrepareForSuspend(id scene, SEL selector);
     if (!atomic_load(&_monitoring)) {
         return;
     }
-    [self setRunloopRunning:NO activity:0 atTimeNs:[NSDate ft_currentNanosecondTimeStamp]];
+    [self setRunloopRunning:NO atTimeNs:[NSDate ft_currentNanosecondTimeStamp]];
 }
 
 - (void)endPreparingForSuspend {
     if (!atomic_load(&_monitoring)) {
         return;
     }
-    [self setRunloopRunning:YES activity:0 atTimeNs:[NSDate ft_currentNanosecondTimeStamp]];
+    [self setRunloopRunning:YES atTimeNs:[NSDate ft_currentNanosecondTimeStamp]];
 }
 
 + (BOOL)installSuspendHookForClass:(Class)cls {

@@ -367,12 +367,18 @@ static NSDictionary *g_registerOrders;
 }
 #pragma mark ----- FTBacktraceReporting -----
 -(NSString *)generateBacktrace:(thread_t)thread{
+    return [self generateBacktrace:thread captureValidation:nil];
+}
+- (NSString *)generateBacktrace:(thread_t)thread captureValidation:(FTBacktraceCaptureValidation)validation {
+    if (validation && !validation()) return nil;
     FTCrashThread currentThread = ftcrashthread_self();
     FTCrashMachineContext context = { 0 };
     FTCrashStackEntry stackEntries[MAX_STACKTRACE_LENGTH] = {0};
     NSMutableString *threadStr = [NSMutableString string];
     NSMutableDictionary *imagesDict = [NSMutableDictionary new];
     int count = getStackEntriesFromThread(thread,&context,stackEntries,MAX_STACKTRACE_LENGTH,true,currentThread == thread);
+    // Attribute raw frames before formatting can overlap producer End.
+    if (validation && !validation()) return nil;
     if (count>0)  {
         [self appendThreadInfoForThreadIndex:0 thread:thread stackEntries:stackEntries stackLength:count toMutableString:threadStr imagesDict:imagesDict];
         [self appendCommonTailToMutableString:threadStr imagesDict:imagesDict];
@@ -381,7 +387,11 @@ static NSDictionary *g_registerOrders;
     return nil;
 }
 -(NSString *)generateAllThreadsBacktrace{
+    return [self generateAllThreadsBacktraceWithCaptureValidation:nil];
+}
+- (NSString *)generateAllThreadsBacktraceWithCaptureValidation:(FTBacktraceCaptureValidation)validation {
     @synchronized(self) {
+        if (validation && !validation()) return nil;
         FTCrashThread currentThread = ftcrashthread_self();
         FTCrashMachineContext context = { 0 };
         thread_act_array_t suspendedThreads = NULL;
@@ -400,6 +410,9 @@ static NSDictionary *g_registerOrders;
             threadsInfos[i].thread = suspendedThreads[i];
         }
         ftcrashmc_resumeEnvironment(&suspendedThreads, &numSuspendedThreads);
+        // Never run an Objective-C predicate while other threads are suspended.
+        // Reject conservatively if End races this immediate post-resume check.
+        if (validation && !validation()) return nil;
        
         NSMutableString *threadStr = [NSMutableString string];
         NSMutableDictionary *imagesDict = [NSMutableDictionary new];

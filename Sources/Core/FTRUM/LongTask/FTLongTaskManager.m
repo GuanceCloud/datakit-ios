@@ -72,7 +72,7 @@
     if (!context.lastSessionState) return nil;
     NSString *situation = FTStringFromAppState(timing.startAppState);
     FTLongTaskActiveEvent *event = [[FTLongTaskActiveEvent alloc] initWithStartTimeNs:timing.startTimeNs freezeDurationMs:self.freezeDurationMs appState:situation];
-    [event updateErrorContext:context errorMonitorInfo:context.errorMonitorInfo];
+    [event updateErrorContext:context];
     return event;
 }
 - (uint64_t)longTaskDetector:(FTLongTaskDetector *)detector didObserveTiming:(FTLongTaskTiming)timing {
@@ -94,15 +94,17 @@
     if (timing.phase == FTLongTaskPhaseEnd) {
         [self finishEvent:event appState:FTStringFromRUMAppState(timing.appState)]; return UINT64_MAX;
     }
-    BOOL (^current)(void) = ^BOOL{ return !atomic_load(&_stopped) && self.longTaskEvent == event && [detector isMonitoringGeneration:timing.generation]; };
+    BOOL (^acceptsResult)(void) = ^BOOL{ return !atomic_load(&_stopped) && self.longTaskEvent == event; };
+    BOOL (^intervalActive)(void) = ^BOOL{ return acceptsResult() && [detector isMonitoringGeneration:timing.generation]; };
     BOOL mainDue = (self.enableFreeze && event.isLongTask) || (self.enableANR && event.durationNs > FTLongTaskANRDataThresholdNs);
-    if (mainDue && !event.mainStackAttempted && current()) {
-        NSString *stack = [self.backtraceReporting generateMainThreadBacktrace];
-        if (!current()) return UINT64_MAX;
+    if (mainDue && !event.mainStackAttempted && intervalActive()) {
+        NSString *stack = [self.backtraceReporting generateMainThreadBacktraceWithCaptureValidation:intervalActive];
+        // A normally ended producer interval still owns its validated raw capture.
+        if (!acceptsResult()) return UINT64_MAX;
         event.mainStackAttempted = YES;
         event.mainThreadBacktrace = stack ?: @"";
     }
-    if (self.enableANR) [self.anrProcessor updateEvent:event stillCurrent:current];
+    if (self.enableANR) [self.anrProcessor updateEvent:event intervalActive:intervalActive acceptsResult:acceptsResult];
     uint64_t next = self.enableANR ? [self.anrProcessor nextCheckpointForEvent:event] : UINT64_MAX;
     if (self.enableFreeze && !event.mainStackAttempted)
         next = MIN(next, (uint64_t)MAX(1, self.freezeDurationMs) * NSEC_PER_MSEC + NSEC_PER_MSEC);
@@ -111,7 +113,7 @@
 - (void)finishEvent:(FTLongTaskActiveEvent *)event appState:(NSString *)intervalState {
     self.longTaskEvent = nil;
     if (atomic_load(&_stopped)) return;
-    if (self.enableANR) [self.anrProcessor.dataStore deleteFile];
+    if (self.enableANR && event.hasPersistedANRData) [self.anrProcessor.dataStore deleteFile];
     if (!atomic_load(&_stopped) && event.isLongTask && self.enableFreeze) {
         FTLongTaskEvent *result = [[FTLongTaskEvent alloc] initWithStack:event.mainThreadBacktrace ?: @""
             startTimeNs:event.startTimeNs endTimeNs:event.lastObservedTimeNs durationNs:event.durationNs appState:intervalState];

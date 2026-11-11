@@ -29,7 +29,6 @@ NS_ASSUME_NONNULL_BEGIN
 /// Epoch time locates the event; continuous time bounds its effective duration.
 typedef struct {
     uint64_t sequence;
-    CFRunLoopActivity activity;
     BOOL running;
     long long startTimeNs;
     uint64_t startContinuousNs;

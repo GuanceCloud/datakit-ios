@@ -18,6 +18,7 @@
 #import <errno.h>
 #import <stdatomic.h>
 #import <objc/runtime.h>
+#import <unistd.h>
 #import "FTLongTaskTiming.h"
 #import "FTDateUtil.h"
 #import "NSDate+FTUtil.h"
@@ -67,11 +68,12 @@ int FTTestUnexpectedUntimedWait(pthread_cond_t *condition, pthread_mutex_t *mute
 }
 
 @interface FTLongTaskDetector (ConditionTests)
-- (void)setRunloopRunning:(BOOL)running activity:(CFRunLoopActivity)activity atTimeNs:(long long)timeNs;
+- (void)setRunloopRunning:(BOOL)running atTimeNs:(long long)timeNs;
 - (void)recordRunLoopBeginActivity:(CFRunLoopActivity)activity atTimeNs:(long long)timeNs;
 - (void)recordRunLoopEndActivity:(CFRunLoopActivity)activity atTimeNs:(long long)timeNs;
 - (BOOL)readRunLoopSnapshot:(FTLongTaskRunLoopSnapshot *)snapshot;
 - (int)waitForRunLoopChangeSinceSequence:(uint64_t)sequence timeoutNanoseconds:(uint64_t)timeoutNs;
+- (void)runMonitor;
 - (void)registerObserver;
 - (void)startAppStateMonitoring;
 - (void)recordAppState:(FTAppState)state intervalState:(FTRUMAppState)intervalState;
@@ -143,6 +145,14 @@ static void DrainDetector(FTLongTaskDetector *detector) {
     dispatch_sync([detector valueForKey:@"longTaskQueue"], ^{});
 }
 
+// These cases supply producer facts after startup but before worker selection.
+// Exercise worker accounting directly; startup itself has separate native tests.
+static void Run(FTLongTaskDetector *detector) {
+    atomic_store((atomic_bool *)IvarAddress(detector, "_monitoring"), true);
+    [detector startAppStateMonitoring];
+    dispatch_sync([detector valueForKey:@"longTaskQueue"], ^{ [detector runMonitor]; });
+}
+
 static void TestIdleWorkerUsesBoundedWait(void) {
     for (NSNumber *state in @[@(kCFRunLoopBeforeWaiting), @(kCFRunLoopExit), @0]) {
         TimingProbe *probe = [TimingProbe new];
@@ -160,8 +170,7 @@ static void TestIdleWorkerUsesBoundedWait(void) {
             if (waits == 3) [detector stopDetecting];
             return ETIMEDOUT;
         };
-        [detector startDetecting];
-        DrainDetector(detector);
+        Run(detector);
         Check(waits == 3 && probe.observations == 0,
               "idle timeout rechecks never become stall callbacks");
         ResetClock();
@@ -285,7 +294,7 @@ static void TestStatePublicationWakesRealWaiter(void) {
     Check(result == 0, "RunLoop publication wakes an actual sleeping pthread waiter");
     FTLongTaskRunLoopSnapshot snapshot;
     Check([detector readRunLoopSnapshot:&snapshot] &&
-          snapshot.activity == kCFRunLoopBeforeSources && snapshot.startTimeNs == 1234 * ms && snapshot.sequence == 2,
+          snapshot.startTimeNs == 1234 * ms && snapshot.sequence == 2,
           "woken reader sees the exact published state and event timestamp");
     ResetClock();
 }
@@ -312,7 +321,7 @@ static void TestMissedSignalIsObservedAtDeadline(void) {
             // Signal before sleeping has no waiter. Timeout must still observe
             // the retained state or cancellation rather than report a stall.
             if (cancel.boolValue) [detector stopDetecting];
-            else [detector setRunloopRunning:YES activity:kCFRunLoopAfterWaiting atTimeNs:1100 * ms];
+            else [detector setRunloopRunning:YES atTimeNs:1100 * ms];
             fakeNow += NSEC_PER_SEC;
             return ETIMEDOUT;
         };
@@ -323,10 +332,6 @@ static void TestMissedSignalIsObservedAtDeadline(void) {
     }
 }
 
-static void Run(FTLongTaskDetector *detector) {
-    [detector startDetecting];
-    DrainDetector(detector);
-}
 static void TestUnavailableDelegateUsesBoundedEndWait(void) {
     for (NSNumber *throws in @[@NO, @YES]) {
         fakeClock = YES;
@@ -787,7 +792,7 @@ static void TestSuspendBoundaryAndRunLoopCallbacks(void) {
         [detector recordRunLoopEndActivity:kCFRunLoopBeforeWaiting atTimeNs:1200*ms];
         FTLongTaskRunLoopSnapshot snapshot;
         Check([detector readRunLoopSnapshot:&snapshot] &&
-              snapshot.activity == kCFRunLoopBeforeWaiting && snapshot.startTimeNs == 1200*ms,
+              !snapshot.running && snapshot.startTimeNs == 1200*ms,
               "RunLoop callbacks are forwarded normally during suspend preparation");
         fakeNow=61000*ms;[detector endPreparingForSuspend];
         return 0;
@@ -828,19 +833,55 @@ static void TestSuspendReturnCannotResumeStoppedDetector(void) {
     DrainDetector(newDetector);
 }
 static void TestBeforeSourcesDoesNotEnableDisabledRunloop(void) {
+    for (NSNumber *suspended in @[@NO, @YES]) {
+        fakeClock = YES;
+        fakeNow = 1000 * ms;
+        TimingProbe *probe = [TimingProbe new];
+        ControlledDetector *detector = [[ControlledDetector alloc] initWithDelegate:probe];
+        atomic_store((atomic_bool *)IvarAddress(detector, "_monitoring"), true);
+        [detector setRunloopRunning:YES atTimeNs:fakeNow];
+        if (suspended.boolValue) [detector beginPreparingForSuspend];
+        else [detector recordRunLoopEndActivity:kCFRunLoopBeforeWaiting atTimeNs:fakeNow];
+        [detector recordRunLoopBeginActivity:kCFRunLoopBeforeSources atTimeNs:fakeNow];
+        __block NSUInteger waits = 0;
+        waitHook = ^int(pthread_cond_t *condition, pthread_mutex_t *mutex, const struct timespec *timeout) {
+            Check(TimeoutNs(timeout) == NSEC_PER_SEC, "BeforeSources preserves the idle recheck interval");
+            waits++;
+            [detector stopDetecting];
+            return ETIMEDOUT;
+        };
+        Run(detector);
+        Check(waits == 1 && probe.observations == 0, "BeforeSources cannot re-enable explicit idle or suspend state");
+        ResetClock();
+    }
+}
+
+static void TestStartupPublishesCompleteBusySnapshot(void) {
     fakeClock = YES;
     fakeNow = 1000 * ms;
     TimingProbe *probe = [TimingProbe new];
     ControlledDetector *detector = [[ControlledDetector alloc] initWithDelegate:probe];
-    [detector recordRunLoopBeginActivity:kCFRunLoopBeforeSources atTimeNs:1000 * ms];
-    waitHook = ^int(pthread_cond_t *condition, pthread_mutex_t *mutex, const struct timespec *timeout) {
-        Check(TimeoutNs(timeout) == NSEC_PER_SEC, "BeforeSources preserves the idle recheck interval");
-        [detector stopDetecting];
-        return ETIMEDOUT;
-    };
-    Run(detector);
+    dispatch_queue_t queue = [detector valueForKey:@"longTaskQueue"];
+    dispatch_suspend(queue);
+    [detector startDetecting];
+    FTLongTaskRunLoopSnapshot snapshot;
+    Check([detector readRunLoopSnapshot:&snapshot] && snapshot.running &&
+          snapshot.sequence == 2 &&
+          snapshot.startTimeNs == 1000 * ms && snapshot.startContinuousNs == 1000 * ms,
+          "startup publishes one coherent busy boundary at initialization time");
+    fakeNow = 1200 * ms;
+    [detector startDetecting];
+    FTLongTaskRunLoopSnapshot duplicate;
+    Check([detector readRunLoopSnapshot:&duplicate] && duplicate.sequence == snapshot.sequence &&
+          duplicate.startTimeNs == snapshot.startTimeNs && detector.observerRegistrations == 1,
+          "duplicate start neither resets the boundary nor reinstalls observers");
+    [detector stopDetecting];
+    dispatch_resume(queue);
+    DrainDetector(detector);
+    Check(probe.observations == 0, "shutdown before queued startup prevents incident callbacks");
     ResetClock();
 }
+
 static void TestShutdownBeforeWorkerStarts(void) {
     TimingProbe *probe = [TimingProbe new];
     ControlledDetector *detector = [[ControlledDetector alloc] initWithDelegate:probe];
@@ -897,6 +938,55 @@ static void TestHookCompatibilityAndOriginalCall(void) {
     shouldThrow=YES;BOOL caught=NO;
     @try{[target _prepareForSuspend];}@catch(NSException*e){caught=[e.name isEqual:@"probe"];}
     Check(caught && originalCalls==2,"original exception propagates without duplicate call");
+}
+
+static void TestStartDuringRealRunLoopIteration(void) {
+    // Run twice with fresh instances, as SDK shutdown/reinitialization does.
+    for (NSUInteger initialization = 0; initialization < 2; initialization++) {
+        TimingProbe *probe = [TimingProbe new];
+        __block FTLongTaskDetector *detector;
+        __block BOOL installed = NO, blocked = NO;
+        __block atomic_uint checkpoints;
+        atomic_init(&checkpoints, 0);
+        probe.observe = ^uint64_t(FTLongTaskDetector *d, FTLongTaskTiming timing) {
+            Check(timing.startTimeNs > 0, "real startup observations have a valid epoch start");
+            if (timing.phase == FTLongTaskPhaseBegin) return 250 * ms;
+            if (timing.phase == FTLongTaskPhaseCheckpoint) atomic_fetch_add(&checkpoints, 1);
+            return UINT64_MAX;
+        };
+        CFRunLoopObserverRef install = CFRunLoopObserverCreateWithHandler(NULL, kCFRunLoopBeforeTimers,
+            NO, LONG_MIN, ^(CFRunLoopObserverRef observer, CFRunLoopActivity activity) {
+                detector = [[FTLongTaskDetector alloc] initWithDelegate:probe];
+                [detector startDetecting];
+                installed = YES;
+            });
+        CFRunLoopObserverRef stall = CFRunLoopObserverCreateWithHandler(NULL, kCFRunLoopBeforeSources,
+            NO, LONG_MAX, ^(CFRunLoopObserverRef observer, CFRunLoopActivity activity) {
+                Check(installed, "detector is installed after Entry and before BeforeSources");
+                FTLongTaskRunLoopSnapshot snapshot;
+                Check([detector readRunLoopSnapshot:&snapshot] && snapshot.running && snapshot.sequence >= 4,
+                      "production BeforeSources observer is delivered after mid-iteration installation");
+                blocked = YES;
+                usleep(600000);
+            });
+        CFRunLoopTimerRef stop = CFRunLoopTimerCreateWithHandler(NULL, CFAbsoluteTimeGetCurrent() + 0.8,
+            0, 0, 0, ^(CFRunLoopTimerRef timer) { CFRunLoopStop(CFRunLoopGetMain()); });
+        CFRunLoopAddObserver(CFRunLoopGetMain(), install, kCFRunLoopDefaultMode);
+        CFRunLoopAddObserver(CFRunLoopGetMain(), stall, kCFRunLoopDefaultMode);
+        CFRunLoopAddTimer(CFRunLoopGetMain(), stop, kCFRunLoopDefaultMode);
+        CFRunLoopRunInMode(kCFRunLoopDefaultMode, 2, false);
+        [detector stopDetecting];
+        DrainDetector(detector);
+        CFRunLoopRemoveObserver(CFRunLoopGetMain(), install, kCFRunLoopDefaultMode);
+        CFRunLoopRemoveObserver(CFRunLoopGetMain(), stall, kCFRunLoopDefaultMode);
+        CFRunLoopTimerInvalidate(stop);
+        CFRelease(install); CFRelease(stall); CFRelease(stop);
+        Check(installed && blocked, "real BeforeTimers/BeforeSources startup scenario completed");
+        fprintf(stderr, "mid-iteration startup %lu: %u checkpoints\n", (unsigned long)initialization,
+                atomic_load(&checkpoints));
+        Check(atomic_load(&checkpoints) == 1, "600ms first-iteration stall reaches its 250ms checkpoint");
+        probe.observe = nil;
+    }
 }
 
 // Seed lifecycle admission before publishing the producer start. No clock or
@@ -1069,7 +1159,15 @@ static void TestManySwitchesDoNotLeakIntoNextGeneration(void) {
     probe.observe = nil; ResetClock();
 }
 
-int main(void){@autoreleasepool{
+int main(int argc, const char *argv[]){@autoreleasepool{
+    // Native startup installs the process-wide platform hook. Keep it isolated
+    // from the separate fake-class hook compatibility checks.
+    if (argc == 2 && strcmp(argv[1], "--real-runloop-startup") == 0) {
+        TestStartDuringRealRunLoopIteration();
+        puts("PASS: real RunLoop mid-iteration startup and SDK reinitialization");
+        return 0;
+    }
+    TestStartupPublishesCompleteBusySnapshot();
     TestIdleWorkerUsesBoundedWait();
     TestBurstIsOneStateChange();
     TestSpuriousWakeupsKeepDeadline();
@@ -1104,5 +1202,5 @@ int main(void){@autoreleasepool{
     TestWorkerStopIncludesPostBoundarySwitchAndFreezesResult();
     TestExcludedWaitAndCaptureStillRetainStateEvidence();
     TestManySwitchesDoNotLeakIntoNextGeneration();
-    puts("PASS: 34 LongTask timing, lifecycle state, suspend, autorelease and condition regressions");
+    puts("PASS: 35 LongTask timing, lifecycle state, suspend, autorelease and condition regressions");
 }return 0;}

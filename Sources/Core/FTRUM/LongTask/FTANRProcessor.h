@@ -35,6 +35,7 @@ NS_ASSUME_NONNULL_BEGIN
 @property (nonatomic, copy, nullable) NSString *mainThreadBacktrace;
 @property (nonatomic, copy, nullable) NSString *allThreadsBacktrace;
 @property (nonatomic, strong, readonly, nullable) FTFatalErrorContextModel *errorContextModel;
+/// A write task was submitted; it may still be pending or have failed on disk.
 @property (nonatomic, assign) BOOL hasPersistedANRData;
 @property (nonatomic, assign, readonly) long long durationNs;
 @property (nonatomic, assign, readonly) BOOL isANR;
@@ -43,7 +44,7 @@ NS_ASSUME_NONNULL_BEGIN
 
 - (instancetype)initWithStartTimeNs:(long long)startTimeNs freezeDurationMs:(long)freezeDurationMs appState:(NSString *)appState;
 /// Refresh environment/session data while preserving the immutable start situation.
-- (void)updateErrorContext:(FTFatalErrorContextModel *)context errorMonitorInfo:(nullable NSDictionary *)errorMonitorInfo;
+- (void)updateErrorContext:(FTFatalErrorContextModel *)context;
 - (FTLongTaskANRData *)anrData;
 @end
 
@@ -51,7 +52,7 @@ NS_ASSUME_NONNULL_BEGIN
 @interface FTANRProcessor : NSObject
 @property (nonatomic, strong, readonly) FTLongTaskANRDataStore *dataStore;
 - (instancetype)initWithDependencies:(FTRUMDependencies *)dependencies backtraceReporting:(id<FTBacktraceReporting>)backtrace;
-- (void)updateEvent:(FTLongTaskActiveEvent *)event stillCurrent:(BOOL (^)(void))stillCurrent;
+- (void)updateEvent:(FTLongTaskActiveEvent *)event intervalActive:(BOOL (^)(void))intervalActive acceptsResult:(BOOL (^)(void))acceptsResult;
 - (uint64_t)nextCheckpointForEvent:(FTLongTaskActiveEvent *)event;
 - (void)reportPreviousANRIfFound;
 - (long long)reportANRData:(FTLongTaskANRData *)data;

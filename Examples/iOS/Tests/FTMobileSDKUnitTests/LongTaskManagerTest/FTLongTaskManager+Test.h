@@ -29,6 +29,7 @@ NS_ASSUME_NONNULL_BEGIN
 @end
 
 @interface FTManualTimingDetector : FTLongTaskDetector
+@property (nonatomic) BOOL intervalEnded;
 @end
 
 static inline FTANRProcessor *FTTestANRProcessor(FTLongTaskManager *manager) {

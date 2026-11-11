@@ -45,11 +45,18 @@ typedef void (^ErrorMonitorInfoChangeBlock)(NSDictionary * _Nonnull);
 @end
 
 
+/// Internal predicate checked around raw capture, before string formatting.
+typedef BOOL (^FTBacktraceCaptureValidation)(void);
+
 @protocol FTBacktraceReporting <NSObject>
 
 - (NSString *)generateMainThreadBacktrace;
 
 - (nullable NSString *)generateAllThreadsBacktrace;
+
+- (nullable NSString *)generateMainThreadBacktraceWithCaptureValidation:(FTBacktraceCaptureValidation)validation;
+
+- (nullable NSString *)generateAllThreadsBacktraceWithCaptureValidation:(FTBacktraceCaptureValidation)validation;
 @end
 
 @protocol FTDictionaryConvertible <NSObject>

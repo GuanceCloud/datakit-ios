@@ -39,8 +39,14 @@ if args.simulator:
     command = ['xcrun', 'simctl', 'spawn', args.simulator, str(executable)]
 else:
     command = [str(executable)]
-result = subprocess.run(command, capture_output=True, text=True, timeout=30)
-(output / 'result.txt').write_text(result.stdout + result.stderr)
-print(result.stdout, end='')
-print(result.stderr, end='')
-raise SystemExit(result.returncode)
+# The native startup case installs a process-wide platform hook; isolate it
+# from the scripted suite's fake-class hook compatibility checks.
+combined_output = ''
+for arguments in [['--real-runloop-startup'], []]:
+    result = subprocess.run(command + arguments, capture_output=True, text=True, timeout=30)
+    combined_output += result.stdout + result.stderr
+    (output / 'result.txt').write_text(combined_output)
+    print(result.stdout, end='')
+    print(result.stderr, end='')
+    if result.returncode:
+        raise SystemExit(result.returncode)

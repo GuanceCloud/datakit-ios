@@ -23,7 +23,6 @@
 #import "FTInnerLog.h"
 #import "FTRUMContext.h"
 #import "FTIssueFieldEnricher.h"
-#import "FTErrorMonitorInfo.h"
 
 @implementation FTLongTaskActiveEvent
 
@@ -38,10 +37,10 @@
     return self;
 }
 
-- (void)updateErrorContext:(FTFatalErrorContextModel *)context errorMonitorInfo:(NSDictionary *)errorMonitorInfo {
+- (void)updateErrorContext:(FTFatalErrorContextModel *)context {
     _errorContextModel = [[FTFatalErrorContextModel alloc] initWithAppState:self.startAppState
         lastSessionState:context.lastSessionState lastViewContext:context.lastViewContext
-        dynamicContext:context.dynamicContext globalAttributes:context.globalAttributes errorMonitorInfo:errorMonitorInfo];
+        dynamicContext:context.dynamicContext globalAttributes:context.globalAttributes errorMonitorInfo:context.errorMonitorInfo];
 }
 
 - (long long)durationNs {
@@ -87,24 +86,25 @@
     }
     return self;
 }
-- (void)updateEvent:(FTLongTaskActiveEvent *)event stillCurrent:(BOOL (^)(void))stillCurrent {
-    if (self.dataStore.isClosed || !stillCurrent() || event.durationNs <= FTLongTaskANRDataThresholdNs) return;
+- (void)updateEvent:(FTLongTaskActiveEvent *)event intervalActive:(BOOL (^)(void))intervalActive acceptsResult:(BOOL (^)(void))acceptsResult {
+    if (self.dataStore.isClosed || !intervalActive() || event.durationNs <= FTLongTaskANRDataThresholdNs) return;
     BOOL captured = NO;
     if (event.needsAllThreadsBacktrace && event.effectiveDurationNs >= event.nextFullStackAttemptNs) {
-        NSString *stack = [self.backtraceReporting generateAllThreadsBacktrace];
-        if (!stillCurrent()) return;
+        NSString *stack = [self.backtraceReporting generateAllThreadsBacktraceWithCaptureValidation:intervalActive];
+        if (!acceptsResult()) return;
         captured = stack.length > 0;
         if (captured) event.allThreadsBacktrace = stack;
         event.nextFullStackAttemptNs = event.effectiveDurationNs + 250 * NSEC_PER_MSEC;
     }
+    // Retain an ended interval's stack for End, but do no further collection or I/O.
+    if (!intervalActive()) return;
     if (!event.hasPersistedANRData) {
-        [event updateErrorContext:self.dependencies.fatalErrorContext.currentContextModel
-                errorMonitorInfo:[self.dependencies.errorMonitorInfoWrapper errorMonitorInfo]];
+        [event updateErrorContext:self.dependencies.fatalErrorContext.currentContextModel];
     }
     BOOL crossedANR = event.durationNs > FT_ANR_THRESHOLD_NS && event.lastPersistedDurationNs <= FT_ANR_THRESHOLD_NS;
     BOOL due = !event.hasPersistedANRData || captured || crossedANR ||
         event.effectiveDurationNs >= event.lastPersistedDurationNs + FTLongTaskANRDataUpdateIntervalNs;
-    if (!stillCurrent() || !due) return;
+    if (!intervalActive() || !due) return;
     if (!event.hasPersistedANRData || captured) {
         [self.dataStore writeANRData:event.anrData];
     } else {
