@@ -23,7 +23,6 @@
 #import "FTErrorDataProtocol.h"
 NS_ASSUME_NONNULL_BEGIN
 @interface FTLongTaskActiveEvent : NSObject
-@property (nonatomic, assign) uint64_t generation;
 @property (nonatomic, assign) BOOL mainStackAttempted;
 @property (nonatomic, assign) uint64_t effectiveDurationNs;
 @property (nonatomic, assign) uint64_t nextFullStackAttemptNs;
@@ -31,7 +30,8 @@ NS_ASSUME_NONNULL_BEGIN
 @property (nonatomic, assign) long long startTimeNs;
 @property (nonatomic, assign) long long lastObservedTimeNs;
 @property (nonatomic, assign) long long freezeThresholdNs;
-@property (nonatomic, copy, readonly) NSString *startAppState;
+@property (nonatomic, copy) NSString *appState;
+@property (nonatomic, copy, nullable) NSString *lastPersistedAppState;
 @property (nonatomic, copy, nullable) NSString *mainThreadBacktrace;
 @property (nonatomic, copy, nullable) NSString *allThreadsBacktrace;
 @property (nonatomic, strong, readonly, nullable) FTFatalErrorContextModel *errorContextModel;
@@ -43,7 +43,7 @@ NS_ASSUME_NONNULL_BEGIN
 @property (nonatomic, assign, readonly) BOOL needsAllThreadsBacktrace;
 
 - (instancetype)initWithStartTimeNs:(long long)startTimeNs freezeDurationMs:(long)freezeDurationMs appState:(NSString *)appState;
-/// Refresh environment/session data while preserving the immutable start situation.
+/// Refresh environment/session data while preserving the last detector-recorded situation.
 - (void)updateErrorContext:(FTFatalErrorContextModel *)context;
 - (FTLongTaskANRData *)anrData;
 @end

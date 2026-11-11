@@ -65,7 +65,7 @@ static void (*FTOriginalPrepareForSuspend)(id, SEL);
 
     // Lifecycle and RunLoop callbacks run on main. Revisions retain the occurrence
     // of either state, even before the worker starts or after the producer End.
-    FTAppState _currentAppState;
+    _Atomic(FTAppState) _currentAppState;
     FTRUMAppState _currentIntervalState;
     atomic_ullong _foregroundRevision;
     atomic_ullong _backgroundRevision;
@@ -101,6 +101,7 @@ static void FTPrepareForSuspend(id scene, SEL selector);
         }
         _waitPrimitivesInitialized = YES;
         atomic_init(&_monitoring, false);
+        atomic_init(&_currentAppState, FTAppStateUnknown);
         atomic_init(&_runLoopSequence, 0);
         atomic_init(&_runloopRunning, false);
         atomic_init(&_runLoopStartTimestampNs, 0);
@@ -214,7 +215,7 @@ static void FTPrepareForSuspend(id scene, SEL selector);
     atomic_store(&_runloopRunning, running);
     atomic_store(&_runLoopStartTimestampNs, timeNs);
     atomic_store(&_runLoopContinuousNs, continuousNs);
-    atomic_store(&_runLoopStartAppState, _currentAppState);
+    atomic_store(&_runLoopStartAppState, atomic_load(&_currentAppState));
     atomic_store(&_runLoopStartIntervalState, _currentIntervalState);
     atomic_store(&_runLoopForegroundRevision, atomic_load(&_foregroundRevision));
     atomic_store(&_runLoopBackgroundRevision, atomic_load(&_backgroundRevision));
@@ -305,9 +306,13 @@ static void FTPrepareForSuspend(id scene, SEL selector);
     [[FTAppLifeCycle sharedInstance] addAppLifecycleDelegate:self];
 }
 
+- (FTAppState)currentAppState {
+    return atomic_load(&_currentAppState);
+}
+
 - (void)recordAppState:(FTAppState)situation intervalState:(FTRUMAppState)intervalState {
     if (!atomic_load(&_monitoring)) return;
-    _currentAppState = situation;
+    atomic_store(&_currentAppState, situation);
     _currentIntervalState = intervalState;
     // Comparing each revision with the producer's baseline answers whether that
     // state occurred. No history retention, clock comparison or per-loop reset.
@@ -332,18 +337,23 @@ static void FTPrepareForSuspend(id scene, SEL selector);
 #endif
 }
 
-- (FTRUMAppState)observedAppStateSince:(FTLongTaskRunLoopSnapshot)snapshot {
-    // A foreground -> background pair racing these reads must not lose its first
-    // state. Retry if foreground changed around the background read.
+- (FTRUMAppState)observedAppStateSince:(FTLongTaskRunLoopSnapshot)snapshot recordedState:(FTAppState *)recordedState {
+    // Freeze the point and aggregate together. Include the point itself if the
+    // main thread has published it just before incrementing its state revision.
     uint64_t foregroundRevision, backgroundRevision;
+    FTAppState currentState;
     do {
         foregroundRevision = atomic_load(&_foregroundRevision);
         backgroundRevision = atomic_load(&_backgroundRevision);
-    } while (foregroundRevision != atomic_load(&_foregroundRevision));
+        currentState = self.currentAppState;
+    } while (foregroundRevision != atomic_load(&_foregroundRevision) ||
+             backgroundRevision != atomic_load(&_backgroundRevision));
+    *recordedState = currentState;
     BOOL foreground = snapshot.startIntervalState == FTRUMAppStateForegroundOnly ||
-        foregroundRevision != snapshot.foregroundRevision;
+        foregroundRevision != snapshot.foregroundRevision ||
+        currentState == FTAppStateRun || currentState == FTAppStateStartUp;
     BOOL background = snapshot.startIntervalState == FTRUMAppStateBackgroundOnly ||
-        backgroundRevision != snapshot.backgroundRevision;
+        backgroundRevision != snapshot.backgroundRevision || currentState == FTAppStateBackground;
     if (foreground && background) return FTRUMAppStateBackgroundAndForeground;
     if (foreground) return FTRUMAppStateForegroundOnly;
     if (background) return FTRUMAppStateBackgroundOnly;
@@ -443,7 +453,7 @@ static void FTPrepareForSuspend(id scene, SEL selector);
                 timing.phase = FTLongTaskPhaseEnd;
                 // Diagnostic observation ends here, not at the earlier producer
                 // boundary. Keep switches during delayed/filtered processing.
-                timing.appState = [self observedAppStateSince:snapshot];
+                timing.appState = [self observedAppStateSince:snapshot recordedState:&timing.recordedAppState];
             } else {
                 timing.observationTimeNs = [NSDate ft_currentNanosecondTimeStamp];
                 timing.phase = FTLongTaskPhaseCheckpoint;
@@ -532,6 +542,7 @@ static void FTPrepareForSuspend(id scene, SEL selector);
 #pragma mark - Timing delegate
 
 - (uint64_t)notifyTiming:(FTLongTaskTiming)timing {
+    if (timing.phase != FTLongTaskPhaseEnd) timing.recordedAppState = self.currentAppState;
     id<FTLongTaskTimingDelegate> delegate = self.longTaskDelegate;
     @try {
         return delegate ? [delegate longTaskDetector:self didObserveTiming:timing] : UINT64_MAX;

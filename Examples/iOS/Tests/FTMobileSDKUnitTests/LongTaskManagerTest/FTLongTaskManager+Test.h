@@ -30,6 +30,7 @@ NS_ASSUME_NONNULL_BEGIN
 
 @interface FTManualTimingDetector : FTLongTaskDetector
 @property (nonatomic) BOOL intervalEnded;
+@property (nonatomic) FTAppState testAppState;
 @end
 
 static inline FTANRProcessor *FTTestANRProcessor(FTLongTaskManager *manager) {
@@ -44,12 +45,14 @@ static inline void FTTestDrainDetector(FTLongTaskDetector *detector) {
     dispatch_sync([detector valueForKey:@"longTaskQueue"], ^{});
 }
 
+// This shorthand models a constant point state. Transition tests use one explicit detector.
 static inline uint64_t FTTestObserveLongTaskState(FTLongTaskManager *manager, FTLongTaskPhase phase,
                                                long long startNs, uint64_t durationNs, long long endNs,
-                                               FTAppState startState, FTRUMAppState appState) {
+                                               FTAppState recordedState, FTRUMAppState appState) {
     FTManualTimingDetector *detector = [[FTManualTimingDetector alloc] initWithDelegate:manager];
+    detector.testAppState = recordedState;
     FTLongTaskTiming timing = {.phase = phase, .generation = 42, .startTimeNs = startNs,
-        .observationTimeNs = endNs, .durationNs = durationNs, .startAppState = startState, .appState = appState};
+        .observationTimeNs = endNs, .durationNs = durationNs, .startAppState = recordedState, .recordedAppState = recordedState, .appState = appState};
     return [manager longTaskDetector:detector didObserveTiming:timing];
 }
 

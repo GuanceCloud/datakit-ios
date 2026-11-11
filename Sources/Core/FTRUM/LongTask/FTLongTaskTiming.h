@@ -47,8 +47,10 @@ typedef struct {
     long long startTimeNs;
     long long observationTimeNs;
     uint64_t durationNs;
-    /// Captured at producer start, never replaced by a later processing state.
+    /// Producer-start admission state, used by the background exclusion policy.
     FTAppState startAppState;
+    /// Last point state recorded immediately before this notification.
+    FTAppState recordedAppState;
     /// At End: all known states observed through worker stop, including excluded gaps.
     FTRUMAppState appState;
 } FTLongTaskTiming;
@@ -61,5 +63,7 @@ typedef struct {
 @interface FTLongTaskDetector (Timing)
 - (void)performAsynchronousBlock:(dispatch_block_t)block;
 - (BOOL)isMonitoringGeneration:(uint64_t)generation;
+/// Atomic lifecycle point snapshot; safe to read on the detector queue.
+- (FTAppState)currentAppState;
 @end
 NS_ASSUME_NONNULL_END

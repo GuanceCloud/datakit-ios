@@ -49,6 +49,7 @@
     dependencies.sessionOnErrorSampleRate = self.sessionOnErrorSampleRate;
     dependencies.enableResourceHostIP = self.enableResourceHostIP;
     dependencies.enableTraceUserAction = self.enableTraceUserAction;
+    dependencies.ignoreBackgroundLongTaskAndANR = self.ignoreBackgroundLongTaskAndANR;
     dependencies.appId = self.appId;
     dependencies.writer = self.writer;
     dependencies.networkSettledResourcePredicate = self.networkSettledResourcePredicate;
