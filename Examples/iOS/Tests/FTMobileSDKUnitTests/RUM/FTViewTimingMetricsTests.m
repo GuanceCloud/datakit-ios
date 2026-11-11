@@ -290,6 +290,60 @@ static long long const FTMetricEpoch = 1800000000000000000LL;
     metrics.fetchEndNsTimeInterval = FTMetricEpoch + end * 1000000LL;
     return metrics;
 }
+- (void)testResourceSignalStrengthRetainsStartSnapshotThroughDelayedCompletion {
+    [self view:@"network-view" at:0 stop:NO];
+    for (id available in @[@NO, @YES, NSNull.null]) {
+        for (id strength in @[@0, @1, @2, @3, NSNull.null]) {
+            NSString *key = [NSString stringWithFormat:@"network-%@-%@", available, strength];
+            NSNumber *expectedAvailable = available == NSNull.null ? nil : available;
+            NSNumber *expectedStrength = strength == NSNull.null ? nil : strength;
+            FTRUMResourceDataModel *start = [[FTRUMResourceDataModel alloc] initWithType:FTRUMDataResourceStart identifier:key];
+            start.networkAvailable = expectedAvailable;
+            start.networkSignalStrength = expectedStrength;
+            start.fields = @{FT_KEY_NETWORK_AVAILABLE:@99, FT_KEY_NETWORK_SIGNAL_STRENGTH:@99, @"custom_start":@1};
+            [self send:start at:10];
+            // Later Model properties and custom fields cannot replace the first Start.
+            FTRUMResourceDataModel *duplicate = [[FTRUMResourceDataModel alloc] initWithType:FTRUMDataResourceStart identifier:key];
+            duplicate.networkAvailable = @(!expectedAvailable.boolValue);
+            duplicate.networkSignalStrength = expectedStrength.intValue == 3 ? @0 : @3;
+            duplicate.fields = @{FT_KEY_NETWORK_AVAILABLE:@98, FT_KEY_NETWORK_SIGNAL_STRENGTH:@98, @"custom_duplicate":@2};
+            [self send:duplicate at:20];
+            FTRUMResourceDataModel *stop = [[FTRUMResourceDataModel alloc] initWithType:FTRUMDataResourceStop identifier:key];
+            stop.networkAvailable = duplicate.networkAvailable;
+            stop.networkSignalStrength = duplicate.networkSignalStrength;
+            stop.fields = @{FT_KEY_NETWORK_AVAILABLE:@97, FT_KEY_NETWORK_SIGNAL_STRENGTH:@97, @"custom_stop":@3};
+            [self send:stop at:30];
+            FTRUMResourceDataModel *complete = [[FTRUMResourceDataModel alloc] initWithType:FTRUMDataResourceComplete identifier:key];
+            complete.networkAvailable = duplicate.networkAvailable;
+            complete.networkSignalStrength = duplicate.networkSignalStrength;
+            complete.fields = @{FT_KEY_NETWORK_AVAILABLE:@96, FT_KEY_NETWORK_SIGNAL_STRENGTH:@96, @"custom_complete":@4};
+            [self send:complete at:5000];
+            NSDictionary *resource = nil;
+            for (NSDictionary *event in self.writer.events.reverseObjectEnumerator) {
+                if ([event[@"source"] isEqual:@"resource"] && [event[@"tags"][@"resource_id"] isEqual:key]) {
+                    resource = event;
+                    break;
+                }
+            }
+            XCTAssertNotNil(resource);
+            NSDictionary *fields = resource[@"fields"];
+            XCTAssertEqualObjects(fields[FT_KEY_NETWORK_AVAILABLE], expectedAvailable);
+            XCTAssertEqualObjects(fields[FT_KEY_NETWORK_SIGNAL_STRENGTH], expectedStrength);
+            XCTAssertEqualObjects(fields[@"custom_start"], @1);
+            // The Session discards a repeated Start for the same key.
+            XCTAssertNil(fields[@"custom_duplicate"]);
+            XCTAssertEqualObjects(fields[@"custom_stop"], @3);
+            XCTAssertEqualObjects(fields[@"custom_complete"], @4);
+            [self send:complete at:6000];
+            NSUInteger count = 0;
+            for (NSDictionary *event in self.writer.events) {
+                if ([event[@"source"] isEqual:@"resource"] && [event[@"tags"][@"resource_id"] isEqual:key]) count++;
+            }
+            XCTAssertEqual(count, 1U);
+        }
+    }
+}
+
 - (void)testAppearanceReportsBeforeBusinessCallbackAndDeduplicatesSuperclassHooks {
     XCTAssertTrue([UIViewController ft_installViewControllerLifecycleSwizzlesForClass:FTAppearanceOrderBase.class]);
     XCTAssertTrue([UIViewController ft_installViewControllerLifecycleSwizzlesForClass:FTAppearanceOrderChild.class]);

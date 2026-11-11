@@ -61,6 +61,7 @@ typedef NS_ENUM(NSInteger, FTNetworkStatus) {
     BOOL _isConnected;
     BOOL _hasPathStatus;
     BOOL _networkAvailable;
+    NSNumber *_networkSignalStrength;
     NSString *_networkType;
     NSUInteger _generation;
     NSUInteger _pathMonitorGeneration; // Accessed on _monitorQueue.
@@ -119,6 +120,25 @@ typedef NS_ENUM(NSInteger, FTNetworkStatus) {
 }
 - (nw_path_status_t)statusForPath:(nw_path_t)path {
     return nw_path_get_status(path);
+}
+#if __IPHONE_OS_VERSION_MAX_ALLOWED >= 260000 || __TV_OS_VERSION_MAX_ALLOWED >= 260000 || __MAC_OS_X_VERSION_MAX_ALLOWED >= 260000
+- (uint8_t)linkQualityForPath:(nw_path_t)path API_AVAILABLE(ios(26.0), tvos(26.0), macos(26.0)) {
+    return nw_path_get_link_quality(path);
+}
+#endif
+- (NSNumber *)signalStrengthForPath:(nw_path_t)path {
+#if __IPHONE_OS_VERSION_MAX_ALLOWED >= 260000 || __TV_OS_VERSION_MAX_ALLOWED >= 260000 || __MAC_OS_X_VERSION_MAX_ALLOWED >= 260000
+    if (@available(iOS 26.0, tvOS 26.0, macOS 26.0, *)) {
+        switch ([self linkQualityForPath:path]) {
+            case nw_link_quality_minimal: return @1;
+            case nw_link_quality_moderate: return @2;
+            case nw_link_quality_good: return @3;
+            case nw_link_quality_unknown:
+            default: return @0;
+        }
+    }
+#endif
+    return nil;
 }
 - (BOOL)path:(nw_path_t)path usesInterfaceType:(nw_interface_type_t)type {
     return nw_path_uses_interface_type(path, type);
@@ -190,6 +210,7 @@ typedef NS_ENUM(NSInteger, FTNetworkStatus) {
         }
     }
     NSString *networkType = [self networkTypeWithStatus:networkStatus];
+    NSNumber *signalStrength = [self signalStrengthForPath:path];
     os_unfair_lock_lock(&_stateLock);
     if (!_isNotifying || _generation != generation) {
         os_unfair_lock_unlock(&_stateLock);
@@ -198,6 +219,7 @@ typedef NS_ENUM(NSInteger, FTNetworkStatus) {
     BOOL changed = _networkStatus != networkStatus || _isConnected != connected || ![_networkType isEqualToString:networkType];
     _hasPathStatus = YES;
     _networkAvailable = available;
+    _networkSignalStrength = signalStrength;
     _isConnected = connected;
     _networkStatus = networkStatus;
     _networkType = networkType;
@@ -218,13 +240,22 @@ typedef NS_ENUM(NSInteger, FTNetworkStatus) {
     os_unfair_lock_unlock(&_stateLock);
     return type;
 }
+- (NSNumber *)networkSignalStrength {
+    os_unfair_lock_lock(&_stateLock);
+    NSNumber *strength = _networkSignalStrength;
+    os_unfair_lock_unlock(&_stateLock);
+    return strength;
+}
 - (NSDictionary<NSString *, id> *)networkResourceFields {
     os_unfair_lock_lock(&_stateLock);
     BOOL hasPathStatus = _hasPathStatus;
     BOOL available = _networkAvailable;
+    NSNumber *strength = _networkSignalStrength;
     os_unfair_lock_unlock(&_stateLock);
-    // No network_available field until the first real path update.
-    return hasPathStatus ? @{FT_KEY_NETWORK_AVAILABLE:@(available)} : @{};
+    // Read both fields from one path snapshot; nil preserves unsupported omission.
+    if (!hasPathStatus) return @{};
+    return strength ? @{FT_KEY_NETWORK_AVAILABLE:@(available), FT_KEY_NETWORK_SIGNAL_STRENGTH:strength}
+                    : @{FT_KEY_NETWORK_AVAILABLE:@(available)};
 }
 - (FTNetworkStatus)networkStatus {
     os_unfair_lock_lock(&_stateLock);

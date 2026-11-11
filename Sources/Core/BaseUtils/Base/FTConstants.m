@@ -168,6 +168,7 @@ NSString * const FT_KEY_RESOURCE_HTTP_PROTOCOL = @"resource_http_protocol";
 NSString * const FT_KEY_RESOURCE_REQUEST_SIZE = @"resource_request_size";
 NSString * const FT_KEY_RESOURCE_CONNECTION_REUSE = @"resource_connection_reuse";
 NSString * const FT_KEY_NETWORK_AVAILABLE = @"network_available";
+NSString * const FT_KEY_NETWORK_SIGNAL_STRENGTH = @"network_signal_strength";
 NSString * const FT_RESOURCE_TYPE_WEBSOCKET = @"websocket";
 NSString * const FT_RESOURCE_WEBSOCKET_COLLECTION_LEVEL_HANDSHAKE = @"handshake";
 NSString * const FT_RESOURCE_WEBSOCKET_HANDSHAKE_STATE_SUCCESS = @"success";

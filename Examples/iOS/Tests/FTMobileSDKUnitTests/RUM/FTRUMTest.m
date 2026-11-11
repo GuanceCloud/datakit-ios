@@ -3859,9 +3859,27 @@
     }];
     XCTAssertTrue(hasResourceData);
 }
+- (void)testStartResourceSignalStrengthOverridesCustomPropertyOrRemainsAbsent {
+    [self setRumConfig];
+    [self waitForNetworkResourceFields];
+    NSNumber *expected = [[FTNetworkConnectivity sharedInstance] networkSignalStrength];
+    [FTModelHelper startView];
+    [self addResource:@{FT_KEY_NETWORK_SIGNAL_STRENGTH:@99} endContext:@{FT_KEY_NETWORK_SIGNAL_STRENGTH:@98}];
+    [[FTGlobalRumManager sharedInstance].rumManager syncProcess];
+    NSArray *records = [[FTTrackerEventDBTool sharedManager] getFirstRecords:100 withType:FT_DATA_TYPE_RUM];
+    __block BOOL found = NO;
+    [FTModelHelper resolveModelArray:records callBack:^(NSString *source, NSDictionary *tags, NSDictionary *fields, BOOL *stop) {
+        if ([source isEqualToString:FT_RUM_SOURCE_RESOURCE]) {
+            XCTAssertEqualObjects(fields[FT_KEY_NETWORK_SIGNAL_STRENGTH], expected);
+            found = YES;
+        }
+    }];
+    XCTAssertTrue(found);
+}
 - (void)testStartResourceNetworkAvailableOverridesCustomProperty{
     [self setRumConfig];
     [self waitForNetworkResourceFields];
+    NSNumber *expected = [[FTNetworkConnectivity sharedInstance] networkResourceFields][FT_KEY_NETWORK_AVAILABLE];
     [FTModelHelper startView];
     [self addResource:@{FT_KEY_NETWORK_AVAILABLE:@"custom"} endContext:@{FT_KEY_NETWORK_AVAILABLE:@"stop_custom"}];
     [[FTGlobalRumManager sharedInstance].rumManager syncProcess];
@@ -3869,7 +3887,7 @@
     __block NSInteger hasResourceData = NO;
     [FTModelHelper resolveModelArray:newArray callBack:^(NSString * _Nonnull source, NSDictionary * _Nonnull tags, NSDictionary * _Nonnull fields, BOOL * _Nonnull stop) {
         if ([source isEqualToString:FT_RUM_SOURCE_RESOURCE]) {
-            XCTAssertTrue([fields[FT_KEY_NETWORK_AVAILABLE] isKindOfClass:NSNumber.class]);
+            XCTAssertEqualObjects(fields[FT_KEY_NETWORK_AVAILABLE], expected);
             hasResourceData = YES;
             *stop = YES;
         }

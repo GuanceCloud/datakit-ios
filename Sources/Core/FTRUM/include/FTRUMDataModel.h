@@ -95,6 +95,11 @@ NS_ASSUME_NONNULL_BEGIN
 
 @interface FTRUMResourceModel : FTRUMDataModel
 @property (nonatomic, copy) NSString *identifier;
+/// Latest network facts captured at Resource Start API entry, before RUM queue processing.
+/// The Handler retains only the first Start values; nil means the field is absent.
+@property (nonatomic, strong, nullable) NSNumber *networkAvailable;
+/// Ordinal link quality: unknown=0, minimal=1, moderate=2, good=3.
+@property (nonatomic, strong, nullable) NSNumber *networkSignalStrength;
 /// Resource terminals retain the View associated when Start is processed.
 @property (nonatomic, copy, nullable) NSString *ownerViewID;
 

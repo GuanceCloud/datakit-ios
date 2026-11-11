@@ -44,7 +44,8 @@ typedef struct {
 @property (nonatomic, assign) BOOL completed;
 @property (nonatomic, strong, nullable) NSDate *resourceStopTime;
 @property (nonatomic, strong) NSMutableDictionary *resourceProperty;
-@property (nonatomic, strong) NSNumber *networkAvailable;
+@property (nonatomic, strong, nullable) NSNumber *networkAvailable;
+@property (nonatomic, strong, nullable) NSNumber *networkSignalStrength;
 @property (nonatomic, copy, nullable) NSString *visitorIDSnapshot;
 - (NSDictionary *)context:(NSDictionary *)context byApplyingVisitorID:(NSString *)visitorID;
 @end
@@ -64,9 +65,8 @@ typedef struct {
         if(model.fields && model.fields.allKeys.count>0){
             [self.resourceProperty addEntriesFromDictionary:model.fields];
         }
-        if ([model.fields[FT_KEY_NETWORK_AVAILABLE] isKindOfClass:NSNumber.class]) {
-            self.networkAvailable = model.fields[FT_KEY_NETWORK_AVAILABLE];
-        }
+        self.networkAvailable = model.networkAvailable;
+        self.networkSignalStrength = model.networkSignalStrength;
         self.context = context;
     }
     return self;
@@ -158,7 +158,6 @@ typedef struct {
         [fields addEntriesFromDictionary:self.resourceProperty];
     }
     [fields addEntriesFromDictionary:data.fields];
-    [fields setValue:self.networkAvailable forKey:FT_KEY_NETWORK_AVAILABLE];
     [fields setValue:self.dependencies.sessionHasReplay forKey:FT_SESSION_HAS_REPLAY];
     NSDate *fallbackEnd = self.resourceStopTime ?: data.time;
     // Legacy duration-only metrics remain event-only when no interval can be established.
@@ -182,6 +181,9 @@ typedef struct {
     fields[@"app_state"] = [self.dependencies.appStateHistory stateFrom:resourceStartTime
                                                                duration:[fields[FT_DURATION] longLongValue]];
     [fields addEntriesFromDictionary:self.context.sessionState.sessionFields];
+    // The first Start owns both network facts, including absent measurements.
+    [fields setValue:self.networkAvailable forKey:FT_KEY_NETWORK_AVAILABLE];
+    [fields setValue:self.networkSignalStrength forKey:FT_KEY_NETWORK_SIGNAL_STRENGTH];
     NSDictionary *sessionTag = [self.context getGlobalSessionViewActionTags];
     NSMutableDictionary *tags = [NSMutableDictionary new];
     [tags addEntriesFromDictionary:sessionTag];

@@ -275,6 +275,7 @@ extern NSString * const FT_KEY_RESOURCE_REQUEST_SIZE;
 extern NSString * const FT_KEY_RESOURCE_CONNECTION_REUSE;
 /// Network availability field key captured when the resource starts.
 extern NSString * const FT_KEY_NETWORK_AVAILABLE;
+extern NSString * const FT_KEY_NETWORK_SIGNAL_STRENGTH;
 /// Resource type value for a WebSocket opening handshake.
 extern NSString * const FT_RESOURCE_TYPE_WEBSOCKET;
 /// WebSocket collection-level value for opening-handshake-only Resources.

@@ -84,6 +84,7 @@
 @interface FTConnectivityPath : NSObject
 @property (nonatomic) nw_path_status_t status;
 @property (nonatomic) nw_interface_type_t interfaceType;
+@property (nonatomic) uint8_t linkQuality;
 @end
 @implementation FTConnectivityPath @end
 
@@ -150,6 +151,9 @@
 }
 - (nw_path_status_t)statusForPath:(nw_path_t)path {
     return ((FTConnectivityPath *)path).status;
+}
+- (uint8_t)linkQualityForPath:(nw_path_t)path {
+    return ((FTConnectivityPath *)path).linkQuality;
 }
 - (BOOL)path:(nw_path_t)path usesInterfaceType:(nw_interface_type_t)type {
     return ((FTConnectivityPath *)path).interfaceType == type;
@@ -248,6 +252,62 @@
     dispatch_sync(monitor.queue, ^{ monitor.handler((nw_path_t)path); });
 }
 
+- (NSDictionary *)fieldsWithAvailable:(NSNumber *)available {
+    NSMutableDictionary *fields = [@{FT_KEY_NETWORK_AVAILABLE: available} mutableCopy];
+#if __IPHONE_OS_VERSION_MAX_ALLOWED >= 260000 || __TV_OS_VERSION_MAX_ALLOWED >= 260000 || __MAC_OS_X_VERSION_MAX_ALLOWED >= 260000
+    if (@available(iOS 26.0, tvOS 26.0, macOS 26.0, *)) fields[@"network_signal_strength"] = @0;
+#endif
+    return fields;
+}
+
+- (void)testSignalStrengthMappingAndUnknownClearsPreviousMeasurement {
+    XCTAssertTrue([self.connectivity respondsToSelector:@selector(networkSignalStrength)]);
+    if (![self.connectivity respondsToSelector:@selector(networkSignalStrength)]) return;
+    XCTAssertNil(self.connectivity.networkSignalStrength);
+    FTConnectivityObserver *observer = [self observe:self.connectivity];
+    FTConnectivityMonitor *monitor = [self startAndDrain:self.connectivity];
+    // Apple enum values are deliberately distinct from the protocol's 0/1/2/3.
+    NSArray *rawValues = @[@10, @20, @30, @0, @255, @10];
+    NSArray *expectedValues = @[@1, @2, @3, @0, @0, @1];
+    for (NSUInteger index = 0; index < rawValues.count; index++) {
+        FTConnectivityPath *path = [self pathWithStatus:nw_path_status_satisfied type:nw_interface_type_wifi];
+        path.linkQuality = [rawValues[index] unsignedCharValue];
+        dispatch_sync(monitor.queue, ^{ monitor.handler((nw_path_t)path); });
+        NSNumber *expected = nil;
+        if (@available(iOS 26.0, tvOS 26.0, macOS 26.0, *)) {
+#if __IPHONE_OS_VERSION_MAX_ALLOWED >= 260000 || __TV_OS_VERSION_MAX_ALLOWED >= 260000 || __MAC_OS_X_VERSION_MAX_ALLOWED >= 260000
+            expected = expectedValues[index];
+#endif
+        }
+        XCTAssertEqualObjects(self.connectivity.networkSignalStrength, expected);
+        NSMutableDictionary *fields = [@{FT_KEY_NETWORK_AVAILABLE: @YES} mutableCopy];
+        [fields setValue:expected forKey:@"network_signal_strength"];
+        XCTAssertEqualObjects(self.connectivity.networkResourceFields, fields);
+    }
+    XCTAssertEqual(observer.events.count, 1U);
+}
+
+- (void)testOldSignalCallbackCannotOverwriteRestartedMonitor {
+    FTConnectivityMonitor *old = [self startAndDrain:self.connectivity];
+    FTConnectivityPath *good = [self pathWithStatus:nw_path_status_satisfied type:nw_interface_type_wifi];
+    good.linkQuality = 30;
+    dispatch_sync(old.queue, ^{ old.handler((nw_path_t)good); });
+    [self.connectivity stop];
+    FTConnectivityMonitor *current = [self startAndDrain:self.connectivity];
+    FTConnectivityPath *minimal = [self pathWithStatus:nw_path_status_satisfied type:nw_interface_type_wifi];
+    minimal.linkQuality = 10;
+    dispatch_sync(current.queue, ^{ current.handler((nw_path_t)minimal); });
+    NSDictionary *snapshot = self.connectivity.networkResourceFields;
+    NSMutableDictionary *expected = [[self fieldsWithAvailable:@YES] mutableCopy];
+    if (expected[@"network_signal_strength"]) expected[@"network_signal_strength"] = @1;
+    XCTAssertEqualObjects(snapshot, expected);
+    dispatch_sync(old.queue, ^{ old.handler((nw_path_t)good); });
+    XCTAssertEqualObjects(self.connectivity.networkResourceFields, snapshot);
+    // A new monitor without a measurement must clear the preceding quality.
+    [self emit:current status:nw_path_status_unsatisfied type:nw_interface_type_wifi];
+    XCTAssertEqualObjects(self.connectivity.networkResourceFields, [self fieldsWithAvailable:@NO]);
+}
+
 - (void)testQueuedStartupCanBeCancelledWithoutCreatingMonitor {
     FTConnectivityGate *gate = [self newGate];
     dispatch_async(self.connectivity.testQueue, ^{ [gate pause]; });
@@ -299,7 +359,7 @@
     for (NSDictionary *entry in cases) {
         [self emit:monitor status:[entry[@"status"] intValue] type:[entry[@"interface"] intValue]];
         XCTAssertEqual(self.connectivity.isConnected, [entry[@"connected"] boolValue]);
-        XCTAssertEqualObjects(self.connectivity.networkResourceFields, (@{FT_KEY_NETWORK_AVAILABLE: entry[@"available"]}));
+        XCTAssertEqualObjects(self.connectivity.networkResourceFields, [self fieldsWithAvailable:entry[@"available"]]);
         XCTAssertEqualObjects(self.connectivity.networkType, entry[@"type"]);
         XCTAssertEqual(observer.events.count, [entry[@"count"] unsignedIntegerValue]);
         XCTAssertEqualObjects(observer.events.lastObject, (@{@"connected": entry[@"connected"], @"type": entry[@"type"]}));
@@ -471,7 +531,7 @@
         XCTAssertEqualObjects(observer.events.lastObject[@"type"], expectedTypes[index]);
         XCTAssertEqual(observer.events.count, index + 1);
         XCTAssertTrue(self.connectivity.isConnected);
-        XCTAssertEqualObjects(self.connectivity.networkResourceFields, (@{FT_KEY_NETWORK_AVAILABLE: @YES}));
+        XCTAssertEqualObjects(self.connectivity.networkResourceFields, [self fieldsWithAvailable:@YES]);
     }
     XCTAssertEqual(self.backend.radioCreations, 1U);
 }
@@ -487,7 +547,7 @@
         [self emit:monitor status:nw_path_status_satisfied type:nw_interface_type_cellular];
         XCTAssertEqualObjects(self.connectivity.networkType, @"unknown");
         XCTAssertTrue(self.connectivity.isConnected);
-        XCTAssertEqualObjects(self.connectivity.networkResourceFields, (@{FT_KEY_NETWORK_AVAILABLE: @YES}));
+        XCTAssertEqualObjects(self.connectivity.networkResourceFields, [self fieldsWithAvailable:@YES]);
     }
     self.backend.radioInfo.dataServiceIdentifier = @"sim-a";
     self.backend.radioInfo.serviceCurrentRadioAccessTechnology = nil;
@@ -523,7 +583,7 @@
         self.backend.radioInfo.serviceCurrentRadioAccessTechnology = @{@"sim": mapping[0]};
         [self emit:monitor status:nw_path_status_satisfied type:nw_interface_type_cellular];
         XCTAssertEqualObjects(self.connectivity.networkType, mapping[1]);
-        XCTAssertEqualObjects(self.connectivity.networkResourceFields, (@{FT_KEY_NETWORK_AVAILABLE: @YES}));
+        XCTAssertEqualObjects(self.connectivity.networkResourceFields, [self fieldsWithAvailable:@YES]);
     }
     self.backend.radioInfo.serviceCurrentRadioAccessTechnology = @{};
     [self emit:monitor status:nw_path_status_satisfied type:nw_interface_type_cellular];

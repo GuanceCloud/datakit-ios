@@ -401,17 +401,15 @@ void *FTRUMQueueIdentityKey = &FTRUMQueueIdentityKey;
     }
     FTVisitorIDManager *visitorIDManager = [FTVisitorIDManager sharedInstance];
     NSString *visitorID = [visitorIDManager consumeResourceVisitorIDForKey:key] ?: [self currentVisitorIDSnapshot];
+    NSDictionary *networkFields = [[FTNetworkConnectivity sharedInstance] networkResourceFields];
     dispatch_async(self.rumQueue, ^{
         @try {
             NSDictionary *context = [self rumDynamicProperty];
             FTRUMResourceDataModel *resourceStart = [[FTRUMResourceDataModel alloc]initWithType:FTRUMDataResourceStart identifier:key];
             resourceStart.time = time;
-            NSMutableDictionary *fields = property ? [property mutableCopy] : [NSMutableDictionary dictionary];
-            NSDictionary *networkFields = [[FTNetworkConnectivity sharedInstance] networkResourceFields];
-            if (networkFields.count > 0) {
-                [fields addEntriesFromDictionary:networkFields];
-            }
-            resourceStart.fields = fields;
+            resourceStart.networkAvailable = networkFields[FT_KEY_NETWORK_AVAILABLE];
+            resourceStart.networkSignalStrength = networkFields[FT_KEY_NETWORK_SIGNAL_STRENGTH];
+            resourceStart.fields = [property copy] ?: @{};
             resourceStart.visitorIDSnapshot = visitorID;
             [self process:resourceStart context:context];
         } @catch (NSException *exception) {
