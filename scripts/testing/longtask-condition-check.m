@@ -76,7 +76,7 @@ int FTTestUnexpectedUntimedWait(pthread_cond_t *condition, pthread_mutex_t *mute
 - (void)runMonitor;
 - (void)registerObserver;
 - (void)startAppStateMonitoring;
-- (void)recordAppState:(FTAppState)state intervalState:(FTRUMAppState)intervalState;
+- (void)recordAppState:(FTAppState)state;
 - (void)beginPreparingForSuspend;
 - (void)endPreparingForSuspend;
 + (BOOL)installSuspendHookForClass:(Class)cls;
@@ -991,26 +991,24 @@ static void TestStartDuringRealRunLoopIteration(void) {
 
 // Seed lifecycle admission before publishing the producer start. No clock or
 // bounded RUM history is involved in these metadata expectations.
-static void SeedAppState(FTLongTaskDetector *detector, FTAppState state, FTRUMAppState intervalState) {
+static void SeedAppState(FTLongTaskDetector *detector, FTAppState state) {
     atomic_store((atomic_bool *)IvarAddress(detector, "_monitoring"), true);
-    [detector recordAppState:state intervalState:intervalState];
+    [detector recordAppState:state];
     atomic_store((atomic_bool *)IvarAddress(detector, "_monitoring"), false);
 }
 
 static void TestProducerSituationPrecedesWorkerAndKeepsSameClockOrder(void) {
     FTAppState starts[] = {FTAppStateStartUp, FTAppStateRun, FTAppStateBackground, FTAppStateUnknown};
-    FTRUMAppState intervals[] = {FTRUMAppStateForegroundOnly, FTRUMAppStateForegroundOnly,
-                               FTRUMAppStateBackgroundOnly, FTRUMAppStateUnknown};
     for (NSUInteger index = 0; index < 4; index++) {
         fakeClock = YES; fakeNow = 1000 * ms;
         TimingProbe *probe = [TimingProbe new];
         ControlledDetector *detector = [[ControlledDetector alloc] initWithDelegate:probe];
-        SeedAppState(detector, starts[index], intervals[index]);
+        SeedAppState(detector, starts[index]);
         [detector recordRunLoopBeginActivity:kCFRunLoopEntry atTimeNs:fakeNow];
         // A transition at the same clock value, but after producer start, must not
         // replace its point situation. This also precedes worker Begin processing.
         atomic_store((atomic_bool *)IvarAddress(detector, "_monitoring"), true);
-        [detector recordAppState:FTAppStateBackground intervalState:FTRUMAppStateBackgroundOnly];
+        [detector recordAppState:FTAppStateBackground];
         atomic_store((atomic_bool *)IvarAddress(detector, "_monitoring"), false);
         __block NSUInteger waits = 0, ends = 0;
         waitHook = ^int(pthread_cond_t *c, pthread_mutex_t *m, const struct timespec *timeout) {
@@ -1022,11 +1020,11 @@ static void TestProducerSituationPrecedesWorkerAndKeepsSameClockOrder(void) {
             return ETIMEDOUT;
         };
         FTAppState expectedStart = starts[index];
-        FTRUMAppState expected = index < 2 ? FTRUMAppStateBackgroundAndForeground : FTRUMAppStateBackgroundOnly;
+
         probe.observe = ^uint64_t(FTLongTaskDetector *d, FTLongTaskTiming t) {
             Check(t.startAppState == expectedStart, "producer start situation survives delayed Begin and Checkpoint");
             if (t.phase == FTLongTaskPhaseEnd) {
-                Check(t.appState == expected && t.durationNs == 502 * ms, "same-clock transition belongs to observation, not its start situation");
+                Check(t.recordedAppState == FTAppStateBackground && t.durationNs == 502 * ms, "same-clock transition belongs to observation, not its start situation");
                 ends++; [d stopDetecting];
             }
             return t.durationNs + 251 * ms;
@@ -1037,12 +1035,12 @@ static void TestProducerSituationPrecedesWorkerAndKeepsSameClockOrder(void) {
     }
 }
 
-static void TestWorkerStopIncludesPostBoundarySwitchAndFreezesResult(void) {
+static void TestDelayedWorkerEndRetainsStartAndCurrentAdmission(void) {
     for (NSNumber *lateSwitch in @[@NO, @YES]) {
         fakeClock = YES; fakeNow = 1000 * ms;
         TimingProbe *probe = [TimingProbe new];
         ControlledDetector *detector = [[ControlledDetector alloc] initWithDelegate:probe];
-        SeedAppState(detector, FTAppStateRun, FTRUMAppStateForegroundOnly);
+        SeedAppState(detector, FTAppStateRun);
         [detector recordRunLoopBeginActivity:kCFRunLoopEntry atTimeNs:fakeNow];
         __block NSUInteger ends = 0;
         waitHook = ^int(pthread_cond_t *c, pthread_mutex_t *m, const struct timespec *timeout) {
@@ -1056,17 +1054,18 @@ static void TestWorkerStopIncludesPostBoundarySwitchAndFreezesResult(void) {
                 [d recordRunLoopEndActivity:kCFRunLoopBeforeWaiting atTimeNs:fakeNow];
                 fakeNow = 1350 * ms; // capture continues after the producer boundary
                 if (lateSwitch.boolValue)
-                    [d recordAppState:FTAppStateBackground intervalState:FTRUMAppStateBackgroundOnly];
+                    [d recordAppState:FTAppStateBackground];
                 // A later producer generation must not reset old observation facts.
                 [d recordRunLoopBeginActivity:kCFRunLoopAfterWaiting atTimeNs:fakeNow];
                 return UINT64_MAX;
             }
-            FTRUMAppState expected = lateSwitch.boolValue ? FTRUMAppStateBackgroundAndForeground : FTRUMAppStateForegroundOnly;
+
             Check(t.durationNs == 320 * ms && t.observationTimeNs == 1320 * ms,
                   "state scope does not inflate duration or move producer End");
-            Check(t.appState == expected, "worker End includes the post-producer-boundary switch");
-            [d recordAppState:FTAppStateBackground intervalState:FTRUMAppStateBackgroundOnly];
-            Check(t.appState == expected, "a switch inside the End delegate cannot mutate its frozen result");
+            FTAppState expectedPoint=lateSwitch.boolValue?FTAppStateBackground:FTAppStateRun;
+            Check(t.recordedAppState == expectedPoint, "worker End point remains available for background admission");
+            [d recordAppState:FTAppStateBackground];
+            Check(t.startAppState == FTAppStateRun, "later callbacks cannot mutate the producer start");
             ends++; [d stopDetecting]; return UINT64_MAX;
         };
         Run(detector); Check(ends == 1, "delayed stop settles exactly once");
@@ -1074,18 +1073,18 @@ static void TestWorkerStopIncludesPostBoundarySwitchAndFreezesResult(void) {
     }
 }
 
-static void TestExcludedWaitAndCaptureStillRetainStateEvidence(void) {
+static void TestExcludedWaitAndCaptureKeepProducerStart(void) {
     fakeClock = YES; fakeNow = 1000 * ms;
     TimingProbe *probe = [TimingProbe new];
     ControlledDetector *detector = [[ControlledDetector alloc] initWithDelegate:probe];
-    SeedAppState(detector, FTAppStateRun, FTRUMAppStateForegroundOnly);
+    SeedAppState(detector, FTAppStateRun);
     [detector recordRunLoopBeginActivity:kCFRunLoopEntry atTimeNs:fakeNow];
     __block NSUInteger waits = 0, checkpoints = 0;
     waitHook = ^int(pthread_cond_t *c, pthread_mutex_t *m, const struct timespec *timeout) {
         waits++;
         if (waits == 1) {
-            [detector recordAppState:FTAppStateBackground intervalState:FTRUMAppStateBackgroundOnly];
-            [detector recordAppState:FTAppStateRun intervalState:FTRUMAppStateForegroundOnly];
+            [detector recordAppState:FTAppStateBackground];
+            [detector recordAppState:FTAppStateRun];
             fakeNow += 60 * NSEC_PER_SEC; // rejected first wait
         } else if (waits == 2) {
             fakeNow += TimeoutNs(timeout);
@@ -1105,8 +1104,8 @@ static void TestExcludedWaitAndCaptureStillRetainStateEvidence(void) {
             fakeNow += 2 * NSEC_PER_SEC; // abnormal capture excluded independently
             return UINT64_MAX;
         }
-        Check(t.appState == FTRUMAppStateBackgroundAndForeground && t.startAppState == FTAppStateRun,
-              "excluded wait/capture and epoch rollback cannot erase observed background");
+        Check(t.recordedAppState == FTAppStateRun && t.startAppState == FTAppStateRun,
+              "excluded wait/capture and epoch rollback cannot replace the producer start");
         Check(t.durationNs == 320 * ms && t.observationTimeNs == 500 * ms,
               "metadata retains existing effective-time and epoch-boundary rules");
         [d stopDetecting]; return UINT64_MAX;
@@ -1119,7 +1118,7 @@ static void TestManySwitchesDoNotLeakIntoNextGeneration(void) {
     fakeClock = YES; fakeNow = 1000 * ms;
     TimingProbe *probe = [TimingProbe new];
     ControlledDetector *detector = [[ControlledDetector alloc] initWithDelegate:probe];
-    SeedAppState(detector, FTAppStateBackground, FTRUMAppStateBackgroundOnly);
+    SeedAppState(detector, FTAppStateBackground);
     [detector recordRunLoopBeginActivity:kCFRunLoopEntry atTimeNs:fakeNow];
     __block NSUInteger waits = 0, ends = 0;
     waitHook = ^int(pthread_cond_t *c, pthread_mutex_t *m, const struct timespec *timeout) {
@@ -1133,16 +1132,15 @@ static void TestManySwitchesDoNotLeakIntoNextGeneration(void) {
     probe.observe = ^uint64_t(FTLongTaskDetector *d, FTLongTaskTiming t) {
         if (t.phase == FTLongTaskPhaseCheckpoint && ends == 0) {
             for (NSUInteger index = 0; index < 300; index++) {
-                [d recordAppState:FTAppStateRun intervalState:FTRUMAppStateForegroundOnly];
-                [d recordAppState:FTAppStateBackground intervalState:FTRUMAppStateBackgroundOnly];
+                [d recordAppState:FTAppStateRun];
+                [d recordAppState:FTAppStateBackground];
             }
-            [d recordAppState:FTAppStateRun intervalState:FTRUMAppStateForegroundOnly];
+            [d recordAppState:FTAppStateRun];
         }
         if (t.phase == FTLongTaskPhaseEnd) {
             Check(t.durationNs == 502 * ms, "switch count does not change timing");
             Check(t.startAppState == (ends == 0 ? FTAppStateBackground : FTAppStateRun), "each generation retains its own start");
-            Check(t.appState == (ends == 0 ? FTRUMAppStateBackgroundAndForeground : FTRUMAppStateForegroundOnly),
-                  "arbitrarily many switches persist, but older transitions cannot pollute a new interval");
+            Check(t.recordedAppState == FTAppStateRun, "new interval sees the latest point without aggregate revisions");
             if (++ends == 1) [d recordRunLoopBeginActivity:kCFRunLoopAfterWaiting atTimeNs:fakeNow];
             else [d stopDetecting];
         }
@@ -1152,26 +1150,25 @@ static void TestManySwitchesDoNotLeakIntoNextGeneration(void) {
     Check(![[FTAppLifeCycle sharedInstance].testDelegates containsObject:detector], "stop unregisters lifecycle delegate");
     FTLongTaskRunLoopSnapshot before, after;
     Check([detector readRunLoopSnapshot:&before], "read state before late callback");
-    [detector recordAppState:FTAppStateBackground intervalState:FTRUMAppStateBackgroundOnly];
+    [detector recordAppState:FTAppStateBackground];
     [detector recordRunLoopBeginActivity:kCFRunLoopEntry atTimeNs:fakeNow];
-    Check([detector readRunLoopSnapshot:&after] && after.startAppState == FTAppStateRun &&
-          after.backgroundRevision == before.backgroundRevision, "late lifecycle callback cannot change a stopped detector");
+    Check([detector readRunLoopSnapshot:&after] && after.startAppState == FTAppStateRun, "late lifecycle callback cannot change a stopped detector");
     probe.observe = nil; ResetClock();
 }
 
-static void TestRecordedSituationAdvancesAndFreezesAtEnd(void) {
+static void TestCurrentAdmissionAdvancesWithoutReplacingStart(void) {
     fakeClock=YES;fakeNow=1000*ms;
     TimingProbe *probe=[TimingProbe new];
     ControlledDetector *detector=[[ControlledDetector alloc]initWithDelegate:probe];
-    SeedAppState(detector,FTAppStateStartUp,FTRUMAppStateForegroundOnly);
+    SeedAppState(detector,FTAppStateStartUp);
     [detector recordRunLoopBeginActivity:kCFRunLoopEntry atTimeNs:fakeNow];
     __block NSUInteger waits=0,observations=0;
     waitHook=^int(pthread_cond_t*c,pthread_mutex_t*m,const struct timespec*timeout){
         fakeNow+=TimeoutNs(timeout);waits++;
-        if(waits==1) [detector recordAppState:FTAppStateRun intervalState:FTRUMAppStateForegroundOnly];
-        if(waits==2) [detector recordAppState:FTAppStateBackground intervalState:FTRUMAppStateBackgroundOnly];
+        if(waits==1) [detector recordAppState:FTAppStateRun];
+        if(waits==2) [detector recordAppState:FTAppStateBackground];
         if(waits==3) {
-            [detector recordAppState:FTAppStateRun intervalState:FTRUMAppStateForegroundOnly];
+            [detector recordAppState:FTAppStateRun];
             [detector recordRunLoopEndActivity:kCFRunLoopBeforeWaiting atTimeNs:fakeNow];
             return 0;
         }
@@ -1183,8 +1180,8 @@ static void TestRecordedSituationAdvancesAndFreezesAtEnd(void) {
         Check(t.startAppState==FTAppStateStartUp,"initial state remains available for background admission");
         observations++;
         if(t.phase==FTLongTaskPhaseEnd) {
-            Check(t.durationNs==753*ms && t.appState==FTRUMAppStateBackgroundAndForeground,"last point and interval state have independent exact boundaries");
-            [d recordAppState:FTAppStateUnknown intervalState:FTRUMAppStateUnknown];
+            Check(t.durationNs==753*ms && t.startAppState==FTAppStateStartUp,"current admission changes leave producer start and exact duration intact");
+            [d recordAppState:FTAppStateUnknown];
             Check(t.recordedAppState==FTAppStateRun,"delegate processing cannot mutate the frozen End point");
             [d stopDetecting];
         }
@@ -1202,7 +1199,7 @@ int main(int argc, const char *argv[]){@autoreleasepool{
         puts("PASS: real RunLoop mid-iteration startup and SDK reinitialization");
         return 0;
     }
-    TestRecordedSituationAdvancesAndFreezesAtEnd();
+    TestCurrentAdmissionAdvancesWithoutReplacingStart();
     TestStartupPublishesCompleteBusySnapshot();
     TestIdleWorkerUsesBoundedWait();
     TestBurstIsOneStateChange();
@@ -1235,8 +1232,8 @@ int main(int argc, const char *argv[]){@autoreleasepool{
     TestShutdownBeforeWorkerStarts();
     TestHookCompatibilityAndOriginalCall();
     TestProducerSituationPrecedesWorkerAndKeepsSameClockOrder();
-    TestWorkerStopIncludesPostBoundarySwitchAndFreezesResult();
-    TestExcludedWaitAndCaptureStillRetainStateEvidence();
+    TestDelayedWorkerEndRetainsStartAndCurrentAdmission();
+    TestExcludedWaitAndCaptureKeepProducerStart();
     TestManySwitchesDoNotLeakIntoNextGeneration();
     puts("PASS: 36 LongTask timing, lifecycle state, suspend, autorelease and condition regressions");
 }return 0;}

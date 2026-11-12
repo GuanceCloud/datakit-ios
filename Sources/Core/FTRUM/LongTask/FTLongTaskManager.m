@@ -29,12 +29,8 @@
 
 @implementation FTLongTaskEvent
 - (instancetype)initWithStack:(NSString *)stack startTimeNs:(long long)startTimeNs endTimeNs:(long long)endTimeNs durationNs:(long long)durationNs {
-    return [self initWithStack:stack startTimeNs:startTimeNs endTimeNs:endTimeNs durationNs:durationNs appState:nil];
-}
-- (instancetype)initWithStack:(NSString *)stack startTimeNs:(long long)startTimeNs endTimeNs:(long long)endTimeNs durationNs:(long long)durationNs appState:(NSString *)appState {
     if ((self = [super init])) {
         _stack = [stack copy]; _startTimeNs = startTimeNs; _endTimeNs = endTimeNs; _durationNs = durationNs;
-        _appState = [appState copy];
     }
     return self;
 }
@@ -42,6 +38,7 @@
 
 @interface FTLongTaskManager () <FTLongTaskTimingDelegate> {
     atomic_bool _stopped;
+    BOOL _ignoreBackgroundLongTaskAndANR; // Collection policy; no public configuration yet.
     uint64_t _intervalGeneration; // Owns callback identity even before an event is confirmed.
     BOOL _discardCurrentInterval; // Detector-queue owned; reset only by the next Begin.
 }
@@ -60,9 +57,10 @@
                  enableTrackAppFreeze:(BOOL)enableFreeze freezeDurationMs:(long)freezeDurationMs {
     if ((self = [super init])) {
         atomic_init(&_stopped, false);
+        _ignoreBackgroundLongTaskAndANR = YES;
         _dependencies = dependencies; _delegate = delegate; _backtraceReporting = backtraceReporting;
         _enableANR = enableANR; _enableFreeze = enableFreeze; _freezeDurationMs = freezeDurationMs;
-        _anrProcessor = [[FTANRProcessor alloc] initWithDependencies:dependencies backtraceReporting:backtraceReporting];
+        _anrProcessor = [[FTANRProcessor alloc] initWithDependencies:dependencies backtraceReporting:backtraceReporting ignoreBackgroundLongTaskAndANR:_ignoreBackgroundLongTaskAndANR];
         _longTaskDetector = [[FTLongTaskDetector alloc] initWithDelegate:self];
         [self.anrProcessor reportPreviousANRIfFound];
         [_longTaskDetector startDetecting];
@@ -72,13 +70,13 @@
 - (FTLongTaskActiveEvent *)eventForTiming:(FTLongTaskTiming)timing {
     FTFatalErrorContextModel *context = self.dependencies.fatalErrorContext.currentContextModel;
     if (!context.lastSessionState) return nil;
-    NSString *situation = FTStringFromAppState(timing.recordedAppState);
+    NSString *situation = FTStringFromAppState(timing.startAppState);
     FTLongTaskActiveEvent *event = [[FTLongTaskActiveEvent alloc] initWithStartTimeNs:timing.startTimeNs freezeDurationMs:self.freezeDurationMs appState:situation];
     [event updateErrorContext:context];
     return event;
 }
 - (BOOL)shouldIgnoreBackgroundAtStart:(FTAppState)startState currentState:(FTAppState)currentState {
-    return self.dependencies.ignoreBackgroundLongTaskAndANR &&
+    return _ignoreBackgroundLongTaskAndANR &&
         (startState == FTAppStateBackground || currentState == FTAppStateBackground);
 }
 - (void)discardCurrentEvent {
@@ -113,18 +111,16 @@
     if (!event) return UINT64_MAX;
     event.effectiveDurationNs = timing.durationNs;
     event.lastObservedTimeNs = timing.observationTimeNs;
-    event.appState = FTStringFromAppState(timing.recordedAppState);
     if (timing.phase == FTLongTaskPhaseEnd) {
-        [self finishEvent:event appState:FTStringFromRUMAppState(timing.appState) detector:detector];
+        [self finishEvent:event detector:detector];
         return UINT64_MAX;
     }
     BOOL (^acceptsResult)(void) = ^BOOL{ return !atomic_load(&_stopped) && self.longTaskEvent == event; };
     __block BOOL backgroundMatched = NO;
-    // Capture predicates update only memory. Cleanup waits until capture has returned.
+    // Capture predicates only check admission. Cleanup waits until capture has returned.
     BOOL (^observeStateAndContinue)(void) = ^BOOL{
         if (!acceptsResult()) return NO;
         FTAppState currentState = detector.currentAppState;
-        event.appState = FTStringFromAppState(currentState);
         if ([self shouldIgnoreBackgroundAtStart:timing.startAppState currentState:currentState]) backgroundMatched = YES;
         return !backgroundMatched && [detector isMonitoringGeneration:timing.generation];
     };
@@ -150,27 +146,27 @@
         next = MIN(next, (uint64_t)MAX(1, self.freezeDurationMs) * NSEC_PER_MSEC + NSEC_PER_MSEC);
     // Freeze-only normally has no more business checkpoints after its stack.
     // Keep bounded policy checks while exclusion is enabled, without recapturing.
-    if (self.dependencies.ignoreBackgroundLongTaskAndANR)
+    if (_ignoreBackgroundLongTaskAndANR)
         next = MIN(next, event.effectiveDurationNs + NSEC_PER_SEC);
     return next;
 }
 - (BOOL)canDeliverWithDetector:(FTLongTaskDetector *)detector {
     return !atomic_load(&_stopped) &&
-        !(self.dependencies.ignoreBackgroundLongTaskAndANR && detector.currentAppState == FTAppStateBackground);
+        !(_ignoreBackgroundLongTaskAndANR && detector.currentAppState == FTAppStateBackground);
 }
-- (void)finishEvent:(FTLongTaskActiveEvent *)event appState:(NSString *)intervalState detector:(FTLongTaskDetector *)detector {
+- (void)finishEvent:(FTLongTaskActiveEvent *)event detector:(FTLongTaskDetector *)detector {
     self.longTaskEvent = nil;
     if (atomic_load(&_stopped)) return;
     if (self.enableANR && event.hasPersistedANRData) [self.anrProcessor.dataStore deleteFile];
     if (![self canDeliverWithDetector:detector]) return;
     if (event.isLongTask && self.enableFreeze) {
         FTLongTaskEvent *result = [[FTLongTaskEvent alloc] initWithStack:event.mainThreadBacktrace ?: @""
-            startTimeNs:event.startTimeNs endTimeNs:event.lastObservedTimeNs durationNs:event.durationNs appState:intervalState];
+            startTimeNs:event.startTimeNs endTimeNs:event.lastObservedTimeNs durationNs:event.durationNs];
         [self.delegate longTaskDetected:result];
     }
     if ([self canDeliverWithDetector:detector] && self.enableANR && event.isANR) {
         NSString *stack = event.allThreadsBacktrace.length ? event.allThreadsBacktrace : event.mainThreadBacktrace;
-        [self.delegate anrStackDetected:stack ?: @"" appState:event.appState intervalAppState:intervalState time:event.startTimeNs];
+        [self.delegate anrStackDetected:stack ?: @"" appState:event.startAppState time:event.startTimeNs];
     }
 }
 - (void)shutDown {

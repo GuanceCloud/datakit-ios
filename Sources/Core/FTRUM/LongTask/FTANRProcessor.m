@@ -32,19 +32,13 @@
         _startTimeNs = startTimeNs;
         _lastObservedTimeNs = startTimeNs;
         _freezeThresholdNs = (long long)freezeDurationMs * NSEC_PER_MSEC;
-        _appState = [appState copy];
+        _startAppState = [appState copy];
     }
     return self;
 }
 
-- (void)setAppState:(NSString *)appState {
-    if ([_appState isEqualToString:appState]) return;
-    _appState = [appState copy];
-    if (_errorContextModel) [self updateErrorContext:_errorContextModel];
-}
-
 - (void)updateErrorContext:(FTFatalErrorContextModel *)context {
-    _errorContextModel = [[FTFatalErrorContextModel alloc] initWithAppState:self.appState
+    _errorContextModel = [[FTFatalErrorContextModel alloc] initWithAppState:self.startAppState
         lastSessionState:context.lastSessionState lastViewContext:context.lastViewContext
         dynamicContext:context.dynamicContext globalAttributes:context.globalAttributes errorMonitorInfo:context.errorMonitorInfo];
 }
@@ -79,15 +73,18 @@
 @end
 
 
-@interface FTANRProcessor ()
+@interface FTANRProcessor () {
+    BOOL _ignoreBackgroundLongTaskAndANR;
+}
 @property (nonatomic, strong) FTRUMDependencies *dependencies;
 @property (nonatomic, strong) FTLongTaskANRDataStore *dataStore;
 @property (nonatomic, weak) id<FTBacktraceReporting> backtraceReporting;
 @end
 @implementation FTANRProcessor
-- (instancetype)initWithDependencies:(FTRUMDependencies *)dependencies backtraceReporting:(id<FTBacktraceReporting>)backtrace {
+- (instancetype)initWithDependencies:(FTRUMDependencies *)dependencies backtraceReporting:(id<FTBacktraceReporting>)backtrace ignoreBackgroundLongTaskAndANR:(BOOL)ignoreBackground {
     if ((self = [super init])) {
         _dependencies = dependencies; _backtraceReporting = backtrace;
+        _ignoreBackgroundLongTaskAndANR = ignoreBackground;
         _dataStore = [FTLongTaskANRDataStore new];
     }
     return self;
@@ -107,21 +104,19 @@
     if (!event.hasPersistedANRData) {
         [event updateErrorContext:self.dependencies.fatalErrorContext.currentContextModel];
     }
-    // Refresh point state after context/capture work, before deciding the payload.
+    // Recheck collection admission after context/capture work.
     if (!intervalActive()) return;
-    BOOL stateChanged = ![event.appState isEqualToString:event.lastPersistedAppState];
     BOOL crossedANR = event.durationNs > FT_ANR_THRESHOLD_NS && event.lastPersistedDurationNs <= FT_ANR_THRESHOLD_NS;
-    BOOL due = !event.hasPersistedANRData || captured || stateChanged || crossedANR ||
+    BOOL due = !event.hasPersistedANRData || captured || crossedANR ||
         event.effectiveDurationNs >= event.lastPersistedDurationNs + FTLongTaskANRDataUpdateIntervalNs;
     if (!due) return;
-    if (!event.hasPersistedANRData || captured || stateChanged) {
+    if (!event.hasPersistedANRData || captured) {
         [self.dataStore writeANRData:event.anrData];
     } else {
         [self.dataStore appendTimingWithStartTimeNs:event.startTimeNs durationNs:event.durationNs endTimeNs:event.lastObservedTimeNs];
     }
     event.hasPersistedANRData = YES;
     event.lastPersistedDurationNs = event.durationNs;
-    event.lastPersistedAppState = event.appState;
 }
 - (uint64_t)nextCheckpointForEvent:(FTLongTaskActiveEvent *)event {
     uint64_t d = event.durationNs;
@@ -168,9 +163,9 @@
     NSString *savedSituation = contextModel.appState;
     BOOL validSituation = [savedSituation isKindOfClass:NSString.class] &&
         [@[@"startup", @"run", @"background", @"unknown"] containsObject:savedSituation];
-    // Both formats can retain their last recorded point; never borrow new-process state.
-    NSString *errorSituation = validSituation ? savedSituation : @"unknown";
-    if (self.dependencies.ignoreBackgroundLongTaskAndANR && [errorSituation isEqualToString:@"background"]) return 0;
+    // V2 saved a sampling-time point, so it cannot establish the producer start.
+    NSString *errorSituation = anrData.usesEffectiveDuration && validSituation ? savedSituation : @"unknown";
+    if (_ignoreBackgroundLongTaskAndANR && validSituation && [savedSituation isEqualToString:@"background"]) return 0;
     NSDictionary *tags = [contextModel.lastSessionState sessionTags];
     NSString *backtrace = anrData.mainThreadBacktrace.length > 0 ? anrData.mainThreadBacktrace : nil;
 
@@ -178,7 +173,6 @@
     [fields addEntriesFromDictionary:[contextModel.lastSessionState sessionFields]];
     [fields setValue:@(duration) forKey:FT_DURATION];
     [fields setValue:backtrace forKey:FT_KEY_LONG_TASK_STACK];
-    fields[@"app_state"] = @"unknown";
     NSDictionary *lastViews = contextModel.lastViewContext;
     BOOL sessionOnError = contextModel.lastSessionState.sampled_for_error_session;
     if (sessionOnError && isAnr) {
@@ -231,7 +225,6 @@
         [anrTags setValue:errorSituation forKey:FT_KEY_ERROR_SITUATION];
 
         NSMutableDictionary *anrFields = [NSMutableDictionary dictionary];
-        anrFields[@"app_state"] = @"unknown";
         [anrFields addEntriesFromDictionary:[contextModel.lastSessionState sessionFields]];
         [anrFields setValue:@"ios_anr" forKey:FT_KEY_ERROR_MESSAGE];
         [anrFields setValue:allBacktrace ?: backtrace forKey:FT_KEY_ERROR_STACK];

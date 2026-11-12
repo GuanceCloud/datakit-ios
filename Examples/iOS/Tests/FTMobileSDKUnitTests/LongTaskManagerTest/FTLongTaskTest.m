@@ -117,7 +117,7 @@
     [FTMobileAgent shutDown];
 }
 
-- (void)testLongTaskUsesObservedIntervalWhileANRKeepsErrorSituation {
+- (void)testAutomaticLongTaskAndANROmitIntervalState {
     [self initSDKWithEnableTrackAppANR:YES longTask:YES];
     [FTModelHelper startViewWithName:@"tracked-anr-state"];
     [[FTGlobalRumManager sharedInstance].rumManager syncProcess];
@@ -133,11 +133,11 @@
     FTLongTaskDetector *detector = [manager valueForKey:@"longTaskDetector"];
     [detector stopDetecting];
     FTTestDrainDetector(detector);
-    FTTestObserveLongTaskState(manager, FTLongTaskPhaseBegin, startTime, 0, startTime, FTAppStateRun, FTRUMAppStateForegroundOnly);
-    FTTestObserveLongTaskState(manager, FTLongTaskPhaseCheckpoint, startTime, 5001*NSEC_PER_MSEC, startTime + 5001*NSEC_PER_MSEC, FTAppStateRun, FTRUMAppStateForegroundOnly);
+    FTTestObserveLongTaskState(manager, FTLongTaskPhaseBegin, startTime, 0, startTime, FTAppStateRun);
+    FTTestObserveLongTaskState(manager, FTLongTaskPhaseCheckpoint, startTime, 5001*NSEC_PER_MSEC, startTime + 5001*NSEC_PER_MSEC, FTAppStateRun);
     [[NSNotificationCenter defaultCenter] postNotificationName:UIApplicationWillEnterForegroundNotification object:nil];
     [[NSNotificationCenter defaultCenter] postNotificationName:UIApplicationDidEnterBackgroundNotification object:nil];
-    FTTestObserveLongTaskState(manager, FTLongTaskPhaseEnd, startTime, 6LL*NSEC_PER_SEC, [NSDate ft_currentNanosecondTimeStamp], FTAppStateRun, FTRUMAppStateBackgroundAndForeground);
+    FTTestObserveLongTaskState(manager, FTLongTaskPhaseEnd, startTime, 6LL*NSEC_PER_SEC, [NSDate ft_currentNanosecondTimeStamp], FTAppStateRun);
     [[FTGlobalRumManager sharedInstance].rumManager syncProcess];
 
     __block BOOL foundLongTask = NO;
@@ -145,13 +145,13 @@
     [FTModelHelper resolveModelArray:[[FTTrackerEventDBTool sharedManager] getAllDatas] callBack:^(NSString *source, NSDictionary *tags, NSDictionary *fields, BOOL *stop) {
         if ([source isEqualToString:FT_RUM_SOURCE_LONG_TASK]) {
             foundLongTask = YES;
-            XCTAssertEqualObjects(fields[@"app_state"], @"foreground_and_background");
+            XCTAssertNil(fields[@"app_state"]);
             XCTAssertEqualObjects(fields[FT_RUM_KEY_SESSION_START_REASON], FT_RUM_SESSION_START_REASON_SDK_INIT);
             XCTAssertNil(fields[@"process_start_time_ns"]);
         }
         if ([source isEqualToString:FT_RUM_SOURCE_ERROR] && [tags[FT_KEY_ERROR_TYPE] isEqualToString:@"anr_error"]) {
             foundANR = YES;
-            XCTAssertEqualObjects(fields[@"app_state"], @"foreground_and_background");
+            XCTAssertNil(fields[@"app_state"]);
             XCTAssertEqualObjects(tags[FT_KEY_ERROR_SITUATION], @"run");
             XCTAssertEqualObjects(fields[FT_RUM_KEY_SESSION_START_REASON], FT_RUM_SESSION_START_REASON_SDK_INIT);
             XCTAssertNil(fields[@"process_start_time_ns"]);
@@ -420,8 +420,11 @@
         XCTAssertTrue([type isEqualToString:FT_DATA_TYPE_RUM]);
         if ([source isEqualToString:FT_RUM_SOURCE_LONG_TASK]) {
             hasLongTask = YES;
+            XCTAssertNil(fields[@"app_state"]);
         }else if ([source isEqualToString:FT_RUM_SOURCE_ERROR]){
             hasAnr = YES;
+            XCTAssertNil(fields[@"app_state"]);
+            XCTAssertEqualObjects(tags[FT_KEY_ERROR_SITUATION], @"unknown");
             XCTAssertEqualObjects(fields[@"historical_anr_field"], @"historical");
         }else if ([source isEqualToString:FT_RUM_SOURCE_VIEW]){
             XCTAssertTrue([fields[FT_KEY_VIEW_LONG_TASK_COUNT] isEqual:@1]);
@@ -476,6 +479,7 @@
         XCTAssertTrue([type isEqualToString:FT_DATA_TYPE_RUM]);
         if ([source isEqualToString:FT_RUM_SOURCE_LONG_TASK]) {
             hasLongTask = YES;
+            XCTAssertNil(fields[@"app_state"]);
         }else if ([source isEqualToString:FT_RUM_SOURCE_ERROR]){
             hasAnr = YES;
         }else if ([source isEqualToString:FT_RUM_SOURCE_VIEW]){

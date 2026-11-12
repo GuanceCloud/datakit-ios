@@ -84,17 +84,6 @@ FOUNDATION_EXPORT NSString *FTStringFromAppState(FTAppState state);
                                  time:(long long)time
                            historical:(BOOL)historical;
 
-/// Internal ANR path carries the interval classification captured before async RUM processing.
-- (void)addAutomaticIssueWithCategory:(FTIssueCategory)category
-                            errorType:(NSString *)errorType
-                             appState:(NSString *)appState
-                              message:(nullable NSString *)message
-                                stack:(nullable NSString *)stack
-                           threadName:(nullable NSString *)threadName
-                                 time:(long long)time
-                           historical:(BOOL)historical
-                     intervalAppState:(nullable NSString *)intervalAppState;
-
 /// Freeze
 /// @param stack Freeze stack
 /// @param duration Freeze duration

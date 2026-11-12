@@ -27,12 +27,7 @@ NS_ASSUME_NONNULL_BEGIN
 @property (nonatomic, assign, readonly) long long startTimeNs;
 @property (nonatomic, assign, readonly) long long endTimeNs;
 @property (nonatomic, assign, readonly) long long durationNs;
-/// Frozen at worker End for automatic collection; includes lifecycle changes during worker delays.
-/// nil preserves explicit/manual event behavior.
-@property (nonatomic, copy, readonly, nullable) NSString *appState;
 - (instancetype)initWithStack:(NSString *)stack startTimeNs:(long long)startTimeNs
                    endTimeNs:(long long)endTimeNs durationNs:(long long)durationNs;
-- (instancetype)initWithStack:(NSString *)stack startTimeNs:(long long)startTimeNs
-                   endTimeNs:(long long)endTimeNs durationNs:(long long)durationNs appState:(nullable NSString *)appState;
 @end
 NS_ASSUME_NONNULL_END

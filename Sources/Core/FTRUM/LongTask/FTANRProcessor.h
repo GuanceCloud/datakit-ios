@@ -30,8 +30,7 @@ NS_ASSUME_NONNULL_BEGIN
 @property (nonatomic, assign) long long startTimeNs;
 @property (nonatomic, assign) long long lastObservedTimeNs;
 @property (nonatomic, assign) long long freezeThresholdNs;
-@property (nonatomic, copy) NSString *appState;
-@property (nonatomic, copy, nullable) NSString *lastPersistedAppState;
+@property (nonatomic, copy, readonly) NSString *startAppState;
 @property (nonatomic, copy, nullable) NSString *mainThreadBacktrace;
 @property (nonatomic, copy, nullable) NSString *allThreadsBacktrace;
 @property (nonatomic, strong, readonly, nullable) FTFatalErrorContextModel *errorContextModel;
@@ -43,7 +42,7 @@ NS_ASSUME_NONNULL_BEGIN
 @property (nonatomic, assign, readonly) BOOL needsAllThreadsBacktrace;
 
 - (instancetype)initWithStartTimeNs:(long long)startTimeNs freezeDurationMs:(long)freezeDurationMs appState:(NSString *)appState;
-/// Refresh environment/session data while preserving the last detector-recorded situation.
+/// Refresh environment/session data while preserving the immutable producer-start situation.
 - (void)updateErrorContext:(FTFatalErrorContextModel *)context;
 - (FTLongTaskANRData *)anrData;
 @end
@@ -51,7 +50,8 @@ NS_ASSUME_NONNULL_BEGIN
 
 @interface FTANRProcessor : NSObject
 @property (nonatomic, strong, readonly) FTLongTaskANRDataStore *dataStore;
-- (instancetype)initWithDependencies:(FTRUMDependencies *)dependencies backtraceReporting:(id<FTBacktraceReporting>)backtrace;
+- (instancetype)initWithDependencies:(FTRUMDependencies *)dependencies backtraceReporting:(id<FTBacktraceReporting>)backtrace
+      ignoreBackgroundLongTaskAndANR:(BOOL)ignoreBackground;
 - (void)updateEvent:(FTLongTaskActiveEvent *)event intervalActive:(BOOL (^)(void))intervalActive acceptsResult:(BOOL (^)(void))acceptsResult;
 - (uint64_t)nextCheckpointForEvent:(FTLongTaskActiveEvent *)event;
 - (void)reportPreviousANRIfFound;

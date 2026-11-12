@@ -48,18 +48,18 @@ static inline void FTTestDrainDetector(FTLongTaskDetector *detector) {
 // This shorthand models a constant point state. Transition tests use one explicit detector.
 static inline uint64_t FTTestObserveLongTaskState(FTLongTaskManager *manager, FTLongTaskPhase phase,
                                                long long startNs, uint64_t durationNs, long long endNs,
-                                               FTAppState recordedState, FTRUMAppState appState) {
+                                               FTAppState recordedState) {
     FTManualTimingDetector *detector = [[FTManualTimingDetector alloc] initWithDelegate:manager];
     detector.testAppState = recordedState;
     FTLongTaskTiming timing = {.phase = phase, .generation = 42, .startTimeNs = startNs,
-        .observationTimeNs = endNs, .durationNs = durationNs, .startAppState = recordedState, .recordedAppState = recordedState, .appState = appState};
+        .observationTimeNs = endNs, .durationNs = durationNs, .startAppState = recordedState, .recordedAppState = recordedState};
     return [manager longTaskDetector:detector didObserveTiming:timing];
 }
 
 static inline uint64_t FTTestObserveLongTask(FTLongTaskManager *manager, FTLongTaskPhase phase,
                                           long long startNs, uint64_t durationNs, long long endNs) {
     return FTTestObserveLongTaskState(manager, phase, startNs, durationNs, endNs,
-                                     FTAppStateUnknown, FTRUMAppStateUnknown);
+                                     FTAppStateUnknown);
 }
 
 NS_ASSUME_NONNULL_END

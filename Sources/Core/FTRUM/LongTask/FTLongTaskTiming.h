@@ -33,9 +33,6 @@ typedef struct {
     long long startTimeNs;
     uint64_t startContinuousNs;
     FTAppState startAppState;
-    FTRUMAppState startIntervalState;
-    uint64_t foregroundRevision;
-    uint64_t backgroundRevision;
 } FTLongTaskRunLoopSnapshot;
 
 typedef NS_ENUM(NSUInteger, FTLongTaskPhase) {
@@ -47,12 +44,10 @@ typedef struct {
     long long startTimeNs;
     long long observationTimeNs;
     uint64_t durationNs;
-    /// Producer-start admission state, used by the background exclusion policy.
+    /// Producer-start situation, immutable for Error attribution and background admission.
     FTAppState startAppState;
     /// Last point state recorded immediately before this notification.
     FTAppState recordedAppState;
-    /// At End: all known states observed through worker stop, including excluded gaps.
-    FTRUMAppState appState;
 } FTLongTaskTiming;
 
 /// Internal interface: return an absolute checkpoint on the effective-duration axis.

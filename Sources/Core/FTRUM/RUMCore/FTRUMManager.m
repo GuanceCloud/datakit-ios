@@ -603,18 +603,6 @@ void *FTRUMQueueIdentityKey = &FTRUMQueueIdentityKey;
                            threadName:(nullable NSString *)threadName
                                  time:(long long)time
                            historical:(BOOL)historical {
-    [self addAutomaticIssueWithCategory:category errorType:errorType appState:appState message:message
-        stack:stack threadName:threadName time:time historical:historical intervalAppState:nil];
-}
-- (void)addAutomaticIssueWithCategory:(FTIssueCategory)category
-                            errorType:(NSString *)errorType
-                             appState:(NSString *)appState
-                              message:(nullable NSString *)message
-                                stack:(nullable NSString *)stack
-                           threadName:(nullable NSString *)threadName
-                                 time:(long long)time
-                           historical:(BOOL)historical
-                     intervalAppState:(nullable NSString *)intervalAppState {
     FTIssueInfo *issueInfo = [[FTIssueInfo alloc]
         initWithCategory:category
         errorType:errorType
@@ -628,7 +616,7 @@ void *FTRUMQueueIdentityKey = &FTRUMQueueIdentityKey;
                   stateStr:appState
                    message:message ?: @""
                      stack:stack ?: @""
-                  property:category == FTIssueCategoryANR ? @{@"app_state": intervalAppState ?: @"unknown"} : nil
+                  property:nil
                       time:time
                  issueInfo:issueInfo];
 }
