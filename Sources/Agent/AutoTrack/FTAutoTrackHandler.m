@@ -20,6 +20,7 @@
 
 #import <TargetConditionals.h>
 #import "FTAutoTrackHandler.h"
+#import "FTRUMPropertySnapshot.h"
 
 #if TARGET_OS_OSX
 #import "Mac/FTAutoTrack.h"
@@ -71,7 +72,7 @@
                                       type:isPreWarming ? FT_LAUNCH_WARM : FT_LAUNCH_COLD
                                 launchTime:launchTime
                                   duration:duration
-                                  property:fields];
+                                  property:FTRUMCopyDictionary(fields)];
     }
 }
 
@@ -195,7 +196,7 @@ static BOOL FTViewControllerIsFromSwiftUIBundle(UIViewController *viewController
         _viewName = [viewName copy];
         _identify = [identify copy];
         _isUntrackedModal = NO;
-        _property = [property copy];
+        _property = FTRUMCopyDictionary(property);
         _viewControllerUUID = [FTBaseInfoHandler randomUUID];
         _loadTime = loadTime ?: @(-1);
         _hasLoadDuration = loadTime != nil;
@@ -379,7 +380,7 @@ heatmapIdentifierRegistry:(id<FTHeatmapIdentifierRegistry>)heatmapIdentifierRegi
             return;
         }
         if (self.addRumDatasDelegate && [self.addRumDatasDelegate respondsToSelector:@selector(addLaunch:type:launchTime:duration:property:)]) {
-            [self.addRumDatasDelegate addLaunch:action.actionName type:FT_LAUNCH_HOT launchTime:launchTime duration:duration property:action.property];
+            [self.addRumDatasDelegate addLaunch:action.actionName type:FT_LAUNCH_HOT launchTime:launchTime duration:duration property:FTRUMCopyDictionary(action.property)];
         }
     }
 }
@@ -392,7 +393,7 @@ heatmapIdentifierRegistry:(id<FTHeatmapIdentifierRegistry>)heatmapIdentifierRegi
         }
         if (self.addRumDatasDelegate && [self.addRumDatasDelegate respondsToSelector:@selector(addLaunch:type:launchTime:duration:property:)]) {
             NSString *actionType = isPreWarming?FT_LAUNCH_WARM:FT_LAUNCH_COLD;
-            [self.addRumDatasDelegate addLaunch:action.actionName type:actionType launchTime:launchTime duration:duration property:action.property];
+            [self.addRumDatasDelegate addLaunch:action.actionName type:actionType launchTime:launchTime duration:duration property:FTRUMCopyDictionary(action.property)];
         }
     }
 }
@@ -451,7 +452,7 @@ heatmapIdentifierRegistry:(id<FTHeatmapIdentifierRegistry>)heatmapIdentifierRegi
         if (rumView) {
             RUMView *view = [[RUMView alloc]initWithViewController:viewController identify:identify];
             view.viewName = rumView.viewName;
-            view.property = rumView.property;
+            view.property = FTRUMCopyDictionary(rumView.property);
             view.isUntrackedModal = rumView.isUntrackedModal;
             [self addView:view];
             return;
@@ -470,7 +471,7 @@ heatmapIdentifierRegistry:(id<FTHeatmapIdentifierRegistry>)heatmapIdentifierRegi
         if (rumView) {
             RUMView *view = [[RUMView alloc]initWithViewController:viewController identify:identify];
             view.viewName = rumView.viewName;
-            view.property = rumView.property;
+            view.property = FTRUMCopyDictionary(rumView.property);
             view.isUntrackedModal = rumView.isUntrackedModal;
             [self addView:view];
         }

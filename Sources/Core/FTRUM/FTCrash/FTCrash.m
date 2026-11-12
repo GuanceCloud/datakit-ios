@@ -244,7 +244,10 @@ static mach_port_t main_thread_id;
             if(filteredReports.count>0 && [filteredReports[0] isKindOfClass:[FTCrashReportRUMModel class]]){
                 for (FTCrashReportRUMModel *report in filteredReports) {
                     RUMModel *model = report.value;
-                    [strongSelf.writer rumWriteAssembledData:model.source tags:model.tags fields:model.fields time:model.createTime];
+                    FTRUMWriteData *data = [[FTRUMWriteData alloc] initWithSource:model.source tags:model.tags fields:model.fields
+                        context:nil customTagKeys:nil customFieldKeys:nil time:model.createTime];
+                    data.cache = @NO;
+                    [strongSelf.writer writeRUMData:data];
                 }
             }
             [strongSelf.reportStore deleteAllReports];

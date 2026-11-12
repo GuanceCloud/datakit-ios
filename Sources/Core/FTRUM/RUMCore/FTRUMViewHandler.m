@@ -56,7 +56,8 @@
 @property (nonatomic, assign) long long loadingStartEpochNs;
 @property (nonatomic, assign) BOOL needUpdateView;
 @property (nonatomic, strong) FTMonitorItem *monitorItem;
-@property (nonatomic, strong) NSMutableDictionary *viewProperty;//Stored in field
+@property (nonatomic, strong) NSMutableDictionary *viewProperty;
+@property (nonatomic, strong) NSMutableSet<NSString *> *viewCustomKeys;//Stored in field
 @property (nonatomic, assign) uint64_t updateTime;
 @property (nonatomic, assign) BOOL sessionHasReplay;
 @end
@@ -75,6 +76,7 @@
         _trackingType = model.trackingType;
         self.fallbackView = NO;
         self.updateTime = 0;
+
         self.view_id = model.view_id;
         self.view_name = model.view_name;
         self.view_referrer = model.view_referrer;
@@ -86,11 +88,12 @@
         self.metrics = [[FTRUMViewMetrics alloc] initWithStartNs:model.tm predicate:rumDependencies.nextViewActionPredicate];
         self.networkMetric = [[FTRUMNetworkSettledMetric alloc] initWithStartNs:model.tm viewName:model.view_name predicate:rumDependencies.networkSettledResourcePredicate];
         self.resourceHandlers = [NSMutableDictionary new];
+        self.viewCustomKeys = [NSMutableSet set];
         self.viewProperty = [NSMutableDictionary new];
         self.rumDependencies = rumDependencies;
         self.sessionHasReplay = [rumDependencies.sessionHasReplay boolValue];
         if(model.fields && model.fields.allKeys.count>0){
-            [self.viewProperty addEntriesFromDictionary:model.fields];
+            FTRUMMergeProperties(self.viewProperty, self.viewCustomKeys, model.fields, model.customFieldKeys);
         }
         _context = [context copy];
         _context.view_name = self.view_name;
@@ -113,12 +116,13 @@
         self.networkSettledTime = nil;
     }
 }
-- (BOOL)process:(FTRUMDataModel *)model context:(nonnull NSDictionary *)context{
+- (BOOL)process:(FTRUMDataModel *)model context:(nonnull FTRUMPropertySnapshot *)context{
     if (self.closed) return NO;
     if ([model isKindOfClass:FTRUMResourceModel.class]) {
         NSString *owner = ((FTRUMResourceModel *)model).ownerViewID;
         if (owner && ![owner isEqualToString:self.view_id]) return YES;
     }
+
     if ([model.time compare:self.latestEventTime] == NSOrderedDescending) self.latestEventTime = model.time;
     if (model.type == FTRUMDataAppStateChange) {
         FTRUMAppStateChangeModel *stateModel = (FTRUMAppStateChangeModel *)model;
@@ -171,7 +175,7 @@
                 self.needUpdateView = YES;
                 self.isActiveView = NO;
                 if(viewModel.fields && viewModel.fields.allKeys.count>0){
-                    [self.viewProperty addEntriesFromDictionary:viewModel.fields];
+                    FTRUMMergeProperties(self.viewProperty, self.viewCustomKeys, viewModel.fields, viewModel.customFieldKeys);
                 }
             }
         }
@@ -237,7 +241,7 @@
             if (self.isActiveView) {
                 FTRUMSRLinkInfoData *info = (FTRUMSRLinkInfoData *)model;
                 if (info.fields && [self.view_id isEqualToString:info.view_id]) {
-                    [self.viewProperty addEntriesFromDictionary:info.fields];
+                    FTRUMMergeProperties(self.viewProperty, self.viewCustomKeys, info.fields, info.customFieldKeys);
                 }
                 self.needUpdateView = YES;
             }
@@ -273,11 +277,12 @@
     self.needUpdateView = YES;
 }
 
-- (void)refreshInteractionMetricWithContext:(NSDictionary *)context {
+- (void)refreshInteractionMetricWithContext:(FTRUMPropertySnapshot *)context {
     if (self.closed) return;
     NSNumber *value = [self.previousViewMetrics interactionToViewAt:self.metrics.startNs name:self.view_name];
     if (value == self.interactionTime || (value && self.interactionTime && [value isEqualToNumber:self.interactionTime])) return;
     self.interactionTime = value;
+
     [self writeViewDataWithContext:context viewEndTime:self.latestEventTime];
 }
 
@@ -300,7 +305,8 @@
 }
 
 
-- (void)writeLaunchData:(FTRUMLaunchDataModel *)model context:(NSDictionary *)context {
+- (void)writeLaunchData:(FTRUMLaunchDataModel *)model context:(FTRUMPropertySnapshot *)context {
+    NSMutableSet *customKeys = [NSMutableSet set];
     NSMutableDictionary *tags = [NSMutableDictionary dictionary];
     [tags addEntriesFromDictionary:[self.context getGlobalSessionViewActionTags]];
     [tags setValue:[FTBaseInfoHandler randomUUID] forKey:FT_KEY_ACTION_ID];
@@ -309,14 +315,17 @@
 
     NSMutableDictionary *fields = [NSMutableDictionary dictionary];
     if (model.fields) {
-        [fields addEntriesFromDictionary:model.fields];
+        FTRUMMergeProperties(fields, customKeys, model.fields, model.customFieldKeys);
     }
     [fields setValue:model.duration forKey:FT_DURATION];
     [fields setValue:@(0) forKey:FT_KEY_ACTION_LONG_TASK_COUNT];
     [fields setValue:@(0) forKey:FT_KEY_ACTION_RESOURCE_COUNT];
     [fields setValue:@(0) forKey:FT_KEY_ACTION_ERROR_COUNT];
-    [fields addEntriesFromDictionary:self.context.sessionState.sessionFields];
-    [self.rumDependencies.writer rumWrite:FT_RUM_SOURCE_ACTION tags:tags fields:fields dynamicContext:context time:model.tm];
+    [fields addEntriesFromDictionary:self.context.sessionState.sessionFields ?: @{}];
+    FTRUMWriteData *writeData = [self.rumDependencies newNativeWriteDataWithSource:FT_RUM_SOURCE_ACTION tags:tags fields:fields
+        context:context customTagKeys:[NSSet set] customFieldKeys:customKeys time:model.tm];
+
+    [self.rumDependencies.writer writeRUMData:writeData];
 }
 -(void)setViewErrorCount:(NSInteger)viewErrorCount{
     _viewErrorCount = viewErrorCount;
@@ -339,7 +348,7 @@
     };
     self.actionHandler = actionHandler;
 }
-- (void)addAction:(FTRUMDataModel *)model context:(NSDictionary *)context{
+- (void)addAction:(FTRUMDataModel *)model context:(FTRUMPropertySnapshot *)context{
     __weak typeof(self) weakSelf = self;
     FTRUMActionHandler *actionHandler = [[FTRUMActionHandler alloc]initWithModel:(FTRUMActionModel *)model context:self.context dependencies:self.rumDependencies];
     model.type = FTRUMDataStopAction;
@@ -371,7 +380,8 @@
     };
     self.resourceHandlers[model.identifier] =resourceHandler;
 }
-- (void)writeErrorData:(FTRUMDataModel *)model context:(NSDictionary *)context{
+- (void)writeErrorData:(FTRUMDataModel *)model context:(FTRUMPropertySnapshot *)context{
+    NSMutableSet *customKeys = [NSMutableSet set];
     if (model.type == FTRUMDataLongTask) {
         long long duration = [model.fields[FT_DURATION] longLongValue];
         if (duration > 0) {
@@ -383,8 +393,8 @@
     [tags addEntriesFromDictionary:sessionViewTag];
     [tags addEntriesFromDictionary:model.tags];
     NSMutableDictionary *fields = [NSMutableDictionary new];
-    [fields addEntriesFromDictionary:model.fields];
-    [fields addEntriesFromDictionary:self.context.sessionState.sessionFields];
+    FTRUMMergeProperties(fields, customKeys, model.fields, model.customFieldKeys);
+    [fields addEntriesFromDictionary:self.context.sessionState.sessionFields ?: @{}];
     if (model.type == FTRUMDataLongTask && !model.longTaskEvent) {
         long long eventStart = model.tm;
         long long duration = [model.fields[FT_DURATION] longLongValue];
@@ -395,9 +405,13 @@
         [fields setValue:@(sessionHasReplay) forKey:FT_SESSION_HAS_REPLAY];
     }
     NSString *error = model.type == FTRUMDataLongTask?FT_RUM_SOURCE_LONG_TASK :FT_RUM_SOURCE_ERROR;
-    [self.rumDependencies.writer rumWrite:error tags:tags fields:fields dynamicContext:context time:model.tm];
+    FTRUMWriteData *writeData = [self.rumDependencies newNativeWriteDataWithSource:error tags:tags fields:fields
+        context:context customTagKeys:[NSSet set] customFieldKeys:customKeys time:model.tm];
+
+    [self.rumDependencies.writer writeRUMData:writeData];
 }
-- (void)writeViewDataWithContext:(NSDictionary *)context viewEndTime:(NSDate *)viewEndTime{
+- (void)writeViewDataWithContext:(FTRUMPropertySnapshot *)context viewEndTime:(NSDate *)viewEndTime{
+    NSMutableSet *customKeys = [NSMutableSet set];
     self.updateTime+=1;
     //Second level
     NSTimeInterval sTimeSpent = MAX(1e-9, [viewEndTime timeIntervalSinceDate:self.viewStartTime]);
@@ -407,7 +421,7 @@
     NSMutableDictionary *tags = [NSMutableDictionary new];
     NSMutableDictionary *viewUserCustomDatas = [NSMutableDictionary new];
     if (context) {
-        [viewUserCustomDatas addEntriesFromDictionary:context];
+        [viewUserCustomDatas addEntriesFromDictionary:context.tags];
     }
     [tags addEntriesFromDictionary:[self.context getGlobalSessionViewTags]];
     FTMonitorValue *cpu = self.monitorItem.cpu;
@@ -423,9 +437,9 @@
     [fields setValue:nTimeSpent forKey:FT_KEY_TIME_SPENT];
     [fields setValue:@(self.updateTime) forKey:FT_KEY_VIEW_UPDATE_TIME];
     [fields setValue:@(self.isActiveView) forKey:FT_KEY_IS_ACTIVE];
-    [fields addEntriesFromDictionary:[self.context.sessionState sessionFields]];
+    [fields addEntriesFromDictionary:[self.context.sessionState sessionFields] ?: @{}];
     [fields setValue:@(self.context.sessionState.sampled_for_error_session) forKey:FT_RUM_KEY_SAMPLED_FOR_ERROR_SESSION];
-    [fields addEntriesFromDictionary:self.rumDependencies.sessionReplaySampledFields];
+    [fields addEntriesFromDictionary:self.rumDependencies.sessionReplaySampledFields ?: @{}];
     // session-replay
     if (self.rumDependencies.sessionHasReplay != nil) {
         BOOL sessionHasReplay = self.sessionHasReplay || self.rumDependencies.sessionHasReplay.boolValue;
@@ -438,7 +452,7 @@
         }
     }
     if(self.viewProperty && self.viewProperty.allKeys.count>0){
-        [fields addEntriesFromDictionary:self.viewProperty];
+        FTRUMMergeProperties(fields, customKeys, self.viewProperty, self.viewCustomKeys);
         [viewUserCustomDatas addEntriesFromDictionary:self.viewProperty];
     }
     if (cpu && cpu.greatestDiff>=0) {
@@ -458,24 +472,32 @@
     if (![self.loading_time isEqual:@0]) {
         [fields setValue:self.loading_time forKey:FT_KEY_LOADING_TIME];
     }
-    [fields addEntriesFromDictionary:self.context.sessionState.sessionFields];
-    // These are SDK-owned duration fields. Custom View/session properties cannot fabricate them.
-    [fields removeObjectForKey:FT_KEY_INTERACTION_TO_NEXT_VIEW_TIME];
-    [fields removeObjectForKey:FT_KEY_NETWORK_SETTLED_TIME];
+    [fields addEntriesFromDictionary:self.context.sessionState.sessionFields ?: @{}];
     [fields setValue:self.interactionTime forKey:FT_KEY_INTERACTION_TO_NEXT_VIEW_TIME];
     [fields setValue:self.networkSettledTime forKey:FT_KEY_NETWORK_SETTLED_TIME];
     long long viewEndNs = [viewEndTime ft_nanosecondTimeStamp];
     long long stateStartNs = self.loadingStartEpochNs;
-    fields[@"app_state"] = viewEndNs == stateStartNs
+    [fields setValue:viewEndNs == stateStartNs
         ? [self.rumDependencies.appStateHistory stateAt:stateStartNs]
-        : [self.rumDependencies.appStateHistory stateFrom:stateStartNs to:viewEndNs];
+        : [self.rumDependencies.appStateHistory stateFrom:stateStartNs to:viewEndNs] forKey:@"app_state"];
 
     long long time = [self.viewStartTime ft_nanosecondTimeStamp];
-    [self.rumDependencies.writer rumWrite:FT_RUM_SOURCE_VIEW tags:tags fields:fields dynamicContext:context?:@{} time:time updateTime:[viewEndTime ft_nanosecondTimeStamp]];
+    FTRUMWriteData *writeData = [self.rumDependencies newNativeWriteDataWithSource:FT_RUM_SOURCE_VIEW tags:tags fields:fields
+        context:context customTagKeys:[NSSet set] customFieldKeys:customKeys time:time];
+
+    writeData.updateTime = [viewEndTime ft_nanosecondTimeStamp];
+    [self.rumDependencies.writer writeRUMData:writeData];
     if (self.isActiveView) {
+        if (writeData.visitorIDSnapshot.length > 0) {
+            tags[FT_VISITOR_ID] = writeData.visitorIDSnapshot;
+            viewUserCustomDatas[FT_VISITOR_ID] = writeData.visitorIDSnapshot;
+        }
         self.rumDependencies.lastViewUserCustomDatas = viewUserCustomDatas;
         self.rumDependencies.fatalErrorContext.lastViewContext = @{@"tags":tags,
                                                                    @"fields":fields,
+                                                                   @"customFieldKeys":customKeys.allObjects,
+                                                                   @"propertyTags":context.tags ?: @{},
+                                                                   @"propertyCustomKeys":context.customKeys.allObjects ?: @[],
                                                                    @"time":[NSNumber numberWithLongLong:time]
         };
     }

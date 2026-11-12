@@ -89,6 +89,7 @@ Pod::Spec.new do |s|
 
 		c.subspec 'Protocol' do |r|
 			r.source_files = 'Sources/Core/Protocol/**/*{.h,.m}'
+			r.dependency 'GuanceSDK/Core/BaseUtils'
 		end
 
 		c.subspec 'RemoteConfig' do |r|

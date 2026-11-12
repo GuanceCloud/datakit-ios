@@ -154,16 +154,16 @@ static FTExtensionManager *sharedInstance = nil;
         FTInnerLogError(@"exception %@",exception);
     }
 }
-- (void)rumWrite:(NSString *)source tags:(NSDictionary *)tags fields:(NSDictionary *)fields dynamicContext:(NSDictionary *)dynamicContext time:(long long)time updateTime:(long long)updateTime{
-    [self rumWrite:source tags:tags fields:fields dynamicContext:dynamicContext time:time];
+- (BOOL)writeRUMData:(FTRUMWriteData *)data {
+    NSMutableDictionary *tags = [data.tags mutableCopy];
+    NSMutableSet *keys = [data.customTagKeys mutableCopy];
+    FTRUMMergeProperties(tags, keys, data.context.tags, data.context.customKeys);
+    if (data.visitorIDSnapshot.length > 0) FTRUMSetSystemProperty(tags, keys, FT_VISITOR_ID, data.visitorIDSnapshot);
+    FTRUMEncodeCustomKeys(tags, data.fields, keys, data.customFieldKeys);
+    [self storeRUMEvent:data.source tags:tags fields:data.fields time:data.time];
+    return YES;
 }
-- (void)rumWrite:(NSString *)source tags:(NSDictionary *)tags fields:(NSDictionary *)fields dynamicContext:(NSDictionary *)dynamicContext time:(long long)time updateTime:(long long)updateTime cache:(BOOL)cache{
-    [self rumWrite:source tags:tags fields:fields dynamicContext:dynamicContext time:time];
-}
-- (void)rumWriteAssembledData:(nonnull NSString *)source tags:(nonnull NSDictionary *)tags fields:(nonnull NSDictionary *)fields time:(long long)time {
-    [self rumWrite:source tags:tags fields:fields dynamicContext:@{} time:time];
-}
-- (void)rumWrite:(NSString *)source tags:(NSDictionary *)tags fields:(NSDictionary *)fields dynamicContext:(NSDictionary *)dynamicContext time:(long long)time{
+- (void)storeRUMEvent:(NSString *)source tags:(NSDictionary *)tags fields:(NSDictionary *)fields time:(long long)time{
     NSString *bundleIdentifier =  [[[NSBundle mainBundle] infoDictionary] objectForKey:@"CFBundleIdentifier"];
     NSMutableDictionary *tagDict = [NSMutableDictionary new];
     [tagDict setValue:bundleIdentifier forKey:@"extension_identifier"];

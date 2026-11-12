@@ -41,7 +41,8 @@ static const NSTimeInterval discreteActionTimeoutDuration = 0.1;
 @property (nonatomic, assign) NSInteger actionLongTaskCount;
 @property (nonatomic, assign) NSInteger actionResourcesCount;
 @property (nonatomic, assign) NSInteger actionErrorCount;
-@property (nonatomic, strong) NSDictionary *actionProperty;//Add to field
+@property (nonatomic, strong) NSDictionary *actionProperty;
+@property (nonatomic, copy) NSSet<NSString *> *actionCustomKeys;//Add to field
 @property (nonatomic, strong) FTHeatmapAttributes *heatmapAttributes;
 //private
 @property (nonatomic, assign) NSInteger activeResourcesCount;
@@ -54,6 +55,7 @@ static const NSTimeInterval discreteActionTimeoutDuration = 0.1;
     if (self) {
         self.dependencies = dependencies;
         self.assistant = self;
+
         self.actionStartTime = model.time;
         self.actionStartNs = model.tm;
         self.action_id = [FTBaseInfoHandler randomUUID];
@@ -65,12 +67,14 @@ static const NSTimeInterval discreteActionTimeoutDuration = 0.1;
         context.action_name = self.action_name;
         self.context = context;
         self.actionProperty = model.fields;
+        self.actionCustomKeys = model.customFieldKeys ?: [NSSet set];
         self.context.action_id = self.action_id;
     }
     return  self;
 }
-- (BOOL)process:(FTRUMDataModel *)model context:(nonnull NSDictionary *)context{
+- (BOOL)process:(FTRUMDataModel *)model context:(nonnull FTRUMPropertySnapshot *)context{
     if (self.completed) return NO;
+
     NSDate *timedOutDate = [self timedOutOrExpired:model.time];
     if(timedOutDate && [self allResourcesCompletedLoading]){
         [self writeActionData:timedOutDate context:context];
@@ -138,7 +142,8 @@ static const NSTimeInterval discreteActionTimeoutDuration = 0.1;
 -(BOOL)allResourcesCompletedLoading{
     return self.activeResourcesCount<=0;
 }
--(void)writeActionData:(NSDate *)endDate context:(NSDictionary *)context{
+-(void)writeActionData:(NSDate *)endDate context:(FTRUMPropertySnapshot *)context{
+    NSMutableSet *customKeys = [NSMutableSet set];
     if (self.completed) return;
     self.completed = YES;
     NSNumber *duration =  [endDate timeIntervalSinceDate:self.actionStartTime] >= actionMaxDuration?@(actionMaxDuration*1000000000):[self.actionStartTime ft_nanosecondTimeIntervalToDate:endDate];
@@ -149,20 +154,23 @@ static const NSTimeInterval discreteActionTimeoutDuration = 0.1;
     [fields setValue:@(self.actionLongTaskCount) forKey:FT_KEY_ACTION_LONG_TASK_COUNT];
     [fields setValue:@(self.actionResourcesCount) forKey:FT_KEY_ACTION_RESOURCE_COUNT];
     [fields setValue:@(self.actionErrorCount) forKey:FT_KEY_ACTION_ERROR_COUNT];
-    [fields addEntriesFromDictionary:self.context.sessionState.sessionFields];
+    [fields addEntriesFromDictionary:self.context.sessionState.sessionFields ?: @{}];
     [fields setValue:self.dependencies.sessionHasReplay forKey:FT_SESSION_HAS_REPLAY];
 
     if(self.actionProperty && self.actionProperty.allKeys.count>0){
-        [fields addEntriesFromDictionary:self.actionProperty];
+        FTRUMMergeProperties(fields, customKeys, self.actionProperty, self.actionCustomKeys);
     }
     NSDictionary *heatmapAction = [self.heatmapAttributes heatmapActionDictionary];
     if (heatmapAction.count > 0) {
-        [fields addEntriesFromDictionary:heatmapAction];
+        [fields addEntriesFromDictionary:heatmapAction ?: @{}];
     }
     NSMutableDictionary *tags = [NSMutableDictionary new];
     [tags addEntriesFromDictionary:sessionViewActionTag];
     [tags setValue:self.action_type forKey:FT_KEY_ACTION_TYPE];
-    BOOL accepted = FTRUMWriteAccepted(self.dependencies.writer, FT_RUM_SOURCE_ACTION, tags, fields, context, self.actionStartNs);
+    FTRUMWriteData *writeData = [self.dependencies newNativeWriteDataWithSource:FT_RUM_SOURCE_ACTION tags:tags fields:fields
+        context:context customTagKeys:[NSSet set] customFieldKeys:customKeys time:self.actionStartNs];
+
+    BOOL accepted = [self.dependencies.writer writeRUMData:writeData];
     if (accepted && self.acceptedActionHandler) {
         self.acceptedActionHandler(self.actionStartNs, self.action_name, self.action_type);
     }

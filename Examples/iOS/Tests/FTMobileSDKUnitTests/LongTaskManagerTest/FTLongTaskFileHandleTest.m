@@ -19,6 +19,7 @@
 //
 
 #import <XCTest/XCTest.h>
+#import "FTModelHelper.h"
 #import "FTLongTaskManager+Test.h"
 #import "FTRUMDependencies.h"
 #import "FTFatalErrorContext.h"
@@ -51,7 +52,7 @@
 @end
 
 @interface FTRUMViewHandler (FTLongTaskEndpointTest)
-- (void)writeErrorData:(FTRUMDataModel *)model context:(NSDictionary *)context;
+- (void)writeErrorData:(FTRUMDataModel *)model context:(FTRUMPropertySnapshot *)context;
 @end
 
 @interface FTLongTaskDetectorDelegateMock : NSObject <FTLongTaskTimingDelegate>
@@ -145,7 +146,7 @@ typedef void (^FTWriteCallBack)(NSDictionary *fields, NSDictionary *tags);
 @property (nonatomic, strong) FTRUMDataModel *capturedError;
 @end
 @implementation FTStateCaptureRUMManager
-- (BOOL)process:(FTRUMDataModel *)model context:(NSDictionary *)context {
+- (BOOL)process:(FTRUMDataModel *)model context:(FTRUMPropertySnapshot *)context {
     if (model.type == FTRUMDataError) self.capturedError = model;
     return YES;
 }
@@ -159,7 +160,7 @@ typedef void (^FTWriteCallBack)(NSDictionary *fields, NSDictionary *tags);
 @property (nonatomic, strong) FTFatalErrorContext *fatalErrorContext;
 @property (nonatomic, strong) NSMutableArray<NSNumber *> *reportedANRTimes;
 @property (nonatomic) long long observedEndTimeNs;
-@property (nonatomic) NSUInteger assembledErrors;
+@property (nonatomic) NSUInteger errorWrites;
 @property (nonatomic, copy) NSDictionary *recoveredErrorTags;
 @property (nonatomic, copy) NSDictionary *recoveredErrorFields;
 @property (nonatomic, strong) FTLongTaskEvent *observedLongTask;
@@ -331,6 +332,7 @@ typedef void (^FTWriteCallBack)(NSDictionary *fields, NSDictionary *tags);
         XCTAssertEqualObjects(self.recoveredErrorTags[FT_KEY_ERROR_SITUATION], expected);
         XCTAssertNil(self.recoveredErrorFields[@"app_state"]);
         XCTAssertEqualObjects(self.recoveredErrorFields[@"custom"], @"kept");
+        XCTAssertEqualObjects(FTRUMDecodeCustomKeys(self.recoveredErrorTags[FT_RUM_CUSTOM_KEYS]), [NSSet setWithObject:@"custom"]);
         XCTAssertEqualObjects(received.appState, expected);
         XCTAssertTrue(received.isHistorical);
         XCTAssertEqual(received.occurredAtNanoseconds, NSEC_PER_SEC);
@@ -357,12 +359,12 @@ typedef void (^FTWriteCallBack)(NSDictionary *fields, NSDictionary *tags);
         endTimeNs:61LL*NSEC_PER_SEC durationNs:3LL*NSEC_PER_SEC];
     __block NSDictionary *written;
     self.writeCallBack = ^(NSDictionary *fields, NSDictionary *tags) { written = fields; };
-    [handler writeErrorData:model context:@{}];
+    [handler writeErrorData:model context:[[FTRUMPropertySnapshot alloc] initWithTags:nil customKeys:nil]];
     XCTAssertNil(written[@"app_state"]);
     XCTAssertEqual([written[FT_DURATION] longLongValue], 3LL*NSEC_PER_SEC);
     model.longTaskEvent = nil; // Manual collection retains its original history query.
     self.writeCallBack = ^(NSDictionary *fields, NSDictionary *tags) { written = fields; };
-    [handler writeErrorData:model context:@{}];
+    [handler writeErrorData:model context:[[FTRUMPropertySnapshot alloc] initWithTags:nil customKeys:nil]];
     XCTAssertEqualObjects(written[@"app_state"], @"unknown");
     self.writeCallBack = nil;
 }
@@ -472,7 +474,6 @@ typedef void (^FTWriteCallBack)(NSDictionary *fields, NSDictionary *tags);
     self.writeCallBack = nil;
     [manager shutDown];
 }
-
 
 - (FTLongTaskManager *)timingManagerANR:(BOOL)anr freeze:(BOOL)freeze threshold:(long)threshold {
     self.backtraceMock = [FTLongTaskBacktraceMock new];
@@ -771,13 +772,13 @@ typedef void (^FTWriteCallBack)(NSDictionary *fields, NSDictionary *tags);
             [file writeToFile:store.dataStorePath atomically:YES encoding:NSUTF8StringEncoding error:nil];
         }
         [self.fatalErrorContext setAppState:@"background"];
-        NSUInteger writes=self.totalRUMWrites,errors=self.assembledErrors;
+        NSUInteger writes=self.totalRUMWrites,errors=self.errorWrites;
         __block NSDictionary *longTaskFields;
         self.writeCallBack=^(NSDictionary *fields,NSDictionary *tags){longTaskFields=fields;};
         [FTTestANRProcessor(manager)reportPreviousANRIfFound];dispatch_sync(store.queue,^{});
         BOOL ignored=[state isEqual:@"background"];
         XCTAssertEqual(self.totalRUMWrites-writes,ignored?0U:2U);
-        XCTAssertEqual(self.assembledErrors-errors,ignored?0U:1U);
+        XCTAssertEqual(self.errorWrites-errors,ignored?0U:1U);
         XCTAssertEqual(self.lastFatalErrorDate,ignored?0:NSEC_PER_SEC);
         if(!ignored) {
             XCTAssertNotNil(longTaskFields);
@@ -1256,11 +1257,11 @@ typedef void (^FTWriteCallBack)(NSDictionary *fields, NSDictionary *tags);
         });
         __block long long recoveredDuration = -1;
         self.writeCallBack = ^(NSDictionary *fields, NSDictionary *tags) { recoveredDuration = [fields[FT_DURATION] longLongValue]; };
-        self.assembledErrors = 0; self.lastFatalErrorDate = -1;
+        self.errorWrites = 0; self.lastFatalErrorDate = -1;
         [FTTestANRProcessor(manager) reportPreviousANRIfFound];
         dispatch_sync(store.queue, ^{});
         XCTAssertEqual(recoveredDuration, corrupt.boolValue ? 3100*NSEC_PER_MSEC : 6LL*NSEC_PER_SEC);
-        XCTAssertEqual(self.assembledErrors, corrupt.boolValue ? 0U : 1U);
+        XCTAssertEqual(self.errorWrites, corrupt.boolValue ? 0U : 1U);
         XCTAssertEqual(self.lastFatalErrorDate, corrupt.boolValue ? 0LL : NSEC_PER_SEC);
         self.writeCallBack = nil; [manager shutDown];
     }
@@ -1338,18 +1339,18 @@ typedef void (^FTWriteCallBack)(NSDictionary *fields, NSDictionary *tags);
     model.longTaskEvent=[[FTLongTaskEvent alloc]initWithStack:@"main" startTimeNs:NSEC_PER_SEC endTimeNs:61LL*NSEC_PER_SEC durationNs:3LL*NSEC_PER_SEC];
     __block NSDictionary *written;
     self.writeCallBack=^(NSDictionary *fields,NSDictionary *tags){written=fields;};
-    [handler writeErrorData:model context:@{}];
+    [handler writeErrorData:model context:[[FTRUMPropertySnapshot alloc] initWithTags:nil customKeys:nil]];
     XCTAssertNil(written[@"app_state"]);
     XCTAssertEqual([written[FT_DURATION]longLongValue],3LL*NSEC_PER_SEC);
     model.longTaskEvent=[[FTLongTaskEvent alloc]initWithStack:@"main" startTimeNs:NSEC_PER_SEC
         endTimeNs:61LL*NSEC_PER_SEC durationNs:3LL*NSEC_PER_SEC];
     self.writeCallBack=^(NSDictionary *fields,NSDictionary *tags){written=fields;};
-    [handler writeErrorData:model context:@{}];
+    [handler writeErrorData:model context:[[FTRUMPropertySnapshot alloc] initWithTags:nil customKeys:nil]];
     XCTAssertNil(written[@"app_state"]);
     // Existing manually reported LongTasks still derive their interval from duration.
     model.longTaskEvent=nil;
     self.writeCallBack=^(NSDictionary *fields,NSDictionary *tags){written=fields;};
-    [handler writeErrorData:model context:@{}];
+    [handler writeErrorData:model context:[[FTRUMPropertySnapshot alloc] initWithTags:nil customKeys:nil]];
     XCTAssertEqualObjects(written[@"app_state"],@"foreground");
     self.writeCallBack=nil;
 }
@@ -1465,7 +1466,7 @@ typedef void (^FTWriteCallBack)(NSDictionary *fields, NSDictionary *tags);
     [FTTestANRProcessor(manager) reportPreviousANRIfFound];
     dispatch_sync(store.queue, ^{});
     XCTAssertEqual(writes, 0U);
-    XCTAssertEqual(self.assembledErrors, 0U);
+    XCTAssertEqual(self.errorWrites, 0U);
     XCTAssertEqual(self.lastFatalErrorDate, 0LL);
     XCTAssertFalse([[NSFileManager defaultManager] fileExistsAtPath:store.dataStorePath]);
     self.writeCallBack = nil;
@@ -1740,6 +1741,32 @@ typedef void (^FTWriteCallBack)(NSDictionary *fields, NSDictionary *tags);
     XCTAssertTrue(hasCallBack);
     [longTaskManager shutDown];
 }
+- (void)testRecoveredViewKeepsSavedNativeVisitorWithRawPresetContext {
+    FTLongTaskManager *manager = [self timingManagerANR:YES freeze:YES threshold:250];
+    NSDictionary *view = @{
+        @"tags": @{FT_KEY_VIEW_ID: @"saved-view", FT_VISITOR_ID: @"request-visitor"},
+        @"fields": @{FT_KEY_VIEW_LONG_TASK_COUNT: @0, FT_KEY_VIEW_UPDATE_TIME: @1},
+        @"customFieldKeys": @[], @"time": @(NSEC_PER_SEC),
+        @"propertyTags": @{FT_VISITOR_ID: @"preset-attempt", @"saved": @1},
+        @"propertyCustomKeys": @[FT_VISITOR_ID, @"saved"]
+    };
+    [self.fatalErrorContext setLastViewContext:view];
+    FTFatalErrorContextModel *saved = [self.fatalErrorContext currentContextModel];
+    FTLongTaskANRData *data = [[FTLongTaskANRData alloc] initWithStartTimeNs:2LL*NSEC_PER_SEC
+        durationNs:4LL*NSEC_PER_SEC mainThreadBacktrace:@"main" allThreadsBacktrace:nil errorContextModel:saved];
+    __block BOOL wroteView = NO;
+    self.writeCallBack = ^(NSDictionary *fields, NSDictionary *tags) {
+        wroteView = YES;
+        XCTAssertEqualObjects(tags[FT_KEY_VIEW_ID], @"saved-view");
+        XCTAssertEqualObjects(tags[FT_VISITOR_ID], @"request-visitor");
+        XCTAssertEqualObjects(tags[@"saved"], @1);
+        XCTAssertEqualObjects(FTRUMDecodeCustomKeys(tags[FT_RUM_CUSTOM_KEYS]), [NSSet setWithObject:@"saved"]);
+        XCTAssertEqualObjects(fields[FT_KEY_TIME_SPENT], @5000000000LL);
+    };
+    [FTTestANRProcessor(manager) reportANRData:data];
+    XCTAssertTrue(wroteView);
+    [manager shutDown];
+}
 - (void)testLongTask_reportPreviousANRDeletesMalformedANRDataAndNotifiesNoFatal{
     FTLongTaskManager *longTaskManager = [self mockLongTaskManager];
     [@"broken ANR data" writeToFile:FTTestANRStore(longTaskManager).dataStorePath atomically:YES encoding:NSUTF8StringEncoding error:nil];
@@ -1817,7 +1844,7 @@ typedef void (^FTWriteCallBack)(NSDictionary *fields, NSDictionary *tags);
     [FTTestANRProcessor(manager) reportPreviousANRIfFound];
     dispatch_sync(FTTestANRStore(manager).queue, ^{});
     XCTAssertEqual(calls, 1U);
-    XCTAssertEqual(self.assembledErrors, 0U);
+    XCTAssertEqual(self.errorWrites, 0U);
     XCTAssertEqual(self.lastFatalErrorDate, -1LL);
     XCTAssertTrue(FTTestANRStore(manager).isClosed);
     dependencies.issueDataProvider = nil;
@@ -2001,40 +2028,22 @@ typedef void (^FTWriteCallBack)(NSDictionary *fields, NSDictionary *tags);
         self.callBack(slowStack, 0);
     }
 }
--(void)rumWrite:(NSString *)source tags:(NSDictionary *)tags fields:(NSDictionary *)fields dynamicContext:(NSDictionary *)dynamicContext time:(long long)time{
-    self.totalRUMWrites++;
-    if(self.writeCallBack){
-        self.writeCallBack(fields, tags);
-        self.writeCallBack = nil;
-    }
-}
--(void)rumWrite:(NSString *)source tags:(NSDictionary *)tags fields:(NSDictionary *)fields dynamicContext:(NSDictionary *)dynamicContext time:(long long)time updateTime:(long long)updateTime cache:(BOOL)cache{
-    self.totalRUMWrites++;
-    if(self.writeCallBack){
-        self.writeCallBack(fields, tags);
-        self.writeCallBack = nil;
-    }
-}
--(void)lastFatalErrorIfFound:(long long)errorDate{
-    self.lastFatalErrorDate = errorDate;
-}
-
-- (void)rumWrite:(nonnull NSString *)source tags:(nonnull NSDictionary *)tags fields:(nonnull NSDictionary *)fields dynamicContext:(NSDictionary *)dynamicContext time:(long long)time updateTime:(long long)updateTime {
-    
-}
-
-
-- (void)rumWriteAssembledData:(nonnull NSString *)source tags:(nonnull NSDictionary *)tags fields:(nonnull NSDictionary *)fields time:(long long)time {
-    if ([source isEqualToString:FT_RUM_SOURCE_ERROR]) {
-        self.assembledErrors += 1;
+- (BOOL)writeRUMData:(FTRUMWriteData *)data {
+    NSDictionary *tags = FTTestRUMTags(data);
+    if ([data.source isEqualToString:FT_RUM_SOURCE_ERROR]) {
+        self.errorWrites++;
         self.recoveredErrorTags = tags;
-        self.recoveredErrorFields = fields;
+        self.recoveredErrorFields = data.fields;
     }
     self.totalRUMWrites++;
-    if(self.writeCallBack){
-        self.writeCallBack(fields, tags);
+    if (self.writeCallBack) {
+        self.writeCallBack(data.fields, tags);
         self.writeCallBack = nil;
     }
+    return YES;
+}
+- (void)lastFatalErrorIfFound:(long long)errorDate {
+    self.lastFatalErrorDate = errorDate;
 }
 
 @end

@@ -35,6 +35,7 @@
 #import "FTConstants.h"
 #import "FTModuleManager.h"
 #import "FTJSONUtil.h"
+#import "FTRUMPropertySnapshot.h"
 #import "FTWeakMapTable.h"
 #import "FTThreadDispatchManager.h"
 #import "NSDate+FTUtil.h"
@@ -402,7 +403,7 @@ allowedWebViewHostsString:(NSString *)hostsString
                         @"error_crash":@(NO)
                     } sync:NO];
                 }
-                [rumDelegate dealRUMWebViewData:measurement tags:tags fields:fields tm:time];
+                [rumDelegate dealRUMWebViewData:measurement tags:FTRUMCopyDictionary(tags) fields:FTRUMCopyDictionary(fields) tm:time];
             }
         }else if ([name isEqualToString:@"session_replay"]){
             if ((!enableTraceWebView && !manuallyEnabled) || !rumDelegate) {

@@ -22,6 +22,9 @@
 #import <FTRecordModel.h>
 
 NS_ASSUME_NONNULL_BEGIN
+@class FTRUMWriteData;
+FOUNDATION_EXPORT NSDictionary *FTTestRUMTags(FTRUMWriteData *data);
+
 
 @interface FTModelHelper : NSObject
 + (FTRecordModel *)createLogModel;

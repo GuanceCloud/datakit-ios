@@ -40,7 +40,8 @@
 - (void)updateErrorContext:(FTFatalErrorContextModel *)context {
     _errorContextModel = [[FTFatalErrorContextModel alloc] initWithAppState:self.startAppState
         lastSessionState:context.lastSessionState lastViewContext:context.lastViewContext
-        dynamicContext:context.dynamicContext globalAttributes:context.globalAttributes errorMonitorInfo:context.errorMonitorInfo];
+        dynamicPropertySnapshot:context.dynamicPropertySnapshot globalPropertySnapshot:context.globalPropertySnapshot
+        errorMonitorInfo:context.errorMonitorInfo];
 }
 
 - (long long)durationNs {
@@ -180,6 +181,7 @@
     }
     if (lastViews) {
         NSMutableDictionary *lastViewsFields = [NSMutableDictionary dictionaryWithDictionary:lastViews[@"fields"]];
+        NSSet *viewCustomKeys = FTRUMDecodeCustomKeys(lastViews[@"customFieldKeys"] ?: lastViews[@"tags"][FT_RUM_CUSTOM_KEYS]);
         long long viewStartTime = [lastViews[@"time"] longLongValue];
         long long timeSpent = longTaskEndTime - viewStartTime;
         if (timeSpent <= 0) {
@@ -206,23 +208,37 @@
         NSNumber *time = lastViews[@"time"];
 
         if (self.dataStore.isClosed) return 0;
-        [self.dependencies.writer rumWrite:FT_RUM_SOURCE_VIEW tags:lastViews[@"tags"] fields:lastViewsFields dynamicContext:contextModel.globalAttributes time:[time longLongValue] updateTime:longTaskEndTime cache:sessionOnError];
+        FTRUMPropertySnapshot *viewSnapshot = lastViews[@"propertyTags"]
+            ? [[FTRUMPropertySnapshot alloc] initWithTags:lastViews[@"propertyTags"] customKeys:FTRUMDecodeCustomKeys(lastViews[@"propertyCustomKeys"])]
+            : contextModel.globalPropertySnapshot;
+        FTRUMWriteData *viewData = [[FTRUMWriteData alloc] initWithSource:FT_RUM_SOURCE_VIEW tags:lastViews[@"tags"] fields:lastViewsFields
+            context:viewSnapshot customTagKeys:nil customFieldKeys:viewCustomKeys time:time.longLongValue];
+        NSString *viewVisitor = lastViews[@"tags"][FT_VISITOR_ID];
+        if ([viewVisitor isKindOfClass:NSString.class]) viewData.visitorIDSnapshot = viewVisitor;
+        viewData.updateTime = longTaskEndTime;
+        viewData.cache = @(sessionOnError);
+        [self.dependencies.writer writeRUMData:viewData];
     }
     if (self.dataStore.isClosed) return 0;
-    [self.dependencies.writer rumWrite:FT_RUM_SOURCE_LONG_TASK tags:tags fields:fields dynamicContext:contextModel.globalAttributes time:startTime updateTime:0 cache:sessionOnError];
+    FTRUMWriteData *longTaskData = [[FTRUMWriteData alloc] initWithSource:FT_RUM_SOURCE_LONG_TASK tags:tags fields:fields
+        context:contextModel.globalPropertySnapshot customTagKeys:[NSSet set] customFieldKeys:[NSSet set] time:startTime];
+    longTaskData.cache = @(sessionOnError);
+    [self.dependencies.writer writeRUMData:longTaskData];
 
     if (isAnr && !self.dataStore.isClosed) {
         NSString *allBacktrace = anrData.allThreadsBacktrace.length > 0 ? anrData.allThreadsBacktrace : nil;
         NSMutableDictionary *anrTags = [NSMutableDictionary dictionary];
+        NSMutableSet *anrTagKeys = [NSMutableSet set];
+        NSMutableSet *anrFieldKeys = [NSMutableSet set];
         [anrTags setValue:@"anr_error" forKey:FT_KEY_ERROR_TYPE];
         [anrTags setValue:FT_LOGGER forKey:FT_KEY_ERROR_SOURCE];
         [anrTags addEntriesFromDictionary:contextModel.errorMonitorInfo];
-        [anrTags addEntriesFromDictionary:contextModel.globalAttributes];
-        [anrTags addEntriesFromDictionary:contextModel.dynamicContext];
-        [anrTags addEntriesFromDictionary:[contextModel.lastSessionState sessionTags]];
-        [anrTags addEntriesFromDictionary:tags];
+        FTRUMMergeProperties(anrTags, anrTagKeys, contextModel.globalAttributes, contextModel.globalPropertySnapshot.customKeys);
+        FTRUMMergeProperties(anrTags, anrTagKeys, contextModel.dynamicContext, contextModel.dynamicPropertySnapshot.customKeys);
+        FTRUMMergeProperties(anrTags, anrTagKeys, [contextModel.lastSessionState sessionTags], nil);
+        FTRUMMergeProperties(anrTags, anrTagKeys, tags, nil);
         // Event facts remain authoritative over saved custom/global context.
-        [anrTags setValue:errorSituation forKey:FT_KEY_ERROR_SITUATION];
+        FTRUMSetSystemProperty(anrTags, anrTagKeys, FT_KEY_ERROR_SITUATION, errorSituation);
 
         NSMutableDictionary *anrFields = [NSMutableDictionary dictionary];
         [anrFields addEntriesFromDictionary:[contextModel.lastSessionState sessionFields]];
@@ -243,10 +259,13 @@
             NSDictionary *customFields =
                 [self.dependencies.issueFieldEnricher fieldsForIssue:issue
                                                          reservedKeys:reservedKeys];
-            [anrFields addEntriesFromDictionary:customFields];
+            FTRUMMergeProperties(anrFields, anrFieldKeys, customFields, FTRUMDecodeCustomKeys(customFields.allKeys));
         }
         if (self.dataStore.isClosed) return 0;
-        [self.dependencies.writer rumWriteAssembledData:FT_RUM_SOURCE_ERROR tags:anrTags fields:anrFields time:startTime];
+        FTRUMWriteData *errorData = [[FTRUMWriteData alloc] initWithSource:FT_RUM_SOURCE_ERROR tags:anrTags fields:anrFields
+            context:nil customTagKeys:anrTagKeys customFieldKeys:anrFieldKeys time:startTime];
+        errorData.cache = @NO;
+        [self.dependencies.writer writeRUMData:errorData];
         return startTime;
     }
     return 0;

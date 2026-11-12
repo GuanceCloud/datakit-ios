@@ -1,3 +1,22 @@
+//
+//  RUMAutomaticViewLifecycleTests.swift
+//  FTMobileSDK
+//
+//  Copyright 2026 Shanghai Guance Information Technology Co., Ltd.
+//
+//  Licensed under the Apache License, Version 2.0 (the "License");
+//  you may not use this file except in compliance with the License.
+//  You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+//  Unless required by applicable law or agreed to in writing, software
+//  distributed under the License is distributed on an "AS IS" BASIS,
+//  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+//  See the License for the specific language governing permissions and
+//  limitations under the License.
+//
+
 import Foundation
 import XCTest
 import GuanceSDK
@@ -13,29 +32,12 @@ private final class LifecycleWriter: NSObject, FTRUMDataWriteProtocol {
 
     var events: [Event] = []
 
-    func rumWrite(_ source: String, tags: [AnyHashable: Any], fields: [AnyHashable: Any],
-                  dynamicContext: [AnyHashable: Any], time: Int64) {
-        rumWrite(source, tags: tags, fields: fields, dynamicContext: dynamicContext,
-                 time: time, updateTime: time)
+    func writeRUMData(_ data: FTRUMWriteData) -> Bool {
+        events.append(Event(source: data.source, tags: FTTestRUMTags(data), fields: data.fields,
+                            time: data.time, updateTime: data.updateTime > 0 ? data.updateTime : data.time))
+        return true
     }
 
-    func rumWrite(_ source: String, tags: [AnyHashable: Any], fields: [AnyHashable: Any],
-                  dynamicContext: [AnyHashable: Any], time: Int64, updateTime: Int64) {
-        events.append(Event(source: source, tags: tags, fields: fields,
-                            time: time, updateTime: updateTime))
-    }
-
-    func rumWrite(_ source: String, tags: [AnyHashable: Any], fields: [AnyHashable: Any],
-                  dynamicContext: [AnyHashable: Any], time: Int64, updateTime: Int64,
-                  cache: Bool) {
-        rumWrite(source, tags: tags, fields: fields, dynamicContext: dynamicContext,
-                 time: time, updateTime: updateTime)
-    }
-
-    func rumWriteAssembledData(_ source: String, tags: [AnyHashable: Any],
-                              fields: [AnyHashable: Any], time: Int64) {
-        rumWrite(source, tags: tags, fields: fields, dynamicContext: [:], time: time)
-    }
 }
 
 final class RUMAutomaticViewLifecycleTests: XCTestCase {
@@ -81,7 +83,7 @@ final class RUMAutomaticViewLifecycleTests: XCTestCase {
                          queue: DispatchQueue) throws {
         let processor = try XCTUnwrap(manager as? FTRUMSessionProtocol)
         queue.sync {
-            XCTAssertTrue(processor.process(model, context: [:]))
+            XCTAssertTrue(processor.process(model, context: FTRUMPropertySnapshot(tags: [:], customKeys: [])))
         }
     }
 

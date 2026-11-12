@@ -18,6 +18,7 @@
 //
 
 #import <XCTest/XCTest.h>
+#import "FTModelHelper.h"
 #import "FTAutoTrackHandler.h"
 #import "UIViewController+FTAutoTrack.h"
 #import "FTRUMSessionHandler.h"
@@ -35,6 +36,7 @@
 #import "FTGlobalRumManager+Private.h"
 #import "FTURLSessionInterceptor+Private.h"
 #import "FTDataWriterWorker.h"
+#import "FTVisitorIDManager.h"
 #import "FTDataFilterManager.h"
 #import "FTURLConnectionHandler.h"
 #import "FTURLSessionInstrumentation.h"
@@ -121,23 +123,14 @@ static long long const FTMetricEpoch = 1800000000000000000LL;
 @end
 @implementation FTMetricWriter
 - (instancetype)init { if ((self = [super init])) _events = [NSMutableArray new]; return self; }
-- (BOOL)rumWriteAccepted:(NSString *)source tags:(NSDictionary *)tags fields:(NSDictionary *)fields dynamicContext:(NSDictionary *)context time:(long long)time {
-    if (([source isEqual:@"action"] && [tags[@"action_name"] isEqual:self.discardAction]) ||
-        ([source isEqual:@"resource"] && [tags[@"resource_id"] isEqual:self.discardResource])) return NO;
-    if (self.admissionWriter && ![self.admissionWriter rumWriteAccepted:source tags:tags fields:fields dynamicContext:context time:time]) return NO;
-    [self rumWrite:source tags:tags fields:fields dynamicContext:context time:time];
+- (BOOL)writeRUMData:(FTRUMWriteData *)data {
+    if (([data.source isEqual:@"action"] && [data.tags[@"action_name"] isEqual:self.discardAction]) ||
+        ([data.source isEqual:@"resource"] && [data.tags[@"resource_id"] isEqual:self.discardResource])) return NO;
+    if (self.admissionWriter && ![self.admissionWriter writeRUMData:data]) return NO;
+    [self.events addObject:@{@"source":data.source, @"tags":FTTestRUMTags(data), @"fields":data.fields, @"time":@(data.time)}];
     return YES;
 }
-- (void)rumWrite:(NSString *)source tags:(NSDictionary *)tags fields:(NSDictionary *)fields dynamicContext:(NSDictionary *)context time:(long long)time {
-    [self.events addObject:@{@"source":source, @"tags":tags ?: @{}, @"fields":[fields copy], @"time":@(time)}];
-}
-- (void)rumWrite:(NSString *)source tags:(NSDictionary *)tags fields:(NSDictionary *)fields dynamicContext:(NSDictionary *)context time:(long long)time updateTime:(long long)updateTime {
-    [self rumWrite:source tags:tags fields:fields dynamicContext:context time:time];
-}
-- (void)rumWrite:(NSString *)source tags:(NSDictionary *)tags fields:(NSDictionary *)fields dynamicContext:(NSDictionary *)context time:(long long)time updateTime:(long long)updateTime cache:(BOOL)cache {
-    [self rumWrite:source tags:tags fields:fields dynamicContext:context time:time];
-}
-- (void)rumWriteAssembledData:(NSString *)source tags:(NSDictionary *)tags fields:(NSDictionary *)fields time:(long long)time {}
+
 @end
 
 @interface FTURLSessionInterceptor (MetricTestClock)
@@ -261,7 +254,7 @@ static long long const FTMetricEpoch = 1800000000000000000LL;
 - (void)send:(FTRUMDataModel *)model at:(NSInteger)ms {
     model.time = [self date:ms];
     model.tm = FTMetricEpoch + ms * 1000000LL;
-    [self.session.assistant process:model context:@{}];
+    [self.session.assistant process:model context:[[FTRUMPropertySnapshot alloc] initWithTags:nil customKeys:nil]];
 }
 - (void)view:(NSString *)identifier at:(NSInteger)ms stop:(BOOL)stop {
     FTRUMViewModel *model = [[FTRUMViewModel alloc] initWithViewID:identifier viewName:@"same-name" viewReferrer:@""];
@@ -289,6 +282,63 @@ static long long const FTMetricEpoch = 1800000000000000000LL;
     metrics.fetchStartNsTimeInterval = FTMetricEpoch + start * 1000000LL;
     metrics.fetchEndNsTimeInterval = FTMetricEpoch + end * 1000000LL;
     return metrics;
+}
+- (void)testActionCompletionAndViewUpdateUseCurrentWriteVisitor {
+    FTVisitorIDManager *visitor = [FTVisitorIDManager sharedInstance];
+    [visitor configureWithEnabled:YES headerName:@"x-visitor-test" ttl:86400 urlMatcher:^BOOL(NSURL *url) { return YES; }];
+    @try {
+        NSString *startVisitor = visitor.snapshot.value;
+        [self view:@"visitor-view" at:0 stop:NO];
+        FTRUMActionModel *action = [[FTRUMActionModel alloc] initWithActionName:@"visitor-action" actionType:@"click"];
+        action.type = FTRUMDataStartAction;
+        [self send:action at:10];
+        [visitor reset];
+        NSString *completionVisitor = visitor.snapshot.value;
+        XCTAssertNotEqualObjects(startVisitor, completionVisitor);
+        FTRUMDataModel *stop = [[FTRUMDataModel alloc] initWithType:FTRUMDataStopAction time:[self date:30]];
+        [self send:stop at:30];
+        NSDictionary *writtenAction = nil;
+        NSDictionary *writtenView = nil;
+        for (NSDictionary *event in self.writer.events) {
+            if ([event[@"source"] isEqual:@"action"]) writtenAction = event;
+            if ([event[@"source"] isEqual:@"view"]) writtenView = event;
+        }
+        XCTAssertEqualObjects(writtenAction[@"tags"][FT_VISITOR_ID], completionVisitor);
+        XCTAssertEqualObjects(writtenView[@"tags"][FT_VISITOR_ID], completionVisitor);
+    } @finally {
+        [visitor configureWithEnabled:NO headerName:nil ttl:0 urlMatcher:nil];
+    }
+}
+- (void)testResourceWithoutStartVisitorDoesNotBorrowCurrentVisitorAtCompletion {
+    FTVisitorIDManager *visitor = [FTVisitorIDManager sharedInstance];
+    [visitor configureWithEnabled:NO headerName:nil ttl:0 urlMatcher:nil];
+    [self view:@"nil-visitor-view" at:0 stop:NO];
+    [self resource:@"nil-visitor" type:FTRUMDataResourceStart at:10 metrics:nil];
+    [visitor configureWithEnabled:YES headerName:@"x-visitor-test" ttl:86400 urlMatcher:^BOOL(NSURL *url) { return YES; }];
+    @try {
+        NSString *current = visitor.snapshot.value;
+        XCTAssertTrue(current.length > 0);
+        [self resource:@"nil-visitor" type:FTRUMDataResourceError at:20 metrics:nil];
+        [self resource:@"nil-visitor" type:FTRUMDataResourceComplete at:30 metrics:[self metricsFrom:10 to:30]];
+        NSUInteger resourceCount = 0, errorCount = 0;
+        NSDictionary *lastView;
+        for (NSDictionary *event in self.writer.events) {
+            if ([event[@"source"] isEqual:@"view"]) lastView = event;
+            if ([event[@"source"] isEqual:@"resource"]) {
+                resourceCount++;
+                XCTAssertNil(event[@"tags"][FT_VISITOR_ID]);
+            }
+            if ([event[@"source"] isEqual:@"error"]) {
+                errorCount++;
+                XCTAssertNil(event[@"tags"][FT_VISITOR_ID]);
+            }
+        }
+        XCTAssertEqual(resourceCount, 1u);
+        XCTAssertEqual(errorCount, 1u);
+        XCTAssertEqualObjects(lastView[@"tags"][FT_VISITOR_ID], current);
+    } @finally {
+        [visitor configureWithEnabled:NO headerName:nil ttl:0 urlMatcher:nil];
+    }
 }
 - (void)testResourceSignalStrengthRetainsStartSnapshotThroughDelayedCompletion {
     [self view:@"network-view" at:0 stop:NO];
@@ -431,7 +481,7 @@ static long long const FTMetricEpoch = 1800000000000000000LL;
     void (^sendAt)(FTRUMDataModel *, long long) = ^(FTRUMDataModel *model, long long ns) {
         model.time = [NSDate dateWithTimeIntervalSince1970:ns / 1e9];
         model.tm = ns;
-        [self.session.assistant process:model context:@{}];
+        [self.session.assistant process:model context:[[FTRUMPropertySnapshot alloc] initWithTags:nil customKeys:nil]];
     };
     FTRUMViewModel *(^view)(NSString *, BOOL) = ^FTRUMViewModel *(NSString *identifier, BOOL stop) {
         FTRUMViewModel *model = [[FTRUMViewModel alloc] initWithViewID:identifier viewName:@"UITestVC" viewReferrer:@""];
@@ -895,7 +945,7 @@ static long long const FTMetricEpoch = 1800000000000000000LL;
     FTRUMViewModel *first = [[FTRUMViewModel alloc] initWithViewID:@"collectorA" viewName:@"A" viewReferrer:@""];
     first.type = FTRUMDataViewStart;
     first.time = [self date:0]; first.tm = FTMetricEpoch;
-    dispatch_sync(rumQueue, ^{ [manager.assistant process:first context:@{}]; });
+    dispatch_sync(rumQueue, ^{ [manager.assistant process:first context:[[FTRUMPropertySnapshot alloc] initWithTags:nil customKeys:nil]]; });
     FTMetricInterceptor *interceptor = [FTMetricInterceptor new];
     interceptor.rumResourceHandler = manager;
     interceptor.boundaryDate = [self date:20];
@@ -908,7 +958,7 @@ static long long const FTMetricEpoch = 1800000000000000000LL;
     FTRUMViewModel *next = [[FTRUMViewModel alloc] initWithViewID:@"collectorB" viewName:@"B" viewReferrer:@""];
     next.type = FTRUMDataViewStart;
     next.time = [self date:1000]; next.tm = FTMetricEpoch + 1000000000;
-    dispatch_sync(rumQueue, ^{ [manager.assistant process:next context:@{}]; });
+    dispatch_sync(rumQueue, ^{ [manager.assistant process:next context:[[FTRUMPropertySnapshot alloc] initWithTags:nil customKeys:nil]]; });
     dispatch_resume(networkQueue);
     dispatch_sync(networkQueue, ^{});
     [manager syncProcess];
@@ -1033,14 +1083,14 @@ static long long const FTMetricEpoch = 1800000000000000000LL;
     dispatch_queue_t queue = [manager valueForKey:@"rumQueue"];
     FTRUMViewModel *view = [[FTRUMViewModel alloc] initWithViewID:@"connectionA" viewName:@"A" viewReferrer:@""];
     view.type = FTRUMDataViewStart; view.time = [self date:0]; view.tm = FTMetricEpoch;
-    dispatch_sync(queue, ^{ [manager.assistant process:view context:@{}]; });
+    dispatch_sync(queue, ^{ [manager.assistant process:view context:[[FTRUMPropertySnapshot alloc] initWithTags:nil customKeys:nil]]; });
     FTURLConnectionHandler *handler = [[FTURLConnectionHandler alloc] initWithRequest:[NSURLRequest requestWithURL:[NSURL URLWithString:@"https://example.test"]] resourceEnabled:YES provider:nil errorFilter:nil rumResourceHandler:manager];
     XCTAssertTrue([handler recordStartWithDate:[self date:20] continuousTime:20000000]);
     XCTAssertFalse([handler recordStartWithDate:[self date:2000] continuousTime:2000000000]);
     [manager syncProcess];
     FTRUMViewModel *next = [[FTRUMViewModel alloc] initWithViewID:@"connectionB" viewName:@"B" viewReferrer:@""];
     next.type = FTRUMDataViewStart; next.time = [self date:1000]; next.tm = FTMetricEpoch + 1000000000;
-    dispatch_sync(queue, ^{ [manager.assistant process:next context:@{}]; });
+    dispatch_sync(queue, ^{ [manager.assistant process:next context:[[FTRUMPropertySnapshot alloc] initWithTags:nil customKeys:nil]]; });
     [handler activate];
     [handler reportStartIfNeeded];
     [handler recordTerminalWithResponse:nil error:[NSError errorWithDomain:NSURLErrorDomain code:NSURLErrorTimedOut userInfo:nil] date:[self date:500] continuousTime:500000000];

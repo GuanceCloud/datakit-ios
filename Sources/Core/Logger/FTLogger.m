@@ -221,7 +221,7 @@ void *FTLoggerQueueIdentityKey = &FTLoggerQueueIdentityKey;
             return;
         }
 
-        NSString *applicationId = [FTPresetProperty sharedInstance].rumTags[FT_APP_ID];
+        NSString *applicationId = [FTPresetProperty sharedInstance].rumPropertySnapshot.tags[FT_APP_ID];
         id<FTLinkRumDataProvider> provider = self.linkRumDataProvider;
         if (provider && [provider respondsToSelector:@selector(getLinkRUMDataWithCompletion:)]) {
             __weak typeof(self) weakSelf = self;

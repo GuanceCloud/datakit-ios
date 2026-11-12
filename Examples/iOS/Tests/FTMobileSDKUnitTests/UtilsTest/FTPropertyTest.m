@@ -44,6 +44,7 @@
 #import "NSDictionary+FTCopyProperties.h"
 #import "FTIDFVProvider.h"
 #import "FTNetworkConnectivity.h"
+#import "FTFatalErrorContext.h"
 @interface FTPresetProperty (Testing)
 - (FTUserInfo *)userInfo;
 - (void)connectivityChanged:(BOOL)connected typeDescription:(NSString *)typeDescription;
@@ -548,7 +549,7 @@ static void FTPropertyTestAssertMissingKeys(XCTestCase *testCase, NSDictionary *
     [[FTMobileAgent sharedInstance] startRumWithConfigOptions:rumConfig];
 
     FTDataWriterWorker *writer = [FTTrackDataManager sharedInstance].dataWriterWorker;
-    XCTAssertNoThrow([writer rumWrite:FT_RUM_SOURCE_ACTION tags:nil fields:nil dynamicContext:nil time:[NSDate ft_currentNanosecondTimeStamp]]);
+    XCTAssertNoThrow([writer writeRUMData:[[FTRUMWriteData alloc] initWithSource:FT_RUM_SOURCE_ACTION tags:nil fields:nil context:nil customTagKeys:nil customFieldKeys:nil time:[NSDate ft_currentNanosecondTimeStamp]]]);
     XCTAssertNoThrow([writer loggingTags:nil field:nil time:[NSDate ft_currentNanosecondTimeStamp] linkRum:NO]);
     [[FTTrackDataManager sharedInstance] insertCacheToDB];
     NSArray *rumDatas = [[FTTrackerEventDBTool sharedManager] getFirstRecords:10 withType:FT_DATA_TYPE_RUM];
@@ -1170,5 +1171,278 @@ static void FTPropertyTestAssertMissingKeys(XCTestCase *testCase, NSDictionary *
 - (void)addRumData{
     [FTModelHelper startView];
     [FTModelHelper addActionWithContext:nil];
+}
+- (void)testCustomKeysIncludeBaseContextAndUserExtra {
+    FTPresetProperty *preset = [FTPresetProperty new];
+    [preset startWithVersion:@"1" sdkVersion:@"1" env:@"test" service:@"test"
+              globalContext:@{@"base_custom": @"base"} pkgInfo:nil];
+    [preset updateUser:@"custom-key-user" name:@"name" email:nil extra:@{@"user_custom": @"extra"}];
+    [preset setRUMAppID:@"app" sampleRate:100 sessionOnErrorSampleRate:0
+      rumGlobalContext:@{@"rum_custom": @"rum"}];
+    [preset appendGlobalContext:@{@"base_dynamic": @1}];
+    [preset appendRUMGlobalContext:@{@"rum_dynamic": @2}];
+    NSString *json = preset.rumTags[FT_RUM_CUSTOM_KEYS];
+    NSArray *keys = json ? [NSJSONSerialization JSONObjectWithData:[json dataUsingEncoding:NSUTF8StringEncoding] options:0 error:nil] : @[];
+    NSSet *expected = [NSSet setWithArray:@[@"base_custom", @"base_dynamic", @"rum_custom", @"rum_dynamic", @"user_custom"]];
+    XCTAssertEqualObjects([NSSet setWithArray:keys], expected);
+    [preset clearUser];
+    [preset shutDown];
+}
+- (void)testRUMMergeUpdatesProvenanceOnlyForOverwrittenValues {
+    NSMutableDictionary *values = [@{@"kept": @1, @"to_system": @2, @"to_custom": @3, @"replace": @4} mutableCopy];
+    NSMutableSet *keys = [NSMutableSet setWithArray:@[@"kept", @"to_system", @"replace"]];
+    NSDictionary *incoming = @{@"to_system": @20, @"to_custom": @30, @"replace": @40,
+        @"added": @50, @"null": NSNull.null, FT_RUM_CUSTOM_KEYS: @"stale"};
+    NSSet *incomingKeys = [NSSet setWithArray:@[@"to_custom", @"replace", @"added", @"null", @"missing", FT_RUM_CUSTOM_KEYS]];
+    FTRUMMergeProperties(values, keys, incoming, incomingKeys);
+    XCTAssertEqualObjects(values, (@{@"kept": @1, @"to_system": @20, @"to_custom": @30, @"replace": @40,
+        @"added": @50, @"null": NSNull.null, FT_RUM_CUSTOM_KEYS: @"stale"}));
+    NSSet *expectedKeys = [NSSet setWithArray:@[@"kept", @"to_custom", @"replace", @"added", @"null"]];
+    XCTAssertEqualObjects(keys, expectedKeys);
+    FTRUMEncodeCustomKeys(values, @{}, keys, nil);
+    NSSet *encodedKeys = [NSSet setWithArray:@[@"kept", @"to_custom", @"replace", @"added"]];
+    XCTAssertEqualObjects(FTRUMDecodeCustomKeys(values[FT_RUM_CUSTOM_KEYS]), encodedKeys);
+}
+- (void)testRUMMergeEmptyInputsAndSystemOnlyOverwrites {
+    for (id input in @[@{}, NSNull.null, @[]]) {
+        NSMutableDictionary *values = [@{@"kept": @1} mutableCopy];
+        NSMutableSet *keys = [NSMutableSet setWithObject:@"kept"];
+        FTRUMMergeProperties(values, keys, input == NSNull.null ? nil : input, [NSSet setWithObject:@"missing"]);
+        XCTAssertEqualObjects(values, (@{@"kept": @1}));
+        XCTAssertEqualObjects(keys, [NSSet setWithObject:@"kept"]);
+    }
+    for (id sourceKeys in @[[NSSet set], NSNull.null]) {
+        NSMutableDictionary *values = [@{@"kept": @1, @"overwritten": @2} mutableCopy];
+        NSMutableSet *keys = [NSMutableSet setWithArray:@[@"kept", @"overwritten"]];
+        FTRUMMergeProperties(values, keys, @{@"overwritten": @20, @"system": @30},
+            sourceKeys == NSNull.null ? nil : sourceKeys);
+        XCTAssertEqualObjects(values, (@{@"kept": @1, @"overwritten": @20, @"system": @30}));
+        XCTAssertEqualObjects(keys, [NSSet setWithObject:@"kept"]);
+    }
+    NSMutableDictionary *systemValues = [NSMutableDictionary dictionary];
+    NSMutableSet *systemKeys = [NSMutableSet set];
+    FTRUMMergeProperties(systemValues, systemKeys, @{@"system": @1}, nil);
+    XCTAssertEqualObjects(systemValues, (@{@"system": @1}));
+    XCTAssertEqualObjects(systemKeys, [NSSet set]);
+}
+- (void)testRUMWriteDataUsesExplicitKeysAndDecodesOnlyMissingLegacyKeys {
+    NSDictionary *tags = @{@"tag": @1, @"legacy_tag": @2,
+        FT_RUM_CUSTOM_KEYS: @"[\"legacy_tag\",\"legacy_field\"]"};
+    NSDictionary *fields = @{@"field": @3, @"legacy_field": @4};
+    for (NSUInteger mask = 0; mask < 4; mask++) {
+        NSSet *tagKeys = mask & 1 ? [NSSet setWithObject:@"tag"] : nil;
+        NSSet *fieldKeys = mask & 2 ? [NSSet setWithObject:@"field"] : nil;
+        FTRUMWriteData *data = [[FTRUMWriteData alloc] initWithSource:FT_RUM_SOURCE_VIEW tags:tags fields:fields
+            context:nil customTagKeys:tagKeys customFieldKeys:fieldKeys time:123];
+        XCTAssertEqualObjects(data.customTagKeys, tagKeys ?: [NSSet setWithObject:@"legacy_tag"]);
+        XCTAssertEqualObjects(data.customFieldKeys, fieldKeys ?: [NSSet setWithObject:@"legacy_field"]);
+        XCTAssertEqualObjects(data.tags, tags);
+        XCTAssertEqualObjects(data.fields, fields);
+        XCTAssertEqual(data.time, 123);
+    }
+    FTRUMWriteData *explicitEmpty = [[FTRUMWriteData alloc] initWithSource:FT_RUM_SOURCE_VIEW tags:tags fields:fields
+        context:nil customTagKeys:[NSSet set] customFieldKeys:[NSSet set] time:123];
+    XCTAssertEqualObjects(explicitEmpty.customTagKeys, [NSSet set]);
+    XCTAssertEqualObjects(explicitEmpty.customFieldKeys, [NSSet set]);
+    XCTAssertNil(FTTestRUMTags(explicitEmpty)[FT_RUM_CUSTOM_KEYS]);
+}
+- (void)testRUMWriteDataFreezesMutableExplicitKeySets {
+    NSMutableSet *tagKeys = [NSMutableSet setWithObject:@"tag"];
+    NSMutableSet *fieldKeys = [NSMutableSet setWithObject:@"field"];
+    FTRUMWriteData *data = [[FTRUMWriteData alloc] initWithSource:FT_RUM_SOURCE_ACTION
+        tags:@{@"tag": @1, FT_RUM_CUSTOM_KEYS: @"[\"ignored_legacy\"]"} fields:@{@"field": @2}
+        context:nil customTagKeys:tagKeys customFieldKeys:fieldKeys time:123];
+    [tagKeys removeAllObjects];
+    [fieldKeys addObject:@"late_field"];
+    XCTAssertEqualObjects(data.customTagKeys, [NSSet setWithObject:@"tag"]);
+    XCTAssertEqualObjects(data.customFieldKeys, [NSSet setWithObject:@"field"]);
+    NSMutableDictionary *tags = [data.tags mutableCopy];
+    FTRUMEncodeCustomKeys(tags, data.fields, data.customTagKeys, data.customFieldKeys);
+    XCTAssertEqualObjects(FTRUMDecodeCustomKeys(tags[FT_RUM_CUSTOM_KEYS]), ([NSSet setWithArray:@[@"tag", @"field"]]));
+}
+- (void)testRUMSnapshotValidatesInputOnceAndPreservesDerivedOwnership {
+    NSSet *inputKeys = [NSSet setWithArray:@[@"custom", @"missing", @"", @7, FT_RUM_CUSTOM_KEYS]];
+    FTRUMPropertySnapshot *snapshot = [[FTRUMPropertySnapshot alloc] initWithTags:
+        @{@"custom": @1, FT_RUM_CUSTOM_KEYS: @"legacy metadata"} customKeys:inputKeys];
+    XCTAssertEqualObjects(snapshot.tags, (@{@"custom": @1}));
+    XCTAssertEqualObjects(snapshot.customKeys, [NSSet setWithObject:@"custom"]);
+    FTRUMPropertySnapshot *visitor = [snapshot snapshotBySettingSystemValue:@"request-visitor" forKey:FT_VISITOR_ID];
+    XCTAssertEqualObjects(visitor.tags, (@{@"custom": @1, FT_VISITOR_ID: @"request-visitor"}));
+    XCTAssertEqualObjects(visitor.customKeys, [NSSet setWithObject:@"custom"]);
+    FTRUMPropertySnapshot *removed = [visitor snapshotBySettingSystemValue:nil forKey:@"custom"];
+    XCTAssertEqualObjects(removed.tags, (@{FT_VISITOR_ID: @"request-visitor"}));
+    XCTAssertEqualObjects(removed.customKeys, [NSSet set]);
+    XCTAssertEqualObjects(visitor.tags[@"custom"], @1);
+    FTRUMPropertySnapshot *legacy = [FTRUMPropertySnapshot snapshotWithLegacyTags:
+        @{@"custom": @1, FT_RUM_CUSTOM_KEYS: @"[\"custom\",\"missing\",\"\",7]"}];
+    XCTAssertEqualObjects(legacy.tags, snapshot.tags);
+    XCTAssertEqualObjects(legacy.customKeys, snapshot.customKeys);
+}
+- (void)testFatalContextReusesManagedVisitorUntilPresetOrVisitorChanges {
+    FTFatalErrorContext *context = [[FTFatalErrorContext alloc] initWithErrorInfoProvider:nil];
+    FTRUMPropertySnapshot *preset = [[FTRUMPropertySnapshot alloc] initWithTags:@{@"custom": @1}
+        customKeys:[NSSet setWithObject:@"custom"]];
+    NSMutableString *visitor = [@"event-visitor" mutableCopy];
+    [context setDynamicPropertySnapshot:preset visitorIDSnapshot:visitor];
+    [visitor setString:@"later-visitor"];
+    FTFatalErrorContextModel *first = [context currentContextModel];
+    XCTAssertEqualObjects(first.dynamicContext[FT_VISITOR_ID], @"event-visitor");
+    XCTAssertEqualObjects(first.dynamicContext[@"custom"], @1);
+    XCTAssertEqualObjects(first.dynamicPropertySnapshot.customKeys, [NSSet setWithObject:@"custom"]);
+    XCTAssertNil(preset.tags[FT_VISITOR_ID]);
+    [context setDynamicPropertySnapshot:preset visitorIDSnapshot:@"event-visitor"];
+    XCTAssertTrue(first.dynamicPropertySnapshot == [context currentContextModel].dynamicPropertySnapshot);
+    [context setDynamicPropertySnapshot:preset visitorIDSnapshot:@"reset-visitor"];
+    FTFatalErrorContextModel *reset = [context currentContextModel];
+    XCTAssertEqualObjects(reset.dynamicContext[FT_VISITOR_ID], @"reset-visitor");
+    FTFatalErrorContextModel *restored = [[FTFatalErrorContextModel alloc] initWithDict:[first toDictionary]];
+    XCTAssertEqualObjects(restored.dynamicContext[FT_VISITOR_ID], @"event-visitor");
+    FTRUMPropertySnapshot *changed = [[FTRUMPropertySnapshot alloc] initWithTags:@{@"custom": @2}
+        customKeys:[NSSet setWithObject:@"custom"]];
+    [context setDynamicPropertySnapshot:changed visitorIDSnapshot:@"reset-visitor"];
+    XCTAssertEqualObjects([context currentContextModel].dynamicContext[@"custom"], @2);
+    [context setDynamicPropertySnapshot:changed visitorIDSnapshot:nil];
+    XCTAssertNil([context currentContextModel].dynamicContext[FT_VISITOR_ID]);
+}
+- (void)testFatalContextReusesSnapshotsAndRoundTripsHistoricalProvenance {
+    FTRUMPropertySnapshot *global = [[FTRUMPropertySnapshot alloc] initWithTags:@{@"base": @1}
+        customKeys:[NSSet setWithObject:@"base"]];
+    FTRUMPropertySnapshot *dynamic = [[FTRUMPropertySnapshot alloc] initWithTags:@{@"dynamic": @2}
+        customKeys:[NSSet setWithObject:@"dynamic"]];
+    FTFatalErrorContextModel *model = [[FTFatalErrorContextModel alloc] initWithAppState:@"run"
+        lastSessionState:nil lastViewContext:nil dynamicPropertySnapshot:dynamic globalPropertySnapshot:global
+        errorMonitorInfo:@{@"memory": @3}];
+    XCTAssertTrue(model.globalPropertySnapshot == global);
+    XCTAssertTrue(model.dynamicPropertySnapshot == dynamic);
+    XCTAssertTrue(model.globalAttributes == global.tags);
+    XCTAssertTrue(model.dynamicContext == dynamic.tags);
+    NSDictionary *encoded = [model toDictionary];
+    XCTAssertEqualObjects(encoded[@"globalAttributes"], @{@"base": @1});
+    XCTAssertEqualObjects(encoded[@"dynamicContext"], @{@"dynamic": @2});
+    XCTAssertEqualObjects(encoded[@"globalCustomKeys"], @[@"base"]);
+    XCTAssertEqualObjects(encoded[@"dynamicCustomKeys"], @[@"dynamic"]);
+    FTFatalErrorContextModel *restored = [[FTFatalErrorContextModel alloc] initWithDict:encoded];
+    XCTAssertEqualObjects([restored toDictionary], encoded);
+    XCTAssertEqualObjects(restored.globalPropertySnapshot.customKeys, global.customKeys);
+    XCTAssertEqualObjects(restored.dynamicPropertySnapshot.customKeys, dynamic.customKeys);
+    FTFatalErrorContext *context = [[FTFatalErrorContext alloc] initWithErrorInfoProvider:nil];
+    [context setDynamicPropertySnapshot:dynamic];
+    FTFatalErrorContextModel *live = [context currentContextModel];
+    XCTAssertTrue(live.dynamicPropertySnapshot == dynamic);
+    XCTAssertEqualObjects(live.dynamicContext, @{@"dynamic": @2});
+}
+- (void)testRUMPropertySnapshotCacheAndUserExtraInvalidation {
+    FTPresetProperty *preset = [FTPresetProperty new];
+    [preset clearUser];
+    [preset startWithVersion:@"1" sdkVersion:@"1" env:@"test" service:@"test"
+              globalContext:@{@"base": @1, @"os": @"base-user-value"} pkgInfo:nil];
+    [preset updateUser:@"before-rum" name:nil email:nil extra:@{@"old_extra": @1}];
+    [preset setRUMAppID:@"app" sampleRate:100 sessionOnErrorSampleRate:0 rumGlobalContext:@{@"rum": @2}];
+    FTRUMPropertySnapshot *first = [preset rumPropertySnapshot];
+    XCTAssertTrue(first == [preset rumPropertySnapshot]);
+    NSSet *firstKeys = [NSSet setWithArray:@[@"base", @"rum", @"old_extra"]];
+    XCTAssertEqualObjects(first.customKeys, firstKeys);
+    XCTAssertEqualObjects(first.tags[@"old_extra"], @1);
+    [preset appendGlobalContext:@{@"new_global": @3}];
+    FTRUMPropertySnapshot *second = [preset rumPropertySnapshot];
+    XCTAssertFalse(first == second);
+    XCTAssertTrue(second == [preset rumPropertySnapshot]);
+    XCTAssertNil(first.tags[@"new_global"]);
+    XCTAssertFalse([first.customKeys containsObject:@"new_global"]);
+    XCTAssertEqualObjects(second.tags[@"new_global"], @3);
+    [preset updateUser:@"new-user" name:nil email:nil extra:@{@"new_extra": @4}];
+    FTRUMPropertySnapshot *third = [preset rumPropertySnapshot];
+    NSSet *thirdKeys = [NSSet setWithArray:@[@"base", @"rum", @"new_global", @"new_extra"]];
+    XCTAssertEqualObjects(third.customKeys, thirdKeys);
+    XCTAssertNil(third.tags[@"old_extra"]);
+    [preset clearUser];
+    NSSet *unboundKeys = [NSSet setWithArray:@[@"base", @"rum", @"new_global"]];
+    XCTAssertEqualObjects([preset rumPropertySnapshot].customKeys, unboundKeys);
+    [preset connectivityChanged:YES typeDescription:@"wifi"];
+    FTRUMPropertySnapshot *network = [preset rumPropertySnapshot];
+    XCTAssertEqualObjects(network.tags[FT_NETWORK_TYPE], @"wifi");
+    XCTAssertEqualObjects(network.customKeys, unboundKeys);
+    XCTAssertTrue(network == [preset rumPropertySnapshot]);
+    [preset shutDown];
+    XCTAssertEqual([preset rumPropertySnapshot].tags.count, 0);
+}
+- (void)testRUMUserExtraKeysFollowModifierAndNilKeepsOriginalValue {
+    FTPresetProperty *preset = [FTPresetProperty new];
+    [preset clearUser];
+    [preset setDataModifier:^id(NSString *key, id value) {
+        if ([key isEqualToString:@"removed_extra"]) return nil;
+        return value;
+    } lineDataModifier:nil];
+    [preset setRUMAppID:@"app" sampleRate:100 sessionOnErrorSampleRate:0 rumGlobalContext:nil];
+    [preset updateUser:@"user" name:@"standard-name" email:nil extra:@{@"kept_extra": @1, @"removed_extra": @2}];
+    NSSet *expected = [NSSet setWithArray:@[@"kept_extra", @"removed_extra"]];
+    XCTAssertEqualObjects([preset rumPropertySnapshot].customKeys, expected);
+    XCTAssertEqualObjects([preset rumPropertySnapshot].tags[@"removed_extra"], @2);
+    XCTAssertEqualObjects([preset rumPropertySnapshot].tags[FT_USER_NAME], @"standard-name");
+    [preset clearUser];
+    [preset shutDown];
+}
+- (void)testRUMPropertySnapshotOwnsNestedValuesAndPreservesNumberTypes {
+    NSMutableString *name = [NSMutableString stringWithString:@"before"];
+    NSMutableDictionary *nested = [@{@"name": name, @"fraction": @1.25} mutableCopy];
+    NSMutableArray *array = [NSMutableArray arrayWithObject:nested];
+    FTRUMPropertySnapshot *snapshot = [[FTRUMPropertySnapshot alloc] initWithTags:@{@"nested": array}
+        customKeys:[NSSet setWithObject:@"nested"]];
+    [name appendString:@"-after"];
+    nested[@"fraction"] = @99;
+    [array removeAllObjects];
+    XCTAssertEqualObjects(snapshot.tags[@"nested"][0][@"name"], @"before");
+    XCTAssertEqualObjects(snapshot.tags[@"nested"][0][@"fraction"], @1.25);
+    XCTAssertTrue([snapshot.tags[@"nested"][0][@"fraction"] isKindOfClass:NSNumber.class]);
+    FTRUMPropertySnapshot *visitor = [snapshot snapshotBySettingSystemValue:@"visitor" forKey:@"visitor_id"];
+    XCTAssertEqualObjects(visitor.customKeys, snapshot.customKeys);
+    XCTAssertTrue(visitor.tags[@"nested"] == snapshot.tags[@"nested"]);
+    XCTAssertTrue(visitor == [visitor snapshotBySettingSystemValue:@"visitor" forKey:@"visitor_id"]);
+}
+- (void)testRUMSlowUserModifierCannotPublishAnOlderUserSnapshot {
+    FTPresetProperty *preset = [FTPresetProperty new];
+    [preset clearUser];
+    [preset setRUMAppID:@"app" sampleRate:100 sessionOnErrorSampleRate:0 rumGlobalContext:nil];
+    dispatch_semaphore_t entered = dispatch_semaphore_create(0);
+    dispatch_semaphore_t release = dispatch_semaphore_create(0);
+    dispatch_semaphore_t done = dispatch_semaphore_create(0);
+    [preset setDataModifier:^id(NSString *key, id value) {
+        if ([key isEqual:@"slow_extra"]) {
+            dispatch_semaphore_signal(entered);
+            dispatch_semaphore_wait(release, DISPATCH_TIME_FOREVER);
+        }
+        return value;
+    } lineDataModifier:nil];
+    dispatch_async(dispatch_get_global_queue(QOS_CLASS_DEFAULT, 0), ^{
+        [preset updateUser:@"old-user" name:nil email:nil extra:@{@"slow_extra": @1}];
+        dispatch_semaphore_signal(done);
+    });
+    XCTAssertEqual(dispatch_semaphore_wait(entered, dispatch_time(DISPATCH_TIME_NOW, NSEC_PER_SEC)), 0L);
+    [preset updateUser:@"new-user" name:nil email:nil extra:@{@"new_extra": @2}];
+    dispatch_semaphore_signal(release);
+    XCTAssertEqual(dispatch_semaphore_wait(done, dispatch_time(DISPATCH_TIME_NOW, NSEC_PER_SEC)), 0L);
+    FTRUMPropertySnapshot *snapshot = [preset rumPropertySnapshot];
+    XCTAssertEqualObjects(snapshot.tags[FT_USER_ID], @"new-user");
+    XCTAssertEqualObjects(snapshot.customKeys, [NSSet setWithObject:@"new_extra"]);
+    XCTAssertEqualObjects(snapshot.tags[@"new_extra"], @2);
+    XCTAssertNil(snapshot.tags[@"slow_extra"]);
+    [preset clearUser];
+    [preset shutDown];
+}
+- (void)testRUMSnapshotReevaluatesSystemOwnershipWithoutLosingSourceKeys {
+    FTPresetProperty *preset = [FTPresetProperty new];
+    [preset clearUser];
+    [preset setRUMAppID:@"app" sampleRate:100 sessionOnErrorSampleRate:0
+        rumGlobalContext:@{FT_NETWORK_TYPE: @"caller-network"}];
+    [preset connectivityChanged:YES typeDescription:@"wifi"];
+    FTRUMPropertySnapshot *system = [preset rumPropertySnapshot];
+    XCTAssertEqualObjects(system.tags[FT_NETWORK_TYPE], @"wifi");
+    XCTAssertFalse([system.customKeys containsObject:FT_NETWORK_TYPE]);
+    [preset connectivityChanged:NO typeDescription:nil];
+    FTRUMPropertySnapshot *custom = [preset rumPropertySnapshot];
+    XCTAssertEqualObjects(custom.tags[FT_NETWORK_TYPE], @"caller-network");
+    XCTAssertEqualObjects(custom.customKeys, [NSSet setWithObject:FT_NETWORK_TYPE]);
+    XCTAssertEqualObjects(system.tags[FT_NETWORK_TYPE], @"wifi");
+    [preset shutDown];
 }
 @end
