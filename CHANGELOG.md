@@ -1,3 +1,9 @@
+# 1.6.9-alpha.4
+
+1. Improved RUM `custom_keys` reporting for global context, user extra properties, and event properties, including WebView, Widget, and historical Crash/ANR events.
+2. **Changed:** Automatic Long Task and ANR collection now ignores background stalls by default, and ANR reports retain the application state captured at stall start. Automatically collected Long Task and ANR events no longer include interval-based `app_state`; manually reported Long Tasks retain interval-based reporting.
+---
+
 # 1.6.9-alpha.3
 
 1. Reduced SDK startup overhead by initializing network connectivity monitoring asynchronously and avoiding eager controller class initialization during automatic View scanning.
