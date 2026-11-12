@@ -22,6 +22,7 @@
 
 #if TARGET_OS_IOS || TARGET_OS_TV
 #import "FTConstants.h"
+#import "FTRUMPropertySnapshot.h"
 
 @interface FTAutoTrackActionPublisher ()
 @property (nonatomic, strong, nullable) FTActionTrackingHandler actionTrackingHandler;
@@ -62,7 +63,7 @@
         return;
     }
     if (self.addRumDatasDelegate && [self.addRumDatasDelegate respondsToSelector:@selector(startAction:actionType:property:)]) {
-        [self.addRumDatasDelegate startAction:actionName actionType:FT_KEY_ACTION_TYPE_CLICK property:property];
+        [self.addRumDatasDelegate startAction:actionName actionType:FT_KEY_ACTION_TYPE_CLICK property:FTRUMCopyDictionary(property)];
     }
 }
 #endif
@@ -80,10 +81,11 @@
 #endif
 
 - (void)publishAction:(FTRUMAction *)action heatmapAttributes:(FTHeatmapAttributes *)heatmapAttributes {
+    NSDictionary *property = FTRUMCopyDictionary(action.property);
     if (self.addRumDatasDelegate && [self.addRumDatasDelegate respondsToSelector:@selector(startAction:actionType:property:heatmapAttributes:)]) {
-        [self.addRumDatasDelegate startAction:action.actionName actionType:FT_KEY_ACTION_TYPE_CLICK property:action.property heatmapAttributes:heatmapAttributes];
+        [self.addRumDatasDelegate startAction:action.actionName actionType:FT_KEY_ACTION_TYPE_CLICK property:property heatmapAttributes:heatmapAttributes];
     } else if (self.addRumDatasDelegate && [self.addRumDatasDelegate respondsToSelector:@selector(startAction:actionType:property:)]) {
-        [self.addRumDatasDelegate startAction:action.actionName actionType:FT_KEY_ACTION_TYPE_CLICK property:action.property];
+        [self.addRumDatasDelegate startAction:action.actionName actionType:FT_KEY_ACTION_TYPE_CLICK property:property];
     }
 }
 

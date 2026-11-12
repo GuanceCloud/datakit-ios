@@ -1542,6 +1542,51 @@ static void FTStartAutoTrackActionTest(AddRumDatasHandlerMock *mock,
     XCTAssertNil(mock.lastHeatmapAttributes);
 }
 
+- (void)testActionPublisherOwnsNestedUIKitPropertiesBeforeHandoff {
+    AddRumDatasHandlerMock *mock = [AddRumDatasHandlerMock new];
+    TestTrackingHandler *handler = [TestTrackingHandler new];
+    NSMutableString *label = [NSMutableString stringWithString:@"before"];
+    NSMutableDictionary *nested = [@{@"label": label} mutableCopy];
+    handler.actionTrackingBlock = ^FTRUMAction *(UIView *view) {
+        return [[FTRUMAction alloc] initWithActionName:@"owned-action" property:@{@"nested": nested, @"fraction": @1.25}];
+    };
+    FTAutoTrackActionPublisher *publisher = [[FTAutoTrackActionPublisher alloc] initWithActionTrackingHandler:handler
+        addRumDatasDelegate:mock heatmapResolver:[FTAutoTrackHeatmapResolver new]];
+    UIButton *button = [UIButton new];
+    [publisher publishUIKitActionWithTargetView:button heatmapTargetView:button locationResolver:nil];
+    [label appendString:@"-after"];
+    nested[@"later"] = @2;
+    XCTAssertEqualObjects(mock.lastActionProperty[@"nested"], (@{@"label": @"before"}));
+    XCTAssertEqualObjects(mock.lastActionProperty[@"fraction"], @1.25);
+    XCTAssertTrue([mock.lastActionProperty[@"fraction"] isKindOfClass:NSNumber.class]);
+}
+
+- (void)testActionPublisherOwnsNestedSwiftUIPropertiesBeforeHandoff {
+    AddRumDatasHandlerMock *mock = [AddRumDatasHandlerMock new];
+    FTAutoTrackActionPublisher *publisher = [[FTAutoTrackActionPublisher alloc] initWithActionTrackingHandler:nil
+        addRumDatasDelegate:mock heatmapResolver:[FTAutoTrackHeatmapResolver new]];
+    NSMutableArray *items = [NSMutableArray arrayWithObject:@1];
+    [publisher publishSwiftUIActionWithName:@"owned-swiftui-action" property:@{@"items": items, @"fraction": @1.25}];
+    [items addObject:@2];
+    XCTAssertEqualObjects(mock.lastActionProperty[@"items"], @[@1]);
+    XCTAssertEqualObjects(mock.lastActionProperty[@"fraction"], @1.25);
+    XCTAssertTrue([mock.lastActionProperty[@"fraction"] isKindOfClass:NSNumber.class]);
+}
+
+- (void)testSwiftUIViewOwnsNestedPropertiesBeforeHandoff {
+    AddRumDatasHandlerMock *mock = [AddRumDatasHandlerMock new];
+    FTAutoTrackHandler *handler = [FTAutoTrackHandler sharedInstance];
+    [handler startWithTrackView:YES action:NO addRumDatasDelegate:mock viewHandler:nil swiftUIViewHandler:nil actionHandler:nil];
+    NSMutableArray *items = [NSMutableArray arrayWithObject:@1];
+    [handler notifyOnAppearWithIdentity:@"owned-swiftui-view" name:@"OwnedView"
+        property:@{@"items": items, @"fraction": @1.25} loadTime:@0];
+    [items addObject:@2];
+    XCTAssertEqualObjects(mock.lastStartProperty[@"items"], @[@1]);
+    XCTAssertEqualObjects(mock.lastStartProperty[@"fraction"], @1.25);
+    XCTAssertTrue([mock.lastStartProperty[@"fraction"] isKindOfClass:NSNumber.class]);
+    [handler notifyOnDisappearWithIdentity:@"owned-swiftui-view"];
+}
+
 - (void)testActionPublisher_ignoresEmptySwiftUIActionName {
     AddRumDatasHandlerMock *mock = [AddRumDatasHandlerMock new];
     FTAutoTrackActionPublisher *publisher = [[FTAutoTrackActionPublisher alloc]initWithActionTrackingHandler:nil

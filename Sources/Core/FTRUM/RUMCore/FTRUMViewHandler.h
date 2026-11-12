@@ -35,7 +35,7 @@ typedef void(^FTErrorHandled)(void);
 @property (nonatomic, strong, readonly) NSDate *viewStartTime;
 @property (nonatomic, strong, nullable, readonly) FTRUMViewMetrics *metrics;
 @property (nonatomic, strong, nullable) FTRUMViewMetrics *previousViewMetrics;
-- (void)refreshInteractionMetricWithContext:(NSDictionary *)context;
+- (void)refreshInteractionMetricWithContext:(FTRUMPropertySnapshot *)context;
 @property (nonatomic, assign) BOOL fallbackView;
 @property (nonatomic, assign) BOOL isApplicationLaunchView;
 @property (nonatomic, assign) BOOL closeAfterInitialLaunchAction;

@@ -116,7 +116,7 @@ static NSString *FTRUMSessionStartReasonForCause(FTRUMSessionRenewalCause cause)
                                                                           viewReferrer:viewHandler.view_referrer];
                 viewStopModel.time = time;
                 viewStopModel.type = FTRUMDataViewStop;
-                [viewHandler.assistant process:viewStopModel context:@{}];
+                [viewHandler.assistant process:viewStopModel context:[[FTRUMPropertySnapshot alloc] initWithTags:nil customKeys:nil]];
                 continue;
             }
             FTRUMViewModel *viewModel = [[FTRUMViewModel alloc]initWithViewID:[FTBaseInfoHandler randomUUID]
@@ -155,7 +155,7 @@ static NSString *FTRUMSessionStartReasonForCause(FTRUMSessionRenewalCause cause)
         [writer isCacheWriter:enable];
     }
 }
-- (BOOL)process:(FTRUMDataModel *)model context:(nonnull NSDictionary *)context{
+- (BOOL)process:(FTRUMDataModel *)model context:(nonnull FTRUMPropertySnapshot *)context{
     // Lifecycle control closes existing Views without renewing or extending the Session.
     if (model.type == FTRUMDataAppStateChange) {
         [self propagateDataToViews:model context:context];
@@ -193,7 +193,7 @@ static NSString *FTRUMSessionStartReasonForCause(FTRUMSessionRenewalCause cause)
             [self.rumDependencies.fatalErrorContext setLastSessionState:[self.context.sessionState copy]];
         }
     }
-    self.rumDependencies.fatalErrorContext.dynamicContext = context;
+    [self.rumDependencies.fatalErrorContext setDynamicPropertySnapshot:context];
     switch (model.type) {
         case FTRUMDataViewStart:
             [self startView:model];
@@ -243,7 +243,7 @@ static NSString *FTRUMSessionStartReasonForCause(FTRUMSessionRenewalCause cause)
     return YES;
 }
 
-- (void)propagateDataToViews:(FTRUMDataModel *)model context:(NSDictionary *)context {
+- (void)propagateDataToViews:(FTRUMDataModel *)model context:(FTRUMPropertySnapshot *)context {
     self.viewHandlers = [self.assistant manageChildHandlers:self.viewHandlers byPropagatingData:model context:context];
     for (FTRUMViewHandler *view in self.viewHandlers) [view refreshInteractionMetricWithContext:context];
     if(![self hasActivityView]){
@@ -294,7 +294,7 @@ static NSString *FTRUMSessionStartReasonForCause(FTRUMSessionRenewalCause cause)
     }
     return nil;
 }
--(void)prepareFallbackViewForModel:(FTRUMDataModel *)model context:(NSDictionary *)context{
+-(void)prepareFallbackViewForModel:(FTRUMDataModel *)model context:(FTRUMPropertySnapshot *)context{
     NSString *fallbackViewName = [self fallbackViewNameForModel:model];
     FTRUMViewHandler *activeViewHandler = [self activeViewHandler];
     if(!activeViewHandler){
@@ -348,7 +348,7 @@ static NSString *FTRUMSessionStartReasonForCause(FTRUMSessionRenewalCause cause)
 -(FTRUMViewHandler *)startFallbackViewWithName:(NSString *)viewName time:(NSDate *)time{
     return [self startFallbackViewWithModel:[self fallbackViewModelWithName:viewName time:time]];
 }
--(FTRUMViewHandler *)startFallbackViewByClosingActiveFallbackWithName:(NSString *)viewName time:(NSDate *)time context:(NSDictionary *)context{
+-(FTRUMViewHandler *)startFallbackViewByClosingActiveFallbackWithName:(NSString *)viewName time:(NSDate *)time context:(FTRUMPropertySnapshot *)context{
     FTRUMViewModel *viewModel = [self fallbackViewModelWithName:viewName time:time];
     self.viewHandlers = [self.assistant manageChildHandlers:self.viewHandlers byPropagatingData:viewModel context:context];
     return [self startFallbackViewWithModel:viewModel];
@@ -383,7 +383,7 @@ static NSString *FTRUMSessionStartReasonForCause(FTRUMSessionRenewalCause cause)
     }
     return FTRUMSessionRenewalCauseNone;
 }
-- (void)writeWebViewJSBData:(FTRUMWebViewData *)data context:(NSDictionary *)context{
+- (void)writeWebViewJSBData:(FTRUMWebViewData *)data context:(FTRUMPropertySnapshot *)context{
     NSDictionary *sessionTag = [self.context getGlobalSessionTags];
     NSMutableDictionary *tags = [NSMutableDictionary new];
     [tags addEntriesFromDictionary:data.tags];
@@ -391,8 +391,10 @@ static NSString *FTRUMSessionStartReasonForCause(FTRUMSessionRenewalCause cause)
     [tags setValue:@(YES) forKey:FT_IS_WEBVIEW];
     NSMutableDictionary *fields = [[NSMutableDictionary alloc]initWithDictionary:data.fields];
     [fields setValue:@(NO) forKey:FT_KEY_IS_ACTIVE];
-    [fields addEntriesFromDictionary:self.context.sessionState.sessionFields];
-    [self.rumDependencies.writer rumWrite:data.measurement tags:tags fields:fields dynamicContext:context time:data.tm];
+    [fields addEntriesFromDictionary:self.context.sessionState.sessionFields ?: @{}];
+    FTRUMWriteData *writeData = [[FTRUMWriteData alloc] initWithSource:data.measurement tags:tags fields:fields
+        context:context customTagKeys:[NSSet set] customFieldKeys:data.customFieldKeys ?: [NSSet set] time:data.tm];
+    FTRUMWrite(self.rumDependencies.writer, writeData);
 }
 -(NSString *)getCurrentViewID{
     FTRUMViewHandler *view = (FTRUMViewHandler *)[self.viewHandlers lastObject];

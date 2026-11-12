@@ -19,6 +19,7 @@
 
 #import <Foundation/Foundation.h>
 #import "FTErrorDataProtocol.h"
+#import "FTRUMPropertySnapshot.h"
 
 NS_ASSUME_NONNULL_BEGIN
 @class FTRUMSessionState;
@@ -27,6 +28,8 @@ typedef void (^FTCrashContextChange)(NSDictionary *context);
 
 
 @interface FTFatalErrorContextModel : NSObject<FTDictionaryConvertible>
+@property (nonatomic, strong) FTRUMPropertySnapshot *globalPropertySnapshot;
+@property (nonatomic, strong) FTRUMPropertySnapshot *dynamicPropertySnapshot;
 
 @property (nonatomic, copy, readonly, nullable) NSString *appState;
 @property (nonatomic, strong, readonly, nullable) FTRUMSessionState *lastSessionState;
@@ -40,6 +43,14 @@ typedef void (^FTCrashContextChange)(NSDictionary *context);
                  lastViewContext:(nullable NSDictionary *)lastViewContext
                   dynamicContext:(nullable NSDictionary *)dynamicContext
                 globalAttributes:(nullable NSDictionary *)globalAttributes
+                errorMonitorInfo:(nullable NSDictionary *)errorMonitorInfo;
+
+/// Reuse owned snapshots on the live path; dictionary decoding is for legacy input.
+- (instancetype)initWithAppState:(nullable NSString *)appState
+                lastSessionState:(nullable FTRUMSessionState *)lastSessionState
+                 lastViewContext:(nullable NSDictionary *)lastViewContext
+         dynamicPropertySnapshot:(nullable FTRUMPropertySnapshot *)dynamicSnapshot
+          globalPropertySnapshot:(nullable FTRUMPropertySnapshot *)globalSnapshot
                 errorMonitorInfo:(nullable NSDictionary *)errorMonitorInfo NS_DESIGNATED_INITIALIZER;
 
 - (instancetype)init NS_UNAVAILABLE;
@@ -58,6 +69,7 @@ typedef void (^FTCrashContextChange)(NSDictionary *context);
 - (void)setLastSessionState:(nullable FTRUMSessionState *)lastSessionState;
 - (void)setLastViewContext:(nullable NSDictionary *)lastViewContext;
 - (void)setDynamicContext:(nullable NSDictionary *)dynamicContext;
+- (void)setDynamicPropertySnapshot:(FTRUMPropertySnapshot *)snapshot;
 
 - (FTFatalErrorContextModel *)currentContextModel;
 

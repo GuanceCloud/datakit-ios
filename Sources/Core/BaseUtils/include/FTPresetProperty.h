@@ -23,6 +23,7 @@
 #import "FTInternalConstants.h"
 #import "FTSDKCompat.h"
 #import "FTReadWriteHelper.h"
+#import "FTRUMPropertySnapshot.h"
 NS_ASSUME_NONNULL_BEGIN
 @class FTUserInfo;
 /// Preset properties
@@ -57,6 +58,7 @@ NS_ASSUME_NONNULL_BEGIN
 
 -(void)setLogGlobalContext:(nullable NSDictionary *)logGlobalContext;
 
+- (FTRUMPropertySnapshot *)rumPropertySnapshot;
 - (NSDictionary *)rumTags;
 - (NSDictionary *)rumDynamicTags;
 

@@ -30,6 +30,7 @@
 #import "FTConstants.h"
 #import "FTJSONUtil.h"
 #import "FTRecordModel.h"
+#import "FTRUMPropertySnapshot.h"
 #import "FTURLSessionDelegate.h"
 #import "FTURLSessionInterceptor.h"
 #import "FTURLSessionInterceptor+Private.h"
@@ -678,5 +679,39 @@
     }];
     XCTAssertEqual(hasResourceCount, autoTrace ? 2 : 1);
     [[FTTrackerEventDBTool sharedManager] deleteAllDatas];
+}
+- (void)testResourceProviderCustomKeysFollowCollectorLifecycleWithoutMetrics {
+    [self initSDKEnableAutoTrace:NO resourcePropertyProvider:nil];
+    [[FTMobileAgent sharedInstance] unbindUser];
+    FTRUMManager *manager = [FTGlobalRumManager sharedInstance].rumManager;
+    FTURLSessionInterceptor *interceptor = [FTURLSessionInterceptor new];
+    interceptor.rumResourceHandler = manager;
+    __block NSUInteger providerCalls = 0;
+    interceptor.resourcePropertyProvider = ^NSDictionary *(NSURLRequest *request, NSURLResponse *response, NSData *data, NSError *error) {
+        providerCalls++;
+        return @{@"provider_custom": @"accepted"};
+    };
+    NSURL *url = [NSURL URLWithString:@"https://provider-lifecycle.test/no-metrics"];
+    NSURLSession *session = [NSURLSession sessionWithConfiguration:NSURLSessionConfiguration.ephemeralSessionConfiguration];
+    NSURLSessionTask *task = [session dataTaskWithURL:url];
+    // Exercise the real collector, with controlled missing metrics and duplicate
+    // terminal delivery. No request is resumed and no network wait is required.
+    [interceptor interceptTask:task];
+    [interceptor taskCompleted:task error:nil extraProvider:nil];
+    [interceptor taskCompleted:task error:nil extraProvider:nil];
+    dispatch_sync(interceptor.queue, ^{});
+    [manager syncProcess];
+    __block NSUInteger resources = 0;
+    NSArray *records = [[FTTrackerEventDBTool sharedManager] getFirstRecords:100 withType:FT_DATA_TYPE_RUM];
+    [FTModelHelper resolveModelArray:records callBack:^(NSString *source, NSDictionary *tags, NSDictionary *fields, BOOL *stop) {
+        if (![source isEqual:FT_RUM_SOURCE_RESOURCE] || ![tags[FT_KEY_RESOURCE_URL] isEqual:url.absoluteString]) return;
+        resources++;
+        XCTAssertEqualObjects(fields[@"provider_custom"], @"accepted");
+        XCTAssertEqualObjects(FTRUMDecodeCustomKeys(tags[FT_RUM_CUSTOM_KEYS]), [NSSet setWithObject:@"provider_custom"]);
+    }];
+    XCTAssertEqual(providerCalls, 1);
+    XCTAssertEqual(resources, 1);
+    [session invalidateAndCancel];
+    [interceptor shutDown];
 }
 @end

@@ -261,7 +261,7 @@ static long long const FTMetricEpoch = 1800000000000000000LL;
 - (void)send:(FTRUMDataModel *)model at:(NSInteger)ms {
     model.time = [self date:ms];
     model.tm = FTMetricEpoch + ms * 1000000LL;
-    [self.session.assistant process:model context:@{}];
+    [self.session.assistant process:model context:[[FTRUMPropertySnapshot alloc] initWithTags:nil customKeys:nil]];
 }
 - (void)view:(NSString *)identifier at:(NSInteger)ms stop:(BOOL)stop {
     FTRUMViewModel *model = [[FTRUMViewModel alloc] initWithViewID:identifier viewName:@"same-name" viewReferrer:@""];
@@ -431,7 +431,7 @@ static long long const FTMetricEpoch = 1800000000000000000LL;
     void (^sendAt)(FTRUMDataModel *, long long) = ^(FTRUMDataModel *model, long long ns) {
         model.time = [NSDate dateWithTimeIntervalSince1970:ns / 1e9];
         model.tm = ns;
-        [self.session.assistant process:model context:@{}];
+        [self.session.assistant process:model context:[[FTRUMPropertySnapshot alloc] initWithTags:nil customKeys:nil]];
     };
     FTRUMViewModel *(^view)(NSString *, BOOL) = ^FTRUMViewModel *(NSString *identifier, BOOL stop) {
         FTRUMViewModel *model = [[FTRUMViewModel alloc] initWithViewID:identifier viewName:@"UITestVC" viewReferrer:@""];
@@ -895,7 +895,7 @@ static long long const FTMetricEpoch = 1800000000000000000LL;
     FTRUMViewModel *first = [[FTRUMViewModel alloc] initWithViewID:@"collectorA" viewName:@"A" viewReferrer:@""];
     first.type = FTRUMDataViewStart;
     first.time = [self date:0]; first.tm = FTMetricEpoch;
-    dispatch_sync(rumQueue, ^{ [manager.assistant process:first context:@{}]; });
+    dispatch_sync(rumQueue, ^{ [manager.assistant process:first context:[[FTRUMPropertySnapshot alloc] initWithTags:nil customKeys:nil]]; });
     FTMetricInterceptor *interceptor = [FTMetricInterceptor new];
     interceptor.rumResourceHandler = manager;
     interceptor.boundaryDate = [self date:20];
@@ -908,7 +908,7 @@ static long long const FTMetricEpoch = 1800000000000000000LL;
     FTRUMViewModel *next = [[FTRUMViewModel alloc] initWithViewID:@"collectorB" viewName:@"B" viewReferrer:@""];
     next.type = FTRUMDataViewStart;
     next.time = [self date:1000]; next.tm = FTMetricEpoch + 1000000000;
-    dispatch_sync(rumQueue, ^{ [manager.assistant process:next context:@{}]; });
+    dispatch_sync(rumQueue, ^{ [manager.assistant process:next context:[[FTRUMPropertySnapshot alloc] initWithTags:nil customKeys:nil]]; });
     dispatch_resume(networkQueue);
     dispatch_sync(networkQueue, ^{});
     [manager syncProcess];
@@ -1033,14 +1033,14 @@ static long long const FTMetricEpoch = 1800000000000000000LL;
     dispatch_queue_t queue = [manager valueForKey:@"rumQueue"];
     FTRUMViewModel *view = [[FTRUMViewModel alloc] initWithViewID:@"connectionA" viewName:@"A" viewReferrer:@""];
     view.type = FTRUMDataViewStart; view.time = [self date:0]; view.tm = FTMetricEpoch;
-    dispatch_sync(queue, ^{ [manager.assistant process:view context:@{}]; });
+    dispatch_sync(queue, ^{ [manager.assistant process:view context:[[FTRUMPropertySnapshot alloc] initWithTags:nil customKeys:nil]]; });
     FTURLConnectionHandler *handler = [[FTURLConnectionHandler alloc] initWithRequest:[NSURLRequest requestWithURL:[NSURL URLWithString:@"https://example.test"]] resourceEnabled:YES provider:nil errorFilter:nil rumResourceHandler:manager];
     XCTAssertTrue([handler recordStartWithDate:[self date:20] continuousTime:20000000]);
     XCTAssertFalse([handler recordStartWithDate:[self date:2000] continuousTime:2000000000]);
     [manager syncProcess];
     FTRUMViewModel *next = [[FTRUMViewModel alloc] initWithViewID:@"connectionB" viewName:@"B" viewReferrer:@""];
     next.type = FTRUMDataViewStart; next.time = [self date:1000]; next.tm = FTMetricEpoch + 1000000000;
-    dispatch_sync(queue, ^{ [manager.assistant process:next context:@{}]; });
+    dispatch_sync(queue, ^{ [manager.assistant process:next context:[[FTRUMPropertySnapshot alloc] initWithTags:nil customKeys:nil]]; });
     [handler activate];
     [handler reportStartIfNeeded];
     [handler recordTerminalWithResponse:nil error:[NSError errorWithDomain:NSURLErrorDomain code:NSURLErrorTimedOut userInfo:nil] date:[self date:500] continuousTime:500000000];

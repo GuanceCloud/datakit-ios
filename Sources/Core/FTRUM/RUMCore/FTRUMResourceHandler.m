@@ -44,10 +44,12 @@ typedef struct {
 @property (nonatomic, assign) BOOL completed;
 @property (nonatomic, strong, nullable) NSDate *resourceStopTime;
 @property (nonatomic, strong) NSMutableDictionary *resourceProperty;
+@property (nonatomic, strong) NSMutableSet<NSString *> *resourceCustomKeys;
 @property (nonatomic, strong, nullable) NSNumber *networkAvailable;
 @property (nonatomic, strong, nullable) NSNumber *networkSignalStrength;
+
 @property (nonatomic, copy, nullable) NSString *visitorIDSnapshot;
-- (NSDictionary *)context:(NSDictionary *)context byApplyingVisitorID:(NSString *)visitorID;
+- (FTRUMPropertySnapshot *)context:(FTRUMPropertySnapshot *)context byApplyingVisitorID:(NSString *)visitorID;
 @end
 @implementation FTRUMResourceHandler
 -(instancetype)initWithModel:(FTRUMResourceDataModel *)model context:(FTRUMContext *)context dependencies:(nonnull FTRUMDependencies *)dependencies networkMetric:(FTRUMNetworkSettledMetric *)networkMetric{
@@ -61,9 +63,10 @@ typedef struct {
         self.networkMetric = networkMetric;
         [networkMetric startResourceWithKey:model.identifier startNs:model.tm URL:model.tags[FT_KEY_RESOURCE_URL]];
         self.visitorIDSnapshot = model.visitorIDSnapshot;
+        self.resourceCustomKeys = [NSMutableSet set];
         self.resourceProperty = [[NSMutableDictionary alloc]init];
         if(model.fields && model.fields.allKeys.count>0){
-            [self.resourceProperty addEntriesFromDictionary:model.fields];
+            FTRUMMergeProperties(self.resourceProperty, self.resourceCustomKeys, model.fields, model.customFieldKeys);
         }
         self.networkAvailable = model.networkAvailable;
         self.networkSignalStrength = model.networkSignalStrength;
@@ -72,7 +75,7 @@ typedef struct {
     return self;
 }
 
-- (BOOL)process:(nonnull FTRUMDataModel *)data context:(nonnull NSDictionary *)context{
+- (BOOL)process:(nonnull FTRUMDataModel *)data context:(nonnull FTRUMPropertySnapshot *)context{
     if (self.completed) return NO;
     if ([data isKindOfClass:FTRUMResourceModel.class]) {
         FTRUMResourceDataModel *newData = (FTRUMResourceDataModel *)data;
@@ -94,12 +97,12 @@ typedef struct {
                         if (self.visitorIDSnapshot.length > 0) {
                             [fields removeObjectForKey:FT_VISITOR_ID];
                         }
-                        [self.resourceProperty addEntriesFromDictionary:fields];
+                        FTRUMMergeProperties(self.resourceProperty, self.resourceCustomKeys, fields, data.customFieldKeys);
                     }
                 }
                     break;
                 case FTRUMDataResourceStart:
-                    if (data.fields) [self.resourceProperty addEntriesFromDictionary:data.fields];
+                    if (data.fields) FTRUMMergeProperties(self.resourceProperty, self.resourceCustomKeys, data.fields, data.customFieldKeys);
                     break;
                 case FTRUMDataResourceError:{
                     if(self.errorHandler){
@@ -123,21 +126,24 @@ typedef struct {
 
     return YES;
 }
-- (void)writeResourceError:(FTRUMDataModel *)model context:(NSDictionary *)context{
+- (void)writeResourceError:(FTRUMDataModel *)model context:(FTRUMPropertySnapshot *)context{
+    NSMutableSet *customKeys = [NSMutableSet set];
     NSDictionary *sessionTag = [self.context getGlobalSessionViewActionTags];
     NSMutableDictionary *tags = [NSMutableDictionary new];
     [tags addEntriesFromDictionary:sessionTag];
     [tags addEntriesFromDictionary:model.tags];
     NSMutableDictionary *fields = [NSMutableDictionary dictionary];
     [fields setValue:self.dependencies.sessionHasReplay forKey:FT_SESSION_HAS_REPLAY];
-    [fields addEntriesFromDictionary:model.fields];
-    [fields addEntriesFromDictionary:self.context.sessionState.sessionFields];
+    FTRUMMergeProperties(fields, customKeys, model.fields, model.customFieldKeys);
+    [fields addEntriesFromDictionary:self.context.sessionState.sessionFields ?: @{}];
     if (self.visitorIDSnapshot.length > 0) {
         [tags removeObjectForKey:FT_VISITOR_ID];
-        [fields removeObjectForKey:FT_VISITOR_ID];
+        [fields setValue:nil forKey:FT_VISITOR_ID];
         context = [self context:context byApplyingVisitorID:self.visitorIDSnapshot];
     }
-    [self.dependencies.writer rumWrite:FT_RUM_SOURCE_ERROR tags:tags fields:fields dynamicContext:context time:model.tm];
+    FTRUMWriteData *writeData = [[FTRUMWriteData alloc] initWithSource:FT_RUM_SOURCE_ERROR tags:tags fields:fields
+        context:context customTagKeys:[NSSet set] customFieldKeys:customKeys time:model.tm];
+    FTRUMWrite(self.dependencies.writer, writeData);
 }
 - (FTRUMResourceTiming)timingForModel:(FTRUMResourceDataModel *)model {
     long long startNs = model.metrics.fetchStartNsTimeInterval;
@@ -147,7 +153,8 @@ typedef struct {
     endNs = self.stopNs.longLongValue;
     return (FTRUMResourceTiming){startNs, endNs, startNs > 0 && self.stopNs && endNs >= startNs};
 }
-- (void)writeResourceData:(FTRUMDataModel *)data context:(NSDictionary *)context{
+- (void)writeResourceData:(FTRUMDataModel *)data context:(FTRUMPropertySnapshot *)context{
+    NSMutableSet *customKeys = [NSMutableSet set];
     FTRUMResourceDataModel *model = (FTRUMResourceDataModel *)data;
     FTRUMResourceTiming timing = [self timingForModel:model];
     long long resourceStartTime = timing.startNs;
@@ -155,10 +162,11 @@ typedef struct {
     [self.networkMetric updateResourceWithKey:self.identifier startNs:timing.startNs URL:model.tags[FT_KEY_RESOURCE_URL]];
     NSMutableDictionary *fields = [NSMutableDictionary new];
     if(self.resourceProperty && self.resourceProperty.allKeys.count>0){
-        [fields addEntriesFromDictionary:self.resourceProperty];
+        FTRUMMergeProperties(fields, customKeys, self.resourceProperty, self.resourceCustomKeys);
     }
-    [fields addEntriesFromDictionary:data.fields];
+    FTRUMMergeProperties(fields, customKeys, data.fields, data.customFieldKeys);
     [fields setValue:self.dependencies.sessionHasReplay forKey:FT_SESSION_HAS_REPLAY];
+
     NSDate *fallbackEnd = self.resourceStopTime ?: data.time;
     // Legacy duration-only metrics remain event-only when no interval can be established.
     NSNumber *duration = timing.valid ? @(timing.endNs - timing.startNs)
@@ -178,12 +186,13 @@ typedef struct {
         [fields setValue:model.metrics.resource_redirect_time forKey:FT_KEY_RESOURCE_REDIRECT_TIME];
         [fields setValue:model.metrics.resource_connect_time forKey:FT_KEY_RESOURCE_CONNECT_TIME];
     }
-    fields[@"app_state"] = [self.dependencies.appStateHistory stateFrom:resourceStartTime
-                                                               duration:[fields[FT_DURATION] longLongValue]];
-    [fields addEntriesFromDictionary:self.context.sessionState.sessionFields];
+    [fields setValue:[self.dependencies.appStateHistory stateFrom:resourceStartTime
+                                                               duration:[fields[FT_DURATION] longLongValue]] forKey:@"app_state"];
+    [fields addEntriesFromDictionary:self.context.sessionState.sessionFields ?: @{}];
     // The first Start owns both network facts, including absent measurements.
     [fields setValue:self.networkAvailable forKey:FT_KEY_NETWORK_AVAILABLE];
     [fields setValue:self.networkSignalStrength forKey:FT_KEY_NETWORK_SIGNAL_STRENGTH];
+
     NSDictionary *sessionTag = [self.context getGlobalSessionViewActionTags];
     NSMutableDictionary *tags = [NSMutableDictionary new];
     [tags addEntriesFromDictionary:sessionTag];
@@ -191,19 +200,19 @@ typedef struct {
     [tags setValue:model.identifier forKey:FT_KEY_RESOURCE_ID];
     if (self.visitorIDSnapshot.length > 0) {
         [tags removeObjectForKey:FT_VISITOR_ID];
-        [fields removeObjectForKey:FT_VISITOR_ID];
+        [fields setValue:nil forKey:FT_VISITOR_ID];
         context = [self context:context byApplyingVisitorID:self.visitorIDSnapshot];
     }
-    BOOL accepted = FTRUMWriteAccepted(self.dependencies.writer, FT_RUM_SOURCE_RESOURCE, tags, fields, context, resourceStartTime);
+    FTRUMWriteData *writeData = [[FTRUMWriteData alloc] initWithSource:FT_RUM_SOURCE_RESOURCE tags:tags fields:fields
+        context:context customTagKeys:[NSSet set] customFieldKeys:customKeys time:resourceStartTime];
+    BOOL accepted = FTRUMWrite(self.dependencies.writer, writeData);
     if (accepted && timing.valid) {
         [self.networkMetric completeResourceWithKey:self.identifier endNs:timing.endNs];
     } else {
         [self.networkMetric dropResourceWithKey:self.identifier];
     }
 }
-- (NSDictionary *)context:(NSDictionary *)context byApplyingVisitorID:(NSString *)visitorID{
-    NSMutableDictionary *managedContext = [context mutableCopy] ?: [NSMutableDictionary dictionary];
-    managedContext[FT_VISITOR_ID] = visitorID;
-    return [managedContext copy];
+- (FTRUMPropertySnapshot *)context:(FTRUMPropertySnapshot *)context byApplyingVisitorID:(NSString *)visitorID{
+    return [context snapshotBySettingSystemValue:visitorID forKey:FT_VISITOR_ID];
 }
 @end

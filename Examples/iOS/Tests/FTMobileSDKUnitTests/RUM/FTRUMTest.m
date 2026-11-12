@@ -65,6 +65,8 @@
 #import "FTLongTaskANRData.h"
 #import "FTModuleManager.h"
 #import "FTReadWriteHelper.h"
+#import "FTPresetProperty.h"
+#import "FTDataWriterWorker.h"
 #import <objc/runtime.h>
 
 // A shared UIKit fixture for iOS and tvOS lifecycle tests.
@@ -146,7 +148,7 @@
 @end
 
 @interface FTRUMManager (RUMProcessingTest)
-- (BOOL)process:(FTRUMDataModel *)model context:(NSDictionary *)context;
+- (BOOL)process:(FTRUMDataModel *)model context:(FTRUMPropertySnapshot *)context;
 @end
 
 @interface FTTestColdStartRUMManager : FTRUMManager
@@ -161,7 +163,7 @@
 @property (nonatomic, assign) NSUInteger processedModelCount;
 @end
 @implementation FTTestRUMProcessingManager
-- (BOOL)process:(FTRUMDataModel *)model context:(NSDictionary *)context {
+- (BOOL)process:(FTRUMDataModel *)model context:(FTRUMPropertySnapshot *)context {
     self.processedModelCount += 1;
     return [super process:model context:context];
 }
@@ -173,7 +175,7 @@
 @property (nonatomic, copy) NSString *testVisitorID;
 @end
 @implementation FTLoadingHandoffTestManager
-- (BOOL)process:(FTRUMDataModel *)model context:(NSDictionary *)context {
+- (BOOL)process:(FTRUMDataModel *)model context:(FTRUMPropertySnapshot *)context {
     if (model.type == FTRUMDataViewStart) {
         if (!self.startedViews) self.startedViews = [NSMutableArray array];
         [self.startedViews addObject:(FTRUMViewModel *)model];
@@ -1243,7 +1245,7 @@
 }
 
 - (BOOL)processModel:(FTRUMDataModel *)model inTestSession:(FTRUMSessionHandler *)session{
-    return [session.assistant process:model context:@{}];
+    return [session.assistant process:model context:[[FTRUMPropertySnapshot alloc] initWithTags:nil customKeys:nil]];
 }
 
 - (void)testRUMDataModelUserInteractionClassification{
@@ -4245,6 +4247,7 @@
     FTCrashReportRUMModel *rumReport = (FTCrashReportRUMModel *)filteredReports.lastObject;
     RUMModel *model = rumReport.value;
     XCTAssertEqualObjects(model.fields[@"business_scene"], @"captured");
+    XCTAssertEqualObjects(FTRUMDecodeCustomKeys(model.tags[FT_RUM_CUSTOM_KEYS]), [NSSet setWithObject:@"business_scene"]);
     XCTAssertEqualObjects(model.fields[FT_KEY_ERROR_MESSAGE], @"mock crash message");
     XCTAssertEqualObjects(model.fields[FT_KEY_FOREGROUND_CRASH_FREE_DURATION], @12300000000LL);
     XCTAssertNil(model.fields[FT_RUM_KEY_SESSION_ID]);
@@ -4328,6 +4331,7 @@
                                       BOOL *stop) {
         if ([source isEqualToString:FT_RUM_SOURCE_ERROR]) {
             snapshotValue = fields[@"snapshot_provider"];
+            XCTAssertEqualObjects(FTRUMDecodeCustomKeys(tags[FT_RUM_CUSTOM_KEYS]), [NSSet setWithObject:@"snapshot_provider"]);
             *stop = YES;
         }
     }];
@@ -4573,5 +4577,275 @@
            && [deadline timeIntervalSinceNow] > 0) {
         [[NSRunLoop currentRunLoop] runMode:NSDefaultRunLoopMode beforeDate:[NSDate dateWithTimeIntervalSinceNow:0.01]];
     }
+}
+- (NSSet *)customKeysForTags:(NSDictionary *)tags {
+    return FTRUMDecodeCustomKeys(tags[FT_RUM_CUSTOM_KEYS]);
+}
+- (void)testCustomKeysEventLifecycle {
+    [self setRumConfig];
+    FTRUMManager *manager = [FTGlobalRumManager sharedInstance].rumManager;
+    [manager startViewWithViewID:@"custom-view" viewName:@"custom-view" property:@{@"view_start": @1}];
+    [manager addAction:@"custom-action" actionType:@"click" property:@{@"action_custom": @2}];
+    [manager startResourceWithKey:@"custom-resource" property:@{@"resource_start": @3}];
+    [manager stopResourceWithKey:@"custom-resource" property:@{@"resource_stop": @4}];
+    FTResourceContentModel *content = [FTResourceContentModel new];
+    content.url = [NSURL URLWithString:@"https://custom.example/resource"];
+    content.httpMethod = @"GET";
+    content.httpStatusCode = 200;
+    [manager addResourceWithKey:@"custom-resource" metrics:nil content:content];
+    [manager addErrorWithType:@"manual" message:@"message" stack:@"stack" property:@{@"error_custom": @5}];
+    [manager addLongTaskWithStack:@"stack" duration:@1000000 startTime:[NSDate ft_currentNanosecondTimeStamp] property:@{@"long_custom": @6}];
+    [manager stopViewWithViewID:@"custom-view" property:@{@"view_stop": @7}];
+    [manager syncProcess];
+    NSArray *records = [[FTTrackerEventDBTool sharedManager] getFirstRecords:100 withType:FT_DATA_TYPE_RUM];
+    NSMutableSet *seen = [NSMutableSet set];
+    __block NSDictionary *latestViewTags;
+    __block NSDictionary *latestViewFields;
+    [FTModelHelper resolveModelArray:records callBack:^(NSString *source, NSDictionary *tags, NSDictionary *fields, BOOL *stop) {
+        NSSet *expected;
+        if ([source isEqual:FT_RUM_SOURCE_ACTION] && [fields[@"action_custom"] isEqual:@2]) expected = [NSSet setWithObject:@"action_custom"];
+        if ([source isEqual:FT_RUM_SOURCE_RESOURCE] && [tags[FT_KEY_RESOURCE_ID] isEqual:@"custom-resource"]) {
+            expected = [NSSet setWithArray:@[@"resource_start", @"resource_stop"]];
+            XCTAssertEqualObjects(fields[@"resource_start"], @3);
+            XCTAssertEqualObjects(fields[@"resource_stop"], @4);
+        }
+        if ([source isEqual:FT_RUM_SOURCE_ERROR] && [fields[@"error_custom"] isEqual:@5]) expected = [NSSet setWithObject:@"error_custom"];
+        if ([source isEqual:FT_RUM_SOURCE_LONG_TASK] && [fields[@"long_custom"] isEqual:@6]) expected = [NSSet setWithObject:@"long_custom"];
+        if (expected) {
+            XCTAssertEqualObjects([self customKeysForTags:tags], expected);
+            [seen addObject:source];
+        }
+        if ([source isEqual:FT_RUM_SOURCE_VIEW] && [tags[FT_KEY_VIEW_ID] isEqual:@"custom-view"] &&
+            (!latestViewFields || [fields[FT_KEY_VIEW_UPDATE_TIME] longLongValue] > [latestViewFields[FT_KEY_VIEW_UPDATE_TIME] longLongValue])) {
+            latestViewTags = tags;
+            latestViewFields = fields;
+        }
+    }];
+    NSSet *expectedSources = [NSSet setWithArray:@[FT_RUM_SOURCE_ACTION, FT_RUM_SOURCE_RESOURCE, FT_RUM_SOURCE_ERROR, FT_RUM_SOURCE_LONG_TASK]];
+    XCTAssertEqualObjects(seen, expectedSources);
+    NSSet *viewKeys = [NSSet setWithArray:@[@"view_start", @"view_stop"]];
+    XCTAssertEqualObjects([self customKeysForTags:latestViewTags], viewKeys);
+    XCTAssertEqualObjects(latestViewFields[@"view_start"], @1);
+    XCTAssertEqualObjects(latestViewFields[@"view_stop"], @7);
+}
+- (void)testCustomKeysWebBridgeMergesNativeAndBrowserMetadata {
+    [self setRumConfig];
+    [FTMobileAgent appendGlobalContext:@{@"native_base": @1}];
+    [FTMobileAgent appendRUMGlobalContext:@{@"native_rum": @2, @"shared": @"native"}];
+    FTRUMManager *manager = [FTGlobalRumManager sharedInstance].rumManager;
+    [manager addWebViewData:FT_RUM_SOURCE_VIEW
+        tags:@{@"view_id": @"browser-view", @"visitor_id": @"browser-visitor",
+               @"custom_keys": @"[\"web_field\",\"shared\",\"web_field\"]"}
+        fields:@{@"web_field": @3, @"shared": @"browser"} tm:123456789];
+    [manager syncProcess];
+    __block NSUInteger count = 0;
+    NSArray *records = [[FTTrackerEventDBTool sharedManager] getFirstRecords:100 withType:FT_DATA_TYPE_RUM];
+    [FTModelHelper resolveModelArray:records callBack:^(NSString *source, NSDictionary *tags, NSDictionary *fields, BOOL *stop) {
+        if (![tags[FT_KEY_VIEW_ID] isEqual:@"browser-view"]) return;
+        count++;
+        NSSet *expected = [NSSet setWithArray:@[@"native_base", @"native_rum", @"shared", @"web_field"]];
+        XCTAssertEqualObjects([self customKeysForTags:tags], expected);
+        XCTAssertEqualObjects(tags[@"shared"], @"native");
+        XCTAssertEqualObjects(fields[@"shared"], @"browser");
+        XCTAssertEqualObjects(tags[@"visitor_id"], @"browser-visitor");
+        XCTAssertEqualObjects(fields[@"web_field"], @3);
+    }];
+    XCTAssertEqual(count, 1);
+}
+- (void)testCustomKeysWebBridgeOnlyMarksDeclaredFields {
+    [self setRumConfig];
+    [FTMobileAgent appendRUMGlobalContext:@{@"native": @1}];
+    FTRUMManager *manager = [FTGlobalRumManager sharedInstance].rumManager;
+    [manager addWebViewData:FT_RUM_SOURCE_ERROR
+        tags:@{@"tag_only": @2, @"custom_keys": @"[\"tag_only\",\"web_field\",\"web_field\",\"missing\"]"}
+        fields:@{@"web_field": @3, @"unmarked_field": @4} tm:123456789];
+    [manager syncProcess];
+    __block NSUInteger count = 0;
+    NSArray *records = [[FTTrackerEventDBTool sharedManager] getFirstRecords:100 withType:FT_DATA_TYPE_RUM];
+    [FTModelHelper resolveModelArray:records callBack:^(NSString *source, NSDictionary *tags, NSDictionary *fields, BOOL *stop) {
+        if (!fields[@"web_field"]) return;
+        count++;
+        NSSet *expected = [NSSet setWithArray:@[@"native", @"web_field"]];
+        XCTAssertEqualObjects([self customKeysForTags:tags], expected);
+        XCTAssertEqualObjects(tags[@"tag_only"], @2);
+        XCTAssertEqualObjects(fields[@"web_field"], @3);
+        XCTAssertEqualObjects(fields[@"unmarked_field"], @4);
+    }];
+    XCTAssertEqual(count, 1);
+}
+- (void)testCustomKeysWriterUsesPassedSnapshotAndPrunesDeletedFields {
+    [self setRumConfig];
+    FTPresetProperty *preset = [FTPresetProperty sharedInstance];
+    [FTMobileAgent appendRUMGlobalContext:@{@"snapshot_old": @1}];
+    FTRUMPropertySnapshot *old = [preset rumPropertySnapshot];
+    [FTMobileAgent appendRUMGlobalContext:@{@"snapshot_new": @2}];
+    [preset setDataModifier:nil lineDataModifier:^NSDictionary *(NSString *source, NSDictionary *values) {
+        return @{@"drop_field": [NSNull null], @"drop_tag": [NSNull null], @"custom_keys": @"invalid override"};
+    }];
+    FTDataWriterWorker *writer = [FTDataWriterWorker new];
+    NSSet *tagKeys = [NSSet setWithArray:@[@"drop_tag", @"same_name"]];
+    NSSet *fieldKeys = [NSSet setWithArray:@[@"drop_field", @"same_name", @"kept_field"]];
+    FTRUMWriteData *data = [[FTRUMWriteData alloc] initWithSource:FT_RUM_SOURCE_ACTION
+        tags:@{@"drop_tag": @1, @"same_name": @"tag"}
+        fields:@{@"drop_field": @1, @"same_name": @"field", @"kept_field": @2}
+        context:old customTagKeys:tagKeys customFieldKeys:fieldKeys time:123456];
+    XCTAssertTrue([writer writeRUMData:data]);
+    NSArray *records = [[FTTrackerEventDBTool sharedManager] getFirstRecords:100 withType:FT_DATA_TYPE_RUM];
+    __block NSUInteger count = 0;
+    [FTModelHelper resolveModelArray:records callBack:^(NSString *source, NSDictionary *tags, NSDictionary *fields, BOOL *stop) {
+        if (![fields[@"kept_field"] isEqual:@2]) return;
+        count++;
+        NSSet *expected = [NSSet setWithArray:@[@"snapshot_old", @"same_name", @"kept_field"]];
+        XCTAssertEqualObjects([self customKeysForTags:tags], expected);
+        XCTAssertNil(tags[@"snapshot_new"]);
+        XCTAssertNil(tags[@"drop_tag"]);
+        XCTAssertNil(fields[@"drop_field"]);
+    }];
+    XCTAssertEqual(count, 1);
+}
+- (void)testCustomKeysQueuedPropertyAndActionCompletionUseMatchingSnapshots {
+    [self setRumConfig];
+    FTRUMManager *manager = [FTGlobalRumManager sharedInstance].rumManager;
+    FTPresetProperty *preset = [FTPresetProperty sharedInstance];
+    [manager startViewWithViewID:@"queued-view" viewName:@"queued-view" property:nil];
+    [manager syncProcess];
+    dispatch_queue_t queue = [manager valueForKey:@"rumQueue"];
+    dispatch_semaphore_t entered = dispatch_semaphore_create(0);
+    dispatch_semaphore_t release = dispatch_semaphore_create(0);
+    dispatch_async(queue, ^{
+        dispatch_semaphore_signal(entered);
+        dispatch_semaphore_wait(release, DISPATCH_TIME_FOREVER);
+    });
+    XCTAssertEqual(dispatch_semaphore_wait(entered, dispatch_time(DISPATCH_TIME_NOW, NSEC_PER_SEC)), 0L);
+    NSMutableArray *nested = [NSMutableArray arrayWithObject:@1.25];
+    NSMutableDictionary *property = [@{@"event_owned": @1, @"nested": nested, @"fraction": @1.25} mutableCopy];
+    [[FTGlobalRumManager sharedInstance] addActionName:@"queued-action" actionType:@"click" property:property];
+    property[@"mutated_later"] = @2;
+    [nested addObject:@99];
+    [preset updateUser:@"start-user" name:nil email:nil extra:@{@"start_extra": @3}];
+    dispatch_semaphore_signal(release);
+    [manager syncProcess];
+    [preset updateUser:@"end-user" name:nil email:nil extra:@{@"end_extra": @4}];
+    [manager stopViewWithViewID:@"queued-view" property:nil];
+    [manager syncProcess];
+    __block NSUInteger count = 0;
+    NSArray *records = [[FTTrackerEventDBTool sharedManager] getFirstRecords:100 withType:FT_DATA_TYPE_RUM];
+    [FTModelHelper resolveModelArray:records callBack:^(NSString *source, NSDictionary *tags, NSDictionary *fields, BOOL *stop) {
+        if (![source isEqual:FT_RUM_SOURCE_ACTION] || ![tags[FT_KEY_ACTION_NAME] isEqual:@"queued-action"]) return;
+        count++;
+        NSSet *expected = [NSSet setWithArray:@[@"event_owned", @"nested", @"fraction", @"end_extra"]];
+        XCTAssertEqualObjects([self customKeysForTags:tags], expected);
+        XCTAssertEqualObjects(fields[@"event_owned"], @1);
+        XCTAssertEqualObjects(fields[@"nested"], @[@1.25]);
+        XCTAssertEqualObjects(fields[@"fraction"], @"1.25");
+        XCTAssertEqualObjects(tags[@"end_extra"], @4);
+        XCTAssertNil(fields[@"mutated_later"]);
+        XCTAssertNil(tags[@"start_extra"]);
+    }];
+    XCTAssertEqual(count, 1);
+    [preset clearUser];
+}
+- (void)testCustomKeysResourceIgnoresRepeatedStopAndLateCompletion {
+    [self setRumConfig];
+    FTRUMManager *manager = [FTGlobalRumManager sharedInstance].rumManager;
+    [manager startResourceWithKey:@"duplicates" property:@{@"start_field": @1}];
+    [manager stopResourceWithKey:@"duplicates" property:@{@"first_stop": @2}];
+    [manager stopResourceWithKey:@"duplicates" property:@{@"ignored_stop": @3}];
+    FTResourceContentModel *content = [FTResourceContentModel new];
+    content.url = [NSURL URLWithString:@"https://custom.example/duplicates"];
+    content.httpMethod = @"GET";
+    content.httpStatusCode = 200;
+    [manager addResourceWithKey:@"duplicates" metrics:nil content:content];
+    [manager stopResourceWithKey:@"duplicates" property:@{@"late_stop": @4}];
+    [manager addResourceWithKey:@"duplicates" metrics:nil content:content];
+    [manager syncProcess];
+    __block NSUInteger count = 0;
+    NSArray *records = [[FTTrackerEventDBTool sharedManager] getFirstRecords:100 withType:FT_DATA_TYPE_RUM];
+    [FTModelHelper resolveModelArray:records callBack:^(NSString *source, NSDictionary *tags, NSDictionary *fields, BOOL *stop) {
+        if (![source isEqual:FT_RUM_SOURCE_RESOURCE] || ![tags[FT_KEY_RESOURCE_ID] isEqual:@"duplicates"]) return;
+        count++;
+        NSSet *expected = [NSSet setWithArray:@[@"start_field", @"first_stop"]];
+        XCTAssertEqualObjects([self customKeysForTags:tags], expected);
+        XCTAssertEqualObjects(fields[@"first_stop"], @2);
+        XCTAssertNil(fields[@"ignored_stop"]);
+        XCTAssertNil(fields[@"late_stop"]);
+    }];
+    XCTAssertEqual(count, 1);
+}
+- (void)testCustomKeysMalformedWebMetadataDoesNotDropDataOrNativeKeys {
+    [self setRumConfig];
+    [FTMobileAgent appendRUMGlobalContext:@{@"native": @1}];
+    FTRUMManager *manager = [FTGlobalRumManager sharedInstance].rumManager;
+    for (id metadata in @[@"{invalid", @"{\"not\":\"array\"}", @42]) {
+        [manager addWebViewData:FT_RUM_SOURCE_ERROR tags:@{@"custom_keys":metadata, @"web_unmarked": @2}
+            fields:@{@"web_unmarked_field": @3} tm:123];
+    }
+    [manager syncProcess];
+    __block NSUInteger count = 0;
+    NSArray *records = [[FTTrackerEventDBTool sharedManager] getFirstRecords:100 withType:FT_DATA_TYPE_RUM];
+    [FTModelHelper resolveModelArray:records callBack:^(NSString *source, NSDictionary *tags, NSDictionary *fields, BOOL *stop) {
+        if (!fields[@"web_unmarked_field"]) return;
+        count++;
+        XCTAssertEqualObjects([self customKeysForTags:tags], [NSSet setWithObject:@"native"]);
+        XCTAssertEqualObjects(tags[@"web_unmarked"], @2);
+        XCTAssertEqualObjects(fields[@"web_unmarked_field"], @3);
+    }];
+    XCTAssertEqual(count, 3);
+}
+- (void)testCustomKeysHistoricalContextAndViewRestoreSavedProvenance {
+    [self setRumConfig];
+    FTPresetProperty *preset = [FTPresetProperty sharedInstance];
+    [FTMobileAgent appendRUMGlobalContext:@{@"historical_global": @1}];
+    FTRUMManager *manager = [FTGlobalRumManager sharedInstance].rumManager;
+    [manager startViewWithViewID:@"historical-view" viewName:@"historical-view" property:@{@"historical_view": @2}];
+    [manager syncProcess];
+    FTRUMDependencies *dependencies = [manager valueForKey:@"rumDependencies"];
+    FTFatalErrorContextModel *saved = [dependencies.fatalErrorContext currentContextModel];
+    NSDictionary *encoded = [saved toDictionary];
+    [preset updateUser:@"new-process-user" name:nil email:nil extra:@{@"current_extra": @3}];
+    [FTMobileAgent appendRUMGlobalContext:@{@"current_global": @4}];
+    FTFatalErrorContextModel *restored = [[FTFatalErrorContextModel alloc] initWithDict:encoded];
+    XCTAssertEqualObjects(restored.dynamicPropertySnapshot.customKeys, [NSSet setWithObject:@"historical_global"]);
+    XCTAssertNil(restored.dynamicPropertySnapshot.tags[@"current_extra"]);
+    NSMutableDictionary *report = [[self mockCrashReportWithAppStats:nil] mutableCopy];
+    report[FTCrashField_User] = encoded;
+    FTCrashReportWrapper *wrapper = [self mockCrashReportWrapper];
+    [wrapper setIssueDataProvider:^NSDictionary *(FTIssueInfo *issue) { return @{@"provider_field": @5}; }];
+    __block NSArray *reports;
+    [wrapper filterReports:@[[FTCrashReportDictionary reportWithValue:report]] onCompletion:^(NSArray *result, NSError *error) { reports = result; }];
+    XCTAssertEqual(reports.count, 2);
+    for (FTCrashReportRUMModel *item in reports) {
+        RUMModel *model = item.value;
+        NSString *extraKey = [model.source isEqual:FT_RUM_SOURCE_VIEW] ? @"historical_view" : @"provider_field";
+        NSSet *expected = [NSSet setWithArray:@[@"historical_global", extraKey]];
+        XCTAssertEqualObjects([self customKeysForTags:model.tags], expected);
+        XCTAssertNil(model.tags[@"current_extra"]);
+        XCTAssertNil(model.tags[@"current_global"]);
+        XCTAssertEqualObjects(model.tags[@"historical_global"], @1);
+    }
+    [preset clearUser];
+}
+- (void)testCustomKeysLaunchSeparatesCallerHotStartPropertiesFromSDKPhases {
+    [self setRumConfig];
+    FTRUMManager *manager = [FTGlobalRumManager sharedInstance].rumManager;
+    NSDate *now = [NSDate date];
+    [manager addLaunch:@"cold-phases" type:FT_LAUNCH_COLD launchTime:now duration:@100 property:@{@"sdk_phase": @10}];
+    [manager addLaunch:@"hot-custom" type:FT_LAUNCH_HOT launchTime:now duration:@100 property:@{@"hot_custom": @20}];
+    [manager syncProcess];
+    __block NSUInteger count = 0;
+    NSArray *records = [[FTTrackerEventDBTool sharedManager] getFirstRecords:100 withType:FT_DATA_TYPE_RUM];
+    [FTModelHelper resolveModelArray:records callBack:^(NSString *source, NSDictionary *tags, NSDictionary *fields, BOOL *stop) {
+        if ([tags[FT_KEY_ACTION_NAME] isEqual:@"cold-phases"]) {
+            count++;
+            XCTAssertEqualObjects([self customKeysForTags:tags], [NSSet set]);
+            XCTAssertEqualObjects(fields[@"sdk_phase"], @10);
+        }
+        if ([tags[FT_KEY_ACTION_NAME] isEqual:@"hot-custom"]) {
+            count++;
+            XCTAssertEqualObjects([self customKeysForTags:tags], [NSSet setWithObject:@"hot_custom"]);
+            XCTAssertEqualObjects(fields[@"hot_custom"], @20);
+        }
+    }];
+    XCTAssertEqual(count, 2);
 }
 @end

@@ -51,7 +51,7 @@
 @end
 
 @interface FTRUMViewHandler (FTLongTaskEndpointTest)
-- (void)writeErrorData:(FTRUMDataModel *)model context:(NSDictionary *)context;
+- (void)writeErrorData:(FTRUMDataModel *)model context:(FTRUMPropertySnapshot *)context;
 @end
 
 @interface FTLongTaskDetectorDelegateMock : NSObject <FTLongTaskTimingDelegate>
@@ -145,7 +145,7 @@ typedef void (^FTWriteCallBack)(NSDictionary *fields, NSDictionary *tags);
 @property (nonatomic, strong) FTRUMDataModel *capturedError;
 @end
 @implementation FTStateCaptureRUMManager
-- (BOOL)process:(FTRUMDataModel *)model context:(NSDictionary *)context {
+- (BOOL)process:(FTRUMDataModel *)model context:(FTRUMPropertySnapshot *)context {
     if (model.type == FTRUMDataError) self.capturedError = model;
     return YES;
 }
@@ -362,6 +362,7 @@ typedef void (^FTWriteCallBack)(NSDictionary *fields, NSDictionary *tags);
         XCTAssertEqualObjects(self.recoveredErrorTags[FT_KEY_ERROR_SITUATION], expected);
         XCTAssertEqualObjects(self.recoveredErrorFields[@"app_state"], @"unknown");
         XCTAssertEqualObjects(self.recoveredErrorFields[@"custom"], @"kept");
+        XCTAssertEqualObjects(FTRUMDecodeCustomKeys(self.recoveredErrorTags[FT_RUM_CUSTOM_KEYS]), [NSSet setWithObject:@"custom"]);
         XCTAssertEqualObjects(received.appState, expected);
         XCTAssertTrue(received.isHistorical);
         XCTAssertEqual(received.occurredAtNanoseconds, NSEC_PER_SEC);
@@ -388,12 +389,13 @@ typedef void (^FTWriteCallBack)(NSDictionary *fields, NSDictionary *tags);
         endTimeNs:61LL*NSEC_PER_SEC durationNs:3LL*NSEC_PER_SEC appState:@"foreground_and_background"];
     __block NSDictionary *written;
     self.writeCallBack = ^(NSDictionary *fields, NSDictionary *tags) { written = fields; };
-    [handler writeErrorData:model context:@{}];
+    [handler writeErrorData:model context:[[FTRUMPropertySnapshot alloc] initWithTags:nil customKeys:nil]];
     XCTAssertEqualObjects(written[@"app_state"], @"foreground_and_background");
+
     XCTAssertEqual([written[FT_DURATION] longLongValue], 3LL*NSEC_PER_SEC);
     model.longTaskEvent = nil; // Manual collection retains its original history query.
     self.writeCallBack = ^(NSDictionary *fields, NSDictionary *tags) { written = fields; };
-    [handler writeErrorData:model context:@{}];
+    [handler writeErrorData:model context:[[FTRUMPropertySnapshot alloc] initWithTags:nil customKeys:nil]];
     XCTAssertEqualObjects(written[@"app_state"], @"unknown");
     self.writeCallBack = nil;
 }
@@ -503,7 +505,6 @@ typedef void (^FTWriteCallBack)(NSDictionary *fields, NSDictionary *tags);
     self.writeCallBack = nil;
     [manager shutDown];
 }
-
 
 - (FTLongTaskManager *)timingManagerANR:(BOOL)anr freeze:(BOOL)freeze threshold:(long)threshold {
     self.backtraceMock = [FTLongTaskBacktraceMock new];
@@ -1326,18 +1327,20 @@ typedef void (^FTWriteCallBack)(NSDictionary *fields, NSDictionary *tags);
     model.longTaskEvent=[[FTLongTaskEvent alloc]initWithStack:@"main" startTimeNs:NSEC_PER_SEC endTimeNs:61LL*NSEC_PER_SEC durationNs:3LL*NSEC_PER_SEC appState:@"foreground_and_background"];
     __block NSDictionary *written;
     self.writeCallBack=^(NSDictionary *fields,NSDictionary *tags){written=fields;};
-    [handler writeErrorData:model context:@{}];
+    [handler writeErrorData:model context:[[FTRUMPropertySnapshot alloc] initWithTags:nil customKeys:nil]];
     XCTAssertEqualObjects(written[@"app_state"],@"foreground_and_background");
+
     XCTAssertEqual([written[FT_DURATION]longLongValue],3LL*NSEC_PER_SEC);
     model.longTaskEvent=[[FTLongTaskEvent alloc]initWithStack:@"main" startTimeNs:NSEC_PER_SEC
         endTimeNs:61LL*NSEC_PER_SEC durationNs:3LL*NSEC_PER_SEC];
     self.writeCallBack=^(NSDictionary *fields,NSDictionary *tags){written=fields;};
-    [handler writeErrorData:model context:@{}];
+    [handler writeErrorData:model context:[[FTRUMPropertySnapshot alloc] initWithTags:nil customKeys:nil]];
     XCTAssertEqualObjects(written[@"app_state"],@"unknown");
+
     // Existing manually reported LongTasks still derive their interval from duration.
     model.longTaskEvent=nil;
     self.writeCallBack=^(NSDictionary *fields,NSDictionary *tags){written=fields;};
-    [handler writeErrorData:model context:@{}];
+    [handler writeErrorData:model context:[[FTRUMPropertySnapshot alloc] initWithTags:nil customKeys:nil]];
     XCTAssertEqualObjects(written[@"app_state"],@"foreground");
     self.writeCallBack=nil;
 }

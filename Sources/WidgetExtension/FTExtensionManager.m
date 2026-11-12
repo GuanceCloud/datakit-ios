@@ -154,6 +154,14 @@ static FTExtensionManager *sharedInstance = nil;
         FTInnerLogError(@"exception %@",exception);
     }
 }
+- (BOOL)writeRUMData:(FTRUMWriteData *)data {
+    NSMutableDictionary *tags = [data.tags mutableCopy];
+    NSMutableSet *keys = [data.customTagKeys mutableCopy];
+    FTRUMMergeProperties(tags, keys, data.context.tags, data.context.customKeys);
+    FTRUMEncodeCustomKeys(tags, data.fields, keys, data.customFieldKeys);
+    [self rumWrite:data.source tags:tags fields:data.fields dynamicContext:@{} time:data.time];
+    return YES;
+}
 - (void)rumWrite:(NSString *)source tags:(NSDictionary *)tags fields:(NSDictionary *)fields dynamicContext:(NSDictionary *)dynamicContext time:(long long)time updateTime:(long long)updateTime{
     [self rumWrite:source tags:tags fields:fields dynamicContext:dynamicContext time:time];
 }

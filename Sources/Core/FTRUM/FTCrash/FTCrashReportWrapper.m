@@ -271,21 +271,24 @@ static NSDictionary *g_registerOrders;
                 [extra setValue:registers forKey:@"registers"];
                 
                 RUMModel *errorModel = [RUMModel new];
-                NSMutableDictionary *errorTags = [NSMutableDictionary dictionaryWithDictionary:errorContext.globalAttributes];
+                NSMutableDictionary *errorTags = [NSMutableDictionary dictionary];
+                NSMutableSet *errorTagKeys = [NSMutableSet set];
+                NSMutableSet *errorFieldKeys = [NSMutableSet set];
+                FTRUMMergeProperties(errorTags, errorTagKeys, errorContext.globalAttributes, errorContext.globalPropertySnapshot.customKeys);
                 
-                [errorTags addEntriesFromDictionary:errorContext.dynamicContext];
-                [errorTags addEntriesFromDictionary:errorContext.errorMonitorInfo];
-                [errorTags addEntriesFromDictionary:[errorContext.lastSessionState sessionTags]];
+                FTRUMMergeProperties(errorTags, errorTagKeys, errorContext.dynamicContext, errorContext.dynamicPropertySnapshot.customKeys);
+                FTRUMMergeProperties(errorTags, errorTagKeys, errorContext.errorMonitorInfo, nil);
+                FTRUMMergeProperties(errorTags, errorTagKeys, [errorContext.lastSessionState sessionTags], nil);
                 if (self.enableMemory) {
                     float memUsage = [self memoryUsageForReport:report.value];
-                    [errorTags setValue:@(memUsage) forKey:FT_MEMORY_USE];
+                    FTRUMSetSystemProperty(errorTags, errorTagKeys, FT_MEMORY_USE, @(memUsage));
                 }
                 if (self.enableCpu) {
                     float cpuUsage = [self threadCpuUsageForReport:report.value];
-                    [errorTags setValue:@(cpuUsage) forKey:FT_CPU_USE];
+                    FTRUMSetSystemProperty(errorTags, errorTagKeys, FT_CPU_USE, @(cpuUsage));
                 }
-                [errorTags setValue:FT_LOGGER forKey:FT_KEY_ERROR_SOURCE];
-                [errorTags setValue:errorContext.appState forKey:FT_KEY_ERROR_SITUATION];
+                FTRUMSetSystemProperty(errorTags, errorTagKeys, FT_KEY_ERROR_SOURCE, FT_LOGGER);
+                FTRUMSetSystemProperty(errorTags, errorTagKeys, FT_KEY_ERROR_SITUATION, errorContext.appState);
                 
                 NSMutableDictionary *errorFields = [NSMutableDictionary new];
                 NSNumber *sessionErrorTimestamp = nil;
@@ -324,7 +327,7 @@ static NSDictionary *g_registerOrders;
                     [reservedKeys addObjectsFromArray:errorFields.allKeys];
                     NSDictionary *customFields = [issueFieldEnricher fieldsForIssue:issue
                                                                        reservedKeys:reservedKeys];
-                    [errorFields addEntriesFromDictionary:customFields];
+                    FTRUMMergeProperties(errorFields, errorFieldKeys, customFields, [NSSet setWithArray:customFields.allKeys]);
                 }
                 errorModel.source = FT_RUM_SOURCE_ERROR;
                 
@@ -332,8 +335,8 @@ static NSDictionary *g_registerOrders;
                     NSString *viewId = errorContext.lastViewContext[@"tags"][FT_KEY_VIEW_ID];
                     NSString *viewName = errorContext.lastViewContext[@"tags"][FT_KEY_VIEW_NAME];
 
-                    [errorTags setValue:viewId forKey:FT_KEY_VIEW_ID];
-                    [errorTags setValue:viewName forKey:FT_KEY_VIEW_NAME];
+                    FTRUMSetSystemProperty(errorTags, errorTagKeys, FT_KEY_VIEW_ID, viewId);
+                    FTRUMSetSystemProperty(errorTags, errorTagKeys, FT_KEY_VIEW_NAME, viewName);
 
                     long long time = [errorContext.lastViewContext[@"time"] longLongValue];
                     NSMutableDictionary *tags = [NSMutableDictionary dictionaryWithDictionary:errorContext.globalAttributes];
@@ -348,12 +351,28 @@ static NSDictionary *g_registerOrders;
                     fields[FT_SESSION_ERROR_TIMESTAMP] = sessionErrorTimestamp;
                     RUMModel *viewModel = [[RUMModel alloc]init];
                     viewModel.source = FT_RUM_SOURCE_VIEW;
+                    NSMutableDictionary *viewTags = [NSMutableDictionary dictionary];
+                    NSMutableSet *viewTagKeys = [NSMutableSet set];
+                    FTRUMMergeProperties(viewTags, viewTagKeys, errorContext.globalAttributes, errorContext.globalPropertySnapshot.customKeys);
+                    FTRUMMergeProperties(viewTags, viewTagKeys, errorContext.lastViewContext[@"tags"], nil);
+                    if (errorContext.lastViewContext[@"propertyTags"]) {
+                        FTRUMMergeProperties(viewTags, viewTagKeys, errorContext.lastViewContext[@"propertyTags"],
+                            FTRUMDecodeCustomKeys(errorContext.lastViewContext[@"propertyCustomKeys"]));
+                    }
+                    tags = viewTags;
+                    NSMutableSet *viewFieldKeys = [FTRUMDecodeCustomKeys(errorContext.lastViewContext[@"customFieldKeys"]) mutableCopy];
+                    if (!errorContext.lastViewContext[@"customFieldKeys"]) {
+                        [viewFieldKeys unionSet:FTRUMDecodeCustomKeys(errorContext.lastViewContext[@"tags"][FT_RUM_CUSTOM_KEYS])];
+                    }
+                    [viewFieldKeys minusSet:[NSSet setWithArray:@[FT_KEY_VIEW_ERROR_COUNT, FT_KEY_VIEW_UPDATE_TIME, FT_KEY_IS_ACTIVE, FT_KEY_TIME_SPENT, FT_SESSION_ERROR_TIMESTAMP]]];
+                    FTRUMEncodeCustomKeys(tags, fields, viewTagKeys, viewFieldKeys);
                     viewModel.tags = tags;
                     viewModel.fields = fields;
                     viewModel.createTime = time;
                     [filteredReports addObject:[FTCrashReportRUMModel reportWithValue:viewModel]];
                 }
                 
+                FTRUMEncodeCustomKeys(errorTags, errorFields, errorTagKeys, errorFieldKeys);
                 errorModel.tags = errorTags;
                 errorModel.fields = errorFields;
                 errorModel.createTime = self.crashDate;

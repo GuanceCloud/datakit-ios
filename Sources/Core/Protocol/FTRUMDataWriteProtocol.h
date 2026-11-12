@@ -19,6 +19,8 @@
 //
 
 #import <Foundation/Foundation.h>
+#import "FTRUMWriteData.h"
+#import "FTConstants.h"
 
 #ifndef FTRUMDataWriteProtocol_h
 #define FTRUMDataWriteProtocol_h
@@ -42,6 +44,8 @@ NS_ASSUME_NONNULL_BEGIN
 
 - (void)rumWriteAssembledData:(NSString *)source tags:(NSDictionary *)tags fields:(NSDictionary *)fields time:(long long)time;
 @optional
+/// Internal canonical writer. Returns modifier/filter admission, not persistence acknowledgment.
+- (BOOL)writeRUMData:(FTRUMWriteData *)data;
 /// Returns the actual modifier/filter admission result synchronously. This is not
 /// a persistence or upload acknowledgment. Compatibility writers may omit it.
 - (BOOL)rumWriteAccepted:(NSString *)source tags:(NSDictionary *)tags fields:(NSDictionary *)fields dynamicContext:(NSDictionary *)dynamicContext time:(long long)time;
@@ -69,6 +73,27 @@ NS_INLINE BOOL FTRUMWriteAccepted(id<FTRUMDataWriteProtocol> writer, NSString *s
         return [writer rumWriteAccepted:source tags:tags fields:fields dynamicContext:context time:time];
     }
     [writer rumWrite:source tags:tags fields:fields dynamicContext:context time:time];
+    return YES;
+}
+/// Preserve legacy writers without requiring new public collection signatures.
+NS_INLINE BOOL FTRUMWrite(id<FTRUMDataWriteProtocol> writer, FTRUMWriteData *data) {
+    if (!writer) return NO;
+    if ([writer respondsToSelector:@selector(writeRUMData:)]) return [writer writeRUMData:data];
+    NSDictionary *context = [data legacyContextTags];
+    NSMutableDictionary *tags = [data.tags mutableCopy];
+    [tags removeObjectForKey:FT_RUM_CUSTOM_KEYS];
+    if (data.assembled) {
+        [tags addEntriesFromDictionary:context];
+        [writer rumWriteAssembledData:data.source tags:tags fields:data.fields time:data.time];
+        return YES;
+    }
+    if (data.cache) {
+        [writer rumWrite:data.source tags:tags fields:data.fields dynamicContext:context time:data.time updateTime:data.updateTime cache:data.cache.boolValue];
+    } else if (data.updateTime) {
+        [writer rumWrite:data.source tags:tags fields:data.fields dynamicContext:context time:data.time updateTime:data.updateTime];
+    } else {
+        return FTRUMWriteAccepted(writer, data.source, tags, data.fields, context, data.time);
+    }
     return YES;
 }
 NS_ASSUME_NONNULL_END

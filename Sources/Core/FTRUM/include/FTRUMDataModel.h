@@ -50,6 +50,8 @@ NS_ASSUME_NONNULL_BEGIN
 @property (nonatomic, assign) FTRUMDataType type;
 @property (nonatomic, strong) NSDictionary *tags;
 @property (nonatomic, strong) NSDictionary *fields;
+@property (nonatomic, copy) NSSet<NSString *> *customFieldKeys;
+@property (nonatomic, copy) NSSet<NSString *> *customTagKeys;
 @property (nonatomic, assign) long long tm;
 /// Automatic LongTask facts captured before asynchronous RUM processing.
 @property (nonatomic, strong, nullable) FTLongTaskEvent *longTaskEvent;

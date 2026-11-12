@@ -4,15 +4,17 @@ workspace 'Consumer'
 project 'Consumer.xcodeproj'
 use_frameworks!
 
+sdk_source_path = ENV.fetch('GUANCE_SDK_SOURCE_PATH', '../..')
+
 target 'ObjCConsumer' do
-  pod 'GuanceSDK', :path => '../..'
-  pod 'GuanceSDK/SessionReplay', :path => '../..'
+  pod 'GuanceSDK', :path => sdk_source_path
+  pod 'GuanceSDK/SessionReplay', :path => sdk_source_path
 end
 
 target 'SwiftConsumer' do
-  pod 'GuanceSDK', :path => '../..'
+  pod 'GuanceSDK', :path => sdk_source_path
 end
 
 target 'SwiftUIConsumer' do
-  pod 'GuanceSDK', :path => '../..'
+  pod 'GuanceSDK', :path => sdk_source_path
 end

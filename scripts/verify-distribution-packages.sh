@@ -8,6 +8,7 @@ BUILD_DIR="${REPO_ROOT}/build"
 PODSPEC="${REPO_ROOT}/GuanceSDK.podspec"
 FRAMEWORK_SCRIPT="${SCRIPT_DIR}/build-sdk-packages.sh"
 POD_CONSUMER_DIR="${REPO_ROOT}/Tests/CocoaPodsConsumer"
+POD_SOURCE_VALIDATION_DIR="${BUILD_DIR}/CocoaPodsSourceValidation"
 POD_CONSUMER_VALIDATION_DIR="${BUILD_DIR}/CocoaPodsConsumerValidation"
 POD_CONSUMER_DERIVED_DATA="${BUILD_DIR}/CocoaPodsConsumerDerivedData"
 FRAMEWORK_CONSUMER_DIR="${REPO_ROOT}/Tests/XCFrameworkConsumer"
@@ -314,9 +315,19 @@ validate_cocoapods() {
   local lint_options="${POD_LINT_OPTIONS:---allow-warnings --verbose}"
   local ruby_command
   ruby_command="$(resolve_xcodeproj_ruby)" || return 1
-  info "Running pod lib lint with options: ${lint_options}"
+  # A development checkout can contain nested SDK copies under docs/build.
+  # CocoaPods/Xcode header discovery must only see the current release sources.
+  rm -rf "${POD_SOURCE_VALIDATION_DIR}"
+  mkdir -p "${POD_SOURCE_VALIDATION_DIR}"
+  cp -R "${REPO_ROOT}/Sources" "${POD_SOURCE_VALIDATION_DIR}/Sources" || return 1
+  cp "${PODSPEC}" "${POD_SOURCE_VALIDATION_DIR}/$(basename "${PODSPEC}")" || return 1
+  cp "${REPO_ROOT}/LICENSE" "${POD_SOURCE_VALIDATION_DIR}/LICENSE" || return 1
+  if [[ -f "${REPO_ROOT}/README.md" ]]; then
+    cp "${REPO_ROOT}/README.md" "${POD_SOURCE_VALIDATION_DIR}/README.md" || return 1
+  fi
+  info "Running isolated pod lib lint with options: ${lint_options}"
   # shellcheck disable=SC2086
-  pod lib lint "${PODSPEC}" ${lint_options} || return 1
+  pod lib lint "${POD_SOURCE_VALIDATION_DIR}/$(basename "${PODSPEC}")" ${lint_options} || return 1
 
   if [[ ! -f "${POD_CONSUMER_DIR}/Podfile" || ! -f "${POD_CONSUMER_DIR}/generate_project.rb" ]]; then
     error "CocoaPods consumer fixture not found: ${POD_CONSUMER_DIR}"
@@ -330,7 +341,7 @@ validate_cocoapods() {
   (
     cd "${POD_CONSUMER_VALIDATION_DIR}" || exit 1
     "${ruby_command}" generate_project.rb || exit 1
-    pod install --no-repo-update || exit 1
+    GUANCE_SDK_SOURCE_PATH="${POD_SOURCE_VALIDATION_DIR}" pod install --no-repo-update || exit 1
 
     local scheme
     for scheme in "${POD_CONSUMER_SCHEMES[@]}"; do

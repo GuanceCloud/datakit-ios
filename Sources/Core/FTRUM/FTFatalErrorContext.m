@@ -42,13 +42,30 @@ static BOOL FTObjectIsEqual(id a, id b) {
                   dynamicContext:(nullable NSDictionary *)dynamicContext
                globalAttributes:(nullable NSDictionary *)globalAttributes
                errorMonitorInfo:(nullable NSDictionary *)errorMonitorInfo {
+    self = [self initWithAppState:appState lastSessionState:lastSessionState lastViewContext:lastViewContext
+        dynamicPropertySnapshot:[FTRUMPropertySnapshot snapshotWithLegacyTags:dynamicContext]
+        globalPropertySnapshot:[FTRUMPropertySnapshot snapshotWithLegacyTags:globalAttributes] errorMonitorInfo:errorMonitorInfo];
+    if (self) {
+        _dynamicContext = dynamicContext;
+        _globalAttributes = globalAttributes;
+    }
+    return self;
+}
+- (instancetype)initWithAppState:(NSString *)appState
+               lastSessionState:(FTRUMSessionState *)lastSessionState
+                lastViewContext:(NSDictionary *)lastViewContext
+        dynamicPropertySnapshot:(FTRUMPropertySnapshot *)dynamicSnapshot
+         globalPropertySnapshot:(FTRUMPropertySnapshot *)globalSnapshot
+               errorMonitorInfo:(NSDictionary *)errorMonitorInfo {
     if (self = [super init]) {
         _appState = [appState copy];
         _lastSessionState = lastSessionState;
         _lastViewContext = lastViewContext;
-        _dynamicContext = dynamicContext;
-        _globalAttributes = globalAttributes;
+        _dynamicContext = dynamicSnapshot.tags;
+        _globalAttributes = globalSnapshot.tags;
         _errorMonitorInfo = errorMonitorInfo;
+        _globalPropertySnapshot = globalSnapshot;
+        _dynamicPropertySnapshot = dynamicSnapshot;
     }
     return self;
 }
@@ -64,10 +81,24 @@ static BOOL FTObjectIsEqual(id a, id b) {
     NSDictionary *errorMonitorInfo = [dict valueForKey:@"errorMonitorInfo"];
     NSDictionary *dynamicContext = [dict valueForKey:@"dynamicContext"];
         
-    return [self initWithAppState:appState lastSessionState:lastSessionState lastViewContext:lastViewContext dynamicContext:dynamicContext globalAttributes:globalAttributes errorMonitorInfo:errorMonitorInfo];
+    FTRUMPropertySnapshot *globalSnapshot = dict[@"globalCustomKeys"]
+        ? [[FTRUMPropertySnapshot alloc] initWithTags:globalAttributes customKeys:FTRUMDecodeCustomKeys(dict[@"globalCustomKeys"])]
+        : [FTRUMPropertySnapshot snapshotWithLegacyTags:globalAttributes];
+    FTRUMPropertySnapshot *dynamicSnapshot = dict[@"dynamicCustomKeys"]
+        ? [[FTRUMPropertySnapshot alloc] initWithTags:dynamicContext customKeys:FTRUMDecodeCustomKeys(dict[@"dynamicCustomKeys"])]
+        : [FTRUMPropertySnapshot snapshotWithLegacyTags:dynamicContext];
+    self = [self initWithAppState:appState lastSessionState:lastSessionState lastViewContext:lastViewContext
+        dynamicPropertySnapshot:dynamicSnapshot globalPropertySnapshot:globalSnapshot errorMonitorInfo:errorMonitorInfo];
+    if (self) {
+        _dynamicContext = dynamicContext;
+        _globalAttributes = globalAttributes;
+    }
+    return self;
 }
 - (NSDictionary *)toDictionary {
     NSMutableDictionary *dict = [NSMutableDictionary new];
+    dict[@"globalCustomKeys"] = self.globalPropertySnapshot.customKeys.allObjects ?: @[];
+    dict[@"dynamicCustomKeys"] = self.dynamicPropertySnapshot.customKeys.allObjects ?: @[];
     [dict setValue:self.lastViewContext forKey:@"lastViewContext"];
     [dict setValue:self.lastSessionState ? [self.lastSessionState toDictionary] : nil forKey:@"lastSessionState"];
     [dict setValue:self.appState forKey:@"appState"];
@@ -80,6 +111,8 @@ static BOOL FTObjectIsEqual(id a, id b) {
 @end
 
 @interface FTFatalErrorContext ()
+@property (nonatomic, strong) FTRUMPropertySnapshot *globalPropertySnapshot;
+@property (nonatomic, strong) FTRUMPropertySnapshot *dynamicPropertySnapshot;
 @property (nonatomic, strong) dispatch_queue_t queue;
 @property (nonatomic, weak, nullable) id<FTErrorMonitorInfoProvider> provider;
 
@@ -98,7 +131,8 @@ static BOOL FTObjectIsEqual(id a, id b) {
     self = [super init];
     if (self) {
         _queue = dispatch_queue_create("com.ft.error-context",DISPATCH_QUEUE_SERIAL);
-        _globalAttributes = [[FTPresetProperty sharedInstance] rumTags];
+        _globalPropertySnapshot = [[FTPresetProperty sharedInstance] rumPropertySnapshot];
+        _globalAttributes = _globalPropertySnapshot.tags;
         _provider = provider;
     }
     return self;
@@ -140,13 +174,18 @@ static BOOL FTObjectIsEqual(id a, id b) {
         }
     });
 }
--(void)setDynamicContext:(NSDictionary *)dynamicContext{
+-(void)setDynamicContext:(NSDictionary *)dynamicContext {
+    [self setDynamicPropertySnapshot:[FTRUMPropertySnapshot snapshotWithLegacyTags:dynamicContext]];
+}
+- (void)setDynamicPropertySnapshot:(FTRUMPropertySnapshot *)snapshot {
     dispatch_async(self.queue, ^{
         @try {
-            if (!FTDictionaryIsEqual(self.dynamicContext,dynamicContext)) {
-                self->_dynamicContext = dynamicContext;
-                [self triggerChangeCallbackIfNeeded];
-            }
+            if (self->_dynamicPropertySnapshot == snapshot) return;
+            if (FTDictionaryIsEqual(self.dynamicContext, snapshot.tags) &&
+                [self.dynamicPropertySnapshot.customKeys isEqualToSet:snapshot.customKeys]) return;
+            self->_dynamicPropertySnapshot = snapshot;
+            self->_dynamicContext = snapshot.tags;
+            [self triggerChangeCallbackIfNeeded];
         } @catch (NSException *exception) {
             FTInnerLogError(@"setDynamicContext exception: %@", exception);
         }
@@ -171,8 +210,8 @@ static BOOL FTObjectIsEqual(id a, id b) {
             model = [[FTFatalErrorContextModel alloc] initWithAppState:self.appState
                                                       lastSessionState:self.lastSessionState
                                                        lastViewContext:self.lastViewContext
-                                                        dynamicContext:self.dynamicContext
-                                                      globalAttributes:self.globalAttributes
+                                               dynamicPropertySnapshot:self.dynamicPropertySnapshot
+                                                globalPropertySnapshot:self.globalPropertySnapshot
                                                       errorMonitorInfo:[self.provider errorMonitorInfo]];
         } @catch (NSException *exception) {
             FTInnerLogError(@"currentContextModel exception: %@", exception);
@@ -190,8 +229,8 @@ static BOOL FTObjectIsEqual(id a, id b) {
             FTFatalErrorContextModel *model = [[FTFatalErrorContextModel alloc] initWithAppState:self.appState
                                                                                 lastSessionState:self.lastSessionState
                                                                                  lastViewContext:self.lastViewContext
-                                                                                  dynamicContext:self.dynamicContext
-                                                                                globalAttributes:self.globalAttributes
+                                                                         dynamicPropertySnapshot:self.dynamicPropertySnapshot
+                                                                          globalPropertySnapshot:self.globalPropertySnapshot
                                                                                 errorMonitorInfo:self.errorMonitorInfo];
             NSDictionary *contextDict = [model toDictionary];
             self.onChange(contextDict);

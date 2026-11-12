@@ -33,6 +33,8 @@ NS_ASSUME_NONNULL_BEGIN
 
 FOUNDATION_EXPORT NSString *FTStringFromAppState(FTAppState state);
 
+/// Internal collection inputs must already own their property values, including nested containers.
+/// Boundary adapters snapshot caller-owned data before handing it to this manager.
 @interface FTRUMManager : FTRUMHandler<FTRumResourceProtocol,FTErrorDataDelegate,FTRumDatasProtocol,FTLinkRumDataProvider,FTWKWebViewRumDelegate>
 @property (nonatomic, assign) FTAppState appState;
 /// Internal automatic collection path with immutable event facts.
@@ -70,6 +72,9 @@ FOUNDATION_EXPORT NSString *FTStringFromAppState(FTAppState state);
 ///   - key: Request identifier
 ///   - property: Custom event properties (optional)
 - (void)stopResourceWithKey:(NSString *)key property:(nullable NSDictionary *)property;
+
+/// Internal Browser RUM ingress consumes owned tags/fields and decodes provenance before queueing.
+- (void)addWebViewData:(NSString *)measurement tags:(NSDictionary *)tags fields:(NSDictionary *)fields tm:(long long)tm;
 
 #pragma mark - Error / Long Task -
 

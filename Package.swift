@@ -120,7 +120,7 @@ let package = Package(
         ),
         .target(
             name: "_FTProtocol",
-            dependencies: [],
+            dependencies: ["_FTBaseUtils"],
             path: "Sources/Core/Protocol",
             publicHeadersPath: "."
         ),
