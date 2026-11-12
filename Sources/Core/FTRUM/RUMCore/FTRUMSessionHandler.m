@@ -19,6 +19,7 @@
 //
 
 #import "FTRUMSessionHandler.h"
+#import "FTVisitorIDManager.h"
 #import "FTRUMViewHandler.h"
 #import "FTRUMViewMetrics.h"
 #import "FTBaseInfoHandler.h"
@@ -193,7 +194,8 @@ static NSString *FTRUMSessionStartReasonForCause(FTRUMSessionRenewalCause cause)
             [self.rumDependencies.fatalErrorContext setLastSessionState:[self.context.sessionState copy]];
         }
     }
-    [self.rumDependencies.fatalErrorContext setDynamicPropertySnapshot:context];
+    NSString *contextVisitorID = model.type == FTRUMDataWebViewJSBData ? nil : [FTVisitorIDManager sharedInstance].snapshot.value;
+    [self.rumDependencies.fatalErrorContext setDynamicPropertySnapshot:context visitorIDSnapshot:contextVisitorID];
     switch (model.type) {
         case FTRUMDataViewStart:
             [self startView:model];
@@ -394,7 +396,7 @@ static NSString *FTRUMSessionStartReasonForCause(FTRUMSessionRenewalCause cause)
     [fields addEntriesFromDictionary:self.context.sessionState.sessionFields ?: @{}];
     FTRUMWriteData *writeData = [[FTRUMWriteData alloc] initWithSource:data.measurement tags:tags fields:fields
         context:context customTagKeys:[NSSet set] customFieldKeys:data.customFieldKeys ?: [NSSet set] time:data.tm];
-    FTRUMWrite(self.rumDependencies.writer, writeData);
+    [self.rumDependencies.writer writeRUMData:writeData];
 }
 -(NSString *)getCurrentViewID{
     FTRUMViewHandler *view = (FTRUMViewHandler *)[self.viewHandlers lastObject];

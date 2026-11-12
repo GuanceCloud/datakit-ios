@@ -42,7 +42,7 @@ static const NSTimeInterval discreteActionTimeoutDuration = 0.1;
 @property (nonatomic, assign) NSInteger actionResourcesCount;
 @property (nonatomic, assign) NSInteger actionErrorCount;
 @property (nonatomic, strong) NSDictionary *actionProperty;
-@property (nonatomic, strong) NSMutableSet<NSString *> *actionCustomKeys;//Add to field
+@property (nonatomic, copy) NSSet<NSString *> *actionCustomKeys;//Add to field
 @property (nonatomic, strong) FTHeatmapAttributes *heatmapAttributes;
 //private
 @property (nonatomic, assign) NSInteger activeResourcesCount;
@@ -55,6 +55,7 @@ static const NSTimeInterval discreteActionTimeoutDuration = 0.1;
     if (self) {
         self.dependencies = dependencies;
         self.assistant = self;
+
         self.actionStartTime = model.time;
         self.actionStartNs = model.tm;
         self.action_id = [FTBaseInfoHandler randomUUID];
@@ -66,13 +67,14 @@ static const NSTimeInterval discreteActionTimeoutDuration = 0.1;
         context.action_name = self.action_name;
         self.context = context;
         self.actionProperty = model.fields;
-        self.actionCustomKeys = [model.customFieldKeys mutableCopy] ?: [NSMutableSet set];
+        self.actionCustomKeys = model.customFieldKeys ?: [NSSet set];
         self.context.action_id = self.action_id;
     }
     return  self;
 }
 - (BOOL)process:(FTRUMDataModel *)model context:(nonnull FTRUMPropertySnapshot *)context{
     if (self.completed) return NO;
+
     NSDate *timedOutDate = [self timedOutOrExpired:model.time];
     if(timedOutDate && [self allResourcesCompletedLoading]){
         [self writeActionData:timedOutDate context:context];
@@ -165,9 +167,10 @@ static const NSTimeInterval discreteActionTimeoutDuration = 0.1;
     NSMutableDictionary *tags = [NSMutableDictionary new];
     [tags addEntriesFromDictionary:sessionViewActionTag];
     [tags setValue:self.action_type forKey:FT_KEY_ACTION_TYPE];
-    FTRUMWriteData *writeData = [[FTRUMWriteData alloc] initWithSource:FT_RUM_SOURCE_ACTION tags:tags fields:fields
+    FTRUMWriteData *writeData = [self.dependencies newNativeWriteDataWithSource:FT_RUM_SOURCE_ACTION tags:tags fields:fields
         context:context customTagKeys:[NSSet set] customFieldKeys:customKeys time:self.actionStartNs];
-    BOOL accepted = FTRUMWrite(self.dependencies.writer, writeData);
+
+    BOOL accepted = [self.dependencies.writer writeRUMData:writeData];
     if (accepted && self.acceptedActionHandler) {
         self.acceptedActionHandler(self.actionStartNs, self.action_name, self.action_type);
     }

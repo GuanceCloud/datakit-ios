@@ -22,6 +22,7 @@
 #import "FTErrorMonitorInfo.h"
 #import "FTRUMContext.h"
 #import "FTInnerLog.h"
+#import "FTConstants.h"
 
 static BOOL FTDictionaryIsEqual(NSDictionary *a, NSDictionary *b) {
     if (a == b) return YES;
@@ -111,6 +112,8 @@ static BOOL FTObjectIsEqual(id a, id b) {
 @end
 
 @interface FTFatalErrorContext ()
+@property (nonatomic, strong) FTRUMPropertySnapshot *dynamicBaseSnapshot;
+@property (nonatomic, copy, nullable) NSString *dynamicVisitorID;
 @property (nonatomic, strong) FTRUMPropertySnapshot *globalPropertySnapshot;
 @property (nonatomic, strong) FTRUMPropertySnapshot *dynamicPropertySnapshot;
 @property (nonatomic, strong) dispatch_queue_t queue;
@@ -178,13 +181,22 @@ static BOOL FTObjectIsEqual(id a, id b) {
     [self setDynamicPropertySnapshot:[FTRUMPropertySnapshot snapshotWithLegacyTags:dynamicContext]];
 }
 - (void)setDynamicPropertySnapshot:(FTRUMPropertySnapshot *)snapshot {
+    [self setDynamicPropertySnapshot:snapshot visitorIDSnapshot:nil];
+}
+- (void)setDynamicPropertySnapshot:(FTRUMPropertySnapshot *)snapshot visitorIDSnapshot:(NSString *)visitorID {
+    NSString *capturedVisitorID = [visitorID copy];
     dispatch_async(self.queue, ^{
         @try {
-            if (self->_dynamicPropertySnapshot == snapshot) return;
-            if (FTDictionaryIsEqual(self.dynamicContext, snapshot.tags) &&
-                [self.dynamicPropertySnapshot.customKeys isEqualToSet:snapshot.customKeys]) return;
-            self->_dynamicPropertySnapshot = snapshot;
-            self->_dynamicContext = snapshot.tags;
+            if (self.dynamicBaseSnapshot == snapshot && FTObjectIsEqual(self.dynamicVisitorID, capturedVisitorID)) return;
+            self.dynamicBaseSnapshot = snapshot;
+            self.dynamicVisitorID = capturedVisitorID;
+            FTRUMPropertySnapshot *historical = capturedVisitorID.length > 0
+                ? [snapshot snapshotBySettingSystemValue:capturedVisitorID forKey:FT_VISITOR_ID] : snapshot;
+            if (self->_dynamicPropertySnapshot == historical) return;
+            if (FTDictionaryIsEqual(self.dynamicContext, historical.tags) &&
+                [self.dynamicPropertySnapshot.customKeys isEqualToSet:historical.customKeys]) return;
+            self->_dynamicPropertySnapshot = historical;
+            self->_dynamicContext = historical.tags;
             [self triggerChangeCallbackIfNeeded];
         } @catch (NSException *exception) {
             FTInnerLogError(@"setDynamicContext exception: %@", exception);

@@ -49,7 +49,6 @@ typedef struct {
 @property (nonatomic, strong, nullable) NSNumber *networkSignalStrength;
 
 @property (nonatomic, copy, nullable) NSString *visitorIDSnapshot;
-- (FTRUMPropertySnapshot *)context:(FTRUMPropertySnapshot *)context byApplyingVisitorID:(NSString *)visitorID;
 @end
 @implementation FTRUMResourceHandler
 -(instancetype)initWithModel:(FTRUMResourceDataModel *)model context:(FTRUMContext *)context dependencies:(nonnull FTRUMDependencies *)dependencies networkMetric:(FTRUMNetworkSettledMetric *)networkMetric{
@@ -139,11 +138,11 @@ typedef struct {
     if (self.visitorIDSnapshot.length > 0) {
         [tags removeObjectForKey:FT_VISITOR_ID];
         [fields setValue:nil forKey:FT_VISITOR_ID];
-        context = [self context:context byApplyingVisitorID:self.visitorIDSnapshot];
     }
     FTRUMWriteData *writeData = [[FTRUMWriteData alloc] initWithSource:FT_RUM_SOURCE_ERROR tags:tags fields:fields
         context:context customTagKeys:[NSSet set] customFieldKeys:customKeys time:model.tm];
-    FTRUMWrite(self.dependencies.writer, writeData);
+    writeData.visitorIDSnapshot = self.visitorIDSnapshot;
+    [self.dependencies.writer writeRUMData:writeData];
 }
 - (FTRUMResourceTiming)timingForModel:(FTRUMResourceDataModel *)model {
     long long startNs = model.metrics.fetchStartNsTimeInterval;
@@ -201,18 +200,15 @@ typedef struct {
     if (self.visitorIDSnapshot.length > 0) {
         [tags removeObjectForKey:FT_VISITOR_ID];
         [fields setValue:nil forKey:FT_VISITOR_ID];
-        context = [self context:context byApplyingVisitorID:self.visitorIDSnapshot];
     }
     FTRUMWriteData *writeData = [[FTRUMWriteData alloc] initWithSource:FT_RUM_SOURCE_RESOURCE tags:tags fields:fields
         context:context customTagKeys:[NSSet set] customFieldKeys:customKeys time:resourceStartTime];
-    BOOL accepted = FTRUMWrite(self.dependencies.writer, writeData);
+    writeData.visitorIDSnapshot = self.visitorIDSnapshot;
+    BOOL accepted = [self.dependencies.writer writeRUMData:writeData];
     if (accepted && timing.valid) {
         [self.networkMetric completeResourceWithKey:self.identifier endNs:timing.endNs];
     } else {
         [self.networkMetric dropResourceWithKey:self.identifier];
     }
-}
-- (FTRUMPropertySnapshot *)context:(FTRUMPropertySnapshot *)context byApplyingVisitorID:(NSString *)visitorID{
-    return [context snapshotBySettingSystemValue:visitorID forKey:FT_VISITOR_ID];
 }
 @end

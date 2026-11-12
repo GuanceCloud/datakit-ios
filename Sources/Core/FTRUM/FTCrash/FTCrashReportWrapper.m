@@ -339,9 +339,7 @@ static NSDictionary *g_registerOrders;
                     FTRUMSetSystemProperty(errorTags, errorTagKeys, FT_KEY_VIEW_NAME, viewName);
 
                     long long time = [errorContext.lastViewContext[@"time"] longLongValue];
-                    NSMutableDictionary *tags = [NSMutableDictionary dictionaryWithDictionary:errorContext.globalAttributes];
                     NSMutableDictionary *fields = [NSMutableDictionary new];
-                    [tags addEntriesFromDictionary:errorContext.lastViewContext[@"tags"]];
                     [fields addEntriesFromDictionary:errorContext.lastViewContext[@"fields"]];
         
                     fields[FT_KEY_VIEW_ERROR_COUNT] = @([fields[FT_KEY_VIEW_ERROR_COUNT] intValue] + 1);
@@ -359,14 +357,17 @@ static NSDictionary *g_registerOrders;
                         FTRUMMergeProperties(viewTags, viewTagKeys, errorContext.lastViewContext[@"propertyTags"],
                             FTRUMDecodeCustomKeys(errorContext.lastViewContext[@"propertyCustomKeys"]));
                     }
-                    tags = viewTags;
+                    NSString *viewVisitor = errorContext.lastViewContext[@"tags"][FT_VISITOR_ID];
+                    if ([viewVisitor isKindOfClass:NSString.class] && viewVisitor.length > 0) {
+                        FTRUMSetSystemProperty(viewTags, viewTagKeys, FT_VISITOR_ID, viewVisitor);
+                    }
                     NSMutableSet *viewFieldKeys = [FTRUMDecodeCustomKeys(errorContext.lastViewContext[@"customFieldKeys"]) mutableCopy];
                     if (!errorContext.lastViewContext[@"customFieldKeys"]) {
                         [viewFieldKeys unionSet:FTRUMDecodeCustomKeys(errorContext.lastViewContext[@"tags"][FT_RUM_CUSTOM_KEYS])];
                     }
                     [viewFieldKeys minusSet:[NSSet setWithArray:@[FT_KEY_VIEW_ERROR_COUNT, FT_KEY_VIEW_UPDATE_TIME, FT_KEY_IS_ACTIVE, FT_KEY_TIME_SPENT, FT_SESSION_ERROR_TIMESTAMP]]];
-                    FTRUMEncodeCustomKeys(tags, fields, viewTagKeys, viewFieldKeys);
-                    viewModel.tags = tags;
+                    FTRUMEncodeCustomKeys(viewTags, fields, viewTagKeys, viewFieldKeys);
+                    viewModel.tags = viewTags;
                     viewModel.fields = fields;
                     viewModel.createTime = time;
                     [filteredReports addObject:[FTCrashReportRUMModel reportWithValue:viewModel]];

@@ -19,6 +19,7 @@
 //
 
 #import <XCTest/XCTest.h>
+#import "FTModelHelper.h"
 #import "FTAppLaunchTracker.h"
 #import "FTRUMManager.h"
 #import "NSDate+FTUtil.h"
@@ -914,21 +915,9 @@ void FTClearLaunchTaskRole(void);
         self.launchBlock(duration, FTLaunchHot,nil);
     }
 }
-- (void)rumWrite:(NSString *)source tags:(NSDictionary *)tags fields:(NSDictionary *)fields dynamicContext:(NSDictionary *)dynamicContext time:(long long)time{
-    if(self.launchDataBlock){
-        self.launchDataBlock(source, tags, fields);
-    }
+- (BOOL)writeRUMData:(FTRUMWriteData *)data {
+    if (self.launchDataBlock) self.launchDataBlock(data.source, FTTestRUMTags(data), data.fields);
+    return YES;
 }
-
-- (void)rumWrite:(nonnull NSString *)source tags:(nonnull NSDictionary *)tags fields:(nonnull NSDictionary *)fields dynamicContext:(NSDictionary *)dynamicContext time:(long long)time updateTime:(long long)updateTime {
-
-}
-
-
-- (void)rumWrite:(nonnull NSString *)source tags:(nonnull NSDictionary *)tags fields:(nonnull NSDictionary *)fields dynamicContext:(NSDictionary *)dynamicContext time:(long long)time updateTime:(long long)updateTime cache:(BOOL)cache {
-
-}
-
-
 
 @end

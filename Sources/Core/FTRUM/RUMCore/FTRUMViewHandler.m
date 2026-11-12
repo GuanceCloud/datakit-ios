@@ -76,6 +76,7 @@
         _trackingType = model.trackingType;
         self.fallbackView = NO;
         self.updateTime = 0;
+
         self.view_id = model.view_id;
         self.view_name = model.view_name;
         self.view_referrer = model.view_referrer;
@@ -121,6 +122,7 @@
         NSString *owner = ((FTRUMResourceModel *)model).ownerViewID;
         if (owner && ![owner isEqualToString:self.view_id]) return YES;
     }
+
     if ([model.time compare:self.latestEventTime] == NSOrderedDescending) self.latestEventTime = model.time;
     if (model.type == FTRUMDataAppStateChange) {
         FTRUMAppStateChangeModel *stateModel = (FTRUMAppStateChangeModel *)model;
@@ -280,6 +282,7 @@
     NSNumber *value = [self.previousViewMetrics interactionToViewAt:self.metrics.startNs name:self.view_name];
     if (value == self.interactionTime || (value && self.interactionTime && [value isEqualToNumber:self.interactionTime])) return;
     self.interactionTime = value;
+
     [self writeViewDataWithContext:context viewEndTime:self.latestEventTime];
 }
 
@@ -319,9 +322,10 @@
     [fields setValue:@(0) forKey:FT_KEY_ACTION_RESOURCE_COUNT];
     [fields setValue:@(0) forKey:FT_KEY_ACTION_ERROR_COUNT];
     [fields addEntriesFromDictionary:self.context.sessionState.sessionFields ?: @{}];
-    FTRUMWriteData *writeData = [[FTRUMWriteData alloc] initWithSource:FT_RUM_SOURCE_ACTION tags:tags fields:fields
+    FTRUMWriteData *writeData = [self.rumDependencies newNativeWriteDataWithSource:FT_RUM_SOURCE_ACTION tags:tags fields:fields
         context:context customTagKeys:[NSSet set] customFieldKeys:customKeys time:model.tm];
-    FTRUMWrite(self.rumDependencies.writer, writeData);
+
+    [self.rumDependencies.writer writeRUMData:writeData];
 }
 -(void)setViewErrorCount:(NSInteger)viewErrorCount{
     _viewErrorCount = viewErrorCount;
@@ -403,9 +407,10 @@
         [fields setValue:@(sessionHasReplay) forKey:FT_SESSION_HAS_REPLAY];
     }
     NSString *error = model.type == FTRUMDataLongTask?FT_RUM_SOURCE_LONG_TASK :FT_RUM_SOURCE_ERROR;
-    FTRUMWriteData *writeData = [[FTRUMWriteData alloc] initWithSource:error tags:tags fields:fields
+    FTRUMWriteData *writeData = [self.rumDependencies newNativeWriteDataWithSource:error tags:tags fields:fields
         context:context customTagKeys:[NSSet set] customFieldKeys:customKeys time:model.tm];
-    FTRUMWrite(self.rumDependencies.writer, writeData);
+
+    [self.rumDependencies.writer writeRUMData:writeData];
 }
 - (void)writeViewDataWithContext:(FTRUMPropertySnapshot *)context viewEndTime:(NSDate *)viewEndTime{
     NSMutableSet *customKeys = [NSMutableSet set];
@@ -479,11 +484,16 @@
         : [self.rumDependencies.appStateHistory stateFrom:stateStartNs to:viewEndNs] forKey:@"app_state"];
 
     long long time = [self.viewStartTime ft_nanosecondTimeStamp];
-    FTRUMWriteData *writeData = [[FTRUMWriteData alloc] initWithSource:FT_RUM_SOURCE_VIEW tags:tags fields:fields
+    FTRUMWriteData *writeData = [self.rumDependencies newNativeWriteDataWithSource:FT_RUM_SOURCE_VIEW tags:tags fields:fields
         context:context customTagKeys:[NSSet set] customFieldKeys:customKeys time:time];
+
     writeData.updateTime = [viewEndTime ft_nanosecondTimeStamp];
-    FTRUMWrite(self.rumDependencies.writer, writeData);
+    [self.rumDependencies.writer writeRUMData:writeData];
     if (self.isActiveView) {
+        if (writeData.visitorIDSnapshot.length > 0) {
+            tags[FT_VISITOR_ID] = writeData.visitorIDSnapshot;
+            viewUserCustomDatas[FT_VISITOR_ID] = writeData.visitorIDSnapshot;
+        }
         self.rumDependencies.lastViewUserCustomDatas = viewUserCustomDatas;
         self.rumDependencies.fatalErrorContext.lastViewContext = @{@"tags":tags,
                                                                    @"fields":fields,

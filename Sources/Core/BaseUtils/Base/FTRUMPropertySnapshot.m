@@ -60,6 +60,7 @@ NSDictionary *FTRUMCopyDictionary(NSDictionary *dictionary) {
     return FTRUMCopyValue(dictionary, ancestors, 0);
 }
 @interface FTRUMPropertySnapshot ()
+- (instancetype)initWithTags:(NSDictionary *)tags decodedCustomKeys:(NSSet *)customKeys;
 - (instancetype)initWithOwnedTags:(NSDictionary *)tags customKeys:(NSSet *)customKeys;
 @end
 NSSet<NSString *> *FTRUMDecodeCustomKeys(id value) {
@@ -75,11 +76,15 @@ NSSet<NSString *> *FTRUMDecodeCustomKeys(id value) {
     return [keys copy];
 }
 void FTRUMMergeProperties(NSMutableDictionary *values, NSMutableSet *keys, NSDictionary *incoming, NSSet *incomingKeys) {
-    NSDictionary *safe = [incoming isKindOfClass:NSDictionary.class] ? incoming : @{};
-    [keys minusSet:[NSSet setWithArray:safe.allKeys]];
-    [values addEntriesFromDictionary:safe];
-    for (NSString *key in incomingKeys) {
-        if (safe[key] && ![key isEqual:FT_RUM_CUSTOM_KEYS]) [keys addObject:key];
+    if (![incoming isKindOfClass:NSDictionary.class] || incoming.count == 0) return;
+    [values addEntriesFromDictionary:incoming];
+    if (keys.count == 0 && incomingKeys.count == 0) return;
+    for (id key in incoming) {
+        if ([incomingKeys containsObject:key] && ![key isEqual:FT_RUM_CUSTOM_KEYS]) {
+            [keys addObject:key];
+        } else {
+            [keys removeObject:key];
+        }
     }
 }
 void FTRUMSetSystemProperty(NSMutableDictionary *values, NSMutableSet *keys, NSString *key, id value) {
@@ -96,21 +101,24 @@ void FTRUMEncodeCustomKeys(NSMutableDictionary *tags, NSDictionary *fields, NSSe
 }
 @implementation FTRUMPropertySnapshot
 - (instancetype)initWithTags:(NSDictionary *)tags customKeys:(NSSet *)customKeys {
-    return [self initWithOwnedTags:FTRUMCopyDictionary(tags) customKeys:customKeys];
+    return [self initWithTags:tags decodedCustomKeys:FTRUMDecodeCustomKeys(customKeys)];
+}
+- (instancetype)initWithTags:(NSDictionary *)tags decodedCustomKeys:(NSSet *)customKeys {
+    NSMutableDictionary *values = [FTRUMCopyDictionary(tags) mutableCopy];
+    [values removeObjectForKey:FT_RUM_CUSTOM_KEYS];
+    NSMutableSet *keys = [customKeys mutableCopy];
+    [keys intersectSet:[NSSet setWithArray:values.allKeys]];
+    return [self initWithOwnedTags:values customKeys:keys];
 }
 - (instancetype)initWithOwnedTags:(NSDictionary *)tags customKeys:(NSSet *)customKeys {
     if ((self = [super init])) {
-        NSMutableDictionary *values = [tags mutableCopy];
-        [values removeObjectForKey:FT_RUM_CUSTOM_KEYS];
-        _tags = [values copy];
-        NSMutableSet *keys = [FTRUMDecodeCustomKeys(customKeys) mutableCopy];
-        [keys intersectSet:[NSSet setWithArray:_tags.allKeys]];
-        _customKeys = [keys copy];
+        _tags = [tags copy];
+        _customKeys = [customKeys copy];
     }
     return self;
 }
 + (instancetype)snapshotWithLegacyTags:(NSDictionary *)tags {
-    return [[self alloc] initWithTags:tags customKeys:FTRUMDecodeCustomKeys(tags[FT_RUM_CUSTOM_KEYS])];
+    return [[self alloc] initWithTags:tags decodedCustomKeys:FTRUMDecodeCustomKeys(tags[FT_RUM_CUSTOM_KEYS])];
 }
 - (NSDictionary *)legacyTags {
     NSMutableDictionary *tags = [self.tags mutableCopy];
@@ -120,8 +128,14 @@ void FTRUMEncodeCustomKeys(NSMutableDictionary *tags, NSDictionary *fields, NSSe
 - (FTRUMPropertySnapshot *)snapshotBySettingSystemValue:(id)value forKey:(NSString *)key {
     if ((self.tags[key] == value || [self.tags[key] isEqual:value]) && ![self.customKeys containsObject:key]) return self;
     NSMutableDictionary *tags = [self.tags mutableCopy];
-    NSMutableSet *keys = [self.customKeys mutableCopy];
-    FTRUMSetSystemProperty(tags, keys, key, value);
+    NSSet *keys = self.customKeys;
+    if ([keys containsObject:key]) {
+        NSMutableSet *updatedKeys = [keys mutableCopy];
+        [updatedKeys removeObject:key];
+        keys = updatedKeys;
+    }
+    [tags setValue:value forKey:key];
+    [tags removeObjectForKey:FT_RUM_CUSTOM_KEYS];
     return [[FTRUMPropertySnapshot alloc] initWithOwnedTags:tags customKeys:keys];
 }
 @end

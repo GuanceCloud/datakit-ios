@@ -219,15 +219,17 @@
             : contextModel.globalPropertySnapshot;
         FTRUMWriteData *viewData = [[FTRUMWriteData alloc] initWithSource:FT_RUM_SOURCE_VIEW tags:lastViews[@"tags"] fields:lastViewsFields
             context:viewSnapshot customTagKeys:nil customFieldKeys:viewCustomKeys time:time.longLongValue];
+        NSString *viewVisitor = lastViews[@"tags"][FT_VISITOR_ID];
+        if ([viewVisitor isKindOfClass:NSString.class]) viewData.visitorIDSnapshot = viewVisitor;
         viewData.updateTime = longTaskEndTime;
         viewData.cache = @(sessionOnError);
-        FTRUMWrite(self.dependencies.writer, viewData);
+        [self.dependencies.writer writeRUMData:viewData];
     }
     if (self.dataStore.isClosed) return 0;
     FTRUMWriteData *longTaskData = [[FTRUMWriteData alloc] initWithSource:FT_RUM_SOURCE_LONG_TASK tags:tags fields:fields
         context:contextModel.globalPropertySnapshot customTagKeys:[NSSet set] customFieldKeys:[NSSet set] time:startTime];
     longTaskData.cache = @(sessionOnError);
-    FTRUMWrite(self.dependencies.writer, longTaskData);
+    [self.dependencies.writer writeRUMData:longTaskData];
 
     if (isAnr && !self.dataStore.isClosed) {
         NSString *allBacktrace = anrData.allThreadsBacktrace.length > 0 ? anrData.allThreadsBacktrace : nil;
@@ -264,14 +266,13 @@
             NSDictionary *customFields =
                 [self.dependencies.issueFieldEnricher fieldsForIssue:issue
                                                          reservedKeys:reservedKeys];
-            FTRUMMergeProperties(anrFields, anrFieldKeys, customFields, [NSSet setWithArray:customFields.allKeys]);
+            FTRUMMergeProperties(anrFields, anrFieldKeys, customFields, FTRUMDecodeCustomKeys(customFields.allKeys));
         }
         if (self.dataStore.isClosed) return 0;
         FTRUMWriteData *errorData = [[FTRUMWriteData alloc] initWithSource:FT_RUM_SOURCE_ERROR tags:anrTags fields:anrFields
             context:nil customTagKeys:anrTagKeys customFieldKeys:anrFieldKeys time:startTime];
         errorData.cache = @NO;
-        errorData.assembled = YES;
-        FTRUMWrite(self.dependencies.writer, errorData);
+        [self.dependencies.writer writeRUMData:errorData];
         return startTime;
     }
     return 0;

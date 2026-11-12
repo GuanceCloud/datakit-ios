@@ -61,6 +61,16 @@ NS_ASSUME_NONNULL_BEGIN
 @property (nonatomic, strong) NSDictionary *sessionReplaySampledFields;
 @property (nonatomic, strong) NSDictionary *sessionReplayStats;
 
+/// Creates a live native event and captures the current Visitor at this write boundary.
+/// Resource, Browser and historical data use FTRUMWriteData's explicit initializer instead.
+- (FTRUMWriteData *)newNativeWriteDataWithSource:(NSString *)source
+                                          tags:(nullable NSDictionary *)tags
+                                        fields:(nullable NSDictionary *)fields
+                                       context:(FTRUMPropertySnapshot *)context
+                                 customTagKeys:(NSSet<NSString *> *)tagKeys
+                               customFieldKeys:(NSSet<NSString *> *)fieldKeys
+                                          time:(long long)time;
+
 @end
 
 NS_ASSUME_NONNULL_END

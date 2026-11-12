@@ -32,6 +32,8 @@
 #import "FTModelHelper.h"
 #import "FTGlobalRumManager+Private.h"
 #import "FTRUMManager.h"
+#import "FTRUMDependencies.h"
+#import "FTFatalErrorContext.h"
 #import "FTAutoTrackHandler.h"
 #import "XCTestCase+Utils.h"
 #import "UIEvent+Mock.h"
@@ -556,7 +558,7 @@ static void FTStartAutoTrackActionTest(AddRumDatasHandlerMock *mock,
     rumConfig.freezeDurationMs = 5000;
     XCTAssertTrue(rumConfig.freezeDurationMs == 5000);
 }
-- (void)testVisitorIDUsesEventSnapshotAndManagedContextPrecedence {
+- (void)testVisitorIDUsesWriteSnapshotAndManagedContextPrecedence {
     __block NSInteger finalModifierMode = 0;
     FTMobileConfig *mobileConfig = [[FTMobileConfig alloc] initWithDatakitUrl:self.url ?: @"http://127.0.0.1:9529"];
     mobileConfig.autoSync = NO;
@@ -610,6 +612,12 @@ static void FTStartAutoTrackActionTest(AddRumDatasHandlerMock *mock,
     dispatch_semaphore_signal(release);
     [manager syncProcess];
 
+    FTRUMDependencies *dependencies = [manager valueForKey:@"rumDependencies"];
+    FTFatalErrorContextModel *historical = [dependencies.fatalErrorContext currentContextModel];
+    XCTAssertEqualObjects(historical.dynamicContext[FT_VISITOR_ID], newVisitorID);
+    XCTAssertEqualObjects(historical.lastViewContext[@"tags"][FT_VISITOR_ID], newVisitorID);
+    XCTAssertEqualObjects(dependencies.lastViewUserCustomDatas[FT_VISITOR_ID], newVisitorID);
+
     finalModifierMode = 1;
     [[FTExternalDataManager sharedManager] addAction:@"visitor-final-override" actionType:@"custom" property:nil];
     [manager syncProcess];
@@ -634,9 +642,11 @@ static void FTStartAutoTrackActionTest(AddRumDatasHandlerMock *mock,
             deleteTags = tags;
         }
     }];
-    XCTAssertEqualObjects(snapshotTags[FT_VISITOR_ID], eventVisitorID);
+    XCTAssertEqualObjects(snapshotTags[FT_VISITOR_ID], newVisitorID);
     XCTAssertEqualObjects(overrideTags[FT_VISITOR_ID], @"final-override");
     XCTAssertNil(deleteTags[FT_VISITOR_ID]);
+    XCTAssertEqualObjects(historical.dynamicContext[FT_VISITOR_ID], newVisitorID);
+    XCTAssertEqualObjects([dependencies.fatalErrorContext currentContextModel].dynamicContext[FT_VISITOR_ID], newVisitorID);
 }
 - (void)testVisitorIDResourceAndNetworkErrorKeepRequestHeaderSnapshotAfterReset {
     FTMobileConfig *mobileConfig = [[FTMobileConfig alloc] initWithDatakitUrl:self.url ?: @"http://127.0.0.1:9529"];

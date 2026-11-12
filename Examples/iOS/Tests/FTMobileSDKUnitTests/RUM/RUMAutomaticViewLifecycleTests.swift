@@ -32,29 +32,12 @@ private final class LifecycleWriter: NSObject, FTRUMDataWriteProtocol {
 
     var events: [Event] = []
 
-    func rumWrite(_ source: String, tags: [AnyHashable: Any], fields: [AnyHashable: Any],
-                  dynamicContext: [AnyHashable: Any], time: Int64) {
-        rumWrite(source, tags: tags, fields: fields, dynamicContext: dynamicContext,
-                 time: time, updateTime: time)
+    func writeRUMData(_ data: FTRUMWriteData) -> Bool {
+        events.append(Event(source: data.source, tags: FTTestRUMTags(data), fields: data.fields,
+                            time: data.time, updateTime: data.updateTime > 0 ? data.updateTime : data.time))
+        return true
     }
 
-    func rumWrite(_ source: String, tags: [AnyHashable: Any], fields: [AnyHashable: Any],
-                  dynamicContext: [AnyHashable: Any], time: Int64, updateTime: Int64) {
-        events.append(Event(source: source, tags: tags, fields: fields,
-                            time: time, updateTime: updateTime))
-    }
-
-    func rumWrite(_ source: String, tags: [AnyHashable: Any], fields: [AnyHashable: Any],
-                  dynamicContext: [AnyHashable: Any], time: Int64, updateTime: Int64,
-                  cache: Bool) {
-        rumWrite(source, tags: tags, fields: fields, dynamicContext: dynamicContext,
-                 time: time, updateTime: updateTime)
-    }
-
-    func rumWriteAssembledData(_ source: String, tags: [AnyHashable: Any],
-                              fields: [AnyHashable: Any], time: Int64) {
-        rumWrite(source, tags: tags, fields: fields, dynamicContext: [:], time: time)
-    }
 }
 
 final class RUMAutomaticViewLifecycleTests: XCTestCase {

@@ -31,14 +31,14 @@
         _context = context ?: [[FTRUMPropertySnapshot alloc] initWithTags:nil customKeys:nil];
         NSSet *legacy = (tagKeys == nil || fieldKeys == nil) ? FTRUMDecodeCustomKeys(_tags[FT_RUM_CUSTOM_KEYS]) : nil;
         if (tagKeys) {
-            _customTagKeys = FTRUMDecodeCustomKeys(tagKeys);
+            _customTagKeys = [tagKeys copy];
         } else {
             NSMutableSet *keys = [legacy mutableCopy];
             [keys intersectSet:[NSSet setWithArray:_tags.allKeys]];
             _customTagKeys = [keys copy];
         }
         if (fieldKeys) {
-            _customFieldKeys = FTRUMDecodeCustomKeys(fieldKeys);
+            _customFieldKeys = [fieldKeys copy];
         } else {
             NSMutableSet *keys = [legacy mutableCopy];
             [keys intersectSet:[NSSet setWithArray:_fields.allKeys]];
@@ -47,14 +47,5 @@
         _time = time;
     }
     return self;
-}
-- (NSDictionary *)legacyContextTags {
-    NSMutableDictionary *values = [self.tags mutableCopy];
-    NSMutableSet *keys = [self.customTagKeys mutableCopy];
-    FTRUMMergeProperties(values, keys, self.context.tags, self.context.customKeys);
-    FTRUMEncodeCustomKeys(values, self.fields, keys, self.customFieldKeys);
-    NSMutableDictionary *context = [self.context.tags mutableCopy];
-    [context setValue:values[FT_RUM_CUSTOM_KEYS] forKey:FT_RUM_CUSTOM_KEYS];
-    return [context copy];
 }
 @end

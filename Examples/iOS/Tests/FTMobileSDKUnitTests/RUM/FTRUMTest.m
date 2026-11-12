@@ -32,6 +32,7 @@
 #import "FTRecordModel.h"
 #import "FTJSONUtil.h"
 #import "FTRUMManager.h"
+#import "FTVisitorIDManager.h"
 #import "FTRUMAppStateHistory.h"
 #import "FTRUMDependencies.h"
 #import "FTRUMSessionHandler.h"
@@ -172,7 +173,6 @@
 // Capture the manager's queue output before session processing changes the models.
 @interface FTLoadingHandoffTestManager : FTRUMManager
 @property (nonatomic, strong) NSMutableArray<FTRUMViewModel *> *startedViews;
-@property (nonatomic, copy) NSString *testVisitorID;
 @end
 @implementation FTLoadingHandoffTestManager
 - (BOOL)process:(FTRUMDataModel *)model context:(FTRUMPropertySnapshot *)context {
@@ -181,9 +181,6 @@
         [self.startedViews addObject:(FTRUMViewModel *)model];
     }
     return YES;
-}
-- (NSString *)currentVisitorIDSnapshot {
-    return self.testVisitorID;
 }
 @end
 
@@ -897,7 +894,7 @@
     XCTAssertEqualObjects(manager.startedViews.lastObject.view_name, @"snapshot");
 }
 
-- (void)testViewLoadingHandoffPreservesEventTimeAndVisitorDuringQueueDelay {
+- (void)testViewLoadingHandoffPreservesEventTimeDuringQueueDelay {
     FTLoadingHandoffTestManager *manager = [[FTLoadingHandoffTestManager alloc] initWithRumDependencies:[FTRUMDependencies new]];
     [manager syncProcess];
     dispatch_queue_t queue = [manager valueForKey:@"rumQueue"];
@@ -912,10 +909,10 @@
     dispatch_suspend(queue);
     method_setImplementation(method, replacement);
     @try {
-        manager.testVisitorID = @"visitor-at-event";
+
         [manager onCreateView:@"delayed" loadTime:@60000000 loadStartEpochNs:@1699999999000000000LL];
         [manager startViewWithName:@"delayed"];
-        manager.testVisitorID = @"visitor-after-event";
+
     } @finally {
         // The real clock is restored before processing can start.
         method_setImplementation(method, original);
@@ -926,7 +923,6 @@
     XCTAssertEqual(manager.startedViews.count, 1u);
     FTRUMViewModel *view = manager.startedViews.firstObject;
     XCTAssertEqualObjects(view.time, eventTime);
-    XCTAssertEqualObjects(view.visitorIDSnapshot, @"visitor-at-event");
     XCTAssertEqualObjects(view.loading_time, @60000000);
     XCTAssertEqualObjects(view.loading_start_epoch_ns, @1699999999000000000LL);
 }
@@ -4745,6 +4741,79 @@
     XCTAssertEqual(count, 1);
     [preset clearUser];
 }
+- (void)testBrowserVisitorIsPreservedWhileNativeVisitorIsEnabled {
+    [self setRumConfig];
+    FTVisitorIDManager *visitor = [FTVisitorIDManager sharedInstance];
+    [visitor configureWithEnabled:YES headerName:@"x-visitor-test" ttl:86400 urlMatcher:^BOOL(NSURL *url) { return YES; }];
+    @try {
+        NSString *nativeVisitor = visitor.snapshot.value;
+        XCTAssertTrue(nativeVisitor.length > 0);
+        FTRUMManager *manager = [FTGlobalRumManager sharedInstance].rumManager;
+        [manager dealRUMWebViewData:FT_RUM_SOURCE_ACTION
+            tags:@{FT_VISITOR_ID: @"browser-visitor", @"app_id": @"browser-app"}
+            fields:@{@"browser_visitor_probe": @1} tm:123];
+        [manager syncProcess];
+        __block NSUInteger count = 0;
+        [FTModelHelper resolveModelArray:[[FTTrackerEventDBTool sharedManager] getFirstRecords:100 withType:FT_DATA_TYPE_RUM]
+            callBack:^(NSString *source, NSDictionary *tags, NSDictionary *fields, BOOL *stop) {
+            if (![fields[@"browser_visitor_probe"] isEqual:@1]) return;
+            count++;
+            XCTAssertEqualObjects(tags[FT_VISITOR_ID], @"browser-visitor");
+            XCTAssertNotEqualObjects(tags[FT_VISITOR_ID], nativeVisitor);
+            XCTAssertFalse([FTRUMDecodeCustomKeys(tags[FT_RUM_CUSTOM_KEYS]) containsObject:FT_VISITOR_ID]);
+        }];
+        XCTAssertEqual(count, 1u);
+    } @finally {
+        [visitor configureWithEnabled:NO headerName:nil ttl:0 urlMatcher:nil];
+    }
+}
+- (void)testWriterComposesModelVisitorAfterOrdinaryModifierAndBeforeLineModifier {
+    [self setRumConfig];
+    FTPresetProperty *preset = [FTPresetProperty sharedInstance];
+    FTRUMPropertySnapshot *context = [[FTRUMPropertySnapshot alloc] initWithTags:@{FT_VISITOR_ID: @"global-spoof"}
+        customKeys:[NSSet setWithObject:FT_VISITOR_ID]];
+    __block NSString *lineVisitor;
+    [preset setDataModifier:^id(NSString *key, id value) {
+        return [key isEqual:FT_VISITOR_ID] ? @"modified-spoof" : value;
+    } lineDataModifier:^NSDictionary *(NSString *source, NSDictionary *values) {
+        if (![source isEqual:FT_RUM_SOURCE_ACTION] || ![values[@"visitor_probe"] isEqual:@1]) return nil;
+        lineVisitor = values[FT_VISITOR_ID];
+        return @{FT_VISITOR_ID: @"line-visitor"};
+    }];
+    FTRUMWriteData *data = [[FTRUMWriteData alloc] initWithSource:FT_RUM_SOURCE_ACTION
+        tags:@{FT_VISITOR_ID: @"tag-spoof"} fields:@{FT_VISITOR_ID: @"field-spoof", @"visitor_probe": @1}
+        context:context customTagKeys:[NSSet set] customFieldKeys:[NSSet set] time:123];
+    data.visitorIDSnapshot = @"event-visitor";
+    XCTAssertTrue([[FTDataWriterWorker new] writeRUMData:data]);
+    XCTAssertEqualObjects(lineVisitor, @"event-visitor");
+    XCTAssertEqualObjects(context.tags[FT_VISITOR_ID], @"global-spoof");
+    __block NSUInteger count = 0;
+    [FTModelHelper resolveModelArray:[[FTTrackerEventDBTool sharedManager] getFirstRecords:100 withType:FT_DATA_TYPE_RUM]
+        callBack:^(NSString *source, NSDictionary *tags, NSDictionary *fields, BOOL *stop) {
+        if (![fields[@"visitor_probe"] isEqual:@1]) return;
+        count++;
+        XCTAssertEqualObjects(tags[FT_VISITOR_ID], @"line-visitor");
+        XCTAssertNil(fields[FT_VISITOR_ID]);
+        XCTAssertFalse([FTRUMDecodeCustomKeys(tags[FT_RUM_CUSTOM_KEYS]) containsObject:FT_VISITOR_ID]);
+    }];
+    XCTAssertEqual(count, 1);
+}
+- (void)testCustomKeysManualIngressOmitsEmptyNameWithoutChangingFieldValue {
+    [self setRumConfig];
+    FTRUMManager *manager = [FTGlobalRumManager sharedInstance].rumManager;
+    [manager addAction:@"empty-custom-name" actionType:@"custom" property:@{@"": @1, @"allowed": @2}];
+    [manager syncProcess];
+    __block NSUInteger count = 0;
+    [FTModelHelper resolveModelArray:[[FTTrackerEventDBTool sharedManager] getFirstRecords:100 withType:FT_DATA_TYPE_RUM]
+        callBack:^(NSString *source, NSDictionary *tags, NSDictionary *fields, BOOL *stop) {
+        if (![source isEqual:FT_RUM_SOURCE_ACTION] || ![tags[FT_KEY_ACTION_NAME] isEqual:@"empty-custom-name"]) return;
+        count++;
+        XCTAssertEqualObjects(fields[@""], @1);
+        XCTAssertEqualObjects(fields[@"allowed"], @2);
+        XCTAssertEqualObjects(FTRUMDecodeCustomKeys(tags[FT_RUM_CUSTOM_KEYS]), [NSSet setWithObject:@"allowed"]);
+    }];
+    XCTAssertEqual(count, 1);
+}
 - (void)testCustomKeysResourceIgnoresRepeatedStopAndLateCompletion {
     [self setRumConfig];
     FTRUMManager *manager = [FTGlobalRumManager sharedInstance].rumManager;
@@ -4801,7 +4870,19 @@
     [manager syncProcess];
     FTRUMDependencies *dependencies = [manager valueForKey:@"rumDependencies"];
     FTFatalErrorContextModel *saved = [dependencies.fatalErrorContext currentContextModel];
-    NSDictionary *encoded = [saved toDictionary];
+    NSMutableDictionary *encoded = [[saved toDictionary] mutableCopy];
+    NSMutableDictionary *dynamicTags = [encoded[@"dynamicContext"] mutableCopy];
+    dynamicTags[FT_VISITOR_ID] = @"historical-visitor";
+    encoded[@"dynamicContext"] = dynamicTags;
+    NSMutableDictionary *lastView = [encoded[@"lastViewContext"] mutableCopy];
+    NSMutableDictionary *viewTags = [lastView[@"tags"] mutableCopy];
+    viewTags[FT_VISITOR_ID] = @"historical-visitor";
+    lastView[@"tags"] = viewTags;
+    NSMutableDictionary *propertyTags = [lastView[@"propertyTags"] mutableCopy];
+    propertyTags[FT_VISITOR_ID] = @"preset-attempt";
+    lastView[@"propertyTags"] = propertyTags;
+    lastView[@"propertyCustomKeys"] = @[@"historical_global", FT_VISITOR_ID];
+    encoded[@"lastViewContext"] = lastView;
     [preset updateUser:@"new-process-user" name:nil email:nil extra:@{@"current_extra": @3}];
     [FTMobileAgent appendRUMGlobalContext:@{@"current_global": @4}];
     FTFatalErrorContextModel *restored = [[FTFatalErrorContextModel alloc] initWithDict:encoded];
@@ -4822,6 +4903,7 @@
         XCTAssertNil(model.tags[@"current_extra"]);
         XCTAssertNil(model.tags[@"current_global"]);
         XCTAssertEqualObjects(model.tags[@"historical_global"], @1);
+        XCTAssertEqualObjects(model.tags[FT_VISITOR_ID], @"historical-visitor");
     }
     [preset clearUser];
 }

@@ -21,6 +21,7 @@
 #import "FTRUMDependencies.h"
 #import "FTRUMViewTimingPredicates.h"
 #import "FTIssueFieldEnricher.h"
+#import "FTVisitorIDManager.h"
 
 @interface FTRUMDependencies ()
 @property (nonatomic, strong, nullable, readwrite) FTIssueFieldEnricher *issueFieldEnricher;
@@ -35,6 +36,17 @@
     return self;
 }
 
+
+- (FTRUMWriteData *)newNativeWriteDataWithSource:(NSString *)source tags:(NSDictionary *)tags
+                                        fields:(NSDictionary *)fields context:(FTRUMPropertySnapshot *)context
+                                 customTagKeys:(NSSet<NSString *> *)tagKeys customFieldKeys:(NSSet<NSString *> *)fieldKeys
+                                          time:(long long)time {
+    NSString *visitorID = [FTVisitorIDManager sharedInstance].snapshot.value;
+    FTRUMWriteData *data = [[FTRUMWriteData alloc] initWithSource:source tags:tags fields:fields
+        context:context customTagKeys:tagKeys customFieldKeys:fieldKeys time:time];
+    data.visitorIDSnapshot = visitorID;
+    return data;
+}
 
 - (void)setIssueDataProvider:(nullable FTIssueDataProvider)issueDataProvider {
     _issueDataProvider = [issueDataProvider copy];

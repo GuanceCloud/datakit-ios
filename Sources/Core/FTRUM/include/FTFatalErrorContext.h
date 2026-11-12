@@ -70,6 +70,8 @@ typedef void (^FTCrashContextChange)(NSDictionary *context);
 - (void)setLastViewContext:(nullable NSDictionary *)lastViewContext;
 - (void)setDynamicContext:(nullable NSDictionary *)dynamicContext;
 - (void)setDynamicPropertySnapshot:(FTRUMPropertySnapshot *)snapshot;
+/// Retain the shared preset and captured Visitor; rebuild historical context only on changes.
+- (void)setDynamicPropertySnapshot:(FTRUMPropertySnapshot *)snapshot visitorIDSnapshot:(nullable NSString *)visitorID;
 
 - (FTFatalErrorContextModel *)currentContextModel;
 

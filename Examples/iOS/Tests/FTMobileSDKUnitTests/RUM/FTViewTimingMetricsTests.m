@@ -18,6 +18,7 @@
 //
 
 #import <XCTest/XCTest.h>
+#import "FTModelHelper.h"
 #import "FTAutoTrackHandler.h"
 #import "UIViewController+FTAutoTrack.h"
 #import "FTRUMSessionHandler.h"
@@ -35,6 +36,7 @@
 #import "FTGlobalRumManager+Private.h"
 #import "FTURLSessionInterceptor+Private.h"
 #import "FTDataWriterWorker.h"
+#import "FTVisitorIDManager.h"
 #import "FTDataFilterManager.h"
 #import "FTURLConnectionHandler.h"
 #import "FTURLSessionInstrumentation.h"
@@ -121,23 +123,14 @@ static long long const FTMetricEpoch = 1800000000000000000LL;
 @end
 @implementation FTMetricWriter
 - (instancetype)init { if ((self = [super init])) _events = [NSMutableArray new]; return self; }
-- (BOOL)rumWriteAccepted:(NSString *)source tags:(NSDictionary *)tags fields:(NSDictionary *)fields dynamicContext:(NSDictionary *)context time:(long long)time {
-    if (([source isEqual:@"action"] && [tags[@"action_name"] isEqual:self.discardAction]) ||
-        ([source isEqual:@"resource"] && [tags[@"resource_id"] isEqual:self.discardResource])) return NO;
-    if (self.admissionWriter && ![self.admissionWriter rumWriteAccepted:source tags:tags fields:fields dynamicContext:context time:time]) return NO;
-    [self rumWrite:source tags:tags fields:fields dynamicContext:context time:time];
+- (BOOL)writeRUMData:(FTRUMWriteData *)data {
+    if (([data.source isEqual:@"action"] && [data.tags[@"action_name"] isEqual:self.discardAction]) ||
+        ([data.source isEqual:@"resource"] && [data.tags[@"resource_id"] isEqual:self.discardResource])) return NO;
+    if (self.admissionWriter && ![self.admissionWriter writeRUMData:data]) return NO;
+    [self.events addObject:@{@"source":data.source, @"tags":FTTestRUMTags(data), @"fields":data.fields, @"time":@(data.time)}];
     return YES;
 }
-- (void)rumWrite:(NSString *)source tags:(NSDictionary *)tags fields:(NSDictionary *)fields dynamicContext:(NSDictionary *)context time:(long long)time {
-    [self.events addObject:@{@"source":source, @"tags":tags ?: @{}, @"fields":[fields copy], @"time":@(time)}];
-}
-- (void)rumWrite:(NSString *)source tags:(NSDictionary *)tags fields:(NSDictionary *)fields dynamicContext:(NSDictionary *)context time:(long long)time updateTime:(long long)updateTime {
-    [self rumWrite:source tags:tags fields:fields dynamicContext:context time:time];
-}
-- (void)rumWrite:(NSString *)source tags:(NSDictionary *)tags fields:(NSDictionary *)fields dynamicContext:(NSDictionary *)context time:(long long)time updateTime:(long long)updateTime cache:(BOOL)cache {
-    [self rumWrite:source tags:tags fields:fields dynamicContext:context time:time];
-}
-- (void)rumWriteAssembledData:(NSString *)source tags:(NSDictionary *)tags fields:(NSDictionary *)fields time:(long long)time {}
+
 @end
 
 @interface FTURLSessionInterceptor (MetricTestClock)
@@ -289,6 +282,63 @@ static long long const FTMetricEpoch = 1800000000000000000LL;
     metrics.fetchStartNsTimeInterval = FTMetricEpoch + start * 1000000LL;
     metrics.fetchEndNsTimeInterval = FTMetricEpoch + end * 1000000LL;
     return metrics;
+}
+- (void)testActionCompletionAndViewUpdateUseCurrentWriteVisitor {
+    FTVisitorIDManager *visitor = [FTVisitorIDManager sharedInstance];
+    [visitor configureWithEnabled:YES headerName:@"x-visitor-test" ttl:86400 urlMatcher:^BOOL(NSURL *url) { return YES; }];
+    @try {
+        NSString *startVisitor = visitor.snapshot.value;
+        [self view:@"visitor-view" at:0 stop:NO];
+        FTRUMActionModel *action = [[FTRUMActionModel alloc] initWithActionName:@"visitor-action" actionType:@"click"];
+        action.type = FTRUMDataStartAction;
+        [self send:action at:10];
+        [visitor reset];
+        NSString *completionVisitor = visitor.snapshot.value;
+        XCTAssertNotEqualObjects(startVisitor, completionVisitor);
+        FTRUMDataModel *stop = [[FTRUMDataModel alloc] initWithType:FTRUMDataStopAction time:[self date:30]];
+        [self send:stop at:30];
+        NSDictionary *writtenAction = nil;
+        NSDictionary *writtenView = nil;
+        for (NSDictionary *event in self.writer.events) {
+            if ([event[@"source"] isEqual:@"action"]) writtenAction = event;
+            if ([event[@"source"] isEqual:@"view"]) writtenView = event;
+        }
+        XCTAssertEqualObjects(writtenAction[@"tags"][FT_VISITOR_ID], completionVisitor);
+        XCTAssertEqualObjects(writtenView[@"tags"][FT_VISITOR_ID], completionVisitor);
+    } @finally {
+        [visitor configureWithEnabled:NO headerName:nil ttl:0 urlMatcher:nil];
+    }
+}
+- (void)testResourceWithoutStartVisitorDoesNotBorrowCurrentVisitorAtCompletion {
+    FTVisitorIDManager *visitor = [FTVisitorIDManager sharedInstance];
+    [visitor configureWithEnabled:NO headerName:nil ttl:0 urlMatcher:nil];
+    [self view:@"nil-visitor-view" at:0 stop:NO];
+    [self resource:@"nil-visitor" type:FTRUMDataResourceStart at:10 metrics:nil];
+    [visitor configureWithEnabled:YES headerName:@"x-visitor-test" ttl:86400 urlMatcher:^BOOL(NSURL *url) { return YES; }];
+    @try {
+        NSString *current = visitor.snapshot.value;
+        XCTAssertTrue(current.length > 0);
+        [self resource:@"nil-visitor" type:FTRUMDataResourceError at:20 metrics:nil];
+        [self resource:@"nil-visitor" type:FTRUMDataResourceComplete at:30 metrics:[self metricsFrom:10 to:30]];
+        NSUInteger resourceCount = 0, errorCount = 0;
+        NSDictionary *lastView;
+        for (NSDictionary *event in self.writer.events) {
+            if ([event[@"source"] isEqual:@"view"]) lastView = event;
+            if ([event[@"source"] isEqual:@"resource"]) {
+                resourceCount++;
+                XCTAssertNil(event[@"tags"][FT_VISITOR_ID]);
+            }
+            if ([event[@"source"] isEqual:@"error"]) {
+                errorCount++;
+                XCTAssertNil(event[@"tags"][FT_VISITOR_ID]);
+            }
+        }
+        XCTAssertEqual(resourceCount, 1u);
+        XCTAssertEqual(errorCount, 1u);
+        XCTAssertEqualObjects(lastView[@"tags"][FT_VISITOR_ID], current);
+    } @finally {
+        [visitor configureWithEnabled:NO headerName:nil ttl:0 urlMatcher:nil];
+    }
 }
 - (void)testResourceSignalStrengthRetainsStartSnapshotThroughDelayedCompletion {
     [self view:@"network-view" at:0 stop:NO];

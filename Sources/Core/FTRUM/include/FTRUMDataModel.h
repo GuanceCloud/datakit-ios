@@ -55,8 +55,6 @@ NS_ASSUME_NONNULL_BEGIN
 @property (nonatomic, assign) long long tm;
 /// Automatic LongTask facts captured before asynchronous RUM processing.
 @property (nonatomic, strong, nullable) FTLongTaskEvent *longTaskEvent;
-/// Immutable Visitor ID captured when this event entered the SDK.
-@property (nonatomic, copy, nullable) NSString *visitorIDSnapshot;
 @property (nonatomic, assign, readonly) BOOL isUserInteraction;
 -(instancetype)initWithType:(FTRUMDataType)type time:(NSDate *)time;
 @end
@@ -96,6 +94,8 @@ NS_ASSUME_NONNULL_BEGIN
 
 
 @interface FTRUMResourceModel : FTRUMDataModel
+/// Request/Start Visitor captured before queueing; nil stays absent throughout this Resource.
+@property (nonatomic, copy, nullable) NSString *visitorIDSnapshot;
 @property (nonatomic, copy) NSString *identifier;
 /// Latest network facts captured at Resource Start API entry, before RUM queue processing.
 /// The Handler retains only the first Start values; nil means the field is absent.

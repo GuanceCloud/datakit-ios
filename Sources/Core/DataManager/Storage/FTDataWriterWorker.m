@@ -70,30 +70,6 @@
     return self;
 }
 // Called in RUM queue or longtask queue
-- (void)rumWrite:(NSString *)source tags:(NSDictionary *)tags fields:(NSDictionary *)fields dynamicContext:(NSDictionary *)dynamicContext time:(long long)time {
-    [self rumWrite:source tags:tags fields:fields dynamicContext:dynamicContext time:time updateTime:0];
-}
-- (void)rumWrite:(NSString *)source tags:(NSDictionary *)tags fields:(NSDictionary *)fields dynamicContext:(NSDictionary *)dynamicContext time:(long long)time updateTime:(long long)updateTime {
-    [self rumWrite:source tags:tags fields:fields dynamicContext:dynamicContext time:time updateTime:updateTime cache:self.isCache];
-}
-- (void)rumWrite:(NSString *)source tags:(NSDictionary *)tags fields:(NSDictionary *)fields dynamicContext:(NSDictionary *)dynamicContext time:(long long)time updateTime:(long long)updateTime cache:(BOOL)cache {
-    FTRUMWriteData *data = [[FTRUMWriteData alloc] initWithSource:source tags:tags fields:fields
-        context:[FTRUMPropertySnapshot snapshotWithLegacyTags:dynamicContext] customTagKeys:nil customFieldKeys:nil time:time];
-    data.updateTime = updateTime;
-    data.cache = @(cache);
-    [self writeRUMData:data];
-}
-- (BOOL)rumWriteAccepted:(NSString *)source tags:(NSDictionary *)tags fields:(NSDictionary *)fields dynamicContext:(NSDictionary *)dynamicContext time:(long long)time {
-    FTRUMWriteData *data = [[FTRUMWriteData alloc] initWithSource:source tags:tags fields:fields
-        context:[FTRUMPropertySnapshot snapshotWithLegacyTags:dynamicContext] customTagKeys:nil customFieldKeys:nil time:time];
-    return [self writeRUMData:data];
-}
-- (void)rumWriteAssembledData:(NSString *)source tags:(NSDictionary *)tags fields:(NSDictionary *)fields time:(long long)time {
-    FTRUMWriteData *data = [[FTRUMWriteData alloc] initWithSource:source tags:tags fields:fields context:nil customTagKeys:nil customFieldKeys:nil time:time];
-    data.cache = @NO;
-    data.assembled = YES;
-    [self writeRUMData:data];
-}
 - (BOOL)writeRUMData:(FTRUMWriteData *)data {
     @try {
         BOOL cache = data.cache ? data.cache.boolValue : self.isCache;
@@ -126,7 +102,7 @@
     FTPresetProperty *preset = [FTPresetProperty sharedInstance];
     NSDictionary *eventTags = [preset applyModifier:tags];
     NSMutableSet *customTagKeys = [rumData.customTagKeys mutableCopy] ?: [NSMutableSet set];
-    NSMutableSet *customFieldKeys = [rumData.customFieldKeys mutableCopy] ?: [NSMutableSet set];
+    NSSet *customFieldKeys = rumData.customFieldKeys;
     NSDictionary *eventFields = [preset applyModifier:fields];
     NSDictionary *safeContextTags = [NSObject ft_normalizedDictionaryWithObject:contextTags];
     NSMutableDictionary *tagsDict = [eventTags mutableCopy] ?: [NSMutableDictionary dictionary];
@@ -136,6 +112,14 @@
         FTRUMMergeProperties(tagsDict, customTagKeys, safeContextTags, rumData.context.customKeys);
     } else {
         [tagsDict addEntriesFromDictionary:safeContextTags];
+    }
+    if (!webViewRUM && rumData.visitorIDSnapshot.length > 0) {
+        FTRUMSetSystemProperty(tagsDict, customTagKeys, FT_VISITOR_ID, rumData.visitorIDSnapshot);
+        if (eventFields[FT_VISITOR_ID]) {
+            NSMutableDictionary *nativeFields = [eventFields mutableCopy];
+            [nativeFields removeObjectForKey:FT_VISITOR_ID];
+            eventFields = nativeFields;
+        }
     }
     NSDictionary *eventPkgInfo = [eventTags[FT_SDK_PKG_INFO] isKindOfClass:NSDictionary.class]
         ? eventTags[FT_SDK_PKG_INFO] : nil;

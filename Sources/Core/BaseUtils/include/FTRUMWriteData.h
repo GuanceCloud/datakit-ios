@@ -29,17 +29,18 @@ NS_ASSUME_NONNULL_BEGIN
 @property (nonatomic, strong, readonly) FTRUMPropertySnapshot *context;
 @property (nonatomic, copy, readonly) NSSet<NSString *> *customTagKeys;
 @property (nonatomic, copy, readonly) NSSet<NSString *> *customFieldKeys;
+/// Explicit native Visitor: current value at live envelope creation, or the saved request/history value.
+/// nil means no native override; Browser and historical dictionaries keep their supplied identity.
+@property (nonatomic, copy, nullable) NSString *visitorIDSnapshot;
 @property (nonatomic, assign) long long time;
-/// Retains the historical assembled-data route for compatibility writers.
-@property (nonatomic, assign) BOOL assembled;
 @property (nonatomic, assign) long long updateTime;
 /// nil uses the writer's existing sampling/cache mode.
 @property (nonatomic, copy, nullable) NSNumber *cache;
+/// Explicit key sets contain names validated at collection ingress. Copy freezes mutable sets;
+/// immutable sets are shared. Only missing sets are inferred from legacy metadata.
 - (instancetype)initWithSource:(NSString *)source tags:(nullable NSDictionary *)tags fields:(nullable NSDictionary *)fields
                        context:(nullable FTRUMPropertySnapshot *)context
                  customTagKeys:(nullable NSSet<NSString *> *)tagKeys customFieldKeys:(nullable NSSet<NSString *> *)fieldKeys
                           time:(long long)time;
-/// For compatibility writers only. Includes event metadata and inherited context.
-- (NSDictionary *)legacyContextTags;
 @end
 NS_ASSUME_NONNULL_END
