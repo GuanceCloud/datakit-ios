@@ -80,10 +80,10 @@
                 NSString *userId = content[@"custom_userid"];
                 // example this user uid = @"user_1"
                 if ([userId isEqualToString:@"user_1"]) {
-                    model.sessionSamplingRate = @(1);
-                    model.logSamplingRate = @(1);
-                    model.traceSamplingRate = @(1);
-                    model.sessionReplaySamplingRate = @(1);
+                    model.sessionSamplingRate = @(100);
+                    model.logSamplingRate = @(100);
+                    model.traceSamplingRate = @(100);
+                    model.sessionReplaySamplingRate = @(100);
                     model.sessionReplayOnErrorSamplingRate = @(0);
                 }
             }
@@ -136,7 +136,7 @@
         srConfig.textAndInputPrivacy = FTTextAndInputPrivacyLevelMaskSensitiveInputs;
         srConfig.touchPrivacy = FTTouchPrivacyLevelShow;
         srConfig.imagePrivacy = FTImagePrivacyLevelMaskNone;
-        srConfig.sampleRate = 100;
+        srConfig.sessionReplaySamplingRate = 100;
         srConfig.enableHeatmap = YES;
         [[FTRumSessionReplay sharedInstance] startWithSessionReplayConfig:srConfig];
 
