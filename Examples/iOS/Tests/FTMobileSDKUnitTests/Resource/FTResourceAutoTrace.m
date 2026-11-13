@@ -1035,20 +1035,36 @@
 }
 
 - (void)testNSURLConnectionAndNSURLSessionCollectExactlyOneResourceEachWhenConcurrent {
+    // The forwarding test protocol creates an additional NSURLSession task.
+    // This real HTTP fixture must exercise exactly the two native requests below.
+    [[FTSessionConfiguration defaultConfiguration] unload];
+    NSMutableDictionary<NSString *, NSNumber *> *providerCounts = [NSMutableDictionary new];
+    NSMutableArray<NSError *> *providerErrors = [NSMutableArray new];
     XCTestExpectation *resourceProviderExpectation = [self expectationWithDescription:@"both collectors reached Resource provider"];
     resourceProviderExpectation.expectedFulfillmentCount = 2;
     [self initSDKWithBothNativeResourceCollectorsWithProvider:^NSDictionary *(NSURLRequest *request,
                                                                                NSURLResponse *response,
                                                                                NSData *data,
                                                                                NSError *error) {
-        XCTAssertNil(error);
-        [resourceProviderExpectation fulfill];
+        NSString *collector = [request valueForHTTPHeaderField:@"X-FT-Test-Collector"] ?: @"unknown";
+        BOOL firstKnownCollector;
+        @synchronized (providerCounts) {
+            NSUInteger count = providerCounts[collector].unsignedIntegerValue + 1;
+            providerCounts[collector] = @(count);
+            if (error) [providerErrors addObject:error];
+            firstKnownCollector = count == 1 && ([@[@"urlconnection", @"urlsession"] containsObject:collector]);
+        }
+        // Assert exact counts below. An overfulfilled XCTest expectation thrown
+        // inside a provider is correctly contained by SDK callback protection.
+        if (firstKnownCollector) [resourceProviderExpectation fulfill];
         return @{@"test_native_collector": [request valueForHTTPHeaderField:@"X-FT-Test-Collector"] ?: @"",
                  @"test_trace_id": [request valueForHTTPHeaderField:FT_NETWORK_DDTRACE_TRACEID] ?: @"",
                  @"test_span_id": [request valueForHTTPHeaderField:FT_NETWORK_DDTRACE_SPANID] ?: @""};
     }];
     [[FTTrackerEventDBTool sharedManager] deleteAllDatas];
     [FTModelHelper startViewWithName:@"ConcurrentNativeCollectors"];
+    NSURLSessionConfiguration *sessionConfiguration = NSURLSessionConfiguration.ephemeralSessionConfiguration;
+    XCTAssertFalse([sessionConfiguration.protocolClasses containsObject:NSClassFromString(@"FTURLProtocol")]);
     FTURLConnectionLoopbackHTTPServer *server = [FTURLConnectionLoopbackHTTPServer new];
     XCTAssertTrue([server start]);
     NSURL *URL = [server URLForPath:@"/concurrent"];
@@ -1067,7 +1083,7 @@
         initWithRequest:connectionRequest
                delegate:connectionDelegate];
 #pragma clang diagnostic pop
-    NSURLSession *session = [NSURLSession sessionWithConfiguration:NSURLSessionConfiguration.ephemeralSessionConfiguration];
+    NSURLSession *session = [NSURLSession sessionWithConfiguration:sessionConfiguration];
     NSURLSessionDataTask *task = [session dataTaskWithRequest:sessionRequest
                                        completionHandler:^(NSData *data, NSURLResponse *response, NSError *error) {
         XCTAssertNil(error);
@@ -1082,6 +1098,10 @@
                          timeout:5];
     dispatch_sync([FTURLSessionInterceptor shared].queue, ^{});
     [self syncURLConnectionResources];
+    @synchronized (providerCounts) {
+        XCTAssertEqualObjects(providerCounts, (@{@"urlconnection": @1, @"urlsession": @1}));
+        XCTAssertEqual(providerErrors.count, 0u);
+    }
     NSArray<NSDictionary *> *resources = [self urlConnectionResourcesForURL:URL];
     XCTAssertEqual(resources.count, 2u);
     // URLConnection reports body bytes. URLSession keeps its existing
@@ -1283,7 +1303,9 @@
             XCTAssertTrue([fields.allKeys containsObject:FT_KEY_RESOURCE_DOWNLOAD_TIME]);
             NSNumber *downloadStart = fields[FT_KEY_RESOURCE_DOWNLOAD_TIME][FT_KEY_START];
             XCTAssertTrue(downloadStart.longValue>firstByteStart.longValue);
-            XCTAssertTrue(firstByteStart.longValue>=connectStart.longValue);
+            XCTAssertGreaterThanOrEqual(firstByteStart.longLongValue, connectStart.longLongValue,
+                                       @"resource=%@ url=%@ firstByteStart=%@ connectStart=%@ fields=%@",
+                                       tags[FT_KEY_RESOURCE_ID], tags[FT_KEY_RESOURCE_URL], firstByteStart, connectStart, fields);
             XCTAssertTrue(connectStart.longValue>=dnsStart.longValue);
             if ([tags[FT_KEY_RESOURCE_URL] hasPrefix:@"https:"]) {
                 XCTAssertTrue([fields.allKeys containsObject:FT_KEY_RESOURCE_SSL]);

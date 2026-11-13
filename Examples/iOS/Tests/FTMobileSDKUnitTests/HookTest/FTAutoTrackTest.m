@@ -246,7 +246,9 @@ static dispatch_group_t testBundleViewControllerSwizzlingGroup = nil;
     FTAutoTrackViewLoadingTimeMock *mock = [FTAutoTrackViewLoadingTimeMock new];
     FTAutoTrackHandler *handler = [self resetAutoTrackHandlerForSwiftUITest];
     // Waiting pumps the main run loop and can finish a previous test's UI
-    // transition. Keep collection disabled until instrumentation is ready.
+    // transition. Keep View reporting disabled until instrumentation is ready,
+    // but enable timing so the scan does not filter out every test controller.
+    [UIViewController ft_configureViewLoadingTimeEnabled:YES classNameExcludes:[NSSet set]];
     [self prepareLoadingTimeTestBundleInstrumentation];
     [handler startWithTrackView:YES
                          action:NO
@@ -315,7 +317,8 @@ static dispatch_group_t testBundleViewControllerSwizzlingGroup = nil;
 - (void)testSwiftUIRUMViewAppearReportsLoadTimeAndProperty{
     AddRumDatasHandlerMock *mock = [AddRumDatasHandlerMock new];
     FTAutoTrackHandler *handler = [self resetAutoTrackHandlerForSwiftUITest];
-    [handler startWithTrackView:NO
+    // Automatic loading time requires automatic View tracking to be enabled.
+    [handler startWithTrackView:YES
                          action:NO
             addRumDatasDelegate:mock
                     viewHandler:nil
@@ -337,7 +340,7 @@ static dispatch_group_t testBundleViewControllerSwizzlingGroup = nil;
 - (void)testSwiftUIRUMViewRepeatedAppearDoesNotStartDuplicateView{
     AddRumDatasHandlerMock *mock = [AddRumDatasHandlerMock new];
     FTAutoTrackHandler *handler = [self resetAutoTrackHandlerForSwiftUITest];
-    [handler startWithTrackView:NO
+    [handler startWithTrackView:YES
                          action:NO
             addRumDatasDelegate:mock
                     viewHandler:nil
@@ -354,7 +357,7 @@ static dispatch_group_t testBundleViewControllerSwizzlingGroup = nil;
 - (void)testSwiftUIRUMViewReappearAfterDisappearStartsNewViewWithZeroLoadTime{
     AddRumDatasHandlerMock *mock = [AddRumDatasHandlerMock new];
     FTAutoTrackHandler *handler = [self resetAutoTrackHandlerForSwiftUITest];
-    [handler startWithTrackView:NO
+    [handler startWithTrackView:YES
                          action:NO
             addRumDatasDelegate:mock
                     viewHandler:nil

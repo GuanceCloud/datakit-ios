@@ -495,7 +495,7 @@
         FTRUMManager *manager = [[FTRUMManager alloc] initWithRumDependencies:dependencies];
         weakManager = manager;
         [manager syncProcess];
-        // Initialization also registers the manager asynchronously on the message bus.
+        // Drain pending message-bus work before checking the manager's lifetime.
         [[FTModuleManager sharedInstance] syncProcess];
     }
     XCTAssertNil(weakManager);
@@ -503,25 +503,29 @@
     XCTAssertFalse([[dependencies.appStateHistory valueForKey:@"monitoring"] boolValue]);
 }
 
-- (void)testManagerDeallocationAfterDelayedMessageBusRegistrationStopsHistory {
+- (void)testManagerDeallocationAfterDelayedMessageReceiverRegistrationStopsHistory {
     FTRUMDependencies *dependencies = [FTRUMDependencies new];
     FTModuleManager *messageBus = [FTModuleManager sharedInstance];
     dispatch_queue_t messageQueue = [messageBus valueForKey:@"queue"];
     __weak FTRUMManager *weakManager;
-    dispatch_suspend(messageQueue);
-    @try {
-        @autoreleasepool {
-            FTRUMManager *manager = [[FTRUMManager alloc] initWithRumDependencies:dependencies];
-            weakManager = manager;
-            [manager syncProcess];
+    @autoreleasepool {
+        // Context-source registration is synchronous. Finish initialization before
+        // suspending the bus, then delay the asynchronous receiver registration.
+        FTRUMManager *manager = [[FTRUMManager alloc] initWithRumDependencies:dependencies];
+        weakManager = manager;
+        [manager syncProcess];
+        dispatch_suspend(messageQueue);
+        @try {
+            [messageBus addMessageReceiver:manager];
+            manager = nil;
+            @autoreleasepool {
+                // A pending registration legitimately retains the manager until it runs.
+                XCTAssertNotNil(weakManager);
+            }
+            XCTAssertTrue([[dependencies.appStateHistory valueForKey:@"monitoring"] boolValue]);
+        } @finally {
+            dispatch_resume(messageQueue);
         }
-        @autoreleasepool {
-            // A pending registration legitimately retains the manager until it runs.
-            XCTAssertNotNil(weakManager);
-        }
-        XCTAssertTrue([[dependencies.appStateHistory valueForKey:@"monitoring"] boolValue]);
-    } @finally {
-        dispatch_resume(messageQueue);
     }
     [messageBus syncProcess];
     XCTAssertNil(weakManager);

@@ -243,6 +243,7 @@ static long long const FTMetricEpoch = 1800000000000000000LL;
 
 - (NSDate *)date:(NSInteger)ms { return [NSDate dateWithTimeIntervalSince1970:(FTMetricEpoch + ms * 1000000LL) / 1e9]; }
 - (void)setUp {
+    [UIViewController ft_configureViewLoadingTimeEnabled:YES classNameExcludes:[NSSet set]];
     self.writer = [FTMetricWriter new];
     self.dependencies = [FTRUMDependencies new];
     self.dependencies.sampleRate = 100;

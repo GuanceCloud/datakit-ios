@@ -59,6 +59,40 @@
 
 @implementation FTTrackDataManagerTest
 
+- (void)withManualUpload:(FTDataUploadWorker *)worker afterPass:(BOOL)afterPass checks:(dispatch_block_t)checks {
+    dispatch_semaphore_t reached = dispatch_semaphore_create(0);
+    dispatch_semaphore_t release = dispatch_semaphore_create(0);
+    dispatch_block_t checkpoint = ^{
+        dispatch_semaphore_signal(reached);
+        dispatch_semaphore_wait(release, DISPATCH_TIME_FOREVER);
+        // Stop the next pass while retaining the first pass's request/cache results.
+        [worker cancelSynchronously];
+    };
+    dispatch_async(worker.networkQueue, ^{
+        [[FTTrackDataManager sharedInstance] flushSyncData];
+        // Admission enqueues the upload body after this checkpoint installer.
+        dispatch_async(worker.networkQueue, ^{
+            if (afterPass) {
+                // The body may enqueue a continuation; inspect before it runs.
+                dispatch_async(worker.networkQueue, checkpoint);
+            } else {
+                checkpoint();
+            }
+        });
+    });
+    long result = dispatch_semaphore_wait(reached, dispatch_time(DISPATCH_TIME_NOW, 40 * NSEC_PER_SEC));
+    @try {
+        XCTAssertEqual(result, 0L, @"Manual upload did not reach the requested queue boundary");
+        if (result == 0) checks();
+    } @finally {
+        dispatch_semaphore_signal(release);
+    }
+    dispatch_sync(worker.networkQueue, ^{});
+}
+- (void)completeOneManualUploadPass:(FTDataUploadWorker *)worker {
+    [self withManualUpload:worker afterPass:YES checks:^{}];
+}
+
 - (void)setUp {
     // Put setup code here. This method is called before the invocation of each test method in the class.
     [FTNetworkInfoManager sharedInstance].setCompressionIntakeRequests(NO);
@@ -292,13 +326,14 @@
     FTDataUploadWorker *worker = [FTTrackDataManager sharedInstance].dataUploadWorker;
     NSNumber *isUploading = [worker valueForKey:@"isUploading"];
     XCTAssertTrue([isUploading boolValue] == NO);
-    [[FTTrackDataManager sharedInstance] flushSyncData];
-    NSNumber *isUploadingN = [worker valueForKey:@"isUploading"];
-    XCTAssertTrue([isUploadingN boolValue] == YES);
-    CFTimeInterval interval = [FTTestUtils functionElapsedTime:^{
-        [FTTrackDataManager shutDown];
+    [self withManualUpload:worker afterPass:NO checks:^{
+        NSNumber *isUploadingN = [worker valueForKey:@"isUploading"];
+        XCTAssertTrue([isUploadingN boolValue] == YES);
+        CFTimeInterval interval = [FTTestUtils functionElapsedTime:^{
+            [FTTrackDataManager shutDown];
+        }];
+        XCTAssertTrue(interval<0.1);
     }];
-    XCTAssertTrue(interval<0.1);
 }
 - (void)testContinuousAutoFlushKeepsFirstUploadDeadline {
     FTUploadSchedulingProbe *worker = [[FTUploadSchedulingProbe alloc] initWithSyncPageSize:10 syncSleepTime:0];
@@ -398,10 +433,10 @@
     XCTAssertFalse(worker.isUploading);
     XCTAssertTrue(worker.hasPendingUpload);
 
-    [[FTTrackDataManager sharedInstance] flushSyncData];
-
-    XCTAssertTrue(worker.isUploading);
-    XCTAssertFalse(worker.hasPendingUpload);
+    [self withManualUpload:worker afterPass:NO checks:^{
+        XCTAssertTrue(worker.isUploading);
+        XCTAssertFalse(worker.hasPendingUpload);
+    }];
 
     [FTTrackDataManager shutDown];
 }
@@ -610,8 +645,7 @@
         [self addLogBacklog:6 prefix:@"testRUMUploadTakesPriorityOverLogBacklog"];
         [[FTTrackDataManager sharedInstance] addTrackData:[FTModelHelper createRUMModel:@"testRUMUploadTakesPriorityOverLogBacklog-rum"] type:FTAddDataRUM];
         FTDataUploadWorker *worker = [FTTrackDataManager sharedInstance].dataUploadWorker;
-        [[FTTrackDataManager sharedInstance] flushSyncData];
-        dispatch_sync(worker.networkQueue, ^{});
+        [self completeOneManualUploadPass:worker];
 
         @synchronized (requestPaths) {
             XCTAssertTrue(requestPaths.count > 0);
@@ -650,8 +684,7 @@
     @try {
         [self addLogBacklog:3 prefix:@"testRUMInsertedDuringLogDrainWaitsForNextPass"];
         FTDataUploadWorker *worker = [FTTrackDataManager sharedInstance].dataUploadWorker;
-        [[FTTrackDataManager sharedInstance] flushSyncData];
-        dispatch_sync(worker.networkQueue, ^{});
+        [self completeOneManualUploadPass:worker];
 
         @synchronized (requestPaths) {
             XCTAssertEqual(requestPaths.count, 1);
@@ -690,8 +723,7 @@
         }
         [self addLogBacklog:2 prefix:@"testRUMBacklogDrainsBeforeLogBacklog-log"];
         FTDataUploadWorker *worker = [FTTrackDataManager sharedInstance].dataUploadWorker;
-        [[FTTrackDataManager sharedInstance] flushSyncData];
-        dispatch_sync(worker.networkQueue, ^{});
+        [self completeOneManualUploadPass:worker];
 
         @synchronized (requestPaths) {
             XCTAssertEqual(requestPaths.count, 4);
@@ -730,8 +762,7 @@
     @try {
         [self addLogBacklog:5 prefix:@"testLogOnlyBacklogUploadsOneBatchPerPass-log"];
         FTDataUploadWorker *worker = [FTTrackDataManager sharedInstance].dataUploadWorker;
-        [[FTTrackDataManager sharedInstance] flushSyncData];
-        dispatch_sync(worker.networkQueue, ^{});
+        [self completeOneManualUploadPass:worker];
 
         @synchronized (requestPaths) {
             XCTAssertEqual(requestPaths.count, 1);
@@ -766,8 +797,7 @@
     @try {
         [self addLogBacklog:12 prefix:@"testLargeLogBacklogUploadsOneBatchPerPass-log"];
         FTDataUploadWorker *worker = [FTTrackDataManager sharedInstance].dataUploadWorker;
-        [[FTTrackDataManager sharedInstance] flushSyncData];
-        dispatch_sync(worker.networkQueue, ^{});
+        [self completeOneManualUploadPass:worker];
 
         @synchronized (requestPaths) {
             XCTAssertEqual(requestPaths.count, 1);
@@ -813,8 +843,7 @@
     @try {
         [self addLogBacklog:1 prefix:@"testLogRetryDoesNotPollRUMUntilNextPass-log"];
         FTDataUploadWorker *worker = [FTTrackDataManager sharedInstance].dataUploadWorker;
-        [[FTTrackDataManager sharedInstance] flushSyncData];
-        dispatch_sync(worker.networkQueue, ^{});
+        [self completeOneManualUploadPass:worker];
 
         @synchronized (requestPaths) {
             XCTAssertEqual(requestPaths.count, 2);
@@ -934,8 +963,7 @@
         [[FTTrackDataManager sharedInstance] addTrackData:[FTModelHelper createRUMModel:@"testRUMFailureDoesNotBlockLogUploadAttempt-rum"] type:FTAddDataRUM];
         [self addLogBacklog:2 prefix:@"testRUMFailureDoesNotBlockLogUploadAttempt-log"];
         FTDataUploadWorker *worker = [FTTrackDataManager sharedInstance].dataUploadWorker;
-        [[FTTrackDataManager sharedInstance] flushSyncData];
-        dispatch_sync(worker.networkQueue, ^{});
+        [self completeOneManualUploadPass:worker];
 
         XCTAssertEqual(rumRequestCount, 6);
         XCTAssertEqual(logRequestCount, 6);
@@ -1095,8 +1123,7 @@
     @try {
         CFTimeInterval startTime = CACurrentMediaTime();
         NSString *packageId = [FTRumRequest.serialGenerator getCurrentSerialNumber];
-        [[FTTrackDataManager sharedInstance] flushSyncData];
-        dispatch_sync(worker.networkQueue, ^{});
+        [self completeOneManualUploadPass:worker];
         CFTimeInterval endTime = CACurrentMediaTime();
         CFTimeInterval duration = endTime-startTime;
         NSLog(@"endTime-startTime:%f",duration);
@@ -1271,8 +1298,7 @@
 
     FTDataUploadWorker *worker = [FTTrackDataManager sharedInstance].dataUploadWorker;
     @try {
-        [[FTTrackDataManager sharedInstance] flushSyncData];
-        dispatch_sync(worker.networkQueue, ^{});
+        [self completeOneManualUploadPass:worker];
 
         XCTAssertTrue(requestCount == 6);
         XCTAssertTrue([[FTTrackerEventDBTool sharedManager] getUploadDatasCount] == 1);
@@ -1310,8 +1336,7 @@
             FTRecordModel *model = [FTModelHelper createRumModel];
             [[FTTrackDataManager sharedInstance] addTrackData:model type:FTAddDataRUM];
 
-            [[FTTrackDataManager sharedInstance] flushSyncData];
-            dispatch_sync(worker.networkQueue, ^{});
+            [self completeOneManualUploadPass:worker];
         }
         NSString *logEndtNum = [FTLoggingRequest.serialGenerator getCurrentSerialNumber];
         XCTAssertTrue([logEndtNum isEqualToString:logStartNum]);

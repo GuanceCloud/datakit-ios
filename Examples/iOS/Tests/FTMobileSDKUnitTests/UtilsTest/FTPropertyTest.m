@@ -59,6 +59,14 @@
 + (BOOL)isiOSAppOnMac { return NO; }
 + (NSString *)unameMachineIdentifier { return @"iPad13,4"; }
 @end
+#if TARGET_OS_TV
+@interface FTPropertyTestAppleTVDevice : FTPresetProperty
+@end
+@implementation FTPropertyTestAppleTVDevice
++ (BOOL)isiOSAppOnMac { return NO; }
++ (NSString *)unameMachineIdentifier { return @"AppleTV14,1"; }
+@end
+#endif
 @interface FTPropertyTestMacDevice : FTPropertyTestIPadDevice
 @end
 @implementation FTPropertyTestMacDevice
@@ -196,9 +204,15 @@ static void FTPropertyTestAssertMissingKeys(XCTestCase *testCase, NSDictionary *
 - (void)testIOSAppOnMacMissingModelDoesNotFallBackToIPad {
     XCTAssertEqualObjects([FTPropertyTestUnknownMacDevice deviceInfo], @"Unknown Mac");
 }
+#if TARGET_OS_IOS
 - (void)testNativeIPadKeepsDeviceNameMapping {
     XCTAssertEqualObjects([FTPropertyTestIPadDevice deviceInfo], @"iPad Pro 3 (11-inch) ");
 }
+#elif TARGET_OS_TV
+- (void)testNativeAppleTVKeepsDeviceNameMapping {
+    XCTAssertEqualObjects([FTPropertyTestAppleTVDevice deviceInfo], @"Apple TV 4K (3rd generation)");
+}
+#endif
 - (void)testIOSAppOnMacMatchesProcessInfo {
 #if TARGET_OS_IOS
     XCTAssertEqual([FTPresetProperty isiOSAppOnMac], [NSProcessInfo processInfo].isiOSAppOnMac);

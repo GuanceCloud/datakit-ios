@@ -129,8 +129,113 @@ typedef NS_ENUM(NSUInteger,TestSessionRequestMethod){
     [self sdkEnableRUMAutoTrace:YES];
     [self startWithTest:InstrumentationProperty requestMethod:DataTaskWithURLCompletionHandler hasResource:YES];
 }
+- (void)testDataTaskWithURLCompletionHandlerReportsAfterDelayedMetricsCallbackReturns {
+    [self sdkEnableRUMAutoTrace:YES];
+    dispatch_queue_t queue = [[FTURLSessionInterceptor shared] valueForKey:@"queue"];
+    FTRUMManager *manager = [FTGlobalRumManager sharedInstance].rumManager;
+    dispatch_semaphore_t releaseMetrics = dispatch_semaphore_create(0);
+    XCTestExpectation *metrics = [self expectationWithDescription:@"Metrics arrived before task completion"];
+    XCTestExpectation *terminal = [self expectationWithDescription:@"Resource terminal processing began"];
+    __block NSUInteger providerCalls = 0;
+    HttpEngineTestUtil *engine = [[HttpEngineTestUtil alloc]
+        initWithSessionInstrumentationType:InstrumentationProperty
+        provider:^NSDictionary *(NSURLRequest *request, NSURLResponse *response, NSData *data, NSError *error) {
+            providerCalls++;
+            [terminal fulfill];
+            return nil;
+        } requestInterceptor:nil traceInterceptor:nil completion:^{
+            [metrics fulfill];
+            dispatch_semaphore_wait(releaseMetrics, DISPATCH_TIME_FOREVER);
+        }];
+    @try {
+        [engine urlNetwork:^(NSData *data, NSURLResponse *response, NSError *error) {}];
+        [self waitForExpectations:@[metrics] timeout:5];
+        dispatch_sync(queue, ^{});
+        [manager syncProcess];
+        __block NSUInteger prematureCount = 0;
+        [FTModelHelper resolveModelArray:[[FTTrackerEventDBTool sharedManager] getAllDatas]
+                               callBack:^(NSString *source, NSDictionary *tags, NSDictionary *fields, BOOL *stop) {
+            if ([source isEqualToString:FT_RUM_SOURCE_RESOURCE]) prematureCount++;
+        }];
+        // Draining SDK queues cannot wait for a terminal callback not yet delivered.
+        XCTAssertEqual(prematureCount, 0u);
+        XCTAssertEqual(providerCalls, 0u);
+    } @finally {
+        dispatch_semaphore_signal(releaseMetrics);
+    }
+    [self waitForExpectations:@[terminal] timeout:5];
+    dispatch_sync(queue, ^{});
+    [manager syncProcess];
+    __block NSUInteger completedCount = 0;
+    [FTModelHelper resolveModelArray:[[FTTrackerEventDBTool sharedManager] getAllDatas]
+                           callBack:^(NSString *source, NSDictionary *tags, NSDictionary *fields, BOOL *stop) {
+        if ([source isEqualToString:FT_RUM_SOURCE_RESOURCE]) {
+            completedCount++;
+            XCTAssertEqualObjects(tags[FT_KEY_RESOURCE_URL], NSProcessInfo.processInfo.environment[@"TRACE_URL"]);
+            XCTAssertGreaterThan([tags[FT_KEY_TRACEID] length], 0u);
+            XCTAssertGreaterThan([tags[FT_KEY_SPANID] length], 0u);
+        }
+    }];
+    XCTAssertEqual(providerCalls, 1u);
+    XCTAssertEqual(completedCount, 1u);
+}
 - (void)testDataTaskWithURL{
     [self sdkNormalSet];
+    [self startWithTest:InstrumentationInherit requestMethod:DataTaskWithURL hasResource:YES];
+}
+- (void)testDataTaskWithURLSurvivesDelayedInterceptorProcessing {
+    [self sdkNormalSet];
+    FTRUMManager *manager = [FTGlobalRumManager sharedInstance].rumManager;
+    dispatch_queue_t queue = [[FTURLSessionInterceptor shared] valueForKey:@"queue"];
+    dispatch_semaphore_t entered = dispatch_semaphore_create(0);
+    dispatch_semaphore_t release = dispatch_semaphore_create(0);
+    dispatch_async(queue, ^{
+        dispatch_semaphore_signal(entered);
+        dispatch_semaphore_wait(release, DISPATCH_TIME_FOREVER);
+    });
+    XCTestExpectation *metrics = [self expectationWithDescription:@"Metrics arrived while Resource processing is delayed"];
+    HttpEngineTestUtil *engine = [[HttpEngineTestUtil alloc] initWithSessionInstrumentationType:InstrumentationInherit completion:^{
+        [metrics fulfill];
+    }];
+    @try {
+        XCTAssertEqual(dispatch_semaphore_wait(entered, dispatch_time(DISPATCH_TIME_NOW, NSEC_PER_SEC)), 0L);
+        [engine urlNetwork];
+        [self waitForExpectations:@[metrics] timeout:5];
+        [manager syncProcess];
+        __block NSUInteger pendingCount = 0;
+        [FTModelHelper resolveModelArray:[[FTTrackerEventDBTool sharedManager] getAllDatas]
+                               callBack:^(NSString *source, NSDictionary *tags, NSDictionary *fields, BOOL *stop) {
+            if ([source isEqualToString:FT_RUM_SOURCE_RESOURCE]) pendingCount++;
+        }];
+        // A Metrics callback is not a Resource persistence barrier.
+        XCTAssertEqual(pendingCount, 0u);
+    } @finally {
+        dispatch_semaphore_signal(release);
+        dispatch_sync(queue, ^{});
+        [manager syncProcess];
+    }
+    __block NSUInteger completedCount = 0;
+    [FTModelHelper resolveModelArray:[[FTTrackerEventDBTool sharedManager] getAllDatas]
+                           callBack:^(NSString *source, NSDictionary *tags, NSDictionary *fields, BOOL *stop) {
+        if ([source isEqualToString:FT_RUM_SOURCE_RESOURCE]) {
+            completedCount++;
+            XCTAssertEqualObjects(tags[FT_KEY_RESOURCE_URL], NSProcessInfo.processInfo.environment[@"TRACE_URL"]);
+            XCTAssertGreaterThan([tags[FT_KEY_TRACEID] length], 0u);
+            XCTAssertGreaterThan([tags[FT_KEY_SPANID] length], 0u);
+        }
+    }];
+    XCTAssertEqual(completedCount, 1u);
+}
+- (void)testDataTaskWithURLAfterManyViewUpdates {
+    [self sdkNormalSet];
+    FTRUMManager *manager = [FTGlobalRumManager sharedInstance].rumManager;
+    for (NSUInteger index = 0; index < 12; index++) {
+        [manager startViewWithName:[NSString stringWithFormat:@"delegate-prefill-%lu", (unsigned long)index]];
+        [manager stopView];
+    }
+    [manager startViewWithName:@"delegate-resource-target"];
+    [manager syncProcess];
+    XCTAssertGreaterThan([[FTTrackerEventDBTool sharedManager] getDatasCountWithType:FT_DATA_TYPE_RUM], 10);
     [self startWithTest:InstrumentationInherit requestMethod:DataTaskWithURL hasResource:YES];
 }
 - (void)testDataTaskWithURL_enableRUMAutoTrace{
@@ -465,7 +570,13 @@ typedef NS_ENUM(NSUInteger,TestSessionRequestMethod){
 }
 - (void)startWithTest:(TestSessionInstrumentationType)type requestMethod:(TestSessionRequestMethod)requestMethod hasResource:(BOOL)has provider:(ResourcePropertyProvider)provider requestInterceptor:(RequestInterceptor)requestInterceptor{
     XCTestExpectation *expectation= [self expectationWithDescription:@"Async operation timeout"];
-    HttpEngineTestUtil *engine = [[HttpEngineTestUtil alloc]initWithSessionInstrumentationType:type provider:provider requestInterceptor:requestInterceptor traceInterceptor:nil completion:^{
+    XCTestExpectation *terminal = has ? [self expectationWithDescription:@"Resource terminal callback received"] : nil;
+    ResourcePropertyProvider observedProvider = ^NSDictionary *(NSURLRequest *request, NSURLResponse *response, NSData *data, NSError *error) {
+        NSDictionary *properties = provider ? provider(request, response, data, error) : nil;
+        [terminal fulfill];
+        return properties;
+    };
+    HttpEngineTestUtil *engine = [[HttpEngineTestUtil alloc]initWithSessionInstrumentationType:type provider:observedProvider requestInterceptor:requestInterceptor traceInterceptor:nil completion:^{
         [expectation fulfill];
     }];
     switch (requestMethod){
@@ -496,9 +607,13 @@ typedef NS_ENUM(NSUInteger,TestSessionRequestMethod){
     [self waitForExpectationsWithTimeout:5 handler:^(NSError *error) {
         XCTAssertNil(error);
     }];
-    [NSThread sleepForTimeInterval:0.1];
+    // Metrics can arrive before the completion handler runs. Wait for the terminal
+    // provider above, then drain its interceptor block and the downstream RUM work.
+    dispatch_queue_t interceptorQueue = [[FTURLSessionInterceptor shared] valueForKey:@"queue"];
+    dispatch_sync(interceptorQueue, ^{});
     [[FTGlobalRumManager sharedInstance].rumManager syncProcess];
-    NSArray *newArray = [[FTTrackerEventDBTool sharedManager] getFirstRecords:10 withType:FT_DATA_TYPE_RUM];
+    // Earlier View updates must not hide the Resource outside a fixed-size page.
+    NSArray *newArray = [[FTTrackerEventDBTool sharedManager] getAllDatas];
     __block NSInteger hasResourceCount = 0;
     [FTModelHelper resolveModelArray:newArray callBack:^(NSString * _Nonnull source, NSDictionary * _Nonnull tags, NSDictionary * _Nonnull fields, BOOL * _Nonnull stop) {
         if ([source isEqualToString:FT_RUM_SOURCE_RESOURCE]) {
@@ -521,6 +636,6 @@ typedef NS_ENUM(NSUInteger,TestSessionRequestMethod){
             }
         }
     }];
-    XCTAssertTrue(hasResourceCount == 1);
+    XCTAssertEqual(hasResourceCount, 1);
 }
 @end

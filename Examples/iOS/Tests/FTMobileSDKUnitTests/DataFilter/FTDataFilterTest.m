@@ -700,6 +700,8 @@ typedef void(^FTDataFilterMockHTTPCompletion)(NSHTTPURLResponse * _Nullable resp
     FTDataUploadWorker *worker = [[FTDataUploadWorker alloc] initWithSyncPageSize:10 syncSleepTime:0];
     [worker flushWithSleep:NO];
     dispatch_queue_t networkQueue = [worker valueForKey:@"networkQueue"];
+    // Immediate submission first enqueues admission, which then enqueues polling.
+    dispatch_sync(networkQueue, ^{});
     dispatch_sync(networkQueue, ^{});
 
     XCTAssertEqual(client.completions.count, 2u);

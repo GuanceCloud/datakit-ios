@@ -357,11 +357,11 @@
     [tester waitForTimeInterval:0.2];
     dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)(3.5 * NSEC_PER_SEC)), dispatch_get_global_queue(0, 0), ^{
         NSData *data = [NSData dataWithContentsOfFile:dataStorePath];
-        XCTAssertTrue(data.length>0);
+        XCTAssertGreaterThan(data.length, 0u, @"ANR snapshot at scheduled shutdown: path=%@ closed=%d", dataStorePath, FTTestANRStore(longTaskManager).isClosed);
         CFTimeInterval duration = [FTTestUtils functionElapsedTime:^{
             [FTMobileAgent shutDown];
         }];
-        XCTAssertTrue(duration<0.1);
+        XCTAssertLessThan(duration, 0.1, @"SDK shutdown duration in seconds");
     });
     [self mockAnr];
     XCTestExpectation *expect = [self expectationWithDescription:@"Request Time!"];
