@@ -117,7 +117,7 @@
     [FTMobileAgent shutDown];
 }
 
-- (void)testAutomaticLongTaskAndANROmitIntervalState {
+- (void)testAutomaticLongTaskUsesHistoryWhileANROmitsIntervalState {
     [self initSDKWithEnableTrackAppANR:YES longTask:YES];
     [FTModelHelper startViewWithName:@"tracked-anr-state"];
     [[FTGlobalRumManager sharedInstance].rumManager syncProcess];
@@ -145,7 +145,7 @@
     [FTModelHelper resolveModelArray:[[FTTrackerEventDBTool sharedManager] getAllDatas] callBack:^(NSString *source, NSDictionary *tags, NSDictionary *fields, BOOL *stop) {
         if ([source isEqualToString:FT_RUM_SOURCE_LONG_TASK]) {
             foundLongTask = YES;
-            XCTAssertNil(fields[@"app_state"]);
+            XCTAssertEqualObjects(fields[@"app_state"], @"foreground");
             XCTAssertEqualObjects(fields[FT_RUM_KEY_SESSION_START_REASON], FT_RUM_SESSION_START_REASON_SDK_INIT);
             XCTAssertNil(fields[@"process_start_time_ns"]);
         }
@@ -420,7 +420,7 @@
         XCTAssertTrue([type isEqualToString:FT_DATA_TYPE_RUM]);
         if ([source isEqualToString:FT_RUM_SOURCE_LONG_TASK]) {
             hasLongTask = YES;
-            XCTAssertNil(fields[@"app_state"]);
+            XCTAssertEqualObjects(fields[@"app_state"], @"unknown");
         }else if ([source isEqualToString:FT_RUM_SOURCE_ERROR]){
             hasAnr = YES;
             XCTAssertNil(fields[@"app_state"]);
@@ -479,7 +479,7 @@
         XCTAssertTrue([type isEqualToString:FT_DATA_TYPE_RUM]);
         if ([source isEqualToString:FT_RUM_SOURCE_LONG_TASK]) {
             hasLongTask = YES;
-            XCTAssertNil(fields[@"app_state"]);
+            XCTAssertEqualObjects(fields[@"app_state"], @"unknown");
         }else if ([source isEqualToString:FT_RUM_SOURCE_ERROR]){
             hasAnr = YES;
         }else if ([source isEqualToString:FT_RUM_SOURCE_VIEW]){

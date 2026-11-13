@@ -341,7 +341,7 @@ typedef void (^FTWriteCallBack)(NSDictionary *fields, NSDictionary *tags);
     }
 }
 
-- (void)testAutomaticLongTaskOmitsIntervalAfterRUMDelay {
+- (void)testAutomaticLongTaskUsesUnknownAfterHistoryEviction {
     FTRUMDependencies *dependencies = [FTRUMDependencies new];
     dependencies.writer = self;
     // State history has been trimmed past this completed producer interval.
@@ -360,7 +360,7 @@ typedef void (^FTWriteCallBack)(NSDictionary *fields, NSDictionary *tags);
     __block NSDictionary *written;
     self.writeCallBack = ^(NSDictionary *fields, NSDictionary *tags) { written = fields; };
     [handler writeErrorData:model context:[[FTRUMPropertySnapshot alloc] initWithTags:nil customKeys:nil]];
-    XCTAssertNil(written[@"app_state"]);
+    XCTAssertEqualObjects(written[@"app_state"], @"unknown");
     XCTAssertEqual([written[FT_DURATION] longLongValue], 3LL*NSEC_PER_SEC);
     model.longTaskEvent = nil; // Manual collection retains its original history query.
     self.writeCallBack = ^(NSDictionary *fields, NSDictionary *tags) { written = fields; };
@@ -783,7 +783,7 @@ typedef void (^FTWriteCallBack)(NSDictionary *fields, NSDictionary *tags);
         if(!ignored) {
             XCTAssertNotNil(longTaskFields);
             XCTAssertEqual([longTaskFields[FT_DURATION] longLongValue],6LL*NSEC_PER_SEC);
-            XCTAssertNil(longTaskFields[@"app_state"]);
+            XCTAssertEqualObjects(longTaskFields[@"app_state"],@"unknown");
             NSString *expected=v3.boolValue && [@[@"startup",@"run",@"unknown"] containsObject:state]?state:@"unknown";
             XCTAssertEqualObjects(self.recoveredErrorTags[FT_KEY_ERROR_SITUATION],expected);
             XCTAssertNil(self.recoveredErrorFields[@"app_state"]);
@@ -1326,34 +1326,52 @@ typedef void (^FTWriteCallBack)(NSDictionary *fields, NSDictionary *tags);
     XCTAssertEqualObjects(data.mainThreadBacktrace,@"");
     [manager shutDown];
 }
-- (void)testAutomaticStateIsAbsentAndManualStateUsesDurationHistory {
-    FTRUMDependencies *dependencies=[FTRUMDependencies new];dependencies.writer=self;
-    dependencies.appStateHistory=[[FTRUMAppStateHistory alloc]initWithState:@"foreground" timeNs:NSEC_PER_SEC];
-    [dependencies.appStateHistory recordState:@"background" timeNs:10LL*NSEC_PER_SEC];
-    FTRUMViewModel *view=[[FTRUMViewModel alloc]initWithViewID:@"view" viewName:@"view" viewReferrer:@""];
-    view.tm=NSEC_PER_SEC;
-    FTRUMContext *context=[[FTRUMContext alloc]initWithSampleRate:100 sessionOnErrorSampleRate:0 appId:@"app"];
-    FTRUMViewHandler *handler=[[FTRUMViewHandler alloc]initWithModel:view context:context rumDependencies:dependencies needsMonitoring:NO];
-    FTRUMDataModel *model=[FTRUMDataModel new];model.type=FTRUMDataLongTask;model.tm=NSEC_PER_SEC;
-    model.tags=@{};model.fields=@{FT_DURATION:@(3LL*NSEC_PER_SEC)};
-    model.longTaskEvent=[[FTLongTaskEvent alloc]initWithStack:@"main" startTimeNs:NSEC_PER_SEC endTimeNs:61LL*NSEC_PER_SEC durationNs:3LL*NSEC_PER_SEC];
-    __block NSDictionary *written;
-    self.writeCallBack=^(NSDictionary *fields,NSDictionary *tags){written=fields;};
-    [handler writeErrorData:model context:[[FTRUMPropertySnapshot alloc] initWithTags:nil customKeys:nil]];
-    XCTAssertNil(written[@"app_state"]);
-    XCTAssertEqual([written[FT_DURATION]longLongValue],3LL*NSEC_PER_SEC);
-    model.longTaskEvent=[[FTLongTaskEvent alloc]initWithStack:@"main" startTimeNs:NSEC_PER_SEC
-        endTimeNs:61LL*NSEC_PER_SEC durationNs:3LL*NSEC_PER_SEC];
-    self.writeCallBack=^(NSDictionary *fields,NSDictionary *tags){written=fields;};
-    [handler writeErrorData:model context:[[FTRUMPropertySnapshot alloc] initWithTags:nil customKeys:nil]];
-    XCTAssertNil(written[@"app_state"]);
-    // Existing manually reported LongTasks still derive their interval from duration.
-    model.longTaskEvent=nil;
-    self.writeCallBack=^(NSDictionary *fields,NSDictionary *tags){written=fields;};
-    [handler writeErrorData:model context:[[FTRUMPropertySnapshot alloc] initWithTags:nil customKeys:nil]];
-    XCTAssertEqualObjects(written[@"app_state"],@"foreground");
-    self.writeCallBack=nil;
+- (void)testAutomaticAndManualLongTaskUse168StartPlusDurationHistory {
+    // start=1s, duration=3s, retained producer End=61s. Expected strings are
+    // derived from [1s,4s), including start and excluding end, for both paths.
+    NSArray *cases=@[
+        @[@"foreground",@0,@"background",@"foreground"],
+        @[@"background",@0,@"foreground",@"background"],
+        @[@"foreground",@2,@"background",@"foreground_and_background"],
+        @[@"background",@2,@"foreground",@"foreground_and_background"],
+        @[@"foreground",@1,@"background",@"background"],
+        @[@"foreground",@4,@"background",@"foreground"],
+        @[@"evicted",@0,@"background",@"unknown"],
+        @[@"rollback",@0,@"background",@"unknown"],
+        @[@"missing",@0,@"background",@"unknown"]
+    ];
+    for (NSArray *scenario in cases) for (NSNumber *automatic in @[@NO,@YES]) {
+        FTRUMDependencies *dependencies=[FTRUMDependencies new];dependencies.writer=self;
+        NSString *initial=scenario[0];
+        if (![initial isEqualToString:@"missing"]) {
+            dependencies.appStateHistory=[[FTRUMAppStateHistory alloc]initWithState:
+                [initial isEqualToString:@"background"]?@"background":@"foreground" timeNs:NSEC_PER_SEC];
+            if ([scenario[1] longLongValue]>0)
+                [dependencies.appStateHistory recordState:scenario[2] timeNs:[scenario[1] longLongValue]*NSEC_PER_SEC];
+            if ([initial isEqualToString:@"evicted"])
+                for (NSUInteger n=2;n<=130;n++) [dependencies.appStateHistory recordState:@"background" timeNs:n*NSEC_PER_SEC];
+            if ([initial isEqualToString:@"rollback"])
+                [dependencies.appStateHistory recordState:@"background" timeNs:NSEC_PER_SEC-1];
+        }
+        FTRUMViewModel *view=[[FTRUMViewModel alloc]initWithViewID:@"view" viewName:@"view" viewReferrer:@""];
+        view.tm=NSEC_PER_SEC;
+        FTRUMContext *context=[[FTRUMContext alloc]initWithSampleRate:100 sessionOnErrorSampleRate:0 appId:@"app"];
+        FTRUMViewHandler *handler=[[FTRUMViewHandler alloc]initWithModel:view context:context rumDependencies:dependencies needsMonitoring:NO];
+        FTRUMDataModel *model=[FTRUMDataModel new];model.type=FTRUMDataLongTask;model.tm=NSEC_PER_SEC;
+        model.tags=@{};model.fields=@{FT_DURATION:@(3LL*NSEC_PER_SEC),@"app_state":@"custom-collision"};
+        model.customFieldKeys=[NSSet setWithObject:@"app_state"];
+        if (automatic.boolValue) model.longTaskEvent=[[FTLongTaskEvent alloc]initWithStack:@"main"
+            startTimeNs:NSEC_PER_SEC endTimeNs:61LL*NSEC_PER_SEC durationNs:3LL*NSEC_PER_SEC];
+        __block NSDictionary *written,*writtenTags;
+        self.writeCallBack=^(NSDictionary *fields,NSDictionary *tags){written=fields;writtenTags=tags;};
+        [handler writeErrorData:model context:[[FTRUMPropertySnapshot alloc]initWithTags:nil customKeys:nil]];
+        XCTAssertEqualObjects(written[@"app_state"],scenario[3],@"%@ automatic=%@",initial,automatic);
+        XCTAssertEqual([written[FT_DURATION]longLongValue],3LL*NSEC_PER_SEC);
+        XCTAssertFalse([FTRUMDecodeCustomKeys(writtenTags[FT_RUM_CUSTOM_KEYS])containsObject:@"app_state"]);
+        self.writeCallBack=nil;
+    }
 }
+
 - (void)testDuplicateEndAndShutdownDuringRecoveredCallback {
     FTLongTaskManager *manager=[self timingManagerANR:YES freeze:YES threshold:250];
     [self sendPhase:FTLongTaskPhaseBegin duration:0 end:NSEC_PER_SEC to:manager];

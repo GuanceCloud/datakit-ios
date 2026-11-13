@@ -174,6 +174,7 @@
     [fields addEntriesFromDictionary:[contextModel.lastSessionState sessionFields]];
     [fields setValue:@(duration) forKey:FT_DURATION];
     [fields setValue:backtrace forKey:FT_KEY_LONG_TASK_STACK];
+    fields[@"app_state"] = @"unknown";
     NSDictionary *lastViews = contextModel.lastViewContext;
     BOOL sessionOnError = contextModel.lastSessionState.sampled_for_error_session;
     if (sessionOnError && isAnr) {

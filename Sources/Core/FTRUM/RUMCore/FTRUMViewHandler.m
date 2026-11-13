@@ -395,10 +395,11 @@
     NSMutableDictionary *fields = [NSMutableDictionary new];
     FTRUMMergeProperties(fields, customKeys, model.fields, model.customFieldKeys);
     [fields addEntriesFromDictionary:self.context.sessionState.sessionFields ?: @{}];
-    if (model.type == FTRUMDataLongTask && !model.longTaskEvent) {
+    if (model.type == FTRUMDataLongTask) {
         long long eventStart = model.tm;
         long long duration = [model.fields[FT_DURATION] longLongValue];
-        fields[@"app_state"] = [self.rumDependencies.appStateHistory stateFrom:eventStart duration:duration];
+        NSString *appState = [self.rumDependencies.appStateHistory stateFrom:eventStart duration:duration] ?: @"unknown";
+        FTRUMSetSystemProperty(fields, customKeys, @"app_state", appState);
     }
     if (self.rumDependencies.sessionHasReplay != nil) {
         BOOL sessionHasReplay = self.sessionHasReplay || self.rumDependencies.sessionHasReplay.boolValue;
