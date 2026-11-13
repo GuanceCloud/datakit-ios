@@ -1,3 +1,9 @@
+# 1.6.9-beta.1
+
+1. Fixed interval-based `app_state` reporting for automatically collected Long Tasks. Recovered historical Long Task events report `unknown`.
+2. `FTRumConfig.viewLoadingTimeClassNameExcludes` now accepts `NSArray<NSString *>` instead of `NSSet<NSString *>`. Update existing configurations to use arrays.
+---
+
 # 1.6.9-alpha.4
 
 1. Improved RUM `custom_keys` reporting for global context, user extra properties, and event properties, including WebView, Widget, and historical Crash/ANR events.
