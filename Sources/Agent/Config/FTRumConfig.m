@@ -98,7 +98,7 @@
         _rumDiscardType = FTRUMDiscard;
         _enableTraceWebView = YES;
         _enableTraceUserViewLoadingTime = YES;
-        _viewLoadingTimeClassNameExcludes = [NSSet set];
+        _viewLoadingTimeClassNameExcludes = @[];
         _crashMonitoring = FTCrashMonitorTypeHighCompatibility;
     }
     return self;
@@ -159,7 +159,7 @@
             if ([dict ft_hasValidValueForKey:@"enableTraceUserView"]) _enableTraceUserView = [dict[@"enableTraceUserView"] boolValue];
             if ([dict ft_hasValidValueForKey:@"enableTraceUserViewLoadingTime"]) self.enableTraceUserViewLoadingTime = [dict[@"enableTraceUserViewLoadingTime"] boolValue];
             if ([dict[@"viewLoadingTimeClassNameExcludes"] isKindOfClass:NSArray.class]) {
-                self.viewLoadingTimeClassNameExcludes = [NSSet setWithArray:dict[@"viewLoadingTimeClassNameExcludes"]];
+                self.viewLoadingTimeClassNameExcludes = dict[@"viewLoadingTimeClassNameExcludes"];
             }
             if ([dict ft_hasValidValueForKey:@"enableTraceUserResource"]) _enableTraceUserResource = [dict[@"enableTraceUserResource"] boolValue];
             if ([dict ft_hasValidValueForKey:@"enableTraceURLConnectionResource"]) _enableTraceURLConnectionResource = [dict[@"enableTraceURLConnectionResource"] boolValue];
@@ -192,8 +192,8 @@
     _enableTrackAppFreeze = enableTrackAppFreeze;
     self.freezeDurationMs = freezeDurationMs;
 }
-- (void)setViewLoadingTimeClassNameExcludes:(NSSet<NSString *> *)excludes {
-    NSMutableSet<NSString *> *validNames = [NSMutableSet set];
+- (void)setViewLoadingTimeClassNameExcludes:(NSArray<NSString *> *)excludes {
+    NSMutableArray<NSString *> *validNames = [NSMutableArray array];
     for (id name in excludes) {
         if ([name isKindOfClass:NSString.class] && [name length] > 0) {
             [validNames addObject:[name copy]];
@@ -218,7 +218,7 @@
     [dict setValue:@(self.enableTraceUserAction) forKey:@"enableTraceUserAction"];
     [dict setValue:@(self.enableTraceUserView) forKey:@"enableTraceUserView"];
     [dict setValue:@(self.enableTraceUserViewLoadingTime) forKey:@"enableTraceUserViewLoadingTime"];
-    [dict setValue:self.viewLoadingTimeClassNameExcludes.allObjects forKey:@"viewLoadingTimeClassNameExcludes"];
+    [dict setValue:self.viewLoadingTimeClassNameExcludes forKey:@"viewLoadingTimeClassNameExcludes"];
     [dict setValue:@(self.enableTraceUserResource) forKey:@"enableTraceUserResource"];
     [dict setValue:@(self.enableTraceURLConnectionResource) forKey:@"enableTraceURLConnectionResource"];
     [dict setValue:@(self.enableResourceHostIP) forKey:@"enableResourceHostIP"];

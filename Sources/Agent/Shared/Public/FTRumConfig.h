@@ -139,7 +139,9 @@ typedef BOOL (^FTSessionTaskErrorFilter)(NSError *_Nonnull error);
 /// Default: empty. Custom page names returned by viewTrackingHandler are not used for this filter.
 /// Excluded controllers retain RUM View tracking. Configure before starting RUM.
 /// Lifecycle overrides must call super for base-class View tracking to receive callbacks.
-@property (nonatomic, copy) NSSet<NSString *> *viewLoadingTimeClassNameExcludes;
+/// @discussion Helps resolve issues in specific scenarios.
+/// For Swift classes, use `NSStringFromClass(MyViewController.self)` to include the module prefix.
+@property (nonatomic, copy) NSArray<NSString *> *viewLoadingTimeClassNameExcludes;
 /// Set whether to track user network requests (only applies to native http)
 @property (nonatomic, assign) BOOL enableTraceUserResource;
 /// Set whether to automatically collect NSURLConnection requests as RUM Resources. Default: NO.

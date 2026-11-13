@@ -256,7 +256,7 @@ static BOOL FTViewControllerIsFromSwiftUIBundle(UIViewController *viewController
    heatmapIdentifierRegistry:(id<FTHeatmapIdentifierRegistry>)heatmapIdentifierRegistry {
     self.enableTraceUserViewLoadingTime = rumConfig.enableTraceUserViewLoadingTime;
     [UIViewController ft_configureViewLoadingTimeEnabled:rumConfig.enableTraceUserView && rumConfig.enableTraceUserViewLoadingTime
-                                     classNameExcludes:rumConfig.viewLoadingTimeClassNameExcludes];
+                                     classNameExcludes:[NSSet setWithArray:rumConfig.viewLoadingTimeClassNameExcludes]];
     [self startWithTrackView:rumConfig.enableTraceUserView
                       action:rumConfig.enableTraceUserAction
          addRumDatasDelegate:delegate

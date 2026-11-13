@@ -73,7 +73,7 @@ Configure these options before starting RUM:
 ```objc
 rumConfig.enableTraceUserView = YES;
 rumConfig.enableTraceUserViewLoadingTime = YES;
-rumConfig.viewLoadingTimeClassNameExcludes = [NSSet setWithObjects:@"TUIChatViewController", @"TUIConversationViewController", nil];
+rumConfig.viewLoadingTimeClassNameExcludes = @[@"TUIChatViewController", @"TUIConversationViewController"];
 ```
 
 Set `enableTraceUserViewLoadingTime = NO` to disable automatic loading-time collection

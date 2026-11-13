@@ -166,7 +166,7 @@ static void FTLoadingPolicySetSwiftUIEnabled(id self, SEL selector, BOOL enabled
     @try {
         Class cls = objc_lookUpClass("FTLoadingDependencyController");
         FTRumConfig *config = [[FTRumConfig alloc] initWithAppid:@"test"];
-        config.viewLoadingTimeClassNameExcludes = [NSSet setWithObject:@"FTLoadingEnabledController"];
+        config.viewLoadingTimeClassNameExcludes = @[@"FTLoadingEnabledController"];
         __unused FTLoadingViewEvents *enabled = [self startWithConfig:config];
         [UIViewController ft_installViewControllerLifecycleSwizzlesForClassNames:@[@"FTLoadingDependencyController"]];
         [[FTAutoTrackHandler sharedInstance] shutDown];
@@ -200,16 +200,18 @@ static void FTLoadingPolicySetSwiftUIEnabled(id self, SEL selector, BOOL enabled
 - (void)testConfigurationDefaultsCopyAndDictionaryRoundTrip {
     FTRumConfig *config = [[FTRumConfig alloc] initWithAppid:@"test"];
     XCTAssertTrue(config.enableTraceUserViewLoadingTime);
-    XCTAssertEqualObjects(config.viewLoadingTimeClassNameExcludes, [NSSet set]);
+    XCTAssertEqualObjects(config.viewLoadingTimeClassNameExcludes, @[]);
     NSMutableString *pattern = [NSMutableString stringWithString:@"TUIChat"];
-    NSMutableSet *excludes = [NSMutableSet setWithObjects:pattern, @"", @42, nil];
+    NSMutableArray *excludes = [NSMutableArray arrayWithObjects:pattern, @"OtherController", pattern, @"", @42, nil];
     config.enableTraceUserViewLoadingTime = NO;
     config.viewLoadingTimeClassNameExcludes = (id)excludes;
     [excludes removeAllObjects];
     [pattern appendString:@"Changed"];
     FTRumConfig *copy = [config copy];
     XCTAssertFalse(copy.enableTraceUserViewLoadingTime);
-    XCTAssertEqualObjects(copy.viewLoadingTimeClassNameExcludes, [NSSet setWithObject:@"TUIChat"]);
+    XCTAssertEqualObjects(copy.viewLoadingTimeClassNameExcludes, (@[@"TUIChat", @"OtherController", @"TUIChat"]));
+    XCTAssertEqualObjects([config convertToDictionary][@"viewLoadingTimeClassNameExcludes"],
+                          (@[@"TUIChat", @"OtherController", @"TUIChat"]));
     FTRumConfig *restored = [[FTRumConfig alloc] initWithDictionary:[config convertToDictionary]];
     XCTAssertFalse(restored.enableTraceUserViewLoadingTime);
     XCTAssertEqualObjects(restored.viewLoadingTimeClassNameExcludes, copy.viewLoadingTimeClassNameExcludes);
@@ -227,7 +229,7 @@ static void FTLoadingPolicySetSwiftUIEnabled(id self, SEL selector, BOOL enabled
 }
 - (void)testExcludedClassIsNotInitializedOrInstrumentedButStillReportsViews {
     FTRumConfig *config = [[FTRumConfig alloc] initWithAppid:@"test"];
-    config.viewLoadingTimeClassNameExcludes = [NSSet setWithObject:@"FTLoadingExcludedController"];
+    config.viewLoadingTimeClassNameExcludes = @[@"FTLoadingExcludedController"];
     FTLoadingViewEvents *events = [self startWithConfig:config];
     NSArray *names = @[@"FTLoadingExcludedController"];
     XCTAssertEqual(excludedInitializations, 0u);
@@ -254,7 +256,7 @@ static void FTLoadingPolicySetSwiftUIEnabled(id self, SEL selector, BOOL enabled
 }
 - (void)testExcludedChildInheritsHookButDoesNotCollectTimeOrDuplicateViews {
     FTRumConfig *config = [[FTRumConfig alloc] initWithAppid:@"test"];
-    config.viewLoadingTimeClassNameExcludes = [NSSet setWithObject:@"FTLoadingInheritedExcludedChild"];
+    config.viewLoadingTimeClassNameExcludes = @[@"FTLoadingInheritedExcludedChild"];
     FTLoadingViewEvents *events = [self startWithConfig:config];
     XCTAssertEqual([UIViewController ft_installViewControllerLifecycleSwizzlesForClassNames:@[@"FTLoadingInheritedParent"]], 1u);
     UIViewController *controller = [[objc_lookUpClass("FTLoadingInheritedExcludedChild") alloc] init];
@@ -333,7 +335,7 @@ static void FTLoadingPolicySetSwiftUIEnabled(id self, SEL selector, BOOL enabled
 }
 - (void)testEnabledNonMatchingClassReportsExactLoadingDuration {
     FTRumConfig *config = [[FTRumConfig alloc] initWithAppid:@"test"];
-    config.viewLoadingTimeClassNameExcludes = [NSSet setWithObject:@"ftloadingenabledcontroller"]; // case-sensitive
+    config.viewLoadingTimeClassNameExcludes = @[@"ftloadingenabledcontroller"]; // case-sensitive
     FTLoadingViewEvents *events = [self startWithConfig:config];
     [UIViewController ft_installViewControllerLifecycleSwizzlesForClassNames:@[@"FTLoadingEnabledController"]];
     UIViewController *controller = [[objc_lookUpClass("FTLoadingEnabledController") alloc] init];
