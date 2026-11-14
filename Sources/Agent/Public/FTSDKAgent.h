@@ -45,6 +45,13 @@ NS_ASSUME_NONNULL_BEGIN
 /// Returns the previously initialized singleton.
 /// Before calling this method, you must first call the startWithConfigOptions method
 + (instancetype)sharedInstance;
+
+/// Record at native main entry, before UIApplicationMain. Safe before SDK initialization.
+/// Used only for opt-in duration-based prewarm inference; first valid call wins.
++ (void)prewarmCheckStart;
+/// Record at the beginning of application:willFinishLaunchingWithOptions:.
+/// Do not substitute Dart/JavaScript or bridge-ready callbacks. First valid pair wins.
++ (void)prewarmCheckEnd;
 /// SDK initialization method
 ///
 /// Configure basic configuration items when starting the SDK. The necessary configuration items include the FT-GateWay metrics write address.

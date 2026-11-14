@@ -41,6 +41,7 @@
 		174058BD28D813A20092E096 /* FTLongTaskTest.m in Sources */ = {isa = PBXBuildFile; fileRef = 174058BC28D813A20092E096 /* FTLongTaskTest.m */; };
 		174058C028D815810092E096 /* FTJavaScriptBridgeTest.m in Sources */ = {isa = PBXBuildFile; fileRef = 174058BF28D815810092E096 /* FTJavaScriptBridgeTest.m */; };
 		174058C828D826540092E096 /* FTAppLaunchDurationTest.m in Sources */ = {isa = PBXBuildFile; fileRef = 174058C728D826540092E096 /* FTAppLaunchDurationTest.m */; };
+		E77100000000000000000002 /* FTLaunchPrewarmTests.m in Sources */ = {isa = PBXBuildFile; fileRef = E77100000000000000000001 /* FTLaunchPrewarmTests.m */; };
 		174BC8802BFCB05500478EE1 /* FTDictionaryCopyTest.m in Sources */ = {isa = PBXBuildFile; fileRef = 174BC87F2BFCB05500478EE1 /* FTDictionaryCopyTest.m */; };
 		17510DD829C99F2E00C8F1E4 /* GuanceWidgetExtension.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 17510DD729C99F2E00C8F1E4 /* GuanceWidgetExtension.framework */; };
 		1757C83C2D9D222600163865 /* SessionReplayConfigTests.m in Sources */ = {isa = PBXBuildFile; fileRef = 1757C83B2D9D222600163865 /* SessionReplayConfigTests.m */; };
@@ -376,6 +377,7 @@
 		174058BC28D813A20092E096 /* FTLongTaskTest.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = FTLongTaskTest.m; sourceTree = "<group>"; };
 		174058BF28D815810092E096 /* FTJavaScriptBridgeTest.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = FTJavaScriptBridgeTest.m; sourceTree = "<group>"; };
 		174058C728D826540092E096 /* FTAppLaunchDurationTest.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = FTAppLaunchDurationTest.m; sourceTree = "<group>"; };
+		E77100000000000000000001 /* FTLaunchPrewarmTests.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = ../Tests/AutoTrack/FTLaunchPrewarmTests.m; sourceTree = SOURCE_ROOT; };
 		174BC87F2BFCB05500478EE1 /* FTDictionaryCopyTest.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = FTDictionaryCopyTest.m; sourceTree = "<group>"; };
 		17510DD429C99F0900C8F1E4 /* GuanceWidgetExtension.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; path = GuanceWidgetExtension.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 		17510DD729C99F2E00C8F1E4 /* GuanceWidgetExtension.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; path = GuanceWidgetExtension.framework; sourceTree = BUILT_PRODUCTS_DIR; };
@@ -777,6 +779,7 @@
 			isa = PBXGroup;
 			children = (
 				174058C728D826540092E096 /* FTAppLaunchDurationTest.m */,
+				E77100000000000000000001 /* FTLaunchPrewarmTests.m */,
 				4A299B932514953300400931 /* FTPropertyTest.m */,
 				4A270E9424FF97FE0079F455 /* FTUtilsTest.m */,
 				172C3570280E7D5F002D139E /* FTSwizzleTest.m */,
@@ -2099,6 +2102,7 @@
 				17F5C5242C60D62A007F2B2C /* FTURLProtocol.m in Sources */,
 				17A61BBA2F307BFA00201932 /* SessionReplayUtilsTest.m in Sources */,
 				174058C828D826540092E096 /* FTAppLaunchDurationTest.m in Sources */,
+				E77100000000000000000002 /* FTLaunchPrewarmTests.m in Sources */,
 				4A85318C23B23A4000B40B5D /* FTNetworkTests.m in Sources */,
 				4A1D78A224F52ACC006125D0 /* FTDatabaseTest.m in Sources */,
 				177AD7332CCF72A10051C0F6 /* FTDataCompressionTest.m in Sources */,

@@ -36,6 +36,8 @@
 typedef void(^LaunchBlock)( NSNumber * _Nullable duration, FTLaunchType type,NSDictionary *_Nullable fields);
 typedef void(^LaunchDataBlock)(NSString *source, NSDictionary *tags, NSDictionary *fields);
 @interface FTAppLaunchTracker (Testing)
++ (NSDictionary *)resetPrewarmCheckForTesting;
++ (void)restorePrewarmCheckForTesting:(NSDictionary *)state;
 + (void)startObservingLaunchBackground;
 + (void)stopObservingLaunchBackground;
 - (void)reportAppLaunchPhaseDuration:(NSDate *)endDate;
@@ -103,6 +105,7 @@ typedef void(^LaunchDataBlock)(NSString *source, NSDictionary *tags, NSDictionar
 @property (nonatomic, copy) LaunchDataBlock launchDataBlock;
 @property (nonatomic, strong) NSDate *lastLaunchTime;
 @property (nonatomic, strong) NSDate *savedFirstLaunchBackgroundDate;
+@property (nonatomic, strong) NSDictionary *savedLaunchState;
 
 @end
 
@@ -116,6 +119,7 @@ void FTSetFirstLaunchBackgroundDate(NSDate *date);
 @implementation FTAppLaunchDurationTest
 
 - (void)setUp {
+    self.savedLaunchState = [FTAppLaunchTracker resetPrewarmCheckForTesting];
     self.savedFirstLaunchBackgroundDate = FTGetFirstLaunchBackgroundDate();
     [FTAppLaunchTracker stopObservingLaunchBackground];
     FTSetFirstLaunchBackgroundDate(nil);
@@ -155,7 +159,9 @@ void FTSetFirstLaunchBackgroundDate(NSDate *date);
     FTSetFirstLaunchBackgroundDate(self.savedFirstLaunchBackgroundDate);
     // Put teardown code here. This method is called after the invocation of each test method in the class.
     self.launchBlock = nil;
+    [self.launchTracker shutDown];
     self.launchTracker = nil;
+    [FTAppLaunchTracker restorePrewarmCheckForTesting:self.savedLaunchState];
 #if TARGET_OS_IOS && (defined(DEBUG) || defined(FTSDKUNITTEST))
     FTClearLaunchTaskRole();
 #endif
@@ -747,6 +753,8 @@ void FTClearLaunchTaskRole(void);
         FTSetApplicationDidBecomeActive(endDate);
         for (NSNumber *prewarm in @[@NO, @YES]) {
             for (NSNumber *missingRuntime in @[@NO, @YES]) {
+                // Each matrix row represents a separate process launch.
+                [FTAppLaunchTracker resetPrewarmCheckForTesting];
                 BOOL isPrewarm = prewarm.boolValue;
                 BOOL hasRuntime = !missingRuntime.boolValue;
                 FTSetIsActivePrewarm(isPrewarm);

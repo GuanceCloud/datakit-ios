@@ -76,6 +76,10 @@
 - (nullable NSArray *)effectiveAllowWebViewHost;
 @end
 @implementation FTSDKAgent
+
++ (void)prewarmCheckStart { [FTAppLaunchTracker prewarmCheckStart]; }
++ (void)prewarmCheckEnd { [FTAppLaunchTracker prewarmCheckEnd]; }
+
 static NSObject *sharedInstanceLock;
 static FTSDKAgent *sharedInstance = nil;
 + (void)initialize{

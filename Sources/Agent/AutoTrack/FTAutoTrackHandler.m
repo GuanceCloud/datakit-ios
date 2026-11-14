@@ -77,6 +77,7 @@
 }
 
 - (void)shutDown {
+    [self.launchTracker shutDown];
     self.launchTracker = nil;
     self.addRumDatasDelegate = nil;
     [FTAutoTrack sharedInstance].addRumDatasDelegate = nil;
@@ -232,6 +233,7 @@ static BOOL FTViewControllerIsFromSwiftUIBundle(UIViewController *viewController
 #endif
 
 @property (nonatomic, strong, nullable) FTActionTrackingHandler actionTrackingHandler;
+@property (nonatomic, assign) NSInteger launchPrewarmInterval;
 @property (nonatomic, strong, nullable) FTAutoTrackActionPublisher *actionPublisher;
 @end
 @implementation FTAutoTrackHandler
@@ -254,6 +256,7 @@ static BOOL FTViewControllerIsFromSwiftUIBundle(UIViewController *viewController
 - (void)startWithRumConfig:(FTRumConfig *)rumConfig
        addRumDatasDelegate:(id<FTRumDatasProtocol>)delegate
    heatmapIdentifierRegistry:(id<FTHeatmapIdentifierRegistry>)heatmapIdentifierRegistry {
+    self.launchPrewarmInterval = rumConfig.launchPrewarmInterval;
     self.enableTraceUserViewLoadingTime = rumConfig.enableTraceUserViewLoadingTime;
     [UIViewController ft_configureViewLoadingTimeEnabled:rumConfig.enableTraceUserView && rumConfig.enableTraceUserViewLoadingTime
                                      classNameExcludes:[NSSet setWithArray:rumConfig.viewLoadingTimeClassNameExcludes]];
@@ -320,7 +323,7 @@ heatmapIdentifierRegistry:(id<FTHeatmapIdentifierRegistry>)heatmapIdentifierRegi
     if (trackAction) {
         self.actionHandler = self;
         [self hookTargetAction];
-        self.launchTracker = [[FTAppLaunchTracker alloc]initWithDelegate:self];
+        self.launchTracker = [[FTAppLaunchTracker alloc]initWithDelegate:self launchPrewarmInterval:self.launchPrewarmInterval];
     }
 }
 - (BOOL)shouldCollectViewLoadingTime{
@@ -385,6 +388,9 @@ heatmapIdentifierRegistry:(id<FTHeatmapIdentifierRegistry>)heatmapIdentifierRegi
     }
 }
 -(void)ftAppColdStart:(NSDate *)launchTime duration:(NSNumber *)duration isPreWarming:(BOOL)isPreWarming fields:(NSDictionary *)fields{
+    [self ftAppColdStart:launchTime duration:duration isPreWarming:isPreWarming fields:fields endDate:[launchTime dateByAddingTimeInterval:MAX(0, duration.doubleValue / 1e9)]];
+}
+- (void)ftAppColdStart:(NSDate *)launchTime duration:(NSNumber *)duration isPreWarming:(BOOL)isPreWarming fields:(NSDictionary *)fields endDate:(NSDate *)endDate {
     if (self.actionTrackingHandler && [self.actionTrackingHandler respondsToSelector:@selector(rumLaunchActionWithLaunchType:)]) {
         FTRUMAction *action = [self.actionTrackingHandler rumLaunchActionWithLaunchType:isPreWarming?FTLaunchWarm:FTLaunchCold];
         action.property = fields;
@@ -393,7 +399,11 @@ heatmapIdentifierRegistry:(id<FTHeatmapIdentifierRegistry>)heatmapIdentifierRegi
         }
         if (self.addRumDatasDelegate && [self.addRumDatasDelegate respondsToSelector:@selector(addLaunch:type:launchTime:duration:property:)]) {
             NSString *actionType = isPreWarming?FT_LAUNCH_WARM:FT_LAUNCH_COLD;
-            [self.addRumDatasDelegate addLaunch:action.actionName type:actionType launchTime:launchTime duration:duration property:FTRUMCopyDictionary(action.property)];
+            if ([self.addRumDatasDelegate respondsToSelector:@selector(addLaunch:type:launchTime:duration:property:endDate:)]) {
+                [(id<FTLaunchDataSink>)self.addRumDatasDelegate addLaunch:action.actionName type:actionType launchTime:launchTime duration:duration property:FTRUMCopyDictionary(action.property) endDate:endDate];
+            } else {
+                [self.addRumDatasDelegate addLaunch:action.actionName type:actionType launchTime:launchTime duration:duration property:FTRUMCopyDictionary(action.property)];
+            }
         }
     }
 }
@@ -594,6 +604,8 @@ heatmapIdentifierRegistry:(id<FTHeatmapIdentifierRegistry>)heatmapIdentifierRegi
     }
 }
 -(void)shutDown{
+    [self.launchTracker shutDown];
+    self.launchTracker = nil;
     self.autoTrackView = NO;
     [UIViewController ft_setViewLoadingTimeEnabled:NO];
     [[FTAppLifeCycle sharedInstance] removeAppLifecycleDelegate:self];

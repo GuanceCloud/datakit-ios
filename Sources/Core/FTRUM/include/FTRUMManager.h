@@ -27,6 +27,8 @@
 #import "FTWKWebViewRumDelegate.h"
 #import "FTIssueDataProvider.h"
 
+#import "FTAppLaunchTracker.h"
+
 @class FTResourceMetricsModel,FTResourceContentModel,FTLongTaskEvent;
 
 NS_ASSUME_NONNULL_BEGIN
@@ -35,7 +37,7 @@ FOUNDATION_EXPORT NSString *FTStringFromAppState(FTAppState state);
 
 /// Internal collection inputs must already own their property values, including nested containers.
 /// Boundary adapters snapshot caller-owned data before handing it to this manager.
-@interface FTRUMManager : FTRUMHandler<FTRumResourceProtocol,FTErrorDataDelegate,FTRumDatasProtocol,FTLinkRumDataProvider,FTWKWebViewRumDelegate>
+@interface FTRUMManager : FTRUMHandler<FTLaunchDataSink,FTRumResourceProtocol,FTErrorDataDelegate,FTRumDatasProtocol,FTLinkRumDataProvider,FTWKWebViewRumDelegate>
 @property (nonatomic, assign) FTAppState appState;
 /// Internal automatic collection path with immutable event facts.
 - (void)addLongTaskEvent:(FTLongTaskEvent *)event;

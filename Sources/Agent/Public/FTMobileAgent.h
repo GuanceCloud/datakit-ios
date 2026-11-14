@@ -34,6 +34,12 @@ NS_ASSUME_NONNULL_BEGIN
 
 - (instancetype)init __attribute__((unavailable("Please use sharedInstance to access")));
 
+/// Record at native main entry, before UIApplicationMain. Safe before SDK initialization.
+/// Used only for opt-in duration-based prewarm inference; first valid call wins.
++ (void)prewarmCheckStart;
+/// Record at the beginning of application:willFinishLaunchingWithOptions:.
+/// Do not substitute Dart/JavaScript or bridge-ready callbacks. First valid pair wins.
++ (void)prewarmCheckEnd;
 + (instancetype)sharedInstance;
 + (void)startWithConfigOptions:(FTSDKConfig *)configOptions;
 

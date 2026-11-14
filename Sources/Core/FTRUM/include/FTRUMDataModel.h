@@ -111,6 +111,8 @@ NS_ASSUME_NONNULL_BEGIN
 @property (nonatomic, strong) FTResourceMetricsModel *metrics;
 @end
 @interface FTRUMLaunchDataModel : FTRUMActionModel
+/// Captured endpoint; calibration must not shorten the owning View lifecycle.
+@property (nonatomic, strong, nullable) NSDate *launchEndDate;
 @property (nonatomic, strong) NSNumber *duration;
 @property (nonatomic, assign, readonly) BOOL isInitialLaunchAction;
 -(instancetype)initWithDuration:(NSNumber *)duration;
