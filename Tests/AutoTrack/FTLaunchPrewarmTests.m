@@ -26,6 +26,7 @@
 #import "FTRUMWriteData.h"
 #import "FTAutoTrackHandler.h"
 #import "FTFirstFrameReader.h"
+#import "FTDefaultActionTrackingHandler.h"
 
 // Declarations keep the numeric regression runnable against the original SDK baseline.
 @interface FTSDKAgent (PrewarmBaseline)
@@ -80,6 +81,16 @@ extern BOOL FTGetIsActivePrewarm(void);
 - (void)stop { self.stops++; }
 @end
 
+@interface FTLaunchCallbackHandler : FTDefaultActionTrackingHandler
+@property (copy) void (^duringCallback)(void);
+@end
+@implementation FTLaunchCallbackHandler
+- (FTRUMAction *)rumLaunchActionWithLaunchType:(FTLaunchType)type {
+    if (self.duringCallback) self.duringCallback();
+    return [super rumLaunchActionWithLaunchType:type];
+}
+@end
+
 @interface FTLaunchPrewarmTests : XCTestCase <FTAppLaunchDataDelegate>
 @property NSDictionary *fields;
 @property NSNumber *duration;
@@ -90,6 +101,10 @@ extern BOOL FTGetIsActivePrewarm(void);
 @property BOOL endMarkerAfterEndpoint;
 @property NSInteger markerPattern;
 @property BOOL reportThroughAutoTrack;
+@property NSNumber *moduleOffset;
+@property BOOL missingModule;
+@property BOOL missingLoad;
+@property NSNumber *finishOffset;
 @end
 @implementation FTLaunchPrewarmTests
 - (void)ftAppColdStart:(NSDate *)time duration:(NSNumber *)duration isPreWarming:(BOOL)prewarm fields:(NSDictionary *)fields {
@@ -111,8 +126,8 @@ extern BOOL FTGetIsActivePrewarm(void);
     NSDictionary *markerState = nil;
     @try {
         if ([FTAppLaunchTracker respondsToSelector:@selector(resetPrewarmCheckForTesting)]) markerState = [FTAppLaunchTracker resetPrewarmCheckForTesting];
-        FTSetRuntimeInit([NSDate dateWithTimeIntervalSince1970:1000+load]);
-        FTSetModuleInitializationTimestamp([NSDate dateWithTimeIntervalSince1970:1000+load+0.125]);
+        FTSetRuntimeInit(self.missingLoad ? nil : [NSDate dateWithTimeIntervalSince1970:1000+load]);
+        FTSetModuleInitializationTimestamp(self.missingModule ? nil : [NSDate dateWithTimeIntervalSince1970:1000+(self.moduleOffset ? self.moduleOffset.doubleValue : load+0.125)]);
         FTSetApplicationDidBecomeActive(nil); FTSetIsActivePrewarm(system);
         FTAppLaunchTracker.sdkStartDate=[NSDate dateWithTimeIntervalSince1970:1000+(self.sdkOffset ?: 8)];
         if (manual && [FTAppLaunchTracker respondsToSelector:@selector(prewarmCheckStart)]) {
@@ -138,7 +153,7 @@ extern BOOL FTGetIsActivePrewarm(void);
         }
         FTAppLaunchTracker *tracker=[FTAppLaunchTracker new];
         if ([tracker respondsToSelector:NSSelectorFromString(@"setLaunchPrewarmInterval:")]) [tracker setValue:@(threshold) forKey:@"launchPrewarmInterval"];
-        [tracker setValue:[NSDate dateWithTimeIntervalSince1970:1008.5] forKey:@"didFinishLaunchingTimestamp"];
+        [tracker setValue:[NSDate dateWithTimeIntervalSince1970:1000+(self.finishOffset ? self.finishOffset.doubleValue : 8.5)] forKey:@"didFinishLaunchingTimestamp"];
         tracker.delegate=self; self.reports=0;
         NSDate *end=[NSDate dateWithTimeIntervalSince1970:1009];
         if(active) FTSetApplicationDidBecomeActive(end);
@@ -146,7 +161,14 @@ extern BOOL FTGetIsActivePrewarm(void);
             [tracker reportAppLaunchPhaseDuration:end];
             [tracker reportAppLaunchPhaseDuration:[end dateByAddingTimeInterval:10000]];
             XCTAssertEqual(self.reports,1u);
-            XCTAssertEqualObjects(self.time,[NSDate dateWithTimeIntervalSince1970:1000]);
+            XCTAssertEqualWithAccuracy([self.time timeIntervalSince1970]+self.duration.doubleValue/1e9,1009,1e-7);
+            for (NSString *key in @[FT_KEY_LAUNCH_PRE_RUNTIME_INIT_TIME,FT_KEY_LAUNCH_RUNTIME_INIT_TIME,FT_KEY_LAUNCH_UIKITI_INIT_TIME,FT_KEY_LAUNCH_APP_INIT_TIME,FT_KEY_LAUNCH_FIRST_FRAME_RENDER_TIME]) {
+                NSDictionary *phase=self.fields[key];
+                if (!phase) continue;
+                XCTAssertGreaterThanOrEqual([phase[@"start"] longLongValue],0LL);
+                XCTAssertGreaterThanOrEqual([phase[@"duration"] longLongValue],0LL);
+                XCTAssertLessThanOrEqual([phase[@"start"] longLongValue]+[phase[@"duration"] longLongValue],self.duration.longLongValue);
+            }
         }
         assertions();
     } @finally {
@@ -157,24 +179,53 @@ extern BOOL FTGetIsActivePrewarm(void);
         if (markerState) [FTAppLaunchTracker restorePrewarmCheckForTesting:markerState];
     }
 }
-- (void)testBeforeLoadWinsWhenBothChecksMatch {
-    [self exerciseThreshold:1500 load:2 manual:5000000000 system:NO active:NO assertions:^{
+- (void)testBeforeLoadOnlyRebasesRetainedPhases {
+    [self exerciseThreshold:1500 load:2 manual:0 system:NO active:NO assertions:^{
         XCTAssertTrue(self.prewarm); XCTAssertEqualObjects(self.duration,@7000000000LL);
         XCTAssertEqualObjects(self.fields[@"prewarm_type"],@"custom");
         XCTAssertNil(self.fields[FT_KEY_LAUNCH_PRE_RUNTIME_INIT_TIME]);
-        XCTAssertEqualObjects(self.fields[FT_KEY_LAUNCH_RUNTIME_INIT_TIME],(@{@"start":@2000000000LL,@"duration":@125000000}));
+        XCTAssertEqualObjects(self.fields[FT_KEY_LAUNCH_RUNTIME_INIT_TIME],(@{@"start":@0,@"duration":@125000000}));
         XCTAssertEqualObjects(self.fields[FT_KEY_LAUNCH_UIKITI_INIT_TIME][@"duration"],@5875000000LL);
         XCTAssertNil(self.fields[FT_KEY_APP_LAUNCH_TYPE]);
     }];
 }
-- (void)testManualMatchRemovesEntireLoadToSDKNotJustManualInterval {
+- (void)testManualMatchRemovesAllIntervalsBeforeSDKInitialization {
     [self exerciseThreshold:1500 load:0.25 manual:2000000000 system:NO active:NO assertions:^{
-        XCTAssertTrue(self.prewarm); XCTAssertEqualObjects(self.duration,@1250000000LL);
+        XCTAssertTrue(self.prewarm); XCTAssertEqualObjects(self.duration,@1000000000LL);
         XCTAssertEqualObjects(self.fields[@"prewarm_type"],@"custom");
-        XCTAssertEqualObjects(self.fields[FT_KEY_LAUNCH_PRE_RUNTIME_INIT_TIME][@"duration"],@250000000);
+        XCTAssertNil(self.fields[FT_KEY_LAUNCH_PRE_RUNTIME_INIT_TIME]);
         XCTAssertNil(self.fields[FT_KEY_LAUNCH_RUNTIME_INIT_TIME]); XCTAssertNil(self.fields[FT_KEY_LAUNCH_UIKITI_INIT_TIME]);
-        XCTAssertEqualObjects(self.fields[FT_KEY_LAUNCH_APP_INIT_TIME],(@{@"start":@8000000000LL,@"duration":@500000000}));
-        XCTAssertEqualObjects(self.fields[FT_KEY_LAUNCH_FIRST_FRAME_RENDER_TIME],(@{@"start":@8500000000LL,@"duration":@500000000}));
+        XCTAssertEqualObjects(self.fields[FT_KEY_LAUNCH_APP_INIT_TIME],(@{@"start":@0,@"duration":@500000000}));
+        XCTAssertEqualObjects(self.fields[FT_KEY_LAUNCH_FIRST_FRAME_RENDER_TIME],(@{@"start":@500000000,@"duration":@500000000}));
+    }];
+}
+- (void)testManualCorrectionWinsWhenBothCustomChecksMatch {
+    [self exerciseThreshold:1500 load:2 manual:2000000000 system:NO active:NO assertions:^{
+        XCTAssertTrue(self.prewarm);
+        XCTAssertEqualObjects(self.time,[NSDate dateWithTimeIntervalSince1970:1008]);
+        XCTAssertEqualObjects(self.duration,@1000000000LL);
+        XCTAssertNil(self.fields[FT_KEY_LAUNCH_PRE_RUNTIME_INIT_TIME]);
+        XCTAssertNil(self.fields[FT_KEY_LAUNCH_RUNTIME_INIT_TIME]);
+        XCTAssertNil(self.fields[FT_KEY_LAUNCH_UIKITI_INIT_TIME]);
+        XCTAssertEqualObjects(self.fields[FT_KEY_LAUNCH_APP_INIT_TIME],(@{@"start":@0,@"duration":@500000000LL}));
+        XCTAssertEqualObjects(self.fields[FT_KEY_LAUNCH_FIRST_FRAME_RENDER_TIME],(@{@"start":@500000000LL,@"duration":@500000000LL}));
+    }];
+}
+- (void)testStagesBeyondCapturedLaunchEndpointAreOmitted {
+    self.finishOffset=@9.5;
+    [self exerciseThreshold:1500 load:0.25 manual:2000000000 system:NO active:NO assertions:^{
+        XCTAssertEqualObjects(self.time,[NSDate dateWithTimeIntervalSince1970:1008]);
+        XCTAssertEqualObjects(self.duration,@1000000000LL);
+        XCTAssertNil(self.fields[FT_KEY_LAUNCH_APP_INIT_TIME]);
+        XCTAssertNil(self.fields[FT_KEY_LAUNCH_FIRST_FRAME_RENDER_TIME]);
+    }];
+}
+- (void)testFractionalOriginUsesConsistentRelativeNanoseconds {
+    self.sdkOffset=8.000000119;
+    [self exerciseThreshold:1500 load:0.25 manual:2000000000 system:NO active:NO assertions:^{
+        XCTAssertEqualObjects(self.duration,@999999880LL);
+        XCTAssertEqualObjects(self.fields[FT_KEY_LAUNCH_APP_INIT_TIME],(@{@"start":@0,@"duration":@499999880LL}));
+        XCTAssertEqualObjects(self.fields[FT_KEY_LAUNCH_FIRST_FRAME_RENDER_TIME],(@{@"start":@499999880LL,@"duration":@500000000LL}));
     }];
 }
 - (void)testDisabledPreservesRawTimingEvenWithManualMarkers {
@@ -183,30 +234,70 @@ extern BOOL FTGetIsActivePrewarm(void);
         XCTAssertNotNil(self.fields[FT_KEY_LAUNCH_PRE_RUNTIME_INIT_TIME]); XCTAssertNotNil(self.fields[FT_KEY_LAUNCH_UIKITI_INIT_TIME]);
     }];
 }
-- (void)testSystemSignalHasPriorityAndKeepsExistingTotal {
+- (void)testSystemSignalHasPriorityAndClipsBeforeMain {
     [self exerciseThreshold:1500 load:2 manual:2000000000 system:YES active:NO assertions:^{
-        XCTAssertTrue(self.prewarm); XCTAssertEqualObjects(self.fields[@"prewarm_type"],@"system"); XCTAssertEqualObjects(self.duration,@9000000000LL);
+        XCTAssertTrue(self.prewarm); XCTAssertEqualObjects(self.fields[@"prewarm_type"],@"system"); XCTAssertEqualObjects(self.duration,@6875000000LL);
         XCTAssertNil(self.fields[FT_KEY_LAUNCH_PRE_RUNTIME_INIT_TIME]); XCTAssertNil(self.fields[FT_KEY_LAUNCH_RUNTIME_INIT_TIME]); XCTAssertNotNil(self.fields[FT_KEY_LAUNCH_UIKITI_INIT_TIME]);
     }];
 }
-- (void)testDisabledSystemPrewarmPreservesOriginalFieldsAndTiming {
+- (void)testDisabledCustomInferenceStillClipsSystemPrewarmWithoutSourceTag {
     [self exerciseThreshold:0 load:2 manual:2000000000 system:YES active:NO assertions:^{
         XCTAssertTrue(self.prewarm);
         XCTAssertNil(self.fields[@"prewarm_type"]);
-        XCTAssertEqualObjects(self.duration,@9000000000LL);
+        XCTAssertEqualObjects(self.duration,@6875000000LL);
         XCTAssertNil(self.fields[FT_KEY_APP_LAUNCH_TYPE]);
         XCTAssertNil(self.fields[FT_KEY_LAUNCH_PRE_RUNTIME_INIT_TIME]);
         XCTAssertNil(self.fields[FT_KEY_LAUNCH_RUNTIME_INIT_TIME]);
-        XCTAssertEqualObjects(self.fields[FT_KEY_LAUNCH_UIKITI_INIT_TIME],(@{@"start":@2125000000LL,@"duration":@5875000000LL}));
-        XCTAssertEqualObjects(self.fields[FT_KEY_LAUNCH_APP_INIT_TIME],(@{@"start":@8000000000LL,@"duration":@500000000}));
-        XCTAssertEqualObjects(self.fields[FT_KEY_LAUNCH_FIRST_FRAME_RENDER_TIME],(@{@"start":@8500000000LL,@"duration":@500000000}));
+        XCTAssertEqualObjects(self.fields[FT_KEY_LAUNCH_UIKITI_INIT_TIME],(@{@"start":@0,@"duration":@5875000000LL}));
+        XCTAssertEqualObjects(self.fields[FT_KEY_LAUNCH_APP_INIT_TIME],(@{@"start":@5875000000LL,@"duration":@500000000}));
+        XCTAssertEqualObjects(self.fields[FT_KEY_LAUNCH_FIRST_FRAME_RENDER_TIME],(@{@"start":@6375000000LL,@"duration":@500000000}));
     }];
 }
 - (void)testManualNanosecondThresholdBoundary {
     for(NSNumber *ns in @[@1499999999ULL,@1500000000ULL,@1500000001ULL]) {
         BOOL match=ns.unsignedLongLongValue>1500000000;
         [self exerciseThreshold:1500 load:0.25 manual:ns.unsignedLongLongValue system:NO active:NO assertions:^{
-            XCTAssertEqual(self.prewarm,match); XCTAssertEqualObjects(self.duration,match?@1250000000LL:@9000000000LL);
+            XCTAssertEqual(self.prewarm,match); XCTAssertEqualObjects(self.duration,match?@1000000000LL:@9000000000LL);
+        }];
+    }
+}
+- (void)testSystemPrewarmCorrectionDoesNotRequireLoadOrThresholdMatch {
+    self.missingLoad=YES;
+    for (NSNumber *threshold in @[@0,@9000]) {
+        [self exerciseThreshold:threshold.integerValue load:2 manual:0 system:YES active:YES assertions:^{
+            XCTAssertTrue(self.prewarm);
+            XCTAssertEqualObjects(self.duration,@6875000000LL);
+            XCTAssertNil(self.fields[FT_KEY_LAUNCH_PRE_RUNTIME_INIT_TIME]);
+            XCTAssertNil(self.fields[FT_KEY_LAUNCH_RUNTIME_INIT_TIME]);
+            XCTAssertNil(self.fields[FT_KEY_LAUNCH_UIKITI_INIT_TIME]);
+            XCTAssertNil(self.fields[FT_KEY_LAUNCH_APP_INIT_TIME]);
+            XCTAssertNil(self.fields[FT_KEY_LAUNCH_FIRST_FRAME_RENDER_TIME]);
+            XCTAssertEqualObjects(self.fields[FT_KEY_PREWARM_TYPE],threshold.integerValue ? @"system" : nil);
+        }];
+    }
+}
+- (void)testSystemPrewarmInvalidConstructorFallsBackWithoutEnteringCustomInference {
+    for (NSNumber *offset in @[@(-1),@10]) {
+        self.moduleOffset=offset;
+        [self exerciseThreshold:1500 load:2 manual:2000000000 system:YES active:NO assertions:^{
+            XCTAssertTrue(self.prewarm);
+            XCTAssertEqualObjects(self.duration,@9000000000LL);
+            XCTAssertEqualObjects(self.fields[FT_KEY_PREWARM_TYPE],@"system");
+        }];
+    }
+    self.missingModule=YES;
+    [self exerciseThreshold:0 load:2 manual:0 system:YES active:NO assertions:^{
+        XCTAssertTrue(self.prewarm);
+        XCTAssertEqualObjects(self.duration,@9000000000LL);
+        XCTAssertNil(self.fields[FT_KEY_PREWARM_TYPE]);
+    }];
+}
+- (void)testSystemPrewarmConstructorAtLaunchBoundaries {
+    for (NSNumber *offset in @[@0,@9]) {
+        self.moduleOffset=offset;
+        [self exerciseThreshold:0 load:2 manual:0 system:YES active:YES assertions:^{
+            XCTAssertEqualObjects(self.duration,offset.integerValue ? @0 : @9000000000LL);
+            XCTAssertTrue(self.prewarm);
         }];
     }
 }
@@ -220,7 +311,7 @@ extern BOOL FTGetIsActivePrewarm(void);
 }
 - (void)testLateInitializationDoesNotInventLaterPhases {
     [self exerciseThreshold:1500 load:0.25 manual:2000000000 system:NO active:YES assertions:^{
-        XCTAssertEqualObjects(self.duration,@1250000000LL); XCTAssertTrue(self.prewarm);
+        XCTAssertEqualObjects(self.duration,@1000000000LL); XCTAssertTrue(self.prewarm);
         XCTAssertNil(self.fields[FT_KEY_LAUNCH_APP_INIT_TIME]); XCTAssertNil(self.fields[FT_KEY_LAUNCH_FIRST_FRAME_RENDER_TIME]);
     }];
 }
@@ -252,20 +343,47 @@ extern BOOL FTGetIsActivePrewarm(void);
         XCTAssertFalse(self.prewarm); XCTAssertEqualObjects(self.duration,@9000000000LL);
     }];
 }
-- (void)testMissingLoadDoesNotManufactureCorrection {
-    [self exerciseThreshold:1500 load:-1 manual:2000000000 system:NO active:NO assertions:^{
-        XCTAssertFalse(self.prewarm); XCTAssertEqualObjects(self.duration,@9000000000LL);
+- (void)testManualEndAfterSDKInitializationCannotTriggerCorrection {
+    self.sdkOffset=2;
+    [self exerciseThreshold:1500 load:0.25 manual:2000000000 system:NO active:NO assertions:^{
+        XCTAssertFalse(self.prewarm);
+        XCTAssertEqualObjects(self.duration,@9000000000LL);
+        XCTAssertNotNil(self.fields[FT_KEY_LAUNCH_PRE_RUNTIME_INIT_TIME]);
+        XCTAssertNotNil(self.fields[FT_KEY_LAUNCH_RUNTIME_INIT_TIME]);
+        XCTAssertNotNil(self.fields[FT_KEY_LAUNCH_UIKITI_INIT_TIME]);
     }];
+}
+- (void)testManualEndAtSDKInitializationCanTriggerCorrection {
+    self.sdkOffset=3;
+    [self exerciseThreshold:1500 load:0.25 manual:2000000000 system:NO active:NO assertions:^{
+        XCTAssertTrue(self.prewarm);
+        XCTAssertEqualObjects(self.duration,@6000000000LL);
+        XCTAssertNil(self.fields[FT_KEY_LAUNCH_PRE_RUNTIME_INIT_TIME]);
+        XCTAssertNil(self.fields[FT_KEY_LAUNCH_RUNTIME_INIT_TIME]);
+        XCTAssertNil(self.fields[FT_KEY_LAUNCH_UIKITI_INIT_TIME]);
+        XCTAssertEqualObjects(self.fields[FT_KEY_LAUNCH_APP_INIT_TIME][@"duration"],@5500000000LL);
+        XCTAssertEqualObjects(self.fields[FT_KEY_LAUNCH_FIRST_FRAME_RENDER_TIME][@"duration"],@500000000LL);
+    }];
+}
+- (void)testInvalidLoadDoesNotPreventValidManualPrefixCorrection {
+    for (NSNumber *missing in @[@NO,@YES]) {
+        self.missingLoad=missing.boolValue;
+        [self exerciseThreshold:1500 load:-1 manual:2000000000 system:NO active:NO assertions:^{
+            XCTAssertTrue(self.prewarm);
+            XCTAssertEqualObjects(self.time,[NSDate dateWithTimeIntervalSince1970:1008]);
+            XCTAssertEqualObjects(self.duration,@1000000000LL);
+        }];
+    }
 }
 - (void)testLaunchSourceSerializationAndViewEndpointThroughDelayedRUMQueue {
     FTRUMDependencies *dependencies=[FTRUMDependencies new];
     FTPrewarmWriter *writer=[FTPrewarmWriter new];
     dependencies.sampleRate=100; dependencies.writer=writer;
     FTRUMManager *manager=[[FTRUMManager alloc] initWithRumDependencies:dependencies];
-    NSDate *start=[NSDate dateWithTimeIntervalSince1970:1000];
+    NSDate *start=[NSDate dateWithTimeIntervalSince1970:1008];
     NSDate *end=[NSDate dateWithTimeIntervalSince1970:1009];
     // Queue processing occurs after capture; the real endpoint must survive calibration.
-    [manager addLaunch:@"app_warm_start" type:FT_LAUNCH_WARM launchTime:start duration:@1250000000LL
+    [manager addLaunch:@"app_warm_start" type:FT_LAUNCH_WARM launchTime:start duration:@1000000000LL
               property:@{@"prewarm_type":@"custom"} endDate:end];
     [manager syncProcess];
     FTRUMWriteData *action=nil, *view=nil;
@@ -274,9 +392,9 @@ extern BOOL FTGetIsActivePrewarm(void);
         if ([event.source isEqualToString:@"view"]) view=event;
     }
     XCTAssertNotNil(action); XCTAssertEqualObjects(action.tags[@"prewarm_type"],@"custom");
-    XCTAssertNil(action.fields[@"prewarm_type"]); XCTAssertEqualObjects(action.fields[@"duration"],@1250000000LL);
-    XCTAssertEqual(action.time,1000000000000LL);
-    XCTAssertNotNil(view); XCTAssertEqualObjects(view.fields[@"time_spent"],@9000000000LL);
+    XCTAssertNil(action.fields[@"prewarm_type"]); XCTAssertEqualObjects(action.fields[@"duration"],@1000000000LL);
+    XCTAssertEqual(action.time,1008000000000LL);
+    XCTAssertNotNil(view); XCTAssertEqualObjects(view.fields[@"time_spent"],@1000000000LL);
     XCTAssertNil(view.tags[@"prewarm_type"]); XCTAssertNil(dependencies.sessionReplayStats);
     [manager addLaunch:@"app_hot_start" type:FT_LAUNCH_HOT launchTime:end duration:@1000000000
               property:@{@"prewarm_type":@"custom"}];
@@ -289,6 +407,60 @@ extern BOOL FTGetIsActivePrewarm(void);
         }
     }
     [manager shutDown];
+}
+- (void)testCalibratedLaunchKeepsExistingViewAndSessionThroughQueueAndCallbackDelay {
+    self.reportThroughAutoTrack=YES;
+    [self exerciseThreshold:1500 load:0.25 manual:2000000000 system:NO active:YES assertions:^{
+        FTRUMDependencies *dependencies=[FTRUMDependencies new];
+        FTPrewarmWriter *writer=[FTPrewarmWriter new];
+        dependencies.sampleRate=100; dependencies.writer=writer;
+        FTRUMManager *manager=[[FTRUMManager alloc] initWithRumDependencies:dependencies];
+        FTAutoTrackHandler *handler=[FTAutoTrackHandler sharedInstance];
+        [manager syncProcess];
+        Method occurrenceClock=class_getClassMethod(NSDate.class,@selector(date));
+        IMP fakeOccurrence=imp_implementationWithBlock(^NSDate *(id receiver){ return [NSDate dateWithTimeIntervalSince1970:1001]; });
+        IMP originalOccurrence=method_setImplementation(occurrenceClock,fakeOccurrence);
+        @try {
+            [manager addErrorWithType:@"startup_error" stateStr:FTStringFromAppState(FTAppStateStartUp)
+                message:@"before calibrated origin" stack:@"test" property:nil time:1001000000000LL];
+            [manager syncProcess];
+        } @finally {
+            method_setImplementation(occurrenceClock,originalOccurrence); imp_removeBlock(fakeOccurrence);
+        }
+        FTRUMWriteData *error=nil;
+        for (FTRUMWriteData *event in writer.events) if ([event.source isEqualToString:@"error"]) error=event;
+        XCTAssertNotNil(error);
+        FTRumConfig *config=[[FTRumConfig alloc] initWithAppid:@"origin-context"];
+        config.enableTraceUserAction=YES; config.launchPrewarmInterval=1500;
+        FTLaunchCallbackHandler *callback=[FTLaunchCallbackHandler new];
+        callback.duringCallback=^{
+            // Simulate time advancing / SDK state changing during user code.
+            // Facts must have been captured before this callback.
+            FTAppLaunchTracker.sdkStartDate=[NSDate dateWithTimeIntervalSince1970:2000];
+        };
+        config.actionTrackingHandler=callback;
+        dispatch_queue_t queue=[manager valueForKey:@"rumQueue"];
+        dispatch_suspend(queue);
+        @try {
+            [handler startWithRumConfig:config addRumDatasDelegate:manager heatmapIdentifierRegistry:nil];
+            for (FTRUMWriteData *event in writer.events) XCTAssertFalse([event.source isEqualToString:@"action"]);
+        } @finally { dispatch_resume(queue); }
+        @try {
+            [manager syncProcess];
+            FTRUMWriteData *action=nil, *view=nil;
+            for (FTRUMWriteData *event in writer.events) {
+                if ([event.source isEqualToString:@"action"]) action=event;
+                if ([event.source isEqualToString:@"view"] && [event.tags[@"view_id"] isEqual:error.tags[@"view_id"]]) view=event;
+            }
+            XCTAssertNotNil(action); XCTAssertNotNil(view);
+            XCTAssertEqual(action.time,1008000000000LL);
+            XCTAssertEqualObjects(action.fields[FT_DURATION],@1000000000LL);
+            XCTAssertEqualObjects(action.tags[@"view_id"],error.tags[@"view_id"]);
+            XCTAssertEqualObjects(action.tags[@"session_id"],error.tags[@"session_id"]);
+            XCTAssertEqual(view.time,1001000000000LL);
+            XCTAssertEqualObjects(view.fields[@"time_spent"],@8000000000LL);
+        } @finally { [handler shutDown]; [manager shutDown]; }
+    }];
 }
 - (void)testRUMConfigReachesSynchronousLateInitializationAndWritesOnlyLaunchTag {
     self.reportThroughAutoTrack=YES;
@@ -337,7 +509,7 @@ extern BOOL FTGetIsActivePrewarm(void);
 - (void)testZeroBeforeLoadIntervalStillAllowsManualInference {
     [self exerciseThreshold:1500 load:0 manual:2000000000 system:NO active:NO assertions:^{
         XCTAssertTrue(self.prewarm); XCTAssertEqualObjects(self.duration,@1000000000LL);
-        XCTAssertEqualObjects(self.fields[FT_KEY_LAUNCH_PRE_RUNTIME_INIT_TIME][@"duration"],@0);
+        XCTAssertNil(self.fields[FT_KEY_LAUNCH_PRE_RUNTIME_INIT_TIME]);
     }];
 }
 - (void)testMissingStartReverseEqualAndUnavailableClocksDoNotMatch {
@@ -351,7 +523,7 @@ extern BOOL FTGetIsActivePrewarm(void);
 - (void)testConcurrentDuplicateStartsKeepFirstValidPair {
     self.markerPattern=4;
     [self exerciseThreshold:1500 load:0.25 manual:2000000000 system:NO active:NO assertions:^{
-        XCTAssertTrue(self.prewarm); XCTAssertEqualObjects(self.duration,@1250000000LL);
+        XCTAssertTrue(self.prewarm); XCTAssertEqualObjects(self.duration,@1000000000LL);
     }];
 }
 - (void)testShutdownReinitializationKeepsOneInitialLaunchAndHotLaunchMonitoring {
@@ -412,7 +584,7 @@ extern BOOL FTGetIsActivePrewarm(void);
                         XCTAssertEqualObjects(event.fields[FT_DURATION],hot==1 ? @250000000 : @500000000);
                     } else {
                         initial++;
-                        XCTAssertEqualObjects(event.fields[FT_DURATION],threshold ? @7000000000LL : @9000000000LL);
+                        XCTAssertEqualObjects(event.fields[FT_DURATION],system ? @6875000000LL : (threshold ? @7000000000LL : @9000000000LL));
                         XCTAssertEqualObjects(event.tags[@"action_type"],(system || threshold) ? FT_LAUNCH_WARM : FT_LAUNCH_COLD);
                     }
                 }

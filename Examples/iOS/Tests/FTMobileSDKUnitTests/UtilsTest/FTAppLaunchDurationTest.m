@@ -733,7 +733,7 @@ void FTClearLaunchTaskRole(void);
     FTSetApplicationDidBecomeActive(applicationDidBecomeActive);
 }
 
-- (void)testLaunchDurationStartsAtProcessStartForColdAndPrewarm{
+- (void)testLaunchDurationUsesProcessForColdAndConstructorForSystemPrewarm{
     NSDate *previousRuntimeInit = FTGetRuntimeInit();
     NSDate *previousModuleInit = FTGetModuleInitializationTimestamp();
     NSDate *previousActive = FTGetApplicationDidBecomeActive();
@@ -763,7 +763,7 @@ void FTClearLaunchTaskRole(void);
                 self.launchBlock = ^(NSNumber *duration, FTLaunchType type, NSDictionary *fields) {
                     reportCount++;
                     XCTAssertEqual(type, isPrewarm ? FTLaunchWarm : FTLaunchCold);
-                    XCTAssertEqualObjects(duration, @(8000000000LL));
+                    XCTAssertEqualObjects(duration, isPrewarm ? @(5000000000LL) : @(8000000000LL));
                     if (isPrewarm) {
                         XCTAssertNil(fields[FT_KEY_APP_LAUNCH_TYPE]);
                     }
@@ -783,7 +783,7 @@ void FTClearLaunchTaskRole(void);
                 // A late duplicate terminal callback must not change or repeat the report.
                 [tracker reportAppLaunchPhaseDuration:[endDate dateByAddingTimeInterval:100]];
                 XCTAssertEqual(reportCount, 1);
-                XCTAssertEqualObjects(self.lastLaunchTime, processStart);
+                XCTAssertEqualObjects(self.lastLaunchTime, isPrewarm ? moduleInit : processStart);
             }
         }
     } @finally {
