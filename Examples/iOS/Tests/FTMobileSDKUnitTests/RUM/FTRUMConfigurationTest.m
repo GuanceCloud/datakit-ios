@@ -1935,8 +1935,10 @@ static void FTStartAutoTrackActionTest(AddRumDatasHandlerMock *mock,
     FTRumConfig *rumConfig = [[FTRumConfig alloc]initWithAppid:self.appid];
     rumConfig.enableTraceUserAction = YES;
     __block NSString *actionName;
+    NSMutableArray<NSNumber *> *launchTypes = [NSMutableArray array];
     TestTrackingHandler *handler = [TestTrackingHandler new];
     handler.launchActionTrackingBlock = ^FTRUMAction * _Nullable(FTLaunchType type) {
+        [launchTypes addObject:@(type)];
         switch (type) {
             case FTLaunchHot:
                 actionName = @"hot";
@@ -1953,14 +1955,24 @@ static void FTStartAutoTrackActionTest(AddRumDatasHandlerMock *mock,
     rumConfig.actionTrackingHandler = handler;
     [FTMobileAgent startWithConfigOptions:config];
     [[FTMobileAgent sharedInstance] startRumWithConfigOptions:rumConfig];
-    
-    
+
+    // Initial launch is process-scoped and may have been reported by an earlier
+    // test. Exercise a new hot launch owned entirely by this SDK instance.
     [[FTGlobalRumManager sharedInstance].rumManager syncProcess];
+    [[FTTrackerEventDBTool sharedManager] deleteAllDatas];
+    [launchTypes removeAllObjects];
+    actionName = nil;
+    [[NSNotificationCenter defaultCenter] postNotificationName:UIApplicationWillEnterForegroundNotification object:nil];
+    [[NSNotificationCenter defaultCenter] postNotificationName:UIApplicationDidBecomeActiveNotification object:nil];
+
+    [[FTGlobalRumManager sharedInstance].rumManager syncProcess];
+    XCTAssertEqualObjects(launchTypes, (@[@(FTLaunchHot)]));
+    XCTAssertEqualObjects(actionName, @"hot");
     NSArray *datas =[[FTTrackerEventDBTool sharedManager] getFirstRecords:50 withType:FT_DATA_TYPE_RUM];
     __block BOOL hasLaunchAction = NO;
     [FTModelHelper resolveModelArray:datas callBack:^(NSString * _Nonnull source, NSDictionary * _Nonnull tags, NSDictionary * _Nonnull fields, BOOL * _Nonnull stop) {
-        if ([source isEqualToString:FT_RUM_SOURCE_ACTION] && ![tags[FT_KEY_ACTION_TYPE] isEqualToString:FT_KEY_ACTION_TYPE_CLICK ]) {
-            XCTAssertTrue([tags[FT_KEY_ACTION_NAME] isEqualToString:actionName]);
+        if ([source isEqualToString:FT_RUM_SOURCE_ACTION] && [tags[FT_KEY_ACTION_TYPE] isEqualToString:FT_LAUNCH_HOT]) {
+            XCTAssertEqualObjects(tags[FT_KEY_ACTION_NAME], @"hot");
             hasLaunchAction = YES;
             *stop = YES;
         }
