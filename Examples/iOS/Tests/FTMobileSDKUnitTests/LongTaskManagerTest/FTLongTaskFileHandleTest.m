@@ -893,6 +893,8 @@ typedef void (^FTWriteCallBack)(NSDictionary *fields, NSDictionary *tags);
 }
 
 - (void)testNativeRawCaptureValidationPrecedesFormatting {
+    // Initialize symbolication independently of other test cases.
+    (void)[FTCrash shared];
     FTCaptureFormatProbe *wrapper=[FTCaptureFormatProbe new];
     __block BOOL active=YES;
     __block NSUInteger validations=0;
@@ -2019,7 +2021,10 @@ typedef void (^FTWriteCallBack)(NSDictionary *fields, NSDictionary *tags);
     dependencies.fatalErrorContext = [[FTFatalErrorContext alloc]initWithErrorInfoProvider:nil];
     [dependencies.fatalErrorContext setLastSessionState:[[FTRUMSessionState alloc] init]];
     FTLongTaskManager *longTaskManager = [[FTLongTaskManager alloc]initWithDependencies:dependencies delegate:self backtraceReporting:[FTCrash shared].backtraceReporting enableTrackAppANR:NO enableTrackAppFreeze:NO freezeDurationMs:250];
-    NSString *path = FTTestANRStore(longTaskManager).dataStorePath;
+    FTLongTaskANRDataStore *store = FTTestANRStore(longTaskManager);
+    __block NSString *path;
+    // Serialize the first path read with asynchronous historical recovery.
+    dispatch_sync(store.queue, ^{ path = store.dataStorePath; });
     
     XCTAssertTrue([pathString isEqualToString:[path stringByDeletingLastPathComponent]]);
     [longTaskManager shutDown];
