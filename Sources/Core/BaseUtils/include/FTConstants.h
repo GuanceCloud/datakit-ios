@@ -368,6 +368,7 @@ extern NSString * const FT_KEY_LAUNCH_PRE_RUNTIME_INIT_TIME;
 extern NSString * const FT_KEY_LAUNCH_RUNTIME_INIT_TIME;
 /// Cold launch role field key.
 extern NSString * const FT_KEY_APP_LAUNCH_TYPE;
+extern NSString * const FT_KEY_PREWARM_TYPE;
 /// Cold launch role value for foreground launches.
 extern NSString * const FT_APP_LAUNCH_TYPE_FOREGROUND;
 /// Cold launch role value for background launches.

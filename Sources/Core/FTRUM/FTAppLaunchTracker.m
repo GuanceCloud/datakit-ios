@@ -42,6 +42,12 @@ static NSDate *moduleInitializationTimestamp;
 static NSDate *runtimeInit = nil;
 static BOOL isActivePrewarm = NO;
 static BOOL appLaunchReported = NO;
+static BOOL __unused prewarmCheckStarted;
+static BOOL prewarmCheckEnded;
+static uint64_t __unused prewarmCheckStartNs;
+static uint64_t prewarmCheckDurationNs;
+static NSDate *prewarmCheckEndDate;
+
 // Capture the source before activation can change the process task role.
 static NSString *processLaunchType;
 static NSDate *firstLaunchBackgroundDate;
@@ -98,13 +104,15 @@ ftModuleInitializationHook(void)
     moduleInitializationTimestamp = [NSDate date];
 }
 @interface FTAppLaunchTracker()<FTAppLifeCycleDelegate>
+@property (nonatomic, assign) NSInteger launchPrewarmInterval;
+@property (atomic, assign) BOOL stopped;
 @property (nonatomic, strong) NSDate *launchTime;
 @property (nonatomic, assign) uint64_t launchTimeSystemTimestamp;
 @property (nonatomic, strong) NSDate *didFinishLaunchingTimestamp;
 @property (nonatomic, copy, nullable) NSString *initialLaunchType;
 @property (nonatomic, strong, nullable) NSDate *firstBackgroundDate;
 #if FT_HAS_UIKIT
-@property (nonatomic, strong, nullable) FTFirstFrameReader *firstFrameReader;
+@property (atomic, strong, nullable) FTFirstFrameReader *firstFrameReader;
 - (instancetype)initWithDelegate:(nullable id)delegate
                 firstFrameReader:(nullable FTFirstFrameReader *)firstFrameReader;
 #endif
@@ -114,11 +122,37 @@ ftModuleInitializationHook(void)
 
 
 @implementation FTAppLaunchTracker{
-    BOOL _applicationDidEnterBackground;
+    BOOL _waitingForHotLaunchReport;
     BOOL _initialLaunchReported;
     BOOL _waitingForActiveLaunchReport;
 }
 
++ (void)prewarmCheckStart {
+#if FT_HOST_IOS
+    uint64_t now = FTDateUtil.continuousTime;
+    if (now == 0) return;
+    @synchronized (FTAppLaunchTracker.class) {
+        if (!appLaunchReported && !prewarmCheckStarted) {
+            prewarmCheckStarted = YES;
+            prewarmCheckStartNs = now;
+        }
+    }
+#endif
+}
++ (void)prewarmCheckEnd {
+#if FT_HOST_IOS
+    uint64_t now = FTDateUtil.continuousTime;
+    NSDate *date = FTDateUtil.date;
+    if (!date || now == 0) return;
+    @synchronized (FTAppLaunchTracker.class) {
+        if (!appLaunchReported && prewarmCheckStarted && !prewarmCheckEnded && now > prewarmCheckStartNs) {
+            prewarmCheckEnded = YES;
+            prewarmCheckEndDate = date;
+            prewarmCheckDurationNs = now - prewarmCheckStartNs;
+        }
+    }
+#endif
+}
 #if FT_HAS_UIKIT
 + (void)stopObservingLaunchBackground {
     @synchronized (FTAppLaunchTracker.class) {
@@ -188,6 +222,7 @@ ftModuleInitializationHook(void)
         if (launchTaskRoleOverride) _initialLaunchType = FTAppLaunchType(NO);
 #endif
         @synchronized (FTAppLaunchTracker.class) {
+            _initialLaunchReported = appLaunchReported;
             _firstBackgroundDate = firstLaunchBackgroundDate;
         }
     }
@@ -221,8 +256,12 @@ ftModuleInitializationHook(void)
 }
 
 - (instancetype)initWithDelegate:(nullable id)delegate {
+    return [self initWithDelegate:delegate launchPrewarmInterval:0];
+}
+- (instancetype)initWithDelegate:(nullable id)delegate launchPrewarmInterval:(NSInteger)interval {
     self = [self initWithLaunchDelegate:delegate];
     if (self) {
+        _launchPrewarmInterval = interval;
 #if FT_HAS_UIKIT
         [self handleLaunchPhaseWithFirstFrameReader:[[FTFirstFrameReader alloc] init]];
 #else
@@ -244,6 +283,7 @@ ftModuleInitializationHook(void)
 
 #if FT_HAS_UIKIT
 - (void)handleLaunchPhaseWithFirstFrameReader:(nullable FTFirstFrameReader *)firstFrameReader {
+    if (_initialLaunchReported || self.stopped) return;
     if (firstFrameReader == nil) {
         [self handleLaunchPhaseWithoutFirstFrameReader];
         return;
@@ -268,6 +308,7 @@ ftModuleInitializationHook(void)
 #endif
 
 - (void)handleLaunchPhaseWithoutFirstFrameReader {
+    if (_initialLaunchReported || self.stopped) return;
     if (applicationDidBecomeActive != nil) {
         [self reportAppLaunchPhaseDuration:applicationDidBecomeActive];
     } else {
@@ -276,11 +317,19 @@ ftModuleInitializationHook(void)
 }
 
 - (void)reportAppLaunchPhaseDuration:(NSDate *)endDate{
-    if (_initialLaunchReported) {
-        return;
+    uint64_t manualDuration = 0;
+    NSDate *manualEndDate = nil;
+    @synchronized (FTAppLaunchTracker.class) {
+        if (self.stopped || _initialLaunchReported) return;
+        _initialLaunchReported = YES;
+        _waitingForActiveLaunchReport = NO;
+        if (appLaunchReported) return;
+        appLaunchReported = YES;
+        if (prewarmCheckEnded && [prewarmCheckEndDate compare:endDate] != NSOrderedDescending) {
+            manualDuration = prewarmCheckDurationNs;
+            manualEndDate = prewarmCheckEndDate;
+        }
     }
-    _initialLaunchReported = YES;
-    appLaunchReported = YES;
     /**
      SystemInterface: processStartTimestamp - runtimeInit
      RuntimeInit:   runtimeInit -  moduleInitializationTimestamp
@@ -290,12 +339,52 @@ ftModuleInitializationHook(void)
      */
     BOOL isPreWarming = [self isActivePrewarmAvailable] && isActivePrewarm;
     NSDate *processStart = [FTDateUtil processStartTimestamp];
+    NSDate *loadDate = runtimeInit;
+    NSDate *preMainDate = moduleInitializationTimestamp;
+    NSDate *sdkStartDate = _sdkStartDate;
+    NSDate *didFinishDate = self.didFinishLaunchingTimestamp;
     NSDate *launchDate = processStart;
-    long long appStartTimestamp = launchDate.ft_nanosecondTimeStamp;
-    NSNumber *appStartDuration = [launchDate ft_nanosecondTimeIntervalToDate:endDate];
+    BOOL validProcess = processStart.timeIntervalSince1970 > 0;
 
+    // Always truncate a continuous prefix. Event time, duration and phase offsets
+    // share this selected origin; the captured endpoint remains unchanged.
+    BOOL beforeLoad = NO, afterLoad = NO;
+    if (isPreWarming) {
+        if (validProcess && preMainDate &&
+            [preMainDate compare:processStart] != NSOrderedAscending &&
+            [preMainDate compare:endDate] != NSOrderedDescending) {
+            launchDate = preMainDate;
+        }
+    }
+#if FT_HOST_IOS
+    else {
+        NSInteger interval = self.launchPrewarmInterval;
+        if (interval > 0 && (uint64_t)interval <= INT64_MAX / 1000000ULL) {
+            uint64_t threshold = (uint64_t)interval * 1000000ULL;
+            // A valid manual match takes precedence over the shorter automatic prefix.
+            if (validProcess && manualDuration > threshold && manualEndDate && sdkStartDate &&
+                [manualEndDate compare:sdkStartDate] != NSOrderedDescending &&
+                [sdkStartDate compare:processStart] != NSOrderedAscending &&
+                [sdkStartDate compare:endDate] != NSOrderedDescending) {
+                afterLoad = YES;
+                launchDate = sdkStartDate;
+            } else if (validProcess && loadDate &&
+                       [loadDate compare:processStart] != NSOrderedAscending &&
+                       [loadDate compare:endDate] != NSOrderedDescending &&
+                       [processStart ft_nanosecondTimeIntervalToDate:loadDate].unsignedLongLongValue > threshold) {
+                beforeLoad = YES;
+                launchDate = loadDate;
+            }
+        }
+    }
+#endif
+    NSNumber *appStartDuration = [launchDate ft_nanosecondTimeIntervalToDate:endDate];
     NSMutableDictionary *fields = [NSMutableDictionary new];
-    NSString *appLaunchType = isPreWarming ? nil : self.initialLaunchType;
+    if (self.launchPrewarmInterval > 0 && (isPreWarming || beforeLoad || afterLoad)) {
+        fields[FT_KEY_PREWARM_TYPE] = isPreWarming ? @"system" : @"custom";
+    }
+    BOOL anyPrewarm = isPreWarming || beforeLoad || afterLoad;
+    NSString *appLaunchType = anyPrewarm ? nil : self.initialLaunchType;
     if ([appLaunchType isEqualToString:FT_APP_LAUNCH_TYPE_FOREGROUND] &&
         self.firstBackgroundDate && [self.firstBackgroundDate compare:endDate] == NSOrderedAscending) {
         appLaunchType = FT_APP_LAUNCH_TYPE_FOREGROUND_AND_BACKGROUND;
@@ -304,69 +393,81 @@ ftModuleInitializationHook(void)
         [fields setValue:appLaunchType forKey:FT_KEY_APP_LAUNCH_TYPE];
     }
 
-    if (!isPreWarming) {
+    if (!isPreWarming && !beforeLoad && !afterLoad) {
         [self addLaunchPhaseFromDate:processStart
-                               toDate:runtimeInit
-                    appStartTimestamp:appStartTimestamp
-                               forKey:FT_KEY_LAUNCH_PRE_RUNTIME_INIT_TIME
-                           intoFields:fields];
-        [self addLaunchPhaseFromDate:runtimeInit
-                               toDate:moduleInitializationTimestamp
-                    appStartTimestamp:appStartTimestamp
-                               forKey:FT_KEY_LAUNCH_RUNTIME_INIT_TIME
-                           intoFields:fields];
-
+                             toDate:loadDate
+                         launchDate:launchDate
+                      launchEndDate:endDate
+                             forKey:FT_KEY_LAUNCH_PRE_RUNTIME_INIT_TIME
+                         intoFields:fields];
     }
-    // applicationDidBecomeActive after then didFinishLaunchingTimestamp,means Hybrid or
-    // sdk init after -didFinishLaunching, no fileds UIKitInit/ ApplicationInit/InitialFrameRender
+    if (!isPreWarming && !afterLoad) {
+        [self addLaunchPhaseFromDate:loadDate
+                             toDate:preMainDate
+                         launchDate:launchDate
+                      launchEndDate:endDate
+                             forKey:FT_KEY_LAUNCH_RUNTIME_INIT_TIME
+                         intoFields:fields];
+    }
+    // A cached first-activation endpoint means tracking started after activation;
+    // the last three phases are unavailable in that path.
     if (endDate != applicationDidBecomeActive) {
-        NSDate *sdkStartDate = _sdkStartDate;
-        [self addLaunchPhaseFromDate:moduleInitializationTimestamp
-                               toDate:sdkStartDate
-                    appStartTimestamp:appStartTimestamp
-                               forKey:FT_KEY_LAUNCH_UIKITI_INIT_TIME
-                           intoFields:fields];
+        if (!afterLoad) {
+            [self addLaunchPhaseFromDate:preMainDate
+                                 toDate:sdkStartDate
+                             launchDate:launchDate
+                          launchEndDate:endDate
+                                 forKey:FT_KEY_LAUNCH_UIKITI_INIT_TIME
+                             intoFields:fields];
+        }
         [self addLaunchPhaseFromDate:sdkStartDate
-                               toDate:self.didFinishLaunchingTimestamp
-                    appStartTimestamp:appStartTimestamp
-                               forKey:FT_KEY_LAUNCH_APP_INIT_TIME
-                           intoFields:fields];
-        [self addLaunchPhaseFromDate:self.didFinishLaunchingTimestamp
-                               toDate:endDate
-                    appStartTimestamp:appStartTimestamp
-                               forKey:FT_KEY_LAUNCH_FIRST_FRAME_RENDER_TIME
-                           intoFields:fields];
-
+                             toDate:didFinishDate
+                         launchDate:launchDate
+                      launchEndDate:endDate
+                             forKey:FT_KEY_LAUNCH_APP_INIT_TIME
+                         intoFields:fields];
+        [self addLaunchPhaseFromDate:didFinishDate
+                             toDate:endDate
+                         launchDate:launchDate
+                      launchEndDate:endDate
+                             forKey:FT_KEY_LAUNCH_FIRST_FRAME_RENDER_TIME
+                         intoFields:fields];
     }
 
-    if (self.delegate&&[self.delegate respondsToSelector:@selector(ftAppColdStart:duration:isPreWarming:fields:)]) {
-        [self.delegate ftAppColdStart:launchDate duration:appStartDuration isPreWarming:isPreWarming fields:[fields copy]];
+    if ([self.delegate respondsToSelector:@selector(ftAppColdStart:duration:isPreWarming:fields:endDate:)]) {
+        [self.delegate ftAppColdStart:launchDate duration:appStartDuration isPreWarming:anyPrewarm fields:[fields copy] endDate:endDate];
+    } else if ([self.delegate respondsToSelector:@selector(ftAppColdStart:duration:isPreWarming:fields:)]) {
+        [self.delegate ftAppColdStart:launchDate duration:appStartDuration isPreWarming:anyPrewarm fields:[fields copy]];
     }
 }
 - (nullable NSDictionary *)launchPhaseFromDate:(nullable NSDate *)fromDate
-                                        toDate:(nullable NSDate *)toDate
-                             appStartTimestamp:(long long)appStartTimestamp{
+                                      toDate:(nullable NSDate *)toDate
+                                  launchDate:(NSDate *)launchDate{
     if (fromDate == nil || toDate == nil) {
         return nil;
     }
     if ([toDate compare:fromDate] == NSOrderedAscending) {
         return nil;
     }
-    long long start = fromDate.ft_nanosecondTimeStamp - appStartTimestamp;
+    if ([fromDate compare:launchDate] == NSOrderedAscending) return nil;
+    long long start = [launchDate ft_nanosecondTimeIntervalToDate:fromDate].longLongValue;
+    long long end = [launchDate ft_nanosecondTimeIntervalToDate:toDate].longLongValue;
     if (start < 0) {
         return nil;
     }
     return @{
-        FT_DURATION:[fromDate ft_nanosecondTimeIntervalToDate:toDate],
+        FT_DURATION:@(end - start),
         FT_KEY_START:@(start)
     };
 }
 - (void)addLaunchPhaseFromDate:(nullable NSDate *)fromDate
-                         toDate:(nullable NSDate *)toDate
-              appStartTimestamp:(long long)appStartTimestamp
-                         forKey:(NSString *)key
-                     intoFields:(NSMutableDictionary *)fields{
-    NSDictionary *phase = [self launchPhaseFromDate:fromDate toDate:toDate appStartTimestamp:appStartTimestamp];
+                      toDate:(nullable NSDate *)toDate
+                  launchDate:(NSDate *)launchDate
+               launchEndDate:(NSDate *)endDate
+                      forKey:(NSString *)key
+                  intoFields:(NSMutableDictionary *)fields{
+    if (toDate && [toDate compare:endDate] == NSOrderedDescending) return;
+    NSDictionary *phase = [self launchPhaseFromDate:fromDate toDate:toDate launchDate:launchDate];
     if (phase) {
         [fields setValue:phase forKey:key];
     }
@@ -380,22 +481,26 @@ ftModuleInitializationHook(void)
 
 #pragma mark - life cycle
 - (void)applicationDidFinishLaunching{
+    if (self.stopped) return;
     _didFinishLaunchingTimestamp = [NSDate date];
 }
 - (void)applicationWillEnterForeground{
+    if (self.stopped) return;
     if (appLaunchReported){
         self.launchTime = FTDateUtil.date;
         self.launchTimeSystemTimestamp = FTDateUtil.systemTime;
+        _waitingForHotLaunchReport = YES;
     }
 }
 - (void)applicationDidBecomeActive{
+    if (self.stopped) return;
     @try {
-        if (appLaunchReported && _applicationDidEnterBackground) {
+        if (appLaunchReported && _waitingForHotLaunchReport) {
             NSNumber *duration = @(FTDateUtil.systemTime - self.launchTimeSystemTimestamp);
+            _waitingForHotLaunchReport = NO;
             if (self.delegate&&[self.delegate respondsToSelector:@selector(ftAppHotStart:duration:)]) {
                 [self.delegate ftAppHotStart:self.launchTime duration:duration];
             }
-            _applicationDidEnterBackground = NO;
         }else if (_waitingForActiveLaunchReport) {
             NSDate *activeDate = applicationDidBecomeActive ?: NSDate.date;
             applicationDidBecomeActive = activeDate;
@@ -408,12 +513,13 @@ ftModuleInitializationHook(void)
     }
 }
 - (void)applicationDidEnterBackground{
+    if (self.stopped) return;
     NSDate *time = [self launchEventDate];
     if (!_initialLaunchReported && time &&
         (!self.firstBackgroundDate || [time compare:self.firstBackgroundDate] == NSOrderedAscending)) {
         self.firstBackgroundDate = time;
     }
-    _applicationDidEnterBackground = YES;
+    _waitingForHotLaunchReport = NO;
 }
 - (BOOL)isActivePrewarmAvailable{
 #    if FT_HOST_IOS
@@ -424,15 +530,45 @@ ftModuleInitializationHook(void)
 #    endif
 }
 
--(void)dealloc{
+- (void)shutDown {
+    @synchronized (FTAppLaunchTracker.class) {
+        self.stopped = YES;
+    }
 #if FT_HAS_UIKIT
     [self.firstFrameReader stop];
+    self.firstFrameReader = nil;
+#endif
+    [[FTAppLifeCycle sharedInstance] removeAppLifecycleDelegate:self];
+}
+-(void)dealloc{
+#if FT_HAS_UIKIT
+    [_firstFrameReader stop];
 #endif
     [[FTAppLifeCycle sharedInstance] removeAppLifecycleDelegate:self];
 }
 
 #ifdef DEBUG
 // Just for testing
++ (NSDictionary *)resetPrewarmCheckForTesting {
+    @synchronized (FTAppLaunchTracker.class) {
+        NSDictionary *previous = @{@"reported": @(appLaunchReported), @"started": @(prewarmCheckStarted),
+            @"ended": @(prewarmCheckEnded), @"start": @(prewarmCheckStartNs),
+            @"duration": @(prewarmCheckDurationNs), @"endDate": prewarmCheckEndDate ?: NSNull.null};
+        prewarmCheckStarted = NO; prewarmCheckEnded = NO;
+        prewarmCheckStartNs = 0; prewarmCheckDurationNs = 0; prewarmCheckEndDate = nil; appLaunchReported = NO;
+        return previous;
+    }
+}
++ (void)restorePrewarmCheckForTesting:(NSDictionary *)previous {
+    @synchronized (FTAppLaunchTracker.class) {
+        appLaunchReported = [previous[@"reported"] boolValue];
+        prewarmCheckStarted = [previous[@"started"] boolValue];
+        prewarmCheckEnded = [previous[@"ended"] boolValue];
+        prewarmCheckStartNs = [previous[@"start"] unsignedLongLongValue];
+        prewarmCheckDurationNs = [previous[@"duration"] unsignedLongLongValue];
+        prewarmCheckEndDate = previous[@"endDate"] == NSNull.null ? nil : previous[@"endDate"];
+    }
+}
 NSDate *FTGetFirstLaunchBackgroundDate(void) {
     @synchronized (FTAppLaunchTracker.class) { return firstLaunchBackgroundDate; }
 }

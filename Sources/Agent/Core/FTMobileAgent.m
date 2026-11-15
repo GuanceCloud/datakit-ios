@@ -35,6 +35,10 @@
 
 @implementation FTMobileAgent
 
++ (void)prewarmCheckStart { [FTSDKAgent prewarmCheckStart]; }
++ (void)prewarmCheckEnd { [FTSDKAgent prewarmCheckEnd]; }
+
+
 static FTMobileAgent *compatibilityProxy;
 
 - (instancetype)initCompatibilityProxy {

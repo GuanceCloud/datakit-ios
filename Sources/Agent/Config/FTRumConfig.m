@@ -106,8 +106,13 @@
 - (void)setNetworkSettledResourcePredicate:(id<FTRUMNetworkSettledResourcePredicate>)predicate {
     _networkSettledResourcePredicate = predicate ?: [FTRUMTimeBasedNetworkSettledPredicate new];
 }
+- (void)setLaunchPrewarmInterval:(NSInteger)value {
+    if (value < 0 || (uint64_t)value > INT64_MAX / 1000000ULL) return;
+    _launchPrewarmInterval = value;
+}
 - (instancetype)copyWithZone:(NSZone *)zone {
     FTRumConfig *options = [[[self class] allocWithZone:zone] init];
+    options.launchPrewarmInterval = self.launchPrewarmInterval;
     options.enableTrackAppCrash = self.enableTrackAppCrash;
     options->_sessionSamplingRate = _sessionSamplingRate;
     options.enableTrackAppFreeze = self.enableTrackAppFreeze;
@@ -148,6 +153,11 @@
 -(instancetype)initWithDictionary:(NSDictionary *)dict{
     if(dict){
         if (self = [self init]) {
+            id interval = dict[@"launchPrewarmInterval"];
+            if ([interval isKindOfClass:NSNumber.class] && isfinite([interval doubleValue]) &&
+                [interval doubleValue] >= 0 && [interval doubleValue] <= INT64_MAX / 1000000ULL) {
+                self.launchPrewarmInterval = [interval integerValue];
+            }
             if ([dict ft_hasValidValueForKey:@"enableTrackAppCrash"]) _enableTrackAppCrash = [dict[@"enableTrackAppCrash"] boolValue];
             if ([dict ft_hasValidValueForKey:@"samplerate"]) self.sessionSamplingRate = (float)[dict[@"samplerate"] intValue];
             if ([dict ft_hasValidValueForKey:@"sampleRate"]) self.sessionSamplingRate = (float)[dict[@"sampleRate"] intValue];
@@ -209,6 +219,7 @@
 }
 -(NSDictionary *)convertToDictionary{
     NSMutableDictionary *dict = [NSMutableDictionary new];
+    dict[@"launchPrewarmInterval"] = @(self.launchPrewarmInterval);
     [dict setValue:@(self.enableTrackAppCrash) forKey:@"enableTrackAppCrash"];
     [dict setValue:@((int)_sessionSamplingRate) forKey:@"sampleRate"];
     [dict setValue:@(_sessionSamplingRate) forKey:@"sessionSamplingRate"];

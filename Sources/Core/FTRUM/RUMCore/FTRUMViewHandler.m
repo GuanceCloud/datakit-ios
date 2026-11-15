@@ -291,6 +291,7 @@
 }
 
 - (NSDate *)launchEndTimeForModel:(FTRUMLaunchDataModel *)model {
+    if (model.launchEndDate && [model.launchEndDate compare:model.time] != NSOrderedAscending) return model.launchEndDate;
     NSTimeInterval duration = MAX(0, model.duration.doubleValue / 1000000000.0);
     return [model.time dateByAddingTimeInterval:duration] ?: model.time;
 }
@@ -316,6 +317,15 @@
     NSMutableDictionary *fields = [NSMutableDictionary dictionary];
     if (model.fields) {
         FTRUMMergeProperties(fields, customKeys, model.fields, model.customFieldKeys);
+    }
+    if ([model.action_type isEqualToString:FT_LAUNCH_WARM]) {
+        NSString *source = model.fields[FT_KEY_PREWARM_TYPE];
+        if ([source isKindOfClass:NSString.class] &&
+            ([source isEqualToString:@"system"] || [source isEqualToString:@"custom"])) {
+            tags[FT_KEY_PREWARM_TYPE] = source;
+        }
+        [fields removeObjectForKey:FT_KEY_PREWARM_TYPE];
+        [customKeys removeObject:FT_KEY_PREWARM_TYPE];
     }
     [fields setValue:model.duration forKey:FT_DURATION];
     [fields setValue:@(0) forKey:FT_KEY_ACTION_LONG_TASK_COUNT];

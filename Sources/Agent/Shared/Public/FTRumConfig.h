@@ -109,6 +109,16 @@ typedef BOOL (^FTSessionTaskErrorFilter)(NSError *_Nonnull error);
 
 /// RUM functionality configuration items
 @interface FTRumConfig : NSObject
+/// iOS startup prewarm heuristic threshold in milliseconds. Default 0 disables duration inference.
+/// Suggested opt-in: 1500. Long intervals are not proof of OS prewarming; compare startup
+/// distributions before using calibrated measurements for SLOs. System-detected prewarming
+/// always excludes the pre-runtime and runtime intervals from total duration, even when this is 0.
+/// Applies to automatic Action tracking; manual markers do not change phase boundaries.
+/// Calibration moves the launch Action time to the retained prefix boundary;
+/// retained phase start offsets are relative to that Action time.
+/// The prewarm_type source tag is emitted only when this threshold is positive.
+@property (nonatomic, assign) NSInteger launchPrewarmInterval;
+
 /// Designated initializer, set appid
 ///
 /// - Parameters:

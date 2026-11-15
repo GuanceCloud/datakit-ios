@@ -34,11 +34,24 @@ NS_ASSUME_NONNULL_BEGIN
 ///   - isPreWarming: Whether prewarming occurred
 ///   - fields: performance fields
 -(void)ftAppColdStart:(NSDate *)launchTime duration:(NSNumber *)duration isPreWarming:(BOOL)isPreWarming fields:(NSDictionary *)fields;
+@optional
+- (void)ftAppColdStart:(NSDate *)launchTime duration:(NSNumber *)duration isPreWarming:(BOOL)prewarm
+               fields:(NSDictionary *)fields endDate:(NSDate *)endDate;
+@end
+/// Internal sink retaining the actual launch endpoint independently of calibrated duration.
+@protocol FTLaunchDataSink <NSObject>
+- (void)addLaunch:(NSString *)name type:(NSString *)type launchTime:(NSDate *)time
+         duration:(NSNumber *)duration property:(nullable NSDictionary *)property endDate:(NSDate *)endDate;
 @end
 @interface FTAppLaunchTracker : NSObject
 @property (class, nonatomic, strong) NSDate *sdkStartDate;
 @property (nonatomic, weak, nullable) id<FTAppLaunchDataDelegate> delegate;
++ (void)prewarmCheckStart;
++ (void)prewarmCheckEnd;
 - (instancetype)initWithDelegate:(nullable id)delegate;
+- (instancetype)initWithDelegate:(nullable id)delegate launchPrewarmInterval:(NSInteger)interval;
+/// Stop this tracker without resetting process-scoped initial-launch ownership.
+- (void)shutDown;
 
 @end
 

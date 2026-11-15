@@ -374,12 +374,16 @@ void *FTRUMQueueIdentityKey = &FTRUMQueueIdentityKey;
     });
 }
 - (void)addLaunch:(NSString *)name type:(NSString *)type launchTime:(NSDate *)time duration:(NSNumber *)duration property:(nullable NSDictionary *)property{
+    [self addLaunch:name type:type launchTime:time duration:duration property:property endDate:[time dateByAddingTimeInterval:MAX(0, duration.doubleValue / 1e9)]];
+}
+- (void)addLaunch:(NSString *)name type:(NSString *)type launchTime:(NSDate *)time duration:(NSNumber *)duration property:(nullable NSDictionary *)property endDate:(NSDate *)endDate {
 
     dispatch_async(self.rumQueue, ^{
         @try {
             FTRUMPropertySnapshot *context = [self rumDynamicProperty];
             FTRUMLaunchDataModel *launchModel = [[FTRUMLaunchDataModel alloc]initWithDuration:duration];
             launchModel.time = time;
+            launchModel.launchEndDate = endDate;
             launchModel.action_name = name;
             launchModel.action_type = type;
             launchModel.fields = property;
