@@ -2,6 +2,9 @@
 
 1. Fixed interval-based `app_state` reporting for automatically collected Long Tasks. Recovered historical Long Task events report `unknown`.
 2. `FTRumConfig.viewLoadingTimeClassNameExcludes` now accepts `NSArray<NSString *>` instead of `NSSet<NSString *>`. Update existing configurations to use arrays.
+3. Added opt-in iOS launch prewarm inference through `FTRumConfig.launchPrewarmInterval` (in milliseconds, disabled by default), with `prewarmCheckStart` / `prewarmCheckEnd` markers for the detection interval. Launch event timestamps, total duration, and phase offsets are calibrated consistently.
+4. System-detected prewarm launches now exclude pre-runtime and runtime intervals from total duration even when duration inference is disabled.
+5. Added process-wide launch event deduplication to prevent duplicate initial launch reports after SDK restarts.
 ---
 
 # 1.6.9-alpha.4
