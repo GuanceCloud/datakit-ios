@@ -26,6 +26,8 @@
 NS_ASSUME_NONNULL_BEGIN
 
 @interface FTURLSessionInterceptor ()<FTURLSessionInterceptorProtocol,FTExternalResourceProtocol>
+/// Lookup only. Internal forwarding must not create a lifecycle.
++ (nullable instancetype)existingInstance;
 - (void)taskMetricsCollected:(NSURLSessionTask *)task metrics:(NSURLSessionTaskMetrics *)metrics custom:(BOOL)custom extraProvider:(nullable ResourcePropertyProvider)extraProvider;
 - (void)shutDown;
 @end

@@ -129,7 +129,7 @@ static dispatch_once_t onceToken;
 
 - (void)shutDown {
     [self disableAutomaticRegistration];
-    [[FTURLSessionInterceptor shared] shutDown];
+    [[FTURLSessionInterceptor existingInstance] shutDown];
     _tracer = nil;
 }
 
@@ -149,8 +149,9 @@ static dispatch_once_t onceToken;
                                           enableAutoTrace:enableAutoTrace
                                         enableLinkRumData:enableLinkRumData];
     
-    [self.interceptor setTracer:_tracer];
-    self.interceptor.traceInterceptor = traceInterceptor;
+    FTURLSessionInterceptor *interceptor = [FTURLSessionInterceptor shared];
+    [interceptor setTracer:_tracer];
+    interceptor.traceInterceptor = traceInterceptor;
     self.shouldTraceInterceptor = enableAutoTrace;
 }
 
@@ -160,10 +161,11 @@ static dispatch_once_t onceToken;
        sessionTaskErrorFilter:(SessionTaskErrorFilter)sessionTaskErrorFilter {
     [self swizzleURLSession];
     
-    self.interceptor.resourceUrlHandler = resourceUrlHandler;
+    FTURLSessionInterceptor *interceptor = [FTURLSessionInterceptor shared];
+    interceptor.resourceUrlHandler = resourceUrlHandler;
+    interceptor.resourcePropertyProvider = resourcePropertyProvider;
+    interceptor.sessionTaskErrorFilter = sessionTaskErrorFilter;
     self.shouldRUMInterceptor = enableAutoRumTrack;
-    self.interceptor.resourcePropertyProvider = resourcePropertyProvider;
-    self.interceptor.sessionTaskErrorFilter = sessionTaskErrorFilter;
 }
 
 - (void)updateTraceSamplingRate:(float)traceSamplingRate {
@@ -171,7 +173,7 @@ static dispatch_once_t onceToken;
 }
 
 - (void)setRumResourceHandler:(id<FTRumResourceProtocol>)handler {
-    self.interceptor.rumResourceHandler = handler;
+    [FTURLSessionInterceptor shared].rumResourceHandler = handler;
 }
 
 - (void)setVisitorIDEnabled:(BOOL)enabled {
@@ -182,7 +184,7 @@ static dispatch_once_t onceToken;
 }
 
 - (void)setIntakeUrlHandler:(FTIntakeUrl)intakeUrlHandler {
-    self.interceptor.intakeUrlHandler = intakeUrlHandler;
+    [FTURLSessionInterceptor shared].intakeUrlHandler = intakeUrlHandler;
 }
 
 /// Disables automatic collection
@@ -195,11 +197,11 @@ static dispatch_once_t onceToken;
 #pragma mark - Interceptor Management
 
 - (id<FTURLSessionInterceptorProtocol>)interceptor {
-    return [FTURLSessionInterceptor shared];
+    return [FTURLSessionInterceptor existingInstance];
 }
 
 - (id<FTExternalResourceProtocol>)externalResourceHandler {
-    return [FTURLSessionInterceptor shared];
+    return [FTURLSessionInterceptor existingInstance];
 }
 
 - (id<FTTracerProtocol>)tracer {
@@ -258,6 +260,10 @@ static dispatch_once_t onceToken;
                 return FTSWCallOriginal(url, completionHandler);
             }
 
+            // Automatic completions look up an existing lifecycle at forwarding time.
+            // Task ownership rejects old tasks, without retaining a stopped collector.
+            id<FTURLSessionInterceptorProtocol> forwardingDelegate =
+                [rumInterceptor isKindOfClass:FTURLSessionInterceptor.class] ? nil : rumInterceptor;
             __block __weak NSURLSessionDataTask *taskReference;
             CompletionHandler originalHandler = [completionHandler copy];
             CompletionHandler handler = originalHandler;
@@ -270,14 +276,15 @@ static dispatch_once_t onceToken;
                     } @finally {
                         @try {
                             NSURLSessionDataTask *task = taskReference;
+                            id<FTURLSessionInterceptorProtocol> taskInterceptor = forwardingDelegate ?: [FTURLSessionInstrumentation sharedInstance].interceptor;
                             if (task) {
                                 if (data) {
-                                    [rumInterceptor taskReceivedCompleteData:task data:data];
+                                    [taskInterceptor taskReceivedCompleteData:task data:data];
                                 }
-                                if ([rumInterceptor respondsToSelector:@selector(taskCompleted:error:endTime:)]) {
-                                    [rumInterceptor taskCompleted:task error:error endTime:endTime];
+                                if ([taskInterceptor respondsToSelector:@selector(taskCompleted:error:endTime:)]) {
+                                    [taskInterceptor taskCompleted:task error:error endTime:endTime];
                                 } else {
-                                    [rumInterceptor taskCompleted:task error:error];
+                                    [taskInterceptor taskCompleted:task error:error];
                                 }
                             }
                         } @catch (NSException *exception) {
@@ -314,6 +321,8 @@ static dispatch_once_t onceToken;
             return FTSWCallOriginal(request, completionHandler);
         }
 
+        id<FTURLSessionInterceptorProtocol> forwardingDelegate =
+            [rumInterceptor isKindOfClass:FTURLSessionInterceptor.class] ? nil : rumInterceptor;
         __block __weak NSURLSessionDataTask *taskReference;
         CompletionHandler originalHandler = [completionHandler copy];
         CompletionHandler handler = originalHandler;
@@ -326,14 +335,15 @@ static dispatch_once_t onceToken;
                 } @finally {
                     @try {
                         NSURLSessionDataTask *task = taskReference;
+                        id<FTURLSessionInterceptorProtocol> taskInterceptor = forwardingDelegate ?: [FTURLSessionInstrumentation sharedInstance].interceptor;
                         if (task) {
                             if (data) {
-                                [rumInterceptor taskReceivedCompleteData:task data:data];
+                                [taskInterceptor taskReceivedCompleteData:task data:data];
                             }
-                            if ([rumInterceptor respondsToSelector:@selector(taskCompleted:error:endTime:)]) {
-                                [rumInterceptor taskCompleted:task error:error endTime:endTime];
+                            if ([taskInterceptor respondsToSelector:@selector(taskCompleted:error:endTime:)]) {
+                                [taskInterceptor taskCompleted:task error:error endTime:endTime];
                             } else {
-                                [rumInterceptor taskCompleted:task error:error];
+                                [taskInterceptor taskCompleted:task error:error];
                             }
                         }
                     } @catch (NSException *exception) {

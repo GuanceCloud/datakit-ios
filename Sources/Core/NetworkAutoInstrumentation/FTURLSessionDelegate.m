@@ -53,7 +53,7 @@
         }
         return mutableRequest;
     }
-    return [self.instrumentation.interceptor interceptRequest:interceptedRequest];
+    return [self.instrumentation.interceptor interceptRequest:interceptedRequest] ?: interceptedRequest;
 }
 - (void)traceInterceptTask:(NSURLSessionTask *)task{
     if(self.requestInterceptor){

@@ -48,6 +48,12 @@
 #import "FTURLConnectionDelegateInstrumentor.h"
 #import "FTResourceMetricsModel+Private.h"
 #import "FTTraceContext.h"
+#import "FTSDKAgent.h"
+#import "FTSDKConfig.h"
+#import "FTURLSessionInterceptor+Private.h"
+#import "FTURLSessionDelegate+Private.h"
+#import "FTPresetProperty.h"
+#import "FTRUMPropertySnapshot.h"
 
 @interface FTURLSessionInstrumentation()
 - (BOOL)isFTIntakeRequest:(NSURLRequest *)request;
@@ -60,10 +66,6 @@
 @end
 @interface FTURLSessionInterceptor()
 @property (nonatomic, strong) dispatch_queue_t queue;
-@property (nonatomic, weak, nullable) id<FTRumResourceProtocol> rumResourceHandler;
-@property (nonatomic, copy, nullable) FTResourceUrlHandler resourceUrlHandler;
-@property (nonatomic, copy, nullable) ResourcePropertyProvider resourcePropertyProvider;
-@property (nonatomic, copy, nullable) SessionTaskErrorFilter sessionTaskErrorFilter;
 - (FTSessionTaskHandler *)getTraceHandler:(id)key;
 - (void)setTracer:(id<FTTracerProtocol>)tracer;
 - (void)taskMetricsCollected:(NSURLSessionTask *)task metrics:(NSURLSessionTaskMetrics *)metrics custom:(BOOL)custom;
@@ -3081,4 +3083,331 @@
                        @"%@ should not be instrumented", className);
     }
 }
+@end
+
+
+@interface FTResourceLifecycleTest : XCTestCase
+@end
+
+@implementation FTResourceLifecycleTest
+- (void)setUp {
+    [super setUp];
+    BOOL automaticResource = ![NSStringFromSelector(self.invocation.selector) isEqualToString:@"testLC001DisabledInstrumentationPreservesApplicationCompletion"];
+    [self startLC001SDKWithContext:@"unit" automaticResource:automaticResource];
+}
+- (void)tearDown {
+    [FTSDKAgent shutDown];
+    [OHHTTPStubs removeAllStubs];
+    [super tearDown];
+}
+
+// LC-001 module regressions use the existing receiver fixture and XCTest host.
+// Cross-queue blocking-provider schedules remain in the isolated lifecycle App.
+- (void)startLC001SDKWithContext:(NSString *)context automaticResource:(BOOL)automaticResource {
+    FTSDKConfig *config = [[FTSDKConfig alloc] initWithDatakitUrl:@"http://127.0.0.1:1"];
+    config.autoSync = NO;
+    config.enableDataFilter = NO;
+    config.remoteConfiguration = NO;
+    config.globalContext = @{@"lc001_lifecycle": context};
+    [FTSDKAgent startWithConfigOptions:config];
+    FTRumConfig *rum = [[FTRumConfig alloc] initWithAppid:@"lc001-unit-tests"];
+    rum.enableTraceUserResource = automaticResource;
+    rum.enableTraceUserView = NO;
+    rum.enableTraceUserAction = NO;
+    rum.enableTrackAppCrash = NO;
+    rum.enableTrackAppANR = NO;
+    rum.enableTrackAppFreeze = NO;
+    rum.enableTraceURLConnectionResource = NO;
+    rum.enableTraceWebView = NO;
+    rum.deviceMetricsMonitorType = 0;
+    [[FTSDKAgent sharedInstance] startRumWithConfigOptions:rum];
+}
+
+- (void)drainLC001Interceptor:(FTURLSessionInterceptor *)interceptor {
+    // Keep the original instance: a singleton lookup after stop could mask a bug.
+    XCTestExpectation *drained = [self expectationWithDescription:@"original interceptor queue completed"];
+    dispatch_async(interceptor.queue, ^{ [drained fulfill]; });
+    [self waitForExpectations:@[drained] timeout:5];
+}
+
+- (void)forwardLC001LateCallbacksForTask:(NSURLSessionTask *)task session:(NSURLSession *)session {
+    FTURLSessionDelegate *manual = [FTURLSessionDelegate new];
+    FTDURLSessionDelegate *automatic = [FTDURLSessionDelegate new];
+    NSData *data = [@"late" dataUsingEncoding:NSUTF8StringEncoding];
+    [manual taskReceivedData:task data:data];
+    [manual taskReceivedCompleteData:task data:data];
+    [manual URLSession:session task:task didFinishCollectingMetrics:nil];
+    [manual taskCompleted:task error:nil endTime:1];
+    [manual taskCompleted:task error:nil];
+    [automatic URLSession:session dataTask:(NSURLSessionDataTask *)task didReceiveData:data];
+    [automatic URLSession:session task:task didFinishCollectingMetrics:nil];
+    [automatic URLSession:session task:task didCompleteWithError:nil];
+    [automatic URLSession:session task:task didCompleteWithError:nil];
+}
+
+- (void)assertLC001WebSocketFilterStopsSDK:(BOOL)stops filtersError:(BOOL)filters {
+    FTURLSessionInterceptor *interceptor = [FTURLSessionInterceptor shared];
+    FTURLSessionSnapshotRumResourceHandler *writer = [FTURLSessionSnapshotRumResourceHandler new];
+    interceptor.rumResourceHandler = writer;
+    NSURLSession *session = [NSURLSession sessionWithConfiguration:NSURLSessionConfiguration.ephemeralSessionConfiguration];
+    NSURL *url = [NSURL URLWithString:@"wss://lc001.test/filter-failure"];
+    NSURLSessionTask *task = [session webSocketTaskWithURL:url];
+    [interceptor interceptTask:task];
+    XCTestExpectation *verified = [self expectationWithDescription:@"WebSocket filter terminal counts"];
+    dispatch_async(interceptor.queue, ^{
+        FTSessionTaskHandler *handler = [interceptor getTraceHandler:task];
+        XCTAssertTrue(handler.webSocketHandshake && handler.webSocketHandshakeStarted);
+        XCTAssertEqual(writer.startCount, 1);
+        XCTAssertNil(handler.metricsModel);
+        long long start = handler.webSocketHandshakeStartNsTimeInterval;
+        uint64_t endTime = handler.webSocketHandshakeStartTime + 500000000;
+        NSError *failure = [NSError errorWithDomain:NSURLErrorDomain code:NSURLErrorTimedOut userInfo:nil];
+        __block NSUInteger filterCalls = 0, providerCalls = 0, shutdownReturns = 0;
+        ResourcePropertyProvider provider = ^NSDictionary *(NSURLRequest *request, NSURLResponse *response, NSData *data, NSError *error) {
+            providerCalls++;
+            XCTAssertEqualObjects(request.URL, url);
+            XCTAssertNil(response);
+            XCTAssertNil(data);
+            XCTAssertEqualObjects(error, filters ? nil : failure);
+            return @{@"ws_filter": filters ? @"yes" : @"no"};
+        };
+        SessionTaskErrorFilter filter = ^BOOL(NSError *error) {
+            filterCalls++;
+            XCTAssertEqualObjects(error, failure);
+            if (stops) {
+                [FTSDKAgent shutDown];
+                shutdownReturns++;
+            }
+            return filters;
+        };
+        [interceptor taskCompleted:task error:failure extraProvider:provider errorFilter:filter endTime:endTime];
+        // Both entries are admitted before either terminal block executes.
+        [interceptor taskCompleted:task error:failure extraProvider:provider errorFilter:filter endTime:endTime + 100000000];
+        dispatch_async(interceptor.queue, ^{
+            XCTAssertEqual(filterCalls, 1);
+            XCTAssertEqual(shutdownReturns, stops ? 1 : 0);
+            XCTAssertEqual(providerCalls, stops ? 0 : 1);
+            XCTAssertEqual(writer.stopCount, stops ? 0 : 1);
+            XCTAssertEqual(writer.addCount, stops ? 0 : 1);
+            if (stops) {
+                XCTAssertNil([FTURLSessionInterceptor existingInstance]);
+            } else {
+                XCTAssertTrue(writer.content.webSocketHandshake);
+                XCTAssertEqualObjects(writer.content.webSocketHandshakeState, FT_RESOURCE_WEBSOCKET_HANDSHAKE_STATE_FAILED);
+                XCTAssertEqualObjects(writer.content.resourceType, FT_RESOURCE_TYPE_WEBSOCKET);
+                XCTAssertEqualObjects(writer.content.url, url);
+                XCTAssertEqualObjects(writer.content.httpMethod, @"GET");
+                XCTAssertEqual(writer.content.httpStatusCode, 0);
+                XCTAssertEqualObjects(writer.content.error, filters ? nil : failure);
+                XCTAssertEqualObjects(writer.stopProperty[@"ws_filter"], filters ? @"yes" : @"no");
+                XCTAssertEqual(writer.metrics.fetchStartNsTimeInterval, start);
+                XCTAssertEqual(writer.metrics.fetchEndNsTimeInterval, start + 500000000);
+                XCTAssertEqualObjects(writer.startKey, writer.stopKey);
+                XCTAssertEqualObjects(writer.startKey, writer.addKey);
+                XCTAssertNil([interceptor getTraceHandler:task]);
+            }
+            [verified fulfill];
+        });
+    });
+    [self waitForExpectations:@[verified] timeout:5];
+    [session invalidateAndCancel];
+}
+
+- (void)testLC001WebSocketFilteredErrorShutdownSkipsProvider {
+    [self assertLC001WebSocketFilterStopsSDK:YES filtersError:YES];
+}
+- (void)testLC001WebSocketUnfilteredErrorShutdownSkipsProvider {
+    [self assertLC001WebSocketFilterStopsSDK:YES filtersError:NO];
+}
+- (void)testLC001WebSocketFilteredErrorSettlesOnce {
+    [self assertLC001WebSocketFilterStopsSDK:NO filtersError:YES];
+}
+- (void)testLC001WebSocketUnfilteredErrorSettlesOnce {
+    [self assertLC001WebSocketFilterStopsSDK:NO filtersError:NO];
+}
+
+- (void)testLC001ProviderCanShutdownRepeatedlyOnInterceptorQueue {
+    FTURLSessionInterceptor *interceptor = [FTURLSessionInterceptor shared];
+    FTURLSessionSnapshotRumResourceHandler *writer = [FTURLSessionSnapshotRumResourceHandler new];
+    interceptor.rumResourceHandler = writer;
+    NSURLSession *session = [NSURLSession sessionWithConfiguration:NSURLSessionConfiguration.ephemeralSessionConfiguration];
+    NSURLSessionTask *task = [session dataTaskWithURL:[NSURL URLWithString:@"https://lc001.test/reentry"]];
+    [interceptor interceptTask:task];
+    __block NSUInteger providerCalls = 0, shutdownReturns = 0;
+    [interceptor taskCompleted:task error:nil extraProvider:^NSDictionary *(NSURLRequest *request, NSURLResponse *response, NSData *data, NSError *error) {
+        providerCalls++;
+        [FTSDKAgent shutDown];
+        shutdownReturns++;
+        [FTSDKAgent shutDown];
+        shutdownReturns++;
+        return @{@"discarded": @YES};
+    }];
+    [self drainLC001Interceptor:interceptor];
+    XCTAssertEqual(providerCalls, 1);
+    XCTAssertEqual(shutdownReturns, 2);
+    XCTAssertEqual(writer.startCount, 1);
+    XCTAssertEqual(writer.stopCount, 0);
+    XCTAssertEqual(writer.addCount, 0);
+    XCTAssertNil([FTURLSessionInterceptor existingInstance]);
+    [session invalidateAndCancel];
+}
+
+- (void)assertLC001HTTPCompletionThenShutdown:(BOOL)stops {
+    FTURLSessionInterceptor *interceptor = [FTURLSessionInterceptor shared];
+    FTURLSessionSnapshotRumResourceHandler *writer = [FTURLSessionSnapshotRumResourceHandler new];
+    interceptor.rumResourceHandler = writer;
+    NSURLSession *session = [NSURLSession sessionWithConfiguration:NSURLSessionConfiguration.ephemeralSessionConfiguration];
+    NSURLSessionTask *task = [session dataTaskWithURL:[NSURL URLWithString:@"https://lc001.test/context"]];
+    [interceptor interceptTask:task];
+    __block NSUInteger providerCalls = 0, contextReturns = 0;
+    [interceptor taskCompleted:task error:nil extraProvider:^NSDictionary *(NSURLRequest *request, NSURLResponse *response, NSData *data, NSError *error) {
+        providerCalls++;
+        [FTSDKAgent appendGlobalContext:@{@"lc001_context": @"unit-provider"}];
+        contextReturns++;
+        return @{@"provider": @"unit"};
+    }];
+    [self drainLC001Interceptor:interceptor];
+    XCTAssertEqual(providerCalls, 1);
+    XCTAssertEqual(contextReturns, 1);
+    XCTAssertEqual(writer.startCount, 1);
+    XCTAssertEqual(writer.stopCount, 1);
+    XCTAssertEqual(writer.addCount, 1);
+    XCTAssertEqualObjects(writer.stopProperty[@"provider"], @"unit");
+    XCTAssertEqualObjects([FTPresetProperty sharedInstance].rumPropertySnapshot.tags[@"lc001_context"], @"unit-provider");
+    if (stops) {
+        [FTSDKAgent shutDown];
+        XCTAssertNil([FTURLSessionInterceptor existingInstance]);
+        [self forwardLC001LateCallbacksForTask:task session:session];
+        [self drainLC001Interceptor:interceptor];
+        XCTAssertEqual(writer.addCount, 1);
+    }
+    [session invalidateAndCancel];
+}
+- (void)testLC001ContextReentryWithoutShutdownSettlesOnce {
+    [self assertLC001HTTPCompletionThenShutdown:NO];
+}
+- (void)testLC001ShutdownAfterCompletionDoesNotResettleResource {
+    [self assertLC001HTTPCompletionThenShutdown:YES];
+}
+
+- (void)testLC001LateCallbacksAndRepeatedShutdownDoNotRecreateCollector {
+    FTURLSessionInterceptor *interceptor = [FTURLSessionInterceptor shared];
+    FTURLSessionSnapshotRumResourceHandler *writer = [FTURLSessionSnapshotRumResourceHandler new];
+    interceptor.rumResourceHandler = writer;
+    NSURLSession *session = [NSURLSession sessionWithConfiguration:NSURLSessionConfiguration.ephemeralSessionConfiguration];
+    NSURLSessionTask *task = [session dataTaskWithURL:[NSURL URLWithString:@"https://lc001.test/late"]];
+    [interceptor interceptTask:task];
+    [self drainLC001Interceptor:interceptor];
+    [FTSDKAgent shutDown];
+    Method initMethod = class_getInstanceMethod(FTURLSessionInterceptor.class, @selector(init));
+    IMP originalInit = method_getImplementation(initMethod);
+    __block NSUInteger initializations = 0;
+    IMP observedInit = imp_implementationWithBlock(^id(id object) {
+        initializations++;
+        return ((id (*)(id, SEL))originalInit)(object, @selector(init));
+    });
+    method_setImplementation(initMethod, observedInit);
+    @try {
+        [FTSDKAgent shutDown];
+        [self forwardLC001LateCallbacksForTask:task session:session];
+        FTURLSessionInstrumentation *instrumentation = [FTURLSessionInstrumentation sharedInstance];
+        XCTAssertNil(instrumentation.interceptor);
+        XCTAssertNil(instrumentation.externalResourceHandler);
+        [instrumentation shutDown];
+        [instrumentation shutDown];
+        XCTAssertNil([FTURLSessionInterceptor existingInstance]);
+        FTURLSessionDelegate *delegate = [FTURLSessionDelegate new];
+        NSURLRequest *request = [NSURLRequest requestWithURL:[NSURL URLWithString:@"https://lc001.test/passthrough"]];
+        XCTAssertEqual([delegate interceptRequest:request], request);
+        [self drainLC001Interceptor:interceptor];
+        XCTAssertEqual(writer.startCount, 1);
+        XCTAssertEqual(writer.stopCount, 0);
+        XCTAssertEqual(writer.addCount, 0);
+        XCTAssertNil([FTURLSessionInterceptor existingInstance]);
+        // Also catch a temporary collector created and detached by repeated stop.
+        XCTAssertEqual(initializations, 0);
+    } @finally {
+        method_setImplementation(initMethod, originalInit);
+        imp_removeBlock(observedInit);
+        [session invalidateAndCancel];
+    }
+}
+
+- (void)testLC001RestartRejectsOldCallbacksAndOldInstanceShutdown {
+    FTURLSessionInterceptor *old = [FTURLSessionInterceptor shared];
+    FTURLSessionSnapshotRumResourceHandler *oldWriter = [FTURLSessionSnapshotRumResourceHandler new];
+    old.rumResourceHandler = oldWriter;
+    NSURLSession *session = [NSURLSession sessionWithConfiguration:NSURLSessionConfiguration.ephemeralSessionConfiguration];
+    NSURLSessionTask *oldTask = [session dataTaskWithURL:[NSURL URLWithString:@"https://lc001.test/old"]];
+    [old interceptTask:oldTask];
+    [self drainLC001Interceptor:old];
+    [FTSDKAgent shutDown];
+    [self startLC001SDKWithContext:@"new" automaticResource:YES];
+    FTURLSessionInterceptor *current = [FTURLSessionInterceptor existingInstance];
+    XCTAssertNotEqual(old, current);
+    FTURLSessionSnapshotRumResourceHandler *newWriter = [FTURLSessionSnapshotRumResourceHandler new];
+    current.rumResourceHandler = newWriter;
+    [old shutDown];
+    [old shutDown];
+    XCTAssertEqual([FTURLSessionInterceptor existingInstance], current);
+    [self forwardLC001LateCallbacksForTask:oldTask session:session];
+    __block NSUInteger oldTraceCalls = 0, oldProviderCalls = 0, newProviderCalls = 0;
+    [current traceInterceptTask:oldTask traceInterceptor:^FTTraceContext *(NSURLRequest *request) { oldTraceCalls++; return nil; }];
+    [current interceptTask:oldTask];
+    [old taskCompleted:oldTask error:nil extraProvider:^NSDictionary *(NSURLRequest *request, NSURLResponse *response, NSData *data, NSError *error) { oldProviderCalls++; return @{}; }];
+    NSURLSessionTask *newTask = [session dataTaskWithURL:[NSURL URLWithString:@"https://lc001.test/new"]];
+    [current interceptTask:newTask];
+    [current taskCompleted:newTask error:nil extraProvider:^NSDictionary *(NSURLRequest *request, NSURLResponse *response, NSData *data, NSError *error) { newProviderCalls++; return @{@"owner": @"new"}; }];
+    [self drainLC001Interceptor:old];
+    [self drainLC001Interceptor:current];
+    XCTAssertEqual(oldTraceCalls, 0);
+    XCTAssertEqual(oldProviderCalls, 0);
+    XCTAssertEqual(newProviderCalls, 1);
+    XCTAssertEqual(oldWriter.startCount, 1);
+    XCTAssertEqual(oldWriter.stopCount, 0);
+    XCTAssertEqual(oldWriter.addCount, 0);
+    XCTAssertEqual(newWriter.startCount, 1);
+    XCTAssertEqual(newWriter.stopCount, 1);
+    XCTAssertEqual(newWriter.addCount, 1);
+    XCTAssertEqualObjects(newWriter.stopProperty[@"owner"], @"new");
+    XCTAssertNotEqualObjects(oldWriter.startKey, newWriter.startKey);
+    XCTAssertEqualObjects(newWriter.startKey, newWriter.addKey);
+    XCTAssertEqualObjects([FTPresetProperty sharedInstance].rumPropertySnapshot.tags[@"lc001_lifecycle"], @"new");
+    XCTAssertEqual([FTURLSessionInterceptor existingInstance], current);
+    [session invalidateAndCancel];
+}
+
+- (void)testLC001DisabledInstrumentationPreservesApplicationCompletion {
+    FTURLSessionInterceptor *interceptor = [FTURLSessionInterceptor existingInstance];
+    FTURLSessionSnapshotRumResourceHandler *writer = [FTURLSessionSnapshotRumResourceHandler new];
+    interceptor.rumResourceHandler = writer;
+    __block NSUInteger providerCalls = 0, completionCalls = 0;
+    interceptor.resourcePropertyProvider = ^NSDictionary *(NSURLRequest *request, NSURLResponse *response, NSData *data, NSError *error) { providerCalls++; return @{}; };
+    [OHHTTPStubs stubRequestsPassingTest:^BOOL(NSURLRequest *request) {
+        return [request.URL.host isEqualToString:@"lc001.test"];
+    } withStubResponse:^OHHTTPStubsResponse *(NSURLRequest *request) {
+        return [OHHTTPStubsResponse responseWithData:[@"ok" dataUsingEncoding:NSUTF8StringEncoding] statusCode:200 headers:nil];
+    }];
+    NSURLSession *session = [NSURLSession sessionWithConfiguration:NSURLSessionConfiguration.ephemeralSessionConfiguration];
+    XCTestExpectation *completed = [self expectationWithDescription:@"uninstrumented application completion"];
+    completed.assertForOverFulfill = YES;
+    NSURLSessionTask *task = [session dataTaskWithURL:[NSURL URLWithString:@"https://lc001.test/off"] completionHandler:^(NSData *data, NSURLResponse *response, NSError *error) {
+        completionCalls++;
+        XCTAssertNil(error);
+        XCTAssertEqual([(NSHTTPURLResponse *)response statusCode], 200);
+        XCTAssertEqualObjects(data, [@"ok" dataUsingEncoding:NSUTF8StringEncoding]);
+        [completed fulfill];
+    }];
+    [task resume];
+    [self waitForExpectations:@[completed] timeout:5];
+    [self drainLC001Interceptor:interceptor];
+    XCTAssertFalse([FTURLSessionInstrumentation sharedInstance].shouldRUMInterceptor);
+    XCTAssertEqual(completionCalls, 1);
+    XCTAssertEqual(providerCalls, 0);
+    XCTAssertEqual(writer.startCount, 0);
+    XCTAssertEqual(writer.stopCount, 0);
+    XCTAssertEqual(writer.addCount, 0);
+    [session invalidateAndCancel];
+}
+
 @end
