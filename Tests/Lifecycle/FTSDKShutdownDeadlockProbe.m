@@ -12,7 +12,9 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-// Isolated lifecycle regression App, also runnable against the historical deadlock.
+// Cross-queue lifecycle regression App, also runnable against the historical deadlock.
+// Module-only cases live in FTResourceLifecycleTest; keep process isolation here
+// because a regressed collector can block shutdown while its provider is running.
 // The external runner isolates hangs and checks explicit completion/count markers.
 #import <UIKit/UIKit.h>
 #import <objc/runtime.h>
@@ -33,16 +35,8 @@
 #import "FTTraceContext.h"
 #import "FTPresetProperty.h"
 #import "FTRUMPropertySnapshot.h"
-#import "FTSessionTaskHandler.h"
-#import "FTResourceContentModel.h"
-#import "FTResourceMetricsModel.h"
-#import "FTConstants.h"
 
 extern void *FTInterceptorQueueIdentityKey;
-
-@interface FTURLSessionInterceptor (LCWebSocketTesting)
-- (FTSessionTaskHandler *)getTraceHandler:(id)key;
-@end
 
 static NSString *gMode;
 static NSString *gRunID;
@@ -62,12 +56,6 @@ static atomic_int gShutdownReturns;
 static atomic_bool gGateReleased;
 static atomic_bool gFinished;
 
-static atomic_int gInterceptorInitializations;
-static IMP gOriginalInit;
-static id LCObservedInit(id object, SEL selector) {
-    atomic_fetch_add(&gInterceptorInitializations, 1);
-    return ((id (*)(id, SEL))gOriginalInit)(object, selector);
-}
 static atomic_int gLateTraceCalls;
 static atomic_int gResourceAdds;
 static id gRestartReceiver;
@@ -76,26 +64,10 @@ static atomic_int gNewProviderEntries;
 static atomic_int gNewCompletions;
 static atomic_bool gRestartVerified;
 static IMP gOriginalAdd;
-static int gWSFilterCalls;
-static int gWSProviderCalls;
-static int gWSStopCalls;
-static FTResourceContentModel *gWSContent;
-static FTResourceMetricsModel *gWSMetrics;
-static NSDictionary *gWSStopProperty;
-static IMP gOriginalWSStop;
-static void LCObservedWSStop(id receiver, SEL selector, NSString *key, NSDictionary *property, NSDate *time) {
-    gWSStopCalls++;
-    gWSStopProperty = property;
-    ((void (*)(id, SEL, id, id, id))gOriginalWSStop)(receiver, selector, key, property, time);
-}
 static atomic_bool gSettlementCheckScheduled;
 static atomic_bool gSettlementChecked;
 static void LCObservedAdd(id receiver, SEL selector, NSString *key, id metrics, id content, NSString *span, NSString *trace) {
     atomic_fetch_add(&gResourceAdds, 1);
-    if ([gMode hasPrefix:@"ws-filter-"]) {
-        gWSContent = content;
-        gWSMetrics = metrics;
-    }
     if (receiver == gRestartReceiver) atomic_fetch_add(&gNewResourceAdds, 1);
     ((void (*)(id, SEL, id, id, id, id, id))gOriginalAdd)(receiver, selector, key, metrics, content, span, trace);
 }
@@ -155,29 +127,11 @@ static void LCLateCallbacks(void) {
     [automatic URLSession:gSession task:gTask didCompleteWithError:nil];
 }
 
-static void LCCheckStoppedCallbacks(void) {
-    int initializations = atomic_load(&gInterceptorInitializations);
-    LCLateCallbacks();
-    FTURLSessionInstrumentation *instrumentation = [FTURLSessionInstrumentation sharedInstance];
-    (void)instrumentation.interceptor;
-    (void)instrumentation.externalResourceHandler;
-    LCRequire(atomic_load(&gInterceptorInitializations) == initializations, @"late callbacks recreated interceptor");
-    LCRequire(instrumentation.interceptor == nil, @"stopped interceptor getter must return nil");
-    LCRequire(instrumentation.externalResourceHandler == nil, @"stopped external getter must return nil");
-    FTURLSessionDelegate *manual = [FTURLSessionDelegate new];
-    NSURLRequest *request = [NSURLRequest requestWithURL:[NSURL URLWithString:@"https://lc001.test/stopped"]];
-    LCRequire([manual interceptRequest:request] == request, @"stopped forwarding changed application request");
-    [instrumentation shutDown];
-    LCRequire(atomic_load(&gInterceptorInitializations) == initializations, @"repeated instrumentation stop recreated interceptor");
-    LCMark(@"late-callbacks-dropped", @{@"new_instances": @0});
-}
-
 static void LCStartNewRequest(void);
 static void LCTryFinish(void) {
     if (LCIsMode(@"restart") && atomic_load(&gSettlementChecked) && !atomic_load(&gRestartVerified)) return;
-    BOOL noProvider = LCIsMode(@"instrumentation-off");
-    int expectedProviders = noProvider ? 0 : 1;
-    int expectedShutdown = LCIsMode(@"no-shutdown") ? 0 : 1;
+    int expectedProviders = 1;
+    int expectedShutdown = 1;
     if (atomic_load(&gProviderReturns) != expectedProviders ||
         atomic_load(&gCompletionReturns) != 1 ||
         atomic_load(&gShutdownReturns) != expectedShutdown) return;
@@ -192,7 +146,7 @@ static void LCTryFinish(void) {
                 LCRequire([context[@"lc001_lifecycle"] isEqual:@"new"], @"restart lost new global context");
                 LCRequire([context[@"lc001_context"] isEqual:@"callback"], @"explicit application Context call did not target current SDK");
             }
-            int expectedAdds = (LCIsMode(@"no-shutdown") || LCIsMode(@"no-overlap")) ? 1 : 0;
+            int expectedAdds = 0;
             LCRequire(atomic_load(&gResourceAdds) == expectedAdds, @"Resource settlement count mismatch");
             LCMark(@"resource-settlement-verified", @{@"adds": @(expectedAdds)});
             atomic_store(&gSettlementChecked, true);
@@ -225,14 +179,13 @@ __attribute__((noinline)) static void LCShutdown(void) {
     [FTSDKAgent shutDown];
     atomic_fetch_add(&gShutdownReturns, 1);
     LCMark(@"sdk-shutdown-returned", nil);
-    if (LCIsMode(@"late-callbacks")) LCCheckStoppedCallbacks();
     LCTryFinish();
 }
 
 __attribute__((noinline)) static void LCObservedInterceptorShutdown(id object, SEL selector) {
     LCRequire(object == gInterceptor, @"shutdown reached another interceptor");
     BOOL onInterceptor = dispatch_get_specific(FTInterceptorQueueIdentityKey) != NULL;
-    LCRequire(onInterceptor == LCIsMode(@"stop-on-interceptor"), @"unexpected shutdown queue");
+    LCRequire(!onInterceptor, @"cross-queue probe shutdown unexpectedly ran on the interceptor queue");
     LCMark(@"shutdown-reached-interceptor", @{
         @"on_interceptor": @(onInterceptor),
         @"automatic_rum_enabled": @([FTURLSessionInstrumentation sharedInstance].shouldRUMInterceptor)
@@ -266,7 +219,7 @@ __attribute__((noinline)) static NSDictionary *LCResourceProvider(NSURLRequest *
     LCRequire(dispatch_get_specific(FTInterceptorQueueIdentityKey) != NULL, @"provider not on real interceptor queue");
     LCRequire(atomic_fetch_add(&gProviderEntries, 1) == 0, @"duplicate provider entry");
     LCMark(@"provider-entered", @{@"url": request.URL.absoluteString});
-    if (LCIsMode(@"primary") || LCIsMode(@"no-reentry") || LCIsMode(@"blocked-provider") || LCIsMode(@"late-callbacks") || LCIsMode(@"restart")) {
+    if (LCIsMode(@"primary") || LCIsMode(@"no-reentry") || LCIsMode(@"blocked-provider") || LCIsMode(@"restart")) {
         dispatch_async(dispatch_get_main_queue(), ^{
             LCShutdown();
             if (LCIsMode(@"restart")) {
@@ -291,7 +244,7 @@ __attribute__((noinline)) static NSDictionary *LCResourceProvider(NSURLRequest *
                 LCRequire(atomic_load(&gLateTraceCalls) == 0, @"old task invoked new lifecycle Trace callback");
                 LCMark(@"restart-isolated", nil);
             }
-            if (LCIsMode(@"blocked-provider") || LCIsMode(@"late-callbacks") || LCIsMode(@"restart")) {
+            if (LCIsMode(@"blocked-provider") || LCIsMode(@"restart")) {
                 LCRequire(atomic_load(&gProviderReturns) == 0, @"provider returned before shutdown");
                 atomic_store(&gGateReleased, true);
                 dispatch_semaphore_signal(gProviderGate);
@@ -301,19 +254,13 @@ __attribute__((noinline)) static NSDictionary *LCResourceProvider(NSURLRequest *
         LCRequire(atomic_load(&gGateReleased), @"provider gate not released");
         LCMark(@"provider-gate-released", nil);
     }
-    if (!LCIsMode(@"no-reentry") && !LCIsMode(@"stop-on-interceptor")) {
+    if (!LCIsMode(@"no-reentry")) {
         LCMark(@"context-call-entered", nil);
         [FTSDKAgent appendGlobalContext:@{@"lc001_context": @"callback"}];
         LCMark(@"context-call-returned", nil);
     }
-    if (LCIsMode(@"stop-on-interceptor")) LCShutdown();
     atomic_fetch_add(&gProviderReturns, 1);
     LCMark(@"provider-returned", nil);
-    if (LCIsMode(@"no-overlap")) {
-        dispatch_async([gInterceptor valueForKey:@"queue"], ^{
-            dispatch_async(dispatch_get_main_queue(), ^{ LCShutdown(); });
-        });
-    }
     LCTryFinish();
     return @{@"lc001_provider": @"visited"};
 }
@@ -336,81 +283,6 @@ __attribute__((noinline)) static NSDictionary *LCResourceProvider(NSURLRequest *
 - (void)stopLoading {}
 @end
 
-// Keep the task suspended: drive admission and completion on the real collector,
-// with no network, timer, or wall-clock delay determining the callback schedule.
-static void LCStartWebSocketFilterProbe(void) {
-    BOOL stops = [gMode hasPrefix:@"ws-filter-stop-"];
-    BOOL filters = [gMode hasSuffix:@"-yes"];
-    Method stopMethod = class_getInstanceMethod(FTRUMManager.class, @selector(stopResourceWithKey:property:time:));
-    gOriginalWSStop = method_setImplementation(stopMethod, (IMP)LCObservedWSStop);
-    gSession = [NSURLSession sessionWithConfiguration:NSURLSessionConfiguration.ephemeralSessionConfiguration];
-    NSURL *url = [NSURL URLWithString:@"wss://lc001.test/filter-failure"];
-    gTask = [gSession webSocketTaskWithURL:url];
-    [gInterceptor interceptTask:gTask];
-    dispatch_queue_t queue = [gInterceptor valueForKey:@"queue"];
-    dispatch_async(queue, ^{
-        FTSessionTaskHandler *handler = [gInterceptor getTraceHandler:gTask];
-        LCRequire(handler.webSocketHandshake && handler.webSocketHandshakeStarted, @"WebSocket handshake was not admitted");
-        LCRequire(handler.metricsModel == nil, @"fixture must exercise missing-metrics fallback");
-        LCMark(@"ws-handshake-admitted", nil);
-        NSError *failure = [NSError errorWithDomain:NSURLErrorDomain code:NSURLErrorTimedOut userInfo:nil];
-        long long expectedStart = handler.webSocketHandshakeStartNsTimeInterval;
-        uint64_t endTime = handler.webSocketHandshakeStartTime + 500000000;
-        ResourcePropertyProvider provider = ^NSDictionary *(NSURLRequest *request, NSURLResponse *response, NSData *data, NSError *error) {
-            gWSProviderCalls++;
-            LCMark(@"ws-provider-entered", nil);
-            LCRequire([request.URL isEqual:url] && response == nil && data == nil, @"WebSocket provider input changed");
-            LCRequire(filters ? error == nil : [error isEqual:failure], @"provider received incorrect filtered error");
-            return @{@"ws_filter": filters ? @"yes" : @"no"};
-        };
-        SessionTaskErrorFilter filter = ^BOOL(NSError *error) {
-            gWSFilterCalls++;
-            LCRequire([error isEqual:failure], @"errorFilter received a different error");
-            LCMark(@"ws-error-filter-entered", @{@"filters_error": @(filters)});
-            if (stops) {
-                LCMark(@"ws-shutdown-called", nil);
-                [FTSDKAgent shutDown];
-                atomic_fetch_add(&gShutdownReturns, 1);
-                LCMark(@"ws-shutdown-returned", nil);
-            }
-            LCMark(@"ws-error-filter-returned", nil);
-            return filters;
-        };
-        [gInterceptor taskCompleted:gTask error:failure extraProvider:provider errorFilter:filter endTime:endTime];
-        // Queue a duplicate before the first completion is handled, so both pass
-        // admission while running. Neither may cause a second terminal callback.
-        [gInterceptor taskCompleted:gTask error:failure extraProvider:provider errorFilter:filter endTime:endTime + 100000000];
-        dispatch_async(queue, ^{
-            int expectedAdds = stops ? 0 : 1;
-            NSDictionary *counts = @{
-                @"error_filter_calls": @(gWSFilterCalls), @"provider_calls": @(gWSProviderCalls),
-                @"resource_adds": @(atomic_load(&gResourceAdds)), @"resource_stops": @(gWSStopCalls),
-                @"shutdown_returns": @(atomic_load(&gShutdownReturns)), @"filters_error": @(filters),
-                @"expected_provider_calls": @(expectedAdds), @"expected_resource_adds": @(expectedAdds)
-            };
-            LCMark(@"ws-filter-counts", counts);
-            LCRequire(gWSFilterCalls == 1, @"WebSocket errorFilter count must be one");
-            LCRequire(atomic_load(&gShutdownReturns) == (stops ? 1 : 0), @"WebSocket shutdown return count mismatch");
-            LCRequire(gWSProviderCalls == expectedAdds, @"WebSocket provider count mismatch after errorFilter shutdown");
-            LCRequire(atomic_load(&gResourceAdds) == expectedAdds, @"WebSocket Resource add count mismatch");
-            LCRequire(gWSStopCalls == expectedAdds, @"WebSocket Resource stop count mismatch");
-            if (stops) {
-                LCRequire([FTURLSessionInterceptor existingInstance] == nil, @"WebSocket stop left an active collector");
-            } else {
-                LCRequire([gWSContent.webSocketHandshakeState isEqual:FT_RESOURCE_WEBSOCKET_HANDSHAKE_STATE_FAILED], @"filtered error changed failed handshake state");
-                LCRequire(gWSContent.webSocketHandshake && [gWSContent.resourceType isEqual:FT_RESOURCE_TYPE_WEBSOCKET], @"WebSocket Resource classification changed");
-                LCRequire([gWSContent.url isEqual:url] && [gWSContent.httpMethod isEqual:@"GET"] && gWSContent.httpStatusCode == 0, @"failed handshake content changed");
-                LCRequire(filters ? gWSContent.error == nil : [gWSContent.error isEqual:failure], @"Resource error filtering changed");
-                LCRequire([gWSStopProperty[@"ws_filter"] isEqual:filters ? @"yes" : @"no"], @"provider properties were not settled");
-                LCRequire(gWSMetrics.fetchStartNsTimeInterval == expectedStart && gWSMetrics.fetchEndNsTimeInterval == expectedStart + 500000000, @"handshake endpoint or duration changed");
-                LCRequire([gInterceptor getTraceHandler:gTask] == nil, @"terminal handshake handler was not removed");
-                LCMark(@"ws-control-content-verified", @{@"handshake_state": gWSContent.webSocketHandshakeState, @"error_present": @(gWSContent.error != nil), @"duration_ns": @500000000});
-            }
-            LCMark(@"case-complete", counts);
-        });
-    });
-}
-
 static void LCStart(void) {
     LCRequire(NSThread.isMainThread, @"startup must be main");
     gProviderGate = dispatch_semaphore_create(0);
@@ -420,14 +292,12 @@ static void LCStart(void) {
     base.enableDataFilter = NO;
     base.remoteConfiguration = NO;
     base.enableSDKDebugLog = NO;
-    Method initMethod = class_getInstanceMethod(FTURLSessionInterceptor.class, @selector(init));
-    gOriginalInit = method_setImplementation(initMethod, (IMP)LCObservedInit);
     Method addMethod = class_getInstanceMethod(FTRUMManager.class, @selector(addResourceWithKey:metrics:content:spanID:traceID:));
     gOriginalAdd = method_setImplementation(addMethod, (IMP)LCObservedAdd);
     gBase = base;
     [FTSDKAgent startWithConfigOptions:base];
     FTRumConfig *rum = [[FTRumConfig alloc] initWithAppid:@"lc001-isolated-audit"];
-    rum.enableTraceUserResource = !LCIsMode(@"instrumentation-off");
+    rum.enableTraceUserResource = YES;
     rum.enableTraceUserView = NO;
     rum.enableTraceUserAction = NO;
     rum.enableTrackAppCrash = NO;
@@ -442,10 +312,6 @@ static void LCStart(void) {
     gRum = rum;
     [[FTSDKAgent sharedInstance] startRumWithConfigOptions:rum];
     gInterceptor = [FTURLSessionInterceptor shared];
-    if ([gMode hasPrefix:@"ws-filter-"]) {
-        LCStartWebSocketFilterProbe();
-        return;
-    }
     Method stopMethod = class_getInstanceMethod(FTURLSessionInterceptor.class, NSSelectorFromString(@"shutDown"));
     LCRequire(stopMethod != NULL, @"missing interceptor shutdown");
     gOriginalShutdown = method_setImplementation(stopMethod, (IMP)LCObservedInterceptorShutdown);
@@ -461,9 +327,6 @@ static void LCStart(void) {
         LCRequire(!error && [(NSHTTPURLResponse *)response statusCode] == 200, @"request did not succeed");
         LCRequire(atomic_fetch_add(&gCompletionReturns, 1) == 0, @"duplicate application completion");
         LCMark(@"application-completion-returning", @{@"body_bytes": @(data.length)});
-        if (LCIsMode(@"instrumentation-off")) {
-            dispatch_async(dispatch_get_main_queue(), ^{ LCShutdown(); });
-        }
         LCTryFinish();
     }];
     LCMark(@"task-created", @{@"task_class": NSStringFromClass(gTask.class), @"session_delegate": NSStringFromClass(gSession.delegate.class)});
@@ -512,7 +375,7 @@ int main(int argc, char *argv[]) {
         if (caseIndex == NSNotFound || caseIndex + 1 >= args.count || runIndex == NSNotFound || runIndex + 1 >= args.count) return 2;
         gMode = args[caseIndex + 1];
         gRunID = args[runIndex + 1];
-        NSSet *modes = [NSSet setWithArray:@[@"ws-filter-stop-yes", @"ws-filter-stop-no", @"ws-filter-continue-yes", @"ws-filter-continue-no", @"late-callbacks", @"blocked-provider", @"restart", @"primary", @"no-reentry", @"no-overlap", @"no-shutdown", @"stop-on-interceptor", @"instrumentation-off"]];
+        NSSet *modes = [NSSet setWithArray:@[@"primary", @"no-reentry", @"blocked-provider", @"restart"]];
         if (![modes containsObject:gMode] || [gRunID containsString:@"/"] || [gRunID isEqualToString:@".."] || !gRunID.length) return 2;
         NSString *documents = NSSearchPathForDirectoriesInDomains(NSDocumentDirectory, NSUserDomainMask, YES).firstObject;
         NSString *directory = [[documents stringByAppendingPathComponent:@"LC001"] stringByAppendingPathComponent:gRunID];

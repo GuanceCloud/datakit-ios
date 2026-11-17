@@ -17,7 +17,7 @@ parser=argparse.ArgumentParser()
 parser.add_argument('--device',required=True)
 parser.add_argument('--output',required=True)
 parser.add_argument('--app',required=True)
-parser.add_argument('--cases',nargs='+',default=['primary','no-reentry','no-overlap','no-shutdown','stop-on-interceptor','instrumentation-off','blocked-provider','late-callbacks','restart','ws-filter-stop-yes','ws-filter-stop-no','ws-filter-continue-yes','ws-filter-continue-no'])
+parser.add_argument('--cases', nargs='+', choices=['primary','no-reentry','blocked-provider','restart'], default=['primary','no-reentry','blocked-provider','restart'], help='Cross-queue subprocess cases; module regressions run in FTResourceLifecycleTest.')
 args=parser.parse_args()
 out=pathlib.Path(args.output);out.mkdir(parents=True,exist_ok=False)
 bundle='com.truewatch.audit.lc001'
@@ -86,37 +86,17 @@ for index,case in enumerate(args.cases,1):
 for result in results:
     assert result['status'] == 'completed', result
     counts = result['counts']
-    if result['case'].startswith('ws-filter-'):
-        summary = result['completion_summary']
-        stops = result['case'].startswith('ws-filter-stop-')
-        filters = result['case'].endswith('-yes')
-        assert summary['error_filter_calls'] == 1, result
-        assert summary['provider_calls'] == (0 if stops else 1), result
-        assert summary['resource_adds'] == (0 if stops else 1), result
-        assert summary['resource_stops'] == (0 if stops else 1), result
-        assert summary['shutdown_returns'] == (1 if stops else 0), result
-        assert summary['filters_error'] == filters, result
-        assert counts.get('ws-handshake-admitted', 0) == 1, result
-        assert counts.get('ws-error-filter-entered', 0) == 1, result
-        assert counts.get('ws-error-filter-returned', 0) == 1, result
-        assert counts.get('ws-control-content-verified', 0) == (0 if stops else 1), result
-        if stops:
-            assert counts.get('ws-shutdown-returned', 0) == 1, result
-            assert result['events'].index('ws-shutdown-returned') < result['events'].index('ws-error-filter-returned'), result
-        continue
     assert counts.get('application-completion-returning', 0) == 1, result
-    expected = 0 if result['case'] == 'instrumentation-off' else 1
+    expected = 1
     assert counts.get('provider-entered', 0) == expected, result
     assert counts.get('provider-returned', 0) == expected, result
-    expected_stop = 0 if result['case'] == 'no-shutdown' else 1
+    expected_stop = 1
     assert counts.get('sdk-shutdown-returned', 0) == expected_stop, result
     if result['case'] == 'restart':
         assert counts.get('restart-isolated', 0) == 1, result
         assert counts.get('new-lifecycle-verified', 0) == 1, result
         assert counts.get('new-application-completion', 0) == 1, result
         assert counts.get('new-provider-entered', 0) == 1, result
-    if result['case'] == 'late-callbacks':
-        assert counts.get('late-callbacks-dropped', 0) == 1, result
-    expected_context = 0 if result['case'] in ['no-reentry','stop-on-interceptor','instrumentation-off'] else 1
+    expected_context = 0 if result['case'] == 'no-reentry' else 1
     assert counts.get('context-call-returned', 0) == expected_context, result
     assert counts.get('resource-settlement-verified', 0) == 1, result
