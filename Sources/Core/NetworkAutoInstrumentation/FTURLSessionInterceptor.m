@@ -34,11 +34,14 @@
 #import "NSDate+FTUtil.h"
 #import "FTVisitorIDManager+Private.h"
 void *FTInterceptorQueueIdentityKey = &FTInterceptorQueueIdentityKey;
+static void *FTInterceptorTaskOwnerKey = &FTInterceptorTaskOwnerKey;
 
 @interface FTURLSessionInterceptor ()
 @property (nonatomic, strong) FTReadWriteHelper<NSMutableDictionary <id,FTSessionTaskHandler *>*> *traceHandlers;
 @property (nonatomic, weak, nullable) id<FTTracerProtocol> tracer;
 @property (nonatomic, strong) dispatch_queue_t queue;
+@property (atomic, assign) BOOL stopped;
+@property (nonatomic, strong) NSObject *taskOwnerToken;
 @end
 @implementation FTURLSessionInterceptor
 @synthesize rumResourceHandler = _rumResourceHandler;
@@ -63,15 +66,36 @@ static NSObject *sharedInstanceLock;
         return sharedInstance;
     }
 }
++ (nullable instancetype)existingInstance{
+    @synchronized(sharedInstanceLock) {
+        return sharedInstance;
+    }
+}
 -(instancetype)init{
     self = [super init];
     if (self) {
+        _taskOwnerToken = [NSObject new];
         _traceHandlers = [[FTReadWriteHelper alloc]initWithValue:[NSMutableDictionary new]];
         _queue = dispatch_queue_create("com.ft.network.interceptor", DISPATCH_QUEUE_SERIAL);
         dispatch_queue_set_specific(_queue, FTInterceptorQueueIdentityKey, &FTInterceptorQueueIdentityKey, NULL);
 
     }
     return self;
+}
+// Bind once at admission. The token does not retain the interceptor or its task table.
+- (BOOL)claimTask:(NSURLSessionTask *)task{
+    if (self.stopped) return NO;
+    @synchronized(task) {
+        id owner = objc_getAssociatedObject(task, FTInterceptorTaskOwnerKey);
+        if (!owner) {
+            owner = self.taskOwnerToken;
+            objc_setAssociatedObject(task, FTInterceptorTaskOwnerKey, owner, OBJC_ASSOCIATION_RETAIN_NONATOMIC);
+        }
+        return owner == self.taskOwnerToken && !self.stopped;
+    }
+}
+- (BOOL)ownsTask:(NSURLSessionTask *)task{
+    return !self.stopped && objc_getAssociatedObject(task, FTInterceptorTaskOwnerKey) == self.taskOwnerToken;
 }
 - (BOOL)isTraceUrl:(NSURL *)url{
     if(self.resourceUrlHandler||self.intakeUrlHandler){
@@ -164,6 +188,7 @@ static NSObject *sharedInstanceLock;
 }
 #pragma mark - trace
 - (NSURLRequest *)interceptRequest:(NSURLRequest *)request{
+    if (self.stopped) return request;
     NSURLRequest *backRequest = request;
     @try {
         if(_tracer&&_tracer.enableAutoTrace){
@@ -186,6 +211,7 @@ static NSObject *sharedInstanceLock;
     [self traceInterceptTask:task traceInterceptor:nil];
 }
 - (void)traceInterceptTask:(NSURLSessionTask *)task traceInterceptor:(nullable TraceInterceptor)traceInterceptor{
+    if (![self claimTask:task]) return;
     @try {
         NSURLRequest *currentRequest = task.currentRequest;
         if(!currentRequest){
@@ -221,7 +247,9 @@ static NSObject *sharedInstanceLock;
     }
 }
 - (void)traceInterceptTask:(NSURLSessionTask *)task linkTraceContext:(nullable FTTraceContext *)traceContext requestURL:(nullable NSURL *)requestURL{
+    if (![self claimTask:task]) return;
     dispatch_async(self.queue, ^{
+        if (self.stopped) return;
         @try {
             if(traceContext&&traceContext.spanId&&traceContext.traceId){
                 if(!requestURL){
@@ -250,6 +278,7 @@ static NSObject *sharedInstanceLock;
 - (void)interceptTask:(NSURLSessionTask *)task{
     NSDate *resourceStartDate = [self resourceBoundaryDate];
     uint64_t resourceStartContinuousTime = [self resourceBoundaryContinuousTime];
+    if (![self claimTask:task]) return;
     static char resourceStartKey;
     NSString *resourceIdentifier;
     @synchronized (task) {
@@ -267,12 +296,14 @@ static NSObject *sharedInstanceLock;
     NSString *requestVisitorID = task.ft_visitorIDSnapshot.value;
     NSURL *resourceURL = isWebSocketHandshake ? task.ft_webSocketResourceURL : requestSnapshot.URL;
     dispatch_async(self.queue, ^{
+        if (self.stopped) return;
         @try {
             FTSessionTaskHandler *handler = [self getTraceHandler:task];
             if(!requestSnapshot || !resourceURL || ![self isTraceUrl:resourceURL]){
                 if(handler)[self removeTraceHandlerWithKey:task];
                 return;
             }
+            if (self.stopped) return;
             if(!handler){
                 handler = [[FTSessionTaskHandler alloc]initWithIdentifier:resourceIdentifier];
                 [self setTraceHandler:handler forKey:task];
@@ -311,12 +342,14 @@ static NSObject *sharedInstanceLock;
 }
 - (void)taskMetricsCollected:(NSURLSessionTask *)task metrics:(NSURLSessionTaskMetrics *)metrics custom:(BOOL)custom extraProvider:(nullable ResourcePropertyProvider)extraProvider{
     uint64_t endTime = [FTDateUtil continuousTime];
+    if (![self ownsTask:task]) return;
     NSURLResponse *completedResponse = task.response;
     NSError *completedError = task.error;
     NSURLSessionTaskState taskState = task.state;
     ResourcePropertyProvider webSocketProvider = extraProvider ?: self.resourcePropertyProvider;
     BOOL hasCompletion = task.ft_hasCompletion;
     dispatch_async(self.queue, ^{
+        if (self.stopped) return;
         @try {
             FTSessionTaskHandler *handler = [self getTraceHandler:task];
             if(!handler){
@@ -359,7 +392,9 @@ static NSObject *sharedInstanceLock;
     });
 }
 - (void)taskReceivedData:(NSURLSessionTask *)task data:(NSData *)data{
+    if (![self ownsTask:task]) return;
     dispatch_async(self.queue, ^{
+        if (self.stopped) return;
         @try {
             FTSessionTaskHandler *handler = [self getTraceHandler:task];
             if(!handler){
@@ -374,7 +409,9 @@ static NSObject *sharedInstanceLock;
     });
 }
 - (void)taskReceivedCompleteData:(NSURLSessionTask *)task data:(NSData *)data{
+    if (![self ownsTask:task]) return;
     dispatch_async(self.queue, ^{
+        if (self.stopped) return;
         @try {
             FTSessionTaskHandler *handler = [self getTraceHandler:task];
             if(!handler){
@@ -390,9 +427,11 @@ static NSObject *sharedInstanceLock;
 /// WebSocket open is the successful handshake boundary. It must not wait for later connection close.
 - (void)taskWebSocketDidOpen:(NSURLSessionTask *)task extraProvider:(nullable ResourcePropertyProvider)extraProvider{
     uint64_t endTime = [FTDateUtil continuousTime];
+    if (![self ownsTask:task]) return;
     ResourcePropertyProvider provider = extraProvider?:self.resourcePropertyProvider;
     NSURLResponse *response = task.response;
     dispatch_async(self.queue, ^{
+        if (self.stopped) return;
         @try {
             FTSessionTaskHandler *handler = [self getTraceHandler:task];
             if (!handler || !handler.webSocketHandshake) {
@@ -425,10 +464,12 @@ static NSObject *sharedInstanceLock;
     [self taskCompleted:task error:error extraProvider:nil errorFilter:nil endTime:endTime];
 }
 - (void)taskCompleted:(NSURLSessionTask *)task error:(NSError *)error extraProvider:(nullable ResourcePropertyProvider)extraProvider errorFilter:(nullable SessionTaskErrorFilter)errorFilter endTime:(uint64_t)endTime {
+    if (![self ownsTask:task]) return;
     ResourcePropertyProvider provider = extraProvider?:self.resourcePropertyProvider;
     SessionTaskErrorFilter filter = errorFilter?:self.sessionTaskErrorFilter;
     NSURLResponse *completedResponse = task.response;
     dispatch_async(self.queue, ^{
+        if (self.stopped) return;
         @try {
             [self handleTaskCompleted:task response:completedResponse error:error extraProvider:provider errorFilter:filter endTime:endTime];
         }@catch (NSException *exception) {
@@ -454,10 +495,12 @@ static NSObject *sharedInstanceLock;
                                     errorFilter:errorFilter];
         return;
     }
+    if (self.stopped) return;
     BOOL filterError = NO;
     if (errorFilter && error) {
         filterError = errorFilter(error);
     }
+    if (self.stopped) return;
     [handler taskCompletedWithResponse:response error:filterError?nil:error];
     [self removeTraceHandlerWithKey:task];
     NSDictionary *property;
@@ -465,6 +508,8 @@ static NSObject *sharedInstanceLock;
         property = extraProvider(handler.request, handler.response, handler.data, handler.error);
         property = [property ft_deepCopy];
     }
+    // A provider may outlive stop or reenter shutdown. Do not settle it into another lifecycle.
+    if (self.stopped) return;
     NSDate *endDate = handler.resourceStartDate && endTime >= handler.resourceStartContinuousTime
         ? [handler.resourceStartDate dateByAddingTimeInterval:(endTime - handler.resourceStartContinuousTime) / 1e9]
         : nil;
@@ -512,6 +557,7 @@ static NSObject *sharedInstanceLock;
     }
     handler.metricsModel = metrics;
     BOOL filterError = errorFilter && error ? errorFilter(error) : NO;
+    if (self.stopped) return;
     NSError *contentError = filterError ? nil : error;
     [handler taskCompletedWithResponse:response error:contentError];
 
@@ -535,6 +581,8 @@ static NSObject *sharedInstanceLock;
         property = extraProvider(handler.request, handler.response, nil, handler.error);
         property = [property ft_deepCopy];
     }
+    // A provider may outlive stop or reenter shutdown. Do not settle it into another lifecycle.
+    if (self.stopped) return;
     NSDate *endDate = handler.resourceStartDate && endTime >= handler.resourceStartContinuousTime
         ? [handler.resourceStartDate dateByAddingTimeInterval:(endTime - handler.resourceStartContinuousTime) / 1e9]
         : nil;
@@ -560,6 +608,7 @@ static NSObject *sharedInstanceLock;
 
 #pragma mark --------- external data ----------
 -(NSDictionary *)getTraceHeaderWithUrl:(NSURL *)url{
+    if (self.stopped) return nil;
     if(!_tracer){
         FTInnerLogError(@"SDK configuration Trace error, trace is not supported");
         return nil;
@@ -568,6 +617,7 @@ static NSObject *sharedInstanceLock;
 }
 // `SkyWalking` requires URL parameter
 -(NSDictionary *)getTraceHeaderWithKey:(NSString *)key url:(NSURL *)url{
+    if (self.stopped) return nil;
     if(!_tracer){
         FTInnerLogError(@"SDK configuration Trace error, trace is not supported");
         return nil;
@@ -587,12 +637,13 @@ static NSObject *sharedInstanceLock;
     return  dict;
 }
 - (void)startResourceWithKey:(NSString *)key{
+    if (self.stopped) return;
     if (self.rumResourceHandler && [self.rumResourceHandler respondsToSelector:@selector(startResourceWithKey:)]) {
         [self.rumResourceHandler startResourceWithKey:key];
     }
 }
 - (void)startResourceWithKey:(NSString *)key requestVisitorID:(nullable NSString *)visitorID time:(NSDate *)time receiver:(id<FTRumResourceProtocol>)receiver{
-    if (!receiver) {
+    if (self.stopped || !receiver) {
         return;
     }
     FTVisitorIDManager *visitorIDManager = [FTVisitorIDManager sharedInstance];
@@ -610,16 +661,19 @@ static NSObject *sharedInstanceLock;
     }
 }
 - (void)startResourceWithKey:(NSString *)key property:(nullable NSDictionary *)property{
+    if (self.stopped) return;
     if (self.rumResourceHandler && [self.rumResourceHandler respondsToSelector:@selector(startResourceWithKey:property:)]) {
         [self.rumResourceHandler startResourceWithKey:key property:property];
     }
 }
 - (void)stopResourceWithKey:(nonnull NSString *)key{
+    if (self.stopped) return;
     if (self.rumResourceHandler && [self.rumResourceHandler respondsToSelector:@selector(stopResourceWithKey:)]) {
         [self.rumResourceHandler stopResourceWithKey:key];
     }
 }
 -(void)stopResourceWithKey:(NSString *)key property:(NSDictionary *)property{
+    if (self.stopped) return;
     if (self.rumResourceHandler && [self.rumResourceHandler respondsToSelector:@selector(stopResourceWithKey:property:)]) {
         [self.rumResourceHandler stopResourceWithKey:key property:property];
     }
@@ -629,17 +683,18 @@ static NSObject *sharedInstanceLock;
     [self addResourceWithKey:key metrics:metrics content:content spanID:handler.spanID traceID:handler.traceID];
 }
 - (void)addResourceWithKey:(NSString *)key metrics:(nullable FTResourceMetricsModel *)metrics content:(FTResourceContentModel *)content spanID:(nullable NSString *)spanID traceID:(nullable NSString *)traceID{
+    if (self.stopped) return;
     [self removeTraceHandlerWithKey:key];
     if (self.rumResourceHandler && [self.rumResourceHandler respondsToSelector:@selector(addResourceWithKey:metrics:content:spanID:traceID:)]) {
         [self.rumResourceHandler addResourceWithKey:key metrics:metrics content:content spanID:spanID traceID:traceID];
     }
 }
 - (void)shutDown{
-    if(dispatch_get_specific(FTInterceptorQueueIdentityKey)==NULL){
-        dispatch_sync(self.queue, ^{});
-    }
     @synchronized(sharedInstanceLock) {
-        sharedInstance =nil;
-    }    
+        self.stopped = YES;
+        if (sharedInstance == self) sharedInstance = nil;
+    }
+    // Pending blocks retain this stopped instance until they return. Its data is
+    // released with the instance; shutdown never drains or settles queued work.
 }
 @end
