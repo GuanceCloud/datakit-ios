@@ -10,9 +10,11 @@
 ## API and Bridge Compatibility
 
 - Keep public API, cross-module interfaces, and module-local implementation separate. Export only headers and symbols intended for consumers.
-- Preserve public symbols, imports, defaults, and behavior. Treat interfaces used by downstream bridges as compatibility-sensitive regardless of visibility. Search call sites, bridges, target declarations, and umbrella headers before making changes. Deprecate public APIs before removal.
+- Preserve public symbols, imports, defaults, and behavior. Treat interfaces used by downstream bridges as compatibility-sensitive regardless of visibility. Search call sites, bridges, target declarations, and umbrella headers before making changes.
+- Deprecate public APIs before removal. Document migration steps for affected callers and name a replacement where available.
 - Check affected imports, signatures, and behavior from Objective-C, Swift, and bridge consumers as applicable. Keep platform availability and distribution metadata aligned.
 - The minimum deployment targets are iOS 15.0, tvOS 15.0, and macOS 12.0 for products that support those platforms. Guard APIs introduced in newer OS versions.
+- Keep compile-time guards consistent across declarations and implementations. Verify compilation and linking on affected platforms with supported toolchains.
 
 ## Swizzling and Auto-Instrumentation
 
