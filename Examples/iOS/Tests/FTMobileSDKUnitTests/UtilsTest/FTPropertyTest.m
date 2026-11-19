@@ -53,6 +53,16 @@
 + (NSString *)modelIdentifier;
 + (NSString *)unameMachineIdentifier;
 @end
+#if TARGET_OS_IOS
+static NSString *FTPropertyTestIPhoneIdentifier;
+
+@interface FTPropertyTestIPhoneDevice : FTPresetProperty
+@end
+@implementation FTPropertyTestIPhoneDevice
++ (BOOL)isiOSAppOnMac { return NO; }
++ (NSString *)unameMachineIdentifier { return FTPropertyTestIPhoneIdentifier; }
+@end
+#endif
 @interface FTPropertyTestIPadDevice : FTPresetProperty
 @end
 @implementation FTPropertyTestIPadDevice
@@ -205,6 +215,20 @@ static void FTPropertyTestAssertMissingKeys(XCTestCase *testCase, NSDictionary *
     XCTAssertEqualObjects([FTPropertyTestUnknownMacDevice deviceInfo], @"Unknown Mac");
 }
 #if TARGET_OS_IOS
+- (void)testNativeIPhoneDeviceNameMapping {
+    NSDictionary<NSString *, NSString *> *expectedModels = @{
+        @"iPhone19,2": @"iPhone 18 Pro",
+        @"iPhone19,3": @"iPhone 18 Pro Max",
+        @"iPhone19,7": @"iPhone 18 Pro Max",
+        @"iPhone19,4": @"iPhone Duo",
+        @"iPhone18,5": @"iPhone 17e",
+    };
+    for (NSString *identifier in expectedModels) {
+        FTPropertyTestIPhoneIdentifier = identifier;
+        XCTAssertEqualObjects([FTPropertyTestIPhoneDevice deviceInfo], expectedModels[identifier], @"%@", identifier);
+    }
+    FTPropertyTestIPhoneIdentifier = nil;
+}
 - (void)testNativeIPadKeepsDeviceNameMapping {
     XCTAssertEqualObjects([FTPropertyTestIPadDevice deviceInfo], @"iPad Pro 3 (11-inch) ");
 }

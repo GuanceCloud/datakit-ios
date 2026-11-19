@@ -1000,6 +1000,10 @@ static uintptr_t firstCmdAfterHeader(const struct mach_header* const header) {
     NSString *platform = [self unameMachineIdentifier];
 #if TARGET_OS_IOS
     //------------------------------iPhone---------------------------
+    if ([platform isEqualToString:@"iPhone19,4"]) return @"iPhone Duo";
+    if ([platform isEqualToString:@"iPhone19,3"] || [platform isEqualToString:@"iPhone19,7"]) return @"iPhone 18 Pro Max";
+    if ([platform isEqualToString:@"iPhone19,2"]) return @"iPhone 18 Pro";
+    if ([platform isEqualToString:@"iPhone18,5"]) return @"iPhone 17e";
     if ([platform isEqualToString:@"iPhone18,4"]) return @"iPhone Air";
     if ([platform isEqualToString:@"iPhone18,3"]) return @"iPhone 17";
     if ([platform isEqualToString:@"iPhone18,2"]) return @"iPhone 17 Pro Max";
