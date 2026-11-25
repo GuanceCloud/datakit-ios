@@ -2,6 +2,7 @@
 
 int main(void) {
     @autoreleasepool {
+        [FTLog enableCrashMonitorLog:YES];
         FTSDKConfig *config = [[FTSDKConfig alloc] initWithDatakitUrl:@"https://example.com"];
         FTSDKAgent *agent = [FTSDKAgent sharedInstance];
 #if TARGET_OS_IOS || TARGET_OS_TV

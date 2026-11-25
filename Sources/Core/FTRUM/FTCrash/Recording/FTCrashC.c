@@ -163,7 +163,6 @@ static void setMonitors(FTCrashCMonitorType monitorTypes)
 // ============================================================================
 
 void ftcrash_install(const char *appName, const char *const installPath,FTCrashCMonitorType monitors){
-    //enableCrashMonitorLog(false);
     if (g_installed) {
         FTLOG_DEBUG("Crash reporter already installed.");
         return;

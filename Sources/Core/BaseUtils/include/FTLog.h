@@ -29,10 +29,17 @@ NS_ASSUME_NONNULL_BEGIN
 /// Singleton
 + (instancetype)sharedInstance;
 
+#pragma mark - Debug Logging
+
 /// Allow swizzle diagnostic logs in SDK Debug builds. Default: NO.
 /// Output also requires SDK debug logging to be enabled.
 /// Includes IMP addresses and image UUIDs/load addresses/offsets for offline symbolication.
 + (void)enableSwizzleLog:(BOOL)enable;
+
+/// Enable local Crash Monitor diagnostic logs for this process. Default: NO.
+/// Can be called before SDK initialization. Independent of Swizzle and SDK debug logging.
+/// Controls diagnostic output only.
++ (void)enableCrashMonitorLog:(BOOL)enable;
 
 /// Write debug logs to the default file.
 /// Documents/FTLogs/FTLog.log

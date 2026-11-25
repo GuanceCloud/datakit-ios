@@ -15,6 +15,7 @@ final class ConsumerTNSRule: NSObject, FTRUMNetworkSettledResourcePredicate {
 @main
 enum SwiftConsumer {
     static func main() {
+        FTLog.enableCrashMonitorLog(true)
         _ = FTSDKAgent.sharedInstance()
         let rum = FTRumConfig(appid: "app")
         rum.nextViewActionPredicate = FTRUMTimeBasedNextViewActionPredicate(maxTimeNs: 5_000_000_000)

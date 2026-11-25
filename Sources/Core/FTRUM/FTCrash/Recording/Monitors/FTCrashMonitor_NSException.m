@@ -99,7 +99,6 @@ static FTCRASH_NOINLINE void handleException(NSException *exception, BOOL isUser
                                         BOOL logAllThreads) FTCRASH_KEEP_FUNCTION_IN_STACKTRACE
 {
     const uint64_t eventTime = ft_earlyCrashNow();
-    FTLOG_DEBUG("Trapped exception %@", exception);
     if (isEnabled()) {
         FTLOG_DEBUG("Trapped exception start");
         // Gather this info before we require async-safety:

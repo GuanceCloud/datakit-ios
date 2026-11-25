@@ -2219,6 +2219,8 @@
 				17AC173A2B98525B003E18A6 /* FTLogMessage.m */,
 				17AC17422B9856C3003E18A6 /* FTFileLogger.m */,
 				1776BA7F2B99B668008424FF /* FTOSLogger.m */,
+				1776BD482E179FA300612A7F /* FTCrashLogger.h */,
+				1776BD492E179FA300612A7F /* FTCrashLogger.c */,
 			);
 			name = FTLog;
 			sourceTree = "<group>";
@@ -2345,8 +2347,6 @@
 				17A423242EEAE57300416673 /* FTCrashNSDictionaryHelper.h */,
 				17A423252EEAE57300416673 /* FTCrashNSDictionaryHelper.m */,
 				17A423382EEAE65700416673 /* FTCrashVarArgs.h */,
-				1776BD482E179FA300612A7F /* FTCrashLogger.h */,
-				1776BD492E179FA300612A7F /* FTCrashLogger.c */,
 				1768684D2ED47AA600C76F0D /* FTCrashMachineContext.h */,
 				1768684E2ED47AA600C76F0D /* FTCrashMachineContext.c */,
 				176868532ED47AA600C76F0D /* FTCrashThread.h */,

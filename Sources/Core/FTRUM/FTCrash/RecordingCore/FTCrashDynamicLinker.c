@@ -336,19 +336,19 @@ static void getCrashInfo(const struct mach_header *header, FTCrashBinaryImage *b
     }
 
     if (isValidCrashInfoMessage(crashInfo->message)) {
-        FTLOG_DEBUG("Found first message: %s", crashInfo->message);
+        FTLOG_DEBUG("Found first crash information message.");
         buffer->crashInfoMessage = crashInfo->message;
     }
     if (isValidCrashInfoMessage(crashInfo->message2)) {
-        FTLOG_DEBUG("Found second message: %s", crashInfo->message2);
+        FTLOG_DEBUG("Found second crash information message.");
         buffer->crashInfoMessage2 = crashInfo->message2;
     }
     if (isValidCrashInfoMessage(crashInfo->backtrace)) {
-        FTLOG_DEBUG("Found backtrace: %s", crashInfo->backtrace);
+        FTLOG_DEBUG("Found crash information backtrace.");
         buffer->crashInfoBacktrace = crashInfo->backtrace;
     }
     if (isValidCrashInfoMessage(crashInfo->signature)) {
-        FTLOG_DEBUG("Found signature: %s", crashInfo->signature);
+        FTLOG_DEBUG("Found crash information signature.");
         buffer->crashInfoSignature = crashInfo->signature;
     }
 }

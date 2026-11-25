@@ -2,6 +2,7 @@
 
 int main(void) {
     @autoreleasepool {
+        [FTLog enableCrashMonitorLog:YES];
         FTSDKConfig *config = [[FTSDKConfig alloc] initWithDatakitUrl:@"https://example.com"];
         FTRumConfig *rum = [[FTRumConfig alloc] initWithAppid:@"app"];
         rum.nextViewActionPredicate = [[FTRUMTimeBasedNextViewActionPredicate alloc] initWithMaxTimeNs:5000000000LL];

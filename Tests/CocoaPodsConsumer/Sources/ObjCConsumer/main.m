@@ -7,6 +7,7 @@
 
 int main(void) {
     @autoreleasepool {
+        [FTLog enableCrashMonitorLog:YES];
         FTSDKConfig *config = [[FTSDKConfig alloc] initWithDatakitUrl:@"https://example.com"];
         FTSDKAgent *agent = [FTSDKAgent sharedInstance];
         FTDefaultActionTrackingHandler *actionHandler = [FTDefaultActionTrackingHandler new];
