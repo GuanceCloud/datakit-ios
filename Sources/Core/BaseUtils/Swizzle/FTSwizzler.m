@@ -244,10 +244,10 @@ static void swizzle(__unsafe_unretained Class classToSwizzle,
     Method method = class_getInstanceMethod(classToSwizzle, selector);
     
     NSCAssert(NULL != method,
-              @"Selector %@ not found in %@ methods of class %@.",
+              @"Selector %@ not found in %@ methods of class %s.",
               NSStringFromSelector(selector),
               class_isMetaClass(classToSwizzle) ? @"class" : @"instance",
-              classToSwizzle);
+              class_getName(classToSwizzle));
     
     __block os_unfair_lock lock = OS_UNFAIR_LOCK_INIT;
     // To keep things thread-safe, we fill in the originalIMP later,
@@ -389,31 +389,50 @@ static void swizzle(__unsafe_unretained Class classToSwizzle,
                            mode:FTSwizzlerModeAlways
                             key:NULL];
 }
-+ (Class)realDelegateClassFromSelector:(SEL)selector proxy:(id)proxy {
-    if (!proxy) {
-        return nil;
-    }
-    
-    id realDelegate = proxy;
-    id obj = nil;
-    do {
-        //Avoid proxy itself implementing the method or adding method implementation through resolveInstanceMethod
-        if (class_getInstanceMethod(object_getClass(realDelegate), selector)) {
-            break;
++ (void)getRealDelegateClassFromSelector:(SEL)selector
+                                   proxy:(id)proxy
+                                  result:(Class __unsafe_unretained *)result {
+    // Returning a runtime Class through ARC can introduce retain/autorelease.
+    *result = Nil;
+    NSHashTable *visited = nil;
+    for (id current = proxy; current; ) {
+        __unsafe_unretained Class currentClass = object_getClass(current);
+        Method method = class_getInstanceMethod(currentClass, selector);
+        __unsafe_unretained Class resolvedClass = object_getClass(current);
+        if (resolvedClass != currentClass) {
+            // Dynamic method resolution can change the receiver's class.
+            method = class_getInstanceMethod(resolvedClass, selector);
+            if (object_getClass(current) != resolvedClass) {
+                return;
+            }
         }
-        
-        //If NSProxy is used or fast forwarding, check if forwardingTargetForSelector is implemented
-        //By default, forwardingTargetForSelector has implementation, just returns nil
-        obj = ((id(*)(id, SEL, SEL))objc_msgSend)(realDelegate, @selector(forwardingTargetForSelector:), selector);
-        if (!obj) break;
-        realDelegate = obj;
-    } while (obj);
-    return object_getClass(realDelegate);
+        if (method) {
+            *result = resolvedClass;
+            return;
+        }
+
+        id next = ((id (*)(id, SEL, SEL))objc_msgSend)(current, @selector(forwardingTargetForSelector:), selector);
+        if (!next) {
+            // URLSession may install a no-op when the terminal delegate lacks the callback.
+            *result = object_getClass(current);
+            return;
+        }
+        if (next == current) {
+            return;
+        }
+        if (!visited) {
+            visited = [NSHashTable hashTableWithOptions:NSPointerFunctionsStrongMemory |
+                                                        NSPointerFunctionsObjectPointerPersonality];
+        }
+        [visited addObject:current];
+        if ([visited containsObject:next]) {
+            return;
+        }
+        current = next;
+    }
 }
 
 + (BOOL)realDelegateClass:(Class)cls respondsToSelector:(SEL)sel {
-    //If cls inherits from NSProxy, using respondsToSelector to judge will crash
-    //Because NSProxy itself does not implement respondsToSelector
     return class_respondsToSelector(cls, sel);
 }
 

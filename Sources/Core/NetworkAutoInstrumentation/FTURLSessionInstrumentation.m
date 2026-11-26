@@ -382,11 +382,15 @@ static dispatch_once_t onceToken;
     SEL completeSelector = @selector(URLSession:task:didCompleteWithError:);
     SEL collectMetricsSelector = @selector(URLSession:task:didFinishCollectingMetrics:);
     SEL webSocketOpenSelector = @selector(URLSession:webSocketTask:didOpenWithProtocol:);
-    
-    Class receiveDataClass = [FTSwizzler realDelegateClassFromSelector:receiveDataSelector proxy:delegate];
-    Class completeClass = [FTSwizzler realDelegateClassFromSelector:completeSelector proxy:delegate];
-    Class collectMetricsClass = [FTSwizzler realDelegateClassFromSelector:collectMetricsSelector proxy:delegate];
-    Class webSocketOpenClass = [FTSwizzler realDelegateClassFromSelector:webSocketOpenSelector proxy:delegate];
+
+    __unsafe_unretained Class receiveDataClass = Nil;
+    __unsafe_unretained Class completeClass = Nil;
+    __unsafe_unretained Class collectMetricsClass = Nil;
+    __unsafe_unretained Class webSocketOpenClass = Nil;
+    [FTSwizzler getRealDelegateClassFromSelector:receiveDataSelector proxy:delegate result:&receiveDataClass];
+    [FTSwizzler getRealDelegateClassFromSelector:completeSelector proxy:delegate result:&completeClass];
+    [FTSwizzler getRealDelegateClassFromSelector:collectMetricsSelector proxy:delegate result:&collectMetricsClass];
+    [FTSwizzler getRealDelegateClassFromSelector:webSocketOpenSelector proxy:delegate result:&webSocketOpenClass];
     
     // Ensure the delegate class implements the necessary methods
     [self addNoopMethodIfNeededToClass:receiveDataClass selector:receiveDataSelector];
@@ -394,15 +398,23 @@ static dispatch_once_t onceToken;
     [self addNoopMethodIfNeededToClass:collectMetricsClass selector:collectMetricsSelector];
     [self addNoopMethodIfNeededToClass:webSocketOpenClass selector:webSocketOpenSelector];
     
-    [self swizzleReceiveDataMethodForClass:receiveDataClass];
-    [self swizzleCompleteMethodForClass:completeClass];
-    [self swizzleCollectMetricsMethodForClass:collectMetricsClass];
-    [self swizzleWebSocketOpenMethodForClass:webSocketOpenClass];
+    if (receiveDataClass) {
+        [self swizzleReceiveDataMethodForClass:receiveDataClass];
+    }
+    if (completeClass) {
+        [self swizzleCompleteMethodForClass:completeClass];
+    }
+    if (collectMetricsClass) {
+        [self swizzleCollectMetricsMethodForClass:collectMetricsClass];
+    }
+    if (webSocketOpenClass) {
+        [self swizzleWebSocketOpenMethodForClass:webSocketOpenClass];
+    }
 }
 
 /// Adds a no-op method to the class if necessary
 - (void)addNoopMethodIfNeededToClass:(Class)targetClass selector:(SEL)selector {
-    if (![FTSwizzler realDelegateClass:targetClass respondsToSelector:selector]) {
+    if (targetClass && !class_respondsToSelector(targetClass, selector)) {
         Method method = class_getInstanceMethod([FTDURLSessionDelegate class], selector);
         if (!method) {
             return;

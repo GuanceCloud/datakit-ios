@@ -22,6 +22,7 @@
 #if TARGET_OS_OSX
 #import "NSTabView+FTAutoTrack.h"
 #import "FTSwizzler.h"
+#import <objc/runtime.h>
 #import "FTGlobalRumManager.h"
 #import "NSView+FTAutoTrack.h"
 #import "FTInnerLog.h"
@@ -44,10 +45,11 @@ static void *FTMacTabViewDidSelectKey = &FTMacTabViewDidSelectKey;
         return;
     }
     SEL selector = @selector(tabView:didSelectTabViewItem:);
-    Class class = [FTSwizzler realDelegateClassFromSelector:selector proxy:delegate];
-    
-    if ([FTSwizzler realDelegateClass:class respondsToSelector:selector]) {
-        FTSwizzlerInstanceMethod(class,
+    __unsafe_unretained Class targetClass = Nil;
+    [FTSwizzler getRealDelegateClassFromSelector:selector proxy:delegate result:&targetClass];
+
+    if (class_respondsToSelector(targetClass, selector)) {
+        FTSwizzlerInstanceMethod(targetClass,
                                  selector,
                                  FTSWReturnType(void),
                                  FTSWArguments(NSTabView *tabView, NSTabViewItem *tabViewItem),

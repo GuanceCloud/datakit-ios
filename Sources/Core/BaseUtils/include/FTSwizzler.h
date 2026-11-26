@@ -317,8 +317,10 @@ typedef NS_ENUM(NSUInteger, FTSwizzlerMode) {
                   inClass:(Class)classToSwizzle
             newImpFactory:(FTSwizzlerImpFactoryBlock)factoryBlock;
 
-// When setDelegate, return the correct delegate
-+ (Class)realDelegateClassFromSelector:(SEL)selector proxy:(id)proxy;
+/// Writes a borrowed runtime class for the selector, or Nil if resolution cannot identify a stable target.
++ (void)getRealDelegateClassFromSelector:(SEL)selector
+                                   proxy:(nullable id)proxy
+                                  result:(Class _Nullable __unsafe_unretained * _Nonnull)result;
 + (BOOL)realDelegateClass:(Class)cls respondsToSelector:(SEL)sel;
 
 @end

@@ -23,6 +23,7 @@
 #import "Firebase.h"
 #import "FTSwizzler.h"
 #import "objc/runtime.h"
+#import <stdatomic.h>
 #import "FTURLSessionInstrumentation.h"
 #import "GuanceSDK.h"
 #import "FTTrackerEventDBTool.h"
@@ -45,6 +46,56 @@
     
 }
 @end
+@interface FTTestDelegateForwarder : NSObject
+@property (nonatomic, weak) id target;
+@property (nonatomic) NSUInteger forwardingCalls;
+@end
+
+@implementation FTTestDelegateForwarder
+- (id)forwardingTargetForSelector:(SEL)selector {
+    // Bound the test double so a cycle regression fails without hanging the test runner.
+    return ++_forwardingCalls <= 2 ? _target : nil;
+}
+@end
+
+@interface FTDynamicSessionDelegate : NSObject<NSURLSessionDataDelegate>
+@property (nonatomic) NSUInteger dataCallbacks;
+@end
+
+@implementation FTDynamicSessionDelegate
+@end
+
+static atomic_uint FTDelegateClassRetains;
+static __weak FTDynamicSessionDelegate *FTDelegateBeingResolved;
+static __unsafe_unretained Class FTDelegateClassAfterResolution;
+
+static Class FTAllocateTestDelegateClass(__unsafe_unretained Class superclass) {
+    NSString *name = [@"FTDynamicSessionDelegate_" stringByAppendingString:NSUUID.UUID.UUIDString];
+    return objc_allocateClassPair(superclass, name.UTF8String, 0);
+}
+
+static const void *FTCountDelegateClassRetain(__unsafe_unretained id receiver, __unused SEL selector) {
+    // Class objects do not have an instance retain count. Record ARC calls without altering runtime metadata.
+    atomic_fetch_add_explicit(&FTDelegateClassRetains, 1, memory_order_relaxed);
+    return (__bridge const void *)receiver;
+}
+
+static void FTCountDelegateDataCallback(FTDynamicSessionDelegate *delegate, __unused SEL selector,
+                                       __unused NSURLSession *session, __unused NSURLSessionDataTask *task,
+                                       __unused NSData *data) {
+    delegate.dataCallbacks++;
+}
+
+static BOOL FTResolveDelegateDataCallback(__unsafe_unretained Class cls, __unused SEL command, SEL selector) {
+    if (selector != @selector(URLSession:dataTask:didReceiveData:)) {
+        return NO;
+    }
+
+    FTDynamicSessionDelegate *delegate = FTDelegateBeingResolved;
+    object_setClass(delegate, FTDelegateClassAfterResolution);
+    return class_addMethod(cls, selector, (IMP)FTCountDelegateDataCallback, "v@:@@@");
+}
+
 @interface FTSwizzlerConflictTest : XCTestCase
 
 @end
@@ -60,6 +111,109 @@
     // Put teardown code here. This method is called after the invocation of each test method in the class.
     [OHHTTPStubs removeAllStubs];
 }
+- (void)testDelegateClassResolutionFollowsForwardingAndRejectsCycles {
+    SEL callback = @selector(URLSession:dataTask:didReceiveData:);
+    FTTestDelegateForwarder *first = [FTTestDelegateForwarder new];
+    FTTestDelegateForwarder *second = [FTTestDelegateForwarder new];
+    DelegateSwizzlerClass *delegate = [DelegateSwizzlerClass new];
+    first.target = second;
+    second.target = delegate;
+
+    __unsafe_unretained Class targetClass = Nil;
+    [FTSwizzler getRealDelegateClassFromSelector:callback proxy:first result:&targetClass];
+    XCTAssertEqual(targetClass, object_getClass(delegate));
+    XCTAssertEqual(first.forwardingCalls, 1u);
+    XCTAssertEqual(second.forwardingCalls, 1u);
+
+    second.target = nil;
+    [FTSwizzler getRealDelegateClassFromSelector:callback proxy:first result:&targetClass];
+    XCTAssertEqual(targetClass, object_getClass(second));
+
+    first.forwardingCalls = 0;
+    second.forwardingCalls = 0;
+    second.target = first;
+    [FTSwizzler getRealDelegateClassFromSelector:callback proxy:first result:&targetClass];
+    XCTAssertEqual(targetClass, Nil);
+    XCTAssertEqual(first.forwardingCalls, 1u);
+    XCTAssertEqual(second.forwardingCalls, 1u);
+
+    first.forwardingCalls = 0;
+    first.target = first;
+    targetClass = object_getClass(first);
+    [FTSwizzler getRealDelegateClassFromSelector:callback proxy:first result:&targetClass];
+    XCTAssertEqual(targetClass, Nil);
+    XCTAssertEqual(first.forwardingCalls, 1u);
+}
+
+- (void)testSessionFactoryHooksDynamicDelegateWithoutRetainingItsClass {
+    __unsafe_unretained Class originalClass = FTDynamicSessionDelegate.class;
+    __unsafe_unretained Class generatedClass = FTAllocateTestDelegateClass(originalClass);
+    XCTAssertTrue(generatedClass != Nil);
+    if (!generatedClass) return;
+
+    SEL callback = @selector(URLSession:dataTask:didReceiveData:);
+    XCTAssertTrue(class_addMethod(generatedClass, callback, (IMP)FTCountDelegateDataCallback, "v@:@@@"));
+    XCTAssertTrue(class_addMethod(object_getClass(generatedClass), sel_registerName("retain"),
+                                  (IMP)FTCountDelegateClassRetain, "@@:"));
+    objc_registerClassPair(generatedClass);
+
+    FTDynamicSessionDelegate *delegate = [FTDynamicSessionDelegate new];
+    object_setClass(delegate, generatedClass);
+    atomic_store_explicit(&FTDelegateClassRetains, 0, memory_order_relaxed);
+    NSURLSession *session = [NSURLSession sessionWithConfiguration:NSURLSessionConfiguration.ephemeralSessionConfiguration
+                                                        delegate:delegate
+                                                   delegateQueue:nil];
+    unsigned int factoryRetains = atomic_load_explicit(&FTDelegateClassRetains, memory_order_relaxed);
+
+    XCTAssertEqual(factoryRetains, 0u);
+    XCTAssertTrue(session.delegate == delegate);
+    XCTAssertTrue(object_getClass(delegate) == generatedClass);
+    XCTAssertTrue(class_getSuperclass(generatedClass) == originalClass);
+    XCTAssertTrue(class_getMethodImplementation(generatedClass, callback) != (IMP)FTCountDelegateDataCallback);
+
+    NSURLSessionDataTask *task = [session dataTaskWithURL:[NSURL URLWithString:@"https://offline.invalid"]];
+    [(id<NSURLSessionDataDelegate>)session.delegate URLSession:session dataTask:task didReceiveData:[NSData data]];
+    XCTAssertEqual(delegate.dataCallbacks, 1u);
+    [session invalidateAndCancel];
+}
+
+- (void)testSessionFactoryHooksClassSelectedDuringDynamicMethodResolution {
+    __unsafe_unretained Class originalClass = FTAllocateTestDelegateClass(FTDynamicSessionDelegate.class);
+    XCTAssertTrue(originalClass != Nil);
+    if (!originalClass) return;
+
+    XCTAssertTrue(class_addMethod(object_getClass(originalClass), @selector(resolveInstanceMethod:),
+                                  (IMP)FTResolveDelegateDataCallback, "B@::"));
+    objc_registerClassPair(originalClass);
+
+    __unsafe_unretained Class resolvedClass = FTAllocateTestDelegateClass(originalClass);
+    XCTAssertTrue(resolvedClass != Nil);
+    if (!resolvedClass) return;
+
+    SEL callback = @selector(URLSession:dataTask:didReceiveData:);
+    XCTAssertTrue(class_addMethod(resolvedClass, callback, (IMP)FTCountDelegateDataCallback, "v@:@@@"));
+    objc_registerClassPair(resolvedClass);
+
+    FTDynamicSessionDelegate *delegate = [originalClass new];
+    FTDelegateBeingResolved = delegate;
+    FTDelegateClassAfterResolution = resolvedClass;
+    NSURLSession *session = [NSURLSession sessionWithConfiguration:NSURLSessionConfiguration.ephemeralSessionConfiguration
+                                                        delegate:delegate
+                                                   delegateQueue:nil];
+    FTDelegateBeingResolved = nil;
+    FTDelegateClassAfterResolution = Nil;
+
+    XCTAssertTrue(session.delegate == delegate);
+    XCTAssertTrue(object_getClass(delegate) == resolvedClass);
+    XCTAssertTrue(class_getMethodImplementation(originalClass, callback) == (IMP)FTCountDelegateDataCallback);
+    XCTAssertTrue(class_getMethodImplementation(resolvedClass, callback) != (IMP)FTCountDelegateDataCallback);
+
+    NSURLSessionDataTask *task = [session dataTaskWithURL:[NSURL URLWithString:@"https://offline.invalid"]];
+    [(id<NSURLSessionDataDelegate>)session.delegate URLSession:session dataTask:task didReceiveData:[NSData data]];
+    XCTAssertEqual(delegate.dataCallbacks, 1u);
+    [session invalidateAndCancel];
+}
+
 - (void)setSDK{
     NSProcessInfo *processInfo = [NSProcessInfo processInfo];
     NSString *url = [processInfo environment][@"ACCESS_SERVER_URL"];
