@@ -1,3 +1,11 @@
+# 1.6.10-alpha.1
+
+1. Improved automatic `URLSession` instrumentation compatibility with dynamically generated delegate classes and cyclic delegate forwarding.
+2. Fixed a potential SDK shutdown deadlock involving RUM Resource callbacks. The restarted SDK ignores late callbacks from requests started before shutdown.
+3. Added opt-in local Crash Monitor diagnostics via `[FTLog enableCrashMonitorLog:YES]`. Logging is disabled by default, can be enabled before SDK initialization, and works independently of SDK debug logging.
+4. Added device model mappings for iPhone 18 Pro, iPhone 18 Pro Max, iPhone Duo, and iPhone 17e.
+---
+
 # 1.6.9
 
 1. Automatic Long Task and ANR collection now ignores background stalls by default, and ANR reports retain the application state captured at stall start. Improved stall timing accuracy, captured stack preservation, and monitor startup reliability.
