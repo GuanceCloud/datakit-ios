@@ -267,60 +267,55 @@ final class FTTestInteraction: XCTestCase {
     }
     // MARK: - RUM - Resource filter
     func testResourceFilter_intakeUrlHandler() throws {
-        resourceFilter(oldMethod: true, hasUrl: true)
+        try resourceFilter(oldMethod: true, hasUrl: true)
     }
     func testResourceFilter_intakeUrlHandler_nullUrl() throws {
-        resourceFilter(oldMethod: true, hasUrl: false)
+        try resourceFilter(oldMethod: true, hasUrl: false)
     }
-    func testResourceFilter_resourceUrlHandler_nullUrl()throws {
-        resourceFilter(oldMethod: false, hasUrl: false)
+    func testResourceFilter_resourceUrlHandler_nullUrl() throws {
+        try resourceFilter(oldMethod: false, hasUrl: false)
     }
     func testResourceFilter_resourceUrlHandler() throws {
-        resourceFilter(oldMethod: false, hasUrl: true)
+        try resourceFilter(oldMethod: false, hasUrl: true)
     }
-    
-    func resourceFilter(oldMethod:Bool,hasUrl:Bool){
-        let dic = ProcessInfo().environment
-        let url = dic["ACCESS_SERVER_URL"]
-        let appid = dic["APP_ID"]
-        let config:FTMobileConfig = FTMobileConfig(datakitUrl: url!)
+
+    private func resourceFilter(oldMethod: Bool, hasUrl: Bool) throws {
+        let config = FTMobileConfig(datakitUrl: "http://127.0.0.1:9")
         config.autoSync = false
         FTMobileAgent.start(withConfigOptions: config)
-    
-        var hasResourceFilter = false
-        
-        let rumConfig = FTRumConfig(appid: appid!)
-        rumConfig.enableTraceUserAction = true
-        rumConfig.enableTrackAppANR = true
-        rumConfig.enableTraceUserView = true
-        rumConfig.enableTrackAppCrash = true
-        rumConfig.enableTrackAppFreeze = true
-        rumConfig.deviceMetricsMonitorType = .all
-        if(oldMethod == false){
-            rumConfig.resourceUrlHandler =  { url in
-                hasResourceFilter = true
+        defer { FTMobileAgent.shutDown() }
+
+        var filteredURLs: [URL] = []
+        let rumConfig = FTRumConfig(appid: "resource-filter-test")
+        if !oldMethod {
+            rumConfig.resourceUrlHandler = { url in
+                filteredURLs.append(url)
                 return false
             }
         }
         FTMobileAgent.sharedInstance().startRum(withConfigOptions: rumConfig)
-        
-        if(oldMethod == true){
+
+        if oldMethod {
             FTMobileAgent.sharedInstance().isIntakeUrl { url in
-                hasResourceFilter = true
+                filteredURLs.append(url)
                 return false
             }
         }
-        
-        let request = URLRequest(url:  URL(string: "http://www.test.com/some/url/string")!)
-        let task = URLSession.shared.dataTask(with:request)
-        if(hasUrl == false){
+
+        let requestURL = try XCTUnwrap(URL(string: "https://resource-filter.invalid/path"))
+        let task = URLSession.shared.dataTask(with: URLRequest(url: requestURL))
+        if !hasUrl {
             task.setValue(nil, forKey: "originalRequest")
             task.setValue(nil, forKey: "currentRequest")
         }
-        FTURLSessionInterceptor.shared().interceptTask(task)
-        FTURLSessionInterceptor.shared().shutDown()
-        XCTAssertTrue(hasResourceFilter == hasUrl)
-        FTMobileAgent.shutDown()
+
+        let interceptor = FTURLSessionInterceptor.shared()
+        let queue = try XCTUnwrap(interceptor.value(forKey: "queue") as? DispatchQueue)
+        interceptor.interceptTask(task)
+
+        // Read the callback results after the interceptor processes the task.
+        let observedURLs = queue.sync { filteredURLs }
+        XCTAssertEqual(observedURLs, hasUrl ? [requestURL] : [])
     }
 
 }

@@ -41,6 +41,11 @@ typedef NS_ENUM(NSUInteger,TestSessionRequestMethod){
     DataTaskWithURLCompletionHandler,
     DataTaskWithURL,
 };
+
+@interface FTURLSessionInterceptor (FTResourceDelegateTesting)
+@property (nonatomic, readonly) dispatch_queue_t queue;
+@end
+
 @interface FTResourceDelegateTest : XCTestCase<NSURLSessionDataDelegate>
 
 @end
@@ -453,32 +458,32 @@ typedef NS_ENUM(NSUInteger,TestSessionRequestMethod){
     [self intakeUrl:NO enableRUMAutoTrace:YES];
 }
 - (void)testIntakeUrlReturnNO_nullUrl{
-    [self sdkEnableRUMAutoTrace:NO];
-    __block BOOL hasUrl = NO;
-    [[FTMobileAgent sharedInstance] isIntakeUrl:^BOOL(NSURL * _Nonnull url) {
-        hasUrl = YES;
-        return YES;
-    }];
-    NSURLSessionTask *task = [[NSURLSession sharedSession] dataTaskWithRequest:[NSURLRequest requestWithURL:[NSURL URLWithString:@"http://www.test.com/some/url/string1"]]];
-    [task setValue:nil forKey:@"originalRequest"];
-    [task setValue:nil forKey:@"currentRequest"];
-    [NSThread sleepForTimeInterval:0.2];
-    [[FTURLSessionInterceptor shared] interceptTask:task];
-    [[FTURLSessionInterceptor shared] shutDown];
-    XCTAssertTrue(hasUrl == NO);
+    [self assertIntakeURLCallbackForRequestWithURL:NO];
 }
 - (void)testIntakeUrlReturnNO_Url{
+    [self assertIntakeURLCallbackForRequestWithURL:YES];
+}
+- (void)assertIntakeURLCallbackForRequestWithURL:(BOOL)hasURL {
     [self sdkEnableRUMAutoTrace:NO];
-    __block BOOL hasUrl = NO;
-
+    NSMutableArray<NSURL *> *observedURLs = [NSMutableArray array];
     [[FTMobileAgent sharedInstance] isIntakeUrl:^BOOL(NSURL * _Nonnull url) {
-        hasUrl = YES;
+        [observedURLs addObject:url];
         return YES;
     }];
-    NSURLSessionTask *task = [[NSURLSession sharedSession] dataTaskWithRequest:[NSURLRequest requestWithURL:[NSURL URLWithString:@"http://www.test.com/some/url/string"]]];
-    [[FTURLSessionInterceptor shared] interceptTask:task];
-    [[FTURLSessionInterceptor shared] shutDown];
-    XCTAssertTrue(hasUrl == YES);
+    NSURL *requestURL = [NSURL URLWithString:@"https://resource-filter.invalid/path"];
+    NSURLRequest *request = [NSURLRequest requestWithURL:requestURL];
+    NSURLSessionTask *task = [[NSURLSession sharedSession] dataTaskWithRequest:request];
+    if (!hasURL) {
+        [task setValue:nil forKey:@"originalRequest"];
+        [task setValue:nil forKey:@"currentRequest"];
+    }
+
+    FTURLSessionInterceptor *interceptor = [FTURLSessionInterceptor shared];
+    [interceptor interceptTask:task];
+    NSArray<NSURL *> *expectedURLs = hasURL ? @[requestURL] : @[];
+    dispatch_sync(interceptor.queue, ^{
+        XCTAssertEqualObjects(observedURLs, expectedURLs);
+    });
 }
 - (void)intakeUrl:(BOOL)trace enableRUMAutoTrace:(BOOL)enable{
     [self sdkEnableRUMAutoTrace:enable];
