@@ -167,7 +167,8 @@ static void *IMP_resolved_method_implementation(void){
     self.sub = [SubSwizzlerClass new];
     SEL selector = @selector(baseSring:);
     self.delegate = self.sub;
-    Class class = [FTSwizzler realDelegateClassFromSelector:selector proxy:self.delegate];
+    __unsafe_unretained Class class = Nil;
+    [FTSwizzler getRealDelegateClassFromSelector:selector proxy:self.delegate result:&class];
     __block NSInteger times = 0;
     if ([FTSwizzler realDelegateClass:class respondsToSelector:selector]) {
         FTSwizzlerInstanceMethod(class, selector, FTSWReturnType(NSString*), FTSWArguments(NSString *str), FTSWReplacement({
@@ -181,7 +182,8 @@ static void *IMP_resolved_method_implementation(void){
 - (void)testSwizzleNullDelegate{
     SEL selector = @selector(baseSring:);
     self.delegate = self.nullSub;
-    Class class = [FTSwizzler realDelegateClassFromSelector:selector proxy:self.delegate];
+    __unsafe_unretained Class class = Nil;
+    [FTSwizzler getRealDelegateClassFromSelector:selector proxy:self.delegate result:&class];
     __block NSInteger times = 0;
     if ([FTSwizzler realDelegateClass:class respondsToSelector:selector]) {
         FTSwizzlerInstanceMethod(class, selector, FTSWReturnType(NSString*), FTSWArguments(NSString *str), FTSWReplacement({

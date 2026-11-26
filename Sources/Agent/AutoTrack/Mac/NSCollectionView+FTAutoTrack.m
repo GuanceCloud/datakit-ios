@@ -22,6 +22,7 @@
 #if TARGET_OS_OSX
 #import "NSCollectionView+FTAutoTrack.h"
 #import "FTSwizzler.h"
+#import <objc/runtime.h>
 #import "FTGlobalRumManager.h"
 #import "FTAutoTrack.h"
 @implementation NSCollectionView (FTAutoTrack)
@@ -34,10 +35,11 @@ static void *FTMacCollectionViewDidSelectKey = &FTMacCollectionViewDidSelectKey;
         return;
     }
     SEL selector = @selector(collectionView:didSelectItemsAtIndexPaths:);
-    Class class = [FTSwizzler realDelegateClassFromSelector:selector proxy:delegate];
-    
-    if ([FTSwizzler realDelegateClass:class respondsToSelector:selector]) {
-        FTSwizzlerInstanceMethod(class,
+    __unsafe_unretained Class targetClass = Nil;
+    [FTSwizzler getRealDelegateClassFromSelector:selector proxy:delegate result:&targetClass];
+
+    if (class_respondsToSelector(targetClass, selector)) {
+        FTSwizzlerInstanceMethod(targetClass,
                                  selector,
                                  FTSWReturnType(void),
                                  FTSWArguments(NSCollectionView *collectionView, NSSet<NSIndexPath *> *indexPaths),
