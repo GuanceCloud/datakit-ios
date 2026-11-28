@@ -1,0 +1,264 @@
+//
+//  FTRumConfig.h
+//
+//  Created by hulilei on 2025/7/22.
+//  Copyright 2025 Shanghai Guance Information Technology Co., Ltd.
+//
+//  Licensed under the Apache License, Version 2.0 (the "License");
+//  you may not use this file except in compliance with the License.
+//  You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+//  Unless required by applicable law or agreed to in writing, software
+//  distributed under the License is distributed on an "AS IS" BASIS,
+//  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+//  See the License for the specific language governing permissions and
+//  limitations under the License.
+//
+
+#import <Foundation/Foundation.h>
+#import "FTActionTrackingHandler.h"
+#import "FTViewTrackingHandler.h"
+#import "FTIssueDataProvider.h"
+#import "FTVisitorIDConfig.h"
+#import "FTRUMViewTimingPredicates.h"
+
+/// Crash monitoring type
+typedef NS_OPTIONS(NSUInteger, FTCrashMonitorType){
+    /** Monitor Mach kernel exceptions. */
+    FTCrashMonitorTypeMachException      = 0x01,
+    
+    /** Monitor fatal signals. */
+    FTCrashMonitorTypeSignal             = 0x02,
+    
+    /** Monitor uncaught C++ exceptions. */
+    FTCrashMonitorTypeCPPException       = 0x04,
+    
+    /** Monitor uncaught Objective-C NSExceptions. */
+    FTCrashMonitorTypeNSException        = 0x08,
+    
+    /** Track and inject system information. */
+    FTCrashMonitorTypeSystem             = 0x40,
+    
+    /** Track and inject application state information. */
+    FTCrashMonitorTypeApplicationState   = 0x80,
+    
+};
+
+/// Bitmask that enables all supported crash monitors.
+#define FTCrashMonitorTypeAll                                                                  \
+    (FTCrashMonitorTypeMachException | FTCrashMonitorTypeSignal                            \
+        | FTCrashMonitorTypeCPPException | FTCrashMonitorTypeNSException                   \
+        | FTCrashMonitorTypeApplicationState | FTCrashMonitorTypeSystem)
+
+
+/// Bitmask that enables all crash monitors except Mach exceptions for broader device compatibility.
+#define FTCrashMonitorTypeHighCompatibility                                                          \
+    (FTCrashMonitorTypeAll & (~FTCrashMonitorTypeMachException))
+/// Device information in ERROR
+typedef NS_OPTIONS(NSUInteger, FTErrorMonitorType) {
+    /// Enable all monitoring: battery, memory, CPU usage
+    FTErrorMonitorAll          = 0xFFFFFFFF,
+    /// Battery level
+    FTErrorMonitorBattery      = 1 << 1,
+    /// Total memory, memory usage
+    FTErrorMonitorMemory       = 1 << 2,
+    /// CPU usage
+    FTErrorMonitorCpu          = 1 << 3,
+};
+
+/// Device information monitoring items
+typedef NS_OPTIONS(NSUInteger, FTDeviceMetricsMonitorType){
+    /// Enable all monitoring items: memory, CPU, FPS
+    FTDeviceMetricsMonitorAll      = 0xFFFFFFFF,
+    /// Average memory, peak memory
+    FTDeviceMetricsMonitorMemory   = 1 << 2,
+    /// CPU maximum fluctuation, average
+    FTDeviceMetricsMonitorCpu      = 1 << 3,
+    /// FPS minimum frame rate, average frame rate
+    FTDeviceMetricsMonitorFps API_UNAVAILABLE(macos) = 1 << 4,
+};
+/// Monitoring item sampling frequency
+typedef NS_ENUM(NSUInteger, FTMonitorFrequency) {
+    /// 500ms (default)
+    FTMonitorFrequencyDefault,
+    /// 100ms
+    FTMonitorFrequencyFrequent,
+    /// 1000ms
+    FTMonitorFrequencyRare,
+};
+
+/// RUM discard strategy
+typedef NS_ENUM(NSInteger, FTRUMCacheDiscard)  {
+    /// Default, when log data count exceeds maximum (100_000), new data is not written
+    FTRUMDiscard,
+    /// When log data exceeds maximum, discard old data
+    FTRUMDiscardOldest
+};
+
+NS_ASSUME_NONNULL_BEGIN
+/// RUM filter resource callback, returns: NO means to collect, YES means not to collect.
+typedef BOOL(^FTResourceUrlHandler)(NSURL * url);
+/// RUM Resource custom add extra properties
+typedef NSDictionary<NSString *,id>* _Nullable (^FTResourcePropertyProvider)( NSURLRequest * _Nullable request, NSURLResponse * _Nullable response,NSData *_Nullable data, NSError *_Nullable error);
+/// Support custom intercept `URLSessionTask` Error, confirm interception returns YES, not intercepted returns NO
+typedef BOOL (^FTSessionTaskErrorFilter)(NSError *_Nonnull error);
+
+
+
+/// RUM functionality configuration items
+@interface FTRumConfig : NSObject
+/// iOS startup prewarm heuristic threshold in milliseconds. Default 0 disables duration inference.
+/// Suggested opt-in: 1500. Long intervals are not proof of OS prewarming; compare startup
+/// distributions before using calibrated measurements for SLOs. System-detected prewarming
+/// always excludes the pre-runtime and runtime intervals from total duration, even when this is 0.
+/// Applies to automatic Action tracking; manual markers do not change phase boundaries.
+/// Calibration moves the launch Action time to the retained prefix boundary;
+/// retained phase start offsets are relative to that Action time.
+/// The prewarm_type source tag is emitted only when this threshold is positive.
+@property (nonatomic, assign) NSInteger launchPrewarmInterval;
+
+/// Designated initializer, set appid
+///
+/// - Parameters:
+///   - appid: User access monitoring application ID unique identifier, automatically generated when creating monitoring in the user access monitoring console.
+/// - Returns: rum configuration items.
+- (instancetype)initWithAppid:(nonnull NSString *)appid;
+/// Disable new initialization
++ (instancetype)new NS_UNAVAILABLE;
+/// User access monitoring application ID unique identifier, automatically generated when creating monitoring in the user access monitoring console.
+@property (nonatomic, copy) NSString *appid;
+/// RUM session sampling rate in percent. Values range from 0 to 100 and may contain a fractional part. Default: 100.
+@property (nonatomic, assign) float sessionSamplingRate;
+/// Collect sessions that have errors.
+/// When the feature is enabled, if a Session that was not originally selected by the sampling rate encounters an error, the SDK will collect data from these originally uncollected Sessions
+/// Values range from 0 to 100 and may contain a fractional part. Default: 0.
+@property (nonatomic, assign) float sessionOnErrorSamplingRate;
+/// Set whether to track user actions, currently supports app launch and click actions,
+/// Only effective when View events are present
+@property (nonatomic, assign) BOOL enableTraceUserAction;
+/// Set whether to track page lifecycle (only applies to autotrack)
+@property (nonatomic, assign) BOOL enableTraceUserView;
+/// Automatically collect page loading time when enableTraceUserView is YES. Default: YES.
+/// Applies to UIKit and automatically tracked SwiftUI pages. Setting NO preserves RUM View tracking.
+/// Configure before starting RUM; this does not remove lifecycle hooks already installed.
+@property (nonatomic, assign) BOOL enableTraceUserViewLoadingTime;
+/// Full runtime controller class names excluded from automatic page loading-time collection.
+/// Matching is exact and case-sensitive, without substring, regular-expression or inheritance matching.
+/// Default: empty. Custom page names returned by viewTrackingHandler are not used for this filter.
+/// Excluded controllers retain RUM View tracking. Configure before starting RUM.
+/// Lifecycle overrides must call super for base-class View tracking to receive callbacks.
+/// @discussion Helps resolve issues in specific scenarios.
+/// For Swift classes, use `NSStringFromClass(MyViewController.self)` to include the module prefix.
+@property (nonatomic, copy) NSArray<NSString *> *viewLoadingTimeClassNameExcludes;
+/// Set whether to track user network requests (only applies to native http)
+@property (nonatomic, assign) BOOL enableTraceUserResource;
+/// Set whether to automatically collect NSURLConnection requests as RUM Resources. Default: NO.
+/// This switch is independent from `enableTraceUserResource`, which controls NSURLSession.
+@property (nonatomic, assign) BOOL enableTraceURLConnectionResource;
+/// Set whether to collect network request Host IP (only applies to native HTTP requests)
+@property (nonatomic, assign) BOOL enableResourceHostIP;
+/// Custom collection resource rules.
+/// Determine whether to collect corresponding resource data based on the requested resource URL, default is to collect all. Returns: NO means to collect, YES means not to collect.
+@property (nonatomic, copy, nullable) FTResourceUrlHandler resourceUrlHandler;
+/// Set whether to collect crash logs
+@property (nonatomic, assign) BOOL enableTrackAppCrash;
+/// Crash monitoring type, default:FTCrashMonitorTypeHighCompatibility
+/// Note: Required are FTCrashMonitorTypeSystem | FTCrashMonitorTypeApplicationState (provides important information for crash reports)
+@property (nonatomic, assign) FTCrashMonitorType crashMonitoring;
+/// Set whether to collect freezes
+@property (nonatomic, assign) BOOL enableTrackAppFreeze;
+/// Set freeze threshold. Unit milliseconds 100 < freezeDurationMs, default 250ms
+@property (nonatomic, assign) long freezeDurationMs;
+/// Set whether to collect ANR
+///
+/// runloop collects main thread freezes
+@property (nonatomic, assign) BOOL enableTrackAppANR;
+/// Synchronously supplies validated custom fields for automatically collected
+/// Crash and ANR RUM Errors.
+///
+/// This callback may run concurrently, reentrantly, and on a non-main SDK
+/// processing thread. Keep it thread-safe and fast, and do not perform UI,
+/// network, disk, dispatch waits, or long lock waits.
+@property (nonatomic, copy, nullable) FTIssueDataProvider issueDataProvider;
+/// Device information in ERROR
+@property (nonatomic, assign) FTErrorMonitorType errorMonitorType;
+/// Set monitoring type, if not set then monitoring is not enabled
+@property (nonatomic, assign) FTDeviceMetricsMonitorType deviceMetricsMonitorType;
+/// Set monitoring sampling frequency
+@property (nonatomic, assign) FTMonitorFrequency monitorFrequency;
+/// Set rum global tags
+///
+/// Reserved tags: special key - track_id (for tracking functionality)
+@property (nonatomic, copy, nullable) NSDictionary<NSString*,NSString*> *globalContext;
+/// RUM maximum cache limit, default 100_000
+@property (nonatomic, assign) int rumCacheLimitCount;
+/// RUM discard strategy
+@property (nonatomic, assign) FTRUMCacheDiscard rumDiscardType;
+/// Adds custom properties to RUM resource events.
+/// The callback receives the request, response, optional buffered response body data, and error.
+/// Response body data is not guaranteed: when the SDK buffers delegate response chunks, media responses and non-media responses larger than 512 KB are not cached and pass nil.
+@property (nonatomic, copy, nullable) FTResourcePropertyProvider resourcePropertyProvider;
+/// Intercept SessionTask Error, confirm interception returns YES, not intercepted returns NO
+@property (nonatomic, copy, nullable) FTSessionTaskErrorFilter sessionTaskErrorFilter;
+
+/// SDK-managed anonymous Visitor ID configuration. Default: nil (disabled).
+///
+/// A non-nil valid configuration injects the configured header into matching
+/// URLSession data/upload/download requests and adds the same event/request
+/// snapshot to native RUM as `visitor_id`. It is independent of RUM and Trace
+/// sampling and must not be used for authentication or authorization.
+@property (nonatomic, copy, nullable) FTVisitorIDConfig *visitorIDConfig;
+
+/// Set whether to enable WebView data collection, default YES
+@property (nonatomic, assign) BOOL enableTraceWebView;
+
+/// A handler for user-defined collection of `ViewControllers` as RUM views for tracking.
+/// It takes effect when enableTraceUserView = YES.
+/// RUM will call this callback for each `ViewController` presented in the application.
+///  - If the given controller needs to start a RUM view, return the FTRUMView parameters;
+///  - Return nil to ignore it.
+@property (nonatomic, strong, nullable) FTViewTrackingHandler viewTrackingHandler API_UNAVAILABLE(macos);
+
+/// Experimental: A handler for user-defined collection of automatically extracted SwiftUI View names as RUM views.
+/// Set this only when your app needs automatic SwiftUI View tracking.
+/// If you do not need custom filtering or naming, set `FTDefaultSwiftUIViewTrackingHandler`.
+/// It takes effect when enableTraceUserView = YES and this handler is not nil.
+/// This experimental API may change in future releases.
+/// RUM will call this callback when a SwiftUI view name is extracted from a hosting view controller.
+///  - If the given SwiftUI view name needs to start a RUM view, return the FTRUMView parameters;
+///  - Return nil to ignore it.
+@property (nonatomic, strong, nullable) id<FTSwiftUIViewTrackingHandler> swiftUIViewTrackingHandler API_UNAVAILABLE(macos);
+
+/// The handler deciding if a given RUM Action should be recorded.
+/// It takes effect when enableTraceUserAction = YES.
+///  - If need to Start a RUM action, return the FTRUMAction parameters;
+///  - Return nil to ignore it.
+@property (nonatomic, strong, nullable) FTActionTrackingHandler actionTrackingHandler API_UNAVAILABLE(macos);
+
+/// Defaults to click within three seconds. Explicit nil disables interaction_to_next_view_time.
+@property (nonatomic, strong, nullable) id<FTRUMNextViewActionPredicate> nextViewActionPredicate NS_EXTENSION_UNAVAILABLE("Interaction-to-next-view timing is unavailable in app extensions.");
+/// Defaults to requests starting within 100ms. Setting nil restores that default rule.
+@property (nonatomic, strong, nullable) id<FTRUMNetworkSettledResourcePredicate> networkSettledResourcePredicate;
+
+/// Enable freeze collection and set freeze threshold.
+/// - Parameter enableTrackAppFreeze: Set whether to collect freezes
+/// - Parameter freezeDurationMs: Freeze threshold, unit milliseconds 100 < freezeDurationMs, default 250ms
+-(void)setEnableTrackAppFreeze:(BOOL)enableTrackAppFreeze freezeDurationMs:(long)freezeDurationMs;
+@end
+
+/// Deprecated RUM configuration APIs retained for backward compatibility.
+@interface FTRumConfig (Deprecated)
+
+/// Deprecated. Use `sessionSamplingRate`. Setting this property validates and updates `sessionSamplingRate`; reading it returns an integer-percent projection.
+@property (nonatomic, assign) int sampleRate DEPRECATED_MSG_ATTRIBUTE("Use sessionSamplingRate.");
+/// Deprecated. Use `sessionSamplingRate`. Setting this property validates and updates `sessionSamplingRate`; reading it returns an integer-percent projection.
+@property (nonatomic, assign) int samplerate DEPRECATED_MSG_ATTRIBUTE("Use sessionSamplingRate.");
+/// Deprecated. Use `sessionOnErrorSamplingRate`. Setting this property validates and updates `sessionOnErrorSamplingRate`; reading it returns an integer-percent projection.
+@property (nonatomic, assign) int sessionOnErrorSampleRate DEPRECATED_MSG_ATTRIBUTE("Use sessionOnErrorSamplingRate.");
+/// Set specific hosts or domains allowed to collect WebView data, nil means collect all.
+@property (nonatomic, copy, nullable) NSArray *allowWebViewHost DEPRECATED_MSG_ATTRIBUTE("Use FTSDKConfig.allowWebViewHost.");
+
+@end
+NS_ASSUME_NONNULL_END

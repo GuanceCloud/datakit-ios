@@ -13,6 +13,7 @@
  * This file has been translated/adapted to Objective-C with project-specific changes.
  */
 
+#import "FTDiagnosticsBridge.h"
 #import <TargetConditionals.h>
 #if TARGET_OS_IOS || TARGET_OS_OSX
 
@@ -148,6 +149,7 @@
             [readableArray addObject:obj];
         }
     }];
+    [FTDiagnosticsBridge record:@"backlog" channel:@"replay" count:readableArray.count bytes:-1 reason:@"observed_storage_files_before_age_filter"];
     if(self.ignoreFilesAgeWhenReading){
         NSInteger length = limit > readableArray.count?readableArray.count:limit;
         return [readableArray subarrayWithRange:NSMakeRange(0, length)];
@@ -178,6 +180,7 @@
 - (FTFile *)deleteFileIfItsObsolete:(FTFile *)file{
     NSTimeInterval fileAge = [[NSDate date] timeIntervalSinceDate:file.fileCreationDate];
     if(fileAge >= self.performance.maxFileAgeForRead){
+        if([FTDiagnosticsBridge enabled]) [FTDiagnosticsBridge record:@"discard" channel:@"replay" count:1 bytes:file.size reason:@"expired_file"];
         [file deleteFile];
         return nil;
     }

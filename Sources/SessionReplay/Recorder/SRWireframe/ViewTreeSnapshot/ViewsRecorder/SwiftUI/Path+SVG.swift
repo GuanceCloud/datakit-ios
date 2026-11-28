@@ -19,7 +19,6 @@ import CoreGraphics
 import Foundation
 import SwiftUI
 
-@available(iOS 13.0, tvOS 13.0, *)
 extension SwiftUI.Path {
     var ft_svgString: String {
         var d = ""

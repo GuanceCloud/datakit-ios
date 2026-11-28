@@ -43,14 +43,15 @@
 @property (nonatomic, assign) long long lastProcessFatalErrorTime;
 @property (nonatomic, strong) dispatch_queue_t errorSampledConsumeQueue;
 
-- (void)writeSource:(NSString *)source
+- (BOOL)writeSource:(NSString *)source
                  op:(NSString *)op
         contextTags:(NSDictionary *)contextTags
                tags:(NSDictionary *)tags
              fields:(NSDictionary *)fields
                time:(long long)time
          updateTime:(long long)updateTime
-              cache:(BOOL)cache;
+              cache:(BOOL)cache
+            rumData:(nullable FTRUMWriteData *)rumData;
 @end
 @implementation FTDataWriterWorker
 -(instancetype)init{
@@ -69,60 +70,86 @@
     return self;
 }
 // Called in RUM queue or longtask queue
-- (void)rumWrite:(NSString *)source tags:(NSDictionary *)tags fields:(NSDictionary *)fields dynamicContext:(NSDictionary *)dynamicContext time:(long long)time{
-    [self rumWrite:source tags:tags fields:fields dynamicContext:dynamicContext time:time updateTime:0];
-}
-- (void)rumWrite:(NSString *)source tags:(NSDictionary *)tags fields:(NSDictionary *)fields dynamicContext:(NSDictionary *)dynamicContext time:(long long)time updateTime:(long long)updateTime{
-    [self rumWrite:source tags:tags fields:fields dynamicContext:dynamicContext time:time updateTime:updateTime cache:self.isCache];
-}
-- (void)rumWrite:(NSString *)source tags:(NSDictionary *)tags fields:(NSDictionary *)fields dynamicContext:(NSDictionary *)dynamicContext time:(long long)time updateTime:(long long)updateTime cache:(BOOL)cache{
-    if (![source isKindOfClass:NSString.class] || source.length == 0) {
-        return;
-    }
+- (BOOL)writeRUMData:(FTRUMWriteData *)data {
     @try {
-        NSMutableDictionary *contextTags = [NSMutableDictionary dictionary];
-        [contextTags addEntriesFromDictionary:[NSObject ft_normalizedDictionaryWithObject:dynamicContext]];
-        [self writeSource:source
-                       op:cache ? FT_DATA_TYPE_RUM_CACHE:FT_DATA_TYPE_RUM
-              contextTags:contextTags
-                     tags:tags
-                   fields:fields
-                     time:time
-               updateTime:updateTime
-                    cache:cache];
+        BOOL cache = data.cache ? data.cache.boolValue : self.isCache;
+        return [self writeSource:data.source op:cache ? FT_DATA_TYPE_RUM_CACHE : FT_DATA_TYPE_RUM
+                     contextTags:data.context.tags tags:data.tags fields:data.fields time:data.time
+                     updateTime:data.updateTime cache:cache rumData:data];
     } @catch (NSException *exception) {
-        FTInnerLogError(@"exception %@",exception);
+        FTInnerLogError(@"exception %@", exception);
+        return NO;
     }
 }
-- (void)rumWriteAssembledData:(NSString *)source tags:(NSDictionary *)tags fields:(NSDictionary *)fields time:(long long)time{
-    [self writeSource:source op:FT_DATA_TYPE_RUM contextTags:nil tags:tags fields:fields time:time updateTime:0 cache:NO];
-}
-- (void)writeSource:(NSString *)source
+- (BOOL)writeSource:(NSString *)source
                  op:(NSString *)op
         contextTags:(NSDictionary *)contextTags
                tags:(NSDictionary *)tags
              fields:(NSDictionary *)fields
                time:(long long)time
          updateTime:(long long)updateTime
-              cache:(BOOL)cache {
+              cache:(BOOL)cache
+            rumData:(FTRUMWriteData *)rumData {
     if (![source isKindOfClass:NSString.class] || source.length == 0 || ![op isKindOfClass:NSString.class] || op.length == 0) {
-        return;
+        return NO;
     }
+    BOOL webViewLog = [op isEqualToString:FT_DATA_TYPE_LOGGING]
+        && [tags[FT_IS_WEBVIEW] respondsToSelector:@selector(boolValue)]
+        && [tags[FT_IS_WEBVIEW] boolValue];
+    BOOL webViewRUM = ([op isEqualToString:FT_DATA_TYPE_RUM] || [op isEqualToString:FT_DATA_TYPE_RUM_CACHE])
+        && [tags[FT_IS_WEBVIEW] respondsToSelector:@selector(boolValue)]
+        && [tags[FT_IS_WEBVIEW] boolValue];
     FTPresetProperty *preset = [FTPresetProperty sharedInstance];
     NSDictionary *eventTags = [preset applyModifier:tags];
+    NSMutableSet *customTagKeys = [rumData.customTagKeys mutableCopy] ?: [NSMutableSet set];
+    NSSet *customFieldKeys = rumData.customFieldKeys;
     NSDictionary *eventFields = [preset applyModifier:fields];
     NSDictionary *safeContextTags = [NSObject ft_normalizedDictionaryWithObject:contextTags];
     NSMutableDictionary *tagsDict = [eventTags mutableCopy] ?: [NSMutableDictionary dictionary];
-    [tagsDict addEntriesFromDictionary:safeContextTags];
-    NSDictionary *pkgInfo = eventTags[FT_SDK_PKG_INFO];
-    if (pkgInfo && pkgInfo.count > 0) {
-        NSDictionary *info = safeContextTags[FT_SDK_PKG_INFO];
-        if (info) {
-            NSMutableDictionary *mutableInfo = [info mutableCopy];
-            [mutableInfo addEntriesFromDictionary:pkgInfo];
-            pkgInfo = mutableInfo;
+    id browserVisitorID = webViewRUM ? eventTags[FT_VISITOR_ID] : nil;
+    if (rumData) {
+        [tagsDict removeObjectForKey:FT_RUM_CUSTOM_KEYS];
+        FTRUMMergeProperties(tagsDict, customTagKeys, safeContextTags, rumData.context.customKeys);
+    } else {
+        [tagsDict addEntriesFromDictionary:safeContextTags];
+    }
+    if (!webViewRUM && rumData.visitorIDSnapshot.length > 0) {
+        FTRUMSetSystemProperty(tagsDict, customTagKeys, FT_VISITOR_ID, rumData.visitorIDSnapshot);
+        if (eventFields[FT_VISITOR_ID]) {
+            NSMutableDictionary *nativeFields = [eventFields mutableCopy];
+            [nativeFields removeObjectForKey:FT_VISITOR_ID];
+            eventFields = nativeFields;
         }
-        tagsDict[FT_SDK_PKG_INFO] = pkgInfo;
+    }
+    NSDictionary *eventPkgInfo = [eventTags[FT_SDK_PKG_INFO] isKindOfClass:NSDictionary.class]
+        ? eventTags[FT_SDK_PKG_INFO] : nil;
+    NSDictionary *contextPkgInfo = [safeContextTags[FT_SDK_PKG_INFO] isKindOfClass:NSDictionary.class]
+        ? safeContextTags[FT_SDK_PKG_INFO] : nil;
+    NSMutableDictionary *pkgInfo = [contextPkgInfo mutableCopy] ?: [NSMutableDictionary dictionary];
+    [pkgInfo addEntriesFromDictionary:eventPkgInfo ?: @{}];
+    if (webViewLog) {
+        id browserService = eventTags[FT_KEY_SERVICE];
+        if (browserService) {
+            tagsDict[FT_KEY_SERVICE] = browserService;
+        }
+        id browserSDKVersion = eventTags[FT_SDK_VERSION];
+        if (browserSDKVersion) {
+            pkgInfo[@"web"] = browserSDKVersion;
+        }
+        tagsDict[FT_IS_WEBVIEW] = @(YES);
+    }
+    if (webViewRUM) {
+        // Browser Visitor ID is an SDK tag, not a Browser custom field.
+        [customTagKeys removeObject:FT_VISITOR_ID];
+        if (browserVisitorID) {
+            tagsDict[FT_VISITOR_ID] = browserVisitorID;
+        } else {
+            [tagsDict removeObjectForKey:FT_VISITOR_ID];
+        }
+    }
+    if (pkgInfo.count > 0) {
+        tagsDict[FT_SDK_PKG_INFO] = [pkgInfo copy];
+        [customTagKeys removeObject:FT_SDK_PKG_INFO];
     }
     NSArray *array = [preset applyLineModifier:source tags:tagsDict fields:eventFields];
     NSDictionary *recordTags = tagsDict;
@@ -130,6 +157,12 @@
     if (array) {
         recordTags = array[0];
         recordFields = array[1];
+    }
+    if (rumData) {
+        NSMutableDictionary *finalTags = [[NSObject ft_normalizedDictionaryWithObject:recordTags] mutableCopy];
+        recordFields = [NSObject ft_normalizedDictionaryWithObject:recordFields];
+        FTRUMEncodeCustomKeys(finalTags, recordFields, customTagKeys, customFieldKeys);
+        recordTags = [finalTags copy];
     }
     NSString *category = nil;
     if ([op isEqualToString:FT_DATA_TYPE_LOGGING]) {
@@ -146,12 +179,12 @@
                                                                     tags:recordTags
                                                                   fields:recordFields
                                                      remoteFilterChecked:&remoteFilterChecked]) {
-            return;
+            return NO;
         }
     }
     FTRecordModel *model = [[FTRecordModel alloc] initWithSource:source op:op tags:recordTags fields:recordFields tm:time];
     if (!model) {
-        return;
+        return NO;
     }
     // View updates keep the event time in payload, but use updateTime for DB tm
     // so error-sampled cache deletion/expiration evaluates the active view by update time.
@@ -169,14 +202,16 @@
     if (cache && [source isEqualToString:FT_RUM_SOURCE_ERROR]) {
         [self lastErrorTimeInterval:model.tm];
     }
+    return YES;
 }
 - (void)extensionRumWrite:(NSString *)source tags:(NSDictionary *)tags fields:(NSDictionary *)fields time:(long long)time{
     if (![source isKindOfClass:NSString.class] || source.length == 0) {
         return;
     }
-    FTPresetProperty *preset = [FTPresetProperty sharedInstance];
-    NSDictionary *dynamicContext = [preset rumTags];
-    [self rumWrite:source tags:tags fields:fields dynamicContext:dynamicContext time:time updateTime:0 cache:NO];
+    FTRUMWriteData *data = [[FTRUMWriteData alloc] initWithSource:source tags:tags fields:fields
+        context:[[FTPresetProperty sharedInstance] rumPropertySnapshot] customTagKeys:nil customFieldKeys:nil time:time];
+    data.cache = @NO;
+    [self writeRUMData:data];
 }
 // FT_DATA_TYPE_LOGGING
 -(void)loggingTags:(nullable NSDictionary *)tags field:(nullable NSDictionary *)field time:(long long)time linkRum:(BOOL)linkRum{
@@ -202,7 +237,7 @@
                    fields:field
                      time:time
                updateTime:0
-                    cache:NO];
+                    cache:NO rumData:nil];
     } @catch (NSException *exception) {
         FTInnerLogError(@"exception %@",exception);
     }

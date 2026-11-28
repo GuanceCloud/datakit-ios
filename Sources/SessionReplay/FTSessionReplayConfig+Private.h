@@ -17,11 +17,10 @@
 #if TARGET_OS_IOS || TARGET_OS_OSX
 
 #import "FTSessionReplayConfig.h"
-#import "FTSRNodeWireframesBuilder.h"
+#import "FTSessionReplayConfig+FrameworkIntegration.h"
 NS_ASSUME_NONNULL_BEGIN
 @class FTRemoteConfigModel;
 @interface FTSessionReplayConfig ()
-@property (nonatomic, strong) NSArray<id <FTSRWireframesRecorder>>*additionalNodeRecorders;
 -(void)mergeWithRemoteConfigModel:(FTRemoteConfigModel *)model;
 @end
 

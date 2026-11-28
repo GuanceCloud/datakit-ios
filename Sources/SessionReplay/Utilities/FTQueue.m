@@ -71,6 +71,10 @@
 
 - (void)run:(void (^)(void))block {
     if (!block) return;
+    if (NSThread.isMainThread) {
+        block();
+        return;
+    }
     [FTThreadDispatchManager performBlockDispatchMainAsync:^{
         block();
     }];

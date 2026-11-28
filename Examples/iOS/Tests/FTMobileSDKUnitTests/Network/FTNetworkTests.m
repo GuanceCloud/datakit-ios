@@ -35,6 +35,11 @@
 #import "FTTrackDataManager+Test.h"
 #import "FTDataUploadWorker.h"
 #import "FTNetworkInfoManager.h"
+#import "FTDBDataCachePolicy.h"
+
+@interface FTDBDataCachePolicy (AutoSyncTesting)
+@property (atomic, assign, readonly) NSInteger logCount;
+@end
 #define FT_SDK_COMPILED_FOR_TESTING
 
 typedef NS_ENUM(NSInteger, FTNetworkTestsType) {
@@ -103,6 +108,7 @@ typedef NS_ENUM(NSInteger, FTNetworkTestsType) {
         default:
             break;
     }
+    __block BOOL delayedAutoSyncResponse = NO;
     [OHHTTPStubs stubRequestsPassingTest:^BOOL(NSURLRequest *request) {
         NSString *str =  request.URL.absoluteString;
         BOOL isURL = [str isEqualToString:logUrl] || [str isEqualToString:rumUrl] || [str isEqualToString:traceUrl];
@@ -125,6 +131,12 @@ typedef NS_ENUM(NSInteger, FTNetworkTestsType) {
         }
         return isURL;
     } withStubResponse:^OHHTTPStubsResponse*(NSURLRequest *request) {
+        if (type == FTNetworkTestAutoSyncData && !delayedAutoSyncResponse) {
+            delayedAutoSyncResponse = YES;
+            // A valid slow response must not be mistaken for an auto-upload failure.
+            return [[OHHTTPStubsResponse responseWithData:[NSData data] statusCode:200 headers:nil]
+                    requestTime:2 responseTime:0];
+        }
         switch (type) {
             case FTNetworkTest:{
                 NSString *data  =[FTJSONUtil convertToJsonData:@{@"data":@"Hello World!",@"code":@200}];
@@ -390,30 +402,46 @@ typedef NS_ENUM(NSInteger, FTNetworkTestsType) {
     FTLoggerConfig *loggerConfig = [[FTLoggerConfig alloc]init];
     loggerConfig.enableCustomLog = YES;
     [[FTMobileAgent sharedInstance] startLoggerWithConfigOptions:loggerConfig];
-    XCTestExpectation *expectation= [self expectationWithDescription:@"Async operation timeout"];
-    dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)(1 * NSEC_PER_SEC)), dispatch_get_main_queue(), ^{
-        [expectation fulfill];
-    });
-    [self waitForExpectations:@[expectation]];
+    FTDataUploadWorker *worker = [FTTrackDataManager sharedInstance].dataUploadWorker;
+    FTDBDataCachePolicy *cache = [FTTrackDataManager sharedInstance].dataCachePolicy;
+    dispatch_semaphore_t allowUpload = dispatch_semaphore_create(0);
+    dispatch_queue_t networkQueue = [worker valueForKey:@"networkQueue"];
+    // Hold automatic upload scheduling until all fixture events have been processed.
+    dispatch_async(networkQueue, ^{ dispatch_semaphore_wait(allowUpload, DISPATCH_TIME_FOREVER); });
+    @try {
+        [FTModelHelper startView];
+        [FTModelHelper addActionWithContext:nil];
+        [FTModelHelper addActionWithContext:nil];
+        dispatch_group_t producers = dispatch_group_create();
+        for (int i = 0; i < 101; i++) {
+            dispatch_group_async(producers, dispatch_get_global_queue(0, 0), ^{
+                [[FTLogger sharedInstance] info:[NSString stringWithFormat:@"testLongTimeLogCache%d",i] property:nil];
+            });
+        }
+        XCTestExpectation *produced = [self expectationWithDescription:@"All log calls submitted"];
+        dispatch_group_notify(producers, dispatch_get_main_queue(), ^{ [produced fulfill]; });
+        [self waitForExpectations:@[produced] timeout:10];
+        // This only drains SDK queues; it cannot wait for unstarted global-queue producers.
+        [[FTMobileAgent sharedInstance] syncProcess];
+        XCTAssertEqual(cache.logCount, 101);
+        XCTAssertGreaterThan([[FTTrackerEventDBTool sharedManager] getDatasCount], 0);
+        dispatch_semaphore_signal(allowUpload);
 
-    [FTModelHelper startView];
-    [FTModelHelper addActionWithContext:nil];
-    [FTModelHelper addActionWithContext:nil];
-    for (int i = 0; i<101; i++) {
-        dispatch_async(dispatch_get_global_queue(0, 0), ^{
-            [[FTLogger sharedInstance] info:[NSString stringWithFormat:@"testLongTimeLogCache%d",i] property:nil];
-        });
+        // Observe automatic completion, including the slow response and the last
+        // in-memory log. Do not force a manual flush or assume an 11-second deadline.
+        NSPredicate *drained = [NSPredicate predicateWithBlock:^BOOL(id object, NSDictionary *bindings) {
+            return cache.logCount == 0 &&
+                [[FTTrackerEventDBTool sharedManager] getDatasCount] == 0 &&
+                ![[worker valueForKey:@"isUploading"] boolValue] &&
+                ![[worker valueForKey:@"hasPendingUpload"] boolValue];
+        }];
+        XCTestExpectation *uploaded = [[XCTNSPredicateExpectation alloc] initWithPredicate:drained object:nil];
+        [self waitForExpectations:@[uploaded] timeout:30];
+        XCTAssertEqual(cache.logCount, 0);
+        XCTAssertEqual([[FTTrackerEventDBTool sharedManager] getDatasCount], 0);
+    } @finally {
+        dispatch_semaphore_signal(allowUpload);
     }
-    [[FTMobileAgent sharedInstance] syncProcess];
-    NSInteger count = [[FTTrackerEventDBTool sharedManager] getDatasCount];
-    XCTAssertTrue(count>0);
-    XCTestExpectation *expectation2= [self expectationWithDescription:@"Async operation timeout"];
-    dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)(11 * NSEC_PER_SEC)), dispatch_get_main_queue(), ^{
-        [expectation2 fulfill];
-    });
-    [self waitForExpectations:@[expectation2]];
-    NSInteger newCount = [[FTTrackerEventDBTool sharedManager] getDatasCount];
-    XCTAssertTrue(newCount == 0);
 }
 - (void)pageSize:(FTNetworkTestsType)type{
     [self setRightConfigWithTestType:type];

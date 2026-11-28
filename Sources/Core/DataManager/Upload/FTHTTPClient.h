@@ -29,6 +29,7 @@ typedef NS_ERROR_ENUM(FTHTTPClientErrorDomain, FTHTTPClientErrorCode) {
 };
 
 @interface FTHTTPClient : NSObject
+- (void)cancel;
 - (instancetype)initWithTimeoutIntervalForRequest:(NSTimeInterval)timeOut NS_DESIGNATED_INITIALIZER;
 - (void)sendRequest:(id<FTRequestProtocol>  _Nonnull)request
          completion:(void(^_Nullable)(NSHTTPURLResponse * _Nullable httpResponse,

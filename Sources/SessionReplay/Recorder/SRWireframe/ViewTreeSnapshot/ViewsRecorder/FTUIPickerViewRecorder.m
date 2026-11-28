@@ -45,12 +45,10 @@
         }
         FTViewTreeRecorder *selectionRecorder = [[FTViewTreeRecorder alloc]init];
         selectionRecorder.nodeRecorders = @[[[FTUIViewRecorder alloc]initWithIdentifier:[NSUUID UUID].UUIDString semanticsOverride:^FTSRNodeSemantics* _Nullable(UIView *view, FTViewAttributes *attributes) {
-            if (@available(iOS 13, *)) {
-                if(!attributes.isVisible || attributes.alpha<1 || !CATransform3DIsIdentity(view.transform3D) ){
-                    FTIgnoredElement *element = [[FTIgnoredElement alloc]init];
-                    element.subtreeStrategy = NodeSubtreeStrategyIgnore;
-                    return element;
-                }
+            if(!attributes.isVisible || attributes.alpha<1 || !CATransform3DIsIdentity(view.transform3D) ){
+                FTIgnoredElement *element = [[FTIgnoredElement alloc]init];
+                element.subtreeStrategy = NodeSubtreeStrategyIgnore;
+                return element;
             }
             FTIgnoredElement *element = [[FTIgnoredElement alloc]init];
             element.subtreeStrategy = NodeSubtreeStrategyRecord;

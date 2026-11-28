@@ -21,14 +21,15 @@
 #import <Foundation/Foundation.h>
 #import "FTRUMDependencies.h"
 #import "FTRUMDataModel.h"
+#import "FTRUMPropertySnapshot.h"
 
 @class FTRUMHandler;
 NS_ASSUME_NONNULL_BEGIN
 @protocol FTRUMSessionProtocol <NSObject>
-- (BOOL)process:(FTRUMDataModel *)model context:(NSDictionary *)context;
+- (BOOL)process:(FTRUMDataModel *)model context:(FTRUMPropertySnapshot *)context;
 @optional
-- (NSMutableArray<FTRUMHandler*>*)manageChildHandlers:(NSMutableArray<FTRUMHandler*> *)childHandlers byPropagatingData:(FTRUMDataModel *)data context:(NSDictionary *)context;
-- (FTRUMHandler *)manage:(FTRUMHandler *)childHandler byPropagatingData:(FTRUMDataModel *)data context:(NSDictionary *)context;
+- (NSMutableArray<FTRUMHandler*>*)manageChildHandlers:(NSMutableArray<FTRUMHandler*> *)childHandlers byPropagatingData:(FTRUMDataModel *)data context:(FTRUMPropertySnapshot *)context;
+- (FTRUMHandler *)manage:(FTRUMHandler *)childHandler byPropagatingData:(FTRUMDataModel *)data context:(FTRUMPropertySnapshot *)context;
 
 @end
 @interface FTRUMHandler : NSObject

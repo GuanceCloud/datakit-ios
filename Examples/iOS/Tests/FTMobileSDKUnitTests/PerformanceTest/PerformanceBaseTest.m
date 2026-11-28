@@ -37,7 +37,7 @@
 - (void)testGetRumPropertyPerformance {
     NSProcessInfo *processInfo = [NSProcessInfo processInfo];
     NSString *url = [processInfo environment][@"ACCESS_SERVER_URL"];
-    FTMobileConfig *config = [[FTMobileConfig alloc]initWithDatakitUrl:url];
+    FTSDKConfig *config = [[FTSDKConfig alloc]initWithDatakitUrl:url];
     [[FTPresetProperty sharedInstance] startWithVersion:[[[NSBundle mainBundle] infoDictionary] objectForKey:@"CFBundleShortVersionString"] sdkVersion:SDK_VERSION env:config.env service:config.service globalContext:config.globalContext pkgInfo:nil];
     FTPresetProperty  *presetProperty = [FTPresetProperty sharedInstance];
     [presetProperty setRUMAppID:@"test_app_id" sampleRate:100 sessionOnErrorSampleRate:0 rumGlobalContext:@{@"rum_key":@"rum_value"}];
@@ -49,7 +49,7 @@
 - (void)testGetRumPropertyAfterUpdatePerformance {
     NSProcessInfo *processInfo = [NSProcessInfo processInfo];
     NSString *url = [processInfo environment][@"ACCESS_SERVER_URL"];
-    FTMobileConfig *config = [[FTMobileConfig alloc]initWithDatakitUrl:url];
+    FTSDKConfig *config = [[FTSDKConfig alloc]initWithDatakitUrl:url];
     [[FTPresetProperty sharedInstance] startWithVersion:[[[NSBundle mainBundle] infoDictionary] objectForKey:@"CFBundleShortVersionString"] sdkVersion:SDK_VERSION env:config.env service:config.service globalContext:config.globalContext pkgInfo:nil];
     FTPresetProperty  *presetProperty = [FTPresetProperty sharedInstance];
     [presetProperty setRUMAppID:@"test_app_id" sampleRate:100 sessionOnErrorSampleRate:0 rumGlobalContext:@{@"rum_key":@"rum_value"}];
@@ -64,7 +64,7 @@
 - (void)testGetLoggerPropertyPerformance {
     NSProcessInfo *processInfo = [NSProcessInfo processInfo];
     NSString *url = [processInfo environment][@"ACCESS_SERVER_URL"];
-    FTMobileConfig *config = [[FTMobileConfig alloc]initWithDatakitUrl:url];
+    FTSDKConfig *config = [[FTSDKConfig alloc]initWithDatakitUrl:url];
     [[FTPresetProperty sharedInstance] startWithVersion:[[[NSBundle mainBundle] infoDictionary] objectForKey:@"CFBundleShortVersionString"] sdkVersion:SDK_VERSION env:config.env service:config.service globalContext:config.globalContext pkgInfo:nil];
     FTPresetProperty  *presetProperty = [FTPresetProperty sharedInstance];
     [self measureBlock:^{
@@ -77,7 +77,7 @@
     NSString *appid = [processInfo environment][@"APP_ID"];
     [self measureMetrics:[self class].defaultPerformanceMetrics automaticallyStartMeasuring:NO forBlock:^{
         [self startMeasuring];
-        FTMobileConfig *config = [[FTMobileConfig alloc]initWithDatakitUrl:url];
+        FTSDKConfig *config = [[FTSDKConfig alloc]initWithDatakitUrl:url];
         config.enableSDKDebugLog = YES;
         [FTMobileAgent startWithConfigOptions:config];
         FTRumConfig *rumConfig = [[FTRumConfig alloc]init];

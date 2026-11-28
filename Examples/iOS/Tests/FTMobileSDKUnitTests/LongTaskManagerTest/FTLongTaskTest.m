@@ -20,6 +20,7 @@
 
 #import <XCTest/XCTest.h>
 #import "TestLongTaskVC.h"
+#import "DemoViewController.h"
 #import "FTMobileAgent.h"
 #import "FTMobileAgent+Private.h"
 #import "FTTrackerEventDBTool.h"
@@ -30,14 +31,47 @@
 #import <KIF/KIF.h>
 #import "FTModelHelper.h"
 #import "FTRUMManager.h"
+#import "FTRUMDependencies.h"
 #import "FTGlobalRumManager+Private.h"
 #import "FTLongTaskManager+Test.h"
 #import "FTTestUtils.h"
+#import "FTAppLifeCycle.h"
+#import "FTDateUtil.h"
+
+@interface FTANRFormatBacktrace : NSObject <FTBacktraceReporting>
+@end
+
+@implementation FTANRFormatBacktrace
+- (NSString *)generateMainThreadBacktrace { return @"format main stack"; }
+- (NSString *)generateAllThreadsBacktrace { return @"format all threads stack"; }
+- (NSString *)generateMainThreadBacktraceWithCaptureValidation:(FTBacktraceCaptureValidation)validation {
+    return validation() ? [self generateMainThreadBacktrace] : nil;
+}
+- (NSString *)generateAllThreadsBacktraceWithCaptureValidation:(FTBacktraceCaptureValidation)validation {
+    return validation() ? [self generateAllThreadsBacktrace] : nil;
+}
+@end
+
 @interface FTLongTaskTest : KIFTestCase
 @property (nonatomic, copy, nullable) FTIssueDataProvider issueDataProvider;
+@property (nonatomic, strong) UIWindow *testWindow;
+@property (nonatomic, strong) UIWindow *hostWindow;
 @end
 @implementation FTLongTaskTest
 -(void)setUp{
+    [super setUp];
+    self.hostWindow = UIApplication.sharedApplication.keyWindow;
+    // Own the navigation state rather than relying on the preceding KIF test's page or tab.
+    if (self.hostWindow.windowScene) {
+        self.testWindow = [[UIWindow alloc] initWithWindowScene:self.hostWindow.windowScene];
+    } else {
+        self.testWindow = [[UIWindow alloc] initWithFrame:UIScreen.mainScreen.bounds];
+    }
+    DemoViewController *home = [DemoViewController new];
+    home.title = @"home";
+    self.testWindow.rootViewController = [[UINavigationController alloc] initWithRootViewController:home];
+    [self.testWindow makeKeyAndVisible];
+    [tester waitForTappableViewWithAccessibilityLabel:@"TrackAppLongTask"];
     NSString *pathString = [NSSearchPathForDirectoriesInDomains(NSDocumentDirectory, NSUserDomainMask, YES) lastObject];
     pathString = [pathString stringByAppendingPathComponent:@"FTLongTask.txt"];
     NSError *error;
@@ -45,8 +79,14 @@
 }
 -(void)tearDown{
     self.issueDataProvider = nil;
-    [[tester waitForViewWithAccessibilityLabel:@"home"] tap];
-    [NSThread sleepForTimeInterval:1];
+    // KIF failures can skip the shutdown at the end of a test body.
+    [FTMobileAgent shutDown];
+    self.testWindow.hidden = YES;
+    self.testWindow.rootViewController = nil;
+    self.testWindow = nil;
+    [self.hostWindow makeKeyAndVisible];
+    self.hostWindow = nil;
+    [super tearDown];
 }
 - (void)initSDKWithEnableTrackAppANR:(BOOL)enable longTask:(BOOL)longTask{
     NSProcessInfo *processInfo = [NSProcessInfo processInfo];
@@ -68,7 +108,7 @@
     [self initSDKWithEnableTrackAppANR:YES longTask:YES];
     NSInteger lastCount = [[FTTrackerEventDBTool sharedManager] getDatasCountWithType:FT_DATA_TYPE_RUM];
     
-    [[tester waitForViewWithAccessibilityLabel:@"TrackAppLongTask"] tap];
+    [tester tapViewWithAccessibilityLabel:@"TrackAppLongTask"];
     
     XCTestExpectation *expect = [self expectationWithDescription:@"Request timeout!"];
     dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)(1.5 * NSEC_PER_SEC)), dispatch_get_main_queue(), ^{
@@ -92,9 +132,54 @@
     [FTMobileAgent shutDown];
 }
 
+- (void)testAutomaticLongTaskUsesHistoryWhileANROmitsIntervalState {
+    [self initSDKWithEnableTrackAppANR:YES longTask:YES];
+    [FTModelHelper startViewWithName:@"tracked-anr-state"];
+    [[FTGlobalRumManager sharedInstance].rumManager syncProcess];
+    FTLongTaskManager *manager = [[FTGlobalRumManager sharedInstance] valueForKey:@"longTaskManager"];
+    long long startTime = [NSDate ft_currentNanosecondTimeStamp] - 6000000000LL;
+    FTRUMDependencies *dependencies = [manager valueForKey:@"dependencies"];
+    id<FTRUMAppStateHistoryDelegate> stateDelegate = dependencies.appStateHistory.delegate;
+    [dependencies.appStateHistory stopMonitoring];
+    dependencies.appStateHistory = [[FTRUMAppStateHistory alloc] initWithState:@"foreground"
+                                                                          timeNs:startTime - 1];
+    dependencies.appStateHistory.delegate = stateDelegate;
+    [dependencies.appStateHistory startMonitoring];
+    FTLongTaskDetector *detector = [manager valueForKey:@"longTaskDetector"];
+    [detector stopDetecting];
+    FTTestDrainDetector(detector);
+    FTTestObserveLongTaskState(manager, FTLongTaskPhaseBegin, startTime, 0, startTime, FTAppStateRun);
+    FTTestObserveLongTaskState(manager, FTLongTaskPhaseCheckpoint, startTime, 5001*NSEC_PER_MSEC, startTime + 5001*NSEC_PER_MSEC, FTAppStateRun);
+    [[NSNotificationCenter defaultCenter] postNotificationName:UIApplicationWillEnterForegroundNotification object:nil];
+    [[NSNotificationCenter defaultCenter] postNotificationName:UIApplicationDidEnterBackgroundNotification object:nil];
+    FTTestObserveLongTaskState(manager, FTLongTaskPhaseEnd, startTime, 6LL*NSEC_PER_SEC, [NSDate ft_currentNanosecondTimeStamp], FTAppStateRun);
+    [[FTGlobalRumManager sharedInstance].rumManager syncProcess];
+
+    __block BOOL foundLongTask = NO;
+    __block BOOL foundANR = NO;
+    [FTModelHelper resolveModelArray:[[FTTrackerEventDBTool sharedManager] getAllDatas] callBack:^(NSString *source, NSDictionary *tags, NSDictionary *fields, BOOL *stop) {
+        if ([source isEqualToString:FT_RUM_SOURCE_LONG_TASK]) {
+            foundLongTask = YES;
+            XCTAssertEqualObjects(fields[@"app_state"], @"foreground");
+            XCTAssertEqualObjects(fields[FT_RUM_KEY_SESSION_START_REASON], FT_RUM_SESSION_START_REASON_SDK_INIT);
+            XCTAssertNil(fields[@"process_start_time_ns"]);
+        }
+        if ([source isEqualToString:FT_RUM_SOURCE_ERROR] && [tags[FT_KEY_ERROR_TYPE] isEqualToString:@"anr_error"]) {
+            foundANR = YES;
+            XCTAssertNil(fields[@"app_state"]);
+            XCTAssertEqualObjects(tags[FT_KEY_ERROR_SITUATION], @"run");
+            XCTAssertEqualObjects(fields[FT_RUM_KEY_SESSION_START_REASON], FT_RUM_SESSION_START_REASON_SDK_INIT);
+            XCTAssertNil(fields[@"process_start_time_ns"]);
+        }
+    }];
+    XCTAssertTrue(foundLongTask);
+    XCTAssertTrue(foundANR);
+    [FTMobileAgent shutDown];
+}
+
 - (void)testNoTrackLongTask{
     [self initSDKWithEnableTrackAppANR:NO longTask:NO];
-    [[tester waitForViewWithAccessibilityLabel:@"TrackAppLongTask"] tap];
+    [tester tapViewWithAccessibilityLabel:@"TrackAppLongTask"];
     
     XCTestExpectation *expect = [self expectationWithDescription:@"Request Time!"];
     dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)(1 * NSEC_PER_SEC)), dispatch_get_main_queue(), ^{
@@ -214,84 +299,113 @@
     XCTAssertTrue(noLongTask == NO);
     [FTMobileAgent shutDown];
 }
-/**
- Format ：
- version: 2.0.0
- dictStr  :{startDate:
-            duration:
-            sessionContext:
-            mainThreadBacktrace:
-            allThreadsBacktrace:
-            errorContextModel:
-            isANR:
- errorContextModel:{appState:
-                    lastSessionState:
-                    lastViewContext:
-                    dynamicContext:
-                    globalAttributes:
-                    errorMonitorInfo:}
- boundary : "\n___boundary.info.date___\n"
- updateDate:
-            date1\n
-            date2\n
- */
+// Verify the v3 base snapshot and timing records without real RunLoop waits.
 - (void)testDataSoreANRDataFormat{
     [self initSDKWithEnableTrackAppANR:YES longTask:NO];
     [FTModelHelper startViewWithName:@"TestAnrFormat"];
-    XCTestExpectation *expect = [self expectationWithDescription:@"Request Time!"];
-    FTLongTaskManager *longTaskManager = [[FTGlobalRumManager sharedInstance] valueForKey:@"longTaskManager"];
-    NSString *dataStorePath = longTaskManager.anrDataStore.dataStorePath;
-    long long startTime = [NSDate ft_currentNanosecondTimeStamp];
-    dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)(3.5 * NSEC_PER_SEC)), dispatch_get_global_queue(0, 0), ^{
-        NSData *data = [NSData dataWithContentsOfFile:dataStorePath];
-        XCTAssertTrue(data.length>100);
-        NSString *str = [[NSString alloc]initWithData:data encoding:NSUTF8StringEncoding];
-        if(str.length>0){
-            XCTAssertTrue([str containsString:@"\n___boundary.info.date___\n"]);
-            NSArray *array = [str componentsSeparatedByString:@"\n___boundary.info.date___\n"];
-            XCTAssertTrue(array.count == 3);
-            NSDictionary *dict = [FTJSONUtil dictionaryWithJsonString:array[1]];
-            XCTAssertTrue([dict.allKeys containsObject:@"startDate"]&&
-                          [dict.allKeys containsObject:@"duration"]&&
-                          [dict.allKeys containsObject:@"errorContextModel"]&&
-                          [dict.allKeys containsObject:@"mainThreadBacktrace"]&&
-                          [dict.allKeys containsObject:@"allThreadsBacktrace"]&&
-                          [dict.allKeys containsObject:@"isANR"]);
-            NSDictionary *view = dict[@"errorContextModel"][@"lastViewContext"];
-            NSDictionary *sessionContext = dict[@"errorContextModel"][@"lastSessionState"];
-            XCTAssertNotNil(view);
-            XCTAssertNotNil(sessionContext);
-            NSArray *dates = [array[2] componentsSeparatedByString:@"\n"];
-            [dates enumerateObjectsUsingBlock:^(NSString  *obj, NSUInteger idx, BOOL * _Nonnull stop) {
-                if(obj.length>0){
-                    long long updateDate = [obj longLongValue];
-                    XCTAssertTrue(updateDate - startTime < 4000000000);
-                }
-            }];
+    [[FTGlobalRumManager sharedInstance].rumManager syncProcess];
+    FTLongTaskManager *manager = [[FTGlobalRumManager sharedInstance] valueForKey:@"longTaskManager"];
+    FTLongTaskDetector *detector = [manager valueForKey:@"longTaskDetector"];
+    [detector stopDetecting];
+    FTTestDrainDetector(detector);
+    __attribute__((objc_precise_lifetime)) FTANRFormatBacktrace *backtrace = [FTANRFormatBacktrace new];
+    [manager setValue:backtrace forKey:@"backtraceReporting"];
+    [FTTestANRProcessor(manager) setValue:backtrace forKey:@"backtraceReporting"];
+    FTLongTaskANRDataStore *store = FTTestANRStore(manager);
+    __block NSString *dataStorePath;
+    dispatch_sync(store.queue, ^{ dataStorePath = store.dataStorePath; });
+    long long startTime = 1700000000000000000LL;
+    long long initialDuration = 3500000000LL;
+
+    for (NSNumber *delayWrites in @[@NO, @YES]) {
+        [store deleteFile];
+        dispatch_semaphore_t writeGate = dispatch_semaphore_create(0);
+        if (delayWrites.boolValue) {
+            dispatch_async(store.queue, ^{
+                dispatch_semaphore_wait(writeGate, DISPATCH_TIME_FOREVER);
+            });
         }
-        [expect fulfill];
-    });
-    [self mockAnr];
-    [self waitForExpectationsWithTimeout:8 handler:^(NSError *error) {
-        XCTAssertNil(error);
-    }];
-    [FTMobileAgent shutDown];
+        @try {
+            dispatch_sync([detector valueForKey:@"longTaskQueue"], ^{
+                FTTestObserveLongTaskState(manager, FTLongTaskPhaseBegin, startTime, 0, startTime, FTAppStateRun);
+                FTTestObserveLongTaskState(manager, FTLongTaskPhaseCheckpoint, startTime, initialDuration,
+                                          startTime + initialDuration, FTAppStateRun);
+                FTTestObserveLongTaskState(manager, FTLongTaskPhaseCheckpoint, startTime, 4500000000LL,
+                                          startTime + 4500000000LL, FTAppStateRun);
+                FTTestObserveLongTaskState(manager, FTLongTaskPhaseCheckpoint, startTime, 5500000000LL,
+                                          startTime + 5500000000LL, FTAppStateRun);
+            });
+            if (delayWrites.boolValue) {
+                XCTAssertFalse([[NSFileManager defaultManager] fileExistsAtPath:dataStorePath]);
+            }
+        } @finally {
+            dispatch_semaphore_signal(writeGate);
+        }
+
+        // Read on the file queue after all queued snapshot/timing writes, including
+        // writes deliberately held above. No elapsed-time assumption is needed.
+        XCTestExpectation *expect = [self expectationWithDescription:@"ANR format writes completed"];
+        __block NSData *data = nil;
+        __block NSError *readError = nil;
+        dispatch_async(store.queue, ^{
+            data = [NSData dataWithContentsOfFile:dataStorePath options:0 error:&readError];
+            [expect fulfill];
+        });
+        [self waitForExpectations:@[expect] timeout:5];
+        XCTAssertNil(readError);
+        XCTAssertNotNil(data);
+        NSString *str = [[NSString alloc] initWithData:data encoding:NSUTF8StringEncoding];
+        NSArray *parts = [str componentsSeparatedByString:@"\n___boundary.info.date___\n"];
+        XCTAssertEqual(parts.count, 3u);
+        if (parts.count != 3) return;
+        XCTAssertEqualObjects(parts[0], @"3.0.0");
+        NSDictionary *snapshot = [FTJSONUtil dictionaryWithJsonString:parts[1]];
+        XCTAssertEqualObjects(snapshot[@"startDate"], @(startTime));
+        XCTAssertEqualObjects(snapshot[@"duration"], @(initialDuration));
+        XCTAssertEqualObjects(snapshot[@"effectiveDuration"], @(initialDuration));
+        XCTAssertEqualObjects(snapshot[@"endDate"], @(startTime + initialDuration));
+        XCTAssertEqualObjects(snapshot[@"isANR"], @NO);
+        XCTAssertEqualObjects(snapshot[@"mainThreadBacktrace"], @"format main stack");
+        XCTAssertEqualObjects(snapshot[@"allThreadsBacktrace"], @"format all threads stack");
+        NSDictionary *context = snapshot[@"errorContextModel"];
+        XCTAssertEqualObjects(context[@"lastViewContext"][@"tags"][FT_KEY_VIEW_NAME], @"TestAnrFormat");
+        XCTAssertNotNil(context[@"lastSessionState"]);
+
+        NSMutableArray *timings = [NSMutableArray array];
+        for (NSString *line in [parts[2] componentsSeparatedByString:@"\n"]) {
+            if (line.length > 0) [timings addObject:line];
+        }
+        XCTAssertEqual(timings.count, 2u);
+        if (timings.count != 2) return;
+        for (NSUInteger index = 0; index < timings.count; index++) {
+            NSDictionary *timing = [FTJSONUtil dictionaryWithJsonString:timings[index]];
+            long long duration = index == 0 ? 4500000000LL : 5500000000LL;
+            XCTAssertEqualObjects(timing[@"effectiveDuration"], @(duration));
+            XCTAssertEqualObjects(timing[@"endDate"], @(startTime + duration));
+        }
+        FTLongTaskANRData *recovered = [store readANRData];
+        XCTAssertEqual(recovered.startTimeNs, startTime);
+        XCTAssertEqual(recovered.durationNs, 5500000000LL);
+        XCTAssertEqual(recovered.endTimeNs, startTime + 5500000000LL);
+    }
 }
 // When the longtask has not been completed, the user manually call `+shutDown` method closes the SDK.
 // Verification: No data addition, no cache, no files, no crashes
 - (void)testShutdownWhenLongTaskNotEnd{
     [self initSDKWithEnableTrackAppANR:YES longTask:NO];
     FTLongTaskManager *longTaskManager = [[FTGlobalRumManager sharedInstance] valueForKey:@"longTaskManager"];
-    NSString *dataStorePath = longTaskManager.anrDataStore.dataStorePath;
+    FTLongTaskANRDataStore *store = FTTestANRStore(longTaskManager);
+    __block NSString *dataStorePath;
+    dispatch_sync(store.queue, ^{ dataStorePath = store.dataStorePath; });
     long long startTime = [NSDate ft_currentNanosecondTimeStamp];
     [tester waitForTimeInterval:0.2];
     dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)(3.5 * NSEC_PER_SEC)), dispatch_get_global_queue(0, 0), ^{
         NSData *data = [NSData dataWithContentsOfFile:dataStorePath];
-        XCTAssertTrue(data.length>0);
+        XCTAssertGreaterThan(data.length, 0u, @"ANR snapshot at scheduled shutdown: path=%@ closed=%d", dataStorePath, FTTestANRStore(longTaskManager).isClosed);
         CFTimeInterval duration = [FTTestUtils functionElapsedTime:^{
             [FTMobileAgent shutDown];
         }];
-        XCTAssertTrue(duration<0.1);
+        XCTAssertLessThan(duration, 0.1, @"SDK shutdown duration in seconds");
     });
     [self mockAnr];
     XCTestExpectation *expect = [self expectationWithDescription:@"Request Time!"];
@@ -312,6 +426,7 @@
     [self waitForExpectationsWithTimeout:8 handler:^(NSError *error) {
         XCTAssertNil(error);
     }];
+    dispatch_sync(FTTestANRStore(longTaskManager).queue, ^{});
     NSData *data = [NSData dataWithContentsOfFile:dataStorePath];
     XCTAssertTrue(data.length == 0);
 }
@@ -349,14 +464,18 @@
         XCTAssertTrue([type isEqualToString:FT_DATA_TYPE_RUM]);
         if ([source isEqualToString:FT_RUM_SOURCE_LONG_TASK]) {
             hasLongTask = YES;
+            XCTAssertEqualObjects(fields[@"app_state"], @"unknown");
         }else if ([source isEqualToString:FT_RUM_SOURCE_ERROR]){
             hasAnr = YES;
+            XCTAssertNil(fields[@"app_state"]);
+            XCTAssertEqualObjects(tags[FT_KEY_ERROR_SITUATION], @"unknown");
             XCTAssertEqualObjects(fields[@"historical_anr_field"], @"historical");
         }else if ([source isEqualToString:FT_RUM_SOURCE_VIEW]){
             XCTAssertTrue([fields[FT_KEY_VIEW_LONG_TASK_COUNT] isEqual:@1]);
             XCTAssertTrue([fields[FT_KEY_VIEW_UPDATE_TIME] isEqual:@2]);
             XCTAssertTrue([fields[FT_KEY_VIEW_ERROR_COUNT] isEqual:@1]);
             XCTAssertTrue([fields[FT_KEY_TIME_SPENT] isEqual:@5667554048]);
+            XCTAssertEqualObjects(fields[@"app_state"], @"unknown");
             XCTAssertEqualWithAccuracy([fields[FT_KEY_VIEW_LONG_TASK_RATE] doubleValue], 0.9613205417816246, 0.000001);
             hasView = YES;
         }
@@ -404,6 +523,7 @@
         XCTAssertTrue([type isEqualToString:FT_DATA_TYPE_RUM]);
         if ([source isEqualToString:FT_RUM_SOURCE_LONG_TASK]) {
             hasLongTask = YES;
+            XCTAssertEqualObjects(fields[@"app_state"], @"unknown");
         }else if ([source isEqualToString:FT_RUM_SOURCE_ERROR]){
             hasAnr = YES;
         }else if ([source isEqualToString:FT_RUM_SOURCE_VIEW]){

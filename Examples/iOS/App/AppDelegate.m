@@ -80,11 +80,11 @@
                 NSString *userId = content[@"custom_userid"];
                 // example this user uid = @"user_1"
                 if ([userId isEqualToString:@"user_1"]) {
-                    model.rumSampleRate = @(1);
-                    model.logSampleRate = @(1);
-                    model.traceSampleRate = @(1);
-                    model.sessionReplaySampleRate = @(1);
-                    model.sessionReplayOnErrorSampleRate = @(0);
+                    model.sessionSamplingRate = @(100);
+                    model.logSamplingRate = @(100);
+                    model.traceSamplingRate = @(100);
+                    model.sessionReplaySamplingRate = @(100);
+                    model.sessionReplayOnErrorSamplingRate = @(0);
                 }
             }
             //if the model is not modified, `return nil`(use original model) == `return model`
@@ -98,6 +98,14 @@
         rumConfig.enableTraceUserAction = YES;
         rumConfig.enableTraceUserView = YES;
         rumConfig.enableTraceUserResource = YES;
+        // NSURLConnection collection is independent of NSURLSession and defaults to NO.
+        rumConfig.enableTraceURLConnectionResource = YES;
+        // Opt in to Visitor ID only for application endpoints that explicitly accept the header.
+        FTVisitorIDConfig *visitorConfig = [[FTVisitorIDConfig alloc] init];
+        visitorConfig.header = @"x-guance-visitor";
+        visitorConfig.ttlHours = 24;
+        [visitorConfig addMatchWithURLPrefix:@"https://httpbin.org/"];
+        rumConfig.visitorIDConfig = visitorConfig;
 //        rumConfig.resourceUrlHandler = ^(NSURL *url){
 //            return NO;
 //        };
@@ -110,6 +118,7 @@
         loggerConfig.enableCustomLog = YES;
         loggerConfig.enableLinkRumData = YES;
         loggerConfig.printCustomLogToConsole = YES;
+        loggerConfig.enableWebViewLog = YES;
         loggerConfig.logLevelFilter = @[@(FTStatusError),@(FTStatusCritical)];
         loggerConfig.discardType = FTDiscardOldest;
         loggerConfig.globalContext = @{@"log_id":@"log_id_1"};//eg.
@@ -117,6 +126,7 @@
         traceConfig.enableLinkRumData = YES;
         traceConfig.networkTraceType = FTNetworkTraceTypeDDtrace;
         traceConfig.enableAutoTrace = YES;
+        traceConfig.enableAutoTraceURLConnection = YES;
         [FTMobileAgent startWithConfigOptions:config];
         [[FTMobileAgent sharedInstance] startRumWithConfigOptions:rumConfig];
         [[FTMobileAgent sharedInstance] startLoggerWithConfigOptions:loggerConfig];
@@ -126,7 +136,7 @@
         srConfig.textAndInputPrivacy = FTTextAndInputPrivacyLevelMaskSensitiveInputs;
         srConfig.touchPrivacy = FTTouchPrivacyLevelShow;
         srConfig.imagePrivacy = FTImagePrivacyLevelMaskNone;
-        srConfig.sampleRate = 100;
+        srConfig.sessionReplaySamplingRate = 100;
         srConfig.enableHeatmap = YES;
         [[FTRumSessionReplay sharedInstance] startWithSessionReplayConfig:srConfig];
 

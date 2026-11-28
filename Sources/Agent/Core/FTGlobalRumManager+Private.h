@@ -33,7 +33,7 @@ NS_ASSUME_NONNULL_BEGIN
 /// - Parameter rumConfig: rum configuration options
 - (void)setRumConfig:(FTRumConfig *)rumConfig writer:(id <FTRUMDataWriteProtocol>)writer;
 
-- (void)updateSampleRate:(int)sampleRate sessionOnErrorSampleRate:(int)sessionOnErrorSampleRate;
+- (void)updateSampleRate:(float)sampleRate sessionOnErrorSampleRate:(float)sessionOnErrorSampleRate;
 
 /// Shut down singleton
 - (void)shutDown;

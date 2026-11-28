@@ -22,6 +22,10 @@
 
 NS_ASSUME_NONNULL_BEGIN
 @interface FTSDKConfig ()
+/// Whether the application explicitly assigned allowWebViewHost, including nil.
+@property (nonatomic, assign) BOOL allowWebViewHostConfigured;
+/// Remote host override. nil means the remote field was absent.
+@property (nonatomic, copy, nullable) NSArray<NSString *> *remoteAllowWebViewHost;
 /// Add package information
 /// - Parameters:
 ///   - key: platform

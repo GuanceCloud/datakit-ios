@@ -33,6 +33,7 @@ static void default_setEnabled(__unused bool isEnabled) {}
 static bool default_isEnabled(void) { return false; }
 static void default_addContextualInfoToEvent(__unused struct FTCrash_MonitorContext *eventContext) {}
 static void default_notifyPostSystemEnable(void) {}
+static void default_reinstallHandlers(void) {}
 static FTCrashMonitorAPI g_defaultAPI = {
     .init = default_init,
     .monitorId = default_monitorId,
@@ -41,6 +42,7 @@ static FTCrashMonitorAPI g_defaultAPI = {
     .isEnabled = default_isEnabled,
     .addContextualInfoToEvent = default_addContextualInfoToEvent,
     .notifyPostSystemEnable = default_notifyPostSystemEnable,
+    .reinstallHandlers = default_reinstallHandlers,
 };
 
 bool ftcrashcma_initAPI(FTCrashMonitorAPI *api)

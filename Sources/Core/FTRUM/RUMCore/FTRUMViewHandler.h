@@ -22,16 +22,20 @@
 NS_ASSUME_NONNULL_BEGIN
 typedef void(^FTErrorHandled)(void);
 
-@class FTRUMMonitor,FTRUMContext;
+@class FTRUMMonitor,FTRUMContext,FTRUMViewMetrics;
 
 @interface FTRUMViewHandler : FTRUMHandler<FTRUMSessionProtocol>
 @property (nonatomic, strong,readonly) FTRUMContext *context;
 @property (nonatomic, assign,readwrite) BOOL isActiveView;
+@property (nonatomic, assign, readonly) FTRUMViewTrackingType trackingType;
 @property (nonatomic, copy) NSString *view_id;
 @property (nonatomic, copy) NSString *view_name;
 @property (nonatomic, copy) NSString *view_referrer;
 @property (nonatomic, strong) NSNumber *loading_time;
 @property (nonatomic, strong, readonly) NSDate *viewStartTime;
+@property (nonatomic, strong, nullable, readonly) FTRUMViewMetrics *metrics;
+@property (nonatomic, strong, nullable) FTRUMViewMetrics *previousViewMetrics;
+- (void)refreshInteractionMetricWithContext:(FTRUMPropertySnapshot *)context;
 @property (nonatomic, assign) BOOL fallbackView;
 @property (nonatomic, assign) BOOL isApplicationLaunchView;
 @property (nonatomic, assign) BOOL closeAfterInitialLaunchAction;

@@ -37,11 +37,7 @@ static char *associatedNodeIDsKey = "FTSRNodeIDsKey";
     objc_setAssociatedObject(self, &associatedNodeIDsKey, nodeIDs, OBJC_ASSOCIATION_RETAIN_NONATOMIC);
 }
 -(BOOL)usesDarkMode{
-    if (@available(iOS 12.0, *)) {
-        return self.traitCollection.userInterfaceStyle == UIUserInterfaceStyleDark;
-    } else {
-        return NO;
-    }
+    return self.traitCollection.userInterfaceStyle == UIUserInterfaceStyleDark;
 }
 @end
 

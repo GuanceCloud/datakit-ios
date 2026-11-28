@@ -23,10 +23,12 @@
 #endif
 
 #import "FTInnerLog.h"
+#import "FTCrashLogger.h"
 #import <os/log.h>
 #import "FTLogMessage.h"
 #import "FTFileLogger.h"
 #import "FTOSLogger.h"
+#import <stdatomic.h>
 
 @implementation FTAbstractLogger
 
@@ -59,6 +61,7 @@
 
 
 static BOOL _enableLog;
+static atomic_bool _enableSwizzleLog = ATOMIC_VAR_INIT(false);
 void *FTInnerLogQueueIdentityKey = &FTInnerLogQueueIdentityKey;
 
 static dispatch_queue_t _loggingQueue;
@@ -81,6 +84,15 @@ static dispatch_group_t _loggingGroup;
 }
 + (BOOL)isLoggerEnabled{
     return _enableLog;
+}
++ (void)enableSwizzleLog:(BOOL)enable {
+    atomic_store_explicit(&_enableSwizzleLog, enable, memory_order_relaxed);
+}
++ (void)enableCrashMonitorLog:(BOOL)enable {
+    enableCrashMonitorLog(enable);
+}
++ (BOOL)isSwizzleLogEnabled {
+    return atomic_load_explicit(&_enableSwizzleLog, memory_order_relaxed);
 }
 + (void)enableLog:(BOOL)enableLog {
     _enableLog = enableLog;

@@ -21,6 +21,7 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 // THE SOFTWARE.
 //
+#include "FTEarlyCrash.h"
 #include "FTCrashMonitor_CPPException.h"
 
 #include "FTCrashCompilerDefines.h"
@@ -118,6 +119,7 @@ static const char *cpp_demangleSymbol(const char *mangledSymbol)
 
 static void CPPExceptionTerminate(void)
 {
+    const uint64_t eventTime = ft_earlyCrashNow();
     FTLOG_DEBUG("Trapped c++ exception");
     std::type_info *tinfo = __cxxabiv1::__cxa_current_exception_type();
     const char *name = cpp_demangleSymbol(tinfo->name());
@@ -133,6 +135,7 @@ static void CPPExceptionTerminate(void)
             thisThread,
             (FTCrash_ExceptionHandlingRequirements) {
                 .shouldRecordAllThreads = true, .shouldWriteReport = true, .isFatal = true, .asyncSafety = true });
+        crashContext->earlyCrashTime = eventTime;
         if (crashContext->requirements.shouldExitImmediately) {
             goto skip_handling;
         }

@@ -21,14 +21,13 @@
 #import "FTRUMContext.h"
 #import "FTConstants.h"
 #import "FTBaseInfoHandler.h"
-#import "NSDate+FTUtil.h"
 
 NS_ASSUME_NONNULL_BEGIN
 @interface FTRUMContext ()
 @property (nonatomic, strong) FTRUMSessionState *sessionState;
 @end
 @implementation FTRUMContext
-- (instancetype)initWithSampleRate:(int)sampleRate sessionOnErrorSampleRate:(int)sessionOnErrorSampleRate appId:(NSString *)appId{
+- (instancetype)initWithSampleRate:(float)sampleRate sessionOnErrorSampleRate:(float)sessionOnErrorSampleRate appId:(NSString *)appId{
     self = [super init];
     if (self) {
         self.appId = appId;
@@ -91,6 +90,8 @@ NS_ASSUME_NONNULL_BEGIN
     if (self) {
         self.session_id = dict[FT_RUM_KEY_SESSION_ID];
         self.session_type = dict[FT_RUM_KEY_SESSION_TYPE];
+        id startReason = dict[FT_RUM_KEY_SESSION_START_REASON];
+        self.session_start_reason = [startReason isKindOfClass:NSString.class] ? startReason : nil;
         self.sampled_for_error_session = [dict[FT_RUM_KEY_SAMPLED_FOR_ERROR_SESSION] boolValue];
         self.session_error_timestamp = [dict[FT_SESSION_ERROR_TIMESTAMP] longLongValue];
         self.sampleRate = [dict[FT_RUM_SESSION_SAMPLE_RATE] floatValue];
@@ -103,6 +104,7 @@ NS_ASSUME_NONNULL_BEGIN
     FTRUMSessionState *sessionState = [[[self class] allocWithZone:zone] init];
     sessionState.session_id = self.session_id;
     sessionState.session_type = self.session_type;
+    sessionState.session_start_reason = self.session_start_reason;
     sessionState.sampleRate = self.sampleRate;
     sessionState.sessionOnErrorSampleRate = self.sessionOnErrorSampleRate;
     sessionState.sampled_for_error_session = self.sampled_for_error_session;
@@ -117,6 +119,7 @@ NS_ASSUME_NONNULL_BEGIN
 }
 - (NSDictionary *)sessionFields{
     NSMutableDictionary *fields = [NSMutableDictionary new];
+    [fields setValue:self.session_start_reason forKey:FT_RUM_KEY_SESSION_START_REASON];
     [fields setValue:@(self.sampleRate) forKey:FT_RUM_SESSION_SAMPLE_RATE];
     [fields setValue:@(self.sessionOnErrorSampleRate) forKey:FT_RUM_SESSION_ON_ERROR_SAMPLE_RATE];
     if (self.session_error_timestamp > 0) {
@@ -137,12 +140,15 @@ NS_ASSUME_NONNULL_BEGIN
     FTRUMSessionState *state = (FTRUMSessionState *)object;
     BOOL equalSessionId = [self.session_id isEqualToString:state.session_id];
     BOOL equalSessionType = [self.session_type isEqualToString:state.session_type];
-    return equalSessionId && equalSessionType && self.sampleRate == state.sampleRate && self.sessionOnErrorSampleRate == state.sessionOnErrorSampleRate && self.sampled_for_error_session == state.sampled_for_error_session && self.session_error_timestamp == state.session_error_timestamp;
+    BOOL equalStartReason = self.session_start_reason == state.session_start_reason
+        || [self.session_start_reason isEqualToString:state.session_start_reason];
+    return equalSessionId && equalSessionType && equalStartReason && self.sampleRate == state.sampleRate && self.sessionOnErrorSampleRate == state.sessionOnErrorSampleRate && self.sampled_for_error_session == state.sampled_for_error_session && self.session_error_timestamp == state.session_error_timestamp;
 }
 - (NSDictionary *)toDictionary{
     NSMutableDictionary *dict = [NSMutableDictionary new];
     [dict setValue:self.session_id forKey:FT_RUM_KEY_SESSION_ID];
     [dict setValue:self.session_type forKey:FT_RUM_KEY_SESSION_TYPE];
+    [dict setValue:self.session_start_reason forKey:FT_RUM_KEY_SESSION_START_REASON];
     [dict setValue:@(self.sampled_for_error_session) forKey:FT_RUM_KEY_SAMPLED_FOR_ERROR_SESSION];
     [dict setValue:@(self.session_error_timestamp) forKey:FT_SESSION_ERROR_TIMESTAMP];
     [dict setValue:@(self.sampleRate) forKey:FT_RUM_SESSION_SAMPLE_RATE];

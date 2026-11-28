@@ -52,6 +52,8 @@ typedef struct {
     bool (*isEnabled)(void);
     void (*addContextualInfoToEvent)(FTCrash_MonitorContext *eventContext);
     void (*notifyPostSystemEnable)(void);
+    /** 安装后若被其他 SDK 替换，把本 monitor 的处理器重新挂到最上层。 */
+    void (*reinstallHandlers)(void);
 } FTCrashMonitorAPI;
 
 /**

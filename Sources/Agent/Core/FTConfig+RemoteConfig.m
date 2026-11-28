@@ -21,10 +21,14 @@
 #import <Foundation/Foundation.h>
 #import "FTConfig+RemoteConfig.h"
 #import "FTSDKConfig.h"
+#import "FTSDKConfig+Private.h"
 #import "FTLoggerConfig.h"
 #import "FTRumConfig.h"
 #import "FTJSONUtil.h"
 #import "FTInnerLog.h"
+
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wdeprecated-declarations"
 
 @implementation FTSDKConfig (RemoteConfig)
 
@@ -48,6 +52,9 @@
         if (model.syncSleepTime != nil) {
             self.syncSleepTime = [model.syncSleepTime intValue];
         }
+        if (model.rumAllowWebViewHost != nil) {
+            self.remoteAllowWebViewHost = model.rumAllowWebViewHost;
+        }
     } @catch (NSException *exception) {
         FTInnerLogError(@"mergeRemoteConfigIntoCoreConfig fail");
     }
@@ -59,12 +66,17 @@
 
 -(void)mergeWithRemoteConfigModel:(FTRemoteConfigModel *)model{
     @try {
-        
         if (model.logSampleRate != nil) {
-            self.sampleRate = [model.logSampleRate doubleValue] * 100;
+            self.logSamplingRate = model.logSampleRate.floatValue * 100.0f;
+        }
+        if (model.logSamplingRate != nil) {
+            self.logSamplingRate = model.logSamplingRate.floatValue;
         }
         if (model.logEnableCustomLog != nil) {
             self.enableCustomLog = [model.logEnableCustomLog boolValue];
+        }
+        if (model.logEnableWebViewLog != nil) {
+            self.enableWebViewLog = [model.logEnableWebViewLog boolValue];
         }
         if (model.logLevelFilters) {
             self.logLevelFilter = model.logLevelFilters;
@@ -80,10 +92,16 @@
 -(void)mergeWithRemoteConfigModel:(FTRemoteConfigModel *)model{
     @try {
         if (model.rumSampleRate != nil) {
-            self.sampleRate = [model.rumSampleRate doubleValue] * 100;
+            self.sessionSamplingRate = model.rumSampleRate.floatValue * 100.0f;
+        }
+        if (model.sessionSamplingRate != nil) {
+            self.sessionSamplingRate = model.sessionSamplingRate.floatValue;
         }
         if (model.rumSessionOnErrorSampleRate != nil) {
-            self.sessionOnErrorSampleRate = [model.rumSessionOnErrorSampleRate doubleValue] * 100;
+            self.sessionOnErrorSamplingRate = model.rumSessionOnErrorSampleRate.floatValue * 100.0f;
+        }
+        if (model.sessionOnErrorSamplingRate != nil) {
+            self.sessionOnErrorSamplingRate = model.sessionOnErrorSamplingRate.floatValue;
         }
         if (model.rumEnableTraceUserAction != nil) {
             self.enableTraceUserAction = [model.rumEnableTraceUserAction boolValue];
@@ -93,6 +111,9 @@
         }
         if (model.rumEnableTraceUserResource != nil) {
             self.enableTraceUserResource = [model.rumEnableTraceUserResource boolValue];
+        }
+        if (model.rumEnableTraceURLConnectionResource != nil) {
+            self.enableTraceURLConnectionResource = [model.rumEnableTraceURLConnectionResource boolValue];
         }
         if (model.rumEnableResourceHostIP != nil) {
            self.enableResourceHostIP = [model.rumEnableResourceHostIP boolValue];
@@ -113,7 +134,10 @@
            self.enableTraceWebView = [model.rumEnableTraceWebView boolValue];
         }
         if (model.rumAllowWebViewHost) {
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wdeprecated-declarations"
            self.allowWebViewHost = model.rumAllowWebViewHost;
+#pragma clang diagnostic pop
         }
     } @catch (NSException *exception) {
         FTInnerLogError(@"mergeRemoteConfigIntoRUMConfig fail");
@@ -127,10 +151,16 @@
 -(void)mergeWithRemoteConfigModel:(FTRemoteConfigModel *)model{
     @try {
         if (model.traceSampleRate != nil) {
-            self.sampleRate = [model.traceSampleRate doubleValue] * 100;
+            self.traceSamplingRate = model.traceSampleRate.floatValue * 100.0f;
+        }
+        if (model.traceSamplingRate != nil) {
+            self.traceSamplingRate = model.traceSamplingRate.floatValue;
         }
         if (model.traceEnableAutoTrace != nil) {
             self.enableAutoTrace = [model.traceEnableAutoTrace boolValue];
+        }
+        if (model.traceEnableAutoTraceURLConnection != nil) {
+            self.enableAutoTraceURLConnection = [model.traceEnableAutoTraceURLConnection boolValue];
         }
         if (model.traceType) {
             FTNetworkTraceType networkTraceType = FTNetworkTraceTypeDDtrace;
@@ -156,3 +186,4 @@
     }
 }
 @end
+#pragma clang diagnostic pop

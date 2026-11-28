@@ -33,6 +33,7 @@ NS_ASSUME_NONNULL_BEGIN
 -(instancetype)initWithExpiredSession:(FTRUMSessionHandler *)expiredSession time:(NSDate *)time;
 
 -(nullable NSString *)getCurrentViewID;
+/// Include View/action tags only while the last View is active.
 -(NSDictionary *)getCurrentSessionInfo;
 @end
 

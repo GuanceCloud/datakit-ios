@@ -32,6 +32,8 @@
 #import "FTModelHelper.h"
 #import "FTGlobalRumManager+Private.h"
 #import "FTRUMManager.h"
+#import "FTRUMDependencies.h"
+#import "FTFatalErrorContext.h"
 #import "FTAutoTrackHandler.h"
 #import "XCTestCase+Utils.h"
 #import "UIEvent+Mock.h"
@@ -43,16 +45,333 @@
 #import "FTAutoTrackHeatmapResolver.h"
 #import "FTAutoTrackActionPublisher.h"
 #import "FTIssueFieldEnricher.h"
+#import "FTVisitorIDConfig+Private.h"
+#import "FTVisitorIDManager+Private.h"
+#import "FTResourceContentModel.h"
+#import <limits.h>
 #import <math.h>
 typedef FTRUMView* _Nullable (^FTViewTrackingBlock)(UIViewController *viewController);
 typedef FTRUMAction* _Nullable (^FTActionTrackingBlock)(UIView *view);
 typedef FTRUMAction* _Nullable (^FTLaunchActionTrackingBlock)(FTLaunchType type);
+
+@interface FTRUMManager (FTVisitorIDQueueTesting)
+@property (nonatomic, strong) dispatch_queue_t rumQueue;
+@end
 
 @class FTCountingIssueDictionary;
 
 @interface FTCountingIssueKeyEnumerator : NSEnumerator
 @property (nonatomic, weak) FTCountingIssueDictionary *dictionary;
 @property (nonatomic, assign) NSUInteger index;
+@end
+
+#pragma mark - Visitor ID configuration and manager
+
+@interface FTVisitorIDTestClock : NSObject <FTVisitorIDClock>
+@property (nonatomic, strong) NSDate *date;
+@end
+
+@implementation FTVisitorIDTestClock
+- (NSDate *)now {
+    return self.date;
+}
+@end
+
+@interface FTVisitorIDTestStorage : NSObject <FTVisitorIDStorage>
+@property (nonatomic, copy, nullable) NSDictionary<NSString *, id> *record;
+@property (nonatomic, assign) BOOL failWrites;
+@property (nonatomic, assign) NSInteger readCount;
+@property (nonatomic, assign) NSInteger writeCount;
+@property (nonatomic, assign) NSInteger removeCount;
+@end
+
+@implementation FTVisitorIDTestStorage
+- (NSDictionary<NSString *,id> *)readRecord {
+    self.readCount += 1;
+    return [self.record copy];
+}
+- (BOOL)writeRecord:(NSDictionary<NSString *,id> *)record {
+    self.writeCount += 1;
+    if (self.failWrites) {
+        return NO;
+    }
+    self.record = [record copy];
+    return YES;
+}
+- (void)removeRecord {
+    self.removeCount += 1;
+    self.record = nil;
+}
+@end
+
+@interface FTVisitorIDTest : XCTestCase
+@end
+
+@implementation FTVisitorIDTest
+
+- (FTVisitorIDManager *)managerWithStorage:(FTVisitorIDTestStorage *)storage
+                                     clock:(FTVisitorIDTestClock *)clock
+                                       ttl:(NSTimeInterval)ttl {
+    FTVisitorIDManager *manager = [[FTVisitorIDManager alloc] initWithStorage:storage clock:clock];
+    [manager configureWithEnabled:YES
+                       headerName:@"x-visitor"
+                              ttl:ttl
+                       urlMatcher:^BOOL(NSURL *url) {
+        return [url.host isEqualToString:@"api.example.com"];
+    }];
+    return manager;
+}
+
+- (void)testVisitorConfigurationDefaultsCopySerializationAndValidation {
+    FTRumConfig *rum = [[FTRumConfig alloc] initWithAppid:@"appid"];
+    XCTAssertNil(rum.visitorIDConfig);
+
+    FTVisitorIDConfig *config = [FTVisitorIDConfig new];
+    XCTAssertEqual(config.ttlHours, 24.0);
+    config.header = @"x-visitor";
+    [config addMatchWithURLPrefix:@"https://api.example.com/base"];
+    [config addMatchWithRegularExpression:[NSRegularExpression regularExpressionWithPattern:@"^https://regex\\.example/"
+                                                                                     options:0
+                                                                                       error:nil]];
+    [config addMatchWithHandler:^BOOL(NSURL *url) {
+        return [url.path hasSuffix:@"/special"];
+    }];
+    NSError *error = nil;
+    FTVisitorIDConfig *validated = [config validatedCopyWithError:&error];
+    XCTAssertNotNil(validated);
+    XCTAssertNil(error);
+    XCTAssertTrue([validated matchesURL:[NSURL URLWithString:@"https://api.example.com/base/one"]]);
+    XCTAssertFalse([validated matchesURL:[NSURL URLWithString:@"https://api.example.com.evil.test/base/one"]]);
+    XCTAssertFalse([validated matchesURL:[NSURL URLWithString:@"http://api.example.com/base/one"]]);
+    XCTAssertTrue([validated matchesURL:[NSURL URLWithString:@"https://regex.example/api"]]);
+    XCTAssertTrue([validated matchesURL:[NSURL URLWithString:@"https://callback.example/special"]]);
+
+    FTVisitorIDConfig *copy = [config copy];
+    XCTAssertEqualObjects(copy.header, @"x-visitor");
+    XCTAssertEqual(copy.ttlHours, 24.0);
+    NSDictionary *dictionary = [copy convertToDictionary];
+    FTVisitorIDConfig *decoded = [[FTVisitorIDConfig alloc] initWithDictionary:dictionary];
+    XCTAssertEqualObjects(decoded.header, @"x-visitor");
+    XCTAssertEqual(decoded.ttlHours, 24.0);
+    XCTAssertTrue([decoded matchesURL:[NSURL URLWithString:@"https://api.example.com/base/two"]]);
+    XCTAssertTrue([decoded matchesURL:[NSURL URLWithString:@"https://regex.example/two"]]);
+    XCTAssertFalse([decoded.debugDescription containsString:@"p012345"]);
+}
+
+- (void)testVisitorConfigurationRejectsInvalidHeadersTTLAndRules {
+    NSArray *headers = @[[NSNull null], @"", @"X-Visitor", @"bad header", @"cookie",
+                         @"traceparent", @"x-datadog-origin", @"x-b3-traceid",
+                         @"x-rum-resource-id", @"x-api-key", @"x-xsrf-token", @"x-signature"];
+    for (id value in headers) {
+        FTVisitorIDConfig *config = [FTVisitorIDConfig new];
+        config.header = value == NSNull.null ? nil : value;
+        [config addMatchWithURLPrefix:@"https://api.example.com/"];
+        XCTAssertNil([config validatedCopyWithError:nil], @"Accepted invalid header: %@", value);
+    }
+    for (NSNumber *ttl in @[@0, @(-1), @(NAN), @(INFINITY), @(DBL_MAX)]) {
+        FTVisitorIDConfig *config = [FTVisitorIDConfig new];
+        config.header = @"x-visitor";
+        config.ttlHours = ttl.doubleValue;
+        [config addMatchWithURLPrefix:@"https://api.example.com/"];
+        XCTAssertNil([config validatedCopyWithError:nil], @"Accepted invalid TTL: %@", ttl);
+    }
+    FTVisitorIDConfig *missingRule = [FTVisitorIDConfig new];
+    missingRule.header = @"x-visitor";
+    XCTAssertNil([missingRule validatedCopyWithError:nil]);
+
+    FTVisitorIDConfig *emptyRule = [FTVisitorIDConfig new];
+    emptyRule.header = @"x-visitor";
+    [emptyRule addMatchWithURLPrefix:@""];
+    XCTAssertNil([emptyRule validatedCopyWithError:nil]);
+}
+
+- (void)testVisitorHeaderRequiresFullStringMatch {
+    NSArray<NSString *> *headers = @[
+        @"x-visitor\n", @"x-visitor\r", @"x-visitor\r\n",
+        @"host\n", @"cookie\r\n", @"traceparent\n",
+        @"\nx-visitor", @"x-\nvisitor", @"x-visitor\t",
+        @" x-visitor", @"x-visitor ", @"x-visitor\u2028", @"x-visitor\u2029",
+        [NSString stringWithFormat:@"x-visitor%C", (unichar)0x0085],
+        [NSString stringWithFormat:@"x-visitor%C", (unichar)0],
+    ];
+    for (NSString *header in headers) {
+        FTVisitorIDConfig *config = [FTVisitorIDConfig new];
+        config.header = header;
+        [config addMatchWithURLPrefix:@"https://api.example.com/"];
+        NSError *error = nil;
+        XCTAssertNil([config validatedCopyWithError:&error], @"Accepted invalid header bytes: %@",
+                     [header dataUsingEncoding:NSUTF8StringEncoding]);
+        XCTAssertNotNil(error);
+    }
+}
+
+- (void)testVisitorHeaderAcceptsLowercaseHTTPTokenCharacters {
+    for (NSString *header in @[@"x-visitor-id", @"visitorid",
+                               @"!#$%&'*+-.^_`|~0123456789abcdefghijklmnopqrstuvwxyz"]) {
+        FTVisitorIDConfig *config = [FTVisitorIDConfig new];
+        config.header = header;
+        [config addMatchWithURLPrefix:@"https://api.example.com/"];
+        NSError *error = nil;
+        FTVisitorIDConfig *validated = [config validatedCopyWithError:&error];
+        XCTAssertNotNil(validated);
+        XCTAssertNil(error);
+        XCTAssertEqualObjects(validated.header, header);
+    }
+}
+
+- (void)testVisitorMatcherExceptionIsANonMatchAndDoesNotAbortLaterRules {
+    FTVisitorIDConfig *config = [FTVisitorIDConfig new];
+    config.header = @"x-visitor";
+    [config addMatchWithHandler:^BOOL(NSURL *url) {
+        @throw [NSException exceptionWithName:@"test" reason:@"matcher" userInfo:nil];
+    }];
+    [config addMatchWithURLPrefix:@"https://api.example.com/"];
+    FTVisitorIDConfig *validated = [config validatedCopyWithError:nil];
+    XCTAssertTrue([validated matchesURL:[NSURL URLWithString:@"https://api.example.com/one"]]);
+    XCTAssertFalse([validated matchesURL:[NSURL URLWithString:@"https://other.example/one"]]);
+    XCTAssertFalse([validated matchesURL:[NSURL fileURLWithPath:@"/tmp/visitor-id-test"]]);
+}
+
+- (void)testDisabledVisitorDoesNotReadOrWriteStorageAndResetClearsPersistedRecord {
+    FTVisitorIDTestStorage *storage = [FTVisitorIDTestStorage new];
+    FTVisitorIDTestClock *clock = [FTVisitorIDTestClock new];
+    clock.date = [NSDate dateWithTimeIntervalSince1970:1000];
+    FTVisitorIDManager *manager = [[FTVisitorIDManager alloc] initWithStorage:storage clock:clock];
+    [manager configureWithEnabled:NO headerName:nil ttl:0 urlMatcher:nil];
+    XCTAssertNil(manager.snapshot);
+    XCTAssertEqual(storage.readCount, 0);
+    XCTAssertEqual(storage.writeCount, 0);
+    XCTAssertEqual(storage.removeCount, 0);
+
+    storage.record = @{@"version": @1,
+                       @"id": @"p0123456789abcdef0123456789abcdef",
+                       @"createdAt": @1000};
+    [manager reset];
+    XCTAssertNil(storage.record);
+    XCTAssertEqual(storage.readCount, 0);
+    XCTAssertEqual(storage.writeCount, 0);
+    XCTAssertEqual(storage.removeCount, 1);
+}
+
+- (void)testVisitorFixedTTLBoundaryResetAndClockRollback {
+    FTVisitorIDTestStorage *storage = [FTVisitorIDTestStorage new];
+    FTVisitorIDTestClock *clock = [FTVisitorIDTestClock new];
+    clock.date = [NSDate dateWithTimeIntervalSince1970:1000];
+    FTVisitorIDManager *manager = [self managerWithStorage:storage clock:clock ttl:86400];
+    NSString *first = manager.snapshot.value;
+    XCTAssertTrue([first hasPrefix:@"p"]);
+    XCTAssertEqual(first.length, 33);
+
+    clock.date = [NSDate dateWithTimeIntervalSince1970:87399.999];
+    XCTAssertEqualObjects(manager.snapshot.value, first);
+    clock.date = [NSDate dateWithTimeIntervalSince1970:87400];
+    NSString *expired = manager.snapshot.value;
+    XCTAssertNotEqualObjects(expired, first);
+
+    [manager reset];
+    NSString *reset = manager.snapshot.value;
+    XCTAssertNotEqualObjects(reset, expired);
+    XCTAssertEqual(storage.removeCount, 1);
+
+    clock.date = [NSDate dateWithTimeIntervalSince1970:87399];
+    NSString *rollback = manager.snapshot.value;
+    XCTAssertNotEqualObjects(rollback, reset);
+}
+
+- (void)testVisitorPersistenceFailureIsStableUntilExpiry {
+    FTVisitorIDTestStorage *storage = [FTVisitorIDTestStorage new];
+    storage.failWrites = YES;
+    FTVisitorIDTestClock *clock = [FTVisitorIDTestClock new];
+    clock.date = [NSDate dateWithTimeIntervalSince1970:1000];
+    FTVisitorIDManager *manager = [self managerWithStorage:storage clock:clock ttl:10];
+    NSString *fallback = manager.snapshot.value;
+    XCTAssertTrue([fallback hasPrefix:@"s"]);
+    XCTAssertEqual(storage.writeCount, 1);
+    for (NSInteger index = 0; index < 20; index++) {
+        clock.date = [NSDate dateWithTimeIntervalSince1970:1000 + (index * 0.4)];
+        XCTAssertEqualObjects(manager.snapshot.value, fallback);
+    }
+    XCTAssertEqual(storage.writeCount, 1);
+    clock.date = [NSDate dateWithTimeIntervalSince1970:1010];
+    XCTAssertNotEqualObjects(manager.snapshot.value, fallback);
+    XCTAssertEqual(storage.writeCount, 2);
+}
+
+- (void)testVisitorCorruptVersionAndIdentifierFormatRepairAndPersistAcrossManagerRestart {
+    FTVisitorIDTestStorage *storage = [FTVisitorIDTestStorage new];
+    storage.record = @{@"version": @99, @"id": @"invalid", @"createdAt": @1000};
+    FTVisitorIDTestClock *clock = [FTVisitorIDTestClock new];
+    clock.date = [NSDate dateWithTimeIntervalSince1970:1000];
+    FTVisitorIDManager *firstManager = [self managerWithStorage:storage clock:clock ttl:86400];
+    NSString *versionRepaired = firstManager.snapshot.value;
+    XCTAssertTrue([versionRepaired hasPrefix:@"p"]);
+    XCTAssertEqual(storage.writeCount, 1);
+
+    [firstManager shutDown];
+    storage.record = @{@"version": @1,
+                       @"id": @"p0123456789abcdef0123456789abcdeg",
+                       @"createdAt": @1000};
+    FTVisitorIDManager *formatManager = [self managerWithStorage:storage clock:clock ttl:86400];
+    NSString *formatRepaired = formatManager.snapshot.value;
+    XCTAssertTrue([formatRepaired hasPrefix:@"p"]);
+    XCTAssertNotEqualObjects(formatRepaired, versionRepaired);
+    XCTAssertEqual(storage.writeCount, 2);
+
+    [formatManager shutDown];
+    FTVisitorIDManager *restartManager = [self managerWithStorage:storage clock:clock ttl:86400];
+    XCTAssertEqualObjects(restartManager.snapshot.value, formatRepaired);
+    XCTAssertEqual(storage.writeCount, 2);
+}
+
+- (void)testVisitorConcurrentReadsReturnOneIdentifier {
+    FTVisitorIDTestStorage *storage = [FTVisitorIDTestStorage new];
+    FTVisitorIDTestClock *clock = [FTVisitorIDTestClock new];
+    clock.date = [NSDate dateWithTimeIntervalSince1970:1000];
+    FTVisitorIDManager *manager = [self managerWithStorage:storage clock:clock ttl:86400];
+    NSMutableSet<NSString *> *values = [NSMutableSet set];
+    dispatch_group_t group = dispatch_group_create();
+    for (NSInteger index = 0; index < 100; index++) {
+        dispatch_group_async(group, dispatch_get_global_queue(QOS_CLASS_USER_INITIATED, 0), ^{
+            NSString *value = manager.snapshot.value;
+            @synchronized (values) {
+                [values addObject:value];
+            }
+        });
+    }
+    XCTAssertEqual(dispatch_group_wait(group, dispatch_time(DISPATCH_TIME_NOW, 5 * NSEC_PER_SEC)), 0);
+    XCTAssertEqual(values.count, 1);
+    XCTAssertEqual(storage.writeCount, 1);
+}
+
+- (void)testVisitorURLNonMatchDoesNotAcquireIdentifier {
+    FTVisitorIDTestStorage *storage = [FTVisitorIDTestStorage new];
+    FTVisitorIDTestClock *clock = [FTVisitorIDTestClock new];
+    clock.date = [NSDate dateWithTimeIntervalSince1970:1000];
+    FTVisitorIDManager *manager = [[FTVisitorIDManager alloc] initWithStorage:storage clock:clock];
+    [manager configureWithEnabled:YES headerName:@"x-visitor" ttl:86400 urlMatcher:^BOOL(NSURL *url) {
+        return NO;
+    }];
+    NSInteger readsAfterConfiguration = storage.readCount;
+    NSInteger writesAfterConfiguration = storage.writeCount;
+    XCTAssertNil([manager requestSnapshotForURL:[NSURL URLWithString:@"https://other.example/"]]);
+    XCTAssertEqual(storage.readCount, readsAfterConfiguration);
+    XCTAssertEqual(storage.writeCount, writesAfterConfiguration);
+}
+
+- (void)testResourceVisitorBindingIsOneShotAndSurvivesReset {
+    FTVisitorIDTestStorage *storage = [FTVisitorIDTestStorage new];
+    FTVisitorIDTestClock *clock = [FTVisitorIDTestClock new];
+    clock.date = [NSDate dateWithTimeIntervalSince1970:1000];
+    FTVisitorIDManager *manager = [self managerWithStorage:storage clock:clock ttl:86400];
+    NSString *requestVisitorID = manager.snapshot.value;
+    [manager bindResourceVisitorID:requestVisitorID forKey:@"resource-key"];
+
+    [manager reset];
+    XCTAssertNotEqualObjects(manager.snapshot.value, requestVisitorID);
+    XCTAssertEqualObjects([manager consumeResourceVisitorIDForKey:@"resource-key"], requestVisitorID);
+    XCTAssertNil([manager consumeResourceVisitorIDForKey:@"resource-key"]);
+}
+
 @end
 
 @interface FTCountingIssueDictionary : NSDictionary
@@ -115,10 +434,6 @@ typedef FTRUMAction* _Nullable (^FTLaunchActionTrackingBlock)(FTLaunchType type)
 - (void)ftTrackTouchEvent:(UIEvent *)event;
 @end
 #endif
-
-@interface FTRumConfig (FTViewLoadingTimeTest)
-@property (nonatomic, assign) BOOL enableUIKitViewLoadingTime;
-@end
 
 @interface ModalViewController : UIViewController
 
@@ -232,6 +547,7 @@ static void FTStartAutoTrackActionTest(AddRumDatasHandlerMock *mock,
 -(void)tearDown{
     [[FTGlobalRumManager sharedInstance].rumManager syncProcess];
     [FTMobileAgent shutDown];
+    [[FTVisitorIDManager sharedInstance] reset];
 }
 
 - (void)testRUMFreezeThreshold{
@@ -242,14 +558,219 @@ static void FTStartAutoTrackActionTest(AddRumDatasHandlerMock *mock,
     rumConfig.freezeDurationMs = 5000;
     XCTAssertTrue(rumConfig.freezeDurationMs == 5000);
 }
-- (void)testUIKitViewLoadingTimePrivateConfiguration {
-    FTRumConfig *rumConfig = [[FTRumConfig alloc]initWithAppid:@"appid"];
-    XCTAssertTrue(rumConfig.enableUIKitViewLoadingTime);
+- (void)testVisitorIDUsesWriteSnapshotAndManagedContextPrecedence {
+    __block NSInteger finalModifierMode = 0;
+    FTMobileConfig *mobileConfig = [[FTMobileConfig alloc] initWithDatakitUrl:self.url ?: @"http://127.0.0.1:9529"];
+    mobileConfig.autoSync = NO;
+    mobileConfig.globalContext = @{FT_VISITOR_ID: @"global-attempt"};
+    mobileConfig.dataModifier = ^id _Nullable(NSString *key, id value) {
+        return [key isEqualToString:FT_VISITOR_ID] ? @"data-modifier-attempt" : nil;
+    };
+    mobileConfig.lineDataModifier = ^NSDictionary<NSString *,id> * _Nullable(NSString *measurement, NSDictionary<NSString *,id> *data) {
+        if (![measurement isEqualToString:FT_RUM_SOURCE_ACTION]) {
+            return nil;
+        }
+        if (finalModifierMode == 1) {
+            return @{FT_VISITOR_ID: @"final-override"};
+        }
+        if (finalModifierMode == 2) {
+            return @{FT_VISITOR_ID: NSNull.null};
+        }
+        return nil;
+    };
+    [FTMobileAgent startWithConfigOptions:mobileConfig];
 
-    rumConfig.enableUIKitViewLoadingTime = NO;
+    FTRumConfig *rumConfig = [[FTRumConfig alloc] initWithAppid:@"visitor-app"];
+    rumConfig.sampleRate = 100;
+    rumConfig.enableTraceUserResource = NO;
+    rumConfig.globalContext = @{FT_VISITOR_ID: @"rum-global-attempt"};
+    FTVisitorIDConfig *visitorConfig = [FTVisitorIDConfig new];
+    visitorConfig.header = @"x-visitor";
+    [visitorConfig addMatchWithURLPrefix:@"https://api.example.com/"];
+    rumConfig.visitorIDConfig = visitorConfig;
+    [[FTMobileAgent sharedInstance] startRumWithConfigOptions:rumConfig];
+
+    FTRUMManager *manager = [FTGlobalRumManager sharedInstance].rumManager;
+    [[FTExternalDataManager sharedManager] startViewWithName:@"visitor-view"];
+    [manager syncProcess];
+    [[FTTrackerEventDBTool sharedManager] deleteAllDatas];
+
+    NSString *eventVisitorID = [FTVisitorIDManager sharedInstance].snapshot.value;
+    dispatch_semaphore_t entered = dispatch_semaphore_create(0);
+    dispatch_semaphore_t release = dispatch_semaphore_create(0);
+    dispatch_async(manager.rumQueue, ^{
+        dispatch_semaphore_signal(entered);
+        dispatch_semaphore_wait(release, DISPATCH_TIME_FOREVER);
+    });
+    XCTAssertEqual(dispatch_semaphore_wait(entered, dispatch_time(DISPATCH_TIME_NOW, 5 * NSEC_PER_SEC)), 0);
+    [[FTExternalDataManager sharedManager] addAction:@"visitor-event-snapshot"
+                                         actionType:@"custom"
+                                            property:@{FT_VISITOR_ID: @"event-attempt"}];
+    [FTSDKAgent resetVisitorID];
+    NSString *newVisitorID = [FTVisitorIDManager sharedInstance].snapshot.value;
+    XCTAssertNotEqualObjects(newVisitorID, eventVisitorID);
+    dispatch_semaphore_signal(release);
+    [manager syncProcess];
+
+    FTRUMDependencies *dependencies = [manager valueForKey:@"rumDependencies"];
+    FTFatalErrorContextModel *historical = [dependencies.fatalErrorContext currentContextModel];
+    XCTAssertEqualObjects(historical.dynamicContext[FT_VISITOR_ID], newVisitorID);
+    XCTAssertEqualObjects(historical.lastViewContext[@"tags"][FT_VISITOR_ID], newVisitorID);
+    XCTAssertEqualObjects(dependencies.lastViewUserCustomDatas[FT_VISITOR_ID], newVisitorID);
+
+    finalModifierMode = 1;
+    [[FTExternalDataManager sharedManager] addAction:@"visitor-final-override" actionType:@"custom" property:nil];
+    [manager syncProcess];
+    finalModifierMode = 2;
+    [[FTExternalDataManager sharedManager] addAction:@"visitor-final-delete" actionType:@"custom" property:nil];
+    [manager syncProcess];
+
+    NSArray *records = [[FTTrackerEventDBTool sharedManager] getFirstRecords:50 withType:FT_DATA_TYPE_RUM];
+    __block NSDictionary *snapshotTags = nil;
+    __block NSDictionary *overrideTags = nil;
+    __block NSDictionary *deleteTags = nil;
+    [FTModelHelper resolveModelArray:records callBack:^(NSString *source, NSDictionary *tags, NSDictionary *fields, BOOL *stop) {
+        if (![source isEqualToString:FT_RUM_SOURCE_ACTION]) {
+            return;
+        }
+        NSString *name = tags[FT_KEY_ACTION_NAME];
+        if ([name isEqualToString:@"visitor-event-snapshot"]) {
+            snapshotTags = tags;
+        } else if ([name isEqualToString:@"visitor-final-override"]) {
+            overrideTags = tags;
+        } else if ([name isEqualToString:@"visitor-final-delete"]) {
+            deleteTags = tags;
+        }
+    }];
+    XCTAssertEqualObjects(snapshotTags[FT_VISITOR_ID], newVisitorID);
+    XCTAssertEqualObjects(overrideTags[FT_VISITOR_ID], @"final-override");
+    XCTAssertNil(deleteTags[FT_VISITOR_ID]);
+    XCTAssertEqualObjects(historical.dynamicContext[FT_VISITOR_ID], newVisitorID);
+    XCTAssertEqualObjects([dependencies.fatalErrorContext currentContextModel].dynamicContext[FT_VISITOR_ID], newVisitorID);
+}
+- (void)testVisitorIDResourceAndNetworkErrorKeepRequestHeaderSnapshotAfterReset {
+    FTMobileConfig *mobileConfig = [[FTMobileConfig alloc] initWithDatakitUrl:self.url ?: @"http://127.0.0.1:9529"];
+    mobileConfig.autoSync = NO;
+    [FTMobileAgent startWithConfigOptions:mobileConfig];
+
+    FTRumConfig *rumConfig = [[FTRumConfig alloc] initWithAppid:@"visitor-resource-app"];
+    rumConfig.sampleRate = 100;
+    FTVisitorIDConfig *visitorConfig = [FTVisitorIDConfig new];
+    visitorConfig.header = @"x-visitor";
+    [visitorConfig addMatchWithURLPrefix:@"https://api.example.com/"];
+    rumConfig.visitorIDConfig = visitorConfig;
+    [[FTMobileAgent sharedInstance] startRumWithConfigOptions:rumConfig];
+
+    FTRUMManager *manager = [FTGlobalRumManager sharedInstance].rumManager;
+    [[FTExternalDataManager sharedManager] startViewWithName:@"visitor-resource-view"];
+    [manager syncProcess];
+    [[FTTrackerEventDBTool sharedManager] deleteAllDatas];
+
+    NSURL *url = [NSURL URLWithString:@"https://api.example.com/failure"];
+    FTVisitorIDRequestSnapshot *requestSnapshot = [[FTVisitorIDManager sharedInstance] requestSnapshotForURL:url];
+    NSMutableURLRequest *request = [NSMutableURLRequest requestWithURL:url];
+    [request setValue:requestSnapshot.value forHTTPHeaderField:requestSnapshot.headerName];
+    NSString *resourceKey = @"visitor-resource-key";
+    [[FTVisitorIDManager sharedInstance] bindResourceVisitorID:requestSnapshot.value forKey:resourceKey];
+    [manager startResourceWithKey:resourceKey property:nil time:[NSDate date]];
+    XCTAssertNil([[FTVisitorIDManager sharedInstance] consumeResourceVisitorIDForKey:resourceKey]);
+
+    [FTSDKAgent resetVisitorID];
+    XCTAssertNotEqualObjects([FTVisitorIDManager sharedInstance].snapshot.value, requestSnapshot.value);
+    [manager stopResourceWithKey:resourceKey property:nil time:[NSDate date]];
+    NSHTTPURLResponse *response = [[NSHTTPURLResponse alloc] initWithURL:url
+                                                             statusCode:500
+                                                            HTTPVersion:@"1.1"
+                                                           headerFields:@{@"Content-Type": @"text/plain"}];
+    FTResourceContentModel *content = [[FTResourceContentModel alloc]
+        initWithRequest:request
+                response:response
+                    data:[@"failure" dataUsingEncoding:NSUTF8StringEncoding]
+                   error:nil];
+    [manager addResourceWithKey:resourceKey
+                         metrics:nil
+                         content:content
+                          spanID:nil
+                         traceID:nil];
+    [manager syncProcess];
+
+    NSArray *records = [[FTTrackerEventDBTool sharedManager] getFirstRecords:50 withType:FT_DATA_TYPE_RUM];
+    __block NSDictionary *resourceTags = nil;
+    __block NSDictionary *errorTags = nil;
+    [FTModelHelper resolveModelArray:records callBack:^(NSString *source, NSDictionary *tags, NSDictionary *fields, BOOL *stop) {
+        if ([source isEqualToString:FT_RUM_SOURCE_RESOURCE] && [tags[FT_KEY_RESOURCE_URL] isEqualToString:url.absoluteString]) {
+            resourceTags = tags;
+        } else if ([source isEqualToString:FT_RUM_SOURCE_ERROR] && [tags[FT_KEY_RESOURCE_URL] isEqualToString:url.absoluteString]) {
+            errorTags = tags;
+        }
+    }];
+    XCTAssertEqualObjects([request valueForHTTPHeaderField:@"x-visitor"], requestSnapshot.value);
+    XCTAssertEqualObjects(resourceTags[FT_VISITOR_ID], requestSnapshot.value);
+    XCTAssertEqualObjects(errorTags[FT_VISITOR_ID], requestSnapshot.value);
+}
+- (void)testVisitorIDManualResourceKeepsStartSnapshotAfterReset {
+    FTMobileConfig *mobileConfig = [[FTMobileConfig alloc] initWithDatakitUrl:self.url ?: @"http://127.0.0.1:9529"];
+    mobileConfig.autoSync = NO;
+    [FTMobileAgent startWithConfigOptions:mobileConfig];
+
+    FTRumConfig *rumConfig = [[FTRumConfig alloc] initWithAppid:@"visitor-manual-resource-app"];
+    rumConfig.sampleRate = 100;
+    FTVisitorIDConfig *visitorConfig = [FTVisitorIDConfig new];
+    visitorConfig.header = @"x-visitor";
+    [visitorConfig addMatchWithURLPrefix:@"https://api.example.com/"];
+    rumConfig.visitorIDConfig = visitorConfig;
+    [[FTMobileAgent sharedInstance] startRumWithConfigOptions:rumConfig];
+
+    FTRUMManager *manager = [FTGlobalRumManager sharedInstance].rumManager;
+    [[FTExternalDataManager sharedManager] startViewWithName:@"visitor-manual-resource-view"];
+    [manager syncProcess];
+    [[FTTrackerEventDBTool sharedManager] deleteAllDatas];
+
+    NSString *startVisitorID = [FTVisitorIDManager sharedInstance].snapshot.value;
+    NSString *resourceKey = @"visitor-manual-resource-key";
+    [manager startResourceWithKey:resourceKey property:nil time:[NSDate date]];
+    [FTSDKAgent resetVisitorID];
+    NSString *completionVisitorID = [FTVisitorIDManager sharedInstance].snapshot.value;
+    XCTAssertNotEqualObjects(completionVisitorID, startVisitorID);
+    [manager stopResourceWithKey:resourceKey
+                        property:@{FT_VISITOR_ID: @"stop-property-attempt"}
+                            time:[NSDate date]];
+
+    NSURL *url = [NSURL URLWithString:@"https://api.example.com/manual-success"];
+    NSURLRequest *request = [NSURLRequest requestWithURL:url];
+    NSHTTPURLResponse *response = [[NSHTTPURLResponse alloc] initWithURL:url
+                                                             statusCode:200
+                                                            HTTPVersion:@"1.1"
+                                                           headerFields:@{ @"Content-Type": @"text/plain" }];
+    FTResourceContentModel *content = [[FTResourceContentModel alloc]
+        initWithRequest:request
+                response:response
+                    data:[NSData data]
+                   error:nil];
+    [manager addResourceWithKey:resourceKey metrics:nil content:content spanID:nil traceID:nil];
+    [manager syncProcess];
+
+    NSArray *records = [[FTTrackerEventDBTool sharedManager] getFirstRecords:50 withType:FT_DATA_TYPE_RUM];
+    __block NSDictionary *resourceTags = nil;
+    __block NSDictionary *resourceFields = nil;
+    [FTModelHelper resolveModelArray:records callBack:^(NSString *source, NSDictionary *tags, NSDictionary *fields, BOOL *stop) {
+        if ([source isEqualToString:FT_RUM_SOURCE_RESOURCE] && [tags[FT_KEY_RESOURCE_URL] isEqualToString:url.absoluteString]) {
+            resourceTags = tags;
+            resourceFields = fields;
+        }
+    }];
+    XCTAssertEqualObjects(resourceTags[FT_VISITOR_ID], startVisitorID);
+    XCTAssertNotEqualObjects(resourceTags[FT_VISITOR_ID], completionVisitorID);
+    XCTAssertNil(resourceFields[FT_VISITOR_ID]);
+}
+- (void)testViewLoadingTimeConfiguration {
+    FTRumConfig *rumConfig = [[FTRumConfig alloc]initWithAppid:@"appid"];
+    XCTAssertTrue(rumConfig.enableTraceUserViewLoadingTime);
+
+    rumConfig.enableTraceUserViewLoadingTime = NO;
     FTRumConfig *copiedConfig = [rumConfig copy];
-    XCTAssertFalse(copiedConfig.enableUIKitViewLoadingTime);
-    XCTAssertFalse([[rumConfig debugDescription] containsString:@"enableUIKitViewLoadingTime"]);
+    XCTAssertFalse(copiedConfig.enableTraceUserViewLoadingTime);
+    XCTAssertTrue([[rumConfig debugDescription] containsString:@"enableTraceUserViewLoadingTime"]);
 }
 - (void)testIssueDataProviderConfigurationCopyAndSerialization{
     FTRumConfig *rumConfig = [[FTRumConfig alloc]initWithAppid:@"appid"];
@@ -940,6 +1461,19 @@ static void FTStartAutoTrackActionTest(AddRumDatasHandlerMock *mock,
     XCTAssertEqual(attributes.positionY, 10);
 }
 
+- (void)testHeatmapAttributes_clampsCGFloatAtLongLongLimits {
+    FTHeatmapIdentifier *identifier = [[FTHeatmapIdentifier alloc]initWithRawValue:@"button-id"];
+    CGFloat upperLimit = (CGFloat)LLONG_MAX;
+    CGFloat lowerLimit = (CGFloat)LLONG_MIN;
+
+    FTHeatmapAttributes *attributes = [[FTHeatmapAttributes alloc]initWithIdentifier:identifier
+                                                                                size:CGSizeMake(upperLimit, lowerLimit)
+                                                                            location:CGPointZero];
+
+    XCTAssertEqual(attributes.targetWidth, LLONG_MAX);
+    XCTAssertEqual(attributes.targetHeight, LLONG_MIN);
+}
+
 - (void)testActionPublisher_actionTrackingHandlerNilSkipsActionAndHeatmap {
     AddRumDatasHandlerMock *mock = [AddRumDatasHandlerMock new];
     TestTrackingHandler *handler = [TestTrackingHandler new];
@@ -1018,6 +1552,51 @@ static void FTStartAutoTrackActionTest(AddRumDatasHandlerMock *mock,
     XCTAssertNil(mock.lastHeatmapAttributes);
 }
 
+- (void)testActionPublisherOwnsNestedUIKitPropertiesBeforeHandoff {
+    AddRumDatasHandlerMock *mock = [AddRumDatasHandlerMock new];
+    TestTrackingHandler *handler = [TestTrackingHandler new];
+    NSMutableString *label = [NSMutableString stringWithString:@"before"];
+    NSMutableDictionary *nested = [@{@"label": label} mutableCopy];
+    handler.actionTrackingBlock = ^FTRUMAction *(UIView *view) {
+        return [[FTRUMAction alloc] initWithActionName:@"owned-action" property:@{@"nested": nested, @"fraction": @1.25}];
+    };
+    FTAutoTrackActionPublisher *publisher = [[FTAutoTrackActionPublisher alloc] initWithActionTrackingHandler:handler
+        addRumDatasDelegate:mock heatmapResolver:[FTAutoTrackHeatmapResolver new]];
+    UIButton *button = [UIButton new];
+    [publisher publishUIKitActionWithTargetView:button heatmapTargetView:button locationResolver:nil];
+    [label appendString:@"-after"];
+    nested[@"later"] = @2;
+    XCTAssertEqualObjects(mock.lastActionProperty[@"nested"], (@{@"label": @"before"}));
+    XCTAssertEqualObjects(mock.lastActionProperty[@"fraction"], @1.25);
+    XCTAssertTrue([mock.lastActionProperty[@"fraction"] isKindOfClass:NSNumber.class]);
+}
+
+- (void)testActionPublisherOwnsNestedSwiftUIPropertiesBeforeHandoff {
+    AddRumDatasHandlerMock *mock = [AddRumDatasHandlerMock new];
+    FTAutoTrackActionPublisher *publisher = [[FTAutoTrackActionPublisher alloc] initWithActionTrackingHandler:nil
+        addRumDatasDelegate:mock heatmapResolver:[FTAutoTrackHeatmapResolver new]];
+    NSMutableArray *items = [NSMutableArray arrayWithObject:@1];
+    [publisher publishSwiftUIActionWithName:@"owned-swiftui-action" property:@{@"items": items, @"fraction": @1.25}];
+    [items addObject:@2];
+    XCTAssertEqualObjects(mock.lastActionProperty[@"items"], @[@1]);
+    XCTAssertEqualObjects(mock.lastActionProperty[@"fraction"], @1.25);
+    XCTAssertTrue([mock.lastActionProperty[@"fraction"] isKindOfClass:NSNumber.class]);
+}
+
+- (void)testSwiftUIViewOwnsNestedPropertiesBeforeHandoff {
+    AddRumDatasHandlerMock *mock = [AddRumDatasHandlerMock new];
+    FTAutoTrackHandler *handler = [FTAutoTrackHandler sharedInstance];
+    [handler startWithTrackView:YES action:NO addRumDatasDelegate:mock viewHandler:nil swiftUIViewHandler:nil actionHandler:nil];
+    NSMutableArray *items = [NSMutableArray arrayWithObject:@1];
+    [handler notifyOnAppearWithIdentity:@"owned-swiftui-view" name:@"OwnedView"
+        property:@{@"items": items, @"fraction": @1.25} loadTime:@0];
+    [items addObject:@2];
+    XCTAssertEqualObjects(mock.lastStartProperty[@"items"], @[@1]);
+    XCTAssertEqualObjects(mock.lastStartProperty[@"fraction"], @1.25);
+    XCTAssertTrue([mock.lastStartProperty[@"fraction"] isKindOfClass:NSNumber.class]);
+    [handler notifyOnDisappearWithIdentity:@"owned-swiftui-view"];
+}
+
 - (void)testActionPublisher_ignoresEmptySwiftUIActionName {
     AddRumDatasHandlerMock *mock = [AddRumDatasHandlerMock new];
     FTAutoTrackActionPublisher *publisher = [[FTAutoTrackActionPublisher alloc]initWithActionTrackingHandler:nil
@@ -1090,26 +1669,27 @@ static void FTStartAutoTrackActionTest(AddRumDatasHandlerMock *mock,
 - (void)testHeatmapAttributes_fallsBackToRegisteredUIControlActionTarget {
     AddRumDatasHandlerMock *mock = [AddRumDatasHandlerMock new];
     TestTrackingHandler *handler = [TestTrackingHandler new];
-    UISwitch *switchView = [[UISwitch alloc]initWithFrame:CGRectMake(0, 0, 51, 31)];
+    // This tests UIControl fallback, so keep geometry independent of UISwitch system styling.
+    UIControl *control = [[UIControl alloc]initWithFrame:CGRectMake(0, 0, 51, 31)];
     UIView *internalView = [[UIView alloc]initWithFrame:CGRectMake(0, 0, 51, 31)];
-    [switchView addSubview:internalView];
-    FTHeatmapIdentifier *switchIdentifier = [[FTHeatmapIdentifier alloc]initWithRawValue:@"switch-id"];
+    [control addSubview:internalView];
+    FTHeatmapIdentifier *controlIdentifier = [[FTHeatmapIdentifier alloc]initWithRawValue:@"control-id"];
     TestHeatmapIdentifierRegistry *registry = [[TestHeatmapIdentifierRegistry alloc]initWithIdentifiers:@{
-        [FTHeatmapIdentifier objectIdentifierForObject:switchView]: switchIdentifier,
+        [FTHeatmapIdentifier objectIdentifierForObject:control]: controlIdentifier,
     }];
     registry.enableHeatmap = YES;
     __block UIView *actionTargetView = nil;
     handler.actionTrackingBlock = ^FTRUMAction * _Nullable(UIView *view) {
         actionTargetView = view;
-        return [[FTRUMAction alloc]initWithActionName:@"switch_tap"];
+        return [[FTRUMAction alloc]initWithActionName:@"control_tap"];
     };
     FTStartAutoTrackActionTest(mock, handler, registry);
 
     UITouchMock *touch = [[UITouchMock alloc]initWithPhase:UITouchPhaseEnded view:internalView location:CGPointMake(12, 8)];
     [[UIApplication sharedApplication] ftTrackTouchEvent:[UIEvent mockWithTouch:touch]];
 
-    XCTAssertEqual(actionTargetView, switchView);
-    XCTAssertEqualObjects(mock.lastHeatmapAttributes.targetPermanentID, @"switch-id");
+    XCTAssertEqual(actionTargetView, control);
+    XCTAssertEqualObjects(mock.lastHeatmapAttributes.targetPermanentID, @"control-id");
     XCTAssertEqual(mock.lastHeatmapAttributes.targetWidth, 51);
     XCTAssertEqual(mock.lastHeatmapAttributes.targetHeight, 31);
     XCTAssertEqual(mock.lastHeatmapAttributes.positionX, 12);
@@ -1355,8 +1935,10 @@ static void FTStartAutoTrackActionTest(AddRumDatasHandlerMock *mock,
     FTRumConfig *rumConfig = [[FTRumConfig alloc]initWithAppid:self.appid];
     rumConfig.enableTraceUserAction = YES;
     __block NSString *actionName;
+    NSMutableArray<NSNumber *> *launchTypes = [NSMutableArray array];
     TestTrackingHandler *handler = [TestTrackingHandler new];
     handler.launchActionTrackingBlock = ^FTRUMAction * _Nullable(FTLaunchType type) {
+        [launchTypes addObject:@(type)];
         switch (type) {
             case FTLaunchHot:
                 actionName = @"hot";
@@ -1373,14 +1955,24 @@ static void FTStartAutoTrackActionTest(AddRumDatasHandlerMock *mock,
     rumConfig.actionTrackingHandler = handler;
     [FTMobileAgent startWithConfigOptions:config];
     [[FTMobileAgent sharedInstance] startRumWithConfigOptions:rumConfig];
-    
-    
+
+    // Initial launch is process-scoped and may have been reported by an earlier
+    // test. Exercise a new hot launch owned entirely by this SDK instance.
     [[FTGlobalRumManager sharedInstance].rumManager syncProcess];
+    [[FTTrackerEventDBTool sharedManager] deleteAllDatas];
+    [launchTypes removeAllObjects];
+    actionName = nil;
+    [[NSNotificationCenter defaultCenter] postNotificationName:UIApplicationWillEnterForegroundNotification object:nil];
+    [[NSNotificationCenter defaultCenter] postNotificationName:UIApplicationDidBecomeActiveNotification object:nil];
+
+    [[FTGlobalRumManager sharedInstance].rumManager syncProcess];
+    XCTAssertEqualObjects(launchTypes, (@[@(FTLaunchHot)]));
+    XCTAssertEqualObjects(actionName, @"hot");
     NSArray *datas =[[FTTrackerEventDBTool sharedManager] getFirstRecords:50 withType:FT_DATA_TYPE_RUM];
     __block BOOL hasLaunchAction = NO;
     [FTModelHelper resolveModelArray:datas callBack:^(NSString * _Nonnull source, NSDictionary * _Nonnull tags, NSDictionary * _Nonnull fields, BOOL * _Nonnull stop) {
-        if ([source isEqualToString:FT_RUM_SOURCE_ACTION] && ![tags[FT_KEY_ACTION_TYPE] isEqualToString:FT_KEY_ACTION_TYPE_CLICK ]) {
-            XCTAssertTrue([tags[FT_KEY_ACTION_NAME] isEqualToString:actionName]);
+        if ([source isEqualToString:FT_RUM_SOURCE_ACTION] && [tags[FT_KEY_ACTION_TYPE] isEqualToString:FT_LAUNCH_HOT]) {
+            XCTAssertEqualObjects(tags[FT_KEY_ACTION_NAME], @"hot");
             hasLaunchAction = YES;
             *stop = YES;
         }

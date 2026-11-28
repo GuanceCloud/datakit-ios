@@ -18,19 +18,6 @@
 //  limitations under the License.
 //
 
-//  Licensed under the Apache License, Version 2.0 (the "License");
-//  you may not use this file except in compliance with the License.
-//  You may obtain a copy of the License at
-//
-//      http://www.apache.org/licenses/LICENSE-2.0
-//
-//  Unless required by applicable law or agreed to in writing, software
-//  distributed under the License is distributed on an "AS IS" BASIS,
-//  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-//  See the License for the specific language governing permissions and
-//  limitations under the License.
-
-
 #ifndef FTURLSessionInterceptorProtocol_h
 #define FTURLSessionInterceptorProtocol_h
 #import "FTRumResourceProtocol.h"
@@ -107,6 +94,9 @@ typedef BOOL (^SessionTaskErrorFilter)(NSError *_Nonnull error);
 ///
 /// When passing to rum, first call -stopResource, then call -addResourceWithKey
 - (void)taskCompleted:(NSURLSessionTask *)task error:(nullable NSError *)error;
+/// Internal boundary captured before the application completion callback.
+- (void)taskCompleted:(NSURLSessionTask *)task error:(nullable NSError *)error endTime:(uint64_t)endTime;
+- (void)taskCompleted:(NSURLSessionTask *)task error:(nullable NSError *)error extraProvider:(nullable ResourcePropertyProvider)extraProvider errorFilter:(nullable SessionTaskErrorFilter)errorFilter endTime:(uint64_t)endTime;
 
 /// Request end -stopResource
 /// - Parameters:

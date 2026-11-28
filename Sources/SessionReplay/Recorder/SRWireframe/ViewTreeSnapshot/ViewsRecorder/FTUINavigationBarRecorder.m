@@ -48,26 +48,21 @@
     return element;
 }
 - (UIColor *)inferNavigationBarColor:(UINavigationBar *)bar{
-    if (@available(iOS 15.0, *)) {
-        // scrollEdgeAppearance
-        if(bar.standardAppearance.backgroundColor){
-            return bar.standardAppearance.backgroundColor;
-        }
+    // scrollEdgeAppearance
+    if(bar.standardAppearance.backgroundColor){
+        return bar.standardAppearance.backgroundColor;
     }
     if(bar.barTintColor){
         return bar.barTintColor;
     }
-    if (@available(iOS 13.0, *)) {
-        switch ([UITraitCollection currentTraitCollection].userInterfaceStyle) {
-            case UIUserInterfaceStyleLight:
-                return [UIColor whiteColor];
-            case UIUserInterfaceStyleDark:
-                return [UIColor blackColor];
-            default:
-                return [UIColor whiteColor];
-        }
+    switch ([UITraitCollection currentTraitCollection].userInterfaceStyle) {
+        case UIUserInterfaceStyleLight:
+            return [UIColor whiteColor];
+        case UIUserInterfaceStyleDark:
+            return [UIColor blackColor];
+        default:
+            return [UIColor whiteColor];
     }
-    return UIColor.whiteColor;
 }
 - (CGRect)inferNavigationBarFrame:(UINavigationBar *)bar context:(FTViewTreeRecordingContext *)context{
     CGRect newRect = bar.frame;

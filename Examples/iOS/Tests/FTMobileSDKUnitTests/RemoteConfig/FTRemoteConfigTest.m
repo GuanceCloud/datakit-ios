@@ -42,6 +42,8 @@
 #import "FTTrackerEventDBTool.h"
 #import "FTModelHelper.h"
 #import "FTNetworkInfoManager.h"
+#include <float.h>
+#include <math.h>
 
 #if !TARGET_OS_TV
 #import "FTSessionReplayConfig+Private.h"
@@ -57,9 +59,15 @@
 @property (nonatomic, strong,readonly) FTLoggerConfig *config;
 @end
 @interface FTRemoteConfigManager (Testing)
+@property (atomic, assign, readonly) BOOL isFetching;
 @property (nonatomic, strong) FTRemoteConfigModel *lastRemoteModel;
 - (void)saveRemoteConfig:(NSDictionary<NSString *, id> *)remoteConfig;
 - (void)saveLastFetchedTime:(NSTimeInterval)lastFetchedTime;
+- (NSDictionary *)getLastFetchedRemoteConfig;
+- (void)handleRemoteConfigResponse:(NSHTTPURLResponse *)httpResponse
+                              data:(NSData *)data
+                             error:(NSError *)error
+                        completion:(FTRemoteConfigFetchCompletionBlock)completion;
 @end
 
 @interface FTSDKAgent (Testing) <FTRemoteConfigurationProtocol>
@@ -192,7 +200,8 @@
         FT_ENV:@"test",
         FT_R_SERVICE_NAME:@"test_remote",
         FT_R_SYNC_PAGE_SIZE:@(120),
-        FT_R_SYNC_SLEEP_TIME:@(100)
+        FT_R_SYNC_SLEEP_TIME:@(100),
+        FT_R_RUM_ALLOW_WEBVIEW_HOST:@"[]"
     };
     NSString *datakit = @"http://datakit-test.com";
     FTSDKConfig *config = [[FTSDKConfig alloc]initWithDatakitUrl:datakit];
@@ -203,6 +212,7 @@
     XCTAssertTrue(![config.service isEqualToString:copyConfig.service] && [copyConfig.service isEqualToString:@"test_remote"]);
     XCTAssertTrue(config.syncPageSize != copyConfig.syncPageSize && copyConfig.syncPageSize == 120);
     XCTAssertTrue(config.syncSleepTime != copyConfig.syncSleepTime && copyConfig.syncSleepTime == 100);
+    XCTAssertEqualObjects(copyConfig.remoteAllowWebViewHost, @[]);
     
     NSDictionary *testRumDict = @{
         FT_R_RUM_SAMPLERATE:@(0.5),
@@ -215,6 +225,7 @@
         FT_R_RUM_ENABLE_RESOURCE_HOST_IP:@(YES),
         FT_R_RUM_ENABLE_TRACE_USER_ACTION:@(YES),
         FT_R_RUM_ENABLE_TRACE_USER_RESOURCE:@(YES),
+        FT_R_RUM_ENABLE_TRACE_URLCONNECTION_RESOURCE:@(YES),
         FT_R_RUM_ENABLE_TRACE_APP_FREEZE:@(YES),
         FT_R_RUM_SESSION_ON_ERROR_SAMPLE_RATE:@(0.5),
     };
@@ -224,7 +235,7 @@
     
     [copyRumConfig mergeWithRemoteConfigModel:[[FTRemoteConfigModel alloc] initWithDict:testRumDict]];
 
-    XCTAssertTrue(rumConfig.samplerate != copyRumConfig.samplerate && copyRumConfig.samplerate == 50);
+    XCTAssertEqualWithAccuracy(copyRumConfig.sessionSamplingRate, 50.0f, FLT_EPSILON);
     XCTAssertTrue(rumConfig.enableTrackAppFreeze != copyRumConfig.enableTrackAppFreeze && copyRumConfig.enableTrackAppFreeze == YES);
     XCTAssertTrue(rumConfig.freezeDurationMs != copyRumConfig.freezeDurationMs && copyRumConfig.freezeDurationMs == 200);
     XCTAssertTrue(rumConfig.allowWebViewHost != copyRumConfig.allowWebViewHost && [copyRumConfig.allowWebViewHost isEqualToArray:@[@"100.0.0.1"]]);
@@ -236,12 +247,14 @@
     XCTAssertTrue(rumConfig.enableResourceHostIP != copyRumConfig.enableResourceHostIP && copyRumConfig.enableResourceHostIP == YES);
     XCTAssertTrue(rumConfig.enableTraceUserAction != copyRumConfig.enableTraceUserAction && copyRumConfig.enableTraceUserAction == YES);
     XCTAssertTrue(rumConfig.enableTraceUserResource != copyRumConfig.enableTraceUserResource && copyRumConfig.enableTraceUserResource == YES);
-    XCTAssertTrue(rumConfig.sessionOnErrorSampleRate != copyRumConfig.sessionOnErrorSampleRate && copyRumConfig.sessionOnErrorSampleRate == 50);
+    XCTAssertTrue(rumConfig.enableTraceURLConnectionResource != copyRumConfig.enableTraceURLConnectionResource && copyRumConfig.enableTraceURLConnectionResource == YES);
+    XCTAssertEqualWithAccuracy(copyRumConfig.sessionOnErrorSamplingRate, 50.0f, FLT_EPSILON);
     
     NSDictionary *testTraceDict = @{
         FT_R_TRACE_SAMPLERATE:@(0.4),
         FT_R_TRACE_TRACE_TYPE:@"jaeger",
         FT_R_TRACE_ENABLE_AUTO_TRACE:@(YES),
+        FT_R_TRACE_ENABLE_AUTO_TRACE_URLCONNECTION:@(YES),
     };
     
     FTTraceConfig *trace = [[FTTraceConfig alloc]init];
@@ -249,23 +262,26 @@
     
     [copyTrace mergeWithRemoteConfigModel:[[FTRemoteConfigModel alloc] initWithDict:testTraceDict]];
 
-    XCTAssertTrue(trace.sampleRate != copyTrace.sampleRate && copyTrace.sampleRate == 40);
+    XCTAssertEqualWithAccuracy(copyTrace.traceSamplingRate, 40.0f, FLT_EPSILON);
     XCTAssertTrue(trace.networkTraceType != copyTrace.networkTraceType && copyTrace.networkTraceType == FTNetworkTraceTypeJaeger);
     XCTAssertTrue(trace.enableAutoTrace != copyTrace.enableAutoTrace && copyTrace.enableAutoTrace == YES);
+    XCTAssertTrue(trace.enableAutoTraceURLConnection != copyTrace.enableAutoTraceURLConnection && copyTrace.enableAutoTraceURLConnection == YES);
     
     
     NSDictionary *testLoggerDict = @{
         FT_R_LOG_SAMPLERATE:@(0.8),
         FT_R_LOG_LEVEL_FILTERS:@"[\"info\",\"error\"]",
         FT_R_LOG_ENABLE_CUSTOM_LOG:@(YES),
+        FT_R_LOG_ENABLE_WEBVIEW_LOG:@(YES),
     };
     FTLoggerConfig *logger = [[FTLoggerConfig alloc]init];
     FTLoggerConfig *copyLogger = [logger copy];
     
     [copyLogger mergeWithRemoteConfigModel:[[FTRemoteConfigModel alloc] initWithDict:testLoggerDict]];
 
-    XCTAssertTrue(logger.sampleRate != copyLogger.sampleRate && copyLogger.sampleRate == 80);
+    XCTAssertEqualWithAccuracy(copyLogger.logSamplingRate, 80.0f, FLT_EPSILON);
     XCTAssertTrue(logger.enableCustomLog != copyLogger.enableCustomLog && copyLogger.enableCustomLog == YES);
+    XCTAssertTrue(logger.enableWebViewLog != copyLogger.enableWebViewLog && copyLogger.enableWebViewLog == YES);
     XCTAssertTrue(![logger.logLevelFilter isEqual:copyLogger.logLevelFilter]);
     NSArray *array = @[@"info",@"error"];
     XCTAssertTrue([copyLogger.logLevelFilter isEqualToArray:array]);
@@ -278,11 +294,217 @@
     FTSessionReplayConfig *srConfig = [[FTSessionReplayConfig alloc]init];
     FTSessionReplayConfig *copySrConfig = [srConfig copy];
     [copySrConfig mergeWithRemoteConfigModel:[[FTRemoteConfigModel alloc] initWithDict:testSRDict]];
-    XCTAssertTrue(srConfig.sampleRate != copySrConfig.sampleRate && copyLogger.sampleRate == 80);
-    XCTAssertTrue(srConfig.sessionReplayOnErrorSampleRate != copySrConfig.sessionReplayOnErrorSampleRate && copySrConfig.sessionReplayOnErrorSampleRate == 50);
+    XCTAssertEqualWithAccuracy(copySrConfig.sessionReplaySamplingRate, 80.0f, FLT_EPSILON);
+    XCTAssertEqualWithAccuracy(copySrConfig.sessionReplayOnErrorSamplingRate, 50.0f, FLT_EPSILON);
 #endif
 
     [[FTRemoteConfigManager sharedInstance] shutDown];
+}
+- (void)testNewSamplingRatesTakePriorityAndPreserveUnits{
+    FTRemoteConfigModel *model = [[FTRemoteConfigModel alloc] initWithDict:@{
+        FT_R_RUM_SAMPLING_RATE: @0,
+        FT_R_RUM_SAMPLERATE: @0.9,
+        FT_R_RUM_SESSION_ON_ERROR_SAMPLING_RATE: @0.1,
+        FT_R_RUM_SESSION_ON_ERROR_SAMPLE_RATE: @0.8,
+        FT_R_LOG_SAMPLING_RATE: @1,
+        FT_R_LOG_SAMPLERATE: @0.2,
+        FT_R_TRACE_SAMPLING_RATE: @12.5,
+        FT_R_TRACE_SAMPLERATE: @0.3,
+        FT_R_SR_SAMPLING_RATE: @25.25,
+        FT_R_SR_SAMPLERATE: @0.4,
+        FT_R_SR_ON_ERROR_SAMPLING_RATE: @50.5,
+        FT_R_SR_ON_ERROR_SAMPLE_RATE: @0.5,
+    }];
+
+    FTRumConfig *rumConfig = [[FTRumConfig alloc] initWithAppid:@"appid"];
+    [rumConfig mergeWithRemoteConfigModel:model];
+    XCTAssertEqualWithAccuracy(rumConfig.sessionSamplingRate, 0.0f, FLT_EPSILON);
+    XCTAssertEqualWithAccuracy(rumConfig.sessionOnErrorSamplingRate, 0.1f, FLT_EPSILON);
+
+    FTLoggerConfig *loggerConfig = [[FTLoggerConfig alloc] init];
+    [loggerConfig mergeWithRemoteConfigModel:model];
+    XCTAssertEqualWithAccuracy(loggerConfig.logSamplingRate, 1.0f, FLT_EPSILON);
+
+    FTTraceConfig *traceConfig = [[FTTraceConfig alloc] init];
+    [traceConfig mergeWithRemoteConfigModel:model];
+    XCTAssertEqualWithAccuracy(traceConfig.traceSamplingRate, 12.5f, FLT_EPSILON);
+
+#if !TARGET_OS_TV
+    FTSessionReplayConfig *replayConfig = [[FTSessionReplayConfig alloc] init];
+    [replayConfig mergeWithRemoteConfigModel:model];
+    XCTAssertEqualWithAccuracy(replayConfig.sessionReplaySamplingRate, 25.25f, FLT_EPSILON);
+    XCTAssertEqualWithAccuracy(replayConfig.sessionReplayOnErrorSamplingRate, 50.5f, FLT_EPSILON);
+#endif
+
+    NSDictionary *serialized = model.toDictionary;
+    XCTAssertEqualObjects(serialized[FT_R_RUM_SAMPLING_RATE], @0);
+    XCTAssertEqualObjects(serialized[FT_R_RUM_SAMPLERATE], @0.9);
+}
+
+- (void)testLegacyRemoteSamplingRateOneMeansFullSampling{
+    FTRemoteConfigModel *model = [[FTRemoteConfigModel alloc] initWithDict:@{
+        FT_R_RUM_SAMPLERATE: @1,
+        FT_R_RUM_SESSION_ON_ERROR_SAMPLE_RATE: @1,
+        FT_R_LOG_SAMPLERATE: @1,
+        FT_R_TRACE_SAMPLERATE: @1,
+        FT_R_SR_SAMPLERATE: @1,
+        FT_R_SR_ON_ERROR_SAMPLE_RATE: @1,
+    }];
+    FTRumConfig *rumConfig = [[FTRumConfig alloc] initWithAppid:@"appid"];
+    FTLoggerConfig *loggerConfig = [[FTLoggerConfig alloc] init];
+    FTTraceConfig *traceConfig = [[FTTraceConfig alloc] init];
+    [rumConfig mergeWithRemoteConfigModel:model];
+    [loggerConfig mergeWithRemoteConfigModel:model];
+    [traceConfig mergeWithRemoteConfigModel:model];
+    XCTAssertEqualWithAccuracy(rumConfig.sessionSamplingRate, 100.0f, FLT_EPSILON);
+    XCTAssertEqualWithAccuracy(rumConfig.sessionOnErrorSamplingRate, 100.0f, FLT_EPSILON);
+    XCTAssertEqualWithAccuracy(loggerConfig.logSamplingRate, 100.0f, FLT_EPSILON);
+    XCTAssertEqualWithAccuracy(traceConfig.traceSamplingRate, 100.0f, FLT_EPSILON);
+#if !TARGET_OS_TV
+    FTSessionReplayConfig *replayConfig = [[FTSessionReplayConfig alloc] init];
+    [replayConfig mergeWithRemoteConfigModel:model];
+    XCTAssertEqualWithAccuracy(replayConfig.sessionReplaySamplingRate, 100.0f, FLT_EPSILON);
+    XCTAssertEqualWithAccuracy(replayConfig.sessionReplayOnErrorSamplingRate, 100.0f, FLT_EPSILON);
+#endif
+}
+
+- (void)testInvalidNewSamplingRatesPreservePreviousValuesWithoutLegacyFallback{
+    FTRemoteConfigModel *previous = [[FTRemoteConfigModel alloc] initWithDict:@{
+        FT_R_RUM_SAMPLING_RATE: @10.1,
+        FT_R_RUM_SAMPLERATE: @0.101,
+        FT_R_RUM_SESSION_ON_ERROR_SAMPLING_RATE: @20.2,
+        FT_R_RUM_SESSION_ON_ERROR_SAMPLE_RATE: @0.202,
+        FT_R_LOG_SAMPLING_RATE: @30.3,
+        FT_R_LOG_SAMPLERATE: @0.303,
+        FT_R_TRACE_SAMPLING_RATE: @40.4,
+        FT_R_TRACE_SAMPLERATE: @0.404,
+        FT_R_SR_SAMPLING_RATE: @50.5,
+        FT_R_SR_SAMPLERATE: @0.505,
+        FT_R_SR_ON_ERROR_SAMPLING_RATE: @60.6,
+        FT_R_SR_ON_ERROR_SAMPLE_RATE: @0.606,
+        @"futureSamplingOption": @YES,
+    }];
+    FTRemoteConfigModel *incoming = [[FTRemoteConfigModel alloc] initWithDict:@{
+        FT_R_RUM_SAMPLING_RATE: @(-0.1),
+        FT_R_RUM_SAMPLERATE: @0.9,
+        FT_R_RUM_SESSION_ON_ERROR_SAMPLING_RATE: @(100.1),
+        FT_R_RUM_SESSION_ON_ERROR_SAMPLE_RATE: @0.8,
+        FT_R_LOG_SAMPLING_RATE: @(NAN),
+        FT_R_LOG_SAMPLERATE: @0.7,
+        FT_R_TRACE_SAMPLING_RATE: @(INFINITY),
+        FT_R_TRACE_SAMPLERATE: @0.6,
+        FT_R_SR_SAMPLING_RATE: @(-INFINITY),
+        FT_R_SR_SAMPLERATE: @0.5,
+        FT_R_SR_ON_ERROR_SAMPLING_RATE: @101,
+        FT_R_SR_ON_ERROR_SAMPLE_RATE: @0.4,
+        @"futureSamplingOption": @NO,
+    }];
+
+    FTRemoteConfigModel *normalized = [incoming modelByNormalizingSamplingWithPreviousModel:previous
+                                                                         includeRawContext:YES];
+    XCTAssertEqualObjects(normalized.sessionSamplingRate, @10.1);
+    XCTAssertEqualObjects(normalized.sessionOnErrorSamplingRate, @20.2);
+    XCTAssertEqualObjects(normalized.logSamplingRate, @30.3);
+    XCTAssertEqualObjects(normalized.traceSamplingRate, @40.4);
+    XCTAssertEqualObjects(normalized.sessionReplaySamplingRate, @50.5);
+    XCTAssertEqualObjects(normalized.sessionReplayOnErrorSamplingRate, @60.6);
+    XCTAssertEqualObjects(normalized.rumSampleRate, @0.101);
+    XCTAssertEqualObjects(normalized.rumSessionOnErrorSampleRate, @0.202);
+    XCTAssertEqualObjects(normalized.logSampleRate, @0.303);
+    XCTAssertEqualObjects(normalized.traceSampleRate, @0.404);
+    XCTAssertEqualObjects(normalized.sessionReplaySampleRate, @0.505);
+    XCTAssertEqualObjects(normalized.sessionReplayOnErrorSampleRate, @0.606);
+    XCTAssertEqualObjects(normalized.toDictionary[@"futureSamplingOption"], @NO);
+
+    FTRumConfig *rumConfig = [[FTRumConfig alloc] initWithAppid:@"appid"];
+    FTLoggerConfig *loggerConfig = [[FTLoggerConfig alloc] init];
+    FTTraceConfig *traceConfig = [[FTTraceConfig alloc] init];
+    [rumConfig mergeWithRemoteConfigModel:normalized];
+    [loggerConfig mergeWithRemoteConfigModel:normalized];
+    [traceConfig mergeWithRemoteConfigModel:normalized];
+    XCTAssertEqualWithAccuracy(rumConfig.sessionSamplingRate, 10.1f, FLT_EPSILON);
+    XCTAssertEqualWithAccuracy(rumConfig.sessionOnErrorSamplingRate, 20.2f, FLT_EPSILON);
+    XCTAssertEqualWithAccuracy(loggerConfig.logSamplingRate, 30.3f, FLT_EPSILON);
+    XCTAssertEqualWithAccuracy(traceConfig.traceSamplingRate, 40.4f, FLT_EPSILON);
+#if !TARGET_OS_TV
+    FTSessionReplayConfig *replayConfig = [[FTSessionReplayConfig alloc] init];
+    [replayConfig mergeWithRemoteConfigModel:normalized];
+    XCTAssertEqualWithAccuracy(replayConfig.sessionReplaySamplingRate, 50.5f, FLT_EPSILON);
+    XCTAssertEqualWithAccuracy(replayConfig.sessionReplayOnErrorSamplingRate, 60.6f, FLT_EPSILON);
+#endif
+
+    FTRemoteConfigModel *invalidTypes = [[FTRemoteConfigModel alloc] initWithDict:@{
+        FT_R_RUM_SAMPLING_RATE: @YES,
+        FT_R_LOG_SAMPLING_RATE: @"30.3",
+    }];
+    FTRemoteConfigModel *typeNormalized = [invalidTypes modelByNormalizingSamplingWithPreviousModel:previous
+                                                                                  includeRawContext:YES];
+    XCTAssertEqualObjects(typeNormalized.sessionSamplingRate, @10.1);
+    XCTAssertEqualObjects(typeNormalized.rumSampleRate, @0.101);
+    XCTAssertEqualObjects(typeNormalized.logSamplingRate, @30.3);
+    XCTAssertEqualObjects(typeNormalized.logSampleRate, @0.303);
+}
+
+- (void)testSamplingRateDeletionKeepsRuntimeValueAndRemovesCachedKeys{
+    FTRemoteConfigModel *previous = [[FTRemoteConfigModel alloc] initWithDict:@{
+        FT_R_LOG_SAMPLING_RATE: @12.5,
+        @"unknownKey": @"preserved",
+    }];
+    FTLoggerConfig *loggerConfig = [[FTLoggerConfig alloc] init];
+    [loggerConfig mergeWithRemoteConfigModel:previous];
+
+    FTRemoteConfigModel *deleted = [[[FTRemoteConfigModel alloc] initWithDict:@{
+        @"unknownKey": @"preserved",
+    }] modelByNormalizingSamplingWithPreviousModel:previous includeRawContext:YES];
+    [loggerConfig mergeWithRemoteConfigModel:deleted];
+
+    XCTAssertEqualWithAccuracy(loggerConfig.logSamplingRate, 12.5f, FLT_EPSILON);
+    XCTAssertNil(deleted.toDictionary[FT_R_LOG_SAMPLING_RATE]);
+    XCTAssertNil(deleted.toDictionary[FT_R_LOG_SAMPLERATE]);
+    XCTAssertEqualObjects(deleted.toDictionary[@"unknownKey"], @"preserved");
+}
+
+- (void)testSamplingRateHotUpdateCacheInvalidUpdateAndDeletion{
+    FTRemoteConfigManager *manager = [FTRemoteConfigManager sharedInstance];
+    [manager enable:YES updateInterval:0 remoteConfigFetchCompletionBlock:nil];
+    manager.delegate = nil;
+    NSHTTPURLResponse *response = [[NSHTTPURLResponse alloc] initWithURL:[NSURL URLWithString:@"https://example.com"]
+                                                              statusCode:200
+                                                             HTTPVersion:@"HTTP/1.1"
+                                                            headerFields:nil];
+
+    NSData *(^responseData)(NSDictionary *) = ^NSData *(NSDictionary *content) {
+        return [NSJSONSerialization dataWithJSONObject:@{@"content": content} options:0 error:nil];
+    };
+
+    [manager handleRemoteConfigResponse:response
+                                   data:responseData(@{FT_R_LOG_SAMPLING_RATE: @12.5, @"unknownKey": @"value"})
+                                  error:nil
+                             completion:nil];
+    NSDictionary *cached = [manager getLastFetchedRemoteConfig];
+    XCTAssertEqualObjects(manager.lastRemoteModel.logSamplingRate, @12.5);
+    XCTAssertEqualObjects(cached[FT_R_LOG_SAMPLING_RATE], @12.5);
+    XCTAssertEqualObjects(cached[@"unknownKey"], @"value");
+
+    [manager handleRemoteConfigResponse:response
+                                   data:responseData(@{FT_R_LOG_SAMPLING_RATE: @101, FT_R_LOG_SAMPLERATE: @0.8})
+                                  error:nil
+                             completion:nil];
+    cached = [manager getLastFetchedRemoteConfig];
+    XCTAssertEqualObjects(manager.lastRemoteModel.logSamplingRate, @12.5);
+    XCTAssertNil(manager.lastRemoteModel.logSampleRate);
+    XCTAssertEqualObjects(cached[FT_R_LOG_SAMPLING_RATE], @12.5);
+    XCTAssertNil(cached[FT_R_LOG_SAMPLERATE]);
+
+    [manager handleRemoteConfigResponse:response
+                                   data:responseData(@{@"unknownKey": @"after-delete"})
+                                  error:nil
+                             completion:nil];
+    cached = [manager getLastFetchedRemoteConfig];
+    XCTAssertNil(manager.lastRemoteModel.logSamplingRate);
+    XCTAssertNil(cached[FT_R_LOG_SAMPLING_RATE]);
+    XCTAssertNil(cached[FT_R_LOG_SAMPLERATE]);
+    XCTAssertEqualObjects(cached[@"unknownKey"], @"after-delete");
 }
 - (void)testWrongTypeMerge{
     NSDictionary *testBaseDict = @{
@@ -359,6 +581,7 @@
         FT_R_LOG_SAMPLERATE:@"0.8",
         FT_R_LOG_LEVEL_FILTERS:@"[info]",
         FT_R_LOG_ENABLE_CUSTOM_LOG:@"1",
+        FT_R_LOG_ENABLE_WEBVIEW_LOG:@"1",
     };
     FTLoggerConfig *logger = [[FTLoggerConfig alloc]init];
     FTLoggerConfig *copyLogger = [logger copy];
@@ -367,6 +590,7 @@
 
     XCTAssertTrue(logger.samplerate == copyLogger.samplerate);
     XCTAssertTrue(logger.enableCustomLog == copyLogger.enableCustomLog);
+    XCTAssertTrue(logger.enableWebViewLog == copyLogger.enableWebViewLog);
     XCTAssertTrue(logger.logLevelFilter == copyLogger.logLevelFilter);
     
     
@@ -381,6 +605,34 @@
     XCTAssertTrue(srConfig.sampleRate == copySrConfig.sampleRate);
     XCTAssertTrue(srConfig.sessionReplayOnErrorSampleRate == copySrConfig.sessionReplayOnErrorSampleRate);
 #endif
+}
+- (void)testRemoteWebViewConfigurationSerializationPreservesEmptyHosts {
+    FTRemoteConfigModel *model = [[FTRemoteConfigModel alloc] initWithDict:@{
+        FT_R_RUM_ALLOW_WEBVIEW_HOST: @"[]",
+        FT_R_LOG_ENABLE_WEBVIEW_LOG: @(YES),
+    }];
+
+    XCTAssertEqualObjects(model.rumAllowWebViewHost, @[]);
+    XCTAssertEqualObjects(model.logEnableWebViewLog, @(YES));
+    XCTAssertEqualObjects(model.toDictionary[FT_R_RUM_ALLOW_WEBVIEW_HOST], @"[]");
+    XCTAssertEqualObjects(model.toDictionary[FT_R_LOG_ENABLE_WEBVIEW_LOG], @(YES));
+    FTRemoteConfigModel *copy = [model copy];
+    XCTAssertEqualObjects(copy.rumAllowWebViewHost, @[]);
+    XCTAssertEqualObjects(copy.logEnableWebViewLog, @(YES));
+}
+
+- (void)testRemoteURLConnectionConfigurationSerializationAndCopy {
+    FTRemoteConfigModel *model = [[FTRemoteConfigModel alloc] initWithDict:@{
+        FT_R_RUM_ENABLE_TRACE_URLCONNECTION_RESOURCE: @YES,
+        FT_R_TRACE_ENABLE_AUTO_TRACE_URLCONNECTION: @NO,
+    }];
+    XCTAssertEqualObjects(model.rumEnableTraceURLConnectionResource, @YES);
+    XCTAssertEqualObjects(model.traceEnableAutoTraceURLConnection, @NO);
+    XCTAssertEqualObjects(model.toDictionary[FT_R_RUM_ENABLE_TRACE_URLCONNECTION_RESOURCE], @YES);
+    XCTAssertEqualObjects(model.toDictionary[FT_R_TRACE_ENABLE_AUTO_TRACE_URLCONNECTION], @NO);
+    FTRemoteConfigModel *copy = [model copy];
+    XCTAssertEqualObjects(copy.rumEnableTraceURLConnectionResource, @YES);
+    XCTAssertEqualObjects(copy.traceEnableAutoTraceURLConnection, @NO);
 }
 - (void)testDefaultUpdateRemoteConfig{
     [[FTTrackerEventDBTool sharedManager] deleteAllDatas];
@@ -400,6 +652,7 @@
     [[FTMobileAgent sharedInstance] startRumWithConfigOptions:rum];
     FTLoggerConfig *log = [[FTLoggerConfig alloc]init];
     log.enableCustomLog = NO;
+    log.enableWebViewLog = NO;
     log.samplerate = 0;
     FTTraceConfig *trace = [[FTTraceConfig alloc]init];
     trace.samplerate = 0;
@@ -415,6 +668,7 @@
         FTLoggerConfig *log = [FTLogger sharedInstance].config;
         XCTAssertTrue([[FTLogger sharedInstance].logLevelFilterSet containsObject:@"logTest"]);
         XCTAssertTrue(log.enableCustomLog == YES);
+        XCTAssertTrue(log.enableWebViewLog == YES);
         XCTAssertTrue(log.samplerate == 100);
     });
     XCTAssertTrue([FTTrackDataManager sharedInstance].autoSync == NO);
@@ -462,6 +716,7 @@
         FT_R_COMPRESS_INTAKE_REQUESTS: @YES,
         FT_R_LOG_LEVEL_FILTERS: @"[\"logTest\"]",
         FT_R_LOG_ENABLE_CUSTOM_LOG: @YES,
+        FT_R_LOG_ENABLE_WEBVIEW_LOG: @YES,
         FT_R_TRACE_SAMPLERATE:@(1),
         FT_R_RUM_SAMPLERATE:@(1),
         FT_R_LOG_SAMPLERATE:@(1),
@@ -720,7 +975,7 @@
     id<OHHTTPStubsDescriptor> stubs = [self mockRemoteData];
     XCTestExpectation *expectation = [self expectationWithDescription:@"Requesting"];
     [self sdkInitWithRemoteConfiguration:YES interval:60];
-    [self waitForTimeInterval:1];
+    [self waitForRemoteConfigApplication];
 
     __block FTRemoteConfigModel *resultModel;
     [FTMobileAgent updateRemoteConfigWithMiniUpdateInterval:0 completion:^FTRemoteConfigModel * _Nullable(BOOL success, NSError * _Nullable error, FTRemoteConfigModel * _Nullable model, NSDictionary<NSString *,id> * _Nullable content) {
@@ -730,6 +985,7 @@
         return nil;
     }];
     [self waitForExpectations:@[expectation] timeout:10];
+    [self waitForRemoteConfigApplication];
     XCTAssertTrue([resultModel.toDictionary isEqualToDictionary:[[FTRemoteConfigManager sharedInstance].lastRemoteModel toDictionary]]);
     [OHHTTPStubs removeStub:stubs];
     [FTMobileAgent shutDown];
@@ -737,23 +993,48 @@
 }
 - (void)testFetchCompletionBlock_return_model_method{
     id<OHHTTPStubsDescriptor> stubs = [self mockRemoteData];
-    XCTestExpectation *expectation = [self expectationWithDescription:@"Requesting"];
+    XCTestExpectation *expectation = [self expectationWithDescription:@"Callback entered"];
+    dispatch_semaphore_t allowReturn = dispatch_semaphore_create(0);
     [self sdkInitWithRemoteConfiguration:YES interval:60];
-    [self waitForTimeInterval:1];
+    [self waitForRemoteConfigApplication];
 
     __block FTRemoteConfigModel *resultModel;
-    [FTMobileAgent updateRemoteConfigWithMiniUpdateInterval:0 completion:^FTRemoteConfigModel * _Nullable(BOOL success, NSError * _Nullable error, FTRemoteConfigModel * _Nullable model, NSDictionary<NSString *,id> * _Nullable content) {
-        XCTAssertTrue(success == YES);
-        resultModel = [model copy];
-        model.autoSync = @(NO);
-        model.syncPageSize = @(1);
-        [expectation fulfill];
-        return model;
+    @try {
+        [FTMobileAgent updateRemoteConfigWithMiniUpdateInterval:0 completion:^FTRemoteConfigModel * _Nullable(BOOL success, NSError * _Nullable error, FTRemoteConfigModel * _Nullable model, NSDictionary<NSString *,id> * _Nullable content) {
+            XCTAssertTrue(success);
+            XCTAssertNil(error);
+            resultModel = [model copy];
+            model.autoSync = @NO;
+            model.syncPageSize = @1;
+            [expectation fulfill];
+            dispatch_semaphore_wait(allowReturn, DISPATCH_TIME_FOREVER);
+            return model;
+        }];
+        [self waitForExpectations:@[expectation] timeout:10];
+        // The return value cannot be applied while the callback is still running.
+        XCTAssertEqualObjects(resultModel.syncPageSize, @15);
+        XCTAssertEqualObjects([FTRemoteConfigManager sharedInstance].lastRemoteModel.syncPageSize, @15);
+        dispatch_semaphore_signal(allowReturn);
+        [self waitForRemoteConfigApplication];
+        FTRemoteConfigModel *appliedModel = [FTRemoteConfigManager sharedInstance].lastRemoteModel;
+        XCTAssertEqualObjects(appliedModel.autoSync, @NO);
+        XCTAssertEqualObjects(appliedModel.syncPageSize, @1);
+    } @finally {
+        dispatch_semaphore_signal(allowReturn);
+        [self waitForRemoteConfigApplication];
+        [OHHTTPStubs removeStub:stubs];
+    }
+}
+
+- (void)waitForRemoteConfigApplication {
+    FTRemoteConfigManager *manager = [FTRemoteConfigManager sharedInstance];
+    // isFetching becomes NO after the callback returns, the delegate applies the
+    // model and persistence completes. Callback fulfillment alone is too early.
+    NSPredicate *idle = [NSPredicate predicateWithBlock:^BOOL(id object, NSDictionary *bindings) {
+        return !manager.isFetching;
     }];
-    [self waitForExpectations:@[expectation] timeout:10];
-    XCTAssertFalse([resultModel.toDictionary isEqualToDictionary:[[FTRemoteConfigManager sharedInstance].lastRemoteModel toDictionary]]);
-    [OHHTTPStubs removeStub:stubs];
-    [FTMobileAgent shutDown];
+    XCTestExpectation *applied = [[XCTNSPredicateExpectation alloc] initWithPredicate:idle object:manager];
+    [self waitForExpectations:@[applied] timeout:10];
 }
 
 - (void)testFetchCompletionBlock_return_nil_global{
@@ -768,6 +1049,7 @@
     }];
    
     [self waitForExpectations:@[expectation] timeout:10];
+    [self waitForRemoteConfigApplication];
     XCTAssertTrue([resultModel.toDictionary isEqualToDictionary:[[FTRemoteConfigManager sharedInstance].lastRemoteModel toDictionary]]);
     [OHHTTPStubs removeStub:stubs];
     [FTMobileAgent shutDown];
@@ -787,6 +1069,7 @@
     }];
     
     [self waitForExpectations:@[expectation] timeout:10];
+    [self waitForRemoteConfigApplication];
     XCTAssertFalse([resultModel.toDictionary isEqualToDictionary:[[FTRemoteConfigManager sharedInstance].lastRemoteModel toDictionary]]);
     [OHHTTPStubs removeStub:stubs];
     [FTMobileAgent shutDown];
@@ -806,7 +1089,7 @@
         return resultModel;
     }];
     
-    [self waitForTimeInterval:1];
+    [self waitForRemoteConfigApplication];
 
     __block FTRemoteConfigModel *resultModel2;
     [FTMobileAgent updateRemoteConfigWithMiniUpdateInterval:0 completion:^FTRemoteConfigModel * _Nullable(BOOL success, NSError * _Nullable error, FTRemoteConfigModel * _Nullable model, NSDictionary<NSString *,id> * _Nullable content) {
@@ -818,6 +1101,7 @@
     }];
     
     [self waitForExpectations:@[expectation,expectation2] timeout:10];
+    [self waitForRemoteConfigApplication];
     XCTAssertFalse([resultModel.toDictionary isEqualToDictionary:[[FTRemoteConfigManager sharedInstance].lastRemoteModel toDictionary]]);
     XCTAssertTrue([resultModel2.toDictionary isEqualToDictionary:[[FTRemoteConfigManager sharedInstance].lastRemoteModel toDictionary]]);
     [OHHTTPStubs removeStub:stubs];
@@ -837,7 +1121,7 @@
         return nil;
     }];
     
-    [self waitForTimeInterval:1];
+    [self waitForRemoteConfigApplication];
 
     __block FTRemoteConfigModel *resultModel2;
     [FTMobileAgent updateRemoteConfigWithMiniUpdateInterval:0 completion:^FTRemoteConfigModel * _Nullable(BOOL success, NSError * _Nullable error, FTRemoteConfigModel * _Nullable model, NSDictionary<NSString *,id> * _Nullable content) {
@@ -849,6 +1133,7 @@
     }];
     
     [self waitForExpectations:@[expectation,expectation2] timeout:10];
+    [self waitForRemoteConfigApplication];
     XCTAssertFalse([resultModel.toDictionary isEqualToDictionary:[[FTRemoteConfigManager sharedInstance].lastRemoteModel toDictionary]]);
     XCTAssertFalse([resultModel2.toDictionary isEqualToDictionary:[[FTRemoteConfigManager sharedInstance].lastRemoteModel toDictionary]]);
     [OHHTTPStubs removeStub:stubs];
@@ -870,6 +1155,7 @@
     }];
    
     [self waitForExpectations:@[expectation] timeout:10];
+    [self waitForRemoteConfigApplication];
     XCTAssertTrue([resultModel.toDictionary isEqualToDictionary:[[FTRemoteConfigManager sharedInstance].lastRemoteModel toDictionary]]);
     NSDictionary *dict = [self waitForLastFetchedRemoteConfigMatching:^BOOL(NSDictionary *dict) {
         return [dict[@"vips"] isEqualToString:@"[\"user1\"]"];

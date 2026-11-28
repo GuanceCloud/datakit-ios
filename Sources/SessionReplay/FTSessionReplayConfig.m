@@ -20,6 +20,9 @@
 #import "FTSessionReplayConfig+Private.h"
 #import "FTSessionReplayCoreImports.h"
 
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wdeprecated-declarations"
+
 static NSString *FTStringFromTextAndInputPrivacyLevel(FTTextAndInputPrivacyLevel level) {
     switch (level) {
         case FTTextAndInputPrivacyLevelMaskSensitiveInputs:
@@ -57,20 +60,58 @@ static NSString *FTStringFromImagePrivacyLevel(FTImagePrivacyLevel level) {
     }
 }
 @interface FTSessionReplayConfig()
+@property (nonatomic, strong, nullable) NSArray<id<FTSRWireframesRecorder>> *additionalNodeRecorders;
+@property (nonatomic, assign) BOOL externalRecorderMode;
 @property (nonatomic, assign) BOOL fineGrainedMaskingSet;
+@property (nonatomic, assign) FTSRPrivacy privacy;
 @end
 @implementation FTSessionReplayConfig
+// Keep deprecated sampling accessors for backward compatibility.
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wdeprecated-implementations"
+- (int)sampleRate {
+    return (int)_sessionReplaySamplingRate;
+}
+- (void)setSampleRate:(int)sampleRate {
+    self.sessionReplaySamplingRate = (float)sampleRate;
+}
+#pragma clang diagnostic pop
+- (void)setSessionReplaySamplingRate:(float)sessionReplaySamplingRate {
+    if (![FTBaseInfoHandler isValidSamplingRate:sessionReplaySamplingRate]) {
+        FTInnerLogWarning(@"[sampling] Ignore invalid sessionReplaySamplingRate: %g", sessionReplaySamplingRate);
+        return;
+    }
+    _sessionReplaySamplingRate = sessionReplaySamplingRate;
+}
+// Keep deprecated sampling accessors for backward compatibility.
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wdeprecated-implementations"
+- (int)sessionReplayOnErrorSampleRate {
+    return (int)_sessionReplayOnErrorSamplingRate;
+}
+- (void)setSessionReplayOnErrorSampleRate:(int)sessionReplayOnErrorSampleRate {
+    self.sessionReplayOnErrorSamplingRate = (float)sessionReplayOnErrorSampleRate;
+}
+#pragma clang diagnostic pop
+- (void)setSessionReplayOnErrorSamplingRate:(float)sessionReplayOnErrorSamplingRate {
+    if (![FTBaseInfoHandler isValidSamplingRate:sessionReplayOnErrorSamplingRate]) {
+        FTInnerLogWarning(@"[sampling] Ignore invalid sessionReplayOnErrorSamplingRate: %g", sessionReplayOnErrorSamplingRate);
+        return;
+    }
+    _sessionReplayOnErrorSamplingRate = sessionReplayOnErrorSamplingRate;
+}
 -(instancetype)init{
     self = [super init];
     if(self){
-        _sampleRate = 100;
-        _sessionReplayOnErrorSampleRate = 0;
+        _sessionReplaySamplingRate = 100.0f;
+        _sessionReplayOnErrorSamplingRate = 0.0f;
         _imagePrivacy = FTImagePrivacyLevelMaskAll;
         _touchPrivacy = FTTouchPrivacyLevelHide;
         _textAndInputPrivacy = FTTextAndInputPrivacyLevelMaskAll;
         _privacy = FTSRPrivacyMask;
         _enableHeatmap = NO;
         _enableSwiftUI = NO;
+        _externalRecorderMode = NO;
     }
     return self;
 }
@@ -118,8 +159,8 @@ static NSString *FTStringFromImagePrivacyLevel(FTImagePrivacyLevel level) {
 }
 - (id)copyWithZone:(nullable NSZone *)zone {
     FTSessionReplayConfig *config = [[[self class] allocWithZone:zone] init];
-    config.sampleRate = self.sampleRate;
-    config.sessionReplayOnErrorSampleRate = self.sessionReplayOnErrorSampleRate;
+    config->_sessionReplaySamplingRate = _sessionReplaySamplingRate;
+    config->_sessionReplayOnErrorSamplingRate = _sessionReplayOnErrorSamplingRate;
     config.touchPrivacy = self.touchPrivacy;
     config.imagePrivacy = self.imagePrivacy;
     config.textAndInputPrivacy = self.textAndInputPrivacy;
@@ -127,10 +168,11 @@ static NSString *FTStringFromImagePrivacyLevel(FTImagePrivacyLevel level) {
     config.additionalNodeRecorders = [self.additionalNodeRecorders copy];
     config.enableLinkRUMKeys = [self.enableLinkRUMKeys copy];
     config.enableHeatmap = self.enableHeatmap;
+    config.externalRecorderMode = self.externalRecorderMode;
     return config;
 }
 -(NSString *)debugDescription{
-    return [NSString stringWithFormat:@"====== Config ======\n sampleRate:%d\n sessionReplayOnErrorSampleRate:%d\n textAndInputPrivacy:%@\n touchPrivacy:%@\n imagePrivacy:%@\n enableSwiftUI:%@ enableHeatmap:%@\n ================== ",self.sampleRate,self.sessionReplayOnErrorSampleRate,FTStringFromTextAndInputPrivacyLevel(self.textAndInputPrivacy),FTStringFromTouchPrivacyLevel(self.touchPrivacy),FTStringFromImagePrivacyLevel(self.imagePrivacy),self.enableSwiftUI?@"YES":@"NO",self.enableHeatmap ? @"true" : @"false"];
+    return [NSString stringWithFormat:@"====== Config ======\n sessionReplaySamplingRate:%g\n sessionReplayOnErrorSamplingRate:%g\n textAndInputPrivacy:%@\n touchPrivacy:%@\n imagePrivacy:%@\n enableSwiftUI:%@ enableHeatmap:%@ externalRecorderMode:%@\n ================== ",self.sessionReplaySamplingRate,self.sessionReplayOnErrorSamplingRate,FTStringFromTextAndInputPrivacyLevel(self.textAndInputPrivacy),FTStringFromTouchPrivacyLevel(self.touchPrivacy),FTStringFromImagePrivacyLevel(self.imagePrivacy),self.enableSwiftUI?@"YES":@"NO",self.enableHeatmap ? @"true" : @"false",self.externalRecorderMode ? @"true" : @"false"];
 }
 #pragma mark remote
 -(void)mergeWithRemoteConfigModel:(FTRemoteConfigModel *)model{
@@ -139,15 +181,23 @@ static NSString *FTStringFromImagePrivacyLevel(FTImagePrivacyLevel level) {
             return;
         }
         if (model.sessionReplaySampleRate != nil) {
-            self.sampleRate = [model.sessionReplaySampleRate doubleValue] * 100;
+            self.sessionReplaySamplingRate = model.sessionReplaySampleRate.floatValue * 100.0f;
+        }
+        if (model.sessionReplaySamplingRate != nil) {
+            self.sessionReplaySamplingRate = model.sessionReplaySamplingRate.floatValue;
         }
         if (model.sessionReplayOnErrorSampleRate != nil) {
-            self.sessionReplayOnErrorSampleRate = [model.sessionReplayOnErrorSampleRate doubleValue] * 100;
+            self.sessionReplayOnErrorSamplingRate = model.sessionReplayOnErrorSampleRate.floatValue * 100.0f;
+        }
+        if (model.sessionReplayOnErrorSamplingRate != nil) {
+            self.sessionReplayOnErrorSamplingRate = model.sessionReplayOnErrorSamplingRate.floatValue;
         }
     } @catch (NSException *exception) {
         FTInnerLogError(@"exception: %@",exception);
     }
 }
 @end
+
+#pragma clang diagnostic pop
 
 #endif

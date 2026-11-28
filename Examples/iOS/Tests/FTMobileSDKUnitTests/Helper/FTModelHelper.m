@@ -19,6 +19,7 @@
 //
 
 #import "FTModelHelper.h"
+#import "FTRUMWriteData.h"
 #import <FTConstants.h>
 #import "NSDate+FTUtil.h"
 #import <FTInternalConstants.h>
@@ -190,3 +191,12 @@
     }];
 }
 @end
+
+NSDictionary *FTTestRUMTags(FTRUMWriteData *data) {
+    NSMutableDictionary *tags = [data.tags mutableCopy];
+    NSMutableSet *keys = [data.customTagKeys mutableCopy];
+    FTRUMMergeProperties(tags, keys, data.context.tags, data.context.customKeys);
+    if (data.visitorIDSnapshot.length > 0) FTRUMSetSystemProperty(tags, keys, FT_VISITOR_ID, data.visitorIDSnapshot);
+    FTRUMEncodeCustomKeys(tags, data.fields, keys, data.customFieldKeys);
+    return [tags copy];
+}

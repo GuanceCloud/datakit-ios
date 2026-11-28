@@ -54,10 +54,7 @@ static char *srIdentifierKey = "FTSRIdentifierKey";
     return [NSString stringWithFormat:@"%02X%02X%02X%02X",(int)round(r * 255), (int)round(g * 255), (int)round(b * 255), (int)round(a * 255)];
 }
 - (UIColor *)ftsr_resolvedColorWithTraitCollection:(nullable UITraitCollection *)traitCollection{
-    if (@available(iOS 13.0, *)) {
-        return [self resolvedColorWithTraitCollection:traitCollection ?: [UITraitCollection currentTraitCollection]];
-    }
-    return self;
+    return [self resolvedColorWithTraitCollection:traitCollection ?: [UITraitCollection currentTraitCollection]];
 }
 @end
 

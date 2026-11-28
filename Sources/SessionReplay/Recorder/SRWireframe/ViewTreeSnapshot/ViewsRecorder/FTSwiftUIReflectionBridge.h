@@ -21,7 +21,6 @@
 
 NS_ASSUME_NONNULL_BEGIN
 
-API_AVAILABLE(ios(13.0))
 @interface FTSwiftUIRecordingAttributes : NSObject
 @property (nonatomic, assign) CGRect frame;
 @property (nonatomic, assign) CGRect clip;
@@ -35,22 +34,18 @@ API_AVAILABLE(ios(13.0))
 @property (nonatomic, assign) int64_t wireframeID;
 @end
 
-API_AVAILABLE(ios(13.0))
 @interface FTSwiftUIRecordingResult : NSObject
 @property (nonatomic, strong, readonly) NSArray *wireframes;
 @property (nonatomic, strong, readonly) NSArray *resources;
 @end
 
-API_AVAILABLE(ios(13.0))
 @interface FTSwiftUIRenderer : NSObject
 @end
 
-API_AVAILABLE(ios(13.0))
 @interface FTSwiftUIRecordingBuilder : NSObject
 - (nullable FTSwiftUIRecordingResult *)build;
 @end
 
-API_AVAILABLE(ios(13.0))
 @interface FTSwiftUIReflectionBridge : NSObject
 - (FTSwiftUIRecordingAttributes *)makeRecordingAttributes;
 - (nullable FTSwiftUIRenderer *)rendererForHostingView:(UIView *)view;

@@ -28,6 +28,10 @@
 @property (nonatomic, strong) UIButton *refreshButton;
 @property (nonatomic, strong) UIBarButtonItem *addCellButton;
 @property (nonatomic, strong) NSURLSession *urlSession;
+@property (nonatomic, strong) NSMutableDictionary<NSString *, NSURLSessionDataTask *> *imageTasks;
+@property (nonatomic, strong) UIImage *cachedPlaceholderImage;
+@property (nonatomic, assign) NSUInteger imageLoadGeneration;
+@property (nonatomic, assign) BOOL imageLoadingEnabled;
 
 @end
 
@@ -41,15 +45,46 @@
     
     self.imageURLs = [NSMutableArray array];
     self.imageCache = [NSMutableDictionary dictionary];
+    self.imageTasks = [NSMutableDictionary dictionary];
     
     NSURLSessionConfiguration *config = [NSURLSessionConfiguration defaultSessionConfiguration];
     config.timeoutIntervalForRequest = 30.0;
-    self.urlSession = [NSURLSession sessionWithConfiguration:config];
+    config.HTTPMaximumConnectionsPerHost = 4;
+    NSOperationQueue *imageQueue = [NSOperationQueue new];
+    imageQueue.maxConcurrentOperationCount = 2;
+    imageQueue.qualityOfService = NSQualityOfServiceUtility;
+    self.urlSession = [NSURLSession sessionWithConfiguration:config delegate:nil delegateQueue:imageQueue];
     
     [self loadInitialImages];
     [self setupNavigationBar];
     [self setupTableView];
     [self setupRefreshButton];
+}
+
+- (void)viewDidAppear:(BOOL)animated {
+    [super viewDidAppear:animated];
+    self.imageLoadingEnabled = YES;
+    [self loadVisibleImages];
+}
+
+- (void)viewWillDisappear:(BOOL)animated {
+    [super viewWillDisappear:animated];
+    self.imageLoadingEnabled = NO;
+    [self cancelImageLoads];
+}
+
+- (void)cancelImageLoads {
+    self.imageLoadGeneration++;
+    for (NSURLSessionDataTask *task in self.imageTasks.allValues) {
+        [task cancel];
+    }
+    [self.imageTasks removeAllObjects];
+}
+
+- (void)loadVisibleImages {
+    for (NSIndexPath *indexPath in self.tableView.indexPathsForVisibleRows) {
+        [self loadImageForURL:self.imageURLs[indexPath.row]];
+    }
 }
 
 - (void)dealloc {
@@ -142,45 +177,48 @@
 }
 
 - (void)refreshButtonTapped {
-    [self.imageCache removeAllObjects];
-    
+    [self cancelImageLoads];
     [self loadInitialImages];
     [self.tableView reloadData];
+    [self loadVisibleImages];
 }
 
 #pragma mark - Image Loading
 
-- (void)loadImageForURL:(NSString *)urlString atIndexPath:(NSIndexPath *)indexPath {
-    if (self.imageCache[urlString]) {
+- (void)loadImageForURL:(NSString *)urlString {
+    // All request bookkeeping and cache access stays on the main thread.
+    if (!self.imageLoadingEnabled || self.imageCache[urlString] || self.imageTasks[urlString]) {
         return;
     }
-    
     NSURL *url = [NSURL URLWithString:urlString];
-    if (!url) {
-        return;
-    }
-    
+    if (!url) return;
+
+    NSUInteger generation = self.imageLoadGeneration;
     __weak typeof(self) weakSelf = self;
-    NSURLSessionDataTask *task = [self.urlSession dataTaskWithURL:url completionHandler:^(NSData * _Nullable data, NSURLResponse * _Nullable response, NSError * _Nullable error) {
-        if (error) {
-            NSLog(@"Failed to load image: %@", error.localizedDescription);
-            return;
+    NSURLSessionDataTask *task = [self.urlSession dataTaskWithURL:url completionHandler:^(NSData *data, NSURLResponse *response, NSError *error) {
+        // Decode before returning to the main queue so the first draw does not
+        // perform deferred decompression during scrolling or navigation.
+        UIImage *image = nil;
+        if (!error && data.length > 0 && [response isKindOfClass:NSHTTPURLResponse.class] &&
+            ((NSHTTPURLResponse *)response).statusCode >= 200 && ((NSHTTPURLResponse *)response).statusCode < 300) {
+            image = [[UIImage imageWithData:data] imageByPreparingForDisplay];
         }
-        
-        UIImage *image = [UIImage imageWithData:data];
-        if (image) {
-            weakSelf.imageCache[urlString] = image;
-            
-            dispatch_async(dispatch_get_main_queue(), ^{
-                UITableViewCell *cell = [weakSelf.tableView cellForRowAtIndexPath:indexPath];
-                if (cell) {
-                    cell.imageView.image = image;
-                    [cell setNeedsLayout];
-                }
-            });
-        }
+        dispatch_async(dispatch_get_main_queue(), ^{
+            __strong typeof(weakSelf) self = weakSelf;
+            if (!self || generation != self.imageLoadGeneration || !self.imageLoadingEnabled) return;
+            [self.imageTasks removeObjectForKey:urlString];
+            if (!image) return;
+            self.imageCache[urlString] = image;
+            for (NSIndexPath *indexPath in self.tableView.indexPathsForVisibleRows) {
+                if (indexPath.row >= self.imageURLs.count || ![self.imageURLs[indexPath.row] isEqualToString:urlString]) continue;
+                UITableViewCell *cell = [self.tableView cellForRowAtIndexPath:indexPath];
+                cell.imageView.image = image;
+                cell.textLabel.text = [NSString stringWithFormat:@"Loaded Image %ld", (long)indexPath.row];
+                [cell setNeedsLayout];
+            }
+        });
     }];
-    
+    self.imageTasks[urlString] = task;
     [task resume];
 }
 
@@ -211,7 +249,7 @@
         cell.imageView.image = cachedImage;
         cell.textLabel.text = [NSString stringWithFormat:@"Loaded Image %ld", (long)indexPath.row];
     } else {
-        [self loadImageForURL:urlString atIndexPath:indexPath];
+        [self loadImageForURL:urlString];
     }
     
     cell.imageView.contentMode = UIViewContentModeScaleAspectFit;
@@ -224,6 +262,7 @@
 }
 
 - (UIImage *)placeholderImage {
+    if (self.cachedPlaceholderImage) return self.cachedPlaceholderImage;
     UIGraphicsBeginImageContextWithOptions(CGSizeMake(100, 100), NO, 0.0);
     
     UIColor *backgroundColor = [UIColor colorWithWhite:0.95 alpha:1.0];
@@ -242,6 +281,7 @@
     UIImage *image = UIGraphicsGetImageFromCurrentImageContext();
     UIGraphicsEndImageContext();
     
+    self.cachedPlaceholderImage = image;
     return image;
 }
 
@@ -270,7 +310,7 @@
 - (void)tableView:(UITableView *)tableView willDisplayCell:(UITableViewCell *)cell forRowAtIndexPath:(NSIndexPath *)indexPath {
     NSString *urlString = self.imageURLs[indexPath.row];
     if (!self.imageCache[urlString]) {
-        [self loadImageForURL:urlString atIndexPath:indexPath];
+        [self loadImageForURL:urlString];
     }
 }
 

@@ -30,6 +30,8 @@
 #import "FTResourceRequest.h"
 #import "FTSessionReplayConfig.h"
 #import "FTSessionReplayFeature.h"
+#import "FTRumSessionReplay+ExternalRecorder.h"
+#import "FTRecordingCoordinator.h"
 #import "FTSegmentJSON.h"
 #import "FTSRNodeWireframesBuilder.h"
 #import "FTSRRecord.h"
@@ -40,6 +42,9 @@
 #import "FTFeatureDirectories.h"
 #import "FTDirectory.h"
 #import "FTDataStore.h"
+#import "FTFileWriter.h"
+#import "FTFilesOrchestrator.h"
+#import "FTTLV.h"
 #import "FTUploadConditions.h"
 #import "FTNetworkInfoManager.h"
 #import "FTUploadStatus.h"
@@ -118,12 +123,49 @@ BOOL isNAN(id value) {
 @end
 
 @interface FTMockResourcesWriter : NSObject<FTResourcesWriting>
-@property (nonatomic, strong) NSArray<FTEnrichedResource *> *writtenResources;
+@property (nonatomic, strong) NSMutableArray<FTEnrichedResource *> *writtenResources;
 @end
 
 @implementation FTMockResourcesWriter
+- (instancetype)init{
+    self = [super init];
+    if (self) {
+        _writtenResources = [NSMutableArray new];
+    }
+    return self;
+}
 - (void)write:(NSArray<FTEnrichedResource *> *)resources{
-    self.writtenResources = resources;
+    [self.writtenResources addObjectsFromArray:resources];
+}
+- (void)writeExternalResourcesToNormalDirectory:(NSArray<FTEnrichedResource *> *)resources{
+    [self write:resources];
+}
+@end
+
+static void *FTExternalImageProcessorQueueKey = &FTExternalImageProcessorQueueKey;
+
+@interface FTMockExternalImageResourceWriter : NSObject<FTResourcesWriting>
+@property (nonatomic, strong) NSMutableArray<FTEnrichedResource *> *writtenResources;
+@property (nonatomic, assign) BOOL allWritesOnProcessorQueue;
+@property (nonatomic, assign) NSUInteger normalDirectoryCallCount;
+@end
+
+@implementation FTMockExternalImageResourceWriter
+- (instancetype)init{
+    self = [super init];
+    if (self) {
+        _writtenResources = [NSMutableArray new];
+        _allWritesOnProcessorQueue = YES;
+    }
+    return self;
+}
+- (void)write:(NSArray<FTEnrichedResource *> *)resources{
+    self.allWritesOnProcessorQueue = self.allWritesOnProcessorQueue && dispatch_get_specific(FTExternalImageProcessorQueueKey) != NULL;
+    [self.writtenResources addObjectsFromArray:resources];
+}
+- (void)writeExternalResourcesToNormalDirectory:(NSArray<FTEnrichedResource *> *)resources{
+    self.normalDirectoryCallCount += 1;
+    [self write:resources];
 }
 @end
 
@@ -151,6 +193,79 @@ BOOL isNAN(id value) {
 - (void)valueForKey:(NSString *)key callback:(DataStoreValueResult)callback{
     NSData *data = self.values[key];
     callback(nil, data, data ? DataStoreDefaultKeyVersion : (FTDataStoreKeyVersion)-1);
+}
+@end
+
+@interface FTMockFilesOrchestrator : NSObject<FTFilesOrchestratorType>
+@property (nonatomic, strong) id<FTStoragePerformancePreset> performance;
+@property (nonatomic, assign) BOOL ignoreFilesAgeWhenReading;
+@property (nonatomic, assign) NSInteger writableFileRequestCount;
+@end
+
+@implementation FTMockFilesOrchestrator
+- (id<FTWritableFile>)getWritableFile:(long long)writeSize{
+    return [self getWritableFile:writeSize forceNewFile:NO];
+}
+- (id<FTWritableFile>)getWritableFile:(long long)writeSize forceNewFile:(BOOL)force{
+    self.writableFileRequestCount += 1;
+    return nil;
+}
+- (NSArray<FTFile *> *)getReadableFiles:(NSSet *)excludedFileNames limit:(int)limit{
+    return @[];
+}
+- (void)deleteReadableFile:(id<FTReadableFile>)readableFile{
+}
+@end
+
+static void *FTExternalSegmentProcessorQueueKey = &FTExternalSegmentProcessorQueueKey;
+
+@interface FTMockExternalSegmentWriter : NSObject<FTWriter>
+@property (nonatomic, strong) NSMutableArray<NSData *> *writtenData;
+@property (nonatomic, strong) NSMutableArray<NSNumber *> *forceNewFileValues;
+@property (nonatomic, assign) BOOL allWritesOnProcessorQueue;
+@end
+
+@implementation FTMockExternalSegmentWriter
+- (instancetype)init{
+    self = [super init];
+    if (self) {
+        _writtenData = [NSMutableArray new];
+        _forceNewFileValues = [NSMutableArray new];
+        _allWritesOnProcessorQueue = YES;
+    }
+    return self;
+}
+- (void)write:(NSData *)datas{
+    [self write:datas forceNewFile:NO];
+}
+- (void)write:(NSData *)datas forceNewFile:(BOOL)force{
+    @synchronized (self) {
+        self.allWritesOnProcessorQueue = self.allWritesOnProcessorQueue && dispatch_get_specific(FTExternalSegmentProcessorQueueKey) != NULL;
+        [self.writtenData addObject:datas];
+        [self.forceNewFileValues addObject:@(force)];
+    }
+}
+@end
+
+@interface FTMockExternalSegmentScope : FTFeatureScope
+@property (nonatomic, strong) id<FTWriter> writer;
+@property (nonatomic, copy, nullable) FTTrackingConsent (^samplingConsentProvider)(void);
+- (instancetype)initWithWriter:(id<FTWriter>)writer;
+@end
+
+@implementation FTMockExternalSegmentScope
+- (instancetype)initWithWriter:(id<FTWriter>)writer{
+    self = [super initWithStorage:nil trackingConsentProvider:nil];
+    if (self) {
+        _writer = writer;
+    }
+    return self;
+}
+- (FTTrackingConsent)trackingConsent{
+    return self.samplingConsentProvider ? self.samplingConsentProvider() : FTTrackingConsentGranted;
+}
+- (void)eventWriteContext:(FTFeatureWriteContext)block{
+    block([[FTFeatureContext alloc]initWithTrackingConsent:self.trackingConsent], self.writer);
 }
 @end
 
@@ -217,6 +332,214 @@ BOOL isNAN(id value) {
     [[FTNetworkInfoManager sharedInstance] clearUploadInfo];
 }
 
+- (void)testFileWriterDropsPayloadExceedingMaximumLengthBeforeRequestingFile {
+    dispatch_queue_t queue = dispatch_queue_create("com.ft.test.session-replay-file-writer", DISPATCH_QUEUE_SERIAL);
+    FTMockFilesOrchestrator *orchestrator = [FTMockFilesOrchestrator new];
+    FTFileWriter *writer = [[FTFileWriter alloc]initWithOrchestrator:orchestrator queue:queue];
+    NSData *payload = [NSMutableData dataWithLength:FT_MAX_DATA_LENGTH + 1];
+
+    [writer write:payload];
+    dispatch_sync(queue, ^{});
+
+    XCTAssertEqual(orchestrator.writableFileRequestCount, 0);
+}
+
+- (void)testTLVAcceptsPayloadAtMaximumLength {
+    NSData *payload = [NSMutableData dataWithLength:FT_MAX_DATA_LENGTH];
+    FTTLV *tlv = [[FTTLV alloc]initWithType:1 value:payload];
+
+    XCTAssertNotNil([tlv serialize]);
+}
+
+- (void)testExternalSegmentsAreProcessedSeriallyOnProcessorsQueue {
+    FTSessionReplayFeature *feature = [[FTSessionReplayFeature alloc]initWithConfig:[FTSessionReplayConfig new]];
+    FTMockExternalSegmentWriter *writer = [FTMockExternalSegmentWriter new];
+    FTMockExternalSegmentScope *scope = [[FTMockExternalSegmentScope alloc]initWithWriter:writer];
+    [feature setValue:scope forKey:@"recordScope"];
+    dispatch_queue_t processorsQueue = [feature valueForKey:@"processorsQueue"];
+    dispatch_queue_set_specific(processorsQueue, FTExternalSegmentProcessorQueueKey, FTExternalSegmentProcessorQueueKey, NULL);
+
+    dispatch_apply(50, dispatch_get_global_queue(QOS_CLASS_USER_INITIATED, 0), ^(size_t index) {
+        [feature writeExternalSegment:[NSString stringWithFormat:@"segment-%zu", index] viewID:@"view-1"];
+    });
+    XCTestExpectation *processed = [self expectationWithDescription:@"External segments processed"];
+    dispatch_async(processorsQueue, ^{
+        [processed fulfill];
+    });
+    [self waitForExpectations:@[processed] timeout:2];
+
+    XCTAssertEqual(writer.writtenData.count, 50);
+    XCTAssertTrue(writer.allWritesOnProcessorQueue);
+    NSUInteger forceNewFileCount = [writer.forceNewFileValues indexesOfObjectsPassingTest:^BOOL(NSNumber *value, NSUInteger idx, BOOL *stop) {
+        return value.boolValue;
+    }].count;
+    XCTAssertEqual(forceNewFileCount, 1);
+}
+
+- (void)testExternalSegmentFollowsCoordinatorSamplingState {
+    FTSessionReplayFeature *feature = [[FTSessionReplayFeature alloc] initWithConfig:[FTSessionReplayConfig new]];
+    FTMockExternalSegmentWriter *writer = [FTMockExternalSegmentWriter new];
+    FTRecordingCoordinator *coordinator = [feature valueForKey:@"recordingCoordinator"];
+    FTMockExternalSegmentScope *scope = [[FTMockExternalSegmentScope alloc] initWithWriter:writer];
+    scope.samplingConsentProvider = ^FTTrackingConsent { return coordinator.trackingConsent; };
+    [feature setValue:scope forKey:@"recordScope"];
+    dispatch_queue_t queue = [feature valueForKey:@"processorsQueue"];
+    NSString *segment = @"segment";
+
+    [feature writeExternalSegment:segment viewID:@"view-1"];
+    dispatch_sync(queue, ^{});
+    XCTAssertEqual(writer.writtenData.count, 0);
+
+    [coordinator setSampleState:FTRecordingSampleStateNormal];
+    [feature writeExternalSegment:segment viewID:@"view-1"];
+    dispatch_sync(queue, ^{});
+    XCTAssertEqual(writer.writtenData.count, 1);
+    XCTAssertEqualObjects(writer.writtenData.firstObject, [segment dataUsingEncoding:NSUTF8StringEncoding]);
+
+    [coordinator setSampleState:FTRecordingSampleStateError];
+    [feature writeExternalSegment:segment viewID:@"view-1"];
+    dispatch_sync(queue, ^{});
+    XCTAssertEqual(writer.writtenData.count, 2);
+
+    [coordinator setSampleState:FTRecordingSampleStateNone];
+    [feature writeExternalSegment:segment viewID:@"view-1"];
+    dispatch_sync(queue, ^{});
+    XCTAssertEqual(writer.writtenData.count, 2);
+}
+
+- (void)testExternalRUMContextUsesCopiedStableKeysOnlyWhileSampled {
+    FTSessionReplayFeature *feature = [[FTSessionReplayFeature alloc] initWithConfig:[FTSessionReplayConfig new]];
+    FTRecordingCoordinator *coordinator = [feature valueForKey:@"recordingCoordinator"];
+    FTMockExternalSegmentScope *scope = [[FTMockExternalSegmentScope alloc] initWithWriter:[FTMockExternalSegmentWriter new]];
+    scope.samplingConsentProvider = ^FTTrackingConsent { return coordinator.trackingConsent; };
+    [feature setValue:scope forKey:@"recordScope"];
+    NSMutableDictionary *globalContext = [@{@"team": @"ios"} mutableCopy];
+    NSMutableDictionary *rumContext = [@{
+        FT_APP_ID: @"app-1",
+        FT_RUM_KEY_SESSION_ID: @"session-1",
+        FT_KEY_VIEW_ID: @"view-1",
+        FT_LINK_RUM_KEYS: globalContext,
+        FT_RUM_KEY_SAMPLED_FOR_ERROR_SESSION: @YES,
+    } mutableCopy];
+    [coordinator setValue:rumContext forKey:@"currentRUMContext"];
+
+    XCTAssertNil([feature currentExternalRUMContext]);
+    [coordinator setSampleState:FTRecordingSampleStateNormal];
+    NSDictionary *context = [feature currentExternalRUMContext];
+    XCTAssertEqualObjects(context[FTSessionReplayRUMContextApplicationIDKey], @"app-1");
+    XCTAssertEqualObjects(context[FTSessionReplayRUMContextViewIDKey], @"view-1");
+    XCTAssertEqualObjects(context[FTSessionReplayRUMContextGlobalContextKey], (@{@"team": @"ios"}));
+    XCTAssertEqualObjects(context[FTSessionReplayRUMContextSampledForErrorSessionKey], @YES);
+
+    globalContext[@"team"] = @"changed";
+    rumContext[FT_KEY_VIEW_ID] = @"view-2";
+    XCTAssertEqualObjects(context[FTSessionReplayRUMContextViewIDKey], @"view-1");
+    XCTAssertEqualObjects(context[FTSessionReplayRUMContextGlobalContextKey], (@{@"team": @"ios"}));
+}
+
+- (void)testExternalImageResourceUsesConfigWhitelistAndStableIdentifier {
+    FTSessionReplayConfig *config = [FTSessionReplayConfig new];
+    config.enableLinkRUMKeys = @[@"team"];
+    FTSessionReplayFeature *feature = [[FTSessionReplayFeature alloc] initWithConfig:config];
+    FTMockExternalImageResourceWriter *writer = [FTMockExternalImageResourceWriter new];
+    [feature setValue:writer forKey:@"externalResourceWriter"];
+    FTRecordingCoordinator *coordinator = [feature valueForKey:@"recordingCoordinator"];
+    FTMockExternalSegmentScope *scope = [[FTMockExternalSegmentScope alloc] initWithWriter:[FTMockExternalSegmentWriter new]];
+    scope.samplingConsentProvider = ^FTTrackingConsent { return coordinator.trackingConsent; };
+    [feature setValue:scope forKey:@"resourceScope"];
+    dispatch_queue_t queue = [feature valueForKey:@"processorsQueue"];
+    NSData *pngData = [@"abc" dataUsingEncoding:NSUTF8StringEncoding];
+    [coordinator setValue:@{
+        FT_APP_ID: @"app-1",
+        FT_LINK_RUM_KEYS: @{@"team": @"ios", @"secret": @"excluded"},
+    } forKey:@"currentRUMContext"];
+
+    XCTAssertNil([feature saveExternalImageResourceData:pngData mimeType:@"image/png"]);
+    [coordinator setSampleState:FTRecordingSampleStateNormal];
+    NSString *identifier = [feature saveExternalImageResourceData:pngData mimeType:@"image/png"];
+    dispatch_sync(queue, ^{});
+
+    XCTAssertEqualObjects(identifier, @"900150983cd24fb0d6963f7d28e17f72");
+    XCTAssertEqual(writer.writtenResources.count, 1);
+    XCTAssertEqual(writer.normalDirectoryCallCount, 1);
+    XCTAssertEqualObjects(writer.writtenResources.firstObject.appId, @"app-1");
+    XCTAssertEqualObjects(writer.writtenResources.firstObject.bindInfo, (@{@"team": @"ios"}));
+
+    [coordinator setSampleState:FTRecordingSampleStateError];
+    XCTAssertEqualObjects([feature saveExternalImageResourceData:pngData mimeType:@"image/png"], identifier);
+    dispatch_sync(queue, ^{});
+    XCTAssertEqual(writer.normalDirectoryCallCount, 2);
+
+    [coordinator setSampleState:FTRecordingSampleStateNone];
+    XCTAssertNil([feature saveExternalImageResourceData:pngData mimeType:@"image/png"]);
+    dispatch_sync(queue, ^{});
+    XCTAssertEqual(writer.normalDirectoryCallCount, 2);
+}
+
+- (void)testExternalSegmentsForceNewFileWhenViewChangesInSubmissionOrder {
+    FTSessionReplayFeature *feature = [[FTSessionReplayFeature alloc]initWithConfig:[FTSessionReplayConfig new]];
+    FTMockExternalSegmentWriter *writer = [FTMockExternalSegmentWriter new];
+    FTMockExternalSegmentScope *scope = [[FTMockExternalSegmentScope alloc]initWithWriter:writer];
+    [feature setValue:scope forKey:@"recordScope"];
+    dispatch_queue_t processorsQueue = [feature valueForKey:@"processorsQueue"];
+    dispatch_queue_set_specific(processorsQueue, FTExternalSegmentProcessorQueueKey, FTExternalSegmentProcessorQueueKey, NULL);
+
+    [feature writeExternalSegment:@"segment-1" viewID:@"view-1"];
+    [feature writeExternalSegment:@"segment-2" viewID:@"view-1"];
+    [feature writeExternalSegment:@"segment-3" viewID:@"view-2"];
+    XCTestExpectation *processed = [self expectationWithDescription:@"External segments processed in order"];
+    dispatch_async(processorsQueue, ^{
+        [processed fulfill];
+    });
+    [self waitForExpectations:@[processed] timeout:2];
+
+    XCTAssertEqualObjects(writer.forceNewFileValues, (@[@YES, @NO, @YES]));
+    XCTAssertTrue(writer.allWritesOnProcessorQueue);
+}
+
+- (void)testExternalImageResourceWriterCapturesInputBeforeAsynchronousProcessing {
+    FTSessionReplayConfig *config = [FTSessionReplayConfig new];
+    config.enableLinkRUMKeys = @[@"env"];
+    FTSessionReplayFeature *feature = [[FTSessionReplayFeature alloc]initWithConfig:config];
+    FTMockExternalImageResourceWriter *writer = [FTMockExternalImageResourceWriter new];
+    FTMockExternalSegmentScope *resourceScope = [[FTMockExternalSegmentScope alloc]initWithWriter:[FTMockExternalSegmentWriter new]];
+    [feature setValue:writer forKey:@"externalResourceWriter"];
+    [feature setValue:resourceScope forKey:@"resourceScope"];
+    NSDictionary *bindInfo = @{@"env": @"test"};
+    id recordingCoordinator = [feature valueForKey:@"recordingCoordinator"];
+    [recordingCoordinator setValue:@{
+        FT_APP_ID: @"app-id",
+        FT_LINK_RUM_KEYS: bindInfo,
+    } forKey:@"currentRUMContext"];
+    dispatch_queue_t processorsQueue = [feature valueForKey:@"processorsQueue"];
+    dispatch_queue_set_specific(processorsQueue, FTExternalImageProcessorQueueKey, FTExternalImageProcessorQueueKey, NULL);
+    dispatch_suspend(processorsQueue);
+
+    NSMutableData *data = [[@"image-data" dataUsingEncoding:NSUTF8StringEncoding] mutableCopy];
+    NSData *expectedData = [data copy];
+    NSString *identifier = [feature saveExternalImageResourceData:data mimeType:@"image/png"];
+    [data appendData:[@"-mutated" dataUsingEncoding:NSUTF8StringEncoding]];
+
+    XCTAssertNotNil(identifier);
+    XCTAssertEqual(writer.writtenResources.count, 0);
+    dispatch_resume(processorsQueue);
+    XCTestExpectation *processed = [self expectationWithDescription:@"External image resource processed"];
+    dispatch_async(processorsQueue, ^{
+        [processed fulfill];
+    });
+    [self waitForExpectations:@[processed] timeout:2];
+
+    XCTAssertEqual(writer.writtenResources.count, 1);
+    XCTAssertTrue(writer.allWritesOnProcessorQueue);
+    XCTAssertEqual(writer.normalDirectoryCallCount, 1);
+    FTEnrichedResource *resource = writer.writtenResources.firstObject;
+    XCTAssertEqualObjects(resource.identifier, identifier);
+    XCTAssertEqualObjects(resource.data, expectedData);
+    XCTAssertEqualObjects(resource.appId, @"app-id");
+    XCTAssertEqualObjects(resource.mimeType, @"image/png");
+    XCTAssertEqualObjects(resource.bindInfo, bindInfo);
+}
+
 - (void)testSegmentJSONUsesIOSSourceByDefault {
     NSDictionary *record = @{
         @"applicationID": @"app-ios",
@@ -270,7 +593,25 @@ BOOL isNAN(id value) {
         block();
         [expectation fulfill];
     });
-    [self waitForExpectationsWithTimeout:1 handler:nil];
+    [self waitForExpectations:@[expectation] timeout:10];
+}
+
+- (BOOL)runOnBackgroundThreadAndWait:(dispatch_block_t)block description:(NSString *)description {
+    XCTestExpectation *expectation = [self expectationWithDescription:description];
+    // Exercise the background boundary without competing for a global Utility queue worker.
+    NSThread *thread = [[NSThread alloc] initWithBlock:^{
+        @autoreleasepool {
+            XCTAssertFalse(NSThread.isMainThread);
+            block();
+            [expectation fulfill];
+        }
+    }];
+    thread.name = description;
+    thread.qualityOfService = NSQualityOfServiceUserInitiated;
+    [thread start];
+    XCTWaiterResult result = [XCTWaiter waitForExpectations:@[expectation] timeout:10];
+    XCTAssertEqual(result, XCTWaiterResultCompleted, @"%@ did not complete", description);
+    return result == XCTWaiterResultCompleted;
 }
 
 - (UIImage *)sessionReplayTestImage{
@@ -331,19 +672,26 @@ BOOL isNAN(id value) {
     
     __block FTUIImageResource *resource = nil;
     [self runOnMainThreadAndWait:^{
-        resource = [[FTUIImageResource alloc] initWithImage:[self sessionReplayTestImage]
+        UIImage *image = [self sessionReplayTestImage];
+        image.srIdentifier = @"dynamic-tint-image";
+        resource = [[FTUIImageResource alloc] initWithImage:image
                                                   tintColor:dynamicColor
                                             traitCollection:traitCollection];
     }];
     NSInteger providerCallsAfterSnapshot = providerCallCount;
     
-    XCTestExpectation *expectation = [self expectationWithDescription:@"Background resource processing"];
-    dispatch_async(dispatch_get_global_queue(QOS_CLASS_UTILITY, 0), ^{
-        [resource calculateIdentifier];
-        [resource calculateData];
-        [expectation fulfill];
-    });
-    [self waitForExpectationsWithTimeout:1 handler:nil];
+    XCTAssertGreaterThan(providerCallsAfterSnapshot, 0);
+    __block NSString *identifier = nil;
+    __block NSData *data = nil;
+    if (![self runOnBackgroundThreadAndWait:^{
+        identifier = [resource calculateIdentifier];
+        data = [resource calculateData];
+    } description:@"Background resource processing"]) {
+        return;
+    }
+    // RGBA (0.1, 0.2, 0.3, 0.4) rounds to the 8-bit identifier 1A334D66.
+    XCTAssertEqualObjects(identifier, @"dynamic-tint-image1A334D66");
+    XCTAssertGreaterThan(data.length, 0);
     
     XCTAssertEqual(backgroundProviderCallCount, 0);
     XCTAssertEqual(providerCallCount, providerCallsAfterSnapshot);
@@ -367,16 +715,18 @@ BOOL isNAN(id value) {
         attributes = [[FTViewAttributes alloc] initWithView:view
                                             frameInRootView:view.frame
                                                        clip:view.frame
-                                                  overrides:[PrivacyOverrides new]];
+                                                  overrides:[FTSessionReplayPrivacyOverrides new]];
     }];
     NSInteger providerCallsAfterSnapshot = providerCallCount;
     
-    XCTestExpectation *expectation = [self expectationWithDescription:@"Background wireframe processing"];
-    dispatch_async(dispatch_get_global_queue(QOS_CLASS_UTILITY, 0), ^{
-        __unused FTSRShapeWireframe *wireframe = [[FTSRShapeWireframe alloc] initWithIdentifier:1 attributes:attributes];
-        [expectation fulfill];
-    });
-    [self waitForExpectationsWithTimeout:1 handler:nil];
+    XCTAssertGreaterThan(providerCallsAfterSnapshot, 0);
+    __block FTSRShapeWireframe *wireframe = nil;
+    if (![self runOnBackgroundThreadAndWait:^{
+        wireframe = [[FTSRShapeWireframe alloc] initWithIdentifier:1 attributes:attributes];
+    } description:@"Background wireframe processing"]) {
+        return;
+    }
+    XCTAssertNotNil(wireframe);
     
     XCTAssertEqual(backgroundProviderCallCount, 0);
     XCTAssertEqual(providerCallCount, providerCallsAfterSnapshot);
@@ -411,6 +761,16 @@ BOOL isNAN(id value) {
         XCTAssertFalse(status.needsRetry, @"statusCode:%@", statusCode);
         XCTAssertEqualObjects(status.responseCode, statusCode);
     }
+}
+
+- (void)testUploadStatusCreatesSuccessWithoutHTTPResponse{
+    FTUploadStatus *status = [FTUploadStatus successStatus];
+
+    XCTAssertTrue(status.success);
+    XCTAssertFalse(status.needsRetry);
+    XCTAssertNil(status.responseCode);
+    XCTAssertNil(status.error);
+    XCTAssertEqual(status.attempt, 0);
 }
 
 - (void)testUploadStatusTreatsCurrentFailureCodesAsRetryable{
@@ -522,6 +882,119 @@ BOOL isNAN(id value) {
     XCTAssertEqualObjects(writer.writtenResources.firstObject.bindInfo, context.bindInfo);
 }
 
+- (void)testResourceDeduplicationIdentifierUsesBindInfoValues{
+    FTEnrichedResource *first = [[FTEnrichedResource alloc] init];
+    first.identifier = @"resource-id";
+    first.bindInfo = @{@"wgtid": @"widget-1", @"tenant": @"tenant-1"};
+
+    FTEnrichedResource *sameContext = [[FTEnrichedResource alloc] init];
+    sameContext.identifier = @"resource-id";
+    sameContext.bindInfo = @{@"tenant": @"tenant-1", @"wgtid": @"widget-1"};
+
+    FTEnrichedResource *differentContext = [[FTEnrichedResource alloc] init];
+    differentContext.identifier = @"resource-id";
+    differentContext.bindInfo = @{@"wgtid": @"widget-2", @"tenant": @"tenant-1"};
+
+    FTEnrichedResource *withoutBindInfo = [[FTEnrichedResource alloc] init];
+    withoutBindInfo.identifier = @"resource-id";
+
+    XCTAssertEqualObjects(first.deduplicationIdentifier, sameContext.deduplicationIdentifier);
+    XCTAssertNotEqualObjects(first.deduplicationIdentifier, differentContext.deduplicationIdentifier);
+    XCTAssertEqualObjects(withoutBindInfo.deduplicationIdentifier, withoutBindInfo.identifier);
+}
+
+- (void)testResourceProcessorWritesSameIdentifierForDifferentBindInfo{
+    dispatch_queue_t queue = dispatch_queue_create("com.ft.sr.resource-processor.deduplication.test", DISPATCH_QUEUE_SERIAL);
+    FTMockResourcesWriter *writer = [[FTMockResourcesWriter alloc] init];
+    FTResourceProcessor *processor = [[FTResourceProcessor alloc] initWithQueue:queue resourceWriter:writer];
+    FTMockSRResource *resource = [[FTMockSRResource alloc] init];
+    resource.identifier = @"resource-id";
+    resource.data = [@"abc" dataUsingEncoding:NSUTF8StringEncoding];
+    resource.mimeType = @"image/png";
+
+    FTSRContext *firstContext = [[FTSRContext alloc] init];
+    firstContext.applicationID = @"app-id";
+    firstContext.bindInfo = @{@"wgtid": @"widget-1"};
+    FTSRContext *secondContext = [[FTSRContext alloc] init];
+    secondContext.applicationID = @"app-id";
+    secondContext.bindInfo = @{@"wgtid": @"widget-2"};
+
+    [processor process:@[resource] context:firstContext];
+    [processor process:@[resource] context:secondContext];
+    [processor process:@[resource] context:firstContext];
+    dispatch_sync(queue, ^{
+    });
+
+    XCTAssertEqual(writer.writtenResources.count, 2);
+    XCTAssertEqualObjects(writer.writtenResources[0].bindInfo, firstContext.bindInfo);
+    XCTAssertEqualObjects(writer.writtenResources[1].bindInfo, secondContext.bindInfo);
+}
+
+- (void)testResourcesWriterPersistsSameIdentifierForDifferentBindInfo{
+    dispatch_queue_t queue = dispatch_queue_create("com.ft.sr.resources-writer.deduplication.test", DISPATCH_QUEUE_SERIAL);
+    NSString *basePath = [NSString stringWithFormat:@"ft-session-replay-resource-writer-test/%@", NSUUID.UUID.UUIDString];
+    FTDirectory *grantedDirectory = [[FTDirectory alloc] initWithSubdirectoryPath:basePath];
+    FTFeatureDirectories *directories = [[FTFeatureDirectories alloc] initWithGranted:grantedDirectory
+                                                                              pending:nil
+                                                                         errorSampled:nil];
+    FTFeatureStorage *storage = [[FTFeatureStorage alloc] initWithFeatureName:@"session-replay-resources"
+                                                                        queue:queue
+                                                                  directories:directories
+                                                                  performance:[[FTPerformancePreset alloc] init]];
+    FTFeatureScope *scope = [[FTFeatureScope alloc] initWithStorage:storage trackingConsentProvider:^FTTrackingConsent{
+        return FTTrackingConsentGranted;
+    }];
+    FTMockDataStore *dataStore = [[FTMockDataStore alloc] init];
+    FTResourcesWriter *writer = [[FTResourcesWriter alloc] initWithFeatureScope:scope dataStore:dataStore];
+    FTEnrichedResource *first = [[FTEnrichedResource alloc] init];
+    first.identifier = @"resource-id";
+    first.appId = @"app-id";
+    first.data = [@"abc" dataUsingEncoding:NSUTF8StringEncoding];
+    first.mimeType = @"image/png";
+    first.bindInfo = @{@"wgtid": @"widget-1"};
+    FTEnrichedResource *second = [[FTEnrichedResource alloc] init];
+    second.identifier = @"resource-id";
+    second.appId = @"app-id";
+    second.data = [@"abc" dataUsingEncoding:NSUTF8StringEncoding];
+    second.mimeType = @"image/png";
+    second.bindInfo = @{@"wgtid": @"widget-2"};
+
+    [writer write:@[first]];
+    [writer write:@[second, first]];
+    dispatch_sync(queue, ^{
+    });
+
+    NSSet *knownIdentifiers = [writer valueForKey:@"knownIdentifiers"];
+    XCTAssertEqual(knownIdentifiers.count, 2);
+    XCTAssertTrue([knownIdentifiers containsObject:first.deduplicationIdentifier]);
+    XCTAssertTrue([knownIdentifiers containsObject:second.deduplicationIdentifier]);
+    XCTAssertTrue([dataStore.setKeys containsObject:@"ft-known-resources"]);
+
+    FTResourcesWriter *reloadedWriter = [[FTResourcesWriter alloc] initWithFeatureScope:scope dataStore:dataStore];
+    NSSet *reloadedKnownIdentifiers = [reloadedWriter valueForKey:@"knownIdentifiers"];
+    XCTAssertEqual(reloadedKnownIdentifiers.count, 2);
+    XCTAssertTrue([reloadedKnownIdentifiers containsObject:first.deduplicationIdentifier]);
+    XCTAssertTrue([reloadedKnownIdentifiers containsObject:second.deduplicationIdentifier]);
+
+    [reloadedWriter write:@[first, second]];
+    dispatch_sync(queue, ^{
+    });
+    XCTAssertEqual([[reloadedWriter valueForKey:@"knownIdentifiers"] count], 2);
+
+    FTEnrichedResource *third = [[FTEnrichedResource alloc] init];
+    third.identifier = @"resource-id";
+    third.appId = @"app-id";
+    third.data = [@"abc" dataUsingEncoding:NSUTF8StringEncoding];
+    third.mimeType = @"image/png";
+    third.bindInfo = @{@"wgtid": @"widget-3"};
+    [reloadedWriter write:@[third]];
+    dispatch_sync(queue, ^{
+    });
+    NSSet *updatedKnownIdentifiers = [reloadedWriter valueForKey:@"knownIdentifiers"];
+    XCTAssertEqual(updatedKnownIdentifiers.count, 3);
+    XCTAssertTrue([updatedKnownIdentifiers containsObject:third.deduplicationIdentifier]);
+}
+
 - (void)testResourcesWriterDoesNotPersistKnownIdentifierWhenNotGranted{
     dispatch_queue_t queue = dispatch_queue_create("com.ft.sr.resources-writer.not-granted.test", DISPATCH_QUEUE_SERIAL);
     NSString *basePath = [NSString stringWithFormat:@"ft-session-replay-resource-writer-test/%@", NSUUID.UUID.UUIDString];
@@ -553,6 +1026,58 @@ BOOL isNAN(id value) {
     XCTAssertFalse([knownIdentifiers containsObject:resource.identifier]);
     XCTAssertFalse([dataStore.setKeys containsObject:@"ft-known-resources"]);
     XCTAssertEqual(grantedDirectory.files.count, 0);
+}
+
+- (void)testExternalErrorSampledImageUsesNormalDirectoryWithoutGrantingUnsampledWrites{
+    dispatch_queue_t queue = dispatch_queue_create("com.ft.sr.external-resource-consent.test", DISPATCH_QUEUE_SERIAL);
+    NSString *basePath = [NSString stringWithFormat:@"ft-session-replay-external-resource-test/%@", NSUUID.UUID.UUIDString];
+    FTDirectory *normalDirectory = [[FTDirectory alloc] initWithSubdirectoryPath:[basePath stringByAppendingPathComponent:@"normal"]];
+    FTDirectory *errorDirectory = [[FTDirectory alloc] initWithSubdirectoryPath:[basePath stringByAppendingPathComponent:@"error"]];
+    FTFeatureDirectories *directories = [[FTFeatureDirectories alloc] initWithGranted:normalDirectory
+                                                                             pending:nil
+                                                                        errorSampled:errorDirectory];
+    FTFeatureStorage *storage = [[FTFeatureStorage alloc] initWithFeatureName:@"session-replay-resources"
+                                                                        queue:queue
+                                                                  directories:directories
+                                                                  performance:[[FTPerformancePreset alloc] init]];
+    __block FTTrackingConsent consent = FTTrackingConsentErrorSampled;
+    FTFeatureScope *scope = [[FTFeatureScope alloc] initWithStorage:storage trackingConsentProvider:^FTTrackingConsent{
+        return consent;
+    }];
+    FTMockDataStore *dataStore = [FTMockDataStore new];
+    FTResourcesWriter *writer = [[FTResourcesWriter alloc] initWithFeatureScope:scope dataStore:dataStore];
+    FTEnrichedResource *sampled = [FTEnrichedResource new];
+    sampled.identifier = @"sampled-image";
+    sampled.appId = @"app-id";
+    sampled.data = [@"abc" dataUsingEncoding:NSUTF8StringEncoding];
+    sampled.mimeType = @"image/png";
+    sampled.bindInfo = @{@"view": @"one"};
+
+    [writer writeExternalResourcesToNormalDirectory:@[sampled]];
+    [writer writeExternalResourcesToNormalDirectory:@[sampled]];
+    dispatch_sync(queue, ^{});
+    XCTAssertEqual(normalDirectory.files.count, 1);
+    XCTAssertEqual(errorDirectory.files.count, 0);
+    XCTAssertTrue([[writer valueForKey:@"knownIdentifiers"] containsObject:sampled.deduplicationIdentifier]);
+
+    FTEnrichedResource *blocked = [FTEnrichedResource new];
+    blocked.identifier = @"blocked-image";
+    blocked.appId = @"app-id";
+    blocked.data = [@"def" dataUsingEncoding:NSUTF8StringEncoding];
+    blocked.mimeType = @"image/png";
+    consent = FTTrackingConsentNotGranted;
+    [writer writeExternalResourcesToNormalDirectory:@[blocked]];
+    dispatch_sync(queue, ^{});
+    XCTAssertEqual(normalDirectory.files.count, 1);
+    XCTAssertEqual(errorDirectory.files.count, 0);
+    XCTAssertFalse([[writer valueForKey:@"knownIdentifiers"] containsObject:blocked.deduplicationIdentifier]);
+
+    consent = FTTrackingConsentPending;
+    [writer writeExternalResourcesToNormalDirectory:@[blocked]];
+    dispatch_sync(queue, ^{});
+    XCTAssertEqual(normalDirectory.files.count, 1);
+    XCTAssertEqual(errorDirectory.files.count, 0);
+    XCTAssertFalse([[writer valueForKey:@"knownIdentifiers"] containsObject:blocked.deduplicationIdentifier]);
 }
 
 - (void)testUploadConditionsIncludesUploadURLNotConfigured{
@@ -605,46 +1130,85 @@ BOOL isNAN(id value) {
     XCTAssertEqual([[conditions checkForUpload] filteredArrayUsingPredicate:batteryPredicate].count, 0);
 }
 
-- (void)testResourceRequestContainsBindInfoFields{
+- (void)testResourceRequestContainsReplayAssetTagsField{
     FTEnrichedResource *resource = [[FTEnrichedResource alloc] init];
     resource.identifier = @"resource-id";
     resource.appId = @"app-id";
     resource.data = [@"abc" dataUsingEncoding:NSUTF8StringEncoding];
     resource.mimeType = @"image/png";
-    resource.bindInfo = @{@"user_id":@"123"};
+    resource.bindInfo = @{@"wgtid":@"123"};
     
     FTResourceRequest *request = [[FTResourceRequest alloc] init];
-    [request requestWithEvents:@[resource] parameters:@{@"service":@"demo-service"}];
+    [request requestWithEvents:@[resource] parameters:@{
+        FT_APP_ID:@"app-id",
+        @"tags":@{@"wgtid":@"123"},
+        @"service":@"demo-service"
+    }];
     NSMutableURLRequest *urlRequest = [[NSMutableURLRequest alloc] initWithURL:[NSURL URLWithString:@"https://example.com"]];
     NSMutableURLRequest *adaptedRequest = [request adaptedRequest:urlRequest];
     NSString *body = [[NSString alloc] initWithData:adaptedRequest.HTTPBody encoding:NSUTF8StringEncoding];
     
     XCTAssertTrue([body containsString:@"name=\"app_id\""]);
     XCTAssertTrue([body containsString:@"app-id"]);
-    XCTAssertTrue([body containsString:@"name=\"service\""]);
-    XCTAssertTrue([body containsString:@"demo-service"]);
-    XCTAssertTrue([body containsString:@"name=\"user_id\""]);
+    XCTAssertTrue([body containsString:@"name=\"tags\""]);
+    XCTAssertTrue([body containsString:@"wgtid"]);
     XCTAssertTrue([body containsString:@"123"]);
+    XCTAssertFalse([body containsString:@"name=\"appid\""]);
+    XCTAssertFalse([body containsString:@"name=\"wgtid\""]);
+    XCTAssertFalse([body containsString:@"name=\"service\""]);
+    XCTAssertFalse([body containsString:@"demo-service"]);
 }
 
-- (void)testResourceCheckRequestContainsBindInfoFields{
+- (void)testResourceCheckRequestContainsReplayAssetTagsObject{
     FTResourceCheckRequest *request = [[FTResourceCheckRequest alloc] init];
     [request requestWithEvents:@[@"resource-id"] parameters:@{
         FT_APP_ID:@"app-id",
+        @"tags":@{@"wgtid":@"123"},
         @"service":@"demo-service",
-        @"user_id":@"123"
+        @"wgtid":@"flattened-value"
     }];
     NSMutableURLRequest *urlRequest = [[NSMutableURLRequest alloc] initWithURL:[NSURL URLWithString:@"https://example.com"]];
     NSMutableURLRequest *adaptedRequest = [request adaptedRequest:urlRequest];
     NSDictionary *body = [NSJSONSerialization JSONObjectWithData:adaptedRequest.HTTPBody options:kNilOptions error:nil];
     
     XCTAssertEqualObjects(body[FT_APP_ID], @"app-id");
-    XCTAssertEqualObjects(body[@"service"], @"demo-service");
-    XCTAssertEqualObjects(body[@"user_id"], @"123");
+    XCTAssertEqualObjects(body[@"tags"][@"wgtid"], @"123");
     XCTAssertEqualObjects(body[@"files"], (@[@"resource-id"]));
+    XCTAssertNil(body[@"appid"]);
+    XCTAssertNil(body[@"service"]);
+    XCTAssertNil(body[@"wgtid"]);
 }
 
-- (void)testImageFeatureUploadGroupsByBindInfoBeforeCheckAndWrite{
+- (void)testResourceRequestOmitsReplayAssetTagsWhenEmpty{
+    FTEnrichedResource *resource = [[FTEnrichedResource alloc] init];
+    resource.identifier = @"resource-id";
+    resource.appId = @"app-id";
+    resource.data = [@"abc" dataUsingEncoding:NSUTF8StringEncoding];
+    resource.mimeType = @"image/png";
+
+    FTResourceRequest *request = [[FTResourceRequest alloc] init];
+    [request requestWithEvents:@[resource] parameters:@{FT_APP_ID:@"app-id"}];
+    NSMutableURLRequest *urlRequest = [[NSMutableURLRequest alloc] initWithURL:[NSURL URLWithString:@"https://example.com"]];
+    NSMutableURLRequest *adaptedRequest = [request adaptedRequest:urlRequest];
+    NSString *body = [[NSString alloc] initWithData:adaptedRequest.HTTPBody encoding:NSUTF8StringEncoding];
+
+    XCTAssertTrue([body containsString:@"name=\"app_id\""]);
+    XCTAssertFalse([body containsString:@"name=\"tags\""]);
+}
+
+- (void)testResourceCheckRequestOmitsReplayAssetTagsWhenEmpty{
+    FTResourceCheckRequest *request = [[FTResourceCheckRequest alloc] init];
+    [request requestWithEvents:@[@"resource-id"] parameters:@{FT_APP_ID:@"app-id"}];
+    NSMutableURLRequest *urlRequest = [[NSMutableURLRequest alloc] initWithURL:[NSURL URLWithString:@"https://example.com"]];
+    NSMutableURLRequest *adaptedRequest = [request adaptedRequest:urlRequest];
+    NSDictionary *body = [NSJSONSerialization JSONObjectWithData:adaptedRequest.HTTPBody options:kNilOptions error:nil];
+
+    XCTAssertEqualObjects(body[FT_APP_ID], @"app-id");
+    XCTAssertEqualObjects(body[@"files"], (@[@"resource-id"]));
+    XCTAssertNil(body[@"tags"]);
+}
+
+- (void)testImageFeatureUploadGroupsByLinkedTagsBeforeCheckAndWrite{
     FTMockHTTPClient *httpClient = [[FTMockHTTPClient alloc] init];
     httpClient.contentMap = @{
         @"resource-a":@NO,
@@ -653,9 +1217,9 @@ BOOL isNAN(id value) {
     };
     FTImageFeatureUpload *upload = [self createImageUploadWithHTTPClient:httpClient];
     NSArray *event = @[
-        [self resourceDataWithIdentifier:@"resource-a" bindInfo:@{@"user_id":@"user-1"}],
-        [self resourceDataWithIdentifier:@"resource-b" bindInfo:@{@"user_id":@"user-2"}],
-        [self resourceDataWithIdentifier:@"resource-c" bindInfo:@{@"user_id":@"user-1"}]
+        [self resourceDataWithIdentifier:@"resource-a" bindInfo:@{@"wgtid":@"widget-1"}],
+        [self resourceDataWithIdentifier:@"resource-b" bindInfo:@{@"wgtid":@"widget-2"}],
+        [self resourceDataWithIdentifier:@"resource-c" bindInfo:@{@"wgtid":@"widget-1"}]
     ];
     
     FTUploadStatus *status = [upload flushWithEvent:event parameters:@{@"service":@"demo-service"}];
@@ -670,22 +1234,38 @@ BOOL isNAN(id value) {
     NSArray *firstFiles = firstCheck[@"files"];
     NSArray *secondFiles = secondCheck[@"files"];
     
-    XCTAssertEqualObjects(firstCheck[@"user_id"], @"user-1");
+    XCTAssertEqualObjects(firstCheck[FT_APP_ID], @"app-id");
+    XCTAssertEqualObjects(firstCheck[@"tags"][@"wgtid"], @"widget-1");
+    XCTAssertNil(firstCheck[@"wgtid"]);
+    XCTAssertNil(firstCheck[@"service"]);
     XCTAssertTrue(firstFiles.count == 2);
     XCTAssertTrue([firstFiles containsObject:@"resource-a"]);
     XCTAssertTrue([firstFiles containsObject:@"resource-c"]);
-    XCTAssertEqualObjects(secondCheck[@"user_id"], @"user-2");
+    XCTAssertEqualObjects(secondCheck[FT_APP_ID], @"app-id");
+    XCTAssertEqualObjects(secondCheck[@"tags"][@"wgtid"], @"widget-2");
+    XCTAssertNil(secondCheck[@"wgtid"]);
+    XCTAssertNil(secondCheck[@"service"]);
     XCTAssertEqualObjects(secondFiles, (@[@"resource-b"]));
     
     NSString *firstWrite = httpClient.writeBodies[0];
     NSString *secondWrite = httpClient.writeBodies[1];
-    XCTAssertTrue([firstWrite containsString:@"user-1"]);
+    XCTAssertTrue([firstWrite containsString:@"name=\"app_id\""]);
+    XCTAssertTrue([firstWrite containsString:@"name=\"tags\""]);
+    XCTAssertTrue([firstWrite containsString:@"widget-1"]);
     XCTAssertTrue([firstWrite containsString:@"resource-a"]);
     XCTAssertTrue([firstWrite containsString:@"resource-c"]);
     XCTAssertFalse([firstWrite containsString:@"resource-b"]);
-    XCTAssertTrue([secondWrite containsString:@"user-2"]);
+    XCTAssertFalse([firstWrite containsString:@"name=\"appid\""]);
+    XCTAssertFalse([firstWrite containsString:@"name=\"wgtid\""]);
+    XCTAssertFalse([firstWrite containsString:@"name=\"service\""]);
+    XCTAssertTrue([secondWrite containsString:@"name=\"app_id\""]);
+    XCTAssertTrue([secondWrite containsString:@"name=\"tags\""]);
+    XCTAssertTrue([secondWrite containsString:@"widget-2"]);
     XCTAssertTrue([secondWrite containsString:@"resource-b"]);
     XCTAssertFalse([secondWrite containsString:@"resource-a"]);
+    XCTAssertFalse([secondWrite containsString:@"name=\"appid\""]);
+    XCTAssertFalse([secondWrite containsString:@"name=\"wgtid\""]);
+    XCTAssertFalse([secondWrite containsString:@"name=\"service\""]);
 }
 
 - (void)testImageFeatureUploadTreats403And429AsFailure{
@@ -738,8 +1318,8 @@ BOOL isNAN(id value) {
     };
     FTImageFeatureUpload *upload = [self createImageUploadWithHTTPClient:httpClient];
     NSArray *event = @[
-        [self resourceDataWithIdentifier:@"resource-a" bindInfo:@{@"user_id":@"user-1"}],
-        [self resourceDataWithIdentifier:@"resource-b" bindInfo:@{@"user_id":@"user-1"}]
+        [self resourceDataWithIdentifier:@"resource-a" bindInfo:@{@"wgtid":@"widget-1"}],
+        [self resourceDataWithIdentifier:@"resource-b" bindInfo:@{@"wgtid":@"widget-1"}]
     ];
     
     FTUploadStatus *status = [upload flushWithEvent:event parameters:@{@"service":@"demo-service"}];
@@ -750,14 +1330,22 @@ BOOL isNAN(id value) {
     XCTAssertEqual(httpClient.writeBodies.count, 1);
     NSDictionary *checkBody = httpClient.checkBodies.firstObject;
     NSArray *files = checkBody[@"files"];
-    XCTAssertEqualObjects(checkBody[@"user_id"], @"user-1");
+    XCTAssertEqualObjects(checkBody[FT_APP_ID], @"app-id");
+    XCTAssertEqualObjects(checkBody[@"tags"][@"wgtid"], @"widget-1");
+    XCTAssertNil(checkBody[@"wgtid"]);
+    XCTAssertNil(checkBody[@"service"]);
     XCTAssertTrue(files.count == 2);
     XCTAssertTrue([files containsObject:@"resource-a"]);
     XCTAssertTrue([files containsObject:@"resource-b"]);
     
     NSString *writeBody = httpClient.writeBodies.firstObject;
-    XCTAssertTrue([writeBody containsString:@"user-1"]);
+    XCTAssertTrue([writeBody containsString:@"name=\"app_id\""]);
+    XCTAssertTrue([writeBody containsString:@"name=\"tags\""]);
+    XCTAssertTrue([writeBody containsString:@"widget-1"]);
     XCTAssertTrue([writeBody containsString:@"resource-a"]);
     XCTAssertTrue([writeBody containsString:@"resource-b"]);
+    XCTAssertFalse([writeBody containsString:@"name=\"appid\""]);
+    XCTAssertFalse([writeBody containsString:@"name=\"wgtid\""]);
+    XCTAssertFalse([writeBody containsString:@"name=\"service\""]);
 }
 @end

@@ -215,11 +215,12 @@ jobs:
           done
 
           if ! gh release view "$TAG_NAME" >/dev/null 2>&1; then
-            release_args=(--title "$TAG_NAME" --verify-tag --notes "iOS SDK release assets for $TAG_NAME")
+            release_args=(--title "$TAG_NAME" --verify-tag --notes "Native SDK release assets for $TAG_NAME")
             if [[ "$TAG_NAME" == *-* ]]; then
               release_args+=(--prerelease)
             fi
-            gh release create "$TAG_NAME" "${release_args[@]}"
+            # The Electron workflow may create this release at the same time.
+            gh release create "$TAG_NAME" "${release_args[@]}" || gh release view "$TAG_NAME" >/dev/null
           fi
 
           if [[ "$OVERWRITE_ASSETS" == "true" ]]; then

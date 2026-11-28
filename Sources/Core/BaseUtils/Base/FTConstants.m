@@ -85,13 +85,20 @@ NSString * const FT_VERSION = @"version";
 #pragma mark ========== RUM ==========
 NSString * const FT_TERMINAL_APP = @"app";
 NSString * const FT_APP_ID = @"app_id";
+NSString * const FT_VISITOR_ID = @"visitor_id";
 NSString * const FT_DURATION = @"duration";
 //session tag
 NSString * const FT_RUM_KEY_SESSION_ID = @"session_id";
 NSString * const FT_RUM_KEY_SESSION_TYPE = @"session_type";
+// session field
+NSString * const FT_RUM_KEY_SESSION_START_REASON = @"session_start_reason";
+NSString * const FT_RUM_SESSION_START_REASON_SDK_INIT = @"sdk_init";
+NSString * const FT_RUM_SESSION_START_REASON_INACTIVITY_TIMEOUT = @"inactivity_timeout";
+NSString * const FT_RUM_SESSION_START_REASON_MAX_DURATION = @"max_duration";
+NSString * const FT_RUM_SESSION_START_REASON_SAMPLING_CHANGED = @"sampling_changed";
+NSString * const FT_RUM_SESSION_START_REASON_UNKNOWN = @"unknown";
 
 NSString * const FT_SESSION_ERROR_TIMESTAMP = @"session_error_timestamp";
-//session field
 NSString * const FT_RUM_SESSION_ON_ERROR_SAMPLE_RATE = @"session_on_error_sample_rate";
 NSString * const FT_RUM_SESSION_REPLAY_ON_ERROR_SAMPLE_RATE = @"session_replay_on_error_sample_rate";
 NSString * const FT_RUM_SESSION_SAMPLE_RATE = @"session_sample_rate";
@@ -106,6 +113,8 @@ NSString * const FT_KEY_VIEW_REFERRER = @"view_referrer";
 NSString * const FT_KEY_VIEW_NAME = @"view_name";
 //view field
 NSString * const FT_KEY_LOADING_TIME = @"loading_time";
+NSString * const FT_KEY_INTERACTION_TO_NEXT_VIEW_TIME = @"interaction_to_next_view_time";
+NSString * const FT_KEY_NETWORK_SETTLED_TIME = @"network_settled_time";
 NSString * const FT_KEY_TIME_SPENT = @"time_spent";
 NSString * const FT_KEY_VIEW_UPDATE_TIME = @"view_update_time";
 NSString * const FT_KEY_VIEW_ERROR_COUNT = @"view_error_count";
@@ -159,6 +168,7 @@ NSString * const FT_KEY_RESOURCE_HTTP_PROTOCOL = @"resource_http_protocol";
 NSString * const FT_KEY_RESOURCE_REQUEST_SIZE = @"resource_request_size";
 NSString * const FT_KEY_RESOURCE_CONNECTION_REUSE = @"resource_connection_reuse";
 NSString * const FT_KEY_NETWORK_AVAILABLE = @"network_available";
+NSString * const FT_KEY_NETWORK_SIGNAL_STRENGTH = @"network_signal_strength";
 NSString * const FT_RESOURCE_TYPE_WEBSOCKET = @"websocket";
 NSString * const FT_RESOURCE_WEBSOCKET_COLLECTION_LEVEL_HANDSHAKE = @"handshake";
 NSString * const FT_RESOURCE_WEBSOCKET_HANDSHAKE_STATE_SUCCESS = @"success";
@@ -197,8 +207,10 @@ NSString * const FT_KEY_LAUNCH_UIKITI_INIT_TIME = @"app_uikit_init_time";
 NSString * const FT_KEY_LAUNCH_PRE_RUNTIME_INIT_TIME = @"app_pre_runtime_init_time";
 NSString * const FT_KEY_LAUNCH_RUNTIME_INIT_TIME = @"app_runtime_init_time";
 NSString * const FT_KEY_APP_LAUNCH_TYPE = @"app_launch_type";
+NSString * const FT_KEY_PREWARM_TYPE = @"prewarm_type";
 NSString * const FT_APP_LAUNCH_TYPE_FOREGROUND = @"foreground";
 NSString * const FT_APP_LAUNCH_TYPE_BACKGROUND = @"background";
+NSString * const FT_APP_LAUNCH_TYPE_FOREGROUND_AND_BACKGROUND = @"foreground_and_background";
 //action tag
 NSString * const FT_KEY_ACTION_ID = @"action_id";
 NSString * const FT_KEY_ACTION_NAME = @"action_name";

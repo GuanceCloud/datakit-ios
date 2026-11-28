@@ -18,12 +18,10 @@
 import Foundation
 import UIKit
 
-@available(iOS 13.0, tvOS 13.0, *)
 protocol FTImageRepresentable: Hashable {
     func makeImage() -> UIImage?
 }
 
-@available(iOS 13.0, tvOS 13.0, *)
 struct FTAnyImageRepresentable: FTImageRepresentable {
     private let wrapped: AnyHashable
     private let make: () -> UIImage?

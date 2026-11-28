@@ -20,6 +20,7 @@
 
 #import <TargetConditionals.h>
 #import "FTAutoTrackHandler.h"
+#import "FTRUMPropertySnapshot.h"
 
 #if TARGET_OS_OSX
 #import "Mac/FTAutoTrack.h"
@@ -71,11 +72,12 @@
                                       type:isPreWarming ? FT_LAUNCH_WARM : FT_LAUNCH_COLD
                                 launchTime:launchTime
                                   duration:duration
-                                  property:fields];
+                                  property:FTRUMCopyDictionary(fields)];
     }
 }
 
 - (void)shutDown {
+    [self.launchTracker shutDown];
     self.launchTracker = nil;
     self.addRumDatasDelegate = nil;
     [FTAutoTrack sharedInstance].addRumDatasDelegate = nil;
@@ -100,6 +102,7 @@
 #import "FTDefaultActionTrackingHandler.h"
 #import "FTAutoTrackActionPublisher.h"
 #import "FTRumConfig.h"
+#import <objc/runtime.h>
 
 #if TARGET_OS_IOS || TARGET_OS_TV
 #define FT_HAS_SWIFTUI_VIEW_TRACKING 1
@@ -125,7 +128,6 @@ static BOOL FTViewControllerIsFromSwiftUIBundle(UIViewController *viewController
 #endif
 
 #if FT_HAS_SWIFTUI_VIEW_TRACKING
-API_AVAILABLE(ios(13.0), tvos(13.0))
 @interface FTSwiftUIViewNameExtractor : NSObject
 - (nullable NSString *)extractNameFromViewController:(UIViewController *)viewController;
 @end
@@ -150,14 +152,11 @@ API_AVAILABLE(ios(13.0), tvos(13.0))
 @end
 #endif
 
-@interface FTRumConfig (FTViewLoadingTimePrivate)
-@property (nonatomic, assign) BOOL enableUIKitViewLoadingTime;
-@end
-
 @interface RUMView:NSObject
 @property (nonatomic, copy) NSString *viewName;
 @property (nonatomic, copy) NSString *identify;
 @property (nonatomic, strong) NSNumber *loadTime;
+@property (nonatomic, strong, nullable) NSNumber *loadStartEpochNs;
 @property (nonatomic, assign) BOOL hasLoadDuration;
 @property (nonatomic, weak, nullable) UIViewController *viewController;
 @property (nonatomic, assign) BOOL isUntrackedModal;
@@ -182,6 +181,7 @@ API_AVAILABLE(ios(13.0), tvos(13.0))
         // UIKit controller). Keep that distinct from a real reload, which is the
         // only path that uses zero.
         NSNumber *loadDuration = viewController.ft_loadDuration;
+        _loadStartEpochNs = viewController.ft_viewLoadStartEpochNs;
         _loadTime = @(-1);
         if(loadDuration != nil){
             _loadTime = loadDuration;
@@ -197,7 +197,7 @@ API_AVAILABLE(ios(13.0), tvos(13.0))
         _viewName = [viewName copy];
         _identify = [identify copy];
         _isUntrackedModal = NO;
-        _property = [property copy];
+        _property = FTRUMCopyDictionary(property);
         _viewControllerUUID = [FTBaseInfoHandler randomUUID];
         _loadTime = loadTime ?: @(-1);
         _hasLoadDuration = loadTime != nil;
@@ -206,7 +206,8 @@ API_AVAILABLE(ios(13.0), tvos(13.0))
 }
 - (void)resetView{
     _viewControllerUUID = [FTBaseInfoHandler randomUUID];
-    _loadTime = @0;
+    _loadTime = _viewController != nil && ![UIViewController ft_shouldCollectViewLoadingTimeForClass:object_getClass(_viewController)] ? @(-1) : @0;
+    _loadStartEpochNs = nil;
 }
 @end
 @interface FTAutoTrackHandler()<FTAppLifeCycleDelegate,FTUIViewControllerHandler,FTUIEventHandler,FTAppLaunchDataDelegate
@@ -220,17 +221,19 @@ API_AVAILABLE(ios(13.0), tvos(13.0))
 @property (nonatomic, strong) NSMutableArray<RUMView*> *stack;
 @property (nonatomic, assign) BOOL autoTrackView;
 @property (nonatomic, assign) BOOL autoTrackAction;
-@property (nonatomic, assign) BOOL enableUIKitViewLoadingTime;
+@property (nonatomic, assign) BOOL enableTraceUserViewLoadingTime;
+@property (nonatomic, readonly) BOOL shouldCollectViewLoadingTime;
 @property (nonatomic, strong) FTAppLaunchTracker *launchTracker;
 /// Pass event object, pass collected view and action data to RUM
 @property (nonatomic, weak, nullable) id<FTRumDatasProtocol> addRumDatasDelegate;
 @property (nonatomic, strong, nullable) FTViewTrackingHandler uiKitViewTrackingHandler;
 @property (nonatomic, strong, nullable) id<FTSwiftUIViewTrackingHandler> swiftUIViewTrackingHandler;
 #if FT_HAS_SWIFTUI_VIEW_TRACKING
-@property (nonatomic, strong, nullable) FTSwiftUIViewNameExtractor *swiftUIViewNameExtractor API_AVAILABLE(ios(13.0), tvos(13.0));
+@property (nonatomic, strong, nullable) FTSwiftUIViewNameExtractor *swiftUIViewNameExtractor;
 #endif
 
 @property (nonatomic, strong, nullable) FTActionTrackingHandler actionTrackingHandler;
+@property (nonatomic, assign) NSInteger launchPrewarmInterval;
 @property (nonatomic, strong, nullable) FTAutoTrackActionPublisher *actionPublisher;
 @end
 @implementation FTAutoTrackHandler
@@ -238,7 +241,7 @@ API_AVAILABLE(ios(13.0), tvos(13.0))
     self = [super init];
     if(self){
         _stack = [NSMutableArray new];
-        _enableUIKitViewLoadingTime = YES;
+        _enableTraceUserViewLoadingTime = YES;
     }
     return self;
 }
@@ -253,7 +256,10 @@ API_AVAILABLE(ios(13.0), tvos(13.0))
 - (void)startWithRumConfig:(FTRumConfig *)rumConfig
        addRumDatasDelegate:(id<FTRumDatasProtocol>)delegate
    heatmapIdentifierRegistry:(id<FTHeatmapIdentifierRegistry>)heatmapIdentifierRegistry {
-    self.enableUIKitViewLoadingTime = rumConfig.enableUIKitViewLoadingTime;
+    self.launchPrewarmInterval = rumConfig.launchPrewarmInterval;
+    self.enableTraceUserViewLoadingTime = rumConfig.enableTraceUserViewLoadingTime;
+    [UIViewController ft_configureViewLoadingTimeEnabled:rumConfig.enableTraceUserView && rumConfig.enableTraceUserViewLoadingTime
+                                     classNameExcludes:[NSSet setWithArray:rumConfig.viewLoadingTimeClassNameExcludes]];
     [self startWithTrackView:rumConfig.enableTraceUserView
                       action:rumConfig.enableTraceUserAction
          addRumDatasDelegate:delegate
@@ -285,6 +291,7 @@ API_AVAILABLE(ios(13.0), tvos(13.0))
             actionHandler:(FTActionTrackingHandler)actionHandler
 heatmapIdentifierRegistry:(id<FTHeatmapIdentifierRegistry>)heatmapIdentifierRegistry{
     _autoTrackView = trackView;
+    [UIViewController ft_setViewLoadingTimeEnabled:self.shouldCollectViewLoadingTime];
     _autoTrackAction = trackAction;
     _stack = [NSMutableArray new];
     _addRumDatasDelegate = delegate;
@@ -298,27 +305,29 @@ heatmapIdentifierRegistry:(id<FTHeatmapIdentifierRegistry>)heatmapIdentifierRegi
     [self bindSwiftUIRUMActionBridgeIfAvailable];
 #endif
     if (trackView) {
+        [[FTAppLifeCycle sharedInstance] addAppLifecycleDelegate:self];
         self.viewControllerHandler = self;
         self.uiKitViewTrackingHandler = viewHandler ? viewHandler : [FTDefaultUIKitViewTrackingHandler new];
         self.swiftUIViewTrackingHandler = swiftUIViewHandler;
         [self hookViewControllerLifeCycle];
-        [[FTAppLifeCycle sharedInstance] addAppLifecycleDelegate:self];
     }else{
+        [[FTAppLifeCycle sharedInstance] removeAppLifecycleDelegate:self];
         self.viewControllerHandler = nil;
         self.uiKitViewTrackingHandler = nil;
         self.swiftUIViewTrackingHandler = nil;
 #if FT_HAS_SWIFTUI_VIEW_TRACKING
         [UIViewController ft_setSwiftUIViewLoadingTimeEnabled:NO];
-        if (@available(iOS 13.0, tvOS 13.0, *)) {
-            self.swiftUIViewNameExtractor = nil;
-        }
+        self.swiftUIViewNameExtractor = nil;
 #endif
     }
     if (trackAction) {
         self.actionHandler = self;
         [self hookTargetAction];
-        self.launchTracker = [[FTAppLaunchTracker alloc]initWithDelegate:self];
+        self.launchTracker = [[FTAppLaunchTracker alloc]initWithDelegate:self launchPrewarmInterval:self.launchPrewarmInterval];
     }
+}
+- (BOOL)shouldCollectViewLoadingTime{
+    return self.autoTrackView && self.enableTraceUserViewLoadingTime;
 }
 - (void)hookViewControllerLifeCycle{
     @try {
@@ -327,14 +336,14 @@ heatmapIdentifierRegistry:(id<FTHeatmapIdentifierRegistry>)heatmapIdentifierRegi
             NSError *error = NULL;
             [UIViewController ft_swizzleMethod:@selector(viewDidAppear:) withMethod:@selector(ft_viewDidAppear:) error:&error];
             [UIViewController ft_swizzleMethod:@selector(viewDidDisappear:) withMethod:@selector(ft_viewDidDisappear:) error:&error];
-            if (self.enableUIKitViewLoadingTime) {
-                [UIViewController ft_swizzleLoadedCustomViewControllerClasses];
-            }
         });
+        if (self.shouldCollectViewLoadingTime) {
+            [UIViewController ft_swizzleLoadedCustomViewControllerClasses];
+        }
 #if FT_HAS_SWIFTUI_VIEW_TRACKING
         BOOL shouldTrackSwiftUIViews = self.swiftUIViewTrackingHandler != nil;
-        [UIViewController ft_setSwiftUIViewLoadingTimeEnabled:shouldTrackSwiftUIViews];
-        if (shouldTrackSwiftUIViews) {
+        [UIViewController ft_setSwiftUIViewLoadingTimeEnabled:shouldTrackSwiftUIViews && self.shouldCollectViewLoadingTime];
+        if (shouldTrackSwiftUIViews && self.shouldCollectViewLoadingTime) {
             static dispatch_once_t swiftUIViewDidLoadOnceToken;
             dispatch_once(&swiftUIViewDidLoadOnceToken, ^{
                 NSError *error = NULL;
@@ -374,11 +383,14 @@ heatmapIdentifierRegistry:(id<FTHeatmapIdentifierRegistry>)heatmapIdentifierRegi
             return;
         }
         if (self.addRumDatasDelegate && [self.addRumDatasDelegate respondsToSelector:@selector(addLaunch:type:launchTime:duration:property:)]) {
-            [self.addRumDatasDelegate addLaunch:action.actionName type:FT_LAUNCH_HOT launchTime:launchTime duration:duration property:action.property];
+            [self.addRumDatasDelegate addLaunch:action.actionName type:FT_LAUNCH_HOT launchTime:launchTime duration:duration property:FTRUMCopyDictionary(action.property)];
         }
     }
 }
 -(void)ftAppColdStart:(NSDate *)launchTime duration:(NSNumber *)duration isPreWarming:(BOOL)isPreWarming fields:(NSDictionary *)fields{
+    [self ftAppColdStart:launchTime duration:duration isPreWarming:isPreWarming fields:fields endDate:[launchTime dateByAddingTimeInterval:MAX(0, duration.doubleValue / 1e9)]];
+}
+- (void)ftAppColdStart:(NSDate *)launchTime duration:(NSNumber *)duration isPreWarming:(BOOL)isPreWarming fields:(NSDictionary *)fields endDate:(NSDate *)endDate {
     if (self.actionTrackingHandler && [self.actionTrackingHandler respondsToSelector:@selector(rumLaunchActionWithLaunchType:)]) {
         FTRUMAction *action = [self.actionTrackingHandler rumLaunchActionWithLaunchType:isPreWarming?FTLaunchWarm:FTLaunchCold];
         action.property = fields;
@@ -387,7 +399,11 @@ heatmapIdentifierRegistry:(id<FTHeatmapIdentifierRegistry>)heatmapIdentifierRegi
         }
         if (self.addRumDatasDelegate && [self.addRumDatasDelegate respondsToSelector:@selector(addLaunch:type:launchTime:duration:property:)]) {
             NSString *actionType = isPreWarming?FT_LAUNCH_WARM:FT_LAUNCH_COLD;
-            [self.addRumDatasDelegate addLaunch:action.actionName type:actionType launchTime:launchTime duration:duration property:action.property];
+            if ([self.addRumDatasDelegate respondsToSelector:@selector(addLaunch:type:launchTime:duration:property:endDate:)]) {
+                [(id<FTLaunchDataSink>)self.addRumDatasDelegate addLaunch:action.actionName type:actionType launchTime:launchTime duration:duration property:FTRUMCopyDictionary(action.property) endDate:endDate];
+            } else {
+                [self.addRumDatasDelegate addLaunch:action.actionName type:actionType launchTime:launchTime duration:duration property:FTRUMCopyDictionary(action.property)];
+            }
         }
     }
 }
@@ -417,10 +433,6 @@ heatmapIdentifierRegistry:(id<FTHeatmapIdentifierRegistry>)heatmapIdentifierRegi
         return;
     }
     [UIViewController ft_invalidatePendingViewLoadDurations];
-    RUMView *current = [self.stack lastObject];
-    if(current){
-        [self.addRumDatasDelegate stopViewWithViewID:current.viewControllerUUID property:nil];
-    }
 }
 -(void)applicationWillEnterForeground{
     if(!self.autoTrackView){
@@ -450,7 +462,7 @@ heatmapIdentifierRegistry:(id<FTHeatmapIdentifierRegistry>)heatmapIdentifierRegi
         if (rumView) {
             RUMView *view = [[RUMView alloc]initWithViewController:viewController identify:identify];
             view.viewName = rumView.viewName;
-            view.property = rumView.property;
+            view.property = FTRUMCopyDictionary(rumView.property);
             view.isUntrackedModal = rumView.isUntrackedModal;
             [self addView:view];
             return;
@@ -469,7 +481,7 @@ heatmapIdentifierRegistry:(id<FTHeatmapIdentifierRegistry>)heatmapIdentifierRegi
         if (rumView) {
             RUMView *view = [[RUMView alloc]initWithViewController:viewController identify:identify];
             view.viewName = rumView.viewName;
-            view.property = rumView.property;
+            view.property = FTRUMCopyDictionary(rumView.property);
             view.isUntrackedModal = rumView.isUntrackedModal;
             [self addView:view];
         }
@@ -492,7 +504,8 @@ heatmapIdentifierRegistry:(id<FTHeatmapIdentifierRegistry>)heatmapIdentifierRegi
         }
     }
 
-    RUMView *view = [[RUMView alloc]initWithViewName:name identify:identity property:property loadTime:loadTime];
+    RUMView *view = [[RUMView alloc]initWithViewName:name identify:identity property:property
+                                        loadTime:self.shouldCollectViewLoadingTime ? loadTime : nil];
     [self addView:view];
 }
 
@@ -562,7 +575,16 @@ heatmapIdentifierRegistry:(id<FTHeatmapIdentifierRegistry>)heatmapIdentifierRegi
     // Ensure that untracked modal views do not affect the duration of tracked views
     // When an untracked modal view pops up, close the last tracked View; when the modal view is closed, restart tracking the last View
     if(!view.isUntrackedModal){
-        [self.addRumDatasDelegate onCreateView:view.viewName loadTime:view.loadTime];
+        if (!self.shouldCollectViewLoadingTime) {
+            view.loadTime = @(-1);
+            view.loadStartEpochNs = nil;
+            view.hasLoadDuration = NO;
+        }
+        if ([self.addRumDatasDelegate respondsToSelector:@selector(onCreateView:loadTime:loadStartEpochNs:)]) {
+            [self.addRumDatasDelegate onCreateView:view.viewName loadTime:view.loadTime loadStartEpochNs:view.loadStartEpochNs];
+        } else {
+            [self.addRumDatasDelegate onCreateView:view.viewName loadTime:view.loadTime];
+        }
         if (!view.hasLoadDuration && view.viewController != nil) {
             // The handler explicitly chose a controller without loading-time
             // lifecycle instrumentation. Record its consumed first appearance
@@ -582,6 +604,11 @@ heatmapIdentifierRegistry:(id<FTHeatmapIdentifierRegistry>)heatmapIdentifierRegi
     }
 }
 -(void)shutDown{
+    [self.launchTracker shutDown];
+    self.launchTracker = nil;
+    self.autoTrackView = NO;
+    [UIViewController ft_setViewLoadingTimeEnabled:NO];
+    [[FTAppLifeCycle sharedInstance] removeAppLifecycleDelegate:self];
     self.addRumDatasDelegate = nil;
     self.viewControllerHandler = nil;
     self.actionHandler = nil;
@@ -591,9 +618,7 @@ heatmapIdentifierRegistry:(id<FTHeatmapIdentifierRegistry>)heatmapIdentifierRegi
     [UIViewController ft_setSwiftUIViewLoadingTimeEnabled:NO];
 #endif
 #if FT_HAS_SWIFTUI_VIEW_TRACKING
-    if (@available(iOS 13.0, tvOS 13.0, *)) {
-        self.swiftUIViewNameExtractor = nil;
-    }
+    self.swiftUIViewNameExtractor = nil;
     [self unbindSwiftUIRUMViewBridgeIfNeeded];
 #endif
 #if FT_HAS_SWIFTUI_ACTION_TRACKING
@@ -601,53 +626,40 @@ heatmapIdentifierRegistry:(id<FTHeatmapIdentifierRegistry>)heatmapIdentifierRegi
 #endif
     self.actionTrackingHandler = nil;
     self.actionPublisher = nil;
-    self.autoTrackView = NO;
     self.autoTrackAction = NO;
 
-    [[FTAppLifeCycle sharedInstance] removeAppLifecycleDelegate:self];
 }
 
 #if FT_HAS_SWIFTUI_VIEW_TRACKING
 - (void)bindSwiftUIRUMViewBridgeIfAvailable{
-    if (@available(iOS 13.0, tvOS 13.0, *)) {
-        FTSwiftUIRUMViewBridge.handler = self;
-    }
+    FTSwiftUIRUMViewBridge.handler = self;
 }
 
 - (void)unbindSwiftUIRUMViewBridgeIfNeeded{
-    if (@available(iOS 13.0, tvOS 13.0, *)) {
-        if (FTSwiftUIRUMViewBridge.handler == self) {
-            FTSwiftUIRUMViewBridge.handler = nil;
-        }
+    if (FTSwiftUIRUMViewBridge.handler == self) {
+        FTSwiftUIRUMViewBridge.handler = nil;
     }
 }
 #endif
 
 #if FT_HAS_SWIFTUI_ACTION_TRACKING
 - (void)bindSwiftUIRUMActionBridgeIfAvailable{
-    if (@available(iOS 13.0, *)) {
-        FTSwiftUIRUMActionBridge.handler = self;
-    }
+    FTSwiftUIRUMActionBridge.handler = self;
 }
 
 - (void)unbindSwiftUIRUMActionBridgeIfNeeded{
-    if (@available(iOS 13.0, *)) {
-        if (FTSwiftUIRUMActionBridge.handler == self) {
-            FTSwiftUIRUMActionBridge.handler = nil;
-        }
+    if (FTSwiftUIRUMActionBridge.handler == self) {
+        FTSwiftUIRUMActionBridge.handler = nil;
     }
 }
 #endif
 
 #if FT_HAS_SWIFTUI_VIEW_TRACKING
 - (nullable NSString *)extractSwiftUIViewNameFromViewController:(UIViewController *)viewController{
-    if (@available(iOS 13.0, tvOS 13.0, *)) {
-        return [self.swiftUIViewNameExtractor extractNameFromViewController:viewController];
-    }
-    return nil;
+    return [self.swiftUIViewNameExtractor extractNameFromViewController:viewController];
 }
 
-- (FTSwiftUIViewNameExtractor *)swiftUIViewNameExtractor API_AVAILABLE(ios(13.0), tvos(13.0)){
+- (FTSwiftUIViewNameExtractor *)swiftUIViewNameExtractor{
     if (!_swiftUIViewNameExtractor) {
         _swiftUIViewNameExtractor = [FTSwiftUIViewNameExtractor new];
     }

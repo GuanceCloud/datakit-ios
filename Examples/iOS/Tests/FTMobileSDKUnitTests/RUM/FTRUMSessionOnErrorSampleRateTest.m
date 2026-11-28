@@ -205,8 +205,20 @@ typedef NS_ENUM(NSInteger, SampleState) {
 
 @interface FTDataWriterWorker(Testing)
 @property (nonatomic, assign) long long processStartTime;
+@property (nonatomic, strong) dispatch_queue_t errorSampledConsumeQueue;
 - (void)checkLastProcessErrorSampled;
+- (void)checkRUMSessionOnErrorDatasWithExpireTime:(long long)expireTime;
 @end
+static void FTWriteRUMFixture(FTDataWriterWorker *writer, NSString *source, NSDictionary *tags,
+                              NSDictionary *fields, NSDictionary *context, long long time,
+                              long long updateTime, NSNumber *cache) {
+    FTRUMWriteData *data = [[FTRUMWriteData alloc] initWithSource:source tags:tags fields:fields
+        context:[FTRUMPropertySnapshot snapshotWithLegacyTags:context] customTagKeys:nil customFieldKeys:nil time:time];
+    data.updateTime = updateTime;
+    data.cache = cache;
+    [writer writeRUMData:data];
+}
+
 @interface FTRUMSessionOnErrorSampleRateTest : XCTestCase
 @property (nonatomic, copy) NSString *url;
 @property (nonatomic, copy) NSString *appid;
@@ -382,9 +394,9 @@ typedef NS_ENUM(NSInteger, SampleState) {
     NSArray *oldArray = [[FTTrackerEventDBTool sharedManager] getAllDatas];
 
     [writerManager isCacheWriter:YES];
-    [writerManager rumWrite:FT_RUM_SOURCE_VIEW tags:@{@"view_id":@"1"} fields:@{@"test":@"normal"} dynamicContext:@{} time:[NSDate ft_currentNanosecondTimeStamp]];
+    FTWriteRUMFixture(writerManager, FT_RUM_SOURCE_VIEW, @{@"view_id":@"1"}, @{@"test":@"normal"}, @{}, [NSDate ft_currentNanosecondTimeStamp], 0, nil);
     [writerManager isCacheWriter:YES];
-    [writerManager rumWrite:FT_RUM_SOURCE_VIEW tags:@{@"view_id":@"2"} fields:@{@"test":@"cache"} dynamicContext:@{} time:[NSDate ft_currentNanosecondTimeStamp]];
+    FTWriteRUMFixture(writerManager, FT_RUM_SOURCE_VIEW, @{@"view_id":@"2"}, @{@"test":@"cache"}, @{}, [NSDate ft_currentNanosecondTimeStamp], 0, nil);
 
     NSArray *newArray = [[FTTrackerEventDBTool sharedManager] getAllDatas];
     for (FTRecordModel *model in newArray) {
@@ -399,12 +411,7 @@ typedef NS_ENUM(NSInteger, SampleState) {
     long long updateTime = [NSDate ft_currentNanosecondTimeStamp];
 
     [writerManager isCacheWriter:YES];
-    [writerManager rumWrite:FT_RUM_SOURCE_VIEW
-                       tags:@{@"view_id":@"time"}
-                     fields:@{@"test":@"cache"}
-             dynamicContext:@{}
-                       time:eventTime
-                 updateTime:updateTime];
+    FTWriteRUMFixture(writerManager, FT_RUM_SOURCE_VIEW, @{@"view_id":@"time"}, @{@"test":@"cache"}, @{}, eventTime, updateTime, nil);
 
     NSArray<FTRecordModel *> *records = [[FTTrackerEventDBTool sharedManager] getFirstRecords:1 withType:FT_DATA_TYPE_RUM_CACHE];
     FTRecordModel *model = records.firstObject;
@@ -425,12 +432,7 @@ typedef NS_ENUM(NSInteger, SampleState) {
     long long updateTime = [NSDate ft_currentNanosecondTimeStamp];
 
     [writerManager isCacheWriter:NO];
-    [writerManager rumWrite:FT_RUM_SOURCE_VIEW
-                       tags:@{@"view_id":@"time"}
-                     fields:@{@"test":@"normal"}
-             dynamicContext:@{}
-                       time:eventTime
-                 updateTime:updateTime];
+    FTWriteRUMFixture(writerManager, FT_RUM_SOURCE_VIEW, @{@"view_id":@"time"}, @{@"test":@"normal"}, @{}, eventTime, updateTime, nil);
 
     NSArray<FTRecordModel *> *records = [[FTTrackerEventDBTool sharedManager] getFirstRecords:1 withType:FT_DATA_TYPE_RUM];
     XCTAssertEqual(records.count, 1);
@@ -447,20 +449,18 @@ typedef NS_ENUM(NSInteger, SampleState) {
     XCTAssertEqual(lineTime.longLongValue, eventTime);
 }
 - (void)testRUMWriterKeepsNonViewRecordTimeAsEventTime{
-    [FTTrackDataManager startWithAutoSync:NO syncPageSize:10 syncSleepTime:0];
-    FTDataWriterWorker *writerManager = [[FTDataWriterWorker alloc]init];
+    FTTrackDataManager *trackDataManager = [FTTrackDataManager startWithAutoSync:NO syncPageSize:10 syncSleepTime:0];
+    FTDataWriterWorker *writerManager = trackDataManager.dataWriterWorker;
+    // The writer checks data left by the previous process asynchronously.
+    // Finish that lifecycle step before inserting records for this test.
+    dispatch_sync(writerManager.errorSampledConsumeQueue, ^{});
     long long eventTime = 123;
     long long updateTime = [NSDate ft_currentNanosecondTimeStamp];
     NSArray<NSString *> *sources = @[FT_RUM_SOURCE_ACTION, FT_RUM_SOURCE_ERROR, FT_RUM_SOURCE_LONG_TASK];
 
     [writerManager isCacheWriter:YES];
     for (NSString *source in sources) {
-        [writerManager rumWrite:source
-                           tags:@{@"view_id":@"time"}
-                         fields:@{@"test":@"cache"}
-                 dynamicContext:@{}
-                           time:eventTime
-                     updateTime:updateTime];
+        FTWriteRUMFixture(writerManager, source, @{@"view_id":@"time"}, @{@"test":@"cache"}, @{}, eventTime, updateTime, nil);
     }
 
     NSArray<FTRecordModel *> *records = [[FTTrackerEventDBTool sharedManager] getFirstRecords:sources.count withType:FT_DATA_TYPE_RUM_CACHE];
@@ -486,9 +486,9 @@ typedef NS_ENUM(NSInteger, SampleState) {
     NSArray *oldArray = [[FTTrackerEventDBTool sharedManager] getAllDatas];
 
     [writerManager isCacheWriter:YES];
-    [writerManager rumWrite:FT_RUM_SOURCE_VIEW tags:@{@"view_id":@"1"} fields:@{@"test":@"cache"} dynamicContext:@{} time:123 updateTime:[[NSDate date] timeIntervalSince1970]*1e9];
-    [writerManager rumWrite:FT_RUM_SOURCE_ERROR tags:@{@"view_id":@"2"} fields:@{@"test":@"normal"} dynamicContext:@{} time:[[NSDate date] timeIntervalSince1970]*1e9];
-    [writerManager rumWrite:FT_RUM_SOURCE_VIEW tags:@{@"view_id":@"2"} fields:@{@"test":@"normal"} dynamicContext:@{} time:123 updateTime:[[NSDate date] timeIntervalSince1970]*1e9];
+    FTWriteRUMFixture(writerManager, FT_RUM_SOURCE_VIEW, @{@"view_id":@"1"}, @{@"test":@"cache"}, @{}, 123, [[NSDate date] timeIntervalSince1970]*1e9, nil);
+    FTWriteRUMFixture(writerManager, FT_RUM_SOURCE_ERROR, @{@"view_id":@"2"}, @{@"test":@"normal"}, @{}, [[NSDate date] timeIntervalSince1970]*1e9, 0, nil);
+    FTWriteRUMFixture(writerManager, FT_RUM_SOURCE_VIEW, @{@"view_id":@"2"}, @{@"test":@"normal"}, @{}, 123, [[NSDate date] timeIntervalSince1970]*1e9, nil);
 
     [writerManager checkRUMSessionOnErrorDatasExpired];
     NSArray<FTRecordModel *> *newArray = [[FTTrackerEventDBTool sharedManager] getAllDatas];
@@ -507,9 +507,9 @@ typedef NS_ENUM(NSInteger, SampleState) {
     NSArray *oldArray = [[FTTrackerEventDBTool sharedManager] getAllDatas];
 
     [writerManager isCacheWriter:YES];
-    [writerManager rumWrite:FT_RUM_SOURCE_VIEW tags:@{@"view_id":@"1"} fields:@{@"test":@"cache"} dynamicContext:@{} time:123 updateTime:[[NSDate date] timeIntervalSince1970]*1e9];
+    FTWriteRUMFixture(writerManager, FT_RUM_SOURCE_VIEW, @{@"view_id":@"1"}, @{@"test":@"cache"}, @{}, 123, [[NSDate date] timeIntervalSince1970]*1e9, nil);
     [self waitForTimeInterval:1.5];
-    [writerManager rumWrite:FT_RUM_SOURCE_VIEW tags:@{@"view_id":@"2"} fields:@{@"test":@"cache"} dynamicContext:@{} time:123 updateTime:[[NSDate date] timeIntervalSince1970]*1e9];
+    FTWriteRUMFixture(writerManager, FT_RUM_SOURCE_VIEW, @{@"view_id":@"2"}, @{@"test":@"cache"}, @{}, 123, [[NSDate date] timeIntervalSince1970]*1e9, nil);
     [self waitForTimeInterval:0.5];
     [writerManager checkRUMSessionOnErrorDatasExpired];
     NSArray *newArray = [[FTTrackerEventDBTool sharedManager] getAllDatas];
@@ -522,32 +522,51 @@ typedef NS_ENUM(NSInteger, SampleState) {
 - (void)testSessionOnErrorDatasInvalid_addErrorData{
     [FTTrackDataManager startWithAutoSync:NO syncPageSize:10 syncSleepTime:0];
     FTDataWriterWorker *writerManager = [[FTDataWriterWorker alloc]initWithCacheInvalidTimeInterval:1];
-    [writerManager isCacheWriter:YES];
-    [writerManager rumWrite:FT_RUM_SOURCE_VIEW tags:@{@"view_id":@"1"} fields:@{@"test":@"delete"} dynamicContext:@{} time:123 updateTime:[[NSDate date] timeIntervalSince1970]*1e9];
-    [self waitForTimeInterval:0.5];
-    [writerManager rumWrite:FT_RUM_SOURCE_VIEW tags:@{@"view_id":@"2"} fields:@{@"test":@"cache"} dynamicContext:@{} time:123 updateTime:[[NSDate date] timeIntervalSince1970]*1e9];
-    NSArray *oldArray = [[FTTrackerEventDBTool sharedManager] getAllDatas];
-    [self waitForTimeInterval:0.5];
+    // Finish recovery of the previous process before adding this fixture's records.
+    dispatch_sync(writerManager.errorSampledConsumeQueue, ^{});
+    writerManager.processStartTime = 10000000000LL;
+    const long long errorTime = 13000000000LL;
+    const long long cutoffTime = 12000000000LL;
+    id previousErrorTime = [[NSUserDefaults standardUserDefaults] objectForKey:@"ft_last_error_time"];
+    @try {
+        [writerManager isCacheWriter:YES];
+        // With a one-second error window, 11s is expired and 12.5s must be retained at 13s.
+        FTWriteRUMFixture(writerManager, FT_RUM_SOURCE_VIEW, @{@"view_id":@"1"}, @{@"test":@"delete"}, @{}, 123, 11000000000LL, nil);
+        FTWriteRUMFixture(writerManager, FT_RUM_SOURCE_VIEW, @{@"view_id":@"2"}, @{@"test":@"cache"}, @{}, 123, 12500000000LL, nil);
+        XCTAssertEqual([[FTTrackerEventDBTool sharedManager] getAllDatas].count, 2);
 
-    [writerManager rumWrite:FT_RUM_SOURCE_ERROR tags:@{@"view_id":@"2"} fields:@{@"test":@"normal"} dynamicContext:@{} time:[[NSDate date] timeIntervalSince1970]*1e9];
-
-    [writerManager checkRUMSessionOnErrorDatasExpired];
-    NSArray *newArray = [[FTTrackerEventDBTool sharedManager] getAllDatas];
-    for (FTRecordModel *model in newArray) {
-        XCTAssertTrue([model.op isEqualToString:FT_DATA_TYPE_RUM]);
+        FTWriteRUMFixture(writerManager, FT_RUM_SOURCE_ERROR, @{@"view_id":@"2"}, @{@"test":@"normal"}, @{}, errorTime, 0, nil);
+        [writerManager checkRUMSessionOnErrorDatasWithExpireTime:cutoffTime];
+        NSArray *newArray = [[FTTrackerEventDBTool sharedManager] getAllDatas];
+        XCTAssertEqual(newArray.count, 2);
+        for (FTRecordModel *model in newArray) {
+            XCTAssertEqualObjects(model.op, FT_DATA_TYPE_RUM);
+        }
+        __block NSInteger viewCount = 0;
+        __block NSInteger errorCount = 0;
+        [FTModelHelper resolveModelArray:newArray callBack:^(NSString *source, NSDictionary *tags, NSDictionary *fields, BOOL *stop) {
+            XCTAssertEqualObjects(tags[@"view_id"], @"2");
+            if ([source isEqualToString:FT_RUM_SOURCE_VIEW]) viewCount++;
+            if ([source isEqualToString:FT_RUM_SOURCE_ERROR]) errorCount++;
+        }];
+        XCTAssertEqual(viewCount, 1);
+        XCTAssertEqual(errorCount, 1);
+    } @finally {
+        if (previousErrorTime) {
+            [[NSUserDefaults standardUserDefaults] setObject:previousErrorTime forKey:@"ft_last_error_time"];
+        } else {
+            [[NSUserDefaults standardUserDefaults] removeObjectForKey:@"ft_last_error_time"];
+        }
     }
-    XCTAssertTrue(newArray.count - oldArray.count == 0);
-    XCTAssertTrue(newArray.count == 2);
 }
-/// Test the case where the last process exceeds the time interval
 - (void)testSampledErrorSessionDatasConsume_lastProcess_exceed_time_interval{
     [FTTrackDataManager startWithAutoSync:NO syncPageSize:10 syncSleepTime:0];
     FTDataWriterWorker *writerManager = [[FTDataWriterWorker alloc]initWithCacheInvalidTimeInterval:1];
     [writerManager isCacheWriter:YES];
-    [writerManager rumWrite:FT_RUM_SOURCE_VIEW tags:@{@"view_id":@"1"} fields:@{@"test":@"delete"} dynamicContext:@{} time:123 updateTime:[[NSDate date] timeIntervalSince1970]*1e9];
-    [writerManager rumWrite:FT_RUM_SOURCE_ERROR tags:@{@"view_id":@"2"} fields:@{@"test":@"normal"} dynamicContext:@{} time:[[NSDate date] timeIntervalSince1970]*1e9];
+    FTWriteRUMFixture(writerManager, FT_RUM_SOURCE_VIEW, @{@"view_id":@"1"}, @{@"test":@"delete"}, @{}, 123, [[NSDate date] timeIntervalSince1970]*1e9, nil);
+    FTWriteRUMFixture(writerManager, FT_RUM_SOURCE_ERROR, @{@"view_id":@"2"}, @{@"test":@"normal"}, @{}, [[NSDate date] timeIntervalSince1970]*1e9, 0, nil);
     [self waitForTimeInterval:0.1];
-    [writerManager rumWrite:FT_RUM_SOURCE_VIEW tags:@{@"view_id":@"3"} fields:@{@"test":@"normal"} dynamicContext:@{} time:[[NSDate date] timeIntervalSince1970]*1e9];
+    FTWriteRUMFixture(writerManager, FT_RUM_SOURCE_VIEW, @{@"view_id":@"3"}, @{@"test":@"normal"}, @{}, [[NSDate date] timeIntervalSince1970]*1e9, 0, nil);
 
     // Simulate entering a new process and exceeding the time interval
     writerManager.processStartTime = [[[NSDate date] dateByAddingTimeInterval:2] timeIntervalSince1970]*1e9;
@@ -564,14 +583,14 @@ typedef NS_ENUM(NSInteger, SampleState) {
     [FTTrackDataManager startWithAutoSync:NO syncPageSize:10 syncSleepTime:0];
     FTDataWriterWorker *writerManager = [[FTDataWriterWorker alloc]initWithCacheInvalidTimeInterval:1];
     [writerManager isCacheWriter:YES];
-    [writerManager rumWrite:FT_RUM_SOURCE_VIEW tags:@{@"view_id":@"1"} fields:@{@"test":@"delete"} dynamicContext:@{} time:123 updateTime:[[NSDate date] timeIntervalSince1970]*1e9];
-    [writerManager rumWrite:FT_RUM_SOURCE_VIEW tags:@{@"view_id":@"2"} fields:@{@"test":@"delete"} dynamicContext:@{} time:123 updateTime:[[NSDate date] timeIntervalSince1970]*1e9];
+    FTWriteRUMFixture(writerManager, FT_RUM_SOURCE_VIEW, @{@"view_id":@"1"}, @{@"test":@"delete"}, @{}, 123, [[NSDate date] timeIntervalSince1970]*1e9, nil);
+    FTWriteRUMFixture(writerManager, FT_RUM_SOURCE_VIEW, @{@"view_id":@"2"}, @{@"test":@"delete"}, @{}, 123, [[NSDate date] timeIntervalSince1970]*1e9, nil);
 
     // Simulate entering a new process
     writerManager.processStartTime = [[NSDate date] timeIntervalSince1970]*1e9;
     [writerManager checkLastProcessErrorSampled];
 
-    [writerManager rumWrite:FT_RUM_SOURCE_ERROR tags:@{@"view_id":@"3"} fields:@{@"test":@"delete"} dynamicContext:@{} time:[[NSDate date] timeIntervalSince1970]*1e9 updateTime:0];
+    FTWriteRUMFixture(writerManager, FT_RUM_SOURCE_ERROR, @{@"view_id":@"3"}, @{@"test":@"delete"}, @{}, [[NSDate date] timeIntervalSince1970]*1e9, 0, nil);
 
     [writerManager checkRUMSessionOnErrorDatasExpired];
     NSArray<FTRecordModel *> *newArray = [[FTTrackerEventDBTool sharedManager] getAllDatas];
@@ -585,10 +604,10 @@ typedef NS_ENUM(NSInteger, SampleState) {
     [FTTrackDataManager startWithAutoSync:NO syncPageSize:10 syncSleepTime:0];
     FTDataWriterWorker *writerManager = [[FTDataWriterWorker alloc]initWithCacheInvalidTimeInterval:1];
     [writerManager isCacheWriter:YES];
-    [writerManager rumWrite:FT_RUM_SOURCE_VIEW tags:@{@"view_id":@"1"} fields:@{@"test":@"delete"} dynamicContext:@{} time:123 updateTime:[[NSDate date] timeIntervalSince1970]*1e9];
-    [writerManager rumWrite:FT_RUM_SOURCE_ERROR tags:@{@"view_id":@"2"} fields:@{@"test":@"normal"} dynamicContext:@{} time:[[NSDate date] timeIntervalSince1970]*1e9];
+    FTWriteRUMFixture(writerManager, FT_RUM_SOURCE_VIEW, @{@"view_id":@"1"}, @{@"test":@"delete"}, @{}, 123, [[NSDate date] timeIntervalSince1970]*1e9, nil);
+    FTWriteRUMFixture(writerManager, FT_RUM_SOURCE_ERROR, @{@"view_id":@"2"}, @{@"test":@"normal"}, @{}, [[NSDate date] timeIntervalSince1970]*1e9, 0, nil);
     [self waitForTimeInterval:0.1];
-    [writerManager rumWrite:FT_RUM_SOURCE_VIEW tags:@{@"view_id":@"3"} fields:@{@"test":@"normal"} dynamicContext:@{} time:[[NSDate date] timeIntervalSince1970]*1e9];
+    FTWriteRUMFixture(writerManager, FT_RUM_SOURCE_VIEW, @{@"view_id":@"3"}, @{@"test":@"normal"}, @{}, [[NSDate date] timeIntervalSince1970]*1e9, 0, nil);
 
     // Simulate entering a new process and exceeding the time interval
     writerManager.processStartTime = [[[NSDate date] dateByAddingTimeInterval:2] timeIntervalSince1970]*1e9;
@@ -606,12 +625,12 @@ typedef NS_ENUM(NSInteger, SampleState) {
     [FTTrackDataManager startWithAutoSync:NO syncPageSize:10 syncSleepTime:0];
     FTDataWriterWorker *writerManager = [[FTDataWriterWorker alloc]initWithCacheInvalidTimeInterval:1];
     [writerManager isCacheWriter:YES];
-    [writerManager rumWrite:FT_RUM_SOURCE_VIEW tags:@{@"view_id":@"1"} fields:@{@"test":@"delete"} dynamicContext:@{} time:123 updateTime:[[NSDate date] timeIntervalSince1970]*1e9];
-    [writerManager rumWrite:FT_RUM_SOURCE_VIEW tags:@{@"view_id":@"2"} fields:@{@"test":@"delete"} dynamicContext:@{} time:123 updateTime:[[NSDate date] timeIntervalSince1970]*1e9];
+    FTWriteRUMFixture(writerManager, FT_RUM_SOURCE_VIEW, @{@"view_id":@"1"}, @{@"test":@"delete"}, @{}, 123, [[NSDate date] timeIntervalSince1970]*1e9, nil);
+    FTWriteRUMFixture(writerManager, FT_RUM_SOURCE_VIEW, @{@"view_id":@"2"}, @{@"test":@"delete"}, @{}, 123, [[NSDate date] timeIntervalSince1970]*1e9, nil);
 
     [self waitForTimeInterval:0.5];
     NSDate *date = [NSDate date];
-    [writerManager rumWrite:FT_RUM_SOURCE_VIEW tags:@{@"view_id":@"3"} fields:@{@"test":@"normal"} dynamicContext:@{} time:[[date dateByAddingTimeInterval:0.6] timeIntervalSince1970]*1e9];
+    FTWriteRUMFixture(writerManager, FT_RUM_SOURCE_VIEW, @{@"view_id":@"3"}, @{@"test":@"normal"}, @{}, [[date dateByAddingTimeInterval:0.6] timeIntervalSince1970]*1e9, 0, nil);
 
     // Simulate entering a new process and exceeding the time interval
     writerManager.processStartTime = [[date dateByAddingTimeInterval:2] timeIntervalSince1970]*1e9;
@@ -619,7 +638,7 @@ typedef NS_ENUM(NSInteger, SampleState) {
     [writerManager checkLastProcessErrorSampled];
     NSArray<FTRecordModel *> *array = [[FTTrackerEventDBTool sharedManager] getAllDatas];
     XCTAssertTrue(array.count == 3);
-    [writerManager rumWrite:FT_RUM_SOURCE_ERROR tags:@{@"anr":@"anr"} fields:@{@"test":@"normal"} dynamicContext:@{} time:[[date dateByAddingTimeInterval:0.5] timeIntervalSince1970]*1e9 updateTime:0 cache:YES];
+    FTWriteRUMFixture(writerManager, FT_RUM_SOURCE_ERROR, @{@"anr":@"anr"}, @{@"test":@"normal"}, @{}, [[date dateByAddingTimeInterval:0.5] timeIntervalSince1970]*1e9, 0, @(YES));
     NSArray<FTRecordModel *> *array2 = [[FTTrackerEventDBTool sharedManager] getAllDatas];
     XCTAssertTrue(array2.count == 4);
     [writerManager lastFatalErrorIfFound:[[date dateByAddingTimeInterval:0.5] timeIntervalSince1970]*1e9];

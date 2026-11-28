@@ -63,41 +63,46 @@
 }
 
 - (void)updateTrackingConsent{
-    FTFeatureContext *context;
-    @synchronized (self) {
-        context = [self featureContext];
-    }
-    [self.storage updateTrackingConsent:context.trackingConsent];
+    [self.storage performContextOperation:^{
+        [self.storage updateTrackingConsent:self.trackingConsent];
+    }];
 }
 
 - (void)eventWriteContext:(FTFeatureWriteContext)block{
     if (!block) {
         return;
     }
-    FTFeatureContext *context;
-    id<FTWriter> writer;
-    @synchronized (self) {
-        context = [self featureContext];
-        writer = [self.storage writerForTrackingConsent:context.trackingConsent];
+    [self.storage performContextOperation:^{
+        FTFeatureContext *context = [self featureContext];
+        id<FTWriter> writer = [self.storage writerForTrackingConsent:context.trackingConsent];
+        block(context, writer);
+    }];
+}
+
+- (void)normalResourceWriteContext:(FTFeatureWriteContext)block{
+    if (!block) {
+        return;
     }
-    block(context, writer);
+    [self.storage performContextOperation:^{
+        FTFeatureContext *context = [self featureContext];
+        id<FTWriter> writer = [self.storage normalResourceWriterForTrackingConsent:context.trackingConsent];
+        block(context, writer);
+    }];
 }
 
 - (void)webViewEventWriteContext:(FTFeatureWriteContext)block{
     if (!block) {
         return;
     }
-    FTFeatureContext *context;
-    id<FTWriter> writer;
-    @synchronized (self) {
-        context = [self featureContext];
-        writer = [self.storage webViewWriterForTrackingConsent:context.trackingConsent];
-    }
-    block(context, writer);
+    [self.storage performContextOperation:^{
+        FTFeatureContext *context = [self featureContext];
+        id<FTWriter> writer = [self.storage webViewWriterForTrackingConsent:context.trackingConsent];
+        block(context, writer);
+    }];
 }
 
 - (FTFeatureContext *)featureContext{
-    return [[FTFeatureContext alloc]initWithTrackingConsent:self.trackingConsent];
+    return [[FTFeatureContext alloc]initWithTrackingConsent:self.storage.invalidated ? FTTrackingConsentNotGranted : self.trackingConsent];
 }
 
 @end

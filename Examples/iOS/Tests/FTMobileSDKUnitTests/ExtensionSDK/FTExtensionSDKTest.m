@@ -353,9 +353,8 @@ static NSArray *FTEnumMapBoundsTestEvents;
     XCTAssertTrue([tags[@"ft_key1"] isEqualToString:@"ft_value"]);
     NSString *custom_keys = tags[FT_RUM_CUSTOM_KEYS];
     NSArray *keys = [NSJSONSerialization JSONObjectWithData:[custom_keys dataUsingEncoding:kCFStringEncodingUTF8] options:0 error:nil];
-    XCTAssertTrue(keys.count == 2);
-    XCTAssertTrue([keys containsObject:@"rum_key1"]);
-    XCTAssertTrue([keys containsObject:@"rum_key"]);
+    NSSet *expectedKeys = [NSSet setWithArray:@[@"rum_key1", @"rum_key", @"ft_key", @"ft_key1", @"extra_key"]];
+    XCTAssertEqualObjects([NSSet setWithArray:keys], expectedKeys);
     [FTMobileAgent shutDown];
 }
 - (void)networkUpload:(void (^)(NSData * _Nullable data, NSURLResponse * _Nullable response, NSError * _Nullable error))completionHandler{

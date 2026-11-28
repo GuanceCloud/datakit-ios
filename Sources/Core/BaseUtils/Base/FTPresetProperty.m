@@ -36,6 +36,7 @@
 #import "NSDictionary+FTCopyProperties.h"
 #include <mach-o/arch.h>
 #include <sys/sysctl.h>
+#include <string.h>
 #import "FTThreadDispatchManager.h"
 #import "FTAppLifeCycle.h"
 #if FT_HOST_MAC
@@ -94,16 +95,14 @@ static BOOL FTPresetIsAppExtension(void) {
         UIApplication *app = [self sharedApplication];
         NSMutableSet *result = [NSMutableSet set];
         
-        if (@available(iOS 13.0, tvOS 13.0, *)) {
-            NSArray<UIScene *> *scenes = [self getApplicationConnectedScenes:app];
-            for (UIScene *scene in scenes) {
-                if (scene.activationState == UISceneActivationStateForegroundActive
-                    && scene.delegate &&
-                    [scene.delegate respondsToSelector:@selector(window)]) {
-                    id window = [scene.delegate performSelector:@selector(window)];
-                    if (window) {
-                        [result addObject:window];
-                    }
+        NSArray<UIScene *> *scenes = [self getApplicationConnectedScenes:app];
+        for (UIScene *scene in scenes) {
+            if (scene.activationState == UISceneActivationStateForegroundActive
+                && scene.delegate &&
+                [scene.delegate respondsToSelector:@selector(window)]) {
+                id window = [scene.delegate performSelector:@selector(window)];
+                if (window) {
+                    [result addObject:window];
                 }
             }
         }
@@ -116,7 +115,7 @@ static BOOL FTPresetIsAppExtension(void) {
                                                       timeout:0.1];
     return windows ?: @[];
 }
-- (NSArray<UIScene *> *)getApplicationConnectedScenes:(UIApplication *)application API_AVAILABLE(ios(13.0), tvos(13.0)){
+- (NSArray<UIScene *> *)getApplicationConnectedScenes:(UIApplication *)application{
     if (application && [application respondsToSelector:@selector(connectedScenes)]) {
         return [application.connectedScenes allObjects];
     }
@@ -250,6 +249,10 @@ static Class FTPresetExpectedValueClass(id value) {
 }
 
 @interface FTPresetPropertyModel : NSObject
+@property (nonatomic, copy) NSSet<NSString *> *customKeys;
+@property (nonatomic, copy) NSSet<NSString *> *userExtraKeys;
+- (void)ft_appendPropertiesToTags:(NSMutableDictionary *)tags customKeys:(NSMutableSet *)customKeys;
+- (void)updateCustomKeys;
 + (NSDictionary<NSString *, NSString *> *)ft_codingKeys;
 + (NSSet<NSString *> *)ft_flattenPropertyNames;
 + (NSSet<NSString *> *)ft_ignoredPropertyNames;
@@ -306,6 +309,28 @@ static Class FTPresetExpectedValueClass(id value) {
         } @catch (NSException *exception) {
             FTInnerLogWarning(@"preset property modifier failed: %@, %@", propertyName, exception);
         }
+    }];
+}
+- (void)updateCustomKeys {
+    NSMutableSet *keys = [NSMutableSet set];
+    for (NSString *name in [[self class] ft_flattenPropertyNames]) {
+        NSDictionary *values = [NSObject ft_normalizedDictionaryWithObject:[self valueForKey:name]];
+        NSSet *sourceKeys = [name isEqualToString:@"userInfo"] ? self.userExtraKeys : [NSSet setWithArray:values.allKeys];
+        for (NSString *key in sourceKeys) if (values[key]) [keys addObject:key];
+    }
+    // Source candidates survive temporary system masks. Snapshot assembly applies
+    // the current precedence and identity in the same pass as the field values.
+    self.customKeys = [keys copy];
+}
+- (void)ft_appendPropertiesToTags:(NSMutableDictionary *)tags customKeys:(NSMutableSet *)keys {
+    for (NSString *name in [[self class] ft_flattenPropertyNames]) {
+        NSDictionary *values = [NSObject ft_normalizedDictionaryWithObject:[self valueForKey:name]];
+        NSSet *sourceKeys = [name isEqualToString:@"userInfo"] ? self.userExtraKeys : self.customKeys;
+        FTRUMMergeProperties(tags, keys, values, sourceKeys);
+    }
+    [[[self class] ft_codingKeys] enumerateKeysAndObjectsUsingBlock:^(NSString *name, NSString *key, BOOL *stop) {
+        id value = [self valueForKey:name];
+        if (value && ![value isKindOfClass:NSNull.class]) FTRUMSetSystemProperty(tags, keys, key, value);
     }];
 }
 - (NSDictionary *)ft_tags {
@@ -380,6 +405,7 @@ static Class FTPresetExpectedValueClass(id value) {
     NSMutableDictionary *result = [NSMutableDictionary dictionaryWithDictionary:self.dynamicGlobalContext ?: @{}];
     [result addEntriesFromDictionary:context];
     self.dynamicGlobalContext = [result copy];
+    [self updateCustomKeys];
 }
 @end
 
@@ -394,12 +420,10 @@ static Class FTPresetExpectedValueClass(id value) {
 @property (nonatomic, strong) NSDictionary *rumGlobalContext;
 @property (nonatomic, strong) NSDictionary *dynamicRUMGlobalContext;
 @property (nonatomic, strong) NSDictionary *userInfo;
-@property (nonatomic, copy) NSString *customKeys;
 @property (nonatomic, copy) NSString *screenSize;
 @property (nonatomic, copy) NSString *networkType;
 - (void)appendRUMGlobalContext:(NSDictionary *)context;
-- (void)updateUserInfo:(NSDictionary *)userInfo;
-- (void)updateCustomKeys;
+- (void)updateUserInfo:(NSDictionary *)userInfo customKeys:(NSSet *)customKeys;
 - (void)updateScreenSize:(NSString *)screenSize;
 - (void)updateNetworkType:(NSString *)networkType;
 @end
@@ -416,7 +440,6 @@ static Class FTPresetExpectedValueClass(id value) {
             @"osVersionMajor": FT_COMMON_PROPERTY_OS_VERSION_MAJOR,
             @"cpuArch": FT_CPU_ARCH,
             @"appId": FT_APP_ID,
-            @"customKeys": FT_RUM_CUSTOM_KEYS,
             @"screenSize": FT_SCREEN_SIZE,
             @"networkType": FT_NETWORK_TYPE,
         };
@@ -440,20 +463,10 @@ static Class FTPresetExpectedValueClass(id value) {
     self.dynamicRUMGlobalContext = [result copy];
     [self updateCustomKeys];
 }
-- (void)updateUserInfo:(NSDictionary *)userInfo {
+- (void)updateUserInfo:(NSDictionary *)userInfo customKeys:(NSSet *)customKeys {
     self.userInfo = [NSObject ft_normalizedDictionaryWithObject:userInfo];
-}
-- (void)updateCustomKeys {
-    NSMutableArray *allKeys = [NSMutableArray array];
-    NSDictionary *dynamicContext = [NSObject ft_normalizedDictionaryWithObject:self.dynamicRUMGlobalContext];
-    if (dynamicContext.count > 0) {
-        [allKeys addObjectsFromArray:dynamicContext.allKeys];
-    }
-    NSDictionary *staticContext = [NSObject ft_normalizedDictionaryWithObject:self.rumGlobalContext];
-    if (staticContext.count > 0) {
-        [allKeys addObjectsFromArray:staticContext.allKeys];
-    }
-    self.customKeys = allKeys.count > 0 ? [FTJSONUtil convertToJsonDataWithObject:allKeys] : nil;
+    self.userExtraKeys = [customKeys copy];
+    [self updateCustomKeys];
 }
 - (void)updateScreenSize:(NSString *)screenSize {
     self.screenSize = screenSize;
@@ -488,6 +501,8 @@ static Class FTPresetExpectedValueClass(id value) {
 @end
 
 @interface FTPresetProperty ()<FTNetworkChangeObserver, FTAppLifeCycleDelegate>
++ (NSString *)modelIdentifier;
++ (NSString *)unameMachineIdentifier;
 @property (nonatomic, copy) FTDataModifier dataModifier;
 @property (nonatomic, copy) FTLineDataModifier lineDataModifier;
 @property (nonatomic, strong, readwrite) NSDictionary *sessionReplayTags;
@@ -498,6 +513,8 @@ static Class FTPresetExpectedValueClass(id value) {
 /// device basic info
 @property (nonatomic, strong) MobileDevice *mobileDevice;
 @property (nonatomic, strong) FTUserInfo *userInfo;
+@property (nonatomic, strong) FTRUMPropertySnapshot *cachedRUMPropertySnapshot;
+@property (nonatomic, assign) NSUInteger userRevision;
 @end
 @implementation FTPresetProperty{
     pthread_rwlock_t _rwLock;
@@ -543,6 +560,7 @@ static Class FTPresetExpectedValueClass(id value) {
     baseModel.sdkName = FT_SDK_NAME_VALUE;
     baseModel.globalContext = FTPresetOptionalDictionary(globalContext);
     [baseModel ft_applyModifier:modifier];
+    [baseModel updateCustomKeys];
 
     NSMutableDictionary *srDict = [NSMutableDictionary dictionary];
     [srDict setValue:service forKey:FT_KEY_SERVICE];
@@ -557,14 +575,15 @@ static Class FTPresetExpectedValueClass(id value) {
 #endif
     [self safeWrite:^{
         self->_basePropertyModel = baseModel;
+        self->_cachedRUMPropertySnapshot = nil;
         self->_sessionReplayTags = [srDict copy];
     }];
     [[FTNetworkConnectivity sharedInstance] addNetworkObserver:self];
 }
 // rumTags
 - (void)setRUMAppID:(NSString *)appID
-         sampleRate:(int)sampleRate
- sessionOnErrorSampleRate:(int)sessionOnErrorSampleRate
+         sampleRate:(float)sampleRate
+ sessionOnErrorSampleRate:(float)sessionOnErrorSampleRate
    rumGlobalContext:(NSDictionary *)rumGlobalContext {
     [self removeRUMScreenSizeActiveRetryIfNeeded];
     BOOL isAppExtension = FTPresetIsAppExtension();
@@ -582,19 +601,27 @@ static Class FTPresetExpectedValueClass(id value) {
     }
     rumModel.rumGlobalContext = FTPresetOptionalDictionary(rumGlobalContext);
 
-    __block NSDictionary *userInfo = nil;
-    pthread_rwlock_rdlock(&_rwLock);
-    userInfo = [self->_userInfo userInfoDict];
-    pthread_rwlock_unlock(&_rwLock);
-    rumModel.userInfo = userInfo;
-
-    [rumModel ft_applyModifier:self.dataModifier];
-    [rumModel updateCustomKeys];
-
     BOOL needsScreenSizeRetry = !isAppExtension && rumModel.screenSize.length == 0;
-    [self safeWrite:^{
-        self->_rumPropertyModel = rumModel;
-    }];
+    [rumModel ft_applyModifier:self.dataModifier];
+    // A user callback may bind/unbind while the new RUM model is being prepared.
+    // Retry outside the lock, then publish only the matching user revision.
+    __block BOOL installed = NO;
+    while (!installed) {
+        pthread_rwlock_rdlock(&_rwLock);
+        NSDictionary *userInfo = [self->_userInfo userInfoDict];
+        NSSet *extraKeys = [NSSet setWithArray:self->_userInfo.extra.allKeys ?: @[]];
+        NSUInteger revision = self->_userRevision;
+        pthread_rwlock_unlock(&_rwLock);
+        NSDictionary *effectiveUser = FTPresetApplyModifierToDictionary(userInfo, self.dataModifier);
+        [rumModel updateUserInfo:effectiveUser customKeys:extraKeys];
+        [self safeWrite:^{
+            if (revision == self->_userRevision) {
+                self->_rumPropertyModel = rumModel;
+                self->_cachedRUMPropertySnapshot = nil;
+                installed = YES;
+            }
+        }];
+    }
     if (needsScreenSizeRetry) {
         [self registerRUMScreenSizeActiveRetryIfNeeded];
     }
@@ -604,6 +631,7 @@ static Class FTPresetExpectedValueClass(id value) {
     NSString *modifiedNetworkType = FTPresetModifiedValue(modifier, FT_NETWORK_TYPE, typeDescription, NSString.class);
     [self safeWrite:^{
         [self->_rumPropertyModel updateNetworkType:modifiedNetworkType];
+        self->_cachedRUMPropertySnapshot = nil;
     }];
 }
 - (void)setLogGlobalContext:(NSDictionary *)logGlobalContext {
@@ -682,16 +710,34 @@ static Class FTPresetExpectedValueClass(id value) {
         NSString *modifiedScreenSize = FTPresetModifiedValue(dataModifier, FT_SCREEN_SIZE, screenSize, NSString.class);
         [self safeWrite:^{
             [self->_rumPropertyModel updateScreenSize:modifiedScreenSize];
+            self->_cachedRUMPropertySnapshot = nil;
         }];
     }
     [self removeRUMScreenSizeActiveRetryIfNeeded];
 }
--(NSDictionary *)rumTags{
-    NSDictionary *tags = nil;
+- (FTRUMPropertySnapshot *)rumPropertySnapshot {
     pthread_rwlock_rdlock(&_rwLock);
-    tags = FTPresetMergeTags([self->_basePropertyModel ft_tags], [self->_rumPropertyModel ft_tags]);
+    FTRUMPropertySnapshot *snapshot = self->_cachedRUMPropertySnapshot;
     pthread_rwlock_unlock(&_rwLock);
-    return tags ?: @{};
+    if (snapshot) return snapshot;
+    pthread_rwlock_wrlock(&_rwLock);
+    @try {
+        snapshot = self->_cachedRUMPropertySnapshot;
+        if (!snapshot) {
+            NSMutableDictionary *tags = [NSMutableDictionary dictionary];
+            NSMutableSet *keys = [NSMutableSet set];
+            [self->_basePropertyModel ft_appendPropertiesToTags:tags customKeys:keys];
+            [self->_rumPropertyModel ft_appendPropertiesToTags:tags customKeys:keys];
+            snapshot = [[FTRUMPropertySnapshot alloc] initWithTags:tags customKeys:keys];
+            self->_cachedRUMPropertySnapshot = snapshot;
+        }
+    } @finally {
+        pthread_rwlock_unlock(&_rwLock);
+    }
+    return snapshot;
+}
+-(NSDictionary *)rumTags{
+    return [[self rumPropertySnapshot] legacyTags];
 }
 - (void)safeWrite:(void (^)(void))block{
     if (!block) return;
@@ -711,26 +757,27 @@ static Class FTPresetExpectedValueClass(id value) {
         self->_lineDataModifier = copyLineDataModifier;
     }];
 }
--(void)updateUser:(NSString *)Id name:(NSString *)name email:(NSString *)email extra:(NSDictionary *)extra{
-    FTDataModifier modifier = self.dataModifier;
-    __block NSDictionary *userInfo = nil;
-    [self safeWrite:^{
-        userInfo = [self->_userInfo updateUser:Id name:name email:email extra:extra];
-    }];
-    NSDictionary *modifiedUserInfo = FTPresetApplyModifierToDictionary(userInfo, modifier);
-    [self safeWrite:^{
-        [self->_rumPropertyModel updateUserInfo:modifiedUserInfo];
-    }];
+-(void)updateUser:(NSString *)Id name:(NSString *)name email:(NSString *)email extra:(NSDictionary *)extra {
+    [self updateUserState:^{ return [self->_userInfo updateUser:Id name:name email:email extra:extra]; }];
 }
--(void)clearUser{
+-(void)clearUser {
+    [self updateUserState:^{ return [self->_userInfo clearUser]; }];
+}
+- (void)updateUserState:(NSDictionary *(^)(void))update {
     FTDataModifier modifier = self.dataModifier;
-    __block NSDictionary *userInfo = nil;
+    __block NSDictionary *userInfo;
+    __block NSSet *extraKeys;
+    __block NSUInteger revision;
     [self safeWrite:^{
-        userInfo = [self->_userInfo clearUser];
+        userInfo = update();
+        extraKeys = [NSSet setWithArray:self->_userInfo.extra.allKeys ?: @[]];
+        revision = ++self->_userRevision;
     }];
-    NSDictionary *modifiedUserInfo = FTPresetApplyModifierToDictionary(userInfo, modifier);
+    NSDictionary *effectiveUser = FTPresetApplyModifierToDictionary(userInfo, modifier);
     [self safeWrite:^{
-        [self->_rumPropertyModel updateUserInfo:modifiedUserInfo];
+        if (revision != self->_userRevision) return;
+        [self->_rumPropertyModel updateUserInfo:effectiveUser customKeys:extraKeys];
+        self->_cachedRUMPropertySnapshot = nil;
     }];
 }
 - (NSDictionary *)loggerDynamicTags{
@@ -751,6 +798,7 @@ static Class FTPresetExpectedValueClass(id value) {
     NSDictionary *modifiedContext = FTPresetApplyModifierToDictionary(context, modifier);
     [self safeWrite:^{
         [self->_basePropertyModel appendGlobalContext:modifiedContext];
+        self->_cachedRUMPropertySnapshot = nil;
     }];
 }
 - (void)appendRUMGlobalContext:(NSDictionary *)context{
@@ -758,6 +806,7 @@ static Class FTPresetExpectedValueClass(id value) {
     NSDictionary *modifiedContext = FTPresetApplyModifierToDictionary(context, modifier);
     [self safeWrite:^{
         [self->_rumPropertyModel appendRUMGlobalContext:modifiedContext];
+        self->_cachedRUMPropertySnapshot = nil;
     }];
 }
 - (void)appendLogGlobalContext:(NSDictionary *)context{
@@ -914,12 +963,47 @@ static uintptr_t firstCmdAfterHeader(const struct mach_header* const header) {
     }
     return [NSString stringWithFormat:@"unknown(%d,%d)", majorCode, minorCode];
 }
++ (BOOL)isiOSAppOnMac {
+#if TARGET_OS_IOS
+    if (@available(iOS 14.0, *)) {
+        return [NSProcessInfo processInfo].isiOSAppOnMac;
+    }
+#endif
+    return NO;
+}
++ (NSString *)modelIdentifier {
+    size_t length = 0;
+    if (sysctlbyname("hw.model", NULL, &length, NULL, 0) != 0 || length == 0) {
+        return @"Unknown Mac";
+    }
+    NSMutableData *data = [NSMutableData dataWithLength:length];
+    if (sysctlbyname("hw.model", data.mutableBytes, &length, NULL, 0) != 0 || length == 0) {
+        return @"Unknown Mac";
+    }
+    // Decode only the returned bytes; do not rely on a terminating NUL.
+    const char *bytes = data.bytes;
+    size_t modelLength = strnlen(bytes, MIN(length, data.length));
+    NSString *model = [[NSString alloc] initWithBytes:bytes length:modelLength encoding:NSUTF8StringEncoding];
+    return model.length > 0 ? model : @"Unknown Mac";
+}
++ (NSString *)unameMachineIdentifier {
+    struct utsname systemInfo = {0};
+    if (uname(&systemInfo) != 0) {
+        return @"Unknown";
+    }
+    return [NSString stringWithCString:systemInfo.machine encoding:NSASCIIStringEncoding] ?: @"Unknown";
+}
 + (NSString *)deviceInfo{
-    struct utsname systemInfo;
-    uname(&systemInfo);
-    NSString *platform = [NSString stringWithCString:systemInfo.machine encoding:NSASCIIStringEncoding];
+    if ([self isiOSAppOnMac]) {
+        return [self modelIdentifier];
+    }
+    NSString *platform = [self unameMachineIdentifier];
 #if TARGET_OS_IOS
     //------------------------------iPhone---------------------------
+    if ([platform isEqualToString:@"iPhone19,4"]) return @"iPhone Duo";
+    if ([platform isEqualToString:@"iPhone19,3"] || [platform isEqualToString:@"iPhone19,7"]) return @"iPhone 18 Pro Max";
+    if ([platform isEqualToString:@"iPhone19,2"]) return @"iPhone 18 Pro";
+    if ([platform isEqualToString:@"iPhone18,5"]) return @"iPhone 17e";
     if ([platform isEqualToString:@"iPhone18,4"]) return @"iPhone Air";
     if ([platform isEqualToString:@"iPhone18,3"]) return @"iPhone 17";
     if ([platform isEqualToString:@"iPhone18,2"]) return @"iPhone 17 Pro Max";
@@ -1105,7 +1189,7 @@ static uintptr_t firstCmdAfterHeader(const struct mach_header* const header) {
 }
 #if FT_HOST_MAC
 + (NSString *)getDeviceUUID{
-    io_registry_entry_t ioRegistryRoot = IORegistryEntryFromPath(kIOMasterPortDefault, "IOService:/");
+    io_registry_entry_t ioRegistryRoot = IORegistryEntryFromPath(kIOMainPortDefault, "IOService:/");
     CFStringRef uuidCf = (CFStringRef) IORegistryEntryCreateCFProperty(ioRegistryRoot, CFSTR(kIOPlatformUUIDKey), kCFAllocatorDefault, 0);
     IOObjectRelease(ioRegistryRoot);
     NSString * uuid = (__bridge NSString *)uuidCf;
@@ -1259,6 +1343,7 @@ static uintptr_t firstCmdAfterHeader(const struct mach_header* const header) {
     [self safeWrite:^{
         self->_basePropertyModel = nil;
         self->_rumPropertyModel = nil;
+        self->_cachedRUMPropertySnapshot = nil;
         self->_logPropertyModel = nil;
         self->_dataModifier = nil;
         self->_lineDataModifier = nil;

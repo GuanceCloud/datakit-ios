@@ -21,17 +21,40 @@
 #import "FTWKWebViewHandler.h"
 #import "FTWeakMapTable.h"
 #import "FTWKWebViewRumDelegate.h"
+#import "FTWKWebViewLogDelegate.h"
+#import "FTWebViewVisitorIDProvider.h"
 #import <TargetConditionals.h>
 #if !TARGET_OS_TV
 NS_ASSUME_NONNULL_BEGIN
 
-@interface FTWKWebViewHandler ()
+@class FTBindInfo;
 
-- (void)startWithEnableTraceWebView:(BOOL)enable allowWebViewHost:(nullable NSArray *)hosts rumDelegate:(id<FTWKWebViewRumDelegate>)delegate;
+@interface FTWKWebViewHandler () <FTWebViewVisitorIDProvider>
+
+/// Composition-root supplied reader. Atomic access permits replacing the reader
+/// while existing bridges continue to obtain the current value on every call.
+@property (atomic, weak, nullable) id<FTWebViewVisitorIDProvider> visitorIDProvider;
+
+/// Configures shared hosts without changing either module's switch or delegate.
+- (void)setAllowWebViewHost:(nullable NSArray *)hosts;
+
+/// Configures WebView RUM without changing shared hosts or Log configuration.
+- (void)startWithEnableTraceWebView:(BOOL)enable rumDelegate:(nullable id<FTWKWebViewRumDelegate>)delegate;
+
+/// Configures WebView Log, including remote refresh, without changing hosts or RUM.
+- (void)startWithEnableWebViewLog:(BOOL)enable logDelegate:(nullable id<FTWKWebViewLogDelegate>)delegate;
 
 - (void)innerEnableWebView:(WKWebView *)webView;
 
 - (void)disableWebView:(WKWebView *)webView;
+
+/// Processes a message emitted by a supported web-container bridge.
+///
+/// Electron uses this entry point after its Main process has resolved the
+/// trusted webContents identifier to a native Session Replay slot.
+- (void)processWebViewBridgeEvent:(id)message
+                           slotId:(int64_t)slotID
+                         bindInfo:(FTBindInfo *)bindInfo;
 
 + (void)shutDown;
 @end

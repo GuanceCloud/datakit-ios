@@ -1,3 +1,184 @@
+# 1.6.10-alpha.1
+
+1. Improved automatic `URLSession` instrumentation compatibility with dynamically generated delegate classes and cyclic delegate forwarding.
+2. Fixed a potential SDK shutdown deadlock involving RUM Resource callbacks. The restarted SDK ignores late callbacks from requests started before shutdown.
+3. Added opt-in local Crash Monitor diagnostics via `[FTLog enableCrashMonitorLog:YES]`. Logging is disabled by default, can be enabled before SDK initialization, and works independently of SDK debug logging.
+4. Added device model mappings for iPhone 18 Pro, iPhone 18 Pro Max, iPhone Duo, and iPhone 17e.
+---
+
+# 1.6.9
+
+1. Automatic Long Task and ANR collection now ignores background stalls by default, and ANR reports retain the application state captured at stall start. Improved stall timing accuracy, captured stack preservation, and monitor startup reliability.
+2. Added `FTRumConfig.enableTraceUserViewLoadingTime` and `viewLoadingTimeClassNameExcludes` to disable automatic page loading-time collection globally or by controller class while preserving RUM View tracking.
+3. Added the RUM Resource `network_signal_strength` field to report network link quality on iOS 26, tvOS 26, and macOS 26 or later. Network state is captured when the Resource starts.
+4. Improved RUM `custom_keys` reporting to include global custom context, user extra properties, and custom event properties.
+5. Fixed RUM cold launch source detection and added the `foreground_and_background` classification to `app_launch_type` for foreground launches interrupted by a transition to the background.
+6. Fixed cellular network type detection to use the SIM currently providing the data service.
+7. Fixed device model reporting for iOS apps running on Mac to use the host Mac model.
+8. Fixed RUM context correlation when Session Replay starts late, ensuring recording can link to the existing session and View.
+9. Shortened the first automatic upload wait on the next launch after an early startup crash, and improved crash history persistence and upload scheduling reliability.
+10. Removed diagnostic symbol lookup during automatic instrumentation to reduce startup overhead in SDK Debug builds. Swizzle diagnostic logging is disabled by default and must be explicitly enabled with `[FTLog enableSwizzleLog:YES]`, with SDK debug logging also enabled.
+11. Added the `launchPrewarmInterval` configuration option for custom launch prewarm detection (disabled by default) and manual detection APIs, with improved prewarm duration trimming and timeline calibration.
+12. Fixed duplicate initial launch reports after SDK shutdown and reinitialization. The initial launch Action is reported only once per process, while subsequent hot launches continue to be tracked after reinitialization.
+---
+
+# 1.6.9-beta.1
+
+1. Fixed interval-based `app_state` reporting for automatically collected Long Tasks. Recovered historical Long Task events report `unknown`.
+2. `FTRumConfig.viewLoadingTimeClassNameExcludes` now accepts `NSArray<NSString *>` instead of `NSSet<NSString *>`. Update existing configurations to use arrays.
+3. Added opt-in iOS launch prewarm inference through `FTRumConfig.launchPrewarmInterval` (in milliseconds, disabled by default), with `prewarmCheckStart` / `prewarmCheckEnd` markers for the detection interval. Launch event timestamps, total duration, and phase offsets are calibrated consistently.
+4. System-detected prewarm launches now exclude pre-runtime and runtime intervals from total duration even when duration inference is disabled.
+5. Added process-wide launch event deduplication to prevent duplicate initial launch reports after SDK restarts.
+---
+
+# 1.6.9-alpha.4
+
+1. Improved RUM `custom_keys` reporting for global context, user extra properties, and event properties, including WebView, Widget, and historical Crash/ANR events.
+2. **Changed:** Automatic Long Task and ANR collection now ignores background stalls by default, and ANR reports retain the application state captured at stall start. Automatically collected Long Task and ANR events no longer include interval-based `app_state`; manually reported Long Tasks retain interval-based reporting.
+---
+
+# 1.6.9-alpha.3
+
+1. Reduced SDK startup overhead by initializing network connectivity monitoring asynchronously and avoiding eager controller class initialization during automatic View scanning.
+2. Added `FTRumConfig.enableTraceUserViewLoadingTime` and `viewLoadingTimeClassNameExcludes` to disable automatic page loading-time collection globally or for specific controller classes while preserving RUM View tracking.
+3. Added the RUM Resource `network_signal_strength` field to report network link quality on iOS 26, tvOS 26, and macOS 26 or later. Network state is captured when the Resource starts.
+4. Fixed cellular network type detection to use the SIM currently providing the data service.
+5. Fixed device model reporting for iOS apps running on Mac to use the host Mac model.
+6. Improved Long Task and ANR timing, application state classification, captured stack preservation, and monitor startup reliability.
+7. Fixed RUM context correlation when Session Replay starts and prevented ended Views from being used as the current View.
+8. Shortened the first automatic upload wait after an early startup crash and improved crash history persistence and upload scheduling reliability.
+---
+# 1.6.9-alpha.2
+
+1. Reduced Debug startup overhead by removing diagnostic symbol lookup during automatic instrumentation. Swizzle diagnostic logging for troubleshooting SDK compatibility issues is disabled by default and also requires SDK debug logging to be enabled.
+---
+
+# 1.6.9-alpha.1
+
+1. Fixed RUM cold launch source detection and added `foreground_and_background` classification for interrupted foreground launches.
+---
+
+# 1.6.8
+
+1. **Breaking:** Raised minimum supported versions to iOS 15, tvOS 15, and macOS 12.
+2. Added opt-in SDK-managed Visitor ID support through `FTRumConfig.visitorIDConfig`, including a configurable TTL, automatic request header injection for matching URLSession requests, native RUM correlation, manual reset, and host allowlist-controlled Visitor ID sharing in WebViews.
+3. Added RUM View metrics `interaction_to_next_view_time` and `network_settled_time` to measure the time from a click interaction to the next View start and the time from a View start until its initial network requests complete, respectively. Matching rules are configurable through `FTRumConfig.nextViewActionPredicate` and `networkSettledResourcePredicate`.
+4. Added automatic NSURLConnection RUM Resource collection and Trace correlation, enabled through `FTRumConfig.enableTraceURLConnectionResource` and `FTTraceConfig.enableAutoTraceURLConnection`; both default to disabled.
+5. Added WebView Log Bridge support through `FTLoggerConfig.enableWebViewLog` for Browser Logger API calls, console logs, and JavaScript error logs, using the shared host allowlist and supporting remote configuration.
+6. Added macOS Electron RUM and Session Replay integration, including Full Mode, Native-owned Mixed Mode, multi-process isolation, and Universal native runtime package distribution.
+7. Added automatic Session Replay shutdown when `FTSDKAgent.shutDown` is called, stopping recording and uploads.
+8. Unified RUM, Log, Trace, and Session Replay sampling APIs with support for fractional percentages, preserving compatibility with deprecated APIs and legacy remote configuration behavior.
+9. Added event interval-based `app_state` reporting for View, Resource, and LongTask events, and `session_start_reason` for native RUM events. Requests that complete later, cached data, and historical ANRs retain the start reason of their associated session; older cached data without this information uses `unknown`. Improved View and Action handling during app foreground and background transitions.
+10. Fixed RUM Resource timing and WebSocket handshake failure classification, and prevented request initiation from being blocked by asynchronous Trace storage.
+11. Improved Long Task detection under delayed scheduling and prevented RunLoop state updates from blocking the main thread. Fixed duplicate ANR reports after RUM session renewal.
+12. Fixed automatic uploads being indefinitely delayed by continuous data writes and corrected network connectivity status updates.
+13. Added general-purpose external Session Replay integration APIs so framework and engine recorders can reuse RUM context, segment storage, image resources, and replay metadata, while coordinating native recorder pause and resume.
+---
+
+# 1.6.8-beta.4
+
+1. same as 1.6.8-beta.1
+---
+
+# 1.6.8-beta.3
+
+1. same as 1.6.8-beta.1
+---
+
+# 1.6.8-beta.2
+
+1. same as 1..6.8-beta.1
+---
+
+# 1.6.8-beta.1
+
+1. Reduced overhead in automatic UIKit View loading-time collection and removed synchronous waits when passing loading data to RUM processing.
+2. Marked `FTRumConfig.nextViewActionPredicate` as unavailable in app extensions and included View timing predicates in configuration debug output.
+3. Fixed Electron Native Runtime validation failures caused by merged Objective-C Categories, with independent checks for arm64 and x86_64.
+---
+
+# 1.6.8-alpha.11
+
+1. Added native Visitor ID sharing in WebViews, with access to the current identifier subject to the WebView host allowlist.
+2. Added RUM View metrics `interaction_to_next_view_time` and `network_settled_time` to measure the time from a click to the next View start and the time for a View's initial network requests to complete. Matching rules are configurable through `FTRumConfig.nextViewActionPredicate` and `networkSettledResourcePredicate`; synthetic fallback Views are excluded.
+3. Added automatic Session Replay shutdown when `FTSDKAgent.shutDown` is called, stopping recording and uploads without exposing a standalone Replay shutdown API.
+4. Removed the `process_start_time_ns` field from RUM events and persisted Session state.
+5. Improved Long Task detection under delayed scheduling and prevented RunLoop state updates from blocking the main thread.
+6. Fixed automatic View tracking order so requests started in `viewDidAppear` are attributed to the newly visible View, without duplicate View events.
+---
+
+# 1.6.8-alpha.10
+
+1. Exposed public APIs required for React Native and Flutter Swift Package Manager integrations, including custom Session Replay recorders, wireframe builders, and external recording.
+2. Improved external Session Replay write ordering, image resource handling for error-sampled sessions, and repeated initialization safety.
+3. Added opt-in SDK-managed Visitor ID support through `FTRumConfig.visitorIDConfig`, including persistent identifiers with configurable fixed TTL, automatic custom-header injection for matching URLSession requests, native RUM `visitor_id` correlation, and manual reset via `+[FTSDKAgent resetVisitorID]`.
+4. Added RUM session start reasons, process start timestamps, and interval-based app state reporting; improved automatic View and Action handling during background transitions.
+5. Fixed prewarmed app launch duration measurement to start from runtime initialization.
+---
+
+# 1.6.8-alpha.9
+
+1. Fixed automatic uploads being indefinitely delayed by continuous data writes by preserving the first scheduled upload deadline.
+---
+# 1.6.8-alpha.8
+
+1. **Breaking:** Raised minimum supported versions to iOS 15, tvOS 15, and macOS 12.
+2. Added optional local SDK diagnostics through CocoaPods (`GuanceSDK/Diagnostics`) and Swift Package Manager (`GuanceDiagnostics`), with independent lifecycle, bounded storage, and export. Collection is disabled by default and diagnostics are not uploaded automatically.
+3. Added diagnostic observations for storage, batch selection, retries, cleanup, and SDK HTTP upload attempts.
+4. Unified RUM, Log, Trace, and Session Replay sampling APIs with support for fractional percentages, preserving deprecated APIs and legacy remote configuration behavior.
+5. Improved external Session Replay write validation and separated external recorder APIs into dedicated public headers.
+6. Fixed network connectivity status updates and duplicate ANR reports after RUM session renewal.
+7. Completed Widget Extension framework umbrella header exports.
+---
+# 1.6.8-alpha.7
+
+1. Improved multi-process isolation and simplified child process configuration for macOS Electron Native-owned Mixed Mode.
+---
+# 1.6.8-alpha.6
+1. Added macOS Electron Universal runtime packaging and GitHub Actions publishing, with arm64, x86_64, and SHA-256 verification.
+2. Added macOS Electron Full Mode and Native-owned Mixed Mode integration examples.
+3. Merge from 1.6.8-alpha.5.
+---
+# 1.6.8-alpha.5
+1. Merge from 1.6.8-alpha.2 and 1.6.8-alpha.4.
+---
+# 1.6.8-alpha.4
+1. Added automatic NSURLConnection RUM Resource collection and Trace correlation, independently enabled through `FTRumConfig.enableTraceURLConnectionResource` and `FTTraceConfig.enableAutoTraceURLConnection`; both default to disabled.
+2. Added WebView Log Bridge support through `FTLoggerConfig.enableWebViewLog` for Browser Logger API calls and automatic Console and JavaScript error logs, with reduced main-thread processing overhead.
+3. Added `FTSDKConfig.allowWebViewHost` as a shared host allowlist for WebView RUM and Log collection; deprecated `FTRumConfig.allowWebViewHost`.
+4. Added the `logEnableWebViewLog` remote configuration option to enable or disable WebView Log collection at runtime.
+5. Fixed numeric conversion overflow at Int64 boundaries in heatmap data.
+6. Fixed RUM Resource timing and WebSocket handshake rejection classification.
+---
+# 1.6.8-alpha.3
+1. Added the macOS `GuanceElectronNative` static Swift Package Manager product for building the Electron native runtime bridge.
+2. Reorganized the Electron integration so the Native SDK owns the bridge and Node-API addon sources, while the standalone Electron Adapter repository owns JavaScript adapter code, packaging, and host integration.
+---
+# 1.6.8-alpha.2
+1. Added reusable external Session Replay recorder control for framework integrations, including external-only recording, owner-aware native capture switching, linked RUM context access, enriched segment writes, and image resource storage.
+---
+# 1.6.8-alpha.1
+1. Added `GuanceElectronWebView` integration through Swift Package Manager and CocoaPods for macOS Electron Web RUM and Session Replay.
+2. Added Electron Full Mode and Native-owned Mixed Mode, including automatic/manual BrowserWindow attachment and authenticated cross-process Bridge communication.
+---
+# 1.6.7
+1. Added RUM Resource collection for WebSocket handshake requests.
+2. Added `FTRumConfig.issueDataProvider` to attach validated custom fields and historical context to automatically collected Crash and ANR RUM Errors.
+3. Added macOS Session Replay recording support for common AppKit views and controls.
+4. Added automatic macOS app launch Action collection and aligned macOS default service and Log source tags.
+5. Added an `FTMobileAgent` compatibility proxy for existing integrations.
+6. Added Session Replay asset uploading and routing through Datakit using linked RUM context tags, with resource preservation and deduplication across linked contexts.
+7. Improved RUM lifecycle handling for fallback Views, application launch, first-frame tracking, delayed initial Actions, and session expiration.
+8. Improved automatic RUM View `loading_time` measurement for UIKit and SwiftUI by excluding pre-render and preloading idle time.
+---
+# 1.6.7-beta.1
+1. same as 1.6.7-alpha.3
+---
+# 1.6.7-alpha.3
+1. Added support for uploading and routing Session Replay asset resources through Datakit using linked RUM context tags.
+2. Improved Session Replay resource deduplication to preserve assets across linked RUM contexts.
+3. Fixed SwiftUI RUM View `loading_time` measurement to start from `body` evaluation, preventing pre-render idle time from inflating the duration.
+---
 # 1.6.7-alpha.2
 1. Added RUM Resource collection for WebSocket handshake requests.
 2. Added `FTRumConfig.issueDataProvider` to attach validated custom fields to automatically collected Crash and ANR RUM Errors, including historical context; improved validation limits and shutdown cleanup.
@@ -203,7 +384,7 @@
 1. Fix the viewReferrer assignment error
 2. Fix WebView memory leaks and viewId binding failures
 3. Fix the repeated addition of webView Script Messages
-4. Same as 1.6.2-alpha.5、same as 1.6.2-alpha.6
+4. Same as 1.6.2-alpha.5 and 1.6.2-alpha.6
 ---
 # 1.6.2-alpha.6
 1. Fix the equality comparison logic of FTPadding
@@ -243,7 +424,7 @@
 4. Same as 1.5.15-alpha.2
 ---
 # 1.5.21
-1. Add `setDatakitURL:` 、`setDatawayURL:clientToken:` APIs to support dynamic upload endpoint configuration
+1. Add `setDatakitURL:` and `setDatawayURL:clientToken:` APIs to support dynamic upload endpoint configuration
 2. Bump minimum deployment target to iOS 12+, macOS 10.14+
 3. Fix view association failure when using `addAction:`
 4. Optimize log & RUM correlation logic, supplement missing `action_id` field
@@ -257,7 +438,7 @@
 1. Rename `updateDatakitURL:` to `setDatakitURL:`, `updateDatawayURL:clientToken:` to `setDatawayURL:clientToken:`
 ---
 # 1.5.21-alpha.2
-1. Add `updateDatakitURL:` 、`updateDatawayURL:clientToken:` APIs to support dynamic upload endpoint configuration
+1. Add `updateDatakitURL:` and `updateDatawayURL:clientToken:` APIs to support dynamic upload endpoint configuration
 2. Bump minimum deployment target to iOS 12+, macOS 10.14+
 3. Fix view association failure when using `addAction:`
 4. Optimize log & RUM correlation logic, supplement missing `action_id` field

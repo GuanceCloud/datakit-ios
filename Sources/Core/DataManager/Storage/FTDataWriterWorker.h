@@ -25,6 +25,8 @@
 NS_ASSUME_NONNULL_BEGIN
 
 @interface FTDataWriterWorker : NSObject<FTRUMDataWriteProtocol,FTLoggerDataWriteProtocol,FTSessionOnErrorDataHandler>
+/// Import an extension event using the host preset context, then use writeRUMData:.
+- (void)extensionRumWrite:(NSString *)source tags:(NSDictionary *)tags fields:(NSDictionary *)fields time:(long long)time;
 
 /// Initialization method, supports setting the time interval before error occurs in rum collection error Session, default 60
 /// - Parameter timeInterval: time interval

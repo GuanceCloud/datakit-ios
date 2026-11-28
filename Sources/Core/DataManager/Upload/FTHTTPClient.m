@@ -18,13 +18,32 @@
 //  limitations under the License.
 //
 
+#import "FTDiagnosticsBridge.h"
 #import "FTHTTPClient.h"
 #import "FTInternalConstants.h"
+#import <objc/runtime.h>
+static char FTDiagnosticMetricsKey;
+// A dedicated delegate has no reference to FTHTTPClient, avoiding a session retain cycle.
+@interface FTDiagnosticUploadDelegate : NSObject <NSURLSessionTaskDelegate>
+@end
+@implementation FTDiagnosticUploadDelegate
+- (void)URLSession:(NSURLSession *)session task:(NSURLSessionTask *)task didFinishCollectingMetrics:(NSURLSessionTaskMetrics *)metrics {
+    if (![FTDiagnosticsBridge enabled]) return;
+    int64_t tx=0,rx=0; BOOL valid=metrics.transactionMetrics.count>0;
+    for (NSURLSessionTaskTransactionMetrics *m in metrics.transactionMetrics) {
+        if(m.countOfRequestBodyBytesSent<0 || m.countOfResponseBodyBytesReceived<0){valid=NO;break;}
+        tx+=m.countOfRequestBodyBytesSent;rx+=m.countOfResponseBodyBytesReceived;
+    }
+    if(valid)objc_setAssociatedObject(task,&FTDiagnosticMetricsKey,@[@(tx),@(rx)],OBJC_ASSOCIATION_RETAIN_NONATOMIC);
+}
+@end
+
 
 NSErrorDomain const FTHTTPClientErrorDomain = @"com.ft.sdk.httpclient";
 
 @interface FTHTTPClient()
 @property (nonatomic, strong) NSURLSession *session;
+@property (nonatomic, assign) BOOL cancelled;
 @end
 @implementation FTHTTPClient
 -(instancetype)init{
@@ -36,7 +55,7 @@ NSErrorDomain const FTHTTPClientErrorDomain = @"com.ft.sdk.httpclient";
         NSURLSessionConfiguration  *configuration = [NSURLSessionConfiguration ephemeralSessionConfiguration];
         configuration.timeoutIntervalForRequest = timeOut;
         configuration.HTTPShouldUsePipelining = NO;
-        _session = [NSURLSession sessionWithConfiguration:configuration];
+        _session = [NSURLSession sessionWithConfiguration:configuration delegate:[FTDiagnosticUploadDelegate new] delegateQueue:nil];
     }
     return self;
 }
@@ -49,12 +68,22 @@ NSErrorDomain const FTHTTPClientErrorDomain = @"com.ft.sdk.httpclient";
     if(!urlRequest){
         return nil;
     }
+    FTDiagnosticsAttempt *attempt = [FTDiagnosticsBridge begin:NSStringFromClass([request class]) payloadBytes:-1];
+    __block __weak NSURLSessionDataTask *observedTask;
     NSURLSessionDataTask  *task =
     
     [self.session dataTaskWithRequest:urlRequest
                     completionHandler:^(NSData * _Nullable data, NSURLResponse * _Nullable response, NSError * _Nullable error) {
         
         NSHTTPURLResponse *httpResponse = (NSHTTPURLResponse *)response;
+        if (attempt) {
+            NSArray *bytes=objc_getAssociatedObject(observedTask,&FTDiagnosticMetricsKey);
+            [attempt finishWithStatus:httpResponse ? httpResponse.statusCode : -1
+                       transportError:error != nil
+                         requestBytes:bytes ? [bytes[0] longLongValue] : -1
+                        responseBytes:bytes ? [bytes[1] longLongValue] : -1
+                               source:@"NSURLSessionTaskMetrics_encoded_body; excludes_headers_tls_tcp"];
+        }
         if (!callback) {
             return;
         }
@@ -62,6 +91,7 @@ NSErrorDomain const FTHTTPClientErrorDomain = @"com.ft.sdk.httpclient";
        
     }];
     
+    observedTask = task;
     [task resume];
     
     return task;
@@ -83,12 +113,24 @@ NSErrorDomain const FTHTTPClientErrorDomain = @"com.ft.sdk.httpclient";
          completion:(void(^_Nullable)(NSHTTPURLResponse * _Nullable httpResponse,
                                       NSData * _Nullable data,
                                       NSError * _Nullable error))callback{
+    @synchronized (self) {
+    if (self.cancelled) {
+        if (callback) callback(nil, nil, [NSError errorWithDomain:NSURLErrorDomain code:NSURLErrorCancelled userInfo:nil]);
+        return;
+    }
     NSURLSessionDataTask *task = [self realSendRequest:request completion:callback];
     if(!task && callback){
         NSError *error = [NSError errorWithDomain:FTHTTPClientErrorDomain
                                              code:FTHTTPClientErrorCodeRequestCreationFailed
                                          userInfo:@{NSLocalizedDescriptionKey:@"Failed to create upload request"}];
         callback(nil,nil,error);
+    }
+    }
+}
+- (void)cancel {
+    @synchronized (self) {
+        self.cancelled = YES;
+        [self.session invalidateAndCancel];
     }
 }
 -(void)dealloc{

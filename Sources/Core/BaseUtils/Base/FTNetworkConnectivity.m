@@ -25,6 +25,7 @@
 #import <CoreTelephony/CTTelephonyNetworkInfo.h>
 #endif
 #import "FTConstants.h"
+#import <os/lock.h>
 
 NSString *const FTConnectivityCellular = @"cellular";
 NSString *const FTConnectivityWiFi = @"wifi";
@@ -44,22 +45,28 @@ typedef NS_ENUM(NSInteger, FTNetworkStatus) {
     FTNetworkStatusUnknown = 4,
 };
 @interface FTNetworkConnectivity()
-@property (nonatomic, assign, readwrite) BOOL isConnected;
-@property (atomic, copy) NSString *networkType;
 @property (nonatomic, strong, readonly) NSPointerArray *networkObservers;
 @property (nonatomic, strong, readonly) NSLock *observerLock;
-@property (atomic, assign) BOOL isNotifying;
 #if TARGET_OS_IOS && !TARGET_OS_MACCATALYST
 @property (nonatomic, strong) CTTelephonyNetworkInfo *networkInfo;
 #endif
 @property (nonatomic, assign) FTNetworkStatus networkStatus;
-@property (atomic, assign) BOOL hasPathStatus;
-@property (atomic, assign) BOOL networkAvailable;
 @end
 @implementation FTNetworkConnectivity{
     nw_path_monitor_t _pathMonitor;
     dispatch_queue_t _monitorQueue;
+    // The lock only protects state, never Network/CoreTelephony calls or observers.
+    os_unfair_lock _stateLock;
+    BOOL _isNotifying;
+    BOOL _isConnected;
+    BOOL _hasPathStatus;
+    BOOL _networkAvailable;
+    NSNumber *_networkSignalStrength;
+    NSString *_networkType;
+    NSUInteger _generation;
+    NSUInteger _pathMonitorGeneration; // Accessed on _monitorQueue.
 }
+@synthesize networkStatus = _networkStatus;
 #if TARGET_OS_IOS && !TARGET_OS_MACCATALYST
 + (CTTelephonyNetworkInfo *)sharedNetworkInfo {
     static CTTelephonyNetworkInfo *networkInfo;
@@ -81,6 +88,7 @@ typedef NS_ENUM(NSInteger, FTNetworkStatus) {
 -(instancetype)init{
     self = [super init];
     if(self){
+        _stateLock = OS_UNFAIR_LOCK_INIT;
         _isConnected = NO;
         _monitorQueue = dispatch_queue_create("com.ft.reachability", NULL);
         _networkObservers = [NSPointerArray pointerArrayWithOptions:NSPointerFunctionsWeakMemory];
@@ -89,61 +97,187 @@ typedef NS_ENUM(NSInteger, FTNetworkStatus) {
     return self;
 }
 
--(void)start{
-    if (self.isNotifying) {
+- (BOOL)isCurrentGeneration:(NSUInteger)generation {
+    os_unfair_lock_lock(&_stateLock);
+    BOOL current = _isNotifying && _generation == generation;
+    os_unfair_lock_unlock(&_stateLock);
+    return current;
+}
+
+// Private system-call boundaries let each test instance provide its own backend.
+// Production instances always forward to Network.framework/CoreTelephony.
+- (nw_path_monitor_t)createPathMonitor {
+    return nw_path_monitor_create();
+}
+- (void)startPathMonitor:(nw_path_monitor_t)monitor queue:(dispatch_queue_t)queue
+          updateHandler:(nw_path_monitor_update_handler_t)handler {
+    nw_path_monitor_set_update_handler(monitor, handler);
+    nw_path_monitor_set_queue(monitor, queue);
+    nw_path_monitor_start(monitor);
+}
+- (void)cancelPathMonitor:(nw_path_monitor_t)monitor {
+    nw_path_monitor_cancel(monitor);
+}
+- (nw_path_status_t)statusForPath:(nw_path_t)path {
+    return nw_path_get_status(path);
+}
+#if __IPHONE_OS_VERSION_MAX_ALLOWED >= 260000 || __TV_OS_VERSION_MAX_ALLOWED >= 260000 || __MAC_OS_X_VERSION_MAX_ALLOWED >= 260000
+- (uint8_t)linkQualityForPath:(nw_path_t)path API_AVAILABLE(ios(26.0), tvos(26.0), macos(26.0)) {
+    return nw_path_get_link_quality(path);
+}
+#endif
+- (NSNumber *)signalStrengthForPath:(nw_path_t)path {
+#if __IPHONE_OS_VERSION_MAX_ALLOWED >= 260000 || __TV_OS_VERSION_MAX_ALLOWED >= 260000 || __MAC_OS_X_VERSION_MAX_ALLOWED >= 260000
+    if (@available(iOS 26.0, tvOS 26.0, macOS 26.0, *)) {
+        switch ([self linkQualityForPath:path]) {
+            case nw_link_quality_minimal: return @1;
+            case nw_link_quality_moderate: return @2;
+            case nw_link_quality_good: return @3;
+            case nw_link_quality_unknown:
+            default: return @0;
+        }
+    }
+#endif
+    return nil;
+}
+- (BOOL)path:(nw_path_t)path usesInterfaceType:(nw_interface_type_t)type {
+    return nw_path_uses_interface_type(path, type);
+}
+#if TARGET_OS_IOS && !TARGET_OS_MACCATALYST
+- (CTTelephonyNetworkInfo *)createCellularNetworkInfo {
+    return [[self class] sharedNetworkInfo];
+}
+#endif
+
+- (void)start {
+    os_unfair_lock_lock(&_stateLock);
+    if (_isNotifying) {
+        os_unfair_lock_unlock(&_stateLock);
         return;
     }
-    self.isNotifying = YES;
-#if TARGET_OS_IOS && !TARGET_OS_MACCATALYST
-    _networkInfo = [FTNetworkConnectivity sharedNetworkInfo];
-#endif
-    [self startPathMonitorNotifier];
+    _isNotifying = YES;
+    NSUInteger generation = ++_generation;
+    os_unfair_lock_unlock(&_stateLock);
+
+    __weak typeof(self) weakSelf = self;
+    dispatch_async(_monitorQueue, ^{
+        __strong typeof(weakSelf) strongSelf = weakSelf;
+        if (![strongSelf isCurrentGeneration:generation]) return;
+        [strongSelf startPathMonitorNotifierForGeneration:generation];
+    });
 }
--(void)startPathMonitorNotifier{
-    _pathMonitor = nw_path_monitor_create();
-    if (_pathMonitor == nil) {
+- (void)startPathMonitorNotifierForGeneration:(NSUInteger)generation {
+    // Creation, startup, cancellation and path callbacks share one serial queue.
+    if (_pathMonitor) {
+        [self cancelPathMonitor:_pathMonitor];
+        _pathMonitor = nil;
+    }
+    nw_path_monitor_t monitor = [self createPathMonitor];
+    if (!monitor) {
+        os_unfair_lock_lock(&_stateLock);
+        if (_generation == generation) _isNotifying = NO;
+        os_unfair_lock_unlock(&_stateLock);
         FTInnerLogError(@"nw_path_monitor_create failed.");
-    }else{
-        __weak typeof(self) weakSelf = self;
-        nw_path_monitor_set_update_handler(_pathMonitor, ^(nw_path_t path) {
-            __strong __typeof(weakSelf) strongSelf = weakSelf;
-            if (!strongSelf)  return;
-            nw_path_status_t status = nw_path_get_status(path);
-            strongSelf.hasPathStatus = YES;
-            strongSelf.networkAvailable = status == nw_path_status_satisfied;
-            strongSelf.isConnected = status != nw_path_status_unsatisfied;
-            FTNetworkStatus networkStatus = FTNetworkStatusUnknown;
-            if(status == nw_path_status_unsatisfied){
-                strongSelf.isConnected = NO;
-                networkStatus = FTNetworkStatusUnknown;
-            }else{
-                strongSelf.isConnected = YES;
-                if (nw_path_uses_interface_type(path,nw_interface_type_wired)) {
-                    networkStatus = FTNetworkStatusEthernet;
-                }else if (nw_path_uses_interface_type(path,nw_interface_type_wifi)) {
-                    networkStatus = FTNetworkStatusWiFi;
-                }
-            }
-            // When network status changes, if it's consistent with the previous network type, no notification is sent
-            if( strongSelf.networkStatus != networkStatus ){
-                strongSelf.networkStatus = networkStatus;
-                [strongSelf connectivityChanged];
-            }
-        });
-        nw_path_monitor_set_queue(_pathMonitor, _monitorQueue);
-        nw_path_monitor_start(_pathMonitor);
+        return;
+    }
+    if (![self isCurrentGeneration:generation]) {
+        [self cancelPathMonitor:monitor];
+        return;
+    }
+    _pathMonitor = monitor;
+    _pathMonitorGeneration = generation;
+    __weak typeof(self) weakSelf = self;
+    [self startPathMonitor:monitor queue:_monitorQueue updateHandler:^(nw_path_t path) {
+        __strong typeof(weakSelf) strongSelf = weakSelf;
+        if (![strongSelf isCurrentGeneration:generation]) return;
+        [strongSelf updatePath:path generation:generation];
+    }];
+}
+- (void)updatePath:(nw_path_t)path generation:(NSUInteger)generation {
+    nw_path_status_t status = [self statusForPath:path];
+    // Preserve the existing connected/available definitions: a path requiring
+    // a connection is connected here, but is not yet available for a resource.
+    BOOL connected = status != nw_path_status_unsatisfied;
+    BOOL available = status == nw_path_status_satisfied;
+    FTNetworkStatus networkStatus = FTNetworkStatusUnknown;
+    if (connected) {
+        if ([self path:path usesInterfaceType:nw_interface_type_wired]) {
+            networkStatus = FTNetworkStatusEthernet;
+        } else if ([self path:path usesInterfaceType:nw_interface_type_wifi]) {
+            networkStatus = FTNetworkStatusWiFi;
+        } else if ([self path:path usesInterfaceType:nw_interface_type_cellular]) {
+            networkStatus = FTNetworkStatusWWAN;
+        }
+    }
+    NSString *networkType = [self networkTypeWithStatus:networkStatus];
+    NSNumber *signalStrength = [self signalStrengthForPath:path];
+    os_unfair_lock_lock(&_stateLock);
+    if (!_isNotifying || _generation != generation) {
+        os_unfair_lock_unlock(&_stateLock);
+        return;
+    }
+    BOOL changed = _networkStatus != networkStatus || _isConnected != connected || ![_networkType isEqualToString:networkType];
+    _hasPathStatus = YES;
+    _networkAvailable = available;
+    _networkSignalStrength = signalStrength;
+    _isConnected = connected;
+    _networkStatus = networkStatus;
+    _networkType = networkType;
+    os_unfair_lock_unlock(&_stateLock);
+    if (changed) {
+        [self notifyObserversWithConnected:connected typeDescription:networkType generation:generation];
     }
 }
-- (NSDictionary<NSString *, id> *)networkResourceFields{
-    if (!self.hasPathStatus) {
-        return @{};
-    }
-    return @{FT_KEY_NETWORK_AVAILABLE:@(self.networkAvailable)};
+- (BOOL)isConnected {
+    os_unfair_lock_lock(&_stateLock);
+    BOOL connected = _isConnected;
+    os_unfair_lock_unlock(&_stateLock);
+    return connected;
 }
--(void)setNetworkStatus:(FTNetworkStatus)networkStatus{
-    self.networkType = [self networkTypeWithStatus:networkStatus];
+- (NSString *)networkType {
+    os_unfair_lock_lock(&_stateLock);
+    NSString *type = _networkType;
+    os_unfair_lock_unlock(&_stateLock);
+    return type;
 }
-- (void)connectivityChanged{
+- (NSNumber *)networkSignalStrength {
+    os_unfair_lock_lock(&_stateLock);
+    NSNumber *strength = _networkSignalStrength;
+    os_unfair_lock_unlock(&_stateLock);
+    return strength;
+}
+- (NSDictionary<NSString *, id> *)networkResourceFields {
+    os_unfair_lock_lock(&_stateLock);
+    BOOL hasPathStatus = _hasPathStatus;
+    BOOL available = _networkAvailable;
+    NSNumber *strength = _networkSignalStrength;
+    os_unfair_lock_unlock(&_stateLock);
+    // Read both fields from one path snapshot; nil preserves unsupported omission.
+    if (!hasPathStatus) return @{};
+    return strength ? @{FT_KEY_NETWORK_AVAILABLE:@(available), FT_KEY_NETWORK_SIGNAL_STRENGTH:strength}
+                    : @{FT_KEY_NETWORK_AVAILABLE:@(available)};
+}
+- (FTNetworkStatus)networkStatus {
+    os_unfair_lock_lock(&_stateLock);
+    FTNetworkStatus status = _networkStatus;
+    os_unfair_lock_unlock(&_stateLock);
+    return status;
+}
+- (void)setNetworkStatus:(FTNetworkStatus)networkStatus {
+    NSString *type = [self networkTypeWithStatus:networkStatus];
+    os_unfair_lock_lock(&_stateLock);
+    _networkStatus = networkStatus;
+    _networkType = type;
+    os_unfair_lock_unlock(&_stateLock);
+}
+- (void)connectivityChanged {
+    os_unfair_lock_lock(&_stateLock);
+    BOOL connected = _isConnected;
+    NSString *type = _networkType;
+    os_unfair_lock_unlock(&_stateLock);
+    [self notifyObserversWithConnected:connected typeDescription:type generation:0];
+}
+- (void)notifyObserversWithConnected:(BOOL)connected typeDescription:(NSString *)typeDescription generation:(NSUInteger)generation {
     NSArray *observers = nil;
     [self.observerLock lock];
     @try {
@@ -151,9 +285,9 @@ typedef NS_ENUM(NSInteger, FTNetworkStatus) {
     } @finally {
         [self.observerLock unlock];
     }
-    BOOL connected = self.isConnected;
-    NSString *typeDescription = [self networkTypeWithStatus:self.networkStatus];
     for (id observer in observers) {
+        // A callback can stop/restart monitoring or remove an observer.
+        if (generation && ![self isCurrentGeneration:generation]) return;
         if ([observer respondsToSelector:@selector(connectivityChanged:typeDescription:)]) {
             [observer connectivityChanged:connected typeDescription:typeDescription];
         }
@@ -198,22 +332,24 @@ typedef NS_ENUM(NSInteger, FTNetworkStatus) {
             
             NSString *currentStatus = nil;
 
+            // Wi-Fi/ethernet startup must not initialize CoreTelephony.
+            if (!_networkInfo) _networkInfo = [self createCellularNetworkInfo];
             if (_networkInfo && [_networkInfo respondsToSelector:@selector(serviceCurrentRadioAccessTechnology)]) {
                 NSDictionary *radioDic = [_networkInfo serviceCurrentRadioAccessTechnology];
-                if (radioDic.allKeys.count) {
-                    currentStatus = [radioDic objectForKey:radioDic.allKeys[0]];
+                NSString *dataServiceIdentifier = _networkInfo.dataServiceIdentifier;
+                if (dataServiceIdentifier.length > 0) {
+                    // Other registered SIMs may use a different radio technology.
+                    currentStatus = radioDic[dataServiceIdentifier];
                 }
             }
             
             if (!currentStatus) {
                 return FTConnectivityUnknown;
             }
-            if (@available(iOS 14.1, *)) {
-                NSArray *typeStrings5G = @[CTRadioAccessTechnologyNRNSA,
-                                           CTRadioAccessTechnologyNR];
-                if ([typeStrings5G containsObject:currentStatus]) {
-                    return @"5G";
-                }
+            NSArray *typeStrings5G = @[CTRadioAccessTechnologyNRNSA,
+                                       CTRadioAccessTechnologyNR];
+            if ([typeStrings5G containsObject:currentStatus]) {
+                return @"5G";
             }
             if ([typeStrings4G containsObject:currentStatus]) {
                 return @"4G";
@@ -242,15 +378,28 @@ typedef NS_ENUM(NSInteger, FTNetworkStatus) {
     return @"unreachable";
 }
 
--(void)cancel{
-    nw_path_monitor_cancel(_pathMonitor);
-    _pathMonitor = nil;
-    self.isNotifying = NO;
+- (void)cancel {
+    os_unfair_lock_lock(&_stateLock);
+    _isNotifying = NO;
+    NSUInteger generation = ++_generation;
+    os_unfair_lock_unlock(&_stateLock);
+    __weak typeof(self) weakSelf = self;
+    dispatch_async(_monitorQueue, ^{
+        __strong typeof(weakSelf) strongSelf = weakSelf;
+        if (!strongSelf) return;
+        // A newer start may have been enqueued before this cancellation block.
+        if (strongSelf->_pathMonitor && strongSelf->_pathMonitorGeneration < generation) {
+            [strongSelf cancelPathMonitor:strongSelf->_pathMonitor];
+            strongSelf->_pathMonitor = nil;
+        }
+    });
 }
 - (void)stop {
-  [self cancel];
+    [self cancel];
 }
 - (void)dealloc {
-  [self cancel];
+    // Work blocks/handlers hold only weak references; no queue work can use
+    // this instance once deallocation starts.
+    if (_pathMonitor) [self cancelPathMonitor:_pathMonitor];
 }
 @end

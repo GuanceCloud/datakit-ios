@@ -17,16 +17,17 @@
 #if TARGET_OS_IOS
 
 #import "FTUIImageViewRecorder.h"
+#import "FTSessionReplayWireframesBuilder.h"
 #import "FTSRWireframe.h"
 #import "FTViewAttributes.h"
 #import "FTSRUtils.h"
 #import "FTViewTreeRecordingContext.h"
 #import "FTUIImageResource.h"
 @implementation UIImage(FTRecord)
-- (BOOL)isContextual API_AVAILABLE(ios(13.0)){
+- (BOOL)isContextual{
     return self.isSymbolImage || [self.description containsString:@"named("] || self.renderingMode == UIImageRenderingModeAlwaysTemplate;
 }
-- (BOOL)isTinted API_AVAILABLE(ios(13.0)){
+- (BOOL)isTinted{
     return self.isSymbolImage || self.isAlwaysTemplate;
 }
 - (BOOL)isBundled{
@@ -78,10 +79,8 @@
             _tintColorProvider = [tintColorProvider copy];
         } else {
             _tintColorProvider = ^UIColor*(UIImageView *imageView){
-                if (@available(iOS 13.0, *)) {
-                    if(imageView.image){
-                        return imageView.image.isTinted?imageView.tintColor:nil;
-                    }
+                if(imageView.image){
+                    return imageView.image.isTinted?imageView.tintColor:nil;
                 }
                 return nil;
             };
@@ -130,10 +129,8 @@
 - (BOOL)shouldRecordImagePredicate:(UIImageView *)imageView privacy:(FTImagePrivacyLevel)privacy{
     switch (privacy) {
         case FTImagePrivacyLevelMaskNonBundledOnly:
-            if (@available(iOS 13.0, *)) {
-                if(imageView.image){
-                    return imageView.image.isContextual || imageView.isSystemControlBackground;
-                }
+            if(imageView.image){
+                return imageView.image.isContextual || imageView.isSystemControlBackground;
             }
             return NO;
             break;

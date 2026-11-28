@@ -17,6 +17,7 @@
 #if TARGET_OS_IOS || TARGET_OS_OSX
 
 #import "FTViewTreeSnapshotBuilder.h"
+#import "FTViewTreeSnapshot.h"
 #import "FTViewAttributes.h"
 #import "FTSRViewID.h"
 #import "FTViewTreeRecordingContext.h"
@@ -51,6 +52,7 @@
 @interface FTViewTreeSnapshotBuilder()
 @property (nonatomic, strong) FTViewTreeRecorder *viewTreeRecorder;
 @property (nonatomic, strong) FTSRViewID *idGen;
+@property (nonatomic, strong, nullable) id electronNodeRecorder;
 @end
 @implementation FTViewTreeSnapshotBuilder
 -(instancetype)init{
@@ -77,6 +79,7 @@
     return self;
 }
 - (FTViewTreeSnapshot *)takeSnapshot:(NSArray <FTSRPlatformView *> *)rootViews referenceView:(FTSRPlatformView *)referenceView context:(FTSRContext *)context{
+    [self installElectronNodeRecorderIfNeeded];
     NSMutableArray *node = [[NSMutableArray alloc]init];
     NSMutableArray *resource = [[NSMutableArray alloc]init];
     NSMutableSet<NSNumber *> *webViewSlotIDs = [NSMutableSet set];
@@ -117,6 +120,26 @@
     viewTree.resources = resource;
     return viewTree;
 }
+- (void)installElectronNodeRecorderIfNeeded {
+#if TARGET_OS_OSX
+    if (self.electronNodeRecorder) {
+        return;
+    }
+    id<FTElectronWebViewTrackingProtocol> provider =
+        [[FTModuleManager sharedInstance]
+            getRegisterService:NSProtocolFromString(@"FTElectronWebViewTrackingProtocol")];
+    id recorder = [provider sessionReplayRecorder];
+    if (!recorder ||
+        ![recorder respondsToSelector:@selector(recorder:attributes:context:)]) {
+        return;
+    }
+    NSMutableArray *recorders = [self.viewTreeRecorder.nodeRecorders mutableCopy];
+    [recorders insertObject:recorder atIndex:0];
+    self.viewTreeRecorder.nodeRecorders = [recorders copy];
+    self.recorders = self.viewTreeRecorder.nodeRecorders;
+    self.electronNodeRecorder = recorder;
+#endif
+}
 - (NSArray<NSNumber *> *)typeIndicesForViews:(NSArray<FTSRPlatformView *> *)views {
     NSMutableDictionary<NSString *, NSNumber *> *counts = [NSMutableDictionary dictionary];
     NSMutableArray<NSNumber *> *indices = [NSMutableArray arrayWithCapacity:views.count];
@@ -151,10 +174,8 @@
         [FTUIProgressViewRecorder new],
         [FTUIActivityIndicatorRecorder new],
     ].mutableCopy;
-    if (@available(iOS 13.0, *)) {
-        if (enableSwiftUI) {
-            [recorders addObject:[FTUIHostingViewRecorder new]];
-        }
+    if (enableSwiftUI) {
+        [recorders addObject:[FTUIHostingViewRecorder new]];
     }
     return [recorders copy];
 #elif TARGET_OS_OSX

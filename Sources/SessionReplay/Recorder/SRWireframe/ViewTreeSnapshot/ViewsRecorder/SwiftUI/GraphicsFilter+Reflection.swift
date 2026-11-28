@@ -17,7 +17,6 @@
 
 import SwiftUI
 
-@available(iOS 13.0, tvOS 13.0, *)
 extension FTGraphicsFilter: FTReflection {
     init(from reflector: FTReflector) throws {
         switch (reflector.displayStyle, reflector.descendantIfPresent(0)) {

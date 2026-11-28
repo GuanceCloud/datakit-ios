@@ -32,37 +32,33 @@
     }
     return nil;
 }
-- (UIWindowScene *)_activeWindowScene  API_AVAILABLE(ios(13.0)){
+- (UIWindowScene *)_activeWindowScene{
     UIApplication *app = [self _findApp];
     if (app == nil) {
         return nil;
     }
 
-    if (@available(iOS 13.0, *)) {
-        UIScene *foregroundActiveScene = nil;
-        UIScene *foregroundInactiveScene = nil;
+    UIScene *foregroundActiveScene = nil;
+    UIScene *foregroundInactiveScene = nil;
 
-        for (UIScene *scene in app.connectedScenes) {
-            if (![scene isKindOfClass:[UIWindowScene class]]) {
-                continue;
-            }
-
-            if (scene.activationState == UISceneActivationStateForegroundActive) {
-                foregroundActiveScene = scene;
-                break;
-            }
-
-            if (!foregroundInactiveScene &&
-                scene.activationState == UISceneActivationStateForegroundInactive) {
-                foregroundInactiveScene = scene;
-            }
+    for (UIScene *scene in app.connectedScenes) {
+        if (![scene isKindOfClass:[UIWindowScene class]]) {
+            continue;
         }
 
-        UIScene *sceneToUse = foregroundActiveScene ?: foregroundInactiveScene;
-        return (UIWindowScene *)sceneToUse;
+        if (scene.activationState == UISceneActivationStateForegroundActive) {
+            foregroundActiveScene = scene;
+            break;
+        }
+
+        if (!foregroundInactiveScene &&
+            scene.activationState == UISceneActivationStateForegroundInactive) {
+            foregroundInactiveScene = scene;
+        }
     }
 
-    return nil;
+    UIScene *sceneToUse = foregroundActiveScene ?: foregroundInactiveScene;
+    return (UIWindowScene *)sceneToUse;
 }
 -(UIWindow *)keyWindow{
     // Prevent compilation failure in WidgetExtension environment
@@ -70,37 +66,16 @@
     if(app == nil){
         return nil;
     }
-    if (@available(iOS 13.0, *)) {
-        UIWindowScene *windowScene = [self _activeWindowScene];
-        if (!windowScene) return nil;
-        
-        if (@available(iOS 15.0, *)) {
-            return windowScene.keyWindow;
-        }
-        
-        for (UIWindow *window in windowScene.windows) {
-            if (window.isKeyWindow) {
-                return window;
-            }
-        }
-        return nil;
-    }
-    if ([app.delegate respondsToSelector:@selector(window)]){
-        return [app.delegate window];
-    }else{
-        return [app keyWindow];
-    }
+    UIWindowScene *windowScene = [self _activeWindowScene];
+    return windowScene.keyWindow;
 }
 - (NSArray<UIWindow *>*)windows{
     UIApplication *app = [self _findApp];
     if(app == nil){
         return nil;
     }
-    if (@available(iOS 13.0, *)) {
-        UIWindowScene *windowScene = [self _activeWindowScene];
-        return windowScene.windows;
-    }
-    return [app windows];
+    UIWindowScene *windowScene = [self _activeWindowScene];
+    return windowScene.windows;
 }
 - (NSArray<FTSRPlatformView *> *)rootViews {
     return self.windows;

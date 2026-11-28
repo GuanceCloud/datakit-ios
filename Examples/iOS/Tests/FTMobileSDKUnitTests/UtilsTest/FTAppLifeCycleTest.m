@@ -21,6 +21,18 @@
 #import <XCTest/XCTest.h>
 #import "FTAppLifeCycle.h"
 #import "FTLog.h"
+@interface FTAppLifeCycleOrderedDelegate : NSObject<FTAppLifeCycleDelegate>
+@property (nonatomic, copy) NSString *name;
+@property (nonatomic, strong) NSMutableArray<NSString *> *calls;
+@property (nonatomic, copy, nullable) dispatch_block_t foregroundCallback;
+@end
+@implementation FTAppLifeCycleOrderedDelegate
+- (void)applicationWillEnterForeground {
+    [self.calls addObject:self.name];
+    if (self.foregroundCallback) self.foregroundCallback();
+}
+@end
+
 @interface FTAppLifeCycleSelfRemovingDelegate : NSObject<FTAppLifeCycleDelegate>
 @property (nonatomic, assign) NSInteger applicationDidBecomeActiveCount;
 @end
@@ -111,6 +123,84 @@
      postNotificationName:UIApplicationDidBecomeActiveNotification object:nil];
 
     XCTAssertEqual(delegate.applicationDidBecomeActiveCount, 1);
+}
+- (void)testInsertedDelegateRunsBeforeExistingAndLaterDelegates {
+    FTAppLifeCycle *lifecycle = [FTAppLifeCycle sharedInstance];
+    NSMutableArray *calls = [NSMutableArray array];
+    FTAppLifeCycleOrderedDelegate *first = [FTAppLifeCycleOrderedDelegate new];
+    FTAppLifeCycleOrderedDelegate *existing = [FTAppLifeCycleOrderedDelegate new];
+    FTAppLifeCycleOrderedDelegate *later = [FTAppLifeCycleOrderedDelegate new];
+    first.name = @"history";
+    existing.name = @"existing";
+    later.name = @"later";
+    first.calls = existing.calls = later.calls = calls;
+    [lifecycle addAppLifecycleDelegate:existing];
+    [lifecycle insertAppLifecycleDelegate:first];
+    [lifecycle addAppLifecycleDelegate:later];
+    @try {
+        [[NSNotificationCenter defaultCenter] postNotificationName:UIApplicationWillEnterForegroundNotification object:nil];
+        XCTAssertEqualObjects(calls, (@[@"history", @"existing", @"later"]));
+    } @finally {
+        [lifecycle removeAppLifecycleDelegate:first];
+        [lifecycle removeAppLifecycleDelegate:existing];
+        [lifecycle removeAppLifecycleDelegate:later];
+    }
+}
+
+- (void)testInsertionMovesExistingDelegateWithoutDuplicatingIt {
+    FTAppLifeCycle *lifecycle = [FTAppLifeCycle sharedInstance];
+    NSMutableArray *calls = [NSMutableArray array];
+    FTAppLifeCycleOrderedDelegate *first = [FTAppLifeCycleOrderedDelegate new];
+    FTAppLifeCycleOrderedDelegate *existing = [FTAppLifeCycleOrderedDelegate new];
+    first.name = @"history";
+    existing.name = @"existing";
+    first.calls = existing.calls = calls;
+    [lifecycle addAppLifecycleDelegate:existing];
+    [lifecycle addAppLifecycleDelegate:first];
+    [lifecycle insertAppLifecycleDelegate:first];
+    [lifecycle insertAppLifecycleDelegate:first];
+    [lifecycle addAppLifecycleDelegate:first];
+    @try {
+        [[NSNotificationCenter defaultCenter] postNotificationName:UIApplicationWillEnterForegroundNotification object:nil];
+        XCTAssertEqualObjects(calls, (@[@"history", @"existing"]));
+    } @finally {
+        [lifecycle removeAppLifecycleDelegate:first];
+        [lifecycle removeAppLifecycleDelegate:existing];
+    }
+}
+- (void)testInsertionDuringCallbackAffectsOnlyNextSnapshot {
+    FTAppLifeCycle *lifecycle = [FTAppLifeCycle sharedInstance];
+    NSMutableArray *calls = [NSMutableArray array];
+    FTAppLifeCycleOrderedDelegate *first = [FTAppLifeCycleOrderedDelegate new];
+    FTAppLifeCycleOrderedDelegate *existing = [FTAppLifeCycleOrderedDelegate new];
+    first.name = @"history";
+    existing.name = @"existing";
+    first.calls = existing.calls = calls;
+    existing.foregroundCallback = ^{
+        [lifecycle insertAppLifecycleDelegate:first];
+    };
+    [lifecycle addAppLifecycleDelegate:existing];
+    @try {
+        [[NSNotificationCenter defaultCenter] postNotificationName:UIApplicationWillEnterForegroundNotification object:nil];
+        XCTAssertEqualObjects(calls, (@[@"existing"]));
+        [calls removeAllObjects];
+        [[NSNotificationCenter defaultCenter] postNotificationName:UIApplicationWillEnterForegroundNotification object:nil];
+        XCTAssertEqualObjects(calls, (@[@"history", @"existing"]));
+    } @finally {
+        [lifecycle removeAppLifecycleDelegate:first];
+        [lifecycle removeAppLifecycleDelegate:existing];
+        existing.foregroundCallback = nil;
+    }
+}
+
+- (void)testInsertedDelegateIsWeaklyHeld {
+    __weak FTAppLifeCycleOrderedDelegate *weakDelegate;
+    @autoreleasepool {
+        FTAppLifeCycleOrderedDelegate *delegate = [FTAppLifeCycleOrderedDelegate new];
+        weakDelegate = delegate;
+        [[FTAppLifeCycle sharedInstance] insertAppLifecycleDelegate:delegate];
+    }
+    XCTAssertNil(weakDelegate);
 }
 - (void)applicationWillTerminate{
     self.applicationWillTerminateCount += 1;

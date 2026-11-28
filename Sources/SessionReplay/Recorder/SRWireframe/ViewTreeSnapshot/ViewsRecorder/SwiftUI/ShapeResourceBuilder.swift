@@ -19,7 +19,6 @@ import Foundation
 import SwiftUI
 import UIKit
 
-@available(iOS 13.0, *)
 final class FTShapeResourceBuilder {
     private final class PathKey: NSObject {
         private let path: SwiftUI.Path

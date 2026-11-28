@@ -21,6 +21,10 @@
 #import <Foundation/Foundation.h>
 NS_ASSUME_NONNULL_BEGIN
 typedef NSString *FTMessageKey NS_STRING_ENUM;
+
+@protocol FTSessionReplayLifecycle <NSObject>
+- (void)shutDown;
+@end
 FOUNDATION_EXPORT FTMessageKey const FTMessageKeyRUMContext;
 FOUNDATION_EXPORT FTMessageKey const FTMessageKeyRecordsCountByViewID;
 FOUNDATION_EXPORT FTMessageKey const FTMessageKeySessionHasReplay;
@@ -45,6 +49,15 @@ FOUNDATION_EXPORT FTMessageKey const FTMessageKeySRSampleRateUpdate;
 - (void)registerService:(Protocol *)service instance:(id)instance;
 
 - (id)getRegisterService:(Protocol *)protocol;
+/// Bind the Core context store to the current RUM lifetime. A new source clears old context.
+- (void)registerRUMContextSource:(id)source;
+/// Clear only the matching source; an old shutdown cannot clear a newer SDK's context.
+- (void)unregisterRUMContextSource:(id)source;
+/// Snapshot on the publishing thread, then update Core memory and notify receivers on the bus.
+- (void)postRUMContext:(NSDictionary *)context source:(id)source;
+/// Asynchronously read Core memory on the message-bus queue. Never calls back into RUM.
+/// Returns an empty dictionary when no live source has published context.
+- (void)rumContextWithCompletion:(void (^)(NSDictionary *context))completion;
 @end
 
 NS_ASSUME_NONNULL_END

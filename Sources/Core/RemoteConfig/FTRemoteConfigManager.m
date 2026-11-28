@@ -72,7 +72,8 @@ static dispatch_once_t onceToken;
     _updateInterval = updateInterval;
     self.fetchCompletionBlock = fetchCompletionBlock;
     if (enable) {
-        self.lastRemoteModel = [[FTRemoteConfigModel alloc]initWithDict:[self getLastFetchedRemoteConfig]];
+        FTRemoteConfigModel *cachedModel = [[FTRemoteConfigModel alloc]initWithDict:[self getLastFetchedRemoteConfig]];
+        self.lastRemoteModel = [cachedModel modelByNormalizingSamplingWithPreviousModel:nil includeRawContext:YES];
         self.lastRequestTimeInterval = [self getLastFetchedTime];
         [[FTAppLifeCycle sharedInstance] addAppLifecycleDelegate:self];
     }
@@ -199,6 +200,7 @@ static dispatch_once_t onceToken;
                              error:(NSError *)error 
                         completion:(FTRemoteConfigFetchCompletionBlock)completion {
     BOOL isSuccess = NO;
+    FTRemoteConfigModel *previousModel = self.lastRemoteModel;
     NSError *requestError = nil;
     FTRemoteConfigModel *model = nil;
     NSDictionary *content = nil;
@@ -219,10 +221,11 @@ static dispatch_once_t onceToken;
     } else {
         isSuccess = YES;
         model = [self handleRemoteConfigData:data];
+        content = model.context;
+        model = [model modelByNormalizingSamplingWithPreviousModel:previousModel includeRawContext:YES];
         NSTimeInterval fetchTimeInterval = [[NSDate date] timeIntervalSince1970];
         self.lastRequestTimeInterval = fetchTimeInterval;
         [self saveLastFetchedTime:fetchTimeInterval];
-        content = model.context;
     }
     
     if (completion) {
@@ -232,6 +235,10 @@ static dispatch_once_t onceToken;
         if (finalModel) {
             model = [finalModel copy];
         }
+    }
+
+    if (model) {
+        model = [model modelByNormalizingSamplingWithPreviousModel:previousModel includeRawContext:NO];
     }
     
     if (isSuccess) {

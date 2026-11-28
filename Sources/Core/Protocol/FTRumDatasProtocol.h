@@ -34,6 +34,11 @@ typedef NS_ENUM(NSUInteger, FTAppState) {
     FTAppStateBackground,
 
 };
+/// Automatic Views are stopped by Native when the application enters background.
+typedef NS_ENUM(NSUInteger, FTRUMViewTrackingType) {
+    FTRUMViewTrackingTypeManual = 0,
+    FTRUMViewTrackingTypeAutomatic,
+};
 /// rum data protocol
 @protocol FTRumDatasProtocol <NSObject>
 /// Create RUM View
@@ -138,6 +143,14 @@ typedef NS_ENUM(NSUInteger, FTAppState) {
 - (void)addLongTaskWithStack:(NSString *)stack duration:(NSNumber *)duration startTime:(long long)startTime property:(nullable NSDictionary *)property;
 
 @optional
+/// Adapter entry point. Existing name-only View APIs remain manual.
+- (void)startViewWithName:(NSString *)viewName
+                property:(nullable NSDictionary *)property
+            trackingType:(FTRUMViewTrackingType)trackingType;
+/// Internal automatic View loading path. The Unix epoch nanosecond timestamp is captured at the actual load start.
+- (void)onCreateView:(NSString *)viewName
+           loadTime:(NSNumber *)loadTime
+      loadStartEpochNs:(nullable NSNumber *)loadStartEpochNs;
 /**
  * Start RUM Action with heatmap metadata.
  */

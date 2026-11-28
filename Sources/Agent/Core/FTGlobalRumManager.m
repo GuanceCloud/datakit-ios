@@ -29,6 +29,7 @@
 #endif
 #import "FTSDKCompat.h"
 #import "FTLongTaskManager.h"
+#import "FTLongTaskEvent.h"
 #import "FTAutoTrackHandler.h"
 #import "FTRUMManager.h"
 #import "FTDisplayRateMonitor.h"
@@ -37,6 +38,7 @@
 #import "FTExternalDataManager+Private.h"
 #import "FTInternalConstants.h"
 #import "FTCrash.h"
+#import "FTTrackDataManager.h"
 #import "FTFatalErrorContext.h"
 #import "FTErrorMonitorInfo.h"
 #import "FTModuleManager.h"
@@ -75,11 +77,17 @@ static NSObject *sharedInstanceLock;
 - (void)onCreateView:(NSString *)viewName loadTime:(NSNumber *)loadTime{
     [self.rumManager onCreateView:viewName loadTime:loadTime];
 }
+- (void)onCreateView:(NSString *)viewName loadTime:(NSNumber *)loadTime loadStartEpochNs:(NSNumber *)loadStartEpochNs {
+    [self.rumManager onCreateView:viewName loadTime:loadTime loadStartEpochNs:loadStartEpochNs];
+}
 - (void)startViewWithName:(NSString *)viewName {
     [self.rumManager startViewWithName:viewName];
 }
 - (void)startViewWithName:(NSString *)viewName property:(NSDictionary *)property{
     [self.rumManager startViewWithName:viewName property:[property ft_deepCopy]];
+}
+- (void)startViewWithName:(NSString *)viewName property:(nullable NSDictionary *)property trackingType:(FTRUMViewTrackingType)trackingType {
+    [self.rumManager startViewWithName:viewName property:[property ft_deepCopy] trackingType:trackingType];
 }
 - (void)stopView{
     [self.rumManager stopView];
@@ -157,10 +165,12 @@ static NSObject *sharedInstanceLock;
                                 errorInfoWrapper:(FTErrorMonitorInfo *)errorInfoWrapper{
     FTRUMDependencies *dependencies = [[FTRUMDependencies alloc]init];
     dependencies.appId = rumConfig.appid;
+    dependencies.nextViewActionPredicate = rumConfig.nextViewActionPredicate;
+    dependencies.networkSettledResourcePredicate = rumConfig.networkSettledResourcePredicate;
     dependencies.monitor = monitor;
     dependencies.writer = writer;
-    dependencies.sessionOnErrorSampleRate = rumConfig.sessionOnErrorSampleRate;
-    dependencies.sampleRate = rumConfig.sampleRate;
+    dependencies.sessionOnErrorSampleRate = rumConfig.sessionOnErrorSamplingRate;
+    dependencies.sampleRate = rumConfig.sessionSamplingRate;
     dependencies.enableResourceHostIP = rumConfig.enableResourceHostIP;
     dependencies.enableTraceUserAction = rumConfig.enableTraceUserAction;
     dependencies.errorMonitorInfoWrapper = errorInfoWrapper;
@@ -196,6 +206,9 @@ static NSObject *sharedInstanceLock;
                      enableMonitorMemory:[errorInfoWrapper enableMonitorMemory]
                         enableMonitorCpu:[errorInfoWrapper enableMonitorCpu]
                        issueDataProvider:rumConfig.issueDataProvider];
+#if TARGET_OS_IOS && !TARGET_OS_MACCATALYST
+        [[FTTrackDataManager sharedInstance] updatePreviousEarlyCrash:[FTCrash shared].previousEarlyCrash];
+#endif
         dependencies.fatalErrorContext.onChange = ^(NSDictionary * _Nonnull context) {
             [FTCrash shared].userInfo = context;
         };
@@ -221,17 +234,14 @@ static NSObject *sharedInstanceLock;
     }
 }
 - (void)setupWebViewAndExternalDataWithRumConfig:(FTRumConfig *)rumConfig{
-#if !TARGET_OS_TV
-    [[FTWKWebViewHandler sharedInstance] startWithEnableTraceWebView:rumConfig.enableTraceWebView allowWebViewHost:rumConfig.allowWebViewHost rumDelegate:self.rumManager];
-#endif
     [FTExternalDataManager sharedManager].delegate = self.rumManager;
 }
--(void)updateSampleRate:(int)sampleRate sessionOnErrorSampleRate:(int)sessionOnErrorSampleRate{
+-(void)updateSampleRate:(float)sampleRate sessionOnErrorSampleRate:(float)sessionOnErrorSampleRate{
     [self.rumManager updateSampleRate:sampleRate sessionOnErrorSampleRate:sessionOnErrorSampleRate];
 }
 #pragma mark ========== FTRunloopDetectorDelegate ==========
-- (void)longTaskStackDetected:(NSString*)slowStack duration:(long long)duration time:(long long)time{
-    [self.rumManager addLongTaskWithStack:slowStack duration:[NSNumber numberWithLongLong:duration] startTime:time];
+- (void)longTaskDetected:(FTLongTaskEvent *)event {
+    [self.rumManager addLongTaskEvent:event];
 }
 - (void)anrStackDetected:(NSString*)slowStack appState:(NSString *)appState time:(long long)time{
     [self.rumManager addAutomaticIssueWithCategory:FTIssueCategoryANR
@@ -246,6 +256,7 @@ static NSObject *sharedInstanceLock;
 #pragma mark ========== Shutdown ==========
 - (void)shutDown{
     [[FTAutoTrackHandler sharedInstance] shutDown];
+    [self.rumManager shutDown];
     self.heatmapIdentifierStore = nil;
     [_longTaskManager shutDown];
     [FTCrash clearIssueDataProvider];

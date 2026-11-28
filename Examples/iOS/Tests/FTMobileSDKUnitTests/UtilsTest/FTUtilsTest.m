@@ -36,9 +36,14 @@
 #import "FTReadWriteHelper.h"
 #import "NSNumber+FTAdd.h"
 #import "NSError+FTDescription.h"
+#include <math.h>
+#include <stdint.h>
 #if !TARGET_OS_TV
 #import "FTLimitedSizeSet.h"
 #endif
+@interface FTBaseInfoHandler (SamplingTest)
++ (BOOL)ft_randomSamplingWithRate:(float)sampling randomValue:(uint32_t)randomValue;
+@end
 @interface FTUtilsTest : XCTestCase
 
 @end
@@ -129,6 +134,26 @@
     }
     XCTAssertTrue([ary containsObject:@(1)]);
     XCTAssertTrue([ary containsObject:@(0)]);
+}
+- (void)testFractionalRandomSamplingBoundaries{
+    XCTAssertFalse([FTBaseInfoHandler ft_randomSamplingWithRate:0.0f randomValue:0]);
+    XCTAssertTrue([FTBaseInfoHandler ft_randomSamplingWithRate:100.0f randomValue:UINT32_MAX]);
+    XCTAssertTrue([FTBaseInfoHandler ft_randomSamplingWithRate:0.1f randomValue:4294966]);
+    XCTAssertFalse([FTBaseInfoHandler ft_randomSamplingWithRate:0.1f randomValue:4294968]);
+    XCTAssertTrue([FTBaseInfoHandler ft_randomSamplingWithRate:1.0f randomValue:42949672]);
+    XCTAssertFalse([FTBaseInfoHandler ft_randomSamplingWithRate:1.0f randomValue:42949673]);
+}
+- (void)testSamplingRateValidation{
+    XCTAssertTrue([FTBaseInfoHandler isValidSamplingRate:0.0f]);
+    XCTAssertTrue([FTBaseInfoHandler isValidSamplingRate:0.1f]);
+    XCTAssertTrue([FTBaseInfoHandler isValidSamplingRate:100.0f]);
+    XCTAssertFalse([FTBaseInfoHandler isValidSamplingRate:-0.1f]);
+    XCTAssertFalse([FTBaseInfoHandler isValidSamplingRate:100.1f]);
+    XCTAssertFalse([FTBaseInfoHandler isValidSamplingRate:NAN]);
+    XCTAssertFalse([FTBaseInfoHandler isValidSamplingRate:INFINITY]);
+    XCTAssertFalse([FTBaseInfoHandler isValidSamplingRate:-INFINITY]);
+    XCTAssertFalse([FTBaseInfoHandler randomSamplingWithRate:NAN]);
+    XCTAssertFalse([FTBaseInfoHandler randomSamplingWithRate:INFINITY]);
 }
 - (void)testRandomUUID{
     NSString *uuid = [FTBaseInfoHandler randomUUID];

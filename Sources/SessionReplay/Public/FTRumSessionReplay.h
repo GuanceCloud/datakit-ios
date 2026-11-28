@@ -19,6 +19,7 @@
 #import <Foundation/Foundation.h>
 #import "FTSessionReplayConfig.h"
 NS_ASSUME_NONNULL_BEGIN
+
 @interface FTRumSessionReplay : NSObject
 
 /// Singleton
@@ -27,6 +28,7 @@ NS_ASSUME_NONNULL_BEGIN
 /// Configure Config to enable Session Replay
 /// - Parameter config: Session Replay configuration items
 - (void)startWithSessionReplayConfig:(FTSessionReplayConfig *)config;
+
 @end
 
 NS_ASSUME_NONNULL_END

@@ -49,14 +49,15 @@
             if(resources && resources.count>0){
                 [resources enumerateObjectsUsingBlock:^(id<FTSRResource>  _Nonnull obj, NSUInteger idx, BOOL * _Nonnull stop) {
                     NSString *identifier = [obj calculateIdentifier];
-                    if(![self.processedIdentifiers containsObject:identifier]){
-                        [self.processedIdentifiers addObject:identifier];
-                        FTEnrichedResource *resource = [[FTEnrichedResource alloc]init];
-                        resource.identifier = identifier;
+                    FTEnrichedResource *resource = [[FTEnrichedResource alloc]init];
+                    resource.identifier = identifier;
+                    resource.appId = context.applicationID;
+                    resource.mimeType = obj.mimeType;
+                    resource.bindInfo = context.bindInfo;
+                    NSString *deduplicationIdentifier = resource.deduplicationIdentifier;
+                    if(![self.processedIdentifiers containsObject:deduplicationIdentifier]){
+                        [self.processedIdentifiers addObject:deduplicationIdentifier];
                         resource.data = [obj calculateData];
-                        resource.appId = context.applicationID;
-                        resource.mimeType = obj.mimeType;
-                        resource.bindInfo = context.bindInfo;
                         [addResource addObject:resource];
                     }
                 }];

@@ -25,7 +25,7 @@
 #import "FTConstants.h"
 @implementation FTResourceMetricsModel
 
--(instancetype)initWithTaskMetrics:(NSURLSessionTaskMetrics *)metrics API_AVAILABLE(ios(10.0)){
+-(instancetype)initWithTaskMetrics:(NSURLSessionTaskMetrics *)metrics{
     self = [super init];
     if (self) {
         @try {
@@ -69,11 +69,9 @@
                 _requestEndNsTimeInterval = taskMetrics.requestEndDate?[taskMetrics.requestEndDate ft_nanosecondTimeStamp]:0;
                 _responseStartNsTimeInterval = taskMetrics.responseStartDate?[taskMetrics.responseStartDate ft_nanosecondTimeStamp]:0;
                 _responseEndNsTimeInterval = taskMetrics.responseEndDate?[taskMetrics.responseEndDate ft_nanosecondTimeStamp]:0;
-                if (@available(iOS 13,macOS 10.15,tvOS 13.0, *)) {
-                    _responseSize = @(taskMetrics.countOfResponseHeaderBytesReceived + taskMetrics.countOfResponseBodyBytesReceived);
-                    _remoteAddress = taskMetrics.remoteAddress;
-                    _requestSize = @(taskMetrics.countOfRequestBodyBytesSent + taskMetrics.countOfRequestHeaderBytesSent);
-                }
+                _responseSize = @(taskMetrics.countOfResponseHeaderBytesReceived + taskMetrics.countOfResponseBodyBytesReceived);
+                _remoteAddress = taskMetrics.remoteAddress;
+                _requestSize = @(taskMetrics.countOfRequestBodyBytesSent + taskMetrics.countOfRequestHeaderBytesSent);
                 _resourceHttpProtocol = taskMetrics.networkProtocolName;
                 _reusedConnection = taskMetrics.reusedConnection;
             }

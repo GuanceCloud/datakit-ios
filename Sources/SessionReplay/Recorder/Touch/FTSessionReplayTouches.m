@@ -34,6 +34,11 @@ static void *const kFTSRSendEvent = (void *)&kFTSRSendEvent;
 @property (nonatomic, strong) FTWindowObserver *windowObserver;
 @end
 @implementation FTSessionReplayTouches
+- (void)shutdown {
+    self.collectionAllowed = ^BOOL{ return NO; };
+    [self reset];
+    if (ft_touchesHandler == self) ft_touchesHandler = nil;
+}
 -(instancetype)initWithWindowObserver:(FTWindowObserver *)observer{
     self = [super init];
     if(self){
@@ -83,8 +88,8 @@ static void *const kFTSRSendEvent = (void *)&kFTSRSendEvent;
                                  FTSWReturnType(void),
                                  FTSWArguments(UIEvent *event),
                                  FTSWReplacement({
-            FTSWCallOriginal(event);
             __strong FTSessionReplayTouches *touchesHandler = ft_touchesHandler;
+            FTSWCallOriginal(event);
             if (!touchesHandler) return;
             [touchesHandler handleEvent:event];
         }),FTSwizzlerModeOncePerClassAndSuperclasses,
@@ -93,6 +98,10 @@ static void *const kFTSRSendEvent = (void *)&kFTSRSendEvent;
     });
 }
 - (void)handleEvent:(UIEvent *)event{
+    if (self.collectionAllowed && !self.collectionAllowed()) {
+        [self reset];
+        return;
+    }
     UIWindow *window = self.windowObserver.keyWindow;
     if(event.type == UIEventTypeTouches){
         if(window){
@@ -165,6 +174,9 @@ static void *const kFTSRSendEvent = (void *)&kFTSRSendEvent;
     }
     return nil;
 }
+- (void)reset {
+    [self.touches removeAllObjects];
+}
 - (void)unSwizzleApplicationTouches{
     [FTThreadDispatchManager performBlockDispatchMainSyncSafe:^{
         [self.touches removeAllObjects];
@@ -202,6 +214,13 @@ static void *const kFTSRSendEvent = (void *)&kFTSRSendEvent;
 @end
 
 @implementation FTSessionReplayTouches
+
+- (void)shutdown {
+    self.collectionAllowed = ^BOOL{ return NO; };
+    [self reset];
+    if (self.eventMonitor) [NSEvent removeMonitor:self.eventMonitor];
+    self.eventMonitor = nil;
+}
 
 - (instancetype)initWithWindowObserver:(FTWindowObserver *)observer {
     self = [super init];
@@ -256,6 +275,10 @@ static void *const kFTSRSendEvent = (void *)&kFTSRSendEvent;
                 buttonNumber:(NSInteger)buttonNumber
             locationInWindow:(NSPoint)locationInWindow
                       window:(nullable NSWindow *)eventWindow {
+    if (self.collectionAllowed && !self.collectionAllowed()) {
+        [self reset];
+        return;
+    }
     NSAssert(NSThread.isMainThread, @"Session Replay pointer capture must run on the main thread.");
     NSView *contentView = self.windowObserver.referenceView;
     NSWindow *keyWindow = contentView.window;
@@ -332,6 +355,10 @@ static void *const kFTSRSendEvent = (void *)&kFTSRSendEvent;
     int nextID = self.currentID;
     self.currentID = self.currentID < INT_MAX ? self.currentID + 1 : 0;
     return nextID;
+}
+- (void)reset {
+    [self.touches removeAllObjects];
+    [self.activePointers removeAllObjects];
 }
 
 - (nullable NSNumber *)resolveTouchOverrideAtPoint:(NSPoint)point inView:(NSView *)rootView {

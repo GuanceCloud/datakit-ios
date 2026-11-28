@@ -63,6 +63,9 @@ typedef struct FTCrash_MonitorContext {
      */
     bool currentSnapshotUserReported;
 
+    /** Monotonic nanoseconds sampled at the monitor entry, before processing. */
+    uint64_t earlyCrashTime;
+
     /** If true, the registers contain valid information about the crash. */
     bool registersAreValid;
 

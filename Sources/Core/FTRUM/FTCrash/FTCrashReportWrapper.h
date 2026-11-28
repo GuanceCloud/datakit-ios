@@ -20,9 +20,9 @@
 #import <Foundation/Foundation.h>
 #import "FTCrashReportFilter.h"
 #import "FTIssueDataProvider.h"
+#import "FTErrorDataProtocol.h"
 
 NS_ASSUME_NONNULL_BEGIN
-@protocol FTBacktraceReporting;
 
 @interface FTCrashReportWrapper : NSObject<FTCrashReportFilter>
 
@@ -35,6 +35,10 @@ NS_ASSUME_NONNULL_BEGIN
 -(nullable NSString *)generateBacktrace:(thread_t)thread;
 
 -(nullable NSString *)generateAllThreadsBacktrace;
+
+- (nullable NSString *)generateBacktrace:(thread_t)thread captureValidation:(nullable FTBacktraceCaptureValidation)validation;
+
+- (nullable NSString *)generateAllThreadsBacktraceWithCaptureValidation:(nullable FTBacktraceCaptureValidation)validation;
 
 @end
 

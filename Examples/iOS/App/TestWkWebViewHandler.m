@@ -19,7 +19,6 @@
 //
 
 #import "TestWkWebViewHandler.h"
-#import <WebKit/WebKit.h>
 @interface TestWkWebViewHandler()
 @end
 @implementation TestWkWebViewHandler

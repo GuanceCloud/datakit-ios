@@ -17,7 +17,6 @@
 
 import SwiftUI
 
-@available(iOS 13.0, tvOS 13.0, *)
 extension SwiftUI.Color._Resolved: FTReflection {
     init(from reflector: FTReflector) throws {
         linearRed = try reflector.descendant("linearRed")
@@ -27,7 +26,6 @@ extension SwiftUI.Color._Resolved: FTReflection {
     }
 }
 
-@available(iOS 13.0, tvOS 13.0, *)
 extension SwiftUI.Color._ResolvedHDR: FTReflection {
     init(from reflector: FTReflector) throws {
         base = try reflector.descendant("base")
@@ -35,14 +33,12 @@ extension SwiftUI.Color._ResolvedHDR: FTReflection {
     }
 }
 
-@available(iOS 13.0, tvOS 13.0, *)
 extension FTColorView: FTReflection {
     init(from reflector: FTReflector) throws {
         color = try reflector.descendant("color")
     }
 }
 
-@available(iOS 13.0, tvOS 13.0, *)
 extension FTResolvedPaint: FTReflection {
     init(from reflector: FTReflector) throws {
         if #available(iOS 26, tvOS 26, *) {

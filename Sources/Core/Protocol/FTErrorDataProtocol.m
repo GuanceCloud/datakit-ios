@@ -1,8 +1,6 @@
 //
 //  FTErrorDataProtocol.m
 //  
-//
-//  Created by hulilei on 2023/3/28.
 //  Copyright 2026 Shanghai Guance Information Technology Co., Ltd.
 //
 //  Licensed under the Apache License, Version 2.0 (the "License");
@@ -17,5 +15,7 @@
 //  See the License for the specific language governing permissions and
 //  limitations under the License.
 //
+
+//  Created by hulilei on 2023/3/28.
 
 #import <Foundation/Foundation.h>

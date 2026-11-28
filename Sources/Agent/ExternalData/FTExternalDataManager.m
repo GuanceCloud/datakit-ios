@@ -50,6 +50,13 @@
         [self.delegate onCreateView:viewName loadTime:loadTime];
     }
 }
+- (void)onCreateView:(NSString *)viewName loadTime:(NSNumber *)loadTime loadStartEpochNs:(nullable NSNumber *)loadStartEpochNs {
+    if (self.delegate && [self.delegate respondsToSelector:@selector(onCreateView:loadTime:loadStartEpochNs:)]) {
+        [self.delegate onCreateView:viewName loadTime:loadTime loadStartEpochNs:loadStartEpochNs];
+    } else {
+        [self onCreateView:viewName loadTime:loadTime];
+    }
+}
 -(void)startViewWithName:(NSString *)viewName {
     if(self.delegate && [self.delegate respondsToSelector:@selector(startViewWithName:)]){
         [self.delegate startViewWithName:viewName];
@@ -59,6 +66,13 @@
     NSDictionary *copyDict = [property ft_deepCopy];
     if(self.delegate && [self.delegate respondsToSelector:@selector(startViewWithName:property:)]){
         [self.delegate startViewWithName:viewName property:copyDict];
+    }
+}
+- (void)startViewWithName:(NSString *)viewName property:(nullable NSDictionary *)property trackingType:(FTRUMViewTrackingType)trackingType {
+    if ([self.delegate respondsToSelector:@selector(startViewWithName:property:trackingType:)]) {
+        [self.delegate startViewWithName:viewName property:[property ft_deepCopy] trackingType:trackingType];
+    } else {
+        [self startViewWithName:viewName property:property];
     }
 }
 -(void)updateViewLoadingTime:(NSNumber *)duration{

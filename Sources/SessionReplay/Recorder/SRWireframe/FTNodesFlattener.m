@@ -17,6 +17,7 @@
 #if TARGET_OS_IOS || TARGET_OS_OSX
 
 #import "FTNodesFlattener.h"
+#import "FTViewTreeSnapshot.h"
 #import "FTViewAttributes.h"
 #import <stdlib.h>
 @implementation FTNodesFlattener

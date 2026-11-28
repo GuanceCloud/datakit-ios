@@ -67,6 +67,7 @@
 
 - (void)stop {
     [self.layerChangeAggregator stop];
+    [self.layerSwizzler detachObserver];
 }
 
 @end

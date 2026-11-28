@@ -17,7 +17,6 @@
 
 import SwiftUI
 
-@available(iOS 13.0, tvOS 13.0, *)
 enum FTGraphicsFilter {
     case colorMultiply(Color._Resolved)
     case unknown

@@ -33,6 +33,9 @@ FOUNDATION_EXTERN long long const FTLongTaskANRDataUpdateIntervalNs;
 @property (nonatomic, copy, nullable) NSString *allThreadsBacktrace;
 @property (nonatomic, strong, nullable) FTFatalErrorContextModel *errorContextModel;
 @property (nonatomic, assign) long long lastUpdateTimeNs;
+/// Version 3 duration is authoritative; the endpoint is an independent event timestamp.
+@property (nonatomic, assign) BOOL usesEffectiveDuration;
+@property (nonatomic, assign) long long endTimeNs;
 
 - (instancetype)initWithStartTimeNs:(long long)startTimeNs
                          durationNs:(long long)durationNs
@@ -45,13 +48,15 @@ FOUNDATION_EXTERN long long const FTLongTaskANRDataUpdateIntervalNs;
 
 @interface FTLongTaskANRDataStore : NSObject
 @property (nonatomic, strong, readonly) dispatch_queue_t queue;
-@property (nonatomic, strong, nullable) NSFileHandle *fileHandle;
+@property (nonatomic, readonly, getter=isClosed) BOOL closed;
 @property (nonatomic, copy) NSString *dataStorePath;
 
-- (void)appendData:(nullable NSData *)data;
 - (void)deleteFile;
-- (void)writeANRData:(FTLongTaskANRData *)anrData updateTimeNs:(long long)updateTimeNs resetFile:(BOOL)resetFile;
-- (void)appendUpdateTimeNs:(long long)updateTimeNs;
+/// Reject late writes and enqueue cleanup without waiting for I/O.
+- (void)shutDown;
+- (void)writeANRData:(FTLongTaskANRData *)anrData;
+/// Append a complete effective-duration/observation-time pair to this incident's snapshot.
+- (void)appendTimingWithStartTimeNs:(long long)startTimeNs durationNs:(long long)durationNs endTimeNs:(long long)endTimeNs;
 - (nullable FTLongTaskANRData *)readANRData;
 @end
 

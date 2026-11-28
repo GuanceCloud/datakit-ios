@@ -40,6 +40,9 @@ typedef void (^FTFeatureWriteContext)(FTFeatureContext *context, id<FTWriter> wr
         trackingConsentProvider:(FTTrackingConsentProvider)trackingConsentProvider;
 - (void)updateTrackingConsent;
 - (void)eventWriteContext:(FTFeatureWriteContext)block;
+/// Uses the current sampling consent, routing only sampled external images to
+/// the normal resource writer. Pending and unsampled writes stay blocked.
+- (void)normalResourceWriteContext:(FTFeatureWriteContext)block;
 - (void)webViewEventWriteContext:(FTFeatureWriteContext)block;
 
 @end

@@ -56,6 +56,8 @@ NS_ASSUME_NONNULL_BEGIN
 
 /** If true, the application crashed on the previous launch. */
 @property(nonatomic, readonly, assign) BOOL crashedLastLaunch;
+/** Cached historical result, consumed during monitored-launch state reset. */
+@property(nonatomic, readonly, assign) BOOL previousEarlyCrash;
 
 /** If value > 0, the application crashed on the previous launch. */
 @property(nonatomic, readonly, assign) double crashedLastTimestamp;
@@ -75,6 +77,8 @@ NS_ASSUME_NONNULL_BEGIN
          issueDataProvider:(nullable FTIssueDataProvider)issueDataProvider;
 
 + (void)clearIssueDataProvider;
+/// 重新挂载安装后被其他崩溃 SDK 替换掉的处理器。安装之前调用不做任何事。
++ (void)reinstallHandlers;
 
 @end
 

@@ -27,6 +27,14 @@ typedef NS_ENUM(NSInteger, FTTrackingConsent) {
     FTTrackingConsentErrorSampled,
 };
 @interface FTFeatureStorage : NSObject
+@property (atomic, assign, readonly) BOOL invalidated;
+- (void)invalidate;
+- (void)performContextOperation:(dispatch_block_t)operation;
+- (instancetype)initWithFeatureName:(NSString *)featureName
+                             queue:(dispatch_queue_t)queue
+                      contextQueue:(dispatch_queue_t)contextQueue
+                       directories:(FTFeatureDirectories *)directories
+                       performance:(FTPerformancePreset *)performance;
 -(instancetype)initWithFeatureName:(NSString *)featureName
                              queue:(dispatch_queue_t)queue
                        directories:(FTFeatureDirectories *)directories
@@ -34,6 +42,9 @@ typedef NS_ENUM(NSInteger, FTTrackingConsent) {
 
 - (void)updateTrackingConsent:(FTTrackingConsent)trackingConsent;
 - (id<FTWriter>)writerForTrackingConsent:(FTTrackingConsent)trackingConsent NS_SWIFT_NAME(writer(for:));
+/// External images remain in the normal resource directory when error sampled.
+/// This never treats a pending or unsampled state as authorization.
+- (id<FTWriter>)normalResourceWriterForTrackingConsent:(FTTrackingConsent)trackingConsent;
 - (id<FTWriter>)webViewWriterForTrackingConsent:(FTTrackingConsent)trackingConsent NS_SWIFT_NAME(webViewWriter(for:));
 - (id<FTReader>)reader;
 - (nullable id<FTCacheWriter>)cacheWriter;

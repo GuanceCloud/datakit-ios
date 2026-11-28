@@ -17,6 +17,7 @@
 #if TARGET_OS_IOS || TARGET_OS_OSX
 
 #import "FTFileWriter.h"
+#import "FTDiagnosticsBridge.h"
 #import "FTFilesOrchestrator.h"
 #import "FTTLV.h"
 #import "FTFile.h"
@@ -44,6 +45,13 @@
             NSData *data = datas;
             FTTLV *tlv = [[FTTLV alloc]initWithType:1 value:data];
             data = [tlv serialize];
+            if (!data) {
+                [FTDiagnosticsBridge record:@"discard" channel:@"replay" count:1 bytes:datas.length reason:@"item_size_limit"];
+                FTInnerLogWarning(@"[Session Replay] Dropping data: payload size %llu bytes exceeds the maximum allowed size of %llu bytes.",
+                                  (unsigned long long)datas.length,
+                                  (unsigned long long)FT_MAX_DATA_LENGTH);
+                return;
+            }
             long long fileSize = data.length;
             id<FTWritableFile> file = [self.orchestrator getWritableFile:fileSize forceNewFile:force];
             [file append:data];

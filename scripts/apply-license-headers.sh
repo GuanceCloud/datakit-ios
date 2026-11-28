@@ -116,14 +116,6 @@ extract_year() {
   fi
 }
 
-has_complete_header() {
-  perl -0ne 'exit(m{^//  Copyright [0-9]{4} Shanghai Guance Information Technology Co\., Ltd\.\n//\n//  Licensed under the Apache License, Version 2\.0 \(the "License"\);\n//  you may not use this file except in compliance with the License\.\n//  You may obtain a copy of the License at\n//\n//      http://www\.apache\.org/licenses/LICENSE-2\.0\n//\n//  Unless required by applicable law or agreed to in writing, software\n//  distributed under the License is distributed on an "AS IS" BASIS,\n//  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied\.\n//  See the License for the specific language governing permissions and\n//  limitations under the License\.\n//}m ? 0 : 1)' "$1"
-}
-
-has_legacy_header_text() {
-  sed -n '1,40p' "$1" | grep -Eq 'Copyright ©|Copyright [0-9]{3,4} (DataFlux-cn|GuanceCloud|hll)|All rights reserved\.'
-}
-
 rewrite_file_to_stdout() {
   local file="$1"
   local year="$2"
@@ -161,30 +153,51 @@ rewrite_file_to_stdout() {
     sub strip_existing_header {
       my ($text) = @_;
 
-      $text =~ s{^(//\s*Copyright\s+(?:©\s*)?[0-9]{3,4}\s+(?:Shanghai Guance Information Technology Co\., Ltd\.|DataFlux-cn\.?|GuanceCloud\.?|hll\.?)(?:\s+All rights reserved\.)?\s*\n)}{}mg;
-      $text =~ s{^(//\s*\n(?=//\s*Licensed under the Apache License, Version 2\.0 \(the "License"\);))}{}mg;
       $text =~ s{
-        ^//\s*Licensed\ under\ the\ Apache\ License,\ Version\ 2\.0\ \(the\ "License"\);\n
-        ^//\s*you\ may\ not\ use\ this\ file\ except\ in\ compliance\ with\ the\ License\.\n
-        ^//\s*You\ may\ obtain\ a\ copy\ of\ the\ License\ at\n
-        ^//\s*\n
-        ^//\s*http://www\.apache\.org/licenses/LICENSE-2\.0\n
-        ^//\s*\n
-        ^//\s*Unless\ required\ by\ applicable\ law\ or\ agreed\ to\ in\ writing,\ software\n
-        ^//\s*distributed\ under\ the\ License\ is\ distributed\ on\ an\ "AS\ IS"\ BASIS,\n
-        ^//\s*WITHOUT\ WARRANTIES\ OR\ CONDITIONS\ OF\ ANY\ KIND,\ either\ express\ or\ implied\.\n
-        ^//\s*See\ the\ License\ for\ the\ specific\ language\ governing\ permissions\ and\n
-        ^//\s*limitations\ under\ the\ License\.\n
-        ^//\s*\n?
+        ^//[\t\ ]*Copyright[\t\ ]+(?:©[\t\ ]*)?[0-9]{3,4}[\t\ ]+
+        (?:Shanghai[\t\ ]+Guance[\t\ ]+Information[\t\ ]+Technology[\t\ ]+Co\.,[\t\ ]+Ltd\.|DataFlux-cn\.?|GuanceCloud\.?|hll\.?)
+        (?:[\t\ ]+All[\t\ ]+rights[\t\ ]+reserved\.)?[\t\ ]*\n
+        (?:^//[\t\ ]*\n)?
+      }{}xmg;
+      $text =~ s{
+        ^//[\t\ ]*Licensed\ under\ the\ Apache\ License,\ Version\ 2\.0\ \(the\ "License"\);\n
+        ^//[\t\ ]*you\ may\ not\ use\ this\ file\ except\ in\ compliance\ with\ the\ License\.\n
+        ^//[\t\ ]*You\ may\ obtain\ a\ copy\ of\ the\ License\ at\n
+        ^//[\t\ ]*\n
+        ^//[\t\ ]*http://www\.apache\.org/licenses/LICENSE-2\.0\n
+        ^//[\t\ ]*\n
+        ^//[\t\ ]*Unless\ required\ by\ applicable\ law\ or\ agreed\ to\ in\ writing,\ software\n
+        ^//[\t\ ]*distributed\ under\ the\ License\ is\ distributed\ on\ an\ "AS\ IS"\ BASIS,\n
+        ^//[\t\ ]*WITHOUT\ WARRANTIES\ OR\ CONDITIONS\ OF\ ANY\ KIND,\ either\ express\ or\ implied\.\n
+        ^//[\t\ ]*See\ the\ License\ for\ the\ specific\ language\ governing\ permissions\ and\n
+        ^//[\t\ ]*limitations\ under\ the\ License\.\n
+        ^//[\t\ ]*\n?
+      }{}xmg;
+      $text =~ s{
+        ^//[\t\ ]*Licensed\ under\ the\ Apache\ License,\ Version\ 2\.0\ \(the\ "License"\);\n
+        (?:^//[^\n]*\n)*
       }{}xmg;
 
       return $text;
     }
 
     $content = strip_existing_header($content);
+    $content =~ s{\A(?:[\t\ ]*\n)+}{};
     my $header = header_for($year);
 
-    if ($content =~ s{\A((?://[^\n]*\n){0,20}//\s*Created by[^\n]*\n)(?://\s*\n)?}{$1 . $header . "\n"}e) {
+    if ($content =~ s{
+      \A(
+        //[\t\ ]*\n
+        (?://[\t\ ]*\S[^\n]*\n){1,20}
+        //[\t\ ]*\n
+        (?:
+          //[\t\ ]*Created[\t\ ]+by[^\n]*\n
+          (?://[\t\ ]*\n)?
+        )?
+      )
+      (?://[\t\ ]*\n)*
+      (?:[\t\ ]*\n)*
+    }{$1 . $header . "\n"}ex) {
       # Inserted into an existing Xcode-style header.
     } else {
       $content = $header . "\n" . $content;
@@ -199,10 +212,6 @@ process_file() {
   local abs_path="${REPO_ROOT}/${rel_path}"
   local year
   local tmp_file
-
-  if ! has_legacy_header_text "${abs_path}" && has_complete_header "${abs_path}"; then
-    return 1
-  fi
 
   year="$(extract_year "${abs_path}")"
   tmp_file="$(mktemp)"

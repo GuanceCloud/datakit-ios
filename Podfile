@@ -1,5 +1,4 @@
-# Uncomment the next line to define a global platform for your project
-# platform :ios, '9.0'
+platform :ios, '15.0'
 use_frameworks!
 example_project_path = 'Examples/Examples'
 workspace 'FTSDK.xcworkspace'
@@ -16,7 +15,7 @@ target 'FTMobileSDKUnitTests' do
 end
 
 target 'FTMobileSDKUnitTests-tvOS' do
-  platform :tvos, '12.0'
+  platform :tvos, '15.0'
   # Comment the next line if you don't want to use dynamic frameworks
    pod 'OHHTTPStubs','8.0.0'
    pod 'Firebase', '8.15.0'
@@ -29,7 +28,8 @@ post_install do |installer|
   installer.generated_projects.each do |project|
    project.targets.each do |target|
        target.build_configurations.each do |config|
-           config.build_settings['IPHONEOS_DEPLOYMENT_TARGET'] = '11.0'
+           config.build_settings['IPHONEOS_DEPLOYMENT_TARGET'] = '15.0'
+           config.build_settings['TVOS_DEPLOYMENT_TARGET'] = '15.0'
         end
    end
  end

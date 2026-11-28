@@ -23,6 +23,7 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 // THE SOFTWARE.
 //
+#include "FTEarlyCrash.h"
 #import "FTCrashMonitor_NSException.h"
 #import "FTCrashCompilerDefines.h"
 #import "FTCrashMonitorContext.h"
@@ -97,7 +98,7 @@ static FTCRASH_NOINLINE void initStackCursor(FTCrashStackCursor *cursor, NSExcep
 static FTCRASH_NOINLINE void handleException(NSException *exception, BOOL isUserReported,
                                         BOOL logAllThreads) FTCRASH_KEEP_FUNCTION_IN_STACKTRACE
 {
-    FTLOG_DEBUG("Trapped exception %@", exception);
+    const uint64_t eventTime = ft_earlyCrashNow();
     if (isEnabled()) {
         FTLOG_DEBUG("Trapped exception start");
         // Gather this info before we require async-safety:
@@ -121,6 +122,7 @@ static FTCRASH_NOINLINE void handleException(NSException *exception, BOOL isUser
                                                                   .isFatal = !isUserReported,
                                                                   .shouldRecordAllThreads = logAllThreads != NO,
                                                                   .shouldWriteReport = true });
+        crashContext->earlyCrashTime = eventTime;
         if (crashContext->requirements.shouldExitImmediately) {
             goto exit_immediately;
         }
@@ -156,6 +158,12 @@ static FTCRASH_NOINLINE void handleException(NSException *exception, BOOL isUser
 
 static void handleUncaughtException(NSException *exception) FTCRASH_KEEP_FUNCTION_IN_STACKTRACE
 {
+    // reinstallHandlers 之后，被转交的处理器可能在同一线程再转交回来，这里防止循环。
+    static _Thread_local bool isHandling = false;
+    if (isHandling) {
+        return;
+    }
+    isHandling = true;
     handleException(exception, NO, YES);
     FTCRASH_THWART_TAIL_CALL_OPTIMISATION
 }
@@ -190,6 +198,19 @@ static void setEnabled(bool enabled)
     }
 }
 
+static void reinstallHandlers(void)
+{
+    if (!isEnabled()) {
+        return;
+    }
+    NSUncaughtExceptionHandler *current = NSGetUncaughtExceptionHandler();
+    if (current == &handleUncaughtException) {
+        return;
+    }
+    g_state.previousUncaughtExceptionHandler = current;
+    NSSetUncaughtExceptionHandler(&handleUncaughtException);
+}
+
 static const char *monitorId(void) { return "NSException"; }
 
 static FTCrashMonitorFlag monitorFlags(void) { return FTCrashMonitorFlagNone; }
@@ -205,6 +226,7 @@ FTCrashMonitorAPI *ftcrashcm_nsexception_getAPI(void)
         api.monitorFlags = monitorFlags;
         api.setEnabled = setEnabled;
         api.isEnabled = isEnabled;
+        api.reinstallHandlers = reinstallHandlers;
     }
     return &api;
 }

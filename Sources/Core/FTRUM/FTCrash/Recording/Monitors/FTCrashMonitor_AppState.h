@@ -32,6 +32,7 @@
 #define FTCrashMonitor_AppState_h
 
 #include <stdbool.h>
+#include <stdint.h>
 #include "FTCrashMonitorAPI.h"
 
 #ifdef __cplusplus
@@ -64,8 +65,11 @@ typedef struct {
 
     /** If true, the application crashed on the previous launch. */
     bool crashedLastLaunch;
+    /** Early-crash fact restored from the last launch with Crash enabled. */
+    bool previousEarlyCrash;
+    uint64_t previousEarlyCrashDurationNS;
 
-    /** FTSDK ADD：If crashedLastLaunch true, crashedLastTimestamp is crash timestamp else is 0
+    /** FTSDK ADD: If crashedLastLaunch true, crashedLastTimestamp is crash timestamp else is 0
         Date max: 2106-2-7-06:28:15 UTC
      */
     unsigned int crashedLastTimestamp;
@@ -93,6 +97,15 @@ typedef struct {
  * @param stateFilePath Where to store on-disk representation of state.
  */
 void ftcrashstate_initialize(const char *stateFilePath);
+
+/** Read a persisted snapshot without initializing or enabling Crash monitoring.
+ * Synchronous disk I/O: invoke explicitly from a background queue.
+ * Does not mutate live state, consume history, set the save path, or write files.
+ * Independent callers own their snapshots. A concurrent file write may make a
+ * read fail; this function does not synchronize with Crash's live-state writer.
+ * On failure (including null arguments), returns false and leaves output unchanged.
+ */
+bool ftcrashstate_readPersistedState(const char *stateFilePath, FTCrash_AppState *state);
 
 /** Reset the crash state.
  */
@@ -123,6 +136,8 @@ void ftcrashstate_notifyAppTerminate(void);
 /** Notify the crash reporter that the application has crashed.
  */
 void ftcrashstate_notifyAppCrash(void);
+/** Record an automatic fatal event using its original monotonic capture time. */
+bool ftcrashstate_recordEarlyCrash(uint64_t sdkStart, uint64_t captureTime);
 
 /** Read-only access into the current state.
  */

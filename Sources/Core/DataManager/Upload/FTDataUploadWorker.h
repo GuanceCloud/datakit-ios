@@ -32,6 +32,9 @@ NS_ASSUME_NONNULL_BEGIN
 
 -(void)flushWithSleep:(BOOL)withSleep;
 
+/// Applies cached Crash history on the network queue, affecting only the first automatic wait.
+- (void)updatePreviousEarlyCrash:(BOOL)previousEarlyCrash;
+
 -(void)cancelSynchronously;
 -(void)cancelAsynchronously;
 -(void)invalidateAndCancelPendingUploads;

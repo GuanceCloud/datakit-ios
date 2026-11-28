@@ -271,21 +271,24 @@ static NSDictionary *g_registerOrders;
                 [extra setValue:registers forKey:@"registers"];
                 
                 RUMModel *errorModel = [RUMModel new];
-                NSMutableDictionary *errorTags = [NSMutableDictionary dictionaryWithDictionary:errorContext.globalAttributes];
+                NSMutableDictionary *errorTags = [NSMutableDictionary dictionary];
+                NSMutableSet *errorTagKeys = [NSMutableSet set];
+                NSMutableSet *errorFieldKeys = [NSMutableSet set];
+                FTRUMMergeProperties(errorTags, errorTagKeys, errorContext.globalAttributes, errorContext.globalPropertySnapshot.customKeys);
                 
-                [errorTags addEntriesFromDictionary:errorContext.dynamicContext];
-                [errorTags addEntriesFromDictionary:errorContext.errorMonitorInfo];
-                [errorTags addEntriesFromDictionary:[errorContext.lastSessionState sessionTags]];
+                FTRUMMergeProperties(errorTags, errorTagKeys, errorContext.dynamicContext, errorContext.dynamicPropertySnapshot.customKeys);
+                FTRUMMergeProperties(errorTags, errorTagKeys, errorContext.errorMonitorInfo, nil);
+                FTRUMMergeProperties(errorTags, errorTagKeys, [errorContext.lastSessionState sessionTags], nil);
                 if (self.enableMemory) {
                     float memUsage = [self memoryUsageForReport:report.value];
-                    [errorTags setValue:@(memUsage) forKey:FT_MEMORY_USE];
+                    FTRUMSetSystemProperty(errorTags, errorTagKeys, FT_MEMORY_USE, @(memUsage));
                 }
                 if (self.enableCpu) {
                     float cpuUsage = [self threadCpuUsageForReport:report.value];
-                    [errorTags setValue:@(cpuUsage) forKey:FT_CPU_USE];
+                    FTRUMSetSystemProperty(errorTags, errorTagKeys, FT_CPU_USE, @(cpuUsage));
                 }
-                [errorTags setValue:FT_LOGGER forKey:FT_KEY_ERROR_SOURCE];
-                [errorTags setValue:errorContext.appState forKey:FT_KEY_ERROR_SITUATION];
+                FTRUMSetSystemProperty(errorTags, errorTagKeys, FT_KEY_ERROR_SOURCE, FT_LOGGER);
+                FTRUMSetSystemProperty(errorTags, errorTagKeys, FT_KEY_ERROR_SITUATION, errorContext.appState);
                 
                 NSMutableDictionary *errorFields = [NSMutableDictionary new];
                 NSNumber *sessionErrorTimestamp = nil;
@@ -324,7 +327,7 @@ static NSDictionary *g_registerOrders;
                     [reservedKeys addObjectsFromArray:errorFields.allKeys];
                     NSDictionary *customFields = [issueFieldEnricher fieldsForIssue:issue
                                                                        reservedKeys:reservedKeys];
-                    [errorFields addEntriesFromDictionary:customFields];
+                    FTRUMMergeProperties(errorFields, errorFieldKeys, customFields, [NSSet setWithArray:customFields.allKeys]);
                 }
                 errorModel.source = FT_RUM_SOURCE_ERROR;
                 
@@ -332,13 +335,11 @@ static NSDictionary *g_registerOrders;
                     NSString *viewId = errorContext.lastViewContext[@"tags"][FT_KEY_VIEW_ID];
                     NSString *viewName = errorContext.lastViewContext[@"tags"][FT_KEY_VIEW_NAME];
 
-                    [errorTags setValue:viewId forKey:FT_KEY_VIEW_ID];
-                    [errorTags setValue:viewName forKey:FT_KEY_VIEW_NAME];
+                    FTRUMSetSystemProperty(errorTags, errorTagKeys, FT_KEY_VIEW_ID, viewId);
+                    FTRUMSetSystemProperty(errorTags, errorTagKeys, FT_KEY_VIEW_NAME, viewName);
 
                     long long time = [errorContext.lastViewContext[@"time"] longLongValue];
-                    NSMutableDictionary *tags = [NSMutableDictionary dictionaryWithDictionary:errorContext.globalAttributes];
                     NSMutableDictionary *fields = [NSMutableDictionary new];
-                    [tags addEntriesFromDictionary:errorContext.lastViewContext[@"tags"]];
                     [fields addEntriesFromDictionary:errorContext.lastViewContext[@"fields"]];
         
                     fields[FT_KEY_VIEW_ERROR_COUNT] = @([fields[FT_KEY_VIEW_ERROR_COUNT] intValue] + 1);
@@ -348,12 +349,31 @@ static NSDictionary *g_registerOrders;
                     fields[FT_SESSION_ERROR_TIMESTAMP] = sessionErrorTimestamp;
                     RUMModel *viewModel = [[RUMModel alloc]init];
                     viewModel.source = FT_RUM_SOURCE_VIEW;
-                    viewModel.tags = tags;
+                    NSMutableDictionary *viewTags = [NSMutableDictionary dictionary];
+                    NSMutableSet *viewTagKeys = [NSMutableSet set];
+                    FTRUMMergeProperties(viewTags, viewTagKeys, errorContext.globalAttributes, errorContext.globalPropertySnapshot.customKeys);
+                    FTRUMMergeProperties(viewTags, viewTagKeys, errorContext.lastViewContext[@"tags"], nil);
+                    if (errorContext.lastViewContext[@"propertyTags"]) {
+                        FTRUMMergeProperties(viewTags, viewTagKeys, errorContext.lastViewContext[@"propertyTags"],
+                            FTRUMDecodeCustomKeys(errorContext.lastViewContext[@"propertyCustomKeys"]));
+                    }
+                    NSString *viewVisitor = errorContext.lastViewContext[@"tags"][FT_VISITOR_ID];
+                    if ([viewVisitor isKindOfClass:NSString.class] && viewVisitor.length > 0) {
+                        FTRUMSetSystemProperty(viewTags, viewTagKeys, FT_VISITOR_ID, viewVisitor);
+                    }
+                    NSMutableSet *viewFieldKeys = [FTRUMDecodeCustomKeys(errorContext.lastViewContext[@"customFieldKeys"]) mutableCopy];
+                    if (!errorContext.lastViewContext[@"customFieldKeys"]) {
+                        [viewFieldKeys unionSet:FTRUMDecodeCustomKeys(errorContext.lastViewContext[@"tags"][FT_RUM_CUSTOM_KEYS])];
+                    }
+                    [viewFieldKeys minusSet:[NSSet setWithArray:@[FT_KEY_VIEW_ERROR_COUNT, FT_KEY_VIEW_UPDATE_TIME, FT_KEY_IS_ACTIVE, FT_KEY_TIME_SPENT, FT_SESSION_ERROR_TIMESTAMP]]];
+                    FTRUMEncodeCustomKeys(viewTags, fields, viewTagKeys, viewFieldKeys);
+                    viewModel.tags = viewTags;
                     viewModel.fields = fields;
                     viewModel.createTime = time;
                     [filteredReports addObject:[FTCrashReportRUMModel reportWithValue:viewModel]];
                 }
                 
+                FTRUMEncodeCustomKeys(errorTags, errorFields, errorTagKeys, errorFieldKeys);
                 errorModel.tags = errorTags;
                 errorModel.fields = errorFields;
                 errorModel.createTime = self.crashDate;
@@ -367,12 +387,18 @@ static NSDictionary *g_registerOrders;
 }
 #pragma mark ----- FTBacktraceReporting -----
 -(NSString *)generateBacktrace:(thread_t)thread{
+    return [self generateBacktrace:thread captureValidation:nil];
+}
+- (NSString *)generateBacktrace:(thread_t)thread captureValidation:(FTBacktraceCaptureValidation)validation {
+    if (validation && !validation()) return nil;
     FTCrashThread currentThread = ftcrashthread_self();
     FTCrashMachineContext context = { 0 };
     FTCrashStackEntry stackEntries[MAX_STACKTRACE_LENGTH] = {0};
     NSMutableString *threadStr = [NSMutableString string];
     NSMutableDictionary *imagesDict = [NSMutableDictionary new];
     int count = getStackEntriesFromThread(thread,&context,stackEntries,MAX_STACKTRACE_LENGTH,true,currentThread == thread);
+    // Attribute raw frames before formatting can overlap producer End.
+    if (validation && !validation()) return nil;
     if (count>0)  {
         [self appendThreadInfoForThreadIndex:0 thread:thread stackEntries:stackEntries stackLength:count toMutableString:threadStr imagesDict:imagesDict];
         [self appendCommonTailToMutableString:threadStr imagesDict:imagesDict];
@@ -381,7 +407,11 @@ static NSDictionary *g_registerOrders;
     return nil;
 }
 -(NSString *)generateAllThreadsBacktrace{
+    return [self generateAllThreadsBacktraceWithCaptureValidation:nil];
+}
+- (NSString *)generateAllThreadsBacktraceWithCaptureValidation:(FTBacktraceCaptureValidation)validation {
     @synchronized(self) {
+        if (validation && !validation()) return nil;
         FTCrashThread currentThread = ftcrashthread_self();
         FTCrashMachineContext context = { 0 };
         thread_act_array_t suspendedThreads = NULL;
@@ -400,6 +430,9 @@ static NSDictionary *g_registerOrders;
             threadsInfos[i].thread = suspendedThreads[i];
         }
         ftcrashmc_resumeEnvironment(&suspendedThreads, &numSuspendedThreads);
+        // Never run an Objective-C predicate while other threads are suspended.
+        // Reject conservatively if End races this immediate post-resume check.
+        if (validation && !validation()) return nil;
        
         NSMutableString *threadStr = [NSMutableString string];
         NSMutableDictionary *imagesDict = [NSMutableDictionary new];

@@ -17,6 +17,7 @@
 #if TARGET_OS_IOS
 
 #import "FTUIHostingViewRecorder.h"
+#import "FTSessionReplayWireframesBuilder.h"
 #import "FTSRWireframe.h"
 #import "FTSRUtils.h"
 #import "FTSRTextObfuscatingFactory.h"
@@ -75,9 +76,7 @@ typedef NS_ENUM(NSInteger, FTSwiftUIWireframePayloadKind) {
                 return [FTSRTextObfuscatingFactory staticTextObfuscator:[attributes resolveTextAndInputPrivacyLevel:context.recorder]];
             };
         }
-        if (@available(iOS 13.0, *)) {
-            _reflectionBridge = [FTSwiftUIReflectionBridge new];
-        }
+        _reflectionBridge = [FTSwiftUIReflectionBridge new];
     }
     return self;
 }
@@ -87,34 +86,32 @@ typedef NS_ENUM(NSInteger, FTSwiftUIWireframePayloadKind) {
         return [[FTIgnoredElement alloc] initWithSubtreeStrategy:NodeSubtreeStrategyIgnore];
     }
 
-    if (@available(iOS 13.0, *)) {
-        int64_t wireframeID = [context.viewIDGenerator SRViewID:view nodeRecorder:self];
+    int64_t wireframeID = [context.viewIDGenerator SRViewID:view nodeRecorder:self];
 
-        FTSwiftUIRenderer *renderer = [self rendererForHostingView:view];
-        if (renderer) {
-            if (!attributes.isVisible) {
-                return [FTInvisibleElement constant];
-            }
-            FTSwiftUIRecordingBuilder *recordingBuilder = [self recordingBuilderWithRenderer:renderer wireframeID:wireframeID attributes:attributes context:context];
-            if (!recordingBuilder) {
-                return nil;
-            }
-            id<FTSRTextObfuscatingProtocol> textObfuscator = self.textObfuscator(context, attributes);
-            FTUIHostingViewBuilder *builder = [[FTUIHostingViewBuilder alloc] init];
-            builder.wireframeID = wireframeID;
-            builder.attributes = attributes;
-            builder.recordingBuilder = recordingBuilder;
-            builder.textObfuscator = textObfuscator;
-            FTSpecificElement *element = [[FTSpecificElement alloc] initWithSubtreeStrategy:NodeSubtreeStrategyRecord];
-            element.nodes = @[builder];
-            return element;
+    FTSwiftUIRenderer *renderer = [self rendererForHostingView:view];
+    if (renderer) {
+        if (!attributes.isVisible) {
+            return [FTInvisibleElement constant];
         }
+        FTSwiftUIRecordingBuilder *recordingBuilder = [self recordingBuilderWithRenderer:renderer wireframeID:wireframeID attributes:attributes context:context];
+        if (!recordingBuilder) {
+            return nil;
+        }
+        id<FTSRTextObfuscatingProtocol> textObfuscator = self.textObfuscator(context, attributes);
+        FTUIHostingViewBuilder *builder = [[FTUIHostingViewBuilder alloc] init];
+        builder.wireframeID = wireframeID;
+        builder.attributes = attributes;
+        builder.recordingBuilder = recordingBuilder;
+        builder.textObfuscator = textObfuscator;
+        FTSpecificElement *element = [[FTSpecificElement alloc] initWithSubtreeStrategy:NodeSubtreeStrategyRecord];
+        element.nodes = @[builder];
+        return element;
     }
 
     return nil;
 }
 
-- (FTSwiftUIRenderer *)rendererForHostingView:(UIView *)view API_AVAILABLE(ios(13.0)) {
+- (FTSwiftUIRenderer *)rendererForHostingView:(UIView *)view {
     if (!self.reflectionBridge) {
         return nil;
     }
@@ -122,7 +119,7 @@ typedef NS_ENUM(NSInteger, FTSwiftUIWireframePayloadKind) {
     return [bridge rendererForHostingView:view];
 }
 
-- (FTSwiftUIRecordingBuilder *)recordingBuilderWithRenderer:(FTSwiftUIRenderer *)renderer wireframeID:(int64_t)wireframeID attributes:(FTViewAttributes *)attributes context:(FTViewTreeRecordingContext *)context API_AVAILABLE(ios(13.0)) {
+- (FTSwiftUIRecordingBuilder *)recordingBuilderWithRenderer:(FTSwiftUIRenderer *)renderer wireframeID:(int64_t)wireframeID attributes:(FTViewAttributes *)attributes context:(FTViewTreeRecordingContext *)context {
     if (!self.reflectionBridge || !renderer || !attributes) {
         return nil;
     }
@@ -143,7 +140,7 @@ typedef NS_ENUM(NSInteger, FTSwiftUIWireframePayloadKind) {
                                                              borderColor:(CGColorRef)borderColor
                                                              textPrivacy:(FTTextAndInputPrivacyLevel)textPrivacy
                                                             imagePrivacy:(FTImagePrivacyLevel)imagePrivacy
-                                                             wireframeID:(int64_t)wireframeID API_AVAILABLE(ios(13.0)) {
+                                                             wireframeID:(int64_t)wireframeID {
     if (!self.reflectionBridge) {
         return nil;
     }
@@ -210,19 +207,17 @@ typedef NS_ENUM(NSInteger, FTSwiftUIWireframePayloadKind) {
 }
 
 - (NSArray<FTSRWireframe *> *)buildWireframesWithBuilder:(FTSessionReplayWireframesBuilder *)builder {
-    if (@available(iOS 13.0, *)) {
-        FTSwiftUIRecordingResult *recordingResult = [self buildRecordingResultSafely];
-        if (recordingResult) {
-            NSArray<FTSRWireframe *> *wireframes = [self wireframesFromPayloads:recordingResult.wireframes
-                                                                 textObfuscator:self.textObfuscator
-                                                                        builder:builder];
-            return wireframes;
-        }
+    FTSwiftUIRecordingResult *recordingResult = [self buildRecordingResultSafely];
+    if (recordingResult) {
+        NSArray<FTSRWireframe *> *wireframes = [self wireframesFromPayloads:recordingResult.wireframes
+                                                             textObfuscator:self.textObfuscator
+                                                                    builder:builder];
+        return wireframes;
     }
     return [self fallbackWireframes];
 }
 
-- (nullable FTSwiftUIRecordingResult *)buildRecordingResultSafely API_AVAILABLE(ios(13.0)) {
+- (nullable FTSwiftUIRecordingResult *)buildRecordingResultSafely {
     FTSwiftUIRecordingBuilder *recordingBuilder = self.recordingBuilder;
     if (!recordingBuilder) {
         return nil;
@@ -242,7 +237,7 @@ typedef NS_ENUM(NSInteger, FTSwiftUIWireframePayloadKind) {
 
 - (NSArray<FTSRWireframe *> *)wireframesFromPayloads:(NSArray<id> *)payloads
                                       textObfuscator:(id<FTSRTextObfuscatingProtocol>)textObfuscator
-                                             builder:(FTSessionReplayWireframesBuilder *)builder API_AVAILABLE(ios(13.0)) {
+                                             builder:(FTSessionReplayWireframesBuilder *)builder {
     NSMutableArray<FTSRWireframe *> *wireframes = [NSMutableArray arrayWithCapacity:payloads.count];
     for (id payload in payloads) {
         FTSRWireframe *wireframe = nil;
@@ -258,7 +253,7 @@ typedef NS_ENUM(NSInteger, FTSwiftUIWireframePayloadKind) {
     return wireframes;
 }
 
-- (nullable id<FTSRResource>)resourceFromPayload:(id)payload API_AVAILABLE(ios(13.0)) {
+- (nullable id<FTSRResource>)resourceFromPayload:(id)payload {
     UIImage *image = [payload valueForKey:@"image"];
     if ([image isKindOfClass:UIImage.class]) {
         UIColor *tintColor = [payload valueForKey:@"tintColor"];
@@ -279,7 +274,7 @@ typedef NS_ENUM(NSInteger, FTSwiftUIWireframePayloadKind) {
 
 - (FTSRWireframe *)wireframeFromPayload:(id)payload
                          textObfuscator:(id<FTSRTextObfuscatingProtocol>)textObfuscator
-                                builder:(FTSessionReplayWireframesBuilder *)builder API_AVAILABLE(ios(13.0)) {
+                                builder:(FTSessionReplayWireframesBuilder *)builder {
     NSInteger kind = [[payload valueForKey:@"kind"] integerValue];
     int64_t identifier = [[payload valueForKey:@"identifier"] longLongValue];
     CGRect frame = [[payload valueForKey:@"frame"] CGRectValue];

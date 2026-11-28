@@ -37,6 +37,7 @@
 #import "FTCrashMonitor_System.h"
 #import "FTCrashReport.h"
 #import "FTCrashBinaryImageCache.h"
+#import "FTEarlyCrash.h"
 
 @interface FTCrash()<FTAppLifeCycleDelegate,FTBacktraceReporting>
 /** If YES, introspect memory contents during a crash.
@@ -57,6 +58,7 @@
 static FTCrash *sharedHandler = nil;
 static mach_port_t main_thread_id;
 
+
 @implementation FTCrash
 
 + (void)load
@@ -71,6 +73,9 @@ static mach_port_t main_thread_id;
         ftcrashbic_init();
     });
     return sharedHandler;
+}
++ (void)reinstallHandlers {
+    ftcrash_reinstallHandlers();
 }
 + (void)clearIssueDataProvider {
     [sharedHandler.crashReportWrapper setIssueDataProvider:nil];
@@ -134,20 +139,7 @@ static mach_port_t main_thread_id;
     [[[NSBundle mainBundle] infoDictionary] objectForKey:@"CFBundleName"] ?: @"Unknown";
     return [bundleName stringByReplacingOccurrencesOfString:@"/" withString:@"-"];
 }
-- (NSString *)getDefaultInstallPath{
-    NSArray *directories = NSSearchPathForDirectoriesInDomains(NSCachesDirectory, NSUserDomainMask, YES);
-    if ([directories count] == 0) {
-        FTInnerLogError(@"Could not locate cache directory path.");
-        return nil;
-    }
-    NSString *cachePath = [directories objectAtIndex:0];
-    if ([cachePath length] == 0) {
-        FTInnerLogError(@"Could not locate cache directory path.");
-        return nil;
-    }
-    NSString *pathEnd = [@"FTCrash" stringByAppendingPathComponent:[self getBundleName]];
-    return [cachePath stringByAppendingPathComponent:pathEnd];
-}
+- (NSString *)getDefaultInstallPath { return ft_crashInstallPath(); }
 
 -(void)setIntrospectMemory:(BOOL)introspectMemory{
     _introspectMemory = introspectMemory;
@@ -177,11 +169,7 @@ static mach_port_t main_thread_id;
     NSData *userInfoJSON = nil;
     
     if (userInfo != nil) {
-        if (@available(iOS 11.0, *)) {
-            userInfoJSON = [NSJSONSerialization dataWithJSONObject:userInfo options:NSJSONWritingSortedKeys error:&error];
-        } else {
-            userInfoJSON = [NSJSONSerialization dataWithJSONObject:userInfo options:0 error:&error];
-        }
+        userInfoJSON = [NSJSONSerialization dataWithJSONObject:userInfo options:NSJSONWritingSortedKeys error:&error];
         
         if (userInfoJSON == nil) {
             FTInnerLogError(@"Could not serialize user info: %@", error.localizedDescription);
@@ -231,11 +219,25 @@ static mach_port_t main_thread_id;
 -(NSString *)generateAllThreadsBacktrace{
     return [self.crashReportWrapper generateAllThreadsBacktrace];
 }
+- (NSString *)generateMainThreadBacktraceWithCaptureValidation:(FTBacktraceCaptureValidation)validation {
+    return [self.crashReportWrapper generateBacktrace:main_thread_id captureValidation:validation];
+}
+- (NSString *)generateAllThreadsBacktraceWithCaptureValidation:(FTBacktraceCaptureValidation)validation {
+    return [self.crashReportWrapper generateAllThreadsBacktraceWithCaptureValidation:validation];
+}
 - (double)crashedLastTimestamp{
     return ftcrashstate_currentState()->crashedLastTimestamp;
 }
 - (BOOL)crashedLastLaunch{
     return ftcrashstate_currentState()->crashedLastLaunch;
+}
+- (BOOL)previousEarlyCrash {
+#if TARGET_OS_IOS && !TARGET_OS_MACCATALYST
+    if ([[NSBundle mainBundle].bundlePath.pathExtension isEqualToString:@"appex"]) return NO;
+    return ftcrashcm_appstate_getAPI()->isEnabled() && ftcrashstate_currentState()->previousEarlyCrash;
+#else
+    return NO;
+#endif
 }
 - (void)sendCrashReport{
     dispatch_async(dispatch_get_global_queue(0, 0), ^{
@@ -245,7 +247,10 @@ static mach_port_t main_thread_id;
             if(filteredReports.count>0 && [filteredReports[0] isKindOfClass:[FTCrashReportRUMModel class]]){
                 for (FTCrashReportRUMModel *report in filteredReports) {
                     RUMModel *model = report.value;
-                    [strongSelf.writer rumWriteAssembledData:model.source tags:model.tags fields:model.fields time:model.createTime];
+                    FTRUMWriteData *data = [[FTRUMWriteData alloc] initWithSource:model.source tags:model.tags fields:model.fields
+                        context:nil customTagKeys:nil customFieldKeys:nil time:model.createTime];
+                    data.cache = @NO;
+                    [strongSelf.writer writeRUMData:data];
                 }
             }
             [strongSelf.reportStore deleteAllReports];

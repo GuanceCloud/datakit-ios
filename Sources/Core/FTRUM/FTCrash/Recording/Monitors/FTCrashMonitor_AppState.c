@@ -25,6 +25,7 @@
 //
 
 #include "FTCrashMonitor_AppState.h"
+#include "FTEarlyCrash.h"
 
 #include "FTCrashMonitorContext.h"
 #include "FTCrashFileUtils.h"
@@ -50,6 +51,8 @@
 
 #define kKeyFormatVersion "version"
 #define kKeyCrashedLastLaunch "crashedLastLaunch"
+#define kKeyPreviousEarlyCrash "previousEarlyCrash"
+#define kKeyEarlyCrashDurationNS "earlyCrashDurationNS"
 #define kKeyCrashedLastDate "crashedLastDate"
 #define kKeyDurationFromCrashStateInitToLastCrash "durationFromCrashStateInitToLastCrash"
 #define kKeyActiveDurationSinceLastCrash "activeDurationSinceLastCrash"
@@ -69,6 +72,13 @@ static const char *g_stateFilePath;
 static FTCrash_AppState g_state;
 
 static atomic_bool g_isEnabled = false;
+_Static_assert(ATOMIC_LLONG_LOCK_FREE == 2, "Early crash capture requires lock-free atomics");
+static atomic_ullong g_earlyCrashDurationNS = UINT64_MAX;
+static bool g_consumedHistory;
+typedef struct {
+    FTCrash_AppState *state;
+    bool sawVersion;
+} StateDecodeContext;
 
 // ============================================================================
 #pragma mark - JSON Encoding -
@@ -76,10 +86,15 @@ static atomic_bool g_isEnabled = false;
 
 static int onBooleanElement(const char *const name, const bool value, void *const userData)
 {
-    FTCrash_AppState *state = userData;
+    if (name == NULL) return FTCRASHJSON_ERROR_INVALID_DATA;
+    FTCrash_AppState *state = ((StateDecodeContext *)userData)->state;
 
     if (strcmp(name, kKeyCrashedLastLaunch) == 0) {
         state->crashedLastLaunch = value;
+    } else if (strcmp(name, kKeyPreviousEarlyCrash) == 0) {
+        state->previousEarlyCrash = value;
+    } else if (strcmp(name, kKeyEarlyCrashDurationNS) == 0) {
+        state->previousEarlyCrashDurationNS = UINT64_MAX;
     }
 
     return FTCRASHJSON_OK;
@@ -87,8 +102,17 @@ static int onBooleanElement(const char *const name, const bool value, void *cons
 
 static int onFloatingPointElement(const char *const name, const double value, void *const userData)
 {
-    FTCrash_AppState *state = userData;
+    if (name == NULL) return FTCRASHJSON_ERROR_INVALID_DATA;
+    FTCrash_AppState *state = ((StateDecodeContext *)userData)->state;
 
+    if (strcmp(name, kKeyEarlyCrashDurationNS) == 0) {
+        state->previousEarlyCrashDurationNS = UINT64_MAX;
+        return FTCRASHJSON_OK;
+    }
+    if (strcmp(name, kKeyPreviousEarlyCrash) == 0) {
+        state->previousEarlyCrash = false;
+        return FTCRASHJSON_OK;
+    }
     if (strcmp(name, kKeyActiveDurationSinceLastCrash) == 0) {
         state->activeDurationSinceLastCrash = value;
     }
@@ -101,9 +125,15 @@ static int onFloatingPointElement(const char *const name, const double value, vo
 
 static int onIntegerElement(const char *const name, const int64_t value, void *const userData)
 {
-    FTCrash_AppState *state = userData;
+    if (name == NULL) return FTCRASHJSON_ERROR_INVALID_DATA;
+    FTCrash_AppState *state = ((StateDecodeContext *)userData)->state;
 
+    if (strcmp(name, kKeyEarlyCrashDurationNS) == 0) {
+        state->previousEarlyCrashDurationNS = value >= 0 ? (uint64_t)value : UINT64_MAX;
+        return FTCRASHJSON_OK;
+    }
     if (strcmp(name, kKeyFormatVersion) == 0) {
+        ((StateDecodeContext *)userData)->sawVersion = value == kFormatVersion;
         if (value != kFormatVersion) {
             FTLOG_ERROR("Expected version 1 but got %" PRId64, value);
             return FTCRASHJSON_ERROR_INVALID_DATA;
@@ -122,9 +152,15 @@ static int onIntegerElement(const char *const name, const int64_t value, void *c
 
 static int onUnsignedIntegerElement(const char *const name, const uint64_t value, void *const userData)
 {
-    FTCrash_AppState *state = userData;
+    if (name == NULL) return FTCRASHJSON_ERROR_INVALID_DATA;
+    FTCrash_AppState *state = ((StateDecodeContext *)userData)->state;
 
+    if (strcmp(name, kKeyEarlyCrashDurationNS) == 0) {
+        state->previousEarlyCrashDurationNS = value;
+        return FTCRASHJSON_OK;
+    }
     if (strcmp(name, kKeyFormatVersion) == 0) {
+        ((StateDecodeContext *)userData)->sawVersion = value == kFormatVersion;
         if (value != kFormatVersion) {
             FTLOG_ERROR("Expected version 1 but got %" PRIu64, value);
             return FTCRASHJSON_ERROR_INVALID_DATA;
@@ -156,12 +192,18 @@ static int onUnsignedIntegerElement(const char *const name, const uint64_t value
     return onFloatingPointElement(name, (double)value, userData);
 }
 
-static int onNullElement(__unused const char *const name, __unused void *const userData) { return FTCRASHJSON_OK; }
+static int onNullElement(const char *const name, void *const userData) {
+    if (name == NULL) return FTCRASHJSON_OK;
+    FTCrash_AppState *state = ((StateDecodeContext *)userData)->state;
+    if (strcmp(name, kKeyEarlyCrashDurationNS) == 0) state->previousEarlyCrashDurationNS = UINT64_MAX;
+    if (strcmp(name, kKeyPreviousEarlyCrash) == 0) state->previousEarlyCrash = false;
+    return FTCRASHJSON_OK;
+}
 
 static int onStringElement(__unused const char *const name, __unused const char *const value,
                            __unused void *const userData)
 {
-    return FTCRASHJSON_OK;
+    return onNullElement(name, userData);
 }
 
 static int onBeginObject(__unused const char *const name, __unused void *const userData) { return FTCRASHJSON_OK; }
@@ -199,7 +241,7 @@ static double timeSince(double timeInSeconds) { return getCurrentTime() - timeIn
  *
  * @return true if the operation was successful.
  */
-static bool loadState(const char *const path)
+static bool loadState(const char *const path, FTCrash_AppState *const state)
 {
     // Stop if the file doesn't exist.
     // This is expected on the first run of the app.
@@ -213,6 +255,16 @@ static bool loadState(const char *const path)
     int length;
     if (!ftcrashfu_readEntireFile(path, &data, &length, 50000)) {
         FTLOG_ERROR("%s: Could not load file", path);
+        return false;
+    }
+
+    // A CrashState document is an object. Reject corrupt scalar/array roots
+    // before dispatching callbacks that expect named object fields.
+    int first = 0;
+    while (first < length && (data[first] == ' ' || data[first] == '\t' ||
+                             data[first] == '\r' || data[first] == '\n')) first++;
+    if (first == length || data[first] != '{') {
+        free(data);
         return false;
     }
 
@@ -231,13 +283,16 @@ static bool loadState(const char *const path)
     int errorOffset = 0;
 
     char stringBuffer[1000];
+    StateDecodeContext decode = {.state = state};
     const int result =
-        ftcrashjson_decode(data, (int)length, stringBuffer, sizeof(stringBuffer), &callbacks, &g_state, &errorOffset);
+        ftcrashjson_decode(data, (int)length, stringBuffer, sizeof(stringBuffer), &callbacks, &decode, &errorOffset);
     free(data);
     if (result != FTCRASHJSON_OK) {
         FTLOG_ERROR("%s, offset %d: %s", path, errorOffset, ftcrashjson_stringForError(result));
         return false;
     }
+    state->previousEarlyCrash = decode.sawVersion && state->previousEarlyCrash &&
+        state->previousEarlyCrashDurationNS <= UINT64_C(5000000000);
     return true;
 }
 /** Save the persistent state portion of a crash context.
@@ -248,6 +303,7 @@ static bool loadState(const char *const path)
  */
 static bool saveState(const char *const path)
 {
+    const uint64_t earlyDuration = atomic_load(&g_earlyCrashDurationNS);
     int fd = open(path, O_RDWR | O_CREAT | O_TRUNC, 0644);
     if (fd < 0) {
         FTLOG_ERROR("Could not open file %s for writing: %s", path, strerror(errno));
@@ -264,6 +320,10 @@ static bool saveState(const char *const path)
     if ((result = ftcrashjson_addIntegerElement(&JSONContext, kKeyFormatVersion, kFormatVersion)) != FTCRASHJSON_OK) {
         goto done;
     }
+    if ((result = ftcrashjson_addBooleanElement(&JSONContext, kKeyPreviousEarlyCrash,
+                                               earlyDuration <= UINT64_C(5000000000))) != FTCRASHJSON_OK) goto done;
+    if ((result = ftcrashjson_addUIntegerElement(&JSONContext, kKeyEarlyCrashDurationNS,
+                                                earlyDuration)) != FTCRASHJSON_OK) goto done;
     // Record this launch crashed state into "crashed last launch" field.
     if ((result = ftcrashjson_addBooleanElement(&JSONContext, kKeyCrashedLastLaunch, g_state.crashedThisLaunch)) !=
         FTCRASHJSON_OK) {
@@ -297,6 +357,11 @@ done:
         FTLOG_ERROR("%s: %s", path, ftcrashjson_stringForError(result));
         return false;
     }
+    // A pre-crash ordinary save may resume after the crash writer. Reconcile
+    // that one-way transition so its stale snapshot cannot overwrite the fact.
+    // Duration changes at most once per process, bounding this to one retry.
+    if (earlyDuration == UINT64_MAX && atomic_load(&g_earlyCrashDurationNS) != UINT64_MAX)
+        return saveState(path);
     return true;
 }
 
@@ -322,10 +387,31 @@ static void updateAppState(void)
 #pragma mark - API -
 // ============================================================================
 
+bool ftcrashstate_readPersistedState(const char *path, FTCrash_AppState *state)
+{
+    if (path == NULL || state == NULL) return false;
+    FTCrash_AppState snapshot = {.previousEarlyCrashDurationNS = UINT64_MAX};
+    if (!loadState(path, &snapshot)) return false;
+    *state = snapshot;
+    return true;
+}
+
 void ftcrashstate_initialize(const char *const stateFilePath)
 {
+    // Never reread or consume this launch's new fact after SDK reinitialization.
+    if (g_stateFilePath != NULL || stateFilePath == NULL) return;
     g_stateFilePath = strdup(stateFilePath);
-    loadState(g_stateFilePath);
+    FTCrash_AppState snapshot;
+    if (ftcrashstate_readPersistedState(g_stateFilePath, &snapshot)) {
+        g_state.activeDurationSinceLastCrash = snapshot.activeDurationSinceLastCrash;
+        g_state.backgroundDurationSinceLastCrash = snapshot.backgroundDurationSinceLastCrash;
+        g_state.launchesSinceLastCrash = snapshot.launchesSinceLastCrash;
+        g_state.sessionsSinceLastCrash = snapshot.sessionsSinceLastCrash;
+        g_state.crashedLastLaunch = snapshot.crashedLastLaunch;
+        g_state.crashedLastTimestamp = snapshot.crashedLastTimestamp;
+        g_state.previousEarlyCrash = snapshot.previousEarlyCrash;
+        g_state.previousEarlyCrashDurationNS = snapshot.previousEarlyCrashDurationNS;
+    }
 }
 
 bool ftcrashstate_reset(void)
@@ -348,7 +434,12 @@ bool ftcrashstate_reset(void)
         g_state.sessionsSinceLastCrash++;
         g_state.applicationIsInForeground = true;
 
-        return saveState(g_stateFilePath);
+        bool saved = saveState(g_stateFilePath);
+        if (!g_consumedHistory) {
+            g_consumedHistory = true;
+            if (!saved) g_state.previousEarlyCrash = false;
+        }
+        return saved;
     }
     return false;
 }
@@ -463,3 +554,15 @@ FTCrashMonitorAPI *ftcrashcm_appstate_getAPI(void)
     return &api;
 }
 
+
+bool ftcrashstate_recordEarlyCrash(uint64_t sdkStart, uint64_t captureTime)
+{
+    uint64_t elapsed;
+    if (!g_stateFilePath || !atomic_load(&g_isEnabled) ||
+        !ft_earlyCrashElapsed(sdkStart, captureTime, &elapsed)) return false;
+    // First valid fact wins; every eligible handler can retry persistence even
+    // when another handler is suspended or a previous write failed.
+    unsigned long long expected = UINT64_MAX;
+    atomic_compare_exchange_strong(&g_earlyCrashDurationNS, &expected, elapsed);
+    return saveState(g_stateFilePath);
+}

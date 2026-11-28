@@ -19,6 +19,7 @@
 //
 
 #import "FTDBDataCachePolicy.h"
+#import "FTDiagnosticsBridge.h"
 #import "FTTrackerEventDBTool.h"
 #import "FTConstants.h"
 #import "FTInnerLog.h"
@@ -105,6 +106,7 @@ static const NSInteger kDBLimitRemoveCount = 100;
     BOOL countIncludesPendingRUM = NO;
     if(self.enableLimitWithDbSize){
         if([self shouldDropRUMForDbLimit]){
+            [FTDiagnosticsBridge record:@"discard" channel:@"rum" count:1 bytes:-1 reason:@"cache_policy"];
             return NO;
         }
     }else{
@@ -115,6 +117,7 @@ static const NSInteger kDBLimitRemoveCount = 100;
             FTInnerLogInfo(@"RUM: DiscardData (%@)",self.rumDiscardNew?@"NEW":@"OLD");
             self.rumCount += count;
             if(self.rumDiscardNew){
+                [FTDiagnosticsBridge record:@"discard" channel:@"rum" count:1 bytes:-1 reason:@"cache_policy"];
                 return NO;
             }
             [[FTTrackerEventDBTool sharedManager] deleteDataWithType:FT_DATA_TYPE_RUM count:-count];
@@ -278,6 +281,7 @@ static const NSInteger kDBLimitRemoveCount = 100;
     if(self.enableLimitWithDbSize){
         if([self shouldDropLogForDbLimitWithCount:logCacheCount]){
             [self decreaseLogCount:logCacheCount];
+            [FTDiagnosticsBridge record:@"discard" channel:@"log" count:logCacheCount bytes:-1 reason:@"cache_policy"];
             return @[];
         }
         return logs;
@@ -294,6 +298,7 @@ static const NSInteger kDBLimitRemoveCount = 100;
         NSInteger keepCount = MAX(0, logCacheCount - overflowCount);
         NSInteger dropCount = logCacheCount - keepCount;
         [self decreaseLogCount:dropCount];
+        if(dropCount>0)[FTDiagnosticsBridge record:@"discard" channel:@"log" count:dropCount bytes:-1 reason:@"cache_policy"];
         if (keepCount == 0) {
             return @[];
         }
@@ -302,6 +307,7 @@ static const NSInteger kDBLimitRemoveCount = 100;
         NSInteger deletedCount = [self deleteOldLogRecordsForDbLimitWithCount:overflowCount];
         NSInteger dropCount = MIN(MAX(0, overflowCount - deletedCount), logCacheCount);
         [self decreaseLogCount:dropCount];
+        if(dropCount>0)[FTDiagnosticsBridge record:@"discard" channel:@"log" count:dropCount bytes:-1 reason:@"cache_policy"];
         if (dropCount == 0) {
             return logs;
         }

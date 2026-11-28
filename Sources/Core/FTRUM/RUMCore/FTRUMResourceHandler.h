@@ -22,6 +22,8 @@
 
 @class FTRUMViewHandler,FTRUMContext;
 NS_ASSUME_NONNULL_BEGIN
+@class FTRUMNetworkSettledMetric;
+
 typedef void(^FTResourceEventSent)(BOOL);
 typedef void(^FTErrorEventSent)(void);
 
@@ -39,7 +41,7 @@ typedef void(^FTErrorEventSent)(void);
 /// - Parameters:
 ///   - model: rum data model
 ///   - context: rum context
--(instancetype)initWithModel:(FTRUMResourceDataModel *)model context:(FTRUMContext *)context dependencies:(FTRUMDependencies *)dependencies;
+-(instancetype)initWithModel:(FTRUMResourceDataModel *)model context:(FTRUMContext *)context dependencies:(FTRUMDependencies *)dependencies networkMetric:(nullable FTRUMNetworkSettledMetric *)networkMetric;
 @end
 
 NS_ASSUME_NONNULL_END

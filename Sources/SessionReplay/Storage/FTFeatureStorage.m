@@ -59,15 +59,27 @@ static NSString * const FTWebViewFilePrefix = @"w";
 @property (nonatomic, strong) id<FTWriter> webViewCacheWriter;
 @property (nonatomic, strong) id<FTWriter> noOpWriter;
 @property (nonatomic, assign) BOOL cacheWriterActive;
+@property (atomic, assign) BOOL invalidated;
+@property (nonatomic, strong) dispatch_queue_t contextQueue;
 @end
+static void *FTStorageContextQueueKey = &FTStorageContextQueueKey;
 @implementation FTFeatureStorage
 
 -(instancetype)initWithFeatureName:(NSString *)featureName
                              queue:(dispatch_queue_t)queue
                        directories:(FTFeatureDirectories *)directories
                        performance:(FTPerformancePreset *)performance{
+    return [self initWithFeatureName:featureName queue:queue contextQueue:dispatch_queue_create("com.ft.replay.context", DISPATCH_QUEUE_SERIAL) directories:directories performance:performance];
+}
+- (instancetype)initWithFeatureName:(NSString *)featureName
+                              queue:(dispatch_queue_t)queue
+                       contextQueue:(dispatch_queue_t)contextQueue
+                        directories:(FTFeatureDirectories *)directories
+                        performance:(FTPerformancePreset *)performance {
     self = [super init];
     if(self){
+        _contextQueue = contextQueue;
+        dispatch_queue_set_specific(contextQueue, FTStorageContextQueueKey, (__bridge void *)contextQueue, NULL);
         _featureName = [featureName copy];
         _queue = queue;
         _performance = performance;
@@ -103,24 +115,22 @@ static NSString * const FTWebViewFilePrefix = @"w";
     return self.webViewAuthorizedWriter;
 }
 - (void)updateTrackingConsent:(FTTrackingConsent)trackingConsent{
-    BOOL shouldActivateCacheWriter = trackingConsent == FTTrackingConsentErrorSampled;
-    @synchronized (self) {
-        if (_cacheWriterActive == shouldActivateCacheWriter) {
+    [self performContextOperation:^{
+        BOOL shouldActivateCacheWriter = !self.invalidated && trackingConsent == FTTrackingConsentErrorSampled;
+        if (self.cacheWriterActive == shouldActivateCacheWriter) {
             return;
         }
-        _cacheWriterActive = shouldActivateCacheWriter;
-    }
-    id<FTCacheWriter> cacheWriter = self.cacheWriter;
-    if (!cacheWriter) {
-        return;
-    }
-    if(shouldActivateCacheWriter){
-        [cacheWriter active];
-    }else{
-        [cacheWriter inactive];
-    }
+        self.cacheWriterActive = shouldActivateCacheWriter;
+        id<FTCacheWriter> cacheWriter = self.cacheWriter;
+        if (shouldActivateCacheWriter) {
+            [cacheWriter active];
+        } else {
+            [cacheWriter inactive];
+        }
+    }];
 }
 - (id<FTWriter>)writerForTrackingConsent:(FTTrackingConsent)trackingConsent{
+    if (self.invalidated) return self.noOpWriter;
     [self updateTrackingConsent:trackingConsent];
     switch (trackingConsent) {
         case FTTrackingConsentGranted:
@@ -133,7 +143,16 @@ static NSString * const FTWebViewFilePrefix = @"w";
             return self.cacheWriter ?: self.noOpWriter;
     }
 }
+- (id<FTWriter>)normalResourceWriterForTrackingConsent:(FTTrackingConsent)trackingConsent{
+    if (self.invalidated) return self.noOpWriter;
+    [self updateTrackingConsent:trackingConsent];
+    if (trackingConsent == FTTrackingConsentGranted || trackingConsent == FTTrackingConsentErrorSampled) {
+        return self.authorizedWriter;
+    }
+    return self.noOpWriter;
+}
 - (id<FTWriter>)webViewWriterForTrackingConsent:(FTTrackingConsent)trackingConsent{
+    if (self.invalidated) return self.noOpWriter;
     [self updateTrackingConsent:trackingConsent];
     switch (trackingConsent) {
         case FTTrackingConsentGranted:
@@ -177,6 +196,19 @@ static NSString * const FTWebViewFilePrefix = @"w";
         return nil;
     }
     return [[FTFileWriter alloc]initWithOrchestrator:orchestrator queue:self.queue];
+}
+- (void)performContextOperation:(dispatch_block_t)operation {
+    if (dispatch_get_specific(FTStorageContextQueueKey) == (__bridge void *)self.contextQueue) {
+        operation();
+    } else {
+        dispatch_sync(self.contextQueue, operation);
+    }
+}
+- (void)invalidate {
+    [self performContextOperation:^{
+        self.invalidated = YES;
+        [self updateTrackingConsent:FTTrackingConsentNotGranted];
+    }];
 }
 - (void)migrateUnauthorizedDataToConsent:(FTTrackingConsent)trackingConsent{
     [self performStorageOperation:^{

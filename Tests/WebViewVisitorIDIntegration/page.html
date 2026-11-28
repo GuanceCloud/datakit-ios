@@ -1,0 +1,87 @@
+<!doctype html><meta charset="utf-8"><title>Visitor ID integration</title><div id="status">running real SDK</div>
+<script>
+const params = new URLSearchParams(location.search), scenario=params.get('scenario'), bundle=params.get('bundle');
+window.lifecycle=[]; for(const name of ["blur","focus","visibilitychange"]) window.addEventListener(name,event=>lifecycle.push({type:name,time:performance.now(),visibility:document.visibilityState}));
+const originalPrompt=window.prompt;window.prompt=function(){lifecycle.push({type:"prompt-before",time:performance.now()});const result=originalPrompt.apply(this,arguments);lifecycle.push({type:"prompt-after",time:performance.now()});return result};
+window.events=[]; window.bridgeEvents=[]; window.failures=[]; window.phases=[];
+window.onerror=(message,source,line,column,error)=>{window.pageError=String(error||message)};
+const bridge=window.FTWebViewJavascriptBridge;
+if(bridge){
+ const originalSend=bridge.sendEvent;
+ bridge.sendEvent=function(data){try{bridgeEvents.push(JSON.parse(data))}catch(e){}return originalSend.apply(this,arguments)};
+ if(scenario==='unavailable') delete bridge.getVisitorid;
+ if(scenario==='invalid') bridge.getVisitorid=()=>"bad\r\nvalue";
+ if(scenario==='throwing') bridge.getVisitorid=()=>{throw new Error('deliberate read failure')};
+}
+const pending={};let commandID=0;
+window.__resolveCommand=(id,value)=>{pending[id](value);delete pending[id]};
+function command(action){return new Promise(resolve=>{let id=++commandID;pending[id]=resolve;window.webkit.messageHandlers.integration.postMessage({command:action,id})})}
+function check(condition,message,details){if(!condition)failures.push({message,details})}
+function xhr(path){return new Promise((resolve,reject)=>{const request=new XMLHttpRequest();request.open('GET',path);request.onload=()=>resolve(JSON.parse(request.responseText));request.onerror=()=>reject(Error('xhr failed'));request.send()})}
+function waitFor(test,timeout=5000){return new Promise((resolve,reject)=>{let start=performance.now();function poll(){const result=test();if(result)return resolve(result);if(performance.now()-start>timeout)return reject(Error('waitFor timed out '+(window.pageError||'')));setTimeout(poll,20)}poll()})}
+async function phase(name,expected){
+ const fetchURL='/api/matched?transport=fetch&phase='+name, xhrURL='/api/matched?transport=xhr&phase='+name;
+ const a=await fetch(fetchURL).then(r=>r.json()),b=await xhr(xhrURL);
+ const id=a.headers['x-rum-visitor-id'];
+ if(scenario==='webDisabled')check(id===undefined&&b.headers['x-rum-visitor-id']===undefined,'disabled headers absent',{a,b});
+ else {check(typeof id==='string'&&id.length>0,'fetch header exists',a);check(b.headers['x-rum-visitor-id']===id,'XHR and Fetch agree',{a,b});if(expected)check(id===expected,'exact expected identity',{expected,id});}
+ datafluxRum.addAction(name,{integration_phase:name});
+ const event=await waitFor(()=>events.find(e=>e.context&&e.context.integration_phase===name));
+ const visitor=event.context&&event.context.visitor_id;
+ check(event._gc&&event._gc.sdk_version==='3.3.16','real RUM event reports SDK 3.3.16',event._gc);
+ if(scenario==='webDisabled')check(visitor===undefined,'disabled context absent',event);
+ else check(visitor===id,'RUM context matches actual request header',{id,event});
+ await waitFor(()=>events.find(e=>e.type==='resource'&&e.resource&&e.resource.url===location.origin+fetchURL));
+ const resource=events.find(e=>e.type==='resource'&&e.resource&&e.resource.url===location.origin+fetchURL);
+ if(scenario!=='webDisabled')check(resource.context.visitor_id===id,'Resource context matches actual header',{id,resource});
+ phases.push({name,fetch:id||null,xhr:b.headers['x-rum-visitor-id']||null,context:visitor||null});
+ return id;
+}
+async function run(){
+ const nativeInitial=await command('current');
+ const originalWebID='pabcdefabcdefabcdefabcdefabcdefab';
+ localStorage.setItem('_gc_visitor_id',JSON.stringify({id:originalWebID,createdAt:Date.now(),revision:0}));
+ await waitFor(()=>document.hasFocus(),10000);
+ datafluxRum.init({applicationId:'11111111-aaaa-1111-aaaa-111111111111',clientToken:'local-test',datakitOrigin:location.origin,
+ service:'webvisitor-integration',env:'test',sessionSampleRate:100,trackInteractions:true,trackResources:true,trackLongTasks:false,
+ visitorId:{enabled:scenario!=='webDisabled',header:'x-rum-visitor-id',match:[location.origin+'/api/matched'],ttlHours:24},
+ beforeSend(event){events.push(JSON.parse(JSON.stringify(event)));return true}});
+ const expected=scenario==='native'?nativeInitial:(scenario==='webDisabled'?undefined:originalWebID);
+ const first=await phase('initial',expected);
+ const unmatched=await fetch('/api/unmatched').then(r=>r.json());check(unmatched.headers['x-rum-visitor-id']===undefined,'unmatched request has no Visitor ID',unmatched);
+ datafluxRum.resetVisitorId();
+ const webReset=await phase('after-web-reset',scenario==='native'?nativeInitial:undefined);
+ if(scenario==='native'){
+  check(webReset===first,'Web reset keeps native identity',{first,webReset});
+  const next=await command('reset');check(next!==first,'native reset creates new identity',{first,next});
+  await phase('after-native-reset',next);
+  await fetch('/hold/prepare');
+  const delayedFetchURL='/api/matched?transport=fetch&phase=inflight&hold=1';
+  const delayedXhrURL='/api/matched?transport=xhr&phase=inflight&hold=1';
+  const delayedFetch=fetch(delayedFetchURL).then(r=>r.json()), delayedXhr=xhr(delayedXhrURL);
+  const state=await fetch('/hold/wait').then(r=>r.json());check(state.held===2,'both real requests started before native reset',state);
+  const during=await command('reset');
+  await fetch('/hold/release');
+  const delayedResults=await Promise.all([delayedFetch,delayedXhr]);
+  for(let index=0;index<2;index++){
+   const url=location.origin+[delayedFetchURL,delayedXhrURL][index];
+   const resource=await waitFor(()=>events.find(e=>e.type==='resource'&&e.resource&&e.resource.url===url));
+   check(delayedResults[index].headers['x-rum-visitor-id']===next,'in-flight actual header retains original ID',delayedResults[index]);
+   check(resource.context.visitor_id===next,'in-flight Resource retains request ID after native reset',{expected:next,resource});
+  }
+  phases.push({name:'inflight-across-native-reset',fetch:delayedResults[0].headers['x-rum-visitor-id'],xhr:delayedResults[1].headers['x-rum-visitor-id'],context:next,currentNative:during});
+  await phase('after-inflight-reset',during);
+  const expired=await command('expire');check(expired!==during,'native TTL rotates identity',{during,expired});
+  await phase('after-native-expiry',expired);
+  await command('disable');
+  const fallback=await phase('after-native-disable',originalWebID);check(fallback!==expired,'disabled native falls back to Web identity',{fallback,expired});
+ }else if(scenario!=='webDisabled'){
+  check(first!==nativeInitial,'fallback does not use native identity',{first,nativeInitial});
+  check(webReset!==first,'Web reset rotates fallback identity',{first,webReset});
+ }
+ if(['denied','webDisabled','noBridge'].includes(scenario))check(!lifecycle.some(event=>event.type==='prompt-before'),'gated scenarios do not read the native visitor bridge',lifecycle);
+ return {bundle,scenario,version:'3.3.16',phases,failures,bridgeEvents:bridgeEvents.filter(e=>e.name==='rum').length,eventCount:events.length};
+}
+</script>
+<script src="/sdk.js"></script>
+<script>var datafluxRum=window.DATAFLUX_RUM;run().then(result=>{document.getElementById('status').textContent=JSON.stringify(result);window.webkit.messageHandlers.integration.postMessage({result})}).catch(error=>window.webkit.messageHandlers.integration.postMessage({result:{bundle,scenario,failures:[{message:String(error),stack:error.stack,pageError:window.pageError}],phases,lifecycle,events:events.slice(-8)}}));</script>

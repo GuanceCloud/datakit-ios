@@ -171,19 +171,19 @@ RUBY
 clangTargetForSDK(){
 case "$sdk" in
 iphoneos)
-echo "arm64-apple-ios12.0"
+echo "arm64-apple-ios15.0"
 ;;
 iphonesimulator)
-echo "arm64-apple-ios12.0-simulator"
+echo "arm64-apple-ios15.0-simulator"
 ;;
 appletvos)
-echo "arm64-apple-tvos12.0"
+echo "arm64-apple-tvos15.0"
 ;;
 appletvsimulator)
-echo "arm64-apple-tvos12.0-simulator"
+echo "arm64-apple-tvos15.0-simulator"
 ;;
 *)
-echo "arm64-apple-ios12.0"
+echo "arm64-apple-ios15.0"
 ;;
 esac
 }

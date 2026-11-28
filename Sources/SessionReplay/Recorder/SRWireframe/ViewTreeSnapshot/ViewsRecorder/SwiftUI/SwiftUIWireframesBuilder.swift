@@ -33,7 +33,6 @@ private enum FTImagePrivacy {
     static let maskNone = 2
 }
 
-@available(iOS 13.0, *)
 struct FTSwiftUIWireframesBuilder {
     struct Output {
         var wireframes: [FTSwiftUIWireframePayload] = []

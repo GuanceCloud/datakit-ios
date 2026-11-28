@@ -20,6 +20,23 @@
 
 #import "FTInternalConstants.h"
 
+NSString *FTStringFromRUMAppState(FTRUMAppState state) {
+    switch (state) {
+        case FTRUMAppStateForegroundOnly: return @"foreground";
+        case FTRUMAppStateBackgroundOnly: return @"background";
+        case FTRUMAppStateBackgroundAndForeground: return @"foreground_and_background";
+        case FTRUMAppStateUnknown: return @"unknown";
+    }
+    return @"unknown";
+}
+
+FTRUMAppState FTRUMAppStateFromString(NSString *state) {
+    if ([state isEqualToString:@"foreground"]) return FTRUMAppStateForegroundOnly;
+    if ([state isEqualToString:@"background"]) return FTRUMAppStateBackgroundOnly;
+    if ([state isEqualToString:@"foreground_and_background"]) return FTRUMAppStateBackgroundAndForeground;
+    return FTRUMAppStateUnknown;
+}
+
 NSString *FTStringFromLogStatus(LogStatus status) {
     switch (status) {
         case StatusInfo:

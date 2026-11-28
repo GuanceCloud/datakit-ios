@@ -33,6 +33,8 @@ NS_ASSUME_NONNULL_BEGIN
 @property (nonatomic, strong, readonly, nullable) NSError *error;
 @property (nonatomic, assign, readonly) NSUInteger attempt;
 
++ (instancetype)successStatus;
+
 + (instancetype)statusWithHTTPResponse:(nullable NSHTTPURLResponse *)httpResponse
                                  error:(nullable NSError *)error
                         previousStatus:(nullable FTUploadStatus *)previousStatus;

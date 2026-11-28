@@ -37,7 +37,6 @@
 @property (class, nonatomic, weak, nullable) id<FTSwiftUIRUMActionHandling> handler;
 @end
 
-API_AVAILABLE(ios(13.0), tvos(13.0))
 @interface FTSwiftUIViewNameExtractor : NSObject
 - (nullable NSString *)extractNameFromViewController:(UIViewController *)viewController;
 @end
@@ -72,7 +71,7 @@ static __weak id<FTSwiftUIRUMActionHandling> ft_swiftUIRUMActionHandler = nil;
 
 @implementation FTSwiftUIViewNameExtractor
 
-- (nullable NSString *)extractNameFromViewController:(UIViewController *)viewController API_AVAILABLE(ios(13.0), tvos(13.0)) {
+- (nullable NSString *)extractNameFromViewController:(UIViewController *)viewController {
     return nil;
 }
 

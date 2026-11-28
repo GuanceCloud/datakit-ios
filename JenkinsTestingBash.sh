@@ -12,6 +12,7 @@ esac
 set -eo pipefail
 
 SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
+bash "${SCRIPT_DIR}/tools/diagnostics/test.sh"
 SCHEME_DIR="${SCRIPT_DIR}/Examples/Examples.xcodeproj/xcshareddata/xcschemes"
 APP_ID="${APP_ID:-}"
 ACCESS_SERVER_URL="${ACCESS_SERVER_URL:-}"
@@ -86,43 +87,75 @@ pod install
 function findSimulator(){
     local TEST_SCHEME="$1"
     local TEST_SIMULATOR="$2"
+    local REQUESTED_DESTINATION="${3:-}"
     local DESTINATIONS
-    local SIMULATOR_INFO
-    local SIMULATOR_ID
+    local SELECTED_DESTINATION
 
-    DESTINATIONS=$(xcodebuild -workspace FTSDK.xcworkspace -scheme "${TEST_SCHEME}" -showdestinations)
-    SIMULATOR_INFO=$(echo "$DESTINATIONS" | awk -v platform="${TEST_SIMULATOR}" '
-      index($0, "{ platform:" platform) > 0 &&
-      index($0, "id:") > 0 &&
-      index($0, "OS:") > 0 &&
-      index($0, "error:") == 0 {
-        print
-        exit
+    if ! DESTINATIONS=$(xcodebuild -workspace FTSDK.xcworkspace -scheme "${TEST_SCHEME}" -showdestinations); then
+        echo "Error: Failed to query destinations for scheme ${TEST_SCHEME}!" >&2
+        return 1
+    fi
+
+    SELECTED_DESTINATION=$(printf '%s\n' "$DESTINATIONS" | awk \
+      -v platform="${TEST_SIMULATOR}" -v requested="${REQUESTED_DESTINATION}" '
+      function trim(value) {
+        sub(/^[[:space:]]+/, "", value)
+        sub(/[[:space:]]+$/, "", value)
+        return value
+      }
+      BEGIN {
+        count = split(requested, parts, ",")
+        for (i = 1; i <= count; i++) {
+          separator = index(parts[i], "=")
+          if (!separator) { invalid = 1; continue }
+          key = trim(substr(parts[i], 1, separator - 1))
+          wanted[key] = trim(substr(parts[i], separator + 1))
+        }
+      }
+      /Destinations incompatible|Ineligible destinations/ { ineligible = 1 }
+      /^[[:space:]]*\{[[:space:]]*platform:/ && !ineligible {
+        for (key in fields) delete fields[key]
+        line = $0
+        sub(/^[[:space:]]*\{[[:space:]]*/, "", line)
+        sub(/[[:space:]]*\}[[:space:]]*$/, "", line)
+        count = split(line, parts, ",")
+        for (i = 1; i <= count; i++) {
+          separator = index(parts[i], ":")
+          if (!separator) continue
+          key = trim(substr(parts[i], 1, separator - 1))
+          fields[key] = trim(substr(parts[i], separator + 1))
+        }
+        if (!fields["id"] || fields["id"] ~ /placeholder/ || "error" in fields) next
+        if (!fallback && fields["platform"] == platform && fields["OS"]) {
+          fallback = "platform=" platform ",id=" fields["id"]
+        }
+        if (!requested || invalid) next
+        matches = 1
+        for (key in wanted) {
+          if (key == "OS" && wanted[key] == "latest" && fields["OS"]) continue
+          if (!(key in fields) || fields[key] != wanted[key]) matches = 0
+        }
+        if (matches) matched = 1
+      }
+      END {
+        if (matched) print requested
+        else if (fallback) print fallback
       }
     ')
 
-    if [ -z "$SIMULATOR_INFO" ]; then
-        echo "Error: No available ${TEST_SIMULATOR} found for scheme ${TEST_SCHEME}!"
-        echo "$DESTINATIONS"
-        exit 1
+    if [ -z "$SELECTED_DESTINATION" ]; then
+        echo "Error: No available ${TEST_SIMULATOR} found for scheme ${TEST_SCHEME}!" >&2
+        printf '%s\n' "$DESTINATIONS" >&2
+        return 1
     fi
 
-    SIMULATOR_ID=$(echo "$SIMULATOR_INFO" | sed -n 's/.*id:\([^,}]*\).*/\1/p' | sed 's/^ *//;s/ *$//')
-
-    if [ -z "$SIMULATOR_ID" ]; then
-        echo "Error: Failed to parse simulator id from destination:"
-        echo "$SIMULATOR_INFO"
-        exit 1
+    if [ -n "$REQUESTED_DESTINATION" ] && [ "$SELECTED_DESTINATION" != "$REQUESTED_DESTINATION" ]; then
+        echo "Warning: Destination '${REQUESTED_DESTINATION}' is unavailable for ${TEST_SCHEME}; using '${SELECTED_DESTINATION}'." >&2
     fi
-
-    echo "platform=${TEST_SIMULATOR},id=${SIMULATOR_ID}"
+    printf '%s\n' "$SELECTED_DESTINATION"
 }
 
-if [ -n "$DEVICE_DESTINATION" ]; then
-    IOS_DESTINATION="$DEVICE_DESTINATION"
-else
-    IOS_DESTINATION=$(findSimulator "FTMobileSDKUnitTestsForCmd" "iOS Simulator")
-fi
+IOS_DESTINATION=$(findSimulator "FTMobileSDKUnitTestsForCmd" "iOS Simulator" "$DEVICE_DESTINATION")
 
 ## Test iOS
 xcodebuild test -workspace FTSDK.xcworkspace \

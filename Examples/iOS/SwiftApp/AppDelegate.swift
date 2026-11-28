@@ -46,6 +46,12 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
             rumConfig.enableTrackAppCrash = true
             rumConfig.enableTrackAppFreeze = true
             rumConfig.deviceMetricsMonitorType = .all
+            // Opt in only for application endpoints that explicitly accept the Visitor header.
+            let visitorConfig = FTVisitorIDConfig()
+            visitorConfig.header = "x-guance-visitor"
+            visitorConfig.ttlHours = 24
+            visitorConfig.addMatch(urlPrefix: "https://httpbin.org/")
+            rumConfig.visitorIDConfig = visitorConfig
             let traceConfig = FTTraceConfig.init()
             traceConfig.enableLinkRumData = true
             traceConfig.enableAutoTrace = true

@@ -17,6 +17,7 @@
 #if TARGET_OS_IOS || TARGET_OS_OSX
 
 #import "FTSnapshotProcessor.h"
+#import "FTViewTreeSnapshot.h"
 #import "FTViewTreeSnapshotBuilder.h"
 #import "FTViewAttributes.h"
 #import "FTViewAttributes.h"
@@ -46,6 +47,7 @@ NSTimeInterval const kFullSnapshotInterval = 20.0;
 @property (nonatomic, strong) NSMutableDictionary *recordsCountByViewID;
 @property (nonatomic, strong) NSDictionary *lastBindInfo;
 @property (nonatomic, strong) FTResourceProcessor *resourceProcessor;
+@property (nonatomic, assign) BOOL forceFullSnapshotPending;
 @end
 @implementation FTSnapshotProcessor
 -(instancetype)initWithQueue:(dispatch_queue_t)queue recordWriter:(FTRecordWriter *)recordWriter resourceProcessor:(FTResourceProcessor *)resourceProcessor{
@@ -65,6 +67,12 @@ NSTimeInterval const kFullSnapshotInterval = 20.0;
         __strong typeof(self) strongSelf = weakSelf;
         if (!strongSelf) return;
         [strongSelf processSync:viewTreeSnapshot touchSnapshot:touchSnapshot];
+    });
+}
+- (void)forceFullSnapshot{
+    __weak typeof(self) weakSelf = self;
+    dispatch_async(self.queue, ^{
+        weakSelf.forceFullSnapshotPending = YES;
     });
 }
 - (void)processSync:(FTViewTreeSnapshot *)viewTreeSnapshot touchSnapshot:(FTTouchSnapshot *)touchSnapshot{
@@ -100,7 +108,9 @@ NSTimeInterval const kFullSnapshotInterval = 20.0;
         BOOL needFullSnapOnLinkRumKeysBind = [self needFullSnapOnLinkRumKeysBind:[srBuilder linkRumKeysInfo] context:viewTreeSnapshot.context];
         // when enable sessionErrorSampled
         BOOL isTimeForFullSnapshot = [self isTimeForFullSnapshot:isNewView];
-        BOOL fullSnapshotRequired = isNewView || needFullSnapOnLinkRumKeysBind || isTimeForFullSnapshot;
+        BOOL forceFullSnapshot = self.forceFullSnapshotPending;
+        self.forceFullSnapshotPending = NO;
+        BOOL fullSnapshotRequired = isNewView || needFullSnapOnLinkRumKeysBind || isTimeForFullSnapshot || forceFullSnapshot;
         
         // 3.1.New view full save
         if (fullSnapshotRequired){

@@ -26,17 +26,52 @@
 #import "FTJSONUtil.h"
 #import "FTInnerLog.h"
 #import "NSDictionary+FTCopyProperties.h"
+#import "FTVisitorIDConfig+Private.h"
 
 @interface FTRumConfig ()
-@property (nonatomic, assign) BOOL enableUIKitViewLoadingTime;
+@property (nonatomic, copy, nullable) NSArray *allowWebViewHost;
 @end
 
 @implementation FTRumConfig
+// Keep deprecated sampling accessors for backward compatibility.
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wdeprecated-implementations"
 - (int)sampleRate {
-    return _samplerate;
+    return (int)_sessionSamplingRate;
 }
 - (void)setSampleRate:(int)sampleRate {
-    _samplerate = sampleRate;
+    self.sessionSamplingRate = (float)sampleRate;
+}
+- (int)samplerate {
+    return (int)_sessionSamplingRate;
+}
+- (void)setSamplerate:(int)samplerate {
+    self.sessionSamplingRate = (float)samplerate;
+}
+#pragma clang diagnostic pop
+- (void)setSessionSamplingRate:(float)sessionSamplingRate {
+    if (![FTBaseInfoHandler isValidSamplingRate:sessionSamplingRate]) {
+        FTInnerLogWarning(@"[sampling] Ignore invalid sessionSamplingRate: %g", sessionSamplingRate);
+        return;
+    }
+    _sessionSamplingRate = sessionSamplingRate;
+}
+// Keep deprecated sampling accessors for backward compatibility.
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wdeprecated-implementations"
+- (int)sessionOnErrorSampleRate {
+    return (int)_sessionOnErrorSamplingRate;
+}
+- (void)setSessionOnErrorSampleRate:(int)sessionOnErrorSampleRate {
+    self.sessionOnErrorSamplingRate = (float)sessionOnErrorSampleRate;
+}
+#pragma clang diagnostic pop
+- (void)setSessionOnErrorSamplingRate:(float)sessionOnErrorSamplingRate {
+    if (![FTBaseInfoHandler isValidSamplingRate:sessionOnErrorSamplingRate]) {
+        FTInnerLogWarning(@"[sampling] Ignore invalid sessionOnErrorSamplingRate: %g", sessionOnErrorSamplingRate);
+        return;
+    }
+    _sessionOnErrorSamplingRate = sessionOnErrorSamplingRate;
 }
 - (instancetype)init{
     return [self initWithAppid:@""];
@@ -45,36 +80,51 @@
     self = [super init];
     if (self) {
         _appid = [appid copy];
+        _nextViewActionPredicate = [FTRUMTimeBasedNextViewActionPredicate new];
+        _networkSettledResourcePredicate = [FTRUMTimeBasedNetworkSettledPredicate new];
         _enableTrackAppCrash= NO;
-        _samplerate = 100;
-        _sessionOnErrorSampleRate = 0;
+        _sessionSamplingRate = 100.0f;
+        _sessionOnErrorSamplingRate = 0.0f;
         _enableTrackAppFreeze = NO;
         _enableTrackAppANR = NO;
         _enableTraceUserAction = NO;
         _enableTraceUserView = NO;
         _enableTraceUserResource = NO;
+        _enableTraceURLConnectionResource = NO;
         _enableResourceHostIP = NO;
         _monitorFrequency = FTMonitorFrequencyDefault;
         _freezeDurationMs = FT_DEFAULT_BLOCK_DURATIONS_MS;
         _rumCacheLimitCount = FT_DB_RUM_MAX_COUNT;
         _rumDiscardType = FTRUMDiscard;
         _enableTraceWebView = YES;
-        _enableUIKitViewLoadingTime = YES;
+        _enableTraceUserViewLoadingTime = YES;
+        _viewLoadingTimeClassNameExcludes = @[];
         _crashMonitoring = FTCrashMonitorTypeHighCompatibility;
     }
     return self;
 }
+- (void)setNetworkSettledResourcePredicate:(id<FTRUMNetworkSettledResourcePredicate>)predicate {
+    _networkSettledResourcePredicate = predicate ?: [FTRUMTimeBasedNetworkSettledPredicate new];
+}
+- (void)setLaunchPrewarmInterval:(NSInteger)value {
+    if (value < 0 || (uint64_t)value > INT64_MAX / 1000000ULL) return;
+    _launchPrewarmInterval = value;
+}
 - (instancetype)copyWithZone:(NSZone *)zone {
     FTRumConfig *options = [[[self class] allocWithZone:zone] init];
+    options.launchPrewarmInterval = self.launchPrewarmInterval;
     options.enableTrackAppCrash = self.enableTrackAppCrash;
-    options.sampleRate = self.sampleRate;
+    options->_sessionSamplingRate = _sessionSamplingRate;
     options.enableTrackAppFreeze = self.enableTrackAppFreeze;
     options.enableTrackAppANR = self.enableTrackAppANR;
     options.enableTraceUserAction = self.enableTraceUserAction;
     options.enableTraceUserView = self.enableTraceUserView;
     options.enableTraceUserResource = self.enableTraceUserResource;
+    options.enableTraceURLConnectionResource = self.enableTraceURLConnectionResource;
     options.enableResourceHostIP = self.enableResourceHostIP;
     options.appid = [self.appid copy];
+    options->_nextViewActionPredicate = _nextViewActionPredicate;
+    options.networkSettledResourcePredicate = self.networkSettledResourcePredicate;
     options.errorMonitorType = self.errorMonitorType;
     options.globalContext = [self.globalContext copy];
     options.deviceMetricsMonitorType = self.deviceMetricsMonitorType;
@@ -84,12 +134,14 @@
     options.rumCacheLimitCount = self.rumCacheLimitCount;
     options.rumDiscardType = self.rumDiscardType;
     options.resourcePropertyProvider = [self.resourcePropertyProvider copy];
-    options.sessionOnErrorSampleRate = self.sessionOnErrorSampleRate;
+    options->_sessionOnErrorSamplingRate = _sessionOnErrorSamplingRate;
     options.enableTraceWebView = self.enableTraceWebView;
-    options.enableUIKitViewLoadingTime = self.enableUIKitViewLoadingTime;
-    options.allowWebViewHost = [self.allowWebViewHost copy];
+    options.enableTraceUserViewLoadingTime = self.enableTraceUserViewLoadingTime;
+    options.viewLoadingTimeClassNameExcludes = self.viewLoadingTimeClassNameExcludes;
+    options->_allowWebViewHost = [_allowWebViewHost copy];
     options.sessionTaskErrorFilter = [self.sessionTaskErrorFilter copy];
     options.issueDataProvider = [self.issueDataProvider copy];
+    options.visitorIDConfig = [self.visitorIDConfig copy];
 #if TARGET_OS_IOS || TARGET_OS_TV
     options.viewTrackingHandler = self.viewTrackingHandler;
     options.swiftUIViewTrackingHandler = self.swiftUIViewTrackingHandler;
@@ -101,15 +153,26 @@
 -(instancetype)initWithDictionary:(NSDictionary *)dict{
     if(dict){
         if (self = [self init]) {
+            id interval = dict[@"launchPrewarmInterval"];
+            if ([interval isKindOfClass:NSNumber.class] && isfinite([interval doubleValue]) &&
+                [interval doubleValue] >= 0 && [interval doubleValue] <= INT64_MAX / 1000000ULL) {
+                self.launchPrewarmInterval = [interval integerValue];
+            }
             if ([dict ft_hasValidValueForKey:@"enableTrackAppCrash"]) _enableTrackAppCrash = [dict[@"enableTrackAppCrash"] boolValue];
-            if ([dict ft_hasValidValueForKey:@"samplerate"]) _samplerate = [dict[@"samplerate"] intValue];
-            if ([dict ft_hasValidValueForKey:@"sampleRate"]) _samplerate = [dict[@"sampleRate"] intValue];
+            if ([dict ft_hasValidValueForKey:@"samplerate"]) self.sessionSamplingRate = (float)[dict[@"samplerate"] intValue];
+            if ([dict ft_hasValidValueForKey:@"sampleRate"]) self.sessionSamplingRate = (float)[dict[@"sampleRate"] intValue];
+            if ([dict ft_hasValidValueForKey:@"sessionSamplingRate"]) self.sessionSamplingRate = [dict[@"sessionSamplingRate"] floatValue];
             if ([dict ft_hasValidValueForKey:@"enableTrackAppFreeze"]) _enableTrackAppFreeze = [dict[@"enableTrackAppFreeze"] boolValue];
             if ([dict ft_hasValidValueForKey:@"freezeDurationMs"]) self.freezeDurationMs = [dict[@"freezeDurationMs"] intValue];
             if ([dict ft_hasValidValueForKey:@"enableTrackAppANR"]) _enableTrackAppANR = [dict[@"enableTrackAppANR"] boolValue];
             if ([dict ft_hasValidValueForKey:@"enableTraceUserAction"]) _enableTraceUserAction = [dict[@"enableTraceUserAction"] boolValue];
             if ([dict ft_hasValidValueForKey:@"enableTraceUserView"]) _enableTraceUserView = [dict[@"enableTraceUserView"] boolValue];
+            if ([dict ft_hasValidValueForKey:@"enableTraceUserViewLoadingTime"]) self.enableTraceUserViewLoadingTime = [dict[@"enableTraceUserViewLoadingTime"] boolValue];
+            if ([dict[@"viewLoadingTimeClassNameExcludes"] isKindOfClass:NSArray.class]) {
+                self.viewLoadingTimeClassNameExcludes = dict[@"viewLoadingTimeClassNameExcludes"];
+            }
             if ([dict ft_hasValidValueForKey:@"enableTraceUserResource"]) _enableTraceUserResource = [dict[@"enableTraceUserResource"] boolValue];
+            if ([dict ft_hasValidValueForKey:@"enableTraceURLConnectionResource"]) _enableTraceURLConnectionResource = [dict[@"enableTraceURLConnectionResource"] boolValue];
             if ([dict ft_hasValidValueForKey:@"enableResourceHostIP"]) _enableResourceHostIP = [dict[@"enableResourceHostIP"] boolValue];
             if ([dict ft_hasValidValueForKey:@"appid"]) _appid = [dict[@"appid"] copy];
             if ([dict ft_hasValidValueForKey:@"errorMonitorType"]) _errorMonitorType = (FTErrorMonitorType)[dict[@"errorMonitorType"] intValue];
@@ -119,12 +182,16 @@
             if ([dict ft_hasValidValueForKey:@"resourceUrlHandler"]) _resourceUrlHandler = [[dict valueForKey:@"resourceUrlHandler"] copy];
             if ([dict ft_hasValidValueForKey:@"resourceProvider"]) _resourcePropertyProvider = [[dict valueForKey:@"resourceProvider"] copy];
             if ([dict ft_hasValidValueForKey:@"sessionTaskErrorFilter"]) _sessionTaskErrorFilter = [[dict valueForKey:@"sessionTaskErrorFilter"] copy];
-            if ([dict ft_hasValidValueForKey:@"sessionOnErrorSampleRate"]) _sessionOnErrorSampleRate = [[dict valueForKey:@"sessionOnErrorSampleRate"] intValue];
+            if ([dict ft_hasValidValueForKey:@"sessionOnErrorSampleRate"]) self.sessionOnErrorSamplingRate = (float)[[dict valueForKey:@"sessionOnErrorSampleRate"] intValue];
+            if ([dict ft_hasValidValueForKey:@"sessionOnErrorSamplingRate"]) self.sessionOnErrorSamplingRate = [[dict valueForKey:@"sessionOnErrorSamplingRate"] floatValue];
             if ([dict ft_hasValidValueForKey:@"crashMonitoring"]) _crashMonitoring = (FTCrashMonitorType)[[dict valueForKey:@"crashMonitoring"] intValue];
             if ([dict ft_hasValidValueForKey:@"rumCacheLimitCount"]) self.rumCacheLimitCount = [dict[@"rumCacheLimitCount"] intValue];
             if ([dict ft_hasValidValueForKey:@"rumDiscardType"]) _rumDiscardType = (FTRUMCacheDiscard)[dict[@"rumDiscardType"] intValue];
             if ([dict ft_hasValidValueForKey:@"enableTraceWebView"]) _enableTraceWebView = [dict[@"enableTraceWebView"] boolValue];
             if ([dict ft_hasValidValueForKey:@"allowWebViewHost"]) _allowWebViewHost = [dict[@"allowWebViewHost"] copy];
+            if ([dict ft_hasValidValueForKey:@"visitorIDConfig"] && [dict[@"visitorIDConfig"] isKindOfClass:NSDictionary.class]) {
+                _visitorIDConfig = [[FTVisitorIDConfig alloc] initWithDictionary:dict[@"visitorIDConfig"]];
+            }
         }
         return self;
     }else{
@@ -135,6 +202,15 @@
     _enableTrackAppFreeze = enableTrackAppFreeze;
     self.freezeDurationMs = freezeDurationMs;
 }
+- (void)setViewLoadingTimeClassNameExcludes:(NSArray<NSString *> *)excludes {
+    NSMutableArray<NSString *> *validNames = [NSMutableArray array];
+    for (id name in excludes) {
+        if ([name isKindOfClass:NSString.class] && [name length] > 0) {
+            [validNames addObject:[name copy]];
+        }
+    }
+    _viewLoadingTimeClassNameExcludes = [validNames copy];
+}
 -(void)setFreezeDurationMs:(long)freezeDurationMs{
     _freezeDurationMs = MAX(FT_MIN_DEFAULT_BLOCK_DURATIONS_MS,freezeDurationMs);
 }
@@ -143,14 +219,19 @@
 }
 -(NSDictionary *)convertToDictionary{
     NSMutableDictionary *dict = [NSMutableDictionary new];
+    dict[@"launchPrewarmInterval"] = @(self.launchPrewarmInterval);
     [dict setValue:@(self.enableTrackAppCrash) forKey:@"enableTrackAppCrash"];
-    [dict setValue:@(self.sampleRate) forKey:@"sampleRate"];
+    [dict setValue:@((int)_sessionSamplingRate) forKey:@"sampleRate"];
+    [dict setValue:@(_sessionSamplingRate) forKey:@"sessionSamplingRate"];
     [dict setValue:@(self.enableTrackAppFreeze) forKey:@"enableTrackAppFreeze"];
     [dict setValue:@(self.freezeDurationMs) forKey:@"freezeDurationMs"];
     [dict setValue:@(self.enableTrackAppANR) forKey:@"enableTrackAppANR"];
     [dict setValue:@(self.enableTraceUserAction) forKey:@"enableTraceUserAction"];
     [dict setValue:@(self.enableTraceUserView) forKey:@"enableTraceUserView"];
+    [dict setValue:@(self.enableTraceUserViewLoadingTime) forKey:@"enableTraceUserViewLoadingTime"];
+    [dict setValue:self.viewLoadingTimeClassNameExcludes forKey:@"viewLoadingTimeClassNameExcludes"];
     [dict setValue:@(self.enableTraceUserResource) forKey:@"enableTraceUserResource"];
+    [dict setValue:@(self.enableTraceURLConnectionResource) forKey:@"enableTraceURLConnectionResource"];
     [dict setValue:@(self.enableResourceHostIP) forKey:@"enableResourceHostIP"];
     [dict setValue:@(self.errorMonitorType) forKey:@"errorMonitorType"];
     [dict setValue:self.appid forKey:@"appid"];
@@ -159,14 +240,20 @@
     [dict setValue:self.globalContext forKey:@"globalContext"];
     [dict setValue:@(self.rumCacheLimitCount) forKey:@"rumCacheLimitCount"];
     [dict setValue:@(self.rumDiscardType) forKey:@"rumDiscardType"];
-    [dict setValue:@(self.sessionOnErrorSampleRate) forKey:@"sessionOnErrorSampleRate"];
+    [dict setValue:@((int)_sessionOnErrorSamplingRate) forKey:@"sessionOnErrorSampleRate"];
+    [dict setValue:@(_sessionOnErrorSamplingRate) forKey:@"sessionOnErrorSamplingRate"];
     [dict setValue:@(self.crashMonitoring) forKey:@"crashMonitoring"];
     [dict setValue:@(self.enableTraceWebView) forKey:@"enableTraceWebView"];
-    [dict setValue:self.allowWebViewHost forKey:@"allowWebViewHost"];
+    [dict setValue:_allowWebViewHost forKey:@"allowWebViewHost"];
+    [dict setValue:[self.visitorIDConfig convertToDictionary] forKey:@"visitorIDConfig"];
     return dict;
 }
 -(NSString *)debugDescription{
     NSMutableDictionary *dict = [[self convertToDictionary] mutableCopy];
+    [dict setValue:@(self.sessionSamplingRate) forKey:@"sessionSamplingRate"];
+    [dict setValue:@(self.sessionOnErrorSamplingRate) forKey:@"sessionOnErrorSamplingRate"];
+    [dict setValue:_nextViewActionPredicate forKey:@"nextViewActionPredicate"];
+    [dict setValue:self.networkSettledResourcePredicate forKey:@"networkSettledResourcePredicate"];
     [dict setValue:[self.resourceUrlHandler copy] forKey:@"resourceUrlHandler"];
     [dict setValue:[self.resourcePropertyProvider copy] forKey:@"resourcePropertyProvider"];
     [dict setValue:[self.sessionTaskErrorFilter copy] forKey:@"sessionTaskErrorFilter"];
@@ -176,8 +263,9 @@
     [dict setValue:self.actionTrackingHandler forKey:@"actionTrackingHandler"];
 #endif
     [dict setValue:@(self.enableTraceWebView) forKey:@"enableTraceWebView"];
-    [dict setValue:[self.allowWebViewHost copy] forKey:@"allowWebViewHost"];
+    [dict setValue:[_allowWebViewHost copy] forKey:@"allowWebViewHost"];
     [dict setValue:[self.issueDataProvider copy] forKey:@"issueDataProvider"];
+    [dict setValue:self.visitorIDConfig.debugDescription forKey:@"visitorIDConfig"];
     return [NSString stringWithFormat:@"%@",dict];
 }
 @end

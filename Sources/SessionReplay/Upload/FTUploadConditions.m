@@ -76,9 +76,7 @@ static NSString *FTStringFromBatteryState(UIDeviceBatteryState state) {
     self.batteryState = self.device.batteryState;
     self.batteryLevel = self.device.batteryLevel;
 #elif TARGET_OS_OSX
-    if (@available(macOS 12.0, *)) {
-        self.lowPowerModeEnabled = NSProcessInfo.processInfo.lowPowerModeEnabled;
-    }
+    self.lowPowerModeEnabled = NSProcessInfo.processInfo.lowPowerModeEnabled;
 #endif
     NotificationBlock block = ^(NSNotification *notification){
         __strong __typeof(weakSelf) strongSelf = weakSelf;
@@ -89,9 +87,7 @@ static NSString *FTStringFromBatteryState(UIDeviceBatteryState state) {
                 #if TARGET_OS_IOS
                 strongSelf.lowPowerModeEnabled = info.lowPowerModeEnabled;
                 #elif TARGET_OS_OSX
-                if (@available(macOS 12.0, *)) {
-                    strongSelf.lowPowerModeEnabled = info.lowPowerModeEnabled;
-                }
+                strongSelf.lowPowerModeEnabled = info.lowPowerModeEnabled;
                 #endif
             }];
 #if TARGET_OS_IOS
@@ -112,10 +108,8 @@ static NSString *FTStringFromBatteryState(UIDeviceBatteryState state) {
     id processObserver = [notificationCenter addObserverForName:NSProcessInfoPowerStateDidChangeNotification object:nil queue:NSOperationQueue.mainQueue usingBlock:block];
     [array addObject:processObserver];
     #elif TARGET_OS_OSX
-    if (@available(macOS 12.0, *)) {
-        id processObserver = [notificationCenter addObserverForName:NSProcessInfoPowerStateDidChangeNotification object:nil queue:NSOperationQueue.mainQueue usingBlock:block];
-        [array addObject:processObserver];
-    }
+    id processObserver = [notificationCenter addObserverForName:NSProcessInfoPowerStateDidChangeNotification object:nil queue:NSOperationQueue.mainQueue usingBlock:block];
+    [array addObject:processObserver];
     #endif
     self.observers = array;
 }

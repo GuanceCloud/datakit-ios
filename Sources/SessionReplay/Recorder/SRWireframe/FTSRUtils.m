@@ -189,16 +189,9 @@ CGFloat FTCGSizeAspectRatio(CGSize size){
         ? (NSAppearance *)traitCollection
         : nil;
     if (appearance) {
-        if (@available(macOS 11.0, *)) {
-            [appearance performAsCurrentDrawingAppearance:^{
-                rgbColor = [color colorUsingColorSpace:NSColorSpace.sRGBColorSpace];
-            }];
-        } else {
-            NSAppearance *previousAppearance = NSAppearance.currentAppearance;
-            NSAppearance.currentAppearance = appearance;
+        [appearance performAsCurrentDrawingAppearance:^{
             rgbColor = [color colorUsingColorSpace:NSColorSpace.sRGBColorSpace];
-            NSAppearance.currentAppearance = previousAppearance;
-        }
+        }];
     } else {
         rgbColor = [color colorUsingColorSpace:NSColorSpace.sRGBColorSpace];
     }
@@ -280,13 +273,9 @@ CGFloat FTCGSizeAspectRatio(CGSize size){
                 UITextContentTypePostalCode,
                 UITextContentTypeCreditCardNumber,
             ]];
-            if (@available(iOS 11.0, *)) {
-                [mutableSet addObject:UITextContentTypePassword];
-            }
-            if (@available(iOS 12.0, *)) {
-                [mutableSet addObject:UITextContentTypeNewPassword];
-                [mutableSet addObject:UITextContentTypeOneTimeCode];
-            }
+            [mutableSet addObject:UITextContentTypePassword];
+            [mutableSet addObject:UITextContentTypeNewPassword];
+            [mutableSet addObject:UITextContentTypeOneTimeCode];
             sensitiveContentTypes = mutableSet;
         });
         return [sensitiveContentTypes containsObject:contentType];

@@ -2,6 +2,20 @@
 //  FTNSImageViewRecorder.m
 //  SessionReplay AppKit views
 //
+//  Copyright 2026 Shanghai Guance Information Technology Co., Ltd.
+//
+//  Licensed under the Apache License, Version 2.0 (the "License");
+//  you may not use this file except in compliance with the License.
+//  You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+//  Unless required by applicable law or agreed to in writing, software
+//  distributed under the License is distributed on an "AS IS" BASIS,
+//  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+//  See the License for the specific language governing permissions and
+//  limitations under the License.
+//
 
 #import <TargetConditionals.h>
 #if TARGET_OS_OSX
@@ -9,8 +23,8 @@
 #import "FTAppKitViewRecorders.h"
 #import <AppKit/AppKit.h>
 #import <CommonCrypto/CommonDigest.h>
-#import <CoreServices/CoreServices.h>
 #import <ImageIO/ImageIO.h>
+#import <UniformTypeIdentifiers/UniformTypeIdentifiers.h>
 #import <objc/runtime.h>
 #import "FTSRNodeWireframesBuilder.h"
 #import "FTSRViewID.h"
@@ -129,7 +143,7 @@ static NSData *FTSRPNGData(CGImageRef image) {
     NSMutableData *data = [NSMutableData data];
     CGImageDestinationRef destination =
         CGImageDestinationCreateWithData((__bridge CFMutableDataRef)data,
-                                         kUTTypePNG,
+                                         (__bridge CFStringRef)UTTypePNG.identifier,
                                          1,
                                          NULL);
     if (!destination) {

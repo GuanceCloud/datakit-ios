@@ -22,6 +22,7 @@
 #error This file must be compiled with ARC. Either turn on ARC for the project or use -fobjc-arc flag on this file.
 #endif
 #import "FTSDKConfig.h"
+#import "FTSDKConfig+Private.h"
 #import "FTConstants.h"
 #import "FTBaseInfoHandler.h"
 #import "FTInternalConstants.h"
@@ -30,37 +31,57 @@
 #import "NSDictionary+FTCopyProperties.h"
 
 @implementation FTTraceConfig
+// Keep deprecated sampling accessors for backward compatibility.
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wdeprecated-implementations"
 - (int)sampleRate {
-    return _samplerate;
+    return (int)_traceSamplingRate;
 }
 - (void)setSampleRate:(int)sampleRate {
-    _samplerate = sampleRate;
+    self.traceSamplingRate = (float)sampleRate;
+}
+- (int)samplerate {
+    return (int)_traceSamplingRate;
+}
+- (void)setSamplerate:(int)samplerate {
+    self.traceSamplingRate = (float)samplerate;
+}
+#pragma clang diagnostic pop
+- (void)setTraceSamplingRate:(float)traceSamplingRate {
+    if (![FTBaseInfoHandler isValidSamplingRate:traceSamplingRate]) {
+        FTInnerLogWarning(@"[sampling] Ignore invalid traceSamplingRate: %g", traceSamplingRate);
+        return;
+    }
+    _traceSamplingRate = traceSamplingRate;
 }
 -(instancetype)init{
     self = [super init];
     if (self) {
-        _samplerate= 100;
+        _traceSamplingRate = 100.0f;
         _networkTraceType = FTNetworkTraceTypeDDtrace;
     }
     return self;
 }
 - (instancetype)copyWithZone:(NSZone *)zone {
     FTTraceConfig *options = [[[self class] allocWithZone:zone] init];
-    options.sampleRate = self.sampleRate;
+    options->_traceSamplingRate = _traceSamplingRate;
     options.enableLinkRumData = self.enableLinkRumData;
     options.networkTraceType = self.networkTraceType;
     options.enableAutoTrace = self.enableAutoTrace;
+    options.enableAutoTraceURLConnection = self.enableAutoTraceURLConnection;
     options.traceInterceptor = [self.traceInterceptor copy];
     return options;
 }
 -(instancetype)initWithDictionary:(NSDictionary *)dict{
     if(dict){
         if (self = [self init]) {
-            if ([dict ft_hasValidValueForKey:@"samplerate"]) _samplerate = [dict[@"samplerate"] intValue];
-            if ([dict ft_hasValidValueForKey:@"sampleRate"]) _samplerate = [dict[@"sampleRate"] intValue];
+            if ([dict ft_hasValidValueForKey:@"samplerate"]) self.traceSamplingRate = (float)[dict[@"samplerate"] intValue];
+            if ([dict ft_hasValidValueForKey:@"sampleRate"]) self.traceSamplingRate = (float)[dict[@"sampleRate"] intValue];
+            if ([dict ft_hasValidValueForKey:@"traceSamplingRate"]) self.traceSamplingRate = [dict[@"traceSamplingRate"] floatValue];
             if ([dict ft_hasValidValueForKey:@"enableLinkRumData"]) _enableLinkRumData = [dict[@"enableLinkRumData"] boolValue];
             if ([dict ft_hasValidValueForKey:@"networkTraceType"]) _networkTraceType =(FTNetworkTraceType)[dict[@"networkTraceType"] intValue];
             if ([dict ft_hasValidValueForKey:@"enableAutoTrace"]) _enableAutoTrace = [dict[@"enableAutoTrace"] boolValue];
+            if ([dict ft_hasValidValueForKey:@"enableAutoTraceURLConnection"]) _enableAutoTraceURLConnection = [dict[@"enableAutoTraceURLConnection"] boolValue];
             if ([dict ft_hasValidValueForKey:@"traceInterceptor"]) _traceInterceptor = [dict[@"traceInterceptor"] copy];
         }
         return self;
@@ -70,20 +91,25 @@
 }
 -(NSDictionary *)convertToDictionary{
     NSMutableDictionary *dict = [NSMutableDictionary new];
-    [dict setValue:@(self.sampleRate) forKey:@"sampleRate"];
+    [dict setValue:@((int)_traceSamplingRate) forKey:@"sampleRate"];
+    [dict setValue:@(_traceSamplingRate) forKey:@"traceSamplingRate"];
     [dict setValue:@(self.enableLinkRumData) forKey:@"enableLinkRumData"];
     [dict setValue:@(self.networkTraceType) forKey:@"networkTraceType"];
     [dict setValue:@(self.enableAutoTrace) forKey:@"enableAutoTrace"];
+    [dict setValue:@(self.enableAutoTraceURLConnection) forKey:@"enableAutoTraceURLConnection"];
     return dict;
 }
 -(NSString *)debugDescription{
     NSMutableDictionary *dict = [[self convertToDictionary] mutableCopy];
+    [dict setValue:@(self.traceSamplingRate) forKey:@"traceSamplingRate"];
     [dict setValue:[self.traceInterceptor copy] forKey:@"traceInterceptor"];
     return [NSString stringWithFormat:@"%@",dict];
 }
 @end
 @interface FTSDKConfig()
 @property (nonatomic, strong) NSMutableDictionary *sdkPkgInfo;
+@property (nonatomic, copy) NSString *metricsUrl;
+@property (nonatomic, copy) NSString *version;
 @end
 @implementation FTSDKConfig
 -(instancetype)initWithMetricsUrl:(NSString *)metricsUrl{
@@ -168,6 +194,10 @@
 -(void)setRemoteConfigMiniUpdateInterval:(int)remoteConfigMiniUpdateInterval{
     _remoteConfigMiniUpdateInterval = MAX(0, remoteConfigMiniUpdateInterval);
 }
+- (void)setAllowWebViewHost:(NSArray<NSString *> *)allowWebViewHost {
+    _allowWebViewHostConfigured = YES;
+    _allowWebViewHost = [allowWebViewHost copy];
+}
 -(NSDictionary *)pkgInfo{
     NSDictionary *dict = nil;
     @synchronized (self) {
@@ -207,6 +237,9 @@
     options.lineDataModifier = [self.lineDataModifier copy];
     options.enableDataFilter = self.enableDataFilter;
     options.dataFilters = [self.dataFilters copy];
+    options->_allowWebViewHost = [self.allowWebViewHost copy];
+    options.allowWebViewHostConfigured = self.allowWebViewHostConfigured;
+    options.remoteAllowWebViewHost = [self.remoteAllowWebViewHost copy];
     options.remoteConfiguration = self.remoteConfiguration;
     options.remoteConfigMiniUpdateInterval = self.remoteConfigMiniUpdateInterval;
     options.remoteConfigFetchCompletionBlock = [self.remoteConfigFetchCompletionBlock copy];
@@ -222,6 +255,7 @@
             if ([dict ft_hasValidValueForKey:@"env"]) self.env = [dict valueForKey:@"env"];
             if ([dict ft_hasValidValueForKey:@"enableDataFilter"]) self.enableDataFilter = [[dict valueForKey:@"enableDataFilter"] boolValue];
             if ([dict ft_hasValidValueForKey:@"dataFilters"]) self.dataFilters = [dict valueForKey:@"dataFilters"];
+            if ([dict ft_hasValidValueForKey:@"allowWebViewHost"]) self.allowWebViewHost = [dict valueForKey:@"allowWebViewHost"];
         }
         return self;
     }else{
@@ -238,6 +272,7 @@
     [dict setValue:self.env forKey:@"env"];
     [dict setValue:@(self.enableDataFilter) forKey:@"enableDataFilter"];
     [dict setValue:self.dataFilters forKey:@"dataFilters"];
+    [dict setValue:self.allowWebViewHost forKey:@"allowWebViewHost"];
     return dict;
 }
 -(NSString *)debugDescription{
@@ -266,6 +301,7 @@
     [dict setValue:self.lineDataModifier forKey:@"lineDataModifier"];
     [dict setValue:@(self.enableDataFilter) forKey:@"enableDataFilter"];
     [dict setValue:self.dataFilters forKey:@"dataFilters"];
+    [dict setValue:self.allowWebViewHost forKey:@"allowWebViewHost"];
     [dict setValue:@(self.remoteConfiguration) forKey:@"remoteConfiguration"];
     [dict setValue:@(self.remoteConfigMiniUpdateInterval) forKey:@"remoteConfigMiniUpdateInterval"];
     [dict setValue:self.remoteConfigFetchCompletionBlock forKey:@"remoteConfigFetchCompletionBlock"];

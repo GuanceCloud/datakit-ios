@@ -23,6 +23,7 @@
 #if TARGET_OS_IOS || TARGET_OS_OSX
 
 #import "FTSegmentJSON.h"
+#import "FTJSONKeyMapper.h"
 #import "FTSessionReplayCoreImports.h"
 
 #if TARGET_OS_OSX

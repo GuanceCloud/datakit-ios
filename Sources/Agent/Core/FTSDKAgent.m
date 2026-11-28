@@ -41,6 +41,7 @@
 #import "FTSDKVersion.h"
 #import "FTNetworkInfoManager.h"
 #import "FTURLSessionInstrumentation.h"
+#import "FTURLConnectionInstrumentation.h"
 #import "FTInternalConstants.h"
 #import "FTSDKConfig+Private.h"
 #import "FTLoggerConfig+Private.h"
@@ -57,17 +58,28 @@
 #import "FTConfig+RemoteConfig.h"
 #import "FTRemoteConfigTypeDefs.h"
 #import "FTCrash.h"
+#import "FTEarlyCrash.h"
 #import "FTRemoteConfigError.h"
 #import "FTDateUtil.h"
 #import "FTAppLaunchTracker.h"
+#import "FTVisitorIDConfig+Private.h"
+#import "FTVisitorIDManager.h"
+#if !TARGET_OS_TV
+#import "FTWKWebViewHandler+Private.h"
+#endif
 
 @interface FTSDKAgent ()<FTAppLifeCycleDelegate,FTRemoteConfigurationProtocol>
 @property (nonatomic, strong) FTLoggerConfig *loggerConfig;
 @property (nonatomic, strong) FTRumConfig *rumConfig;
 @property (nonatomic, strong) FTTraceConfig *traceConfig;
 @property (nonatomic, strong) FTSDKConfig *sdkConfig;
+- (nullable NSArray *)effectiveAllowWebViewHost;
 @end
 @implementation FTSDKAgent
+
++ (void)prewarmCheckStart { [FTAppLaunchTracker prewarmCheckStart]; }
++ (void)prewarmCheckEnd { [FTAppLaunchTracker prewarmCheckEnd]; }
+
 static NSObject *sharedInstanceLock;
 static FTSDKAgent *sharedInstance = nil;
 + (void)initialize{
@@ -77,10 +89,12 @@ static FTSDKAgent *sharedInstance = nil;
 }
 #pragma mark --------- Initialize config settings ----------
 + (void)startWithConfigOptions:(FTSDKConfig *)configOptions{
+    const uint64_t sdkStart = ft_earlyCrashNow();
     NSAssert ((strcmp(dispatch_queue_get_label(DISPATCH_CURRENT_QUEUE_LABEL), dispatch_queue_get_label(dispatch_get_main_queue())) == 0),@"The SDK must be initialized on the main thread, otherwise unpredictable issues may occur (such as missing launch events).");
 
     @synchronized(sharedInstanceLock) {
         if (!sharedInstance) {
+            ft_earlyCrashStart(sdkStart);
             sharedInstance = [[FTSDKAgent alloc] initWithConfig:configOptions];
         }
     }
@@ -121,6 +135,13 @@ static FTSDKAgent *sharedInstance = nil;
                 [[FTRemoteConfigManager sharedInstance] innerUpdateRemoteConfig];
                 [_rumConfig mergeWithRemoteConfigModel:[FTRemoteConfigManager sharedInstance].lastRemoteModel];
             }
+#if !TARGET_OS_TV
+            // Compatibility only: explicit base hosts (including nil) and remote
+            // overrides take precedence over the deprecated RUM host configuration.
+            if (!_sdkConfig.allowWebViewHostConfigured && _sdkConfig.remoteAllowWebViewHost == nil) {
+                [[FTWKWebViewHandler sharedInstance] setAllowWebViewHost:[self effectiveAllowWebViewHost]];
+            }
+#endif
             [self applyRUMConfig:_rumConfig];
         }
     } @catch (NSException *exception) {
@@ -159,12 +180,22 @@ static FTSDKAgent *sharedInstance = nil;
     [self.sdkConfig mergeWithRemoteConfigModel:model];
     [self.rumConfig mergeWithRemoteConfigModel:model];
     [self.traceConfig mergeWithRemoteConfigModel:model];
-    [[FTGlobalRumManager sharedInstance] updateSampleRate:self.rumConfig.sampleRate sessionOnErrorSampleRate:self.rumConfig.sessionOnErrorSampleRate];
-    [[FTURLSessionInstrumentation sharedInstance] updateTraceSampleRate:self.traceConfig.sampleRate];
+    [[FTGlobalRumManager sharedInstance] updateSampleRate:self.rumConfig.sessionSamplingRate sessionOnErrorSampleRate:self.rumConfig.sessionOnErrorSamplingRate];
+    [[FTURLSessionInstrumentation sharedInstance] updateTraceSamplingRate:self.traceConfig.traceSamplingRate];
+    FTURLConnectionInstrumentation *urlConnectionInstrumentation = [FTURLConnectionInstrumentation existingInstance];
+    [urlConnectionInstrumentation updateTraceSamplingRate:self.traceConfig.traceSamplingRate];
+    [urlConnectionInstrumentation updateResourceEnabled:self.rumConfig.enableTraceURLConnectionResource];
+    [urlConnectionInstrumentation updateTraceEnabled:self.traceConfig.enableAutoTraceURLConnection];
     [FTNetworkInfoManager sharedInstance].setCompressionIntakeRequests(self.sdkConfig.compressIntakeRequests);
     [[FTTrackDataManager sharedInstance] updateAutoSync:self.sdkConfig.autoSync syncPageSize:self.sdkConfig.syncPageSize syncSleepTime:self.sdkConfig.syncSleepTime];
     [self.loggerConfig mergeWithRemoteConfigModel:[FTRemoteConfigManager sharedInstance].lastRemoteModel];
     [[FTLogger sharedInstance] updateLoggerConfiguration:self.loggerConfig];
+#if !TARGET_OS_TV
+    if (self.loggerConfig) {
+        [[FTWKWebViewHandler sharedInstance] startWithEnableWebViewLog:self.loggerConfig.enableWebViewLog
+                                                         logDelegate:[FTLogger sharedInstance]];
+    }
+#endif
     [[FTModuleManager sharedInstance] postMessageWithKey:FTMessageKeySRSampleRateUpdate message:@{}];
 }
 + (void)updateRemoteConfig{
@@ -218,11 +249,27 @@ static FTSDKAgent *sharedInstance = nil;
     [[FTTrackDataManager sharedInstance] setEnableLimitWithDb:config.enableLimitWithDbSize size:config.dbCacheLimit discardNew:config.dbDiscardType == FTDBDiscard];
 
     [[FTExtensionDataManager sharedInstance] writeMobileConfig:[config convertToDictionary]];
+#if !TARGET_OS_TV
+    [[FTWKWebViewHandler sharedInstance] setAllowWebViewHost:[self effectiveAllowWebViewHost]];
+#endif
     FTInnerLogInfo(@"Init Mobile Config Success: \n%@",config.debugDescription);
 }
 - (void)applyRUMConfig:(FTRumConfig *)rumConfig{
     FTInnerLogInfo(@"[RUM] APPID:%@",rumConfig.appid);
-    [[FTPresetProperty sharedInstance] setRUMAppID:rumConfig.appid sampleRate:rumConfig.sampleRate sessionOnErrorSampleRate:rumConfig.sessionOnErrorSampleRate rumGlobalContext:rumConfig.globalContext];
+    NSError *visitorError = nil;
+    FTVisitorIDConfig *visitorConfig = [rumConfig.visitorIDConfig validatedCopyWithError:&visitorError];
+    if (rumConfig.visitorIDConfig && !visitorConfig) {
+        FTInnerLogWarning(@"Invalid Visitor ID configuration; Visitor ID is disabled: %@", visitorError.localizedDescription);
+    }
+    [[FTVisitorIDManager sharedInstance]
+        configureWithEnabled:visitorConfig != nil
+                  headerName:visitorConfig.header
+                         ttl:visitorConfig.ttlHours * 60.0 * 60.0
+                  urlMatcher:visitorConfig ? ^BOOL(NSURL *url) {
+                      return [visitorConfig matchesURL:url];
+                  } : nil];
+    [[FTURLSessionInstrumentation sharedInstance] setVisitorIDEnabled:visitorConfig != nil];
+    [[FTPresetProperty sharedInstance] setRUMAppID:rumConfig.appid sampleRate:rumConfig.sessionSamplingRate sessionOnErrorSampleRate:rumConfig.sessionOnErrorSamplingRate rumGlobalContext:rumConfig.globalContext];
     [[FTTrackDataManager sharedInstance] setRUMCacheLimitCount:rumConfig.rumCacheLimitCount discardNew:rumConfig.rumDiscardType == FTRUMDiscard];
     [[FTGlobalRumManager sharedInstance] setRumConfig:rumConfig writer:[FTTrackDataManager sharedInstance].dataWriterWorker];
     [[FTURLSessionInstrumentation sharedInstance]setEnableAutoRumTrace:rumConfig.enableTraceUserResource
@@ -231,11 +278,23 @@ static FTSDKAgent *sharedInstance = nil;
                                                 sessionTaskErrorFilter:rumConfig.sessionTaskErrorFilter
     ];
     [[FTURLSessionInstrumentation sharedInstance] setRumResourceHandler:[FTGlobalRumManager sharedInstance].rumManager];
+    [[FTURLConnectionInstrumentation sharedInstance]
+        setRumResourceHandler:[FTGlobalRumManager sharedInstance].rumManager];
+    [[FTURLConnectionInstrumentation sharedInstance]
+        setEnableAutoRumResource:rumConfig.enableTraceURLConnectionResource
+        resourceUrlHandler:rumConfig.resourceUrlHandler
+        resourcePropertyProvider:rumConfig.resourcePropertyProvider
+        sessionTaskErrorFilter:rumConfig.sessionTaskErrorFilter];
     [FTExternalDataManager sharedManager].resourceDelegate = [FTURLSessionInstrumentation sharedInstance].externalResourceHandler;
     [[FTExtensionDataManager sharedInstance] writeRumConfig:[rumConfig convertToDictionary]];
     if (_loggerConfig) {
         [FTLogger sharedInstance].linkRumDataProvider = [FTGlobalRumManager sharedInstance].rumManager;
     }
+#if !TARGET_OS_TV
+    [FTWKWebViewHandler sharedInstance].visitorIDProvider = [FTVisitorIDManager sharedInstance];
+    [[FTWKWebViewHandler sharedInstance] startWithEnableTraceWebView:rumConfig.enableTraceWebView
+                                                       rumDelegate:[FTGlobalRumManager sharedInstance].rumManager];
+#endif
     FTInnerLogInfo(@"Init RUM Config Success: \n%@",rumConfig.debugDescription);
 }
 - (void)applyLogConfig:(FTLoggerConfig *)loggerConfig{
@@ -244,16 +303,40 @@ static FTSDKAgent *sharedInstance = nil;
     [[FTExtensionDataManager sharedInstance] writeLoggerConfig:[loggerConfig convertToDictionary]];
     [[FTLogger sharedInstance] startWithLoggerConfig:loggerConfig writer:[FTTrackDataManager sharedInstance].dataWriterWorker];
     [FTLogger sharedInstance].linkRumDataProvider = [FTGlobalRumManager sharedInstance].rumManager;
+#if !TARGET_OS_TV
+    [[FTWKWebViewHandler sharedInstance] startWithEnableWebViewLog:loggerConfig.enableWebViewLog
+                                                     logDelegate:[FTLogger sharedInstance]];
+#endif
     FTInnerLogInfo(@"Init Logger Config Success: \n%@",loggerConfig.debugDescription);
+}
+- (NSArray *)effectiveAllowWebViewHost {
+    if (self.sdkConfig.remoteAllowWebViewHost != nil) {
+        return self.sdkConfig.remoteAllowWebViewHost;
+    }
+    if (self.sdkConfig.allowWebViewHostConfigured) {
+        return self.sdkConfig.allowWebViewHost;
+    }
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wdeprecated-declarations"
+    NSArray *legacyHosts = self.rumConfig.allowWebViewHost;
+#pragma clang diagnostic pop
+    return legacyHosts;
 }
 - (void)applyTraceConfig:(FTTraceConfig *)traceConfig{
     [[FTURLSessionInstrumentation sharedInstance] setTraceEnableAutoTrace:traceConfig.enableAutoTrace
                                                         enableLinkRumData:traceConfig.enableLinkRumData
-                                                               sampleRate:traceConfig.sampleRate
+                                                        traceSamplingRate:traceConfig.traceSamplingRate
                                                                 traceType:(NetworkTraceType)traceConfig.networkTraceType
                                                          traceInterceptor:traceConfig.traceInterceptor
                                                               serviceName:self.sdkConfig.service
     ];
+    [[FTURLConnectionInstrumentation sharedInstance]
+        setTraceEnableAutoTrace:traceConfig.enableAutoTraceURLConnection
+        enableLinkRumData:traceConfig.enableLinkRumData
+        traceSamplingRate:traceConfig.traceSamplingRate
+        traceType:(NetworkTraceType)traceConfig.networkTraceType
+        traceInterceptor:traceConfig.traceInterceptor
+        serviceName:self.sdkConfig.service];
     [FTExternalDataManager sharedManager].resourceDelegate = [FTURLSessionInstrumentation sharedInstance].externalResourceHandler;
     [[FTExtensionDataManager sharedInstance] writeTraceConfig:[traceConfig convertToDictionary]];
     FTInnerLogInfo(@"Init Trace Config Success: \n%@",traceConfig.debugDescription);
@@ -267,6 +350,7 @@ static FTSDKAgent *sharedInstance = nil;
 - (void)isIntakeUrl:(BOOL(^)(NSURL *url))handler{
     if(handler){
         [[FTURLSessionInstrumentation sharedInstance] setIntakeUrlHandler:handler];
+        [[FTURLConnectionInstrumentation sharedInstance] setIntakeUrlHandler:handler];
     }
 }
 -(void)logging:(NSString *)content status:(FTLogStatus)status{
@@ -429,9 +513,13 @@ static FTSDKAgent *sharedInstance = nil;
     [FTSDKAgent shutDown];
 }
 - (void)releaseInternalResources {
+    id<FTSessionReplayLifecycle> replay = [[FTModuleManager sharedInstance] getRegisterService:@protocol(FTSessionReplayLifecycle)];
+    [replay shutDown];
     [[FTLogger sharedInstance] shutDown];
+    [[FTURLConnectionInstrumentation existingInstance] shutDown];
     [[FTGlobalRumManager sharedInstance] shutDown];
     [[FTURLSessionInstrumentation sharedInstance] shutDown];
+    [[FTVisitorIDManager sharedInstance] shutDown];
     [[FTRemoteConfigManager sharedInstance] shutDown];
     [[FTDataFilterManager sharedInstance] shutDown];
     [FTTrackDataManager shutDown];
@@ -462,6 +550,12 @@ static FTSDKAgent *sharedInstance = nil;
     @catch (NSException *exception) {
         FTInnerLogError(@"%@ error: %@", self, exception);
     }
+}
++ (void)resetVisitorID{
+    [[FTVisitorIDManager sharedInstance] reset];
+}
++ (void)reinstallCrashHandlers{
+    [FTCrash reinstallHandlers];
 }
 - (void)syncProcess{
     [[FTGlobalRumManager sharedInstance].rumManager syncProcess];

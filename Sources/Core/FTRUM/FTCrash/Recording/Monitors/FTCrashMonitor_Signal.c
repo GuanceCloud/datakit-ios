@@ -24,6 +24,7 @@
 // THE SOFTWARE.
 //
 
+#include "FTEarlyCrash.h"
 #include "FTCrashMonitor_Signal.h"
 
 #include "FTCrashMonitorContext.h"
@@ -93,6 +94,7 @@ static bool shouldWriteReport(int sigNum) { return !(sigNum == SIGTERM && !g_sta
  */
 static void handleSignal(int sigNum, siginfo_t *signalInfo, void *userContext)
 {
+    const uint64_t eventTime = ft_earlyCrashNow();
     FTLOG_DEBUG("Trapped signal %d", sigNum);
     if (isEnabled()) {
         thread_t thisThread = (thread_t)ftcrashthread_self();
@@ -101,6 +103,7 @@ static void handleSignal(int sigNum, siginfo_t *signalInfo, void *userContext)
                                                                   .isFatal = true,
                                                                   .shouldRecordAllThreads = true,
                                                                   .shouldWriteReport = shouldWriteReport(sigNum) });
+        crashContext->earlyCrashTime = eventTime;
         if (crashContext->requirements.shouldExitImmediately) {
             goto exit_immediately;
         }
@@ -121,6 +124,12 @@ static void handleSignal(int sigNum, siginfo_t *signalInfo, void *userContext)
         crashContext->stackCursor = &stackCursor;
 
         g_state.callbacks.handle(crashContext);
+    } else if (g_state.installedState == FTCrashCM_Uninstalled) {
+        // 已恢复的前一个处理器又转交回来：改用默认动作，避免来回转交。
+        struct sigaction defaultAction = { { 0 } };
+        defaultAction.sa_handler = SIG_DFL;
+        sigemptyset(&defaultAction.sa_mask);
+        sigaction(sigNum, &defaultAction, NULL);
     }
 
     FTLOG_DEBUG("Re-raising signal for regular handlers to catch.");
@@ -220,6 +229,36 @@ static void uninstall(void)
     FTLOG_DEBUG("Signal handlers uninstalled.");
 }
 
+static void reinstallHandlers(void)
+{
+    if (!isEnabled() || g_state.previousSignalHandlers == NULL) {
+        return;
+    }
+    const int *fatalSignals = ftcrashsignal_fatalSignals();
+    int fatalSignalsCount = ftcrashsignal_numFatalSignals();
+
+    struct sigaction action = { { 0 } };
+    action.sa_flags = SA_SIGINFO | SA_ONSTACK;
+#if defined(__LP64__)
+    action.sa_flags |= SA_64REGSET;
+#endif
+    sigemptyset(&action.sa_mask);
+    action.sa_sigaction = &handleSignal;
+
+    for (int i = 0; i < fatalSignalsCount; i++) {
+        struct sigaction current;
+        if (sigaction(fatalSignals[i], NULL, &current) != 0) {
+            continue;
+        }
+        if ((current.sa_flags & SA_SIGINFO) && current.sa_sigaction == &handleSignal) {
+            continue;
+        }
+        // 先记下替换者再接管，避免并发信号读到过期的 previous 处理器。
+        g_state.previousSignalHandlers[i] = current;
+        sigaction(fatalSignals[i], &action, NULL);
+    }
+}
+
 static const char *monitorId(void) { return "Signal"; }
 
 static FTCrashMonitorFlag monitorFlags(void) { return FTCrashMonitorFlagAsyncSafe; }
@@ -268,6 +307,7 @@ FTCrashMonitorAPI *ftcrashcm_signal_getAPI(void)
         api.setEnabled = setEnabled;
         api.isEnabled = isEnabled;
         api.addContextualInfoToEvent = addContextualInfoToEvent;
+        api.reinstallHandlers = reinstallHandlers;
 #endif
     }
     return &api;

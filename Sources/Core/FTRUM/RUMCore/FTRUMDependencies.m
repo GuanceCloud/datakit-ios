@@ -19,14 +19,34 @@
 //
 
 #import "FTRUMDependencies.h"
-#import "FTConstants.h"
+#import "FTRUMViewTimingPredicates.h"
 #import "FTIssueFieldEnricher.h"
+#import "FTVisitorIDManager.h"
 
 @interface FTRUMDependencies ()
 @property (nonatomic, strong, nullable, readwrite) FTIssueFieldEnricher *issueFieldEnricher;
 @end
 
 @implementation FTRUMDependencies
+- (instancetype)init {
+    if ((self = [super init])) {
+        _nextViewActionPredicate = [FTRUMTimeBasedNextViewActionPredicate new];
+        _networkSettledResourcePredicate = [FTRUMTimeBasedNetworkSettledPredicate new];
+    }
+    return self;
+}
+
+
+- (FTRUMWriteData *)newNativeWriteDataWithSource:(NSString *)source tags:(NSDictionary *)tags
+                                        fields:(NSDictionary *)fields context:(FTRUMPropertySnapshot *)context
+                                 customTagKeys:(NSSet<NSString *> *)tagKeys customFieldKeys:(NSSet<NSString *> *)fieldKeys
+                                          time:(long long)time {
+    NSString *visitorID = [FTVisitorIDManager sharedInstance].snapshot.value;
+    FTRUMWriteData *data = [[FTRUMWriteData alloc] initWithSource:source tags:tags fields:fields
+        context:context customTagKeys:tagKeys customFieldKeys:fieldKeys time:time];
+    data.visitorIDSnapshot = visitorID;
+    return data;
+}
 
 - (void)setIssueDataProvider:(nullable FTIssueDataProvider)issueDataProvider {
     _issueDataProvider = [issueDataProvider copy];
@@ -43,6 +63,8 @@
     dependencies.enableTraceUserAction = self.enableTraceUserAction;
     dependencies.appId = self.appId;
     dependencies.writer = self.writer;
+    dependencies.networkSettledResourcePredicate = self.networkSettledResourcePredicate;
+    dependencies.nextViewActionPredicate = self.nextViewActionPredicate;
     dependencies.errorMonitorInfoWrapper = self.errorMonitorInfoWrapper;
     dependencies.monitor = self.monitor;
     dependencies.fatalErrorContext = self.fatalErrorContext;
@@ -51,6 +73,7 @@
     dependencies.sampledForErrorReplay = self.sampledForErrorReplay;
     dependencies.sessionReplaySampledFields = self.sessionReplaySampledFields;
     dependencies.sessionReplayStats = self.sessionReplayStats;
+    dependencies.appStateHistory = self.appStateHistory;
     return dependencies;
 }
 @end

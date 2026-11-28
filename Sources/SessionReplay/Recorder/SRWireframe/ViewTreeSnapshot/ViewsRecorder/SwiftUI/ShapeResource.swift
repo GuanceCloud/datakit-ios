@@ -18,7 +18,6 @@
 import CommonCrypto
 import Foundation
 
-@available(iOS 13.0, *)
 final class FTShapeResource: NSObject {
     let svgString: String
     let mimeType = "image/svg+xml"

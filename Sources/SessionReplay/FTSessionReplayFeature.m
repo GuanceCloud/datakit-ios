@@ -17,6 +17,7 @@
 #if TARGET_OS_IOS || TARGET_OS_OSX
 
 #import "FTSessionReplayFeature.h"
+#import "FTRumSessionReplay+ExternalRecorder.h"
 #import "FTSegmentRequest.h"
 #import "FTPerformancePresetOverride.h"
 #import "FTSessionReplayCoreImports.h"
@@ -37,6 +38,13 @@
 #import "FTLimitedSizeSet.h"
 #import "FTWKWebViewHandler+SessionReplay.h"
 #import "FTScreenChangeScheduler.h"
+#import <CommonCrypto/CommonDigest.h>
+
+NSString * const FTSessionReplayRUMContextApplicationIDKey = @"applicationId";
+NSString * const FTSessionReplayRUMContextSessionIDKey = @"sessionId";
+NSString * const FTSessionReplayRUMContextViewIDKey = @"viewId";
+NSString * const FTSessionReplayRUMContextGlobalContextKey = @"globalContext";
+NSString * const FTSessionReplayRUMContextSampledForErrorSessionKey = @"sampledForErrorSession";
 
 @interface FTSessionReplayFeature()<FTMessageReceiver,FTSRWebTrackingProtocol>
 @property (nonatomic, strong) FTWindowObserver *windowObserver;
@@ -44,9 +52,13 @@
 @property (nonatomic, strong) FTSessionReplayConfig *config;
 @property (nonatomic, strong) FTFeatureScope *recordScope;
 @property (nonatomic, strong) FTFeatureScope *resourceScope;
+@property (nonatomic, strong) FTResourceProcessor *resourceProcessor;
 @property (nonatomic, copy) NSString *lastViewID;
 @property (nonatomic, strong) FTLimitedSizeSet *needCheckSlots;
 @property (nonatomic, strong) FTRecordingCoordinator *recordingCoordinator;
+@property (nonatomic, strong) id<FTResourcesWriting> externalResourceWriter;
+@property (nonatomic, copy) NSString *lastExternalViewID;
+@property (nonatomic, strong) NSMutableDictionary<NSString *, NSDictionary *> *externalRecordsCountByViewID;
 
 @end
 @implementation FTSessionReplayFeature
@@ -67,6 +79,7 @@
         FTSessionReplayTouches *touches = [[FTSessionReplayTouches alloc]initWithWindowObserver:_windowObserver];
         _config = [config copy];
         _needCheckSlots = [[FTLimitedSizeSet alloc]initWithMaxCount:10];
+        _externalRecordsCountByViewID = [NSMutableDictionary new];
         #if TARGET_OS_OSX
         NSTimeInterval captureInterval = FTSessionReplayMacOSCaptureInterval;
         #else
@@ -113,17 +126,42 @@
     self.resourceScope = resourceScope;
 
     FTResourcesWriter *resource = [[FTResourcesWriter alloc]initWithFeatureScope:resourceScope dataStore:dataStore];
+    self.externalResourceWriter = resource;
     FTResourceProcessor *resourceProcessor = [[FTResourceProcessor alloc]initWithQueue:self.processorsQueue resourceWriter:resource];
+    self.resourceProcessor = resourceProcessor;
     FTRecordWriter *recordWriter = [[FTRecordWriter alloc]initWithFeatureScope:recordScope];
     FTSnapshotProcessor *srProcessor = [[FTSnapshotProcessor alloc]initWithQueue:self.processorsQueue recordWriter:recordWriter resourceProcessor:resourceProcessor];
 
-    FTRecorder *windowRecorder = [[FTRecorder alloc]initWithWindowObserver:self.windowObserver snapshotProcessor:srProcessor additionalNodeRecorders:self.config.additionalNodeRecorders enableSwiftUI:self.config.enableSwiftUI enableHeatmap:self.config.enableHeatmap];
-    self.recordingCoordinator.recorder = windowRecorder;
+    if (!self.config.externalRecorderMode) {
+        FTRecorder *windowRecorder = [[FTRecorder alloc]initWithWindowObserver:self.windowObserver snapshotProcessor:srProcessor additionalNodeRecorders:self.config.additionalNodeRecorders enableSwiftUI:self.config.enableSwiftUI enableHeatmap:self.config.enableHeatmap];
+        self.recordingCoordinator.recorder = windowRecorder;
+    }
     [self.recordScope updateTrackingConsent];
     [self.resourceScope updateTrackingConsent];
 }
 - (void)startRecording{
+    if (self.recordingCoordinator.invalidated) return;
+    __weak typeof(self) weakSelf = self;
+    [[FTModuleManager sharedInstance] rumContextWithCompletion:^(NSDictionary *context) {
+        [weakSelf handleRUMContextMessage:context];
+    }];
     [self.recordingCoordinator startRecording];
+}
+- (void)shutDown {
+    @synchronized (self) {
+        [self.recordingCoordinator invalidate];
+        [[FTModuleManager sharedInstance] removeMessageReceiver:self];
+        dispatch_async(self.processorsQueue, ^{
+            self.resourceProcessor = nil;
+            self.externalResourceWriter = nil;
+            self.lastViewID = nil;
+            self.lastExternalViewID = nil;
+            self.needCheckSlots = nil;
+            @synchronized (self.externalRecordsCountByViewID) {
+                [self.externalRecordsCountByViewID removeAllObjects];
+            }
+        });
+    }
 }
 #pragma mark =========== FTMessageReceiver ============
 - (void)receive:(NSString *)key message:(NSDictionary *)message {
@@ -302,6 +340,143 @@
     }
     return [object mutableCopy];
 }
+
+#pragma mark =========== External Session Replay ============
+- (void)setExternalRecorderActive:(BOOL)active {
+    [self.recordingCoordinator setExternalRecorderActive:active];
+}
+
+- (void)setExternalRecorderActive:(BOOL)active forOwner:(NSString *)owner {
+    [self.recordingCoordinator setExternalRecorderActive:active forOwner:owner];
+}
+
+- (NSDictionary<NSString *, id> *)externalContextFromRUMContext:(NSDictionary *)rumContext {
+    NSString *applicationID = rumContext[FT_APP_ID];
+    NSString *sessionID = rumContext[FT_RUM_KEY_SESSION_ID];
+    NSString *viewID = rumContext[FT_KEY_VIEW_ID];
+    if (applicationID.length == 0 || sessionID.length == 0 || viewID.length == 0) {
+        return nil;
+    }
+    NSMutableDictionary *context = [@{
+        FTSessionReplayRUMContextApplicationIDKey: [applicationID copy],
+        FTSessionReplayRUMContextSessionIDKey: [sessionID copy],
+        FTSessionReplayRUMContextViewIDKey: [viewID copy],
+        FTSessionReplayRUMContextSampledForErrorSessionKey: @([rumContext[FT_RUM_KEY_SAMPLED_FOR_ERROR_SESSION] boolValue]),
+    } mutableCopy];
+    NSDictionary *bindInfo = rumContext[FT_LINK_RUM_KEYS];
+    if ([bindInfo isKindOfClass:NSDictionary.class] && bindInfo.count > 0) {
+        context[FTSessionReplayRUMContextGlobalContextKey] = [bindInfo copy];
+    }
+    return [context copy];
+}
+
+- (NSDictionary *)currentExternalRUMContext {
+    if (self.recordScope.trackingConsent == FTTrackingConsentNotGranted) {
+        return nil;
+    }
+    return [self externalContextFromRUMContext:[self.recordingCoordinator.currentRUMContext copy]];
+}
+
+- (void)setExternalHasReplay:(BOOL)hasReplay {
+    [[FTModuleManager sharedInstance] postMessageWithKey:FTMessageKeySessionHasReplay message:@{
+        FT_SESSION_HAS_REPLAY: @(hasReplay),
+        FT_RUM_SESSION_REPLAY_SAMPLE_RATE: @(self.config.sessionReplaySamplingRate),
+        FT_RUM_SESSION_REPLAY_ON_ERROR_SAMPLE_RATE: @(self.config.sessionReplayOnErrorSamplingRate),
+        FT_RUM_KEY_SAMPLED_FOR_ERROR_REPLAY: @(self.recordingCoordinator.sampleState == FTRecordingSampleStateError),
+    }];
+}
+
+- (void)setExternalRecordCountForViewID:(NSString *)viewID count:(NSUInteger)count {
+    if (viewID.length == 0) {
+        return;
+    }
+    @synchronized (self.externalRecordsCountByViewID) {
+        self.externalRecordsCountByViewID[viewID] = @{ FT_RECORDS_COUNT: @(count) };
+        [[FTModuleManager sharedInstance] postMessageWithKey:FTMessageKeyRecordsCountByViewID
+                                                    message:[self.externalRecordsCountByViewID copy]];
+    }
+}
+
+- (void)writeExternalSegment:(NSString *)segment viewID:(NSString *)viewID {
+    if (segment.length == 0 || viewID.length == 0 || !self.recordScope) {
+        return;
+    }
+    NSData *data = [segment dataUsingEncoding:NSUTF8StringEncoding];
+    if (data.length == 0) {
+        return;
+    }
+    NSString *capturedViewID = [viewID copy];
+    __weak typeof(self) weakSelf = self;
+    dispatch_async(self.processorsQueue, ^{
+        __strong typeof(weakSelf) strongSelf = weakSelf;
+        if (!strongSelf) {
+            return;
+        }
+        [strongSelf.recordScope eventWriteContext:^(FTFeatureContext *context, id<FTWriter> writer) {
+            if (context.trackingConsent == FTTrackingConsentNotGranted) {
+                return;
+            }
+            BOOL force = strongSelf.lastExternalViewID == nil || ![strongSelf.lastExternalViewID isEqualToString:capturedViewID];
+            [writer write:data forceNewFile:force];
+            strongSelf.lastExternalViewID = capturedViewID;
+            [strongSelf setExternalHasReplay:YES];
+        }];
+    });
+}
+
+- (NSString *)saveExternalImageResourceData:(NSData *)data mimeType:(NSString *)mimeType {
+    if (data.length == 0 || mimeType.length == 0 || !self.externalResourceWriter) {
+        return nil;
+    }
+    NSDictionary *rumContext = [self.recordingCoordinator.currentRUMContext copy];
+    NSString *applicationID = rumContext[FT_APP_ID];
+    if (applicationID.length == 0 || self.resourceScope.trackingConsent == FTTrackingConsentNotGranted) {
+        return nil;
+    }
+    NSString *identifier = [self externalResourceIdentifierForData:data];
+    if (identifier.length == 0) {
+        return nil;
+    }
+    NSData *capturedData = [data copy];
+    NSString *capturedIdentifier = [identifier copy];
+    NSString *capturedApplicationID = [applicationID copy];
+    NSString *capturedMimeType = [mimeType copy];
+    NSDictionary *candidateBindInfo = rumContext[FT_LINK_RUM_KEYS];
+    NSMutableDictionary *filteredBindInfo = [NSMutableDictionary new];
+    if ([candidateBindInfo isKindOfClass:NSDictionary.class]) {
+        for (id key in self.config.enableLinkRUMKeys) {
+            if ([key isKindOfClass:NSString.class] && candidateBindInfo[key]) {
+                filteredBindInfo[key] = candidateBindInfo[key];
+            }
+        }
+    }
+    NSDictionary *capturedBindInfo = [filteredBindInfo copy];
+    id<FTResourcesWriting> resourceWriter = self.externalResourceWriter;
+    dispatch_async(self.processorsQueue, ^{
+        FTEnrichedResource *resource = [[FTEnrichedResource alloc] init];
+        resource.identifier = capturedIdentifier;
+        resource.data = capturedData;
+        resource.appId = capturedApplicationID;
+        resource.mimeType = capturedMimeType;
+        resource.bindInfo = capturedBindInfo;
+        [resourceWriter writeExternalResourcesToNormalDirectory:@[resource]];
+    });
+    return identifier;
+}
+
+- (NSString *)externalResourceIdentifierForData:(NSData *)data {
+    if (data.length > UINT32_MAX) {
+        return nil;
+    }
+    unsigned char digest[CC_MD5_DIGEST_LENGTH];
+    CC_MD5(data.bytes, (CC_LONG)data.length, digest);
+    NSMutableString *identifier = [NSMutableString stringWithCapacity:CC_MD5_DIGEST_LENGTH * 2];
+    for (NSUInteger index = 0; index < CC_MD5_DIGEST_LENGTH; index++) {
+        [identifier appendFormat:@"%02x", digest[index]];
+    }
+    return identifier;
+}
+
 #pragma mark =========== FTSRWebTrackingProtocol ============
 -(NSString *)getSessionReplayPrivacyLevel{
     if (self.config.touchPrivacy == FTTouchPrivacyLevelShow) {

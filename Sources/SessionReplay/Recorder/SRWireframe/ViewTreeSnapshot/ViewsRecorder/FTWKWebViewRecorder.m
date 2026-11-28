@@ -18,6 +18,7 @@
 
 #if !TARGET_OS_TV
 #import "FTWKWebViewRecorder.h"
+#import "FTSessionReplayWireframesBuilder.h"
 #import "FTViewAttributes.h"
 #import "FTSRWireframe.h"
 #import "FTSRUtils.h"
@@ -56,13 +57,11 @@
 
 - (float)calculateFrameOffset:(WKWebView *)webView attributes:(FTViewAttributes *)attributes{
 #if TARGET_OS_IOS
-    if (@available(iOS 11.0, *)) {
-        if (webView.scrollView.contentInsetAdjustmentBehavior != UIScrollViewContentInsetAdjustmentNever) {
-            CGFloat safeAreaTop = webView.safeAreaInsets.top;
-            if (CGRectGetMinX(attributes.frame) < safeAreaTop) {
-                CGFloat scale = webView.window != nil ? webView.window.screen.scale : 1;
-                return safeAreaTop / scale;
-            }
+    if (webView.scrollView.contentInsetAdjustmentBehavior != UIScrollViewContentInsetAdjustmentNever) {
+        CGFloat safeAreaTop = webView.safeAreaInsets.top;
+        if (CGRectGetMinX(attributes.frame) < safeAreaTop) {
+            CGFloat scale = webView.window != nil ? webView.window.screen.scale : 1;
+            return safeAreaTop / scale;
         }
     }
 #endif

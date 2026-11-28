@@ -27,18 +27,24 @@
 #import "FTWKWebViewRumDelegate.h"
 #import "FTIssueDataProvider.h"
 
-@class FTResourceMetricsModel,FTResourceContentModel;
+#import "FTAppLaunchTracker.h"
+
+@class FTResourceMetricsModel,FTResourceContentModel,FTLongTaskEvent;
 
 NS_ASSUME_NONNULL_BEGIN
 
 FOUNDATION_EXPORT NSString *FTStringFromAppState(FTAppState state);
 
-@interface FTRUMManager : FTRUMHandler<FTRumResourceProtocol,FTErrorDataDelegate,FTRumDatasProtocol,FTLinkRumDataProvider,FTWKWebViewRumDelegate>
+/// Internal collection inputs must already own their property values, including nested containers.
+/// Boundary adapters snapshot caller-owned data before handing it to this manager.
+@interface FTRUMManager : FTRUMHandler<FTLaunchDataSink,FTRumResourceProtocol,FTErrorDataDelegate,FTRumDatasProtocol,FTLinkRumDataProvider,FTWKWebViewRumDelegate>
 @property (nonatomic, assign) FTAppState appState;
+/// Internal automatic collection path with immutable event facts.
+- (void)addLongTaskEvent:(FTLongTaskEvent *)event;
 
 #pragma mark - init -
 -(instancetype)initWithRumDependencies:(FTRUMDependencies *)dependencies;
--(void)updateSampleRate:(int)sampleRate sessionOnErrorSampleRate:(int)sessionOnErrorSampleRate;
+-(void)updateSampleRate:(float)sampleRate sessionOnErrorSampleRate:(float)sessionOnErrorSampleRate;
 #pragma mark - resource -
 /// HTTP request start
 ///
@@ -69,6 +75,9 @@ FOUNDATION_EXPORT NSString *FTStringFromAppState(FTAppState state);
 ///   - property: Custom event properties (optional)
 - (void)stopResourceWithKey:(NSString *)key property:(nullable NSDictionary *)property;
 
+/// Internal Browser RUM ingress consumes owned tags/fields and decodes provenance before queueing.
+- (void)addWebViewData:(NSString *)measurement tags:(NSDictionary *)tags fields:(NSDictionary *)fields tm:(long long)tm;
+
 #pragma mark - Error / Long Task -
 
 /// Adds an automatically collected Issue without routing manual Errors through
@@ -93,6 +102,9 @@ FOUNDATION_EXPORT NSString *FTStringFromAppState(FTAppState state);
  * @param property   Event properties (optional)
  */
 - (void)addLongTaskWithStack:(NSString *)stack duration:(NSNumber *)duration startTime:(long long)time property:(nullable NSDictionary *)property;
+
+/// Clear this RUM lifetime from the Core context store before releasing SDK resources.
+- (void)shutDown;
 
 /// Wait for all rum processing data to be processed
 - (void)syncProcess;

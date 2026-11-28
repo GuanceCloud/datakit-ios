@@ -13,6 +13,7 @@
  * This file has been translated/adapted to Objective-C with project-specific changes.
  */
 
+#import "FTDiagnosticsBridge.h"
 #import <TargetConditionals.h>
 #if TARGET_OS_IOS || TARGET_OS_OSX
 
@@ -38,20 +39,16 @@
 - (void)append:(NSData *)data{
     NSError *error;
     NSFileHandle *fileHandle = [NSFileHandle fileHandleForWritingToURL:self.url error:&error];
-    if (@available(macOS 10.15, iOS 13.0, *)) {
-        __autoreleasing NSError *error = nil;
-        [fileHandle seekToEndReturningOffset:nil error:&error];
-        [fileHandle writeData:data error:&error];
-        [fileHandle closeAndReturnError:&error];
-    } else {
-        [fileHandle seekToEndOfFile];
-        [fileHandle writeData:data];
-        [fileHandle closeFile];
-    }
+    [fileHandle seekToEndReturningOffset:nil error:&error];
+    [fileHandle writeData:data error:&error];
+    [fileHandle closeAndReturnError:&error];
+    [FTDiagnosticsBridge record:(fileHandle && !error) ? @"storage_write" : @"discard" channel:@"replay"
+                          count:-1 bytes:(fileHandle && !error) ? data.length : -1 reason:@"file_append"];
 }
 - (void)write:(NSData *)data{
     NSError *error;
-    [data writeToURL:self.url options:NSDataWritingAtomic error:&error];
+    BOOL written = [data writeToURL:self.url options:NSDataWritingAtomic error:&error];
+    [FTDiagnosticsBridge record:written ? @"storage_write" : @"discard" channel:@"replay" count:-1 bytes:written ? data.length : -1 reason:@"file_write"];
 }
 - (NSInputStream *)stream{
     NSInputStream *stream = [NSInputStream inputStreamWithURL:self.url];
@@ -64,7 +61,9 @@
 }
 - (void)deleteFile{
     NSError *error;
-    [[NSFileManager defaultManager] removeItemAtURL:self.url error:&error];
+    int64_t bytes = [FTDiagnosticsBridge enabled] ? self.size : -1;
+    BOOL removed = [[NSFileManager defaultManager] removeItemAtURL:self.url error:&error];
+    if(removed)[FTDiagnosticsBridge record:@"storage_remove" channel:@"replay" count:1 bytes:bytes reason:@"file_delete"];
 }
 -(NSDate *)fileCreationDate{
     if(!_fileCreationDate){

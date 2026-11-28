@@ -23,6 +23,7 @@
 #if TARGET_OS_IOS || TARGET_OS_OSX
 
 #import "FTSRBaseFrame.h"
+#import "FTJSONKeyMapper.h"
 #import <objc/runtime.h>
 #import "FTSessionReplayCoreImports.h"
 #import <math.h>

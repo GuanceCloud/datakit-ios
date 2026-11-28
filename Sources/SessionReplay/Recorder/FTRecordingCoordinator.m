@@ -24,6 +24,8 @@
 #import "FTScheduler.h"
 #import "FTViewAttributes.h"
 
+static NSString * const FTDefaultExternalRecorderOwner = @"external";
+
 static FTTrackingConsent FTTrackingConsentFromSampleState(FTRecordingSampleState sampleState) {
     switch (sampleState) {
         case FTRecordingSampleStateNormal:
@@ -43,7 +45,9 @@ static FTTrackingConsent FTTrackingConsentFromSampleState(FTRecordingSampleState
 @property (atomic, strong, nullable) NSDictionary *bindInfo;
 @property (nonatomic, assign) FTRecordingSampleState sampleState;
 @property (atomic, assign) BOOL recordingEnabled;
+@property (atomic, assign) BOOL invalidated;
 @property (nonatomic, copy, nullable) FTTrackingConsentChanged trackingConsentDidChange;
+@property (nonatomic, strong) NSMutableSet<NSString *> *activeExternalRecorderOwners;
 @end
 
 @implementation FTRecordingCoordinator
@@ -62,6 +66,9 @@ static FTTrackingConsent FTTrackingConsentFromSampleState(FTRecordingSampleState
         _recordingEnabled = NO;
         _sampleState = FTRecordingSampleStateNone;
         _trackingConsentDidChange = [trackingConsentDidChange copy];
+        _activeExternalRecorderOwners = [NSMutableSet set];
+        __weak typeof(self) weakSelf = self;
+        _touches.collectionAllowed = ^BOOL{ return !weakSelf.invalidated; };
         [self setScheduler:scheduler];
     }
     return self;
@@ -82,14 +89,14 @@ static FTTrackingConsent FTTrackingConsentFromSampleState(FTRecordingSampleState
 }
 
 - (FTTrackingConsent)trackingConsent{
-    return FTTrackingConsentFromSampleState(self.sampleState);
+    return self.invalidated ? FTTrackingConsentNotGranted : FTTrackingConsentFromSampleState(self.sampleState);
 }
 
 - (void)setSampleState:(FTRecordingSampleState)sampleState{
     FTTrackingConsentChanged trackingConsentDidChange = nil;
     FTTrackingConsent trackingConsent = FTTrackingConsentNotGranted;
     @synchronized (self) {
-        if (_sampleState == sampleState) {
+        if (self.invalidated || _sampleState == sampleState) {
             return;
         }
         _sampleState = sampleState;
@@ -102,43 +109,71 @@ static FTTrackingConsent FTTrackingConsentFromSampleState(FTRecordingSampleState
 }
 
 - (void)startRecording{
+    @synchronized (self) {
+        if (self.invalidated || self.recordingEnabled) return;
+        self.recordingEnabled = YES;
+    }
     __weak typeof(self) weakSelf = self;
     [self.scheduler.queue run:^{
         __strong typeof(weakSelf) strongSelf = weakSelf;
         if (!strongSelf) {
             return;
         }
-        strongSelf.recordingEnabled = YES;
         [strongSelf evaluateRecordingConditions];
+    }];
+}
+
+- (void)invalidate {
+    @synchronized (self) {
+        if (self.invalidated) return;
+        self.invalidated = YES;
+        self.recordingEnabled = NO;
+    }
+    [self updateHasReplay];
+    [self.scheduler.queue run:^{
+        [self.scheduler stop];
+        if ([self.scheduler respondsToSelector:@selector(shutdown)]) [self.scheduler shutdown];
+        [self.touches shutdown];
+        self.touches = nil;
+        self.recorder = nil;
+        self.currentRUMContext = nil;
+        self.bindInfo = nil;
+        @synchronized (self.activeExternalRecorderOwners) {
+            [self.activeExternalRecorderOwners removeAllObjects];
+        }
     }];
 }
 
 - (void)handleRUMContextMessage:(NSDictionary *)message{
     __weak typeof(self) weakSelf = self;
-    dispatch_async(self.processorsQueue, ^{
+    [self.scheduler.queue run:^{
         __strong __typeof(weakSelf) strongSelf = weakSelf;
         if (!strongSelf) {
             return;
         }
-        if ([strongSelf.currentRUMContext isEqualToDictionary:message]) return;
+        if (strongSelf.invalidated || [strongSelf.currentRUMContext isEqualToDictionary:message]) return;
         [strongSelf onRUMContextChanged:message];
-    });
+    }];
 }
 
 - (void)handleSampleRateUpdate{
     __weak typeof(self) weakSelf = self;
-    dispatch_async(self.processorsQueue, ^{
+    [self.scheduler.queue run:^{
         __strong typeof(weakSelf) strongSelf = weakSelf;
-        if (!strongSelf) return;
+        if (!strongSelf || strongSelf.invalidated) return;
         [strongSelf evaluateRecordingConditionsForSamplingRateUpdate];
-    });
+    }];
 }
 
 - (void)captureNextRecord{
+    @synchronized (self) {
+        if (!self.recordingEnabled || self.trackingConsent == FTTrackingConsentNotGranted) return;
+    }
     @try {
         NSDictionary *rumContext = [self.currentRUMContext copy];
         NSString *viewID = rumContext[FT_KEY_VIEW_ID];
-        if (!viewID || !self.recorder) {
+        if (viewID.length == 0 || [rumContext[FT_APP_ID] length] == 0 ||
+            [rumContext[FT_RUM_KEY_SESSION_ID] length] == 0 || !self.recorder) {
             return;
         }
         FTSRContext *context = [[FTSRContext alloc]init];
@@ -159,7 +194,9 @@ static FTTrackingConsent FTTrackingConsentFromSampleState(FTRecordingSampleState
 
 - (void)onRUMContextChanged:(NSDictionary *)context{
     NSDictionary *rumContext = [self.currentRUMContext copy];
-    if(rumContext == nil || ![context[FT_RUM_KEY_SESSION_ID] isEqualToString:rumContext[FT_RUM_KEY_SESSION_ID]]){
+    if ([context[FT_RUM_KEY_SESSION_ID] length] == 0) {
+        self.sampleState = FTRecordingSampleStateNone;
+    } else if(rumContext == nil || ![context[FT_RUM_KEY_SESSION_ID] isEqualToString:rumContext[FT_RUM_KEY_SESSION_ID]]){
         [self updateSamplingStatusWithRUMContext:context];
     }
     [self checkLinkRumKeys:context];
@@ -169,8 +206,8 @@ static FTTrackingConsent FTTrackingConsentFromSampleState(FTRecordingSampleState
 
 - (void)updateSamplingStatusWithRUMContext:(NSDictionary *)context{
     BOOL isErrorSession = [context[FT_RUM_KEY_SAMPLED_FOR_ERROR_SESSION] boolValue];
-    BOOL isNormalSampled = [FTBaseInfoHandler randomSampling:self.config.sampleRate];
-    BOOL isErrorSampled = isNormalSampled ? NO : [FTBaseInfoHandler randomSampling:self.config.sessionReplayOnErrorSampleRate];
+    BOOL isNormalSampled = [FTBaseInfoHandler randomSamplingWithRate:self.config.sessionReplaySamplingRate];
+    BOOL isErrorSampled = isNormalSampled ? NO : [FTBaseInfoHandler randomSamplingWithRate:self.config.sessionReplayOnErrorSamplingRate];
 
     BOOL needSampleForErrorReplay = (isErrorSession && isNormalSampled) || isErrorSampled;
 
@@ -180,6 +217,7 @@ static FTTrackingConsent FTTrackingConsentFromSampleState(FTRecordingSampleState
 }
 
 - (void)checkLinkRumKeys:(NSDictionary *)rumContext{
+    self.bindInfo = nil;
     NSDictionary *bindInfo = rumContext[FT_LINK_RUM_KEYS];
     if (bindInfo) {
         NSArray *whiteLists = self.config.enableLinkRUMKeys;
@@ -196,13 +234,57 @@ static FTTrackingConsent FTTrackingConsentFromSampleState(FTRecordingSampleState
 }
 
 - (void)evaluateRecordingConditions{
-    FTRecordingSampleState sampleState = self.sampleState;
-    if (self.recordingEnabled && sampleState != FTRecordingSampleStateNone) {
-        [self.scheduler start];
-    } else {
-        [self.scheduler stop];
+    [self.scheduler.queue run:^{
+    @synchronized (self) {
+        if (self.invalidated) return;
+        FTRecordingSampleState sampleState = self.sampleState;
+        if (!self.invalidated && self.recordingEnabled && sampleState != FTRecordingSampleStateNone && !self.config.externalRecorderMode && ![self isExternalRecorderActive]) {
+            [self.scheduler start];
+        } else {
+            [self.scheduler stop];
+            [self.scheduler.queue run:^{ [self.touches reset]; }];
+        }
+        [self updateHasReplay];
     }
-    [self updateHasReplay];
+    }];
+}
+
+- (void)setExternalRecorderActive:(BOOL)active{
+    [self setExternalRecorderActive:active forOwner:FTDefaultExternalRecorderOwner];
+}
+
+- (void)setExternalRecorderActive:(BOOL)active forOwner:(NSString *)owner{
+    if (self.invalidated) return;
+    NSString *normalizedOwner = [owner stringByTrimmingCharactersInSet:NSCharacterSet.whitespaceAndNewlineCharacterSet];
+    if (normalizedOwner.length == 0) {
+        FTInnerLogError(@"[session-replay] External recorder owner must not be empty.");
+        return;
+    }
+
+    BOOL wasActive = NO;
+    BOOL isActive = NO;
+    @synchronized (self.activeExternalRecorderOwners) {
+        wasActive = self.activeExternalRecorderOwners.count > 0;
+        if (active) {
+            [self.activeExternalRecorderOwners addObject:normalizedOwner];
+        } else {
+            [self.activeExternalRecorderOwners removeObject:normalizedOwner];
+        }
+        isActive = self.activeExternalRecorderOwners.count > 0;
+    }
+    if (wasActive == isActive) {
+        return;
+    }
+    if (!isActive && self.recordingEnabled && self.sampleState != FTRecordingSampleStateNone && !self.config.externalRecorderMode) {
+        [self.recorder forceFullSnapshot];
+    }
+    [self evaluateRecordingConditions];
+}
+
+- (BOOL)isExternalRecorderActive{
+    @synchronized (self.activeExternalRecorderOwners) {
+        return self.activeExternalRecorderOwners.count > 0;
+    }
 }
 
 - (void)evaluateRecordingConditionsForSamplingRateUpdate{
@@ -211,14 +293,14 @@ static FTTrackingConsent FTTrackingConsentFromSampleState(FTRecordingSampleState
     FTRecordingSampleState sampleState = self.sampleState;
 
     if (sampleState != FTRecordingSampleStateNone) {
-        if (self.config.sampleRate == 0 && self.config.sessionReplayOnErrorSampleRate == 0) {
+        if (self.config.sessionReplaySamplingRate == 0 && self.config.sessionReplayOnErrorSamplingRate == 0) {
             needUpdate = YES;
         }
-        if (sampleState == FTRecordingSampleStateError && self.config.sampleRate == 100) {
+        if (sampleState == FTRecordingSampleStateError && self.config.sessionReplaySamplingRate == 100) {
             needUpdate = YES;
         }
     } else {
-        if (self.config.sampleRate == 100 || self.config.sessionReplayOnErrorSampleRate == 100) {
+        if (self.config.sessionReplaySamplingRate == 100 || self.config.sessionReplayOnErrorSamplingRate == 100) {
             needUpdate = YES;
         }
     }
@@ -231,11 +313,11 @@ static FTTrackingConsent FTTrackingConsentFromSampleState(FTRecordingSampleState
 
 - (void)updateHasReplay{
     FTRecordingSampleState sampleState = self.sampleState;
-    BOOL hasReplay = self.recordingEnabled && sampleState != FTRecordingSampleStateNone;
+    BOOL hasReplay = !self.invalidated && self.recordingEnabled && sampleState != FTRecordingSampleStateNone;
     [[FTModuleManager sharedInstance] postMessageWithKey:FTMessageKeySessionHasReplay message:@{
         FT_SESSION_HAS_REPLAY:@(hasReplay),
-        FT_RUM_SESSION_REPLAY_SAMPLE_RATE:@(self.config.sampleRate),
-        FT_RUM_SESSION_REPLAY_ON_ERROR_SAMPLE_RATE:@(self.config.sessionReplayOnErrorSampleRate),
+        FT_RUM_SESSION_REPLAY_SAMPLE_RATE:@(self.config.sessionReplaySamplingRate),
+        FT_RUM_SESSION_REPLAY_ON_ERROR_SAMPLE_RATE:@(self.config.sessionReplayOnErrorSamplingRate),
         FT_RUM_KEY_SAMPLED_FOR_ERROR_REPLAY:@(sampleState == FTRecordingSampleStateError)
     }];
 }

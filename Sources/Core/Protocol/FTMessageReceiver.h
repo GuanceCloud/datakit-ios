@@ -21,6 +21,8 @@
 #ifndef FTMessageReceiver_h
 #define FTMessageReceiver_h
 
+#import <Foundation/Foundation.h>
+
 @protocol FTMessageReceiver <NSObject>
 
 - (void)receive:(NSString *)key message:(NSDictionary *)message;

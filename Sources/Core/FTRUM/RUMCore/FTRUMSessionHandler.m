@@ -19,7 +19,9 @@
 //
 
 #import "FTRUMSessionHandler.h"
+#import "FTVisitorIDManager.h"
 #import "FTRUMViewHandler.h"
+#import "FTRUMViewMetrics.h"
 #import "FTBaseInfoHandler.h"
 #import "NSDate+FTUtil.h"
 #import "FTConstants.h"
@@ -34,6 +36,27 @@ static NSString * const FTRUMFallbackViewNameApplicationLaunch = @"ApplicationLa
 static NSString * const FTRUMFallbackViewNameBackground = @"BackgroundView";
 static NSString * const FTRUMFallbackViewNameRoot = @"RootView";
 static NSString * const FTRUMFallbackViewReferrerRoot = @"root";
+typedef NS_ENUM(NSUInteger, FTRUMSessionRenewalCause) {
+    FTRUMSessionRenewalCauseNone,
+    FTRUMSessionRenewalCauseInactivity,
+    FTRUMSessionRenewalCauseMaxDuration,
+    FTRUMSessionRenewalCauseSamplingChange,
+};
+
+static NSString *FTRUMSessionStartReasonForCause(FTRUMSessionRenewalCause cause) {
+    switch (cause) {
+        case FTRUMSessionRenewalCauseInactivity:
+            return FT_RUM_SESSION_START_REASON_INACTIVITY_TIMEOUT;
+        case FTRUMSessionRenewalCauseMaxDuration:
+            return FT_RUM_SESSION_START_REASON_MAX_DURATION;
+        case FTRUMSessionRenewalCauseSamplingChange:
+            return FT_RUM_SESSION_START_REASON_SAMPLING_CHANGED;
+        case FTRUMSessionRenewalCauseNone:
+            return FT_RUM_SESSION_START_REASON_UNKNOWN;
+    }
+    return FT_RUM_SESSION_START_REASON_UNKNOWN;
+}
+
 @interface FTRUMSessionHandler()<FTRUMSessionProtocol>
 @property (nonatomic, strong) FTRUMContext *context;
 @property (nonatomic, strong) NSDate *sessionStartTime;
@@ -41,6 +64,10 @@ static NSString * const FTRUMFallbackViewReferrerRoot = @"root";
 @property (nonatomic, strong) NSMutableArray<FTRUMHandler*> *viewHandlers;
 @property (nonatomic, assign) BOOL sampling;
 @property (nonatomic, assign) BOOL sessionOnErrorSampling;
+@property (nonatomic, assign) FTRUMSessionRenewalCause renewalCause;
+@property (nonatomic, strong) FTRUMViewMetrics *lastViewMetrics;
+@property (nonatomic, strong) NSMutableDictionary<NSString *, NSString *> *resourceViewIDs;
+@property (nonatomic, strong) NSMutableSet<NSString *> *startedResourceKeys;
 
 @end
 @implementation FTRUMSessionHandler
@@ -52,9 +79,12 @@ static NSString * const FTRUMFallbackViewReferrerRoot = @"root";
         self.sessionStartTime = model.time;
         self.lastInteractionTime = self.sessionStartTime;
         self.viewHandlers = [NSMutableArray new];
+        self.resourceViewIDs = [NSMutableDictionary new];
+        self.startedResourceKeys = [NSMutableSet new];
         self.context = [[FTRUMContext alloc] initWithSampleRate:dependencies.sampleRate sessionOnErrorSampleRate:dependencies.sessionOnErrorSampleRate appId:dependencies.appId];
+        self.context.sessionState.session_start_reason = FT_RUM_SESSION_START_REASON_SDK_INIT;
         self.appState = FTAppStateStartUp;
-        self.sampling = [FTBaseInfoHandler randomSampling:dependencies.sampleRate];
+        self.sampling = [FTBaseInfoHandler randomSamplingWithRate:dependencies.sampleRate];
     }
     return  self;
 }
@@ -63,12 +93,19 @@ static NSString * const FTRUMFallbackViewReferrerRoot = @"root";
     if (self) {
         self.assistant = self;
         self.rumDependencies = expiredSession.rumDependencies;
-        self.sampling = [FTBaseInfoHandler randomSampling:expiredSession.rumDependencies.sampleRate];
         self.sessionStartTime = time;
         self.lastInteractionTime = self.sessionStartTime;
         self.context = [[FTRUMContext alloc]initWithSampleRate:expiredSession.rumDependencies.sampleRate sessionOnErrorSampleRate:expiredSession.rumDependencies.sessionOnErrorSampleRate appId:self.rumDependencies.appId];
+        FTRUMSessionRenewalCause cause = expiredSession.renewalCause;
+        if (cause == FTRUMSessionRenewalCauseNone) {
+            cause = [expiredSession renewalCauseAtTime:time];
+        }
+        self.context.sessionState.session_start_reason = FTRUMSessionStartReasonForCause(cause);
+        self.sampling = [FTBaseInfoHandler randomSamplingWithRate:expiredSession.rumDependencies.sampleRate];
         self.appState = expiredSession.appState;
         self.viewHandlers = [NSMutableArray new];
+        self.resourceViewIDs = [NSMutableDictionary new];
+        self.startedResourceKeys = [NSMutableSet new];
         for (FTRUMViewHandler *viewHandler in expiredSession.viewHandlers) {
             if (!viewHandler.isActiveView) {
                 continue;
@@ -80,13 +117,14 @@ static NSString * const FTRUMFallbackViewReferrerRoot = @"root";
                                                                           viewReferrer:viewHandler.view_referrer];
                 viewStopModel.time = time;
                 viewStopModel.type = FTRUMDataViewStop;
-                [viewHandler.assistant process:viewStopModel context:@{}];
+                [viewHandler.assistant process:viewStopModel context:[[FTRUMPropertySnapshot alloc] initWithTags:nil customKeys:nil]];
                 continue;
             }
             FTRUMViewModel *viewModel = [[FTRUMViewModel alloc]initWithViewID:[FTBaseInfoHandler randomUUID]
                                                                      viewName:viewHandler.view_name viewReferrer:viewHandler.view_referrer];
             viewModel.time = time;
             viewModel.loading_time = viewHandler.loading_time;
+            viewModel.trackingType = viewHandler.trackingType;
             [self startView:viewModel];
         }
     }
@@ -97,8 +135,8 @@ static NSString * const FTRUMFallbackViewReferrerRoot = @"root";
     [self updateWriterCacheWriterState:NO];
     FTRUMSessionState *sessionState = self.context.sessionState;
     if (!sampling) {
-        CGFloat errorSampleRate = self.rumDependencies.sessionOnErrorSampleRate;
-        BOOL sessionOnErrorSamplingResult = [FTBaseInfoHandler randomSampling:errorSampleRate];
+        float errorSampleRate = self.rumDependencies.sessionOnErrorSampleRate;
+        BOOL sessionOnErrorSamplingResult = [FTBaseInfoHandler randomSamplingWithRate:errorSampleRate];
         self.sessionOnErrorSampling = sessionOnErrorSamplingResult;
         
         if (sessionOnErrorSamplingResult) {
@@ -118,12 +156,29 @@ static NSString * const FTRUMFallbackViewReferrerRoot = @"root";
         [writer isCacheWriter:enable];
     }
 }
-- (BOOL)process:(FTRUMDataModel *)model context:(nonnull NSDictionary *)context{
-    if ([self timedOutOrExpired:model.time]) {
+- (BOOL)process:(FTRUMDataModel *)model context:(nonnull FTRUMPropertySnapshot *)context{
+    // Lifecycle control closes existing Views without renewing or extending the Session.
+    if (model.type == FTRUMDataAppStateChange) {
+        [self propagateDataToViews:model context:context];
+        return YES;
+    }
+    if ([model isKindOfClass:FTRUMResourceModel.class]) {
+        FTRUMResourceModel *resource = (FTRUMResourceModel *)model;
+        resource.ownerViewID = self.resourceViewIDs[resource.identifier];
+        BOOL starts = model.type == FTRUMDataResourceStart;
+        if (!starts && !resource.ownerViewID) return YES;
+        if (model.type == FTRUMDataResourceStart && [self.startedResourceKeys containsObject:resource.identifier]) return YES;
+    }
+    self.renewalCause = [self renewalCauseAtTime:model.time];
+    if (self.renewalCause != FTRUMSessionRenewalCauseNone) {
         return NO;
     }
     if (model.type == FTRUMSampleRateUpdate) {
-        return  [self checkSessionStateForSamplingRateUpdate];
+        BOOL keepSession = [self checkSessionStateForSamplingRateUpdate];
+        if (!keepSession) {
+            self.renewalCause = FTRUMSessionRenewalCauseSamplingChange;
+        }
+        return keepSession;
     }
     if (model.isUserInteraction && [model.time compare:self.lastInteractionTime] == NSOrderedDescending) {
         self.lastInteractionTime = model.time;
@@ -139,7 +194,8 @@ static NSString * const FTRUMFallbackViewReferrerRoot = @"root";
             [self.rumDependencies.fatalErrorContext setLastSessionState:[self.context.sessionState copy]];
         }
     }
-    self.rumDependencies.fatalErrorContext.dynamicContext = context;
+    NSString *contextVisitorID = model.type == FTRUMDataWebViewJSBData ? nil : [FTVisitorIDManager sharedInstance].snapshot.value;
+    [self.rumDependencies.fatalErrorContext setDynamicPropertySnapshot:context visitorIDSnapshot:contextVisitorID];
     switch (model.type) {
         case FTRUMDataViewStart:
             [self startView:model];
@@ -157,7 +213,19 @@ static NSString * const FTRUMFallbackViewReferrerRoot = @"root";
         case FTRUMDataError:
         case FTRUMDataLongTask:
         case FTRUMDataResourceStart:
-            [self prepareFallbackViewForModel:model context:context];
+            if ([model isKindOfClass:FTRUMResourceModel.class]) {
+                FTRUMResourceModel *resource = (FTRUMResourceModel *)model;
+                resource.ownerViewID = self.resourceViewIDs[resource.identifier];
+            }
+            if (![model isKindOfClass:FTRUMResourceModel.class] || !((FTRUMResourceModel *)model).ownerViewID) {
+                [self prepareFallbackViewForModel:model context:context];
+            }
+            if (model.type == FTRUMDataResourceStart) {
+                FTRUMResourceModel *resource = (FTRUMResourceModel *)model;
+                resource.ownerViewID = resource.ownerViewID ?: [self activeViewHandler].view_id;
+                if (resource.ownerViewID) self.resourceViewIDs[resource.identifier] = resource.ownerViewID;
+                [self.startedResourceKeys addObject:resource.identifier];
+            }
             break;
         case FTRUMDataLaunch:
             if (((FTRUMLaunchDataModel *)model).isInitialLaunchAction) {
@@ -169,14 +237,23 @@ static NSString * const FTRUMFallbackViewReferrerRoot = @"root";
         default:
             break;
     }
+    [self propagateDataToViews:model context:context];
+    if (model.type == FTRUMDataResourceComplete || model.type == FTRUMDataResourceAbandon) {
+        [self.resourceViewIDs removeObjectForKey:((FTRUMResourceModel *)model).identifier];
+        [self.startedResourceKeys removeObject:((FTRUMResourceModel *)model).identifier];
+    }
+    return YES;
+}
+
+- (void)propagateDataToViews:(FTRUMDataModel *)model context:(FTRUMPropertySnapshot *)context {
     self.viewHandlers = [self.assistant manageChildHandlers:self.viewHandlers byPropagatingData:model context:context];
-    
+    for (FTRUMViewHandler *view in self.viewHandlers) [view refreshInteractionMetricWithContext:context];
     if(![self hasActivityView]){
         [self.rumDependencies.fatalErrorContext setLastViewContext:nil];
         self.rumDependencies.lastViewUserCustomDatas = nil;
     }
-    return  YES;
 }
+
 - (BOOL)checkSessionStateForSamplingRateUpdate{
     // 1. The previous session is being sampled; end the current session if the updated sampling rate is set to non-sampling
     if (self.sampling) {
@@ -219,7 +296,7 @@ static NSString * const FTRUMFallbackViewReferrerRoot = @"root";
     }
     return nil;
 }
--(void)prepareFallbackViewForModel:(FTRUMDataModel *)model context:(NSDictionary *)context{
+-(void)prepareFallbackViewForModel:(FTRUMDataModel *)model context:(FTRUMPropertySnapshot *)context{
     NSString *fallbackViewName = [self fallbackViewNameForModel:model];
     FTRUMViewHandler *activeViewHandler = [self activeViewHandler];
     if(!activeViewHandler){
@@ -235,8 +312,14 @@ static NSString * const FTRUMFallbackViewReferrerRoot = @"root";
         return;
     }
     FTRUMViewHandler *activeViewHandler = [self activeViewHandler];
+    FTRUMViewMetrics *precedingMetrics = self.lastViewMetrics;
     applicationLaunchViewHandler = [self startFallbackViewWithName:FTRUMFallbackViewNameApplicationLaunch time:model.time];
     applicationLaunchViewHandler.closeAfterInitialLaunchAction = activeViewHandler != nil;
+    if (activeViewHandler) {
+        // A late initial-launch report uses a temporary fallback alongside the
+        // active page. It must not become the predecessor of the next page.
+        self.lastViewMetrics = precedingMetrics;
+    }
 }
 -(NSString *)fallbackViewNameForModel:(FTRUMDataModel *)model{
     NSString *errorSituation = model.tags[FT_KEY_ERROR_SITUATION];
@@ -267,7 +350,7 @@ static NSString * const FTRUMFallbackViewReferrerRoot = @"root";
 -(FTRUMViewHandler *)startFallbackViewWithName:(NSString *)viewName time:(NSDate *)time{
     return [self startFallbackViewWithModel:[self fallbackViewModelWithName:viewName time:time]];
 }
--(FTRUMViewHandler *)startFallbackViewByClosingActiveFallbackWithName:(NSString *)viewName time:(NSDate *)time context:(NSDictionary *)context{
+-(FTRUMViewHandler *)startFallbackViewByClosingActiveFallbackWithName:(NSString *)viewName time:(NSDate *)time context:(FTRUMPropertySnapshot *)context{
     FTRUMViewModel *viewModel = [self fallbackViewModelWithName:viewName time:time];
     self.viewHandlers = [self.assistant manageChildHandlers:self.viewHandlers byPropagatingData:viewModel context:context];
     return [self startFallbackViewWithModel:viewModel];
@@ -276,26 +359,33 @@ static NSString * const FTRUMFallbackViewReferrerRoot = @"root";
     FTRUMViewHandler *viewHandler = [[FTRUMViewHandler alloc]initWithModel:viewModel context:self.context rumDependencies:self.rumDependencies needsMonitoring:NO];
     viewHandler.fallbackView = YES;
     viewHandler.isApplicationLaunchView = [viewModel.view_name isEqualToString:FTRUMFallbackViewNameApplicationLaunch];
+    // A real fallback boundary breaks INV linkage; do not bridge across it.
+    self.lastViewMetrics = nil;
     [self.viewHandlers addObject:viewHandler];
     return viewHandler;
 }
 -(void)startView:(FTRUMDataModel *)model{
     FTRUMViewHandler *viewHandler = [[FTRUMViewHandler alloc]initWithModel:(FTRUMViewModel *)model context:self.context rumDependencies:self.rumDependencies];
+    viewHandler.previousViewMetrics = self.lastViewMetrics;
+    self.lastViewMetrics = viewHandler.metrics;
     [self.viewHandlers addObject:viewHandler];
 }
-- (BOOL)timedOutOrExpired:(NSDate *)eventTime{
+- (FTRUMSessionRenewalCause)renewalCauseAtTime:(NSDate *)eventTime{
     NSDate *effectiveTime = [eventTime compare:self.lastInteractionTime] == NSOrderedAscending
         ? self.lastInteractionTime
         : eventTime;
     NSTimeInterval timeElapsedSinceLastInteraction = [effectiveTime timeIntervalSinceDate:self.lastInteractionTime];
-    BOOL timedOut = timeElapsedSinceLastInteraction >= sessionTimeoutDuration;
+    if (timeElapsedSinceLastInteraction >= sessionTimeoutDuration) {
+        return FTRUMSessionRenewalCauseInactivity;
+    }
 
     NSTimeInterval sessionDuration = [effectiveTime timeIntervalSinceDate:self.sessionStartTime];
-    BOOL expired = sessionDuration >= sessionMaxDuration;
-
-    return timedOut || expired;
+    if (sessionDuration >= sessionMaxDuration) {
+        return FTRUMSessionRenewalCauseMaxDuration;
+    }
+    return FTRUMSessionRenewalCauseNone;
 }
-- (void)writeWebViewJSBData:(FTRUMWebViewData *)data context:(NSDictionary *)context{
+- (void)writeWebViewJSBData:(FTRUMWebViewData *)data context:(FTRUMPropertySnapshot *)context{
     NSDictionary *sessionTag = [self.context getGlobalSessionTags];
     NSMutableDictionary *tags = [NSMutableDictionary new];
     [tags addEntriesFromDictionary:data.tags];
@@ -303,8 +393,10 @@ static NSString * const FTRUMFallbackViewReferrerRoot = @"root";
     [tags setValue:@(YES) forKey:FT_IS_WEBVIEW];
     NSMutableDictionary *fields = [[NSMutableDictionary alloc]initWithDictionary:data.fields];
     [fields setValue:@(NO) forKey:FT_KEY_IS_ACTIVE];
-    [fields addEntriesFromDictionary:self.context.sessionState.sessionFields];
-    [self.rumDependencies.writer rumWrite:data.measurement tags:tags fields:fields dynamicContext:context time:data.tm];
+    [fields addEntriesFromDictionary:self.context.sessionState.sessionFields ?: @{}];
+    FTRUMWriteData *writeData = [[FTRUMWriteData alloc] initWithSource:data.measurement tags:tags fields:fields
+        context:context customTagKeys:[NSSet set] customFieldKeys:data.customFieldKeys ?: [NSSet set] time:data.tm];
+    [self.rumDependencies.writer writeRUMData:writeData];
 }
 -(NSString *)getCurrentViewID{
     FTRUMViewHandler *view = (FTRUMViewHandler *)[self.viewHandlers lastObject];
@@ -315,9 +407,9 @@ static NSString * const FTRUMFallbackViewReferrerRoot = @"root";
 }
 -(NSDictionary *)getCurrentSessionInfo{
     FTRUMViewHandler *view = (FTRUMViewHandler *)[self.viewHandlers lastObject];
-    if (view) {
+    if (view.isActiveView) {
         return [view.context getGlobalSessionViewActionTags];
     }
-    return [self.context getGlobalSessionViewTags];
+    return [self.context getGlobalSessionTags];
 }
 @end

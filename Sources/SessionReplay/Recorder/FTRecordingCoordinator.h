@@ -46,11 +46,15 @@ typedef void (^FTTrackingConsentChanged)(FTTrackingConsent trackingConsent);
                        touches:(FTSessionReplayTouches *)touches
       trackingConsentDidChange:(nullable FTTrackingConsentChanged)trackingConsentDidChange;
 
+@property (atomic, assign, readonly) BOOL invalidated;
+- (void)invalidate;
 - (void)startRecording;
 - (void)handleRUMContextMessage:(NSDictionary *)message;
 - (void)handleSampleRateUpdate;
 - (void)setSampleState:(FTRecordingSampleState)sampleState;
 - (void)evaluateRecordingConditions;
+- (void)setExternalRecorderActive:(BOOL)active;
+- (void)setExternalRecorderActive:(BOOL)active forOwner:(NSString *)owner;
 
 @end
 

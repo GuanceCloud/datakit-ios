@@ -77,13 +77,17 @@ static const void * const kURLSessionTaskMetrics = &kURLSessionTaskMetrics;
     TableViewCellItem *item9 = [[TableViewCellItem alloc]initWithTitle:@"RUM Resource Error" handler:^{
         [weakSelf manualRumResource:@"https://httpbin.org/status/404"];
     }];
-    TableViewCellItem *item10 = [[TableViewCellItem alloc]initWithTitle:@"Resource WebSocket Success" handler:^{
+    TableViewCellItem *item10 = [[TableViewCellItem alloc]initWithTitle:@"RUM Resource Delay" handler:^{
+        [weakSelf manualRumResource:@"https://httpbin.org/delay/10"];
+    }];
+    TableViewCellItem *item11 = [[TableViewCellItem alloc]initWithTitle:@"Resource WebSocket Success" handler:^{
         [weakSelf createWebSocketResourceWithURLString:@"wss://testserver.host/ws/echo"];
     }];
-    TableViewCellItem *item11 = [[TableViewCellItem alloc]initWithTitle:@"Resource WebSocket Error" handler:^{
+    TableViewCellItem *item12 = [[TableViewCellItem alloc]initWithTitle:@"Resource WebSocket Error" handler:^{
         [weakSelf createWebSocketResourceWithURLString:@"wss://testserver.host/status/403"];
     }];
-    [self.dataSource addObjectsFromArray:@[item1,item2,item3,item4,item5,item6,item7,item8,item9,item10,item11]];
+    [self.dataSource addObjectsFromArray:@[item1,item2,item3,item4,item5,item6,item7,item8,item9,item10,item11,item12
+                                         ]];
     _mtableView = [[UITableView alloc] initWithFrame:CGRectMake(0, 0, self.view.bounds.size.width, self.view.bounds.size.height)];
     _mtableView.dataSource = self;
     _mtableView.delegate = self;

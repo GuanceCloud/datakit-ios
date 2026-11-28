@@ -18,19 +18,6 @@
 //  limitations under the License.
 //
 
-//  Licensed under the Apache License, Version 2.0 (the "License");
-//  you may not use this file except in compliance with the License.
-//  You may obtain a copy of the License at
-//
-//      http://www.apache.org/licenses/LICENSE-2.0
-//
-//  Unless required by applicable law or agreed to in writing, software
-//  distributed under the License is distributed on an "AS IS" BASIS,
-//  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-//  See the License for the specific language governing permissions and
-//  limitations under the License.
-
-
 #ifndef FTRumResourceProtocol_h
 #define FTRumResourceProtocol_h
 NS_ASSUME_NONNULL_BEGIN
@@ -66,6 +53,11 @@ NS_ASSUME_NONNULL_BEGIN
 ///   - property: Event custom properties (optional)
 - (void)stopResourceWithKey:(NSString *)key property:(nullable NSDictionary *)property;
 @optional
+/// HTTP request start at the supplied event time. Internal automatic collectors use this
+/// to preserve the network boundary when reporting is processed asynchronously.
+- (void)startResourceWithKey:(NSString *)key property:(nullable NSDictionary *)property time:(NSDate *)time;
+/// HTTP request end at the supplied event time.
+- (void)stopResourceWithKey:(NSString *)key property:(nullable NSDictionary *)property time:(NSDate *)time;
 /// HTTP request data including tracer information spanID, traceID
 /// - Parameters:
 ///   - key: Request identifier

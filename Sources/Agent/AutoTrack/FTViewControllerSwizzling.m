@@ -8,7 +8,7 @@
 //  you may not use this file except in compliance with the License.
 //  You may obtain a copy of the License at
 //
-//  http://www.apache.org/licenses/LICENSE-2.0
+//      http://www.apache.org/licenses/LICENSE-2.0
 //
 //  Unless required by applicable law or agreed to in writing, software
 //  distributed under the License is distributed on an "AS IS" BASIS,
@@ -42,6 +42,7 @@
 @property (nonatomic, strong) NSMutableArray<dispatch_block_t> *completionBlocks;
 @property (nonatomic, assign) BOOL started;
 @property (nonatomic, assign) BOOL completed;
+@property (nonatomic, assign) BOOL needsRescan;
 - (void)swizzleViewControllerHierarchyForWindows:(NSArray<UIWindow *> *)windows;
 @end
 
@@ -142,13 +143,11 @@ static NSArray<UIWindow *> *FTCurrentApplicationWindows(void) {
         return @[];
     }
     NSMutableOrderedSet<UIWindow *> *windows = [NSMutableOrderedSet orderedSet];
-    if (@available(iOS 13.0, tvOS 13.0, *)) {
-        for (UIScene *scene in application.connectedScenes) {
-            if (![scene isKindOfClass:UIWindowScene.class]) {
-                continue;
-            }
-            [windows addObjectsFromArray:((UIWindowScene *)scene).windows];
+    for (UIScene *scene in application.connectedScenes) {
+        if (![scene isKindOfClass:UIWindowScene.class]) {
+            continue;
         }
+        [windows addObjectsFromArray:((UIWindowScene *)scene).windows];
     }
     id<UIApplicationDelegate> delegate = application.delegate;
     if ([delegate respondsToSelector:@selector(window)] && delegate.window != nil) {
@@ -243,6 +242,20 @@ static NSArray<UIViewController *> *FTViewControllerHierarchyFromRootViewControl
     }
 }
 
+- (void)refreshLoadedViewControllerClasses {
+    dispatch_block_t refresh = ^{
+        if (self.started && !self.completed) {
+            self.needsRescan = YES;
+            return;
+        }
+        self.started = NO;
+        self.completed = NO;
+        [self swizzleLoadedViewControllerClassesWithCompletion:nil];
+    };
+    if ([NSThread isMainThread]) refresh();
+    else dispatch_async(dispatch_get_main_queue(), refresh);
+}
+
 - (void)scanLoadedImagePaths {
     dispatch_async(dispatch_get_global_queue(QOS_CLASS_UTILITY, 0), ^{
         NSArray<NSString *> *loadedImagePaths = FTLoadedImagePaths();
@@ -281,29 +294,31 @@ static NSArray<UIViewController *> *FTViewControllerHierarchyFromRootViewControl
     for (dispatch_block_t completion in completionBlocks) {
         completion();
     }
+    if (self.needsRescan) {
+        self.needsRescan = NO;
+        [self refreshLoadedViewControllerClasses];
+    }
 }
 
 - (void)observeFirstSceneConnectionForRootViewControllerHierarchy {
     if (self.sceneWillConnectObserver != nil) {
         return;
     }
-    if (@available(iOS 13.0, tvOS 13.0, *)) {
-        __weak typeof(self) weakSelf = self;
-        self.sceneWillConnectObserver = [[NSNotificationCenter defaultCenter] addObserverForName:UISceneWillConnectNotification object:nil queue:nil usingBlock:^(NSNotification * _Nonnull note) {
-            FTViewControllerSwizzling *strongSelf = weakSelf;
-            if (strongSelf == nil) {
-                return;
-            }
-            [[NSNotificationCenter defaultCenter] removeObserver:strongSelf.sceneWillConnectObserver];
-            strongSelf.sceneWillConnectObserver = nil;
-            // UIScene posts this notification on the main thread after its delegate has
-            // configured the scene's windows. Swizzle synchronously here, before the
-            // root controller receives its initial lifecycle callbacks.
-            if ([note.object isKindOfClass:UIWindowScene.class]) {
-                [strongSelf swizzleViewControllerHierarchyForWindows:((UIWindowScene *)note.object).windows];
-            }
-        }];
-    }
+    __weak typeof(self) weakSelf = self;
+    self.sceneWillConnectObserver = [[NSNotificationCenter defaultCenter] addObserverForName:UISceneWillConnectNotification object:nil queue:nil usingBlock:^(NSNotification * _Nonnull note) {
+        FTViewControllerSwizzling *strongSelf = weakSelf;
+        if (strongSelf == nil) {
+            return;
+        }
+        [[NSNotificationCenter defaultCenter] removeObserver:strongSelf.sceneWillConnectObserver];
+        strongSelf.sceneWillConnectObserver = nil;
+        // UIScene posts this notification on the main thread after its delegate has
+        // configured the scene's windows. Swizzle synchronously here, before the
+        // root controller receives its initial lifecycle callbacks.
+        if ([note.object isKindOfClass:UIWindowScene.class]) {
+            [strongSelf swizzleViewControllerHierarchyForWindows:((UIWindowScene *)note.object).windows];
+        }
+    }];
 }
 
 - (void)swizzleCurrentRootViewControllerHierarchy {
