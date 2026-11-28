@@ -65,6 +65,8 @@ bool ftcrashcm_activateMonitors(void);
  */
 void ftcrashcm_disableAllMonitors(void);
 
+void ftcrashcm_reinstallHandlers(void);
+
 /**
  * Adds a crash monitor to the system.
  *

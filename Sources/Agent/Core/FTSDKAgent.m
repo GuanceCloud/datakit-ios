@@ -554,6 +554,9 @@ static FTSDKAgent *sharedInstance = nil;
 + (void)resetVisitorID{
     [[FTVisitorIDManager sharedInstance] reset];
 }
++ (void)reinstallCrashHandlers{
+    [FTCrash reinstallHandlers];
+}
 - (void)syncProcess{
     [[FTGlobalRumManager sharedInstance].rumManager syncProcess];
     [[FTLogger sharedInstance] syncProcess];

@@ -77,6 +77,8 @@ NS_ASSUME_NONNULL_BEGIN
          issueDataProvider:(nullable FTIssueDataProvider)issueDataProvider;
 
 + (void)clearIssueDataProvider;
+/// 重新挂载安装后被其他崩溃 SDK 替换掉的处理器。安装之前调用不做任何事。
++ (void)reinstallHandlers;
 
 @end
 

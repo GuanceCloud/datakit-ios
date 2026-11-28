@@ -158,6 +158,13 @@ NS_ASSUME_NONNULL_BEGIN
 /// automatically calling it for transient HTTP 401 or request failures.
 + (void)resetVisitorID;
 
+/// 在其他崩溃采集 SDK 开启后，把本 SDK 的崩溃处理器重新挂到最上层。
+///
+/// Datadog 的崩溃采集（DatadogCrashReporting，底层是 PLCrashReporter）不会把崩溃转交给之前的处理器，
+/// 它在 RUM 启动之后开启时，本 SDK 会收不到崩溃。在其开启后调用一次：本 SDK 先记录崩溃，再转交给对方。
+/// 只重新挂载 NSException 和信号处理器；C++ terminate 与 Mach 异常保持原样。可重复调用，未开启崩溃采集时不做任何事。
++ (void)reinstallCrashHandlers;
+
 /// Trigger request to get remote configuration environment variables
 /// The minimum update time interval defaults to FTSDKConfig.remoteConfigMiniUpdateInterval. If the time interval since the last request doesn't meet the setting, no request will be initiated
 + (void)updateRemoteConfig;

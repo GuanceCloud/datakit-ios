@@ -100,6 +100,9 @@ void ftcrashcmr_removeMonitor(FTCrashMonitorAPIList *monitorList, const FTCrashM
 
 void ftcrashcmr_addContextualInfoToEvent(FTCrashMonitorAPIList *monitorList, struct FTCrash_MonitorContext *ctx);
 
+/** 让每个已启用的 monitor 把处理器重新挂到处理链最上层。 */
+void ftcrashcmr_reinstallHandlers(FTCrashMonitorAPIList *monitorList);
+
 #ifdef __cplusplus
 }
 #endif

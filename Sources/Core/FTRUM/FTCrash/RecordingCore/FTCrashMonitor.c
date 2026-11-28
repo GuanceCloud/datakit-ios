@@ -188,6 +188,12 @@ void ftcrashcm_disableAllMonitors(void)
     ftcrashcmr_disableAllMonitors(&g_state.monitors);
 }
 
+void ftcrashcm_reinstallHandlers(void)
+{
+    init();
+    ftcrashcmr_reinstallHandlers(&g_state.monitors);
+}
+
 static FTCrash_MonitorContext *notifyException(const mach_port_t offendingThread,
                                                const FTCrash_ExceptionHandlingRequirements initialRequirements)
 {

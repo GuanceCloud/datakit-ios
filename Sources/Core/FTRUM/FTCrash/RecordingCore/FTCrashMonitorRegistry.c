@@ -151,6 +151,16 @@ void ftcrashcmr_disableAllMonitors(FTCrashMonitorAPIList *monitorList)
     FTLOG_DEBUG("All monitors have been disabled.");
 }
 
+void ftcrashcmr_reinstallHandlers(FTCrashMonitorAPIList *monitorList)
+{
+    for (size_t i = 0; i < FTCRASH_MONITOR_API_COUNT; i++) {
+        const FTCrashMonitorAPI *api = monitorList->apis[i];
+        if (api != NULL && api->isEnabled() && api->reinstallHandlers != NULL) {
+            api->reinstallHandlers();
+        }
+    }
+}
+
 void ftcrashcmr_addContextualInfoToEvent(FTCrashMonitorAPIList *monitorList, struct FTCrash_MonitorContext *ctx)
 {
     for (size_t i = 0; i < FTCRASH_MONITOR_API_COUNT; i++) {

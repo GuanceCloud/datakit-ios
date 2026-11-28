@@ -198,6 +198,13 @@ void ftcrash_install(const char *appName, const char *const installPath,FTCrashC
     
     g_installed = true;
 }
+void ftcrash_reinstallHandlers(void)
+{
+    if (!g_installed) {
+        return;
+    }
+    ftcrashcm_reinstallHandlers();
+}
 void ftcrash_setWillWriteCrashNotifyCallback(const FTCrashWillWriteReportCallback onCrashNotify){
     g_willWriteReportCallback = onCrashNotify;
 }

@@ -54,3 +54,15 @@ xcrun clang -fobjc-arc -Wno-nullability-completeness -framework Foundation \
   "$output/crash-logger.o" \
   "$root/Tests/EarlyCrash/CrashMonitorLoggingTests.m" -o "$output/crash-monitor-logging"
 "$output/crash-monitor-logging"
+
+# 用真实的 NSException / Signal monitor 对接其他崩溃 SDK；采集相关的辅助函数在测试里做了桩。
+crash_inc=(-I "$base/Base" -I "$base/include" -I "$base/Thread/include" -I "$root/Sources/Core/FTRUM/include"
+  -I "$crash/Recording" -I "$crash/Recording/Monitors" -I "$crash/RecordingCore")
+xcrun clang -std=gnu11 -Wall -Wextra -Werror -Wno-missing-field-initializers -mmacosx-version-min=12.0 "${crash_inc[@]}" \
+  -c "$crash/Recording/Monitors/FTCrashMonitor_Signal.c" -o "$output/monitor-signal.o"
+xcrun clang -fobjc-arc -Wall -Wextra -Werror -Wno-missing-field-initializers -Wno-nullability-completeness -mmacosx-version-min=12.0 \
+  "${crash_inc[@]}" -framework Foundation \
+  "$crash/Recording/Monitors/FTCrashMonitor_NSException.m" "$output/monitor-signal.o" \
+  "$crash/RecordingCore/FTCrashSignalInfo.c" "$crash/RecordingCore/FTCrashMonitorAPI.c" \
+  "$root/Tests/EarlyCrash/CrashHandlerReinstallTests.m" -o "$output/crash-handler-reinstall"
+"$output/crash-handler-reinstall"

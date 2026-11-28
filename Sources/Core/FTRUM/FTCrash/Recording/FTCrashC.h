@@ -47,6 +47,9 @@ bool ftcrash_prepareEventForRecording(struct FTCrash_MonitorContext *context);
 
 void ftcrash_install(const char *appName, const char *const installPath,FTCrashCMonitorType monitors);
 
+/** 重新挂载被其他崩溃 SDK 替换掉的处理器。ftcrash_install 之前调用不做任何事。 */
+void ftcrash_reinstallHandlers(void);
+
 /** Set the user-supplied data in JSON format.
  *
  * @param userInfoJSON Pre-baked JSON containing user-supplied information.

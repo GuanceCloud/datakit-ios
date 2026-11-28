@@ -74,6 +74,9 @@ static mach_port_t main_thread_id;
     });
     return sharedHandler;
 }
++ (void)reinstallHandlers {
+    ftcrash_reinstallHandlers();
+}
 + (void)clearIssueDataProvider {
     [sharedHandler.crashReportWrapper setIssueDataProvider:nil];
 }
